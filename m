@@ -2,102 +2,103 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA0DDC41513
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 11:20:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56129CDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 13:01:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232422AbjJPLUA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 07:20:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53614 "EHLO
+        id S231569AbjJPNBA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 09:01:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59028 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231442AbjJPLUA (ORCPT
+        with ESMTP id S232133AbjJPNA7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 07:20:00 -0400
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 287F2C5
-        for <linux-fbdev@vger.kernel.org>; Mon, 16 Oct 2023 04:19:58 -0700 (PDT)
-Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-4060b623e64so27110025e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 16 Oct 2023 04:19:58 -0700 (PDT)
+        Mon, 16 Oct 2023 09:00:59 -0400
+Received: from mail-oo1-xc2b.google.com (mail-oo1-xc2b.google.com [IPv6:2607:f8b0:4864:20::c2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5E1EF2;
+        Mon, 16 Oct 2023 06:00:57 -0700 (PDT)
+Received: by mail-oo1-xc2b.google.com with SMTP id 006d021491bc7-57be3d8e738so2598155eaf.1;
+        Mon, 16 Oct 2023 06:00:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1697455196; x=1698059996; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+        d=gmail.com; s=20230601; t=1697461257; x=1698066057; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=A8KsGpPOOoWej+EABAJ7O0MnezxzJN0p6iOYP9JLBdQ=;
-        b=bsEAkxWY0dzw4kb9IARJlAMASvaxvEHrkDR1Cv7mzOkiEEKWZjplB5nQUpTsjP5tLo
-         D8wTUqty9LpDUOXUNPX3iT4cZ2uMT0Lq4LDSM5Ll4e79Cg7eGCLQPNCgtdglsyxFqAAk
-         Qn2Sdx+IIJBF8LsBEk5ltng9JGnt8XAiYLqa16SUOTSaYwX/4tf95RNM1USnuaz7CeUw
-         ENfWZOH11Uu6S9nGST6hoCE82Pc29C3QdlalUd9s2YbHzhIn9IAO2qUY9eBQL+wdSi7C
-         GjykIu4ItNhuHfnRPiC7qm4cX9oWlJ/g0igZHj10JaGnUQ3a+2E5EzZbEFjwQkWfbNeQ
-         Mu2w==
+        bh=vRSNHwdO/tIPJtA5wXwUSgkVx6Nppqe1ZqNrcskxaoE=;
+        b=MgLhzfIaSEpBy6bFa38ReELtg2y8DNL8TWK3TuiRkH9EZHD3dccLZybxKA4njiHI4W
+         mxUrdNF9lra9Txs5j7shDhZlpLe2+wjnoplJF3bl858IplSsmsmKKZYsNqdxABZ6kHLx
+         5WylQRZ27JOl2Sz1tRgDpZYoVMGH76W59yd0LLewIKk4puPwnkRegE7+TKqv3guC7kwk
+         bOfp9DTGMO/hrwgNVcmF40RighYVoQWm+pr4KpS+5eqJqOpg/pwj04ybK/uNRRaHywfl
+         aD2gxNr1V0VMnUhj4jUexHUWsL3CI6iCkUCXvfSfm46iCmPq+jrm413eOwDMwW+DcY0N
+         cGTw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697455196; x=1698059996;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+        d=1e100.net; s=20230601; t=1697461257; x=1698066057;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=A8KsGpPOOoWej+EABAJ7O0MnezxzJN0p6iOYP9JLBdQ=;
-        b=F5GHIAyJKRdAHfpgPbLWxpIiy7Vve8Q07kjiNzyeqA/3SCh6La/RD2Xj9TryFlaD/u
-         Pe9cpNEaFAzM2hL5A/fekLDPfAn62YUZ6bNbODcRlHX8PZg4Ahj328NqRzdMknUDgmMR
-         LaAm//AaGN/4vMwT7VLOJqiCDkLCsUUXzMV8jdWFYFNVlawyXP17s/2SHF+dcsn0DEyq
-         XeeZ/ZnXZGZIg/beO7HB9DzVTZlgmoSN2Iks/SYChupBwF98rAAh/l+ljEdS0xADhfju
-         tmQjBVQlixQhiAuTcUkgM6CO5YRgIDyTw42hge06Jx5yRGQpvROHl/rV3DquhGsm5Jyo
-         q7sg==
-X-Gm-Message-State: AOJu0Yw2QIgnmaosBq6pguIaXJdmlum1lJ5B0Htiaw3pafB9MUMNmE2w
-        Qr7Ls9PwWWUaoBcj/NfbvxUW3w==
-X-Google-Smtp-Source: AGHT+IEwsg3DmJum5HD3wiLEYwzwIlJS3Ala8HDGksmUXDObbnciWs0r3lFHIdZY4gQew0/dSIC84g==
-X-Received: by 2002:a05:600c:1552:b0:407:7def:382c with SMTP id f18-20020a05600c155200b004077def382cmr4012116wmg.13.1697455196603;
-        Mon, 16 Oct 2023 04:19:56 -0700 (PDT)
-Received: from localhost ([102.36.222.112])
-        by smtp.gmail.com with ESMTPSA id p11-20020a05600c358b00b004075d5664basm6983560wmq.8.2023.10.16.04.19.55
+        bh=vRSNHwdO/tIPJtA5wXwUSgkVx6Nppqe1ZqNrcskxaoE=;
+        b=CvxcuShxBP/8PMVs8QOBR/N9KufwtWf2J/7aFUjAv6TS1CQeWu/eBgsPOireiq34PK
+         RMFJf0WaOkj1ffrrWwb/jE0nM9u1v+kESskcKlMyVVFyH5uvSp7VqpNWO2Z/tAOsc+0C
+         ndpGI4tYC7q1kYrINFfqvb0+VNRBk20HVQ+M1hDk3fR6ypAzKvSXgL155tms1kgCh16U
+         QqK1W75hNmcxqg8gaTSVsPrQnz1+1qa0np2c8+quMHxSuxgPrRLw6XA+RPD9/8oEW8ax
+         9JTJCibfZyGMxcXtrGUCEVe/Pazu20Eos03IzIHIuQ5JyxQv0VJJ7/IAUjNEAuKRFyyL
+         4++Q==
+X-Gm-Message-State: AOJu0YyZjg7ISLHF1q/Tg4gjMCTdDQvkJ99uv4iPxoJSHO0XfrctMJ27
+        E+PxfOY8Chci97ZRIUeU6jM=
+X-Google-Smtp-Source: AGHT+IHkqaGRFiSDzIC8/PY+WcmLdafEJPlOVfqU/vUx0GF0CaZ4cYipr6e7qW1L1NjWOrO9T9Ck8Q==
+X-Received: by 2002:a05:6358:7e92:b0:143:5383:af8b with SMTP id o18-20020a0563587e9200b001435383af8bmr35449974rwn.11.1697461256761;
+        Mon, 16 Oct 2023 06:00:56 -0700 (PDT)
+Received: from ubuntu ([223.226.54.200])
+        by smtp.gmail.com with ESMTPSA id u12-20020aa7848c000000b0068883728c16sm18783070pfn.144.2023.10.16.06.00.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Oct 2023 04:19:56 -0700 (PDT)
-Date:   Mon, 16 Oct 2023 14:19:52 +0300
-From:   Dan Carpenter <dan.carpenter@linaro.org>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Yang Yang <yang.yang29@zte.com>,
-        Xu Panda <xu.panda@zte.com.cn>,
-        Lucy Mielke <mielkesteven@icloud.com>,
-        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] fbdev: omapfb: fix some error codes
-Message-ID: <843b063c-ee4a-4e17-add6-75e2cc82c2f4@moroto.mountain>
+        Mon, 16 Oct 2023 06:00:56 -0700 (PDT)
+Date:   Mon, 16 Oct 2023 06:00:53 -0700
+From:   Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
+To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: sm750fb: remove unnecessary parentheses
+Message-ID: <20231016130053.GA9696@ubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Return negative -ENXIO instead of positive ENXIO.
+Adhere to linux coding style. Reported by checkpatch:
+CHECK: Unnecessary parentheses
 
-Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+Signed-off-by: Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
 ---
-No fixes tag because the caller doesn't check for errors.
+ drivers/staging/sm750fb/ddk750_swi2c.c | 2 +-
+ drivers/staging/sm750fb/sm750_accel.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
- drivers/video/fbdev/omap/omapfb_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index f28cb90947a3..42c96f1cfc93 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1645,13 +1645,13 @@ static int omapfb_do_probe(struct platform_device *pdev,
- 	}
- 	fbdev->int_irq = platform_get_irq(pdev, 0);
- 	if (fbdev->int_irq < 0) {
--		r = ENXIO;
-+		r = -ENXIO;
- 		goto cleanup;
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index 0ef8d4ff2ef9..50e51d730d86 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -393,7 +393,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
+ 	 * Return 0 if the GPIO pins to be used is out of range. The
+ 	 * range is only from [0..63]
+ 	 */
+-	if ((clk_gpio > 31) || (data_gpio > 31))
++	if (clk_gpio > 31 || data_gpio > 31)
+ 		return -1;
+ 
+ 	if (sm750_get_chip_type() == SM750LE)
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 44b9e3fe3a41..bbef19a39f81 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -215,7 +215,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 		}
  	}
  
- 	fbdev->ext_irq = platform_get_irq(pdev, 1);
- 	if (fbdev->ext_irq < 0) {
--		r = ENXIO;
-+		r = -ENXIO;
- 		goto cleanup;
- 	}
- 
+-	if ((nDirection == BOTTOM_TO_TOP) || (nDirection == RIGHT_TO_LEFT)) {
++	if (nDirection == BOTTOM_TO_TOP || nDirection == RIGHT_TO_LEFT) {
+ 		sx += width - 1;
+ 		sy += height - 1;
+ 		dx += width - 1;
 -- 
-2.39.2
+2.25.1
 

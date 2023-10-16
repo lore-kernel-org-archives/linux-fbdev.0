@@ -2,174 +2,151 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88726CDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:31:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0380CDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 21:07:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234000AbjJPUbB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 16:31:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55526 "EHLO
+        id S231221AbjJPVHE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 17:07:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47564 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234170AbjJPUa7 (ORCPT
+        with ESMTP id S229848AbjJPVHD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 16:30:59 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20661F3;
-        Mon, 16 Oct 2023 13:30:56 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-405417465aaso48609365e9.1;
-        Mon, 16 Oct 2023 13:30:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697488254; x=1698093054; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=yP03Yjd+YrRnUI9Z4/vJQB7dAVo1TlzSZV/Wwx+jtHQ=;
-        b=FgngYESc8iguPN8DdepLB/f4jQ1lqeXzJNAj3rw9jDVmEJPdB17syfhgOs2NOEdEF8
-         dIfQg1aJvQUuhrTiXtpjRNCTKDwWTdluyPphNkAX23uWtDN/HG60aFLCP9NmQVfPCiBp
-         S/yxehQxzpXMQjtG0tFTFXhw4xDQM49NFbYeDD/6QOQt3zpi4pC15J2pgloR7eBbaQWS
-         3o1jpFmKD41QueM/0hISteUKr2VVDfN6tghI3vepWaSl05YD492XCPkQF/FfkTKqwkjk
-         uDqeXpN58Vamlexi31OiXW8SPRHMNs4MpYjFbVipBwthycnuQ0LzuVxbVr5O8o0mxZH7
-         ckXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697488254; x=1698093054;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yP03Yjd+YrRnUI9Z4/vJQB7dAVo1TlzSZV/Wwx+jtHQ=;
-        b=uPrwttExOjmj2NwhtH1Daxt+baCO/TRE9OlbKFiDysIKbGydgWYdTIIzif3pUiYhvV
-         ZR2VQENVYHLboqyPXm+EFhVUUNaMsKGcDnyKe+aHLXZHeLiyo8XvmJtZl0pkjE/+hadm
-         tVJcTl7FewpjTq5GcioWkkCgvepZwtxzO5PeBfZ4kFSkRX6oJ/3SUSmNZMMndWK5eGGX
-         geMpEfid40ycX0tp0/tm1Pm40W9nxxXoSy7mWxSOt1r920Zl5aredRpxETANylV2JwBc
-         yJ/tMpkyI05B1h8LIUEcxnPjw7utsrja2f3hm2cEPWkq64yjPstthdzH7QxthzMLRZHV
-         9YbQ==
-X-Gm-Message-State: AOJu0YzPM9ktbRzGQZAxdSSPhcFi/jy3qDVE7CH2PbPjKIcsemd5t428
-        U5rSJaLzYM8aRoCBh4zK0Q==
-X-Google-Smtp-Source: AGHT+IGR2WYyvQGDSVWvcnP9TKmfjCt0gbYLkfoAC0FYqIYNl1BRisa6qK/vHorshbbX/iwXh4QmBw==
-X-Received: by 2002:a05:600c:19cd:b0:405:1baf:cedf with SMTP id u13-20020a05600c19cd00b004051bafcedfmr172204wmq.24.1697488254326;
-        Mon, 16 Oct 2023 13:30:54 -0700 (PDT)
-Received: from dorcaslitunya-virtual-machine ([105.163.1.143])
-        by smtp.gmail.com with ESMTPSA id 13-20020a05600c230d00b004068495910csm7946115wmo.23.2023.10.16.13.30.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Oct 2023 13:30:54 -0700 (PDT)
-Date:   Mon, 16 Oct 2023 23:30:50 +0300
-From:   Dorcas Litunya <anonolitunya@gmail.com>
-To:     Julia Lawall <julia.lawall@inria.fr>
-Cc:     outreachy@lists.linux.dev,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] Staging: sm750fb: Rename displayControl
-Message-ID: <ZS2deicLPyamwb5T@dorcaslitunya-virtual-machine>
-References: <cover.1697400022.git.anonolitunya@gmail.com>
- <596de9b4cf3483d872b1ba25e1b02194aec34bac.1697400022.git.anonolitunya@gmail.com>
- <a5cbf027-7990-c54d-8bfc-dc042ac166f@inria.fr>
+        Mon, 16 Oct 2023 17:07:03 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54E31A7;
+        Mon, 16 Oct 2023 14:07:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+ t=1697490408; x=1698095208; i=deller@gmx.de;
+ bh=d6tjiijzqQhQKa4d9B5bi64BIn8+37P4rH09K0TNgCk=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=fW880YgfFGiPWR6gnyAu9yN8aKybPvsczrXXi3oKHWDCXOshb5ThdkCvB+m2F9qZ45ZSNlaTS5F
+ USfUQvnj73mxGhkeT4IJfFsy/jZvvDIDEcGXJt411XIRe1d/jJqqNcckQR/HSHTR094bo72yQWn0y
+ f/0G7/+Jhe/fDKnwbfTY/QSJLYxJPkSB3BxHTRLkXFFezJ4ZRmuHQrRgm2RHbGBEpb+PnK2ZgCJQQ
+ OU7RIfsVBa/mpsn0PL4nzYNdw+vm5IKrtujiYAluw8+SkMTWeXLZQNe3V+0JVWhduK0oeqXVpLbTZ
+ Z+GVYuIPjTEnLjca+N+pyWj4KxyfZbEg8HTw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.153.197]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MPokD-1rEr8t1oIt-00MuL8; Mon, 16
+ Oct 2023 23:06:48 +0200
+Message-ID: <3ad85b24-4f7d-4031-ab27-d5c6516dff8b@gmx.de>
+Date:   Mon, 16 Oct 2023 23:06:47 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a5cbf027-7990-c54d-8bfc-dc042ac166f@inria.fr>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: sa1100fb: mark sa1100fb_init() static
+Content-Language: en-US
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     Arnd Bergmann <arnd@arndb.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lee Jones <lee@kernel.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20231016200450.826502-1-arnd@kernel.org>
+From:   Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20231016200450.826502-1-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:oww78UoT3556zyxNmfdLNIun6dvYXk9jadrobaQVz4Ke3P4xxcO
+ 5RcgOMbOl9NAdoDa55i132ZOvOqAZL5iEt+JOLGvJW9eB2l7PKfcDScXSt+17+JUpyJm5Yy
+ Kqrk27CMl/ArKvcxBlRJk4Fc11B3R+1J0nPDmu0HZ7mlOCO0ZPZAiE9JT5LvpY2dzejnGlL
+ 0Qu5OMhDPh/VK02ibFRGw==
+UI-OutboundReport: notjunk:1;M01:P0:NXFGhKVB1Ss=;t5w+h5GczZzzMmIu5idSOSmAJQU
+ CPUt4xslxFC6MVMCH9aF90nkkhWCzff0sYrjWJwLBKbSHT/u/hONVVbxvl3s8EwK3UPUnuBHK
+ dlJzgt3mGp5mfm90KqQKHu24AFzOnE5O61aO8RJrhQHjPDjq+j+BnqA/+EMdC9K3trMR03vPm
+ 3hd1E8gao+EhTERXmdjqAdMTpvqopTOr7U26T4M4eZQL+CRnCf2KLkzI6lZ82pkIOkbBcvNQO
+ EcGZKoERagWuFWqRaVH7QeRYdy7owkpCSlt58KaaUYzNuCT/ID5u+F/7bgFDXBDMbMg8ZG4rK
+ 7cY3jThtJkxQdPM5L4ukBehVrJQQFyTGZFczeaSdeAf+6gIB67xxiaoBhSTKW+7mAnDeT6uh1
+ Tjm9m1f02I677taUegWVUm9+JqfT6+UWrLTEeDjokYWkSB4PNQreZ7/0CnxhbChV4YNZXE96I
+ dhsI6j6J0wwh42nZoHamBGsAaCjhDK+V+FCXyxqUxYEDiQg4X/aZDmxixNqt0/Op0pJQmKRF3
+ AcB9PtCt1ePbpVKdpk6ihgKFXaVAWH7WgIroUeVdS/E/7kwDd2NK7mXNSYQJyC+ApCuENDQiS
+ qeRjPtk5T+lXRVa4GBZ4BhA52+I/S0MyCG9kLuiPqbTwm/bvAIWSSZq4g1tAq0MXtjr5sBASn
+ eh34AT2bbYaSvOFqJnSXyalKlERVuF7EUP9y+jupTuZd1BhgT8C0CPDnQ7gyiACJE6g0o99r+
+ gRXBPpmeoMEgarLOuoG05VgXpviDBMW9pHHOYCAwbkSfqQeXBlvts3ZUkxtTf5yW8Yfrveu0c
+ lGrWQxq384w/EsuHlJwLrVuVc5c2HgfSMgVe8Ou19xT1FJ3zdF95xNd4P2Gip6BvHBfClPCld
+ zFDw7zDNBXNf8JGb2bn5uk7Ks+Vnq6UVV6eST24fJ9gx9gR7JvhFUx5N0m1lyBiTFpClCWyqJ
+ MIBnVxKmliDvl9EuQjKjKteNzJw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Oct 15, 2023 at 10:23:54PM +0200, Julia Lawall wrote:
-> 
-> 
-> On Sun, 15 Oct 2023, Dorcas AnonoLitunya wrote:
-> 
-> > Rename variable displayControl to display_control. This follows
-> > snakecase naming convention and ensures consistent naming style
-> > throughout the file.Issue by checkpatch.
-> 
-> Actually, the variable seems to be dispControl?
-> 
-I had actually missed this. Thanks for the correction. Its now corrected
-in v2.
+On 10/16/23 22:04, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> This is a global function that is only referenced as an initcall. This c=
+auses
+> a warning:
+>
+> drivers/video/fbdev/sa1100fb.c:1218:12: error: no previous prototype for=
+ 'sa1100fb_init' [-Werror=3Dmissing-prototypes]
+>
+> Make it static instead.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Dorcas
-> julia
-> 
-> >
-> > Mutes the following checkpatch error:
-> > CHECK: Avoid CamelCase: <dispControl>
-> >
-> > Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
-> > ---
-> >  drivers/staging/sm750fb/ddk750_mode.c | 32 +++++++++++++--------------
-> >  1 file changed, 16 insertions(+), 16 deletions(-)
-> >
-> > diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-> > index 431b273a347a..fc3db09de9ae 100644
-> > --- a/drivers/staging/sm750fb/ddk750_mode.c
-> > +++ b/drivers/staging/sm750fb/ddk750_mode.c
-> > @@ -15,7 +15,7 @@
-> >   */
-> >  static unsigned long
-> >  display_control_adjust_SM750LE(struct mode_parameter *mode_param,
-> > -			       unsigned long dispControl)
-> > +			       unsigned long disp_control)
-> >  {
-> >  	unsigned long x, y;
-> >
-> > @@ -36,42 +36,42 @@ display_control_adjust_SM750LE(struct mode_parameter *mode_param,
-> >  	       ((x - 1) & CRT_AUTO_CENTERING_BR_RIGHT_MASK));
-> >
-> >  	/*
-> > -	 * Assume common fields in dispControl have been properly set before
-> > +	 * Assume common fields in disp_control have been properly set before
-> >  	 * calling this function.
-> > -	 * This function only sets the extra fields in dispControl.
-> > +	 * This function only sets the extra fields in disp_control.
-> >  	 */
-> >
-> >  	/* Clear bit 29:27 of display control register */
-> > -	dispControl &= ~CRT_DISPLAY_CTRL_CLK_MASK;
-> > +	disp_control &= ~CRT_DISPLAY_CTRL_CLK_MASK;
-> >
-> >  	/* Set bit 29:27 of display control register for the right clock */
-> >  	/* Note that SM750LE only need to supported 7 resolutions. */
-> >  	if (x == 800 && y == 600)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL41;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL41;
-> >  	else if (x == 1024 && y == 768)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL65;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL65;
-> >  	else if (x == 1152 && y == 864)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL80;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL80;
-> >  	else if (x == 1280 && y == 768)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL80;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL80;
-> >  	else if (x == 1280 && y == 720)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL74;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL74;
-> >  	else if (x == 1280 && y == 960)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL108;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL108;
-> >  	else if (x == 1280 && y == 1024)
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL108;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL108;
-> >  	else /* default to VGA clock */
-> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL25;
-> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL25;
-> >
-> >  	/* Set bit 25:24 of display controller */
-> > -	dispControl |= (CRT_DISPLAY_CTRL_CRTSELECT | CRT_DISPLAY_CTRL_RGBBIT);
-> > +	disp_control |= (CRT_DISPLAY_CTRL_CRTSELECT | CRT_DISPLAY_CTRL_RGBBIT);
-> >
-> >  	/* Set bit 14 of display controller */
-> > -	dispControl |= DISPLAY_CTRL_CLOCK_PHASE;
-> > +	disp_control |= DISPLAY_CTRL_CLOCK_PHASE;
-> >
-> > -	poke32(CRT_DISPLAY_CTRL, dispControl);
-> > +	poke32(CRT_DISPLAY_CTRL, disp_control);
-> >
-> > -	return dispControl;
-> > +	return disp_control;
-> >  }
-> >
-> >  /* only timing related registers will be  programed */
-> > --
-> > 2.42.0.345.gaab89be2eb
-> >
-> >
-> >
+applied.
+
+Thanks!
+Helge
+
+> ---
+>   drivers/video/fbdev/sa1100fb.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100=
+fb.c
+> index 63e12a7c1100e..e14eb634cb944 100644
+> --- a/drivers/video/fbdev/sa1100fb.c
+> +++ b/drivers/video/fbdev/sa1100fb.c
+> @@ -1215,7 +1215,7 @@ static struct platform_driver sa1100fb_driver =3D =
+{
+>   	},
+>   };
+>
+> -int __init sa1100fb_init(void)
+> +static int __init sa1100fb_init(void)
+>   {
+>   	if (fb_get_options("sa1100fb", NULL))
+>   		return -ENODEV;
+

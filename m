@@ -2,75 +2,92 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 715D1CDB474
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:04:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6547CDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:15:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232578AbjJPUE7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 16:04:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58394 "EHLO
+        id S231955AbjJPUPI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 16:15:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59112 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231508AbjJPUE6 (ORCPT
+        with ESMTP id S231221AbjJPUPH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 16:04:58 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 036B883;
-        Mon, 16 Oct 2023 13:04:57 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C629CC433C7;
-        Mon, 16 Oct 2023 20:04:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1697486696;
-        bh=+CKoakIKRn8tAacvsCSRM0rsr0ykK+jJR6uwcT1H03s=;
-        h=From:To:Cc:Subject:Date:From;
-        b=D1h/PEOWkFFhGEqvx5NqiK82gHeTCGUuSJfwks5MkWbwbnVN/mKglBBjVG/UHIvoS
-         bqRgcaOcPoHaX36lDPsDBYKWGUHx+BLHKth43SR+8/HZBK536qNAVWUNRnMFfmBeR0
-         G4pQ6zdHgkwse4tO9ZiGSJAq3eubliFJE+nD3eEMfS2wj1Q4sdKlYsVkCpBqG7nze5
-         Ga8OAYDOjmzwh/8k01bTNCEWpoSTqACdKKWMmrejxvQhebsnz5NGebFKwR5QEojhgl
-         9xZHX5iPtj+dHURWf7GWlGDOUz/BjgQvHadd81mhkY313PyS/ym0fs+tAg3pbd6FUZ
-         XHyCLk+toyTAQ==
-From:   Arnd Bergmann <arnd@kernel.org>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Arnd Bergmann <arnd@arndb.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Lee Jones <lee@kernel.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: sa1100fb: mark sa1100fb_init() static
-Date:   Mon, 16 Oct 2023 22:04:40 +0200
-Message-Id: <20231016200450.826502-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
+        Mon, 16 Oct 2023 16:15:07 -0400
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB3DA1;
+        Mon, 16 Oct 2023 13:15:05 -0700 (PDT)
+Received: by mail-ej1-x62e.google.com with SMTP id a640c23a62f3a-9ada2e6e75fso873104966b.2;
+        Mon, 16 Oct 2023 13:15:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1697487304; x=1698092104; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=FRniKyUz9iHO7Fz4n7LlSe4JaoEPWk/8N3r3s0S38yc=;
+        b=UrS2WK899aTYX/5/k5bWoihbwZfs8AHdyNi1GfDzBaj0X4rD7342Zq3n0J2uKy9h6c
+         3ZxP6e+DpXxLPKIOjI8uTdtBJzsjQDi6SzOB/YDjy4F4mf2KYz4sqAjHOGiwxjbe5E59
+         5Kf3RC4wmQNeZ+q4lzwArvdqtMBQOEjsb4djbOJlGko+JrBvxAcnlqj45VkD+5egp/LY
+         yZYQOZBge2rcHcmJORLvoCu9ob+wxjBb0jw686plrgeVBWythR7KaNMXppos1gHz/4KW
+         ufuv7g2AwT7ZRVrxMZkW7jEScUKer+7+iK+4csIb4YMF2gjW6IFiZ2m/j0dROeQx5hv4
+         pF0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1697487304; x=1698092104;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=FRniKyUz9iHO7Fz4n7LlSe4JaoEPWk/8N3r3s0S38yc=;
+        b=VLCIceJla5zYzuDeFptg6n18kfTnnhnEa7//IrqZwnmVc2vVy50N9XbrIGsH2IfJ6L
+         4wF/32K9N4bHQZ9ULIilSVxyYuFYP3MUQha5oR7hXd+MfRqeoIS6pOtbQJiC087WLLdA
+         AZiEyZinQ0lPp8ttz/C1nKKGrNFUZeKqLS6+qoWJOa2goVfHy89xFpFfcp51ErT+QoW0
+         Hwx/mWE17Je6U0hQPn6UcYeY5ySBhSBJAl2mAAVcWxv9D8h5wxYOjj7ShU/lwXZybEKg
+         avLey1GvCeazIu0rVeizKlDIx1/gn8gGFXIQqEhYG1WMYP4fyA4icyTwSS+5mE0+fYOj
+         Z28Q==
+X-Gm-Message-State: AOJu0YymmWINBPWsW9g9jMyL2gJhSDiqBnQrn/az8XzHA6Fa+03aHtkJ
+        BldMcM7im2fMHwj7th/Ep4UQYnRolN+S5xU=
+X-Google-Smtp-Source: AGHT+IFqWbp0v+lRnIYAfoA8RbKDtJE6+FBX4X9Kzec6bIIB2oZpNU94+sLO+oRr4pQMPO6v2uYU3w==
+X-Received: by 2002:a17:907:6d1d:b0:9be:5ab2:73c2 with SMTP id sa29-20020a1709076d1d00b009be5ab273c2mr104647ejc.58.1697487303797;
+        Mon, 16 Oct 2023 13:15:03 -0700 (PDT)
+Received: from dorcaslitunya-virtual-machine.localdomain ([105.163.1.143])
+        by smtp.gmail.com with ESMTPSA id u26-20020a17090657da00b009b97521b58bsm4606055ejr.39.2023.10.16.13.15.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Oct 2023 13:15:03 -0700 (PDT)
+From:   Dorcas AnonoLitunya <anonolitunya@gmail.com>
+Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
+        julia.lawall@inria.fr, dan.carpenter@linaro.org,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/5] staging: sm750fb: Renaming camelcase to snakecase
+Date:   Mon, 16 Oct 2023 23:14:07 +0300
+Message-ID: <20231016201434.7880-1-anonolitunya@gmail.com>
+X-Mailer: git-send-email 2.42.0.345.gaab89be2eb
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+Renames various function names and variable names that were previously
+in camelcase to snakecase to ensure consistent naming style throughout.
+ This issues were highlighted by checkpatch.
 
-This is a global function that is only referenced as an initcall. This causes
-a warning:
+Dorcas AnonoLitunya (5):
+  Staging: sm750fb: Rename displayControlAdjust_SM750E
+  Staging: sm750fb: Rename pModeParam
+  Staging: sm750fb: Rename dispControl
+  Staging: sm750fb: Rename programModeRegisters
+  Staging: sm750fb: Rename ddk750_setModeTiming
 
-drivers/video/fbdev/sa1100fb.c:1218:12: error: no previous prototype for 'sa1100fb_init' [-Werror=missing-prototypes]
+v2: Ammended wording in commit messages for all files. 
+    Suggested by Julia Lawall <julia.lawall@inria.fr>
 
-Make it static instead.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/video/fbdev/sa1100fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_mode.c | 90 +++++++++++++--------------
+ drivers/staging/sm750fb/ddk750_mode.h |  2 +-
+ drivers/staging/sm750fb/sm750_hw.c    |  2 +-
+ 3 files changed, 47 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 63e12a7c1100e..e14eb634cb944 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1215,7 +1215,7 @@ static struct platform_driver sa1100fb_driver = {
- 	},
- };
- 
--int __init sa1100fb_init(void)
-+static int __init sa1100fb_init(void)
- {
- 	if (fb_get_options("sa1100fb", NULL))
- 		return -ENODEV;
 -- 
-2.39.2
+2.42.0.345.gaab89be2eb
 

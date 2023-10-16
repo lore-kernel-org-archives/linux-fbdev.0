@@ -2,129 +2,130 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B01CCDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65D9BCDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:29:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233528AbjJPUQc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 16:16:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33012 "EHLO
+        id S233280AbjJPU37 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 16:29:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57258 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234118AbjJPUQ2 (ORCPT
+        with ESMTP id S231955AbjJPU36 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 16:16:28 -0400
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B876FD9;
-        Mon, 16 Oct 2023 13:16:26 -0700 (PDT)
-Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-9a6190af24aso819931866b.0;
-        Mon, 16 Oct 2023 13:16:26 -0700 (PDT)
+        Mon, 16 Oct 2023 16:29:58 -0400
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 898A3B4;
+        Mon, 16 Oct 2023 13:29:53 -0700 (PDT)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-405361bb9f7so50208375e9.2;
+        Mon, 16 Oct 2023 13:29:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697487385; x=1698092185; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YUYZDjo3nNnCe2435X1iMxICDdnMM/czWpG4K+g4SPM=;
-        b=KLfIoPOCXOdfC7FxqBDgJfUvb4Dej6DHNXzpUgj17qx3nBXXHCZW7+nhqkRZbkUczc
-         a6JTOmkOzTs2Z034Ci86u1fVyQ1T8hPiVl4SGrUgJzZy+qBDKsmp+rs70KhF/U5XMrdq
-         FM4XC/fkEfqgAewQwwxQoB2REvVpsUm+1SbDxalw26Jzs/MdRSKcx04woH7T7Ldxrw0r
-         P+y/I2EwTAqEqu4+SdKQB52WVeluaSezNsjtdHGvg7UvNGGrHmNV7HJY6jG/1FXpSgbC
-         rI389k89MeeBwTwor/+yftSLrbgrQd52IHKOsBkOVVWon5vL7MD/duGvxkK1kURdhfv+
-         0yWQ==
+        d=gmail.com; s=20230601; t=1697488192; x=1698092992; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=UwRWv8WzXK7ulsIjQYcQ2H5E6aNrsXzP3LLjUnpeYMY=;
+        b=NQhMGZS6o4Udb2K191Ec7f07mkjb8kx+nNQpkRZ6EpU+5/mLnp34QIpKEhUHRDzsY1
+         uD+jOalrAxKxPM88pA4d4iWrmgf5XOf3KPC42YSPhBK0UyGpl48kS8BNIXK1SOAzoT/N
+         Xt7Z7zePsO3+GsHsIk8PFle1OrmL3Ac4d50sFfZYgNtS7YVRZHiU2gON0uP4hxB/1/LK
+         9VkGKhHvPevE7eJ0IOoAA85QaM+YQEz7YE9nenbM/tVPG4IOAtB//BxgKj9cnHbOzufA
+         1JWI18DBE+1ykQ356UFzpLPrbUoU54yhy/f3ztl0oBjAJi1ELaLT7xonydEx1I5LQDku
+         PwEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697487385; x=1698092185;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YUYZDjo3nNnCe2435X1iMxICDdnMM/czWpG4K+g4SPM=;
-        b=mEYGpMSAhJB2MwOdCIyuVzFZf1LIeHkD9bNtgWiAmZ2nyXMIG3ycGyBM44CVcLlzm9
-         zT2UDFlylvE0wyOcIUeJGLDtftJ5lYQnSQgfDI+hXCkJzl5P3HkQ2Te++SK4O195I6+5
-         ckmblWSfWfmQDEY7AXZCdndMJVysyf8UoKNAUESMpUkdb8CZvWApipqfOvm5LSv8DCxh
-         ueaN5/kQwWqnWEkm8AyJhSbQ+DLgJhOV7G7YwiqHfYIyDhoUF384V6sgxCfqgsePnL/Q
-         BE9lia1kJXy0LE4Wea/1w1HJHzR6Z8EYRWwls4z/gn/41ECCKufe+jYJH4C8wMk6121Q
-         iRlw==
-X-Gm-Message-State: AOJu0YzOwIECwLJ3L+uUQSe21hKhtWk8TYUbcJ9yGGB9zEOw02+blSHs
-        kB5wJYqCWQENgh11WyBu0wY1G62x7QfPpT4=
-X-Google-Smtp-Source: AGHT+IHGTayWdsFIKX5DIfZ4bt0TvbqwGILNLrrx0y4VXUYHr2i1Gsj6APfHOHu5gHzlVaup6NOEcA==
-X-Received: by 2002:a17:907:3f94:b0:9b9:facb:d950 with SMTP id hr20-20020a1709073f9400b009b9facbd950mr91174ejc.72.1697487385170;
-        Mon, 16 Oct 2023 13:16:25 -0700 (PDT)
-Received: from dorcaslitunya-virtual-machine.localdomain ([105.163.1.143])
-        by smtp.gmail.com with ESMTPSA id u26-20020a17090657da00b009b97521b58bsm4606055ejr.39.2023.10.16.13.16.22
+        d=1e100.net; s=20230601; t=1697488192; x=1698092992;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UwRWv8WzXK7ulsIjQYcQ2H5E6aNrsXzP3LLjUnpeYMY=;
+        b=ghIEC6I+2wJ/fYvnOCJdmWkxs5g9bMV7Wzxlhgv8220zUxhco9rPQjCGKzR1HqxGU7
+         mMZKpWTRloxXlz81+WoNnP2ta0VcUJf5IbRL0tWh4QT0Knwam0EeGaGoFHr112HWGPxF
+         XRqEEeX9ArBMxIYD7pZ+j4Xzf9/0ofKTi6eqyfESkE05nYgX0Gq6v7T7ztLafTAu7lry
+         +6rIhD/Kiiah8nlYMijEzy8PnZbg1V/J4UWQAZ3BcJwrTlkk6GRbcQlIUckberLjalZg
+         nVAz4Y9lLOZmffLhqsZgGZSyVf+4HF+6cCCoQYlH43J7Jw1cgiPpnAIjovxdVrzuPb1J
+         6Ijg==
+X-Gm-Message-State: AOJu0Yw68WQ/gx2IlgDNCKwETA4NdbZgeABjPHeHkNU0e8Isu8pQI9ND
+        JCHUptFVpjs9Q/EAIq1l7g==
+X-Google-Smtp-Source: AGHT+IGHR6pm/ebcyjCzv/iEasWkYG4F4GvkqOo2vIn6DGhR2AerZFfF4bL0VTU13lVA7nWMfdiv1w==
+X-Received: by 2002:a5d:6885:0:b0:32d:a022:8559 with SMTP id h5-20020a5d6885000000b0032da0228559mr397043wru.47.1697488191736;
+        Mon, 16 Oct 2023 13:29:51 -0700 (PDT)
+Received: from dorcaslitunya-virtual-machine ([105.163.1.143])
+        by smtp.gmail.com with ESMTPSA id i5-20020adffc05000000b0032dab20e773sm73834wrr.69.2023.10.16.13.29.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Oct 2023 13:16:24 -0700 (PDT)
-From:   Dorcas AnonoLitunya <anonolitunya@gmail.com>
-Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
-        julia.lawall@inria.fr, dan.carpenter@linaro.org,
+        Mon, 16 Oct 2023 13:29:51 -0700 (PDT)
+Date:   Mon, 16 Oct 2023 23:29:47 +0300
+From:   Dorcas Litunya <anonolitunya@gmail.com>
+To:     Julia Lawall <julia.lawall@inria.fr>
+Cc:     outreachy@lists.linux.dev,
         Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/5] Staging: sm750fb: Rename ddk750_setModeTiming
-Date:   Mon, 16 Oct 2023 23:14:12 +0300
-Message-ID: <20231016201434.7880-6-anonolitunya@gmail.com>
-X-Mailer: git-send-email 2.42.0.345.gaab89be2eb
-In-Reply-To: <20231016201434.7880-1-anonolitunya@gmail.com>
-References: <20231016201434.7880-1-anonolitunya@gmail.com>
+Subject: Re: [PATCH 1/5] Staging: sm750fb: Rename displayControlAdjust_SM750E
+Message-ID: <ZS2dO4oirsQlM+TU@dorcaslitunya-virtual-machine>
+References: <cover.1697400022.git.anonolitunya@gmail.com>
+ <16a9ad33ef67993482da0d350d7239aee3f0dd22.1697400022.git.anonolitunya@gmail.com>
+ <d4fb378f-7446-cf16-2d14-3623e313d6ac@inria.fr>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d4fb378f-7446-cf16-2d14-3623e313d6ac@inria.fr>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Rename function ddk750_setModeTiming to ddk750_set_mode_timing. This
-patch affects three files as the function is imported to other external
-files.
+On Sun, Oct 15, 2023 at 10:22:29PM +0200, Julia Lawall wrote:
+> 
+> 
+> On Sun, 15 Oct 2023, Dorcas AnonoLitunya wrote:
+> 
+> > Rename function displayControlAdjust_SM750E to
+> > display_control_adjust_SM750E.This follows snakecase naming convention
+> > and ensures consistent naming style throughout the file.Issue by
+> > checkpatch.
+> 
+> The period at the end of a sentence should have a space after it.
+> 
+> ensures -> ensures a
+> 
+> Issue -> Issue found
+> 
+This is corrected. Thanks Julia!
 
-This follows snakecase naming convention and ensures a consistent naming
-style throughout the file. Issue found by checkpatch.
-
-Mutes the following checkpatch error:
-CHECK:Avoid CamelCase: <ddk750_setModeTiming>
-
-Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
----
- drivers/staging/sm750fb/ddk750_mode.c | 2 +-
- drivers/staging/sm750fb/ddk750_mode.h | 2 +-
- drivers/staging/sm750fb/sm750_hw.c    | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index e901855fa9b6..f3f354831617 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -207,7 +207,7 @@ static int program_mode_registers(struct mode_parameter *mode_param,
- 	return ret;
- }
- 
--int ddk750_setModeTiming(struct mode_parameter *parm, enum clock_type clock)
-+int ddk750_set_mode_timing(struct mode_parameter *parm, enum clock_type clock)
- {
- 	struct pll_value pll;
- 
-diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
-index 2df78a0937b2..1b70885f85e5 100644
---- a/drivers/staging/sm750fb/ddk750_mode.h
-+++ b/drivers/staging/sm750fb/ddk750_mode.h
-@@ -33,5 +33,5 @@ struct mode_parameter {
- 	enum spolarity clock_phase_polarity;
- };
- 
--int ddk750_setModeTiming(struct mode_parameter *parm, enum clock_type clock);
-+int ddk750_set_mode_timing(struct mode_parameter *parm, enum clock_type clock);
- #endif
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 71247eaf26ee..4bc89218c11c 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -305,7 +305,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
- 		clock = SECONDARY_PLL;
- 
- 	pr_debug("Request pixel clock = %lu\n", modparm.pixel_clock);
--	ret = ddk750_setModeTiming(&modparm, clock);
-+	ret = ddk750_set_mode_timing(&modparm, clock);
- 	if (ret) {
- 		pr_err("Set mode timing failed\n");
- 		goto exit;
--- 
-2.42.0.345.gaab89be2eb
-
+> julia
+> 
+> >
+> > Mutes the following error:
+> > CHECK:Avoid CamelCase: <displayControlAdjust_SM750E>
+> >
+> > Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
+> > ---
+> >  drivers/staging/sm750fb/ddk750_mode.c | 6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+> > index e00a6cb31947..8708995f676c 100644
+> > --- a/drivers/staging/sm750fb/ddk750_mode.c
+> > +++ b/drivers/staging/sm750fb/ddk750_mode.c
+> > @@ -14,8 +14,8 @@
+> >   * in bit 29:27 of Display Control register.
+> >   */
+> >  static unsigned long
+> > -displayControlAdjust_SM750LE(struct mode_parameter *pModeParam,
+> > -			     unsigned long dispControl)
+> > +display_control_adjust_SM750LE(struct mode_parameter *pModeParam,
+> > +			       unsigned long dispControl)
+> >  {
+> >  	unsigned long x, y;
+> >
+> > @@ -125,7 +125,7 @@ static int programModeRegisters(struct mode_parameter *pModeParam,
+> >  			tmp |= DISPLAY_CTRL_HSYNC_PHASE;
+> >
+> >  		if (sm750_get_chip_type() == SM750LE) {
+> > -			displayControlAdjust_SM750LE(pModeParam, tmp);
+> > +			display_control_adjust_SM750LE(pModeParam, tmp);
+> >  		} else {
+> >  			reg = peek32(CRT_DISPLAY_CTRL) &
+> >  				~(DISPLAY_CTRL_VSYNC_PHASE |
+> > --
+> > 2.42.0.345.gaab89be2eb
+> >
+> >
+> >

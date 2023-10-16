@@ -2,146 +2,196 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28193CDB47E
-	for <linux-fbdev@archiver.kernel.org>; Sun, 15 Oct 2023 20:24:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 377EDC46CA1
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 09:59:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229990AbjJOUYD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 15 Oct 2023 16:24:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35182 "EHLO
+        id S229784AbjJPJ7R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 05:59:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38062 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229500AbjJOUYD (ORCPT
+        with ESMTP id S229459AbjJPJ7Q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 15 Oct 2023 16:24:03 -0400
-Received: from mail3-relais-sop.national.inria.fr (mail3-relais-sop.national.inria.fr [192.134.164.104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6936EAB;
-        Sun, 15 Oct 2023 13:24:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=inria.fr; s=dc;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=j8EKEVq7xETVyP/OZQl8GFvNsqRyq5PaXInXR8hfZW8=;
-  b=lmT63O9sBaE6tTwvvRQi7k91t1zue+xDYzESgRXsmMBCS6+Rla3wZP3e
-   0rdppf/D+9yNXY68AuEGHrg7/XzgD3kmy0pI9ZhIpH1Al7rMCmMifv4aW
-   eQHYKUUK03eJssP7Jf5eI/bidomVg0Zynuv6gA59IQscpBXNqZ0kQhNdX
-   g=;
-Authentication-Results: mail3-relais-sop.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=julia.lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
-X-IronPort-AV: E=Sophos;i="6.03,226,1694728800"; 
-   d="scan'208";a="68765621"
-Received: from unknown (HELO hadrien) ([87.129.180.234])
-  by mail3-relais-sop.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Oct 2023 22:23:57 +0200
-Date:   Sun, 15 Oct 2023 22:23:54 +0200 (CEST)
-From:   Julia Lawall <julia.lawall@inria.fr>
-To:     Dorcas AnonoLitunya <anonolitunya@gmail.com>
-cc:     outreachy@lists.linux.dev,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] Staging: sm750fb: Rename displayControl
-In-Reply-To: <596de9b4cf3483d872b1ba25e1b02194aec34bac.1697400022.git.anonolitunya@gmail.com>
-Message-ID: <a5cbf027-7990-c54d-8bfc-dc042ac166f@inria.fr>
-References: <cover.1697400022.git.anonolitunya@gmail.com> <596de9b4cf3483d872b1ba25e1b02194aec34bac.1697400022.git.anonolitunya@gmail.com>
+        Mon, 16 Oct 2023 05:59:16 -0400
+Received: from mail-yb1-f179.google.com (mail-yb1-f179.google.com [209.85.219.179])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C4F59C;
+        Mon, 16 Oct 2023 02:59:14 -0700 (PDT)
+Received: by mail-yb1-f179.google.com with SMTP id 3f1490d57ef6-d77ad095f13so4279981276.2;
+        Mon, 16 Oct 2023 02:59:14 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1697450353; x=1698055153;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=i9GLVUGKessKoslJIZpAI7+l//jryIRXWw3bJSWd/JU=;
+        b=YpDAPKeVaVk1om3qEAtzdITkpkguvsjgbnlLajX5IRwq2TkM9TxIcL1p0S0ZmmVckF
+         A0x+ofvsJMYjROMp2PtTgDf1CU1Fo0Ylz+dq+We7gyYjX4h8UQH8zeTVJqsmn2DRLTJ5
+         SswsTJEzJxsypsRZ2hORFL680Cc9wtTQeHWr9p40xJ5JY22csfxEAvUDsPUe6hQ4marD
+         iNcRBKzq5hJ2cPl5VotwkrC1h6tCsn0EKlz5saQ29r7B2rR43Q1DSmGo/9ifiCRFj4c/
+         xXIh3fEKUTDXPvJjrh3kynCkyZqINJ52l4fZcn3c+bTTZBXWPBq+EU7/rhPr3VnsPTA8
+         f5lA==
+X-Gm-Message-State: AOJu0Yzmn5aPl+3Sq+cW4aiMGD9x2AQwmBanQ5emqVFkWnZmXJZbenrm
+        v8diF7JUoDbSZYE/rWdWJ4idOe8NfGvpAQ==
+X-Google-Smtp-Source: AGHT+IHDifpYoVg377WaVlCQbyVtL075I/N8OSBwyoKSlQwbzsy4Q39TGatkdfof4lMFOPSU9W6aXg==
+X-Received: by 2002:a25:a044:0:b0:d32:cd49:2469 with SMTP id x62-20020a25a044000000b00d32cd492469mr30483446ybh.24.1697450353351;
+        Mon, 16 Oct 2023 02:59:13 -0700 (PDT)
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com. [209.85.128.171])
+        by smtp.gmail.com with ESMTPSA id s10-20020a056902120a00b00d800eb5ac2asm2501003ybu.65.2023.10.16.02.59.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 16 Oct 2023 02:59:12 -0700 (PDT)
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-5a2536adaf3so58366447b3.2;
+        Mon, 16 Oct 2023 02:59:12 -0700 (PDT)
+X-Received: by 2002:a81:b661:0:b0:5a7:b9b1:c0bd with SMTP id
+ h33-20020a81b661000000b005a7b9b1c0bdmr19215902ywk.11.1697450352391; Mon, 16
+ Oct 2023 02:59:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <cover.1694767208.git.geert+renesas@glider.be> <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
+In-Reply-To: <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 16 Oct 2023 11:59:01 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUF61V5qNyKbrTGxZfEJvCVuLO7q2R5MqZYkzRC_cNr0w@mail.gmail.com>
+Message-ID: <CAMuHMdUF61V5qNyKbrTGxZfEJvCVuLO7q2R5MqZYkzRC_cNr0w@mail.gmail.com>
+Subject: [GIT PULL v2] drm: renesas: shmobile: Atomic conversion + DT support
+ (was: Re: [PATCH v4 00/41] drm: renesas: shmobile: Atomic conversion + DT support)
+To:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>
+Cc:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Hans Verkuil <hverkuil@xs4all.nl>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+        Hi David, Daniel,
 
+The following changes since commit 389af786f92ecdff35883551d54bf4e507ffcccb:
 
-On Sun, 15 Oct 2023, Dorcas AnonoLitunya wrote:
+  Merge tag 'drm-intel-next-2023-09-29' of
+git://anongit.freedesktop.org/drm/drm-intel into drm-next (2023-10-04
+13:55:19 +1000)
 
-> Rename variable displayControl to display_control. This follows
-> snakecase naming convention and ensures consistent naming style
-> throughout the file.Issue by checkpatch.
+are available in the Git repository at:
 
-Actually, the variable seems to be dispControl?
+  git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+tags/shmob-drm-atomic-dt-tag2
 
-julia
+for you to fetch changes up to 1399ebacbf590dfbac4fbba181dd1595b2fa10ba:
 
->
-> Mutes the following checkpatch error:
-> CHECK: Avoid CamelCase: <dispControl>
->
-> Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_mode.c | 32 +++++++++++++--------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-> index 431b273a347a..fc3db09de9ae 100644
-> --- a/drivers/staging/sm750fb/ddk750_mode.c
-> +++ b/drivers/staging/sm750fb/ddk750_mode.c
-> @@ -15,7 +15,7 @@
->   */
->  static unsigned long
->  display_control_adjust_SM750LE(struct mode_parameter *mode_param,
-> -			       unsigned long dispControl)
-> +			       unsigned long disp_control)
->  {
->  	unsigned long x, y;
->
-> @@ -36,42 +36,42 @@ display_control_adjust_SM750LE(struct mode_parameter *mode_param,
->  	       ((x - 1) & CRT_AUTO_CENTERING_BR_RIGHT_MASK));
->
->  	/*
-> -	 * Assume common fields in dispControl have been properly set before
-> +	 * Assume common fields in disp_control have been properly set before
->  	 * calling this function.
-> -	 * This function only sets the extra fields in dispControl.
-> +	 * This function only sets the extra fields in disp_control.
->  	 */
->
->  	/* Clear bit 29:27 of display control register */
-> -	dispControl &= ~CRT_DISPLAY_CTRL_CLK_MASK;
-> +	disp_control &= ~CRT_DISPLAY_CTRL_CLK_MASK;
->
->  	/* Set bit 29:27 of display control register for the right clock */
->  	/* Note that SM750LE only need to supported 7 resolutions. */
->  	if (x == 800 && y == 600)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL41;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL41;
->  	else if (x == 1024 && y == 768)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL65;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL65;
->  	else if (x == 1152 && y == 864)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL80;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL80;
->  	else if (x == 1280 && y == 768)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL80;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL80;
->  	else if (x == 1280 && y == 720)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL74;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL74;
->  	else if (x == 1280 && y == 960)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL108;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL108;
->  	else if (x == 1280 && y == 1024)
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL108;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL108;
->  	else /* default to VGA clock */
-> -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL25;
-> +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL25;
->
->  	/* Set bit 25:24 of display controller */
-> -	dispControl |= (CRT_DISPLAY_CTRL_CRTSELECT | CRT_DISPLAY_CTRL_RGBBIT);
-> +	disp_control |= (CRT_DISPLAY_CTRL_CRTSELECT | CRT_DISPLAY_CTRL_RGBBIT);
->
->  	/* Set bit 14 of display controller */
-> -	dispControl |= DISPLAY_CTRL_CLOCK_PHASE;
-> +	disp_control |= DISPLAY_CTRL_CLOCK_PHASE;
->
-> -	poke32(CRT_DISPLAY_CTRL, dispControl);
-> +	poke32(CRT_DISPLAY_CTRL, disp_control);
->
-> -	return dispControl;
-> +	return disp_control;
->  }
->
->  /* only timing related registers will be  programed */
-> --
-> 2.42.0.345.gaab89be2eb
->
->
->
+  drm: renesas: shmobile: Add DT support (2023-10-16 11:47:48 +0200)
+
+----------------------------------------------------------------
+drm: renesas: shmobile: Atomic conversion + DT support
+
+Currently, there are two drivers for the LCD controller on Renesas
+SuperH-based and ARM-based SH-Mobile and R-Mobile SoCs:
+  1. sh_mobile_lcdcfb, using the fbdev framework,
+  2. shmob_drm, using the DRM framework.
+However, only the former driver is used, as all platform support
+integrates the former.  None of these drivers support DT-based systems.
+
+Convert the SH-Mobile DRM driver to atomic modesetting, and add DT
+support, complemented by the customary set of fixes and improvements.
+
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Link: https://lore.kernel.org/r/cover.1694767208.git.geert+renesas@glider.be/
+
+Changes compared to v1:
+  - Rebase to drm-next,
+  - Add Acked-by.
+
+Thanks for pulling!
+
+----------------------------------------------------------------
+Geert Uytterhoeven (36):
+      MAINTAINER: Create entry for Renesas SH-Mobile DRM drivers
+      dt-bindings: display: Add Renesas SH-Mobile LCDC bindings
+      media: uapi: Add MEDIA_BUS_FMT_RGB666_2X9_BE format
+      drm: renesas: shmobile: Fix overlay plane disable
+      drm: renesas: shmobile: Fix ARGB32 overlay format typo
+      drm: renesas: shmobile: Correct encoder/connector types
+      drm: renesas: shmobile: Add support for Runtime PM
+      drm: renesas: shmobile: Restore indentation of shmob_drm_setup_clocks()
+      drm: renesas: shmobile: Use %p4cc to print fourcc code
+      drm: renesas: shmobile: Add missing YCbCr formats
+      drm: renesas: shmobile: Improve shmob_drm_format_info table
+      drm: renesas: shmobile: Improve error handling
+      drm: renesas: shmobile: Convert to use devm_request_irq()
+      drm: renesas: shmobile: Remove custom plane destroy callback
+      drm: renesas: shmobile: Use drmm_universal_plane_alloc()
+      drm: renesas: shmobile: Embed drm_device in shmob_drm_device
+      drm: renesas: shmobile: Convert container helpers to static
+inline functions
+      drm: renesas: shmobile: Replace .dev_private with container_of()
+      drm: renesas: shmobile: Use media bus formats in platform data
+      drm: renesas: shmobile: Move interface handling to connector setup
+      drm: renesas: shmobile: Unify plane allocation
+      drm: renesas: shmobile: Rename shmob_drm_crtc.crtc
+      drm: renesas: shmobile: Rename shmob_drm_connector.connector
+      drm: renesas: shmobile: Rename shmob_drm_plane.plane
+      drm: renesas: shmobile: Use drm_crtc_handle_vblank()
+      drm: renesas: shmobile: Move shmob_drm_crtc_finish_page_flip()
+      drm: renesas: shmobile: Wait for page flip when turning CRTC off
+      drm: renesas: shmobile: Turn vblank on/off when enabling/disabling CRTC
+      drm: renesas: shmobile: Shutdown the display on remove
+      drm: renesas: shmobile: Cleanup encoder
+      drm: renesas: shmobile: Atomic conversion part 1
+      drm: renesas: shmobile: Atomic conversion part 2
+      drm: renesas: shmobile: Use suspend/resume helpers
+      drm: renesas: shmobile: Remove internal CRTC state tracking
+      drm: renesas: shmobile: Atomic conversion part 3
+      drm: renesas: shmobile: Add DT support
+
+Laurent Pinchart (5):
+      drm: renesas: shmobile: Remove backlight support
+      drm: renesas: shmobile: Don't set display info width and height twice
+      drm: renesas: shmobile: Rename input clocks
+      drm: renesas: shmobile: Remove support for SYS panels
+      drm: renesas: shmobile: Use struct videomode in platform data
+
+ .../bindings/display/renesas,shmobile-lcdc.yaml    | 130 +++++
+ .../userspace-api/media/v4l/subdev-formats.rst     |  72 +++
+ MAINTAINERS                                        |  13 +-
+ drivers/gpu/drm/renesas/shmobile/Kconfig           |   3 +-
+ drivers/gpu/drm/renesas/shmobile/Makefile          |   3 +-
+ .../gpu/drm/renesas/shmobile/shmob_drm_backlight.c |  82 ---
+ .../gpu/drm/renesas/shmobile/shmob_drm_backlight.h |  19 -
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_crtc.c  | 650 +++++++++------------
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_crtc.h  |  27 +-
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_drv.c   | 179 +++---
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_drv.h   |  18 +-
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_kms.c   |  77 ++-
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_kms.h   |   9 +-
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_plane.c | 326 ++++++-----
+ drivers/gpu/drm/renesas/shmobile/shmob_drm_plane.h |   5 +-
+ include/linux/platform_data/shmob_drm.h            |  57 +-
+ include/uapi/linux/media-bus-format.h              |   3 +-
+ 17 files changed, 860 insertions(+), 813 deletions(-)
+ create mode 100644
+Documentation/devicetree/bindings/display/renesas,shmobile-lcdc.yaml
+ delete mode 100644 drivers/gpu/drm/renesas/shmobile/shmob_drm_backlight.c
+ delete mode 100644 drivers/gpu/drm/renesas/shmobile/shmob_drm_backlight.h
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -2,89 +2,64 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD6B0CDB474
-	for <linux-fbdev@archiver.kernel.org>; Tue, 17 Oct 2023 19:39:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D07BDCDB482
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 00:31:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235043AbjJQTjS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 17 Oct 2023 15:39:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47270 "EHLO
+        id S234963AbjJRAbb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 17 Oct 2023 20:31:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234998AbjJQTjR (ORCPT
+        with ESMTP id S234843AbjJRAba (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 17 Oct 2023 15:39:17 -0400
+        Tue, 17 Oct 2023 20:31:30 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5D20C4;
-        Tue, 17 Oct 2023 12:39:15 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E35ECC433C7;
-        Tue, 17 Oct 2023 19:39:13 +0000 (UTC)
-Date:   Tue, 17 Oct 2023 21:39:11 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DC33BA;
+        Tue, 17 Oct 2023 17:31:29 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1B594C433C7;
+        Wed, 18 Oct 2023 00:31:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1697589089;
+        bh=4FoHz9Z8aWCHUm7je8sI/1euzWMFjdMPTTsb8ApHUC0=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=cEsAVliye6CP6RpXi1pLqCfZFEHxeaN/7q35bbntzuU3FRRkzAjd9YoMAzHZymQVy
+         2z/rw5qa2CY5zHbnCfhrvV57vIrz9fZv1qhQECQ0f9/Yw66hw94HU1MeMWHXcOgmh1
+         vYDIagzjEDT9GLvxxcBZfMq8SXY+j9tkBVpA9HlmUyYcKe5mzB5tc6tZ62VCQEdsP/
+         lH+nd7+b8gFQ4RAecgPzn48FGbI9hLZnH4xtgKVmhD7X1bBkiecMPcTLaIw27gZNHX
+         hHiJ8/XpEDVjupUdcbxaJAyNuj5HbCNt4057Udi/saXKo/EmNOX7m6/bHBgquSUoQq
+         d/QuwpW/qohmA==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 07BE3E4E9BC;
+        Wed, 18 Oct 2023 00:31:29 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev fixes and updates for v6.6-rc7
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <ZS7i38pKFD0/Msus@ls3530>
+References: <ZS7i38pKFD0/Msus@ls3530>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <ZS7i38pKFD0/Msus@ls3530>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.6-rc7
+X-PR-Tracked-Commit-Id: e8e4a470b677511f9d1ad4f3cef32adc1d9a60ca
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 06dc10eae55b5ceabfef287a7e5f16ceea204aa0
+Message-Id: <169758908902.4553.16741062330186147068.pr-tracker-bot@kernel.org>
+Date:   Wed, 18 Oct 2023 00:31:29 +0000
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev fixes and updates for v6.6-rc7
-Message-ID: <ZS7i38pKFD0/Msus@ls3530>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+The pull request you sent on Tue, 17 Oct 2023 21:39:11 +0200:
 
-please pull a few unexiting small fbdev fixes & cleanups for 6.6-rc7.
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.6-rc7
 
-Thanks,
-Helge
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/06dc10eae55b5ceabfef287a7e5f16ceea204aa0
 
------------
+Thank you!
 
-The following changes since commit ce9ecca0238b140b88f43859b211c9fdfd8e5b70:
-
-  Linux 6.6-rc2 (2023-09-17 14:40:24 -0700)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.6-rc7
-
-for you to fetch changes up to e8e4a470b677511f9d1ad4f3cef32adc1d9a60ca:
-
-  fbdev: core: syscopyarea: fix sloppy typing (2023-10-16 23:22:53 +0200)
-
-----------------------------------------------------------------
-fbdev fixes and cleanups for 6.6-rc7:
-
-various minor fixes, cleanups and annotations for atyfb, sa1100fb,
-omapfb, uvesafb and mmp.
-
-----------------------------------------------------------------
-Arnd Bergmann (2):
-      fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-      fbdev: sa1100fb: mark sa1100fb_init() static
-
-Dan Carpenter (1):
-      fbdev: omapfb: fix some error codes
-
-Jorge Maidana (2):
-      fbdev: uvesafb: Remove uvesafb_exec() prototype from include/video/uvesafb.h
-      fbdev: uvesafb: Call cn_del_callback() at the end of uvesafb_exit()
-
-Kees Cook (2):
-      fbdev: mmp: Annotate struct mmphw_ctrl with __counted_by
-      fbdev: mmp: Annotate struct mmp_path with __counted_by
-
-Sergey Shtylyov (2):
-      fbdev: core: cfbcopyarea: fix sloppy typing
-      fbdev: core: syscopyarea: fix sloppy typing
-
- drivers/video/fbdev/aty/atyfb_base.c   | 4 ++++
- drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
- drivers/video/fbdev/core/syscopyarea.c | 2 +-
- drivers/video/fbdev/mmp/hw/mmp_ctrl.h  | 2 +-
- drivers/video/fbdev/omap/omapfb_main.c | 4 ++--
- drivers/video/fbdev/sa1100fb.c         | 2 +-
- drivers/video/fbdev/uvesafb.c          | 2 +-
- include/video/mmp_disp.h               | 2 +-
- include/video/uvesafb.h                | 2 --
- 9 files changed, 12 insertions(+), 10 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

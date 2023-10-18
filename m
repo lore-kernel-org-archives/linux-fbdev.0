@@ -2,58 +2,86 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DA55CDB47E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 08:26:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9198BCDB47E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 09:08:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235131AbjJRI0r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 18 Oct 2023 04:26:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50286 "EHLO
+        id S229544AbjJRJIX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 Oct 2023 05:08:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56500 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235220AbjJRI0o (ORCPT
+        with ESMTP id S229461AbjJRJIW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 18 Oct 2023 04:26:44 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4502E109;
-        Wed, 18 Oct 2023 01:26:43 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B330C433C8;
-        Wed, 18 Oct 2023 08:26:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1697617602;
-        bh=FYY5Pw0Y+SetLQv/94Izx/Ga9lYCUK/a+v2DG8+qr3U=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=K8ihN9k42Q+zy47NN7jjfBSBCf75PLtqJUOxonlKVPQ7Uc2VVf9w/cCYWm8Idmpye
-         j1pMGnF15msUWEOw1DstX5nhc7LJc34NrUSGx2TGp84nCRjMmICfmtM9HRNk4tKoLK
-         EpUawOspUieZOKkL8SZdod8Hi1pvuJ6V9ri3vdd0=
-Date:   Wed, 18 Oct 2023 10:26:33 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Dorcas AnonoLitunya <anonolitunya@gmail.com>
-Cc:     outreachy@lists.linux.dev, julia.lawall@inria.fr,
-        dan.carpenter@linaro.org, andi.shyti@linux.intel.com,
+        Wed, 18 Oct 2023 05:08:22 -0400
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A174193;
+        Wed, 18 Oct 2023 02:08:20 -0700 (PDT)
+Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-2c50cd16f3bso66329051fa.2;
+        Wed, 18 Oct 2023 02:08:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1697620099; x=1698224899; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Xl3s5u4aFpW0tVBln3gd6w2ulesWfdj/cSoOhMXvMdE=;
+        b=beQ8wfumXHjcrcOJ/dS2DlCcpv/3AD5DhzRXm/dIK1VxE4SXONgCjTjy3LLACt05iI
+         Jh2pM0hTvwNscTK183PJjItkW9lu2JG2aJQIHTcST+AK30r8UaW4XYBTRHAr0TPU9YRE
+         fa/kYQlHrvuWjd1UHpHecwhBAGA421/jQin20iqbH6FNGpibQJwYWZUQtxEAQqAWUzS/
+         aM9AlzemehzmDsoHiMpjqlwkC22VPScdBAzFVz4t/G+BJoUIrwbyYgf3uq20qDBwMXYc
+         7tDcQh9dUO2VRsTGb8CDdTNjM11FZORLv0L83TXasx/xzSCuUZ/Ouy1YEGcOxwynbTsA
+         vCRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1697620099; x=1698224899;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Xl3s5u4aFpW0tVBln3gd6w2ulesWfdj/cSoOhMXvMdE=;
+        b=DX2FI5YCzb/3JOUnTtq1kgixo89J4EoC10H8dPBkm6Y6bgu24Bm0njL+Xn0greP9jb
+         vPGCzpUEbw/OhA4DJ1LcpI0wuNl470mgHeFYOb22KiHtnyA5L3HkKyITwZvFWLNBZp+Z
+         x0SD0zLAt+oqhnjkLnqi/Bm+Dml+TznT8XLPlrA//cXTE356i0zsAR7e5AxGlsjudhIN
+         ux85TYMv2beLvALaIr1ydtWU+o6+SXGNGkxyULAlyXzBQz6yQ5juQ+SyiwTKhFYIXozO
+         4Qk6zJvNDa2JZ+RfFv1N4KgEhms8KUDJ82Kdw7+xAwi3KANhYcjomXDbBBPHvSXK/UO9
+         pNyg==
+X-Gm-Message-State: AOJu0YzG4htR72ACGOTh+ajUQEvbyJYvm/DLpjHwtwSZGile+yEG9nzc
+        96KUNjd5AR4+RMiki5Jv5g==
+X-Google-Smtp-Source: AGHT+IFZxqUnj/AB3+p1hRp/y2wDrCrKc9X/ahR53kA/1QzZt1N36O5r+BKNQKC4kqgoSxtmDKX0RA==
+X-Received: by 2002:a2e:9b05:0:b0:2bd:d34:e1ef with SMTP id u5-20020a2e9b05000000b002bd0d34e1efmr3527854lji.3.1697620098560;
+        Wed, 18 Oct 2023 02:08:18 -0700 (PDT)
+Received: from dorcaslitunya-virtual-machine.localdomain ([105.163.0.227])
+        by smtp.gmail.com with ESMTPSA id l16-20020a7bc450000000b003fee6e170f9sm1107397wmi.45.2023.10.18.02.08.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Oct 2023 02:08:18 -0700 (PDT)
+From:   Dorcas AnonoLitunya <anonolitunya@gmail.com>
+Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
+        julia.lawall@inria.fr, dan.carpenter@linaro.org,
+        andi.shyti@linux.intel.com,
         Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Staging: sm750fb: Rename
- display_control_adjust_sm750LE
-Message-ID: <2023101817-cleat-attendee-8884@gregkh>
-References: <20231018080416.25931-2-anonolitunya@gmail.com>
+Subject: [PATCH 0/2] Remove unused return values from functions
+Date:   Wed, 18 Oct 2023 12:07:34 +0300
+Message-ID: <cover.1697619623.git.anonolitunya@gmail.com>
+X-Mailer: git-send-email 2.42.0.345.gaab89be2eb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231018080416.25931-2-anonolitunya@gmail.com>
+Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 18, 2023 at 11:04:08AM +0300, Dorcas AnonoLitunya wrote:
-> Rename function display_control_adjust_sm750LE to
-> display_control_adjust_sm750le. This further enforces snakecase naming
-> convention for consistent naming style throughout entire file.
-> 
-> This change was suggested by Andi Shyti <andi.shyti@linux.intel.com>
+Modifies the return type of different static functions to void as the return value is being ignored
+in all funtion calls thus not useful to have a return type.This improves
+code readability and maintainability.
 
-Please use the "Suggested-by:" tag for this.
+Dorcas AnonoLitunya (2):
+  staging: sm750fb: Remove unused return value in
+    display_control_adjust_sm750le()
+  staging: sm750fb: Remove unused return value in
+    program_mode_registers()
 
-thanks,
+ drivers/staging/sm750fb/ddk750_mode.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-greg k-h
+-- 
+2.42.0.345.gaab89be2eb
+

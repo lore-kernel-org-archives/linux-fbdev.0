@@ -2,125 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AEDDCDB47E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 10:49:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E03EBC41513
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 12:06:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230316AbjJRKtF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 18 Oct 2023 06:49:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33426 "EHLO
+        id S231282AbjJRMGr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 Oct 2023 08:06:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230057AbjJRKtE (ORCPT
+        with ESMTP id S231375AbjJRMGr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 18 Oct 2023 06:49:04 -0400
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6092FF;
-        Wed, 18 Oct 2023 03:49:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-        s=201909; t=1697626140;
-        bh=3xWcji3oXjlN4cFukeLMtXQkcjmbOBmNuowH8WPgpqg=;
-        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-        b=dSMsP/ETZci4Y90jENdqAUbUV4tg7l7t750Pe69hZMYUPqmlGGYZkb6yRIl8yDLFf
-         /omnvBNpejjy8tnAf/mOpBbMrR0m2tpZeWAfIeIIRQdypgILcreVGx4IvLCdwQvtHi
-         ZLDfUBUHEZFWV0Sla+UsS3dgFaDp0Zi9UHQoIcVWG8W1mpO4ksfZXApbK6uUIpJJCt
-         ji5wtK6EjMbdd8GGudB8lG6dgOxPSl5YTC/nwHljwzatAAGxmIg931O54qvU7biaSQ
-         2NZO2VolvUQmPCrtOlhRbYg15rfUsekBU39vQAMSXRUJLifgfmaFy0H70KXYAwXBsZ
-         EZVZNNGZ9KphA==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        by mail.ozlabs.org (Postfix) with ESMTPSA id 4S9SJT6JZtz4xPX;
-        Wed, 18 Oct 2023 21:48:57 +1100 (AEDT)
-From:   Michael Ellerman <mpe@ellerman.id.au>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, arnd@arndb.de, deller@gmx.de,
-        javierm@redhat.com
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v5 0/5] ppc, fbdev: Clean up fbdev mmap helper
-In-Reply-To: <de09143e-ab7f-4ccc-8a5a-50e0f48c1b40@suse.de>
-References: <20230922080636.26762-1-tzimmermann@suse.de>
- <de09143e-ab7f-4ccc-8a5a-50e0f48c1b40@suse.de>
-Date:   Wed, 18 Oct 2023 21:48:54 +1100
-Message-ID: <87a5sg6wa1.fsf@mail.lhotse>
+        Wed, 18 Oct 2023 08:06:47 -0400
+Received: from mail2-relais-roc.national.inria.fr (mail2-relais-roc.national.inria.fr [192.134.164.83])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95855112;
+        Wed, 18 Oct 2023 05:06:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=inria.fr; s=dc;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=UpeYTh2P4KQvdjFFPRoqkuwGbEkoq8vBM1ds043uAt4=;
+  b=QWzZBm7ACQALV25Qy8k2ZnFZKZ+dUkpsVrrM/4GG237sFSzVXXcdgSlw
+   kznBRH7QDSLRlSHKsmuMBxY+1Pr527MfwHtTzP5wW+Tu2RGBC3ohlbnUA
+   3Z5EPLD1cH0rRWYUKj3fvWQgAyf/SqBRHzMW/8U3JkoZjqSWMs6pTWsy6
+   4=;
+Authentication-Results: mail2-relais-roc.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=julia.lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
+X-IronPort-AV: E=Sophos;i="6.03,235,1694728800"; 
+   d="scan'208";a="131893552"
+Received: from dhcp-138-246-3-50.dynamic.eduroam.mwn.de (HELO hadrien) ([138.246.3.50])
+  by mail2-relais-roc.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2023 14:06:41 +0200
+Date:   Wed, 18 Oct 2023 14:06:41 +0200 (CEST)
+From:   Julia Lawall <julia.lawall@inria.fr>
+To:     Dorcas AnonoLitunya <anonolitunya@gmail.com>
+cc:     outreachy@lists.linux.dev, dan.carpenter@linaro.org,
+        andi.shyti@linux.intel.com,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] staging: sm750fb: Remove unused return value in
+ program_mode_registers()
+In-Reply-To: <492e63bbc58147fb534930ef9e1fb5d844ae8769.1697619623.git.anonolitunya@gmail.com>
+Message-ID: <4b7129ae-27f9-7ff4-845-9c327aff488c@inria.fr>
+References: <cover.1697619623.git.anonolitunya@gmail.com> <492e63bbc58147fb534930ef9e1fb5d844ae8769.1697619623.git.anonolitunya@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
-> FYI, I intent to merge patches 1 and 2 of this patchset into 
-> drm-misc-next. The updates for PowerPC can be merged through PPC trees 
-> later. Let me know if this does not work for you.
 
-Hi Thomas,
 
-Sorry for the late reply, I was on leave.
+On Wed, 18 Oct 2023, Dorcas AnonoLitunya wrote:
 
-Yeah that's fine.
-
-cheers
-
-> Am 22.09.23 um 10:04 schrieb Thomas Zimmermann:
->> Clean up and rename fb_pgprotect() to work without struct file. Then
->> refactor the implementation for PowerPC. This change has been discussed
->> at [1] in the context of refactoring fbdev's mmap code.
->> 
->> The first two patches update fbdev and replace fbdev's fb_pgprotect()
->> with pgprot_framebuffer() on all architectures. The new helper's stream-
->> lined interface enables more refactoring within fbdev's mmap
->> implementation.
->> 
->> Patches 3 to 5 adapt PowerPC's internal interfaces to provide
->> phys_mem_access_prot() that works without struct file. Neither the
->> architecture code or fbdev helpers need the parameter.
->> 
->> v5:
->> 	* improve commit descriptions (Javier)
->> 	* add missing tags (Geert)
->> v4:
->> 	* fix commit message (Christophe)
->> v3:
->> 	* rename fb_pgrotect() to pgprot_framebuffer() (Arnd)
->> v2:
->> 	* reorder patches to simplify merging (Michael)
->> 
->> [1] https://lore.kernel.org/linuxppc-dev/5501ba80-bdb0-6344-16b0-0466a950f82c@suse.com/
->> 
->> Thomas Zimmermann (5):
->>    fbdev: Avoid file argument in fb_pgprotect()
->>    fbdev: Replace fb_pgprotect() with pgprot_framebuffer()
->>    arch/powerpc: Remove trailing whitespaces
->>    arch/powerpc: Remove file parameter from phys_mem_access_prot code
->>    arch/powerpc: Call internal __phys_mem_access_prot() in fbdev code
->> 
->>   arch/ia64/include/asm/fb.h                | 15 +++++++--------
->>   arch/m68k/include/asm/fb.h                | 19 ++++++++++---------
->>   arch/mips/include/asm/fb.h                | 11 +++++------
->>   arch/powerpc/include/asm/book3s/pgtable.h | 10 ++++++++--
->>   arch/powerpc/include/asm/fb.h             | 13 +++++--------
->>   arch/powerpc/include/asm/machdep.h        | 13 ++++++-------
->>   arch/powerpc/include/asm/nohash/pgtable.h | 10 ++++++++--
->>   arch/powerpc/include/asm/pci.h            |  4 +---
->>   arch/powerpc/kernel/pci-common.c          |  3 +--
->>   arch/powerpc/mm/mem.c                     |  8 ++++----
->>   arch/sparc/include/asm/fb.h               | 15 +++++++++------
->>   arch/x86/include/asm/fb.h                 | 10 ++++++----
->>   arch/x86/video/fbdev.c                    | 15 ++++++++-------
->>   drivers/video/fbdev/core/fb_chrdev.c      |  3 ++-
->>   include/asm-generic/fb.h                  | 12 ++++++------
->>   15 files changed, 86 insertions(+), 75 deletions(-)
->> 
->> 
->> base-commit: f8d21cb17a99b75862196036bb4bb93ee9637b74
+> Modifies the return type of program_mode_registers()
+> to void from int as the return value is being ignored in
+> all subsequent function calls.
 >
-> -- 
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Frankenstrasse 146, 90461 Nuernberg, Germany
-> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-> HRB 36809 (AG Nuernberg)
+> This improves code readability and maintainability.
+>
+> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_mode.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+> index 83ace6cc9583..e15039238232 100644
+> --- a/drivers/staging/sm750fb/ddk750_mode.c
+> +++ b/drivers/staging/sm750fb/ddk750_mode.c
+> @@ -73,8 +73,8 @@ display_control_adjust_sm750le(struct mode_parameter *mode_param,
+>  }
+>
+>  /* only timing related registers will be  programed */
+> -static int program_mode_registers(struct mode_parameter *mode_param,
+> -				  struct pll_value *pll)
+> +static void program_mode_registers(struct mode_parameter *mode_param,
+> +				   struct pll_value *pll)
+>  {
+>  	int ret = 0;
+>  	int cnt = 0;
+> @@ -202,7 +202,6 @@ static int program_mode_registers(struct mode_parameter *mode_param,
+>  	} else {
+>  		ret = -1;
+
+Is it still useful to have ret = -1?  Maybe the ret variable is not useful
+at all any more, but one would have to check the parts of the function
+that aren't shown.
+
+julia
+
+>  	}
+> -	return ret;
+>  }
+>
+>  int ddk750_set_mode_timing(struct mode_parameter *parm, enum clock_type clock)
+> --
+> 2.42.0.345.gaab89be2eb
+>
+>

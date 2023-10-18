@@ -2,64 +2,98 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D07BDCDB482
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 00:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09E0ACDB483
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 03:38:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234963AbjJRAbb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 17 Oct 2023 20:31:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58144 "EHLO
+        id S229499AbjJRDh7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 17 Oct 2023 23:37:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33360 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234843AbjJRAba (ORCPT
+        with ESMTP id S229469AbjJRDh5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 17 Oct 2023 20:31:30 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DC33BA;
-        Tue, 17 Oct 2023 17:31:29 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 1B594C433C7;
-        Wed, 18 Oct 2023 00:31:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1697589089;
-        bh=4FoHz9Z8aWCHUm7je8sI/1euzWMFjdMPTTsb8ApHUC0=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=cEsAVliye6CP6RpXi1pLqCfZFEHxeaN/7q35bbntzuU3FRRkzAjd9YoMAzHZymQVy
-         2z/rw5qa2CY5zHbnCfhrvV57vIrz9fZv1qhQECQ0f9/Yw66hw94HU1MeMWHXcOgmh1
-         vYDIagzjEDT9GLvxxcBZfMq8SXY+j9tkBVpA9HlmUyYcKe5mzB5tc6tZ62VCQEdsP/
-         lH+nd7+b8gFQ4RAecgPzn48FGbI9hLZnH4xtgKVmhD7X1bBkiecMPcTLaIw27gZNHX
-         hHiJ8/XpEDVjupUdcbxaJAyNuj5HbCNt4057Udi/saXKo/EmNOX7m6/bHBgquSUoQq
-         d/QuwpW/qohmA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 07BE3E4E9BC;
-        Wed, 18 Oct 2023 00:31:29 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev fixes and updates for v6.6-rc7
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <ZS7i38pKFD0/Msus@ls3530>
-References: <ZS7i38pKFD0/Msus@ls3530>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <ZS7i38pKFD0/Msus@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.6-rc7
-X-PR-Tracked-Commit-Id: e8e4a470b677511f9d1ad4f3cef32adc1d9a60ca
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 06dc10eae55b5ceabfef287a7e5f16ceea204aa0
-Message-Id: <169758908902.4553.16741062330186147068.pr-tracker-bot@kernel.org>
-Date:   Wed, 18 Oct 2023 00:31:29 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
+        Tue, 17 Oct 2023 23:37:57 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBE9BFE;
+        Tue, 17 Oct 2023 20:37:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1697600275; x=1729136275;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=P1Y4r0Us5zf2Vwf6/V8LkQboWRZ55cSVjIX4qdzVeSk=;
+  b=IrcPtQlbJZ8pAL03p86V+Dfn9/gMhorF7rrp1NyThg4UXtlP/4B59jw/
+   lTxfBvdxHWWt9XsL2WfdQ6NQJ49g2FykuosHny50lp2htmyq1MKyPcZAN
+   T/AxZT0iahqcwr+UzRXrif2EliF083C5wnO4O7Ou8GHBx82bdZ5RFiBRk
+   VyBplv97pN+CBsjTq8C37/HeYbPLQOGza2SVuwVoEsZgCmMeiNr3WMHgq
+   mE2ImF2njNb2kfshLTwzl0Q/NchKgmNaveFbHLQJw78s81Z5C96n1P/GE
+   ZAOWWPuZXrzhCyQHvpwvcJEEGGJSzAzIpi6wdYd4odQcuHoPF3T8rKdk/
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10866"; a="384808946"
+X-IronPort-AV: E=Sophos;i="6.03,234,1694761200"; 
+   d="scan'208";a="384808946"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Oct 2023 20:37:55 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10866"; a="822264440"
+X-IronPort-AV: E=Sophos;i="6.03,234,1694761200"; 
+   d="scan'208";a="822264440"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by fmsmga008.fm.intel.com with ESMTP; 17 Oct 2023 20:37:53 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+        id E2A0E130; Wed, 18 Oct 2023 06:37:51 +0300 (EEST)
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Cc:     Dan Carpenter <dan.carpenter@linaro.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/1] fbdev: omapfb: Do not shadow error code from platform_get_irq()
+Date:   Wed, 18 Oct 2023 06:37:50 +0300
+Message-Id: <20231018033750.1123859-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Tue, 17 Oct 2023 21:39:11 +0200:
+There is no point in shadowing the error codes from platform_get_irq().
+Refactor omapfb_do_probe() accordingly.
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.6-rc7
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/06dc10eae55b5ceabfef287a7e5f16ceea204aa0
-
-Thank you!
-
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 42c96f1cfc93..631076bf71f9 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1643,17 +1643,16 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 		r = -ENOMEM;
+ 		goto cleanup;
+ 	}
+-	fbdev->int_irq = platform_get_irq(pdev, 0);
+-	if (fbdev->int_irq < 0) {
+-		r = -ENXIO;
++
++	r = platform_get_irq(pdev, 0);
++	if (r < 0)
+ 		goto cleanup;
+-	}
++	fbdev->int_irq = r;
+ 
+-	fbdev->ext_irq = platform_get_irq(pdev, 1);
+-	if (fbdev->ext_irq < 0) {
+-		r = -ENXIO;
++	r = platform_get_irq(pdev, 1);
++	if (r < 0)
+ 		goto cleanup;
+-	}
++	fbdev->ext_irq = r;
+ 
+ 	init_state++;
+ 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.40.0.1.gaa8946217a0b
+

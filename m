@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85E01CDB47E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 08:01:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40365CDB47E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 08:05:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229948AbjJRIBi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 18 Oct 2023 04:01:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47140 "EHLO
+        id S235026AbjJRIFN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 Oct 2023 04:05:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229897AbjJRIBf (ORCPT
+        with ESMTP id S229948AbjJRIFM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 18 Oct 2023 04:01:35 -0400
-Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA1E7BC;
-        Wed, 18 Oct 2023 01:01:33 -0700 (PDT)
-Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-53e751aeb3cso6743870a12.2;
-        Wed, 18 Oct 2023 01:01:33 -0700 (PDT)
+        Wed, 18 Oct 2023 04:05:12 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FAF5B6;
+        Wed, 18 Oct 2023 01:05:10 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-507bd64814fso2217669e87.1;
+        Wed, 18 Oct 2023 01:05:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697616092; x=1698220892; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1697616308; x=1698221108; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=30ULjp8VAyqZgr5itRchTkBiQGYWmRnWFZPnaPGlIfI=;
-        b=IEkeJd3OaH7Ll7U7HiXDaBfg8JosMXxIBKJGsydVgdXnO+updefeaN+/N6GJKn5b57
-         qkrWMJnC+gi9f0gtQREJntExL1HraviDEJfIHGhIXDpgVTO9mCTurx95fStosIvtQXPM
-         JDA6ytEVn/GbbKCj7nVTxwsCERan5zeOgqdD7wfpgTIuNyTj7+/Hdc/LvJoAxF+HGdWB
-         r276FPOQn237mHGmbBR1nwMW0hDZfShfM7Fqp9F4DDAMHCwRZfmVSyqAew+/qyIaV+vh
-         3A3TOgSqN6NNMT0uhZeJJFFPeNb1xjuM0TKsIQPi3IQ4dwRpXPxFptgdPuVL1DYhnCXy
-         JadA==
+        bh=OMNVGJeJs6tC6fM9RWBX9uPuEFgE2XkieCrcZbldbM4=;
+        b=kr6TE3GLsgcpvXPIXYqqoYgo8ImXDuM87j4dBeJDV7muAHuTzMYjt1ysvSQBUsXmHi
+         a5v4W4MZZ/LGhQbMCQdent+OHYntclCYHMe17fybygWcxNY+EOCqhHWhrjpmw6y3+aBO
+         t68GV+3+lhUX5EsQxqXWlbpya5K8HNoXqXMH+bgyQ3PHuVZQByfS4Scgfxx+OVKvXM67
+         QrTjYin8ho+f7K1uEAzCX6U5Jtt8P/Q4nS4bYdpOCqxNC4QHVsPiXV/dNsWFGi2QJOwd
+         99KoxGLfDCZcgaA/+nzrcLYiUH0eItVp6GAVZ9aJD107p9NF0pJ6PqR+o0U5NLyF6yu6
+         BsLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697616092; x=1698220892;
+        d=1e100.net; s=20230601; t=1697616308; x=1698221108;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=30ULjp8VAyqZgr5itRchTkBiQGYWmRnWFZPnaPGlIfI=;
-        b=BvMm7PAn6a4y87RG2zOTCk1W6j8Emi6zng1YsUt1zDEeSKMKdEMMkEdk/nhMwHzlAK
-         pbbOFZ4dHb/zNiDaicsySIEarmsl1tRg76q5BO7d/+vxeqDOgaSdmU6rdpGMzmVhfgid
-         SWao/uHWVXayxUp9lTBMoq7vvz6GrYfodxaQx2Z1m/Bt0Yx40XRj32K6bMXCZIWkrxOX
-         mIWeynpmnApkyuQNcJCwwkVMyJ10Ms5cRvtVbkFr7AIy9h24wMcRsY22LpXUzi42ri4U
-         Z7VdihAgadoU9hMduqPdNMHb0uBX5ZdnObN/ncn6zSpOsFg3A5Pra5wl6+RcV6YRqpk/
-         sH6w==
-X-Gm-Message-State: AOJu0YwhixrFbg/E4sdwdzNoYu69rT/qxtQmejCdT4oPqjUCl/jn333N
-        MkKf5Pn3cBvBMW4dwE0yrQ==
-X-Google-Smtp-Source: AGHT+IFO5HbNWvKe8y47ftHvUNTxHsza97HzHWo6CRd4IG8Kf9Ur5Z8NsFE0wLzrGk2H35KGEIhKqw==
-X-Received: by 2002:a05:6402:50d1:b0:525:6e47:10f6 with SMTP id h17-20020a05640250d100b005256e4710f6mr3714476edb.22.1697616091949;
-        Wed, 18 Oct 2023 01:01:31 -0700 (PDT)
+        bh=OMNVGJeJs6tC6fM9RWBX9uPuEFgE2XkieCrcZbldbM4=;
+        b=HtXjYgN8NG/Su5LScAc3PpejFIzovmX/q6/a4E9xQNsqC6m2m+0sNRgA6bX9qBqAy6
+         aVXOcsZJauuzIzS5sSz1LXd7W8FBRZQL2nn+UDApbO7W7+eIV86I+YruRXx6WBLqy492
+         RQlA12WBmAakAalDn8PRaJI5nh4sGrzYK4tD0aNP4Ur67LAnzCp0RgyAx6UHlM+30By/
+         Sg8Cmh3bbmuguBx4oEGzuodevyMfbf33XfDpQqyCIseeO9mCztBmtsvYGGiz7Q7zTUaP
+         rYWhWKFSR2I4aJhPf0BYHwLSGDxtETuF995B/G/lxkRkr4NUJMUsKlAst6Vynmno7dFF
+         Zo6w==
+X-Gm-Message-State: AOJu0YxvE9LjOCKGpzFfXkuT4OMCfhn70UpJZN416sD1gwWPtG+SNIM2
+        Lmaa4Fagu+0LBkKzUiwdagWkOWewiICmnDw=
+X-Google-Smtp-Source: AGHT+IEOoxnYTOtBclV4vk36arcwft7QKDtzgJRUNRHK+278x59Pnk7rzDUe855MTH5QEDI9sLxiLA==
+X-Received: by 2002:ac2:52a9:0:b0:507:9618:d446 with SMTP id r9-20020ac252a9000000b005079618d446mr2950797lfm.61.1697616308093;
+        Wed, 18 Oct 2023 01:05:08 -0700 (PDT)
 Received: from dorcaslitunya-virtual-machine.localdomain ([105.163.0.227])
-        by smtp.gmail.com with ESMTPSA id z96-20020a509e69000000b0053b67aba57bsm2428560ede.17.2023.10.18.01.01.28
+        by smtp.gmail.com with ESMTPSA id i6-20020adfe486000000b0032415213a6fsm1484548wrm.87.2023.10.18.01.05.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Oct 2023 01:01:31 -0700 (PDT)
+        Wed, 18 Oct 2023 01:05:07 -0700 (PDT)
 From:   Dorcas AnonoLitunya <anonolitunya@gmail.com>
 Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
         julia.lawall@inria.fr, dan.carpenter@linaro.org,
@@ -58,9 +58,9 @@ Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] Staging: sm750fb: Rename display_control_adjust_sm750LE
-Date:   Wed, 18 Oct 2023 11:00:50 +0300
-Message-ID: <20231018080103.25555-1-anonolitunya@gmail.com>
+Subject: [PATCH v2] Staging: sm750fb: Rename display_control_adjust_sm750LE
+Date:   Wed, 18 Oct 2023 11:04:08 +0300
+Message-ID: <20231018080416.25931-2-anonolitunya@gmail.com>
 X-Mailer: git-send-email 2.42.0.345.gaab89be2eb
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -73,10 +73,13 @@ Rename function display_control_adjust_sm750LE to
 display_control_adjust_sm750le. This further enforces snakecase naming
 convention for consistent naming style throughout entire file.
 
-This change was suggested by Andy <andi.shyti@linux.intel.com>
+This change was suggested by Andi Shyti <andi.shyti@linux.intel.com>
 
 Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
 ---
+
+v2: Correctly spells Andi Shyti's name
+
  drivers/staging/sm750fb/ddk750_mode.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 

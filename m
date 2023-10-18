@@ -2,143 +2,239 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A19A7CDB47E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 09:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71FE0CDB47E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Oct 2023 10:35:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229671AbjJRJeu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 18 Oct 2023 05:34:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48072 "EHLO
+        id S229717AbjJRKfU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 Oct 2023 06:35:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230096AbjJRJef (ORCPT
+        with ESMTP id S230107AbjJRKfT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 18 Oct 2023 05:34:35 -0400
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 013D8106;
-        Wed, 18 Oct 2023 02:34:32 -0700 (PDT)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-40836ea8cbaso10330325e9.0;
-        Wed, 18 Oct 2023 02:34:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697621671; x=1698226471; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=sd04U5ztHM5BN91zVsx9G6ZDnJ4iPY9R76fpuMvI0tU=;
-        b=XbEcmMEIG/xzTmpJfdoxYpcGYmLJj50T9Fmz95KTNgrY+l4uACG8sQee7rX8XxHURk
-         GWGz5K3XCmgP5fXFYd5F9CGmVNuaAuQFNMfr3oFKLAbGb+sRS4+vnmPP9Wn56pGqtPHn
-         4jrOPWVA2/dCB4wym1eM1/OKXLpIJWjRRPS+dm6qVHATWDJJ3CfO0NtSarRnnmEXes6Q
-         HkX8iVp7q4PJdlUnTEVfmBwjsl4JWvoY6M/pur6gk458BDCJ1aUNeL/pVthD7snCGCnx
-         V3j7h5WyQHOu/VhNa42Pqbv5IiG1UTtHx+a/T2XKgj9KsEuvE3951137cg4POUmcInNl
-         XuRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697621671; x=1698226471;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sd04U5ztHM5BN91zVsx9G6ZDnJ4iPY9R76fpuMvI0tU=;
-        b=kyltxCrxwuHjKNVGt2HfzW9vGliD0RmQjDpJ2vWdBAfyBj91BCJDTPPth+5rc7EmXW
-         KtwPgwounFWxeWptzV9myBtUD3MJKK+qWoZfmKqJwolHMnCvGxoLiSwIRuliQTMzHT9T
-         r7hS/0iYqUm06v8QCkX6D6JKgH3uXqCyOF6KqfbuZLmt3jDIOo3kfgMRGtUcA9dzRFkI
-         +qosh2NXUdd0Hbgn8KXQ02t8JQehhsa0K5IITRrrkAGt4ctAFjZmrJg0ZZHudTQ4fpXb
-         EPTDumrUgrVFaSiKey6M1EJ812b6CzS+ZrePGV1fI6fKLFaDZiyWYQ7ht/COOS8EQCbO
-         SCUA==
-X-Gm-Message-State: AOJu0YzIAAGi3tYZtH5tMxo5MMA1XvoqcyqvCNnGVzZ5N+qPTe90JnIg
-        x6hJncoZGe+af/XyjY6Z1A==
-X-Google-Smtp-Source: AGHT+IHmDIpRPzXCLPQAZ3IxJiiTrLvL6xTrGXiKrnqsbiCJwNUaHu+nlvHbGSpKR4lJJDeUTV+Qjg==
-X-Received: by 2002:a05:600c:5487:b0:408:3ab3:a050 with SMTP id iv7-20020a05600c548700b004083ab3a050mr1172995wmb.16.1697621670844;
-        Wed, 18 Oct 2023 02:34:30 -0700 (PDT)
-Received: from dorcaslitunya-virtual-machine ([105.163.0.227])
-        by smtp.gmail.com with ESMTPSA id k1-20020a5d66c1000000b0032dbf99bf4fsm1680829wrw.89.2023.10.18.02.34.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Oct 2023 02:34:30 -0700 (PDT)
-Date:   Wed, 18 Oct 2023 12:34:26 +0300
-From:   Dorcas Litunya <anonolitunya@gmail.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     outreachy@lists.linux.dev, julia.lawall@inria.fr,
-        dan.carpenter@linaro.org, andi.shyti@linux.intel.com,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] staging: sm750fb: Remove unused return value in
- program_mode_registers()
-Message-ID: <ZS+moqE585lPBN3m@dorcaslitunya-virtual-machine>
-References: <cover.1697619623.git.anonolitunya@gmail.com>
- <492e63bbc58147fb534930ef9e1fb5d844ae8769.1697619623.git.anonolitunya@gmail.com>
- <2023101846-synopses-paralyses-d1ee@gregkh>
+        Wed, 18 Oct 2023 06:35:19 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D72495
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 Oct 2023 03:35:18 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F32D1C433C8
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 Oct 2023 10:35:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1697625318;
+        bh=a8ifNWOXUKGVTohZmwI1XdSkd0wI6MFAv9aD3vBziNo=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=K65ZYcO05cDtSJncDwNrtoXEasrSNt2fZ8oXdl0fvAqL0VEDEYKAVGI08AbGtk6OS
+         NJVTKt0lfl4X20d61X3UZkIjcCfo1gF23bwK7WElSlc88k3Kfk973QDbx2DXvEAY+c
+         Af50ITnrr/K7JLxxrhhQAID8btzoVETSEBSzWJ6EQdMzNWgwMKSFv/Erg/8WmrngSp
+         Iz4yYCQaNXQOEchn/HV10B42yK8G/Z9kXVO18kBUiwgDTzFPpRHuG0lgJ7xXRmnxzw
+         saeK8YaRVs941iSlK9UmZqwjlGMA8vYL61yfLVAyIht3YGPlKambJk9iqkHC+TrncP
+         zTJsbUbtlmvMA==
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-27d11401516so4363524a91.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 Oct 2023 03:35:17 -0700 (PDT)
+X-Gm-Message-State: AOJu0YzZJTit4idGjh4z55zvRxCa32RaNB+YehZyDR90Y1Yj+gl76PBQ
+        58AABKbsgwfBPyqB9APi2uZNo1W/n/0wnMFZTjsChg==
+X-Google-Smtp-Source: AGHT+IFMIKA28pV3Q3IJoHhXWoQbe40WAx+86JLtIEDR8V79bq1eXzhoT06UDEQO0R5iLJhjWzjVWiHeH10sXW46eYs=
+X-Received: by 2002:a17:90a:196:b0:27d:20ca:1156 with SMTP id
+ 22-20020a17090a019600b0027d20ca1156mr4552970pjc.34.1697625317527; Wed, 18 Oct
+ 2023 03:35:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2023101846-synopses-paralyses-d1ee@gregkh>
+References: <20231011143809.1108034-1-thierry.reding@gmail.com> <20231011143809.1108034-3-thierry.reding@gmail.com>
+In-Reply-To: <20231011143809.1108034-3-thierry.reding@gmail.com>
+From:   Robert Foss <rfoss@kernel.org>
+Date:   Wed, 18 Oct 2023 12:35:06 +0200
+X-Gmail-Original-Message-ID: <CAN6tsi462nsJ1x_Z-Mcy+MuyaWhwvyFSuG0Ey=Uvqy_Vd1L0xA@mail.gmail.com>
+Message-ID: <CAN6tsi462nsJ1x_Z-Mcy+MuyaWhwvyFSuG0Ey=Uvqy_Vd1L0xA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] fbdev/simplefb: Add support for generic power-domains
+To:     Thierry Reding <thierry.reding@gmail.com>
+Cc:     Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Jon Hunter <jonathanh@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 18, 2023 at 11:26:33AM +0200, Greg Kroah-Hartman wrote:
-> On Wed, Oct 18, 2023 at 12:07:38PM +0300, Dorcas AnonoLitunya wrote:
-> > Modifies the return type of program_mode_registers()
-> > to void from int as the return value is being ignored in
-> > all subsequent function calls.
-> > 
-> > This improves code readability and maintainability.
-> > 
-> > Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
-> > ---
-> >  drivers/staging/sm750fb/ddk750_mode.c | 5 ++---
-> >  1 file changed, 2 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-> > index 83ace6cc9583..e15039238232 100644
-> > --- a/drivers/staging/sm750fb/ddk750_mode.c
-> > +++ b/drivers/staging/sm750fb/ddk750_mode.c
-> > @@ -73,8 +73,8 @@ display_control_adjust_sm750le(struct mode_parameter *mode_param,
-> >  }
-> >  
-> >  /* only timing related registers will be  programed */
-> > -static int program_mode_registers(struct mode_parameter *mode_param,
-> > -				  struct pll_value *pll)
-> > +static void program_mode_registers(struct mode_parameter *mode_param,
-> > +				   struct pll_value *pll)
-> >  {
-> >  	int ret = 0;
-> >  	int cnt = 0;
-> > @@ -202,7 +202,6 @@ static int program_mode_registers(struct mode_parameter *mode_param,
-> >  	} else {
-> >  		ret = -1;
-> 
-> Why are you still setting the 'ret' variable if you are not doing
-> anything with it anymore?
-> 
-> >  	}
-> > -	return ret;
-> 
-> Are you sure that the caller shouldn't be checking for errors instead of
-> dropping the return value?  If so, document that in the changelog too.
+On Wed, Oct 11, 2023 at 4:38=E2=80=AFPM Thierry Reding <thierry.reding@gmai=
+l.com> wrote:
 >
-Seems like the caller doesn't use the function to check for errors as in
-the code below:
+> From: Thierry Reding <treding@nvidia.com>
+>
+> The simple-framebuffer device tree bindings document the power-domains
+> property, so make sure that simplefb supports it. This ensures that the
+> power domains remain enabled as long as simplefb is active.
+>
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+> ---
+>  drivers/video/fbdev/simplefb.c | 93 +++++++++++++++++++++++++++++++++-
+>  1 file changed, 91 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplef=
+b.c
+> index 18025f34fde7..e69fb0ad2d54 100644
+> --- a/drivers/video/fbdev/simplefb.c
+> +++ b/drivers/video/fbdev/simplefb.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/of_clk.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/parser.h>
+> +#include <linux/pm_domain.h>
+>  #include <linux/regulator/consumer.h>
+>
+>  static const struct fb_fix_screeninfo simplefb_fix =3D {
+> @@ -78,6 +79,11 @@ struct simplefb_par {
+>         unsigned int clk_count;
+>         struct clk **clks;
+>  #endif
+> +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
+> +       unsigned int num_genpds;
+> +       struct device **genpds;
+> +       struct device_link **genpd_links;
+> +#endif
+>  #if defined CONFIG_OF && defined CONFIG_REGULATOR
+>         bool regulators_enabled;
+>         u32 regulator_count;
+> @@ -432,6 +438,83 @@ static void simplefb_regulators_enable(struct simple=
+fb_par *par,
+>  static void simplefb_regulators_destroy(struct simplefb_par *par) { }
+>  #endif
+>
+> +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
+> +static void simplefb_detach_genpds(void *res)
+> +{
+> +       struct simplefb_par *par =3D res;
+> +       unsigned int i =3D par->num_genpds;
+> +
+> +       if (par->num_genpds <=3D 1)
+> +               return;
+> +
+> +       while (i--) {
+> +               if (par->genpd_links[i])
+> +                       device_link_del(par->genpd_links[i]);
+> +
+> +               if (!IS_ERR_OR_NULL(par->genpds[i]))
+> +                       dev_pm_domain_detach(par->genpds[i], true);
+> +       }
+> +}
+> +
+> +static int simplefb_attach_genpd(struct simplefb_par *par,
+> +                                struct platform_device *pdev)
+> +{
+> +       struct device *dev =3D &pdev->dev;
+> +       unsigned int i;
+> +       int err;
+> +
+> +       par->num_genpds =3D of_count_phandle_with_args(dev->of_node,
+> +                                                    "power-domains",
+> +                                                    "#power-domain-cells=
+");
+> +       /*
+> +        * Single power-domain devices are handled by the driver core, so
+> +        * nothing to do here.
+> +        */
+> +       if (par->num_genpds <=3D 1)
+> +               return 0;
+> +
+> +       par->genpds =3D devm_kcalloc(dev, par->num_genpds, sizeof(*par->g=
+enpds),
+> +                                  GFP_KERNEL);
+> +       if (!par->genpds)
+> +               return -ENOMEM;
+> +
+> +       par->genpd_links =3D devm_kcalloc(dev, par->num_genpds,
+> +                                       sizeof(*par->genpd_links),
+> +                                       GFP_KERNEL);
+> +       if (!par->genpd_links)
+> +               return -ENOMEM;
+> +
+> +       for (i =3D 0; i < par->num_genpds; i++) {
+> +               par->genpds[i] =3D dev_pm_domain_attach_by_id(dev, i);
+> +               if (IS_ERR(par->genpds[i])) {
+> +                       err =3D PTR_ERR(par->genpds[i]);
+> +                       if (err =3D=3D -EPROBE_DEFER) {
+> +                               simplefb_detach_genpds(par);
+> +                               return err;
+> +                       }
+> +
+> +                       dev_warn(dev, "failed to attach domain %u: %d\n",=
+ i, err);
+> +                       continue;
+> +               }
+> +
+> +               par->genpd_links[i] =3D device_link_add(dev, par->genpds[=
+i],
+> +                                                     DL_FLAG_STATELESS |
+> +                                                     DL_FLAG_PM_RUNTIME =
+|
+> +                                                     DL_FLAG_RPM_ACTIVE)=
+;
+> +               if (!par->genpd_links[i])
+> +                       dev_warn(dev, "failed to link power-domain %u\n",=
+ i);
+> +       }
+> +
+> +       return devm_add_action_or_reset(dev, simplefb_detach_genpds, par)=
+;
+> +}
+> +#else
+> +static int simplefb_attach_genpd(struct simplefb_par *par,
+> +                                struct platform_device *pdev)
+> +{
+> +       return 0;
+> +}
+> +#endif
+> +
+>  static int simplefb_probe(struct platform_device *pdev)
+>  {
+>         int ret;
+> @@ -518,6 +601,10 @@ static int simplefb_probe(struct platform_device *pd=
+ev)
+>         if (ret < 0)
+>                 goto error_clocks;
+>
+> +       ret =3D simplefb_attach_genpd(par, pdev);
+> +       if (ret < 0)
+> +               goto error_regulators;
+> +
+>         simplefb_clocks_enable(par, pdev);
+>         simplefb_regulators_enable(par, pdev);
+>
+> @@ -534,18 +621,20 @@ static int simplefb_probe(struct platform_device *p=
+dev)
+>         ret =3D devm_aperture_acquire_for_platform_device(pdev, par->base=
+, par->size);
+>         if (ret) {
+>                 dev_err(&pdev->dev, "Unable to acquire aperture: %d\n", r=
+et);
+> -               goto error_regulators;
+> +               goto error_genpds;
+>         }
+>         ret =3D register_framebuffer(info);
+>         if (ret < 0) {
+>                 dev_err(&pdev->dev, "Unable to register simplefb: %d\n", =
+ret);
+> -               goto error_regulators;
+> +               goto error_genpds;
+>         }
+>
+>         dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+>
+>         return 0;
+>
+> +error_genpds:
+> +       simplefb_detach_genpds(par);
+>  error_regulators:
+>         simplefb_regulators_destroy(par);
 
-int ddk750_set_mode_timing(struct mode_parameter *parm, enum clock_type clock)
-{
-        struct pll_value pll;
+I saw an error on a rhel9.3 kernel build, it may or may not be hit on
+an upstream build.
 
-        pll.input_freq = DEFAULT_INPUT_CLOCK;
-        pll.clock_type = clock;
+drivers/video/fbdev/simplefb.c: In function 'simplefb_probe':
+drivers/video/fbdev/simplefb.c:650:1: warning: label
+'error_regulators' defined but not used [-Wunused-label]
+  650 | error_regulators:
+      | ^~~~~~~~~~~~~~~~
 
-        sm750_calc_pll_value(parm->pixel_clock, &pll);
-        if (sm750_get_chip_type() == SM750LE) {
-                /* set graphic mode via IO method */
-                outb_p(0x88, 0x3d4);
-                outb_p(0x06, 0x3d5);
-        }
-        program_mode_registers(parm, &pll);
-        return 0;
 
-It will still return 0 regardless of whether there is an error or not.
-Since I am not sure how the two functions relate to one another, is
-there need to check error in the caller function?
-
-thanks,
-Dorcas
-> thanks,
-> 
-> greg k-h
+>  error_clocks:
+> --
+> 2.42.0
+>

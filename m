@@ -2,119 +2,171 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69339CDB465
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Oct 2023 10:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA170CDB465
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Oct 2023 10:52:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345039AbjJSKPZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 19 Oct 2023 06:15:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35188 "EHLO
+        id S233044AbjJSKw3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 19 Oct 2023 06:52:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35368 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345188AbjJSKPY (ORCPT
+        with ESMTP id S235234AbjJSKw2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 19 Oct 2023 06:15:24 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33CFFAB;
-        Thu, 19 Oct 2023 03:15:19 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-4064876e8b8so77845595e9.0;
-        Thu, 19 Oct 2023 03:15:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697710517; x=1698315317; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8cbB8KyCX5JCSADfj+9upLa+4bu4hru1gFdwgH5SKUA=;
-        b=b1DM3/uaIm22jgkgm6dXGjyGujA0OhrdzlC+zRWQL2pGC0SOTmE+6ubVPlG4qRml73
-         plpBYsyJ0NiLAQIwNlDLFi4lgPMr154857Ao3o2FdCgbOI9+DU191c8oudrH1y7bgSx0
-         cGTOJeg+yQJRnkM2nhAwbgAoPLN6z1y3MDWYgoiA9PyiHv35IP4YU8COpe0wHuMQymd5
-         fdrKFO5gaKiFmq1bJug8/ih7kiKMQ1F7U4kjcYN5jc9itbucEvpxthgR2MYLeXuqEPTA
-         0cVNNwsebBLK/ShU1A6BkVZ5YMB5Ng2nGdGSRWX7BM2R1ibmjeFAI7PTPDVhVPCCV0RN
-         gS2w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697710517; x=1698315317;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8cbB8KyCX5JCSADfj+9upLa+4bu4hru1gFdwgH5SKUA=;
-        b=q8vc6ejmFaCP0MpQFcMnBUvGnfc8HoX+bXWW70lb30RMzJVTTCsbwGpwhWKCr9O8/Z
-         yEPW9N/wBat4bMlPkSvGguCOIDM20Wb8Rg4tKhIC5EEynzM359tZ7ziiRoxvCm7ZetDV
-         f795sftRNN8nOGOi+Djj39NiUkxbZTWv18liZx3fYsJeoa8UrgJcDYOaxTk2chruakoB
-         fAHm+pkWaa9S8fLX1+0wI8RZ8UAHxz9eREWOXNbQsA8wOt/BoRgyYCsnA4LrIo+xKy9g
-         ywPNFADZED411LPDdmQo4vSfvigGSU6n4Nejbf8mE4ADSI8/wJQj1vnsBWmTNbLt2Pg0
-         IJmQ==
-X-Gm-Message-State: AOJu0YyqYx4JutFopeoVMZgy/HBhafDHq7Fas+nYLr+eYdVyJPDWsUsd
-        jacYRN2GURveUyXW9FCS9PVAvvxGL6YjNOg=
-X-Google-Smtp-Source: AGHT+IGiDMFrmb9+RwMtP6BpxH9s/4iB8rEAMTIZXjwiWmRveGAphvfriwoq9wK4V9AK4OIZ4FiN7g==
-X-Received: by 2002:a05:600c:4a14:b0:406:4573:81d2 with SMTP id c20-20020a05600c4a1400b00406457381d2mr1364687wmp.39.1697710517493;
-        Thu, 19 Oct 2023 03:15:17 -0700 (PDT)
-Received: from dorcaslitunya-virtual-machine.localdomain ([105.163.1.8])
-        by smtp.gmail.com with ESMTPSA id l32-20020a05600c1d2000b00402f713c56esm4109300wms.2.2023.10.19.03.15.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Oct 2023 03:15:17 -0700 (PDT)
-From:   Dorcas AnonoLitunya <anonolitunya@gmail.com>
-Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
-        julia.lawall@inria.fr, dan.carpenter@linaro.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/2] staging: sm750fb: Remove unused return variable in program_mode_registers()
-Date:   Thu, 19 Oct 2023 13:13:37 +0300
-Message-ID: <20231019101348.22076-3-anonolitunya@gmail.com>
-X-Mailer: git-send-email 2.42.0.345.gaab89be2eb
-In-Reply-To: <20231019101348.22076-1-anonolitunya@gmail.com>
-References: <20231019101348.22076-1-anonolitunya@gmail.com>
+        Thu, 19 Oct 2023 06:52:28 -0400
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65601B6
+        for <linux-fbdev@vger.kernel.org>; Thu, 19 Oct 2023 03:52:25 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1qtQcb-0002Wd-GE; Thu, 19 Oct 2023 12:51:21 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1qtQcZ-002lnZ-81; Thu, 19 Oct 2023 12:51:19 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1qtQcY-001W9b-T9; Thu, 19 Oct 2023 12:51:18 +0200
+Date:   Thu, 19 Oct 2023 12:51:18 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Hans de Goede <hdegoede@redhat.com>
+Cc:     Sean Young <sean@mess.org>, linux-media@vger.kernel.org,
+        linux-pwm@vger.kernel.org,
+        Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+        Mark Gross <markgross@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] pwm: make it possible to apply pwm changes in
+ atomic context
+Message-ID: <20231019105118.64gdzzixwqrztjir@pengutronix.de>
+References: <cover.1697534024.git.sean@mess.org>
+ <a7fcd19938d5422abc59c968ff7b3d5c275577ed.1697534024.git.sean@mess.org>
+ <90728c06-4c6c-b3d2-4723-c24711be2fa5@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="yn2iyczv5acooknv"
+Content-Disposition: inline
+In-Reply-To: <90728c06-4c6c-b3d2-4723-c24711be2fa5@redhat.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Drops variable ret as it is unused in the code. This therefore modifies
-the return type of program_mode_registers() to void from int since the
-return value is being ignored in all function calls. This improves code
-readability and maintainability.
 
-Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
----
-Changes in v2:
-- Drop variable 'ret' entirely as it is unused.
-Suggested-by: Julia Lawall <julia.lawall@inria.fr>, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org>, Dan Carpenter <dan.carpenter@linaro.org>
+--yn2iyczv5acooknv
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- drivers/staging/sm750fb/ddk750_mode.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+On Wed, Oct 18, 2023 at 03:57:48PM +0200, Hans de Goede wrote:
+> Hi Sean,
+>=20
+> On 10/17/23 11:17, Sean Young wrote:
+> > Some drivers require sleeping, for example if the pwm device is connect=
+ed
+> > over i2c. The pwm-ir-tx requires precise timing, and sleeping causes ha=
+voc
+> > with the generated IR signal when sleeping occurs.
+> >=20
+> > This patch makes it possible to use pwm when the driver does not sleep,
+> > by introducing the pwm_can_sleep() function.
+> >=20
+> > Signed-off-by: Sean Young <sean@mess.org>
+>=20
+> I have no objection to this patch by itself, but it seems a bit
+> of unnecessary churn to change all current callers of pwm_apply_state()
+> to a new API.
 
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 83ace6cc9583..4278f9a826ab 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -73,10 +73,9 @@ display_control_adjust_sm750le(struct mode_parameter *mode_param,
- }
- 
- /* only timing related registers will be  programed */
--static int program_mode_registers(struct mode_parameter *mode_param,
--				  struct pll_value *pll)
-+static void program_mode_registers(struct mode_parameter *mode_param,
-+				   struct pll_value *pll)
- {
--	int ret = 0;
- 	int cnt = 0;
- 	unsigned int tmp, reg;
- 
-@@ -199,10 +198,7 @@ static int program_mode_registers(struct mode_parameter *mode_param,
- 				break;
- 			poke32(PANEL_DISPLAY_CTRL, tmp | reg);
- 		}
--	} else {
--		ret = -1;
- 	}
--	return ret;
- }
- 
- int ddk750_set_mode_timing(struct mode_parameter *parm, enum clock_type clock)
--- 
-2.42.0.345.gaab89be2eb
+The idea is to improve the semantic of the function name, see
+https://lore.kernel.org/linux-pwm/20231013180449.mcdmklbsz2rlymzz@pengutron=
+ix.de
+for more context. I think it's very subjective if you consider this
+churn or not. While it's nice to have every caller converted in a single
+step, I'd go for
 
+	#define pwm_apply_state(pwm, state) pwm_apply_cansleep(pwm, state)
+
+, keep that macro for a while and convert all users step by step. This
+way we don't needlessly break oot code and the changes to convert to the
+new API can go via their usual trees without time pressure.
+
+> Why not just keep pwm_apply_state() as is and introduce a new
+> pwm_apply_state_atomic() for callers which want to apply state
+> in a case where sleeping is not allowed ?
+
+There is a big spontaneous growth of function name patterns. I didn't
+claim having done a complete research, but not using a suffix for the
+fast variant and _cansleep for the sleeping one at least aligns to how
+the gpio subsystem names things.
+
+Grepping a bit more:
+
+ - regmap has: regmap_might_sleep() and struct regmap::can_sleep
+   The actual API doesn't have different functions to differentiate
+   sleeping and non-sleeping calls. (Though there is
+   regmap_read_poll_timeout_atomic().)
+
+ - kmap() + kmap_atomic()
+ - set_pte() + set_pte_atomic()
+
+ - There is scmi_is_transport_atomic() and scmi_handle::is_transport_atomic=
+()
+   (Is this also about sleeping?)
+
+ - There are quite a lot more symbols ending in _atomic and in
+   _cansleep, but several of them don't exists to differentiate a slow
+   and a fast procedure.  (e.g. drm_mode_atomic)
+
+Not entirely sure what to read out of that.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--yn2iyczv5acooknv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmUxCiUACgkQj4D7WH0S
+/k4jlwgAgQS/Vm8QPoZFBjT4W6JQXxJRPwUsXBOa7whQZfAYqlzZZ35+WjXKug70
+1nq/INcUz96H0aYtK2aHLUeOEQH+cDau32nAM9dYk0S4qWXOEgC1gFbPwGTrF1SE
+gEPMEkOMezwBlon9ik8cPddAGP5rDSXD8YKeiGy5O6gbXi/iKChFxnamOn5K7B+j
+mgPy/pP0tTP79r0tsVIKta7hnJ1uGfv8cWRQqvPTyT9YuEiBfKRzgi7rxXq9gH2X
+DS+SMO7jtBXFEl5kzKsw1oKpR5VqInvebeBJHSnsH3T/sXAuyJj379046bjbKq7c
+rp0jBis0JVqrfUguEpnfRBuxuTilXQ==
+=OvnQ
+-----END PGP SIGNATURE-----
+
+--yn2iyczv5acooknv--

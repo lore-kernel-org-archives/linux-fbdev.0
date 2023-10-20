@@ -2,167 +2,154 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2C89C00A98
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Oct 2023 12:11:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46954C0032E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Oct 2023 13:55:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377005AbjJTML6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 Oct 2023 08:11:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53862 "EHLO
+        id S1377501AbjJTNzO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 Oct 2023 09:55:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1376941AbjJTML5 (ORCPT
+        with ESMTP id S1377274AbjJTNzN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 Oct 2023 08:11:57 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D8879F
-        for <linux-fbdev@vger.kernel.org>; Fri, 20 Oct 2023 05:11:55 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qtoM1-0007gt-ST; Fri, 20 Oct 2023 14:11:49 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qtoM0-0031Pm-WD; Fri, 20 Oct 2023 14:11:49 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qtoM0-002VMF-Mo; Fri, 20 Oct 2023 14:11:48 +0200
-Date:   Fri, 20 Oct 2023 14:11:48 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Philipp Zabel <p.zabel@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-pwm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: [PATCH] backlight: pwm_bl: Avoid backlight flicker applying
- initial PWM state
-Message-ID: <20231020121148.3g6t3v5uuyubifpb@pengutronix.de>
-References: <20230608-backlight-pwm-avoid-flicker-v1-1-afd380d50174@pengutronix.de>
- <20231018210741.6t3yfj6qgmpwhhlo@pengutronix.de>
- <20231020112727.GF23755@aspen.lan>
+        Fri, 20 Oct 2023 09:55:13 -0400
+Received: from EUR03-DBA-obe.outbound.protection.outlook.com (mail-dbaeur03on2054.outbound.protection.outlook.com [40.107.104.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B817C93;
+        Fri, 20 Oct 2023 06:55:07 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Uf4/ueOwSpGueg1moM9yL0r5SwPzTQFwl3G54Cnma/po/fu7KZdx9anjleLcrOBpBCCUom0oJ0IfKb4yRsBMJ8kQmSwUNz2lQV2VB24QH66KCDrtf8Oox7CheHpa+z9MzfSUtHJdA5hOOCTpr5L+EOLJ/4v3gvNUwWZkoE07j/yBgbdirdyKOUdoQiWHJqlB0xKwYvEmMFqt38Q+kgKprULMSk0suc/HofPuBkmLTh2U7z7AGkiWhv46PzIhx0XE2d8BkaqInhRhV+/TrK4b58k78DJk9N0O2/7f6HwbI4CDAMemwKHbE2DmycS4ryj1L1i3lr9NeQrZx7CHHxaBDQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xNA+Hw6QwGM3O5n7svgM4gdZNh5Lp6FAvnOV5X3vxak=;
+ b=L5C8RJvWXGqsJt9UNqqb/932w/bvyi4GACeO+lxx2LDhkJU5eJxnr3jWLTFkEVgPIFV4XzRXvN0Kp9MQa//81E23ytfypcNi5gZU5dnmJ2aToWdCxrNZTv550Z5XbcnDTO00lJvrTvSi8HYf9E+cdfU8YHtvVFAiY1nIMuqAi82ob2zGcB0LpJYaYqOHOXXAQxL2UPbXUIiqxNPJCT97myxZgSiCDs45KYmGlUQRKydpr0QUw5fiQpHiW4sl9uWXP3pnA0meLICetnlHYd3nWRRMGTTH51XKt69ABOD8eN44koWY/B/SOBz1n7BGNuNVAvD8uxWDeZ/DtmXSEqqR3w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xNA+Hw6QwGM3O5n7svgM4gdZNh5Lp6FAvnOV5X3vxak=;
+ b=IGTcRPZ06KooiZ+2KZNqSk0mUs3lAcl6BEuYCV+tg3zWIxgX0FM8MMeQAkaxsO1fE74naOn7iGszryFR2xLQrXGIj6XOVfBiakwI9gaKcdBYvURYVTDFZ2HiEQTGx8WC4RR+r2rQuBasn+0TBu1a/T4KUMefJD5hD8UJNR313yg=
+Received: from DU2PR04CA0019.eurprd04.prod.outlook.com (2603:10a6:10:3b::24)
+ by VI1PR01MB6511.eurprd01.prod.exchangelabs.com (2603:10a6:800:151::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.24; Fri, 20 Oct
+ 2023 13:55:04 +0000
+Received: from DU6PEPF0000B622.eurprd02.prod.outlook.com
+ (2603:10a6:10:3b:cafe::38) by DU2PR04CA0019.outlook.office365.com
+ (2603:10a6:10:3b::24) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.25 via Frontend
+ Transport; Fri, 20 Oct 2023 13:55:04 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ DU6PEPF0000B622.mail.protection.outlook.com (10.167.8.139) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6907.20 via Frontend Transport; Fri, 20 Oct 2023 13:55:04 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+         Fri, 20 Oct 2023 15:55:02 +0200
+From:   Flavio Suligoi <f.suligoi@asem.it>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH 1/1] dt-bindings: backlight: mp3309c: remove two required properties
+Date:   Fri, 20 Oct 2023 15:54:33 +0200
+Message-Id: <20231020135434.2598578-2-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231020135434.2598578-1-f.suligoi@asem.it>
+References: <20231020135434.2598578-1-f.suligoi@asem.it>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="4ujggu4vg72aghiu"
-Content-Disposition: inline
-In-Reply-To: <20231020112727.GF23755@aspen.lan>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 20 Oct 2023 13:55:02.0828 (UTC) FILETIME=[05FED6C0:01DA035D]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU6PEPF0000B622:EE_|VI1PR01MB6511:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 32b5913a-d99f-4a22-c8c3-08dbd1742989
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: CRDKt9tApOnTbpky9xlyv5+53R1ePhZOL0b9JvEvNLmA0MlLHv+HwKvBnyVm3PXqj4wph6xwrqnoSZzFezcL0bwjtQONX2Ne217KVqaHZKwmMdWzn3G+SXUStUqqVTHuG7A0YhMmTTTo4d7FKc9SjDuONSyPmpJ3XZ+U3vbb447bvxmA4bdpzoqT9dytZ9BVFCKpiQQaiSi7JOLFWY5SjjXbdof6O+shcXzWu4fpUyOJ6F0413ulAFgKKfSH5dFSynOREDKG/Emo8XKs+WybnP1pY/78DraMJJkiYm0oj0BynVBPuCdwZNrvkbpYEE/ZoxSRp7197iYCUy6Btszfjws2z9bKg/HmbmcWKtNYtXqmZAuSUxisWtFdciNUR8c6cb5qOf08HKONqrOOLbIA9KGExZ72qfrvtr/kK27By6LEzyie9BrcnWFFQuqzhB6Gm3DQPvoldWa+sGEb5Mdooy9+EeRtW4Je3UhEoRVSNCdPMd4+ZIDnmj800xL1MI1LIH0NN6QpHHfu4k6++jeIDZatevkpeU1crVQz6bunXv1r6Kn4g9uoOkXKOgaz22ayIW2ukQTd4CsswmDHRTRLlSUZb1wBPGj4ckOPrVxVA/REOxjgFkvz0OS8NJj9h5rxivud+In3a+CpH0dkBvEszsCgBgZSBpZGW+vCrabuKMXAG8z5p9MKn5pAGGY2rZC5bYgg1+xDVJyEpCX93p4Nm0FEtrdp2m49SZbypMd4tAc=
+X-Forefront-Antispam-Report: CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(376002)(39840400004)(396003)(136003)(346002)(230922051799003)(64100799003)(186009)(1800799009)(82310400011)(451199024)(46966006)(36840700001)(4326008)(356005)(41300700001)(316002)(110136005)(36756003)(8676002)(8936002)(966005)(2906002)(478600001)(70206006)(81166007)(36860700001)(5660300002)(450100002)(70586007)(6666004)(26005)(336012)(1076003)(2616005)(86362001)(40480700001)(47076005)(83380400001)(107886003)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Oct 2023 13:55:04.4176
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 32b5913a-d99f-4a22-c8c3-08dbd1742989
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource: DU6PEPF0000B622.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR01MB6511
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+The two properties:
 
---4ujggu4vg72aghiu
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+- max-brightness
+- default brightness
 
-Hello Daniel,
+are not really required, so they can be removed from the "required"
+section.
 
-On Fri, Oct 20, 2023 at 12:27:27PM +0100, Daniel Thompson wrote:
-> On Wed, Oct 18, 2023 at 11:07:41PM +0200, Uwe Kleine-K=F6nig wrote:
-> > Hello Philipp,
-> >
-> > On Thu, Jun 08, 2023 at 04:11:14PM +0200, Philipp Zabel wrote:
-> > > The initial PWM state returned by pwm_init_state() has a duty cycle
-> > > of 0 ns.
-> >
-> > This is only true for drivers without a .get_state() callback, isn't it?
->=20
-> pwm_init_state() explicitly zeros the duty-cycle in order to avoid
-> problems when the default args have a different period to the currently
-> applied config:
-> https://elixir.bootlin.com/linux/latest/source/include/linux/pwm.h#L174
+Other changes:
 
-Ah right, pwm_init_state() is strange in a different way than I
-remembered :-) pwm_get_state() is only called to get .enabled set
-appropriately.
+- improve the backlight working mode description, in the "description"
+  section
+- update the example, removing the "max-brightness" and introducing the
+  "brightess-levels" property
 
-Looking at the callers:
+Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+---
+ .../bindings/leds/backlight/mps,mp3309c.yaml           | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
- - drivers/gpu/drm/solomon/ssd130x.c
-   It does:
- 	pwm_init_state(ssd130x->pwm, &pwmstate);
-	pwm_set_relative_duty_cycle(&pwmstate, 50, 100);
-	pwm_apply_state(ssd130x->pwm, &pwmstate);
-	pwm_enable(ssd130x->pwm);
+diff --git a/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+index 4191e33626f5..527a37368ed7 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
++++ b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+@@ -14,8 +14,8 @@ description: |
+   programmable switching frequency to optimize efficiency.
+   It supports two different dimming modes:
+ 
+-  - analog mode, via I2C commands (default)
+-  - PWM controlled mode.
++  - analog mode, via I2C commands, as default mode (32 dimming levels)
++  - PWM controlled mode (optional)
+ 
+   The datasheet is available at:
+   https://www.monolithicpower.com/en/mp3309c.html
+@@ -50,8 +50,6 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - max-brightness
+-  - default-brightness
+ 
+ unevaluatedProperties: false
+ 
+@@ -66,8 +64,8 @@ examples:
+             compatible = "mps,mp3309c";
+             reg = <0x17>;
+             pwms = <&pwm1 0 3333333 0>; /* 300 Hz --> (1/f) * 1*10^9 */
+-            max-brightness = <100>;
+-            default-brightness = <80>;
++            brightness-levels = <0 4 8 16 32 64 128 255>;
++            default-brightness = <6>;
+             mps,overvoltage-protection-microvolt = <24000000>;
+         };
+     };
+-- 
+2.34.1
 
-   A probably better result can be reached quicker using:
- 	pwm_init_state(ssd130x->pwm, &pwmstate);
-	pwm_set_relative_duty_cycle(&pwmstate, 50, 100);
-	pwmstate.enabled =3D true;
-	pwm_apply_state(ssd130x->pwm, &pwmstate);
- - drivers/hwmon/pwm-fan.c
-   __set_pwm should probably explicitly set .enabled.
-   All other calls to pwm_apply_state set .enabled explicitly.
-
- - drivers/input/misc/da7280.c
-   explicitly sets .enabled after calling pwm_init_state()
-
- - drivers/input/misc/pwm-beeper.c
-   explicitly sets .enabled after calling pwm_init_state()
-
- - drivers/input/misc/pwm-vibra.c
-   explicitly sets .enabled after calling pwm_init_state()
-
- - drivers/leds/leds-pwm.c
-   explictily sets .enabled before calling pwm_apply_state()
-
- - drivers/leds/rgb/leds-pwm-multicolor.c
-   explictily sets .enabled before calling pwm_apply_state()
-
- - drivers/media/rc/ir-rx51.c
-   explictily sets .enabled before calling pwm_apply_state()
-
- - drivers/media/rc/pwm-ir-tx.c
-   explictily sets .enabled before calling pwm_apply_state()
-
- - drivers/regulator/pwm-regulator.c
-   never sets .enabled, probably a bug
-
- - drivers/video/backlight/lm3630a_bl.c
-   explictily sets .enabled before calling pwm_apply_state()
-
- - drivers/video/backlight/lp855x_bl.c
-   explictily sets .enabled before calling pwm_apply_state()
-
- - drivers/video/backlight/pwm_bl.c
-   This is the one we currently discuss. I think even with the patch
-   applied it uses the .enabled value returned by pwm_init_state() but
-   it shouldn't.
-
- - drivers/video/fbdev/ssd1307fb.c
-   Similar to drivers/gpu/drm/solomon/ssd130x.c. Probably the one was
-   copied to the other given that it seems to handle the same hardware.
-
-So all consumers using pwm_init_state() either don't use the .enabled
-value returned by pwm_init_state() or at least shouldn't do that.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---4ujggu4vg72aghiu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmUyboMACgkQj4D7WH0S
-/k6z8QgAk0g406vvpJ815Hdz5BSVMclVmbygCKOIROSOKowNrW6WOgrFvaXeUqyi
-qBw06fdMe3EB3Ak9xeZ0EwZ2TWFvol0KsTcHC/B0NPv3naRvXdcnhQylYtlxNFSN
-Ra677iflQiqyYV/UcOf7bvDm0d6cj8W7PpatbZ+NJLh+qXepNDlZgl7cUgtVWw5u
-N04OLkaAtWtfb3lWyT0fnOTTATCkm8x9qrqxHrSilR4+Xf43PAHSbi/427a9mNv6
-vzIWS7HNi9xdirUsXfQbyP8pJhfhEbJjvwhAubqMlS0xPHujsYJcZ7dquVTmu6tb
-Suaayp81cFoCFdHmtCsA6bTorRVi4Q==
-=yuK5
------END PGP SIGNATURE-----
-
---4ujggu4vg72aghiu--

@@ -2,120 +2,170 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A535C001E0
-	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Oct 2023 10:20:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48095C25B41
+	for <linux-fbdev@archiver.kernel.org>; Sun, 22 Oct 2023 10:46:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231296AbjJUKU5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 21 Oct 2023 06:20:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55502 "EHLO
+        id S229588AbjJVKq2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 22 Oct 2023 06:46:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42490 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231178AbjJUKUx (ORCPT
+        with ESMTP id S229472AbjJVKq1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 21 Oct 2023 06:20:53 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6668D1BF;
-        Sat, 21 Oct 2023 03:20:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1697883643; x=1698488443; i=deller@gmx.de;
-        bh=dhDbWXH7BPN56bfie9iMzrJjndwh/b13GtRjH27O56o=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-         In-Reply-To;
-        b=IdAULbEV/M0lULP662Kp5mF9clSyt2OwYZDB04o1+7LkIoXDXBTxtezd+9209AIt
-         3hGqVWhjBK4Vxcj+JiGzYHMuySCXjdlF3rAI/DhKAgHo/O54oGKhemQqDJ+U9DHz0
-         0q5Sc5helbN4+W0HqdC82DoSN+Xt5Ly6fVKH63LiIL0PXPlTjc1u1h1pKcP7jSdun
-         bMf9TEkCZlq/7SeACRifcngQ6NaFYh3/xJAIiJEBR0y3YT70uqUSOPp765L1m7Ar/
-         ygp1qANXWSjUr6quCUfgiLOEYh3mzhBJrToaAgMbZZPNmncbQ1uWhH9EHymSoHFM4
-         bT1YpDqH+Ll4GP9ZKA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.149]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MDhlf-1qlaF21o1f-00Apoa; Sat, 21
- Oct 2023 12:20:43 +0200
-Message-ID: <46792c4f-5c72-4675-992d-e62ef5d1cc1f@gmx.de>
-Date:   Sat, 21 Oct 2023 12:20:42 +0200
+        Sun, 22 Oct 2023 06:46:27 -0400
+Received: from gofer.mess.org (gofer.mess.org [88.97.38.141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 971B0A7;
+        Sun, 22 Oct 2023 03:46:25 -0700 (PDT)
+Received: by gofer.mess.org (Postfix, from userid 1000)
+        id D8A1B1000C2; Sun, 22 Oct 2023 11:46:22 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
+        t=1697971582; bh=M7VN2YhQWSJtc+cSbcBrFFqz4ksGBErewDtODBR+VmQ=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=PnkeoM8N5hx3qaBdVrilN+IynCjwmnKapSBqWSB45BWsAOSWpe9KHkQL7YRUItROr
+         uFFPdvWk5lPhVQZxkVPRIaXgmqXs5imsVOrfbNzr5SBcKWaRO5NjsdhW+dKKt0doQr
+         3DAVaG99NhZHD/hnZrszsAFvfJtR67PqtTFmJoYnWTftElP9OkThhD2tWRha7fvs8a
+         uxartmlQT+FrRCB22IFFzoAVGTPJxSFN0LoAu+pErhIX/fOe4iEuwaiS1+SInLIjX5
+         FNm6tT+kFdl8LjG7e2h3VQmVvNxQ5cWMhDZanSX1IXvB61OLWDZ1uWOfUk78WcLfaV
+         kudis//kekD/A==
+Date:   Sun, 22 Oct 2023 11:46:22 +0100
+From:   Sean Young <sean@mess.org>
+To:     Hans de Goede <hdegoede@redhat.com>
+Cc:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, linux-media@vger.kernel.org,
+        linux-pwm@vger.kernel.org,
+        Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Mark Gross <markgross@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] pwm: make it possible to apply pwm changes in
+ atomic context
+Message-ID: <ZTT9fvEF+lqfzGJ/@gofer.mess.org>
+References: <cover.1697534024.git.sean@mess.org>
+ <a7fcd19938d5422abc59c968ff7b3d5c275577ed.1697534024.git.sean@mess.org>
+ <90728c06-4c6c-b3d2-4723-c24711be2fa5@redhat.com>
+ <20231019105118.64gdzzixwqrztjir@pengutronix.de>
+ <01a505ac-320f-3819-a58d-2b82c1bf2a86@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/offb: Simplify offb_init_fb()
-Content-Language: en-US
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <1c94c99117617c1a844f6551b7bca27f23c5f0c8.1697871190.git.christophe.jaillet@wanadoo.fr>
-From:   Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <1c94c99117617c1a844f6551b7bca27f23c5f0c8.1697871190.git.christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Z0RvpZoLIi5f72gOTfbcWj7KFnUCjNmRp1IzPMFdI5aQFRxKDDS
- Q8RL44q/pTzRNHx66vzmtyADeX/P0Onzi+2YOWFNzvpymgV1L1aZX5neDbGfDUL/ErP4QTh
- /eLDKJq//xCDULSBQoqpgYa481tJPmfVVrdbPeJDD32zluTZoq021xH9dJVe4OT2/LLzT2j
- S7dbZxiRaceWXYxiNysEQ==
-UI-OutboundReport: notjunk:1;M01:P0:ejG3x8S8/g8=;j8Sebk2yOW0ye6bJh+BD/4sCR5u
- CLoAJjW6RpWT42D3lHuJT4nIh2SHJHulZaEaa6vwVF/Tkmf7fNAoRNtmJHFlfxA44Y+UtREoG
- Yngw3II+0a8cs72CYz8Vx8WmFuz38unGdE1daevGWKAgIVPZSMZOrKm//bJUeKopg/0h0g8eP
- cQvHBSKFyIZWeiSdrkTpDGWV96fx4Z7K9NcaxPxcn2zGtgqDfwzplnY9mS7xsKBlj9zbQ6fsj
- UMnQ9pQTO51+E0+dfPnco9u4+19Xxi/utCbgYx7jNbtdDFM6NNtdZCiNkkJY3DrdIUq1IrKeK
- 9lWoboeyCBP2qvY+eoYgvSSFhunEoVtOgFp7E3n5uhXCPKH5TQvnAdLWGkKhAuqAcTzUSDhNj
- vmLUv9r0ieSoSGI8xcdOSCHM5ywz8vREsKvk1fdqUB4fHVqRaz5HA7gGEmj+1tzJfy2QdsYZy
- xE4hnH2CsGKDhbVTWtAWQBirK25G4GCwjSBLzbomhompxGnVw8cFyrr0IptjDCYGIe9D1PVi9
- XmAUCnizhfqX/os/wilfoWPeJeScRJAeK7cQ8zzQfyQXxdS7ztMWNFdQT8fQSoCZgaxiJVgFs
- 1c6deoKc2YnhQzFQsQFnsO8ZQkht4/DFzwPThy5Xw627WAWJZLWrNyb4yG9OEi32+3tVZ84h6
- omOUipfxJhZi9mWnOjvvtDt9ZncAg+gZHL4wiX7Miu6vRzmTLjeYShDokq0hybF8ENPshS9AI
- I5Dp+bx7LOVFWFV4TuP8KlSNbik4fXFJSA5C0kmpYKawMsl4IhohuqS9hlGQ+z4QSxp5W3l4O
- LheUiI5xTNfoEjqyjQkn6rG69q4sbSPhgU4XExyWAHsh1oGCTHLcFGX3mTz0BnK4f60H1GlsQ
- jyLX4E+gwyQzxGcLn3RwNe0jEniWEwBqPs+ptu59DoplnjcOLR5Iy6XTjZOd1uoFAWycqUfns
- QHFePg==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <01a505ac-320f-3819-a58d-2b82c1bf2a86@redhat.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/21/23 08:53, Christophe JAILLET wrote:
-> Turn a strcpy()+strncat()+'\0' into an equivalent snprintf().
->
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Hi Hans,
 
-applied.
-Thanks!
-Helge
+On Sat, Oct 21, 2023 at 11:08:22AM +0200, Hans de Goede wrote:
+> On 10/19/23 12:51, Uwe Kleine-König wrote:
+> > On Wed, Oct 18, 2023 at 03:57:48PM +0200, Hans de Goede wrote:
+> >> On 10/17/23 11:17, Sean Young wrote:
+> >>> Some drivers require sleeping, for example if the pwm device is connected
+> >>> over i2c. The pwm-ir-tx requires precise timing, and sleeping causes havoc
+> >>> with the generated IR signal when sleeping occurs.
+> >>>
+> >>> This patch makes it possible to use pwm when the driver does not sleep,
+> >>> by introducing the pwm_can_sleep() function.
+> >>>
+> >>> Signed-off-by: Sean Young <sean@mess.org>
+> >>
+> >> I have no objection to this patch by itself, but it seems a bit
+> >> of unnecessary churn to change all current callers of pwm_apply_state()
+> >> to a new API.
+> > 
+> > The idea is to improve the semantic of the function name, see
+> > https://lore.kernel.org/linux-pwm/20231013180449.mcdmklbsz2rlymzz@pengutronix.de
+> > for more context.
+> 
+> Hmm, so the argument here is that the GPIO API has this, but GPIOs
+> generally speaking can be set atomically, so there not being able
+> to set it atomically is special.
+> 
+> OTOH we have many many many other kernel functions which may sleep
+> and we don't all postfix them with _can_sleep.
+> 
+> And for PWM controllers pwm_apply_state is IMHO sorta expected to
+> sleep. Many of these are attached over I2C so things will sleep,
+> others have a handshake to wait for the current dutycycle to
+> end before you can apply a second change on top of an earlier
+> change during the current dutycycle which often also involves
+> sleeping.
+> 
+> So the natural/expeected thing for pwm_apply_state() is to sleep
+> and thus it does not need a postfix for this IMHO.
 
+Most pwm drivers look like they can be made to work in atomic context,
+I think. Like you say this is not the case for all of them. Whatever
+we choose to be the default for pwm_apply_state(), we should have a
+clear function name for the alternative. This is essentially why
+pam_apply_cansleep() was picked.
+
+The alternative to pwm_apply_cansleep() is to have a function name
+which implies it can be used from atomic context. However, 
+pwm_apply_atomic() is not great because the "atomic" could be
+confused with the PWM atomic API, not the kernel process/atomic
+context.
+
+So what should the non-sleeping function be called then? 
+ - pwm_apply_cannotsleep() 
+ - pwm_apply_nosleep()
+ - pwm_apply_nonsleeping()
+ - pwm_apply_atomic_context()
+
+> > I think it's very subjective if you consider this
+> > churn or not.
+> 
+> I consider it churn because I don't think adding a postfix
+> for what is the default/expected behavior is a good idea
+> (with GPIOs not sleeping is the expected behavior).
+> 
+> I agree that this is very subjective and very much goes
+> into the territory of bikeshedding. So please consider
+> the above my 2 cents on this and lets leave it at that.
+
+You have a valid point. Let's focus on having descriptive function names.
+
+> > While it's nice to have every caller converted in a single
+> > step, I'd go for
+> > 
+> > 	#define pwm_apply_state(pwm, state) pwm_apply_cansleep(pwm, state)
+> > 
+> > , keep that macro for a while and convert all users step by step. This
+> > way we don't needlessly break oot code and the changes to convert to the
+> > new API can go via their usual trees without time pressure.
+> 
+> I don't think there are enough users of pwm_apply_state() to warrant
+> such an exercise.
+> 
+> So if people want to move ahead with the _can_sleep postfix addition
+> (still not a fan) here is my acked-by for the drivers/platform/x86
+> changes, for merging this through the PWM tree in a single commit:
+> 
+> Acked-by: Hans de Goede <hdegoede@redhat.com>
+
+Thanks,
+
+Sean

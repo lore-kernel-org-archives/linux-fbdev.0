@@ -2,136 +2,143 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 647EEC25B6D
-	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Oct 2023 10:08:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8FA5C25B6C
+	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Oct 2023 15:09:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234038AbjJXKId convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 24 Oct 2023 06:08:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58952 "EHLO
+        id S232054AbjJXPJF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 24 Oct 2023 11:09:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233977AbjJXKIc (ORCPT
+        with ESMTP id S232308AbjJXPJE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 24 Oct 2023 06:08:32 -0400
-Received: from mail-ot1-f43.google.com (mail-ot1-f43.google.com [209.85.210.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83B53DA;
-        Tue, 24 Oct 2023 03:08:30 -0700 (PDT)
-Received: by mail-ot1-f43.google.com with SMTP id 46e09a7af769-6ce2c71c61fso2537693a34.1;
-        Tue, 24 Oct 2023 03:08:30 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698142109; x=1698746909;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=fgLdb8aZYAs0Y0vcAtZXYMnjVSNSuVBAYZU46oMnylE=;
-        b=vwrkjQTjaojTWw7p75D+HbOiDJpgkiM8+oe3JjT24O1jhS5a9lYFnJ+lMNWHPYStXG
-         CDUJ0ZSGG9s85FtDib4VwFubUbzyM9+6NwPN/bYhcDd25yTIc+27n7f9IxEEfsfAWmw+
-         iHd19rZCxu7aNt5iIB/d2tBCygFjzlQTCC05ZqZWUY+8r9ZeX7mmQVbLkLbpy5X0MtJE
-         arFsDYOomgwDTi5AcTnZH/FG8Hv0T89SkUyxAc42mefDmPMhWzcUnzqTCzswJmZWQbQC
-         frP5iwk5/TiZxhwMMEnHLhy9WMQLad7LAcfOlvW1mYvstZvFV/AZDmK73RS6KiFbwCU2
-         PE/Q==
-X-Gm-Message-State: AOJu0YzJ6gJZT1XZDGBeVbxDyzutw+UhR+S8c4okP4MYsupTaRBFPOpG
-        0utpiZrgH5Y+ZB/14SVh5CAZi6ajEaV5IQ==
-X-Google-Smtp-Source: AGHT+IFwbmfZEtB6EjV7plAjBjiMSKS8WA0uiSTZMc8xtF5/VyWVAhFyE31uIrTnpoR2++LVtkQnkw==
-X-Received: by 2002:a05:6830:6b45:b0:6c4:e8ff:9e7d with SMTP id dc5-20020a0568306b4500b006c4e8ff9e7dmr10664744otb.23.1698142109494;
-        Tue, 24 Oct 2023 03:08:29 -0700 (PDT)
-Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com. [209.85.219.172])
-        by smtp.gmail.com with ESMTPSA id b190-20020a0dd9c7000000b005a23ab90366sm3924244ywe.11.2023.10.24.03.08.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Oct 2023 03:08:28 -0700 (PDT)
-Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-d9c66e70ebdso3950886276.2;
-        Tue, 24 Oct 2023 03:08:28 -0700 (PDT)
-X-Received: by 2002:a25:b9cf:0:b0:d9a:5908:a29 with SMTP id
- y15-20020a25b9cf000000b00d9a59080a29mr10249227ybj.64.1698142108080; Tue, 24
- Oct 2023 03:08:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1694767208.git.geert+renesas@glider.be> <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
- <CAMuHMdUF61V5qNyKbrTGxZfEJvCVuLO7q2R5MqZYkzRC_cNr0w@mail.gmail.com>
-In-Reply-To: <CAMuHMdUF61V5qNyKbrTGxZfEJvCVuLO7q2R5MqZYkzRC_cNr0w@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 24 Oct 2023 12:08:15 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXTpMYqdFzro3kX-3wXYC8N6z2abiMTiXXpV9xn1ohj0Q@mail.gmail.com>
-Message-ID: <CAMuHMdXTpMYqdFzro3kX-3wXYC8N6z2abiMTiXXpV9xn1ohj0Q@mail.gmail.com>
-Subject: Re: [GIT PULL v2] drm: renesas: shmobile: Atomic conversion + DT
- support (was: Re: [PATCH v4 00/41] drm: renesas: shmobile: Atomic conversion
- + DT support)
-To:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>
-Cc:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Tue, 24 Oct 2023 11:09:04 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D15210DB;
+        Tue, 24 Oct 2023 08:09:01 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 740BAC433C7;
+        Tue, 24 Oct 2023 15:08:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1698160141;
+        bh=WjZOHjehQIEdnvElJew7f9x5ZqLGCeUVjwRuHOMlEjk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=CgZv75zmnuoQ3ekkikQC5x9qSL7DET36FFJXesbijJrWTAliIFHfRSIjF6/JXUDQ0
+         d+cP6SIFduzbCM5SmWKiaiRL18S85MiUGZ8OX1xnjboThQELef/voEBlHUIIa4Yc80
+         0P++v7esCbdc9Z1jAU+oRLa52c7PCgm+7OaJJG19BLbu2WUUIDxnUugkzoKgEgtHig
+         xbqa1LPQHGhx0lPElbc/GcNikq8DiiOhwHgeUguRliY3sJJiAYe+wSeAuj/zX1NwXL
+         s9T/KMpbHqCf2cLHEaSW4y52qBo5mgOAtijYPOOu3uxicZgzGpkSpEPL5Unstd12Hi
+         /HclSTJxGaD5w==
+Date:   Tue, 24 Oct 2023 16:08:56 +0100
+From:   Conor Dooley <conor@kernel.org>
+To:     Flavio Suligoi <f.suligoi@asem.it>
+Cc:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Hans Verkuil <hverkuil@xs4all.nl>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Media Mailing List <linux-media@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux-sh list <linux-sh@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] dt-bindings: backlight: mp3309c: remove two required
+ properties
+Message-ID: <20231024-paddling-spongy-be82eae03228@spud>
+References: <20231020135434.2598578-1-f.suligoi@asem.it>
+ <20231020135434.2598578-2-f.suligoi@asem.it>
+ <20231020-moonrise-senate-86d0edb2d404@spud>
+ <DU2PR01MB803498DFD93E82DD3947D72DF9D8A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+ <20231023-anybody-silver-4548023f8f26@spud>
+ <DU2PR01MB8034CF8EE4358B9446809AA2F9DFA@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="8Q3LPtznJIWd+xHE"
+Content-Disposition: inline
+In-Reply-To: <DU2PR01MB8034CF8EE4358B9446809AA2F9DFA@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 16, 2023 at 11:59 AM Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
->
->         Hi David, Daniel,
->
-> The following changes since commit 389af786f92ecdff35883551d54bf4e507ffcccb:
->
->   Merge tag 'drm-intel-next-2023-09-29' of
-> git://anongit.freedesktop.org/drm/drm-intel into drm-next (2023-10-04
-> 13:55:19 +1000)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
-> tags/shmob-drm-atomic-dt-tag2
->
-> for you to fetch changes up to 1399ebacbf590dfbac4fbba181dd1595b2fa10ba:
->
->   drm: renesas: shmobile: Add DT support (2023-10-16 11:47:48 +0200)
->
-> ----------------------------------------------------------------
-> drm: renesas: shmobile: Atomic conversion + DT support
->
-> Currently, there are two drivers for the LCD controller on Renesas
-> SuperH-based and ARM-based SH-Mobile and R-Mobile SoCs:
->   1. sh_mobile_lcdcfb, using the fbdev framework,
->   2. shmob_drm, using the DRM framework.
-> However, only the former driver is used, as all platform support
-> integrates the former.  None of these drivers support DT-based systems.
->
-> Convert the SH-Mobile DRM driver to atomic modesetting, and add DT
-> support, complemented by the customary set of fixes and improvements.
->
-> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> Link: https://lore.kernel.org/r/cover.1694767208.git.geert+renesas@glider.be/
->
-> Changes compared to v1:
->   - Rebase to drm-next,
->   - Add Acked-by.
->
-> Thanks for pulling!
 
-Ping?
-Thanks!
+--8Q3LPtznJIWd+xHE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Gr{oetje,eeting}s,
+On Tue, Oct 24, 2023 at 07:53:38AM +0000, Flavio Suligoi wrote:
+> > On Mon, Oct 23, 2023 at 09:28:03AM +0000, Flavio Suligoi wrote:
+> > > > On Fri, Oct 20, 2023 at 03:54:33PM +0200, Flavio Suligoi wrote:
+> > > > > The two properties:
+> > > > >
+> > > > > - max-brightness
+> > > > > - default brightness
+> > > > >
+> > > > > are not really required, so they can be removed from the "require=
+d"
+> > > > > section.
+> > > >
+> > > > Why are they not required? You need to provide an explanation.
+> > >
+> > > The "max-brightness" is not more used now in the driver (I used it in
+> > > the first version of the driver).
+> >=20
+> > If it is not used any more, what happens when someone passes an old
+> > devicetree to the kernel, that contains max-brightness, but not any of =
+your
+> > new properties?
+>=20
+> This is not a problem, because the device driver has not yet been include=
+d in any kernel.
+> My patch for the device driver is still being analyzed by the maintainers.
+> Only this dt-binding yaml file is already included in the "for-backlight-=
+next" branch
+> of the "backlight" kernel repository.
+> At the moment, this driver is used only in a i.MX8MM board produced in my=
+ company,
+> under my full control. No other developer is using it now.
 
-                        Geert
+Right. This is exactly the sort of commentary that you need to provide
+up front, to have us spent a bunch of time going back and forth to
+figure out :(
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> > > The "default-brightness", if omitted in the DT, is managed by the
+> > > device driver, using a default value. This depends on the dimming mode
+> > used:
+> >=20
+> > For default-brightness, has here always been support in the driver for =
+the
+> > property being omitted, or is this newly added?
+>=20
+> In the first version of the driver this property was a "required property=
+",
+> but nobody has used this driver before, so this should be not a problem.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> > What I would like is an explanation in the commit message as to why the
+> > revised example is more helpful than the existing (and
+> > must-remain-valid) one.
+>=20
+> As said before, no one may have ever used this device driver,
+> so I would leave only this new version of the example.
+
+Okay. Please improve the commit message explaining why it is okay to
+make these changes & send a v2.
+The alternative is that Lee drops the dt-binding patch & you submit a
+revised version of the binding alongside the next iteration of the
+driver.
+
+Cheers,
+Conor.
+
+--8Q3LPtznJIWd+xHE
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZTfeCAAKCRB4tDGHoIJi
+0iFhAP9S/FlnjK5C6KCH6pLyfeeCD1U8XFRW7kZPbpJplU8SCAD/bkAcQQd5VU9d
+3r2f744R9Cw33bKy5n99PAJBaey2KwU=
+=8wm8
+-----END PGP SIGNATURE-----
+
+--8Q3LPtznJIWd+xHE--

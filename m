@@ -2,196 +2,150 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A87E0C0032E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 25 Oct 2023 10:49:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2E7CC07545
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 Oct 2023 15:51:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232270AbjJYKtI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 Oct 2023 06:49:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35694 "EHLO
+        id S1344356AbjJYPvS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 25 Oct 2023 11:51:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43428 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343588AbjJYKs4 (ORCPT
+        with ESMTP id S1343780AbjJYPvP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 Oct 2023 06:48:56 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C325F13A
-        for <linux-fbdev@vger.kernel.org>; Wed, 25 Oct 2023 03:48:53 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qvbQQ-0001DN-Q8; Wed, 25 Oct 2023 12:47:46 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qvbQO-0049gV-FC; Wed, 25 Oct 2023 12:47:44 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qvbQO-005ubj-4j; Wed, 25 Oct 2023 12:47:44 +0200
-Date:   Wed, 25 Oct 2023 12:47:43 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Sean Young <sean@mess.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        linux-media@vger.kernel.org, linux-pwm@vger.kernel.org,
-        Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-        Mark Gross <markgross@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
+        Wed, 25 Oct 2023 11:51:15 -0400
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com (mail-db3eur04on2056.outbound.protection.outlook.com [40.107.6.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE9F3182;
+        Wed, 25 Oct 2023 08:51:09 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ivpaSCO/vr8f3jS6M+IgGQCMm10HuGjscok1e8DSjrvldzwaCLbz0OrREc3jAO1hrl5yNxKan1C3pt3FDFzGyc9jA4iQcnM51WZIOv3xhNVqYdjkE7iaoq8YkqMkgeVQmsvpwN/1LWtwNMMQwtDfQngD/mbFwDxkFp+Qx1lPizVfo3EibVTPkPlXB9YjZxlC5VYwVWEy+N493sB1E1XK4NR8intVvXPia7oVflDKSHAzLUeCj7tSjSFLDswwX+sG56AqK+VUxtAfQ3rJjReuvEBMVhmRe4ExtSRzequCfERAnHNdPJN8PENrF61hsU7CtSSOU/GEGby0fCuqvmnluA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=XGUZwAaFuAPJBm2px7vb6P5m+iiV8jGnPBLUM1awQI0=;
+ b=RX6Psmfs8QpMAfqLY+FCLhjGm/GnI8C/t6ZQa6tTsqjJEOZb/ivvjo8IwkfjGqiyg3nHALZ9sgBMpGoaIRO6AUt/FXvNiBlTck+3RQv1/y9tllFTZPqPQR3kbONX7jYI5D9vmHfZuxfvuTBcuKUXU35RTxXsYytVm+wCW7Hp5beig+e4HXrcpWEcfTHgm+2Ng7xYijJ3cRXqbWZsgqjTKtms0y7VQHZNI7FlcKnfSjhrWxdc8U1alb4Ew3Y84Yuq+E1wjxgqbFE6v18OYna8fNTwZDsCbxUEA6LkB3hkcT8GNI/gLLgDRvs24EC4qX9Mq4paE1sNJL8aQ1aMNIaGtg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=XGUZwAaFuAPJBm2px7vb6P5m+iiV8jGnPBLUM1awQI0=;
+ b=camlQTDK7ObVisiROZvgFN36kb0nsYu0cyfHd0f8M7eUvZduXrqi6G9Lap/Z0cYi5DXsJOu8lNTjA9mFFs+l8XM0vSb4rdwBijALwNErqS+ahzs2qNC1WFCicZETMpnrUBqN+uZbpGu2boixaS5LHIdUTjAj4cwPubW56brwViQ=
+Received: from AM6P195CA0020.EURP195.PROD.OUTLOOK.COM (2603:10a6:209:81::33)
+ by AM9PR01MB7203.eurprd01.prod.exchangelabs.com (2603:10a6:20b:2c8::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.33; Wed, 25 Oct
+ 2023 15:51:05 +0000
+Received: from AM3PEPF0000A791.eurprd04.prod.outlook.com
+ (2603:10a6:209:81:cafe::a0) by AM6P195CA0020.outlook.office365.com
+ (2603:10a6:209:81::33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.36 via Frontend
+ Transport; Wed, 25 Oct 2023 15:51:05 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ AM3PEPF0000A791.mail.protection.outlook.com (10.167.16.120) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6933.15 via Frontend Transport; Wed, 25 Oct 2023 15:51:05 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+         Wed, 25 Oct 2023 17:51:04 +0200
+From:   Flavio Suligoi <f.suligoi@asem.it>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] pwm: make it possible to apply pwm changes in
- atomic context
-Message-ID: <20231025104743.56elaloj3jmojz2v@pengutronix.de>
-References: <cover.1697534024.git.sean@mess.org>
- <a7fcd19938d5422abc59c968ff7b3d5c275577ed.1697534024.git.sean@mess.org>
- <90728c06-4c6c-b3d2-4723-c24711be2fa5@redhat.com>
- <20231019105118.64gdzzixwqrztjir@pengutronix.de>
- <01a505ac-320f-3819-a58d-2b82c1bf2a86@redhat.com>
- <ZTT9fvEF+lqfzGJ/@gofer.mess.org>
- <20231023133417.GE49511@aspen.lan>
- <ZTjll7oTNVWqygbD@gofer.mess.org>
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v2 0/1] dt-bindings: backlight: mp3309c: remove two required properties
+Date:   Wed, 25 Oct 2023 17:50:56 +0200
+Message-Id: <20231025155057.886823-1-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="kdxw67dv7iobkbz2"
-Content-Disposition: inline
-In-Reply-To: <ZTjll7oTNVWqygbD@gofer.mess.org>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 25 Oct 2023 15:51:04.0513 (UTC) FILETIME=[0F8C6B10:01DA075B]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM3PEPF0000A791:EE_|AM9PR01MB7203:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: facfd5cc-8cd6-4adc-f042-08dbd5723275
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: SAQeInu82Lp/vHYzfwMO88OddYGwkKS1LmbUEpsaZlPooPOB19+/DPOMLHIu9H5JXS700//dK6CuxWZ9Evi/KkjPLiBF7cJnGQsDjLcuoOSj7ubhnYwKnmUnNn78T+EX7ap4EltDG56CmzIeexyYdGXNT1YsGsJxJRuKBtyPeWkr4d4ScqJ6H1Nv3CWAsYin8/QlznYXlPjQaSI4kHat6KuHfke8xKdiNvpk6QOVdw9u6k6ey32EpiSU+GFzU9zkRc7f/8V/5VaOvb8btdtCDSvsIwN7LP6F6rPbC/5nlrMvRRFYK+m9bskpMJWcVLIIjX4/XOtXRBmWps4GUbj+xl2rO+wZD1d9BGOmRlGKTAD9tJ0XOtDFAP4EQoT9Hc2Zw4shkf+1/eYlXt0zpe3Rb5e5OeqkSyRvG2/+LyoV1QMmVg+26+AvBThWQQpuSD5/yXKIaOfyf97e4N3K33njUco1X/BFckiXxH4xt6izI9c8J4k8Oc+TK3RXhL53ZRw8VfqkdtRz3zEGZgugHu9QbmHAO2QTfaJ3BI00WaMi4mCd7fmC/osVIh0/v7Q5tEx7lJrR8C1XQHbjE37TQ0Qn3gjw7JG3Umh+VTgrxD1DUaRBzXCPGuvm/HGp2RXtpFI1sEn4wfoFVNpS+t+OPAFAPg9xORUZ/V2J0hhd2Pjz9Hz3IaGlCqybXwQaVYAaE1W5dh/uoyTzm7W4sE2BTrmqxDk6MAhzKOQ+Qb4gu24J+WSBcPP08/vJWMtnAOFFd/gi
+X-Forefront-Antispam-Report: CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(346002)(39850400004)(396003)(136003)(376002)(230922051799003)(64100799003)(451199024)(1800799009)(186009)(82310400011)(46966006)(36840700001)(41300700001)(450100002)(2906002)(81166007)(70206006)(82740400003)(6666004)(478600001)(356005)(47076005)(40480700001)(336012)(83380400001)(110136005)(86362001)(36756003)(5660300002)(2616005)(107886003)(36860700001)(1076003)(8676002)(8936002)(4326008)(70586007)(26005)(316002)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2023 15:51:05.0916
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: facfd5cc-8cd6-4adc-f042-08dbd5723275
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource: AM3PEPF0000A791.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR01MB7203
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+This patch remove the following two not-required properties from the
+"required" section:
 
---kdxw67dv7iobkbz2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+- max-brightness
+- default brightness
 
-Hello,
+These properties are not really required, so they can be removed from the
+"required" section.
+The "max-brightness" is no longer used in the current version
+of the driver (it was used only in the first version).
+The "default-brightness", if omitted in the DT, is managed by the
+device driver, using a default value. This value depends on the dimming
+mode used:
 
-On Wed, Oct 25, 2023 at 10:53:27AM +0100, Sean Young wrote:
-> On Mon, Oct 23, 2023 at 02:34:17PM +0100, Daniel Thompson wrote:
-> > On Sun, Oct 22, 2023 at 11:46:22AM +0100, Sean Young wrote:
-> > > On Sat, Oct 21, 2023 at 11:08:22AM +0200, Hans de Goede wrote:
-> > > > On 10/19/23 12:51, Uwe Kleine-K=F6nig wrote:
-> > > > > On Wed, Oct 18, 2023 at 03:57:48PM +0200, Hans de Goede wrote:
-> > > > >> On 10/17/23 11:17, Sean Young wrote:
-> > > > > I think it's very subjective if you consider this
-> > > > > churn or not.
-> > > >
-> > > > I consider it churn because I don't think adding a postfix
-> > > > for what is the default/expected behavior is a good idea
-> > > > (with GPIOs not sleeping is the expected behavior).
-> > > >
-> > > > I agree that this is very subjective and very much goes
-> > > > into the territory of bikeshedding. So please consider
-> > > > the above my 2 cents on this and lets leave it at that.
-> > >
-> > > You have a valid point. Let's focus on having descriptive function na=
-mes.
-> >=20
-> > For a couple of days I've been trying to resist the bikeshedding (esp.
-> > given the changes to backlight are tiny) so I'll try to keep it as
-> > brief as I can:
-> >=20
-> > 1. I dislike the do_it() and do_it_cansleep() pairing. It is
-> >    difficult to detect when a client driver calls do_it() by mistake.
-> >    In fact a latent bug of this nature can only be detected by runtime
-> >    testing with the small number of PWMs that do not support
-> >    configuration from an atomic context.
-> >=20
-> >    In contrast do_it() and do_it_atomic()[*] means that although
-> >    incorrectly calling do_it() from an atomic context can be pretty
-> >    catastrophic it is also trivially detected (with any PWM driver)
-> >    simply by running with CONFIG_DEBUG_ATOMIC_SLEEP.
+- for the "analog mode", via I2C commands, this value is fixed by
+  hardware (=31);
+- while in case of pwm mode the default used is the last value of the
+  brightness-levels array.
 
-Wrongly calling the atomic variant (no matter how it's named) in a
-context where sleeping is possible is only a minor issue. Being faster
-than necessary is hardly a problem, so it only hurts by not being an
-preemption point with PREEMPT_VOLUNTARY which might not even be relevant
-because we're near to a system call anyhow.
+Also the brightness-levels array is not required:
 
-For me the naming is only very loosely related to the possible bugs. I
-think calling the wrong function happens mainly because the driver author
-isn't aware in which context the call happens and not because of wrong
-assumptions about the sleepiness of a certain function call.
-If you consider this an argument however, do_it + do_it_cansleep is
-better than do_it_atomic + do_it as wrongly assuming do_it would sleep
-is less bad than wrongly assuming do_it wouldn't sleep. (The latter is
-catched by CONFIG_DEBUG_ATOMIC_SLEEP, but only if it's enabled.)
+- in "analog mode", via I2C commands, the brightness-level array is
+  fixed by hardware (0..31);
+- in pwm dimming mode, the driver uses a default array of 0..255 and
+  the "default-brightness" is the last one, which is "255".
 
-Having said that while my subjective preference ordering is (with first
-=3D best):
+NOTE: there are no compatibility problems with the previous version,
+      since the device driver has not yet been included in any kernel.
+      Only this dt-binding yaml file is already included in the
+      "for-backlight-next" branch of the "backlight" kernel repository.
+      No developer may have used it.
 
-	do_it + do_it_cansleep
-	do_it_atomic + do_it_cansleep
-	do_it_atomic + do_it
+Other changes:
 
-wi(th a _might_sleep or _mightsleep suffix ranging below _cansleep)
-I wouldn't get sleepless nights when I get overruled here
-(uwe_cansleep :-).
+- improve the backlight working mode descripion in the "description"
+  section
+- update the example, removing the "max-brightness" and introducing the
+  "brightess-levels" property
 
-> >    No objections (beyond churn) to fully spelt out pairings such as
-> >    do_it_cansleep() and do_it_atomic()[*]!
->=20
-> I must say I do like the look of this. Uwe, how do you feel about:
-> pwm_apply_cansleep() and pwm_apply_atomic()? I know we've talked about
-> pwm_apply_atomic in the past, however I think this this the best=20
-> option I've seen so far.
->=20
-> > 2. If there is an API rename can we make sure the patch contains no
-> >    other changes (e.g. don't introduce any new API in the same patch).
-> >    Seperating renames makes the patches easier to review!
-> >    It makes each one smaller and easier to review!
->=20
-> Yes, this should have been separated out. Will fix for next version.
+NOTE: the "brightess-levels" property is present in the last version of the
+      common.yaml file, so it is not decalared here.
+      For this last version of common.yaml file, see my patch:
+      
+[1/1] dt-bindings: backlight: add brightness-levels related common
+ properties
+commit: d5272d39995f4150062a67e6f2cef556edece740
 
-+1
+Flavio Suligoi (1):
+  dt-bindings: backlight: mp3309c: remove two required properties
 
-Best regards
-Uwe
+ .../bindings/leds/backlight/mps,mp3309c.yaml           | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+-- 
+2.34.1
 
---kdxw67dv7iobkbz2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmU48k8ACgkQj4D7WH0S
-/k6W3AgAk4aFQs6woLctFKPwObedmFaF4LVusjnyP2JYEuwOcWzfmL/W31PFxuWP
-KEm7kc/16r0LD6qbwwgpOGUucBHmXKkmJa+0tdj/pRKkbkBfbA/RDaly9ZNh9Aql
-dZEuZ4CyAE7Pw6ea3ZQhQL1W4x37ZZwVPMvNmQaydtP5VBP1cBrml1SBcrT+6r0j
-j6N5LZR1Jb1+8XuisgUnufJAbBpykKTDJSdqwsREGb93kuDzhiTB7/YDFXe9P8fs
-NOvV78af278xkuohhXrWRRdqJSd+/PDGii+WImHHQpWcJPmcgwsXMCnjnK7DruZR
-Ket6emGp+CLdMp+GKhD7b53atfLNjQ==
-=7sp5
------END PGP SIGNATURE-----
-
---kdxw67dv7iobkbz2--

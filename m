@@ -2,46 +2,46 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AF58C4167B
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:08:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7703C4167D
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:08:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232151AbjJ2XIa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Oct 2023 19:08:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35228 "EHLO
+        id S231598AbjJ2XId (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 29 Oct 2023 19:08:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43760 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232089AbjJ2XH7 (ORCPT
+        with ESMTP id S231956AbjJ2XIE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Oct 2023 19:07:59 -0400
+        Sun, 29 Oct 2023 19:08:04 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01FB7A5D1;
-        Sun, 29 Oct 2023 16:03:24 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 575C7C433BB;
-        Sun, 29 Oct 2023 23:01:55 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 558E47ECB;
+        Sun, 29 Oct 2023 16:02:22 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C0CB2C116A3;
+        Sun, 29 Oct 2023 23:00:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1698620516;
+        s=k20201202; t=1698620437;
         bh=V3MW3HlJw0Dv/VdEsrQyNiXGgZkXx8rL2UAla9DTeeg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TqokyoJEOy4FBHdvp1nprVYYUkHfvGgCemykOTcUGd6iF0sKEMMX3dFf1riy53aFx
-         DYkCn4G53LkN5POXNALoAe3RiT8AW3fL2mNS9A7T2Zvz8jS2ioYMH0dXM9dw+exQPW
-         FmZjkEYMs9uYV9DMeOdyBCXzmPiLsc0wtTy48flmh6G2m6r/JUopx6w69XRdxBApLA
-         HKFjOwrcM/ZM2NT84/4bAlQ0eoy0+xGwnCMDL5Xabn4o4xVGn9dzAGMqNm78IQlxI9
-         6LanPWmn8jPV98S79xZHNGt/bfbnfs6X5AUQszzzbp9Tao/gffH75pHd+MbMwmsJwv
-         i7FuSxZGeEo0A==
+        b=mRmDOZYNURMqCkb5tzUd9HJ/gj45WeCua6MUtpEl36kf3QA8r8ohbjpLUC+bKMELI
+         eiXkbG1JWWUs77NRK3JEVtcUefG5j5zJeBfT4MBi/2q8mPl6UdD3lYNYbmYb9QMcXC
+         IYDNoHghC311zvslBMIAYV9EmFDd2Bwqd7AM1a6C5kmHhtpGGMJqDEng4jaH37l5qi
+         cRRruYB33xtiaj8fxqE332QlAmPwalvPsJ9FPnojUxVGHEnc1wtY+EFv0zM6+3RTGr
+         MHfrvl6LAYQZUalFPrfeYdXfi4gKI54c3Scp2OLUNpUSUCSJbYvWNk7FipNFNlUBU1
+         VHaBSdlPQZcOA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>, Helge Deller <deller@gmx.de>,
         Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.19 09/12] fbdev: core: syscopyarea: fix sloppy typing
-Date:   Sun, 29 Oct 2023 19:01:22 -0400
-Message-ID: <20231029230135.793281-9-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 11/16] fbdev: core: syscopyarea: fix sloppy typing
+Date:   Sun, 29 Oct 2023 18:59:57 -0400
+Message-ID: <20231029230014.792490-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231029230135.793281-1-sashal@kernel.org>
-References: <20231029230135.793281-1-sashal@kernel.org>
+In-Reply-To: <20231029230014.792490-1-sashal@kernel.org>
+References: <20231029230014.792490-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 4.19.297
+X-stable-base: Linux 5.10.199
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>

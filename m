@@ -2,87 +2,84 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21B7FC00144
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:30:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2FF0C4332F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:31:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232697AbjJ2XaC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Oct 2023 19:30:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36680 "EHLO
+        id S232501AbjJ2XbM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 29 Oct 2023 19:31:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42252 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232700AbjJ2X3d (ORCPT
+        with ESMTP id S232766AbjJ2Xaq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Oct 2023 19:29:33 -0400
+        Sun, 29 Oct 2023 19:30:46 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CDF22700;
-        Sun, 29 Oct 2023 15:59:18 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF4FAC116B1;
-        Sun, 29 Oct 2023 22:58:14 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9F3D55BE;
+        Sun, 29 Oct 2023 16:00:34 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19244C4339A;
+        Sun, 29 Oct 2023 23:00:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1698620296;
-        bh=YqgL3JlI9PcctTEnavZMjyjn+ScP9k7hZzFJc+ccac8=;
+        s=k20201202; t=1698620433;
+        bh=dOPID+WAHBe+1C/wlvaKW7GPyApeXN5OKVtbv1qYIlE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=mFl7Lqx0k2aC/oRAKXBNmSZeRxxUFK7Z9zDu3Uh/JnxFqMQs795Liene1saaFvPuy
-         EDipw9LFZvwYvKtcJNhnsKS5ZgC02nS2v1q5gkGiq0ybMNY4qoRpc/7/ZrX0GrNq+z
-         0kwWiGp32+kqo4N+qmAZl2CcdMS8igaO4EzfAjO3YezEf0N5cyBybg881KtNeP4eEm
-         1zQJAfF7l8tORzbbKSmI3lBwiy+T0IMZEXuJpaOll3zLdtgm1PkTBtufyiSP8LRZYY
-         xT7ymzdCgo87KVtajddzSrNKhgH5LfzJotXU58wIjh3pDO+U7MF8eoLcGWY0XMelPH
-         LojzMDs3O7mKg==
+        b=eBfvvxVi76/7msisE+cmZBNY5WNb6+DJi9ijr1nupECgo+v39xZV1KZ4sm5fUHiCo
+         BS12v89g9uTbJacK289jgAzYqpjhKm0a648R/BG6Q3p2IYx3Ub2c9Rr/z5wwr33pPF
+         O3sSam7F2mcTEYeuVf6fcdSHNvbsoAaKTGD28erwJjv0quJ5s6JN+1uj5mviW1YKTD
+         gSNVOEp/stfkZXaFERVA67Pd1S+Ub2OPlodlnXLxbpu3PReafqWZDc7ZqXucuByy47
+         OLMe/FEn1JvfqGZlq8YY7wt+wDQWNR7SETpGRrS2KCVC1KbEYbyrd8Xj9gw1djpZFc
+         uHiSPSklw0tXw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Dan Carpenter <dan.carpenter@linaro.org>,
-        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        sam@ravnborg.org, tzimmermann@suse.de, xu.panda@zte.com.cn,
-        u.kleine-koenig@pengutronix.de, mielkesteven@icloud.com,
-        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 23/39] fbdev: omapfb: fix some error codes
-Date:   Sun, 29 Oct 2023 18:56:55 -0400
-Message-ID: <20231029225740.790936-23-sashal@kernel.org>
+Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.10 10/16] fbdev: core: cfbcopyarea: fix sloppy typing
+Date:   Sun, 29 Oct 2023 18:59:56 -0400
+Message-ID: <20231029230014.792490-10-sashal@kernel.org>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231029225740.790936-1-sashal@kernel.org>
-References: <20231029225740.790936-1-sashal@kernel.org>
+In-Reply-To: <20231029230014.792490-1-sashal@kernel.org>
+References: <20231029230014.792490-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.60
+X-stable-base: Linux 5.10.199
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@linaro.org>
+From: Sergey Shtylyov <s.shtylyov@omp.ru>
 
-[ Upstream commit dc608db793731426938baa2f0e75a4a3cce5f5cf ]
+[ Upstream commit 7f33df94cf0156f64eee9509bd9b4a178990f613 ]
 
-Return negative -ENXIO instead of positive ENXIO.
+In cfb_copyarea(), the local variable bits_per_line is needlessly typed as
+*unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
+type on the 64-bit arches; that variable's value is derived from the __u32
+typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
+*unsigned int* type should still be enough to store the # of bits per line.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+Found by Linux Verification Center (linuxtesting.org) with the Svace static
+analysis tool.
+
+Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/omap/omapfb_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 17cda57656838..5ea7c52baa5a8 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1643,13 +1643,13 @@ static int omapfb_do_probe(struct platform_device *pdev,
- 	}
- 	fbdev->int_irq = platform_get_irq(pdev, 0);
- 	if (fbdev->int_irq < 0) {
--		r = ENXIO;
-+		r = -ENXIO;
- 		goto cleanup;
- 	}
- 
- 	fbdev->ext_irq = platform_get_irq(pdev, 1);
- 	if (fbdev->ext_irq < 0) {
--		r = ENXIO;
-+		r = -ENXIO;
- 		goto cleanup;
- 	}
- 
+diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+index 6d4bfeecee350..5b80bf3dae504 100644
+--- a/drivers/video/fbdev/core/cfbcopyarea.c
++++ b/drivers/video/fbdev/core/cfbcopyarea.c
+@@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+ {
+ 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+ 	u32 height = area->height, width = area->width;
+-	unsigned long const bits_per_line = p->fix.line_length*8u;
++	unsigned int const bits_per_line = p->fix.line_length * 8u;
+ 	unsigned long __iomem *base = NULL;
+ 	int bits = BITS_PER_LONG, bytes = bits >> 3;
+ 	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
 -- 
 2.42.0
 

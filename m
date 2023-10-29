@@ -2,39 +2,39 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8DE7C4167B
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 778C3C001B0
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:01:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231492AbjJ2XB3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Oct 2023 19:01:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50292 "EHLO
+        id S231236AbjJ2XBb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 29 Oct 2023 19:01:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48678 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231208AbjJ2XB0 (ORCPT
+        with ESMTP id S231517AbjJ2XBa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Oct 2023 19:01:26 -0400
+        Sun, 29 Oct 2023 19:01:30 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B2A14205;
-        Sun, 29 Oct 2023 15:59:22 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FF4EC116A3;
-        Sun, 29 Oct 2023 22:58:24 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 826334687;
+        Sun, 29 Oct 2023 15:58:31 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89705C433C8;
+        Sun, 29 Oct 2023 22:58:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1698620305;
-        bh=V3MW3HlJw0Dv/VdEsrQyNiXGgZkXx8rL2UAla9DTeeg=;
+        s=k20201202; t=1698620301;
+        bh=dOPID+WAHBe+1C/wlvaKW7GPyApeXN5OKVtbv1qYIlE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jHBTXr1mPLHN3jdN7c8fFImt7L3IbJPKbQt/Ukda/gx0GAt18CghzLntBZqKF8Xmr
-         6jz+3NMo+fCCMVbexnmus8K0jKrVXGQNCh0vjK3ihxFQ/UZU6G3i8+bDCAgkdwclUM
-         ao72X8fu3A88vA4BoSYIsrwFy187zWMzmT1rYUJO2LTB7/GkknvGkQBCCLq5PVbWt0
-         tQdO0Rz0r5Cf6vZgFQyzGlAP8X8s/bkfGaaee/G18xtUAsKhqri9Cz64eslY8b2EEC
-         og53GmaECXDzgd4b5fT56b2mcFyEozT6Eqokh9TSwwwTciBiQPpK1/XDwjpPa/WX1U
-         b89NeyGNI3VrQ==
+        b=q6daPCicuAokINRV5mLLGPLkTu/7hnTe8ye12lO7xHZoHE/hTmZWZ44p8ob6Godvg
+         5U5sEZCSZr472EWu4YFWuAIKXzn7dQQjrrlSROAhiF+932/al8bDGGws73tL47KNWy
+         955+7tfsr5s80eWNXWzmKc66iJYzyt3kELKn/Zy8GAtQV/58bZyasr0870x6/mxwEs
+         iSgNeD9c/QRTNNCkt4euh046vgU1cKt7AdsKcahYb5xLStm4Z3pMRF2R5RZoc1TiKm
+         T4SOZRyhPEUKbpNAUM362ZJnqkP0jkAsxpZFzwCTSIcmpC7luLZlvGzJblWAihUvuL
+         PXLv4TPP3pa+A==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>, Helge Deller <deller@gmx.de>,
         Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 26/39] fbdev: core: syscopyarea: fix sloppy typing
-Date:   Sun, 29 Oct 2023 18:56:58 -0400
-Message-ID: <20231029225740.790936-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 25/39] fbdev: core: cfbcopyarea: fix sloppy typing
+Date:   Sun, 29 Oct 2023 18:56:57 -0400
+Message-ID: <20231029225740.790936-25-sashal@kernel.org>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231029225740.790936-1-sashal@kernel.org>
 References: <20231029225740.790936-1-sashal@kernel.org>
@@ -49,9 +49,9 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Sergey Shtylyov <s.shtylyov@omp.ru>
 
-[ Upstream commit e8e4a470b677511f9d1ad4f3cef32adc1d9a60ca ]
+[ Upstream commit 7f33df94cf0156f64eee9509bd9b4a178990f613 ]
 
-In sys_copyarea(), the local variable bits_per_line is needlessly typed as
+In cfb_copyarea(), the local variable bits_per_line is needlessly typed as
 *unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
 type on the 64-bit arches; that variable's value is derived from the __u32
 typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
@@ -64,20 +64,20 @@ Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/syscopyarea.c | 2 +-
+ drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev/core/syscopyarea.c
-index c1eda31909682..7b8bd3a2bedc5 100644
---- a/drivers/video/fbdev/core/syscopyarea.c
-+++ b/drivers/video/fbdev/core/syscopyarea.c
-@@ -316,7 +316,7 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+index 6d4bfeecee350..5b80bf3dae504 100644
+--- a/drivers/video/fbdev/core/cfbcopyarea.c
++++ b/drivers/video/fbdev/core/cfbcopyarea.c
+@@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
  {
  	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
  	u32 height = area->height, width = area->width;
 -	unsigned long const bits_per_line = p->fix.line_length*8u;
 +	unsigned int const bits_per_line = p->fix.line_length * 8u;
- 	unsigned long *base = NULL;
+ 	unsigned long __iomem *base = NULL;
  	int bits = BITS_PER_LONG, bytes = bits >> 3;
  	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
 -- 

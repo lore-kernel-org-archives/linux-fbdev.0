@@ -2,31 +2,31 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 041CFC4332F
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:04:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B24B6C00144
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:04:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230519AbjJ2XEZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Oct 2023 19:04:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44224 "EHLO
+        id S231382AbjJ2XE0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 29 Oct 2023 19:04:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231994AbjJ2XEE (ORCPT
+        with ESMTP id S232115AbjJ2XEK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Oct 2023 19:04:04 -0400
+        Sun, 29 Oct 2023 19:04:10 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 243AF7D88;
-        Sun, 29 Oct 2023 16:02:17 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17BD7C433C7;
-        Sun, 29 Oct 2023 23:02:14 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6F757D86;
+        Sun, 29 Oct 2023 16:02:16 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33406C433C9;
+        Sun, 29 Oct 2023 23:00:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1698620536;
-        bh=ThgpdufNRoS1xMLZQV3AzV26leDqwWdIz1O5qKKzcyI=;
+        s=k20201202; t=1698620417;
+        bh=FLifietJudVbRerLqFYajN/jjseQHGbcVr8cqO5LHFc=;
         h=From:To:Cc:Subject:Date:From;
-        b=hPBJEkeYCK/jYjN7WS+9uvobXluiDB3Rgq51FDTIGXvYoPD+5E0A8o1XEXvLSN+ix
-         m613sFOX2rQ+ZT5LZ/cMSJSR6OQ+F8wv1KZsxv55PiphFmnsIiOZb7RXSYM7PDus+7
-         03Pn3Jur9WsEDuhHKQnF+MAvhxvzPUInT/+eI5QgDG/rchEQ/DsWbjej55gkS06UZo
-         l+WF/xtCn2LLUc/B04bsc2lLIpSVUEafJHPNallg9rd/ehJ/liS0mjcJQ87MhWjFVz
-         CQLAVUACsnP3qU7e102HihIuoE+9d8c8Pa1WR5GV+Klpybl5T3C0/6+5USfYyYgAgW
-         gsD7ekCrO5yKA==
+        b=PDSfQf/+wqPkaZ1ZgxtLTB3O6ape0rEecnItMxY5Ihf/U1evrl2lPH2rpV0jKzESa
+         uBwsYXfDlZyRN3NglfQy8l13uU0korr5JzHYxdhp5Md2KNAzFK30A0vDRM4QlUqwyN
+         MxdTiL1MYV7uFkVPAlG2+lxmTl7UOfPhe6QUk4JOhQ8GyinLblGsBKBg1a/J85+/eF
+         HGy5PW2Dr4yK5BlZbDf1JafiVh3EBZc/sqPINWaZS8hxM8Jefr7jOPm5xWaDRrNAJD
+         HSgXY+82W50lbfX6l+7EgxBkGf0G4Gq/rHJ9zA5RdylBWSry6Amg3gfGWXG+fLRn04
+         BTcWk9HJdC7ZA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>,
@@ -36,16 +36,16 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Sasha Levin <sashal@kernel.org>, sam@ravnborg.org,
-        javierm@redhat.com, daniel.thompson@linaro.org, steve@sk2.org,
-        schnelle@linux.ibm.com, xu.panda@zte.com.cn
-Subject: [PATCH AUTOSEL 4.14 01/11] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-Date:   Sun, 29 Oct 2023 19:01:52 -0400
-Message-ID: <20231029230213.793581-1-sashal@kernel.org>
+        javierm@redhat.com, xu.panda@zte.com.cn, schnelle@linux.ibm.com,
+        steve@sk2.org
+Subject: [PATCH AUTOSEL 5.10 01/16] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Date:   Sun, 29 Oct 2023 18:59:47 -0400
+Message-ID: <20231029230014.792490-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 4.14.328
+X-stable-base: Linux 5.10.199
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
@@ -82,10 +82,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+)
 
 diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index d4b938276d238..71e95533613cd 100644
+index c8feff0ee8da9..eb32ff0910d3e 100644
 --- a/drivers/video/fbdev/aty/atyfb_base.c
 +++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3435,11 +3435,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+@@ -3440,11 +3440,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
  	}
  
  	info->fix.mmio_start = raddr;

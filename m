@@ -2,84 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8ABAC4167D
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:08:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5A8DC4167B
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Oct 2023 23:08:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232283AbjJ2XIH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Oct 2023 19:08:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43812 "EHLO
+        id S231390AbjJ2XIP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 29 Oct 2023 19:08:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44208 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232146AbjJ2XHR (ORCPT
+        with ESMTP id S231790AbjJ2XHe (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Oct 2023 19:07:17 -0400
+        Sun, 29 Oct 2023 19:07:34 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D14A93F6;
-        Sun, 29 Oct 2023 16:03:08 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43F73C4163D;
-        Sun, 29 Oct 2023 23:01:18 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AAC899EF5;
+        Sun, 29 Oct 2023 16:03:17 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8A1AC433CC;
+        Sun, 29 Oct 2023 23:01:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1698620479;
-        bh=V3MW3HlJw0Dv/VdEsrQyNiXGgZkXx8rL2UAla9DTeeg=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e8xdJKbFHIia/kzT6Om75p/55YDyIOEkAu1qJxSveoVeatEvjOpyyJgrYB0OPMcjB
-         oQ64wWxsLiPLeM8AKK+1BbpJdF5IFc2tJFlZrU2aFNSns+bifccc8r4iiabtRUtqLz
-         C9ay7sqb9noHo+W+dWVRJIWgA+B5tEP1ceDZoig/eyGQQY3VeK3EPfixxywRn9ZlWX
-         +XCTeQFE8Vns08tv8SpbRGNeLXimTYsUEd64OpozoY+hhiaUSQ3ku03w20bRWRp+/F
-         /27GuJq7XR+fwHuY+KZLoTiFk4umcOwUz9w9wqnik9FywRG+usJh3WS8YzviGzYcUt
-         zn3ZUIyjhKHuw==
+        s=k20201202; t=1698620499;
+        bh=kY4XyLVwrX+3H1bdvNP8pEQe+U5OaqLJ46NhUlVlTC4=;
+        h=From:To:Cc:Subject:Date:From;
+        b=ovX9womKt/awtKy7X//j+OImm5hO2WXk4Zm+4HTB9xkNbA7PV/Xs6JcAlRwCOGxK8
+         OmPzKTafPiKuMH4SxF82mUgF9juDeYULdreIj1Fvob50RbTazjONVouD7EG8gvqUq/
+         Zk6Z4yJyDAnM8xFTW6Vmqs207Y18vFcXitUtsL5zBjUDDCH+vv3S34QGBKTQ12qRYh
+         rn2gYajJQvFTUzwIOPVyeXU6eW9RbiAaRaPuJFMpviD5IhGayisgxKTqvO9l2ndb0c
+         ozKPhrIGwqCZRmazECjwXwR9KsQo3/p00Yl/b9G0QsRAUlJmi2XMx7pGY/d0HUt10B
+         aQ1fGWkbBUCzg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.4 10/13] fbdev: core: syscopyarea: fix sloppy typing
-Date:   Sun, 29 Oct 2023 19:00:43 -0400
-Message-ID: <20231029230057.792930-10-sashal@kernel.org>
+Cc:     Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Sasha Levin <sashal@kernel.org>, sam@ravnborg.org,
+        javierm@redhat.com, schnelle@linux.ibm.com, xu.panda@zte.com.cn,
+        steve@sk2.org
+Subject: [PATCH AUTOSEL 4.19 01/12] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Date:   Sun, 29 Oct 2023 19:01:14 -0400
+Message-ID: <20231029230135.793281-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231029230057.792930-1-sashal@kernel.org>
-References: <20231029230057.792930-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.4.259
+X-stable-base: Linux 4.19.297
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Sergey Shtylyov <s.shtylyov@omp.ru>
+From: Arnd Bergmann <arnd@arndb.de>
 
-[ Upstream commit e8e4a470b677511f9d1ad4f3cef32adc1d9a60ca ]
+[ Upstream commit c1a8d1d0edb71dec15c9649cb56866c71c1ecd9e ]
 
-In sys_copyarea(), the local variable bits_per_line is needlessly typed as
-*unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
-type on the 64-bit arches; that variable's value is derived from the __u32
-typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
-*unsigned int* type should still be enough to store the # of bits per line.
+ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+extension, and on ia64 with its slightly unconventional ioremap()
+behavior, everywhere else this is the same as ioremap() anyway.
 
-Found by Linux Verification Center (linuxtesting.org) with the Svace static
-analysis tool.
+Change the only driver that still references ioremap_uc() to only do so
+on x86-32/ia64 in order to allow removing that interface at some
+point in the future for the other architectures.
 
-Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+On some architectures, ioremap_uc() just returns NULL, changing
+the driver to call ioremap() means that they now have a chance
+of working correctly.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Baoquan He <bhe@redhat.com>
+Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/syscopyarea.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev/core/syscopyarea.c
-index c1eda31909682..7b8bd3a2bedc5 100644
---- a/drivers/video/fbdev/core/syscopyarea.c
-+++ b/drivers/video/fbdev/core/syscopyarea.c
-@@ -316,7 +316,7 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- {
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
- 	u32 height = area->height, width = area->width;
--	unsigned long const bits_per_line = p->fix.line_length*8u;
-+	unsigned int const bits_per_line = p->fix.line_length * 8u;
- 	unsigned long *base = NULL;
- 	int bits = BITS_PER_LONG, bytes = bits >> 3;
- 	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 05111e90f1681..5ef008e9c61c3 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3435,11 +3435,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+ 	}
+ 
+ 	info->fix.mmio_start = raddr;
++#if defined(__i386__) || defined(__ia64__)
+ 	/*
+ 	 * By using strong UC we force the MTRR to never have an
+ 	 * effect on the MMIO region on both non-PAT and PAT systems.
+ 	 */
+ 	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
++#else
++	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
++#endif
+ 	if (par->ati_regbase == NULL)
+ 		return -ENOMEM;
+ 
 -- 
 2.42.0
 

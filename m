@@ -2,94 +2,58 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 253E9C4332F
-	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Nov 2023 02:07:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D697CC4332F
+	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Nov 2023 04:29:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229801AbjKDCHn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 3 Nov 2023 22:07:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41482 "EHLO
+        id S229634AbjKDE3G (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 4 Nov 2023 00:29:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42296 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231209AbjKDCHm (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Nov 2023 22:07:42 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FCD9D60;
-        Fri,  3 Nov 2023 19:07:40 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A970C433C8;
-        Sat,  4 Nov 2023 02:07:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1699063659;
-        bh=L6ks4yKT0/F+fOvkUaGIHPgT6JzQVMFwAqz5caY4KZU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=UJUrnToOTQovPehLi9haOD6o6/5UCScaj5JM30hNFQItSwGi1w+nMogw1UJ/dJYpc
-         ua3XgBh20btA8FNNcYLkjqecTFGkHFMrG0bs6JLz1Up7iX9f62geWyNSHBrE6iL1Zl
-         uEgPkL2FyLym3rEwvNYaWzAVaIKSuYTXN3qSzukOQZ41rRUW5ZVmL01GxrE1ywBgQs
-         gzknh1xRxRIcS0jDbi7PqRqcfJCD6q3az+h7frcHd4y9NeqEbYOWzEmOad84/06Fns
-         h3OnLG5IEEok7PiPAzPDzkaIL4RZiyHzkTMlrRnObJESAbpscTKuRvWHu8izzYbW+G
-         0TbNtB5ppbLJg==
-Date:   Fri, 3 Nov 2023 22:07:38 -0400
-From:   Sasha Levin <sashal@kernel.org>
-To:     Sergey Shtylyov <s.shtylyov@omp.ru>
-Cc:     linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Helge Deller <deller@gmx.de>, daniel@ffwll.ch,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH AUTOSEL 6.5 34/52] fbdev: core: cfbcopyarea: fix sloppy
- typing
-Message-ID: <ZUWnasfAphVCFPhR@sashalap>
-References: <20231029225441.789781-1-sashal@kernel.org>
- <20231029225441.789781-34-sashal@kernel.org>
- <a93b7be2-a0a6-084d-47e6-a0e8fcd5bc2b@omp.ru>
+        with ESMTP id S229509AbjKDE3F (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 4 Nov 2023 00:29:05 -0400
+X-Greylist: delayed 4182 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 03 Nov 2023 21:29:03 PDT
+Received: from mail.profitpathwaygo.com (mail.profitpathwaygo.com [141.94.21.238])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EBA2D44
+        for <linux-fbdev@vger.kernel.org>; Fri,  3 Nov 2023 21:29:03 -0700 (PDT)
+Received: by mail.profitpathwaygo.com (Postfix, from userid 1002)
+        id E3CFD4F2CA; Mon, 30 Oct 2023 08:30:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=profitpathwaygo.com;
+        s=mail; t=1698654847;
+        bh=qp3Ofokho6Ql+WtI8ZPVilyHYhskXL7fod7u9CWs8W4=;
+        h=Date:From:To:Subject:From;
+        b=JxcCJSywO2oQNeMbi+1oAC5mMpRM9yD0C+kdX9u1mpkUf+PlfsVQLyrLgVlADXJqD
+         4CZZAxShofxJB4Bs6KWHeVfgfYH6c+bqeLCo/5AfogxCqS6BDo8rYnuoJQcmY0nAL4
+         9KkcLZRQqLtklFsU23URSrZDG9Jj125QFtn6N76WsxIU2ZtRA5O5xm8h0IiHJnSjuh
+         MQVqb3yGy6OTNT0Doy/oNjThw3FfxYWZuY6q227VlOaCu+e89y6qpxYyK6Vw3Fj4Mw
+         yWyMNK6OkKf/1S2EKBxpj2/oEtekRofMKTrkbC2dYHIjslixV0Nd+twJGy9qWDRs1m
+         J5zicJRq/x17A==
+Received: by mail.profitpathwaygo.com for <linux-fbdev@vger.kernel.org>; Mon, 30 Oct 2023 08:30:28 GMT
+Message-ID: <20231030074500-0.1.2s.155al.0.b7dnau9sbl@profitpathwaygo.com>
+Date:   Mon, 30 Oct 2023 08:30:28 GMT
+From:   "Adam Charachuta" <adam.charachuta@profitpathwaygo.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania_?=
+X-Mailer: mail.profitpathwaygo.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <a93b7be2-a0a6-084d-47e6-a0e8fcd5bc2b@omp.ru>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 30, 2023 at 11:39:14AM +0300, Sergey Shtylyov wrote:
->Hello!
->
->On 10/30/23 1:53 AM, Sasha Levin wrote:
->
->> From: Sergey Shtylyov <s.shtylyov@omp.ru>
->>
->> [ Upstream commit 7f33df94cf0156f64eee9509bd9b4a178990f613 ]
->>
->> In cfb_copyarea(), the local variable bits_per_line is needlessly typed as
->> *unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
->> type on the 64-bit arches; that variable's value is derived from the __u32
->> typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
->> *unsigned int* type should still be enough to store the # of bits per line.
->>
->> Found by Linux Verification Center (linuxtesting.org) with the Svace static
->> analysis tool.
->>
->> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Signed-off-by: Sasha Levin <sashal@kernel.org>
->> ---
->>  drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
->> index 6d4bfeecee350..5b80bf3dae504 100644
->> --- a/drivers/video/fbdev/core/cfbcopyarea.c
->> +++ b/drivers/video/fbdev/core/cfbcopyarea.c
->> @@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
->>  {
->>  	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
->>  	u32 height = area->height, width = area->width;
->> -	unsigned long const bits_per_line = p->fix.line_length*8u;
->> +	unsigned int const bits_per_line = p->fix.line_length * 8u;
->>  	unsigned long __iomem *base = NULL;
->>  	int bits = BITS_PER_LONG, bytes = bits >> 3;
->>  	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
->
->   I highly doubt this is necessary to pull that into stable. This was
->intended to be a cleanup originally.
+Dzie=C5=84 dobry,
 
-I'll drop this and the other one you've pointed out, thanks!
+zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
+=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
+o dalszych rozm=C3=B3w.=20
 
--- 
-Thanks,
-Sasha
+Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
+=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
+=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
+strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+
+Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
+
+
+Pozdrawiam serdecznie
+Adam Charachuta

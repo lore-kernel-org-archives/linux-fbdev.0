@@ -2,105 +2,123 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6B63C00142
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Oct 2023 00:02:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3895C4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Oct 2023 08:39:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231430AbjJ3ACi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Oct 2023 20:02:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42228 "EHLO
+        id S232073AbjJ3Ij2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Oct 2023 04:39:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53114 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231191AbjJ3ACg (ORCPT
+        with ESMTP id S231741AbjJ3Ij1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Oct 2023 20:02:36 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D56244A6;
-        Sun, 29 Oct 2023 15:58:29 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47D29C433CD;
-        Sun, 29 Oct 2023 22:57:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1698620263;
-        bh=JvXWdaPVGCXGPljCNPOAWNOooFCOP2wSIUJSdS6nMTU=;
-        h=From:To:Cc:Subject:Date:From;
-        b=e+HOEm9Dph06Y1p06hYWg27v0mMzYcikpuM5V7+aIeolERgQQrcUaNOwfipIte41U
-         XxeF+3sMToFrYBC3PZQZy2suzmC1L3WVOB0aSQ8Pyy1vjfQWaVoYKxTRv8Z4nIy+q3
-         RfQSSiJig5wgOyseZRpJN/y6B7WiaUgwbx+kknp3CEnQsgBSwksjH/OHQIVuTjmF/y
-         6XVlGwYDTPSQqt/jUqfg+4xy4GXi48CLWHRtRi8UsirGO3Bunym5zrKVcNOZmGoX1y
-         vLqEkJBZtSpUghPxCDzoQHNLVpM3d3jMyzv9v8l+b3C32RddBSc6rspdP/+zAlMlHb
-         K1JHg3fqSLVvw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>,
-        Luis Chamberlain <mcgrof@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Sasha Levin <sashal@kernel.org>, javierm@redhat.com,
-        sam@ravnborg.org, xu.panda@zte.com.cn, schnelle@linux.ibm.com,
-        steve@sk2.org
-Subject: [PATCH AUTOSEL 6.1 01/39] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-Date:   Sun, 29 Oct 2023 18:56:33 -0400
-Message-ID: <20231029225740.790936-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.42.0
+        Mon, 30 Oct 2023 04:39:27 -0400
+Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E32BA7;
+        Mon, 30 Oct 2023 01:39:24 -0700 (PDT)
+Received: from [192.168.1.103] (178.176.73.57) by msexch01.omp.ru
+ (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1258.12; Mon, 30 Oct
+ 2023 11:39:14 +0300
+Subject: Re: [PATCH AUTOSEL 6.5 34/52] fbdev: core: cfbcopyarea: fix sloppy
+ typing
+To:     Sasha Levin <sashal@kernel.org>, <linux-kernel@vger.kernel.org>,
+        <stable@vger.kernel.org>
+CC:     Helge Deller <deller@gmx.de>, <daniel@ffwll.ch>,
+        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
+References: <20231029225441.789781-1-sashal@kernel.org>
+ <20231029225441.789781-34-sashal@kernel.org>
+From:   Sergey Shtylyov <s.shtylyov@omp.ru>
+Organization: Open Mobile Platform
+Message-ID: <a93b7be2-a0a6-084d-47e6-a0e8fcd5bc2b@omp.ru>
+Date:   Mon, 30 Oct 2023 11:39:14 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.60
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20231029225441.789781-34-sashal@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [178.176.73.57]
+X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
+ (10.188.4.12)
+X-KSE-ServerInfo: msexch01.omp.ru, 9
+X-KSE-AntiSpam-Interceptor-Info: scan successful
+X-KSE-AntiSpam-Version: 6.0.0, Database issued on: 10/30/2023 08:22:09
+X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
+X-KSE-AntiSpam-Method: none
+X-KSE-AntiSpam-Rate: 59
+X-KSE-AntiSpam-Info: Lua profiles 180967 [Oct 30 2023]
+X-KSE-AntiSpam-Info: Version: 6.0.0.2
+X-KSE-AntiSpam-Info: Envelope from: s.shtylyov@omp.ru
+X-KSE-AntiSpam-Info: LuaCore: 543 543 1e3516af5cdd92079dfeb0e292c8747a62cb1ee4
+X-KSE-AntiSpam-Info: {rep_avail}
+X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
+X-KSE-AntiSpam-Info: {relay has no DNS name}
+X-KSE-AntiSpam-Info: {SMTP from is not routable}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.57 in (user)
+ b.barracudacentral.org}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.57 in (user)
+ dbl.spamhaus.org}
+X-KSE-AntiSpam-Info: omp.ru:7.1.1;127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1
+X-KSE-AntiSpam-Info: ApMailHostAddress: 178.176.73.57
+X-KSE-AntiSpam-Info: {DNS response errors}
+X-KSE-AntiSpam-Info: Rate: 59
+X-KSE-AntiSpam-Info: Status: not_detected
+X-KSE-AntiSpam-Info: Method: none
+X-KSE-AntiSpam-Info: Auth:dmarc=temperror header.from=omp.ru;spf=temperror
+ smtp.mailfrom=omp.ru;dkim=none
+X-KSE-Antiphishing-Info: Clean
+X-KSE-Antiphishing-ScanningType: Heuristic
+X-KSE-Antiphishing-Method: None
+X-KSE-Antiphishing-Bases: 10/30/2023 08:27:00
+X-KSE-Antivirus-Interceptor-Info: scan successful
+X-KSE-Antivirus-Info: Clean, bases: 10/30/2023 2:39:00 AM
+X-KSE-Attachment-Filter-Triggered-Rules: Clean
+X-KSE-Attachment-Filter-Triggered-Filters: Clean
+X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+Hello!
 
-[ Upstream commit c1a8d1d0edb71dec15c9649cb56866c71c1ecd9e ]
+On 10/30/23 1:53 AM, Sasha Levin wrote:
 
-ioremap_uc() is only meaningful on old x86-32 systems with the PAT
-extension, and on ia64 with its slightly unconventional ioremap()
-behavior, everywhere else this is the same as ioremap() anyway.
+> From: Sergey Shtylyov <s.shtylyov@omp.ru>
+> 
+> [ Upstream commit 7f33df94cf0156f64eee9509bd9b4a178990f613 ]
+> 
+> In cfb_copyarea(), the local variable bits_per_line is needlessly typed as
+> *unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
+> type on the 64-bit arches; that variable's value is derived from the __u32
+> typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
+> *unsigned int* type should still be enough to store the # of bits per line.
+> 
+> Found by Linux Verification Center (linuxtesting.org) with the Svace static
+> analysis tool.
+> 
+> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> Signed-off-by: Sasha Levin <sashal@kernel.org>
+> ---
+>  drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+> index 6d4bfeecee350..5b80bf3dae504 100644
+> --- a/drivers/video/fbdev/core/cfbcopyarea.c
+> +++ b/drivers/video/fbdev/core/cfbcopyarea.c
+> @@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+>  {
+>  	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+>  	u32 height = area->height, width = area->width;
+> -	unsigned long const bits_per_line = p->fix.line_length*8u;
+> +	unsigned int const bits_per_line = p->fix.line_length * 8u;
+>  	unsigned long __iomem *base = NULL;
+>  	int bits = BITS_PER_LONG, bytes = bits >> 3;
+>  	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
 
-Change the only driver that still references ioremap_uc() to only do so
-on x86-32/ia64 in order to allow removing that interface at some
-point in the future for the other architectures.
+   I highly doubt this is necessary to pull that into stable. This was
+intended to be a cleanup originally.
 
-On some architectures, ioremap_uc() just returns NULL, changing
-the driver to call ioremap() means that they now have a chance
-of working correctly.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Baoquan He <bhe@redhat.com>
-Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index b3463d1371520..faaa64fa5dfe9 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3447,11 +3447,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
- 	}
- 
- 	info->fix.mmio_start = raddr;
-+#if defined(__i386__) || defined(__ia64__)
- 	/*
- 	 * By using strong UC we force the MTRR to never have an
- 	 * effect on the MMIO region on both non-PAT and PAT systems.
- 	 */
- 	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
-+#else
-+	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
-+#endif
- 	if (par->ati_regbase == NULL)
- 		return -ENOMEM;
- 
--- 
-2.42.0
-
+MBR, Sergey

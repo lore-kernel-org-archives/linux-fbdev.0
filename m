@@ -2,106 +2,184 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9858BC4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Nov 2023 15:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5614EC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Nov 2023 16:02:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233876AbjKAPhA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Nov 2023 11:37:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56998 "EHLO
+        id S230505AbjKAQCW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Nov 2023 12:02:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229603AbjKAPg7 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Nov 2023 11:36:59 -0400
-Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02D76DA;
-        Wed,  1 Nov 2023 08:36:57 -0700 (PDT)
-Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-533d31a8523so10901603a12.1;
-        Wed, 01 Nov 2023 08:36:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1698853015; x=1699457815; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=hexmk49ujNpb1xtdHgW2u+GIQeyEe+vJ7SF4SxvQAsE=;
-        b=To6GlV/KdFOpByY1yvAw7isqSl8s4HfsUh4dzfs14IXxdseir8HOdPMYZFDsVoTUdg
-         WXGUwEn21qaRnWNCnIy314lqniL7n1V5gY8au63vnnqi6gzbeTSLY1TYWsJS2hov7PQ/
-         4xrw/jezioilfbPeRIXruL033DEOzs0qUX+BanwxjgjVOhICC56DjPzuS7p1uy0KYk7S
-         xZCZmkn8OxFiAZU0HjCtACIus/afIlH/SbV1ZdPWAP4YKAVcewuar93Qc3LyOcGiWD7s
-         L0Ufh3ut/JuKtuhh7+GkHaznv/Y74z57HUXu18FskacLXYyRr7oWC25ZKXcmI5qQFDt9
-         G6mA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698853015; x=1699457815;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hexmk49ujNpb1xtdHgW2u+GIQeyEe+vJ7SF4SxvQAsE=;
-        b=RjFQksVYmB48C7RIXjV+r/mTLEyJ3d/lqFkvFeHT1TOQC97sOxeeq5m/kOqdmdLpoP
-         U5n6pT95GdR/IufWvQbyq1TuhrIP0VeRhkzKtK8DkYD3TePMSAnywuykUF1iafRtcCfb
-         RtYNm88yjMf+hIHIrkrF8ZfBwAhdDrmfhTa3k7nnZhA4DlHHxzRFkxoPrUhvskCOQN6j
-         n5Pll7dMgwlV01XYoVfGMnOOuULTGgUu5VJm7DMGLARMWYX3CG314ngAiOj0ZpnIRxMS
-         6V5Bz0/kvcJYWKAYdGP5KmpFNC2dVlBUlLn627JoqdSuTIpTrGFlANZmGM87CcW18ZS9
-         RJ1g==
-X-Gm-Message-State: AOJu0YzU3QhY1ou/7fNXksAI/lMDb9CIAY/ztrU9v7jTJx1hh05EYmN+
-        XU/F++6eTYWS4Op0SPq/Og==
-X-Google-Smtp-Source: AGHT+IHGBq6ikaR1Vc0Dr5gti0wNOgkMImLBk6ma21/TdEmuBAI35mUjQ49xGCe1d1e1AA5A2y3fCQ==
-X-Received: by 2002:aa7:d0ca:0:b0:530:74ed:fc8a with SMTP id u10-20020aa7d0ca000000b0053074edfc8amr12958328edo.41.1698853015062;
-        Wed, 01 Nov 2023 08:36:55 -0700 (PDT)
-Received: from [192.168.78.129] ([105.163.156.68])
-        by smtp.gmail.com with ESMTPSA id v10-20020aa7dbca000000b0052ffc2e82f1sm1191247edt.4.2023.11.01.08.36.52
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Nov 2023 08:36:54 -0700 (PDT)
-Message-ID: <9d00781f-3c24-401d-902a-451e38c19e3c@gmail.com>
-Date:   Wed, 1 Nov 2023 18:36:51 +0300
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] staging: sm750fb: Remove unused return value in
- display_control_adjust_sm750le()
-Content-Language: en-US
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     outreachy@lists.linux.dev, julia.lawall@inria.fr,
-        dan.carpenter@linaro.org,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-References: <20231019101348.22076-1-anonolitunya@gmail.com>
- <20231019101348.22076-2-anonolitunya@gmail.com>
- <2023102113-barbell-amazingly-cef6@gregkh>
-From:   Dorcas Anono Litunya <anonolitunya@gmail.com>
-In-Reply-To: <2023102113-barbell-amazingly-cef6@gregkh>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        with ESMTP id S229498AbjKAQCV (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Nov 2023 12:02:21 -0400
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id F0EB4E4;
+        Wed,  1 Nov 2023 09:02:18 -0700 (PDT)
+Received: by linux.microsoft.com (Postfix, from userid 1159)
+        id 6738C20B74C0; Wed,  1 Nov 2023 09:02:18 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 6738C20B74C0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+        s=default; t=1698854538;
+        bh=JjKagOQc7XVCsOzjX5mQZCyIjlKEf/+UGuI8XDR24n4=;
+        h=From:To:Cc:Subject:Date:From;
+        b=Yj+KLdDWCXSntyvw2Ee6orRF9hr+VRDlMQZ0OP7j+7KKotau1/PdptyJC7tbAC0MA
+         T9ZzO0RudXLO3xp7WDdEZPcm7CXEFHNzDzi0YWOig14lgfEgoK0FBK91M7ed/LS1OM
+         VdWEZh1X7+XnzywI3maf4YfsadR90ULFkZIIVd/8=
+From:   Nischala Yelchuri <niyelchu@linux.microsoft.com>
+To:     linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, kys@microsoft.com,
+        haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
+        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+        drawat.floss@gmail.com, maarten.lankhorst@linux.intel.com,
+        mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
+        daniel@ffwll.ch, dri-devel@lists.freedesktop.org, deller@gmx.de
+Cc:     mhklinux@outlook.com, mhkelley@outlook.com,
+        singhabhinav9051571833@gmail.com, niyelchu@microsoft.com
+Subject: [PATCH] Replace ioremap_cache() with memremap()
+Date:   Wed,  1 Nov 2023 09:01:48 -0700
+Message-Id: <1698854508-23036-1-git-send-email-niyelchu@linux.microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Current Hyper-V code for CoCo VMs uses ioremap_cache() to map normal memory as decrypted.
+ioremap_cache() is ideally used to map I/O device memory when it has the characteristics
+of normal memory. It should not be used to map normal memory as the returned pointer
+has the __iomem attribute.
 
-On 21/10/2023 13:01, Greg Kroah-Hartman wrote:
-> On Thu, Oct 19, 2023 at 01:13:36PM +0300, Dorcas AnonoLitunya wrote:
->> Modifies the return type of display_control_adjust_sm750le()
->> to void from unsigned long as the return value is being ignored in
->> all subsequent function calls.
->>
->> This improves code readability and maintainability.
->>
->> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
->> ---
->>   drivers/staging/sm750fb/ddk750_mode.c | 4 +---
->>   1 file changed, 1 insertion(+), 3 deletions(-)
-> This patch doesn't apply against my latest branch.  Please rebase it and
-> resend.
->
-> thanks,
->
-> greg k-h
+Fix current code by replacing ioremap_cache() with memremap().
 
+No functional change intended.
 
-Hi Greg,
+Signed-off-by: Nischala Yelchuri <niyelchu@linux.microsoft.com>
+---
+ arch/x86/hyperv/hv_init.c               |  6 +++---
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c |  2 +-
+ drivers/hv/hv.c                         | 13 +++++++------
+ drivers/video/fbdev/hyperv_fb.c         |  6 +++---
+ 4 files changed, 14 insertions(+), 13 deletions(-)
 
-Sorry for the delay. Was occupied on the project starter tasks. I have 
-rebased the patch and resent it. Thanks!
-
-
-Dorcas
-
+diff --git a/arch/x86/hyperv/hv_init.c b/arch/x86/hyperv/hv_init.c
+index 21556ad87..fae43c040 100644
+--- a/arch/x86/hyperv/hv_init.c
++++ b/arch/x86/hyperv/hv_init.c
+@@ -68,9 +68,9 @@ static int hyperv_init_ghcb(void)
+ 	 */
+ 	rdmsrl(MSR_AMD64_SEV_ES_GHCB, ghcb_gpa);
+ 
+-	/* Mask out vTOM bit. ioremap_cache() maps decrypted */
++	/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
+ 	ghcb_gpa &= ~ms_hyperv.shared_gpa_boundary;
+-	ghcb_va = (void *)ioremap_cache(ghcb_gpa, HV_HYP_PAGE_SIZE);
++	ghcb_va = memremap(ghcb_gpa, HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
+ 	if (!ghcb_va)
+ 		return -ENOMEM;
+ 
+@@ -238,7 +238,7 @@ static int hv_cpu_die(unsigned int cpu)
+ 	if (hv_ghcb_pg) {
+ 		ghcb_va = (void **)this_cpu_ptr(hv_ghcb_pg);
+ 		if (*ghcb_va)
+-			iounmap(*ghcb_va);
++			memunmap(*ghcb_va);
+ 		*ghcb_va = NULL;
+ 	}
+ 
+diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
+index d511d17c5..d6fec9bd3 100644
+--- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
++++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
+@@ -92,7 +92,7 @@ static int hyperv_setup_vram(struct hyperv_drm_device *hv,
+ 	 * connect to display properly for ARM64 Linux VM, as the host also maps
+ 	 * the VRAM cacheable.
+ 	 */
+-	hv->vram = ioremap_cache(hv->mem->start, hv->fb_size);
++	hv->vram = memremap(hv->mem->start, hv->fb_size, MEMREMAP_WB | MEMREMAP_DEC);
+ 	if (!hv->vram) {
+ 		drm_err(dev, "Failed to map vram\n");
+ 		ret = -ENOMEM;
+diff --git a/drivers/hv/hv.c b/drivers/hv/hv.c
+index 51e5018ac..399bfa392 100644
+--- a/drivers/hv/hv.c
++++ b/drivers/hv/hv.c
+@@ -274,11 +274,12 @@ void hv_synic_enable_regs(unsigned int cpu)
+ 	simp.simp_enabled = 1;
+ 
+ 	if (ms_hyperv.paravisor_present || hv_root_partition) {
+-		/* Mask out vTOM bit. ioremap_cache() maps decrypted */
++		/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
+ 		u64 base = (simp.base_simp_gpa << HV_HYP_PAGE_SHIFT) &
+ 				~ms_hyperv.shared_gpa_boundary;
+ 		hv_cpu->synic_message_page
+-			= (void *)ioremap_cache(base, HV_HYP_PAGE_SIZE);
++			= memremap(base,
++				   HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
+ 		if (!hv_cpu->synic_message_page)
+ 			pr_err("Fail to map synic message page.\n");
+ 	} else {
+@@ -293,11 +294,11 @@ void hv_synic_enable_regs(unsigned int cpu)
+ 	siefp.siefp_enabled = 1;
+ 
+ 	if (ms_hyperv.paravisor_present || hv_root_partition) {
+-		/* Mask out vTOM bit. ioremap_cache() maps decrypted */
++		/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
+ 		u64 base = (siefp.base_siefp_gpa << HV_HYP_PAGE_SHIFT) &
+ 				~ms_hyperv.shared_gpa_boundary;
+ 		hv_cpu->synic_event_page
+-			= (void *)ioremap_cache(base, HV_HYP_PAGE_SIZE);
++			= memremap(base, HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
+ 		if (!hv_cpu->synic_event_page)
+ 			pr_err("Fail to map synic event page.\n");
+ 	} else {
+@@ -376,7 +377,7 @@ void hv_synic_disable_regs(unsigned int cpu)
+ 	 */
+ 	simp.simp_enabled = 0;
+ 	if (ms_hyperv.paravisor_present || hv_root_partition) {
+-		iounmap(hv_cpu->synic_message_page);
++		memunmap(hv_cpu->synic_message_page);
+ 		hv_cpu->synic_message_page = NULL;
+ 	} else {
+ 		simp.base_simp_gpa = 0;
+@@ -388,7 +389,7 @@ void hv_synic_disable_regs(unsigned int cpu)
+ 	siefp.siefp_enabled = 0;
+ 
+ 	if (ms_hyperv.paravisor_present || hv_root_partition) {
+-		iounmap(hv_cpu->synic_event_page);
++		memunmap(hv_cpu->synic_event_page);
+ 		hv_cpu->synic_event_page = NULL;
+ 	} else {
+ 		siefp.base_siefp_gpa = 0;
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index bf59daf86..cd9ec1f6c 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -1034,7 +1034,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	 * VM Connect to display properly for ARM64 Linux VM, as the host also
+ 	 * maps the VRAM cacheable.
+ 	 */
+-	fb_virt = ioremap_cache(par->mem->start, screen_fb_size);
++	fb_virt = memremap(par->mem->start, screen_fb_size, MEMREMAP_WB | MEMREMAP_DEC);
+ 	if (!fb_virt)
+ 		goto err2;
+ 
+@@ -1068,7 +1068,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	return 0;
+ 
+ err3:
+-	iounmap(fb_virt);
++	memunmap(fb_virt);
+ err2:
+ 	vmbus_free_mmio(par->mem->start, screen_fb_size);
+ 	par->mem = NULL;
+@@ -1086,7 +1086,7 @@ static void hvfb_putmem(struct hv_device *hdev, struct fb_info *info)
+ 
+ 	if (par->need_docopy) {
+ 		vfree(par->dio_vp);
+-		iounmap(info->screen_base);
++		memunmap(info->screen_base);
+ 		vmbus_free_mmio(par->mem->start, screen_fb_size);
+ 	} else {
+ 		hvfb_release_phymem(hdev, info->fix.smem_start,
+-- 
+2.34.1
 

@@ -2,120 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 141C7C4167D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Oct 2023 08:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2017DC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Nov 2023 15:24:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232075AbjJ3Ikt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Oct 2023 04:40:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42620 "EHLO
+        id S233622AbjKAPYa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Nov 2023 11:24:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231741AbjJ3Iks (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Oct 2023 04:40:48 -0400
-Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8436BB7;
-        Mon, 30 Oct 2023 01:40:45 -0700 (PDT)
-Received: from [192.168.1.103] (178.176.73.57) by msexch01.omp.ru
- (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1258.12; Mon, 30 Oct
- 2023 11:40:38 +0300
-Subject: Re: [PATCH AUTOSEL 6.5 35/52] fbdev: core: syscopyarea: fix sloppy
- typing
-To:     Sasha Levin <sashal@kernel.org>, <linux-kernel@vger.kernel.org>,
-        <stable@vger.kernel.org>
-CC:     Helge Deller <deller@gmx.de>, <daniel@ffwll.ch>,
-        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-References: <20231029225441.789781-1-sashal@kernel.org>
- <20231029225441.789781-35-sashal@kernel.org>
-From:   Sergey Shtylyov <s.shtylyov@omp.ru>
-Organization: Open Mobile Platform
-Message-ID: <b2986ba9-0a66-09fe-4a9a-444c113b2bbd@omp.ru>
-Date:   Mon, 30 Oct 2023 11:40:37 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+        with ESMTP id S233227AbjKAPY3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Nov 2023 11:24:29 -0400
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67291DA;
+        Wed,  1 Nov 2023 08:24:27 -0700 (PDT)
+Received: by mail-ej1-x62b.google.com with SMTP id a640c23a62f3a-9d267605ceeso588203166b.2;
+        Wed, 01 Nov 2023 08:24:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1698852266; x=1699457066; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=MR56JFaTSz3HojkL2pFJM5gDNujw4Oiu7ruy5pujofg=;
+        b=i122G23ULf4J/voTJG3Fb7wWMoG8LE/ssCLyfVwFBh45SPe3+/YbrERS62gA04m4wY
+         EBiyQhDZYHsJQUZ4TpatQjv6PB/bVcfDaWkB5gArBIZl2gjCOYoUMhoDtC7sWWSrHUmr
+         ffYbjQHzSOsiND8TGp3Mq2Xsety5U/N+EmIObqMpkKFgGEFiruaxatpSB/QkyGhB7Me2
+         fqb/GmE6qwYUYLqDvvKHoH1sTbJNnmxl0SQYXp3hjQdAYkBihZDz7QT5XnXGiGkO1Wvv
+         oDdZlaKLYwMJ3HbRPzmJAbQdXHvQ7Hfzs1wKsIubeWYXAjdYnoyq40z7PBauB8K/uA3f
+         gK8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698852266; x=1699457066;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=MR56JFaTSz3HojkL2pFJM5gDNujw4Oiu7ruy5pujofg=;
+        b=kpbT5GAaP4d+Es0jvPf6PIgF1wiiwtP0+9vRRRub8xrfI/NH/hNFtz3oSppNuK2uyJ
+         TPqkeYUlHjLzxLVOJ0tyxMePIzepHPWhCse0fJ9+CWflqTbEV+lznjGVFvxxdd3Cd+fr
+         b9TLrz7QHXBhrRYKQXTrt5DWkfRCVN1uumFTucsOqF6iDIdDuHsJsxK/h5bvZqgWksNq
+         3Xf5obnPpP+LOEuaa1fkKezRUHDwOX/XsdHrn6KhXnJZFIOdV2yKTeysIAK+FpIi3Ztr
+         nWWgTlpzYmk9bul9mYvIllxN7y6SOfa4nbDGxIPVRdwXEKxiHBOAotPQoUFGW8QOf/z2
+         t/LQ==
+X-Gm-Message-State: AOJu0YyDAtAVhMXgxqQDXpjQhkt6GhbulbN/IKyAAwgpg5nLrFJxP1VW
+        a7E0JORjtLWiC6UwIeaLvQ==
+X-Google-Smtp-Source: AGHT+IG06McQz3xQ9bs3PqKtzLwtYLm29nY/TyIOplo37JTu3OFaOpw5cUcGk9s6YXB+xPAlRY6zUQ==
+X-Received: by 2002:a17:906:4fc8:b0:9a6:4f54:1da6 with SMTP id i8-20020a1709064fc800b009a64f541da6mr2108484ejw.57.1698852265584;
+        Wed, 01 Nov 2023 08:24:25 -0700 (PDT)
+Received: from localhost.localdomain ([105.163.156.68])
+        by smtp.gmail.com with ESMTPSA id lu13-20020a170906facd00b009ad8796a6aesm50855ejb.56.2023.11.01.08.24.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Nov 2023 08:24:25 -0700 (PDT)
+From:   Dorcas AnonoLitunya <anonolitunya@gmail.com>
+To:     gregkh@linuxfoundation.org
+Cc:     anonolitunya@gmail.com, outreachy@lists.linux.dev,
+        julia.lawall@inria.fr,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v3] staging: sm750fb: Remove unused return value in display_control_adjust_sm750le()
+Date:   Wed,  1 Nov 2023 18:21:34 +0300
+Message-ID: <20231101152137.10664-2-anonolitunya@gmail.com>
+X-Mailer: git-send-email 2.42.0.345.gaab89be2eb
 MIME-Version: 1.0
-In-Reply-To: <20231029225441.789781-35-sashal@kernel.org>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [178.176.73.57]
-X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
- (10.188.4.12)
-X-KSE-ServerInfo: msexch01.omp.ru, 9
-X-KSE-AntiSpam-Interceptor-Info: scan successful
-X-KSE-AntiSpam-Version: 6.0.0, Database issued on: 10/30/2023 08:31:24
-X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
-X-KSE-AntiSpam-Method: none
-X-KSE-AntiSpam-Rate: 59
-X-KSE-AntiSpam-Info: Lua profiles 180967 [Oct 30 2023]
-X-KSE-AntiSpam-Info: Version: 6.0.0.2
-X-KSE-AntiSpam-Info: Envelope from: s.shtylyov@omp.ru
-X-KSE-AntiSpam-Info: LuaCore: 543 543 1e3516af5cdd92079dfeb0e292c8747a62cb1ee4
-X-KSE-AntiSpam-Info: {rep_avail}
-X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
-X-KSE-AntiSpam-Info: {relay has no DNS name}
-X-KSE-AntiSpam-Info: {SMTP from is not routable}
-X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.57 in (user)
- b.barracudacentral.org}
-X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.57 in (user)
- dbl.spamhaus.org}
-X-KSE-AntiSpam-Info: d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;127.0.0.199:7.1.2;omp.ru:7.1.1
-X-KSE-AntiSpam-Info: ApMailHostAddress: 178.176.73.57
-X-KSE-AntiSpam-Info: {DNS response errors}
-X-KSE-AntiSpam-Info: Rate: 59
-X-KSE-AntiSpam-Info: Status: not_detected
-X-KSE-AntiSpam-Info: Method: none
-X-KSE-AntiSpam-Info: Auth:dmarc=temperror header.from=omp.ru;spf=temperror
- smtp.mailfrom=omp.ru;dkim=none
-X-KSE-Antiphishing-Info: Clean
-X-KSE-Antiphishing-ScanningType: Heuristic
-X-KSE-Antiphishing-Method: None
-X-KSE-Antiphishing-Bases: 10/30/2023 08:36:00
-X-KSE-Antivirus-Interceptor-Info: scan successful
-X-KSE-Antivirus-Info: Clean, bases: 10/30/2023 2:39:00 AM
-X-KSE-Attachment-Filter-Triggered-Rules: Clean
-X-KSE-Attachment-Filter-Triggered-Filters: Clean
-X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/30/23 1:53 AM, Sasha Levin wrote:
+Modifies the return type of display_control_adjust_sm750le()
+to void from unsigned long as the return value is being ignored in
+all subsequent function calls.
 
-> From: Sergey Shtylyov <s.shtylyov@omp.ru>
-> 
-> [ Upstream commit e8e4a470b677511f9d1ad4f3cef32adc1d9a60ca ]
-> 
-> In sys_copyarea(), the local variable bits_per_line is needlessly typed as
-> *unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
-> type on the 64-bit arches; that variable's value is derived from the __u32
-> typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
-> *unsigned int* type should still be enough to store the # of bits per line.
-> 
-> Found by Linux Verification Center (linuxtesting.org) with the Svace static
-> analysis tool.
-> 
-> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
-> ---
->  drivers/video/fbdev/core/syscopyarea.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev/core/syscopyarea.c
-> index c1eda31909682..7b8bd3a2bedc5 100644
-> --- a/drivers/video/fbdev/core/syscopyarea.c
-> +++ b/drivers/video/fbdev/core/syscopyarea.c
-> @@ -316,7 +316,7 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
->  {
->  	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
->  	u32 height = area->height, width = area->width;
-> -	unsigned long const bits_per_line = p->fix.line_length*8u;
-> +	unsigned int const bits_per_line = p->fix.line_length * 8u;
->  	unsigned long *base = NULL;
->  	int bits = BITS_PER_LONG, bytes = bits >> 3;
->  	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
+This improves code readability and maintainability.
 
-   This one doesn't seem necessary in the stable kernels too...
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
+---
 
-MBR, Sergey
+Changes in v3:
+- Rebase patch to apply against latest branch
+
+ drivers/staging/sm750fb/ddk750_mode.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index e1f20379431c..4278f9a826ab 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -13,7 +13,7 @@
+  * HW only supports 7 predefined pixel clocks, and clock select is
+  * in bit 29:27 of Display Control register.
+  */
+-static unsigned long
++static void
+ display_control_adjust_sm750le(struct mode_parameter *mode_param,
+ 			       unsigned long disp_control)
+ {
+@@ -70,8 +70,6 @@ display_control_adjust_sm750le(struct mode_parameter *mode_param,
+ 	disp_control |= DISPLAY_CTRL_CLOCK_PHASE;
+ 
+ 	poke32(CRT_DISPLAY_CTRL, disp_control);
+-
+-	return disp_control;
+ }
+ 
+ /* only timing related registers will be  programed */
+-- 
+2.42.0.345.gaab89be2eb
+

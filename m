@@ -2,184 +2,239 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5614EC4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Nov 2023 16:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1AC7C4167B
+	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Nov 2023 16:50:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230505AbjKAQCW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Nov 2023 12:02:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59744 "EHLO
+        id S1344094AbjKAQuQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Nov 2023 12:50:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41006 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229498AbjKAQCV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Nov 2023 12:02:21 -0400
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id F0EB4E4;
-        Wed,  1 Nov 2023 09:02:18 -0700 (PDT)
-Received: by linux.microsoft.com (Postfix, from userid 1159)
-        id 6738C20B74C0; Wed,  1 Nov 2023 09:02:18 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 6738C20B74C0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-        s=default; t=1698854538;
-        bh=JjKagOQc7XVCsOzjX5mQZCyIjlKEf/+UGuI8XDR24n4=;
-        h=From:To:Cc:Subject:Date:From;
-        b=Yj+KLdDWCXSntyvw2Ee6orRF9hr+VRDlMQZ0OP7j+7KKotau1/PdptyJC7tbAC0MA
-         T9ZzO0RudXLO3xp7WDdEZPcm7CXEFHNzDzi0YWOig14lgfEgoK0FBK91M7ed/LS1OM
-         VdWEZh1X7+XnzywI3maf4YfsadR90ULFkZIIVd/8=
-From:   Nischala Yelchuri <niyelchu@linux.microsoft.com>
-To:     linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, kys@microsoft.com,
-        haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
-        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        drawat.floss@gmail.com, maarten.lankhorst@linux.intel.com,
-        mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
-        daniel@ffwll.ch, dri-devel@lists.freedesktop.org, deller@gmx.de
-Cc:     mhklinux@outlook.com, mhkelley@outlook.com,
-        singhabhinav9051571833@gmail.com, niyelchu@microsoft.com
-Subject: [PATCH] Replace ioremap_cache() with memremap()
-Date:   Wed,  1 Nov 2023 09:01:48 -0700
-Message-Id: <1698854508-23036-1-git-send-email-niyelchu@linux.microsoft.com>
-X-Mailer: git-send-email 1.8.3.1
+        with ESMTP id S1343964AbjKAQuQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Nov 2023 12:50:16 -0400
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F2A9FD
+        for <linux-fbdev@vger.kernel.org>; Wed,  1 Nov 2023 09:50:13 -0700 (PDT)
+Received: by mail-ej1-x62e.google.com with SMTP id a640c23a62f3a-9adb9fa7200so6149466b.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 01 Nov 2023 09:50:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1698857411; x=1699462211; darn=vger.kernel.org;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LeL4k8689m96l5Y4ms3ueSfun611lvzf6vVo9VUnw9g=;
+        b=jNqGJ8onjiOy00Xqpq7s3oKUZHahubSTLuuiY7kdfcrvWNM50xNwaqq3mf9uA5IXDN
+         HbZFd0oc1mMZWxg5UayAb63eNnCoIL3T3sWA7IOtYrQDhmMAQwr61tt2EmfPlDbX11Wa
+         RYLZtbUObP01lWe6qtf8RhoDCm9vqtPcKvjLtLlZJzrQmzDDfkJadyPhJFoEiQv95n+A
+         z55v81v565fyuNHg0hghVGdEjDs9UACKDGJ5g/EttaHG0tHp7kf0kvbxu5D/a5JEjlMm
+         xV8EOgP7IyyG+t83bZVZFzPcmj0AA8SCmdIIhoptzlLr1qLsg9bu1GXMg0MlKQ499OoP
+         pEsA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698857411; x=1699462211;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=LeL4k8689m96l5Y4ms3ueSfun611lvzf6vVo9VUnw9g=;
+        b=iKMhn9TO9nAH0/w1H4xcstmHEX5MiBhUp1xtld/rQQHVtCw3Z4JEPIguDCLJXi53pA
+         XFBA8yCbqXiA3K4U1uxflgZCTUqG2J9ugZIEMA07JC9/B6dBzymqNPGGjEJ3HMuZsTBS
+         LCGeu61I2IjY3QR8GH05LXMW+M9G8dQ3v/042qldtG77z1ukkAw5NUquSvVJgTe267OM
+         xlmVwMtyBEemoQxcDzCt1lYa+M0MZxH+6zp7EzCT//jJC1FeX338qrG1szX25hKDiaSL
+         HbP19DK682GzIZlyKmEttyPxkTXgttmdk9yRYNiTOeY6UI3nG8mSIXvIPf/msPowP29Q
+         G3zw==
+X-Gm-Message-State: AOJu0YwS/OVvThxUN8FCGSc5hrAbTjERrouJSkLD0sE9PH8DAFB2fNK9
+        DJVz3HWGm7LJZt/9m1chtKw=
+X-Google-Smtp-Source: AGHT+IEzNJlj3njEpQ05m3lSiJ0Hxu6OgY2H/VIIqTbfltvKMwc9SdIzP6dHFJ4m+vh0ksnIDovDFA==
+X-Received: by 2002:a17:906:fe41:b0:9ad:f60c:7287 with SMTP id wz1-20020a170906fe4100b009adf60c7287mr2445108ejb.28.1698857411190;
+        Wed, 01 Nov 2023 09:50:11 -0700 (PDT)
+Received: from orome.fritz.box (p200300e41f3f4900f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f3f:4900:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id f7-20020a170906560700b0099cc36c4681sm126524ejq.157.2023.11.01.09.50.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Nov 2023 09:50:10 -0700 (PDT)
+Date:   Wed, 1 Nov 2023 17:50:09 +0100
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Hans de Goede <hdegoede@redhat.com>
+Cc:     Helge Deller <deller@gmx.de>, Robert Foss <rfoss@kernel.org>,
+        Jon Hunter <jonathanh@nvidia.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 2/2] fbdev/simplefb: Add support for generic power-domains
+Message-ID: <ZUKBwZ3axCKQDXfz@orome.fritz.box>
+References: <20231011143809.1108034-1-thierry.reding@gmail.com>
+ <20231011143809.1108034-3-thierry.reding@gmail.com>
+ <0bc4aac4-817a-4a6d-8e7c-d19269c47a40@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="+/xFpIUyBUk/gF1c"
+Content-Disposition: inline
+In-Reply-To: <0bc4aac4-817a-4a6d-8e7c-d19269c47a40@redhat.com>
+User-Agent: Mutt/2.2.12 (2023-09-09)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Current Hyper-V code for CoCo VMs uses ioremap_cache() to map normal memory as decrypted.
-ioremap_cache() is ideally used to map I/O device memory when it has the characteristics
-of normal memory. It should not be used to map normal memory as the returned pointer
-has the __iomem attribute.
 
-Fix current code by replacing ioremap_cache() with memremap().
+--+/xFpIUyBUk/gF1c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No functional change intended.
+On Thu, Oct 26, 2023 at 02:50:27PM +0200, Hans de Goede wrote:
+> Hi,
+>=20
+> Thank you for your patches.
+>=20
+> On 10/11/23 16:38, Thierry Reding wrote:
+> > From: Thierry Reding <treding@nvidia.com>
+> >=20
+> > The simple-framebuffer device tree bindings document the power-domains
+> > property, so make sure that simplefb supports it. This ensures that the
+> > power domains remain enabled as long as simplefb is active.
+> >=20
+> > Signed-off-by: Thierry Reding <treding@nvidia.com>
+> > ---
+> >  drivers/video/fbdev/simplefb.c | 93 +++++++++++++++++++++++++++++++++-
+> >  1 file changed, 91 insertions(+), 2 deletions(-)
+> >=20
+> > diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simpl=
+efb.c
+> > index 18025f34fde7..e69fb0ad2d54 100644
+> > --- a/drivers/video/fbdev/simplefb.c
+> > +++ b/drivers/video/fbdev/simplefb.c
+> > @@ -25,6 +25,7 @@
+> >  #include <linux/of_clk.h>
+> >  #include <linux/of_platform.h>
+> >  #include <linux/parser.h>
+> > +#include <linux/pm_domain.h>
+> >  #include <linux/regulator/consumer.h>
+> > =20
+> >  static const struct fb_fix_screeninfo simplefb_fix =3D {
+> > @@ -78,6 +79,11 @@ struct simplefb_par {
+> >  	unsigned int clk_count;
+> >  	struct clk **clks;
+> >  #endif
+> > +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
+> > +	unsigned int num_genpds;
+> > +	struct device **genpds;
+> > +	struct device_link **genpd_links;
+> > +#endif
+> >  #if defined CONFIG_OF && defined CONFIG_REGULATOR
+> >  	bool regulators_enabled;
+> >  	u32 regulator_count;
+> > @@ -432,6 +438,83 @@ static void simplefb_regulators_enable(struct simp=
+lefb_par *par,
+> >  static void simplefb_regulators_destroy(struct simplefb_par *par) { }
+> >  #endif
+> > =20
+> > +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
+> > +static void simplefb_detach_genpds(void *res)
+> > +{
+> > +	struct simplefb_par *par =3D res;
+> > +	unsigned int i =3D par->num_genpds;
+> > +
+> > +	if (par->num_genpds <=3D 1)
+> > +		return;
+> > +
+> > +	while (i--) {
+> > +		if (par->genpd_links[i])
+> > +			device_link_del(par->genpd_links[i]);
+> > +
+> > +		if (!IS_ERR_OR_NULL(par->genpds[i]))
+> > +			dev_pm_domain_detach(par->genpds[i], true);
+> > +	}
+>=20
+> Using this i-- construct means that genpd at index 0 will
+> not be cleaned up.
 
-Signed-off-by: Nischala Yelchuri <niyelchu@linux.microsoft.com>
----
- arch/x86/hyperv/hv_init.c               |  6 +++---
- drivers/gpu/drm/hyperv/hyperv_drm_drv.c |  2 +-
- drivers/hv/hv.c                         | 13 +++++++------
- drivers/video/fbdev/hyperv_fb.c         |  6 +++---
- 4 files changed, 14 insertions(+), 13 deletions(-)
+This is actually a common variant to clean up in reverse order. You'll
+find this used a lot in core code and so on. It has the advantage that
+you can use it to unwind (not the case here) because i will already be
+set to the right value, typically. It's also nice because it works for
+unsigned integers.
 
-diff --git a/arch/x86/hyperv/hv_init.c b/arch/x86/hyperv/hv_init.c
-index 21556ad87..fae43c040 100644
---- a/arch/x86/hyperv/hv_init.c
-+++ b/arch/x86/hyperv/hv_init.c
-@@ -68,9 +68,9 @@ static int hyperv_init_ghcb(void)
- 	 */
- 	rdmsrl(MSR_AMD64_SEV_ES_GHCB, ghcb_gpa);
- 
--	/* Mask out vTOM bit. ioremap_cache() maps decrypted */
-+	/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
- 	ghcb_gpa &= ~ms_hyperv.shared_gpa_boundary;
--	ghcb_va = (void *)ioremap_cache(ghcb_gpa, HV_HYP_PAGE_SIZE);
-+	ghcb_va = memremap(ghcb_gpa, HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
- 	if (!ghcb_va)
- 		return -ENOMEM;
- 
-@@ -238,7 +238,7 @@ static int hv_cpu_die(unsigned int cpu)
- 	if (hv_ghcb_pg) {
- 		ghcb_va = (void **)this_cpu_ptr(hv_ghcb_pg);
- 		if (*ghcb_va)
--			iounmap(*ghcb_va);
-+			memunmap(*ghcb_va);
- 		*ghcb_va = NULL;
- 	}
- 
-diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-index d511d17c5..d6fec9bd3 100644
---- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-+++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-@@ -92,7 +92,7 @@ static int hyperv_setup_vram(struct hyperv_drm_device *hv,
- 	 * connect to display properly for ARM64 Linux VM, as the host also maps
- 	 * the VRAM cacheable.
- 	 */
--	hv->vram = ioremap_cache(hv->mem->start, hv->fb_size);
-+	hv->vram = memremap(hv->mem->start, hv->fb_size, MEMREMAP_WB | MEMREMAP_DEC);
- 	if (!hv->vram) {
- 		drm_err(dev, "Failed to map vram\n");
- 		ret = -ENOMEM;
-diff --git a/drivers/hv/hv.c b/drivers/hv/hv.c
-index 51e5018ac..399bfa392 100644
---- a/drivers/hv/hv.c
-+++ b/drivers/hv/hv.c
-@@ -274,11 +274,12 @@ void hv_synic_enable_regs(unsigned int cpu)
- 	simp.simp_enabled = 1;
- 
- 	if (ms_hyperv.paravisor_present || hv_root_partition) {
--		/* Mask out vTOM bit. ioremap_cache() maps decrypted */
-+		/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
- 		u64 base = (simp.base_simp_gpa << HV_HYP_PAGE_SHIFT) &
- 				~ms_hyperv.shared_gpa_boundary;
- 		hv_cpu->synic_message_page
--			= (void *)ioremap_cache(base, HV_HYP_PAGE_SIZE);
-+			= memremap(base,
-+				   HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
- 		if (!hv_cpu->synic_message_page)
- 			pr_err("Fail to map synic message page.\n");
- 	} else {
-@@ -293,11 +294,11 @@ void hv_synic_enable_regs(unsigned int cpu)
- 	siefp.siefp_enabled = 1;
- 
- 	if (ms_hyperv.paravisor_present || hv_root_partition) {
--		/* Mask out vTOM bit. ioremap_cache() maps decrypted */
-+		/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
- 		u64 base = (siefp.base_siefp_gpa << HV_HYP_PAGE_SHIFT) &
- 				~ms_hyperv.shared_gpa_boundary;
- 		hv_cpu->synic_event_page
--			= (void *)ioremap_cache(base, HV_HYP_PAGE_SIZE);
-+			= memremap(base, HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
- 		if (!hv_cpu->synic_event_page)
- 			pr_err("Fail to map synic event page.\n");
- 	} else {
-@@ -376,7 +377,7 @@ void hv_synic_disable_regs(unsigned int cpu)
- 	 */
- 	simp.simp_enabled = 0;
- 	if (ms_hyperv.paravisor_present || hv_root_partition) {
--		iounmap(hv_cpu->synic_message_page);
-+		memunmap(hv_cpu->synic_message_page);
- 		hv_cpu->synic_message_page = NULL;
- 	} else {
- 		simp.base_simp_gpa = 0;
-@@ -388,7 +389,7 @@ void hv_synic_disable_regs(unsigned int cpu)
- 	siefp.siefp_enabled = 0;
- 
- 	if (ms_hyperv.paravisor_present || hv_root_partition) {
--		iounmap(hv_cpu->synic_event_page);
-+		memunmap(hv_cpu->synic_event_page);
- 		hv_cpu->synic_event_page = NULL;
- 	} else {
- 		siefp.base_siefp_gpa = 0;
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index bf59daf86..cd9ec1f6c 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -1034,7 +1034,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 	 * VM Connect to display properly for ARM64 Linux VM, as the host also
- 	 * maps the VRAM cacheable.
- 	 */
--	fb_virt = ioremap_cache(par->mem->start, screen_fb_size);
-+	fb_virt = memremap(par->mem->start, screen_fb_size, MEMREMAP_WB | MEMREMAP_DEC);
- 	if (!fb_virt)
- 		goto err2;
- 
-@@ -1068,7 +1068,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 	return 0;
- 
- err3:
--	iounmap(fb_virt);
-+	memunmap(fb_virt);
- err2:
- 	vmbus_free_mmio(par->mem->start, screen_fb_size);
- 	par->mem = NULL;
-@@ -1086,7 +1086,7 @@ static void hvfb_putmem(struct hv_device *hdev, struct fb_info *info)
- 
- 	if (par->need_docopy) {
- 		vfree(par->dio_vp);
--		iounmap(info->screen_base);
-+		memunmap(info->screen_base);
- 		vmbus_free_mmio(par->mem->start, screen_fb_size);
- 	} else {
- 		hvfb_release_phymem(hdev, info->fix.smem_start,
--- 
-2.34.1
+Note that this uses the postfix decrement, so evaluation happens before
+the decrement and therefore the last iteration of the loop will run with
+i =3D=3D 0. For unsigned integers this also means that after the loop the
+variable will actually have wrapped around, but that's usually not a
+problem since it isn't used after this point anymore.
 
+> >  static int simplefb_probe(struct platform_device *pdev)
+> >  {
+> >  	int ret;
+> > @@ -518,6 +601,10 @@ static int simplefb_probe(struct platform_device *=
+pdev)
+> >  	if (ret < 0)
+> >  		goto error_clocks;
+> > =20
+> > +	ret =3D simplefb_attach_genpd(par, pdev);
+> > +	if (ret < 0)
+> > +		goto error_regulators;
+> > +
+> >  	simplefb_clocks_enable(par, pdev);
+> >  	simplefb_regulators_enable(par, pdev);
+> > =20
+> > @@ -534,18 +621,20 @@ static int simplefb_probe(struct platform_device =
+*pdev)
+> >  	ret =3D devm_aperture_acquire_for_platform_device(pdev, par->base, pa=
+r->size);
+> >  	if (ret) {
+> >  		dev_err(&pdev->dev, "Unable to acquire aperture: %d\n", ret);
+> > -		goto error_regulators;
+> > +		goto error_genpds;
+>=20
+> This is not necessary since simplefb_attach_genpd() ends with:
+>=20
+> 	devm_add_action_or_reset(dev, simplefb_detach_genpds, par)
+>=20
+> Which causes simplefb_detach_genpds() to run when probe() fails.
+
+Yes, you're right. I've removed all these explicit cleanup paths since
+they are not needed.
+
+>=20
+> >  	}
+> >  	ret =3D register_framebuffer(info);
+> >  	if (ret < 0) {
+> >  		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+> > -		goto error_regulators;
+> > +		goto error_genpds;
+> >  	}
+> > =20
+> >  	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+> > =20
+> >  	return 0;
+> > =20
+> > +error_genpds:
+> > +	simplefb_detach_genpds(par);
+>=20
+> As the kernel test robot (LKP) already pointed out this is causing
+> compile errors when #if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DO=
+MAINS
+> evaluates as false.
+>=20
+> Since there is no simplefb_detach_genpds() stub in the #else, but as
+> mentioned above this is not necessary so just remove it.
+
+Yep, done.
+
+Thanks,
+Thierry
+
+--+/xFpIUyBUk/gF1c
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmVCgb4ACgkQ3SOs138+
+s6EM3w/9FP7lqs9ZyGWbUDEYUymUwki1/1KqaUBA4DAQYrzllhGmvJSnNWSJz+p5
+zjDxpvJ0tVhrwsVe5OHgluyWKLi5ck1QJVZOo9IyXObSBlx7Ecr0BtgTUxJda2MJ
+YZ2nJemJVl2DCHKozdx/Raq8HK8wVE88jIkB6arXi8xRGjFBQ9IKvbelGP9YvI8i
+VISMZYhPcKcvdotj0DrKQL4tcLL7XpM9Fup8Gt7CWPwjieH90PXf2EOgSlwqSYnX
+V/HM3y9QVccQBhawXfmpvvKK80Ez+E8dPjjlsKhTEHG64ngqn7ulaVtVmdmgAYtu
+LyKForoeboswYv/p+14n+O2ngEFt4FLNjYrMSCI7EcdMUADdpqgG03Fe4ex8ke/S
+A13OQT4jXXaKecaSykJJYjE38LX1MQu+GxVotkxPD/k4urHV50XKuhk70Ai2I/dR
+WI3tZysyPV5hXYltQdlz/h/wT901ApWCQZa2TLZmH4vjKHdMQJoqFYVQQnUvEKr9
+Kaiv/8sVSNAMNvhYyfpmtInXhXEVGBgg50aWuOlhtnIx/M56ghmZ4BSb5tAhF6RW
+8x6aAwwF5vLT7PUVFzI81hF40dWtq8GKWYwV85szjvW6dOoyKeEaouUbV+8FbEeV
+VMdG5Dgi/XdnRmKUm2dbM9SltkUelVixE5baAymhLEyZiqXdRzw=
+=pXpM
+-----END PGP SIGNATURE-----
+
+--+/xFpIUyBUk/gF1c--

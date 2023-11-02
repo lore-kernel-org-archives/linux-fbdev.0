@@ -2,122 +2,99 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25040C4167B
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Nov 2023 10:55:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A38CCC4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Nov 2023 19:25:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346324AbjKBKzu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Nov 2023 06:55:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51464 "EHLO
+        id S234334AbjKBTZH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Nov 2023 15:25:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346804AbjKBKzt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Nov 2023 06:55:49 -0400
+        with ESMTP id S229686AbjKBTZH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Nov 2023 15:25:07 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDC5912E
-        for <linux-fbdev@vger.kernel.org>; Thu,  2 Nov 2023 03:55:01 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E80B0186
+        for <linux-fbdev@vger.kernel.org>; Thu,  2 Nov 2023 12:24:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1698922501;
+        s=mimecast20190719; t=1698953056;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=rDScEF2O82i+YasDdzJYzr0zXZ3g8ZG6cVf0gZaER+0=;
-        b=TnqhCl3aVB9MTU9NESx/V29j5HpBCjsR7gYriVvmUmHKC3tpkZ4E/nQ7ffzypKCQxuFUjG
-        yF19YtZC4I4MbqS8bzpcqN9fz06Mc3pdw/tSFzVCHIuudrP/ucgNZZBXyx/NN4SOyYiKJJ
-        bZpcdEk/+cAnPp9ytZ4DoVk1FpVsqkU=
-Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
- [209.85.218.70]) by relay.mimecast.com with ESMTP with STARTTLS
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=p5/AYOFpMtipyX3yVNE3RQ2sBJUpaSLLWRc4pCufaM4=;
+        b=PISWMasEA+/cGOyaiqmN54OtG0KDP5HxLmcr3QdWeEckS0gUKM6bu/fTslszFg9TNgklmV
+        3FNjoWAMGh5RI/SRDpZKuvCAAlNxHcuOETmMHpVGE2D/GQ1GLBkEEDK6sIUXcLAqkHfYvO
+        MWnwQE8/k82Z2OpTuQiuR96pKDTgw1A=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-38-zl0O-CZaNlun_Xx0lLRFlQ-1; Thu, 02 Nov 2023 06:54:59 -0400
-X-MC-Unique: zl0O-CZaNlun_Xx0lLRFlQ-1
-Received: by mail-ej1-f70.google.com with SMTP id a640c23a62f3a-9ae7663e604so54768866b.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 02 Nov 2023 03:54:59 -0700 (PDT)
+ us-mta-518-OIsWlKFSM5eOAxnhvORcjg-1; Thu, 02 Nov 2023 15:24:14 -0400
+X-MC-Unique: OIsWlKFSM5eOAxnhvORcjg-1
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-32fabf96aa5so170395f8f.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 02 Nov 2023 12:24:14 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698922498; x=1699527298;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=rDScEF2O82i+YasDdzJYzr0zXZ3g8ZG6cVf0gZaER+0=;
-        b=EqOwRtCTmOf5/kkr3uVvmCHs6H+hreHd7OzLbDEq+MCiQ5moJdYc4cXDHHQYPQF6En
-         g7avn+uQBlXNI65ovUyPSOw2ANCkIW6QV+HMkoEv4SVS9hRdNRPK8d/s7xaXfCEgiz36
-         ANP5e78W59BwBftU9WCP5NViWQnQbGcxox7HFvVK8Safn2N1exg1+4Op6owEKhYECOlT
-         sCzYks3a0AOkHdBw6PZnOzQR9NY+LzNX+rJVXAZ1Y4veaglUE2Efd5sJ0FWvHysozxCn
-         ucVTRPC0lKCTNHobNSyNslI3n6xHsBOG+KGWrRjc2rJqzfYBcsYiTuYaFz6dNz+4Yehq
-         hUsQ==
-X-Gm-Message-State: AOJu0YyxyojSYnXzPeFd9F4zSsPsFjxWos1JtiznVudHGT8GBnrcNUnz
-        Aywg9fVUZxo7Q6/61OsNWDMLegzxO6DJpwFpDqO9pyrMUyQH2FxnUZhVd6bG/9gHDDzA9nAROPT
-        pYJyIqaGCdbnW+MTBxLyWaEA=
-X-Received: by 2002:a17:907:25c6:b0:9bd:e74b:abf1 with SMTP id ae6-20020a17090725c600b009bde74babf1mr3812313ejc.8.1698922498524;
-        Thu, 02 Nov 2023 03:54:58 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGpOoo/gHPrFW7q5k0Nk4IT1LkiKH6+7Adch5Y9SLGgRh4AyMOkHjDcasHc9ORZJ/8+aHt9Sw==
-X-Received: by 2002:a17:907:25c6:b0:9bd:e74b:abf1 with SMTP id ae6-20020a17090725c600b009bde74babf1mr3812300ejc.8.1698922498200;
-        Thu, 02 Nov 2023 03:54:58 -0700 (PDT)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? ([2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id d25-20020a170906175900b009c657110cf2sm990147eje.99.2023.11.02.03.54.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Nov 2023 03:54:57 -0700 (PDT)
-Message-ID: <80081ce9-f6a6-312b-a798-d64655d8e5d4@redhat.com>
-Date:   Thu, 2 Nov 2023 11:54:54 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v2 0/2] fbdev/simplefb: Add missing simple-framebuffer
- features
-Content-Language: en-US, nl
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
+        d=1e100.net; s=20230601; t=1698953053; x=1699557853;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=p5/AYOFpMtipyX3yVNE3RQ2sBJUpaSLLWRc4pCufaM4=;
+        b=vHTnNjtYGtgH8E284BG7vZV9sPiI4wfRGNSUCiQd5mx7nSiCCQWZqXxlF880EWnsh9
+         aYEnZicFxWtBYuoVR5T/+MB2wcPLl1turrShfszAGP9vCNorhe4STUIkDAc/4ZBWD7kM
+         /k6rwNzudzdSdolweVZrV+LStIrrySYRooOlhZ3Ej2vBqiMDlNg+myS3v/UMlUw/vBE3
+         VLGtA6tuM8tU9knLuUHMImPkxPVe9ft0Hzsu5oQfZXqJlx9BAMX5wqrfH82NmMUrDFB9
+         hN3SS7ZK4m3tVqGdl9cdFHzeto+NVgqxpoDhL+4BiLWReLb/NH/jMFBFCYfmcc7+Tanf
+         lTrA==
+X-Gm-Message-State: AOJu0Yzw2p7eCbh6/ex1Y+aiJ21M/x+U0+BLGrAz7PmkVnyVh1EMAZJ6
+        3fiZOlncy2+gBsQzpJZ0HlexxhrjtiCCxZXvl7huU7Rgg16+xS8gs3pL21WwEgi0XixZw5r1ddp
+        uCIM2nY2jNVIjg4C25eedbxw=
+X-Received: by 2002:a05:600c:350c:b0:405:39bb:38a8 with SMTP id h12-20020a05600c350c00b0040539bb38a8mr15776529wmq.2.1698953053682;
+        Thu, 02 Nov 2023 12:24:13 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHEUyUDco60L/5B6mfJp7cXtWCHrP4XE4BNQJlgxAUqDulZh/VHu2Gj0WecmI7xbtoZDCWUmA==
+X-Received: by 2002:a05:600c:350c:b0:405:39bb:38a8 with SMTP id h12-20020a05600c350c00b0040539bb38a8mr15776516wmq.2.1698953053326;
+        Thu, 02 Nov 2023 12:24:13 -0700 (PDT)
+Received: from pstanner-thinkpadt14sgen1.remote.csb ([2001:9e8:32c5:d600:227b:d2ff:fe26:2a7a])
+        by smtp.gmail.com with ESMTPSA id gw21-20020a05600c851500b004064741f855sm66371wmb.47.2023.11.02.12.24.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Nov 2023 12:24:12 -0700 (PDT)
+From:   Philipp Stanner <pstanner@redhat.com>
+To:     Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
         Helge Deller <deller@gmx.de>
-Cc:     Robert Foss <rfoss@kernel.org>, Jon Hunter <jonathanh@nvidia.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-tegra@vger.kernel.org
-References: <20231101172017.3872242-1-thierry.reding@gmail.com>
- <56fbbe6c-0342-01d9-9840-40c7fa13f1f2@redhat.com>
-In-Reply-To: <56fbbe6c-0342-01d9-9840-40c7fa13f1f2@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Philipp Stanner <pstanner@redhat.com>,
+        Dave Airlie <airlied@redhat.com>
+Subject: [PATCH] drivers/video/fbdev: use new array-copying-wrapper
+Date:   Thu,  2 Nov 2023 20:24:03 +0100
+Message-ID: <20231102192402.53721-2-pstanner@redhat.com>
+X-Mailer: git-send-email 2.41.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+viafbdev.c utilizes memdup_user() to copy an array from userspace.
 
-On 11/1/23 18:54, Hans de Goede wrote:
-> Hi,
-> 
-> On 11/1/23 18:20, Thierry Reding wrote:
->> From: Thierry Reding <treding@nvidia.com>
->>
->> Hi,
->>
->> This contains two patches that bring simplefb up to feature parity with
->> simpledrm. The patches add support for the "memory-region" property that
->> provides an alternative to the "reg" property to describe the memory
->> used for the framebuffer and allow attaching the simple-framebuffer
->> device to one or more generic power domains to make sure they aren't
->> turned off during the boot process and take down the display
->> configuration.
->>
->> Changes in v2:
->> - remove unnecessary call to simplefb_detach_genpds() since that's
->>   already done automatically by devres
->> - fix crash if power-domains property is missing in DT
-> 
-> Thanks, the new version looks good to me:
-> 
-> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-> 
-> for the series.
-> 
-> Helge, will you pick these 2 up, or shall I push them to drm-misc-fixes?
+There is a new wrapper, specifically designed for copying arrays. Use
+this one instead.
 
-I have pushed this to drm-misc-next now.
+Suggested-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Philipp Stanner <pstanner@redhat.com>
+---
+ drivers/video/fbdev/via/viafbdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I now I said drm-misc-fixes at first, but on a second look
-these really are not fixes, so getting them in mainline
-will have to wait to the next merge-window.
-
-Regards,
-
-Hans
-
-
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 58868f8880d6..a52b1ba43a48 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -574,7 +574,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ 		break;
+ 
+ 	case VIAFB_SET_GAMMA_LUT:
+-		viafb_gamma_table = memdup_user(argp, 256 * sizeof(u32));
++		viafb_gamma_table = memdup_array_user(argp, 256, sizeof(u32));
+ 		if (IS_ERR(viafb_gamma_table))
+ 			return PTR_ERR(viafb_gamma_table);
+ 		viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
+-- 
+2.41.0
 

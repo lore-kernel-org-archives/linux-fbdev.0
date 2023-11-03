@@ -2,99 +2,93 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A38CCC4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Nov 2023 19:25:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4398BC4332F
+	for <linux-fbdev@archiver.kernel.org>; Fri,  3 Nov 2023 17:36:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234334AbjKBTZH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Nov 2023 15:25:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46142 "EHLO
+        id S229730AbjKCRgH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 3 Nov 2023 13:36:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229686AbjKBTZH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Nov 2023 15:25:07 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E80B0186
-        for <linux-fbdev@vger.kernel.org>; Thu,  2 Nov 2023 12:24:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1698953056;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=p5/AYOFpMtipyX3yVNE3RQ2sBJUpaSLLWRc4pCufaM4=;
-        b=PISWMasEA+/cGOyaiqmN54OtG0KDP5HxLmcr3QdWeEckS0gUKM6bu/fTslszFg9TNgklmV
-        3FNjoWAMGh5RI/SRDpZKuvCAAlNxHcuOETmMHpVGE2D/GQ1GLBkEEDK6sIUXcLAqkHfYvO
-        MWnwQE8/k82Z2OpTuQiuR96pKDTgw1A=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-518-OIsWlKFSM5eOAxnhvORcjg-1; Thu, 02 Nov 2023 15:24:14 -0400
-X-MC-Unique: OIsWlKFSM5eOAxnhvORcjg-1
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-32fabf96aa5so170395f8f.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 02 Nov 2023 12:24:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698953053; x=1699557853;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=p5/AYOFpMtipyX3yVNE3RQ2sBJUpaSLLWRc4pCufaM4=;
-        b=vHTnNjtYGtgH8E284BG7vZV9sPiI4wfRGNSUCiQd5mx7nSiCCQWZqXxlF880EWnsh9
-         aYEnZicFxWtBYuoVR5T/+MB2wcPLl1turrShfszAGP9vCNorhe4STUIkDAc/4ZBWD7kM
-         /k6rwNzudzdSdolweVZrV+LStIrrySYRooOlhZ3Ej2vBqiMDlNg+myS3v/UMlUw/vBE3
-         VLGtA6tuM8tU9knLuUHMImPkxPVe9ft0Hzsu5oQfZXqJlx9BAMX5wqrfH82NmMUrDFB9
-         hN3SS7ZK4m3tVqGdl9cdFHzeto+NVgqxpoDhL+4BiLWReLb/NH/jMFBFCYfmcc7+Tanf
-         lTrA==
-X-Gm-Message-State: AOJu0Yzw2p7eCbh6/ex1Y+aiJ21M/x+U0+BLGrAz7PmkVnyVh1EMAZJ6
-        3fiZOlncy2+gBsQzpJZ0HlexxhrjtiCCxZXvl7huU7Rgg16+xS8gs3pL21WwEgi0XixZw5r1ddp
-        uCIM2nY2jNVIjg4C25eedbxw=
-X-Received: by 2002:a05:600c:350c:b0:405:39bb:38a8 with SMTP id h12-20020a05600c350c00b0040539bb38a8mr15776529wmq.2.1698953053682;
-        Thu, 02 Nov 2023 12:24:13 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHEUyUDco60L/5B6mfJp7cXtWCHrP4XE4BNQJlgxAUqDulZh/VHu2Gj0WecmI7xbtoZDCWUmA==
-X-Received: by 2002:a05:600c:350c:b0:405:39bb:38a8 with SMTP id h12-20020a05600c350c00b0040539bb38a8mr15776516wmq.2.1698953053326;
-        Thu, 02 Nov 2023 12:24:13 -0700 (PDT)
-Received: from pstanner-thinkpadt14sgen1.remote.csb ([2001:9e8:32c5:d600:227b:d2ff:fe26:2a7a])
-        by smtp.gmail.com with ESMTPSA id gw21-20020a05600c851500b004064741f855sm66371wmb.47.2023.11.02.12.24.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Nov 2023 12:24:12 -0700 (PDT)
-From:   Philipp Stanner <pstanner@redhat.com>
-To:     Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Philipp Stanner <pstanner@redhat.com>,
-        Dave Airlie <airlied@redhat.com>
-Subject: [PATCH] drivers/video/fbdev: use new array-copying-wrapper
-Date:   Thu,  2 Nov 2023 20:24:03 +0100
-Message-ID: <20231102192402.53721-2-pstanner@redhat.com>
-X-Mailer: git-send-email 2.41.0
+        with ESMTP id S230101AbjKCRgG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Nov 2023 13:36:06 -0400
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFCD1D54
+        for <linux-fbdev@vger.kernel.org>; Fri,  3 Nov 2023 10:36:03 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1qyy5R-0004Wt-Nj; Fri, 03 Nov 2023 18:36:01 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1qyy5R-006NKM-5q; Fri, 03 Nov 2023 18:36:01 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1qyy5Q-00CUUo-Se; Fri, 03 Nov 2023 18:36:00 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, kernel@pengutronix.de
+Subject: [PATCH] fbdev: omapfb: Drop unused remove function
+Date:   Fri,  3 Nov 2023 18:35:58 +0100
+Message-ID: <20231103173557.3639484-2-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1451; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=Pa/PZpA5LZpLFCrixqqTeyvjev8rwBS2ffBdngiT/bo=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlRS9+pvyHnfIDX2L26lFQyBi7dT6romTz0XqMS 93UFNxEGGiJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUUvfgAKCRCPgPtYfRL+ TlFsB/0e8vL7LYOd70imHwL3kg/uTtJ33J4rI+aK4VoBp82iIlkZONKRFta9zpssQWlm8mm0X0C JLzoGdN3WQXYV0bg3Nd3HV6jb/VKvUlZSxH3BQAVOwR89Xuy0uCrwYTpPktGGV8cQwBqQOi6wdE Pza+A/ErT2D+D/4OhiCl2BDP5cGwcuBMiWUKY2GkYvJpnfz8sq5fYHvRzLwKihL3hF7kcGcVA4x gupf/3xnK7wUAWdoXWLe6hOeM/l79BBfIPHXTylfJveMCKrk+q3UumOrhkuuqoaOyIf6V0Ii6pu +D+xlW6AxippRvAEfJm+vR4Xt1W8Nak7D+tGvEVyW3TqUUYn
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-viafbdev.c utilizes memdup_user() to copy an array from userspace.
+OMAP2_VRFB is a bool, so the vrfb driver can never be compiled as a
+module. With that __exit_p(vrfb_remove) always evaluates to NULL and
+vrfb_remove() is unused.
 
-There is a new wrapper, specifically designed for copying arrays. Use
-this one instead.
+If the driver was compilable as a module, it would fail to build because
+the type of vrfb_remove() isn't compatible with struct
+platform_driver::remove(). (The former returns void, the latter int.)
 
-Suggested-by: Dave Airlie <airlied@redhat.com>
-Signed-off-by: Philipp Stanner <pstanner@redhat.com>
+Fixes: aa1e49a3752f ("OMAPDSS: VRFB: add omap_vrfb_supported()")
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbdev/via/viafbdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/omapfb/vrfb.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
-index 58868f8880d6..a52b1ba43a48 100644
---- a/drivers/video/fbdev/via/viafbdev.c
-+++ b/drivers/video/fbdev/via/viafbdev.c
-@@ -574,7 +574,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
- 		break;
+diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+index ee0dd4c6a646..568e6e1eca62 100644
+--- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
++++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+@@ -368,17 +368,10 @@ static int __init vrfb_probe(struct platform_device *pdev)
+ 	return 0;
+ }
  
- 	case VIAFB_SET_GAMMA_LUT:
--		viafb_gamma_table = memdup_user(argp, 256 * sizeof(u32));
-+		viafb_gamma_table = memdup_array_user(argp, 256, sizeof(u32));
- 		if (IS_ERR(viafb_gamma_table))
- 			return PTR_ERR(viafb_gamma_table);
- 		viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
+-static void __exit vrfb_remove(struct platform_device *pdev)
+-{
+-	vrfb_loaded = false;
+-}
+-
+ static struct platform_driver vrfb_driver = {
+ 	.driver.name	= "omapvrfb",
+-	.remove		= __exit_p(vrfb_remove),
+ };
+-
+-module_platform_driver_probe(vrfb_driver, vrfb_probe);
++builtin_platform_driver_probe(vrfb_driver, vrfb_probe);
+ 
+ MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
+ MODULE_DESCRIPTION("OMAP VRFB");
+
+base-commit: e27090b1413ff236ca1aec26d6b022149115de2c
 -- 
-2.41.0
+2.42.0
 

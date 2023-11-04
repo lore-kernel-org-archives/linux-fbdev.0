@@ -2,93 +2,94 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4398BC4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri,  3 Nov 2023 17:36:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 253E9C4332F
+	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Nov 2023 02:07:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229730AbjKCRgH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 3 Nov 2023 13:36:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48516 "EHLO
+        id S229801AbjKDCHn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 3 Nov 2023 22:07:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230101AbjKCRgG (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Nov 2023 13:36:06 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFCD1D54
-        for <linux-fbdev@vger.kernel.org>; Fri,  3 Nov 2023 10:36:03 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qyy5R-0004Wt-Nj; Fri, 03 Nov 2023 18:36:01 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qyy5R-006NKM-5q; Fri, 03 Nov 2023 18:36:01 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qyy5Q-00CUUo-Se; Fri, 03 Nov 2023 18:36:00 +0100
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, kernel@pengutronix.de
-Subject: [PATCH] fbdev: omapfb: Drop unused remove function
-Date:   Fri,  3 Nov 2023 18:35:58 +0100
-Message-ID: <20231103173557.3639484-2-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.42.0
+        with ESMTP id S231209AbjKDCHm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Nov 2023 22:07:42 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FCD9D60;
+        Fri,  3 Nov 2023 19:07:40 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A970C433C8;
+        Sat,  4 Nov 2023 02:07:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1699063659;
+        bh=L6ks4yKT0/F+fOvkUaGIHPgT6JzQVMFwAqz5caY4KZU=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=UJUrnToOTQovPehLi9haOD6o6/5UCScaj5JM30hNFQItSwGi1w+nMogw1UJ/dJYpc
+         ua3XgBh20btA8FNNcYLkjqecTFGkHFMrG0bs6JLz1Up7iX9f62geWyNSHBrE6iL1Zl
+         uEgPkL2FyLym3rEwvNYaWzAVaIKSuYTXN3qSzukOQZ41rRUW5ZVmL01GxrE1ywBgQs
+         gzknh1xRxRIcS0jDbi7PqRqcfJCD6q3az+h7frcHd4y9NeqEbYOWzEmOad84/06Fns
+         h3OnLG5IEEok7PiPAzPDzkaIL4RZiyHzkTMlrRnObJESAbpscTKuRvWHu8izzYbW+G
+         0TbNtB5ppbLJg==
+Date:   Fri, 3 Nov 2023 22:07:38 -0400
+From:   Sasha Levin <sashal@kernel.org>
+To:     Sergey Shtylyov <s.shtylyov@omp.ru>
+Cc:     linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        Helge Deller <deller@gmx.de>, daniel@ffwll.ch,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH AUTOSEL 6.5 34/52] fbdev: core: cfbcopyarea: fix sloppy
+ typing
+Message-ID: <ZUWnasfAphVCFPhR@sashalap>
+References: <20231029225441.789781-1-sashal@kernel.org>
+ <20231029225441.789781-34-sashal@kernel.org>
+ <a93b7be2-a0a6-084d-47e6-a0e8fcd5bc2b@omp.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1451; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=Pa/PZpA5LZpLFCrixqqTeyvjev8rwBS2ffBdngiT/bo=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlRS9+pvyHnfIDX2L26lFQyBi7dT6romTz0XqMS 93UFNxEGGiJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUUvfgAKCRCPgPtYfRL+ TlFsB/0e8vL7LYOd70imHwL3kg/uTtJ33J4rI+aK4VoBp82iIlkZONKRFta9zpssQWlm8mm0X0C JLzoGdN3WQXYV0bg3Nd3HV6jb/VKvUlZSxH3BQAVOwR89Xuy0uCrwYTpPktGGV8cQwBqQOi6wdE Pza+A/ErT2D+D/4OhiCl2BDP5cGwcuBMiWUKY2GkYvJpnfz8sq5fYHvRzLwKihL3hF7kcGcVA4x gupf/3xnK7wUAWdoXWLe6hOeM/l79BBfIPHXTylfJveMCKrk+q3UumOrhkuuqoaOyIf6V0Ii6pu +D+xlW6AxippRvAEfJm+vR4Xt1W8Nak7D+tGvEVyW3TqUUYn
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <a93b7be2-a0a6-084d-47e6-a0e8fcd5bc2b@omp.ru>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-OMAP2_VRFB is a bool, so the vrfb driver can never be compiled as a
-module. With that __exit_p(vrfb_remove) always evaluates to NULL and
-vrfb_remove() is unused.
+On Mon, Oct 30, 2023 at 11:39:14AM +0300, Sergey Shtylyov wrote:
+>Hello!
+>
+>On 10/30/23 1:53 AM, Sasha Levin wrote:
+>
+>> From: Sergey Shtylyov <s.shtylyov@omp.ru>
+>>
+>> [ Upstream commit 7f33df94cf0156f64eee9509bd9b4a178990f613 ]
+>>
+>> In cfb_copyarea(), the local variable bits_per_line is needlessly typed as
+>> *unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
+>> type on the 64-bit arches; that variable's value is derived from the __u32
+>> typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
+>> *unsigned int* type should still be enough to store the # of bits per line.
+>>
+>> Found by Linux Verification Center (linuxtesting.org) with the Svace static
+>> analysis tool.
+>>
+>> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
+>> Signed-off-by: Sasha Levin <sashal@kernel.org>
+>> ---
+>>  drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+>> index 6d4bfeecee350..5b80bf3dae504 100644
+>> --- a/drivers/video/fbdev/core/cfbcopyarea.c
+>> +++ b/drivers/video/fbdev/core/cfbcopyarea.c
+>> @@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+>>  {
+>>  	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+>>  	u32 height = area->height, width = area->width;
+>> -	unsigned long const bits_per_line = p->fix.line_length*8u;
+>> +	unsigned int const bits_per_line = p->fix.line_length * 8u;
+>>  	unsigned long __iomem *base = NULL;
+>>  	int bits = BITS_PER_LONG, bytes = bits >> 3;
+>>  	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
+>
+>   I highly doubt this is necessary to pull that into stable. This was
+>intended to be a cleanup originally.
 
-If the driver was compilable as a module, it would fail to build because
-the type of vrfb_remove() isn't compatible with struct
-platform_driver::remove(). (The former returns void, the latter int.)
+I'll drop this and the other one you've pointed out, thanks!
 
-Fixes: aa1e49a3752f ("OMAPDSS: VRFB: add omap_vrfb_supported()")
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/video/fbdev/omap2/omapfb/vrfb.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
-index ee0dd4c6a646..568e6e1eca62 100644
---- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
-+++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
-@@ -368,17 +368,10 @@ static int __init vrfb_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static void __exit vrfb_remove(struct platform_device *pdev)
--{
--	vrfb_loaded = false;
--}
--
- static struct platform_driver vrfb_driver = {
- 	.driver.name	= "omapvrfb",
--	.remove		= __exit_p(vrfb_remove),
- };
--
--module_platform_driver_probe(vrfb_driver, vrfb_probe);
-+builtin_platform_driver_probe(vrfb_driver, vrfb_probe);
- 
- MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
- MODULE_DESCRIPTION("OMAP VRFB");
-
-base-commit: e27090b1413ff236ca1aec26d6b022149115de2c
 -- 
-2.42.0
-
+Thanks,
+Sasha

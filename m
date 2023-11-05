@@ -2,299 +2,160 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F43FC4332F
-	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Nov 2023 15:15:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 585D1C4167B
+	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Nov 2023 18:16:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229448AbjKEPPx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 5 Nov 2023 10:15:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49542 "EHLO
+        id S229489AbjKESQH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 5 Nov 2023 13:16:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229447AbjKEPPw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Nov 2023 10:15:52 -0500
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10olkn2046.outbound.protection.outlook.com [40.92.42.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0435CD9;
-        Sun,  5 Nov 2023 07:15:49 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Xd+Eqjc2wq7XM4WtJex308nNgxSPmiNP5DW9DdXze+YrB3eQJ2FP3P/PFXfLJsfIfsmyf//J7T200TeCbMmwEui5pbb6NmGWkVVEwCkMsmXxz6X+kTSs4UCH1gsM52I+9p+xGx5sv6QapsRtFi+extrQZW0WAiWdUW8uhDkAV3fM7cRERxxpAngUPcZvWikrP0N0huZ3VGdCN6NPNtZxj9GEaykUCU8DJoi9KeNHN2CS+66xifFioH62BkFEldve9nSYJoaPQLV3rqcNoHU0MymrRg+X7yydo8sQCAkWD6J+P6U3S3Zeb2lFUFaPFM8k59+1AP8PGS6/A7QcNz5IaA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VorxeaR0tPcsEj0IC7UDkAeMGJMwekz+Pv1hYawm2l0=;
- b=RPVlvRbct/jzqdKTA6GMbamwxzaOITuleYfcRt21D/G8VU7oJMbClAX0R4PIn5P1KGeS9o3abadcgq54YtWZkX+0rExwn8jeH/+QSpB01xfzDr+zZnkq2IsISDMVNp788Cq7b2WAEgGK4ccTUXZCwpKRv7WzBH+TcSBxWO3a1TGO0am3oL7FBMJHLSCS5BFl0HWrA8n7ApnPYs50Tot31WWuEcW2G0I6OPSwxUHMDADg1s+IbpT0iYq/BW7oDVXKtnFnfhBzERPj7UNaE6adeLTHbla+1ONSkCaDs9WF/FSbLQ/tdbryCJKHoEY/HLN1biuVptZ0YP+wRaQB4yNJOw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VorxeaR0tPcsEj0IC7UDkAeMGJMwekz+Pv1hYawm2l0=;
- b=bY8gZPhuEV3O7Y91j6zOdyQfJR1p7nNF5ZtanPSbqkHS9+jj9q8elot26Znxs3LtPlXG+t/FO13Xz0jvxVKnpXgE/pm9R2Y3096wUwE7sTjgDjPx6XJ7ElGjyqCB7V/AHteoZZ253bssW0q4YRwndc3Og9lBox2/DyDp7qpgq3bfbfqhW8abfln3uglJsdl0r7MhTuFCkX2Q/WJhAm4BpRG+aBCSP8o88LmDj6S0+cMfTuA9jEA+sM930O5cnWQ4GDnwykPW6djxV/plND750jZmSYcAxI/yvMr/oMRFYLCyveJncIjvyeavvM6US5hEvAb2U1b9ckXN01e7CthxtQ==
-Received: from BY3PR18MB4692.namprd18.prod.outlook.com (2603:10b6:a03:3c7::12)
- by PH7PR18MB5666.namprd18.prod.outlook.com (2603:10b6:510:2e7::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6954.27; Sun, 5 Nov
- 2023 15:15:46 +0000
-Received: from BY3PR18MB4692.namprd18.prod.outlook.com
- ([fe80::4fa4:77da:f114:612a]) by BY3PR18MB4692.namprd18.prod.outlook.com
- ([fe80::4fa4:77da:f114:612a%6]) with mapi id 15.20.6954.027; Sun, 5 Nov 2023
- 15:15:45 +0000
-From:   Michael Kelley <mhklinux@outlook.com>
-To:     Nischala Yelchuri <niyelchu@linux.microsoft.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "kys@microsoft.com" <kys@microsoft.com>,
-        "haiyangz@microsoft.com" <haiyangz@microsoft.com>,
-        "wei.liu@kernel.org" <wei.liu@kernel.org>,
-        "decui@microsoft.com" <decui@microsoft.com>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "mingo@redhat.com" <mingo@redhat.com>,
-        "bp@alien8.de" <bp@alien8.de>,
-        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
-        "x86@kernel.org" <x86@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>,
-        "drawat.floss@gmail.com" <drawat.floss@gmail.com>,
-        "maarten.lankhorst@linux.intel.com" 
-        <maarten.lankhorst@linux.intel.com>,
-        "mripard@kernel.org" <mripard@kernel.org>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "airlied@gmail.com" <airlied@gmail.com>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "deller@gmx.de" <deller@gmx.de>
-CC:     "mhkelley@outlook.com" <mhkelley@outlook.com>,
-        "singhabhinav9051571833@gmail.com" <singhabhinav9051571833@gmail.com>,
-        "niyelchu@microsoft.com" <niyelchu@microsoft.com>
-Subject: RE: [PATCH] Replace ioremap_cache() with memremap()
-Thread-Topic: [PATCH] Replace ioremap_cache() with memremap()
-Thread-Index: AQHaDNzUez9nfYQyzk+2c7gpvJ79lbBr0PJg
-Date:   Sun, 5 Nov 2023 15:15:45 +0000
-Message-ID: <BY3PR18MB469219E1401B9E1A997EA51BD4ABA@BY3PR18MB4692.namprd18.prod.outlook.com>
-References: <1698854508-23036-1-git-send-email-niyelchu@linux.microsoft.com>
-In-Reply-To: <1698854508-23036-1-git-send-email-niyelchu@linux.microsoft.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-tmn:  [K0H8C53o/bui+UHEXvpEJQHbJR9dIQAM]
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BY3PR18MB4692:EE_|PH7PR18MB5666:EE_
-x-ms-office365-filtering-correlation-id: 57a6393c-7f18-49d2-4c1c-08dbde1215bc
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: md/6IQYiwYcVGJm39PuQyVapNLYKd0v0Y07yZrfvKaGD0XYlDh+V9uMww1YD0rv03mKADTlX0SOm4RSJjYTWxL03gat0B3Bf8NzUE+g9vjQcrM4NzX0VLO/idL5I672Z6SS6un8VJWNHh9X6TLTHZVD7usjnRtaG0xdo5uqZDruiJ3Dg9uaVHaIHDSmYjXEiC6KEf3tGQGSFjAJ69LILIXJ0m9xEZsi3AHDLi/ln3QrMp1kwvcqBp7fR+w1SpVsjSIebRKDyRxFSSpkq+87X1D2a4bULVHRTKXQuqOYGeT9TMtrCo1a1VDMrFmUQuorkX+ubkrdN6ucmcq9IXvce379nI48kUCxcLRGt1yFPY/O7Fk0a2GMC7t0cNxK0lidimtKWmdwFSpp1usnQyJd9+G0YQa2Ff5oswp+0YIHfRAhRqFPSrQRQtDUODd9bOMx1QMT/s/p59GIF+Fi3vzDq2h37SWrSVhv1WmS/gQwtNo73Jw42+Rei4I30F00TVoWi04nPAkPo61XbmiOVDNBtrZWFE2mujQAj/l3GKRdmXV2FP7vGR1HsqWMDIOe2hFtQ
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?H+Qy2hNpOhV2F3RZHPNGmKOU5qJaECY07hBMiMBxJc/ycS/AtZbGqsWddYl8?=
- =?us-ascii?Q?lbpjvw7I6nxnsdNMQE+l8upnQn5Z2peg6XLcZ51pIufWngFOKHC8bIFehW0D?=
- =?us-ascii?Q?Klrph6ve4SNdadcFOqL6u+o9gehgjJ0H/dl4SkfRch4UCGuDtp55QZF65DG6?=
- =?us-ascii?Q?dRCxfA2cWpmee4zA8Nc+nZw3432kgUGt5eJZSeltMkFqy5a/0lzrlHAVUGbh?=
- =?us-ascii?Q?gfomJlNcl0xMcBQrHJ6PbZioSwddye/Iz/a0RiaBKgmFj7Vq2jk3icY/2SV9?=
- =?us-ascii?Q?H9I4lM7Zb9qRE/e7kCtONRezH6dauYdVdzGD07rS+2NR9Q7c8gH/cXFmUtJA?=
- =?us-ascii?Q?gpdGBcYu8n3wUqqpR85fdhLoNkaZtVKcdZ3jzt1QW2d5H8NROE8GbO+10ip9?=
- =?us-ascii?Q?yPgtSWj1ggZf4kqnPUCeITEtKEBKWsAo9IluRAMLc45nAuf0CiY8CGZVY9aE?=
- =?us-ascii?Q?RXL2t29zq1HID8ALi0V5mUk9MkRj4T/zTCK8WUM2p9XLEweYja+NH59Jt9tZ?=
- =?us-ascii?Q?kBBgKCP6lwF+CE5wj9MF5oSTeKKBfbK42dbrbOFEn46JINL5gSWOuMgI1c4+?=
- =?us-ascii?Q?eEn6D4xI4nCIlkwT/Vld6JLEfajy6AvBquZijYAvGx394pM/fWiZW9gMqQI4?=
- =?us-ascii?Q?fqt+pjUFZgWXCSMWQlJWfA2BEDxnROydsodNxXNr2Q1S+05jPHIVb6kOupB3?=
- =?us-ascii?Q?VJO9Y8LPKa+/fp6TmAphng37yqekogp8uegp66J+1wD8ZFJRQEcg66PMXt1g?=
- =?us-ascii?Q?LisUPt0zs2fB3qqnlR9bYutQEN+Oq4rvHK3Moo9A96X0amdNAly4RXkLuKPN?=
- =?us-ascii?Q?hJ+qrBV2nn4bSuOAdL+vTOCfMTpq50vwa3NZDrN9ANZGl29UXfndjOH9r2WV?=
- =?us-ascii?Q?peGjGl9uC7HmE1gV48BmP+EWhj+HJcNmzZ+gmOSgUf/Wg2xhCBN0pEIMG6Lh?=
- =?us-ascii?Q?LWmBeuTfpI8H0z4LwSzsdY6huwwwbQD9g19b5eIzfCEPDwsPk+m0rdN7T8zc?=
- =?us-ascii?Q?0We0PwAfWGfszIfvBETkv30lqX1ztHBMjUxZyOlXjHPewAH31jE0jgWhVgUu?=
- =?us-ascii?Q?Th6g9ieIc51nXbkF+jDw2B1uT/JAtVgJLgQ4GjE96lUo4yw2C3D+YPLioAzy?=
- =?us-ascii?Q?F2xkJdqi9w/Ap/xGXXqaTRVrU+muULSa8cEevqbi+cVHDj7269WZhPRmXMCa?=
- =?us-ascii?Q?Jnl33wpit8QdWkSwnphLukE1qdFUeE0rYdsojg=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+        with ESMTP id S229496AbjKESQG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Nov 2023 13:16:06 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE0B5BB;
+        Sun,  5 Nov 2023 10:16:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1699208155; x=1699812955; i=deller@gmx.de;
+        bh=OpuGHWHjo+z7zkLdJMq7rmnWSH4uTCXi2DFnckteg+E=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+         In-Reply-To;
+        b=ouCgQEWl4OU3qITKJagJYZnXWjAAeDbYso6hjsB0ZGA23yEuYuwr9IPLXXY6kiJM
+         snDebPDCHf/2/7PD7+rJUdjL8pu+ZFWM8WnJaWABKYOv0sq8JT1Mv8L9E5yYZNu5A
+         m8LNA2D6dZrb5Do/nDusvlpyQE9WoGNtE3lwTICn5TnFjj3gf8xkw2srGHm5LYB3w
+         vYtH8gGESptlb345FLMx4U7XtISwT9VDPAwtpME9eJc27kF8v2cnMNQQk/8kE0OuW
+         V3h5Q2AXsSksY9u1waIsIIZol2GfeSay8XkRBXe/c8mOsSHj1ObZ49zphJL2+Z+PZ
+         Oyj0trW4X15wYLM6DQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.149.195]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N3KTo-1rPNQf2XMQ-010LFf; Sun, 05
+ Nov 2023 19:15:55 +0100
+Message-ID: <0c6dfd41-8ad9-4780-a327-c910d6214355@gmx.de>
+Date:   Sun, 5 Nov 2023 19:15:54 +0100
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BY3PR18MB4692.namprd18.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 57a6393c-7f18-49d2-4c1c-08dbde1215bc
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-originalarrivaltime: 05 Nov 2023 15:15:45.8443
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR18MB5666
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: omapfb: Drop unused remove function
+Content-Language: en-US
+To:     =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc:     Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, kernel@pengutronix.de
+References: <20231103173557.3639484-2-u.kleine-koenig@pengutronix.de>
+From:   Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
+ HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
+ r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
+ CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
+ 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
+ dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
+ Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
+ GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
+ aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
+ 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
+ ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
+ FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
+ uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
+ uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
+ REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
+ qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
+ iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
+ gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
+ Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
+ qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
+ 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
+ dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
+ rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
+ UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
+ eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
+ ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
+ dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
+ lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
+ 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
+ xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
+ wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
+ fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
+ Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
+ l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
+ RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
+ BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
+ Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
+ XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
+ MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
+ FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
+ 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
+ ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
+In-Reply-To: <20231103173557.3639484-2-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:Tva4T/FttIwLqofolQVY7ZaEyS6uSg9AxEBPnxJrZKjJ2cUezVO
+ 0ckQPyp1yfMJY7v/abSN+gmWgOJNsipjdK8sKaIEq5Sl9Hwbxn4xDpCGbQD/Z164RoOOPDf
+ /34q+87OPf85ica9b6rLchmBG9vOhyB/ry+uAHlLD4R3jPk0YaaOSvSbWkLZEi0owGzeqpm
+ jhQgArtnWYe0f4Guzw33A==
+UI-OutboundReport: notjunk:1;M01:P0:IlOivZGtjTo=;7SvbprnV9Vc+9+iowCdh8UM3hO3
+ j3UhkwQa0UMK57JyNQ4SSwxKDZGoNk51gwvqWOw6nzan2URBOEFsmF7qagtJmHwGgIl4BM1A1
+ Vo27cW+rQSWN43bOjZo6YgnDY2B2bVSzc0CgChT6UJBzJnVAijP3gEGr8532KmDHtJHpNWpaU
+ Gz6CcvyEvsknfqA4KqHQxZPUi+hM/iCocoJL8mUzOJQMjz3vDSLM5+aFt0XadLzFrmjXxYB9y
+ IebCOz4F4xU/ZdKQ0ew1p3zj7qgQQY3kDlfKO4EpWfdVxLk95Rpn7mTNbh2moxb9KaqWFbJcA
+ s597kchLtfGpUosou5pp5MWSgdmzpy0409vh49CfbEi0t8MO08l6CDVQksWA1m4FsOAU4REW3
+ wVC1BhKfYdyctWhdQG1npD3MBI2wcxi88fXnITcE24ERF8BzYq05I6o2g1TYwltEYkj2gh9MR
+ w2H/12eD/5Cyov8rs3b5vkERkDcmUMa6GblgwfYQHyHhpFFLpRp5k6s7Vd64ShxRBNhQe7lPb
+ hy8ZXxeKS3MAeiEPFWwuv0xl2HMnANKbhgu51bk8lSL/cNYUIz9HRKnVzJcuyQxwJcm6SQo0f
+ HZNq5jw1pgFoIj2850wzHzX68mTlXj/QN/D9u6BCNMMvHLAIu9Y0KvxHsnx5rQxhJOJBkh4aW
+ 1rjKTGqBpMHib5p1DfSpf3/RB8jGZyu9WwVYo/vr4cNhwao8h074mm8XbjvfDC91mRajWOFVY
+ nCkTGQS5h+RzD0zDieJUAHfn6id3WJ4OMT4W/aKYbGWVSGseX+TIcUka1keC8eNaD9Xqa3h0G
+ oFHkY62Q/mSDEe/R86gVH48kr91OLYfSK3Mv9iM1zjHQllC9Gp3Q+zsUwzt3eQdMR+xrcAOFm
+ BjUK4JIFwgFMdqghJDewONrUFg5N7ydiPEbJFmHHxoiiV2of2pIx3EH8nZF8Z4scdb/rPZ4E3
+ qNiZxR05BxVMcXmiyr2mdE/KIN4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Nischala Yelchuri <niyelchu@linux.microsoft.com> Sent: Wednesday, Nov=
-ember 1, 2023 9:02 AM
+On 11/3/23 18:35, Uwe Kleine-K=C3=B6nig wrote:
+> OMAP2_VRFB is a bool, so the vrfb driver can never be compiled as a
+> module. With that __exit_p(vrfb_remove) always evaluates to NULL and
+> vrfb_remove() is unused.
 >
+> If the driver was compilable as a module, it would fail to build because
+> the type of vrfb_remove() isn't compatible with struct
+> platform_driver::remove(). (The former returns void, the latter int.)
+>
+> Fixes: aa1e49a3752f ("OMAPDSS: VRFB: add omap_vrfb_supported()")
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
 
-It's customary for the patch "Subject:" line to have a prefix indicating th=
-e
-area of the code being modified.  This patch touches on multiple Hyper-V
-drivers, so there's not a clear choice for prefix.  I would suggest using
-"Drivers: hv:" as is commonly used for Hyper-V code, though other
-reviewers might have a different suggestion.
+applied.
+Thanks!
+Helge
 
- > Current Hyper-V code for CoCo VMs uses ioremap_cache() to map normal
-> memory as decrypted.
-> ioremap_cache() is ideally used to map I/O device memory when it has the =
-characteristics
-> of normal memory. It should not be used to map normal memory as the retur=
-ned pointer
-> has the __iomem attribute.
->=20
-> Fix current code by replacing ioremap_cache() with memremap().
->=20
-> No functional change intended.
->=20
-> Signed-off-by: Nischala Yelchuri <niyelchu@linux.microsoft.com>
+
 > ---
->  arch/x86/hyperv/hv_init.c               |  6 +++---
->  drivers/gpu/drm/hyperv/hyperv_drm_drv.c |  2 +-
->  drivers/hv/hv.c                         | 13 +++++++------
->  drivers/video/fbdev/hyperv_fb.c         |  6 +++---
->  4 files changed, 14 insertions(+), 13 deletions(-)
->=20
-> diff --git a/arch/x86/hyperv/hv_init.c b/arch/x86/hyperv/hv_init.c
-> index 21556ad87..fae43c040 100644
-> --- a/arch/x86/hyperv/hv_init.c
-> +++ b/arch/x86/hyperv/hv_init.c
-> @@ -68,9 +68,9 @@ static int hyperv_init_ghcb(void)
->  	 */
->  	rdmsrl(MSR_AMD64_SEV_ES_GHCB, ghcb_gpa);
->=20
-> -	/* Mask out vTOM bit. ioremap_cache() maps decrypted */
-> +	/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
->  	ghcb_gpa &=3D ~ms_hyperv.shared_gpa_boundary;
-> -	ghcb_va =3D (void *)ioremap_cache(ghcb_gpa, HV_HYP_PAGE_SIZE);
-> +	ghcb_va =3D memremap(ghcb_gpa, HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP=
-_DEC);
->  	if (!ghcb_va)
->  		return -ENOMEM;
->=20
-> @@ -238,7 +238,7 @@ static int hv_cpu_die(unsigned int cpu)
->  	if (hv_ghcb_pg) {
->  		ghcb_va =3D (void **)this_cpu_ptr(hv_ghcb_pg);
->  		if (*ghcb_va)
-> -			iounmap(*ghcb_va);
-> +			memunmap(*ghcb_va);
->  		*ghcb_va =3D NULL;
->  	}
->=20
-> diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-> b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-> index d511d17c5..d6fec9bd3 100644
-> --- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-> +++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-> @@ -92,7 +92,7 @@ static int hyperv_setup_vram(struct hyperv_drm_device
-> *hv,
->  	 * connect to display properly for ARM64 Linux VM, as the host also map=
-s
->  	 * the VRAM cacheable.
->  	 */
-> -	hv->vram =3D ioremap_cache(hv->mem->start, hv->fb_size);
-> +	hv->vram =3D memremap(hv->mem->start, hv->fb_size, MEMREMAP_WB | MEMREM=
-AP_DEC);
+>   drivers/video/fbdev/omap2/omapfb/vrfb.c | 9 +--------
+>   1 file changed, 1 insertion(+), 8 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbd=
+ev/omap2/omapfb/vrfb.c
+> index ee0dd4c6a646..568e6e1eca62 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+> @@ -368,17 +368,10 @@ static int __init vrfb_probe(struct platform_devic=
+e *pdev)
+>   	return 0;
+>   }
+>
+> -static void __exit vrfb_remove(struct platform_device *pdev)
+> -{
+> -	vrfb_loaded =3D false;
+> -}
+> -
+>   static struct platform_driver vrfb_driver =3D {
+>   	.driver.name	=3D "omapvrfb",
+> -	.remove		=3D __exit_p(vrfb_remove),
+>   };
+> -
+> -module_platform_driver_probe(vrfb_driver, vrfb_probe);
+> +builtin_platform_driver_probe(vrfb_driver, vrfb_probe);
+>
+>   MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
+>   MODULE_DESCRIPTION("OMAP VRFB");
+>
+> base-commit: e27090b1413ff236ca1aec26d6b022149115de2c
 
-This change has some additional implications that must be
-accounted for.  The hv->vram field is declared as void __iomem *
-in hyperv_drm.h.   The __iomem attribute should be dropped.
-Then the use of IOSYS_MAP_INIT_VADDR_IOMEM() in
-hyperv_blit_to_vram_rect() should be changed to
-IOSYS_MAP_INIT_VADDR().  This has the desirable effect of=20
-allowing normal memcpy() functions to be used instead of
-the _toio()/_fromio() variants.
-
->  	if (!hv->vram) {
->  		drm_err(dev, "Failed to map vram\n");
->  		ret =3D -ENOMEM;
-> diff --git a/drivers/hv/hv.c b/drivers/hv/hv.c
-> index 51e5018ac..399bfa392 100644
-> --- a/drivers/hv/hv.c
-> +++ b/drivers/hv/hv.c
-> @@ -274,11 +274,12 @@ void hv_synic_enable_regs(unsigned int cpu)
->  	simp.simp_enabled =3D 1;
->=20
->  	if (ms_hyperv.paravisor_present || hv_root_partition) {
-> -		/* Mask out vTOM bit. ioremap_cache() maps decrypted */
-> +		/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
->  		u64 base =3D (simp.base_simp_gpa << HV_HYP_PAGE_SHIFT) &
->  				~ms_hyperv.shared_gpa_boundary;
->  		hv_cpu->synic_message_page
-> -			=3D (void *)ioremap_cache(base, HV_HYP_PAGE_SIZE);
-> +			=3D memremap(base,
-> +				   HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
->  		if (!hv_cpu->synic_message_page)
->  			pr_err("Fail to map synic message page.\n");
->  	} else {
-> @@ -293,11 +294,11 @@ void hv_synic_enable_regs(unsigned int cpu)
->  	siefp.siefp_enabled =3D 1;
->=20
->  	if (ms_hyperv.paravisor_present || hv_root_partition) {
-> -		/* Mask out vTOM bit. ioremap_cache() maps decrypted */
-> +		/* Mask out vTOM bit. memremap() maps decrypted with MEMREMAP_DEC */
->  		u64 base =3D (siefp.base_siefp_gpa << HV_HYP_PAGE_SHIFT) &
->  				~ms_hyperv.shared_gpa_boundary;
->  		hv_cpu->synic_event_page
-> -			=3D (void *)ioremap_cache(base, HV_HYP_PAGE_SIZE);
-> +			=3D memremap(base, HV_HYP_PAGE_SIZE, MEMREMAP_WB | MEMREMAP_DEC);
->  		if (!hv_cpu->synic_event_page)
->  			pr_err("Fail to map synic event page.\n");
->  	} else {
-> @@ -376,7 +377,7 @@ void hv_synic_disable_regs(unsigned int cpu)
->  	 */
->  	simp.simp_enabled =3D 0;
->  	if (ms_hyperv.paravisor_present || hv_root_partition) {
-> -		iounmap(hv_cpu->synic_message_page);
-> +		memunmap(hv_cpu->synic_message_page);
->  		hv_cpu->synic_message_page =3D NULL;
->  	} else {
->  		simp.base_simp_gpa =3D 0;
-> @@ -388,7 +389,7 @@ void hv_synic_disable_regs(unsigned int cpu)
->  	siefp.siefp_enabled =3D 0;
->=20
->  	if (ms_hyperv.paravisor_present || hv_root_partition) {
-> -		iounmap(hv_cpu->synic_event_page);
-> +		memunmap(hv_cpu->synic_event_page);
->  		hv_cpu->synic_event_page =3D NULL;
->  	} else {
->  		siefp.base_siefp_gpa =3D 0;
-> diff --git a/drivers/video/fbdev/hyperv_fb.c
-> b/drivers/video/fbdev/hyperv_fb.c
-> index bf59daf86..cd9ec1f6c 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -1034,7 +1034,7 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
-ct fb_info *info)
->  	 * VM Connect to display properly for ARM64 Linux VM, as the host also
->  	 * maps the VRAM cacheable.
->  	 */
-> -	fb_virt =3D ioremap_cache(par->mem->start, screen_fb_size);
-> +	fb_virt =3D memremap(par->mem->start, screen_fb_size, MEMREMAP_WB | MEM=
-REMAP_DEC);
-
-There's a similar situation here:  the local variable fb_virt is
-declared as void __iomem *.  The __iomem attribute should
-be dropped.
-
->  	if (!fb_virt)
->  		goto err2;
->=20
-> @@ -1068,7 +1068,7 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
-ct fb_info *info)
->  	return 0;
->=20
->  err3:
-> -	iounmap(fb_virt);
-> +	memunmap(fb_virt);
->  err2:
->  	vmbus_free_mmio(par->mem->start, screen_fb_size);
->  	par->mem =3D NULL;
-> @@ -1086,7 +1086,7 @@ static void hvfb_putmem(struct hv_device *hdev, str=
-uct fb_info *info)
->=20
->  	if (par->need_docopy) {
->  		vfree(par->dio_vp);
-> -		iounmap(info->screen_base);
-> +		memunmap(info->screen_base);
->  		vmbus_free_mmio(par->mem->start, screen_fb_size);
->  	} else {
->  		hvfb_release_phymem(hdev, info->fix.smem_start,
-> --
-> 2.34.1

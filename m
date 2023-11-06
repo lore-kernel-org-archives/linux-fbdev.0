@@ -2,27 +2,27 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03EE1C4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Nov 2023 13:27:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8512C4167D
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Nov 2023 13:32:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232609AbjKFN1P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Nov 2023 08:27:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43622 "EHLO
+        id S232766AbjKFNdA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Nov 2023 08:33:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39462 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232605AbjKFN1O (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Nov 2023 08:27:14 -0500
+        with ESMTP id S232764AbjKFNdA (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Nov 2023 08:33:00 -0500
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B058C10B;
-        Mon,  6 Nov 2023 05:27:11 -0800 (PST)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3ECCC433C8;
-        Mon,  6 Nov 2023 13:27:10 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85F5AA9;
+        Mon,  6 Nov 2023 05:32:57 -0800 (PST)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2F93C433C8;
+        Mon,  6 Nov 2023 13:32:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1699277231;
-        bh=tgbDnK4ghuOPjs63JXQXulNk6xQr3SPdrwYN41NPIRA=;
+        s=korg; t=1699277577;
+        bh=eY2ohnsARVYZplJWZoO8cQQDbf0Wbx1qZEOrowctVtU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e2E80zwfDj+P7wSb+eCw734Bz9pGEEmgNaPG/7G659q+DwG9OT05TP8BX0YoxFc/Q
-         jbFgwK6TVeH5L6hT9ohyvu7XyQwGtn8looEKfIfzl44StT1Nl8Zs2aaqOBr7TKtLPi
-         N/Y2eh08b2EIKbuqFghC27QPs0LLnFVBxwECmy6g=
+        b=yZWLDJiVfQAkBopJJb7j5nOfMTNYo8a5fCB8uS+B1nSmDto5fdy8rwErFMrLhw34J
+         60L4T4NXvNCGwZ+IbUlHC+IPUOOn3D9C6jAu5eelELezqwzj8qh6gR18q92r6ikXoV
+         8SPwQmKZgap/ZfpkVekHzSuixHjaJPepkO8htUrA=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     stable@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -34,12 +34,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.15 082/128] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-Date:   Mon,  6 Nov 2023 14:04:02 +0100
-Message-ID: <20231106130312.878518033@linuxfoundation.org>
+Subject: [PATCH 5.10 66/95] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Date:   Mon,  6 Nov 2023 14:04:34 +0100
+Message-ID: <20231106130307.131544559@linuxfoundation.org>
 X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231106130309.112650042@linuxfoundation.org>
-References: <20231106130309.112650042@linuxfoundation.org>
+In-Reply-To: <20231106130304.678610325@linuxfoundation.org>
+References: <20231106130304.678610325@linuxfoundation.org>
 User-Agent: quilt/0.67
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -49,7 +49,7 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-5.15-stable review patch.  If anyone has any objections, please let me know.
+5.10-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -84,10 +84,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+)
 
 diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 1aef3d6ebd880..246bf67b32ea0 100644
+index c8feff0ee8da9..eb32ff0910d3e 100644
 --- a/drivers/video/fbdev/aty/atyfb_base.c
 +++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3447,11 +3447,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+@@ -3440,11 +3440,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
  	}
  
  	info->fix.mmio_start = raddr;

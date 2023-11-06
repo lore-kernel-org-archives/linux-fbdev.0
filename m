@@ -2,50 +2,109 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D840C4167B
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Nov 2023 13:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E368C41535
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Nov 2023 13:13:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232099AbjKFNMT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Nov 2023 08:12:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59388 "EHLO
+        id S232196AbjKFNNw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Nov 2023 08:13:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58478 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232130AbjKFNMQ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Nov 2023 08:12:16 -0500
+        with ESMTP id S232199AbjKFNNv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Nov 2023 08:13:51 -0500
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C847A9
-        for <linux-fbdev@vger.kernel.org>; Mon,  6 Nov 2023 05:12:13 -0800 (PST)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7554C433C8;
-        Mon,  6 Nov 2023 13:12:12 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BD73191;
+        Mon,  6 Nov 2023 05:13:47 -0800 (PST)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AEB2C433C9;
+        Mon,  6 Nov 2023 13:13:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1699276332;
-        bh=jIyk3coOzPkBV7QTj0XHJadht8iHu2WOA0RmAbz1QIE=;
-        h=Date:From:To:Subject:From;
-        b=CdeT+bghz/6SUhDmih2XVDxCWSq6w1XXCXTsnPJhS8rc8D6JCPiMOUDVT5RJIiYlI
-         Qc4IarbhXeben0qoE5DWE8KcE23gsCXFOzR+WNnXZKOnENVX9U85jEW4VMUiKa2iRV
-         486iPmbWTcjqIbwtwxvhIEAeqpaOS9s8uuY4fp6k=
-Date:   Mon, 6 Nov 2023 08:12:11 -0500
-From:   Konstantin Ryabitsev <konstantin@linuxfoundation.org>
-To:     linux-fbdev@vger.kernel.org
-Subject: PSA: migrating linux-fbdev to new vger infrastructure
-Message-ID: <20231106-nippy-woodlouse-of-luxury-a46ed7@nitro>
+        s=korg; t=1699276426;
+        bh=vIGp1W/38lmDvbkGPPzEez15ndehWTOo31+3iPr81s0=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=TIlDv9H6Ffk/u/kk3Naf/ofXPGhilZCCHQm2DvsRTi/GxlRGav5KBw73dR/igQfIL
+         mFigwXWB1wZ56CQMIxrGualB8VGEyLBXTH9N5suKYLLNlzRYOdNFV6KWXvbDQlqHjl
+         EY7AwvA8H0KJYS77uV+bplA+VkSs/b9Ci4AARbq0=
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     stable@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        patches@lists.linux.dev, Arnd Bergmann <arnd@arndb.de>,
+        Baoquan He <bhe@redhat.com>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 6.1 10/62] fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Date:   Mon,  6 Nov 2023 14:03:16 +0100
+Message-ID: <20231106130302.191881467@linuxfoundation.org>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231106130301.807965064@linuxfoundation.org>
+References: <20231106130301.807965064@linuxfoundation.org>
+User-Agent: quilt/0.67
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Good day!
+6.1-stable review patch.  If anyone has any objections, please let me know.
 
-I plan to migrate the linux-fbdev@vger.kernel.org list to the new
-infrastructure this week. We're still doing it list-by-list to make sure that
-we don't run into scaling issues with the new infra.
+------------------
 
-The migration will be performed live and should not require any downtime.
-There will be no changes to how anyone interacts with the list after
-migration is completed, so no action is required on anyone's part.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Please let me know if you have any concerns.
+[ Upstream commit c1a8d1d0edb71dec15c9649cb56866c71c1ecd9e ]
 
-Best wishes,
--K
+ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+extension, and on ia64 with its slightly unconventional ioremap()
+behavior, everywhere else this is the same as ioremap() anyway.
+
+Change the only driver that still references ioremap_uc() to only do so
+on x86-32/ia64 in order to allow removing that interface at some
+point in the future for the other architectures.
+
+On some architectures, ioremap_uc() just returns NULL, changing
+the driver to call ioremap() means that they now have a chance
+of working correctly.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Baoquan He <bhe@redhat.com>
+Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b3463d1371520..faaa64fa5dfe9 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3447,11 +3447,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+ 	}
+ 
+ 	info->fix.mmio_start = raddr;
++#if defined(__i386__) || defined(__ia64__)
+ 	/*
+ 	 * By using strong UC we force the MTRR to never have an
+ 	 * effect on the MMIO region on both non-PAT and PAT systems.
+ 	 */
+ 	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
++#else
++	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
++#endif
+ 	if (par->ati_regbase == NULL)
+ 		return -ENOMEM;
+ 
+-- 
+2.42.0
+
+
+

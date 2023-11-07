@@ -2,45 +2,47 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E54FDC001B2
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Nov 2023 09:20:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0446C04E83
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Nov 2023 09:20:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233251AbjKGJUe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Nov 2023 04:20:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36834 "EHLO
+        id S233817AbjKGJUf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Nov 2023 04:20:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233817AbjKGJUb (ORCPT
+        with ESMTP id S233822AbjKGJUb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Nov 2023 04:20:31 -0500
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D9C712B
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Nov 2023 01:20:27 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1116A106
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Nov 2023 01:20:28 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1r0IG1-0000JK-PA; Tue, 07 Nov 2023 10:20:25 +0100
+        id 1r0IG1-0000IZ-7N; Tue, 07 Nov 2023 10:20:25 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1r0IG1-007Fld-Ce; Tue, 07 Nov 2023 10:20:25 +0100
+        id 1r0IG0-007FlL-Ap; Tue, 07 Nov 2023 10:20:24 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1r0IG1-00ENWW-3Z; Tue, 07 Nov 2023 10:20:25 +0100
+        id 1r0IG0-00ENW7-1c; Tue, 07 Nov 2023 10:20:24 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Helge Deller <deller@gmx.de>
-Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Atul Raut <rauji.raut@gmail.com>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, kernel@pengutronix.de
-Subject: [PATCH 06/22] fb: omapfb/dvi: Don't put .remove() in .exit.text and drop suppress_bind_attrs
-Date:   Tue,  7 Nov 2023 10:17:47 +0100
-Message-ID: <20231107091740.3924258-7-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 01/22] fb: amifb: Stop using platform_driver_probe()
+Date:   Tue,  7 Nov 2023 10:17:42 +0100
+Message-ID: <20231107091740.3924258-2-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
 In-Reply-To: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
 References: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1879; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=T5NKih1NbhRpQaxm+mQiuA7o/X9WnTBakc/jpKl9Xn8=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlSgC7/uPC3wG1e4Lup0IbRbN4w4ctwBQNPepEq vngqfwWhj2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUoAuwAKCRCPgPtYfRL+ TohdCACBIY/xrrA+m5WzRZlOHbpj0zjkUcUvhhkbk0xU1AZbNBFsrc1uK56oS694AFb18pe2Al+ UUB1DLKqfyzLF2bGk5maqpgDGwNjav7RfApA/Zcxii5Hi3KH582oios/pTpRDraQgcsAxnl4xvJ tH1gPuL4uF80yV5E3A/Z1AdkZBJMfDyHlQlaOybjHbYMrkA7zfD0LpuZsoMAd/4fb0l+AaHfCej Gztip6t8UWXKD4zMfvCeZecYmC9dl4hoaLRxKd9X6BGMEp7HhG2pSbTMVeoC5lHlFb+/ls2Xs/W UQlLXN7jfrJjfUr8gZHYh++cUgnvr/h47x31AT1S5aZMFjtt
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2258; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=oG9a0u8ePiuLkRlvrucgb/21kgy596LDbVG/7UHObeY=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlSgC1g6l8kfiGZf6ynAygClDXnAjXuiMZglr7D 301DDl/mpuJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUoAtQAKCRCPgPtYfRL+ TmqUB/wK6QlmNM5mlXhL8RKtrnCHxGYe0CQuYyJnA1GDGHLA5/LyyVw0Csuu9SdZT3jdPqdglPp Fb/K6ywolgkCzdfaGWUatEjvAmoc1fSbL+7cAQuZ96RivUKoQyFBPLMYfD3XY9hCXqogjRTf1WE BzcQ/YKDbFoHuVqE4SGRyV5ovVirgZmQrDPWIydy/nFglqlQRIEbwqhEfGnC1gjEuBvTYV0bPAl jXQhFIRu39qDNiaJOC1GsbtEhugprWuTAgPjp/UPxoIoUWDDU4oSRbNzPIdFfJIlGVRfkte2TyA 9Zo6dID5j4LjKqo7nXTlwIQOmTGhiaOa0UfpvVWIf6jpWBKn
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -51,51 +53,66 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On today's platforms the memory savings of putting the remove function
-in .exit isn't that relevant any more. It only matters for built-in
-drivers and typically saves a few 100k.
+On today's platforms the benefit of platform_driver_probe() isn't that
+relevant any more. It allows to drop some code after booting (or module
+loading) for .probe() and discard the .remove() function completely if
+the driver is built-in. This typically saves a few 100k.
 
-The downside is that the driver cannot be unbound at runtime which is
-ancient and also slightly complicates testing. Also it requires to mark
-the driver struct with __refdata which is needed to suppress a (W=1)
-modpost warning:
+The downside of platform_driver_probe() is that the driver cannot be
+bound and unbound at runtime which is ancient and also slightly
+complicates testing. There are also thoughts to deprecate
+platform_driver_probe() because it adds some complexity in the driver
+core for little gain. Also many drivers don't use it correctly. This
+driver for example misses to mark the driver struct with __refdata which
+is needed to suppress a (W=1) modpost warning:
 
-	WARNING: modpost: drivers/video/fbdev/omap2/omapfb/displays/connector-dvi: section mismatch in reference: dvi_connector_driver+0x4 (section: .data) -> dvic_remove (section: .exit.text)
-
-To simplify matters, move the remove callback to .text and drop
-.suppress_bind_attrs = true.
+	WARNING: modpost: drivers/video/fbdev/amifb: section mismatch in reference: amifb_driver+0x4 (section: .data) -> amifb_remove (section: .exit.text)
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/amifb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-index c8ad3ef42bd3..2a5824fe8ea0 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-@@ -303,7 +303,7 @@ static int dvic_probe(struct platform_device *pdev)
- 	return r;
+diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
+index b18c6b4f129a..85da43034166 100644
+--- a/drivers/video/fbdev/amifb.c
++++ b/drivers/video/fbdev/amifb.c
+@@ -3530,7 +3530,7 @@ static inline void chipfree(void)
+ 	 * Initialisation
+ 	 */
+ 
+-static int __init amifb_probe(struct platform_device *pdev)
++static int amifb_probe(struct platform_device *pdev)
+ {
+ 	struct fb_info *info;
+ 	int tag, i, err = 0;
+@@ -3752,7 +3752,7 @@ static int __init amifb_probe(struct platform_device *pdev)
  }
  
--static int __exit dvic_remove(struct platform_device *pdev)
-+static int dvic_remove(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
- 	struct omap_dss_device *dssdev = &ddata->dssdev;
-@@ -330,11 +330,10 @@ MODULE_DEVICE_TABLE(of, dvic_of_match);
  
- static struct platform_driver dvi_connector_driver = {
- 	.probe	= dvic_probe,
--	.remove	= __exit_p(dvic_remove),
-+	.remove	= dvic_remove,
- 	.driver	= {
- 		.name	= "connector-dvi",
- 		.of_match_table = dvic_of_match,
--		.suppress_bind_attrs = true,
+-static int __exit amifb_remove(struct platform_device *pdev)
++static int amifb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 
+@@ -3769,13 +3769,13 @@ static int __exit amifb_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver amifb_driver = {
+-	.remove = __exit_p(amifb_remove),
+-	.driver   = {
++	.probe = amifb_probe,
++	.remove = amifb_remove,
++	.driver = {
+ 		.name	= "amiga-video",
  	},
  };
+-
+-module_platform_driver_probe(amifb_driver, amifb_probe);
++module_platform_driver(amifb_driver);
  
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:amiga-video");
 -- 
 2.42.0
 

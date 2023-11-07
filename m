@@ -2,169 +2,170 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF1C1C4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Nov 2023 13:57:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C174C4167D
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Nov 2023 20:01:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229643AbjKGN6B (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Nov 2023 08:58:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47582 "EHLO
+        id S233167AbjKGUBp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Nov 2023 15:01:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229535AbjKGN6A (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Nov 2023 08:58:00 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54DBCA2;
-        Tue,  7 Nov 2023 05:57:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1699365448; x=1699970248; i=deller@gmx.de;
-        bh=p0n3xVOp9BeJAf/wjJtPJiFlqD7fJ/EeIppkkT97BkY=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-         In-Reply-To;
-        b=q+tJ7lCQ61BVh95hguZrSopxCmOFoIDAQjiEgLjNGkiw0oECVKUNChRObc6po+i2
-         IWtFeNXDemxh3PmX65kO3N95sYcgDx7OzFUctYkjO2nNgHbZNxt3URLHmPjv6yjgk
-         1RBIoy3kPY5O4P4pHJqDxFDGhXmo10j3z38R8HbO+jj8xKAPbJmnTEOzU8ynJYEbT
-         XM9VkKqw0ZnbUAjCg56aHONNZwkx0dlDr8eKk9LznmpGjZQlY2H7EnKYdFaO8AqvN
-         ypyVK+g3mCZeie7H1SxqISG12T4KjN8EdcNcdVqf71z0fLHXtRexE8yHZ5tHWYd3m
-         YaRfi39qLw3NHuZo6Q==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.157.202]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N7zFj-1rV0Qt2ENv-0154EG; Tue, 07
- Nov 2023 14:57:28 +0100
-Message-ID: <d23a19eb-6f13-407c-a09e-ce55fb903171@gmx.de>
-Date:   Tue, 7 Nov 2023 14:57:27 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/22] fb: handle remove callbacks in .exit.text and
- convert to .remove_new
-Content-Language: en-US
-To:     =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Atul Raut <rauji.raut@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, kernel@pengutronix.de,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        with ESMTP id S231962AbjKGUBo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Nov 2023 15:01:44 -0500
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76F90E7
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Nov 2023 12:01:42 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1r0SGV-0008C6-Vx; Tue, 07 Nov 2023 21:01:36 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1r0SGU-007MtR-VY; Tue, 07 Nov 2023 21:01:34 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1r0SGU-00En5h-M9; Tue, 07 Nov 2023 21:01:34 +0100
+Date:   Tue, 7 Nov 2023 21:01:34 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        kernel@pengutronix.de, Nicolas Ferre <nicolas.ferre@microchip.com>,
+        dri-devel@lists.freedesktop.org,
         Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-        linux-arm-kernel@lists.infradead.org,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-omap@vger.kernel.org,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Stephen Kitt <steve@sk2.org>, Rob Herring <robh@kernel.org>,
-        Javier Martinez Canillas <javierm@redhat.com>
+        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 02/22] fb: atmel_lcdfb: Stop using platform_driver_probe()
+Message-ID: <20231107200134.jsowrcruisrtnspw@pengutronix.de>
 References: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
-From:   Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:JN2iC4gf0zkfiA/NEAWl8Kgbg7aqYMvjyof2nBrypp5HNWUqwwd
- 2wNodxKU5c+r4FJhlxXAKBRq+r88f+ToXEDZ9lhHZnxaqU3aozBM42jE3V/SgO3Y9UYydGI
- FDr5foFxzcTGBmpzPYe3ugd8bkHxJqDIKcMHBCzMe6jFiHp1nLr8eV8i7CeScUaLoN78L+N
- tMKvFNQd+GxYKk+TPbHMA==
-UI-OutboundReport: notjunk:1;M01:P0:k2g+Ph0Aa2g=;7p5xbbnGTZErlS9iSPv/+gSNye+
- GGrrCp53vJYDCHHB2bBVVfhbGbtHoNOUOzXiDmL3hf1Tmsvj5ud/4/HDaGFL4WdAGmA5mknuf
- f8ESfqVzkHjuTowpMvozpH2l1bj+gnCl8X/hE4Kc831wiq20LQi0xdf7tTSqiYF3kjj9Tn9Y/
- Y0RwzeNEhxvZ2ei7jj9Z3AmtIhlVM++AT40bUvL5TqzPOKwi28V/vMXY0ZlCF5oqxMPCczZlH
- tnhx9EBuax8x1UIW6Ympl2q16mHatS4lh/u4XS2d7QCPRTA2lW6/KsDwoDcNHgKoWWTK+CWXH
- VKw/EB8EMB1AkR4o+GphmWYKVyQlY2FFfBTJj819yct+bm7+FxnM2jb2o7zacFbTbJYTUue7v
- /nVJgA3YmW7BA1OtctFXRHWQq0uAwUrvPlh0BsqTJks5roP8HCX+yrLmqkxw7oYuiDk6nNFfb
- 5kF2wp2asMAPEGHCXdfAQ78WbP7cJWxun51/RMURmR2jjBXaKOSM41SRHbfCrLYmkWFQlucag
- xVU1ZqQD/PLczQVG0GLyVJZbOFVbwHL8SXJET5GQXyrsaIaO5ccS6VaNKqgjMr8cxS5+HTZJz
- maRqPVRvoUSqEdTurpJTfPhbrtrcAMh7FElx5CWG01JnV0ZSTuk3iTurUTIFqHXnuy/7Gg33P
- /Zak2HrCyVQy2clhv7mfbu+AU/ZNXOXPxHsAUdF+ZOngM24pFMbC0lDDZnY15X+yp48feZ8+q
- DZ38TkfqOdBII5rZwzL1df80wstGQMBot1RzQjKNCJbf+5WEv1tbUx2p/ZGH+fYt8fj/AJUVb
- pEsk/q2T8itDecULn1hGe2ZCpBD8t1Fr9EjjbxJz+qmmGBzX9XxygenAqm7Peh+MTcguOI1FK
- aPOhKUne3+yax8lGMGh14W8JFfRbT/rlZngGlCO49P4afU/0nAqXOHQF9z8/d3VJpbrqj20ef
- F0fANgraUM7W1MUJDjOavo7ng8U=
+ <20231107091740.3924258-3-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="sjmfdg57sgsypwrr"
+Content-Disposition: inline
+In-Reply-To: <20231107091740.3924258-3-u.kleine-koenig@pengutronix.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/7/23 10:17, Uwe Kleine-K=C3=B6nig wrote:
-> there are currently several platform drivers that have their .remove
-> callback defined in .exit.text. While this works fine, it comes with a
-> few downsides: Since commit f177cd0c15fc ("modpost: Don't let "driver"s
-> reference .exit.*") it triggers a modpost warning unless the driver
-> struct is marked with __refdata. None of the drivers in
-> drivers/video/fbdev get that right (which is understandable the warning
-> was added only recently). While it would be possible to add that marker,
-> that's also a bit ugly as this bypasses all other section checks that
-> modpost does. Having the remove callback in .exit.text also means that
-> the corresponding devices cannot be unbound at runtime which is
-> sometimes usefull for debugging purposes.
->
-> To fix the modpost warning I picked the progressive option and moved the
-> .remove() callbacks (and for two drivers also .probe()) into .text (i.e.
-> the default code section) and dropped .suppress_bind_attrs =3D true (whi=
-ch
-> is implicitly set for drivers using platform_driver_probe()).  Note even
-> though these patches fix a warning, it currently only happens with W=3D1=
-,
-> so this isn't urgent and there is no need to apply these before v6.7.
-> The next merge window is fine (although I wouldn't object an earlier
-> application of course :-) The alternative is to add the __refdata
-> marker, ideally with a comment describing the need. (See e.g. commit
-> 141626dbc2e6 ("rtc: sh: Mark driver struct with __refdata to prevent
-> section mismatch warning") .)
->
-> As a follow-up I converted the affected drivers to .remove_new(). There
-> was already a series doing this for the other drivers in
-> drivers/video/fb, but my coccinelle script missed these drivers as it
-> didn't handle
->
-> 	.remove =3D __exit_p(removefunc),
->
-> . See commit 5c5a7680e67b ("platform: Provide a remove callback that
-> returns no value") for an extended explanation and the eventual goal. I
-> considered creating a second series for this conversion, but as the
-> patches conflict I put all patches in a single series to make it easier
-> to apply it.
 
-Thanks Uwe!
+--sjmfdg57sgsypwrr
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've applied the series as-is to the fbdev for-next git tree.
-The patches look ok, and if they survive the next few days they will go
-upstream soon.
+On Tue, Nov 07, 2023 at 10:17:43AM +0100, Uwe Kleine-K=F6nig wrote:
+> On today's platforms the benefit of platform_driver_probe() isn't that
+> relevant any more. It allows to drop some code after booting (or module
+> loading) for .probe() and discard the .remove() function completely if
+> the driver is built-in. This typically saves a few 100k.
+>=20
+> The downside of platform_driver_probe() is that the driver cannot be
+> bound and unbound at runtime which is ancient and also slightly
+> complicates testing. There are also thoughts to deprecate
+> platform_driver_probe() because it adds some complexity in the driver
+> core for little gain. Also many drivers don't use it correctly. This
+> driver for example misses to mark the driver struct with __refdata which
+> is needed to suppress a (W=3D1) modpost warning:
+>=20
+> 	WARNING: modpost: drivers/video/fbdev/atmel_lcdfb: section mismatch in r=
+eference: atmel_lcdfb_driver+0x4 (section: .data) -> atmel_lcdfb_remove (se=
+ction: .exit.text)
+>=20
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> ---
+>  drivers/video/fbdev/atmel_lcdfb.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atme=
+l_lcdfb.c
+> index a908db233409..b218731ef732 100644
+> --- a/drivers/video/fbdev/atmel_lcdfb.c
+> +++ b/drivers/video/fbdev/atmel_lcdfb.c
+> @@ -1017,7 +1017,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_i=
+nfo *sinfo)
+>  	return ret;
+>  }
+> =20
+> -static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+> +static int atmel_lcdfb_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev =3D &pdev->dev;
+>  	struct fb_info *info;
+> @@ -1223,7 +1223,7 @@ static int __init atmel_lcdfb_probe(struct platform=
+_device *pdev)
+>  	return ret;
+>  }
+> =20
+> -static int __exit atmel_lcdfb_remove(struct platform_device *pdev)
+> +static int atmel_lcdfb_remove(struct platform_device *pdev)
+>  {
+>  	struct device *dev =3D &pdev->dev;
+>  	struct fb_info *info =3D dev_get_drvdata(dev);
+> @@ -1301,7 +1301,8 @@ static int atmel_lcdfb_resume(struct platform_devic=
+e *pdev)
+>  #endif
+> =20
+>  static struct platform_driver atmel_lcdfb_driver =3D {
+> -	.remove		=3D __exit_p(atmel_lcdfb_remove),
+> +	.probe		=3D atmel_lcdfb_probe,
+> +	.remove		=3D atmel_lcdfb_remove,
+>  	.suspend	=3D atmel_lcdfb_suspend,
+>  	.resume		=3D atmel_lcdfb_resume,
+>  	.driver		=3D {
+> @@ -1310,7 +1311,7 @@ static struct platform_driver atmel_lcdfb_driver =
+=3D {
+>  	},
+>  };
+> =20
+> -module_platform_driver_probe(atmel_lcdfb_driver, atmel_lcdfb_probe);
+> +module_platform_driver(atmel_lcdfb_driver, );
 
-Helge
+Argh, the , must be removed. I had this in my working copy but forgot to
+squash it into this commit. Sorry!
+
+Can you squash in the following please?:
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_=
+lcdfb.c
+index 0531d6f6dcc5..88c75ae7d315 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -1308,8 +1308,7 @@ static struct platform_driver atmel_lcdfb_driver =3D {
+ 		.of_match_table	=3D atmel_lcdfb_dt_ids,
+ 	},
+ };
+-
+-module_platform_driver(atmel_lcdfb_driver, );
++module_platform_driver(atmel_lcdfb_driver);
+=20
+ MODULE_DESCRIPTION("AT91 LCD Controller framebuffer driver");
+ MODULE_AUTHOR("Nicolas Ferre <nicolas.ferre@atmel.com>");
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--sjmfdg57sgsypwrr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVKl50ACgkQj4D7WH0S
+/k79igf+NcsaKUuX+n6J099hutP7e/6l1H4tbP734q1G0NfcM88RoImECYSikOS7
+kjD3nZNRkIZZI4wvwUHVDVWeG53uzR9j1/M92J2iPBbeixxiF7oJvpoDtySYTMxm
+J4KbgDb1F1cNXXfG5DhDv+Av7db0QVX1nWr8ClrN8OpXPg7RRLbDeve0DyVVNThx
+Wq/JyMW+UeucJCf+j/b9YS1+8F+cDCztNwmcQYxycRCKplItqkjnUyfHGFZYZzUg
+cN/S3Km57tPKwxKHxpKaVPIF9hFGFkZKKNTJaXA0PDPyxwGpFj/vATYlNNovFYhL
+X/hoC1DjhyzoIS6OBmwOsD9YX8AALg==
+=NGWh
+-----END PGP SIGNATURE-----
+
+--sjmfdg57sgsypwrr--

@@ -2,125 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1896DC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Nov 2023 13:48:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF68C41535
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Nov 2023 09:20:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232851AbjKFNsy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Nov 2023 08:48:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60822 "EHLO
+        id S233909AbjKGJUd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Nov 2023 04:20:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232083AbjKFNsx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Nov 2023 08:48:53 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD72BBF
-        for <linux-fbdev@vger.kernel.org>; Mon,  6 Nov 2023 05:48:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1699278528; x=1699883328; i=deller@gmx.de;
-        bh=PA1YJ+qVRx9pUSfF3oggHQ458Ts7xa2r6hIMyr3h/sw=;
-        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
-        b=SNdbs8vcX5i3oaCdixx/ga03A0m9LHxihZpemtMVByAgO2gtIHJGC3OrwAaRfCQV
-         +BgDooz5pSX+URwuFiODJ+h+qEFc/XJN+yThjeZnXoVFxarxCd5f3Dnq2/aP5BO+l
-         NE/2f92GwYbih6ijhj2u4ygbh2woTsE9i5wIAGDvqaD4VIGhUkQ7oKaQm+RPYQadH
-         L7h5T7nttMg9oBFWdE3RjtmGNwRlOL/VtQxMsxxFOvbsc2sBg72gxldeLrqcIUNB8
-         xJU/WAi7FnFT7Yi7mPeanSuFW9IpD2i6zU551UYODMvK37yVDJg+1ADfxAvkmQQkx
-         UTYOf8zkXJ3FzzgW6Q==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.147.209]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mv2xU-1rHOGO2ANM-00r2CJ; Mon, 06
- Nov 2023 14:48:48 +0100
-Message-ID: <462101f7-2c11-4fad-8875-615041f9a8ce@gmx.de>
-Date:   Mon, 6 Nov 2023 14:48:48 +0100
+        with ESMTP id S229536AbjKGJUa (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Nov 2023 04:20:30 -0500
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 577B2125
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Nov 2023 01:20:27 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1r0IG1-0000Ib-7N; Tue, 07 Nov 2023 10:20:25 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1r0IG0-007FlR-QR; Tue, 07 Nov 2023 10:20:24 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1r0IG0-00ENWF-HE; Tue, 07 Nov 2023 10:20:24 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, kernel@pengutronix.de
+Subject: [PATCH 03/22] fb: omapfb/analog-tv: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+Date:   Tue,  7 Nov 2023 10:17:44 +0100
+Message-ID: <20231107091740.3924258-4-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.42.0.586.gbc5204569f7d.dirty
+In-Reply-To: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
+References: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: PSA: migrating linux-fbdev to new vger infrastructure
-To:     Konstantin Ryabitsev <konstantin@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org
-References: <20231106-nippy-woodlouse-of-luxury-a46ed7@nitro>
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20231106-nippy-woodlouse-of-luxury-a46ed7@nitro>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:h6d1QKVYF+nT3zzxpjprsiILVuttKMV5/uOx3Wu6l5glWmuxbk2
- IIy1As/eiPxd3fhWize3THgYvAb5cuiMKVpNhGLUuNHVl1SeYNPWPokXSf+/pVLV1IE8/MH
- MdAOv2ktggdzjzTOid60rg3TIfa7oTd0p0LV9z2OPCWi8vdh3DwbBi8j69Cs0+KcTQ6DnoY
- 4XXCBZ/7ng/A5Ds0IeawA==
-UI-OutboundReport: notjunk:1;M01:P0:mt99Ca3zZmI=;DM/pz40tp5lVRbsfj3juSyW2LdI
- DyVwblUR2aeVqYrQcwVtiUqSdU51NH+YgBZTOTbHfT+gZzc3uxpC2WutxuJL3xXixR5W/7seo
- ttFyPDClPnficXtUdF3LtelRpTaSvITuepgoqhkK0oXmfsnCIYYI7RAlncdpR8GYfUVx8fNHf
- 1i5pMjIizMfjK1eucIgI5n4sDxlFiZ+6Y+r8shfKz2L1KTCNksJatculcuvGgEKOhTFw7Z6W4
- SmihISnmQyJXxCvsmgO3szxIOMYcBQv8c1IY5AUq7FtXtYsqeLXwfsY88n5Dc45DIP4J2RxY3
- 2BcxR92CnyESxLJ8dFq+Z4DWTNO+Ejksp4haCLXChYb82FTB5oJsteXXbSgaIVxH9qseq7CcW
- BPc7WCljd/R1G/HRydT14kO6/NEBZWa9KmHZUPSvRPz6NM+j5/pvmWbQP45NXAQ4InQrydaJg
- k7Vu/F1XrJBGHDmf7FdQotmtpiLQ8+EabiF9PF+XLM7rQuDRxBMq8Swjxe23+ebwGr8TFrFar
- p0fy3Uo4mZ7BWKwDRR0O54vSHEyEBhorzPMkDyk5hCd8e/mJhflCIIBszpXVrpHKbHzKaMbCQ
- xIGrq8zn8sw8cljey5NeTfvJsQrNKmvHY3nbucxlXJZj8f2JjL/cAlmbCJ6NCWv09HS2Qpuin
- M+J5dLBpYe6eFwUUj7F/335573w6Q1py+rBQYhPOreeNya7T5JXcDinknyNkdeBLTuxkqgefQ
- z04jR8M0DqBsrkoq9F1sxxLbQumODilJrXjUX4qJei/of6FFGSDg3mfimht4qfJnPljQVHIkd
- 7tv2YNrY1IJZrozZZO62ghihuzr+hyCUwfTTkjK6KPCbbR74VhSwR9TS2E8hf2YOYBf+4QdDq
- eV/YKan87i5iadbDlduqpCLzC+Ftx2UExFW6eFggqyZ5uEC8h3U/Sm8L0mcdn3zbSfHMPzf0S
- JKRfd/1ugU4LJyjo3MQG0Hzp4wU=
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1909; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=6VdYr8cdlJJ63QMV/RkyaKWVaf+688YzUfimrg2v3tk=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlSgC4P2sDbLL3y6bXQTgb5LvLYRoJsZExJKfm9 DA5RIcxcCWJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZUoAuAAKCRCPgPtYfRL+ TrY1B/9ebuLqqfSO8Z7tgEuEXMFgL2weyds0kDru8kjmTEkzbpxDd4yaBm74d/gbtIKItSp12i2 v4/9LngrEL3z0qjjjF71G5D3zU+Al9JhTX0iE+aOgWQ9N3RXSjYUzPuT5rt/R6qMhRMuCG9m8ZS lzZz85zCuxWEhCCBu3AyKAJS3ZHfJ60a/ZyYlSaD8LDXNkyDbuKCiKmZJVzCAFtq9XimCCtH5xi N2UjJGX0Xn7Mx5BdENDezFUhALm7DzHjJsWIc8AxM7HPjAsO6mFrKTr0iAoW2L1aYF5BW7K1o5U gPZ+8brn4LijTYETyFiQkjnxTgpaqvYGXbuevcCSjRPv/3nG
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/6/23 14:12, Konstantin Ryabitsev wrote:
-> I plan to migrate the linux-fbdev@vger.kernel.org list to the new
-> infrastructure this week. We're still doing it list-by-list to make sure=
- that
-> we don't run into scaling issues with the new infra.
->
-> The migration will be performed live and should not require any downtime=
-.
-> There will be no changes to how anyone interacts with the list after
-> migration is completed, so no action is required on anyone's part.
->
-> Please let me know if you have any concerns.
+On today's platforms the memory savings of putting the remove function
+in .exit isn't that relevant any more. It only matters for built-in
+drivers and typically saves a few 100k.
 
-Thanks for the heads-up, and no concerns from my side.
+The downside is that the driver cannot be unbound at runtime which is
+ancient and also slightly complicates testing. Also it requires to mark
+the driver struct with __refdata which is needed to suppress a (W=1)
+modpost warning:
 
-Helge
+	WARNING: modpost: drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv: section mismatch in reference: tvc_connector_driver+0x4 (section: .data) -> tvc_remove (section: .exit.text)
+
+To simplify matters, move the remove callback to .text and drop
+.suppress_bind_attrs = true.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ .../video/fbdev/omap2/omapfb/displays/connector-analog-tv.c  | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
+index 0daaf9f89bab..85fa58f48a81 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
+@@ -221,7 +221,7 @@ static int tvc_probe(struct platform_device *pdev)
+ 	return r;
+ }
+ 
+-static int __exit tvc_remove(struct platform_device *pdev)
++static int tvc_remove(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+ 	struct omap_dss_device *dssdev = &ddata->dssdev;
+@@ -247,11 +247,10 @@ MODULE_DEVICE_TABLE(of, tvc_of_match);
+ 
+ static struct platform_driver tvc_connector_driver = {
+ 	.probe	= tvc_probe,
+-	.remove	= __exit_p(tvc_remove),
++	.remove	= tvc_remove,
+ 	.driver	= {
+ 		.name	= "connector-analog-tv",
+ 		.of_match_table = tvc_of_match,
+-		.suppress_bind_attrs = true,
+ 	},
+ };
+ 
+-- 
+2.42.0
 

@@ -2,190 +2,146 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32C11C4167B
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Nov 2023 12:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D710C4167D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Nov 2023 20:31:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230063AbjKIMXf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Nov 2023 07:23:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47912 "EHLO
+        id S1345146AbjKIUbv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Nov 2023 15:31:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229574AbjKIMXe (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Nov 2023 07:23:34 -0500
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D6C52D55;
-        Thu,  9 Nov 2023 04:23:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-        s=201909; t=1699532610;
-        bh=R2IIgl4ZRFgwipCQ4ZBWquxZCbtnLxeQT8yMzVcSClk=;
-        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-        b=JOE+Y96nQb0g0fD7YjgIsTtXOrsQ0zdJ9Xit6bae239vdgrtE8Xe20tGEjOEwp6b5
-         bBGasTtN2qhciM6Vxj5gO1APMLHXfhhNabxTTxDpDoDz6AXcIv0hdu9+rRXuZNmSj3
-         PriUuPEOny5OCaNxYhuQeMYyhW0D7Uuip11fA5kii4KmxM9zaRV2MnEviCDpMHy6zq
-         fUfZ9elCA6bj44/a3P1CQqNaCruTVzrNA2B2UxDQEd/EBpaSM5DHluHgXy74J1JLYp
-         rlgnpTfcT5fdD0htnPYkbVFENF7DqxPzxI5N3NUPYBgm/lUlPDoiySV3dJVovZ01Br
-         M0UtCQNJ+RaEQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        by mail.ozlabs.org (Postfix) with ESMTPSA id 4SR1MD6jtmz4wd2;
-        Thu,  9 Nov 2023 23:23:20 +1100 (AEDT)
-From:   Michael Ellerman <mpe@ellerman.id.au>
-To:     Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>
-Cc:     Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        guoren <guoren@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Greg Ungerer <gerg@linux-m68k.org>,
-        Michal Simek <monstr@monstr.eu>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Dinh Nguyen <dinguyen@kernel.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Geoff Levand <geoff@infradead.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        "David S . Miller" <davem@davemloft.net>,
-        Andy Lutomirski <luto@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        "x86@kernel.org" <x86@kernel.org>, Helge Deller <deller@gmx.de>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Timur Tabi <timur@kernel.org>,
-        Kent Overstreet <kent.overstreet@linux.dev>,
-        David Woodhouse <dwmw2@infradead.org>,
-        "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
-        Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-        Kees Cook <keescook@chromium.org>,
-        Vincenzo Frascino <vincenzo.frascino@arm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Nicolas Schier <nicolas@fjasle.eu>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
-        "linux-snps-arc@lists.infradead.org" 
-        <linux-snps-arc@lists.infradead.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-trace-kernel@vger.kernel.org" 
-        <linux-trace-kernel@vger.kernel.org>,
-        "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
-        "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>,
-        "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
-        "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-        "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
-        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-        Netdev <netdev@vger.kernel.org>,
-        "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-bcachefs@vger.kernel.org" <linux-bcachefs@vger.kernel.org>,
-        "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
-Subject: Re: [PATCH 15/22] arch: vdso: consolidate gettime prototypes
-In-Reply-To: <886df4e4-9fc2-ca52-e7e9-53688e6e821a@csgroup.eu>
-References: <20231108125843.3806765-1-arnd@kernel.org>
- <20231108125843.3806765-16-arnd@kernel.org>
- <ecedb0f1-9543-35c6-18bd-723e6bf21173@csgroup.eu>
- <d94de5b8-db92-4055-9484-f2666973c02a@app.fastmail.com>
- <87o7g3qlf5.fsf@mail.lhotse>
- <886df4e4-9fc2-ca52-e7e9-53688e6e821a@csgroup.eu>
-Date:   Thu, 09 Nov 2023 23:23:20 +1100
-Message-ID: <87il6bqfnr.fsf@mail.lhotse>
+        with ESMTP id S234623AbjKIUbk (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Nov 2023 15:31:40 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A0EA49D1;
+        Thu,  9 Nov 2023 12:31:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1699561869; x=1700166669; i=deller@gmx.de;
+        bh=3jA2O5flvizCABXx4ttgZeVpGLkt76gxErJWerUzBgQ=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+         In-Reply-To;
+        b=r5M9CiZqN/jtz/zCrhg/fSrcWrivR453BKh8+aUf3OMuz52XcD78AaRdJcuO2CNU
+         UImOYdQbY+OQaBrITrvw72QdqzYMSBuGQt3bPapTlMVfuBlx2yBrCL66nBG7V99Fu
+         U1xNeHewRw9nQY432/zRLyDCIwg6tf0RkL4v4E/ou5zFoCdnRp9modn6p9gKjrHXP
+         jA9ir3NKDF+G81qF8ezJK8Czr0Hua3xnEdaK1XYfZgL+IxrKC0MvHSlqmSgMFiNDz
+         uv0AuiF4as7Xa3APEnl/+krkELUyUUahhUY9a/7WEWgRMJbimGP5mXiPuoftflOtx
+         F5StcTecgbnh2VwXVg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.153.156]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MUowV-1qs4tQ1rhh-00QhHh; Thu, 09
+ Nov 2023 21:31:09 +0100
+Message-ID: <e2f7ef76-7c03-40d6-a985-141dc1a191c2@gmx.de>
+Date:   Thu, 9 Nov 2023 21:31:08 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 01/22] fb: amifb: Stop using platform_driver_probe()
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Atul Raut <rauji.raut@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, kernel@pengutronix.de,
+        linux-m68k <linux-m68k@lists.linux-m68k.org>
+References: <20231107091740.3924258-1-u.kleine-koenig@pengutronix.de>
+ <20231107091740.3924258-2-u.kleine-koenig@pengutronix.de>
+ <CAMuHMdVaaH_ZJT+jAyxZxnVYT3L=b4B-LEMTP4PqQH2TE0nH6g@mail.gmail.com>
+ <9559f1d6-f68e-4c14-83b0-e5a545039124@gmx.de>
+ <CAMuHMdVsHHPAE5JXjC5rS86H=nDgBMePGU8b1y_wcQYrWZHuTA@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <CAMuHMdVsHHPAE5JXjC5rS86H=nDgBMePGU8b1y_wcQYrWZHuTA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:wix2lv0/0/bdXp9mIyXaOBLlu/03xgjvPuZko6JduTHlbRKrm5m
+ UH5TJyL/vUXuyfieMNLHTHW1aB72Bvw7Mq+M90okobX74Dh1RIw2GZHgX3u19vqo1aFgO5y
+ pj3AwP1hGq80f5gHW6ZRo1KRELcsxIcMR8h52x3vyZKqDnYxuCyZZoEqeTAoEZX9vpb2fYF
+ XpY0dtkOoxckH99RYrp/w==
+UI-OutboundReport: notjunk:1;M01:P0:X629G8/7wx4=;9OQbjKko2DnTNSzDf8Epesze6tK
+ lnfDlEQjsTFVlSeMec/XiCLA86QwtlJnETZYqAdxGCw+u3Wo9/mzqX7v9EYttmAzfN20T9SAS
+ 7q0yG19xfC88U944ZlHsiNp6YhpDKU6gLom0u6ynmjS5TGyOHhAAByMfbfLJwYg/1/FrSpLOI
+ fTd8x8SMYUi06Rp5HE7yQebKr89J2EohMzv2yZC4EFEahW08kvit/POAJCWKlwdHYrhqWveUU
+ WTZiuYFGqYeXZ/o3JQuglGBgB14jGj5jSm0U5kj3HWAXtTvMaBm+C38YSDyetJF0u4vuDuPCU
+ hI562qnyuzOtiAP7hpNifpvhv9U9wESJ5Xdoz+Aa0ChlwE2Ood1r9tWJreSO4jKu8OVTcyubU
+ fCbLdhI0g+bFZlD/AY0LANh/4UkSVE+R3GR7TwX4ES2mVa6FvvNoMbAaIX1OVCQbcQWBqDw61
+ Cp+OIi+9hldefpuDWeFfW9mi8aaEQ13r0WUvbawe9y35DFxZlTqP97NcAmJoUBanT11QX+uz4
+ 1Makdz0X49SKu4eiSuBpe1lDS71L4TSQv8qpTXwIiIc5MHMOG51ilM15VBkcwM9KYCGOr6TP9
+ hRoj1dQ3xR0sUeM3SLRClbEK/dv9U2W0lIIIjQjZTqHDkbVnqLUVg8fFYTnQRKzMi/u2tvjq5
+ ej7SOSge75quvu7lBlNYmuCNlWfjE/9Myuai7vFkMN6+IS31W5BtOzHc7uLH6CrJmQ4zV3IlT
+ iTGucv6YSIivG82IJtVTbwGkCE1/grvULxaxQ92hzvfnyTszoGG31qErYN0WPjT7pPTl31or5
+ FE5/KJ1VodEU5W9y2vqS0Hxi35GOFqB2YhTuA6x6T6goKzUu6bi97mOOYtVYrhm9+9OtUIgU4
+ 4eKQdrbI+VHr1uwaQAoxJhE6qauqibSlMeiyLORvxo6j/846XKApQgv0cqR7MrU6goJ467I0v
+ nf6j9A==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 09/11/2023 =C3=A0 11:18, Michael Ellerman a =C3=A9crit=C2=A0:
->> "Arnd Bergmann" <arnd@arndb.de> writes:
->>> On Wed, Nov 8, 2023, at 19:31, Christophe Leroy wrote:
->>>> Le 08/11/2023 =C3=A0 13:58, Arnd Bergmann a =C3=A9crit=C2=A0:
->>>
->>>> powerpc has functions doing more or less the same, they are called
->>>> __c_kernel_clock_gettime() and alike with their prototypes siting in
->>>> arch/powerpc/include/asm/vdso/gettimeofday.h
->>>>
->>>> Should those prototypes be moved to include/vdso/gettime.h too and
->>>> eventually renamed, or are they considered too powerpc specific ?
->>>
->>> I don't actually know, my initial interpretation was that
->>> these function names are part of the user ABI for the vdso,
->>> but I never looked closely enough at how vdso works to
->>> be sure what the actual ABI is.
->>=20
->> AFAIK the ABI is just the symbols we export, as defined in the linker
->> script:
->>=20
->> /*
->>   * This controls what symbols we export from the DSO.
->>   */
->> VERSION
->> {
->> 	VDSO_VERSION_STRING {
->> 	global:
->> 		__kernel_get_syscall_map;
->> 		__kernel_gettimeofday;
->> 		__kernel_clock_gettime;
->> 		__kernel_clock_getres;
->> 		__kernel_get_tbfreq;
->> 		__kernel_sync_dicache;
->> 		__kernel_sigtramp_rt64;
->> 		__kernel_getcpu;
->> 		__kernel_time;
->>=20
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
-arch/powerpc/kernel/vdso/vdso64.lds.S?h=3Dv6.6&#n117
->>=20
->>> If __c_kernel_clock_gettime() etc are not part of the user-facing
->>> ABI, I think renaming them for consistency with the other
->>> architectures would be best.
->>=20
->> The __c symbols are not part of the ABI, so we could rename them.
->>=20
->> At the moment though they don't have the same prototype as the generic
->> versions, because we find the VDSO data in asm and pass it to the C
->> functions, eg:
->>=20
->> int __c_kernel_gettimeofday(struct __kernel_old_timeval *tv, struct time=
-zone *tz,
->> 			    const struct vdso_data *vd);
->>=20
->> I think we can rework that though, by implementing
->> __arch_get_vdso_data() and getting the vdso_data in C. Then we'd be able
->> to share the prototypes.
+On 11/8/23 22:34, Geert Uytterhoeven wrote:
+> Hi Helge,
 >
-> I think it would not a been good idea, it would be less performant, for=20
-> explanation see commit=20
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
-/?id=3De876f0b69dc993e86ca7795e63e98385aa9a7ef3
+> On Wed, Nov 8, 2023 at 10:32=E2=80=AFPM Helge Deller <deller@gmx.de> wro=
+te:
+>> On 11/8/23 22:06, Geert Uytterhoeven wrote:
+>>> On Tue, Nov 7, 2023 at 10:20=E2=80=AFAM Uwe Kleine-K=C3=B6nig
+>>> <u.kleine-koenig@pengutronix.de> wrote:
+>>>> On today's platforms the benefit of platform_driver_probe() isn't tha=
+t
+>>>> relevant any more. It allows to drop some code after booting (or modu=
+le
+>>>> loading) for .probe() and discard the .remove() function completely i=
+f
+>>>> the driver is built-in. This typically saves a few 100k.
+>>>
+>>> Which is a lot on platforms with only a few MiBs of RAM...
+>>
+>> True.
+>> Given the warnings below, what is your suggestion?
+>> Better to drop the amifb patch ?
+>
+> I think so. There is a reason these drivers use platform_driver_probe().
 
-Ah thanks. I was wondering why you had done it in asm.
+Ok, I've dropped both amifb patches.
 
-It's a pity but you're right that's probably a measurable performance
-hit for some of those calls.
+Helge
 
-cheers

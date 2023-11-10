@@ -1,55 +1,108 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E0783B28F;
-	Fri, 10 Nov 2023 19:35:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="QWIAULOH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A15FFC433CA;
-	Fri, 10 Nov 2023 19:35:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1699644910;
-	bh=a8twNFEKjGrKBxbdq191jaAma5+5cbZZWFE+Q6SHfO4=;
-	h=Date:From:To:Subject:References:In-Reply-To:From;
-	b=QWIAULOHfuC4ewTV3HG2pnrPYVTcQmHYctffbQR65o8lGEafhP0RAYM3fCRSz3VWw
-	 j3ZPD3GePpQS36hL6HkQa1TKqTCL/mCNrYH3Lj3P6TSLxNDktFoc/fMvZzWXnn4RGa
-	 MsHKSj90uf6JkRds+DIZYTZqnsoLyFU3BriaM6sE=
-Date: Fri, 10 Nov 2023 14:35:09 -0500
-From: Konstantin Ryabitsev <konstantin@linuxfoundation.org>
-To: linux-embedded@vger.kernel.org, linux-ext4@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-fscrypt@vger.kernel.org, 
-	linux-gcc@vger.kernel.org, linux-gpio@vger.kernel.org, linux-hams@vger.kernel.org, 
-	linux-hexagon@vger.kernel.org, linux-hotplug@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, linux-ia64@vger.kernel.org, linux-ide@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, linux-integrity@vger.kernel.org, 
-	linux-kbuild@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-m68k@vger.kernel.org, linux-man@vger.kernel.org, linux-media@vger.kernel.org, 
-	linux-mips@vger.kernel.org, linux-mmc@vger.kernel.org, linux-msdos@vger.kernel.org
-Subject: Re: PSA: This list is being migrated (no action required)
-Message-ID: <3dfzeofvzxqk4yuyoancdanbxzpw5udmvbdz3b2mdwejwbnhk2@7y56nwlj3rgp>
-References: <cfriwrxovqzcrptf74ccq52lcqj2nsergucufsz6wlh45fdnz3@z5e5y2lowbq2>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBDAA3C6BE
+	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 22:23:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dkim=none
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CF0CC433C7;
+	Fri, 10 Nov 2023 22:23:51 +0000 (UTC)
+Date: Fri, 10 Nov 2023 23:23:48 +0100
+From: Helge Deller <deller@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and updates for v6.7-rc1
+Message-ID: <ZU6tdJPgt4tin/TU@ls3530>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <cfriwrxovqzcrptf74ccq52lcqj2nsergucufsz6wlh45fdnz3@z5e5y2lowbq2>
+Content-Transfer-Encoding: 8bit
 
-On Fri, Nov 10, 2023 at 01:51:44PM -0500, Konstantin Ryabitsev wrote:
-> This list is being migrated to new vger infrastructure. No action is required
-> on your part and there will be no change in how you interact with this list
-> after the migration is completed.
-> 
-> There will be a short 30-minute delay to the list archives on lore.kernel.org.
-> Once the backend work is done, I will follow up with another message.
+The following changes since commit be3ca57cfb777ad820c6659d52e60bbdd36bf5ff:
 
-This work is completed now. This message acts as a test to make sure archives
-are working at their new place.
+  Merge tag 'media/v6.7-1' of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-media (2023-11-06 15:06:06 -0800)
 
-If anything is not working or looking right, please reach out to
-helpdesk@kernel.org.
+are available in the Git repository at:
 
--K
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.7-rc1
+
+for you to fetch changes up to a5035c81847430dfa3482807b07325f29e9e8c09:
+
+  fbdev: fsl-diu-fb: mark wr_reg_wa() static (2023-11-10 09:16:02 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.7-rc1:
+
+- fix double free and resource leaks in imsttfb
+- lots of remove callback cleanups and section mismatch fixes in omapfb,
+  amifb and atmel_lcdfb
+- error code fix and memparse simplification in omapfb
+
+----------------------------------------------------------------
+Andy Shevchenko (2):
+      fbdev: omapfb: Do not shadow error code from platform_get_irq()
+      fbdev: omapfb: Replace custom memparse() implementation
+
+Arnd Bergmann (2):
+      fbdev: hyperv_fb: fix uninitialized local variable use
+      fbdev: fsl-diu-fb: mark wr_reg_wa() static
+
+Christophe JAILLET (1):
+      fbdev: offb: Simplify offb_init_fb()
+
+Dan Carpenter (2):
+      fbdev: imsttfb: fix double free in probe()
+      fbdev: imsttfb: fix a resource leak in probe
+
+Philipp Stanner (1):
+      fbdev: viafb: use new array-copying-wrapper
+
+Uwe Kleine-König (23):
+      fbdev: omapfb: Drop unused remove function
+      fbdev: atmel_lcdfb: Stop using platform_driver_probe()
+      fbdev: omapfb/analog-tv: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/dpi: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/dsi-cm: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/dvi: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/hdmi: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/opa362: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/sharp-ls037v7dw01: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/tfp410: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: omapfb/tpd12s015: Don't put .remove() in .exit.text and drop suppress_bind_attrs
+      fbdev: atmel_lcdfb: Convert to platform remove callback returning void
+      fbdev: omapfb/analog-tv: Convert to platform remove callback returning void
+      fbdev: omapfb/dpi: Convert to platform remove callback returning void
+      fbdev: omapfb/dsi-cm: Convert to platform remove callback returning void
+      fbdev: omapfb/dvi: Convert to platform remove callback returning void
+      fbdev: omapfb/hdmi: Convert to platform remove callback returning void
+      fbdev: omapfb/opa362: Convert to platform remove callback returning void
+      fbdev: omapfb/sharp-ls037v7dw01: Convert to platform remove callback returning void
+      fbdev: omapfb/tfp410: Convert to platform remove callback returning void
+      fbdev: omapfb/tpd12s015: Convert to platform remove callback returning void
+      fbdev: amifb: Mark driver struct with __refdata to prevent section mismatch warning
+      fbdev: amifb: Convert to platform remove callback returning void
+
+ drivers/video/fbdev/amifb.c                        | 13 +++++---
+ drivers/video/fbdev/atmel_lcdfb.c                  | 18 +++++------
+ drivers/video/fbdev/fsl-diu-fb.c                   |  2 +-
+ drivers/video/fbdev/hyperv_fb.c                    |  2 ++
+ drivers/video/fbdev/imsttfb.c                      | 35 +++++++++++-----------
+ drivers/video/fbdev/offb.c                         |  8 ++---
+ drivers/video/fbdev/omap/omapfb_main.c             | 28 +++++++----------
+ .../omap2/omapfb/displays/connector-analog-tv.c    |  7 ++---
+ .../fbdev/omap2/omapfb/displays/connector-dvi.c    |  7 ++---
+ .../fbdev/omap2/omapfb/displays/connector-hdmi.c   |  7 ++---
+ .../fbdev/omap2/omapfb/displays/encoder-opa362.c   |  7 ++---
+ .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   |  7 ++---
+ .../omap2/omapfb/displays/encoder-tpd12s015.c      |  7 ++---
+ .../video/fbdev/omap2/omapfb/displays/panel-dpi.c  |  7 ++---
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |  7 ++---
+ .../omapfb/displays/panel-sharp-ls037v7dw01.c      |  7 ++---
+ drivers/video/fbdev/omap2/omapfb/vrfb.c            |  9 +-----
+ drivers/video/fbdev/via/viafbdev.c                 |  2 +-
+ 18 files changed, 70 insertions(+), 110 deletions(-)

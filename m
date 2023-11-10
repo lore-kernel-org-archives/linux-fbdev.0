@@ -1,107 +1,96 @@
-Return-Path: <linux-fbdev+bounces-6-linux-fbdev=archiver.kernel.org@vger.kernel.org>
+Return-Path: <linux-fbdev+bounces-7-linux-fbdev=archiver.kernel.org@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from sv.mirrors.kernel.org (sv.mirrors.kernel.org [139.178.88.99])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D18DC4167D
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78770C4167B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:29 +0000 (UTC)
 Received: from smtp.subspace.kernel.org (wormhole.subspace.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by sv.mirrors.kernel.org (Postfix) with ESMTPS id 01F68281AE0
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:21 +0000 (UTC)
+	by sv.mirrors.kernel.org (Postfix) with ESMTPS id 3C5682818A0
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:29 +0000 (UTC)
 Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 530B23D382;
-	Fri, 10 Nov 2023 17:46:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id BBC043D391;
+	Fri, 10 Nov 2023 17:47:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dkim=none
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AB3B3C094
-	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 17:46:54 +0000 (UTC)
-Received: from mail-yw1-f177.google.com (mail-yw1-f177.google.com [209.85.128.177])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8368E2B7EF
-	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 01:17:03 -0800 (PST)
-Received: by mail-yw1-f177.google.com with SMTP id 00721157ae682-5a877e0f0d8so25245907b3.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 01:17:03 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 426603B2B8
+	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 17:46:55 +0000 (UTC)
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92DDA8869
+	for <linux-fbdev@vger.kernel.org>; Thu,  9 Nov 2023 23:59:33 -0800 (PST)
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-5be6d6c04bfso20457877b3.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Nov 2023 23:59:33 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699607822; x=1700212622;
+        d=1e100.net; s=20230601; t=1699603172; x=1700207972;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=5SeoW2Ozl9vYqZb/JuRB8XTAeF65cUnotgZLsCYXGTo=;
-        b=r2K0nO2yUv9/rwrGe8Ude7uOjtfXOva+3szLauy4zjk103QjyY8CVeUSmKB+ZDdgbm
-         LXIMHtM+0RqZk4cGE4u5RixEYwEHSc5oHALMaNpWG2Rkir2lSAxxYXDmkkGo8NlfrVzk
-         jVjtqJmmSc6v8R3T19Oz4IZtTFnnjGKeyT+ArB4yUBRFn0+jcbH19Dd1Ny23tlYGS+At
-         Bs+vplwXlEsMY0Eh0Mg2MPmaF7oCI+OjSa1OnqzwUTpM4tGkvVKQM6Pq/8C3Unn5OJbY
-         p9jJ6/vwxFxPC3yXEeuyI43lkdDgOdP0cT0kCRRw9ZY8BNSj4OHQMLqNQwkzRuX+YOLE
-         1ggw==
-X-Gm-Message-State: AOJu0Yz6EjR7/qesVPPIug/ncbolvk6wOM10xgTfN4wusVqaGr68/yed
-	vX3OrEdSUkiE1Rv4kfxjCIdFjYtb6BABwQ==
-X-Google-Smtp-Source: AGHT+IGS01PR8vb0KLTWNAl767qw2+KvHTAa5JpvvNktaW0ne1veQF85xhRabpd7aEHosKD6JNCn3w==
-X-Received: by 2002:a0d:db8c:0:b0:5a8:1bc6:352 with SMTP id d134-20020a0ddb8c000000b005a81bc60352mr1218478ywe.20.1699607822537;
-        Fri, 10 Nov 2023 01:17:02 -0800 (PST)
-Received: from mail-yw1-f177.google.com (mail-yw1-f177.google.com. [209.85.128.177])
-        by smtp.gmail.com with ESMTPSA id bt12-20020a05690c072c00b005a7b785f66bsm8488922ywb.39.2023.11.10.01.17.02
+        bh=V8V5kC4IHcPdk1CWqhFLtS9k05ixlcMjlfh6q5y52Wo=;
+        b=An0u9iYZx43QfPM021EezeseKs6lTnW6v2pfvFTBJ57eZkjXBiiEWdIc6S4VrBViEB
+         SeIJPrZ8vWEav1bJ0GpaVe9SVtQXP/zU3xZOaurt5XGc/pOWY8T56SfXtiGOC+Q5XPP6
+         FPHF/dIpTmBiDOF96fgiS3Hpg6Rr3t+cJ21GawoWUrYQdALgRnxDr4RgVOUMIO9HTO+E
+         8TR1V6SAx3p1M0EybWdpeRM08agsFAK2ihC7wpvCgnJKwNpthZDuLu/AVUNYw0jJ/PGr
+         ypxRjqvKtenNCcPqAduMo7JVj0lv+3bMEZIvsT0xZ7o17Cg3DHf11PZp3tQfiUpT9+CR
+         71IQ==
+X-Gm-Message-State: AOJu0YwsFA75209I4bvNmIYVCn1aSbr8RhrO1ZYms9Z6tW44NIGw8874
+	nceN6S1RUjiJ8wHvvRX+G2bSZ0albT6EZw==
+X-Google-Smtp-Source: AGHT+IFyrGz+Lx/G+WRE6Cop9a+KmuGSY55PZAqoqT7M7FiRKnsIt+Aq8RehpLAbzwaw8rjpnqSFZQ==
+X-Received: by 2002:a0d:eb50:0:b0:5a7:aa7f:17d5 with SMTP id u77-20020a0deb50000000b005a7aa7f17d5mr7012844ywe.11.1699603172596;
+        Thu, 09 Nov 2023 23:59:32 -0800 (PST)
+Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
+        by smtp.gmail.com with ESMTPSA id g200-20020a0dddd1000000b00583f8f41cb8sm8501045ywe.63.2023.11.09.23.59.32
         for <linux-fbdev@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 10 Nov 2023 01:17:02 -0800 (PST)
-Received: by mail-yw1-f177.google.com with SMTP id 00721157ae682-5a877e0f0d8so25245787b3.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 01:17:02 -0800 (PST)
-X-Received: by 2002:a81:7307:0:b0:5b3:f93c:d55 with SMTP id
- o7-20020a817307000000b005b3f93c0d55mr1077240ywc.4.1699607822211; Fri, 10 Nov
- 2023 01:17:02 -0800 (PST)
+        Thu, 09 Nov 2023 23:59:32 -0800 (PST)
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-5be6d6c04bfso20457677b3.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Nov 2023 23:59:32 -0800 (PST)
+X-Received: by 2002:a81:5b07:0:b0:5a7:fae6:1cc6 with SMTP id
+ p7-20020a815b07000000b005a7fae61cc6mr6505478ywb.24.1699603171811; Thu, 09 Nov
+ 2023 23:59:31 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20231109220151.10654-1-u.kleine-koenig@pengutronix.de>
- <20231109220151.10654-2-u.kleine-koenig@pengutronix.de> <CAMuHMdWEGxU8STZrv4q3JgT+U=+Vyr4w_e_VnN23f36kBRBJXA@mail.gmail.com>
- <20231110085718.tzn7crqcahx2yo63@pengutronix.de>
-In-Reply-To: <20231110085718.tzn7crqcahx2yo63@pengutronix.de>
+References: <20231109220151.10654-1-u.kleine-koenig@pengutronix.de> <20231109220151.10654-3-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20231109220151.10654-3-u.kleine-koenig@pengutronix.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 10 Nov 2023 10:16:51 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXJbmZzyBcmPshLcPv3SBJpZ6qdxgY+nzByfz5Hkhc+YQ@mail.gmail.com>
-Message-ID: <CAMuHMdXJbmZzyBcmPshLcPv3SBJpZ6qdxgY+nzByfz5Hkhc+YQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] fb: amifb: Mark driver struct with __refdata to
- prevent section mismatch warning
+Date: Fri, 10 Nov 2023 08:59:20 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdX6=wNfX+zo3-8a=wLUDzWux1f83=Z9J30kyE4jk1hwoA@mail.gmail.com>
+Message-ID: <CAMuHMdX6=wNfX+zo3-8a=wLUDzWux1f83=Z9J30kyE4jk1hwoA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] fb: amifb: Convert to platform remove callback
+ returning void
 To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: linux-fbdev@vger.kernel.org, kernel@pengutronix.de, 
-	Helge Deller <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>, dri-devel@lists.freedesktop.org, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Atul Raut <rauji.raut@gmail.com>, 
-	Sam Ravnborg <sam@ravnborg.org>
+Cc: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, Atul Raut <rauji.raut@gmail.com>, 
+	Sam Ravnborg <sam@ravnborg.org>, Javier Martinez Canillas <javierm@redhat.com>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, kernel@pengutronix.de
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Uwe,
-
-On Fri, Nov 10, 2023 at 9:57=E2=80=AFAM Uwe Kleine-K=C3=B6nig
+On Thu, Nov 9, 2023 at 11:02=E2=80=AFPM Uwe Kleine-K=C3=B6nig
 <u.kleine-koenig@pengutronix.de> wrote:
-> On Fri, Nov 10, 2023 at 08:58:37AM +0100, Geert Uytterhoeven wrote:
-> > On Thu, Nov 9, 2023 at 11:02=E2=80=AFPM Uwe Kleine-K=C3=B6nig
-> > <u.kleine-koenig@pengutronix.de> wrote:
-> > > As described in the added code comment, a reference to .exit.text is =
-ok
-> > > for drivers registered via module_platform_driver_probe(). Make this
-> > > explicit to prevent a section mismatch warning.
-> > >
-> > > Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> >
-> > Thanks for your patch!
-> > Why am I not seeing the actual section mismatch warning, not even
-> > with W=3D1?
+> The .remove() callback for a platform driver returns an int which makes
+> many driver authors wrongly assume it's possible to do error handling by
+> returning an error code. However the value returned is ignored (apart
+> from emitting a warning) and this typically results in resource leaks.
 >
-> Do you have f177cd0c15fcc7bdbb68d8d1a3166dead95314c8 in your tree? And
+> To improve here there is a quest to make the remove callback return
+> void. In the first step of this quest all drivers are converted to
+> .remove_new(), which already returns void. Eventually after all drivers
+> are converted, .remove_new() will be renamed to .remove().
+>
+> Trivially convert this driver from always returning zero in the remove
+> callback to the void returning variant.
+>
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
 
-Yes I have.
-
-> note it's only there if you compile the driver as a module and it is
-> only emitted once you completed the whole build.
-
-Thanks, I do see it in a modular build.
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 Gr{oetje,eeting}s,
 

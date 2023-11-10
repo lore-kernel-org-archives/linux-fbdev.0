@@ -1,108 +1,165 @@
-Return-Path: <linux-fbdev+bounces-7-linux-fbdev=archiver.kernel.org@vger.kernel.org>
+Return-Path: <linux-fbdev+bounces-8-linux-fbdev=archiver.kernel.org@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from sv.mirrors.kernel.org (sv.mirrors.kernel.org [139.178.88.99])
+Received: from sy.mirrors.kernel.org (sy.mirrors.kernel.org [147.75.48.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78770C4167B
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12F5AC4167B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:56 +0000 (UTC)
 Received: from smtp.subspace.kernel.org (wormhole.subspace.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by sv.mirrors.kernel.org (Postfix) with ESMTPS id 3C5682818A0
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:29 +0000 (UTC)
+	by sy.mirrors.kernel.org (Postfix) with ESMTPS id 8F1C9B222AF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Nov 2023 17:49:54 +0000 (UTC)
 Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BBC043D391;
-	Fri, 10 Nov 2023 17:47:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id F1B193C695;
+	Fri, 10 Nov 2023 17:47:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dkim=none
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 426603B2B8
-	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 17:46:55 +0000 (UTC)
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92DDA8869
-	for <linux-fbdev@vger.kernel.org>; Thu,  9 Nov 2023 23:59:33 -0800 (PST)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-5be6d6c04bfso20457877b3.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 09 Nov 2023 23:59:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699603172; x=1700207972;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=V8V5kC4IHcPdk1CWqhFLtS9k05ixlcMjlfh6q5y52Wo=;
-        b=An0u9iYZx43QfPM021EezeseKs6lTnW6v2pfvFTBJ57eZkjXBiiEWdIc6S4VrBViEB
-         SeIJPrZ8vWEav1bJ0GpaVe9SVtQXP/zU3xZOaurt5XGc/pOWY8T56SfXtiGOC+Q5XPP6
-         FPHF/dIpTmBiDOF96fgiS3Hpg6Rr3t+cJ21GawoWUrYQdALgRnxDr4RgVOUMIO9HTO+E
-         8TR1V6SAx3p1M0EybWdpeRM08agsFAK2ihC7wpvCgnJKwNpthZDuLu/AVUNYw0jJ/PGr
-         ypxRjqvKtenNCcPqAduMo7JVj0lv+3bMEZIvsT0xZ7o17Cg3DHf11PZp3tQfiUpT9+CR
-         71IQ==
-X-Gm-Message-State: AOJu0YwsFA75209I4bvNmIYVCn1aSbr8RhrO1ZYms9Z6tW44NIGw8874
-	nceN6S1RUjiJ8wHvvRX+G2bSZ0albT6EZw==
-X-Google-Smtp-Source: AGHT+IFyrGz+Lx/G+WRE6Cop9a+KmuGSY55PZAqoqT7M7FiRKnsIt+Aq8RehpLAbzwaw8rjpnqSFZQ==
-X-Received: by 2002:a0d:eb50:0:b0:5a7:aa7f:17d5 with SMTP id u77-20020a0deb50000000b005a7aa7f17d5mr7012844ywe.11.1699603172596;
-        Thu, 09 Nov 2023 23:59:32 -0800 (PST)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
-        by smtp.gmail.com with ESMTPSA id g200-20020a0dddd1000000b00583f8f41cb8sm8501045ywe.63.2023.11.09.23.59.32
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Nov 2023 23:59:32 -0800 (PST)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-5be6d6c04bfso20457677b3.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 09 Nov 2023 23:59:32 -0800 (PST)
-X-Received: by 2002:a81:5b07:0:b0:5a7:fae6:1cc6 with SMTP id
- p7-20020a815b07000000b005a7fae61cc6mr6505478ywb.24.1699603171811; Thu, 09 Nov
- 2023 23:59:31 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C7BA3D398
+	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 17:47:01 +0000 (UTC)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C46AD34827
+	for <linux-fbdev@vger.kernel.org>; Fri, 10 Nov 2023 04:45:02 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1Qqm-0008RY-G3; Fri, 10 Nov 2023 13:43:04 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1Qqd-0081VE-CM; Fri, 10 Nov 2023 13:42:55 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r1Qqd-00Gimy-0Z; Fri, 10 Nov 2023 13:42:55 +0100
+Date: Fri, 10 Nov 2023 13:41:23 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+	Masahiro Yamada <masahiroy@kernel.org>,
+	linux-kbuild@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>, Guo Ren <guoren@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Greg Ungerer <gerg@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Geoff Levand <geoff@infradead.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andy Lutomirski <luto@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
+	Helge Deller <deller@gmx.de>,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Timur Tabi <timur@kernel.org>,
+	Kent Overstreet <kent.overstreet@linux.dev>,
+	David Woodhouse <dwmw2@infradead.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+	Kees Cook <keescook@chromium.org>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Nicolas Schier <nicolas@fjasle.eu>,
+	Al Viro <viro@zeniv.linux.org.uk>, linux-alpha@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-trace-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+	netdev@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-bcachefs@vger.kernel.org,
+	linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 04/22] [RESEND] time: make sysfs_get_uname() function
+ visible in header
+Message-ID: <20231110124123.5mado2cc5vnywqfx@pengutronix.de>
+References: <20231108125843.3806765-1-arnd@kernel.org>
+ <20231108125843.3806765-5-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20231109220151.10654-1-u.kleine-koenig@pengutronix.de> <20231109220151.10654-3-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20231109220151.10654-3-u.kleine-koenig@pengutronix.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 10 Nov 2023 08:59:20 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX6=wNfX+zo3-8a=wLUDzWux1f83=Z9J30kyE4jk1hwoA@mail.gmail.com>
-Message-ID: <CAMuHMdX6=wNfX+zo3-8a=wLUDzWux1f83=Z9J30kyE4jk1hwoA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] fb: amifb: Convert to platform remove callback
- returning void
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, Atul Raut <rauji.raut@gmail.com>, 
-	Sam Ravnborg <sam@ravnborg.org>, Javier Martinez Canillas <javierm@redhat.com>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, kernel@pengutronix.de
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ljpauxr7qypfgjtq"
+Content-Disposition: inline
+In-Reply-To: <20231108125843.3806765-5-arnd@kernel.org>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+
+
+--ljpauxr7qypfgjtq
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 9, 2023 at 11:02=E2=80=AFPM Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@pengutronix.de> wrote:
-> The .remove() callback for a platform driver returns an int which makes
-> many driver authors wrongly assume it's possible to do error handling by
-> returning an error code. However the value returned is ignored (apart
-> from emitting a warning) and this typically results in resource leaks.
->
-> To improve here there is a quest to make the remove callback return
-> void. In the first step of this quest all drivers are converted to
-> .remove_new(), which already returns void. Eventually after all drivers
-> are converted, .remove_new() will be renamed to .remove().
->
-> Trivially convert this driver from always returning zero in the remove
-> callback to the void returning variant.
->
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Hello Arnd,
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On Wed, Nov 08, 2023 at 01:58:25PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> This function is defined globally in clocksource.c and used conditionally
+> in clockevent.c, which the declaration hidden when clockevent support
 
-Gr{oetje,eeting}s,
+s/which/with/ ?
 
-                        Geert
+> is disabled. This causes a harmless warning in the definition:
+>=20
+> kernel/time/clocksource.c:1324:9: warning: no previous prototype for 'sys=
+fs_get_uname' [-Wmissing-prototypes]
+>  1324 | ssize_t sysfs_get_uname(const char *buf, char *dst, size_t cnt)
+>=20
+> Move the declaration out of the #ifdef so it is always visible.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+Other than that:
+
+Reviewed-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
 --=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+--ljpauxr7qypfgjtq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVOJO4ACgkQj4D7WH0S
+/k65EAf/UjDsSsmivHFeg9uWSJLPICzRXZuL3swrSrbDypaI8PuJaX8767ZWsiYT
+oDeWDpXzpAvyvz7WUCuFkRJIytR6EpscoR2t39XsflnxAYmcgYmiBDesY/A6xtuZ
+k2ZldHp9NVszzJP3PiXQ8JOcEFA1LEc08SjHzEz4F6QAsno6WZD/do4yBIU+ikEg
+57Rbk4CJghGfXhgOAmwcWrN91qOFQwhPpKHHDgFfYSZ3zLo+f6H9hSUkzOuLGDhx
+zbK1UnRCuRi3iiJlIqS2LzaSySmRQ9tsbtjk9aQx7+GqdGprHajLMikxQ13xn8jh
+U+F4kOqRAwsIV6i5/GUFGEGtLnMsSQ==
+=9raj
+-----END PGP SIGNATURE-----
+
+--ljpauxr7qypfgjtq--
 

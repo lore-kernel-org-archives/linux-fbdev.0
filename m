@@ -1,45 +1,45 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5C2112B61
-	for <linux-fbdev@vger.kernel.org>; Sat, 11 Nov 2023 10:42:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4021B12B7D
+	for <linux-fbdev@vger.kernel.org>; Sat, 11 Nov 2023 10:42:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.b="iUVTib7I"
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45EAF9F
-	for <linux-fbdev@vger.kernel.org>; Sat, 11 Nov 2023 02:42:41 -0800 (PST)
-Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-9e62b14c9eeso215491466b.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 11 Nov 2023 02:42:40 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.b="j9/uP+Xd"
+Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEE733C05
+	for <linux-fbdev@vger.kernel.org>; Sat, 11 Nov 2023 02:42:42 -0800 (PST)
+Received: by mail-ej1-x629.google.com with SMTP id a640c23a62f3a-9e5dd91b0acso267640266b.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 11 Nov 2023 02:42:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amarulasolutions.com; s=google; t=1699699358; x=1700304158; darn=vger.kernel.org;
+        d=amarulasolutions.com; s=google; t=1699699361; x=1700304161; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=cv+Nw99h5TQ+ZdPAOUHCJ7Is/AuyKPzv38qwm03SYTY=;
-        b=iUVTib7IJ4nhaswszUcXNqeDYfL9gea5rmO66MPg09zFniiYdl8zeNd7NL/UI0WXr3
-         kLBahdPopN5Tgd9pCNTkFE0JUd4OpJhp8WN0DGjLxLu26Q66OgCXa9a+4CUbZhXBu+nG
-         2Frn8VH7h/uX9zsEua2SXecMfxyNoAku+QdO8=
+        bh=ZuBW6agG70lIoCkGnVCWEFfcl6uwNB9B1+pa2Yxc8Go=;
+        b=j9/uP+Xdw1Pq1sOD1h6jzT5RhRDbh7QbdYHMsw0DFpoZJwoJziQuHef1h0jrjFE5O1
+         WjTyTx93aPwRDuSOGHMq/qIRSEQUQOSX0FT8FN7o3TEEwNMqp+hVKAuUdAMbRJL2g5LJ
+         qWjxsbHnyCLi610M+A9iCZdBac+AZ/WG/hXQU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699699358; x=1700304158;
+        d=1e100.net; s=20230601; t=1699699361; x=1700304161;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=cv+Nw99h5TQ+ZdPAOUHCJ7Is/AuyKPzv38qwm03SYTY=;
-        b=jPGSYSElYs6BxrRDp+3w1BTz5hqedf+/YEYny8+2HZWPffPGj3LTW4GqkRL5XU/Mte
-         XAIFlzhF1apL0s2ya/B5M+vFm9jBgZhPE4hbK+n/QcP9MnP+I0ZUbCMzk2iq6Rg6D3HG
-         NMn+6SHLY40EtB8JO2/NzBQuM2XCgnxs3/wnWvNcyzZiyX3vWvengCse1sIGPe3Js4F5
-         AXCSniH1N8+GPKNv3GfUscavff72seXeBMLZrGLFQ2PBkaF8QAtKoYQp5OL2k+41tGrm
-         Ob8Zivp+gT2uiPI5TmGXdU2sP3RM7kNB5NLJ9y2K9Jhc4H8jH22rYbmyIswuDlU2Bax5
-         ruNA==
-X-Gm-Message-State: AOJu0YwVdlNRZJYLIQjGXvc7g7uE2VWTUsR2mFzAC2GpVMc379blOh0m
-	zosdRJpxlhug43cHrsSbgP9yPQ==
-X-Google-Smtp-Source: AGHT+IGV/oLH/5lcH7sOkoekG3D+ekNeJmSBIhCHEhoX0aYsTwH02HKUCdbRojD3+VixFTGso1kIJg==
-X-Received: by 2002:a17:906:fc0a:b0:9e0:5d5c:aa81 with SMTP id ov10-20020a170906fc0a00b009e05d5caa81mr1063698ejb.27.1699699358600;
-        Sat, 11 Nov 2023 02:42:38 -0800 (PST)
+        bh=ZuBW6agG70lIoCkGnVCWEFfcl6uwNB9B1+pa2Yxc8Go=;
+        b=b53ZC+OoSbzF8DKp6rmX4nhzacVP43euTVi+K+X5MdHK3jWkpZcimXBLFUVLRviZeH
+         MMRneWic4dyHzUxdhxOT2t58jrbNqs7iTVDah7N1BsfG28m+Vhhcl1Szro+Cg8CvtOQ7
+         IvLcQfOz/4BLUXs0NWoKYGeQgxlbvvW+Z6dUAbydPRuvlxrVKvMXg3+bPc2UccXxq5tV
+         6S0vyNsjuwUHy69HIWcAkqmUOwK0QAshJNJM6fRucuFwz8iNNX90WOOzDnyScMSr/Adf
+         r3FAhxNhiHz0cViJ0RY/vvg0kNarFSgWWJrRl5kG/e92gsvWzXRy+AI01QdejbQq4+3Z
+         J8fQ==
+X-Gm-Message-State: AOJu0YyHHiVk7fiRKWvypg+bLQztKisUhG2ODL8YEslHPbxtxNGPqFTv
+	NbOFMGc1SCGrJrv7J+4qLBsLSg==
+X-Google-Smtp-Source: AGHT+IFbVhFnBfDEfeThETUmx79l/FqCUdUKdBP1kZUSVO8UVeOwurpqW+LCgtJFLlAn08avd0DyXw==
+X-Received: by 2002:a17:906:3c9:b0:9e6:59d5:7a86 with SMTP id c9-20020a17090603c900b009e659d57a86mr915376eja.57.1699699361285;
+        Sat, 11 Nov 2023 02:42:41 -0800 (PST)
 Received: from dario-ThinkPad-T14s-Gen-2i.homenet.telecomitalia.it (host-79-20-97-182.retail.telecomitalia.it. [79.20.97.182])
-        by smtp.gmail.com with ESMTPSA id ga33-20020a1709070c2100b0099e12a49c8fsm872183ejc.173.2023.11.11.02.42.37
+        by smtp.gmail.com with ESMTPSA id ga33-20020a1709070c2100b0099e12a49c8fsm872183ejc.173.2023.11.11.02.42.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 11 Nov 2023 02:42:38 -0800 (PST)
+        Sat, 11 Nov 2023 02:42:41 -0800 (PST)
 From: Dario Binacchi <dario.binacchi@amarulasolutions.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-amarula@amarulasolutions.com,
@@ -53,9 +53,9 @@ Cc: linux-amarula@amarulasolutions.com,
 	dri-devel@lists.freedesktop.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH 02/10] fbdev: imxfb: move PCR bitfields near their offset
-Date: Sat, 11 Nov 2023 11:41:51 +0100
-Message-ID: <20231111104225.136512-3-dario.binacchi@amarulasolutions.com>
+Subject: [PATCH 04/10] fbdev: imxfb: replace some magic numbers with constants
+Date: Sat, 11 Nov 2023 11:41:53 +0100
+Message-ID: <20231111104225.136512-5-dario.binacchi@amarulasolutions.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231111104225.136512-1-dario.binacchi@amarulasolutions.com>
 References: <20231111104225.136512-1-dario.binacchi@amarulasolutions.com>
@@ -67,46 +67,47 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The patch moves the bitfields of the PCR register near the macro that
-defines its offset, just like for all the other registers.
+The patch gets rid of magic numbers replacing them with appropriate
+macros.
 
 Signed-off-by: Dario Binacchi <dario.binacchi@amarulasolutions.com>
 ---
 
- drivers/video/fbdev/imxfb.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/imxfb.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 7042a43b81d8..6af5f09d9c85 100644
+index b7ef43a7930a..485e57fa9389 100644
 --- a/drivers/video/fbdev/imxfb.c
 +++ b/drivers/video/fbdev/imxfb.c
-@@ -41,13 +41,6 @@
- #include <video/of_videomode.h>
- #include <video/videomode.h>
- 
--#define PCR_TFT		(1 << 31)
--#define PCR_COLOR	(1 << 30)
--#define PCR_BPIX_8	(3 << 25)
--#define PCR_BPIX_12	(4 << 25)
--#define PCR_BPIX_16	(5 << 25)
--#define PCR_BPIX_18	(6 << 25)
--
- struct imx_fb_videomode {
- 	struct fb_videomode mode;
- 	u32 pcr;
-@@ -88,6 +81,12 @@ struct imx_fb_videomode {
- #define LCDC_LCHCC	0x14
- 
- #define LCDC_PCR	0x18
-+#define PCR_TFT		(1 << 31)
-+#define PCR_COLOR	(1 << 30)
-+#define PCR_BPIX_8	(3 << 25)
-+#define PCR_BPIX_12	(4 << 25)
-+#define PCR_BPIX_16	(5 << 25)
-+#define PCR_BPIX_18	(6 << 25)
+@@ -89,6 +89,7 @@ struct imx_fb_videomode {
+ #define PCR_BPIX_12	4
+ #define PCR_BPIX_16	5
+ #define PCR_BPIX_18	6
++#define PCR_PCD_MASK	GENMASK(5, 0)
  
  #define LCDC_HCR	0x1C
- #define HCR_H_WIDTH(x)	(((x) & 0x3f) << 26)
+ #define HCR_H_WIDTH_MASK	GENMASK(31, 26)
+@@ -414,8 +415,8 @@ static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 
+ 	pcr = (unsigned int)tmp;
+ 
+-	if (--pcr > 0x3F) {
+-		pcr = 0x3F;
++	if (--pcr > PCR_PCD_MASK) {
++		pcr = PCR_PCD_MASK;
+ 		printk(KERN_WARNING "Must limit pixel clock to %luHz\n",
+ 				lcd_clk / pcr);
+ 	}
+@@ -444,7 +445,7 @@ static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	}
+ 
+ 	/* add sync polarities */
+-	pcr |= imxfb_mode->pcr & ~(0x3f | (7 << 25));
++	pcr |= imxfb_mode->pcr & ~(PCR_PCD_MASK | PCR_BPIX_MASK);
+ 
+ 	fbi->pcr = pcr;
+ 	/*
 -- 
 2.42.0
 

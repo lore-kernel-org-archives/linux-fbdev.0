@@ -1,69 +1,54 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B71581BDD6;
-	Sun, 12 Nov 2023 23:12:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 718D3847E;
+	Mon, 13 Nov 2023 02:49:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dkim=none
-Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72647D4C;
-	Sun, 12 Nov 2023 15:12:36 -0800 (PST)
-Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-6c32a20d5dbso3278770b3a.1;
-        Sun, 12 Nov 2023 15:12:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1699830756; x=1700435556;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kINOohyUI5UBn47vUF3tJOP4oDKGMiC1TLYt+h+N9h8=;
-        b=cKtLILqHeL+pnYUEEgjKI5t2rrlkKtdgqnc3nWqDn5V7aTjmt2zGXJEcaW95X9bDPO
-         h4RHuLYLQYFf+NWleGptfxCZmr78JchXQWe0qyyFZDovrcIzFbcQYdSeF5PjdCrqNbXG
-         tfGp1b1aH8m5UUCfPcCPxCbTQpeJQFkVS3e0ob58FbdyiEYsUxRJRYUe7twKw3CKe4H7
-         hFJJYGla5pC4Q3gr7K6gBpq96GIyRvLBCxDBKchmYDA86IwwlVsuxntyOdK1RGLusqCL
-         Z73JReRUIxeUYKQZ+pyjMZVcezBjIRxp6Tgr4zKg2M7kVncxUGvfCLuoW17BNOC4ATjN
-         ZMQg==
-X-Gm-Message-State: AOJu0Yyd1zZVUM1YyvQpf8ozZOu0sS379Re/WcRhaMRmnN8jmWatnuFc
-	zwPGTNqe0wrdKQZ0Usph/FU=
-X-Google-Smtp-Source: AGHT+IHM1xHv6Bya3xnKdXlAB4GGDEjoopo7t48S2k9vh/N7JJhUB7QT9lDd1A0TcBVCTEHnRb9f5w==
-X-Received: by 2002:a05:6a00:13a8:b0:6be:2bfa:6290 with SMTP id t40-20020a056a0013a800b006be2bfa6290mr3248217pfg.8.1699830755833;
-        Sun, 12 Nov 2023 15:12:35 -0800 (PST)
-Received: from liuwe-devbox-debian-v2 ([20.69.120.36])
-        by smtp.gmail.com with ESMTPSA id n3-20020a6546c3000000b005b8f3293bf2sm2554422pgr.88.2023.11.12.15.12.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Nov 2023 15:12:35 -0800 (PST)
-Date: Sun, 12 Nov 2023 23:12:33 +0000
-From: Wei Liu <wei.liu@kernel.org>
-To: Nischala Yelchuri <niyelchu@linux.microsoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, kys@microsoft.com,
-	haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
-	tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-	drawat.floss@gmail.com, maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
-	daniel@ffwll.ch, dri-devel@lists.freedesktop.org, deller@gmx.de,
-	mhklinux@outlook.com, mhkelley@outlook.com,
-	singhabhinav9051571833@gmail.com, niyelchu@microsoft.com
-Subject: Re: [PATCH] Replace ioremap_cache() with memremap()
-Message-ID: <ZVFb4f8IRJeCFmYD@liuwe-devbox-debian-v2>
-References: <1698854508-23036-1-git-send-email-niyelchu@linux.microsoft.com>
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E4ED115;
+	Sun, 12 Nov 2023 18:49:26 -0800 (PST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4STDR45zpTz4xWP;
+	Mon, 13 Nov 2023 13:49:20 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org
+In-Reply-To: <20230922080636.26762-1-tzimmermann@suse.de>
+References: <20230922080636.26762-1-tzimmermann@suse.de>
+Subject: Re: (subset) [PATCH v5 0/5] ppc, fbdev: Clean up fbdev mmap helper
+Message-Id: <169984352204.1887074.16685503842131763450.b4-ty@ellerman.id.au>
+Date: Mon, 13 Nov 2023 13:45:22 +1100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1698854508-23036-1-git-send-email-niyelchu@linux.microsoft.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 01, 2023 at 09:01:48AM -0700, Nischala Yelchuri wrote:
-> Current Hyper-V code for CoCo VMs uses ioremap_cache() to map normal memory as decrypted.
-> ioremap_cache() is ideally used to map I/O device memory when it has the characteristics
-> of normal memory. It should not be used to map normal memory as the returned pointer
-> has the __iomem attribute.
+On Fri, 22 Sep 2023 10:04:54 +0200, Thomas Zimmermann wrote:
+> Clean up and rename fb_pgprotect() to work without struct file. Then
+> refactor the implementation for PowerPC. This change has been discussed
+> at [1] in the context of refactoring fbdev's mmap code.
+> 
+> The first two patches update fbdev and replace fbdev's fb_pgprotect()
+> with pgprot_framebuffer() on all architectures. The new helper's stream-
+> lined interface enables more refactoring within fbdev's mmap
+> implementation.
+> 
+> [...]
 
-Do you find any real world issues with the current code? How do you
-discover these issues?
+Patches 3-5 applied to powerpc/fixes.
 
-Thanks,
-Wei.
+[3/5] arch/powerpc: Remove trailing whitespaces
+      https://git.kernel.org/powerpc/c/322948c3198cf80e7c10d953ddad24ebd85757cd
+[4/5] arch/powerpc: Remove file parameter from phys_mem_access_prot code
+      https://git.kernel.org/powerpc/c/1f92a844c35e483c00bab8a7b7d39c555ee799d8
+[5/5] arch/powerpc: Call internal __phys_mem_access_prot() in fbdev code
+      https://git.kernel.org/powerpc/c/deebe5f607d7f72f83c41163191ad0c1c4356385
+
+cheers

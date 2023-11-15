@@ -1,117 +1,190 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 677BF2510C
-	for <linux-fbdev@vger.kernel.org>; Mon, 13 Nov 2023 21:28:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dkim=none
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 036AED67
-	for <linux-fbdev@vger.kernel.org>; Mon, 13 Nov 2023 13:28:22 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r2eTZ-0006K4-SL; Mon, 13 Nov 2023 22:28:09 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r2eTV-008qY8-9X; Mon, 13 Nov 2023 22:28:05 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r2eTU-0015Of-Vv; Mon, 13 Nov 2023 22:28:05 +0100
-Date: Mon, 13 Nov 2023 22:28:01 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Javier Martinez Canillas <javierm@redhat.com>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Helge Deller <deller@gmx.de>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Benjamin Mugnier <benjamin.mugnier@foss.st.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Jilin Yuan <yuanjilin@cdjrlc.com>,
-	Thierry Reding <thierry.reding@gmail.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	kernel@pengutronix.de, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 0/3] pwm: Drop useless member "pwm" from struct pwm_device
-Message-ID: <20231113212801.v4nh6njrog5q2hxe@pengutronix.de>
-References: <20230728145824.616687-1-u.kleine-koenig@pengutronix.de>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8712DDA3
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:29:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ADl91A1L";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="bToUZgHS"
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5AC310F
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:29:57 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 74ACA204E3;
+	Wed, 15 Nov 2023 10:29:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1700044196; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=AScGBOOVRsIdNjA3ofDprTsJoTZ679DbuhovRxn5FnI=;
+	b=ADl91A1L6z6+kgq+YQV0MWVVxtFl8oNYX5XPnRpbxn3HIBKdOgoixMge43hVPUMd/xk20l
+	I78kukNcaWo+Wzb/PfcVAys70AvNBlLrGAbJe9nhgBErMXZjYn1g7SArb327UesPC1LXuU
+	T2k5C/K/8xMhLTh0okcqUCmGfAq5Lmc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1700044196;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=AScGBOOVRsIdNjA3ofDprTsJoTZ679DbuhovRxn5FnI=;
+	b=bToUZgHS5uA5zv7kPlkZ7Ud3JJimhs68X16aDXnYy0fo88jARXJijWTgdBJ62btd9GZwCL
+	O553xePN0uNZpkDA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 53F0C13592;
+	Wed, 15 Nov 2023 10:29:56 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id 4C55E6SdVGV+UAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Wed, 15 Nov 2023 10:29:56 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: deller@gmx.de,
+	javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 00/32] fbdev: Modularize helpers for struct fb_ops
+Date: Wed, 15 Nov 2023 11:19:05 +0100
+Message-ID: <20231115102954.7102-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.42.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="6j3bhefnu7emb5lk"
-Content-Disposition: inline
-In-Reply-To: <20230728145824.616687-1-u.kleine-koenig@pengutronix.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Authentication-Results: smtp-out2.suse.de;
+	none
+X-Spam-Level: 
+X-Spam-Score: -6.10
+X-Spamd-Result: default: False [-6.10 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-3.00)[-1.000];
+	 RCPT_COUNT_FIVE(0.00)[5];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-1.00)[-1.000];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FREEMAIL_TO(0.00)[gmx.de,redhat.com];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_COUNT_TWO(0.00)[2];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%]
+
+Convert the remaining fbdev drivers to use fbdev's helpers macros
+for struct fb_ops. Then push the current default code for file-I/O
+operations into a module and remove it as default. Each driver now
+selects the helpers its needs for file I/O and drawing to its
+framebuffer. If no helper has been set for an operation in struct
+fb_ops, the operation is unsupported. Once applied, fbdev drivers
+will not include unnecessary helper code. The helpers will also be
+more robust against mis-use.
+
+The first 2 patches are bug fixes. Patches 3 to 26 modify fbdev
+drivers to set up their fb_ops structures correctly and select the
+necessary helpers.
+
+Patches 27 and 28 do a few additional minor cleanups.
+
+Patches 29 to 32 move all helpers for struct fb_ops into modules
+and drop the default. Helpers also warn if they operate on the
+wrong type of framebuffer memory. Framebuffers in I/O memory and
+system memory can only be used with the correct helper functions.
+
+Thomas Zimmermann (32):
+  fbdev/acornfb: Fix name of fb_ops initializer macro
+  fbdev/sm712fb: Use correct initializer macros for struct fb_ops
+  fbdev/vfb: Set FBINFO_VIRTFB flag
+  fbdev/vfb: Initialize fb_ops with fbdev macros
+  fbdev/arcfb: Set FBINFO_VIRTFB flag
+  fbdev/arcfb: Use generator macros for deferred I/O
+  auxdisplay/cfag12864bfb: Set FBINFO_VIRTFB flag
+  auxdisplay/cfag12864bfb: Initialize fb_ops with fbdev macros
+  auxdisplay/ht16k33: Set FBINFO_VIRTFB flag
+  auxdisplay/ht16k33: Initialize fb_ops with fbdev macros
+  hid/picolcd_fb: Set FBINFO_VIRTFB flag
+  fbdev/sh_mobile_lcdcfb: Set FBINFO_VIRTFB flag
+  fbdev/sh_mobile_lcdcfb: Initialize fb_ops with fbdev macros
+  fbdev/smscufx: Select correct helpers
+  fbdev/udlfb: Select correct helpers
+  fbdev/au1200fb: Set FBINFO_VIRTFB flag
+  fbdev/au1200fb: Initialize fb_ops with fbdev macros
+  fbdev/ps3fb: Set FBINFO_VIRTFB flag
+  fbdev/ps3fb: Initialize fb_ops with fbdev macros
+  media/ivtvfb: Initialize fb_ops to fbdev I/O-memory helpers
+  fbdev/clps711x-fb: Initialize fb_ops with fbdev macros
+  fbdev/vt8500lcdfb: Initialize fb_ops with fbdev macros
+  fbdev/wm8505fb: Initialize fb_ops to fbdev I/O-memory helpers
+  fbdev/cyber2000fb: Initialize fb_ops with fbdev macros
+  staging/sm750fb: Declare fb_ops as constant
+  staging/sm750fb: Initialize fb_ops with fbdev macros
+  fbdev: Rename FB_SYS_FOPS token to FB_SYSMEM_FOPS
+  fbdev: Remove trailing whitespaces
+  fbdev: Push pgprot_decrypted() into mmap implementations
+  fbdev: Move default fb_mmap code into helper function
+  fbdev: Warn on incorrect framebuffer access
+  fbdev: Remove default file-I/O implementations
+
+ drivers/auxdisplay/Kconfig                    |  10 +-
+ drivers/auxdisplay/cfag12864bfb.c             |  10 +-
+ drivers/auxdisplay/ht16k33.c                  |  10 +-
+ drivers/hid/hid-picolcd_fb.c                  |   1 +
+ drivers/media/pci/ivtv/Kconfig                |   4 +-
+ drivers/media/pci/ivtv/ivtvfb.c               |   6 +-
+ drivers/staging/sm750fb/sm750.c               |  65 ++++++++--
+ drivers/video/fbdev/Kconfig                   |  50 ++------
+ drivers/video/fbdev/acornfb.c                 |   2 +-
+ drivers/video/fbdev/amba-clcd.c               |   2 +
+ drivers/video/fbdev/arcfb.c                   | 114 +++++-------------
+ drivers/video/fbdev/au1100fb.c                |   2 +
+ drivers/video/fbdev/au1200fb.c                |  11 +-
+ drivers/video/fbdev/clps711x-fb.c             |   4 +-
+ drivers/video/fbdev/core/Kconfig              |   7 +-
+ drivers/video/fbdev/core/Makefile             |   2 +-
+ drivers/video/fbdev/core/cfbcopyarea.c        |   3 +
+ drivers/video/fbdev/core/cfbfillrect.c        |   3 +
+ drivers/video/fbdev/core/cfbimgblt.c          |   3 +
+ drivers/video/fbdev/core/fb_chrdev.c          |  68 ++---------
+ drivers/video/fbdev/core/fb_defio.c           |   2 +
+ drivers/video/fbdev/core/fb_io_fops.c         |  36 ++++++
+ drivers/video/fbdev/core/fb_sys_fops.c        |   6 +
+ drivers/video/fbdev/core/syscopyarea.c        |   3 +
+ drivers/video/fbdev/core/sysfillrect.c        |   3 +
+ drivers/video/fbdev/core/sysimgblt.c          |   3 +
+ drivers/video/fbdev/cyber2000fb.c             |   9 +-
+ drivers/video/fbdev/ep93xx-fb.c               |   2 +
+ drivers/video/fbdev/gbefb.c                   |   2 +
+ drivers/video/fbdev/omap/omapfb_main.c        |   2 +
+ .../video/fbdev/omap2/omapfb/omapfb-main.c    |   2 +
+ drivers/video/fbdev/ps3fb.c                   |  11 +-
+ drivers/video/fbdev/sa1100fb.c                |   2 +
+ drivers/video/fbdev/sbuslib.c                 |   5 +-
+ drivers/video/fbdev/sh_mobile_lcdcfb.c        |  16 +--
+ drivers/video/fbdev/sm712fb.c                 |   6 +-
+ drivers/video/fbdev/smscufx.c                 |   2 +
+ drivers/video/fbdev/udlfb.c                   |   2 +
+ drivers/video/fbdev/vermilion/vermilion.c     |   2 +
+ drivers/video/fbdev/vfb.c                     |  10 +-
+ drivers/video/fbdev/vt8500lcdfb.c             |   4 +-
+ drivers/video/fbdev/wm8505fb.c                |   2 +
+ include/linux/fb.h                            |  11 +-
+ 43 files changed, 254 insertions(+), 266 deletions(-)
 
 
---6j3bhefnu7emb5lk
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+base-commit: ab54663d6cd21c6748f91c1cc0fe3456d4e38ce6
+-- 
+2.42.0
 
-Hello,
-
-On Fri, Jul 28, 2023 at 04:58:21PM +0200, Uwe Kleine-K=F6nig wrote:
-> there are only two users of struct pwm_device::pwm in the tree; both use
-> it for some dev_dbg output. While this number allows to identify the
-> PWM, it's not trivial, for example the data currently available in
-> /sys/kernel/debug/pwm isn't enough. (You have to look in /sys/class/pwm,
-> pick the pwmchip with the highest number that isn't bigger than the
-> PWM's number.)
->=20
-> To be honest the label isn't always usefull either, but it's easy to use
-> and should be enough to identify the used PWM. The parent device + hwid
-> might be more useful?! On the other hand using that for a dev_dbg that
-> is probably only looked at by someone debugging the driver and thus
-> knowing the used PWM anyhow is of little value either.
->=20
-> Assuming this change is still considered worthwile I suggest that patches=
- #1
-> and #2 go in via their respective maintainer trees and I resend patch #3 =
-to go
-> via the pwm tree once these two are "in".
->=20
-> Best regards
-> Uwe
->=20
-> Uwe Kleine-K=F6nig (3):
->   drm/ssd130x: Print the PWM's label instead of its number
->   video: fbdev: ssd1307fb: Print the PWM's label instead of its number
->   pwm: Drop unused member "pwm" from struct pwm_device
-
-The two patches to stop making use of struct pwm_device::pwm are now in
-Linus's tree (as of v6.7-rc1). The third patch is still "new" in
-patchwork, so I don't resend.
-
-It's great if patch #3 goes in during the next merge window.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---6j3bhefnu7emb5lk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVSlOEACgkQj4D7WH0S
-/k7u7AgAg4xtAcglUYH0v23q8qHBO4gYPTdvMPn/Oao+/72FDmpW7/Q9wT9kaMfh
-6K/ZhDJiOQ/9p3ek+P8uUKl8g5JdFEH0+luqF5QIOg2iwH//uu0UppmkEBprmNg+
-pWTJUxUsD13AuyquMp0yIqLT3hsEzh9N/803NWp/98kXxMOLjvGNYLKZFsH6KKkl
-er2+4/XxV1oyq/an4DlTIjIAO9pQr3G14gb9AUdT/UGmkzipqTNHBaiA8ykOPjGO
-tcgfXBDi9OM56y6R8syM6c0iP6GQSlY3y4Hqk3jfZ3hKF2Q/C5bdsyosRTet/Dmg
-FrwZ/snIa4f2oQV6Bd+rpYjwetsegA==
-=YvtS
------END PGP SIGNATURE-----
-
---6j3bhefnu7emb5lk--

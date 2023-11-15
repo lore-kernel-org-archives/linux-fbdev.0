@@ -1,47 +1,47 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17F81F9C8
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:30:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA537125D5
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:30:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wqc4nYvx";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="71shkTLs"
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05191127
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:30:04 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="nNLLKI4F";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="eQJxHnqr"
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09B1D18F
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:30:03 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id CAC6422914;
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 7ED2320506;
 	Wed, 15 Nov 2023 10:30:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1700044201; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NpTAIVT1mFZjZGtABwbdXQeIticTTk7mDsjbRkpohAI=;
-	b=wqc4nYvxzXg9ri0MMOkaJsi5Wjn9BpoPjiOTaImd3McyNNt90p9xqUjrRp7Vz+QjL1TkdQ
-	PdxRShhUfiR7yTfj3SEZN2z/IbLvk5vO/fbd/zRLfo1Rh4W4riSG2BiW5d4lksza4H86e2
-	luTfK/6B6Svl/Pd+QgS8dYa3ibB+OBo=
+	bh=0OVrH/0rFVKmN3aA/0RJOik2TMthajWqG84sslo4CY8=;
+	b=nNLLKI4FZJyh7xE8yNBJImKVJGSa9lC9zjHovpxV37L3XnElFBzlBLGDWItNJW8taGAqSK
+	Knq1Wj4DQWsia1pqjfkbMzw95DrNjGnw8oezLFZ6IlkZDQWj6bP+7/IJV3RUQy5DD2iWaj
+	sitZsSzrgs0i5g+xlcHDxzEX7C8gYNo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1700044201;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NpTAIVT1mFZjZGtABwbdXQeIticTTk7mDsjbRkpohAI=;
-	b=71shkTLshaw8fuvA3H1woJ1UXgEfZP61e8oXJ95alBXi4fxMiQoyJB6fTqpZ4IE0fAm0fV
-	sIi6Gdri+gqg8OCg==
+	bh=0OVrH/0rFVKmN3aA/0RJOik2TMthajWqG84sslo4CY8=;
+	b=eQJxHnqrcNJdd0U02tv3oBbeoygxW3oxWlre1mJNvLXF839onv4AkgMIqk+mPcL4OoAySD
+	xl+c/ms7itBGHrCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A8A4A13592;
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 639C413592;
 	Wed, 15 Nov 2023 10:30:01 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id wBk/KKmdVGV+UAAAMHmgww
+	id qAhqF6mdVGV+UAAAMHmgww
 	(envelope-from <tzimmermann@suse.de>); Wed, 15 Nov 2023 10:30:01 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -49,9 +49,9 @@ To: deller@gmx.de,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 32/32] fbdev: Remove default file-I/O implementations
-Date: Wed, 15 Nov 2023 11:19:37 +0100
-Message-ID: <20231115102954.7102-33-tzimmermann@suse.de>
+Subject: [PATCH 30/32] fbdev: Move default fb_mmap code into helper function
+Date: Wed, 15 Nov 2023 11:19:35 +0100
+Message-ID: <20231115102954.7102-31-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231115102954.7102-1-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
@@ -62,7 +62,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
+Authentication-Results: smtp-out2.suse.de;
 	none
 X-Spam-Level: 
 X-Spam-Score: -6.10
@@ -91,103 +91,148 @@ X-Spamd-Result: default: False [-6.10 / 50.00];
 	 RCVD_TLS_ALL(0.00)[];
 	 BAYES_HAM(-3.00)[100.00%]
 
-Drop the default implementations for file read, write and mmap
-operations. Each fbdev driver must now provide an implementation
-and select any necessary helpers. If no implementation has been
-set, fbdev returns an errno code to user space. The code is the
-same as if the operation had not been set in the file_operations
-struct.
+Move the default fb_mmap code for I/O address spaces into the helper
+function fb_io_mmap(). The helper can either be called via struct
+fb_ops.fb_mmap or as the default if no fb_mmap has been set. Also
+set the new helper in __FB_DEFAULT_IOMEM_OPS_MMAP.
 
-This change makes the fbdev helpers for I/O memory optional. Most
-systems only use system-memory framebuffers via DRM's fbdev emulation.
+In the mid-term, fb_io_mmap() is supposed to become optional. Fbdev
+drivers will initialize their struct fb_ops.fb_mmap to the helper
+and select a corresponding Kconfig token. The helper can then be made
+optional at compile time.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/Kconfig     |  1 -
- drivers/video/fbdev/core/fb_chrdev.c | 37 +++++++++-------------------
- 2 files changed, 12 insertions(+), 26 deletions(-)
+ drivers/video/fbdev/core/fb_chrdev.c  | 36 +++++----------------------
+ drivers/video/fbdev/core/fb_io_fops.c | 27 ++++++++++++++++++++
+ include/linux/fb.h                    |  3 ++-
+ 3 files changed, 35 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
-index faab5d50cac3c..21053bf00dc58 100644
---- a/drivers/video/fbdev/core/Kconfig
-+++ b/drivers/video/fbdev/core/Kconfig
-@@ -4,7 +4,6 @@
- #
- 
- config FB_CORE
--	select FB_IOMEM_FOPS
- 	select VIDEO_CMDLINE
- 	tristate
- 
 diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
-index 089441c9d810f..118ab7884285a 100644
+index b73a122950a94..089441c9d810f 100644
 --- a/drivers/video/fbdev/core/fb_chrdev.c
 +++ b/drivers/video/fbdev/core/fb_chrdev.c
-@@ -34,13 +34,13 @@ static ssize_t fb_read(struct file *file, char __user *buf, size_t count, loff_t
+@@ -314,20 +314,16 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	struct fb_info *info = file_fb_info(file);
+-	unsigned long mmio_pgoff;
+-	unsigned long start;
+-	u32 len;
++	int res;
+ 
  	if (!info)
  		return -ENODEV;
- 
-+	if (!info->fbops->fb_read)
-+		return -EINVAL;
 +
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return -EPERM;
+ 	mutex_lock(&info->mm_lock);
  
--	if (info->fbops->fb_read)
--		return info->fbops->fb_read(info, buf, count, ppos);
+ 	if (info->fbops->fb_mmap) {
+-		int res;
+ 
+ 		res = info->fbops->fb_mmap(info, vma);
+-		mutex_unlock(&info->mm_lock);
+-		return res;
+ #if IS_ENABLED(CONFIG_FB_DEFERRED_IO)
+ 	} else if (info->fbdefio) {
+ 		/*
+@@ -335,35 +331,15 @@ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
+ 		 * minimum, point struct fb_ops.fb_mmap to fb_deferred_io_mmap().
+ 		 */
+ 		dev_warn_once(info->dev, "fbdev mmap not set up for deferred I/O.\n");
+-		mutex_unlock(&info->mm_lock);
+-		return -ENODEV;
++		res = -ENODEV;
+ #endif
++	} else {
++		res = fb_io_mmap(info, vma);
+ 	}
+ 
+-	/*
+-	 * Ugh. This can be either the frame buffer mapping, or
+-	 * if pgoff points past it, the mmio mapping.
+-	 */
+-	start = info->fix.smem_start;
+-	len = info->fix.smem_len;
+-	mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
+-	if (vma->vm_pgoff >= mmio_pgoff) {
+-		if (info->var.accel_flags) {
+-			mutex_unlock(&info->mm_lock);
+-			return -EINVAL;
+-		}
 -
--	return fb_io_read(info, buf, count, ppos);
-+	return info->fbops->fb_read(info, buf, count, ppos);
- }
- 
- static ssize_t fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
-@@ -50,13 +50,13 @@ static ssize_t fb_write(struct file *file, const char __user *buf, size_t count,
- 	if (!info)
- 		return -ENODEV;
- 
-+	if (!info->fbops->fb_write)
-+		return -EINVAL;
-+
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return -EPERM;
- 
--	if (info->fbops->fb_write)
--		return info->fbops->fb_write(info, buf, count, ppos);
--
--	return fb_io_write(info, buf, count, ppos);
-+	return info->fbops->fb_write(info, buf, count, ppos);
- }
- 
- static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
-@@ -319,24 +319,11 @@ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
- 	if (!info)
- 		return -ENODEV;
- 
--	mutex_lock(&info->mm_lock);
--
--	if (info->fbops->fb_mmap) {
--
--		res = info->fbops->fb_mmap(info, vma);
--#if IS_ENABLED(CONFIG_FB_DEFERRED_IO)
--	} else if (info->fbdefio) {
--		/*
--		 * FB deferred I/O wants you to handle mmap in your drivers. At a
--		 * minimum, point struct fb_ops.fb_mmap to fb_deferred_io_mmap().
--		 */
--		dev_warn_once(info->dev, "fbdev mmap not set up for deferred I/O.\n");
--		res = -ENODEV;
--#endif
--	} else {
--		res = fb_io_mmap(info, vma);
+-		vma->vm_pgoff -= mmio_pgoff;
+-		start = info->fix.mmio_start;
+-		len = info->fix.mmio_len;
 -	}
-+	if (!info->fbops->fb_mmap)
-+		return -ENODEV;
- 
-+	mutex_lock(&info->mm_lock);
-+	res = info->fbops->fb_mmap(info, vma);
  	mutex_unlock(&info->mm_lock);
  
- 	return res;
+-	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+-	vma->vm_page_prot = pgprot_framebuffer(vma->vm_page_prot, vma->vm_start,
+-					       vma->vm_end, start);
+-
+-	return vm_iomap_memory(vma, start, len);
++	return res;
+ }
+ 
+ static int fb_open(struct inode *inode, struct file *file)
+diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
+index 871b829521af3..60805e43914e5 100644
+--- a/drivers/video/fbdev/core/fb_io_fops.c
++++ b/drivers/video/fbdev/core/fb_io_fops.c
+@@ -132,5 +132,32 @@ ssize_t fb_io_write(struct fb_info *info, const char __user *buf, size_t count,
+ }
+ EXPORT_SYMBOL(fb_io_write);
+ 
++int fb_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	unsigned long start = info->fix.smem_start;
++	u32 len = info->fix.smem_len;
++	unsigned long mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
++
++	/*
++	 * This can be either the framebuffer mapping, or if pgoff points
++	 * past it, the mmio mapping.
++	 */
++	if (vma->vm_pgoff >= mmio_pgoff) {
++		if (info->var.accel_flags)
++			return -EINVAL;
++
++		vma->vm_pgoff -= mmio_pgoff;
++		start = info->fix.mmio_start;
++		len = info->fix.mmio_len;
++	}
++
++	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
++	vma->vm_page_prot = pgprot_framebuffer(vma->vm_page_prot, vma->vm_start,
++					       vma->vm_end, start);
++
++	return vm_iomap_memory(vma, start, len);
++}
++EXPORT_SYMBOL(fb_io_mmap);
++
+ MODULE_DESCRIPTION("Fbdev helpers for framebuffers in I/O memory");
+ MODULE_LICENSE("GPL");
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 94e2c44c65699..a36d05b576b0c 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -536,6 +536,7 @@ extern ssize_t fb_io_read(struct fb_info *info, char __user *buf,
+ 			  size_t count, loff_t *ppos);
+ extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
+ 			   size_t count, loff_t *ppos);
++int fb_io_mmap(struct fb_info *info, struct vm_area_struct *vma);
+ 
+ #define __FB_DEFAULT_IOMEM_OPS_RDWR \
+ 	.fb_read	= fb_io_read, \
+@@ -547,7 +548,7 @@ extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
+ 	.fb_imageblit	= cfb_imageblit
+ 
+ #define __FB_DEFAULT_IOMEM_OPS_MMAP \
+-	.fb_mmap	= NULL /* default implementation */
++	.fb_mmap	= fb_io_mmap
+ 
+ #define FB_DEFAULT_IOMEM_OPS \
+ 	__FB_DEFAULT_IOMEM_OPS_RDWR, \
 -- 
 2.42.0
 

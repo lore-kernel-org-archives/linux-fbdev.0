@@ -1,47 +1,47 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B481111717
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:30:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFAB7DF57
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:30:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="n+3pSdD7";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="inAncJ/t"
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0709118D
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:30:03 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TUwd29Zm";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="LQA6PhFd"
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B977D18C
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:30:02 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A7AC22290B;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 630182290F;
 	Wed, 15 Nov 2023 10:30:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1700044201; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=r3bAgP3AgHGt4HwgTrOwADGeDWklRjE6bWR23Lt9CTs=;
-	b=n+3pSdD73VIW3ywyzVIbGBhxaleOHspW9Zv2hQgoi0gJaUMlWhKakLRCeTm6WlrT37bun/
-	cA6a/Vm6AFcK2b6fmVgupFG+F7SN42N6C684nmPBp5bTlRAFKIyDWntgVkf3WHM3SwtYC4
-	a+1EKL9UqwNwbbV3sTPZdPQ4rU4HkUI=
+	bh=39bFg1JjTzB0Y4UTzd+H6bLA/LLSZYQXq7AIKtTHOJI=;
+	b=TUwd29Zmotb85H/8i7amdhJvRo4EVMlZ5AEJHZHoaFlSv7nWx0z9XE4UlbsztLtcSRpPia
+	Hu8OyIJtYVxjG0etatZPw/imy15Gk8CnzzgM/vRaQ++6vROvrY/O+rlY8xRgRDnnJEOw2f
+	Zo/hloP2vsGAPY6erdhkXKIvqiFADKU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1700044201;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=r3bAgP3AgHGt4HwgTrOwADGeDWklRjE6bWR23Lt9CTs=;
-	b=inAncJ/tZ0fKljqXk2kiE1cTfwOZwalelw9l7++HEiOnSWD1hT3tIQNzfy2f6+0ByrVU7X
-	kwoW4OpeZ+sni+DA==
+	bh=39bFg1JjTzB0Y4UTzd+H6bLA/LLSZYQXq7AIKtTHOJI=;
+	b=LQA6PhFdik5kUUz9h+olBo/ZjMSW4NWHQ6E2TISTDH1bTN0tb6+56s7tPaRcBxSO1Jpl0V
+	hboYSai0X/vGhwCQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 864B1139B7;
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4339B139B7;
 	Wed, 15 Nov 2023 10:30:01 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id QH3XH6mdVGV+UAAAMHmgww
+	id YJNwD6mdVGV+UAAAMHmgww
 	(envelope-from <tzimmermann@suse.de>); Wed, 15 Nov 2023 10:30:01 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -49,9 +49,9 @@ To: deller@gmx.de,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 31/32] fbdev: Warn on incorrect framebuffer access
-Date: Wed, 15 Nov 2023 11:19:36 +0100
-Message-ID: <20231115102954.7102-32-tzimmermann@suse.de>
+Subject: [PATCH 29/32] fbdev: Push pgprot_decrypted() into mmap implementations
+Date: Wed, 15 Nov 2023 11:19:34 +0100
+Message-ID: <20231115102954.7102-30-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231115102954.7102-1-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
@@ -91,192 +91,300 @@ X-Spamd-Result: default: False [-6.10 / 50.00];
 	 RCVD_TLS_ALL(0.00)[];
 	 BAYES_HAM(-3.00)[100.00%]
 
-Test in framebuffer read, write and drawing helpers if FBINFO_VIRTFB
-has been set correctly. Framebuffers in I/O memory should only be
-accessed with the architecture's respective helpers. Framebuffers
-in system memory should be accessed with the regular load and
-store operations. Presumably not all drivers get this right, so we
-now warn about it.
+If a driver sets struct fb_ops.fb_mmap, the fbdev core automatically
+calls pgprot_decrypted(). But the default fb_mmap code doesn't handle
+pgprot_decrypted().
+
+Move the call to pgprot_decrypted() into each drivers' fb_mmap function.
+This only concerns fb_mmap functions for system and DMA memory. For
+I/O memory, which is the default case, nothing changes. The fb_mmap
+for I/O-memory can later be moved into a helper as well.
+
+DRM's fbdev emulation handles pgprot_decrypted() internally via the
+Prime helpers. Fbdev doesn't have to do anything in this case. In
+cases where DRM uses deferred I/O, this patch updates fb_mmap correctly.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/cfbcopyarea.c | 3 +++
- drivers/video/fbdev/core/cfbfillrect.c | 3 +++
- drivers/video/fbdev/core/cfbimgblt.c   | 3 +++
- drivers/video/fbdev/core/fb_io_fops.c  | 9 +++++++++
- drivers/video/fbdev/core/fb_sys_fops.c | 6 ++++++
- drivers/video/fbdev/core/syscopyarea.c | 3 +++
- drivers/video/fbdev/core/sysfillrect.c | 3 +++
- drivers/video/fbdev/core/sysimgblt.c   | 3 +++
- include/linux/fb.h                     | 8 +++++++-
- 9 files changed, 40 insertions(+), 1 deletion(-)
+ drivers/auxdisplay/cfag12864bfb.c              | 2 ++
+ drivers/auxdisplay/ht16k33.c                   | 2 ++
+ drivers/video/fbdev/amba-clcd.c                | 2 ++
+ drivers/video/fbdev/au1100fb.c                 | 2 ++
+ drivers/video/fbdev/au1200fb.c                 | 2 ++
+ drivers/video/fbdev/core/fb_chrdev.c           | 5 -----
+ drivers/video/fbdev/core/fb_defio.c            | 2 ++
+ drivers/video/fbdev/ep93xx-fb.c                | 2 ++
+ drivers/video/fbdev/gbefb.c                    | 2 ++
+ drivers/video/fbdev/omap/omapfb_main.c         | 2 ++
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 2 ++
+ drivers/video/fbdev/ps3fb.c                    | 2 ++
+ drivers/video/fbdev/sa1100fb.c                 | 2 ++
+ drivers/video/fbdev/sbuslib.c                  | 1 +
+ drivers/video/fbdev/sh_mobile_lcdcfb.c         | 4 ++++
+ drivers/video/fbdev/smscufx.c                  | 2 ++
+ drivers/video/fbdev/udlfb.c                    | 2 ++
+ drivers/video/fbdev/vermilion/vermilion.c      | 2 ++
+ drivers/video/fbdev/vfb.c                      | 2 ++
+ 19 files changed, 37 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
-index 5b80bf3dae504..a271f57d9c6c1 100644
---- a/drivers/video/fbdev/core/cfbcopyarea.c
-+++ b/drivers/video/fbdev/core/cfbcopyarea.c
-@@ -391,6 +391,9 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
+diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
+index ede0f9a513110..5ba19c339f088 100644
+--- a/drivers/auxdisplay/cfag12864bfb.c
++++ b/drivers/auxdisplay/cfag12864bfb.c
+@@ -51,6 +51,8 @@ static int cfag12864bfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	struct page *pages = virt_to_page(cfag12864b_buffer);
  
-+	if (p->flags & FBINFO_VIRTFB)
-+		fb_warn_once(p, "Framebuffer is not in I/O address space.");
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
 +
- 	/* if the beginning of the target area might overlap with the end of
- 	the source area, be have to copy the area reverse. */
- 	if ((dy == sy && dx > sx) || (dy > sy)) {
-diff --git a/drivers/video/fbdev/core/cfbfillrect.c b/drivers/video/fbdev/core/cfbfillrect.c
-index ba9f58b2a5e86..cbaa4c9e2355a 100644
---- a/drivers/video/fbdev/core/cfbfillrect.c
-+++ b/drivers/video/fbdev/core/cfbfillrect.c
-@@ -287,6 +287,9 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
- 
-+	if (p->flags & FBINFO_VIRTFB)
-+		fb_warn_once(p, "Framebuffer is not in I/O address space.");
-+
- 	if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
- 	    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
- 		fg = ((u32 *) (p->pseudo_palette))[rect->color];
-diff --git a/drivers/video/fbdev/core/cfbimgblt.c b/drivers/video/fbdev/core/cfbimgblt.c
-index 9ebda4e0dc7ab..7d1d2f1a627dc 100644
---- a/drivers/video/fbdev/core/cfbimgblt.c
-+++ b/drivers/video/fbdev/core/cfbimgblt.c
-@@ -326,6 +326,9 @@ void cfb_imageblit(struct fb_info *p, const struct fb_image *image)
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
- 
-+	if (p->flags & FBINFO_VIRTFB)
-+		fb_warn_once(p, "Framebuffer is not in I/O address space.");
-+
- 	bitstart = (dy * p->fix.line_length * 8) + (dx * bpp);
- 	start_index = bitstart & (32 - 1);
- 	pitch_index = (p->fix.line_length & (bpl - 1)) * 8;
-diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
-index 60805e43914e5..3408ff1b2b7a0 100644
---- a/drivers/video/fbdev/core/fb_io_fops.c
-+++ b/drivers/video/fbdev/core/fb_io_fops.c
-@@ -12,6 +12,9 @@ ssize_t fb_io_read(struct fb_info *info, char __user *buf, size_t count, loff_t
- 	int c, cnt = 0, err = 0;
- 	unsigned long total_size, trailing;
- 
-+	if (info->flags & FBINFO_VIRTFB)
-+		fb_warn_once(info, "Framebuffer is not in I/O address space.");
-+
- 	if (!info->screen_base)
- 		return -ENODEV;
- 
-@@ -73,6 +76,9 @@ ssize_t fb_io_write(struct fb_info *info, const char __user *buf, size_t count,
- 	int c, cnt = 0, err = 0;
- 	unsigned long total_size, trailing;
- 
-+	if (info->flags & FBINFO_VIRTFB)
-+		fb_warn_once(info, "Framebuffer is not in I/O address space.");
-+
- 	if (!info->screen_base)
- 		return -ENODEV;
- 
-@@ -138,6 +144,9 @@ int fb_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 	u32 len = info->fix.smem_len;
- 	unsigned long mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
- 
-+	if (info->flags & FBINFO_VIRTFB)
-+		fb_warn_once(info, "Framebuffer is not in I/O address space.");
-+
- 	/*
- 	 * This can be either the framebuffer mapping, or if pgoff points
- 	 * past it, the mmio mapping.
-diff --git a/drivers/video/fbdev/core/fb_sys_fops.c b/drivers/video/fbdev/core/fb_sys_fops.c
-index 0cb0989abda61..a9aa6519a5b30 100644
---- a/drivers/video/fbdev/core/fb_sys_fops.c
-+++ b/drivers/video/fbdev/core/fb_sys_fops.c
-@@ -22,6 +22,9 @@ ssize_t fb_sys_read(struct fb_info *info, char __user *buf, size_t count,
- 	unsigned long total_size, c;
- 	ssize_t ret;
- 
-+	if (!(info->flags & FBINFO_VIRTFB))
-+		fb_warn_once(info, "Framebuffer is not in virtual address space.");
-+
- 	if (!info->screen_buffer)
- 		return -ENODEV;
- 
-@@ -64,6 +67,9 @@ ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- 	unsigned long total_size, c;
- 	size_t ret;
- 
-+	if (!(info->flags & FBINFO_VIRTFB))
-+		fb_warn_once(info, "Framebuffer is not in virtual address space.");
-+
- 	if (!info->screen_buffer)
- 		return -ENODEV;
- 
-diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev/core/syscopyarea.c
-index 7b8bd3a2bedc5..75e7001e8450f 100644
---- a/drivers/video/fbdev/core/syscopyarea.c
-+++ b/drivers/video/fbdev/core/syscopyarea.c
-@@ -324,6 +324,9 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
- 
-+	if (!(p->flags & FBINFO_VIRTFB))
-+		fb_warn_once(p, "Framebuffer is not in virtual address space.");
-+
- 	/* if the beginning of the target area might overlap with the end of
- 	the source area, be have to copy the area reverse. */
- 	if ((dy == sy && dx > sx) || (dy > sy)) {
-diff --git a/drivers/video/fbdev/core/sysfillrect.c b/drivers/video/fbdev/core/sysfillrect.c
-index bcdcaeae6538c..e49221a88ccc7 100644
---- a/drivers/video/fbdev/core/sysfillrect.c
-+++ b/drivers/video/fbdev/core/sysfillrect.c
-@@ -242,6 +242,9 @@ void sys_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
- 
-+	if (!(p->flags & FBINFO_VIRTFB))
-+		fb_warn_once(p, "Framebuffer is not in virtual address space.");
-+
- 	if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
- 	    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
- 		fg = ((u32 *) (p->pseudo_palette))[rect->color];
-diff --git a/drivers/video/fbdev/core/sysimgblt.c b/drivers/video/fbdev/core/sysimgblt.c
-index 665ef7a0a2495..6949bbd51d920 100644
---- a/drivers/video/fbdev/core/sysimgblt.c
-+++ b/drivers/video/fbdev/core/sysimgblt.c
-@@ -296,6 +296,9 @@ void sys_imageblit(struct fb_info *p, const struct fb_image *image)
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
- 
-+	if (!(p->flags & FBINFO_VIRTFB))
-+		fb_warn_once(p, "Framebuffer is not in virtual address space.");
-+
- 	bitstart = (dy * p->fix.line_length * 8) + (dx * bpp);
- 	start_index = bitstart & (32 - 1);
- 	pitch_index = (p->fix.line_length & (bpl - 1)) * 8;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a36d05b576b0c..24f0ec3662352 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -849,7 +849,10 @@ static inline bool fb_modesetting_disabled(const char *drvname)
+ 	return vm_map_pages_zero(vma, &pages, 1);
  }
- #endif
  
--/* Convenience logging macros */
-+/*
-+ * Convenience logging macros
-+ */
-+
- #define fb_err(fb_info, fmt, ...)					\
- 	pr_err("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
- #define fb_notice(info, fmt, ...)					\
-@@ -861,4 +864,7 @@ static inline bool fb_modesetting_disabled(const char *drvname)
- #define fb_dbg(fb_info, fmt, ...)					\
- 	pr_debug("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
+diff --git a/drivers/auxdisplay/ht16k33.c b/drivers/auxdisplay/ht16k33.c
+index 2f1dc6b4e2765..a90430b7d07ba 100644
+--- a/drivers/auxdisplay/ht16k33.c
++++ b/drivers/auxdisplay/ht16k33.c
+@@ -351,6 +351,8 @@ static int ht16k33_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	struct ht16k33_priv *priv = info->par;
+ 	struct page *pages = virt_to_page(priv->fbdev.buffer);
  
-+#define fb_warn_once(fb_info, fmt, ...)					\
-+	pr_warn_once("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
 +
- #endif /* _LINUX_FB_H */
+ 	return vm_map_pages_zero(vma, &pages, 1);
+ }
+ 
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 0399db369e709..47d373f04f3f0 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -829,6 +829,8 @@ static int clcdfb_of_dma_setup(struct clcd_fb *fb)
+ 
+ static int clcdfb_of_dma_mmap(struct clcd_fb *fb, struct vm_area_struct *vma)
+ {
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	return dma_mmap_wc(&fb->dev->dev, vma, fb->fb.screen_base,
+ 			   fb->fb.fix.smem_start, fb->fb.fix.smem_len);
+ }
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index a9c8d33a6ef71..08109ce535cd4 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -342,6 +342,8 @@ int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ {
+ 	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	pgprot_val(vma->vm_page_prot) |= (6 << 9); //CCA=6
+ 
+ 	return dma_mmap_coherent(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 16ebbab500972..6f20efc663d7e 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1236,6 +1236,8 @@ static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	struct au1200fb_device *fbdev = info->par;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	return dma_mmap_coherent(fbdev->dev, vma,
+ 				 fbdev->fb_mem, fbdev->fb_phys, fbdev->fb_len);
+ }
+diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
+index 32a7315b4b6dd..b73a122950a94 100644
+--- a/drivers/video/fbdev/core/fb_chrdev.c
++++ b/drivers/video/fbdev/core/fb_chrdev.c
+@@ -325,11 +325,6 @@ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
+ 	if (info->fbops->fb_mmap) {
+ 		int res;
+ 
+-		/*
+-		 * The framebuffer needs to be accessed decrypted, be sure
+-		 * SME protection is removed ahead of the call
+-		 */
+-		vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+ 		res = info->fbops->fb_mmap(info, vma);
+ 		mutex_unlock(&info->mm_lock);
+ 		return res;
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index 274f5d0fa2471..1b0b85e59e5e1 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -227,6 +227,8 @@ static const struct address_space_operations fb_deferred_io_aops = {
+ 
+ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	vma->vm_ops = &fb_deferred_io_vm_ops;
+ 	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
+ 	if (!(info->flags & FBINFO_VIRTFB))
+diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
+index cae00deee0014..3e378874ccc79 100644
+--- a/drivers/video/fbdev/ep93xx-fb.c
++++ b/drivers/video/fbdev/ep93xx-fb.c
+@@ -311,6 +311,8 @@ static int ep93xxfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	unsigned int offset = vma->vm_pgoff << PAGE_SHIFT;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	if (offset < info->fix.smem_len) {
+ 		return dma_mmap_wc(info->device, vma, info->screen_base,
+ 				   info->fix.smem_start, info->fix.smem_len);
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index e89e5579258ef..8463de833d1e1 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -1000,6 +1000,8 @@ static int gbefb_mmap(struct fb_info *info,
+ 	unsigned long phys_addr, phys_size;
+ 	u16 *tile;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	/* check range */
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+ 		return -EINVAL;
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 42c96f1cfc93c..e35c8dbc5a535 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1203,6 +1203,8 @@ static int omapfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	struct omapfb_device *fbdev = plane->fbdev;
+ 	int r;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	omapfb_rqueue_lock(fbdev);
+ 	r = fbdev->ctrl->mmap(info, vma);
+ 	omapfb_rqueue_unlock(fbdev);
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index c9fd0ad352d7f..0db9c55fce5a2 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1095,6 +1095,8 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ 	u32 len;
+ 	int r;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	rg = omapfb_get_mem_region(ofbi->region);
+ 
+ 	start = omapfb_get_region_paddr(ofbi);
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index de8d78bf070a0..dbcda307f6a67 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -708,6 +708,8 @@ static int ps3fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	int r;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	r = vm_iomap_memory(vma, info->fix.smem_start, info->fix.smem_len);
+ 
+ 	dev_dbg(info->device, "ps3fb: mmap framebuffer P(%lx)->V(%lx)\n",
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index befd3fe2f6596..0d362d2bf0e38 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -562,6 +562,8 @@ static int sa1100fb_mmap(struct fb_info *info,
+ 		container_of(info, struct sa1100fb_info, fb);
+ 	unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	if (off < info->fix.smem_len) {
+ 		vma->vm_pgoff += 1; /* skip over the palette */
+ 		return dma_mmap_wc(fbi->dev, vma, fbi->map_cpu, fbi->map_dma,
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index 4d524db5c4f26..634e3d159452c 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -60,6 +60,7 @@ int sbusfb_mmap_helper(struct sbus_mmap_map *map,
+ 
+ 	/* VM_IO | VM_DONTEXPAND | VM_DONTDUMP are set by remap_pfn_range() */
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	/* Each page, see which map applies */
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index d84628de51893..eb2297b37504c 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1482,6 +1482,8 @@ sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	if (info->fbdefio)
+ 		return fb_deferred_io_mmap(info, vma);
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	return dma_mmap_coherent(ovl->channel->lcdc->dev, vma, ovl->fb_mem,
+ 				 ovl->dma_handle, ovl->fb_size);
+ }
+@@ -1956,6 +1958,8 @@ sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	if (info->fbdefio)
+ 		return fb_deferred_io_mmap(info, vma);
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
+ 				 ch->dma_handle, ch->fb_size);
+ }
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index 90a77d19b236b..35d682b110c42 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -783,6 +783,8 @@ static int ufx_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	if (info->fbdefio)
+ 		return fb_deferred_io_mmap(info, vma);
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+ 		return -EINVAL;
+ 	if (size > info->fix.smem_len)
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 2460ff4ac86b4..1514ddac4cafc 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -331,6 +331,8 @@ static int dlfb_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	if (info->fbdefio)
+ 		return fb_deferred_io_mmap(info, vma);
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+ 		return -EINVAL;
+ 	if (size > info->fix.smem_len)
+diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
+index 840ead69654b8..a087b42ca652f 100644
+--- a/drivers/video/fbdev/vermilion/vermilion.c
++++ b/drivers/video/fbdev/vermilion/vermilion.c
+@@ -998,6 +998,8 @@ static int vmlfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	int ret;
+ 	unsigned long prot;
+ 
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	ret = vmlfb_vram_offset(vinfo, offset);
+ 	if (ret)
+ 		return -EINVAL;
+diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
+index f6140f247e4b0..f86149ba38352 100644
+--- a/drivers/video/fbdev/vfb.c
++++ b/drivers/video/fbdev/vfb.c
+@@ -382,6 +382,8 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
+ static int vfb_mmap(struct fb_info *info,
+ 		    struct vm_area_struct *vma)
+ {
++	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
++
+ 	return remap_vmalloc_range(vma, (void *)info->fix.smem_start, vma->vm_pgoff);
+ }
+ 
 -- 
 2.42.0
 

@@ -1,60 +1,68 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA537125D5
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:30:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C52539FC6;
+	Wed, 15 Nov 2023 15:29:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="nNLLKI4F";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="eQJxHnqr"
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09B1D18F
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:30:03 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 7ED2320506;
-	Wed, 15 Nov 2023 10:30:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1700044201; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0OVrH/0rFVKmN3aA/0RJOik2TMthajWqG84sslo4CY8=;
-	b=nNLLKI4FZJyh7xE8yNBJImKVJGSa9lC9zjHovpxV37L3XnElFBzlBLGDWItNJW8taGAqSK
-	Knq1Wj4DQWsia1pqjfkbMzw95DrNjGnw8oezLFZ6IlkZDQWj6bP+7/IJV3RUQy5DD2iWaj
-	sitZsSzrgs0i5g+xlcHDxzEX7C8gYNo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1700044201;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0OVrH/0rFVKmN3aA/0RJOik2TMthajWqG84sslo4CY8=;
-	b=eQJxHnqrcNJdd0U02tv3oBbeoygxW3oxWlre1mJNvLXF839onv4AkgMIqk+mPcL4OoAySD
-	xl+c/ms7itBGHrCg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 639C413592;
-	Wed, 15 Nov 2023 10:30:01 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-	by imap2.suse-dmz.suse.de with ESMTPSA
-	id qAhqF6mdVGV+UAAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Wed, 15 Nov 2023 10:30:01 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 30/32] fbdev: Move default fb_mmap code into helper function
-Date: Wed, 15 Nov 2023 11:19:35 +0100
-Message-ID: <20231115102954.7102-31-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20231115102954.7102-1-tzimmermann@suse.de>
-References: <20231115102954.7102-1-tzimmermann@suse.de>
+	dkim=pass (1024-bit key) header.d=asem.it header.i=@asem.it header.b="kXXoLe9C"
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2069.outbound.protection.outlook.com [40.107.21.69])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D4D41A1;
+	Wed, 15 Nov 2023 07:29:11 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=mT9gE34oZIVNnWJ26hVPICiyEPjUgZH5qyeDOqiU+3HvcP03aqsoFT1dn1b7OI2t5KrDiHQjHNucYNDUBp3gLQz7iMtojZOUnjCzq3klsdLuZb8HfAk08M0Rt3GMZsTw02OWUMDQxh5m60Tfu2Q79AT3XALN2gzgshs0oEgd4iUmJ8OhtpRc+gZsuxDoEnu4liQVGC6mcp5JbLHA3+keKeklexo9hVHf3DCFBCSPU8yVT8tEh+tNlG4Ocgq98O2IwkW+RumJgNFibGl8VQ/5L9JSkyFDzgOSuLQaTJvCY3YDAowm4b7n+lpRMDJdAF6ZQaYH3gn6B1wTBiqiaoXqcw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Bo+ViQCVwP4zn25XTOp+1bolcZ0vuCqNmJ/hK0s8FhQ=;
+ b=FJEj6cq6M3C5XUB118chP+sAXGXGG5wK4y+mwuVubuf0pw1QMcr+WI35+5bOrQXwx/F4cyE+NdFj78oJ23H9JL7AdgFI2O4Kj2OZ4B33IXlgqZNYWFFYwtwnfvgp04tq0xA4/v9sYTj4aC1FmYRWQy0icjX74aIlcLkuZRVC0fCquEFtTikdLx1+CW0bT4T/KMN4yALjC0zFnkq1I+4pzllazLMGWk6qMhk4fAHjKxaFgfieFlOvFM+/RAt+2u0H8e3K646lImht0PJflEr4GaDCLHdj8eppOtDnfoDM2XH1XzftUwnsTn5lZfikJRpRSZY9P+PV3rs0n9JIGdbeuw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Bo+ViQCVwP4zn25XTOp+1bolcZ0vuCqNmJ/hK0s8FhQ=;
+ b=kXXoLe9Cvwayg/d7xfzXAP7RLXQdfEKQldMBxEc4N++S9BH8BjVMPE4ZGssixa4shtiS4fOeJVIBxWBpft1XqJjZVodeb/7onFnVF0E7vddppQV/bMofxQo7J9KA5HwDiW5YjpvBB02IAvQ0vw05nPXAiAv+nAnXsSbI/3YJ1lM=
+Received: from AM6P193CA0100.EURP193.PROD.OUTLOOK.COM (2603:10a6:209:88::41)
+ by DB8PR01MB6520.eurprd01.prod.exchangelabs.com (2603:10a6:10:15d::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6977.31; Wed, 15 Nov
+ 2023 15:29:07 +0000
+Received: from AMS0EPF000001A6.eurprd05.prod.outlook.com
+ (2603:10a6:209:88:cafe::8d) by AM6P193CA0100.outlook.office365.com
+ (2603:10a6:209:88::41) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.19 via Frontend
+ Transport; Wed, 15 Nov 2023 15:29:07 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ AMS0EPF000001A6.mail.protection.outlook.com (10.167.16.233) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7002.20 via Frontend Transport; Wed, 15 Nov 2023 15:29:07 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+	 Wed, 15 Nov 2023 16:29:06 +0100
+From: Flavio Suligoi <f.suligoi@asem.it>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Pavel Machek <pavel@ucw.cz>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v6 0/2] backlight: mp3309c: Add support for MPS MP3309C
+Date: Wed, 15 Nov 2023 16:29:00 +0100
+Message-Id: <20231115152902.851715-1-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -62,177 +70,56 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spam-Level: 
-X-Spam-Score: -6.10
-X-Spamd-Result: default: False [-6.10 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 R_MISSING_CHARSET(2.50)[];
-	 REPLY(-4.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 RCPT_COUNT_FIVE(0.00)[5];
-	 NEURAL_HAM_LONG(-3.00)[-1.000];
-	 R_RATELIMIT(0.00)[to_ip_from(RLhj387a44qpajt9e5qpoeukef)];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-1.00)[-1.000];
-	 MID_CONTAINS_FROM(1.00)[];
-	 FREEMAIL_TO(0.00)[gmx.de,redhat.com];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_COUNT_TWO(0.00)[2];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%]
+X-OriginalArrivalTime: 15 Nov 2023 15:29:06.0631 (UTC) FILETIME=[78B45570:01DA17D8]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMS0EPF000001A6:EE_|DB8PR01MB6520:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: a9e77758-64e6-480f-1266-08dbe5ef9ba6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	Ac6GwUEcAOeStTqHP1Av5+JmUlJqqipuRZgWTlKhbzmlOm+VhS8juuIpCZ/JItnlt73mROuoNj/hhuhoqfSAx6zYhOJHJqS671XzMjUruZIJRNgG1z/V1i89wY2xunDFhAS2ebAiK4Lx4gkDSQGvbnCT9Y/Xtb/oypl/R5Acz3bpAv3B9L7z72TV+fDx8YMBUzMRrX1xGcCPh6Q+5aDdrzw74jjcI5gsi43wtvA7EPjtBPn8x1SFG14C49FTV7c40xA7J/jwrpoBHAzVU4a2oVDVyYmhrolUD2cxqxQqOiECZuUK5eYG7hkevHD7hQ9dW3SJfCiEkOljmWI5oDM8vp96S6g4TEOveoMIuw5fsmG5yC2OmKFnBX+ssL/mBs0zFhPNpUSuQxS45L0rg3pCQxRHqxmBToFHfW0MABpziLjF5izKPEkbYZxv7dzuHwgdGkZoxYJ87SO05N9HZ98dozIEpBIYz9L4E5agf7AHqZsvj9qBOV8JeRUZ7Rzj2TGvJs6/lMdrlFC8RJdZh6tGBmY/vTcY5NqMUoNA4VfNQx13tIgxA7BKXUo4tolfErofhpxtQwbcNv6FNpr34EK/JWcGk2nE3h2p+VVj6Ev5v7FGoNfGiEgCp1zPN70OUu7XchJxUu+b0xnSCgrmrNebUg06pip6XXFQVQRve/mxahCT2H7zjWcmj+3aRgrbibIE2sEVCNPO4vvFEJP4FPga+jZPE4dxE5dmgPqJgsZfpodn6dm/rJFQd4Fv5MDrFgGk
+X-Forefront-Antispam-Report:
+	CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(376002)(346002)(39850400004)(396003)(136003)(230922051799003)(82310400011)(64100799003)(451199024)(1800799009)(186009)(46966006)(36840700001)(107886003)(2616005)(1076003)(336012)(70586007)(110136005)(70206006)(26005)(82740400003)(478600001)(6666004)(83380400001)(36860700001)(86362001)(81166007)(5660300002)(47076005)(41300700001)(2906002)(316002)(356005)(450100002)(36756003)(8936002)(40480700001)(8676002)(4326008)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Nov 2023 15:29:07.2635
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: a9e77758-64e6-480f-1266-08dbe5ef9ba6
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AMS0EPF000001A6.eurprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8PR01MB6520
 
-Move the default fb_mmap code for I/O address spaces into the helper
-function fb_io_mmap(). The helper can either be called via struct
-fb_ops.fb_mmap or as the default if no fb_mmap has been set. Also
-set the new helper in __FB_DEFAULT_IOMEM_OPS_MMAP.
+This patchset (rebased on v6.7-rc1 kernel version):
 
-In the mid-term, fb_io_mmap() is supposed to become optional. Fbdev
-drivers will initialize their struct fb_ops.fb_mmap to the helper
-and select a corresponding Kconfig token. The helper can then be made
-optional at compile time.
+- updates the mps,mp3309c.yaml dt bindings file:
+    - Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/core/fb_chrdev.c  | 36 +++++----------------------
- drivers/video/fbdev/core/fb_io_fops.c | 27 ++++++++++++++++++++
- include/linux/fb.h                    |  3 ++-
- 3 files changed, 35 insertions(+), 31 deletions(-)
+- adds the related device driver to support the MPS MP3309C backlight chip.
 
-diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
-index b73a122950a94..089441c9d810f 100644
---- a/drivers/video/fbdev/core/fb_chrdev.c
-+++ b/drivers/video/fbdev/core/fb_chrdev.c
-@@ -314,20 +314,16 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
- static int fb_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	struct fb_info *info = file_fb_info(file);
--	unsigned long mmio_pgoff;
--	unsigned long start;
--	u32 len;
-+	int res;
- 
- 	if (!info)
- 		return -ENODEV;
-+
- 	mutex_lock(&info->mm_lock);
- 
- 	if (info->fbops->fb_mmap) {
--		int res;
- 
- 		res = info->fbops->fb_mmap(info, vma);
--		mutex_unlock(&info->mm_lock);
--		return res;
- #if IS_ENABLED(CONFIG_FB_DEFERRED_IO)
- 	} else if (info->fbdefio) {
- 		/*
-@@ -335,35 +331,15 @@ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
- 		 * minimum, point struct fb_ops.fb_mmap to fb_deferred_io_mmap().
- 		 */
- 		dev_warn_once(info->dev, "fbdev mmap not set up for deferred I/O.\n");
--		mutex_unlock(&info->mm_lock);
--		return -ENODEV;
-+		res = -ENODEV;
- #endif
-+	} else {
-+		res = fb_io_mmap(info, vma);
- 	}
- 
--	/*
--	 * Ugh. This can be either the frame buffer mapping, or
--	 * if pgoff points past it, the mmio mapping.
--	 */
--	start = info->fix.smem_start;
--	len = info->fix.smem_len;
--	mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
--	if (vma->vm_pgoff >= mmio_pgoff) {
--		if (info->var.accel_flags) {
--			mutex_unlock(&info->mm_lock);
--			return -EINVAL;
--		}
--
--		vma->vm_pgoff -= mmio_pgoff;
--		start = info->fix.mmio_start;
--		len = info->fix.mmio_len;
--	}
- 	mutex_unlock(&info->mm_lock);
- 
--	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
--	vma->vm_page_prot = pgprot_framebuffer(vma->vm_page_prot, vma->vm_start,
--					       vma->vm_end, start);
--
--	return vm_iomap_memory(vma, start, len);
-+	return res;
- }
- 
- static int fb_open(struct inode *inode, struct file *file)
-diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
-index 871b829521af3..60805e43914e5 100644
---- a/drivers/video/fbdev/core/fb_io_fops.c
-+++ b/drivers/video/fbdev/core/fb_io_fops.c
-@@ -132,5 +132,32 @@ ssize_t fb_io_write(struct fb_info *info, const char __user *buf, size_t count,
- }
- EXPORT_SYMBOL(fb_io_write);
- 
-+int fb_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
-+{
-+	unsigned long start = info->fix.smem_start;
-+	u32 len = info->fix.smem_len;
-+	unsigned long mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
-+
-+	/*
-+	 * This can be either the framebuffer mapping, or if pgoff points
-+	 * past it, the mmio mapping.
-+	 */
-+	if (vma->vm_pgoff >= mmio_pgoff) {
-+		if (info->var.accel_flags)
-+			return -EINVAL;
-+
-+		vma->vm_pgoff -= mmio_pgoff;
-+		start = info->fix.mmio_start;
-+		len = info->fix.mmio_len;
-+	}
-+
-+	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-+	vma->vm_page_prot = pgprot_framebuffer(vma->vm_page_prot, vma->vm_start,
-+					       vma->vm_end, start);
-+
-+	return vm_iomap_memory(vma, start, len);
-+}
-+EXPORT_SYMBOL(fb_io_mmap);
-+
- MODULE_DESCRIPTION("Fbdev helpers for framebuffers in I/O memory");
- MODULE_LICENSE("GPL");
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 94e2c44c65699..a36d05b576b0c 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -536,6 +536,7 @@ extern ssize_t fb_io_read(struct fb_info *info, char __user *buf,
- 			  size_t count, loff_t *ppos);
- extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
- 			   size_t count, loff_t *ppos);
-+int fb_io_mmap(struct fb_info *info, struct vm_area_struct *vma);
- 
- #define __FB_DEFAULT_IOMEM_OPS_RDWR \
- 	.fb_read	= fb_io_read, \
-@@ -547,7 +548,7 @@ extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
- 	.fb_imageblit	= cfb_imageblit
- 
- #define __FB_DEFAULT_IOMEM_OPS_MMAP \
--	.fb_mmap	= NULL /* default implementation */
-+	.fb_mmap	= fb_io_mmap
- 
- #define FB_DEFAULT_IOMEM_OPS \
- 	__FB_DEFAULT_IOMEM_OPS_RDWR, \
+Note: about the first point, the mps,mp3309c.yaml file updating, there are
+      no compatibility problems with the previous version, since the
+      related device driver has not yet been included in any kernel.
+      Only this dt-binding yaml file is already included in the current
+      v6.7-rc1 kernel version.
+      No developer may have used it.
+
+Flavio Suligoi (2):
+  dt-bindings: backlight: mp3309c: remove two required properties
+  backlight: mp3309c: Add support for MPS MP3309C
+
+ .../bindings/leds/backlight/mps,mp3309c.yaml  |  10 +-
+ MAINTAINERS                                   |   7 +
+ drivers/video/backlight/Kconfig               |  11 +
+ drivers/video/backlight/Makefile              |   1 +
+ drivers/video/backlight/mp3309c.c             | 443 ++++++++++++++++++
+ 5 files changed, 466 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/video/backlight/mp3309c.c
+
 -- 
-2.42.0
-
+2.34.1

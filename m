@@ -1,60 +1,57 @@
 Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A1911171E;
-	Wed, 15 Nov 2023 10:30:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34EFBE555
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 10:30:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Z9uMZRoR";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ZQZ4nxaz"
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94D27183;
-	Wed, 15 Nov 2023 02:30:01 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Hwgu06Oa";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="GUtpICZO"
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED654120
+	for <linux-fbdev@vger.kernel.org>; Wed, 15 Nov 2023 02:30:01 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id E9C8320509;
-	Wed, 15 Nov 2023 10:29:59 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 64EED22917;
+	Wed, 15 Nov 2023 10:30:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1700044199; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1700044200; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=MkdPY1iVeLg5+M9CmVWe38fY8DrZsFQB+byTm7arYPk=;
-	b=Z9uMZRoRamklofmUJutMya5N/kLm3XUTQ6s/xg3S/3eYTSAyUs7o8KO4CUDd25iO8mTvxQ
-	oyWfsEg5wzNfY60dR2I9hrPBdfmPSRzu1oHlke7HXp9q99Z8uUg2k2uQWAyjQLns2VG9ec
-	0ySNmmQVf8zmHAreuoceammuJE6BL2Q=
+	bh=rbU4RvLsvyLtgQSbxCP50VlwKIpkZ6DiTMKK49GG3l8=;
+	b=Hwgu06OaQUvqv9BcWIOb6e3L1Y6qzK5eixJkEkmASYAWWWKj6LwjWVCVhqtg4MdBXfvUFj
+	b/ZUbiP2/84LyZRcBZGtUOTO+KrJ/nXsVVIz4c3y+PBuNfOtIIf6JXHBFPZvalhv4RlB5b
+	sMPqAe5a0HE14tl/KCh8XkJdSDDcgfk=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1700044199;
+	s=susede2_ed25519; t=1700044200;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=MkdPY1iVeLg5+M9CmVWe38fY8DrZsFQB+byTm7arYPk=;
-	b=ZQZ4nxazc/gL2ZSUj+M1vJE3esvrBxdE03UD9XARld/ItNn9aBUsfH4HptksUEzz39bghq
-	LMwMX0YbbB+Kf5CA==
+	bh=rbU4RvLsvyLtgQSbxCP50VlwKIpkZ6DiTMKK49GG3l8=;
+	b=GUtpICZOP5LDI6qftMIYnXN3LAb/1nvJZB5VUxxBxkIwh7F8TffOYsL7bVuI6SfRpkHR7i
+	YqnOeRkPijr24CAw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C1DAF13A6F;
-	Wed, 15 Nov 2023 10:29:59 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 435B8139B7;
+	Wed, 15 Nov 2023 10:30:00 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id gGFyLqedVGV+UAAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Wed, 15 Nov 2023 10:29:59 +0000
+	id IAGYD6idVGV+UAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Wed, 15 Nov 2023 10:30:00 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
 	javierm@redhat.com
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Andy Walls <awalls@md.metrocast.net>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	linux-media@vger.kernel.org
-Subject: [PATCH 20/32] media/ivtvfb: Initialize fb_ops to fbdev I/O-memory helpers
-Date: Wed, 15 Nov 2023 11:19:25 +0100
-Message-ID: <20231115102954.7102-21-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 23/32] fbdev/wm8505fb: Initialize fb_ops to fbdev I/O-memory helpers
+Date: Wed, 15 Nov 2023 11:19:28 +0100
+Message-ID: <20231115102954.7102-24-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231115102954.7102-1-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
@@ -65,7 +62,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out2.suse.de;
+Authentication-Results: smtp-out1.suse.de;
 	none
 X-Spam-Level: 
 X-Spam-Score: -6.10
@@ -80,11 +77,11 @@ X-Spamd-Result: default: False [-6.10 / 50.00];
 	 R_MISSING_CHARSET(2.50)[];
 	 REPLY(-4.00)[];
 	 BROKEN_CONTENT_TYPE(1.50)[];
+	 RCPT_COUNT_FIVE(0.00)[5];
 	 NEURAL_HAM_LONG(-3.00)[-1.000];
 	 R_RATELIMIT(0.00)[to_ip_from(RLhj387a44qpajt9e5qpoeukef)];
 	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	 NEURAL_HAM_SHORT(-1.00)[-1.000];
-	 RCPT_COUNT_SEVEN(0.00)[8];
 	 MID_CONTAINS_FROM(1.00)[];
 	 FREEMAIL_TO(0.00)[gmx.de,redhat.com];
 	 FUZZY_BLOCKED(0.00)[rspamd.com];
@@ -95,9 +92,9 @@ X-Spamd-Result: default: False [-6.10 / 50.00];
 	 BAYES_HAM(-3.00)[100.00%]
 
 Initialize the instance of struct fb_ops with fbdev initializer
-macros for framebuffers in I/O address space. This explictily sets
-the read/write, draw and mmap callbacks to the correct default
-implementation.
+macros for framebuffers in DMA-able address space. This explictily
+sets the read/write, draw and mmap callbacks to the correct default
+implementation. Also select the necessary helpers in Kconfig.
 
 Fbdev drivers sometimes rely on the callbacks being NULL for a
 default implementation to be invoked; hence requireing the I/O
@@ -108,54 +105,43 @@ This benefits systems that do not use these functions.
 Set the callbacks via macros. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Andy Walls <awalls@md.metrocast.net>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: linux-media@vger.kernel.org
 ---
- drivers/media/pci/ivtv/Kconfig  | 4 +---
- drivers/media/pci/ivtv/ivtvfb.c | 6 +++---
- 2 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/Kconfig    | 1 +
+ drivers/video/fbdev/wm8505fb.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
-diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
-index 9be52101bc4f2..2498f9079b756 100644
---- a/drivers/media/pci/ivtv/Kconfig
-+++ b/drivers/media/pci/ivtv/Kconfig
-@@ -48,9 +48,7 @@ config VIDEO_IVTV_ALSA
- config VIDEO_FB_IVTV
- 	tristate "Conexant cx23415 framebuffer support"
- 	depends on VIDEO_IVTV && FB
--	select FB_CFB_FILLRECT
--	select FB_CFB_COPYAREA
--	select FB_CFB_IMAGEBLIT
-+	select FB_IOMEM_HELPERS
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 658848475fa7a..357c125c11204 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1480,6 +1480,7 @@ config FB_WM8505
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
++	select FB_SYS_FOPS
+ 	select FB_MODE_HELPERS
+ 	select VIDEOMODE_HELPERS
  	help
- 	  This is a framebuffer driver for the Conexant cx23415 MPEG
- 	  encoder/decoder.
-diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-index 23c8c094e791b..410477e3e6216 100644
---- a/drivers/media/pci/ivtv/ivtvfb.c
-+++ b/drivers/media/pci/ivtv/ivtvfb.c
-@@ -927,17 +927,17 @@ static int ivtvfb_blank(int blank_mode, struct fb_info *info)
+diff --git a/drivers/video/fbdev/wm8505fb.c b/drivers/video/fbdev/wm8505fb.c
+index 5833147aa43d1..00952e9c88028 100644
+--- a/drivers/video/fbdev/wm8505fb.c
++++ b/drivers/video/fbdev/wm8505fb.c
+@@ -248,6 +248,7 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
  
- static const struct fb_ops ivtvfb_ops = {
- 	.owner = THIS_MODULE,
-+	.fb_read        = fb_io_read,
- 	.fb_write       = ivtvfb_write,
- 	.fb_check_var   = ivtvfb_check_var,
- 	.fb_set_par     = ivtvfb_set_par,
- 	.fb_setcolreg   = ivtvfb_setcolreg,
--	.fb_fillrect    = cfb_fillrect,
--	.fb_copyarea    = cfb_copyarea,
--	.fb_imageblit   = cfb_imageblit,
-+	__FB_DEFAULT_IOMEM_OPS_DRAW,
- 	.fb_cursor      = NULL,
- 	.fb_ioctl       = ivtvfb_ioctl,
- 	.fb_pan_display = ivtvfb_pan_display,
- 	.fb_blank       = ivtvfb_blank,
+ static const struct fb_ops wm8505fb_ops = {
+ 	.owner		= THIS_MODULE,
++	__FB_DEFAULT_DMAMEM_OPS_RDWR,
+ 	.fb_set_par	= wm8505fb_set_par,
+ 	.fb_setcolreg	= wm8505fb_setcolreg,
+ 	.fb_fillrect	= wmt_ge_fillrect,
+@@ -256,6 +257,7 @@ static const struct fb_ops wm8505fb_ops = {
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_pan_display	= wm8505fb_pan_display,
+ 	.fb_blank	= wm8505fb_blank,
 +	__FB_DEFAULT_IOMEM_OPS_MMAP,
  };
  
- /* Restore hardware after firmware restart */
+ static int wm8505fb_probe(struct platform_device *pdev)
 -- 
 2.42.0
 

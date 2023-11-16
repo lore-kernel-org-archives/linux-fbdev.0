@@ -1,108 +1,86 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="N8TnHSuH"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12D38D4D
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 10:07:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700158078;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=W54lS/jbyFmKQJpxN3dQRiCf/ft7R1Q+OyFPgBZkh2k=;
-	b=N8TnHSuHpwtjPH68TEur4HiEn8RBJdj+RRGWGlgV+SG6Y528DsSF/Bnx1Era+qDFTMpzdj
-	fhk5FQWlnzsyUORJEe2xwKkwWERlSOHxXodOzZTsWTaUWAH7d4unWEraYFm5/8TLmQfTzF
-	4tIVnGAyhDPzY5+osA4gWIm+K/J0zZs=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-451-lXODFWjYNvSK7hsmrVOL-A-1; Thu, 16 Nov 2023 13:07:57 -0500
-X-MC-Unique: lXODFWjYNvSK7hsmrVOL-A-1
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-32f7cf9c33bso539969f8f.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 10:07:56 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PWzekTA/"
+Received: from mail-ot1-x329.google.com (mail-ot1-x329.google.com [IPv6:2607:f8b0:4864:20::329])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 917A31A8;
+	Thu, 16 Nov 2023 11:18:00 -0800 (PST)
+Received: by mail-ot1-x329.google.com with SMTP id 46e09a7af769-6d67d32adc2so638838a34.2;
+        Thu, 16 Nov 2023 11:18:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1700162280; x=1700767080; darn=vger.kernel.org;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=NQvW2mlQLaPe9zQwh1aRBhkCYad5wvCc2L3vPohQIMU=;
+        b=PWzekTA/EMOnasKIkRbWSzZAKqRrhPMl+OcEVZmQhkJ18jzvYSU/OEHZFUuk4XKvOk
+         qI74oPZB17SAUURlLVqxq/Y8ed3j1Mdd83FmpLR1q9oSE7PhrQi+Xq8fAd8vrU532iLE
+         g5CHwDsHEQjmx5dcG9mya5TKGjhITcxalLoUKsl+SAjRrRYnEM0trCGeC42xl+JKmvTO
+         O82FXXDfpXTwUaoFqODaMyJvHciuL4crs68s7APCOaG5ytW/Z3sryt2IhVgoiHYN8Ku6
+         TNFr7AIYnV15QXdZDy3nfCFgT85bINY2QAQZnBKy7wbD+kfdGV1ONzvIXQ8zUycd5j0W
+         pcBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700158076; x=1700762876;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1700162280; x=1700767080;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=W54lS/jbyFmKQJpxN3dQRiCf/ft7R1Q+OyFPgBZkh2k=;
-        b=GZmRs5WraUUS5JavB7KX8f10Lbyq7Ut+XZrcKorKm7Y/xKSVLgEULCpOxxrgh+lIeV
-         SYKEriczCJ/3M7w+q4X+yj+poEA/HkmVCZfKXWsaWehC8NHnZpinbSdQ2GbLTsm6wcfP
-         tvgV/6TQYjYYvSOH8NgIdb9ov90DqzYPYqWi6ZKUlW4vX6dtf/m8WcEoKihsatK+pAqh
-         gZiKYAQ3w9+LRd1GYWkvdWnAEqL7phUa6yoZ8tllD8CgtrKUPWJwoZZN0XqbYBZJuFF+
-         OlLnbSM2ETkTdw4KbTSwvXJ/P/zB0hkHLR/pMD8Ty21a+SdWX/HeIgUFlfU67C4it0uN
-         RbWQ==
-X-Gm-Message-State: AOJu0YwCSkve7i/owmOE8/GSOlMKlyuLv+ANIzn0cdRyxG61a3nzQhnZ
-	qI5N5O3vaogLnRCIeuCX41RMXODmW4k5RWwukL8983fy/XbtedolSrCbB9YdohexR/CX8Ep3pZt
-	ya8zCAtkHE4QMZ7XUjSR94Hk=
-X-Received: by 2002:a5d:4441:0:b0:32d:a688:8813 with SMTP id x1-20020a5d4441000000b0032da6888813mr11709936wrr.32.1700158076059;
-        Thu, 16 Nov 2023 10:07:56 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGr2Uo2/zKtm0kyeqWnh34kZmrEKiHbZLy5vndsH3tPLeRv2OqMJqf+niFFID1bDqbG3zONhA==
-X-Received: by 2002:a5d:4441:0:b0:32d:a688:8813 with SMTP id x1-20020a5d4441000000b0032da6888813mr11709913wrr.32.1700158075741;
-        Thu, 16 Nov 2023 10:07:55 -0800 (PST)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id p6-20020a5d48c6000000b0032db8cccd3asm32812wrs.114.2023.11.16.10.07.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 10:07:54 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Sahaj Sarup <sahaj.sarup@linaro.org>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Helge Deller <deller@gmx.de>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH 2/3] fbdev: ssd1307fb: Change "solomon,page-offset" property default value
-Date: Thu, 16 Nov 2023 19:07:38 +0100
-Message-ID: <20231116180743.2763021-2-javierm@redhat.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231116180743.2763021-1-javierm@redhat.com>
-References: <20231116180743.2763021-1-javierm@redhat.com>
+        bh=NQvW2mlQLaPe9zQwh1aRBhkCYad5wvCc2L3vPohQIMU=;
+        b=Hm4lxXOa/WhnRtVjaMuZ5t4ILF3jQf1CT1fNnGKNH+InVn36ySAlKTKyXHA+t2AUOs
+         iBRtVe+KY7qxDTIxBSZrHmMYa6cFkjdr7D2bahg+a8HonVvbAltPL6nxzunGxanjTOK9
+         Um4xylC+Qtu73dT8A/j5g+DhB1xlKWzA7X+AvrPOZvKXU6uwCL6kSSWX3pVlw0hBN5zQ
+         CcTAgzrHNqdUv192cBhP33VCL+dHBRmtAHnxu2edq6MAzhUDrFavlxpcL8gX0hJNFcVd
+         sotBdygYSJ8MNeoVJDjTTxiWkZ+7VxogL4SmG8kna6loflMDVVVULP4HM813jx0zWHiH
+         qujg==
+X-Gm-Message-State: AOJu0Yw9fyvtg9bwkU3Slh/6THOrMwl8Gx9Q/vK9D44pU0WxvEL0OTeS
+	HkVgtRlKt7S7uY39jjy1vQbTlCj2jdLDlS6eQn0=
+X-Google-Smtp-Source: AGHT+IFchzrhEbVbz5AEifNKluJrx6zIDMG5gc5BfPiF7RMJY6+/+9azNscfVMvB74Y03sWBedUaDVz9bS5Uf4oPXtE=
+X-Received: by 2002:a05:6871:2312:b0:1e9:cb7f:2287 with SMTP id
+ sf18-20020a056871231200b001e9cb7f2287mr21389323oab.46.1700162279900; Thu, 16
+ Nov 2023 11:17:59 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20231113112344.719-1-hkallweit1@gmail.com> <ZVJhwSS16+/Zzt0f@shikoro>
+ <887657ba-86ca-49bc-b6c3-8543610c3230@gmail.com> <ZVKNIn1eSlZ9yzco@shikoro>
+In-Reply-To: <ZVKNIn1eSlZ9yzco@shikoro>
+From: Alex Deucher <alexdeucher@gmail.com>
+Date: Thu, 16 Nov 2023 14:17:48 -0500
+Message-ID: <CADnq5_NgzZ+1FTzZObivnjJbbuYcafY-fbvgiGA9ryqA9wYedg@mail.gmail.com>
+Subject: Re: [PATCH 00/20] remove I2C_CLASS_DDC support
+To: Wolfram Sang <wsa@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>, 
+	intel-gfx@lists.freedesktop.org, linux-i2c@vger.kernel.org, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Jonas Karlman <jonas@kwiboo.se>, 
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, 
+	amd-gfx@lists.freedesktop.org, linux-rockchip@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, 
+	Jocelyn Falempe <jfalempe@redhat.com>, linux-sunxi@lists.linux.dev, 
+	linux-mediatek@lists.infradead.org, Sean Paul <sean@poorly.run>, 
+	Marijn Suijten <marijn.suijten@somainline.org>, linux-arm-msm@vger.kernel.org, 
+	freedreno@lists.freedesktop.org, Xinwei Kong <kong.kongxinwei@hisilicon.com>, 
+	Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu <yongqin.liu@linaro.org>, 
+	John Stultz <jstultz@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This is used to specify the page start address offset of the display RAM.
+On Mon, Nov 13, 2023 at 3:55=E2=80=AFPM Wolfram Sang <wsa@kernel.org> wrote=
+:
+>
+>
+> > We're not in a hurry. It's just my experience with patch series' affect=
+ing
+> > multiple subsystems that typically the decision was to apply the full
+> > series via one tree. Also to avoid inquires from maintainers like:
+> > Shall I take it or are you going to take it?
+> > Of course there may be different opinions. Please advise.
+>
+> Ok, then this turns out to be a negotation thing between the drm/fbdev
+> maintainers and me. I *can* take all the patches, of course. But since
+> the number of patches touching the non-i2c subsystems is high, I'd like
+> to hear their preference, too.
+>
 
-The value is used as offset when setting the page start address with the
-SSD130X_SET_PAGE_RANGE command, and the driver currently sets its value to
-1 if the property is not present in the Device Tree.
+I don't have a preference if you would prefer to take these via i2c.
 
-But the datasheet mentions that the value on reset for the page start is a
-0, so it makes more sense to also have 0 as the default value for the page
-offset if the property is not present.
-
-In fact, using a default value of 1 leads to the display not working when
-the fbdev is attached to the framebuffer console.
-
-Reported-by: Sahaj Sarup <sahaj.sarup@linaro.org>
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
----
-
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 5ae48e36fccb..34f014bf4994 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -637,7 +637,7 @@ static int ssd1307fb_probe(struct i2c_client *client)
- 		par->height = 16;
- 
- 	if (device_property_read_u32(dev, "solomon,page-offset", &par->page_offset))
--		par->page_offset = 1;
-+		par->page_offset = 0;
- 
- 	if (device_property_read_u32(dev, "solomon,col-offset", &par->col_offset))
- 		par->col_offset = 0;
--- 
-2.41.0
-
+Alex

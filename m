@@ -1,111 +1,82 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EwDoSdu6"
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BB68193
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:59:39 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-4083cd3917eso6101485e9.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:59:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1700135977; x=1700740777; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Bgu/OmIil+m+pgaiPX4vyBYRM7q2Oj3pmqGujW+IM1U=;
-        b=EwDoSdu6WCK1MIdDIz1jTLvpPb3wwBdwPNTaR1K2t17RbxnH1Q5rnOjIBFGubGWcYb
-         KHXb88YoNhvs9HnJIntN0/lWa8mpO+YpvIrrbYp0Nv/9LBPxSJ/ZdgkOb+P4SmjcpBpO
-         Wb+l2JDXw2P7p7xvs6IDoW03YQSHVYzUzaObC2dgIaJ+PpzKPThE2VZ0jVfinFTBx0TY
-         f2nm4hPBOqjJTPRaFa+DqFGb/Wbe8jVrGu15FP403cP98W6mH7iBlHvomPTXBJ8mBt1h
-         ff0bwuJZm4SSvJ2y+3Gzo05PxqN/LuaEZn1aP6hHMqZOGKh5/JxsR+V1aBlioYpsleJx
-         mBLA==
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="LrButUDL"
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A678187
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 04:05:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1700136352;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WOSU9nPcc5buhfeYjOi7yXkwoaqROWwqoyQZ/1RMnoc=;
+	b=LrButUDLlYX8Q7w4fnl6sLx0JNzekqevsQkl9N+USh4l/Uax2S/8ovx/Zmk0/nMwqxCR7j
+	MtiEUvGXu9XIE6+QVghe2oiBlA1FBCR7qBsMvgkLt+DrXDpq5vBvlZPl/ZefYwLm0PIBb9
+	6c0fVlKD9PIM7DAiy433wW5GcFClXhU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-562-51-oezCsMYC7yiSE88fFMA-1; Thu, 16 Nov 2023 07:05:49 -0500
+X-MC-Unique: 51-oezCsMYC7yiSE88fFMA-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4093a561f7eso4042765e9.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 04:05:49 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700135977; x=1700740777;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Bgu/OmIil+m+pgaiPX4vyBYRM7q2Oj3pmqGujW+IM1U=;
-        b=q2N18hEgm3TWTUeru2tkJ12p5sb4v1ZNrLqz4yKmcKLIAAEiq/qXyxtDDZkkuyF/Cu
-         vN4bhoNhSext7MXSKm4+UmbKyF7a6qjpCN3QO9wBZge1EMSmKRmE/hnRXk6aKgtAN/CL
-         GuifX6EyXIQwp30cTkz9ZXRzmlmd/XnNhb06Xp81Wi5zATqr+J+ShtfD1bmOlZ8gwUvu
-         uTXfFYAb/hnQxQyy/psptvVYNRDeGEv+WJ9xuZEX7wcRosQqX0EreMbTRsr6t3XdpcWe
-         KFReuFw+OrOUtFdZW+hgin+cuG5buDaE1h0Tun1X03PajPqmLLorK3tzXIQ1MoQvtSix
-         r8NQ==
-X-Gm-Message-State: AOJu0YwL95NOhEWb82qu6nujzeHfWRLNAMxpH92JsouOKJnkCQVGjr/X
-	bPprikzyMPyNLgK64rGVUXMzPg==
-X-Google-Smtp-Source: AGHT+IGgShwNUHy7UmmpWIBZdQEdCnXfXFJTSulfEi9aWAIItDdqiFC8s1dZy5fLM0CanEYV7W7KHQ==
-X-Received: by 2002:a05:600c:310f:b0:408:3ac4:dc3f with SMTP id g15-20020a05600c310f00b004083ac4dc3fmr13808290wmo.29.1700135977363;
-        Thu, 16 Nov 2023 03:59:37 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id y7-20020a05600c364700b00401b242e2e6sm3259951wmq.47.2023.11.16.03.59.36
+        d=1e100.net; s=20230601; t=1700136348; x=1700741148;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=WOSU9nPcc5buhfeYjOi7yXkwoaqROWwqoyQZ/1RMnoc=;
+        b=UlMK/XVQxs6z/TqepC+uGFxCt5Ij/yJwkzXpKFAJN1HLmgJRClIMdKrVdWLHKxqyYG
+         ErgKcDyaYOB5Fsos6gKze9eFjzRbXBagAHZcqYECGiY5BDwXIP+n9Zzo7r0BWpYEsdKg
+         Z8E5c5PKR/AqaRpk5Rg8j/fJ3pWA51sZacXP8Gkwgm4BG//0hmVde59SexZoZQ1s/Q+v
+         oZxzD3vd31LogX/694DxvsZNOD1bKQDnSd4IffZyoIeCj8U67lqwPy7QMB1D6PyJAzJH
+         iMNiuqPx6zxwPO+8Z/uYZyWJocfnvWx8bTQDI8injerIVPqHylZJqqk6pPBRF02Fclru
+         nAog==
+X-Gm-Message-State: AOJu0YywDpcXspx6KM8Ci8iQT4FFiAdTK3zkO6JoDAiaThv8QFnkR5XV
+	SGBAw1eoAtliuxnhl71SlHi/k/qJfiu28nQbx/J/9SxS3xQ7T0Gfo+p8u/0eia154l10UUGbaD1
+	bFouKx9uMPhe1BIBycno8XQE=
+X-Received: by 2002:a05:600c:350a:b0:406:c6de:2bea with SMTP id h10-20020a05600c350a00b00406c6de2beamr12718848wmq.17.1700136348187;
+        Thu, 16 Nov 2023 04:05:48 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHdWVhOqGTW375pLi3FYuX9g67/Iptv+/PMA1d+/llKPmaAQmCrDgOhPFR2NRaqiQaHtXiX+Q==
+X-Received: by 2002:a05:600c:350a:b0:406:c6de:2bea with SMTP id h10-20020a05600c350a00b00406c6de2beamr12718834wmq.17.1700136347857;
+        Thu, 16 Nov 2023 04:05:47 -0800 (PST)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id h38-20020a05600c49a600b004064ac107cfsm3277181wmp.39.2023.11.16.04.05.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 03:59:36 -0800 (PST)
-Date: Thu, 16 Nov 2023 11:59:35 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Flavio Suligoi <f.suligoi@asem.it>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Conor Dooley <conor.dooley@microchip.com>
-Subject: Re: [PATCH v7 1/2] dt-bindings: backlight: mp3309c: remove two
- required properties
-Message-ID: <20231116115935.GA56909@aspen.lan>
-References: <20231116105319.957600-1-f.suligoi@asem.it>
- <20231116105319.957600-2-f.suligoi@asem.it>
+        Thu, 16 Nov 2023 04:05:47 -0800 (PST)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+ dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 27/32] fbdev: Rename FB_SYS_FOPS token to FB_SYSMEM_FOPS
+In-Reply-To: <20231115102954.7102-28-tzimmermann@suse.de>
+References: <20231115102954.7102-1-tzimmermann@suse.de>
+ <20231115102954.7102-28-tzimmermann@suse.de>
+Date: Thu, 16 Nov 2023 13:05:47 +0100
+Message-ID: <87bkbt3ntw.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231116105319.957600-2-f.suligoi@asem.it>
+Content-Type: text/plain
 
-On Thu, Nov 16, 2023 at 11:53:18AM +0100, Flavio Suligoi wrote:
-> The two properties:
->
-> - max-brightness
-> - default brightness
->
-> are not really required, so they can be removed from the "required"
-> section.
-> The "max-brightness" is no longer used in the current version
-> of the driver (it was used only in the first version).
-> The "default-brightness", if omitted in the DT, is managed by the
-> device driver, using a default value. This value depends on the dimming
-> mode used:
->
-> - for the "analog mode", via I2C commands, this value is fixed by
->   hardware (=31)
-> - while in case of pwm mode the default used is the last value of the
->   brightness-levels array.
->
-> Also the brightness-levels array is not required:
->
-> - in "analog mode", via I2C commands, the brightness-level array is
->   fixed by hardware (0..31).;
-> - in pwm dimming mode, the driver uses a default array of 0..255 and
->   the "default-brightness" is the last one, which is "255"
->
-> NOTE: there are no compatibility problems with the previous version,
->       since the device driver has not yet been included in any kernel.
->       Only this dt-binding yaml file is already included in the current
->       v6.7.0-rc1 kernel version.
->       No developer may have used it.
->
-> Other changes:
->
-> - improve the backlight working mode description, in the "description"
->   section
-> - update the example, removing the "max-brightness" and introducing the
->   "brightess-levels" property
->
-> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Rename the token to harmonize naming among various helpers. For
+> example, I/O-memory helpers use FB_IOMEM_FOPS.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 
+I wonder if the object names should also be changed to fb_iomem_fops.o
+and fb_sysmem_fops.o for consistency with the Kconfig symbols names.
 
-Daniel.
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

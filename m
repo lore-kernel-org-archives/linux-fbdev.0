@@ -1,89 +1,126 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Q1AxUHV9"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B6631AE
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:48:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700131719;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ypSMusxu7iqOH9G9Y+yTp1W0QKNM3WZxsK2UxHgzZ+c=;
-	b=Q1AxUHV9OFzU8yidm8+ZhAe7Hl3sFtCZFJ/U99vTi8pldzOLoESh1NbwdnCPP5YstHRHMq
-	KugTAKZPZotpmBVk39D+il7KZ7gpOryis0GBh1SEQyoDjq1bHJzbhUtCEjFmL/IWOeQRr6
-	lmSQ9QwCxcuG0SHxZuDE7g4UbaQpAQQ=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-363-qTy5LXG_OfeQgDe6nevdaA-1; Thu, 16 Nov 2023 05:48:35 -0500
-X-MC-Unique: qTy5LXG_OfeQgDe6nevdaA-1
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-32de9f93148so332759f8f.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:48:35 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700131714; x=1700736514;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ypSMusxu7iqOH9G9Y+yTp1W0QKNM3WZxsK2UxHgzZ+c=;
-        b=OpYFnSF8L5tMjbJwY+QcWohCfC5VkXM6DxI8MwDbjEh7LLQ3RVW8/Gcl26CEFFwbvE
-         zBmsN9nZQNsP82m9R+GN3kzTEJfsutwwyjjsZaHhTSBs0PCIuZwbybiKIIi2W7STwwxt
-         54Ae2UMv+gpwG0L7ZLnJ92jH9ghFxYXP0UOMARskhzzc/quclBWJpGnNhkwcN2S+Kp2r
-         d+z+hF6Fs5zEIfLnpBE39wVUuIRyswyG7lpLfzVVryWGiGE5juutS9HqXblPWz3+oHcD
-         medYrh+U+ObIaWNPTWMDNkRdLPPInH/iKl2H2VXZPPZjvDTJv0Zc4LEjunbxOOwfHlSK
-         LA8Q==
-X-Gm-Message-State: AOJu0YztEDxhxhP8taAtLw0SlL2No9I1eK76+p+uw4NqN9itYMpEUvIh
-	iqVWgnaS2Y/NPvebRYtOe44UtRQYS+ZS1+wMThhD0AiabtOFA7aea8wKK+1G4j28MLno+k0AYCm
-	/jk1A/gB0gpuu8euvJTPS1ds=
-X-Received: by 2002:a5d:5984:0:b0:331:3cec:2165 with SMTP id n4-20020a5d5984000000b003313cec2165mr2007874wri.8.1700131714566;
-        Thu, 16 Nov 2023 02:48:34 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IE7NsKKEAAjbY8zJdDPa65leIeCkC6dEdyIoSE7iJYMq/buhxbY80svcu2UXMWuNi65+e3tsw==
-X-Received: by 2002:a5d:5984:0:b0:331:3cec:2165 with SMTP id n4-20020a5d5984000000b003313cec2165mr2007865wri.8.1700131714310;
-        Thu, 16 Nov 2023 02:48:34 -0800 (PST)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id w7-20020adff9c7000000b0033130644c87sm13244575wrr.54.2023.11.16.02.48.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 02:48:34 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- dri-devel@lists.freedesktop.org, Christophe Leroy
- <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Thomas
- Zimmermann <tzimmermann@suse.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 18/32] fbdev/ps3fb: Set FBINFO_VIRTFB flag
-In-Reply-To: <20231115102954.7102-19-tzimmermann@suse.de>
-References: <20231115102954.7102-1-tzimmermann@suse.de>
- <20231115102954.7102-19-tzimmermann@suse.de>
-Date: Thu, 16 Nov 2023 11:48:33 +0100
-Message-ID: <874jhm3rem.fsf@minerva.mail-host-address-is-not-set>
+	dkim=pass (1024-bit key) header.d=asem.it header.i=@asem.it header.b="J1EpFjD2"
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com (mail-he1eur04on2077.outbound.protection.outlook.com [40.107.7.77])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4706C1B6;
+	Thu, 16 Nov 2023 02:53:31 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=X54U0a2b5lMnFXFteZwFJQKCTv8WWpGIz3ClJ+F+e5CpNJqn0WzySKE86iSbXuqisQBYaVavv9iD+UYyknv0/7mOoDBg7XLVGSDX4m8tvCPFhYkIO8lHRQEz1UV6YiKaWzdFzRipFLT7UZ6BxeaBigPUCgrGVPjM+Osa1otVUXOi958FltfwUPhJqjFTRdVLCDeLZfXzEF8NZstmNy/w09JL2rAfQP3yDw4soENnYjsdThoq2JlJfdl6S0uEnUYIXXFDOGfNkAsMuG4TKPBYqG5Ll/4LEDzwPd5v7A4NHo1lFw8Cu371WBxfPu9ZYL5FeNvsMAMuyQuuEatzcsUNtw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=kXFm1JVcKK2Sm2WULWvxrSdeaYJ06T+WVyWjZQZfxjw=;
+ b=eBFRpkTxbgNhJV0vrvqxq3nylNcyT4JOM0tzbTINT3aZbqU1JqsmdQ5ThWzWvny6NkisnDN8msYny89wOitB4cFPzDHHdGiSo9OAiKW9epiIzGH65coxdp5AHNJOrn9Ckx9Cyxbx0gIS0fM4dAsKcsrZ+hMsSS62PtjOMjkvtyZDnRChAVtMM0wDBTCj29xu5z01M0g3TSthZz2U0vTCeee448d/mUEaE+Ni19ogcp8tDo4y1HwPPk/yrkQS+1Fx72dQTHVEg3oTFPGnx2pimJx65JRq6oUKwANJBEyTkY389KKp3p+yB3/meJOTTHHkFq9J0laZxEQDhDdS4FXEng==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=kXFm1JVcKK2Sm2WULWvxrSdeaYJ06T+WVyWjZQZfxjw=;
+ b=J1EpFjD2/JZVJb/aVOZP7AGtHE82op0UYotPPW5Kh61Zromiw6740eKg4j2WdD/H0nuTbR8MvTMKMA81uOKqCdZUzGspW0r8KWh9CIQ11mOXinoUpukJpQZg6sLd9SEk4VMRKj0VWyaP6hCsM2EhqprmOid33wdyCPMGidMaI+w=
+Received: from AS4P189CA0023.EURP189.PROD.OUTLOOK.COM (2603:10a6:20b:5db::11)
+ by AS4PR01MB9160.eurprd01.prod.exchangelabs.com (2603:10a6:20b:4ef::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6977.26; Thu, 16 Nov
+ 2023 10:53:28 +0000
+Received: from AMS0EPF00000198.eurprd05.prod.outlook.com
+ (2603:10a6:20b:5db:cafe::48) by AS4P189CA0023.outlook.office365.com
+ (2603:10a6:20b:5db::11) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7002.21 via Frontend
+ Transport; Thu, 16 Nov 2023 10:53:28 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ AMS0EPF00000198.mail.protection.outlook.com (10.167.16.244) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7002.19 via Frontend Transport; Thu, 16 Nov 2023 10:53:28 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+	 Thu, 16 Nov 2023 11:53:27 +0100
+From: Flavio Suligoi <f.suligoi@asem.it>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Pavel Machek <pavel@ucw.cz>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v7 0/2] backlight: mp3309c: Add support for MPS MP3309C
+Date: Thu, 16 Nov 2023 11:53:17 +0100
+Message-Id: <20231116105319.957600-1-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Nov 2023 10:53:27.0497 (UTC) FILETIME=[21068390:01DA187B]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMS0EPF00000198:EE_|AS4PR01MB9160:EE_
 Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 698f4505-95c4-4921-5dcd-08dbe69243f4
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	Iuram3dqDY3MuLlb6cYkxmKlRmh1wphtg4KIeu2/wpRU3Cj7C/PrCC4gneno55bIC8paZQggEXzYFaSqQM2YQA66UN676A/zi9u3tjNK65jdpk1TfZ1+MPaJhElJa3biL5EzGTI9CxhNTNC4/3Fpx9vsNtrVRSnO1Ml3N1hvHtaPfk2K/sfcPiP959r2EWacW28bTH5Nnz7Xkmxu3iziuDVAYY5hkvuqkm5lOFlJoVE03VIVGFw39tFtD/TAgZgzgyDg17ajyBHBP8jWJhgJj2fFQTIceMgaMLoCJ+uylAEdJLi5ZWuU6kzD1tejLtLXpOlxWAMss7HR2Fu7Y9PxTMiil5+kCOI7P8frMC78CMY9aGBfHKEATiRc3Qho6VXjLD2uf9RBmXpsqxMfguGzNUGmKmlbdJwS27NcwtLAHEjpxRHvlzH1GqchHEAl9MA+hmzeImhPgalJWorjCt7BYTaocVarCyG3756MJllFzSg+C1c2gfJqIxa0q1m6gdBhorsJDDJDbri9G7mQMLjUQ+CAUUrsEKjYXpnsmyK+skJu5OREU5n1/M5nxBlEIEeNxrnsZh2g7GzCIbxRdvyinCdW5JxOF3S7JyubwNrJ7cAb+WsiPJrskjfjgWvhzezA49mAqScMNgFW1bPWDs1jWUl3VJK05Ydcz15p/8VOUjhyc/d5eRxRgW5bqiYhTtocMq77MDRsApqYf2BmRNCwXpdVXqgUvcq7GFvBDlhzSo+ab5vUKKoioZsnevocEu4N
+X-Forefront-Antispam-Report:
+	CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(396003)(39850400004)(346002)(136003)(376002)(230922051799003)(82310400011)(64100799003)(451199024)(1800799009)(186009)(46966006)(36840700001)(70586007)(316002)(70206006)(83380400001)(110136005)(82740400003)(356005)(8676002)(450100002)(40480700001)(8936002)(4326008)(81166007)(478600001)(36756003)(6666004)(86362001)(5660300002)(107886003)(2616005)(2906002)(1076003)(36860700001)(26005)(336012)(47076005)(41300700001)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Nov 2023 10:53:28.0415
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 698f4505-95c4-4921-5dcd-08dbe69243f4
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AMS0EPF00000198.eurprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS4PR01MB9160
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+This patchset (rebased on v6.7.0-rc1 kernel version):
 
-> The ps3fb driver operates on system memory. Mark the framebuffer
-> accordingly. Helpers operating on the framebuffer memory will test
-> for the presence of this flag.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  drivers/video/fbdev/ps3fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
+- includes and updates the mps,mp3309c.yaml dt bindings file:
+    - Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+    Note: the patch related to this file was previously a separate patch
+          and sent in two versions (v1 and v2).
+          It has now been included in this patchset, starting with the
+          version v6.
+- adds the related device driver to support the MPS MP3309C backlight chip
+- adds missed history of previous versions
+- adds missed "Acked-by" and "Reviewed-by" added in previous versions
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Note: about the first point, the mps,mp3309c.yaml file updating, there are
+      no compatibility problems with the previous version, since the
+      related device driver has not yet been included in any kernel.
+      Only this dt-binding yaml file is already included in the current
+      v6.7.0-rc1 kernel version.
+      No developer may have used it.
+
+Flavio Suligoi (2):
+  dt-bindings: backlight: mp3309c: remove two required properties
+  backlight: mp3309c: Add support for MPS MP3309C
+
+ .../bindings/leds/backlight/mps,mp3309c.yaml  |  10 +-
+ MAINTAINERS                                   |   7 +
+ drivers/video/backlight/Kconfig               |  11 +
+ drivers/video/backlight/Makefile              |   1 +
+ drivers/video/backlight/mp3309c.c             | 443 ++++++++++++++++++
+ 5 files changed, 466 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/video/backlight/mp3309c.c
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+2.34.1
 

@@ -1,78 +1,111 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Hi0obuai"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACA41B0
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:57:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700135870;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VPqGFXVhoOJAOGmkOh+AVOaUjN8gAwNLcy8Vd+Rk03g=;
-	b=Hi0obuaiSoFU5adR0AvrnKGZ7lgc0OG+1TS4MN/XTbtxDN/dLuIFEv4MMz9L1mZ3dZE5AG
-	7dLiiJUIvJ2HmkcBFmDW90ogoYV6SKqGlz1N1MEFAaq/0//wG+Ta4a1ES9Q52TPEtAaXCa
-	AFNDXHXKoabsqMR5UbEegs9XqFrp2Lw=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-606-VdXhv2ZuMpGXwlZ-Nq4T9g-1; Thu, 16 Nov 2023 06:57:49 -0500
-X-MC-Unique: VdXhv2ZuMpGXwlZ-Nq4T9g-1
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-32f798bc811so358050f8f.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:57:49 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EwDoSdu6"
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BB68193
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:59:39 -0800 (PST)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-4083cd3917eso6101485e9.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:59:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700135977; x=1700740777; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Bgu/OmIil+m+pgaiPX4vyBYRM7q2Oj3pmqGujW+IM1U=;
+        b=EwDoSdu6WCK1MIdDIz1jTLvpPb3wwBdwPNTaR1K2t17RbxnH1Q5rnOjIBFGubGWcYb
+         KHXb88YoNhvs9HnJIntN0/lWa8mpO+YpvIrrbYp0Nv/9LBPxSJ/ZdgkOb+P4SmjcpBpO
+         Wb+l2JDXw2P7p7xvs6IDoW03YQSHVYzUzaObC2dgIaJ+PpzKPThE2VZ0jVfinFTBx0TY
+         f2nm4hPBOqjJTPRaFa+DqFGb/Wbe8jVrGu15FP403cP98W6mH7iBlHvomPTXBJ8mBt1h
+         ff0bwuJZm4SSvJ2y+3Gzo05PxqN/LuaEZn1aP6hHMqZOGKh5/JxsR+V1aBlioYpsleJx
+         mBLA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700135868; x=1700740668;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=VPqGFXVhoOJAOGmkOh+AVOaUjN8gAwNLcy8Vd+Rk03g=;
-        b=gnAIgwi3I3s3OEi3SSl44VcZlN5j6tGeHPKq2ltlcdoPBUFXRc+oKDDpF/5+kF0waG
-         BrB+/NqmprsJfr1jihB8tqAyWUr+bQBn/HRAqArqEjD5hdMYgASpR6890PDEswEVcbO8
-         9Ea0IFOEMwciHkJA6SprFZq4mUen1VtWKSM7bO46Y/TSlxKzuwnLqzzmTME8+GFpbKyR
-         MV7Fa6W0y6/YUV1SDSpAi1Qflpfs8VnmyFOyy6+VatMcYVRCDlXoGuggN6lWI+I6t93F
-         +JTdy87yf39O19MIEYxP+4WZp8HmJxm+hE5U/PAZtvxjhHxrOhtro+gmElbshqffiKv7
-         PuKw==
-X-Gm-Message-State: AOJu0YwKeasu46lLIGIsX8bfHzfw19WHrh/FfBQ6P18gTz/XH/3JlB03
-	w8kAdZujOBP131eLBhFLr3qyOcIA8pAtw2Pkby6UXSjHWSAH3k7pp1uUxJ3/qlaXrRxgzLyILSy
-	55QxDSLM3andDQe5EIJruW7U=
-X-Received: by 2002:a05:6000:2c1:b0:32f:7d50:267e with SMTP id o1-20020a05600002c100b0032f7d50267emr15968016wry.9.1700135868660;
-        Thu, 16 Nov 2023 03:57:48 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFSgGBwWSGgKgB90lpexnyrsMqam+5f5ZdNROWqRD1U0tE9001rNzCx3BSnj2QBkH6SdjRCWw==
-X-Received: by 2002:a05:6000:2c1:b0:32f:7d50:267e with SMTP id o1-20020a05600002c100b0032f7d50267emr15967998wry.9.1700135868352;
-        Thu, 16 Nov 2023 03:57:48 -0800 (PST)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id e17-20020adfe391000000b0032fb7b4f191sm13384655wrm.91.2023.11.16.03.57.48
+        d=1e100.net; s=20230601; t=1700135977; x=1700740777;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Bgu/OmIil+m+pgaiPX4vyBYRM7q2Oj3pmqGujW+IM1U=;
+        b=q2N18hEgm3TWTUeru2tkJ12p5sb4v1ZNrLqz4yKmcKLIAAEiq/qXyxtDDZkkuyF/Cu
+         vN4bhoNhSext7MXSKm4+UmbKyF7a6qjpCN3QO9wBZge1EMSmKRmE/hnRXk6aKgtAN/CL
+         GuifX6EyXIQwp30cTkz9ZXRzmlmd/XnNhb06Xp81Wi5zATqr+J+ShtfD1bmOlZ8gwUvu
+         uTXfFYAb/hnQxQyy/psptvVYNRDeGEv+WJ9xuZEX7wcRosQqX0EreMbTRsr6t3XdpcWe
+         KFReuFw+OrOUtFdZW+hgin+cuG5buDaE1h0Tun1X03PajPqmLLorK3tzXIQ1MoQvtSix
+         r8NQ==
+X-Gm-Message-State: AOJu0YwL95NOhEWb82qu6nujzeHfWRLNAMxpH92JsouOKJnkCQVGjr/X
+	bPprikzyMPyNLgK64rGVUXMzPg==
+X-Google-Smtp-Source: AGHT+IGgShwNUHy7UmmpWIBZdQEdCnXfXFJTSulfEi9aWAIItDdqiFC8s1dZy5fLM0CanEYV7W7KHQ==
+X-Received: by 2002:a05:600c:310f:b0:408:3ac4:dc3f with SMTP id g15-20020a05600c310f00b004083ac4dc3fmr13808290wmo.29.1700135977363;
+        Thu, 16 Nov 2023 03:59:37 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id y7-20020a05600c364700b00401b242e2e6sm3259951wmq.47.2023.11.16.03.59.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 03:57:48 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
- dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 28/32] fbdev: Remove trailing whitespaces
-In-Reply-To: <20231115102954.7102-29-tzimmermann@suse.de>
-References: <20231115102954.7102-1-tzimmermann@suse.de>
- <20231115102954.7102-29-tzimmermann@suse.de>
-Date: Thu, 16 Nov 2023 12:57:47 +0100
-Message-ID: <87edgp3o78.fsf@minerva.mail-host-address-is-not-set>
+        Thu, 16 Nov 2023 03:59:36 -0800 (PST)
+Date: Thu, 16 Nov 2023 11:59:35 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Flavio Suligoi <f.suligoi@asem.it>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Conor Dooley <conor.dooley@microchip.com>
+Subject: Re: [PATCH v7 1/2] dt-bindings: backlight: mp3309c: remove two
+ required properties
+Message-ID: <20231116115935.GA56909@aspen.lan>
+References: <20231116105319.957600-1-f.suligoi@asem.it>
+ <20231116105319.957600-2-f.suligoi@asem.it>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231116105319.957600-2-f.suligoi@asem.it>
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
-
-> Fix coding style. No functional changes.
+On Thu, Nov 16, 2023 at 11:53:18AM +0100, Flavio Suligoi wrote:
+> The two properties:
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+> - max-brightness
+> - default brightness
+>
+> are not really required, so they can be removed from the "required"
+> section.
+> The "max-brightness" is no longer used in the current version
+> of the driver (it was used only in the first version).
+> The "default-brightness", if omitted in the DT, is managed by the
+> device driver, using a default value. This value depends on the dimming
+> mode used:
+>
+> - for the "analog mode", via I2C commands, this value is fixed by
+>   hardware (=31)
+> - while in case of pwm mode the default used is the last value of the
+>   brightness-levels array.
+>
+> Also the brightness-levels array is not required:
+>
+> - in "analog mode", via I2C commands, the brightness-level array is
+>   fixed by hardware (0..31).;
+> - in pwm dimming mode, the driver uses a default array of 0..255 and
+>   the "default-brightness" is the last one, which is "255"
+>
+> NOTE: there are no compatibility problems with the previous version,
+>       since the device driver has not yet been included in any kernel.
+>       Only this dt-binding yaml file is already included in the current
+>       v6.7.0-rc1 kernel version.
+>       No developer may have used it.
+>
+> Other changes:
+>
+> - improve the backlight working mode description, in the "description"
+>   section
+> - update the example, removing the "max-brightness" and introducing the
+>   "brightess-levels" property
+>
+> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
--- 
-Best regards,
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+Daniel.

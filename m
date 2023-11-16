@@ -1,72 +1,76 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C69CE3C462;
-	Wed, 15 Nov 2023 20:14:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TiQsJcib"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5F14C433C8;
-	Wed, 15 Nov 2023 20:14:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1700079278;
-	bh=u27jYiyCnPvX7BwcogXqTwm0JCokegPD0Pe+zFt7/vk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=TiQsJcibVMrhAUxdRs4u55T1ZRdXUaqXl0B5FwM1xxy95CP56AwkQ1rDOe8a9oRoM
-	 Z8/1VADpjkogA5+7sakttqxM+FIdPYZCb6phOXReJyup0qXLXDxcDlBED2qrZ9pEK/
-	 5d23ZF8mirTogRa0OaIJ6zSozfBveBNkof79iV0xhe4z7yoIHnXwn6mqxh1h426RzR
-	 5BDgd7OCfpaenn5yZ96T8LtORT8jEzmRim8o1D82D5BBkWn0IBuHnMgWvXhB4dr07X
-	 VKcfkO78iZsKEchmMDJOT0SGiuzm2EaZdxuf33hGEk96KPL2GK8EUKga0NP+ACePHB
-	 q4fkFIRbfc2mw==
-Date: Wed, 15 Nov 2023 20:14:32 +0000
-From: Conor Dooley <conor@kernel.org>
-To: Flavio Suligoi <f.suligoi@asem.it>
-Cc: Lee Jones <lee@kernel.org>,
+	dkim=pass (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.b="HQLNp6Oi"
+Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BBC4120;
+	Wed, 15 Nov 2023 23:50:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1700121020; x=1731657020;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=kjXlzMKI4SAh9l1+GsCDYTAjNE/uMze9MZXtOyCmaPM=;
+  b=HQLNp6OiqIDewTqK16FrYbVgOkqNFAEBumH+BqcJr1hkkkJT1NNZlale
+   7WFR3OvkYqRlvvW4t/R51TP2JX0Yn+vF3eQTlujw1iODESKjt0GNlj8sP
+   DmVMVTRU7Gm3ijhPWu+xv7ppBJzjgET9ujCishDMf+UFIMZ41y59fMyQo
+   OeTP4aahmFCBuAtBAqhxQUhHyXUOi5EfM/WUAmW0z0nT6vn/mQrFgzN7C
+   QeeFdpyUEwjYcF8IoquNEBSYaGP8Ho6fDnWLZyYecA093UWQv6ij1bjlX
+   asqXehEZH535cJaaf/S0KgFioL6XsN1z+CWN6LLTjbpJ4p7Rfc68xKBd/
+   Q==;
+X-IronPort-AV: E=Sophos;i="6.03,307,1694728800"; 
+   d="scan'208";a="34010892"
+Received: from vtuxmail01.tq-net.de ([10.115.0.20])
+  by mx1.tq-group.com with ESMTP; 16 Nov 2023 08:50:18 +0100
+Received: from steina-w.tq-net.de (steina-w.tq-net.de [10.123.53.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 30CB928007F;
+	Thu, 16 Nov 2023 08:50:18 +0100 (CET)
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Thierry Reding <thierry.reding@gmail.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Lee Jones <lee@kernel.org>,
 	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 1/2] dt-bindings: backlight: mp3309c: remove two
- required properties
-Message-ID: <20231115-showdown-blame-06a9acb63506@squawk>
-References: <20231115152902.851715-1-f.suligoi@asem.it>
- <20231115152902.851715-2-f.suligoi@asem.it>
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Cc: Alexander Stein <alexander.stein@ew.tq-group.com>,
+	linux-pwm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH 1/1] backlight: pwm_bl: Use dev_err_probe
+Date: Thu, 16 Nov 2023 08:50:17 +0100
+Message-Id: <20231116075017.939926-1-alexander.stein@ew.tq-group.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="7YInnrzDKNO+YsB+"
-Content-Disposition: inline
-In-Reply-To: <20231115152902.851715-2-f.suligoi@asem.it>
+Content-Transfer-Encoding: 8bit
 
+Let dev_err_probe handle the -EPROBE_DEFER case and also add an entry to
+/sys/kernel/debug/devices_deferred when deferred.
 
---7YInnrzDKNO+YsB+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
+---
+ drivers/video/backlight/pwm_bl.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-On Wed, Nov 15, 2023 at 04:29:01PM +0100, Flavio Suligoi wrote:
-> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 289bd9ce4d36d..3825c2b67c53b 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -509,8 +509,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm)) {
+ 		ret = PTR_ERR(pb->pwm);
+-		if (ret != -EPROBE_DEFER)
+-			dev_err(&pdev->dev, "unable to request PWM\n");
++		dev_err_probe(&pdev->dev, ret, "unable to request PWM\n");
+ 		goto err_alloc;
+ 	}
+ 
+-- 
+2.34.1
 
-You omitted my ack that I gave on the previous version.
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-
-Cheers,
-Conor.
-
---7YInnrzDKNO+YsB+
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEARYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZVUmpQAKCRB4tDGHoIJi
-0qqQAP48sZ0PpimqIgeXVDtIsAnRBgLRK6J12gcofe0rmm2dTQEA6AsQB7AwImc8
-T8U4C7CkANMlEQvcOu1fB5Bl5KkzKgw=
-=Z3fk
------END PGP SIGNATURE-----
-
---7YInnrzDKNO+YsB+--

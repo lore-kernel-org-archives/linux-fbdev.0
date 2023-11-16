@@ -1,58 +1,57 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iaOScH2q"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBBC31A3
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 05:10:16 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="fWYYCUH8"
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D6011A7
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 05:13:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700140216;
+	s=mimecast20190719; t=1700140382;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=mrGmsjr48vvSt4Jlx14HfvIRMMMvtnKQ8EBuWRi5SBg=;
-	b=iaOScH2qZDkCOJynmRmUq+iY8rqR2SOtgg6kfNhuXUSwO8ZaZ9Brj8ZA49JRMpMlrgnd4x
-	NYsjV5YgbzlyFIQMWtPUuIr5JLy7I0972Ui6PokYj7Pwz16lEMkhpeoqiypphGCf0Qcvbm
-	BrNhNFnPYTn6LNbO/MzlXob84YkyMDQ=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=xleHXMOYndgy/0SzjJt8wqPeBlWoOdp4DyJVoMu5fsw=;
+	b=fWYYCUH8whwPp4sSm9hklgVr5ge0VKV0HBHBmu4d6gFcEHztMPfZ1C6zBDC8JU1A5oQkMx
+	U96V0pbEvhKbP3uZ6/9vLTEqIGafA6Purw27nX2niGpFI62mGjgXIX4IIvv8DdiGUNlIpD
+	xM+y67zjKRb22pK3kSZP0BOGJfXGszE=
+Received: from mail-lj1-f198.google.com (mail-lj1-f198.google.com
+ [209.85.208.198]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-284-ePS1GJzYOQ2e-OH1xAazyQ-1; Thu, 16 Nov 2023 08:10:14 -0500
-X-MC-Unique: ePS1GJzYOQ2e-OH1xAazyQ-1
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-32f798bc811so393242f8f.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 05:10:14 -0800 (PST)
+ us-mta-141-saxPiW1xP46M0nOxrfGB5Q-1; Thu, 16 Nov 2023 08:13:01 -0500
+X-MC-Unique: saxPiW1xP46M0nOxrfGB5Q-1
+Received: by mail-lj1-f198.google.com with SMTP id 38308e7fff4ca-2c52cbb64c9so6646851fa.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 05:13:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700140213; x=1700745013;
+        d=1e100.net; s=20230601; t=1700140380; x=1700745180;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mrGmsjr48vvSt4Jlx14HfvIRMMMvtnKQ8EBuWRi5SBg=;
-        b=v+WW77OsnNBNYPuaqRkFFUZmDUbngMm/1B/HpLJHQBAIIP6P4uwuB5wFUEQZNB1lG6
-         dSSLNLx41u1bllcEmhgwK4JkY90deQbLPzgvfrlxsIvND3sU/zP9KWMj7wtQ+BIxDUzn
-         /4T3455Xn3p4OyIu8bOQaoq2RiE07X3VHQH3bggfXW6i8Dwihywpoa2DntT59C6CYFtJ
-         2oxGp7A+3z0SfdiTlAaw54OaPjOm4DGwld6iTipsIDOKCZM1hfe4dGZhWVSIWY/7iJzx
-         ha+DodXWyoy/4qbgre8rVGRMILfR5SXtSAJwhgRmAcFEFPsahOsU3E5m2mZq2UZWrS0E
-         nOWQ==
-X-Gm-Message-State: AOJu0YwEbv0CE88yD28PdskUB0qvT2BIXYcYbTUEimbuMvPPrqtH/nh3
-	SW/Y7LsAGRfpJkVsWkKU6NOoKc3tt9gzTS87IBum4/WVXyqKh6GXCLo52Ho444g1a9Nw2C9wKXg
-	yZWaREj+ZLZJyZgEcexvjzSE=
-X-Received: by 2002:a5d:58e1:0:b0:32d:b289:4bda with SMTP id f1-20020a5d58e1000000b0032db2894bdamr11453149wrd.40.1700140213603;
-        Thu, 16 Nov 2023 05:10:13 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IF3TpPzho2RAiZPqL/bbKINoeN3Ay14lbtxiuo/KeGYqzEtW96hvu1Xrb1r+wGaH+lKpKTn4Q==
-X-Received: by 2002:a5d:58e1:0:b0:32d:b289:4bda with SMTP id f1-20020a5d58e1000000b0032db2894bdamr11453129wrd.40.1700140213264;
-        Thu, 16 Nov 2023 05:10:13 -0800 (PST)
+        bh=xleHXMOYndgy/0SzjJt8wqPeBlWoOdp4DyJVoMu5fsw=;
+        b=EgQ5ntm4ln3mzmJyQ50gkCYaVpfjeN7PrPUTvnFlCOMbW0+N78MrXofc3Fy/PPXP4J
+         ntSverkU+PGFsyKyJHOlpFv44lHGgn3Qtn1fnQeJVUhDdZwJ1b3t0U20RoGrs9XnvCn/
+         /r3VKV2l0ijpqVny1zwT78WCA5XOPUTlFeqxoYrRFMXEfme+j9nOCIfcYh7t2pe/iLy0
+         WHchBxaIrUplfA9FCWCJvagSaitxbqj0MvykOivoY/88PUzHiJ1eOrZ6Vv1FPjKlFkHq
+         u27ZeXFt/utho1hsD/QzTU4ZJNjSa7NHcOqXvjxXEQQTPGGLziLSf0MP0Xsfx3PCWpR8
+         ic6g==
+X-Gm-Message-State: AOJu0YyEQTx9EOYX9kzoEW8vSnuIK4FR3XgBIXqkcLGk55UQpyL7ZVrh
+	ngYzwETTbS+YpZtwPOuQE936Ihw469xGYNcrOGpjyFHEsyoR7inLzSfbFSC1Ju7bxKB5NwPddr1
+	XMT55A8D3XVPww64jRlF1Moo=
+X-Received: by 2002:a2e:8018:0:b0:2c5:70f:614a with SMTP id j24-20020a2e8018000000b002c5070f614amr5915548ljg.17.1700140379860;
+        Thu, 16 Nov 2023 05:12:59 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IGZq8VMxo51xXvQF1h4C7TgM5Rtss1R7wyZzjAWJgcFAJspMD3HirntEI6zKgyIlaPaGVn0jQ==
+X-Received: by 2002:a2e:8018:0:b0:2c5:70f:614a with SMTP id j24-20020a2e8018000000b002c5070f614amr5915535ljg.17.1700140379560;
+        Thu, 16 Nov 2023 05:12:59 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id h6-20020adff4c6000000b0032fa66bda58sm13742368wrp.101.2023.11.16.05.10.12
+        by smtp.gmail.com with ESMTPSA id n20-20020a05600c4f9400b004060f0a0fd5sm3657213wmq.13.2023.11.16.05.12.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 05:10:13 -0800 (PST)
+        Thu, 16 Nov 2023 05:12:59 -0800 (PST)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
  dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 30/32] fbdev: Move default fb_mmap code into helper
- function
-In-Reply-To: <20231115102954.7102-31-tzimmermann@suse.de>
+Subject: Re: [PATCH 31/32] fbdev: Warn on incorrect framebuffer access
+In-Reply-To: <20231115102954.7102-32-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
- <20231115102954.7102-31-tzimmermann@suse.de>
-Date: Thu, 16 Nov 2023 14:10:12 +0100
-Message-ID: <875y213kuj.fsf@minerva.mail-host-address-is-not-set>
+ <20231115102954.7102-32-tzimmermann@suse.de>
+Date: Thu, 16 Nov 2023 14:12:57 +0100
+Message-ID: <8734x53kpy.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -63,15 +62,12 @@ Content-Type: text/plain
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> Move the default fb_mmap code for I/O address spaces into the helper
-> function fb_io_mmap(). The helper can either be called via struct
-> fb_ops.fb_mmap or as the default if no fb_mmap has been set. Also
-> set the new helper in __FB_DEFAULT_IOMEM_OPS_MMAP.
->
-> In the mid-term, fb_io_mmap() is supposed to become optional. Fbdev
-> drivers will initialize their struct fb_ops.fb_mmap to the helper
-> and select a corresponding Kconfig token. The helper can then be made
-> optional at compile time.
+> Test in framebuffer read, write and drawing helpers if FBINFO_VIRTFB
+> has been set correctly. Framebuffers in I/O memory should only be
+> accessed with the architecture's respective helpers. Framebuffers
+> in system memory should be accessed with the regular load and
+> store operations. Presumably not all drivers get this right, so we
+> now warn about it.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---

@@ -1,93 +1,89 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="it3iQiuG"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="cBoDovwe"
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6420E1A8
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:23:55 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1076B8
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:27:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700130234;
+	s=mimecast20190719; t=1700130479;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=mZuQXo9gnkbNsHEOB2zSY3qjcWzrlb81dsj8lBIB1oQ=;
-	b=it3iQiuGm4SZMuNN1x06MoymumAO2v7tVtX1KgT/EtIlauao4ewsBTgGMu9pZHn4UQyx8P
-	3v1siaXSwMPtH54iaCFz56d0Z3+4HHK4a0au15rk3i7t92UkGwnXlizuAOfp33B9TAy3jj
-	lqeTkB4jAeJVoPLUaUY4ph+6IPIXVqs=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=FlHlGuIFKBdR7Fli1C8w7UyO4Sn2DZFiv8/q8c7YdBo=;
+	b=cBoDovwebWYO2cSFQoHO11ryonmM3kbgj7yWOiCChm2U4e78YDqc+d9yxsAEGtSn1Cs1uU
+	rp5Pb9SW0VJlmqVo7PpM0DccbrcsJWzno1SEreMbTJ6pzwjEWgXzM5IJKgBNZ6Ql2pGVZj
+	8Psln9tSXHiNjil02zr5WVcI4WYCl4I=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-594-OVsb0sNvORq8eCqOTFI0Fw-1; Thu, 16 Nov 2023 05:23:53 -0500
-X-MC-Unique: OVsb0sNvORq8eCqOTFI0Fw-1
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-4084d0b171eso8747805e9.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:23:53 -0800 (PST)
+ us-mta-452-3mmfND3fOA2m4zk1eeK2IQ-1; Thu, 16 Nov 2023 05:27:57 -0500
+X-MC-Unique: 3mmfND3fOA2m4zk1eeK2IQ-1
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-32f8cb825c5so303149f8f.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:27:57 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700130231; x=1700735031;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mZuQXo9gnkbNsHEOB2zSY3qjcWzrlb81dsj8lBIB1oQ=;
-        b=UeLorvhCKUChASDR2uYh/BqynYH/l5fKNNw0OX7EA0ta7uk0nz8liX7bYH/KEDJWVO
-         iuHrd6tJ5gmjgXSxl0RgZot54SAwFb228VF0j+hucGOdjAHi0X2K8xXbs6X2rAe+9dcx
-         mHybBAfXhH6IWZcAODwsKm+/8H3rNLcMaDxn5L2NURkEwhHO4Ij6+HTReKPI4zXRffsD
-         VfhEtcGmO2MmCEgw9D4UWOXyVOH66jU/KT7aD5+FRn/HUkSCrWY9lCecSUflgZtJ7uNf
-         j4732uqb3oltYEUYAHYeEWAmfOVTUdpobwfBmntPOO9giYAhOwK6zc30yipjHnOZgrEy
-         ITrQ==
-X-Gm-Message-State: AOJu0YyMj9wh4JmpwL4dsMW5v+vKb4+Rwe/bw/SoJeYM1o7f2DY0x0b4
-	kzG6+h/ja+dSdlAHjSgb8RKLFRunnqYhVZKYb4jcV8Dm6YQb60VNsNngwNgK2jkW7HUULbCCNpb
-	8l5q08C0pdcXaZnperOJPwK8/YYCv0Dk=
-X-Received: by 2002:a05:600c:1906:b0:409:6e0e:e95a with SMTP id j6-20020a05600c190600b004096e0ee95amr1138240wmq.19.1700130231654;
-        Thu, 16 Nov 2023 02:23:51 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IEAVDQkmo3j+8iWEwGwvFmLiS/SO/vAfk2hJXFP092iyiMamOm6OHU8ASafyrHF8vMvPKAMmg==
-X-Received: by 2002:a05:600c:1906:b0:409:6e0e:e95a with SMTP id j6-20020a05600c190600b004096e0ee95amr1138222wmq.19.1700130231264;
-        Thu, 16 Nov 2023 02:23:51 -0800 (PST)
+        d=1e100.net; s=20230601; t=1700130476; x=1700735276;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FlHlGuIFKBdR7Fli1C8w7UyO4Sn2DZFiv8/q8c7YdBo=;
+        b=MnGxewoCUBQiXsxC3wHijzwUuflsxwFo7aAD7PfU5xC4zz7wndulojxZ/QbABxS/aj
+         ulX0t+qTuU3bLdH5l9X9KDHznSm7sfD81HtyulzLpIxatcNFhjvdgz8oUb5PaLoqqu1u
+         HQ2yAIe4yWLAOs0TRQVXg9GeoXfaFBR0+lLnRel4FrkcMyi19uVQ9Em1lDFJ95MAB2zg
+         XSdbb/aYYAGZ9Ep1X6n8VcNyHV8HsQ4GnqPyC+NLLL2DYPlyjug36Oewx8IawzZs+Hd2
+         xb/QFiKjoeQzVpIry1nl8zT8SaZY4uctqWnVi53c91HyW7cPXJWy9PeEFhiZYrKJcPSJ
+         ML3g==
+X-Gm-Message-State: AOJu0YxoiXXS77ku468oTUqiFnLOH0Un/cACwv8XXGIsatsIgvGXKdU5
+	5Z3TwkcfNLBwtcI2rQz5D7Xj8Ey8IXzClbDoVE1bgPCFFGRoucu3h8HLCfLTr/5M9YK78UupMmp
+	pJHx7AQ1a5SKKXgo6BIyyBxY=
+X-Received: by 2002:a05:6000:2c1:b0:32f:7f65:8f3e with SMTP id o1-20020a05600002c100b0032f7f658f3emr11490924wry.7.1700130476319;
+        Thu, 16 Nov 2023 02:27:56 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHVowa78+7DuIt1O2CluTlGpgTtzZ/Y0J9eR+J6IQbq1Imn9LSMs1Gu9C++CQRfYKUKXpQNgg==
+X-Received: by 2002:a05:6000:2c1:b0:32f:7f65:8f3e with SMTP id o1-20020a05600002c100b0032f7f658f3emr11490908wry.7.1700130475998;
+        Thu, 16 Nov 2023 02:27:55 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id u5-20020a05600c138500b003fee6e170f9sm2986310wmf.45.2023.11.16.02.23.50
+        by smtp.gmail.com with ESMTPSA id m3-20020adffe43000000b0032d8354fb43sm13119242wrs.76.2023.11.16.02.27.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 02:23:51 -0800 (PST)
+        Thu, 16 Nov 2023 02:27:55 -0800 (PST)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thomas
- Zimmermann <tzimmermann@suse.de>, Miguel Ojeda <ojeda@kernel.org>, Robin
- van der Gracht <robin@protonic.nl>
-Subject: Re: [PATCH 10/32] auxdisplay/ht16k33: Initialize fb_ops with fbdev
- macros
-In-Reply-To: <20231115102954.7102-11-tzimmermann@suse.de>
+ Zimmermann <tzimmermann@suse.de>, Bruno =?utf-8?Q?Pr=C3=A9mont?=
+ <bonbons@linux-vserver.org>, Jiri Kosina <jikos@kernel.org>, Benjamin
+ Tissoires <benjamin.tissoires@redhat.com>, linux-input@vger.kernel.org
+Subject: Re: [PATCH 11/32] hid/picolcd_fb: Set FBINFO_VIRTFB flag
+In-Reply-To: <20231115102954.7102-12-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
- <20231115102954.7102-11-tzimmermann@suse.de>
-Date: Thu, 16 Nov 2023 11:23:50 +0100
-Message-ID: <87r0kq3sjt.fsf@minerva.mail-host-address-is-not-set>
+ <20231115102954.7102-12-tzimmermann@suse.de>
+Date: Thu, 16 Nov 2023 11:27:55 +0100
+Message-ID: <87o7fu3sd0.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> Initialize the instance of struct fb_ops with fbdev initializer
-> macros for framebuffers in virtual address space. Set the read/write,
-> draw and mmap callbacks to the correct implementation and avoid
-> implicit defaults. Also select the necessary helpers in Kconfig.
->
-> Fbdev drivers sometimes rely on the callbacks being NULL for a
-> default I/O-memory-based implementation to be invoked; hence
-> requiring the I/O helpers to be built in any case. Setting all
-> callbacks in all drivers explicitly will allow to make the I/O
-> helpers optional. This benefits systems that do not use these
-> functions.
+> The picolcd_fb driver operates on system memory. Mark the framebuffer
+> accordingly. Helpers operating on the framebuffer memory will test
+> for the presence of this flag.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Miguel Ojeda <ojeda@kernel.org>
-> Cc: Robin van der Gracht <robin@protonic.nl>
+> Cc: "Bruno Pr=C3=A9mont" <bonbons@linux-vserver.org>
+> Cc: Jiri Kosina <jikos@kernel.org>
+> Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+> Cc: linux-input@vger.kernel.org
 > ---
->  drivers/auxdisplay/Kconfig   | 5 +----
->  drivers/auxdisplay/ht16k33.c | 7 ++-----
->  2 files changed, 3 insertions(+), 9 deletions(-)
+>  drivers/hid/hid-picolcd_fb.c | 1 +
+>  1 file changed, 1 insertion(+)
 >
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
--- 
+--=20
 Best regards,
 
 Javier Martinez Canillas

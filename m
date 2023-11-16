@@ -1,59 +1,58 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="LKXPr3po"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ECD1187
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:26:29 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="HNo0nBPG"
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2542C85
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:28:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700133988;
+	s=mimecast20190719; t=1700134110;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=xhfIum68/LfGGlKZxKOpUyUVoYt3PypwKYYqLYNBIe4=;
-	b=LKXPr3poCS0Jvwqk31sYxbtX4gHmsXQ3+H40DISKO50Nw/5togLZ4lN4mw2tZan/tG2eVV
-	KVz8sT1jSe/FivlukqSx7fLktEbrzfA9mXZb5oTTrGkVnBvIjJ0QREVE/rDoUwUecIJm7e
-	E8QZPQzmYGerQJbzB7C220J6lXfVBtA=
-Received: from mail-lj1-f198.google.com (mail-lj1-f198.google.com
- [209.85.208.198]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=v5/8ZzCVrCdsxMalmcenuz1AcsZBPFj3JQUIdn0FWWw=;
+	b=HNo0nBPGIEfKef+m6jSI1jp1reT4brf5q/RVsYELjkDdrcz3tSDZqz2pPaNqcYNzK7kHxa
+	Fg5gSPq1wReRlde8ePPOpoKWVnMda7EJe3i69oIFKH/KnpBGs4A8JKQ3fLRrM4qrf7YCo8
+	39Mfo4twuK0Mr+0fYRCn9GQLia/4sfM=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-295-9Yn46j9GPGavzw3y1BPfyg-1; Thu, 16 Nov 2023 06:26:27 -0500
-X-MC-Unique: 9Yn46j9GPGavzw3y1BPfyg-1
-Received: by mail-lj1-f198.google.com with SMTP id 38308e7fff4ca-2c50bebd8dfso5924101fa.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:26:26 -0800 (PST)
+ us-mta-146-A5Gfe8ZaO5SSpZ-i_HY3fg-1; Thu, 16 Nov 2023 06:28:29 -0500
+X-MC-Unique: A5Gfe8ZaO5SSpZ-i_HY3fg-1
+Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-32cef5f8af5so862829f8f.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 03:28:29 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700133985; x=1700738785;
+        d=1e100.net; s=20230601; t=1700134107; x=1700738907;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xhfIum68/LfGGlKZxKOpUyUVoYt3PypwKYYqLYNBIe4=;
-        b=jooGRdvhQaQDaUdhmu2MBG20VxKzZK/WIURPydBwhJbRnE3usARAeMfTNY4hakXppk
-         xM9utErN+7gBWNPhdlYag1NBXuK5+BrnkxePEYmDcQuSvx/QEAnxL8xOgsUy1zL+gnqh
-         8YOSCO0+vcRdBE9cOx7kTZzvNvLPlGiR3AJGXqeFsDc7VuLkf4kR7TInmkO70hgrdEzk
-         wWQ3dLIY9n6NoTzXZs4jSKCYO0c/HQ1X+PbvA35AYnCpp81LDvgnQ6HARV9VwCYE+Uiy
-         Vxl6YZd0x+XWR4l33VKJM8SWu9NfJjDb42eAKmtVhFGOFbdicHTrDym1px806yA498dQ
-         OGUw==
-X-Gm-Message-State: AOJu0Yz67TJ4uZcCdhpE9SJFMP08LsxE2B1k+EtcRSvFNCu4jkN6Li0/
-	zGzpMgV05dY7pqEmmCmijrW2JIAfHY8qGbaZDIWcAiBWVKw+zG4OcDrv2F1/i/zrhxo8ntiv0UY
-	ncOlL5lHGQ5UkLETCGU/cEk4=
-X-Received: by 2002:a2e:a4cb:0:b0:2c5:5926:de52 with SMTP id p11-20020a2ea4cb000000b002c55926de52mr5121265ljm.53.1700133985732;
-        Thu, 16 Nov 2023 03:26:25 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IEJnR2iDTGVBiyLONW/q3XfA8jLqJYND8GKOCtotFp7WUFdUTultF747i6hHAkQad7D5Wm1Ng==
-X-Received: by 2002:a2e:a4cb:0:b0:2c5:5926:de52 with SMTP id p11-20020a2ea4cb000000b002c55926de52mr5121250ljm.53.1700133985429;
-        Thu, 16 Nov 2023 03:26:25 -0800 (PST)
+        bh=v5/8ZzCVrCdsxMalmcenuz1AcsZBPFj3JQUIdn0FWWw=;
+        b=dhX7mBGBK12Ai6EAW6plDNLK7U1kK3g2fJy8gdj/TP8EhZBzIAbS30jyUfhnZPJ4Ge
+         +Q0thx3hJ4+w88fX8Z3FGmYv9jqK4lT6ArN+AmZmy49ZKOM1ubtQyiNGw8wJChOdYmNI
+         84pVwq5CGxvvD7gbE5vDPP2J8JL92sQYHdy62uThbegb/k3X7kcvsXb+U3yNz8EGg7I1
+         7ily9pBhMF59g5e53g2m02GGDmzYHmAiBez3nloCFhWrkpTnw5SOxV44sKoG8KlcpZZF
+         5AA5pKbgNLEOoXeV9jCzeezus7KelblBnpIJtsrTDTLLlRA0GDgzdjAeX8/hI7J3Mj1W
+         B2IQ==
+X-Gm-Message-State: AOJu0Yw+ay8zeUh99RH387ajqRzsZj9oXVMT+04+js2oMk1nytL8EQ+0
+	+uc01qGQyFc07/ZFQVNiiEE+tWMFDIdh/Yr5CnfzpVKtKV8hqbPFm/TKTXPr/Lm0ZVj94AYg5Cx
+	Mtk0CrgovzLIUuSN+PJ/paCmUnNwdT9A=
+X-Received: by 2002:a5d:5987:0:b0:32f:8a45:937f with SMTP id n7-20020a5d5987000000b0032f8a45937fmr1746643wri.2.1700134106951;
+        Thu, 16 Nov 2023 03:28:26 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHIcOMB0JSgLEWjYCwKqh/p/oabxJ7+9I26X5aSBxMMD1u1HUxMMcKxJBMQZRc3RqGkMwIVZg==
+X-Received: by 2002:a5d:5987:0:b0:32f:8a45:937f with SMTP id n7-20020a5d5987000000b0032f8a45937fmr1746627wri.2.1700134106654;
+        Thu, 16 Nov 2023 03:28:26 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k42-20020a05600c1caa00b003feae747ff2sm3302601wms.35.2023.11.16.03.26.25
+        by smtp.gmail.com with ESMTPSA id j9-20020a5d6049000000b0032710f5584fsm13320749wrt.25.2023.11.16.03.28.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 03:26:25 -0800 (PST)
+        Thu, 16 Nov 2023 03:28:26 -0800 (PST)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, Andy Walls <awalls@md.metrocast.net>,
- dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, linux-media@vger.kernel.org
-Subject: Re: [PATCH 20/32] media/ivtvfb: Initialize fb_ops to fbdev
- I/O-memory helpers
-In-Reply-To: <20231115102954.7102-21-tzimmermann@suse.de>
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+ dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 21/32] fbdev/clps711x-fb: Initialize fb_ops with fbdev
+ macros
+In-Reply-To: <20231115102954.7102-22-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
- <20231115102954.7102-21-tzimmermann@suse.de>
-Date: Thu, 16 Nov 2023 12:26:24 +0100
-Message-ID: <87y1ey2b33.fsf@minerva.mail-host-address-is-not-set>
+ <20231115102954.7102-22-tzimmermann@suse.de>
+Date: Thu, 16 Nov 2023 12:28:25 +0100
+Message-ID: <87v8a22azq.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -65,22 +64,21 @@ Content-Type: text/plain
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
 > Initialize the instance of struct fb_ops with fbdev initializer
-> macros for framebuffers in I/O address space. This explictily sets
-> the read/write, draw and mmap callbacks to the correct default
-> implementation.
+> macros for framebuffers in I/O address space. Set the read/write,
+> draw and mmap callbacks to the correct implementation and avoid
+> implicit defaults. Also select the necessary helpers in Kconfig.
+>
+> The driver previously selected drawing ops for system memory
+> although it operates on I/O memory. Fixed now.
 >
 > Fbdev drivers sometimes rely on the callbacks being NULL for a
-> default implementation to be invoked; hence requireing the I/O
-> helpers to be built in any case. Setting all callbacks in all
-> drivers explicitly will allow to make the I/O helpers optional.
-> This benefits systems that do not use these functions.
->
-> Set the callbacks via macros. No functional changes.
+> default I/O-memory-based implementation to be invoked; hence
+> requiring the I/O helpers to be built in any case. Setting all
+> callbacks in all drivers explicitly will allow to make the I/O
+> helpers optional. This benefits systems that do not use these
+> functions.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Andy Walls <awalls@md.metrocast.net>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: linux-media@vger.kernel.org
 > ---
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>

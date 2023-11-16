@@ -1,57 +1,57 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="AjNM8dm6"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="K8+ZCOnZ"
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 842FB19E
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:05:23 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97CD9D5A
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:16:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700129122;
+	s=mimecast20190719; t=1700129799;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JSNlp1+/gXMtVqoR/aOQ3Vuht8AOWTyGnk7nVUalkfI=;
-	b=AjNM8dm6XxtO01UvZUD1IAEN/BUYD1S+16XnOt3JWzhADiPnygMzno0XY/fEDHXbwxcGP8
-	nnPsvgpV/+SE5zWHBQ+7Gq08W2LB4ZSIRKMFHK7S4+cUkpStj3zGeWXhUQyQJTWhXLsL/B
-	0fJINqQYEsR+zZc4EeadMUxI+8Jgmx0=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=uDwACU7dtp8fJ4WW5xK6PlRB4Fg6zXxs5sSrL3YNTGw=;
+	b=K8+ZCOnZoRLCAtugB9jNGOc/NOEutGctEh9Y16wioBSZtP7/G1Hp61oy/MpS31Xo3CoHnp
+	bhAGOZaTcRE9qH5u9mJqFyFwffhRononhP+dCD03G2E2PVdHSavFgTR2gK6LnLz3G2FcJO
+	OKPA7RAawFrtAKxKrqNMLX2ZsQ8ic58=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-270-I7K0i-r_O-yaWPC8J5MPug-1; Thu, 16 Nov 2023 05:05:20 -0500
-X-MC-Unique: I7K0i-r_O-yaWPC8J5MPug-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-4083c9b426fso3170675e9.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:05:20 -0800 (PST)
+ us-mta-296-dueZEHF2MROTT90f6hmOdA-1; Thu, 16 Nov 2023 05:16:37 -0500
+X-MC-Unique: dueZEHF2MROTT90f6hmOdA-1
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-32d9b520d15so283542f8f.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 02:16:37 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700129119; x=1700733919;
+        d=1e100.net; s=20230601; t=1700129797; x=1700734597;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=JSNlp1+/gXMtVqoR/aOQ3Vuht8AOWTyGnk7nVUalkfI=;
-        b=WpXN2KhrzhCmZojQzOJmqT/GNyeJDab4dKOseqIOJjx2aQD//NsEo5luvlWWBHYrb7
-         1l4wXjCiFnwPfHfUlbyD/IKgjYa6diGjzpvFjkYZdiZNfP/CbyXJGzr66G8FXDuxIFsG
-         qcrm1m020ckjVlh+K0hijyHJvXbg50qI5jqQVJWWK3rQhFIuxDQegcvNsceb4+GrDe5a
-         OEBzMdE8Ug7kEyEIRqpVNGp7i1isMYNz4VGScEadFnZXfQrmSQlls0o9urvqjsTxudkp
-         U2+dzPK/JxqbxiBKpCfR1+img0RonsaeNDyOJ8SAFjmapTNwFZFIjrel84z5rXc3h/qM
-         PmEg==
-X-Gm-Message-State: AOJu0YwaurPhu45qBxzcH/okfAU3ffTdlxEJT+g5C9zwNNPFbDeXYPuu
-	y7bRndt27NgxOn16Azqul8XjgXtj4RPAMbH3UiE6UuJYwE3VuC5ct1fxystjMa33T7wndoAEGEd
-	7F15XEC7GtlRF9fKpmRHgTCA=
-X-Received: by 2002:a05:600c:35c2:b0:408:80bb:ae80 with SMTP id r2-20020a05600c35c200b0040880bbae80mr1643805wmq.7.1700129119545;
-        Thu, 16 Nov 2023 02:05:19 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFxq1W8dzn6d2MNNVy3msexF8xkL5g5RWLNAmn7R8Fnb73BFw9CCJrcGUUn/q5NdHTcxCRO3A==
-X-Received: by 2002:a05:600c:35c2:b0:408:80bb:ae80 with SMTP id r2-20020a05600c35c200b0040880bbae80mr1643785wmq.7.1700129119125;
-        Thu, 16 Nov 2023 02:05:19 -0800 (PST)
+        bh=uDwACU7dtp8fJ4WW5xK6PlRB4Fg6zXxs5sSrL3YNTGw=;
+        b=nPtaTBRxzaTG/MpVs/GnsQQDr37PwxsgCtJ2zWdYXSjAtwvcl5xAgAL+zZvcZNWvsW
+         oQhBY7wZxksbE18b7/fTmR2Otkxa+usYxdkH6izsv/WwILz5YT9xCsq7Q9s9TD0NWsg6
+         dEU+h4pEe+NgOo2JOiqR4fOCcE9p1KytiB5KuBXMUOqJZH4tXGK/kHfJ04Bq7bPxJrKi
+         XXVyud4jHWo+JpgDcAYvKSomIqFLvntLvu2cNxLowyWgiOzNaaxWRZylnZFbyWGKuzPk
+         vYoDdZ+355ydR3RZrspNE+kRuTa14sVvbttd1AlrgKQgGROgetnYghoYOCqHRzz1ig5q
+         GVNw==
+X-Gm-Message-State: AOJu0YyXwbxnMYlRJ5XhLoBd/4DTQ1fDMHcNvZbKc0C5Z1X55jorWuIh
+	ti72uoN69b59OiVa7rK5AFXztj2TRMf73F0L4VkpVhkwlO/59Cm3nyO35CnqoFmpoiDc1Afk390
+	AIwSMEhnqJYv6OOIJMGNhGgU=
+X-Received: by 2002:a5d:598b:0:b0:32f:77a6:52ea with SMTP id n11-20020a5d598b000000b0032f77a652eamr12512698wri.61.1700129796875;
+        Thu, 16 Nov 2023 02:16:36 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHjM/ZjRb/J7PFHTr4EsIs7Wr3JSQTtPxs9S1xb4LRj7HRY0TPAX/UHfJmGKcDjv2BmCJjbGQ==
+X-Received: by 2002:a5d:598b:0:b0:32f:77a6:52ea with SMTP id n11-20020a5d598b000000b0032f77a652eamr12512688wri.61.1700129796599;
+        Thu, 16 Nov 2023 02:16:36 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id p6-20020a05600c358600b0040a45fffd27sm2953271wmq.10.2023.11.16.02.05.18
+        by smtp.gmail.com with ESMTPSA id f13-20020a5d4dcd000000b0032f7c563ffasm13019302wru.36.2023.11.16.02.16.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Nov 2023 02:05:18 -0800 (PST)
+        Thu, 16 Nov 2023 02:16:36 -0800 (PST)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thomas
- Zimmermann <tzimmermann@suse.de>, Jaya Kumar <jayalk@intworks.biz>
-Subject: Re: [PATCH 05/32] fbdev/arcfb: Set FBINFO_VIRTFB flag
-In-Reply-To: <20231115102954.7102-6-tzimmermann@suse.de>
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+ dri-devel@lists.freedesktop.org, Jaya Kumar <jayalk@intworks.biz>
+Subject: Re: [PATCH 06/32] fbdev/arcfb: Use generator macros for deferred I/O
+In-Reply-To: <20231115102954.7102-7-tzimmermann@suse.de>
 References: <20231115102954.7102-1-tzimmermann@suse.de>
- <20231115102954.7102-6-tzimmermann@suse.de>
-Date: Thu, 16 Nov 2023 11:05:18 +0100
-Message-ID: <875y2257z5.fsf@minerva.mail-host-address-is-not-set>
+ <20231115102954.7102-7-tzimmermann@suse.de>
+Date: Thu, 16 Nov 2023 11:16:35 +0100
+Message-ID: <8734x657gc.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -62,17 +62,27 @@ Content-Type: text/plain
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> The arcfb driver operates on system memory. Mark the framebuffer
-> accordingly. Helpers operating on the framebuffer memory will test
-> for the presence of this flag.
+> Implement the driver's fops with the generator macros for deferred
+> I/O. Only requires per-driver code for the on-scren scanout buffer.
+> The generated helpers implement reading, writing and drawing on top
+> of that. Also update the selected Kconfig tokens accordingly.
+>
+> Actual support for deferred I/O is missing from the driver. So
+> writing to memory-mapped pages does not automatically update the
+> scanout buffer.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > Cc: Jaya Kumar <jayalk@intworks.biz>
 > ---
->  drivers/video/fbdev/arcfb.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/video/fbdev/Kconfig |   5 +-
+>  drivers/video/fbdev/arcfb.c | 113 +++++++++---------------------------
+>  2 files changed, 27 insertions(+), 91 deletions(-)
+>
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+The patch looks good to me from a high level point of view but it's not
+trivial so it would be good if Jaya Kumar can review / test it as well.
+
+Acked-by: Javier Martinez Canillas <javierm@redhat.com>
 
 -- 
 Best regards,

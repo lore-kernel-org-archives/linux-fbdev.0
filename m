@@ -1,83 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; dkim=none
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E336DD5B
-	for <linux-fbdev@vger.kernel.org>; Fri, 17 Nov 2023 10:07:44 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r43Fh-0007T5-KT; Fri, 17 Nov 2023 19:07:37 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r43Fg-009jIK-4J; Fri, 17 Nov 2023 19:07:36 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1r43Ff-003C8h-Q2; Fri, 17 Nov 2023 19:07:35 +0100
-Date: Fri, 17 Nov 2023 19:07:33 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Alexander Stein <alexander.stein@ew.tq-group.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/1] backlight: pwm_bl: Use dev_err_probe
-Message-ID: <20231117180733.4p5zkhzxwfur6dcg@pengutronix.de>
-References: <20231117120625.2398417-1-alexander.stein@ew.tq-group.com>
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="hZXWF7sv"
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3667D5C;
+	Fri, 17 Nov 2023 13:15:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1700255724; x=1731791724;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=OhC8Can3NUULqJ4zhoGuYZBHu9pSBGs3i4XET9PRUpM=;
+  b=hZXWF7sviyHBezIuSriI+Gh7D3Se7rQUVpv/MjS1ajtTTi8MPIwyXJi8
+   oRA7C/eV72xtov1ExLeC5NQzS+wp3CzaMGQ1T2e96JRl2QJapwiuI8uwi
+   Aobd6dZVcAczmb06TFPUjVBRUlk66qZeyIk+Qx69AvFOUkaKRNTYCecRY
+   JQGCyDMYqz5u5Vq9OXzSoaTuE9oHiQadNabf0NxryI3fYX5eIOApLPRmW
+   hHFLoeNIHx9xnxMtM05fX4+ewp2Bz2azen5+gwmkxOPcAD4KYAFFVNo71
+   27eNKZphDPxqIpnIJSxTA7bpOjKR/mt+4AIEBFZp9GweeOyKg8eRIz1Yy
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10897"; a="457870843"
+X-IronPort-AV: E=Sophos;i="6.04,206,1695711600"; 
+   d="scan'208";a="457870843"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Nov 2023 13:15:24 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10897"; a="769320977"
+X-IronPort-AV: E=Sophos;i="6.04,206,1695711600"; 
+   d="scan'208";a="769320977"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga007.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Nov 2023 13:15:21 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.97)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1r46BK-0000000Eu9N-0Z5G;
+	Fri, 17 Nov 2023 23:15:18 +0200
+Date: Fri, 17 Nov 2023 23:15:17 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Javier Martinez Canillas <javierm@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Sahaj Sarup <sahaj.sarup@linaro.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 2/3] fbdev: ssd1307fb: Change "solomon,page-offset"
+ property default value
+Message-ID: <ZVfX5Tw71cqKFJ83@smile.fi.intel.com>
+References: <20231116180743.2763021-1-javierm@redhat.com>
+ <20231116180743.2763021-2-javierm@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="jy5iil4yjrcrfou5"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20231117120625.2398417-1-alexander.stein@ew.tq-group.com>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+In-Reply-To: <20231116180743.2763021-2-javierm@redhat.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+
+On Thu, Nov 16, 2023 at 07:07:38PM +0100, Javier Martinez Canillas wrote:
+> This is used to specify the page start address offset of the display RAM.
+> 
+> The value is used as offset when setting the page start address with the
+> SSD130X_SET_PAGE_RANGE command, and the driver currently sets its value to
+> 1 if the property is not present in the Device Tree.
+> 
+> But the datasheet mentions that the value on reset for the page start is a
+> 0, so it makes more sense to also have 0 as the default value for the page
+> offset if the property is not present.
+> 
+> In fact, using a default value of 1 leads to the display not working when
+> the fbdev is attached to the framebuffer console.
+> 
+> Reported-by: Sahaj Sarup <sahaj.sarup@linaro.org>
+
+Closes?
+Fixes?
+
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+
+-- 
+With Best Regards,
+Andy Shevchenko
 
 
---jy5iil4yjrcrfou5
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Alexander,
-
-On Fri, Nov 17, 2023 at 01:06:25PM +0100, Alexander Stein wrote:
-> Use dev_err_probe to simplify error paths. Also let dev_err_probe handle
-> the -EPROBE_DEFER case and add an entry to
-> /sys/kernel/debug/devices_deferred when deferred.
->=20
-> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
-
-Reviewed-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-
-Thanks
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---jy5iil4yjrcrfou5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVXq+QACgkQj4D7WH0S
-/k5VEQf/SRCjx28hkWDbqq/1JesvS2n1hzirF0hHfkH6Sf0dbm+KxS5XTYihmUsd
-eusJBb6h8kt9vU/CsB2kYLK3GvbcYd33zakz5wZaL45oDn1kVezHmmGr5XHYJK8Y
-V52WZupXXWKQ78FmMXjp+CeOLp9CEPD/vvbLvoMpXpQF4FzpHgWlb8Oj59kEvdNE
-vn6UeLFCpqW7pjJJX/tZyGSEqbyQ3Ghmb5LYJ2ehFad/dDELFmFLBsiLwrIYxkS+
-qHyrOCpe6cIAHtAQ309LdZ2p4FdeSqG6WtDWG3ig1TKTycpjjgIQy1qbGe5Yav52
-d8RJiorK9cM5cWYbL4xP4sbJYQlbdw==
-=ZNb9
------END PGP SIGNATURE-----
-
---jy5iil4yjrcrfou5--

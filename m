@@ -1,150 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.b="fVhRV/Fh"
-Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7949A109;
-	Thu, 16 Nov 2023 23:33:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1700206396; x=1731742396;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=+7xplb2EDRVudwSeGqzpqCtcj22RhVs/CX26mtXzjQk=;
-  b=fVhRV/FhFnCOjkm4xaqwAmlfsEqV5UvAeU5kqcKLpInSkHCmz41G9VTI
-   Se+9V4Cmx0WfKlpH3Uae18ZAoF5E3pF36rwavdijc5aJKl1pDiuCkiDqr
-   8EajCvxS08hacAXMd0KPN3kMzVYbSkENyOIiHM96azns7/Usqqnufgwa5
-   WEgGgxS27aaNSVup+SMOIzuSx0SBUGvLVpUebrelZRtGrArHB8X7KEkKf
-   k0ibq5tFsBsW+nniFNEyzsipTbajGidtL/NopmIRBG5KZAuqgco7yyyfI
-   MmSUEMh61dLlfwwN7GzKxgytwlGXNRYK0x6DwJQS0lRk2X7yEx9wgAS4R
-   A==;
-X-IronPort-AV: E=Sophos;i="6.04,206,1695679200"; 
-   d="scan'208";a="34032746"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 17 Nov 2023 08:33:14 +0100
-Received: from steina-w.tq-net.de (steina-w.tq-net.de [10.123.53.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 3C5EC28007F;
-	Fri, 17 Nov 2023 08:33:14 +0100 (CET)
-From: Alexander Stein <alexander.stein@ew.tq-group.com>
-To: Thierry Reding <thierry.reding@gmail.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Lee Jones <lee@kernel.org>,
+Authentication-Results: smtp.subspace.kernel.org; dkim=none
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81005D52
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Nov 2023 23:44:40 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r3tWf-00029F-4o; Fri, 17 Nov 2023 08:44:29 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r3tWe-009czx-9j; Fri, 17 Nov 2023 08:44:28 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1r3tWe-002wBG-0a; Fri, 17 Nov 2023 08:44:28 +0100
+Date: Fri, 17 Nov 2023 08:44:27 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee@kernel.org>,
 	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Cc: Alexander Stein <alexander.stein@ew.tq-group.com>,
-	linux-pwm@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v2 1/1] backlight: pwm_bl: Use dev_err_probe
-Date: Fri, 17 Nov 2023 08:33:16 +0100
-Message-Id: <20231117073316.2103162-1-alexander.stein@ew.tq-group.com>
-X-Mailer: git-send-email 2.34.1
+Subject: Re: [PATCH v2 1/1] backlight: pwm_bl: Use dev_err_probe
+Message-ID: <20231117074427.q265i4y2sbvp4s55@pengutronix.de>
+References: <20231117073316.2103162-1-alexander.stein@ew.tq-group.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="yskr37x5apjfzgbh"
+Content-Disposition: inline
+In-Reply-To: <20231117073316.2103162-1-alexander.stein@ew.tq-group.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-Use dev_err_probe to simplify error paths. Also Let dev_err_probe handle
-the -EPROBE_DEFER case and also add an entry to
-/sys/kernel/debug/devices_deferred when deferred.
 
-Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
----
-Changes in v2:
-* Use dev_err_probe in more places in probe function (as suggested by Uwe)
-* Adjusted commit message
+--yskr37x5apjfzgbh
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- drivers/video/backlight/pwm_bl.c | 32 +++++++++++++++++---------------
- 1 file changed, 17 insertions(+), 15 deletions(-)
+Hello Alexander,
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 289bd9ce4d36d..e1b3fe04d3169 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -461,10 +461,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 
- 	if (!data) {
- 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
--		if (ret < 0) {
--			dev_err(&pdev->dev, "failed to find platform data\n");
--			return ret;
--		}
-+		if (ret < 0)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed to find platform data\n");
- 
- 		data = &defdata;
- 	}
-@@ -493,24 +492,27 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
- 						  GPIOD_ASIS);
- 	if (IS_ERR(pb->enable_gpio)) {
--		ret = PTR_ERR(pb->enable_gpio);
-+		ret = dev_err_probe(&pdev->dev, PTR_ERR(pb->enable_gpio),
-+				    "failed to acquire enable GPIO\n");
- 		goto err_alloc;
- 	}
- 
- 	pb->power_supply = devm_regulator_get_optional(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
- 		ret = PTR_ERR(pb->power_supply);
--		if (ret == -ENODEV)
-+		if (ret == -ENODEV) {
- 			pb->power_supply = NULL;
--		else
-+		} else {
-+			dev_err_probe(&pdev->dev, ret,
-+				      "failed to acquire power regulator\n");
- 			goto err_alloc;
-+		}
- 	}
- 
- 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
- 	if (IS_ERR(pb->pwm)) {
--		ret = PTR_ERR(pb->pwm);
--		if (ret != -EPROBE_DEFER)
--			dev_err(&pdev->dev, "unable to request PWM\n");
-+		ret = dev_err_probe(&pdev->dev, PTR_ERR(pb->pwm),
-+				    "unable to request PWM\n");
- 		goto err_alloc;
- 	}
- 
-@@ -530,8 +532,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 
- 	ret = pwm_apply_state(pb->pwm, &state);
- 	if (ret) {
--		dev_err(&pdev->dev, "failed to apply initial PWM state: %d\n",
--			ret);
-+		dev_err_probe(&pdev->dev, ret,
-+			      "failed to apply initial PWM state");
- 		goto err_alloc;
- 	}
- 
-@@ -568,7 +570,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		ret = pwm_backlight_brightness_default(&pdev->dev, data,
- 						       state.period);
- 		if (ret < 0) {
--			dev_err(&pdev->dev,
-+			dev_err_probe(&pdev->dev, ret,
- 				"failed to setup default brightness table\n");
- 			goto err_alloc;
- 		}
-@@ -597,8 +599,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, pb,
- 				       &pwm_backlight_ops, &props);
- 	if (IS_ERR(bl)) {
--		dev_err(&pdev->dev, "failed to register backlight\n");
--		ret = PTR_ERR(bl);
-+		ret = dev_err_probe(&pdev->dev, PTR_ERR(bl),
-+				    "failed to register backlight\n");
- 		goto err_alloc;
- 	}
- 
--- 
-2.34.1
+On Fri, Nov 17, 2023 at 08:33:16AM +0100, Alexander Stein wrote:
+> Use dev_err_probe to simplify error paths. Also Let dev_err_probe handle
 
+s/Let/let/
+
+> the -EPROBE_DEFER case and also add an entry to
+
+I'd s/also //
+
+> /sys/kernel/debug/devices_deferred when deferred.
+>=20
+> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
+> [...]
+> @@ -568,7 +570,7 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  		ret =3D pwm_backlight_brightness_default(&pdev->dev, data,
+>  						       state.period);
+>  		if (ret < 0) {
+> -			dev_err(&pdev->dev,
+> +			dev_err_probe(&pdev->dev, ret,
+>  				"failed to setup default brightness table\n");
+
+Missing realign of the continuation line.
+
+>  			goto err_alloc;
+>  		}
+
+Otherwise LGTM
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--yskr37x5apjfzgbh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmVXGdoACgkQj4D7WH0S
+/k52gQgAqzzkCjfGHhT2Ts6EMtM7m2g7hlDCJRLKdzBqq6OC/3WoAobPfbG3ZAtD
+DIX7GQpU/6HgERd2N5RPPsG8l1wjGPkHxaZWam75s+dUnG1yOQ7ST1MGELWSVVmm
+/Uv+DIgtulg0Tv5VjAh1Zve6Ce/+DqGrFgaAYM7qmSCUqnvbi33OiXJ18bf4fadZ
+vkUqY64FSqv5lYJ48EoTkMvoz93wbkLTWF6Ss3qdHyOJn65wKx+BWeO/Fl5pkwlC
+/NUGPX4i0gCHNlA4Q5d0QJqjyL6XJeP/cuD1SZ0E/xjDYvX3MuvitL+nbBiXVQXy
+W1W9lCJ3ayvsiLuAWAaUUzhSMXKfOA==
+=r2z0
+-----END PGP SIGNATURE-----
+
+--yskr37x5apjfzgbh--

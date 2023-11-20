@@ -1,25 +1,13 @@
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="ZSeJtHhl"
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6298A98;
-	Sun, 19 Nov 2023 13:51:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-	t=1700430664; x=1701035464; i=deller@gmx.de;
-	bh=GZw86HrxI4KNbAsNQxkedUxJj0YIJUQmH1y/U7vq1Ng=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=ZSeJtHhl3OfGnXw/HAjm1kVpm4HeqsKE5+6GhOhb5DVrUqSXAmJNuTd5dq1TQ73u
-	 tZd/b1HD7MACqol344m9cjYf0rMr15MvmDGo35N/rsVEitMz/nNA0mkCORSU9zGer
-	 cLs6h2TXw55kTO+9ELXD5G6KugSxAVNyzbpsSRXiuYU7r2sMrg1XXGO3/P9t2PnlQ
-	 VAh8jxBiPNssFoZEmJqy5C/HzKTnqJwsWdC3uKFS3Zf1ryda3P+2PVi9+uiTU66+l
-	 DZZkS+iwjJgqdybWRElOkox2MguC+HkEIEu3pMRdbNjDQnbPukFSzpVAxnicAfUNk
-	 sIkHZ+cf33tDRKl0fA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.146.64]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MDhhX-1rEUc30rkl-00AmGw; Sun, 19
- Nov 2023 22:51:04 +0100
-Message-ID: <106b818d-ad4b-4539-a159-751e2108d77e@gmx.de>
-Date: Sun, 19 Nov 2023 22:51:01 +0100
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B08AF4F3;
+	Mon, 20 Nov 2023 08:52:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dkim=none
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9C97C433C8;
+	Mon, 20 Nov 2023 08:52:46 +0000 (UTC)
+Message-ID: <3103e3a1-7dfd-4db0-b67e-b8857b8027e7@xs4all.nl>
+Date: Mon, 20 Nov 2023 09:52:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -27,161 +15,137 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 RESEND 00/20] remove I2C_CLASS_DDC support
-Content-Language: en-US
-To: Heiner Kallweit <hkallweit1@gmail.com>, Wolfram Sang <wsa@kernel.org>,
- intel-gfx@lists.freedesktop.org
-Cc: linux-i2c@vger.kernel.org, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Jonas Karlman <jonas@kwiboo.se>,
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
- linux-fbdev@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- Thomas Zimmermann <tzimmermann@suse.de>,
- Jocelyn Falempe <jfalempe@redhat.com>, linux-sunxi@lists.linux.dev,
- linux-mediatek@lists.infradead.org, Sean Paul <sean@poorly.run>,
- Marijn Suijten <marijn.suijten@somainline.org>,
- linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
- Xinwei Kong <kong.kongxinwei@hisilicon.com>,
- Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu
- <yongqin.liu@linaro.org>, John Stultz <jstultz@google.com>
-References: <20231119112826.5115-1-hkallweit1@gmail.com>
- <e40b913f-379f-4b6e-a0d2-844887a17284@gmx.de>
- <b336a8e3-44e7-4f56-a950-5155675b5628@gmail.com>
- <bd4be069-b86d-4a69-aa0f-71257f93691f@gmail.com>
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <bd4be069-b86d-4a69-aa0f-71257f93691f@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
-X-Provags-ID: V03:K1:4bo0YQp4nOX04fSlYKU7Ed7/Lx5pYstzA4JPyY4mAXCHdJpljs3
- yDd16cdeh0gpASf/ZInpwaZcM23Ih+PXc+ledOmLjOwybtxI+dQvoN3Ii81KHFb9+qriDX0
- u4h7DchrevyaHQ1ae714S54Y7JiqdBj1ZGyD2Ivq+axKYXxVpGJqoQnP7NEaF0sV7o2tumQ
- /R1hkMAw27qE6kexZk1iw==
-UI-OutboundReport: notjunk:1;M01:P0:XxsjsC6iqXI=;zo2Q6e54K/3B/k62l86hh+pmYGY
- KMnzvTX+tu7XpRJPpbXKhCHw2e1DsJ5V2ia9DzA7dtCR0buPYjmsSf/iPon4mYf9PA464Z6d1
- 1we9hnmqqnlkQDwqMr3x+5GHIVgMQpXn7zqaV0mjlx/vUYeTj1xZNoVTpQ0BiMs48ks54j5h6
- sM7hfA+PeZE7qVtCDQZtFvrZEKF49TGlkqzVfLEcPheAuWHVUuH4LrTQmVu8CWOVTGoGJcudP
- 14gbah4APu+VwZ7qZcb7HImgGHv9lVYymue7UIWxQafq5QgBeCZSRT4JHpIsdUstBbnkKp3Y7
- xWymncMYVUqLI6BEI9f8OSQYNeqrsHDAY0IgcL3y7bKeryRzlAFz/o/CwhN2m+g4Z6IC7uFhB
- oN4lePpA0gAqKU/m99DV65aLUkv/3e2m08QwoaE+cn5xM2+Ni8H+aAkmqNt1g7NrfCYURxZjs
- krTZSvGkp6LytPwzxQioQdkHbJXtxD6PIwymby3/EwqHLNunOsEI7j7/8XHMT+69odr8YqMjo
- Vqqvc8/th14RMUGcsPWPyiDJQ4HAC5ffSOYS5VbBRUFpQ8qZ5LNMEdZu0leftxffetHGgrXQK
- VxEAXRw33BBdW2ft/xH3OCZm37F+zLWJY4O1e06LNjddxQp32ILZ+k1i7A7dwGKLkO65WPZbC
- lKlUbI5xYQ/xkcoQvHEL75HkZm7kXsrFrR83y9XI23pjt2OjEpYYbMOoCqIJci1hqV+9U2Yj8
- NnS0h1ve396EAav9Pg9Ftx7mLYtcXwkDeWl2x29ulXKzi4CLQAKHvTzJvbAsy+GVfd8brptCg
- HZSTpVEVrwJ8B963Pmm3jukO8/0NvjadKafGU2kR3Wthp9IJDOOUnvTl6TER+ZvhpLTAnhN1J
- bW9AVAaSItQH20UMl5RYIWbp40SUidWRxPCC7Anlj8sza1yhL6j+zbmhXtwaJMYLoGuLrRQe/
- +kEKcA==
+Subject: Re: [PATCH 20/32] media/ivtvfb: Initialize fb_ops to fbdev I/O-memory
+ helpers
+Content-Language: en-US, nl
+To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de, javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Andy Walls <awalls@md.metrocast.net>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, linux-media@vger.kernel.org
+References: <20231115102954.7102-1-tzimmermann@suse.de>
+ <20231115102954.7102-21-tzimmermann@suse.de>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Autocrypt: addr=hverkuil@xs4all.nl; keydata=
+ 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
+In-Reply-To: <20231115102954.7102-21-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-T24gMTEvMTkvMjMgMjE6NTEsIEhlaW5lciBLYWxsd2VpdCB3cm90ZToNCj4gT24gMTkuMTEuMjAy
-MyAyMTo0OCwgSGVpbmVyIEthbGx3ZWl0IHdyb3RlOg0KPj4gT24gMTkuMTEuMjAyMyAyMToyOCwg
-SGVsZ2UgRGVsbGVyIHdyb3RlOg0KPj4+IE9uIDExLzE5LzIzIDEyOjI4LCBIZWluZXIgS2FsbHdl
-aXQgd3JvdGU6DQo+Pj4+IEFmdGVyIHJlbW92YWwgb2YgdGhlIGxlZ2FjeSBFRVBST00gZHJpdmVy
-IGFuZCBJMkNfQ0xBU1NfRERDIHN1cHBvcnQgaW4NCj4+Pj4gb2xwY19kY29uIHRoZXJlJ3Mgbm8g
-aTJjIGNsaWVudCBkcml2ZXIgbGVmdCBzdXBwb3J0aW5nIEkyQ19DTEFTU19EREMuDQo+Pj4+IENs
-YXNzLWJhc2VkIGRldmljZSBhdXRvLWRldGVjdGlvbiBpcyBhIGxlZ2FjeSBtZWNoYW5pc20gYW5k
-IHNob3VsZG4ndA0KPj4+PiBiZSB1c2VkIGluIG5ldyBjb2RlLiBTbyB3ZSBjYW4gcmVtb3ZlIHRo
-aXMgY2xhc3MgY29tcGxldGVseSBub3cuDQo+Pj4+DQo+Pj4+IFByZWZlcmFibHkgdGhpcyBzZXJp
-ZXMgc2hvdWxkIGJlIGFwcGxpZWQgdmlhIHRoZSBpMmMgdHJlZS4NCj4+Pg0KPj4+IFRoZSBmYmRl
-diBjaGFuZ2VzIGxvb2sgYXQgbGVhc3Qgb2sgc28gZmFyLCBzbzoNCj4+PiBBY2tlZC1ieTogSGVs
-Z2UgRGVsbGVyIDxkZWxsZXJAZ214LmRlPsKgwqAgI2ZiZGV2DQo+Pj4NCj4+IEkgdGhpbmsgdGhp
-cyByZWZlcnMgdG8gcGF0Y2ggNSBvZiB0aGUgc2VyaWVzLiBDb3VsZCB5b3UgcGxlYXNlIHJlcGx5
-DQo+PiB0byBwYXRjaCA1IGluc3RlYWQgb2YgdGhlIGNvdmVyIGxldHRlciB3aXRoIHlvdXIgYWNr
-ZWQtYnkgc28gdGhhdA0KPj4gcGF0Y2h3b3JrIGdldHMgaXQgcmlnaHQ/IFRoYW5rcyENCj4+DQo+
-IFNvcnJ5LCBqdXN0IGxvb2tlZCBhdCB3aGVyZSB5b3UgYXJlIGluIFRvLCBub3QgQ2MuDQo+IFNv
-IHlvdXIgYWNrIGluY2x1ZGVzIHBhdGNoZXMgNiwgOSwgMTAsIDEzPw0KDQpZZXMuDQoNCkhlbGdl
-DQogIA0KPj4+DQo+Pj4+IHYyOg0KPj4+PiAtIGNoYW5nZSB0YWcgaW4gY29tbWl0IHN1YmplY3Qg
-b2YgcGF0Y2ggMDMNCj4+Pj4gLSBhZGQgYWNrIHRhZ3MNCj4+Pj4gdjM6DQo+Pj4+IC0gZml4IGEg
-Y29tcGlsZSBlcnJvciBpbiBwYXRjaCA1DQo+Pj4+DQo+Pj4+IFNpZ25lZC1vZmYtYnk6IEhlaW5l
-ciBLYWxsd2VpdCA8aGthbGx3ZWl0MUBnbWFpbC5jb20+DQo+Pj4+DQo+Pj4+IC0tLQ0KPj4+Pg0K
-Pj4+PiAgwqAgZHJpdmVycy9ncHUvZHJtL2FtZC9hbWRncHUvYW1kZ3B1X2kyYy5jwqDCoMKgwqDC
-oMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZlcnMvZ3B1L2RybS9hbWQvZGlz
-cGxheS9hbWRncHVfZG0vYW1kZ3B1X2RtLmMgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZlcnMv
-Z3B1L2RybS9hc3QvYXN0X2kyYy5jwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoCB8wqDCoMKgIDEgLQ0KPj4+PiAgwqAgZHJpdmVycy9ncHUvZHJtL2JyaWRnZS9zeW5vcHN5
-cy9kdy1oZG1pLmPCoMKgwqDCoMKgwqDCoMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCBkcml2ZXJz
-L2dwdS9kcm0vZGlzcGxheS9kcm1fZHBfaGVscGVyLmPCoMKgwqDCoMKgwqDCoMKgwqDCoCB8wqDC
-oMKgIDEgLQ0KPj4+PiAgwqAgZHJpdmVycy9ncHUvZHJtL2Rpc3BsYXkvZHJtX2RwX21zdF90b3Bv
-bG9neS5jwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZlcnMvZ3B1L2RybS9nbWE1
-MDAvY2R2X2ludGVsX2RwLmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+
-Pj4gIMKgIGRyaXZlcnMvZ3B1L2RybS9nbWE1MDAvaW50ZWxfZ21idXMuY8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCBkcml2ZXJzL2dwdS9kcm0vZ21hNTAw
-L29ha3RyYWlsX2hkbWlfaTJjLmPCoMKgwqDCoMKgwqDCoCB8wqDCoMKgIDEgLQ0KPj4+PiAgwqAg
-ZHJpdmVycy9ncHUvZHJtL2dtYTUwMC9wc2JfaW50ZWxfc2R2by5jwqDCoMKgwqDCoMKgwqDCoMKg
-wqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZlcnMvZ3B1L2RybS9oaXNpbGljb24vaGlibWMv
-aGlibWNfZHJtX2kyYy5jwqDCoCB8wqDCoMKgIDEgLQ0KPj4+PiAgwqAgZHJpdmVycy9ncHUvZHJt
-L2k5MTUvZGlzcGxheS9pbnRlbF9nbWJ1cy5jwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+
-Pj4gIMKgIGRyaXZlcnMvZ3B1L2RybS9pOTE1L2Rpc3BsYXkvaW50ZWxfc2R2by5jwqDCoMKgwqDC
-oMKgwqDCoCB8wqDCoMKgIDEgLQ0KPj4+PiAgwqAgZHJpdmVycy9ncHUvZHJtL2xvb25nc29uL2xz
-ZGNfaTJjLmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDC
-oCBkcml2ZXJzL2dwdS9kcm0vbWVkaWF0ZWsvbXRrX2hkbWlfZGRjLmPCoMKgwqDCoMKgwqDCoMKg
-wqDCoCB8wqDCoMKgIDEgLQ0KPj4+PiAgwqAgZHJpdmVycy9ncHUvZHJtL21nYWcyMDAvbWdhZzIw
-MF9pMmMuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8wqDCoMKgIDEgLQ0KPj4+PiAgwqAgZHJp
-dmVycy9ncHUvZHJtL21zbS9oZG1pL2hkbWlfaTJjLmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCBkcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9p
-MmMuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRy
-aXZlcnMvZ3B1L2RybS9yb2NrY2hpcC9pbm5vX2hkbWkuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCBkcml2ZXJzL2dwdS9kcm0vcm9ja2NoaXAvcmszMDY2
-X2hkbWkuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZl
-cnMvZ3B1L2RybS9zdW40aS9zdW40aV9oZG1pX2kyYy5jwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8
-wqDCoMKgIDEgLQ0KPj4+PiAgwqAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2RkYy5jwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZl
-cnMvdmlkZW8vZmJkZXYvY3liZXIyMDAwZmIuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2k3NDBmYi5jwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHzCoMKgwqAgMSAtDQo+Pj4+
-ICDCoCBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2ludGVsZmIvaW50ZWxmYl9pMmMuY8KgwqDCoMKgwqDC
-oMKgwqAgfMKgwqAgMTUgKysrKystLS0tLS0tLS0tDQo+Pj4+ICDCoCBkcml2ZXJzL3ZpZGVvL2Zi
-ZGV2L21hdHJveC9pMmMtbWF0cm94ZmIuY8KgwqDCoMKgwqDCoMKgwqAgfMKgwqAgMTIgKysrKy0t
-LS0tLS0tDQo+Pj4+ICDCoCBkcml2ZXJzL3ZpZGVvL2ZiZGV2L3MzZmIuY8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRy
-aXZlcnMvdmlkZW8vZmJkZXYvdGRmeGZiLmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0NCj4+Pj4gIMKgIGRyaXZlcnMvdmlkZW8vZmJkZXYvdHJp
-ZGVudGZiLmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfMKgwqDCoCAxIC0N
-Cj4+Pj4gIMKgIGRyaXZlcnMvdmlkZW8vZmJkZXYvdmlhL3ZpYV9pMmMuY8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCBpbmNsdWRlL2xpbnV4L2ky
-Yy5owqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgIHzCoMKgwqAgMSAtDQo+Pj4+ICDCoCAzMSBmaWxlcyBjaGFuZ2VkLCA5IGluc2VydGlv
-bnMoKyksIDQ3IGRlbGV0aW9ucygtKQ0KPj4+Pg0KPj4+DQo+Pg0KPiANCg0K
+Hi Thomas,
+
+On 15/11/2023 11:19, Thomas Zimmermann wrote:
+> Initialize the instance of struct fb_ops with fbdev initializer
+> macros for framebuffers in I/O address space. This explictily sets
+> the read/write, draw and mmap callbacks to the correct default
+> implementation.
+> 
+> Fbdev drivers sometimes rely on the callbacks being NULL for a
+> default implementation to be invoked; hence requireing the I/O
+> helpers to be built in any case. Setting all callbacks in all
+> drivers explicitly will allow to make the I/O helpers optional.
+> This benefits systems that do not use these functions.
+> 
+> Set the callbacks via macros. No functional changes.
+
+Makes sense, shall I pick up this patch?
+
+If you prefer to take it, then you can add:
+
+Reviewed-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+
+Regards,
+
+	Hans
+
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Andy Walls <awalls@md.metrocast.net>
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: linux-media@vger.kernel.org
+> ---
+>  drivers/media/pci/ivtv/Kconfig  | 4 +---
+>  drivers/media/pci/ivtv/ivtvfb.c | 6 +++---
+>  2 files changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
+> index 9be52101bc4f2..2498f9079b756 100644
+> --- a/drivers/media/pci/ivtv/Kconfig
+> +++ b/drivers/media/pci/ivtv/Kconfig
+> @@ -48,9 +48,7 @@ config VIDEO_IVTV_ALSA
+>  config VIDEO_FB_IVTV
+>  	tristate "Conexant cx23415 framebuffer support"
+>  	depends on VIDEO_IVTV && FB
+> -	select FB_CFB_FILLRECT
+> -	select FB_CFB_COPYAREA
+> -	select FB_CFB_IMAGEBLIT
+> +	select FB_IOMEM_HELPERS
+>  	help
+>  	  This is a framebuffer driver for the Conexant cx23415 MPEG
+>  	  encoder/decoder.
+> diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+> index 23c8c094e791b..410477e3e6216 100644
+> --- a/drivers/media/pci/ivtv/ivtvfb.c
+> +++ b/drivers/media/pci/ivtv/ivtvfb.c
+> @@ -927,17 +927,17 @@ static int ivtvfb_blank(int blank_mode, struct fb_info *info)
+>  
+>  static const struct fb_ops ivtvfb_ops = {
+>  	.owner = THIS_MODULE,
+> +	.fb_read        = fb_io_read,
+>  	.fb_write       = ivtvfb_write,
+>  	.fb_check_var   = ivtvfb_check_var,
+>  	.fb_set_par     = ivtvfb_set_par,
+>  	.fb_setcolreg   = ivtvfb_setcolreg,
+> -	.fb_fillrect    = cfb_fillrect,
+> -	.fb_copyarea    = cfb_copyarea,
+> -	.fb_imageblit   = cfb_imageblit,
+> +	__FB_DEFAULT_IOMEM_OPS_DRAW,
+>  	.fb_cursor      = NULL,
+>  	.fb_ioctl       = ivtvfb_ioctl,
+>  	.fb_pan_display = ivtvfb_pan_display,
+>  	.fb_blank       = ivtvfb_blank,
+> +	__FB_DEFAULT_IOMEM_OPS_MMAP,
+>  };
+>  
+>  /* Restore hardware after firmware restart */
+

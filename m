@@ -1,80 +1,53 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D197136C;
-	Tue, 21 Nov 2023 14:52:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="poue5VPW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 580D7C433C7;
-	Tue, 21 Nov 2023 14:52:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1700578360;
-	bh=dGYz6IxNOUY4NpvhlMLeIB3Xxc/hARJYIHJyki7wDHE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=poue5VPWyYd+HrTAPC2kL1JwV02FvsHlUJ1z3W9FXk/U2czUqklkcawHdmmtSEsoY
-	 IlPddu/gpJsZ1UpOPQIgrM7BkkvyXf2F3hIfHrb2U18/fsMMvTR4wCzYJDyNBuBtzP
-	 SpQfWPT1cgV1qEShQyzt0KdJxLEsOUDx610rqzSQ=
-Date: Tue, 21 Nov 2023 15:12:23 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-	Masahiro Yamada <masahiroy@kernel.org>,
-	linux-kbuild@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>, Guo Ren <guoren@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Greg Ungerer <gerg@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Geoff Levand <geoff@infradead.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-	Helge Deller <deller@gmx.de>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Timur Tabi <timur@kernel.org>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	David Woodhouse <dwmw2@infradead.org>,
-	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
-	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-	Kees Cook <keescook@chromium.org>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Nicolas Schier <nicolas@fjasle.eu>,
-	Al Viro <viro@zeniv.linux.org.uk>,
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Bniw8I4O"
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D693783
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Nov 2023 07:08:58 -0800 (PST)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-40b2c8e91afso2184255e9.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 21 Nov 2023 07:08:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700579337; x=1701184137; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=nae4JbWQBA2aia/B95hNasr3I++DT3K8V5bSC8i7lEI=;
+        b=Bniw8I4O8xww1+R9CFSXtkVwY5De5uZmI1EaZgyhAKu5rQfSLt5wvDnElgWndu6wRA
+         GmtHIJL1do8SEBYu755CjIeZ6HDorS21qwWMZmHrk70Z2UWoESfqnlSui6rTeJ1AVkv9
+         W5uOAaX4zrVSPpFcRXKhcAwt9kqOdcXglRmYTGqju3ottZdaPdy+FZ4dq+UtRH4W3Og0
+         mHstYY3E8z/y3/UFcOYd43i5VaxshdCsE0Jd+EcVejPIPwDizCnNdzYELdtWI49HWspW
+         BJT8JK5mNeVOrRxPzo7ikMPt1ioD0dyGb6N+WkjRqkO9wcc50sZkMC+28sP+0QgEWR3m
+         47Aw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700579337; x=1701184137;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nae4JbWQBA2aia/B95hNasr3I++DT3K8V5bSC8i7lEI=;
+        b=LIMZzmzNSE5SYrdcUP/ib3przAp15ljKcMxh9C2A17j9XA1sbJPNlzBfEthMI97qM9
+         MfN1xIS9U2gzvtH9YIdDrMbYQcFpQeMGQCp3PG/gBhF77x0wcbmb98XMXm9w6A9RIzSH
+         LjMwvPxoWI1BCvYBMPoDGGWu2R21ax/UJ0JjsxMSDORlLvIHe96+F8bVN5Bl8Cppzgxj
+         vncnl4ANOpukD7EgmwJJ/tGQMtv++3T3yapp28UmBR/09U9Jm7/4ytQVfFeOMOJ+d3ZA
+         5a29UAU0ahd5zKHNjzPFIrW6QIK0OVgq2nfs5QaxQkMBezeV/UlTX+S4o1WEzc+5hmwv
+         44iw==
+X-Gm-Message-State: AOJu0YxRO8KmSZHEKSzs7jQZPLlsz91yuQL8teBiTvg4jGIufRRZvXIL
+	VcE2OkPTStBHF/36D6RJfA4DYw==
+X-Google-Smtp-Source: AGHT+IH55XwOpCbTpm2nlb6uk8LPDmWMNuN4gHEZr7xfOXoov1mRLB8htGKYmkK0xC2O/BYriy6t0w==
+X-Received: by 2002:a05:600c:4ed2:b0:405:4a78:a890 with SMTP id g18-20020a05600c4ed200b004054a78a890mr8499401wmq.8.1700579337271;
+        Tue, 21 Nov 2023 07:08:57 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id l6-20020a05600c4f0600b004068495910csm21858114wmq.23.2023.11.21.07.08.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Nov 2023 07:08:56 -0800 (PST)
+Date: Tue, 21 Nov 2023 15:08:54 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>,
 	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-trace-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-	netdev@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-bcachefs@vger.kernel.org,
-	linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 20/22] usb: fsl-mph-dr-of: mark fsl_usb2_mpc5121_init()
- static
-Message-ID: <2023112114-cried-ramble-b3f9@gregkh>
-References: <20231108125843.3806765-1-arnd@kernel.org>
- <20231108125843.3806765-21-arnd@kernel.org>
+	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, linux-pwm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] backlight: pwm_bl: Use dev_err_probe
+Message-ID: <20231121150854.GC4740@aspen.lan>
+References: <20231117120625.2398417-1-alexander.stein@ew.tq-group.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,16 +56,16 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20231108125843.3806765-21-arnd@kernel.org>
+In-Reply-To: <20231117120625.2398417-1-alexander.stein@ew.tq-group.com>
 
-On Wed, Nov 08, 2023 at 01:58:41PM +0100, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> This function is only called locally and should always have been static:
-> 
-> drivers/usb/host/fsl-mph-dr-of.c:291:5: error: no previous prototype for 'fsl_usb2_mpc5121_init' [-Werror=missing-prototypes]
-> 
-> Fixes: 230f7ede6c2f ("USB: add USB EHCI support for MPC5121 SoC")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Fri, Nov 17, 2023 at 01:06:25PM +0100, Alexander Stein wrote:
+> Use dev_err_probe to simplify error paths. Also let dev_err_probe handle
+> the -EPROBE_DEFER case and add an entry to
+> /sys/kernel/debug/devices_deferred when deferred.
+>
+> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+
+
+Daniel.

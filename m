@@ -1,88 +1,102 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RQyaFcGy"
-Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com [IPv6:2607:f8b0:4864:20::72b])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14A0F197
-	for <linux-fbdev@vger.kernel.org>; Tue, 21 Nov 2023 16:58:02 -0800 (PST)
-Received: by mail-qk1-x72b.google.com with SMTP id af79cd13be357-7788f727dd7so388467885a.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Nov 2023 16:58:02 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=protonic.nl header.i=@protonic.nl header.b="gxXZbPtB"
+X-Greylist: delayed 280 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 21 Nov 2023 23:47:40 PST
+Received: from smtp28.bhosted.nl (smtp28.bhosted.nl [IPv6:2a02:9e0:8000::40])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7255110E
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Nov 2023 23:47:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1700614681; x=1701219481; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=MFz25rhV/tQYJ/usJamHobIxJPBWkC1P9QKNu6+n9H0=;
-        b=RQyaFcGy1L7mKR3OeWs2VDs5rwyQLmOgjOVuvLXDYwjctKynqb6HLMdxvPF2S2zxvZ
-         iU15zO1YwWhdcoW22vzveet7H1czi54KDFThNLPyj1LSIqf9DR9bS7qw/L17itlIYYug
-         GPZoqDNJurcqYsm6YVZeiD1fyQpVTo340NgyAb8QNe45LTdtlZakVFzujoyoPtR8Duj7
-         P8ONOu1EKoa/G3dx9yXI1iui3VqbCt36tQYtQUwYRuIQ3PuPgjSEQ8dd4/s7majz8AyU
-         bAL/KRA7mRhb5W0SWpdeeIhg3zMfRrOZ2WwYg11+dAbh6UN6a+FS6tshBEHQP1hK56/E
-         4O1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700614681; x=1701219481;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MFz25rhV/tQYJ/usJamHobIxJPBWkC1P9QKNu6+n9H0=;
-        b=ffB5NYefyyP58KQGNEEye9ww81c2OjkF8aAaGr4idYMLn5fghDkZDWuQ8grkw96e9L
-         wTldXYt2h8xCzP+Azbn1OEDEWuBZ5uwKoWY4Bei/pmUfMYkz6yyD5qwNs8HHUrRo/IAJ
-         C7AWdQ3Xbsox3ebx/2NlzVJY6AGrd/5fHtoE4lwwtX2iY68hk02nc8hki/GyQJI/j+ny
-         nFHFqVkUKNs4XSfmdGH3sAk/ut9krmzp+WnQorBIsZHorz9b6xXU2waOWjGny6feQ/5D
-         ox0j/7E7jFkRe/Y6EHBJOV6+/2NNkuseNubpygwwN1ZWIQibOoVDKIAaTepv9sjR5Fg8
-         KXYQ==
-X-Gm-Message-State: AOJu0YygiEle9RVsymqP2NGnE/sIgyWrq5rOak30nFtg7R7gtdcaK7BH
-	DBvoFssfEmMdcrOaQP7djMg=
-X-Google-Smtp-Source: AGHT+IHK5zmXtx2CrzmRrXrePJ8VaQvJ/bDCoqi8nx/Atu1M6AvENNujwhGE+whhP3wVQywcUytgug==
-X-Received: by 2002:a05:6214:c41:b0:66d:12b5:68c1 with SMTP id r1-20020a0562140c4100b0066d12b568c1mr923386qvj.59.1700614681132;
-        Tue, 21 Nov 2023 16:58:01 -0800 (PST)
-Received: from localhost ([2607:fea8:529e:7800::80ec])
-        by smtp.gmail.com with ESMTPSA id j2-20020ad453a2000000b0066d32666a20sm4427293qvv.71.2023.11.21.16.57.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Nov 2023 16:58:00 -0800 (PST)
-From: Richard Acayan <mailingradian@gmail.com>
-To: Hans de Goede <hdegoede@redhat.com>,
-	Helge Deller <deller@gmx.de>,
-	Thierry Reding <treding@nvidia.com>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Cc: Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH] fbdev/simplefb: Suppress error on missing power domains
-Date: Tue, 21 Nov 2023 19:54:59 -0500
-Message-ID: <20231122005457.330066-3-mailingradian@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	d=protonic.nl; s=202111;
+	h=message-id:references:in-reply-to:reply-to:subject:cc:to:from:date:
+	 content-transfer-encoding:content-type:mime-version:from;
+	bh=oA1pu36Ecm05PvEFejRKpdd/suHx+bVmVkYV4CS0iV4=;
+	b=gxXZbPtBe5x4WKBAbh1R5Bcv/cxbbPwF0B5lkQVb0eS4BI8iOHFGQFq8m5IpUcUcKWoNG802bMnam
+	 uZRS2QDq/otL5+sXiWph7kXhaJl2CKC5/bierORRKfugG2hTzp9hP1n8ou1/NAg7nEkpLNyUT+9xqO
+	 3N13mc4Ny/FlY8RZ7bIMrtK5nP+iHQn+N8CQAVd5lpAYJUU/qhzk7mTUFebVhn2U3/HSQHkhAT2tsp
+	 n5BuoKBRj1YO0BV+3gJ3ugmB+mS8VzKmcGPEKX7Dnl6KqMuKBnpNgVxPyWCOix93/r67pH7LPP0DP3
+	 j0MgXuk0TuIrTZwDwWUwjlZUfJ6R7iQ==
+X-MSG-ID: 687177d5-890b-11ee-893f-0050568164d1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Nov 2023 08:47:38 +0100
+From: Robin van der Gracht <robin@protonic.nl>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: deller@gmx.de, javierm@redhat.com, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Miguel Ojeda <ojeda@kernel.org>
+Subject: Re: [PATCH 10/32] auxdisplay/ht16k33: Initialize fb_ops with fbdev
+ macros
+Organization: Protonic Holland
+Reply-To: robin@protonic.nl
+Mail-Reply-To: robin@protonic.nl
+In-Reply-To: <20231115102954.7102-11-tzimmermann@suse.de>
+References: <20231115102954.7102-1-tzimmermann@suse.de>
+ <20231115102954.7102-11-tzimmermann@suse.de>
+Message-ID: <96c2d4bd1408de26af93b3380f372474@protonic.nl>
+X-Sender: robin@protonic.nl
+User-Agent: Roundcube Webmail/1.3.1 
 
-When the power domains are missing, the call to of_count_phandle_with_args
-fails with -ENOENT. The power domains are not required and there are
-some device trees that do not specify them. Suppress this error to fix
-devices without power domains attached to simplefb.
+On 2023-11-15 11:19, Thomas Zimmermann wrote:
+> Initialize the instance of struct fb_ops with fbdev initializer
+> macros for framebuffers in virtual address space. Set the read/write,
+> draw and mmap callbacks to the correct implementation and avoid
+> implicit defaults. Also select the necessary helpers in Kconfig.
+> 
+> Fbdev drivers sometimes rely on the callbacks being NULL for a
+> default I/O-memory-based implementation to be invoked; hence
+> requiring the I/O helpers to be built in any case. Setting all
+> callbacks in all drivers explicitly will allow to make the I/O
+> helpers optional. This benefits systems that do not use these
+> functions.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Miguel Ojeda <ojeda@kernel.org>
+> Cc: Robin van der Gracht <robin@protonic.nl>
+> ---
+>  drivers/auxdisplay/Kconfig   | 5 +----
+>  drivers/auxdisplay/ht16k33.c | 7 ++-----
+>  2 files changed, 3 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/auxdisplay/Kconfig b/drivers/auxdisplay/Kconfig
+> index 4377e53f8f572..d944d5298eca8 100644
+> --- a/drivers/auxdisplay/Kconfig
+> +++ b/drivers/auxdisplay/Kconfig
+> @@ -167,10 +167,7 @@ config IMG_ASCII_LCD
+>  config HT16K33
+>  	tristate "Holtek Ht16K33 LED controller with keyscan"
+>  	depends on FB && I2C && INPUT
+> -	select FB_SYS_FOPS
+> -	select FB_SYS_FILLRECT
+> -	select FB_SYS_COPYAREA
+> -	select FB_SYS_IMAGEBLIT
+> +	select FB_SYSMEM_HELPERS
+>  	select INPUT_MATRIXKMAP
+>  	select FB_BACKLIGHT
+>  	select NEW_LEDS
+> diff --git a/drivers/auxdisplay/ht16k33.c 
+> b/drivers/auxdisplay/ht16k33.c
+> index f1716e3ce6a92..2f1dc6b4e2765 100644
+> --- a/drivers/auxdisplay/ht16k33.c
+> +++ b/drivers/auxdisplay/ht16k33.c
+> @@ -356,12 +356,9 @@ static int ht16k33_mmap(struct fb_info *info,
+> struct vm_area_struct *vma)
+> 
+>  static const struct fb_ops ht16k33_fb_ops = {
+>  	.owner = THIS_MODULE,
+> -	.fb_read = fb_sys_read,
+> -	.fb_write = fb_sys_write,
+> +	__FB_DEFAULT_SYSMEM_OPS_RDWR,
+>  	.fb_blank = ht16k33_blank,
+> -	.fb_fillrect = sys_fillrect,
+> -	.fb_copyarea = sys_copyarea,
+> -	.fb_imageblit = sys_imageblit,
+> +	__FB_DEFAULT_SYSMEM_OPS_DRAW,
+>  	.fb_mmap = ht16k33_mmap,
+>  };
 
-Fixes: 92a511a568e4 ("fbdev/simplefb: Add support for generic power-domains")
-Closes: https://lore.kernel.org/linux-fbdev/ZVwFNfkqjrvhFHM0@radian
-Signed-off-by: Richard Acayan <mailingradian@gmail.com>
----
- drivers/video/fbdev/simplefb.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index fe682af63827..6f58ee276ad1 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -466,6 +466,10 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
- 	err = of_count_phandle_with_args(dev->of_node, "power-domains",
- 					 "#power-domain-cells");
- 	if (err < 0) {
-+		/* Nothing wrong if optional PDs are missing */
-+		if (err == -ENOENT)
-+			return 0;
-+
- 		dev_info(dev, "failed to parse power-domains: %d\n", err);
- 		return err;
- 	}
--- 
-2.43.0
-
+Reviewed-by: Robin van der Gracht <robin@protonic.nl>

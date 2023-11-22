@@ -1,51 +1,43 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="LdFXi6mL"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06C02E7
-	for <linux-fbdev@vger.kernel.org>; Wed, 22 Nov 2023 00:42:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1700642559;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JklgPZMO6OqmeViq25n8y74P+opPCcYmBt1jmDMzJaw=;
-	b=LdFXi6mLKtPqMtz7/S2O9Q0cQemptxKLp1Kh8g5JSAXulYrtdPELAddI8hJ0M6iD87VylQ
-	J6w5Nau9IHxVxcvyFeS88IR4Tqrjf7SSiN2W6HOheVvDOy9Uou2MpebpVi1c33Fu88KEzW
-	nchprDPb051qhA27RS3MnbkvtP5HS6Q=
-Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
- [209.85.208.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-524-qj8XWXiINZyTaVXeLG9lsA-1; Wed, 22 Nov 2023 03:42:37 -0500
-X-MC-Unique: qj8XWXiINZyTaVXeLG9lsA-1
-Received: by mail-ed1-f71.google.com with SMTP id 4fb4d7f45d1cf-548dfaaaee8so1821185a12.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 22 Nov 2023 00:42:37 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700642556; x=1701247356;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=JklgPZMO6OqmeViq25n8y74P+opPCcYmBt1jmDMzJaw=;
-        b=F4NUA8rvXsokuSYem+byMZNl9GNanFfUXdFKCbtMs/txSkib4q9MP/9nf6C3I3eKv/
-         mKXLuasKqaMtRfZfK4A3vGnqgWTZnpWMOQ4OJkzfXMxrpP7mMUK/RlYz8w03Nv+Sdr4T
-         VXxiKZHVoLFYm4KSTrFtytblPIFmFwArU8aw35WUsxHnmJ93r2dfGSRUh5JJNsYxZt4j
-         0iiQJ/Jga0/3cEcSiPO8eBaNWjAqpiX08+4Qlyew+tTUrlnjzeF4wN9PZDLL8nKaxYqv
-         r7K6N1swzQm3T9VWhj3QbpPkMNo9Vj6TWV3jrMh1WkHb7E0rzqXEahXVe6ia9rPe7xk+
-         uNfg==
-X-Gm-Message-State: AOJu0YzVv9yomjICCWcr8JdaFvP9ZpTFBA0eEhLCW1ogG5GBWrfTcJpr
-	r15pl3X6bUvSOgULpzUdzxiUeQlPi8AesS0EAcwGMSQKglK4Xf/v/sOWQIAksrhX+h5ZnQaACua
-	24vfUNBlWKZvAGH9hrBazSr+KjIPt8WU=
-X-Received: by 2002:a50:ee8e:0:b0:532:bf2a:8cbc with SMTP id f14-20020a50ee8e000000b00532bf2a8cbcmr1074587edr.16.1700642556328;
-        Wed, 22 Nov 2023 00:42:36 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGxArAdliv8159t4/mg6wNprGb74aZdGoe+N5rfxMIglonZ4sDjt0/8JuUuvDqRR7ldDuvEIg==
-X-Received: by 2002:a50:ee8e:0:b0:532:bf2a:8cbc with SMTP id f14-20020a50ee8e000000b00532bf2a8cbcmr1074578edr.16.1700642555975;
-        Wed, 22 Nov 2023 00:42:35 -0800 (PST)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id u10-20020aa7db8a000000b00546cf67c348sm5795023edt.59.2023.11.22.00.42.35
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 22 Nov 2023 00:42:35 -0800 (PST)
-Message-ID: <3e7a7b77-9104-4141-b8a9-3caca05416dd@redhat.com>
-Date: Wed, 22 Nov 2023 09:42:34 +0100
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ouPCElbQ";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="IeUbDmc4"
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86F0B4689
+	for <linux-fbdev@vger.kernel.org>; Wed, 22 Nov 2023 01:03:17 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 21AEA1F8D7;
+	Wed, 22 Nov 2023 09:03:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1700643791; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=bu/xFHKOhmXOVvaSKH1V4mzwUoCc4YzAQ8Eec3NXTHY=;
+	b=ouPCElbQdU1K08T5Vm6kceiHqBzA55CCTRPLGDV2wVIrhSFGpubqLzDYHCCvGa4PW94OHp
+	a9cbj3K1dWWwOqJ3DbXV+lWkWPeXGhQlIPK/sC+jwAfeMJrt4LIJQSZfF7U91gDwoogQBa
+	jDRQi4RCOjvg0XBDZ4CVDmSdeawf0A0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1700643791;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=bu/xFHKOhmXOVvaSKH1V4mzwUoCc4YzAQ8Eec3NXTHY=;
+	b=IeUbDmc46il1zFcn7K1hpw9eDenY4foXXmDUyR3t0krb24uFDwzvhWE3wJ6Z3cv7PMv3eQ
+	FPcp4S2Z5wTbz7Ag==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 00E6B139FD;
+	Wed, 22 Nov 2023 09:03:10 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id 5C3WOs7DXWWWaAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Wed, 22 Nov 2023 09:03:10 +0000
+Message-ID: <50dc2f5d-3065-4923-b2ef-789ac9c77676@suse.de>
+Date: Wed, 22 Nov 2023 10:03:09 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -53,199 +45,133 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] fbdev/simplefb: Add support for generic
- power-domains
-To: Richard Acayan <mailingradian@gmail.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Helge Deller <deller@gmx.de>,
- Robert Foss <rfoss@kernel.org>, Jon Hunter <jonathanh@nvidia.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org
-References: <20231101172017.3872242-1-thierry.reding@gmail.com>
- <20231101172017.3872242-3-thierry.reding@gmail.com> <ZVwFNfkqjrvhFHM0@radian>
- <60319873-e1f5-43b4-aa22-68a5671d413b@redhat.com> <ZV1E1aigUFcLceWK@radian>
-Content-Language: en-US, nl
-From: Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <ZV1E1aigUFcLceWK@radian>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 09/32] auxdisplay/ht16k33: Set FBINFO_VIRTFB flag
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Robin van der Gracht <robin@protonic.nl>,
+ deller@gmx.de, javierm@redhat.com, dri-devel@lists.freedesktop.org,
+ Miguel Ojeda <ojeda@kernel.org>
+References: <20231115102954.7102-1-tzimmermann@suse.de>
+ <20231115102954.7102-10-tzimmermann@suse.de>
+ <CANiq72m8=KMin6Hck1XouqC3bV3oBgBxj0Qb4HCXsOjgFdgKjA@mail.gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <CANiq72m8=KMin6Hck1XouqC3bV3oBgBxj0Qb4HCXsOjgFdgKjA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------ychpN35UL0xdWfVZfaOaIyyX"
+Authentication-Results: smtp-out2.suse.de;
+	none
+X-Spam-Level: 
+X-Spam-Score: -4.72
+X-Spamd-Result: default: False [-4.72 / 50.00];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 TO_DN_SOME(0.00)[];
+	 HAS_ATTACHMENT(0.00)[];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 MIME_BASE64_TEXT(0.10)[];
+	 RCPT_COUNT_SEVEN(0.00)[7];
+	 SIGNED_PGP(-2.00)[];
+	 FREEMAIL_TO(0.00)[gmail.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
+	 MID_RHS_MATCH_FROM(0.00)[];
+	 BAYES_HAM(-2.93)[99.69%];
+	 ARC_NA(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 TAGGED_RCPT(0.00)[];
+	 MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 RCVD_COUNT_TWO(0.00)[2];
+	 RCVD_TLS_ALL(0.00)[];
+	 SUSPICIOUS_RECIPS(1.50)[];
+	 FREEMAIL_CC(0.00)[vger.kernel.org,protonic.nl,gmx.de,redhat.com,lists.freedesktop.org,kernel.org]
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------ychpN35UL0xdWfVZfaOaIyyX
+Content-Type: multipart/mixed; boundary="------------mpD7t1yPfxCPHb3X6bbvSvOt";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Robin van der Gracht <robin@protonic.nl>,
+ deller@gmx.de, javierm@redhat.com, dri-devel@lists.freedesktop.org,
+ Miguel Ojeda <ojeda@kernel.org>
+Message-ID: <50dc2f5d-3065-4923-b2ef-789ac9c77676@suse.de>
+Subject: Re: [PATCH 09/32] auxdisplay/ht16k33: Set FBINFO_VIRTFB flag
+References: <20231115102954.7102-1-tzimmermann@suse.de>
+ <20231115102954.7102-10-tzimmermann@suse.de>
+ <CANiq72m8=KMin6Hck1XouqC3bV3oBgBxj0Qb4HCXsOjgFdgKjA@mail.gmail.com>
+In-Reply-To: <CANiq72m8=KMin6Hck1XouqC3bV3oBgBxj0Qb4HCXsOjgFdgKjA@mail.gmail.com>
 
-On 11/22/23 01:01, Richard Acayan wrote:
-> On Tue, Nov 21, 2023 at 10:01:18AM +0100, Hans de Goede wrote:
->> Hi,
->>
->> On 11/21/23 02:17, Richard Acayan wrote:
->>> Hello,
->>>
->>> On Wed, Nov 01, 2023 at 06:20:17PM +0100, Thierry Reding wrote:
->>>> From: Thierry Reding <treding@nvidia.com>
->>>>
->>>> The simple-framebuffer device tree bindings document the power-domains
->>>> property, so make sure that simplefb supports it. This ensures that the
->>>> power domains remain enabled as long as simplefb is active.
->>>>
->>>> v2: - remove unnecessary call to simplefb_detach_genpds() since that's
->>>>       already done automatically by devres
->>>>     - fix crash if power-domains property is missing in DT
->>>>
->>>> Signed-off-by: Thierry Reding <treding@nvidia.com>
->>>> ---
->>>>  drivers/video/fbdev/simplefb.c | 93 ++++++++++++++++++++++++++++++++++
->>>>  1 file changed, 93 insertions(+)
->>>>
->>>> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
->>>> index 18025f34fde7..fe682af63827 100644
->>>> --- a/drivers/video/fbdev/simplefb.c
->>>> +++ b/drivers/video/fbdev/simplefb.c
->>>> @@ -25,6 +25,7 @@
->>>>  #include <linux/of_clk.h>
->>>>  #include <linux/of_platform.h>
->>>>  #include <linux/parser.h>
->>>> +#include <linux/pm_domain.h>
->>>>  #include <linux/regulator/consumer.h>
->>>>  
->>>>  static const struct fb_fix_screeninfo simplefb_fix = {
->>>> @@ -78,6 +79,11 @@ struct simplefb_par {
->>>>  	unsigned int clk_count;
->>>>  	struct clk **clks;
->>>>  #endif
->>>> +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
->>>> +	unsigned int num_genpds;
->>>
->>> This is the cause of the crash that occurred on the older patch series.
->>> The field is unsigned, a deviation from v6.6:drivers/remoteproc/imx_rproc.c.
->>>
->>> Instead of making it signed, this version emits an error whenever the
->>> count is negative.
->>
->> I'm not sure what you are trying to say here ?
-> 
-> In v1 of the patch, there was no error propagation from of_count_phandle_with_args
-> and this field was directly assigned to the return value. This was a
-> problem (the "crash" as mentioned in this patch's changelog) when the
-> return value is negative, since unsigned integers cannot hold negative
-> values. On mainstream architectures, the driver would believe that there
-> is an absurd amount of power domains.
-> 
-> I compared the versions of this patch and figured that the fix to the
-> crash was more error handling.
-> 
-> Basically, if "unsigned" was removed, the error handling for the call to
-> of_count_phandle_with_args could be dropped with few consequences.
+--------------mpD7t1yPfxCPHb3X6bbvSvOt
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I see, thank you for explaining.
+SGkNCg0KQW0gMjIuMTEuMjMgdW0gMDA6NTAgc2NocmllYiBNaWd1ZWwgT2plZGE6DQo+IE9u
+IFdlZCwgTm92IDE1LCAyMDIzIGF0IDExOjMw4oCvQU0gVGhvbWFzIFppbW1lcm1hbm4gPHR6
+aW1tZXJtYW5uQHN1c2UuZGU+IHdyb3RlOg0KPj4NCj4+ICsgICAgICAgZmJkZXYtPmluZm8t
+PmZsYWdzIHw9IEZCSU5GT19WSVJURkI7DQo+IA0KPiBJcyB0aGUgYHw9YCAoaW5zdGVhZCBv
+ZiBqdXN0IGA9YCkgdXNlZCBpbiBjYXNlIHNvbWVvbmUgYWRkcyBzb21ldGhpbmcNCj4gdG8g
+dGhlIGZsYWdzIGJlZm9yZSAoZS5nLiBgZmJfYmxfZGVmYXVsdF9jdXJ2ZWApIG9yIGR1ZSB0
+byBzb21lIG90aGVyDQo+IHJlYXNvbj8gKE9uZSBvZiB0aGUgb3RoZXIgcGF0Y2hlcyB1c2Vz
+IGA9YCkuDQoNClllcywgaXQncyBpbnRlbnRpb25hbGx5Lg0KDQo+IA0KPiBJbiBhbnkgY2Fz
+ZSwgaWYgdGhhdCBpcyBpbnRlbmRlZDoNCj4gDQo+IEFja2VkLWJ5OiBNaWd1ZWwgT2plZGEg
+PG9qZWRhQGtlcm5lbC5vcmc+DQoNClRoYW5rcy4NCg0KPiANCj4gQ2hlZXJzLA0KPiBNaWd1
+ZWwNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Bl
+cg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNz
+ZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3
+IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChB
+RyBOdWVybmJlcmcpDQo=
 
-I believe that actually handling the error is better then storing
-a negative value, so I believe that the fix in v2 is correct.
+--------------mpD7t1yPfxCPHb3X6bbvSvOt--
 
->>>> +	struct device **genpds;
->>>> +	struct device_link **genpd_links;
->>>> +#endif
->>>>  #if defined CONFIG_OF && defined CONFIG_REGULATOR
->>>>  	bool regulators_enabled;
->>>>  	u32 regulator_count;
->>>> @@ -432,6 +438,89 @@ static void simplefb_regulators_enable(struct simplefb_par *par,
->>>>  static void simplefb_regulators_destroy(struct simplefb_par *par) { }
->>>>  #endif
->>>>  
->>>> +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
->>>> +static void simplefb_detach_genpds(void *res)
->>>> +{
->>>> +	struct simplefb_par *par = res;
->>>> +	unsigned int i = par->num_genpds;
->>>> +
->>>> +	if (par->num_genpds <= 1)
->>>> +		return;
->>>> +
->>>> +	while (i--) {
->>>> +		if (par->genpd_links[i])
->>>> +			device_link_del(par->genpd_links[i]);
->>>> +
->>>> +		if (!IS_ERR_OR_NULL(par->genpds[i]))
->>>> +			dev_pm_domain_detach(par->genpds[i], true);
->>>> +	}
->>>> +}
->>>> +
->>>> +static int simplefb_attach_genpds(struct simplefb_par *par,
->>>> +				  struct platform_device *pdev)
->>>> +{
->>>> +	struct device *dev = &pdev->dev;
->>>> +	unsigned int i;
->>>> +	int err;
->>>> +
->>>> +	err = of_count_phandle_with_args(dev->of_node, "power-domains",
->>>> +					 "#power-domain-cells");
->>>> +	if (err < 0) {
->>>> +		dev_info(dev, "failed to parse power-domains: %d\n", err);
->>>> +		return err;
->>>
->>> This error path is taken when there is no power-domains property in the
->>> device tree with err = -ENOENT.
->>>
->>> Strangely, this does not suppress the error like the next if statement,
->>> even though it is possible that nothing is wrong.
->>>
->>>> +	}
->>>> +
->>>> +	par->num_genpds = err;
->>>> +
->>>> +	/*
->>>> +	 * Single power-domain devices are handled by the driver core, so
->>>> +	 * nothing to do here.
->>>> +	 */
->>>> +	if (par->num_genpds <= 1)
->>>> +		return 0;
->>>> +
->>>> +	par->genpds = devm_kcalloc(dev, par->num_genpds, sizeof(*par->genpds),
->>>> +				   GFP_KERNEL);
->>> <snip>
->>>> @@ -518,6 +607,10 @@ static int simplefb_probe(struct platform_device *pdev)
->>>>  	if (ret < 0)
->>>>  		goto error_clocks;
->>>>  
->>>> +	ret = simplefb_attach_genpds(par, pdev);
->>>> +	if (ret < 0)
->>>> +		goto error_regulators;
->>>
->>> With the error case specified above, not specifying power-domains (which
->>> is valid according to dtschema) causes the entire driver to fail
->>> whenever there are no power domains in the device tree.
->>>
->>> On google-sargo, this causes a bug where the framebuffer fails to probe:
->>>
->>>     [    0.409290] simple-framebuffer 9c000000.framebuffer: failed to parse power-domains: -2
->>>     [    0.409340] simple-framebuffer: probe of 9c000000.framebuffer failed with error -2
->>
->> Ok so this is a problem, sorry for not catching this during review.
->>
->> I believe that this should be fixed by changing the code to:
->>
->> 	err = of_count_phandle_with_args(dev->of_node, "power-domains",
->> 					 "#power-domain-cells");
->> 	if (err < 0) {
->> 		if (err == -ENOENT)
->> 			return 0;
->>
->> 		dev_info(dev, "failed to parse power-domains: %d\n", err);
->> 		return err;
->> 	}
->>
->> Can you submit a (tested) patch fixing this? Then I'll push it
->> to drm-misc-next right away.
-> 
-> Okay, will do. If my above response changes the preferred fix, let me
-> know.
+--------------ychpN35UL0xdWfVZfaOaIyyX
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
-Please move ahead with the proposed fixed, thank you.
+-----BEGIN PGP SIGNATURE-----
 
-> Thank you for committing to having this fixed.
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmVdw84FAwAAAAAACgkQlh/E3EQov+Av
+FQ//TqxfT5ZJnIXrhwqEKchKULvEqvosyvf6TN+vLKY/0YHt2C+8RRYtWcE/MuvJ7TMBEJ8niZ37
+zjsuB8XF5EN6FURmQYcjWduJIgLoiOPO4XXUMfr+oY1tdWgc+hSUsVLvXx51Ce5kwXcWIExsiINK
+wBVlZ/lwWFDSsZhR4V/oJ9vevRST3sUWtCRG9V9fkuLB/cuzuthNT4zkr3g7+YENff9yVYy9gdGv
+bkMW1WyAmKtbqnjWZd8tDbmVXUr4SjLAMrJiiqIrBre6JF42YZioXXJ4yYZqwoTSf02cfOo0khxZ
+7c2eNkgUarI7x5Nw7asKfUALlRf2lMRa6jYrSUYPHPoNGb3nRN4poXCAweIAtzixpwG6nUf1/QVK
+7x4LYNTdY2GLO0O8tUvMsOI+I/R3cFU6Jq4MNwCJO4g40JAUNAaqOAmHl50hRm/+dL9a/VzCqZQM
+DYIL30799AUuOoy7ve/pbRCvxHlP5LC5oqKKq+JJg1d36ywPCjRSn9dxlVT5WMUI5VuKoQZK6Rgm
+EvDCtlze94lzRyimCHFx3uHsBZ3KQjFUtItiSudq7MVVYZ+b6FYcArQpNllevN0NmMFfQS6ljzVJ
+tjOzGkIE+zIs9ypzhV8SVwwZk7BxC7D6jmgDeBxC/4FCWn1HCtLtRlFbydWvikmLHSvpTQt5hehp
+w+s=
+=KuOn
+-----END PGP SIGNATURE-----
 
-You're welcome.
-
-Regards,
-
-Hans
-
-
-
+--------------ychpN35UL0xdWfVZfaOaIyyX--

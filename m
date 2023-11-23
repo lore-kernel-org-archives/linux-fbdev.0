@@ -1,134 +1,83 @@
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51D0724B30;
+	Thu, 23 Nov 2023 12:53:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fjWwVPsU"
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4733FD68;
-	Thu, 23 Nov 2023 01:40:57 -0800 (PST)
-Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-a02d91ab199so82436066b.0;
-        Thu, 23 Nov 2023 01:40:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1700732456; x=1701337256; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4GQVLU0yIdzvkWpe6EOtR/8b+D+v0ZubEgK+LbytqFk=;
-        b=fjWwVPsUARNs/VHoDvw+mL4gcuTLMp87TVPPHIXI4vRAwPTQf1iHkbSebo6UJRon04
-         tPCZjQBz4+0S+YCvq4bvmPjqshFlAE2+okqWk0w9H3YaY/9BhDOSZ5cgk8ngIQ8kdYUd
-         ephbv23hFWXKs9BaAw+RSy+6BXnRNE1IJdafCfKBpv+4mtNSpJo4NexAhH0uOz5oCl3S
-         KSEWFoGsHn3sLePq+be9kkERR7OOJeYZSnjY212XtJVG7YU1ExkdP1a8DvTxO6lZ2Fyo
-         1rSxOd+jLAvQmkFMyEZloLl0ckLnQmySRIdEl88n+mLX0oV83YntN7i1/RENesFf2Imc
-         v2bQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700732456; x=1701337256;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4GQVLU0yIdzvkWpe6EOtR/8b+D+v0ZubEgK+LbytqFk=;
-        b=hgu9yuraYqQohUH32EqSrDp6cdSjFuQqC90twdC95t/aTMvzbgJyWfgQSjSwSOEgJO
-         bRtK3uT9tWLVAgzRRySNUcRThNqd9rDHCDEvjH4VsUYw3YkJt+hFmK/bUC7lpY5O1zf4
-         PfXHfkKV1LQofZPH+jEYVqfdGI8pOA6i+hb5HWoibcyfjMa6TC6Pb1dqPQmsZ6zoDKbE
-         a9rsRLdNFveaevxMkIPLiF50YgZguIOG99P6C21doUoX+nl+7RAskPEw3sxAKgi62Vwn
-         DA/Jlgq1P6vzD85jwivfH4/UtWnXgEVHdxKl787dG/KuY5LhsvQbaFbzrBIRzYvDMefy
-         ed2Q==
-X-Gm-Message-State: AOJu0Yx2yGuFGK3WW/Fvz4LA20QkH5eILXlC25RT+ykWxJ1Yw3gud3jK
-	yFLmetk+Hbc7pMKixt8Dnhc=
-X-Google-Smtp-Source: AGHT+IFW7oGp/sxqiNU9T6YyLWfXmVFxlR+ROFim07r/08bufC+IIaX6Uvxyofr/jhfjkQUrN3Ji5Q==
-X-Received: by 2002:a17:906:1855:b0:a00:8706:c82b with SMTP id w21-20020a170906185500b00a008706c82bmr3269223eje.47.1700732455722;
-        Thu, 23 Nov 2023 01:40:55 -0800 (PST)
-Received: from zotac.lan. (dynamic-2a01-0c23-c0f2-3200-2223-08ff-fe18-0310.c23.pool.telefonica.de. [2a01:c23:c0f2:3200:2223:8ff:fe18:310])
-        by smtp.gmail.com with ESMTPSA id s9-20020a1709066c8900b009e5ce1acb01sm546199ejr.103.2023.11.23.01.40.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Nov 2023 01:40:55 -0800 (PST)
-From: Heiner Kallweit <hkallweit1@gmail.com>
-To: Wolfram Sang <wsa@kernel.org>,
-	Maik Broemme <mbroemme@libmpq.org>
-Cc: linux-i2c@vger.kernel.org,
-	Heiner Kallweit <hkallweit1@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v5 13/20] drivers/video/fbdev/intelfb/intelfb_i2c.c: remove I2C_CLASS_DDC support
-Date: Thu, 23 Nov 2023 10:40:33 +0100
-Message-ID: <20231123094040.592-14-hkallweit1@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20231123094040.592-1-hkallweit1@gmail.com>
-References: <20231123094040.592-1-hkallweit1@gmail.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="PB81C+oE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2EFF1C433C7;
+	Thu, 23 Nov 2023 12:52:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1700743980;
+	bh=F7P1UrcrA7XXYERAlMWEnIMlgPNCzYeKlSXTkoC+Q5c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=PB81C+oEP4NslxZtrQVlx0Jb94L25vntk60abpyG1TQRbvYo8ZMR1FLYs4DbWZCf9
+	 q310bWMtehDxFYYsr7zeqQFMowHy6oGAKPVKJUpo80QSdUMCdZ10SxNPBZRnESpEoI
+	 MbZvrayzvPCT8oZ67f5qnT7iyZ9omLH48kbEvnrE=
+Date: Thu, 23 Nov 2023 12:48:35 +0000
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Dorcas AnonoLitunya <anonolitunya@gmail.com>
+Cc: outreachy@lists.linux.dev, julia.lawall@inria.fr,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] staging: sm750fb: Remove unused return value in
+ display_control_adjust_sm750le()
+Message-ID: <2023112329-daybed-elevate-88aa@gregkh>
+References: <20231101152137.10664-2-anonolitunya@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231101152137.10664-2-anonolitunya@gmail.com>
 
-After removal of the legacy EEPROM driver and I2C_CLASS_DDC support in
-olpc_dcon there's no i2c client driver left supporting I2C_CLASS_DDC.
-Class-based device auto-detection is a legacy mechanism and shouldn't
-be used in new code. So we can remove this class completely now.
+On Wed, Nov 01, 2023 at 06:21:34PM +0300, Dorcas AnonoLitunya wrote:
+> Modifies the return type of display_control_adjust_sm750le()
+> to void from unsigned long as the return value is being ignored in
+> all subsequent function calls.
+> 
+> This improves code readability and maintainability.
+> 
+> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
+> ---
+> 
+> Changes in v3:
+> - Rebase patch to apply against latest branch
+> 
+>  drivers/staging/sm750fb/ddk750_mode.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+> index e1f20379431c..4278f9a826ab 100644
+> --- a/drivers/staging/sm750fb/ddk750_mode.c
+> +++ b/drivers/staging/sm750fb/ddk750_mode.c
+> @@ -13,7 +13,7 @@
+>   * HW only supports 7 predefined pixel clocks, and clock select is
+>   * in bit 29:27 of Display Control register.
+>   */
+> -static unsigned long
+> +static void
+>  display_control_adjust_sm750le(struct mode_parameter *mode_param,
+>  			       unsigned long disp_control)
+>  {
+> @@ -70,8 +70,6 @@ display_control_adjust_sm750le(struct mode_parameter *mode_param,
+>  	disp_control |= DISPLAY_CTRL_CLOCK_PHASE;
+>  
+>  	poke32(CRT_DISPLAY_CTRL, disp_control);
+> -
+> -	return disp_control;
+>  }
+>  
+>  /* only timing related registers will be  programed */
+> -- 
+> 2.42.0.345.gaab89be2eb
+> 
+> 
 
-Preferably this series should be applied via the i2c tree.
-
-Acked-by: Helge Deller <deller@gmx.de>
-Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
-
----
- drivers/video/fbdev/intelfb/intelfb_i2c.c |   15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/video/fbdev/intelfb/intelfb_i2c.c b/drivers/video/fbdev/intelfb/intelfb_i2c.c
-index 3300bd31d..f24c7cb4c 100644
---- a/drivers/video/fbdev/intelfb/intelfb_i2c.c
-+++ b/drivers/video/fbdev/intelfb/intelfb_i2c.c
-@@ -99,8 +99,7 @@ static int intelfb_gpio_getsda(void *data)
- 
- static int intelfb_setup_i2c_bus(struct intelfb_info *dinfo,
- 				 struct intelfb_i2c_chan *chan,
--				 const u32 reg, const char *name,
--				 int class)
-+				 const u32 reg, const char *name)
- {
- 	int rc;
- 
-@@ -108,7 +107,6 @@ static int intelfb_setup_i2c_bus(struct intelfb_info *dinfo,
- 	chan->reg			= reg;
- 	snprintf(chan->adapter.name, sizeof(chan->adapter.name),
- 		 "intelfb %s", name);
--	chan->adapter.class		= class;
- 	chan->adapter.owner		= THIS_MODULE;
- 	chan->adapter.algo_data		= &chan->algo;
- 	chan->adapter.dev.parent	= &chan->dinfo->pdev->dev;
-@@ -144,8 +142,7 @@ void intelfb_create_i2c_busses(struct intelfb_info *dinfo)
- 	dinfo->output[i].type = INTELFB_OUTPUT_ANALOG;
- 
- 	/* setup the DDC bus for analog output */
--	intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].ddc_bus, GPIOA,
--			      "CRTDDC_A", I2C_CLASS_DDC);
-+	intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].ddc_bus, GPIOA, "CRTDDC_A");
- 	i++;
- 
- 	/* need to add the output busses for each device
-@@ -159,10 +156,8 @@ void intelfb_create_i2c_busses(struct intelfb_info *dinfo)
- 	case INTEL_855GM:
- 	case INTEL_865G:
- 		dinfo->output[i].type = INTELFB_OUTPUT_DVO;
--		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].ddc_bus,
--				      GPIOD, "DVODDC_D", I2C_CLASS_DDC);
--		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].i2c_bus,
--				      GPIOE, "DVOI2C_E", 0);
-+		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].ddc_bus, GPIOD, "DVODDC_D");
-+		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].i2c_bus, GPIOE, "DVOI2C_E");
- 		i++;
- 		break;
- 	case INTEL_915G:
-@@ -176,7 +171,7 @@ void intelfb_create_i2c_busses(struct intelfb_info *dinfo)
- 		/* SDVO ports have a single control bus - 2 devices */
- 		dinfo->output[i].type = INTELFB_OUTPUT_SDVO;
- 		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].i2c_bus,
--				      GPIOE, "SDVOCTRL_E", 0);
-+				      GPIOE, "SDVOCTRL_E");
- 		/* TODO: initialize the SDVO */
- 		/* I830SDVOInit(pScrn, i, DVOB); */
- 		i++;
-
+Does not apply to my current tree :(

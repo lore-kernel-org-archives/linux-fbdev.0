@@ -1,82 +1,158 @@
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10C7B1EB42;
+	Fri, 24 Nov 2023 12:04:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.b="GuRLhXgI"
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DCA9C1707
-	for <linux-fbdev@vger.kernel.org>; Fri, 24 Nov 2023 01:52:27 -0800 (PST)
-Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-544455a4b56so2312115a12.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 24 Nov 2023 01:52:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amarulasolutions.com; s=google; t=1700819546; x=1701424346; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=lPiBn2j7nRC2ohY93oZwJpQOBSGsTTZbyG2+TlPFQiA=;
-        b=GuRLhXgIIoNoHiXXElj/Uz50alI1JdzaFBgz6HNm0jkMA8K2Bb0bcsJbbw+Jfdf+B2
-         cuGzMW/kI0M8GKmj3emS/8uoHTYV+/tD8CEHXZA3I+XmO8Dxho0k4v2g8k5dIGE62/K6
-         zU/qZDypAnI+Mlqiz7q/BiPH3Tkdl7BZ9L14M=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700819546; x=1701424346;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=lPiBn2j7nRC2ohY93oZwJpQOBSGsTTZbyG2+TlPFQiA=;
-        b=VVHKpPTnz2ohbvuXBHiHzix1YOgJrwx4A3hIuVi7IATD4mDUOfe7ZmPir8oDfJKPQq
-         XIJo5/SrMlQAszsjUR6dXlHwBXF8bfGvN+scnjctzS/3uKeavyiszOre5vB5CLi3n7LV
-         j+nf1px86Nhj1E3wr8RdR/WpsBnjqAJkTK661LWPBTl5ZYwq1Gp5phzd/c7s3orY3hR2
-         fNuz/bM27PeohgOnhv0hYQKSdG/BafMfQYjRN5f1sS9jdvUujscRHwVm8MGh4Kltx9UF
-         0BteNKUNAukQDy+ukX9aDf2MKOnVhBjSS0z4CGHkuNi6Y33e0lHwI0o3pjq/UIPhN8r3
-         X7QA==
-X-Gm-Message-State: AOJu0YxGLeuOqQzKuWmHURgWg702cquOpZNiwFw3cqHiYMzgpBX0uucX
-	qz5Kr6XApFp7CkyXcHcowuoQbg==
-X-Google-Smtp-Source: AGHT+IEBfhEmsD5EKPJl+/lEhxi4nG9SttIahQn1yPMeWAXJB+1krEHdfcyXCHFNF8KJVIk8quJgcQ==
-X-Received: by 2002:a50:d745:0:b0:543:5741:c9cd with SMTP id i5-20020a50d745000000b005435741c9cdmr1359620edj.34.1700819546366;
-        Fri, 24 Nov 2023 01:52:26 -0800 (PST)
-Received: from localhost.localdomain ([2001:b07:6474:ebbf:7c18:b9c9:f303:f6bb])
-        by smtp.gmail.com with ESMTPSA id i7-20020aa7c9c7000000b0054855988fedsm1588384edt.37.2023.11.24.01.52.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 24 Nov 2023 01:52:26 -0800 (PST)
-From: Dario Binacchi <dario.binacchi@amarulasolutions.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dario Binacchi <dario.binacchi@amarulasolutions.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Haojian Zhuang <haojian.zhuang@gmail.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ASSOqFUT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C12FAC433C7;
+	Fri, 24 Nov 2023 12:04:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1700827484;
+	bh=iYS7ANsuZ6vwOLgQk5XN795HJ5oXfHcHZNUjCJ6SXCw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ASSOqFUTTJHCjKWaYnDmAWOsdJx6xpTr/qPcu1HB+Fm5a/QclWrV0vncK2Q3Q7xX2
+	 aCCX9KBbw2Az9X58fZvG86NOH/nrOeX7BVzsNXr5gajrQU9ziayJ62atPHT8DwDcCc
+	 ahgZtb/ixwvuzDrehPu48aUVx6G2ccUCRb+KcZHUWGGyWnosZcOgffotJMEG6Q3zmg
+	 BKh8HHr1sjhFvHUZ1Iby4sERa66rD1silvF54u1GkmzyyDomzoGyssBaqUowuIrSEm
+	 G36HFkUDw4hjv0/b3iAj4rjrfH4/y0Ks3nDD/1Xr+xB/Qamv83b+9r9W6Jyz43KFdu
+	 6MPuY/CW+rmPA==
+Date: Fri, 24 Nov 2023 12:04:40 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+	Masahiro Yamada <masahiroy@kernel.org>,
+	linux-kbuild@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>, Guo Ren <guoren@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Greg Ungerer <gerg@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Geoff Levand <geoff@infradead.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andy Lutomirski <luto@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
 	Helge Deller <deller@gmx.de>,
-	Zhou Zhu <zzhu3@marvell.com>,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH] video: fbdev: mmp: Fix typo in code comment
-Date: Fri, 24 Nov 2023 10:52:11 +0100
-Message-ID: <20231124095221.659445-1-dario.binacchi@amarulasolutions.com>
-X-Mailer: git-send-email 2.42.0
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Timur Tabi <timur@kernel.org>,
+	Kent Overstreet <kent.overstreet@linux.dev>,
+	David Woodhouse <dwmw2@infradead.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+	Kees Cook <keescook@chromium.org>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Nicolas Schier <nicolas@fjasle.eu>,
+	Al Viro <viro@zeniv.linux.org.uk>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-trace-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+	netdev@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-bcachefs@vger.kernel.org,
+	linux-mtd@lists.infradead.org,
+	Aishwarya TCV <aishwarya.tcv@arm.com>
+Subject: Re: [PATCH 15/22] arch: vdso: consolidate gettime prototypes
+Message-ID: <ZWCRWArzbTYUjvon@finisterre.sirena.org.uk>
+References: <20231108125843.3806765-1-arnd@kernel.org>
+ <20231108125843.3806765-16-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="woSdJmrFfLwaS8m2"
+Content-Disposition: inline
+In-Reply-To: <20231108125843.3806765-16-arnd@kernel.org>
+X-Cookie: Am I in GRADUATE SCHOOL yet?
 
-s/singals/signals/
 
-Fixes: 641b4b1b6a7c ("video: mmpdisp: add spi port in display controller")
-Signed-off-by: Dario Binacchi <dario.binacchi@amarulasolutions.com>
----
+--woSdJmrFfLwaS8m2
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- drivers/video/fbdev/mmp/hw/mmp_spi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, Nov 08, 2023 at 01:58:36PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> The VDSO functions are defined as globals in the kernel sources but inten=
+ded
+> to be called from userspace, so there is no need to declare them in a ker=
+nel
+> side header.
 
-diff --git a/drivers/video/fbdev/mmp/hw/mmp_spi.c b/drivers/video/fbdev/mmp/hw/mmp_spi.c
-index 16401eb95c6c..64e34b7e739e 100644
---- a/drivers/video/fbdev/mmp/hw/mmp_spi.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_spi.c
-@@ -91,7 +91,7 @@ static int lcd_spi_setup(struct spi_device *spi)
- 	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
- 
- 	/*
--	 * After set mode it need a time to pull up the spi singals,
-+	 * After set mode it need a time to pull up the spi signals,
- 	 * or it would cause the wrong waveform when send spi command,
- 	 * especially on pxa910h
- 	 */
--- 
-2.42.0
+This is in -next as commit 42874e4eb35bdfc54f8514685e50434098ba4f6c and
+breaks an arm64 defconfig build, the 32 bit vDSO build is broken:
 
+/build/stage/linux/arch/arm64/kernel/vdso32/vgettimeofday.c:10:5: error: co=
+nflic
+ting types for =E2=80=98__vdso_clock_gettime=E2=80=99; have =E2=80=98int(cl=
+ockid_t,  struct old_timespec
+32 *)=E2=80=99 {aka =E2=80=98int(int,  struct old_timespec32 *)=E2=80=99}
+   10 | int __vdso_clock_gettime(clockid_t clock,
+      |     ^~~~~~~~~~~~~~~~~~~~
+In file included from /build/stage/linux/arch/arm64/kernel/vdso32/vgettimeo=
+fday.
+c:8:
+/build/stage/linux/include/vdso/gettime.h:16:5: note: previous declaration =
+of =E2=80=98__vdso_clock_gettime=E2=80=99 with type =E2=80=98int(clockid_t,=
+  struct __kernel_timespec *)=E2=80=99 {aka =E2=80=98int(int,  struct __ker=
+nel_timespec *)=E2=80=99}
+   16 | int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec =
+*ts);
+      |     ^~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/arch/arm64/kernel/vdso32/vgettimeofday.c:28:5: error: co=
+nflicting types for =E2=80=98__vdso_clock_getres=E2=80=99; have =E2=80=98in=
+t(clockid_t,  struct old_timespec32 *)=E2=80=99 {aka =E2=80=98int(int,  str=
+uct old_timespec32 *)=E2=80=99}
+   28 | int __vdso_clock_getres(clockid_t clock_id,
+      |     ^~~~~~~~~~~~~~~~~~~
+/build/stage/linux/include/vdso/gettime.h:15:5: note: previous declaration =
+of =E2=80=98__vdso_clock_getres=E2=80=99 with type =E2=80=98int(clockid_t, =
+ struct __kernel_timespec *)=E2=80=99 {aka =E2=80=98int(int,  struct __kern=
+el_timespec *)=E2=80=99}
+   15 | int __vdso_clock_getres(clockid_t clock, struct __kernel_timespec *=
+res);
+      |     ^~~~~~~~~~~~~~~~~~~
+
+--woSdJmrFfLwaS8m2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmVgkVgACgkQJNaLcl1U
+h9Dz9gf/VMa1PvhU/bO1IxdTJVCJWAk44qPipqzqyUg2pLaBosU5v8Dx8eAPyIg0
+DgxKA9Cycd3l3JSSqWIwJ1xEztqi2CvdmV5Ljrml8UqOvqHNPtg16JgCCOZ+Ssww
+82B8fl93C3CmUtTLFx3u3lZRKd7FjyeOiiemekfHvdbZSOn+K6Dk9zvPAE63gI0I
+5m6xp+q1eJ7Uyq7o4kCOnJOo/y9eDGX3lGqOsVQ7bnQAH6Id5y32aplMkStvzLKI
+TrSlxBsnU/wry1msxEbcgmhN2YebA1wWGNC0j6fT4xg0MzuHevZwPTSm/2sK5Exc
+fOQ/QL09MCXtNwNJ3QpItc8VaAFrVQ==
+=sHT7
+-----END PGP SIGNATURE-----
+
+--woSdJmrFfLwaS8m2--

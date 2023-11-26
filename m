@@ -1,76 +1,69 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3EBF17E4
-	for <linux-fbdev@vger.kernel.org>; Sun, 26 Nov 2023 06:58:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dkim=none
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AAD6C433C8;
-	Sun, 26 Nov 2023 06:58:10 +0000 (UTC)
-Date: Sun, 26 Nov 2023 07:58:08 +0100
-From: Helge Deller <deller@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev fixes and updates for v6.7-rc3
-Message-ID: <ZWLsgGku7j_7_eVE@ls3530>
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="PkS2bZ9X"
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78CE4E3
+	for <linux-fbdev@vger.kernel.org>; Sun, 26 Nov 2023 08:30:03 -0800 (PST)
+Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-5079f6efd64so4659495e87.2
+        for <linux-fbdev@vger.kernel.org>; Sun, 26 Nov 2023 08:30:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google; t=1701016201; x=1701621001; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=sSJ+yeqxuvutnkpSkcqAmI5LAVDWcSBce0PQad7lFBQ=;
+        b=PkS2bZ9XIf1gB9rDAW2NcW53LskZxG24TPyKzs+aqE5rJ1Htr32CvpMZwO1Gp+Gmo3
+         QWnDQdp+IcG1bRebFUlQHhkkpMBcxSK/5nWgZUp3zjQI/Wbf0dHcTTDe+M+z6tCp3aef
+         A99jWaJwCfQUd6S/lxAcNbzjzRlNA40tVt160=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701016201; x=1701621001;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=sSJ+yeqxuvutnkpSkcqAmI5LAVDWcSBce0PQad7lFBQ=;
+        b=oF9mJa+ACkvnAn5w47fQUO9VOUqc4oPp77JAiRTgcDEa5wwhRnwUr36OraxuwDq0qy
+         F1mdX8nfPU4pfH5GMqasmtouXgxX/D5mVXSln+ba1hWHpVhN50L3SO48jBxDbsgLDEAf
+         AM+KDkbHAcepGpBVRJHar/HBmXbnvhzy4M1i8y3Aj9VJAnw1XTZ+AwukBLhc5N0lr+B7
+         NhGiXdDnNhVic+syKaU7DrHUYiYiVcLqrqsrXiiSkbEMtOE1ddW+/fMgumlrcjK5BDJK
+         DKSxD+HLRD1YIIrdIIGEsLSax4a+wh9FlpQAJ60B5Gts+D29JeZjwqBqEUslQMWQhdYH
+         imoA==
+X-Gm-Message-State: AOJu0Yx2cKRNCm55od+0c3KDC7c+OnSP3+SCdLwaeM+B/F626CdVAnOS
+	wCRuoLZWyLZWitkZ1VGyo0nRUKgTuLD5mlHpF1K4PiMc
+X-Google-Smtp-Source: AGHT+IHybEgoCaoyJ7cE6pRWmxDTqpnm+yjwqEDh8HrAFkoeTQ6C/fnuxTkbgi1FIywP2+dY9mkFNg==
+X-Received: by 2002:a2e:8086:0:b0:2c8:721c:6912 with SMTP id i6-20020a2e8086000000b002c8721c6912mr5668070ljg.37.1701016201469;
+        Sun, 26 Nov 2023 08:30:01 -0800 (PST)
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com. [209.85.167.43])
+        by smtp.gmail.com with ESMTPSA id a21-20020a2e88d5000000b002c882f503basm1042453ljk.13.2023.11.26.08.30.00
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 26 Nov 2023 08:30:00 -0800 (PST)
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-507a98517f3so4694088e87.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 26 Nov 2023 08:30:00 -0800 (PST)
+X-Received: by 2002:a19:5e03:0:b0:509:dec:9f3c with SMTP id
+ s3-20020a195e03000000b005090dec9f3cmr4999914lfb.50.1701016200246; Sun, 26 Nov
+ 2023 08:30:00 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <ZWLsgGku7j_7_eVE@ls3530>
+In-Reply-To: <ZWLsgGku7j_7_eVE@ls3530>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sun, 26 Nov 2023 08:29:43 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wiR5yLK6-n5p=F97unF1bf3DuPdGcv0MZcO51aiik4T0w@mail.gmail.com>
+Message-ID: <CAHk-=wiR5yLK6-n5p=F97unF1bf3DuPdGcv0MZcO51aiik4T0w@mail.gmail.com>
+Subject: Re: [GIT PULL] fbdev fixes and updates for v6.7-rc3
+To: Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Linus,
+On Sat, 25 Nov 2023 at 22:58, Helge Deller <deller@gmx.de> wrote:
+>
+> please pull some small fbdev fixes for 6.7-rc3.
 
-please pull some small fbdev fixes for 6.7-rc3.
+These all seem to be pure cleanups, not bug fixes.
 
-A left margin fix and code cleanups in imxfb, and one 
-sparse warning fix in fsl-diu-fb.
+Please resend during the merge window.
 
-Thanks,
-Helge
-
----
-
-The following changes since commit ffc253263a1375a65fa6c9f62a893e9767fbebfa:
-
-  Linux 6.6 (2023-10-29 16:31:08 -1000)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.7-rc3
-
-for you to fetch changes up to 64a1aed0aa07698d12deca9b7821ea77762ff328:
-
-  fbdev: mmp: Fix typo and wording in code comment (2023-11-25 09:54:41 +0100)
-
-----------------------------------------------------------------
-fbdev fixes and cleanups for 6.7-rc3:
-
-- fix left margin settings in imxfb
-- sparse warning fix in fsl-diu-fb
-- lots of code cleanups in imxfb
-
-----------------------------------------------------------------
-Dario Binacchi (11):
-      fbdev: imxfb: fix left margin setting
-      fbdev: imxfb: move PCR bitfields near their offset
-      fbdev: imxfb: use BIT, FIELD_{GET,PREP} and GENMASK macros
-      fbdev: imxfb: replace some magic numbers with constants
-      fbdev: imxfb: add missing SPDX tag
-      fbdev: imxfb: drop ftrace-like logging
-      fbdev: imxfb: add missing spaces after ','
-      fbdev: imxfb: Fix style warnings relating to printk()
-      fbdev: imxfb: use __func__ for function name
-      fbdev: imxfb: add '*/' on a separate line in block comment
-      fbdev: mmp: Fix typo and wording in code comment
-
-Stanislav Kinsburskii (1):
-      fbdev: fsl-diu-fb: Fix sparse warning due to virt_to_phys() prototype change
-
- drivers/video/fbdev/fsl-diu-fb.c     |   2 +-
- drivers/video/fbdev/imxfb.c          | 179 ++++++++++++++++++++---------------
- drivers/video/fbdev/mmp/hw/mmp_spi.c |   2 +-
- 3 files changed, 104 insertions(+), 79 deletions(-)
+            Linus

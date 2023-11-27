@@ -1,56 +1,32 @@
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ZFm86Rtc";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="TZXluPho"
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44CBE187
+Authentication-Results: smtp.subspace.kernel.org; dkim=none
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E85D619D
 	for <linux-fbdev@vger.kernel.org>; Mon, 27 Nov 2023 05:17:07 -0800 (PST)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id C3B32203FE;
-	Mon, 27 Nov 2023 13:17:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1701091025; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hJyET7XWuf/KWIDuSKlKzyH4amNakF6D1rSc8AEdlbQ=;
-	b=ZFm86RtcrCKpfV4jgk6LHNz8+cvMRIEWagWH7qyjtvtyGllR8KhXm51O40vwx1P4XJzMl7
-	7d6vDxHor7AeNTwldmAodKEf3Zx6xs6hOBIVPWmlp2Gu+irDHRT+A5vpVvttFWXAnV1qix
-	YqLxPe2nKgH7yD93D7WAda6IvBtN870=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1701091025;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hJyET7XWuf/KWIDuSKlKzyH4amNakF6D1rSc8AEdlbQ=;
-	b=TZXluPhoHXTMoLrE3/BXugenP345L4ju5ajwZjM/+JAhRNFY6h+lQCi66LVF7MX0PsMqKr
-	ds5M2e1iPZFI7RCw==
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 36DFA20403;
+	Mon, 27 Nov 2023 13:17:06 +0000 (UTC)
 Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 8BFA5132A6;
-	Mon, 27 Nov 2023 13:17:05 +0000 (UTC)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 13260132A6;
+	Mon, 27 Nov 2023 13:17:06 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id SJwYIdGWZGUhLQAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Mon, 27 Nov 2023 13:17:05 +0000
+	id UK+YA9KWZGUhLQAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Mon, 27 Nov 2023 13:17:06 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-staging@lists.linux.dev
-Subject: [PATCH v2 25/32] staging/sm750fb: Declare fb_ops as constant
-Date: Mon, 27 Nov 2023 14:15:54 +0100
-Message-ID: <20231127131655.4020-26-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 27/32] fbdev: Rename FB_SYS_FOPS token to FB_SYSMEM_FOPS
+Date: Mon, 27 Nov 2023 14:15:56 +0100
+Message-ID: <20231127131655.4020-28-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231127131655.4020-1-tzimmermann@suse.de>
 References: <20231127131655.4020-1-tzimmermann@suse.de>
@@ -61,148 +37,120 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Spamd-Bar: +++++++
+X-Spam-Score: 7.73
+X-Rspamd-Server: rspamd1
 Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spam-Score: 5.20
-X-Spamd-Result: default: False [5.20 / 50.00];
-	 ARC_NA(0.00)[];
+	dkim=none;
+	spf=softfail (smtp-out2.suse.de: 2a07:de40:b281:104:10:150:64:98 is neither permitted nor denied by domain of tzimmermann@suse.de) smtp.mailfrom=tzimmermann@suse.de;
+	dmarc=fail reason="No valid SPF, No valid DKIM" header.from=suse.de (policy=none)
+X-Rspamd-Queue-Id: 36DFA20403
+X-Spamd-Result: default: False [7.73 / 50.00];
 	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
+	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:98:from];
 	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
 	 R_MISSING_CHARSET(2.50)[];
-	 TAGGED_RCPT(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
 	 BROKEN_CONTENT_TYPE(1.50)[];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 R_SPF_SOFTFAIL(4.60)[~all:c];
+	 RCPT_COUNT_FIVE(0.00)[5];
 	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 RCPT_COUNT_SEVEN(0.00)[9];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,siliconmotion.com:email];
+	 MX_GOOD(-0.01)[];
+	 NEURAL_HAM_SHORT(-0.17)[-0.855];
 	 FREEMAIL_TO(0.00)[redhat.com,gmx.de];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
 	 FROM_EQ_ENVFROM(0.00)[];
+	 R_DKIM_NA(2.20)[];
 	 MIME_TRACE(0.00)[0:+];
-	 FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,suse.de,gmail.com,siliconmotion.com,linuxfoundation.org,lists.linux.dev];
+	 BAYES_HAM(-3.00)[100.00%];
+	 ARC_NA(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-0.89)[-0.891];
+	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
 	 RCVD_TLS_ALL(0.00)[];
-	 SUSPICIOUS_RECIPS(1.50)[]
+	 DMARC_POLICY_SOFTFAIL(0.10)[suse.de : No valid SPF, No valid DKIM,none]
 
-Split up lynxfb_ops and declare each as constant. The fb_ops
-instance used to be modified while initializing the driver. It is
-now constant and the driver picks the correct instance, depending
-on the settings for acceleration and cursor support.
+Rename the token to harmonize naming among various helpers. For
+example, I/O-memory helpers use FB_IOMEM_FOPS.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-staging@lists.linux.dev
-Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/staging/sm750fb/sm750.c | 59 +++++++++++++++++++++++++++------
- 1 file changed, 49 insertions(+), 10 deletions(-)
+ drivers/video/fbdev/Kconfig       | 4 ++--
+ drivers/video/fbdev/core/Kconfig  | 6 +++---
+ drivers/video/fbdev/core/Makefile | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 79bcd5bd49380..35098516f53c9 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -663,16 +663,53 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 	return ret;
- }
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 37c8188752baf..d5909a9206ffd 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1464,7 +1464,7 @@ config FB_VT8500
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+-	select FB_SYS_FOPS
++	select FB_SYSMEM_FOPS
+ 	select FB_MODE_HELPERS
+ 	select VIDEOMODE_HELPERS
+ 	help
+@@ -1477,7 +1477,7 @@ config FB_WM8505
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+-	select FB_SYS_FOPS
++	select FB_SYSMEM_FOPS
+ 	select FB_MODE_HELPERS
+ 	select VIDEOMODE_HELPERS
+ 	help
+diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+index 7a3ed13bed708..faab5d50cac3c 100644
+--- a/drivers/video/fbdev/core/Kconfig
++++ b/drivers/video/fbdev/core/Kconfig
+@@ -129,7 +129,7 @@ config FB_LITTLE_ENDIAN
  
--static struct fb_ops lynxfb_ops = {
-+static const struct fb_ops lynxfb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var =  lynxfb_ops_check_var,
- 	.fb_set_par = lynxfb_ops_set_par,
- 	.fb_setcolreg = lynxfb_ops_setcolreg,
- 	.fb_blank = lynxfb_ops_blank,
-+	.fb_pan_display = lynxfb_ops_pan_display,
- 	.fb_fillrect = cfb_fillrect,
- 	.fb_imageblit = cfb_imageblit,
- 	.fb_copyarea = cfb_copyarea,
--	/* cursor */
-+};
-+
-+static const struct fb_ops lynxfb_ops_with_cursor = {
-+	.owner = THIS_MODULE,
-+	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_set_par = lynxfb_ops_set_par,
-+	.fb_setcolreg = lynxfb_ops_setcolreg,
-+	.fb_blank = lynxfb_ops_blank,
-+	.fb_pan_display = lynxfb_ops_pan_display,
-+	.fb_fillrect = cfb_fillrect,
-+	.fb_copyarea = cfb_copyarea,
-+	.fb_imageblit = cfb_imageblit,
-+	.fb_cursor = lynxfb_ops_cursor,
-+};
-+
-+static const struct fb_ops lynxfb_ops_accel = {
-+	.owner = THIS_MODULE,
-+	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_set_par = lynxfb_ops_set_par,
-+	.fb_setcolreg = lynxfb_ops_setcolreg,
-+	.fb_blank = lynxfb_ops_blank,
-+	.fb_pan_display = lynxfb_ops_pan_display,
-+	.fb_fillrect = lynxfb_ops_fillrect,
-+	.fb_copyarea = lynxfb_ops_copyarea,
-+	.fb_imageblit = lynxfb_ops_imageblit,
-+};
-+
-+static const struct fb_ops lynxfb_ops_accel_with_cursor = {
-+	.owner = THIS_MODULE,
-+	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_set_par = lynxfb_ops_set_par,
-+	.fb_setcolreg = lynxfb_ops_setcolreg,
-+	.fb_blank = lynxfb_ops_blank,
-+	.fb_pan_display = lynxfb_ops_pan_display,
-+	.fb_fillrect = lynxfb_ops_fillrect,
-+	.fb_copyarea = lynxfb_ops_copyarea,
-+	.fb_imageblit = lynxfb_ops_imageblit,
- 	.fb_cursor = lynxfb_ops_cursor,
- };
+ endchoice
  
-@@ -714,7 +751,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	par->index = index;
- 	output->channel = &crtc->channel;
- 	sm750fb_set_drv(par);
--	lynxfb_ops.fb_pan_display = lynxfb_ops_pan_display;
+-config FB_SYS_FOPS
++config FB_SYSMEM_FOPS
+ 	tristate
+ 	depends on FB_CORE
  
- 	/*
- 	 * set current cursor variable and proc pointer,
-@@ -731,19 +767,22 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
+@@ -142,8 +142,8 @@ config FB_DMAMEM_HELPERS
+ 	depends on FB_CORE
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_FILLRECT
+-	select FB_SYS_FOPS
+ 	select FB_SYS_IMAGEBLIT
++	select FB_SYSMEM_FOPS
  
- 	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
--	if (!g_hwcursor) {
--		lynxfb_ops.fb_cursor = NULL;
-+	if (!g_hwcursor)
- 		sm750_hw_cursor_disable(&crtc->cursor);
--	}
+ config FB_IOMEM_FOPS
+ 	tristate
+@@ -168,8 +168,8 @@ config FB_SYSMEM_HELPERS
+ 	depends on FB_CORE
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_FILLRECT
+-	select FB_SYS_FOPS
+ 	select FB_SYS_IMAGEBLIT
++	select FB_SYSMEM_FOPS
  
- 	/* set info->fbops, must be set before fb_find_mode */
- 	if (!sm750_dev->accel_off) {
- 		/* use 2d acceleration */
--		lynxfb_ops.fb_fillrect = lynxfb_ops_fillrect;
--		lynxfb_ops.fb_copyarea = lynxfb_ops_copyarea;
--		lynxfb_ops.fb_imageblit = lynxfb_ops_imageblit;
-+		if (!g_hwcursor)
-+			info->fbops = &lynxfb_ops_accel;
-+		else
-+			info->fbops = &lynxfb_ops_accel_with_cursor;
-+	} else {
-+		if (!g_hwcursor)
-+			info->fbops = &lynxfb_ops;
-+		else
-+			info->fbops = &lynxfb_ops_with_cursor;
- 	}
--	info->fbops = &lynxfb_ops;
- 
- 	if (!g_fbmode[index]) {
- 		g_fbmode[index] = g_def_fbmode;
+ config FB_SYSMEM_HELPERS_DEFERRED
+ 	bool
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index c1d657601b2be..d159747590869 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -32,6 +32,6 @@ obj-$(CONFIG_FB_IOMEM_FOPS)    += fb_io_fops.o
+ obj-$(CONFIG_FB_SYS_FILLRECT)  += sysfillrect.o
+ obj-$(CONFIG_FB_SYS_COPYAREA)  += syscopyarea.o
+ obj-$(CONFIG_FB_SYS_IMAGEBLIT) += sysimgblt.o
+-obj-$(CONFIG_FB_SYS_FOPS)      += fb_sys_fops.o
++obj-$(CONFIG_FB_SYSMEM_FOPS)   += fb_sys_fops.o
+ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
 -- 
 2.43.0
 

@@ -1,52 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="F1CPMNYS";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="e8kuIAgG"
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 852A4198
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="XpFLMQCN";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="l4mGwQQs"
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 945B11AB
 	for <linux-fbdev@vger.kernel.org>; Mon, 27 Nov 2023 05:17:05 -0800 (PST)
 Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 1DFCD21DBF;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id ABDF221DC3;
 	Mon, 27 Nov 2023 13:17:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1701091023; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NGtlCCrQDHRvTgZHfjLzF69h05XzxLk7bdpiv/lvKTk=;
-	b=F1CPMNYS0SbDQeZSvf6fQpPTc0P/+hoTMBxiilAIU18s6J/l7qGE7v97E6kwN+uRKsebor
-	pvvrUofknUtAQVsd4/RN0z6Hr5Sa3AwrPvUO0kFKEi0B4/HRpaQPBaamKdsAnvyS2HmuKz
-	HD+IaR7fUI/o098L4yeRJKGdOeoZXEk=
+	bh=bd84MzDkjGhQ3Rdw5fsPOVQycLGEwWU/9FqBsAV1pjQ=;
+	b=XpFLMQCNXI4srbiSug+DUiaZ8P9UHUU8/JiJvTZDNsIL4gh1opRPFWrhIkgUSA90zClYF7
+	R3P6u/KdccDYp/3NCFssZkWdtys0K2rEEp5R4OjvV6ZOqaHnYIRvDFsqRfhf9slqg5yA9t
+	0/okPcE6yf9BEUhFgj18Z8Q1OlEYbrQ=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1701091023;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NGtlCCrQDHRvTgZHfjLzF69h05XzxLk7bdpiv/lvKTk=;
-	b=e8kuIAgG71IgYnjZ3VS+SvtH8KbnaQ7yHn/YCiL4nFqO3HH2fMsbiDF72qjUB0zRdrUry8
-	Ai51M8lMZXAFRmDA==
+	bh=bd84MzDkjGhQ3Rdw5fsPOVQycLGEwWU/9FqBsAV1pjQ=;
+	b=l4mGwQQsc9E3L2bZ5bYivr/XGaSZ4fQCtKmyfekhesUqNfhrIlpPyZAgIKZ2xntkhcX1UJ
+	6PXu77OupuIEUJAg==
 Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id EC91413B3A;
-	Mon, 27 Nov 2023 13:17:02 +0000 (UTC)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 860F1132A6;
+	Mon, 27 Nov 2023 13:17:03 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 0A6OOM6WZGUhLQAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Mon, 27 Nov 2023 13:17:02 +0000
+	id cB+SH8+WZGUhLQAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Mon, 27 Nov 2023 13:17:03 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 13/32] fbdev/sh_mobile_lcdcfb: Initialize fb_ops with fbdev macros
-Date: Mon, 27 Nov 2023 14:15:42 +0100
-Message-ID: <20231127131655.4020-14-tzimmermann@suse.de>
+Subject: [PATCH v2 15/32] fbdev/udlfb: Select correct helpers
+Date: Mon, 27 Nov 2023 14:15:44 +0100
+Message-ID: <20231127131655.4020-16-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231127131655.4020-1-tzimmermann@suse.de>
 References: <20231127131655.4020-1-tzimmermann@suse.de>
@@ -59,8 +59,8 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Authentication-Results: smtp-out1.suse.de;
 	none
-X-Spam-Score: 1.90
-X-Spamd-Result: default: False [1.90 / 50.00];
+X-Spam-Score: 4.28
+X-Spamd-Result: default: False [4.28 / 50.00];
 	 ARC_NA(0.00)[];
 	 RCVD_VIA_SMTP_AUTH(0.00)[];
 	 FROM_HAS_DN(0.00)[];
@@ -80,80 +80,34 @@ X-Spamd-Result: default: False [1.90 / 50.00];
 	 FROM_EQ_ENVFROM(0.00)[];
 	 MIME_TRACE(0.00)[0:+];
 	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%]
+	 BAYES_HAM(-0.62)[82.13%]
 
-Initialize the instance of struct fb_ops with fbdev initializer
-macros for framebuffers in DMA-able virtual address space. Set the
-read/write, draw and mmap callbacks to the correct implementation
-and avoid implicit defaults. Also select the necessary helpers in
-Kconfig.
-
-The driver uses a mixture of DMA helpers and deferred I/O. That
-probably needs fixing by a driver maintainer.
-
-Fbdev drivers sometimes rely on the callbacks being NULL for a
-default I/O-memory-based implementation to be invoked; hence
-requiring the I/O helpers to be built in any case. Setting all
-callbacks in all drivers explicitly will allow to make the I/O
-helpers optional. This benefits systems that do not use these
-functions.
+The driver uses deferred I/O. Select the correct helpers via
+FB_SYSMEM_HELPERS_DEFERRED in the Kconfig file.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/fbdev/Kconfig            |  7 ++-----
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 10 +++-------
- 2 files changed, 5 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/Kconfig | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 44bf622fc8d74..1eab89a07bbc5 100644
+index d110d89b21d46..de57bf59e0179 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -1634,12 +1634,9 @@ config FB_SH_MOBILE_LCDC
- 	depends on FB && HAVE_CLK && HAS_IOMEM
- 	depends on SUPERH || ARCH_RENESAS || COMPILE_TEST
+@@ -1696,11 +1696,7 @@ config FB_UDL
+ 	depends on FB && USB
  	depends on FB_DEVICE
+ 	select FB_MODE_HELPERS
 -	select FB_SYS_FILLRECT
 -	select FB_SYS_COPYAREA
 -	select FB_SYS_IMAGEBLIT
 -	select FB_SYS_FOPS
 -	select FB_DEFERRED_IO
- 	select FB_BACKLIGHT
-+	select FB_DEFERRED_IO
-+	select FB_DMAMEM_HELPERS
++	select FB_SYSMEM_HELPERS_DEFERRED
  	help
- 	  Frame buffer driver for the on-chip SH-Mobile LCD controller.
- 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 5c99fc8a409fd..d84628de51893 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1488,13 +1488,10 @@ sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 
- static const struct fb_ops sh_mobile_lcdc_overlay_ops = {
- 	.owner          = THIS_MODULE,
--	.fb_read        = fb_sys_read,
--	.fb_write       = fb_sys_write,
--	.fb_fillrect	= sys_fillrect,
--	.fb_copyarea	= sys_copyarea,
--	.fb_imageblit	= sys_imageblit,
-+	__FB_DEFAULT_DMAMEM_OPS_RDWR,
- 	.fb_blank	= sh_mobile_lcdc_overlay_blank,
- 	.fb_pan_display = sh_mobile_lcdc_overlay_pan,
-+	__FB_DEFAULT_DMAMEM_OPS_DRAW,
- 	.fb_ioctl       = sh_mobile_lcdc_overlay_ioctl,
- 	.fb_check_var	= sh_mobile_lcdc_overlay_check_var,
- 	.fb_set_par	= sh_mobile_lcdc_overlay_set_par,
-@@ -1966,8 +1963,7 @@ sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
- static const struct fb_ops sh_mobile_lcdc_ops = {
- 	.owner          = THIS_MODULE,
- 	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
--	.fb_read        = fb_sys_read,
--	.fb_write       = fb_sys_write,
-+	__FB_DEFAULT_DMAMEM_OPS_RDWR,
- 	.fb_fillrect	= sh_mobile_lcdc_fillrect,
- 	.fb_copyarea	= sh_mobile_lcdc_copyarea,
- 	.fb_imageblit	= sh_mobile_lcdc_imageblit,
+ 	  This is a kernel framebuffer driver for DisplayLink USB devices.
+ 	  Supports fbdev clients like xf86-video-fbdev, kdrive, fbi, and
 -- 
 2.43.0
 

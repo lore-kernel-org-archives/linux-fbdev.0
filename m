@@ -1,23 +1,43 @@
-Authentication-Results: smtp.subspace.kernel.org; dkim=none
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC0E483
-	for <linux-fbdev@vger.kernel.org>; Wed, 29 Nov 2023 07:52:25 -0800 (PST)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tOOBIdm3";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+2U6b+xf"
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EAF69A
+	for <linux-fbdev@vger.kernel.org>; Wed, 29 Nov 2023 07:52:26 -0800 (PST)
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 566861F8D7;
-	Wed, 29 Nov 2023 15:52:24 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 35733219B3;
+	Wed, 29 Nov 2023 15:52:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1701273145; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2x8SEA9Jv+TRl53Og4/kqMcrPpj7MMHhiT6acauaruY=;
+	b=tOOBIdm3uWvpyC+uLjLcosLjyZAp7MyWs1/aAAusidqKTHFzKsYJcuVTDUD/GBf3jgVVQ8
+	++/p+dMZh4uhDCWgDY6k6fhGI3S5qf1KCDxwVly+2dEw+CReoJH3r6av/A89uW+3bYwRwj
+	fd/D5BkABqmo3CR3X0rf54O3bT6PAS8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1701273145;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2x8SEA9Jv+TRl53Og4/kqMcrPpj7MMHhiT6acauaruY=;
+	b=+2U6b+xfReKkmMVpev0Vp/vfv2ZpDax8LQUpT2zo1+OTaqIxCXwg+CPQir0EtiikeE1AYR
+	ghiQGVQZqUfGZeDA==
 Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 1E5AA1376F;
-	Wed, 29 Nov 2023 15:52:24 +0000 (UTC)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 095C413B49;
+	Wed, 29 Nov 2023 15:52:25 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 64EaBjheZ2XzWAAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 29 Nov 2023 15:52:24 +0000
+	id kJ8aATleZ2XzWAAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Wed, 29 Nov 2023 15:52:25 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	deller@gmx.de,
@@ -25,10 +45,12 @@ To: javierm@redhat.com,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 0/4] fbdev: Remove global screen_info in efifb/vesafb
-Date: Wed, 29 Nov 2023 16:48:00 +0100
-Message-ID: <20231129155218.3475-1-tzimmermann@suse.de>
+Subject: [PATCH 4/4] fbdev/vesafb: Use screen_info pointer from device
+Date: Wed, 29 Nov 2023 16:48:04 +0100
+Message-ID: <20231129155218.3475-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20231129155218.3475-1-tzimmermann@suse.de>
+References: <20231129155218.3475-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -36,55 +58,70 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Bar: ++++++++++++
-Authentication-Results: smtp-out2.suse.de;
-	dkim=none;
-	dmarc=fail reason="No valid SPF, No valid DKIM" header.from=suse.de (policy=none);
-	spf=softfail (smtp-out2.suse.de: 2a07:de40:b281:104:10:150:64:98 is neither permitted nor denied by domain of tzimmermann@suse.de) smtp.mailfrom=tzimmermann@suse.de
-X-Rspamd-Server: rspamd2
-X-Spamd-Result: default: False [12.46 / 50.00];
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spam-Score: 3.78
+X-Spamd-Result: default: False [3.78 / 50.00];
 	 ARC_NA(0.00)[];
 	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 BAYES_SPAM(0.00)[25.26%];
 	 FROM_HAS_DN(0.00)[];
 	 TO_DN_SOME(0.00)[];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
 	 R_MISSING_CHARSET(2.50)[];
 	 MIME_GOOD(-0.10)[text/plain];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
 	 BROKEN_CONTENT_TYPE(1.50)[];
-	 R_SPF_SOFTFAIL(4.60)[~all:c];
 	 RCPT_COUNT_FIVE(0.00)[6];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
 	 RCVD_COUNT_THREE(0.00)[3];
-	 MX_GOOD(-0.01)[];
-	 NEURAL_SPAM_LONG(1.17)[0.335];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.12)[-0.596];
 	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
 	 FREEMAIL_TO(0.00)[redhat.com,gmx.de];
 	 FUZZY_BLOCKED(0.00)[rspamd.com];
 	 FROM_EQ_ENVFROM(0.00)[];
-	 R_DKIM_NA(2.20)[];
 	 MIME_TRACE(0.00)[0:+];
-	 RCVD_IN_DNSWL_HI(-0.50)[2a07:de40:b281:104:10:150:64:98:from];
 	 RCVD_TLS_ALL(0.00)[];
-	 DMARC_POLICY_SOFTFAIL(0.10)[suse.de : No valid SPF, No valid DKIM,none]
-X-Spam-Score: 12.46
-X-Rspamd-Queue-Id: 566861F8D7
+	 BAYES_HAM(-0.00)[26.23%]
 
-Replace the global instance of screen_info with the per-device instance
-that is set by the sysfb code. The use of the global screen_info should
-be limited and ideally be pushed into per-architecture code.
+Use the screen_info instance from the device instead of dereferencing
+the global screen_info state. Decouples the driver from per-architecture
+code. Duplicated the screen_info data, so that vesafb can modify it at
+will.
 
-Thomas Zimmermann (4):
-  fbdev/efifb: Replace references to global screen_info by local pointer
-  fbdev/efifb: Use screen_info pointer from device
-  fbdev/vesafb: Replace references to global screen_info by local
-    pointer
-  fbdev/vesafb: Use screen_info pointer from device
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/vesafb.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
- drivers/video/fbdev/efifb.c  | 120 +++++++++++++++++++----------------
- drivers/video/fbdev/vesafb.c |  73 ++++++++++++---------
- 2 files changed, 107 insertions(+), 86 deletions(-)
-
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index ea89accbec385..8912b16db75a1 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -243,7 +243,7 @@ static int vesafb_setup(char *options)
+ 
+ static int vesafb_probe(struct platform_device *dev)
+ {
+-	struct screen_info *si = &screen_info;
++	struct screen_info *si;
+ 	struct fb_info *info;
+ 	struct vesafb_par *par;
+ 	int i, err;
+@@ -252,6 +252,13 @@ static int vesafb_probe(struct platform_device *dev)
+ 	unsigned int size_total;
+ 	char *option = NULL;
+ 
++	si = dev_get_platdata(&dev->dev);
++	if (!si)
++		return -ENODEV;
++	si = devm_kmemdup(&dev->dev, si, sizeof(*si), GFP_KERNEL);
++	if (!si)
++		return -ENOMEM;
++
+ 	/* ignore error return of fb_get_options */
+ 	fb_get_options("vesafb", &option);
+ 	vesafb_setup(option);
 -- 
 2.43.0
 

@@ -1,36 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; dkim=none
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4251BD54
-	for <linux-fbdev@vger.kernel.org>; Wed, 29 Nov 2023 07:59:07 -0800 (PST)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id BE72F219CE;
-	Wed, 29 Nov 2023 15:59:05 +0000 (UTC)
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 5D76913B47;
-	Wed, 29 Nov 2023 15:52:24 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id UFeOFTheZ2XzWAAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 29 Nov 2023 15:52:24 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: javierm@redhat.com,
-	deller@gmx.de,
-	pjones@redhat.com
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 1/4] fbdev/efifb: Replace references to global screen_info by local pointer
-Date: Wed, 29 Nov 2023 16:48:01 +0100
-Message-ID: <20231129155218.3475-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20231129155218.3475-1-tzimmermann@suse.de>
-References: <20231129155218.3475-1-tzimmermann@suse.de>
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=asem.it header.i=@asem.it header.b="lUhdcPoX"
+Received: from EUR03-DBA-obe.outbound.protection.outlook.com (mail-dbaeur03on2045.outbound.protection.outlook.com [40.107.104.45])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BCDD2A8;
+	Wed, 29 Nov 2023 08:45:19 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=dnko3q5c596H65DwDrDfbOUMPRY70KX1LU6SvFTQ6PEEV0mlpOJ7AAtb1muGhKBt86ZhU83gbY8Yu9b4Xmy1sSHSWgWFDoxgN1Zi8FDphWgf2XFrxtOO/+IJo93qQZs6R2c9CsVJ2aqv4NOp7tjPHxg+hkdtueyubvRXzUd5z58fG8p0YTF4ogmes14xbEcCvtVj21cZMf3mTIlGljsHVVtzO74EByZZvqHDEMOkWWJBzpYW4oHE3L473G2HoUrMpo7MY8TmflX+0+wU2aG7J3CrTgAu/jyvKHWTf6CBg+T64rWN+VP7DsKeidt/QLlx7FZritN/ANJk+e6w02GLjQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=4YmLrSXgTAY2ITY2nCiIcc4kvwsLALJ+OU3ok6sin4o=;
+ b=UPjNVLHaLYvEwDR2VLqTXngk282B5PtCfUqnrzQbpu3q414yL4io8peWTb9KFec07saxJmmFDqVVhjFZyL72LWs7QB9Pg8pfL5tf1fGZk0NUst7EF5ctXAQahz4QJeTHbVb/MaIy0LQ7ecnKAnYhNGcIh0mveFDs9OUPG7aBqoQ38u9ft8g+NXky3P0aNz0IB4BNUyAXRwhiMlNHAxMoQNbRtxjBQdyp0L7sr6m8jlOvWhRqV5CsYOwMGIyxdAxc1Eh9gENOLlSxUMjzcues1f5gC4C9KGNAs0+wNsKpC7LZlPOPbG224OJuefvZdXVDAvH02ZbzwmXv7EBh0fCFLg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4YmLrSXgTAY2ITY2nCiIcc4kvwsLALJ+OU3ok6sin4o=;
+ b=lUhdcPoXBEo6LXY77SyYSRZOWExDQamltgauWECigC4USmMjOS9lqi+RJdVU1H1hIIprQddooEpE/6Xzz+8QLjGmkPhEfQA1QzomuuwUyQP0nhoIvqftlK+ZMHLoytnJqzzDCLyr7LadXIG8hXmzQwDEkc0vwJ0cALdvncuG0X0=
+Received: from DU7PR01CA0035.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:50e::16) by AS1PR01MB9081.eurprd01.prod.exchangelabs.com
+ (2603:10a6:20b:4db::14) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7025.28; Wed, 29 Nov
+ 2023 16:45:16 +0000
+Received: from DB5PEPF00014B90.eurprd02.prod.outlook.com
+ (2603:10a6:10:50e:cafe::85) by DU7PR01CA0035.outlook.office365.com
+ (2603:10a6:10:50e::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7025.29 via Frontend
+ Transport; Wed, 29 Nov 2023 16:45:16 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ DB5PEPF00014B90.mail.protection.outlook.com (10.167.8.228) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7046.17 via Frontend Transport; Wed, 29 Nov 2023 16:45:16 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+	 Wed, 29 Nov 2023 17:45:15 +0100
+From: Flavio Suligoi <f.suligoi@asem.it>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Dan Carpenter <dan.carpenter@linaro.org>
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v2] backlight: mp3309c: fix uninitialized local variable
+Date: Wed, 29 Nov 2023 17:45:14 +0100
+Message-Id: <20231129164514.2772719-1-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -38,283 +60,70 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Bar: +++++++++++++++++++++++
-X-Spam-Score: 23.36
-X-Rspamd-Server: rspamd1
-Authentication-Results: smtp-out1.suse.de;
-	dkim=none;
-	spf=softfail (smtp-out1.suse.de: 2a07:de40:b281:104:10:150:64:98 is neither permitted nor denied by domain of tzimmermann@suse.de) smtp.mailfrom=tzimmermann@suse.de;
-	dmarc=fail reason="No valid SPF, No valid DKIM" header.from=suse.de (policy=none)
-X-Rspamd-Queue-Id: BE72F219CE
-X-Spamd-Result: default: False [23.36 / 50.00];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 BAYES_SPAM(5.10)[100.00%];
-	 TO_DN_SOME(0.00)[];
-	 R_MISSING_CHARSET(2.50)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 R_SPF_SOFTFAIL(4.60)[~all:c];
-	 RCPT_COUNT_FIVE(0.00)[6];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 MX_GOOD(-0.01)[];
-	 FREEMAIL_TO(0.00)[redhat.com,gmx.de];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 R_DKIM_NA(2.20)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_IN_DNSWL_FAIL(0.00)[2a07:de40:b281:104:10:150:64:98:server fail];
-	 ARC_NA(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 NEURAL_SPAM_SHORT(3.00)[1.000];
-	 NEURAL_SPAM_LONG(3.47)[0.991];
-	 MID_CONTAINS_FROM(1.00)[];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 RCVD_TLS_ALL(0.00)[];
-	 GREYLIST(0.00)[pass,body];
-	 DMARC_POLICY_SOFTFAIL(0.10)[suse.de : No valid SPF, No valid DKIM,none]
-X-Spam: Yes
+X-OriginalArrivalTime: 29 Nov 2023 16:45:15.0521 (UTC) FILETIME=[6DC21F10:01DA22E3]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DB5PEPF00014B90:EE_|AS1PR01MB9081:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 6fd5eab3-ae8a-4bcf-ac52-08dbf0fa90cd
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	m+Ckb/XgIjd9N802NSWyIsyrFdJD6YYFgimzhA+7rWKn6e9cwH1j8bSyDe07Y8fS2HWXt8PyhOTOytD/6YL9O46STFTxzen0Q5wQp9COeV8p9nyqo0Pt4a+XkZPKIWI1Jau0jc8J0RqKxBNriR0JM59H7ZtFKM4moSsQrxQqmtaVCptXl0epc1QF1/bfPtNSAvOJeYOX82P7nWJTF1f4xZOI90hU9f50MjGVkiOAODD+uosLTXT9xiGO0Irbv6nLdD5q7tzlTt1UvY9Cx7uko3YGnpc5xurjmFqFhb2ASWxUIXlJTdyAdD0k1apl86y98Kv1yQDcGTZhp4nR4ZOcKYineiJgUVgAv/AJ1kzQ3uGp6jImFkPy/615nYctaGRsfj0SyW11FKJvU26gyv40btRLgrcNaKiYrBwMhxTSH9YMYMNbLQ+U5MFuHqFJ/XIRKOjLor79Z1kjkYT8KgFbt//msBT9nS4J9T/6BVvWymbeFhX5byaZ9g3pD4wqz9Qpy5uPoz7qY9dfiK7k7zyF0aM1x/IDYYsg49+YUK8YKEVOZM5IwQxGh6DttxhUr0QXNVqfKmckyBbUo75cHD5wzc0CDiY3Lhw4iSacdrlWdGOshOEdZxpQpCJbDJZDEZA0ekW+dHTHTcf0STbdK/6zb2wgthTY3OyPANDeVbXVQPvPlftElLxme2tWhnMYMts0npl8f8Y3TeKCdRzfF9ME/0+2VklyVUcX3bc329sGZmqoSvB66MPaIAZ2x5a+a6MIxCmYl7q6eHx3daf/j4aVfA==
+X-Forefront-Antispam-Report:
+	CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(136003)(376002)(346002)(396003)(39850400004)(230922051799003)(230273577357003)(230173577357003)(64100799003)(451199024)(82310400011)(1800799012)(186009)(36840700001)(46966006)(36860700001)(36756003)(356005)(82740400003)(81166007)(86362001)(966005)(478600001)(8676002)(4326008)(5660300002)(41300700001)(8936002)(70206006)(110136005)(316002)(70586007)(450100002)(2906002)(47076005)(40480700001)(107886003)(2616005)(336012)(1076003)(26005)(83380400001)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Nov 2023 16:45:16.2601
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6fd5eab3-ae8a-4bcf-ac52-08dbf0fa90cd
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource:
+	DB5PEPF00014B90.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS1PR01MB9081
 
-Get the global screen_info's address once and access the data via
-this pointer. Limits the use of global state.
+In the function "pm3309c_parse_dt_node", when the dimming analog control
+mode (by I2C messages) is enabled, the local variable "prop_levels" is
+tested without any initialization, as indicated by the following smatch
+warning:
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+drivers/video/backlight/mp3309c.c:279 pm3309c_parse_dt_node() error: uninitialized symbol 'prop_levels'.
+
+To avoid any problem in case of undefined behavior, we need to initialize
+it to "NULL".
+
+Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+Closes: https://lore.kernel.org/dri-devel/af0a1870-693b-442f-9b11-0503cfcd944a@moroto.mountain/
+Fixes: 2e914516a58c ("backlight: mp3309c: Add support for MPS MP3309C")
+Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
 ---
- drivers/video/fbdev/efifb.c | 113 ++++++++++++++++++------------------
- 1 file changed, 58 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index f9b4ddd592ce4..6cbb65bbe1110 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -147,10 +147,9 @@ static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
- }
- #endif
- 
--static void efifb_show_boot_graphics(struct fb_info *info)
-+static void efifb_show_boot_graphics(struct fb_info *info, struct screen_info *si)
+v2:
+ - remove redundant initialization of "prop_pwms" variable
+ - remove "thanks to Dan Carpenter for the report"
+ - add "Reported-by: Dan Carpenter <dan.carpenter@linaro.org>" tag
+ - add "Closes:" tag
+
+ drivers/video/backlight/mp3309c.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/mp3309c.c b/drivers/video/backlight/mp3309c.c
+index 3fe4469ef43f..34d71259fac1 100644
+--- a/drivers/video/backlight/mp3309c.c
++++ b/drivers/video/backlight/mp3309c.c
+@@ -203,7 +203,8 @@ static int pm3309c_parse_dt_node(struct mp3309c_chip *chip,
+ 				 struct mp3309c_platform_data *pdata)
  {
- 	u32 bmp_width, bmp_height, bmp_pitch, dst_x, y, src_y;
--	struct screen_info *si = &screen_info;
- 	struct bmp_file_header *file_header;
- 	struct bmp_dib_header *dib_header;
- 	void *bgrt_image = NULL;
-@@ -282,7 +281,7 @@ static const struct fb_ops efifb_ops = {
- 	.fb_setcolreg	= efifb_setcolreg,
- };
- 
--static int efifb_setup(char *options)
-+static int efifb_setup(struct screen_info *si, char *options)
- {
- 	char *this_opt;
- 
-@@ -290,16 +289,16 @@ static int efifb_setup(char *options)
- 		while ((this_opt = strsep(&options, ",")) != NULL) {
- 			if (!*this_opt) continue;
- 
--			efifb_setup_from_dmi(&screen_info, this_opt);
-+			efifb_setup_from_dmi(si, this_opt);
- 
- 			if (!strncmp(this_opt, "base:", 5))
--				screen_info.lfb_base = simple_strtoul(this_opt+5, NULL, 0);
-+				si->lfb_base = simple_strtoul(this_opt+5, NULL, 0);
- 			else if (!strncmp(this_opt, "stride:", 7))
--				screen_info.lfb_linelength = simple_strtoul(this_opt+7, NULL, 0) * 4;
-+				si->lfb_linelength = simple_strtoul(this_opt+7, NULL, 0) * 4;
- 			else if (!strncmp(this_opt, "height:", 7))
--				screen_info.lfb_height = simple_strtoul(this_opt+7, NULL, 0);
-+				si->lfb_height = simple_strtoul(this_opt+7, NULL, 0);
- 			else if (!strncmp(this_opt, "width:", 6))
--				screen_info.lfb_width = simple_strtoul(this_opt+6, NULL, 0);
-+				si->lfb_width = simple_strtoul(this_opt+6, NULL, 0);
- 			else if (!strcmp(this_opt, "nowc"))
- 				mem_flags &= ~EFI_MEMORY_WC;
- 			else if (!strcmp(this_opt, "nobgrt"))
-@@ -310,15 +309,15 @@ static int efifb_setup(char *options)
- 	return 0;
- }
- 
--static inline bool fb_base_is_valid(void)
-+static inline bool fb_base_is_valid(struct screen_info *si)
- {
--	if (screen_info.lfb_base)
-+	if (si->lfb_base)
- 		return true;
- 
--	if (!(screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE))
-+	if (!(si->capabilities & VIDEO_CAPABILITY_64BIT_BASE))
- 		return false;
- 
--	if (screen_info.ext_lfb_base)
-+	if (si->ext_lfb_base)
- 		return true;
- 
- 	return false;
-@@ -329,7 +328,10 @@ static ssize_t name##_show(struct device *dev,				\
- 			   struct device_attribute *attr,		\
- 			   char *buf)					\
- {									\
--	return sprintf(buf, fmt "\n", (screen_info.lfb_##name));	\
-+	struct screen_info *si = dev_get_platdata(dev);			\
-+	if (!si)							\
-+		return -ENODEV;						\
-+	return sprintf(buf, fmt "\n", (si->lfb_##name));		\
- }									\
- static DEVICE_ATTR_RO(name)
- 
-@@ -356,6 +358,7 @@ static u64 bar_offset;
- 
- static int efifb_probe(struct platform_device *dev)
- {
-+	struct screen_info *si = &screen_info;
- 	struct fb_info *info;
- 	struct efifb_par *par;
- 	int err, orientation;
-@@ -365,48 +368,48 @@ static int efifb_probe(struct platform_device *dev)
- 	char *option = NULL;
- 	efi_memory_desc_t md;
- 
--	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
-+	if (si->orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
- 		return -ENODEV;
- 
- 	if (fb_get_options("efifb", &option))
- 		return -ENODEV;
--	efifb_setup(option);
-+	efifb_setup(si, option);
- 
- 	/* We don't get linelength from UGA Draw Protocol, only from
- 	 * EFI Graphics Protocol.  So if it's not in DMI, and it's not
- 	 * passed in from the user, we really can't use the framebuffer.
- 	 */
--	if (!screen_info.lfb_linelength)
-+	if (!si->lfb_linelength)
- 		return -ENODEV;
- 
--	if (!screen_info.lfb_depth)
--		screen_info.lfb_depth = 32;
--	if (!screen_info.pages)
--		screen_info.pages = 1;
--	if (!fb_base_is_valid()) {
-+	if (!si->lfb_depth)
-+		si->lfb_depth = 32;
-+	if (!si->pages)
-+		si->pages = 1;
-+	if (!fb_base_is_valid(si)) {
- 		printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
- 		return -ENODEV;
- 	}
- 	printk(KERN_INFO "efifb: probing for efifb\n");
- 
- 	/* just assume they're all unset if any are */
--	if (!screen_info.blue_size) {
--		screen_info.blue_size = 8;
--		screen_info.blue_pos = 0;
--		screen_info.green_size = 8;
--		screen_info.green_pos = 8;
--		screen_info.red_size = 8;
--		screen_info.red_pos = 16;
--		screen_info.rsvd_size = 8;
--		screen_info.rsvd_pos = 24;
-+	if (!si->blue_size) {
-+		si->blue_size = 8;
-+		si->blue_pos = 0;
-+		si->green_size = 8;
-+		si->green_pos = 8;
-+		si->red_size = 8;
-+		si->red_pos = 16;
-+		si->rsvd_size = 8;
-+		si->rsvd_pos = 24;
- 	}
- 
--	efifb_fix.smem_start = screen_info.lfb_base;
-+	efifb_fix.smem_start = si->lfb_base;
- 
--	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE) {
-+	if (si->capabilities & VIDEO_CAPABILITY_64BIT_BASE) {
- 		u64 ext_lfb_base;
- 
--		ext_lfb_base = (u64)(unsigned long)screen_info.ext_lfb_base << 32;
-+		ext_lfb_base = (u64)(unsigned long)si->ext_lfb_base << 32;
- 		efifb_fix.smem_start |= ext_lfb_base;
- 	}
- 
-@@ -417,10 +420,10 @@ static int efifb_probe(struct platform_device *dev)
- 		efifb_fix.smem_start = bar_resource->start + bar_offset;
- 	}
- 
--	efifb_defined.bits_per_pixel = screen_info.lfb_depth;
--	efifb_defined.xres = screen_info.lfb_width;
--	efifb_defined.yres = screen_info.lfb_height;
--	efifb_fix.line_length = screen_info.lfb_linelength;
-+	efifb_defined.bits_per_pixel = si->lfb_depth;
-+	efifb_defined.xres = si->lfb_width;
-+	efifb_defined.yres = si->lfb_height;
-+	efifb_fix.line_length = si->lfb_linelength;
- 
- 	/*   size_vmode -- that is the amount of memory needed for the
- 	 *                 used video mode, i.e. the minimum amount of
-@@ -430,7 +433,7 @@ static int efifb_probe(struct platform_device *dev)
- 	/*   size_total -- all video memory we have. Used for
- 	 *                 entries, ressource allocation and bounds
- 	 *                 checking. */
--	size_total = screen_info.lfb_size;
-+	size_total = si->lfb_size;
- 	if (size_total < size_vmode)
- 		size_total = size_vmode;
- 
-@@ -512,7 +515,7 @@ static int efifb_probe(struct platform_device *dev)
- 	pr_info("efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
- 	       efifb_defined.xres, efifb_defined.yres,
- 	       efifb_defined.bits_per_pixel, efifb_fix.line_length,
--	       screen_info.pages);
-+	       si->pages);
- 
- 	efifb_defined.xres_virtual = efifb_defined.xres;
- 	efifb_defined.yres_virtual = efifb_fix.smem_len /
-@@ -526,26 +529,26 @@ static int efifb_probe(struct platform_device *dev)
- 	efifb_defined.left_margin  = (efifb_defined.xres / 8) & 0xf8;
- 	efifb_defined.hsync_len    = (efifb_defined.xres / 8) & 0xf8;
- 
--	efifb_defined.red.offset    = screen_info.red_pos;
--	efifb_defined.red.length    = screen_info.red_size;
--	efifb_defined.green.offset  = screen_info.green_pos;
--	efifb_defined.green.length  = screen_info.green_size;
--	efifb_defined.blue.offset   = screen_info.blue_pos;
--	efifb_defined.blue.length   = screen_info.blue_size;
--	efifb_defined.transp.offset = screen_info.rsvd_pos;
--	efifb_defined.transp.length = screen_info.rsvd_size;
-+	efifb_defined.red.offset    = si->red_pos;
-+	efifb_defined.red.length    = si->red_size;
-+	efifb_defined.green.offset  = si->green_pos;
-+	efifb_defined.green.length  = si->green_size;
-+	efifb_defined.blue.offset   = si->blue_pos;
-+	efifb_defined.blue.length   = si->blue_size;
-+	efifb_defined.transp.offset = si->rsvd_pos;
-+	efifb_defined.transp.length = si->rsvd_size;
- 
- 	pr_info("efifb: %s: "
- 	       "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
- 	       "Truecolor",
--	       screen_info.rsvd_size,
--	       screen_info.red_size,
--	       screen_info.green_size,
--	       screen_info.blue_size,
--	       screen_info.rsvd_pos,
--	       screen_info.red_pos,
--	       screen_info.green_pos,
--	       screen_info.blue_pos);
-+	       si->rsvd_size,
-+	       si->red_size,
-+	       si->green_size,
-+	       si->blue_size,
-+	       si->rsvd_pos,
-+	       si->red_pos,
-+	       si->green_pos,
-+	       si->blue_pos);
- 
- 	efifb_fix.ypanstep  = 0;
- 	efifb_fix.ywrapstep = 0;
+ 	struct device_node *node = chip->dev->of_node;
+-	struct property *prop_pwms, *prop_levels;
++	struct property *prop_pwms;
++	struct property *prop_levels = NULL;
+ 	int length = 0;
+ 	int ret, i;
+ 	unsigned int num_levels, tmp_value;
 -- 
-2.43.0
+2.34.1
 

@@ -1,116 +1,93 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vcx1QLG6"
-Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com [IPv6:2607:f8b0:4864:20::112d])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FF9D1B5
-	for <linux-fbdev@vger.kernel.org>; Tue,  5 Dec 2023 13:48:53 -0800 (PST)
-Received: by mail-yw1-x112d.google.com with SMTP id 00721157ae682-5d2d0661a8dso70970707b3.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 05 Dec 2023 13:48:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1701812932; x=1702417732; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5eP0uI2tmZM9ZtqjfsWxJwWzFVr6JH04FbBdTmyNv/w=;
-        b=vcx1QLG6WwxECp6bKqCg4qzU+3z0twyYAm/fKxldOfbA0WT56rifsYRjs4CMIYCITy
-         aCAuzONwK7DCLR79+Wq9XgzHQiJt5eyvZuKwUHgqqP2BVud0kuHKDyCUvYuAJ0zJmV7b
-         U47iSy0ilrmbYL+Ig3V7i06FYB4fsP0hA5kxYxGpOSHVmSo4Mxz9u0AdYe8mWtTIsVXJ
-         2e/UlpJMgTltzCcqk818OWNmMQPdEVbjojQQoSI8FmevbYke5EDsmrPD4AbgfVI8FEzG
-         6mzfV/A3hV5n40HIiA0Xf8gYZD8L9E1rdzo4m353KTeFLzqEp627WSWrPzsrT1mZPnvX
-         ns4g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701812932; x=1702417732;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5eP0uI2tmZM9ZtqjfsWxJwWzFVr6JH04FbBdTmyNv/w=;
-        b=YSdRE5GoVhI3Tutn1gHViP6hGAybT6hhrC+d6nCvyBVbMMAWKsuPNFHU90K+JdkDHU
-         dNC3aNWaYXZLDCvBW0unqYlzGIUUZ5ACCioRXQs4rLSWCN+TlTQftJqtcz+U+paKTM/f
-         +QKQLGJTYRzKJ8BMy+BmpPGR5LBhAl9eJwg6ZpZ8lpF86szP/b0I8ON1p1vy1NdriV/2
-         +GCOwYk8itdUQHCjpvRiTCI/YqTLiQYJ0K3kJmssUc2dJEzP85CfjrwNRKK+RnlXN4zZ
-         BNWfAhJkkfwv5GrYssGREKuBF5mEmkW66qzYSSu4a1ntQlPHNiDAm/xjR7vUoJVO4j3H
-         Y5Fw==
-X-Gm-Message-State: AOJu0YzGmYX3LaT4W6x4DkEdInzN+h1NPKaK4ryruDPyKTnlkqELRugD
-	6aZPwQ3JOBFl6HJ7ipTxQX/O6Lmb2Q+U0SVbGwNFxg==
-X-Google-Smtp-Source: AGHT+IEC7pNshX6Y57af6XTx4hp1z/Y9MEpMHk/hv4YF7sUJybFapw88Qbjz6GB2s4WrIdgZn+IiEoCY/A4u2lTVAiA=
-X-Received: by 2002:a25:aac2:0:b0:db7:dacf:59d1 with SMTP id
- t60-20020a25aac2000000b00db7dacf59d1mr4535677ybi.69.1701812932200; Tue, 05
- Dec 2023 13:48:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ymfUUOVO"
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14F94B5
+	for <linux-fbdev@vger.kernel.org>; Tue,  5 Dec 2023 14:56:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=MdnCEOu4uestWpLQY50JohpBreItAAs8W53VxcosDAU=; b=ymfUUOVOkplMqLDWizo3PRMhzT
+	R9qmoWAu0gaQAm+eDR80jbVU2HAW4AM0Z+gTuKm+EZ+IwEseBOgPwJXR3wupm6KwmosWjuK8GEKBK
+	fb/hEH68kxHJZseFJB3aDKXnVaJoXIJXnTe0rOBC5VfUD4mSs1URhm7y/XdykSvUDlGIuho7EhtSa
+	TbMcL64jMz0RN+h7GlJUNXH/assVxEM/HnTCpE/8CXCDt2qkVVgeYKMe2fnwySd0bEdnTIbZDxLsh
+	ai51ofOYvEytzc8BZoUC+bfN1fi+XTbtQ4w0iLZtMwVdrWrdvY1I0I4YtVggqaOSeBSwPc3DE6Dnc
+	ijYg64tg==;
+Received: from [50.53.46.231] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1rAeLG-008YxJ-38;
+	Tue, 05 Dec 2023 22:56:39 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: dri-devel@lists.freedesktop.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH] backlight: ili922x: fix W=1 kernel-doc warnings
+Date: Tue,  5 Dec 2023 14:56:38 -0800
+Message-ID: <20231205225638.32563-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1701768028.git.ysato@users.sourceforge.jp>
- <602e1ba4f02489fcbc47e8f9904f3c1db1c9f14a.1701768028.git.ysato@users.sourceforge.jp>
- <2ef81211-9525-4f96-a6b2-3fcfbed0c6e5@app.fastmail.com>
-In-Reply-To: <2ef81211-9525-4f96-a6b2-3fcfbed0c6e5@app.fastmail.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 5 Dec 2023 22:48:41 +0100
-Message-ID: <CACRpkdZUAMXJ4YM9+xW2Snzt0Dx5mxWjcwHZifsXPJH9ozL5bg@mail.gmail.com>
-Subject: Re: [DO NOT MERGE v5 11/37] pci: pci-sh7751: Add SH7751 PCI driver
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org, 
-	Damien Le Moal <dlemoal@kernel.org>, Rob Herring <robh+dt@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner <tglx@linutronix.de>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, 
-	Helge Deller <deller@gmx.de>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
-	Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, 
-	Randy Dunlap <rdunlap@infradead.org>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
-	David Rientjes <rientjes@google.com>, Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Stephen Rothwell <sfr@canb.auug.org.au>, guoren <guoren@kernel.org>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Azeem Shaikh <azeemshaikh38@gmail.com>, 
-	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Tom Rix <trix@redhat.com>, 
-	Herve Codina <herve.codina@bootlin.com>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Lukas Bulwahn <lukas.bulwahn@gmail.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Biju Das <biju.das.jz@bp.renesas.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Sam Ravnborg <sam@ravnborg.org>, Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
-	Sergey Shtylyov <s.shtylyov@omp.ru>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, Dec 5, 2023 at 2:26=E2=80=AFPM Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tue, Dec 5, 2023, at 10:45, Yoshinori Sato wrote:
+Fix kernel-doc warnings found when using "W=1".
 
-> > +     if (of_property_read_u32_array(pdev->dev.of_node,
-> > +                                    "renesas,memory", memory, 2) < 0) =
-{
-> > +             /*
-> > +              * If no memory range is specified,
-> > +              *  the entire main memory will be targeted for DMA.
-> > +              */
-> > +             memory[0] =3D memory_start;
-> > +             memory[1] =3D memory_end - memory_start;
-> > +     }
->
-> There is a generic "dma-ranges" proerty for describing
-> which memory is visible by a bus.
+ili922x.c:85: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
+ili922x.c:85: warning: missing initial short description on line:
+ * START_BYTE(id, rs, rw)
+ili922x.c:91: warning: contents before sections
+ili922x.c:118: warning: expecting prototype for CHECK_FREQ_REG(spi_device s, spi_transfer x)(). Prototype was for CHECK_FREQ_REG() instead
 
-It's really a headache to use, so I put a bit of documentation here:
-https://elinux.org/Device_Tree_Usage#PCI_DMA_Address_Translation
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/backlight/ili922x.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Yoshinoro, you can look at these bindings and drivers that use
-dma-ranges for help:
-Documentation/devicetree/bindings/pci/intel,ixp4xx-pci.yaml
-drivers/pci/controller/pci-ixp4xx.c
-Documentation/devicetree/bindings/pci/faraday,ftpci100.yaml
-drivers/pci/controller/pci-ftpci100.c
-
-Yours,
-Linus Walleij
+diff -- a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/ili922x.c
+--- a/drivers/video/backlight/ili922x.c
++++ b/drivers/video/backlight/ili922x.c
+@@ -82,13 +82,12 @@
+ #define START_RW_READ		1
+ 
+ /**
+- * START_BYTE(id, rs, rw)
+- *
+- * Set the start byte according to the required operation.
++ * START_BYTE() - Set the start byte according to the required operation.
+  * The start byte is defined as:
+  *   ----------------------------------
+  *  | 0 | 1 | 1 | 1 | 0 | ID | RS | RW |
+  *   ----------------------------------
++ *
+  * @id: display's id as set by the manufacturer
+  * @rs: operation type bit, one of:
+  *	  - START_RS_INDEX	set the index register
+@@ -101,14 +100,14 @@
+ 	(0x70 | (((id) & 0x01) << 2) | (((rs) & 0x01) << 1) | ((rw) & 0x01))
+ 
+ /**
+- * CHECK_FREQ_REG(spi_device s, spi_transfer x) - Check the frequency
++ * CHECK_FREQ_REG() - Check the frequency
+  *	for the SPI transfer. According to the datasheet, the controller
+  *	accept higher frequency for the GRAM transfer, but it requires
+  *	lower frequency when the registers are read/written.
+  *	The macro sets the frequency in the spi_transfer structure if
+  *	the frequency exceeds the maximum value.
+  * @s: pointer to an SPI device
+- * @x: pointer to the read/write buffer pair
++ * @x: pointer to the &spi_transfer read/write buffer pair
+  */
+ #define CHECK_FREQ_REG(s, x)	\
+ 	do {			\

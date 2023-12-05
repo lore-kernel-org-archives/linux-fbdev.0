@@ -1,33 +1,32 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ymfUUOVO"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SObVE2TC"
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14F94B5
-	for <linux-fbdev@vger.kernel.org>; Tue,  5 Dec 2023 14:56:42 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B9A71734
+	for <linux-fbdev@vger.kernel.org>; Tue,  5 Dec 2023 15:16:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
 	Content-ID:Content-Description:In-Reply-To:References;
-	bh=MdnCEOu4uestWpLQY50JohpBreItAAs8W53VxcosDAU=; b=ymfUUOVOkplMqLDWizo3PRMhzT
-	R9qmoWAu0gaQAm+eDR80jbVU2HAW4AM0Z+gTuKm+EZ+IwEseBOgPwJXR3wupm6KwmosWjuK8GEKBK
-	fb/hEH68kxHJZseFJB3aDKXnVaJoXIJXnTe0rOBC5VfUD4mSs1URhm7y/XdykSvUDlGIuho7EhtSa
-	TbMcL64jMz0RN+h7GlJUNXH/assVxEM/HnTCpE/8CXCDt2qkVVgeYKMe2fnwySd0bEdnTIbZDxLsh
-	ai51ofOYvEytzc8BZoUC+bfN1fi+XTbtQ4w0iLZtMwVdrWrdvY1I0I4YtVggqaOSeBSwPc3DE6Dnc
-	ijYg64tg==;
+	bh=SEYrcEs9MxnuTOU1kwL+n0OPPR/LYIWzA9eTewrMYPY=; b=SObVE2TCBYHgbbmFjoJeNCGm9G
+	BZ24lj5KLBeeuSJxFwhACG1jROd/LhngIXfyubzMNcBJfsuUF4yQ3vEBQ0zQGoEa4xLtox29en7iU
+	o1Rs9vobmt7Gd2IVeRKOOa5AL5bYea8wdjCh6ZTf1IaSpKqFbU3aYLCupWG+nbQ6du08dgV9C7/kl
+	Cr5Y2JklH1RclinuMHYATN3ui8Z7kZtGKnHvrRDT4Ti7a5uztnOFWYtZRNk/NDB1NBTlzYF92NQxY
+	PAcBLiNelsT56HDYWIHuqXw/zuVtr4eeCTg0Mgn2lT3wShEceYEHpyRGu2xY4I3ZZj/mtnXmc9fc1
+	xYNYaPgw==;
 Received: from [50.53.46.231] (helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1rAeLG-008YxJ-38;
-	Tue, 05 Dec 2023 22:56:39 +0000
+	id 1rAecD-008ay2-0J;
+	Tue, 05 Dec 2023 23:14:19 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: dri-devel@lists.freedesktop.org
 Cc: Randy Dunlap <rdunlap@infradead.org>,
-	Lee Jones <lee@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
+	Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
 	Helge Deller <deller@gmx.de>,
+	linux-nvidia@lists.surfsouth.com,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH] backlight: ili922x: fix W=1 kernel-doc warnings
-Date: Tue,  5 Dec 2023 14:56:38 -0800
-Message-ID: <20231205225638.32563-1-rdunlap@infradead.org>
+Subject: [PATCH] fbdev: hgafb: fix kernel-doc comments
+Date: Tue,  5 Dec 2023 15:14:08 -0800
+Message-ID: <20231205231408.1234-1-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -39,55 +38,77 @@ Content-Transfer-Encoding: 8bit
 
 Fix kernel-doc warnings found when using "W=1".
 
-ili922x.c:85: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
-ili922x.c:85: warning: missing initial short description on line:
- * START_BYTE(id, rs, rw)
-ili922x.c:91: warning: contents before sections
-ili922x.c:118: warning: expecting prototype for CHECK_FREQ_REG(spi_device s, spi_transfer x)(). Prototype was for CHECK_FREQ_REG() instead
+hgafb.c:370: warning: No description found for return value of 'hgafb_open'
+hgafb.c:384: warning: No description found for return value of 'hgafb_release'
+hgafb.c:406: warning: No description found for return value of 'hgafb_setcolreg'
+hgafb.c:425: warning: No description found for return value of 'hgafb_pan_display'
+hgafb.c:425: warning: expecting prototype for hga_pan_display(). Prototype was for hgafb_pan_display() instead
+hgafb.c:455: warning: No description found for return value of 'hgafb_blank'
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Lee Jones <lee@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
 Cc: Helge Deller <deller@gmx.de>
+Cc: linux-nvidia@lists.surfsouth.com
 Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
 ---
- drivers/video/backlight/ili922x.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/hgafb.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff -- a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/ili922x.c
---- a/drivers/video/backlight/ili922x.c
-+++ b/drivers/video/backlight/ili922x.c
-@@ -82,13 +82,12 @@
- #define START_RW_READ		1
- 
- /**
-- * START_BYTE(id, rs, rw)
-- *
-- * Set the start byte according to the required operation.
-+ * START_BYTE() - Set the start byte according to the required operation.
-  * The start byte is defined as:
-  *   ----------------------------------
-  *  | 0 | 1 | 1 | 1 | 0 | ID | RS | RW |
-  *   ----------------------------------
+diff -- a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+--- a/drivers/video/fbdev/hgafb.c
++++ b/drivers/video/fbdev/hgafb.c
+@@ -364,6 +364,8 @@ error:
+  *	hgafb_open - open the framebuffer device
+  *	@info: pointer to fb_info object containing info for current hga board
+  *	@init: open by console system or userland.
 + *
-  * @id: display's id as set by the manufacturer
-  * @rs: operation type bit, one of:
-  *	  - START_RS_INDEX	set the index register
-@@ -101,14 +100,14 @@
- 	(0x70 | (((id) & 0x01) << 2) | (((rs) & 0x01) << 1) | ((rw) & 0x01))
++ *	Returns: %0
+  */
+ 
+ static int hgafb_open(struct fb_info *info, int init)
+@@ -378,6 +380,8 @@ static int hgafb_open(struct fb_info *in
+  *	hgafb_release - open the framebuffer device
+  *	@info: pointer to fb_info object containing info for current hga board
+  *	@init: open by console system or userland.
++ *
++ *	Returns: %0
+  */
+ 
+ static int hgafb_release(struct fb_info *info, int init)
+@@ -399,6 +403,8 @@ static int hgafb_release(struct fb_info
+  *	This callback function is used to set the color registers of a HGA
+  *	board. Since we have only two fixed colors only @regno is checked.
+  *	A zero is returned on success and 1 for failure.
++ *
++ *	Returns: %0
+  */
+ 
+ static int hgafb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+@@ -410,14 +416,15 @@ static int hgafb_setcolreg(u_int regno,
+ }
  
  /**
-- * CHECK_FREQ_REG(spi_device s, spi_transfer x) - Check the frequency
-+ * CHECK_FREQ_REG() - Check the frequency
-  *	for the SPI transfer. According to the datasheet, the controller
-  *	accept higher frequency for the GRAM transfer, but it requires
-  *	lower frequency when the registers are read/written.
-  *	The macro sets the frequency in the spi_transfer structure if
-  *	the frequency exceeds the maximum value.
-  * @s: pointer to an SPI device
-- * @x: pointer to the read/write buffer pair
-+ * @x: pointer to the &spi_transfer read/write buffer pair
+- *	hga_pan_display - pan or wrap the display
++ *	hgafb_pan_display - pan or wrap the display
+  *	@var:contains new xoffset, yoffset and vmode values
+  *	@info:pointer to fb_info object containing info for current hga board
+  *
+  *	This function looks only at xoffset, yoffset and the %FB_VMODE_YWRAP
+  *	flag in @var. If input parameters are correct it calls hga_pan() to
+  *	program the hardware. @info->var is updated to the new values.
+- *	A zero is returned on success and %-EINVAL for failure.
++ *
++ *	Returns: %0 on success or %-EINVAL for failure.
   */
- #define CHECK_FREQ_REG(s, x)	\
- 	do {			\
+ 
+ static int hgafb_pan_display(struct fb_var_screeninfo *var,
+@@ -449,6 +456,8 @@ static int hgafb_pan_display(struct fb_v
+  *		@blank_mode == 2 means suspend vsync,
+  *		@blank_mode == 3 means suspend hsync,
+  *		@blank_mode == 4 means powerdown.
++ *
++ * Returns: %0
+  */
+ 
+ static int hgafb_blank(int blank_mode, struct fb_info *info)

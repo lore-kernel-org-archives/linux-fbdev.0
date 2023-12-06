@@ -1,42 +1,21 @@
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="P6aKd4VK";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="AwCtuVm5"
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1AC8D4B
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8042BD45
 	for <linux-fbdev@vger.kernel.org>; Wed,  6 Dec 2023 05:51:58 -0800 (PST)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 3C8D21FD11;
-	Wed,  6 Dec 2023 13:51:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1701870717; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=UPAqGWJPTkUEbNdycRnvjHfrmf791D8Z57JHNYLG2/w=;
-	b=P6aKd4VKfom77PiUC8i4RvI3P9irr2XvTLUBuvE+z2B4OnZBA8xYl2MJ0nXZG6sYmf481d
-	leKOZlbq7C+T3nqsZ8so2LUKNiqpqclYchLSNGBwczwDb23MBkCWRlzNn4b1cvZHRvVh94
-	pH3SXcSf3gRY6KJhEn0cREKDKVngKpM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1701870717;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=UPAqGWJPTkUEbNdycRnvjHfrmf791D8Z57JHNYLG2/w=;
-	b=AwCtuVm5OZwxibhRD+X3pTUl5zXlAmaTi5r2fklF2tia+h2cMBwBVQcu74BPiDZhdJ8EB7
-	XDyrG/DuN4BSw+Dg==
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 6D4D721EBA;
+	Wed,  6 Dec 2023 13:51:56 +0000 (UTC)
 Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 0581813B6E;
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 2653D13B6E;
 	Wed,  6 Dec 2023 13:51:56 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 0MWoOXx8cGWVBgAAn2gu4w
+	id kOsNCHx8cGWVBgAAn2gu4w
 	(envelope-from <tzimmermann@suse.de>); Wed, 06 Dec 2023 13:51:56 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
@@ -46,9 +25,9 @@ To: javierm@redhat.com,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 4/4] fbdev/vesafb: Use screen_info pointer from device
-Date: Wed,  6 Dec 2023 14:50:29 +0100
-Message-ID: <20231206135153.2599-5-tzimmermann@suse.de>
+Subject: [PATCH v3 1/4] fbdev/efifb: Replace references to global screen_info by local pointer
+Date: Wed,  6 Dec 2023 14:50:26 +0100
+Message-ID: <20231206135153.2599-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231206135153.2599-1-tzimmermann@suse.de>
 References: <20231206135153.2599-1-tzimmermann@suse.de>
@@ -59,80 +38,304 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out2.suse.de;
-	none
+X-Rspamd-Queue-Id: 6D4D721EBA
 X-Spam-Level: 
-X-Spam-Score: -1.72
-X-Spamd-Result: default: False [-1.72 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 REPLY(-4.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 RCPT_COUNT_SEVEN(0.00)[7];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
-	 FREEMAIL_TO(0.00)[redhat.com,gmx.de,linux.dev];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-2.42)[97.36%]
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	 REPLY(-4.00)[]
+X-Spam-Score: -4.00
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Rspamd-Server: rspamd1
 
-Use the screen_info instance from the device instead of dereferencing
-the global screen_info state. Decouples the driver from per-architecture
-code. Duplicated the screen_info data, so that vesafb can modify it at
-will.
+Get the global screen_info's address once and access the data via
+this pointer. Limits the use of global state.
 
-v2:
-	* comment on devm_kmemdup() usage (Javier)
+v3:
+	* use const screen_info in several places (Sui)
+	* fix build for deferred takeover (kernel test robot)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Tested-by: Sui Jingfeng <sui.jingfeng@linux.dev>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/fbdev/vesafb.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/efifb.c | 124 +++++++++++++++++++-----------------
+ 1 file changed, 64 insertions(+), 60 deletions(-)
 
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index ea89accbec38..8ab64ae4cad3 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -243,7 +243,7 @@ static int vesafb_setup(char *options)
- 
- static int vesafb_probe(struct platform_device *dev)
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index f9b4ddd592ce..6b3b5cca1d41 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -108,7 +108,7 @@ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
+  */
+ #if defined CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER && \
+     defined CONFIG_ACPI_BGRT
+-static void efifb_copy_bmp(u8 *src, u32 *dst, int width, struct screen_info *si)
++static void efifb_copy_bmp(u8 *src, u32 *dst, int width, const struct screen_info *si)
  {
--	struct screen_info *si = &screen_info;
-+	struct screen_info *si;
- 	struct fb_info *info;
- 	struct vesafb_par *par;
- 	int i, err;
-@@ -252,6 +252,18 @@ static int vesafb_probe(struct platform_device *dev)
- 	unsigned int size_total;
- 	char *option = NULL;
+ 	u8 r, g, b;
  
-+	/*
-+	 * If we fail probing the device, the kernel might try a different
-+	 * driver. We get a copy of the attached screen_info, so that we can
-+	 * modify its values without affecting later drivers.
-+	 */
-+	si = dev_get_platdata(&dev->dev);
-+	if (!si)
-+		return -ENODEV;
-+	si = devm_kmemdup(&dev->dev, si, sizeof(*si), GFP_KERNEL);
-+	if (!si)
-+		return -ENOMEM;
-+
- 	/* ignore error return of fb_get_options */
- 	fb_get_options("vesafb", &option);
- 	vesafb_setup(option);
+@@ -130,7 +130,7 @@ static void efifb_copy_bmp(u8 *src, u32 *dst, int width, struct screen_info *si)
+  * resolution still fits, it will be displayed very close to the right edge of
+  * the display looking quite bad. This function checks for this.
+  */
+-static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
++static bool efifb_bgrt_sanity_check(const struct screen_info *si, u32 bmp_width)
+ {
+ 	/*
+ 	 * All x86 firmwares horizontally center the image (the yoffset
+@@ -141,16 +141,15 @@ static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
+ 	return bgrt_tab.image_offset_x == expected_xoffset;
+ }
+ #else
+-static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
++static bool efifb_bgrt_sanity_check(const struct screen_info *si, u32 bmp_width)
+ {
+ 	return true;
+ }
+ #endif
+ 
+-static void efifb_show_boot_graphics(struct fb_info *info)
++static void efifb_show_boot_graphics(struct fb_info *info, const struct screen_info *si)
+ {
+ 	u32 bmp_width, bmp_height, bmp_pitch, dst_x, y, src_y;
+-	struct screen_info *si = &screen_info;
+ 	struct bmp_file_header *file_header;
+ 	struct bmp_dib_header *dib_header;
+ 	void *bgrt_image = NULL;
+@@ -247,7 +246,8 @@ static void efifb_show_boot_graphics(struct fb_info *info)
+ 	pr_warn("efifb: Ignoring BGRT: unexpected or invalid BMP data\n");
+ }
+ #else
+-static inline void efifb_show_boot_graphics(struct fb_info *info) {}
++static inline void efifb_show_boot_graphics(struct fb_info *info, const struct screen_info *si)
++{ }
+ #endif
+ 
+ /*
+@@ -282,7 +282,7 @@ static const struct fb_ops efifb_ops = {
+ 	.fb_setcolreg	= efifb_setcolreg,
+ };
+ 
+-static int efifb_setup(char *options)
++static int efifb_setup(struct screen_info *si, char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -290,16 +290,16 @@ static int efifb_setup(char *options)
+ 		while ((this_opt = strsep(&options, ",")) != NULL) {
+ 			if (!*this_opt) continue;
+ 
+-			efifb_setup_from_dmi(&screen_info, this_opt);
++			efifb_setup_from_dmi(si, this_opt);
+ 
+ 			if (!strncmp(this_opt, "base:", 5))
+-				screen_info.lfb_base = simple_strtoul(this_opt+5, NULL, 0);
++				si->lfb_base = simple_strtoul(this_opt+5, NULL, 0);
+ 			else if (!strncmp(this_opt, "stride:", 7))
+-				screen_info.lfb_linelength = simple_strtoul(this_opt+7, NULL, 0) * 4;
++				si->lfb_linelength = simple_strtoul(this_opt+7, NULL, 0) * 4;
+ 			else if (!strncmp(this_opt, "height:", 7))
+-				screen_info.lfb_height = simple_strtoul(this_opt+7, NULL, 0);
++				si->lfb_height = simple_strtoul(this_opt+7, NULL, 0);
+ 			else if (!strncmp(this_opt, "width:", 6))
+-				screen_info.lfb_width = simple_strtoul(this_opt+6, NULL, 0);
++				si->lfb_width = simple_strtoul(this_opt+6, NULL, 0);
+ 			else if (!strcmp(this_opt, "nowc"))
+ 				mem_flags &= ~EFI_MEMORY_WC;
+ 			else if (!strcmp(this_opt, "nobgrt"))
+@@ -310,15 +310,15 @@ static int efifb_setup(char *options)
+ 	return 0;
+ }
+ 
+-static inline bool fb_base_is_valid(void)
++static inline bool fb_base_is_valid(struct screen_info *si)
+ {
+-	if (screen_info.lfb_base)
++	if (si->lfb_base)
+ 		return true;
+ 
+-	if (!(screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE))
++	if (!(si->capabilities & VIDEO_CAPABILITY_64BIT_BASE))
+ 		return false;
+ 
+-	if (screen_info.ext_lfb_base)
++	if (si->ext_lfb_base)
+ 		return true;
+ 
+ 	return false;
+@@ -329,7 +329,10 @@ static ssize_t name##_show(struct device *dev,				\
+ 			   struct device_attribute *attr,		\
+ 			   char *buf)					\
+ {									\
+-	return sprintf(buf, fmt "\n", (screen_info.lfb_##name));	\
++	struct screen_info *si = dev_get_platdata(dev);			\
++	if (!si)							\
++		return -ENODEV;						\
++	return sprintf(buf, fmt "\n", (si->lfb_##name));		\
+ }									\
+ static DEVICE_ATTR_RO(name)
+ 
+@@ -356,6 +359,7 @@ static u64 bar_offset;
+ 
+ static int efifb_probe(struct platform_device *dev)
+ {
++	struct screen_info *si = &screen_info;
+ 	struct fb_info *info;
+ 	struct efifb_par *par;
+ 	int err, orientation;
+@@ -365,48 +369,48 @@ static int efifb_probe(struct platform_device *dev)
+ 	char *option = NULL;
+ 	efi_memory_desc_t md;
+ 
+-	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
++	if (si->orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
+ 		return -ENODEV;
+ 
+ 	if (fb_get_options("efifb", &option))
+ 		return -ENODEV;
+-	efifb_setup(option);
++	efifb_setup(si, option);
+ 
+ 	/* We don't get linelength from UGA Draw Protocol, only from
+ 	 * EFI Graphics Protocol.  So if it's not in DMI, and it's not
+ 	 * passed in from the user, we really can't use the framebuffer.
+ 	 */
+-	if (!screen_info.lfb_linelength)
++	if (!si->lfb_linelength)
+ 		return -ENODEV;
+ 
+-	if (!screen_info.lfb_depth)
+-		screen_info.lfb_depth = 32;
+-	if (!screen_info.pages)
+-		screen_info.pages = 1;
+-	if (!fb_base_is_valid()) {
++	if (!si->lfb_depth)
++		si->lfb_depth = 32;
++	if (!si->pages)
++		si->pages = 1;
++	if (!fb_base_is_valid(si)) {
+ 		printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
+ 		return -ENODEV;
+ 	}
+ 	printk(KERN_INFO "efifb: probing for efifb\n");
+ 
+ 	/* just assume they're all unset if any are */
+-	if (!screen_info.blue_size) {
+-		screen_info.blue_size = 8;
+-		screen_info.blue_pos = 0;
+-		screen_info.green_size = 8;
+-		screen_info.green_pos = 8;
+-		screen_info.red_size = 8;
+-		screen_info.red_pos = 16;
+-		screen_info.rsvd_size = 8;
+-		screen_info.rsvd_pos = 24;
++	if (!si->blue_size) {
++		si->blue_size = 8;
++		si->blue_pos = 0;
++		si->green_size = 8;
++		si->green_pos = 8;
++		si->red_size = 8;
++		si->red_pos = 16;
++		si->rsvd_size = 8;
++		si->rsvd_pos = 24;
+ 	}
+ 
+-	efifb_fix.smem_start = screen_info.lfb_base;
++	efifb_fix.smem_start = si->lfb_base;
+ 
+-	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE) {
++	if (si->capabilities & VIDEO_CAPABILITY_64BIT_BASE) {
+ 		u64 ext_lfb_base;
+ 
+-		ext_lfb_base = (u64)(unsigned long)screen_info.ext_lfb_base << 32;
++		ext_lfb_base = (u64)(unsigned long)si->ext_lfb_base << 32;
+ 		efifb_fix.smem_start |= ext_lfb_base;
+ 	}
+ 
+@@ -417,10 +421,10 @@ static int efifb_probe(struct platform_device *dev)
+ 		efifb_fix.smem_start = bar_resource->start + bar_offset;
+ 	}
+ 
+-	efifb_defined.bits_per_pixel = screen_info.lfb_depth;
+-	efifb_defined.xres = screen_info.lfb_width;
+-	efifb_defined.yres = screen_info.lfb_height;
+-	efifb_fix.line_length = screen_info.lfb_linelength;
++	efifb_defined.bits_per_pixel = si->lfb_depth;
++	efifb_defined.xres = si->lfb_width;
++	efifb_defined.yres = si->lfb_height;
++	efifb_fix.line_length = si->lfb_linelength;
+ 
+ 	/*   size_vmode -- that is the amount of memory needed for the
+ 	 *                 used video mode, i.e. the minimum amount of
+@@ -430,7 +434,7 @@ static int efifb_probe(struct platform_device *dev)
+ 	/*   size_total -- all video memory we have. Used for
+ 	 *                 entries, ressource allocation and bounds
+ 	 *                 checking. */
+-	size_total = screen_info.lfb_size;
++	size_total = si->lfb_size;
+ 	if (size_total < size_vmode)
+ 		size_total = size_vmode;
+ 
+@@ -505,14 +509,14 @@ static int efifb_probe(struct platform_device *dev)
+ 		goto err_release_fb;
+ 	}
+ 
+-	efifb_show_boot_graphics(info);
++	efifb_show_boot_graphics(info, si);
+ 
+ 	pr_info("efifb: framebuffer at 0x%lx, using %dk, total %dk\n",
+ 	       efifb_fix.smem_start, size_remap/1024, size_total/1024);
+ 	pr_info("efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
+ 	       efifb_defined.xres, efifb_defined.yres,
+ 	       efifb_defined.bits_per_pixel, efifb_fix.line_length,
+-	       screen_info.pages);
++	       si->pages);
+ 
+ 	efifb_defined.xres_virtual = efifb_defined.xres;
+ 	efifb_defined.yres_virtual = efifb_fix.smem_len /
+@@ -526,26 +530,26 @@ static int efifb_probe(struct platform_device *dev)
+ 	efifb_defined.left_margin  = (efifb_defined.xres / 8) & 0xf8;
+ 	efifb_defined.hsync_len    = (efifb_defined.xres / 8) & 0xf8;
+ 
+-	efifb_defined.red.offset    = screen_info.red_pos;
+-	efifb_defined.red.length    = screen_info.red_size;
+-	efifb_defined.green.offset  = screen_info.green_pos;
+-	efifb_defined.green.length  = screen_info.green_size;
+-	efifb_defined.blue.offset   = screen_info.blue_pos;
+-	efifb_defined.blue.length   = screen_info.blue_size;
+-	efifb_defined.transp.offset = screen_info.rsvd_pos;
+-	efifb_defined.transp.length = screen_info.rsvd_size;
++	efifb_defined.red.offset    = si->red_pos;
++	efifb_defined.red.length    = si->red_size;
++	efifb_defined.green.offset  = si->green_pos;
++	efifb_defined.green.length  = si->green_size;
++	efifb_defined.blue.offset   = si->blue_pos;
++	efifb_defined.blue.length   = si->blue_size;
++	efifb_defined.transp.offset = si->rsvd_pos;
++	efifb_defined.transp.length = si->rsvd_size;
+ 
+ 	pr_info("efifb: %s: "
+ 	       "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
+ 	       "Truecolor",
+-	       screen_info.rsvd_size,
+-	       screen_info.red_size,
+-	       screen_info.green_size,
+-	       screen_info.blue_size,
+-	       screen_info.rsvd_pos,
+-	       screen_info.red_pos,
+-	       screen_info.green_pos,
+-	       screen_info.blue_pos);
++	       si->rsvd_size,
++	       si->red_size,
++	       si->green_size,
++	       si->blue_size,
++	       si->rsvd_pos,
++	       si->red_pos,
++	       si->green_pos,
++	       si->blue_pos);
+ 
+ 	efifb_fix.ypanstep  = 0;
+ 	efifb_fix.ywrapstep = 0;
 -- 
 2.43.0
 

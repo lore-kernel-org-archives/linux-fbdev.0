@@ -1,61 +1,71 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AA7D34183
-	for <linux-fbdev@vger.kernel.org>; Thu,  7 Dec 2023 13:28:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n0qBB1+z"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FDACC433C7;
-	Thu,  7 Dec 2023 13:28:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1701955717;
-	bh=RjsTyYC7v5IBKKpKx0mXuVDmEieZFxuN9bGKkGb4jM4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=n0qBB1+zRYTXRTd+nu8JKgQzysDyojT1UNCv+AGdjADVO7f4owE8g+Z1bgNOjQqOr
-	 afyBN0nJ6aWuql1gqgxdWjOrqmlWUYNNDKbbgXa/ebY/7Z7XznAmClVs/+fHpOF7UN
-	 +//RTIiUyKGeaVZxPPi450UcRotQ0k1PL8L3GFKvT5d6DhWBucJs2x97eLa5qVovrl
-	 ZEXDoxKqv/LEpPx0umQ9Xf0wlLJ+BbrE/jq4LJEhaicI73tQIa5xVOVSEgyFHG3OcW
-	 jS19FJjcBBoyYvCzO5pR3LL7TM4SMneczHFDkmF9Btz55THQjQ46bIY73bhN4w+51p
-	 bp0Ts138eCq4A==
-From: Lee Jones <lee@kernel.org>
-To: dri-devel@lists.freedesktop.org, Randy Dunlap <rdunlap@infradead.org>
-Cc: Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- linux-fbdev@vger.kernel.org
-In-Reply-To: <20231206174525.14960-1-rdunlap@infradead.org>
-References: <20231206174525.14960-1-rdunlap@infradead.org>
-Subject: Re: (subset) [PATCH v2] backlight: ili922x: drop kernel-doc for
- local macros
-Message-Id: <170195571617.42042.8968185076237505378.b4-ty@kernel.org>
-Date: Thu, 07 Dec 2023 13:28:36 +0000
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dppiFzHN"
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBB0310CC
+	for <linux-fbdev@vger.kernel.org>; Thu,  7 Dec 2023 06:28:48 -0800 (PST)
+Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-332f90a375eso1009523f8f.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 07 Dec 2023 06:28:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1701959327; x=1702564127; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=siQf2yGcuKbINax/017dn/aIzi9vyOaDmow1c81WvIo=;
+        b=dppiFzHNRvBHRoMiYi5jk2GzYB6GsoLQTdKJ8dCLkQgVj5pm/StwLPvc/nnYv0d/EL
+         w/CqYxrhNHT45sm5pI0Dm/V897m0gXFbtA5BOW79lq6gbaOprwMMNr+ZpiUlyxBA1epf
+         enfAioD9O8sUIfX93D/6n/laxLPhhvImvznstwJ4f+1iUe4+AuKA4TSAbzLq45CH40mc
+         AFX/k46CP6opKA9vGgt9DiAfkW0B/rfu3o2wffoPa1k9s8cveQczvLfzTv/zQaM3xh9u
+         4b8Ls4AmS+Ge9WEVnBz+YD2SZ7u3BHCAuzXu9aSoqCrxTNavD5Ol20q4+KgUcbvWRbIt
+         G81g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1701959327; x=1702564127;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=siQf2yGcuKbINax/017dn/aIzi9vyOaDmow1c81WvIo=;
+        b=NCZc/32qn5uHCkiJF9p9p2fZFAFQAMsOMqBiiIgew1COuFWwHpVkOEf08/LqYdgWq5
+         lmH6y/P/JxsZlsKKF94RK4C6nbu+yXStPIWcamztxu93VJ7qzUZRZSF36csW/XcPw8dq
+         BW0glABr2Nsr2tDWyq/bvfiRgmkQnfQehBGiKkiUKrxHuhcuXUO9zPJDzYy1pz/oQDVY
+         X2EgG1LSG8Xc+ae4su6kcH3+Seyy4g7A5QBS1jnMqNMGM2dJCLqnO20IdKGC8tOFcQ3X
+         90fmciKy45o2a5fVe45jFj8UCDzCjgBd63hBSvfn8iiAkZ/fPRT1HgMEfG/Eu3bnx4Nm
+         hPiw==
+X-Gm-Message-State: AOJu0Yx3UHeo7SUTQKSm1wMrh3Sn4L2Hc49g9fGkMB4zdhkHDA75LuIc
+	POi8ruMam3REifZtecFvl+DbQw==
+X-Google-Smtp-Source: AGHT+IG3fjLcVnbgN/JM62HKhQ/CpsfIghOkkqs4Bf6SrVZBPi1Z/DUH73yzVRZSk42YeYyrPH8xFg==
+X-Received: by 2002:a05:600c:a43:b0:40b:5e59:c58c with SMTP id c3-20020a05600c0a4300b0040b5e59c58cmr1686676wmq.182.1701959327359;
+        Thu, 07 Dec 2023 06:28:47 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id b16-20020a05600c4e1000b0040c310abc4bsm216659wmq.43.2023.12.07.06.28.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 07 Dec 2023 06:28:46 -0800 (PST)
+Date: Thu, 7 Dec 2023 14:28:44 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Su Hui <suhui@nfschina.com>
+Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de, nathan@kernel.org,
+	ndesaulniers@google.com, trix@redhat.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
+	kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] backlight: ili922x: add an error code check in
+ ili922x_write
+Message-ID: <20231207142844.GA151182@aspen.lan>
+References: <20231130051155.1235972-1-suhui@nfschina.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231130051155.1235972-1-suhui@nfschina.com>
 
-On Wed, 06 Dec 2023 09:45:25 -0800, Randy Dunlap wrote:
-> Don't use kernel-doc notation for the local macros START_BYTE() and
-> CHECK_FREQ_REG(). This prevents these kernel-doc warnings:
-> 
-> ili922x.c:85: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
->  * START_BYTE(id, rs, rw)
-> ili922x.c:85: warning: missing initial short description on line:
->  * START_BYTE(id, rs, rw)
-> ili922x.c:118: warning: expecting prototype for CHECK_FREQ_REG(spi_device s, spi_transfer x)(). Prototype was for CHECK_FREQ_REG() instead
-> 
-> [...]
+On Thu, Nov 30, 2023 at 01:11:56PM +0800, Su Hui wrote:
+> Clang static analyzer complains that value stored to 'ret' is never read.
+> Return the error code when spi_sync() failed.
+>
+> Signed-off-by: Su Hui <suhui@nfschina.com>
 
-Applied, thanks!
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-[1/1] backlight: ili922x: drop kernel-doc for local macros
-      commit: 64d9799d6dd04601227f602ae961e3f3d2f1f02b
 
---
-Lee Jones [李琼斯]
-
+Daniel.

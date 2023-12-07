@@ -1,79 +1,51 @@
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="T7LsDMQ0"
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB8C01991
-	for <linux-fbdev@vger.kernel.org>; Thu,  7 Dec 2023 01:10:34 -0800 (PST)
-Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-3334a701cbbso711606f8f.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 07 Dec 2023 01:10:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1701940233; x=1702545033; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=kVL972CQGLcSJW3AciqVNZzuMMM19Q2E2yNZVzQKrFU=;
-        b=T7LsDMQ0s5JLoluO6QFHAxDThv+MoQeu9p3hHoYMrkSzroRouB0dkgXVXCF8inqfQr
-         iUSq5tR4MvjfQbjByeHabTbT0FYtrCC1+uwMlGBo02a10h8B5HpYvYDimPHclgidaI2k
-         p+RzOj0TdwcURbTHtP4NtQ8Adz8zLD1A++IElf6f7lrGrYEKho+gpzKWE848ReGy3pu7
-         9iQNT8imBGN2DxZNmUaG3nnAUThD4qmtSkYduXQJVkSwdr5QMPIACTGWFeUQ9Vc1AFrv
-         e9+O4AQC3pmYca5Av0kQFGoKdRz27UQ11wylBWHAqFmHaYMWmfXXEWb3LIZ9hGrqnYoj
-         WRSg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701940233; x=1702545033;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kVL972CQGLcSJW3AciqVNZzuMMM19Q2E2yNZVzQKrFU=;
-        b=NfVgeF5lDUUmbvuTZgR+KZ+P4bigIrVZUbrycCOxoLMuZKCj5uDul1mC1mwMF+kRRI
-         t2zuSld+xF9BiGjXCaNZMnk6llkBM78YOFhY4KnDQ5oxDSyGDT7yHcoxS0huUXV23XNO
-         tjnLw0P93a78cAqHvv2Xf0+KVt3CBqmavarvIzf5RUEjRTzWI/vYnlCBhrD5KL/TBgj8
-         l028q50E+y9jr4EPVnwbaI7jQS+e34y09cjyGX3HKFJZjXPMM7kdbxZlCNtMh2iX7Ey6
-         r2euv9E+4cD7QKutVfnjn1wR2ENOXctPATaF3h7JSENaYZRYxNXW/oYed53lcbJA5VHz
-         9GEA==
-X-Gm-Message-State: AOJu0YxUeoo2GlZLGZDqK8SHUIwiE+vaBHn4L6qM+a0MnGnRWBlsasmW
-	McBwoHGqVBKoUZwct6xI2dINGQ==
-X-Google-Smtp-Source: AGHT+IH+IApGH4/piJWGesyPfGeXa/LPQoTSHnDHwNL1K1eexST0rVyhW3P9trJFOjmQKc/vrkG3AA==
-X-Received: by 2002:adf:fe8e:0:b0:333:41e2:6221 with SMTP id l14-20020adffe8e000000b0033341e26221mr911521wrr.102.1701940233141;
-        Thu, 07 Dec 2023 01:10:33 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id k18-20020a5d5252000000b0033330846e76sm887112wrc.86.2023.12.07.01.10.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 Dec 2023 01:10:32 -0800 (PST)
-Date: Thu, 7 Dec 2023 09:10:34 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: dri-devel@lists.freedesktop.org, Lee Jones <lee@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2] backlight: ili922x: drop kernel-doc for local macros
-Message-ID: <20231207091034.GA135517@aspen.lan>
-References: <20231206174525.14960-1-rdunlap@infradead.org>
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7B91122;
+	Thu,  7 Dec 2023 04:44:29 -0800 (PST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4SmDVL0kpKz4xGR;
+	Thu,  7 Dec 2023 23:44:10 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Masahiro Yamada <masahiroy@kernel.org>, linux-kbuild@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Guo Ren <guoren@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ard Biesheuvel <ardb@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Dinh Nguyen <dinguyen@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Geoff Levand <geoff@infradead.org>, Palmer Dabbelt <palmer@dabbelt.com>, Heiko Carstens <hca@linux.ibm.com>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "David S. Miller" <davem@davemloft.net>, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molna
+ r <mingo@redhat.com>, x86@kernel.org, Helge Deller <deller@gmx.de>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Timur Tabi <timur@kernel.org>, Kent Overstreet <kent.overstreet@linux.dev>, David Woodhouse <dwmw2@infradead.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, Kees Cook <keescook@chromium.org>, Vincenzo Frascino <vincenzo.frascino@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, Nicolas Schier <nicolas@fjasle.eu>, Al Viro <viro@zeniv.linux.org.uk>, Uwe Kleine-König <u.kleine-koenig@pengutronix.de>, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-trace-kernel@vger.kernel.org, linux-csky@vger.kernel.org, loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kerne
+ l.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, netdev@vger.kernel.org, linux-parisc@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-bcachefs@vger.kernel.org, linux-mtd@lists.infradead.org
+In-Reply-To: <20231108125843.3806765-1-arnd@kernel.org>
+References: <20231108125843.3806765-1-arnd@kernel.org>
+Subject: Re: (subset) [PATCH 00/22] -Wmissing-prototype warning fixes
+Message-Id: <170195271155.2310221.7822619081586355844.b4-ty@ellerman.id.au>
+Date: Thu, 07 Dec 2023 23:38:31 +1100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231206174525.14960-1-rdunlap@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 06, 2023 at 09:45:25AM -0800, Randy Dunlap wrote:
-> Don't use kernel-doc notation for the local macros START_BYTE() and
-> CHECK_FREQ_REG(). This prevents these kernel-doc warnings:
->
-> ili922x.c:85: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
->  * START_BYTE(id, rs, rw)
-> ili922x.c:85: warning: missing initial short description on line:
->  * START_BYTE(id, rs, rw)
-> ili922x.c:118: warning: expecting prototype for CHECK_FREQ_REG(spi_device s, spi_transfer x)(). Prototype was for CHECK_FREQ_REG() instead
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
+On Wed, 08 Nov 2023 13:58:21 +0100, Arnd Bergmann wrote:
+> I slightly dropped the ball on this since last sending the series in
+> August, but a number of warning fixes have made it into the kernel in
+> the meantime, both from my earlier submission and from architecture
+> maintainers.
+> 
+> I have none patches that remain from the previous submission, with
+> two of them reworked according to comments. The additional patches
+> are from more testing across architectures and configurations that
+> I had previously missed.
+> 
+> [...]
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Applied to powerpc/next.
 
+[17/22] powerpc: ps3: move udbg_shutdown_ps3gelic prototype
+        https://git.kernel.org/powerpc/c/04c40eed3f7ac48ddaf20104489510e743a53c47
+[18/22] powerpc: pasemi: mark pas_shutdown() static
+        https://git.kernel.org/powerpc/c/0c9a768de64d24e38e27652b8c273725ccc31916
+[19/22] powerpc: powermac: mark smp_psurge_{give,take}_timebase static
+        https://git.kernel.org/powerpc/c/afb36ac386783d2ef2ed839293c03fd06f470be0
 
-Daniel.
+cheers

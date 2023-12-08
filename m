@@ -1,141 +1,357 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=tronnes.org header.i=@tronnes.org header.b="RhdDRBxH"
-Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3006::1])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7706710DE
-	for <linux-fbdev@vger.kernel.org>; Fri,  8 Dec 2023 12:18:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
-	; s=ds202212; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=Tt/vgZair8oQaWQQmIRBw9lUyYFxaqNxtAp9NQOC8Uw=; b=RhdDRBxHC5EwMPr+QFRf6I1v/e
-	PJIb4hQmsHpp11qPBM7zdAX/K34jOi12z+EhekGMi0fo7gqeYFT5yiPPGYli7RgcxAYpeqnnSolU5
-	C1co4Cnm3Z0A6zhiItYFUehSsV1KtmFEqVIEERhmjUqyGGylh29O/P5BPu1IyGIq5BtrNcXg8Iyt8
-	NfFPJPIx3/dTzk8IdnWTbyRX2YGeCcnurvz+bvPxMPhr230QIejxwVMdL4ysKqczujO2TRQx/u9V1
-	3WcMdkvugJ2FplXjVFPEu9+lazb+szo6KP0uxran8VuKkzbS337npmtZnwAAvLnQufL/3zn+sU5uP
-	w28ryrvg==;
-Received: from [2a01:799:950:4300:268a:bbd3:738c:c4c6] (port=42932)
-	by smtp.domeneshop.no with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.95)
-	(envelope-from <noralf@tronnes.org>)
-	id 1rBhIn-002A7D-7v;
-	Fri, 08 Dec 2023 21:18:25 +0100
-Message-ID: <7c848801-cf7f-4293-8a29-084dd20efb8e@tronnes.org>
-Date: Fri, 8 Dec 2023 21:18:20 +0100
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="gza9M9EO"
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6FF6D1;
+	Fri,  8 Dec 2023 14:47:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=iTwSrBS/psQWYmq0oJLKHMv2C9G6WtXP3GgAfwSGatU=; b=gza9M9EOhH7pw0bTgrrtTAVF96
+	HovQnSj+0EpRHJ88ltnURTrwdHXobInuzWt9mgX4F8qiikHRaPFLbrvse+JwL9aVzxj+bR5EJ7nHJ
+	d9eApY4/zCcwldLY3K06rJN6yPok8gFWR/ZjzgjSQMrwfYc68mIBvoMVXUdJizmuwrphQNTf9cIyc
+	yR8qVQ43SI5cQK30TUgnodfGJbKh3tx3yxhbcD7VDMZdCVp7x+YWhRG7+0Fq8sYDdfYjSRK/ODAxp
+	b6zoYSDvgeb2fCfIGFkwmFGDehdsQejg6bXOxICqlh3jsNN1AkEB1Em7XgmpXeBFjDn9BhZGS4Z2M
+	r+14LTmQ==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1rBjcf-006j5V-Ox; Fri, 08 Dec 2023 22:47:05 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fbdev@vger.kernel.org,
+	linux-mtd@lists.infradead.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Richard Weinberger <richard@nod.at>,
+	Lee Jones <lee@kernel.org>,
+	Andy Lowe <alowe@mvista.com>,
+	Thomas Hellstrom <thellstrom@vmware.com>,
+	Alan Hourihane <alanh@fairlite.co.uk>
+Subject: [PATCH 2/2] mtd: Remove support for Carillo Ranch driver
+Date: Fri,  8 Dec 2023 22:47:03 +0000
+Message-Id: <20231208224703.1603264-2-willy@infradead.org>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20231208224703.1603264-1-willy@infradead.org>
+References: <20231208224703.1603264-1-willy@infradead.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: State of affairs with Ilitek 9341 support
-Content-Language: en-US
-To: Andy Shevchenko <andriy.shevchenko@intel.com>,
- Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- Priit Laes <plaes@plaes.org>, Dillon Min <dillon.minfei@gmail.com>,
- David Lechner <dlechner@baylibre.com>, Maxime Ripard <mripard@kernel.org>,
- noralf@tronnes.org
-References: <ZXM9pG-53V4S8E2H@smile.fi.intel.com>
-From: =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>
-In-Reply-To: <ZXM9pG-53V4S8E2H@smile.fi.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+As far as anybody can tell, this product never shipped.  If it did,
+it shipped in 2007 and nobody has access to one any more.  Remove the
+mtd NOR driver.
 
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ drivers/mtd/maps/Kconfig        |   7 -
+ drivers/mtd/maps/Makefile       |   1 -
+ drivers/mtd/maps/intel_vr_nor.c | 265 --------------------------------
+ 3 files changed, 273 deletions(-)
+ delete mode 100644 drivers/mtd/maps/intel_vr_nor.c
 
-On 12/8/23 17:00, Andy Shevchenko wrote:
-> Included authors and latest (non-white-space) contributors to the drivers
-> in question along with relevant mailing list and respective (active in the
-> area) maintainers.
-> 
-> I already had risen the question in times when 4th (sic!) driver for the same
-> hardware was about to be pulled into upstream that we have to somehow reduce
-> the code base and unify device properties.
-> 
-> So, the main question here "What is the plan and where are we now?"
-> 
-> I admit that fbtft case is special as it supports, in particular, platform
-> device (parallel interface) and also well established in the embedded world.
-> What about the rest?
-> 
-> N.B. Besides the fact that panel drivers are too OF-centric, which is bad
-> practice for the new kernel code in general and has to be stopped. I.o.w.
-> seeing of_property_*() or alike in the driver after ca. 2020 should be
-> immediate NAK unless it's very well justified why it may not be used on
-> non-OF systems.
-> 
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index e098ae937ce8..8a8b19874e23 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -341,13 +341,6 @@ config MTD_UCLINUX
+ 	help
+ 	  Map driver to support image based filesystems for uClinux.
+ 
+-config MTD_INTEL_VR_NOR
+-	tristate "NOR flash on Intel Vermilion Range Expansion Bus CS0"
+-	depends on PCI
+-	help
+-	  Map driver for a NOR flash bank located on the Expansion Bus of the
+-	  Intel Vermilion Range chipset.
+-
+ config MTD_PLATRAM
+ 	tristate "Map driver for platform device RAM (mtd-ram)"
+ 	select MTD_RAM
+diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+index 094cfb244086..a9083c888e3b 100644
+--- a/drivers/mtd/maps/Makefile
++++ b/drivers/mtd/maps/Makefile
+@@ -40,6 +40,5 @@ obj-$(CONFIG_MTD_UCLINUX)	+= uclinux.o
+ obj-$(CONFIG_MTD_NETtel)	+= nettel.o
+ obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
+ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+-obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
+ obj-$(CONFIG_MTD_VMU)		+= vmu-flash.o
+ obj-$(CONFIG_MTD_LANTIQ)	+= lantiq-flash.o
+diff --git a/drivers/mtd/maps/intel_vr_nor.c b/drivers/mtd/maps/intel_vr_nor.c
+deleted file mode 100644
+index d67b845b0e89..000000000000
+--- a/drivers/mtd/maps/intel_vr_nor.c
++++ /dev/null
+@@ -1,265 +0,0 @@
+-/*
+- * drivers/mtd/maps/intel_vr_nor.c
+- *
+- * An MTD map driver for a NOR flash bank on the Expansion Bus of the Intel
+- * Vermilion Range chipset.
+- *
+- * The Vermilion Range Expansion Bus supports four chip selects, each of which
+- * has 64MiB of address space.  The 2nd BAR of the Expansion Bus PCI Device
+- * is a 256MiB memory region containing the address spaces for all four of the
+- * chip selects, with start addresses hardcoded on 64MiB boundaries.
+- *
+- * This map driver only supports NOR flash on chip select 0.  The buswidth
+- * (either 8 bits or 16 bits) is determined by reading the Expansion Bus Timing
+- * and Control Register for Chip Select 0 (EXP_TIMING_CS0).  This driver does
+- * not modify the value in the EXP_TIMING_CS0 register except to enable writing
+- * and disable boot acceleration.  The timing parameters in the register are
+- * assumed to have been properly initialized by the BIOS.  The reset default
+- * timing parameters are maximally conservative (slow), so access to the flash
+- * will be slower than it should be if the BIOS has not initialized the timing
+- * parameters.
+- *
+- * Author: Andy Lowe <alowe@mvista.com>
+- *
+- * 2006 (c) MontaVista Software, Inc. This file is licensed under
+- * the terms of the GNU General Public License version 2. This program
+- * is licensed "as is" without any warranty of any kind, whether express
+- * or implied.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/slab.h>
+-#include <linux/pci.h>
+-#include <linux/mtd/mtd.h>
+-#include <linux/mtd/map.h>
+-#include <linux/mtd/partitions.h>
+-#include <linux/mtd/cfi.h>
+-#include <linux/mtd/flashchip.h>
+-
+-#define DRV_NAME "vr_nor"
+-
+-struct vr_nor_mtd {
+-	void __iomem *csr_base;
+-	struct map_info map;
+-	struct mtd_info *info;
+-	struct pci_dev *dev;
+-};
+-
+-/* Expansion Bus Configuration and Status Registers are in BAR 0 */
+-#define EXP_CSR_MBAR 0
+-/* Expansion Bus Memory Window is BAR 1 */
+-#define EXP_WIN_MBAR 1
+-/* Maximum address space for Chip Select 0 is 64MiB */
+-#define CS0_SIZE 0x04000000
+-/* Chip Select 0 is at offset 0 in the Memory Window */
+-#define CS0_START 0x0
+-/* Chip Select 0 Timing Register is at offset 0 in CSR */
+-#define EXP_TIMING_CS0 0x00
+-#define TIMING_CS_EN		(1 << 31)	/* Chip Select Enable */
+-#define TIMING_BOOT_ACCEL_DIS	(1 <<  8)	/* Boot Acceleration Disable */
+-#define TIMING_WR_EN		(1 <<  1)	/* Write Enable */
+-#define TIMING_BYTE_EN		(1 <<  0)	/* 8-bit vs 16-bit bus */
+-#define TIMING_MASK		0x3FFF0000
+-
+-static void vr_nor_destroy_partitions(struct vr_nor_mtd *p)
+-{
+-	mtd_device_unregister(p->info);
+-}
+-
+-static int vr_nor_init_partitions(struct vr_nor_mtd *p)
+-{
+-	/* register the flash bank */
+-	/* partition the flash bank */
+-	return mtd_device_register(p->info, NULL, 0);
+-}
+-
+-static void vr_nor_destroy_mtd_setup(struct vr_nor_mtd *p)
+-{
+-	map_destroy(p->info);
+-}
+-
+-static int vr_nor_mtd_setup(struct vr_nor_mtd *p)
+-{
+-	static const char * const probe_types[] =
+-	    { "cfi_probe", "jedec_probe", NULL };
+-	const char * const *type;
+-
+-	for (type = probe_types; !p->info && *type; type++)
+-		p->info = do_map_probe(*type, &p->map);
+-	if (!p->info)
+-		return -ENODEV;
+-
+-	p->info->dev.parent = &p->dev->dev;
+-
+-	return 0;
+-}
+-
+-static void vr_nor_destroy_maps(struct vr_nor_mtd *p)
+-{
+-	unsigned int exp_timing_cs0;
+-
+-	/* write-protect the flash bank */
+-	exp_timing_cs0 = readl(p->csr_base + EXP_TIMING_CS0);
+-	exp_timing_cs0 &= ~TIMING_WR_EN;
+-	writel(exp_timing_cs0, p->csr_base + EXP_TIMING_CS0);
+-
+-	/* unmap the flash window */
+-	iounmap(p->map.virt);
+-
+-	/* unmap the csr window */
+-	iounmap(p->csr_base);
+-}
+-
+-/*
+- * Initialize the map_info structure and map the flash.
+- * Returns 0 on success, nonzero otherwise.
+- */
+-static int vr_nor_init_maps(struct vr_nor_mtd *p)
+-{
+-	unsigned long csr_phys, csr_len;
+-	unsigned long win_phys, win_len;
+-	unsigned int exp_timing_cs0;
+-	int err;
+-
+-	csr_phys = pci_resource_start(p->dev, EXP_CSR_MBAR);
+-	csr_len = pci_resource_len(p->dev, EXP_CSR_MBAR);
+-	win_phys = pci_resource_start(p->dev, EXP_WIN_MBAR);
+-	win_len = pci_resource_len(p->dev, EXP_WIN_MBAR);
+-
+-	if (!csr_phys || !csr_len || !win_phys || !win_len)
+-		return -ENODEV;
+-
+-	if (win_len < (CS0_START + CS0_SIZE))
+-		return -ENXIO;
+-
+-	p->csr_base = ioremap(csr_phys, csr_len);
+-	if (!p->csr_base)
+-		return -ENOMEM;
+-
+-	exp_timing_cs0 = readl(p->csr_base + EXP_TIMING_CS0);
+-	if (!(exp_timing_cs0 & TIMING_CS_EN)) {
+-		dev_warn(&p->dev->dev, "Expansion Bus Chip Select 0 "
+-		       "is disabled.\n");
+-		err = -ENODEV;
+-		goto release;
+-	}
+-	if ((exp_timing_cs0 & TIMING_MASK) == TIMING_MASK) {
+-		dev_warn(&p->dev->dev, "Expansion Bus Chip Select 0 "
+-		       "is configured for maximally slow access times.\n");
+-	}
+-	p->map.name = DRV_NAME;
+-	p->map.bankwidth = (exp_timing_cs0 & TIMING_BYTE_EN) ? 1 : 2;
+-	p->map.phys = win_phys + CS0_START;
+-	p->map.size = CS0_SIZE;
+-	p->map.virt = ioremap(p->map.phys, p->map.size);
+-	if (!p->map.virt) {
+-		err = -ENOMEM;
+-		goto release;
+-	}
+-	simple_map_init(&p->map);
+-
+-	/* Enable writes to flash bank */
+-	exp_timing_cs0 |= TIMING_BOOT_ACCEL_DIS | TIMING_WR_EN;
+-	writel(exp_timing_cs0, p->csr_base + EXP_TIMING_CS0);
+-
+-	return 0;
+-
+-      release:
+-	iounmap(p->csr_base);
+-	return err;
+-}
+-
+-static const struct pci_device_id vr_nor_pci_ids[] = {
+-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x500D)},
+-	{0,}
+-};
+-
+-static void vr_nor_pci_remove(struct pci_dev *dev)
+-{
+-	struct vr_nor_mtd *p = pci_get_drvdata(dev);
+-
+-	vr_nor_destroy_partitions(p);
+-	vr_nor_destroy_mtd_setup(p);
+-	vr_nor_destroy_maps(p);
+-	kfree(p);
+-	pci_release_regions(dev);
+-	pci_disable_device(dev);
+-}
+-
+-static int vr_nor_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+-{
+-	struct vr_nor_mtd *p = NULL;
+-	unsigned int exp_timing_cs0;
+-	int err;
+-
+-	err = pci_enable_device(dev);
+-	if (err)
+-		goto out;
+-
+-	err = pci_request_regions(dev, DRV_NAME);
+-	if (err)
+-		goto disable_dev;
+-
+-	p = kzalloc(sizeof(*p), GFP_KERNEL);
+-	err = -ENOMEM;
+-	if (!p)
+-		goto release;
+-
+-	p->dev = dev;
+-
+-	err = vr_nor_init_maps(p);
+-	if (err)
+-		goto release;
+-
+-	err = vr_nor_mtd_setup(p);
+-	if (err)
+-		goto destroy_maps;
+-
+-	err = vr_nor_init_partitions(p);
+-	if (err)
+-		goto destroy_mtd_setup;
+-
+-	pci_set_drvdata(dev, p);
+-
+-	return 0;
+-
+-      destroy_mtd_setup:
+-	map_destroy(p->info);
+-
+-      destroy_maps:
+-	/* write-protect the flash bank */
+-	exp_timing_cs0 = readl(p->csr_base + EXP_TIMING_CS0);
+-	exp_timing_cs0 &= ~TIMING_WR_EN;
+-	writel(exp_timing_cs0, p->csr_base + EXP_TIMING_CS0);
+-
+-	/* unmap the flash window */
+-	iounmap(p->map.virt);
+-
+-	/* unmap the csr window */
+-	iounmap(p->csr_base);
+-
+-      release:
+-	kfree(p);
+-	pci_release_regions(dev);
+-
+-      disable_dev:
+-	pci_disable_device(dev);
+-
+-      out:
+-	return err;
+-}
+-
+-static struct pci_driver vr_nor_pci_driver = {
+-	.name = DRV_NAME,
+-	.probe = vr_nor_pci_probe,
+-	.remove = vr_nor_pci_remove,
+-	.id_table = vr_nor_pci_ids,
+-};
+-
+-module_pci_driver(vr_nor_pci_driver);
+-
+-MODULE_AUTHOR("Andy Lowe");
+-MODULE_DESCRIPTION("MTD map driver for NOR flash on Intel Vermilion Range");
+-MODULE_LICENSE("GPL");
+-MODULE_DEVICE_TABLE(pci, vr_nor_pci_ids);
+-- 
+2.42.0
 
-Last year drivers/gpu/drm/tiny/panel-mipi-dbi.c was added to support all
-MIPI DBI compatible (ili9341) SPI displays.
-It loads the initialisation commands from a firmware file. For more info
-see https://github.com/notro/panel-mipi-dbi/wiki.
-
-When I started on fbtft in 2013 I didn't know about MIPI DBI so I made
-some common bus access functions and one driver per controller and that
-driver had an initialisation sequence to match the panel I had. Then I
-discovered that displays using the same controller could have different
-init sequences so I added a Device Tree <init> property that could
-override the driver init.
-
-In 2015 fbtft was added to drivers/staging, but later that year fbdev
-was closed for new drivers so it was a dead end.
-
-I started to work on porting fbtft to DRM and almost 2 years later
-support for the MI0283QT panel (ILI9341) was added.
-I had now learned about MIPI DBI so a library to handle that was added.
-I had asked on the Device Tree ML about the <init> property and I was
-told that I couldn't have that which meant that I couldn't get away with
-having just one driver for the MIPI DBI compatible display panels as I
-was first hoping for.
-
-I was aware that there was a challenge going from fbtft to DRM because
-in fbtft there is support for all panel setups using the <init>
-property, but in DRM every panel needed support in a driver. So I
-started to look at adding Device Tree properties to describe the setup
-for one controller. This would make it easy to describe a new panel in
-Device Tree for a supported controller. Maxime Ripard came up with the
-idea to have the controller initialisation commands in a firmware file
-which meant that we could get away with having just one driver for all
-MIPI DBI SPI panels (which is the vast majority of these SPI pixel
-upload panels).
-
-This meant that SPI support could be removed from all the MIPI DBI
-compatible controllers in fbtft since there's now a solution for them in
-DRM. The drivers themselves must stay since they also have parallel bus
-support which is lacking in DRM. My plan was to wait for panel-mipi-dbi
-to hit an LTS and then either prepare patches to remove MIPI DBI SPI
-support from fbtft or at least send an email to staging about the new
-driver. Unfortunately my health problems got worse and many plans went
-out the window.
-
-
-ILI9341 DRM drivers
-
-- drivers/gpu/drm/tiny/mi0283qt.c
-  This was the first driver added for the MI0283QT panel series
-
-- drivers/gpu/drm/tiny/ili9341.c
-  Later ili9341 based panels was decided to be added to a controller
-  specific driver.
-
-- drivers/gpu/drm/tiny/panel-mipi-dbi.c
-  Generic MIPI DBI SPI driver that loads init commands from a firmware
-  file. It uses of_property_read_string_index() and
-  of_get_drm_panel_display_mode(). I don't know if it's possible to make
-  device_property_*() versions of those.
-
-- drivers/gpu/drm/panel/panel-ilitek-ili9341.c
-  This driver supports the MIPI DPI (RGB) interface on the controller.
-  Controller init is done over MIPI DBI SPI. The driver does also for
-  some reason support the same panel as the ili9341.c driver does.
-  So 2 drivers for the same panel...
-  Sidenote: It is possible to make a generic panel-mipi-dpi.c driver for
-  panels that use DPI for pixels and DBI for init loaded from a firmware
-  file.
-
-
-Noralf.

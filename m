@@ -1,128 +1,133 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADC29F2
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 03:42:39 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rD18I-0005bB-Vy; Tue, 12 Dec 2023 12:41:03 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rD18G-00FKJT-S1; Tue, 12 Dec 2023 12:41:00 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rD18G-001bBp-HP; Tue, 12 Dec 2023 12:41:00 +0100
-Date: Tue, 12 Dec 2023 12:41:00 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Sean Young <sean@mess.org>, Jean Delvare <jdelvare@suse.com>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Helge Deller <deller@gmx.de>
-Cc: linux-media@vger.kernel.org, linux-pwm@vger.kernel.org,
-	Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Support Opensource <support.opensource@diasemi.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Mark Gross <markgross@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Jani Nikula <jani.nikula@intel.com>, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v8 1/6] pwm: Rename pwm_apply_state() to
- pwm_apply_might_sleep()
-Message-ID: <20231212114100.sn7nzntousql2ays@pengutronix.de>
-References: <cover.1702369869.git.sean@mess.org>
- <9af7ba748fd2eb7e04208b6b183185f1daf78016.1702369869.git.sean@mess.org>
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="X17BEak1"
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4E1FF7
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 05:18:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1702387083; x=1702991883; i=deller@gmx.de;
+	bh=wkHWbQi8l1Uix6JDbIqPjm1cE193FYxG7+kIXrzU73s=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=X17BEak1jDR4wO5pTqJJ9jFEu20pvpVQ45NhvOlLyw218PixI7fF1UjMhUoSXl6R
+	 nZAxP79eM5iBEt6bqnkJMFow8iyXYoXV49NXYICqVFF6+F2ho8ELDsljQUklC7k2J
+	 Rlks09/lXRb4RAcnj8GR3qsj+RjnT6pi8E2FbMLd9XJqwKEy+jwqb/PBpMO15RxUy
+	 a3t2ASa1USn5UlNLotQLMtUsLKYfskY/pEGOnreGjMyfFtSB5/oaqq3fedX+5GHZT
+	 h1rPRvVWytjHAAA2J7FB+aEmLHBVWtrv916F/OLkuDrzZLR8kJQnFxMGoka0drpkz
+	 TugT8UrLB17sQSIIBA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MZCfJ-1qiSz40mNV-00VCaq; Tue, 12
+ Dec 2023 14:18:03 +0100
+Message-ID: <92c8d77e-a912-45bc-aad8-65500cb3c0ce@gmx.de>
+Date: Tue, 12 Dec 2023 14:18:02 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="kqcylsquh2dgmtcq"
-Content-Disposition: inline
-In-Reply-To: <9af7ba748fd2eb7e04208b6b183185f1daf78016.1702369869.git.sean@mess.org>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
-
-
---kqcylsquh2dgmtcq
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: hgafb: fix kernel-doc comments
+Content-Language: en-US
+To: Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org
+Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
+ linux-nvidia@lists.surfsouth.com, linux-fbdev@vger.kernel.org
+References: <20231205231408.1234-1-rdunlap@infradead.org>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20231205231408.1234-1-rdunlap@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:q/JsTjGH6Obu65iWDI67EITFS4iLRM4Gab1twphGjh3NZQ9wzTz
+ /n0Zq5gcFWLlt0BFeGzVzd5uBYHU6AONUjUuAZzAASORwC0DbyQuVo9QzMIWh//PTZirxUz
+ G/CneXCiOm9ZjKeFMIO5QZftEAqcrzT5lGvRP/c79iFAihHxJHxl3XaOPxxigyfnGUu3sRr
+ sS9kELRLhZvXYxQ7TtmgQ==
+UI-OutboundReport: notjunk:1;M01:P0:sR7+tCVqDxc=;+nl0m7Lzl+hf1l/4Fu2D50P1B0X
+ y+WjpcDrnOOZpEJ506a491thss8NQ1XKCQ3j3EcHbA0A6GND31p+986s2DH4FY9OxK/S3cj6e
+ QOuZWpzufueO0aOu6H6F5ASfydGr+WrefhQG7fAP4PteWpYZxwFJFlD/OEv+HR+ILGpQpeCi9
+ yD9GBFG1imWelNyml0RE9v1Bpy41SquE4SsNx0gjqlAvHkzv37Xkf5MD74t7bjf1W7KA6g2QW
+ Nx7kFRo7x52CFUXeKOVbnApZjAwHxpgJSiTCdA+CUlYS86yEfQ/xexGpvsl0MzUNAWRbgrtkm
+ RfOlZbnlIWmUh+hpBWOgUo/5qIrMcSf/AiFpJeDRUZ/2qsE1vz+NY750ZVr/8HYTepK1P7boK
+ dSo67iCFawN3aejHjSUqtBlrxFloyhHLyKHBPMtHW148jWTH+4XIoDm0t1f5YYzCfZSMlZyIP
+ sJqk8L5nFyemduAPiCO9ahY0rVP9bdTUcedOQHWZUmMOK2+m/ZZAEOkcNePTciahuTZtZDHfP
+ mCIxx5YQxrysH69/gvDBnAsOZLtu4R+slez+FZ783A7lFGPJ0/i5gc6YTT6vPygkVXZOuVbrb
+ lf9UQfkHXVBQedP6hvsi+9TZv8TkCOkaqYnVsdsXeFniHhJycU9Xb+jQt2vux/yM/7q3sdDTa
+ eAh4NAkm8FDJManX/O2VrLZiV79VLhEo6dmkpbn96NK1TsVbI9gAG48G8J2BUamxZSKFjagv3
+ 1WOm0FU9WkyVDUYxGixs4+tvPsgZJuVwZ6KsBoEavYE3Ai4AK0YazA7U+04krPETANdVD9vGJ
+ 01SgPmPw+Tme893KOxXruxRfpEhD4E8qcoSZIy3evI2MZbNh0WnVjNil7S9BgA5jrTDJa8V36
+ 3IiFJLffxucuE62+XPzTBVIy6mVvnr7GIDpwhs8uk5CDmVLAPZqKJv/y5LGhusvrJrXEcocLn
+ MSl4gw==
 
-On Tue, Dec 12, 2023 at 08:34:00AM +0000, Sean Young wrote:
-> In order to introduce a pwm api which can be used from atomic context,
-> we will need two functions for applying pwm changes:
->=20
-> 	int pwm_apply_might_sleep(struct pwm *, struct pwm_state *);
-> 	int pwm_apply_atomic(struct pwm *, struct pwm_state *);
->=20
-> This commit just deals with renaming pwm_apply_state(), a following
-> commit will introduce the pwm_apply_atomic() function.
->=20
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com> # for input
-> Acked-by: Hans de Goede <hdegoede@redhat.com>
-> Acked-by: Jani Nikula <jani.nikula@intel.com>
-> Acked-by: Lee Jones <lee@kernel.org>
-> Signed-off-by: Sean Young <sean@mess.org>
+On 12/6/23 00:14, Randy Dunlap wrote:
+> Fix kernel-doc warnings found when using "W=3D1".
+>
+> hgafb.c:370: warning: No description found for return value of 'hgafb_op=
+en'
+> hgafb.c:384: warning: No description found for return value of 'hgafb_re=
+lease'
+> hgafb.c:406: warning: No description found for return value of 'hgafb_se=
+tcolreg'
+> hgafb.c:425: warning: No description found for return value of 'hgafb_pa=
+n_display'
+> hgafb.c:425: warning: expecting prototype for hga_pan_display(). Prototy=
+pe was for hgafb_pan_display() instead
+> hgafb.c:455: warning: No description found for return value of 'hgafb_bl=
+ank'
+>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-nvidia@lists.surfsouth.com
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> ---
+>   drivers/video/fbdev/hgafb.c |   13 +++++++++++--
+>   1 file changed, 11 insertions(+), 2 deletions(-)
 
-Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+applied.
 
-Several affected maintainers already acked, so I guess it's fine to take
-this via the pwm tree. An Ack from the remaining maintainers would be
-very welcome, an alternative would be to split the patch.
+Thanks!
+Helge
 
-Missing Acks so far:
-
- - Jean Delvare / Guenter Roeck for drivers/hwmon/pwm-fan.c
- - Javier Martinez Canillas for drivers/gpu/drm/solomon/ssd130x.c
- - Liam Girdwood / Mark Brown for drivers/regulator/pwm-regulator.c
- - Helge Deller for drivers/video/fbdev/ssd1307fb.c
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---kqcylsquh2dgmtcq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmV4RssACgkQj4D7WH0S
-/k4FvQgAhhnJ0gGDS9vNrkWmDYMBz0OOooFMMGBMTBk2URyQxiqdxXWCSQKX4pDP
-4H/Hu+EbrEgXfRn0ANEzPIBDBGHQTo7W6N1NGpgxr8Bn1FoRwTzJMCbp62IGORar
-Xr+m5fAJrOjprAETsdyrt8zzjkkJR8Rxg3Gs1bCjjaJGv9VND2ArWlOqwC+I1PWM
-AYDVj/+/0wv8/rqAgNJbjPxdvlcfw/bnqy4/4Gs75Zn9qCRtODT3mCVtAKaWFSsh
-/FMmxKBYIm9ZFhT4skjci6JscC3iWTtp/LeJnoTY2cOyMJePYeRFLT0Ys7+wlsWe
-LCFShS20T2QYBWCYGmIIOHXHa7YwRQ==
-=jAgf
------END PGP SIGNATURE-----
-
---kqcylsquh2dgmtcq--

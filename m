@@ -1,125 +1,91 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 008BD76DDF;
-	Tue, 12 Dec 2023 15:27:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XZE/1j13"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C6CDC433CB;
-	Tue, 12 Dec 2023 15:27:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1702394866;
-	bh=DWg3sQ9qxo14q4VzdIjndy7b2Wyci4KHHq5fC3tFwHw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=XZE/1j13EWy8z8pFkXqNRn6HYJzjFYN/10G8iu8cAoafoyKUIycSHgfsSyvCG2Teo
-	 WIYd8P+3bQWl5nIbbFYJJT9TxFvKa61BuG3l1DafVw0ekfJDR8qSKIxXKDzCInlZYV
-	 raUWL9oNnYA4SBKtgOH4ful8G+RZ+T/71QpgbHLJGeR0sVbnohOUMP3PCXgg3SfKK2
-	 I9ufZ93he66i2gRzet1ebLl1wH5amInfBW6CfiulcjcH7V2WDx4RmZaQ5GFC1P65zR
-	 XRdJhdv/ySQONhdGuJFe03izK1d+T/JtjpbEhiwAqjmZ4pejzLDtj95C/Gi2y5/LVG
-	 RVsC/UmRz27YA==
-Date: Tue, 12 Dec 2023 15:27:35 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Sean Young <sean@mess.org>, Jean Delvare <jdelvare@suse.com>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Liam Girdwood <lgirdwood@gmail.com>, Helge Deller <deller@gmx.de>,
-	linux-media@vger.kernel.org, linux-pwm@vger.kernel.org,
-	Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Support Opensource <support.opensource@diasemi.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Mark Gross <markgross@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Jani Nikula <jani.nikula@intel.com>, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v8 1/6] pwm: Rename pwm_apply_state() to
- pwm_apply_might_sleep()
-Message-ID: <7594ea09-a6f3-4dac-acb3-d5f899f9cf84@sirena.org.uk>
-References: <cover.1702369869.git.sean@mess.org>
- <9af7ba748fd2eb7e04208b6b183185f1daf78016.1702369869.git.sean@mess.org>
- <20231212114100.sn7nzntousql2ays@pengutronix.de>
- <f7be8d89-25ae-4d83-9577-12fcac41d0ab@roeck-us.net>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="PfRp8Lcy"
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE37F8E
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 11:58:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1702411088;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=vio5W2CXh8VIVVnye0VQz+L8cj+HSZDsPzluUFJanUo=;
+	b=PfRp8LcyVfUE/rUUSsymkpRuXQqwii/iTHaiHeyUwgXKVhEkHtcdRc8rHJgG2DVFKmXg+t
+	iJ1D2r747tOP4FW73XxAIlLSW44yOdHC3AHW8bqIS0CICvdM8PuckmkLyqk6x5rLT5nJZe
+	mKtyGpnLbREwnsx+YKlKQm5i3R2WGM8=
+Received: from mail-yw1-f200.google.com (mail-yw1-f200.google.com
+ [209.85.128.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-246-x_yx5cprOt6HseVtJUsQzw-1; Tue, 12 Dec 2023 14:58:06 -0500
+X-MC-Unique: x_yx5cprOt6HseVtJUsQzw-1
+Received: by mail-yw1-f200.google.com with SMTP id 00721157ae682-5ce16bc121aso72108547b3.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 11:58:06 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1702411085; x=1703015885;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vio5W2CXh8VIVVnye0VQz+L8cj+HSZDsPzluUFJanUo=;
+        b=L5aW4ycBKVxNzUmO85lgcMuRQmXlIPCRMfRseigXcDB8oD/dOc2BPtyPPLUrGMew1w
+         WqvjUu7TNNr9oUSlasIktw8LX/BDE03BIeAwrKLpf0py7h7dIeOZUpq4rQWqDyAX/dgE
+         Jn9gHsyL5MI9T1tNIG8s4Lq8lvUPvDVGVJIjwTBeBbIxmGBNfpBiveQNBrxTkpBj32Lr
+         VuwzTWNsyteQ8yc460TklQjYbJBVbW6R9b19nGYNPnRo0ivvluJWeMMvJqiRU2DrwHKJ
+         lhrRZ9e5OzXc3o5cBbmO8Q51D9rpsNy/lTc0ogv+ItBFF0lCHvfVHoSlsz+NRqdBtHIs
+         kimA==
+X-Gm-Message-State: AOJu0Yy8KntcGahzIBi49gr8U2/vzw2yWncwqsezhgvh8QSd+8baJbIa
+	hr0H2LPzNX+5VGujJ4UUxWQVaS+hjc5f5dgcIn5D2a0ewLtOp+zv1Y5bmZSo2+WCSMx1s/XYqkL
+	l46IMfN93P0hNJt+qlFizHPAJpfFyKS7Ueg==
+X-Received: by 2002:a05:690c:3185:b0:5e1:e50b:ab5c with SMTP id fd5-20020a05690c318500b005e1e50bab5cmr1351520ywb.1.1702411085549;
+        Tue, 12 Dec 2023 11:58:05 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHzll/KfEEeFGXHCYWsZvQiNpoKwD81UlefsjiQ4B9Q//3lL6+1EqEwS9Dic0uVUQCzigLnuQ==
+X-Received: by 2002:a05:690c:3185:b0:5e1:e50b:ab5c with SMTP id fd5-20020a05690c318500b005e1e50bab5cmr1351514ywb.1.1702411085342;
+        Tue, 12 Dec 2023 11:58:05 -0800 (PST)
+Received: from x1.redhat.com (c-73-214-169-22.hsd1.pa.comcast.net. [73.214.169.22])
+        by smtp.gmail.com with ESMTPSA id g184-20020a0dc4c1000000b005a7d46770f2sm3985306ywd.83.2023.12.12.11.58.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 Dec 2023 11:58:04 -0800 (PST)
+From: Brian Masney <bmasney@redhat.com>
+To: hdegoede@redhat.com,
+	deller@gmx.de
+Cc: treding@nvidia.com,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev/simplefb: change loglevel when the power domains cannot be parsed
+Date: Tue, 12 Dec 2023 14:57:54 -0500
+Message-ID: <20231212195754.232303-1-bmasney@redhat.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="iRFgPhdLTHQFhazT"
-Content-Disposition: inline
-In-Reply-To: <f7be8d89-25ae-4d83-9577-12fcac41d0ab@roeck-us.net>
-X-Cookie: If rash develops, discontinue use.
+Content-type: text/plain
+Content-Transfer-Encoding: 8bit
 
+When the power domains cannot be parsed, the message is incorrectly
+logged as an info message. Let's change this to an error since an error
+is returned.
 
---iRFgPhdLTHQFhazT
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fixes: 92a511a568e4 ("fbdev/simplefb: Add support for generic power-domains")
+Signed-off-by: Brian Masney <bmasney@redhat.com>
+---
+ drivers/video/fbdev/simplefb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Tue, Dec 12, 2023 at 07:22:18AM -0800, Guenter Roeck wrote:
-> On 12/12/23 03:41, Uwe Kleine-K=F6nig wrote:
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 6f58ee276ad1..028a56525047 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -470,7 +470,7 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+ 		if (err == -ENOENT)
+ 			return 0;
+ 
+-		dev_info(dev, "failed to parse power-domains: %d\n", err);
++		dev_err(dev, "failed to parse power-domains: %d\n", err);
+ 		return err;
+ 	}
+ 
+-- 
+2.43.0
 
-> > Several affected maintainers already acked, so I guess it's fine to take
-> > this via the pwm tree. An Ack from the remaining maintainers would be
-> > very welcome, an alternative would be to split the patch.
-
-> > Missing Acks so far:
-
-> >   - Jean Delvare / Guenter Roeck for drivers/hwmon/pwm-fan.c
-> >   - Javier Martinez Canillas for drivers/gpu/drm/solomon/ssd130x.c
-> >   - Liam Girdwood / Mark Brown for drivers/regulator/pwm-regulator.c
-> >   - Helge Deller for drivers/video/fbdev/ssd1307fb.c
-
-> Personally I find the change unnecessary and pointless, which is why I
-> didn't ack it. Even if function names were deemed important enough, keepi=
-ng
-> pwm_apply_state() for the time being and just adding pwm_apply_might_slee=
-p()
-> as duplicate would have done it, all the changes could have gone in long
-> ago, and per-subsystem cleanup could have been orthogonal.
-
-> I refrained from commenting because it might be considered bike shedding,
-> but I don't want to ack something I deem unnecessary and pointless without
-> comment. But then don't want to keep arguing either, so
-
-I haven't been reading this series because I couldn't tell why I was
-copied on it, it's only chance that made me open Guenter's mail here...
-
-Acked-by: Mark Brown <broonie@kernel.org>
-
---iRFgPhdLTHQFhazT
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmV4e+YACgkQJNaLcl1U
-h9Aqewf/UALlUMgqzHC9oYZI+Kcf9eGgd7QO/+pxhbI5hMnT5tFRH9lkihV8NhkZ
-moY0GH6PcO8YFj0y+Hs89vmJCd3MRAJ7tZ3eEg5/Q7BJejmk7kB24R5TlqUHUcg7
-DcHugsUrGAmvt3afuF03VqA53HlJ6D43J0cIv5j5X8x18v9Z4s0/4z+/zuMEJ8qi
-05gpioqCsqqPxlKMuWv9qPxn6PDVO3JMk7OUodLi1Tdzfio/b7/81nRQX6DgpHm4
-odCEdmvJwIAukE1TlXxfpb7GZuHEe0z04rKSLfvDj6s90hRM9uHdJb3L7kp1Xf0n
-nsm4Twh4PnRdMJRKACafo9HyC8RvJw==
-=Wkx1
------END PGP SIGNATURE-----
-
---iRFgPhdLTHQFhazT--

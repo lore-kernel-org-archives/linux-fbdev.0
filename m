@@ -1,91 +1,95 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="PfRp8Lcy"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="fznMueJ6"
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE37F8E
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 11:58:08 -0800 (PST)
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6561C95
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 13:01:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1702411088;
+	s=mimecast20190719; t=1702414893;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=vio5W2CXh8VIVVnye0VQz+L8cj+HSZDsPzluUFJanUo=;
-	b=PfRp8LcyVfUE/rUUSsymkpRuXQqwii/iTHaiHeyUwgXKVhEkHtcdRc8rHJgG2DVFKmXg+t
-	iJ1D2r747tOP4FW73XxAIlLSW44yOdHC3AHW8bqIS0CICvdM8PuckmkLyqk6x5rLT5nJZe
-	mKtyGpnLbREwnsx+YKlKQm5i3R2WGM8=
-Received: from mail-yw1-f200.google.com (mail-yw1-f200.google.com
- [209.85.128.200]) by relay.mimecast.com with ESMTP with STARTTLS
+	 in-reply-to:in-reply-to:references:references;
+	bh=LVAsjbMqpYyZ3IkWoFHSbEJwyLTdmo/iH1LCGeQmZh8=;
+	b=fznMueJ6GIEXFsusPyDnZFR275uKWrdcFghfXTxuLDjvjXACUO8ZiZb8n1Mber5wOIpevP
+	sFBfJTl59MFEQkBetEt/4r9jnRc9wP5DeJwi9d+mAfwTcWoKdpp1ydJKgDgEVwiCpQTvzg
+	/u9W+rkcALdy4kFxncHLqW+TU0NI3Qw=
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
+ [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-246-x_yx5cprOt6HseVtJUsQzw-1; Tue, 12 Dec 2023 14:58:06 -0500
-X-MC-Unique: x_yx5cprOt6HseVtJUsQzw-1
-Received: by mail-yw1-f200.google.com with SMTP id 00721157ae682-5ce16bc121aso72108547b3.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 11:58:06 -0800 (PST)
+ us-mta-628-UsRzdciwP0a944RbUerVgA-1; Tue, 12 Dec 2023 16:01:31 -0500
+X-MC-Unique: UsRzdciwP0a944RbUerVgA-1
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-67ef0871074so7462066d6.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Dec 2023 13:01:31 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702411085; x=1703015885;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vio5W2CXh8VIVVnye0VQz+L8cj+HSZDsPzluUFJanUo=;
-        b=L5aW4ycBKVxNzUmO85lgcMuRQmXlIPCRMfRseigXcDB8oD/dOc2BPtyPPLUrGMew1w
-         WqvjUu7TNNr9oUSlasIktw8LX/BDE03BIeAwrKLpf0py7h7dIeOZUpq4rQWqDyAX/dgE
-         Jn9gHsyL5MI9T1tNIG8s4Lq8lvUPvDVGVJIjwTBeBbIxmGBNfpBiveQNBrxTkpBj32Lr
-         VuwzTWNsyteQ8yc460TklQjYbJBVbW6R9b19nGYNPnRo0ivvluJWeMMvJqiRU2DrwHKJ
-         lhrRZ9e5OzXc3o5cBbmO8Q51D9rpsNy/lTc0ogv+ItBFF0lCHvfVHoSlsz+NRqdBtHIs
-         kimA==
-X-Gm-Message-State: AOJu0Yy8KntcGahzIBi49gr8U2/vzw2yWncwqsezhgvh8QSd+8baJbIa
-	hr0H2LPzNX+5VGujJ4UUxWQVaS+hjc5f5dgcIn5D2a0ewLtOp+zv1Y5bmZSo2+WCSMx1s/XYqkL
-	l46IMfN93P0hNJt+qlFizHPAJpfFyKS7Ueg==
-X-Received: by 2002:a05:690c:3185:b0:5e1:e50b:ab5c with SMTP id fd5-20020a05690c318500b005e1e50bab5cmr1351520ywb.1.1702411085549;
-        Tue, 12 Dec 2023 11:58:05 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IHzll/KfEEeFGXHCYWsZvQiNpoKwD81UlefsjiQ4B9Q//3lL6+1EqEwS9Dic0uVUQCzigLnuQ==
-X-Received: by 2002:a05:690c:3185:b0:5e1:e50b:ab5c with SMTP id fd5-20020a05690c318500b005e1e50bab5cmr1351514ywb.1.1702411085342;
-        Tue, 12 Dec 2023 11:58:05 -0800 (PST)
-Received: from x1.redhat.com (c-73-214-169-22.hsd1.pa.comcast.net. [73.214.169.22])
-        by smtp.gmail.com with ESMTPSA id g184-20020a0dc4c1000000b005a7d46770f2sm3985306ywd.83.2023.12.12.11.58.04
+        d=1e100.net; s=20230601; t=1702414890; x=1703019690;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LVAsjbMqpYyZ3IkWoFHSbEJwyLTdmo/iH1LCGeQmZh8=;
+        b=AHZYtIdHmHPTRkuaHNqiiZkG/tDuusr2AgViNog+9Syxc2mp7W//shlvWlwensi4rj
+         JwTKc70F4Gy6aTIyU/HrJ7t0ZNEMIc+L3r+L/aMZffNCff8lIX+mK6xKzA7cVUJp0BxA
+         3/j1Z1f2rYUpmgClhoVT34mr5LSWJR9iSxxviTcMp/XT0Ymfkdp0NnjfcRqj55F2lj9/
+         DiL+LQM6tiTD/vDXqLOxK6py40E4Pm8GWJuhybzz3VL1WTWvFl/ekoCO791IqaSWZk2p
+         2ZO/MpkAgBk12Fz4Qpu1OGDp9vQcL95+YiW3vljzY416lVtH/xgoQUSgq7lDnsf7AX8+
+         fTuQ==
+X-Gm-Message-State: AOJu0YyHh988qIt1Ldw4Ywp1Rm1kYt5RlvK7W11DbU3coGk3A1wwlOyo
+	SWyUjcdLFA/Njkx8fsNBNsXjzsW3ef6Pjf+6FtsvHkgalRS4ajFXaYfFU2yGiiQPS+liWL02FBu
+	ww1X5nQ5ES7M3tDUvtTMp9vo=
+X-Received: by 2002:a05:6214:e8d:b0:67e:aa5b:8e9f with SMTP id hf13-20020a0562140e8d00b0067eaa5b8e9fmr8845939qvb.62.1702414890652;
+        Tue, 12 Dec 2023 13:01:30 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHVewhRs7Hdh5QT+34KH2wML5O8m9XHLGWFWDGFa8wOrPNpZCusPikbcT6klf4Qm0z2wwfb/g==
+X-Received: by 2002:a05:6214:e8d:b0:67e:aa5b:8e9f with SMTP id hf13-20020a0562140e8d00b0067eaa5b8e9fmr8845928qvb.62.1702414890410;
+        Tue, 12 Dec 2023 13:01:30 -0800 (PST)
+Received: from fedora ([2600:1700:1ff0:d0e0::37])
+        by smtp.gmail.com with ESMTPSA id n6-20020a056214008600b0067ea8085b71sm4471934qvr.5.2023.12.12.13.01.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Dec 2023 11:58:04 -0800 (PST)
-From: Brian Masney <bmasney@redhat.com>
-To: hdegoede@redhat.com,
-	deller@gmx.de
-Cc: treding@nvidia.com,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev/simplefb: change loglevel when the power domains cannot be parsed
-Date: Tue, 12 Dec 2023 14:57:54 -0500
-Message-ID: <20231212195754.232303-1-bmasney@redhat.com>
-X-Mailer: git-send-email 2.43.0
+        Tue, 12 Dec 2023 13:01:29 -0800 (PST)
+Date: Tue, 12 Dec 2023 15:01:27 -0600
+From: Andrew Halaney <ahalaney@redhat.com>
+To: Brian Masney <bmasney@redhat.com>
+Cc: hdegoede@redhat.com, deller@gmx.de, treding@nvidia.com, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbdev/simplefb: change loglevel when the power domains
+ cannot be parsed
+Message-ID: <lv3bauwrmy2bkycijpmgmym6x2kxo57twl62ttpgsbwecmxoge@quhe7siu6zdp>
+References: <20231212195754.232303-1-bmasney@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-type: text/plain
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231212195754.232303-1-bmasney@redhat.com>
 
-When the power domains cannot be parsed, the message is incorrectly
-logged as an info message. Let's change this to an error since an error
-is returned.
+On Tue, Dec 12, 2023 at 02:57:54PM -0500, Brian Masney wrote:
+> When the power domains cannot be parsed, the message is incorrectly
+> logged as an info message. Let's change this to an error since an error
+> is returned.
+> 
+> Fixes: 92a511a568e4 ("fbdev/simplefb: Add support for generic power-domains")
+> Signed-off-by: Brian Masney <bmasney@redhat.com>
 
-Fixes: 92a511a568e4 ("fbdev/simplefb: Add support for generic power-domains")
-Signed-off-by: Brian Masney <bmasney@redhat.com>
----
- drivers/video/fbdev/simplefb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Andrew Halaney <ahalaney@redhat.com>
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 6f58ee276ad1..028a56525047 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -470,7 +470,7 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
- 		if (err == -ENOENT)
- 			return 0;
- 
--		dev_info(dev, "failed to parse power-domains: %d\n", err);
-+		dev_err(dev, "failed to parse power-domains: %d\n", err);
- 		return err;
- 	}
- 
--- 
-2.43.0
+> ---
+>  drivers/video/fbdev/simplefb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+> index 6f58ee276ad1..028a56525047 100644
+> --- a/drivers/video/fbdev/simplefb.c
+> +++ b/drivers/video/fbdev/simplefb.c
+> @@ -470,7 +470,7 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+>  		if (err == -ENOENT)
+>  			return 0;
+>  
+> -		dev_info(dev, "failed to parse power-domains: %d\n", err);
+> +		dev_err(dev, "failed to parse power-domains: %d\n", err);
+>  		return err;
+>  	}
+>  
+> -- 
+> 2.43.0
+> 
 

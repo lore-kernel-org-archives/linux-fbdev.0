@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 510983D541;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71A4A3FB04;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YgriCXD5"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 1140DC433BB;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RqHa9edS"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 56423C4163C;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1703023396;
-	bh=DAckDaszSSlkDLEk3IyqFSh0AOhApSXl06lz755SSsI=;
+	bh=hUeer878kHfZToHNcJoRPcV1xECdXnEhs/Nyvz2zVvc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=YgriCXD5URzeXr6DCUm/gh7K66SvEYU89s5u8CA7/fJqyvnWT6AHywiSg+QKU7qgz
-	 bY+DoIo/reR4CyKji5GQcDiHIr8phMIJr9Cth7DDvx4cVSXVwK4SQ4cLgYWcr7zdtu
-	 jO+Q6sbo/IxHA42BUuNfllrdB1c/k40iExK+RKcR44NY33Z5Sj5RnK9tra4taQtliN
-	 UWfXDUC0EQwe5nSnnh62zEXsEoaRxkJZqQSY0HHMd4opDE6esu0v273INHDs/yeC7i
-	 yoS4smDBqaeCbaphiXACulsl7MstW2JqIjeM4b8W8D/aOUU/xQr1N4pdj5jcl0D2lq
-	 aDAvF7Ja8dc+g==
+	b=RqHa9edS2lcZtGxaOHUorag9ZUWw2PIcweiVofAtU8YbY/pchL+SZ/W+rYqqrFjnF
+	 pRgQeVUTBRCT8Adp2alKxKZ4q2Sp9F1R8FJFTm4i02eeCQYRV7mkKPPrbPLYhAt4kf
+	 d0nAbVNmBHunwFW1rUgTRCqmPYemUEgeJ1GVtfKciQZ11lsHh7H1EKJyLhEqcIImU2
+	 /5/ysjo3gcHNxGbHjWSs+MWhdQT7p+vYfM7kkLjWi7Tssbb+ICBrnE+Oq+QY5DDCcX
+	 5Wqwc9Q3RCIAprb0ATOImyHP2LfzLUG/cJln+p3thVI8IxXq7hj8Mq2q/SKf7dD1V8
+	 uQSijh84etlKA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00291C41535;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47AEEC4706E;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 From: Sam Ravnborg via B4 Relay <devnull+sam.ravnborg.org@kernel.org>
-Date: Tue, 19 Dec 2023 23:03:17 +0100
-Subject: [PATCH 12/27] sparc32: Drop mbus support
+Date: Tue, 19 Dec 2023 23:03:23 +0100
+Subject: [PATCH 18/27] sparc32: Drop support for 7 register windows
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -31,7 +31,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231219-sam-sparc32-sunset-v3-v1-12-64bb44b598c5@ravnborg.org>
+Message-Id: <20231219-sam-sparc32-sunset-v3-v1-18-64bb44b598c5@ravnborg.org>
 References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 In-Reply-To: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -44,11 +44,11 @@ Cc: Helge Deller <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
  linux-sound@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=9849;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=15090;
  i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
- bh=OENRqL5IVKXpRTjnIUYIIVTRNMdjWxbr4jcDVkzLAoA=; =?utf-8?q?b=3D70Bho5cmTjpR?=
- =?utf-8?q?FOojcHC24i7zyjKARvPUs/vOhorzskKi52EwFYqobc9HK/QYj98yCZyH0xO4uG6M?=
- a7Vao9quBjLRo9SqlCA3h7wlIfnRk9vrqUhGfZoA1dChtSKXM34u
+ bh=ihMG1Y5AtoVjy/gldPt3VrNpQv5kvVGjd8vY2r8DSK8=; =?utf-8?q?b=3DtitO9Jm1CDCe?=
+ =?utf-8?q?qX4B3E34NGwQ5uja4Jo/TcmtNONt1AhdQWk3eRRbOAgRwXBHfA/BxOvXa7PR5r93?=
+ GziGgtPkCqF1zmfel+mEKYviAW1/tiKSdY2RHp574D9dVDMaCNzu
 X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
  pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
 X-Endpoint-Received: by B4 Relay for sam@ravnborg.org/20230107 with auth_id=22
@@ -57,303 +57,473 @@ Reply-To: <sam@ravnborg.org>
 
 From: Sam Ravnborg <sam@ravnborg.org>
 
-Only used by older SPARC HW, not used by LEON.
+Some older SPARC CPUs had support for only 7 register windows.
+To support this run-time patching was used.
+
+LEON demand 8 register windows for use with Linux so
+there is no need to support the 7 window configuration.
+
+The complexity of the assembler code is reduced
+when dropping the run-time patching, thus increasing
+the maintainability.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Arnd Bergmann <arnd@kernel.org>
 Cc: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/include/asm/elf_32.h |  2 -
- arch/sparc/include/asm/mbus.h   | 97 -----------------------------------------
- arch/sparc/kernel/cpu.c         |  1 -
- arch/sparc/kernel/setup_32.c    |  1 -
- arch/sparc/mm/iommu.c           | 18 ++------
- arch/sparc/mm/srmmu.c           | 48 --------------------
- 6 files changed, 3 insertions(+), 164 deletions(-)
+ arch/sparc/include/asm/switch_to_32.h |  1 -
+ arch/sparc/kernel/entry.S             | 28 ++++-----------
+ arch/sparc/kernel/etrap_32.S          | 35 +++++--------------
+ arch/sparc/kernel/head_32.S           | 65 -----------------------------------
+ arch/sparc/kernel/rtrap_32.S          | 55 +++++++++++++----------------
+ arch/sparc/kernel/wof.S               | 43 ++++++++---------------
+ arch/sparc/kernel/wuf.S               | 20 +++--------
+ 7 files changed, 57 insertions(+), 190 deletions(-)
 
-diff --git a/arch/sparc/include/asm/elf_32.h b/arch/sparc/include/asm/elf_32.h
-index 37a6016c9ccd..b2cca9be55c2 100644
---- a/arch/sparc/include/asm/elf_32.h
-+++ b/arch/sparc/include/asm/elf_32.h
-@@ -91,8 +91,6 @@ typedef struct {
- 	unsigned int	pr_q[64];
- } elf_fpregset_t;
+diff --git a/arch/sparc/include/asm/switch_to_32.h b/arch/sparc/include/asm/switch_to_32.h
+index 42eeafcb8a41..7aaaf31c09b4 100644
+--- a/arch/sparc/include/asm/switch_to_32.h
++++ b/arch/sparc/include/asm/switch_to_32.h
+@@ -37,7 +37,6 @@ extern struct thread_info *current_set[NR_CPUS];
  
--#include <asm/mbus.h>
--
- /*
-  * This is used to ensure we don't load something for the wrong architecture.
-  */
-diff --git a/arch/sparc/include/asm/mbus.h b/arch/sparc/include/asm/mbus.h
-deleted file mode 100644
-index 8b6dbe701b9b..000000000000
---- a/arch/sparc/include/asm/mbus.h
-+++ /dev/null
-@@ -1,97 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * mbus.h:  Various defines for MBUS modules.
-- *
-- * Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
-- */
--
--#ifndef _SPARC_MBUS_H
--#define _SPARC_MBUS_H
--
--#include <asm/ross.h>    /* HyperSparc stuff */
--#include <asm/viking.h>  /* Ugh, bug city... */
--
--enum mbus_module {
--	HyperSparc        = 0,
--	Swift_ok          = 4,
--	Swift_bad_c       = 5,
--	Swift_lots_o_bugs = 6,
--	Tsunami           = 7,
--	Viking_12         = 8,
--	Viking_2x         = 9,
--	Viking_30         = 10,
--	Viking_35         = 11,
--	Viking_new        = 12,
--	TurboSparc	  = 13,
--	SRMMU_INVAL_MOD   = 14,
--};
--
--extern enum mbus_module srmmu_modtype;
--extern unsigned int viking_rev, swift_rev, cypress_rev;
--
--/* HW Mbus module bugs we have to deal with */
--#define HWBUG_COPYBACK_BROKEN        0x00000001
--#define HWBUG_ASIFLUSH_BROKEN        0x00000002
--#define HWBUG_VACFLUSH_BITROT        0x00000004
--#define HWBUG_KERN_ACCBROKEN         0x00000008
--#define HWBUG_KERN_CBITBROKEN        0x00000010
--#define HWBUG_MODIFIED_BITROT        0x00000020
--#define HWBUG_PC_BADFAULT_ADDR       0x00000040
--#define HWBUG_SUPERSCALAR_BAD        0x00000080
--#define HWBUG_PACINIT_BITROT         0x00000100
--
--/* First the module type values. To find out which you have, just load
-- * the mmu control register from ASI_M_MMUREG alternate address space and
-- * shift the value right 28 bits.
-- */
--/* IMPL field means the company which produced the chip. */
--#define MBUS_VIKING        0x4   /* bleech, Texas Instruments Module */
--#define MBUS_LSI           0x3   /* LSI Logics */
--#define MBUS_ROSS          0x1   /* Ross is nice */
--#define MBUS_FMI           0x0   /* Fujitsu Microelectronics/Swift */
--
--/* Ross Module versions */
--#define ROSS_604_REV_CDE        0x0   /* revisions c, d, and e */
--#define ROSS_604_REV_F          0x1   /* revision f */
--#define ROSS_605                0xf   /* revision a, a.1, and a.2 */
--#define ROSS_605_REV_B          0xe   /* revision b */
--
--/* TI Viking Module versions */
--#define VIKING_REV_12           0x1   /* Version 1.2 or SPARCclassic's CPU */
--#define VIKING_REV_2            0x2   /* Version 2.1, 2.2, 2.3, and 2.4 */
--#define VIKING_REV_30           0x3   /* Version 3.0 */
--#define VIKING_REV_35           0x4   /* Version 3.5 */
--
--/* LSI Logics. */
--#define LSI_L64815		0x0
--
--/* Fujitsu */
--#define FMI_AURORA		0x4   /* MB8690x, a Swift module... */
--#define FMI_TURBO		0x5   /* MB86907, a TurboSparc module... */
--
--/* For multiprocessor support we need to be able to obtain the CPU id and
-- * the MBUS Module id.
-- */
--
--/* The CPU ID is encoded in the trap base register, 20 bits to the left of
-- * bit zero, with 2 bits being significant.
-- */
--#define TBR_ID_SHIFT            20
--
--static inline int get_cpuid(void)
--{
--	register int retval;
--	__asm__ __volatile__("rd %%tbr, %0\n\t"
--			     "srl %0, %1, %0\n\t" :
--			     "=r" (retval) :
--			     "i" (TBR_ID_SHIFT));
--	return (retval & 3);
--}
--
--static inline int get_modid(void)
--{
--	return (get_cpuid() | 0x8);
--}
--
--	
--#endif /* !(_SPARC_MBUS_H) */
-diff --git a/arch/sparc/kernel/cpu.c b/arch/sparc/kernel/cpu.c
-index 79cd6ccfeac0..cca7de051593 100644
---- a/arch/sparc/kernel/cpu.c
-+++ b/arch/sparc/kernel/cpu.c
-@@ -19,7 +19,6 @@
- #include <asm/page.h>
- #include <asm/head.h>
- #include <asm/psr.h>
--#include <asm/mbus.h>
- #include <asm/cpudata.h>
+ #define prepare_arch_switch(next) do { \
+ 	__asm__ __volatile__( \
+-	".globl\tflush_patch_switch\nflush_patch_switch:\n\t" \
+ 	"save %sp, -0x40, %sp; save %sp, -0x40, %sp; save %sp, -0x40, %sp\n\t" \
+ 	"save %sp, -0x40, %sp; save %sp, -0x40, %sp; save %sp, -0x40, %sp\n\t" \
+ 	"save %sp, -0x40, %sp\n\t" \
+diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
+index 9cf8f87e8c42..078a8f7f8383 100644
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -384,11 +384,8 @@ do_flush_windows:
  
- #include "kernel.h"
-diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
-index e3b72a7b46d3..5a497140c52a 100644
---- a/arch/sparc/kernel/setup_32.c
-+++ b/arch/sparc/kernel/setup_32.c
-@@ -41,7 +41,6 @@
- #include <asm/page.h>
- #include <asm/traps.h>
- #include <asm/vaddrs.h>
--#include <asm/mbus.h>
- #include <asm/idprom.h>
- #include <asm/cpudata.h>
- #include <asm/setup.h>
-diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
-index 5a5080db800f..832e5ff8b663 100644
---- a/arch/sparc/mm/iommu.c
-+++ b/arch/sparc/mm/iommu.c
-@@ -19,7 +19,6 @@
+ 	RESTORE_ALL
  
- #include <asm/io.h>
- #include <asm/mxcc.h>
--#include <asm/mbus.h>
- #include <asm/cacheflush.h>
- #include <asm/tlbflush.h>
- #include <asm/bitext.h>
-@@ -117,13 +116,7 @@ static void __init sbus_iommu_init(struct platform_device *op)
- 		prom_halt();
- 	}
- 	bit_map_init(&iommu->usemap, bitmap, IOMMU_NPTES);
--	/* To be coherent on HyperSparc, the page color of DVMA
--	 * and physical addresses must match.
--	 */
--	if (srmmu_modtype == HyperSparc)
--		iommu->usemap.num_colors = vac_cache_size >> PAGE_SHIFT;
--	else
--		iommu->usemap.num_colors = 1;
-+	iommu->usemap.num_colors = 1;
+-	.globl	flush_patch_one
+-
+ 	/* We get these for debugging routines using __builtin_return_address() */
+ dfw_kernel:
+-flush_patch_one:
+ 	FLUSH_ALL_KERNEL_WINDOWS
  
- 	printk(KERN_INFO "IOMMU: impl %d vers %d table 0x%p[%d B] map [%d b]\n",
- 	       impl, vers, iommu->page_table,
-@@ -445,11 +438,6 @@ static const struct dma_map_ops sbus_iommu_dma_pflush_ops = {
+ 	/* Advance over the trap instruction. */
+@@ -558,10 +555,9 @@ sys_rt_sigreturn:
+ 	 * XXX code just like on sparc64... -DaveM
+ 	 */
+ 	.align	4
+-	.globl	sys_fork, flush_patch_two
++	.globl	sys_fork
+ sys_fork:
+ 	mov	%o7, %l5
+-flush_patch_two:
+ 	FLUSH_ALL_KERNEL_WINDOWS;
+ 	ld	[%curptr + TI_TASK], %o4
+ 	rd	%psr, %g4
+@@ -574,10 +570,9 @@ flush_patch_two:
+ 	 mov	%l5, %o7
  
- void __init ld_mmu_iommu(void)
- {
--	if (viking_mxcc_present || srmmu_modtype == HyperSparc) {
--		dvma_prot = __pgprot(SRMMU_CACHE | SRMMU_ET_PTE | SRMMU_PRIV);
--		ioperm_noc = IOPTE_CACHE | IOPTE_WRITE | IOPTE_VALID;
--	} else {
--		dvma_prot = __pgprot(SRMMU_ET_PTE | SRMMU_PRIV);
--		ioperm_noc = IOPTE_WRITE | IOPTE_VALID;
--	}
-+	dvma_prot = __pgprot(SRMMU_CACHE | SRMMU_ET_PTE | SRMMU_PRIV);
-+	ioperm_noc = IOPTE_CACHE | IOPTE_WRITE | IOPTE_VALID;
- }
-diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
-index b00683d65592..9161f55049ae 100644
---- a/arch/sparc/mm/srmmu.c
-+++ b/arch/sparc/mm/srmmu.c
-@@ -34,7 +34,6 @@
- #include <asm/cache.h>
- #include <asm/traps.h>
- #include <asm/oplib.h>
--#include <asm/mbus.h>
- #include <asm/page.h>
- #include <asm/asi.h>
- #include <asm/smp.h>
-@@ -51,8 +50,6 @@
+ 	/* Whee, kernel threads! */
+-	.globl	sys_clone, flush_patch_three
++	.globl	sys_clone
+ sys_clone:
+ 	mov	%o7, %l5
+-flush_patch_three:
+ 	FLUSH_ALL_KERNEL_WINDOWS;
+ 	ld	[%curptr + TI_TASK], %o4
+ 	rd	%psr, %g4
+@@ -590,9 +585,8 @@ flush_patch_three:
+ 	 mov	%l5, %o7
  
- #include "mm_32.h"
+ 	/* Whee, real vfork! */
+-	.globl	sys_vfork, flush_patch_four
++	.globl	sys_vfork
+ sys_vfork:
+-flush_patch_four:
+ 	FLUSH_ALL_KERNEL_WINDOWS;
+ 	ld	[%curptr + TI_TASK], %o4
+ 	rd	%psr, %g4
+@@ -909,17 +903,7 @@ breakpoint_trap:
+ #endif
  
--enum mbus_module srmmu_modtype;
--static unsigned int hwbug_bitmask;
- int vac_cache_size;
- EXPORT_SYMBOL(vac_cache_size);
- int vac_line_size;
-@@ -1117,7 +1114,6 @@ static const struct sparc32_cachetlb_ops hypersparc_ops = {
- static void __init init_hypersparc(void)
- {
- 	srmmu_name = "ROSS HyperSparc";
--	srmmu_modtype = HyperSparc;
+ 	.align	4
+-	.globl	flush_patch_exception
+-flush_patch_exception:
+-	FLUSH_ALL_KERNEL_WINDOWS;
+-	ldd	[%o0], %o6
+-	jmpl	%o7 + 0xc, %g0			! see asm-sparc/processor.h
+-	 mov	1, %g1				! signal EFAULT condition
+-
+-	.align	4
+-	.globl	kill_user_windows, kuw_patch1_7win
+-	.globl	kuw_patch1
+-kuw_patch1_7win:	sll	%o3, 6, %o3
++	.globl	kill_user_windows
  
- 	init_vac_layout();
+ 	/* No matter how much overhead this routine has in the worst
+ 	 * case scenario, it is several times better than taking the
+@@ -939,11 +923,11 @@ kill_user_windows:
+ 	be	4f				! yep, we are done
+ 	 rd	%wim, %o3			! get current wim
+ 	srl	%o3, 1, %o4			! simulate a save
+-kuw_patch1:
++kuw_next:
+ 	sll	%o3, 7, %o3			! compute next wim
+ 	or	%o4, %o3, %o3			! result
+ 	andncc	%o0, %o3, %o0			! clean this bit in umask
+-	bne	kuw_patch1			! not done yet
++	bne	kuw_next			! not done yet
+ 	 srl	%o3, 1, %o4			! begin another save simulation
+ 	wr	%o3, 0x0, %wim			! set the new wim
+ 	st	%g0, [%g6 + TI_UWINMASK]	! clear uwinmask
+diff --git a/arch/sparc/kernel/etrap_32.S b/arch/sparc/kernel/etrap_32.S
+index bb222459f097..95dfdea1f36c 100644
+--- a/arch/sparc/kernel/etrap_32.S
++++ b/arch/sparc/kernel/etrap_32.S
+@@ -30,18 +30,6 @@
+ 	.text
+ 	.align 4
  
-@@ -1176,45 +1172,6 @@ static void __init init_swift(void)
- 			     "=r" (swift_rev) :
- 			     "r" (SWIFT_MASKID_ADDR), "i" (ASI_M_BYPASS));
- 	srmmu_name = "Fujitsu Swift";
--	switch (swift_rev) {
--	case 0x11:
--	case 0x20:
--	case 0x23:
--	case 0x30:
--		srmmu_modtype = Swift_lots_o_bugs;
--		hwbug_bitmask |= (HWBUG_KERN_ACCBROKEN | HWBUG_KERN_CBITBROKEN);
--		/*
--		 * Gee george, I wonder why Sun is so hush hush about
--		 * this hardware bug... really braindamage stuff going
--		 * on here.  However I think we can find a way to avoid
--		 * all of the workaround overhead under Linux.  Basically,
--		 * any page fault can cause kernel pages to become user
--		 * accessible (the mmu gets confused and clears some of
--		 * the ACC bits in kernel ptes).  Aha, sounds pretty
--		 * horrible eh?  But wait, after extensive testing it appears
--		 * that if you use pgd_t level large kernel pte's (like the
--		 * 4MB pages on the Pentium) the bug does not get tripped
--		 * at all.  This avoids almost all of the major overhead.
--		 * Welcome to a world where your vendor tells you to,
--		 * "apply this kernel patch" instead of "sorry for the
--		 * broken hardware, send it back and we'll give you
--		 * properly functioning parts"
--		 */
--		break;
--	case 0x25:
--	case 0x31:
--		srmmu_modtype = Swift_bad_c;
--		hwbug_bitmask |= HWBUG_KERN_CBITBROKEN;
--		/*
--		 * You see Sun allude to this hardware bug but never
--		 * admit things directly, they'll say things like,
--		 * "the Swift chip cache problems" or similar.
--		 */
--		break;
--	default:
--		srmmu_modtype = Swift_ok;
--		break;
--	}
- 
- 	sparc32_cachetlb_ops = &swift_ops;
- 	flush_page_for_dma_global = 0;
-@@ -1367,7 +1324,6 @@ static const struct sparc32_cachetlb_ops turbosparc_ops = {
- static void __init init_turbosparc(void)
- {
- 	srmmu_name = "Fujitsu TurboSparc";
--	srmmu_modtype = TurboSparc;
- 	sparc32_cachetlb_ops = &turbosparc_ops;
- 	poke_srmmu = poke_turbosparc;
- }
-@@ -1406,7 +1362,6 @@ static void __init init_tsunami(void)
+-	/* SEVEN WINDOW PATCH INSTRUCTIONS */
+-	.globl	tsetup_7win_patch1, tsetup_7win_patch2
+-	.globl	tsetup_7win_patch3, tsetup_7win_patch4
+-	.globl	tsetup_7win_patch5, tsetup_7win_patch6
+-tsetup_7win_patch1:	sll	%t_wim, 0x6, %t_wim
+-tsetup_7win_patch2:	and	%g2, 0x7f, %g2
+-tsetup_7win_patch3:	and	%g2, 0x7f, %g2
+-tsetup_7win_patch4:	and	%g1, 0x7f, %g1
+-tsetup_7win_patch5:	sll	%t_wim, 0x6, %t_wim
+-tsetup_7win_patch6:	and	%g2, 0x7f, %g2
+-	/* END OF PATCH INSTRUCTIONS */
+-
+ 	/* At trap time, interrupts and all generic traps do the
+ 	 * following:
+ 	 *
+@@ -72,9 +60,7 @@ tsetup_7win_patch6:	and	%g2, 0x7f, %g2
+ 	 * trap pc and npc, and %l3 contains the trap time %wim.
  	 */
  
- 	srmmu_name = "TI Tsunami";
--	srmmu_modtype = Tsunami;
- 	sparc32_cachetlb_ops = &tsunami_ops;
- 	poke_srmmu = poke_tsunami;
+-	.globl	trap_setup, tsetup_patch1, tsetup_patch2
+-	.globl	tsetup_patch3, tsetup_patch4
+-	.globl	tsetup_patch5, tsetup_patch6
++	.globl	trap_setup
+ trap_setup:
+ 	/* Calculate mask of trap window.  See if from user
+ 	 * or kernel and branch conditionally.
+@@ -109,11 +95,10 @@ trap_setup_kernel_spill:
+ 	 * %wim and go.
+ 	 */
+ 	 srl	%t_wim, 0x1, %g2	! begin computation of new %wim
+-tsetup_patch1:
+-	sll	%t_wim, 0x7, %t_wim	! patched on 7 window Sparcs
++
++	sll	%t_wim, 0x7, %t_wim
+ 	or	%t_wim, %g2, %g2
+-tsetup_patch2:
+-	and	%g2, 0xff, %g2		! patched on 7 window Sparcs
++	and	%g2, 0xff, %g2
  
-@@ -1546,9 +1501,6 @@ static void __init get_srmmu_type(void)
- 	unsigned long mreg, psr;
- 	unsigned long mod_typ, mod_rev, psr_typ, psr_vers;
+ 	save	%g0, %g0, %g0
  
--	srmmu_modtype = SRMMU_INVAL_MOD;
--	hwbug_bitmask = 0;
+@@ -185,8 +170,7 @@ trap_setup_from_user:
+ 	 sub	%g2, 0x1, %g2
+ 1:
+ 	andn	%g2, %t_twinmask, %g2
+-tsetup_patch3:
+-	and	%g2, 0xff, %g2			! patched on 7win Sparcs
++	and	%g2, 0xff, %g2
+ 	st	%g2, [%curptr + TI_UWINMASK]	! store new umask
+ 
+ 	jmpl	%t_retpc + 0x8, %g0		! return to caller
+@@ -199,14 +183,11 @@ trap_setup_user_spill:
+ 	 * is in %g1 upon entry to here.
+ 	 */
+ 
+-tsetup_patch4:
+-	and	%g1, 0xff, %g1		! patched on 7win Sparcs, mask
++	and	%g1, 0xff, %g1
+ 	srl	%t_wim, 0x1, %g2	! compute new %wim
+-tsetup_patch5:
+-	sll	%t_wim, 0x7, %t_wim	! patched on 7win Sparcs
++	sll	%t_wim, 0x7, %t_wim
+ 	or	%t_wim, %g2, %g2	! %g2 is new %wim
+-tsetup_patch6:
+-	and	%g2, 0xff, %g2		! patched on 7win Sparcs
++	and	%g2, 0xff, %g2
+ 	andn	%g1, %g2, %g1		! clear this bit in %g1
+ 	st	%g1, [%curptr + TI_UWINMASK]
+ 
+diff --git a/arch/sparc/kernel/head_32.S b/arch/sparc/kernel/head_32.S
+index 03dc232dd235..908c77cb456e 100644
+--- a/arch/sparc/kernel/head_32.S
++++ b/arch/sparc/kernel/head_32.S
+@@ -404,71 +404,6 @@ leon_init:
+ 		wr	%g1, 0x0, %wim			! make window 1 invalid
+ 		WRITE_PAUSE
+ 
+-		cmp	%g3, 0x7
+-		bne	2f
+-		 nop
 -
- 	mreg = srmmu_get_mmureg(); psr = get_psr();
- 	mod_typ = (mreg & 0xf0000000) >> 28;
- 	mod_rev = (mreg & 0x0f000000) >> 24;
+-		/* Adjust our window handling routines to
+-		 * do things correctly on 7 window Sparcs.
+-		 */
+-
+-#define		PATCH_INSN(src, dest) \
+-		set	src, %g5; \
+-		set	dest, %g2; \
+-		ld	[%g5], %g4; \
+-		st	%g4, [%g2];
+-
+-		/* Patch for window spills... */
+-		PATCH_INSN(spnwin_patch1_7win, spnwin_patch1)
+-		PATCH_INSN(spnwin_patch2_7win, spnwin_patch2)
+-		PATCH_INSN(spnwin_patch3_7win, spnwin_patch3)
+-
+-		/* Patch for window fills... */
+-		PATCH_INSN(fnwin_patch1_7win, fnwin_patch1)
+-		PATCH_INSN(fnwin_patch2_7win, fnwin_patch2)
+-
+-		/* Patch for trap entry setup... */
+-		PATCH_INSN(tsetup_7win_patch1, tsetup_patch1)
+-		PATCH_INSN(tsetup_7win_patch2, tsetup_patch2)
+-		PATCH_INSN(tsetup_7win_patch3, tsetup_patch3)
+-		PATCH_INSN(tsetup_7win_patch4, tsetup_patch4)
+-		PATCH_INSN(tsetup_7win_patch5, tsetup_patch5)
+-		PATCH_INSN(tsetup_7win_patch6, tsetup_patch6)
+-
+-		/* Patch for returning from traps... */
+-		PATCH_INSN(rtrap_7win_patch1, rtrap_patch1)
+-		PATCH_INSN(rtrap_7win_patch2, rtrap_patch2)
+-		PATCH_INSN(rtrap_7win_patch3, rtrap_patch3)
+-		PATCH_INSN(rtrap_7win_patch4, rtrap_patch4)
+-		PATCH_INSN(rtrap_7win_patch5, rtrap_patch5)
+-
+-		/* Patch for killing user windows from the register file. */
+-		PATCH_INSN(kuw_patch1_7win, kuw_patch1)
+-
+-		/* Now patch the kernel window flush sequences.
+-		 * This saves 2 traps on every switch and fork.
+-		 */
+-		set	0x01000000, %g4
+-		set	flush_patch_one, %g5
+-		st	%g4, [%g5 + 0x18]
+-		st	%g4, [%g5 + 0x1c]
+-		set	flush_patch_two, %g5
+-		st	%g4, [%g5 + 0x18]
+-		st	%g4, [%g5 + 0x1c]
+-		set	flush_patch_three, %g5
+-		st	%g4, [%g5 + 0x18]
+-		st	%g4, [%g5 + 0x1c]
+-		set	flush_patch_four, %g5
+-		st	%g4, [%g5 + 0x18]
+-		st	%g4, [%g5 + 0x1c]
+-		set	flush_patch_exception, %g5
+-		st	%g4, [%g5 + 0x18]
+-		st	%g4, [%g5 + 0x1c]
+-		set	flush_patch_switch, %g5
+-		st	%g4, [%g5 + 0x18]
+-		st	%g4, [%g5 + 0x1c]
+-
+-2:
+ 		sethi	%hi(nwindows), %g4
+ 		st	%g3, [%g4 + %lo(nwindows)]	! store final value
+ 		sub	%g3, 0x1, %g3
+diff --git a/arch/sparc/kernel/rtrap_32.S b/arch/sparc/kernel/rtrap_32.S
+index a232b367c219..8383048c3b5e 100644
+--- a/arch/sparc/kernel/rtrap_32.S
++++ b/arch/sparc/kernel/rtrap_32.S
+@@ -23,15 +23,6 @@
+ #define glob_tmp  g4
+ #define curptr    g6
+ 
+-	/* 7 WINDOW SPARC PATCH INSTRUCTIONS */
+-	.globl	rtrap_7win_patch1, rtrap_7win_patch2, rtrap_7win_patch3
+-	.globl	rtrap_7win_patch4, rtrap_7win_patch5
+-rtrap_7win_patch1:	srl	%t_wim, 0x6, %glob_tmp
+-rtrap_7win_patch2:	and	%glob_tmp, 0x7f, %glob_tmp
+-rtrap_7win_patch3:	srl	%g1, 7, %g2
+-rtrap_7win_patch4:	srl	%g2, 6, %g2
+-rtrap_7win_patch5:	and	%g1, 0x7f, %g1
+-	/* END OF PATCH INSTRUCTIONS */
+ 
+ 	/* We need to check for a few things which are:
+ 	 * 1) The need to call schedule() because this
+@@ -117,17 +108,17 @@ ret_trap_nobufwins:
+ 	bne	ret_trap_userwins_ok
+ 	 nop
+ 
+-		/* Calculate new %wim, we have to pull a register
+-		 * window from the users stack.
+-		 */
++	/* Calculate new %wim, we have to pull a register
++	 * window from the users stack.
++	 */
+ ret_trap_pull_one_window:
+-		rd	%wim, %t_wim
+-		sll	%t_wim, 0x1, %twin_tmp1
+-rtrap_patch1:	srl	%t_wim, 0x7, %glob_tmp
+-		or	%glob_tmp, %twin_tmp1, %glob_tmp
+-rtrap_patch2:	and	%glob_tmp, 0xff, %glob_tmp
++	rd	%wim, %t_wim
++	sll	%t_wim, 0x1, %twin_tmp1
++	srl	%t_wim, 0x7, %glob_tmp
++	or	%glob_tmp, %twin_tmp1, %glob_tmp
++	and	%glob_tmp, 0xff, %glob_tmp
+ 
+-		wr	%glob_tmp, 0x0, %wim
++	wr	%glob_tmp, 0x0, %wim
+ 
+ 	/* Here comes the architecture specific
+ 	 * branch to the user stack checking routine
+@@ -174,20 +165,20 @@ ret_trap_unaligned_pc:
+ 	 ld	[%curptr + TI_FLAGS], %g2
+ 
+ ret_trap_kernel:
+-		/* Will the rett land us in the invalid window? */
+-		mov	2, %g1
+-		sll	%g1, %t_psr, %g1
+-rtrap_patch3:	srl	%g1, 8, %g2
+-		or	%g1, %g2, %g1
+-		rd	%wim, %g2
+-		andcc	%g2, %g1, %g0
+-		be	1f		! Nope, just return from the trap
+-		 sll	%g2, 0x1, %g1
+-
+-		/* We have to grab a window before returning. */
+-rtrap_patch4:	srl	%g2, 7,  %g2
+-		or	%g1, %g2, %g1
+-rtrap_patch5:	and	%g1, 0xff, %g1
++	/* Will the rett land us in the invalid window? */
++	mov	2, %g1
++	sll	%g1, %t_psr, %g1
++	srl	%g1, 8, %g2
++	or	%g1, %g2, %g1
++	rd	%wim, %g2
++	andcc	%g2, %g1, %g0
++	be	1f		! Nope, just return from the trap
++	 sll	%g2, 0x1, %g1
++
++	/* We have to grab a window before returning. */
++	srl	%g2, 7,  %g2
++	or	%g1, %g2, %g1
++	and	%g1, 0xff, %g1
+ 
+ 	wr	%g1, 0x0, %wim
+ 
+diff --git a/arch/sparc/kernel/wof.S b/arch/sparc/kernel/wof.S
+index fe4cfd4abcd2..30c5ebdd035c 100644
+--- a/arch/sparc/kernel/wof.S
++++ b/arch/sparc/kernel/wof.S
+@@ -43,18 +43,6 @@
+ #define twin_tmp    l4 /* Temp reg, only usable in trap window  T */
+ #define glob_tmp    g5 /* Global temporary reg, usable anywhere G */
+ 
+-	.text
+-	.align	4
+-	/* BEGINNING OF PATCH INSTRUCTIONS */
+-	/* On a 7-window Sparc the boot code patches spnwin_*
+-	 * instructions with the following ones.
+-	 */
+-	.globl	spnwin_patch1_7win, spnwin_patch2_7win, spnwin_patch3_7win
+-spnwin_patch1_7win:	sll	%t_wim, 6, %glob_tmp
+-spnwin_patch2_7win:	and	%glob_tmp, 0x7f, %glob_tmp
+-spnwin_patch3_7win:	and	%twin_tmp, 0x7f, %twin_tmp
+-	/* END OF PATCH INSTRUCTIONS */
+-
+ 	/* The trap entry point has done the following:
+ 	 *
+ 	 * rd    %psr, %l0
+@@ -69,7 +57,6 @@ spnwin_patch3_7win:	and	%twin_tmp, 0x7f, %twin_tmp
+ 	 * will be all zeroes.
+ 	 */
+ 	.globl	spill_window_entry 
+-	.globl	spnwin_patch1, spnwin_patch2, spnwin_patch3
+ spill_window_entry:
+ 	/* LOCATION: Trap Window */
+ 
+@@ -81,10 +68,10 @@ spill_window_entry:
+ 	 *
+ 	 * newwim = ((%wim>>1) | (%wim<<(nwindows - 1)));
+ 	 */
+-		srl	%t_wim, 0x1, %twin_tmp
+-spnwin_patch1:	sll	%t_wim, 7, %glob_tmp
+-		or	%glob_tmp, %twin_tmp, %glob_tmp
+-spnwin_patch2:	and	%glob_tmp, 0xff, %glob_tmp
++	srl	%t_wim, 0x1, %twin_tmp
++	sll	%t_wim, 7, %glob_tmp
++	or	%glob_tmp, %twin_tmp, %glob_tmp
++	and	%glob_tmp, 0xff, %glob_tmp
+ 
+ 	/* The trap entry point has set the condition codes
+ 	 * up for us to see if this is from user or kernel.
+@@ -222,17 +209,17 @@ spwin_user_stack_is_bolixed:
+ 	mov	1, %twin_tmp
+ 	st	%twin_tmp, [%curptr + TI_W_SAVED]
+ 
+-		/* Compute new user window mask.  What we are basically
+-		 * doing is taking two windows, the invalid one at trap
+-		 * time and the one we attempted to throw onto the users
+-		 * stack, and saying that everything else is an ok user
+-		 * window.  umask = ((~(%t_wim | %wim)) & valid_wim_bits)
+-		 */
+-		rd	%wim, %twin_tmp
+-		or	%twin_tmp, %t_wim, %twin_tmp
+-		not	%twin_tmp
+-spnwin_patch3:	and	%twin_tmp, 0xff, %twin_tmp	! patched on 7win Sparcs
+-		st	%twin_tmp, [%curptr + TI_UWINMASK]
++	/* Compute new user window mask.  What we are basically
++	 * doing is taking two windows, the invalid one at trap
++	 * time and the one we attempted to throw onto the users
++	 * stack, and saying that everything else is an ok user
++	 * window.  umask = ((~(%t_wim | %wim)) & valid_wim_bits)
++	 */
++	rd	%wim, %twin_tmp
++	or	%twin_tmp, %t_wim, %twin_tmp
++	not	%twin_tmp
++	and	%twin_tmp, 0xff, %twin_tmp
++	st	%twin_tmp, [%curptr + TI_UWINMASK]
+ 
+ #define STACK_OFFSET (THREAD_SIZE - TRACEREG_SZ - STACKFRAME_SZ)
+ 
+diff --git a/arch/sparc/kernel/wuf.S b/arch/sparc/kernel/wuf.S
+index 4c52b69d4b7a..dd2a539f92ff 100644
+--- a/arch/sparc/kernel/wuf.S
++++ b/arch/sparc/kernel/wuf.S
+@@ -68,27 +68,17 @@
+ 	 *           are done and return from trap if successful
+ 	 */
+ 
+-	/* BEGINNING OF PATCH INSTRUCTIONS */
+-
+-	/* On 7-window Sparc the boot code patches fnwin_patch1
+-	 * with the following instruction.
+-	 */
+-	.globl	fnwin_patch1_7win, fnwin_patch2_7win
+-fnwin_patch1_7win:	srl	%t_wim, 6, %twin_tmp2
+-fnwin_patch2_7win:	and	%twin_tmp1, 0x7f, %twin_tmp1
+-	/* END OF PATCH INSTRUCTIONS */
+-
+-	.globl	fill_window_entry, fnwin_patch1, fnwin_patch2
++	.globl	fill_window_entry
+ fill_window_entry:
+ 	/* LOCATION: Window 'T' */
+ 
+ 	/* Compute what the new %wim is going to be if we retrieve
+ 	 * the proper window off of the stack.
+ 	 */
+-		sll	%t_wim, 1, %twin_tmp1
+-fnwin_patch1:	srl	%t_wim, 7, %twin_tmp2
+-		or	%twin_tmp1, %twin_tmp2, %twin_tmp1
+-fnwin_patch2:	and	%twin_tmp1, 0xff, %twin_tmp1
++	sll	%t_wim, 1, %twin_tmp1
++	srl	%t_wim, 7, %twin_tmp2
++	or	%twin_tmp1, %twin_tmp2, %twin_tmp1
++	and	%twin_tmp1, 0xff, %twin_tmp1
+ 
+ 	wr	%twin_tmp1, 0x0, %wim	/* Make window 'I' invalid */
+ 
 
 -- 
 2.34.1

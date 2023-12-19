@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7297E3FB0C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 719A33FB03;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DfpFm8ha"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4D512C41679;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UXuy/jSM"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 36FE9C43140;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1703023396;
-	bh=ueTE/yyYgHzSFp5WMKMe/Lefd/L2b24jmufTFHxAvfE=;
+	bh=nyYkYuiVqyCR04RXBg22IyXtbGaFXThr3PFMPOtukLY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=DfpFm8ha4/lLJICaxIkhacldZVqeWfVpTTifZ3hNoTs1e8tkpbLpD/diqwYuD9wSX
-	 qRFNSgbDntYGtqiS/c12y5jJLzfKeQat99DJx7kZ+JOm/mwLARG8+zvfYoMbNMYfRa
-	 +Vk2pUOBvJ0UAn1w3wBusWPX02ToFjGc6yXLmDeBhH8kGwqgnscj6fZ4A19Kv5sULS
-	 3RF8S0cw7/GQLYVPHGkgfPt3sOTN9s2alQDdXTGF74m7pSWAe+8Gd6kbnWyroIQ2uw
-	 3yMAgTRKt6nPSv348iXoQE2EEiFyDTG4epHBdyHONHB2AcB9fr2108NjGGSn4hmCda
-	 cce50rATGbI+A==
+	b=UXuy/jSMfjZCEjI1VdiOpjbZNymmaGaZhoOoagGsQ+pQP8OJ3fP0KAdX8ghCvrgyd
+	 Uj7a9TILRU24l6U+RHL/ccTCXFXIvNRXuuh79zfg6itRoE0IqJC+UNJ5XZPb9ms8Ls
+	 jx60yVpc8iMbmxG9mKZxsF4mRICoLSMMnoKTJtEZcVeQUlpOIEanoAIZ3SrbDxW/gg
+	 J3vBaou45/oc5LOIgrbjKyn1kV0oK48e3NawBkC4fK3xx47Pdu1L3837WqFUDw1MLc
+	 JPKENcH9MEVeNWxHjC0FdOUjYoOod4Amx5GoFmlTEwKlrVlZr7g5ptURvmLSnHWnYn
+	 s8v4UvThze6wQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C7C5C4706C;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25E3FC46CD8;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 From: Sam Ravnborg via B4 Relay <devnull+sam.ravnborg.org@kernel.org>
-Date: Tue, 19 Dec 2023 23:03:22 +0100
-Subject: [PATCH 17/27] sparc32: Drop run-time patching of ASI instructions
+Date: Tue, 19 Dec 2023 23:03:20 +0100
+Subject: [PATCH 15/27] sparc32: Drop check for sparc_model
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -31,7 +31,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231219-sam-sparc32-sunset-v3-v1-17-64bb44b598c5@ravnborg.org>
+Message-Id: <20231219-sam-sparc32-sunset-v3-v1-15-64bb44b598c5@ravnborg.org>
 References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 In-Reply-To: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -44,11 +44,11 @@ Cc: Helge Deller <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
  linux-sound@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=17578;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=7589;
  i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
- bh=orJ6Re0yMKNUE7LoDpDBGUldkQ5REsl/uMUDjutJ2ic=; =?utf-8?q?b=3Dr7NiAbPFxlch?=
- =?utf-8?q?I+UKz5Osj//zaLUhUn6gUspaj0xpNy0ZPBY6BdVlAXvdMFamLS1Lty0uqM9nC6At?=
- YcK0tjS9AP7yJaMnNbcP/MLfgNCPBFvj/FCH2lPr0qbdmLMEDkzt
+ bh=Ug/1kUk7xzX48rBhZcKGw3mgqlUZBCpZ4RMKG+8KP+I=; =?utf-8?q?b=3DbXvVFC5D/ZOI?=
+ =?utf-8?q?dS61qfHNUW1erQ8hUNKMVTRiVKdXtTQ08Rg2XH2GNL3zQHM+NUQrelsZTxUS4hc3?=
+ I2b/ASr1AO20iUlMauOuxsmyi1k/Ey2dEm/cRlWtL7nX9bePme1x
 X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
  pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
 X-Endpoint-Received: by B4 Relay for sam@ravnborg.org/20230107 with auth_id=22
@@ -57,520 +57,278 @@ Reply-To: <sam@ravnborg.org>
 
 From: Sam Ravnborg <sam@ravnborg.org>
 
-With only LEON supported there is no need to run-time patch
-the instructions to match ASI.
-
-Move a few functions back to C with inline asm, now that
-run-time patching is not needed.
-
-Deleted a few functions that turns out not to be used rather
-than re-implement them in C.
+sparc32 is always LEON, so no need to check for the model.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Arnd Bergmann <arnd@kernel.org>
 Cc: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/include/asm/asmmacro.h | 22 -----------
- arch/sparc/include/asm/pgtsrmmu.h | 29 +++++++-------
- arch/sparc/include/asm/sections.h |  3 --
- arch/sparc/include/asm/winmacro.h | 11 +-----
- arch/sparc/kernel/entry.S         |  7 +---
- arch/sparc/kernel/etrap_32.S      | 15 +++----
- arch/sparc/kernel/rtrap_32.S      | 18 +++------
- arch/sparc/kernel/setup_32.c      | 37 -----------------
- arch/sparc/kernel/vmlinux.lds.S   |  5 ---
- arch/sparc/kernel/wof.S           | 18 +++------
- arch/sparc/kernel/wuf.S           | 21 ++++------
- arch/sparc/mm/Makefile            |  1 -
- arch/sparc/mm/srmmu_access.S      | 83 ---------------------------------------
- 13 files changed, 43 insertions(+), 227 deletions(-)
+ arch/sparc/include/asm/cpu_type.h | 18 ---------
+ arch/sparc/include/asm/io_32.h    |  4 +-
+ arch/sparc/include/asm/pgtsrmmu.h |  1 -
+ arch/sparc/kernel/devices.c       |  7 +---
+ arch/sparc/kernel/ioport.c        |  4 +-
+ arch/sparc/kernel/leon_pmc.c      | 16 ++++----
+ arch/sparc/kernel/setup_32.c      | 79 +--------------------------------------
+ 7 files changed, 12 insertions(+), 117 deletions(-)
 
-diff --git a/arch/sparc/include/asm/asmmacro.h b/arch/sparc/include/asm/asmmacro.h
-index 49aaf6f3bc55..d5782dbc7810 100644
---- a/arch/sparc/include/asm/asmmacro.h
-+++ b/arch/sparc/include/asm/asmmacro.h
-@@ -21,26 +21,4 @@
- /* All traps low-level code here must end with this macro. */
- #define RESTORE_ALL b ret_trap_entry; clr %l6;
+diff --git a/arch/sparc/include/asm/cpu_type.h b/arch/sparc/include/asm/cpu_type.h
+index 2b59799859d1..3e0154c3f41d 100644
+--- a/arch/sparc/include/asm/cpu_type.h
++++ b/arch/sparc/include/asm/cpu_type.h
+@@ -2,28 +2,10 @@
+ #ifndef __ASM_CPU_TYPE_H
+ #define __ASM_CPU_TYPE_H
  
--/* Support for run-time patching of single instructions.
-- * This is used to handle the differences in the ASI for
-- * MMUREGS for LEON and SUN.
-- *
-- * Sample:
-- * LEON_PI(lda [%g0] ASI_LEON_MMUREGS, %o0
-- * SUN_PI_(lda [%g0] ASI_M_MMUREGS, %o0
-- * PI == Patch Instruction
-- *
-- * For LEON we will use the first variant,
-- * and for all other we will use the SUN variant.
-- * The order is important.
+-/*
+- * Sparc (general) CPU types
 - */
--#define LEON_PI(...)				\
--662:	__VA_ARGS__
+-enum sparc_cpu {
+-  sun4m       = 0x00,
+-  sun4d       = 0x01,
+-  sun4e       = 0x02,
+-  sun4u       = 0x03, /* V8 ploos ploos */
+-  sun_unknown = 0x04,
+-  ap1000      = 0x05, /* almost a sun4m */
+-  sparc_leon  = 0x06, /* Leon SoC */
+-};
 -
--#define SUN_PI_(...)				\
--	.section .leon_1insn_patch, "ax";	\
--	.word 662b;				\
--	__VA_ARGS__;				\
--	.previous
+ #ifdef CONFIG_SPARC32
+-extern enum sparc_cpu sparc_cpu_model;
+ 
+ #define SUN4M_NCPUS            4              /* Architectural limit of sun4m. */
+ 
+-#else
 -
- #endif /* !(_SPARC_ASMMACRO_H) */
+-#define sparc_cpu_model sun4u
+-
+ #endif
+ 
+ #endif /* __ASM_CPU_TYPE_H */
+diff --git a/arch/sparc/include/asm/io_32.h b/arch/sparc/include/asm/io_32.h
+index 549f0a72280d..83abe709d120 100644
+--- a/arch/sparc/include/asm/io_32.h
++++ b/arch/sparc/include/asm/io_32.h
+@@ -138,11 +138,11 @@ void pci_iounmap(struct pci_dev *dev, void __iomem *);
+ 
+ static inline int sbus_can_dma_64bit(void)
+ {
+-	return 0; /* actually, sparc_cpu_model==sun4d */
++	return 0;
+ }
+ static inline int sbus_can_burst64(void)
+ {
+-	return 0; /* actually, sparc_cpu_model==sun4d */
++	return 0;
+ }
+ struct device;
+ void sbus_set_sbus64(struct device *, int);
 diff --git a/arch/sparc/include/asm/pgtsrmmu.h b/arch/sparc/include/asm/pgtsrmmu.h
-index 664d4bba1bcb..69c28ff3c4c4 100644
+index 7cb5cbc83211..664d4bba1bcb 100644
 --- a/arch/sparc/include/asm/pgtsrmmu.h
 +++ b/arch/sparc/include/asm/pgtsrmmu.h
-@@ -107,23 +107,24 @@ extern void *srmmu_nocache_pool;
- #define __nocache_va(PADDR) (__va((unsigned long)PADDR) - (unsigned long)srmmu_nocache_pool + SRMMU_NOCACHE_VADDR)
- #define __nocache_fix(VADDR) ((__typeof__(VADDR))__va(__nocache_pa(VADDR)))
+@@ -124,7 +124,6 @@ static inline void srmmu_flush_whole_tlb(void)
+ 			     "i" (ASI_M_FLUSH_PROBE) : "memory");
  
--/* Accessing the MMU control register. */
--unsigned int srmmu_get_mmureg(void);
--void srmmu_set_mmureg(unsigned long regval);
--void srmmu_set_ctable_ptr(unsigned long paddr);
--void srmmu_set_context(int context);
--int srmmu_get_context(void);
--unsigned int srmmu_get_fstatus(void);
--unsigned int srmmu_get_faddr(void);
--
--/* This is guaranteed on all SRMMU's. */
--static inline void srmmu_flush_whole_tlb(void)
-+static inline void srmmu_set_ctable_ptr(unsigned long paddr)
- {
--	__asm__ __volatile__("sta %%g0, [%0] %1\n\t": :
--			     "r" (0x400),        /* Flush entire TLB!! */
--			     "i" (ASI_M_FLUSH_PROBE) : "memory");
-+	paddr = ((paddr >> 4) & SRMMU_CTX_PMASK);
-+	asm volatile("sta %0, [%1] %2\n\t" : : "r" (paddr), "r" (SRMMU_CTXTBL_PTR), "i" (ASI_LEON_MMUREGS) : "memory");
-+}
-+
-+static inline void srmmu_set_context(int context)
-+{
-+	asm volatile("sta %0, [%1] %2\n\t" : : "r" (context), "r" (SRMMU_CTX_REG), "i" (ASI_LEON_MMUREGS) : "memory");
-+}
- 
-+static inline int srmmu_get_context(void)
-+{
-+	register int retval;
-+	asm volatile("lda [%1] %2, %0\n\t" : "=r" (retval) : "r" (SRMMU_CTX_REG), "i" (ASI_LEON_MMUREGS));
-+	return retval;
  }
-+
+-
  #endif /* !(__ASSEMBLY__) */
  
  #endif /* !(_SPARC_PGTSRMMU_H) */
-diff --git a/arch/sparc/include/asm/sections.h b/arch/sparc/include/asm/sections.h
-index 08f833453ab3..e9d28148850b 100644
---- a/arch/sparc/include/asm/sections.h
-+++ b/arch/sparc/include/asm/sections.h
-@@ -8,7 +8,4 @@
- /* sparc entry point */
- extern char _start[];
+diff --git a/arch/sparc/kernel/devices.c b/arch/sparc/kernel/devices.c
+index b3c2d51b22c4..2963e89611a3 100644
+--- a/arch/sparc/kernel/devices.c
++++ b/arch/sparc/kernel/devices.c
+@@ -26,8 +26,6 @@
  
--extern char __leon_1insn_patch[];
--extern char __leon_1insn_patch_end[];
+ static char *cpu_mid_prop(void)
+ {
+-	if (sparc_cpu_model == sun4d)
+-		return "cpu-id";
+ 	return "mid";
+ }
+ 
+@@ -40,8 +38,6 @@ static int check_cpu_node(phandle nd, int *cur_inst,
+ 			*prom_node = nd;
+ 		if (mid) {
+ 			*mid = prom_getintdefault(nd, cpu_mid_prop(), 0);
+-			if (sparc_cpu_model == sun4m)
+-				*mid &= 3;
+ 		}
+ 		return 0;
+ 	}
+@@ -92,8 +88,7 @@ static int cpu_mid_compare(phandle nd, int instance, void *_arg)
+ 	int this_mid;
+ 
+ 	this_mid = prom_getintdefault(nd, cpu_mid_prop(), 0);
+-	if (this_mid == desired_mid
+-	    || (sparc_cpu_model == sun4m && (this_mid & 3) == desired_mid))
++	if (this_mid == desired_mid)
+ 		return 0;
+ 	return -ENODEV;
+ }
+diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
+index 5ebca5c7af1e..cf0ace29704a 100644
+--- a/arch/sparc/kernel/ioport.c
++++ b/arch/sparc/kernel/ioport.c
+@@ -309,9 +309,7 @@ arch_initcall(sparc_register_ioport);
+ void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
+ 		enum dma_data_direction dir)
+ {
+-	if (dir != DMA_TO_DEVICE &&
+-	    sparc_cpu_model == sparc_leon &&
+-	    !sparc_leon3_snooping_enabled())
++	if (dir != DMA_TO_DEVICE && !sparc_leon3_snooping_enabled())
+ 		leon_flush_dcache_all();
+ }
+ 
+diff --git a/arch/sparc/kernel/leon_pmc.c b/arch/sparc/kernel/leon_pmc.c
+index 6c00cbad7fb5..d4a2d49f941c 100644
+--- a/arch/sparc/kernel/leon_pmc.c
++++ b/arch/sparc/kernel/leon_pmc.c
+@@ -79,15 +79,13 @@ static void pmc_leon_idle(void)
+ /* Install LEON Power Down function */
+ static int __init leon_pmc_install(void)
+ {
+-	if (sparc_cpu_model == sparc_leon) {
+-		/* Assign power management IDLE handler */
+-		if (pmc_leon_need_fixup())
+-			sparc_idle = pmc_leon_idle_fixup;
+-		else
+-			sparc_idle = pmc_leon_idle;
 -
- #endif
-diff --git a/arch/sparc/include/asm/winmacro.h b/arch/sparc/include/asm/winmacro.h
-index b6e911f5d93c..c496b04cdfaf 100644
---- a/arch/sparc/include/asm/winmacro.h
-+++ b/arch/sparc/include/asm/winmacro.h
-@@ -108,18 +108,11 @@
- 661:	rd	%tbr, %idreg;				\
- 	srl	%idreg, 10, %idreg;			\
- 	and	%idreg, 0xc, %idreg;			\
--	.section	.cpuid_patch, "ax";		\
--	/* Instruction location. */			\
--	.word		661b;				\
--	/* SUN4D implementation. */			\
--	lda	 [%g0] ASI_M_VIKING_TMP1, %idreg;	\
--	sll	 %idreg, 2, %idreg;			\
--	nop;						\
--	/* LEON implementation. */			\
-+							\
- 	rd 	%asr17, %idreg;				\
- 	srl	%idreg, 0x1c, %idreg;			\
- 	sll	%idreg, 0x02, %idreg;			\
--	.previous;					\
-+							\
- 	sethi    %hi(current_set), %dest_reg; 		\
- 	or       %dest_reg, %lo(current_set), %dest_reg;\
- 	ld       [%idreg + %dest_reg], %dest_reg;
-diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
-index 0f2417ee3f95..9cf8f87e8c42 100644
---- a/arch/sparc/kernel/entry.S
-+++ b/arch/sparc/kernel/entry.S
-@@ -469,11 +469,8 @@ srmmu_fault:
- 	mov	0x400, %l5
- 	mov	0x300, %l4
+-		printk(KERN_INFO "leon: power management initialized\n");
+-	}
++	/* Assign power management IDLE handler */
++	if (pmc_leon_need_fixup())
++		sparc_idle = pmc_leon_idle_fixup;
++	else
++		sparc_idle = pmc_leon_idle;
++
++	printk(KERN_INFO "leon: power management initialized\n");
  
--LEON_PI(lda	[%l5] ASI_LEON_MMUREGS, %l6)	! read sfar first
--SUN_PI_(lda	[%l5] ASI_M_MMUREGS, %l6)	! read sfar first
--
--LEON_PI(lda	[%l4] ASI_LEON_MMUREGS, %l5)	! read sfsr last
--SUN_PI_(lda	[%l4] ASI_M_MMUREGS, %l5)	! read sfsr last
-+	lda	[%l5] ASI_LEON_MMUREGS, %l6	! read sfar first
-+	lda	[%l4] ASI_LEON_MMUREGS, %l5	! read sfsr last
- 
- 	andn	%l6, 0xfff, %l6
- 	srl	%l5, 6, %l5			! and encode all info into l7
-diff --git a/arch/sparc/kernel/etrap_32.S b/arch/sparc/kernel/etrap_32.S
-index 9f243f918619..bb222459f097 100644
---- a/arch/sparc/kernel/etrap_32.S
-+++ b/arch/sparc/kernel/etrap_32.S
-@@ -235,8 +235,7 @@ tsetup_srmmu_stackchk:
- 
- 	cmp	%glob_tmp, %sp
- 	bleu,a	1f
--LEON_PI( lda	[%g0] ASI_LEON_MMUREGS, %glob_tmp)	! read MMU control
--SUN_PI_( lda	[%g0] ASI_M_MMUREGS, %glob_tmp)		! read MMU control
-+	 lda	[%g0] ASI_LEON_MMUREGS, %glob_tmp	! read MMU control
- 
- trap_setup_user_stack_is_bolixed:
- 	/* From user/kernel into invalid window w/bad user
-@@ -251,24 +250,20 @@ trap_setup_user_stack_is_bolixed:
- 1:
- 	/* Clear the fault status and turn on the no_fault bit. */
- 	or	%glob_tmp, 0x2, %glob_tmp		! or in no_fault bit
--LEON_PI(sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS)		! set it
--SUN_PI_(sta	%glob_tmp, [%g0] ASI_M_MMUREGS)		! set it
-+	sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS	! set it
- 
- 	/* Dump the registers and cross fingers. */
- 	STORE_WINDOW(sp)
- 
- 	/* Clear the no_fault bit and check the status. */
- 	andn	%glob_tmp, 0x2, %glob_tmp
--LEON_PI(sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%glob_tmp, [%g0] ASI_M_MMUREGS)
-+	sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS
- 
- 	mov	AC_M_SFAR, %glob_tmp
--LEON_PI(lda	[%glob_tmp] ASI_LEON_MMUREGS, %g0)
--SUN_PI_(lda	[%glob_tmp] ASI_M_MMUREGS, %g0)
-+	lda	[%glob_tmp] ASI_LEON_MMUREGS, %g0
- 
- 	mov	AC_M_SFSR, %glob_tmp
--LEON_PI(lda	[%glob_tmp] ASI_LEON_MMUREGS, %glob_tmp)! save away status of winstore
--SUN_PI_(lda	[%glob_tmp] ASI_M_MMUREGS, %glob_tmp)	! save away status of winstore
-+	lda	[%glob_tmp] ASI_LEON_MMUREGS, %glob_tmp	! save away status of winstore
- 
- 	andcc	%glob_tmp, 0x2, %g0			! did we fault?
- 	bne	trap_setup_user_stack_is_bolixed	! failure
-diff --git a/arch/sparc/kernel/rtrap_32.S b/arch/sparc/kernel/rtrap_32.S
-index 8931fe266346..a232b367c219 100644
---- a/arch/sparc/kernel/rtrap_32.S
-+++ b/arch/sparc/kernel/rtrap_32.S
-@@ -232,14 +232,11 @@ srmmu_rett_stackchk:
- 	cmp	%g1, %fp
- 	bleu	ret_trap_user_stack_is_bolixed
- 	 mov	AC_M_SFSR, %g1
--LEON_PI(lda	[%g1] ASI_LEON_MMUREGS, %g0)
--SUN_PI_(lda	[%g1] ASI_M_MMUREGS, %g0)
-+	lda	[%g1] ASI_LEON_MMUREGS, %g0
- 
--LEON_PI(lda	[%g0] ASI_LEON_MMUREGS, %g1)
--SUN_PI_(lda	[%g0] ASI_M_MMUREGS, %g1)
-+	lda	[%g0] ASI_LEON_MMUREGS, %g1
- 	or	%g1, 0x2, %g1
--LEON_PI(sta	%g1, [%g0] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%g1, [%g0] ASI_M_MMUREGS)
-+	sta	%g1, [%g0] ASI_LEON_MMUREGS
- 
- 	restore	%g0, %g0, %g0
- 
-@@ -248,16 +245,13 @@ SUN_PI_(sta	%g1, [%g0] ASI_M_MMUREGS)
- 	save	%g0, %g0, %g0
- 
- 	andn	%g1, 0x2, %g1
--LEON_PI(sta	%g1, [%g0] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%g1, [%g0] ASI_M_MMUREGS)
-+	sta	%g1, [%g0] ASI_LEON_MMUREGS
- 
- 	mov	AC_M_SFAR, %g2
--LEON_PI(lda	[%g2] ASI_LEON_MMUREGS, %g2)
--SUN_PI_(lda	[%g2] ASI_M_MMUREGS, %g2)
-+	lda	[%g2] ASI_LEON_MMUREGS, %g2
- 
- 	mov	AC_M_SFSR, %g1
--LEON_PI(lda	[%g1] ASI_LEON_MMUREGS, %g1)
--SUN_PI_(lda	[%g1] ASI_M_MMUREGS, %g1)
-+	lda	[%g1] ASI_LEON_MMUREGS, %g1
- 	andcc	%g1, 0x2, %g0
- 	be	ret_trap_userwins_ok
- 	 nop
+ 	return 0;
+ }
 diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
-index cb981f2794b3..1035d553d27a 100644
+index 5a497140c52a..cb981f2794b3 100644
 --- a/arch/sparc/kernel/setup_32.c
 +++ b/arch/sparc/kernel/setup_32.c
-@@ -178,39 +178,6 @@ extern int root_mountflags;
+@@ -189,30 +189,12 @@ static void __init per_cpu_patch(void)
+ {
+ 	struct cpuid_patch_entry *p;
  
- char reboot_command[COMMAND_LINE_SIZE];
- 
--struct cpuid_patch_entry {
--	unsigned int	addr;
--	unsigned int	sun4d[3];
--	unsigned int	leon[3];
--};
--extern struct cpuid_patch_entry __cpuid_patch, __cpuid_patch_end;
--
--static void __init per_cpu_patch(void)
--{
--	struct cpuid_patch_entry *p;
--
--	p = &__cpuid_patch;
--	while (p < &__cpuid_patch_end) {
--		unsigned long addr = p->addr;
--		unsigned int *insns;
--
--		insns = &p->leon[0];
--		*(unsigned int *) (addr + 0) = insns[0];
--		flushi(addr + 0);
--		*(unsigned int *) (addr + 4) = insns[1];
--		flushi(addr + 4);
--		*(unsigned int *) (addr + 8) = insns[2];
--		flushi(addr + 8);
--
--		p++;
+-	if (sparc_cpu_model == sun4m) {
+-		/* Nothing to do, this is what the unpatched code
+-		 * targets.
+-		 */
+-		return;
 -	}
--}
 -
--static __init void leon_patch(void)
--{
--	/* Default instruction is leon - no patching */
--}
--
- struct tt_entry *sparc_ttable;
+ 	p = &__cpuid_patch;
+ 	while (p < &__cpuid_patch_end) {
+ 		unsigned long addr = p->addr;
+ 		unsigned int *insns;
  
- /* Called from head_32.S - before we have setup anything
-@@ -219,7 +186,6 @@ struct tt_entry *sparc_ttable;
+-		switch (sparc_cpu_model) {
+-		case sun4d:
+-			insns = &p->sun4d[0];
+-			break;
+-
+-		case sparc_leon:
+-			insns = &p->leon[0];
+-			break;
+-		default:
+-			prom_printf("Unknown cpu type, halting.\n");
+-			prom_halt();
+-		}
++		insns = &p->leon[0];
+ 		*(unsigned int *) (addr + 0) = insns[0];
+ 		flushi(addr + 0);
+ 		*(unsigned int *) (addr + 4) = insns[1];
+@@ -224,31 +206,9 @@ static void __init per_cpu_patch(void)
+ 	}
+ }
+ 
+-struct leon_1insn_patch_entry {
+-	unsigned int addr;
+-	unsigned int insn;
+-};
+-
+-enum sparc_cpu sparc_cpu_model;
+-EXPORT_SYMBOL(sparc_cpu_model);
+-
+ static __init void leon_patch(void)
+ {
+-	struct leon_1insn_patch_entry *start = (void *)__leon_1insn_patch;
+-	struct leon_1insn_patch_entry *end = (void *)__leon_1insn_patch_end;
+-
+ 	/* Default instruction is leon - no patching */
+-	if (sparc_cpu_model == sparc_leon)
+-		return;
+-
+-	while (start < end) {
+-		unsigned long addr = start->addr;
+-
+-		*(unsigned int *)(addr) = start->insn;
+-		flushi(addr);
+-
+-		start++;
+-	}
+ }
+ 
+ struct tt_entry *sparc_ttable;
+@@ -259,22 +219,6 @@ struct tt_entry *sparc_ttable;
  void __init sparc32_start_kernel(struct linux_romvec *rp)
  {
  	prom_init(rp);
--	leon_patch();
+-
+-	/* Set sparc_cpu_model */
+-	sparc_cpu_model = sun_unknown;
+-	if (!strcmp(&cputypval[0], "sun4m"))
+-		sparc_cpu_model = sun4m;
+-	if (!strcmp(&cputypval[0], "sun4s"))
+-		sparc_cpu_model = sun4m; /* CP-1200 with PROM 2.30 -E */
+-	if (!strcmp(&cputypval[0], "sun4d"))
+-		sparc_cpu_model = sun4d;
+-	if (!strcmp(&cputypval[0], "sun4e"))
+-		sparc_cpu_model = sun4e;
+-	if (!strcmp(&cputypval[0], "sun4u"))
+-		sparc_cpu_model = sun4u;
+-	if (!strncmp(&cputypval[0], "leon" , 4))
+-		sparc_cpu_model = sparc_leon;
+-
+ 	leon_patch();
  	start_kernel();
  }
+@@ -295,27 +239,6 @@ void __init setup_arch(char **cmdline_p)
  
-@@ -271,9 +237,6 @@ void __init setup_arch(char **cmdline_p)
- 		(*(linux_dbvec->teach_debugger))();
- 	}
+ 	register_console(&prom_early_console);
  
--	/* Run-time patch instructions to match the cpu model */
--	per_cpu_patch();
--
- 	paging_init();
- 
- 	smp_setup_cpu_possible_map();
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index d317a843f7ea..1cc4d3e79321 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -113,11 +113,6 @@ SECTIONS
- 		*(.sun4v_2insn_patch)
- 		__sun4v_2insn_patch_end = .;
- 	}
--	.leon_1insn_patch : {
--		__leon_1insn_patch = .;
--		*(.leon_1insn_patch)
--		__leon_1insn_patch_end = .;
+-	switch(sparc_cpu_model) {
+-	case sun4m:
+-		pr_info("ARCH: SUN4M\n");
+-		break;
+-	case sun4d:
+-		pr_info("ARCH: SUN4D\n");
+-		break;
+-	case sun4e:
+-		pr_info("ARCH: SUN4E\n");
+-		break;
+-	case sun4u:
+-		pr_info("ARCH: SUN4U\n");
+-		break;
+-	case sparc_leon:
+-		pr_info("ARCH: LEON\n");
+-		break;
+-	default:
+-		pr_info("ARCH: UNKNOWN!\n");
+-		break;
 -	}
- 	.swapper_tsb_phys_patch : {
- 		__swapper_tsb_phys_patch = .;
- 		*(.swapper_tsb_phys_patch)
-diff --git a/arch/sparc/kernel/wof.S b/arch/sparc/kernel/wof.S
-index 96a3a112423a..fe4cfd4abcd2 100644
---- a/arch/sparc/kernel/wof.S
-+++ b/arch/sparc/kernel/wof.S
-@@ -333,30 +333,24 @@ spwin_srmmu_stackchk:
- 	 mov	AC_M_SFSR, %glob_tmp
- 
- 	/* Clear the fault status and turn on the no_fault bit. */
--LEON_PI(lda	[%glob_tmp] ASI_LEON_MMUREGS, %g0)	! eat SFSR
--SUN_PI_(lda	[%glob_tmp] ASI_M_MMUREGS, %g0)		! eat SFSR
-+	lda	[%glob_tmp] ASI_LEON_MMUREGS, %g0	! eat SFSR
- 
--LEON_PI(lda	[%g0] ASI_LEON_MMUREGS, %glob_tmp)	! read MMU control
--SUN_PI_(lda	[%g0] ASI_M_MMUREGS, %glob_tmp)		! read MMU control
-+	lda	[%g0] ASI_LEON_MMUREGS, %glob_tmp	! read MMU control
- 	or	%glob_tmp, 0x2, %glob_tmp		! or in no_fault bit
--LEON_PI(sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS)	! set it
--SUN_PI_(sta	%glob_tmp, [%g0] ASI_M_MMUREGS)		! set it
-+	sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS	! set it
- 
- 	/* Dump the registers and cross fingers. */
- 	STORE_WINDOW(sp)
- 
- 	/* Clear the no_fault bit and check the status. */
- 	andn	%glob_tmp, 0x2, %glob_tmp
--LEON_PI(sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%glob_tmp, [%g0] ASI_M_MMUREGS)
-+	sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS
- 
- 	mov	AC_M_SFAR, %glob_tmp
--LEON_PI(lda	[%glob_tmp] ASI_LEON_MMUREGS, %g0)
--SUN_PI_(lda	[%glob_tmp] ASI_M_MMUREGS, %g0)
-+	lda	[%glob_tmp] ASI_LEON_MMUREGS, %g0
- 
- 	mov	AC_M_SFSR, %glob_tmp
--LEON_PI(lda	[%glob_tmp] ASI_LEON_MMUREGS, %glob_tmp)
--SUN_PI_(lda	[%glob_tmp] ASI_M_MMUREGS, %glob_tmp)
-+	lda	[%glob_tmp] ASI_LEON_MMUREGS, %glob_tmp
- 	andcc	%glob_tmp, 0x2, %g0			! did we fault?
- 	be,a	spwin_finish_up + 0x4			! cool beans, success
- 	 restore %g0, %g0, %g0
-diff --git a/arch/sparc/kernel/wuf.S b/arch/sparc/kernel/wuf.S
-index 1a4ca490e9c2..4c52b69d4b7a 100644
---- a/arch/sparc/kernel/wuf.S
-+++ b/arch/sparc/kernel/wuf.S
-@@ -255,19 +255,16 @@ srmmu_fwin_stackchk:
- 	mov	AC_M_SFSR, %l4
- 	cmp	%l5, %sp
- 	bleu	fwin_user_stack_is_bolixed
--LEON_PI( lda	[%l4] ASI_LEON_MMUREGS, %g0)	! clear fault status
--SUN_PI_( lda	[%l4] ASI_M_MMUREGS, %g0)	! clear fault status
-+	 lda	[%l4] ASI_LEON_MMUREGS, %g0	! clear fault status
- 
- 	/* The technique is, turn off faults on this processor,
- 	 * just let the load rip, then check the sfsr to see if
- 	 * a fault did occur.  Then we turn on fault traps again
- 	 * and branch conditionally based upon what happened.
- 	 */
--LEON_PI(lda	[%g0] ASI_LEON_MMUREGS, %l5)	! read mmu-ctrl reg
--SUN_PI_(lda	[%g0] ASI_M_MMUREGS, %l5)	! read mmu-ctrl reg
-+	lda	[%g0] ASI_LEON_MMUREGS, %l5	! read mmu-ctrl reg
- 	or	%l5, 0x2, %l5			! turn on no-fault bit
--LEON_PI(sta	%l5, [%g0] ASI_LEON_MMUREGS)	! store it
--SUN_PI_(sta	%l5, [%g0] ASI_M_MMUREGS)	! store it
-+	sta	%l5, [%g0] ASI_LEON_MMUREGS	! store it
- 
- 	/* Cross fingers and go for it. */
- 	LOAD_WINDOW(sp)
-@@ -279,19 +276,15 @@ SUN_PI_(sta	%l5, [%g0] ASI_M_MMUREGS)	! store it
- 
- 	/* LOCATION: Window 'T' */
- 
--LEON_PI(lda	[%g0] ASI_LEON_MMUREGS, %twin_tmp1)	! load mmu-ctrl again
--SUN_PI_(lda	[%g0] ASI_M_MMUREGS, %twin_tmp1)	! load mmu-ctrl again
-+	lda	[%g0] ASI_LEON_MMUREGS, %twin_tmp1	! load mmu-ctrl again
- 	andn	%twin_tmp1, 0x2, %twin_tmp1		! clear no-fault bit
--LEON_PI(sta	%twin_tmp1, [%g0] ASI_LEON_MMUREGS)	! store it
--SUN_PI_(sta	%twin_tmp1, [%g0] ASI_M_MMUREGS)	! store it
-+	sta	%twin_tmp1, [%g0] ASI_LEON_MMUREGS	! store it
- 
- 	mov	AC_M_SFAR, %twin_tmp2
--LEON_PI(lda	[%twin_tmp2] ASI_LEON_MMUREGS, %g0)	! read fault address
--SUN_PI_(lda	[%twin_tmp2] ASI_M_MMUREGS, %g0)	! read fault address
-+	lda	[%twin_tmp2] ASI_LEON_MMUREGS, %g0	! read fault address
- 
- 	mov	AC_M_SFSR, %twin_tmp2
--LEON_PI(lda	[%twin_tmp2] ASI_LEON_MMUREGS, %twin_tmp2) ! read fault status
--SUN_PI_(lda	[%twin_tmp2] ASI_M_MMUREGS, %twin_tmp2)	   ! read fault status
-+	lda	[%twin_tmp2] ASI_LEON_MMUREGS, %twin_tmp2 ! read fault status
- 	andcc	%twin_tmp2, 0x2, %g0			   ! did fault occur?
- 
- 	bne	1f					   ! yep, cleanup
-diff --git a/arch/sparc/mm/Makefile b/arch/sparc/mm/Makefile
-index 4347247d6cb0..357a5816a6bf 100644
---- a/arch/sparc/mm/Makefile
-+++ b/arch/sparc/mm/Makefile
-@@ -9,7 +9,6 @@ obj-$(CONFIG_SPARC64)   += ultra.o tlb.o tsb.o
- obj-y                   += fault_$(BITS).o
- obj-y                   += init_$(BITS).o
- obj-$(CONFIG_SPARC32)   += srmmu.o iommu.o io-unit.o
--obj-$(CONFIG_SPARC32)   += srmmu_access.o
- obj-$(CONFIG_SPARC32)   += leon_mm.o
- 
- # Only used by sparc64
-diff --git a/arch/sparc/mm/srmmu_access.S b/arch/sparc/mm/srmmu_access.S
-deleted file mode 100644
-index d8d2e644a5ca..000000000000
---- a/arch/sparc/mm/srmmu_access.S
-+++ /dev/null
-@@ -1,83 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Assembler variants of srmmu access functions.
-- * Implemented in assembler to allow run-time patching.
-- * LEON uses a different ASI for MMUREGS than SUN.
-- *
-- * The leon_1insn_patch infrastructure is used
-- * for the run-time patching.
-- */
 -
--#include <linux/linkage.h>
--
--#include <asm/asmmacro.h>
--#include <asm/pgtsrmmu.h>
--#include <asm/asi.h>
--
--/* unsigned int srmmu_get_mmureg(void) */
--ENTRY(srmmu_get_mmureg)
--LEON_PI(lda	[%g0] ASI_LEON_MMUREGS, %o0)
--SUN_PI_(lda	[%g0] ASI_M_MMUREGS, %o0)
--	retl
--	 nop
--ENDPROC(srmmu_get_mmureg)
--
--/* void srmmu_set_mmureg(unsigned long regval) */
--ENTRY(srmmu_set_mmureg)
--LEON_PI(sta	%o0, [%g0] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%o0, [%g0] ASI_M_MMUREGS)
--	retl
--	 nop
--ENDPROC(srmmu_set_mmureg)
--
--/* void srmmu_set_ctable_ptr(unsigned long paddr) */
--ENTRY(srmmu_set_ctable_ptr)
--	/* paddr = ((paddr >> 4) & SRMMU_CTX_PMASK); */
--	srl	%o0, 4, %g1
--	and	%g1, SRMMU_CTX_PMASK, %g1
--
--	mov	SRMMU_CTXTBL_PTR, %g2
--LEON_PI(sta	%g1, [%g2] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%g1, [%g2] ASI_M_MMUREGS)
--	retl
--	 nop
--ENDPROC(srmmu_set_ctable_ptr)
--
--
--/* void srmmu_set_context(int context) */
--ENTRY(srmmu_set_context)
--	mov	SRMMU_CTX_REG, %g1
--LEON_PI(sta	%o0, [%g1] ASI_LEON_MMUREGS)
--SUN_PI_(sta	%o0, [%g1] ASI_M_MMUREGS)
--	retl
--	 nop
--ENDPROC(srmmu_set_context)
--
--
--/* int srmmu_get_context(void) */
--ENTRY(srmmu_get_context)
--	mov	SRMMU_CTX_REG, %o0
--LEON_PI(lda     [%o0] ASI_LEON_MMUREGS, %o0)
--SUN_PI_(lda	[%o0] ASI_M_MMUREGS, %o0)
--	retl
--	 nop
--ENDPROC(srmmu_get_context)
--
--
--/* unsigned int srmmu_get_fstatus(void) */
--ENTRY(srmmu_get_fstatus)
--	mov	SRMMU_FAULT_STATUS, %o0
--LEON_PI(lda     [%o0] ASI_LEON_MMUREGS, %o0)
--SUN_PI_(lda	[%o0] ASI_M_MMUREGS, %o0)
--	retl
--	 nop
--ENDPROC(srmmu_get_fstatus)
--
--
--/* unsigned int srmmu_get_faddr(void) */
--ENTRY(srmmu_get_faddr)
--	mov	SRMMU_FAULT_ADDR, %o0
--LEON_PI(lda     [%o0] ASI_LEON_MMUREGS, %o0)
--SUN_PI_(lda	[%o0] ASI_M_MMUREGS, %o0)
--	retl
--	 nop
--ENDPROC(srmmu_get_faddr)
+ 	idprom_init();
+ 	load_mmu();
+ 
 
 -- 
 2.34.1

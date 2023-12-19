@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDF6E41753;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A527C40BED;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LXY5nwUu"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BA8DAC433A9;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VUfJaGDb"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8530CC116B5;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1703023396;
-	bh=0D+ON4oeNZOeVZXfD0xqsLjuyAIQe7lSx7T2s4D02kg=;
+	bh=2X7o1Lt3H8IW+wJpA8JXoQ1HU5uCPMeWcMEAyMe088c=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=LXY5nwUuWkFXcqJ0M4HhBKX8XcUbGbQqNdy/i6rWxP/2H9mffS6iZZdkz5ul6EAKM
-	 xUyTEfSMdKhMAWecD7Saffl1l7efnxUbjZW/CvH6+HogO1GFua6d5/Dhxav5u89V/s
-	 azI/YnZRzJaXn4H8iTni+QBIWOo6iieFo6ZeNaasGYVOP0rS8AoWC3bb73f0sGg2vA
-	 u8o62fZ92Xaj7mQiPs2Y71v2t+eMQFsrXyCOsWwqR0MOJj4qjm0rYu/kGsVJgxHDi2
-	 v+krUBNwLjSt28vkT1dmQ9OaSU5vipcOt02eFXkUkHvF976bqTgIvxhb8PsDVMU+dU
-	 tYejJJPqrURmA==
+	b=VUfJaGDbgC/phKWbtTMyOkQbePSPo3CsSs+H2orD28Z719yUfK+7LHFV/hRThkX7w
+	 OsvS//3ER6zAfdT1VqSZOjm4iaMeqdi8qByRpR+fhPwiUeYZyfKqQ5TbFj27PcUlmj
+	 Daf197WH/6FawzwaM/heVilGEUG3Zzgy6GUHVJTHI3bMa3Js00Swal4ICD8D59uccq
+	 3Kwp/k/8up5rhpuZX3hqkkdre90Az9bI2b4pGu2EXj5lYHoTl0G765S1p67pEIYAIA
+	 XyQK0dXRrNhfjqSXbv4eeI7i0VRxUIiKnI/nKOUrcQTG2iCa7J5Yor+JXJZHD48X90
+	 WTQauGJ4Uxjpw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC88EC46CD2;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75636C4706C;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 From: Sam Ravnborg via B4 Relay <devnull+sam.ravnborg.org@kernel.org>
-Date: Tue, 19 Dec 2023 23:03:32 +0100
-Subject: [PATCH 27/27] fbdev/p9100: Drop now unused driver p9100
+Date: Tue, 19 Dec 2023 23:03:27 +0100
+Subject: [PATCH 22/27] sparc32: Drop sun4m irq support
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -31,7 +31,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231219-sam-sparc32-sunset-v3-v1-27-64bb44b598c5@ravnborg.org>
+Message-Id: <20231219-sam-sparc32-sunset-v3-v1-22-64bb44b598c5@ravnborg.org>
 References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 In-Reply-To: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -44,11 +44,11 @@ Cc: Helge Deller <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
  linux-sound@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=11715;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=15199;
  i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
- bh=iA8JbwHY6fG7LBqaMIwOpi+rv8FIlfD/a+18lk+a/yg=; =?utf-8?q?b=3DxLx8QJT1DeN/?=
- =?utf-8?q?31Tp0n1Pwf61zbQdWjbuL9/LAngB/OMqRezOKwU12aE8l2/DawT+XUglCsLZwYk5?=
- uBsoLHkbA8MMLhEwcKYYskx/v8q/PkFcAgt9QkgeNdcf0z4sU+Va
+ bh=X63koqqYTm+iT+PU2L8ElZACMgk19KzK8/hbmjfO82M=; =?utf-8?q?b=3DY47K421BJoVD?=
+ =?utf-8?q?JiQyqLXXy+kXYVTcxLxP3mtpLEkxrpcdOqEP/44A9Qi/FHs7Gbzwk58sTzOQYVP/?=
+ +zkvvSvwDmnEx9w4micBREbkE4aZpO5hthhR50uYPebTV00dO9TP
 X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
  pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
 X-Endpoint-Received: by B4 Relay for sam@ravnborg.org/20230107 with auth_id=22
@@ -57,429 +57,473 @@ Reply-To: <sam@ravnborg.org>
 
 From: Sam Ravnborg <sam@ravnborg.org>
 
-The p9100 driver is only relevant for the Sparcbook 3 machine,
-and with sun4m support removed this driver is no longer relevant.
+Drop all code uses to support sun4m irqs.
+Update entry.S to call the leon_nmi function.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Arnd Bergmann <arnd@kernel.org>
 Cc: Andreas Larsson <andreas@gaisler.com>
-Cc: Helge Deller <deller@gmx.de>
 ---
- drivers/video/fbdev/Kconfig  |   8 -
- drivers/video/fbdev/Makefile |   1 -
- drivers/video/fbdev/p9100.c  | 372 -------------------------------------------
- 3 files changed, 381 deletions(-)
+ arch/sparc/kernel/Makefile      |   1 -
+ arch/sparc/kernel/entry.S       |  29 ++---
+ arch/sparc/kernel/irq.h         |  47 +-------
+ arch/sparc/kernel/irq_32.c      |   6 +-
+ arch/sparc/kernel/kernel.h      |   4 -
+ arch/sparc/kernel/leon_kernel.c |  10 +-
+ arch/sparc/kernel/sun4m_irq.c   | 238 ----------------------------------------
+ 7 files changed, 23 insertions(+), 312 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 94f6dca5856f..ebcc3815c7a5 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -576,14 +576,6 @@ config FB_CG14
- 	  This is the frame buffer device driver for the CGfourteen frame
- 	  buffer on Desktop SPARCsystems with the SX graphics option.
+diff --git a/arch/sparc/kernel/Makefile b/arch/sparc/kernel/Makefile
+index 09577e39037c..1961d165b279 100644
+--- a/arch/sparc/kernel/Makefile
++++ b/arch/sparc/kernel/Makefile
+@@ -29,7 +29,6 @@ obj-y                   += traps_$(BITS).o
  
--config FB_P9100
--	bool "P9100 (Sparcbook 3 only) support"
--	depends on FB_SBUS
--	select FB_SBUS_HELPERS
--	help
--	  This is the frame buffer device driver for the P9100 card
--	  supported on Sparcbook 3 machines.
+ # IRQ
+ obj-y                   += irq_$(BITS).o
+-obj-$(CONFIG_SPARC32)   += sun4m_irq.o
+ 
+ obj-y                   += process_$(BITS).o
+ obj-y                   += process.o
+diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
+index eecbe0be7bf6..fb6095aab9c2 100644
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -427,36 +427,21 @@ setcc_trap_handler:
+ 	jmp	%l2		! advance over trap instruction
+ 	rett	%l2 + 0x4	! like this...
+ 
+-sun4m_nmi_error:
++nmi_error:
+ 	/* NMI async memory error handling. */
+-	sethi	%hi(0x80000000), %l4
+-	sethi	%hi(sun4m_irq_global), %o5
+-	ld	[%o5 + %lo(sun4m_irq_global)], %l5
+-	st	%l4, [%l5 + 0x0c]	! sun4m_irq_global->mask_set=0x80000000
+-	WRITE_PAUSE
+-	ld	[%l5 + 0x00], %g0	! sun4m_irq_global->pending
+-	WRITE_PAUSE
++#ifndef CONFIG_SMP
++	.align	4
++	.globl	linux_trap_ipi15_leon
++linux_trap_ipi15_leon:
++	SAVE_ALL
+ 	or	%l0, PSR_PIL, %l4
+ 	wr	%l4, 0x0, %psr
+ 	WRITE_PAUSE
+ 	wr	%l4, PSR_ET, %psr
+ 	WRITE_PAUSE
+-	call	sun4m_nmi
++	call	leon_nmi
+ 	 nop
+-	st	%l4, [%l5 + 0x08]	! sun4m_irq_global->mask_clear=0x80000000
+-	WRITE_PAUSE
+-	ld	[%l5 + 0x00], %g0	! sun4m_irq_global->pending
+-	WRITE_PAUSE
+ 	RESTORE_ALL
 -
- config FB_LEO
- 	bool "Leo (ZX) support"
- 	depends on FB_SBUS
-diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-index 8e15220152bd..bc9b24648347 100644
---- a/drivers/video/fbdev/Makefile
-+++ b/drivers/video/fbdev/Makefile
-@@ -51,7 +51,6 @@ obj-$(CONFIG_FB_CG6)              += cg6.o
- obj-$(CONFIG_FB_CG3)              += cg3.o
- obj-$(CONFIG_FB_BW2)              += bw2.o
- obj-$(CONFIG_FB_CG14)             += cg14.o
--obj-$(CONFIG_FB_P9100)            += p9100.o
- obj-$(CONFIG_FB_TCX)              += tcx.o
- obj-$(CONFIG_FB_LEO)              += leo.o
- obj-$(CONFIG_FB_ACORN)            += acornfb.o
-diff --git a/drivers/video/fbdev/p9100.c b/drivers/video/fbdev/p9100.c
+-#ifndef CONFIG_SMP
+-	.align	4
+-	.globl	linux_trap_ipi15_leon
+-linux_trap_ipi15_leon:
+-	SAVE_ALL
+-
+-	ba      sun4m_nmi_error
+-	 nop
+ #endif /* CONFIG_SMP */
+ 
+ 	.align	4
+diff --git a/arch/sparc/kernel/irq.h b/arch/sparc/kernel/irq.h
+index 8a0b314c8299..9d15dbb9fe6f 100644
+--- a/arch/sparc/kernel/irq.h
++++ b/arch/sparc/kernel/irq.h
+@@ -10,39 +10,14 @@ struct irq_bucket {
+         unsigned int pil;
+ };
+ 
+-#define SUN4M_HARD_INT(x)       (0x000000001 << (x))
+-#define SUN4M_SOFT_INT(x)       (0x000010000 << (x))
+-
+-#define SUN4D_MAX_BOARD 10
+-#define SUN4D_MAX_IRQ ((SUN4D_MAX_BOARD + 2) << 5)
++#define MAX_BOARD 10
++#define MAX_IRQ ((MAX_BOARD + 2) << 5)
+ 
+ /* Map between the irq identifier used in hw to the
+  * irq_bucket. The map is sufficient large to hold
+  * the sun4d hw identifiers.
+  */
+-extern struct irq_bucket *irq_map[SUN4D_MAX_IRQ];
+-
+-
+-/* sun4m specific type definitions */
+-
+-/* This maps direct to CPU specific interrupt registers */
+-struct sun4m_irq_percpu {
+-	u32	pending;
+-	u32	clear;
+-	u32	set;
+-};
+-
+-/* This maps direct to global interrupt registers */
+-struct sun4m_irq_global {
+-	u32	pending;
+-	u32	mask;
+-	u32	mask_clear;
+-	u32	mask_set;
+-	u32	interrupt_target;
+-};
+-
+-extern struct sun4m_irq_percpu __iomem *sun4m_irq_percpu[SUN4M_NCPUS];
+-extern struct sun4m_irq_global __iomem *sun4m_irq_global;
++extern struct irq_bucket *irq_map[MAX_IRQ];
+ 
+ unsigned int irq_alloc(unsigned int real_irq, unsigned int pil);
+ void irq_link(unsigned int irq);
+@@ -51,22 +26,8 @@ void handler_irq(unsigned int pil, struct pt_regs *regs);
+ 
+ unsigned long leon_get_irqmask(unsigned int irq);
+ 
+-/* sun4m_irq.c */
+-void sun4m_nmi(struct pt_regs *regs);
+-
+-/* sun4d_irq.c */
+-void sun4d_handler_irq(unsigned int pil, struct pt_regs *regs);
+-
+ /* leon_kernel.c */
+ void leon_clear_clock_irq(void);
+ void leon_load_profile_irq(int cpu, unsigned int limit);
+ u32 leon_cycles_offset(void);
+-
+-#ifdef CONFIG_SMP
+-
+-/* All SUN4D IPIs are sent on this IRQ, may be shared with hard IRQs */
+-#define SUN4D_IPI_IRQ 13
+-
+-void sun4d_ipi_interrupt(void);
+-
+-#endif
++void leon_nmi(struct pt_regs *regs);
+diff --git a/arch/sparc/kernel/irq_32.c b/arch/sparc/kernel/irq_32.c
+index f76f57073323..5bd64828e8a0 100644
+--- a/arch/sparc/kernel/irq_32.c
++++ b/arch/sparc/kernel/irq_32.c
+@@ -111,7 +111,7 @@ static struct irq_bucket irq_table[NR_IRQS];
+ static DEFINE_SPINLOCK(irq_table_lock);
+ 
+ /* Map between the irq identifier used in hw to the irq_bucket. */
+-struct irq_bucket *irq_map[SUN4D_MAX_IRQ];
++struct irq_bucket *irq_map[MAX_IRQ];
+ /* Protect access to irq_map */
+ static DEFINE_SPINLOCK(irq_map_lock);
+ 
+@@ -162,7 +162,7 @@ void irq_link(unsigned int irq)
+ 
+ 	p = &irq_table[irq];
+ 	pil = p->pil;
+-	BUG_ON(pil >= SUN4D_MAX_IRQ);
++	BUG_ON(pil >= MAX_IRQ);
+ 	p->next = irq_map[pil];
+ 	irq_map[pil] = p;
+ 
+@@ -179,7 +179,7 @@ void irq_unlink(unsigned int irq)
+ 	spin_lock_irqsave(&irq_map_lock, flags);
+ 
+ 	p = &irq_table[irq];
+-	BUG_ON(p->pil >= SUN4D_MAX_IRQ);
++	BUG_ON(p->pil >= MAX_IRQ);
+ 	pnext = &irq_map[p->pil];
+ 	while (*pnext != p)
+ 		pnext = &(*pnext)->next;
+diff --git a/arch/sparc/kernel/kernel.h b/arch/sparc/kernel/kernel.h
+index a14812903629..30adbec894f7 100644
+--- a/arch/sparc/kernel/kernel.h
++++ b/arch/sparc/kernel/kernel.h
+@@ -92,10 +92,6 @@ extern spinlock_t irq_action_lock;
+ 
+ void unexpected_irq(int irq, void *dev_id, struct pt_regs * regs);
+ 
+-/* sun4m_irq.c */
+-void sun4m_unmask_profile_irq(void);
+-void sun4m_clear_profile_irq(int cpu);
+-
+ /* leon_smp.c */
+ void leon_cpu_pre_starting(void *arg);
+ void leon_cpu_pre_online(void *arg);
+diff --git a/arch/sparc/kernel/leon_kernel.c b/arch/sparc/kernel/leon_kernel.c
+index fa9cdaffdc6b..1bdf08db3037 100644
+--- a/arch/sparc/kernel/leon_kernel.c
++++ b/arch/sparc/kernel/leon_kernel.c
+@@ -9,6 +9,7 @@
+ #include <linux/mutex.h>
+ #include <linux/of.h>
+ #include <linux/interrupt.h>
++#include <linux/sched/debug.h>
+ #include <linux/clocksource.h>
+ #include <linux/clockchips.h>
+ 
+@@ -269,8 +270,15 @@ u32 leon_cycles_offset(void)
+ 	return off;
+ }
+ 
+-#ifdef CONFIG_SMP
++/* NMI interrupt (15) */
++void leon_nmi(struct pt_regs *regs)
++{
++	printk(KERN_ERR "Aieee: NMI received!\n");
++	show_regs(regs);
++	prom_halt();
++}
+ 
++#ifdef CONFIG_SMP
+ /* smp clockevent irq */
+ static irqreturn_t leon_percpu_timer_ce_interrupt(int irq, void *unused)
+ {
+diff --git a/arch/sparc/kernel/sun4m_irq.c b/arch/sparc/kernel/sun4m_irq.c
 deleted file mode 100644
-index e1356f8a866e..000000000000
---- a/drivers/video/fbdev/p9100.c
+index 1a220a2b9ac3..000000000000
+--- a/arch/sparc/kernel/sun4m_irq.c
 +++ /dev/null
-@@ -1,372 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/* p9100.c: P9100 frame buffer driver
+@@ -1,238 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- * sun4m irq support
 - *
-- * Copyright (C) 2003, 2006 David S. Miller (davem@davemloft.net)
-- * Copyright 1999 Derrick J Brashear (shadow@dementia.org)
+- *  djhr: Hacked out of irq.c into a CPU dependent version.
 - *
-- * Driver layout based loosely on tgafb.c, see that file for credits.
+- *  Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
+- *  Copyright (C) 1995 Miguel de Icaza (miguel@nuclecu.unam.mx)
+- *  Copyright (C) 1995 Pete A. Zaitcev (zaitcev@yahoo.com)
+- *  Copyright (C) 1996 Dave Redman (djhr@tadpole.co.uk)
 - */
 -
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/string.h>
--#include <linux/delay.h>
--#include <linux/init.h>
--#include <linux/fb.h>
--#include <linux/mm.h>
--#include <linux/of.h>
--#include <linux/platform_device.h>
+-#include <linux/slab.h>
+-#include <linux/sched/debug.h>
+-#include <linux/pgtable.h>
 -
+-#include <asm/timer.h>
+-#include <asm/traps.h>
+-#include <asm/irq.h>
 -#include <asm/io.h>
--#include <asm/fbio.h>
+-#include <asm/cacheflush.h>
 -
--#include "sbuslib.h"
+-#include "irq.h"
+-#include "kernel.h"
 -
--/*
-- * Local functions.
+-/* Sample sun4m IRQ layout:
+- *
+- * 0x22 - Power
+- * 0x24 - ESP SCSI
+- * 0x26 - Lance ethernet
+- * 0x2b - Floppy
+- * 0x2c - Zilog uart
+- * 0x32 - SBUS level 0
+- * 0x33 - Parallel port, SBUS level 1
+- * 0x35 - SBUS level 2
+- * 0x37 - SBUS level 3
+- * 0x39 - Audio, Graphics card, SBUS level 4
+- * 0x3b - SBUS level 5
+- * 0x3d - SBUS level 6
+- *
+- * Each interrupt source has a mask bit in the interrupt registers.
+- * When the mask bit is set, this blocks interrupt deliver.  So you
+- * clear the bit to enable the interrupt.
+- *
+- * Interrupts numbered less than 0x10 are software triggered interrupts
+- * and unused by Linux.
+- *
+- * Interrupt level assignment on sun4m:
+- *
+- *	level		source
+- * ------------------------------------------------------------
+- *	  1		softint-1
+- *	  2		softint-2, VME/SBUS level 1
+- *	  3		softint-3, VME/SBUS level 2
+- *	  4		softint-4, onboard SCSI
+- *	  5		softint-5, VME/SBUS level 3
+- *	  6		softint-6, onboard ETHERNET
+- *	  7		softint-7, VME/SBUS level 4
+- *	  8		softint-8, onboard VIDEO
+- *	  9		softint-9, VME/SBUS level 5, Module Interrupt
+- *	 10		softint-10, system counter/timer
+- *	 11		softint-11, VME/SBUS level 6, Floppy
+- *	 12		softint-12, Keyboard/Mouse, Serial
+- *	 13		softint-13, VME/SBUS level 7, ISDN Audio
+- *	 14		softint-14, per-processor counter/timer
+- *	 15		softint-15, Asynchronous Errors (broadcast)
+- *
+- * Each interrupt source is masked distinctly in the sun4m interrupt
+- * registers.  The PIL level alone is therefore ambiguous, since multiple
+- * interrupt sources map to a single PIL.
+- *
+- * This ambiguity is resolved in the 'intr' property for device nodes
+- * in the OF device tree.  Each 'intr' property entry is composed of
+- * two 32-bit words.  The first word is the IRQ priority value, which
+- * is what we're intersted in.  The second word is the IRQ vector, which
+- * is unused.
+- *
+- * The low 4 bits of the IRQ priority indicate the PIL, and the upper
+- * 4 bits indicate onboard vs. SBUS leveled vs. VME leveled.  0x20
+- * means onboard, 0x30 means SBUS leveled, and 0x40 means VME leveled.
+- *
+- * For example, an 'intr' IRQ priority value of 0x24 is onboard SCSI
+- * whereas a value of 0x33 is SBUS level 2.  Here are some sample
+- * 'intr' property IRQ priority values from ss4, ss5, ss10, ss20, and
+- * Tadpole S3 GX systems.
+- *
+- * esp:		0x24	onboard ESP SCSI
+- * le:		0x26	onboard Lance ETHERNET
+- * p9100:	0x32	SBUS level 1 P9100 video
+- * bpp:		0x33	SBUS level 2 BPP parallel port device
+- * DBRI:	0x39	SBUS level 5 DBRI ISDN audio
+- * SUNW,leo:	0x39	SBUS level 5 LEO video
+- * pcmcia:	0x3b	SBUS level 6 PCMCIA controller
+- * uctrl:	0x3b	SBUS level 6 UCTRL device
+- * modem:	0x3d	SBUS level 7 MODEM
+- * zs:		0x2c	onboard keyboard/mouse/serial
+- * floppy:	0x2b	onboard Floppy
+- * power:	0x22	onboard power device (XXX unknown mask bit XXX)
 - */
 -
--static int p9100_setcolreg(unsigned, unsigned, unsigned, unsigned,
--			   unsigned, struct fb_info *);
--static int p9100_blank(int, struct fb_info *);
 -
--static int p9100_sbusfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
--static int p9100_sbusfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg);
+-/* Code in entry.S needs to get at these register mappings.  */
+-struct sun4m_irq_percpu __iomem *sun4m_irq_percpu[SUN4M_NCPUS];
+-struct sun4m_irq_global __iomem *sun4m_irq_global;
 -
--/*
-- *  Frame buffer operations
+-struct sun4m_handler_data {
+-	bool    percpu;
+-	long    mask;
+-};
+-
+-/* Dave Redman (djhr@tadpole.co.uk)
+- * The sun4m interrupt registers.
 - */
+-#define SUN4M_INT_ENABLE	0x80000000
+-#define SUN4M_INT_E14		0x00000080
+-#define SUN4M_INT_E10		0x00080000
 -
--static const struct fb_ops p9100_ops = {
--	.owner			= THIS_MODULE,
--	FB_DEFAULT_SBUS_OPS(p9100),
--	.fb_setcolreg		= p9100_setcolreg,
--	.fb_blank		= p9100_blank,
+-#define	SUN4M_INT_MASKALL	0x80000000	  /* mask all interrupts */
+-#define	SUN4M_INT_MODULE_ERR	0x40000000	  /* module error */
+-#define	SUN4M_INT_M2S_WRITE_ERR	0x20000000	  /* write buffer error */
+-#define	SUN4M_INT_ECC_ERR	0x10000000	  /* ecc memory error */
+-#define	SUN4M_INT_VME_ERR	0x08000000	  /* vme async error */
+-#define	SUN4M_INT_FLOPPY	0x00400000	  /* floppy disk */
+-#define	SUN4M_INT_MODULE	0x00200000	  /* module interrupt */
+-#define	SUN4M_INT_VIDEO		0x00100000	  /* onboard video */
+-#define	SUN4M_INT_REALTIME	0x00080000	  /* system timer */
+-#define	SUN4M_INT_SCSI		0x00040000	  /* onboard scsi */
+-#define	SUN4M_INT_AUDIO		0x00020000	  /* audio/isdn */
+-#define	SUN4M_INT_ETHERNET	0x00010000	  /* onboard ethernet */
+-#define	SUN4M_INT_SERIAL	0x00008000	  /* serial ports */
+-#define	SUN4M_INT_KBDMS		0x00004000	  /* keyboard/mouse */
+-#define	SUN4M_INT_SBUSBITS	0x00003F80	  /* sbus int bits */
+-#define	SUN4M_INT_VMEBITS	0x0000007F	  /* vme int bits */
+-
+-#define	SUN4M_INT_ERROR		(SUN4M_INT_MODULE_ERR |    \
+-				 SUN4M_INT_M2S_WRITE_ERR | \
+-				 SUN4M_INT_ECC_ERR |       \
+-				 SUN4M_INT_VME_ERR)
+-
+-#define SUN4M_INT_SBUS(x)	(1 << (x+7))
+-#define SUN4M_INT_VME(x)	(1 << (x))
+-
+-/* Interrupt levels used by OBP */
+-#define	OBP_INT_LEVEL_SOFT	0x10
+-#define	OBP_INT_LEVEL_ONBOARD	0x20
+-#define	OBP_INT_LEVEL_SBUS	0x30
+-#define	OBP_INT_LEVEL_VME	0x40
+-
+-#define SUN4M_TIMER_IRQ         (OBP_INT_LEVEL_ONBOARD | 10)
+-#define SUN4M_PROFILE_IRQ       (OBP_INT_LEVEL_ONBOARD | 14)
+-
+-static unsigned long sun4m_imask[0x50] = {
+-	/* 0x00 - SMP */
+-	0,  SUN4M_SOFT_INT(1),
+-	SUN4M_SOFT_INT(2),  SUN4M_SOFT_INT(3),
+-	SUN4M_SOFT_INT(4),  SUN4M_SOFT_INT(5),
+-	SUN4M_SOFT_INT(6),  SUN4M_SOFT_INT(7),
+-	SUN4M_SOFT_INT(8),  SUN4M_SOFT_INT(9),
+-	SUN4M_SOFT_INT(10), SUN4M_SOFT_INT(11),
+-	SUN4M_SOFT_INT(12), SUN4M_SOFT_INT(13),
+-	SUN4M_SOFT_INT(14), SUN4M_SOFT_INT(15),
+-	/* 0x10 - soft */
+-	0,  SUN4M_SOFT_INT(1),
+-	SUN4M_SOFT_INT(2),  SUN4M_SOFT_INT(3),
+-	SUN4M_SOFT_INT(4),  SUN4M_SOFT_INT(5),
+-	SUN4M_SOFT_INT(6),  SUN4M_SOFT_INT(7),
+-	SUN4M_SOFT_INT(8),  SUN4M_SOFT_INT(9),
+-	SUN4M_SOFT_INT(10), SUN4M_SOFT_INT(11),
+-	SUN4M_SOFT_INT(12), SUN4M_SOFT_INT(13),
+-	SUN4M_SOFT_INT(14), SUN4M_SOFT_INT(15),
+-	/* 0x20 - onboard */
+-	0, 0, 0, 0,
+-	SUN4M_INT_SCSI,  0, SUN4M_INT_ETHERNET, 0,
+-	SUN4M_INT_VIDEO, SUN4M_INT_MODULE,
+-	SUN4M_INT_REALTIME, SUN4M_INT_FLOPPY,
+-	(SUN4M_INT_SERIAL | SUN4M_INT_KBDMS),
+-	SUN4M_INT_AUDIO, SUN4M_INT_E14, SUN4M_INT_MODULE_ERR,
+-	/* 0x30 - sbus */
+-	0, 0, SUN4M_INT_SBUS(0), SUN4M_INT_SBUS(1),
+-	0, SUN4M_INT_SBUS(2), 0, SUN4M_INT_SBUS(3),
+-	0, SUN4M_INT_SBUS(4), 0, SUN4M_INT_SBUS(5),
+-	0, SUN4M_INT_SBUS(6), 0, 0,
+-	/* 0x40 - vme */
+-	0, 0, SUN4M_INT_VME(0), SUN4M_INT_VME(1),
+-	0, SUN4M_INT_VME(2), 0, SUN4M_INT_VME(3),
+-	0, SUN4M_INT_VME(4), 0, SUN4M_INT_VME(5),
+-	0, SUN4M_INT_VME(6), 0, 0
 -};
 -
--/* P9100 control registers */
--#define P9100_SYSCTL_OFF	0x0UL
--#define P9100_VIDEOCTL_OFF	0x100UL
--#define P9100_VRAMCTL_OFF 	0x180UL
--#define P9100_RAMDAC_OFF 	0x200UL
--#define P9100_VIDEOCOPROC_OFF 	0x400UL
--
--/* P9100 command registers */
--#define P9100_CMD_OFF 0x0UL
--
--/* P9100 framebuffer memory */
--#define P9100_FB_OFF 0x0UL
--
--/* 3 bits: 2=8bpp 3=16bpp 5=32bpp 7=24bpp */
--#define SYS_CONFIG_PIXELSIZE_SHIFT 26
--
--#define SCREENPAINT_TIMECTL1_ENABLE_VIDEO 0x20 /* 0 = off, 1 = on */
--
--struct p9100_regs {
--	/* Registers for the system control */
--	u32 sys_base;
--	u32 sys_config;
--	u32 sys_intr;
--	u32 sys_int_ena;
--	u32 sys_alt_rd;
--	u32 sys_alt_wr;
--	u32 sys_xxx[58];
--
--	/* Registers for the video control */
--	u32 vid_base;
--	u32 vid_hcnt;
--	u32 vid_htotal;
--	u32 vid_hsync_rise;
--	u32 vid_hblank_rise;
--	u32 vid_hblank_fall;
--	u32 vid_hcnt_preload;
--	u32 vid_vcnt;
--	u32 vid_vlen;
--	u32 vid_vsync_rise;
--	u32 vid_vblank_rise;
--	u32 vid_vblank_fall;
--	u32 vid_vcnt_preload;
--	u32 vid_screenpaint_addr;
--	u32 vid_screenpaint_timectl1;
--	u32 vid_screenpaint_qsfcnt;
--	u32 vid_screenpaint_timectl2;
--	u32 vid_xxx[15];
--
--	/* Registers for the video control */
--	u32 vram_base;
--	u32 vram_memcfg;
--	u32 vram_refresh_pd;
--	u32 vram_refresh_cnt;
--	u32 vram_raslo_max;
--	u32 vram_raslo_cur;
--	u32 pwrup_cfg;
--	u32 vram_xxx[25];
--
--	/* Registers for IBM RGB528 Palette */
--	u32 ramdac_cmap_wridx;
--	u32 ramdac_palette_data;
--	u32 ramdac_pixel_mask;
--	u32 ramdac_palette_rdaddr;
--	u32 ramdac_idx_lo;
--	u32 ramdac_idx_hi;
--	u32 ramdac_idx_data;
--	u32 ramdac_idx_ctl;
--	u32 ramdac_xxx[1784];
+-struct sun4m_timer_percpu {
+-	u32		l14_limit;
+-	u32		l14_count;
+-	u32		l14_limit_noclear;
+-	u32		user_timer_start_stop;
 -};
 -
--struct p9100_cmd_parameng {
--	u32 parameng_status;
--	u32 parameng_bltcmd;
--	u32 parameng_quadcmd;
--};
+-static struct sun4m_timer_percpu __iomem *timers_percpu[SUN4M_NCPUS];
 -
--struct p9100_par {
--	spinlock_t		lock;
--	struct p9100_regs	__iomem *regs;
--
--	u32			flags;
--#define P9100_FLAG_BLANKED	0x00000001
--
--	unsigned long		which_io;
--};
--
--/**
-- *      p9100_setcolreg - Optional function. Sets a color register.
-- *      @regno: boolean, 0 copy local, 1 get_user() function
-- *      @red: frame buffer colormap structure
-- *      @green: The green value which can be up to 16 bits wide
-- *      @blue:  The blue value which can be up to 16 bits wide.
-- *      @transp: If supported the alpha value which can be up to 16 bits wide.
-- *      @info: frame buffer info structure
-- */
--static int p9100_setcolreg(unsigned regno,
--			   unsigned red, unsigned green, unsigned blue,
--			   unsigned transp, struct fb_info *info)
+-void sun4m_nmi(struct pt_regs *regs)
 -{
--	struct p9100_par *par = (struct p9100_par *) info->par;
--	struct p9100_regs __iomem *regs = par->regs;
+-	unsigned long afsr, afar, si;
+-
+-	printk(KERN_ERR "Aieee: sun4m NMI received!\n");
+-	/* XXX HyperSparc hack XXX */
+-	__asm__ __volatile__("mov 0x500, %%g1\n\t"
+-			     "lda [%%g1] 0x4, %0\n\t"
+-			     "mov 0x600, %%g1\n\t"
+-			     "lda [%%g1] 0x4, %1\n\t" :
+-			     "=r" (afsr), "=r" (afar));
+-	printk(KERN_ERR "afsr=%08lx afar=%08lx\n", afsr, afar);
+-	si = sbus_readl(&sun4m_irq_global->pending);
+-	printk(KERN_ERR "si=%08lx\n", si);
+-	if (si & SUN4M_INT_MODULE_ERR)
+-		printk(KERN_ERR "Module async error\n");
+-	if (si & SUN4M_INT_M2S_WRITE_ERR)
+-		printk(KERN_ERR "MBus/SBus async error\n");
+-	if (si & SUN4M_INT_ECC_ERR)
+-		printk(KERN_ERR "ECC memory error\n");
+-	if (si & SUN4M_INT_VME_ERR)
+-		printk(KERN_ERR "VME async error\n");
+-	printk(KERN_ERR "you lose buddy boy...\n");
+-	show_regs(regs);
+-	prom_halt();
+-}
+-
+-void sun4m_unmask_profile_irq(void)
+-{
 -	unsigned long flags;
 -
--	if (regno >= 256)
--		return 1;
--
--	red >>= 8;
--	green >>= 8;
--	blue >>= 8;
--
--	spin_lock_irqsave(&par->lock, flags);
--
--	sbus_writel((regno << 16), &regs->ramdac_cmap_wridx);
--	sbus_writel((red << 16), &regs->ramdac_palette_data);
--	sbus_writel((green << 16), &regs->ramdac_palette_data);
--	sbus_writel((blue << 16), &regs->ramdac_palette_data);
--
--	spin_unlock_irqrestore(&par->lock, flags);
--
--	return 0;
+-	local_irq_save(flags);
+-	sbus_writel(sun4m_imask[SUN4M_PROFILE_IRQ], &sun4m_irq_global->mask_clear);
+-	local_irq_restore(flags);
 -}
 -
--/**
-- *      p9100_blank - Optional function.  Blanks the display.
-- *      @blank: the blank mode we want.
-- *      @info: frame buffer structure that represents a single frame buffer
-- */
--static int
--p9100_blank(int blank, struct fb_info *info)
+-void sun4m_clear_profile_irq(int cpu)
 -{
--	struct p9100_par *par = (struct p9100_par *) info->par;
--	struct p9100_regs __iomem *regs = par->regs;
--	unsigned long flags;
--	u32 val;
--
--	spin_lock_irqsave(&par->lock, flags);
--
--	switch (blank) {
--	case FB_BLANK_UNBLANK: /* Unblanking */
--		val = sbus_readl(&regs->vid_screenpaint_timectl1);
--		val |= SCREENPAINT_TIMECTL1_ENABLE_VIDEO;
--		sbus_writel(val, &regs->vid_screenpaint_timectl1);
--		par->flags &= ~P9100_FLAG_BLANKED;
--		break;
--
--	case FB_BLANK_NORMAL: /* Normal blanking */
--	case FB_BLANK_VSYNC_SUSPEND: /* VESA blank (vsync off) */
--	case FB_BLANK_HSYNC_SUSPEND: /* VESA blank (hsync off) */
--	case FB_BLANK_POWERDOWN: /* Poweroff */
--		val = sbus_readl(&regs->vid_screenpaint_timectl1);
--		val &= ~SCREENPAINT_TIMECTL1_ENABLE_VIDEO;
--		sbus_writel(val, &regs->vid_screenpaint_timectl1);
--		par->flags |= P9100_FLAG_BLANKED;
--		break;
--	}
--
--	spin_unlock_irqrestore(&par->lock, flags);
--
--	return 0;
+-	sbus_readl(&timers_percpu[cpu]->l14_limit);
 -}
--
--static struct sbus_mmap_map p9100_mmap_map[] = {
--	{ CG3_MMAP_OFFSET,	0,		SBUS_MMAP_FBSIZE(1) },
--	{ 0,			0,		0		    }
--};
--
--static int p9100_sbusfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
--{
--	struct p9100_par *par = (struct p9100_par *)info->par;
--
--	return sbusfb_mmap_helper(p9100_mmap_map,
--				  info->fix.smem_start, info->fix.smem_len,
--				  par->which_io, vma);
--}
--
--static int p9100_sbusfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
--{
--	/* Make it look like a cg3. */
--	return sbusfb_ioctl_helper(cmd, arg, info,
--				   FBTYPE_SUN3COLOR, 8, info->fix.smem_len);
--}
--
--/*
-- *  Initialisation
-- */
--
--static void p9100_init_fix(struct fb_info *info, int linebytes, struct device_node *dp)
--{
--	snprintf(info->fix.id, sizeof(info->fix.id), "%pOFn", dp);
--
--	info->fix.type = FB_TYPE_PACKED_PIXELS;
--	info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
--
--	info->fix.line_length = linebytes;
--
--	info->fix.accel = FB_ACCEL_SUN_CGTHREE;
--}
--
--static int p9100_probe(struct platform_device *op)
--{
--	struct device_node *dp = op->dev.of_node;
--	struct fb_info *info;
--	struct p9100_par *par;
--	int linebytes, err;
--
--	info = framebuffer_alloc(sizeof(struct p9100_par), &op->dev);
--
--	err = -ENOMEM;
--	if (!info)
--		goto out_err;
--	par = info->par;
--
--	spin_lock_init(&par->lock);
--
--	/* This is the framebuffer and the only resource apps can mmap.  */
--	info->fix.smem_start = op->resource[2].start;
--	par->which_io = op->resource[2].flags & IORESOURCE_BITS;
--
--	sbusfb_fill_var(&info->var, dp, 8);
--	info->var.red.length = 8;
--	info->var.green.length = 8;
--	info->var.blue.length = 8;
--
--	linebytes = of_getintprop_default(dp, "linebytes", info->var.xres);
--	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
--
--	par->regs = of_ioremap(&op->resource[0], 0,
--			       sizeof(struct p9100_regs), "p9100 regs");
--	if (!par->regs)
--		goto out_release_fb;
--
--	info->fbops = &p9100_ops;
--	info->screen_base = of_ioremap(&op->resource[2], 0,
--				       info->fix.smem_len, "p9100 ram");
--	if (!info->screen_base)
--		goto out_unmap_regs;
--
--	p9100_blank(FB_BLANK_UNBLANK, info);
--
--	if (fb_alloc_cmap(&info->cmap, 256, 0))
--		goto out_unmap_screen;
--
--	p9100_init_fix(info, linebytes, dp);
--
--	err = register_framebuffer(info);
--	if (err < 0)
--		goto out_dealloc_cmap;
--
--	fb_set_cmap(&info->cmap, info);
--
--	dev_set_drvdata(&op->dev, info);
--
--	printk(KERN_INFO "%pOF: p9100 at %lx:%lx\n",
--	       dp,
--	       par->which_io, info->fix.smem_start);
--
--	return 0;
--
--out_dealloc_cmap:
--	fb_dealloc_cmap(&info->cmap);
--
--out_unmap_screen:
--	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
--
--out_unmap_regs:
--	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
--
--out_release_fb:
--	framebuffer_release(info);
--
--out_err:
--	return err;
--}
--
--static void p9100_remove(struct platform_device *op)
--{
--	struct fb_info *info = dev_get_drvdata(&op->dev);
--	struct p9100_par *par = info->par;
--
--	unregister_framebuffer(info);
--	fb_dealloc_cmap(&info->cmap);
--
--	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
--	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
--
--	framebuffer_release(info);
--}
--
--static const struct of_device_id p9100_match[] = {
--	{
--		.name = "p9100",
--	},
--	{},
--};
--MODULE_DEVICE_TABLE(of, p9100_match);
--
--static struct platform_driver p9100_driver = {
--	.driver = {
--		.name = "p9100",
--		.of_match_table = p9100_match,
--	},
--	.probe		= p9100_probe,
--	.remove_new	= p9100_remove,
--};
--
--static int __init p9100_init(void)
--{
--	if (fb_get_options("p9100fb", NULL))
--		return -ENODEV;
--
--	return platform_driver_register(&p9100_driver);
--}
--
--static void __exit p9100_exit(void)
--{
--	platform_driver_unregister(&p9100_driver);
--}
--
--module_init(p9100_init);
--module_exit(p9100_exit);
--
--MODULE_DESCRIPTION("framebuffer driver for P9100 chipsets");
--MODULE_AUTHOR("David S. Miller <davem@davemloft.net>");
--MODULE_VERSION("2.0");
--MODULE_LICENSE("GPL");
 
 -- 
 2.34.1

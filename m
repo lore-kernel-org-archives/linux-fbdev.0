@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71AD73FB08;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92508405D6;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H3Yyyvsx"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 40287C4167D;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hiFZYARL"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 74334C116B3;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1703023396;
-	bh=jplkjx8KqxEm4GLkaXEG2Z4HbaFqY312HYZeES0ZtrE=;
+	bh=bLoZlXD+uyujBiI2QIHjJyBWQ7WHglpOzYi0YEMALhI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=H3YyyvsxfiS6k44YxC/qRiEBp7u6VA6JILXBOBPtvDxC6pMp3O2eAkGMFHhtABWj3
-	 7s0iOY5MY/nS9YCsv6q3ozlTGTiYcZENEDdQt+3gMhSSExgtKdmMseMPgG2KnLN49f
-	 HJpXQxX/8NNPC2PycdPMEsXXS3j5KRYEBqdrTaMlUZil0juQz6Xrir3FCtVnluaEwb
-	 IvmSafv/WbiJVDE40QjtEvtzeMVBmatsdkIuJaNTXa9xgmDJVFSrrro1dRtQHjLLb2
-	 VkgxHP26d+0ffNPeloDk/8nE1Bb6YQ9VY0zeqw9U2Z6KMGvSylX8CpsaP2qBWNkkBM
-	 akaFxUS6vNhhQ==
+	b=hiFZYARLvw+cpesK+MbG5CFYiNTMuLIBzfQOKzXeuvXzZzQM1qg6OMJD5YXWDasX5
+	 zJdVqmsufRiCvLG67nWP0AxNoWTK+GDBOHgkKDH9k12Oxi2O9haAV8gW8NX9kdY4nH
+	 3ngMfjm56Ltl/gXRG67TIvkk8TPfvJTxF/h7ykgrpDbsSZYVxah5vlmrMHYGopjYlv
+	 72sYg21txveDBj2hC0Up40rped7bdo69Q2p3inl4mVPmNvz7p9Qb+8VTCBBhjN2+SF
+	 VZdAopWgK4gxmjG3GVWyer30Fy5r9oNx7WRSRfdUKeohDqGv7btdHOUP3jf4mb92lT
+	 7rygtWgpV4l7w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A33C41535;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DA0CC41535;
 	Tue, 19 Dec 2023 22:03:16 +0000 (UTC)
 From: Sam Ravnborg via B4 Relay <devnull+sam.ravnborg.org@kernel.org>
-Date: Tue, 19 Dec 2023 23:03:21 +0100
-Subject: [PATCH 16/27] sparc32: Drop use of sparc_config
+Date: Tue, 19 Dec 2023 23:03:25 +0100
+Subject: [PATCH 20/27] sparc32: Drop unused prom ranges support
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -31,7 +31,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231219-sam-sparc32-sunset-v3-v1-16-64bb44b598c5@ravnborg.org>
+Message-Id: <20231219-sam-sparc32-sunset-v3-v1-20-64bb44b598c5@ravnborg.org>
 References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 In-Reply-To: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -44,11 +44,11 @@ Cc: Helge Deller <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
  linux-sound@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=12280;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1703023392; l=6494;
  i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
- bh=towcWv/IYNk7Hr20WNSh7PMItPdPneNjwiK/fXzUXBw=; =?utf-8?q?b=3DV1cnAV/sOaE2?=
- =?utf-8?q?3j6mQAoXJ8XD3mN9KWAjrZjSKN6qIEqfPE6+95qYg6Iyd8Jljo/koYkJsy+p4Nfv?=
- 5oWz9OgsBFCB9lJ/Rtpax43gJ1nkhx8t33AGEPrHUm/A+1ct60ek
+ bh=JWUMPYjeM7nZeaLhzjjM6ATuORPYfX7XPb+WWflq45I=; =?utf-8?q?b=3DpeEDLnJfNsDv?=
+ =?utf-8?q?bMEUyLIfk5KCN4dAImCHU1GZ0JD0n/cOF0IpbTfq7Erj+RhLDOeOO0ivzmtmiCOY?=
+ w+qPEBwLCvTPNLWgyuz3ImztuQA+VjR0A01A3WxdeMxU5GIypt81
 X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
  pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
 X-Endpoint-Received: by B4 Relay for sam@ravnborg.org/20230107 with auth_id=22
@@ -57,373 +57,186 @@ Reply-To: <sam@ravnborg.org>
 
 From: Sam Ravnborg <sam@ravnborg.org>
 
-sparc_config were used to handle the differences between the machines.
-With only LEON supported sparc_config is no longer required.
-
-Refactor the time code a litte as some parts are obsolete and other
-parts are only used when SMP is not enabled.
+Drop support for prom ranges - not used anymore.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Arnd Bergmann <arnd@kernel.org>
 Cc: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/include/asm/timer_32.h |  1 +
- arch/sparc/kernel/irq.h           | 37 +++-------------------
- arch/sparc/kernel/irq_32.c        |  3 --
- arch/sparc/kernel/leon_kernel.c   | 27 +++--------------
- arch/sparc/kernel/of_device_32.c  |  4 +--
- arch/sparc/kernel/time_32.c       | 64 +++++++++++++--------------------------
- 6 files changed, 33 insertions(+), 103 deletions(-)
+ arch/sparc/include/asm/oplib_32.h |  11 ----
+ arch/sparc/prom/Makefile          |   1 -
+ arch/sparc/prom/init_32.c         |   2 -
+ arch/sparc/prom/ranges.c          | 114 --------------------------------------
+ 4 files changed, 128 deletions(-)
 
-diff --git a/arch/sparc/include/asm/timer_32.h b/arch/sparc/include/asm/timer_32.h
-index eecd2696922d..1cd89a99966f 100644
---- a/arch/sparc/include/asm/timer_32.h
-+++ b/arch/sparc/include/asm/timer_32.h
-@@ -17,6 +17,7 @@
- #include <asm/cpu_type.h>  /* For SUN4M_NCPUS */
+diff --git a/arch/sparc/include/asm/oplib_32.h b/arch/sparc/include/asm/oplib_32.h
+index d1cf3a27a40d..4ef7f05978d3 100644
+--- a/arch/sparc/include/asm/oplib_32.h
++++ b/arch/sparc/include/asm/oplib_32.h
+@@ -163,17 +163,6 @@ int prom_setprop(phandle node, const char *prop_name, char *prop_value,
  
- #define SBUS_CLOCK_RATE   2000000 /* 2MHz */
-+#define LEON_CLOCK_RATE   1000000
- #define TIMER_VALUE_SHIFT 9
- #define TIMER_VALUE_MASK  0x3fffff
- #define TIMER_LIMIT_BIT   (1 << 31)  /* Bit 31 in Counter-Timer register */
-diff --git a/arch/sparc/kernel/irq.h b/arch/sparc/kernel/irq.h
-index 0d9b740725b4..8a0b314c8299 100644
---- a/arch/sparc/kernel/irq.h
-+++ b/arch/sparc/kernel/irq.h
-@@ -44,38 +44,6 @@ struct sun4m_irq_global {
- extern struct sun4m_irq_percpu __iomem *sun4m_irq_percpu[SUN4M_NCPUS];
- extern struct sun4m_irq_global __iomem *sun4m_irq_global;
+ phandle prom_inst2pkg(int);
  
--/* The following definitions describe the individual platform features: */
--#define FEAT_L10_CLOCKSOURCE (1 << 0) /* L10 timer is used as a clocksource */
--#define FEAT_L10_CLOCKEVENT  (1 << 1) /* L10 timer is used as a clockevent */
--#define FEAT_L14_ONESHOT     (1 << 2) /* L14 timer clockevent can oneshot */
+-/* Dorking with Bus ranges... */
 -
+-/* Apply promlib probes OBIO ranges to registers. */
+-void prom_apply_obio_ranges(struct linux_prom_registers *obioregs, int nregs);
+-
+-/* Apply ranges of any prom node (and optionally parent node as well) to registers. */
+-void prom_apply_generic_ranges(phandle node, phandle parent,
+-			       struct linux_prom_registers *sbusregs, int nregs);
+-
+-void prom_ranges_init(void);
+-
+ /* CPU probing helpers.  */
+ int cpu_find_by_instance(int instance, phandle *prom_node, int *mid);
+ int cpu_find_by_mid(int mid, phandle *prom_node);
+diff --git a/arch/sparc/prom/Makefile b/arch/sparc/prom/Makefile
+index 397b79af77f7..6d94d8b28bcf 100644
+--- a/arch/sparc/prom/Makefile
++++ b/arch/sparc/prom/Makefile
+@@ -10,7 +10,6 @@ lib-y                 += init_$(BITS).o
+ lib-$(CONFIG_SPARC32) += memory.o
+ lib-y                 += misc_$(BITS).o
+ lib-$(CONFIG_SPARC32) += mp.o
+-lib-$(CONFIG_SPARC32) += ranges.o
+ lib-y                 += console_$(BITS).o
+ lib-y                 += printf.o
+ lib-y                 += tree_$(BITS).o
+diff --git a/arch/sparc/prom/init_32.c b/arch/sparc/prom/init_32.c
+index d20470166cb1..1681f1f980d4 100644
+--- a/arch/sparc/prom/init_32.c
++++ b/arch/sparc/prom/init_32.c
+@@ -67,8 +67,6 @@ void __init prom_init(struct linux_romvec *rp)
+ 
+ 	prom_meminit();
+ 
+-	prom_ranges_init();
+-
+ 	printk("PROMLIB: Sun Boot Prom Version %d Revision %d\n",
+ 	       romvec->pv_romvers, prom_rev);
+ 
+diff --git a/arch/sparc/prom/ranges.c b/arch/sparc/prom/ranges.c
+deleted file mode 100644
+index 20cb828bc5f4..000000000000
+--- a/arch/sparc/prom/ranges.c
++++ /dev/null
+@@ -1,114 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
 -/*
-- * Platform specific configuration
-- * The individual platforms assign their platform
-- * specifics in their init functions.
+- * ranges.c: Handle ranges in newer proms for obio/sbus.
+- *
+- * Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
+- * Copyright (C) 1997 Jakub Jelinek (jj@sunsite.mff.cuni.cz)
 - */
--struct sparc_config {
--	void (*init_timers)(void);
--	unsigned int (*build_device_irq)(struct platform_device *op,
--	                                 unsigned int real_irq);
 -
--	/* generic clockevent features - see FEAT_* above */
--	int features;
+-#include <linux/init.h>
+-#include <linux/module.h>
 -
--	/* clock rate used for clock event timer */
--	int clock_rate;
+-#include <asm/openprom.h>
+-#include <asm/oplib.h>
+-#include <asm/types.h>
 -
--	/* one period for clock source timer */
--	unsigned int cs_period;
+-static struct linux_prom_ranges promlib_obio_ranges[PROMREG_MAX];
+-static int num_obio_ranges;
 -
--	/* function to obtain offsett for cs period */
--	unsigned int (*get_cycles_offset)(void);
--
--	void (*clear_clock_irq)(void);
--	void (*load_profile_irq)(int cpu, unsigned int limit);
--};
--extern struct sparc_config sparc_config;
--
- unsigned int irq_alloc(unsigned int real_irq, unsigned int pil);
- void irq_link(unsigned int irq);
- void irq_unlink(unsigned int irq);
-@@ -89,6 +57,11 @@ void sun4m_nmi(struct pt_regs *regs);
- /* sun4d_irq.c */
- void sun4d_handler_irq(unsigned int pil, struct pt_regs *regs);
- 
-+/* leon_kernel.c */
-+void leon_clear_clock_irq(void);
-+void leon_load_profile_irq(int cpu, unsigned int limit);
-+u32 leon_cycles_offset(void);
-+
- #ifdef CONFIG_SMP
- 
- /* All SUN4D IPIs are sent on this IRQ, may be shared with hard IRQs */
-diff --git a/arch/sparc/kernel/irq_32.c b/arch/sparc/kernel/irq_32.c
-index a6af08fce796..f76f57073323 100644
---- a/arch/sparc/kernel/irq_32.c
-+++ b/arch/sparc/kernel/irq_32.c
-@@ -24,9 +24,6 @@
- #include "kernel.h"
- #include "irq.h"
- 
--/* platform specific irq setup */
--struct sparc_config sparc_config;
--
- unsigned long arch_local_irq_save(void)
- {
- 	unsigned long retval;
-diff --git a/arch/sparc/kernel/leon_kernel.c b/arch/sparc/kernel/leon_kernel.c
-index ea04bad6a118..fa9cdaffdc6b 100644
---- a/arch/sparc/kernel/leon_kernel.c
-+++ b/arch/sparc/kernel/leon_kernel.c
-@@ -237,12 +237,6 @@ unsigned int leon_build_device_irq(unsigned int real_irq,
- 	return irq;
- }
- 
--static unsigned int _leon_build_device_irq(struct platform_device *op,
--					   unsigned int real_irq)
+-/* Adjust register values based upon the ranges parameters. */
+-static void prom_adjust_regs(struct linux_prom_registers *regp, int nregs,
+-			     struct linux_prom_ranges *rangep, int nranges)
 -{
--	return leon_build_device_irq(real_irq, handle_simple_irq, "edge", 0);
+-	int regc, rngc;
+-
+-	for (regc = 0; regc < nregs; regc++) {
+-		for (rngc = 0; rngc < nranges; rngc++)
+-			if (regp[regc].which_io == rangep[rngc].ot_child_space)
+-				break; /* Fount it */
+-		if (rngc == nranges) /* oops */
+-			prom_printf("adjust_regs: Could not find range with matching bus type...\n");
+-		regp[regc].which_io = rangep[rngc].ot_parent_space;
+-		regp[regc].phys_addr -= rangep[rngc].ot_child_base;
+-		regp[regc].phys_addr += rangep[rngc].ot_parent_base;
+-	}
 -}
 -
- void leon_update_virq_handling(unsigned int virq,
- 			      irq_flow_handler_t flow_handler,
- 			      const char *name, int do_ack)
-@@ -258,7 +252,7 @@ void leon_update_virq_handling(unsigned int virq,
- 	irq_set_chip_data(virq, (void *)mask);
- }
- 
--static u32 leon_cycles_offset(void)
-+u32 leon_cycles_offset(void)
- {
- 	u32 rld, val, ctrl, off;
- 
-@@ -312,14 +306,6 @@ void __init leon_init_timers(void)
- 	u32 config;
- 	u32 ctrl;
- 
--	sparc_config.get_cycles_offset = leon_cycles_offset;
--	sparc_config.cs_period = 1000000 / HZ;
--	sparc_config.features |= FEAT_L10_CLOCKSOURCE;
--
--#ifndef CONFIG_SMP
--	sparc_config.features |= FEAT_L10_CLOCKEVENT;
--#endif
--
- 	leondebug_irq_disable = 0;
- 	leon_debug_irqout = 0;
- 	master_l10_counter = (u32 __iomem *)&dummy_master_l10_counter;
-@@ -434,7 +420,7 @@ void __init leon_init_timers(void)
- 	err = request_irq(irq, leon_percpu_timer_ce_interrupt,
- 			  IRQF_PERCPU | IRQF_TIMER, "timer", NULL);
- #else
--	irq = _leon_build_device_irq(NULL, leon3_gptimer_irq);
-+	irq = leon_build_device_irq(leon3_gptimer_irq, handle_simple_irq, "edge", 0);
- 	err = request_irq(irq, timer_interrupt, IRQF_TIMER, "timer", NULL);
- #endif
- 	if (err) {
-@@ -453,7 +439,7 @@ void __init leon_init_timers(void)
- 	return;
- }
- 
--static void leon_clear_clock_irq(void)
-+void leon_clear_clock_irq(void)
- {
- 	u32 ctrl;
- 
-@@ -462,7 +448,7 @@ static void leon_clear_clock_irq(void)
- 			      ctrl & leon3_gptimer_ackmask);
- }
- 
--static void leon_load_profile_irq(int cpu, unsigned int limit)
-+void leon_load_profile_irq(int cpu, unsigned int limit)
- {
- }
- 
-@@ -485,9 +471,4 @@ void leon_enable_irq_cpu(unsigned int irq_nr, unsigned int cpu)
- 
- void __init leon_init_IRQ(void)
- {
--	sparc_config.init_timers      = leon_init_timers;
--	sparc_config.build_device_irq = _leon_build_device_irq;
--	sparc_config.clock_rate       = 1000000;
--	sparc_config.clear_clock_irq  = leon_clear_clock_irq;
--	sparc_config.load_profile_irq = leon_load_profile_irq;
- }
-diff --git a/arch/sparc/kernel/of_device_32.c b/arch/sparc/kernel/of_device_32.c
-index 06012e68bdca..ddb3b197d5e4 100644
---- a/arch/sparc/kernel/of_device_32.c
-+++ b/arch/sparc/kernel/of_device_32.c
-@@ -358,7 +358,7 @@ static struct platform_device * __init scan_one_device(struct device_node *dp,
- 		op->archdata.num_irqs = len / sizeof(struct linux_prom_irqs);
- 		for (i = 0; i < op->archdata.num_irqs; i++)
- 			op->archdata.irqs[i] =
--			    sparc_config.build_device_irq(op, intr[i].pri);
-+			    leon_build_device_irq(intr[i].pri, handle_simple_irq, "edge", 0);
- 	} else {
- 		const unsigned int *irq =
- 			of_get_property(dp, "interrupts", &len);
-@@ -367,7 +367,7 @@ static struct platform_device * __init scan_one_device(struct device_node *dp,
- 			op->archdata.num_irqs = len / sizeof(unsigned int);
- 			for (i = 0; i < op->archdata.num_irqs; i++)
- 				op->archdata.irqs[i] =
--				    sparc_config.build_device_irq(op, irq[i]);
-+				    leon_build_device_irq(irq[i], handle_simple_irq, "edge", 0);
- 		} else {
- 			op->archdata.num_irqs = 0;
- 		}
-diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
-index 848404610b86..e6a2cb444777 100644
---- a/arch/sparc/kernel/time_32.c
-+++ b/arch/sparc/kernel/time_32.c
-@@ -44,6 +44,7 @@
- #include <asm/idprom.h>
- #include <asm/page.h>
- #include <asm/irq_regs.h>
-+#include <asm/leon.h>
- #include <asm/setup.h>
- 
- #include "kernel.h"
-@@ -88,10 +89,10 @@ irqreturn_t notrace timer_interrupt(int dummy, void *dev_id)
- 	if (timer_cs_enabled) {
- 		write_seqlock(&timer_cs_lock);
- 		timer_cs_internal_counter++;
--		sparc_config.clear_clock_irq();
-+		leon_clear_clock_irq();
- 		write_sequnlock(&timer_cs_lock);
- 	} else {
--		sparc_config.clear_clock_irq();
-+		leon_clear_clock_irq();
- 	}
- 
- 	if (timer_ce_enabled)
-@@ -100,6 +101,7 @@ irqreturn_t notrace timer_interrupt(int dummy, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
-+#ifndef CONFIG_SMP
- static int timer_ce_shutdown(struct clock_event_device *evt)
- {
- 	timer_ce_enabled = 0;
-@@ -128,24 +130,10 @@ static __init void setup_timer_ce(void)
- 	ce->tick_resume = timer_ce_set_periodic;
- 	ce->cpumask  = cpu_possible_mask;
- 	ce->shift    = 32;
--	ce->mult     = div_sc(sparc_config.clock_rate, NSEC_PER_SEC,
--	                      ce->shift);
-+	ce->mult     = div_sc(LEON_CLOCK_RATE, NSEC_PER_SEC, ce->shift);
- 	clockevents_register_device(ce);
- }
--
--static unsigned int sbus_cycles_offset(void)
+-static void prom_adjust_ranges(struct linux_prom_ranges *ranges1, int nranges1,
+-			       struct linux_prom_ranges *ranges2, int nranges2)
 -{
--	u32 val, offset;
+-	int rng1c, rng2c;
 -
--	val = sbus_readl(master_l10_counter);
--	offset = (val >> TIMER_VALUE_SHIFT) & TIMER_VALUE_MASK;
--
--	/* Limit hit? */
--	if (val & TIMER_LIMIT_BIT)
--		offset += sparc_config.cs_period;
--
--	return offset;
--}
-+#endif
- 
- static u64 timer_cs_read(struct clocksource *cs)
- {
-@@ -156,11 +144,11 @@ static u64 timer_cs_read(struct clocksource *cs)
- 		seq = read_seqbegin(&timer_cs_lock);
- 
- 		cycles = timer_cs_internal_counter;
--		offset = sparc_config.get_cycles_offset();
-+		offset = leon_cycles_offset();
- 	} while (read_seqretry(&timer_cs_lock, seq));
- 
- 	/* Count absolute cycles */
--	cycles *= sparc_config.cs_period;
-+	cycles *= LEON_CLOCK_RATE / HZ;
- 	cycles += offset;
- 
- 	return cycles;
-@@ -177,7 +165,7 @@ static struct clocksource timer_cs = {
- static __init int setup_timer_cs(void)
- {
- 	timer_cs_enabled = 1;
--	return clocksource_register_hz(&timer_cs, sparc_config.clock_rate);
-+	return clocksource_register_hz(&timer_cs, LEON_CLOCK_RATE);
- }
- 
- #ifdef CONFIG_SMP
-@@ -185,7 +173,7 @@ static int percpu_ce_shutdown(struct clock_event_device *evt)
- {
- 	int cpu = cpumask_first(evt->cpumask);
- 
--	sparc_config.load_profile_irq(cpu, 0);
-+	leon_load_profile_irq(cpu, 0);
- 	return 0;
- }
- 
-@@ -193,7 +181,7 @@ static int percpu_ce_set_periodic(struct clock_event_device *evt)
- {
- 	int cpu = cpumask_first(evt->cpumask);
- 
--	sparc_config.load_profile_irq(cpu, SBUS_CLOCK_RATE / HZ);
-+	leon_load_profile_irq(cpu, SBUS_CLOCK_RATE / HZ);
- 	return 0;
- }
- 
-@@ -203,7 +191,7 @@ static int percpu_ce_set_next_event(unsigned long delta,
- 	int cpu = cpumask_first(evt->cpumask);
- 	unsigned int next = (unsigned int)delta;
- 
--	sparc_config.load_profile_irq(cpu, next);
-+	leon_load_profile_irq(cpu, next);
- 	return 0;
- }
- 
-@@ -212,9 +200,6 @@ void register_percpu_ce(int cpu)
- 	struct clock_event_device *ce = &per_cpu(sparc32_clockevent, cpu);
- 	unsigned int features = CLOCK_EVT_FEAT_PERIODIC;
- 
--	if (sparc_config.features & FEAT_L14_ONESHOT)
--		features |= CLOCK_EVT_FEAT_ONESHOT;
--
- 	ce->name           = "percpu_ce";
- 	ce->rating         = 200;
- 	ce->features       = features;
-@@ -224,10 +209,9 @@ void register_percpu_ce(int cpu)
- 	ce->set_next_event = percpu_ce_set_next_event;
- 	ce->cpumask        = cpumask_of(cpu);
- 	ce->shift          = 32;
--	ce->mult           = div_sc(sparc_config.clock_rate, NSEC_PER_SEC,
--	                            ce->shift);
--	ce->max_delta_ns   = clockevent_delta2ns(sparc_config.clock_rate, ce);
--	ce->max_delta_ticks = (unsigned long)sparc_config.clock_rate;
-+	ce->mult           = div_sc(LEON_CLOCK_RATE, NSEC_PER_SEC, ce->shift);
-+	ce->max_delta_ns   = clockevent_delta2ns(LEON_CLOCK_RATE, ce);
-+	ce->max_delta_ticks = (unsigned long)LEON_CLOCK_RATE;
- 	ce->min_delta_ns   = clockevent_delta2ns(100, ce);
- 	ce->min_delta_ticks = 100;
- 
-@@ -326,26 +310,20 @@ fs_initcall(clock_init);
- 
- static void __init sparc32_late_time_init(void)
- {
--	if (sparc_config.features & FEAT_L10_CLOCKEVENT)
--		setup_timer_ce();
--	if (sparc_config.features & FEAT_L10_CLOCKSOURCE)
--		setup_timer_cs();
-+#ifndef CONFIG_SMP
-+	setup_timer_ce();
-+#endif
-+	setup_timer_cs();
-+
- #ifdef CONFIG_SMP
- 	register_percpu_ce(smp_processor_id());
- #endif
- }
- 
--static void __init sbus_time_init(void)
--{
--	sparc_config.get_cycles_offset = sbus_cycles_offset;
--	sparc_config.init_timers();
+-	for (rng1c = 0; rng1c < nranges1; rng1c++) {
+-		for (rng2c = 0; rng2c < nranges2; rng2c++)
+-			if (ranges1[rng1c].ot_parent_space == ranges2[rng2c].ot_child_space &&
+-			   ranges1[rng1c].ot_parent_base >= ranges2[rng2c].ot_child_base &&
+-			   ranges2[rng2c].ot_child_base + ranges2[rng2c].or_size - ranges1[rng1c].ot_parent_base > 0U)
+-			break;
+-		if (rng2c == nranges2) /* oops */
+-			prom_printf("adjust_ranges: Could not find matching bus type...\n");
+-		else if (ranges1[rng1c].ot_parent_base + ranges1[rng1c].or_size > ranges2[rng2c].ot_child_base + ranges2[rng2c].or_size)
+-			ranges1[rng1c].or_size = ranges2[rng2c].ot_child_base + ranges2[rng2c].or_size - ranges1[rng1c].ot_parent_base;
+-		ranges1[rng1c].ot_parent_space = ranges2[rng2c].ot_parent_space;
+-		ranges1[rng1c].ot_parent_base += ranges2[rng2c].ot_parent_base;
+-	}
 -}
 -
- void __init time_init(void)
- {
--	sparc_config.features = 0;
- 	late_time_init = sparc32_late_time_init;
- 
--	sbus_time_init();
-+	leon_init_timers();
- }
- 
+-/* Apply probed obio ranges to registers passed, if no ranges return. */
+-void prom_apply_obio_ranges(struct linux_prom_registers *regs, int nregs)
+-{
+-	if (num_obio_ranges)
+-		prom_adjust_regs(regs, nregs, promlib_obio_ranges, num_obio_ranges);
+-}
+-EXPORT_SYMBOL(prom_apply_obio_ranges);
+-
+-void __init prom_ranges_init(void)
+-{
+-	phandle node, obio_node;
+-	int success;
+-
+-	num_obio_ranges = 0;
+-
+-	/* Check for obio and sbus ranges. */
+-	node = prom_getchild(prom_root_node);
+-	obio_node = prom_searchsiblings(node, "obio");
+-
+-	if (obio_node) {
+-		success = prom_getproperty(obio_node, "ranges",
+-					   (char *) promlib_obio_ranges,
+-					   sizeof(promlib_obio_ranges));
+-		if (success != -1)
+-			num_obio_ranges = (success / sizeof(struct linux_prom_ranges));
+-	}
+-
+-	if (num_obio_ranges)
+-		prom_printf("PROMLIB: obio_ranges %d\n", num_obio_ranges);
+-}
+-
+-void prom_apply_generic_ranges(phandle node, phandle parent,
+-			       struct linux_prom_registers *regs, int nregs)
+-{
+-	int success;
+-	int num_ranges;
+-	struct linux_prom_ranges ranges[PROMREG_MAX];
+-
+-	success = prom_getproperty(node, "ranges",
+-				   (char *) ranges,
+-				   sizeof(ranges));
+-	if (success != -1) {
+-		num_ranges = (success / sizeof(struct linux_prom_ranges));
+-		if (parent) {
+-			struct linux_prom_ranges parent_ranges[PROMREG_MAX];
+-			int num_parent_ranges;
+-
+-			success = prom_getproperty(parent, "ranges",
+-						   (char *) parent_ranges,
+-						   sizeof(parent_ranges));
+-			if (success != -1) {
+-				num_parent_ranges = (success / sizeof(struct linux_prom_ranges));
+-				prom_adjust_ranges(ranges, num_ranges, parent_ranges, num_parent_ranges);
+-			}
+-		}
+-		prom_adjust_regs(regs, nregs, ranges, num_ranges);
+-	}
+-}
 
 -- 
 2.34.1

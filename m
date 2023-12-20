@@ -1,463 +1,261 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com [209.85.219.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C4072574F;
-	Wed, 20 Dec 2023 13:46:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 940823D38F;
+	Wed, 20 Dec 2023 14:39:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="BoMCbXoN";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="4SuhF5+6";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="BoMCbXoN";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="4SuhF5+6"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 9D2641F831;
-	Wed, 20 Dec 2023 13:46:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1703080007; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v/4ct0iSeQF0Ky9ZBwzVlmeP0hs7U6lkwZguG+4N5t4=;
-	b=BoMCbXoNdxUjaqvUSfqG6L8aRkifyotgB4/PtqKzn0T2sr6FjycRkHoXl01F2kisBDvrkx
-	GhhNJIsGLWdnfTEw1s979eB0S7UWnF2uCs5XmdGHy/kiryQjd7cJAXL0jTpXnlTkuEYjB2
-	vS1GIVfN+z0iYt9G8ook2LNmJZPojeM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1703080007;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v/4ct0iSeQF0Ky9ZBwzVlmeP0hs7U6lkwZguG+4N5t4=;
-	b=4SuhF5+6tWg8QatyEj2/O3ZJdvJV9Vf81wmgYorFyUEvrmNXGPRDhn45KUIOR3OYn83r//
-	sPr10+2M7ozTwFDQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1703080007; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v/4ct0iSeQF0Ky9ZBwzVlmeP0hs7U6lkwZguG+4N5t4=;
-	b=BoMCbXoNdxUjaqvUSfqG6L8aRkifyotgB4/PtqKzn0T2sr6FjycRkHoXl01F2kisBDvrkx
-	GhhNJIsGLWdnfTEw1s979eB0S7UWnF2uCs5XmdGHy/kiryQjd7cJAXL0jTpXnlTkuEYjB2
-	vS1GIVfN+z0iYt9G8ook2LNmJZPojeM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1703080007;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v/4ct0iSeQF0Ky9ZBwzVlmeP0hs7U6lkwZguG+4N5t4=;
-	b=4SuhF5+6tWg8QatyEj2/O3ZJdvJV9Vf81wmgYorFyUEvrmNXGPRDhn45KUIOR3OYn83r//
-	sPr10+2M7ozTwFDQ==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 5D62513BA9;
-	Wed, 20 Dec 2023 13:46:47 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id sM+hFUfwgmWZJwAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 20 Dec 2023 13:46:47 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	James.Bottomley@HansenPartnership.com,
-	arnd@arndb.de
-Cc: linux-parisc@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 2/4] fbdev/stifb: Allocate fb_info instance with framebuffer_alloc()
-Date: Wed, 20 Dec 2023 14:22:55 +0100
-Message-ID: <20231220134639.8190-3-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20231220134639.8190-1-tzimmermann@suse.de>
-References: <20231220134639.8190-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="itk22wab"
+Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-dbd722b55afso1401619276.2;
+        Wed, 20 Dec 2023 06:39:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1703083191; x=1703687991; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=mGiuE7bBlhop0dbIyO12uegbMs1gwuxE7A225J0CU+c=;
+        b=itk22wab9PjEyDtMz0VECfnCEQ2iObaB7+wwG6+G5Q2/j1IBwboJ9wnJ6kYdtssZjq
+         0AB/sDhz+acmTzeueFVhwOb9YtxrM/rNHYmf6Qn74NyI61iNd7BLCzf3A8p0vOftOZJD
+         6paQmaXbWt4ULmBRVCdZCmAXcftkoy7umfD/20t3QOIJgL+MNZ39wFvIIb9H9IQKFgUz
+         M1N6DWzmUZffMd2swHRmQD5Dt3L8GghV/Wg1MJJ3FFlos+/hYzH9d1ru0nBxspW7RfW+
+         2wLc23gosJ9OV/KzklkPF/WNxGCto/LIzbko7qaBgQr9Tasdmxk+p7v/GHRBcfhv9YTw
+         Bimw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1703083191; x=1703687991;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=mGiuE7bBlhop0dbIyO12uegbMs1gwuxE7A225J0CU+c=;
+        b=GSFo0Wq89yXABFvz3lAL37lcMKeSIXIB2Do9b98y+AdinDzPBHE1iYci4MOsf2tFD8
+         5srW47HjPIqqcCLu0d0QddcOcnZ+GV0O9d4Rjzfx99IX4mZossikWP3nW4g1m1oWloV9
+         YNMmX1zpo4oSiAs/dlUF38hhVCImC9WX6m1VDo2vBTkuBq87Leb4IwRCyChhQJBe03zw
+         BDF8x0ExZbkzR5oBQZ/PHuOMQPsl4igqfreGGRxQfqLbAjWa8rOrhOQ3Zourb0Tn83nM
+         sbZRsAD11gwbdaTl0sS5EFXrE/uW3JT4NSe4tqi8QoDOV2EDZdZnOCpYmsQipAM4gg2N
+         /IKw==
+X-Gm-Message-State: AOJu0YzEgOFZn/PvIbX+W3XUCRLpnahRzgqUwG9QIRfGI8SVI1iv6hTP
+	SaJj9EpRNMk8IcLuBxY016u+73G0YusA2Krncwk=
+X-Google-Smtp-Source: AGHT+IGlBuSyexbm+t7kPzJNAaBIT/3G8cNlf7e//glBqcxcF6RvsXOs17a4rCEwbms1SizM/s4EHUfstGWSxFCeAFE=
+X-Received: by 2002:a5b:c85:0:b0:dbc:4ef4:c754 with SMTP id
+ i5-20020a5b0c85000000b00dbc4ef4c754mr12380160ybq.65.1703083191369; Wed, 20
+ Dec 2023 06:39:51 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: 1.90
-X-Spamd-Result: default: False [1.90 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 RCPT_COUNT_SEVEN(0.00)[7];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
-	 FREEMAIL_TO(0.00)[gmx.de,HansenPartnership.com,arndb.de];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%]
-Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spam-Level: *
-X-Spam-Flag: NO
+References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
+In-Reply-To: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
+From: Kjetil Oftedal <oftedal@gmail.com>
+Date: Wed, 20 Dec 2023 15:42:59 +0100
+Message-ID: <CALMQjD-BG6FtQw5LFkDf2LOZgFnfhEUe+nN+5XSaUEUL_QZxqQ@mail.gmail.com>
+Subject: Re: [PATCH 00/27] sparc32: sunset sun4m and sun4d
+To: sam@ravnborg.org
+Cc: "David S. Miller" <davem@davemloft.net>, Arnd Bergmann <arnd@kernel.org>, 
+	Andreas Larsson <andreas@gaisler.com>, Helge Deller <deller@gmx.de>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, Jaroslav Kysela <perex@perex.cz>, 
+	Takashi Iwai <tiwai@suse.com>, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Allocate stifb's instance of fb_info with framebuffer_alloc(). This
-is the preferred way of creating fb_info with associated driver data
-stored in struct fb_info.par. Requires several, but minor, changes
-through out the driver's code.
+On Tue, 19 Dec 2023 at 23:03, Sam Ravnborg via B4 Relay
+<devnull+sam.ravnborg.org@kernel.org> wrote:
+>
+> This is the second attempt to sunset sun4m and sun4d.
+> See [1] for the inital attempt.
+>
+> The sun4m and sun4d parts of the kernel have seen no real interest
+> for several years now. Last time a few people surfaced, but it was
+> either due to a personal project or for nostalgic reasons.
+> It is time to let go and drop the parts of sparc32 that in reality
+> are not in use.
+>
+> LEON from Frontgrade Gaisler is the only real user of sparc32,
+> and this patchset reduces sparc32 to what is required by LEON.
+>
+> The defconfig is first adapted to the one used by Gaisler.
+> Then the patches removes sun4m and sun4d specific
+> implementations such as small drivers, SMP support, IRQ suppor etc.
+>
+> Removing sun4m and sun4d support allowed removal of the run time
+> patching of the code as well as a lot of assembler code.
+> The result is a much cleaner assembler code that is easier to
+> understand and thus maintain and extend.
+>
+> So far the code builds but it has seen no run-time testing.
+>
+> If anyone can tell me how to boot a linux kernel with the leon_genric
+> machine with QEMU that would be super as this would be a minimal
+> testing that others can reproduce as well.
+> I assume QEMU needs a few patches to make it work, but maybe I
+> just failed to use the right bootloader.
+>
+> TODO before this can be applied:
+> - Ack from davem - as he is the principal sparc maintainer
+> - Tested-by: preferably on a target or QEMU (see above)
+>   I expect bugs as there are some involved changes!
+>
+> Ideas for the future
+> - Apply the most relevant downstream Gaisler patches
+>   - The ones introducing CAS should have preference as we then
+>     can drop the cmpxchg emulation
+> - Adjust defconfig to include all Gaisler drivers to make sure they
+>   see build time coverage
+> - Move the leon bits from leon files to the general files
+>   - Add leon smp support to smp_32.c
+>   - Add leon irq support to irq_32.c
+> - Integrate leom_mm support with srmmu and drop some of the
+>   function operations that are no longer needed
+> - The current sparc32 code assume the bootloader uses the prom
+>   provided by sun. Maybe migrate over to a more modern device tree
+>   way of working.
+> - Drop some of the homegrown memory allocators and use memblocks
+>
+> [1]: https://lore.kernel.org/all/20201218184347.2180772-1-sam@ravnborg.org/
+>
+>         Sam
+>
+> ---
+> Sam Ravnborg (27):
+>       sparc32: Update defconfig to LEON SMP
+>       sparc32: Drop sun4m/sun4d support from head_32.S
+>       sparc32: Drop floppy support
+>       sparc32: Drop sun4m specific led driver
+>       sparc32: Drop sun specific power management drivers
+>       sparc32: Drop auxio support
+>       sparc32: Drop run-time patching of ipi trap
+>       sparc32: Drop patching of interrupt vector
+>       sparc32: Drop sun4m/sun4d specific irq handling
+>       sparc32: Drop sun4d/sun4m smp support
+>       sparc32: Drop pcic support
+>       sparc32: Drop mbus support
+>       sparc32: Drop unused function __get_{phys,iospace}
+>       sparc32: Drop unused mmu models
+>       sparc32: Drop check for sparc_model
+>       sparc32: Drop use of sparc_config
+>       sparc32: Drop run-time patching of ASI instructions
+>       sparc32: Drop support for 7 register windows
+>       sparc32: Drop additional sun4d bits
+>       sparc32: Drop unused prom ranges support
+>       sparc32: Drop unused iommu support
+>       sparc32: Drop sun4m irq support
+>       sparc32: Drop unused trampoline code
+>       sparc32: Drop config SPARC_LEON
+>       sparc32: Drop sbus support
+>       sbus: char: Drop now unused uctrl driver
+>       fbdev/p9100: Drop now unused driver p9100
+>
+>  arch/sparc/Kconfig                    |  54 +--
+>  arch/sparc/configs/sparc32_defconfig  | 170 +++----
+>  arch/sparc/include/asm/asmmacro.h     |  22 -
+>  arch/sparc/include/asm/auxio_32.h     |  73 +--
+>  arch/sparc/include/asm/cpu_type.h     |  18 -
+>  arch/sparc/include/asm/elf_32.h       |   2 -
+>  arch/sparc/include/asm/fb.h           |   8 +-
+>  arch/sparc/include/asm/floppy.h       |   2 -
+>  arch/sparc/include/asm/floppy_32.h    | 393 ----------------
+>  arch/sparc/include/asm/io-unit.h      |  59 ---
+>  arch/sparc/include/asm/io_32.h        |  83 ----
+>  arch/sparc/include/asm/iommu.h        |   2 -
+>  arch/sparc/include/asm/iommu_32.h     | 122 -----
+>  arch/sparc/include/asm/irq_32.h       |   2 -
+>  arch/sparc/include/asm/mbus.h         |  97 ----
+>  arch/sparc/include/asm/mxcc.h         | 138 ------
+>  arch/sparc/include/asm/obio.h         | 226 ---------
+>  arch/sparc/include/asm/oplib_32.h     |  11 -
+>  arch/sparc/include/asm/pcic.h         | 130 ------
+>  arch/sparc/include/asm/pgtable_32.h   |  24 -
+>  arch/sparc/include/asm/pgtsrmmu.h     |  33 +-
+>  arch/sparc/include/asm/ross.h         | 192 --------
+>  arch/sparc/include/asm/sbi.h          | 116 -----
+>  arch/sparc/include/asm/sections.h     |   3 -
+>  arch/sparc/include/asm/swift.h        | 107 -----
+>  arch/sparc/include/asm/switch_to_32.h |   1 -
+>  arch/sparc/include/asm/timer_32.h     |   1 +
+>  arch/sparc/include/asm/tsunami.h      |  65 ---
+>  arch/sparc/include/asm/turbosparc.h   | 126 -----
+>  arch/sparc/include/asm/viking.h       | 255 -----------
+>  arch/sparc/include/asm/winmacro.h     |  11 +-
+>  arch/sparc/kernel/Makefile            |   8 +-
+>  arch/sparc/kernel/apc.c               | 196 --------
+>  arch/sparc/kernel/auxio_32.c          | 139 ------
+>  arch/sparc/kernel/cpu.c               |   1 -
+>  arch/sparc/kernel/devices.c           |  10 +-
+>  arch/sparc/kernel/entry.S             | 413 +----------------
+>  arch/sparc/kernel/etrap_32.S          |  50 +-
+>  arch/sparc/kernel/head_32.S           | 255 +----------
+>  arch/sparc/kernel/ioport.c            |  55 +--
+>  arch/sparc/kernel/irq.h               |  85 +---
+>  arch/sparc/kernel/irq_32.c            | 133 +-----
+>  arch/sparc/kernel/kernel.h            |  53 +--
+>  arch/sparc/kernel/led.c               | 146 ------
+>  arch/sparc/kernel/leon_kernel.c       |  53 +--
+>  arch/sparc/kernel/leon_pmc.c          |  16 +-
+>  arch/sparc/kernel/leon_smp.c          |   3 -
+>  arch/sparc/kernel/of_device_32.c      |  18 +-
+>  arch/sparc/kernel/pcic.c              | 840 ----------------------------------
+>  arch/sparc/kernel/pmc.c               | 100 ----
+>  arch/sparc/kernel/process_32.c        |  10 -
+>  arch/sparc/kernel/rtrap_32.S          |  73 ++-
+>  arch/sparc/kernel/setup_32.c          | 115 -----
+>  arch/sparc/kernel/smp_32.c            | 102 +----
+>  arch/sparc/kernel/sun4d_irq.c         | 519 ---------------------
+>  arch/sparc/kernel/sun4d_smp.c         | 415 -----------------
+>  arch/sparc/kernel/sun4m_irq.c         | 478 -------------------
+>  arch/sparc/kernel/sun4m_smp.c         | 275 -----------
+>  arch/sparc/kernel/time_32.c           |  68 +--
+>  arch/sparc/kernel/trampoline_32.S     | 127 +----
+>  arch/sparc/kernel/ttable_32.S         |   9 +-
+>  arch/sparc/kernel/vmlinux.lds.S       |   5 -
+>  arch/sparc/kernel/wof.S               |  61 +--
+>  arch/sparc/kernel/wuf.S               |  41 +-
+>  arch/sparc/mm/Makefile                |   4 +-
+>  arch/sparc/mm/hypersparc.S            | 414 -----------------
+>  arch/sparc/mm/io-unit.c               | 286 ------------
+>  arch/sparc/mm/iommu.c                 | 455 ------------------
+>  arch/sparc/mm/mm_32.h                 |   4 -
+>  arch/sparc/mm/srmmu.c                 | 836 +--------------------------------
+>  arch/sparc/mm/srmmu_access.S          |  83 ----
+>  arch/sparc/mm/swift.S                 | 256 -----------
+>  arch/sparc/mm/tsunami.S               | 132 ------
+>  arch/sparc/mm/viking.S                | 284 ------------
+>  arch/sparc/prom/Makefile              |   1 -
+>  arch/sparc/prom/init_32.c             |   2 -
+>  arch/sparc/prom/misc_32.c             |   2 -
+>  arch/sparc/prom/ranges.c              | 114 -----
+>  drivers/sbus/char/Kconfig             |   8 -
+>  drivers/sbus/char/Makefile            |   1 -
+>  drivers/sbus/char/uctrl.c             | 435 ------------------
+>  drivers/usb/host/Kconfig              |   2 +-
+>  drivers/usb/host/ehci-hcd.c           |   4 +-
+>  drivers/usb/host/uhci-hcd.c           |   2 +-
+>  drivers/video/fbdev/Kconfig           |  10 +-
+>  drivers/video/fbdev/Makefile          |   1 -
+>  drivers/video/fbdev/p9100.c           | 372 ---------------
+>  sound/sparc/Kconfig                   |   1 +
+>  88 files changed, 318 insertions(+), 10809 deletions(-)
+> ---
+> base-commit: bee0e7762ad2c6025b9f5245c040fcc36ef2bde8
+> change-id: 20231219-sam-sparc32-sunset-v3-4751ea89da2d
+>
+> Best regards,
+> --
+> Sam Ravnborg <sam@ravnborg.org>
+>
+>
 
-The intended side effect of this patch is that the new instance of
-struct fb_info now has its device field correctly set to the parent
-device of the STI ROM. A later patch can detect if the device is the
-firmware's primary output. It is also now correctly located within
-the Linux device hierarchy.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/stifb.c | 106 +++++++++++++++++++-----------------
- 1 file changed, 56 insertions(+), 50 deletions(-)
+Hi everyone,
 
-diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-index 548d992f8cb1..36e6bcab83aa 100644
---- a/drivers/video/fbdev/stifb.c
-+++ b/drivers/video/fbdev/stifb.c
-@@ -103,7 +103,7 @@ typedef struct {
- } ngle_rom_t;
- 
- struct stifb_info {
--	struct fb_info info;
-+	struct fb_info *info;
- 	unsigned int id;
- 	ngle_rom_t ngle_rom;
- 	struct sti_struct *sti;
-@@ -153,15 +153,15 @@ static int __initdata stifb_bpp_pref[MAX_STI_ROMS];
- #define REG_44		0x210030
- #define REG_45		0x210034
- 
--#define READ_BYTE(fb,reg)		gsc_readb((fb)->info.fix.mmio_start + (reg))
--#define READ_WORD(fb,reg)		gsc_readl((fb)->info.fix.mmio_start + (reg))
-+#define READ_BYTE(fb, reg)		gsc_readb((fb)->info->fix.mmio_start + (reg))
-+#define READ_WORD(fb, reg)		gsc_readl((fb)->info->fix.mmio_start + (reg))
- 
- 
- #ifndef DEBUG_STIFB_REGS
- # define  DEBUG_OFF()
- # define  DEBUG_ON()
--# define WRITE_BYTE(value,fb,reg)	gsc_writeb((value),(fb)->info.fix.mmio_start + (reg))
--# define WRITE_WORD(value,fb,reg)	gsc_writel((value),(fb)->info.fix.mmio_start + (reg))
-+# define WRITE_BYTE(value, fb, reg)	gsc_writeb((value), (fb)->info->fix.mmio_start + (reg))
-+# define WRITE_WORD(value, fb, reg)	gsc_writel((value), (fb)->info->fix.mmio_start + (reg))
- #else
-   static int debug_on = 1;
- # define  DEBUG_OFF() debug_on=0
-@@ -169,11 +169,11 @@ static int __initdata stifb_bpp_pref[MAX_STI_ROMS];
- # define WRITE_BYTE(value,fb,reg)	do { if (debug_on) \
- 						printk(KERN_DEBUG "%30s: WRITE_BYTE(0x%06x) = 0x%02x (old=0x%02x)\n", \
- 							__func__, reg, value, READ_BYTE(fb,reg)); 		  \
--					gsc_writeb((value),(fb)->info.fix.mmio_start + (reg)); } while (0)
-+					gsc_writeb((value), (fb)->info->fix.mmio_start + (reg)); } while (0)
- # define WRITE_WORD(value,fb,reg)	do { if (debug_on) \
- 						printk(KERN_DEBUG "%30s: WRITE_WORD(0x%06x) = 0x%08x (old=0x%08x)\n", \
- 							__func__, reg, value, READ_WORD(fb,reg)); 		  \
--					gsc_writel((value),(fb)->info.fix.mmio_start + (reg)); } while (0)
-+					gsc_writel((value), (fb)->info->fix.mmio_start + (reg)); } while (0)
- #endif /* DEBUG_STIFB_REGS */
- 
- 
-@@ -210,13 +210,13 @@ SETUP_FB(struct stifb_info *fb)
- 			reg10_value = 0x13601000;
- 			break;
- 		case S9000_ID_A1439A:
--			if (fb->info.var.bits_per_pixel == 32)
-+			if (fb->info->var.bits_per_pixel == 32)
- 				reg10_value = 0xBBA0A000;
- 			else
- 				reg10_value = 0x13601000;
- 			break;
- 		case S9000_ID_HCRX:
--			if (fb->info.var.bits_per_pixel == 32)
-+			if (fb->info->var.bits_per_pixel == 32)
- 				reg10_value = 0xBBA0A000;
- 			else
- 				reg10_value = 0x13602000;
-@@ -254,7 +254,7 @@ static void
- FINISH_IMAGE_COLORMAP_ACCESS(struct stifb_info *fb)
- {
- 	WRITE_WORD(0x400, fb, REG_2);
--	if (fb->info.var.bits_per_pixel == 32) {
-+	if (fb->info->var.bits_per_pixel == 32) {
- 		WRITE_WORD(0x83000100, fb, REG_1);
- 	} else {
- 		if (fb->id == S9000_ID_ARTIST || fb->id == CRT_ID_VISUALIZE_EG)
-@@ -503,7 +503,7 @@ static void
- ngleSetupAttrPlanes(struct stifb_info *fb, int BufferNumber)
- {
- 	SETUP_ATTR_ACCESS(fb, BufferNumber);
--	SET_ATTR_SIZE(fb, fb->info.var.xres, fb->info.var.yres);
-+	SET_ATTR_SIZE(fb, fb->info->var.xres, fb->info->var.yres);
- 	FINISH_ATTR_ACCESS(fb);
- 	SETUP_FB(fb);
- }
-@@ -526,9 +526,9 @@ rattlerSetupPlanes(struct stifb_info *fb)
- 	SETUP_FB(fb);
- 	fb->id = saved_id;
- 
--	for (y = 0; y < fb->info.var.yres; ++y)
--		fb_memset_io(fb->info.screen_base + y * fb->info.fix.line_length,
--			     0xff, fb->info.var.xres * fb->info.var.bits_per_pixel/8);
-+	for (y = 0; y < fb->info->var.yres; ++y)
-+		fb_memset_io(fb->info->screen_base + y * fb->info->fix.line_length,
-+			     0xff, fb->info->var.xres * fb->info->var.bits_per_pixel/8);
- 
- 	CRX24_SET_OVLY_MASK(fb);
- 	SETUP_FB(fb);
-@@ -607,7 +607,7 @@ setHyperLutBltCtl(struct stifb_info *fb, int offsetWithinLut, int length)
- 	lutBltCtl.fields.lutType = HYPER_CMAP_TYPE;
- 
- 	/* Expect lutIndex to be 0 or 1 for image cmaps, 2 or 3 for overlay cmaps */
--	if (fb->info.var.bits_per_pixel == 8)
-+	if (fb->info->var.bits_per_pixel == 8)
- 		lutBltCtl.fields.lutOffset = 2 * 256;
- 	else
- 		lutBltCtl.fields.lutOffset = 0 * 256;
-@@ -688,7 +688,7 @@ ngleResetAttrPlanes(struct stifb_info *fb, unsigned int ctlPlaneReg)
- 					       DataDynamic, MaskOtc,
- 					       BGx(0), FGx(0)));
- 	packed_dst = 0;
--	packed_len = (fb->info.var.xres << 16) | fb->info.var.yres;
-+	packed_len = (fb->info->var.xres << 16) | fb->info->var.yres;
- 	GET_FIFO_SLOTS(fb, nFreeFifoSlots, 2);
- 	NGLE_SET_DSTXY(fb, packed_dst);
- 	SET_LENXY_START_RECFILL(fb, packed_len);
-@@ -738,7 +738,7 @@ ngleClearOverlayPlanes(struct stifb_info *fb, int mask, int data)
-         NGLE_REALLY_SET_IMAGE_PLANEMASK(fb, mask);
- 
-         packed_dst = 0;
--        packed_len = (fb->info.var.xres << 16) | fb->info.var.yres;
-+	packed_len = (fb->info->var.xres << 16) | fb->info->var.yres;
-         NGLE_SET_DSTXY(fb, packed_dst);
- 
- 	/* Write zeroes to overlay planes */
-@@ -760,7 +760,7 @@ hyperResetPlanes(struct stifb_info *fb, int enable)
- 	NGLE_LOCK(fb);
- 
- 	if (IS_24_DEVICE(fb))
--		if (fb->info.var.bits_per_pixel == 32)
-+		if (fb->info->var.bits_per_pixel == 32)
- 			controlPlaneReg = 0x04000F00;
- 		else
- 			controlPlaneReg = 0x00000F00;   /* 0x00000800 should be enough, but lets clear all 4 bits */
-@@ -890,7 +890,7 @@ SETUP_HCRX(struct stifb_info *fb)
- 	GET_FIFO_SLOTS(fb, nFreeFifoSlots, 7);
- 
- 	if (IS_24_DEVICE(fb)) {
--		hyperbowl = (fb->info.var.bits_per_pixel == 32) ?
-+		hyperbowl = (fb->info->var.bits_per_pixel == 32) ?
- 			HYPERBOWL_MODE01_8_24_LUT0_TRANSPARENT_LUT1_OPAQUE :
- 			HYPERBOWL_MODE01_8_24_LUT0_OPAQUE_LUT1_OPAQUE;
- 
-@@ -924,21 +924,21 @@ SETUP_HCRX(struct stifb_info *fb)
- static int
- stifb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
--	struct stifb_info *fb = container_of(info, struct stifb_info, info);
-+	struct stifb_info *fb = info->par;
- 
--	if (var->xres != fb->info.var.xres ||
--	    var->yres != fb->info.var.yres ||
--	    var->bits_per_pixel != fb->info.var.bits_per_pixel)
-+	if (var->xres != fb->info->var.xres ||
-+	    var->yres != fb->info->var.yres ||
-+	    var->bits_per_pixel != fb->info->var.bits_per_pixel)
- 		return -EINVAL;
- 
- 	var->xres_virtual = var->xres;
- 	var->yres_virtual = var->yres;
- 	var->xoffset = 0;
- 	var->yoffset = 0;
--	var->grayscale = fb->info.var.grayscale;
--	var->red.length = fb->info.var.red.length;
--	var->green.length = fb->info.var.green.length;
--	var->blue.length = fb->info.var.blue.length;
-+	var->grayscale = fb->info->var.grayscale;
-+	var->red.length = fb->info->var.red.length;
-+	var->green.length = fb->info->var.green.length;
-+	var->blue.length = fb->info->var.blue.length;
- 
- 	return 0;
- }
-@@ -947,7 +947,7 @@ static int
- stifb_setcolreg(u_int regno, u_int red, u_int green,
- 	      u_int blue, u_int transp, struct fb_info *info)
- {
--	struct stifb_info *fb = container_of(info, struct stifb_info, info);
-+	struct stifb_info *fb = info->par;
- 	u32 color;
- 
- 	if (regno >= NR_PALETTE)
-@@ -961,7 +961,7 @@ stifb_setcolreg(u_int regno, u_int red, u_int green,
- 
- 	START_IMAGE_COLORMAP_ACCESS(fb);
- 
--	if (unlikely(fb->info.var.grayscale)) {
-+	if (unlikely(fb->info->var.grayscale)) {
- 		/* gray = 0.30*R + 0.59*G + 0.11*B */
- 		color = ((red * 77) +
- 			 (green * 151) +
-@@ -972,10 +972,10 @@ stifb_setcolreg(u_int regno, u_int red, u_int green,
- 			 (blue));
- 	}
- 
--	if (fb->info.fix.visual == FB_VISUAL_DIRECTCOLOR) {
--		struct fb_var_screeninfo *var = &fb->info.var;
-+	if (fb->info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-+		struct fb_var_screeninfo *var = &fb->info->var;
- 		if (regno < 16)
--			((u32 *)fb->info.pseudo_palette)[regno] =
-+			((u32 *)fb->info->pseudo_palette)[regno] =
- 				regno << var->red.offset |
- 				regno << var->green.offset |
- 				regno << var->blue.offset;
-@@ -1007,7 +1007,7 @@ stifb_setcolreg(u_int regno, u_int red, u_int green,
- static int
- stifb_blank(int blank_mode, struct fb_info *info)
- {
--	struct stifb_info *fb = container_of(info, struct stifb_info, info);
-+	struct stifb_info *fb = info->par;
- 	int enable = (blank_mode == 0) ? ENABLE : DISABLE;
- 
- 	switch (fb->id) {
-@@ -1036,12 +1036,12 @@ stifb_blank(int blank_mode, struct fb_info *info)
- static void
- stifb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
- {
--	struct stifb_info *fb = container_of(info, struct stifb_info, info);
-+	struct stifb_info *fb = info->par;
- 
- 	SETUP_COPYAREA(fb);
- 
- 	SETUP_HW(fb);
--	if (fb->info.var.bits_per_pixel == 32) {
-+	if (fb->info->var.bits_per_pixel == 32) {
- 		WRITE_WORD(0xBBA0A000, fb, REG_10);
- 
- 		NGLE_REALLY_SET_IMAGE_PLANEMASK(fb, 0xffffffff);
-@@ -1075,15 +1075,15 @@ stifb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
- static void
- stifb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- {
--	struct stifb_info *fb = container_of(info, struct stifb_info, info);
-+	struct stifb_info *fb = info->par;
- 
- 	if (rect->rop != ROP_COPY ||
--	    (fb->id == S9000_ID_HCRX && fb->info.var.bits_per_pixel == 32))
-+	    (fb->id == S9000_ID_HCRX && fb->info->var.bits_per_pixel == 32))
- 		return cfb_fillrect(info, rect);
- 
- 	SETUP_HW(fb);
- 
--	if (fb->info.var.bits_per_pixel == 32) {
-+	if (fb->info->var.bits_per_pixel == 32) {
- 		WRITE_WORD(0xBBA0A000, fb, REG_10);
- 
- 		NGLE_REALLY_SET_IMAGE_PLANEMASK(fb, 0xffffffff);
-@@ -1141,7 +1141,7 @@ stifb_init_display(struct stifb_info *fb)
-         switch (id) {
- 	 case S9000_ID_A1659A:
- 	 case S9000_ID_A1439A:
--	    if (fb->info.var.bits_per_pixel == 32)
-+	    if (fb->info->var.bits_per_pixel == 32)
- 		ngleSetupAttrPlanes(fb, BUFF1_CMAP3);
- 	    else {
- 		ngleSetupAttrPlanes(fb, BUFF1_CMAP0);
-@@ -1151,7 +1151,7 @@ stifb_init_display(struct stifb_info *fb)
- 	    break;
- 	 case S9000_ID_ARTIST:
- 	 case CRT_ID_VISUALIZE_EG:
--	    if (fb->info.var.bits_per_pixel == 32)
-+	    if (fb->info->var.bits_per_pixel == 32)
- 		ngleSetupAttrPlanes(fb, BUFF1_CMAP3);
- 	    else {
- 		ngleSetupAttrPlanes(fb, ARTIST_CMAP0);
-@@ -1193,11 +1193,11 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 	char *dev_name;
- 	int bpp, xres, yres;
- 
--	fb = kzalloc(sizeof(*fb), GFP_ATOMIC);
--	if (!fb)
-+	info = framebuffer_alloc(sizeof(*fb), sti->dev);
-+	if (!info)
- 		return -ENOMEM;
--
--	info = &fb->info;
-+	fb = info->par;
-+	fb->info = info;
- 
- 	/* set struct to a known state */
- 	fix = &info->fix;
-@@ -1390,10 +1390,10 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 
- 	/* save for primary gfx device detection & unregister_framebuffer() */
- 	sti->info = info;
--	if (register_framebuffer(&fb->info) < 0)
-+	if (register_framebuffer(fb->info) < 0)
- 		goto out_err4;
- 
--	fb_info(&fb->info, "%s %dx%d-%d frame buffer device, %s, id: %04x, mmio: 0x%04lx\n",
-+	fb_info(fb->info, "%s %dx%d-%d frame buffer device, %s, id: %04x, mmio: 0x%04lx\n",
- 		fix->id,
- 		var->xres,
- 		var->yres,
-@@ -1402,6 +1402,8 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 		fb->id,
- 		fix->mmio_start);
- 
-+	dev_set_drvdata(sti->dev, info);
-+
- 	return 0;
- 
- 
-@@ -1414,7 +1416,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- out_err1:
- 	iounmap(info->screen_base);
- out_err0:
--	kfree(fb);
-+	framebuffer_release(info);
- 	sti->info = NULL;
- 	return -ENXIO;
- }
-@@ -1480,15 +1482,19 @@ stifb_cleanup(void)
- 		sti = sti_get_rom(i);
- 		if (!sti)
- 			break;
--		if (sti->info) {
--			struct fb_info *info = sti->info;
--			unregister_framebuffer(sti->info);
-+		if (sti->dev) {
-+			struct fb_info *info = dev_get_drvdata(sti->dev);
-+
-+			if (!info)
-+				continue;
-+			unregister_framebuffer(info);
- 			release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
- 		        release_mem_region(info->fix.smem_start, info->fix.smem_len);
- 				if (info->screen_base)
- 					iounmap(info->screen_base);
- 		        fb_dealloc_cmap(&info->cmap);
- 		        framebuffer_release(info);
-+			dev_set_drvdata(sti->dev, NULL);
- 		}
- 		sti->info = NULL;
- 	}
--- 
-2.43.0
+These changes will now effectively make the sparc32 port into a port
+that is only really supported by
+a rather specific sparc32 implementation delivered by Gaisler. I will
+therefore suggest to remove any remaining
+references to sparc32 and replaced them with leon, to symbolize the
+end of common sparc32 support.
 
+
+Best regards,
+Kjetil Oftedal

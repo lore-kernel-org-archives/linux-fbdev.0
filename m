@@ -1,106 +1,217 @@
-Received: from smtp-out3.simply.com (smtp-out3.simply.com [94.231.106.210])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 072C62374E;
-	Fri, 22 Dec 2023 15:33:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gaisler.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gaisler.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=gaisler.com header.i=@gaisler.com header.b="p2o87jp7"
-Received: from localhost (localhost [127.0.0.1])
-	by smtp.simply.com (Simply.com) with ESMTP id 4SxWPh4Sz5z6831;
-	Fri, 22 Dec 2023 16:27:20 +0100 (CET)
-Received: from [10.10.15.23] (h-98-128-223-123.NA.cust.bahnhof.se [98.128.223.123])
+Received: from mail-io1-f49.google.com (mail-io1-f49.google.com [209.85.166.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(Client did not present a certificate)
-	by smtp.simply.com (Simply.com) with ESMTPSA id 4SxWPh0TQLz681j;
-	Fri, 22 Dec 2023 16:27:20 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gaisler.com;
-	s=unoeuro; t=1703258840;
-	bh=m7I+N7YglnnDAb5DtR+LUfwkg0HkRzNLUluJIF+uoPM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=p2o87jp784kPbSta4a1986Wv2iStA5gze7ttrCbLhC6KgxlYUjGY/PIwPQbTB9ZNQ
-	 ngb13eNePXnFDkTX+E3eWmvLmTtffjg6qL12LR+Tw8vTHoaoELXiz+DYsKTMjm0GaZ
-	 ef2LvbQI6FRWQtn12eZpRwvwz2kHJ3puvEPVLwdM=
-Message-ID: <22f2a3af-0f61-4938-8546-d0308853b467@gaisler.com>
-Date: Fri, 22 Dec 2023 16:27:19 +0100
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBCBBD50E
+	for <linux-fbdev@vger.kernel.org>; Sat, 23 Dec 2023 03:01:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OjcKyD3h"
+Received: by mail-io1-f49.google.com with SMTP id ca18e2360f4ac-7b7fe0ae57bso109272039f.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 22 Dec 2023 19:01:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1703300469; x=1703905269; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=J8OoqAiM//Ec8KyRzYnGWKahzmDJ4khoTmwRNIjxv3I=;
+        b=OjcKyD3h1ecJChZsyCOwi7c4YFsJ3907USl8DOpLjfAl2vFDmqJKGa/+EI5fUlVwk9
+         w3zU0JXHuO/dffVMAsgyFdMfYLcv+3HbQ8wGhsZ2O5yR6wyfBpyyHlTce1iFRpk2tnA3
+         2pweNCHnWGRUREhu9ys9hHOBaO7MZ8rNR2vyezmwndrcFpjTH5nKiNb6x7ul67Oah5oJ
+         wLvhHKUAHDwIml2La0jU25VYOHDmOtEfpBan/3FoQslV2moyJf8f+/edlGco74KZNLcx
+         gwLsObuCob18mpYtD/GkpMZVmANJEDWairWnE+lurQ42RXjX2+CFU7tREnQ1SMmgQRbE
+         FaQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1703300469; x=1703905269;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=J8OoqAiM//Ec8KyRzYnGWKahzmDJ4khoTmwRNIjxv3I=;
+        b=B+1o+RxNql71l/S17H1mc9w0hOwVLsMdAFWSh0n9i3m0ptJ0VyD/zQ35PAufhE1me9
+         b7ez9ANJ6Xz7O+hTLpRuzY9Q/izSAKBEAjc4/MM5WcYXWrwiVZbwpp8DUWK4DwHatvl8
+         iNymuuBctV+9DydU1Hbm9Buql+epkGN4/PnwlDPQXuDpwypLeRqW2nVjlSNjMhd2DyHr
+         kvpO2oHm+HBvT205aAmboEM1Ruc9sAxMqSbHgpxX+qsY6Hygg4swRSm8v+aiAxHVlAwS
+         dVk0i35lLawKJ8aAd7u+g1gweexHS1nWL1oKdxPrpk7YhwjhIzLEfjliFq5tQigLW6Qq
+         ngwQ==
+X-Gm-Message-State: AOJu0YwA+rCJiNSjon/mHX/cllYodSssb1Ort1+mmsxMDK7QjYa+ikmt
+	m7fzjPtEdZipHWKv4EaoKowDQTgWeuK4Iy4HTlg=
+X-Google-Smtp-Source: AGHT+IGGQNHVY11KYqlpzCvOtz5O3eCysFRigaLzsJ7bhd+IOCocMo+8AMyQ75OsMpXnCU/hkwmTTbKD9TikM+6vv+4=
+X-Received: by 2002:a5e:a803:0:b0:7b7:fde0:ccfb with SMTP id
+ c3-20020a5ea803000000b007b7fde0ccfbmr2699501ioa.9.1703300468716; Fri, 22 Dec
+ 2023 19:01:08 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/27] sparc32: sunset sun4m and sun4d
-Content-Language: en-US
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Sam Ravnborg <sam@ravnborg.org>,
- Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-Cc: Arnd Bergmann <arnd@kernel.org>, "David S . Miller"
- <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alan Stern <stern@rowland.harvard.edu>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, sparclinux@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-sound@vger.kernel.org
-References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
- <01ea8c41-88cd-4123-95c7-391640845fc3@app.fastmail.com>
- <e897e6d5a88ec2f9024c62f7bee5c13bfb2cab55.camel@physik.fu-berlin.de>
- <dbb60b13-565f-43b8-8cb8-6f8cd98b06df@app.fastmail.com>
- <3d733b57-884a-4755-a32a-74061b48e182@ilande.co.uk>
- <20231220152224.GA867968@ravnborg.org>
- <566d7867c746ac2a85f0fc42dd8e28eaffd45ed4.camel@physik.fu-berlin.de>
-From: Andreas Larsson <andreas@gaisler.com>
-In-Reply-To: <566d7867c746ac2a85f0fc42dd8e28eaffd45ed4.camel@physik.fu-berlin.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <ZXM9pG-53V4S8E2H@smile.fi.intel.com> <7c848801-cf7f-4293-8a29-084dd20efb8e@tronnes.org>
+ <ZXcMTBKbHiuTLAfR@smile.fi.intel.com>
+In-Reply-To: <ZXcMTBKbHiuTLAfR@smile.fi.intel.com>
+From: Dillon Min <dillon.minfei@gmail.com>
+Date: Sat, 23 Dec 2023 11:00:32 +0800
+Message-ID: <CAL9mu0+PDhFEWM7TKbMOQfKF0kSgGxo67qd1MRuCLpzq=d_Edg@mail.gmail.com>
+Subject: Re: State of affairs with Ilitek 9341 support
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>, 
+	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, 
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Priit Laes <plaes@plaes.org>, 
+	David Lechner <dlechner@baylibre.com>, Maxime Ripard <mripard@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, 11 Dec 2023 at 21:19, Andy Shevchenko
+<andriy.shevchenko@intel.com> wrote:
+>
+> On Fri, Dec 08, 2023 at 09:18:20PM +0100, Noralf Tr=C3=B8nnes wrote:
+> > On 12/8/23 17:00, Andy Shevchenko wrote:
+> > > Included authors and latest (non-white-space) contributors to the dri=
+vers
+> > > in question along with relevant mailing list and respective (active i=
+n the
+> > > area) maintainers.
+> > >
+> > > I already had risen the question in times when 4th (sic!) driver for =
+the same
+> > > hardware was about to be pulled into upstream that we have to somehow=
+ reduce
+> > > the code base and unify device properties.
+> > >
+> > > So, the main question here "What is the plan and where are we now?"
+> > >
+> > > I admit that fbtft case is special as it supports, in particular, pla=
+tform
+> > > device (parallel interface) and also well established in the embedded=
+ world.
+> > > What about the rest?
+> > >
+> > > N.B. Besides the fact that panel drivers are too OF-centric, which is=
+ bad
+> > > practice for the new kernel code in general and has to be stopped. I.=
+o.w.
+> > > seeing of_property_*() or alike in the driver after ca. 2020 should b=
+e
+> > > immediate NAK unless it's very well justified why it may not be used =
+on
+> > > non-OF systems.
+>
+> Noralf, thanks for your response, my comments below.
+>
+> TBH I would also like to hear from maintainers, because it seems they got
+> an additional burden for no benefit.
+>
+> > Last year drivers/gpu/drm/tiny/panel-mipi-dbi.c was added to support al=
+l
+> > MIPI DBI compatible (ili9341) SPI displays.
+> > It loads the initialisation commands from a firmware file. For more inf=
+o
+> > see https://github.com/notro/panel-mipi-dbi/wiki.
+> >
+> > When I started on fbtft in 2013 I didn't know about MIPI DBI so I made
+> > some common bus access functions and one driver per controller and that
+> > driver had an initialisation sequence to match the panel I had. Then I
+> > discovered that displays using the same controller could have different
+> > init sequences so I added a Device Tree <init> property that could
+> > override the driver init.
+> >
+> > In 2015 fbtft was added to drivers/staging, but later that year fbdev
+> > was closed for new drivers so it was a dead end.
+> >
+> > I started to work on porting fbtft to DRM and almost 2 years later
+> > support for the MI0283QT panel (ILI9341) was added.
+> > I had now learned about MIPI DBI so a library to handle that was added.
+> > I had asked on the Device Tree ML about the <init> property and I was
+> > told that I couldn't have that which meant that I couldn't get away wit=
+h
+> > having just one driver for the MIPI DBI compatible display panels as I
+> > was first hoping for.
+> >
+> > I was aware that there was a challenge going from fbtft to DRM because
+> > in fbtft there is support for all panel setups using the <init>
+> > property, but in DRM every panel needed support in a driver. So I
+> > started to look at adding Device Tree properties to describe the setup
+> > for one controller. This would make it easy to describe a new panel in
+> > Device Tree for a supported controller. Maxime Ripard came up with the
+> > idea to have the controller initialisation commands in a firmware file
+> > which meant that we could get away with having just one driver for all
+> > MIPI DBI SPI panels (which is the vast majority of these SPI pixel
+> > upload panels).
+> >
+> > This meant that SPI support could be removed from all the MIPI DBI
+> > compatible controllers in fbtft
+>
+> I believe it can't. Otherwise we _must_ provide the DT (device property)
+> parser that uses what is provided for fbtft SPI to be enabled in the othe=
+r
+> driver.
+>
+> > since there's now a solution for them in
+> > DRM. The drivers themselves must stay since they also have parallel bus
+> > support which is lacking in DRM. My plan was to wait for panel-mipi-dbi
+> > to hit an LTS and then either prepare patches to remove MIPI DBI SPI
+> > support from fbtft or at least send an email to staging about the new
+> > driver.
+>
+> > Unfortunately my health problems got worse and many plans went
+> > out the window.
+>
+> Oh, sad to hear this, hope you will get better sooner than later!
+>
+> > ILI9341 DRM drivers
+> >
+> > - drivers/gpu/drm/tiny/mi0283qt.c
+> >   This was the first driver added for the MI0283QT panel series
+> >
+> > - drivers/gpu/drm/tiny/ili9341.c
+> >   Later ili9341 based panels was decided to be added to a controller
+> >   specific driver.
+>
+> Why was it appeared in the first place? :-(
+>
+> > - drivers/gpu/drm/tiny/panel-mipi-dbi.c
+> >   Generic MIPI DBI SPI driver that loads init commands from a firmware
+> >   file. It uses of_property_read_string_index() and
+> >   of_get_drm_panel_display_mode(). I don't know if it's possible to mak=
+e
+> >   device_property_*() versions of those.
+>
+> Everything like this is possible, just somebody needs to fulfill that.
+> And as I said, new OF-centric code, has to be NAKed by default.
+>
+> > - drivers/gpu/drm/panel/panel-ilitek-ili9341.c
+> >   This driver supports the MIPI DPI (RGB) interface on the controller.
+> >   Controller init is done over MIPI DBI SPI. The driver does also for
+> >   some reason support the same panel as the ili9341.c driver does.
+> >   So 2 drivers for the same panel...
+> >   Sidenote: It is possible to make a generic panel-mipi-dpi.c driver fo=
+r
+> >   panels that use DPI for pixels and DBI for init loaded from a firmwar=
+e
+> >   file.
+>
+> I wonder who has enough experience and time to at least point out or do
+> something about this...
+>
+> At least we can start combining the two in tinydrm, to reduce the variety=
+.
+>
 
-On 2023-12-20 18:25, John Paul Adrian Glaubitz wrote:
-> Hi Sam,
-> 
-> On Wed, 2023-12-20 at 16:22 +0100, Sam Ravnborg wrote:
->>> The leon3_generic machine is maintained by different people so I'd suggest
->>> contacting them: see [1] for their contact details. I see there is an
->>> avocado boot test for the leon3_generic machine included within the QEMU
->>> source tree, but it uses a downloadable image of HelenOS rather than Linux.
->>
->> Thanks for the pointer, I will try to reach out to them when I have
->> something a bit more solid than "it does not work".
->>
->> I tried to hack around a little in qemu and I have an idea where things
->> goes wrong. The leon_generic assumes another address layout than what is
->> used by the kernel, so the very first jump to a kernel address fails.
+I wrote drivers/gpu/drm/panel/panel-ilitek-ili9341.c to support ili9341
+on stm32f429-disco board via dbi or dpi.
+https://www.st.com/resource/en/schematic_pack/mb1075-f429i-c01_schematic.pd=
+f
 
-The MKLINUXIMG second stage bootloader sets up MMU tables and the SPARC
-OPENPROM interface for LEON systems, so you need to run the vmlinux
-image through that. You can find it (and our other Linux related
-releases) via https://gaisler.com/index.php/downloads/linux. The manual
-is at https://www.gaisler.com/doc/mklinuximg.pdf and the latest release at
-https://gaisler.com/anonftp/linux/linux-2.6/kernel/mklinuximg-2.0.15.tar.bz2
+As one driver for one panel reason, so porting the mipi_dbi code and
+dts binding from tiny/ili9341.c
+It's true confused two driver for one panel in current kernel.
+I can remove the mipi_dbi code from panel-ilitek-ili9341.c or do something =
+else.
 
-With a sparc-linux-gcc in the PATH (or using CROSS_COMPILE to point out
-a toolchain stem) you can do:
+Anyway, I'd like to rewrite it based on the agreement.
 
-mklinuximg vmlinux image.ram
-
-and then run the resulting image.ram in e.g. QEMU 8.2.0 with
-
-qemu-system-sparc -nographic -M leon3_generic -m 256 -kernel image.ram
-
-This at least boots the kernel and let me log in when quickly testing a
-few images with root filesystems in initramfs, admittedly with our
-kernel patches in place.
-
-
-> I would argue that before we start introducing larger changes to arch/sparc,
-> we should settle the maintainership question first. Once we have an active
-> maintainer again, we can have a more extended discussion about what to keep
-> and how to name things.
-I agree.
-
-Cheers,
-Andreas
-
+> --
+> With Best Regards,
+> Andy Shevchenko
+>
+>

@@ -1,217 +1,522 @@
-Received: from mail-io1-f49.google.com (mail-io1-f49.google.com [209.85.166.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBCBBD50E
-	for <linux-fbdev@vger.kernel.org>; Sat, 23 Dec 2023 03:01:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 097004404;
+	Sat, 30 Dec 2023 08:35:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OjcKyD3h"
-Received: by mail-io1-f49.google.com with SMTP id ca18e2360f4ac-7b7fe0ae57bso109272039f.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Dec 2023 19:01:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1703300469; x=1703905269; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=J8OoqAiM//Ec8KyRzYnGWKahzmDJ4khoTmwRNIjxv3I=;
-        b=OjcKyD3h1ecJChZsyCOwi7c4YFsJ3907USl8DOpLjfAl2vFDmqJKGa/+EI5fUlVwk9
-         w3zU0JXHuO/dffVMAsgyFdMfYLcv+3HbQ8wGhsZ2O5yR6wyfBpyyHlTce1iFRpk2tnA3
-         2pweNCHnWGRUREhu9ys9hHOBaO7MZ8rNR2vyezmwndrcFpjTH5nKiNb6x7ul67Oah5oJ
-         wLvhHKUAHDwIml2La0jU25VYOHDmOtEfpBan/3FoQslV2moyJf8f+/edlGco74KZNLcx
-         gwLsObuCob18mpYtD/GkpMZVmANJEDWairWnE+lurQ42RXjX2+CFU7tREnQ1SMmgQRbE
-         FaQg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1703300469; x=1703905269;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=J8OoqAiM//Ec8KyRzYnGWKahzmDJ4khoTmwRNIjxv3I=;
-        b=B+1o+RxNql71l/S17H1mc9w0hOwVLsMdAFWSh0n9i3m0ptJ0VyD/zQ35PAufhE1me9
-         b7ez9ANJ6Xz7O+hTLpRuzY9Q/izSAKBEAjc4/MM5WcYXWrwiVZbwpp8DUWK4DwHatvl8
-         iNymuuBctV+9DydU1Hbm9Buql+epkGN4/PnwlDPQXuDpwypLeRqW2nVjlSNjMhd2DyHr
-         kvpO2oHm+HBvT205aAmboEM1Ruc9sAxMqSbHgpxX+qsY6Hygg4swRSm8v+aiAxHVlAwS
-         dVk0i35lLawKJ8aAd7u+g1gweexHS1nWL1oKdxPrpk7YhwjhIzLEfjliFq5tQigLW6Qq
-         ngwQ==
-X-Gm-Message-State: AOJu0YwA+rCJiNSjon/mHX/cllYodSssb1Ort1+mmsxMDK7QjYa+ikmt
-	m7fzjPtEdZipHWKv4EaoKowDQTgWeuK4Iy4HTlg=
-X-Google-Smtp-Source: AGHT+IGGQNHVY11KYqlpzCvOtz5O3eCysFRigaLzsJ7bhd+IOCocMo+8AMyQ75OsMpXnCU/hkwmTTbKD9TikM+6vv+4=
-X-Received: by 2002:a5e:a803:0:b0:7b7:fde0:ccfb with SMTP id
- c3-20020a5ea803000000b007b7fde0ccfbmr2699501ioa.9.1703300468716; Fri, 22 Dec
- 2023 19:01:08 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="W+Ko+DK3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1703925324; x=1704530124; i=deller@gmx.de;
+	bh=VZGTN6TgRUcd52aQbEvz8CxnloFnIsTyoxfkzyF18A0=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=W+Ko+DK315YuZQzPi/dG7tMrGXbUGXGx5yait0cGNPu+QDgkxWSyjTvARR3Gc00z
+	 GTQKPF91mAINhHQuNMJnBVq+iZsIB45BrrydFbY/1yRZR9GdKJwdqfRf0x08xGiZ1
+	 p4+hii5RiGpxsdemW0AJcyKFfPeBVTLfCly4huJjqhvynFIv6DN85evSZ96SaT1sR
+	 UjFK0mma73QfvyCe24By12JABZZ3bf7K4H+O1XifffSCWU5mVGhv9v4qMWwLt1wXE
+	 cJimjcFROeDoN/L5T7hac5ISTa3QXDUv2LL02wDh26UR6ayqHwEwQe5kfUZ3vzLd8
+	 OFlSXi8oYxjWwitGEQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([94.134.152.157]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M7b2T-1rKJEH08CL-0081PW; Sat, 30
+ Dec 2023 09:35:24 +0100
+Message-ID: <a25a32c7-44aa-420c-aec6-dc4796768621@gmx.de>
+Date: Sat, 30 Dec 2023 09:35:22 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <ZXM9pG-53V4S8E2H@smile.fi.intel.com> <7c848801-cf7f-4293-8a29-084dd20efb8e@tronnes.org>
- <ZXcMTBKbHiuTLAfR@smile.fi.intel.com>
-In-Reply-To: <ZXcMTBKbHiuTLAfR@smile.fi.intel.com>
-From: Dillon Min <dillon.minfei@gmail.com>
-Date: Sat, 23 Dec 2023 11:00:32 +0800
-Message-ID: <CAL9mu0+PDhFEWM7TKbMOQfKF0kSgGxo67qd1MRuCLpzq=d_Edg@mail.gmail.com>
-Subject: Re: State of affairs with Ilitek 9341 support
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>, 
-	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, 
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Priit Laes <plaes@plaes.org>, 
-	David Lechner <dlechner@baylibre.com>, Maxime Ripard <mripard@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/4] fbdev/stifb: Allocate fb_info instance with
+ framebuffer_alloc()
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ James.Bottomley@HansenPartnership.com, arnd@arndb.de
+Cc: linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <20231220134639.8190-1-tzimmermann@suse.de>
+ <20231220134639.8190-3-tzimmermann@suse.de>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20231220134639.8190-3-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:qm4klWRQuI/+1b4rP7ccuVIP/NdWKW8d1HzToz/CXAgRTYcDcDc
+ u+K1sa6wnmVmcNspWtcUfhAiaBH7Za95jeYRYBwEXTAnJQEEtjNFX8Yok4Q2t0tn60fAOKj
+ CpRAdVRAVZurzSDQOZjXvZjJmzZRcMC6oOEATQ8YdzhUTarBaGy2+7RatKRo9NeyDQP6f4C
+ fEKec70t1hNb5AHAnUjyg==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:he+R6uCh4bc=;nIZc/VXmsnaAzrXcryJNOLahCFl
+ 5tGs2W4SP0pIw2qjSPm1EPLEohak4rImEeGffXgyE188rla5gkr//YHh8548zZC3wqOXO/Yv3
+ yC22E07BEedxQlpmDrpe0dr27tScWcFa+CQJ4GUD39H23bo4TNRxhOkfiWj9KA2qsag6/Mru7
+ klXRVxtx40+GJWDoxrW/h1E7DI2xyfj7mShJlbgzlHgvN/87HDvzJOKX27tGTsUEbcTEDlAB5
+ TzzHJOC/t8PfPrRtTotxUV882NySPsbu8fuk2zW2hb2FKrH3ChgYixL1rwwvRdxcOgfqn2e02
+ b0zuz3csEVfQ0lBP7A2z5896oOr3Fy8M9ZOv6dXrXMzNwwzhsqxTlO5WdIKl82m+eYUUQtIUw
+ dOBAYiYvazM3yik3rocRlNOdL8kAdFDHOwsbQosN8EBhDHYskQZe/gjL5AuI3LNXW4sslRK4B
+ 3MRHWlTunbB7FENzAuzwgAJVZyj25ipL+UPYfiANV6WbIj0nsHX660fFKSvwR7/lnzjxSLLy2
+ p6eu0Yz+d1AIN9q9iSrjBDb4JcXVukj3HLllq7hX6z5fVDZF0Rm51Rotl0fNpHFK0rhmfWDfF
+ EBmygdZrrAuAJV7pUa+KAHch3PnBpboJ3nnw1qoazyLWHDXwXdfzH+t8jjuDRJznrqbnuc1Kr
+ SkcRVJdaVSfxTkGVqYw4ZwMOEv2XcQF81lXFOuatxiReeoAz0UEP97V96m+dTjOuL3HpnAhp7
+ nWCaIJFYi3ALcst1bbaMti4H7868KOflqcuz6kKaGYkVqhi5kU0HVlpj8EW9ktOjcLqhHTqdW
+ XBb1hTdsSn2h3qS6/ym5SYYCs5hdRC/LcH3ZXoHyiY2yh2FkCnWzT/6A4G1zLWmNUfyZA9kWS
+ wI1GLEMhAukvALQUQImEXihjgEMAtMc4AgLvnjnlmU4FMO2CS/TeXA8CJ4zSDzUSDBNgNtUkb
+ yE/Bqg==
 
-On Mon, 11 Dec 2023 at 21:19, Andy Shevchenko
-<andriy.shevchenko@intel.com> wrote:
->
-> On Fri, Dec 08, 2023 at 09:18:20PM +0100, Noralf Tr=C3=B8nnes wrote:
-> > On 12/8/23 17:00, Andy Shevchenko wrote:
-> > > Included authors and latest (non-white-space) contributors to the dri=
-vers
-> > > in question along with relevant mailing list and respective (active i=
-n the
-> > > area) maintainers.
-> > >
-> > > I already had risen the question in times when 4th (sic!) driver for =
-the same
-> > > hardware was about to be pulled into upstream that we have to somehow=
- reduce
-> > > the code base and unify device properties.
-> > >
-> > > So, the main question here "What is the plan and where are we now?"
-> > >
-> > > I admit that fbtft case is special as it supports, in particular, pla=
-tform
-> > > device (parallel interface) and also well established in the embedded=
- world.
-> > > What about the rest?
-> > >
-> > > N.B. Besides the fact that panel drivers are too OF-centric, which is=
- bad
-> > > practice for the new kernel code in general and has to be stopped. I.=
-o.w.
-> > > seeing of_property_*() or alike in the driver after ca. 2020 should b=
-e
-> > > immediate NAK unless it's very well justified why it may not be used =
-on
-> > > non-OF systems.
->
-> Noralf, thanks for your response, my comments below.
->
-> TBH I would also like to hear from maintainers, because it seems they got
-> an additional burden for no benefit.
->
-> > Last year drivers/gpu/drm/tiny/panel-mipi-dbi.c was added to support al=
-l
-> > MIPI DBI compatible (ili9341) SPI displays.
-> > It loads the initialisation commands from a firmware file. For more inf=
-o
-> > see https://github.com/notro/panel-mipi-dbi/wiki.
-> >
-> > When I started on fbtft in 2013 I didn't know about MIPI DBI so I made
-> > some common bus access functions and one driver per controller and that
-> > driver had an initialisation sequence to match the panel I had. Then I
-> > discovered that displays using the same controller could have different
-> > init sequences so I added a Device Tree <init> property that could
-> > override the driver init.
-> >
-> > In 2015 fbtft was added to drivers/staging, but later that year fbdev
-> > was closed for new drivers so it was a dead end.
-> >
-> > I started to work on porting fbtft to DRM and almost 2 years later
-> > support for the MI0283QT panel (ILI9341) was added.
-> > I had now learned about MIPI DBI so a library to handle that was added.
-> > I had asked on the Device Tree ML about the <init> property and I was
-> > told that I couldn't have that which meant that I couldn't get away wit=
-h
-> > having just one driver for the MIPI DBI compatible display panels as I
-> > was first hoping for.
-> >
-> > I was aware that there was a challenge going from fbtft to DRM because
-> > in fbtft there is support for all panel setups using the <init>
-> > property, but in DRM every panel needed support in a driver. So I
-> > started to look at adding Device Tree properties to describe the setup
-> > for one controller. This would make it easy to describe a new panel in
-> > Device Tree for a supported controller. Maxime Ripard came up with the
-> > idea to have the controller initialisation commands in a firmware file
-> > which meant that we could get away with having just one driver for all
-> > MIPI DBI SPI panels (which is the vast majority of these SPI pixel
-> > upload panels).
-> >
-> > This meant that SPI support could be removed from all the MIPI DBI
-> > compatible controllers in fbtft
->
-> I believe it can't. Otherwise we _must_ provide the DT (device property)
-> parser that uses what is provided for fbtft SPI to be enabled in the othe=
-r
-> driver.
->
-> > since there's now a solution for them in
-> > DRM. The drivers themselves must stay since they also have parallel bus
-> > support which is lacking in DRM. My plan was to wait for panel-mipi-dbi
-> > to hit an LTS and then either prepare patches to remove MIPI DBI SPI
-> > support from fbtft or at least send an email to staging about the new
-> > driver.
->
-> > Unfortunately my health problems got worse and many plans went
-> > out the window.
->
-> Oh, sad to hear this, hope you will get better sooner than later!
->
-> > ILI9341 DRM drivers
-> >
-> > - drivers/gpu/drm/tiny/mi0283qt.c
-> >   This was the first driver added for the MI0283QT panel series
-> >
-> > - drivers/gpu/drm/tiny/ili9341.c
-> >   Later ili9341 based panels was decided to be added to a controller
-> >   specific driver.
->
-> Why was it appeared in the first place? :-(
->
-> > - drivers/gpu/drm/tiny/panel-mipi-dbi.c
-> >   Generic MIPI DBI SPI driver that loads init commands from a firmware
-> >   file. It uses of_property_read_string_index() and
-> >   of_get_drm_panel_display_mode(). I don't know if it's possible to mak=
-e
-> >   device_property_*() versions of those.
->
-> Everything like this is possible, just somebody needs to fulfill that.
-> And as I said, new OF-centric code, has to be NAKed by default.
->
-> > - drivers/gpu/drm/panel/panel-ilitek-ili9341.c
-> >   This driver supports the MIPI DPI (RGB) interface on the controller.
-> >   Controller init is done over MIPI DBI SPI. The driver does also for
-> >   some reason support the same panel as the ili9341.c driver does.
-> >   So 2 drivers for the same panel...
-> >   Sidenote: It is possible to make a generic panel-mipi-dpi.c driver fo=
-r
-> >   panels that use DPI for pixels and DBI for init loaded from a firmwar=
-e
-> >   file.
->
-> I wonder who has enough experience and time to at least point out or do
-> something about this...
->
-> At least we can start combining the two in tinydrm, to reduce the variety=
-.
->
+Hi Thomas,
 
-I wrote drivers/gpu/drm/panel/panel-ilitek-ili9341.c to support ili9341
-on stm32f429-disco board via dbi or dpi.
-https://www.st.com/resource/en/schematic_pack/mb1075-f429i-c01_schematic.pd=
-f
+On 12/20/23 14:22, Thomas Zimmermann wrote:
+> Allocate stifb's instance of fb_info with framebuffer_alloc(). This
+> is the preferred way of creating fb_info with associated driver data
+> stored in struct fb_info.par. Requires several, but minor, changes
+> through out the driver's code.
+>
+> The intended side effect of this patch is that the new instance of
+> struct fb_info now has its device field correctly set to the parent
+> device of the STI ROM. A later patch can detect if the device is the
+> firmware's primary output. It is also now correctly located within
+> the Linux device hierarchy.
 
-As one driver for one panel reason, so porting the mipi_dbi code and
-dts binding from tiny/ili9341.c
-It's true confused two driver for one panel in current kernel.
-I can remove the mipi_dbi code from panel-ilitek-ili9341.c or do something =
-else.
+Thanks for this cleanup series!
+Sadly stifb then crashes at bootup.
 
-Anyway, I'd like to rewrite it based on the agreement.
+Please include this copy&pasted hunk in this patch, which then fixes the c=
+rash:
 
-> --
-> With Best Regards,
-> Andy Shevchenko
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index 2de0e675fd15..f8bbd8d6f5b2 100644
+=2D-- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1158,7 +1158,7 @@ stifb_init_display(struct stifb_info *fb)
+             }
+             break;
+         }
+-       stifb_blank(0, (struct fb_info *)fb);   /* 0=3Denable screen */
++       stifb_blank(0, fb->info);       /* 0=3Denable screen */
+
+
+
+With this applied, you may add to the series:
+
+Tested-by: Helge Deller <deller@gmx.de>
+Reviewed-by: Helge Deller <deller@gmx.de>
+
+Thanks!
+Helge
+
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>   drivers/video/fbdev/stifb.c | 106 +++++++++++++++++++-----------------
+>   1 file changed, 56 insertions(+), 50 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+> index 548d992f8cb1..36e6bcab83aa 100644
+> --- a/drivers/video/fbdev/stifb.c
+> +++ b/drivers/video/fbdev/stifb.c
+> @@ -103,7 +103,7 @@ typedef struct {
+>   } ngle_rom_t;
+>
+>   struct stifb_info {
+> -	struct fb_info info;
+> +	struct fb_info *info;
+>   	unsigned int id;
+>   	ngle_rom_t ngle_rom;
+>   	struct sti_struct *sti;
+> @@ -153,15 +153,15 @@ static int __initdata stifb_bpp_pref[MAX_STI_ROMS]=
+;
+>   #define REG_44		0x210030
+>   #define REG_45		0x210034
+>
+> -#define READ_BYTE(fb,reg)		gsc_readb((fb)->info.fix.mmio_start + (reg))
+> -#define READ_WORD(fb,reg)		gsc_readl((fb)->info.fix.mmio_start + (reg))
+> +#define READ_BYTE(fb, reg)		gsc_readb((fb)->info->fix.mmio_start + (reg=
+))
+> +#define READ_WORD(fb, reg)		gsc_readl((fb)->info->fix.mmio_start + (reg=
+))
 >
 >
+>   #ifndef DEBUG_STIFB_REGS
+>   # define  DEBUG_OFF()
+>   # define  DEBUG_ON()
+> -# define WRITE_BYTE(value,fb,reg)	gsc_writeb((value),(fb)->info.fix.mmi=
+o_start + (reg))
+> -# define WRITE_WORD(value,fb,reg)	gsc_writel((value),(fb)->info.fix.mmi=
+o_start + (reg))
+> +# define WRITE_BYTE(value, fb, reg)	gsc_writeb((value), (fb)->info->fix=
+.mmio_start + (reg))
+> +# define WRITE_WORD(value, fb, reg)	gsc_writel((value), (fb)->info->fix=
+.mmio_start + (reg))
+>   #else
+>     static int debug_on =3D 1;
+>   # define  DEBUG_OFF() debug_on=3D0
+> @@ -169,11 +169,11 @@ static int __initdata stifb_bpp_pref[MAX_STI_ROMS]=
+;
+>   # define WRITE_BYTE(value,fb,reg)	do { if (debug_on) \
+>   						printk(KERN_DEBUG "%30s: WRITE_BYTE(0x%06x) =3D 0x%02x (old=3D0x=
+%02x)\n", \
+>   							__func__, reg, value, READ_BYTE(fb,reg)); 		  \
+> -					gsc_writeb((value),(fb)->info.fix.mmio_start + (reg)); } while (0)
+> +					gsc_writeb((value), (fb)->info->fix.mmio_start + (reg)); } while (=
+0)
+>   # define WRITE_WORD(value,fb,reg)	do { if (debug_on) \
+>   						printk(KERN_DEBUG "%30s: WRITE_WORD(0x%06x) =3D 0x%08x (old=3D0x=
+%08x)\n", \
+>   							__func__, reg, value, READ_WORD(fb,reg)); 		  \
+> -					gsc_writel((value),(fb)->info.fix.mmio_start + (reg)); } while (0)
+> +					gsc_writel((value), (fb)->info->fix.mmio_start + (reg)); } while (=
+0)
+>   #endif /* DEBUG_STIFB_REGS */
+>
+>
+> @@ -210,13 +210,13 @@ SETUP_FB(struct stifb_info *fb)
+>   			reg10_value =3D 0x13601000;
+>   			break;
+>   		case S9000_ID_A1439A:
+> -			if (fb->info.var.bits_per_pixel =3D=3D 32)
+> +			if (fb->info->var.bits_per_pixel =3D=3D 32)
+>   				reg10_value =3D 0xBBA0A000;
+>   			else
+>   				reg10_value =3D 0x13601000;
+>   			break;
+>   		case S9000_ID_HCRX:
+> -			if (fb->info.var.bits_per_pixel =3D=3D 32)
+> +			if (fb->info->var.bits_per_pixel =3D=3D 32)
+>   				reg10_value =3D 0xBBA0A000;
+>   			else
+>   				reg10_value =3D 0x13602000;
+> @@ -254,7 +254,7 @@ static void
+>   FINISH_IMAGE_COLORMAP_ACCESS(struct stifb_info *fb)
+>   {
+>   	WRITE_WORD(0x400, fb, REG_2);
+> -	if (fb->info.var.bits_per_pixel =3D=3D 32) {
+> +	if (fb->info->var.bits_per_pixel =3D=3D 32) {
+>   		WRITE_WORD(0x83000100, fb, REG_1);
+>   	} else {
+>   		if (fb->id =3D=3D S9000_ID_ARTIST || fb->id =3D=3D CRT_ID_VISUALIZE_=
+EG)
+> @@ -503,7 +503,7 @@ static void
+>   ngleSetupAttrPlanes(struct stifb_info *fb, int BufferNumber)
+>   {
+>   	SETUP_ATTR_ACCESS(fb, BufferNumber);
+> -	SET_ATTR_SIZE(fb, fb->info.var.xres, fb->info.var.yres);
+> +	SET_ATTR_SIZE(fb, fb->info->var.xres, fb->info->var.yres);
+>   	FINISH_ATTR_ACCESS(fb);
+>   	SETUP_FB(fb);
+>   }
+> @@ -526,9 +526,9 @@ rattlerSetupPlanes(struct stifb_info *fb)
+>   	SETUP_FB(fb);
+>   	fb->id =3D saved_id;
+>
+> -	for (y =3D 0; y < fb->info.var.yres; ++y)
+> -		fb_memset_io(fb->info.screen_base + y * fb->info.fix.line_length,
+> -			     0xff, fb->info.var.xres * fb->info.var.bits_per_pixel/8);
+> +	for (y =3D 0; y < fb->info->var.yres; ++y)
+> +		fb_memset_io(fb->info->screen_base + y * fb->info->fix.line_length,
+> +			     0xff, fb->info->var.xres * fb->info->var.bits_per_pixel/8);
+>
+>   	CRX24_SET_OVLY_MASK(fb);
+>   	SETUP_FB(fb);
+> @@ -607,7 +607,7 @@ setHyperLutBltCtl(struct stifb_info *fb, int offsetW=
+ithinLut, int length)
+>   	lutBltCtl.fields.lutType =3D HYPER_CMAP_TYPE;
+>
+>   	/* Expect lutIndex to be 0 or 1 for image cmaps, 2 or 3 for overlay c=
+maps */
+> -	if (fb->info.var.bits_per_pixel =3D=3D 8)
+> +	if (fb->info->var.bits_per_pixel =3D=3D 8)
+>   		lutBltCtl.fields.lutOffset =3D 2 * 256;
+>   	else
+>   		lutBltCtl.fields.lutOffset =3D 0 * 256;
+> @@ -688,7 +688,7 @@ ngleResetAttrPlanes(struct stifb_info *fb, unsigned =
+int ctlPlaneReg)
+>   					       DataDynamic, MaskOtc,
+>   					       BGx(0), FGx(0)));
+>   	packed_dst =3D 0;
+> -	packed_len =3D (fb->info.var.xres << 16) | fb->info.var.yres;
+> +	packed_len =3D (fb->info->var.xres << 16) | fb->info->var.yres;
+>   	GET_FIFO_SLOTS(fb, nFreeFifoSlots, 2);
+>   	NGLE_SET_DSTXY(fb, packed_dst);
+>   	SET_LENXY_START_RECFILL(fb, packed_len);
+> @@ -738,7 +738,7 @@ ngleClearOverlayPlanes(struct stifb_info *fb, int ma=
+sk, int data)
+>           NGLE_REALLY_SET_IMAGE_PLANEMASK(fb, mask);
+>
+>           packed_dst =3D 0;
+> -        packed_len =3D (fb->info.var.xres << 16) | fb->info.var.yres;
+> +	packed_len =3D (fb->info->var.xres << 16) | fb->info->var.yres;
+>           NGLE_SET_DSTXY(fb, packed_dst);
+>
+>   	/* Write zeroes to overlay planes */
+> @@ -760,7 +760,7 @@ hyperResetPlanes(struct stifb_info *fb, int enable)
+>   	NGLE_LOCK(fb);
+>
+>   	if (IS_24_DEVICE(fb))
+> -		if (fb->info.var.bits_per_pixel =3D=3D 32)
+> +		if (fb->info->var.bits_per_pixel =3D=3D 32)
+>   			controlPlaneReg =3D 0x04000F00;
+>   		else
+>   			controlPlaneReg =3D 0x00000F00;   /* 0x00000800 should be enough, b=
+ut lets clear all 4 bits */
+> @@ -890,7 +890,7 @@ SETUP_HCRX(struct stifb_info *fb)
+>   	GET_FIFO_SLOTS(fb, nFreeFifoSlots, 7);
+>
+>   	if (IS_24_DEVICE(fb)) {
+> -		hyperbowl =3D (fb->info.var.bits_per_pixel =3D=3D 32) ?
+> +		hyperbowl =3D (fb->info->var.bits_per_pixel =3D=3D 32) ?
+>   			HYPERBOWL_MODE01_8_24_LUT0_TRANSPARENT_LUT1_OPAQUE :
+>   			HYPERBOWL_MODE01_8_24_LUT0_OPAQUE_LUT1_OPAQUE;
+>
+> @@ -924,21 +924,21 @@ SETUP_HCRX(struct stifb_info *fb)
+>   static int
+>   stifb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+>   {
+> -	struct stifb_info *fb =3D container_of(info, struct stifb_info, info);
+> +	struct stifb_info *fb =3D info->par;
+>
+> -	if (var->xres !=3D fb->info.var.xres ||
+> -	    var->yres !=3D fb->info.var.yres ||
+> -	    var->bits_per_pixel !=3D fb->info.var.bits_per_pixel)
+> +	if (var->xres !=3D fb->info->var.xres ||
+> +	    var->yres !=3D fb->info->var.yres ||
+> +	    var->bits_per_pixel !=3D fb->info->var.bits_per_pixel)
+>   		return -EINVAL;
+>
+>   	var->xres_virtual =3D var->xres;
+>   	var->yres_virtual =3D var->yres;
+>   	var->xoffset =3D 0;
+>   	var->yoffset =3D 0;
+> -	var->grayscale =3D fb->info.var.grayscale;
+> -	var->red.length =3D fb->info.var.red.length;
+> -	var->green.length =3D fb->info.var.green.length;
+> -	var->blue.length =3D fb->info.var.blue.length;
+> +	var->grayscale =3D fb->info->var.grayscale;
+> +	var->red.length =3D fb->info->var.red.length;
+> +	var->green.length =3D fb->info->var.green.length;
+> +	var->blue.length =3D fb->info->var.blue.length;
+>
+>   	return 0;
+>   }
+> @@ -947,7 +947,7 @@ static int
+>   stifb_setcolreg(u_int regno, u_int red, u_int green,
+>   	      u_int blue, u_int transp, struct fb_info *info)
+>   {
+> -	struct stifb_info *fb =3D container_of(info, struct stifb_info, info);
+> +	struct stifb_info *fb =3D info->par;
+>   	u32 color;
+>
+>   	if (regno >=3D NR_PALETTE)
+> @@ -961,7 +961,7 @@ stifb_setcolreg(u_int regno, u_int red, u_int green,
+>
+>   	START_IMAGE_COLORMAP_ACCESS(fb);
+>
+> -	if (unlikely(fb->info.var.grayscale)) {
+> +	if (unlikely(fb->info->var.grayscale)) {
+>   		/* gray =3D 0.30*R + 0.59*G + 0.11*B */
+>   		color =3D ((red * 77) +
+>   			 (green * 151) +
+> @@ -972,10 +972,10 @@ stifb_setcolreg(u_int regno, u_int red, u_int gree=
+n,
+>   			 (blue));
+>   	}
+>
+> -	if (fb->info.fix.visual =3D=3D FB_VISUAL_DIRECTCOLOR) {
+> -		struct fb_var_screeninfo *var =3D &fb->info.var;
+> +	if (fb->info->fix.visual =3D=3D FB_VISUAL_DIRECTCOLOR) {
+> +		struct fb_var_screeninfo *var =3D &fb->info->var;
+>   		if (regno < 16)
+> -			((u32 *)fb->info.pseudo_palette)[regno] =3D
+> +			((u32 *)fb->info->pseudo_palette)[regno] =3D
+>   				regno << var->red.offset |
+>   				regno << var->green.offset |
+>   				regno << var->blue.offset;
+> @@ -1007,7 +1007,7 @@ stifb_setcolreg(u_int regno, u_int red, u_int gree=
+n,
+>   static int
+>   stifb_blank(int blank_mode, struct fb_info *info)
+>   {
+> -	struct stifb_info *fb =3D container_of(info, struct stifb_info, info);
+> +	struct stifb_info *fb =3D info->par;
+>   	int enable =3D (blank_mode =3D=3D 0) ? ENABLE : DISABLE;
+>
+>   	switch (fb->id) {
+> @@ -1036,12 +1036,12 @@ stifb_blank(int blank_mode, struct fb_info *info=
+)
+>   static void
+>   stifb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+>   {
+> -	struct stifb_info *fb =3D container_of(info, struct stifb_info, info);
+> +	struct stifb_info *fb =3D info->par;
+>
+>   	SETUP_COPYAREA(fb);
+>
+>   	SETUP_HW(fb);
+> -	if (fb->info.var.bits_per_pixel =3D=3D 32) {
+> +	if (fb->info->var.bits_per_pixel =3D=3D 32) {
+>   		WRITE_WORD(0xBBA0A000, fb, REG_10);
+>
+>   		NGLE_REALLY_SET_IMAGE_PLANEMASK(fb, 0xffffffff);
+> @@ -1075,15 +1075,15 @@ stifb_copyarea(struct fb_info *info, const struc=
+t fb_copyarea *area)
+>   static void
+>   stifb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+>   {
+> -	struct stifb_info *fb =3D container_of(info, struct stifb_info, info);
+> +	struct stifb_info *fb =3D info->par;
+>
+>   	if (rect->rop !=3D ROP_COPY ||
+> -	    (fb->id =3D=3D S9000_ID_HCRX && fb->info.var.bits_per_pixel =3D=3D=
+ 32))
+> +	    (fb->id =3D=3D S9000_ID_HCRX && fb->info->var.bits_per_pixel =3D=
+=3D 32))
+>   		return cfb_fillrect(info, rect);
+>
+>   	SETUP_HW(fb);
+>
+> -	if (fb->info.var.bits_per_pixel =3D=3D 32) {
+> +	if (fb->info->var.bits_per_pixel =3D=3D 32) {
+>   		WRITE_WORD(0xBBA0A000, fb, REG_10);
+>
+>   		NGLE_REALLY_SET_IMAGE_PLANEMASK(fb, 0xffffffff);
+> @@ -1141,7 +1141,7 @@ stifb_init_display(struct stifb_info *fb)
+>           switch (id) {
+>   	 case S9000_ID_A1659A:
+>   	 case S9000_ID_A1439A:
+> -	    if (fb->info.var.bits_per_pixel =3D=3D 32)
+> +	    if (fb->info->var.bits_per_pixel =3D=3D 32)
+>   		ngleSetupAttrPlanes(fb, BUFF1_CMAP3);
+>   	    else {
+>   		ngleSetupAttrPlanes(fb, BUFF1_CMAP0);
+> @@ -1151,7 +1151,7 @@ stifb_init_display(struct stifb_info *fb)
+>   	    break;
+>   	 case S9000_ID_ARTIST:
+>   	 case CRT_ID_VISUALIZE_EG:
+> -	    if (fb->info.var.bits_per_pixel =3D=3D 32)
+> +	    if (fb->info->var.bits_per_pixel =3D=3D 32)
+>   		ngleSetupAttrPlanes(fb, BUFF1_CMAP3);
+>   	    else {
+>   		ngleSetupAttrPlanes(fb, ARTIST_CMAP0);
+> @@ -1193,11 +1193,11 @@ static int __init stifb_init_fb(struct sti_struc=
+t *sti, int bpp_pref)
+>   	char *dev_name;
+>   	int bpp, xres, yres;
+>
+> -	fb =3D kzalloc(sizeof(*fb), GFP_ATOMIC);
+> -	if (!fb)
+> +	info =3D framebuffer_alloc(sizeof(*fb), sti->dev);
+> +	if (!info)
+>   		return -ENOMEM;
+> -
+> -	info =3D &fb->info;
+> +	fb =3D info->par;
+> +	fb->info =3D info;
+>
+>   	/* set struct to a known state */
+>   	fix =3D &info->fix;
+> @@ -1390,10 +1390,10 @@ static int __init stifb_init_fb(struct sti_struc=
+t *sti, int bpp_pref)
+>
+>   	/* save for primary gfx device detection & unregister_framebuffer() *=
+/
+>   	sti->info =3D info;
+> -	if (register_framebuffer(&fb->info) < 0)
+> +	if (register_framebuffer(fb->info) < 0)
+>   		goto out_err4;
+>
+> -	fb_info(&fb->info, "%s %dx%d-%d frame buffer device, %s, id: %04x, mmi=
+o: 0x%04lx\n",
+> +	fb_info(fb->info, "%s %dx%d-%d frame buffer device, %s, id: %04x, mmio=
+: 0x%04lx\n",
+>   		fix->id,
+>   		var->xres,
+>   		var->yres,
+> @@ -1402,6 +1402,8 @@ static int __init stifb_init_fb(struct sti_struct =
+*sti, int bpp_pref)
+>   		fb->id,
+>   		fix->mmio_start);
+>
+> +	dev_set_drvdata(sti->dev, info);
+> +
+>   	return 0;
+>
+>
+> @@ -1414,7 +1416,7 @@ static int __init stifb_init_fb(struct sti_struct =
+*sti, int bpp_pref)
+>   out_err1:
+>   	iounmap(info->screen_base);
+>   out_err0:
+> -	kfree(fb);
+> +	framebuffer_release(info);
+>   	sti->info =3D NULL;
+>   	return -ENXIO;
+>   }
+> @@ -1480,15 +1482,19 @@ stifb_cleanup(void)
+>   		sti =3D sti_get_rom(i);
+>   		if (!sti)
+>   			break;
+> -		if (sti->info) {
+> -			struct fb_info *info =3D sti->info;
+> -			unregister_framebuffer(sti->info);
+> +		if (sti->dev) {
+> +			struct fb_info *info =3D dev_get_drvdata(sti->dev);
+> +
+> +			if (!info)
+> +				continue;
+> +			unregister_framebuffer(info);
+>   			release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+>   		        release_mem_region(info->fix.smem_start, info->fix.smem_len)=
+;
+>   				if (info->screen_base)
+>   					iounmap(info->screen_base);
+>   		        fb_dealloc_cmap(&info->cmap);
+>   		        framebuffer_release(info);
+> +			dev_set_drvdata(sti->dev, NULL);
+>   		}
+>   		sti->info =3D NULL;
+>   	}
+

@@ -1,129 +1,88 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B082BF9C3;
-	Tue,  2 Jan 2024 12:06:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72E4F156CD
+	for <linux-fbdev@vger.kernel.org>; Tue,  2 Jan 2024 16:31:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="bmzU9iWl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-	t=1704197162; x=1704801962; i=deller@gmx.de;
-	bh=uAGHcEkap2SFuefC9cpcqBlQ76TanOfJ8NSrSxq5QxI=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=bmzU9iWlY7UBk6eWT6i+iDNGDMdhj8OP5YlNbVMPxWOSaC3Wc4sxOsN0kESMecPu
-	 E7jqZyswN9cjr/d3RJqFjKfy9aAt6QylXTIwNkdtI01oKdlJczWXZiVs1PpZks2Ii
-	 A5dLVz+jqCcenJQa4FWeodj21kvXS9q/JdTHqfPPMLJj4KPAPftw0cfpiLMBHOUdx
-	 +kPiYKXIF3Nn594apPx2bJNi13jRXbPuuXlF0JUs/a4QmeHPRmS8WUa430kj3W7SP
-	 djPV7OkHi5ZmxaSopQa8b86sXX//Bm6VRAAc5kRNjpbfOk29xJ7PHlDt1DYb2YWQe
-	 vCAwYa/U6stnt/m7BQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([94.134.159.184]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MI5UD-1rPG610Qml-00FG9H; Tue, 02
- Jan 2024 13:06:02 +0100
-Message-ID: <dbe21c9c-bbe8-477f-a6fd-97dfb2ce7220@gmx.de>
-Date: Tue, 2 Jan 2024 13:06:00 +0100
+	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="iz2gtZve";
+	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="ppjdj+bJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=rsa2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=7pKpo+sBmuDRPGTAU7DR6NOpi4cHG/Pa0KfY/BWs7xs=;
+	b=iz2gtZvep5v6iWlxT8TmXRPOqebPYxEz+YLB1YV3J8ky/wKDiC5dKO8fQiOxOnqvi496xq/C7/qbZ
+	 3kD3ap+RVx35g21stU3T+o3TyLQ3MpdPDf9NWxk7qdJ/A1hNu639hmFCwORV24DHHkkhIu4VKM4+DD
+	 12UNSYbvU8UCyij0+Grw9Aa3r1Ax+10yTFsgF2isq9KJoQZKCLFFF3ya6JJSG59enlCC7onpm72Dti
+	 2soGMgllhhvDgCorop3JZKLsIb1PI/EyaJrupT2WJgP1BSkv8MZXcecP3DUV2ozeUGeIwTUe3PZ5WQ
+	 DL1Budqpvs+iu/qNaaNvAtnFzeJ6oMA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=ed2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=7pKpo+sBmuDRPGTAU7DR6NOpi4cHG/Pa0KfY/BWs7xs=;
+	b=ppjdj+bJv/kc4DB+tSOE73nHayIzOdvYjIV/deteqz8MnseJSyC3Q0Wluu76AS3imkD5hMqr+O2Aw
+	 FMclUj+CA==
+X-HalOne-ID: 5539e9de-a98c-11ee-8a73-2dc64a403fa2
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+	by mailrelay4 (Halon) with ESMTPSA
+	id 5539e9de-a98c-11ee-8a73-2dc64a403fa2;
+	Tue, 02 Jan 2024 16:31:10 +0000 (UTC)
+Date: Tue, 2 Jan 2024 17:31:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Arnd Bergmann <arnd@kernel.org>,
+	Andreas Larsson <andreas@gaisler.com>, Helge Deller <deller@gmx.de>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH 27/27] fbdev/p9100: Drop now unused driver p9100
+Message-ID: <20240102163108.GA564954@ravnborg.org>
+References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
+ <20231219-sam-sparc32-sunset-v3-v1-27-64bb44b598c5@ravnborg.org>
+ <0fc5ba5d-4513-48b5-bde9-3eb311cdc535@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/4] video/sticore: Store ROM device in STI struct
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>,
- James.Bottomley@HansenPartnership.com, arnd@arndb.de
-Cc: linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <20231220134639.8190-1-tzimmermann@suse.de>
- <20231220134639.8190-2-tzimmermann@suse.de>
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20231220134639.8190-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Nfgny22kzhpakaYBWinm0sF9XrS1iJY7O6t80oGozLzMMqqMRxe
- 6FAbvR0pQtvhEnj05eycKWTouSvDnHqMIi4ecNHL1p2TH0DooupuZSxIa6BeupqAtBJDuUP
- XWpM5irayfb/se/xEZ4l+167KbBxHIruI3yLn17KC3mkc/0474R693bE5J8nid/yLztp71s
- p6GOF3AiJLx/diDSRNqiQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:vCoNzJR5R7s=;dlmE+nuB6QjNOG+jfazPpTKxX61
- 2XPeV2oEy7cBOT8BkLCM47xXnO6DYOO6c7fRYBO3z6FnZ1Nm/d9y+nmxq0oWwZ1RiuN24sKCV
- 7aWYcI8agM5Dfyca8A8uDYTz6EWoRjnZamWAcQIv6EGPBVf+AsOhUa2zQ+crXAVqEb2+JzirB
- YUhmjJIP3bmQEWFtuX7ZJQIRS8DTLijjjV5Trg+lZDJJvfUmLjJvWKqTQub644IGhmKAGmVZC
- mmFHwiim6RqVBtQ8rEVtLfo7GLIriLNudb6PY0rWYFtWoSWbF6pIe3QIBdP7WHTDEESHPxGfg
- Ph7ucgiQPJ4Itn07qrHlTPG5S85eosDa5Q0panBFrh2DIxB0HLAdvzgLQ4MEPL9UGjokqf6vR
- GSVJcaZDmGaGd7JJoA0alrS6Edc9SkHxcqtedGGhH4qBllEhWsHpKU3ckUuOiGOpVBR4laT98
- yXCWAuJHDfg+KIK10MVq+8bQgd5pnahIaTSgrJea3iWO+g4pCKykm8cRgQ9xv737yUB/i/+bB
- 8IbVzg96aJEwlE4rHbaea2atffkhVqdvWUQhHpEBhM6VaqjJGZYN3a2v9XXV3K3IvjQCpwljU
- 6N1Mabm/+DrX4zHZtpGWiYGLVy+xyyUebY5czfvVwZrEDNMfd1L7PHcEGER0NYDFuedvgcRd5
- RRaf/nKaDpQ99cp6Fc2oBCpzg4Bm9uKazfOL478cPshW4vOp7xSLLBerGBNZlriY7IHUEV/2N
- 8bNhmalVJdG5+WxF+lIvTo5qkur19qznbBqd2irdA8qM8kmPLha7SffIl29XlGCrCjxHqvld4
- bv/Wc2tm/giv2JBhrAPzwF8Tc4we+g6v3DtmnUNdtXj6eyC+Pxq2YknpNhfj1aLB5JDk+hX/G
- HlVIvwZb6dUilr/FYNnGOvnkxwDPr3W+iC6lmtJnMySlcpA4j2XmRaR5zgiK3xE2NnrARxOPZ
- 8r6QUqcnkNFknPrRnk6QCLbtkq8=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0fc5ba5d-4513-48b5-bde9-3eb311cdc535@suse.de>
 
-On 12/20/23 14:22, Thomas Zimmermann wrote:
-> Store the ROM's parent device in each STI struct, so we can associate
-> the STI framebuffer with a device.
->
-> The new field will eventually replace the fbdev subsystem's info field,
-> which the function fb_is_primary_device() currently requires to detect
-> the firmware's output. By using the device instead of the framebuffer
-> info, a later patch can generalize the helper for use in non-fbdev code.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->   drivers/video/sticore.c | 5 +++++
->   include/video/sticore.h | 4 ++++
->   2 files changed, 9 insertions(+)
+Hi Thomas,
 
-Series applied to fbdev git tree.
+On Tue, Jan 02, 2024 at 09:26:27AM +0100, Thomas Zimmermann wrote:
+> Hi Sam
+> 
+> Am 19.12.23 um 23:03 schrieb Sam Ravnborg via B4 Relay:
+> > From: Sam Ravnborg <sam@ravnborg.org>
+> > 
+> > The p9100 driver is only relevant for the Sparcbook 3 machine,
+> > and with sun4m support removed this driver is no longer relevant.
+> > 
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > Cc: "David S. Miller" <davem@davemloft.net>
+> > Cc: Arnd Bergmann <arnd@kernel.org>
+> > Cc: Andreas Larsson <andreas@gaisler.com>
+> > Cc: Helge Deller <deller@gmx.de>
+> 
+> Thanks for cleaning up.
+> 
+> Ack-by: Thomas Zimmermann <tzimmermann@suse.de>
+Thanks.
+> 
+> if the series is accepted.
+As you may have seen there is a maintainer vacuum at the moment :-(
+That holds up clean-up a bit, and I cannot find the motivation/time
+to offer it myself at the moment (no sponsor for this type of work).
 
-Thanks!
-Helge
-
+	Sam

@@ -1,66 +1,66 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED631C8F5;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9987C8FF;
 	Tue,  2 Jan 2024 09:56:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ZNuLby10";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5kJF65cu";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ZNuLby10";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5kJF65cu"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="dV46ZBbc";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="pO6Ezxm5";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="dV46ZBbc";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="pO6Ezxm5"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 1D78B1FCEE;
-	Tue,  2 Jan 2024 09:56:07 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D17AF21E80;
+	Tue,  2 Jan 2024 09:56:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1704189367; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1704189366; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5s+Dg6n3IY8XHwL3pAiZbP/itrzceNeno5mM07TKb6U=;
-	b=ZNuLby10YEPb431QhdIJ1D2iMra4+sAE9KhNuZzUJ1BnSscB6yGEUdzy8xCQhGk7UTGY17
-	t6wMVtLY8ZEDIpq4o3ys8RmcW8VdUX9O5HVMx6ciHb4QbYrdjKIkc0sNsJ0cWUBP+GbyBs
-	USf9WjyTBOiYnDqy2I8u2mSjUsBHp5c=
+	bh=0/GSscohF6sdDI8bF3SLelZwCjQ2JqpZEm4wsy2Dqxs=;
+	b=dV46ZBbcAc42h2Be2eqGqoPCUCjQ8j/oRIPSph+jCaXizunPoxaPh/h7AvJNoq7IdEjjrO
+	Vo75CrHK+XBHxnx0WKiwOCZ20qayhqwMfggRjAAlN7vD5qHeRCovtVoqKycNEcTdpsyCGP
+	ItWahpPgIBvcSsyAycgD9unyDWR+0cw=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1704189367;
+	s=susede2_ed25519; t=1704189366;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5s+Dg6n3IY8XHwL3pAiZbP/itrzceNeno5mM07TKb6U=;
-	b=5kJF65cuSD8Z0qw0SXv9nVhdnuof5lRguOMwAhik/ph8lwXUAlvmFa9xm3QJ6xwaLZY9EK
-	AJx7Qm4vrCB4ajBg==
+	bh=0/GSscohF6sdDI8bF3SLelZwCjQ2JqpZEm4wsy2Dqxs=;
+	b=pO6Ezxm5LGREc86qG0XaXf8mOeA4TPwkNPPQSG/edRQ7cA9WZMXIjwbHezosR+uQ6YRgpn
+	DCA3UuSgm58LyzDg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1704189367; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1704189366; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5s+Dg6n3IY8XHwL3pAiZbP/itrzceNeno5mM07TKb6U=;
-	b=ZNuLby10YEPb431QhdIJ1D2iMra4+sAE9KhNuZzUJ1BnSscB6yGEUdzy8xCQhGk7UTGY17
-	t6wMVtLY8ZEDIpq4o3ys8RmcW8VdUX9O5HVMx6ciHb4QbYrdjKIkc0sNsJ0cWUBP+GbyBs
-	USf9WjyTBOiYnDqy2I8u2mSjUsBHp5c=
+	bh=0/GSscohF6sdDI8bF3SLelZwCjQ2JqpZEm4wsy2Dqxs=;
+	b=dV46ZBbcAc42h2Be2eqGqoPCUCjQ8j/oRIPSph+jCaXizunPoxaPh/h7AvJNoq7IdEjjrO
+	Vo75CrHK+XBHxnx0WKiwOCZ20qayhqwMfggRjAAlN7vD5qHeRCovtVoqKycNEcTdpsyCGP
+	ItWahpPgIBvcSsyAycgD9unyDWR+0cw=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1704189367;
+	s=susede2_ed25519; t=1704189366;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5s+Dg6n3IY8XHwL3pAiZbP/itrzceNeno5mM07TKb6U=;
-	b=5kJF65cuSD8Z0qw0SXv9nVhdnuof5lRguOMwAhik/ph8lwXUAlvmFa9xm3QJ6xwaLZY9EK
-	AJx7Qm4vrCB4ajBg==
+	bh=0/GSscohF6sdDI8bF3SLelZwCjQ2JqpZEm4wsy2Dqxs=;
+	b=pO6Ezxm5LGREc86qG0XaXf8mOeA4TPwkNPPQSG/edRQ7cA9WZMXIjwbHezosR+uQ6YRgpn
+	DCA3UuSgm58LyzDg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D8C6613AC6;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9389013C96;
 	Tue,  2 Jan 2024 09:56:06 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id KMumM7bdk2WBEwAAD6G6ig
+	id wBu2Irbdk2WBEwAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Tue, 02 Jan 2024 09:56:06 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -70,9 +70,9 @@ Cc: linux-parisc@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 4/4] video/sticore: Remove info field from STI struct
-Date: Tue,  2 Jan 2024 10:52:36 +0100
-Message-ID: <20240102095604.7276-5-tzimmermann@suse.de>
+Subject: [PATCH v2 3/4] arch/parisc: Detect primary video device from device instance
+Date: Tue,  2 Jan 2024 10:52:35 +0100
+Message-ID: <20240102095604.7276-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240102095604.7276-1-tzimmermann@suse.de>
 References: <20240102095604.7276-1-tzimmermann@suse.de>
@@ -83,30 +83,26 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Level: *****
+X-Spam-Level: ****
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 X-Spam-Level: 
 X-Spamd-Bar: /
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=ZNuLby10;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=5kJF65cu
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-0.01 / 50.00];
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [0.93 / 50.00];
 	 RCVD_VIA_SMTP_AUTH(0.00)[];
 	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
 	 RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
 	 TO_DN_SOME(0.00)[];
 	 R_MISSING_CHARSET(2.50)[];
 	 BROKEN_CONTENT_TYPE(1.50)[];
-	 R_RATELIMIT(0.00)[to_ip_from(RLtfyjk8sg4x43ngtem9djprcp)];
 	 RCVD_COUNT_THREE(0.00)[3];
 	 DKIM_TRACE(0.00)[suse.de:+];
 	 MX_GOOD(-0.01)[];
 	 RCPT_COUNT_SEVEN(0.00)[7];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
 	 FREEMAIL_TO(0.00)[gmx.de,HansenPartnership.com,arndb.de];
 	 FROM_EQ_ENVFROM(0.00)[];
 	 MIME_TRACE(0.00)[0:+];
-	 BAYES_HAM(-0.00)[15.67%];
+	 BAYES_HAM(-0.26)[73.71%];
 	 ARC_NA(0.00)[];
 	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	 FROM_HAS_DN(0.00)[];
@@ -114,79 +110,42 @@ X-Spamd-Result: default: False [-0.01 / 50.00];
 	 TO_MATCH_ENVRCPT_ALL(0.00)[];
 	 MIME_GOOD(-0.10)[text/plain];
 	 DWL_DNSWL_HI(-3.50)[suse.de:dkim];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
 	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	 MID_CONTAINS_FROM(1.00)[];
 	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email];
 	 FUZZY_BLOCKED(0.00)[rspamd.com];
 	 RCVD_TLS_ALL(0.00)[];
 	 RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from]
-X-Spam-Score: -0.01
-X-Rspamd-Queue-Id: 1D78B1FCEE
-X-Spam-Flag: NO
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=dV46ZBbc;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=pO6Ezxm5
+X-Spam-Score: 0.93
+X-Rspamd-Queue-Id: D17AF21E80
 
-The info field in struct sti_struct was used to detect the default
-display device. That test is now done with the respective Linux device
-and the info field is unused. Remove it.
+Update fb_is_primary device() on parisc to detect the primary display
+device from the Linux device instance. Aligns the code with the other
+architectures. A later patch will remove the fbdev dependency from the
+function's interface.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Tested-by: Helge Deller <deller@gmx.de>
 Reviewed-by: Helge Deller <deller@gmx.de>
 ---
- drivers/video/fbdev/stifb.c | 3 ---
- include/video/sticore.h     | 4 ----
- 2 files changed, 7 deletions(-)
+ arch/parisc/video/fbdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-index 9954640faae6..8e5bac27542d 100644
---- a/drivers/video/fbdev/stifb.c
-+++ b/drivers/video/fbdev/stifb.c
-@@ -1389,7 +1389,6 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 	}
+diff --git a/arch/parisc/video/fbdev.c b/arch/parisc/video/fbdev.c
+index 137561d98246..e4f8ac99fc9e 100644
+--- a/arch/parisc/video/fbdev.c
++++ b/arch/parisc/video/fbdev.c
+@@ -21,6 +21,6 @@ int fb_is_primary_device(struct fb_info *info)
+ 		return true;
  
- 	/* save for primary gfx device detection & unregister_framebuffer() */
--	sti->info = info;
- 	if (register_framebuffer(fb->info) < 0)
- 		goto out_err4;
- 
-@@ -1417,7 +1416,6 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 	iounmap(info->screen_base);
- out_err0:
- 	framebuffer_release(info);
--	sti->info = NULL;
- 	return -ENXIO;
+ 	/* return true if it's the default built-in framebuffer driver */
+-	return (sti->info == info);
++	return (sti->dev == info->device);
  }
- 
-@@ -1496,7 +1494,6 @@ stifb_cleanup(void)
- 		        framebuffer_release(info);
- 			dev_set_drvdata(sti->dev, NULL);
- 		}
--		sti->info = NULL;
- 	}
- }
- 
-diff --git a/include/video/sticore.h b/include/video/sticore.h
-index 9d993e22805d..823666af1871 100644
---- a/include/video/sticore.h
-+++ b/include/video/sticore.h
-@@ -3,7 +3,6 @@
- #define STICORE_H
- 
- struct device;
--struct fb_info;
- 
- /* generic STI structures & functions */
- 
-@@ -368,9 +367,6 @@ struct sti_struct {
- 	/* PCI data structures (pg. 17ff from sti.pdf) */
- 	u8 rm_entry[16]; /* pci region mapper array == pci config space offset */
- 
--	/* pointer to the fb_info where this STI device is used */
--	struct fb_info *info;
--
- 	/* pointer to the parent device */
- 	struct device *dev;
- 
+ EXPORT_SYMBOL(fb_is_primary_device);
 -- 
 2.43.0
 

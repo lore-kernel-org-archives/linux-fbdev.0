@@ -1,90 +1,146 @@
-Received: from mout.web.de (mout.web.de [217.72.192.78])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9AF118623;
-	Wed,  3 Jan 2024 09:06:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3695918ED9;
+	Wed,  3 Jan 2024 10:26:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="YRY4Vu/u"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de; s=s29768273;
-	t=1704272779; x=1704877579; i=markus.elfring@web.de;
-	bh=Fb/E0bLfK4HYiwHmpycQDyjgyUrLghAFd2etpy2dGyo=;
-	h=X-UI-Sender-Class:Date:Subject:From:To:References:Cc:
-	 In-Reply-To;
-	b=YRY4Vu/uF/q09ZyO20+wDkEtIp40KkprS+whmkQ2V8g4+/dyjXryX6vxXUHw8fxf
-	 gVov6sfLeWV3cICN4x2SyrYQtT1PrdW64VnBQgU3fHsmQF79JZl8AMqeZScgS3JvZ
-	 gpXYCeVzkDFIIHWu19FiZw/YH/Z43Z3PKJeO3lib5V9sJZMkUZEtOyPoef55e0xzE
-	 VkGJ1+IMX3pCJ9CWAKtq7fUNsFrVrNW+JCU+lHYBauXsIk61OcL0Og9yERX5n003W
-	 dN8cCnXK5fSvcl3Hoiikj03ZW61XEIxVrlM67dX+Ru0z+jtdS1v5Rd4GJjx6dCCrN
-	 rXq1vFykn47Ff0wtHw==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.88.95]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MODiN-1raAhm0cNl-00ONpl; Wed, 03
- Jan 2024 10:06:19 +0100
-Message-ID: <bb11fd85-1fa7-429b-a379-f4a92f7f0f88@web.de>
-Date: Wed, 3 Jan 2024 10:06:18 +0100
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="HtU/LYl/";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Gif3NOEV";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="HtU/LYl/";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Gif3NOEV"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2AFC621CE4;
+	Wed,  3 Jan 2024 10:26:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1704277602; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=abc6UaxFIPj+xDBAAYtizVyMNL31WYzON1HiYHlhgYw=;
+	b=HtU/LYl/ChOnzFQqbwrYRYELAX0Ik+t55F7j6Wr67fPTV3u61BkfcPkdYjw+RbhxfpFsqq
+	g+BRrbKmMa8xqtnWD5e9xfGRPcXfnHOQg7zTCBqpbvVdMuyQ7S4cKALDA7ux9mqOmYuBGJ
+	6AM3XD6acRpgKqelRHjspwtAE3xQvDE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1704277602;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=abc6UaxFIPj+xDBAAYtizVyMNL31WYzON1HiYHlhgYw=;
+	b=Gif3NOEViHGIs3VobpDcfVsmyzB+o2QJvT/zyR9yW5F5bYTdie0tBHsGd4PEemCz7Bhd1Y
+	VlX4KhJzvVWUeFBQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1704277602; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=abc6UaxFIPj+xDBAAYtizVyMNL31WYzON1HiYHlhgYw=;
+	b=HtU/LYl/ChOnzFQqbwrYRYELAX0Ik+t55F7j6Wr67fPTV3u61BkfcPkdYjw+RbhxfpFsqq
+	g+BRrbKmMa8xqtnWD5e9xfGRPcXfnHOQg7zTCBqpbvVdMuyQ7S4cKALDA7ux9mqOmYuBGJ
+	6AM3XD6acRpgKqelRHjspwtAE3xQvDE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1704277602;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=abc6UaxFIPj+xDBAAYtizVyMNL31WYzON1HiYHlhgYw=;
+	b=Gif3NOEViHGIs3VobpDcfVsmyzB+o2QJvT/zyR9yW5F5bYTdie0tBHsGd4PEemCz7Bhd1Y
+	VlX4KhJzvVWUeFBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CBD491340C;
+	Wed,  3 Jan 2024 10:26:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 2y2GMGE2lWWmfgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 03 Jan 2024 10:26:41 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: drawat.floss@gmail.com,
+	javierm@redhat.com,
+	deller@gmx.de,
+	decui@microsoft.com,
+	wei.liu@kernel.org,
+	haiyangz@microsoft.com,
+	kys@microsoft.com,
+	daniel@ffwll.ch,
+	airlied@gmail.com
+Cc: linux-hyperv@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/4] hyperv, sysfb: Do not use screen_info in drivers
+Date: Wed,  3 Jan 2024 11:15:08 +0100
+Message-ID: <20240103102640.31751-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC] fbdev: Completing error handling for fb_alloc_cmap() calls
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-To: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
- Helge Deller <deller@gmx.de>
-References: <913bb6fa-c168-46f7-ba39-5fdaae586b6e@web.de>
-Cc: cocci@inria.fr, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <913bb6fa-c168-46f7-ba39-5fdaae586b6e@web.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:A4M3xaazTPrShaIJhrVteu/4GqbA0GzEzzmVrL1bCQrpmNVDERV
- WCyj1rRRUVyO4tU+6n2OPqpaLolyJWevbPvHuMV8wcMGamejJAOCPt/ZKl28Bl2Unrgdokv
- osfl2ei4VkEePSz3yBcHEnanhLcMn1tFi5zDrS7X8Dfb0m5kW5J+aj4cgw/KMlbmRrEyVcH
- Y+ih3krKSGjJIq+ORzevg==
+Content-Transfer-Encoding: 8bit
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spam-Level: *****
+X-Spam-Score: 5.20
+X-Spamd-Result: default: False [5.20 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 BAYES_HAM(-0.00)[30.08%];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 R_MISSING_CHARSET(2.50)[];
+	 TAGGED_RCPT(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 R_RATELIMIT(0.00)[to_ip_from(RLw9gjjhh8cousxs3wi4trssza)];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 RCPT_COUNT_TWELVE(0.00)[13];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FREEMAIL_TO(0.00)[gmail.com,redhat.com,gmx.de,microsoft.com,kernel.org,ffwll.ch];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[];
+	 SUSPICIOUS_RECIPS(1.50)[]
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:vA+xCXVlgZI=;Rno+HfKZxe7/PQaAe9RUvnekz2K
- 7dLwz68F9SG/kBRGvZmCXV/PXJVU/I2nhQ2ohxLew8EI4ROJyP8x8Gt99unFaFnw86wHbcbXG
- tjZ1Xi8eKBDEY810Yx9bYGa4V4Cwm7FCra08Ladj9OSO0U/GaDESfck2m7tF6sGg02qUGqDiI
- 3z6/cKT3+2tiEpxCH4aJBruDR5ltWLSf53qI1rapg6kHJ5iFmxazGeJ7x00T8PGCCNZafqukg
- bQWm8gJBiOyoC7L6M8yyMtHIoapf5aAxS2CTEj/0j1iwsn+WsWDAnEplCVTtJoId28GLf69E6
- pIKLp4JBpidsUC6wQc8biLZqm4+cBrsKjn9Oxu8JgxQEzRtLDmEzbSDhdkGD9XCfnxFToSRdN
- coxvZ9pyTPHiju0DBjJbCLmZHoEw4RJiOe0UcQDXxdSyQ9E7sgL6MHDQDSjxct8qtO7ctURNz
- C+Us9to9mGSFKPIaMQMUlzI+t9cL4Ml7HjmEQOYEsezyTo2KaFcWjXzluhtzk8czqx8WAs6kU
- WxoaN2nzFalI7d4tHvx1wQ6GjQV76nZSeAF2H1G2DzopgJHZzV6K2CRvqS3ASa+UwLPxDHOOj
- KhDtuc1SPWSps24uKePPIXCMc9jCYwKFqKEjCPd7Bft2cf/48ddssUJ3V1kOMdehiDMjUeg6B
- XW2mD8WS8Gji9xKKD/63/b01yT0bIDkrZycZ1SYSMR+NP7JR4Tl2UBRIWev1ASdCng0aTaCCE
- K4x9PYILpRx/BbOcnXJFezfwEesXVEjn0l9SpzNqMfFWRVxQcj8dX4fRvdtIxUEyF9Fi+ca8I
- WIe8woZzRbzt+iFyHau0mmtoHipNoXAMAZ/ctQYYVtqTzsxbf5KVKSIgHGFCLYeoSxxgSZX+i
- RsD5gixoEtxUzzdWxbb8hvTn+kN2eYk9twXvK/tyJATVh2j3NfyyhyNqu3Slwo2+WZFMPv7zx
- MAMNvT8DnDrNCB1QUQaHljBjhhQ=
 
-> @addition@
-> @@
-> +{
-> +int rc =3D
->  fb_alloc_cmap(...);
-> +if (rc)
-> +   return rc;
-> +}
+The global screen_info state is only meant for architecture and
+firmware code. Replace its use in hyperv graphics drivers with the
+correct aperture helpers.
 
-How do you think about to apply this script for the semantic patch languag=
-e
-so that remaining update candidates will be found?
+Patches 1 and 2 update hyperv-drm and hyperv-fb to use the correct
+aperture helpers instead of screen_info for removing existing firmware
+framebuffers.
 
+Hyperv-fb also modifies screen_info for better use with kexec. While
+that update makes sense, it's not supposed to be done by the driver.
+Patch 3 adds similar code to sysfb and patch 4 removes the code from
+the driver.
 
-See also:
-Clarification approach =E2=80=9CChecking addition of local error code chec=
-ks=E2=80=9D
-https://lore.kernel.org/cocci/913bb6fa-c168-46f7-ba39-5fdaae586b6e@web.de/
-https://sympa.inria.fr/sympa/arc/cocci/2024-01/msg00000.html
+An intented side effect of this patchset is that all systems now
+benefit from better kexec support. After rebooting with kexec, the
+kernel operated on stale settings on screen_info. Patch 3 fixes this
+and the kexec kernel will use screen_info in any meaningful way.
+
+Thomas Zimmermann (4):
+  drm/hyperv: Remove firmware framebuffers with aperture helper
+  fbdev/hyperv_fb: Remove firmware framebuffers with aperture helpers
+  firmware/sysfb: Clear screen_info state after consuming it
+  fbdev/hyperv_fb: Do not clear global screen_info
+
+ drivers/firmware/sysfb.c                | 14 +++++++++++++-
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c |  8 ++------
+ drivers/video/fbdev/hyperv_fb.c         | 20 +++++++-------------
+ 3 files changed, 22 insertions(+), 20 deletions(-)
 
 
-Do you find further change possibilities still relevant for 23 source file=
-s?
+base-commit: 25232eb8a9ac7fa0dac7e846a4bf7fba2b6db39a
+-- 
+2.43.0
 
-Regards,
-Markus

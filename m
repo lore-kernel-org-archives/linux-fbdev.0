@@ -1,88 +1,90 @@
-Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+Received: from mout.web.de (mout.web.de [217.72.192.78])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72E4F156CD
-	for <linux-fbdev@vger.kernel.org>; Tue,  2 Jan 2024 16:31:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9AF118623;
+	Wed,  3 Jan 2024 09:06:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="iz2gtZve";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="ppjdj+bJ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=7pKpo+sBmuDRPGTAU7DR6NOpi4cHG/Pa0KfY/BWs7xs=;
-	b=iz2gtZvep5v6iWlxT8TmXRPOqebPYxEz+YLB1YV3J8ky/wKDiC5dKO8fQiOxOnqvi496xq/C7/qbZ
-	 3kD3ap+RVx35g21stU3T+o3TyLQ3MpdPDf9NWxk7qdJ/A1hNu639hmFCwORV24DHHkkhIu4VKM4+DD
-	 12UNSYbvU8UCyij0+Grw9Aa3r1Ax+10yTFsgF2isq9KJoQZKCLFFF3ya6JJSG59enlCC7onpm72Dti
-	 2soGMgllhhvDgCorop3JZKLsIb1PI/EyaJrupT2WJgP1BSkv8MZXcecP3DUV2ozeUGeIwTUe3PZ5WQ
-	 DL1Budqpvs+iu/qNaaNvAtnFzeJ6oMA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=7pKpo+sBmuDRPGTAU7DR6NOpi4cHG/Pa0KfY/BWs7xs=;
-	b=ppjdj+bJv/kc4DB+tSOE73nHayIzOdvYjIV/deteqz8MnseJSyC3Q0Wluu76AS3imkD5hMqr+O2Aw
-	 FMclUj+CA==
-X-HalOne-ID: 5539e9de-a98c-11ee-8a73-2dc64a403fa2
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay4 (Halon) with ESMTPSA
-	id 5539e9de-a98c-11ee-8a73-2dc64a403fa2;
-	Tue, 02 Jan 2024 16:31:10 +0000 (UTC)
-Date: Tue, 2 Jan 2024 17:31:08 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Arnd Bergmann <arnd@kernel.org>,
-	Andreas Larsson <andreas@gaisler.com>, Helge Deller <deller@gmx.de>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH 27/27] fbdev/p9100: Drop now unused driver p9100
-Message-ID: <20240102163108.GA564954@ravnborg.org>
-References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
- <20231219-sam-sparc32-sunset-v3-v1-27-64bb44b598c5@ravnborg.org>
- <0fc5ba5d-4513-48b5-bde9-3eb311cdc535@suse.de>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="YRY4Vu/u"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de; s=s29768273;
+	t=1704272779; x=1704877579; i=markus.elfring@web.de;
+	bh=Fb/E0bLfK4HYiwHmpycQDyjgyUrLghAFd2etpy2dGyo=;
+	h=X-UI-Sender-Class:Date:Subject:From:To:References:Cc:
+	 In-Reply-To;
+	b=YRY4Vu/uF/q09ZyO20+wDkEtIp40KkprS+whmkQ2V8g4+/dyjXryX6vxXUHw8fxf
+	 gVov6sfLeWV3cICN4x2SyrYQtT1PrdW64VnBQgU3fHsmQF79JZl8AMqeZScgS3JvZ
+	 gpXYCeVzkDFIIHWu19FiZw/YH/Z43Z3PKJeO3lib5V9sJZMkUZEtOyPoef55e0xzE
+	 VkGJ1+IMX3pCJ9CWAKtq7fUNsFrVrNW+JCU+lHYBauXsIk61OcL0Og9yERX5n003W
+	 dN8cCnXK5fSvcl3Hoiikj03ZW61XEIxVrlM67dX+Ru0z+jtdS1v5Rd4GJjx6dCCrN
+	 rXq1vFykn47Ff0wtHw==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.21] ([94.31.88.95]) by smtp.web.de (mrweb106
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MODiN-1raAhm0cNl-00ONpl; Wed, 03
+ Jan 2024 10:06:19 +0100
+Message-ID: <bb11fd85-1fa7-429b-a379-f4a92f7f0f88@web.de>
+Date: Wed, 3 Jan 2024 10:06:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0fc5ba5d-4513-48b5-bde9-3eb311cdc535@suse.de>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC] fbdev: Completing error handling for fb_alloc_cmap() calls
+Content-Language: en-GB
+From: Markus Elfring <Markus.Elfring@web.de>
+To: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Helge Deller <deller@gmx.de>
+References: <913bb6fa-c168-46f7-ba39-5fdaae586b6e@web.de>
+Cc: cocci@inria.fr, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <913bb6fa-c168-46f7-ba39-5fdaae586b6e@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:A4M3xaazTPrShaIJhrVteu/4GqbA0GzEzzmVrL1bCQrpmNVDERV
+ WCyj1rRRUVyO4tU+6n2OPqpaLolyJWevbPvHuMV8wcMGamejJAOCPt/ZKl28Bl2Unrgdokv
+ osfl2ei4VkEePSz3yBcHEnanhLcMn1tFi5zDrS7X8Dfb0m5kW5J+aj4cgw/KMlbmRrEyVcH
+ Y+ih3krKSGjJIq+ORzevg==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:vA+xCXVlgZI=;Rno+HfKZxe7/PQaAe9RUvnekz2K
+ 7dLwz68F9SG/kBRGvZmCXV/PXJVU/I2nhQ2ohxLew8EI4ROJyP8x8Gt99unFaFnw86wHbcbXG
+ tjZ1Xi8eKBDEY810Yx9bYGa4V4Cwm7FCra08Ladj9OSO0U/GaDESfck2m7tF6sGg02qUGqDiI
+ 3z6/cKT3+2tiEpxCH4aJBruDR5ltWLSf53qI1rapg6kHJ5iFmxazGeJ7x00T8PGCCNZafqukg
+ bQWm8gJBiOyoC7L6M8yyMtHIoapf5aAxS2CTEj/0j1iwsn+WsWDAnEplCVTtJoId28GLf69E6
+ pIKLp4JBpidsUC6wQc8biLZqm4+cBrsKjn9Oxu8JgxQEzRtLDmEzbSDhdkGD9XCfnxFToSRdN
+ coxvZ9pyTPHiju0DBjJbCLmZHoEw4RJiOe0UcQDXxdSyQ9E7sgL6MHDQDSjxct8qtO7ctURNz
+ C+Us9to9mGSFKPIaMQMUlzI+t9cL4Ml7HjmEQOYEsezyTo2KaFcWjXzluhtzk8czqx8WAs6kU
+ WxoaN2nzFalI7d4tHvx1wQ6GjQV76nZSeAF2H1G2DzopgJHZzV6K2CRvqS3ASa+UwLPxDHOOj
+ KhDtuc1SPWSps24uKePPIXCMc9jCYwKFqKEjCPd7Bft2cf/48ddssUJ3V1kOMdehiDMjUeg6B
+ XW2mD8WS8Gji9xKKD/63/b01yT0bIDkrZycZ1SYSMR+NP7JR4Tl2UBRIWev1ASdCng0aTaCCE
+ K4x9PYILpRx/BbOcnXJFezfwEesXVEjn0l9SpzNqMfFWRVxQcj8dX4fRvdtIxUEyF9Fi+ca8I
+ WIe8woZzRbzt+iFyHau0mmtoHipNoXAMAZ/ctQYYVtqTzsxbf5KVKSIgHGFCLYeoSxxgSZX+i
+ RsD5gixoEtxUzzdWxbb8hvTn+kN2eYk9twXvK/tyJATVh2j3NfyyhyNqu3Slwo2+WZFMPv7zx
+ MAMNvT8DnDrNCB1QUQaHljBjhhQ=
 
-Hi Thomas,
+> @addition@
+> @@
+> +{
+> +int rc =3D
+>  fb_alloc_cmap(...);
+> +if (rc)
+> +   return rc;
+> +}
 
-On Tue, Jan 02, 2024 at 09:26:27AM +0100, Thomas Zimmermann wrote:
-> Hi Sam
-> 
-> Am 19.12.23 um 23:03 schrieb Sam Ravnborg via B4 Relay:
-> > From: Sam Ravnborg <sam@ravnborg.org>
-> > 
-> > The p9100 driver is only relevant for the Sparcbook 3 machine,
-> > and with sun4m support removed this driver is no longer relevant.
-> > 
-> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > Cc: "David S. Miller" <davem@davemloft.net>
-> > Cc: Arnd Bergmann <arnd@kernel.org>
-> > Cc: Andreas Larsson <andreas@gaisler.com>
-> > Cc: Helge Deller <deller@gmx.de>
-> 
-> Thanks for cleaning up.
-> 
-> Ack-by: Thomas Zimmermann <tzimmermann@suse.de>
-Thanks.
-> 
-> if the series is accepted.
-As you may have seen there is a maintainer vacuum at the moment :-(
-That holds up clean-up a bit, and I cannot find the motivation/time
-to offer it myself at the moment (no sponsor for this type of work).
+How do you think about to apply this script for the semantic patch languag=
+e
+so that remaining update candidates will be found?
 
-	Sam
+
+See also:
+Clarification approach =E2=80=9CChecking addition of local error code chec=
+ks=E2=80=9D
+https://lore.kernel.org/cocci/913bb6fa-c168-46f7-ba39-5fdaae586b6e@web.de/
+https://sympa.inria.fr/sympa/arc/cocci/2024-01/msg00000.html
+
+
+Do you find further change possibilities still relevant for 23 source file=
+s?
+
+Regards,
+Markus

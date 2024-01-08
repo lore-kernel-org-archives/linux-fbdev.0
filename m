@@ -1,63 +1,78 @@
-Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com [209.85.219.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC9C146B88;
-	Mon,  8 Jan 2024 14:08:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yb1-f173.google.com with SMTP id 3f1490d57ef6-dbdd61d80a3so1332672276.0;
-        Mon, 08 Jan 2024 06:08:33 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B50245BF0
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jan 2024 14:15:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="P5QuxNYH"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1704723349;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=YxB4hJGUskiSNKv+s1TrmZMXKolMvHe6Ob3/kfn7C0U=;
+	b=P5QuxNYHhJLU3HIfzNVaEpyDPkTAAfWjFaisD96VD6PLrR8Q3wfCf4pinTrV2X9GbIJ2Ic
+	Z5DZxAdp80w+F4+w7AdQmHo0lkW8WTM3VEimm5tdCnbk3Mk+ShaL8N700Ei9VHuKKhJ/wZ
+	JwOzXLDMAQZ8vqMaIomvgxfcvD39k9A=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-569-Ha66pxlKOgGFOck5bzbAFg-1; Mon, 08 Jan 2024 09:15:46 -0500
+X-MC-Unique: Ha66pxlKOgGFOck5bzbAFg-1
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-33680148d24so1317723f8f.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 08 Jan 2024 06:15:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704722912; x=1705327712;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MdHl7md1Zkmv60g30fUAOV7PYkRMYcjuuSdDFpSytAY=;
-        b=OGUKsnvckriOw3+AXBaO9KzCSJ0M5Zdpb6wBPtCZ0ESGzFGCwdAqeYnoU9+23ZbLOc
-         GTMQBAzAkzdI6DyHPU1SYFyPc4hXBcmdx7PCtgPSIfGl3e5YfMAtLZXKkthEwR3wrYcp
-         5mSmr9mEfrV+Ztgi/BeudQsWnNutKwkQH5cj6hUuAPGeHudZJFCKvDeXQpInEfF9BY1b
-         47kQiqMhHXU/SyGYdVNXmzakgwo7NClugkWrJ2DRfmY1oRQnOCpRWoQZAaYBYieB3lQq
-         EODigL+FTM69raGdrz6QJ+y9MDg7M8HjOVUVoqjYlnoTQwjmcHDgTdyTezXlmqMHMWzn
-         AmZg==
-X-Gm-Message-State: AOJu0YwYYNSIKIBzDmdtvOFd4IftAftC7BYblE0jsYABjVC71kf6xjkk
-	m22rYG0AKG3MEpi5VYykvx0EbAVS9DnOOg==
-X-Google-Smtp-Source: AGHT+IFaj1QXA6VxzzfaNdDvMYIOmWFtc5jFxlsdeCbGpNuOYIh1XDr7y3IsYUu0Ky1GCJ1GgVOR5A==
-X-Received: by 2002:a5b:11:0:b0:dbe:341b:d38 with SMTP id a17-20020a5b0011000000b00dbe341b0d38mr2309447ybp.49.1704722912648;
-        Mon, 08 Jan 2024 06:08:32 -0800 (PST)
-Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com. [209.85.128.169])
-        by smtp.gmail.com with ESMTPSA id n185-20020a25d6c2000000b00db54cf1383esm2211679ybg.10.2024.01.08.06.08.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 08 Jan 2024 06:08:32 -0800 (PST)
-Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-5e784ce9bb8so13430497b3.0;
-        Mon, 08 Jan 2024 06:08:32 -0800 (PST)
-X-Received: by 2002:a81:570b:0:b0:5f8:fc22:93f5 with SMTP id
- l11-20020a81570b000000b005f8fc2293f5mr128986ywb.26.1704722911972; Mon, 08 Jan
- 2024 06:08:31 -0800 (PST)
+        d=1e100.net; s=20230601; t=1704723345; x=1705328145;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YxB4hJGUskiSNKv+s1TrmZMXKolMvHe6Ob3/kfn7C0U=;
+        b=Zv6IxE70zQiB/pCXR+rdfPw/B0NrRbruYlvk4YVqoTUtouNvUWFn8IOQyd65Athm20
+         B/OV6US3Q/FXLJcspdKx7dLxIXVMf2s9K6RNuVbIQI/ajT51OFn7gFJbR3P87UKIF7wK
+         9Pv/NcsdzFwzZ/BSLsMykRFRanHmYgIX7jhaYNPISYDlhHuqyPXDPfHRU8NUJtNAFuVI
+         06fQ4S4dxYj0wL3vzuwudbI4E5h6ufjYaheiN3eZ7Lv5+zNcTTu6urq8sSshrD/WvLCd
+         SIVfL9ZTkL3CY2Ja8fmaZHHzxmOnKJkLxF4PDfHydwSmTmVBJW1DzXVneuF3ABSn3Lqw
+         gtBQ==
+X-Gm-Message-State: AOJu0YyDyfl6CoBV9ll4FdaXESPdS/BHQtLkCmY53GkI1ZSuz2PuXIeE
+	UEcIFRRzwDqbQjLFqYX5ilCijPOXjUsMX/fZ6RGfI2WmeIapsyTTMKJ7AVlSz4htnUnq1wDoPW6
+	Zbcwlx9covsO2T0QWN2ZZw928V9I2FKk=
+X-Received: by 2002:a1c:4b10:0:b0:40e:48b5:3349 with SMTP id y16-20020a1c4b10000000b0040e48b53349mr432183wma.25.1704723345536;
+        Mon, 08 Jan 2024 06:15:45 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IH6B2nGNQDVdFDm3USpj0QhZ27T8ggPZi0nN4hlsNXsc4GJ1RmAnYI10aMq5+7l7vGing5psw==
+X-Received: by 2002:a1c:4b10:0:b0:40e:48b5:3349 with SMTP id y16-20020a1c4b10000000b0040e48b53349mr432170wma.25.1704723344860;
+        Mon, 08 Jan 2024 06:15:44 -0800 (PST)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id v10-20020a05600c470a00b0040d5c58c41dsm11210711wmo.24.2024.01.08.06.15.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Jan 2024 06:15:44 -0800 (PST)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Lukas Bulwahn <lukas.bulwahn@gmail.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>,
+ linux-serial@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>, Dmitry
+ Torokhov <dmitry.torokhov@gmail.com>, kernel-janitors@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven
+ <geert@linux-m68k.org>, linux-input@vger.kernel.org, Lukas Bulwahn
+ <lukas.bulwahn@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: remove superfluous CONFIG_HW_CONSOLE
+In-Reply-To: <20240108134102.601-1-lukas.bulwahn@gmail.com>
+References: <20240108134102.601-1-lukas.bulwahn@gmail.com>
+Date: Mon, 08 Jan 2024 15:15:43 +0100
+Message-ID: <87y1czdi7k.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240108134102.601-1-lukas.bulwahn@gmail.com>
-In-Reply-To: <20240108134102.601-1-lukas.bulwahn@gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 8 Jan 2024 15:08:20 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXW0bU3KO+-S+jZDGUDkb0Nxg6EQUdc_uKTCs8jj6VOLg@mail.gmail.com>
-Message-ID: <CAMuHMdXW0bU3KO+-S+jZDGUDkb0Nxg6EQUdc_uKTCs8jj6VOLg@mail.gmail.com>
-Subject: Re: [PATCH] vt: remove superfluous CONFIG_HW_CONSOLE
-To: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	linux-serial@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Helge Deller <deller@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, kernel-janitors@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 
-On Mon, Jan 8, 2024 at 2:41=E2=80=AFPM Lukas Bulwahn <lukas.bulwahn@gmail.c=
-om> wrote:
+Lukas Bulwahn <lukas.bulwahn@gmail.com> writes:
+
+Hello Lukas,
+
 > The config HW_CONSOLE is always identical to the config VT and is not
 > visible in the kernel's build menuconfig. So, CONFIG_HW_CONSOLE is
 > redundant.
@@ -66,23 +81,16 @@ om> wrote:
 > CONFIG_HW_CONSOLE.
 >
 > Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+> ---
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Makes sense to me.
 
->  arch/m68k/amiga/config.c        | 2 +-
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+-- 
+Best regards,
 
-Gr{oetje,eeting}s,
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

@@ -1,29 +1,29 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 828101170D
-	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jan 2024 09:30:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A4551426D;
+	Mon,  8 Jan 2024 09:33:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="gbrWqlQp"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="G+Zk9ux5"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-	t=1704706214; x=1705311014; i=deller@gmx.de;
-	bh=riH2FLGAXZ4BKZk1hp+CHpEu0rMj5GictGoJRzwbObo=;
+	t=1704706409; x=1705311209; i=deller@gmx.de;
+	bh=B91dkGZkhI5I6MrAdfx6C1xz2e+7x2w4wYdu9BniE20=;
 	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
 	 In-Reply-To;
-	b=gbrWqlQpxfUuKBiazfsnCPqGFG/0CObIih8LEkWQyrL5+8VIYj2XgtJ+4Q91OQGH
-	 ADR3KFIaRINUQbCG8AC1bbdQf4EReh79eoE2ZVg0/hXaqZAVuE6KWiIoXMv+/Oawl
-	 rcGazjprLMk062w6h0H0SEhaxT0/GiXM86ApQMDLjg5ofAuTYskLEgbDdMSpZAmzI
-	 gAGTjsUwJv8UEVD+JCQH7curx1iVn8jobgi7EJktiNeTTz+JfGZ5PTS3NzgqDlkCx
-	 Q+mUmhluWZ1b6lEI7NMebI2aXuYtX30j7PRiiPR+2mFuAckKHKrDuBATTOZfHNpJL
-	 bN+x4EYAczjSl84ulQ==
+	b=G+Zk9ux5chVXa/6rJuy46xvadWZneQuJs7h5aRvZGaegY3vrxSXGPFai3yFK+X/l
+	 W8t5qoXY/rQZQ4/w3Zfu2lAAfsvmUt12skRXIyCVjCYKQocgLE+lgXv/jzznNDB2E
+	 JMRudAZ6tQ9f8ojdWEmX7AAhKLaZNj8exX9KRFBkbRVxdbcnQ+pyxz+GU3ERxcfmO
+	 vghbP9CURD1/z6GTeCsGEZLT03TfED3ZahRiEvvN92EtGMyowf+cICvALDZRJ1ezW
+	 VjcCUKLnFDwwqEtsAYOKZkjIQGBZTlPRPM7ebg7CBQ7i3OuV25QlPEjpCS3/Odukw
+	 ZWZ4Qf/MTn7xtYOW7g==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([94.134.148.84]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M7sHo-1rHqHU3D3y-0054Ot; Mon, 08
- Jan 2024 10:30:14 +0100
-Message-ID: <eb69de14-411c-4a45-bcfb-ad7399d874bc@gmx.de>
-Date: Mon, 8 Jan 2024 10:30:14 +0100
+Received: from [192.168.20.55] ([94.134.148.84]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N6sn7-1r7Vbi0EFb-018K1U; Mon, 08
+ Jan 2024 10:33:29 +0100
+Message-ID: <4095003c-20a5-45af-8765-d772cd054f0b@gmx.de>
+Date: Mon, 8 Jan 2024 10:33:28 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -31,12 +31,18 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/intelfb: Remove driver
+Subject: Re: [PATCH 1/4] drm/hyperv: Remove firmware framebuffers with
+ aperture helper
 Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>, mbroemme@libmpq.org,
- javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240105091127.23087-1-tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>, drawat.floss@gmail.com,
+ decui@microsoft.com, wei.liu@kernel.org, haiyangz@microsoft.com,
+ kys@microsoft.com, daniel@ffwll.ch, airlied@gmail.com
+Cc: linux-hyperv@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <20240103102640.31751-1-tzimmermann@suse.de>
+ <20240103102640.31751-2-tzimmermann@suse.de>
+ <87a5pgdvll.fsf@minerva.mail-host-address-is-not-set>
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -81,68 +87,52 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240105091127.23087-1-tzimmermann@suse.de>
+In-Reply-To: <87a5pgdvll.fsf@minerva.mail-host-address-is-not-set>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:yYpzwU4Ir9MkfCqQlzVNvojJhnizMM5QnwIrkgbY47qhrXaE3Vn
- e02gyNLUgF0bQPaH2+ra+/BGHdEFedOOdCUnYZX0yqw52Tj2kyiTMKw4cry2jAk5aUuPjIH
- GV4FQXOxmgL8ot3zRogQ0Noyg9DLY3h418b8LGlVe8r5seR7T/t57AJouy5hGyD4UirBYZm
- Xqfssp68O1MWIWHK+8Bmg==
+X-Provags-ID: V03:K1:Ovg2O8J5M3AOSM/vZFPHDgtkX3D/xvyImfjoBYLjdx916W4W8Gl
+ E/KT40SX52KPnbKk3aA23DYEZpEsrM+uvIyHA398GbZdRstiM2Fsd2myhG36BK8IrSF/8zq
+ EPvldWvRJ/WMu6nDXBh0BngdX7/LQmAtHDQniKlLMTUDSWd/VxfcycmINF0495JEGE4ZoaR
+ uAwIUOP54ZHopc6eanqfQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:pAWxy34nq8s=;li7KXVldx3dG1qXMLj+cIQhcTwr
- CFnLRt68+YQ5P/jVzH+iKJBtwWbcpGaKz2jR5kh+xJ3CWYUGCvbYq7LLifEKsZCQU9gsibCfU
- VixoCo3LSAMQD9JkWNWnX1dFqLNLOB/0teY997Lrk0rRNFuQWIq71hCXloqvxZ4etByCFJpbb
- ThNa9bfUqpNEIuvOZlH7+ayyczDIzNZS3jmsuRGyUDinw6WGmj4J5mevwa8aSziiW814ddbgz
- BWcUvsPJELJzTobu3XAWib5aLAO4du30XI2w6a94zij3cUqtA6SFya6MOs9r3T3orAH1AHHbj
- Qzi/pTvCTpVGWhTpKABinZxuUBh8ffx6/mUnHP2NmGvT5aF9UfoN6SkbFrUN2F3lnHuocsYMa
- XHaI+PPFxWSQnuE6JUIc+xNywjGC4HhzHJ7bxQH7ovxKlgck1SRrKkaYJXDiV29quBjeXtFGd
- /IjVOApuDOR/vS/TipETNCZxxMQpEBM5gzsKPg1xP+kUwPoWj0ZNRTO0zt/uxoNIpoa65yDQO
- UiHDB4kUIdqgjt1YnPtag+FS9G8qTissExDPbn+248ik5fNNmigh01BaYLfB8m/HCkuw0wKzQ
- HlQiphv4QG9up6Vt6bEy9krQtZYE5e1vO2yYYTqHCvvF0iWl6w0zD4WFqxLKU1uaAvw1XsXur
- +RcoQFcRPbkeam7esefOkF2jMinZTyMJIZp4bcJjXiODhtOLtwAWJnPXh3QMjo+IswvjQsGmB
- BqmGPITcVWvZPTP2E5l5T1IoTWgWvfD6Wfervu6B4EUTqiWelTLhSf/re6licghlVlIfiLVEv
- R29pU0pVNAdhClZYcVzXxR9Vwg9CyUspfA8MDBHvcoqQTR1JZhDJrpmL4Dp4euE5/ezpsc7o/
- mnNhigEUiZIJ2Kn9JNYCjnrMRFw2U3lwibkjcSY2DSIcoDnUtKZdX12XuSWew+oAIU/Ok2gUs
- vihsLUw61QVi/qn1CPFBRk9ZJck=
+UI-OutboundReport: notjunk:1;M01:P0:75kICWzAk4Y=;peWUIQcD9PynF7OMHl92dYNXYqr
+ pLB8HBoTQrAqU9lnyMK08vGc0svEelqnoOglX+4qhZSgJ6scmJuNIAYqFUOiTGIdUqmb1dEp7
+ mRMieFGRhE0SrmqntGvEWQfu0wfjG82uNb6Apz7n97qLlvosqxo18qDRaeZY3o0zs0TNQjKTZ
+ vBgjEPFBeXJUQhsaFVc6I09/Z/9BNaKh6HJ2IDJxndXumTs0JPIQejCs931Dq1Tk23HW+kBwR
+ W7kEmYBM403s577wVe8d8iqhCrZLIkMEGqs5w4dKwoi5cvX3tVEAmCtKJ+up74CBC/ojo+kkG
+ 4CZrxz97m6YbuvqguJAM7GkJRBmpKk7bJIwXElfClhHQ4qNkkx8bUj7l3i5kNGOoKmDITXR9G
+ k4GqFtdsHa08OW86DYLqaQUZaflyg6SKz4eFkthL9HtXEJyEYvq7kbTYzCU/uG4VIXL0ynn69
+ HOBNqoiQ+1mxpWCA63vEIi7rCgiuIiCf3/nwGp6yzCeGdCVq2Tj/6yYvjb6KAQv9wDgriXBQt
+ eIir6s6RTwikLdyi48dnBZZTSpMGiZEZ96iJNztirfg1gGGcBK7KmNugbxWm7ln04OLDdkEp/
+ 44SAFhF7NwVRifoWP9ytF8tZEgCyo5Bi37qN5vO008YKmb/cI3V9kxJO/WlXd/1FBmPDHj66f
+ WuHIyp4IdbKBNdr0EeoGIRJtBNoHa0fliISsqDtWOhc/svfGsBV52iJR8u1cSOmKkQnTrT9Zh
+ 3pSGCZczy33bsKMuXhJ9be02B8h+ALqbX0aVtDAcDbbvjztb3/GyTxD/5+gv+THrPe6JUx4A+
+ ieIVjI9t37QwuaEwpH/0cWDoyRKXoCavOqbCw4b8FRiNJlJ7g4pbqzcYWNqTJDNNhliaYfxxY
+ VqwlZh42IO7Ltz2gaPGFCFDvN7QmIqfCNlmxzrzIf43i0OgKVv0QYJOLQC+pMxKPOELliIa14
+ gisMSqhIunIYgloPpXkJ1sZmI5c=
 
-On 1/5/24 10:10, Thomas Zimmermann wrote:
->  From looking at the PCI IDs, every device supported by intelfb is
-> also supported by i915. Anyone still using intelfb should please
-> move on to i915, which does everything intelfb does but better.
+On 1/8/24 10:26, Javier Martinez Canillas wrote:
+> Thomas Zimmermann <tzimmermann@suse.de> writes:
 >
-> Removing intelfb is motivated by the driver's excessive use of the
-> global screen_info state. The state belongs to architecture and
-> firmware code; device drivers should not attempt to access it. But
-> fixing intelfb would require a significant change in the driver's
-> probing logic. As intelfb has been obsolete for nearly 2 decades,
-> it is probably not worth the effort. Let's just remove it. Also
-> remove the related documentation.
+> Hello Thomas,
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->   Documentation/fb/index.rst                    |    1 -
->   Documentation/fb/intelfb.rst                  |  155 --
->   .../userspace-api/ioctl/ioctl-number.rst      |    1 -
->   MAINTAINERS                                   |    7 -
->   drivers/Makefile                              |    3 +-
->   drivers/video/fbdev/Kconfig                   |   39 -
->   drivers/video/fbdev/intelfb/Makefile          |    8 -
->   drivers/video/fbdev/intelfb/intelfb.h         |  382 ---
->   drivers/video/fbdev/intelfb/intelfb_i2c.c     |  209 --
->   drivers/video/fbdev/intelfb/intelfbdrv.c      | 1680 -------------
->   drivers/video/fbdev/intelfb/intelfbhw.c       | 2115 -----------------
->   drivers/video/fbdev/intelfb/intelfbhw.h       |  609 -----
->   12 files changed, 1 insertion(+), 5208 deletions(-)
->   delete mode 100644 Documentation/fb/intelfb.rst
->   delete mode 100644 drivers/video/fbdev/intelfb/Makefile
->   delete mode 100644 drivers/video/fbdev/intelfb/intelfb.h
->   delete mode 100644 drivers/video/fbdev/intelfb/intelfb_i2c.c
->   delete mode 100644 drivers/video/fbdev/intelfb/intelfbdrv.c
->   delete mode 100644 drivers/video/fbdev/intelfb/intelfbhw.c
->   delete mode 100644 drivers/video/fbdev/intelfb/intelfbhw.h
+>> Replace use of screen_info state with the correct interface from
+>> the aperture helpers. The state is only for architecture and firmware
+>> code. It is not guaranteed to contain valid data. Drivers are thus
+>> not allowed to use it.
+>>
+>> For removing conflicting firmware framebuffers, there are aperture
+>> helpers. Hence replace screen_info with the correct function that will
+>> remove conflicting framebuffers for the hyperv-drm driver. Also
+>> move the call to the correct place within the driver.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-applied to fbdev git tree.
+Series applied to fbdev git tree.
 
-Thanks!
+Thanks,
 Helge
 

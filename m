@@ -1,199 +1,79 @@
-Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66188381CD
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Jan 2024 12:43:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4322B3A1C2;
+	Tue,  9 Jan 2024 16:29:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QeIOoMPx"
-Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-5ed10316e22so24123197b3.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 09 Jan 2024 04:43:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1704804184; x=1705408984; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YRdzfj7JEW1eBQjWfVgccO0cPj0nGjhcrGXH3osu83E=;
-        b=QeIOoMPxJmnP7J6Ahz9RoFYBBAyFE1JBl58mDEbiOpjOXlXa4xctkyQ4nrjf58hZKM
-         UXAqgSfKfhBETJo7a6hI3NqYN/e/itjolyWBN7FXOOc1GVl4LoyzphSDupJkrBa6CcUx
-         uhg8+zb05cg3wX8odOqH1lntKqpAMgurMrtZCrBQHowdaKJVPOJ+e0AXNkXtdjlgelGx
-         e+KH88M4t756B0qSvZN4tKYQFQflFf4mg2QDBHbjdVtjW53sR3LDi55rkiBQ0f84/fuJ
-         bjjACC4hup/9yntLNcJlH8FzrZr8+C15ucKIwwVU8w2GBCAXJrzU3XiImhpFHY+eE/Ve
-         zvaw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1704804184; x=1705408984;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YRdzfj7JEW1eBQjWfVgccO0cPj0nGjhcrGXH3osu83E=;
-        b=F+mAPPwB3cqQtx3Ta9OG9gJg5UQS1KgPjSgH1Opd2vdvCt+x0iAo6Xip6dLGbeWq3Q
-         g78kFMPoG/yb4dad+K3VHFpD/REvptZ4vMSL7kOzpfDkP/dbweEDeUMTvNWQ+bQeQeNs
-         RMT25UjQTG8NFOlqxSQ1D85lJKdKpAvMpCnS10ghJsORba49BrIK8OuLmDImAa9ulEfm
-         +F4+POU2BBgwcJYKtfSXRacwYZtAT365k2GAKI+tscmb1mKeKiN6CrGcAn5fiurQ24qk
-         DLdJuzgFs0mLAoQM6lJR+HzOvQ6RLyhuf8yI6BwwK7Ccg9F86hZqD2eeI13bW3A5Lavm
-         i0Pw==
-X-Gm-Message-State: AOJu0Yzi7mvu7f9lA5quncYsvdpRW+MzdC3GpQnKDigOoeOHkAzgQADk
-	oW2KtYP1aWDFDjuPaJ3GxbLvGTAjmDcGohKhrD4taALrvb6aRw==
-X-Google-Smtp-Source: AGHT+IGP2TpOD/2aQljjLpEh7rgxkZ1rPK7JLdhb+SJI4gzWB4npHJxZY6IBNmQ0p0RFR21+Q3sEEaYhEw7pDx3EeW0=
-X-Received: by 2002:a0d:cb85:0:b0:5f1:7189:b9d with SMTP id
- n127-20020a0dcb85000000b005f171890b9dmr2932736ywd.82.1704804184379; Tue, 09
- Jan 2024 04:43:04 -0800 (PST)
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tO+b64eZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C550C433F1;
+	Tue,  9 Jan 2024 16:29:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1704817760;
+	bh=QgGwzoys5P2Z/fVPtiI4dBsiCdvR2utj2/6oG20yU8I=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=tO+b64eZxpE1divDNhiYoF0w5a3carVLU5isQEfJzuMYC7Ujt9cl6FuZJzvfO9gr1
+	 Ek0j32D8E/N9c2ZpF+PncLfrZNjSd2FQgZM+2kYC1xQ0R+Xw89F0O8GkPasA+zPqnY
+	 TcYSEBqUo3329T9TvIcblHnRX7YTBlcAzLppVXfT+gjgWnlfrh3lHQivbfFi5DVqOs
+	 NCuJm5Oov75+0QrXdipVIqhgi8A78rfcgtBFmqiKhzLN2tiQbha10SmTHO2tg+2hlK
+	 KJIWok0gjAPrbvRkttADcxAFt9q9KFQiLJklVJrdqh95LQs5enmxfTrdEwYXxWbA4Y
+	 gcZfH0x+RS8yg==
+Received: (nullmailer pid 2713715 invoked by uid 1000);
+	Tue, 09 Jan 2024 16:29:14 -0000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1704788539.git.ysato@users.sourceforge.jp> <160ee086771703c951c5522d997662aeac122a28.1704788539.git.ysato@users.sourceforge.jp>
-In-Reply-To: <160ee086771703c951c5522d997662aeac122a28.1704788539.git.ysato@users.sourceforge.jp>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 9 Jan 2024 13:42:53 +0100
-Message-ID: <CACRpkdZMkyJdkFt_x-6iubLZ-KzewvmT0zi4HAas0Xy9DpPn3g@mail.gmail.com>
-Subject: Re: [DO NOT MERGE v6 12/37] dt-bindings: pci: pci-sh7751: Add SH7751 PCI
+From: Rob Herring <robh@kernel.org>
 To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
-	Rob Herring <robh+dt@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Thomas Gleixner <tglx@linutronix.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, 
-	Helge Deller <deller@gmx.de>, Heiko Stuebner <heiko@sntech.de>, 
-	Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, 
-	Yang Xiwen <forbidden405@foxmail.com>, Sebastian Reichel <sre@kernel.org>, 
-	Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@suse.cz>, 
-	Hyeonggon Yoo <42.hyeyoo@gmail.com>, David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Stephen Rothwell <sfr@canb.auug.org.au>, Azeem Shaikh <azeemshaikh38@gmail.com>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Lukas Bulwahn <lukas.bulwahn@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
-	Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Cc: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Randy Dunlap <rdunlap@infradead.org>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Jiri Slaby <jirislaby@kernel.org>, dri-devel@lists.freedesktop.org, Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>, Azeem Shaikh <azeemshaikh38@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, linux-ide@vger.kernel.org, Helge Deller <deller@gmx.de>, Michael Turquette <mturquette@baylibre.com>, Yang Xiwen <forbidden405@foxmail.com>, Linus Walleij <linus.walleij@linaro.org>, Conor Dooley <conor+dt@kernel.org>, David Rientjes <rientjes@google.com>, Bin Meng <bmeng@tinylab.org>, Vlastimil Babka <vbabka@suse.cz>, Sergey Shtylyov <s.shtylyov@omp.ru>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Biju Das <biju.das.jz@bp.renesas.com>, Damien Le Moal <dlemoal@kernel.org>, Krzysztof Kozlowski <krzyszto
+ f.kozlowski+dt@linaro.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, linux-renesas-soc@vger.kernel.org, Rich Felker <dalias@libc.org>, Stephen Boyd <sboyd@kernel.org>, linux-pci@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Heiko Stuebner <heiko@sntech.de>, Stephen Rothwell <sfr@canb.auug.org.au>, devicetree@vger.kernel.org, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Rob Herring <robh+dt@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>, David Airlie <airlied@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Javier Martinez 
+ Canillas <javierm@redhat.com>, Jacky Huang <ychuang3@nuvoton.com>, Lee Jones <lee@kernel.org>, Baoquan He <bhe@redhat.com>, Guenter Roeck <linux@roeck-us.net>, Max Filippov <jcmvbkbc@gmail.com>, Palmer Dabbelt <palmer@rivosinc.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, linux-clk@vger.kernel.org, linux-serial@vger.kernel.org, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-fbdev@vger.kernel.org
+In-Reply-To: <a801115c277e65341da079c318a1b970f8d9e671.1704788539.git.ysato@users.sourceforge.jp>
+References: <cover.1704788539.git.ysato@users.sourceforge.jp>
+ <a801115c277e65341da079c318a1b970f8d9e671.1704788539.git.ysato@users.sourceforge.jp>
+Message-Id: <170481775440.2713680.11814908609719501949.robh@kernel.org>
+Subject: Re: [DO NOT MERGE v6 19/37] dt-bindings: interrupt-controller:
+ renesas,sh7751-irl-ext: Add json-schema
+Date: Tue, 09 Jan 2024 09:29:14 -0700
 
-Hi Yoshinori,
 
-thanks for your patch!
-
-On Tue, Jan 9, 2024 at 9:24=E2=80=AFAM Yoshinori Sato
-<ysato@users.sourceforge.jp> wrote:
-
-> Renesas SH7751 PCI Controller json-schema.
->
+On Tue, 09 Jan 2024 17:23:16 +0900, Yoshinori Sato wrote:
+> Renesas SH7751 external interrupt encoder json-schema.
+> 
 > Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-(...)
-> +  renesas,bus-arbit-round-robin:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set DMA bus arbitration to round robin.
-> +
-> +  pci-command-reg-fast-back-to-back:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI command register Fast Back-to-Back enable bit.
-> +
-> +  pci-command-reg-serr:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI command register SERR# enable.
-> +
-> +  pci-command-reg-wait-cycle-control:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI command register Wait cycle control bit.
-> +
-> +  pci-command-reg-parity-error-response:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register Parity error response bit.
-> +
-> +  pci-command-reg-vga-snoop:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register VGA palette snoop bit.
-> +
-> +  pci-command-reg-write-invalidate:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register Memory write and invaldate enable bit=
-.
-> +
-> +  pci-command-reg-special-cycle:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register Special cycle bit.
-> +
-> +  pci-command-reg-bus-master:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register Bus master bit.
-> +
-> +  pci-command-reg-memory-space:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register Memory space bit.
-> +
-> +  pci-command-reg-io-space:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
-> +      Set for PCI Command register I/O space bit.
+> ---
+>  .../renesas,sh7751-irl-ext.yaml               | 72 +++++++++++++++++++
+>  1 file changed, 72 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/renesas,sh7751-irl-ext.yaml
+> 
 
-Do you really need to configure all these things? It seems they are
-just set to default values anyway?
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-Can't you just look at the compatible "renesas,sh7751-pci" and
-set it to the values you know are needed for that compatible?
+yamllint warnings/errors:
 
-> +  pci-bar:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-matrix
-> +    description: Overwrite to  PCI CONFIG Base Address Registers value.
-> +    items:
-> +      items:
-> +        - description: BAR register number
-> +        - description: BAR register value
-> +    minItems: 1
-> +    maxItems: 6
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/interrupt-controller/renesas,sh7751-irl-ext.example.dtb: sh7751irl_encoder@a4000000: '#size-cells' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/renesas,sh7751-irl-ext.yaml#
 
-Same with this, isn't this always the same (hardcoded) values
-for "renesas,sh7751-pci" if used?
+doc reference errors (make refcheckdocs):
 
-> +            interrupt-map =3D <0x0000 0 0 1 &julianintc 5>,
-> +                            <0x0000 0 0 2 &julianintc 6>,
-> +                            <0x0000 0 0 3 &julianintc 7>,
-> +                            <0x0000 0 0 4 &julianintc 8>,
-> +                            <0x0800 0 0 1 &julianintc 6>,
-> +                            <0x0800 0 0 2 &julianintc 7>,
-> +                            <0x0800 0 0 3 &julianintc 8>,
-> +                            <0x0800 0 0 4 &julianintc 5>,
-> +                            <0x1000 0 0 1 &julianintc 7>,
-> +                            <0x1000 0 0 2 &julianintc 8>,
-> +                            <0x1000 0 0 3 &julianintc 5>,
-> +                            <0x1000 0 0 4 &julianintc 6>;
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/a801115c277e65341da079c318a1b970f8d9e671.1704788539.git.ysato@users.sourceforge.jp
 
-This interrupt-map looks very strange, usually the last cell is the polarit=
-y
-flag and here it is omitted? I would expect something like:
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
 
-<0x0000 0 0 1 &julianintc 5 IRQ_TYPE_LEVEL_LOW>, (...)
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
 
-The interrupt-map schema in dtschema isn't really looking at this
-so it is easy to get it wrong.
+pip3 install dtschema --upgrade
 
-Yours,
-Linus Walleij
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+

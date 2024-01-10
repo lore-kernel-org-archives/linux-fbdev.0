@@ -1,161 +1,136 @@
-Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com [64.147.123.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f175.google.com (mail-il1-f175.google.com [209.85.166.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38B613FB08;
-	Wed, 10 Jan 2024 10:20:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="myiiLqUC";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="3aLv+tsR"
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-	by mailnew.west.internal (Postfix) with ESMTP id 1CEA32B005B1;
-	Wed, 10 Jan 2024 05:20:33 -0500 (EST)
-Received: from imap51 ([10.202.2.101])
-  by compute5.internal (MEProxy); Wed, 10 Jan 2024 05:20:35 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1704882032;
-	 x=1704889232; bh=syE5UlqFQxkc/rlq6eSMNsD1Ft+dm/4kEwr9kygNnZw=; b=
-	myiiLqUCaOFNyy0KGz1/79d3HRMOpqenCIcjtVp8MIMXNuuxs7r3pdnpfmWhoqoR
-	IQ7N3YbmF9nJffZH4HS8LkIh22Vv3wG2sjpK27f9XTmmoCr2Kc68Xrl4dw5To32W
-	7oTNxvKqrQNHtDvW+wa87N9N90pn8A9G+LrTYmcdO105B4Zsmftj7IvnAIh1E8zz
-	Q2WU5G/3jk+uFyxgwtiyCxFAwp4RGMAhxKlU9P6WBbVa8LUUGhnX9TdNNUh1DUbx
-	zmCG1MYbF7h4hfd2TJzbdJ+Q1Rify5IxLv96YznkO8r5UDdnw/B35FP/X80ijL7V
-	BaGn8hEWLg1dYwSkCYndvA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1704882032; x=
-	1704889232; bh=syE5UlqFQxkc/rlq6eSMNsD1Ft+dm/4kEwr9kygNnZw=; b=3
-	aLv+tsROFR55+fPEzkAuUR1EYdQ2HX99dqCRlz/JfV2MsJtp0CGFqmB6tAMDy72A
-	ZrX+AdDDWBNTrrW7sMzvvfEP8gUJIpMLLtVrp/teui+cU+9KRRCxKXkanMetlfcj
-	FBkFKDgNOVxh6ZGz33H1r+Dke653H3inbaS1l5dzm3/T9LKzj/zhFl3mBIhvpN+a
-	i/+bZg97tvEz1ahcWMOXb7cxJW8wSehQ2OGnZNijfKOPiOkazb67CX7p6n/QsClV
-	xFUVOUH+ktgc0Wsof32P0kt85rwvOomYqUIMGJg3KdbRUBngGNzPJwoAUnUqfuOk
-	0otxMsg6CfS2J4mWRF6QA==
-X-ME-Sender: <xms:b2-eZfbb8jU7eUbhVM8ptUPbFBsqxwkHmtQmk9r-V5K41TRFTBKjlA>
-    <xme:b2-eZebHxIw1Fjp3BqSzuovwQbyqtk2C5hrRG6PAfO8XS-kw0MYGTAjpPxl57hAYq
-    -Augo6FuvTHj0uSGNU>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvkedrvdeiuddgudegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtgfesthhqredtreerjeenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpeegfeejhedvledvffeijeeijeeivddvhfeliedvleevheejleetgedukedt
-    gfejveenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:b2-eZR8Zym7T_ixwwEfoUeE2EDbxpF4y1T6da7RnK6yyA1qx7ynaAQ>
-    <xmx:b2-eZVr4FQ5uhgAwkslmh14i6fuaYanuuxC2M5Z2QAp-pF9q7WvfTw>
-    <xmx:b2-eZapet_e5NSzPInuoxvdn0YzOepAI8Xf2d7B8XgPzF98nJjvgIg>
-    <xmx:cG-eZeqOJGWBxdm_kxnLomgMKhRJk3BAFc59xS0XCWHMebF1Iw26jJaiRpM>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id 64819B6008D; Wed, 10 Jan 2024 05:20:31 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-1364-ga51d5fd3b7-fm-20231219.001-ga51d5fd3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5964347A7C;
+	Wed, 10 Jan 2024 11:31:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-il1-f175.google.com with SMTP id e9e14a558f8ab-3606ad581a5so18766875ab.1;
+        Wed, 10 Jan 2024 03:31:28 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1704886287; x=1705491087;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=rp53vQ2ebf1f54OIMX+oacHnmEBZZdohJKcQphr0pdo=;
+        b=rEpdbTsX+4AcHrZztMQXm/lIvZD+rvzOXMS8LYDwxJaMzEi+XDrl9c9dq+fNHkCeQK
+         vDY7sXlbMKQzxTSkZAmuNDpYxvuheK247POrSrC2/witgEa53HjeMsbmk/tdkF3TudAE
+         pWiVUCH0qXuAk1hyfbJqnKBqNOjDnWB9UCd0lTyEgk+lM6ol11QDzJpjCHiSYH/nz78b
+         rBvIu0qrFIeGBeVAQTwzscWRkmhqkwxmZj4qcnPFt50g91P2TWjJGn2CWkH5Xc9jel7K
+         k5tsEPHNOKWqjThcsQZmaydIH+sJPDAlvO3hfNsYz7JxdKaosUeijs7YCM6U73AVnWg+
+         2kCQ==
+X-Gm-Message-State: AOJu0YyHOmjVGl85PPY1OKOUpiNMRq/oTOAha3txHbN3aVqEDnJrQB5Y
+	DO4twqeLR9wV9vSzfD3rKCJsIV6i2E354Vc7
+X-Google-Smtp-Source: AGHT+IE4ykJgcq2BqiHgDY8T/mT9u8cCQfTLL2octH67MqlQMtVdHLymoA4Q65ngu5TSMaJ1EcyFXg==
+X-Received: by 2002:a05:6e02:1885:b0:360:a195:a142 with SMTP id o5-20020a056e02188500b00360a195a142mr1273026ilu.65.1704886285326;
+        Wed, 10 Jan 2024 03:31:25 -0800 (PST)
+Received: from mail-io1-f50.google.com (mail-io1-f50.google.com. [209.85.166.50])
+        by smtp.gmail.com with ESMTPSA id bz4-20020a056e02268400b003606ef496c4sm1215421ilb.63.2024.01.10.03.31.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Jan 2024 03:31:25 -0800 (PST)
+Received: by mail-io1-f50.google.com with SMTP id ca18e2360f4ac-7bee8f7df35so49536239f.3;
+        Wed, 10 Jan 2024 03:31:25 -0800 (PST)
+X-Received: by 2002:a81:9295:0:b0:5f0:5816:f339 with SMTP id
+ j143-20020a819295000000b005f05816f339mr802434ywg.46.1704885831172; Wed, 10
+ Jan 2024 03:23:51 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-Id: <fdf707b9-f39d-4f5a-a8bf-1bcb8cc6594f@app.fastmail.com>
-In-Reply-To: 
- <CAMuHMdV8uFKntiMfwwmnFpd4Dcx8vJDwS6r1iBLtkh40N71dbw@mail.gmail.com>
-References: <20231108125843.3806765-1-arnd@kernel.org>
- <20231108125843.3806765-9-arnd@kernel.org>
- <CAMuHMdV8uFKntiMfwwmnFpd4Dcx8vJDwS6r1iBLtkh40N71dbw@mail.gmail.com>
-Date: Wed, 10 Jan 2024 11:20:10 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>,
- "Arnd Bergmann" <arnd@kernel.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
- linux-kernel@vger.kernel.org, "Masahiro Yamada" <masahiroy@kernel.org>,
- linux-kbuild@vger.kernel.org, "Matt Turner" <mattst88@gmail.com>,
- "Vineet Gupta" <vgupta@kernel.org>,
- "Russell King" <linux@armlinux.org.uk>,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Will Deacon" <will@kernel.org>, "Steven Rostedt" <rostedt@goodmis.org>,
- "Masami Hiramatsu" <mhiramat@kernel.org>,
- "Mark Rutland" <mark.rutland@arm.com>, guoren <guoren@kernel.org>,
- "Peter Zijlstra" <peterz@infradead.org>,
- "Ard Biesheuvel" <ardb@kernel.org>,
- "Huacai Chen" <chenhuacai@kernel.org>,
- "Greg Ungerer" <gerg@linux-m68k.org>, "Michal Simek" <monstr@monstr.eu>,
- "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
- "Dinh Nguyen" <dinguyen@kernel.org>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- "Geoff Levand" <geoff@infradead.org>,
- "Palmer Dabbelt" <palmer@dabbelt.com>,
- "Heiko Carstens" <hca@linux.ibm.com>,
- "John Paul Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>,
- "David S . Miller" <davem@davemloft.net>,
- "Andy Lutomirski" <luto@kernel.org>,
- "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
- x86@kernel.org, "Helge Deller" <deller@gmx.de>,
- "Sudip Mukherjee" <sudipm.mukherjee@gmail.com>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Timur Tabi" <timur@kernel.org>,
- "Kent Overstreet" <kent.overstreet@linux.dev>,
- "David Woodhouse" <dwmw2@infradead.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
- "Anil S Keshavamurthy" <anil.s.keshavamurthy@intel.com>,
- "Kees Cook" <keescook@chromium.org>,
- "Vincenzo Frascino" <vincenzo.frascino@arm.com>,
- "Juri Lelli" <juri.lelli@redhat.com>,
- "Vincent Guittot" <vincent.guittot@linaro.org>,
- "Nathan Chancellor" <nathan@kernel.org>,
- "Nick Desaulniers" <ndesaulniers@google.com>,
- "Nicolas Schier" <nicolas@fjasle.eu>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-trace-kernel@vger.kernel.org,
- "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
- loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Netdev <netdev@vger.kernel.org>, linux-parisc@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- "linux-bcachefs@vger.kernel.org" <linux-bcachefs@vger.kernel.org>,
- linux-mtd@lists.infradead.org, "Palmer Dabbelt" <palmer@rivosinc.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>
-Subject: Re: [PATCH 08/22] [v2] arch: consolidate arch_irq_work_raise prototypes
-Content-Type: text/plain;charset=utf-8
+References: <cover.1704788539.git.ysato@users.sourceforge.jp>
+ <c8aaf67e3fcdb7e60632c53a784691aabfc7733e.1704788539.git.ysato@users.sourceforge.jp>
+ <20240109-fructose-bundle-05d01033277b@spud>
+In-Reply-To: <20240109-fructose-bundle-05d01033277b@spud>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 10 Jan 2024 12:23:37 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdU1z64QHJOVd3jUsOfyuDApB1+khkUV8PvjoKbwsi327g@mail.gmail.com>
+Message-ID: <CAMuHMdU1z64QHJOVd3jUsOfyuDApB1+khkUV8PvjoKbwsi327g@mail.gmail.com>
+Subject: Re: [DO NOT MERGE v6 26/37] dt-bindings: vendor-prefixes: Add smi
+To: Conor Dooley <conor@kernel.org>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org, 
+	Damien Le Moal <dlemoal@kernel.org>, Rob Herring <robh+dt@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Thomas Gleixner <tglx@linutronix.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, 
+	Helge Deller <deller@gmx.de>, Heiko Stuebner <heiko@sntech.de>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, 
+	Yang Xiwen <forbidden405@foxmail.com>, Sebastian Reichel <sre@kernel.org>, 
+	Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@suse.cz>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
+	David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Stephen Rothwell <sfr@canb.auug.org.au>, Azeem Shaikh <azeemshaikh38@gmail.com>, 
+	Javier Martinez Canillas <javierm@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
+	Lukas Bulwahn <lukas.bulwahn@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
+	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
+	Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 10, 2024, at 10:03, Geert Uytterhoeven wrote:
-> On Wed, Nov 8, 2023 at 2:01=E2=80=AFPM Arnd Bergmann <arnd@kernel.org>=
- wrote:
->> From: Arnd Bergmann <arnd@arndb.de>
->>
->> The prototype was hidden in an #ifdef on x86, which causes a warning:
->>
->> kernel/irq_work.c:72:13: error: no previous prototype for 'arch_irq_w=
-ork_raise' [-Werror=3Dmissing-prototypes]
->
-> This issue is now present upstream.
->
->> Some architectures have a working prototype, while others don't.
->> Fix this by providing it in only one place that is always visible.
->>
->> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
->> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
->> Acked-by: Guo Ren <guoren@kernel.org>
->> Reviewed-by: Alexander Gordeev <agordeev@linux.ibm.com>
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->
-> Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Hi Conor,
 
-I've sent out the asm-generic pull request now,
-that contains the fix. Thanks for the reminder.
+On Tue, Jan 9, 2024 at 7:06=E2=80=AFPM Conor Dooley <conor@kernel.org> wrot=
+e:
+> On Tue, Jan 09, 2024 at 05:23:23PM +0900, Yoshinori Sato wrote:
+> > Add Silicon Mortion Technology Corporation
 
-      Arnd
+Motion
+
+> > https://www.siliconmotion.com/
+> >
+> > Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> > ---
+> >  Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+> >  1 file changed, 2 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/D=
+ocumentation/devicetree/bindings/vendor-prefixes.yaml
+> > index 94ed63d9f7de..a338bdd743ab 100644
+> > --- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> > +++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> > @@ -1283,6 +1283,8 @@ patternProperties:
+> >      description: Skyworks Solutions, Inc.
+> >    "^smartlabs,.*":
+> >      description: SmartLabs LLC
+> > +  "^smi,.*":
+> > +    description: Silicon Motion Technology Corporation
+>
+> How come "smi" is used for a company with this name?
+> Why is it not something like SMTC? There's probably some history here
+> that I am unaware of.
+
+See Documentation/devicetree/bindings/display/sm501fb.txt
+The stock ticker is "SIMO", though.
+https://www.nasdaq.com/market-activity/stocks/simo
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

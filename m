@@ -1,106 +1,101 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 992673F8F2
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Jan 2024 21:41:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rNJpY-000832-VC; Tue, 09 Jan 2024 22:40:16 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rNJpO-001Z2m-Fk; Tue, 09 Jan 2024 22:40:06 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rNJpO-0066FS-12;
-	Tue, 09 Jan 2024 22:40:06 +0100
-Date: Tue, 9 Jan 2024 22:40:05 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
-	Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Daniel Vetter <daniel@ffwll.ch>, Thomas Gleixner <tglx@linutronix.de>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>, 
-	Heiko Stuebner <heiko@sntech.de>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
-	Chris Morgan <macromorgan@hotmail.com>, Yang Xiwen <forbidden405@foxmail.com>, 
-	Sebastian Reichel <sre@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, 
-	Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@suse.cz>, 
-	Hyeonggon Yoo <42.hyeyoo@gmail.com>, David Rientjes <rientjes@google.com>, 
-	Baoquan He <bhe@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, 
-	Guenter Roeck <linux@roeck-us.net>, Stephen Rothwell <sfr@canb.auug.org.au>, 
-	Azeem Shaikh <azeemshaikh38@gmail.com>, Javier Martinez Canillas <javierm@redhat.com>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Palmer Dabbelt <palmer@rivosinc.com>, 
-	Bin Meng <bmeng@tinylab.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Jacky Huang <ychuang3@nuvoton.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, 
-	Biju Das <biju.das.jz@bp.renesas.com>, Sam Ravnborg <sam@ravnborg.org>, 
-	Sergey Shtylyov <s.shtylyov@omp.ru>, Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, linux-serial@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org
-Subject: Re: [DO NOT MERGE v6 26/37] dt-bindings: vendor-prefixes:  Add smi
-Message-ID: <c2f7yketm64rqryiq5ldl6gosdot5qv36sf4lqbe3erb2azoh2@k6dml2j4amp5>
-References: <cover.1704788539.git.ysato@users.sourceforge.jp>
- <c8aaf67e3fcdb7e60632c53a784691aabfc7733e.1704788539.git.ysato@users.sourceforge.jp>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B55C21376;
+	Wed, 10 Jan 2024 02:06:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hEUsXdPE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18AEAC433F1;
+	Wed, 10 Jan 2024 02:06:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1704852375;
+	bh=K20e8jhxQctdn0EQe0a64CVvGFTYjmTc3LS7asQogyo=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=hEUsXdPExgJ/6tyvorNMmv2xbbnN/ksrlzf9XWoz4XzMSpDxk/Su9jRai8A6JmPqT
+	 CROg9vyX/uPgMa6hC3+dIv1+9VwRJuYOHwCZqh4PPAT20xe0N58/U93+wqZ4eMep+N
+	 C9Y9/Yl2ILJOSVXmlxmhAbkx+aAbO4RSpzEDkemhkakgnE8rlLiL7DE1D79+kIKw62
+	 c5+A6TL8g0sDmmmyWP6zXo51r4mcIw9+uHa66sJvr6wGG+GkGqe1ewkKXIi+ONI0Fz
+	 xX64W1DE45sKKqohJS8CPYy6lPEmA17vOTByyqBIbrhq4wLzLuEHnHNC1j3EhDfzcF
+	 aA908fHMhDbXQ==
+Message-ID: <c2f88d7b-cded-42ab-bc5c-3d9a723daa1f@kernel.org>
+Date: Wed, 10 Jan 2024 11:06:06 +0900
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="k3wplihoehcx5dum"
-Content-Disposition: inline
-In-Reply-To: <c8aaf67e3fcdb7e60632c53a784691aabfc7733e.1704788539.git.ysato@users.sourceforge.jp>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [DO NOT MERGE v6 27/37] dt-bindings: ata: ata-generic: Add new
+ targets
+Content-Language: en-US
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org
+Cc: Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>,
+ =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>,
+ Heiko Stuebner <heiko@sntech.de>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Chris Morgan <macromorgan@hotmail.com>, Yang Xiwen
+ <forbidden405@foxmail.com>, Sebastian Reichel <sre@kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ Vlastimil Babka <vbabka@suse.cz>, Hyeonggon Yoo <42.hyeyoo@gmail.com>,
+ David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck
+ <linux@roeck-us.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Azeem Shaikh <azeemshaikh38@gmail.com>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Palmer Dabbelt <palmer@rivosinc.com>,
+ Bin Meng <bmeng@tinylab.org>, Jonathan Corbet <corbet@lwn.net>,
+ Jacky Huang <ychuang3@nuvoton.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+ Biju Das <biju.das.jz@bp.renesas.com>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>,
+ Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>,
+ Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+ linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-fbdev@vger.kernel.org
+References: <cover.1704788539.git.ysato@users.sourceforge.jp>
+ <06fdb2cf7927681acf3099b826390ef75ba321af.1704788539.git.ysato@users.sourceforge.jp>
+From: Damien Le Moal <dlemoal@kernel.org>
+Organization: Western Digital Research
+In-Reply-To: <06fdb2cf7927681acf3099b826390ef75ba321af.1704788539.git.ysato@users.sourceforge.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+On 1/9/24 17:23, Yoshinori Sato wrote:
+> Added new ata-generic target.
+> - iodata,usl-5p-ata
+> - renesas,rts7751r2d-ata
+> 
+> Each boards have simple IDE Interface. Use ATA generic driver.
 
---k3wplihoehcx5dum
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This looks OK to me, so feel free to add:
 
-Hello,
+Acked-by: Damien Le Moal <dlemoal@kernel.org>
 
-not a complete review, I just note that there is a duplicate space in
-the Subject. You might want to fix for the next patch round.
+Note: The "DO NOT MERGE" patch prefix almost got me to immediately delete this
+37 patches in my inbox... If you wish to get this work merged after review,
+please use the regular "PATCH" prefix. No worries, the series will not be merged
+until is is reviewed :)
 
-Best regards
-Uwe
+-- 
+Damien Le Moal
+Western Digital Research
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---k3wplihoehcx5dum
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmWdvTUACgkQj4D7WH0S
-/k42/Qf+OiUMdWX7ofxy3BcrM4WDosGYD3v051cAkDrM1UU7vn14H4nDlTp0AkUx
-pzhs+r4x5ivYAv9c4UHIXeQOUWIaPLpY2tXJ1SPG5v9qUMxDVvFk28mGM1iidoM4
-hunvGv2nwhdTCDVUSm04aY5nebXW1S7mB4FfTr8A6pNVkYKhuHh92Pk7kS9cvA4f
-2N3ldtz2sW+Qm6s8+Hp2+VGkyD1jnwKgBscsap9G9g54+5TtukrFmNayfApLXoOQ
-+kiDrlWzjgencsnRqEVCL8tOjVRiw3f+e9LhRK9df/ebNVLs4CHsxS6Ao1pM0LF9
-+e1Wi0ZIExYHQKEGMuiBgD83DdWU5w==
-=MXKF
------END PGP SIGNATURE-----
-
---k3wplihoehcx5dum--

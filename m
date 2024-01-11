@@ -1,27 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B48915482;
-	Thu, 11 Jan 2024 11:35:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35D6E390;
+	Thu, 11 Jan 2024 14:59:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IvFJ3gZn"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69AFEC433F1;
-	Thu, 11 Jan 2024 11:35:44 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nHYalyDO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F65AC43390;
+	Thu, 11 Jan 2024 14:59:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1704972955;
-	bh=aBdXrdu7Fc3ywB3LGukHqXOp/HVe7tj8vpqYpP1GRMc=;
+	s=k20201202; t=1704985170;
+	bh=obzljcLiJ4GpVaa5SSKo4cJxW9OvkYGDmnjlyQfIlZI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=IvFJ3gZnJZmOW4n1hDb23BAssZ0EUOybEz7w/eZDwzNSg5bilSn8XI9BXJJ93D/0d
-	 o09I04nLNlA3Cow6eZT+PujIFuptFMcf9eUDNW4/nTJCqwOl7iWyVUTZwo9hs+OXin
-	 y2gDzAAfeTSFB0im9juwXFPOpR4dsX9yshWNxTXZwcnDMtps8uQPbeU+EDjq3ElIrY
-	 N1XqwjNc02YboOdua/+DnwuYUdKah9CSZ6vhEAsofIaGvd1HDRccJAh4DUTdcHVwZ5
-	 0FPsse1MSDcaCS6sx5uUIBSOScPpXiJbtYDqM44o/fGRMiRUn8P9XMVj1QSBKga5eF
-	 hhSYZuH+NvKCA==
-Date: Thu, 11 Jan 2024 11:35:41 +0000
-From: Lee Jones <lee@kernel.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
-	Rob Herring <robh+dt@kernel.org>,
+	b=nHYalyDOvAOPCXFghAM1koa8SyyhhJbx2NS7oaSccjGMgH7hd8K6PgCbgUYNNxNlV
+	 RmGKdU8H/qelbOpHbdK6lY3z94gtQDkXFLwmXpIo6se2QKdb2/eJHuEYRWwCvqRZqz
+	 d6c/2VhyfKTHc2AOeMEj2o2oEeAhfzNCGN+6T/O6RApd1aGtGh6rdqf/jl/505e4yX
+	 2vkmubzDVpwuYZ5TSUe6C8cnpmoESUorVaftbQJbcjgGD8ONaUd6KceQOl+dy+Jwil
+	 R5sfhQjmbOfzkWmuihvw8I2rFw5SlSma30PRhfosHts/KPzeyEknOc/usqeCbKIhN0
+	 6Aj8MjPf72M2w==
+Date: Thu, 11 Jan 2024 08:59:28 -0600
+From: Rob Herring <robh@kernel.org>
+To: Conor Dooley <conor@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
 	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
 	Conor Dooley <conor+dt@kernel.org>,
 	Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -41,7 +42,8 @@ Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
 	Rich Felker <dalias@libc.org>,
 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Helge Deller <deller@gmx.de>, Heiko Stuebner <heiko@sntech.de>,
+	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>,
+	Heiko Stuebner <heiko@sntech.de>,
 	Jernej Skrabec <jernej.skrabec@gmail.com>,
 	Chris Morgan <macromorgan@hotmail.com>,
 	Yang Xiwen <forbidden405@foxmail.com>,
@@ -72,11 +74,13 @@ Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
 	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
 	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
 	linux-fbdev@vger.kernel.org
-Subject: Re: [DO NOT MERGE v6 23/37] mfd: sm501: Convert platform_data to OF
- property
-Message-ID: <20240111113541.GH1678981@google.com>
+Subject: Re: [DO NOT MERGE v6 26/37] dt-bindings: vendor-prefixes: Add smi
+Message-ID: <20240111145928.GA538344-robh@kernel.org>
 References: <cover.1704788539.git.ysato@users.sourceforge.jp>
- <569f0bfb4fa3fcec8fbd64f67fc4fd2d1cba3f77.1704788539.git.ysato@users.sourceforge.jp>
+ <c8aaf67e3fcdb7e60632c53a784691aabfc7733e.1704788539.git.ysato@users.sourceforge.jp>
+ <20240109-fructose-bundle-05d01033277b@spud>
+ <CAMuHMdU1z64QHJOVd3jUsOfyuDApB1+khkUV8PvjoKbwsi327g@mail.gmail.com>
+ <20240110-sincere-tripod-9d34175fcbce@spud>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -86,28 +90,50 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <569f0bfb4fa3fcec8fbd64f67fc4fd2d1cba3f77.1704788539.git.ysato@users.sourceforge.jp>
+In-Reply-To: <20240110-sincere-tripod-9d34175fcbce@spud>
 
-On Tue, 09 Jan 2024, Yoshinori Sato wrote:
-
-> Various parameters of SM501 can be set using platform_data,
-> so parameters cannot be passed in the DeviceTree target.
-> Expands the parameters set in platform_data so that they can be
-> specified using DeviceTree properties.
+On Wed, Jan 10, 2024 at 04:11:44PM +0000, Conor Dooley wrote:
+> On Wed, Jan 10, 2024 at 12:23:37PM +0100, Geert Uytterhoeven wrote:
+> > Hi Conor,
+> > 
+> > On Tue, Jan 9, 2024 at 7:06 PM Conor Dooley <conor@kernel.org> wrote:
+> > > On Tue, Jan 09, 2024 at 05:23:23PM +0900, Yoshinori Sato wrote:
+> > > > Add Silicon Mortion Technology Corporation
+> > 
+> > Motion
+> > 
+> > > > https://www.siliconmotion.com/
+> > > >
+> > > > Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> > > > ---
+> > > >  Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+> > > >  1 file changed, 2 insertions(+)
+> > > >
+> > > > diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> > > > index 94ed63d9f7de..a338bdd743ab 100644
+> > > > --- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> > > > +++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> > > > @@ -1283,6 +1283,8 @@ patternProperties:
+> > > >      description: Skyworks Solutions, Inc.
+> > > >    "^smartlabs,.*":
+> > > >      description: SmartLabs LLC
+> > > > +  "^smi,.*":
+> > > > +    description: Silicon Motion Technology Corporation
+> > >
+> > > How come "smi" is used for a company with this name?
+> > > Why is it not something like SMTC? There's probably some history here
+> > > that I am unaware of.
+> > 
+> > See Documentation/devicetree/bindings/display/sm501fb.txt
+> > The stock ticker is "SIMO", though.
+> > https://www.nasdaq.com/market-activity/stocks/simo
 > 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> ---
->  drivers/mfd/sm501.c           | 436 ++++++++++++++++++++++++++++++++++
+> If there's an existing user, there's little reason to stand in the way I
+> think.
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
 
-How has this grown from 99 lines to 436 lines?
+Or reason not to apply, so I'm applying this.
 
-Most of it almost certainly needs moving (back?) out to the leaf
-drivers.  A great deal of the properties parsed in here are only
-relevant to a single device (display for instance).  Please move all
-non-generic handling out to the relevant subsystems.
+BTW, 'RFC' is the standard way to say 'DO NOT MERGE'.
 
->  drivers/video/fbdev/sm501fb.c | 106 +++++++++
->  2 files changed, 542 insertions(+)
-
--- 
-Lee Jones [李琼斯]
+Rob

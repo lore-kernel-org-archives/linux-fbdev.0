@@ -1,139 +1,178 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35D6E390;
-	Thu, 11 Jan 2024 14:59:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B79506EB4E;
+	Fri, 12 Jan 2024 15:48:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nHYalyDO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F65AC43390;
-	Thu, 11 Jan 2024 14:59:30 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UwfzX2mE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F028DC433F1;
+	Fri, 12 Jan 2024 15:48:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1704985170;
-	bh=obzljcLiJ4GpVaa5SSKo4cJxW9OvkYGDmnjlyQfIlZI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=nHYalyDOvAOPCXFghAM1koa8SyyhhJbx2NS7oaSccjGMgH7hd8K6PgCbgUYNNxNlV
-	 RmGKdU8H/qelbOpHbdK6lY3z94gtQDkXFLwmXpIo6se2QKdb2/eJHuEYRWwCvqRZqz
-	 d6c/2VhyfKTHc2AOeMEj2o2oEeAhfzNCGN+6T/O6RApd1aGtGh6rdqf/jl/505e4yX
-	 2vkmubzDVpwuYZ5TSUe6C8cnpmoESUorVaftbQJbcjgGD8ONaUd6KceQOl+dy+Jwil
-	 R5sfhQjmbOfzkWmuihvw8I2rFw5SlSma30PRhfosHts/KPzeyEknOc/usqeCbKIhN0
-	 6Aj8MjPf72M2w==
-Date: Thu, 11 Jan 2024 08:59:28 -0600
-From: Rob Herring <robh@kernel.org>
-To: Conor Dooley <conor@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Yang Xiwen <forbidden405@foxmail.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Hyeonggon Yoo <42.hyeyoo@gmail.com>,
-	David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Azeem Shaikh <azeemshaikh38@gmail.com>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Max Filippov <jcmvbkbc@gmail.com>,
-	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Lukas Bulwahn <lukas.bulwahn@gmail.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Sergey Shtylyov <s.shtylyov@omp.ru>,
-	Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [DO NOT MERGE v6 26/37] dt-bindings: vendor-prefixes: Add smi
-Message-ID: <20240111145928.GA538344-robh@kernel.org>
-References: <cover.1704788539.git.ysato@users.sourceforge.jp>
- <c8aaf67e3fcdb7e60632c53a784691aabfc7733e.1704788539.git.ysato@users.sourceforge.jp>
- <20240109-fructose-bundle-05d01033277b@spud>
- <CAMuHMdU1z64QHJOVd3jUsOfyuDApB1+khkUV8PvjoKbwsi327g@mail.gmail.com>
- <20240110-sincere-tripod-9d34175fcbce@spud>
+	s=k20201202; t=1705074526;
+	bh=LjNh32+q3C0+BqK8BlI5tSSM8lb3tGzw35+W/e7lDGA=;
+	h=Date:From:To:Subject:From;
+	b=UwfzX2mEQlMs7lKRKyPel2evCsbDKSF3FUJWhz2ja/dq05Zf8E2LeyAKqtghulLpq
+	 ZdITG9xio8wsxb3aEbE66gvbl7xwWfvDC8zdLdBfbo6nDoRr5K/2FYDwTMSP+1aTXO
+	 yUapVQDcRnDBzXNxRRXJVIhKYuatcVQScCr1aNn99StcNxluNspXVxAkY7wkvGptIm
+	 oD7706f5h6O5euzgYr+ywxiZRoCebK5twcPV36/yj6KaSt08ogPP1B41RPoh9XIAT/
+	 zB0rf6PqQbiPbnenPeiqIGWpAWP/2mdtPBD3Fp/wfdd8IEze9+H8kGf9NSFQSPu3qL
+	 GoUDR079kJFZw==
+Date: Fri, 12 Jan 2024 16:48:41 +0100
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and updates for v6.8-rc1
+Message-ID: <ZaFfWY-bB_b9dGrO@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240110-sincere-tripod-9d34175fcbce@spud>
 
-On Wed, Jan 10, 2024 at 04:11:44PM +0000, Conor Dooley wrote:
-> On Wed, Jan 10, 2024 at 12:23:37PM +0100, Geert Uytterhoeven wrote:
-> > Hi Conor,
-> > 
-> > On Tue, Jan 9, 2024 at 7:06 PM Conor Dooley <conor@kernel.org> wrote:
-> > > On Tue, Jan 09, 2024 at 05:23:23PM +0900, Yoshinori Sato wrote:
-> > > > Add Silicon Mortion Technology Corporation
-> > 
-> > Motion
-> > 
-> > > > https://www.siliconmotion.com/
-> > > >
-> > > > Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> > > > ---
-> > > >  Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-> > > > index 94ed63d9f7de..a338bdd743ab 100644
-> > > > --- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
-> > > > +++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-> > > > @@ -1283,6 +1283,8 @@ patternProperties:
-> > > >      description: Skyworks Solutions, Inc.
-> > > >    "^smartlabs,.*":
-> > > >      description: SmartLabs LLC
-> > > > +  "^smi,.*":
-> > > > +    description: Silicon Motion Technology Corporation
-> > >
-> > > How come "smi" is used for a company with this name?
-> > > Why is it not something like SMTC? There's probably some history here
-> > > that I am unaware of.
-> > 
-> > See Documentation/devicetree/bindings/display/sm501fb.txt
-> > The stock ticker is "SIMO", though.
-> > https://www.nasdaq.com/market-activity/stocks/simo
-> 
-> If there's an existing user, there's little reason to stand in the way I
-> think.
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Hi Linus,
 
-Or reason not to apply, so I'm applying this.
+please pull the fbdev changes for kernel 6.8-rc1.
 
-BTW, 'RFC' is the standard way to say 'DO NOT MERGE'.
+Three fbdev drivers (~8500 lines of code) will be dropped:
+The Carillo Ranch fbdev driver is for an Intel product which was never shipped,
+and for the intelfb and the amba-clcd drivers the drm drivers can be used
+instead. 
 
-Rob
+The other code changes are minor:
+Some fb_deferred_io flushing fixes, imxfb margin fixes and stifb cleanups.
+
+Please note that there is a merge conflict with the drm tree for those files:
+- drivers/video/fbdev/amba-clcd.c
+- drivers/video/fbdev/vermilion/vermilion.c
+They were modified in the drm tree, but deleted in the fbdev tree.
+In case you don't want to deal with this upcoming merge conflict I offer
+to resend a rebased pull request after you pulled drm.
+
+Thanks!
+Helge
+
+----------------------------------------------------------------
+The following changes since commit de927f6c0b07d9e698416c5b287c521b07694cac:
+
+  Merge tag 's390-6.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux (2024-01-10 18:18:20 -0800)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.8-rc1
+
+for you to fetch changes up to 689237ab37c59b9909bc9371d7fece3081683fba:
+
+  fbdev/intelfb: Remove driver (2024-01-12 12:38:37 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.8-rc1:
+
+- Remove intelfb fbdev driver (Thomas Zimmermann)
+- Remove amba-clcd fbdev driver (Linus Walleij)
+- Remove vmlfb Carillo Ranch fbdev driver (Matthew Wilcox)
+- fb_deferred_io flushing fixes (Nam Cao)
+- imxfb code fixes and cleanups (Dario Binacchi)
+- stifb primary screen detection cleanups (Thomas Zimmermann)
+
+----------------------------------------------------------------
+Colin Ian King (1):
+      video/logo: use %u format specifier for unsigned int values
+
+Dario Binacchi (11):
+      fbdev: imxfb: fix left margin setting
+      fbdev: imxfb: move PCR bitfields near their offset
+      fbdev: imxfb: use BIT, FIELD_{GET,PREP} and GENMASK macros
+      fbdev: imxfb: replace some magic numbers with constants
+      fbdev: imxfb: add missing SPDX tag
+      fbdev: imxfb: drop ftrace-like logging
+      fbdev: imxfb: add missing spaces after ','
+      fbdev: imxfb: Fix style warnings relating to printk()
+      fbdev: imxfb: use __func__ for function name
+      fbdev: imxfb: add '*/' on a separate line in block comment
+      fbdev: mmp: Fix typo and wording in code comment
+
+Linus Walleij (1):
+      fbdev: amba-clcd: Delete the old CLCD driver
+
+Matthew Wilcox (Oracle) (1):
+      fbdev: Remove support for Carillo Ranch driver
+
+Nam Cao (2):
+      fbdev: flush deferred work in fb_deferred_io_fsync()
+      fbdev: flush deferred IO before closing
+
+Randy Dunlap (1):
+      fbdev: hgafb: fix kernel-doc comments
+
+Stanislav Kinsburskii (1):
+      fbdev: fsl-diu-fb: Fix sparse warning due to virt_to_phys() prototype change
+
+Thomas Zimmermann (10):
+      video/sticore: Store ROM device in STI struct
+      fbdev/stifb: Allocate fb_info instance with framebuffer_alloc()
+      arch/parisc: Detect primary video device from device instance
+      video/sticore: Remove info field from STI struct
+      fbdev/sis: Remove dependency on screen_info
+      drm/hyperv: Remove firmware framebuffers with aperture helper
+      fbdev/hyperv_fb: Remove firmware framebuffers with aperture helpers
+      firmware/sysfb: Clear screen_info state after consuming it
+      fbdev/hyperv_fb: Do not clear global screen_info
+      fbdev/intelfb: Remove driver
+
+ Documentation/fb/index.rst                         |    1 -
+ Documentation/fb/intelfb.rst                       |  155 --
+ Documentation/userspace-api/ioctl/ioctl-number.rst |    1 -
+ MAINTAINERS                                        |   12 -
+ arch/parisc/video/fbdev.c                          |    2 +-
+ drivers/Makefile                                   |    3 +-
+ drivers/firmware/sysfb.c                           |   14 +-
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c            |    8 +-
+ drivers/video/backlight/Kconfig                    |    7 -
+ drivers/video/backlight/Makefile                   |    1 -
+ drivers/video/backlight/cr_bllcd.c                 |  264 ---
+ drivers/video/fbdev/Kconfig                        |   72 -
+ drivers/video/fbdev/Makefile                       |    2 -
+ drivers/video/fbdev/amba-clcd.c                    |  984 ---------
+ drivers/video/fbdev/core/fb_defio.c                |    8 +-
+ drivers/video/fbdev/fsl-diu-fb.c                   |    2 +-
+ drivers/video/fbdev/hgafb.c                        |   13 +-
+ drivers/video/fbdev/hyperv_fb.c                    |   20 +-
+ drivers/video/fbdev/imxfb.c                        |  179 +-
+ drivers/video/fbdev/intelfb/Makefile               |    8 -
+ drivers/video/fbdev/intelfb/intelfb.h              |  382 ----
+ drivers/video/fbdev/intelfb/intelfb_i2c.c          |  209 --
+ drivers/video/fbdev/intelfb/intelfbdrv.c           | 1680 ----------------
+ drivers/video/fbdev/intelfb/intelfbhw.c            | 2115 --------------------
+ drivers/video/fbdev/intelfb/intelfbhw.h            |  609 ------
+ drivers/video/fbdev/mmp/hw/mmp_spi.c               |    2 +-
+ drivers/video/fbdev/sis/sis_main.c                 |   37 -
+ drivers/video/fbdev/stifb.c                        |  109 +-
+ drivers/video/fbdev/vermilion/Makefile             |    6 -
+ drivers/video/fbdev/vermilion/cr_pll.c             |  195 --
+ drivers/video/fbdev/vermilion/vermilion.c          | 1173 -----------
+ drivers/video/fbdev/vermilion/vermilion.h          |  245 ---
+ drivers/video/logo/pnmtologo.c                     |    6 +-
+ drivers/video/sticore.c                            |    5 +
+ include/linux/amba/clcd-regs.h                     |   87 -
+ include/linux/amba/clcd.h                          |  290 ---
+ include/video/sticore.h                            |    6 +-
+ 37 files changed, 208 insertions(+), 8704 deletions(-)
+ delete mode 100644 Documentation/fb/intelfb.rst
+ delete mode 100644 drivers/video/backlight/cr_bllcd.c
+ delete mode 100644 drivers/video/fbdev/amba-clcd.c
+ delete mode 100644 drivers/video/fbdev/intelfb/Makefile
+ delete mode 100644 drivers/video/fbdev/intelfb/intelfb.h
+ delete mode 100644 drivers/video/fbdev/intelfb/intelfb_i2c.c
+ delete mode 100644 drivers/video/fbdev/intelfb/intelfbdrv.c
+ delete mode 100644 drivers/video/fbdev/intelfb/intelfbhw.c
+ delete mode 100644 drivers/video/fbdev/intelfb/intelfbhw.h
+ delete mode 100644 drivers/video/fbdev/vermilion/Makefile
+ delete mode 100644 drivers/video/fbdev/vermilion/cr_pll.c
+ delete mode 100644 drivers/video/fbdev/vermilion/vermilion.c
+ delete mode 100644 drivers/video/fbdev/vermilion/vermilion.h
+ delete mode 100644 include/linux/amba/clcd-regs.h
+ delete mode 100644 include/linux/amba/clcd.h

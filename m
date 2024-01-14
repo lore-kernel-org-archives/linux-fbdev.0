@@ -1,55 +1,92 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EDF418E24;
-	Fri, 12 Jan 2024 23:25:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1EC92100;
+	Sun, 14 Jan 2024 14:39:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ebIg9RVY"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D9C90C433C7;
-	Fri, 12 Jan 2024 23:25:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705101926;
-	bh=K1MidH5sVBEyKNuPJH4olazqJE8kNJXKjQSNh6ZQ3dk=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=ebIg9RVYTpaZRq16zZ3v40lHfqgy4W9+ONkNeRhH0ZAv/opFgqF72oDxQDyk8fPMq
-	 TnGAOtC6xqFzlI7omvgUyEb8BgUYlJ5LKaqlXSy/g84SQyUNl7VRKeB4g4AMvR2b2c
-	 caERKRd6Fi786F0Fd6Gnq2dLYNK2Zt1Z18frQ3A/0tDP+zu5c50/SCn8AfEMBfoyTr
-	 R8NGIo7qrcJdZy7QI2udRER3BeGiVMMHXIG/b0tEHRajtjGm5H75QLIOlyssFlCWu5
-	 Ii+QOWh9fmKrSPBmMmHpiIxU+xVGHubdOQ+W34pw7jgTuAyXZNxbQ6xWFJc3wA49e2
-	 JlV8at917Q5vQ==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id C15E0D8C96D;
-	Fri, 12 Jan 2024 23:25:26 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev fixes and updates for v6.8-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <ZaFfWY-bB_b9dGrO@carbonx1>
-References: <ZaFfWY-bB_b9dGrO@carbonx1>
-X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
-X-PR-Tracked-Message-Id: <ZaFfWY-bB_b9dGrO@carbonx1>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.8-rc1
-X-PR-Tracked-Commit-Id: 689237ab37c59b9909bc9371d7fece3081683fba
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: d97a78423c33f68ca6543de510a409167baed6f5
-Message-Id: <170510192678.16457.5931859299348612306.pr-tracker-bot@kernel.org>
-Date: Fri, 12 Jan 2024 23:25:26 +0000
-To: Helge Deller <deller@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GCu70Qar"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1705243170; x=1736779170;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=LjxdR67V7tYCeQiHxVhdjSjgVoL8PIzrrKcwukyWZSQ=;
+  b=GCu70Qar8nZTPI52VrH3J2cjzmtQ634TI8FW6ZWDSW5b8BnZ12+H5MA6
+   G+XO2mUrLSiRh27jBeJp2cOI3R9sNd26ULTbKFiaRGgHsEMFCGkQigewZ
+   4DWDhr6rNgyYBYTHuDv0OBh+y2GqG71nPT6WJsVX8aV+vwsvcY9mdcUId
+   S8beCJm0cO5cakkHVeAbWt0Dxk7rZNPPK5wxF1ToR0mKWvz0EaYZIk4nq
+   mSc6ywpR+sdX/JbwcWUxe63m0QK/9op/7AcjAuo1u/8ufqLmXuydAQT8G
+   +8MOZLamgISyvzAETfWd0f9PEfc5MrZg/7EspqEvIxmW0Sxues/cbIzkF
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10953"; a="465845314"
+X-IronPort-AV: E=Sophos;i="6.04,194,1695711600"; 
+   d="scan'208";a="465845314"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jan 2024 06:39:29 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10953"; a="1114692658"
+X-IronPort-AV: E=Sophos;i="6.04,194,1695711600"; 
+   d="scan'208";a="1114692658"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by fmsmga005.fm.intel.com with ESMTP; 14 Jan 2024 06:39:26 -0800
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id 839D72AC; Sun, 14 Jan 2024 16:39:25 +0200 (EET)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Dan Carpenter <dan.carpenter@linaro.org>
+Subject: [PATCH v1 1/1] backlight: hx8357: Fix potential NULL pointer dereference
+Date: Sun, 14 Jan 2024 16:39:21 +0200
+Message-ID: <20240114143921.550736-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.43.0.rc1.1.gbec44491f096
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-The pull request you sent on Fri, 12 Jan 2024 16:48:41 +0100:
+The "im" pins are optional. Add missing check in the hx8357_probe().
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.8-rc1
+Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+Closes: https://lore.kernel.org/r/642e1230-3358-4006-a17f-3f297897ae74@moroto.mountain
+Fixes: 7d84a63a39b7 ("backlight: hx8357: Convert to agnostic GPIO API")
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/video/backlight/hx8357.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/d97a78423c33f68ca6543de510a409167baed6f5
-
-Thank you!
-
+diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+index d7298376cf74..bf18337ff0c2 100644
+--- a/drivers/video/backlight/hx8357.c
++++ b/drivers/video/backlight/hx8357.c
+@@ -609,11 +609,13 @@ static int hx8357_probe(struct spi_device *spi)
+ 	lcd->im_pins = devm_gpiod_get_array_optional(dev, "im", GPIOD_OUT_LOW);
+ 	if (IS_ERR(lcd->im_pins))
+ 		return dev_err_probe(dev, PTR_ERR(lcd->im_pins), "failed to request im GPIOs\n");
+-	if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)
+-		return dev_err_probe(dev, -EINVAL, "not enough im GPIOs\n");
++	if (lcd->im_pins) {
++		if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)
++			return dev_err_probe(dev, -EINVAL, "not enough im GPIOs\n");
+ 
+-	for (i = 0; i < HX8357_NUM_IM_PINS; i++)
+-		gpiod_set_consumer_name(lcd->im_pins->desc[i], "im_pins");
++		for (i = 0; i < HX8357_NUM_IM_PINS; i++)
++			gpiod_set_consumer_name(lcd->im_pins->desc[i], "im_pins");
++	}
+ 
+ 	lcdev = devm_lcd_device_register(&spi->dev, "mxsfb", &spi->dev, lcd,
+ 					&hx8357_ops);
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.43.0.rc1.1.gbec44491f096
+

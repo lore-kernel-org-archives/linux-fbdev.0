@@ -1,87 +1,106 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20CB27475
-	for <linux-fbdev@vger.kernel.org>; Mon, 15 Jan 2024 08:27:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="GYzKJjCB"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1705307248;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pehUlh5mpGQ5TGIbBN/xVKuXzozmXoCM9xJyPY4GLE0=;
-	b=GYzKJjCB6Ub9oM6AtPeKHLpid/ui1SptJbxTTFAtSQ3M1VeiwdaNT57zqRK+c1Fsu87sgJ
-	ljsdxlwWWkTum+hmOyHsNyP9VunlMBEOIafr8IXaoyuTjUOBb++uUH8KxHth1xr7n3MnJy
-	ABBpGtF3jEJpwzRORyFYMDWxyOdzW/A=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-83-74Z5NRAaNEW41c5vKEkVtA-1; Mon, 15 Jan 2024 03:27:27 -0500
-X-MC-Unique: 74Z5NRAaNEW41c5vKEkVtA-1
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-40d6e7334cfso77122565e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 15 Jan 2024 00:27:26 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18989F4E3;
+	Mon, 15 Jan 2024 09:29:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-5efb0e180f0so84137307b3.1;
+        Mon, 15 Jan 2024 01:29:55 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705307246; x=1705912046;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=pehUlh5mpGQ5TGIbBN/xVKuXzozmXoCM9xJyPY4GLE0=;
-        b=gp1dCSIkbEhMC099BO9aatQ3LjcyjVmW5TS+QTf/QJlU6UcPYfRkkQHl/enyL+mo/5
-         2OJ9QX0cA7jq52OT6/z98m15WVtoI/16HEiyXBB3xRiqWBT4QQIEZ12gJPYm2F1uvh8k
-         Y8bAHRLLHjWUP+Fbwk3IYO/dqlfvAqSo78xLlo+d0Z0pLiOfq3tsnwEKpgfUOY3IzwCv
-         NIx7Zv7VRY0tXg3hVcrUU3BicJPAOg2/xZjD5zxhdrmg9fsm3g+aAp5WobDZrDTX0sGy
-         kbwaJUBY3/ze33cTvhR59H9Ce3/8R+LGW3q88Fz0HLG7uiFGg5XO8ECDCOqZCzmhC/o8
-         G2Gg==
-X-Gm-Message-State: AOJu0YwmfbYN+0QaTjXrx4TdTRsB/prsnrrV8b64h1WkGJa3CTFG3hh0
-	Isw2MUeTQeiA85G/K//WLFgdZsMUXAxuxxhPR+cMLHCg2pfy1lGHmg6N+gR5/kW8r3LN+7IZPn6
-	xR5GNH9gzzdyTs5PRwVFeyPbA1VCsH7w=
-X-Received: by 2002:a7b:cb93:0:b0:40e:6792:ac08 with SMTP id m19-20020a7bcb93000000b0040e6792ac08mr2081308wmi.14.1705307246017;
-        Mon, 15 Jan 2024 00:27:26 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IE2x/nlsctM6zk5v7GGg1IXQBdJ9MByR0vhFREzXeFeH6SHdHa07Hl7vvvScqLoCtW0k+RoYA==
-X-Received: by 2002:a7b:cb93:0:b0:40e:6792:ac08 with SMTP id m19-20020a7bcb93000000b0040e6792ac08mr2081301wmi.14.1705307245688;
-        Mon, 15 Jan 2024 00:27:25 -0800 (PST)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id g7-20020adfa487000000b00336e69fbc32sm11277592wrb.102.2024.01.15.00.27.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Jan 2024 00:27:25 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Jingoo Han <jingoohan1@gmail.com>, Daniel Thompson
- <daniel.thompson@linaro.org>, Lee Jones <lee@kernel.org>, Helge Deller
- <deller@gmx.de>
-Subject: Re: [PATCH v1 4/4] backlight: hx8357: Utilise temporary variable
- for struct device
-In-Reply-To: <20240114152759.1040563-5-andriy.shevchenko@linux.intel.com>
-References: <20240114152759.1040563-1-andriy.shevchenko@linux.intel.com>
- <20240114152759.1040563-5-andriy.shevchenko@linux.intel.com>
-Date: Mon, 15 Jan 2024 09:27:24 +0100
-Message-ID: <8734uzovbn.fsf@minerva.mail-host-address-is-not-set>
+        d=1e100.net; s=20230601; t=1705310994; x=1705915794;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oJZ9RgNzg7VLWUx8YQuwC3dXe057PkvGB0IXNBt0r28=;
+        b=dtfes5M+7LLvHlCbwZEEyxf5Qi3hJR1D3kdnXnKkzzG/eWCbzMvNID54EB2novQQ0+
+         zpfggxrpOp7XhEV9BSuuqt/z4hXnDSpNAfceK9kpN6fMpfdtRrY3XsxvRHfDGunrw3h5
+         GrZOV1tlPU2ufXGtaPhAehbmLmWV9tMiJqb91fIxlWX9nWpkh2TxWr1avfw6NZiBXEry
+         URtSUV/CjwPzgGoTOuoBfV2tc68oNOKay62kwFGwYsZ/GuLHPaGISICOSNOAqrWhmsPQ
+         kC+uRu0EDzqbLs2kZOinC/UwwAfPNs/gwz8ik5zkrAgh4WcJ1jA7r0K11E5Y7IWUOmZu
+         Fd6g==
+X-Gm-Message-State: AOJu0YwP+L+kp2HeVSS2w+Adod0ZZCp8MU4s1DSguDfFsUdQdoDsSYS5
+	aDUa5pTVyV/ut28OKqn0Y3Dd+ziqxjLL8g==
+X-Google-Smtp-Source: AGHT+IHNpy1SfNWdjqyl21eVF7EgjPpYGMelhc9v7045OlQYeXup7+ylWjrrQcklwFuBy1UkQgPi2A==
+X-Received: by 2002:a81:9b0f:0:b0:5e9:d166:2438 with SMTP id s15-20020a819b0f000000b005e9d1662438mr3417304ywg.86.1705310994190;
+        Mon, 15 Jan 2024 01:29:54 -0800 (PST)
+Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com. [209.85.128.170])
+        by smtp.gmail.com with ESMTPSA id s7-20020a817707000000b005e3f0da06ffsm3843909ywc.34.2024.01.15.01.29.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 15 Jan 2024 01:29:53 -0800 (PST)
+Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-5efb0e180f0so84136827b3.1;
+        Mon, 15 Jan 2024 01:29:53 -0800 (PST)
+X-Received: by 2002:a81:8395:0:b0:5ca:607e:b16e with SMTP id
+ t143-20020a818395000000b005ca607eb16emr3313628ywf.0.1705310992678; Mon, 15
+ Jan 2024 01:29:52 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <cover.1704788539.git.ysato@users.sourceforge.jp> <dbaaf58b50b681cf03bc5ad3eef0a546fe863bca.1704788539.git.ysato@users.sourceforge.jp>
+In-Reply-To: <dbaaf58b50b681cf03bc5ad3eef0a546fe863bca.1704788539.git.ysato@users.sourceforge.jp>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 15 Jan 2024 10:29:41 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXw=FC5EsYSHw6y2GzT9pNPNEB1iO3DRVmMLjzuPfx8nQ@mail.gmail.com>
+Message-ID: <CAMuHMdXw=FC5EsYSHw6y2GzT9pNPNEB1iO3DRVmMLjzuPfx8nQ@mail.gmail.com>
+Subject: Re: [DO NOT MERGE v6 21/37] dt-bindings: serial: renesas,scif: Add scif-sh7751.
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
+	Rob Herring <robh+dt@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Thomas Gleixner <tglx@linutronix.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, 
+	Helge Deller <deller@gmx.de>, Heiko Stuebner <heiko@sntech.de>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, 
+	Yang Xiwen <forbidden405@foxmail.com>, Sebastian Reichel <sre@kernel.org>, 
+	Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@suse.cz>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
+	David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Stephen Rothwell <sfr@canb.auug.org.au>, Azeem Shaikh <azeemshaikh38@gmail.com>, 
+	Javier Martinez Canillas <javierm@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
+	Lukas Bulwahn <lukas.bulwahn@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
+	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
+	Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
-
-> We have a temporary variable to keep pointer to struct device.
-> Utilise it inside the ->probe() implementation.
+On Tue, Jan 9, 2024 at 9:24=E2=80=AFAM Yoshinori Sato
+<ysato@users.sourceforge.jp> wrote:
+> Add Renesas SH7751 SCIF.
 >
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
--- 
-Best regards,
+Gr{oetje,eeting}s,
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+                        Geert
 
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

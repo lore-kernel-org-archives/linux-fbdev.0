@@ -1,76 +1,132 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C6FE17C7B
-	for <linux-fbdev@vger.kernel.org>; Mon, 15 Jan 2024 17:21:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ii4ZQbpN"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-40e7e2e04f0so6981035e9.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 15 Jan 2024 09:21:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1705339289; x=1705944089; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=IjkFYZF4OJsSCux1ae0KuULOn1wykr+CXrlgMJayfq0=;
-        b=ii4ZQbpNn+VpHZoDLjK3ZkDmdggSBxUJ+uid6MeMEI2OL9Of/yRkoklnBdiYtvNdwO
-         6hvvn0zrrNshMmIglQW6EZOPwFxPZewGScw+yGEdzp6gw0QkE2MRrp+8CmiiLSsEdYPF
-         ZXbfq6sSyp8xXrfIiTw1B0kzAaQ1at62qeoi5LGQ+YgVlfp5QvR4lufoljfKAf1OO1Jo
-         tt+voRkrCFGdKXqjPazTnHU432acDA+JQMHlRGaHb4MiXURe4U7avEnaeitHQ3Y56p7i
-         XsY64A+wTC2a3Nf3P/W6EXrKPL7Dq4/bgO8ZKjIDlVyDEZ8k9pHzOTd+yE9nQ8JQc6CT
-         MPMg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705339289; x=1705944089;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=IjkFYZF4OJsSCux1ae0KuULOn1wykr+CXrlgMJayfq0=;
-        b=ekjfJ94rze62wMfE1qifrr6K+I54UTPuALqQShusq5xz9/NH/jCWTd+Aqnr+JhUTzH
-         aOpsVUwK8jcDya7YpKvXHmuY+5Ixs+G1FFeUIDpaB04ZRdylO7QVgRx9Nxntou8p4uvu
-         aJk8krdMJbKcqF0alntZ/Sjq7bR9TezJMn4klXLstu1yFuFOLdJjNBCKs+h5095pagaR
-         D+Hi1JB3vG6Zyp7Aqyu+BJj+lVgQf8U8BEtc+y1emVwsWyC4zQbLLQct3SmFSpc2WExs
-         juzvN45eYl4i4czf6wa1u5YkbIPMy5D5LEATNdoNlnU9py+WxZPZ4jNopltVQoxtLa6u
-         58kw==
-X-Gm-Message-State: AOJu0YwFVbdrLAK7lY34JOYPEWhhK19GPQAHynyfal+vx4I46UWGizpB
-	shqJQqkpg4ee//aI9GEXwd5O+U9viUSAdQ==
-X-Google-Smtp-Source: AGHT+IGEIWTLvbhgXwT8d2oD5iyG6zHn0v20sib1KcKMQWPEWI9LPUGG9Iy5hCJrKDalyprRbZDANg==
-X-Received: by 2002:a05:600c:44f:b0:40d:3fee:97f6 with SMTP id s15-20020a05600c044f00b0040d3fee97f6mr3339548wmb.34.1705339288709;
-        Mon, 15 Jan 2024 09:21:28 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id l6-20020a7bc346000000b0040d81ca11casm16167428wmj.28.2024.01.15.09.21.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Jan 2024 09:21:28 -0800 (PST)
-Date: Mon, 15 Jan 2024 17:21:26 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Lee Jones <lee@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Dan Carpenter <dan.carpenter@linaro.org>
-Subject: Re: [PATCH v1 1/1] backlight: hx8357: Fix potential NULL pointer
- dereference
-Message-ID: <20240115172126.GA31203@aspen.lan>
-References: <20240114143921.550736-1-andriy.shevchenko@linux.intel.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C387F19BAC
+	for <linux-fbdev@vger.kernel.org>; Mon, 15 Jan 2024 20:21:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rPTSJ-0004yf-BD; Mon, 15 Jan 2024 21:21:11 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rPTSI-0005hl-SJ; Mon, 15 Jan 2024 21:21:10 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rPTSI-000N95-2Z;
+	Mon, 15 Jan 2024 21:21:10 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: linux-spi@vger.kernel.org,
+	kernel@pengutronix.de,
+	Helge Deller <deller@gmx.de>,
+	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH 29/33] video: fbdev: mmp: Follow renaming of SPI "master" to "controller"
+Date: Mon, 15 Jan 2024 21:13:15 +0100
+Message-ID:  <29daa1fc94443cc392188135217675176b074f35.1705348270.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1705348269.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1705348269.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240114143921.550736-1-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2712; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=ijw9anAf6h8n1KBd3RjgyrXHDafUFZIr9UcDRpXmqmg=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlpZHhX60U4n4fkTpjpsvVORb2ta4gfxYPTJcHC 4KyRjHfSSyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZaWR4QAKCRCPgPtYfRL+ TsogCACMZ24MIfn6AqoSHWGRODHeNgatY1yoerlFkKEV9WEyRwHUA6ML1HIPzXlVJ2KaH+HbDG7 wwPVSJ3743aNR1nrJxk1EnvKNqi8fxgxBGqOUezS/DFI43xWhWC3ermwbKzflTu1lQBMQE8/CCW +6jq7Ra9ehVyG1YjOrGqscaEOOUbIWFE/xNBOplsxSwHO/b2bwbC6ayrigFnkpQK/mUET0k8mWO zBuIPQpAKPIAio9ENQqC3a4QJLctuXV58gGxYibaDWWnpAALzWt2RnHYPSB4KGQ1wlkbHwPrE6Z GFae96/Gipv9gU4+qmTzzm14TxLv559OCnKmt/Rgq+DjBXTT
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-On Sun, Jan 14, 2024 at 04:39:21PM +0200, Andy Shevchenko wrote:
-> The "im" pins are optional. Add missing check in the hx8357_probe().
->
-> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-> Closes: https://lore.kernel.org/r/642e1230-3358-4006-a17f-3f297897ae74@moroto.mountain
-> Fixes: 7d84a63a39b7 ("backlight: hx8357: Convert to agnostic GPIO API")
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
+some functions and struct members were renamed. To not break all drivers
+compatibility macros were provided.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+To be able to remove these compatibility macros push the renaming into
+this driver.
 
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/mmp/hw/mmp_spi.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-Daniel.
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_spi.c b/drivers/video/fbdev/mmp/hw/mmp_spi.c
+index 0f8f0312a7c4..cf23650d7f0b 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_spi.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_spi.c
+@@ -32,7 +32,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
+ 	int timeout = 100000, isr, ret = 0;
+ 	u32 tmp;
+ 	void __iomem *reg_base = (void __iomem *)
+-		*(void **)spi_master_get_devdata(spi->master);
++		*(void **) spi_controller_get_devdata(spi->controller);
+ 
+ 	/* clear ISR */
+ 	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
+@@ -81,7 +81,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
+ static int lcd_spi_setup(struct spi_device *spi)
+ {
+ 	void __iomem *reg_base = (void __iomem *)
+-		*(void **)spi_master_get_devdata(spi->master);
++		*(void **) spi_controller_get_devdata(spi->controller);
+ 	u32 tmp;
+ 
+ 	tmp = CFG_SCLKCNT(16) |
+@@ -136,32 +136,32 @@ static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
+ 
+ int lcd_spi_register(struct mmphw_ctrl *ctrl)
+ {
+-	struct spi_master *master;
++	struct spi_controller *ctlr;
+ 	void **p_regbase;
+ 	int err;
+ 
+-	master = spi_alloc_master(ctrl->dev, sizeof(void *));
+-	if (!master) {
++	ctlr = spi_alloc_master(ctrl->dev, sizeof(void *));
++	if (!ctlr) {
+ 		dev_err(ctrl->dev, "unable to allocate SPI master\n");
+ 		return -ENOMEM;
+ 	}
+-	p_regbase = spi_master_get_devdata(master);
++	p_regbase = spi_controller_get_devdata(ctlr);
+ 	*p_regbase = (void __force *)ctrl->reg_base;
+ 
+ 	/* set bus num to 5 to avoid conflict with other spi hosts */
+-	master->bus_num = 5;
+-	master->num_chipselect = 1;
+-	master->setup = lcd_spi_setup;
+-	master->transfer = lcd_spi_one_transfer;
++	ctlr->bus_num = 5;
++	ctlr->num_chipselect = 1;
++	ctlr->setup = lcd_spi_setup;
++	ctlr->transfer = lcd_spi_one_transfer;
+ 
+-	err = spi_register_master(master);
++	err = spi_register_controller(ctlr);
+ 	if (err < 0) {
+ 		dev_err(ctrl->dev, "unable to register SPI master\n");
+-		spi_master_put(master);
++		spi_controller_put(ctlr);
+ 		return err;
+ 	}
+ 
+-	dev_info(&master->dev, "registered\n");
++	dev_info(&ctlr->dev, "registered\n");
+ 
+ 	return 0;
+ }
+-- 
+2.43.0
+

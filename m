@@ -1,117 +1,150 @@
-Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com [209.85.128.171])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BE02125A7;
-	Thu, 18 Jan 2024 08:56:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16353443D
+	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jan 2024 09:07:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705568209; cv=none; b=GjwrvmQcDMbX8/kb177U87Gf3b4SSrv1C55T3f/lmdja/gKxVyo3sv8DKjn2qWpulmlId7fLtHVsehnovCcmS298gVDN1vm941qGBa9hE7Edm/i5t7qYG2rJEQuI4S2GioiJvNKOYjhqDS1Wg1WauphqalJKE4s1EkY+E3ddGbM=
+	t=1705568846; cv=none; b=PGON9tsDgql1zQP+x4Sdb38Nf6+UJ1Da6aJx0PQRutbIBMnLT832CROfwqVau4ECCIShw7CfxTn+h8HNuKLTlwkCY82kRzSoMgpFr0a8G6eFs8hnkDpfdrngN9cA6dYpHi0SCkhzF0Q2ODcB/Af+/gJn8fo8/HZ/izaQTn2SMZ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705568209; c=relaxed/simple;
-	bh=DKc/D2UkkHwXWH4OMtAGeleG7U/HKVCzA9yBkCaGT+0=;
-	h=Received:X-Google-DKIM-Signature:X-Gm-Message-State:
-	 X-Google-Smtp-Source:X-Received:Received:Received:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:
-	 X-Gmail-Original-Message-ID:Message-ID:Subject:To:Cc:Content-Type:
-	 Content-Transfer-Encoding; b=NYXvvawTfbzrnhh0eSuAQ5GCvQTyepo8laaCRSgCMFytHGELNMMlYo5yfdSE67NdCHYruYCJYt4hXp3kWPPReB1SRCPX55tPAXKAVo9avbxAAPSRZJy5TNFJaIWSPUv7U2YZyXwiYoSyW55Geo7s/PgW8qqSPnEGkMEMMDfFfUU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-5f0629e67f4so120156667b3.3;
-        Thu, 18 Jan 2024 00:56:48 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705568207; x=1706173007;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=yUhp044KaG5kosWl9TplBzHfM0oWfk1S3xB5Nr0ifxs=;
-        b=FvWJE/IPvz4lef+pVbRhjQJ+a74ODWgOqPsnOqRMJhlUcMPUsJsYz/m0xDD+uQRZVb
-         M5Zcw4cvslSQwDr78Y/XbcKF6OhGQZDHfVTxydmSCLaI+NDMYqRFQGWfsckRH/xzLO0E
-         3y64QD6L2W7qMisjMQ2tWCn6X/+WcYscilCuf+Xn8LBjfbpxSYHjim6En7AddQ456u9k
-         5F7ccKKYRsKaCV/2cg4zC+09CMK4MRsjAmlYsEPFALMRJyIMTQY/PaKAMja9xS8PLOrC
-         2obhYP61iDQ6g0GPRSxIFWi7YjllZ5bMMWHX7Azrv/hhI77reGT2lUIGxBKOUVMq16Ek
-         Icww==
-X-Gm-Message-State: AOJu0YxtIUBYGvamLpgqEZ4z/rop1sanGLiHwdVxZ7Zu5QusJuNY6xN1
-	6mdNFiGXLM7+PNvO8haJPlhW1EL+IsifeiF/C9TG0AhcpWhbi72uW0sGjOHkWTM=
-X-Google-Smtp-Source: AGHT+IF6lL8EQfZZdv6kebQAfAHjechw+y9fjjKUjzfE0aS4EkBi7nItihgyegNwcHj3R9ZgnE0F/w==
-X-Received: by 2002:a0d:dbd4:0:b0:5ff:63e0:885b with SMTP id d203-20020a0ddbd4000000b005ff63e0885bmr418769ywe.76.1705568207309;
-        Thu, 18 Jan 2024 00:56:47 -0800 (PST)
-Received: from mail-yb1-f175.google.com (mail-yb1-f175.google.com. [209.85.219.175])
-        by smtp.gmail.com with ESMTPSA id v67-20020a814846000000b005ff88cbbc93sm286920ywa.111.2024.01.18.00.56.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 18 Jan 2024 00:56:47 -0800 (PST)
-Received: by mail-yb1-f175.google.com with SMTP id 3f1490d57ef6-dc238cb1b17so1839225276.0;
-        Thu, 18 Jan 2024 00:56:47 -0800 (PST)
-X-Received: by 2002:a25:86c5:0:b0:dc2:42fc:135d with SMTP id
- y5-20020a2586c5000000b00dc242fc135dmr352561ybm.62.1705568206842; Thu, 18 Jan
- 2024 00:56:46 -0800 (PST)
+	s=arc-20240116; t=1705568846; c=relaxed/simple;
+	bh=vaN4w+9UKL/3Y2vs59sPGPx2ZTsxP4loHoAVH+T2hT4=;
+	h=Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-Spam-Level:X-Spam-Score:X-Spamd-Result:X-Spam-Flag; b=jmqioftXWH1QDNXzAcdPQUfhR/gfaNZ9PL/AWFMDOaWUa8qCRpGF3eHSqP77BYNmflYul2GJzdoqOobZjBrOOEpts/Nx5Hm2EB0z7ecKupwIuN7j//GqbGZGBstoHkLN5uJE2saNJgRSWSqbz7xNh+dJT0coiu477POghtFTXPo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wCRqiS2F; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=/EsrBqym; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wCRqiS2F; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=/EsrBqym; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wCRqiS2F";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="/EsrBqym";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wCRqiS2F";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="/EsrBqym"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2955921F27;
+	Thu, 18 Jan 2024 09:07:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1705568843; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QnvhJQPs+b8QWsB2oyvuRQ9Rd3DMaDHQ1+xP5TTdklI=;
+	b=wCRqiS2FT5DlK/XBOZq/Y/aofvjkJ90BvT9JIzxP8Kkt1P/OAurUHHoiWaZGIWm9VwJ9Ws
+	/wfeztu4ps8gsGZetQjd4Bgplg5C8Eri31Xm2IHYbHm1Vp35q5CUNS9Ju21P/awo15n9C0
+	yL8cRoYEiYoinrZ0Apv8S8dY03pdLMo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1705568843;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QnvhJQPs+b8QWsB2oyvuRQ9Rd3DMaDHQ1+xP5TTdklI=;
+	b=/EsrBqyma2ccwOy0BgftxYHJcJjtEb2RlGwNAmwilboO64yBhfktLBSOkeGePmSJ1kMuXo
+	yDfBrhGtUQ1BKYBg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1705568843; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QnvhJQPs+b8QWsB2oyvuRQ9Rd3DMaDHQ1+xP5TTdklI=;
+	b=wCRqiS2FT5DlK/XBOZq/Y/aofvjkJ90BvT9JIzxP8Kkt1P/OAurUHHoiWaZGIWm9VwJ9Ws
+	/wfeztu4ps8gsGZetQjd4Bgplg5C8Eri31Xm2IHYbHm1Vp35q5CUNS9Ju21P/awo15n9C0
+	yL8cRoYEiYoinrZ0Apv8S8dY03pdLMo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1705568843;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QnvhJQPs+b8QWsB2oyvuRQ9Rd3DMaDHQ1+xP5TTdklI=;
+	b=/EsrBqyma2ccwOy0BgftxYHJcJjtEb2RlGwNAmwilboO64yBhfktLBSOkeGePmSJ1kMuXo
+	yDfBrhGtUQ1BKYBg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E5B5813874;
+	Thu, 18 Jan 2024 09:07:22 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id P0KFNkrqqGWIMgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 18 Jan 2024 09:07:22 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	deller@gmx.de,
+	daniel@ffwll.ch,
+	airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 0/3] video: Simplify Kconfig options
+Date: Thu, 18 Jan 2024 10:05:25 +0100
+Message-ID: <20240118090721.7995-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240118075756.10541-1-jirislaby@kernel.org> <20240118075756.10541-20-jirislaby@kernel.org>
-In-Reply-To: <20240118075756.10541-20-jirislaby@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 18 Jan 2024 09:56:35 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdU5P9v9ofeeMA9M+kbHv2fSikChZCS3=tbaAZmG8dwF6A@mail.gmail.com>
-Message-ID: <CAMuHMdU5P9v9ofeeMA9M+kbHv2fSikChZCS3=tbaAZmG8dwF6A@mail.gmail.com>
-Subject: Re: [PATCH 19/45] tty: vt: make init parameter of consw::con_init() a bool
-To: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
-Cc: gregkh@linuxfoundation.org, linux-serial@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-parisc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spam-Level: ***
+X-Spam-Score: 3.70
+X-Spamd-Result: default: False [3.70 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 R_MISSING_CHARSET(2.50)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 MIME_GOOD(-0.10)[text/plain];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 RCPT_COUNT_SEVEN(0.00)[7];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FREEMAIL_TO(0.00)[redhat.com,gmx.de,ffwll.ch,gmail.com];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[]
+X-Spam-Flag: NO
 
-Hi Jiri,
+Replace CONFIG_VIDEO_CMDLINE and CONFIG_VIDEO_NOMODESET by the single
+option CONFIG_VIDEO. Select the latter for DRM or fbdev. Both original
+options used to be selected in most cases, so this change simplifies
+the Kconfig rules.
 
-On Thu, Jan 18, 2024 at 9:03=E2=80=AFAM Jiri Slaby (SUSE) <jirislaby@kernel=
-.org> wrote:
-> The 'init' parameter of consw::con_init() is true for the first call of
-> the hook on a particular console. So make the parameter a bool.
->
-> And document the hook.
->
-> Signed-off-by: Jiri Slaby (SUSE) <jirislaby@kernel.org>
+Since commit ca6c080eef42 ("arch/parisc: Detect primary video device
+from device instance") architecture helpers for fbdev do not longer
+require fbdev in their implementation and could be used for non-fbdev
+code as well. Eventually guarding them with CONFIG_VIDEO will make
+them available to any subsystem.
 
-Thanks for your patch!
+v2:
+	* support CONFIG_FB_CORE=m via IS_ENABLED() (kernel test robot)
 
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -367,7 +367,7 @@ static const char *vgacon_startup(void)
->         return display_desc;
->  }
->
-> -static void vgacon_init(struct vc_data *c, int init)
-> +static void vgacon_init(struct vc_data *c, bool init)
->  {
->         struct uni_pagedict *p;
->
+Thomas Zimmermann (3):
+  video/cmdline: Introduce CONFIG_VIDEO for video= parameter
+  video/cmdline: Hide __video_get_options() behind CONFIG_FB_CORE
+  video/nomodeset: Select nomodeset= parameter with CONFIG_VIDEO
 
-Below, there is one more line to update:
+ drivers/gpu/drm/Kconfig           |  3 +--
+ drivers/staging/sm750fb/Kconfig   |  1 -
+ drivers/video/Kconfig             |  5 +----
+ drivers/video/Makefile            |  3 +--
+ drivers/video/cmdline.c           |  2 ++
+ drivers/video/fbdev/Kconfig       | 37 -------------------------------
+ drivers/video/fbdev/core/Kconfig  |  2 +-
+ drivers/video/fbdev/core/fbmem.c  |  2 --
+ drivers/video/fbdev/geode/Kconfig |  3 ---
+ include/linux/fb.h                |  7 ------
+ include/video/cmdline.h           |  8 ++-----
+ 11 files changed, 8 insertions(+), 65 deletions(-)
 
-    -        /* set dimensions manually if init !=3D 0 since vc_resize()
-will fail */
-    +        /* set dimensions manually if init is true since
-vc_resize() will fail */
 
-With the above fixed:
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+base-commit: 05b317e8457c8e2bd1a797c9440ec07b7f341584
+-- 
+2.43.0
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

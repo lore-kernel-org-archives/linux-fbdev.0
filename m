@@ -1,156 +1,146 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 320A811CB0
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jan 2024 07:46:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E791125A1;
+	Thu, 18 Jan 2024 07:58:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705563987; cv=none; b=cnQMdLjYER9oYP1/uCvf0G2lFDNmsfGKhybd4m1bWZqmfh3mdtROFyK7JnKQdWUFI9Q5pi1RRUH/wDboQARpCPNYX3fRQ3+Mx5hkzl0LNtga/W1FUw7r7RQROhTZPaXKstaW0CB8UinPZvpuZFYxaLJoMNaCeP/phoT9VL0Y/GU=
+	t=1705564683; cv=none; b=L36zVdeENew+jXY/lhMbeqskpFBWEXT+w/Jae5KgvWms1tCU5MKcIOMfDDsDpF/a4qpUXdeHs43ldFEjpIxixmMQMUiYzrzqLFC36Zp6VAYt62PCWxhXFRc4AWeWMYaAFVWG0HgWMp12fTD85ToE8XkrSvE6+hP3hj5W8BqaCOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705563987; c=relaxed/simple;
-	bh=I+AwgK7hDw+c6EEynL5Kyfwmh9VClF8/96eM8ycGszg=;
-	h=Received:Received:Received:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To:X-SA-Exim-Connect-IP:X-SA-Exim-Mail-From:
-	 X-SA-Exim-Scanned:X-PTX-Original-Recipient; b=Ma6ZuF9KtcukILn31nL7me6wyl2p4/pn+PYJmuF7076WyGnp9sjsS4WjLnUQONIMNQw1dz6L4DHor+aL1lY31G7aFkaMNN7B4xuFiJHYbC5TD3tQy7IVvREOm0QZBLp3Gv/H9Q4TOF/gIx+Co1XHKgQS6RU4lsu7kbiKeFWZ3+c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rQN5p-000356-TN; Thu, 18 Jan 2024 08:45:41 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rQN5m-000dlb-1S; Thu, 18 Jan 2024 08:45:38 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rQN5l-002Fc2-30;
-	Thu, 18 Jan 2024 08:45:37 +0100
-Date: Thu, 18 Jan 2024 08:45:37 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
-	Helge Deller <deller@gmx.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Prathu Baronia <prathubaronia2011@gmail.com>, 
-	Sam Ravnborg <sam@ravnborg.org>, Sui Jingfeng <suijingfeng@loongson.cn>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-parisc@vger.kernel.org
-Subject: Re: [BUG][BISECTED] Freeze at loading init ramdisk
-Message-ID: <gevqxytidg5efylozindaqntkbl4yeoyzqnh5m3ylitmipgum3@sgmv7qieo7rs>
-References: <8a6aa228-f2da-4dcd-93c1-e34614cd6471@alu.unizg.hr>
- <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
+	s=arc-20240116; t=1705564683; c=relaxed/simple;
+	bh=oQ9cSYYWIYoTtIDUE2vPJkWnOqd7aXp34/3pmH6YSnI=;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding; b=PK7IoNqdWVtl/v1d3h1tAL4PbU7r4Q014lv4YOyZoBZ02i5Z8gzZMKC3Gsc0OhVupiKPnU1F9HAf8E8OYy99FzWGEOJl1PJ5r8tCErnEai+8z0YxR/nOtctRmX36VydpV0dwjrMAcQ4MVrmSchVy7ioguOxL1vIwF8ntZAbpAlU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lQRS0jA0; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lQRS0jA0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7386EC433F1;
+	Thu, 18 Jan 2024 07:57:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1705564682;
+	bh=oQ9cSYYWIYoTtIDUE2vPJkWnOqd7aXp34/3pmH6YSnI=;
+	h=From:To:Cc:Subject:Date:From;
+	b=lQRS0jA0ah6MATrSuq6IuypGBN12aslrn/fMEm6OEU97UfGpNmBwpt/sMmPXwmRES
+	 IvbFnyoEudEARF/+ZxxZMzOFHZRlFy5hYOpuvqWyysYe0cz/AqxUQ+v8PC1081mep8
+	 2uNYjZKyZddi8+jlju13jRu4Qwn57I97FxgsJymOzcfdAYNhX+fUlzq1NOziZOlFtZ
+	 bnZlWE5mwKwgSY9PBcBtPzmzsCvfrWDrmxCSLFyl9DCRV/5dhljpLXg0AozUgHaWge
+	 nitA/6KF2zHMkRA6Em3DZJLftCaZyTRBnmT8xKq1pbdal/6EVhP48xxFcSm36W4Hum
+	 7H/YfJqPRvwmQ==
+From: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: linux-serial@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	dri-devel@lists.freedesktop.org,
+	Helge Deller <deller@gmx.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	linux-doc@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	Martin Hostettler <textshell@uchuujin.de>
+Subject: [PATCH 00/45] tty: vt: cleanup and documentation
+Date: Thu, 18 Jan 2024 08:57:11 +0100
+Message-ID: <20240118075756.10541-1-jirislaby@kernel.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="vrvcwpg6gkakpejo"
-Content-Disposition: inline
-In-Reply-To: <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
 
+Push the console code (vt.c, vt.h, console.h, ...) into a bit more
+maintainable state. Especially all around consw structure and document
+it.
 
---vrvcwpg6gkakpejo
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+CSI parser is also a bit cleaned up. More to follow some time in the
+next round.
 
-Hello Mirsad,
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: Martin Hostettler <textshell@uchuujin.de>
 
-On Wed, Jan 17, 2024 at 07:47:49PM +0100, Mirsad Todorovac wrote:
-> On 1/16/24 01:32, Mirsad Todorovac wrote:
-> > On the Ubuntu 22.04 LTS Jammy platform, on a mainline vanilla torvalds =
-tree kernel, the boot
-> > freezes upon first two lines and before any systemd messages.
-> >=20
-> > (Please find the config attached.)
-> >=20
-> > Bisecting the bug led to this result:
-> >=20
-> > marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
-> > d97a78423c33f68ca6543de510a409167baed6f5 is the first bad commit
-> > commit d97a78423c33f68ca6543de510a409167baed6f5
-> > Merge: 61da593f4458 689237ab37c5
-> > Author: Linus Torvalds <torvalds@linux-foundation.org>
-> > Date:=A0=A0 Fri Jan 12 14:38:08 2024 -0800
-> >=20
-> > [...]
-> >=20
-> > Hope this helps.
->=20
-> P.S.
->=20
-> As I see that this is a larger merge commit, with 5K+ lines changed, I do=
-n't think I can
-> bisect further to determine the culprit.
+Jiri Slaby (SUSE) (45):
+  vgacon: inline vc_scrolldelta_helper() into vgacon_scrolldelta()
+  fbcon: make display_desc a static array in fbcon_startup()
+  tty: vt: fix 20 vs 0x20 typo in EScsiignore
+  tty: vt: expect valid vc when in tty ops
+  tty: vt: pass proper pointers from tioclinux()
+  tty: vt: push console lock from tioclinux() down to 2 functions
+  tty: vt: pass vc_resize_user as a parameter
+  tty: vt: make vc_is_sel()'s vc const
+  tty: vt: define an enum for CSI+m codes
+  tty: vt: use case ranges for CSI+m fg/bg colors
+  tty: vt: define an enum for CSI+J codes
+  tty: vt: reflow csi_J()
+  tty: vt: define an enum for CSI+K codes
+  tty: vt: reflow csi_K()
+  tty: vt: pass vpar as unsigned to csi_J() and csi_K()
+  tty: vt: define an enum for ascii characters
+  tty: vt: remove extern from functions in selection.h
+  tty: vt: make consw::con_debug_*() return void
+  tty: vt: make init parameter of consw::con_init() a bool
+  tty: vt: sanitize arguments of consw::con_clear()
+  tty: vt: remove checks for count in consw::con_clear() implementations
+  tty: vt: add con_putc() helper
+  tty: vt: eliminate unneeded consw::con_putc() implementations
+  tty: vt: sanitize consw::con_putc() parameters
+  tty: vt: sanitize consw::con_putcs() parameters
+  consoles: use if instead of switch-case in consw::con_cursor()
+  fbdev/core: simplify cursor_state setting in fbcon_ops::cursor()
+  tty: vt: remove CM_* constants
+  tty: vt: make consw::con_switch() return a bool
+  tty: vt: stop using -1 for blank mode in consw::con_blank()
+  tty: vt: use VESA blanking constants
+  tty: vt: use enum for VESA blanking modes
+  tty: vt: make types around consw::con_blank() bool
+  tty: vt: make font of consw::con_font_set() const
+  tty: vt: make consw::con_font_default()'s name const
+  tty: vt: change consw::con_set_origin() return type
+  fbcon: remove consw::con_screen_pos()
+  tty: vt: remove consw::con_screen_pos()
+  tty: vt: make types of screenpos() more consistent
+  fbcon: remove fbcon_getxy()
+  tty: vt: remove consw::con_getxy()
+  tty: vt: remove unused consw::con_flush_scrollback()
+  tty: vt: document the rest of struct consw
+  tty: vt: fix up kernel-doc
+  Documentation: add console.rst
 
-Actually it's not that hard. If a merge commit is the first bad commit
-for a bisection, either the merge wasn't done correctly (less likely,
-looking at d97a78423c33f68ca6543de510a409167baed6f5 I'd bet this isn't
-the problem); or changes on different sides conflict or you did
-something wrong during bisection.
+ Documentation/driver-api/tty/console.rst |  45 ++
+ Documentation/driver-api/tty/index.rst   |   1 +
+ drivers/tty/vt/selection.c               |  43 +-
+ drivers/tty/vt/vt.c                      | 587 +++++++++++------------
+ drivers/tty/vt/vt_ioctl.c                |   6 +-
+ drivers/video/console/dummycon.c         |  38 +-
+ drivers/video/console/mdacon.c           |  43 +-
+ drivers/video/console/newport_con.c      |  69 +--
+ drivers/video/console/sticon.c           |  79 ++-
+ drivers/video/console/vgacon.c           | 150 +++---
+ drivers/video/fbdev/core/bitblit.c       |  13 +-
+ drivers/video/fbdev/core/fbcon.c         | 123 ++---
+ drivers/video/fbdev/core/fbcon.h         |   4 +-
+ drivers/video/fbdev/core/fbcon_ccw.c     |  13 +-
+ drivers/video/fbdev/core/fbcon_cw.c      |  13 +-
+ drivers/video/fbdev/core/fbcon_ud.c      |  13 +-
+ drivers/video/fbdev/core/tileblit.c      |   4 +-
+ include/linux/console.h                  | 132 ++---
+ include/linux/console_struct.h           |   1 -
+ include/linux/selection.h                |  56 +--
+ include/linux/vt_kern.h                  |  12 +-
+ include/uapi/linux/fb.h                  |   5 +-
+ 22 files changed, 725 insertions(+), 725 deletions(-)
+ create mode 100644 Documentation/driver-api/tty/console.rst
 
-To rule out the third option, you can just retest d97a78423c33,
-61da593f4458 and 689237ab37c5. If d97a78423c33 is the only bad one, you
-did it right.
+-- 
+2.43.0
 
-Then to further debug the second option you can find out the offending
-commit on each side with a bisection as follows, here for the RHS (i.e.
-689237ab37c5):
-
-	git bisect start 689237ab37c5 $(git merge-base 61da593f4458 689237ab37c5)
-
-and then in each bisection step do:
-
-	git merge --no-commit 61da593f4458
-	test if the problem is present
-	git reset --hard
-	git bisect good/bad
-
-In this case you get merge conflicts in drivers/video/fbdev/amba-clcd.c
-and drivers/video/fbdev/vermilion/vermilion.c. In the assumption that
-you don't have these enabled in your .config, you can just ignore these.
-
-Side note: A problem during bisection can be that the .config changes
-along the process. You should put your config into (say)
-arch/x86/configs/lala_defconfig and do
-
-	make lala_defconfig
-
-before building each step to prevent this.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---vrvcwpg6gkakpejo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmWo1yAACgkQj4D7WH0S
-/k7q0Qf/W0t/IirzZUaGB+CH/LGga+7j/KLL5uCh7l6cqhTW1WPWQm1GuEidN2KK
-Hw1/HRMjxHlFtrZWoKVrXpT8mtNXb+vVSIQwxPItzFprY2c1aip9azmc95CcUjx1
-kiVbkKYhwoO93CVo5y9k8dRiapAKGqJ3om5WYeGhaaP7O2id0H/QMHpDC8IUd6vk
-5+UKkqzUznooHGbxuNYhpRUVKaeZZW4yK9fcT6YfFCSqRcYcB/wJ0vfvX4+4nSf6
-0NVvZo3kvwhaTuvX5CjgD49kr5WRRcnypUE/2UwVSdChUyUTnx15+cKnvnYCkPQ5
-Rbed4l9pWRYUp8DZAnt65Xl9tHMvxA==
-=OgfD
------END PGP SIGNATURE-----
-
---vrvcwpg6gkakpejo--

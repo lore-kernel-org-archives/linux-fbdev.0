@@ -1,503 +1,99 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9889D125D1
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jan 2024 09:07:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F8891173D;
+	Thu, 18 Jan 2024 09:47:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705568847; cv=none; b=FE++0CeL67cplYwYqKHgpAqvvGlj0v8RD4RB3w8Q1f6+P/kBmHTc9tUd8TALJ2rj7b5lpTaSs7bNkgnCG69ovj3dBdiAO5ktv/k+8PSPe8vPLGkW6Sb5w9BUV9i0mjCS0QVTuQed9hifzhhLEufeSppybyyRiTXJPJCI7QbK7Jk=
+	t=1705571245; cv=none; b=UF1egfU06kpQb2j1ZmQTqwzgiTT+0J+3ct6M3pCHUE41lR7fbqUQUr6UtWRhYwRfmD/IPa8GClC9sUjAFlILDv+MF4GoxGyQGZ1vaeav3NNi8oJoBur3VbfykKA83TDwf3EwkkJlZUflheTkMszBk1rVjFB3nG4I7I8vPLvUZKU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705568847; c=relaxed/simple;
-	bh=Lza4sNhwvDU4Gw2MCmiOTFl/6vnM4MZ8dzWx7PJWiAc=;
-	h=Received:Received:Received:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Spamd-Result:X-Rspamd-Server:
-	 X-Rspamd-Queue-Id:X-Spam-Level:X-Spam-Score:X-Spam-Flag; b=B/8QeYHTdvvYFLIRhzDRSofy1bJQJb8pK/yw8yUqgepewLm6dFdg298CQLB/hd2rnusHMQ9291z/Ih3lqVUX1h9jRkjptKRnbrCubpyCffniu5GjMjjTRxEBB0vQzZvCjJjdDv76U99OwWYsgVnflEKOop0mHS6RYJymFwDKo+s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id CEB501F785;
-	Thu, 18 Jan 2024 09:07:23 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 98FE81387C;
-	Thu, 18 Jan 2024 09:07:23 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id UF0zJEvqqGWIMgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 18 Jan 2024 09:07:23 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: javierm@redhat.com,
-	deller@gmx.de,
-	daniel@ffwll.ch,
-	airlied@gmail.com
-Cc: dri-devel@lists.freedesktop.org,
+	s=arc-20240116; t=1705571245; c=relaxed/simple;
+	bh=xUKe/6pES/NscQ+RcGPUqZZ6ve+SBnXl+mH5PIJD128=;
+	h=X-UUID:X-CID-P-RULE:X-CID-O-INFO:X-CID-INFO:X-CID-META:X-CID-BVR:
+	 X-CID-BAS:X-CID-FACTOR:X-UUID:Received:Received:X-ns-mid:Received:
+	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding; b=GuU32bhO2fIC4J1g5xbc2zSRnFr5N2kcIze86q5WcvmFs+JGhFHO+uejShYddPHpmAdP9zolZeC+CVeEKWeNpME5JXNCU1rHsQdXTIvsWmnU/S0PB+fHW23N6j3MeKX3+z+MB7Yt0TdSWhCKZCP3PqEj4Sadaa6+fEcT2nfEn4U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 3d0cabb88c414149bc8eca0681ee3386-20240118
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.35,REQID:02285d8d-6596-4773-956c-95702a0cee6f,IP:20,
+	URL:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
+	ON:release,TS:5
+X-CID-INFO: VERSION:1.1.35,REQID:02285d8d-6596-4773-956c-95702a0cee6f,IP:20,UR
+	L:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:5
+X-CID-META: VersionHash:5d391d7,CLOUDID:c4567d7f-4f93-4875-95e7-8c66ea833d57,B
+	ulkID:240118174709GVOR3L11,BulkQuantity:0,Recheck:0,SF:17|19|44|66|38|24|1
+	02,TC:nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,CO
+	L:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_FSI,TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD
+X-UUID: 3d0cabb88c414149bc8eca0681ee3386-20240118
+Received: from mail.kylinos.cn [(39.156.73.10)] by mailgw
+	(envelope-from <chentao@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 1667805969; Thu, 18 Jan 2024 17:47:08 +0800
+Received: from mail.kylinos.cn (localhost [127.0.0.1])
+	by mail.kylinos.cn (NSMail) with SMTP id 71955E000EB9;
+	Thu, 18 Jan 2024 17:47:08 +0800 (CST)
+X-ns-mid: postfix-65A8F39C-245485265
+Received: from kernel.. (unknown [172.20.15.234])
+	by mail.kylinos.cn (NSMail) with ESMTPA id E42E8E000EB9;
+	Thu, 18 Jan 2024 17:47:05 +0800 (CST)
+From: Kunwu Chan <chentao@kylinos.cn>
+To: andersson@kernel.org,
+	konrad.dybcio@linaro.org,
+	lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: linux-arm-msm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 3/3] video/nomodeset: Select nomodeset= parameter with CONFIG_VIDEO
-Date: Thu, 18 Jan 2024 10:05:28 +0100
-Message-ID: <20240118090721.7995-4-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240118090721.7995-1-tzimmermann@suse.de>
-References: <20240118090721.7995-1-tzimmermann@suse.de>
+	linux-kernel@vger.kernel.org,
+	Kunwu Chan <chentao@kylinos.cn>
+Subject: [PATCH] hwmon: (peci/cputemp) Add a null pointer check to the wled_configure
+Date: Thu, 18 Jan 2024 17:47:04 +0800
+Message-Id: <20240118094704.212641-1-chentao@kylinos.cn>
+X-Mailer: git-send-email 2.39.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	 REPLY(-4.00)[]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: CEB501F785
-X-Spam-Level: 
-X-Spam-Score: -4.00
-X-Spam-Flag: NO
+Content-Transfer-Encoding: quoted-printable
 
-Enable support for nomodeset= parameter via CONFIG_VIDEO. Both,
-DRM and fbdev, already select this option. Remove the existing
-option CONFIG_VIDEO_NOMODESET. Simplifies the Kconfig rules.
+devm_kasprintf() returns a pointer to dynamically allocated memory
+which can be NULL upon failure. Ensure the allocation was successful
+by checking the pointer validity.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
 ---
- drivers/gpu/drm/Kconfig           |  1 -
- drivers/staging/sm750fb/Kconfig   |  1 -
- drivers/video/Kconfig             |  4 ----
- drivers/video/Makefile            |  3 +--
- drivers/video/fbdev/Kconfig       | 37 -------------------------------
- drivers/video/fbdev/core/fbmem.c  |  2 --
- drivers/video/fbdev/geode/Kconfig |  3 ---
- include/linux/fb.h                |  7 ------
- 8 files changed, 1 insertion(+), 57 deletions(-)
+ drivers/video/backlight/qcom-wled.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index e519e1987613..872edb47bb53 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -20,7 +20,6 @@ menuconfig DRM
- # device and dmabuf fd. Let's make sure that is available for our userspace.
- 	select KCMP
- 	select VIDEO
--	select VIDEO_NOMODESET
- 	help
- 	  Kernel-level support for the Direct Rendering Infrastructure (DRI)
- 	  introduced in XFree86 4.0. If you say Y here, you need to select
-diff --git a/drivers/staging/sm750fb/Kconfig b/drivers/staging/sm750fb/Kconfig
-index ab3d9b057d56..08bcccdd0f1c 100644
---- a/drivers/staging/sm750fb/Kconfig
-+++ b/drivers/staging/sm750fb/Kconfig
-@@ -6,7 +6,6 @@ config FB_SM750
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--	select VIDEO_NOMODESET
- 	help
- 	  Frame buffer driver for the Silicon Motion SM750 chip
- 	  with 2D acceleration and dual head support.
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 253b129a82dc..130ebccb8338 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -22,10 +22,6 @@ config VIDEO
- 	bool
- 	default n
- 
--config VIDEO_NOMODESET
--	bool
--	default n
--
- source "drivers/auxdisplay/Kconfig"
- 
- if HAS_IOMEM
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 287c198f0c82..9eb5557911de 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -3,8 +3,7 @@
- obj-$(CONFIG_APERTURE_HELPERS)    += aperture.o
- obj-$(CONFIG_STI_CORE)            += sticore.o
- obj-$(CONFIG_VGASTATE)            += vgastate.o
--obj-$(CONFIG_VIDEO)               += cmdline.o
--obj-$(CONFIG_VIDEO_NOMODESET)     += nomodeset.o
-+obj-$(CONFIG_VIDEO)               += cmdline.o nomodeset.o
- obj-$(CONFIG_HDMI)                += hdmi.o
- 
- obj-$(CONFIG_VT)		  += console/
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index d5909a9206ff..f15ba4b2f306 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -75,7 +75,6 @@ config FB_CIRRUS
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
--	select VIDEO_NOMODESET
- 	help
- 	  This enables support for Cirrus Logic GD542x/543x based boards on
- 	  Amiga: SD64, Piccolo, Picasso II/II+, Picasso IV, or EGS Spectrum.
-@@ -95,7 +94,6 @@ config FB_PM2
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for cards based on
- 	  the 3D Labs Permedia, Permedia 2 and Permedia 2V chips.
-@@ -179,7 +177,6 @@ config FB_CYBER2000
- 	tristate "CyberPro 2000/2010/5000 support"
- 	depends on FB && PCI && (BROKEN || !SPARC64)
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This enables support for the Integraphics CyberPro 20x0 and 5000
- 	  VGA chips used in the Rebel.com Netwinder and other machines.
-@@ -330,7 +327,6 @@ config FB_CT65550
- 	bool "Chips 65550 display support"
- 	depends on (FB = y) && PPC32 && PCI
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for the Chips & Technologies
- 	  65550 graphics chip in PowerBooks.
-@@ -339,7 +335,6 @@ config FB_ASILIANT
- 	bool "Asiliant (Chips) 69000 display support"
- 	depends on (FB = y) && PCI
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for the Asiliant 69030 chipset
- 
-@@ -349,7 +344,6 @@ config FB_IMSTT
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
- 	select FB_MACMODES if PPC_PMAC
--	select VIDEO_NOMODESET
- 	help
- 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
- 	  many Macintosh and compatible computers.
-@@ -414,7 +408,6 @@ config FB_TGA
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for generic TGA and SFB+
- 	  graphic cards.  These include DEC ZLXp-E1, -E2 and -E3 PCI cards,
-@@ -591,7 +584,6 @@ config FB_XVR500
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the framebuffer device for the Sun XVR-500 and similar
- 	  graphics cards based upon the 3DLABS Wildcat chipset.  The driver
-@@ -603,7 +595,6 @@ config FB_XVR2500
- 	bool "Sun XVR-2500 3DLABS Wildcat support"
- 	depends on (FB = y) && PCI && SPARC64
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the framebuffer device for the Sun XVR-2500 and similar
- 	  graphics cards based upon the 3DLABS Wildcat chipset.  The driver
-@@ -629,7 +620,6 @@ config FB_PVR2
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
--	select VIDEO_NOMODESET
- 	help
- 	  Say Y here if you have a PowerVR 2 card in your box.  If you plan to
- 	  run linux on your Dreamcast, you will have to say Y here.
-@@ -692,7 +682,6 @@ config FB_NVIDIA
- 	select FB_IOMEM_FOPS
- 	select BITREVERSE
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports graphics boards with the nVidia chips, TNT
- 	  and newer. For very old chipsets, such as the RIVA128, then use
-@@ -741,7 +730,6 @@ config FB_RIVA
- 	select FB_MODE_HELPERS
- 	select BITREVERSE
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports graphics boards with the nVidia Riva/Geforce
- 	  chips.
-@@ -784,7 +772,6 @@ config FB_I740
- 	select FB_IOMEM_HELPERS
- 	select FB_MODE_HELPERS
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	select FB_DDC
- 	help
- 	  This driver supports graphics cards based on Intel740 chip.
-@@ -795,7 +782,6 @@ config FB_I810
- 	select FB_IOMEM_FOPS
- 	select FB_MODE_HELPERS
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports the on-board graphics built in to the Intel 810
- 	  and 815 chipsets.  Say Y if you have and plan to use such a board.
-@@ -844,7 +830,6 @@ config FB_LE80578
- 	depends on FB && PCI && X86
- 	select FB_IOMEM_HELPERS
- 	select FB_MODE_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports the LE80578 (Vermilion Range) chipset
- 
-@@ -863,7 +848,6 @@ config FB_INTEL
- 	select FB_IOMEM_FOPS
- 	select FB_MODE_HELPERS
- 	select BOOT_VESA_SUPPORT if FB_INTEL = y
--	select VIDEO_NOMODESET
- 	depends on !DRM_I915
- 	help
- 	  This driver supports the on-board graphics built in to the Intel
-@@ -902,7 +886,6 @@ config FB_MATROX
- 	select FB_IOMEM_FOPS
- 	select FB_TILEBLITTING
- 	select FB_MACMODES if PPC_PMAC
--	select VIDEO_NOMODESET
- 	help
- 	  Say Y here if you have a Matrox Millennium, Matrox Millennium II,
- 	  Matrox Mystique, Matrox Mystique 220, Matrox Productiva G100, Matrox
-@@ -1025,7 +1008,6 @@ config FB_RADEON
- 	select FB_IOMEM_FOPS
- 	select FB_MACMODES if PPC
- 	select FB_MODE_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Choose this option if you want to use an ATI Radeon graphics card as
- 	  a framebuffer device.  There are both PCI and AGP versions.  You
-@@ -1063,7 +1045,6 @@ config FB_ATY128
- 	select FB_BACKLIGHT if FB_ATY128_BACKLIGHT
- 	select FB_IOMEM_HELPERS
- 	select FB_MACMODES if PPC_PMAC
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports graphics boards with the ATI Rage128 chips.
- 	  Say Y if you have such a graphics board and read
-@@ -1089,7 +1070,6 @@ config FB_ATY
- 	select FB_IOMEM_FOPS
- 	select FB_MACMODES if PPC
- 	select FB_ATY_CT if SPARC64 && PCI
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports graphics boards with the ATI Mach64 chips.
- 	  Say Y if you have such a graphics board.
-@@ -1141,7 +1121,6 @@ config FB_S3
- 	select FB_TILEBLITTING
- 	select FB_SVGALIB
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	select FONT_8x16 if FRAMEBUFFER_CONSOLE
- 	help
- 	  Driver for graphics boards with S3 Trio / S3 Virge chip.
-@@ -1163,7 +1142,6 @@ config FB_SAVAGE
- 	select FB_IOMEM_FOPS
- 	select FB_MODE_HELPERS
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports notebooks and computers with S3 Savage PCI/AGP
- 	  chips.
-@@ -1203,7 +1181,6 @@ config FB_SIS
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
- 	select FB_SIS_300 if !FB_SIS_315
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for the SiS 300, 315, 330
- 	  and 340 series as well as XGI V3XT, V5, V8, Z7 graphics chipsets.
-@@ -1234,7 +1211,6 @@ config FB_VIA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
- 	select I2C_ALGOBIT
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for Graphics chips of VIA
- 	  UniChrome (Pro) Family (CLE266,PM800/CN400,P4M800CE/P4M800Pro/
-@@ -1275,7 +1251,6 @@ config FB_NEOMAGIC
- 	select FB_IOMEM_FOPS
- 	select FB_MODE_HELPERS
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports notebooks with NeoMagic PCI chips.
- 	  Say Y if you have such a graphics card.
-@@ -1287,7 +1262,6 @@ config FB_KYRO
- 	tristate "IMG Kyro support"
- 	depends on FB && PCI
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Say Y here if you have a STG4000 / Kyro / PowerVR 3 based
- 	  graphics board.
-@@ -1303,7 +1277,6 @@ config FB_3DFX
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
- 	select FB_MODE_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This driver supports graphics boards with the 3Dfx Banshee,
- 	  Voodoo3 or VSA-100 (aka Voodoo4/5) chips. Say Y if you have
-@@ -1332,7 +1305,6 @@ config FB_VOODOO1
- 	depends on FB && PCI
- 	depends on FB_DEVICE
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Say Y here if you have a 3Dfx Voodoo Graphics (Voodoo1/sst1) or
- 	  Voodoo2 (cvg) based graphics card.
-@@ -1355,7 +1327,6 @@ config FB_VT8623
- 	select FB_TILEBLITTING
- 	select FB_SVGALIB
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	select FONT_8x16 if FRAMEBUFFER_CONSOLE
- 	help
- 	  Driver for CastleRock integrated graphics core in the
-@@ -1370,7 +1341,6 @@ config FB_TRIDENT
- 	select FB_DDC
- 	select FB_IOMEM_FOPS
- 	select FB_MODE_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for Trident PCI/AGP chipsets.
- 	  Supported chipset families are TGUI 9440/96XX, 3DImage, Blade3D
-@@ -1395,7 +1365,6 @@ config FB_ARK
- 	select FB_TILEBLITTING
- 	select FB_SVGALIB
- 	select VGASTATE
--	select VIDEO_NOMODESET
- 	select FONT_8x16 if FRAMEBUFFER_CONSOLE
- 	help
- 	  Driver for PCI graphics boards with ARK 2000PV chip
-@@ -1408,7 +1377,6 @@ config FB_PM3
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_IOMEM_FOPS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for the 3DLabs Permedia3
- 	  chipset, used in Formac ProFormance III, 3DLabs Oxygen VX1 &
-@@ -1419,7 +1387,6 @@ config FB_CARMINE
- 	tristate "Fujitsu carmine frame buffer support"
- 	depends on FB && PCI
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  This is the frame buffer device driver for the Fujitsu Carmine chip.
- 	  The driver provides two independent frame buffer devices.
-@@ -1701,7 +1668,6 @@ config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
- 	depends on FB
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Say Y here to enable support for the IBM GXT4000P/6000P and
- 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
-@@ -1819,7 +1785,6 @@ config FB_MB862XX
- 	depends on FB
- 	depends on PCI || (OF && PPC)
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Frame buffer driver for Fujitsu Carmine/Coral-P(A)/Lime controllers.
- 
-@@ -1885,7 +1850,6 @@ config FB_HYPERV
- 	depends on FB && HYPERV
- 	select DMA_CMA if HAVE_DMA_CONTIGUOUS && CMA
- 	select FB_IOMEM_HELPERS_DEFERRED
--	select VIDEO_NOMODESET
- 	help
- 	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
- 
-@@ -1919,7 +1883,6 @@ config FB_SM712
- 	tristate "Silicon Motion SM712 framebuffer support"
- 	depends on FB && PCI
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Frame buffer driver for the Silicon Motion SM710, SM712, SM721
- 	  and SM722 chips.
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index fc206755f5f6..48287366e0d4 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -645,7 +645,6 @@ int fb_new_modelist(struct fb_info *info)
- 	return 0;
- }
- 
--#if defined(CONFIG_VIDEO_NOMODESET)
- bool fb_modesetting_disabled(const char *drvname)
- {
- 	bool fwonly = video_firmware_drivers_only();
-@@ -657,6 +656,5 @@ bool fb_modesetting_disabled(const char *drvname)
- 	return fwonly;
- }
- EXPORT_SYMBOL(fb_modesetting_disabled);
--#endif
- 
- MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/geode/Kconfig b/drivers/video/fbdev/geode/Kconfig
-index 9a49916e0492..3b20420cc94d 100644
---- a/drivers/video/fbdev/geode/Kconfig
-+++ b/drivers/video/fbdev/geode/Kconfig
-@@ -14,7 +14,6 @@ config FB_GEODE_LX
- 	tristate "AMD Geode LX framebuffer support"
- 	depends on FB && FB_GEODE
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Framebuffer driver for the display controller integrated into the
- 	  AMD Geode LX processors.
-@@ -28,7 +27,6 @@ config FB_GEODE_GX
- 	tristate "AMD Geode GX framebuffer support"
- 	depends on FB && FB_GEODE
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Framebuffer driver for the display controller integrated into the
- 	  AMD Geode GX processors.
-@@ -42,7 +40,6 @@ config FB_GEODE_GX1
- 	tristate "AMD Geode GX1 framebuffer support"
- 	depends on FB && FB_GEODE
- 	select FB_IOMEM_HELPERS
--	select VIDEO_NOMODESET
- 	help
- 	  Framebuffer driver for the display controller integrated into the
- 	  AMD Geode GX1 processor.
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 05dc9624897d..2ce2f5c2fca9 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -840,14 +840,7 @@ extern int fb_find_mode(struct fb_var_screeninfo *var,
- 			const struct fb_videomode *default_mode,
- 			unsigned int default_bpp);
- 
--#if defined(CONFIG_VIDEO_NOMODESET)
- bool fb_modesetting_disabled(const char *drvname);
--#else
--static inline bool fb_modesetting_disabled(const char *drvname)
--{
--	return false;
--}
--#endif
- 
- /*
-  * Convenience logging macros
--- 
-2.43.0
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backligh=
+t/qcom-wled.c
+index 10129095a4c1..a0b06839d778 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1406,8 +1406,11 @@ static int wled_configure(struct wled *wled)
+ 	wled->ctrl_addr =3D be32_to_cpu(*prop_addr);
+=20
+ 	rc =3D of_property_read_string(dev->of_node, "label", &wled->name);
+-	if (rc)
++	if (rc) {
+ 		wled->name =3D devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
++		if (!wled->name)
++			return -ENOMEM;
++	}
+=20
+ 	switch (wled->version) {
+ 	case 3:
+--=20
+2.39.2
 

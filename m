@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86E7D3175F;
-	Thu, 18 Jan 2024 07:59:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DF9E328D8;
+	Thu, 18 Jan 2024 07:59:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705564765; cv=none; b=DmmErLgYz/UnMf4a3V+rs0Zfqm56xpoHGXEflI94U7h+5p9a5m9sdzNhfA1630aFQPFV9NdIVZ9oPWSzTSzwP04M1IGZQ4CmUxR5zEx2VsqLGmalfHPv8wjt6CbCdr4JymbpuKU44V8xvFT4kO3kVV1oeLbgQXffdrPoWUqbUj8=
+	t=1705564771; cv=none; b=d4ahxnDCPU57tDa3OVX/6xtwws6PIw23rtg896A3BimupFDe/X4S0dfu5jRmlNS070lm7pORb5Vbt5rOcDBPpn3yWuDM5GEIYbYbKL5Ff9vC/Yah3Vhk4d2j3MVK+2RZK/eyFg7tnXFw5fZU4OKARj2bapbS8WkNTleLFupmJMg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705564765; c=relaxed/simple;
-	bh=GuttBthplzcWAD92DYxHAXefieOSH/0KZn+o6peTBWY=;
+	s=arc-20240116; t=1705564771; c=relaxed/simple;
+	bh=TxyfiQSfnfbUMhKRrQ0H1rTP3kUo5bAgp6fUTnxFTJs=;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding; b=mEkngoU3cYmiWnwij/X9XI7LM0lKlNlYezAh+L5/MHcHzCj34cxIl/fWMmzPulAS1pCk1t6d5AHH9GUToc3sMtHvdeEpwjznYReDJFLuQPX5e4WYCzvBELxsaXepIoBGkLzbGl6WjigS52nIcV4AurUbwDjRlpBfvtvX3zQpgiI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jK+FEF6c; arc=none smtp.client-ip=10.30.226.201
+	 Content-Transfer-Encoding; b=bHw8UnXbq4V4HrBgb58ax3KT7GaOG1sXsYONA+ALzS3UyXSYyZoytch3fmyHucgCs/VwpIkab+XnnDjfaikOT9+9FfnKO5umf5cATf5t4SY5VIO/JQKPSXweaQwNEctcvs9woqeollObZdzg0r6PrHZZVnk3feKnNYtdp6jmGDs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ls3qFhFQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jK+FEF6c"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 604ADC433C7;
-	Thu, 18 Jan 2024 07:59:23 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ls3qFhFQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43FF8C433F1;
+	Thu, 18 Jan 2024 07:59:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705564765;
-	bh=GuttBthplzcWAD92DYxHAXefieOSH/0KZn+o6peTBWY=;
+	s=k20201202; t=1705564771;
+	bh=TxyfiQSfnfbUMhKRrQ0H1rTP3kUo5bAgp6fUTnxFTJs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=jK+FEF6cWzI+fO9Fnk6BTANz83FQ+Lf1d+PsJX7UgvaZ3SD0ojQzqBSQUAT0/ca6V
-	 Y74TcR+ajAzxBP+CHyJf5GIpa9w6z6aLiowoJ4h0OiNZ5YLqLYiTaf20qygE60FF2e
-	 zQ7thTa4t7woijOADtWIoBemY1RBlSKro8h/aNmGhYzubDfgWf3VoNwdxIdB6+TbU1
-	 CFQHvk5E6jfSXOeGV3Thu6bwPJbURfO657v2/3kfXKyKWqS9m4bA5F9iQYRBM68YR8
-	 tWk0jTTDeyqpvaaMIptgZrva5raYWF4rBZOCHDGJsZoW6VNoRuSpOrRKm5HZ+6rS9C
-	 9X1GNlPY2Opww==
+	b=ls3qFhFQJLk9RLW/rjJ1Jett3RJ2P/AFQ7Df/lDXsXPvS1FzS26Z7HI/QewF2b+/U
+	 Mz4Eb1WyZd91E07cU+rSVgy4EPOU6Zhb2nsAQh+p6lVxyOYtTjSlFHulF7f3DxuIJ2
+	 harnNn3m0oAUYTpiCu4KOWWtCq7DTPSGupGYPrNlybSuNWeqYSXIYkK0EfCMSfmBxr
+	 aOSsYKFA9BOJGvKUFBZS0d5yOFJb+2FFk3jSrILvO7bXc64tpqgkrwASSNl/HImMdt
+	 tlvamhci8HICutVrmQw9zyHDGzXueJkb5qtFoTstxUeNb7BhOJOAuZe1o+A5pU/HU0
+	 9XwFxrpzYlKPg==
 From: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
 To: gregkh@linuxfoundation.org
 Cc: linux-serial@vger.kernel.org,
@@ -36,9 +36,9 @@ Cc: linux-serial@vger.kernel.org,
 	Helge Deller <deller@gmx.de>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH 37/45] fbcon: remove consw::con_screen_pos()
-Date: Thu, 18 Jan 2024 08:57:48 +0100
-Message-ID: <20240118075756.10541-38-jirislaby@kernel.org>
+Subject: [PATCH 40/45] fbcon: remove fbcon_getxy()
+Date: Thu, 18 Jan 2024 08:57:51 +0100
+Message-ID: <20240118075756.10541-41-jirislaby@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240118075756.10541-1-jirislaby@kernel.org>
 References: <20240118075756.10541-1-jirislaby@kernel.org>
@@ -50,13 +50,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-fbcon_screen_pos() performs the same as the default implementation. The
-only difference in the default implementation is that is considers both
-vc->vc_origin and vc->vc_visible_origin. But given fbcon's softscroll
-code was already removed in commit 50145474f6ef (fbcon: remove soft
-scrollback code), both are always the same.
-
-So remove fbcon_screen_pos() too.
+Again, fbcon_getxy() is the same as the default implementation since the
+softscroll removal in commit 50145474f6ef (fbcon: remove soft scrollback
+code). Drop that.
 
 Signed-off-by: Jiri Slaby (SUSE) <jirislaby@kernel.org>
 Cc: Daniel Vetter <daniel@ffwll.ch>
@@ -64,33 +60,52 @@ Cc: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org
 Cc: dri-devel@lists.freedesktop.org
 ---
- drivers/video/fbdev/core/fbcon.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 25 -------------------------
+ 1 file changed, 25 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 657160eec0a5..2166ea1a5430 100644
+index 2166ea1a5430..9c2962900d13 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2593,11 +2593,6 @@ static void fbcon_set_palette(struct vc_data *vc, const unsigned char *table)
+@@ -2593,30 +2593,6 @@ static void fbcon_set_palette(struct vc_data *vc, const unsigned char *table)
  	fb_set_cmap(&palette_cmap, info);
  }
  
--static u16 *fbcon_screen_pos(const struct vc_data *vc, int offset)
+-static unsigned long fbcon_getxy(struct vc_data *vc, unsigned long pos,
+-				 int *px, int *py)
 -{
--	return (u16 *) (vc->vc_origin + offset);
+-	unsigned long ret;
+-	int x, y;
+-
+-	if (pos >= vc->vc_origin && pos < vc->vc_scr_end) {
+-		unsigned long offset = (pos - vc->vc_origin) / 2;
+-
+-		x = offset % vc->vc_cols;
+-		y = offset / vc->vc_cols;
+-		ret = pos + (vc->vc_cols - x) * 2;
+-	} else {
+-		/* Should not happen */
+-		x = y = 0;
+-		ret = vc->vc_origin;
+-	}
+-	if (px)
+-		*px = x;
+-	if (py)
+-		*py = y;
+-	return ret;
 -}
 -
- static unsigned long fbcon_getxy(struct vc_data *vc, unsigned long pos,
- 				 int *px, int *py)
- {
-@@ -3162,7 +3157,6 @@ static const struct consw fb_con = {
+ /* As we might be inside of softback, we may work with non-contiguous buffer,
+    that's why we have to use a separate routine. */
+ static void fbcon_invert_region(struct vc_data *vc, u16 * p, int cnt)
+@@ -3157,7 +3133,6 @@ static const struct consw fb_con = {
  	.con_font_default	= fbcon_set_def_font,
  	.con_set_palette 	= fbcon_set_palette,
  	.con_invert_region 	= fbcon_invert_region,
--	.con_screen_pos 	= fbcon_screen_pos,
- 	.con_getxy 		= fbcon_getxy,
+-	.con_getxy 		= fbcon_getxy,
  	.con_resize             = fbcon_resize,
  	.con_debug_enter	= fbcon_debug_enter,
+ 	.con_debug_leave	= fbcon_debug_leave,
 -- 
 2.43.0
 

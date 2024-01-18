@@ -1,77 +1,47 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA7861CFA4;
-	Thu, 18 Jan 2024 08:41:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2543F125A2;
+	Thu, 18 Jan 2024 08:53:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705567298; cv=none; b=jeNoxJh2BZw4zOnIkxSN1GB9MIblLHnEEy4Ya6lZNcWGzA4isNJaGTYgTyXKy95mPq9mF+bEJzP+5HhxFAXcom1YWG7vXiJvMWaoppa+cZDGmaJ1N5rFgdf+ru/NYjEoUpLexsp87OqeIdXlHy4ZPdCom0ox1GoxHDTZ6HvtMOc=
+	t=1705567983; cv=none; b=f5OTom4qRfsuwef7kWgzBKqhgqwio3vWlYAgiwf8cDzUkoXrx1gYqcV6Z3sUyvU+BCN7vDr8tt+mmqtMTG4RW7b8CrEtD8rhtY9cPckFZA4x4crljbO+PLSDynq90K6YBbfVfxkpIO9FfAmkfup3JXI+DiaOg8oK3i9Z8OrTwyQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705567298; c=relaxed/simple;
-	bh=WXznHUNnjA7E9cTJbOSlDbHn3SVpaaAeDRTPzoVAPHE=;
-	h=Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
-	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:Content-Language:To:Cc:References:From:
-	 Autocrypt:In-Reply-To:Content-Type:X-Spam-Level:X-Spam-Score:
-	 X-Spamd-Result:X-Spam-Flag; b=K5ZNs2xHpumgFn2D5Y1E+xVva9JGdzotCZSNDiji2Kwdo94m2DdtH6zj4J37FUr9AtM+9RWD3boGa21mr5Ni246eDaoihcEhMgnHaSiAmliZjS72ECa0KnvuJcD8nh8hnAnwk1p8YktrzPJ+2/9nD62Jza2f2NZiOrnfdsCYUaU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=2YmzeGix; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7xTaX/MW; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=2YmzeGix; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7xTaX/MW; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="2YmzeGix";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7xTaX/MW";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="2YmzeGix";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7xTaX/MW"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 03336220C2;
-	Thu, 18 Jan 2024 08:41:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1705567295; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WXznHUNnjA7E9cTJbOSlDbHn3SVpaaAeDRTPzoVAPHE=;
-	b=2YmzeGixT+yPVJBM8MqvVkN1w8AbfknLKAgRjCc9Ed09TPYZZ8ad734uXdju2WCDWLKSP2
-	rg165FUFIbm95hMLovePqLsxPUqMNzbKaHvY57zrS1Gzao+zHlGRgqVU3sv9ylGhPx1tji
-	vDcKdMsE683G6MSd3T7IkTDSYscmaXw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1705567295;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WXznHUNnjA7E9cTJbOSlDbHn3SVpaaAeDRTPzoVAPHE=;
-	b=7xTaX/MWrnCVntLPZB/FgTvSjriuXHFsO/AVUbDWAGPqBYZAON51TEr0PpOt5GekmIor2E
-	lOmnflruCWJCQLBQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1705567295; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WXznHUNnjA7E9cTJbOSlDbHn3SVpaaAeDRTPzoVAPHE=;
-	b=2YmzeGixT+yPVJBM8MqvVkN1w8AbfknLKAgRjCc9Ed09TPYZZ8ad734uXdju2WCDWLKSP2
-	rg165FUFIbm95hMLovePqLsxPUqMNzbKaHvY57zrS1Gzao+zHlGRgqVU3sv9ylGhPx1tji
-	vDcKdMsE683G6MSd3T7IkTDSYscmaXw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1705567295;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WXznHUNnjA7E9cTJbOSlDbHn3SVpaaAeDRTPzoVAPHE=;
-	b=7xTaX/MWrnCVntLPZB/FgTvSjriuXHFsO/AVUbDWAGPqBYZAON51TEr0PpOt5GekmIor2E
-	lOmnflruCWJCQLBQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id BEEB8136F5;
-	Thu, 18 Jan 2024 08:41:34 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id uT+FLT7kqGVeKgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 18 Jan 2024 08:41:34 +0000
-Message-ID: <4ae60e8c-6a86-4895-b8fe-48de5b64b6c8@suse.de>
-Date: Thu, 18 Jan 2024 09:41:34 +0100
+	s=arc-20240116; t=1705567983; c=relaxed/simple;
+	bh=EUxlP8TQSaz+aUuKrg3IdzttUBIfYpiIjK9Vzhpp42o=;
+	h=Received:X-Google-DKIM-Signature:X-Gm-Message-State:
+	 X-Google-Smtp-Source:X-Received:Received:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:Content-Language:To:Cc:References:
+	 From:Autocrypt:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=gwKrURGLVIDMSwp+IKxjucu4GXukR7NIHoy3BJ5uaYgYKfXvwPtScpRybsHOM9u4yQ+xPcvXX8mQtZFeU0BP4fkPDRF8HqTesSfD6WMUEeK0X9IhNvji84P1hXnX6k5dozJh8vIiICqXviWClyHI+/KcKi85TbsnkSzAVMYcHsc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-337cc8e72f5so350401f8f.1;
+        Thu, 18 Jan 2024 00:53:01 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1705567980; x=1706172780;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
+         :to:content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=HohZ+568aayDubztr663VwJJUa0UzFWr0ovhCgvpAek=;
+        b=AFrktMN3Fy5zL0nvD46EGSlak7Kdo7sYFlp7iChPk6NxgAZOCBwLmYxYntTARnklnq
+         n6zoO1tGaDTQloLG4siRZ0nIYutlZlI6PWCECEOqEyOuvJFDEeVp88DUGmX5dfIcbYih
+         6hL2CagM6ouoou7Qr6yAbXfecUpmle29BYm8u7yAcsnLnhcJkBUaMXW6PAHDRV7iCHJa
+         CBcPizPcOMAC67MeNzXbCXY8LHGyhgKEoop5R2jWDIaEBuLk62L7ylQmPTRAFKaAjf2O
+         JzNbLRQfP6fYueKqjTe9vbePJd7ijzAyuGPrKc8ssj0Q1/RwjzgMfa0SYMyaJVgfX5h0
+         jKJw==
+X-Gm-Message-State: AOJu0YylXLY47IU404XA7Bn8uCymJGqCUMVUqKAyB5w7Kgxf2QzUB0mL
+	Ul21u3/rWSzEPdlzjy4v9jf1o03m0x/f0Wrd+JBB68LW6NuY9f6z
+X-Google-Smtp-Source: AGHT+IEobU2BzLTBC4QUkEIMS2hdODPazKfKEqI4sJLh5EvmiCS6FVLZ6S+Sa9SNIdMf6VqydiwnfQ==
+X-Received: by 2002:a5d:6843:0:b0:337:c4af:7251 with SMTP id o3-20020a5d6843000000b00337c4af7251mr248353wrw.125.1705567980217;
+        Thu, 18 Jan 2024 00:53:00 -0800 (PST)
+Received: from ?IPV6:2a0b:e7c0:0:107::aaaa:59? ([2a0b:e7c0:0:107::aaaa:59])
+        by smtp.gmail.com with ESMTPSA id s15-20020a5d6a8f000000b00336898daceasm1132882wru.96.2024.01.18.00.52.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 18 Jan 2024 00:52:59 -0800 (PST)
+Message-ID: <e75d0f43-50b7-48b3-8980-d66736daa736@kernel.org>
+Date: Thu, 18 Jan 2024 09:52:58 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -81,7 +51,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 31/45] tty: vt: use VESA blanking constants
 Content-Language: en-US
-To: Jiri Slaby <jirislaby@kernel.org>, gregkh@linuxfoundation.org
+To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org
 Cc: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org,
  Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org,
@@ -91,130 +61,62 @@ References: <20240118075756.10541-1-jirislaby@kernel.org>
  <20240118075756.10541-32-jirislaby@kernel.org>
  <39622a13-3999-4bf6-b8fc-f7a70c8cd5da@suse.de>
  <4976e06c-dffd-4b93-a828-34f998f2472a@kernel.org>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <4976e06c-dffd-4b93-a828-34f998f2472a@kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------loYU98uSvn7axArMuY6K9YWs"
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spam-Level: 
-X-Spam-Score: -1.83
-X-Spamd-Result: default: False [-1.83 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
-	 HAS_ATTACHMENT(0.00)[];
-	 BAYES_HAM(-1.04)[87.55%];
-	 MIME_BASE64_TEXT_BOGUS(1.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 MIME_BASE64_TEXT(0.10)[];
-	 RCPT_COUNT_SEVEN(0.00)[9];
-	 SIGNED_PGP(-2.00)[];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
-	 FREEMAIL_CC(0.00)[vger.kernel.org,gmx.de,lists.freedesktop.org,HansenPartnership.com];
-	 RCVD_TLS_ALL(0.00)[];
-	 SUSPICIOUS_RECIPS(1.50)[]
-X-Spam-Flag: NO
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------loYU98uSvn7axArMuY6K9YWs
-Content-Type: multipart/mixed; boundary="------------X0jWnYPUl0BYtxXwiZkCSoDE";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Jiri Slaby <jirislaby@kernel.org>, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org,
- Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- linux-serial@vger.kernel.org
-Message-ID: <4ae60e8c-6a86-4895-b8fe-48de5b64b6c8@suse.de>
-Subject: Re: [PATCH 31/45] tty: vt: use VESA blanking constants
-References: <20240118075756.10541-1-jirislaby@kernel.org>
- <20240118075756.10541-32-jirislaby@kernel.org>
- <39622a13-3999-4bf6-b8fc-f7a70c8cd5da@suse.de>
- <4976e06c-dffd-4b93-a828-34f998f2472a@kernel.org>
-In-Reply-To: <4976e06c-dffd-4b93-a828-34f998f2472a@kernel.org>
-
---------------X0jWnYPUl0BYtxXwiZkCSoDE
+ <4ae60e8c-6a86-4895-b8fe-48de5b64b6c8@suse.de>
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <4ae60e8c-6a86-4895-b8fe-48de5b64b6c8@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 
-SGkNCg0KQW0gMTguMDEuMjQgdW0gMDk6MzIgc2NocmllYiBKaXJpIFNsYWJ5Og0KPiBPbiAx
-OC4gMDEuIDI0LCA5OjMwLCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4+IEFtIDE4LjAx
-LjI0IHVtIDA4OjU3IHNjaHJpZWIgSmlyaSBTbGFieSAoU1VTRSk6DQo+Pj4gVGhlcmUgYXJl
-IFZFU0EgYmxhbmtpbmcgY29uc3RhbnRzIGRlZmluZWQgaW4gY29uc29sZS5oIGFscmVhZHku
-IFNvIHVzZQ0KPj4+IHRoZW0gaW4gdGhlIGNvbnNvbGUgY29kZSBpbnN0ZWFkIG9mIGNvbnN0
-YW50IHZhbHVlcy4NCj4+DQo+PiBUaGVzZSBjb25zdGFudHMgYWxzbyBleGlzdCBpbiBpbmNs
-dWRlL3VhcGkvbGludXgvZmIuaC4gSXQgd291bGQgYmUgDQo+PiBuaWNlIHRvIGZpbmQgYSBj
-b21tb24gaGVhZGVyIHdoZXJlIHRoZXkgY2FuIGJlIHNoYXJlZC4NCj4gDQo+IEhpLA0KPiAN
-Cj4gc2VlIDMyLzQ1Lg0KPiANCj4gSSBhY3R1YWxseSBkb24ndCBrbm93IGhvdyB0byBmaXgg
-dGhhdCBuaWNlbHkgd2hpbGUga2VlcGluZyB1YXBpIGhhcHB5Lg0KDQpJcyBpdCBoYXJkIHRv
-IGdldCBhIG5ldyBVQVBJIGhlYWRlciBhY2NlcHRlZCAoaG9uZXN0IHF1ZXN0aW9uKT8gVGhl
-cmUgDQphcmUgYSBmZXcgdGhpbmdzIEknZCBsaWtlIHRvIHNwbGl0IG9mZiBmcm9tIGZiZGV2
-LiBCdXQgdGhhdCB3b3VsZCANCnJlcXVpcmUgVUFQSSBoZWFkZXJzLg0KDQpCZXN0IHJlZ2Fy
-ZHMNClRob21hcw0KDQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBE
-cml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgN
-CkZyYW5rZW5zdHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55DQpHRjogSXZv
-IFRvdGV2LCBBbmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGllbiBNb2VybWFu
-DQpIUkIgMzY4MDkgKEFHIE51ZXJuYmVyZykNCg==
+On 18. 01. 24, 9:41, Thomas Zimmermann wrote:
+> Is it hard to get a new UAPI header accepted (honest question)?
 
---------------X0jWnYPUl0BYtxXwiZkCSoDE--
+Not at all, IMO. The header just needs to be correct™ as it would be set 
+in stone once released.
 
---------------loYU98uSvn7axArMuY6K9YWs
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+thanks,
+-- 
+js
+suse labs
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmWo5D4FAwAAAAAACgkQlh/E3EQov+AK
-YRAAwNY7Jyl75Qhbbmt3C/dTqKfAJAFsUDZmrNavvFGMixePlEbziUui1bavhXeLSScqseOTkH24
-E5EI5hSicdFOP7mO1m629XOw1WDg4o+yx9d3loIQpdLbMsnsrk9BaRmMiP9yls4lwQlykQuO0ueg
-JHtfcs3Gyaik3t7ZAzSfVqTmCGbXBBoC4WjfMPNL54FNL5mjbX9KulM8mN5MAY1bagluPZKpIkkq
-LzdQzwVE+TwAZHnNcu/n+HtwEfk0Li9kcrbf9k1OvgsdF/trlteWVJL5ZhPBBGZeS0XFvA392V0Z
-skNK8ilm/nVnxNg+rFTfIjLOj5dZTsg0lguBqTXPjXrB+D6UBOD8+WfCfyNez1105YT5JlIR6JFb
-192u8OQVqTtakINb4cdWChJGaiAWz6to37R10e8t55jxssKiXHdAlljPULoqtgZXvamcl19tcd5J
-Qxd/37BJYc1hlaWR+0ANu+/qXAkn6ZZCp+8iTm7G0FslMsLqe6KQY9CmircoxTVqjRa0fzobhBv6
-szJurAr59jXzhbddS8DCYemKjNBY4ljl1JXT6jB2VvHlOSG366H2FR1lRXsIlq7QEbElDWdUnDQr
-SqnMJ3VRk9ZKPT/M7b6CnQk9e4HnYUz4IrOQYNWU7fOPaWSzls2iSpf8CdbdoXp5i1CuQIgxHIsh
-6Zw=
-=rnib
------END PGP SIGNATURE-----
-
---------------loYU98uSvn7axArMuY6K9YWs--

@@ -1,118 +1,109 @@
-Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B60222575D
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jan 2024 14:17:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D268624B32;
+	Thu, 18 Jan 2024 14:57:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705587433; cv=none; b=WqjgLaGEuRizVxEhQA7yFx9js9foRcJ5RB9xbo00dXV/KD1yOHvlgM+vJEBareAJLi6DhPZtoqPe61j0fPkTvyzNKROi3/DsjDhIEiPdcu6iW6lmet8edtZU3VpbqmWKlvUTbr5Fndjq1HPU10zvFa1hn1SoWqMRtIC6eO7fdAA=
+	t=1705589870; cv=none; b=c2dcJ12OOEiJ7JHxfJKYX+IxZ/LViwpGzKFADU5whZq0wtnT+d5R3mfuq/O2XSsAqC4KfeC5X3j57rVZu+mHe+EFP4yQ05v4vQQ1tAZuzS2GRH0f9nfmGU39USTsZzQegspKcMSQYipPSNdqmhQQy8OAz0q3JeWF1H3dHgCUtKc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705587433; c=relaxed/simple;
-	bh=kBrP5/4z0gKWuaC7MCN2c/7hFq7Uz9QvDCUF8WuPVjY=;
-	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Google-Smtp-Source:X-Received:Received:Date:
-	 From:To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:X-Operating-System; b=ilJ9t4ze5TZxNBDTcVRAg73IFgvpnBlYOMrMSauCupuO4ZpKXH8xFhTniBqsqwjRZT+8Nnl5vPRs+a52Xy3m4LLwjSNzebr/LdTj6UXsukDtSragziSJxyDYOBPefSXyMBjpKSVTd0DlPLMX8EuZzUvkipoWT4UlEA93C2P6R1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=OgSkPFRY; arc=none smtp.client-ip=209.85.208.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="OgSkPFRY"
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-5573c79aac5so3137599a12.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 18 Jan 2024 06:17:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1705587430; x=1706192230; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=wF4iSgPnjSMZjszaSvukPCbLZVGeSigi+LPrvVrYLe4=;
-        b=OgSkPFRY+ea4ojIcr1Sw1dSZkIuD8LHCdEVqAZ+JVeMZxjodDAP8h3qRnmp6saz34S
-         xK724PdaXVxrod1xjK8thKbGrpLoCgezxd50RglYtmuIAzooY4HGaug5lda6neyJMLhz
-         5BUihN56PkCNGZzhBxGEIPBkQtyCRNbMA1oYQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705587430; x=1706192230;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wF4iSgPnjSMZjszaSvukPCbLZVGeSigi+LPrvVrYLe4=;
-        b=eJSOfJk+QK8sk9qYAvUUXZlHjZze7jpG1A5H8srsiFXo0tQS7qNZ8BVonlPhZSs9EG
-         2IvUgT2Z/50Zf7uIMCI62qSycXQ3qMuJu1EYHlYFk0xqjdnqhk3xa4eiaSnzFHt6myW+
-         Ke3Grv1L4qMJ2oSLsiF/bf6fSkOHt95UK5VWNNib4tZHxmvAiXfxUC8KiAxxMPN5CWCL
-         ILlqmwLhZ1IoAZC7z1GnjdrQ/aYQEfZC8vAEe3/Cn8dyde74vzC8g33oqChOgeGgYGtw
-         Rs8CgI9XwjaLyrv7HBKRJTTE882sjS5RcDtHz7y3IDkPV6k5oX0vfjQFTRyvgbpfqfct
-         zpHA==
-X-Gm-Message-State: AOJu0YzSc5AwZnk7MUaXtfJXOYULdklE4PI0tFs4Ir6YG0h6H6TbO/a6
-	EHcxxsRu1QAOvV1z30xnafVJW4uujTrknLaxNrpBocKvVX5WtWcBDDHJgUpYaH4=
-X-Google-Smtp-Source: AGHT+IGzoQ3SU0z6FJj+jiGUFdUlxq7hERImFqcv6wTD//GXqXOzJX5VAz8UujMWdI2SdWHXBbYftQ==
-X-Received: by 2002:a17:906:48d2:b0:a2c:d6f7:341f with SMTP id d18-20020a17090648d200b00a2cd6f7341fmr1137561ejt.3.1705587430002;
-        Thu, 18 Jan 2024 06:17:10 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id lz3-20020a170906fb0300b00a26a061eef8sm9175423ejb.69.2024.01.18.06.17.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Jan 2024 06:17:09 -0800 (PST)
-Date: Thu, 18 Jan 2024 15:17:07 +0100
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch, airlied@gmail.com,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 0/3] video: Simplify Kconfig options
-Message-ID: <Zaky46R04of5mPRX@phenom.ffwll.local>
-References: <20240118090721.7995-1-tzimmermann@suse.de>
+	s=arc-20240116; t=1705589870; c=relaxed/simple;
+	bh=9vG04yUoo2s196yOGMlC3D8vecQCNCa6UnsnMYuaq2o=;
+	h=Received:Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
+	 References:Autocrypt:Content-Type:Content-Transfer-Encoding:
+	 User-Agent:MIME-Version:X-Original-Sender:X-Originating-IP:
+	 X-ZEDAT-Hint; b=J8ukLx9U6GoL+uvZEhBeJcdt4CZMx0rwQ9GS6QhIaLvv4uqiIM+KJjwDJbDMpwfJSIOP8NPOTyah89uABm8LwaTyFH0wxbjCF90y8wLnCSg9GkkibKuGj1RtHu58R16V8Cn1AvmI9QukV4taXVzJg8JizwxJvm2ENk0Njcq50ic=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; arc=none smtp.client-ip=130.133.4.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.95)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1rQTpj-000p61-ND; Thu, 18 Jan 2024 15:57:31 +0100
+Received: from p5dc556fd.dip0.t-ipconnect.de ([93.197.86.253] helo=[192.168.178.20])
+          by inpost2.zedat.fu-berlin.de (Exim 4.95)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1rQTpj-003N7a-FJ; Thu, 18 Jan 2024 15:57:31 +0100
+Message-ID: <4e4dfece5f2f44c6fc826735ddef67ca3c3ac2dc.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH] sh: ecovec24: Rename missed backlight field from fbdev
+ to dev
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Yoshinori Sato
+ <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Thomas
+ Zimmermann <tzimmermann@suse.de>, Sam Ravnborg <sam@ravnborg.org>, Daniel
+ Thompson <daniel.thompson@linaro.org>
+Cc: linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel test
+ robot <lkp@intel.com>
+Date: Thu, 18 Jan 2024 15:57:30 +0100
+In-Reply-To: <20230925111022.3626362-1-geert+renesas@glider.be>
+References: <20230925111022.3626362-1-geert+renesas@glider.be>
+Autocrypt: addr=glaubitz@physik.fu-berlin.de; prefer-encrypt=mutual;
+ keydata=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
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.50.3 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240118090721.7995-1-tzimmermann@suse.de>
-X-Operating-System: Linux phenom 6.5.0-4-amd64 
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-ZEDAT-Hint: PO
 
-On Thu, Jan 18, 2024 at 10:05:25AM +0100, Thomas Zimmermann wrote:
-> Replace CONFIG_VIDEO_CMDLINE and CONFIG_VIDEO_NOMODESET by the single
-> option CONFIG_VIDEO. Select the latter for DRM or fbdev. Both original
-> options used to be selected in most cases, so this change simplifies
-> the Kconfig rules.
-> 
-> Since commit ca6c080eef42 ("arch/parisc: Detect primary video device
-> from device instance") architecture helpers for fbdev do not longer
-> require fbdev in their implementation and could be used for non-fbdev
-> code as well. Eventually guarding them with CONFIG_VIDEO will make
-> them available to any subsystem.
-> 
-> v2:
-> 	* support CONFIG_FB_CORE=m via IS_ENABLED() (kernel test robot)
-> 
-> Thomas Zimmermann (3):
->   video/cmdline: Introduce CONFIG_VIDEO for video= parameter
->   video/cmdline: Hide __video_get_options() behind CONFIG_FB_CORE
->   video/nomodeset: Select nomodeset= parameter with CONFIG_VIDEO
+On Mon, 2023-09-25 at 13:10 +0200, Geert Uytterhoeven wrote:
+> One instance of gpio_backlight_platform_data.fbdev was renamed, but the
+> second instance was forgotten, causing a build failure:
+>=20
+>     arch/sh/boards/mach-ecovec24/setup.c: In function =E2=80=98arch_setup=
+=E2=80=99:
+>     arch/sh/boards/mach-ecovec24/setup.c:1223:37: error: =E2=80=98struct =
+gpio_backlight_platform_data=E2=80=99 has no member named =E2=80=98fbdev=E2=
+=80=99; did you mean =E2=80=98dev=E2=80=99?
+>      1223 |                 gpio_backlight_data.fbdev =3D NULL;
+> 	  |                                     ^~~~~
+> 	  |                                     dev
+>=20
+> Fix this by updating the second instance.
+>=20
+> Fixes: ed369def91c1579a ("backlight/gpio_backlight: Rename field 'fbdev' =
+to 'dev'")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202309231601.Uu6qcRnU-lkp@i=
+ntel.com/
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  arch/sh/boards/mach-ecovec24/setup.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-e=
+covec24/setup.c
+> index 3be293335de54512..7a788d44cc73496c 100644
+> --- a/arch/sh/boards/mach-ecovec24/setup.c
+> +++ b/arch/sh/boards/mach-ecovec24/setup.c
+> @@ -1220,7 +1220,7 @@ static int __init arch_setup(void)
+>  		lcdc_info.ch[0].num_modes		=3D ARRAY_SIZE(ecovec_dvi_modes);
+> =20
+>  		/* No backlight */
+> -		gpio_backlight_data.fbdev =3D NULL;
+> +		gpio_backlight_data.dev =3D NULL;
+> =20
+>  		gpio_set_value(GPIO_PTA2, 1);
+>  		gpio_set_value(GPIO_PTU1, 1);
 
-On the series:
+Reviewed-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-
-> 
->  drivers/gpu/drm/Kconfig           |  3 +--
->  drivers/staging/sm750fb/Kconfig   |  1 -
->  drivers/video/Kconfig             |  5 +----
->  drivers/video/Makefile            |  3 +--
->  drivers/video/cmdline.c           |  2 ++
->  drivers/video/fbdev/Kconfig       | 37 -------------------------------
->  drivers/video/fbdev/core/Kconfig  |  2 +-
->  drivers/video/fbdev/core/fbmem.c  |  2 --
->  drivers/video/fbdev/geode/Kconfig |  3 ---
->  include/linux/fb.h                |  7 ------
->  include/video/cmdline.h           |  8 ++-----
->  11 files changed, 8 insertions(+), 65 deletions(-)
-> 
-> 
-> base-commit: 05b317e8457c8e2bd1a797c9440ec07b7f341584
-> -- 
-> 2.43.0
-> 
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

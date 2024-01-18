@@ -1,196 +1,210 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from domac.alu.hr (domac.alu.unizg.hr [161.53.235.3])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4358C3175A
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jan 2024 21:14:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DFA52C197;
+	Thu, 18 Jan 2024 21:44:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.235.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705612499; cv=none; b=ZoCaC4NojWx6ysSoPMMfDrpJn24OCVDaTDIPWeqUReKpOWzE+M1vTjwnHYE4XSFCWuWnZbFdb1XdzulzcvJ/yO1pMrOaiZuelYTJ6sdYl35xacQpdi0SFyYw3/8Kx1TwOHirHwoSbxABOMJIk0QXrn4ZD2LsGMawL1HywcIZ7bs=
+	t=1705614283; cv=none; b=Qhy5iUscVuqxfdrmQv4gRU6UU++DIgym0+zVaecgPA1bBINAHu1mipNmrfwD7o9vuaxZBT7NY4evA/91/Xc+9iBgKs0D3Of3Zo7gkv9F8Vtn7hCTJydNZ1TpWZBSYHt5unL/FOV12Xaom+uVnDtSOmdvYvphmVUltNDotV+Peo0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705612499; c=relaxed/simple;
-	bh=LUIEKbVcQtC1NIu+/WCbLot0r1BC95WJSTJQ0d1HOjU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JdkGqS62N2h7TN7m+aH5tPoXZ7swlbJ9LgS+nBTe0p4hcAb+Ro7ZEyBtZTn2520RU2SILyxAcAROEgGyDOCyGzC0/rY+/Fr4tOIUH2trVV1HIwG6S29LZI8GFs2HYOju46Jm59OvXFx0PmW1MBVAUnrs2+u1RUU12iEru1+b0oE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rQZia-0007Jv-N2; Thu, 18 Jan 2024 22:14:32 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rQZiW-000m90-Ga; Thu, 18 Jan 2024 22:14:28 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rQZiW-002lX3-1E;
-	Thu, 18 Jan 2024 22:14:28 +0100
-Date: Thu, 18 Jan 2024 22:14:28 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
-	Helge Deller <deller@gmx.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Prathu Baronia <prathubaronia2011@gmail.com>, 
-	Sam Ravnborg <sam@ravnborg.org>, Sui Jingfeng <suijingfeng@loongson.cn>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-parisc@vger.kernel.org
-Subject: Re: [BUG][BISECTED] Freeze at loading init ramdisk
-Message-ID: <esh5npfi6ahrlralvmcrnqtrfkarlhsqahbtmfnw5pclr2pf2u@xzitdq6wi7of>
-References: <8a6aa228-f2da-4dcd-93c1-e34614cd6471@alu.unizg.hr>
- <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
- <gevqxytidg5efylozindaqntkbl4yeoyzqnh5m3ylitmipgum3@sgmv7qieo7rs>
- <1fe9b78c-7fb5-4d7b-a754-afd563950829@alu.unizg.hr>
+	s=arc-20240116; t=1705614283; c=relaxed/simple;
+	bh=IS1yEaRMuerTQxizDzJWXJ8G5cZ1GL+CPG/5u9t2Fnw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=f18GxhJSe++8HbS3CuzfHCo8dq0mwR/uaRQGjdCyh60II1Dfq+JYKk1RR1wcJYt8kbQWUoPk+FHEZtOCGIxwjlUkXMYYKW1HOvdwutMbhv+LB/Jf5kfWGyXjFNMwpTbC2l1iRjYOXLHBNA44xlvZDFyUmhr9zpJA9DEyTZAezIM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alu.unizg.hr; spf=pass smtp.mailfrom=alu.unizg.hr; dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b=qmBU8Ysd; dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b=JnTyWDD3; arc=none smtp.client-ip=161.53.235.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alu.unizg.hr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alu.unizg.hr
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b="qmBU8Ysd";
+	dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b="JnTyWDD3"
+Received: from localhost (localhost [127.0.0.1])
+	by domac.alu.hr (Postfix) with ESMTP id 74432601A5;
+	Thu, 18 Jan 2024 22:44:35 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=alu.unizg.hr; s=mail;
+	t=1705614275; bh=IS1yEaRMuerTQxizDzJWXJ8G5cZ1GL+CPG/5u9t2Fnw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=qmBU8YsdJIZZgtpi5Zh0hAsUah5INpLoQmhgnJcrXZ31WfutbQzrzUEv2hhsxcr++
+	 wVwbxqD4R/rshgVeI5/+J+tHmZ/54tTItW13vrKZXaDgbajqkL20aAZCKLl7bvSTsp
+	 8FeOhSn1iP3LPQVcKAVlicTsknY7Go3tQJFSAd0+Zfn528vcc6WgeoUYx2ROQg4JjU
+	 yAEB0/gIZ5iN14tWWPoD3Kl5vGMDMoeA0uB5M1RigW0j7YY6QQJaLC+6YZWjcEkYRZ
+	 WKkJWfnYjLyK6U9QJFpZJ66+t2i68f4jWaVuoiB6dVtUnq7qouU0bmmM93tOTsxLZl
+	 7A10wK6m+7ZKQ==
+X-Virus-Scanned: Debian amavisd-new at domac.alu.hr
+Received: from domac.alu.hr ([127.0.0.1])
+	by localhost (domac.alu.hr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id hj2rLTFDBh8j; Thu, 18 Jan 2024 22:44:33 +0100 (CET)
+Received: from [192.168.178.20] (dh207-40-167.xnet.hr [88.207.40.167])
+	by domac.alu.hr (Postfix) with ESMTPSA id BE6CC601A1;
+	Thu, 18 Jan 2024 22:44:31 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=alu.unizg.hr; s=mail;
+	t=1705614272; bh=IS1yEaRMuerTQxizDzJWXJ8G5cZ1GL+CPG/5u9t2Fnw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=JnTyWDD3kNHEMWtbilVBMLIVc01OSgOF/i6pubmDiBmvxUQZQ0IL1O1f6Vn7IDZqg
+	 jXoUKJxyTuliQU8ZPQnDg7v5zAwn/7t4CnUm6vIQQF28dLtCR40gmkKQzEFOs5RTLv
+	 qHHdla3+p2+z7MX/Tl7GccPaHie3zXEBJggUtUeUmYqtSQ9OdxQP+ngKJZukfrPYAR
+	 /JPakAugRrIsZkWjmsoeJ7oMm69aCSFZR5r5bfutiMo8WS2NccIoVg6F1ijk0H9kUj
+	 nvkoPg/hlrmYa0vKxXEp0H8X4DQSB56A6NFF/bCLE7uLToqzAXhtp5nicdJ7fP3Zw1
+	 DxXH3D+btMeTw==
+Message-ID: <b9ecdb2e-f62c-4661-a786-496804e09606@alu.unizg.hr>
+Date: Thu, 18 Jan 2024 22:44:27 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="nprtap22skgv2jmt"
-Content-Disposition: inline
-In-Reply-To: <1fe9b78c-7fb5-4d7b-a754-afd563950829@alu.unizg.hr>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG][BISECTED] Freeze at loading init ramdisk
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Helge Deller <deller@gmx.de>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Hans de Goede <hdegoede@redhat.com>, Huacai Chen <chenhuacai@kernel.org>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Prathu Baronia <prathubaronia2011@gmail.com>, Sam Ravnborg
+ <sam@ravnborg.org>, Sui Jingfeng <suijingfeng@loongson.cn>,
+ Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org
+References: <8a6aa228-f2da-4dcd-93c1-e34614cd6471@alu.unizg.hr>
+ <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
+ <gevqxytidg5efylozindaqntkbl4yeoyzqnh5m3ylitmipgum3@sgmv7qieo7rs>
+ <1fe9b78c-7fb5-4d7b-a754-afd563950829@alu.unizg.hr>
+ <esh5npfi6ahrlralvmcrnqtrfkarlhsqahbtmfnw5pclr2pf2u@xzitdq6wi7of>
+Content-Language: en-US
+From: Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
+In-Reply-To: <esh5npfi6ahrlralvmcrnqtrfkarlhsqahbtmfnw5pclr2pf2u@xzitdq6wi7of>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
---nprtap22skgv2jmt
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 18, 2024 at 09:04:05PM +0100, Mirsad Todorovac wrote:
->=20
->=20
-> On 1/18/24 08:45, Uwe Kleine-K=F6nig wrote:
-> > Hello Mirsad,
-> >=20
-> > On Wed, Jan 17, 2024 at 07:47:49PM +0100, Mirsad Todorovac wrote:
-> > > On 1/16/24 01:32, Mirsad Todorovac wrote:
-> > > > On the Ubuntu 22.04 LTS Jammy platform, on a mainline vanilla torva=
-lds tree kernel, the boot
-> > > > freezes upon first two lines and before any systemd messages.
-> > > >=20
-> > > > (Please find the config attached.)
-> > > >=20
-> > > > Bisecting the bug led to this result:
-> > > >=20
-> > > > marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
-> > > > d97a78423c33f68ca6543de510a409167baed6f5 is the first bad commit
-> > > > commit d97a78423c33f68ca6543de510a409167baed6f5
-> > > > Merge: 61da593f4458 689237ab37c5
-> > > > Author: Linus Torvalds <torvalds@linux-foundation.org>
-> > > > Date:=A0=A0 Fri Jan 12 14:38:08 2024 -0800
-> > > >=20
-> > > > [...]
-> > > >=20
-> > > > Hope this helps.
-> > >=20
-> > > P.S.
-> > >=20
-> > > As I see that this is a larger merge commit, with 5K+ lines changed, =
-I don't think I can
-> > > bisect further to determine the culprit.
-> >=20
-> > Actually it's not that hard. If a merge commit is the first bad commit
-> > for a bisection, either the merge wasn't done correctly (less likely,
-> > looking at d97a78423c33f68ca6543de510a409167baed6f5 I'd bet this isn't
-> > the problem); or changes on different sides conflict or you did
-> > something wrong during bisection.
-> >=20
-> > To rule out the third option, you can just retest d97a78423c33,
-> > 61da593f4458 and 689237ab37c5. If d97a78423c33 is the only bad one, you
-> > did it right.
->=20
-> This was confirmed.
->=20
-> > Then to further debug the second option you can find out the offending
-> > commit on each side with a bisection as follows, here for the RHS (i.e.
-> > 689237ab37c5):
-> >=20
-> > 	git bisect start 689237ab37c5 $(git merge-base 61da593f4458 689237ab37=
-c5)
-> >=20
-> > and then in each bisection step do:
-> >=20
-> > 	git merge --no-commit 61da593f4458
-> > 	test if the problem is present
-> > 	git reset --hard
-> > 	git bisect good/bad
-> >=20
-> > In this case you get merge conflicts in drivers/video/fbdev/amba-clcd.c
-> > and drivers/video/fbdev/vermilion/vermilion.c. In the assumption that
-> > you don't have these enabled in your .config, you can just ignore these.
-> >=20
-> > Side note: A problem during bisection can be that the .config changes
-> > along the process. You should put your config into (say)
-> > arch/x86/configs/lala_defconfig and do
-> >=20
-> > 	make lala_defconfig
-> >=20
-> > before building each step to prevent this.
->=20
-> I must have done something wrong:
->=20
-> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect log
-> # bad: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove d=
-river
-> # good: [de927f6c0b07d9e698416c5b287c521b07694cac] Merge tag 's390-6.8-1'=
- of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
-> git bisect start '689237ab37c5' 'de927f6c0b07d9e698416c5b287c521b07694cac'
-> # good: [d9f25b59ed85ae45801cf45fe17eb269b0ef3038] fbdev: Remove support =
-for Carillo Ranch driver
-> git bisect good d9f25b59ed85ae45801cf45fe17eb269b0ef3038
-> # good: [e2e0b838a1849f92612a8305c09aaf31bf824350] video/sticore: Remove =
-info field from STI struct
-> git bisect good e2e0b838a1849f92612a8305c09aaf31bf824350
-> # good: [778e73d2411abc8f3a2d60dbf038acaec218792e] drm/hyperv: Remove fir=
-mware framebuffers with aperture helper
-> git bisect good 778e73d2411abc8f3a2d60dbf038acaec218792e
-> # good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear =
-screen_info state after consuming it
-> git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
-> marvin@defiant:~/linux/kernel/linux_torvalds$
->=20
-> with the error:
->=20
-> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
-> Bisecting: 0 revisions left to test after this (roughly 0 steps)
-> drivers/video/fbdev/amba-clcd.c: needs merge
-> drivers/video/fbdev/vermilion/vermilion.c: needs merge
-> error: you need to resolve your current index first
+On 1/18/24 22:14, Uwe Kleine-König wrote:
+> On Thu, Jan 18, 2024 at 09:04:05PM +0100, Mirsad Todorovac wrote:
+>>
+>>
+>> On 1/18/24 08:45, Uwe Kleine-König wrote:
+>>> Hello Mirsad,
+>>>
+>>> On Wed, Jan 17, 2024 at 07:47:49PM +0100, Mirsad Todorovac wrote:
+>>>> On 1/16/24 01:32, Mirsad Todorovac wrote:
+>>>>> On the Ubuntu 22.04 LTS Jammy platform, on a mainline vanilla torvalds tree kernel, the boot
+>>>>> freezes upon first two lines and before any systemd messages.
+>>>>>
+>>>>> (Please find the config attached.)
+>>>>>
+>>>>> Bisecting the bug led to this result:
+>>>>>
+>>>>> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
+>>>>> d97a78423c33f68ca6543de510a409167baed6f5 is the first bad commit
+>>>>> commit d97a78423c33f68ca6543de510a409167baed6f5
+>>>>> Merge: 61da593f4458 689237ab37c5
+>>>>> Author: Linus Torvalds <torvalds@linux-foundation.org>
+>>>>> Date:   Fri Jan 12 14:38:08 2024 -0800
+>>>>>
+>>>>> [...]
+>>>>>
+>>>>> Hope this helps.
+>>>>
+>>>> P.S.
+>>>>
+>>>> As I see that this is a larger merge commit, with 5K+ lines changed, I don't think I can
+>>>> bisect further to determine the culprit.
+>>>
+>>> Actually it's not that hard. If a merge commit is the first bad commit
+>>> for a bisection, either the merge wasn't done correctly (less likely,
+>>> looking at d97a78423c33f68ca6543de510a409167baed6f5 I'd bet this isn't
+>>> the problem); or changes on different sides conflict or you did
+>>> something wrong during bisection.
+>>>
+>>> To rule out the third option, you can just retest d97a78423c33,
+>>> 61da593f4458 and 689237ab37c5. If d97a78423c33 is the only bad one, you
+>>> did it right.
+>>
+>> This was confirmed.
+>>
+>>> Then to further debug the second option you can find out the offending
+>>> commit on each side with a bisection as follows, here for the RHS (i.e.
+>>> 689237ab37c5):
+>>>
+>>> 	git bisect start 689237ab37c5 $(git merge-base 61da593f4458 689237ab37c5)
+>>>
+>>> and then in each bisection step do:
+>>>
+>>> 	git merge --no-commit 61da593f4458
+>>> 	test if the problem is present
+>>> 	git reset --hard
+>>> 	git bisect good/bad
+>>>
+>>> In this case you get merge conflicts in drivers/video/fbdev/amba-clcd.c
+>>> and drivers/video/fbdev/vermilion/vermilion.c. In the assumption that
+>>> you don't have these enabled in your .config, you can just ignore these.
+>>>
+>>> Side note: A problem during bisection can be that the .config changes
+>>> along the process. You should put your config into (say)
+>>> arch/x86/configs/lala_defconfig and do
+>>>
+>>> 	make lala_defconfig
+>>>
+>>> before building each step to prevent this.
+>>
+>> I must have done something wrong:
+>>
+>> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect log
+>> # bad: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove driver
+>> # good: [de927f6c0b07d9e698416c5b287c521b07694cac] Merge tag 's390-6.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
+>> git bisect start '689237ab37c5' 'de927f6c0b07d9e698416c5b287c521b07694cac'
+>> # good: [d9f25b59ed85ae45801cf45fe17eb269b0ef3038] fbdev: Remove support for Carillo Ranch driver
+>> git bisect good d9f25b59ed85ae45801cf45fe17eb269b0ef3038
+>> # good: [e2e0b838a1849f92612a8305c09aaf31bf824350] video/sticore: Remove info field from STI struct
+>> git bisect good e2e0b838a1849f92612a8305c09aaf31bf824350
+>> # good: [778e73d2411abc8f3a2d60dbf038acaec218792e] drm/hyperv: Remove firmware framebuffers with aperture helper
+>> git bisect good 778e73d2411abc8f3a2d60dbf038acaec218792e
+>> # good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear screen_info state after consuming it
+>> git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
+>> marvin@defiant:~/linux/kernel/linux_torvalds$
+>>
+>> with the error:
+>>
+>> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
+>> Bisecting: 0 revisions left to test after this (roughly 0 steps)
+>> drivers/video/fbdev/amba-clcd.c: needs merge
+>> drivers/video/fbdev/vermilion/vermilion.c: needs merge
+>> error: you need to resolve your current index first
+> 
+> It seems you forgot the "git reset --hard" step.  Doing it in this state
+> should still be possible.
 
-It seems you forgot the "git reset --hard" step.  Doing it in this state
-should still be possible.
+Well, it was possible, but I obviously got the wrong result:
 
-Best regards
-Uwe
+marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect log
+# bad: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove driver
+# good: [de927f6c0b07d9e698416c5b287c521b07694cac] Merge tag 's390-6.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
+git bisect start '689237ab37c5' 'de927f6c0b07d9e698416c5b287c521b07694cac'
+# good: [d9f25b59ed85ae45801cf45fe17eb269b0ef3038] fbdev: Remove support for Carillo Ranch driver
+git bisect good d9f25b59ed85ae45801cf45fe17eb269b0ef3038
+# good: [e2e0b838a1849f92612a8305c09aaf31bf824350] video/sticore: Remove info field from STI struct
+git bisect good e2e0b838a1849f92612a8305c09aaf31bf824350
+# good: [778e73d2411abc8f3a2d60dbf038acaec218792e] drm/hyperv: Remove firmware framebuffers with aperture helper
+git bisect good 778e73d2411abc8f3a2d60dbf038acaec218792e
+# good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear screen_info state after consuming it
+git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
+# good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear screen_info state after consuming it
+git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
+# good: [c25a19afb81cfd73dab494ba64f9a434cf1a4499] fbdev/hyperv_fb: Do not clear global screen_info
+git bisect good c25a19afb81cfd73dab494ba64f9a434cf1a4499
+# first bad commit: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove driver
+marvin@defiant:~/linux/kernel/linux_torvalds$ uname -rms
+Linux 6.7.0-initrd-retest-02751-g689237ab37c5 x86_64
+marvin@defiant:~/linux/kernel/linux_torvalds$
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+... meaning, I get the 689237ab37c5 as "first bad commit" but it boots.
 
---nprtap22skgv2jmt
-Content-Type: application/pgp-signature; name="signature.asc"
+If you see an obvious error, it would be helpful, otherwise I might retry the bisect, but later.
 
------BEGIN PGP SIGNATURE-----
+I am puzzled, but bisecting a merge commit is my first attempt at this.
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmWplLMACgkQj4D7WH0S
-/k7yHAf/bzavMnfba1j/V8B/3Gx4zR6zjYx9rMfvDkIIKxsg4k2lDBZQUyRCwYu2
-XvjLPT7YSPUj7zJ2KR5RbJAEL6rytOigXv4NljQLH6FHF2yBVh9fh6lKk62PWbF1
-sPV+g/lYT/WbmnCEcbSbqTpju/75Rp+Z9csfLN21F44M4MoJSsULMwlZ7fQ++v+X
-OjOzAQOE7dcPRKTG8xcv7fktoFregB71cqzROQJihJ6ajpOfSSmR0rw9F0pw0HUI
-i4nbTIxgkQ4lw+tpeSFGbD6ZsyU5Y0YuicxVvN3B+x8+hxN4DI82ISdlIJ7yrCPV
-6yIlg55o4LL/bpOW4iFZWaiXxtiBzw==
-=d3U1
------END PGP SIGNATURE-----
-
---nprtap22skgv2jmt--
+Best regards,
+Mirsad

@@ -1,210 +1,110 @@
-Received: from domac.alu.hr (domac.alu.unizg.hr [161.53.235.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DFA52C197;
-	Thu, 18 Jan 2024 21:44:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.235.3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6CDB2376A;
+	Fri, 19 Jan 2024 08:18:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705614283; cv=none; b=Qhy5iUscVuqxfdrmQv4gRU6UU++DIgym0+zVaecgPA1bBINAHu1mipNmrfwD7o9vuaxZBT7NY4evA/91/Xc+9iBgKs0D3Of3Zo7gkv9F8Vtn7hCTJydNZ1TpWZBSYHt5unL/FOV12Xaom+uVnDtSOmdvYvphmVUltNDotV+Peo0=
+	t=1705652314; cv=none; b=MMJxClQPgfUWXXnM71jBmnlrZWWckMZXA2njzdUTIU5d3Z/Ws4NbRD7Fk9JB1O5HUsiDlLWsqcbiqmGdop0DBcCQztoeo6cwMfN9V+u62Magu6A2OAaOu9elAAB8+R8JZiiD+u5K23pkTfB9FYTvoKasTeGX6n6Bel4spm71WEI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705614283; c=relaxed/simple;
-	bh=IS1yEaRMuerTQxizDzJWXJ8G5cZ1GL+CPG/5u9t2Fnw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=f18GxhJSe++8HbS3CuzfHCo8dq0mwR/uaRQGjdCyh60II1Dfq+JYKk1RR1wcJYt8kbQWUoPk+FHEZtOCGIxwjlUkXMYYKW1HOvdwutMbhv+LB/Jf5kfWGyXjFNMwpTbC2l1iRjYOXLHBNA44xlvZDFyUmhr9zpJA9DEyTZAezIM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alu.unizg.hr; spf=pass smtp.mailfrom=alu.unizg.hr; dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b=qmBU8Ysd; dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b=JnTyWDD3; arc=none smtp.client-ip=161.53.235.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alu.unizg.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alu.unizg.hr
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b="qmBU8Ysd";
-	dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b="JnTyWDD3"
-Received: from localhost (localhost [127.0.0.1])
-	by domac.alu.hr (Postfix) with ESMTP id 74432601A5;
-	Thu, 18 Jan 2024 22:44:35 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=alu.unizg.hr; s=mail;
-	t=1705614275; bh=IS1yEaRMuerTQxizDzJWXJ8G5cZ1GL+CPG/5u9t2Fnw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=qmBU8YsdJIZZgtpi5Zh0hAsUah5INpLoQmhgnJcrXZ31WfutbQzrzUEv2hhsxcr++
-	 wVwbxqD4R/rshgVeI5/+J+tHmZ/54tTItW13vrKZXaDgbajqkL20aAZCKLl7bvSTsp
-	 8FeOhSn1iP3LPQVcKAVlicTsknY7Go3tQJFSAd0+Zfn528vcc6WgeoUYx2ROQg4JjU
-	 yAEB0/gIZ5iN14tWWPoD3Kl5vGMDMoeA0uB5M1RigW0j7YY6QQJaLC+6YZWjcEkYRZ
-	 WKkJWfnYjLyK6U9QJFpZJ66+t2i68f4jWaVuoiB6dVtUnq7qouU0bmmM93tOTsxLZl
-	 7A10wK6m+7ZKQ==
-X-Virus-Scanned: Debian amavisd-new at domac.alu.hr
-Received: from domac.alu.hr ([127.0.0.1])
-	by localhost (domac.alu.hr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hj2rLTFDBh8j; Thu, 18 Jan 2024 22:44:33 +0100 (CET)
-Received: from [192.168.178.20] (dh207-40-167.xnet.hr [88.207.40.167])
-	by domac.alu.hr (Postfix) with ESMTPSA id BE6CC601A1;
-	Thu, 18 Jan 2024 22:44:31 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=alu.unizg.hr; s=mail;
-	t=1705614272; bh=IS1yEaRMuerTQxizDzJWXJ8G5cZ1GL+CPG/5u9t2Fnw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=JnTyWDD3kNHEMWtbilVBMLIVc01OSgOF/i6pubmDiBmvxUQZQ0IL1O1f6Vn7IDZqg
-	 jXoUKJxyTuliQU8ZPQnDg7v5zAwn/7t4CnUm6vIQQF28dLtCR40gmkKQzEFOs5RTLv
-	 qHHdla3+p2+z7MX/Tl7GccPaHie3zXEBJggUtUeUmYqtSQ9OdxQP+ngKJZukfrPYAR
-	 /JPakAugRrIsZkWjmsoeJ7oMm69aCSFZR5r5bfutiMo8WS2NccIoVg6F1ijk0H9kUj
-	 nvkoPg/hlrmYa0vKxXEp0H8X4DQSB56A6NFF/bCLE7uLToqzAXhtp5nicdJ7fP3Zw1
-	 DxXH3D+btMeTw==
-Message-ID: <b9ecdb2e-f62c-4661-a786-496804e09606@alu.unizg.hr>
-Date: Thu, 18 Jan 2024 22:44:27 +0100
+	s=arc-20240116; t=1705652314; c=relaxed/simple;
+	bh=nka9qg98D0WG/fpsgyCtxIOzejbMklwfQIFqBlggomg=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=thu90zRnUW8P7DOv3QL1HO4QKkQy9ZbUwd4LPWJFuUmk2To+/HLNdBRNZgszAZSkiEq9T7F/hzMQhj80VALl5eflKTJY04Ji1cCzC1V2UWQJJC6RZCK4VvySvIr/L+0tVQSdayPnpM7fuh9Zzuuky+e6wjZBXd2Tfi3IkU0e07o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; arc=none smtp.client-ip=130.133.4.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.95)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1rQk4y-0012W7-R9; Fri, 19 Jan 2024 09:18:20 +0100
+Received: from p5dc556fd.dip0.t-ipconnect.de ([93.197.86.253] helo=suse-laptop.fritz.box)
+          by inpost2.zedat.fu-berlin.de (Exim 4.95)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1rQk4y-001jQj-J2; Fri, 19 Jan 2024 09:18:20 +0100
+Message-ID: <8aebb76605f567042f68f3cd8b8634b4501f8ca6.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH] sh: ecovec24: Rename missed backlight field from fbdev
+ to dev
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Yoshinori Sato
+ <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Thomas
+ Zimmermann <tzimmermann@suse.de>, Sam Ravnborg <sam@ravnborg.org>, Daniel
+ Thompson <daniel.thompson@linaro.org>
+Cc: linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel test
+ robot <lkp@intel.com>
+Date: Fri, 19 Jan 2024 09:18:19 +0100
+In-Reply-To: <20230925111022.3626362-1-geert+renesas@glider.be>
+References: <20230925111022.3626362-1-geert+renesas@glider.be>
+Autocrypt: addr=glaubitz@physik.fu-berlin.de; prefer-encrypt=mutual;
+ keydata=mQINBE3JE9wBEADMrYGNfz3oz6XLw9XcWvuIxIlPWoTyw9BxTicfGAv0d87wngs9U+d52t/REggPePf34gb7/k8FBY1IgyxnZEB5NxUb1WtW0M3GUxpPx6gBZqOm7SK1ZW3oSORw+T7Aezl3Zq4Nr4Nptqx7fnLpXfRDs5iYO/GX8WuL8fkGS/gIXtxKewd0LkTlb6jq9KKq8qn8/BN5YEKqJlM7jsENyA5PIe2npN3MjEg6p+qFrmrzJRuFjjdf5vvGfzskrXCAKGlNjMMA4TgZvugOFmBI/iSyV0IOaj0uKhes0ZNX+lQFrOB4j6I5fTBy7L/T3W/pCWo3wVkknNYa8TDYT73oIZ7Aimv+k7OzRfnxsSOAZT8Re1Yt8mvzr6FHVFjr/VdyTtO5JgQZ6LEmvo4Ro+2ByBmCHORCQ0NJhD1U3avjGfvfslG999W0WEZLTeaGkBAN1yG/1bgGAytQQkD9NsVXqBy7S3LVv9bB844ysW5Aj1nvtgIz14E2WL8rbpfjJMXi7B5ha6Lxf3rFOgxpr6ZoEn+bGG4hmrO+/ReA4SerfMqwSTnjZsZvxMJsx2B9c8DaZE8GsA4I6lsihbJmXhw8i7Cta8Dx418wtEbXhL6m/UEk60O7QD1VBgGqDMnJDFSlvKa9D+tZde/kHSNmQmLLzxtDbNgBgmR0jUlmxirijnm8bwARAQABtEBKb2huIFBhdWwgQWRyaWFuIEdsYXViaXR6IChEZWJpYW4gUHJvamVjdCkgPGdsYXViaXR6QGRlYmlhbi5vcmc+iQI3BBMBCAAhBQJRnmPwAhsDBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheAAAoJEHQmOzf1tfkTF0gQAJgvGiKf5YW6+Qyss1qGwf+KHXb/6gIThY6GpSIro9vL/UxaakRCOloaXXAs3KpgBULOO8+prqU8GIqcd8tE3YvQFvvO3rN+8bhOiiD0lFmQSEHcpCW5ZRpdh
+	J5wy1t9Ddb1K/7XGzen3Uzx9bjKgDyikM3js1VtJHaFr8FGt5gtZIBDgp8QM9IRCv/32mPQxqmsaTczEzSNxTBM6Tc2NwNLus3Yh5OnFdxk1jzk+Ajpnqd/E/M7/CU5QznDgIJyopcMtOArv9Er+xe3gAXHkFvnPqcP+9UpzHB5N0HPYn4k4hsOTiJ41FHUapq8d1AuzrWyqzF9aMUi2kbHJdUmt9V39BbJIgjCysZPyGtFhR42fXHDnPARjxtRRPesEhjOeHei9ioAsZfT6bX+l6kSf/9gaxEKQe3UCXd3wbw68sXcvhzBVBxhXM91+Y7deHhNihMtqPyEmSyGXTHOMODysRU453E+XXTr2HkZPx4NV1dA8Vlid2NcMQ0iItD+85xeVznc8xquY/c1vPBeqneBWaE530Eo5e3YA7OGrxHwHbet3E210ng+xU8zUjQrFXMJm3xNpOe45RwmhCAt5z1gDTk5qNgjNgnU3mDp9DX6IffS3g2UJ02JeTrBY4hMpdVlmGCVOm9xipcPHreVGEBbM4eQnYnwbaqjVBBvy2DyfyN/tFRKb2huIFBhdWwgQWRyaWFuIEdsYXViaXR6IChGcmVpZSBVbml2ZXJzaXRhZXQgQmVybGluKSA8Z2xhdWJpdHpAcGh5c2lrLmZ1LWJlcmxpbi5kZT6JAlEEEwEIADsCGwMFCwkIBwMFFQoJCAsFFgIDAQACHgECF4AWIQRi/4p1hOApVpVGAAZ0Jjs39bX5EwUCWhQoUgIZAQAKCRB0Jjs39bX5Ez/ID/98r9c4WUSgOHVPSMVcOVziMOi+zPWfF1OhOXW+atpTM4LSSp66196xOlDFHOdNNmO6kxckXAX9ptvpBc0mRxa7OrC168fKzqR7P75eTsJnVaOu+uI/vvgsbUIosYdkkekCxDAbYCUwmzNotIspnFbxiSPMNrpw7Ud/yQkS9TDYeXnrZDhBp7p5+naWCD/yMvh7yVCA4Ea8+xDVoX
+	+kjv6EHJrwVupOpMa39cGs2rKYZbWTazcflKH+bXG3FHBrwh9XRjA6A1CTeC/zTVNgGF6wvw/qT2x9tS7WeeZ1jvBCJub2cb07qIfuvxXiGcYGr+W4z9GuLCiWsMmoff/Gmo1aeMZDRYKLAZLGlEr6zkYh1Abtiz0YLqIYVbZAnf8dCjmYhuwPq77IeqSjqUqI2Cb0oOOlwRKVWDlqAeo0Bh8DrvZvBAojJf4HnQZ/pSz0yaRed/0FAmkVfV+1yR6BtRXhkRF6NCmguSITC96IzE26C6n5DBb43MR7Ga/mof4MUufnKADNG4qz57CBwENHyx6ftWJeWZNdRZq10o0NXuCJZf/iulHCWS/hFOM5ygfONq1Vsj2ZDSWvVpSLj+Ufd2QnmsnrCr1ZGcl72OC24AmqFWJY+IyReHWpuABEVZVeVDQooJ0K4yqucmrFR7HyH7oZGgR0CgYHCI+9yhrXHrQpyLQ/Sm9obiBQYXVsIEFkcmlhbiBHbGF1Yml0eiAoU1VTRSBMSU5VWCBHbWJIKSA8Z2xhdWJpdHpAc3VzZS5jb20+iQJOBBMBCAA4FiEEYv+KdYTgKVaVRgAGdCY7N/W1+RMFAloSyhICGwMFCwkIBwMFFQoJCAsFFgIDAQACHgECF4AACgkQdCY7N/W1+ROnkQ//X6LVYXPi1D8/XFsoi0HDCvZhbWSzcGw6MQZKmTk42mNFKm/OrYBJ9d1St4Q3nRwH/ELzGb8liA02d4Ul+DV1Sv3P540LzZ4mmCi9wV+4Ohn6cXfaJNaTmHy1dFvg1NrVjMqGAFZkhTXRAvjRIQItyRvL//gKaciyKB/T0C3CIzbuTLBqtZMIIuP5nIgkwBvdw6H7EQ7kqOAO85S4FDSum/cLwLzdKygyvmPNOOtxvxa9QIryLf6h7HfWg68DvGDqIV9ZBoi8JjYZrZzaBmlPV8Iwm52uYnzsKM/LoyZ0G4v2u/WEtQEl7deLJjKby3kKmZGh9hQ
+	YImvOkrd9z8LQSvu0e8Qm8+JbRCCqUGkAPrRDFIzH8nFCFGCU/V+4LT2j68KMbApLkDQAFEDBcQVJYGnOZf7eU/EtYQIqVmGEjdOP7Qf/yMFzhc9GBXeE5mbe0LwA5LOO74FDH5qjwB5KI6VkTWPoXJoZA5waVC2sUSYOnmwFINkCLyyDoWaL9ubSbU9KTouuNm4F6XIssMHuX4OIKA7b2Kn5qfUFbd0ls8d5mY2gKcXBfEY+eKkhmuwZhd/7kP10awC3DF3QGhgqpaS100JW8z78el7moijZONwqXCS3epUol6q1pJ+zcapcFzO3KqcHTdVOKh6CXQci3Yv5NXuWDs/l2dMH4t2NvZC5Ag0ETckULgEQAKwmloVWzF8PYh5jB9ATf07kpnirVYf/kDk+QuVMPlydwPjh6/awfkqZ3SRHAyIb+9IC66RLpaF4WSPVWGs307+pa5AmTm16vzYA0DJ7vvRPxPzxPYq6p2WTjFqbq0EYeNTIm0YotIkq/gB9iIUS+gjdnoGSA+n/dwnbu1Eud2aiMW16ILqhgdgitdeW3J7LMDFvWIlXoBQOSfXQDLAiPf+jPJYvgkmCAovYKtC3aTg3bFX2sZqOPsWBXV6Azd92/GMs4W4fyOYLVSEaXy/mI35PMQLH8+/MM4n0g3JEgdzRjwF77Oh8SnOdG73/j+rdrS6Zgfyq6aM5WWs6teopLWPe0LpchGPSVgohIA7OhCm+ME8fpVHuMkvXqPeXAVfmJS/gV5CUgDMsYEjst+QXgWnlEiK2Knx6WzZ+v54ncA4YP58cibPJj5Qbx4gi8KLY3tgIbWJ3QxIRkChLRGjEBIQ4vTLAhh3vtNEHoAr9xUb3h8MxqYWNWJUSLS4xeE3Bc9UrB599Hu7i0w3v6VDGVCndcVO91lq9DZVhtYOPSE8mgacHb/3LP0UOZWmGHor52oPNU3Dwg205u814sKOd2i0DmY+Lt4EkLwFIYGE0FLLTHZDjDp9D
+	0iKclQKt86xBRGH+2zUk3HRq4MArggXuA4CN1buCzqAHiONvLdnY9StRABEBAAGJAh8EGAEIAAkFAk3JFC4CGwwACgkQdCY7N/W1+ROvNxAAtYbssC+AZcU4+xU5uxYinefyhB+f6GsS0Ddupp/MkZD/y98cIql8XXdIZ6z8lHvJlDq0oOyizLpfqUkcT4GhwMbdSNYUGd9HCdY/0pAyFdiJkn++WM8+b+9nz4mC6vfh96imcK4KH/cjP7NG37El/xlshWrb6CqKPk4KxNK5rUMPNr7+/3GwwGHHkJtW0QfDa/GoD8hl2HI6IQI+zSXK2uIZ7tcFMN8g9OafwUZ7b+zbz1ldzqOwygliEuEaRHeiOhPrTdxgnj6kTnitZw7/hSVi5Mr8C4oHzWgi66Ov9vdmClTHQSEjWDeLOiBj61xhr6A8KPUVaOpAYZWBH4OvtnmjwsKuNCFXym2DcCywdjEdrLC+Ms5g6Dkd60BQz4/kHA7x+P9IAkPqkaWAEyHoEvM1OcUPJzy/JW2vWDXo2jjM8PEQfNIPtqDzid1s8aDLJsPLWlJnfUyMP2ydlTtR54oiVBlFwqqHoPIaJrwTkND5lgFiMIwup3+giLiDOBILtiOSpYxBfSJkz3GGacOb4Xcj8AXV1tpUo1dxAKpJ1ro0YHLJvOJ8nLiZyJsCabUePNRFprbh+srI+WIUVRm0D33bI1VEH2XUXZBL+AmfdKXbHAYtZ0anKgDbcwvlkBcHpA85NpRqjUQ4OerPqtCrWLHDpEwGUBlaQ//AGix+L9c=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.50.3 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG][BISECTED] Freeze at loading init ramdisk
-To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Helge Deller <deller@gmx.de>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Hans de Goede <hdegoede@redhat.com>, Huacai Chen <chenhuacai@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Prathu Baronia <prathubaronia2011@gmail.com>, Sam Ravnborg
- <sam@ravnborg.org>, Sui Jingfeng <suijingfeng@loongson.cn>,
- Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org
-References: <8a6aa228-f2da-4dcd-93c1-e34614cd6471@alu.unizg.hr>
- <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
- <gevqxytidg5efylozindaqntkbl4yeoyzqnh5m3ylitmipgum3@sgmv7qieo7rs>
- <1fe9b78c-7fb5-4d7b-a754-afd563950829@alu.unizg.hr>
- <esh5npfi6ahrlralvmcrnqtrfkarlhsqahbtmfnw5pclr2pf2u@xzitdq6wi7of>
-Content-Language: en-US
-From: Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
-In-Reply-To: <esh5npfi6ahrlralvmcrnqtrfkarlhsqahbtmfnw5pclr2pf2u@xzitdq6wi7of>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-ZEDAT-Hint: PO
 
+On Mon, 2023-09-25 at 13:10 +0200, Geert Uytterhoeven wrote:
+> One instance of gpio_backlight_platform_data.fbdev was renamed, but the
+> second instance was forgotten, causing a build failure:
+>=20
+>     arch/sh/boards/mach-ecovec24/setup.c: In function =E2=80=98arch_setup=
+=E2=80=99:
+>     arch/sh/boards/mach-ecovec24/setup.c:1223:37: error: =E2=80=98struct =
+gpio_backlight_platform_data=E2=80=99 has no member named =E2=80=98fbdev=E2=
+=80=99; did you mean =E2=80=98dev=E2=80=99?
+>      1223 |                 gpio_backlight_data.fbdev =3D NULL;
+> 	  |                                     ^~~~~
+> 	  |                                     dev
+>=20
+> Fix this by updating the second instance.
+>=20
+> Fixes: ed369def91c1579a ("backlight/gpio_backlight: Rename field 'fbdev' =
+to 'dev'")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202309231601.Uu6qcRnU-lkp@i=
+ntel.com/
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  arch/sh/boards/mach-ecovec24/setup.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-e=
+covec24/setup.c
+> index 3be293335de54512..7a788d44cc73496c 100644
+> --- a/arch/sh/boards/mach-ecovec24/setup.c
+> +++ b/arch/sh/boards/mach-ecovec24/setup.c
+> @@ -1220,7 +1220,7 @@ static int __init arch_setup(void)
+>  		lcdc_info.ch[0].num_modes		=3D ARRAY_SIZE(ecovec_dvi_modes);
+> =20
+>  		/* No backlight */
+> -		gpio_backlight_data.fbdev =3D NULL;
+> +		gpio_backlight_data.dev =3D NULL;
+> =20
+>  		gpio_set_value(GPIO_PTA2, 1);
+>  		gpio_set_value(GPIO_PTU1, 1);
 
+Applied to my sh-linux tree.
 
-On 1/18/24 22:14, Uwe Kleine-König wrote:
-> On Thu, Jan 18, 2024 at 09:04:05PM +0100, Mirsad Todorovac wrote:
->>
->>
->> On 1/18/24 08:45, Uwe Kleine-König wrote:
->>> Hello Mirsad,
->>>
->>> On Wed, Jan 17, 2024 at 07:47:49PM +0100, Mirsad Todorovac wrote:
->>>> On 1/16/24 01:32, Mirsad Todorovac wrote:
->>>>> On the Ubuntu 22.04 LTS Jammy platform, on a mainline vanilla torvalds tree kernel, the boot
->>>>> freezes upon first two lines and before any systemd messages.
->>>>>
->>>>> (Please find the config attached.)
->>>>>
->>>>> Bisecting the bug led to this result:
->>>>>
->>>>> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
->>>>> d97a78423c33f68ca6543de510a409167baed6f5 is the first bad commit
->>>>> commit d97a78423c33f68ca6543de510a409167baed6f5
->>>>> Merge: 61da593f4458 689237ab37c5
->>>>> Author: Linus Torvalds <torvalds@linux-foundation.org>
->>>>> Date:   Fri Jan 12 14:38:08 2024 -0800
->>>>>
->>>>> [...]
->>>>>
->>>>> Hope this helps.
->>>>
->>>> P.S.
->>>>
->>>> As I see that this is a larger merge commit, with 5K+ lines changed, I don't think I can
->>>> bisect further to determine the culprit.
->>>
->>> Actually it's not that hard. If a merge commit is the first bad commit
->>> for a bisection, either the merge wasn't done correctly (less likely,
->>> looking at d97a78423c33f68ca6543de510a409167baed6f5 I'd bet this isn't
->>> the problem); or changes on different sides conflict or you did
->>> something wrong during bisection.
->>>
->>> To rule out the third option, you can just retest d97a78423c33,
->>> 61da593f4458 and 689237ab37c5. If d97a78423c33 is the only bad one, you
->>> did it right.
->>
->> This was confirmed.
->>
->>> Then to further debug the second option you can find out the offending
->>> commit on each side with a bisection as follows, here for the RHS (i.e.
->>> 689237ab37c5):
->>>
->>> 	git bisect start 689237ab37c5 $(git merge-base 61da593f4458 689237ab37c5)
->>>
->>> and then in each bisection step do:
->>>
->>> 	git merge --no-commit 61da593f4458
->>> 	test if the problem is present
->>> 	git reset --hard
->>> 	git bisect good/bad
->>>
->>> In this case you get merge conflicts in drivers/video/fbdev/amba-clcd.c
->>> and drivers/video/fbdev/vermilion/vermilion.c. In the assumption that
->>> you don't have these enabled in your .config, you can just ignore these.
->>>
->>> Side note: A problem during bisection can be that the .config changes
->>> along the process. You should put your config into (say)
->>> arch/x86/configs/lala_defconfig and do
->>>
->>> 	make lala_defconfig
->>>
->>> before building each step to prevent this.
->>
->> I must have done something wrong:
->>
->> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect log
->> # bad: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove driver
->> # good: [de927f6c0b07d9e698416c5b287c521b07694cac] Merge tag 's390-6.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
->> git bisect start '689237ab37c5' 'de927f6c0b07d9e698416c5b287c521b07694cac'
->> # good: [d9f25b59ed85ae45801cf45fe17eb269b0ef3038] fbdev: Remove support for Carillo Ranch driver
->> git bisect good d9f25b59ed85ae45801cf45fe17eb269b0ef3038
->> # good: [e2e0b838a1849f92612a8305c09aaf31bf824350] video/sticore: Remove info field from STI struct
->> git bisect good e2e0b838a1849f92612a8305c09aaf31bf824350
->> # good: [778e73d2411abc8f3a2d60dbf038acaec218792e] drm/hyperv: Remove firmware framebuffers with aperture helper
->> git bisect good 778e73d2411abc8f3a2d60dbf038acaec218792e
->> # good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear screen_info state after consuming it
->> git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
->> marvin@defiant:~/linux/kernel/linux_torvalds$
->>
->> with the error:
->>
->> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
->> Bisecting: 0 revisions left to test after this (roughly 0 steps)
->> drivers/video/fbdev/amba-clcd.c: needs merge
->> drivers/video/fbdev/vermilion/vermilion.c: needs merge
->> error: you need to resolve your current index first
-> 
-> It seems you forgot the "git reset --hard" step.  Doing it in this state
-> should still be possible.
+Thanks,
+Adrian
 
-Well, it was possible, but I obviously got the wrong result:
-
-marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect log
-# bad: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove driver
-# good: [de927f6c0b07d9e698416c5b287c521b07694cac] Merge tag 's390-6.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
-git bisect start '689237ab37c5' 'de927f6c0b07d9e698416c5b287c521b07694cac'
-# good: [d9f25b59ed85ae45801cf45fe17eb269b0ef3038] fbdev: Remove support for Carillo Ranch driver
-git bisect good d9f25b59ed85ae45801cf45fe17eb269b0ef3038
-# good: [e2e0b838a1849f92612a8305c09aaf31bf824350] video/sticore: Remove info field from STI struct
-git bisect good e2e0b838a1849f92612a8305c09aaf31bf824350
-# good: [778e73d2411abc8f3a2d60dbf038acaec218792e] drm/hyperv: Remove firmware framebuffers with aperture helper
-git bisect good 778e73d2411abc8f3a2d60dbf038acaec218792e
-# good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear screen_info state after consuming it
-git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
-# good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear screen_info state after consuming it
-git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
-# good: [c25a19afb81cfd73dab494ba64f9a434cf1a4499] fbdev/hyperv_fb: Do not clear global screen_info
-git bisect good c25a19afb81cfd73dab494ba64f9a434cf1a4499
-# first bad commit: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove driver
-marvin@defiant:~/linux/kernel/linux_torvalds$ uname -rms
-Linux 6.7.0-initrd-retest-02751-g689237ab37c5 x86_64
-marvin@defiant:~/linux/kernel/linux_torvalds$
-
-... meaning, I get the 689237ab37c5 as "first bad commit" but it boots.
-
-If you see an obvious error, it would be helpful, otherwise I might retry the bisect, but later.
-
-I am puzzled, but bisecting a merge commit is my first attempt at this.
-
-Best regards,
-Mirsad
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

@@ -1,124 +1,162 @@
-Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9A895577D;
-	Fri, 19 Jan 2024 17:36:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40C4B1DFCB;
+	Fri, 19 Jan 2024 20:55:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705685821; cv=none; b=EwseZnIf4esj+M+FhGE9r51xDrB6FaP+jwQu3XZE6ghQamgP3ieiVyo0MJS5jZ9Gzt8eKG0w0FKxR4wV+6k2PAQiywnJae3QhVhL9MaavnnhOtxFMwyVVbktQKML+PUhw5qOg4sSyhVo9OZKUCQ0kSxic2wjkCQVl1wKRAHz1qA=
+	t=1705697750; cv=none; b=XgJatF2DFK1Fe/pYubLVi64jdgY7dyd+6pAF9zm3Ac/W/Zicqbh0z1M35SLZfJvE8U98X1lzhvoVw/akW9+0lIKNhLcnr3gyhG7mKgu7og3KC1sdxmL/+Mfo9v92Lx/+P59PPui5A4m7Pe7DrHpt1uU5cAPqAsrcWADwlzGtNxo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705685821; c=relaxed/simple;
-	bh=hpvlFjQYQ+F7RT5mW2r1opu6+5eS/F7pSSdF5Mk80LU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KBz2+zs0zZ+9tjjAzEZ7c1htTqo+Voi7GLAKa3dOQx2Nbc8psw7cUe3M+YHYYbyPzzz0XsbhAw7ucyfHkvYM7RvUUmqhyWzxM6HleAYYdJYUBhAwyjsLhHBtrS4KCkG6+CaWxxyXoMpj3r96LPtBnWKXc8Up4Q1FS33toe8Sij0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
-Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id 6A1FE86959;
-	Fri, 19 Jan 2024 18:36:50 +0100 (CET)
-From: Duje =?utf-8?B?TWloYW5vdmnEhw==?= <duje.mihanovic@skole.hr>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>,
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
- Rob Herring <robh+dt@kernel.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
- Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht,
- dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] backlight: Add Kinetic KTD2801 driver
-Date: Fri, 19 Jan 2024 18:36:15 +0100
-Message-ID: <3283558.44csPzL39Z@radijator>
-In-Reply-To: <51576fbb-c7dd-4ee8-a77f-ae7f62b254ab@wanadoo.fr>
-References:
- <20240118-ktd2801-v2-0-425cf32e0769@skole.hr>
- <20240118-ktd2801-v2-2-425cf32e0769@skole.hr>
- <51576fbb-c7dd-4ee8-a77f-ae7f62b254ab@wanadoo.fr>
+	s=arc-20240116; t=1705697750; c=relaxed/simple;
+	bh=yiyaYnWRIuAJVuP5d0hq1Vm608wfgBc/+asxYVtVaiI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dIy2A1U/5yYqcqmaqck0yrl135u77dw1CaB1bp2lLHp5KXPg2TvOdT6TP8/pmzyzf6PTcQ2L3twpYzV2UvGNCBkGtRq7t6BXfsfPyEH6Oeg/ke6e8apmTdHpw0qrfnzk1RpINUnNmRjI0nxrLBgBnMLSBsblwbyHCuDRcFGNY3o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=TbxmXlvm; arc=none smtp.client-ip=212.227.15.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="TbxmXlvm"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1705697733; x=1706302533; i=deller@gmx.de;
+	bh=yiyaYnWRIuAJVuP5d0hq1Vm608wfgBc/+asxYVtVaiI=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=TbxmXlvm3rE7QOQOh4cbM2NQxiKpTAXLemwKMo/FVr5T7JeZOt8qHuCU2SsEnNy+
+	 hFiA57ddfhZb+vSB0Y+gZtMsMASlllXGWykvrrHpmI+JgmudxrIsYZoP018dHJ63h
+	 ST9l8nRvhmq6jdPJOP/QyufQxtgZ0Wt+Q37HLjppY1IQHM++p67AF4TAIWLJZIEhL
+	 KCC42dAY0bGQpfcVqNq4k9eBmJipHVu+1g4nRdAupvd/yzD/6Doa0uKifZ7wIYT1c
+	 SX8R2vtI0x4ZJx1lDtM9x8kiHNTkkxHlnDZp5XrYlkngivlXmGy4IpSOuwL8TDOu9
+	 V92ci9kN9fDCWTUNVg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([94.134.146.202]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzFr-1rijjQ1iRF-00HviA; Fri, 19
+ Jan 2024 21:55:33 +0100
+Message-ID: <0293b14b-6188-4229-9fb6-29fbbdb8dc83@gmx.de>
+Date: Fri, 19 Jan 2024 21:55:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Autocrypt: addr=duje.mihanovic@skole.hr;
- keydata=
- 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
+User-Agent: Mozilla Thunderbird
+Subject: Re: REGRESSION: no console on current -git
+Content-Language: en-US
+To: Jens Axboe <axboe@kernel.dk>, LKML <linux-kernel@vger.kernel.org>,
+ "regressions@lists.linux.dev" <regressions@lists.linux.dev>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ Thomas Zimmermann <tzimmermann@suse.de>
+Cc: avier Martinez Canillas <javierm@redhat.com>,
+ Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
+References: <05ea3233-20dd-4af7-86cc-de11ad2efe84@kernel.dk>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <05ea3233-20dd-4af7-86cc-de11ad2efe84@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:TXMxecq5B8z4yhyXYaxKHVfKYJk1nHTR6ojUy0qKuDu4dyl9JHQ
+ Y+W19o7vK4cWx0PRtOl+3ftJAFWxYEu8aTrab8sQuFDpo8DpZpexX/TRuu9bUX1vTDs0aJH
+ n46Qhqg719vyku3VfedvWNY90Pgat1pwtz0xr4eGxDLJq5Z3Wdbq/F8pn0rm+uamVyUy6Qb
+ MaPlaHH2T2ry3MoJJnaRw==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:Cu7OFdiOwGU=;mmr7J1y84JwXPPypeqkeft6THJW
+ NTwogCrwOuFFHvj/DGzcGFstlVIbTgp6jVtZm44ApgH4THkU8uvH/KXYtLfzBdbW6vTI96VwV
+ MGA9DX5A5sEpu5j2/17LKuKhCoj+rb2SLoFM8Lg+EwZojzhdzezkIYPff9cpoavbs1MLJ/ub4
+ sfsDZNS09jnf3JWDyx+etgiL9bFDW2KdfJ6t+ppAnunL/SeIpRSnpgSjDabrJk121Ot2t4emN
+ 9TXi7uWMvt7B6Vj57OuI+goVGkOp8cAZtbRYJK6UgtdE/7vYlQxCycCX/10G10qVZ2enFA+Ek
+ lg4l2+HR8VXyiarazUfo+z1FrGd+FdytbFSK0TMUgWVxteyIDMh9tO2vUKRjS8P6GCT5tWp7Q
+ Zd5wFCwyJipv+xyXdgkQ1eDEA4YlTzccaCcQWMTxPjdtmkpBbgnoasbo6Cakt2un/Mkm7N5cT
+ Epj4Tpw/EExStKw+YX0pDoZ1ygUDqVYbcQXDljbHoIZ5+7hNYm+qJYWGwfweHP5zuE5r7DT6S
+ c3Sxjhejo8CzAiLqCR4fGt1taRIdPxHA4KDpU19xMGN+YToPHQ94kDI9+uRBS9i6hSUfF33q1
+ MhlpkBh12eSjmnQUX688cbhlvtbNrRtSBbVfzGwTiek+5Fz2HrJ4rioCu14+w6P8gpwf6HnQs
+ tqm3QcxVHw7RGOl6trbTvtxuLh4rDbwt3pXUoVA3QPUtANKG+IZXVfsGw3SycMzBB/JFgNjd9
+ 0oU/Mu4LDJhNgqgvn0gwmRChhMH+HxhyS46mEVOJaEBNyEEotB9NzhAvHtENvGxTIF8UU8Vss
+ 6/m9cFWzyg/ZQ/IhE2MvC941efv/kngDTaR1INEzHosSMheJI3OQWkMYF6jfXz8lz1bIQStia
+ 98bGnMQGflSZ2Dv/MYcAk/KeYbjW4hofwkn1oWdWJZE32fNk1YGDcURFE/qfQ58R2xrAsdckG
+ J62TbrlO9HRxQk8i1UJEHWqEt00=
 
-On Friday, January 19, 2024 6:29:21 PM CET Christophe JAILLET wrote:
-> Le 18/01/2024 =C3=A0 18:32, Duje Mihanovi=C4=87 a =C3=A9crit :
-> > Add driver for the Kinetic KTD2801 backlight driver.
-> >=20
-> > Signed-off-by: Duje Mihanovi=C4=87 <duje.mihanovic@skole.hr>
-> >=20
-> > ---
->=20
-> ...
->=20
-> > +	ktd2801->gpiod =3D devm_gpiod_get(dev, "ctrl", GPIOD_OUT_HIGH);
-> > +	if (IS_ERR(ktd2801->gpiod))
-> > +		return dev_err_probe(dev, PTR_ERR(dev),
->=20
-> PTR_ERR(ktd2801->gpiod); ?
+Adding Mirsad Todorovac (who reported a similar issue).
 
-Good catch, I'll fix it in v3.
+On 1/19/24 19:39, Jens Axboe wrote:
+> My trusty R7525 test box is failing to show a console, or in fact anythi=
+ng,
+> on current -git. There's no output after:
+>
+> Loading Linux 6.7.0+ ...
+> Loading initial ramdisk ...
+>
+> and I don't get a console up. I went through the bisection pain and
+> found this was the culprit:
+>
+> commit df67699c9cb0ceb70f6cc60630ca938c06773eda
+> Author: Thomas Zimmermann <tzimmermann@suse.de>
+> Date:   Wed Jan 3 11:15:11 2024 +0100
+>
+>      firmware/sysfb: Clear screen_info state after consuming it
+>
+> Reverting this commit, and everything is fine. Looking at dmesg with a
+> buggy kernel, I get no frame or fb messages. On a good kernel, it looks
+> ilke this:
+>
+> [    1.416486] efifb: probing for efifb
+> [    1.416602] efifb: framebuffer at 0xde000000, using 3072k, total 3072=
+k
+> [    1.416605] efifb: mode is 1024x768x32, linelength=3D4096, pages=3D1
+> [    1.416607] efifb: scrolling: redraw
+> [    1.416608] efifb: Truecolor: size=3D8:8:8:8, shift=3D24:16:8:0
+> [    1.449746] fb0: EFI VGA frame buffer device
+>
+> Happy to test a fix, or barring that, can someone just revert this
+> commit please?
 
-Regards,
-=2D-
-Duje
+I've temporarily added a revert patch into the fbdev for-next tree for now=
+,
+so people should not face the issue in the for-next series:
+https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/com=
+mit/?h=3Dfor-next
+I'd like to wait for Thomas to return on monday to check the issue
+as there are some other upcoming patches in this area from him.
 
-
-
+Helge

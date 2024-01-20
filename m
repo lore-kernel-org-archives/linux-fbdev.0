@@ -1,235 +1,126 @@
-Received: from domac.alu.hr (domac.alu.unizg.hr [161.53.235.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.skole.hr (mx1.hosting.skole.hr [161.53.165.185])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4825B10A20;
-	Sat, 20 Jan 2024 18:15:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.235.3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C03F112E5F;
+	Sat, 20 Jan 2024 21:27:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.185
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705774518; cv=none; b=UUuaTzo66f5OKsmb13XCi9B+CQ0JZuHIyyCGlyYnNRJlvaVBD9XrNqmkMuTwlJ1u+GYDmO1S4kN8jLFqXEeehuORW+MI8iXJCKvbeH43vmWfWvHIaG6qiH81ij03AUs5o8XZ65Zw7UNeOtWqw4WLV7bT9SA6Uq4OkHTcKlWPcHk=
+	t=1705786049; cv=none; b=Y8d0a7gtw74ZoTafuxV88YSYa5L/LoIFoXdb0r217uYDo7uM331+7g6hUg8KxMONlGjshcWSYnPAlhfCQLB/nvL0khVDVPWKn3Q4rrUVs9MAEQ1raBWfbtBHOdg1AU1N5OTlM7L1+826mtn0n4W490XyOkq2kYzL2l99ct2IUSk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705774518; c=relaxed/simple;
-	bh=E/AVwm19Vw3c9m9wJsEAX0UufsuEbOfBRUcifCQetiY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cqpMaETVTxY1+oQNr6bx+DFFm6ny4N9fT12nlETcF0+oZReMfZ/1PnbhK1BczZBkE5JOEgluZJtFjhtiyzAqa9u/7wNPEFDPv+W8bt0isSgFcFSDzuN2WdXdPy8paHkPR4VqLynRAYkbLXqQJsAnd7FpcTNNdefyg+DGmJZQXZU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alu.unizg.hr; spf=pass smtp.mailfrom=alu.unizg.hr; dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b=cyeGHiBW; dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b=mzA1SFNP; arc=none smtp.client-ip=161.53.235.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alu.unizg.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alu.unizg.hr
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b="cyeGHiBW";
-	dkim=pass (2048-bit key) header.d=alu.unizg.hr header.i=@alu.unizg.hr header.b="mzA1SFNP"
-Received: from localhost (localhost [127.0.0.1])
-	by domac.alu.hr (Postfix) with ESMTP id DBF2160187;
-	Sat, 20 Jan 2024 19:15:12 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=alu.unizg.hr; s=mail;
-	t=1705774512; bh=E/AVwm19Vw3c9m9wJsEAX0UufsuEbOfBRUcifCQetiY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=cyeGHiBWhSkbMSGhRpDXtFCPkmo7kOirsWFp3xAq5clU1x4cnYmcFN0w2jDrDlemS
-	 ROUUWK7ly3yEW1QVQa6ghJULIFC4Jg1SUPNpMnjNBT2mpnmL5BNvC58ICXfqLXdVMV
-	 H+qLLubm7ZDkHlrkORfdKF+Xawr3m+GkKGPvgQhv8cEIbFUhpYSsY12e38VvwyFyka
-	 FFODR3lgb2VkLfIK+spR0Zl7ZQxoX0VqY4FS7/u2KKqoSl1kEOr9hH1nG4pxEE50vZ
-	 YiVxBKCphAdEFOOmK2vOlHuX2Z7WDNpRg2RsdGVlI1s240bPBkYcCVxmn5QW//YNb9
-	 VgsHcSwu6IgQg==
-X-Virus-Scanned: Debian amavisd-new at domac.alu.hr
-Received: from domac.alu.hr ([127.0.0.1])
-	by localhost (domac.alu.hr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Fj_jGnug5Kgg; Sat, 20 Jan 2024 19:15:09 +0100 (CET)
-Received: from [192.168.178.20] (dh207-42-16.xnet.hr [88.207.42.16])
-	by domac.alu.hr (Postfix) with ESMTPSA id 190E060182;
-	Sat, 20 Jan 2024 19:15:08 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=alu.unizg.hr; s=mail;
-	t=1705774509; bh=E/AVwm19Vw3c9m9wJsEAX0UufsuEbOfBRUcifCQetiY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mzA1SFNP7xqUT/2FKrs0HQKt1ptQ7GsdmfHSfvLAmbAYOQd1+oD+KBSd5cKmdHYeN
-	 oi51jfX27frtgkaCWuJZImtPlk+oRLaxBqIay/2nDW/Lpjbq6HDqIeU667RDj9f+oN
-	 q/W1Kex8s1EWpAKqT0Nts1RlNG+hFJynFMKOMqvsKBtFKsZpqUr7QkPTxcaQvcV+CB
-	 7gVUmlHgGeN883i0/iFgMgu+BjW66AEKu8/MC7R+Mn4Q+o3/V27eLh4L+GwqoqNPQW
-	 1nxbYS2UX4WRGAfeMO3du2Y9aJ1jbpgPbGv+10thzUlGpE1ob+U3qidCOLgJ2zdvy2
-	 WP1+Tl/vFB7Rg==
-Message-ID: <3da0801d-acb6-42a0-b4b1-05a8bf25c67e@alu.unizg.hr>
-Date: Sat, 20 Jan 2024 19:15:07 +0100
+	s=arc-20240116; t=1705786049; c=relaxed/simple;
+	bh=wUqtxI1FSpcpCqfPkwEhcve6CkyStV415xdTZekKd5c=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=luFsp8K/vnnrfGLvWCIlzoxR2qvLD2N75WyEB5euBb/qArO8lZENmWQWRNpnU3xlX4Z1izhgzun8+y6SgeZTheUI4KFXLIdx/77fi+pjPFu4lkdUPLYYBwzk6G0iJC5zTEm13lwfDKXNWp2I/BaTrYGeolaNlKaZNEIsTNNoJSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.185
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
+Received: from mx1.hosting.skole.hr (localhost.localdomain [127.0.0.1])
+	by mx.skole.hr (mx.skole.hr) with ESMTP id 6344D858F6;
+	Sat, 20 Jan 2024 22:27:24 +0100 (CET)
+From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Subject: [PATCH v3 0/3] Kinetic ExpressWire library and KTD2801 backlight
+ driver
+Date: Sat, 20 Jan 2024 22:26:42 +0100
+Message-Id: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG][BISECTED] Freeze at loading init ramdisk
-Content-Language: en-US
-To: Bagas Sanjaya <bagasdotme@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Sui Jingfeng <suijingfeng@loongson.cn>, linux-parisc@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Hans de Goede <hdegoede@redhat.com>,
- Prathu Baronia <prathubaronia2011@gmail.com>,
- Thomas Zimmermann <tzimmermann@suse.de>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Sam Ravnborg <sam@ravnborg.org>, Ard Biesheuvel <ardb@kernel.org>
-References: <8a6aa228-f2da-4dcd-93c1-e34614cd6471@alu.unizg.hr>
- <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
- <ZautsJ6a7_YjW5aQ@archie.me>
-From: Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
-In-Reply-To: <ZautsJ6a7_YjW5aQ@archie.me>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAJI6rGUC/03MQQ6CMBCF4auQWVsznVIsrryHcQFtkQZDTUsaD
+ eHuFhLU5ZvM/80QbXA2wrmYIdjkovNjHuJQgO6b8W6ZM3kDIQmOWLJhMqSQM+yEUkK3sjYI+fs
+ ZbOdem3S95d27OPnw3uDE1+tuyK+RMsNKoY2SLVZUN5c4+Ic99gFWItGelci5+mW0ZiR1J8jiq
+ ar/smVZPnZlwOrUAAAA
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
+ Rob Herring <robh+dt@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Linus Walleij <linus.walleij@linaro.org>
+Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht, 
+ phone-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2318;
+ i=duje.mihanovic@skole.hr; h=from:subject:message-id;
+ bh=wUqtxI1FSpcpCqfPkwEhcve6CkyStV415xdTZekKd5c=;
+ b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrDqXO1xcPWa+CH+urwK0NvcRf1j9ADUaEYL3q
+ Z0+Lp2SODSJAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZaw6lwAKCRCaEZ6wQi2W
+ 4WDxD/9C7pKu8/wuladiEQq90adnWZCAYzen10KGjYQBYJEXSHlFDm2pePOnghvI52wc31JdByK
+ E62TJwaSmJnFzpHw0efPbFRQAjwjBOS1BS0em/wQ1qRy3b4VTdlvaH7VBW4CT0Z4OYd8Y/gWElU
+ g6RuW7Z+JC6d2V6Cc0NvDOfHrttiKM84SRAgNN69fOe96HUKcJxazbvfjFKwNM0NeYQutlml7dB
+ FviZZ7WIoIqT7c8T1CP7JiMuRYYGNSGLe9ZNMQkP+XlMv+XPQYrHmESunSUTND+rh9JLQnQ1pBK
+ nyy/oyLLOk3g0YIbgAcX3MhVudzZzk8ql6bRgf0MJQbgBrqqeYfTKiteRpxf1FF/nSJyOVGgL+K
+ xMWYuXIVKIB/vbhfKugHWCWhKlyFobQo+zFhyV79Sk9uD4djAtt5WwpjRwfxJUAzICzSz4zMc4X
+ +ncqASI0zOBZI0hJpYIwComSqOIYAxf/L6jIx9MIINXVTnuAXAXV5x4onDy4AJHkxVZ3yGXYzg+
+ O+PGGAibXT2VGwowdsnNKkOKKKvAfT2J9ckKPMp2E2WGGK1QQrKa+vtIXUHT3+oezLcx/JfH6qn
+ F6ZaGsxGIgHENFtzr+lHWSubVBGyTF1zue/KM645It3AuM0TfNdoCHcizYZm7rsgqIj2h3Bn5Sc
+ Syyfrd1xwQ4K9uw==
+X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
+ fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
 
-On 1/20/24 12:25, Bagas Sanjaya wrote:
-> On Wed, Jan 17, 2024 at 07:47:49PM +0100, Mirsad Todorovac wrote:
->> On 1/16/24 01:32, Mirsad Todorovac wrote:
->>> Hi,
->>>
->>> On the Ubuntu 22.04 LTS Jammy platform, on a mainline vanilla torvalds tree kernel, the boot
->>> freezes upon first two lines and before any systemd messages.
->>>
->>> (Please find the config attached.)
->>>
->>> Bisecting the bug led to this result:
->>>
->>> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
->>> d97a78423c33f68ca6543de510a409167baed6f5 is the first bad commit
->>> commit d97a78423c33f68ca6543de510a409167baed6f5
->>> Merge: 61da593f4458 689237ab37c5
->>> Author: Linus Torvalds <torvalds@linux-foundation.org>
->>> Date:   Fri Jan 12 14:38:08 2024 -0800
->>>
->>>       Merge tag 'fbdev-for-6.8-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev
->>>       Pull fbdev updates from Helge Deller:
->>>        "Three fbdev drivers (~8500 lines of code) removed. The Carillo Ranch
->>>         fbdev driver is for an Intel product which was never shipped, and for
->>>         the intelfb and the amba-clcd drivers the drm drivers can be used
->>>         instead.
->>>         The other code changes are minor: some fb_deferred_io flushing fixes,
->>>         imxfb margin fixes and stifb cleanups.
->>>         Summary:
->>>          - Remove intelfb fbdev driver (Thomas Zimmermann)
->>>          - Remove amba-clcd fbdev driver (Linus Walleij)
->>>          - Remove vmlfb Carillo Ranch fbdev driver (Matthew Wilcox)
->>>          - fb_deferred_io flushing fixes (Nam Cao)
->>>          - imxfb code fixes and cleanups (Dario Binacchi)
->>>          - stifb primary screen detection cleanups (Thomas Zimmermann)"
->>>       * tag 'fbdev-for-6.8-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev: (28 commits)
->>>         fbdev/intelfb: Remove driver
->>>         fbdev/hyperv_fb: Do not clear global screen_info
->>>         firmware/sysfb: Clear screen_info state after consuming it
->>>         fbdev/hyperv_fb: Remove firmware framebuffers with aperture helpers
->>>         drm/hyperv: Remove firmware framebuffers with aperture helper
->>>         fbdev/sis: Remove dependency on screen_info
->>>         video/logo: use %u format specifier for unsigned int values
->>>         video/sticore: Remove info field from STI struct
->>>         arch/parisc: Detect primary video device from device instance
->>>         fbdev/stifb: Allocate fb_info instance with framebuffer_alloc()
->>>         video/sticore: Store ROM device in STI struct
->>>         fbdev: flush deferred IO before closing
->>>         fbdev: flush deferred work in fb_deferred_io_fsync()
->>>         fbdev: amba-clcd: Delete the old CLCD driver
->>>         fbdev: Remove support for Carillo Ranch driver
->>>         fbdev: hgafb: fix kernel-doc comments
->>>         fbdev: mmp: Fix typo and wording in code comment
->>>         fbdev: fsl-diu-fb: Fix sparse warning due to virt_to_phys() prototype change
->>>         fbdev: imxfb: add '*/' on a separate line in block comment
->>>         fbdev: imxfb: use __func__ for function name
->>>         ...
->>>
->>>    Documentation/fb/index.rst                         |    1 -
->>>    Documentation/fb/intelfb.rst                       |  155 --
->>>    Documentation/userspace-api/ioctl/ioctl-number.rst |    1 -
->>>    MAINTAINERS                                        |   12 -
->>>    arch/parisc/video/fbdev.c                          |    2 +-
->>>    drivers/Makefile                                   |    3 +-
->>>    drivers/firmware/sysfb.c                           |   14 +-
->>>    drivers/gpu/drm/hyperv/hyperv_drm_drv.c            |    8 +-
->>>    drivers/video/backlight/Kconfig                    |    7 -
->>>    drivers/video/backlight/Makefile                   |    1 -
->>>    drivers/video/backlight/cr_bllcd.c                 |  264 ---
->>>    drivers/video/fbdev/Kconfig                        |   72 -
->>>    drivers/video/fbdev/Makefile                       |    2 -
->>>    drivers/video/fbdev/amba-clcd.c                    |  986 ---------
->>>    drivers/video/fbdev/core/fb_defio.c                |    8 +-
->>>    drivers/video/fbdev/fsl-diu-fb.c                   |    2 +-
->>>    drivers/video/fbdev/hgafb.c                        |   13 +-
->>>    drivers/video/fbdev/hyperv_fb.c                    |   20 +-
->>>    drivers/video/fbdev/imxfb.c                        |  179 +-
->>>    drivers/video/fbdev/intelfb/Makefile               |    8 -
->>>    drivers/video/fbdev/intelfb/intelfb.h              |  382 ----
->>>    drivers/video/fbdev/intelfb/intelfb_i2c.c          |  209 --
->>>    drivers/video/fbdev/intelfb/intelfbdrv.c           | 1680 ----------------
->>>    drivers/video/fbdev/intelfb/intelfbhw.c            | 2115 --------------------
->>>    drivers/video/fbdev/intelfb/intelfbhw.h            |  609 ------
->>>    drivers/video/fbdev/mmp/hw/mmp_spi.c               |    2 +-
->>>    drivers/video/fbdev/sis/sis_main.c                 |   37 -
->>>    drivers/video/fbdev/stifb.c                        |  109 +-
->>>    drivers/video/fbdev/vermilion/Makefile             |    6 -
->>>    drivers/video/fbdev/vermilion/cr_pll.c             |  195 --
->>>    drivers/video/fbdev/vermilion/vermilion.c          | 1175 -----------
->>>    drivers/video/fbdev/vermilion/vermilion.h          |  245 ---
->>>    drivers/video/logo/pnmtologo.c                     |    6 +-
->>>    drivers/video/sticore.c                            |    5 +
->>>    include/linux/amba/clcd-regs.h                     |   87 -
->>>    include/linux/amba/clcd.h                          |  290 ---
->>>    include/video/sticore.h                            |    6 +-
->>>    37 files changed, 208 insertions(+), 8708 deletions(-)
->>>    delete mode 100644 Documentation/fb/intelfb.rst
->>>    delete mode 100644 drivers/video/backlight/cr_bllcd.c
->>>    delete mode 100644 drivers/video/fbdev/amba-clcd.c
->>>    delete mode 100644 drivers/video/fbdev/intelfb/Makefile
->>>    delete mode 100644 drivers/video/fbdev/intelfb/intelfb.h
->>>    delete mode 100644 drivers/video/fbdev/intelfb/intelfb_i2c.c
->>>    delete mode 100644 drivers/video/fbdev/intelfb/intelfbdrv.c
->>>    delete mode 100644 drivers/video/fbdev/intelfb/intelfbhw.c
->>>    delete mode 100644 drivers/video/fbdev/intelfb/intelfbhw.h
->>>    delete mode 100644 drivers/video/fbdev/vermilion/Makefile
->>>    delete mode 100644 drivers/video/fbdev/vermilion/cr_pll.c
->>>    delete mode 100644 drivers/video/fbdev/vermilion/vermilion.c
->>>    delete mode 100644 drivers/video/fbdev/vermilion/vermilion.h
->>>    delete mode 100644 include/linux/amba/clcd-regs.h
->>>    delete mode 100644 include/linux/amba/clcd.h
->>> marvin@defiant:~/linux/kernel/linux_torvalds$
->>>
->>> Hope this helps.
->>
->> P.S.
->>
->> As I see that this is a larger merge commit, with 5K+ lines changed, I don't think I can
->> bisect further to determine the culprit.
->>
->> But I thought later that it would be interesting to see why my hardware triggered the freeze
->> and probably others did not, or someone would complain already.
->>
->> Both of the boxes were AMD Ryzen: Ryzen 7 5700G and Ryzen 9 7950X.
->>
->> FWIW, I am attaching both hardware listings and the config used, so anyone knowledgeable with
->> fbdev could possibly narrow down the search.
->>
-> 
-> Hi Mirsad,
-> 
-> There is another report from Jens with similar symptom [1]. Can you check if
-> reverting df67699c9cb0ce ("firmware/sysfb: Clear screen_info state after
-> consuming it") fixes your regression?
-> 
-> Thanks.
-> 
-> [1]: https://lore.kernel.org/regressions/93ffd2ee-fa83-4469-96fb-fb263c26bb3c@kernel.dk/T/#t
+Hello,
 
-Thanks, Bagas, I confirm that it is the same issue:
+This series adds support for the Kinetic KTD2801 LED backlight driver
+IC found in samsung,coreprimevelte.
 
-  1991  git checkout d97a78423c33
-  1992  git revert df67699c9cb0ce
-  1993  make clean; make olddefconfig
-  1994  time nice make -j 36 bindeb-pkg |& tee ../err-6.8-mrg-1.log; date
-  1995  sudo apt-get -s install ../linux-image-6.7.0-bagas-vanilla-rvt-09751-g6b082430adc8_6.7.0-09751-g6b082430adc8-26_amd64.deb
-  1996  sudo apt-get -y install ../linux-image-6.7.0-bagas-vanilla-rvt-09751-g6b082430adc8_6.7.0-09751-g6b082430adc8-26_amd64.deb
+Support is already upstream for the somewhat similar KTD2692 flash
+driver, and this series since v3 also moves its ExpressWire code into a
+separate library and converts the KTD2692 driver to use that library.
 
-Reverting df67699c9cb0ce fixed it.
+Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
+---
+Changes in v3:
+- Split ExpressWire code into library (and convert KTD2692 to use this
+  library)
+- Rewrite commit messages
+- Add link to datasheet
+- Drop of.h include in ktd2801
+- Use _cansleep and usleep_range when powering off
+- Clean up bitwise operation in update_status
+- Link to v2: https://lore.kernel.org/r/20240118-ktd2801-v2-0-425cf32e0769@skole.hr
 
-I don't have a slightest idea what is the side effect of this commit.
+Changes in v2:
+- Address maintainer comments:
+  - Drop MODULE_ALIAS
+  - Rename enable-gpios to ctrl-gpios
+  - Rename ktd2801_backlight->desc to ktd2801_backlight->gpiod
+  - Give time constants more descriptive names and note their origins in
+    Samsung driver
+  - Convert to GPIO_ACTIVE_HIGH
+- Update trailers
+- Link to v1: https://lore.kernel.org/r/20231005-ktd2801-v1-0-43cd85b0629a@skole.hr
 
-Tested-by: Mirsad Goran Todorovac <mirsad.todorovac@alu.unizg.hr>
+---
+Duje Mihanović (3):
+      leds: ktd2692: move ExpressWire code to library
+      dt-bindings: backlight: add Kinetic KTD2801 binding
+      backlight: Add Kinetic KTD2801 backlight support
+
+ .../bindings/leds/backlight/kinetic,ktd2801.yaml   |  46 +++++++
+ MAINTAINERS                                        |  13 ++
+ drivers/leds/Kconfig                               |   3 +
+ drivers/leds/Makefile                              |   3 +
+ drivers/leds/flash/Kconfig                         |   1 +
+ drivers/leds/flash/leds-ktd2692.c                  |  91 ++++---------
+ drivers/leds/leds-expresswire.c                    |  59 +++++++++
+ drivers/video/backlight/Kconfig                    |   8 ++
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/ktd2801-backlight.c        | 143 +++++++++++++++++++++
+ include/linux/leds-expresswire.h                   |  35 +++++
+ 11 files changed, 336 insertions(+), 67 deletions(-)
+---
+base-commit: 0dd3ee31125508cd67f7e7172247f05b7fd1753a
+change-id: 20231004-ktd2801-0f3883cb59d0
 
 Best regards,
-Mirsad
+-- 
+Duje Mihanović <duje.mihanovic@skole.hr>
+
+

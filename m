@@ -1,25 +1,25 @@
 Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B725A13FE2;
-	Sat, 20 Jan 2024 21:27:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C958512E74;
+	Sat, 20 Jan 2024 21:27:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705786050; cv=none; b=fGvzQEsxgh/B3zV6Pi3rd4vVuaykYlQBE2bAogcukFmILpJc+xDEIEUvJybEokrh7XgadjbOvlT+ZI3RCHVKpikA5zupVCCD4GPcoi8HxRtdJcxBXPZkqqRfykBbiajoFbiN7KVrwF6lorUpTPdPZYXO/zRff4L95q457Rey0bE=
+	t=1705786051; cv=none; b=ifkzXTu3jdLgvsfwzVpJ1PXuskoMd+268HOHzVcckokNcIRY7NtJJDiLHc953Mgvi1Cujs4XYiw8FVMb1BT0AkIVRBvvLGz/yMBPvLbwt2lMUyg46I0D4/bwVrQ3HM8LCoVqUGqSzVmseKHP9zkIQL4gC5B9XKYxE1+JngB0OGw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705786050; c=relaxed/simple;
-	bh=FC1EjKKMu309UuB+RKeyqY3SuL54ONyCm0c9CWTGi94=;
+	s=arc-20240116; t=1705786051; c=relaxed/simple;
+	bh=C2X6yo7wrv17sg0OzEddeEO2QFSrulIh4ctqk9FgHBk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AlPdDDYRYd1ZbRQ3BjHdGTXHls9i+8vpUxgOGclZQaCCgzUhkGGvqqy+K2NJ8eUDVm0UQiESbKiYuj36lgSSA5i5R+naDNRShAE1MsrsEfvcj0e9WBk9UoJnqu2iQNpQCQZPCRMmmRD1/c+xxUzPiqLedJ8jYyY9wfgGHkHdQIY=
+	 In-Reply-To:To:Cc; b=BN3cAdie8laFixJBJkl+w6WZK8RVAMvsIxZPruefN/bN7IiJAg/QAIgsW+hU8L1z0JYBm1XRfvuhDR0dXoVsaDmoGSUX8ItROhp2n2qZynCjSYqOM5QGSFXK7MD9XqCCkdUz9ZnrHUR8Ks5viYaqIDF9qVLxKAzl/qIbTWnI+eM=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
 Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id A801786C62;
-	Sat, 20 Jan 2024 22:27:26 +0100 (CET)
+	by mx.skole.hr (mx.skole.hr) with ESMTP id A0CFC86C5A;
+	Sat, 20 Jan 2024 22:27:25 +0100 (CET)
 From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Date: Sat, 20 Jan 2024 22:26:45 +0100
-Subject: [PATCH v3 3/3] backlight: Add Kinetic KTD2801 backlight support
+Date: Sat, 20 Jan 2024 22:26:43 +0100
+Subject: [PATCH v3 1/3] leds: ktd2692: move ExpressWire code to library
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -28,7 +28,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240120-ktd2801-v3-3-fe2cbafffb21@skole.hr>
+Message-Id: <20240120-ktd2801-v3-1-fe2cbafffb21@skole.hr>
 References: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
 In-Reply-To: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
 To: Lee Jones <lee@kernel.org>, 
@@ -44,233 +44,380 @@ Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht,
  linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
  =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7161;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=12703;
  i=duje.mihanovic@skole.hr; h=from:subject:message-id;
- bh=FC1EjKKMu309UuB+RKeyqY3SuL54ONyCm0c9CWTGi94=;
- b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrDqXA8eeM1rneiarkBVOYjFzaCB2FaXFAQs9p
- n+qHN5uiYaJAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZaw6lwAKCRCaEZ6wQi2W
- 4UJkD/4tqCl58QQWHnetlBPLGttzp8B5bT6TS+OcDmEDyNHEPkSX5ZHB0YikL/Yiy1huO4s5phO
- jekA5tYJjzS3OnhWWiwCpd1+cFrp+htdAsrS9ab1lwCFFR9Om6nwoSaJuQ3AhtwKH1u4qgvClnJ
- FzRbQcrxk1qaWJy5ssxTEMXgI0pkUZEEqUa/3JYjDj6t9rofP8DImLvoo+aGvktm72qLJssnLWF
- QhoPQJaL8+A5VNk4R5AJA2EcDjgAHDFyG/eJTzA0mEYC51icvdS8LQJ9pKkPQ1jA/Lrymdldfqf
- 7EoGK9JlUGlNnN3sqHiHAWmxe6HBWLfveV5kkjMe7AdwUwRQzUFqogMZceoOQHi9R9/ph2rga2q
- kL4LqZyaavvNMvaDJFO0y82q1cWLegOArF2DLT3I8yIrbmXQM4gBCKI30M63uOfwgAQIlNYnswM
- xAbnvJJZpObm/CRepA4Mo9upFFXXn8i0MiR8QgBO9V2xSfS+3zABMTqcgn/x2oEXth35TmqiC9D
- cpAe3Q6kNYwQZSHS3J5Bo19z6JIdRs9kSp7UBlhNe2P/NE4EtC21zOTyCX82d086EMg3fHHJSnN
- A7+Lue2TziTrHn1OHESMWw+F+ZaB2AauFVfmnOmU0J0PvAE5v0XzZ51unNvKUV/6yGg2f2da1l8
- ZrdFrpCM+ld7VcA==
+ bh=C2X6yo7wrv17sg0OzEddeEO2QFSrulIh4ctqk9FgHBk=;
+ b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrDqXnBK/SVXS3c7VYyUHJuvmOZyaLHL444j7W
+ LzCnp7hlZ+JAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZaw6lwAKCRCaEZ6wQi2W
+ 4Rr3EACSyEfoq6tb3P0aKem/BEQopy73sC2cDOogwFss3JVhoaqisMb4Q76eqh705BKgOW1wfr9
+ oOdtWd1tKP3zwfWi4ZZGZXptnsElWbS0rG9uJ5QflS++q5SmJLWxsZrt0faTpLUg2oKJDAFw8T5
+ dpdHA1PerN0+Z1mm96EHjGWybmYbBk5qftY7bhyv3RF6RYxr3a2vtguFQtxD/0z0WK80QyeFyNa
+ JlP+cPAR6poNxa17ZG00plPzTWYPTPYPKOHJ2LYdij6astRUJqYjZCTkrt+1RhO37xrdvkIwQFG
+ M2xG6Zx1Rx5JpEesjMzfAf+LV74KifoxdqiQMJTH9rkbJalC9Z/u/LyugnBc6okBFZS8qf9pPSp
+ 9+48+EL7rAlNIPhto3zBpz24vJD0vP3CmXtjT8Olq315ZbtPoSfXFccaAHpU/1C1+3v6SnPGlHL
+ k+YZUU4d6s4mmtqG1gifV+t4dUpTxB648bYBpQ9APQvn8nwxmv6T3u0g7CdGIWZRJ7SpA/p6tyM
+ PsoH/2cU5j1CjyykyKQ95Qu7uSx7w+FPeOdCcpwOa718ogSplYBguyys1Mlh+yHo9/bkcYalULK
+ d1BHJg+nYZ0aoKObOdjMPzTuWfP1AL08ZyLrNG9Eyw4oTyfhLqWESYP7L5djzqT6ygz6PBPdr1V
+ NIbkT0aYxxUb9zA==
 X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
  fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
 
-KTD2801 is a LED backlight driver IC found in samsung,coreprimevelte.
-The brightness can be set using PWM or the ExpressWire protocol. Add
-support for the KTD2801.
+The ExpressWire protocol is shared between at least KTD2692 and KTD2801
+with slight differences such as timings and the former not having a
+defined set of pulses for enabling the protocol (possibly because it
+does not support PWM unlike KTD2801). Despite these differences the
+ExpressWire handling code can be shared between the two, so move it into
+a library in preparation for adding KTD2801 support.
 
+Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
 Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
 ---
- MAINTAINERS                                 |   6 ++
- drivers/video/backlight/Kconfig             |   8 ++
- drivers/video/backlight/Makefile            |   1 +
- drivers/video/backlight/ktd2801-backlight.c | 143 ++++++++++++++++++++++++++++
- 4 files changed, 158 insertions(+)
+ MAINTAINERS                       |  7 +++
+ drivers/leds/Kconfig              |  3 ++
+ drivers/leds/Makefile             |  3 ++
+ drivers/leds/flash/Kconfig        |  1 +
+ drivers/leds/flash/leds-ktd2692.c | 91 +++++++++++----------------------------
+ drivers/leds/leds-expresswire.c   | 59 +++++++++++++++++++++++++
+ include/linux/leds-expresswire.h  | 35 +++++++++++++++
+ 7 files changed, 132 insertions(+), 67 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 87b12d2448a0..dddffbd8d2a0 100644
+index a7c4cf8201e0..87b12d2448a0 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -11891,6 +11891,12 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd253.yaml
- F:	drivers/video/backlight/ktd253-backlight.c
+@@ -7902,6 +7902,13 @@ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/linkinjeon/exfat.git
+ F:	fs/exfat/
  
-+KTD2801 BACKLIGHT DRIVER
++EXPRESSWIRE PROTOCOL LIBRARY
 +M:	Duje Mihanović <duje.mihanovic@skole.hr>
++L:	linux-leds@vger.kernel.org
 +S:	Maintained
-+F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
-+F:	drivers/video/backlight/ktd2801-backlight.c
++F:	drivers/leds/leds-expresswire.c
++F:	include/linux/leds-expresswire.h
 +
- KTEST
- M:	Steven Rostedt <rostedt@goodmis.org>
- M:	John Hawley <warthog9@eaglescrag.net>
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 51387b1ef012..585a5a713759 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -183,6 +183,14 @@ config BACKLIGHT_KTD253
- 	  which is a 1-wire GPIO-controlled backlight found in some mobile
- 	  phones.
+ EXT2 FILE SYSTEM
+ M:	Jan Kara <jack@suse.com>
+ L:	linux-ext4@vger.kernel.org
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 6292fddcc55c..d29b6823e7d1 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -181,6 +181,9 @@ config LEDS_EL15203000
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called leds-el15203000.
  
-+config BACKLIGHT_KTD2801
-+	tristate "Backlight Driver for Kinetic KTD2801"
-+	depends on GPIOLIB || COMPILE_TEST
-+	select LEDS_EXPRESSWIRE
-+	help
-+	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
-+	  GPIO-controlled backlight found in Samsung Galaxy Core Prime VE LTE.
++config LEDS_EXPRESSWIRE
++	bool
 +
- config BACKLIGHT_KTZ8866
- 	tristate "Backlight Driver for Kinetic KTZ8866"
- 	depends on I2C
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index f72e1c3c59e9..b33b647f31ca 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -35,6 +35,7 @@ obj-$(CONFIG_BACKLIGHT_HP680)		+= hp680_bl.o
- obj-$(CONFIG_BACKLIGHT_HP700)		+= jornada720_bl.o
- obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
- obj-$(CONFIG_BACKLIGHT_KTD253)		+= ktd253-backlight.o
-+obj-$(CONFIG_BACKLIGHT_KTD2801)		+= ktd2801-backlight.o
- obj-$(CONFIG_BACKLIGHT_KTZ8866)		+= ktz8866.o
- obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
-diff --git a/drivers/video/backlight/ktd2801-backlight.c b/drivers/video/backlight/ktd2801-backlight.c
+ config LEDS_TURRIS_OMNIA
+ 	tristate "LED support for CZ.NIC's Turris Omnia"
+ 	depends on LEDS_CLASS_MULTICOLOR
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index d7348e8bc019..a63a07d01c6f 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -89,6 +89,9 @@ obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
+ obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
+ 
++# Kinetic ExpressWire Protocol
++obj-$(CONFIG_LEDS_EXPRESSWIRE)		+= leds-expresswire.o
++
+ # LED SPI Drivers
+ obj-$(CONFIG_LEDS_CR0014114)		+= leds-cr0014114.o
+ obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+diff --git a/drivers/leds/flash/Kconfig b/drivers/leds/flash/Kconfig
+index 4e08dbc05709..526c1d063cd8 100644
+--- a/drivers/leds/flash/Kconfig
++++ b/drivers/leds/flash/Kconfig
+@@ -24,6 +24,7 @@ config LEDS_KTD2692
+ 	tristate "LED support for Kinetic KTD2692 flash LED controller"
+ 	depends on OF
+ 	depends on GPIOLIB || COMPILE_TEST
++	select LEDS_EXPRESSWIRE
+ 	help
+ 	  This option enables support for Kinetic KTD2692 LED flash connected
+ 	  through ExpressWire interface.
+diff --git a/drivers/leds/flash/leds-ktd2692.c b/drivers/leds/flash/leds-ktd2692.c
+index 598eee5daa52..8c17de3d621f 100644
+--- a/drivers/leds/flash/leds-ktd2692.c
++++ b/drivers/leds/flash/leds-ktd2692.c
+@@ -9,6 +9,7 @@
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/gpio/consumer.h>
++#include <linux/leds-expresswire.h>
+ #include <linux/led-class-flash.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+@@ -48,11 +49,6 @@
+ /* KTD2692 default length of name */
+ #define KTD2692_NAME_LENGTH			20
+ 
+-enum ktd2692_bitset {
+-	KTD2692_LOW = 0,
+-	KTD2692_HIGH,
+-};
+-
+ /* Movie / Flash Mode Control */
+ enum ktd2692_led_mode {
+ 	KTD2692_MODE_DISABLE = 0,	/* default */
+@@ -71,7 +67,19 @@ struct ktd2692_led_config_data {
+ 	enum led_brightness max_brightness;
+ };
+ 
++const struct expresswire_timing ktd2692_timing = {
++	.poweroff_us = KTD2692_TIME_RESET_US,
++	.data_start_us = KTD2692_TIME_DATA_START_TIME_US,
++	.end_of_data_low_us = KTD2692_TIME_LOW_END_OF_DATA_US,
++	.end_of_data_high_us = KTD2692_TIME_HIGH_END_OF_DATA_US,
++	.short_bitset_us = KTD2692_TIME_SHORT_BITSET_US,
++	.long_bitset_us = KTD2692_TIME_LONG_BITSET_US
++};
++
+ struct ktd2692_context {
++	/* Common ExpressWire properties (ctrl GPIO and timing) */
++	struct expresswire_common_props props;
++
+ 	/* Related LED Flash class device */
+ 	struct led_classdev_flash fled_cdev;
+ 
+@@ -80,7 +88,6 @@ struct ktd2692_context {
+ 	struct regulator *regulator;
+ 
+ 	struct gpio_desc *aux_gpio;
+-	struct gpio_desc *ctrl_gpio;
+ 
+ 	enum ktd2692_led_mode mode;
+ 	enum led_brightness torch_brightness;
+@@ -92,65 +99,14 @@ static struct ktd2692_context *fled_cdev_to_led(
+ 	return container_of(fled_cdev, struct ktd2692_context, fled_cdev);
+ }
+ 
+-static void ktd2692_expresswire_start(struct ktd2692_context *led)
+-{
+-	gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
+-	udelay(KTD2692_TIME_DATA_START_TIME_US);
+-}
+-
+-static void ktd2692_expresswire_reset(struct ktd2692_context *led)
+-{
+-	gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
+-	udelay(KTD2692_TIME_RESET_US);
+-}
+-
+-static void ktd2692_expresswire_end(struct ktd2692_context *led)
+-{
+-	gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
+-	udelay(KTD2692_TIME_LOW_END_OF_DATA_US);
+-	gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
+-	udelay(KTD2692_TIME_HIGH_END_OF_DATA_US);
+-}
+-
+-static void ktd2692_expresswire_set_bit(struct ktd2692_context *led, bool bit)
+-{
+-	/*
+-	 * The Low Bit(0) and High Bit(1) is based on a time detection
+-	 * algorithm between time low and time high
+-	 * Time_(L_LB) : Low time of the Low Bit(0)
+-	 * Time_(H_LB) : High time of the LOW Bit(0)
+-	 * Time_(L_HB) : Low time of the High Bit(1)
+-	 * Time_(H_HB) : High time of the High Bit(1)
+-	 *
+-	 * It can be simplified to:
+-	 * Low Bit(0) : 2 * Time_(H_LB) < Time_(L_LB)
+-	 * High Bit(1) : 2 * Time_(L_HB) < Time_(H_HB)
+-	 * HIGH  ___           ____    _..     _________    ___
+-	 *          |_________|    |_..  |____|         |__|
+-	 * LOW        <L_LB>  <H_LB>     <L_HB>  <H_HB>
+-	 *          [  Low Bit (0) ]     [  High Bit(1) ]
+-	 */
+-	if (bit) {
+-		gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
+-		udelay(KTD2692_TIME_SHORT_BITSET_US);
+-		gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
+-		udelay(KTD2692_TIME_LONG_BITSET_US);
+-	} else {
+-		gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
+-		udelay(KTD2692_TIME_LONG_BITSET_US);
+-		gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
+-		udelay(KTD2692_TIME_SHORT_BITSET_US);
+-	}
+-}
+-
+ static void ktd2692_expresswire_write(struct ktd2692_context *led, u8 value)
+ {
+ 	int i;
+ 
+-	ktd2692_expresswire_start(led);
++	expresswire_start(&led->props);
+ 	for (i = 7; i >= 0; i--)
+-		ktd2692_expresswire_set_bit(led, value & BIT(i));
+-	ktd2692_expresswire_end(led);
++		expresswire_set_bit(&led->props, value & BIT(i));
++	expresswire_end(&led->props);
+ }
+ 
+ static int ktd2692_led_brightness_set(struct led_classdev *led_cdev,
+@@ -163,7 +119,7 @@ static int ktd2692_led_brightness_set(struct led_classdev *led_cdev,
+ 
+ 	if (brightness == LED_OFF) {
+ 		led->mode = KTD2692_MODE_DISABLE;
+-		gpiod_direction_output(led->aux_gpio, KTD2692_LOW);
++		gpiod_direction_output(led->aux_gpio, 0);
+ 	} else {
+ 		ktd2692_expresswire_write(led, brightness |
+ 					KTD2692_REG_MOVIE_CURRENT_BASE);
+@@ -191,10 +147,10 @@ static int ktd2692_led_flash_strobe_set(struct led_classdev_flash *fled_cdev,
+ 				| KTD2692_REG_FLASH_TIMEOUT_BASE);
+ 
+ 		led->mode = KTD2692_MODE_FLASH;
+-		gpiod_direction_output(led->aux_gpio, KTD2692_HIGH);
++		gpiod_direction_output(led->aux_gpio, 1);
+ 	} else {
+ 		led->mode = KTD2692_MODE_DISABLE;
+-		gpiod_direction_output(led->aux_gpio, KTD2692_LOW);
++		gpiod_direction_output(led->aux_gpio, 0);
+ 	}
+ 
+ 	ktd2692_expresswire_write(led, led->mode | KTD2692_REG_MODE_BASE);
+@@ -247,8 +203,8 @@ static void ktd2692_init_flash_timeout(struct led_classdev_flash *fled_cdev,
+ static void ktd2692_setup(struct ktd2692_context *led)
+ {
+ 	led->mode = KTD2692_MODE_DISABLE;
+-	ktd2692_expresswire_reset(led);
+-	gpiod_direction_output(led->aux_gpio, KTD2692_LOW);
++	expresswire_power_off(&led->props);
++	gpiod_direction_output(led->aux_gpio, 0);
+ 
+ 	ktd2692_expresswire_write(led, (KTD2692_MM_MIN_CURR_THRESHOLD_SCALE - 1)
+ 				 | KTD2692_REG_MM_MIN_CURR_THRESHOLD_BASE);
+@@ -277,8 +233,8 @@ static int ktd2692_parse_dt(struct ktd2692_context *led, struct device *dev,
+ 	if (!np)
+ 		return -ENXIO;
+ 
+-	led->ctrl_gpio = devm_gpiod_get(dev, "ctrl", GPIOD_ASIS);
+-	ret = PTR_ERR_OR_ZERO(led->ctrl_gpio);
++	led->props.ctrl_gpio = devm_gpiod_get(dev, "ctrl", GPIOD_ASIS);
++	ret = PTR_ERR_OR_ZERO(led->props.ctrl_gpio);
+ 	if (ret)
+ 		return dev_err_probe(dev, ret, "cannot get ctrl-gpios\n");
+ 
+@@ -412,6 +368,7 @@ static struct platform_driver ktd2692_driver = {
+ 
+ module_platform_driver(ktd2692_driver);
+ 
++MODULE_IMPORT_NS(EXPRESSWIRE);
+ MODULE_AUTHOR("Ingi Kim <ingi2.kim@samsung.com>");
+ MODULE_DESCRIPTION("Kinetic KTD2692 LED driver");
+ MODULE_LICENSE("GPL v2");
+diff --git a/drivers/leds/leds-expresswire.c b/drivers/leds/leds-expresswire.c
 new file mode 100644
-index 000000000000..7b9d1a93aa71
+index 000000000000..88e76c968cf0
 --- /dev/null
-+++ b/drivers/video/backlight/ktd2801-backlight.c
-@@ -0,0 +1,143 @@
++++ b/drivers/leds/leds-expresswire.c
+@@ -0,0 +1,59 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
-+ * Datasheet:
-+ * https://www.kinet-ic.com/uploads/web/KTD2801/KTD2801-04b.pdf
++ * Shared library for Kinetic's ExpressWire protocol.
++ * This protocol works by pulsing the ExpressWire IC's control GPIO.
++ * ktd2692 and ktd2801 are known to use this protocol.
 + */
-+#include <linux/backlight.h>
-+#include <linux/bits.h>
++
 +#include <linux/delay.h>
 +#include <linux/gpio/consumer.h>
 +#include <linux/leds-expresswire.h>
-+#include <linux/platform_device.h>
-+#include <linux/property.h>
 +
-+/* These values have been extracted from Samsung's driver. */
-+#define KTD2801_EXPRESSWIRE_DETECT_DELAY_US	150
-+#define KTD2801_EXPRESSWIRE_DETECT_US		270
-+#define KTD2801_SHORT_BITSET_US			5
-+#define KTD2801_LONG_BITSET_US			(3 * KTD2801_SHORT_BITSET_US)
-+#define KTD2801_DATA_START_US			5
-+#define KTD2801_END_OF_DATA_LOW_US		10
-+#define KTD2801_END_OF_DATA_HIGH_US		350
-+#define KTD2801_PWR_DOWN_DELAY_US		2600
-+
-+#define KTD2801_DEFAULT_BRIGHTNESS	100
-+#define KTD2801_MAX_BRIGHTNESS		255
-+
-+const struct expresswire_timing ktd2801_timing = {
-+	.poweroff_us = KTD2801_PWR_DOWN_DELAY_US,
-+	.detect_delay_us = KTD2801_EXPRESSWIRE_DETECT_DELAY_US,
-+	.detect_us = KTD2801_EXPRESSWIRE_DETECT_US,
-+	.data_start_us = KTD2801_DATA_START_US,
-+	.short_bitset_us = KTD2801_SHORT_BITSET_US,
-+	.long_bitset_us = KTD2801_LONG_BITSET_US,
-+	.end_of_data_low_us = KTD2801_END_OF_DATA_LOW_US,
-+	.end_of_data_high_us = KTD2801_END_OF_DATA_HIGH_US
-+};
-+
-+struct ktd2801_backlight {
-+	struct expresswire_common_props props;
-+	struct backlight_device *bd;
-+	bool was_on;
-+};
-+
-+static int ktd2801_update_status(struct backlight_device *bd)
++void expresswire_power_off(struct expresswire_common_props *props)
 +{
-+	struct ktd2801_backlight *ktd2801 = bl_get_data(bd);
-+	u8 brightness = (u8) backlight_get_brightness(bd);
-+
-+	if (backlight_is_blank(bd)) {
-+		expresswire_power_off(&ktd2801->props);
-+		ktd2801->was_on = false;
-+		return 0;
-+	}
-+
-+	if (!ktd2801->was_on) {
-+		expresswire_enable(&ktd2801->props);
-+		ktd2801->was_on = true;
-+	}
-+
-+	expresswire_start(&ktd2801->props);
-+
-+	for (int i = 7; i >= 0; i--)
-+		expresswire_set_bit(&ktd2801->props, !!(brightness & BIT(i)));
-+
-+	expresswire_end(&ktd2801->props);
-+	return 0;
++	gpiod_set_value_cansleep(props->ctrl_gpio, 0);
++	usleep_range(props->timing.poweroff_us, props->timing.poweroff_us * 2);
 +}
++EXPORT_SYMBOL_NS_GPL(expresswire_power_off, EXPRESSWIRE);
 +
-+static const struct backlight_ops ktd2801_backlight_ops = {
-+	.update_status = ktd2801_update_status,
-+};
-+
-+static int ktd2801_backlight_probe(struct platform_device *pdev)
++void expresswire_enable(struct expresswire_common_props *props)
 +{
-+	struct device *dev = &pdev->dev;
-+	struct backlight_device *bd;
-+	struct ktd2801_backlight *ktd2801;
-+	u32 brightness, max_brightness;
-+	int ret;
-+
-+	ktd2801 = devm_kzalloc(dev, sizeof(*ktd2801), GFP_KERNEL);
-+	if (!ktd2801)
-+		return -ENOMEM;
-+	ktd2801->was_on = true;
-+	ktd2801->props.timing = ktd2801_timing;
-+
-+	ret = device_property_read_u32(dev, "max-brightness", &max_brightness);
-+	if (ret)
-+		max_brightness = KTD2801_MAX_BRIGHTNESS;
-+	if (max_brightness > KTD2801_MAX_BRIGHTNESS) {
-+		dev_err(dev, "illegal max brightness specified\n");
-+		max_brightness = KTD2801_MAX_BRIGHTNESS;
-+	}
-+
-+	ret = device_property_read_u32(dev, "default-brightness", &brightness);
-+	if (ret)
-+		brightness = KTD2801_DEFAULT_BRIGHTNESS;
-+	if (brightness > max_brightness) {
-+		dev_err(dev, "default brightness exceeds max\n");
-+		brightness = max_brightness;
-+	}
-+
-+	ktd2801->props.ctrl_gpio = devm_gpiod_get(dev, "ctrl", GPIOD_OUT_HIGH);
-+	if (IS_ERR(ktd2801->props.ctrl_gpio))
-+		return dev_err_probe(dev, PTR_ERR(ktd2801->props.ctrl_gpio),
-+				"failed to get backlight GPIO");
-+	gpiod_set_consumer_name(ktd2801->props.ctrl_gpio, dev_name(dev));
-+
-+	bd = devm_backlight_device_register(dev, dev_name(dev), dev, ktd2801,
-+			&ktd2801_backlight_ops, NULL);
-+	if (IS_ERR(bd))
-+		return dev_err_probe(dev, PTR_ERR(bd),
-+				"failed to register backlight");
-+
-+	bd->props.max_brightness = max_brightness;
-+	bd->props.brightness = brightness;
-+
-+	ktd2801->bd = bd;
-+	platform_set_drvdata(pdev, bd);
-+	backlight_update_status(bd);
-+
-+	return 0;
++	gpiod_set_value(props->ctrl_gpio, 1);
++	udelay(props->timing.detect_delay_us);
++	gpiod_set_value(props->ctrl_gpio, 0);
++	udelay(props->timing.detect_us);
++	gpiod_set_value(props->ctrl_gpio, 1);
 +}
++EXPORT_SYMBOL_NS_GPL(expresswire_enable, EXPRESSWIRE);
 +
-+static const struct of_device_id ktd2801_of_match[] = {
-+	{ .compatible = "kinetic,ktd2801" },
-+	{ }
++void expresswire_start(struct expresswire_common_props *props)
++{
++	gpiod_set_value(props->ctrl_gpio, 1);
++	udelay(props->timing.data_start_us);
++}
++EXPORT_SYMBOL_NS_GPL(expresswire_start, EXPRESSWIRE);
++
++void expresswire_end(struct expresswire_common_props *props)
++{
++	gpiod_set_value(props->ctrl_gpio, 0);
++	udelay(props->timing.end_of_data_low_us);
++	gpiod_set_value(props->ctrl_gpio, 1);
++	udelay(props->timing.end_of_data_high_us);
++}
++EXPORT_SYMBOL_NS_GPL(expresswire_end, EXPRESSWIRE);
++
++void expresswire_set_bit(struct expresswire_common_props *props, bool bit)
++{
++	if (bit) {
++		gpiod_set_value(props->ctrl_gpio, 0);
++		udelay(props->timing.short_bitset_us);
++		gpiod_set_value(props->ctrl_gpio, 1);
++		udelay(props->timing.long_bitset_us);
++	} else {
++		gpiod_set_value(props->ctrl_gpio, 0);
++		udelay(props->timing.long_bitset_us);
++		gpiod_set_value(props->ctrl_gpio, 1);
++		udelay(props->timing.short_bitset_us);
++	}
++}
++EXPORT_SYMBOL_NS_GPL(expresswire_set_bit, EXPRESSWIRE);
+diff --git a/include/linux/leds-expresswire.h b/include/linux/leds-expresswire.h
+new file mode 100644
+index 000000000000..b5aad0556cb8
+--- /dev/null
++++ b/include/linux/leds-expresswire.h
+@@ -0,0 +1,35 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Shared library for Kinetic's ExpressWire protocol.
++ * This protocol works by pulsing the ExpressWire IC's control GPIO.
++ * ktd2692 and ktd2801 are known to use this protocol.
++ */
++
++#ifndef _LEDS_EXPRESSWIRE_H
++#define _LEDS_EXPRESSWIRE_H
++
++#include <linux/gpio/consumer.h>
++
++struct expresswire_timing {
++	unsigned long poweroff_us;
++	unsigned long detect_delay_us;
++	unsigned long detect_us;
++	unsigned long data_start_us;
++	unsigned long end_of_data_low_us;
++	unsigned long end_of_data_high_us;
++	unsigned long short_bitset_us;
++	unsigned long long_bitset_us;
 +};
-+MODULE_DEVICE_TABLE(of, ktd2801_of_match);
 +
-+static struct platform_driver ktd2801_backlight_driver = {
-+	.driver = {
-+		.name = "ktd2801-backlight",
-+		.of_match_table = ktd2801_of_match,
-+	},
-+	.probe = ktd2801_backlight_probe,
++struct expresswire_common_props {
++	struct gpio_desc *ctrl_gpio;
++	struct expresswire_timing timing;
 +};
-+module_platform_driver(ktd2801_backlight_driver);
 +
-+MODULE_IMPORT_NS(EXPRESSWIRE);
-+MODULE_AUTHOR("Duje Mihanović <duje.mihanovic@skole.hr>");
-+MODULE_DESCRIPTION("Kinetic KTD2801 Backlight Driver");
-+MODULE_LICENSE("GPL");
++extern void expresswire_power_off(struct expresswire_common_props *props);
++extern void expresswire_enable(struct expresswire_common_props *props);
++extern void expresswire_start(struct expresswire_common_props *props);
++extern void expresswire_end(struct expresswire_common_props *props);
++extern void expresswire_set_bit(struct expresswire_common_props *props, bool bit);
++
++#endif /* _LEDS_EXPRESSWIRE_H */
 
 -- 
 2.43.0

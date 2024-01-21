@@ -1,425 +1,139 @@
-Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C958512E74;
-	Sat, 20 Jan 2024 21:27:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61AB514F61;
+	Sun, 21 Jan 2024 08:02:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705786051; cv=none; b=ifkzXTu3jdLgvsfwzVpJ1PXuskoMd+268HOHzVcckokNcIRY7NtJJDiLHc953Mgvi1Cujs4XYiw8FVMb1BT0AkIVRBvvLGz/yMBPvLbwt2lMUyg46I0D4/bwVrQ3HM8LCoVqUGqSzVmseKHP9zkIQL4gC5B9XKYxE1+JngB0OGw=
+	t=1705824136; cv=none; b=Y3Bq6fFEZ5V4ZpF3oxp24sKqHB9EeW6U5WUgehRo0iAApTDWlmhS4dvvcqTesqoNx+sCv0vHO7pyLMfchXddEDpqk1/dY/HbnDz3ISiFQfjLMZGEXU3g8bYarsmLRD7FSnzCFbXOjtYLtLuYZhmhLZFyzf0p/7DWT+9DWnMtoE4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705786051; c=relaxed/simple;
-	bh=C2X6yo7wrv17sg0OzEddeEO2QFSrulIh4ctqk9FgHBk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=BN3cAdie8laFixJBJkl+w6WZK8RVAMvsIxZPruefN/bN7IiJAg/QAIgsW+hU8L1z0JYBm1XRfvuhDR0dXoVsaDmoGSUX8ItROhp2n2qZynCjSYqOM5QGSFXK7MD9XqCCkdUz9ZnrHUR8Ks5viYaqIDF9qVLxKAzl/qIbTWnI+eM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
-Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id A0CFC86C5A;
-	Sat, 20 Jan 2024 22:27:25 +0100 (CET)
-From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Date: Sat, 20 Jan 2024 22:26:43 +0100
-Subject: [PATCH v3 1/3] leds: ktd2692: move ExpressWire code to library
+	s=arc-20240116; t=1705824136; c=relaxed/simple;
+	bh=lmEl2d7HAt/XbGIN81juIpgwCW99VwCJsVaLTSFIR8Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uzmbajFjaU5SF8DRBZtU/Mq+jxwML1i1gcqAEm8MH5YRO5OYIAnz5KhvZeWQ6qrckBQWwCseYwUn80NuCD+zovdVRaHZKBepRljZxv9FFdgmQwko+cxG8RIQaSi5tLfLc5rHeSSxN7L5UNHOLbbe2dOeJrpg/QLqz54/8XobyuE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Q24U5l1W; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Q24U5l1W"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1705824117; x=1706428917; i=deller@gmx.de;
+	bh=lmEl2d7HAt/XbGIN81juIpgwCW99VwCJsVaLTSFIR8Y=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=Q24U5l1WuGkPh74jae0sAt++EHF353b9Nqzp/snjJj6RD1RKPu2X5HPab3vkJePK
+	 kQbIyXyWSJA8wTLhP3GJJFZB4hfIGuNa+9AytxoWMc+hHnKMip7HKX74mscIJLXRV
+	 rsHG1hfjK6gq9RJOp/Qu8l8E1H0ymdEyPAZ2P+xgm9yoxbaaIVUUOohT+xoRuxjkh
+	 egaqadmuN5+5t9twjl0qAMrIjvV5N7Kwq8QBmdUCrAWKrZbLiLuOn6sTZwxsI8J36
+	 efzV16qLOuaVBRIEybZfMWi5WggDRJ/PZp3MUm8iX7UL5Ls/ODbOl58PSpBpmzbJI
+	 UfESlxeEjPs9LmkCAw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([94.134.154.190]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MUGiJ-1rb38I1faF-00REM1; Sun, 21
+ Jan 2024 09:01:57 +0100
+Message-ID: <fb18e94f-3254-48d1-b260-1c3a7514bd8f@gmx.de>
+Date: Sun, 21 Jan 2024 09:01:55 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240120-ktd2801-v3-1-fe2cbafffb21@skole.hr>
-References: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
-In-Reply-To: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
-To: Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
- Rob Herring <robh+dt@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
- Linus Walleij <linus.walleij@linaro.org>
-Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht, 
- phone-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=12703;
- i=duje.mihanovic@skole.hr; h=from:subject:message-id;
- bh=C2X6yo7wrv17sg0OzEddeEO2QFSrulIh4ctqk9FgHBk=;
- b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrDqXnBK/SVXS3c7VYyUHJuvmOZyaLHL444j7W
- LzCnp7hlZ+JAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZaw6lwAKCRCaEZ6wQi2W
- 4Rr3EACSyEfoq6tb3P0aKem/BEQopy73sC2cDOogwFss3JVhoaqisMb4Q76eqh705BKgOW1wfr9
- oOdtWd1tKP3zwfWi4ZZGZXptnsElWbS0rG9uJ5QflS++q5SmJLWxsZrt0faTpLUg2oKJDAFw8T5
- dpdHA1PerN0+Z1mm96EHjGWybmYbBk5qftY7bhyv3RF6RYxr3a2vtguFQtxD/0z0WK80QyeFyNa
- JlP+cPAR6poNxa17ZG00plPzTWYPTPYPKOHJ2LYdij6astRUJqYjZCTkrt+1RhO37xrdvkIwQFG
- M2xG6Zx1Rx5JpEesjMzfAf+LV74KifoxdqiQMJTH9rkbJalC9Z/u/LyugnBc6okBFZS8qf9pPSp
- 9+48+EL7rAlNIPhto3zBpz24vJD0vP3CmXtjT8Olq315ZbtPoSfXFccaAHpU/1C1+3v6SnPGlHL
- k+YZUU4d6s4mmtqG1gifV+t4dUpTxB648bYBpQ9APQvn8nwxmv6T3u0g7CdGIWZRJ7SpA/p6tyM
- PsoH/2cU5j1CjyykyKQ95Qu7uSx7w+FPeOdCcpwOa718ogSplYBguyys1Mlh+yHo9/bkcYalULK
- d1BHJg+nYZ0aoKObOdjMPzTuWfP1AL08ZyLrNG9Eyw4oTyfhLqWESYP7L5djzqT6ygz6PBPdr1V
- NIbkT0aYxxUb9zA==
-X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
- fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] video: fbdev: sis: Error out if pixclock equals zero
+Content-Language: en-US
+To: Fullway Wang <fullwaywang@outlook.com>, tzimmermann@suse.de,
+ sam@ravnborg.org, javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ fullwaywang@tencent.com
+References: <PH7PR20MB5925C492B7F8CDACB2386DB4BF712@PH7PR20MB5925.namprd20.prod.outlook.com>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <PH7PR20MB5925C492B7F8CDACB2386DB4BF712@PH7PR20MB5925.namprd20.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:rPKVCaXb0ndO2tg3vgAi1V42uGT3otTXDBMHqCejyzRXKpSEwZl
+ wrBIS0IrqQ0kGRVowQuILGo5vUcd/uXFtbPMqpWHsTc6s5Ahf1asxcU7dqYNVivdH1+1nK/
+ MO4l8gdOaWGjkX/YMgbnxElXpkqLK2iT7AGNWBPJf7VAjl0uEk6QyNapl8wAW5UxH7A9flZ
+ XTEL4vOBYaps/A1OczL4g==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:U+LjjRAcEUk=;1D46GZPLBjz3tYeDKRVyT3rZXNG
+ Cy7gdqKck1qX+M3pAlK8zBuGdyhA7m31D7W2OclwfiBuBM6aZr25NFo9isLq1zjr3q353ZjeI
+ /1lGrm7bkQ6cxWeJuwTNC7MZyLsQzLP0mP9ipT1RkWO+Ncan4g5U+wYYr9dJIDudGcEmn+hsc
+ tPwbQWkh+CjIe9Lgag/IXVvIDlsF2sDKY33rQxgdzIZKI0sLWfceYS6tw/TOtbu5ZmlOB16wF
+ aXcGOIOINvGBqV0xInOXdIWd6egqLnQitaEL0UAVrCTKqU4si6jbMgcSF9ilUNyfOn5ZrJRUO
+ yjMNxrqCQpRPegbEe3ABIeI4ttCEvbuFtKRksM3xFc6Bj1mJX9szHFDS08O01AYxgLnDqPSSz
+ H7bAdABJnfH1u1GCZ19HJnfp0YL1NAOkhMXIyugZy1QwcN7kIGJxDP0qQg+SZo2eZneXrKvB9
+ S8xBHTj/fhCMpgPMkgv2JVJLtdNvgynZJiFw74t+XW8KZvgFemjGp/T0j+7IsMm8oeMoOofR7
+ vaSPI7EfsrCFXQgjceo0qc2C3z4usCnzPtxam2aMM8wxVMF0YmcuTq8Jg5nsNLuVZJPXikjbe
+ kyI6J7sEHj8Oi38j4Wo4avJwcZpIOlrErKDka+igCUYZ1jiXA1BJpdD6EHCT4sCq9R5aONldz
+ o6wZ4N4RQxh6OjMf+j4SRWexL/RQwTULfHvDRTxoTyaYOURNTS+EiKcQVIp4GLtUBjjnhBl7E
+ 12D2iElcn83atAxlC/agxh/0YhiQnvux3ck3+9FLbWK5fXoyao+LUjoVizr9gw9SLd7d4OKml
+ 5L7begdQ2+ivPF48hJ7EDoSXzA/JbMszxHJe3tuw/z8wHWvHLWcD8gkpl5ajc4AFIH4H4KJJE
+ nghxVjlWq+uSxNr/j9QczbsMDmzGMHtyIH63On3MV0KuG0euk6mKpC3CQYVLEGOeV8BOmpnQc
+ vOl0Jg==
 
-The ExpressWire protocol is shared between at least KTD2692 and KTD2801
-with slight differences such as timings and the former not having a
-defined set of pulses for enabling the protocol (possibly because it
-does not support PWM unlike KTD2801). Despite these differences the
-ExpressWire handling code can be shared between the two, so move it into
-a library in preparation for adding KTD2801 support.
+On 1/18/24 07:24, Fullway Wang wrote:
+> The userspace program could pass any values to the driver through
+> ioctl() interface. If the driver doesn't check the value of pixclock,
+> it may cause divide-by-zero error.
+>
+> In sisfb_check_var(), var->pixclock is used as a divisor to caculate
+> drate before it is checked against zero. Fix this by checking it
+> at the beginning.
+>
+> This is similar to CVE-2022-3061 in i740fb which was fixed by
+> commit 15cf0b8.
+>
+> Signed-off-by: Fullway Wang <fullwaywang@outlook.com>
+> ---
+>   drivers/video/fbdev/sis/sis_main.c | 2 ++
+>   1 file changed, 2 insertions(+)
 
-Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
----
- MAINTAINERS                       |  7 +++
- drivers/leds/Kconfig              |  3 ++
- drivers/leds/Makefile             |  3 ++
- drivers/leds/flash/Kconfig        |  1 +
- drivers/leds/flash/leds-ktd2692.c | 91 +++++++++++----------------------------
- drivers/leds/leds-expresswire.c   | 59 +++++++++++++++++++++++++
- include/linux/leds-expresswire.h  | 35 +++++++++++++++
- 7 files changed, 132 insertions(+), 67 deletions(-)
+I've applied this patch and your savage patch to fbdev git tree.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a7c4cf8201e0..87b12d2448a0 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7902,6 +7902,13 @@ S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/linkinjeon/exfat.git
- F:	fs/exfat/
- 
-+EXPRESSWIRE PROTOCOL LIBRARY
-+M:	Duje Mihanović <duje.mihanovic@skole.hr>
-+L:	linux-leds@vger.kernel.org
-+S:	Maintained
-+F:	drivers/leds/leds-expresswire.c
-+F:	include/linux/leds-expresswire.h
-+
- EXT2 FILE SYSTEM
- M:	Jan Kara <jack@suse.com>
- L:	linux-ext4@vger.kernel.org
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 6292fddcc55c..d29b6823e7d1 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -181,6 +181,9 @@ config LEDS_EL15203000
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called leds-el15203000.
- 
-+config LEDS_EXPRESSWIRE
-+	bool
-+
- config LEDS_TURRIS_OMNIA
- 	tristate "LED support for CZ.NIC's Turris Omnia"
- 	depends on LEDS_CLASS_MULTICOLOR
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index d7348e8bc019..a63a07d01c6f 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -89,6 +89,9 @@ obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
- obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
- obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
- 
-+# Kinetic ExpressWire Protocol
-+obj-$(CONFIG_LEDS_EXPRESSWIRE)		+= leds-expresswire.o
-+
- # LED SPI Drivers
- obj-$(CONFIG_LEDS_CR0014114)		+= leds-cr0014114.o
- obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-diff --git a/drivers/leds/flash/Kconfig b/drivers/leds/flash/Kconfig
-index 4e08dbc05709..526c1d063cd8 100644
---- a/drivers/leds/flash/Kconfig
-+++ b/drivers/leds/flash/Kconfig
-@@ -24,6 +24,7 @@ config LEDS_KTD2692
- 	tristate "LED support for Kinetic KTD2692 flash LED controller"
- 	depends on OF
- 	depends on GPIOLIB || COMPILE_TEST
-+	select LEDS_EXPRESSWIRE
- 	help
- 	  This option enables support for Kinetic KTD2692 LED flash connected
- 	  through ExpressWire interface.
-diff --git a/drivers/leds/flash/leds-ktd2692.c b/drivers/leds/flash/leds-ktd2692.c
-index 598eee5daa52..8c17de3d621f 100644
---- a/drivers/leds/flash/leds-ktd2692.c
-+++ b/drivers/leds/flash/leds-ktd2692.c
-@@ -9,6 +9,7 @@
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/leds-expresswire.h>
- #include <linux/led-class-flash.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-@@ -48,11 +49,6 @@
- /* KTD2692 default length of name */
- #define KTD2692_NAME_LENGTH			20
- 
--enum ktd2692_bitset {
--	KTD2692_LOW = 0,
--	KTD2692_HIGH,
--};
--
- /* Movie / Flash Mode Control */
- enum ktd2692_led_mode {
- 	KTD2692_MODE_DISABLE = 0,	/* default */
-@@ -71,7 +67,19 @@ struct ktd2692_led_config_data {
- 	enum led_brightness max_brightness;
- };
- 
-+const struct expresswire_timing ktd2692_timing = {
-+	.poweroff_us = KTD2692_TIME_RESET_US,
-+	.data_start_us = KTD2692_TIME_DATA_START_TIME_US,
-+	.end_of_data_low_us = KTD2692_TIME_LOW_END_OF_DATA_US,
-+	.end_of_data_high_us = KTD2692_TIME_HIGH_END_OF_DATA_US,
-+	.short_bitset_us = KTD2692_TIME_SHORT_BITSET_US,
-+	.long_bitset_us = KTD2692_TIME_LONG_BITSET_US
-+};
-+
- struct ktd2692_context {
-+	/* Common ExpressWire properties (ctrl GPIO and timing) */
-+	struct expresswire_common_props props;
-+
- 	/* Related LED Flash class device */
- 	struct led_classdev_flash fled_cdev;
- 
-@@ -80,7 +88,6 @@ struct ktd2692_context {
- 	struct regulator *regulator;
- 
- 	struct gpio_desc *aux_gpio;
--	struct gpio_desc *ctrl_gpio;
- 
- 	enum ktd2692_led_mode mode;
- 	enum led_brightness torch_brightness;
-@@ -92,65 +99,14 @@ static struct ktd2692_context *fled_cdev_to_led(
- 	return container_of(fled_cdev, struct ktd2692_context, fled_cdev);
- }
- 
--static void ktd2692_expresswire_start(struct ktd2692_context *led)
--{
--	gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
--	udelay(KTD2692_TIME_DATA_START_TIME_US);
--}
--
--static void ktd2692_expresswire_reset(struct ktd2692_context *led)
--{
--	gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
--	udelay(KTD2692_TIME_RESET_US);
--}
--
--static void ktd2692_expresswire_end(struct ktd2692_context *led)
--{
--	gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
--	udelay(KTD2692_TIME_LOW_END_OF_DATA_US);
--	gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
--	udelay(KTD2692_TIME_HIGH_END_OF_DATA_US);
--}
--
--static void ktd2692_expresswire_set_bit(struct ktd2692_context *led, bool bit)
--{
--	/*
--	 * The Low Bit(0) and High Bit(1) is based on a time detection
--	 * algorithm between time low and time high
--	 * Time_(L_LB) : Low time of the Low Bit(0)
--	 * Time_(H_LB) : High time of the LOW Bit(0)
--	 * Time_(L_HB) : Low time of the High Bit(1)
--	 * Time_(H_HB) : High time of the High Bit(1)
--	 *
--	 * It can be simplified to:
--	 * Low Bit(0) : 2 * Time_(H_LB) < Time_(L_LB)
--	 * High Bit(1) : 2 * Time_(L_HB) < Time_(H_HB)
--	 * HIGH  ___           ____    _..     _________    ___
--	 *          |_________|    |_..  |____|         |__|
--	 * LOW        <L_LB>  <H_LB>     <L_HB>  <H_HB>
--	 *          [  Low Bit (0) ]     [  High Bit(1) ]
--	 */
--	if (bit) {
--		gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
--		udelay(KTD2692_TIME_SHORT_BITSET_US);
--		gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
--		udelay(KTD2692_TIME_LONG_BITSET_US);
--	} else {
--		gpiod_direction_output(led->ctrl_gpio, KTD2692_LOW);
--		udelay(KTD2692_TIME_LONG_BITSET_US);
--		gpiod_direction_output(led->ctrl_gpio, KTD2692_HIGH);
--		udelay(KTD2692_TIME_SHORT_BITSET_US);
--	}
--}
--
- static void ktd2692_expresswire_write(struct ktd2692_context *led, u8 value)
- {
- 	int i;
- 
--	ktd2692_expresswire_start(led);
-+	expresswire_start(&led->props);
- 	for (i = 7; i >= 0; i--)
--		ktd2692_expresswire_set_bit(led, value & BIT(i));
--	ktd2692_expresswire_end(led);
-+		expresswire_set_bit(&led->props, value & BIT(i));
-+	expresswire_end(&led->props);
- }
- 
- static int ktd2692_led_brightness_set(struct led_classdev *led_cdev,
-@@ -163,7 +119,7 @@ static int ktd2692_led_brightness_set(struct led_classdev *led_cdev,
- 
- 	if (brightness == LED_OFF) {
- 		led->mode = KTD2692_MODE_DISABLE;
--		gpiod_direction_output(led->aux_gpio, KTD2692_LOW);
-+		gpiod_direction_output(led->aux_gpio, 0);
- 	} else {
- 		ktd2692_expresswire_write(led, brightness |
- 					KTD2692_REG_MOVIE_CURRENT_BASE);
-@@ -191,10 +147,10 @@ static int ktd2692_led_flash_strobe_set(struct led_classdev_flash *fled_cdev,
- 				| KTD2692_REG_FLASH_TIMEOUT_BASE);
- 
- 		led->mode = KTD2692_MODE_FLASH;
--		gpiod_direction_output(led->aux_gpio, KTD2692_HIGH);
-+		gpiod_direction_output(led->aux_gpio, 1);
- 	} else {
- 		led->mode = KTD2692_MODE_DISABLE;
--		gpiod_direction_output(led->aux_gpio, KTD2692_LOW);
-+		gpiod_direction_output(led->aux_gpio, 0);
- 	}
- 
- 	ktd2692_expresswire_write(led, led->mode | KTD2692_REG_MODE_BASE);
-@@ -247,8 +203,8 @@ static void ktd2692_init_flash_timeout(struct led_classdev_flash *fled_cdev,
- static void ktd2692_setup(struct ktd2692_context *led)
- {
- 	led->mode = KTD2692_MODE_DISABLE;
--	ktd2692_expresswire_reset(led);
--	gpiod_direction_output(led->aux_gpio, KTD2692_LOW);
-+	expresswire_power_off(&led->props);
-+	gpiod_direction_output(led->aux_gpio, 0);
- 
- 	ktd2692_expresswire_write(led, (KTD2692_MM_MIN_CURR_THRESHOLD_SCALE - 1)
- 				 | KTD2692_REG_MM_MIN_CURR_THRESHOLD_BASE);
-@@ -277,8 +233,8 @@ static int ktd2692_parse_dt(struct ktd2692_context *led, struct device *dev,
- 	if (!np)
- 		return -ENXIO;
- 
--	led->ctrl_gpio = devm_gpiod_get(dev, "ctrl", GPIOD_ASIS);
--	ret = PTR_ERR_OR_ZERO(led->ctrl_gpio);
-+	led->props.ctrl_gpio = devm_gpiod_get(dev, "ctrl", GPIOD_ASIS);
-+	ret = PTR_ERR_OR_ZERO(led->props.ctrl_gpio);
- 	if (ret)
- 		return dev_err_probe(dev, ret, "cannot get ctrl-gpios\n");
- 
-@@ -412,6 +368,7 @@ static struct platform_driver ktd2692_driver = {
- 
- module_platform_driver(ktd2692_driver);
- 
-+MODULE_IMPORT_NS(EXPRESSWIRE);
- MODULE_AUTHOR("Ingi Kim <ingi2.kim@samsung.com>");
- MODULE_DESCRIPTION("Kinetic KTD2692 LED driver");
- MODULE_LICENSE("GPL v2");
-diff --git a/drivers/leds/leds-expresswire.c b/drivers/leds/leds-expresswire.c
-new file mode 100644
-index 000000000000..88e76c968cf0
---- /dev/null
-+++ b/drivers/leds/leds-expresswire.c
-@@ -0,0 +1,59 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Shared library for Kinetic's ExpressWire protocol.
-+ * This protocol works by pulsing the ExpressWire IC's control GPIO.
-+ * ktd2692 and ktd2801 are known to use this protocol.
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/leds-expresswire.h>
-+
-+void expresswire_power_off(struct expresswire_common_props *props)
-+{
-+	gpiod_set_value_cansleep(props->ctrl_gpio, 0);
-+	usleep_range(props->timing.poweroff_us, props->timing.poweroff_us * 2);
-+}
-+EXPORT_SYMBOL_NS_GPL(expresswire_power_off, EXPRESSWIRE);
-+
-+void expresswire_enable(struct expresswire_common_props *props)
-+{
-+	gpiod_set_value(props->ctrl_gpio, 1);
-+	udelay(props->timing.detect_delay_us);
-+	gpiod_set_value(props->ctrl_gpio, 0);
-+	udelay(props->timing.detect_us);
-+	gpiod_set_value(props->ctrl_gpio, 1);
-+}
-+EXPORT_SYMBOL_NS_GPL(expresswire_enable, EXPRESSWIRE);
-+
-+void expresswire_start(struct expresswire_common_props *props)
-+{
-+	gpiod_set_value(props->ctrl_gpio, 1);
-+	udelay(props->timing.data_start_us);
-+}
-+EXPORT_SYMBOL_NS_GPL(expresswire_start, EXPRESSWIRE);
-+
-+void expresswire_end(struct expresswire_common_props *props)
-+{
-+	gpiod_set_value(props->ctrl_gpio, 0);
-+	udelay(props->timing.end_of_data_low_us);
-+	gpiod_set_value(props->ctrl_gpio, 1);
-+	udelay(props->timing.end_of_data_high_us);
-+}
-+EXPORT_SYMBOL_NS_GPL(expresswire_end, EXPRESSWIRE);
-+
-+void expresswire_set_bit(struct expresswire_common_props *props, bool bit)
-+{
-+	if (bit) {
-+		gpiod_set_value(props->ctrl_gpio, 0);
-+		udelay(props->timing.short_bitset_us);
-+		gpiod_set_value(props->ctrl_gpio, 1);
-+		udelay(props->timing.long_bitset_us);
-+	} else {
-+		gpiod_set_value(props->ctrl_gpio, 0);
-+		udelay(props->timing.long_bitset_us);
-+		gpiod_set_value(props->ctrl_gpio, 1);
-+		udelay(props->timing.short_bitset_us);
-+	}
-+}
-+EXPORT_SYMBOL_NS_GPL(expresswire_set_bit, EXPRESSWIRE);
-diff --git a/include/linux/leds-expresswire.h b/include/linux/leds-expresswire.h
-new file mode 100644
-index 000000000000..b5aad0556cb8
---- /dev/null
-+++ b/include/linux/leds-expresswire.h
-@@ -0,0 +1,35 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Shared library for Kinetic's ExpressWire protocol.
-+ * This protocol works by pulsing the ExpressWire IC's control GPIO.
-+ * ktd2692 and ktd2801 are known to use this protocol.
-+ */
-+
-+#ifndef _LEDS_EXPRESSWIRE_H
-+#define _LEDS_EXPRESSWIRE_H
-+
-+#include <linux/gpio/consumer.h>
-+
-+struct expresswire_timing {
-+	unsigned long poweroff_us;
-+	unsigned long detect_delay_us;
-+	unsigned long detect_us;
-+	unsigned long data_start_us;
-+	unsigned long end_of_data_low_us;
-+	unsigned long end_of_data_high_us;
-+	unsigned long short_bitset_us;
-+	unsigned long long_bitset_us;
-+};
-+
-+struct expresswire_common_props {
-+	struct gpio_desc *ctrl_gpio;
-+	struct expresswire_timing timing;
-+};
-+
-+extern void expresswire_power_off(struct expresswire_common_props *props);
-+extern void expresswire_enable(struct expresswire_common_props *props);
-+extern void expresswire_start(struct expresswire_common_props *props);
-+extern void expresswire_end(struct expresswire_common_props *props);
-+extern void expresswire_set_bit(struct expresswire_common_props *props, bool bit);
-+
-+#endif /* _LEDS_EXPRESSWIRE_H */
-
--- 
-2.43.0
-
+Thanks!
+Helge
 

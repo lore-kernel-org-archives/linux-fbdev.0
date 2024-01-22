@@ -1,38 +1,38 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDF523B790;
-	Mon, 22 Jan 2024 20:01:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE47D481C6
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 21:42:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705953692; cv=none; b=LDGEjxQVCAE0UBlE2WUsGaKQoQcafU7mrOboVbfE9Ds0E5Pu6h2MeQy6TN82KZ/l/1UEWg13cjNi5T2OjF4mZCBOMKqeCi3Qtpq/EXgueWdekhh7vPgfdbDyrDTy0wFW4biOCKCo8PjCsnwYT0/2kUO+51OBnRgpMQuZuh/y96o=
+	t=1705959734; cv=none; b=DKGdor4G2fyywD9QeH1o29DJijKpwY7BHabZ6T7fbu3KiW5iQluOKvnu5wlAWs8s5ZbKiX7ZJuVvLwksfjxcq70cftEyl4IjfwEJCbBCjnMRCNsLsF+xhJmg7pejzpkYWTNwgvNLlwvOss8Bbtgo5YKtjRQNx36Kpp7oIllXMek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705953692; c=relaxed/simple;
-	bh=dNelk4kBrgBCghijjRjoFYY9rvEodTp1XYkmBPmw944=;
+	s=arc-20240116; t=1705959734; c=relaxed/simple;
+	bh=i71/Im2vJBPoIH97PmmNuIvGmWy12BUCJjc8Usoyn/A=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nsNTXAKf6XRnp7FP6czi+rGNmyzSRUOw8ZCLinUYEVsbXTL5x8hV4BsZvkx8NLy5HzGlodpPFmlOMFFP75g+IWfX4MF2XRZ5wOEKTyRlicQ54s5TmM/nBDzjEabLg+68SEuecQvjKMjFatXwu5QYY0znQI9P2pU1HhRsjpKfSeQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Roldsi+e; arc=none smtp.client-ip=212.227.15.19
+	 In-Reply-To:Content-Type; b=jCuM0Qv7HXtro8QkqQW8iiNuWaHB83tfD9kgsSOdvfvSnpqHE7IIk0shnIbFHYvJOnf1q5ACxXIiSZNYdjTKFUGqu9HQBHTBLzAZ059XeVGZTngcH2rujps0DQSzm8Xhh2VYlW+zs6fvW9Sll9CgPliTNn3q6uuOYdnIDZdjAU8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=c0ijoK+Q; arc=none smtp.client-ip=212.227.15.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Roldsi+e"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="c0ijoK+Q"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-	t=1705953660; x=1706558460; i=deller@gmx.de;
-	bh=dNelk4kBrgBCghijjRjoFYY9rvEodTp1XYkmBPmw944=;
+	t=1705959726; x=1706564526; i=deller@gmx.de;
+	bh=i71/Im2vJBPoIH97PmmNuIvGmWy12BUCJjc8Usoyn/A=;
 	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
 	 In-Reply-To;
-	b=Roldsi+e/ixsw0Rufo0TEKAUHwJ964vRlLwtamHVpZ1xrEG7UaEczqqFz4sDeIRS
-	 ic0L8UckEsHeeywccp9evzE4PnUSo4EnXD1rhJETkLPpdbOxdNHOEpJP6Kmv1faQW
-	 MYb0m35MDfLSjtlbbPukc6mmMnB0hOSjkyVTIqClVl/MhfbxNABvktXjaiMw1T9Zh
-	 +C9wUuoa0ePtyS052o7yTMwRKZIBcHdyQq35dINaac6bPPQVtPxZ/QAMVMRWfedFy
-	 YVJ73IupSgKAjZOSd8JYcUP8z1/bUsSVkAouGd8xAd2h1x+W0vDKY+EYNlLj4wkzK
-	 Sm4PA/vmBmYnGU9Mng==
+	b=c0ijoK+QXWNW+5JWK8fqfqw8PUICZPFYNJzuVffCB2luGRSkglUC3t/wtGx4TA5/
+	 2bGL9TsZpxihbLAgBAXCHvZCLBRJpHZNGFvaTCIXcHqh1Cd0RpNG20I3LPwJOTooz
+	 1NRdmZI0UjvUMgeBg311uRAGroJHdzSmhfb4lk7s2Ko6TdU8AxNHQK+KAFXA2zCwE
+	 T97yXmVMwjgkAv6Q96hNDx0Pql454KMxIDnSA3xCnpfMGMJ7BS3oNhCjixueH3RRv
+	 gDIgyvhr6nRdT0r2qDa8NE0HQnrGQbcuwt8mEPJt+yNSGzQ3H6gvkJgQHslxR26rE
+	 pqbBss9I5FKSLEIu1Q==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([94.134.156.47]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MuDc7-1r7Ahd0JdF-00uZaX; Mon, 22
- Jan 2024 21:01:00 +0100
-Message-ID: <00232392-dc40-4790-9278-91df30e50a04@gmx.de>
-Date: Mon, 22 Jan 2024 21:00:58 +0100
+Received: from [192.168.20.55] ([94.134.156.47]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N8XPn-1r65Jk3YhN-014W7k; Mon, 22
+ Jan 2024 22:42:05 +0100
+Message-ID: <de2bae83-f6dd-4097-b94a-6086c527360c@gmx.de>
+Date: Mon, 22 Jan 2024 22:42:05 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,17 +40,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 00/47] tty: vt: cleanup and documentation
+Subject: Re: [PATCH] fbcon: Fix incorrect printed function name in
+ fbcon_prepare_logo()
 Content-Language: en-US
-To: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>, gregkh@linuxfoundation.org
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
- Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org,
- Martin Hostettler <textshell@uchuujin.de>,
- Thomas Zimmermann <tzimmermann@suse.de>
-References: <20240122110401.7289-1-jirislaby@kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Daniel Vetter <daniel@ffwll.ch>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <d15dd1d81ffebed4e5028e156f0082c44ebbf2fc.1705935864.git.geert+renesas@glider.be>
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -95,138 +91,63 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240122110401.7289-1-jirislaby@kernel.org>
+In-Reply-To: <d15dd1d81ffebed4e5028e156f0082c44ebbf2fc.1705935864.git.geert+renesas@glider.be>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:+gm3ywaYDIj1z5b8uKNnsDEONVgpeLMuXadHkrhEOpzr6RnNRc7
- MKGXdTFk8i7+n/hahB3Z1Qd8HY06s3puVkp07+cNPf46oh5IMvd3h1bWGRq80KU0k0bugu9
- YObXAsna5CKxrH/v31pd/DN7EvKZxpRVxMGu7Rdl0bJ4eQ/OqbHLZeQ2hFs9tdPdBMSD0qR
- aJAfV/luWPLKrCuWbAFLQ==
+X-Provags-ID: V03:K1:BpE0nKae8j3gt/XgzzOkuGicTJkvEmUgGimjr8J5j1TaDER/zzK
+ vlnfRAg33aAANo1G28KReEf49izeDzO0rzCYiC1YcG2dA0665hRrPhYYfVBewJXGBnatqy4
+ WG33WQ5N3Q7zQt37WXbUuNfI05FCCEB7Bm4taBSNW8N8wt4FqqJbjdYLdOUQ9YfyRAMSM+E
+ SB7HuwbyxJQ2xbzi21pkg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:5N8g+roOATs=;p5v/fSt9MlMDLMws6IHxxqdF0j/
- 9qrDa48mvx+g132niFtZYy4NuzSIoKKuc4JHILs9PXpMu7h3gdSmcDlbkO1H3qTlKIF+FBZBh
- AFG5SD5BhbkjSCLY3hsw/v8IKys0SySa8kiNOGGVZAQoPEhd6OASbF8fgw7hNfDN2okRrZsp0
- eNk38aYHyot3S/jaa6eQYzVuzm/alVU4Vy88eWqnv5fTppyB4NKOaXs9EdaUil7KaH5tlW7dq
- wtYiWTpdOmY9V21fnDsnCuHUyIJm12VVibs+c4BwD3b3nwrru93Q57BpY1RC6dyMtwgXJQKSb
- /vkRuVPj8K0pQae3n+p9i4l5alAZkqkjEbv6Nq3KdgiPTu2Rs9hoceBHQhebrFt8EuR+2x0EK
- HjAM+WDMvo+JrgU6a+3BmoqBcX/gVdaRBOA1sdI5TFjBTn8QMVyGa+/gsiEmYATe/p6zRva+H
- W5TzpfZYuuKOCH2S71kRL0xbL8DewQ9j0J02f4FC2Cw0V3B+z7C5rX4PQtwI5MQoc4vI8TH9/
- cc2iFQRmPYXx/28uwAUKo7K4zZN/0tMhG0rbfTuKC0AOfokwwM7JSaVV0wXVigbNf+O9s0bNc
- 60KVPXtnVwsk+VywgROWfrpPyIuaVTDjiQULY9cNF4RtMTncR1nkDqLY9rlTidwMNHbSUxN2b
- mqz7QbZmPTQWoxWhGERqPJbA1HG8dqPXVq1yDuHa2BtBM175z61NSo2/eWltWau0Elh9EYLo0
- Tn2VF7lX8DIm8fQNGS35Sdiyto/XVfh6OC2In7nex24Wf+qJMc92WRnFp5WgPUffwVlTQQxld
- 5TF1+oRDWqkJWbNoywlACASXzSPMAvAAMGqVGCvtIbo1DZ1UUmhKPLnDLU5XYnZ+ksJ3gUFvB
- LNS64cTPvYnLF0Ydp7l2Y4hdKsCUBTtYg56Vus4plpOwR0zYQPV+I+WHi12KyNMPHp96XBeFJ
- QbQOzA==
+UI-OutboundReport: notjunk:1;M01:P0:5OU6LLIzLn4=;abhVIj0GhOVfrnPgtXp3MeUa8Vg
+ X5JpHISx3SGj1JpxoItsobjlXGQHi/t19ryNjffoJLWYugRPwT1qdTsxjNyh0kVYUlN6H2QxF
+ JoeMyJun+zHcDZS5qEXcEHlt3j3W9UkLbkHkznOWqyV4bd3uSbYx8PwwcpmYUIyW0FrNlCygq
+ De8QS03V897oGeIwnYMvoMWSXKaIHixBzBuvcL/jamu6sfn1FzBqS9Rz7jKwPoz9sZ/g99lrp
+ Flyhxl0MslklTO369DadlIrprbUGTopV1rRUQOmHdZtj3M5/s71Uo8Mo2FUo1+MAtIQjnjg5i
+ vsYTrd14IV6cZbEPQdjLGDmSIsWWzbyu069yZaeHrKOf0CAPzEBxi5GCvNHfDYDXuvFkALFJD
+ hZgWPKTGNQq+OOWc7W/WiM7HvTl9Hq6nT/sCHZCI9L7FlgA0KwzNJpAZqaGzdILsVaK4kdlLc
+ SWPVXaRI/sEugTZ3KpU6JubbAoHZYRJBSDDeDyf4K9AqriLs2wQ/9e/224QMg0lyCT4g6z6F2
+ 3mDihwZVlsSNkw1jbhxmuU8V6ntCSp5TZVA5VO2JmUVDFW8HuUuINo9OAU6pyzk3VX46UI5k+
+ irPIqBsMSqyL/I9iNuGrHkaIhlfG4YKko0fsq/LBbKO+KFYF5AeEVgGeYgxpVEfThYV9nNu78
+ raqxIFAOQgNn3NawZ6jubC2K5YTb+t+PnuoNh7YIX+nHI5AGTd6nClmBKM0yYcn1VGX/B+HDe
+ nbVZ0NFbVb1wb86KuAfouIsGQ0BjmQDDIdNIKYOKL6v9l7V7NtKQptIsxfDPmDFK21blSjyQp
+ PWQV7rj5bPqUh2fXNFy1Z9kfzeFhvt2FKZ9Jf7CHnQ/K7EvSnXCTuFFsCiRKucukFkUh+i/LA
+ Rkt5FUpJ3if6xRbVGdStx1EoqjV5PTkB0agSXRIyvZY7NWiG1Y83FLV0a6A4/hS4xI/4UDRym
+ HgZiiRTpUpYkn29TFBfLPUGxg5E=
 
-On 1/22/24 12:03, Jiri Slaby (SUSE) wrote:
-> Push the console code (vt.c, vt.h, console.h, ...) into a bit more
-> maintainable state. Especially all around consw structure and document
-> it.
+On 1/22/24 16:04, Geert Uytterhoeven wrote:
+> If the boot logo does not fit, a message is printed, including a wrong
+> function name prefix.  Instead of correcting the function name (or using
+> __func__), just use "fbcon", like is done in several other messages.
 >
-> CSI parser is also a bit cleaned up. More to follow some time in the
-> next round.
+> While at it, modernize the call by switching to pr_info().
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-I've not yet looked through all of those patches, but I
-tried to boot up a machine with the STI console driver
-and I've not seen any issues yet.
-So far:
-
-Tested-by: Helge Deller <deller@gmx.de> # parisc STI console
-
+applied to fbdev git tree.
+Thanks!
 Helge
 
-> [v2] See respective patches for changes. The major changes:
->   * vesa.h introduced
->   * parameters of csi*() simplified
+> ---
+>   drivers/video/fbdev/core/fbcon.c | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
 >
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: Martin Hostettler <textshell@uchuujin.de>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
+/fbcon.c
+> index 63af6ab034b5f1bb..1183e7a871f8b270 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -631,8 +631,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, s=
+truct fb_info *info,
 >
-> Jiri Slaby (SUSE) (47):
->
->    vgacon: inline vc_scrolldelta_helper() into vgacon_scrolldelta()
->    fbcon: make display_desc a static array in fbcon_startup()
->    tty: vt: fix 20 vs 0x20 typo in EScsiignore
->    tty: vt: expect valid vc when in tty ops
->    tty: vt: pass proper pointers from tioclinux()
->    tty: vt: push console lock from tioclinux() down to 2 functions
->    tty: vt: pass vc_resize_user as a parameter
->    tty: vt: make vc_is_sel()'s vc const
->    tty: vt: define an enum for CSI+m codes
->    tty: vt: use case ranges for CSI+m fg/bg colors
->    tty: vt: define an enum for CSI+J codes
->    tty: vt: reflow csi_J()
->    use clamp() for counts in csi_?() handlers
->    don't pass vc->vc_par[0] to csi_?() handlers
->    tty: vt: define an enum for CSI+K codes
->    tty: vt: reflow csi_K()
->    tty: vt: define an enum for ascii characters
->    tty: vt: remove extern from functions in selection.h
->    tty: vt: make consw::con_debug_*() return void
->    tty: vt: make init parameter of consw::con_init() a bool
->    tty: vt: sanitize arguments of consw::con_clear()
->    tty: vt: remove checks for count in consw::con_clear() implementation=
-s
->    tty: vt: add con_putc() helper
->    tty: vt: eliminate unneeded consw::con_putc() implementations
->    tty: vt: sanitize consw::con_putc() parameters
->    tty: vt: sanitize consw::con_putcs() parameters
->    consoles: use if instead of switch-case in consw::con_cursor()
->    fbdev/core: simplify cursor_state setting in fbcon_ops::cursor()
->    tty: vt: remove CM_* constants
->    tty: vt: make consw::con_switch() return a bool
->    tty: vt: stop using -1 for blank mode in consw::con_blank()
->    tty: vt: define a common enum for VESA blanking constants
->    tty: vt: use VESA blanking constants
->    tty: vt: use enum constants for VESA blanking modes
->    tty: vt: make types around consw::con_blank() bool
->    tty: vt: make font of consw::con_font_set() const
->    tty: vt: make consw::con_font_default()'s name const
->    tty: vt: change consw::con_set_origin() return type
->    fbcon: remove consw::con_screen_pos()
->    tty: vt: remove consw::con_screen_pos()
->    tty: vt: make types of screenpos() more consistent
->    fbcon: remove fbcon_getxy()
->    tty: vt: remove consw::con_getxy()
->    tty: vt: remove unused consw::con_flush_scrollback()
->    tty: vt: document the rest of struct consw
->    tty: vt: fix up kernel-doc
->    Documentation: add console.rst
->
->   Documentation/driver-api/tty/console.rst |  45 ++
->   Documentation/driver-api/tty/index.rst   |   1 +
->   drivers/tty/vt/selection.c               |  43 +-
->   drivers/tty/vt/vt.c                      | 645 +++++++++++------------
->   drivers/tty/vt/vt_ioctl.c                |   6 +-
->   drivers/video/console/dummycon.c         |  38 +-
->   drivers/video/console/mdacon.c           |  43 +-
->   drivers/video/console/newport_con.c      |  69 +--
->   drivers/video/console/sticon.c           |  79 ++-
->   drivers/video/console/vgacon.c           | 152 +++---
->   drivers/video/fbdev/core/bitblit.c       |  13 +-
->   drivers/video/fbdev/core/fbcon.c         | 123 ++---
->   drivers/video/fbdev/core/fbcon.h         |   4 +-
->   drivers/video/fbdev/core/fbcon_ccw.c     |  13 +-
->   drivers/video/fbdev/core/fbcon_cw.c      |  13 +-
->   drivers/video/fbdev/core/fbcon_ud.c      |  13 +-
->   drivers/video/fbdev/core/tileblit.c      |   4 +-
->   include/linux/console.h                  | 124 +++--
->   include/linux/console_struct.h           |   1 -
->   include/linux/selection.h                |  56 +-
->   include/linux/vt_kern.h                  |  12 +-
->   include/uapi/linux/fb.h                  |   8 +-
->   include/uapi/linux/vesa.h                |  18 +
->   23 files changed, 755 insertions(+), 768 deletions(-)
->   create mode 100644 Documentation/driver-api/tty/console.rst
->   create mode 100644 include/uapi/linux/vesa.h
->
+>   	if (logo_lines > vc->vc_bottom) {
+>   		logo_shown =3D FBCON_LOGO_CANSHOW;
+> -		printk(KERN_INFO
+> -		       "fbcon_init: disable boot-logo (boot-logo bigger than screen).=
+\n");
+> +		pr_info("fbcon: disable boot-logo (boot-logo bigger than screen).\n")=
+;
+>   	} else {
+>   		logo_shown =3D FBCON_LOGO_DRAW;
+>   		vc->vc_top =3D logo_lines;
 

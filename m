@@ -1,117 +1,137 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE7593DBA8;
-	Mon, 22 Jan 2024 19:24:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9384E3FB26;
+	Mon, 22 Jan 2024 19:51:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705951456; cv=none; b=aEVbdbEvWIgB0P5IdQPrpxmWMzSsTq7ACAjO2j/Cz75McxizM2qQnQv/ogaoItKnb8rW+mJJ6t8Oa4T4JWKYcQ2A9Ei4OzHn23U3FMhSj4oCvxQGfK6rzwrIwkjGudL163Psb9F0Lqlx56PDZe6CSor75y4T/rsvfHpBwnyOfHQ=
+	t=1705953105; cv=none; b=DvEcR2Igrw0/BHLxYkHQUtoMzOU3oiIcIKOsyeDorGOcbM6BmOl4aF/RSDu/RpJzuREeF5WJ5a4Pi63pMcXCPhfX/0hsN5Stq/DFysEDeb3Vs02ZP1/hhuPPWExTz5QXd6Eh0f0sV0fmAzUWoqvergmKeoJMe1wSF4X9yDuOfbc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705951456; c=relaxed/simple;
-	bh=MEXKZHQkB/IyiyQVHXrZDxlLURiVSiUhivYGVZLcqn0=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ByF9IqdSPil69Mjoli42+D+gwIqFYP0nX0IAnXzNPfou4dpGCGkrz7Bk1kF4Y5NMh3kTZjLtiw06ICf1ucgjdrXg8EvY9vDhT6ATr3u8beJUzY2KeKQPBSrU+osP4oH5FyEvz5gyACdq6sSRuCYGaff3q85qQ2tYEtCfqEH75Xw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Om7TXwRG; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Om7TXwRG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FBDEC433C7;
-	Mon, 22 Jan 2024 19:23:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1705951455;
-	bh=MEXKZHQkB/IyiyQVHXrZDxlLURiVSiUhivYGVZLcqn0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Om7TXwRG+RLb91NjkMlGtbBbQYrAGinHi8YBBuORygdejt7BZ+vQd9Bqs0sBl/BxP
-	 VCw1yjmez+FHyuigs8WrRG3xG5dxGPTpaOT2qYeFl6QHLeQijLl0kkOlguh3EaCef5
-	 +AkOU52pnihuLtq9XxoisJbYHmdBJ7MWGdIGbaT+Hqd1d3bAs/JdGsBZD+YdEjOqeP
-	 eiYtqYfgWpXt9iSL4haLcS9baDm6slcDBeeq4Pri4phWer/ACYdMdlNEE7R3pgjieo
-	 tFpdEkRwqJLtm9GAX85YeLj+l6gbxcnR7JUDJE+8uHr22Geysx+TUOYD6M7QtotXaK
-	 eSyrD1CGdOh3w==
-Date: Mon, 22 Jan 2024 19:23:43 +0000
-From: Jonathan Cameron <jic23@kernel.org>
-To: Mark Brown <broonie@kernel.org>
-Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>,
- kernel@pengutronix.de, Moritz Fischer <mdf@kernel.org>, Wu Hao
- <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Tom Rix
- <trix@redhat.com>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Aring <alex.aring@gmail.com>,
- Stefan Schmidt <stefan@datenfreihafen.org>, Miquel Raynal
- <miquel.raynal@bootlin.com>, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
- Abeni <pabeni@redhat.com>, linux-wpan@vger.kernel.org,
- netdev@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michael
- Hennerich <Michael.Hennerich@analog.com>, linux-iio@vger.kernel.org, Dmitry
- Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Ulf
- Hansson <ulf.hansson@linaro.org>, Rayyan Ansari <rayyan@ansari.sh>, Andy
- Shevchenko <andriy.shevchenko@linux.intel.com>, Jonathan Cameron
- <Jonathan.Cameron@huawei.com>, Martin Tuma
- <martin.tuma@digiteqautomotive.com>, Mauro Carvalho Chehab
- <mchehab@kernel.org>, linux-media@vger.kernel.org, Sergey Kozlov
- <serjk@netup.ru>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Yang Yingliang <yangyingliang@huawei.com>,
- linux-mmc@vger.kernel.org, Richard Weinberger <richard@nod.at>, Vignesh
- Raghavendra <vigneshr@ti.com>, Rob Herring <robh@kernel.org>, Heiko
- Stuebner <heiko@sntech.de>, Michal Simek <michal.simek@amd.com>, Amit Kumar
- Mahapatra via Alsa-devel <alsa-devel@alsa-project.org>,
- linux-mtd@lists.infradead.org, Martin Blumenstingl
- <martin.blumenstingl@googlemail.com>, Geert Uytterhoeven
- <geert+renesas@glider.be>, Pali =?UTF-8?B?Um9ow6Fy?= <pali@kernel.org>,
- Simon Horman <horms@kernel.org>, Ronald Wahl <ronald.wahl@raritan.com>,
- Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>,
- Guenter Roeck <groeck@chromium.org>, chrome-platform@lists.linux.dev, Max
- Filippov <jcmvbkbc@gmail.com>, linux-spi@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Bjorn Andersson
- <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>,
- linux-arm-msm@vger.kernel.org, Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- linux-mediatek@lists.infradead.org, Thomas Zimmermann
- <tzimmermann@suse.de>, Javier Martinez Canillas <javierm@redhat.com>, Amit
- Kumar Mahapatra <amit.kumar-mahapatra@amd.com>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, Viresh Kumar <vireshk@kernel.org>, Rui
- Miguel Silva <rmfrfs@gmail.com>, Johan Hovold <johan@kernel.org>, Alex
- Elder <elder@kernel.org>, greybus-dev@lists.linaro.org, Peter Huewe
- <peterhuewe@gmx.de>, Jarkko Sakkinen <jarkko@kernel.org>, Jason Gunthorpe
- <jgg@ziepe.ca>, linux-integrity@vger.kernel.org, Herve Codina
- <herve.codina@bootlin.com>, Alan Stern <stern@rowland.harvard.edu>, Aaro
- Koskinen <aaro.koskinen@iki.fi>, Krzysztof Kozlowski
- <krzysztof.kozlowski@linaro.org>, linux-usb@vger.kernel.org, Helge Deller
- <deller@gmx.de>, Dario Binacchi <dario.binacchi@amarulasolutions.com>,
- Kalle Valo <kvalo@kernel.org>, Dmitry Antipov <dmantipov@yandex.ru>,
- libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org, Jonathan
- Corbet <corbet@lwn.net>, James Clark <james.clark@arm.com>, Bjorn Helgaas
- <bhelgaas@google.com>, linux-doc@vger.kernel.org
-Subject: Re: [PATCH v2 00/33] spi: get rid of some legacy macros
-Message-ID: <20240122192343.148a0b6d@jic23-huawei>
-In-Reply-To: <e62cdf7f-ce58-4f46-a0a0-25ce9fb271b1@sirena.org.uk>
-References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
-	<e62cdf7f-ce58-4f46-a0a0-25ce9fb271b1@sirena.org.uk>
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.40; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1705953105; c=relaxed/simple;
+	bh=h3bREyOH1oCNdl7LgneqpfYf+pwYxlqZnL9DAyhGyas=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=DCj2FKa3TBkfvEdHXRvjEyEQo3kPtr2pmTACjXRSX0vEjlWJqd408PXCaJblArZub33d7xgJSEXnOWNjXKjmQlFDupToQ3jr50ieHNKVIWyoh6ajTRS6r5doK8eudz8w6W00HbqyN9/hx6Ti4kCpyjt9MAfgxN3TByD/chhp4uU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
+Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
+	by mx.skole.hr (mx.skole.hr) with ESMTP id 1CDAC86C45;
+	Mon, 22 Jan 2024 20:51:39 +0100 (CET)
+From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Subject: [PATCH v4 0/3] Kinetic ExpressWire library and KTD2801 backlight
+ driver
+Date: Mon, 22 Jan 2024 20:50:56 +0100
+Message-Id: <20240122-ktd2801-v4-0-33c986a3eb68@skole.hr>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIACDHrmUC/13MTQ6CMBCG4auYrq2ZTlssrryHcQH9kQYDpiWNh
+ nB3CwlCXH6Ted6RRBu8jeRyGEmwyUffd3mI44HopuoelnqTN0FAzgAEbQeDChgFx5XiupalAZK
+ /X8E6/15Kt3vejY9DHz5LOLH5ujbkr5FyhgqujZI1FFhW19j2T3tqApkTCVcmgDG1MZwZSu04W
+ jgX5R/jO4awMZ6Zs6jryjlXI9uxaZq+xZcJSAsBAAA=
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
+ Rob Herring <robh+dt@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Linus Walleij <linus.walleij@linaro.org>
+Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht, 
+ phone-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2764;
+ i=duje.mihanovic@skole.hr; h=from:subject:message-id;
+ bh=h3bREyOH1oCNdl7LgneqpfYf+pwYxlqZnL9DAyhGyas=;
+ b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrsckvqKcxfItPfeI8JR1dRfffkR6LOBPH6yu4
+ y44ElntPp6JAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZa7HJAAKCRCaEZ6wQi2W
+ 4SueD/4ibIhE/jpzZXN9RJq78NClxp7Rx9uEVxuyFbdEEnIJhnOn7GJUmpFzvAiaIZPQLsx4/1s
+ hkzEQ/ypo+ZM8bjXRRmZBKPmuxLyVgTfM+AbvOd561LQBiukiN6te/xHxNlFpA6TEnHg8VSfvxV
+ DXE6h2Y8qFZJfe8l/IENcSdW+KVq46NWa1zyXdNxwnet6EvnfQkFVqyR5pCJ22f6aja1Nm2xtxn
+ OMCDWMzmmCfclcQhfOJ9nL/AM9sgny9MYoW7TYSmAviZVSuQqNIW6+EX4xRHOfyuhj7VRe1Xf6f
+ ZyZ3NY67CwwshHkW1yEu3B2fQVd3zYCU/+op8WmtYHb/k43ykCJhzE1iq9+LD7rEKDsyMGsBkLU
+ v4fE8Evxlz7XE3BBrLXdfDUn2Mki0rzs9SUDcQSf+R0Z2rU+pN/wjuSwX8WR3ibU5JfHwRMqtRP
+ idFcoJeF5h81NKrEzd+xOVw0vQn4KS3fxTuarSFOSw+Bw94hW7mxA7HNIiC42vVGZ7s/gRbhdF0
+ OnWzxPO33B+Pb4kitm+zV08jpT3RMcrx4dicRjaoZxvWEjTR4+fkFinuLWJjQySCuAN/J+FbNQT
+ LAn+e60CTtpnIcbHSKw002PCmsv+6+8WarnTKRArFSRWxOXyeeysjRi23iPEasuffO3wgelIALJ
+ 6MaOgn20Vty+x6A==
+X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
+ fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
 
-On Mon, 22 Jan 2024 18:18:22 +0000
-Mark Brown <broonie@kernel.org> wrote:
+Hello,
 
-> On Mon, Jan 22, 2024 at 07:06:55PM +0100, Uwe Kleine-K=C3=B6nig wrote:
->=20
-> > Note that Jonathan Cameron has already applied patch 3 to his tree, it
-> > didn't appear in a public tree though yet. I still included it here to
-> > make the kernel build bots happy. =20
->=20
-> It's also going to be needed for buildability of the end of the series.
+This series adds support for the Kinetic KTD2801 LED backlight driver
+IC found in samsung,coreprimevelte.
 
-Ah.  I thought intent was to split this across all the different trees
-then do the final patch only after they were all gone?
+Support is already upstream for the somewhat similar KTD2692 flash
+driver, and this series since v3 also moves its ExpressWire code into a
+separate library and converts the KTD2692 driver to use that library.
 
-I'm fine with it going all in one go if people prefer that.
+Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
+---
+Changes in v4:
+- Drop 'extern' keywords in leds-expresswire.h
+- Add 'expresswire_write_u8' to leds-expresswire.c and use it in the two
+  drivers
+- Move GPIOLIB dependency to LEDS_EXPRESSWIRE instead of letting clients
+  handle it
+- Drop time constant macros
+- Drop delay.h include in ktd2692
+- Drop bits.h and delay.h includes in ktd2801
+- Link to v3: https://lore.kernel.org/r/20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr
 
-My tree will be out in a few mins. Was just waiting to rebase on rc1
-which I've just done.
+Changes in v3:
+- Split ExpressWire code into library (and convert KTD2692 to use this
+  library)
+- Rewrite commit messages
+- Add link to datasheet
+- Drop of.h include in ktd2801
+- Use _cansleep and usleep_range when powering off
+- Clean up bitwise operation in update_status
+- Link to v2: https://lore.kernel.org/r/20240118-ktd2801-v2-0-425cf32e0769@skole.hr
 
-Jonathan
+Changes in v2:
+- Address maintainer comments:
+  - Drop MODULE_ALIAS
+  - Rename enable-gpios to ctrl-gpios
+  - Rename ktd2801_backlight->desc to ktd2801_backlight->gpiod
+  - Give time constants more descriptive names and note their origins in
+    Samsung driver
+  - Convert to GPIO_ACTIVE_HIGH
+- Update trailers
+- Link to v1: https://lore.kernel.org/r/20231005-ktd2801-v1-0-43cd85b0629a@skole.hr
+
+---
+Duje Mihanović (3):
+      leds: ktd2692: move ExpressWire code to library
+      dt-bindings: backlight: add Kinetic KTD2801 binding
+      backlight: Add Kinetic KTD2801 backlight support
+
+ .../bindings/leds/backlight/kinetic,ktd2801.yaml   |  46 ++++++++
+ MAINTAINERS                                        |  13 +++
+ drivers/leds/Kconfig                               |   4 +
+ drivers/leds/Makefile                              |   3 +
+ drivers/leds/flash/Kconfig                         |   2 +-
+ drivers/leds/flash/leds-ktd2692.c                  | 116 +++++--------------
+ drivers/leds/leds-expresswire.c                    |  68 +++++++++++
+ drivers/video/backlight/Kconfig                    |   7 ++
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/ktd2801-backlight.c        | 128 +++++++++++++++++++++
+ include/linux/leds-expresswire.h                   |  36 ++++++
+ 11 files changed, 334 insertions(+), 90 deletions(-)
+---
+base-commit: 0dd3ee31125508cd67f7e7172247f05b7fd1753a
+change-id: 20231004-ktd2801-0f3883cb59d0
+
+Best regards,
+-- 
+Duje Mihanović <duje.mihanovic@skole.hr>
+
+

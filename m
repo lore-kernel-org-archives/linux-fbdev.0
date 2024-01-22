@@ -1,162 +1,188 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C536D3A8E9
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 10:19:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DB403A1D6
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 10:21:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705918772; cv=none; b=chYQqqf09A8O4O1OH5E+C6BcgLMmhtu9JDTw/Z84k5cQlRlfU3alwqxCYzug08tX2npmc5LFseU9BIDFvS6S2lSwij0dKz5BWDO4CI08h7mD0XEe3BI3SsbH2AhXF2U/E46NMIGTFXxnLQ00CJa87WdxFSqbawPydFvECDH+cUY=
+	t=1705918883; cv=none; b=HFdZEC3hOacfCkKXxeN1Q/dYNDujpQTohdydX6R3fK7PUT9CyUPSyW7kQ8aS90dTgEotkg2hDnWeuIUQp0Qe4iW4HCy+Q9Okt2rXlYxoUkv2VyULh3TQuiM9rqyY/RIjqgexDIrRSPVGsky0wp2W9kigaUihCUY0yYqVdyQK6Gc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705918772; c=relaxed/simple;
-	bh=/SNLHHN7xOHjhgf5Ka2VMBrDa6pANZCIGYnQJH8RKpA=;
+	s=arc-20240116; t=1705918883; c=relaxed/simple;
+	bh=z5/qqF7CrLgPHHHN1stH49GDrMHD9J/2vZYYyNgNNYk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bKoPEls+zbaRyuKHSPzoIQWhA+b8oiEKWWbQoFqKE5boWkB11+2hBqcJkAjrUFpkknb2LBzStxW3LprnkvKW+Mq8+XOO4nsAE9fK+Vm3fIiKTRp+eiTgL3oMry56lH6+6LvIoMT0EZdQKAX1FYqZGf1IH8PNZL6rRMMFoj0Z3SA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=WtQICkc8; arc=none smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WtQICkc8"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-339231c062bso1933528f8f.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 02:19:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1705918769; x=1706523569; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=6CUlLsOEJCO3o0htEYr8Lbj/bayNpoeF4Yah4if4kLc=;
-        b=WtQICkc8gaYMT3ZMfWqXR1v+0Gf5KtlFeiUD0rSgSx1nNdGnGlNSiQoENFBZDtuSYq
-         Vh4ac5BIzGlq+mCzcF5KE8sMLXnrc7ELMooSqig/dh8wzf6GNTJs4QmwFvegB37gEJv2
-         fInxTyv3cuKkKkYhS4+wJHJeSZqYaTzhJQfoyReb4l6VQpSJNrmbor2NWKf5vzXT61ER
-         oky1p/zXf5u8pkjGH23oAg33Yd3/gwThAjN7XAZWKSkb40qIEHJxY6aF/Jz43P83fX4k
-         N9an9FzAJFBiXe0MOsKBR8DQ6jJXWm2gT5pEcEn0m8zDPBHsXGbZLv1FMXqmiqk9GrwA
-         QRPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705918769; x=1706523569;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=6CUlLsOEJCO3o0htEYr8Lbj/bayNpoeF4Yah4if4kLc=;
-        b=bWVVK40TmgO+jnPyvMKmeJnl6oqw7MOKLMzTzIgAOFmCkOFM194gweNORqkAhk6jKK
-         UatqGU+d7wFSm/9eBcamqAy0EySxdpIiLL8uDfVzXa3qAJQpHqYHXGU5KAmB91fIZF2W
-         gKsx8q18VxXeZtkrmewbE/RvfW1qbkoFzgaGMskcnJvv/aR5UEwo8itmxx2l9AYFABqm
-         XNgj7PH1OTQMkPerORh5egXczYrw6E8YersB4Xd3MrfVgrRibUx+28YwfrWyO4rEO7PW
-         +l+/MVDFyxmS3+U1dd/z2rsbQFH8jLOmsJOCCysYAXeuFOPcbRebgtAaaEPitaBtdQXn
-         cAMQ==
-X-Gm-Message-State: AOJu0YxZtvOksKEaaI5MDRTRXXJ18v1tdYhLMkqNl81G3Nk9zSypAnQ9
-	BTOUXd0nhPQhn9ocBEpg75NhghTzXywz8IvKOStUsUAyU5sUqxjOHY1g5TSF9oc=
-X-Google-Smtp-Source: AGHT+IGiXCkeFT62mIizDAGCPWlt7/MMpjwMRYs+WW2Kwg136ect9locc0HoNUSbJlXRnS59IcBghQ==
-X-Received: by 2002:a05:600c:5486:b0:40e:7c23:898d with SMTP id iv6-20020a05600c548600b0040e7c23898dmr2156961wmb.102.1705918769050;
-        Mon, 22 Jan 2024 02:19:29 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id iv11-20020a05600c548b00b0040d8ff79fd8sm38663573wmb.7.2024.01.22.02.19.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jan 2024 02:19:28 -0800 (PST)
-Date: Mon, 22 Jan 2024 10:19:26 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Karel Balej <balejk@matfyz.cz>,
-	~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] leds: ktd2692: move ExpressWire code to library
-Message-ID: <20240122101926.GA8596@aspen.lan>
-References: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
- <20240120-ktd2801-v3-1-fe2cbafffb21@skole.hr>
+	 Content-Type:Content-Disposition:In-Reply-To; b=sutkIBAet6Kp7BXkcj3b2/2VTrNWXwQySamJBM2XpDDqEvKwbyVonnSMOAg4kkBye+tTQtsW24yAHVn3LSm01dWYELZCUjekXJoWJOfGVxz9exld8HZdtbR46+JyTLsBWAiZ/E/iFmqedmztm7alD3DUmJgp1nXUYEgOH3TSfFA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRrQC-0007gd-F7; Mon, 22 Jan 2024 11:20:52 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRrQA-001ZRC-9s; Mon, 22 Jan 2024 11:20:50 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRrQA-005FLD-0d;
+	Mon, 22 Jan 2024 11:20:50 +0100
+Date: Mon, 22 Jan 2024 11:20:50 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
+	Helge Deller <deller@gmx.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, 
+	Huacai Chen <chenhuacai@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>, 
+	Linus Walleij <linus.walleij@linaro.org>, Prathu Baronia <prathubaronia2011@gmail.com>, 
+	Sam Ravnborg <sam@ravnborg.org>, Sui Jingfeng <suijingfeng@loongson.cn>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-parisc@vger.kernel.org
+Subject: Re: [BUG][BISECTED] Freeze at loading init ramdisk
+Message-ID: <2q2t7mgnpuk2t7wq2tmymxv72oki4uetojkz72xofn7wh45l64@smk3wi6zw54g>
+References: <8a6aa228-f2da-4dcd-93c1-e34614cd6471@alu.unizg.hr>
+ <cc813525-5484-443e-a40a-cb98f2ed4e1f@alu.unizg.hr>
+ <gevqxytidg5efylozindaqntkbl4yeoyzqnh5m3ylitmipgum3@sgmv7qieo7rs>
+ <1fe9b78c-7fb5-4d7b-a754-afd563950829@alu.unizg.hr>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ysfre7wk3l4bhl2f"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240120-ktd2801-v3-1-fe2cbafffb21@skole.hr>
-
-On Sat, Jan 20, 2024 at 10:26:43PM +0100, Duje Mihanović wrote:
-> The ExpressWire protocol is shared between at least KTD2692 and KTD2801
-> with slight differences such as timings and the former not having a
-> defined set of pulses for enabling the protocol (possibly because it
-> does not support PWM unlike KTD2801). Despite these differences the
-> ExpressWire handling code can be shared between the two, so move it into
-> a library in preparation for adding KTD2801 support.
->
-> Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
-> ---
->  MAINTAINERS                       |  7 +++
->  drivers/leds/Kconfig              |  3 ++
->  drivers/leds/Makefile             |  3 ++
->  drivers/leds/flash/Kconfig        |  1 +
->  drivers/leds/flash/leds-ktd2692.c | 91 +++++++++++----------------------------
->  drivers/leds/leds-expresswire.c   | 59 +++++++++++++++++++++++++
->  include/linux/leds-expresswire.h  | 35 +++++++++++++++
->  7 files changed, 132 insertions(+), 67 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a7c4cf8201e0..87b12d2448a0 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -7902,6 +7902,13 @@ S:	Maintained
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/linkinjeon/exfat.git
->  F:	fs/exfat/
->
-> +EXPRESSWIRE PROTOCOL LIBRARY
-> +M:	Duje Mihanović <duje.mihanovic@skole.hr>
-> +L:	linux-leds@vger.kernel.org
-> +S:	Maintained
-> +F:	drivers/leds/leds-expresswire.c
-> +F:	include/linux/leds-expresswire.h
-> +
->  EXT2 FILE SYSTEM
->  M:	Jan Kara <jack@suse.com>
->  L:	linux-ext4@vger.kernel.org
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index 6292fddcc55c..d29b6823e7d1 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -181,6 +181,9 @@ config LEDS_EL15203000
->  	  To compile this driver as a module, choose M here: the module
->  	  will be called leds-el15203000.
->
-> +config LEDS_EXPRESSWIRE
-> +	bool
-> +
-
-Shouldn't there be a "select GPIOLIB" here? It seems odd to make the
-clients responsible for the dependencies.
-
-BTW there seems to be very little consistency across the kernel between
-"depends on GPIOLIB" and "select GPIOLIB".. but select is marginally
-more popular (283 vs. 219 in the kernel I checked).
+In-Reply-To: <1fe9b78c-7fb5-4d7b-a754-afd563950829@alu.unizg.hr>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
 
-> diff --git a/drivers/leds/flash/leds-ktd2692.c b/drivers/leds/flash/leds-ktd2692.c
-> index 598eee5daa52..8c17de3d621f 100644
-> --- a/drivers/leds/flash/leds-ktd2692.c
-> +++ b/drivers/leds/flash/leds-ktd2692.c
->  <snip>
->  static void ktd2692_expresswire_write(struct ktd2692_context *led, u8 value)
->  {
->  	int i;
->
-> -	ktd2692_expresswire_start(led);
-> +	expresswire_start(&led->props);
->  	for (i = 7; i >= 0; i--)
-> -		ktd2692_expresswire_set_bit(led, value & BIT(i));
-> -	ktd2692_expresswire_end(led);
-> +		expresswire_set_bit(&led->props, value & BIT(i));
-> +	expresswire_end(&led->props);
->  }
+--ysfre7wk3l4bhl2f
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Is there any reason not to have an expresswire_write_u8() method in the
-library code? It is a concept that appears in both drivers.
+On Thu, Jan 18, 2024 at 09:04:05PM +0100, Mirsad Todorovac wrote:
+>=20
+>=20
+> On 1/18/24 08:45, Uwe Kleine-K=F6nig wrote:
+> > Hello Mirsad,
+> >=20
+> > On Wed, Jan 17, 2024 at 07:47:49PM +0100, Mirsad Todorovac wrote:
+> > > On 1/16/24 01:32, Mirsad Todorovac wrote:
+> > > > On the Ubuntu 22.04 LTS Jammy platform, on a mainline vanilla torva=
+lds tree kernel, the boot
+> > > > freezes upon first two lines and before any systemd messages.
+> > > >=20
+> > > > (Please find the config attached.)
+> > > >=20
+> > > > Bisecting the bug led to this result:
+> > > >=20
+> > > > marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect good
+> > > > d97a78423c33f68ca6543de510a409167baed6f5 is the first bad commit
+> > > > commit d97a78423c33f68ca6543de510a409167baed6f5
+> > > > Merge: 61da593f4458 689237ab37c5
+> > > > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > Date:=A0=A0 Fri Jan 12 14:38:08 2024 -0800
+> > > >=20
+> > > > [...]
+> > > >=20
+> > > > Hope this helps.
+> > >=20
+> > > P.S.
+> > >=20
+> > > As I see that this is a larger merge commit, with 5K+ lines changed, =
+I don't think I can
+> > > bisect further to determine the culprit.
+> >=20
+> > Actually it's not that hard. If a merge commit is the first bad commit
+> > for a bisection, either the merge wasn't done correctly (less likely,
+> > looking at d97a78423c33f68ca6543de510a409167baed6f5 I'd bet this isn't
+> > the problem); or changes on different sides conflict or you did
+> > something wrong during bisection.
+> >=20
+> > To rule out the third option, you can just retest d97a78423c33,
+> > 61da593f4458 and 689237ab37c5. If d97a78423c33 is the only bad one, you
+> > did it right.
+>=20
+> This was confirmed.
+>=20
+> > Then to further debug the second option you can find out the offending
+> > commit on each side with a bisection as follows, here for the RHS (i.e.
+> > 689237ab37c5):
+> >=20
+> > 	git bisect start 689237ab37c5 $(git merge-base 61da593f4458 689237ab37=
+c5)
+> >=20
+> > and then in each bisection step do:
+> >=20
+> > 	git merge --no-commit 61da593f4458
+> > 	test if the problem is present
+> > 	git reset --hard
+> > 	git bisect good/bad
+> >=20
+> > In this case you get merge conflicts in drivers/video/fbdev/amba-clcd.c
+> > and drivers/video/fbdev/vermilion/vermilion.c. In the assumption that
+> > you don't have these enabled in your .config, you can just ignore these.
+> >=20
+> > Side note: A problem during bisection can be that the .config changes
+> > along the process. You should put your config into (say)
+> > arch/x86/configs/lala_defconfig and do
+> >=20
+> > 	make lala_defconfig
+> >=20
+> > before building each step to prevent this.
+>=20
+> I must have done something wrong:
+>=20
+> marvin@defiant:~/linux/kernel/linux_torvalds$ git bisect log
+> # bad: [689237ab37c59b9909bc9371d7fece3081683fba] fbdev/intelfb: Remove d=
+river
+> # good: [de927f6c0b07d9e698416c5b287c521b07694cac] Merge tag 's390-6.8-1'=
+ of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
+> git bisect start '689237ab37c5' 'de927f6c0b07d9e698416c5b287c521b07694cac'
+> # good: [d9f25b59ed85ae45801cf45fe17eb269b0ef3038] fbdev: Remove support =
+for Carillo Ranch driver
+> git bisect good d9f25b59ed85ae45801cf45fe17eb269b0ef3038
+> # good: [e2e0b838a1849f92612a8305c09aaf31bf824350] video/sticore: Remove =
+info field from STI struct
+> git bisect good e2e0b838a1849f92612a8305c09aaf31bf824350
+> # good: [778e73d2411abc8f3a2d60dbf038acaec218792e] drm/hyperv: Remove fir=
+mware framebuffers with aperture helper
+> git bisect good 778e73d2411abc8f3a2d60dbf038acaec218792e
+> # good: [df67699c9cb0ceb70f6cc60630ca938c06773eda] firmware/sysfb: Clear =
+screen_info state after consuming it
+> git bisect good df67699c9cb0ceb70f6cc60630ca938c06773eda
 
+FTR: Now that you identified df67699c9cb0ce as the culprit, calling
+git bisect good on it was wrong, so something was fishy in your testing
+and it's no surprise the bisection found a wrong result.
 
-Daniel.
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--ysfre7wk3l4bhl2f
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmWuQXwACgkQj4D7WH0S
+/k7BUwf/c+o/iSAwOCv43dqEm/CcfvKOaq7nnRskQii51OdMDOpIVHur9IOFEGX9
+lEng0n7/jCsjTmNbYFaiWvyEBMI0hJgsjEseA+nt3mPkcmhREWN5RJ/KIh/53rxN
+0scUgXo1PBWQCm8cUWQLsQu1hvT7jLUbwkQifp9pEeoNVLToAaBii1jYl3epShIE
+WhGSfwc3rgdd2OXqtx25vuN0Sf/qkC9JHNW1TjQkkGuquh1mNbSjMr6CznfjwnZ4
+bHskT+3UyO9OcpGG/6hDhUO6aiObcoLxnulX7y3YH5UtsIxVyWl4ya7KPfvjz/Bc
+7lXF2uvftGaPoEttybS9sjjtA25pCA==
+=hK1d
+-----END PGP SIGNATURE-----
+
+--ysfre7wk3l4bhl2f--

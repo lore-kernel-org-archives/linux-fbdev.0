@@ -1,98 +1,156 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0F723A1BE
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 10:43:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8A653A8C0;
+	Mon, 22 Jan 2024 11:04:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705920220; cv=none; b=Kvgu66Qy+ZkeuiFsWee9oV0+sJF3CY+mOjCguVPXRFEcNnWPfxrl8GAxHGt9iNiui9nWXJM+x2gtMlKM1APiaXJPBhfmOwRyxMvEZ4rqXO9J5KQKJ+O1Qwn3te4vfMweGy0U9J+ijY2SEWuGmyAt35Pm5ztLpbIpIf0ygTu2irk=
+	t=1705921448; cv=none; b=m1HWafvl2kke2E1HImwzgQvB08zkf7ep46yz5EgkR33b4PgO4rpk2mIBPPVEuAji1VlA++gjhiQHxptMY6v8lo6cscURE++keKWfnbH8G0+YGGR98l/KpDZ3gTEX3i2CLySIxNAzKrkdl9Lj6GIZyzqlLDrGw5b9n9TFYtYZgzQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705920220; c=relaxed/simple;
-	bh=SYImlEaJH/Jealdq0FPzHywiTrW4AlV0b9Sn8/s5j5Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AVEM1Odavxl2JsA7xOUvaSwRcMmyoIWsqZRWi0UbTdCtC4krB+ZG3Subib0Ihme7PZ7Bzq9y0PAO5K2+BURZnUv//kJm1/mt9Rzu06i1B+z94i7v2DGmE6Qc88YM+gmJzz8l6ARmEI3xw5hgZvPigugxx37UeSJJ2Tc3x5Emj7Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qnX4o8CZ; arc=none smtp.client-ip=209.85.128.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1705921448; c=relaxed/simple;
+	bh=6WGGhf/BTgLnnKlxdbNPCXyuwYCekxPpegnJq4vX000=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jkGE9vmFaBeFO9sQxtrB7c8K2JxA3AJIGpnc3HfSjbmA7KF6ih3ZNmFQT6NTjZ94ExnQtSexu6s1GzMJuKiPVu9sKF9mkkm/8exDPVYlF281KD06eSrdXXcNh/JCJaI66UT0EOYN3j2ETaNE0XAQyoFoX+VbqPcEeVxMnPoF5SQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WuV6cvDj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qnX4o8CZ"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-40eab3912d5so10971215e9.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 02:43:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1705920217; x=1706525017; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=mBWNCLLFubdT9fJ3cv8e16Ff7jYhvZKyENiuEu8Dr8s=;
-        b=qnX4o8CZr21tY8pU730x+25Zw7BPm4w3XKVCxtmKCk3H3/frj3c+2UT0awZ7dg0AOp
-         gCss1Kcg1DUXAA1C+u+C5HqkAlo6f5HLplnumd/F12/CLk08gypYvO2y0/vEwSUoXzjF
-         gYt+LLnxcrYD4AnlxgWM58EmXRXop1SwUpJJhQQimC4NvB0vAeepY+1UbF7MJ2Cn48xG
-         0bc0BLvM8QlcS1uo5CXF09whkBCyhICOYVBTJXBhRLTm5fwhPCZSRnWFfmtxw95jfICM
-         5Sh17e2IhPvT//KSqcHBEY6ZApFKD6UPMSL99kZuWEtvVlBjDzkW8pEGA2YdR918R+ov
-         HLcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705920217; x=1706525017;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mBWNCLLFubdT9fJ3cv8e16Ff7jYhvZKyENiuEu8Dr8s=;
-        b=tIkF9jLBCKzcIcwDrrBwhMbkwh4a6H+xcg2Cfut/PQaXiNV+J0NnKjmrnWYEs5b8se
-         WrhstbFjdQhM8ZISDKLLhzPU5pOJx8R5ghYk52abbnYFIbVwua3YQgV7w8tDTsEU8sGU
-         1tPCBBX29L+Cp+gFo6OReyfWW4AO3Oycp9cXb05ekPQNgNDa/F2iwsOdvcOegPLyY7Gh
-         TlWQ/synSJfEqaCmta0UUWhTssLQHaJb/NChF5CHWPSmdYyXYTJPGzuLCnlR+IebNAue
-         thWxpRZyHS81EOu28/W4zYkRIvX/dqycpP+HnnvJcijdkKlqLfFTiZihVYDexjRq1MrX
-         9pew==
-X-Gm-Message-State: AOJu0Yw4NHGQrrAhMzKbQyJTvGUwoSk7VcW0pm3l5actGxBwlaIzZQx7
-	FlKVMox5T1UinSWPzdJe5d1PiSTnyFMMTwVQLyMkup/07IFKz5atCsxqOv/3J9jfKBEyjMIDi1o
-	D/To=
-X-Google-Smtp-Source: AGHT+IHzftdJu5Tfe2SF8LvabynhKKZASp+dGkCarsLc7Hm4XRhrssvAPcplXGyZx9jwYzzGDAuLwQ==
-X-Received: by 2002:a05:600c:1d87:b0:40e:ae91:1d38 with SMTP id p7-20020a05600c1d8700b0040eae911d38mr512318wms.33.1705920217017;
-        Mon, 22 Jan 2024 02:43:37 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id v21-20020a05600c445500b0040e3bdff98asm42176303wmn.23.2024.01.22.02.43.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jan 2024 02:43:36 -0800 (PST)
-Date: Mon, 22 Jan 2024 10:43:34 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Javier Martinez Canillas <javierm@redhat.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>,
-	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v1 2/4] backlight: hx8357: Move OF table closer to its
- consumer
-Message-ID: <20240122104334.GD8596@aspen.lan>
-References: <20240114152759.1040563-1-andriy.shevchenko@linux.intel.com>
- <20240114152759.1040563-3-andriy.shevchenko@linux.intel.com>
- <878r4rovk4.fsf@minerva.mail-host-address-is-not-set>
- <Za0g47CgOH4MhdRe@smile.fi.intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WuV6cvDj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4CC00C433F1;
+	Mon, 22 Jan 2024 11:04:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1705921447;
+	bh=6WGGhf/BTgLnnKlxdbNPCXyuwYCekxPpegnJq4vX000=;
+	h=From:To:Cc:Subject:Date:From;
+	b=WuV6cvDj37O15oSjTHGuaol6bCLP78ejj/Qqj1SW7SBKckvvka5v+47PF1FXP7ypE
+	 z8bPKsEWzCACA0JC2QjeWs5bx4hHkyPxxpf2/rOeSXpfpDwA4EToI+diq8ckf2NpRQ
+	 gT3IDlQYVaCkI8ue4DJEhWrjdt4UClq0ZCqZv34eAaDCNgBrnhDszRFT/ajus6C8Pq
+	 IXAl0s6zN0bR928g3H2mCH46U7WbujMk9bSlgl97yrRcnon3yzPubDbl8y8xv7/78B
+	 DzHXQS7rE/VOJKvdmiuPb+5XWlbzGPmKIB/MRaftvwXs3cqCHcSMTXn4tikwKLJlvP
+	 LUNtsz4+7e+QA==
+From: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: linux-serial@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	dri-devel@lists.freedesktop.org,
+	Helge Deller <deller@gmx.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	linux-doc@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	Martin Hostettler <textshell@uchuujin.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 00/47] tty: vt: cleanup and documentation
+Date: Mon, 22 Jan 2024 12:03:14 +0100
+Message-ID: <20240122110401.7289-1-jirislaby@kernel.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Za0g47CgOH4MhdRe@smile.fi.intel.com>
+Content-Transfer-Encoding: 8bit
 
-On Sun, Jan 21, 2024 at 03:49:23PM +0200, Andy Shevchenko wrote:
-> On Mon, Jan 15, 2024 at 09:22:19AM +0100, Javier Martinez Canillas wrote:
-> > Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
->
-> ...
->
-> > > +	{}
-> >
-> > While at it, maybe add the { /* sentinel */ } convention to the last entry ?
->
-> Maybe. Is it a common for this subsystem?
+Push the console code (vt.c, vt.h, console.h, ...) into a bit more
+maintainable state. Especially all around consw structure and document
+it.
 
-I'd answer that slightly differently. Backlight does not aspire to be
-special regarding this sort of thing. If this pattern is becoming common
-within the rest of the kernel then its absolutely fine to use it here!
+CSI parser is also a bit cleaned up. More to follow some time in the
+next round.
 
-There are certainly backlights that use this convention... although they
-are not yet the majority.
+[v2] See respective patches for changes. The major changes:
+ * vesa.h introduced
+ * parameters of csi*() simplified
 
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: Martin Hostettler <textshell@uchuujin.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
 
-Daniel.
+Jiri Slaby (SUSE) (47):
+
+  vgacon: inline vc_scrolldelta_helper() into vgacon_scrolldelta()
+  fbcon: make display_desc a static array in fbcon_startup()
+  tty: vt: fix 20 vs 0x20 typo in EScsiignore
+  tty: vt: expect valid vc when in tty ops
+  tty: vt: pass proper pointers from tioclinux()
+  tty: vt: push console lock from tioclinux() down to 2 functions
+  tty: vt: pass vc_resize_user as a parameter
+  tty: vt: make vc_is_sel()'s vc const
+  tty: vt: define an enum for CSI+m codes
+  tty: vt: use case ranges for CSI+m fg/bg colors
+  tty: vt: define an enum for CSI+J codes
+  tty: vt: reflow csi_J()
+  use clamp() for counts in csi_?() handlers
+  don't pass vc->vc_par[0] to csi_?() handlers
+  tty: vt: define an enum for CSI+K codes
+  tty: vt: reflow csi_K()
+  tty: vt: define an enum for ascii characters
+  tty: vt: remove extern from functions in selection.h
+  tty: vt: make consw::con_debug_*() return void
+  tty: vt: make init parameter of consw::con_init() a bool
+  tty: vt: sanitize arguments of consw::con_clear()
+  tty: vt: remove checks for count in consw::con_clear() implementations
+  tty: vt: add con_putc() helper
+  tty: vt: eliminate unneeded consw::con_putc() implementations
+  tty: vt: sanitize consw::con_putc() parameters
+  tty: vt: sanitize consw::con_putcs() parameters
+  consoles: use if instead of switch-case in consw::con_cursor()
+  fbdev/core: simplify cursor_state setting in fbcon_ops::cursor()
+  tty: vt: remove CM_* constants
+  tty: vt: make consw::con_switch() return a bool
+  tty: vt: stop using -1 for blank mode in consw::con_blank()
+  tty: vt: define a common enum for VESA blanking constants
+  tty: vt: use VESA blanking constants
+  tty: vt: use enum constants for VESA blanking modes
+  tty: vt: make types around consw::con_blank() bool
+  tty: vt: make font of consw::con_font_set() const
+  tty: vt: make consw::con_font_default()'s name const
+  tty: vt: change consw::con_set_origin() return type
+  fbcon: remove consw::con_screen_pos()
+  tty: vt: remove consw::con_screen_pos()
+  tty: vt: make types of screenpos() more consistent
+  fbcon: remove fbcon_getxy()
+  tty: vt: remove consw::con_getxy()
+  tty: vt: remove unused consw::con_flush_scrollback()
+  tty: vt: document the rest of struct consw
+  tty: vt: fix up kernel-doc
+  Documentation: add console.rst
+
+ Documentation/driver-api/tty/console.rst |  45 ++
+ Documentation/driver-api/tty/index.rst   |   1 +
+ drivers/tty/vt/selection.c               |  43 +-
+ drivers/tty/vt/vt.c                      | 645 +++++++++++------------
+ drivers/tty/vt/vt_ioctl.c                |   6 +-
+ drivers/video/console/dummycon.c         |  38 +-
+ drivers/video/console/mdacon.c           |  43 +-
+ drivers/video/console/newport_con.c      |  69 +--
+ drivers/video/console/sticon.c           |  79 ++-
+ drivers/video/console/vgacon.c           | 152 +++---
+ drivers/video/fbdev/core/bitblit.c       |  13 +-
+ drivers/video/fbdev/core/fbcon.c         | 123 ++---
+ drivers/video/fbdev/core/fbcon.h         |   4 +-
+ drivers/video/fbdev/core/fbcon_ccw.c     |  13 +-
+ drivers/video/fbdev/core/fbcon_cw.c      |  13 +-
+ drivers/video/fbdev/core/fbcon_ud.c      |  13 +-
+ drivers/video/fbdev/core/tileblit.c      |   4 +-
+ include/linux/console.h                  | 124 +++--
+ include/linux/console_struct.h           |   1 -
+ include/linux/selection.h                |  56 +-
+ include/linux/vt_kern.h                  |  12 +-
+ include/uapi/linux/fb.h                  |   8 +-
+ include/uapi/linux/vesa.h                |  18 +
+ 23 files changed, 755 insertions(+), 768 deletions(-)
+ create mode 100644 Documentation/driver-api/tty/console.rst
+ create mode 100644 include/uapi/linux/vesa.h
+
+-- 
+2.43.0
+

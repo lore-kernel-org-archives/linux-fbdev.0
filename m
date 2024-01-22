@@ -1,108 +1,141 @@
-Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1BA24CB3F
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 17:50:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 085D060BAC
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 18:08:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705945837; cv=none; b=MgyGuWh2WSmpnaCig6OYmpO744fgvHW2yypz4PTpCbX0KjR2HdWHtDfG3zOAiMP07Aa2wsBML4Dhf3dFwrfTldIg4dhTqcHI5GYnqsfrBbrVn/qKzRn1iXpP31fDBveYqOv+blhnNwgHfaZIgH8TfIDsk4KIaMZHFz4x3PLfdk0=
+	t=1705946913; cv=none; b=BYVwCXn03GemvqNz/qkLUb/+pimZsKs6czWwJI3nxpxNHTZ3p/5n+r6wMWUoEzTdmptqLk1YfzGj/1MvXvy7qI7p5CxUvs0hLWJM+wxqxAb/a4r8s1Cv7I6ah/LMWW/sLixdu7LGiX2Qb1SVOTpfrgI8EUq88HB5w7wxmAGIoN0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705945837; c=relaxed/simple;
-	bh=xLPMMOi9U5aA2QOUyNYRwdev7zD4A+KnUqD+T4+EA/Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K4B589bBKi5jJz4OnS0cpIayZ77SyGxsnL3D3MUkTWc1z7sXywTuR4MPyHnZzXO5nmweq/0+zC+S7QjOZQG6Ln/lmlocNAonEcsoJXcP6IP/otCopF3dHrnGSuGylOhH1i5VpO0KJ7pGEwb87PqZOinkpcfiARC9xMeXhOA9kWk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=F3SK6Tjl; arc=none smtp.client-ip=209.85.221.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F3SK6Tjl"
-Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-339208f5105so3004913f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jan 2024 09:50:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1705945834; x=1706550634; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=sYGuiuUN/VCPpW9oWOQ4p73+grZOykVwihNpjjDuv0Q=;
-        b=F3SK6TjlNfQnBS4iXAAc0b9u8u04WFz0BR17agbw8LPd7czINCOtAvlubBLCcdN8SN
-         Iptkxj8v2kLA1hD8xExxhw//T+icNkTpoyiLV3tbzGANVQY8vtzflRJ4r49vQ/iL+d/C
-         T2e6K3UOUeJl3D94hie4a2pHfJb0Lp+CWygjk7wPIWElGw2A0AZMOntSoFSLLEXc9IVc
-         LPDmA5F2W5g9kOfjmr+DYpXc9hKbpTnEN5jQ649bqx64YApBYnLYKZBdI/3OFrstB2jA
-         HJgRegE0xklM7YWjyHkSVYILVlofiME+Pzn1sqc4YipxIbM57oRgigJtixgInp/J21m4
-         vVnw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705945834; x=1706550634;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=sYGuiuUN/VCPpW9oWOQ4p73+grZOykVwihNpjjDuv0Q=;
-        b=dnL9Rmo00hm9MvfOc5OS6oG4T64eCmKnN3vCfT2dLq9tp6EglwHEzr+zgTqgHv6x6m
-         i6B0I1vnE7itXEPyfWlMLdfmEW+cQVn0DKQs/k6y2Jc+z3sqhGICcl+Dc87hnbNmoMwi
-         WIm/NQZq/ZP3mBQEupXIQtwGcfZ0baf6wvKjJLE9WTJKXuNe8S5RKK/E9qVSzccWtHu/
-         +ypf3YgmziyJur4HcoPGoQG6QECxkgpFMxuOb1FIyO8NgWNaapBwmcf3Il6jTegeEyt4
-         7z0rBGZ7tgkr9/nNaQaRSTuXyU6QUJC66ux67s/dLgW3DvIajRjVxlP3CLcorozMPC2k
-         oSbA==
-X-Gm-Message-State: AOJu0YyfYdgV4QMO87PsuPVUAVCtZFxupnlc6K1m5svfa7x7PGuCO/Y+
-	4+cpSNgU6NU+FYYsm2e6fv5Mk+7dZhQZGyF43Es4mexJK+8YQ7haaB3X5ABdL94=
-X-Google-Smtp-Source: AGHT+IGMKjXfBPPqRjfBziR7QI5pQ0EzWnQZly3+fsLmJWUOsG/MDJPaYvuxqQs8u+NniIHlytAXNQ==
-X-Received: by 2002:adf:a199:0:b0:337:bdf2:26fe with SMTP id u25-20020adfa199000000b00337bdf226femr2086857wru.161.1705945834114;
-        Mon, 22 Jan 2024 09:50:34 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id s15-20020a5d6a8f000000b00336898daceasm11996072wru.96.2024.01.22.09.50.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jan 2024 09:50:33 -0800 (PST)
-Date: Mon, 22 Jan 2024 17:50:31 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Karel Balej <balejk@matfyz.cz>,
-	~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] leds: ktd2692: move ExpressWire code to library
-Message-ID: <20240122175031.GC8815@aspen.lan>
-References: <20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr>
- <20240122165011.GA8815@aspen.lan>
- <23373359.6Emhk5qWAg@radijator>
- <3603320.R56niFO833@radijator>
+	s=arc-20240116; t=1705946913; c=relaxed/simple;
+	bh=ijw9anAf6h8n1KBd3RjgyrXHDafUFZIr9UcDRpXmqmg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MJq6wIXk1HhCVTl1WZeXOR+gmiGi3soxu7pNHAW4w45KA4WeZo9Za3SmxDaaNPA0SzWevH8o2XHcvtS0iXO5p/W4GoG/IGoOhnRnqlYP8uBchELF1Ksa2x4Fl+XCzaKtL/vIAzJlEKQS+IjWvk+WJujfRYksnG9ihkA6l5D01ww=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRyiZ-000275-Dk; Mon, 22 Jan 2024 19:08:19 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRyiY-001eR0-M1; Mon, 22 Jan 2024 19:08:18 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRyiY-005Zyl-1v;
+	Mon, 22 Jan 2024 19:08:18 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>
+Cc: kernel@pengutronix.de,
+	Helge Deller <deller@gmx.de>,
+	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	linux-spi@vger.kernel.org
+Subject: [PATCH v2 29/33] video: fbdev: mmp: Follow renaming of SPI "master" to "controller"
+Date: Mon, 22 Jan 2024 19:07:24 +0100
+Message-ID:  <c5e47849673482635de19ac0765a9c5a57ad8b3f.1705944943.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2712; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=ijw9anAf6h8n1KBd3RjgyrXHDafUFZIr9UcDRpXmqmg=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlrq7laIw1D1s3Vy0oXfxrkam/vnbRCUoZLjwLY b2NsSJ4TNyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZa6u5QAKCRCPgPtYfRL+ TinZB/9OvTmkype35KBSvJz8eVvFVI2k1RVoInKikmHpw7B0KPj9U3tvHGy2ievPBlZF2/iypXJ Ml/2yl8K5uQf9TcdQMSqVRFSYEbrB2znK9Qi85LaMlFOOnpTZQF2Q+4Jk8ngHkxvRSgW8EEmoc5 5CQholu59+UxvOflchDmBw7VPp1+tSwlQqzTHf6NVEljOZ5N2r7S+vqxQdAJQAnc/4cE9h8wYx1 hz5lNAh1ZLAtsKY6sL4fREWn5H5qTpSDU9VNCD9jhZr30lIC1Oi/xr6I0mqhapTM8ZJTdeqdudX UcO/oRY9BTE+5rqEKnDygutJ0jnbwV5187UF6AVvtoVRxARY
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <3603320.R56niFO833@radijator>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 22, 2024 at 06:26:04PM +0100, Duje Mihanović wrote:
-> On Monday, January 22, 2024 5:57:53 PM CET Duje Mihanović wrote:
-> > On Monday, January 22, 2024 5:50:11 PM CET Daniel Thompson wrote:
-> > > AFAICT nothing will inhibit setting GPIOLIB so allyes- and allmodconfig
-> > > builds will always end up with GPIOLIB enabled. If we are happy to
-> > > select it then I think that is enough!
-> >
-> > In that case I guess I'll just make it select GPIOLIB.
->
-> Nevermind that, it'll have to be 'depends on' after all:
->
-> drivers/gpio/Kconfig:6:error: recursive dependency detected!
-> drivers/gpio/Kconfig:6: symbol GPIOLIB is selected by LEDS_EXPRESSWIRE
-> drivers/leds/Kconfig:184:       symbol LEDS_EXPRESSWIRE depends on NEW_LEDS
+In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
+some functions and struct members were renamed. To not break all drivers
+compatibility macros were provided.
 
-Can this dependency could be broken by declaring LEDS_EXPRESSWIRE at
-the top (or bottom) of the KConfig file (it's an option without a UI
-and does not need to be within the if NEW_LEDS block).
+To be able to remove these compatibility macros push the renaming into
+this driver.
 
-I'm aware this kind of change could provoke an argument about which
-sub-system the expresswire code should live in... but I think it's
-a worthwhile change anyway! We shouldn't need NEW_LEDS for this.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/mmp/hw/mmp_spi.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_spi.c b/drivers/video/fbdev/mmp/hw/mmp_spi.c
+index 0f8f0312a7c4..cf23650d7f0b 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_spi.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_spi.c
+@@ -32,7 +32,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
+ 	int timeout = 100000, isr, ret = 0;
+ 	u32 tmp;
+ 	void __iomem *reg_base = (void __iomem *)
+-		*(void **)spi_master_get_devdata(spi->master);
++		*(void **) spi_controller_get_devdata(spi->controller);
+ 
+ 	/* clear ISR */
+ 	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
+@@ -81,7 +81,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
+ static int lcd_spi_setup(struct spi_device *spi)
+ {
+ 	void __iomem *reg_base = (void __iomem *)
+-		*(void **)spi_master_get_devdata(spi->master);
++		*(void **) spi_controller_get_devdata(spi->controller);
+ 	u32 tmp;
+ 
+ 	tmp = CFG_SCLKCNT(16) |
+@@ -136,32 +136,32 @@ static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
+ 
+ int lcd_spi_register(struct mmphw_ctrl *ctrl)
+ {
+-	struct spi_master *master;
++	struct spi_controller *ctlr;
+ 	void **p_regbase;
+ 	int err;
+ 
+-	master = spi_alloc_master(ctrl->dev, sizeof(void *));
+-	if (!master) {
++	ctlr = spi_alloc_master(ctrl->dev, sizeof(void *));
++	if (!ctlr) {
+ 		dev_err(ctrl->dev, "unable to allocate SPI master\n");
+ 		return -ENOMEM;
+ 	}
+-	p_regbase = spi_master_get_devdata(master);
++	p_regbase = spi_controller_get_devdata(ctlr);
+ 	*p_regbase = (void __force *)ctrl->reg_base;
+ 
+ 	/* set bus num to 5 to avoid conflict with other spi hosts */
+-	master->bus_num = 5;
+-	master->num_chipselect = 1;
+-	master->setup = lcd_spi_setup;
+-	master->transfer = lcd_spi_one_transfer;
++	ctlr->bus_num = 5;
++	ctlr->num_chipselect = 1;
++	ctlr->setup = lcd_spi_setup;
++	ctlr->transfer = lcd_spi_one_transfer;
+ 
+-	err = spi_register_master(master);
++	err = spi_register_controller(ctlr);
+ 	if (err < 0) {
+ 		dev_err(ctrl->dev, "unable to register SPI master\n");
+-		spi_master_put(master);
++		spi_controller_put(ctlr);
+ 		return err;
+ 	}
+ 
+-	dev_info(&master->dev, "registered\n");
++	dev_info(&ctlr->dev, "registered\n");
+ 
+ 	return 0;
+ }
+-- 
+2.43.0
 
-Daniel.

@@ -1,26 +1,25 @@
 Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9384E3FB26;
-	Mon, 22 Jan 2024 19:51:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF8413D981;
+	Mon, 22 Jan 2024 19:51:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705953105; cv=none; b=DvEcR2Igrw0/BHLxYkHQUtoMzOU3oiIcIKOsyeDorGOcbM6BmOl4aF/RSDu/RpJzuREeF5WJ5a4Pi63pMcXCPhfX/0hsN5Stq/DFysEDeb3Vs02ZP1/hhuPPWExTz5QXd6Eh0f0sV0fmAzUWoqvergmKeoJMe1wSF4X9yDuOfbc=
+	t=1705953105; cv=none; b=KzjiOsLCtOBT8B2z7w7/hSy6xNjHS/xNGbHbpPgH1u7horJs410qX0sdN126dapBR80XjWtNe5ke2pGsInEnvc3NFhUEX0QOQJ6A8q521NDqsEIB/3f2mYCQldV/+XLmrqIY+eUIBZebaKBzarAJw1DVYCkcxa2YoI2DUOo7L0I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1705953105; c=relaxed/simple;
-	bh=h3bREyOH1oCNdl7LgneqpfYf+pwYxlqZnL9DAyhGyas=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=DCj2FKa3TBkfvEdHXRvjEyEQo3kPtr2pmTACjXRSX0vEjlWJqd408PXCaJblArZub33d7xgJSEXnOWNjXKjmQlFDupToQ3jr50ieHNKVIWyoh6ajTRS6r5doK8eudz8w6W00HbqyN9/hx6Ti4kCpyjt9MAfgxN3TByD/chhp4uU=
+	bh=0YufyoxCcDHdvrCe1DCC6ao7YtZtJoU6/jXb8S7jhuc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=S25jM3KhssSfZZcCdpVG4SiIv/dEkbRbUZMaMgUv633jlALSLVS2Gx5JPf/KWU577/LGGouPtzfuGUn5JVqfNb8Xg7t/4HrfCp3uePpgs1lMC/WxmmJXJXK+gelfYmiLQQ/eRTpsjSj3Lg9y+XbQR0GIYnMIY2Z5tvFfbvVeOOg=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
 Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id 1CDAC86C45;
-	Mon, 22 Jan 2024 20:51:39 +0100 (CET)
+	by mx.skole.hr (mx.skole.hr) with ESMTP id 898648689C;
+	Mon, 22 Jan 2024 20:51:40 +0100 (CET)
 From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Subject: [PATCH v4 0/3] Kinetic ExpressWire library and KTD2801 backlight
- driver
-Date: Mon, 22 Jan 2024 20:50:56 +0100
-Message-Id: <20240122-ktd2801-v4-0-33c986a3eb68@skole.hr>
+Date: Mon, 22 Jan 2024 20:50:58 +0100
+Subject: [PATCH v4 2/3] dt-bindings: backlight: add Kinetic KTD2801 binding
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -29,10 +28,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIACDHrmUC/13MTQ6CMBCG4auYrq2ZTlssrryHcQH9kQYDpiWNh
- nB3CwlCXH6Ted6RRBu8jeRyGEmwyUffd3mI44HopuoelnqTN0FAzgAEbQeDChgFx5XiupalAZK
- /X8E6/15Kt3vejY9DHz5LOLH5ujbkr5FyhgqujZI1FFhW19j2T3tqApkTCVcmgDG1MZwZSu04W
- jgX5R/jO4awMZ6Zs6jryjlXI9uxaZq+xZcJSAsBAAA=
+Message-Id: <20240122-ktd2801-v4-2-33c986a3eb68@skole.hr>
+References: <20240122-ktd2801-v4-0-33c986a3eb68@skole.hr>
+In-Reply-To: <20240122-ktd2801-v4-0-33c986a3eb68@skole.hr>
 To: Lee Jones <lee@kernel.org>, 
  Daniel Thompson <daniel.thompson@linaro.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
@@ -47,91 +45,89 @@ Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht,
  =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>, 
  Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2764;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1941;
  i=duje.mihanovic@skole.hr; h=from:subject:message-id;
- bh=h3bREyOH1oCNdl7LgneqpfYf+pwYxlqZnL9DAyhGyas=;
- b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrsckvqKcxfItPfeI8JR1dRfffkR6LOBPH6yu4
- y44ElntPp6JAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZa7HJAAKCRCaEZ6wQi2W
- 4SueD/4ibIhE/jpzZXN9RJq78NClxp7Rx9uEVxuyFbdEEnIJhnOn7GJUmpFzvAiaIZPQLsx4/1s
- hkzEQ/ypo+ZM8bjXRRmZBKPmuxLyVgTfM+AbvOd561LQBiukiN6te/xHxNlFpA6TEnHg8VSfvxV
- DXE6h2Y8qFZJfe8l/IENcSdW+KVq46NWa1zyXdNxwnet6EvnfQkFVqyR5pCJ22f6aja1Nm2xtxn
- OMCDWMzmmCfclcQhfOJ9nL/AM9sgny9MYoW7TYSmAviZVSuQqNIW6+EX4xRHOfyuhj7VRe1Xf6f
- ZyZ3NY67CwwshHkW1yEu3B2fQVd3zYCU/+op8WmtYHb/k43ykCJhzE1iq9+LD7rEKDsyMGsBkLU
- v4fE8Evxlz7XE3BBrLXdfDUn2Mki0rzs9SUDcQSf+R0Z2rU+pN/wjuSwX8WR3ibU5JfHwRMqtRP
- idFcoJeF5h81NKrEzd+xOVw0vQn4KS3fxTuarSFOSw+Bw94hW7mxA7HNIiC42vVGZ7s/gRbhdF0
- OnWzxPO33B+Pb4kitm+zV08jpT3RMcrx4dicRjaoZxvWEjTR4+fkFinuLWJjQySCuAN/J+FbNQT
- LAn+e60CTtpnIcbHSKw002PCmsv+6+8WarnTKRArFSRWxOXyeeysjRi23iPEasuffO3wgelIALJ
- 6MaOgn20Vty+x6A==
+ bh=0YufyoxCcDHdvrCe1DCC6ao7YtZtJoU6/jXb8S7jhuc=;
+ b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlrsckO1mwx44YvZ3Dc3vxmj9vux3yBgfybdSqz
+ pzWPxya09WJAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZa7HJAAKCRCaEZ6wQi2W
+ 4WmYEACb+8QNWDYRs9Ws6URBZHTMcmYpGX91/smv02pU7AujWpAUZbArxpyHjWMitPiPK9BierL
+ PKG8VVdhfjMI6fIrzH5QaK18hn4XoRNDD6XWWvAnoxl6J4CEAXjfCCFUAAvQhmneuT0+noHNm3h
+ OPwO8J6BxRLur/AfCjA2tle6EtXcYRv34Ww4M36hZzn7URzoiCvabtf0yctEQAhfFpo6Y/rAqQm
+ 7uJSfVssxae0QXqhfC4m5LE0zw6Xl2Mv8shxWrlI8hHoF77eVUe8jJo8EtfEcJbj0t22ZHJlwJj
+ Np1Y/Q9F2h8kJTScvHnfwkmrAKLn9upCiPQQ7E+QDF0LP8fMed8pY4GT779n9W2duZf5N0+eRlz
+ Wcsp9jxQmdfHpRYZvfrWqvJ4s5Rkpa+NkJFdlCXlDeVk1F3G0i6vsth2vM85UNDmIWr2F1Xji6o
+ UIN9Vrww/2vX0/Hct0ZNg9Ss7cVckIVyxc4QmLsRI17gVPztD+FLrDOWXod1qSTIGJRT00SKJJD
+ O/TGjCJWJo6cQJLis4gJ34Fy8Fza66t/DNNluaJSkSYSHZzW1iX5CsjPsBTKT8N5Larxa+epgi3
+ iRy2FHLgA/GMOCeCP2jOGNjx8Gnz1ECU6tNdYV4Hu38n2ovebY4jX+OhCLi0my0QSuBdvDga9SE
+ 3ahH/6ZkawbaQqw==
 X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
  fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
 
-Hello,
+KTD2801 is a LED backlight driver IC found in samsung,coreprimevelte.
+The brightness can be set using PWM or the ExpressWire protocol. Add
+a DT binding for the KTD2801.
 
-This series adds support for the Kinetic KTD2801 LED backlight driver
-IC found in samsung,coreprimevelte.
-
-Support is already upstream for the somewhat similar KTD2692 flash
-driver, and this series since v3 also moves its ExpressWire code into a
-separate library and converts the KTD2692 driver to use that library.
-
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
 ---
-Changes in v4:
-- Drop 'extern' keywords in leds-expresswire.h
-- Add 'expresswire_write_u8' to leds-expresswire.c and use it in the two
-  drivers
-- Move GPIOLIB dependency to LEDS_EXPRESSWIRE instead of letting clients
-  handle it
-- Drop time constant macros
-- Drop delay.h include in ktd2692
-- Drop bits.h and delay.h includes in ktd2801
-- Link to v3: https://lore.kernel.org/r/20240120-ktd2801-v3-0-fe2cbafffb21@skole.hr
+ .../bindings/leds/backlight/kinetic,ktd2801.yaml   | 46 ++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
-Changes in v3:
-- Split ExpressWire code into library (and convert KTD2692 to use this
-  library)
-- Rewrite commit messages
-- Add link to datasheet
-- Drop of.h include in ktd2801
-- Use _cansleep and usleep_range when powering off
-- Clean up bitwise operation in update_status
-- Link to v2: https://lore.kernel.org/r/20240118-ktd2801-v2-0-425cf32e0769@skole.hr
+diff --git a/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+new file mode 100644
+index 000000000000..b005065e0f48
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+@@ -0,0 +1,46 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/kinetic,ktd2801.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Kinetic Technologies KTD2801 one-wire backlight
++
++maintainers:
++  - Duje Mihanović <duje.mihanovic@skole.hr>
++
++description: |
++  The Kinetic Technologies KTD2801 is a LED backlight driver controlled
++  by a single GPIO line. The driver can be controlled with a PWM signal
++  or by pulsing the GPIO line to set the backlight level. This is called
++  "ExpressWire".
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: kinetic,ktd2801
++
++  ctrl-gpios:
++    maxItems: 1
++
++  default-brightness: true
++  max-brightness: true
++
++required:
++  - compatible
++  - ctrl-gpios
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    backlight {
++        compatible = "kinetic,ktd2801";
++        ctrl-gpios = <&gpio 97 GPIO_ACTIVE_HIGH>;
++        max-brightness = <210>;
++        default-brightness = <100>;
++    };
 
-Changes in v2:
-- Address maintainer comments:
-  - Drop MODULE_ALIAS
-  - Rename enable-gpios to ctrl-gpios
-  - Rename ktd2801_backlight->desc to ktd2801_backlight->gpiod
-  - Give time constants more descriptive names and note their origins in
-    Samsung driver
-  - Convert to GPIO_ACTIVE_HIGH
-- Update trailers
-- Link to v1: https://lore.kernel.org/r/20231005-ktd2801-v1-0-43cd85b0629a@skole.hr
-
----
-Duje Mihanović (3):
-      leds: ktd2692: move ExpressWire code to library
-      dt-bindings: backlight: add Kinetic KTD2801 binding
-      backlight: Add Kinetic KTD2801 backlight support
-
- .../bindings/leds/backlight/kinetic,ktd2801.yaml   |  46 ++++++++
- MAINTAINERS                                        |  13 +++
- drivers/leds/Kconfig                               |   4 +
- drivers/leds/Makefile                              |   3 +
- drivers/leds/flash/Kconfig                         |   2 +-
- drivers/leds/flash/leds-ktd2692.c                  | 116 +++++--------------
- drivers/leds/leds-expresswire.c                    |  68 +++++++++++
- drivers/video/backlight/Kconfig                    |   7 ++
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/ktd2801-backlight.c        | 128 +++++++++++++++++++++
- include/linux/leds-expresswire.h                   |  36 ++++++
- 11 files changed, 334 insertions(+), 90 deletions(-)
----
-base-commit: 0dd3ee31125508cd67f7e7172247f05b7fd1753a
-change-id: 20231004-ktd2801-0f3883cb59d0
-
-Best regards,
 -- 
-Duje Mihanović <duje.mihanovic@skole.hr>
+2.43.0
 
 

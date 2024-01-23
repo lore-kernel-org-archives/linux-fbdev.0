@@ -1,133 +1,236 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67BFF5662;
-	Tue, 23 Jan 2024 00:25:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD3D58ABB
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Jan 2024 09:23:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705969503; cv=none; b=C4vagdQRmTx+k+7+NFXYSIHbywew26FdI4vacelhy8FR5xn6PLPSot5Fs5M5Rd6kluBudFNNw6qYEfllHY5DKXCeeoGxa0kzomBHr27Q7Z5hM2kL+apEwQksY7LVQEDKLfSGJLG+I76DszY7S1dy5sUfz+aBmTBaaeQiKYBjVdU=
+	t=1706001834; cv=none; b=iNsOFLJiYZ+67OqAxZtgW9DsLdku4L2Uj8nrlIFfCfyFtWM586EhH4LLguQCWvlsDMpzyPzdc92CWsfq2zDn8+yATViAGvxDYsTlJIRwITQZUvPkTg3AJSuIvJHO9WrABDZCKnOO8LSG5sm4YAkV+hdQRouUcJnqRan3ojvCQ9Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705969503; c=relaxed/simple;
-	bh=0DXwUaR0VggXMxYkKz32oLwLHF1KUpZrtX3PhcO0yeI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=j44/Y73E0acvX6KLUNXBKCv7wY+OMdQobuqvD0ck1fGc+gpGrrDxMbmLNU9iZ/71MSgI9648utpYU4bk/Y/n1FrwlDwGo5DOHr3a0kHPk1SO4/+RPiFKd6+MjShHREZoI6yv/C99oNfddDPrz+O4GTVXXrajxhpf9PDQHPq1LgM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=GwQQcsbO; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1706001834; c=relaxed/simple;
+	bh=OaaT226xMrQq18fOAzMOfgL7VSqkFsg9HIaoIH7htj4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fseOQEJ2A0rc8TjGLWXOZFKbiPW2UfccLARAjxijavQSPNQsb1lX0uXUh7ndIdHr2V7HsU7au4h3Vv16ydxOYZk0tprrE9FCvjXqcaBEFTtnpM8VGHn1EBlZ8Fg3OjJXExR1gN0qjUJ4sc4UdJx5z3gRl08jUkornwTgKS3eHE8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=f3O/w8zm; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7kmmyAW9; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=s63D5d9X; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=t2RxRM8C; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="GwQQcsbO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19174C433A6;
-	Tue, 23 Jan 2024 00:25:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1705969503;
-	bh=0DXwUaR0VggXMxYkKz32oLwLHF1KUpZrtX3PhcO0yeI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GwQQcsbOn68XpQvyN6no3Hw5Xv1xRduXnSx51LllB4vvAPvYFF/LhA1YuJv7ZLWEr
-	 b288lJrkT0AFJoVEUIhlaX26CF7Ec79y4AJr8Tv1D8qiqoW1sI8ij0wvMb89V92VPv
-	 RllGbY4cF58/nFt83o47xn3XtT3pVkw1chABmD6Y=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Helge Deller <deller@gmx.de>,
-	Arnd Bergmann <arnd@arndb.de>,
-	linux-fbdev@vger.kernel.org,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.7 265/641] fbdev/sm712fb: Use correct initializer macros for struct fb_ops
-Date: Mon, 22 Jan 2024 15:52:49 -0800
-Message-ID: <20240122235826.218003281@linuxfoundation.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240122235818.091081209@linuxfoundation.org>
-References: <20240122235818.091081209@linuxfoundation.org>
-User-Agent: quilt/0.67
-X-stable: review
-X-Patchwork-Hint: ignore
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="f3O/w8zm";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7kmmyAW9";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="s63D5d9X";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="t2RxRM8C"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 763AD1F770;
+	Tue, 23 Jan 2024 09:23:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1706001831; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=OaaT226xMrQq18fOAzMOfgL7VSqkFsg9HIaoIH7htj4=;
+	b=f3O/w8zmvHFAalqow5Sj4vYGTn/FPvISWH9FPJp0wMxci+ILmumn+raMWc8rjIk/rMcMrU
+	/TSTo6CYAeUIpNm7vDH+jd9X2ko8du+Mj9BRaJYbNgf/z4FX7dZggeuIFw7Dzhvw3JbY5T
+	SS/u4KMP5ve8yW/sB/otMaZp4K0Hchw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1706001831;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=OaaT226xMrQq18fOAzMOfgL7VSqkFsg9HIaoIH7htj4=;
+	b=7kmmyAW9/dlwvMlCE9hagUMnYcx5MAlAim7AI/FvigpXgRltjZGlRqEJ/1ACLWA+1CBp9l
+	s5/UByY8KIztULBA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1706001830; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=OaaT226xMrQq18fOAzMOfgL7VSqkFsg9HIaoIH7htj4=;
+	b=s63D5d9X5k45mi0i2nJ4vTE5p2AsvOi6jnMigUBQGRmjFc2stoOCUfVbgfXb71CsouzsHI
+	CXCfNSO+BIc9Q6sYQJPGCJf9cp1Jg6YPllczS3MdMxUiI00u9WeEjYR/h8job1yoMTeFqM
+	lHXvKGuAGq0Omfz45+Lb1wl22YbtNq8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1706001830;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=OaaT226xMrQq18fOAzMOfgL7VSqkFsg9HIaoIH7htj4=;
+	b=t2RxRM8CYpCFZ6jj66ht6XoIKHKYyft+8H6gtzFECtgSgSfSXjVnJqagcQDSs20jclRmVW
+	cPiwZgn+vK1lZ4Dw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 48EEC136A4;
+	Tue, 23 Jan 2024 09:23:50 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id InRSEKaFr2V3AwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 23 Jan 2024 09:23:50 +0000
+Message-ID: <2e7de6c3-43a1-4511-b910-b25eb80a5bfe@suse.de>
+Date: Tue, 23 Jan 2024 10:23:49 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-
-6.7-stable review patch.  If anyone has any objections, please let me know.
-
-------------------
-
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/3] video: Simplify Kconfig options
+Content-Language: en-US
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: javierm@redhat.com, deller@gmx.de, airlied@gmail.com,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20240118090721.7995-1-tzimmermann@suse.de>
+ <Zaky46R04of5mPRX@phenom.ffwll.local>
 From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <Zaky46R04of5mPRX@phenom.ffwll.local>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------UiOP064P3fnfB0waqQPYMK70"
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=s63D5d9X;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=t2RxRM8C
+X-Spamd-Result: default: False [-6.30 / 50.00];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	 TO_DN_SOME(0.00)[];
+	 HAS_ATTACHMENT(0.00)[];
+	 MIME_BASE64_TEXT_BOGUS(1.00)[];
+	 RCPT_COUNT_FIVE(0.00)[6];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_TRACE(0.00)[suse.de:+];
+	 MIME_BASE64_TEXT(0.10)[];
+	 MX_GOOD(-0.01)[];
+	 SIGNED_PGP(-2.00)[];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
+	 MID_RHS_MATCH_FROM(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%];
+	 ARC_NA(0.00)[];
+	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 FROM_HAS_DN(0.00)[];
+	 DWL_DNSWL_MED(-2.00)[suse.de:dkim];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[ffwll.ch:email,suse.de:dkim];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FREEMAIL_CC(0.00)[redhat.com,gmx.de,gmail.com,lists.freedesktop.org,vger.kernel.org];
+	 RCVD_TLS_ALL(0.00)[]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 763AD1F770
+X-Spam-Level: 
+X-Spam-Score: -6.30
+X-Spam-Flag: NO
 
-[ Upstream commit 12d55c013a09a2d490f004a324c20800e4ff35ec ]
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------UiOP064P3fnfB0waqQPYMK70
+Content-Type: multipart/mixed; boundary="------------kJWOFfpTBcEcnUn8SJ1eXd0j";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: javierm@redhat.com, deller@gmx.de, airlied@gmail.com,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Message-ID: <2e7de6c3-43a1-4511-b910-b25eb80a5bfe@suse.de>
+Subject: Re: [PATCH v2 0/3] video: Simplify Kconfig options
+References: <20240118090721.7995-1-tzimmermann@suse.de>
+ <Zaky46R04of5mPRX@phenom.ffwll.local>
+In-Reply-To: <Zaky46R04of5mPRX@phenom.ffwll.local>
 
-Only initialize mmap and draw helpers with macros; leave read/write
-callbacks to driver implementations. Fixes the following warnings:
+--------------kJWOFfpTBcEcnUn8SJ1eXd0j
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-  CC [M]  drivers/video/fbdev/sm712fb.o
-  sm712fb.c:1355:25: warning: initialized field overwritten [-Woverride-init]
-  1355 |         .fb_fillrect  = cfb_fillrect,
-       |                         ^~~~~~~~~~~~
-  sm712fb.c:1355:25: note: (near initialization for 'smtcfb_ops.fb_fillrect')
-  sm712fb.c:1356:25: warning: initialized field overwritten [-Woverride-init]
-  1356 |         .fb_imageblit = cfb_imageblit,
-       |                         ^~~~~~~~~~~~~
-  sm712fb.c:1356:25: note: (near initialization for 'smtcfb_ops.fb_imageblit')
-  sm712fb.c:1357:25: warning: initialized field overwritten [-Woverride-init]
-  1357 |         .fb_copyarea  = cfb_copyarea,
-       |                         ^~~~~~~~~~~~
-  sm712fb.c:1357:25: note: (near initialization for 'smtcfb_ops.fb_copyarea')
-  sm712fb.c:1358:25: warning: initialized field overwritten [-Woverride-init]
-  1358 |         .fb_read      = smtcfb_read,
-       |                         ^~~~~~~~~~~
-  sm712fb.c:1358:25: note: (near initialization for 'smtcfb_ops.fb_read')
-  sm712fb.c:1359:25: warning: initialized field overwritten [-Woverride-init]
-  1359 |         .fb_write     = smtcfb_write,
-       |                         ^~~~~~~~~~~~
-  sm712fb.c:1359:25: note: (near initialization for 'smtcfb_ops.fb_write')
+SGkNCg0KQW0gMTguMDEuMjQgdW0gMTU6MTcgc2NocmllYiBEYW5pZWwgVmV0dGVyOg0KPiBP
+biBUaHUsIEphbiAxOCwgMjAyNCBhdCAxMDowNToyNUFNICswMTAwLCBUaG9tYXMgWmltbWVy
+bWFubiB3cm90ZToNCj4+IFJlcGxhY2UgQ09ORklHX1ZJREVPX0NNRExJTkUgYW5kIENPTkZJ
+R19WSURFT19OT01PREVTRVQgYnkgdGhlIHNpbmdsZQ0KPj4gb3B0aW9uIENPTkZJR19WSURF
+Ty4gU2VsZWN0IHRoZSBsYXR0ZXIgZm9yIERSTSBvciBmYmRldi4gQm90aCBvcmlnaW5hbA0K
+Pj4gb3B0aW9ucyB1c2VkIHRvIGJlIHNlbGVjdGVkIGluIG1vc3QgY2FzZXMsIHNvIHRoaXMg
+Y2hhbmdlIHNpbXBsaWZpZXMNCj4+IHRoZSBLY29uZmlnIHJ1bGVzLg0KPj4NCj4+IFNpbmNl
+IGNvbW1pdCBjYTZjMDgwZWVmNDIgKCJhcmNoL3BhcmlzYzogRGV0ZWN0IHByaW1hcnkgdmlk
+ZW8gZGV2aWNlDQo+PiBmcm9tIGRldmljZSBpbnN0YW5jZSIpIGFyY2hpdGVjdHVyZSBoZWxw
+ZXJzIGZvciBmYmRldiBkbyBub3QgbG9uZ2VyDQo+PiByZXF1aXJlIGZiZGV2IGluIHRoZWly
+IGltcGxlbWVudGF0aW9uIGFuZCBjb3VsZCBiZSB1c2VkIGZvciBub24tZmJkZXYNCj4+IGNv
+ZGUgYXMgd2VsbC4gRXZlbnR1YWxseSBndWFyZGluZyB0aGVtIHdpdGggQ09ORklHX1ZJREVP
+IHdpbGwgbWFrZQ0KPj4gdGhlbSBhdmFpbGFibGUgdG8gYW55IHN1YnN5c3RlbS4NCj4+DQo+
+PiB2MjoNCj4+IAkqIHN1cHBvcnQgQ09ORklHX0ZCX0NPUkU9bSB2aWEgSVNfRU5BQkxFRCgp
+IChrZXJuZWwgdGVzdCByb2JvdCkNCj4+DQo+PiBUaG9tYXMgWmltbWVybWFubiAoMyk6DQo+
+PiAgICB2aWRlby9jbWRsaW5lOiBJbnRyb2R1Y2UgQ09ORklHX1ZJREVPIGZvciB2aWRlbz0g
+cGFyYW1ldGVyDQo+PiAgICB2aWRlby9jbWRsaW5lOiBIaWRlIF9fdmlkZW9fZ2V0X29wdGlv
+bnMoKSBiZWhpbmQgQ09ORklHX0ZCX0NPUkUNCj4+ICAgIHZpZGVvL25vbW9kZXNldDogU2Vs
+ZWN0IG5vbW9kZXNldD0gcGFyYW1ldGVyIHdpdGggQ09ORklHX1ZJREVPDQo+IA0KPiBPbiB0
+aGUgc2VyaWVzOg0KPiANCj4gUmV2aWV3ZWQtYnk6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52
+ZXR0ZXJAZmZ3bGwuY2g+DQoNClB1c2hlZCB0byBkcm0tbWlzYy1uZXh0LiBUaGFua3MgYSBs
+b3QuIEZZSSB0aGVyZSdzIGEgY29uZmxpY3Qgd2l0aCANCmNvbW1pdCA2ODkyMzdhYjM3YzUg
+KCJmYmRldi9pbnRlbGZiOiBSZW1vdmUgZHJpdmVyIikuDQoNCkJlc3QgcmVnYXJkcw0KVGhv
+bWFzDQoNCj4gDQo+Pg0KPj4gICBkcml2ZXJzL2dwdS9kcm0vS2NvbmZpZyAgICAgICAgICAg
+fCAgMyArLS0NCj4+ICAgZHJpdmVycy9zdGFnaW5nL3NtNzUwZmIvS2NvbmZpZyAgIHwgIDEg
+LQ0KPj4gICBkcml2ZXJzL3ZpZGVvL0tjb25maWcgICAgICAgICAgICAgfCAgNSArLS0tLQ0K
+Pj4gICBkcml2ZXJzL3ZpZGVvL01ha2VmaWxlICAgICAgICAgICAgfCAgMyArLS0NCj4+ICAg
+ZHJpdmVycy92aWRlby9jbWRsaW5lLmMgICAgICAgICAgIHwgIDIgKysNCj4+ICAgZHJpdmVy
+cy92aWRlby9mYmRldi9LY29uZmlnICAgICAgIHwgMzcgLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQ0KPj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvS2NvbmZpZyAgfCAg
+MiArLQ0KPj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYyAgfCAgMiAtLQ0K
+Pj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2dlb2RlL0tjb25maWcgfCAgMyAtLS0NCj4+ICAg
+aW5jbHVkZS9saW51eC9mYi5oICAgICAgICAgICAgICAgIHwgIDcgLS0tLS0tDQo+PiAgIGlu
+Y2x1ZGUvdmlkZW8vY21kbGluZS5oICAgICAgICAgICB8ICA4ICsrLS0tLS0NCj4+ICAgMTEg
+ZmlsZXMgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCA2NSBkZWxldGlvbnMoLSkNCj4+DQo+
+Pg0KPj4gYmFzZS1jb21taXQ6IDA1YjMxN2U4NDU3YzhlMmJkMWE3OTdjOTQ0MGVjMDdiN2Yz
+NDE1ODQNCj4+IC0tIA0KPj4gMi40My4wDQo+Pg0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVy
+bWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlv
+bnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywg
+R2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQs
+IEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: 586132cf1d38 ("fbdev/sm712fb: Initialize fb_ops to fbdev I/O-memory helpers")
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fbdev@vger.kernel.org
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20231127131655.4020-3-tzimmermann@suse.de
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/sm712fb.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+--------------kJWOFfpTBcEcnUn8SJ1eXd0j--
 
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 3f8ef50e3209..104f122e0f27 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -1347,16 +1347,14 @@ static int smtc_set_par(struct fb_info *info)
- 
- static const struct fb_ops smtcfb_ops = {
- 	.owner        = THIS_MODULE,
--	FB_DEFAULT_IOMEM_OPS,
- 	.fb_check_var = smtc_check_var,
- 	.fb_set_par   = smtc_set_par,
- 	.fb_setcolreg = smtc_setcolreg,
- 	.fb_blank     = smtc_blank,
--	.fb_fillrect  = cfb_fillrect,
--	.fb_imageblit = cfb_imageblit,
--	.fb_copyarea  = cfb_copyarea,
-+	__FB_DEFAULT_IOMEM_OPS_DRAW,
- 	.fb_read      = smtcfb_read,
- 	.fb_write     = smtcfb_write,
-+	__FB_DEFAULT_IOMEM_OPS_MMAP,
- };
- 
- /*
--- 
-2.43.0
+--------------UiOP064P3fnfB0waqQPYMK70
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmWvhaUFAwAAAAAACgkQlh/E3EQov+C7
+wA/+IbG+uc59HFkD4gMDR48TJL5HM1r8T9kXLwM5blG3H38woamBTVRp/w7zUSPrsoF/Ybw/xVXz
+0nfANHHdWskMeLhYyWrQrE21m1oOFLp6AMQlxsa6N0+ky4sdHZRkWkpp+OH30FDQulVWdXbocHNP
+XfGv9dWdAYqgX7of0I3B5NlbqDu+NyeNcwyFHbxdW4uMC2+GmhjYUSfL51GGYtFk0TdNjy5Z7d76
+p+4SmSHfRkMWG8qL/xGQKrGailc8KvtCYCvSodmwrB23t5bfsXaD6v0hnZyRaa7XhFiO0LAWIqde
+srAgSASxYI/ngC8TY5Hh5G+2o9btBUuUK8oniEdenGz61z00iHESoHTiLDcn+wScb+cr6S7KFgl/
+9BH0aLjj/skOM6//PG6QSk/zf8RTzA6SeH4TvGrZa0ICgxI+lI96LAP4EtUT3BqMFbUpYHIJ7H8q
+sSLFZGu+lp1PnCpPQoOZIItgLPSJuDCcW12feZ5hJQTdFQ74d1dQjdYY9FvPdAKkLPIuApdrDE8v
+h9lzVB8fOo9dVGG3KwKIFuc92KxhtIXBX+R1/Jmm1gsaUuvg+6VRXAGT48Lq3P8cAahfScSJ/On1
+yhfwT89adbZQO0fKiCTWC/ESehawL1w7233NOBssH3C89NH3vLWpyTeD8ADI77b1q40wFn11qUCT
+7fY=
+=dbPb
+-----END PGP SIGNATURE-----
 
+--------------UiOP064P3fnfB0waqQPYMK70--

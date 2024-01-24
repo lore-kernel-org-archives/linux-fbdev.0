@@ -1,93 +1,96 @@
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C0C97FBC1
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Jan 2024 17:22:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CEAB7CF37;
+	Wed, 24 Jan 2024 16:11:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706030553; cv=none; b=WpGvp77WKnw6V+ngRcEhaDE1wTfCaKUNBuZjSkk0HrHnnKce5f/E1leAOy/UqQosVolOqUajku5hfanZsUyT2exjBU8FIB7F6O1sbuApOpvWr+jKLPiOkDL8Kg63qdP6VrP5Mcbh/Q+ZmOhlaEXhr/0w5XejVO9Qnj/Edxk3QtY=
+	t=1706112700; cv=none; b=Mnpm/sahLZnVfKtbmGvlgJy+XQyq7d4aF92wuoEB/braJ4+6VI9Z9bOIdodJR7ecaySGYh+LVqbhspmVdW+aH/cVcaN06t2VH9ndmDG8IIh/o6QSGkeEzBwACf+aOzkq98p/4vNEbB9b3wJzkykks2i12/vle4TckWl1KYUc1ag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706030553; c=relaxed/simple;
-	bh=1Hfc6n+pM6KQNiyZQNXhNkFf773fzhUlASTk4Tfi3oQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ro1Dn1NjkManUy36LYSq2ZlCwwRuvoH0C284s2eyHBK2GmfXJYlkXU3kBJuzY2T8MU/8VxA6hwQ3b+TTem+OD269y6VX0LZBTbIhcZDtCQUPOh3/OCXG1BlE8cnX5hQG+i8Wp7zwRoMwyiFzZCtK0rzM8oDaVAeDJARfK6hhzkQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ZmMT0kqH; arc=none smtp.client-ip=209.85.221.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1706112700; c=relaxed/simple;
+	bh=888Xfe7DxNuyULyYMnQLFv/4qhy732lEuQhhLHccKJM=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=i5GzLRwVlIW+7D1Gv/Rr+aVKfyZqs95XLUmgZKY31m0tniiEt+wmdyJuyVhYzJdz1EOjzXMuEkdi6n1cnhwKl4Gftytqzsp2C8KrFlQ14uTTCv07XUCOdaZ7Atayx6fQA7oTjSdyUAJ1haQo3V7jqCFc4YR+i0GN6LhaFonNYxI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d9/2awFm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZmMT0kqH"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-339237092dcso3297702f8f.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Jan 2024 09:22:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1706030549; x=1706635349; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=1Hfc6n+pM6KQNiyZQNXhNkFf773fzhUlASTk4Tfi3oQ=;
-        b=ZmMT0kqH8TvUD3gM5p5O90FrptpqkFMA9wSGe0G5ip+Y05ycwi2OKq2fkBmjiZgKzo
-         Yf5XRSduF4j8q6XLhQJbjQSqe+Deb82QXBJ/BAxEgctBteQQS/424fATVuQI9cPM+6Xx
-         0K+Fw0yFZOyqX0Qk2y1BIG4VjMwyHapqFtoU6LVkiefqBWPnTmM9dtqDnBy+wNJFp4XM
-         hCAlAjpckhoqxVIrHmIqVrHTznRXFRKX2FsNkvhkKLCtn4o40gTh33A1SvFowFQrWaAB
-         3qtke2qgNlHbBttjzKDYusXQdt+FC8b0XLUjizG3o8yvfcXc1FoXNYcbLjsGAAp61hDB
-         WUiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706030549; x=1706635349;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1Hfc6n+pM6KQNiyZQNXhNkFf773fzhUlASTk4Tfi3oQ=;
-        b=gYHLe/s4SnnqDAUnfNdX6yCiKh5VB7tdNyp13UyVw5BMKjBlvR4Cq2RF8Holx97b9A
-         J2mLmmUAsZxm5Pk70xyd2/cYO46BdOTiAZb7c/lXKIg653cJs1EWaHiXNCw+rfpd96tY
-         +0WxBJIZ46BU92AF4sLtqvHWkWMYV8cVbWrvcj17ZwDzwfcmwTK1laWfBXLUG6Vw9qT1
-         sHVXv60uh032gXvZVDAk/ElvVP44bH0rf9F1458P1TPNNlYnWhjFbJTkrBCM44Qcmbpy
-         0t/ORRoHE/p08IFX41o3L2pEaSDFAghegkkIIIMzBSgyKAi2oCzrPyM6UGRzWDZjgDM5
-         CM5g==
-X-Gm-Message-State: AOJu0YwDWJb8rpIwCUXv2Jz2YpxoINUzWV3ueKObGmubeTgqZRk5/Sm1
-	OuZ/j+OIf664i6Kw9bOn24P9b7eqbjp7QapUc/HLBLxKVu5nYLTWIMlE1lcsO2s=
-X-Google-Smtp-Source: AGHT+IFoO7gQRGdGA6peiV/mTL2CvpmYneI+ojl6fbQ6l0AX59DKNiE6xTLu71LBrqA2E5JpU1OYmA==
-X-Received: by 2002:adf:a459:0:b0:338:fcdc:ad21 with SMTP id e25-20020adfa459000000b00338fcdcad21mr4255272wra.49.1706030549105;
-        Tue, 23 Jan 2024 09:22:29 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id l8-20020a5d4bc8000000b00338914eb90dsm12032927wrt.82.2024.01.23.09.22.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jan 2024 09:22:28 -0800 (PST)
-Date: Tue, 23 Jan 2024 17:22:26 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Karel Balej <balejk@matfyz.cz>,
-	~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v4 3/3] backlight: Add Kinetic KTD2801 backlight support
-Message-ID: <20240123172226.GC263554@aspen.lan>
-References: <20240122-ktd2801-v4-0-33c986a3eb68@skole.hr>
- <20240122-ktd2801-v4-3-33c986a3eb68@skole.hr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d9/2awFm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D009C43399;
+	Wed, 24 Jan 2024 16:11:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706112699;
+	bh=888Xfe7DxNuyULyYMnQLFv/4qhy732lEuQhhLHccKJM=;
+	h=Date:From:To:Subject:From;
+	b=d9/2awFmfY5SR40WVEPzND3SxzZVzqC02DQ91vWwRZgxkwZLbaHV2+ktdkypf81ul
+	 3NXxi2bjLTjQrDDARp3GnRR8Se/coY383I3B9gOkTQu05i25nJ2rtzrm4L7ltzeMvT
+	 /VXuMKmYRS+nBaUuuuBOOO0SVs/yE5TIhXpu1ukoc1v9AoSiwLg3EfrD+uFnetjN+T
+	 VLfiKPfhLYguIP96eR36tYaoprW+ywAD9WxLI1s/H4pvmiDhzUC/iptShlS/gGEQl3
+	 qbyU4BoJshIgUUJunsNW8oJ8ZqLpJcSyFdbQNq1EMOIgHJyPmzhhdpbhoJfBFecULM
+	 DwnquqBb3d6hw==
+Date: Wed, 24 Jan 2024 17:11:35 +0100
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fix for v6.8-rc2
+Message-ID: <ZbE2t9LoFlro7J-H@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240122-ktd2801-v4-3-33c986a3eb68@skole.hr>
 
-On Mon, Jan 22, 2024 at 08:50:59PM +0100, Duje Mihanović wrote:
-> KTD2801 is a LED backlight driver IC found in samsung,coreprimevelte.
-> The brightness can be set using PWM or the ExpressWire protocol. Add
-> support for the KTD2801.
->
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
+Hi Linus,
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+please pull a small patch set with 3 fixes and 2 small cleanups for
+fbdev for kernel 6.8-rc2:
 
+A crash fix in stifb which was missed to be included in the drm-misc tree, two
+checks to prevent wrong userspace input in sisfb and savagefb and two trivial
+printk cleanups.
 
-Daniel.
+Thanks!
+Helge
+
+----------------------------------------------------------------
+The following changes since commit 7a396820222d6d4c02057f41658b162bdcdadd0e:
+
+  Merge tag 'v6.8-rc-part2-smb-client' of git://git.samba.org/sfrench/cifs-2.6 (2024-01-20 16:48:07 -0800)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.8-rc2
+
+for you to fetch changes up to 4b088005c897a62fe98f70ab69687706cb2fad3b:
+
+  fbdev: stifb: Fix crash in stifb_blank() (2024-01-23 09:13:24 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.8-rc2:
+
+- stifb: Fix crash in stifb_blank()
+- savage/sis: Error out if pixclock equals zero
+- minor trivial cleanups
+
+----------------------------------------------------------------
+Fullway Wang (2):
+      fbdev: savage: Error out if pixclock equals zero
+      fbdev: sis: Error out if pixclock equals zero
+
+Geert Uytterhoeven (1):
+      fbcon: Fix incorrect printed function name in fbcon_prepare_logo()
+
+Helge Deller (1):
+      fbdev: stifb: Fix crash in stifb_blank()
+
+Jiapeng Chong (1):
+      fbdev: vt8500lcdfb: Remove unnecessary print function dev_err()
+
+ drivers/video/fbdev/core/fbcon.c             | 3 +--
+ drivers/video/fbdev/savage/savagefb_driver.c | 3 +++
+ drivers/video/fbdev/sis/sis_main.c           | 2 ++
+ drivers/video/fbdev/stifb.c                  | 2 +-
+ drivers/video/fbdev/vt8500lcdfb.c            | 1 -
+ 5 files changed, 7 insertions(+), 4 deletions(-)

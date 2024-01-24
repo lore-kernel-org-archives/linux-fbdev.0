@@ -1,64 +1,64 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDCC5128371;
-	Wed, 24 Jan 2024 17:31:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CA73133434;
+	Wed, 24 Jan 2024 19:49:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706117498; cv=none; b=kZxYFIT9qVub/PmICxX3JGO2BUuonuxDxz5RkeYZ8pBlppQ6z/BctFGu/kc5x1v9STJHu6dmY0syEsovzCRjh6miQHlWhd2uu7If1mXMlEtuT171y/aTCalJOkJfmWLGmYXqaHOs781nvl05JMEikgPCJvbRdj1xxf3k62rRuMg=
+	t=1706125784; cv=none; b=ZLOdrZs0vPE+eHV2Znq6gnNKAluMaGtqTmY72Am/abno3nNQRcqqUoyYmwwSLpQymS+92uwu4VL6wuCZv69jpsWssOMucq6Gn3zWYgvXm0IZ8q7jax7pIFF2+Bw/kAX+Y/6JteMrbxlg3Z1B0lKi5eIT3yBeA6Ktf2q1UfIQ5Rc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706117498; c=relaxed/simple;
-	bh=ZSjxwNZxgQqXe2BOuCzNUYDMffDoamSMVJAvz8N0Jp8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=boPhVNXRN/fGqsiLpykem3i7+WYJ8zvXPqdexgzdZHUuLUKgc3VNc0B32ndeDp+yJe9CD4luAetJjakqG2pPMF+2IbcpEo210nFeBaw2STM0NfKbz7IeitgSXmVmBwxSiOWmu0I5/GulwP11W+Ovx0HUMc5rdyC/r/V/87RB02E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=OhL4KZBx; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1706125784; c=relaxed/simple;
+	bh=VBDeXV//B1Ygl8IacY4kMW66YLU6vLMeG9D2ddbaCXg=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=hk+ZKYzCF3JBQEU9RKIidtFC3mBSubtlApaVBjC4LXp0bqaA/tDenBf0XX+93KIegouK5TpN8+VUBxXnVusQQ6ks321hT1G+iWxGZw+9Zudo17hlz2Wp16zdFXLhlVYfHRXVzYAqSUiRM0XsBGdE2fAm4DjGiPsYJoXhxLFw4ds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=o4O7gtfe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="OhL4KZBx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B501C433F1;
-	Wed, 24 Jan 2024 17:31:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1706117497;
-	bh=ZSjxwNZxgQqXe2BOuCzNUYDMffDoamSMVJAvz8N0Jp8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=OhL4KZBxcp2t0yMZMoCBrGcfBBoXaQZupv4MvaMDjAzB1kwV6ho5n3yY4ANGiv7cj
-	 L3/Sz895iSgeKYbttN87BY05nBeydlLwSvKzLV8L9QoZfDeKXemE53FP3mijJ0tpxM
-	 eSGUnVjCug4tUzAQ1EZ9ZhQGA1GXWyAzrinFo+9k=
-Date: Wed, 24 Jan 2024 09:31:36 -0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Mark Brown <broonie@kernel.org>, kernel@pengutronix.de,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Michal Simek <michal.simek@amd.com>,
-	Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-spi@vger.kernel.org
-Subject: Re: [PATCH v2 25/33] staging: fbtft: Follow renaming of SPI "master"
- to "controller"
-Message-ID: <2024012428-annex-destruct-1c92@gregkh>
-References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
- <d486dbb16fafd93a00013a555658a44e975115fd.1705944943.git.u.kleine-koenig@pengutronix.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="o4O7gtfe"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E52BEC43399;
+	Wed, 24 Jan 2024 19:49:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706125783;
+	bh=VBDeXV//B1Ygl8IacY4kMW66YLU6vLMeG9D2ddbaCXg=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=o4O7gtfezGf/bN44nuF1YJphJTRqA5fVlq7DTfbCJ2MXehbEutu2EooHu+qbn8oh1
+	 xxlj6oWo9H5jHuMa9667+23LYue2EePSEobhhfdEGPt4gWb4LhRfboJWqzSvxrvUg6
+	 TFbDc6aF36OZbgut4ny593gpdnoeeKN2DYT7UFQnf637W0cTG1G7dhpwl7CGQR7DIZ
+	 P7Ym6sG9PxlDwfK/wuGnXKTF25NCOIzB8jahWBApgpLbYqUyLQYvoJYfjcg2jW378Q
+	 5Cc5uR2z3EwLOKNtJZcue3tbBwycGa6Tmj+KKvUckRfGbFlSagyAD6Bgxw4psUUDN/
+	 6pQTcn+4ZdD8g==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id CDC3EDFF767;
+	Wed, 24 Jan 2024 19:49:43 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev fix for v6.8-rc2
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <ZbE2t9LoFlro7J-H@carbonx1>
+References: <ZbE2t9LoFlro7J-H@carbonx1>
+X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
+ <dri-devel.lists.freedesktop.org>
+X-PR-Tracked-Message-Id: <ZbE2t9LoFlro7J-H@carbonx1>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.8-rc2
+X-PR-Tracked-Commit-Id: 4b088005c897a62fe98f70ab69687706cb2fad3b
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 1110ebe058268b5425c69a23a99456f2331063bf
+Message-Id: <170612578383.9426.13921726820598469749.pr-tracker-bot@kernel.org>
+Date: Wed, 24 Jan 2024 19:49:43 +0000
+To: Helge Deller <deller@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d486dbb16fafd93a00013a555658a44e975115fd.1705944943.git.u.kleine-koenig@pengutronix.de>
 
-On Mon, Jan 22, 2024 at 07:07:20PM +0100, Uwe Kleine-König wrote:
-> In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
-> some functions and struct members were renamed. To not break all drivers
-> compatibility macros were provided.
-> 
-> To be able to remove these compatibility macros push the renaming into
-> this driver.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
+The pull request you sent on Wed, 24 Jan 2024 17:11:35 +0100:
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.8-rc2
+
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/1110ebe058268b5425c69a23a99456f2331063bf
+
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

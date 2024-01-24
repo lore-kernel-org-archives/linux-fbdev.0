@@ -1,83 +1,129 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF64F129A65
-	for <linux-fbdev@vger.kernel.org>; Wed, 24 Jan 2024 17:25:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5815D85C4B;
+	Wed, 24 Jan 2024 17:30:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706117113; cv=none; b=Wow27xIYh37DboMTd+6KNRjwAFsgHkkc7QNuTToxcN9ptBnzwS4hwTMF9lEyfWRhiZnBu7OETBteOWRgQVjeFlpeFbv3kB88CON4dpV7sPRRvOafaA9aYgRmRv3xAWBiP8Fg3AQ6SV04b9Fmqau4RTypvNGivaVN3Y0u4tGdKSg=
+	t=1706117458; cv=none; b=g2/Ec2tTrSNkWygH4MD5gwSuXvxi8bYscPTf/MEyb28zsErLI9B1qo0PowMVkwT31ZqfKBmKc3VRKbHn+QacGy17ZPUGbRZnQ6895AGCKhFkt6ii5cf1/9l51ntLlSAa3tqmLHRNutqqEcDHekTAmYK0nwDhodWGx5zciI0cDo4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706117113; c=relaxed/simple;
-	bh=fQP8/M1QomdvhevshrbbyC+G3774Cm3toGMmsbZ5S08=;
+	s=arc-20240116; t=1706117458; c=relaxed/simple;
+	bh=NNDXRpvhIGTKBi9slZ/qWQEGn6Uj559Gpw2fxZO2A8A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JX/QidxeGXY49ZVMb1eJU6Te/p8d28iAo1E+Vk+z19rRggLN1oq/4evagyzO7d1QB9kyCwEa6qNcgWqpep+S/wK1JzDwI1PvuKjllAUHv2xIJVUMVjza0o+TVzyKRGJJ17VzUpTauT7d4H+d479DytOX5tYCn4OdrBNnPOi15F8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tDV3VfTQ; arc=none smtp.client-ip=209.85.128.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=hpfhlR1qRxJB6kQ6fi3d6bQPohqrtiyF+cthEde/2U6mwHfmF+UwlDPj5SDfp6wV1EBVPK68UdS82RPYJYgsQP+NVrCfH4ajbPUVcbWEbYY3n/+ggoD5MZ+a2OHAqe4PImU+ytiICGPyuQ9etNR823YUOYVvL0WqQRyyUHdYHr0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=TE8sMbvf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tDV3VfTQ"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-40ec34160baso13765785e9.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 24 Jan 2024 09:25:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1706117110; x=1706721910; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=fQP8/M1QomdvhevshrbbyC+G3774Cm3toGMmsbZ5S08=;
-        b=tDV3VfTQGdHxj52YrYBAslccY5mFWvnpoB4Q7nePNtX0TVq/1W/oVVM//AoHQSjhnS
-         bEo/ja2Via7LQEVi3qjTrJXHY3sqooJr8JodFFMBxnWchgtZpSeU7J5Y+Q4f/LBxlPNS
-         Slf96OL70rJcwk2oP8O4k6SlKfv1LWIRSYwWCdeAZ7TCTbIvg8xJOwjcfOk0Q7rFTKsD
-         zpZrs1zcSVyDG18K4IIF9X/ajLuwt6/mDfu+AzWPbSXswMILMdzH46bs+U2jdVWQo8i2
-         xc1HVKgrQhtSV1AYpeFzCvXqHROoPMRnniBAVIQtYvr3yCxzFPZoZ5LsnzmJJwAFx4Hx
-         tGJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706117110; x=1706721910;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fQP8/M1QomdvhevshrbbyC+G3774Cm3toGMmsbZ5S08=;
-        b=FGYk+CLcMEf1z/DTAsQJX6HpWCpgN2tAlBcRzqNyjL9LAd0JJwc12i5yiMDmyRAHcP
-         yZbT7CTP3h5aatlGQOLpnCbJTZyQZPWDFfRtZXow3Bsv2gxpFLd3Xg4ovAVCmKyEKRyy
-         X6J0dtjF7dR3dyKAYNvg7HvJvHxGAVO+abRQw1DNIVuxqWFgcUUIAbUtnrXqZxZ9jIMH
-         vbm8npgVfmDM+ypwZKMyb8RSIZR5NhkyS5CpQJGBLAfMDWgeV13LZZu6fIw43KWKUC8g
-         qmmLZeHedHfTE/DSlvin4mJPOT0tlIwGr68qrX72DqWlcE/Fzqjww40od4o4zNPSVxGj
-         8LaQ==
-X-Gm-Message-State: AOJu0YwzrYmUXeXKEfvP82e/WyRhFTXWpAgJF0AHazcg3oU4ZhhsdZTB
-	4XzDVa15iBTkVtO6W0HiAqjqeflpAbws6kCyfJWMU7TQdLU+KJIyOL6FLsap2VY=
-X-Google-Smtp-Source: AGHT+IHtZmUsImHUN6vx4IajyMpk1NjS/10baW8IunEC4zx4kdLeWpbSforzB18JvfYxa35SxlP9Hw==
-X-Received: by 2002:a05:600c:470a:b0:40e:7516:2c7b with SMTP id v10-20020a05600c470a00b0040e75162c7bmr1904703wmo.38.1706117109977;
-        Wed, 24 Jan 2024 09:25:09 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id fc6-20020a05600c524600b0040d53588d94sm285281wmb.46.2024.01.24.09.25.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jan 2024 09:25:09 -0800 (PST)
-Date: Wed, 24 Jan 2024 17:25:07 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Lee Jones <lee@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v1 4/4] backlight: hx8357: Utilise temporary variable for
- struct device
-Message-ID: <20240124172507.GA16024@aspen.lan>
-References: <20240114152759.1040563-1-andriy.shevchenko@linux.intel.com>
- <20240114152759.1040563-5-andriy.shevchenko@linux.intel.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="TE8sMbvf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA2D0C433C7;
+	Wed, 24 Jan 2024 17:30:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1706117457;
+	bh=NNDXRpvhIGTKBi9slZ/qWQEGn6Uj559Gpw2fxZO2A8A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=TE8sMbvfIUEPS7l+FWWrLd9ucrffQrWpUeULzzDGbHOZntLPKHC9u7ekCFztLhU3U
+	 g9c/BN8CkGH0i32zPynRDSS6j46gbVDA6ioIe6yR345V3vEOlOOOrQK63M5gAF7wrU
+	 bDTC1oJaRecQ9F29HgZfYDFNvnxiLNzNXD19CPf8=
+Date: Wed, 24 Jan 2024 09:30:56 -0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	kernel@pengutronix.de, Moritz Fischer <mdf@kernel.org>,
+	Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Alexander Aring <alex.aring@gmail.com>,
+	Stefan Schmidt <stefan@datenfreihafen.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	linux-wpan@vger.kernel.org, netdev@vger.kernel.org,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Jonathan Cameron <jic23@kernel.org>, linux-iio@vger.kernel.org,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-input@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+	Rayyan Ansari <rayyan@ansari.sh>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Martin Tuma <martin.tuma@digiteqautomotive.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	linux-media@vger.kernel.org, Sergey Kozlov <serjk@netup.ru>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Yang Yingliang <yangyingliang@huawei.com>,
+	linux-mmc@vger.kernel.org, Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+	Michal Simek <michal.simek@amd.com>,
+	Amit Kumar Mahapatra via Alsa-devel <alsa-devel@alsa-project.org>,
+	linux-mtd@lists.infradead.org,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
+	Simon Horman <horms@kernel.org>,
+	Ronald Wahl <ronald.wahl@raritan.com>,
+	Benson Leung <bleung@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Guenter Roeck <groeck@chromium.org>,
+	chrome-platform@lists.linux.dev, Max Filippov <jcmvbkbc@gmail.com>,
+	linux-spi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	linux-arm-msm@vger.kernel.org,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	linux-mediatek@lists.infradead.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, Viresh Kumar <vireshk@kernel.org>,
+	Rui Miguel Silva <rmfrfs@gmail.com>,
+	Johan Hovold <johan@kernel.org>, Alex Elder <elder@kernel.org>,
+	greybus-dev@lists.linaro.org, Peter Huewe <peterhuewe@gmx.de>,
+	Jarkko Sakkinen <jarkko@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+	linux-integrity@vger.kernel.org,
+	Herve Codina <herve.codina@bootlin.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	linux-usb@vger.kernel.org, Helge Deller <deller@gmx.de>,
+	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
+	Kalle Valo <kvalo@kernel.org>, Dmitry Antipov <dmantipov@yandex.ru>,
+	libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
+	Jonathan Corbet <corbet@lwn.net>, James Clark <james.clark@arm.com>,
+	Bjorn Helgaas <bhelgaas@google.com>, linux-doc@vger.kernel.org
+Subject: Re: [PATCH v2 00/33] spi: get rid of some legacy macros
+Message-ID: <2024012439-machinist-amazingly-2d2c@gregkh>
+References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
+ <2024012417-prissy-sworn-bc55@gregkh>
+ <c1e38a30-5075-4d01-af24-ac684e77cf29@sirena.org.uk>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20240114152759.1040563-5-andriy.shevchenko@linux.intel.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c1e38a30-5075-4d01-af24-ac684e77cf29@sirena.org.uk>
 
-On Sun, Jan 14, 2024 at 05:25:11PM +0200, Andy Shevchenko wrote:
-> We have a temporary variable to keep pointer to struct device.
-> Utilise it inside the ->probe() implementation.
->
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+On Wed, Jan 24, 2024 at 05:22:00PM +0000, Mark Brown wrote:
+> On Wed, Jan 24, 2024 at 09:13:49AM -0800, Greg Kroah-Hartman wrote:
+> > On Mon, Jan 22, 2024 at 07:06:55PM +0100, Uwe Kleine-König wrote:
+> 
+> > > Note that Jonathan Cameron has already applied patch 3 to his tree, it
+> > > didn't appear in a public tree though yet. I still included it here to
+> > > make the kernel build bots happy.
+> 
+> > Are we supposed to take the individual changes in our different
+> > subsystem trees, or do you want them all to go through the spi tree?
+> 
+> Given that the final patch removes the legacy interfaces I'm expecting
+> to take them via SPI.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Great, thanks, I'll go ack the subsystem patches that are relevent for
+me.
 
-
-Daniel.
+greg k-h

@@ -1,69 +1,73 @@
-Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EE901BDD3
-	for <linux-fbdev@vger.kernel.org>; Thu, 25 Jan 2024 20:22:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18CF128DCA;
+	Sat, 27 Jan 2024 15:58:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706214162; cv=none; b=l9jbXUtrc7fLUwtHa2G2uNW8+1pUlnwNZowoIoBspFAucDOT3CZ85C10PU8XLABrTi/eNB8FBa0iskInwCBpsVGiSySTQWxh5EHlcGHYVwekLig7ClQCfDdhtgPijSTVIWcM57KXpOSbtyfGONfUGwioc+u+F0KRcGASlJCJAp8=
+	t=1706371119; cv=none; b=ed3XUUE1usKS2KlgRWOUoJY7kXI8PD7UAVrquM79xLCRiVdAuPYQCNBWm4/ReyrRFSij7WEQYEazh9ot+rwqDRInVlzcCKI4sJ7hTUjLxFFtcSFSrhdYvB/4NpHzR0jfZDCykaSOBRLVVvRiMNEmvb5RkoztLI6CAR58GrL1gnc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706214162; c=relaxed/simple;
-	bh=O3ooH8/duDDCld9UTZOCr4l7u1P7UYgyqLjLD3vteBQ=;
+	s=arc-20240116; t=1706371119; c=relaxed/simple;
+	bh=hBtf6FLBv/lirHB/qFxQDOfC3/JrgO9F5zuWntBY3Bo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lWVFbDOQIbpNFM6d+GZeJgCIYb8UPoH1wr1i+S/t8n5oJqe/dyDfa9lyZuHMH0dBcYjyOfvffrodWTZYM2UDUgq7Yo5TGv5BueAjolic/jsqRGoSLLyRFR8oLeYlFPSSZrfRn9oC8SJY7ISSnhCcqgUbKY0OUowtnqXIcp4l9+k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=Rlc+5ulv; arc=none smtp.client-ip=209.85.208.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=b3ZASke+vhXwK4tNZAOXWg0RlyYnwRNPDPs7n2RXcx9rabuWQ4/50Rmu1ovaVpULSveB3ZYKnzyollYrrAZ0/tyi7aV+vsCidzNe056YC1/tgf5ABKliyt4T+yivyB9TTAPFwtfwm1tjbuTPSjgieWIJUteXn3Y2s3QYX6yNNRE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fa5J9WQd; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="Rlc+5ulv"
-Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-55d000834dcso212093a12.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 25 Jan 2024 12:22:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1706214157; x=1706818957; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=cgx7mklBpB9KounVQy5eGpWd3i905pv75d99Q4ggPTM=;
-        b=Rlc+5ulvuvv1T5WKCiXUe8pq4kzSTFOEsTjXA3UBZ3YUJgVC2l6+bMhdcWn6ryOwka
-         3PeMQ9Y0B4wI5uC75vGV+tPVH4k8ODoR4kcI1UjjDY3YIN6wxYiF8Iak68oXktDBpX4Y
-         W2agJ55ql9t/8XzJPefSRj+tmpAP+oCM22oRM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706214157; x=1706818957;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=cgx7mklBpB9KounVQy5eGpWd3i905pv75d99Q4ggPTM=;
-        b=TC/4AzSDgdzPrudHHSLorumt0Sec8kWzkB+FLloRelefPVd7ni4RjteU0gQ4aNKBwp
-         jFlPq+4vjKCO3yVRpU1QIecv7h1WBk9tWM0yJKgdR5OUbxh6yJogY0rPiZwzsFwSI/ZN
-         SXF6b53lRl3MIJDHKcTmPYHbgKUwdw++HnDNHmsziQDvUMfa8792je5sL4vRFOdIg1CU
-         4rFpxFVyENIIHxDXsC3W6RGPZhgW1znwtsOLpPfi3hfAdCqoEp893HXgROmRJLtqXbtY
-         E8mKlPbShjWFHS3UIE4WQSWgSKqW2Mqwh2fG88OqxXSK1v3hLNB4/Z/2ZCyS8qq8rVdU
-         lZQA==
-X-Forwarded-Encrypted: i=0; AJvYcCU/8ZtdFhCg9JwlJX6XXJuo1h0R8SwJFhK6dscf9VXOJovOD7OKPd0Xeli16Gna/RAKKTSYRNtMuzHayKUglJDwXB2dCyF2QENsiuU=
-X-Gm-Message-State: AOJu0YzzMCXh2eyPdif7UzSo00SYk/rfr0bCqPyKa3UD2uVgc0vVSFOu
-	Nw37InO2xjhj49d+xV2HoV0BPTUEhk6ABLkMNvCarj6d8he/nrNUWzsDcbGCLyg=
-X-Google-Smtp-Source: AGHT+IFaTRwxaZ3kossB3H1YRQdr9l0tTF1yAxPBdIIOdK1uRobh4zyGMgDW9fgGjUXK1GGr2MpHAQ==
-X-Received: by 2002:a17:906:f804:b0:a30:ff7f:e583 with SMTP id kh4-20020a170906f80400b00a30ff7fe583mr148157ejb.2.1706214157490;
-        Thu, 25 Jan 2024 12:22:37 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id ps12-20020a170906bf4c00b00a31225fed97sm1372278ejb.104.2024.01.25.12.22.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 Jan 2024 12:22:36 -0800 (PST)
-Date: Thu, 25 Jan 2024 21:22:34 +0100
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
-	Jaya Kumar <jayalk@intworks.biz>, Daniel Vetter <daniel@ffwll.ch>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-mm@kvack.org
-Subject: Re: fb_defio and page->mapping
-Message-ID: <ZbLDCkpq9zxkdyLt@phenom.ffwll.local>
-Mail-Followup-To: Matthew Wilcox <willy@infradead.org>,
-	Helge Deller <deller@gmx.de>,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fa5J9WQd"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1706371116; x=1737907116;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=hBtf6FLBv/lirHB/qFxQDOfC3/JrgO9F5zuWntBY3Bo=;
+  b=fa5J9WQddtmcDXUGFz4Q66JK4ZipyxZBWTiROxl6qXEzrPzMIRTKdQqK
+   DP6y99H5WsPBYlzMsPVe3kK8PA7is+hxytcLLW8i/zb3hj4JVsM2RcB8A
+   Z8pWho1bBi8XGmpw3QD+j4O2jiJdFHc3xGQsOhCyDeJ84D54oAKufNNeQ
+   Zb7Z/9hoGiLLBtb5SYx6swh/Xl8G1hq7TSn8jtBNg7XgMw83dhknjX0yU
+   VxmvtpeP/Tp0+HwJVZMaRLaxP16EnNrvHBV+yuGV+dNVe8I1Er8cNp6Id
+   2hQ7HfBJ8dRMC3r/5XrRV/YsdR4fqrMx3n5BzP2+/1Uv7ewAUAqFJWQ0I
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10964"; a="10074283"
+X-IronPort-AV: E=Sophos;i="6.05,220,1701158400"; 
+   d="scan'208";a="10074283"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2024 07:58:35 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10964"; a="787406022"
+X-IronPort-AV: E=Sophos;i="6.05,220,1701158400"; 
+   d="scan'208";a="787406022"
+Received: from lkp-server01.sh.intel.com (HELO 370188f8dc87) ([10.239.97.150])
+  by orsmga002.jf.intel.com with ESMTP; 27 Jan 2024 07:58:29 -0800
+Received: from kbuild by 370188f8dc87 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1rTl4c-0002UU-1g;
+	Sat, 27 Jan 2024 15:58:26 +0000
+Date: Sat, 27 Jan 2024 23:57:54 +0800
+From: kernel test robot <lkp@intel.com>
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+	Frank Rowand <frowand.list@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>, Michal Simek <monstr@monstr.eu>,
+	Rob Herring <robh+dt@kernel.org>,
+	Saravana Kannan <saravanak@google.com>,
+	Takashi Iwai <tiwai@suse.com>,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-mm@kvack.org
-References: <Za_1d4MVxKeQOP9B@casper.infradead.org>
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Cc: oe-kbuild-all@lists.linux.dev, linux-media@vger.kernel.org,
+	alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH 11/13] fbdev: omapfb: use of_graph_get_next_port()
+Message-ID: <202401272336.CCkvpjde-lkp@intel.com>
+References: <874jf4ud77.wl-kuninori.morimoto.gx@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -72,75 +76,107 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Za_1d4MVxKeQOP9B@casper.infradead.org>
-X-Operating-System: Linux phenom 6.6.11-amd64 
+In-Reply-To: <874jf4ud77.wl-kuninori.morimoto.gx@renesas.com>
 
-On Tue, Jan 23, 2024 at 05:20:55PM +0000, Matthew Wilcox wrote:
-> We're currently trying to remove page->mapping from the entire kernel.
-> This has me interested in fb_defio and since I made such a mess of it
-> with commits ccf953d8f3d6 / 0b78f8bcf495, I'd like to discuss what to
-> do before diving in.
-> 
-> Folios continue to have a mapping.  So we can effectively do
-> page_folio(page)->mapping (today that's calling compound_head() to get
-> to the head page; eventually it's a separate allocation).
-> 
-> But now I look at commit 56c134f7f1b5, I'm a little scared.
-> Apparently pages are being allocated from shmem and being mapped by
-> fb_deferred_io_fault()?  This line:
-> 
->                 page->mapping = vmf->vma->vm_file->f_mapping;
-> 
-> initially appears harmless for shmem files (because that's presumably
-> a noop), but it's only a noop for head pages.  If shmem allocates a
-> compound page (ie a 2MB THP today), you'll overlay some information
-> stored in the second and third pages; looks like _entire_mapcount
-> and _deferred_list.prev (but we do shift those fields around without
-> regard to what the fb_defio driver is doing).  Even if you've disabled
-> THP today, setting page->mapping to NULL in fb_deferred_io_lastclose()
-> for a shmem page is a really bad idea.
-> 
-> I'd like to avoid fb_defio playing with page->mapping at all.
-> As I understand it, the only reason to set page->mapping is so that
-> page_mkclean() works.  But there are all kinds of assumptions in
-> page_mkclean() (now essentially folio_mkclean()) that we're dealing with
-> file-backed or anonymous memory.  I wonder if we might be better off
-> calling pfn_mkclean_range() for each VMA which maps these allocations?
-> You'd have to keep track of each VMA yourself (I think?)  but it would
-> avoid messing with page->mapping.
-> 
-> Anyway, I don't know enough about DRM.  There might be something
-> unutterably obvious we could do to fix this.
+Hi Kuninori,
 
-It's just really old code that's been barely touched to keep it going.
+kernel test robot noticed the following build warnings:
 
-The issue is that the entire defio stuff is pretty bad layering violation.
-Not sure what the cleanest way to do this really would be if it only
-touches the ptes and nothing else. Not sure what's the right function for
-a bit of pte walking for that.
+[auto build test WARNING on broonie-sound/for-next]
+[also build test WARNING on linus/master v6.8-rc1 next-20240125]
+[cannot apply to robh/for-next drm-misc/drm-misc-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-That would still potentially mess with the mapping by the gpu memory
-allocator in bad ways, but I think at least for all current ones it should
-avoid problems.
+url:    https://github.com/intel-lab-lkp/linux/commits/Kuninori-Morimoto/of-property-add-port-base-loop/20240123-081427
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+patch link:    https://lore.kernel.org/r/874jf4ud77.wl-kuninori.morimoto.gx%40renesas.com
+patch subject: [PATCH 11/13] fbdev: omapfb: use of_graph_get_next_port()
+config: i386-buildonly-randconfig-003-20240127 (https://download.01.org/0day-ci/archive/20240127/202401272336.CCkvpjde-lkp@intel.com/config)
+compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240127/202401272336.CCkvpjde-lkp@intel.com/reproduce)
 
-Definitely agree that messing with struct page in any way is really bad,
-we simply didn't get that far yet.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202401272336.CCkvpjde-lkp@intel.com/
 
-I think the cleanest way would be if we have a fb_mmap only for drm
-drivers in drm_fbdev_generic.c and sunset fb_deferred_io_mmap and use that
-to just replicate the ptes from the kernel's vmap into one that is ok for
-userspace. The fbdev implementation in drm_fbdev_generic.c is the only one
-left in drm that supports fb_defio, so that would catch all of them. To my
-knowledge all the other defio implementations in native fbdev drivers
-aren't problematic since none use shmem.
+All warnings (new ones prefixed by >>):
 
-For I while we pondered with proxying the vma to the driver's drm native
-mmap implementation, but that gets real messy plus there's no benefit
-because fbdev assumes a bit too much that the memory is permanently
-pinned. So we need the pinned kernel vmap anyway.
+   drivers/video/fbdev/omap2/omapfb/dss/dss.c: In function 'dss_init_ports':
+   drivers/video/fbdev/omap2/omapfb/dss/dss.c:925:9: error: implicit declaration of function 'of_graph_get_next_port'; did you mean 'of_get_next_parent'? [-Werror=implicit-function-declaration]
+     port = of_graph_get_next_port(parent, NULL);
+            ^~~~~~~~~~~~~~~~~~~~~~
+            of_get_next_parent
+>> drivers/video/fbdev/omap2/omapfb/dss/dss.c:925:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     port = of_graph_get_next_port(parent, NULL);
+          ^
+   drivers/video/fbdev/omap2/omapfb/dss/dss.c:956:10: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+       (port = of_graph_get_next_port(parent, port)) != NULL);
+             ^
+   drivers/video/fbdev/omap2/omapfb/dss/dss.c: In function 'dss_uninit_ports':
+   drivers/video/fbdev/omap2/omapfb/dss/dss.c:972:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     port = of_graph_get_next_port(parent, NULL);
+          ^
+   drivers/video/fbdev/omap2/omapfb/dss/dss.c:1003:17: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     } while ((port = of_graph_get_next_port(parent, port)) != NULL);
+                    ^
+   cc1: some warnings being treated as errors
 
-Cheers, Sima
+
+vim +925 drivers/video/fbdev/omap2/omapfb/dss/dss.c
+
+   915	
+   916	static int dss_init_ports(struct platform_device *pdev)
+   917	{
+   918		struct device_node *parent = pdev->dev.of_node;
+   919		struct device_node *port;
+   920		int r, ret = 0;
+   921	
+   922		if (parent == NULL)
+   923			return 0;
+   924	
+ > 925		port = of_graph_get_next_port(parent, NULL);
+   926		if (!port)
+   927			return 0;
+   928	
+   929		if (dss.feat->num_ports == 0)
+   930			return 0;
+   931	
+   932		do {
+   933			enum omap_display_type port_type;
+   934			u32 reg;
+   935	
+   936			r = of_property_read_u32(port, "reg", &reg);
+   937			if (r)
+   938				reg = 0;
+   939	
+   940			if (reg >= dss.feat->num_ports)
+   941				continue;
+   942	
+   943			port_type = dss.feat->ports[reg];
+   944	
+   945			switch (port_type) {
+   946			case OMAP_DISPLAY_TYPE_DPI:
+   947				ret = dpi_init_port(pdev, port);
+   948				break;
+   949			case OMAP_DISPLAY_TYPE_SDI:
+   950				ret = sdi_init_port(pdev, port);
+   951				break;
+   952			default:
+   953				break;
+   954			}
+   955		} while (!ret &&
+   956			 (port = of_graph_get_next_port(parent, port)) != NULL);
+   957	
+   958		if (ret)
+   959			dss_uninit_ports(pdev);
+   960	
+   961		return ret;
+   962	}
+   963	
+
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

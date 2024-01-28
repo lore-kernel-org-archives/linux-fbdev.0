@@ -1,103 +1,100 @@
-Received: from gofer.mess.org (gofer.mess.org [88.97.38.141])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 393D425772;
-	Sun, 28 Jan 2024 15:49:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=88.97.38.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D71C3C063
+	for <linux-fbdev@vger.kernel.org>; Sun, 28 Jan 2024 16:43:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706456966; cv=none; b=MbA4G6v7gv8QSmOdElvMYlDi5iizOoVmQwmQUlefK5CGX9hJQ2AeKBBpV8RC+dT8cDa699c71fRSQru6b95Zb3LPvc8ukPORHiuruVgChdhYWlx7gz1shMKvWZ938F14XDQbhvbYpLoohDpgPjCSY0GZnETBZoSvqgZonozJRSc=
+	t=1706460243; cv=none; b=kYOJwPUSRSlLQEhn8pw4CiKWHVkOBCrTtlZtAGMTyIRuAOLs5uOrb3VV7f5kqyKukWcUtQsGzjzs26REp2oGIuz45S3gcpewof0/xn+8QIi+mWbiZy//CbKW9NGD8yJmVK5SrVGOhvk7R3edmrSoHrFcbVoiME9hfw1OKkg3ca0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706456966; c=relaxed/simple;
-	bh=pIUGZH0WA/dnmasx5Fb75KygIBvTRFfwHo3C1qQyatU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jKSTIurqmvR5S2ibaXOLgNH72y99w4xbL+uY2iwS8eFPbFO3Mzyh6bLm/iCg8r8UqloMJ25KCssSuJrb52VFyc0zn1ApozSxADj37TwqIYxg9LXrd5D9GX2l/Yy128g0QowTOnndDufSwGorC+y98gEBF5sSqMwe89sGuBlmjow=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org; spf=pass smtp.mailfrom=mess.org; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=B8ikNft5; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=BVNGuGDP; arc=none smtp.client-ip=88.97.38.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mess.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="B8ikNft5";
-	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="BVNGuGDP"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
-	t=1706456955; bh=pIUGZH0WA/dnmasx5Fb75KygIBvTRFfwHo3C1qQyatU=;
-	h=From:To:Cc:Subject:Date:From;
-	b=B8ikNft5M3ZiBK7NHoTnEBITCVUwtkDt3vhcDOlGKG73fUvC4g6x3TU6T44ygh5UI
-	 gRTvSkr5wZqCV+YFsQNvxJ9vl8RfDZTeLHuefPmyhKaXDcEnnxmS3PcfCU9PhpouMZ
-	 o5whQIGNAhwCzLw0fhFftjg8k+aA/4JXpjKqKPvOOrPqu/kc8/mFM3VJ6cFka8JsCL
-	 QA2dQRjY83Ty4WZNDe6k5R1nbLT/uGJjIt1Flwx8eH6xnuPFLNghFbNaA7pkjzM4QW
-	 cCVl0seEh0CL0giiin4fmbOQU5o1ueKMN2+RRxWK2AJj/rsadpRegN40o+t19qqCMr
-	 6cv2/+nzY+sBQ==
-Received: by gofer.mess.org (Postfix, from userid 501)
-	id 999141009C0; Sun, 28 Jan 2024 15:49:15 +0000 (GMT)
-X-Spam-Level: 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
-	t=1706456953; bh=pIUGZH0WA/dnmasx5Fb75KygIBvTRFfwHo3C1qQyatU=;
-	h=From:To:Cc:Subject:Date:From;
-	b=BVNGuGDPkHcq680/07H+MZm6kSMUHplL3QA/QQ1CydeLArEadowfvbwxBbASXbF0n
-	 baez3+xNJuwljbqm8wU8V4zzh5hww0sWtfqzGOwJJDxcxOJdDHYe0uXx3dWQLTOSb+
-	 5tgaLO5pon+/1mF7hZ4q+c6qFSXEjv5qEVq8sMp/jbzKUsj8Nl2/BZD8j6GAB6Q2mk
-	 FDqCWXWGeJGkJhqdF035VBmEhOJEfIH6nFJyz3aGzhpzkFzZHtdW6srpYnvnsReaYI
-	 ovnTJGJudjBtRV9DhZOBpSSVlfhR9E+KBVQd+mQeF6H1qz3aiBoK8s3LTVMo4/WFgT
-	 AJmVh+swGsFtw==
-Received: from bigcore.mess.org (bigcore.local [IPv6:2a02:8011:d000:212:bc3c:1b4a:a6fa:362f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by gofer.mess.org (Postfix) with ESMTPSA id 6CFC91000B2;
-	Sun, 28 Jan 2024 15:49:13 +0000 (GMT)
-From: Sean Young <sean@mess.org>
-To: Flavio Suligoi <f.suligoi@asem.it>,
-	Lee Jones <lee@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Sean Young <sean@mess.org>,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+	s=arc-20240116; t=1706460243; c=relaxed/simple;
+	bh=EmgOgNfJOoUg/I2634CBEsy1X290BU37QjN2TFLRu2Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sVgqtKS/nhcBl0Cm1exKmyQenkNAsZ/eLqMITgIx34PtFNeWWYvVAKW+EWZPnkv5ThRG6wmDI2PMK4GSQ2BYm1Y3ExLDdGicarL4TkOooDfiPs3rTgUsGWI3Z2RaAABI2jaDSlh4kCpgFzoJlAvoslEGUk1YgDJRxpPxk0I83s4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rU8Fv-0002V2-20; Sun, 28 Jan 2024 17:43:39 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rU8Ft-002z8T-Uv; Sun, 28 Jan 2024 17:43:37 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rU8Ft-00AGqM-2m;
+	Sun, 28 Jan 2024 17:43:37 +0100
+Date: Sun, 28 Jan 2024 17:43:37 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Sean Young <sean@mess.org>
+Cc: Flavio Suligoi <f.suligoi@asem.it>, Lee Jones <lee@kernel.org>, 
+	Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-pwm@vger.kernel.org
-Subject: [PATCH] backlight: mp3309c: Use pwm_apply_might_sleep()
-Date: Sun, 28 Jan 2024 15:49:04 +0000
-Message-ID: <20240128154905.407302-1-sean@mess.org>
-X-Mailer: git-send-email 2.43.0
+Subject: Re: [PATCH] backlight: mp3309c: Use pwm_apply_might_sleep()
+Message-ID: <apuuk7hi5233xi2ujou4ndovlkq5qr5rgbkoij2jsfi7rwxgbi@2nie6c53ru3z>
+References: <20240128154905.407302-1-sean@mess.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="kvi2qh5kgw6q2equ"
+Content-Disposition: inline
+In-Reply-To: <20240128154905.407302-1-sean@mess.org>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-pwm_apply_state() is deprecated since commit c748a6d77c06a ("pwm: Rename
-pwm_apply_state() to pwm_apply_might_sleep()"). This is the final user
-in the tree.
 
-Signed-off-by: Sean Young <sean@mess.org>
----
- drivers/video/backlight/mp3309c.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+--kvi2qh5kgw6q2equ
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/backlight/mp3309c.c b/drivers/video/backlight/mp3309c.c
-index 34d71259fac1d..b0d9aef6942b3 100644
---- a/drivers/video/backlight/mp3309c.c
-+++ b/drivers/video/backlight/mp3309c.c
-@@ -131,7 +131,7 @@ static int mp3309c_bl_update_status(struct backlight_device *bl)
- 					    chip->pdata->levels[brightness],
- 					    chip->pdata->levels[chip->pdata->max_brightness]);
- 		pwmstate.enabled = true;
--		ret = pwm_apply_state(chip->pwmd, &pwmstate);
-+		ret = pwm_apply_might_sleep(chip->pwmd, &pwmstate);
- 		if (ret)
- 			return ret;
- 
-@@ -393,7 +393,7 @@ static int mp3309c_probe(struct i2c_client *client)
- 					    chip->pdata->default_brightness,
- 					    chip->pdata->max_brightness);
- 		pwmstate.enabled = true;
--		ret = pwm_apply_state(chip->pwmd, &pwmstate);
-+		ret = pwm_apply_might_sleep(chip->pwmd, &pwmstate);
- 		if (ret)
- 			return dev_err_probe(chip->dev, ret,
- 					     "error setting pwm device\n");
--- 
-2.43.0
+Hello Sean,
 
+On Sun, Jan 28, 2024 at 03:49:04PM +0000, Sean Young wrote:
+> pwm_apply_state() is deprecated since commit c748a6d77c06a ("pwm: Rename
+> pwm_apply_state() to pwm_apply_might_sleep()"). This is the final user
+> in the tree.
+>=20
+> Signed-off-by: Sean Young <sean@mess.org>
+
+The "problem" here is that the mp3309c driver didn't exist yet in commit
+c748a6d77c06a, so it relies on the pwm_apply_state compatibility stub.
+
+I would mention that in the commit log.
+
+Otherwise the change looks fine.
+
+thanks for catching and addressing this issue
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--kvi2qh5kgw6q2equ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmW2hDMACgkQj4D7WH0S
+/k769AgAuhICKH8tjWxmVW/U6B4fj9zEKtlPa3ebg5wrtKvlXBuwKhif676Epb1q
+OCvuQNg5wsJ5MSngBPzpoGK+AL9Ew4oRzlNl+AUCpJUw/6IlhZXw/Ga0TLCdVuig
+a6kz+rAq4/NDOck8BAhOqBjoo6xM4/4GDQaV3E39lJPQfZrtXWpJ407w6HvXor//
+x9+7x7oIL3bLkBboHzkRFChlRvqsj6HIYLI9RNpBlJiu2MymHIOgN0SyyFILIA4Y
+fv2DNlEZjceu6ubg+JdHd9nUFUDftD+bt979N6q8BXv9oz1nq/qTIpELI/f2UotK
+NogEFu3nSIG56vcJAJZIimQ9qxbYtw==
+=nndy
+-----END PGP SIGNATURE-----
+
+--kvi2qh5kgw6q2equ--

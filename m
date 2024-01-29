@@ -1,71 +1,72 @@
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 097D0537E2
-	for <linux-fbdev@vger.kernel.org>; Mon, 29 Jan 2024 10:41:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ED4C5B5A1
+	for <linux-fbdev@vger.kernel.org>; Mon, 29 Jan 2024 11:04:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706524882; cv=none; b=eu9Hk8J6vXPAmHGMd4H7/W5Y3beowSiEG2EIqhmVuCDKUibfO4c5zTJ7q+Fdx240Sl6h0QfoTS4/LOvqfsSCdEzjPoENbOcT6G9VY/zhStkVhAN6PxtFUDYm7P0YKrrFdXppe4JyDLzRy+OsPrqlc18UpdqanE7fJJGUiFhtydc=
+	t=1706526280; cv=none; b=OgNRoANvWixh5OVYihjlEeqJym4RRUVNLcmI3jkps9ZiU1YZe5JnFjljsAhR5ba8X0TbSvLQ1X6x0QgeWTlJH3S1ItElP5RJhidJHUOIsD6F2xQJsAkhOK5VUlpmwASV0QCKWwXxGwBaSvTrLqNAmWiVetML3RKFoprvk0Q05Uk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706524882; c=relaxed/simple;
-	bh=JZieUS7RXQH4sJhXPiB/EknJAepT/XFdan03H5xFE94=;
+	s=arc-20240116; t=1706526280; c=relaxed/simple;
+	bh=aFnf7+oR6FCrLIfDXFDm0Eq1vVJaIzTXma1qhxHzqLc=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=tsUIDcVdrJhx7DzJnZyHh7zU+pAStCbBvxWSBbeO4jmu8ivYc6nnd2myg89lHvD7rxhBmGne94pImjTONUiBzr+xVC5/oOsFkrw+xSi7/eHPT0idfi3ny2qN6u33r8eQh0lI44sEUXrY9jMPWRGEjRWv7wla68/YCF+ihHzP798=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=F6CT3C81; arc=none smtp.client-ip=170.10.133.124
+	 MIME-Version:Content-Type; b=QKU8FkDQ6uK18pMOt3xd1aSYxpxFxRzFO+7v9ISMpcQdKXeRNBc2E988VVDNWmlTkN2BcvDanBu0d5bKzPhs3wwXc1uDPerI5JkDqcfP36SOWbB4tZX/BzAvzOt44ngyT3T/wp4Ikeqh1w3D4YJ6KLy7xevz3xkQhv3N7NWsPzA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=bmTD+OEc; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="F6CT3C81"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="bmTD+OEc"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1706524879;
+	s=mimecast20190719; t=1706526277;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iuw+sd9oKGlN++0B7Qqn1bE1N0OC+tp2A8+Ru07eNUc=;
-	b=F6CT3C81fkefWw7bCOuYJKVXqSvptFyHkbaqTP8NIRiWwG7vzwoGjvO9L2cR07rlXPvYuW
-	ultZpR37Ri42CsrcWqftRPCA1pvenedUTGVjpYadzN1PlZvjfLs3NusphFaoKWG7QhaL+f
-	GXJl0LSsF+hiv4B2kwfVfcO8AaPxqI0=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=ZUxFR3bcXHTta+1PBg8XyG/gXzeG2AKh0T4pCbNWzhk=;
+	b=bmTD+OEcWUf4OA/4Zu6zuhw3epjnQqs8bQefwIwRVSuyt7FcHSH6JYWT8tVNihyS4020Bi
+	BVbmsFfKi/HvUiWi6Ml2Qoo6/uBD4Awjo8YKm/IhsBBpffNk+69314YNIYG9o7CPX8vR2L
+	xCcJgmMra3CSe5V1B7wlUQEqLjx7dlY=
+Received: from mail-lf1-f70.google.com (mail-lf1-f70.google.com
+ [209.85.167.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-622-WOPPfYAhPna7k7NgsfyffQ-1; Mon, 29 Jan 2024 05:41:18 -0500
-X-MC-Unique: WOPPfYAhPna7k7NgsfyffQ-1
-Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-337d6024098so1333854f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 Jan 2024 02:41:18 -0800 (PST)
+ us-mta-588-5sxkYfUPPBS7Rw9tMCtcFg-1; Mon, 29 Jan 2024 06:04:35 -0500
+X-MC-Unique: 5sxkYfUPPBS7Rw9tMCtcFg-1
+Received: by mail-lf1-f70.google.com with SMTP id 2adb3069b0e04-5102bbe883aso1369783e87.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 Jan 2024 03:04:35 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706524877; x=1707129677;
+        d=1e100.net; s=20230601; t=1706526274; x=1707131074;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iuw+sd9oKGlN++0B7Qqn1bE1N0OC+tp2A8+Ru07eNUc=;
-        b=acUc40+PRfoKbqCRn6gO3zoO+sAJ95a/JCcUPLnpmw+/nNbVOBsFd9YaZnkxGpflH2
-         hmSP4Ncfwvs3yinnN5PGhLIwYBYYRMj3uDtte12oWFSCaMhxZKpSBU0LDLPdEJ2xtOzK
-         4ri7XUL59LdjOoUi/p8x9TtC1uFI1eagGZFGUwD/qwzPRUxHWPRHtfJ98DPdi9wH1NcK
-         VfBoAPdWKTNAQrXCz8uqJSwI0hfwQWWp438sXVHJdoj/FHcencCQ4+ypJCjRlaY2UAJK
-         S8XLsgx9KYUODZVLKtJQaj0JcXGeroToJfmTyI3va1CPO7iDfnj+g/xWNGNKfNtnyWts
-         kmWw==
-X-Gm-Message-State: AOJu0YxoSoPkmXG7Kyg1uol/tCD+ndrI0sJmnEXNXlTbJKEE3QpvR8FF
-	QzUUg1xzz7wzpOl+atp3mKjJB1CjPyQ0aU4DMQICUiizeg6VUiVWYoI0UOq9ugEa7sT0vNQ8tC6
-	5SrmT8rJzHSCZ08y0e0Uxgv7h9s6tAM01yZrF0Wx2vlMAdxAKuMWtlN7/lMzj
-X-Received: by 2002:a5d:4043:0:b0:33a:f51a:f7ba with SMTP id w3-20020a5d4043000000b0033af51af7bamr164609wrp.49.1706524877150;
-        Mon, 29 Jan 2024 02:41:17 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IExzbLj3XPsh+SexBvN/jdpZc68WXbSDGdGg/7k0PlqDJOHKiXCIIn37mrTX2pYX3WvTiYVww==
-X-Received: by 2002:a5d:4043:0:b0:33a:f51a:f7ba with SMTP id w3-20020a5d4043000000b0033af51af7bamr164595wrp.49.1706524876814;
-        Mon, 29 Jan 2024 02:41:16 -0800 (PST)
+        bh=ZUxFR3bcXHTta+1PBg8XyG/gXzeG2AKh0T4pCbNWzhk=;
+        b=jeJ+ozwYX1nuPkG9+ig4zXFduGNLor1b86bRiyMNqkIMeMGBH2n1p0x2IJZV8CHzUL
+         zh3wUDb3JiS0tvl+UzBgUUbJuBgvYhPue5WRTwdk7sYqs/VbhIhqp7Rk6PEjzfJbBOX1
+         tEhv73fiNirvefvgezPNGNakWKpklvBLBVe53myUYe3gEdG/puBpAn4LqpZ9PjAzuDVj
+         Zme4X40I6d4aa6NljfyreRJFQT8msKJ4fbSVkQNKOPC1agUGs4qoHUMVZomWjphNafYR
+         vy2mgA0v6T7JjNjxmz6qvvdX+MOqzOuxkU+nrBJzTWLgQHUejZ793SZSS3DO42E7ERoT
+         liQA==
+X-Gm-Message-State: AOJu0YyYjrixA3U1CA2Ej/1lnQ43j0fqBdOLpugvkZL2FstmplPkuXD2
+	zvCesFSOG4ERyq0KXzJePQsjr2FC+P7caAr6Z4nfKbuGjRRa6/LNmYrjNRXq9OE2kkrBRwkdF9r
+	jdqFkNOMgBuAhHMImi/FhEU0QFwdTk46FhF5CAp2x3m4ncraDw5LPg7Dl0vco
+X-Received: by 2002:ac2:42c1:0:b0:50e:b8d3:143e with SMTP id n1-20020ac242c1000000b0050eb8d3143emr3378871lfl.51.1706526274504;
+        Mon, 29 Jan 2024 03:04:34 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IG+YRm9cnARxFv2Yk7TeaTF10Mp/qci6lPx2SZJuQwn7WAL5ifGgR2MNzRpI9RYU7JyB4YVlA==
+X-Received: by 2002:ac2:42c1:0:b0:50e:b8d3:143e with SMTP id n1-20020ac242c1000000b0050eb8d3143emr3378864lfl.51.1706526274194;
+        Mon, 29 Jan 2024 03:04:34 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id m13-20020adff38d000000b003392cdeb3a2sm7737125wro.103.2024.01.29.02.41.16
+        by smtp.gmail.com with ESMTPSA id bw11-20020a0560001f8b00b00337af95c1d2sm710380wrb.14.2024.01.29.03.04.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jan 2024 02:41:16 -0800 (PST)
+        Mon, 29 Jan 2024 03:04:33 -0800 (PST)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, pjones@redhat.com,
  deller@gmx.de, ardb@kernel.org
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Thomas
  Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 1/8] video: Add helpers for decoding screen_info
-In-Reply-To: <20240117125527.23324-2-tzimmermann@suse.de>
+Subject: Re: [PATCH 2/8] video: Provide screen_info_get_pci_dev() to find
+ screen_info's PCI device
+In-Reply-To: <20240117125527.23324-3-tzimmermann@suse.de>
 References: <20240117125527.23324-1-tzimmermann@suse.de>
- <20240117125527.23324-2-tzimmermann@suse.de>
-Date: Mon, 29 Jan 2024 11:41:15 +0100
-Message-ID: <87wmrsv2us.fsf@minerva.mail-host-address-is-not-set>
+ <20240117125527.23324-3-tzimmermann@suse.de>
+Date: Mon, 29 Jan 2024 12:04:33 +0100
+Message-ID: <87ttmwv1ry.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -76,96 +77,30 @@ Content-Type: text/plain
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-Hello Thomas,
-
-> The plain values as stored in struct screen_info need to be decoded
-> before being used. Add helpers that decode the type of video output
-> and the framebuffer I/O aperture.
->
-> Old or non-x86 systems may not set the type of video directly, but
-> only indicate the presence by storing 0x01 in orig_video_isVGA. The
-> decoding logic in screen_info_video_type() takes this into account.
-
-I always disliked how the orig_video_isVGA variable lost its meaning.
-
-> It then follows similar code in vgacon's vgacon_startup() to detect
-> the video type from the given values.
->
-> A call to screen_info_resources() returns all known resources of the
-> given screen_info. The resources' values have been taken from existing
-> code in vgacon and vga16fb. These drivers can later be converted to
-> use the new interfaces.
+> Add screen_info_get_pci_dev() to find the PCI device of an instance
+> of screen_info. Does nothing on systems without PCI bus.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
 
-Thanks for doing this! It's quite useful to have these helpers, since as
-you mention the screen_info data decoding is complex and the variables
-used to store the video type and modes are confusing / misleading.
-
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-
-I just have a few comments below:
-
-> +static inline bool __screen_info_has_ega_gfx(unsigned int mode)
-> +{
-> +	switch (mode) {
-> +	case 0x0d:	/* 320x200-4 */
-> +	case 0x0e:	/* 640x200-4 */
-> +	case 0x0f:	/* 640x350-1 */
-> +	case 0x10:	/* 640x350-4 */
-
-I wonder if makes sense to define some constant macros for these modes? I
-know that check_mode_supported() in drivers/video/fbdev/vga16fb.c also use
-magic numbers but I believe that it could ease readability.
-
-> +		return true;
-> +	default:
-> +		return false;
-> +	}
-> +}
-> +
-> +static inline bool __screen_info_has_vga_gfx(unsigned int mode)
-> +{
-> +	switch (mode) {
-> +	case 0x10:	/* 640x480-1 */
-> +	case 0x12:	/* 640x480-4 */
-> +	case 0x13:	/* 320-200-8 */
-> +	case 0x6a:	/* 800x600-4 (VESA) */
-> +		return true;
-
-And same for these.
-
-It can be a follow-up patch though.
-
 [...]
 
-> +int screen_info_resources(const struct screen_info *si, struct resource *r, size_t num)
+> +struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
 > +{
-> +	struct resource *pos = r;
-> +	unsigned int type = screen_info_video_type(si);
-> +	u64 base, size;
+> +	struct resource res[SCREEN_INFO_MAX_RESOURCES];
+> +	size_t i, numres;
+> +	int ret;
 > +
-> +	switch (type) {
-> +	case VIDEO_TYPE_MDA:
-> +		if (num > 0)
-> +			resource_init_io_named(pos++, 0x3b0, 12, "mda");
+> +	ret = screen_info_resources(si, res, ARRAY_SIZE(res));
+> +	if (ret < 0)
+> +		return ERR_PTR(ret);
+> +	numres = ret;
+> +
 
-I see that drivers/video/fbdev/i740_reg.h has a #define MDA_BASE
-0x3B0. Maybe move to a header in include/video along with the other
-constants mentioned above ?
+I would just drop the ret variable and assign the screen_info_resources()
+return value to numres. I think that makes the code easier to follow.
 
-> +		if (num > 1)
-> +			resource_init_io_named(pos++, 0x3bf, 0x01, "mda");
-> +		if (num > 2)
-> +			resource_init_mem_named(pos++, 0xb0000, 0x2000, "mda");
-
-Same for these start addresses. I see that are also used by mdacon_startup()
-in drivers/video/console/mdacon.c, so some constants defined somewhere might
-be useful for that console driver too.
-
-The comment also applies to all the other start addresses, since I see
-that those are used by other drivers (i810, vgacon, etc).
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
 -- 
 Best regards,

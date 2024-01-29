@@ -1,39 +1,71 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EA8C627F6;
-	Mon, 29 Jan 2024 13:02:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706533344; cv=none; b=uzU/uIErzNDSb9VVFshPKX7IHhg2sCe03jwZ3eltiht/TTViML4Wm8vHT37FDV9i+AHhetnmYL13kIqTvFYOfYk7OgXL8dkExqV3/WkbWU6svL4BndkrLgHD/aNdIVqyzmmXaSqOVYK+6AhrooLVqzXladGM58N6pbLN1NO8zUk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706533344; c=relaxed/simple;
-	bh=oYJ9n0kmGBMU2bNIDl3amQ7PKIOiEuPvpUteUrfq+VI=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98797651AF;
+	Mon, 29 Jan 2024 13:37:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1706535466; cv=pass; b=NdY1OUmQygawjckQ6aMZmToYpFa4e4YWxz8muFCWmbrXwZ2VzwDS3yqg7vKb2hWItu5gCfvOE2KZHKgFosgCFqoCF0rfz5Krs/WhNLvtpqZmDBuhsx1u1R4vuluAx+v6UIM7ZV9pD2ijlMFT3mSmDU5cdXJ2GsUivfFThMGIOa4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1706535466; c=relaxed/simple;
+	bh=USoguoAsVtRzvLdYpwq9PSQwEzZknH4DB77gCTTu4yA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cNf0P1ejzZXVgY+Czle3gPL8aBi4wgus4rLRo/i0cNrnYF1r8EVa0SFjxkx3u/nOSpb8ZjO/EeQB8/+PfnlLt1kePFTn6FXYcPG8X1mHHhKxEAVpKeLVo7HnNwyVOBRk6ooPWaBYOmUhZofoddCJ5c5CLaW148wGv45j0ex0qEE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=djMzyfRg; arc=none smtp.client-ip=213.167.242.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=pWk+OoRSbO2xMZJFTWC9U9j+jv/AOvo7726QtM41exIX1gh5Q3Z480SmiLTpxL+sL7TrxeP/S3YCPWsw7gLqbvXxhC0oxoX+b1ZBGizU/Y/WJ8V/ByC04UTxiz5Eeax3uOAkMplqPBvWAfWIR0SlP/BAoLGP29lvIqm+dU84KHQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=HWwgkOWL; arc=pass smtp.client-ip=185.185.170.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="djMzyfRg"
-Received: from pendragon.ideasonboard.com (117.145-247-81.adsl-dyn.isp.belgacom.be [81.247.145.117])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 7D80915B5;
-	Mon, 29 Jan 2024 14:01:01 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1706533261;
-	bh=oYJ9n0kmGBMU2bNIDl3amQ7PKIOiEuPvpUteUrfq+VI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=djMzyfRgXF1NPy65MR+61w/tngalKk2yKnI+GwLaXMGffyykJfxg+BE9W8Ny+SzKp
-	 3edG11TvKTFuKerv6OEweKNRHe4leVvnw1jLWk7XEqB5zloijNMsHBUZ/GvRbEzqKG
-	 ZOkF9RPQ1nYYuooHeJRC/2msKN4yH4MV7pyzzASQ=
-Date: Mon, 29 Jan 2024 15:02:19 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="HWwgkOWL"
+Received: from hillosipuli.retiisi.eu (2a00-1190-d1dd-0-c641-1eff-feae-163c.v6.cust.suomicom.net [IPv6:2a00:1190:d1dd:0:c641:1eff:feae:163c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: sailus)
+	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4TNq0D5PsFz49PsS;
+	Mon, 29 Jan 2024 15:29:32 +0200 (EET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+	t=1706534974;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Ti5qDi4jNpEc7HezPyQo40H85potwB0yNijMtXKik8o=;
+	b=HWwgkOWLzH5ghmaXKwfPxaY00WCBofcmOmeghi2AFgVt/hyO0lxbZoR7KNn2YqsjDDUy9T
+	wbXioyPTV6I1b0D2uAidHUU6mFcaoQvYC1VYrm2QGg61s8sSwmsXCpQ33nek7u+OAzJiL1
+	KohbpioO9kSsyFmmCXj7avOPd3T2DEb4CP8VgEobVn5vqIwJDBPrqA/b63ryCNVgbSY6HB
+	uutj+Ia6DCwugd+STbNMcgNqsj73a+jNabtpQLWsmZAcciqdKKVrNLoKw+IIT/z14mTj8c
+	sv5VTBBAx4scTr+TTbf9mV2l8LgP8imDKphDmHKw/a5sIKKeN2jV13f3Lh9/lg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+	s=lahtoruutu; t=1706534974;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Ti5qDi4jNpEc7HezPyQo40H85potwB0yNijMtXKik8o=;
+	b=nIXCWyMeKTw4vP1xJ/+s4m+uumY8VJjfXn0U0iNRnY3zJ3M73CFkNL1LF6Urfs0QgTqPMo
+	8kCQdKyxDdA5LGaj21SL8MXUvVpHotYd2+BztEFUip9mQXp/Pq54v9ihHIgvZm4UUTBO4m
+	geDXx40Y8UuerWe+JV4Q077f0rZJGBGCFOs63pwqTARUF/ootmlkTpWFq96gT85geRskBc
+	XaGvTJ3s7Bb2djwDby9WuKDRBEPhfBsIkSTwAHGkuuziOUSUvqpe0srgE/94S8oO3OSGop
+	ZNLquxupCinWOdePNujKL/NuccD04MLs1GJzAIw316XmPOTFtGq27Ukdvn4POg==
+ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1706534974; a=rsa-sha256;
+	cv=none;
+	b=qt1DALoLuXyOBmzEPdZI2WBROdMWb7hdl88hVZqDDCu06N5RbUPh/ncIuKZM01ev98Jh0o
+	Dw7WoUiDfeoX9R6G+CI0BzNuSBsW23Q+IyScAEDnvhSge2mEHAIsRguf6Umo7Oy5UOwptg
+	tu5aj+IWzbzucZborT/3/B0u2CK4srZAkhsuaYDq24Y0u0KZRcD6z4kJ372UxBGg5WwhK2
+	3urSaaP7mC/a5NpyS8FMQriAkgsUmdwZ8nX9Eu58QY/kkU9V6IUgwrectDtOpi/jx5cbMQ
+	cs6eQGPH+F6TIXofczRppdvM7Z3Jynbi9IN7ntCZ1aagFC2GOl1AvbRvgtsJNA==
+ARC-Authentication-Results: i=1;
+	ORIGINATING;
+	auth=pass smtp.auth=sailus smtp.mailfrom=sakari.ailus@iki.fi
+Received: from valkosipuli.retiisi.eu (valkosipuli.localdomain [192.168.4.2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by hillosipuli.retiisi.eu (Postfix) with ESMTPS id 1EBAF634C93;
+	Mon, 29 Jan 2024 15:29:32 +0200 (EET)
+Date: Mon, 29 Jan 2024 13:29:32 +0000
+From: Sakari Ailus <sakari.ailus@iki.fi>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	Uwe =?utf-8?B?S2xlaW5lLUvDg8K2bmln?= <u.kleine-koenig@pengutronix.de>,
+	=?iso-8859-1?Q?=22Uwe_Kleine-K=C3=B6nig=22?= <u.kleine-koenig@pengutronix.de>,
 	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
 	Frank Rowand <frowand.list@gmail.com>, Helge Deller <deller@gmx.de>,
 	Jaroslav Kysela <perex@perex.cz>,
@@ -46,163 +78,70 @@ Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
 	Rob Herring <robh+dt@kernel.org>,
 	Saravana Kannan <saravanak@google.com>,
 	Takashi Iwai <tiwai@suse.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH v2 03/13] of: property: add
- of_graph_get_next_endpoint_raw()
-Message-ID: <20240129130219.GA20460@pendragon.ideasonboard.com>
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+	alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 00/13] of: property: add port base loop
+Message-ID: <ZbeoPBvGJlaJco_J@valkosipuli.retiisi.eu>
 References: <87fryhklhb.wl-kuninori.morimoto.gx@renesas.com>
- <87bk95klgc.wl-kuninori.morimoto.gx@renesas.com>
- <afea123c-12b0-4bcb-8f9e-6a15b4e8c915@ideasonboard.com>
+ <20240129122736.GC8131@pendragon.ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <afea123c-12b0-4bcb-8f9e-6a15b4e8c915@ideasonboard.com>
+In-Reply-To: <20240129122736.GC8131@pendragon.ideasonboard.com>
 
-On Mon, Jan 29, 2024 at 02:29:22PM +0200, Tomi Valkeinen wrote:
-> On 29/01/2024 02:54, Kuninori Morimoto wrote:
-> > We already have of_graph_get_next_endpoint(), but it is not intuitive
-> > to use.
-> > 
-> > (X)	node {
-> > (Y)		ports {
-> > 			port@0 { endpoint { remote-endpoint = ...; };};
-> > (A1)			port@1 { endpoint { remote-endpoint = ...; };
-> > (A2)				 endpoint { remote-endpoint = ...; };};
-> > (B)			port@2 { endpoint { remote-endpoint = ...; };};
-> > 		};
-> > 	};
-> > 
-> > For example, if I want to handle port@1's 2 endpoints (= A1, A2),
-> > I want to use like below
-> > 
-> > 	A1 = of_graph_get_next_endpoint(port1, NULL);
-> > 	A2 = of_graph_get_next_endpoint(port1, A1);
-> > 
-> > But 1st one will be error, because of_graph_get_next_endpoint() requested
-> > "parent" means "node" (X) or "ports" (Y), not "port".
-> > Below are OK
-> > 
-> > 	of_graph_get_next_endpoint(node,  NULL); // node/ports/port@0/endpoint
-> > 	of_graph_get_next_endpoint(ports, NULL); // node/ports/port@0/endpoint
-> > 
-> > In other words, we can't handle A1/A2 directly via
-> > of_graph_get_next_endpoint() so far.
-> > 
-> > There is another non intuitive behavior on of_graph_get_next_endpoint().
-> > In case of if I could get A1 pointer for some way, and if I want to
-> > handle port@1 things, I would like use it like below
-> > 
-> > 	/*
-> > 	 * "endpoint" is now A1, and handle port1 things here,
-> > 	 * but we don't know how many endpoints port1 has.
-> > 	 *
-> > 	 * Because "endpoint" is non NULL, we can use port1
-> > 	 * as of_graph_get_next_endpoint(port1, xxx)
-> > 	 */
-> > 	do {
-> > 		/* do something for port1 specific things here */
-> > 	} while (endpoint = of_graph_get_next_endpoint(port1, endpoint))
-> > 
-> > But it also not worked as I expected.
-> > I expect it will be A1 -> A2 -> NULL,
-> > but      it will be A1 -> A2 -> B,    because of_graph_get_next_endpoint()
-> > will fetch endpoint beyond the port.
-> > 
-> > It is not useful on generic driver like Generic Sound Card.
-> > It uses of_get_next_child() instead for now, but it is not intuitive,
-> > and not check node name (= "endpoint").
-> > 
-> > To handle endpoint more intuitive, create of_graph_get_next_endpoint_raw()
-> > 
-> > 	of_graph_get_next_endpoint_raw(port1, NULL); // A1
-> > 	of_graph_get_next_endpoint_raw(port1, A1);   // A2
-> > 	of_graph_get_next_endpoint_raw(port1, A2);   // NULL
-> > 
-> > Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> > ---
-> >   drivers/of/property.c    | 26 +++++++++++++++++++++++++-
-> >   include/linux/of_graph.h |  2 ++
-> >   2 files changed, 27 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/of/property.c b/drivers/of/property.c
-> > index 14ffd199c9b1..37dbb1b0e742 100644
-> > --- a/drivers/of/property.c
-> > +++ b/drivers/of/property.c
-> > @@ -667,6 +667,30 @@ struct device_node *of_graph_get_next_port(const struct device_node *parent,
-> >   }
-> >   EXPORT_SYMBOL(of_graph_get_next_port);
-> >   
-> > +/**
-> > + * of_graph_get_next_endpoint_raw() - get next endpoint node
+Hi Laurent, Morimoto-san,
+
+On Mon, Jan 29, 2024 at 02:27:36PM +0200, Laurent Pinchart wrote:
+> Hello Morimoto-san,
 > 
-> How about "of_graph_get_next_port_endpoint()"?
+> (CC'ing Sakari Ailus)
 
-We may want to also rename the existing of_graph_get_next_endpoint()
-function to of_graph_next_dev_endpoint() then. It would be a tree-wide
-patch, which is always annoying to get reviewed and merged, so if Rob
-would prefer avoiding the rename, I'm fine with that.
+Thanks for cc'ing me.
 
-> > + * @port: pointer to the target port node
-> > + * @endpoint: current endpoint node, or NULL to get first
-> > + *
-> > + * Return: An 'endpoint' node pointer with refcount incremented. Refcount
-> > + * of the passed @prev node is decremented.
-> > + */
 > 
-> It might be good to highlight here the difference to the 
-> of_graph_get_next_endpoint().
+> On Mon, Jan 29, 2024 at 12:54:24AM +0000, Kuninori Morimoto wrote:
+> > 
+> > Hi Rob
+> > 
+> > This is v2 of port base loop patch-set
+> > 
+> > We have endpoint base functions
+> > 	- of_graph_get_next_endpoint()
+> > 	- of_graph_get_endpoint_count()
+> > 	- for_each_endpoint_of_node()
+> > 
+> > But to handling "port" base things, it is not useful. We want to have
+> > "port" base functions, too. This patch-set adds it.
+> > 
+> > Because current existing drivers couldn't use "port" base functions,
+> > it were implemented in a different way. This patch-set doesn't try
+> > to full-replace to avoid unknown bug, try easy / quick replace only
+> > for now, but easy to know how "port" base functions are needed.
+> > 
+> > Because I can't test the driver which I can't use, non-ASoC drivers
+> > needs Tested-by, Acked-by.
+> 
+> The strategy sounds good to me. However, I'm wondering if you shouldn't
+> take one more step in the core, and implement these as fwnode
+> operations. Or is there a reason why OF is special, and iterating over
+> ports would be useful for drivers on OF systems but not on other types
+> of systems ?
 
-Yes, and the documentation of of_graph_get_next_endpoint() shoul also be
-improved.
+I'd prefer that, too.
 
-> > +struct device_node *of_graph_get_next_endpoint_raw(const struct device_node *port,
-> > +						   struct device_node *endpoint)
-> > +{
-> > +	if (!port)
-> > +		return NULL;
-> > +
-> > +	do {
-> > +		endpoint = of_get_next_child(port, endpoint);
-> > +		if (!endpoint)
-> > +			break;
-> > +	} while (!of_node_name_eq(endpoint, "endpoint"));
-> > +
-> > +	return endpoint;
-> > +}
-> > +EXPORT_SYMBOL(of_graph_get_next_endpoint_raw);
-> > +
-> >   /**
-> >    * of_graph_get_next_endpoint() - get next endpoint node
-> >    * @parent: pointer to the parent device node
-> > @@ -708,7 +732,7 @@ struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
-> >   		 * getting the next child. If the previous endpoint is NULL this
-> >   		 * will return the first child.
-> >   		 */
-> > -		endpoint = of_get_next_child(port, prev);
-> > +		endpoint = of_graph_get_next_endpoint_raw(port, prev);
-> >   		if (endpoint) {
-> >   			of_node_put(port);
-> >   			return endpoint;
-> > diff --git a/include/linux/of_graph.h b/include/linux/of_graph.h
-> > index fff598640e93..427905a6e8c3 100644
-> > --- a/include/linux/of_graph.h
-> > +++ b/include/linux/of_graph.h
-> > @@ -57,6 +57,8 @@ int of_graph_get_port_count(const struct device_node *np);
-> >   struct device_node *of_graph_get_port_by_id(struct device_node *node, u32 id);
-> >   struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
-> >   					struct device_node *previous);
-> > +struct device_node *of_graph_get_next_endpoint_raw(const struct device_node *port,
-> > +						   struct device_node *prev);
-> >   struct device_node *of_graph_get_next_port(const struct device_node *parent,
-> >   					   struct device_node *previous);
-> >   struct device_node *of_graph_get_endpoint_by_regs(
+Probably we could use the existing callbacks for endpoint enumeration, for
+port enumeration, too, as I don't think this is performance critical in any
+way.
 
 -- 
-Regards,
+Kind regards,
 
-Laurent Pinchart
+Sakari Ailus

@@ -1,265 +1,189 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F8516BB23
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Jan 2024 13:12:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDFD560ED3;
+	Tue, 30 Jan 2024 13:36:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.55.52.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706620358; cv=none; b=mexO7Kp8nnqCKM40si/Abk5vrsNtfEpzmAuQyEFzLGOKXrEibXKiaoe0oZrzo3uaXiAnhn/X3GUYwH1PvPUiwfnVrl8x0sJ6PA5t6JtVjYWUg/Ge5P4JIuJS2ryqhIlJprprpBJ5fP83IHyHeJMalKtTsfgoooXV5gXbyW1QGy4=
+	t=1706621772; cv=none; b=ZcJlLi62SZUnCfW7+x2KVgW3i+BW97OsVwMvl8fig3kuEKiTiLorT9e+Wtc3CwhaEQ/463/Y8xAjWlz31Oa+rdPKnkkteOgKAtnKg2Il8yj0WtpDZC8WKPb8OTip9yAY5kZ+Hkzhcd8tlsQXS+fBVLPbG5HAubiAPHR0w/coOOY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706620358; c=relaxed/simple;
-	bh=dwtrqaNA2ugFWKDjuZkWQCUSFdZ9mFQikzhQge4k414=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ihJJdsqYSvQRutRntY2e1fH7w9tHgJZJnQtvOQNJPA5msebkLe9WGo+q+L1vl3Q7/nKfU0nyIUL4iHpGBrLKZ7BXfifScuZfLTB2Ap2cKXRQVUL3h/YVRVbQOFr9KJqfrDjOUbK/sz5Eeh3uxlYR15lIx5YqUsMCXN12e1L60hM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=W1xhONRI; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tqxFMMjF; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ynveuwX/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hH0iYIFR; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1706621772; c=relaxed/simple;
+	bh=8oAMdxYBFetttydjmWPCSo5s+7Jc7Mw7JFAbAL32jwk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dbE8cBlezD4rLphAroVcxaxcmWvSEig1aswBv3fvq5HYUYFP+M2U35Xns3pIKnChVOmQ6R+YGjBN0K/UlbpFiE9epZU64ZstmfRQ7gxnMH52sgNeObcAm89H+tEPffmBPi5uOysCILvTKv+8Nc7nTwEynt927ioCT4ooymETwO0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=A6KwfjwQ; arc=none smtp.client-ip=192.55.52.115
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="W1xhONRI";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tqxFMMjF";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ynveuwX/";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hH0iYIFR"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id E945E1F867;
-	Tue, 30 Jan 2024 13:12:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1706620353; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=dwtrqaNA2ugFWKDjuZkWQCUSFdZ9mFQikzhQge4k414=;
-	b=W1xhONRIYMjBGaRDHVArBeypouU+OmPHXuRo+TfKZjBQnX8VZ8GU+hAdfCtwxDoJYzbwVk
-	f8ruX+Y4jl+IPwfsuKvEoGOhhshk/pV5ehZqI3eblIaMxn3Lra2IZklr5ycEMH76dPXXmX
-	dBZwlR74+8FRSbP5LEl5FWM1x0wc45Q=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1706620353;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=dwtrqaNA2ugFWKDjuZkWQCUSFdZ9mFQikzhQge4k414=;
-	b=tqxFMMjFcu/3DMu+L2b0ekHZ8Q3RB1nQVY0SEDNuqObtJhHMq+9273h45HfXFnBedhqwt7
-	p/J0zqaKj/+tPlDw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1706620352; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=dwtrqaNA2ugFWKDjuZkWQCUSFdZ9mFQikzhQge4k414=;
-	b=ynveuwX/NGeEt3y9TJdqgY/Gh71HxkchythF2OsIQptGLu7Ig7OkGgX1HLCuNZdEbZH7O6
-	0sQ+mokBbk4li/C+RgAinj69OcPQQNwrMmYiLXRQNRKGeeIzxmy9cONegmaU3pAvguvXMq
-	TZv4Rj7fKT2vcnQ/d6pz6UHK05Jdmd8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1706620352;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=dwtrqaNA2ugFWKDjuZkWQCUSFdZ9mFQikzhQge4k414=;
-	b=hH0iYIFRTzIhjO9o0H6NleMrbxiDEmoX1bLEpfxT4swI/7dvLnDykN/Q0xU9y99NjBqyEw
-	D/zqWxnQToPzxMAw==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id BA03313212;
-	Tue, 30 Jan 2024 13:12:32 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id s1zeK8D1uGVtJwAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Tue, 30 Jan 2024 13:12:32 +0000
-Message-ID: <24f87814-b62e-41b0-b02c-34a645d73881@suse.de>
-Date: Tue, 30 Jan 2024 14:12:31 +0100
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="A6KwfjwQ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1706621770; x=1738157770;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=8oAMdxYBFetttydjmWPCSo5s+7Jc7Mw7JFAbAL32jwk=;
+  b=A6KwfjwQlUre8Ed23KKNKSGAZJ0ZQLEJSpIeHNrZb53CyVBqllKolHYu
+   0aXnQXIHowjbHiDeuZYNrFoEetKJjPhSTXEKl094Sxh41fsOHa7jcnkRj
+   Hr4aR8t2HlHNvuNsnihXJ/lSzF3Wrltrbkkr/Dbhx+g9l+zoBkGKnlYJZ
+   h23A6s6gcxKK99e2TcCAH0KgnP+xj8/7RKWn/q6fwfv2M2mCcQAowlzB1
+   J+hiQEZrXm2L301/9jBuQLXnStlUxTyuI24ApVf5pk0Jm9zNju3vZvnMO
+   rAgmBiLPVLlHxzJ45oEaPJ+HVRYvLOMx+Dx+lZ1gn47Ve+UJNdX2tdzC8
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10968"; a="402907061"
+X-IronPort-AV: E=Sophos;i="6.05,707,1701158400"; 
+   d="scan'208";a="402907061"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jan 2024 05:36:08 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.05,707,1701158400"; 
+   d="scan'208";a="3705399"
+Received: from lkp-server02.sh.intel.com (HELO 59f4f4cd5935) ([10.239.97.151])
+  by orviesa003.jf.intel.com with ESMTP; 30 Jan 2024 05:36:03 -0800
+Received: from kbuild by 59f4f4cd5935 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1rUoHN-0000L2-2t;
+	Tue, 30 Jan 2024 13:35:58 +0000
+Date: Tue, 30 Jan 2024 21:35:46 +0800
+From: kernel test robot <lkp@intel.com>
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+	Frank Rowand <frowand.list@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>, Michal Simek <monstr@monstr.eu>,
+	Rob Herring <robh+dt@kernel.org>,
+	Saravana Kannan <saravanak@google.com>,
+	Takashi Iwai <tiwai@suse.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Cc: oe-kbuild-all@lists.linux.dev, linux-media@vger.kernel.org,
+	alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 05/13] media: xilinx-tpg: use
+ of_graph_get_next_endpoint_raw()
+Message-ID: <202401302148.K0ZR110q-lkp@intel.com>
+References: <878r49klg1.wl-kuninori.morimoto.gx@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/8] video: Add helpers for decoding screen_info
-Content-Language: en-US
-To: Javier Martinez Canillas <javierm@redhat.com>, pjones@redhat.com,
- deller@gmx.de, ardb@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20240117125527.23324-1-tzimmermann@suse.de>
- <20240117125527.23324-2-tzimmermann@suse.de>
- <87wmrsv2us.fsf@minerva.mail-host-address-is-not-set>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <87wmrsv2us.fsf@minerva.mail-host-address-is-not-set>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------deFCP2xCzgCMe5KeQmBu1kdd"
-Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spam-Level: 
-X-Spam-Score: -5.29
-X-Spamd-Result: default: False [-5.29 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
-	 HAS_ATTACHMENT(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%];
-	 MIME_BASE64_TEXT_BOGUS(1.00)[];
-	 RCPT_COUNT_FIVE(0.00)[6];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 MIME_BASE64_TEXT(0.10)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
-	 SIGNED_PGP(-2.00)[];
-	 FREEMAIL_TO(0.00)[redhat.com,gmx.de,kernel.org];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
-	 RCVD_TLS_ALL(0.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[]
-X-Spam-Flag: NO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <878r49klg1.wl-kuninori.morimoto.gx@renesas.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------deFCP2xCzgCMe5KeQmBu1kdd
-Content-Type: multipart/mixed; boundary="------------6UUqLNHjaLavhP7NXYE5fgcH";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>, pjones@redhat.com,
- deller@gmx.de, ardb@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <24f87814-b62e-41b0-b02c-34a645d73881@suse.de>
-Subject: Re: [PATCH 1/8] video: Add helpers for decoding screen_info
-References: <20240117125527.23324-1-tzimmermann@suse.de>
- <20240117125527.23324-2-tzimmermann@suse.de>
- <87wmrsv2us.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87wmrsv2us.fsf@minerva.mail-host-address-is-not-set>
+Hi Kuninori,
 
---------------6UUqLNHjaLavhP7NXYE5fgcH
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+kernel test robot noticed the following build errors:
 
-SGkNCg0KQW0gMjkuMDEuMjQgdW0gMTE6NDEgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cml0
-ZXM6DQo+IA0KPiBIZWxsbyBUaG9tYXMsDQo+IA0KPj4gVGhlIHBsYWluIHZhbHVlcyBhcyBz
-dG9yZWQgaW4gc3RydWN0IHNjcmVlbl9pbmZvIG5lZWQgdG8gYmUgZGVjb2RlZA0KPj4gYmVm
-b3JlIGJlaW5nIHVzZWQuIEFkZCBoZWxwZXJzIHRoYXQgZGVjb2RlIHRoZSB0eXBlIG9mIHZp
-ZGVvIG91dHB1dA0KPj4gYW5kIHRoZSBmcmFtZWJ1ZmZlciBJL08gYXBlcnR1cmUuDQo+Pg0K
-Pj4gT2xkIG9yIG5vbi14ODYgc3lzdGVtcyBtYXkgbm90IHNldCB0aGUgdHlwZSBvZiB2aWRl
-byBkaXJlY3RseSwgYnV0DQo+PiBvbmx5IGluZGljYXRlIHRoZSBwcmVzZW5jZSBieSBzdG9y
-aW5nIDB4MDEgaW4gb3JpZ192aWRlb19pc1ZHQS4gVGhlDQo+PiBkZWNvZGluZyBsb2dpYyBp
-biBzY3JlZW5faW5mb192aWRlb190eXBlKCkgdGFrZXMgdGhpcyBpbnRvIGFjY291bnQuDQo+
-IA0KPiBJIGFsd2F5cyBkaXNsaWtlZCBob3cgdGhlIG9yaWdfdmlkZW9faXNWR0EgdmFyaWFi
-bGUgbG9zdCBpdHMgbWVhbmluZy4NCj4gDQo+PiBJdCB0aGVuIGZvbGxvd3Mgc2ltaWxhciBj
-b2RlIGluIHZnYWNvbidzIHZnYWNvbl9zdGFydHVwKCkgdG8gZGV0ZWN0DQo+PiB0aGUgdmlk
-ZW8gdHlwZSBmcm9tIHRoZSBnaXZlbiB2YWx1ZXMuDQo+Pg0KPj4gQSBjYWxsIHRvIHNjcmVl
-bl9pbmZvX3Jlc291cmNlcygpIHJldHVybnMgYWxsIGtub3duIHJlc291cmNlcyBvZiB0aGUN
-Cj4+IGdpdmVuIHNjcmVlbl9pbmZvLiBUaGUgcmVzb3VyY2VzJyB2YWx1ZXMgaGF2ZSBiZWVu
-IHRha2VuIGZyb20gZXhpc3RpbmcNCj4+IGNvZGUgaW4gdmdhY29uIGFuZCB2Z2ExNmZiLiBU
-aGVzZSBkcml2ZXJzIGNhbiBsYXRlciBiZSBjb252ZXJ0ZWQgdG8NCj4+IHVzZSB0aGUgbmV3
-IGludGVyZmFjZXMuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4g
-PHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0NCj4gDQo+IFRoYW5rcyBmb3IgZG9pbmcg
-dGhpcyEgSXQncyBxdWl0ZSB1c2VmdWwgdG8gaGF2ZSB0aGVzZSBoZWxwZXJzLCBzaW5jZSBh
-cw0KPiB5b3UgbWVudGlvbiB0aGUgc2NyZWVuX2luZm8gZGF0YSBkZWNvZGluZyBpcyBjb21w
-bGV4IGFuZCB0aGUgdmFyaWFibGVzDQo+IHVzZWQgdG8gc3RvcmUgdGhlIHZpZGVvIHR5cGUg
-YW5kIG1vZGVzIGFyZSBjb25mdXNpbmcgLyBtaXNsZWFkaW5nLg0KPiANCj4gUmV2aWV3ZWQt
-Ynk6IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVybUByZWRoYXQuY29tPg0KPiAN
-Cj4gSSBqdXN0IGhhdmUgYSBmZXcgY29tbWVudHMgYmVsb3c6DQo+IA0KPj4gK3N0YXRpYyBp
-bmxpbmUgYm9vbCBfX3NjcmVlbl9pbmZvX2hhc19lZ2FfZ2Z4KHVuc2lnbmVkIGludCBtb2Rl
-KQ0KPj4gK3sNCj4+ICsJc3dpdGNoIChtb2RlKSB7DQo+PiArCWNhc2UgMHgwZDoJLyogMzIw
-eDIwMC00ICovDQo+PiArCWNhc2UgMHgwZToJLyogNjQweDIwMC00ICovDQo+PiArCWNhc2Ug
-MHgwZjoJLyogNjQweDM1MC0xICovDQo+PiArCWNhc2UgMHgxMDoJLyogNjQweDM1MC00ICov
-DQo+IA0KPiBJIHdvbmRlciBpZiBtYWtlcyBzZW5zZSB0byBkZWZpbmUgc29tZSBjb25zdGFu
-dCBtYWNyb3MgZm9yIHRoZXNlIG1vZGVzPyBJDQo+IGtub3cgdGhhdCBjaGVja19tb2RlX3N1
-cHBvcnRlZCgpIGluIGRyaXZlcnMvdmlkZW8vZmJkZXYvdmdhMTZmYi5jIGFsc28gdXNlDQo+
-IG1hZ2ljIG51bWJlcnMgYnV0IEkgYmVsaWV2ZSB0aGF0IGl0IGNvdWxkIGVhc2UgcmVhZGFi
-aWxpdHkuDQoNClRoZXkgYXJlIGtub3duIGJ5IHRoZWlyIG51bWJlcnMsIGJ1dCBoYXZlIG5v
-IG5hbWVzLiBUaGVyZSdzIGFsc28gbm8gDQpjb21tb24gcHJhY3RpY2Ugb3IgcHJlY2VkZW5j
-ZSBJJ20gYXdhcmUgb2YuDQoNCk9UT0gsIGRyaXZlcnMgbGlrZSB2Z2ExNmZiIHNob3VsZCBu
-byBsb25nZXIgaGF2ZSB0byB0ZXN0IG1hZ2ljIG51bWJlcnMgDQphdCBhbGwuIFRoZXkgYmlu
-ZCB0byBhIGNlcnRhaW4gdHlwZSBvZiBkZXZpY2UsIHN1Y2ggYXMgZWdhLXR4dCBhbmQgDQp2
-Z2EtZ2Z4LCB3aGljaCBpbXBsaWVzIGEgY29ycmVjdGx5IHNldCBtb2RlLg0KDQo+IA0KPj4g
-KwkJcmV0dXJuIHRydWU7DQo+PiArCWRlZmF1bHQ6DQo+PiArCQlyZXR1cm4gZmFsc2U7DQo+
-PiArCX0NCj4+ICt9DQo+PiArDQo+PiArc3RhdGljIGlubGluZSBib29sIF9fc2NyZWVuX2lu
-Zm9faGFzX3ZnYV9nZngodW5zaWduZWQgaW50IG1vZGUpDQo+PiArew0KPj4gKwlzd2l0Y2gg
-KG1vZGUpIHsNCj4+ICsJY2FzZSAweDEwOgkvKiA2NDB4NDgwLTEgKi8NCj4+ICsJY2FzZSAw
-eDEyOgkvKiA2NDB4NDgwLTQgKi8NCj4+ICsJY2FzZSAweDEzOgkvKiAzMjAtMjAwLTggKi8N
-Cj4+ICsJY2FzZSAweDZhOgkvKiA4MDB4NjAwLTQgKFZFU0EpICovDQo+PiArCQlyZXR1cm4g
-dHJ1ZTsNCj4gDQo+IEFuZCBzYW1lIGZvciB0aGVzZS4NCj4gDQo+IEl0IGNhbiBiZSBhIGZv
-bGxvdy11cCBwYXRjaCB0aG91Z2guDQo+IA0KPiBbLi4uXQ0KPiANCj4+ICtpbnQgc2NyZWVu
-X2luZm9fcmVzb3VyY2VzKGNvbnN0IHN0cnVjdCBzY3JlZW5faW5mbyAqc2ksIHN0cnVjdCBy
-ZXNvdXJjZSAqciwgc2l6ZV90IG51bSkNCj4+ICt7DQo+PiArCXN0cnVjdCByZXNvdXJjZSAq
-cG9zID0gcjsNCj4+ICsJdW5zaWduZWQgaW50IHR5cGUgPSBzY3JlZW5faW5mb192aWRlb190
-eXBlKHNpKTsNCj4+ICsJdTY0IGJhc2UsIHNpemU7DQo+PiArDQo+PiArCXN3aXRjaCAodHlw
-ZSkgew0KPj4gKwljYXNlIFZJREVPX1RZUEVfTURBOg0KPj4gKwkJaWYgKG51bSA+IDApDQo+
-PiArCQkJcmVzb3VyY2VfaW5pdF9pb19uYW1lZChwb3MrKywgMHgzYjAsIDEyLCAibWRhIik7
-DQo+IA0KPiBJIHNlZSB0aGF0IGRyaXZlcnMvdmlkZW8vZmJkZXYvaTc0MF9yZWcuaCBoYXMg
-YSAjZGVmaW5lIE1EQV9CQVNFDQo+IDB4M0IwLiBNYXliZSBtb3ZlIHRvIGEgaGVhZGVyIGlu
-IGluY2x1ZGUvdmlkZW8gYWxvbmcgd2l0aCB0aGUgb3RoZXINCj4gY29uc3RhbnRzIG1lbnRp
-b25lZCBhYm92ZSA/DQoNClRoYXQgY291bGQgZ28gaW50byA8dmlkZW8vdmdhLmg+LiBNREFf
-QkFTRSAoYW5kIENHQV9CQVNFKSBmcm9tIHRoZSBzYW1lIA0KZmlsZSBhcmUgdW51c2VkIHRo
-b3VnaC4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4+ICsJCWlmIChudW0gPiAx
-KQ0KPj4gKwkJCXJlc291cmNlX2luaXRfaW9fbmFtZWQocG9zKyssIDB4M2JmLCAweDAxLCAi
-bWRhIik7DQo+PiArCQlpZiAobnVtID4gMikNCj4+ICsJCQlyZXNvdXJjZV9pbml0X21lbV9u
-YW1lZChwb3MrKywgMHhiMDAwMCwgMHgyMDAwLCAibWRhIik7DQo+IA0KPiBTYW1lIGZvciB0
-aGVzZSBzdGFydCBhZGRyZXNzZXMuIEkgc2VlIHRoYXQgYXJlIGFsc28gdXNlZCBieSBtZGFj
-b25fc3RhcnR1cCgpDQo+IGluIGRyaXZlcnMvdmlkZW8vY29uc29sZS9tZGFjb24uYywgc28g
-c29tZSBjb25zdGFudHMgZGVmaW5lZCBzb21ld2hlcmUgbWlnaHQNCj4gYmUgdXNlZnVsIGZv
-ciB0aGF0IGNvbnNvbGUgZHJpdmVyIHRvby4NCj4gDQo+IFRoZSBjb21tZW50IGFsc28gYXBw
-bGllcyB0byBhbGwgdGhlIG90aGVyIHN0YXJ0IGFkZHJlc3Nlcywgc2luY2UgSSBzZWUNCj4g
-dGhhdCB0aG9zZSBhcmUgdXNlZCBieSBvdGhlciBkcml2ZXJzIChpODEwLCB2Z2Fjb24sIGV0
-YykuDQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2
-ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCkZyYW5rZW5z
-dHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55DQpHRjogSXZvIFRvdGV2LCBB
-bmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGllbiBNb2VybWFuDQpIUkIgMzY4
-MDkgKEFHIE51ZXJuYmVyZykNCg==
+[auto build test ERROR on broonie-sound/for-next]
+[also build test ERROR on drm-misc/drm-misc-next linus/master v6.8-rc2 next-20240130]
+[cannot apply to robh/for-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
---------------6UUqLNHjaLavhP7NXYE5fgcH--
+url:    https://github.com/intel-lab-lkp/linux/commits/Kuninori-Morimoto/of-property-add-port-base-loop/20240129-085726
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+patch link:    https://lore.kernel.org/r/878r49klg1.wl-kuninori.morimoto.gx%40renesas.com
+patch subject: [PATCH v2 05/13] media: xilinx-tpg: use of_graph_get_next_endpoint_raw()
+config: mips-randconfig-r113-20240130 (https://download.01.org/0day-ci/archive/20240130/202401302148.K0ZR110q-lkp@intel.com/config)
+compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project.git f28c006a5895fc0e329fe15fead81e37457cb1d1)
+reproduce: (https://download.01.org/0day-ci/archive/20240130/202401302148.K0ZR110q-lkp@intel.com/reproduce)
 
---------------deFCP2xCzgCMe5KeQmBu1kdd
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202401302148.K0ZR110q-lkp@intel.com/
 
------BEGIN PGP SIGNATURE-----
+All error/warnings (new ones prefixed by >>):
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmW49cAFAwAAAAAACgkQlh/E3EQov+B8
-Vg/+JIcDVRVCa896bw8h1nXA7TOrW5P3A6UQwpnfQaZQ8pmzTSwoDv38gvn+6Dq/Zck4natIJTKg
-A91+UH9SK2zKtiV1xNPkG+6F9yZM+kj9HLaexz/J4v83jrQJBxLSrCsxCTI835AlOjgbGpLOw0Xn
-aj0cmmOB1ILWdMErGhpYV+84hRR/gGK0AWZC7YPd30LftQcvZbxCd487slqvkbUtE/P3bugE1J6N
-M/9GskcbOPLSYjCUXkyuBEEoQ8SmQA1bpwQmB42OH1o86Uw/KC8LYS0tHzJpGM1LK4sUsSFNwvkQ
-pGka4k26PaNTgucXxA1kBpibWTxqS7Fak4bboG29oNO+DgeMZCCAqAziYOYP+rhpnL12fwB9JcqA
-ukJnYag1/PEbAp9ulCACWtl5g7o+t+O2ZfLf2Zh9xVALFitjYl5CJfPm2ZWDu4XkAEQcEEWGyB+U
-5VLcU8I/zidU0dBYuKQj4mYudfzi5CD1qv6egQ1lh5vOkSjrKc2su/BoiDfVbdMZSt10AjYa/Yrf
-YvgtCSj6HdezgUpujG9fnfpQ1wnSGrHTYVw20aEM3t7bfJtJ2kWMoTIBVpaiRu144cfMYJm3m1Sc
-k5PUdHOHxLJKr1rk/a1rXRnwHOnpf0uY/zfEyjNv+tH0p45xAY5NSJ/3emb1Q7gBkSHfo0PmUcOK
-UzQ=
-=sWGt
------END PGP SIGNATURE-----
+>> drivers/media/platform/xilinx/xilinx-tpg.c:747:15: error: implicit declaration of function 'of_graph_get_next_endpoint_raw' is invalid in C99 [-Werror,-Wimplicit-function-declaration]
+                           endpoint = of_graph_get_next_endpoint_raw(port, NULL);
+                                      ^
+   drivers/media/platform/xilinx/xilinx-tpg.c:747:15: note: did you mean 'acpi_graph_get_next_endpoint'?
+   include/linux/acpi.h:1409:1: note: 'acpi_graph_get_next_endpoint' declared here
+   acpi_graph_get_next_endpoint(const struct fwnode_handle *fwnode,
+   ^
+>> drivers/media/platform/xilinx/xilinx-tpg.c:747:13: warning: incompatible integer to pointer conversion assigning to 'struct device_node *' from 'int' [-Wint-conversion]
+                           endpoint = of_graph_get_next_endpoint_raw(port, NULL);
+                                    ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   1 warning and 1 error generated.
 
---------------deFCP2xCzgCMe5KeQmBu1kdd--
+
+vim +/of_graph_get_next_endpoint_raw +747 drivers/media/platform/xilinx/xilinx-tpg.c
+
+   705	
+   706	/* -----------------------------------------------------------------------------
+   707	 * Platform Device Driver
+   708	 */
+   709	
+   710	static int xtpg_parse_of(struct xtpg_device *xtpg)
+   711	{
+   712		struct device *dev = xtpg->xvip.dev;
+   713		struct device_node *node = xtpg->xvip.dev->of_node;
+   714		struct device_node *ports;
+   715		struct device_node *port;
+   716		unsigned int nports = 0;
+   717		bool has_endpoint = false;
+   718	
+   719		ports = of_get_child_by_name(node, "ports");
+   720		if (ports == NULL)
+   721			ports = node;
+   722	
+   723		for_each_child_of_node(ports, port) {
+   724			const struct xvip_video_format *format;
+   725			struct device_node *endpoint;
+   726	
+   727			if (!of_node_name_eq(port, "port"))
+   728				continue;
+   729	
+   730			format = xvip_of_get_format(port);
+   731			if (IS_ERR(format)) {
+   732				dev_err(dev, "invalid format in DT");
+   733				of_node_put(port);
+   734				return PTR_ERR(format);
+   735			}
+   736	
+   737			/* Get and check the format description */
+   738			if (!xtpg->vip_format) {
+   739				xtpg->vip_format = format;
+   740			} else if (xtpg->vip_format != format) {
+   741				dev_err(dev, "in/out format mismatch in DT");
+   742				of_node_put(port);
+   743				return -EINVAL;
+   744			}
+   745	
+   746			if (nports == 0) {
+ > 747				endpoint = of_graph_get_next_endpoint_raw(port, NULL);
+   748				if (endpoint)
+   749					has_endpoint = true;
+   750				of_node_put(endpoint);
+   751			}
+   752	
+   753			/* Count the number of ports. */
+   754			nports++;
+   755		}
+   756	
+   757		if (nports != 1 && nports != 2) {
+   758			dev_err(dev, "invalid number of ports %u\n", nports);
+   759			return -EINVAL;
+   760		}
+   761	
+   762		xtpg->npads = nports;
+   763		if (nports == 2 && has_endpoint)
+   764			xtpg->has_input = true;
+   765	
+   766		return 0;
+   767	}
+   768	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

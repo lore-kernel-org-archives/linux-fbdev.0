@@ -1,126 +1,225 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C46765BC3
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Jan 2024 10:23:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E4476A33B
+	for <linux-fbdev@vger.kernel.org>; Tue, 30 Jan 2024 12:53:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706610237; cv=none; b=Mf3K5pk0JVVytT6V2uXkUW1qvo62vlbtNH8xdpkyDR6mcWZr4W58r9sjituGMH5/hnQFedLjFGsbCY3UfmvAVYryF/0i5MXKz+HiN+/lZwM5wr7fEU5woU7NaXeK/3xjQPv0IVOHeC554LduOBPUEZ5MpD0WJigu29pEyCb63vY=
+	t=1706619183; cv=none; b=Is4s6uDfLOAEKQGYKkmqZsglmMQ3BHif03SqcEwb3Xj9eD9rurwAUyHtrLxPgmUeRbP7qamPSbBy+dZ/HWm8pCREHFhtY/yMAj+LGKL/vzQ7VpeinwVbUiW/mPgN3wrQs2DSkWHdFTqQFE3900F7XMdrI1WZOh1Y3nEkWOYZFjs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706610237; c=relaxed/simple;
-	bh=V33WuqeNSSZiEnAUBIIEPNvVHm80UNGC12ozs7ygRP8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=ulAoAD7pjOjbP6M6Mix5j8XTiEoPgVr/RX/1Cz6Axjc/FceZksnAJU+FlbA1JjNjWmLwydQF69jRBjjod1n1Kr9Z/Sj8Nf70r9af8B4YOSOgj8lxHfDRQSRT7/Nlp5x7xpM+CQUgKFIdzJXrrAIQNeuJ9MK5ipuwHY4/HePYYRE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=PF3niMba; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1706619183; c=relaxed/simple;
+	bh=f4HTT8ZIZw8i+CYfnG8FA/oSSbAoj2Aii27t/UWNh5U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=U6i7TGMnaKfk7F512ktK24PW3nezkZ8lE5x/i60gqHNACHSlh6uFRoUPqU8UbnTQGelp1NXcgoEvx7MVHWBJT3JKPo1dCG+NsJiTXGI+0I6GX6Pv/sp3jirZ9lGaO5CXaZjiplzI/hhIMgBGax3Oee6K5HuMrtJsD+AbPeNaKyI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=uTXEyLqL; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xPBQPEzF; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=XzoEr9/w; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=US2BNGOz; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="PF3niMba"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1706610234;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jt4gc9cNMGeGEZd3+mcsp9v3Xj41BvVXchDqDl7Wcr8=;
-	b=PF3niMbaSF87Eu9H6KNcUuFTiiLdHjOW/Lda7yruCIqERod0p4HuhP0QwFt6pjaYdInl/Z
-	s4bIZTc1nZefFg4dd4dilhTYtzwdtIb4osjVWUM6wIT8WO5rMAbqDRCDMjN7P5T0dGN4U2
-	L5hoMpunhVOxTLz7aIiL9sKGgXgvWH8=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-374-MbUa0GhQNxiCLf43Mf5VhQ-1; Tue, 30 Jan 2024 05:23:53 -0500
-X-MC-Unique: MbUa0GhQNxiCLf43Mf5VhQ-1
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-33afdb0eb4fso56140f8f.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 30 Jan 2024 02:23:53 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706610231; x=1707215031;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=jt4gc9cNMGeGEZd3+mcsp9v3Xj41BvVXchDqDl7Wcr8=;
-        b=Pr3GfkwlyRt6qTQQ7x7Eh5bkzaDIgg/DoKgJCvB3DltybK9hXzxf5FEHmBK+XmqJJw
-         2gJ0e4N0OIkCbcr3c5EcxT/GVeWjVDNKWlRADNX+v0XMa1RxovApgDdXEZdDarV3+Hhk
-         /LHlO9afs2K0rwUdBnFGl7oP41qaBesQ3bS1ACj2D3u6Ct2DacYCNV49RvCa/xfdV/iM
-         1F3LfBEUYj7pwRSAWZe29b6lGVJTZRfYsPB1a0NVd37PIcugo4RDd5/r+E2qHZ49jtNd
-         clY9W7tmr0x/5FPi2ddfdq2gL17Fv6OpSvTqm4xjB7PktLEoeSRG67Pp1M5LNg9kgroc
-         qxsQ==
-X-Gm-Message-State: AOJu0YxroSUJvI35CLUwScpb6/V0UGAgDnTTEP2TB+dH09Q8VfT2njDg
-	Ub3LAqeOe5sa5iNtUAmF3x2qpNRlsGxPvLHQhzSsLH/nOv88j5uyfGgdd5HFmZpoqN2TCDkFFkT
-	8uj9DL3Pj/uDwcOF4yZIHYSNyoB1FbEJoVrqO4qOfM+tpPB5UMisAhv1xYh5jYPK9vqVO
-X-Received: by 2002:adf:ead2:0:b0:337:c730:d7e3 with SMTP id o18-20020adfead2000000b00337c730d7e3mr5555570wrn.57.1706610231614;
-        Tue, 30 Jan 2024 02:23:51 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IF70eoaY+VIa4GGUoctQafkQSI2W9UAxj/xfOjdA+e8CALa0W7RU/iiJwjoHpdQk0U/hsjOhw==
-X-Received: by 2002:adf:ead2:0:b0:337:c730:d7e3 with SMTP id o18-20020adfead2000000b00337c730d7e3mr5555558wrn.57.1706610231331;
-        Tue, 30 Jan 2024 02:23:51 -0800 (PST)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id bu9-20020a056000078900b0033af35a024csm3694820wrb.12.2024.01.30.02.23.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Jan 2024 02:23:51 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, pjones@redhat.com,
- deller@gmx.de, ardb@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 2/8] video: Provide screen_info_get_pci_dev() to find
- screen_info's PCI device
-In-Reply-To: <7c33dd4c-d178-4b46-b859-f228391e4d44@suse.de>
-References: <20240117125527.23324-1-tzimmermann@suse.de>
- <20240117125527.23324-3-tzimmermann@suse.de>
- <87ttmwv1ry.fsf@minerva.mail-host-address-is-not-set>
- <7c33dd4c-d178-4b46-b859-f228391e4d44@suse.de>
-Date: Tue, 30 Jan 2024 11:23:50 +0100
-Message-ID: <877cjrunk9.fsf@minerva.mail-host-address-is-not-set>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="uTXEyLqL";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xPBQPEzF";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="XzoEr9/w";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="US2BNGOz"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id CE3601F848;
+	Tue, 30 Jan 2024 12:52:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1706619179; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=f4HTT8ZIZw8i+CYfnG8FA/oSSbAoj2Aii27t/UWNh5U=;
+	b=uTXEyLqLLicUTnCxQ4UV4BZsoq313CY8if53PSNQa2qvJKDikHqe41RMPxHTM6XKWQWA8D
+	rwRYj6bpDnJ2Q6wWu8oM6vn/Dll1HsBS1BPC5JWRuFatpU/NiUm1dqmriJoJtjRkJYbHQE
+	k9g+uRSUQ0cm87K/6LSdKkZzZ+fgaOU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1706619179;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=f4HTT8ZIZw8i+CYfnG8FA/oSSbAoj2Aii27t/UWNh5U=;
+	b=xPBQPEzFyRvYYfdBze4j6jtYlOPuh2oYBz0lcpd5nIkfCm73sc9bJxqrf1CdjJSXx72wom
+	djaHiNDcddyDdiDQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1706619178; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=f4HTT8ZIZw8i+CYfnG8FA/oSSbAoj2Aii27t/UWNh5U=;
+	b=XzoEr9/wlY90dD1Znn8G0+nF/XIMuWD1spMujWDeeXl3OXNHrsx3FTwlLqDH4kgS4Z01p9
+	sEIxDsybRyo3C77JUGOSdnD05jZ7P874elYbHlrxU/3hHYBz4Xp68fqXNUodPeRTwmSdEl
+	orlLz7OwVrEX3XykW/U3a5ZCjH8sFMs=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1706619178;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=f4HTT8ZIZw8i+CYfnG8FA/oSSbAoj2Aii27t/UWNh5U=;
+	b=US2BNGOzIst87pnsdfbT6ShEx1vJsaJasM4WGJwMyalbXeeFa8qPbVHNVSjqSFSxdZoJuV
+	SR6GCjzrNa6+UNCw==
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id A989513212;
+	Tue, 30 Jan 2024 12:52:58 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id bw9cKCrxuGWoIgAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Tue, 30 Jan 2024 12:52:58 +0000
+Message-ID: <95ae7e7a-de13-4702-a0dc-ed1806b96135@suse.de>
+Date: Tue, 30 Jan 2024 13:52:57 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/8] firmware/sysfb: Create firmware device only for
+ enabled PCI devices
+Content-Language: en-US
+To: Javier Martinez Canillas <javierm@redhat.com>, pjones@redhat.com,
+ deller@gmx.de, ardb@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20240117125527.23324-1-tzimmermann@suse.de>
+ <20240117125527.23324-6-tzimmermann@suse.de>
+ <87le88v0bg.fsf@minerva.mail-host-address-is-not-set>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <87le88v0bg.fsf@minerva.mail-host-address-is-not-set>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------hh2zBxLNMvpUf3Ch3xlWqru0"
+Authentication-Results: smtp-out2.suse.de;
+	none
+X-Spam-Level: 
+X-Spam-Score: -5.29
+X-Spamd-Result: default: False [-5.29 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
+	 HAS_ATTACHMENT(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%];
+	 MIME_BASE64_TEXT_BOGUS(1.00)[];
+	 RCPT_COUNT_FIVE(0.00)[6];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 MIME_BASE64_TEXT(0.10)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
+	 SIGNED_PGP(-2.00)[];
+	 FREEMAIL_TO(0.00)[redhat.com,gmx.de,kernel.org];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
+	 RCVD_TLS_ALL(0.00)[];
+	 MID_RHS_MATCH_FROM(0.00)[]
+X-Spam-Flag: NO
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------hh2zBxLNMvpUf3Ch3xlWqru0
+Content-Type: multipart/mixed; boundary="------------dYFrNSjbZMMGzUq9VVJNFlLr";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>, pjones@redhat.com,
+ deller@gmx.de, ardb@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Message-ID: <95ae7e7a-de13-4702-a0dc-ed1806b96135@suse.de>
+Subject: Re: [PATCH 5/8] firmware/sysfb: Create firmware device only for
+ enabled PCI devices
+References: <20240117125527.23324-1-tzimmermann@suse.de>
+ <20240117125527.23324-6-tzimmermann@suse.de>
+ <87le88v0bg.fsf@minerva.mail-host-address-is-not-set>
+In-Reply-To: <87le88v0bg.fsf@minerva.mail-host-address-is-not-set>
 
-> Hi
->
-> Am 29.01.24 um 12:04 schrieb Javier Martinez Canillas:
->> Thomas Zimmermann <tzimmermann@suse.de> writes:
->> 
->>> Add screen_info_get_pci_dev() to find the PCI device of an instance
->>> of screen_info. Does nothing on systems without PCI bus.
->>>
->>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->>> ---
->> 
->> [...]
->> 
->>> +struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
->>> +{
->>> +	struct resource res[SCREEN_INFO_MAX_RESOURCES];
->>> +	size_t i, numres;
->>> +	int ret;
->>> +
->>> +	ret = screen_info_resources(si, res, ARRAY_SIZE(res));
->>> +	if (ret < 0)
->>> +		return ERR_PTR(ret);
->>> +	numres = ret;
->>> +
->> 
->> I would just drop the ret variable and assign the screen_info_resources()
->> return value to numres. I think that makes the code easier to follow.
->
-> The value of ret could be an errno code. We would effectively return 
-> NULL for errors. And I just noticed that the function docs imply this. 
-> But NULL is also a valid value if there is no PCI device. I'd prefer to 
-> keep the errno-pointer around.
->
+--------------dYFrNSjbZMMGzUq9VVJNFlLr
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Yes. I meant making numres an int instead of size_t (SCREEN_INFO_MAX_RESOURCES
-is only 3 after all). That way you could just return ERR_PTR(numres) if is < 0.
+SGkNCg0KQW0gMjkuMDEuMjQgdW0gMTI6MzYgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cml0
+ZXM6DQo+IA0KPj4gVGVzdCBpZiB0aGUgZmlybXdhcmUgZnJhbWVidWZmZXIncyBwYXJlbnQg
+UENJIGRldmljZSwgaWYgYW55LCBoYXMNCj4+IGJlZW4gZW5hYmxlZC4gSWYgbm90LCB0aGUg
+ZmlybXdhcmUgZnJhbWVidWZmZXIgaXMgbW9zdCBsaWtlbHkgbm90DQo+PiB3b3JraW5nLiBI
+ZW5jZSwgZG8gbm90IGNyZWF0ZSBhIGRldmljZSBmb3IgdGhlIGZpcm13YXJlIGZyYW1lYnVm
+ZmVyDQo+PiBvbiBkaXNhYmxlZCBQQ0kgZGV2aWNlcy4NCj4+DQo+PiBTbyBmYXIsIGVmaWZi
+IHRyYWNrZWQgdGhlIHN0YXR1cyBvZiB0aGUgUENJIHBhcmVudCBkZXZpY2UgaW50ZXJuYWxs
+eQ0KPj4gYW5kIGRpZCBub3QgYmluZCBpZiBpdCB3YXMgZGlzYWJsZWQuIFRoaXMgcGF0Y2gg
+aW1wbGVtZW50cyB0aGUNCj4+IGZ1bmN0aW9uYWxpdHkgZm9yIGFsbCBmaXJtd2FyZSBmcmFt
+ZWJ1ZmZlcnMuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6
+aW1tZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0NCj4gDQo+IFsuLi5dDQo+IA0KPj4gICANCj4+
+ICtzdGF0aWMgX19pbml0IGJvb2wgc3lzZmJfcGNpX2Rldl9pc19lbmFibGVkKHN0cnVjdCBw
+Y2lfZGV2ICpwZGV2KQ0KPj4gK3sNCj4+ICsjaWYgZGVmaW5lZChDT05GSUdfUENJKQ0KPj4g
+KwkvKg0KPj4gKwkgKiBUT0RPOiBUcnkgdG8gaW50ZWdyYXRlIHRoaXMgY29kZSBpbnRvIHRo
+ZSBQQ0kgc3Vic3lzdGVtDQo+PiArCSAqLw0KPj4gKwlpbnQgcmV0Ow0KPj4gKwl1MTYgY29t
+bWFuZDsNCj4+ICsNCj4+ICsJcmV0ID0gcGNpX3JlYWRfY29uZmlnX3dvcmQocGRldiwgUENJ
+X0NPTU1BTkQsICZjb21tYW5kKTsNCj4+ICsJaWYgKHJldCAhPSBQQ0lCSU9TX1NVQ0NFU1NG
+VUwpDQo+PiArCQlyZXR1cm4gZmFsc2U7DQo+PiArCWlmICghKGNvbW1hbmQgJiBQQ0lfQ09N
+TUFORF9NRU1PUlkpKQ0KPj4gKwkJcmV0dXJuIGZhbHNlOw0KPj4gKwlyZXR1cm4gdHJ1ZTsN
+Cj4+ICsjZWxzZQ0KPj4gKwkvLyBHZXR0aW5nIGhlcmUgd2l0aG91dCBQQ0kgc3VwcG9ydCBp
+cyBwcm9iYWJseSBhIGJ1Zy4NCj4+ICsJcmV0dXJuIGZhbHNlOw0KPiANCj4gU2hvdWxkIHdl
+IHdhcm4gYmVmb3JlIHJldHVybiBpbiB0aGlzIGNhc2UgPw0KDQpJIHdvdWxkIG5vdCBkbyBz
+byBhcyB0aGUgYnVnIGlzIG5vdCBoZXJlLCBidXQgaW4gc2NyZWVuX2luZm9fcGNpX2Rldigp
+LiANCkknbSBnb2luZyB0byB1cGRhdGUgdGhpcyBjaHVuayBzdWNoIHRoYXQgdGhlIG5vbi1Q
+Q0kgY2FzZSBpcyBhIHNlcGFyYXRlIA0KZnVuY3Rpb24uDQoNCj4gDQo+IFJldmlld2VkLWJ5
+OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gDQoN
+Ci0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNV
+U0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2
+LCA5MDQ2MSBOdWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVy
+cywgQW5kcmV3IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVl
+cm5iZXJnKQ0K
 
-No strong preference, just think that the code is easier to read in that case.
+--------------dYFrNSjbZMMGzUq9VVJNFlLr--
 
--- 
-Best regards,
+--------------hh2zBxLNMvpUf3Ch3xlWqru0
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+-----BEGIN PGP SIGNATURE-----
 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmW48SoFAwAAAAAACgkQlh/E3EQov+Ad
+TA/6A5NVY6ClyYBY/DSbwTXzWecCig3x4iOwsDgEAZ5k8issqL1w+nsxu6wBkd+MT0IfdX/SIOi2
+t3aFZuOpwKgo8NgWy/vZ+ZlSTDMYFvRsIyW+/mj4P9t8rLbMuBOtymmDB0FMrvT6v5io8+JyJjb7
+4axazeLX4UNhxZ09f7YL6czBvtgkUDqLC4viUqtD3w2eDgDnTz18pwJdoKx1tivZGcCy/+Pb+pyI
+OEwsxaex0w4nmash91VMhPFT65AwErtP7+OX/gaqub+LMxrmgb3Gmbz2KR3aRRPV/6ycFitM/mvp
+wKHNldiZpW8u/pfqjrnwe5y0mfG+oa2439YQcTR4iGhWgn4gQkvB3LdKlFo/k/UMm7KmZKjYcDfT
+9Kia7KCUrH3HqEoloZcwkYjemyAq7qdMCqDiHocRg5sNqfRW7X0qtpeHNtdRoFFoXX2tYjb2Ou+K
+VhzeLKM+a6bJzVEStoBE9Iza7wrxFCK/YtqceYfV0O9vmHnuqPKQfjQVYjBiyHpIM/QENto4J4in
+9Ay7I3CoH8yX8bpu+9WekTRG0FVLp4MlAaZ6PZyMil7bT99lbzW9h0mr8yWJNXj6dmr5fJ0+j+gK
+0bw+Se8kk+kmKATpNP+Yy+fLZFhJBWB0Ubd2U0kBqLRsm5qvRTOINrYe6a4mUJcFOTkbB59jnsea
+MA8=
+=oCK6
+-----END PGP SIGNATURE-----
+
+--------------hh2zBxLNMvpUf3Ch3xlWqru0--

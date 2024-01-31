@@ -1,65 +1,66 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 912E029CA
-	for <linux-fbdev@vger.kernel.org>; Wed, 31 Jan 2024 14:34:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26A4783CBE
+	for <linux-fbdev@vger.kernel.org>; Wed, 31 Jan 2024 14:42:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706711649; cv=none; b=dyMKTLPZfeFczu31TrmiN3fuf+GHhLjyWWe9CkearbZGsIXdJZS6xr8vkrTt3XjfdAbUNpwmPsiruJi69WgaxRvkPguOwdKjLiBXOCHuFKPYu4A1SSHpGGiTkf0WJljTzmNyE6E2lGmYnBhBEPkTxs+bspClkFoPhlaoA0765qM=
+	t=1706712146; cv=none; b=IsYtdK/zlOHg1/EluQpikWPXKO1/1nsbBHbM5E6Rgjz482IvGLyRl3AY3/hYj6nKQNf5y24roaHQELo4QbChdqy99U2sAS3x9ZrjY9Mrxv4U1J25dKV+VIQVP3kLnAeHJj4O+3b7hvpM/u2gVIPr927QHQ1z9jq3ODo+qQOannI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706711649; c=relaxed/simple;
-	bh=pw+U8iahJ0CmhuCN4ZbIgl2mTW7ZjtW2xezbf/dgrRE=;
+	s=arc-20240116; t=1706712146; c=relaxed/simple;
+	bh=K31KqT5V5uF5b954ZcpqYJhJ0+aoYbQF+sfNU7Nx2B4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cwJ7AbzFFAD6qlZALMPup+jJN0ODFKvX7IZ20g3tameSMUQkJwW5JbPKyDI2cFt2UPcepHQQ+DTqtTr3sMZKcxFFwR5B9k1NSTT/SDpNctto82gclBJEv1cDuk7gI/R/J4HzjVor2PsQUymtXWkir3UNTbqLcwUU75yTyfsLqhY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ynnVoJSp; arc=none smtp.client-ip=209.85.221.47
+	 Content-Type:Content-Disposition:In-Reply-To; b=nzHLHms6w1ayv2AlSdxua+Zv/jwQmIdcfFjEGnieKpbu9xFqo8uB2D+nQgqGDJv0w57CEfYRzRFSqfwXiRB9oOLlp3b6z96c+DrkeEFRq76syrHfbcS6NPJEZ7KwEb7TEeDms3tQ/vddn3AGFUsBLUl5l9ZKNHZZ9uoY7VBlVz0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NGMvGKXf; arc=none smtp.client-ip=209.85.128.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ynnVoJSp"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-33ae7ae9ec5so2200335f8f.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 31 Jan 2024 06:34:06 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NGMvGKXf"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-40f02b8d176so15965565e9.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 31 Jan 2024 06:42:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1706711645; x=1707316445; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1706712143; x=1707316943; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=pw+U8iahJ0CmhuCN4ZbIgl2mTW7ZjtW2xezbf/dgrRE=;
-        b=ynnVoJSpmN6+EBPst/BcvEzVF9bVaW8nhpB9VqWK4HMFL89VCmAYiUZH4ZxYu80/Bk
-         Lop+DxvXDRvzZNwxTcdtDgnI96ikIz1N94fI+SEGzHVOmjBjjZyxjC7VhOVUt3LMavP8
-         M45WS++SrDwrDYUL3Vm0ofiYyNg1gAE9q8uvvQ5z7B1OgHt/AtxwmfdjORFUJ2aKyXqj
-         T4uq+LUe6Ggl1dC46p7BQuroH9v5K/w3bfYumzR+q6CoRN9eD8z43DrmriKp4L9JvDZA
-         c1yq7m0Bioz6f55+1AdxBfYRtr9tw1O1zu/sk20zynYHvDC/O8BetVJk+5GPrAilc8Ii
-         1sYA==
+        bh=K31KqT5V5uF5b954ZcpqYJhJ0+aoYbQF+sfNU7Nx2B4=;
+        b=NGMvGKXf/NKrrNkwdoYuutjpFtJjxIRGPIYnPTLuINv94uljI+aQXWuKdquwMaGLa8
+         PQ/smU3Fgjmh35h2X9SZTaE8nd2Kh/ehv66hjtjUUI2aby1WXIDBC/gyu9FmzM4OZ9An
+         RYAojzhysLoc7XFwBt2YISOEoxMh0Xwmg+Dvk1p/eZYcGwFMnfg5LpEXDqkXvxHd0Tll
+         i94IbvYeSnhVE0WwUWaRV9+VlkgrevuYYWLWre5J4LLlgjPSbQCbKSw1gbhyja0iMyFp
+         dwgoBSS9ki3UOZ1JlCNzK0CAyizixJrglnRNM7A2VCSmL0eyWX2JIyn6yBIqTdh8i9w7
+         Sedw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706711645; x=1707316445;
+        d=1e100.net; s=20230601; t=1706712143; x=1707316943;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=pw+U8iahJ0CmhuCN4ZbIgl2mTW7ZjtW2xezbf/dgrRE=;
-        b=qtq9s2FR6BWdZfLbMB2WqOcZC1Z6gQlGCVvlr10gjUcSP9a6M+VLiaUG/M4tZTBbT0
-         DmDIDjHvRdBjHav0JorTwAjoc1oppnbWI6q68f14DemkGY3FswmKxI4mCNVesjTGUoF2
-         3/H8ICF9SKhQ3GivPaBBJ7eoTez8vOAXIPUX23fRbvqvtIlBGxloMh04rUEWKbyQojlU
-         Gru9MKhEwvszdxRyszKMba5QCGFcgt7iOTFheuzfPGawKjgtRwuJ4EFHa8E/WVoi17r5
-         Rqx4dp9QCCMtj03gONoT/b8EgVpd7vgKEEUfgkIJqWwC/z2FKu2FnMrFHoYbSkkbdiZ9
-         jB8A==
-X-Gm-Message-State: AOJu0YzG9tgivFtGofMUiqDoMfkmUV8Nv/y+uKQ01yg6xOwTQAS6RfgC
-	MBlDMAw3utCf5vz7JENuBhBndDve50tHgjUDM71JNTW02uimmlnFeUrGZbyhll4=
-X-Google-Smtp-Source: AGHT+IGxibPRLhmvYBASqTzPoOPDIA2DlXiwWGSJOIVvDa/pebaIEuqr9bjfmEhnBIEEMlPlSKnUWw==
-X-Received: by 2002:a05:6000:1379:b0:33a:ee08:7541 with SMTP id q25-20020a056000137900b0033aee087541mr1386289wrz.35.1706711644956;
-        Wed, 31 Jan 2024 06:34:04 -0800 (PST)
+        bh=K31KqT5V5uF5b954ZcpqYJhJ0+aoYbQF+sfNU7Nx2B4=;
+        b=HwPNnkrJmGUKqnrPeMm+v0ZdSfUGkVLnE6FqqvMVXT5EFRd0lJNxzmwJ1L1ZyZ6Ifl
+         dKi9RHt6trqnXJ2mMPl++BKVg+MxDBWOt52NqIMnCIxb4vrnUs+NE7L/8f+jww4FXxII
+         f05NFuQ4soHatPcK5MCxktuUJRhdKkR/tR4+vRCZvHSTfbivdlLs/r6gx5ls92lFYMQk
+         pWJK0HPeR8hnelMUh1urmk+ZS8LBY0JKdcSke5sVeqZHQtS566K2HsVhftw+blamNMa7
+         oc6p0q8di/po6us/j22wblm2qdlqr5U161AKJAjEJRTHjLU6fwUe0A+oS76e37lnj4Xm
+         At7w==
+X-Gm-Message-State: AOJu0YyFjhilpFHcx9ifSmlIG9tWSzXNoPwhTd4X0B1PUPoVV++EuEjd
+	bOqZqbNOxX15NXNAbX8cwJdpCP1zt/VbzPAoF3260mAt7p5xuXkomZTLjLMW6Ic=
+X-Google-Smtp-Source: AGHT+IHrC/K+xdbE/khLOxKWVe2CNuHMAaEhHqNgScg2QXA2v/u7cDClshre9bUbEaRveSzAwxcppw==
+X-Received: by 2002:a05:600c:1386:b0:40e:f5d0:8517 with SMTP id u6-20020a05600c138600b0040ef5d08517mr1321066wmf.33.1706712143446;
+        Wed, 31 Jan 2024 06:42:23 -0800 (PST)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id n16-20020adfe790000000b0033afed6e9desm2888638wrm.98.2024.01.31.06.34.04
+        by smtp.gmail.com with ESMTPSA id l18-20020a05600c1d1200b0040e89ade84bsm1830569wms.4.2024.01.31.06.42.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 31 Jan 2024 06:34:04 -0800 (PST)
-Date: Wed, 31 Jan 2024 14:34:02 +0000
+        Wed, 31 Jan 2024 06:42:23 -0800 (PST)
+Date: Wed, 31 Jan 2024 14:42:21 +0000
 From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Jianhua Lu <lujianhua000@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: ktz8866: Correct the check for
- of_property_read_u32
-Message-ID: <20240131143402.GA5929@aspen.lan>
-References: <20240129122829.16248-1-lujianhua000@gmail.com>
+To: Sean Young <sean@mess.org>
+Cc: Flavio Suligoi <f.suligoi@asem.it>, Lee Jones <lee@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH] backlight: mp3309c: Use pwm_apply_might_sleep()
+Message-ID: <20240131144221.GB5929@aspen.lan>
+References: <20240128154905.407302-1-sean@mess.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -68,14 +69,14 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240129122829.16248-1-lujianhua000@gmail.com>
+In-Reply-To: <20240128154905.407302-1-sean@mess.org>
 
-On Mon, Jan 29, 2024 at 08:28:29PM +0800, Jianhua Lu wrote:
-> of_property_read_u32 returns 0 when success, so reverse the
-> return value to get the true value.
+On Sun, Jan 28, 2024 at 03:49:04PM +0000, Sean Young wrote:
+> pwm_apply_state() is deprecated since commit c748a6d77c06a ("pwm: Rename
+> pwm_apply_state() to pwm_apply_might_sleep()"). This is the final user
+> in the tree.
 >
-> Fixes: f8449c8f7355 ("backlight: ktz8866: Add support for Kinetic KTZ8866 backlight")
-> Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
+> Signed-off-by: Sean Young <sean@mess.org>
 
 Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 

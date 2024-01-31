@@ -1,151 +1,83 @@
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C0116997E;
-	Wed, 31 Jan 2024 09:07:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 912E029CA
+	for <linux-fbdev@vger.kernel.org>; Wed, 31 Jan 2024 14:34:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706692043; cv=none; b=Bfd3e4ROgbXAeGpGMkCUTlVSnoLzyMYq6/oNEdHVynhm/aQ22mR8jj7TQ/nJKaDrYt4a3mUFhY1LDi2PdT83qCZXsTPVQn4AD5103HC0z6ZyNoB3Qwqjwa7DL7cIzkUPZTCwdTk91X1CrutWq5GsYyCXLD662rnjmwMqr4e6TTk=
+	t=1706711649; cv=none; b=dyMKTLPZfeFczu31TrmiN3fuf+GHhLjyWWe9CkearbZGsIXdJZS6xr8vkrTt3XjfdAbUNpwmPsiruJi69WgaxRvkPguOwdKjLiBXOCHuFKPYu4A1SSHpGGiTkf0WJljTzmNyE6E2lGmYnBhBEPkTxs+bspClkFoPhlaoA0765qM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706692043; c=relaxed/simple;
-	bh=0RuTS+kPwr4+e0G8exQO+9NVYj16oJYi6dt0lNc9JzM=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Lt2/W2fGTFX4rWxp5SEcFLDNBFyoSyNCPObPJELlg4lpTvFLgSVm0JGnEzjWxKcXvXSFQj1RTwzVAg+kReuxk1gTiGSklwHol3P6bUiaQRAeITqDWYP4GHF2hD838FPiyAHh+6m7n6z9yHxWaNQsx7BfZ0ywFNiHtQknr7BzUOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=IpopKANJ; arc=none smtp.client-ip=217.70.183.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1706711649; c=relaxed/simple;
+	bh=pw+U8iahJ0CmhuCN4ZbIgl2mTW7ZjtW2xezbf/dgrRE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cwJ7AbzFFAD6qlZALMPup+jJN0ODFKvX7IZ20g3tameSMUQkJwW5JbPKyDI2cFt2UPcepHQQ+DTqtTr3sMZKcxFFwR5B9k1NSTT/SDpNctto82gclBJEv1cDuk7gI/R/J4HzjVor2PsQUymtXWkir3UNTbqLcwUU75yTyfsLqhY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ynnVoJSp; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="IpopKANJ"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 94A901C0003;
-	Wed, 31 Jan 2024 09:07:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1706692038;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=txVeyDCwCa0PTblW/GH4Mt4FMs2okstRsQIFGpgZpIA=;
-	b=IpopKANJvPwzP+cqcm/nV8tIJeOl95Z+pm5ZBFxwXGnXRcK3j8Pw+g5PpTHYdFLZ+S68Mp
-	Zsj2PczR2iFjVt4JmxgdVtBXXEmZpd6iYEY+KPRCxNu2fQPiuG18FsmsoFfZfWkaW1KPbB
-	G1MSsTLhcCIWapF7QsFR2x2AIjii8HyIxhHt1myJcrQtSSLsH8641MOW1xBoMgS5kgngcd
-	HpasEnyJS3TgeESvACXjoa9KiuEvYQs3iCmPPe7m0RCMy1Q343Sq2P0VW3xur3FbmOGHKH
-	v498LDl6jvgqLJTyZWKLJSC9wenFYUOzH2yWAnMS8h04WN1KqPaw/M4Qidd9Fw==
-Date: Wed, 31 Jan 2024 10:07:01 +0100
-From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: "Bryan O'Donoghue" <bryan.odonoghue@linaro.org>, "Lad,  Prabhakar"
- <prabhakar.csengg@gmail.com>, "Niklas =?UTF-8?Q?S=C3=83=C2=B6derlund?="
- <niklas.soderlund+renesas@ragnatech.se>, "Uwe =?UTF-8?Q?Kleine-K=C3=83?=
- =?UTF-8?Q?=C2=B6nig?=" <u.kleine-koenig@pengutronix.de>, Abhinav Kumar
- <quic_abhinavk@quicinc.com>, Alexander Shishkin
- <alexander.shishkin@linux.intel.com>, Alexander Stein
- <alexander.stein@ew.tq-group.com>, Alexandre Belloni
- <alexandre.belloni@bootlin.com>, Alexandre Torgue
- <alexandre.torgue@foss.st.com>, Alexey Brodkin <abrodkin@synopsys.com>,
- Andrzej Hajda <andrzej.hajda@intel.com>, Andy Gross <agross@kernel.org>,
- Biju Das <biju.das.jz@bp.renesas.com>, Bjorn Andersson
- <andersson@kernel.org>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, Daniel
- Vetter <daniel@ffwll.ch>, Dave Stevenson <dave.stevenson@raspberrypi.com>,
- David Airlie <airlied@gmail.com>, Dmitry Baryshkov
- <dmitry.baryshkov@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Emma Anholt <emma@anholt.net>, Eugen Hristev <eugen.hristev@collabora.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>, Frank Rowand
- <frowand.list@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Hans Verkuil <hverkuil-cisco@xs4all.nl>, Helge Deller <deller@gmx.de>,
- Hugues Fruchet <hugues.fruchet@foss.st.com>, Jacopo Mondi
- <jacopo+renesas@jmondi.org>, Jacopo Mondi <jacopo@jmondi.org>, James Clark
- <james.clark@arm.com>, Jaroslav Kysela <perex@perex.cz>, Jonathan Hunter
- <jonathanh@nvidia.com>, Kevin Hilman <khilman@baylibre.com>, Kieran Bingham
- <kieran.bingham+renesas@ideasonboard.com>, Kieran Bingham
- <kieran.bingham@ideasonboard.com>, Konrad Dybcio
- <konrad.dybcio@linaro.org>, Krzysztof Kozlowski
- <krzysztof.kozlowski@linaro.org>, Laurent Pinchart
- <laurent.pinchart+renesas@ideasonboard.com>, Laurent Pinchart
- <laurent.pinchart@ideasonboard.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Liu Ying <victor.liu@nxp.com>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>, Marek Vasut <marex@denx.de>, Mark
- Brown <broonie@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>, Maxime Ripard
- <mripard@kernel.org>, Michael Tretter <m.tretter@pengutronix.de>, Michal
- Simek <michal.simek@amd.com>, Miguel Ojeda <ojeda@kernel.org>, Nathan
- Chancellor <nathan@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
- Nick Desaulniers <ndesaulniers@google.com>, Nicolas Ferre
- <nicolas.ferre@microchip.com>, Philipp Zabel <p.zabel@pengutronix.de>,
- Philippe Cornu <philippe.cornu@foss.st.com>, Raphael Gallais-Pou
- <raphael.gallais-pou@foss.st.com>, Rob Clark <robdclark@gmail.com>, Rob
- Herring <robh+dt@kernel.org>, Robert Foss <rfoss@kernel.org>, Russell King
- <linux@armlinux.org.uk>, Sakari Ailus <sakari.ailus@linux.intel.com>,
- Saravana Kannan <saravanak@google.com>, Sascha Hauer
- <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Sowjanya
- Komatineni <skomatineni@nvidia.com>, Stefan Agner <stefan@agner.ch>, Suzuki
- K Poulose <suzuki.poulose@arm.com>, Sylwester Nawrocki
- <s.nawrocki@samsung.com>, Takashi Iwai <tiwai@suse.com>, Thierry Reding
- <thierry.reding@gmail.com>, Thomas Zimmermann <tzimmermann@suse.de>, Tim
- Harvey <tharvey@gateworks.com>, Todor Tomov <todor.too@gmail.com>, Tomi
- Valkeinen <tomi.valkeinen@ideasonboard.com>, Yannick Fertre
- <yannick.fertre@foss.st.com>, Alim Akhtar <alim.akhtar@samsung.com>, Fabio
- Estevam <festevam@gmail.com>, Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
- Jernej Skrabec <jernej.skrabec@gmail.com>, Jerome Brunet
- <jbrunet@baylibre.com>, Jessica Zhang <quic_jesszhan@quicinc.com>, Jonas
- Karlman <jonas@kwiboo.se>, Leo Yan <leo.yan@linaro.org>, Marijn Suijten
- <marijn.suijten@somainline.org>, Martin Blumenstingl
- <martin.blumenstingl@googlemail.com>, Mike Leach <mike.leach@linaro.org>,
- Sam Ravnborg <sam@ravnborg.org>, Sean Paul <sean@poorly.run>, Tom Rix
- <trix@redhat.com>, coresight@lists.linaro.org, devicetree@vger.kernel.org,
- dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
- linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-renesas-soc@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-sound@vger.kernel.org,
- linux-staging@lists.linux.dev, linux-stm32@st-md-mailman.stormreply.com,
- linux-tegra@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH v3 14/24] of: property: add of_graph_get_next_endpoint()
-Message-ID: <20240131100701.754a95ee@booty>
-In-Reply-To: <874jeu6qhv.wl-kuninori.morimoto.gx@renesas.com>
-References: <87o7d26qla.wl-kuninori.morimoto.gx@renesas.com>
-	<874jeu6qhv.wl-kuninori.morimoto.gx@renesas.com>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ynnVoJSp"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-33ae7ae9ec5so2200335f8f.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 31 Jan 2024 06:34:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1706711645; x=1707316445; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=pw+U8iahJ0CmhuCN4ZbIgl2mTW7ZjtW2xezbf/dgrRE=;
+        b=ynnVoJSpmN6+EBPst/BcvEzVF9bVaW8nhpB9VqWK4HMFL89VCmAYiUZH4ZxYu80/Bk
+         Lop+DxvXDRvzZNwxTcdtDgnI96ikIz1N94fI+SEGzHVOmjBjjZyxjC7VhOVUt3LMavP8
+         M45WS++SrDwrDYUL3Vm0ofiYyNg1gAE9q8uvvQ5z7B1OgHt/AtxwmfdjORFUJ2aKyXqj
+         T4uq+LUe6Ggl1dC46p7BQuroH9v5K/w3bfYumzR+q6CoRN9eD8z43DrmriKp4L9JvDZA
+         c1yq7m0Bioz6f55+1AdxBfYRtr9tw1O1zu/sk20zynYHvDC/O8BetVJk+5GPrAilc8Ii
+         1sYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1706711645; x=1707316445;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=pw+U8iahJ0CmhuCN4ZbIgl2mTW7ZjtW2xezbf/dgrRE=;
+        b=qtq9s2FR6BWdZfLbMB2WqOcZC1Z6gQlGCVvlr10gjUcSP9a6M+VLiaUG/M4tZTBbT0
+         DmDIDjHvRdBjHav0JorTwAjoc1oppnbWI6q68f14DemkGY3FswmKxI4mCNVesjTGUoF2
+         3/H8ICF9SKhQ3GivPaBBJ7eoTez8vOAXIPUX23fRbvqvtIlBGxloMh04rUEWKbyQojlU
+         Gru9MKhEwvszdxRyszKMba5QCGFcgt7iOTFheuzfPGawKjgtRwuJ4EFHa8E/WVoi17r5
+         Rqx4dp9QCCMtj03gONoT/b8EgVpd7vgKEEUfgkIJqWwC/z2FKu2FnMrFHoYbSkkbdiZ9
+         jB8A==
+X-Gm-Message-State: AOJu0YzG9tgivFtGofMUiqDoMfkmUV8Nv/y+uKQ01yg6xOwTQAS6RfgC
+	MBlDMAw3utCf5vz7JENuBhBndDve50tHgjUDM71JNTW02uimmlnFeUrGZbyhll4=
+X-Google-Smtp-Source: AGHT+IGxibPRLhmvYBASqTzPoOPDIA2DlXiwWGSJOIVvDa/pebaIEuqr9bjfmEhnBIEEMlPlSKnUWw==
+X-Received: by 2002:a05:6000:1379:b0:33a:ee08:7541 with SMTP id q25-20020a056000137900b0033aee087541mr1386289wrz.35.1706711644956;
+        Wed, 31 Jan 2024 06:34:04 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id n16-20020adfe790000000b0033afed6e9desm2888638wrm.98.2024.01.31.06.34.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 31 Jan 2024 06:34:04 -0800 (PST)
+Date: Wed, 31 Jan 2024 14:34:02 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Jianhua Lu <lujianhua000@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: ktz8866: Correct the check for
+ of_property_read_u32
+Message-ID: <20240131143402.GA5929@aspen.lan>
+References: <20240129122829.16248-1-lujianhua000@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-GND-Sasl: luca.ceresoli@bootlin.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240129122829.16248-1-lujianhua000@gmail.com>
 
-Hello Kuninori Morimoto,
+On Mon, Jan 29, 2024 at 08:28:29PM +0800, Jianhua Lu wrote:
+> of_property_read_u32 returns 0 when success, so reverse the
+> return value to get the true value.
+>
+> Fixes: f8449c8f7355 ("backlight: ktz8866: Add support for Kinetic KTZ8866 backlight")
+> Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
 
-On Wed, 31 Jan 2024 05:06:36 +0000
-Kuninori Morimoto <kuninori.morimoto.gx@renesas.com> wrote:
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-> To handle endpoint more intuitive, create of_graph_get_next_endpoint()
-> 
-> 	of_graph_get_next_endpoint(port1, NULL); // A1
-> 	of_graph_get_next_endpoint(port1, A1);   // A2
-> 	of_graph_get_next_endpoint(port1, A2);   // NULL
 
-The idea looks good. My only concern is about reusing the
-of_graph_get_next_endpoint() name after having removed the old, different
-function having the same name. This can be confusing in the first
-place to who is used to the old function, and also to anybody rebasing
-their patches on top of a new kernel to find their code behaving
-differently.
-
-Also, as now we'd have two similar variants of this function, it would
-be good if each of them were having a name that clearly identifies in
-which way they differ from the other.
-
-So a better name for this function would probably be
-of_graph_get_next_port_endpoint() I guess, to clearly differentiate from
-of_graph_get_next_device_endpoint().
-
-Luca
-
--- 
-Luca Ceresoli, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Daniel.

@@ -1,82 +1,82 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C7F815B99C;
-	Thu,  1 Feb 2024 11:46:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8247E5F48C;
+	Thu,  1 Feb 2024 15:06:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.55.52.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706788010; cv=none; b=azH9UXkOjNjX0YSlu5658UiDoV+2oxmob2KZIjLLwneHHqxSUi+nxsMjYeyRIz9ANo5MhWJF6fmJRHpVehEsd0Ki8a+e9LU6GcvSsbEMkEzbQaeJH6CCQezNWMQwFjbp3j4plWmLKfsSqgKmFq+B3MiUMvafc8/o/wOZWP7uxX0=
+	t=1706800006; cv=none; b=SCH7tZZox1L2DUAp2yeveBSkdYRK2xhc6tY4njtT2MJZbd0+amd5ZtTywDZyyZzWuFIugbGlOSVpVB8QFSbvzr0ZHVgMOgHgkM0h//0hp2uzBwVWjtGI5j62MrUJcc3rM3wOloc5wPMSSWddzKrkhndZbPFl87AqInJMpOw/AvY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706788010; c=relaxed/simple;
-	bh=B6kqzkRK4glDQvlEuCa9QVdBlMc7GkHgutxdKIuYASU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=VsPV4hQef6Nl2LJLkFdBo/foKO4ybIrJowpM7ZSV7VVc4txlGa/c//YgpfWXeq9ozCuOwSr+Y4P1QXUpYR1LN3nEIrZk3Va8x/D3GJAFDi7UpWyPmCUbdxo7JWcPhzkLXyG4zGAt2B2dRx8YbCWfaXL9ABGb29r1fWp8yJZGh9s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BU9Dmkd3; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1706800006; c=relaxed/simple;
+	bh=gV3rpgXyCLB5Os65qh8tufSawczRz8oU+Pr448CXlGg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z3uFctfhF7y2LAVnvbIWkgSTbSdlUczgHvPF4TpsCrPuNPITEJE/UY8dpuF3mnx8IhsZJOwynPoluMHgVPAWm6Zj4MtiGOKsPdIiYLRgEXHYn3XbU+RVTuRUPRFp4NbEue9Q4FscOh6DJc8V1ZZdbOGHfRSJ8OpZHgmBhGO1jvE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=MCKAqLK0; arc=none smtp.client-ip=192.55.52.115
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BU9Dmkd3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97BC0C433F1;
-	Thu,  1 Feb 2024 11:46:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1706788010;
-	bh=B6kqzkRK4glDQvlEuCa9QVdBlMc7GkHgutxdKIuYASU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=BU9Dmkd3b5PaBA9/hvqiJqUvtIzvUbxV+Gl5YTvyNJ+LpLHTKsI7NkCho6lTprxi/
-	 C+nDFKDuNTxySZcwYmjmFP7/7rlyXytOWKq6E2C3JlWH/LvmRe+0sGL6RPxR2g2O3e
-	 xa+3UZEUyNLM02j96GUksR4UnUPN4kDl53DYI1drM6zdIQbJQ0jtr6ZzwQLLYNWobr
-	 23NNiexqgAtEzo7A/1dOtraNfEhXXEcFC1j/3e+zEZEUJhCIWKt1C6KmxcjzpEBpfb
-	 iY/6OwaIB43ugX3lbPFWIpLSMETL0XkWi9UGtxuSqeMuVnQAx84gb4IrYBEdRShmI2
-	 ZOOlxdUxVCPnw==
-From: Lee Jones <lee@kernel.org>
-To: Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
- Rob Herring <robh+dt@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht, 
- phone-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20240125-ktd2801-v5-0-e22da232a825@skole.hr>
-References: <20240125-ktd2801-v5-0-e22da232a825@skole.hr>
-Subject: Re: [PATCH v5 0/4] Kinetic ExpressWire library and KTD2801
- backlight driver
-Message-Id: <170678800633.1338717.2755658439241529457.b4-ty@kernel.org>
-Date: Thu, 01 Feb 2024 11:46:46 +0000
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MCKAqLK0"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1706800004; x=1738336004;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=gV3rpgXyCLB5Os65qh8tufSawczRz8oU+Pr448CXlGg=;
+  b=MCKAqLK0RfwhPWd9iVsIcTGsaO9oEGvfEJA/Qv1Ox9Woim3mHqetGOWg
+   pXcVwRX84lqROjYOyOFbLKwVu7eFvUYJT8D+24nV26eFn0hJZyuYSzZs1
+   pncEkN4OFqnnpgpKh0JkYMVI3Tqzyr4xR3Vay5lmY06C8GC2sztAMYBwi
+   4nHcOnwaGSXC0RtxRLWxuxUKIwpX/c+GVMYBXFFNRXSKrZ27GlXs1E/rQ
+   r2ZGe655MHzYsCML/jKkCyBwwyoHroNtVlslUeQ3yZE7PDaQOP0rCJxFC
+   PoG8pLaDsbBAkToJQ/EqElCUxn9jylUi843ocOcgfLvB2RV94SCFAf9a9
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="403525475"
+X-IronPort-AV: E=Sophos;i="6.05,234,1701158400"; 
+   d="scan'208";a="403525475"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2024 07:06:43 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="859168146"
+X-IronPort-AV: E=Sophos;i="6.05,234,1701158400"; 
+   d="scan'208";a="859168146"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by fmsmga004.fm.intel.com with ESMTP; 01 Feb 2024 07:06:41 -0800
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id DD39EA23; Thu,  1 Feb 2024 16:49:52 +0200 (EET)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Lee Jones <lee@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Subject: [PATCH v2 0/4] backlight: hx8357: Clean up and make OF-independent
+Date: Thu,  1 Feb 2024 16:47:41 +0200
+Message-ID: <20240201144951.294215-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.43.0.rc1.1.gbec44491f096
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.3
 
-On Thu, 25 Jan 2024 16:30:52 +0100, Duje Mihanović wrote:
-> This series adds support for the Kinetic KTD2801 LED backlight driver
-> IC found in samsung,coreprimevelte.
-> 
-> Support is already upstream for the somewhat similar KTD2692 flash
-> driver, and this series since v3 also moves its ExpressWire code into a
-> separate library and converts the KTD2692 driver to use that library.
-> 
-> [...]
+A few ad-hoc cleanups and one patch to make driver OF-independent.
 
-Applied, thanks!
+Chagelog v2:
+- renamed init to init_fn and typedef accordingly (Daniel)
+- added tags (Daniel, Javier)
 
-[1/4] leds: introduce ExpressWire library
-      commit: 25ae5f5f4168bbf91e7b6b126d24c30c91ef952e
-[2/4] leds: ktd2692: convert to use ExpressWire library
-      commit: e59a15af7aa690fa0997758df23069a9f0756c49
-[3/4] dt-bindings: backlight: add Kinetic KTD2801 binding
-      commit: 4ac621a418ce8f4c562b50ea6f676196bd5262da
-[4/4] backlight: Add Kinetic KTD2801 backlight support
-      commit: 66c76c1cd984c14660453dfa2118014817924375
+Andy Shevchenko (4):
+  backlight: hx8357: Make use of device properties
+  backlight: hx8357: Move OF table closer to its consumer
+  backlight: hx8357: Make use of dev_err_probe()
+  backlight: hx8357: Utilise temporary variable for struct device
 
---
-Lee Jones [李琼斯]
+ drivers/video/backlight/hx8357.c | 57 +++++++++++++++-----------------
+ 1 file changed, 27 insertions(+), 30 deletions(-)
+
+-- 
+2.43.0.rc1.1.gbec44491f096
 

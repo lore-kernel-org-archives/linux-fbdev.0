@@ -1,75 +1,51 @@
-Received: from mail-oo1-f43.google.com (mail-oo1-f43.google.com [209.85.161.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC9A710A32;
-	Thu,  1 Feb 2024 06:00:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69788157E94;
+	Thu,  1 Feb 2024 07:12:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706767258; cv=none; b=j4PZ+rgUL8Qbp7b3jGGgTHiNAge7uG2jiasTsFpC8VclxTV1+bi/XgwKsCRTLnXp39uOFjYixeEPaWIhk9rIairGl0u3KoTKhIy4uB3SewVlK2tDTnLORrNhn7CjlYrt08exkW1WYb6uWjj4v4ltakex9t3cAgjAu8Xlu0fZMW8=
+	t=1706771542; cv=none; b=Gr2gvXJLYVVmaQphbi5HhOMiZ6dVWz8ThvXMuUab8K8ogc+OFu0ct31ylSZuDEWcvlODODwAkLId7Xz9S1XI4BnhvCpxRhEf3HvKTXf05maeyL8eoqEjH9fyA8L1a/biPWf9JxJbSvNsRb0tfcf1G3iMx1tUxS/CkAQixlUlX0o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706767258; c=relaxed/simple;
-	bh=uXeCpDY6WAGGJZR6enMwI9bH990VMkzDoU/cPePVUGo=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=idzGSbFoDLY6iFfZi6AyHghGStH7mVxbAqRIBQu+wvRRuEJBc6MSO3ujTlyHS3fr6B0EM+eQbFo4hUwywt6cgkzd/k02VnrsQ1FAxLu97tHuhuVQ5BY6lx6sCSG7unUNrqPIkNCFNlC/yfKJdUBvh0KaW4Qmu3tMAnrnMQH1jxw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nH0VE7Sa; arc=none smtp.client-ip=209.85.161.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nH0VE7Sa"
-Received: by mail-oo1-f43.google.com with SMTP id 006d021491bc7-59502aa878aso268093eaf.1;
-        Wed, 31 Jan 2024 22:00:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1706767256; x=1707372056; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:reply-to:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=TNqK50nnoYYuan190E0eP8SeFX+t45XrkVrq9dZoFeQ=;
-        b=nH0VE7Sawvf6aU1erofvbyFEbv/NXg3nv2NxZ17IwE9a02o0x0dM6zr+uk80MmDZOc
-         stNSyxp7t0aqVqfskk6Xql5HOZs/JqtQQJI0CJ8vrv53vnGaHM+lFBCqD85FHFtUJxEc
-         l36FgMKoOig3xhWPT2gSREgVdJwk+tM3rftiTvdWiYfyillpcz7RRXBF5bUs96upcCP2
-         KTk7o5mHUAmA2kpdOdoNTT0EwyDUZj+t2Ks6i/Y4vBoYc2pU7p1I5U1OQYF4Z3sBkE/o
-         h3KZ17xfhM83F8uWqdwp5JS6IDEwdU/yucig27IbLSHTcHKmHgD8LTzlapQwjPSlDZ6V
-         6pTA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706767256; x=1707372056;
-        h=content-transfer-encoding:mime-version:reply-to:message-id:date
-         :subject:cc:to:from:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TNqK50nnoYYuan190E0eP8SeFX+t45XrkVrq9dZoFeQ=;
-        b=TSaPnVzSWBQmvZpkafzsUptrfdieXtbW4aAIvVkJjDAcFl2ZO+slv6KqP4kKJuNS04
-         RAT24miqiIHSeYioaOMiAr49U8dQaOOFW7mvvf/hTBUs43ScPlmRcRtJQKdaypIZ6gA6
-         6LRGfYQDzL0xhUbfaaYV+5mEjjdSssQTegfIwgfx5nmpmXOOMBHKdvndRq2h+ibOgCYA
-         cOGUf0Uny4dXZRwPXk44G3RM5dmSHjsK1k3fOXtmpoJk8ogjf7tPNBcSBO+o8chpdjXi
-         DS++J8+vzVgGa+E6Rx1pgjEsQfx6uxwK+ZvJhmY4UERV5X87PCytbNT7V/v77g36qVhq
-         u55w==
-X-Gm-Message-State: AOJu0Yx2Xp2VM9qbfQNvrGbGu/Qa+tN6ze9/S/wg8e7oksnB7RcTuqeZ
-	xedv15wwMPPOZ5jD2rElF+LL7jZwwEQkoTKgBozvfk2Uk0weJGvc
-X-Google-Smtp-Source: AGHT+IHcVlLzVN688P71oGlESCZpzZCNnOKzQYQpaj46pVgz4n3hzhfDPwZCWeDPvMepB8EpgU0gdg==
-X-Received: by 2002:a05:6358:3121:b0:176:40fb:e123 with SMTP id c33-20020a056358312100b0017640fbe123mr3761793rwe.5.1706767255698;
-        Wed, 31 Jan 2024 22:00:55 -0800 (PST)
-X-Forwarded-Encrypted: i=0; AJvYcCW58zNQ7RRUJl0D+6XE/IYfATzZDmZFvUbCxlFidY8YBavKgky0QSUOOhjkOYy9906WTlThIMqRkWE+7aieaxHv9tHsSR5CGpAAf201CKtb2IC5k0DYeA84HEX5RZxuUGD9Q96lXx1J3zNDOBhAHnGoOL07ggTkssJDJYhynhYyOMdqxA0Dv62eolWhvzWivqopxphjMVN3JTYGgE6/wlo8xoN+IJ+YYuv97uiPIfwm+9ILuozFkkSr3uwtegMaQNnzH6ZsfDVIAZtEDGTnoZTYWJgVdKkQXIcwHRBPgfZnrJDaWV+QwGU4mdkriukD9O7EE31MBicntRRm7oshX5NE8Xg1XbAJYFDt01xKfl9gpXLf2ldR3wMQi6hzxXKBEiyVtMQK
-Received: from localhost.localdomain (c-73-254-87-52.hsd1.wa.comcast.net. [73.254.87.52])
-        by smtp.gmail.com with ESMTPSA id ka7-20020a056a00938700b006d9a38fe569sm10809913pfb.89.2024.01.31.22.00.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 31 Jan 2024 22:00:55 -0800 (PST)
-From: mhkelley58@gmail.com
-X-Google-Original-From: mhklinux@outlook.com
-To: haiyangz@microsoft.com,
-	wei.liu@kernel.org,
-	decui@microsoft.com,
-	drawat.floss@gmail.com,
-	javierm@redhat.com,
-	deller@gmx.de,
-	daniel@ffwll.ch,
-	airlied@gmail.com,
-	tzimmermann@suse.de
-Cc: dri-devel@lists.freedesktop.org,
+	s=arc-20240116; t=1706771542; c=relaxed/simple;
+	bh=9pSdTqppayXVg8e6uEt07WBrfPZEDwNrE4b0Y5LSgg8=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=WvDoHgWvKjaw4ayz0TGqG7nMqT9e1w79fQzICL+E6+9MWli8QcoPXfMkKSQYJfBi91TM9gEYba3pyG+SgOChbV1+BfYg04gpxsr4D6RFb7UivFfHVMEwlB0funamwhi++6rid8Uo5g28FSdyz1x3ZfoG3W6KyTB/RstQ2e4ZRbA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 65cdf20534ff4e049a204efcd879dd7c-20240201
+X-CID-O-RULE: Release_Ham
+X-CID-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.35,REQID:1eff9a06-e204-4097-8ba7-f29e89d81adb,IP:15,
+	URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACT
+	ION:release,TS:-5
+X-CID-INFO: VERSION:1.1.35,REQID:1eff9a06-e204-4097-8ba7-f29e89d81adb,IP:15,UR
+	L:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-5
+X-CID-META: VersionHash:5d391d7,CLOUDID:4972e68e-e2c0-40b0-a8fe-7c7e47299109,B
+	ulkID:240201150131SZXINURA,BulkQuantity:0,Recheck:0,SF:19|44|66|24|17|102,
+	TC:nil,Content:0,EDM:-3,IP:-2,URL:1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
+	,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI,
+	TF_CID_SPAM_ULS
+X-UUID: 65cdf20534ff4e049a204efcd879dd7c-20240201
+X-User: liucong2@kylinos.cn
+Received: from localhost.localdomain [(116.128.244.171)] by mailgw
+	(envelope-from <liucong2@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 1121363701; Thu, 01 Feb 2024 15:01:29 +0800
+From: Cong Liu <liucong2@kylinos.cn>
+To: Helge Deller <deller@gmx.de>
+Cc: Cong Liu <liucong2@kylinos.cn>,
 	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-hyperv@vger.kernel.org
-Subject: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in hvfb_getmem()
-Date: Wed, 31 Jan 2024 22:00:22 -0800
-Message-Id: <20240201060022.233666-1-mhklinux@outlook.com>
-X-Mailer: git-send-email 2.25.1
-Reply-To: mhklinux@outlook.com
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev/sh_mobile_lcdcfb: Replace deprecated simple_strtol with kstrtol
+Date: Thu,  1 Feb 2024 15:01:27 +0800
+Message-Id: <20240201070127.3290465-1-liucong2@kylinos.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -78,38 +54,35 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Michael Kelley <mhklinux@outlook.com>
+This patch replaces the use of the deprecated simple_strtol [1] function
+in the sh_mobile_lcdcfb.c file with the recommended kstrtol function.
+This change improves error handling and boundary checks.
 
-A recent commit removing the use of screen_info introduced a logic
-error. The error causes hvfb_getmem() to always return -ENOMEM
-for Generation 2 VMs. As a result, the Hyper-V frame buffer
-device fails to initialize. The error was introduced by removing
-an "else if" clause, leaving Gen2 VMs to always take the -ENOMEM
-error path.
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#simple-strtol-simple-strtoll-simple-strtoul-simple-strtoull
 
-Fix the problem by removing the error path "else" clause. Gen 2
-VMs now always proceed through the MMIO memory allocation code,
-but with "base" and "size" defaulting to 0.
-
-Fixes: 0aa0838c84da ("fbdev/hyperv_fb: Remove firmware framebuffers with aperture helpers")
-Signed-off-by: Michael Kelley <mhklinux@outlook.com>
+Signed-off-by: Cong Liu <liucong2@kylinos.cn>
 ---
- drivers/video/fbdev/hyperv_fb.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index c26ee6fd73c9..8fdccf033b2d 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -1010,8 +1010,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 			goto getmem_done;
- 		}
- 		pr_info("Unable to allocate enough contiguous physical memory on Gen 1 VM. Using MMIO instead.\n");
--	} else {
--		goto err1;
- 	}
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index eb2297b37504..5fc7d74b273e 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1278,11 +1278,11 @@ overlay_position_store(struct device *dev, struct device_attribute *attr,
+ 	int pos_x;
+ 	int pos_y;
  
- 	/*
+-	pos_x = simple_strtol(buf, &endp, 10);
++	pos_x = kstrtol(buf, &endp, 10);
+ 	if (*endp != ',')
+ 		return -EINVAL;
+ 
+-	pos_y = simple_strtol(endp + 1, &endp, 10);
++	pos_y = kstrtol(endp + 1, &endp, 10);
+ 	if (isspace(*endp))
+ 		endp++;
+ 
 -- 
-2.25.1
+2.34.1
 

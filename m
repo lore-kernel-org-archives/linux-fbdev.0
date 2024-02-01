@@ -1,140 +1,126 @@
-Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F3D3159583;
-	Thu,  1 Feb 2024 09:19:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706779148; cv=pass; b=HYRZM3vH55U/e3KUsyDzIeNn5DFyiAgWvdoNZoXm6/j7ZKhMGoFRSKottQxLtowDTGgom3BfC277ceNZTvJtwXSf8XqxlJTlQ5q2tinC9Nw+Lv2/Z/tGjnQYU6GLP/s70BYTF28fN+QEoH+Ehg0pwPyAZ2uwnfEMFgmOhwVBzqs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706779148; c=relaxed/simple;
-	bh=R2/KugRaeWca7L8ElD1e0FLg7bs8qEI5wiMRWQAzd80=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MPh1JsxgM55xeNPI1fExecM0lYQLuMqvK8j2VW0CUdP9kPfB+60MVTlP3jyGhVCg6ezv8l03OFw61VJZEKNgdNoJmx2c87HquBavPkU6y12EDjCgYmxNpV0IbXgI4Qw/0IvtJiA+tCHZtg5eipUV6L9k+wY92l5L+Z7v2/MJa2E=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=QLzeQBYW; arc=pass smtp.client-ip=185.185.170.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0745C4DA0A;
+	Thu,  1 Feb 2024 10:04:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1706781843; cv=none; b=itMp8nQL4Cy1X17r8GSh6QhFJve9fF2ElmOb//6g4ngTYFFy+yHbg+coD6Jhep6crffMmY1qLI7++L9nxSYeMkIMmYxnCTsj304KNKsIw4oun9VtW0bNWzD2bhUdJfalmhXx/b0BBF1/mE5yPaTGOK6kGgtO+LiFCk8TBaziiuE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1706781843; c=relaxed/simple;
+	bh=/6GAHSLsbRsu7ttcJNlM/3SSJlg6wlpPIJ8gRwHmcNQ=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=niUMc8Vo65NuHH512+gue7+VnY8Yu2kqWXh/fS+YzUD5Id22wrZBjNicxxA9AeDt5W/yRD/bAKUg8dhE5cCPQntmxOlKGROrPx2e5i5hYp43F7S//lhbz1a3qTj7Ch5KaFSKNhN38U4XqnbTGFLu5C7Sl3Alz3qDTCkRVLdwQXQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EDgXVr7Q; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="QLzeQBYW"
-Received: from hillosipuli.retiisi.eu (80-248-247-191.cust.suomicom.net [80.248.247.191])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: sailus)
-	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4TQYHk0RBKz49Q4M;
-	Thu,  1 Feb 2024 11:18:57 +0200 (EET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
-	t=1706779139;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0Fpy/KbSzjZ8m/Xpg84MM6yz5okV9u4UdrP7s0ILl8o=;
-	b=QLzeQBYWyIizNCEdOO0UnX0HbEbBMsM6ktPq78KqRpoDIQ8DmizFrGfVVnqwyqtUM/JaQ+
-	erh45k6PJI0YU0dVIUAuNMpYqhechz6r7RLjPhP0fCld4o9s92kwIfth9sixHAur8GV2ye
-	G2lFy1SdeH9AtNZFleuMzdFQqETUVPDqw+urOJfKPNLmyuvp4bBGSIV+V4ig0+XrumyWw8
-	07fO25P6bDSPhfUBeJnaRCgXxunatKkjhJf6ewRWNftJ32L9nbl7zxsY62LhrL6VcpImO1
-	cu/F04Wn3EOnsDbdb61x+zQZO1Yl5mrbRGKmKp8rOJ1aKctoF/qjfKxyftAoLg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-	s=lahtoruutu; t=1706779139;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0Fpy/KbSzjZ8m/Xpg84MM6yz5okV9u4UdrP7s0ILl8o=;
-	b=NknHwVeZQJph2n5Ymg8Coj2j1/Q2mhhDK6vMUerjuy1o4kzQBFLyw6FjOzTBjxdEHsyG5l
-	mGxwX+TYvyaeBrDhVHKBQEpF3iFhU6h9WDDTUXmLIDiwLhwnGaWiQE7J54Gz4I+J6Xsfkd
-	0XKjFaruAqV8fQa78frFvSmUxR09PvGIFkumiQy+u5QzJuymMuyEzzZzdhePLaudoRtmi+
-	H00XLzwqiTuH2uJ2jx7uUy5JYxlmfWZ3UNNc34jvL6Y53pYP1Sfaw5ysl05YQTVbelZj7M
-	qrK3owq9nvbhux0AG2BXRMCG37dovyKGhjdI1NAXn511Tfdk8kQ+Dsnc+eUzHQ==
-ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1706779139; a=rsa-sha256;
-	cv=none;
-	b=NXxTkNsVQcVrRPfV3ZqrLN9BDgTVvbgp7hawQ7Q6lKlQaDSt++h0qI6VuOwvJvBLnyCz2N
-	sGZ+lNoYYhWvTGiUU7Bf2GwvZ+WJedRCZNClnC5pZzjA4JKpjpBXsUOc/2qBSERXjSVbFF
-	1kUXTsWurtS6VjuyIEFk594JHCAhlyMxRNZPNtFALs/nyBqKa1pE9ZXCtmqlhAvhs47v6x
-	Zr9qQ8tQ0DEeUNNVFnBzVgvDYhgiqkt/0isTXz8cq9vVKlFUoLg/56p24AjjeXPzwMs5+X
-	vOzDNbGz+dH9WCIlxrE9bSo2nb6QIlWzGvwiKZ/ftfGIOgSJJHSC0KxxDGfyTA==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=sailus smtp.mailfrom=sakari.ailus@iki.fi
-Received: from valkosipuli.retiisi.eu (valkosipuli.localdomain [192.168.4.2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by hillosipuli.retiisi.eu (Postfix) with ESMTPS id B5FC0634C93;
-	Thu,  1 Feb 2024 11:18:56 +0200 (EET)
-Date: Thu, 1 Feb 2024 09:18:56 +0000
-From: Sakari Ailus <sakari.ailus@iki.fi>
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
-	Frank Rowand <frowand.list@gmail.com>, Helge Deller <deller@gmx.de>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mark Brown <broonie@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Saravana Kannan <saravanak@google.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 00/13] of: property: add port base loop
-Message-ID: <ZbtiAJklkLaXWY20@valkosipuli.retiisi.eu>
-References: <87fryhklhb.wl-kuninori.morimoto.gx@renesas.com>
- <20240129122736.GC8131@pendragon.ideasonboard.com>
- <ZbeoPBvGJlaJco_J@valkosipuli.retiisi.eu>
- <87zfwnirps.wl-kuninori.morimoto.gx@renesas.com>
- <Zbil22dm9x2ZudJC@valkosipuli.retiisi.eu>
- <582ede29-2df7-4f01-a03b-da59d9f56d74@ideasonboard.com>
- <Zbin6Pg6oNp0cTNO@valkosipuli.retiisi.eu>
- <87ttmu76co.wl-kuninori.morimoto.gx@renesas.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EDgXVr7Q"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1706781841; x=1738317841;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=/6GAHSLsbRsu7ttcJNlM/3SSJlg6wlpPIJ8gRwHmcNQ=;
+  b=EDgXVr7QFKi2eVZu8xtNUNSMwxctxtyddCppE9YJkCb0ZVdbkAueYZn6
+   K/WDAmE6lwdfBKY4x1HaS0WZ1gJZt+KmSPM0KWiBx0f32m2lJ467hQqUD
+   vjlJIKVpFe6aEYBaJD2Tiz34aoAs7+n4q+o6vuOddia7cbA9OpqkPvQs/
+   O6JSddoODXtU1DXc4IhErUbZA5+4isekfYZB5Z/qqhFw/Yazn8jyjhGJn
+   nxiJNQX/RFPHt3xYBAEQjLzxyfuHQgNGMrhuoNuamCt2PI3RlRw8VpQMx
+   ajpFzNg6kCzuRCAbqVSDnVDMEX9jC3ME7HtYZEJRm6ZeP0qePidWj7Y0S
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="11229729"
+X-IronPort-AV: E=Sophos;i="6.05,234,1701158400"; 
+   d="scan'208";a="11229729"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2024 02:04:00 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="908194780"
+X-IronPort-AV: E=Sophos;i="6.05,234,1701158400"; 
+   d="scan'208";a="908194780"
+Received: from aragners-mobl.ger.corp.intel.com (HELO localhost) ([10.252.43.111])
+  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2024 02:03:56 -0800
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Cong Liu <liucong2@kylinos.cn>, Daniel Vetter <daniel@ffwll.ch>, Helge
+ Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Cong Liu <liucong2@kylinos.cn>,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] fbdev/core: Replace deprecated simple_strtol with kstrtol
+In-Reply-To: <20240201070216.3291999-1-liucong2@kylinos.cn>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20240201070216.3291999-1-liucong2@kylinos.cn>
+Date: Thu, 01 Feb 2024 12:03:53 +0200
+Message-ID: <87cytgh56e.fsf@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ttmu76co.wl-kuninori.morimoto.gx@renesas.com>
+Content-Type: text/plain
 
-Hi Morimoto-san,
+On Thu, 01 Feb 2024, Cong Liu <liucong2@kylinos.cn> wrote:
+> This patch replaces the use of the deprecated simple_strtol [1] function
+> in the modedb.c file with the recommended kstrtol function. This change
+> improves error handling and boundary checks.
+>
+> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#simple-strtol-simple-strtoll-simple-strtoul-simple-strtoull
+>
+> Signed-off-by: Cong Liu <liucong2@kylinos.cn>
 
-On Tue, Jan 30, 2024 at 11:24:07PM +0000, Kuninori Morimoto wrote:
-> 
-> Hi Sakari
-> 
-> > > > > I'm not familiar with fwnode, but in my quick check, it seems it is easy
-> > > > > to expand fwnode side functions if of_graph side function exist ?
-> > > > 
-> > > > That would be one way to do that, yes, but I suggested using the existing
-> > > > endpoint iterators as that would keep the firmware specific implementation
-> > > > more simple. The (slight) drawback is that for each node returned, you'd
-> > > > need to check its parent (i.e. port node) is the same as the port you're
-> > > > interested in. The alternative may involve reworking the struct
-> > > > fwnode_operations interface somewhat, including swnode, DT and ACPI
-> > > > implementations.
-> > > > 
-> > > 
-> > > But we still need the of_* versions, don't we, for patches 4 to 13?
-> > 
-> > Yes, my comment was indeed about the fwnode property API only.
-> 
-> Thank you for your suggestion.
-> But I'm not familiar with fwnode, and it seems we still need of_*,
-> I will keep current style (= non fwnode) in v3
+This is completely wrong, and obviously not tested at all.
 
-The fwnode API should be kept in sync with the OF (and other firmware
-specific) API. Merging your set in its current form would leave fwnode API
-impaired. Therefore I'd very much prefer to see this set add similar fwnode
-APIs, too.
+The recommended replacements are *not* drop-in replacements. Look into
+the documentation of the functions.
+
+BR,
+Jani.
+
+
+> ---
+>  drivers/video/fbdev/core/modedb.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
+> index 7196b055f2bd..eebbbc7e2aa3 100644
+> --- a/drivers/video/fbdev/core/modedb.c
+> +++ b/drivers/video/fbdev/core/modedb.c
+> @@ -661,7 +661,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
+>  				namelen = i;
+>  				if (!refresh_specified && !bpp_specified &&
+>  				    !yres_specified) {
+> -					refresh = simple_strtol(&name[i+1], NULL,
+> +					refresh = kstrtol(&name[i+1], NULL,
+>  								10);
+>  					refresh_specified = 1;
+>  					if (cvt || rb)
+> @@ -672,7 +672,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
+>  			case '-':
+>  				namelen = i;
+>  				if (!bpp_specified && !yres_specified) {
+> -					bpp = simple_strtol(&name[i+1], NULL,
+> +					bpp = kstrtol(&name[i+1], NULL,
+>  							    10);
+>  					bpp_specified = 1;
+>  					if (cvt || rb)
+> @@ -682,7 +682,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
+>  				break;
+>  			case 'x':
+>  				if (!yres_specified) {
+> -					yres = simple_strtol(&name[i+1], NULL,
+> +					yres = kstrtol(&name[i+1], NULL,
+>  							     10);
+>  					yres_specified = 1;
+>  				} else
+> @@ -719,7 +719,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
+>  			}
+>  		}
+>  		if (i < 0 && yres_specified) {
+> -			xres = simple_strtol(name, NULL, 10);
+> +			xres = kstrtol(name, NULL, 10);
+>  			res_specified = 1;
+>  		}
+>  done:
 
 -- 
-Regards,
-
-Sakari Ailus
+Jani Nikula, Intel

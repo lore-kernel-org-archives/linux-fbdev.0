@@ -1,101 +1,82 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50F7D15B11F;
-	Thu,  1 Feb 2024 10:04:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.55.52.93
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C7F815B99C;
+	Thu,  1 Feb 2024 11:46:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706781866; cv=none; b=bJb5Et9d9081TpGeTcECHdTPxRLG8jPDq3SJp5qkdN/oiUWBjoQ1pTm0lM5Lfr4o7unuT/rb8LRbF0RrqIQJ+1JUnXkXtS5B/LGBoftZ6+yTsfYXLbum/YE+MpIwLuIJlqvhD4e0myWpBLcD+YYgQUnQQIxQQsVgxMRcZSL1wnA=
+	t=1706788010; cv=none; b=azH9UXkOjNjX0YSlu5658UiDoV+2oxmob2KZIjLLwneHHqxSUi+nxsMjYeyRIz9ANo5MhWJF6fmJRHpVehEsd0Ki8a+e9LU6GcvSsbEMkEzbQaeJH6CCQezNWMQwFjbp3j4plWmLKfsSqgKmFq+B3MiUMvafc8/o/wOZWP7uxX0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706781866; c=relaxed/simple;
-	bh=KdgUCk8gXka/4nZtIoc5a4Qez4+qKNQZz5DWDBkPpJ4=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=I864DciMPyhcVjPRQnNU3G7Fk4clRQ1e3qtJSbnZB2gYTYw98JfuGzFyO+YPfqHrHJ+r0amoUPflRjTP3bvKFP7da4aFb2s+qNg6G+H2qjz3IHBnvRvT7UqhDnVg9OovzGh2kdL391gEdAwY176Lx33L3I4BxtOQIe7JZv+uMFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VXMUwAX7; arc=none smtp.client-ip=192.55.52.93
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1706788010; c=relaxed/simple;
+	bh=B6kqzkRK4glDQvlEuCa9QVdBlMc7GkHgutxdKIuYASU=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=VsPV4hQef6Nl2LJLkFdBo/foKO4ybIrJowpM7ZSV7VVc4txlGa/c//YgpfWXeq9ozCuOwSr+Y4P1QXUpYR1LN3nEIrZk3Va8x/D3GJAFDi7UpWyPmCUbdxo7JWcPhzkLXyG4zGAt2B2dRx8YbCWfaXL9ABGb29r1fWp8yJZGh9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BU9Dmkd3; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VXMUwAX7"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1706781864; x=1738317864;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=KdgUCk8gXka/4nZtIoc5a4Qez4+qKNQZz5DWDBkPpJ4=;
-  b=VXMUwAX78eja/LpntaPKECzocIyY+u3gurXFyLBv5d3e4RgdsJMjJasS
-   sQpHbbycEQdfojgI8xxn0+ywU0xMWvPB9zH7ZDME5V+ADgKvMvkf+gXcl
-   KbVdAay8pN3y6oFtIy0HjrKMhwgHcRntLEM1E4dbsI2smfvTwd239kwzn
-   jS042PY5YUySIjZd5NXQV6ntLa3HAjF72tonkkDCGnZOuDpAmkzEXAGb4
-   4SfRbvXOXnsETN/NvWBZDrRy9KrsZdhL4S1oNDajJdwGt6EvfwNcD7Yqp
-   kCuflxjDH399IOod2aAUz5HByc7dqWWeoAGphaSgVLmOd5WqhKmBOQbJ/
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="400992750"
-X-IronPort-AV: E=Sophos;i="6.05,234,1701158400"; 
-   d="scan'208";a="400992750"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2024 02:04:23 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.05,234,1701158400"; 
-   d="scan'208";a="23070696"
-Received: from aragners-mobl.ger.corp.intel.com (HELO localhost) ([10.252.43.111])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2024 02:04:21 -0800
-From: Jani Nikula <jani.nikula@linux.intel.com>
-To: Cong Liu <liucong2@kylinos.cn>, Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, Cong Liu <liucong2@kylinos.cn>,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] fbdev/sh_mobile_lcdcfb: Replace deprecated
- simple_strtol with kstrtol
-In-Reply-To: <20240201070127.3290465-1-liucong2@kylinos.cn>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20240201070127.3290465-1-liucong2@kylinos.cn>
-Date: Thu, 01 Feb 2024 12:04:18 +0200
-Message-ID: <87a5okh55p.fsf@intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BU9Dmkd3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97BC0C433F1;
+	Thu,  1 Feb 2024 11:46:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706788010;
+	bh=B6kqzkRK4glDQvlEuCa9QVdBlMc7GkHgutxdKIuYASU=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=BU9Dmkd3b5PaBA9/hvqiJqUvtIzvUbxV+Gl5YTvyNJ+LpLHTKsI7NkCho6lTprxi/
+	 C+nDFKDuNTxySZcwYmjmFP7/7rlyXytOWKq6E2C3JlWH/LvmRe+0sGL6RPxR2g2O3e
+	 xa+3UZEUyNLM02j96GUksR4UnUPN4kDl53DYI1drM6zdIQbJQ0jtr6ZzwQLLYNWobr
+	 23NNiexqgAtEzo7A/1dOtraNfEhXXEcFC1j/3e+zEZEUJhCIWKt1C6KmxcjzpEBpfb
+	 iY/6OwaIB43ugX3lbPFWIpLSMETL0XkWi9UGtxuSqeMuVnQAx84gb4IrYBEdRShmI2
+	 ZOOlxdUxVCPnw==
+From: Lee Jones <lee@kernel.org>
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
+ Rob Herring <robh+dt@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Cc: Karel Balej <balejk@matfyz.cz>, ~postmarketos/upstreaming@lists.sr.ht, 
+ phone-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20240125-ktd2801-v5-0-e22da232a825@skole.hr>
+References: <20240125-ktd2801-v5-0-e22da232a825@skole.hr>
+Subject: Re: [PATCH v5 0/4] Kinetic ExpressWire library and KTD2801
+ backlight driver
+Message-Id: <170678800633.1338717.2755658439241529457.b4-ty@kernel.org>
+Date: Thu, 01 Feb 2024 11:46:46 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.12.3
 
-On Thu, 01 Feb 2024, Cong Liu <liucong2@kylinos.cn> wrote:
-> This patch replaces the use of the deprecated simple_strtol [1] function
-> in the sh_mobile_lcdcfb.c file with the recommended kstrtol function.
-> This change improves error handling and boundary checks.
->
-> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#simple-strtol-simple-strtoll-simple-strtoul-simple-strtoull
->
-> Signed-off-by: Cong Liu <liucong2@kylinos.cn>
+On Thu, 25 Jan 2024 16:30:52 +0100, Duje Mihanović wrote:
+> This series adds support for the Kinetic KTD2801 LED backlight driver
+> IC found in samsung,coreprimevelte.
+> 
+> Support is already upstream for the somewhat similar KTD2692 flash
+> driver, and this series since v3 also moves its ExpressWire code into a
+> separate library and converts the KTD2692 driver to use that library.
+> 
+> [...]
 
-This is completely wrong, and obviously not tested at all.
+Applied, thanks!
 
-The recommended replacements are *not* drop-in replacements. Look into
-the documentation of the functions.
+[1/4] leds: introduce ExpressWire library
+      commit: 25ae5f5f4168bbf91e7b6b126d24c30c91ef952e
+[2/4] leds: ktd2692: convert to use ExpressWire library
+      commit: e59a15af7aa690fa0997758df23069a9f0756c49
+[3/4] dt-bindings: backlight: add Kinetic KTD2801 binding
+      commit: 4ac621a418ce8f4c562b50ea6f676196bd5262da
+[4/4] backlight: Add Kinetic KTD2801 backlight support
+      commit: 66c76c1cd984c14660453dfa2118014817924375
 
-BR,
-Jani.
+--
+Lee Jones [李琼斯]
 
-> ---
->  drivers/video/fbdev/sh_mobile_lcdcfb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> index eb2297b37504..5fc7d74b273e 100644
-> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> @@ -1278,11 +1278,11 @@ overlay_position_store(struct device *dev, struct device_attribute *attr,
->  	int pos_x;
->  	int pos_y;
->  
-> -	pos_x = simple_strtol(buf, &endp, 10);
-> +	pos_x = kstrtol(buf, &endp, 10);
->  	if (*endp != ',')
->  		return -EINVAL;
->  
-> -	pos_y = simple_strtol(endp + 1, &endp, 10);
-> +	pos_y = kstrtol(endp + 1, &endp, 10);
->  	if (isspace(*endp))
->  		endp++;
-
--- 
-Jani Nikula, Intel

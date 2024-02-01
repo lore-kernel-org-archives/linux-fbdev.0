@@ -1,111 +1,227 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3351157E94;
-	Thu,  1 Feb 2024 07:13:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AD24158D76;
+	Thu,  1 Feb 2024 08:17:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706771589; cv=none; b=FXFPJPfxkshmq2Rq3H+6lreKzw07qZwA4gWNTLjcWMQyXoNzZraXIcF2NyO0ckZn2IaLk03nfo3ENAirbDcqGkdwG6g5+YjV4/0QIUajXAzyY4xlkqxc3XB6SomVoiajvnW/+UyL1jVF/LocnpJ/kQWufiK0p5jthTnVHqaOxbM=
+	t=1706775443; cv=none; b=rHmDEXRvrzRAXqtXvKnlzFH3XHubZbGEDG3ayUIqkh8PW/bsJl/Ldaaan9z681YvB64hcml7mq9kehI4YTmCmPEu/KsNnnnkI0jiwlN5G2YJNMOWSacp61/RYikcDIXjf4sIVTdtFeZd32IKV367fuwrXlyiRTj+FGR9zGC1otQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706771589; c=relaxed/simple;
-	bh=huJMH0x/uqn1CsjcUxnVfiPIVCd0M2fQhOLMlIRHHMs=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=MYwNwimYprF2q0T3nCuGFwwXiqVq0mKqu3wODJOFO/sw5/fhAjseaRmSNx+ftEjcJv/WwYZJk4/7qCy3+4/mgBzJRemOIHqPv1/tJ4CgTYnP8IUNayxYQmTIrwxWK9Yw+qQ3Z1OmKn9nycC9hO0YxNmcM5o/p7VdkNJeBhMS6mo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 791b174af724403da7687f9cd8aebb6e-20240201
-X-CID-O-RULE: Release_Ham
-X-CID-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.35,REQID:e3ed52e8-b592-4d07-9f9e-0e04c6561891,IP:15,
-	URL:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
-	ON:release,TS:0
-X-CID-INFO: VERSION:1.1.35,REQID:e3ed52e8-b592-4d07-9f9e-0e04c6561891,IP:15,UR
-	L:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:0
-X-CID-META: VersionHash:5d391d7,CLOUDID:de707f83-8d4f-477b-89d2-1e3bdbef96d1,B
-	ulkID:2402011502192136VGHT,BulkQuantity:0,Recheck:0,SF:24|17|19|44|66|38|1
-	02,TC:nil,Content:0,EDM:-3,IP:-2,URL:1,File:nil,Bulk:nil,QS:nil,BEC:nil,CO
-	L:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI,
-	TF_CID_SPAM_ULS
-X-UUID: 791b174af724403da7687f9cd8aebb6e-20240201
-X-User: liucong2@kylinos.cn
-Received: from localhost.localdomain [(116.128.244.171)] by mailgw
-	(envelope-from <liucong2@kylinos.cn>)
-	(Generic MTA)
-	with ESMTP id 568714648; Thu, 01 Feb 2024 15:02:18 +0800
-From: Cong Liu <liucong2@kylinos.cn>
-To: Daniel Vetter <daniel@ffwll.ch>,
-	Helge Deller <deller@gmx.de>
-Cc: Cong Liu <liucong2@kylinos.cn>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev/core: Replace deprecated simple_strtol with kstrtol
-Date: Thu,  1 Feb 2024 15:02:16 +0800
-Message-Id: <20240201070216.3291999-1-liucong2@kylinos.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1706775443; c=relaxed/simple;
+	bh=0XDPNqdL7AzJ4bDcrCfCzXmkLc/Eb2YnvHgnkS6F3Ug=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jh1JXgxlGzyPPwhQVFilC7GBIC1aUc2P6qIytz7aaygrJiQJs6U4a4gSTNN5y6aSayS1ar0P0aKkaTpvnA4KCemrLaZq1QbPtd41sSUpkh7bNIC0xomoyv/mqv3ie95EFwer0KxxsnBnmerevr+kf8A8LugIEWhcgfddAj/fG5U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=cPW7FbND; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=AhKU2YzR; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=cPW7FbND; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=AhKU2YzR; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="cPW7FbND";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="AhKU2YzR";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="cPW7FbND";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="AhKU2YzR"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id AF535221B1;
+	Thu,  1 Feb 2024 08:17:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1706775439; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=0XDPNqdL7AzJ4bDcrCfCzXmkLc/Eb2YnvHgnkS6F3Ug=;
+	b=cPW7FbNDeFJqv2yhvxGxmScANCxmwPm0k4uTLDHOARwWBCpMLuynx9LXS/UVNgc5pVauVB
+	g0Bjn97EoNQzCmvWuBdcHprqYbKz+o91Kl4xcscW6sVH/rL++MpkxL3M7JR+ECqn+j8yAA
+	Q8yqHoLoUve9vGowbSkGa5INsAlynUM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1706775439;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=0XDPNqdL7AzJ4bDcrCfCzXmkLc/Eb2YnvHgnkS6F3Ug=;
+	b=AhKU2YzRfbx9knOxnyhQE/ZbzDR/JP61ni1UAJ3ZqigstnrXzGRVOlm5uk/E1zcwgbF3ra
+	Nvuk5rmsXuYxltCA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1706775439; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=0XDPNqdL7AzJ4bDcrCfCzXmkLc/Eb2YnvHgnkS6F3Ug=;
+	b=cPW7FbNDeFJqv2yhvxGxmScANCxmwPm0k4uTLDHOARwWBCpMLuynx9LXS/UVNgc5pVauVB
+	g0Bjn97EoNQzCmvWuBdcHprqYbKz+o91Kl4xcscW6sVH/rL++MpkxL3M7JR+ECqn+j8yAA
+	Q8yqHoLoUve9vGowbSkGa5INsAlynUM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1706775439;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=0XDPNqdL7AzJ4bDcrCfCzXmkLc/Eb2YnvHgnkS6F3Ug=;
+	b=AhKU2YzRfbx9knOxnyhQE/ZbzDR/JP61ni1UAJ3ZqigstnrXzGRVOlm5uk/E1zcwgbF3ra
+	Nvuk5rmsXuYxltCA==
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 6268C1329F;
+	Thu,  1 Feb 2024 08:17:19 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id bjnNFo9Tu2VUQgAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Thu, 01 Feb 2024 08:17:19 +0000
+Message-ID: <f2fe331b-06cb-4729-888f-1f5eafe18d0f@suse.de>
+Date: Thu, 1 Feb 2024 09:17:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
+ hvfb_getmem()
+To: mhklinux@outlook.com, haiyangz@microsoft.com, wei.liu@kernel.org,
+ decui@microsoft.com, drawat.floss@gmail.com, javierm@redhat.com,
+ deller@gmx.de, daniel@ffwll.ch, airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org
+References: <20240201060022.233666-1-mhklinux@outlook.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20240201060022.233666-1-mhklinux@outlook.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------RSTStixnH0ez825aw0C0c0dB"
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spamd-Result: default: False [-2.59 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 FROM_HAS_DN(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de,outlook.com];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 TAGGED_RCPT(0.00)[];
+	 MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
+	 TO_DN_NONE(0.00)[];
+	 MIME_BASE64_TEXT_BOGUS(1.00)[];
+	 MID_RHS_MATCH_FROM(0.00)[];
+	 HAS_ATTACHMENT(0.00)[];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 MIME_BASE64_TEXT(0.10)[];
+	 RCPT_COUNT_TWELVE(0.00)[13];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[outlook.com:email,suse.de:email];
+	 SIGNED_PGP(-2.00)[];
+	 FREEMAIL_TO(0.00)[outlook.com,microsoft.com,kernel.org,gmail.com,redhat.com,gmx.de,ffwll.ch];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
+	 RCVD_TLS_ALL(0.00)[];
+	 SUSPICIOUS_RECIPS(1.50)[];
+	 BAYES_HAM(-3.00)[100.00%]
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Spam-Score: -2.59
 
-This patch replaces the use of the deprecated simple_strtol [1] function
-in the modedb.c file with the recommended kstrtol function. This change
-improves error handling and boundary checks.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------RSTStixnH0ez825aw0C0c0dB
+Content-Type: multipart/mixed; boundary="------------CbJRBa0hGe4rp2SYqjcA0c0b";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: mhklinux@outlook.com, haiyangz@microsoft.com, wei.liu@kernel.org,
+ decui@microsoft.com, drawat.floss@gmail.com, javierm@redhat.com,
+ deller@gmx.de, daniel@ffwll.ch, airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org
+Message-ID: <f2fe331b-06cb-4729-888f-1f5eafe18d0f@suse.de>
+Subject: Re: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
+ hvfb_getmem()
+References: <20240201060022.233666-1-mhklinux@outlook.com>
+In-Reply-To: <20240201060022.233666-1-mhklinux@outlook.com>
 
-[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#simple-strtol-simple-strtoll-simple-strtoul-simple-strtoull
+--------------CbJRBa0hGe4rp2SYqjcA0c0b
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Signed-off-by: Cong Liu <liucong2@kylinos.cn>
----
- drivers/video/fbdev/core/modedb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+SGkNCg0KQW0gMDEuMDIuMjQgdW0gMDc6MDAgc2NocmllYiBtaGtlbGxleTU4QGdtYWlsLmNv
+bToNCj4gRnJvbTogTWljaGFlbCBLZWxsZXkgPG1oa2xpbnV4QG91dGxvb2suY29tPg0KPiAN
+Cj4gQSByZWNlbnQgY29tbWl0IHJlbW92aW5nIHRoZSB1c2Ugb2Ygc2NyZWVuX2luZm8gaW50
+cm9kdWNlZCBhIGxvZ2ljDQo+IGVycm9yLiBUaGUgZXJyb3IgY2F1c2VzIGh2ZmJfZ2V0bWVt
+KCkgdG8gYWx3YXlzIHJldHVybiAtRU5PTUVNDQo+IGZvciBHZW5lcmF0aW9uIDIgVk1zLiBB
+cyBhIHJlc3VsdCwgdGhlIEh5cGVyLVYgZnJhbWUgYnVmZmVyDQo+IGRldmljZSBmYWlscyB0
+byBpbml0aWFsaXplLiBUaGUgZXJyb3Igd2FzIGludHJvZHVjZWQgYnkgcmVtb3ZpbmcNCj4g
+YW4gImVsc2UgaWYiIGNsYXVzZSwgbGVhdmluZyBHZW4yIFZNcyB0byBhbHdheXMgdGFrZSB0
+aGUgLUVOT01FTQ0KPiBlcnJvciBwYXRoLg0KPiANCj4gRml4IHRoZSBwcm9ibGVtIGJ5IHJl
+bW92aW5nIHRoZSBlcnJvciBwYXRoICJlbHNlIiBjbGF1c2UuIEdlbiAyDQo+IFZNcyBub3cg
+YWx3YXlzIHByb2NlZWQgdGhyb3VnaCB0aGUgTU1JTyBtZW1vcnkgYWxsb2NhdGlvbiBjb2Rl
+LA0KPiBidXQgd2l0aCAiYmFzZSIgYW5kICJzaXplIiBkZWZhdWx0aW5nIHRvIDAuDQoNCklu
+ZGVlZCwgdGhhdCdzIGhvdyBpdCB3YXMgc3VwcG9zZWQgdG8gd29yay4gSURLIGhvdyBJIGRp
+ZG4ndCBub3RpY2UgdGhpcyANCmJ1Zy4gVGhhbmtzIGEgbG90IGZvciB0aGUgZml4Lg0KDQo+
+IA0KPiBGaXhlczogMGFhMDgzOGM4NGRhICgiZmJkZXYvaHlwZXJ2X2ZiOiBSZW1vdmUgZmly
+bXdhcmUgZnJhbWVidWZmZXJzIHdpdGggYXBlcnR1cmUgaGVscGVycyIpDQo+IFNpZ25lZC1v
+ZmYtYnk6IE1pY2hhZWwgS2VsbGV5IDxtaGtsaW51eEBvdXRsb29rLmNvbT4NCg0KUmV2aWV3
+ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0KDQo+IC0t
+LQ0KPiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvaHlwZXJ2X2ZiLmMgfCAyIC0tDQo+ICAgMSBm
+aWxlIGNoYW5nZWQsIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy92aWRlby9mYmRldi9oeXBlcnZfZmIuYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvaHlwZXJ2
+X2ZiLmMNCj4gaW5kZXggYzI2ZWU2ZmQ3M2M5Li44ZmRjY2YwMzNiMmQgMTAwNjQ0DQo+IC0t
+LSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvaHlwZXJ2X2ZiLmMNCj4gKysrIGIvZHJpdmVycy92
+aWRlby9mYmRldi9oeXBlcnZfZmIuYw0KPiBAQCAtMTAxMCw4ICsxMDEwLDYgQEAgc3RhdGlj
+IGludCBodmZiX2dldG1lbShzdHJ1Y3QgaHZfZGV2aWNlICpoZGV2LCBzdHJ1Y3QgZmJfaW5m
+byAqaW5mbykNCj4gICAJCQlnb3RvIGdldG1lbV9kb25lOw0KPiAgIAkJfQ0KPiAgIAkJcHJf
+aW5mbygiVW5hYmxlIHRvIGFsbG9jYXRlIGVub3VnaCBjb250aWd1b3VzIHBoeXNpY2FsIG1l
+bW9yeSBvbiBHZW4gMSBWTS4gVXNpbmcgTU1JTyBpbnN0ZWFkLlxuIik7DQo+IC0JfSBlbHNl
+IHsNCj4gLQkJZ290byBlcnIxOw0KPiAgIAl9DQo+ICAgDQo+ICAgCS8qDQoNCi0tIA0KVGhv
+bWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdh
+cmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2MSBO
+dWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5kcmV3
+IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJnKQ0K
 
-diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
-index 7196b055f2bd..eebbbc7e2aa3 100644
---- a/drivers/video/fbdev/core/modedb.c
-+++ b/drivers/video/fbdev/core/modedb.c
-@@ -661,7 +661,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 				namelen = i;
- 				if (!refresh_specified && !bpp_specified &&
- 				    !yres_specified) {
--					refresh = simple_strtol(&name[i+1], NULL,
-+					refresh = kstrtol(&name[i+1], NULL,
- 								10);
- 					refresh_specified = 1;
- 					if (cvt || rb)
-@@ -672,7 +672,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 			case '-':
- 				namelen = i;
- 				if (!bpp_specified && !yres_specified) {
--					bpp = simple_strtol(&name[i+1], NULL,
-+					bpp = kstrtol(&name[i+1], NULL,
- 							    10);
- 					bpp_specified = 1;
- 					if (cvt || rb)
-@@ -682,7 +682,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 				break;
- 			case 'x':
- 				if (!yres_specified) {
--					yres = simple_strtol(&name[i+1], NULL,
-+					yres = kstrtol(&name[i+1], NULL,
- 							     10);
- 					yres_specified = 1;
- 				} else
-@@ -719,7 +719,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 			}
- 		}
- 		if (i < 0 && yres_specified) {
--			xres = simple_strtol(name, NULL, 10);
-+			xres = kstrtol(name, NULL, 10);
- 			res_specified = 1;
- 		}
- done:
--- 
-2.34.1
 
+--------------CbJRBa0hGe4rp2SYqjcA0c0b--
+
+--------------RSTStixnH0ez825aw0C0c0dB
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmW7U44FAwAAAAAACgkQlh/E3EQov+BQ
++Q/+LraNaBvf8EiYIkWJ1xjl5gBQr1UbHhEGBgLY78kB5t6m4EP76UxbT36hsj8dq9TcYKX7dWe5
+Jmyffr8h4L56Hy34Gr3YnXX67zqEFP3DULTuJyAUgBsjh2rNwZ3gPMyeIEPEGFIsi9CG/v/KdICN
+oSgtrkJNq/gtqn+uRRY4dRWEn4JTz7FgW9lcg7yJeocnHNXJNd5f4RVOE/mF6pe3K1eLV5Xar4uv
+XMxz7DTPg1eNYEsJDGd2rL0QkhYrzt06T/JljBHl8A3O3gfUMpnQtYXKU2tdFcp/Arqpgy1IqyTb
+rmcV6r1Wp4ECHfQNca4jtd9XfHNgfBPI9N9ZQXTKTt5/WxxuEVIXQXHge87sQeCaZM4uh5Pc0kyd
+EWQpiB1v3XOzpJun48cmaQWEbVYvgDVXqR8N/hjot3tYD2cTiPwX6ZVbIGQ95MyNO5GfWWsITqF/
+ou/HKeeDQKIU+zVtZizo4EC+P6uvKyW3vfctRJ9X5MnWTdyw2wpjUs5AzdFnu/KgflB5RUlYUTyg
+yByWp+2YEjnzoW84h1u5BTbwr58gHlpljIqTRWRf/ZNNxpWJD58volM8+SlDyGD+h7Ujw4Xpn9To
+xouMOQe7LPtKRq5GvE2dAKUYCkjW1bSThD0pIdYK8KCOf5IuPvFYz+kysuUTtNlm+bSBipTgsqLT
+Gu4=
+=bN3A
+-----END PGP SIGNATURE-----
+
+--------------RSTStixnH0ez825aw0C0c0dB--

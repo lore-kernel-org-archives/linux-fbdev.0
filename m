@@ -1,75 +1,75 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 651DE13E215
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BFA713DB9E
 	for <linux-fbdev@vger.kernel.org>; Fri,  2 Feb 2024 12:01:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706875308; cv=none; b=Fg67LAZpcZOJrOM712Ing8VyFi1pJMtizb8AG+DKsb+DxME5HaJxoWTqmjQ3gCHm5rMAzgUZCSkHMy8qRYr5MmfA9bsFKOhe6C5gaz8MRF+HjOsAVta4yVLyFsYCkH7J46wxoG2rfAwzmaD9t5+rwZT0jd8swJKPJ9w/EY5hhZo=
+	t=1706875308; cv=none; b=qr3ofTdRDm02HqyLhOPk3HN8HYRddGZn3ZN8+WTwiCU5ybPw/cdZ/Um0/nE0oB7EasOJAKtLTUo5xriU3i55MUu4Wf4T/A+X0sQIAP4v9CK2tGDN55av2n8kenmHkaUKy9PeMBuPWa0u9kscDkH1weq/OhA8A7HF0XQi3gqttkg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1706875308; c=relaxed/simple;
-	bh=yRH5f9ZztNjfVIgD/Y3NfNpuFa1yocGTO/z9dPxRiRk=;
+	bh=cII07ZVkYr5EYEbiTAIRFoGZj9yihKnhBm6Dzc5b8hI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TnXiBksXrUI0vmMaRfu/3MddVTa25VmutY8rwuaUcAxXwZoTxf/XMcgIL4xtIgUc87/ttYnClR7VFpP7TVWgro1Hypa+C0I7dXbcfpWQ4g3+ztTIoT02DAle14Rdu3Na8PVzYxXJI78FZ+L69HL8BiXlEPXdR+Cghc5CLFUpd/Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WPKGrCK4; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=bbRvYMC7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WPKGrCK4; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=bbRvYMC7; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=XBlc1ztCxUyBVSrki1ZcWYxRMCbJPfMI79yfT55BsXxtU3sv0q8EYgbk9mFMzY+A3EbuQilJUYNk/LdYwc8ksJvAo/kBEMbdSk06mxxMrBBhZh/mMFCfP1JUXSaK6gPyGJa8PY2hvBAvayi5T549IxZMa7PmhVNIw/+uza/ICAM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=i9FPphYC; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CDCrybok; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=i9FPphYC; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CDCrybok; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WPKGrCK4";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="bbRvYMC7";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WPKGrCK4";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="bbRvYMC7"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="i9FPphYC";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CDCrybok";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="i9FPphYC";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CDCrybok"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A73BC22350;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 7EDC02234C;
 	Fri,  2 Feb 2024 12:01:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1706875304; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UQL2HPWHVgX5VlEVJY/c9n5aXeS2yj/n6M8vZ4j/Eao=;
-	b=WPKGrCK4cPwfch+jnPupvnpvBGLOg9OyYOrUDcT3Nb35YzYNNLA+vQK9kdHY2hmsBaUIuZ
-	3rSQ8AQt19Lcin7TeOJq30HE2QsLAvdUIM2p3Z4nCOTFGOWzFaQxpp3AjzOyqGgpEfDxai
-	bypdOqFrz9+nhZKBvlo9ruM/9Rcgy2s=
+	bh=G8nCDHPTtkmTE95MOrSrMIvvtI4MS6W1afM0QAvTJ0w=;
+	b=i9FPphYCtgdcbZTtRFoTL6cIPxFchHSH0CVG9ATcSI2KDBPv4C1/B//+bJZg06/cUIf2Il
+	9ZNFQTTnA/qzLNIoanJHVPfQzTIQZvtCVynJvAa2r8E2SibJ7zXMkYOXhjLBT6AdpwiGJq
+	8J3vKEdfaqs/iUg4/1sMerPxoQX24X8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1706875304;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UQL2HPWHVgX5VlEVJY/c9n5aXeS2yj/n6M8vZ4j/Eao=;
-	b=bbRvYMC7o+CwYqk0vokCfzeP+2riqBvCnb0VXm8bLnPwGJENWj+kCd2C+CMk9b7ZCIMthn
-	HLdKHIknSPaGbTBQ==
+	bh=G8nCDHPTtkmTE95MOrSrMIvvtI4MS6W1afM0QAvTJ0w=;
+	b=CDCrybokwTEYDTydY32NXf2rxisMtcO7eBjVMcpr4kf/geYBtfd1LSDFi54hDs+O3gf46N
+	iL0jJQWAPspzcIAg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1706875304; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UQL2HPWHVgX5VlEVJY/c9n5aXeS2yj/n6M8vZ4j/Eao=;
-	b=WPKGrCK4cPwfch+jnPupvnpvBGLOg9OyYOrUDcT3Nb35YzYNNLA+vQK9kdHY2hmsBaUIuZ
-	3rSQ8AQt19Lcin7TeOJq30HE2QsLAvdUIM2p3Z4nCOTFGOWzFaQxpp3AjzOyqGgpEfDxai
-	bypdOqFrz9+nhZKBvlo9ruM/9Rcgy2s=
+	bh=G8nCDHPTtkmTE95MOrSrMIvvtI4MS6W1afM0QAvTJ0w=;
+	b=i9FPphYCtgdcbZTtRFoTL6cIPxFchHSH0CVG9ATcSI2KDBPv4C1/B//+bJZg06/cUIf2Il
+	9ZNFQTTnA/qzLNIoanJHVPfQzTIQZvtCVynJvAa2r8E2SibJ7zXMkYOXhjLBT6AdpwiGJq
+	8J3vKEdfaqs/iUg4/1sMerPxoQX24X8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1706875304;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UQL2HPWHVgX5VlEVJY/c9n5aXeS2yj/n6M8vZ4j/Eao=;
-	b=bbRvYMC7o+CwYqk0vokCfzeP+2riqBvCnb0VXm8bLnPwGJENWj+kCd2C+CMk9b7ZCIMthn
-	HLdKHIknSPaGbTBQ==
+	bh=G8nCDHPTtkmTE95MOrSrMIvvtI4MS6W1afM0QAvTJ0w=;
+	b=CDCrybokwTEYDTydY32NXf2rxisMtcO7eBjVMcpr4kf/geYBtfd1LSDFi54hDs+O3gf46N
+	iL0jJQWAPspzcIAg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7640613A64;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 084FF13A61;
 	Fri,  2 Feb 2024 12:01:44 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id YBalG6jZvGWfeAAAD6G6ig
+	id 2D3VAKjZvGWfeAAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Fri, 02 Feb 2024 12:01:44 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
@@ -79,9 +79,9 @@ To: javierm@redhat.com,
 Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 7/8] firmware/sysfb: Update screen_info for relocated EFI framebuffers
-Date: Fri,  2 Feb 2024 12:58:48 +0100
-Message-ID: <20240202120140.3517-8-tzimmermann@suse.de>
+Subject: [PATCH v2 5/8] firmware/sysfb: Create firmware device only for enabled PCI devices
+Date: Fri,  2 Feb 2024 12:58:46 +0100
+Message-ID: <20240202120140.3517-6-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240202120140.3517-1-tzimmermann@suse.de>
 References: <20240202120140.3517-1-tzimmermann@suse.de>
@@ -92,211 +92,118 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
 X-Spam-Level: 
-X-Spam-Score: 0.70
-X-Spamd-Result: default: False [0.70 / 50.00];
-	 ARC_NA(0.00)[];
+X-Spamd-Bar: /
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=i9FPphYC;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=CDCrybok
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-0.01 / 50.00];
 	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
+	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
 	 TO_DN_SOME(0.00)[];
 	 R_MISSING_CHARSET(2.50)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
 	 BROKEN_CONTENT_TYPE(1.50)[];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
 	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 DKIM_TRACE(0.00)[suse.de:+];
+	 MX_GOOD(-0.01)[];
 	 RCPT_COUNT_SEVEN(0.00)[7];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
 	 FREEMAIL_TO(0.00)[redhat.com,gmx.de,kernel.org];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
 	 FROM_EQ_ENVFROM(0.00)[];
 	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%]
+	 BAYES_HAM(-0.00)[10.21%];
+	 ARC_NA(0.00)[];
+	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCVD_DKIM_ARC_DNSWL_HI(-1.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 DWL_DNSWL_MED(-2.00)[suse.de:dkim];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 RCVD_IN_DNSWL_HI(-0.50)[2a07:de40:b281:104:10:150:64:97:from];
+	 RCVD_TLS_ALL(0.00)[]
+X-Spam-Score: -0.01
+X-Rspamd-Queue-Id: 7EDC02234C
 X-Spam-Flag: NO
 
-On ARM PCI systems, the PCI hierarchy might be reconfigured during
-boot and the firmware framebuffer might move as a result of that.
-The values in screen_info will then be invalid.
+Test if the firmware framebuffer's parent PCI device, if any, has
+been enabled. If not, the firmware framebuffer is most likely not
+working. Hence, do not create a device for the firmware framebuffer
+on disabled PCI devices.
 
-Work around this problem by tracking the framebuffer's initial
-location before it get relocated; then fix the screen_info state
-between reloaction and creating the firmware framebuffer's device.
+So far, efifb tracked the status of the PCI parent device internally
+and did not bind if it was disabled. This patch implements the
+functionality for all firmware framebuffers.
 
-This functionality has been lifted from efifb. See the commit message
-of commit 55d728a40d36 ("efi/fb: Avoid reconfiguration of BAR that
-covers the framebuffer") for more information.
+v2:
+	* rework sysfb_pci_dev_is_enabled() (Javier)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/firmware/sysfb.c        |  2 +
- drivers/video/screen_info_pci.c | 88 +++++++++++++++++++++++++++++++++
- include/linux/screen_info.h     | 16 ++++++
- 3 files changed, 106 insertions(+)
+ drivers/firmware/sysfb.c | 30 +++++++++++++++++++++++++++++-
+ 1 file changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/firmware/sysfb.c b/drivers/firmware/sysfb.c
-index ab5cbc0326f6d..87b9236577ca7 100644
+index d02945b0d8ea1..ab5cbc0326f6d 100644
 --- a/drivers/firmware/sysfb.c
 +++ b/drivers/firmware/sysfb.c
-@@ -116,6 +116,8 @@ static __init int sysfb_init(void)
- 	bool compatible;
- 	int ret = 0;
+@@ -70,13 +70,39 @@ void sysfb_disable(void)
+ }
+ EXPORT_SYMBOL_GPL(sysfb_disable);
  
-+	screen_info_apply_fixups();
-+
- 	mutex_lock(&disable_lock);
- 	if (disabled)
- 		goto unlock_mutex;
-diff --git a/drivers/video/screen_info_pci.c b/drivers/video/screen_info_pci.c
-index d959a4c6ba3d5..afd568486dc24 100644
---- a/drivers/video/screen_info_pci.c
-+++ b/drivers/video/screen_info_pci.c
-@@ -1,7 +1,95 @@
- // SPDX-License-Identifier: GPL-2.0
- 
- #include <linux/pci.h>
-+#include <linux/printk.h>
- #include <linux/screen_info.h>
-+#include <linux/string.h>
-+
-+static struct pci_dev *screen_info_lfb_pdev;
-+static size_t screen_info_lfb_bar;
-+static resource_size_t screen_info_lfb_offset;
-+static struct resource screen_info_lfb_res = DEFINE_RES_MEM(0, 0);
-+
-+static bool __screen_info_relocation_is_valid(const struct screen_info *si, struct resource *pr)
++#if defined(CONFIG_PCI)
++static __init bool sysfb_pci_dev_is_enabled(struct pci_dev *pdev)
 +{
-+	u64 size = __screen_info_lfb_size(si, screen_info_video_type(si));
++	/*
++	 * TODO: Try to integrate this code into the PCI subsystem
++	 */
++	int ret;
++	u16 command;
 +
-+	if (screen_info_lfb_offset > resource_size(pr))
++	ret = pci_read_config_word(pdev, PCI_COMMAND, &command);
++	if (ret != PCIBIOS_SUCCESSFUL)
 +		return false;
-+	if (size > resource_size(pr))
++	if (!(command & PCI_COMMAND_MEMORY))
 +		return false;
-+	if (resource_size(pr) - size < screen_info_lfb_offset)
-+		return false;
-+
 +	return true;
 +}
-+
-+void screen_info_apply_fixups(void)
++#else
++static __init bool sysfb_pci_dev_is_enabled(struct pci_dev *pdev)
 +{
-+	struct screen_info *si = &screen_info;
++	return false;
++}
++#endif
 +
-+	if (screen_info_lfb_pdev) {
-+		struct resource *pr = &screen_info_lfb_pdev->resource[screen_info_lfb_bar];
-+
-+		if (pr->start != screen_info_lfb_res.start) {
-+			if (__screen_info_relocation_is_valid(si, pr)) {
-+				/*
-+				 * Only update base if we have an actual
-+				 * relocation to a valid I/O range.
-+				 */
-+				__screen_info_set_lfb_base(si, pr->start + screen_info_lfb_offset);
-+				pr_info("Relocating firmware framebuffer to offset %pa[d] within %pr\n",
-+					&screen_info_lfb_offset, pr);
-+			} else {
-+				pr_warn("Invalid relocating, disabling firmware framebuffer\n");
-+			}
-+		}
+ static __init struct device *sysfb_parent_dev(const struct screen_info *si)
+ {
+ 	struct pci_dev *pdev;
+ 
+ 	pdev = screen_info_pci_dev(si);
+-	if (pdev)
++	if (pdev) {
++		if (!sysfb_pci_dev_is_enabled(pdev))
++			return ERR_PTR(-ENODEV);
+ 		return &pdev->dev;
 +	}
-+}
-+
-+static void screen_info_fixup_lfb(struct pci_dev *pdev)
-+{
-+	unsigned int type;
-+	struct resource res[SCREEN_INFO_MAX_RESOURCES];
-+	size_t i, numres;
-+	int ret;
-+	const struct screen_info *si = &screen_info;
-+
-+	if (screen_info_lfb_pdev)
-+		return; // already found
-+
-+	type = screen_info_video_type(si);
-+	if (type != VIDEO_TYPE_EFI)
-+		return; // only applies to EFI
-+
-+	ret = screen_info_resources(si, res, ARRAY_SIZE(res));
-+	if (ret < 0)
-+		return;
-+	numres = ret;
-+
-+	for (i = 0; i < numres; ++i) {
-+		struct resource *r = &res[i];
-+		const struct resource *pr;
-+
-+		if (!(r->flags & IORESOURCE_MEM))
-+			continue;
-+		pr = pci_find_resource(pdev, r);
-+		if (!pr)
-+			continue;
-+
-+		/*
-+		 * We've found a PCI device with the framebuffer
-+		 * resource. Store away the parameters to track
-+		 * relocation of the framebuffer aperture.
-+		 */
-+		screen_info_lfb_pdev = pdev;
-+		screen_info_lfb_bar = pr - pdev->resource;
-+		screen_info_lfb_offset = r->start - pr->start;
-+		memcpy(&screen_info_lfb_res, r, sizeof(screen_info_lfb_res));
-+	}
-+}
-+DECLARE_PCI_FIXUP_CLASS_HEADER(PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY, 16,
-+			       screen_info_fixup_lfb);
  
- static struct pci_dev *__screen_info_pci_dev(struct resource *res)
- {
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index 0eae08e3c6f90..75303c126285a 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -4,6 +4,8 @@
- 
- #include <uapi/linux/screen_info.h>
- 
-+#include <linux/bits.h>
-+
- /**
-  * SCREEN_INFO_MAX_RESOURCES - maximum number of resources per screen_info
-  */
-@@ -27,6 +29,17 @@ static inline u64 __screen_info_lfb_base(const struct screen_info *si)
- 	return lfb_base;
- }
- 
-+static inline void __screen_info_set_lfb_base(struct screen_info *si, u64 lfb_base)
-+{
-+	si->lfb_base = lfb_base & GENMASK_ULL(31, 0);
-+	si->ext_lfb_base = (lfb_base & GENMASK_ULL(63, 32)) >> 32;
-+
-+	if (si->ext_lfb_base)
-+		si->capabilities |= VIDEO_CAPABILITY_64BIT_BASE;
-+	else
-+		si->capabilities &= ~VIDEO_CAPABILITY_64BIT_BASE;
-+}
-+
- static inline u64 __screen_info_lfb_size(const struct screen_info *si, unsigned int type)
- {
- 	u64 lfb_size = si->lfb_size;
-@@ -106,8 +119,11 @@ static inline unsigned int screen_info_video_type(const struct screen_info *si)
- ssize_t screen_info_resources(const struct screen_info *si, struct resource *r, size_t num);
- 
- #if defined(CONFIG_PCI)
-+void screen_info_apply_fixups(void);
- struct pci_dev *screen_info_pci_dev(const struct screen_info *si);
- #else
-+static inline void screen_info_apply_fixups(void)
-+{ }
- static inline struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
- {
  	return NULL;
+ }
+@@ -97,6 +123,8 @@ static __init int sysfb_init(void)
+ 	sysfb_apply_efi_quirks();
+ 
+ 	parent = sysfb_parent_dev(si);
++	if (IS_ERR(parent))
++		goto unlock_mutex;
+ 
+ 	/* try to create a simple-framebuffer device */
+ 	compatible = sysfb_parse_mode(si, &mode);
 -- 
 2.43.0
 

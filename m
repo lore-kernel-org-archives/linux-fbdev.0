@@ -1,48 +1,46 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08F5F13B2B7;
-	Fri,  2 Feb 2024 18:41:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF50F14FF89;
+	Fri,  2 Feb 2024 18:41:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706899267; cv=none; b=lnetOntTro8dqnOaXMq6JnYir//+1pBGevFcdmDo7cCV3lBvrcDbJUJiEX4thhSWJ2GynuflMFIVHYfbt7kJDidr7b6yVdOzok2eZ7Q/nDp6P5AsXfeL8DqAjHc+xxKMJmGhxE67GTeNS0HZ1KLPhXIwUK03/qz9n65urfEZDfQ=
+	t=1706899296; cv=none; b=AM/QKKyv0VQIu0hW/Lj6V8OtaDSq5N2Z6O6GHKgZ1Outbkgby3sefQYN6EJiDsEOAoFcWrOUzVBLKE7NSOHzJ2z/tMeMJhJv0idZdk6fBQwR5m4IAWNHHcra6T5TAsUh7FTuL+pJQJVoHiH7yvcG7nMWvqOmGm0MCXdcvtLE78A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706899267; c=relaxed/simple;
-	bh=zlBTO+DIaLb1eyn6GqHbfx3msn97FB7ND0l06vg+m/g=;
+	s=arc-20240116; t=1706899296; c=relaxed/simple;
+	bh=39r6KwcwEavhQc/YC8RhALPOF3PfKMR2Uu9B0zwyiJY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JK8cXcw++/YSTt5GaqubHKUKtTRLQG2ovQSaTV3QueYsPRuowvrnmNThWGaHbnI6Fef5rRWY45ihOpBJn4Xw0Mj5PLS+aNVreQU3hlhobkiWGsZ5xrw12lEYo61L7L2aYP2QcpG1dlWwOuU5KN1mloQd5UbTFlmMA9bjrAMen1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hIcQDLPa; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=YLFp4VzVSE8NLq7H6DuZnsmO+97v7jGE+WU8W+kfdK6bCBY0o2B29/ul+oWdnYyAV6EmEFu9qxjPvSvLxexiGTuuu3qXg8r6LoC9/C4lXAcQ1rDAFl+6Zyf96vG+ZST5Lj02TWrjtSGEMy8G7UK1cgjNt3TOGoWa1YCNyNf6WZg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bHS7UpSc; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hIcQDLPa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EFFAC433F1;
-	Fri,  2 Feb 2024 18:41:05 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bHS7UpSc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DAF5C433F1;
+	Fri,  2 Feb 2024 18:41:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1706899266;
-	bh=zlBTO+DIaLb1eyn6GqHbfx3msn97FB7ND0l06vg+m/g=;
+	s=k20201202; t=1706899296;
+	bh=39r6KwcwEavhQc/YC8RhALPOF3PfKMR2Uu9B0zwyiJY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hIcQDLPa58vIQ/+wExqqSYkR1XF888GN4nU3KtrGqGFuEu98huPNKCDHW6n+Qmeq/
-	 +siTHUOy7ngqD5X1Df1zPIECU7qvgrfDpacPc4jFakMUK+K4e1C6BECte4Svx20Nir
-	 OJ+2/rMNDhYBsMcu3zwgC2nsKomFEGUo/LfrF8N5jRSLcyj5wE8NTLUDRTfk6nXf4K
-	 i/diECVSNI7MFF2Kf5GSSKqTxnaSB/WBtswuc0MVS8gkU1P2TOF2uBDAV/yP5QyTjJ
-	 a/8QlDN06JF+1LVUPHZSuOC7JG1UctOPVcXnfA6jHLirUUEZJ6Ndf2PdPEvEebQUiQ
-	 XL7wNxtO5O9pQ==
+	b=bHS7UpScMaV47Iz9QJ/bQ5w+ZXXx8XaolBHcbVzcsav5Iqy+tL5hWTelit9YBqKC7
+	 HpOm4uOT16TIFP9AWN/xL8h+NniSwv79SOKCCsjIwV0r4XY7yp8UfZuKpX41cVVy94
+	 h95n62wrfZVXp1GX2GDY8mqv62+AVLTn3bhLhs8V1PxfWR+U+ZGULmdu6TbxlACHQG
+	 +qYseo2bc4BSB6gxGUxq39Sr1+/p0bFbPw8VKMay0a5UUagspXOr1Q6qdK5EXCGY8A
+	 MNd3AvZSCDwdgZp4z4aHSA9CBiMG4xSerGzP+3OUtjhzMBcPs/pVtstwRzH6opdnGf
+	 C3lAsY/GeELzw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
 Cc: Fullway Wang <fullwaywang@outlook.com>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	tzimmermann@suse.de,
-	sam@ravnborg.org,
-	javierm@redhat.com,
+	adaplas@gmail.com,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 04/15] fbdev: sis: Error out if pixclock equals zero
-Date: Fri,  2 Feb 2024 13:40:41 -0500
-Message-ID: <20240202184057.541411-4-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 03/11] fbdev: savage: Error out if pixclock equals zero
+Date: Fri,  2 Feb 2024 13:41:17 -0500
+Message-ID: <20240202184130.541736-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240202184057.541411-1-sashal@kernel.org>
-References: <20240202184057.541411-1-sashal@kernel.org>
+In-Reply-To: <20240202184130.541736-1-sashal@kernel.org>
+References: <20240202184130.541736-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -51,20 +49,21 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.76
+X-stable-base: Linux 5.15.148
 Content-Transfer-Encoding: 8bit
 
 From: Fullway Wang <fullwaywang@outlook.com>
 
-[ Upstream commit e421946be7d9bf545147bea8419ef8239cb7ca52 ]
+[ Upstream commit 04e5eac8f3ab2ff52fa191c187a46d4fdbc1e288 ]
 
 The userspace program could pass any values to the driver through
 ioctl() interface. If the driver doesn't check the value of pixclock,
 it may cause divide-by-zero error.
 
-In sisfb_check_var(), var->pixclock is used as a divisor to caculate
-drate before it is checked against zero. Fix this by checking it
-at the beginning.
+Although pixclock is checked in savagefb_decode_var(), but it is not
+checked properly in savagefb_probe(). Fix this by checking whether
+pixclock is zero in the function savagefb_check_var() before
+info->var.pixclock is used as the divisor.
 
 This is similar to CVE-2022-3061 in i740fb which was fixed by
 commit 15cf0b8.
@@ -73,22 +72,23 @@ Signed-off-by: Fullway Wang <fullwaywang@outlook.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/sis/sis_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/savage/savagefb_driver.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 1c197c3f9538..fe8996461b9e 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -1475,6 +1475,8 @@ sisfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 0ac750cc5ea1..94ebd8af50cf 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -868,6 +868,9 @@ static int savagefb_check_var(struct fb_var_screeninfo   *var,
  
- 	vtotal = var->upper_margin + var->lower_margin + var->vsync_len;
+ 	DBG("savagefb_check_var");
  
 +	if (!var->pixclock)
 +		return -EINVAL;
- 	pixclock = var->pixclock;
- 
- 	if((var->vmode & FB_VMODE_MASK) == FB_VMODE_NONINTERLACED) {
++
+ 	var->transp.offset = 0;
+ 	var->transp.length = 0;
+ 	switch (var->bits_per_pixel) {
 -- 
 2.43.0
 

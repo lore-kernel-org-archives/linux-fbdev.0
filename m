@@ -1,66 +1,94 @@
-Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [91.218.175.186])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7AAC14C58B
-	for <linux-fbdev@vger.kernel.org>; Fri,  2 Feb 2024 18:07:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.186
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1DCD152DE3;
+	Fri,  2 Feb 2024 18:39:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706897265; cv=none; b=XEdbda7POKvj/IpbI5wCret+msa7+yiO82jLyOhw9HuPFqc6Qow/TBFk3Xl5xhauCnhuuBEZF+wrXV47Jzdw+SyUCFoInA1xsmdI5TI2uYFYNOvFXnjwMqhVmxN4n/8nfpxicxffXZw9gRKTfB0eWcimlJ3nFUjyWYks3LbIPZA=
+	t=1706899172; cv=none; b=nsrBfA36HqWK1Uut83DfJoD7SGoaAtd7jOALebchjPm1jUGODNzxgHMVVpIlH7UzEGypeNf74ajfMbZ8SOZJijA3lQ7vvHH+Xmm3RF6tzW5Jsn8OAri4rWqSSSqNsEoqSj0hGDt9Rtutq+FtFHIXZV1NIuUlGX4IpLXtT8zcK6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706897265; c=relaxed/simple;
-	bh=7MZ2fnP4nMz2ezvFtFW0bkUpgRFT0pXg5LdsuNjSZhg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lepKbzOAYik+salVpL/+I9Gr2T4YAP3c6GQZREDlGib/PAAAmqnIABLMhV4LR/+n1D2GpMMiTwii/XfuWW9o1vCfLq7bWxnxKTcBGTxN+hews0Nob/hXctgk50maOs+jbX6HiLLsmLDFmHj+5f25MjIZhnREsViaRx5tjDeLkvo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=hDWElelD; arc=none smtp.client-ip=91.218.175.186
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1706899172; c=relaxed/simple;
+	bh=+I78WAJjV2mXXrvpFXbawPuTz8P4TcngqBjgiVV9yU8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SKHy6VI2lv8RCGIsRAbNjBdPtBSqQa+Be2VAlx6GcU+K5A6drYn7yEfMbKz6sHUX9stVYSRlmeJGQiFhbfpdFClfK3CIb3tFP0g9Vc3PcLbGrnhWfU5Y1eTQnxw3D3vnuaurNb5575QBalFpTSNlBCDtcgHkMmk4lRjfNpmoHVU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OW8Afam5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="hDWElelD"
-Message-ID: <cad42648-4add-4820-b40f-3f713ebbb5e4@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1706897262;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ytMHC3f1GOpt4JbRweei/YmnhLHZS+eeFsBfpdA2ynU=;
-	b=hDWElelDUBe4ueIGOT55ovLgHkbhFclhl7LSpcI94+ZEEZELfa0K7sYSMQB9hp3oQZC8mH
-	HThz+oH4qF/2PXNlqbNpGBqwV4Xc8mhkjH4aTbki5m3j6TeQgP3CZ6YBVCz+3mU7+Bl8Tc
-	269EEzkFzSUGSRcIVuTPt3PLkGpXvgc=
-Date: Sat, 3 Feb 2024 02:07:35 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OW8Afam5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D2C6C433A6;
+	Fri,  2 Feb 2024 18:39:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706899172;
+	bh=+I78WAJjV2mXXrvpFXbawPuTz8P4TcngqBjgiVV9yU8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=OW8Afam5jtsHT1tsBudJ8TyHMuiXcHckjhau6Tz43/JAq5BC1UMTJxrjT+h/6VJS8
+	 /6ZEZDeORCIPjagzSwbeL8bkktghFC7HqouOELil+f4UVQo4LWAh/zZlUYqLKeOX1l
+	 w6Sdr/nEHD1gy3R6PG/4yi2/7z1MMLSFTIC5K9WqytWeTiAW+bku7yGLuqe0qZVVhM
+	 sIbeX1aSPKMJzCx5XlfiiqQMGrkgMUFKr4uqVPZ2JD0p0cCjRTdaKT57yKyy4NDCjD
+	 VRrjlSbSWAfMIS32kDZnGfELxeFpodVfWQAecfKtI2WM61i8asaE9gg4DPllEigHTB
+	 0V0jqVP8OH5DA==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Fullway Wang <fullwaywang@outlook.com>,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	adaplas@gmail.com,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.7 03/23] fbdev: savage: Error out if pixclock equals zero
+Date: Fri,  2 Feb 2024 13:38:59 -0500
+Message-ID: <20240202183926.540467-3-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240202183926.540467-1-sashal@kernel.org>
+References: <20240202183926.540467-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [v2,8/8] fbdev/efifb: Remove framebuffer relocation tracking
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
- pjones@redhat.com, deller@gmx.de, ardb@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20240202120140.3517-9-tzimmermann@suse.de>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Sui Jingfeng <sui.jingfeng@linux.dev>
-In-Reply-To: <20240202120140.3517-9-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.7.3
+Content-Transfer-Encoding: 8bit
 
-Hi,
+From: Fullway Wang <fullwaywang@outlook.com>
 
-Nice job, well done!
+[ Upstream commit 04e5eac8f3ab2ff52fa191c187a46d4fdbc1e288 ]
 
-Because this the fix the problem at the root level, I appreciate this 
-solution.
+The userspace program could pass any values to the driver through
+ioctl() interface. If the driver doesn't check the value of pixclock,
+it may cause divide-by-zero error.
 
+Although pixclock is checked in savagefb_decode_var(), but it is not
+checked properly in savagefb_probe(). Fix this by checking whether
+pixclock is zero in the function savagefb_check_var() before
+info->var.pixclock is used as the divisor.
 
-On 2024/2/2 19:58, Thomas Zimmermann wrote:
-> If the firmware framebuffer has been reloacted, the sysfb code
-> fixes the screen_info state before it creates the framebuffer's
-> platform device. Efifb will automatically receive a screen_info
-> with updated values. Hence remove the tracking from efifb.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Acked-by: Sui Jingfeng <sui.jingfeng@linux.dev>
+This is similar to CVE-2022-3061 in i740fb which was fixed by
+commit 15cf0b8.
+
+Signed-off-by: Fullway Wang <fullwaywang@outlook.com>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/savage/savagefb_driver.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index dddd6afcb972..ebc9aeffdde7 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -869,6 +869,9 @@ static int savagefb_check_var(struct fb_var_screeninfo   *var,
+ 
+ 	DBG("savagefb_check_var");
+ 
++	if (!var->pixclock)
++		return -EINVAL;
++
+ 	var->transp.offset = 0;
+ 	var->transp.length = 0;
+ 	switch (var->bits_per_pixel) {
+-- 
+2.43.0
+

@@ -1,204 +1,147 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com [91.218.175.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DCEE148FFF;
-	Fri,  2 Feb 2024 17:49:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FA29168B9
+	for <linux-fbdev@vger.kernel.org>; Fri,  2 Feb 2024 17:50:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706896184; cv=none; b=YDIyMj6GsiKTX8FwYtRTnwXM96mOn5kMPIJJW93iXTK2aZs/z0r3zkxwNMulY6nQuK360wH/JfBAC6PSIZ/NGT5Pimm7fCm246K2+IqhpVgoDWHjJybKQrWzN05KyMCRmsnJ6YdJzsTux8mk7XY18prVk9ps/eGcCZgzpu07pt8=
+	t=1706896215; cv=none; b=Eoxgqq+8PFhgrpOHQ8KdXGk9fH690KMI/oJJtSyMZbfewrnQhGzJ2TQndAgs8i5s41aMlyaoGVSTAsisGd0USpa3VyDiGlQYnvCX2emVKSnslxWpVrBc2QD0TeckJIuHS2tkpZ9tewDcOrtEAyrHTFnLbBMiD2X7aaDX27VMbAc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706896184; c=relaxed/simple;
-	bh=dOC6l/UpwJt+sDh73ImH2SYn2JbGC0ZF3A9tIFxdqtk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=q8FrLABDuJ2YzIBnCSTfQ0mx/QESP0eyj51NH5pTzUeiN1YQkwsEPIiwpG61oOjj1cpp2nV8hKqSxujoS0EoKhE3I7xeQQYwKDmJYKoY5d77619Du09xr8dgpdx2ekTtJVpmZVmaGY/i2ZW6d2KzcouZuQBeR4ZtW/ScZkcJzSM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WPJJYvAz; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1706896215; c=relaxed/simple;
+	bh=17WxI6Z7MkY+zDf2Nd+Sr0hXcOCPhEbXf7SvxW61fO8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Lxc4jVwlDzI+Svsdc/ynedip8qUeGp5bnAbceqcfCaR2H71ioo5yVKeBcOzdMP7ZeHKxliTb7FFF8tP4hDZtXQBIOKFL80R58iYt3QPHgWKSZ/Oi5GXOvCgpCD0wQ0obdzxR3hJML7AXwVerKrx3Qyalp2ZHv4zIoXIxHUm7z1k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=uRazlhx5; arc=none smtp.client-ip=91.218.175.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WPJJYvAz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA7E5C433C7;
-	Fri,  2 Feb 2024 17:49:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1706896184;
-	bh=dOC6l/UpwJt+sDh73ImH2SYn2JbGC0ZF3A9tIFxdqtk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WPJJYvAz83PqbWfJevH/VqATyZyF8CMELM/qsF5iGbGg+7c08RkvpLVnt1A5GE/cF
-	 tcu63FYZn4b7uhLLPzbN+EdUSZoRoygx/1agCdTpP9s/n883bAkiQP8gjBz/mp+kDW
-	 qAUTtz5OnUdUz5st4dAWc5OGoV8IM7DK0KDm2fKGNgkvkbFxVCqblojdOgeVCjK2WT
-	 8TgIKe63Wz1bq6Pwy73SdDw6XnGCRuLJmukJO4LPOLdK/c9MQGRTbs1oxi0ZYlm/v9
-	 h+6C4sTZAkHgIq2mWUe1PiL9Ix6Qz58Sj0f91Fwj4LzNhLlO4dG31aRGnZ1zxuS/WT
-	 KdHH/uaxwI7ag==
-Date: Fri, 2 Feb 2024 11:49:41 -0600
-From: Rob Herring <robh@kernel.org>
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
-	"Lad,  Prabhakar" <prabhakar.csengg@gmail.com>,
-	=?iso-8859-1?Q?=22Niklas_S=C3=B6derlund=22?= <niklas.soderlund+renesas@ragnatech.se>,
-	=?iso-8859-1?Q?=22Uwe_Kleine-K=C3=B6nig=22?= <u.kleine-koenig@pengutronix.de>,
-	Abhinav Kumar <quic_abhinavk@quicinc.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Alexander Stein <alexander.stein@ew.tq-group.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Alexey Brodkin <abrodkin@synopsys.com>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Andy Gross <agross@kernel.org>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Daniel Vetter <daniel@ffwll.ch>,
-	Dave Stevenson <dave.stevenson@raspberrypi.com>,
-	David Airlie <airlied@gmail.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Emma Anholt <emma@anholt.net>,
-	Eugen Hristev <eugen.hristev@collabora.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Frank Rowand <frowand.list@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Hans Verkuil <hverkuil-cisco@xs4all.nl>,
-	Helge Deller <deller@gmx.de>,
-	Hugues Fruchet <hugues.fruchet@foss.st.com>,
-	Jacopo Mondi <jacopo+renesas@jmondi.org>,
-	Jacopo Mondi <jacopo@jmondi.org>, James Clark <james.clark@arm.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-	Kieran Bingham <kieran.bingham@ideasonboard.com>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Liam Girdwood <lgirdwood@gmail.com>, Liu Ying <victor.liu@nxp.com>,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Marek Vasut <marex@denx.de>, Mark Brown <broonie@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Michael Tretter <m.tretter@pengutronix.de>,
-	Michal Simek <michal.simek@amd.com>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Philippe Cornu <philippe.cornu@foss.st.com>,
-	Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>,
-	Rob Clark <robdclark@gmail.com>, Robert Foss <rfoss@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Saravana Kannan <saravanak@google.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sowjanya Komatineni <skomatineni@nvidia.com>,
-	Stefan Agner <stefan@agner.ch>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Sylwester Nawrocki <s.nawrocki@samsung.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tim Harvey <tharvey@gateworks.com>,
-	Todor Tomov <todor.too@gmail.com>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Yannick Fertre <yannick.fertre@foss.st.com>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Jerome Brunet <jbrunet@baylibre.com>,
-	Jessica Zhang <quic_jesszhan@quicinc.com>,
-	Jonas Karlman <jonas@kwiboo.se>, Leo Yan <leo.yan@linaro.org>,
-	Marijn Suijten <marijn.suijten@somainline.org>,
-	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-	Mike Leach <mike.leach@linaro.org>, Sam Ravnborg <sam@ravnborg.org>,
-	Sean Paul <sean@poorly.run>, Tom Rix <trix@redhat.com>,
-	coresight@lists.linaro.org, devicetree@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-	linux-amlogic@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-omap@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-rpi-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org, linux-sound@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-tegra@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH v3 05/24] media: i2c: switch to use
- of_graph_get_next_device_endpoint()
-Message-ID: <20240202174941.GA310089-robh@kernel.org>
-References: <87o7d26qla.wl-kuninori.morimoto.gx@renesas.com>
- <87h6iu6qjs.wl-kuninori.morimoto.gx@renesas.com>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="uRazlhx5"
+Message-ID: <2bbaab9a-3b4c-4c70-b1b2-09bc265d0476@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1706896209;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=glz+Whkt9eR1IOU+DpFpEwRTsaEbA18tocKSIn5mkyQ=;
+	b=uRazlhx5PRpyrK7j2RFoJmbPznTNczDUf8E2m8ARPEQ9tZRay7lAXwD/R0B7S766xt1Uub
+	LlyfdqTgXjN8CPSUVg6b4zxAa2TseQT0OIHcZi86BDI0MpU2TSSRBRpqa4cu50MYwZ9Xsk
+	W2PvXo1wQo4uXEPZn5zNvu1+y8g3r+g=
+Date: Sat, 3 Feb 2024 01:50:01 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87h6iu6qjs.wl-kuninori.morimoto.gx@renesas.com>
+Subject: Re: [v2,5/8] firmware/sysfb: Create firmware device only for enabled
+ PCI devices
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+ pjones@redhat.com, deller@gmx.de, ardb@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20240202120140.3517-6-tzimmermann@suse.de>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Sui Jingfeng <sui.jingfeng@linux.dev>
+In-Reply-To: <20240202120140.3517-6-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, Jan 31, 2024 at 05:05:27AM +0000, Kuninori Morimoto wrote:
-> of_graph_get_next_endpoint() is now renamed to
-> of_graph_get_next_device_endpoint(). Switch to it.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+HI,
+
+
+On 2024/2/2 19:58, Thomas Zimmermann wrote:
+> Test if the firmware framebuffer's parent PCI device, if any, has
+> been enabled. If not, the firmware framebuffer is most likely not
+> working. Hence, do not create a device for the firmware framebuffer
+> on disabled PCI devices.
+>
+> So far, efifb tracked the status of the PCI parent device internally
+> and did not bind if it was disabled. This patch implements the
+> functionality for all firmware framebuffers.
+
+
+For *all* ?
+
+I think the functionality this patch implemented is only target for the
+PCIe device firmware framebuffers, the framebuffer consumed by the simplefb
+driver (fbdev/simplefb.c) is also a kind of firmware framebuffer, but it is
+target for the platform device only.
+
+So, the correct description would be: "this patch implements the functionality
+for the PCIe firmware framebuffers".
+
+> v2:
+> 	* rework sysfb_pci_dev_is_enabled() (Javier)
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 > ---
->  drivers/media/i2c/adv7343.c              | 2 +-
->  drivers/media/i2c/adv748x/adv748x-core.c | 2 +-
->  drivers/media/i2c/adv7604.c              | 2 +-
->  drivers/media/i2c/isl7998x.c             | 2 +-
->  drivers/media/i2c/max9286.c              | 2 +-
->  drivers/media/i2c/mt9p031.c              | 2 +-
->  drivers/media/i2c/mt9v032.c              | 2 +-
->  drivers/media/i2c/ov2659.c               | 2 +-
->  drivers/media/i2c/ov5645.c               | 2 +-
->  drivers/media/i2c/ov5647.c               | 2 +-
->  drivers/media/i2c/s5c73m3/s5c73m3-core.c | 2 +-
->  drivers/media/i2c/s5k5baf.c              | 2 +-
->  drivers/media/i2c/tc358743.c             | 2 +-
->  drivers/media/i2c/tda1997x.c             | 2 +-
->  drivers/media/i2c/tvp514x.c              | 2 +-
->  drivers/media/i2c/tvp5150.c              | 4 ++--
->  drivers/media/i2c/tvp7002.c              | 2 +-
->  17 files changed, 18 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/media/i2c/adv7343.c b/drivers/media/i2c/adv7343.c
-> index ff21cd4744d3..7e4eb2f8bf0d 100644
-> --- a/drivers/media/i2c/adv7343.c
-> +++ b/drivers/media/i2c/adv7343.c
-> @@ -403,7 +403,7 @@ adv7343_get_pdata(struct i2c_client *client)
->  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
->  		return client->dev.platform_data;
->  
-> -	np = of_graph_get_next_endpoint(client->dev.of_node, NULL);
-> +	np = of_graph_get_next_device_endpoint(client->dev.of_node, NULL);
+>   drivers/firmware/sysfb.c | 30 +++++++++++++++++++++++++++++-
+>   1 file changed, 29 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/firmware/sysfb.c b/drivers/firmware/sysfb.c
+> index d02945b0d8ea1..ab5cbc0326f6d 100644
+> --- a/drivers/firmware/sysfb.c
+> +++ b/drivers/firmware/sysfb.c
+> @@ -70,13 +70,39 @@ void sysfb_disable(void)
+>   }
+>   EXPORT_SYMBOL_GPL(sysfb_disable);
+>   
+> +#if defined(CONFIG_PCI)
+> +static __init bool sysfb_pci_dev_is_enabled(struct pci_dev *pdev)
+> +{
+> +	/*
+> +	 * TODO: Try to integrate this code into the PCI subsystem
+> +	 */
+> +	int ret;
+> +	u16 command;
+> +
+> +	ret = pci_read_config_word(pdev, PCI_COMMAND, &command);
+> +	if (ret != PCIBIOS_SUCCESSFUL)
+> +		return false;
+> +	if (!(command & PCI_COMMAND_MEMORY))
+> +		return false;
+> +	return true;
+> +}
+> +#else
+> +static __init bool sysfb_pci_dev_is_enabled(struct pci_dev *pdev)
+> +{
+> +	return false;
+> +}
+> +#endif
+> +
+>   static __init struct device *sysfb_parent_dev(const struct screen_info *si)
+>   {
+>   	struct pci_dev *pdev;
+>   
+>   	pdev = screen_info_pci_dev(si);
+> -	if (pdev)
+> +	if (pdev) {
+> +		if (!sysfb_pci_dev_is_enabled(pdev))
+> +			return ERR_PTR(-ENODEV);
 
-This is assuming there's just 1 port and 1 endpoint, but let's be 
-specific as the bindings are (first endpoint on port 0):
 
-of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+Is it better to move the call of sysfb_pci_dev_is_enabled() out of sysfb_parent_dev() ?
+Because then we don't need check the returned value by calling the IS_ERR() inthe sysfb_init() function.
 
-Note we could ask for endpoint 0 here, but the bindings generally allow 
-for more than 1.
 
-I imagine most of the other cases here are the same.
+>   		return &pdev->dev;
+> +	}
+>   
+>   	return NULL;
+>   }
+> @@ -97,6 +123,8 @@ static __init int sysfb_init(void)
+>   	sysfb_apply_efi_quirks();
+>   
+>   	parent = sysfb_parent_dev(si);
+> +	if (IS_ERR(parent))
+> +		goto unlock_mutex;
 
->  	if (!np)
->  		return NULL;
->  
-> diff --git a/drivers/media/i2c/adv748x/adv748x-core.c b/drivers/media/i2c/adv748x/adv748x-core.c
-> index 3eb6d5e8f082..4e9e4cef8954 100644
-> --- a/drivers/media/i2c/adv748x/adv748x-core.c
-> +++ b/drivers/media/i2c/adv748x/adv748x-core.c
-> @@ -657,7 +657,7 @@ static int adv748x_parse_dt(struct adv748x_state *state)
->  	bool in_found = false;
->  	int ret;
->  
-> -	for_each_endpoint_of_node(state->dev->of_node, ep_np) {
-> +	for_each_device_endpoint_of_node(state->dev->of_node, ep_np) {
+	if (!sysfb_pci_dev_is_enabled(parent))
+		goto unlock_mutex;
 
-I would skip the rename.
-
-Rob
+>   
+>   	/* try to create a simple-framebuffer device */
+>   	compatible = sysfb_parse_mode(si, &mode);

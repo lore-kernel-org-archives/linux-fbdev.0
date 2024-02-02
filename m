@@ -1,122 +1,138 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp-relay-canonical-1.canonical.com (smtp-relay-canonical-1.canonical.com [185.125.188.121])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4B0F39AE1;
-	Thu,  1 Feb 2024 21:47:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1F2255769;
+	Fri,  2 Feb 2024 08:55:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.188.121
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706824053; cv=none; b=Uak3q6fovuTrGQ6irIPfGICYVR6/6afdPLjz5lGScydMdAvIKR/Ha7ZIPGsrj8heY0Ul5oFuu9USIkaIAmsbS2Wh/ipeb4gjhrXDLzP7rEYiWVRvrELSdlwX1XSIfR1w2P79RKfrvzAbn89EXGPA6OMhjEYh+YXMgar4h6gDgzs=
+	t=1706864119; cv=none; b=iB3++85hc7PT0F8tfH6TBLD7Yp+iS4iZ/GNy2CUm2qAgpM+RMX3rMsStv9cuzl4ML8dWD8rYB4J4vEk1K8/jhozjBJjZY+FUuoXb+/g+SnTfyngOG6pYVMx/gVg6Ws1pGdNWKWdovZjJ/TlBlEICY8m1y9udYCHRXCeat4b1qoY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706824053; c=relaxed/simple;
-	bh=ONdXqAS27cKeOgWX4XGTKCxg4rE0mzWElHVnnYMMb0Y=;
-	h=Mime-Version:Content-Type:Date:Message-Id:From:To:Cc:Subject:
-	 References:In-Reply-To; b=khxhwSxLDnLzjIdYRf0JZGlz3N+SgDTU1UeUf+6SBoSQeUBK47wAcA3uuk18bvU3k9yTfrG83HMqz2/VEq/jaA28iuim+dgoqHSgNBcucMECnn/FwC7u904JZr5lKQUlIl0uxu6CALvToLATsy7OmaqQxjriTPztTHU9S2cVVvc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KYhAJw//; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1706864119; c=relaxed/simple;
+	bh=CV4GH9UNJ6zNQc6c5xVZP+xrV8bnxAF5VgMaNZ9XGwg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ukCJcIYnab3qnEVvJ8ShOozgtqc2gQr/egoYQDRjXAgvfUfBkmuoxMmYSXsLWbT9I2FSpUCAbEe4nHT/Qume+NZiHFU6GoBoxwHzR6b4FsMz5MM85MNYrsBZuccNxuOJgAXNZk0VcNM2PO/3Nyw9o4nYgk94GdvmmpRWk4k4PUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com; spf=pass smtp.mailfrom=canonical.com; dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b=U8UqnvCa; arc=none smtp.client-ip=185.125.188.121
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=canonical.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KYhAJw//"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEEB5C433C7;
-	Thu,  1 Feb 2024 21:47:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1706824052;
-	bh=ONdXqAS27cKeOgWX4XGTKCxg4rE0mzWElHVnnYMMb0Y=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=KYhAJw//yARcM3TA6pVCkI4LUiBLE5XWbQdyIJ2IOE9XeeW9PXuRT0u1fpPxxrkwp
-	 Hurjt/dBf8xwi23T1FksMdv9e36XHyjvhrDNFhBSr1xRnTYLMYbJE3ILCL/Xokm/MD
-	 5zQO0eFXQidwjXeacacwmmo5pMdGivYcXVl5OsSlyzb4uDD6zF3QHkW/ipNCSyCrkX
-	 ruFySuh4tDJV4Rf4YFiYpBgTsdWdhvZKAcl5M+3wneiWVFJ2zo1QtBfWDecyRoxa73
-	 fETXEmGDyXWVSu/j1Xloaznpi7OcrAoyx70CgInqn+hTw2H52XDK3rA5SorsXzUwVT
-	 KByKrTZWMbAOA==
+	dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b="U8UqnvCa"
+Received: from dragon.fritz.box (unknown [58.7.187.102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 7D1AE419B1;
+	Fri,  2 Feb 2024 08:55:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+	s=20210705; t=1706864103;
+	bh=qrYMi74bcCPFGEWKyxCuYJeZThHsF8LjYHDib4wabmI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version;
+	b=U8UqnvCaViIiodS5APZKF6sQKAIa+eUT41hLsslejEPofW6tCDRsG1EpMjQNNoV8D
+	 gsF7wGHgRw9/nzbp7L6LgHPPBpO7ATs09FYRGDlvQzUsmhsXC3elrRUp8VmTqpK96v
+	 ZhBmbzoUoX0vnfeLN0fFUfIXvdu5G6nQMOgV7XPYeGsH/aJF9JYVdRrQ7sVnRjS9eB
+	 OzjTI518N7YaFJZ9ES+93o8PvNHBaNnPHXJMcxAS+mDZSwhDrb+q81zuLOGFhPGyeG
+	 DJR+O/EJt2v4qhV4d8bnMN54j13/tGUJQwmj/i1gH6GQUp/4h6Q+t7CQrlvk1EDLGw
+	 2WQdXXsVRtqcA==
+From: Daniel van Vugt <daniel.van.vugt@canonical.com>
+To: 
+Cc: Daniel van Vugt <daniel.van.vugt@canonical.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] dummycon: Add dummycon_(un)register_switch_notifier
+Date: Fri,  2 Feb 2024 16:53:54 +0800
+Message-ID: <20240202085408.23251-1-daniel.van.vugt@canonical.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 01 Feb 2024 23:47:13 +0200
-Message-Id: <CYU2MG4IOJ0Q.2UJOTK999FCCC@suppilovahvero>
-From: "Jarkko Sakkinen" <jarkko@kernel.org>
-To: "Mark Brown" <broonie@kernel.org>, "Greg Kroah-Hartman"
- <gregkh@linuxfoundation.org>
-Cc: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- <kernel@pengutronix.de>, "Moritz Fischer" <mdf@kernel.org>, "Wu Hao"
- <hao.wu@intel.com>, "Xu Yilun" <yilun.xu@intel.com>, "Tom Rix"
- <trix@redhat.com>, <linux-fpga@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, "Alexander Aring" <alex.aring@gmail.com>,
- "Stefan Schmidt" <stefan@datenfreihafen.org>, "Miquel Raynal"
- <miquel.raynal@bootlin.com>, "David S. Miller" <davem@davemloft.net>, "Eric
- Dumazet" <edumazet@google.com>, "Jakub Kicinski" <kuba@kernel.org>, "Paolo
- Abeni" <pabeni@redhat.com>, <linux-wpan@vger.kernel.org>,
- <netdev@vger.kernel.org>, "Lars-Peter Clausen" <lars@metafoo.de>, "Michael
- Hennerich" <Michael.Hennerich@analog.com>, "Jonathan Cameron"
- <jic23@kernel.org>, <linux-iio@vger.kernel.org>, "Dmitry Torokhov"
- <dmitry.torokhov@gmail.com>, <linux-input@vger.kernel.org>, "Ulf Hansson"
- <ulf.hansson@linaro.org>, "Rayyan Ansari" <rayyan@ansari.sh>, "Andy
- Shevchenko" <andriy.shevchenko@linux.intel.com>, "Jonathan Cameron"
- <Jonathan.Cameron@huawei.com>, "Martin Tuma"
- <martin.tuma@digiteqautomotive.com>, "Mauro Carvalho Chehab"
- <mchehab@kernel.org>, <linux-media@vger.kernel.org>, "Sergey Kozlov"
- <serjk@netup.ru>, "Arnd Bergmann" <arnd@arndb.de>, "Yang Yingliang"
- <yangyingliang@huawei.com>, <linux-mmc@vger.kernel.org>, "Richard
- Weinberger" <richard@nod.at>, "Vignesh Raghavendra" <vigneshr@ti.com>, "Rob
- Herring" <robh@kernel.org>, "Heiko Stuebner" <heiko@sntech.de>, "Michal
- Simek" <michal.simek@amd.com>, "Amit Kumar Mahapatra via Alsa-devel"
- <alsa-devel@alsa-project.org>, <linux-mtd@lists.infradead.org>, "Martin
- Blumenstingl" <martin.blumenstingl@googlemail.com>, "Geert Uytterhoeven"
- <geert+renesas@glider.be>, =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
- "Simon Horman" <horms@kernel.org>, "Ronald Wahl" <ronald.wahl@raritan.com>,
- "Benson Leung" <bleung@chromium.org>, "Tzung-Bi Shih" <tzungbi@kernel.org>,
- "Guenter Roeck" <groeck@chromium.org>, <chrome-platform@lists.linux.dev>,
- "Max Filippov" <jcmvbkbc@gmail.com>, <linux-spi@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, "Bjorn Andersson"
- <andersson@kernel.org>, "Konrad Dybcio" <konrad.dybcio@linaro.org>,
- <linux-arm-msm@vger.kernel.org>, "Matthias Brugger"
- <matthias.bgg@gmail.com>, "AngeloGioacchino Del Regno"
- <angelogioacchino.delregno@collabora.com>,
- <linux-mediatek@lists.infradead.org>, "Thomas Zimmermann"
- <tzimmermann@suse.de>, "Javier Martinez Canillas" <javierm@redhat.com>,
- "Amit Kumar Mahapatra" <amit.kumar-mahapatra@amd.com>,
- <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
- <linux-staging@lists.linux.dev>, "Viresh Kumar" <vireshk@kernel.org>, "Rui
- Miguel Silva" <rmfrfs@gmail.com>, "Johan Hovold" <johan@kernel.org>, "Alex
- Elder" <elder@kernel.org>, <greybus-dev@lists.linaro.org>, "Peter Huewe"
- <peterhuewe@gmx.de>, "Jason Gunthorpe" <jgg@ziepe.ca>,
- <linux-integrity@vger.kernel.org>, "Herve Codina"
- <herve.codina@bootlin.com>, "Alan Stern" <stern@rowland.harvard.edu>, "Aaro
- Koskinen" <aaro.koskinen@iki.fi>, "Krzysztof Kozlowski"
- <krzysztof.kozlowski@linaro.org>, <linux-usb@vger.kernel.org>, "Helge
- Deller" <deller@gmx.de>, "Dario Binacchi"
- <dario.binacchi@amarulasolutions.com>, "Kalle Valo" <kvalo@kernel.org>,
- "Dmitry Antipov" <dmantipov@yandex.ru>, <libertas-dev@lists.infradead.org>,
- <linux-wireless@vger.kernel.org>, "Jonathan Corbet" <corbet@lwn.net>,
- "James Clark" <james.clark@arm.com>, "Bjorn Helgaas" <bhelgaas@google.com>,
- <linux-doc@vger.kernel.org>
-Subject: Re: [PATCH v2 00/33] spi: get rid of some legacy macros
-X-Mailer: aerc 0.15.2
-References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
- <2024012417-prissy-sworn-bc55@gregkh>
- <c1e38a30-5075-4d01-af24-ac684e77cf29@sirena.org.uk>
-In-Reply-To: <c1e38a30-5075-4d01-af24-ac684e77cf29@sirena.org.uk>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Wed Jan 24, 2024 at 7:22 PM EET, Mark Brown wrote:
-> On Wed, Jan 24, 2024 at 09:13:49AM -0800, Greg Kroah-Hartman wrote:
-> > On Mon, Jan 22, 2024 at 07:06:55PM +0100, Uwe Kleine-K=C3=B6nig wrote:
->
-> > > Note that Jonathan Cameron has already applied patch 3 to his tree, i=
-t
-> > > didn't appear in a public tree though yet. I still included it here t=
-o
-> > > make the kernel build bots happy.
->
-> > Are we supposed to take the individual changes in our different
-> > subsystem trees, or do you want them all to go through the spi tree?
->
-> Given that the final patch removes the legacy interfaces I'm expecting
-> to take them via SPI.
+To detect switch attempts before a real console exists. This will be
+used for the same purpose as dummycon_(un)register_output_notifier,
+for fbcon to detect a more polite time to take over.
 
-+1
+Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
+---
+ drivers/video/console/dummycon.c | 35 +++++++++++++++++++++++++++-----
+ include/linux/console.h          |  2 ++
+ 2 files changed, 32 insertions(+), 5 deletions(-)
 
-least fuss approach
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index 14af5d9e13..55e9b600ce 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -83,6 +83,32 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
+ 	/* Redraw, so that we get putc(s) for output done while blanked */
+ 	return 1;
+ }
++
++/* This is protected by the console_lock */
++static RAW_NOTIFIER_HEAD(dummycon_switch_nh);
++
++void dummycon_register_switch_notifier(struct notifier_block *nb)
++{
++	WARN_CONSOLE_UNLOCKED();
++
++	raw_notifier_chain_register(&dummycon_switch_nh, nb);
++}
++
++void dummycon_unregister_switch_notifier(struct notifier_block *nb)
++{
++	WARN_CONSOLE_UNLOCKED();
++
++	raw_notifier_chain_unregister(&dummycon_switch_nh, nb);
++}
++
++static int dummycon_switch(struct vc_data *vc)
++{
++	WARN_CONSOLE_UNLOCKED();
++
++	raw_notifier_call_chain(&dummycon_switch_nh, 0, vc);
++
++	return 0;
++}
+ #else
+ static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
+ static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
+@@ -91,6 +117,10 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
+ {
+ 	return 0;
+ }
++static int dummycon_switch(struct vc_data *vc)
++{
++	return 0;
++}
+ #endif
+ 
+ static const char *dummycon_startup(void)
+@@ -120,11 +150,6 @@ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
+ 	return false;
+ }
+ 
+-static int dummycon_switch(struct vc_data *vc)
+-{
+-	return 0;
+-}
+-
+ /*
+  *  The console `switch' structure for the dummy console
+  *
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 779d388af8..8fd70ae623 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -531,5 +531,7 @@ extern void console_init(void);
+ /* For deferred console takeover */
+ void dummycon_register_output_notifier(struct notifier_block *nb);
+ void dummycon_unregister_output_notifier(struct notifier_block *nb);
++void dummycon_register_switch_notifier(struct notifier_block *nb);
++void dummycon_unregister_switch_notifier(struct notifier_block *nb);
+ 
+ #endif /* _LINUX_CONSOLE_H */
+-- 
+2.43.0
 
-BR, Jarkko

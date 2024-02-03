@@ -1,41 +1,59 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9C30F4EB25;
-	Sat,  3 Feb 2024 08:08:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 137E55FDA6
+	for <linux-fbdev@vger.kernel.org>; Sat,  3 Feb 2024 19:13:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.55.52.88
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706947732; cv=none; b=tgvzkD806y3DRlo47+c6IxjOTYPjbcmvTc618rQVSxyfs1p7AgEaIjb8qg2vhDKJ5ye/RfHNuNFZorwD6eYhl+h1BbqxxYnxru7N185pKjAd/N3o+y9PqcOzUoCT9H1wWSOG96yxHluPaTpBbPzeDNl+hXANCKSeaAgS9e0cFFY=
+	t=1706987606; cv=none; b=XdKhr38lHEsy8gnkJWzCqWyhUqDQfr3LN3q2fYxnRQhBhQc06Sr9QaE7FXrsJ3cJ7dN6RxLhfEDTkiGB5KbZ//H9yIKR+oLukDv91R7BDZbQmXq01mfKbi05rK3RKjzLQhgDDJFnOxR+Pf7SD3yaDHduvZoHr+TjmvF+HwnXBbo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706947732; c=relaxed/simple;
-	bh=XGVfjG+sAX4pMvyR7XEzs8ZfGkMlTIaJ8Nl+H+MNGAo=;
+	s=arc-20240116; t=1706987606; c=relaxed/simple;
+	bh=pHok6RksrsEONhRmSw62ZPWwkRDVQiY7VhfooE0bS7I=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ctpWMBoLkD72BDzsX32EDuRh3WMlkHZFS05lokdA4wklPvQ/aDHsFaJxelcJeW9OYk2N+3MT0WkhXdQq7VUrDuWh4oyAEpbgoeg0SSUJIohJbo5X1OL7yo57PiZ59mZw9rvVgr8yhby1wZjmTfxMPRRI8HS/aSYwjEaLFk5jP5s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=k0OfUKLR; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=TvHZP4Cm/ALhAiDGaCXCAi+IEwFSudIEdGUMILkr/rlANnqDKbxYKMekn8T1XfGrVw9QQyCbD7JwG+2JmiDH+pmkFcxT2lNgEJeSY0FJ4DQy1sDCQ4f0jQwwomb2EwklSHONP8o4R1BaDJN0bvNwCHM7OA8d+UGM3ryum0G553k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OeI4VvWD; arc=none smtp.client-ip=192.55.52.88
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="k0OfUKLR"
-Received: by linux.microsoft.com (Postfix, from userid 1127)
-	id 1FEF220B2000; Sat,  3 Feb 2024 00:08:50 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1FEF220B2000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1706947730;
-	bh=07vG+62V6dqAkeDJQ2J+ZqfY5Na7tXr+v+0St/Ckcu8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=k0OfUKLRSHYVPhHV1EpWNPpWC6i1WTJcXBa2tZvc8JfqeyLHc9hXmmyjLL/7PFfog
-	 jZJk6fA7GbUoUCKRkLzRxY4HXST8rtvY0yxHbkTq8Mp07BNna9WUOBpKl9iTna8PjU
-	 D71g3xP55ydTQQjUHFGqhRYznWbhCF8MUzZA39ac=
-Date: Sat, 3 Feb 2024 00:08:50 -0800
-From: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
-To: mhklinux@outlook.com
-Cc: haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
-	drawat.floss@gmail.com, javierm@redhat.com, deller@gmx.de,
-	daniel@ffwll.ch, airlied@gmail.com, tzimmermann@suse.de,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org
-Subject: Re: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
- hvfb_getmem()
-Message-ID: <20240203080850.GA29113@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
-References: <20240201060022.233666-1-mhklinux@outlook.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OeI4VvWD"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1706987605; x=1738523605;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=pHok6RksrsEONhRmSw62ZPWwkRDVQiY7VhfooE0bS7I=;
+  b=OeI4VvWD/+/zxqQYHzb53tdzdAqOT1yiFi7/GZAKEc6Z2c46h7i9532z
+   hWy+viK236Q+Zw33LV3cLEPkeCBVxPtWXJoif9hx44Ok/tOXR7AGnlcFB
+   KWGS5yIoAQzelmECl5aynHnkVfqbmrETntng7lRHY1sdsRn9mEPKdAddP
+   /hmJ8MmNMfepjntG4Z5IzfAsppRboGLZl8RkS5mRyc0XwEZszF76t+Bwl
+   WIYRDEw+FFzu15Oetlc6PNpL0Y1FVZx5qWdoSvKCe89Fk8QWWThIeLhbo
+   6+n7Vuev4pjmnymp1kVs7gYlLb7nLhTiJY4RDC0S58jxZhkSUSW2Sdha6
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10973"; a="435476120"
+X-IronPort-AV: E=Sophos;i="6.05,241,1701158400"; 
+   d="scan'208";a="435476120"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Feb 2024 11:13:24 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.05,241,1701158400"; 
+   d="scan'208";a="4973109"
+Received: from lkp-server02.sh.intel.com (HELO 59f4f4cd5935) ([10.239.97.151])
+  by orviesa003.jf.intel.com with ESMTP; 03 Feb 2024 11:13:21 -0800
+Received: from kbuild by 59f4f4cd5935 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1rWLS2-0005Ug-1p;
+	Sat, 03 Feb 2024 19:13:18 +0000
+Date: Sun, 4 Feb 2024 03:12:30 +0800
+From: kernel test robot <lkp@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+	pjones@redhat.com, deller@gmx.de, ardb@kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v2 3/8] firmware/sysfb: Set firmware-framebuffer parent
+ device
+Message-ID: <202402040214.GFutmkRC-lkp@intel.com>
+References: <20240202120140.3517-4-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -44,43 +62,110 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240201060022.233666-1-mhklinux@outlook.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <20240202120140.3517-4-tzimmermann@suse.de>
 
-On Wed, Jan 31, 2024 at 10:00:22PM -0800, mhkelley58@gmail.com wrote:
-> From: Michael Kelley <mhklinux@outlook.com>
-> 
-> A recent commit removing the use of screen_info introduced a logic
-> error. The error causes hvfb_getmem() to always return -ENOMEM
-> for Generation 2 VMs. As a result, the Hyper-V frame buffer
-> device fails to initialize. The error was introduced by removing
-> an "else if" clause, leaving Gen2 VMs to always take the -ENOMEM
-> error path.
-> 
-> Fix the problem by removing the error path "else" clause. Gen 2
-> VMs now always proceed through the MMIO memory allocation code,
-> but with "base" and "size" defaulting to 0.
-> 
-> Fixes: 0aa0838c84da ("fbdev/hyperv_fb: Remove firmware framebuffers with aperture helpers")
-> Signed-off-by: Michael Kelley <mhklinux@outlook.com>
-> ---
->  drivers/video/fbdev/hyperv_fb.c | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-> index c26ee6fd73c9..8fdccf033b2d 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -1010,8 +1010,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
->  			goto getmem_done;
->  		}
->  		pr_info("Unable to allocate enough contiguous physical memory on Gen 1 VM. Using MMIO instead.\n");
-> -	} else {
-> -		goto err1;
->  	}
->  
->  	/*
-> -- 
-> 2.25.1
->
-Reviewed-by: Saurabh Sengar <ssengar@linux.microsoft.com> 
+Hi Thomas,
+
+kernel test robot noticed the following build errors:
+
+[auto build test ERROR on drm-misc/drm-misc-next]
+[also build test ERROR on drm-tip/drm-tip linus/master v6.8-rc2 next-20240202]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/video-Add-helpers-for-decoding-screen_info/20240202-200314
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20240202120140.3517-4-tzimmermann%40suse.de
+patch subject: [PATCH v2 3/8] firmware/sysfb: Set firmware-framebuffer parent device
+config: i386-buildonly-randconfig-002-20240203 (https://download.01.org/0day-ci/archive/20240204/202402040214.GFutmkRC-lkp@intel.com/config)
+compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240204/202402040214.GFutmkRC-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202402040214.GFutmkRC-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   drivers/firmware/sysfb.c: In function 'sysfb_init':
+>> drivers/firmware/sysfb.c:104:8: error: too many arguments to function 'sysfb_create_simplefb'
+      pd = sysfb_create_simplefb(si, &mode, parent);
+           ^~~~~~~~~~~~~~~~~~~~~
+   In file included from drivers/firmware/sysfb.c:36:0:
+   include/linux/sysfb.h:105:39: note: declared here
+    static inline struct platform_device *sysfb_create_simplefb(const struct screen_info *si,
+                                          ^~~~~~~~~~~~~~~~~~~~~
+
+
+vim +/sysfb_create_simplefb +104 drivers/firmware/sysfb.c
+
+    83	
+    84	static __init int sysfb_init(void)
+    85	{
+    86		struct screen_info *si = &screen_info;
+    87		struct device *parent;
+    88		struct simplefb_platform_data mode;
+    89		const char *name;
+    90		bool compatible;
+    91		int ret = 0;
+    92	
+    93		mutex_lock(&disable_lock);
+    94		if (disabled)
+    95			goto unlock_mutex;
+    96	
+    97		sysfb_apply_efi_quirks();
+    98	
+    99		parent = sysfb_parent_dev(si);
+   100	
+   101		/* try to create a simple-framebuffer device */
+   102		compatible = sysfb_parse_mode(si, &mode);
+   103		if (compatible) {
+ > 104			pd = sysfb_create_simplefb(si, &mode, parent);
+   105			if (!IS_ERR(pd))
+   106				goto unlock_mutex;
+   107		}
+   108	
+   109		/* if the FB is incompatible, create a legacy framebuffer device */
+   110		if (si->orig_video_isVGA == VIDEO_TYPE_EFI)
+   111			name = "efi-framebuffer";
+   112		else if (si->orig_video_isVGA == VIDEO_TYPE_VLFB)
+   113			name = "vesa-framebuffer";
+   114		else if (si->orig_video_isVGA == VIDEO_TYPE_VGAC)
+   115			name = "vga-framebuffer";
+   116		else if (si->orig_video_isVGA == VIDEO_TYPE_EGAC)
+   117			name = "ega-framebuffer";
+   118		else
+   119			name = "platform-framebuffer";
+   120	
+   121		pd = platform_device_alloc(name, 0);
+   122		if (!pd) {
+   123			ret = -ENOMEM;
+   124			goto unlock_mutex;
+   125		}
+   126	
+   127		pd->dev.parent = parent;
+   128	
+   129		sysfb_set_efifb_fwnode(pd);
+   130	
+   131		ret = platform_device_add_data(pd, si, sizeof(*si));
+   132		if (ret)
+   133			goto err;
+   134	
+   135		ret = platform_device_add(pd);
+   136		if (ret)
+   137			goto err;
+   138	
+   139		goto unlock_mutex;
+   140	err:
+   141		platform_device_put(pd);
+   142	unlock_mutex:
+   143		mutex_unlock(&disable_lock);
+   144		return ret;
+   145	}
+   146	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

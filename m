@@ -1,116 +1,194 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+Received: from out-173.mta1.migadu.com (out-173.mta1.migadu.com [95.215.58.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEDDE125B7;
-	Mon,  5 Feb 2024 09:26:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 942F714A90
+	for <linux-fbdev@vger.kernel.org>; Mon,  5 Feb 2024 10:05:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707125207; cv=none; b=Y5ijBQmsL1Pps1NbBsW3Czt1lPidAp/reOjEYWiLSuKm7VsDqLlWF84oGdSXvN2iS0KItth9YWXWuA94VmT9RfLaj1s0FH+vaT9TBls3KYsopm9gqauIedhxHUePIDOi8NgB6m1GFwU5P+KY1VC2beuf4FWSUTncv0JOZ7XjTuo=
+	t=1707127523; cv=none; b=itcxdKQgPcByKBazOst0o4b9+fuhP/X8PB1Ks6q43dD8D7RN9oK/G1yE5KWbSeTnotstoiVnMPOgUmxEEE5Ci5oQJYEYdyyTO9LP1W6fAjBlWq9BtUfF5ruz7Votm1OGivJ552cUNLdufDF8beUYgXpx1oxxHOlKOyE6fXH/LWU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707125207; c=relaxed/simple;
-	bh=rHMp+3HUl38fXd92yWtNbr68AI7/ldR3UAk7XKf8c/k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FSsN+8shkbb90uiwqQksoNQKcHnB9bEPCGP3iWH8CjFz4BG2Ip2d9AK+XYykYAxw5cpmXxY0W2rYKLXO46Y/fAtmWl8uU2h/kQpz4YNWbS2g1A4P3n0+6Fp+YWZ2BNU2bcq6al4SLsNwE0bPhaLphSwK9AKL5OnnioeEU4HAWnI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=foU6YdKK; arc=none smtp.client-ip=213.167.242.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	s=arc-20240116; t=1707127523; c=relaxed/simple;
+	bh=RmbuzgeQ5GImLa1ISfJzwE9p7oJbI7tTF38zP5zhK2c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dd/x5H1JiZ21h/QSsBx8iSWdMrhZMGYk95GAVedsU3GF9gEbzcaNQgRt+OaPta1R9dU8lvckxjMfeF6F20KAb2lbOAyfJJVTOf8tVEyLxH1BTLTXjxrJwx7/wXscLSAu8GU5deZa7q4h3mc22CR5ojIKFP6+m76HOeIdobdJew4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=afmcMWX0; arc=none smtp.client-ip=95.215.58.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="foU6YdKK"
-Received: from pendragon.ideasonboard.com (99.141-128-109.adsl-dyn.isp.belgacom.be [109.128.141.99])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id DC5A4268;
-	Mon,  5 Feb 2024 10:25:20 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1707125120;
-	bh=rHMp+3HUl38fXd92yWtNbr68AI7/ldR3UAk7XKf8c/k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=foU6YdKKlM9CYYob1znc8ZbHPp9AotBroDPzPQoXy+b/czrpSr2+sCa6G+Ae/kfVB
-	 25qzq1p6Da4NtDQRhfuNtUSKEzqrSE5R9H5IWOWjoTkOmLgq8fFGITxV+PjOybBUQL
-	 lYZr6XhiRpmFvuU+yPl8n7b2fWnhBNp6lHkspcAE=
-Date: Mon, 5 Feb 2024 11:26:44 +0200
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Sakari Ailus <sakari.ailus@iki.fi>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Uwe =?utf-8?B?S2xlaW5lLUvDg8K2bmln?= <u.kleine-koenig@pengutronix.de>,
-	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
-	Frank Rowand <frowand.list@gmail.com>, Helge Deller <deller@gmx.de>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mark Brown <broonie@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Saravana Kannan <saravanak@google.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 00/13] of: property: add port base loop
-Message-ID: <20240205092644.GK6804@pendragon.ideasonboard.com>
-References: <87fryhklhb.wl-kuninori.morimoto.gx@renesas.com>
- <20240129122736.GC8131@pendragon.ideasonboard.com>
- <ZbeoPBvGJlaJco_J@valkosipuli.retiisi.eu>
- <87zfwnirps.wl-kuninori.morimoto.gx@renesas.com>
- <Zbil22dm9x2ZudJC@valkosipuli.retiisi.eu>
- <582ede29-2df7-4f01-a03b-da59d9f56d74@ideasonboard.com>
- <Zbin6Pg6oNp0cTNO@valkosipuli.retiisi.eu>
- <87ttmu76co.wl-kuninori.morimoto.gx@renesas.com>
- <ZbtiAJklkLaXWY20@valkosipuli.retiisi.eu>
- <87ttmncw9f.wl-kuninori.morimoto.gx@renesas.com>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="afmcMWX0"
+Message-ID: <1d28e615-4c40-4c43-ac97-915ca25e1cd7@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1707127517;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ht2SGZcLR56qHuGqVBuPYaMZcogs2lbBpnDwi6AkSmc=;
+	b=afmcMWX0DOiT7FHYJZbc95+NvPOCvjx7DZrxgQeb55B3ZpEkKGETF+MJkBFCpxMfhEy6Aa
+	5RkRYrvou7R09yv50LXHRitfGMslTKskY1k1OnPebI9h6xi1xxggRAS6LLMsmB5CLnKSw3
+	eaQIVGyoOFrA5XTsE0n9yO0HBZ10eHQ=
+Date: Mon, 5 Feb 2024 18:05:02 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <87ttmncw9f.wl-kuninori.morimoto.gx@renesas.com>
+Subject: Re: [v2,2/8] video: Provide screen_info_get_pci_dev() to find
+ screen_info's PCI device
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+ pjones@redhat.com, deller@gmx.de, ardb@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20240202120140.3517-3-tzimmermann@suse.de>
+ <16b3f80f-9b55-4b91-8fc3-9b8ad414437b@linux.dev>
+ <0293822c-b261-4725-8cca-3b6dd8e2991d@suse.de>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Sui Jingfeng <sui.jingfeng@linux.dev>
+In-Reply-To: <0293822c-b261-4725-8cca-3b6dd8e2991d@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-Hello Morimoto-san,
+Hi,
 
-On Mon, Feb 05, 2024 at 05:31:25AM +0000, Kuninori Morimoto wrote:
-> 
-> Hi Sakari
-> 
-> > > Thank you for your suggestion.
-> > > But I'm not familiar with fwnode, and it seems we still need of_*,
-> > > I will keep current style (= non fwnode) in v3
-> > 
-> > The fwnode API should be kept in sync with the OF (and other firmware
-> > specific) API. Merging your set in its current form would leave fwnode API
-> > impaired. Therefore I'd very much prefer to see this set add similar fwnode
-> > APIs, too.
-> 
-> I will keep current fwnode API behavior, but I can't test it.
+On 2024/2/5 16:17, Thomas Zimmermann wrote:
+> Hi
+>
+> Am 02.02.24 um 18:03 schrieb Sui Jingfeng:
+>> Hi,
+>>
+>>
+>> On 2024/2/2 19:58, Thomas Zimmermann wrote:
+>>> +
+>>> +/**
+>>> + * screen_info_pci_dev() - Return PCI parent device that contains 
+>>> screen_info's framebuffer
+>>> + * @si: the screen_info
+>>> + *
+>>> + * Returns:
+>>> + * The screen_info's parent device on success, or NULL otherwise.
+>>> + */
+>>> +struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
+>>> +{
+>>> +    struct resource res[SCREEN_INFO_MAX_RESOURCES];
+>>> +    ssize_t i, numres;
+>>> +
+>>> +    numres = screen_info_resources(si, res, ARRAY_SIZE(res));
+>>> +    if (numres < 0)
+>>> +        return ERR_PTR(numres);
+>>
+>>
+>> Please return NULL at here, otherwise we have to use the IS_ERR or 
+>> IS_ERR_OR_NULL()
+>> in the caller function to check the returned value. Meanwhile, I 
+>> noticed that you
+>> didn't actually call IS_ERR() in the sysfb_parent_dev() function 
+>> (introduced by the
+>> 3/8 patch), so I think we probably should return NULL at here.
+>>
+>> Please also consider that the comments of this function says that it 
+>> return NULL on
+>> the otherwise cases.
+>
+> Right. The idea is to return NULL is there is no parent device. 
 
-The fwnode API is an abstraction layer on top of the OF or ACPI APIs,
-and allows drivers to work on both without needing to support OF and
-ACPI explicitly and separately. You should be able to convert the
-drivers you're using to the fwnode API, and it should work exactly the
-same as when using the OF-specific functions. That will give you a way
-to test the API.
 
-For instance, if you look at the drivers/media/platform/rcar_drif.c
-driver, you will see
+return NULL is more easier and clear, it stand for "None" or "don't exist".
+There is another reason that I want to tell you:
 
-        if (!fwnode_property_read_u32(fwnode, "sync-active", &val))
+Some systems which don't have a good UEFI firmware support for uncommon GPUs.
+the word "uncommon" means "not very popular GPU" or "extremely new GPU" or
+"just refer to the GPUs that UEFI firmware don't know(recognize) about"
 
-which, on OF platforms, is equivalent to
+On such cases, there is no firmware framebuffer support. I means it is possible
+that screen_info_resources() return -EINVAL because of not support yet. Then,
+the screen_info_pci_dev(si) returns ERR_PTR(-EINVAL) and sysfb_pci_dev_is_enabled()
+will take this error code as a pointer and de-reference it, cause the following
+problem:
 
-        if (!of_property_read_u32(np, "sync-active", &val))
+And even the x86-64 motherboard will not likely support all GPU(for example the one
+with a old UEFI BIOS). And for an example, The intel Xe is the "extremely new GPU".
 
-This particular driver will never be used on an ACPI-based system, but
-drivers are still encouraged to use the fwnode API. 
 
-> Now, I'm separating the patch-set into small stages.
-> There is no problem for a while, but I think I will ask you to test it in the
-> final stage.
+[    5.031966] CPU 4 Unable to handle kernel paging request at virtual 
+address 000000000000081a, era == 900000000329b448, ra == 900000000329b440
+[    5.044587] Oops[#1]:
+[    5.046837] CPU: 4 PID: 1 Comm: swapper/0 Not tainted 6.8.0-rc1+ #7
+[    5.053062] Hardware name: Loongson 
+Loongson-3A6000-HV-7A2000-XA61200/Loongson-3A6000-HV-7A2000-XA61200, 
+BIOS Loongson-UDK2018-V4.0.05636-stable202311 12/
+[    5.066803] pc 900000000329b448 ra 900000000329b440 tp 
+90000001000d0000 sp 90000001000d3d40
+[    5.075100] a0 ffffffffffffffea a1 90000001000d3c38 a2 
+0000000000000003 a3 9000000003867ce8
+[    5.083398] a4 9000000003867ce0 a5 90000001000d3a80 a6 
+0000000000000001 a7 0000000000000001
+[    5.091695] t0 ac81f55e34713962 t1 ac81f55e34713962 t2 
+0000000000000000 t3 0000000000000001
+[    5.099992] t4 0000000000000004 t5 0000000000000000 t6 
+0000000000000030 t7 0000000000000000
+[    5.108290] t8 00000000000070b1 u0 0000000000000000 s9 
+0000000000000008 s0 9000000003d58b48
+[    5.116587] s1 9000000003c0b4a8 s2 9000000003787000 s3 
+9000000003778000 s4 90000000032c0578
+[    5.124884] s5 ffffffffffffffea s6 90000000032c0560 s7 
+90000000032df900 s8 ffffffffccccc000
+[    5.133182]    ra: 900000000329b440 sysfb_init+0x80/0x1f0
+[    5.138545]   ERA: 900000000329b448 sysfb_init+0x88/0x1f0
+[    5.143905]  CRMD: 000000b0 (PLV0 -IE -DA +PG DACF=CC DACM=CC -WE)
+[    5.150048]  PRMD: 00000004 (PPLV0 +PIE -PWE)
+[    5.154373]  EUEN: 00000000 (-FPE -SXE -ASXE -BTE)
+[    5.159131]  ECFG: 00071c1c (LIE=2-4,10-12 VS=7)
+[    5.163717] ESTAT: 00010000 [PIL] (IS= ECode=1 EsubCode=0)
+[    5.169164]  BADV: 000000000000081a
+[    5.172623]  PRID: 0014d000 (Loongson-64bit, Loongson-3A6000-HV)
+[    5.178587] Modules linked in:
+[    5.181614] Process swapper/0 (pid: 1, threadinfo=(____ptrval____), 
+task=(____ptrval____))
+[    5.189827] Stack : 0000000000000000 0000000000000000 
+0000000000000000 0000000000000000
+[    5.197782]         0000000000000000 ac81f55e34713962 
+90000000032c0000 9000000003778000
+[    5.205736]         90000000032c0578 0000000000000000 
+900000000329b3c0 9000000003c54000
+[    5.213691]         90000001000d3db8 9000000002260154 
+0000000000000006 0000000000000000
+[    5.221645]         0000000000000000 0000000000000000 
+0000000000000000 0000000000000000
+[    5.229599]         0000000000000000 0000000000000000 
+0000000000000000 ac81f55e34713962
+[    5.237553]         90000000037468f8 90000000037468f8 
+90000000032c0578 90000000036a7658
+[    5.245508]         0000000000000006 9000000100041e00 
+0000000000000a55 9000000003260ff4
+[    5.251549] ata3: SATA link down (SStatus 0 SControl 300)
+[    5.253463]         0000000000000000 90000000032600b0 
+0000000000000000 0000000000000000
+[    5.266777]         0000000000000000 0000000000000000 
+0000000000000000 0000000000000000
+[    5.274731]         ...
+[    5.277154] Call Trace:
+[    5.277155] [<900000000329b448>] sysfb_init+0x88/0x1f0
+[    5.284678] [<9000000002260154>] do_one_initcall+0x78/0x1cc
+[    5.290213] [<9000000003260ff4>] kernel_init_freeable+0x228/0x298
+[    5.296267] [<900000000324d104>] kernel_init+0x20/0x110
+[    5.301455] [<90000000022611e8>] ret_from_kernel_thread+0xc/0xa4
+[    5.307421]
+[    5.308892] Code: 561667fe  0015009c  40007080 <2408308c> 29403860  
+02c2e09b  0040818c  6400180c  1a007d45
+[    5.318579]
+[    5.320053] ---[ end trace 0000000000000000 ]---
+[    5.324640] Kernel panic - not syncing: Attempted to kill init! 
+exitcode=0x0000000b
+[    5.332247] Kernel relocated by 0x2040000
+[    5.336226]  .text @ 0x9000000002240000
+[    5.340031]  .data @ 0x90000000032f0000
+[    5.343835]  .bss  @ 0x9000000003c3f200
+[    5.347640] ---[ end Kernel panic - not syncing: Attempted to kill 
+init! exitcode=0x0000000b ]---
 
--- 
-Regards,
 
-Laurent Pinchart
+> Best regards
+> Thomas
+>

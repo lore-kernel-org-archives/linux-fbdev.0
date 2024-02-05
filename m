@@ -1,98 +1,159 @@
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+Received: from JPN01-OS0-obe.outbound.protection.outlook.com (mail-os0jpn01on2109.outbound.protection.outlook.com [40.107.113.109])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32C29BA30;
-	Mon,  5 Feb 2024 05:12:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707109957; cv=none; b=Xf7rYyWvv54GRVQ89cGrBd0AdKGaRmuMosWN2/QejwVKrtbhBub9zlHM9X6MWIGQmdoo3oXS3bF+0vaXCG+dzXvxvaZ1O524cBX71u722hzdvfotc1O1x+VFEZJaCWLzw/CQXc/omcmxR5FPzxf53ZraV06UVgjBbtHsGd2H6X8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707109957; c=relaxed/simple;
-	bh=3FvIe0RPK1fdWKTy4tAKN+3gHOUvTE9wqd2g6CRqy7w=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=rkX4Q8NwIErB2ZssQ9O1H9w8MhmAGu4YDh6uffuCflRDAqsZxkH3pHbOojRej4VHXWssdfL/FAfobKiAHGu/5UOYShORXin3/+JhQZEuYYaarwvutvfdIVH10Znb3c11BRRwPPN1mQZOd/SO2oK9LsRmWumkQytEOx/bqHCoBoA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; arc=none smtp.client-ip=130.133.4.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.97)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1rWrHD-00000002ePf-0SxQ; Mon, 05 Feb 2024 06:12:15 +0100
-Received: from port-92-192-74-82.dynamic.as20676.net ([92.192.74.82] helo=suse-laptop.fritz.box)
-          by inpost2.zedat.fu-berlin.de (Exim 4.97)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1rWrHC-00000001Vxi-2l0a; Mon, 05 Feb 2024 06:12:15 +0100
-Message-ID: <e530a8cc9404a6cdd3abe800daf9a216fba5047d.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH 00/27] sparc32: sunset sun4m and sun4d
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "David S. Miller" <davem@davemloft.net>, Arnd Bergmann
- <arnd@kernel.org>,  Andreas Larsson <andreas@gaisler.com>, Helge Deller
- <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>,  Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern
- <stern@rowland.harvard.edu>, Jaroslav Kysela <perex@perex.cz>,  Takashi
- Iwai <tiwai@suse.com>, sparclinux@vger.kernel.org,
- linux-kernel@vger.kernel.org,  linux-usb@vger.kernel.org,
- linux-fbdev@vger.kernel.org,  dri-devel@lists.freedesktop.org,
- linux-sound@vger.kernel.org
-Date: Mon, 05 Feb 2024 06:12:11 +0100
-In-Reply-To: <20240204192134.GB896678@ravnborg.org>
-References: <20231219-sam-sparc32-sunset-v3-v1-0-64bb44b598c5@ravnborg.org>
-	 <20240204192134.GB896678@ravnborg.org>
-Autocrypt: addr=glaubitz@physik.fu-berlin.de; prefer-encrypt=mutual;
- keydata=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
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.50.3 
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89808B665;
+	Mon,  5 Feb 2024 05:31:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.113.109
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1707111092; cv=fail; b=X9Tj6qBvTvs0kBdtUGIcj8sbBLP4oDzzMAr5oZmopLODxnjlWRn/MQGGpKpCFnBYs0/lTnqIjH3lbzWB7dTeSlRnc8onilY7s1a7k/2awX/RHuS7NTZXMC+JYIoET/bbZ3q6nMf/sL2XKwlQzU3xeqvBaX6+LJNtCp6moBDFx1g=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1707111092; c=relaxed/simple;
+	bh=Ez/cNbrikcOK+rSk8lBRL8Zwm2/B4V6j0aIq93CbekU=;
+	h=Message-ID:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=c3iHKz3UlV2/YUnBuy8wmG/FuGoBHy1cqjqjTJ7kiw39OKnqTzZV3EmWtmRMEzcC2YGMMtAsBanSE+s1zQ1YU6w58C5k0eBfaUTImsDMwTfeOoUQGt5oQgBqD90J3IMqr4bN75GUsHCg10Mxm7eEg/MAvlHOCvnxhnjlCu26yUE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=J+SMjlaH; arc=fail smtp.client-ip=40.107.113.109
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="J+SMjlaH"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=daw96ECLD5nFUFWgfLPA0kYoBFU2zm0f6lhoV2axZTWOrbvmhNMD1yXPjQrFTgBDOXmYZSz9nB9ETajoIBRc2KWzg0ob+ZUhU7Ss6q7TEUgR9SAY/InYBDn46ngb9zFO9Dix1M6Gwe+TKhhZgR9UOsEIRAqy48Eti9O4oaEYU7bJzudqkAbfhBqiT4Ir069GIjL9L+4DF/q+XedfQWySAefGPbnNkq7uS1Iq61mcl82XY7Yb0HD3LfuO65ggHKbDCJyB3ehMSQRq4Z63lSWLfJA0ZHBUjSpjXTTx0aOYjGZqaVp6sh+xRTaAK3sQl4LV+LC1fU7PwWix/7Kh5jnJ/A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=qpDJsb/GKvWelBQFYTW15Fec7j9I9uxPwrIzEoafF7s=;
+ b=cJ9w51GyOd02gzIoRUyARZIDHvZjl7thWKzAX91NudWJ/Pkt8BQj0KcIHxwxNO4iX7yP1s4Z7LgIJtV9Q4BQAtrfyTQQS+GH8YEtsj0O/Pc4h86c6TyHqHUBS1l0GyFKRarYEHZHtdGUNxM+eJZhrhavDDbhN6IuK5YE6ySBKXTggtlxmFq1Se1WOrqrNbRw754sl1PMbcHU05Py0FjchxqULqTXi5GqNH6QfMVhldTHx1cSsuacdZjKxzGTUNyfGHlfW7VzvZT2s019XDHdkXkEy2rXBujj55vVzl0xiLgyw9rFykLY6/+46Jp6owqcxcBSNYUvQ2f9zpDnVO2QZg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qpDJsb/GKvWelBQFYTW15Fec7j9I9uxPwrIzEoafF7s=;
+ b=J+SMjlaHgmrbQcn39eQdw9AtJT9k9uWb1lNR7QxTta2mwYo38INtBFB0VdbNJ0wezFw0eux7aW7J6rB8qT+uMlegp/aC0BA/+bmzFbmpcqUwnIDWRySIa/QBqzHUEqMwkWGXFv/2KhBcb0MHc6NCClU+kk8IGyMjtBISfQ82bAA=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11) by OS0PR01MB5859.jpnprd01.prod.outlook.com
+ (2603:1096:604:b8::14) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7249.30; Mon, 5 Feb
+ 2024 05:31:25 +0000
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::4d0b:6738:dc2b:51c8]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::4d0b:6738:dc2b:51c8%6]) with mapi id 15.20.7249.032; Mon, 5 Feb 2024
+ 05:31:25 +0000
+Message-ID: <87ttmncw9f.wl-kuninori.morimoto.gx@renesas.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: Sakari Ailus <sakari.ailus@iki.fi>
+Cc: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,	Laurent Pinchart
+ <laurent.pinchart@ideasonboard.com>,	Uwe =?ISO-8859-1?Q?Kleine-K=C3=B6nig?=
+ <u.kleine-koenig@pengutronix.de>,	Daniel Vetter <daniel@ffwll.ch>,	David
+ Airlie <airlied@gmail.com>,	Frank Rowand <frowand.list@gmail.com>,	Helge
+ Deller <deller@gmx.de>,	Jaroslav Kysela <perex@perex.cz>,	Liam Girdwood
+ <lgirdwood@gmail.com>,	Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>,	Mark Brown <broonie@kernel.org>,	Mauro
+ Carvalho Chehab <mchehab@kernel.org>,	Maxime Ripard <mripard@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,	Rob Herring <robh+dt@kernel.org>,
+	Saravana Kannan <saravanak@google.com>,	Takashi Iwai <tiwai@suse.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,	alsa-devel@alsa-project.org,
+	devicetree@vger.kernel.org,	linux-fbdev@vger.kernel.org,
+	linux-media@vger.kernel.org,	linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 00/13] of: property: add port base loop
+In-Reply-To: <ZbtiAJklkLaXWY20@valkosipuli.retiisi.eu>
+References: <87fryhklhb.wl-kuninori.morimoto.gx@renesas.com>
+	<20240129122736.GC8131@pendragon.ideasonboard.com>
+	<ZbeoPBvGJlaJco_J@valkosipuli.retiisi.eu>
+	<87zfwnirps.wl-kuninori.morimoto.gx@renesas.com>
+	<Zbil22dm9x2ZudJC@valkosipuli.retiisi.eu>
+	<582ede29-2df7-4f01-a03b-da59d9f56d74@ideasonboard.com>
+	<Zbin6Pg6oNp0cTNO@valkosipuli.retiisi.eu>
+	<87ttmu76co.wl-kuninori.morimoto.gx@renesas.com>
+	<ZbtiAJklkLaXWY20@valkosipuli.retiisi.eu>
+User-Agent: Wanderlust/2.15.9 Emacs/27.1 Mule/6.0
+Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 5 Feb 2024 05:31:25 +0000
+X-ClientProxiedBy: TYBP286CA0038.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:404:10a::26) To TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-ZEDAT-Hint: PO
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|OS0PR01MB5859:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4a4a77ab-c0ef-4ccc-20a3-08dc260bb20a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	SUS6dgv336uAe1GROcW7ETJCpW2DdJLu75MjuyRo+Zc2mVOOUcoZ8Fri2LQtC32gNuGcycFNmDEycsMXBPfjeYGk6PvYdYjHi+Kb7AN2+n7G4x2p9RFmKNDWD7jAXjx+caEhZDwy/t50XfhZQIw65mTzyRT368dPxOPHAaVWiG3OisZxH33b0yRWRh2lcGPhfGDB2zDVsSuCk1wWzkEOPWK2Y6Sh/yUlxO08KrqidbopL+KCq62AXnRtLkMNXU/IChhoR172fXDTGpAeZwRKkbB3C3x6D7zjFrwRr/9dwSAM3BFadCodvESx58ICpX6W/t9KO7tX0n3NGi3IW1ca1dBJq/uxcbsPDk/mvuhmPY2UE+N+rL5hZ343AdCbZA1F6OY0SZy2aOjpNCvKCX7LAw97C178/EyFRUwR9sbp0O5T4bfMwqv5GtmYAePG35HjmdpxeG3zeSC+zbCZgKr5bomSfnMssqWViWRfWx02IVfZ/riJCav+4RwxgDWFTsmvaMUPhK1F5nWWmh38Y0ANVlN+Ms2HFQzz9jUqPCdcca1GssmK3XGM5yOD/EGuvhQEduaw5MdvnWsjhdWQKluUPU4aeNy+X0jkxYSok7E2+vCmttZyVbj79fp9VMkveZn2
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(366004)(39860400002)(136003)(376002)(396003)(230922051799003)(451199024)(64100799003)(186009)(1800799012)(4326008)(4744005)(5660300002)(2906002)(7416002)(41300700001)(26005)(2616005)(6486002)(478600001)(6506007)(6512007)(36756003)(52116002)(38100700002)(86362001)(66946007)(38350700005)(66556008)(6916009)(54906003)(316002)(66476007)(8936002)(8676002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?p7ksdstZN90qffMAQojhA7efNwZInsBLFLmucZ2LoX4Vt6ym5BJmHxypeEm0?=
+ =?us-ascii?Q?VuFV3Q2VtDkIV17dluUeS+qWIvs/478eM9g/rr6DwVUIHJbwk4Xo6TLOfQgF?=
+ =?us-ascii?Q?/RO7SKF60T77P1YvnPLHnF217KvF8HQ3Xomm2oP8RJoLN2cC9fsaI7Mt8O92?=
+ =?us-ascii?Q?bXysPLOiFAr4RWwLmMlWXaDfE98CK2O7e/dDWLHNcn2LbZRcYHjmFZfVTHjd?=
+ =?us-ascii?Q?1gTyVNAhLWDBPWhDUSDV2+qkQyGV40SAHTZkHA/HcgJbYOE9zWORLTIfxlbz?=
+ =?us-ascii?Q?HL7kjH9NZr8+yy8WZDNQoxVPQtiIsSfnpOwIP4/fgG7SEhPuI5qzfo0Xr97s?=
+ =?us-ascii?Q?molFsqgNUGRaZzLDLhQLDcdjTZ0Oa/Gq+bPugMqJatXQl0eH4Azh/dqPKEdE?=
+ =?us-ascii?Q?JvmkfZdI4YBpmhyeqKxJJAuby0aSZAHL+CKwxq13h0OXzlhKjulk2QKzEdj/?=
+ =?us-ascii?Q?JSO6SS2luSC8ssCLqX75I9qgW3PL2N9GNB0N+PgujBGCazigRQXYQK2HnaCN?=
+ =?us-ascii?Q?Z4ELhJFNFmop4KcLxCC+8JpIPKsKW7HPhtnvy/zp+P8Kl4hG7uGapyYHa1s5?=
+ =?us-ascii?Q?2F0sq6185tgEcoPSPVPbxtfTS6fQCIUMaOxn6z7vwD3/YyLX9+siPZipP8g4?=
+ =?us-ascii?Q?j43LaXpjOOlfehcFbPEM8/iraj4GD2kyJyiXAImUByiuGVhzFxLLtAo+rvLL?=
+ =?us-ascii?Q?zWJfMVl6wQmYIHIKUahSzZJCb8QfAlNbpfwdy6cq9JhHAig6RpKvm3Jpr5yo?=
+ =?us-ascii?Q?4YqznQzNMgzAcS+SeQTRnfaiqAGZzY2+sdfkXE++8Yyr6Q0Mm1YCxUrvFjk9?=
+ =?us-ascii?Q?3BpTHiinC0rtOkDb/1GzYN6g9OxZRETBS6ApOJb2wBpQUn5fJe4AhktrZeAA?=
+ =?us-ascii?Q?iOwH1TJvjyfy9nuNOUMXCFa6AtW8NoCZwceavVOWwlZiq7sHk/XVwlUygmnm?=
+ =?us-ascii?Q?JgcV+7sG0QX0hBjgm7nzgOfMABClpqy2Paq+OQAjY2GSu48bOp6kgFT0+l90?=
+ =?us-ascii?Q?zxo8/XD7SybcY0efedbBkaPDYXWry5qrDd15qkuU/G7KeujaY44OcLQzoRcu?=
+ =?us-ascii?Q?yAHB406RX3fIZswg3qF0NfGpN/NIqWTPpgqvXfoubE6zQ9nAHj6Fd/WmMWLX?=
+ =?us-ascii?Q?tNt9HME74CEFl/Xj1fqOKcJ11hy1Hz1dVjcsKCYO1TEoUCRFbTvXtWKP0xoe?=
+ =?us-ascii?Q?1x4wjS372DMjGwNQKXc1gyN8JZzADvfprBMm797mGIEYUO+wAqhbJIBaAAEC?=
+ =?us-ascii?Q?nQqT9pBq1TL3EgD9Um3liJUT0XhImUP0f3b5RNMw0H/fhNy9V+xg8Q7BQRfF?=
+ =?us-ascii?Q?W2gEMs3kKcxE57BYGeo8QgwITtw2neJ/eV7M11S4AcjqZiwu+Tec+/qCp9Yg?=
+ =?us-ascii?Q?pbodk5nf0dFkqTqoOevPpBL3GOuITseLWgYdn9PW2PY8d1F2yjLtAJjqq63K?=
+ =?us-ascii?Q?d1xmPJfnwUjCuLwUsnId+hbUsMn5y9WBLAZMH8StV71ey0O7hHE7jWL6UYGL?=
+ =?us-ascii?Q?RqQ/9lwGIuyq5XmN65MZiN+PWEMOAA0ZInTP7PZwesiX9x2poroSj3XgvPWT?=
+ =?us-ascii?Q?US28gt5fBGNMFPiGMxmrHep0i+8aeNZAsPTP0prHbKPF1ev6cx8TgQhAZYsK?=
+ =?us-ascii?Q?pXwbdt7crJSv6hUdRjpN8hs=3D?=
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4a4a77ab-c0ef-4ccc-20a3-08dc260bb20a
+X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Feb 2024 05:31:25.6626
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: lXntSVUfg3I85iXLMr2oXIuMt2tflXp+m1mPa2dkjN4sh4Ad/Am1iQmYExMUcUqNLO0Zqg2ImcXkPCNRYil0w4/EOtzvbavmZSiH5YhuF+WYbrbcS5w2cq6FMbGK+ryp
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS0PR01MB5859
 
-Hi Sam,
 
-On Sun, 2024-02-04 at 20:21 +0100, Sam Ravnborg wrote:
-> Assuming you agree with the patchset how do you want me to move forward?
-> I can rebase on top of the latest -rc and collect acks if that helps.
->=20
-> Arnd promised to pick up the patches until you got a git tree up,
-> but I do not expect Arnd to pick up anything unless you have acked or
-> reviewed said patch(es).
->=20
-> If I rebase the patch-set I will likely include a few bug-fix patches tha=
-t
-> was prepared in the meantime.
-> I can also send them as a separate series, no worries.
+Hi Sakari
 
-I met with Andreas this weekend and he got GPG signatures from at least me
-and Geert which he needs for his kernel.org account. Please give him a few
-more days, maybe be even 2-3 weeks to get everything up and comfortable wit=
-h
-the whole process.
+> > Thank you for your suggestion.
+> > But I'm not familiar with fwnode, and it seems we still need of_*,
+> > I will keep current style (= non fwnode) in v3
+> 
+> The fwnode API should be kept in sync with the OF (and other firmware
+> specific) API. Merging your set in its current form would leave fwnode API
+> impaired. Therefore I'd very much prefer to see this set add similar fwnode
+> APIs, too.
 
-The more patches Andreas can review and merge himself, the better. And sinc=
-e
-your patches have been laying around for some time already, I don't think t=
-hat
-waiting a little longer will be a problem.
+I will keep current fwnode API behavior, but I can't test it.
+Now, I'm separating the patch-set into small stages.
+There is no problem for a while, but I think I will ask you to test it in the
+final stage.
 
-Thanks,
-Adrian
 
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+Thank you for your help !!
+
+Best regards
+---
+Renesas Electronics
+Ph.D. Kuninori Morimoto

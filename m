@@ -1,228 +1,325 @@
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from ewsoutbound.kpnmail.nl (ewsoutbound.kpnmail.nl [195.121.94.167])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1836132497
-	for <linux-fbdev@vger.kernel.org>; Tue,  6 Feb 2024 14:21:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F35BD1E520
+	for <linux-fbdev@vger.kernel.org>; Tue,  6 Feb 2024 14:45:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.121.94.167
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707229275; cv=none; b=VZmDKBEB+Mkjwlymq9T0odjzocAuBVV1Nq3DkOaCAFYQquiUWpULD5qTK0uBHONxQzohEafksM+bSmGT6GgqFwy7qYBIvmAhX96SXcwJ6o7c1js8rgf/eIZIKyGGb1LmxT57/byAufQ9EAVT/cFFlqAkbWRjDZQkQk+Tak/2r+8=
+	t=1707230763; cv=none; b=vB30clo+klZIZgNT8TxHwzA57Q0KfpPD6Do/EBPF2iZBQCEiyaD/TfAbWwAMOmymIk+zo/1w+2XLCoypb11Jo+rMbsukJRuJHPeIblBJOEc2fXFkUKtr/gOOEJTyLVz4zrXv7kMByojWT7uPn65S62fvRje40vFwHhs74EnPdzY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707229275; c=relaxed/simple;
-	bh=CUnjCo76/LggIQyrh7hM9viaEWjGMwz5mjjc2J93re8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BJD64DVHNPeyzXMcEG7qZw18W8E6oMxL7kqDR4jzo/5avlt4MuFV1XXTkPyVDZJjCp0JXuIrKarNzkczjUS3KYamD72c++g23mxe6PLnEnMZUTVSfh3C215EmtoMuXo+A7n8V5fA2Qg5boqiqBF3LCvcdm1SiD9Z4DfptOPfLKg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=b6ZaAiXl; arc=none smtp.client-ip=209.85.128.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
+	s=arc-20240116; t=1707230763; c=relaxed/simple;
+	bh=008NZlIIKKcRbZtY8WBgHmga9ePdRnsihK5UNUmHyPw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Krk1Ysh8sMVS/24wMhUqVMqxJBdEukY5JqwWVmXC9ro6qyZUzKtAxn4feU5qs2KAmy7nDY3eDST6hMC290TuXpMYMHtBwxdt43K06GO2X/4PFHvynCBxqnDaKYVT7vczRU+svlDs8RdI/XBtA4wBU0K+UntVgWZvn5WxOZNSGhc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=xs4all.nl; spf=pass smtp.mailfrom=xs4all.nl; dkim=pass (2048-bit key) header.d=xs4all.nl header.i=@xs4all.nl header.b=kFXpchdr; arc=none smtp.client-ip=195.121.94.167
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=xs4all.nl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xs4all.nl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="b6ZaAiXl"
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-40fd3b294beso7038025e9.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 06 Feb 2024 06:21:13 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=xs4all.nl header.i=@xs4all.nl header.b="kFXpchdr"
+X-KPN-MessageId: 4568c7c9-c4fe-11ee-a95f-005056abbe64
+Received: from smtp.kpnmail.nl (unknown [10.31.155.39])
+	by ewsoutbound.so.kpn.org (Halon) with ESMTPS
+	id 4568c7c9-c4fe-11ee-a95f-005056abbe64;
+	Tue, 06 Feb 2024 15:44:46 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1707229272; x=1707834072; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7cH4cinVRUE3M6YMj8iFULuCrqzQIuc0TJaFv9jLZwc=;
-        b=b6ZaAiXl3AxUrRvCcysvmV8Wc8teJaKTglNBOc+/CwDr4QZ5qOGkzu91L4UPQq0cmQ
-         20zRLo4DLIuBKqMUCkaG9TqXu0A/ws50VZrQwd2upIJMNgqHCfCtRK/vXiRC6ixmX4YC
-         fQ35QJuPO8BruD0C8gOR64yHl7aw+zNO6dC/M=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707229272; x=1707834072;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7cH4cinVRUE3M6YMj8iFULuCrqzQIuc0TJaFv9jLZwc=;
-        b=HhNJqT0HcDKEX+MADtlZQX+9BCdNX1W2UbfyYlLHUDtwqMSD2HcSr/lUHkTG9dzR3c
-         pI4REd8am0pGGFBKZFheAi8fWhuDmRJ4lQc4OoT+WeOuQHOhF9UwhK0M9dMRgSOeFxQ0
-         zPGVi6BlpxjpZitHD9SRO0EwJ16R5uxN77vuEx3zL0+YUJuPy1yEbgNYx2KYXLWZw59L
-         MFilcCy0CVsehDHTGqpZgsoWLssc3PnO7KhSph3TvepOGLoZnmD7FNU3AHDHULtGonDv
-         6bI1KQYzHRoWd1cb5Hu6nzypTIBpXYoEDpT+NDWypDRk+j/rOz41cYOLTc1Xf7gPTj97
-         zhWA==
-X-Gm-Message-State: AOJu0YzqYF8ITMFeo14wYHZa8ug0OlIuir6WeeY5Rpxvq9wlL+DQWBjT
-	KLjUmPYyKZhV4TeDsCNEKiOLbcscvRXr3FyGRZO93BE8EoElbG0VqugmmvbIAI0=
-X-Google-Smtp-Source: AGHT+IGJg0nk0Vq5ScK0sm2/0DnUB3Eu8fRzGY48sYNzv3HCToc0vt80A464uq3LIaKMXGNrCimq4A==
-X-Received: by 2002:a05:600c:198f:b0:40f:bda6:ccc0 with SMTP id t15-20020a05600c198f00b0040fbda6ccc0mr2335730wmq.1.1707229271976;
-        Tue, 06 Feb 2024 06:21:11 -0800 (PST)
-X-Forwarded-Encrypted: i=0; AJvYcCWvfccj3dIELWNuZ5cbWBfo92YLAuBIdF79eWwOGcB5Kom+Uk02ixbChm8cD/5S6PttjMHAhAtdhWg1I0WLwY/bovMBqa01X/ydI4/Ig8k5HRGLyS+eFur1ry+MrZFzkILNN14RV5o+WbX3ny9ACTzkp6SzB/DKi0CNw9mP3CI9F5BsoGXFMAAi4nqqACvjpBEbqd0TcqZjWyPBB5BvINbp8fkWh0gHzpK5KSg90Nc2pMJqW3D6d2i8Tjih2gLR34XcCS6j2WXWqMMgskMN/iNLn+w2B8I1+eBwEzzkbBpCyL8UzYvA35lskW7YS7oE
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id u21-20020a05600c139500b0040e813f1f31sm2212377wmf.25.2024.02.06.06.21.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Feb 2024 06:21:11 -0800 (PST)
-Date: Tue, 6 Feb 2024 15:21:09 +0100
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Daniel van Vugt <daniel.van.vugt@canonical.com>
-Cc: Mario Limonciello <mario.limonciello@amd.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
-	Jani Nikula <jani.nikula@intel.com>,
-	Danilo Krummrich <dakr@redhat.com>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] fbcon: Defer console takeover for splash screens
- to first switch
-Message-ID: <ZcJAVSyH3gRYx3EG@phenom.ffwll.local>
-Mail-Followup-To: Daniel van Vugt <daniel.van.vugt@canonical.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Helge Deller <deller@gmx.de>, Jani Nikula <jani.nikula@intel.com>,
-	Danilo Krummrich <dakr@redhat.com>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <f037df4a-8a97-4fcd-b196-43f484b63d8d@amd.com>
- <20240206101100.25536-1-daniel.van.vugt@canonical.com>
- <20240206101100.25536-2-daniel.van.vugt@canonical.com>
+	d=xs4all.nl; s=xs4all01;
+	h=content-type:from:to:subject:mime-version:date:message-id;
+	bh=sVhg6tYMRf/3ZgsSwv4ezK1ZnRtWNigTMohOSfmrdrE=;
+	b=kFXpchdrx+O53J8720yZPPvK1ytij006qCuLoTG3gApM9Cdp4+puc/qoV5SKXKNuv6lI7wfMlIsYG
+	 7Im1VLd2ePLDn0oCfoboaZRykl3Oa1mpINk3G5BlRZb9LmUrP15DXRBvawOh0m703mxnGtAakWaoWI
+	 OzJOYupc21hp3US9QlZOdPLHMAS/h9Lvq9mPq/y8IZ7JKsLgbSCr4xXcMpxxeClGr3FpTYgQh3xm+w
+	 /lwDLmqMZMGOHjzknJiKMK39WmliYMGQf7jyCVIsoq0m0pCZ+J4NU9d59juC3Zrfa7cAPnCDY4LW+a
+	 D0P2Dwp/Xz4KaUY39LXtRnJ/MukLSgg==
+X-KPN-MID: 33|jA6uH9xZgY1knbeKSi6dhq/1oOne2U8bpKIfge1alGbmiWw4WtZRL/JrdrTtnHN
+ 7Bs0IK6MayUV9ZziGAXmUz8VwwxLoQDVWspwFsUV8srA=
+X-KPN-VerifiedSender: Yes
+X-CMASSUN: 33|rcDDLhX3Pfqvt4pErGfwvkDsq0AYsFBHimHVqPC05g52A/YFh5ohXgVG1DNg/PT
+ DpGkua0lo4qtTk/w7m3A0EQ==
+Received: from [10.47.75.249] (unknown [173.38.220.58])
+	by smtp.xs4all.nl (Halon) with ESMTPSA
+	id 456b66ec-c4fe-11ee-a7ca-005056ab7447;
+	Tue, 06 Feb 2024 15:44:47 +0100 (CET)
+Message-ID: <9d1e99b0-892d-4a72-a9b3-886b8ed094b0@xs4all.nl>
+Date: Tue, 6 Feb 2024 15:44:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240206101100.25536-2-daniel.van.vugt@canonical.com>
-X-Operating-System: Linux phenom 6.6.11-amd64 
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/4] media: i2c: replace of_graph_get_next_endpoint()
+Content-Language: en-US
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ =?UTF-8?Q?Krzysztof_Ha=C5=82asa?= <khalasa@piap.pl>
+Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Alexey Brodkin <abrodkin@synopsys.com>, Alim Akhtar
+ <alim.akhtar@samsung.com>, Andrzej Hajda <andrzej.hajda@intel.com>,
+ Biju Das <biju.das.jz@bp.renesas.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>,
+ Claudiu Beznea <claudiu.beznea@tuxon.dev>, Daniel Vetter <daniel@ffwll.ch>,
+ Dave Stevenson <dave.stevenson@raspberrypi.com>,
+ David Airlie <airlied@gmail.com>, Eugen Hristev
+ <eugen.hristev@collabora.com>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Helge Deller <deller@gmx.de>, Hugues Fruchet <hugues.fruchet@foss.st.com>,
+ Jacopo Mondi <jacopo@jmondi.org>, Jessica Zhang <quic_jesszhan@quicinc.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Maxime Ripard <mripard@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Sakari Ailus <sakari.ailus@linux.intel.com>, Sam Ravnborg
+ <sam@ravnborg.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>, Tim Harvey <tharvey@gateworks.com>,
+ dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
+ linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
+References: <87ttmmnvzh.wl-kuninori.morimoto.gx@renesas.com>
+ <87r0hqnvxc.wl-kuninori.morimoto.gx@renesas.com>
+ <20240206134155.GB2827@pendragon.ideasonboard.com>
+From: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+In-Reply-To: <20240206134155.GB2827@pendragon.ideasonboard.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Feb 06, 2024 at 06:10:51PM +0800, Daniel van Vugt wrote:
-> Until now, deferred console takeover only meant defer until there is
-> output. But that risks stepping on the toes of userspace splash screens,
-> as console messages may appear before the splash screen. So check the
-> command line for the expectation of userspace splash and if present then
-> extend the deferral until after the first switch.
+On 2/6/24 14:41, Laurent Pinchart wrote:
+> Hi Morimoto-san,
 > 
-> V2: Added Kconfig option instead of hard coding "splash".
+> (Adding Krzysztof Hałasa)
 > 
-> Closes: https://bugs.launchpad.net/bugs/1970069
-> Cc: Mario Limonciello <mario.limonciello@amd.com>
-> Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
-> ---
->  drivers/video/console/Kconfig    | 13 +++++++++++
->  drivers/video/fbdev/core/fbcon.c | 38 ++++++++++++++++++++++++++++++--
->  2 files changed, 49 insertions(+), 2 deletions(-)
+> Thank you for the patch.
 > 
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index bc31db6ef7..a6e371bfb4 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -138,6 +138,19 @@ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->  	  by the firmware in place, rather then replacing the contents with a
->  	  black screen as soon as fbcon loads.
->  
-> +config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
-> +	string "Framebuffer Console Deferred Takeover Condition"
-> +	depends on FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
-> +	default "splash"
-> +	help
-> +	  If enabled this defers further the framebuffer console taking over
-> +	  until the first console switch has occurred. And even then only if
-> +	  text has been output, and only if the specified parameter is found
-> +	  on the command line. This ensures fbcon does not interrupt userspace
-> +	  splash screens such as Plymouth which may be yet to start rendering
-> +	  at the time of the first console output. "splash" is the simplest
-> +	  distro-agnostic condition for this that Plymouth checks for.
+> On Tue, Feb 06, 2024 at 02:55:27AM +0000, Kuninori Morimoto wrote:
+>> From DT point of view, in general, drivers should be asking for a
+>> specific port number because their function is fixed in the binding.
+>>
+>> of_graph_get_next_endpoint() doesn't match to this concept.
+>>
+>> Simply replace
+>>
+>> 	- of_graph_get_next_endpoint(xxx, NULL);
+>> 	+ of_graph_get_endpoint_by_regs(xxx, 0, -1);
+>>
+>> Link: https://lore.kernel.org/r/20240202174941.GA310089-robh@kernel.org
+>> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>> ---
+>>  drivers/media/i2c/adv7343.c              | 2 +-
+>>  drivers/media/i2c/adv7604.c              | 2 +-
+>>  drivers/media/i2c/mt9p031.c              | 2 +-
+>>  drivers/media/i2c/mt9v032.c              | 2 +-
+>>  drivers/media/i2c/ov2659.c               | 2 +-
+>>  drivers/media/i2c/ov5645.c               | 2 +-
+>>  drivers/media/i2c/ov5647.c               | 2 +-
+>>  drivers/media/i2c/s5c73m3/s5c73m3-core.c | 2 +-
+>>  drivers/media/i2c/s5k5baf.c              | 2 +-
+>>  drivers/media/i2c/tc358743.c             | 2 +-
+>>  drivers/media/i2c/tda1997x.c             | 2 +-
+>>  drivers/media/i2c/tvp514x.c              | 2 +-
+>>  drivers/media/i2c/tvp7002.c              | 2 +-
+>>  13 files changed, 13 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/drivers/media/i2c/adv7343.c b/drivers/media/i2c/adv7343.c
+>> index ff21cd4744d3..4fbe4e18570e 100644
+>> --- a/drivers/media/i2c/adv7343.c
+>> +++ b/drivers/media/i2c/adv7343.c
+>> @@ -403,7 +403,7 @@ adv7343_get_pdata(struct i2c_client *client)
+>>  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
+>>  		return client->dev.platform_data;
+>>  
+>> -	np = of_graph_get_next_endpoint(client->dev.of_node, NULL);
+>> +	np = of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+>>  	if (!np)
+>>  		return NULL;
+>>  
+>> diff --git a/drivers/media/i2c/adv7604.c b/drivers/media/i2c/adv7604.c
+>> index b202a85fbeaa..dcfdbb975473 100644
+>> --- a/drivers/media/i2c/adv7604.c
+>> +++ b/drivers/media/i2c/adv7604.c
+>> @@ -3205,7 +3205,7 @@ static int adv76xx_parse_dt(struct adv76xx_state *state)
+>>  	np = state->i2c_clients[ADV76XX_PAGE_IO]->dev.of_node;
+>>  
+>>  	/* Parse the endpoint. */
+>> -	endpoint = of_graph_get_next_endpoint(np, NULL);
+>> +	endpoint = of_graph_get_endpoint_by_regs(np, 0, -1);
+> 
+> I think this should be port 1 for the adv7611 and port2 for the adv7612.
+> The adv7610 may need to use port 1 too, but the bindings likely need to
+> be updated.
+> 
+> Hans, Krzysztof, any opinion ?
 
-Hm this seems a bit strange since a lot of complexity that no one needs,
-also my impression is that it's rather distro specific how you want this
-to work. So why not just a Kconfig option that lets you choose how much
-you want to delay fbcon setup, with the following options:
+It looks like it. But I suspect the code never worked. The endpoint parsing
+is only needed if a specific mbus type is used (i.e., not 'UNKNOWN'), and
+I don't think that is used in the device trees in the kernel. So everything
+silently falls back to UNKNOWN and some default bus config that 'just works' (tm).
 
-- no delay at all
-- dely until first output from the console (which then works for distros
-  which set a log-level to suppress unwanted stuff)
-- delay until first vt-switch. In that case I don't think we also need to
-  delay for first output, since vt switch usually means you'll get first
-  output right away (if it's a vt terminal) or you switch to a different
-  graphical console (which will keep fbcon fully suppressed on the drm
-  side).
+I'm pretty sure this code is wrong, but nobody ever noticed. Changing it
+to the new code just makes it bug-compatible :-)
 
-I think you could even reuse the existing
-CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER for this, and then just
-compile-time select which kind of notifier to register (well plus the
-check for "splash" on the cmdline for the vt switch one I guess).
+Ideally someone would have to actually test this, perhaps with one of those
+Renesas boards. While I do have one, it got bricked after I attempted a
+u-boot update :-(
 
-Thoughts?
+Regards,
 
-Cheers, Sima
+	Hans
 
-
-> +
->  config STI_CONSOLE
->  	bool "STI text console"
->  	depends on PARISC && HAS_IOMEM
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 63af6ab034..98155d2256 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -76,6 +76,7 @@
->  #include <linux/crc32.h> /* For counting font checksums */
->  #include <linux/uaccess.h>
->  #include <asm/irq.h>
-> +#include <asm/cmdline.h>
->  
->  #include "fbcon.h"
->  #include "fb_internal.h"
-> @@ -3358,6 +3359,26 @@ static int fbcon_output_notifier(struct notifier_block *nb,
->  
->  	return NOTIFY_OK;
->  }
-> +
-> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
-> +static int initial_console;
-> +static struct notifier_block fbcon_switch_nb;
-> +
-> +static int fbcon_switch_notifier(struct notifier_block *nb,
-> +				 unsigned long action, void *data)
-> +{
-> +	struct vc_data *vc = data;
-> +
-> +	WARN_CONSOLE_UNLOCKED();
-> +
-> +	if (vc->vc_num != initial_console) {
-> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
-> +		dummycon_register_output_notifier(&fbcon_output_nb);
-> +	}
-> +
-> +	return NOTIFY_OK;
-> +}
-> +#endif
->  #endif
->  
->  static void fbcon_start(void)
-> @@ -3370,7 +3391,16 @@ static void fbcon_start(void)
->  
->  	if (deferred_takeover) {
->  		fbcon_output_nb.notifier_call = fbcon_output_notifier;
-> -		dummycon_register_output_notifier(&fbcon_output_nb);
-> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
-> +		if (cmdline_find_option_bool(boot_command_line,
-> +		      CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION)) {
-> +			initial_console = fg_console;
-> +			fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
-> +			dummycon_register_switch_notifier(&fbcon_switch_nb);
-> +		} else
-> +#endif
-> +			dummycon_register_output_notifier(&fbcon_output_nb);
-> +
->  		return;
->  	}
->  #endif
-> @@ -3417,8 +3447,12 @@ void __exit fb_console_exit(void)
->  {
->  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->  	console_lock();
-> -	if (deferred_takeover)
-> +	if (deferred_takeover) {
->  		dummycon_unregister_output_notifier(&fbcon_output_nb);
-> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
-> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
-> +#endif
-> +	}
->  	console_unlock();
->  
->  	cancel_work_sync(&fbcon_deferred_takeover_work);
-> -- 
-> 2.43.0
+> 
+>>  	if (!endpoint)
+>>  		return -EINVAL;
+>>  
+>> diff --git a/drivers/media/i2c/mt9p031.c b/drivers/media/i2c/mt9p031.c
+>> index 348f1e1098fb..c57a0d436421 100644
+>> --- a/drivers/media/i2c/mt9p031.c
+>> +++ b/drivers/media/i2c/mt9p031.c
+>> @@ -1080,7 +1080,7 @@ mt9p031_get_pdata(struct i2c_client *client)
+>>  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
+>>  		return client->dev.platform_data;
+>>  
+>> -	np = of_graph_get_next_endpoint(client->dev.of_node, NULL);
+>> +	np = of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+>>  	if (!np)
+>>  		return NULL;
+>>  
+>> diff --git a/drivers/media/i2c/mt9v032.c b/drivers/media/i2c/mt9v032.c
+>> index 1c6f6cea1204..14d277680fa2 100644
+>> --- a/drivers/media/i2c/mt9v032.c
+>> +++ b/drivers/media/i2c/mt9v032.c
+>> @@ -1008,7 +1008,7 @@ mt9v032_get_pdata(struct i2c_client *client)
+>>  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
+>>  		return client->dev.platform_data;
+>>  
+>> -	np = of_graph_get_next_endpoint(client->dev.of_node, NULL);
+>> +	np = of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+>>  	if (!np)
+>>  		return NULL;
+>>  
+>> diff --git a/drivers/media/i2c/ov2659.c b/drivers/media/i2c/ov2659.c
+>> index 2c3dbe164eb6..edea62a02320 100644
+>> --- a/drivers/media/i2c/ov2659.c
+>> +++ b/drivers/media/i2c/ov2659.c
+>> @@ -1388,7 +1388,7 @@ ov2659_get_pdata(struct i2c_client *client)
+>>  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
+>>  		return client->dev.platform_data;
+>>  
+>> -	endpoint = of_graph_get_next_endpoint(client->dev.of_node, NULL);
+>> +	endpoint = of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+>>  	if (!endpoint)
+>>  		return NULL;
+>>  
+>> diff --git a/drivers/media/i2c/ov5645.c b/drivers/media/i2c/ov5645.c
+>> index a70db7e601a4..31d214bd4a83 100644
+>> --- a/drivers/media/i2c/ov5645.c
+>> +++ b/drivers/media/i2c/ov5645.c
+>> @@ -1053,7 +1053,7 @@ static int ov5645_probe(struct i2c_client *client)
+>>  	ov5645->i2c_client = client;
+>>  	ov5645->dev = dev;
+>>  
+>> -	endpoint = of_graph_get_next_endpoint(dev->of_node, NULL);
+>> +	endpoint = of_graph_get_endpoint_by_regs(dev->of_node, 0, -1);
+>>  	if (!endpoint) {
+>>  		dev_err(dev, "endpoint node not found\n");
+>>  		return -EINVAL;
+>> diff --git a/drivers/media/i2c/ov5647.c b/drivers/media/i2c/ov5647.c
+>> index dcfe3129c63a..beab2813c672 100644
+>> --- a/drivers/media/i2c/ov5647.c
+>> +++ b/drivers/media/i2c/ov5647.c
+>> @@ -1363,7 +1363,7 @@ static int ov5647_parse_dt(struct ov5647 *sensor, struct device_node *np)
+>>  	struct device_node *ep;
+>>  	int ret;
+>>  
+>> -	ep = of_graph_get_next_endpoint(np, NULL);
+>> +	ep = of_graph_get_endpoint_by_regs(np, 0, -1);
+>>  	if (!ep)
+>>  		return -EINVAL;
+>>  
+>> diff --git a/drivers/media/i2c/s5c73m3/s5c73m3-core.c b/drivers/media/i2c/s5c73m3/s5c73m3-core.c
+>> index ed5b10731a14..aaec5f64f31a 100644
+>> --- a/drivers/media/i2c/s5c73m3/s5c73m3-core.c
+>> +++ b/drivers/media/i2c/s5c73m3/s5c73m3-core.c
+>> @@ -1555,7 +1555,7 @@ static int s5c73m3_get_dt_data(struct s5c73m3 *state)
+>>  				     "failed to request gpio S5C73M3_RST\n");
+>>  	gpiod_set_consumer_name(state->reset, "S5C73M3_RST");
+>>  
+>> -	node_ep = of_graph_get_next_endpoint(node, NULL);
+>> +	node_ep = of_graph_get_endpoint_by_regs(node, 0, -1);
+>>  	if (!node_ep) {
+>>  		dev_warn(dev, "no endpoint defined for node: %pOF\n", node);
+>>  		return 0;
+>> diff --git a/drivers/media/i2c/s5k5baf.c b/drivers/media/i2c/s5k5baf.c
+>> index 67da2045f543..af7e49e6cc5b 100644
+>> --- a/drivers/media/i2c/s5k5baf.c
+>> +++ b/drivers/media/i2c/s5k5baf.c
+>> @@ -1836,7 +1836,7 @@ static int s5k5baf_parse_device_node(struct s5k5baf *state, struct device *dev)
+>>  			 state->mclk_frequency);
+>>  	}
+>>  
+>> -	node_ep = of_graph_get_next_endpoint(node, NULL);
+>> +	node_ep = of_graph_get_endpoint_by_regs(node, 0, -1);
+>>  	if (!node_ep) {
+>>  		dev_err(dev, "no endpoint defined at node %pOF\n", node);
+>>  		return -EINVAL;
+>> diff --git a/drivers/media/i2c/tc358743.c b/drivers/media/i2c/tc358743.c
+>> index 2785935da497..872e802cdfbe 100644
+>> --- a/drivers/media/i2c/tc358743.c
+>> +++ b/drivers/media/i2c/tc358743.c
+>> @@ -1895,7 +1895,7 @@ static int tc358743_probe_of(struct tc358743_state *state)
+>>  		return dev_err_probe(dev, PTR_ERR(refclk),
+>>  				     "failed to get refclk\n");
+>>  
+>> -	ep = of_graph_get_next_endpoint(dev->of_node, NULL);
+>> +	ep = of_graph_get_endpoint_by_regs(dev->of_node, 0, -1);
+>>  	if (!ep) {
+>>  		dev_err(dev, "missing endpoint node\n");
+>>  		return -EINVAL;
+>> diff --git a/drivers/media/i2c/tda1997x.c b/drivers/media/i2c/tda1997x.c
+>> index 325e99125941..662efd5e69b9 100644
+>> --- a/drivers/media/i2c/tda1997x.c
+>> +++ b/drivers/media/i2c/tda1997x.c
+>> @@ -2307,7 +2307,7 @@ static int tda1997x_parse_dt(struct tda1997x_state *state)
+>>  	pdata->vidout_sel_de = DE_FREF_SEL_DE_VHREF;
+>>  
+>>  	np = state->client->dev.of_node;
+>> -	ep = of_graph_get_next_endpoint(np, NULL);
+>> +	ep = of_graph_get_endpoint_by_regs(np, 0, -1);
+>>  	if (!ep)
+>>  		return -EINVAL;
+>>  
+>> diff --git a/drivers/media/i2c/tvp514x.c b/drivers/media/i2c/tvp514x.c
+>> index c37f605cb75f..b1630a6c396b 100644
+>> --- a/drivers/media/i2c/tvp514x.c
+>> +++ b/drivers/media/i2c/tvp514x.c
+>> @@ -988,7 +988,7 @@ tvp514x_get_pdata(struct i2c_client *client)
+>>  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
+>>  		return client->dev.platform_data;
+>>  
+>> -	endpoint = of_graph_get_next_endpoint(client->dev.of_node, NULL);
+>> +	endpoint = of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+>>  	if (!endpoint)
+>>  		return NULL;
+>>  
+>> diff --git a/drivers/media/i2c/tvp7002.c b/drivers/media/i2c/tvp7002.c
+>> index a2d7bc799849..8e58ce400df2 100644
+>> --- a/drivers/media/i2c/tvp7002.c
+>> +++ b/drivers/media/i2c/tvp7002.c
+>> @@ -893,7 +893,7 @@ tvp7002_get_pdata(struct i2c_client *client)
+>>  	if (!IS_ENABLED(CONFIG_OF) || !client->dev.of_node)
+>>  		return client->dev.platform_data;
+>>  
+>> -	endpoint = of_graph_get_next_endpoint(client->dev.of_node, NULL);
+>> +	endpoint = of_graph_get_endpoint_by_regs(client->dev.of_node, 0, -1);
+>>  	if (!endpoint)
+>>  		return NULL;
+>>  
 > 
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch

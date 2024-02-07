@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A386F12AAC1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBE1712AAF9
 	for <linux-fbdev@vger.kernel.org>; Wed,  7 Feb 2024 18:43:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707331410; cv=none; b=XJyJUHMIDas2s9x1aF/YkNHENrtPc4HAZYZmp29BZh9bOJwNkWdGxLA/y1gecLxHB6rhQCaF/MI98LiZQdZb54VFKCpe+6WYxRbN7GMvhT9i/2sLaUu7QcTuOb5yIpZ95WUzsxiXK2zNECqaAG6VSrJ3BexK57XeJlRgTNGkbQk=
+	t=1707331411; cv=none; b=FM0VqeVWR+hZJ4g7hF9wEEMhlSmj8zQVfhR/+LMRsa8bz37x0615Ex5BSzkpxfWCjsAxpah49uNYgedI9WjDv1v2ine9+0u4xbiwjL8tXPUcuUqteBfIvvfRZaDV/ne3KUG4TQGhb2f9xFF4YJU1HvUpk6ZBYASVtgHskkhIFkU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707331410; c=relaxed/simple;
-	bh=XCjKjslPjqHKRPhjAFqin0asrGjQXScMLqttnb/ERUQ=;
+	s=arc-20240116; t=1707331411; c=relaxed/simple;
+	bh=jLSDSfpv7WSEI2jePythvXMi4bwtOGfFN61uJJKBvR4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iM+1znNm+30esi5nQIPdGC+j1hFOm8qTirg7iaKA57Lf4TjqHtZhWZFaR8wnCcZ0PmQIjHaWzL0e7vXEdqqMx30N7sg9vupPosGXSHxgjte8HqNU6gxbOz1l48b8lCDW/g8XIfey8KXBSehf6Mpt8r23XOjo6eODqyox755s1LU=
+	 MIME-Version:Content-Type; b=uIDw4yI5Uj2wouqV0YP+sdknSboRmFGMj5+KJiGoqgCP3apDKkcyCmJer+XQCH8Xu4ZtgMF9mGeQxHv8CRIEw2WWkcn50lrNeo03x4wBpUJUrKBx4yLJ3RolboybcGazzpoq2U6l9yJKORQM9p1lNKNu04LkvCYxeWFsy4JLe0s=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,28 +18,32 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rXmtD-00082i-BC; Wed, 07 Feb 2024 19:43:19 +0100
+	id 1rXmtC-0007se-3M; Wed, 07 Feb 2024 19:43:18 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rXmtC-0054Yb-Qo; Wed, 07 Feb 2024 19:43:18 +0100
+	id 1rXmtB-0054YL-A0; Wed, 07 Feb 2024 19:43:17 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rXmtC-00HRth-2Q;
-	Wed, 07 Feb 2024 19:43:18 +0100
+	id 1rXmtB-00HRtR-0h;
+	Wed, 07 Feb 2024 19:43:17 +0100
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 To: Mark Brown <broonie@kernel.org>
 Cc: kernel@pengutronix.de,
-	Helge Deller <deller@gmx.de>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
-	linux-fbdev@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>,
 	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 28/32] video: fbdev: mmp: Follow renaming of SPI "master" to "controller"
-Date: Wed,  7 Feb 2024 19:40:42 +0100
-Message-ID:  <136f59b6e272e5ff7ec210627c9c3ea27d066d51.1707324794.git.u.kleine-koenig@pengutronix.de>
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v3 24/32] staging: fbtft: Follow renaming of SPI "master" to "controller"
+Date: Wed,  7 Feb 2024 19:40:38 +0100
+Message-ID:  <df79f22caf31d2c5ca2b15b33670323d1e1120c7.1707324794.git.u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1707324793.git.u.kleine-koenig@pengutronix.de>
 References: <cover.1707324793.git.u.kleine-koenig@pengutronix.de>
@@ -50,7 +54,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2770; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=XCjKjslPjqHKRPhjAFqin0asrGjQXScMLqttnb/ERUQ=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlw87cfCDKPouSdyY/ruXPqXmi502nagTlT3Zz4 C1qUXW8K0GJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZcPO3AAKCRCPgPtYfRL+ TvX3CACqveA/rD7JWSIm5VWKcQuWk6O6yOGgjkNs3so17MGNpc9D3WJa+1Q3Fj9YswI/+mc2cvv lM7DaKL+zFnNP+sKDzyE86BmdsQTMXD9C446LLZJvrtEywze4r0dfh1bSHPB6t3g9TTIXE0E6e+ 5HD/C2dCcF/uquUYSd5burrHstyxfQJ2xooOfYph3zLZ4D/K+8PbcJV5XgEYdwQU2GRE+OOUEfl T/cPQMNlK0VlFMfaAl6UKj8ihO6jBXAyPc4LWnDgVfkKr+4gqogS30viLdt6DlnE9MNmKZB6fEj y2Xqa0X3zEvdPeLNY+ennxVjeiVzVibBGlODr4KPrxuLJAMR
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1645; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=jLSDSfpv7WSEI2jePythvXMi4bwtOGfFN61uJJKBvR4=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlw87GXqnqC9di7ObQ9f5f86SeO9J8OHbB6IyeF M0/bFpSbpmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZcPOxgAKCRCPgPtYfRL+ TuGBB/9TlS6oRq9gEfvRb9gRhMiLfLJhtlORbYI0ifh40f/j0hyzeyZynD3Fq61MCA25AK4L1oL bUEmiFI9dkmdpl/wxEeoFDRn3uUORsjdca5iTgkJ61wtS+nHjVGel9Itd+lMwVfVKjEOurt1mc2 QFyyRLeIt5WqYZhtg25+BcZnHayunBMMYQgFCPVv9FsauTTBQwpUJWl3B7rEoPfzPJENssYMRIO MwvUqvxZfVtdIDlV5jpwCkzw7dgKr6qQECrj/iiev9zmuIJrkYjPKc/Kd1fQwnxbdkopXRbpvns dBa9kOZixjMojyHMla3Xgcm7uqCKemj6XZLqGQIuEbIj7IhH
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -65,78 +69,35 @@ compatibility macros were provided.
 To be able to remove these compatibility macros push the renaming into
 this driver.
 
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbdev/mmp/hw/mmp_spi.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/staging/fbtft/fbtft-core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/mmp/hw/mmp_spi.c b/drivers/video/fbdev/mmp/hw/mmp_spi.c
-index 0f8f0312a7c4..cf23650d7f0b 100644
---- a/drivers/video/fbdev/mmp/hw/mmp_spi.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_spi.c
-@@ -32,7 +32,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
- 	int timeout = 100000, isr, ret = 0;
- 	u32 tmp;
- 	void __iomem *reg_base = (void __iomem *)
--		*(void **)spi_master_get_devdata(spi->master);
-+		*(void **) spi_controller_get_devdata(spi->controller);
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 3626f429b002..68add4d598ae 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -794,7 +794,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 	if (par->txbuf.buf && par->txbuf.len >= 1024)
+ 		sprintf(text1, ", %zu KiB buffer memory", par->txbuf.len >> 10);
+ 	if (spi)
+-		sprintf(text2, ", spi%d.%d at %d MHz", spi->master->bus_num,
++		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
+ 			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
+ 	dev_info(fb_info->dev,
+ 		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
+@@ -1215,7 +1215,7 @@ int fbtft_probe_common(struct fbtft_display *display,
  
- 	/* clear ISR */
- 	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-@@ -81,7 +81,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
- static int lcd_spi_setup(struct spi_device *spi)
- {
- 	void __iomem *reg_base = (void __iomem *)
--		*(void **)spi_master_get_devdata(spi->master);
-+		*(void **) spi_controller_get_devdata(spi->controller);
- 	u32 tmp;
- 
- 	tmp = CFG_SCLKCNT(16) |
-@@ -136,32 +136,32 @@ static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
- 
- int lcd_spi_register(struct mmphw_ctrl *ctrl)
- {
--	struct spi_master *master;
-+	struct spi_controller *ctlr;
- 	void **p_regbase;
- 	int err;
- 
--	master = spi_alloc_master(ctrl->dev, sizeof(void *));
--	if (!master) {
-+	ctlr = spi_alloc_master(ctrl->dev, sizeof(void *));
-+	if (!ctlr) {
- 		dev_err(ctrl->dev, "unable to allocate SPI master\n");
- 		return -ENOMEM;
- 	}
--	p_regbase = spi_master_get_devdata(master);
-+	p_regbase = spi_controller_get_devdata(ctlr);
- 	*p_regbase = (void __force *)ctrl->reg_base;
- 
- 	/* set bus num to 5 to avoid conflict with other spi hosts */
--	master->bus_num = 5;
--	master->num_chipselect = 1;
--	master->setup = lcd_spi_setup;
--	master->transfer = lcd_spi_one_transfer;
-+	ctlr->bus_num = 5;
-+	ctlr->num_chipselect = 1;
-+	ctlr->setup = lcd_spi_setup;
-+	ctlr->transfer = lcd_spi_one_transfer;
- 
--	err = spi_register_master(master);
-+	err = spi_register_controller(ctlr);
- 	if (err < 0) {
- 		dev_err(ctrl->dev, "unable to register SPI master\n");
--		spi_master_put(master);
-+		spi_controller_put(ctlr);
- 		return err;
- 	}
- 
--	dev_info(&master->dev, "registered\n");
-+	dev_info(&ctlr->dev, "registered\n");
- 
- 	return 0;
- }
+ 	/* 9-bit SPI setup */
+ 	if (par->spi && display->buswidth == 9) {
+-		if (par->spi->master->bits_per_word_mask & SPI_BPW_MASK(9)) {
++		if (par->spi->controller->bits_per_word_mask & SPI_BPW_MASK(9)) {
+ 			par->spi->bits_per_word = 9;
+ 		} else {
+ 			dev_warn(&par->spi->dev,
 -- 
 2.43.0
 

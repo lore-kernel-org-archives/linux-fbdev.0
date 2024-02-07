@@ -1,225 +1,212 @@
-Received: from smtp-relay-canonical-0.canonical.com (smtp-relay-canonical-0.canonical.com [185.125.188.120])
+Received: from JPN01-TYC-obe.outbound.protection.outlook.com (mail-tycjpn01on2054.outbound.protection.outlook.com [40.107.114.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45C851CD22;
-	Wed,  7 Feb 2024 02:03:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.188.120
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707271405; cv=none; b=CPiqg1uVyDFe75ewQuXu7Qr/0ue01+nsK+ztaxKKUxFCeULKBLSnzkcul1PPsnhEcuNAmBUZM9Nc0GkCxXwtak9KqLqGTJZ1ojFh4Vlg9ufOTv4/drQJUYezFiUZPuXvEhanAL7jU2GF71ySdch07OFtq5TTF/CMsXMQxa85oJk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707271405; c=relaxed/simple;
-	bh=SDRE0rw/sH4xsb0pXCX2TzJd5P36l13633gOcChpp6k=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:Cc:From:
-	 In-Reply-To:Content-Type; b=YSq2UZNGB8z8pUzBLS8wx0K1tMXNoxs2CGdnyHi+9/gkdlq2Y6x/kg48uzV+Y3JN40JuYs4A0U1Xx6yoVnt6XQm5SjGNdnlLUcCznGyabmrP678Q1Qhy3WFoB830ZkuzTtFRVJbcj3vMvitFdaoHeEkeeiinCKL9PM2MZkvN8T8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com; spf=pass smtp.mailfrom=canonical.com; dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b=C5Y2YPnL; arc=none smtp.client-ip=185.125.188.120
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=canonical.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD2E3125CC;
+	Wed,  7 Feb 2024 04:38:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.114.54
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1707280708; cv=fail; b=teHvxcyjlE8u2GVdpQkYD5CwoXYW7If849hU03CPY2CGW2Q3MZQr/vhSscRykATr3K+ktANmr751xX1pQNC/8+UBnlPZC8iqoZIwfTJJqBES7YJK+ymrabEldg06SKnm/DZFrYowl9VRwJMKpOYp/WhcQHxD0iJo4mpgHG+uShE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1707280708; c=relaxed/simple;
+	bh=ybmAoAzffTAv1skUkWRlBhddWilbheOJRheGljzjadY=;
+	h=Message-ID:To:From:Subject:Content-Type:Date:MIME-Version; b=OsXBNTptx7J/q5nDNFQChny97xxmSqi/jF7f65f0dVo7p08Yb7p7hn0+E5sX2GEkmAq/0plzOwPEQJ1FAWB8KZbPgFw7Z0SjIcjBp7eD4fSC7VYeDCcR09RQzwGNdmzgm3sX41bGSZQsejw+gpEK/jN/j7C6oz5C6a36DOuJciQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=a2ApfRc1; arc=fail smtp.client-ip=40.107.114.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b="C5Y2YPnL"
-Received: from [192.168.178.2] (unknown [58.7.187.102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 0B4983F2AE;
-	Wed,  7 Feb 2024 02:03:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20210705; t=1707271398;
-	bh=Uehal0PUIXb/o6zdMlG9jSwgBPrNjXIDJe97Eitsx0M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:Cc:From:
-	 In-Reply-To:Content-Type;
-	b=C5Y2YPnLY3jPhMW16UrINrd7v5YGXF7kmIwzcsDJZPZZjbzsZBkxSxQqDjrOsuVou
-	 trFwqozGDYEA5Y9IUzAo84+KEmHHIzZzF3uMYlj1v6NF7b+Yt4T9Th14AFnNIgFWMl
-	 w16nNaO99a/CC1BcQ4BUORaamth6lwFoGFCIytkMz00twbc5ONymN3oJgLUBtnrBVd
-	 dt6ABRuevfoArAT3S/uB7BsLz6/tOIASyoouF+JvY5HpYQb2YF2wyPrrJOBC9B0XRo
-	 cJ734+tRhDmxLIAEfg2bzPhdFrdvC2FdgztxStzjBnGubrDNcZr2ghzBaWgLvTfwUe
-	 2Ai4blqboNTsg==
-Message-ID: <26893900-2d0d-4624-94f1-c4aa88386e9c@canonical.com>
-Date: Wed, 7 Feb 2024 10:03:10 +0800
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="a2ApfRc1"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=WhhTQWxwenKS+av/JcqFAQK91V3IFU5x5bqJHNSJ+AD8cJGBPngPoB2VASuhvCYkUn5BDs+ofqUaipepV1OqnWqWpK5rRyKAmKdl/iQREDnS2MNo5wCapwFQLCcN56Hmdcu8gn3B40vNvFPseqzP61Wa92Qff5CEHy2IY93SmMNPO+Xrk1qmIDFXxkCAAaogQcu7/QIVYwiqnYwtySY1DGBCghVK3dvsuuudbSXeU1f3PCdlI3XnjSp0vsuU/1NQelqHn3gRtJ30PDiHIEM41CXvHeDGJP1jB4EFdawHXoh+dyPoVnkfLUCbj9532EPWWP96xIBXiynND0X+xsjRFg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=KrBUw1BWATzR6g0PWPOlP84Ez48OkFe8CqJi2JWgoJ4=;
+ b=cPFXNnRoiFrGNAuZe76bYx256GvctgJ+30RrOvEKf7/58BdtkyEGYxXxEx88RXJ1ujm5qoFx350dZ58WMerUjVgHC9mki4AlkqlFAtf1/erDEaZHSP6yXS36opmIGbqrTt+NHIwlVBsu8qNOm/Z17KPpbrzEC3ob1TCn9/pfZ66oSmQn/sFi+C31QHyVfiOL+CbuKBxohF/cWtICeiU2nKyX+XGWTV9Q2QVlWAel9HhHkoP+jexP6ANQ8W0OAqV6gKWkP1hvG06J5cZZL6Fngwi+yRMtTu+MmmYFNM17H/uZFMxx0pINVnzqeQEIkrOFr/3skuxv9rgvLsbAZ0CMfQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=KrBUw1BWATzR6g0PWPOlP84Ez48OkFe8CqJi2JWgoJ4=;
+ b=a2ApfRc1VF5v3mqVLzBcLwpWgzqYaoiwD2c/q+XUs3bM96prBKeMq155Eel09secSOmByBCOaV0DmzuNff3S0ms/qrCJDnCtPPkCojJFXrvZVoYrW8u/MVgiTxUb52O0VqKWs3MBCTcL0JBUilix3zBCr/TyUQMQQkbXov8Bu8M=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11) by TYYPR01MB8022.jpnprd01.prod.outlook.com
+ (2603:1096:400:f8::12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7249.36; Wed, 7 Feb
+ 2024 04:38:21 +0000
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::4d0b:6738:dc2b:51c8]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::4d0b:6738:dc2b:51c8%6]) with mapi id 15.20.7249.035; Wed, 7 Feb 2024
+ 04:38:21 +0000
+Message-ID: <87r0hosxc3.wl-kuninori.morimoto.gx@renesas.com>
+To: "Lad,  Prabhakar" <prabhakar.csengg@gmail.com>, =?ISO-8859-1?Q?=22Uwe_?=
+ =?ISO-8859-1?Q?Kleine-K=F6nig=22?= <u.kleine-koenig@pengutronix.de>, Alain
+ Volmat <alain.volmat@foss.st.com>, Alexandre Belloni
+ <alexandre.belloni@bootlin.com>, Alexandre Torgue
+ <alexandre.torgue@foss.st.com>, Alexey Brodkin <abrodkin@synopsys.com>,
+ Alim Akhtar <alim.akhtar@samsung.com>, Andrzej Hajda
+ <andrzej.hajda@intel.com>, Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>, Daniel Vetter <daniel@ffwll.ch>, Dave Stevenson
+ <dave.stevenson@raspberrypi.com>, David Airlie <airlied@gmail.com>, Eugen
+ Hristev <eugen.hristev@collabora.com>, Florian Fainelli
+ <florian.fainelli@broadcom.com>, Hans Verkuil <hverkuil-cisco@xs4all.nl>,
+ Helge Deller <deller@gmx.de>, Hugues Fruchet <hugues.fruchet@foss.st.com>,
+ Jacopo Mondi <jacopo@jmondi.org>, Jessica Zhang
+ <quic_jesszhan@quicinc.com>, Krzysztof Kozlowski
+ <krzysztof.kozlowski@linaro.org>, Laurent Pinchart
+ <laurent.pinchart@ideasonboard.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Mauro Carvalho Chehab
+ <mchehab@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Maxime
+ Ripard <mripard@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>, Sakari Ailus
+ <sakari.ailus@linux.intel.com>, Sam Ravnborg <sam@ravnborg.org>, Sylwester
+ Nawrocki <s.nawrocki@samsung.com>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Tim Harvey <tharvey@gateworks.com>, dri-devel@lists.freedesktop.org,
+ linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-rpi-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Subject: [PATCH v2 0/4] of: replace of_graph_get_next_endpoint()
+Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 7 Feb 2024 04:38:20 +0000
+X-ClientProxiedBy: TY2PR04CA0011.apcprd04.prod.outlook.com
+ (2603:1096:404:f6::23) To TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] fbcon: Defer console takeover for splash screens
- to first switch
-Content-Language: en-US
-To: Mario Limonciello <mario.limonciello@amd.com>,
- Daniel Vetter <daniel@ffwll.ch>
-References: <f037df4a-8a97-4fcd-b196-43f484b63d8d@amd.com>
- <20240206101100.25536-1-daniel.van.vugt@canonical.com>
- <20240206101100.25536-2-daniel.van.vugt@canonical.com>
- <ZcJAVSyH3gRYx3EG@phenom.ffwll.local>
- <e4fc61ae-97f5-4fa1-bfed-1312466a2a22@amd.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Helge Deller <deller@gmx.de>, Jani Nikula <jani.nikula@intel.com>,
- Danilo Krummrich <dakr@redhat.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-From: Daniel van Vugt <daniel.van.vugt@canonical.com>
-In-Reply-To: <e4fc61ae-97f5-4fa1-bfed-1312466a2a22@amd.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|TYYPR01MB8022:EE_
+X-MS-Office365-Filtering-Correlation-Id: 95c31d17-41a2-4576-62f4-08dc27969d04
+X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	lq2kHrgR4N17LqQsf7+SEMl4AJz/+G+EKinUmibE8tDVHCTSVwgJt8/nmraM6eJIOtjp7sIkGypo/qYECAgayNagbj27rT34OVYvNnfMYA7aoasuUN40RkTPOfPL02K7Rs121rcOJayW6W8g31z7BEvgo31S14Ey8ClJnZ/WNUhviwutPMAjhrd8AeGj0DzE1JCuGQTOTu5btp1eXiwIqpz1nG++Rle3PXgp6BdcXagUl2+k3BCsFR2Pe6wtaed65z71PeD07PRJegDUsn7dYSGz2WS9D2B5vlw8iEivjtTnyxbtULR4SygfSXQgySHjE2ZkBDmnKwmgbiGyXWNqbISk4fewPaDTx/TFbLusviBUD8wLtVTZXVuV9KQkJz7cxlqyfuMfc9ZFLUSycAPFbZL7vSIBUZwRJGV4kq+u7v4n+7pmJtxtxC3GtxT4oV1+YNWb8s8vsGIJhMVk6pEFvpxA0ob3aezsBK1ijoXpiYhinIvAy+tcG5WL0VTM3XVL2LYPJv708MS1/ydUsKfs4vJ82jOkT5XwI5xzGEpZvL7z99zkdSgtXyzZk3yQeRmG7tEOa5qMM9H5Him18wWqNzSEPEHLKZPzGSaSWiG2ntxgJNF6MWqgEZUztBtVyRrv
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(366004)(39860400002)(136003)(346002)(396003)(376002)(230922051799003)(1800799012)(64100799003)(451199024)(186009)(6512007)(6486002)(41300700001)(66946007)(66556008)(66476007)(38350700005)(316002)(26005)(8676002)(8936002)(86362001)(6506007)(83380400001)(2616005)(52116002)(110136005)(36756003)(478600001)(966005)(7416002)(2906002)(5660300002)(921011)(7406005)(38100700002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?PWf11XEy//9PLTPxcqL5KbKt2BJnr+J4ROsMB2MgcKb/cwHf/1o/EEsJiju8?=
+ =?us-ascii?Q?KVY+8uCbw7jqVxzh3glZmR0sR+Gkz8W54N+HB5Pkc5cueN9GUSDWSeVX67P9?=
+ =?us-ascii?Q?Vo7yMdraoh7ekcI8Qc2piQVf4vbLnpIeXV/dXMHd3niB7hbdgFyyw6rjNh7x?=
+ =?us-ascii?Q?wSxMK5ofGbCM0XNnujYDe/eNhANbOOZkjbiK8Pb+bz6iuJIgiyK73k8eIp6B?=
+ =?us-ascii?Q?mom3/tEblx0xBrRx2O+QwfhDu+xMgVEuHIMg4UQYWP3QNT8t3Ttv+lPzyrLY?=
+ =?us-ascii?Q?5CBoWfBz4ciubNCm+4RYdvvYVH+HHdwbUylk5gz08rSO4egJ1MM7aSRmSh6Y?=
+ =?us-ascii?Q?byh0xO/WTR9NjODIAbYqVSFGKzyA9x4MwxWFExHGobalY5SfaCLql3OSvIEc?=
+ =?us-ascii?Q?P97sljr6CJ2ig/o1EC69jMCdOc6lRuoQdfsP0HRhUrn07rQ3t356N+XvK+4o?=
+ =?us-ascii?Q?2k8qOzt2zpzEpMo6Zas9p9u93Iz2zoQ5K8ibM1Tcnq7hBU/yesdkxH2kdAHf?=
+ =?us-ascii?Q?tKkw6EcCFqp4nhArn40OtwqlkGm0TnNOkwyJWER+YSwQie54zjcH15YGdxy4?=
+ =?us-ascii?Q?BwJCMfS0tWkFrSn4Hd6vQDUo1hgXcDaGMejLzDjvdWhm2O0BhNMBsAk9qajC?=
+ =?us-ascii?Q?oE1TA+oqDgQQPHYnsGMJ074mZ9z0g2BHeem7IGH+f8HcHjQ4b0kZxiOJgRF2?=
+ =?us-ascii?Q?/FLhG5W43u7SIApKo/8pj1nVnTtKLYs+ual9HPtu4nH+hJBcCJ+dhvRTFkZj?=
+ =?us-ascii?Q?08DxIAF9mlxzifio31K5eWKQGdCpRwDSA4XEgV2VXtfrTWGzWDQTrTmFKahZ?=
+ =?us-ascii?Q?UzaCucvooPOKUc3+1INeOnTZlkxTP+clsAtlOBCadFsAsFTRRIkfhv9qCz6N?=
+ =?us-ascii?Q?h8mM/rKh9moeLO60xuxLkI/8MHMOH7omK1e1wEa5hQnMP0DZ58uFYnn1ZwQo?=
+ =?us-ascii?Q?XHvjadpTa6ZukS3ICEwpGmRo7yJl6BMLCBmJf8+kYMqawO8C05HP/QQQs0px?=
+ =?us-ascii?Q?5OWedEmS+hpGpfdP4Cma0Ghx9a0+msvUne51iAMFVNtP01OafQzj3YpVrGqH?=
+ =?us-ascii?Q?VFD9JiONQ6Rn0RtHi12cNbpk1QFa87BKa1ERLdbkT4yTXuKIuEwt9RWRB/I+?=
+ =?us-ascii?Q?+6SbDbb8lIwY9NGyJ79OugXFnpyRkevxZPxRZ0re4DlkSqeFAr6yecTYdHms?=
+ =?us-ascii?Q?994qmdubf4XGQFqV7WpHOnFsGd19k7yH+TfXj7kKpKKKl9G+WZCne7MmNVAp?=
+ =?us-ascii?Q?mvdVyD1+G9tz9KkPrAOC5WA/hgwFZqODVIOK7pP1V6Tv7hvvr9yRA3JTrbkw?=
+ =?us-ascii?Q?suI8wiD653yRdJO2rpkaRAaDfkIxc/oo/pcyZOsuFOc9O5heLOPFHgWmHSyj?=
+ =?us-ascii?Q?mIgUO7Oy5OZrXsvNMKHurjzj16ENJ60cKY2fFF6j/Tx96GU7PxVkyrVfU/Vc?=
+ =?us-ascii?Q?dwPRxxtmfbysBjfK0JMGTXtnNy9wriliEHtTYDk1DsXxwP79YSXVNwY1Is1P?=
+ =?us-ascii?Q?p397PjFVnyCu9WKETYoPo+NMIEwDv6fYT32eLO401m7sr/gANj4FWVA8vxqv?=
+ =?us-ascii?Q?pcNbdM1lHRseEyT401dzhZnc+0XnpEtn1/FUacYeksaACBfD0R3K265VZiJv?=
+ =?us-ascii?Q?+pAwiMff5Rwd7pE8VTWa03U=3D?=
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 95c31d17-41a2-4576-62f4-08dc27969d04
+X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Feb 2024 04:38:21.3498
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: I3AvTF1G80SFy/58Hb1qyMunJueaabp3gynGthhvvVcu7e0ycHoocgX6AU1JR4tpsPlG+GksvjcNy3H50zkBobAviRFrnPGKZfW01NPYMK5A+IT3QY51P3C9ImLxTKNn
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYYPR01MB8022
 
-On 6/2/24 23:41, Mario Limonciello wrote:
-> On 2/6/2024 08:21, Daniel Vetter wrote:
->> On Tue, Feb 06, 2024 at 06:10:51PM +0800, Daniel van Vugt wrote:
->>> Until now, deferred console takeover only meant defer until there is
->>> output. But that risks stepping on the toes of userspace splash screens,
->>> as console messages may appear before the splash screen. So check the
->>> command line for the expectation of userspace splash and if present then
->>> extend the deferral until after the first switch.
->>>
->>> V2: Added Kconfig option instead of hard coding "splash".
->>>
->>> Closes: https://bugs.launchpad.net/bugs/1970069
->>> Cc: Mario Limonciello <mario.limonciello@amd.com>
->>> Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
->>> ---
->>>   drivers/video/console/Kconfig    | 13 +++++++++++
->>>   drivers/video/fbdev/core/fbcon.c | 38 ++++++++++++++++++++++++++++++--
->>>   2 files changed, 49 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
->>> index bc31db6ef7..a6e371bfb4 100644
->>> --- a/drivers/video/console/Kconfig
->>> +++ b/drivers/video/console/Kconfig
->>> @@ -138,6 +138,19 @@ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->>>         by the firmware in place, rather then replacing the contents with a
->>>         black screen as soon as fbcon loads.
->>>   +config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
->>> +    string "Framebuffer Console Deferred Takeover Condition"
->>> +    depends on FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->>> +    default "splash"
->>> +    help
->>> +      If enabled this defers further the framebuffer console taking over
->>> +      until the first console switch has occurred. And even then only if
->>> +      text has been output, and only if the specified parameter is found
->>> +      on the command line. This ensures fbcon does not interrupt userspace
->>> +      splash screens such as Plymouth which may be yet to start rendering
->>> +      at the time of the first console output. "splash" is the simplest
->>> +      distro-agnostic condition for this that Plymouth checks for.
->>
->> Hm this seems a bit strange since a lot of complexity that no one needs,
->> also my impression is that it's rather distro specific how you want this
->> to work. So why not just a Kconfig option that lets you choose how much
->> you want to delay fbcon setup, with the following options:
->>
->> - no delay at all
->> - dely until first output from the console (which then works for distros
->>    which set a log-level to suppress unwanted stuff)
->> - delay until first vt-switch. In that case I don't think we also need to
->>    delay for first output, since vt switch usually means you'll get first
->>    output right away (if it's a vt terminal) or you switch to a different
->>    graphical console (which will keep fbcon fully suppressed on the drm
->>    side).
->>
 
-I had similar thoughts, and had prototyped some of this already. But in the end
-it felt like extra complexity there was no demand for.
+Hi Rob
 
-If you would like to specify the preferred Kconfig design then I can implement
-it. Though I don't think there is an enumeration type. It could also be a
-runtime enumeration (deferred_takeover) controlled by fbcon=something.
+This is v2 of replace of_graph_get_next_endpoint()
 
-> 
-> IIUC there is an "automatic" VT switch that happens with Ubuntu GRUB + Ubuntu
-> kernels.
-> 
-> Why?
-> 
-> Couldn't this also be suppressed by just not doing that?
+We should get rid of or minimize of_graph_get_next_endpoint() in
+its current form. In general, drivers should be asking for a specific 
+port number because their function is fixed in the binding.
 
-I have not seen any automatic VT switches in debugging but now that you mention
-it I was probably only debugging on drm-misc-next and not an Ubuntu kernel.
+	https://lore.kernel.org/r/20240131184347.GA1906672-robh@kernel.org
 
-- Daniel
+This patch-set replace of_graph_get_next_endpoint() by
+of_graph_get_endpoint_by_regs(). There are still next_endpoint()
+after this patch-set, but it will be replaced by
+for_each_endpoint_of_node() in next patch-set (A)
 
-> 
->> I think you could even reuse the existing
->> CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER for this, and then just
->> compile-time select which kind of notifier to register (well plus the
->> check for "splash" on the cmdline for the vt switch one I guess).
->>
->> Thoughts?
->>
->> Cheers, Sima
->>
->>
->>> +
->>>   config STI_CONSOLE
->>>       bool "STI text console"
->>>       depends on PARISC && HAS_IOMEM
->>> diff --git a/drivers/video/fbdev/core/fbcon.c
->>> b/drivers/video/fbdev/core/fbcon.c
->>> index 63af6ab034..98155d2256 100644
->>> --- a/drivers/video/fbdev/core/fbcon.c
->>> +++ b/drivers/video/fbdev/core/fbcon.c
->>> @@ -76,6 +76,7 @@
->>>   #include <linux/crc32.h> /* For counting font checksums */
->>>   #include <linux/uaccess.h>
->>>   #include <asm/irq.h>
->>> +#include <asm/cmdline.h>
->>>     #include "fbcon.h"
->>>   #include "fb_internal.h"
->>> @@ -3358,6 +3359,26 @@ static int fbcon_output_notifier(struct
->>> notifier_block *nb,
->>>         return NOTIFY_OK;
->>>   }
->>> +
->>> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
->>> +static int initial_console;
->>> +static struct notifier_block fbcon_switch_nb;
->>> +
->>> +static int fbcon_switch_notifier(struct notifier_block *nb,
->>> +                 unsigned long action, void *data)
->>> +{
->>> +    struct vc_data *vc = data;
->>> +
->>> +    WARN_CONSOLE_UNLOCKED();
->>> +
->>> +    if (vc->vc_num != initial_console) {
->>> +        dummycon_unregister_switch_notifier(&fbcon_switch_nb);
->>> +        dummycon_register_output_notifier(&fbcon_output_nb);
->>> +    }
->>> +
->>> +    return NOTIFY_OK;
->>> +}
->>> +#endif
->>>   #endif
->>>     static void fbcon_start(void)
->>> @@ -3370,7 +3391,16 @@ static void fbcon_start(void)
->>>         if (deferred_takeover) {
->>>           fbcon_output_nb.notifier_call = fbcon_output_notifier;
->>> -        dummycon_register_output_notifier(&fbcon_output_nb);
->>> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
->>> +        if (cmdline_find_option_bool(boot_command_line,
->>> +              CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION)) {
->>> +            initial_console = fg_console;
->>> +            fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
->>> +            dummycon_register_switch_notifier(&fbcon_switch_nb);
->>> +        } else
->>> +#endif
->>> +            dummycon_register_output_notifier(&fbcon_output_nb);
->>> +
->>>           return;
->>>       }
->>>   #endif
->>> @@ -3417,8 +3447,12 @@ void __exit fb_console_exit(void)
->>>   {
->>>   #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->>>       console_lock();
->>> -    if (deferred_takeover)
->>> +    if (deferred_takeover) {
->>>           dummycon_unregister_output_notifier(&fbcon_output_nb);
->>> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
->>> +        dummycon_unregister_switch_notifier(&fbcon_switch_nb);
->>> +#endif
->>> +    }
->>>       console_unlock();
->>>         cancel_work_sync(&fbcon_deferred_takeover_work);
->>> -- 
->>> 2.43.0
->>>
->>
-> 
+[*] this patch-set
+[o] done
+
+	[o] tidyup of_graph_get_endpoint_count()
+	[*] replace endpoint func - use endpoint_by_regs()
+(A)	[ ] replace endpoint func - use for_each()
+	[ ] rename endpoint func to device_endpoint
+	[ ] add new port function
+	[ ] add new endpont function
+	[ ] remove of_graph_get_next_device_endpoint()
+
+v1 -> v2
+	- add Reviewed-by from Launrent
+	- use by_regs(xx, -1, -1) for some devices
+	- add extra explain for drm_of_get_dsi_bus()
+	- add FIXME and Link on adv7604.c
+	- based on latest of branch
+
+Kuninori Morimoto (4):
+  gpu: drm: replace of_graph_get_next_endpoint()
+  media: i2c: replace of_graph_get_next_endpoint()
+  media: platform: replace of_graph_get_next_endpoint()
+  video: fbdev: replace of_graph_get_next_endpoint()
+
+ drivers/gpu/drm/drm_of.c                      |  4 +++-
+ .../drm/panel/panel-raspberrypi-touchscreen.c |  2 +-
+ drivers/gpu/drm/tiny/arcpgu.c                 |  2 +-
+ drivers/media/i2c/adv7343.c                   |  2 +-
+ drivers/media/i2c/adv7604.c                   |  4 ++--
+ drivers/media/i2c/mt9p031.c                   |  2 +-
+ drivers/media/i2c/mt9v032.c                   |  2 +-
+ drivers/media/i2c/ov2659.c                    |  2 +-
+ drivers/media/i2c/ov5645.c                    |  2 +-
+ drivers/media/i2c/ov5647.c                    |  2 +-
+ drivers/media/i2c/s5c73m3/s5c73m3-core.c      |  2 +-
+ drivers/media/i2c/s5k5baf.c                   |  2 +-
+ drivers/media/i2c/tc358743.c                  |  2 +-
+ drivers/media/i2c/tda1997x.c                  |  2 +-
+ drivers/media/i2c/tvp514x.c                   |  2 +-
+ drivers/media/i2c/tvp7002.c                   |  2 +-
+ drivers/media/platform/atmel/atmel-isi.c      |  4 ++--
+ drivers/media/platform/intel/pxa_camera.c     |  2 +-
+ .../platform/samsung/exynos4-is/fimc-is.c     |  2 +-
+ .../platform/samsung/exynos4-is/mipi-csis.c   |  3 ++-
+ drivers/media/platform/st/stm32/stm32-dcmi.c  |  4 ++--
+ drivers/media/platform/ti/davinci/vpif.c      |  3 +--
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c    |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 20 +------------------
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c  |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c  |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c   |  3 ++-
+ drivers/video/fbdev/pxafb.c                   |  2 +-
+ include/video/omapfb_dss.h                    |  3 ---
+ 29 files changed, 38 insertions(+), 53 deletions(-)
+
+-- 
+2.25.1
+

@@ -1,117 +1,182 @@
-Received: from ni.piap.pl (ni.piap.pl [195.187.100.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3AE176C7C;
-	Wed,  7 Feb 2024 13:20:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.187.100.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 515A417BDD
+	for <linux-fbdev@vger.kernel.org>; Wed,  7 Feb 2024 13:49:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707312021; cv=none; b=Cx5wyv/cSy8tZIVBMfnHxx6dWrCQ+j7PaUuS6VoUjuSkbdRW2qs3OridxlR9tMjD/LaMm/GgpNcCcFNOWCd5ko53qZs4oN1Eyis9eNEbxr1udZrW8MWUfwF67YJskNkdSJPRZMzAjUUdnJyKI8DtHG5JQSr1Yd24RRZMCwn0MJw=
+	t=1707313779; cv=none; b=KiRQ1EbuOcif55BQixUW/c904XbiwQCxtLKyNZbRhfCmobx9SXgoXcKwN1em5zHG5D4XrinTkUHaqo6WqEpgrl1hjIBFcnuxEZGrz351bVR+gtBJnyF1hbi8X+URAnS2tSqRtxpDDDcy0ndrTP+UyFNanLM3R6+ns0f/+Tohx74=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707312021; c=relaxed/simple;
-	bh=9XbXN2HqJLMraSRllZfM8SB0u4PwD0X20StBBC/8AV8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Miiy1ge9jVKObNwYE+OOCSZJDUYSlHmQsCmlUdktPkL5EBoTpQwlFRWQL3GqmVeEJ6kHx1WkZxeDCdGF69Waq+PSHJFQdk0qhbq/WsSYeaBSRs42dfvCTPAWzfgoCdIA3iC0orFe4/DZWhVVPKawWQoeexM5KF+4f7WPDFZj3HI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=piap.pl; spf=pass smtp.mailfrom=piap.pl; arc=none smtp.client-ip=195.187.100.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=piap.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=piap.pl
-Received: from t19.piap.pl (OSB1819.piap.pl [10.0.9.19])
-	by ni.piap.pl (Postfix) with ESMTPS id 2CA3FC3F2A57;
-	Wed,  7 Feb 2024 14:13:05 +0100 (CET)
-DKIM-Filter: OpenDKIM Filter v2.11.0 ni.piap.pl 2CA3FC3F2A57
-From: =?utf-8?Q?Krzysztof_Ha=C5=82asa?= <khalasa@piap.pl>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,  Hans Verkuil
- <hverkuil-cisco@xs4all.nl>,  "Lad, Prabhakar"
- <prabhakar.csengg@gmail.com>,  =?utf-8?Q?Uwe_Kleine-K=C3=B6nig?=
- <u.kleine-koenig@pengutronix.de>,  Alexandre Belloni
- <alexandre.belloni@bootlin.com>,  Alexandre Torgue
- <alexandre.torgue@foss.st.com>,  Alexey Brodkin <abrodkin@synopsys.com>,
-  Alim Akhtar <alim.akhtar@samsung.com>,  Andrzej Hajda
- <andrzej.hajda@intel.com>,  Biju Das <biju.das.jz@bp.renesas.com>,
-  Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>,  Claudiu Beznea
- <claudiu.beznea@tuxon.dev>,  Daniel Vetter <daniel@ffwll.ch>,  Dave
- Stevenson <dave.stevenson@raspberrypi.com>,  David Airlie
- <airlied@gmail.com>,  Eugen Hristev <eugen.hristev@collabora.com>,
-  Florian Fainelli <florian.fainelli@broadcom.com>,  Helge Deller
- <deller@gmx.de>,  Hugues Fruchet <hugues.fruchet@foss.st.com>,  Jacopo
- Mondi <jacopo@jmondi.org>,  Jessica Zhang <quic_jesszhan@quicinc.com>,
-  Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,  Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>,  Mauro Carvalho Chehab
- <mchehab@kernel.org>,  Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-  Maxime Ripard <mripard@kernel.org>,  Neil Armstrong
- <neil.armstrong@linaro.org>,  Nicolas Ferre <nicolas.ferre@microchip.com>,
-  Russell King <linux@armlinux.org.uk>,  Sakari Ailus
- <sakari.ailus@linux.intel.com>,  Sam Ravnborg <sam@ravnborg.org>,
-  Sylwester Nawrocki <s.nawrocki@samsung.com>,  Thomas Zimmermann
- <tzimmermann@suse.de>,  Tim Harvey <tharvey@gateworks.com>,
-  dri-devel@lists.freedesktop.org,  linux-arm-kernel@lists.infradead.org,
-  linux-fbdev@vger.kernel.org,  linux-media@vger.kernel.org,
-  linux-omap@vger.kernel.org,  linux-rpi-kernel@lists.infradead.org,
-  linux-samsung-soc@vger.kernel.org,
-  linux-stm32@st-md-mailman.stormreply.com
-Subject: Re: [PATCH 2/4] media: i2c: replace of_graph_get_next_endpoint()
-In-Reply-To: <20240206134155.GB2827@pendragon.ideasonboard.com> (Laurent
-	Pinchart's message of "Tue, 6 Feb 2024 15:41:55 +0200")
-References: <87ttmmnvzh.wl-kuninori.morimoto.gx@renesas.com>
-	<87r0hqnvxc.wl-kuninori.morimoto.gx@renesas.com>
-	<20240206134155.GB2827@pendragon.ideasonboard.com>
-Sender: khalasa@piap.pl
-Date: Wed, 07 Feb 2024 14:13:05 +0100
-Message-ID: <m3il30zace.fsf@t19.piap.pl>
+	s=arc-20240116; t=1707313779; c=relaxed/simple;
+	bh=YKtTfDYYkWb1OMfcY7hrRpa9UVHFMgr4RX8XKNrsTgM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nBMnE4UOWc9vNnGGFY9XWkp3jwiH/vtowCvWZOrmmE+McldP7vJyirHSavBrr6++yyx6VeoiY96il3x39iTS/tvE96BesqSKHNIt5i8QHHr/jD3usgeNaHdTnmE2u9gkOdAwyfG60E4K2XhWGJd8lZd9mmTGg3K3WXcwzjU3aNU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fLn7gpA5; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7A6gRlNs; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fLn7gpA5; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7A6gRlNs; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fLn7gpA5";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7A6gRlNs";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fLn7gpA5";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7A6gRlNs"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 57333222E0;
+	Wed,  7 Feb 2024 13:49:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1707313775; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=8YmkPT4cpekHa9EtI4LkzVXfq4PiT9ekycighb0Xjk4=;
+	b=fLn7gpA5K4SqTSEoIkQwNjB+hXkPjeqRhN//DACRUvgyUeMvsgLfBaVPwcWwsiboWdFf88
+	KN8WCqxxPsQBRabZ4S8HSCZZ/M7IdbqKRsy2koX072/5VT8ycTG5wpzsnT+jD9xQysyg//
+	X+L5UwPffWtmxs8qB0r6UiWq3R2R+JY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1707313775;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=8YmkPT4cpekHa9EtI4LkzVXfq4PiT9ekycighb0Xjk4=;
+	b=7A6gRlNszbzkH5Lo2hZ58XoDoWjSWhqcbC9Lbx4R6LBJ6DV4iV9Bxo2HSH0OAflYTU7nkV
+	fxRYKesjaj2e6NAA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1707313775; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=8YmkPT4cpekHa9EtI4LkzVXfq4PiT9ekycighb0Xjk4=;
+	b=fLn7gpA5K4SqTSEoIkQwNjB+hXkPjeqRhN//DACRUvgyUeMvsgLfBaVPwcWwsiboWdFf88
+	KN8WCqxxPsQBRabZ4S8HSCZZ/M7IdbqKRsy2koX072/5VT8ycTG5wpzsnT+jD9xQysyg//
+	X+L5UwPffWtmxs8qB0r6UiWq3R2R+JY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1707313775;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=8YmkPT4cpekHa9EtI4LkzVXfq4PiT9ekycighb0Xjk4=;
+	b=7A6gRlNszbzkH5Lo2hZ58XoDoWjSWhqcbC9Lbx4R6LBJ6DV4iV9Bxo2HSH0OAflYTU7nkV
+	fxRYKesjaj2e6NAA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 12109139B9;
+	Wed,  7 Feb 2024 13:49:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id JxO+Am+Kw2V7IQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 07 Feb 2024 13:49:35 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	sui.jingfeng@linux.dev,
+	pjones@redhat.com,
+	deller@gmx.de,
+	ardb@kernel.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 0/8] firmware/sysfb: Track parent device for screen_info
+Date: Wed,  7 Feb 2024 14:47:09 +0100
+Message-ID: <20240207134932.7321-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-KLMS-Rule-ID: 3
-X-KLMS-Message-Action: skipped
-X-KLMS-AntiSpam-Status: not scanned, whitelist
-X-KLMS-AntiPhishing: not scanned, whitelist
-X-KLMS-AntiVirus: Kaspersky Security for Linux Mail Server, version 8.0.3.30, not scanned, whitelist
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spamd-Bar: /
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=fLn7gpA5;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=7A6gRlNs
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [0.49 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 R_MISSING_CHARSET(2.50)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 MIME_GOOD(-0.10)[text/plain];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 DKIM_TRACE(0.00)[suse.de:+];
+	 MX_GOOD(-0.01)[];
+	 RCPT_COUNT_SEVEN(0.00)[8];
+	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim];
+	 FREEMAIL_TO(0.00)[redhat.com,linux.dev,gmx.de,kernel.org];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%]
+X-Spam-Score: 0.49
+X-Rspamd-Queue-Id: 57333222E0
+X-Spam-Flag: NO
 
-Laurent,
+Detect the firmware framebuffer's parent device from the global
+screen_info state and set up the framebuffer's device accordingly.
+Remove the equivalent functionality from efifb. Other drivers for
+firmware framebuffers, such as simpledrm or vesafb, now add these
+new features.
 
-Laurent Pinchart <laurent.pinchart@ideasonboard.com> writes:
+Patches 1 and 2 provide a set of helper functions to avoid parsing
+the screen_info values manually. Decoding screen_info is fragile and
+many drivers get it wrong. We should later adopt these helpers in
+existing drivers, such as efifb, vesafb, as well.
 
->> +++ b/drivers/media/i2c/adv7604.c
->> @@ -3205,7 +3205,7 @@ static int adv76xx_parse_dt(struct adv76xx_state *=
-state)
->>       np =3D state->i2c_clients[ADV76XX_PAGE_IO]->dev.of_node;
->>
->>       /* Parse the endpoint. */
->> -     endpoint =3D of_graph_get_next_endpoint(np, NULL);
->> +     endpoint =3D of_graph_get_endpoint_by_regs(np, 0, -1);
->
-> I think this should be port 1 for the adv7611 and port2 for the adv7612.
-> The adv7610 may need to use port 1 too, but the bindings likely need to
-> be updated.
+Patches 3 and 4 set the firmware framebuffer's parent device. There
+is code in efifb to do something similar for power management. That
+is now obsolete and being cleaned up. Setting the parent device makes
+Linux track the power management correctly.
 
-To be honest I have no idea about ADV7611 and 7612.
-The 7610 I have on Tinyrex "mobo" seems to be single port.
+Patches 5 and 6 track the parent device's enable state. We don't
+create framebuffer devices if the underlying hardware device has been
+disabled. Remove the functionality from efifb.
 
-ADV7611 seems to be mostly a 7610 in a different package (LQFP 64
-instead of some BGA 76). The driver simply treats ADV7610 as a 7611.
+Patches 7 and 8 track the parent device's PCI BAR location. It can
+happen on aarch64 that the firmware framebuffer moves its location
+during the kernel's boot. We now fix up the screen_info state to
+point to the correct location. Again remove such functionality from
+efifb.
 
-ADV7612 is apparently dual port (only one port can be used at a time)
-though:
+v3:
+	* filter PCI device list with pci_get_base_class() (Sui)
+	* fix error handling for screen_info_pci_dev() (Sui)
+	* fix build for CONFIG_SYSFB_SIMPLEFB=n (Sui)
+	* small cleanups
+v2:
+	* small refactorings throughout the patchset
 
-[ADV7612] =3D {
-        .type =3D ADV7612,
-        .has_afe =3D false,
-        .max_port =3D ADV76XX_PAD_HDMI_PORT_A,    /* B not supported */
-        .num_dv_ports =3D 1,                      /* normally 2 */
+Thomas Zimmermann (8):
+  video: Add helpers for decoding screen_info
+  video: Provide screen_info_get_pci_dev() to find screen_info's PCI
+    device
+  firmware/sysfb: Set firmware-framebuffer parent device
+  fbdev/efifb: Remove PM for parent device
+  firmware/sysfb: Create firmware device only for enabled PCI devices
+  fbdev/efifb: Do not track parent device status
+  firmware/sysfb: Update screen_info for relocated EFI framebuffers
+  fbdev/efifb: Remove framebuffer relocation tracking
 
+ drivers/firmware/Kconfig            |   1 +
+ drivers/firmware/sysfb.c            |  51 +++++++++-
+ drivers/firmware/sysfb_simplefb.c   |   5 +-
+ drivers/video/Kconfig               |   4 +
+ drivers/video/Makefile              |   4 +
+ drivers/video/fbdev/efifb.c         |  97 +-----------------
+ drivers/video/screen_info_generic.c | 146 ++++++++++++++++++++++++++++
+ drivers/video/screen_info_pci.c     | 136 ++++++++++++++++++++++++++
+ include/linux/screen_info.h         | 126 ++++++++++++++++++++++++
+ include/linux/sysfb.h               |   6 +-
+ 10 files changed, 480 insertions(+), 96 deletions(-)
+ create mode 100644 drivers/video/screen_info_generic.c
+ create mode 100644 drivers/video/screen_info_pci.c
 
-All related in-tree DTS entries (as of v6.8.0-rc1) seem to be ADV7612.
+-- 
+2.43.0
 
-To me it seems all known devices use the first port only.
---=20
-Krzysztof "Chris" Ha=C5=82asa
-
-Sie=C4=87 Badawcza =C5=81ukasiewicz
-Przemys=C5=82owy Instytut Automatyki i Pomiar=C3=B3w PIAP
-Al. Jerozolimskie 202, 02-486 Warszawa

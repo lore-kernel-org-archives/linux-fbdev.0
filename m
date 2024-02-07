@@ -1,200 +1,142 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4950D446C8;
-	Wed,  7 Feb 2024 16:36:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A386F12AAC1
+	for <linux-fbdev@vger.kernel.org>; Wed,  7 Feb 2024 18:43:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707323789; cv=none; b=pZ7qQ91GqBWtKfOzlgcjKCUIK4Q2QmVpe83Sp6oe+8U2vMNf8DDYTMxcSaNT2l4b+/+D04/MLWRo8mYjfMdIWDlx9YU+h6ylEcjaM/8XQ2yd4OVUqGs3bs740aM+EjltS1SpwHyTp71qzgnTBqLfoOgnkgyBVMJIDrfydcEKsoQ=
+	t=1707331410; cv=none; b=XJyJUHMIDas2s9x1aF/YkNHENrtPc4HAZYZmp29BZh9bOJwNkWdGxLA/y1gecLxHB6rhQCaF/MI98LiZQdZb54VFKCpe+6WYxRbN7GMvhT9i/2sLaUu7QcTuOb5yIpZ95WUzsxiXK2zNECqaAG6VSrJ3BexK57XeJlRgTNGkbQk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707323789; c=relaxed/simple;
-	bh=VFyW+3sUR37twugqH5O9GBQX1t3/Eft5lI+KpHkZNYg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mQ4wJ58Uk+I3SBnRV/2xqsMZcYVXasal54ZIOyFPwMfoLFYSV7xikjaNvbMwuLyjTExISOwiJmt31QyOQ1KcrQkDzmLLNNNgKjQy2anT1xlkbHsLt25kcdcE0KyrOQtLM3wnXrfxUrbDrcZ8tBFfRVZ7tVZbk3rhgCc94UoLfxo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tfd5bgOA; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lUmV/kdW; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tfd5bgOA; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lUmV/kdW; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tfd5bgOA";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lUmV/kdW";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tfd5bgOA";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lUmV/kdW"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 59EF51FC07;
-	Wed,  7 Feb 2024 16:36:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1707323785; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wYK4A+hl1ikVe6uxqkO7zdf+UWB3BNTB0tZ47Dw913I=;
-	b=tfd5bgOA0X5lMAHmf0wh2MdqcwRGli+jJLIF4cH8+LBjyY+h+yFhlpOKTqUSjwKWLnNMJT
-	wCSAS226k6X0Crly+JanSAc4EOyiT7e5jtsWt6ZJOOPmOqT+eO1S86KL4nO4zrBkofFIRL
-	geB5JrYzB2oCEr50iy42O2+4LH8WE9I=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1707323785;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wYK4A+hl1ikVe6uxqkO7zdf+UWB3BNTB0tZ47Dw913I=;
-	b=lUmV/kdWNkQwY1MImmJpUsRedOS6AF5B8mSO7TUOnAhOo+g++M2ug+XXcjoJpC58KjoWBP
-	ewhU7v3DMi14wUAg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1707323785; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wYK4A+hl1ikVe6uxqkO7zdf+UWB3BNTB0tZ47Dw913I=;
-	b=tfd5bgOA0X5lMAHmf0wh2MdqcwRGli+jJLIF4cH8+LBjyY+h+yFhlpOKTqUSjwKWLnNMJT
-	wCSAS226k6X0Crly+JanSAc4EOyiT7e5jtsWt6ZJOOPmOqT+eO1S86KL4nO4zrBkofFIRL
-	geB5JrYzB2oCEr50iy42O2+4LH8WE9I=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1707323785;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wYK4A+hl1ikVe6uxqkO7zdf+UWB3BNTB0tZ47Dw913I=;
-	b=lUmV/kdWNkQwY1MImmJpUsRedOS6AF5B8mSO7TUOnAhOo+g++M2ug+XXcjoJpC58KjoWBP
-	ewhU7v3DMi14wUAg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E19D113931;
-	Wed,  7 Feb 2024 16:36:24 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 6BXlNIixw2X5UgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 07 Feb 2024 16:36:24 +0000
-Message-ID: <e0893d21-606e-429e-a554-c9ee60fd0ae4@suse.de>
-Date: Wed, 7 Feb 2024 17:36:24 +0100
+	s=arc-20240116; t=1707331410; c=relaxed/simple;
+	bh=XCjKjslPjqHKRPhjAFqin0asrGjQXScMLqttnb/ERUQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=iM+1znNm+30esi5nQIPdGC+j1hFOm8qTirg7iaKA57Lf4TjqHtZhWZFaR8wnCcZ0PmQIjHaWzL0e7vXEdqqMx30N7sg9vupPosGXSHxgjte8HqNU6gxbOz1l48b8lCDW/g8XIfey8KXBSehf6Mpt8r23XOjo6eODqyox755s1LU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rXmtD-00082i-BC; Wed, 07 Feb 2024 19:43:19 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rXmtC-0054Yb-Qo; Wed, 07 Feb 2024 19:43:18 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rXmtC-00HRth-2Q;
+	Wed, 07 Feb 2024 19:43:18 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>
+Cc: kernel@pengutronix.de,
+	Helge Deller <deller@gmx.de>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Dario Binacchi <dario.binacchi@amarulasolutions.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 28/32] video: fbdev: mmp: Follow renaming of SPI "master" to "controller"
+Date: Wed,  7 Feb 2024 19:40:42 +0100
+Message-ID:  <136f59b6e272e5ff7ec210627c9c3ea27d066d51.1707324794.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1707324793.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1707324793.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] drivers/ps3: select VIDEO to provide cmdline functions
-Content-Language: en-US
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
- "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240207161322.8073-1-rdunlap@infradead.org>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240207161322.8073-1-rdunlap@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Authentication-Results: smtp-out2.suse.de;
-	none
-X-Spamd-Result: default: False [-7.09 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 REPLY(-4.00)[];
-	 BAYES_HAM(-3.00)[100.00%];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 RCPT_COUNT_SEVEN(0.00)[11];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[lists.freedesktop.org:email,ellerman.id.au:email,csgroup.eu:email,ozlabs.org:email,infradead.org:email];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 FREEMAIL_CC(0.00)[ellerman.id.au,gmail.com,csgroup.eu,kernel.org,linux.ibm.com,lists.ozlabs.org,infradead.org,vger.kernel.org,lists.freedesktop.org];
-	 RCVD_TLS_ALL(0.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[]
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Spam-Score: -7.09
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2770; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=XCjKjslPjqHKRPhjAFqin0asrGjQXScMLqttnb/ERUQ=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlw87cfCDKPouSdyY/ruXPqXmi502nagTlT3Zz4 C1qUXW8K0GJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZcPO3AAKCRCPgPtYfRL+ TvX3CACqveA/rD7JWSIm5VWKcQuWk6O6yOGgjkNs3so17MGNpc9D3WJa+1Q3Fj9YswI/+mc2cvv lM7DaKL+zFnNP+sKDzyE86BmdsQTMXD9C446LLZJvrtEywze4r0dfh1bSHPB6t3g9TTIXE0E6e+ 5HD/C2dCcF/uquUYSd5burrHstyxfQJ2xooOfYph3zLZ4D/K+8PbcJV5XgEYdwQU2GRE+OOUEfl T/cPQMNlK0VlFMfaAl6UKj8ihO6jBXAyPc4LWnDgVfkKr+4gqogS30viLdt6DlnE9MNmKZB6fEj y2Xqa0X3zEvdPeLNY+ennxVjeiVzVibBGlODr4KPrxuLJAMR
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
+In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
+some functions and struct members were renamed. To not break all drivers
+compatibility macros were provided.
 
+To be able to remove these compatibility macros push the renaming into
+this driver.
 
-Am 07.02.24 um 17:13 schrieb Randy Dunlap:
-> When VIDEO is not set, there is a build error. Fix that by selecting
-> VIDEO for PS3_PS3AV.
->
-> ERROR: modpost: ".video_get_options" [drivers/ps3/ps3av_mod.ko] undefined!
->
-> Fixes: dae7fbf43fd0 ("driver/ps3: Include <video/cmdline.h> for mode parsing")
-> Fixes: a3b6792e990d ("video/cmdline: Introduce CONFIG_VIDEO for video= parameter")
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-> Cc: Naveen N. Rao <naveen.n.rao@linux.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Geoff Levand <geoff@infradead.org>
-> Acked-by: Geoff Levand <geoff@infradead.org>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/mmp/hw/mmp_spi.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-> ---
-> v2: add Geoff's Ack;
->      add second Fixes: tag and more Cc:s (Thomas)
->
->   arch/powerpc/platforms/ps3/Kconfig |    1 +
->   1 file changed, 1 insertion(+)
->
-> diff -- a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-> --- a/arch/powerpc/platforms/ps3/Kconfig
-> +++ b/arch/powerpc/platforms/ps3/Kconfig
-> @@ -67,6 +67,7 @@ config PS3_VUART
->   config PS3_PS3AV
->   	depends on PPC_PS3
->   	tristate "PS3 AV settings driver" if PS3_ADVANCED
-> +	select VIDEO
->   	select PS3_VUART
->   	default y
->   	help
-
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_spi.c b/drivers/video/fbdev/mmp/hw/mmp_spi.c
+index 0f8f0312a7c4..cf23650d7f0b 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_spi.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_spi.c
+@@ -32,7 +32,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
+ 	int timeout = 100000, isr, ret = 0;
+ 	u32 tmp;
+ 	void __iomem *reg_base = (void __iomem *)
+-		*(void **)spi_master_get_devdata(spi->master);
++		*(void **) spi_controller_get_devdata(spi->controller);
+ 
+ 	/* clear ISR */
+ 	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
+@@ -81,7 +81,7 @@ static inline int lcd_spi_write(struct spi_device *spi, u32 data)
+ static int lcd_spi_setup(struct spi_device *spi)
+ {
+ 	void __iomem *reg_base = (void __iomem *)
+-		*(void **)spi_master_get_devdata(spi->master);
++		*(void **) spi_controller_get_devdata(spi->controller);
+ 	u32 tmp;
+ 
+ 	tmp = CFG_SCLKCNT(16) |
+@@ -136,32 +136,32 @@ static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
+ 
+ int lcd_spi_register(struct mmphw_ctrl *ctrl)
+ {
+-	struct spi_master *master;
++	struct spi_controller *ctlr;
+ 	void **p_regbase;
+ 	int err;
+ 
+-	master = spi_alloc_master(ctrl->dev, sizeof(void *));
+-	if (!master) {
++	ctlr = spi_alloc_master(ctrl->dev, sizeof(void *));
++	if (!ctlr) {
+ 		dev_err(ctrl->dev, "unable to allocate SPI master\n");
+ 		return -ENOMEM;
+ 	}
+-	p_regbase = spi_master_get_devdata(master);
++	p_regbase = spi_controller_get_devdata(ctlr);
+ 	*p_regbase = (void __force *)ctrl->reg_base;
+ 
+ 	/* set bus num to 5 to avoid conflict with other spi hosts */
+-	master->bus_num = 5;
+-	master->num_chipselect = 1;
+-	master->setup = lcd_spi_setup;
+-	master->transfer = lcd_spi_one_transfer;
++	ctlr->bus_num = 5;
++	ctlr->num_chipselect = 1;
++	ctlr->setup = lcd_spi_setup;
++	ctlr->transfer = lcd_spi_one_transfer;
+ 
+-	err = spi_register_master(master);
++	err = spi_register_controller(ctlr);
+ 	if (err < 0) {
+ 		dev_err(ctrl->dev, "unable to register SPI master\n");
+-		spi_master_put(master);
++		spi_controller_put(ctlr);
+ 		return err;
+ 	}
+ 
+-	dev_info(&master->dev, "registered\n");
++	dev_info(&ctlr->dev, "registered\n");
+ 
+ 	return 0;
+ }
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+2.43.0
 

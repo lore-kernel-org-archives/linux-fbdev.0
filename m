@@ -1,102 +1,93 @@
-Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73B987FBD3
-	for <linux-fbdev@vger.kernel.org>; Wed,  7 Feb 2024 15:34:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.184
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E0B77FBD4;
+	Wed,  7 Feb 2024 16:13:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707320055; cv=none; b=hupz9tx9nuKYtR16GRMm0M4AQKv4QfotwUjsu9Jgo+AUaUK7H5lLjN3an4vlKn7eQN12e43leXb4ilawxyahMKykdHgORkj4+k7aVxwzNvb79z66MZiuhJa7Q7kT3iSonmXw7j8qzjTdWDHliL3k9/O/Z36xZik3wwnEe/XPHoM=
+	t=1707322412; cv=none; b=nFiExzDh4VGYufdAbe+SvZ+Qatw35DMrZqSaQZxBsDRUsqUP13GejKQ69NN1rznqeJIJVN435eePsINzHNMLWWkprEiGOdc0sL4ym+99hraB3QaYTC/ZQCmN+564BzrCVdNdGveh/VAmI+N+DAZeSgLHA3wYX3m5v4urFRvW1xE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707320055; c=relaxed/simple;
-	bh=JFciDtMQtOJ7lo5r/FTSnXWrW0zMXHhjmjQCRnJ3OC4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=g1o2UC+PGYrfkrxZkv5vsxyQy53Z/XXG153mi5zP6KyNhrh8y13H66tL9ksD2ezEdWjLw+lxkXxtQlNWwwJD/nr0ozNYhVsAzGR7+4OVcADSQDbvhsD9Ff8pvSn1y3CxxmaewHd2K8OhC34qKLaIH7of586xT5fBJUTscqjQ/QQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=ezvTKNdK; arc=none smtp.client-ip=91.218.175.184
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1707322412; c=relaxed/simple;
+	bh=gMkb/LVVk95GKIk8bauKpW7UC/dh8L4ylJC+kHTYZqQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZPdBZ2c3ZX0Q/r47c3tUkyhmf7WVEgew021L3T7KlcjtLQvOZHoYbpXbPdGzj2xfxxpq8xpgJWCYwUs2tguE50Dbz1KlptR+IfP6NU+9iYPizwN5Rzstx62ZrHVO9X9JceAR5pe3AgfMwsvo5RpyL63ddyfXTUf3CunMuHEEhew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=RJNTBrNA; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="ezvTKNdK"
-Message-ID: <3e7de0d3-226b-4036-a353-7c0edc0941af@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1707320046;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=F7QnNAiA4ba0BbyxZVm5Gu2UvxvN0HYH7Wen4NoGjq0=;
-	b=ezvTKNdKpmxLtBjSo8tl+zn1oPRbuWua26J+OT1jfwZqSQz96gRtTAvHxVS3uugk8uYrGF
-	t0F68Pf4p6vlOGzdQd+XyBvRxL966J0KM8FqTmLT546VezzCyJeu+fscYarvpLmvy+Iv4l
-	rfKHwEod12TC+j5Gifl+9bZHElZoPHo=
-Date: Wed, 7 Feb 2024 23:34:00 +0800
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="RJNTBrNA"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=BzfR02iaC4unUSCO9abKwcFUwiyIjB6j/U2qifVyUjY=; b=RJNTBrNA0gX9tZMdxmaX0a3ewg
+	UQNsN0ZI+eUd/5Zhixy5DWyILdoKHPiVbMB3x40NacxvJaR1cZdLWFefS8x7WGy0Mh8x/GpApawEt
+	e9F3587MTXO5WU2Bkeu1QKEgyEzoSUZYzIxXT1YLuYvYbv0qED0ZL10TMfAtJT4SHZF4R65bziM7A
+	nmIjfG8Slb/SKaR2kjvBiCKEoa1d2hEiLJUmoV6x7KEeRJowHjmHZe04lucfdnO1VpiZ+fyUGOTGU
+	Fpm0TGGdwNq7bL7a6epxfUcxyuSOV0l5akAd3OFxd2AxCG5Ee3TRTNNB+WSiPXPkqSDoWoFJOnoXc
+	Q4A3mxrg==;
+Received: from [50.53.50.0] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1rXkYA-0000000BBCJ-2Wir;
+	Wed, 07 Feb 2024 16:13:26 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
+	"Naveen N . Rao" <naveen.n.rao@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Geoff Levand <geoff@infradead.org>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH v2] drivers/ps3: select VIDEO to provide cmdline functions
+Date: Wed,  7 Feb 2024 08:13:22 -0800
+Message-ID: <20240207161322.8073-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [v2,3/8] firmware/sysfb: Set firmware-framebuffer parent device
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
- pjones@redhat.com, deller@gmx.de, ardb@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20240202120140.3517-4-tzimmermann@suse.de>
- <eb221db3-76b0-4c69-8736-df5576392717@linux.dev>
- <d429ddb0-4132-4476-b751-b59accaf0e8d@suse.de>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Sui Jingfeng <sui.jingfeng@linux.dev>
-In-Reply-To: <d429ddb0-4132-4476-b751-b59accaf0e8d@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
-Hi,
+When VIDEO is not set, there is a build error. Fix that by selecting
+VIDEO for PS3_PS3AV.
 
+ERROR: modpost: ".video_get_options" [drivers/ps3/ps3av_mod.ko] undefined!
 
-On 2024/2/5 16:24, Thomas Zimmermann wrote:
-> Hi
->
-> Am 02.02.24 um 16:23 schrieb Sui Jingfeng:
->> Hi,
->>
->>
->> On 2024/2/2 19:58, Thomas Zimmermann wrote:
->>> Set the firmware framebuffer's parent device, which usually is the
->>> graphics hardware's physical device. Integrates the framebuffer in
->>> the Linux device hierarchy and lets Linux handle dependencies among
->>> devices. For example, the graphics hardware won't be suspended while
->>> the firmware device is still active.
->>
->> This is a very nice benefit, I can't agree more!
->>
->> Because the backing memory of the firmware framebuffer occupied
->> belongs to the graphics hardware itself. For PCIe device, the
->> backing memory is typically the dedicated VRAM of the PCIe GPU.
->> But there are some exceptions, for example, the gma500. But I
->> think this can be fixed in the future, as majority(>99.9%) PCIe
->> GPU has the a dedicated VRAM.
->>
->>
->> For ARM and ARM64 platform device, the backing memory of the
->> firmware framebuffer may located at the system RAM. It's common
->> that the display controller is a platform device in the embedded
->> world. So I think the sysfb_parent_dev() function can be extended
->> to be able to works for platform device in the future.
->
-> The current approach has been taken from efifb. It would already not 
-> work reliably with gma500 or ARM SoCs. So there's no immediate loss of 
-> functionality AFAICT. But with the patchset now have a correct device 
-> hierarchy and PM for simpledrm, vesafb et al.
->
-> In the long term, I want to employ some of the logic in vgaarb that 
-> detects the firmware default device. That needs additional work, though.
->
+Fixes: dae7fbf43fd0 ("driver/ps3: Include <video/cmdline.h> for mode parsing")
+Fixes: a3b6792e990d ("video/cmdline: Introduce CONFIG_VIDEO for video= parameter")
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+Cc: Naveen N. Rao <naveen.n.rao@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Geoff Levand <geoff@infradead.org>
+Acked-by: Geoff Levand <geoff@infradead.org>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+---
+v2: add Geoff's Ack;
+    add second Fixes: tag and more Cc:s (Thomas)
 
-Good ideas, try to be impressive.
-I probably could help to test if I'm online.
+ arch/powerpc/platforms/ps3/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-
-> Best regards
-> Thomas
->
->>
->
+diff -- a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
+--- a/arch/powerpc/platforms/ps3/Kconfig
++++ b/arch/powerpc/platforms/ps3/Kconfig
+@@ -67,6 +67,7 @@ config PS3_VUART
+ config PS3_PS3AV
+ 	depends on PPC_PS3
+ 	tristate "PS3 AV settings driver" if PS3_ADVANCED
++	select VIDEO
+ 	select PS3_VUART
+ 	default y
+ 	help

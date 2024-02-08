@@ -1,45 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 000D71DFE1;
-	Thu,  8 Feb 2024 10:35:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F5806F532;
+	Thu,  8 Feb 2024 10:52:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707388513; cv=none; b=KHvioOvz/8bv/VuVNLRKs6nZiuHA9tEGia7xRLbGwHsdqbEZZrksr76qpBgF9PuYY/y877VidslPC0nijcQcrJU4iyeaExNs69SMHWJXgDsQ+CuZZkeNHA3iknajquDHN1OcqsYggwHZvcUWTCVDpTKNt5EHcookYTmqsssVweM=
+	t=1707389562; cv=none; b=qO0cIB99PzpOsAEQ0QbvyZAJJG4jTfskmeTPMDqCQ9D9x4sy2M7Ic+WLg5Y45jmmqmfOYlSM0esle2U9eNnwItUwfq7sz9q8c7s5QCSh6+c4IHvxVnRe2kdVv0/iXPU2xlxFv/wcEibcn36/WRD8MbcThpaGYlcZxFk0OpfoV+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707388513; c=relaxed/simple;
-	bh=0/YRNuXxZuldgKvPMxkRGmiUNw3aBOqxeqR1S9uQF6c=;
+	s=arc-20240116; t=1707389562; c=relaxed/simple;
+	bh=NjNSfhEcjSG5tAQPM6gOvRlfxb1YnyNXjNsO7vePUMw=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=In3OgDreWXzzY76ts9bAYZF/xIGLo8GyiePeRo7SRaEzDD/YmT0IBmuAafikGED7IE0R0QjkX/n9HpBSVmBlsQHv3tTSn8I0xZoX1SozsRm5O5+IZS4vgI5Slxcl5bxbhCv/NAONtpNzN7ePVM68O0K8hq7bs8Jl2BKapRagY20=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GKfJoNlh; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=shMw5Ume/p2iig9Mn/QdOdTLLiHclnAJQIHBNOq+ubske0vqoZRTCRFWhXLnmQBDKB1HGsnBnvyjZbyNYMB1MvtuLxTd738GvkAkofeBupv5PxJBAR9L1CJkRlveoNjzWy9Neqad/hP3Wc0Z9U05Ku0LbGQ37rwLt0fc43tU03A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A6h59rw2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GKfJoNlh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 677AAC433F1;
-	Thu,  8 Feb 2024 10:35:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A6h59rw2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60E7BC433F1;
+	Thu,  8 Feb 2024 10:52:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707388512;
-	bh=0/YRNuXxZuldgKvPMxkRGmiUNw3aBOqxeqR1S9uQF6c=;
+	s=k20201202; t=1707389561;
+	bh=NjNSfhEcjSG5tAQPM6gOvRlfxb1YnyNXjNsO7vePUMw=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=GKfJoNlhG3qi82SM3lHOL568A/rTjCfDxuu50jgDXdzpa7fiqU9TxMpmWkSYg0gzb
-	 SuK5lDR0uBnkmhHkW4++pICqKFBVSsLD/k9MHhKtSNtSHmqjeYcGd1QuyzIXsCaC4k
-	 GZ89XWlVft+XhdQhYRevc6iiYd5teL6dkgt6yTIkdlf8VIh7yamwP4iin2EoZdsqNI
-	 n80wFKOrgdor2Gz8QHuvXr5ma2Fis5MEIoqS59VQ/cNCILvaITalu2UA3HpnLEN6+x
-	 In5sjmWLYr/se5q8eFMalz9eJ5dBtcYBiknyZqt+1R4wTunFz3aSzqs0FLpU29Q6nF
-	 fBniF7l+3lm4w==
+	b=A6h59rw2GM1lbtLDFzDaniCuHjjsEJxV4Ht+EAzuikpOsRmtVAKvLlrl3PbIn4QU5
+	 t8itmryf0ubsnAsFVCb9MjM8wXRbTs64hEioQK/lPekWsa6pGr30a4x5DibrzWFlU6
+	 n7786l7U9cVi59/mfJ7OoDChtBq1GbMQHuiWwwjbCdslq+pDmcNj5huSmtQ6VqzPDj
+	 0Qeo+6eVXj3puhbFa0KTYWnd3ntngeil/eB2KfwQ8W+DjBgAvUsthWYleMe/3LH3g/
+	 T2SKiarEDBiG081/fbWAeCKO8JKgkV+AD7PONePtyS98MPX9TBNc4jNWsPQC5J0rsf
+	 BDuXznCWOIYkA==
 From: Lee Jones <lee@kernel.org>
-To: Flavio Suligoi <f.suligoi@asem.it>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
- Sean Young <sean@mess.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
-In-Reply-To: <20240128154905.407302-1-sean@mess.org>
-References: <20240128154905.407302-1-sean@mess.org>
-Subject: Re: (subset) [PATCH] backlight: mp3309c: Use
- pwm_apply_might_sleep()
-Message-Id: <170738851016.914450.4228723185612575654.b4-ty@kernel.org>
-Date: Thu, 08 Feb 2024 10:35:10 +0000
+To: Daniel Thompson <daniel.thompson@linaro.org>, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Helge Deller <deller@gmx.de>
+In-Reply-To: <20240201144951.294215-1-andriy.shevchenko@linux.intel.com>
+References: <20240201144951.294215-1-andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v2 0/4] backlight: hx8357: Clean up and make
+ OF-independent
+Message-Id: <170738956012.925871.18016345920241211144.b4-ty@kernel.org>
+Date: Thu, 08 Feb 2024 10:52:40 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -50,17 +49,31 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.12.3
 
-On Sun, 28 Jan 2024 15:49:04 +0000, Sean Young wrote:
-> pwm_apply_state() is deprecated since commit c748a6d77c06a ("pwm: Rename
-> pwm_apply_state() to pwm_apply_might_sleep()"). This is the final user
-> in the tree.
+On Thu, 01 Feb 2024 16:47:41 +0200, Andy Shevchenko wrote:
+> A few ad-hoc cleanups and one patch to make driver OF-independent.
 > 
+> Chagelog v2:
+> - renamed init to init_fn and typedef accordingly (Daniel)
+> - added tags (Daniel, Javier)
 > 
+> Andy Shevchenko (4):
+>   backlight: hx8357: Make use of device properties
+>   backlight: hx8357: Move OF table closer to its consumer
+>   backlight: hx8357: Make use of dev_err_probe()
+>   backlight: hx8357: Utilise temporary variable for struct device
+> 
+> [...]
 
 Applied, thanks!
 
-[1/1] backlight: mp3309c: Use pwm_apply_might_sleep()
-      commit: 7feb4ec8ec900daf29602bcdf7c04178c63205ac
+[1/4] backlight: hx8357: Make use of device properties
+      commit: d965a5ee7c95ce9414259181cbdccb1d2f1c1247
+[2/4] backlight: hx8357: Move OF table closer to its consumer
+      commit: 3d226ecdfd83c0d89c1d4a430706e8228022685d
+[3/4] backlight: hx8357: Make use of dev_err_probe()
+      commit: f0ed1589885ae933e2b2f9c63e16f5be3fb0324d
+[4/4] backlight: hx8357: Utilise temporary variable for struct device
+      commit: 27a4701c92250ae0aecb2edea1109f89cf344ba1
 
 --
 Lee Jones [李琼斯]

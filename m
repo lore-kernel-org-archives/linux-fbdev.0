@@ -1,74 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A6277C0A9;
-	Thu,  8 Feb 2024 17:10:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CFA17B3C2;
+	Thu,  8 Feb 2024 17:15:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707412219; cv=none; b=ZTp9KFLFP261yZKTpZaL3VqidDt7kQXFpQgsliyzV6xIdoE5wk0pSOyrUNnwsU5mUrUj4354jBK5Js/Sq3/KPclM9niAUllJb0JNk81Aa8YNGwYgoIWQoNod4ZuyzgVuXTl2KXaaklsNb7gIhq9OfRNKXES+AArrctNHRSe1FoE=
+	t=1707412540; cv=none; b=WssO38IZlcoLhmN8UGWEXYM/plDFJusCzGFhQZuopDl251ctdDZH1R6qeNamTUwuWS1MS5mW/uqtBIrDT3KtMsf1DGryuV6/OCNqRtnHm7VElIWxS0+gzHDSIWmdRdzSqZWEl3sCH+ofDaXgRaat4GLZjvpsr2YACkccqiAE4J8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707412219; c=relaxed/simple;
-	bh=IOWSzMMlO8YnqPbPdbrgPuZBehBM3plhMgRmZTrstpg=;
+	s=arc-20240116; t=1707412540; c=relaxed/simple;
+	bh=p76xqtocPXxIASp/RvwQN97YAIQh0QlwZC10TmxGnq0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Xz/P2m4VFdpDeqZzCrn01+v0SAKdlgT7PRtC9Ff4/cCcY9FgFZmu/YI1wYp//r8D8QB27JZmJQyZhLrUFMWRSrXk2gs8jQpxStwYDbvCcrV5SN/g0Gju1UNNmvSI0H5NaBdpXE+jk4pKap2XU8x/zBnOiB5Lf8wegsqDFy3t8Zs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Z9zA4kNi; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=H7E4fT68Ay9gcHD4F4tm9o16fdPG5xcNwKapfrQZJnFN2L9mSiOjElSJekdXX7Io9xDsR+fhrDT1xtHYlPE2uZXENADmtFHNUpTwWqvruFn5xR/z1MBR7ofwJofBnw+5EAq9laxc7GW9aFnKo4+kOkQ9L/4ql6IPRO+HUCsxVM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jz2kKRJp; arc=none smtp.client-ip=198.175.65.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z9zA4kNi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40978C43390;
-	Thu,  8 Feb 2024 17:10:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707412218;
-	bh=IOWSzMMlO8YnqPbPdbrgPuZBehBM3plhMgRmZTrstpg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Z9zA4kNi3LDmXYPGblJeqbGXFB0y4GLSR6Sea/138sxNx07IiIBW8UN4/Qw0OFRJh
-	 aYH0IFxoAAaNMQPano/vow2LQnB6QO1ngCB8k/7CadBHz2Kfoz6VZw9ug47zyrtgWS
-	 vlv25aHnv33AK3Td76bto+j0HlWjcOF0Pdzh4BJheR7YFaAHqzu1O+GTbEBglNqfPD
-	 OaAfCQsfYckoroCZZLweLdWLWJWLYqwhxgp5jU+tXYsBBizx92vDj0Y9C86MIoG2u8
-	 VC2Eqz1rMd0ntjeArBMnULFuQ9EXS2ZlhNvrtjVBpJOtJFE/IIQJXCeP4rGVg4hNdI
-	 b+Pq4UG0UKXww==
-Date: Thu, 8 Feb 2024 17:10:14 +0000
-From: Lee Jones <lee@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v2 0/4] backlight: hx8357: Clean up and make
- OF-independent
-Message-ID: <20240208171014.GW689448@google.com>
-References: <20240201144951.294215-1-andriy.shevchenko@linux.intel.com>
- <20240208105304.GI689448@google.com>
- <ZcUKmlbtyktnKhLr@smile.fi.intel.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jz2kKRJp"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1707412540; x=1738948540;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=p76xqtocPXxIASp/RvwQN97YAIQh0QlwZC10TmxGnq0=;
+  b=jz2kKRJpJZRqmgKHolbk+geF9tcOM5CkaAyv1Is2zCoeOKzu3X/6JX2f
+   dB7+I/zHv/4fC74iGlbGY+GyQXa7yEPCVsCdoEQY+/DeH6qb49na2oJ4F
+   hTzGd4LDZogVBWiVMzyXhX8cWOdStJVl2ZdtFvvEAM+3y+j9usu41f3Q/
+   MYy9sTo5aEG9CFV9WV1B30ON+424STbuixiLraMCfnGnRHUwcXELQXyU8
+   aZpkkaNBisOt7SjZAdfmSzlHTnILm0Pbr4eAUikeR0Oz4jTsLWle7Z5e5
+   BU6xUMC3bOHJSHS0mIU50CyjxrOiCmFhysvgA0Zkji/B/Ts35BI0wo0TX
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10978"; a="11841737"
+X-IronPort-AV: E=Sophos;i="6.05,254,1701158400"; 
+   d="scan'208";a="11841737"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2024 09:15:38 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10978"; a="910429976"
+X-IronPort-AV: E=Sophos;i="6.05,254,1701158400"; 
+   d="scan'208";a="910429976"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2024 09:15:34 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.97)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1rY7zn-00000002vyu-3v1g;
+	Thu, 08 Feb 2024 19:15:31 +0200
+Date: Thu, 8 Feb 2024 19:15:31 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Lee Jones <lee@kernel.org>
+Cc: Flavio Suligoi <f.suligoi@asem.it>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH v2 0/3] backlight: mp3309c: Allow to use on non-OF
+ platforms
+Message-ID: <ZcUMMyV_vBTNw8Rz@smile.fi.intel.com>
+References: <20240201151537.367218-1-andriy.shevchenko@linux.intel.com>
+ <20240208113425.GK689448@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ZcUKmlbtyktnKhLr@smile.fi.intel.com>
+In-Reply-To: <20240208113425.GK689448@google.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 
-On Thu, 08 Feb 2024, Andy Shevchenko wrote:
+On Thu, Feb 08, 2024 at 11:34:25AM +0000, Lee Jones wrote:
+> On Thu, 01 Feb 2024, Andy Shevchenko wrote:
 
-> On Thu, Feb 08, 2024 at 10:53:04AM +0000, Lee Jones wrote:
-> > On Thu, 01 Feb 2024, Andy Shevchenko wrote:
-> 
-> ...
-> 
-> > Someone may wish to address this:
-> > 
-> > WARNING: DT compatible string "himax,hx8369" appears un-documented -- check ./Documentation/devicetree/bindings/
-> > #58: FILE: drivers/video/backlight/hx8357.c:636:
-> > +		.compatible = "himax,hx8369",
-> 
-> I can do it if and when have more time. But apparently it was before this
-> series, right?
+...
 
-I'm not sure it's ever been documented.
+> >   backlight: mp3309c: Utilise temporary variable for struct device
 
-It doesn't affect your series in any way.
+(1)
+
+> Set no longer applies.  Please rebase, thanks.
+
+I got a contradictory messages:
+1) email that says that all had been applied;
+2) this email (that tells the complete opposite);
+3) the repository where the first two were applied.
+
+While you can amend your scripts, I think I need to rebase only the last patch
+(1) that may not be found in your tree currently.
 
 -- 
-Lee Jones [李琼斯]
+With Best Regards,
+Andy Shevchenko
+
+

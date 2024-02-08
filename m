@@ -1,42 +1,42 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00EFB78B4D;
-	Thu,  8 Feb 2024 10:53:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E9806EB70;
+	Thu,  8 Feb 2024 11:34:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707389591; cv=none; b=hLMGCgXSS1fPxi2u2rAgpz1klr+MISUAK6aIPaXNa8YWWo+Xe4j1INzYSRbtIhttC+y7cMp0IKtz+Vt4oe3kP3hJjbXtHs1trizSpjl7EOIZbJfCJqQ9QjT1CPXN5nn925LHRNmwB2tBJBKzXUKNr72JlJK6IhTXy0imWKCBovg=
+	t=1707392070; cv=none; b=T3yTm/ngIIqdnYCgxaHESbXWm9IiCuKfjBAEVpwBH4JSpE2vX2KPVrZCwfXAH7T9b+ni9o6PmzF55rls6yNBaBRED8mlLWy/q075K4wR27tBb1Y+s+Ouxmb2K3293/U8bHNFYL5dHJ3XkYyRz8WNKoF5qIMMjgmgts7Qs8y1+tQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707389591; c=relaxed/simple;
-	bh=wBeYdUBNJaBkDPT3NHcSUBRjPj9TIlvLdhLYgROCToE=;
+	s=arc-20240116; t=1707392070; c=relaxed/simple;
+	bh=yyQjmff7mDe+PFwHUjspM3GhT+PcMskz98VGgV0pDXI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=foOC2e5J0l6V5eigs9s+y4fmfCg5nPOc/mzP8Akiq4rQsAgYXVFWpHW2pDnziMJiKHc8mcEw7pdgktvj0hWR9elOpihFog4goz8C5Km6gl0opDOXly+itIreyPT4L3aZGCagDKpUj3/0d672xJZU8ktnXXhcqu3J6mbZ/ArgbaQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CLTTh2gU; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=Rawt/v8GtrDvArAAkfszDo2ZGMWZ0e5/0yNJbP8B9zUo3iDb8VwE/wMeWPMWJm3u2UvCoGAEP4BnJsy+12aYKcNX9K3I4bQewTMAcwX4xzVStjYTRRsfDHe/YC/eElyxhsVQPaElVZ9piR5a5h3Uz49w/segacQfUVGLUtJ+DtQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=otMJJuv7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CLTTh2gU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6034C433B1;
-	Thu,  8 Feb 2024 10:53:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="otMJJuv7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 209BEC433F1;
+	Thu,  8 Feb 2024 11:34:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1707389589;
-	bh=wBeYdUBNJaBkDPT3NHcSUBRjPj9TIlvLdhLYgROCToE=;
+	s=k20201202; t=1707392069;
+	bh=yyQjmff7mDe+PFwHUjspM3GhT+PcMskz98VGgV0pDXI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CLTTh2gUPf7X+du/kpXt5N6d8vyKMod7zdhYCpAkk8ftEkOe1iwkixVKEgx3dQaAk
-	 XYU9lDce1kwLNZ7oU7X3FxsZUhpTzucTaU7M5+PDAzhZYuZ617AddRSRcd5qMxVuu4
-	 1oEPcSYVk8kG8LhplCoFipC/B9Novif9PSh4JY7hYBc814/jNuaHGWjg5PuEUja2/2
-	 5TiKmWuhNb3o3lczdbWr4WwVd2RbjTt2X7AKKsojlvLVnssePOhhUgfOl6ZGCyajrL
-	 QcEXgbl6fw07HkyYrh/z2kBvoIn7ejWJTbr2lfVWI9XESB3nxNEDmXBAJYksLuZfJG
-	 54XEt4QBk+Lfg==
-Date: Thu, 8 Feb 2024 10:53:04 +0000
+	b=otMJJuv7xmoVBxGBtHlNHS60vRtgbaz98hCw3I7+YzfJQaSpyfJeT1zQgiIFs47jZ
+	 EYWZn6Um2d+JCdWamZy7zfyEzMm6WIBZzTi7vCgQgEDHToI59x+8MxL95urvBQ6ta4
+	 0Os/gPU9xbgj1J6ryDeUwEjUfP0if1AQ8vwO9pEdDvYh7AUFUmoSO6WHhCH+9luC2h
+	 ZZirBBZm90ey9nXVvQaOjQAGVLrFRRRNdyfk++m4VU2xXTuJ2R84XNsMbUdqskxHi7
+	 3EVMEOYWaiTLgP9eOINvOWb2QcUiCbFsrYSAcwFr4HS8/CSKPJK09ugsIAKVpgx2eQ
+	 sh+iz4fazo2/w==
+Date: Thu, 8 Feb 2024 11:34:25 +0000
 From: Lee Jones <lee@kernel.org>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v2 0/4] backlight: hx8357: Clean up and make
- OF-independent
-Message-ID: <20240208105304.GI689448@google.com>
-References: <20240201144951.294215-1-andriy.shevchenko@linux.intel.com>
+Cc: Flavio Suligoi <f.suligoi@asem.it>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH v2 0/3] backlight: mp3309c: Allow to use on non-OF
+ platforms
+Message-ID: <20240208113425.GK689448@google.com>
+References: <20240201151537.367218-1-andriy.shevchenko@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -46,30 +46,26 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240201144951.294215-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20240201151537.367218-1-andriy.shevchenko@linux.intel.com>
 
 On Thu, 01 Feb 2024, Andy Shevchenko wrote:
 
-> A few ad-hoc cleanups and one patch to make driver OF-independent.
+> Allow to use driver on non-OF platforms and other cleanups.
 > 
-> Chagelog v2:
-> - renamed init to init_fn and typedef accordingly (Daniel)
-> - added tags (Daniel, Javier)
+> Changelog v2:
+> - rename pm3309c_parse_dt_node() --> mp3309c_parse_fwnode() (Daniel)
+> - add tags (Daniel, Flavio)
+> - new patch 2
 > 
-> Andy Shevchenko (4):
->   backlight: hx8357: Make use of device properties
->   backlight: hx8357: Move OF table closer to its consumer
->   backlight: hx8357: Make use of dev_err_probe()
->   backlight: hx8357: Utilise temporary variable for struct device
+> Andy Shevchenko (3):
+>   backlight: mp3309c: Make use of device properties
+>   backlight: mp3309c: use dev_err_probe() instead of dev_err()
+>   backlight: mp3309c: Utilise temporary variable for struct device
 > 
->  drivers/video/backlight/hx8357.c | 57 +++++++++++++++-----------------
->  1 file changed, 27 insertions(+), 30 deletions(-)
+>  drivers/video/backlight/mp3309c.c | 88 ++++++++++++-------------------
+>  1 file changed, 35 insertions(+), 53 deletions(-)
 
-Someone may wish to address this:
-
-WARNING: DT compatible string "himax,hx8369" appears un-documented -- check ./Documentation/devicetree/bindings/
-#58: FILE: drivers/video/backlight/hx8357.c:636:
-+		.compatible = "himax,hx8369",
+Set no longer applies.  Please rebase, thanks.
 
 -- 
 Lee Jones [李琼斯]

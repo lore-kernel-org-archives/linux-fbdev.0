@@ -1,200 +1,160 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12olkn2073.outbound.protection.outlook.com [40.92.22.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E8124EB3E;
-	Fri,  9 Feb 2024 14:51:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707490320; cv=none; b=gByArhX3zxuRlnbyt3eg1gEgM99E9hTo3bjlKARe+1nfMH5EcO9Sk7ujTeKmCU7oXRV+gTlYksoQRPCawQMrnsqd1A+3JAjs4cAjy34cjEihalZguK+noDDQS3TX0KRLKgbV5syuqdmV8GvN5nc8X3ZpfLggP8Zh1XeNGRjcrek=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707490320; c=relaxed/simple;
-	bh=Xu2NTH+sj2xaNNkHf92WqNMoNmO6d7I+wEi7f2JMgBI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mg6qAnbjDz74eZnIAvTsh/LU2DDA+nO5BYPZbXioC98oypoPmw5AmIQVHtqf6cMFCtJtiMCsVfq8Le2r6bwXHVxLDffZS5e54l9pLMrjcHiqTeVYaZ2M5nbVUyseEg7r0ZHGKx9XnYvD0eXNKFVztWndABvG+bR2tGHLWQScPCo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EN6/0V13; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B17E71B55;
+	Fri,  9 Feb 2024 15:23:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.22.73
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1707492220; cv=fail; b=WX9sDUnq65Up0841/t+Fc9+f07T3szCXwZclKaAwEc0CCtkaPo4Y3LI0+fXod6ySVVT7uAuV+Hv4Hh97GxXEGBfYV1avfxKH0qBvZysIUSKa92V6momzzm1pD+AEDkjGKXYW2Is90VmtIOt+z0feIrfD0J2x22ORfptMSEDvRgo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1707492220; c=relaxed/simple;
+	bh=sUfMkjYRCHMwcc/PuT/pGiasnbb2/rP9yyX+goTs5ek=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=lMnSMvmZlSRsFT44hTaHO+mZydpvq4kmjRVsyD82ZabVzmb1wkqCjqolRmXROUJKitSDQMojShvsIyqPWySi5lUE0505WzUmP/lr9tIxufrGmt5atztdrB0zM/eyouNZ8aTiAOKVCWa591aoZdA0q3eIHFz0H4h1FKUQ//OL0xY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=fYkZ1z7/; arc=fail smtp.client-ip=40.92.22.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EN6/0V13"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1707490319; x=1739026319;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=Xu2NTH+sj2xaNNkHf92WqNMoNmO6d7I+wEi7f2JMgBI=;
-  b=EN6/0V13rCOmdgbCN+kJ69L85NyVZyZ280TS9aRE8KDzuUXCU9lBQ8xj
-   nInEfw1hB8gaQNOHhLUfMuywS9kI/NwSVKNmSm0RyBNmPn2BAD0NRHpL2
-   Zt9nv9T80lUk/2ZKY5TVdcV921M7aS/DL7wQ60hl+T22XO+HxrZA1Ylhn
-   Assch99ayZbFWvq0mOSWKTAOl8InSUsS/HaPsrcl46EAwBlxlqw+ILjvf
-   oe66GLw1ZLYDCvwiyxHW0DJTNzV61vzYEmgmcNXZHboX6dVcwW62akYZK
-   ju39ADJvVO2GMUOaqCwbUXprHS4fT2T6I2OgrZAqIeklzKTGLWFTgvXyy
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10979"; a="5233510"
-X-IronPort-AV: E=Sophos;i="6.05,257,1701158400"; 
-   d="scan'208";a="5233510"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Feb 2024 06:51:58 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10979"; a="910729409"
-X-IronPort-AV: E=Sophos;i="6.05,257,1701158400"; 
-   d="scan'208";a="910729409"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by fmsmga002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Feb 2024 06:51:56 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.97)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1rYSEL-00000003B4I-166a;
-	Fri, 09 Feb 2024 16:51:53 +0200
-Date: Fri, 9 Feb 2024 16:51:52 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Lee Jones <lee@kernel.org>
-Cc: Flavio Suligoi <f.suligoi@asem.it>, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v2 0/3] backlight: mp3309c: Allow to use on non-OF
- platforms
-Message-ID: <ZcY8CDnUZn7SuK8-@smile.fi.intel.com>
-References: <20240201151537.367218-1-andriy.shevchenko@linux.intel.com>
- <20240208113425.GK689448@google.com>
- <ZcUMMyV_vBTNw8Rz@smile.fi.intel.com>
- <20240208173946.GX689448@google.com>
- <ZcUYZRDVmHhKQu9j@smile.fi.intel.com>
- <20240208181455.GA689448@google.com>
- <ZcUcRlcQmQG4s42k@smile.fi.intel.com>
- <20240209075052.GB689448@google.com>
+	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="fYkZ1z7/"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UNpn9mYPYy/eaUWmHfkN+f9wff376Nve7B5s9jmtoyT+4+S+WrKmgm2L+bqQIehAjaND+yvvgm8ylRw5jezHPg3Mt6VyVz+gcOYxZe/fCTrzOpVFgTAUXoJBSBUL9qwwFGpGJoiLpCh/ZyKYBZM4cDer3Tgmchvk2rnb61AAfe0LSIfD718t6ukql8Fde2usnrCjwT25AVaUMnU6NPUcwtiYgiiCZWX2o9g7dgmVai9GQ7GBlsVD1XlpOjNvnv98pE9a3szOPoae8HzTP5ZzI9N4SrKMvBnGWDsb49Z8AnEtLcFOnOvZBVuxHKbkqn0meR4instXDEDG/H2xUGp3tQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=sUfMkjYRCHMwcc/PuT/pGiasnbb2/rP9yyX+goTs5ek=;
+ b=ag2t8gTOY4e65RSUnzpGvXZo7WDM+lx6VxVBW7MPN0Rvyum8u+un28ONF8xYf3tPWQl0AtuoLEHfOdUDb+LvQnwQ3uZozbULNiXBKTfHt7p3ibvtWnnGay4cFDInnZz7WSZqU+BHP/53DK/bFGPwYY6foKkYmO7wyxx5MeJeClWbOZ2XgPlG27wcr40/5Nnr31aFalVdsDoy2YstBtVeI3VO95jWFRI/6XZH7GpBi1yeFZJzgYWPW+SEJpEGayLGuiFODlK5iMa/jxvwjLX9lAJqU2BWlms7yOxTseDTL1i26KI2RaTvQoUEyBrZBCt7j4eKn8OMVheMH8d+SEIu5A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sUfMkjYRCHMwcc/PuT/pGiasnbb2/rP9yyX+goTs5ek=;
+ b=fYkZ1z7/G77F9cDS1dlvPoG4tat/WzV2TrNL1HAZvMQUJsodl8guYC1XUB2LBFKy7PPiSv9i0UB5TClZKrvNZZWbxGr8YWrjiQuYALyrzJUxkbk3UPcCdyBho3Nqr6ADUaANr/kekUXYSpN+WrhEDfWFugBtJv6aFWczZK/qvLxMUHKgmzlwWNjSdYeOpQPJPie9JC3Jod7FyUdsfDzAjRZtabvYUl34F9Myqa4dYt2vZTggB8phw9TGUVZqCJU3iNy55GXh+7Y+Q+Owjf4wuUpR4peRzWLpcC0kXgoWLpdJ/ZDd4tkd3WXX21IqustXaPJcjmqxOUUqOtDtEkk5+A==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by LV3PR02MB10080.namprd02.prod.outlook.com (2603:10b6:408:196::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7249.38; Fri, 9 Feb
+ 2024 15:23:34 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::67a9:f3c0:f57b:86dd]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::67a9:f3c0:f57b:86dd%5]) with mapi id 15.20.7249.027; Fri, 9 Feb 2024
+ 15:23:34 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: "wei.liu@kernel.org" <wei.liu@kernel.org>, "deller@gmx.de" <deller@gmx.de>
+CC: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, Thomas
+ Zimmermann <tzimmermann@suse.de>, "haiyangz@microsoft.com"
+	<haiyangz@microsoft.com>, "decui@microsoft.com" <decui@microsoft.com>,
+	"drawat.floss@gmail.com" <drawat.floss@gmail.com>, "javierm@redhat.com"
+	<javierm@redhat.com>, "daniel@ffwll.ch" <daniel@ffwll.ch>,
+	"airlied@gmail.com" <airlied@gmail.com>
+Subject: RE: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
+ hvfb_getmem()
+Thread-Topic: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
+ hvfb_getmem()
+Thread-Index: AQHaVNQQLtKdxJeAI0qs1qW1SCByZbD1JHwAgA0F6sA=
+Date: Fri, 9 Feb 2024 15:23:33 +0000
+Message-ID:
+ <SN6PR02MB4157811F082C62B6132EC283D44B2@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20240201060022.233666-1-mhklinux@outlook.com>
+ <f2fe331b-06cb-4729-888f-1f5eafe18d0f@suse.de>
+In-Reply-To: <f2fe331b-06cb-4729-888f-1f5eafe18d0f@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-tmn: [hlyXUCXXUDeLkpOFyz8O/zgiTaxl2Nxi]
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|LV3PR02MB10080:EE_
+x-ms-office365-filtering-correlation-id: 58988543-62ef-4a11-8954-08dc2983146b
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:
+ gLYVhxo90gHNrueQsgWfpgb0NsCOFzejIo1oc9Ed76ZAxUgmJMJ+jWyuAM2EmAtgIHRu+LJpZmrXfHB+bCrABMaSmLGOxFsA4srcG8t2RT8Wng8Xf3FUCwYGYP4Bo9tyH2PqLVKi1W1/fTk/WNoE8GctlyLp2w7Adj998qQ8e9Yuz3AkTztWl8aWG6Rd9bNDUktmRQ4adYRPiRd5WHt0ReA9m9RohDDUfJnOmgJLQ1L7oui21Bv+tEbZJKgHSHmwYMa4ZTEYUz95K4kcwHCkm45OjntF9pjCIKt6BKx5yNFo5ytLWVsuTCjAKQrm5U/rcny8JBI0UGJGUcI3A8yYdOIhHzuVYmspHY67JbuNsyJFcKYyoQsgGS8jt+4FsTyZJE0WeyHEI/XTj+ih8nf6WKTE1bJ54uYLwuNc98agtz7UnY6y8VZUlnVfoAKrUQPES8ImklgzG4HMzP+7IR7zIe7NxneMT/DayMHG36+NHjQA8OUEYfJq0DBo8n7a+fkHbsltZqdGaUF+DDge3yW3oB5PoaAC6Mb5ly7YVcu0wCP74v7PDQy5WR8SE0/5FuUu
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?QkJ6WHA4dVU0bWxDNlBCTzRqL3h0T2Jsc3ZoQjZDVlJtcnlZZVlaWjljcXpv?=
+ =?utf-8?B?cGsxN0JmV0FzSlh5RzFiNlJzZjlvOXlKeVlqUG5Wc3dJRGtjMTJxZGxaL0s5?=
+ =?utf-8?B?RlphdDVjdjJzVkNVelRNeFczeVNiczZkbzZWazJ6M3pnQVlFVXZIdTR3TUlX?=
+ =?utf-8?B?eDRwYTkwZzFRaExva2wySDk2NStEcFgzVWMzOXVkMVBNdnNZL3kxMkhXODNn?=
+ =?utf-8?B?STN4NFljQTFiQUxxOFVJZ1pTMVlIVDVzRlZtTXFjOVZ4UzR6U29zVm5YdTZh?=
+ =?utf-8?B?UTRUZUZkU2c5NFl2WmJwY0dqNzFSaXlEbzNZRWNEWDE0ZHpsUDRZSVhYMHYy?=
+ =?utf-8?B?MWlDUDdFc0dZYVhzOXlwZmVTVnQzSFlveGxGd1hZQlY3dkJocWI5aCtoci9r?=
+ =?utf-8?B?NE9OVHFZbU5LY1hTSmlEL0ZGMHo5cGJmMjUvZGNZaXgyMUVzMEs4ZWxNc2I1?=
+ =?utf-8?B?TXlHbnNWaU5nT0VmSFdtdlkyZXF0Y1hyZGZCRnJ6TW5tTTFXdHhLRExCd0l3?=
+ =?utf-8?B?Qmlmc0N2MFNWTGloM2JpUTRrK0ZaQ2NSTjE1UW9CYnZkTEpHM2srT1k5QjR3?=
+ =?utf-8?B?dzFFaGRmL1FiVnM5Znp1VG9SeUlheVpkbmtlT0dzT284R0s2ZUtvbXZVMGpy?=
+ =?utf-8?B?MUExNzNuTkRHK3BEV2pjV1MwaWpyN2hnUzhSMFkvK0RUcGJHRlN6V2hDR09a?=
+ =?utf-8?B?S0IvUFFRaTFOZlNoSDJVc3BKQ0NwTUJJcjFSb1hSbGJJS2N5cmxkT0dTdEkv?=
+ =?utf-8?B?SnNtdUY2TDlqRG5hWnhpUU8rd290TjNEbURqQUthck9WL0E2SFZGUExHbkRH?=
+ =?utf-8?B?Ujc1MG9sY09FNEtDRWdvazkrZjArRFYycEhwMHBXb0RoM0Z1TDVJNDI4Sis4?=
+ =?utf-8?B?SVhvb2ZZUzVycElnREN1cW8vZzlZYndRcWdSSnhpWU5XVTlHMUlxV25JMUlQ?=
+ =?utf-8?B?VGxXTldNbGdpN0NvcURxazJmU1FoUmZxL1ZEOTFKL2d3UGcvNlRrQ2RENDRN?=
+ =?utf-8?B?MnkycGpZUlpBem81dk1mNHlvVWcwTHdzSVUxQjRhUGxFZkV0U3Vpb0RONVcy?=
+ =?utf-8?B?R2hVUkU3dHpjTmZJajlOMmUyVFNjd01uYlpiQkVqM1k0ZnprT1UvdkMzd0V2?=
+ =?utf-8?B?a20vWGFoNFhrNkplSzJFc0kwSWVSTTVqTE9DSnpVZDdkdS9GRktYVisrRXk4?=
+ =?utf-8?B?MGVVZlJNa0VldDdpMlhoTGlPR3RncUtiM2JxaWtLbk1OZmtVeE14YXZxbzI2?=
+ =?utf-8?B?T2Z3VTh2dHF1NzMvRGNkVUI2bWhJS0FKdDdkbHNmR1pOYmt6MW9lUHZ2TXdB?=
+ =?utf-8?B?MnVhYUF4dThmTzYxYUpqejYzVzB3RndSTnRuSGExU0toY3hvdXdIZWkrVUJS?=
+ =?utf-8?B?UjJ5VUZmeEpmRUdMU0tScVdvKzJBandJT2IyN2V5NGRCK1Z2MWhSeWxjSE9n?=
+ =?utf-8?B?Qmp6dzdyV21JWVFYaHVxWk9BaEIwQkozeGFpL2VSZ2NzY3RuOHJBNnRaYzZx?=
+ =?utf-8?B?NlZ0S2tlcVliclJOdFRqQW1FTml1dVdmeHFtOXVLU2JpQm94L3hralBUazZ1?=
+ =?utf-8?B?cVZCbW5VTTZURGRROEd1U09MOTM3TW1HY0M2dkU3dzlRVlkvZ2g1WGZCVlBm?=
+ =?utf-8?Q?UvdT1Jy/sq6VpOpu5eKn3GJ3VDFjtEjWj2F8gcbERdnE=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240209075052.GB689448@google.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 58988543-62ef-4a11-8954-08dc2983146b
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Feb 2024 15:23:33.9747
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR02MB10080
 
-On Fri, Feb 09, 2024 at 07:50:52AM +0000, Lee Jones wrote:
-> On Thu, 08 Feb 2024, Andy Shevchenko wrote:
-> > On Thu, Feb 08, 2024 at 06:14:55PM +0000, Lee Jones wrote:
-> > > On Thu, 08 Feb 2024, Andy Shevchenko wrote:
-> > > > On Thu, Feb 08, 2024 at 05:39:46PM +0000, Lee Jones wrote:
-> > > > > On Thu, 08 Feb 2024, Andy Shevchenko wrote:
-> > > > > > On Thu, Feb 08, 2024 at 11:34:25AM +0000, Lee Jones wrote:
-> > > > > > > On Thu, 01 Feb 2024, Andy Shevchenko wrote:
-
-...
-
-> > > > > > > >   backlight: mp3309c: Utilise temporary variable for struct device
-> > > > > > 
-> > > > > > (1)
-> > > > > > 
-> > > > > > > Set no longer applies.  Please rebase, thanks.
-> > > > > > 
-> > > > > > I got a contradictory messages:
-> > > > > > 1) email that says that all had been applied;
-> > > > > > 2) this email (that tells the complete opposite);
-> > > > > > 3) the repository where the first two were applied.
-> > > > > > 
-> > > > > > While you can amend your scripts, I think I need to rebase only the last patch
-> > > > > 
-> > > > > This is what I assume happened:
-> > > > > 
-> > > > > 1. Attempted to apply the set (as a set)
-> > > > > 2. 2 commits applied cleanly
-> > > > > 3. The final commit conflicted
-> > > > 
-> > > > Which is really strange. I have just applied (with b4) on top of your changes
-> > > > and no complains so far.
-> > > > 
-> > > > $ git am ./v2_20240201_andriy_shevchenko_backlight_mp3309c_allow_to_use_on_non_of_platforms.mbx
-> > > > Applying: backlight: mp3309c: Make use of device properties
-> > > > Applying: backlight: mp3309c: use dev_err_probe() instead of dev_err()
-> > > > Applying: backlight: mp3309c: Utilise temporary variable for struct device
-> > > > 
-> > > > Can you show what b4 tells you about this?
-> > > 
-> > > Fetching patch(es)
-> > > Analyzing 14 messages in the thread
-> > > Checking attestation on all messages, may take a moment...
-> > > ---
-> > >   ✓ [PATCH v2 1/3] backlight: mp3309c: Make use of device properties
-> > >     + Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org> (✓ DKIM/linaro.org)
-> > >     + Link: https://lore.kernel.org/r/20240201151537.367218-2-andriy.shevchenko@linux.intel.com
-> > >     + Signed-off-by: Lee Jones <lee@kernel.org>
-> > >   ✓ [PATCH v2 2/3] backlight: mp3309c: use dev_err_probe() instead of dev_err()
-> > >     + Tested-by: Flavio Suligoi <f.suligoi@asem.it> (✗ DKIM/asem.it)
-> > >     + Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org> (✓ DKIM/linaro.org)
-> > >     + Link: https://lore.kernel.org/r/20240201151537.367218-3-andriy.shevchenko@linux.intel.com
-> > >     + Signed-off-by: Lee Jones <lee@kernel.org>
-> > >   ✓ [PATCH v2 3/3] backlight: mp3309c: Utilise temporary variable for struct device
-> > >     + Link: https://lore.kernel.org/r/20240201151537.367218-4-andriy.shevchenko@linux.intel.com
-> > >     + Signed-off-by: Lee Jones <lee@kernel.org>
-> > >   ---
-> > >   ✓ Signed: DKIM/intel.com (From: andriy.shevchenko@linux.intel.com)
-> > > ---
-> > > Total patches: 3
-> > > Prepared a fake commit range for 3-way merge (672ecc5199b5..d507b9f4c5b9)
-> > > ---
-> > >  Link: https://lore.kernel.org/r/20240201151537.367218-1-andriy.shevchenko@linux.intel.com
-> > >  Base: not specified
-> > > 
-> > > Running through checkpatch.pl
-> > > total: 0 errors, 0 warnings, 103 lines checked
-> > > 
-> > > "[PATCH v2 1/3] backlight: mp3309c: Make use of device properties" has no obvious style problems and is ready for submission.
-> > > total: 0 errors, 0 warnings, 41 lines checked
-> > > 
-> > > "[PATCH v2 2/3] backlight: mp3309c: use dev_err_probe() instead of" has no obvious style problems and is ready for submission.
-> > > total: 0 errors, 0 warnings, 81 lines checked
-> > > 
-> > > "[PATCH v2 3/3] backlight: mp3309c: Utilise temporary variable for" has no obvious style problems and is ready for submission.
-> > > 
-> > > Check the results (hit return to continue or Ctrl+c to exit)
-> > > 
-> > > 
-> > > Applying patch(es)
-> > > Applying: backlight: mp3309c: Make use of device properties
-> > > Applying: backlight: mp3309c: use dev_err_probe() instead of dev_err()
-> > > Applying: backlight: mp3309c: Utilise temporary variable for struct device
-> > > Using index info to reconstruct a base tree...
-> > > M	drivers/video/backlight/mp3309c.c
-> > > Checking patch drivers/video/backlight/mp3309c.c...
-> > > Applied patch drivers/video/backlight/mp3309c.c cleanly.
-> > > Falling back to patching base and 3-way merge...
-> > > error: Your local changes to the following files would be overwritten by merge:
-> > > 	drivers/video/backlight/mp3309c.c
-> > > Please commit your changes or stash them before you merge.
-> > > Aborting
-> > > error: Failed to merge in the changes.
-> > > Patch failed at 0003 backlight: mp3309c: Utilise temporary variable for struct device
-> > > hint: Use 'git am --show-current-patch=diff' to see the failed patch
-> > > When you have resolved this problem, run "git am --continue".
-> > > If you prefer to skip this patch, run "git am --skip" instead.
-> > > To restore the original branch and stop patching, run "git am --abort".
-> > 
-> > Thank you!
-> > 
-> > It seems I have reduced context, so if you do `git am -C2 ...` it should apply.
-> > Never mind, I'll send a new version which should work with -C3.
-> 
-> I just use the default matching context lines.
-> 
-> Do you have a special config that reduces you context in patches?
-
-No special config, but can be done via aliasing (through function)
-E.g.,
-	git() {
-		if [ "$1" = 'am' ]; then
-			shift
-			/usr/bin/git am -C1 "$@"
-		else
-			/usr/bin/git "$@"
-		fi
-	}
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+RnJvbTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+IFNlbnQ6IFRodXJz
+ZGF5LCBGZWJydWFyeSAxLCAyMDI0IDEyOjE3IEFNDQo+IA0KPiBIaQ0KPiANCj4gQW0gMDEuMDIu
+MjQgdW0gMDc6MDAgc2NocmllYiBtaGtlbGxleTU4QGdtYWlsLmNvbToNCj4gPiBGcm9tOiBNaWNo
+YWVsIEtlbGxleSA8bWhrbGludXhAb3V0bG9vay5jb20+DQo+ID4NCj4gPiBBIHJlY2VudCBjb21t
+aXQgcmVtb3ZpbmcgdGhlIHVzZSBvZiBzY3JlZW5faW5mbyBpbnRyb2R1Y2VkIGEgbG9naWMNCj4g
+PiBlcnJvci4gVGhlIGVycm9yIGNhdXNlcyBodmZiX2dldG1lbSgpIHRvIGFsd2F5cyByZXR1cm4g
+LUVOT01FTQ0KPiA+IGZvciBHZW5lcmF0aW9uIDIgVk1zLiBBcyBhIHJlc3VsdCwgdGhlIEh5cGVy
+LVYgZnJhbWUgYnVmZmVyDQo+ID4gZGV2aWNlIGZhaWxzIHRvIGluaXRpYWxpemUuIFRoZSBlcnJv
+ciB3YXMgaW50cm9kdWNlZCBieSByZW1vdmluZw0KPiA+IGFuICJlbHNlIGlmIiBjbGF1c2UsIGxl
+YXZpbmcgR2VuMiBWTXMgdG8gYWx3YXlzIHRha2UgdGhlIC1FTk9NRU0NCj4gPiBlcnJvciBwYXRo
+Lg0KPiA+DQo+ID4gRml4IHRoZSBwcm9ibGVtIGJ5IHJlbW92aW5nIHRoZSBlcnJvciBwYXRoICJl
+bHNlIiBjbGF1c2UuIEdlbiAyDQo+ID4gVk1zIG5vdyBhbHdheXMgcHJvY2VlZCB0aHJvdWdoIHRo
+ZSBNTUlPIG1lbW9yeSBhbGxvY2F0aW9uIGNvZGUsDQo+ID4gYnV0IHdpdGggImJhc2UiIGFuZCAi
+c2l6ZSIgZGVmYXVsdGluZyB0byAwLg0KPiANCj4gSW5kZWVkLCB0aGF0J3MgaG93IGl0IHdhcyBz
+dXBwb3NlZCB0byB3b3JrLiBJREsgaG93IEkgZGlkbid0IG5vdGljZSB0aGlzDQo+IGJ1Zy4gVGhh
+bmtzIGEgbG90IGZvciB0aGUgZml4Lg0KPiANCj4gPg0KPiA+IEZpeGVzOiAwYWEwODM4Yzg0ZGEg
+KCJmYmRldi9oeXBlcnZfZmI6IFJlbW92ZSBmaXJtd2FyZSBmcmFtZWJ1ZmZlcnN3aXRoIGFwZXJ0
+dXJlIGhlbHBlcnMiKQ0KPiA+IFNpZ25lZC1vZmYtYnk6IE1pY2hhZWwgS2VsbGV5IDxtaGtsaW51
+eEBvdXRsb29rLmNvbT4NCj4gDQo+IFJldmlld2VkLWJ5OiBUaG9tYXMgWmltbWVybWFubiA8dHpp
+bW1lcm1hbm5Ac3VzZS5kZT4NCg0KV2VpIExpdSBhbmQgSGVsZ2UgRGVsbGVyIC0tDQoNClNob3Vs
+ZCB0aGlzIGZpeCBnbyB0aHJvdWdoIHRoZSBIeXBlci1WIHRyZWUgb3IgdGhlIGZiZGV2IHRyZWU/
+ICAgSSdtIG5vdA0KYXdhcmUgb2YgYSByZWFzb24gdGhhdCBpdCByZWFsbHkgbWF0dGVycywgYnV0
+IGl0IG5lZWRzIHRvIGJlIG9uZSBvciB0aGUNCm90aGVyLCBhbmQgc29vbmVyIHJhdGhlciB0aGFu
+IGxhdGVyLCBiZWNhdXNlIHRoZSBIeXBlci1WIGRyaXZlciBpcyBicm9rZW4NCnN0YXJ0aW5nIGlu
+IDYuOC1yYzEuDQoNCk1pY2hhZWwNCg0KPiANCj4gPiAtLS0NCj4gPiAgIGRyaXZlcnMvdmlkZW8v
+ZmJkZXYvaHlwZXJ2X2ZiLmMgfCAyIC0tDQo+ID4gICAxIGZpbGUgY2hhbmdlZCwgMiBkZWxldGlv
+bnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9m
+Yi5jDQo+IGIvZHJpdmVycy92aWRlby9mYmRldi9oeXBlcnZfZmIuYw0KPiA+IGluZGV4IGMyNmVl
+NmZkNzNjOS4uOGZkY2NmMDMzYjJkIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJk
+ZXYvaHlwZXJ2X2ZiLmMNCj4gPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5j
+DQo+ID4gQEAgLTEwMTAsOCArMTAxMCw2IEBAIHN0YXRpYyBpbnQgaHZmYl9nZXRtZW0oc3RydWN0
+IGh2X2RldmljZSAqaGRldiwNCj4gc3RydWN0IGZiX2luZm8gKmluZm8pDQo+ID4gICAJCQlnb3Rv
+IGdldG1lbV9kb25lOw0KPiA+ICAgCQl9DQo+ID4gICAJCXByX2luZm8oIlVuYWJsZSB0byBhbGxv
+Y2F0ZSBlbm91Z2ggY29udGlndW91cyBwaHlzaWNhbCBtZW1vcnkgb24gR2VuIDEgVk0uIFVzaW5n
+IE1NSU8gaW5zdGVhZC5cbiIpOw0KPiA+IC0JfSBlbHNlIHsNCj4gPiAtCQlnb3RvIGVycjE7DQo+
+ID4gICAJfQ0KPiA+DQo+ID4gICAJLyoNCj4gDQoNCg0K

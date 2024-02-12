@@ -1,463 +1,185 @@
-Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com [209.85.219.182])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CA895D472
-	for <linux-fbdev@vger.kernel.org>; Sun, 11 Feb 2024 20:06:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31B59FBF2
+	for <linux-fbdev@vger.kernel.org>; Mon, 12 Feb 2024 09:07:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707681986; cv=none; b=ipmulR4XwKSqyAgTRj90BC+OANOKB0bvGJTnSTs6HfMWSjnSsJ4rhOAFKv5UgsEBFQbQB1QUgrtEcVEeOxULgw6rS/pdWqbwPT4ggJ7qgkeE4WDM2J7ea1xr3lGgipfZzuX/jxqEsKAjxeMCI/KsgyfNE1BN+PfeKvDMGyUHljM=
+	t=1707728865; cv=none; b=TB37xrtAjan0yKEC7pWFBtRV+lqITgeTLXIgTyC6ybQqL4mT++8lBJXamcX99CbAxxQZJqhyaaCFwAJuMuH2X+5itbNY/l0yNIlUCs6GjCJ7DOv3e+A4VPo5gqPbsL3ThJmHST4fr6G2IDyLvyE5n31byotLbvH2VtRpMdy1Wnk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707681986; c=relaxed/simple;
-	bh=1v4JzOrr8GfhQNkR4IOWviXV9XvsmnKyyUHw52CsD+E=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iy4pxvhQP0SDhwg/LncnIcDkiwyRoZiYGnxawapbRDzizDc4b537JiLtY9YdJS1xLuNfNhxADQ6/H5lC6171C1FmLVaUq0gTXs4lXHEpOj0C9RzJKzNZa496qRvXxw+0Z0KVADLjeDp0J3WRATo34b+M5eRsiEM6KyxwtcfZYLU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=kR6IrHZq; arc=none smtp.client-ip=209.85.219.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1707728865; c=relaxed/simple;
+	bh=8XCiqpZ7noIcATbIEGwlxoACcqgKvuqvv6p45P+gpWg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dZyemNaDMm4GcWhZQXXUQEXELfROGkymdQPBl2qlxHGmgkoWABZEC2tUkJxk4kuopTAY75WhJMeyWWVooKWmm/7GsVvOnvE3gQ51bOmzrfTnMHjVQDEK1PmvZDtcqIcykI2jnfUUneGg7qVzNgUNdfe9IA9A61L0ZrHAIRsKOVg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Xm+dzZTE; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=quJaPzB0; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Xm+dzZTE; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=quJaPzB0; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kR6IrHZq"
-Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-dc6cbe1ac75so2044154276.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 11 Feb 2024 12:06:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1707681983; x=1708286783; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=/sP+KXDdWumdh42ISXdMy/9U1hT/ZXoWJmOPWSe3vi0=;
-        b=kR6IrHZq7mdUKE2RkxGEz/hgSrex1XzI9PmpsR+gdRnymBL0p4o8+Q/sAoaQIyME7m
-         tatT4qob1gazHwGcrsH007cxGCUozZW2TReWISdn/+8SAWPGG6UyxI57Xc1E1lPW/TOp
-         b68OhJn2fVbWnAgRLIbj/3xVIpGeN9JFWnS1pHt1QTxPiFkicrWdrDg3EP/MFqgVmsjn
-         fXuHGfKsFD50I4hX5fU+iy33F9ls+8/t5svxOVVPlB+H3W0mrnb+jV9YRyMEyVs584fU
-         kKOifzCLJi5xbgYJyT0K3OaUvV/1Fs52BMFtnwpU8bXJydnO0KVsa7SdbjqAbNjj3gq5
-         s8QQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707681983; x=1708286783;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/sP+KXDdWumdh42ISXdMy/9U1hT/ZXoWJmOPWSe3vi0=;
-        b=eikuQbN1VUPVlAVTXa71tm6vr1LbZJIbO6kubpoe5JrSavJotwfIdraQLV4OEDDwE8
-         Sw8uSW+fyx+4xeWQjZfsv2qOpEp1x2vWsp9et0k10ld2INQZXz9N18wothO2FNhXENnC
-         p0Wf+tnTn0Q4pTt92UV5UxMSJHDKpRW1FOA8efBfcEz6+781thXMEgJjv/nsW3++8xos
-         tx1Wre52H+8/sKO2+BviuBiNWE45SZUoiXkDAzw9Ha5ZEkzLOKQxs99/c2fSEUqDkwnC
-         1jGDIUpORftINd4twq/Pm3LCaoLgx6GgBQe3ccrMiFFhuQ/h4aDUOBC/xBTS8nBcwrbY
-         UV8w==
-X-Gm-Message-State: AOJu0YwCK2xAIzskwoRy0whRuQsaKxjHERzSzEGWjsuRToMUokBWir6J
-	CXzIKpoA1g1iZGf97/trdnSMJaL+28ZtXqBhISdU6WYarj4hlee3pWPeQnI/aCviHjNYVz/DXBe
-	E1XY+GdEXEJnZUY17Z+R4c40FhpKA1Cg5xFYzcg==
-X-Google-Smtp-Source: AGHT+IEQ2TR+6KgOrJ6LAIAwB7DMaAIO3iNvKJ6/25awLnfbPL9rqS69hkfDe/88LywetMtLp/r9K9LJtw/CBxh8njk=
-X-Received: by 2002:a25:acd7:0:b0:dc6:d1a9:d858 with SMTP id
- x23-20020a25acd7000000b00dc6d1a9d858mr3110337ybd.8.1707681983250; Sun, 11 Feb
- 2024 12:06:23 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Xm+dzZTE";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="quJaPzB0";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Xm+dzZTE";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="quJaPzB0"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 28CFC1F457;
+	Mon, 12 Feb 2024 09:07:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1707728861; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=hHBR/2KzafDsROlbPYcqYXrsN2vBfu5YNMNkVRtC9JM=;
+	b=Xm+dzZTE5yxW8eFJnhZAAzI7gjUf2WdFuxoMUiMxl43bumy2o4snLe91Q3FCKchQjZNg27
+	cUujjblr/LfbqaMewzXp/z99ktqKauokCpP4md2vKn6eXVOJmdWi42ygLWBGvN1KO7Vewy
+	dsL3N7lGQTFJW3qyE05j5lA9ZEh2dy0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1707728861;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=hHBR/2KzafDsROlbPYcqYXrsN2vBfu5YNMNkVRtC9JM=;
+	b=quJaPzB0KH4hirCbnt13ALM3muoXYpc/JDwfv3DxIraL4HzD/2jy2loED7vmYUh3eylvv6
+	HXDo6tax5madHwBQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1707728861; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=hHBR/2KzafDsROlbPYcqYXrsN2vBfu5YNMNkVRtC9JM=;
+	b=Xm+dzZTE5yxW8eFJnhZAAzI7gjUf2WdFuxoMUiMxl43bumy2o4snLe91Q3FCKchQjZNg27
+	cUujjblr/LfbqaMewzXp/z99ktqKauokCpP4md2vKn6eXVOJmdWi42ygLWBGvN1KO7Vewy
+	dsL3N7lGQTFJW3qyE05j5lA9ZEh2dy0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1707728861;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=hHBR/2KzafDsROlbPYcqYXrsN2vBfu5YNMNkVRtC9JM=;
+	b=quJaPzB0KH4hirCbnt13ALM3muoXYpc/JDwfv3DxIraL4HzD/2jy2loED7vmYUh3eylvv6
+	HXDo6tax5madHwBQ==
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id D9BC313212;
+	Mon, 12 Feb 2024 09:07:40 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id vOFxM9zfyWXecwAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Mon, 12 Feb 2024 09:07:40 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	sui.jingfeng@linux.dev,
+	pjones@redhat.com,
+	deller@gmx.de,
+	ardb@kernel.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v4 0/8] firmware/sysfb: Track parent device for screen_info
+Date: Mon, 12 Feb 2024 10:06:08 +0100
+Message-ID: <20240212090736.11464-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240210015223.24670-1-quic_parellan@quicinc.com>
- <20240210015223.24670-14-quic_parellan@quicinc.com> <CAA8EJpq6EFn6xix2GLej=bB2JCP7btuQ+zugeJTeLBH+mVKdSg@mail.gmail.com>
- <6f4a0a31-e17a-3301-aacf-a88f458db6f3@quicinc.com> <8f728a4d-eb62-add1-1f67-8085eaea3102@quicinc.com>
- <CAA8EJpoct4xTYL38zNOuD=cy9J4_2dStGh+r2YKUdSxRQ8Zhgw@mail.gmail.com>
- <b1793aab-6fd7-14d9-baec-834bc63dae2d@quicinc.com> <CAA8EJpokVV+ng5Qp5BqFw+JFFOYxazH4bnj3rj3TbTyhCLo0sQ@mail.gmail.com>
- <a9b68699-6d16-0e57-a7bb-013881656526@quicinc.com>
-In-Reply-To: <a9b68699-6d16-0e57-a7bb-013881656526@quicinc.com>
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date: Sun, 11 Feb 2024 22:06:12 +0200
-Message-ID: <CAA8EJpqqxMw_AyWAY-TUe-uo7nPexivYDUyt3bJ43=jwAfcieQ@mail.gmail.com>
-Subject: Re: [PATCH v2 13/19] drm/msm/dp: add VSC SDP support for YUV420 over DP
-To: Abhinav Kumar <quic_abhinavk@quicinc.com>
-Cc: Paloma Arellano <quic_parellan@quicinc.com>, Helge Deller <deller@gmx.de>, 
-	freedreno@lists.freedesktop.org, linux-arm-msm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, robdclark@gmail.com, seanpaul@chromium.org, 
-	swboyd@chromium.org, quic_jesszhan@quicinc.com, quic_khsieh@quicinc.com, 
-	marijn.suijten@somainline.org, neil.armstrong@linaro.org, 
-	linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spamd-Bar: /
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Xm+dzZTE;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=quJaPzB0
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [0.49 / 50.00];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:98:from];
+	 TO_DN_SOME(0.00)[];
+	 R_MISSING_CHARSET(2.50)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_TRACE(0.00)[suse.de:+];
+	 MX_GOOD(-0.01)[];
+	 RCPT_COUNT_SEVEN(0.00)[8];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 FREEMAIL_TO(0.00)[redhat.com,linux.dev,gmx.de,kernel.org];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 BAYES_HAM(-3.00)[100.00%];
+	 ARC_NA(0.00)[];
+	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 FROM_HAS_DN(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 RCVD_TLS_ALL(0.00)[]
+X-Spam-Score: 0.49
+X-Rspamd-Queue-Id: 28CFC1F457
+X-Spam-Flag: NO
 
-On Sun, 11 Feb 2024 at 19:18, Abhinav Kumar <quic_abhinavk@quicinc.com> wrote:
->
->
->
-> On 2/10/2024 10:57 PM, Dmitry Baryshkov wrote:
-> > On Sun, 11 Feb 2024 at 06:06, Abhinav Kumar <quic_abhinavk@quicinc.com> wrote:
-> >>
-> >>
-> >>
-> >> On 2/10/2024 1:46 PM, Dmitry Baryshkov wrote:
-> >>> On Sat, 10 Feb 2024 at 20:50, Abhinav Kumar <quic_abhinavk@quicinc.com> wrote:
-> >>>>
-> >>>>
-> >>>>
-> >>>> On 2/10/2024 10:14 AM, Abhinav Kumar wrote:
-> >>>>>
-> >>>>>
-> >>>>> On 2/10/2024 2:09 AM, Dmitry Baryshkov wrote:
-> >>>>>> On Sat, 10 Feb 2024 at 03:52, Paloma Arellano
-> >>>>>> <quic_parellan@quicinc.com> wrote:
-> >>>>>>>
-> >>>>>>> Add support to pack and send the VSC SDP packet for DP. This therefore
-> >>>>>>> allows the transmision of format information to the sinks which is
-> >>>>>>> needed for YUV420 support over DP.
-> >>>>>>>
-> >>>>>>> Changes in v2:
-> >>>>>>>            - Rename GENERIC0_SDPSIZE macro to GENERIC0_SDPSIZE_VALID
-> >>>>>>>            - Remove dp_sdp from the dp_catalog struct since this data is
-> >>>>>>>              being allocated at the point used
-> >>>>>>>            - Create a new function in dp_utils to pack the VSC SDP data
-> >>>>>>>              into a buffer
-> >>>>>>>            - Create a new function that packs the SDP header bytes into a
-> >>>>>>>              buffer. This function is made generic so that it can be
-> >>>>>>>              utilized by dp_audio
-> >>>>>>>              header bytes into a buffer
-> >>>>>>>            - Create a new function in dp_utils that takes the packed
-> >>>>>>> buffer
-> >>>>>>>              and writes to the DP_GENERIC0_* registers
-> >>>>>>>            - Split the dp_catalog_panel_config_vsc_sdp() function into two
-> >>>>>>>              to disable/enable sending VSC SDP packets
-> >>>>>>>            - Check the DP HW version using the original useage of
-> >>>>>>>              dp_catalog_hw_revision() and correct the version checking
-> >>>>>>>              logic
-> >>>>>>>            - Rename dp_panel_setup_vsc_sdp() to
-> >>>>>>>              dp_panel_setup_vsc_sdp_yuv_420() to explicitly state that
-> >>>>>>>              currently VSC SDP is only being set up to support YUV420
-> >>>>>>> modes
-> >>>>>>>
-> >>>>>>> Signed-off-by: Paloma Arellano <quic_parellan@quicinc.com>
-> >>>>>>> ---
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_catalog.c | 105 ++++++++++++++++++++++++++++
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_catalog.h |   6 ++
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_ctrl.c    |   4 ++
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_panel.c   |  59 ++++++++++++++++
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_reg.h     |   3 +
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_utils.c   |  80 +++++++++++++++++++++
-> >>>>>>>     drivers/gpu/drm/msm/dp/dp_utils.h   |   3 +
-> >>>>>>>     7 files changed, 260 insertions(+)
-> >>>>>>>
-> >>>>>>> diff --git a/drivers/gpu/drm/msm/dp/dp_catalog.c
-> >>>>>>> b/drivers/gpu/drm/msm/dp/dp_catalog.c
-> >>>>>>> index 5d84c089e520a..0f28a4897b7b7 100644
-> >>>>>>> --- a/drivers/gpu/drm/msm/dp/dp_catalog.c
-> >>>>>>> +++ b/drivers/gpu/drm/msm/dp/dp_catalog.c
-> >>>>>>> @@ -901,6 +901,111 @@ int dp_catalog_panel_timing_cfg(struct
-> >>>>>>> dp_catalog *dp_catalog)
-> >>>>>>>            return 0;
-> >>>>>>>     }
-> >>>>>>>
-> >>
-> >> <Snip>
-> >>
-> >>>>>>> +static int dp_panel_setup_vsc_sdp_yuv_420(struct dp_panel *dp_panel)
-> >>>>>>> +{
-> >>>>>>> +       struct dp_catalog *catalog;
-> >>>>>>> +       struct dp_panel_private *panel;
-> >>>>>>> +       struct dp_display_mode *dp_mode;
-> >>>>>>> +       struct dp_sdp_header sdp_header;
-> >>>>>>> +       struct drm_dp_vsc_sdp vsc_sdp_data;
-> >>>>>>> +       size_t buff_size;
-> >>>>>>> +       u32 gen_buffer[10];
-> >>>>>>> +       int rc = 0;
-> >>>>>>> +
-> >>>>>>> +       if (!dp_panel) {
-> >>>>>>> +               DRM_ERROR("invalid input\n");
-> >>>>>>> +               rc = -EINVAL;
-> >>>>>>> +               return rc;
-> >>>>>>> +       }
-> >>>>>>> +
-> >>>>>>> +       panel = container_of(dp_panel, struct dp_panel_private,
-> >>>>>>> dp_panel);
-> >>>>>>> +       catalog = panel->catalog;
-> >>>>>>> +       dp_mode = &dp_panel->dp_mode;
-> >>>>>>> +       buff_size = sizeof(gen_buffer);
-> >>>>>>> +
-> >>>>>>> +       memset(&sdp_header, 0, sizeof(sdp_header));
-> >>>>>>> +       memset(&vsc_sdp_data, 0, sizeof(vsc_sdp_data));
-> >>>>>>> +
-> >>>>>>> +       /* VSC SDP header as per table 2-118 of DP 1.4 specification */
-> >>>>>>> +       sdp_header.HB0 = 0x00;
-> >>>>>>> +       sdp_header.HB1 = 0x07;
-> >>>>>>> +       sdp_header.HB2 = 0x05;
-> >>>>>>> +       sdp_header.HB3 = 0x13;
-> >>>>>>
-> >>>>>> This should go to the packing function.
-> >>>>>>
-> >>>>>
-> >>>>> We can .... but ....
-> >>>>>
-> >>>>> the header bytes can change based on the format. These values are
-> >>>>> specific to YUV420. Thats why this part was kept outside of the generic
-> >>>>> vsc sdp packing. Today we support only YUV420 VSC SDP so we can move it
-> >>>>> but this was the reason.
-> >>>
-> >>> These values can be set from the sdp_type, revision and length fields
-> >>> of struct drm_dp_vsc_sdp.
-> >>> The function intel_dp_vsc_sdp_pack() is pretty much close to what I had in mind.
-> >>>
-> >>>>>
-> >>>>>>> +
-> >>>>>>> +       /* VSC SDP Payload for DB16 */
-> >>>>>>
-> >>>>>> Comments are useless more or less. The code fills generic information
-> >>>>>> structure which might or might not be packed to the data buffer.
-> >>>>>>
-> >>>>>>> +       vsc_sdp_data.pixelformat = DP_PIXELFORMAT_YUV420;
-> >>>>>>> +       vsc_sdp_data.colorimetry = DP_COLORIMETRY_DEFAULT;
-> >>>>>>> +
-> >>>>>>> +       /* VSC SDP Payload for DB17 */
-> >>>>>>> +       vsc_sdp_data.dynamic_range = DP_DYNAMIC_RANGE_CTA;
-> >>>>>>> +
-> >>>>>>> +       /* VSC SDP Payload for DB18 */
-> >>>>>>> +       vsc_sdp_data.content_type = DP_CONTENT_TYPE_GRAPHICS;
-> >>>>>>> +
-> >>>>>>> +       vsc_sdp_data.bpc = dp_mode->bpp / 3;
-> >>>>>>
-> >>>>>> Consider extracting intel_dp_compute_vsc_colorimetry() and using it.
-> >>>>>>
-> >>>>>
-> >>>>> intel_dp_compute_vsc_colorimetry() uses colorspace property to pick
-> >>>>> YUV420, we do not.
-> >>>
-> >>> Intel function also uses output_format, but it's true, it is full of
-> >>> Intel specifics.
-> >>>
-> >>>>> Right now, its a pure driver decision to use YUV420
-> >>>>> when the mode is supported only in that format.
-> >>>>>
-> >>>>> Also, many params are to be used within this function cached inside
-> >>>>> intel_crtc_state . We will first need to make that API more generic to
-> >>>>> be re-usable by others.
-> >>>>>
-> >>>>> I think overall, if we want to have a generic packing across vendors, it
-> >>>>> needs more work. I think one of us can take that up as a separate effort.
-> >>>
-> >>> Ack, I agree here. I did only a quick glance over
-> >>> intel_dp_compute_vsc_colorimetry function() beforehand.
-> >>>
-> >>>>>
-> >>>>>>> +
-> >>>>>>> +       rc = dp_utils_pack_vsc_sdp(&vsc_sdp_data, &sdp_header,
-> >>>>>>> gen_buffer, buff_size);
-> >>>>>>> +       if (rc) {
-> >>>>>>> +               DRM_ERROR("unable to pack vsc sdp\n");
-> >>>>>>> +               return rc;
-> >>>>>>> +       }
-> >>>>>>> +
-> >>>>>>> +       dp_catalog_panel_enable_vsc_sdp(catalog, gen_buffer);
-> >>>>>>> +
-> >>>>>>> +       return rc;
-> >>>>>>> +}
-> >>>>>>> +
-> >>>>>>>     void dp_panel_dump_regs(struct dp_panel *dp_panel)
-> >>>>>>>     {
-> >>>>>>>            struct dp_catalog *catalog;
-> >>>>>>> @@ -344,6 +399,10 @@ int dp_panel_timing_cfg(struct dp_panel *dp_panel)
-> >>>>>>>            catalog->dp_active = data;
-> >>>>>>>
-> >>>>>>>            dp_catalog_panel_timing_cfg(catalog);
-> >>>>>>> +
-> >>>>>>> +       if (dp_panel->dp_mode.out_fmt_is_yuv_420)
-> >>>>>>> +               dp_panel_setup_vsc_sdp_yuv_420(dp_panel);
-> >>>>>>> +
-> >>>>>>>            panel->panel_on = true;
-> >>>>>>>
-> >>>>>>>            return 0;
-> >>>>>>> diff --git a/drivers/gpu/drm/msm/dp/dp_reg.h
-> >>>>>>> b/drivers/gpu/drm/msm/dp/dp_reg.h
-> >>>>>>> index ea85a691e72b5..2983756c125cd 100644
-> >>>>>>> --- a/drivers/gpu/drm/msm/dp/dp_reg.h
-> >>>>>>> +++ b/drivers/gpu/drm/msm/dp/dp_reg.h
-> >>>>>>> @@ -142,6 +142,7 @@
-> >>>>>>>     #define DP_MISC0_SYNCHRONOUS_CLK               (0x00000001)
-> >>>>>>>     #define DP_MISC0_COLORIMETRY_CFG_SHIFT         (0x00000001)
-> >>>>>>>     #define DP_MISC0_TEST_BITS_DEPTH_SHIFT         (0x00000005)
-> >>>>>>> +#define DP_MISC1_VSC_SDP                       (0x00004000)
-> >>>>>>>
-> >>>>>>>     #define REG_DP_VALID_BOUNDARY                  (0x00000030)
-> >>>>>>>     #define REG_DP_VALID_BOUNDARY_2                        (0x00000034)
-> >>>>>>> @@ -201,9 +202,11 @@
-> >>>>>>>     #define MMSS_DP_AUDIO_CTRL_RESET               (0x00000214)
-> >>>>>>>
-> >>>>>>>     #define MMSS_DP_SDP_CFG                                (0x00000228)
-> >>>>>>> +#define GEN0_SDP_EN                            (0x00020000)
-> >>>>>>>     #define MMSS_DP_SDP_CFG2                       (0x0000022C)
-> >>>>>>>     #define MMSS_DP_AUDIO_TIMESTAMP_0              (0x00000230)
-> >>>>>>>     #define MMSS_DP_AUDIO_TIMESTAMP_1              (0x00000234)
-> >>>>>>> +#define GENERIC0_SDPSIZE_VALID                 (0x00010000)
-> >>>>>>>
-> >>>>>>>     #define MMSS_DP_AUDIO_STREAM_0                 (0x00000240)
-> >>>>>>>     #define MMSS_DP_AUDIO_STREAM_1                 (0x00000244)
-> >>>>>>> diff --git a/drivers/gpu/drm/msm/dp/dp_utils.c
-> >>>>>>> b/drivers/gpu/drm/msm/dp/dp_utils.c
-> >>>>>>> index 176d839906cec..05e0133eb50f3 100644
-> >>>>>>> --- a/drivers/gpu/drm/msm/dp/dp_utils.c
-> >>>>>>> +++ b/drivers/gpu/drm/msm/dp/dp_utils.c
-> >>>>>>> @@ -4,6 +4,16 @@
-> >>>>>>>      */
-> >>>>>>>
-> >>>>>>>     #include <linux/types.h>
-> >>>>>>> +#include <drm/display/drm_dp_helper.h>
-> >>>>>>> +#include <drm/drm_print.h>
-> >>>>>>> +
-> >>>>>>> +#include "dp_utils.h"
-> >>>>>>> +
-> >>>>>>> +#define DP_GENERIC0_6_YUV_8_BPC                BIT(0)
-> >>>>>>> +#define DP_GENERIC0_6_YUV_10_BPC       BIT(1)
-> >>>>>>> +
-> >>>>>>> +#define DP_SDP_HEADER_SIZE             8
-> >>>>>>> +#define DP_VSC_SDP_BUFFER_SIZE         40
-> >>>>>>>
-> >>>>>>>     u8 dp_utils_get_g0_value(u8 data)
-> >>>>>>>     {
-> >>>>>>> @@ -69,3 +79,73 @@ u8 dp_utils_calculate_parity(u32 data)
-> >>>>>>>
-> >>>>>>>            return parity_byte;
-> >>>>>>>     }
-> >>>>>>> +
-> >>>>>>> +int dp_utils_pack_sdp_header(struct dp_sdp_header *sdp_header, u32
-> >>>>>>> *buffer, size_t buff_size)
-> >>>>>>> +{
-> >>>>>>> +       u32 header, parity;
-> >>>>>>> +
-> >>>>>>> +       if (buff_size < DP_SDP_HEADER_SIZE)
-> >>>>>>> +               return -ENOSPC;
-> >>>>>>> +
-> >>>>>>> +       memset(buffer, 0, sizeof(buffer));
-> >>>>>>> +
-> >>>>>>> +       /* HEADER BYTE 0 */
-> >>>>>>> +       header = sdp_header->HB0;
-> >>>>>>> +       parity = dp_utils_calculate_parity(header);
-> >>>>>>> +       buffer[0]   = ((header << HEADER_BYTE_0_BIT) | (parity <<
-> >>>>>>> PARITY_BYTE_0_BIT));
-> >>>>>>> +
-> >>>>>>> +       /* HEADER BYTE 1 */
-> >>>>>>> +       header = sdp_header->HB1;
-> >>>>>>> +       parity = dp_utils_calculate_parity(header);
-> >>>>>>> +       buffer[0]  |= ((header << HEADER_BYTE_1_BIT) | (parity <<
-> >>>>>>> PARITY_BYTE_1_BIT));
-> >>>>>>> +
-> >>>>>>> +       /* HEADER BYTE 2 */
-> >>>>>>> +       header = sdp_header->HB2;
-> >>>>>>> +       parity = dp_utils_calculate_parity(header);
-> >>>>>>> +       buffer[1]   = ((header << HEADER_BYTE_2_BIT) | (parity <<
-> >>>>>>> PARITY_BYTE_2_BIT));
-> >>>>>>> +
-> >>>>>>> +       /* HEADER BYTE 3 */
-> >>>>>>> +       header = sdp_header->HB3;
-> >>>>>>> +       parity = dp_utils_calculate_parity(header);
-> >>>>>>> +       buffer[1]  |= ((header << HEADER_BYTE_3_BIT) | (parity <<
-> >>>>>>> PARITY_BYTE_3_BIT));
-> >>>>>>> +
-> >>>>>>> +       return 0;
-> >>>>>>> +}
-> >>>>>>> +
-> >>>>>>> +int dp_utils_pack_vsc_sdp(struct drm_dp_vsc_sdp *vsc_sdp_data,
-> >>>>>>> struct dp_sdp_header *sdp_header,
-> >>>>>>> +                         u32 *buffer, size_t buff_size)
-> >>>>>>> +{
-> >>>>>>
-> >>>>>> No. This function should pack data into struct dp_sdp and it should go
-> >>>>>> to drivers/video/hdmi.c
-> >>>>>>
-> >>>>>
-> >>>>> What is the difference between struct drm_dp_vsc_sdp and struct dp_sdp?
-> >>>>>
-> >>>>
-> >>>> I think you were referring to the fact that instead of a custom buffer,
-> >>>> we should use struct dp_sdp to pack elements from struct drm_dp_vsc_sdp.
-> >>>>
-> >>>> If yes, I agree with this part.
-> >>>
-> >>> Yes.
-> >>>
-> >>>>
-> >>>>> It seems like struct drm_dp_vsc_sdp is more appropriate for this.
-> >>>>>
-> >>>>> Regarding hdmi.c, I think the packing needs to be more generic to move
-> >>>>> it there.
-> >>>>>
-> >>>>> I am not seeing parity bytes packing with other vendors. So there will
-> >>>>> have to be some packing there and then some packing here.
-> >>>
-> >>> Yes. Writing the HB + PB seems specific to Qualcomm hardware. At least
-> >>> Intel and AMD seem to write header bytes without parity.
-> >>>
-> >>>>> Also, like you already noticed, to make the VSC SDP packing more generic
-> >>>>> to move to hdmi.c, it needs more work to make it more usable like
-> >>>>> supporting all pixel formats and all colorimetry values.
-> >>>>>
-> >>>>> We do not have that much utility yet for that.
-> >>>
-> >>> I think you are mixing the filling of drm_dp_vsc_sdp and packing of
-> >>> that struct. I suppose intel_dp_vsc_sdp_pack() can be extracted more
-> >>> or less as is.
-> >>> Once somebody needs to support 3D (AMD does), they can extend the function.
-> >>>
-> >>
-> >> Yes once I corrected my understanding of using the function to just pack
-> >> struct dp_sdp instead of the buffer, I understood the intention.
-> >>
-> >> We can try it. I have written up a RFC to move the
-> >> intel_dp_vsc_sdp_pack() to drm_dp_helper as that seems more appropriate
-> >> now for it and not hdmi.c as we already have some vsc sdp utils in
-> >> drm_dp_helper.
-> >
-> > Yes, we have. However all structure manipulation functions, even for
-> > DP, are usually a part of the hdmi.c. If I understand correctly, we
-> > can still touch this file from drm-misc (or from other drm trees).
-> >
->
-> hmm ... I think the only reason we have
-> hdmi_audio_infoframe_pack_for_dp() is because of re-using
-> hdmi_audio_infoframe to pack into a struct dp_sdp.
->
-> We will not be doing that here. It will be from a drm_dp_vsc_sdp to
-> dp_sdp. Thats why I thought drm_dp_helper is more appropriate.
+Detect the firmware framebuffer's parent device from the global
+screen_info state and set up the framebuffer's device accordingly.
+Remove the equivalent functionality from efifb. Other drivers for
+firmware framebuffers, such as simpledrm or vesafb, now add these
+new features.
 
-Could you please raise this question at #dri-devel? Let's get Jani's
-and other maintainers' opinion.
+Patches 1 and 2 provide a set of helper functions to avoid parsing
+the screen_info values manually. Decoding screen_info is fragile and
+many drivers get it wrong. We should later adopt these helpers in
+existing drivers, such as efifb, vesafb, as well.
 
->
-> >> But before I post, we will do some cleanup and see if things look
-> >> reasonable in this patch too because we will still need to write a
-> >> common utility to pack the parity bytes for the sdp header which we need
-> >> to utilize for audio and vsc sdp in our DP case.
-> >>
-> >> I am thinking of a
-> >>
-> >> struct msm_dp_sdp_pb {
-> >>          u8 PB0;
-> >>          u8 PB1;
-> >>          u8 PB2;
-> >>          u8 PB3;
-> >> } __packed;
-> >>
-> >> struct msm_dp_sdp_with_parity {
-> >>          struct dp_sdp vsc_sdp;
-> >>          struct msm_dp_sdp_pb pb;
-> >> };
-> >>
-> >> intel_dp_vsc_sdp_pack() will pack the struct dp_sdp but we will have to
-> >> do some additional parity byte packing after that. That part will remain
-> >> common for audio and vsc for msm.
-> >
-> > I think you can do it in a much easier way:
-> >
-> > struct dp_sdp sdp
-> > u32 header[2];
-> >
-> > hdmi_dp_vsc_sdp_pack(vsc_sdp, &sdp);
-> > msm_dp_pack_header(&sdp, header);
-> > dp_write_register(catalog, MMSS_DP_FOO_HEADER0, header[0]);
-> > dp_write_register(catalog, MMSS_DP_FOO_HEADER1, header[1]);
-> > // write sdp.db
-> >
->
-> Sure. Just a difference of packing it together Vs a local header. We
-> will see which one looks better and post it. I felt that my way makes it
-> clear that msm_dp needs extra parity specific to msm.
+Patches 3 and 4 set the firmware framebuffer's parent device. There
+is code in efifb to do something similar for power management. That
+is now obsolete and being cleaned up. Setting the parent device makes
+Linux track the power management correctly.
 
-I just don't like extra wrapping structures. But really, let's see
-your patches first.
+Patches 5 and 6 track the parent device's enable state. We don't
+create framebuffer devices if the underlying hardware device has been
+disabled. Remove the functionality from efifb.
+
+Patches 7 and 8 track the parent device's PCI BAR location. It can
+happen on aarch64 that the firmware framebuffer moves its location
+during the kernel's boot. We now fix up the screen_info state to
+point to the correct location. Again remove such functionality from
+efifb.
+
+v4:
+	* fix sysfb.h header file
+v3:
+	* filter PCI device list with pci_get_base_class() (Sui)
+	* fix error handling for screen_info_pci_dev() (Sui)
+	* fix build for CONFIG_SYSFB_SIMPLEFB=n (Sui)
+	* small cleanups
+v2:
+	* small refactorings throughout the patchset
+
+Thomas Zimmermann (8):
+  video: Add helpers for decoding screen_info
+  video: Provide screen_info_get_pci_dev() to find screen_info's PCI
+    device
+  firmware/sysfb: Set firmware-framebuffer parent device
+  fbdev/efifb: Remove PM for parent device
+  firmware/sysfb: Create firmware device only for enabled PCI devices
+  fbdev/efifb: Do not track parent device status
+  firmware/sysfb: Update screen_info for relocated EFI framebuffers
+  fbdev/efifb: Remove framebuffer relocation tracking
+
+ drivers/firmware/Kconfig            |   1 +
+ drivers/firmware/sysfb.c            |  51 +++++++++-
+ drivers/firmware/sysfb_simplefb.c   |   5 +-
+ drivers/video/Kconfig               |   4 +
+ drivers/video/Makefile              |   4 +
+ drivers/video/fbdev/efifb.c         |  97 +-----------------
+ drivers/video/screen_info_generic.c | 146 ++++++++++++++++++++++++++++
+ drivers/video/screen_info_pci.c     | 136 ++++++++++++++++++++++++++
+ include/linux/screen_info.h         | 126 ++++++++++++++++++++++++
+ include/linux/sysfb.h               |   6 +-
+ 10 files changed, 480 insertions(+), 96 deletions(-)
+ create mode 100644 drivers/video/screen_info_generic.c
+ create mode 100644 drivers/video/screen_info_pci.c
 
 -- 
-With best wishes
-Dmitry
+2.43.0
+

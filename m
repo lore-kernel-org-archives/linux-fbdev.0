@@ -1,154 +1,204 @@
-Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53FEA3AC14;
-	Mon, 12 Feb 2024 14:39:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 165C43C497;
+	Mon, 12 Feb 2024 15:33:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707748750; cv=none; b=qJcDgDat0A8VtOzntVOuQjEW8QI6T0QrOkU8AkTq5XlBpCQpIZo5mCKCkjDHc5eWuc6IAw27gH9jEBiizpm6X50tzWwDKAZxVBHO5oIn+EIik2ICE8iMI5eeJULcv7jhYkFWeSOyY9dslemyLK7OZh8zu3fQUnxMYcXGENnH90g=
+	t=1707752001; cv=none; b=S/BayAzGdPR3klvxlZiO1LUgqlCfOoEDK3A4Q5FWj9HKntQaI5WEP5wrcajsUD+iJGMdGLRYWNeiOebLF3LNR+QMpOCI7NhG4AAw4yyZ+2tOT2kn2EJ5inMYbyhypL4z7qI0ixQmTI+BNrt1TEtTI09PH0PE9jDWT98ZI88VEbA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707748750; c=relaxed/simple;
-	bh=bhdRHyoW7lPVIkTI8IjDK4sPL6Ctj/nSJiAUABT6vdc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Rh5ps9diC055XoLKLTDU+OFFuuBRYvIDEsblB285BRF9liqRz7RAP9YYcBHBXSJKSR69jqR46Zx6M1zKMKYKcqLTg5g2egxR7grLgHcd8UyHe2O+ohODCfNlyC+0mA89p90VZep5GmOoat8vWZ9bnGlGFNqwvI2BWA03j30+TGk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
-Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id 2BAEB84EA7;
-	Mon, 12 Feb 2024 15:32:42 +0100 (CET)
-From: Duje =?utf-8?B?TWloYW5vdmnEhw==?= <duje.mihanovic@skole.hr>
-To: Arnd Bergmann <arnd@kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Helge Deller <deller@gmx.de>, Linus Walleij <linus.walleij@linaro.org>,
- Arnd Bergmann <arnd@arndb.de>, Flavio Suligoi <f.suligoi@asem.it>,
- Hans de Goede <hdegoede@redhat.com>, Jianhua Lu <lujianhua000@gmail.com>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: ktd2801: fix LED dependency
-Date: Mon, 12 Feb 2024 15:31:50 +0100
-Message-ID: <4869921.GXAFRqVoOG@radijator>
-In-Reply-To: <20240212124428.GB4593@aspen.lan>
-References:
- <20240212111819.936815-1-arnd@kernel.org> <20240212124428.GB4593@aspen.lan>
+	s=arc-20240116; t=1707752001; c=relaxed/simple;
+	bh=GFsfkdOmJKsuZtWQAq7OhjxHg4IKHiDCDNVd+Gd58aw=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=MmRv28evJMFIXRjQdtHazGe3+puM5+3YvnVkl9fCoH/skTwqYCQ86cssWz3+SzaivKYcGElJhwYgM9XBfewGWXwDSbbf5wnCNfilgG3W8HgwIVomPFjg7leCuzwja53AP7K89FNPXItD6EjIsS9BRMsm2b2VPXa8qzx7eZd4tFE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Co2aU8UO; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Co2aU8UO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0CD66C433F1;
+	Mon, 12 Feb 2024 15:33:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1707752000;
+	bh=GFsfkdOmJKsuZtWQAq7OhjxHg4IKHiDCDNVd+Gd58aw=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=Co2aU8UOdKL4W8SUaaEqV0BTVAuiZ9niMqI5QuXmkWRQqRD+bsuUp32djuJPfJQ7M
+	 J0AdS/WqPhUm+WDhNwj0PIl1NFZPSx4kaz74w8AVaBO2niEWSvmitVVz0AuwMwTUcd
+	 8MtOvRT2s7ojnBMUpDpCQjuzEzxH0//zOgasqtDHJDU6fjIDBJFEa6lJkzge7aVnIn
+	 65sRlXZGfvNWKRj6hhoF+/MvmClp/yoVXWTT6Lqc/PTFBqTwhuA4fpNCA+K8uTOths
+	 DH2aamg+A5g3aeMmWit1ZUc4X0oSEYy8EtlcvJyPFhdziLYkgWINAXOkx2oWF2pGNL
+	 vlKQQFPbdC2Dw==
+From: Mark Brown <broonie@kernel.org>
+To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: kernel@pengutronix.de, Moritz Fischer <mdf@kernel.org>, 
+ Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, 
+ Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Alexander Aring <alex.aring@gmail.com>, 
+ Stefan Schmidt <stefan@datenfreihafen.org>, 
+ Miquel Raynal <miquel.raynal@bootlin.com>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ linux-wpan@vger.kernel.org, netdev@vger.kernel.org, 
+ Lars-Peter Clausen <lars@metafoo.de>, 
+ Michael Hennerich <Michael.Hennerich@analog.com>, 
+ Jonathan Cameron <jic23@kernel.org>, linux-iio@vger.kernel.org, 
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, 
+ Ulf Hansson <ulf.hansson@linaro.org>, Rayyan Ansari <rayyan@ansari.sh>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Martin Tuma <martin.tuma@digiteqautomotive.com>, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>, linux-media@vger.kernel.org, 
+ Sergey Kozlov <serjk@netup.ru>, Arnd Bergmann <arnd@arndb.de>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Yang Yingliang <yangyingliang@huawei.com>, linux-mmc@vger.kernel.org, 
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+ Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Michal Simek <michal.simek@amd.com>, 
+ Amit Kumar Mahapatra via Alsa-devel <alsa-devel@alsa-project.org>, 
+ linux-mtd@lists.infradead.org, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ Geert Uytterhoeven <geert+renesas@glider.be>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+ Simon Horman <horms@kernel.org>, Ronald Wahl <ronald.wahl@raritan.com>, 
+ Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
+ Guenter Roeck <groeck@chromium.org>, chrome-platform@lists.linux.dev, 
+ Max Filippov <jcmvbkbc@gmail.com>, linux-spi@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konrad.dybcio@linaro.org>, linux-arm-msm@vger.kernel.org, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ linux-mediatek@lists.infradead.org, Thomas Zimmermann <tzimmermann@suse.de>, 
+ Javier Martinez Canillas <javierm@redhat.com>, 
+ Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev, Viresh Kumar <vireshk@kernel.org>, 
+ Rui Miguel Silva <rmfrfs@gmail.com>, Johan Hovold <johan@kernel.org>, 
+ Alex Elder <elder@kernel.org>, greybus-dev@lists.linaro.org, 
+ Peter Huewe <peterhuewe@gmx.de>, Jarkko Sakkinen <jarkko@kernel.org>, 
+ Jason Gunthorpe <jgg@ziepe.ca>, linux-integrity@vger.kernel.org, 
+ Herve Codina <herve.codina@bootlin.com>, 
+ Alan Stern <stern@rowland.harvard.edu>, 
+ Aaro Koskinen <aaro.koskinen@iki.fi>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
+ linux-usb@vger.kernel.org, Helge Deller <deller@gmx.de>, 
+ Dario Binacchi <dario.binacchi@amarulasolutions.com>, 
+ Kalle Valo <kvalo@kernel.org>, Dmitry Antipov <dmantipov@yandex.ru>, 
+ libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org, 
+ Jonathan Corbet <corbet@lwn.net>, James Clark <james.clark@arm.com>, 
+ Bjorn Helgaas <bhelgaas@google.com>, linux-doc@vger.kernel.org
+In-Reply-To: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
+Subject: Re: (subset) [PATCH v2 00/33] spi: get rid of some legacy macros
+Message-Id: <170775198078.46149.4700126128576800564.b4-ty@kernel.org>
+Date: Mon, 12 Feb 2024 15:33:00 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Autocrypt: addr=duje.mihanovic@skole.hr;
- keydata=
- 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
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.13-dev-a684c
 
-On Monday, February 12, 2024 1:44:28 PM CET Daniel Thompson wrote:
-> On Mon, Feb 12, 2024 at 12:18:12PM +0100, Arnd Bergmann wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > The new backlight driver unconditionally selects LEDS_EXPRESSWIRE, which
-> > is in a different subsystem that may be disabled here:
-> > 
-> > WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
-> > 
-> >   Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=y]
-> >   Selected by [y]:
-> >   - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE 
-[=y]
-> > 
-> > Change the select to depends, to ensure the indirect dependency is
-> > met as well even when LED support is disabled.
-> > 
-> > Fixes: 66c76c1cd984 ("backlight: Add Kinetic KTD2801 backlight support")
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> > 
-> >  drivers/video/backlight/Kconfig | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/video/backlight/Kconfig
-> > b/drivers/video/backlight/Kconfig index 230bca07b09d..f83f9ef037fc 100644
-> > --- a/drivers/video/backlight/Kconfig
-> > +++ b/drivers/video/backlight/Kconfig
-> > @@ -185,7 +185,7 @@ config BACKLIGHT_KTD253
-> > 
-> >  config BACKLIGHT_KTD2801
-> >  
-> >  	tristate "Backlight Driver for Kinetic KTD2801"
-> > 
-> > -	select LEDS_EXPRESSWIRE
-> > +	depends on LEDS_EXPRESSWIRE
+On Mon, 22 Jan 2024 19:06:55 +0100, Uwe Kleine-König wrote:
+> this is v2 of this patch set.
 > 
-> As far as I can tell this resolves the warning by making it impossible
-> to enable BACKLIGHT_KTD2801 unless a largely unrelated driver
-> (LEDS_KTD2692) is also enabled!
+> Changes since (implicit) v1, sent with Message-Id:
+> cover.1705348269.git.u.kleine-koenig@pengutronix.de:
 > 
-> A better way to resolve this problem might be to eliminate the NEW_LEDS
-> dependency entirely:
+>  - Rebase to v6.8-rc1
+>  - Fix a build failure on sh
+>  - Added the tags received in (implicit) v1.
+> 
+> [...]
 
-I believe this would be the best thing to do here. Making LEDS_EXPRESSWIRE 
-user selectable doesn't make much sense to me as the library is rather low-
-level (a quick grep turns up BTREE as an example of something similar) and IMO 
-the GPIOLIB dependency should be handled by LEDS_EXPRESSWIRE as it's the one 
-actually using the GPIO interface (except maybe for KTD2692 as it has some 
-extra GPIOs not present in the other one and thus handles them itself).
+Applied to
 
-Regards,
--- 
-Duje
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
 
+Thanks!
 
+[01/33] fpga: ice40-spi: Follow renaming of SPI "master" to "controller"
+        commit: 227ab73b89d66e3064b3c2bcb5fe382b1815763d
+[02/33] ieee802154: ca8210: Follow renaming of SPI "master" to "controller"
+        commit: 167b78446706bb4d19f7dd93ca320aed25ae1bbd
+[03/33] iio: adc: ad_sigma_delta: Follow renaming of SPI "master" to "controller"
+        commit: 2780e7b716a605781dbee753ef4983d775a65427
+[04/33] Input: pxspad - follow renaming of SPI "master" to "controller"
+        commit: a78acec53b8524593afeed7258a442adc3450818
+[05/33] Input: synaptics-rmi4 - follow renaming of SPI "master" to "controller"
+        commit: 1245633c61baf159fcc1303d7f0855f49831b9c1
+[06/33] media: mgb4: Follow renaming of SPI "master" to "controller"
+        commit: 2c2f93fbfba7186cc081e23120f169eac3b5b62a
+[07/33] media: netup_unidvb: Follow renaming of SPI "master" to "controller"
+        commit: cfa13a64bd631d8f04a1c385923706fcef9a63ed
+[08/33] media: usb/msi2500: Follow renaming of SPI "master" to "controller"
+        commit: dd868ae646d5770f80f90dc056d06eb2e6d39c62
+[09/33] media: v4l2-subdev: Follow renaming of SPI "master" to "controller"
+        commit: d920b3a672b7f79cd13b341234aebd49233f836c
+[10/33] misc: gehc-achc: Follow renaming of SPI "master" to "controller"
+        commit: 26dcf09ee5d9ceba2c627ae3ba174a229f25638f
+[11/33] mmc: mmc_spi: Follow renaming of SPI "master" to "controller"
+        commit: b0a6776e53403aa380411f2a43cdefb9f00ff50a
+[12/33] mtd: dataflash: Follow renaming of SPI "master" to "controller"
+        commit: 44ee998db9eef84bf005c39486566a67cb018354
+[14/33] net: ks8851: Follow renaming of SPI "master" to "controller"
+        commit: 1cc711a72ae7fd44e90839f0c8d3226664de55a2
+[15/33] net: vertexcom: mse102x: Follow renaming of SPI "master" to "controller"
+        commit: 7969b98b80c0332f940c547f84650a20aab33841
+[16/33] platform/chrome: cros_ec_spi: Follow renaming of SPI "master" to "controller"
+        commit: 85ad0ec049a771c4910c8aebb2d0bd9ce9311fd9
+[17/33] spi: bitbang: Follow renaming of SPI "master" to "controller"
+        commit: 2259233110d90059187c5ba75537eb93eba8417b
+[18/33] spi: cadence-quadspi: Don't emit error message on allocation error
+        commit: e71011dacc3413bed4118d2c42f10736ffcd762c
+[19/33] spi: cadence-quadspi: Follow renaming of SPI "master" to "controller"
+        commit: 28e59d8bf1ace0ddf05f989a48d6824d75731267
+[20/33] spi: cavium: Follow renaming of SPI "master" to "controller"
+        commit: 1747fbdedba8b6b3fd459895ed5d57e534549884
+[21/33] spi: geni-qcom: Follow renaming of SPI "master" to "controller"
+        commit: 14cea92338a0776c1615994150e738ac0f5fbb2c
+[22/33] spi: loopback-test: Follow renaming of SPI "master" to "controller"
+        commit: 2c2310c17fac13aa7e78756d7f3780c7891f9397
+[23/33] spi: slave-mt27xx: Follow renaming of SPI "master" to "controller"
+        commit: 8197b136bbbe64a7cab1020a4b067020e5977d98
+[24/33] spi: spidev: Follow renaming of SPI "master" to "controller"
+        commit: d934cd6f0e5d0052772612db4b07df60cb9da387
+[25/33] staging: fbtft: Follow renaming of SPI "master" to "controller"
+        commit: bbd25d7260eeeaef89f7371cbadcd33dd7f7bff9
+[26/33] staging: greybus: spi: Follow renaming of SPI "master" to "controller"
+        commit: ee3c668dda3d2783b0fff4091461356fe000e4d8
+[27/33] tpm_tis_spi: Follow renaming of SPI "master" to "controller"
+        commit: b6af14eacc8814b0986e20507df423cebe9fd859
+[28/33] usb: gadget: max3420_udc: Follow renaming of SPI "master" to "controller"
+        commit: 8c716f4a3d4fcbec976247e3443d36cbc24c0512
+[29/33] video: fbdev: mmp: Follow renaming of SPI "master" to "controller"
+        commit: b23031e730e72ec9067b7c38c25e776c5e27e116
+[30/33] wifi: libertas: Follow renaming of SPI "master" to "controller"
+        commit: 30060d57cee194d6b70283f2faf787e2fdc61b6e
+[31/33] spi: fsl-lib: Follow renaming of SPI "master" to "controller"
+        commit: 801185efa2402dce57828930e9684884fc8d62da
+[32/33] spi: Drop compat layer from renaming "master" to "controller"
+        commit: 620d269f29a569ba37419cc03cf1da2d55f6252a
+[33/33] Documentation: spi: Update documentation for renaming "master" to "controller"
+        commit: 76b31eb4c2da3ddb3195cc14f6aad24908adf524
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 

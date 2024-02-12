@@ -1,155 +1,154 @@
-Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.skole.hr (mx2.hosting.skole.hr [161.53.165.186])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 881023A1B8
-	for <linux-fbdev@vger.kernel.org>; Mon, 12 Feb 2024 12:44:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53FEA3AC14;
+	Mon, 12 Feb 2024 14:39:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.186
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707741876; cv=none; b=JwZqHMtXc5RUju+tPmgMdW5VaQ8bx1a6BJJiRY0xRDEcCzfsQvhRcYYQYVIhlqZblkrW+imWv0/FGzPaKldL5Cbj4caDrZ5uXhnZ8LZNLyZ/bHaLi7aLNQ0FsedrkYQEJ8Tajhh48D8V1Knzpa8whetAEsZE1DOC1h5nqn5AWAI=
+	t=1707748750; cv=none; b=qJcDgDat0A8VtOzntVOuQjEW8QI6T0QrOkU8AkTq5XlBpCQpIZo5mCKCkjDHc5eWuc6IAw27gH9jEBiizpm6X50tzWwDKAZxVBHO5oIn+EIik2ICE8iMI5eeJULcv7jhYkFWeSOyY9dslemyLK7OZh8zu3fQUnxMYcXGENnH90g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707741876; c=relaxed/simple;
-	bh=H0znO3eD0oSu7G2J3b6kxDLB0YQVdKOrJ9kPYa67HqI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Nqd5AzgSLnVnKxS5JqUZnyzcvOM32Rr4Vc+kPDxLTKjpseEMAqt88uluk0Bprg1RHkHUZSrJ/Pynd3CktAtEN26m8u4eWQPKa9OY2nCpLeLpqpogE9Uc1ZtuEYP8rg/rRAMo4gdIwPYZXZ47nzIyibQF3arfzAiS7WKX7wKyDhs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Rh4+6E6f; arc=none smtp.client-ip=209.85.167.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Rh4+6E6f"
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5116b540163so4396785e87.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Feb 2024 04:44:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1707741872; x=1708346672; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XvN0mE8+X+sOTUoptopXTmTpNcPMMCKjy4OSqGx44gE=;
-        b=Rh4+6E6fwgcRwJDaunQ0v7cCn4neZhhZv4vrCeBWm6MsGcVJw/LrAjRM8aUY7FBVX5
-         7B8qVCLolVerLarDzHRR7VpzvyoJ2jOzT2W+AyWcL0Ct9BT2s22wdZuoaPLRD8ncH0uf
-         gLyBKTdkpoY1leM9mZuX3e0yn/dDo5c0VBZvWiqmfXJgqNQOA3lJsQgqPiNOCcAjRj2s
-         dJBsL7TTwFioi5FlkX0yWJByRU41VAHrjZaSAvLQgwJfRTTq2zLOlYh72mHSer1TLFyy
-         ISuw3MZPRkVArCNCUWbhWtRymzLoRJcc3LhXsz0r8rA4l7rjvp9rE4eBrTT32PhmBxjF
-         PDRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707741872; x=1708346672;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XvN0mE8+X+sOTUoptopXTmTpNcPMMCKjy4OSqGx44gE=;
-        b=VXpxHtk02aEGjFIDP6cbyAYWAiBOm2RY8lXOYToUjq2+doYlBV78y0FJAf/YovN9WM
-         TIAjOFvIYvJ0oObojG2dR03zEAtbQEYlQ0m/nocklMKgOkMTTTQc2i0sKF1AdwjN/sxI
-         4i3rR90pXn8DIbU4mJkuSaqJrAghbj+UAvIbm4zJWMHwItxyRwpllfiIMo6MmAenp+1w
-         TxWBAQR7ABA4+4M5TtRTsp4sLh+Xf1lc8JSZ83VACGh/f8nvBiLr60YHQ6Z6WoyGUIZS
-         i/pJztw0ThiDmlUtLUgqTkcPPFwJtFxS5RELXkoBrBpzpFeSw2KildA6vZlLuVVLeHn5
-         vAFg==
-X-Forwarded-Encrypted: i=1; AJvYcCVfpFqo+eORO7Yh2eqIzvgWO55Ne7cKo0nFjKty5MGz6+CcUytg3th0W85ubjreTqe2RldTsXmnohaeu7ApElxPpVhOl6XivwaPN2M=
-X-Gm-Message-State: AOJu0YyRGl7owjGJa/rgeN7QUE/+8CsK6o4nl5P8qlEhq9c3l6wZii8p
-	wZ8RgDjI/5cakbVg1hojzDyPvoV4ckW/NKDysLw8TwqZap9HSaSIKHQi5AMYBO0=
-X-Google-Smtp-Source: AGHT+IECaQR8SxGdAuBdoh2ITf4ZKxq5Ebe9H8QzZh9YQ3kzq6zuiVOl/DFf3eiPYe3IBXg8A7rqMw==
-X-Received: by 2002:a05:6512:12cc:b0:511:86f8:f6a9 with SMTP id p12-20020a05651212cc00b0051186f8f6a9mr3076899lfg.22.1707741872466;
-        Mon, 12 Feb 2024 04:44:32 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXQsyLmcNz7AYCWiLFIm8eWdCgWxh+lwKbempYrtW3ICNHWg++T6oOCAsu15mIwbSj7xBE5Pml36z949yFxdSfbFZiOJHiSd2jMydY2g0oJNeQb3u0ojclTjj/XA2C6BydwAX5Q441VrduzhUdJlOuZB3hd1Mhu8CFIqwY2KC5ggXBixcxSjrWAOOt8IA/2aJu461D76jqi5nX48TALXh322aRUgGDRcmslPG9Mnlezh9zHHqhO/wDGkJefoc1aCgdO6iO+XygCM3w2dt7QyWon1GSITb66+vzDNlKwG8Ti1so6E8m9Zn2+m0CdUgSoV1zPZGZkGDmlOBROoPt9dXJWJIfYs/sTLnrTxbMVr12ASfOEKLTUG/khxdb94p9GDw8ToaLtpn6BqfkWIRFfsJwhJrF8FsZA4i2PAHhpwjNLA8RpGjtpWA==
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id 7-20020a05600c248700b0040fddaf9ff4sm8470964wms.40.2024.02.12.04.44.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Feb 2024 04:44:30 -0800 (PST)
-Date: Mon, 12 Feb 2024 12:44:28 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Arnd Bergmann <arnd@kernel.org>
+	s=arc-20240116; t=1707748750; c=relaxed/simple;
+	bh=bhdRHyoW7lPVIkTI8IjDK4sPL6Ctj/nSJiAUABT6vdc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Rh5ps9diC055XoLKLTDU+OFFuuBRYvIDEsblB285BRF9liqRz7RAP9YYcBHBXSJKSR69jqR46Zx6M1zKMKYKcqLTg5g2egxR7grLgHcd8UyHe2O+ohODCfNlyC+0mA89p90VZep5GmOoat8vWZ9bnGlGFNqwvI2BWA03j30+TGk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.186
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
+Received: from mx2.hosting.skole.hr (localhost.localdomain [127.0.0.1])
+	by mx.skole.hr (mx.skole.hr) with ESMTP id 2BAEB84EA7;
+	Mon, 12 Feb 2024 15:32:42 +0100 (CET)
+From: Duje =?utf-8?B?TWloYW5vdmnEhw==?= <duje.mihanovic@skole.hr>
+To: Arnd Bergmann <arnd@kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>
 Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Arnd Bergmann <arnd@arndb.de>, Flavio Suligoi <f.suligoi@asem.it>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Jianhua Lu <lujianhua000@gmail.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+ Helge Deller <deller@gmx.de>, Linus Walleij <linus.walleij@linaro.org>,
+ Arnd Bergmann <arnd@arndb.de>, Flavio Suligoi <f.suligoi@asem.it>,
+ Hans de Goede <hdegoede@redhat.com>, Jianhua Lu <lujianhua000@gmail.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] backlight: ktd2801: fix LED dependency
-Message-ID: <20240212124428.GB4593@aspen.lan>
-References: <20240212111819.936815-1-arnd@kernel.org>
+Date: Mon, 12 Feb 2024 15:31:50 +0100
+Message-ID: <4869921.GXAFRqVoOG@radijator>
+In-Reply-To: <20240212124428.GB4593@aspen.lan>
+References:
+ <20240212111819.936815-1-arnd@kernel.org> <20240212124428.GB4593@aspen.lan>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240212111819.936815-1-arnd@kernel.org>
+Autocrypt: addr=duje.mihanovic@skole.hr;
+ keydata=
+ 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
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Mon, Feb 12, 2024 at 12:18:12PM +0100, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The new backlight driver unconditionally selects LEDS_EXPRESSWIRE, which
-> is in a different subsystem that may be disabled here:
->
-> WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
->   Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=y]
->   Selected by [y]:
->   - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=y]
->
-> Change the select to depends, to ensure the indirect dependency is
-> met as well even when LED support is disabled.
->
-> Fixes: 66c76c1cd984 ("backlight: Add Kinetic KTD2801 backlight support")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/video/backlight/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 230bca07b09d..f83f9ef037fc 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -185,7 +185,7 @@ config BACKLIGHT_KTD253
->
->  config BACKLIGHT_KTD2801
->  	tristate "Backlight Driver for Kinetic KTD2801"
-> -	select LEDS_EXPRESSWIRE
-> +	depends on LEDS_EXPRESSWIRE
+On Monday, February 12, 2024 1:44:28 PM CET Daniel Thompson wrote:
+> On Mon, Feb 12, 2024 at 12:18:12PM +0100, Arnd Bergmann wrote:
+> > From: Arnd Bergmann <arnd@arndb.de>
+> > 
+> > The new backlight driver unconditionally selects LEDS_EXPRESSWIRE, which
+> > is in a different subsystem that may be disabled here:
+> > 
+> > WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
+> > 
+> >   Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=y]
+> >   Selected by [y]:
+> >   - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE 
+[=y]
+> > 
+> > Change the select to depends, to ensure the indirect dependency is
+> > met as well even when LED support is disabled.
+> > 
+> > Fixes: 66c76c1cd984 ("backlight: Add Kinetic KTD2801 backlight support")
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> > 
+> >  drivers/video/backlight/Kconfig | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/video/backlight/Kconfig
+> > b/drivers/video/backlight/Kconfig index 230bca07b09d..f83f9ef037fc 100644
+> > --- a/drivers/video/backlight/Kconfig
+> > +++ b/drivers/video/backlight/Kconfig
+> > @@ -185,7 +185,7 @@ config BACKLIGHT_KTD253
+> > 
+> >  config BACKLIGHT_KTD2801
+> >  
+> >  	tristate "Backlight Driver for Kinetic KTD2801"
+> > 
+> > -	select LEDS_EXPRESSWIRE
+> > +	depends on LEDS_EXPRESSWIRE
+> 
+> As far as I can tell this resolves the warning by making it impossible
+> to enable BACKLIGHT_KTD2801 unless a largely unrelated driver
+> (LEDS_KTD2692) is also enabled!
+> 
+> A better way to resolve this problem might be to eliminate the NEW_LEDS
+> dependency entirely:
 
-As far as I can tell this resolves the warning by making it impossible
-to enable BACKLIGHT_KTD2801 unless a largely unrelated driver
-(LEDS_KTD2692) is also enabled!
+I believe this would be the best thing to do here. Making LEDS_EXPRESSWIRE 
+user selectable doesn't make much sense to me as the library is rather low-
+level (a quick grep turns up BTREE as an example of something similar) and IMO 
+the GPIOLIB dependency should be handled by LEDS_EXPRESSWIRE as it's the one 
+actually using the GPIO interface (except maybe for KTD2692 as it has some 
+extra GPIOs not present in the other one and thus handles them itself).
 
-A better way to resolve this problem might be to eliminate the NEW_LEDS
-dependency entirely:
-~~~
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 64bb2de237e95..a08816cde78ae 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -186,10 +186,6 @@ config LEDS_EL15203000
-          To compile this driver as a module, choose M here: the module
-          will be called leds-el15203000.
-
--config LEDS_EXPRESSWIRE
--       bool
--       depends on GPIOLIB
--
- config LEDS_TURRIS_OMNIA
-        tristate "LED support for CZ.NIC's Turris Omnia"
-        depends on LEDS_CLASS_MULTICOLOR
-@@ -936,3 +932,10 @@ comment "Simple LED drivers"
- source "drivers/leds/simple/Kconfig"
-
- endif # NEW_LEDS
-+
-+# This is library code that is useful for LEDs but can be enable/disabled
-+# independently of NEW_LEDS. In fact it must be independent so it can be
-+# selected from other sub-systems.
-+config LEDS_EXPRESSWIRE
-+       bool
-+       depends on GPIOLIB
-~~~
-
-Alternatively we could add a "depends on NEW_LEDS" alongside the
-existing select or just make LEDS_EXPRESSWIRE user selectable.
-
-It also looks like we should put back the GPIOLIB dependency to both
- KTD2801 and KTD2692... and I'll take a mea-culpa for providing bad
- advice during the review cycles!
+Regards,
+-- 
+Duje
 
 
-Daniel.
+

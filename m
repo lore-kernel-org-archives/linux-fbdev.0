@@ -1,95 +1,198 @@
-Received: from mx.skole.hr (mx1.hosting.skole.hr [161.53.165.185])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D0BE604D5;
-	Tue, 13 Feb 2024 18:13:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.185
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FFD165BAA;
+	Tue, 13 Feb 2024 21:58:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707848014; cv=none; b=i2ABn8SUgS+B2REKUu4f8XmiK255RMuiTI7fvLJMCQiBZ5IHOYJrAxKg8zygDJTuiDL3f+KUFnw6SY+/J8B/kqDMqfNrI45K5+2gtlD4O7hDPShK9hLck/bDlo3l5UeLrNvuuiT3CEDfQ7fgXsm0zBWTcsMo+TA5J6phxL0WYRI=
+	t=1707861504; cv=none; b=Yz2KV8+5xhfy/F67ZksMf2Fqs38pDlbQIilQFLgULB+p2SlefVUJ7stNPr/6nSgtA3y3S80w7dIbVaV8+Riy3VBX7cyOo6V19y53WR0wjsX7I79vTiUMuiceFv2iQ6nUybVHxG1lAFCAXA4QvAWNherw4+WfS+5GRmJvTpKOynY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707848014; c=relaxed/simple;
-	bh=U+6rlt5Ta8MmGgRR4Hf8eIhUKZgfMXsWUZk6oX3Js04=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=dTzvMoq2ElXY+urZzLsVt8XeV5RmvxQCq7IjDdmmOU1uDVfV4dwtNtiQfRUgjbPZVnEhRE+rcLsIRqLhfi6s9V0x6ZPVbKhr7FBMfKgXkVoDMX8cCnGUAhOCQMd1u5R+aFg3mJhGocm0BX3WMISE6Rm2yQiVeU/oNSQ7jw8/SUc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.185
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
-Received: from mx1.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id CD1F9873CC;
-	Tue, 13 Feb 2024 19:13:27 +0100 (CET)
-From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Date: Tue, 13 Feb 2024 19:12:33 +0100
-Subject: [PATCH] backlight: ktd2801: depend on GPIOLIB
+	s=arc-20240116; t=1707861504; c=relaxed/simple;
+	bh=QZtp6zFSJB9KAqD6mHzlmSSAFRT2TanT7mhlKfjwml4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uSCSxzcGDlK0O03jlqnSpkx/RvPZRQEmuWcQI+PZrXB1swbse2BgBUbETw/97Ns4sSlo8wmaIXdeDgb0T4UrI0VN73cuvkS55H12ESYzaQzA/WhUwkIgPKnCLwxbSG+rPUF4LO0813ZAsEISwSaWka2UTunNnYsb9kTpe7OVzYE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bQU8V6E6; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bQU8V6E6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1707861502; x=1739397502;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=QZtp6zFSJB9KAqD6mHzlmSSAFRT2TanT7mhlKfjwml4=;
+  b=bQU8V6E6qhV+r/nkG0+zeTp+0uyc/JQNQbasnPMXJLvm7VKBzMANMCQi
+   ywMEGQSdlEx7zGgy7ISwOT5NqpcZQCz3tx/MeWNdg8LaKv68jiaTpA8fp
+   08vqHaS1k+HPKe2Vz879R3XR+ryyvK6clsOFDFHMhf1AmYNDsm/6b+RBB
+   9IVAnOzOnUssNp9vUZmFZ5JkauFXtBMdq6z7DYDVOPeS8gJWnfMSLygZ+
+   cqG4KZg7SfWsPI+yU3B1pJOAYZXzP+7PFpVeERJxWJxWpy8Vn0JboknSV
+   5te1X/yXB8wZPcidBXryqesKewDr0+KZ7octVeZh2xNcQVs3zpxPnMC3W
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="12611759"
+X-IronPort-AV: E=Sophos;i="6.06,158,1705392000"; 
+   d="scan'208";a="12611759"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Feb 2024 13:58:21 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="911908559"
+X-IronPort-AV: E=Sophos;i="6.06,158,1705392000"; 
+   d="scan'208";a="911908559"
+Received: from lkp-server01.sh.intel.com (HELO 01f0647817ea) ([10.239.97.150])
+  by fmsmga002.fm.intel.com with ESMTP; 13 Feb 2024 13:58:17 -0800
+Received: from kbuild by 01f0647817ea with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1ra0nA-00086a-0K;
+	Tue, 13 Feb 2024 21:58:16 +0000
+Date: Wed, 14 Feb 2024 05:57:42 +0800
+From: kernel test robot <lkp@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, lee@kernel.org,
+	daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
+	javierm@redhat.com
+Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-pwm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+	Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
+Subject: Re: [PATCH 04/10] hid/hid-picolcd: Remove struct
+ backlight_ops.check_fb
+Message-ID: <202402140514.sb1rerJx-lkp@intel.com>
+References: <20240212162645.5661-5-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240213-ktd2801-deps-v1-1-7feb5385eb9a@skole.hr>
-X-B4-Tracking: v=1; b=H4sIABCxy2UC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxMDI0Nj3eySFCMLA0PdlNSCYl2DNFNzw2QDyyQLIxMloJaCotS0zAqwcdG
- xtbUAviWRL14AAAA=
-To: Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Arnd Bergmann <arnd@kernel.org>, Karel Balej <balejk@matfyz.cz>, 
- dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1130;
- i=duje.mihanovic@skole.hr; h=from:subject:message-id;
- bh=U+6rlt5Ta8MmGgRR4Hf8eIhUKZgfMXsWUZk6oX3Js04=;
- b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBly7ETl3iXiBasGYGxNzalU0t7/uTvFbWgKXkMI
- l0VLMuc26GJAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZcuxEwAKCRCaEZ6wQi2W
- 4YkmEACKMl/X2GJUWXOA57RLxzb3s5i8nLgTWk9quyZcge6rleXOSuP7FUP/x7xOk0ifXg8CUgF
- mDSSa69nLnkdwGIMblSgBKk9qaJESt9J0AXUgkZrBC96+3Iqf5f3+GGQoir/dc1z8pOOpyTJUu4
- b1mUu6qSl0flypP0F03YWOz7v53vRW3guhkCkUxaOkLU6U2cvZhKdvEN9Cey15JsIe5C+C9GcjD
- VNVl6wA3ju8uloRRGjIUV6FUkkf574BSWJVhu8uZvZqStkoe+aHxx2X4YQOQLXC+YFhnZ0JPf0c
- ay8/tIhW9Kk5Cp1qNhow853GYIDb8GX6leqVr99yx/MKMA1WinkHCToGA9JzocQDqjkaMnUNwGk
- 6Zk2T0njowSWKEVfTcQ45xRVo7Ny+osaGcpFdXrWJB2hXn1Lte+CrgsXWJ5zLPjBrO4s7fYgRh2
- nnm6qt67d8+p9agbm8JtK1bMQ361ATNr26BS6u4TexyEizkDz27nzjdjuBCmvoRiRdIbbL6CuW6
- Hyrpw8LJOtY2XYmhSQeOHa2uuH9jn/kYkxOyq7ZBvNrRq2pjGZRKD3t9rti7vB62QenQqr2N22f
- 42CYcE97jPJlQJYsJQ+IcaywKBKHdkOpF04cSttg6YTIVYl+Hl9BbuNgBBzochXi2LIZjc+qaS2
- yjy3ToDWXhgUJAA==
-X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
- fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240212162645.5661-5-tzimmermann@suse.de>
 
-LEDS_EXPRESSWIRE depends on GPIOLIB, and so must anything selecting it:
+Hi Thomas,
 
-WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
-  Depends on [n]: NEW_LEDS [=y] && GPIOLIB [=n]
-  Selected by [m]:
-  - BACKLIGHT_KTD2801 [=m] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=m]
+kernel test robot noticed the following build errors:
 
-Fixes: 66c76c1cd984 ("backlight: Add Kinetic KTD2801 backlight support")
-Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
----
- drivers/video/backlight/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+[auto build test ERROR on lee-backlight/for-backlight-next]
+[also build test ERROR on lee-backlight/for-backlight-fixes hid/for-next lee-leds/for-leds-next linus/master v6.8-rc4 next-20240213]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 230bca07b09d..8bd88017d945 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -185,6 +185,7 @@ config BACKLIGHT_KTD253
- 
- config BACKLIGHT_KTD2801
- 	tristate "Backlight Driver for Kinetic KTD2801"
-+	depends on GPIOLIB
- 	select LEDS_EXPRESSWIRE
- 	help
- 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/backlight-Match-backlight-device-against-struct-fb_info-bl_dev/20240213-002853
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git for-backlight-next
+patch link:    https://lore.kernel.org/r/20240212162645.5661-5-tzimmermann%40suse.de
+patch subject: [PATCH 04/10] hid/hid-picolcd: Remove struct backlight_ops.check_fb
+config: x86_64-rhel-8.3 (https://download.01.org/0day-ci/archive/20240214/202402140514.sb1rerJx-lkp@intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240214/202402140514.sb1rerJx-lkp@intel.com/reproduce)
 
----
-base-commit: 46d4e2eb58e14c8935fa0e27d16d4c62ef82849a
-change-id: 20240213-ktd2801-deps-0f571c09b824
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202402140514.sb1rerJx-lkp@intel.com/
 
-Best regards,
+All errors (new ones prefixed by >>):
+
+   drivers/hid/hid-picolcd_fb.c: In function 'picolcd_init_framebuffer':
+>> drivers/hid/hid-picolcd_fb.c:497:13: error: 'struct fb_info' has no member named 'bl_dev'
+     497 |         info->bl_dev = data->backlight;
+         |             ^~
+
+
+vim +497 drivers/hid/hid-picolcd_fb.c
+
+   459	
+   460	static DEVICE_ATTR(fb_update_rate, 0664, picolcd_fb_update_rate_show,
+   461			picolcd_fb_update_rate_store);
+   462	
+   463	/* initialize Framebuffer device */
+   464	int picolcd_init_framebuffer(struct picolcd_data *data)
+   465	{
+   466		struct device *dev = &data->hdev->dev;
+   467		struct fb_info *info = NULL;
+   468		struct picolcd_fb_data *fbdata = NULL;
+   469		int i, error = -ENOMEM;
+   470		u32 *palette;
+   471	
+   472		/* The extra memory is:
+   473		 * - 256*u32 for pseudo_palette
+   474		 * - struct fb_deferred_io
+   475		 */
+   476		info = framebuffer_alloc(256 * sizeof(u32) +
+   477				sizeof(struct fb_deferred_io) +
+   478				sizeof(struct picolcd_fb_data) +
+   479				PICOLCDFB_SIZE, dev);
+   480		if (!info)
+   481			goto err_nomem;
+   482	
+   483		info->fbdefio = info->par;
+   484		*info->fbdefio = picolcd_fb_defio;
+   485		info->par += sizeof(struct fb_deferred_io);
+   486		palette = info->par;
+   487		info->par += 256 * sizeof(u32);
+   488		for (i = 0; i < 256; i++)
+   489			palette[i] = i > 0 && i < 16 ? 0xff : 0;
+   490		info->pseudo_palette = palette;
+   491		info->fbops = &picolcdfb_ops;
+   492		info->var = picolcdfb_var;
+   493		info->fix = picolcdfb_fix;
+   494		info->fix.smem_len   = PICOLCDFB_SIZE*8;
+   495	
+   496	#ifdef CONFIG_HID_PICOLCD_BACKLIGHT
+ > 497		info->bl_dev = data->backlight;
+   498	#endif
+   499	
+   500		fbdata = info->par;
+   501		spin_lock_init(&fbdata->lock);
+   502		fbdata->picolcd = data;
+   503		fbdata->update_rate = PICOLCDFB_UPDATE_RATE_DEFAULT;
+   504		fbdata->bpp     = picolcdfb_var.bits_per_pixel;
+   505		fbdata->force   = 1;
+   506		fbdata->vbitmap = info->par + sizeof(struct picolcd_fb_data);
+   507		fbdata->bitmap  = vmalloc(PICOLCDFB_SIZE*8);
+   508		if (fbdata->bitmap == NULL) {
+   509			dev_err(dev, "can't get a free page for framebuffer\n");
+   510			goto err_nomem;
+   511		}
+   512		info->flags |= FBINFO_VIRTFB;
+   513		info->screen_buffer = fbdata->bitmap;
+   514		info->fix.smem_start = (unsigned long)fbdata->bitmap;
+   515		memset(fbdata->vbitmap, 0xff, PICOLCDFB_SIZE);
+   516		data->fb_info = info;
+   517	
+   518		error = picolcd_fb_reset(data, 1);
+   519		if (error) {
+   520			dev_err(dev, "failed to configure display\n");
+   521			goto err_cleanup;
+   522		}
+   523	
+   524		error = device_create_file(dev, &dev_attr_fb_update_rate);
+   525		if (error) {
+   526			dev_err(dev, "failed to create sysfs attributes\n");
+   527			goto err_cleanup;
+   528		}
+   529	
+   530		fb_deferred_io_init(info);
+   531		error = register_framebuffer(info);
+   532		if (error) {
+   533			dev_err(dev, "failed to register framebuffer\n");
+   534			goto err_sysfs;
+   535		}
+   536		return 0;
+   537	
+   538	err_sysfs:
+   539		device_remove_file(dev, &dev_attr_fb_update_rate);
+   540		fb_deferred_io_cleanup(info);
+   541	err_cleanup:
+   542		data->fb_info    = NULL;
+   543	
+   544	err_nomem:
+   545		if (fbdata)
+   546			vfree(fbdata->bitmap);
+   547		framebuffer_release(info);
+   548		return error;
+   549	}
+   550	
+
 -- 
-Duje Mihanović <duje.mihanovic@skole.hr>
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

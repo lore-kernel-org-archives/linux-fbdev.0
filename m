@@ -1,116 +1,186 @@
-Received: from mx.skole.hr (mx1.hosting.skole.hr [161.53.165.185])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A43604D9E9;
-	Mon, 12 Feb 2024 20:04:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=161.53.165.185
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC38611C8B
+	for <linux-fbdev@vger.kernel.org>; Tue, 13 Feb 2024 05:44:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707768289; cv=none; b=KYdF9Zw8QpHzr+0dHTtVKY2GmvC3euMkGxCcZIq/AGnWB3C5KOdJ14HdBKRbVEhr8Ruoj8dJZWCa78uKRcrqrqXOQ14h6tjxn1TuflGiFF6GgUmQDGrMA2kOSCHxiOP7uSVM+y9VKiRN0aWxkMYH3Qi/DwctGpF/PVm4f0tXskc=
+	t=1707803065; cv=none; b=NMI5u97Fh09D4XUFzuwEDd11R01AYtWBnfclB2F8Eu6UofPOJ6AkFZZkrw9mgIWzXZ2z7YxxCrViRGHtZMmiurnxNzkRDVSsZPDoUMf5+WJkz3fFpOouvOSFu4l/Ja+aUOXKSPJW/wS5kDtpJ6ayR+L3XBAAAQsRVVl3siIJsUI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707768289; c=relaxed/simple;
-	bh=8oXLHu5mf6GCO+ZMr+tU6h6oKIscP7uIjmv7rxzg+zo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bkNO3HDTPNqfiW3IY/oyxMacCEOxXP3N7LhqVI9xhA34IUuSswr4xAUvyDq8TWpLr1gKDkPdbFAOD3dV4gFHqlvE7tCf6+63z/N3J+QH8Wzj/9fai4TrhyLCfPRa8EyXrW+FgOcrwm0AgOq+wuDBfeRa0uupoTSMY66wVmCQP4A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr; spf=pass smtp.mailfrom=skole.hr; arc=none smtp.client-ip=161.53.165.185
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=skole.hr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=skole.hr
-Received: from mx1.hosting.skole.hr (localhost.localdomain [127.0.0.1])
-	by mx.skole.hr (mx.skole.hr) with ESMTP id 982CF83C56;
-	Mon, 12 Feb 2024 21:04:38 +0100 (CET)
-From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Date: Mon, 12 Feb 2024 21:03:26 +0100
-Subject: [PATCH 2/2] leds: expresswire: don't depend on NEW_LEDS
+	s=arc-20240116; t=1707803065; c=relaxed/simple;
+	bh=XwYxTCi3Vrffvqu5sWo94/cUOA0oYGVkWlFbOTubhzg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nYfbDbNvBSp5zEOOsOvYJRXwkYWzmi/Av6mrcba892vHq6zskEh7BVs5gpDYU7VghbNjUuZe1N03axj0E+ESiUHklcgRZ7NALPft1XA+eAo70bL09MMPxUdESMkNW7x5zpF5QPWC8cdO58wuRlxyO4F71zKa9o4SOGg3AIEwFiY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jqapkzhh; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jqapkzhh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1707803062; x=1739339062;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=XwYxTCi3Vrffvqu5sWo94/cUOA0oYGVkWlFbOTubhzg=;
+  b=jqapkzhhmZhqGLWVv4Rs1h+ezacS6q1P+Lst6Px1MER1AbVIVeoQP1Dk
+   ECSuzY80JsPdLkH0PXkIGpMZ1Qnm/rNtzRL95KNFny2U2m13zvAk7XKTa
+   2qsKzhoOfkEdqo99tXe5VWhjwSEJQHkgg+ddMS3E6pI3oW1G9LKZqZRZy
+   JKDkNIy7CBPCxqqTUG77lKsw/Qm4Ifm5v0O8j1+ReIemyGMGlskacd2aD
+   nvLIiF3SgimB8VdA/aPhWQuxddq1dwUSPcYmXJSXGQ0dO1NPvCJ+JSAvq
+   G0j5vxvbzaaJ4XvrWDT5C2tYOTcQSp2sSZa4di9+nZvXa93Ap+m3huSAk
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="1924496"
+X-IronPort-AV: E=Sophos;i="6.06,156,1705392000"; 
+   d="scan'208";a="1924496"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2024 21:44:22 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.06,156,1705392000"; 
+   d="scan'208";a="33876227"
+Received: from lkp-server01.sh.intel.com (HELO 01f0647817ea) ([10.239.97.150])
+  by fmviesa001.fm.intel.com with ESMTP; 12 Feb 2024 21:44:19 -0800
+Received: from kbuild by 01f0647817ea with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1rZlaa-0007Xe-37;
+	Tue, 13 Feb 2024 05:44:16 +0000
+Date: Tue, 13 Feb 2024 13:43:30 +0800
+From: kernel test robot <lkp@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+	kherbst@redhat.com, lyude@redhat.com, dakr@redhat.com,
+	daniel@ffwll.ch, airlied@gmail.com
+Cc: oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 2/7] fbdev: Do not include <linux/backlight.h> in header
+Message-ID: <202402131349.eg8DJ3MB-lkp@intel.com>
+References: <20240212101712.23675-3-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240212-expresswire-deps-v1-2-685ad10cd693@skole.hr>
-References: <20240212-expresswire-deps-v1-0-685ad10cd693@skole.hr>
-In-Reply-To: <20240212-expresswire-deps-v1-0-685ad10cd693@skole.hr>
-To: Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Flavio Suligoi <f.suligoi@asem.it>, Hans de Goede <hdegoede@redhat.com>, 
- Jianhua Lu <lujianhua000@gmail.com>, 
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
- Helge Deller <deller@gmx.de>, Jingoo Han <jingoohan1@gmail.com>, 
- Karel Balej <balejk@matfyz.cz>, dri-devel@lists.freedesktop.org, 
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-leds@vger.kernel.org, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1760;
- i=duje.mihanovic@skole.hr; h=from:subject:message-id;
- bh=8oXLHu5mf6GCO+ZMr+tU6h6oKIscP7uIjmv7rxzg+zo=;
- b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlynmgL8L0kP8ZVEOL1g3BmNLjNbTU+Q9Ykoclo
- JRlY2qTALGJAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZcp5oAAKCRCaEZ6wQi2W
- 4ZkvD/9Tm0AdqRYDjoU8A+UDGagpNQJX5o2MxYzKRI15Kjuili8GVVflTvViVBi8H34/ML2TaNa
- jEeaHxyeQssz/2zcEpflayLn02Sq1FOwKnbvzp7VjdvltWyeAkIPn6Nx3gLszasLNrh3FisGZ+8
- pg4FlXvlkDpxnflQ7tu8hTKLCnPWnbzIX8dZqP2JDTTljWc0fqL8CvLXfOqz3W4kdj3JYmGpAB+
- NPcKfhUn+aP+MUzP3j0hxCUiaywhKiR5e0hvgIgyiXYY7KHcD/tfh6P5nefeV3x6nD/NsStw5eO
- sOkyzOe3hc0KlLT2sgdzGw7t1Zm5ytPX6LYjwfBwiBG9vvCC0Cxa6xbqpdr5cUPjmJL0wRFO3/Z
- E0baLz6BFlGEs64xGzWz1dTG+VMlG2V3Or2CKO4p4AIsx7QEio/Rjm6tGChAcqupljAZCeetnSA
- 4GcUqixr4W8gbqcFkylk86tIXZmqaI4YsTEyObgqQwmSFIHwUhnU8aV2pLH7JBtJQHABysUjUXz
- P97uJRkCfNs1CVOYbBgH3tYIKH3aSkzIuv4i+gf/8LPtge3BGEOEUHYXc8E4TvJJTnZ1tFP2Zh4
- qzDs5rdjQ6ZsABIz4sdsizTeQjIJytLO0ZIWgZGxjtXnH1U9iT5vCcdUe6qTMkpr20jL9/XqD28
- eOvZ3avwrFwS2jg==
-X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
- fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240212101712.23675-3-tzimmermann@suse.de>
 
-The ExpressWire library does not depend on NEW_LEDS and selecting it
-from a subsystem other than LEDs may cause Kconfig warnings:
+Hi Thomas,
 
-WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
-  Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=y]
-  Selected by [y]:
-  - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=y]
+kernel test robot noticed the following build warnings:
 
-Move it out of the "if NEW_LEDS" block to allow selection from other
-subsystems (in particular backlight) without raising this warning.
+[auto build test WARNING on drm-misc/drm-misc-next]
+[also build test WARNING on linus/master v6.8-rc4 next-20240212]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Link: https://lore.kernel.org/20240212111819.936815-1-arnd@kernel.org
-Reported-by: Arnd Bergmann <arnd@arndb.de>
-Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
-Fixes: 25ae5f5f4168 ("leds: Introduce ExpressWire library")
-Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
----
- drivers/leds/Kconfig | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/drm-nouveau-Include-linux-backlight-h/20240212-181930
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20240212101712.23675-3-tzimmermann%40suse.de
+patch subject: [PATCH 2/7] fbdev: Do not include <linux/backlight.h> in header
+config: powerpc-ppc6xx_defconfig (https://download.01.org/0day-ci/archive/20240213/202402131349.eg8DJ3MB-lkp@intel.com/config)
+compiler: powerpc-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240213/202402131349.eg8DJ3MB-lkp@intel.com/reproduce)
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 52328d295b4e..66998b938ed3 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -6,6 +6,12 @@ config LEDS_GPIO_REGISTER
- 	  As this function is used by arch code it must not be compiled as a
- 	  module.
- 
-+# This library does not depend on NEW_LEDS and must be independent so it can be
-+# selected from other subsystems (specifically backlight).
-+config LEDS_EXPRESSWIRE
-+	bool
-+	depends on GPIOLIB
-+
- menuconfig NEW_LEDS
- 	bool "LED Support"
- 	help
-@@ -186,10 +192,6 @@ config LEDS_EL15203000
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called leds-el15203000.
- 
--config LEDS_EXPRESSWIRE
--	bool
--	depends on GPIOLIB
--
- config LEDS_TURRIS_OMNIA
- 	tristate "LED support for CZ.NIC's Turris Omnia"
- 	depends on LEDS_CLASS_MULTICOLOR
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202402131349.eg8DJ3MB-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   drivers/macintosh/via-pmu-backlight.c: In function '__pmu_backlight_update_status':
+   drivers/macintosh/via-pmu-backlight.c:74:21: error: implicit declaration of function 'backlight_get_brightness'; did you mean 'pmu_backlight_get_level_brightness'? [-Werror=implicit-function-declaration]
+      74 |         int level = backlight_get_brightness(bd);
+         |                     ^~~~~~~~~~~~~~~~~~~~~~~~
+         |                     pmu_backlight_get_level_brightness
+   drivers/macintosh/via-pmu-backlight.c: At top level:
+   drivers/macintosh/via-pmu-backlight.c:108:21: error: variable 'pmu_backlight_data' has initializer but incomplete type
+     108 | static const struct backlight_ops pmu_backlight_data = {
+         |                     ^~~~~~~~~~~~~
+   drivers/macintosh/via-pmu-backlight.c:109:10: error: 'const struct backlight_ops' has no member named 'update_status'
+     109 |         .update_status  = pmu_backlight_update_status,
+         |          ^~~~~~~~~~~~~
+>> drivers/macintosh/via-pmu-backlight.c:109:27: warning: excess elements in struct initializer
+     109 |         .update_status  = pmu_backlight_update_status,
+         |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/macintosh/via-pmu-backlight.c:109:27: note: (near initialization for 'pmu_backlight_data')
+   drivers/macintosh/via-pmu-backlight.c: In function 'pmu_backlight_init':
+   drivers/macintosh/via-pmu-backlight.c:136:37: error: storage size of 'props' isn't known
+     136 |         struct backlight_properties props;
+         |                                     ^~~~~
+   drivers/macintosh/via-pmu-backlight.c:154:34: error: invalid application of 'sizeof' to incomplete type 'struct backlight_properties'
+     154 |         memset(&props, 0, sizeof(struct backlight_properties));
+         |                                  ^~~~~~
+   drivers/macintosh/via-pmu-backlight.c:155:22: error: 'BACKLIGHT_PLATFORM' undeclared (first use in this function)
+     155 |         props.type = BACKLIGHT_PLATFORM;
+         |                      ^~~~~~~~~~~~~~~~~~
+   drivers/macintosh/via-pmu-backlight.c:155:22: note: each undeclared identifier is reported only once for each function it appears in
+   drivers/macintosh/via-pmu-backlight.c:157:14: error: implicit declaration of function 'backlight_device_register'; did you mean 'root_device_register'? [-Werror=implicit-function-declaration]
+     157 |         bd = backlight_device_register(name, NULL, NULL, &pmu_backlight_data,
+         |              ^~~~~~~~~~~~~~~~~~~~~~~~~
+         |              root_device_register
+   drivers/macintosh/via-pmu-backlight.c:166:19: error: invalid use of undefined type 'struct backlight_device'
+     166 |         level = bd->props.max_brightness;
+         |                   ^~
+   drivers/macintosh/via-pmu-backlight.c:176:35: error: invalid use of undefined type 'struct backlight_device'
+     176 |                                 bd->props.max_brightness / 15);
+         |                                   ^~
+   drivers/macintosh/via-pmu-backlight.c:179:11: error: invalid use of undefined type 'struct backlight_device'
+     179 |         bd->props.brightness = level;
+         |           ^~
+   drivers/macintosh/via-pmu-backlight.c:180:11: error: invalid use of undefined type 'struct backlight_device'
+     180 |         bd->props.power = FB_BLANK_UNBLANK;
+         |           ^~
+   drivers/macintosh/via-pmu-backlight.c:181:9: error: implicit declaration of function 'backlight_update_status'; did you mean 'pmu_backlight_update_status'? [-Werror=implicit-function-declaration]
+     181 |         backlight_update_status(bd);
+         |         ^~~~~~~~~~~~~~~~~~~~~~~
+         |         pmu_backlight_update_status
+>> drivers/macintosh/via-pmu-backlight.c:136:37: warning: unused variable 'props' [-Wunused-variable]
+     136 |         struct backlight_properties props;
+         |                                     ^~~~~
+   drivers/macintosh/via-pmu-backlight.c: At top level:
+   drivers/macintosh/via-pmu-backlight.c:108:35: error: storage size of 'pmu_backlight_data' isn't known
+     108 | static const struct backlight_ops pmu_backlight_data = {
+         |                                   ^~~~~~~~~~~~~~~~~~
+   drivers/macintosh/via-pmu-backlight.c:108:35: error: storage size of 'pmu_backlight_data' isn't known
+   cc1: some warnings being treated as errors
+
+
+vim +109 drivers/macintosh/via-pmu-backlight.c
+
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  106  
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  107  
+acc2472ed33fc5 Lionel Debroux         2010-11-16  108  static const struct backlight_ops pmu_backlight_data = {
+5474c120aafe78 Michael Hanselmann     2006-06-25 @109  	.update_status	= pmu_backlight_update_status,
+599a52d1262939 Richard Purdie         2007-02-10  110  
+5474c120aafe78 Michael Hanselmann     2006-06-25  111  };
+5474c120aafe78 Michael Hanselmann     2006-06-25  112  
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  113  #ifdef CONFIG_PM
+d565dd3b0824b6 Benjamin Herrenschmidt 2006-08-31  114  void pmu_backlight_set_sleep(int sleep)
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  115  {
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  116  	unsigned long flags;
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  117  
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  118  	spin_lock_irqsave(&pmu_backlight_lock, flags);
+d565dd3b0824b6 Benjamin Herrenschmidt 2006-08-31  119  	sleeping = sleep;
+fa19d63488bd10 Benjamin Herrenschmidt 2008-03-03  120  	if (pmac_backlight && uses_pmu_bl) {
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  121  		if (sleep) {
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  122  			struct adb_request req;
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  123  
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  124  			pmu_request(&req, NULL, 2, PMU_POWER_CTRL,
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  125  				    PMU_POW_BACKLIGHT | PMU_POW_OFF);
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  126  			pmu_wait_complete(&req);
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  127  		} else
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  128  			__pmu_backlight_update_status(pmac_backlight);
+0094f2cdcfb6f2 Benjamin Herrenschmidt 2007-12-20  129  	}
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  130  	spin_unlock_irqrestore(&pmu_backlight_lock, flags);
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  131  }
+d565dd3b0824b6 Benjamin Herrenschmidt 2006-08-31  132  #endif /* CONFIG_PM */
+4b755999d6e0c1 Michael Hanselmann     2006-07-30  133  
+00f7b29f6e9b8a Mathieu Malaterre      2017-12-26  134  void __init pmu_backlight_init(void)
+5474c120aafe78 Michael Hanselmann     2006-06-25  135  {
+a19a6ee6cad2b2 Matthew Garrett        2010-02-17 @136  	struct backlight_properties props;
 
 -- 
-2.43.1
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

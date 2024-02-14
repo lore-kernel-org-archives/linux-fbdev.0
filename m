@@ -1,198 +1,191 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+Received: from smtp-relay-canonical-1.canonical.com (smtp-relay-canonical-1.canonical.com [185.125.188.121])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FFD165BAA;
-	Tue, 13 Feb 2024 21:58:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EFA510A01;
+	Wed, 14 Feb 2024 05:25:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.188.121
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707861504; cv=none; b=Yz2KV8+5xhfy/F67ZksMf2Fqs38pDlbQIilQFLgULB+p2SlefVUJ7stNPr/6nSgtA3y3S80w7dIbVaV8+Riy3VBX7cyOo6V19y53WR0wjsX7I79vTiUMuiceFv2iQ6nUybVHxG1lAFCAXA4QvAWNherw4+WfS+5GRmJvTpKOynY=
+	t=1707888327; cv=none; b=ALeoEngWsaYOHbLxy32XnlNz7YVqg3VP3svVzMu5a2gTI5ed+GcPIhruDTpyS0Qmov/S9ilI0ctBhKb9ikqfQo/kxfS7mGoPdKTiuVGMIo5rH4QqvwbbCVfDpKXZRJe6a/XRAy91/B+xQR4tL6bR9nJvh3Lg5mbfbZn605hE2d8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707861504; c=relaxed/simple;
-	bh=QZtp6zFSJB9KAqD6mHzlmSSAFRT2TanT7mhlKfjwml4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uSCSxzcGDlK0O03jlqnSpkx/RvPZRQEmuWcQI+PZrXB1swbse2BgBUbETw/97Ns4sSlo8wmaIXdeDgb0T4UrI0VN73cuvkS55H12ESYzaQzA/WhUwkIgPKnCLwxbSG+rPUF4LO0813ZAsEISwSaWka2UTunNnYsb9kTpe7OVzYE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bQU8V6E6; arc=none smtp.client-ip=192.198.163.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1707888327; c=relaxed/simple;
+	bh=/SNJH5mi3cLJUn0gkt7Dk+vu0AREXHUs/+p3bdoRMj8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=prWWnvsh2ZbBUpO3b2gSTrxoqkpiUrGmyXufOgEWGJtH9L0OCtpIS5uA+MvoVcR64XThXb0j5AE27s1ExV6iaGS1oYekOKszjG6PGBlXG6/X2aUl/mnTe+75m0+SDiZKRyC+QrKJ0ye19L6NUJ6oDBOCQaftaihWQlyBxWhok3E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com; spf=pass smtp.mailfrom=canonical.com; dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b=jmn+rSKV; arc=none smtp.client-ip=185.125.188.121
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=canonical.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bQU8V6E6"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1707861502; x=1739397502;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=QZtp6zFSJB9KAqD6mHzlmSSAFRT2TanT7mhlKfjwml4=;
-  b=bQU8V6E6qhV+r/nkG0+zeTp+0uyc/JQNQbasnPMXJLvm7VKBzMANMCQi
-   ywMEGQSdlEx7zGgy7ISwOT5NqpcZQCz3tx/MeWNdg8LaKv68jiaTpA8fp
-   08vqHaS1k+HPKe2Vz879R3XR+ryyvK6clsOFDFHMhf1AmYNDsm/6b+RBB
-   9IVAnOzOnUssNp9vUZmFZ5JkauFXtBMdq6z7DYDVOPeS8gJWnfMSLygZ+
-   cqG4KZg7SfWsPI+yU3B1pJOAYZXzP+7PFpVeERJxWJxWpy8Vn0JboknSV
-   5te1X/yXB8wZPcidBXryqesKewDr0+KZ7octVeZh2xNcQVs3zpxPnMC3W
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="12611759"
-X-IronPort-AV: E=Sophos;i="6.06,158,1705392000"; 
-   d="scan'208";a="12611759"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Feb 2024 13:58:21 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="911908559"
-X-IronPort-AV: E=Sophos;i="6.06,158,1705392000"; 
-   d="scan'208";a="911908559"
-Received: from lkp-server01.sh.intel.com (HELO 01f0647817ea) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 13 Feb 2024 13:58:17 -0800
-Received: from kbuild by 01f0647817ea with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1ra0nA-00086a-0K;
-	Tue, 13 Feb 2024 21:58:16 +0000
-Date: Wed, 14 Feb 2024 05:57:42 +0800
-From: kernel test robot <lkp@intel.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, lee@kernel.org,
-	daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
-	javierm@redhat.com
-Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-pwm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
-	Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Subject: Re: [PATCH 04/10] hid/hid-picolcd: Remove struct
- backlight_ops.check_fb
-Message-ID: <202402140514.sb1rerJx-lkp@intel.com>
-References: <20240212162645.5661-5-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b="jmn+rSKV"
+Received: from dragon.fritz.box (unknown [58.7.187.102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 6213043A13;
+	Wed, 14 Feb 2024 05:25:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+	s=20210705; t=1707888320;
+	bh=F7tGUbYrO0LaqqLDslIXG8EpJYmwDVj8pxAuB9hurBw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version;
+	b=jmn+rSKV1GWw4BbgEKt8LV0gNWtSCrzaGYl4SnNBs2cJc0IEZ4eWfCctqqyFJxbw/
+	 mbdu/f/ACZQSi11bX5Me0YKaPIIT2/VNp2nAB5GkytNwkvtnZuKDvIdswItJK1WhPz
+	 4yn8Wi7iWb3Vi/4/UxzLO/mlokW6YDLZVN5rLeTM6z46xBtMHs62bMf0LY4SrPuiMC
+	 iBEKbjZ4gp+jCKngdWFB9EI1VEpjnYLcXg1EwgX4iDO8RJxwFjeAkTq4Yox11zfhC6
+	 pnsv7zgs1a5gbeN0oJc6dHTE3VIHF/CHCfvjT1ggMLYbrgMZue6rXJrSNOKgko+x/6
+	 Q0TQjSF2rf6Bg==
+From: Daniel van Vugt <daniel.van.vugt@canonical.com>
+To: 
+Cc: Daniel van Vugt <daniel.van.vugt@canonical.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Helge Deller <deller@gmx.de>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	=?UTF-8?q?Thomas=20Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	Jani Nikula <jani.nikula@intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 2/2] fbcon: Defer console takeover for splash screens to first switch
+Date: Wed, 14 Feb 2024 13:24:07 +0800
+Message-ID: <20240214052412.22770-2-daniel.van.vugt@canonical.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240214052412.22770-1-daniel.van.vugt@canonical.com>
+References: <f2c54ff7-d601-49d0-b5ad-9b111d743ded@canonical.com>
+ <20240214052412.22770-1-daniel.van.vugt@canonical.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240212162645.5661-5-tzimmermann@suse.de>
+Content-Transfer-Encoding: 8bit
 
-Hi Thomas,
+Until now, deferred console takeover only meant defer until there is
+output. But that risks stepping on the toes of userspace splash screens,
+as console messages may appear before the splash screen. So check the
+command line for the expectation of userspace splash and if present then
+extend the deferral until the first switch.
 
-kernel test robot noticed the following build errors:
+v2: Added Kconfig option instead of hard coding "splash".
+v3: Default to disabled, not "splash". If enabled then take over on
+    switch rather than on first output after switch.
 
-[auto build test ERROR on lee-backlight/for-backlight-next]
-[also build test ERROR on lee-backlight/for-backlight-fixes hid/for-next lee-leds/for-leds-next linus/master v6.8-rc4 next-20240213]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Closes: https://bugs.launchpad.net/bugs/1970069
+Cc: Mario Limonciello <mario.limonciello@amd.com>
+Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
+---
+ drivers/video/console/Kconfig    | 12 +++++++++
+ drivers/video/fbdev/core/fbcon.c | 44 +++++++++++++++++++++++++++++---
+ 2 files changed, 52 insertions(+), 4 deletions(-)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/backlight-Match-backlight-device-against-struct-fb_info-bl_dev/20240213-002853
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git for-backlight-next
-patch link:    https://lore.kernel.org/r/20240212162645.5661-5-tzimmermann%40suse.de
-patch subject: [PATCH 04/10] hid/hid-picolcd: Remove struct backlight_ops.check_fb
-config: x86_64-rhel-8.3 (https://download.01.org/0day-ci/archive/20240214/202402140514.sb1rerJx-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240214/202402140514.sb1rerJx-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202402140514.sb1rerJx-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/hid/hid-picolcd_fb.c: In function 'picolcd_init_framebuffer':
->> drivers/hid/hid-picolcd_fb.c:497:13: error: 'struct fb_info' has no member named 'bl_dev'
-     497 |         info->bl_dev = data->backlight;
-         |             ^~
-
-
-vim +497 drivers/hid/hid-picolcd_fb.c
-
-   459	
-   460	static DEVICE_ATTR(fb_update_rate, 0664, picolcd_fb_update_rate_show,
-   461			picolcd_fb_update_rate_store);
-   462	
-   463	/* initialize Framebuffer device */
-   464	int picolcd_init_framebuffer(struct picolcd_data *data)
-   465	{
-   466		struct device *dev = &data->hdev->dev;
-   467		struct fb_info *info = NULL;
-   468		struct picolcd_fb_data *fbdata = NULL;
-   469		int i, error = -ENOMEM;
-   470		u32 *palette;
-   471	
-   472		/* The extra memory is:
-   473		 * - 256*u32 for pseudo_palette
-   474		 * - struct fb_deferred_io
-   475		 */
-   476		info = framebuffer_alloc(256 * sizeof(u32) +
-   477				sizeof(struct fb_deferred_io) +
-   478				sizeof(struct picolcd_fb_data) +
-   479				PICOLCDFB_SIZE, dev);
-   480		if (!info)
-   481			goto err_nomem;
-   482	
-   483		info->fbdefio = info->par;
-   484		*info->fbdefio = picolcd_fb_defio;
-   485		info->par += sizeof(struct fb_deferred_io);
-   486		palette = info->par;
-   487		info->par += 256 * sizeof(u32);
-   488		for (i = 0; i < 256; i++)
-   489			palette[i] = i > 0 && i < 16 ? 0xff : 0;
-   490		info->pseudo_palette = palette;
-   491		info->fbops = &picolcdfb_ops;
-   492		info->var = picolcdfb_var;
-   493		info->fix = picolcdfb_fix;
-   494		info->fix.smem_len   = PICOLCDFB_SIZE*8;
-   495	
-   496	#ifdef CONFIG_HID_PICOLCD_BACKLIGHT
- > 497		info->bl_dev = data->backlight;
-   498	#endif
-   499	
-   500		fbdata = info->par;
-   501		spin_lock_init(&fbdata->lock);
-   502		fbdata->picolcd = data;
-   503		fbdata->update_rate = PICOLCDFB_UPDATE_RATE_DEFAULT;
-   504		fbdata->bpp     = picolcdfb_var.bits_per_pixel;
-   505		fbdata->force   = 1;
-   506		fbdata->vbitmap = info->par + sizeof(struct picolcd_fb_data);
-   507		fbdata->bitmap  = vmalloc(PICOLCDFB_SIZE*8);
-   508		if (fbdata->bitmap == NULL) {
-   509			dev_err(dev, "can't get a free page for framebuffer\n");
-   510			goto err_nomem;
-   511		}
-   512		info->flags |= FBINFO_VIRTFB;
-   513		info->screen_buffer = fbdata->bitmap;
-   514		info->fix.smem_start = (unsigned long)fbdata->bitmap;
-   515		memset(fbdata->vbitmap, 0xff, PICOLCDFB_SIZE);
-   516		data->fb_info = info;
-   517	
-   518		error = picolcd_fb_reset(data, 1);
-   519		if (error) {
-   520			dev_err(dev, "failed to configure display\n");
-   521			goto err_cleanup;
-   522		}
-   523	
-   524		error = device_create_file(dev, &dev_attr_fb_update_rate);
-   525		if (error) {
-   526			dev_err(dev, "failed to create sysfs attributes\n");
-   527			goto err_cleanup;
-   528		}
-   529	
-   530		fb_deferred_io_init(info);
-   531		error = register_framebuffer(info);
-   532		if (error) {
-   533			dev_err(dev, "failed to register framebuffer\n");
-   534			goto err_sysfs;
-   535		}
-   536		return 0;
-   537	
-   538	err_sysfs:
-   539		device_remove_file(dev, &dev_attr_fb_update_rate);
-   540		fb_deferred_io_cleanup(info);
-   541	err_cleanup:
-   542		data->fb_info    = NULL;
-   543	
-   544	err_nomem:
-   545		if (fbdata)
-   546			vfree(fbdata->bitmap);
-   547		framebuffer_release(info);
-   548		return error;
-   549	}
-   550	
-
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index bc31db6ef7..2f9435335f 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -138,6 +138,18 @@ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+ 	  by the firmware in place, rather then replacing the contents with a
+ 	  black screen as soon as fbcon loads.
+ 
++config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
++	string "Command line parameter to defer takeover to first switch"
++	depends on FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
++	default ""
++	help
++	  If enabled this defers further the framebuffer console taking over
++	  until the first console switch has occurred. And even then only if
++	  the specified parameter is found on the command line. This ensures
++	  fbcon does not interrupt userspace splash screens such as Plymouth
++	  which may be yet to start rendering at the time of the first console
++	  output.
++
+ config STI_CONSOLE
+ 	bool "STI text console"
+ 	depends on PARISC && HAS_IOMEM
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 1183e7a871..e5d841ab03 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -76,6 +76,7 @@
+ #include <linux/crc32.h> /* For counting font checksums */
+ #include <linux/uaccess.h>
+ #include <asm/irq.h>
++#include <asm/cmdline.h>
+ 
+ #include "fbcon.h"
+ #include "fb_internal.h"
+@@ -3348,7 +3349,7 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+ {
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+-	pr_info("fbcon: Taking over console\n");
++	pr_info("fbcon: Taking over console for output\n");
+ 
+ 	dummycon_unregister_output_notifier(&fbcon_output_nb);
+ 
+@@ -3357,6 +3358,27 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+ 
+ 	return NOTIFY_OK;
+ }
++
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
++static int initial_console;
++static struct notifier_block fbcon_switch_nb;
++
++static int fbcon_switch_notifier(struct notifier_block *nb,
++				 unsigned long action, void *data)
++{
++	struct vc_data *vc = data;
++
++	WARN_CONSOLE_UNLOCKED();
++
++	if (vc->vc_num != initial_console) {
++		pr_info("fbcon: Taking over console for switch\n");
++		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
++		schedule_work(&fbcon_deferred_takeover_work);
++	}
++
++	return NOTIFY_OK;
++}
++#endif
+ #endif
+ 
+ static void fbcon_start(void)
+@@ -3368,8 +3390,18 @@ static void fbcon_start(void)
+ 		deferred_takeover = false;
+ 
+ 	if (deferred_takeover) {
+-		fbcon_output_nb.notifier_call = fbcon_output_notifier;
+-		dummycon_register_output_notifier(&fbcon_output_nb);
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
++		if (cmdline_find_option_bool(boot_command_line,
++		      CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION)) {
++			initial_console = fg_console;
++			fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
++			dummycon_register_switch_notifier(&fbcon_switch_nb);
++		} else
++#endif
++		{
++			fbcon_output_nb.notifier_call = fbcon_output_notifier;
++			dummycon_register_output_notifier(&fbcon_output_nb);
++		}
+ 		return;
+ 	}
+ #endif
+@@ -3416,8 +3448,12 @@ void __exit fb_console_exit(void)
+ {
+ #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+ 	console_lock();
+-	if (deferred_takeover)
++	if (deferred_takeover) {
+ 		dummycon_unregister_output_notifier(&fbcon_output_nb);
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
++		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
++#endif
++	}
+ 	console_unlock();
+ 
+ 	cancel_work_sync(&fbcon_deferred_takeover_work);
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+

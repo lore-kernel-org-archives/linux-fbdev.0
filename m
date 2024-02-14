@@ -1,46 +1,46 @@
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2084.outbound.protection.outlook.com [40.107.220.84])
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2041.outbound.protection.outlook.com [40.107.236.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11D49141997;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E3C314199C;
 	Wed, 14 Feb 2024 21:58:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.220.84
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.236.41
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707947914; cv=fail; b=RivKu2byIfNyMQPG0qJinankpMdXq8shdL0B5lx0f3vb2aDg/90lB21sDBKhLL6izn2DyPdgP/vp87r9iTjGSpu4unfxG4rh+7W9cxt+we44vLDOkbXCCuNtWTRqkd6JI/iKkBkmghXL+XY9WDBNCgu4cOt9Ea8WqrrrpYCd7uA=
+	t=1707947915; cv=fail; b=CfAlvqx49ECZvp0eT7dBN3L8nL0ZroL1UTtHB0wpcIKZL76uAMfodpKEp72ZXfnIbcPgkHGcDZv9bdytocNDGZ9YtWJCHfbM096EENUDKp3t5gjo3ULlG0sM3EFv9Ld0MXek29TpiaooQXnwsNvz9BWM2nbf3eGJ7fbXramjans=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707947914; c=relaxed/simple;
-	bh=VM5DK3a5DkYNLuL518lf+jCXrbZRw4nA/ki/l996tJw=;
+	s=arc-20240116; t=1707947915; c=relaxed/simple;
+	bh=2i2tAczuHFmpXHQWABxZYvFWWSYe/Q1OpOgTAeGAwAg=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aKzOkPLap/O8tCUzoDAs75BdqoYiL4PM886teStB8NGFLIQ0pa9Ylussr7gvn9zBjotWEQEjcg88ZdW+ZT5T9jZ+4ye3E4KgKdrHt8bmz/DlN9CeDIHtExNIbdyvzjK6RAT+tkbVniJaDSHBzyKRF/bETF6z1PMz/H/pzsymwcA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=wJYsqY42; arc=fail smtp.client-ip=40.107.220.84
+	 MIME-Version:Content-Type; b=nLgXXtCrQ/QsfOIMc+XSSuM1K4Pw/XAtBB9M53H+N73nwxnsvlXzrvR11mRIcq1Xc5iQJgfBQhUwauSLbI6Lx8qRzNsPYaTNW6qgB5r3JjirecJRKF9OZRV3PSU/nFUPsGfXP/dZek+TX6J8eDdnAUxv1X/u9lcdtD6pJzIZXSQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=OHVOleSi; arc=fail smtp.client-ip=40.107.236.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="wJYsqY42"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="OHVOleSi"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Wk3+d/A8Wpzme7kQAJIO+XoLG7Xu3be19ezWQr6xK9a7gg/5AZ84w3wSCEpGxG1VKf1sJLrFZzruS1oB7A0Cccd8YdT1R5JcpkJO/HqfgQo2RntgBwGEPkBpKVzecHhj66dxo80WkJm3w9/5MC4hsWGRnrjJfIMIsRH/PYlZMnU1/JRRZdx9a8z5SqB07IZY8hYgJ5kEfRZQrwHFejHOXyycjmGrEriHhVhDbLDWJQK1moMSRv33bHcRIIlnXVq0tXEMIPzTK4gyB2LW/0CDLewxnh6YSrYHqAnFgWLZqWgkBVOl//TLYJYwj38YuLS/eXdE/aYWL+OIp7Lzdq23Cg==
+ b=GRJ6olEaGFCdO0uYsIUYki5QFE6Go32nBiGTFEaQfgb6cXAy24wj9vUOBktcghqL7+JElNfg4nacXMLnrhvnxMxDtMxIy75KrlUoDI17qcatGHX07LuvvRlyjop57DSWGXrmh+4w3dZHFzGx4RpO76sgNFjk4GF2Bq3oLafJTyFTMXK80wc1ZXK/dW8F+L641syWZK4Yif8UDGYpRnCp4YIwF8NM2nl7ebg/rCp+eEA/ZlvcoVmcRw/uvM6tZQDpXQPCfe48qoVp/aMuGaSczaNpI/5/TjSLKtJNUa8J1mtDSRRp/weUJ7GdpQfeHLoLQJiAEStFj6PxwvG5BT4t0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Mp0M3qgQ+UH8u3Fzym1meKBbPuuWeEsx8opzMEJNl3A=;
- b=h6NR39qTZrSjQdTvQ8tn/KxEY0340XSggVn4vJXB+BHm2DXZ7Tir1h0IEcY0eQJv0U3CBVH3+lzzEH/zwTwwJp/du1U4dDkEdbw0O9+xF9PY7BrY2w4joHmOxvX55rEmUOyJJHxolJ3QgOaQnAKXyc/bFPvnQ5IsEQerUljs+O0r0VSz+abLQyFnx9bS6OrW9v2j2AJuLJIORMUyLVLTKxBBAayGxsUdsADlh1fBjvo6iRo4Mni1e6oSGNFLDTZtqy0dNMIBN/wgHxbM+czABdker/9tZiAewi+bsCxopWXesjfl90875TbhGU1P37PQlSYZQbvuSqtsqsLLp3QQCw==
+ bh=ijTBQLavwGwoqcodRrW9x+ZVRUoNo9dDweW735Q8j+I=;
+ b=Mn8DbT/2TontnMRCNtnMEZeZaivRQriM3V6mPAo+TgLfPgFf/35nGfSBAbmrZI0Cchg3nTNjsBj7P5k5RwH6tC5RhXuYqvmFM0tP3FvhDcBkwcU6mN0j8eXapr3ZMM/7eI5DcTVhY+9PKNydr2fKL+WVajfJ+0UxC0n3ihIsSbNj8tl2cOLFYuI26ikmj2Oho+RSJ0uXQABtYnq9GjwHd/ACR4wwi3CXkqpVjqHHljoT0TRBfhJJz2FTAlFp2JMZOBeJUIzMbW3soWp8n8uPmh4B0GEg8vnJkKHt/J/a8JoJjGNBBYnsrxZU/ZDwtUGN4KcWhKUo1eSx/Nq+hXMZUw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=ffwll.ch smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Mp0M3qgQ+UH8u3Fzym1meKBbPuuWeEsx8opzMEJNl3A=;
- b=wJYsqY42uITuR/fGmS0zCq8F6a1uzcLZiZ6vDBtRpfupBrtAlo3LNtqHE6COaQmS4GpfV4JldplrhTHTekqjerj22TANaMqLliedo7JKmSqtgjLZbzjDOPA0SWCEV53yFntUHZwoXftBex4ZrRGj0KIAuXISq4r9lYWT1ftzBR0=
-Received: from BL0PR1501CA0017.namprd15.prod.outlook.com
- (2603:10b6:207:17::30) by DS0PR12MB7511.namprd12.prod.outlook.com
- (2603:10b6:8:139::8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.26; Wed, 14 Feb
- 2024 21:58:30 +0000
-Received: from MN1PEPF0000ECD9.namprd02.prod.outlook.com
- (2603:10b6:207:17:cafe::b3) by BL0PR1501CA0017.outlook.office365.com
- (2603:10b6:207:17::30) with Microsoft SMTP Server (version=TLS1_2,
+ bh=ijTBQLavwGwoqcodRrW9x+ZVRUoNo9dDweW735Q8j+I=;
+ b=OHVOleSiSc9B3eB7cJXimILFNUg0+psPv7snMSODD7Qy4iLopUEmIIdv49l+YMHFhh7GyWPzXkmDgYdO0KGyCPdJADYVuzqytIDqQ8ysno2mm3LlPzudoGXqkZAp2HcZCV/v8mKKLPhh7fiV8iaaKeP/vlvy9mZf0xlNlHagW4M=
+Received: from BL1PR13CA0020.namprd13.prod.outlook.com (2603:10b6:208:256::25)
+ by IA0PR12MB7506.namprd12.prod.outlook.com (2603:10b6:208:442::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.29; Wed, 14 Feb
+ 2024 21:58:29 +0000
+Received: from MN1PEPF0000ECD6.namprd02.prod.outlook.com
+ (2603:10b6:208:256:cafe::d0) by BL1PR13CA0020.outlook.office365.com
+ (2603:10b6:208:256::25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.26 via Frontend
- Transport; Wed, 14 Feb 2024 21:58:30 +0000
+ Transport; Wed, 14 Feb 2024 21:58:29 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,13 +48,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- MN1PEPF0000ECD9.mail.protection.outlook.com (10.167.242.138) with Microsoft
+ MN1PEPF0000ECD6.mail.protection.outlook.com (10.167.242.135) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.7292.25 via Frontend Transport; Wed, 14 Feb 2024 21:58:30 +0000
+ 15.20.7292.25 via Frontend Transport; Wed, 14 Feb 2024 21:58:29 +0000
 Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.35; Wed, 14 Feb
- 2024 15:58:29 -0600
+ 2024 15:58:28 -0600
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: Daniel Vetter <daniel@ffwll.ch>, Jani Nikula
 	<jani.nikula@linux.intel.com>, Alex Deucher <alexander.deucher@amd.com>,
@@ -68,9 +68,9 @@ CC: <amd-gfx@lists.freedesktop.org>, "open list:USB SUBSYSTEM"
 	<linux-acpi@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>,
 	Melissa Wen <mwen@igalia.com>, Mark Pearson <mpearson-lenovo@squebb.ca>,
 	Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v6 5/5] drm/nouveau: Use drm_edid_read_acpi() helper
-Date: Wed, 14 Feb 2024 15:57:56 -0600
-Message-ID: <20240214215756.6530-6-mario.limonciello@amd.com>
+Subject: [PATCH v6 3/5] drm: Add support to get EDID from ACPI
+Date: Wed, 14 Feb 2024 15:57:54 -0600
+Message-ID: <20240214215756.6530-4-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240214215756.6530-1-mario.limonciello@amd.com>
 References: <20240214215756.6530-1-mario.limonciello@amd.com>
@@ -86,174 +86,251 @@ X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN1PEPF0000ECD9:EE_|DS0PR12MB7511:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6f03c3d6-49f2-45bd-1b22-08dc2da814ef
+X-MS-TrafficTypeDiagnostic: MN1PEPF0000ECD6:EE_|IA0PR12MB7506:EE_
+X-MS-Office365-Filtering-Correlation-Id: 66d143d8-d99f-4b44-3862-08dc2da81406
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
 X-Microsoft-Antispam-Message-Info:
-	aU4Dnc+/pdRyBBJP93PgXymR5ZU2ZAhQZDmRLaklig1bH1Z1TyOiaTXREm6SVLi7VeBcUeoyzQU49oQ0Y/E/2avYtqGA1gwq7bJwaWHkehrAj38yY+5dfEi+br+GjqQzZweNcY5is6iEJz0WEy/WXo1Bvoz/cD37H+6a/px+ROWwcBCG2DdbHvAahGtobeocZnJiDjwm6g5zSCSW+3QfaM73/5S2gjRbSpV2xYCBaqUf63ORUDgYrQwnJKKDZUVm037yMtGBdbzDKuH+cqMr8gpPeDrElAM6A8e8mL0HEuKw1koomSab+EtzYAFnhxT6lGk4HTw3tmM0x5F6xN8R8alwi75rTZkWgGLPUbmVQuv1YyoEKlLhw2B3UN0AXgTJJe7WHVPTkiACOrm7jYH5fdPyy/2LN7sLP2xxYQOjs5gi/8EZJP8doJZrh3F1OvkoL6id9xiNYM8JoR+kex1VnWr1Bvotmx1kGB0nxU/S73ooCa1vMBt0AwuduI9czFFBnOb+e9vjM6pkmeL55LwWphJyZXouqjJLJqSv+Zzw5RRzadtPvITv8p/YMjBQtv1JEmxIF5F01yDmJ/bHPZ+0rGhHXc3x85IhBYTFpUv0OwrlIUllbd252eB/6sF63H8J11SJ6MxjP3cXuGzKZFQpAFmoYarx1iU3o9kwuxRfC5Q=
+	RX5sbaqCoKR40WnF+AYC3SHOOANWsa07s+Q2V+V53GWgOt4EoPmRaPO6Q9z93AaqM1TtM6x9PIQVlZhNKbiTHOKKLsqvc982YasmOUxuKqNJtb/RbOhFj1i8qPzAB3mdL+6DU40/1cn1VliPsleGxs0/yRi7i/wQxJCzts3azlYUS7BwbD97ow8bQsX9aRBGH15WlFomanfLJlJHraUbUzj88oiV6EiR/jAFVyjsTB2d1yuDXevyKylERjQxH6yt+eh2ziQ1R6S4dJIbWGoR3IG5ByPDib2duH/HRYSzDkkQ+5OVnT8PDlYDYGZfWx9hKNgSiz9wBxUJt71ryF8m9oAHA9CQJyghXAefLsVRMNVyKpeiIvLuvqdCczH0SkdwoAcLifhLPmFFF8bjk7HkBrx1cVanT0f9D/oMYX5qHLMUG2nQ6GYgC4ZYrz8qabTysGlQlBdvLIDjfi6gCaigIsaTpVZDVQ/z+ANmKMNPI2zdrTO1zdY7ysZNPT5SgUXOvirHynygGYg5ulfT202+aDBTbLJ2QaxUGZyTEDR1xTwIoSR3NULp2hEgho7gG3Mrv8p3wiNYItU0bKxTuUbEgKKjpXznmKCc+Mm/2cz+PCElONv66epSvTTZG2Fta9largZSJSHe9SoMUiHggOb8hT19SbYamy5SsV1eVJT5Rp0=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(396003)(376002)(136003)(346002)(230922051799003)(82310400011)(36860700004)(451199024)(1800799012)(64100799003)(186009)(40470700004)(46966006)(8936002)(8676002)(81166007)(5660300002)(83380400001)(82740400003)(2906002)(4326008)(356005)(44832011)(70206006)(70586007)(7416002)(41300700001)(1076003)(426003)(336012)(16526019)(26005)(2616005)(6666004)(54906003)(478600001)(7696005)(316002)(110136005)(86362001)(36756003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(4636009)(39860400002)(396003)(376002)(346002)(136003)(230922051799003)(36860700004)(64100799003)(82310400011)(186009)(1800799012)(451199024)(46966006)(40470700004)(2616005)(41300700001)(7696005)(478600001)(66899024)(7416002)(44832011)(5660300002)(8936002)(8676002)(4326008)(2906002)(70586007)(70206006)(6666004)(54906003)(316002)(16526019)(1076003)(26005)(83380400001)(86362001)(36756003)(110136005)(426003)(82740400003)(81166007)(356005)(336012);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Feb 2024 21:58:30.8269
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Feb 2024 21:58:29.3006
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6f03c3d6-49f2-45bd-1b22-08dc2da814ef
+X-MS-Exchange-CrossTenant-Network-Message-Id: 66d143d8-d99f-4b44-3862-08dc2da81406
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	MN1PEPF0000ECD9.namprd02.prod.outlook.com
+	MN1PEPF0000ECD6.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7511
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7506
 
-Rather than inventing a wrapper to acpi_video_get_edid() use the
-one provided by drm. This fixes two problems:
-1. A memory leak that the memory provided by the ACPI call was
-   never freed.
-2. Validation of the BIOS provided blob.
-
-Convert the usage in nouveau_connector_detect_lvds() to use
-struct drm_edid at the same time.
+Some manufacturers have intentionally put an EDID that differs from
+the EDID on the internal panel on laptops.  Drivers that prefer to
+fetch this EDID can set a bit on the drm_connector to indicate that
+the DRM EDID helpers should try to fetch it and it is preferred if
+it's present.
 
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- drivers/gpu/drm/nouveau/nouveau_acpi.c      | 27 ----------------
- drivers/gpu/drm/nouveau/nouveau_acpi.h      |  2 --
- drivers/gpu/drm/nouveau/nouveau_connector.c | 35 +++++++++------------
- 3 files changed, 14 insertions(+), 50 deletions(-)
+ drivers/gpu/drm/Kconfig     |   1 +
+ drivers/gpu/drm/drm_edid.c  | 109 +++++++++++++++++++++++++++++++++---
+ include/drm/drm_connector.h |   6 ++
+ include/drm/drm_edid.h      |   1 +
+ 4 files changed, 109 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-index 8f0c69aad248..de9daafb3fbb 100644
---- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-@@ -360,33 +360,6 @@ void nouveau_unregister_dsm_handler(void) {}
- void nouveau_switcheroo_optimus_dsm(void) {}
- #endif
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 872edb47bb53..3db89e6af01d 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -8,6 +8,7 @@
+ menuconfig DRM
+ 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
+ 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && HAS_DMA
++	depends on (ACPI_VIDEO || ACPI_VIDEO=n)
+ 	select DRM_PANEL_ORIENTATION_QUIRKS
+ 	select DRM_KMS_HELPER if DRM_FBDEV_EMULATION
+ 	select FB_CORE if DRM_FBDEV_EMULATION
+diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
+index 923c4423151c..cdc30c6d05d5 100644
+--- a/drivers/gpu/drm/drm_edid.c
++++ b/drivers/gpu/drm/drm_edid.c
+@@ -28,6 +28,7 @@
+  * DEALINGS IN THE SOFTWARE.
+  */
  
--void *
--nouveau_acpi_edid(struct drm_device *dev, struct drm_connector *connector)
--{
--	struct acpi_device *acpidev;
--	int type, ret;
--	void *edid;
--
--	switch (connector->connector_type) {
--	case DRM_MODE_CONNECTOR_LVDS:
--	case DRM_MODE_CONNECTOR_eDP:
--		type = ACPI_VIDEO_DISPLAY_LCD;
--		break;
--	default:
--		return NULL;
--	}
--
--	acpidev = ACPI_COMPANION(dev->dev);
--	if (!acpidev)
--		return NULL;
--
--	ret = acpi_video_get_edid(acpidev, type, -1, &edid);
--	if (ret < 0)
--		return NULL;
--
--	return kmemdup(edid, EDID_LENGTH, GFP_KERNEL);
--}
--
- bool nouveau_acpi_video_backlight_use_native(void)
- {
- 	return acpi_video_backlight_use_native();
-diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.h b/drivers/gpu/drm/nouveau/nouveau_acpi.h
-index e39dd8b94b8b..6a3def8e6cca 100644
---- a/drivers/gpu/drm/nouveau/nouveau_acpi.h
-+++ b/drivers/gpu/drm/nouveau/nouveau_acpi.h
-@@ -10,7 +10,6 @@ bool nouveau_is_v1_dsm(void);
- void nouveau_register_dsm_handler(void);
- void nouveau_unregister_dsm_handler(void);
- void nouveau_switcheroo_optimus_dsm(void);
--void *nouveau_acpi_edid(struct drm_device *, struct drm_connector *);
- bool nouveau_acpi_video_backlight_use_native(void);
- void nouveau_acpi_video_register_backlight(void);
- #else
-@@ -19,7 +18,6 @@ static inline bool nouveau_is_v1_dsm(void) { return false; };
- static inline void nouveau_register_dsm_handler(void) {}
- static inline void nouveau_unregister_dsm_handler(void) {}
- static inline void nouveau_switcheroo_optimus_dsm(void) {}
--static inline void *nouveau_acpi_edid(struct drm_device *dev, struct drm_connector *connector) { return NULL; }
- static inline bool nouveau_acpi_video_backlight_use_native(void) { return true; }
- static inline void nouveau_acpi_video_register_backlight(void) {}
- #endif
-diff --git a/drivers/gpu/drm/nouveau/nouveau_connector.c b/drivers/gpu/drm/nouveau/nouveau_connector.c
-index 856b3ef5edb8..492035dc8453 100644
---- a/drivers/gpu/drm/nouveau/nouveau_connector.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_connector.c
-@@ -687,22 +687,13 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
- 	struct nouveau_drm *drm = nouveau_drm(dev);
- 	struct nouveau_connector *nv_connector = nouveau_connector(connector);
- 	struct nouveau_encoder *nv_encoder = NULL;
--	struct edid *edid = NULL;
-+	const struct drm_edid *drm_edid = NULL;
- 	enum drm_connector_status status = connector_status_disconnected;
++#include <acpi/video.h>
+ #include <linux/bitfield.h>
+ #include <linux/cec.h>
+ #include <linux/hdmi.h>
+@@ -2188,6 +2189,58 @@ drm_do_probe_ddc_edid(void *data, u8 *buf, unsigned int block, size_t len)
+ 	return ret == xfers ? 0 : -1;
+ }
  
- 	nv_encoder = find_encoder(connector, DCB_OUTPUT_LVDS);
- 	if (!nv_encoder)
- 		goto out;
- 
--	/* Try retrieving EDID via DDC */
--	if (!drm->vbios.fp_no_ddc) {
--		status = nouveau_connector_detect(connector, force);
--		if (status == connector_status_connected) {
--			edid = nv_connector->edid;
--			goto out;
--		}
--	}
--
- 	/* On some laptops (Sony, i'm looking at you) there appears to
- 	 * be no direct way of accessing the panel's EDID.  The only
- 	 * option available to us appears to be to ask ACPI for help..
-@@ -712,10 +703,14 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
- 	 * the nouveau decides an entry in the VBIOS FP mode table is
- 	 * valid - it's not (rh#613284)
- 	 */
--	if (nv_encoder->dcb->lvdsconf.use_acpi_for_edid) {
--		edid = nouveau_acpi_edid(dev, connector);
--		if (edid) {
--			status = connector_status_connected;
-+	if (nv_encoder->dcb->lvdsconf.use_acpi_for_edid)
-+		connector->acpi_edid_allowed = true;
++/**
++ * drm_do_probe_acpi_edid() - get EDID information via ACPI _DDC
++ * @data: struct drm_connector
++ * @buf: EDID data buffer to be filled
++ * @block: 128 byte EDID block to start fetching from
++ * @len: EDID data buffer length to fetch
++ *
++ * Try to fetch EDID information by calling acpi_video_get_edid() function.
++ *
++ * Return: 0 on success or error code on failure.
++ */
++static int
++drm_do_probe_acpi_edid(void *data, u8 *buf, unsigned int block, size_t len)
++{
++	struct drm_connector *connector = data;
++	struct drm_device *ddev = connector->dev;
++	struct acpi_device *acpidev = ACPI_COMPANION(ddev->dev);
++	unsigned char start = block * EDID_LENGTH;
++	void *edid;
++	int r;
 +
-+	/* Try retrieving EDID via BIOS or DDC */
-+	if (!drm->vbios.fp_no_ddc || nv_encoder->dcb->lvdsconf.use_acpi_for_edid) {
-+		status = nouveau_connector_detect(connector, force);
-+		if (status == connector_status_connected) {
-+			drm_edid = drm_edid_alloc(nv_connector->edid, EDID_LENGTH);
- 			goto out;
- 		}
- 	}
-@@ -734,12 +729,9 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
- 	 * stored for the panel stored in them.
- 	 */
- 	if (!drm->vbios.fp_no_ddc) {
--		edid = (struct edid *)nouveau_bios_embedded_edid(dev);
--		if (edid) {
--			edid = kmemdup(edid, EDID_LENGTH, GFP_KERNEL);
--			if (edid)
--				status = connector_status_connected;
--		}
-+		drm_edid = drm_edid_alloc(nouveau_bios_embedded_edid(dev), EDID_LENGTH);
-+		if (drm_edid)
-+			status = connector_status_connected;
- 	}
++	if (!acpidev)
++		return -ENODEV;
++
++	switch (connector->connector_type) {
++	case DRM_MODE_CONNECTOR_LVDS:
++	case DRM_MODE_CONNECTOR_eDP:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* fetch the entire edid from BIOS */
++	r = acpi_video_get_edid(acpidev, ACPI_VIDEO_DISPLAY_LCD, -1, &edid);
++	if (r < 0) {
++		DRM_DEBUG_KMS("Failed to get EDID from ACPI: %d\n", r);
++		return r;
++	}
++	if (len > r || start > r || start + len > r) {
++		r = -EINVAL;
++		goto cleanup;
++	}
++
++	memcpy(buf, edid + start, len);
++	r = 0;
++
++cleanup:
++	kfree(edid);
++
++	return r;
++}
++
+ static void connector_bad_edid(struct drm_connector *connector,
+ 			       const struct edid *edid, int num_blocks)
+ {
+@@ -2621,7 +2674,8 @@ EXPORT_SYMBOL(drm_probe_ddc);
+  * @connector: connector we're probing
+  * @adapter: I2C adapter to use for DDC
+  *
+- * Poke the given I2C channel to grab EDID data if possible.  If found,
++ * If the connector allows it, try to fetch EDID data using ACPI. If not found
++ * poke the given I2C channel to grab EDID data if possible.  If found,
+  * attach it to the connector.
+  *
+  * Return: Pointer to valid EDID or NULL if we couldn't find any.
+@@ -2629,20 +2683,50 @@ EXPORT_SYMBOL(drm_probe_ddc);
+ struct edid *drm_get_edid(struct drm_connector *connector,
+ 			  struct i2c_adapter *adapter)
+ {
+-	struct edid *edid;
++	struct edid *edid = NULL;
  
- out:
-@@ -750,7 +742,8 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
- 		status = connector_status_unknown;
- #endif
+ 	if (connector->force == DRM_FORCE_OFF)
+ 		return NULL;
  
--	nouveau_connector_set_edid(nv_connector, edid);
-+	drm_edid_connector_update(connector, drm_edid);
-+	drm_edid_free(drm_edid);
- 	if (nv_encoder)
- 		nouveau_connector_set_encoder(connector, nv_encoder);
- 	return status;
+-	if (connector->force == DRM_FORCE_UNSPECIFIED && !drm_probe_ddc(adapter))
+-		return NULL;
++	if (connector->acpi_edid_allowed)
++		edid = _drm_do_get_edid(connector, drm_do_probe_acpi_edid, connector, NULL);
++
++	if (!edid) {
++		if (connector->force == DRM_FORCE_UNSPECIFIED && !drm_probe_ddc(adapter))
++			return NULL;
++		edid = _drm_do_get_edid(connector, drm_do_probe_ddc_edid, adapter, NULL);
++	}
+ 
+-	edid = _drm_do_get_edid(connector, drm_do_probe_ddc_edid, adapter, NULL);
+ 	drm_connector_update_edid_property(connector, edid);
+ 	return edid;
+ }
+ EXPORT_SYMBOL(drm_get_edid);
+ 
++/**
++ * drm_edid_read_acpi - get EDID data, if available
++ * @connector: connector we're probing
++ *
++ * Use the BIOS to attempt to grab EDID data if possible.
++ *
++ * The returned pointer must be freed using drm_edid_free().
++ *
++ * Return: Pointer to valid EDID or NULL if we couldn't find any.
++ */
++const struct drm_edid *drm_edid_read_acpi(struct drm_connector *connector)
++{
++	const struct drm_edid *drm_edid;
++
++	if (connector->force == DRM_FORCE_OFF)
++		return NULL;
++
++	drm_edid = drm_edid_read_custom(connector, drm_do_probe_acpi_edid, connector);
++
++	/* Note: Do *not* call connector updates here. */
++
++	return drm_edid;
++}
++EXPORT_SYMBOL(drm_edid_read_acpi);
++
+ /**
+  * drm_edid_read_custom - Read EDID data using given EDID block read function
+  * @connector: Connector to use
+@@ -2727,10 +2811,11 @@ const struct drm_edid *drm_edid_read_ddc(struct drm_connector *connector,
+ EXPORT_SYMBOL(drm_edid_read_ddc);
+ 
+ /**
+- * drm_edid_read - Read EDID data using connector's I2C adapter
++ * drm_edid_read - Read EDID data using BIOS or connector's I2C adapter
+  * @connector: Connector to use
+  *
+- * Read EDID using the connector's I2C adapter.
++ * Read EDID from BIOS if allowed by connector or by using the connector's
++ * I2C adapter.
+  *
+  * The EDID may be overridden using debugfs override_edid or firmware EDID
+  * (drm_edid_load_firmware() and drm.edid_firmware parameter), in this priority
+@@ -2742,10 +2827,18 @@ EXPORT_SYMBOL(drm_edid_read_ddc);
+  */
+ const struct drm_edid *drm_edid_read(struct drm_connector *connector)
+ {
++	const struct drm_edid *drm_edid = NULL;
++
+ 	if (drm_WARN_ON(connector->dev, !connector->ddc))
+ 		return NULL;
+ 
+-	return drm_edid_read_ddc(connector, connector->ddc);
++	if (connector->acpi_edid_allowed)
++		drm_edid = drm_edid_read_acpi(connector);
++
++	if (!drm_edid)
++		drm_edid = drm_edid_read_ddc(connector, connector->ddc);
++
++	return drm_edid;
+ }
+ EXPORT_SYMBOL(drm_edid_read);
+ 
+diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+index fe88d7fc6b8f..74ed47f37a69 100644
+--- a/include/drm/drm_connector.h
++++ b/include/drm/drm_connector.h
+@@ -1886,6 +1886,12 @@ struct drm_connector {
+ 
+ 	/** @hdr_sink_metadata: HDR Metadata Information read from sink */
+ 	struct hdr_sink_metadata hdr_sink_metadata;
++
++	/**
++	 * @acpi_edid_allowed: Get the EDID from the BIOS, if available.
++	 * This is only applicable to eDP and LVDS displays.
++	 */
++	bool acpi_edid_allowed;
+ };
+ 
+ #define obj_to_connector(x) container_of(x, struct drm_connector, base)
+diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+index 7923bc00dc7a..1c1ee927de9c 100644
+--- a/include/drm/drm_edid.h
++++ b/include/drm/drm_edid.h
+@@ -459,5 +459,6 @@ bool drm_edid_is_digital(const struct drm_edid *drm_edid);
+ 
+ const u8 *drm_find_edid_extension(const struct drm_edid *drm_edid,
+ 				  int ext_id, int *ext_index);
++const struct drm_edid *drm_edid_read_acpi(struct drm_connector *connector);
+ 
+ #endif /* __DRM_EDID_H__ */
 -- 
 2.34.1
 

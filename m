@@ -1,74 +1,68 @@
-Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on2087.outbound.protection.outlook.com [40.107.101.87])
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2062.outbound.protection.outlook.com [40.107.220.62])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69D3B12D75F;
-	Thu, 15 Feb 2024 19:04:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.101.87
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D75D413A27C;
+	Thu, 15 Feb 2024 19:40:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.220.62
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708023846; cv=fail; b=jq6JBKa9Wou/ZYNikE2SRW3CQSwgjKpA1bMXabI72EwUnSveo4y8fHPjmlLPMXeprXbetcYrPeBUVQMvZ/i7MFgtHWG8OFDqRK83vWXn8F3L0BZuYIJkCCcbfP1ZLURjy61Ah9USKBxv2bUHDcsFuWWPwVy7e8z8RNEiJzRdmAU=
+	t=1708026050; cv=fail; b=lkZO/B5BY1f2QgKHuy124UxhMLhfweGViyF7JjeIUNjQ2E+ovmPdu6/lFGY19vdAejvvIsSjIQhpiFUZ3vzyN5uTOBcjS0dNkXTz8+eiPIMi8xncLGioxIRD6jy3fSK5Q916HdKolN18AneRt4myuGvmIpcOdMUPIjGe2dSbkik=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708023846; c=relaxed/simple;
-	bh=jyyCVjmKgs5pTlmjnrmSf81+uFfuJuoiHdR5Dg9DEOM=;
+	s=arc-20240116; t=1708026050; c=relaxed/simple;
+	bh=w7gzCloOWX4+KWoFaelWABi2nMhjPXMoPRRiYTh3LmM=;
 	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=ErHyZtTlqtncAmgaidLa3Zae4LxqQOykBRx1e46XHPwgxOCwK6hVsTeSUvz6rADXPHMYvzFUzizu/woMzJpp1sPn3Rswbtg8zimKvJ8bRmDX3xInVT/dBIZry+P5x8KBkdG5lktizvDLJgADAwZ5n7Tew0KXVmvtS9j2pCSucNA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=C/XOwYdD; arc=fail smtp.client-ip=40.107.101.87
+	 Content-Type:MIME-Version; b=kb0LHuH3Uzkt2UrPU9kDWCpgvTlplpapAZWSXyw2XKTRnsyG65DdlPDH7NYZ7jBnyLQ2Zq6FFkxCXBDVA+zTy2b7dvNshxpfQQA9oBrP64Tq1qWeiBJgzg3828nZ9LIjYicfQ3Ypb6yGQ3UCEdvC5IKLB3rp83NZt2EVvPIVSqc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=R6GfjO8m; arc=fail smtp.client-ip=40.107.220.62
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="C/XOwYdD"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="R6GfjO8m"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=IvEmAriE+2PspVxemw2j3n7cvu+SjavtvEY5RuEY8wWo4fdT33C2grWCHbNwxOzDprH7LHQK3bu3PjcxCC7OkILwLgLIoyLh8uNGiWboLIyrZbuxzpvXX0qiWJjaiFzQZzgpVtY0WqCcz8C38zKoEu0tu657/s/rWfoS4hRKXy5kG5Yg80wtDDmZ+66nGaQB8sQmWjTl+6VFxRLi/X0oPaMJvgiv1szBJ045X34r52oUBYIosPE9SZEtntZnPqG0k/F4gMLrL43E1bTRv+HoNOcGh7RjgX9MYsAtf1768iYISbMZ4iYiyxAG8B8u/DZ/0GLrJ/FE7anYIcuOYzfO7Q==
+ b=AKEwO2g0efOEJid5ErS1UdHXbwKuTfpnx2IcmvLcUW7+xxB6obyDqSEO6iYWWo/ccJWt773ZSCzCtiUc8WeC4guX+6WKf4t3fsnqhwTXUe+pJQYSB8EVwuO8V+5OCX/FoteFTJfBUEitzHvnWpkcD2+4vi5TspAr2j62GI0wTSMvDetPXWtFUpkBxKPcCEi+Cb//BRBF8KBqMLAmV638PgqVaRJxRHRGJuw35d3QlaNQA6ayCcBRy7V5/nEPHwVS6dz3WbjgBjXxYhcTs7kA4urk69I0lgk9GmaTjTvzcl4/fan8921fHx4GLExUb7p+PPHRzs1PahX5AQzbyC1nag==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=f4XuuYsOSCdQXrJWV6tyJoAmDAM30z8Yj39x/o5TTzk=;
- b=XL6Gqgh0GXV5cJMVo1lX1NGzGQvTX9AoIjLw9yp3K3qxxsNa9+GAUQYxcPZdZMpLPG45CZggLXOTInpJ5dMT3kM7lyZofieBqaAJz/yx+AeaGCMXKdkhtJkFljl2onmBUOkmjxM1ZJY/ItYdwO0DrenwWy/+kpEL0igzmVRlllXnRyV1JmzfzresyCGPeEnfrX+YJ4p65LBIGZ9R9nwnygNJEHJt6d54GGJPph21mQl8F54HfCzNqpLwrktrDwWcx8iESBXpClB2FRq8+Jr0yHAZkghycJgIs1iRrU0+COgKpJNJZEtt03vzCy02+rU0Ulghxpe2Y61K7687rKJCqg==
+ bh=Yjzb9UPsFsOZlGhlPYdVL1SAW7gno/53FSEL3EuZYjI=;
+ b=T4TI9vDEDmHypBMGKjhTYfx+hmzwqxAZikHx4G5P//vC5fRetRnqeKgT8MId+9wIsWERdWeeWpSvGsRM1LcErPmOmTcCRSfE0pOpKiITtuGEcJtWjZFEZi2FpOPzl9vi7Z2UQn1/JLg5AVWERYjYQHnQb6L3t5uewBICJ6r4hXH16/j2vGmtmP96qXMZ4smKE9tIlaE/jclOhrsYi7yAttjBqjyN7JtBqCjvscBZKBilYP8xfAo33gFjzLy7jc6eMIzyDpMysL/siqbHVEQXH+bBMQ3G5DxCadMKIg0q+xQxCi/1BUGlPvTUVgv/AOJduIAtQ4w9p9Z9xCFRYrcFuQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
  header.d=amd.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=f4XuuYsOSCdQXrJWV6tyJoAmDAM30z8Yj39x/o5TTzk=;
- b=C/XOwYdDB/8t71XedKLuu525VQlB7jcLX18maiPqrorwh+i7U016+/sOABNeQk6DUGXwc47L22O/d3/XQrcgrtGEO56krGcXqHT/nrmJcgB/cDfiI9/nLjP1vCbPJR8YvgwckUsxqiHm4ev7YXExKWSzAsGhI1Mbc1o3MUwUuqs=
+ bh=Yjzb9UPsFsOZlGhlPYdVL1SAW7gno/53FSEL3EuZYjI=;
+ b=R6GfjO8mMsvIWTUqGGYN3wmoSB2VtvLmDPBOOsZ+nz6qDyGVGVSk9lf0842pN5qLaalvh8oActlW3pKO65/+NBzmdCdwfewQb2hPtFWrZZOPYCSNKngLMV5n2pRLSk7yvpK/PZa/Te7EmHlPGDzlWZkbyPUmQvIIVJK1MjShFqY=
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=amd.com;
 Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
- by DS0PR12MB8044.namprd12.prod.outlook.com (2603:10b6:8:148::14) with
+ by PH8PR12MB7136.namprd12.prod.outlook.com (2603:10b6:510:22b::5) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.31; Thu, 15 Feb
- 2024 19:04:02 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.25; Thu, 15 Feb
+ 2024 19:40:46 +0000
 Received: from MN0PR12MB6101.namprd12.prod.outlook.com
  ([fe80::dd00:9ab5:4d11:2d1a]) by MN0PR12MB6101.namprd12.prod.outlook.com
  ([fe80::dd00:9ab5:4d11:2d1a%7]) with mapi id 15.20.7316.012; Thu, 15 Feb 2024
- 19:04:02 +0000
-Message-ID: <ecbaadf9-dfa1-46af-9a7e-cfd7aa1120be@amd.com>
-Date: Thu, 15 Feb 2024 13:03:59 -0600
+ 19:40:46 +0000
+Message-ID: <bb8d631d-9f6c-48e8-a504-8931ee21014d@amd.com>
+Date: Thu, 15 Feb 2024 13:40:43 -0600
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 3/5] drm: Add support to get EDID from ACPI
+Subject: Re: [PATCH v3 2/2] fbcon: Defer console takeover for splash screens
+ to first switch
 Content-Language: en-US
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>, Jani Nikula
- <jani.nikula@linux.intel.com>, Alex Deucher <alexander.deucher@amd.com>,
- Hans de Goede <hdegoede@redhat.com>,
- "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
- amd-gfx@lists.freedesktop.org,
- "open list:USB SUBSYSTEM" <linux-usb@vger.kernel.org>,
- linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, platform-driver-x86@vger.kernel.org,
- intel-xe@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org,
- "open list:ACPI" <linux-acpi@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>, Melissa Wen <mwen@igalia.com>,
- Mark Pearson <mpearson-lenovo@squebb.ca>
-References: <20240214215756.6530-1-mario.limonciello@amd.com>
- <20240214215756.6530-4-mario.limonciello@amd.com>
- <Zc1JEg5mC0ww_BeU@intel.com> <9831e9bc-d55f-4a72-950a-684a757af59c@amd.com>
- <Zc5cPjpNZydqKeS8@intel.com>
+To: Daniel van Vugt <daniel.van.vugt@canonical.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+ =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+ Jani Nikula <jani.nikula@intel.com>, Maxime Ripard <mripard@kernel.org>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <f2c54ff7-d601-49d0-b5ad-9b111d743ded@canonical.com>
+ <20240214052412.22770-1-daniel.van.vugt@canonical.com>
+ <20240214052412.22770-2-daniel.van.vugt@canonical.com>
 From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <Zc5cPjpNZydqKeS8@intel.com>
+In-Reply-To: <20240214052412.22770-2-daniel.van.vugt@canonical.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SN7P222CA0003.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:806:124::21) To MN0PR12MB6101.namprd12.prod.outlook.com
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SN7PR04CA0181.namprd04.prod.outlook.com
+ (2603:10b6:806:126::6) To MN0PR12MB6101.namprd12.prod.outlook.com
  (2603:10b6:208:3cb::10)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -77,366 +71,207 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|DS0PR12MB8044:EE_
-X-MS-Office365-Filtering-Correlation-Id: 69d27505-6321-4eec-fc3c-08dc2e58df59
+X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|PH8PR12MB7136:EE_
+X-MS-Office365-Filtering-Correlation-Id: b93f765b-08c5-4aa0-6f1c-08dc2e5e0133
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
 X-Microsoft-Antispam-Message-Info:
-	Hh4mw9s01LFG2eftEVYv0j304xtQbDPyNwPndsN6ld/y44flztWeNCgVxg6h8A62kCXEaIVD6NwGXXr9SJpsO+UCDZyrKikqMaE1W9ah19XTIv/ZAKtNgyCGDft37WxrCqUJ8MwKOJWKpCYH1H6kEEe1M1agKEFJuWdWMQunQa0O1f0YN9AwM1SdL1td8P2+vFGdXIgmxNZnBDds5CCPkU/akBGfdUD34U+mhu46sxEaPgsPwjwV7OzO4u6oCsBWrEA1uy4pg2WOdfTo8Eo6zOw4s+wpT7mNuiHkg2nH6F23w5WZ/a/JxMc8QP0Ve9c+OJbIHEgfUQVIX+Tb2j1lLSzBY5haQqx0YTtNF3gtV1/hES+qAnh3/mzuj0U5VyLb6HuL9MofPU3lnrBYlm9Zj4hLLKeBlfUXUpgUQPsYQU7TzOjzkoT9dhXoR+aP7RhPztl2AZt6ruouKi0ziBBfkPuG2vdU0bW5ngad+0VhucG1P38vhlPM7DgPv8tbyyw7ZfAomccLjZk/rgrUAFx6B7sTSTBikv4brqvaQZb6SII=
+	0fu6ottflXg7W3CLSXlbE1qDpEVSlsmaOoBqVJon+70AX6eu4IeddgYj/g+ne8Ow//vbb7PTTOoEhkC5/BgTrKvIju80Mbl14NOebRP4xD5Qy3nMMnQ6jdDDXhN/izruIyQ7tdyQd9XEH1AkaRy7bHNwo3au7Ehxqb2jAiRmufzKgBf7TmpjG6+3ikAObX2MxpgAZQWb03Z8zoVUqhAcX/lXth2TjH5xGewhEBMSzNKcQGexrwLUljQE5MtaeJ5jJ/EJUaUF0vXwLRQxhHC5849YmbVD5BwC4QlY+fZSTjJV9zNCXHP3kzWYkg9Iz4AIVz7khJnSDxzGpzWYkb/HKVJ1YWoFLwY3N5FDp0ddRREgCbisU8FdfhusPE5Q8EWdWOQNHZify02Qt82R8qoQCP2WOO2fTtfbP5wnfUXLy9hnqe/Rlf65eslLJPcuivkttCgI4bSYNrK2itNqAN4/CsqvU9dD4Z7qh45jE5Dj2V2pBESclQ7OGtbI01jqnQ+YicL1NQJ7vZdH2DOLSAN/kkQpXws/8/VmZ1aO+o0HmPg=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(366004)(376002)(346002)(136003)(39860400002)(230922051799003)(186009)(64100799003)(1800799012)(451199024)(6506007)(6512007)(6486002)(966005)(478600001)(53546011)(31686004)(2906002)(7416002)(30864003)(44832011)(5660300002)(66899024)(316002)(41300700001)(54906003)(6916009)(66476007)(8936002)(66946007)(8676002)(66556008)(6666004)(4326008)(26005)(2616005)(83380400001)(66574015)(31696002)(36756003)(38100700002)(86362001);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(376002)(366004)(396003)(39860400002)(346002)(230922051799003)(1800799012)(186009)(64100799003)(451199024)(6666004)(2906002)(316002)(31686004)(54906003)(7416002)(44832011)(5660300002)(66946007)(66476007)(66556008)(966005)(4326008)(86362001)(31696002)(83380400001)(6916009)(8676002)(8936002)(6506007)(478600001)(26005)(36756003)(41300700001)(2616005)(6486002)(6512007)(53546011)(38100700002);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Q2hrdkdZYVZ3NFM4bFFDY1NLbWNzeTQyY2crZjJTQ0UxNmtndVJlZW9FUEQz?=
- =?utf-8?B?SlQ4V3ZzVG81VlVZVHJVbm5HbFVRQm5XWDdKNnFZK1hteUtkdENKZ2c3Qk9C?=
- =?utf-8?B?WGJvZkNlZWFnM2VJeDV6V1lET2Q5b0NSYTNNdW9mMEZQeitFcVNkQXFMNGt3?=
- =?utf-8?B?UnZvaUVCcERKTUdGZ1FvWVBZTHoxcmlLamw4eUxjUCtKdW1SUDBJZVR0WjlI?=
- =?utf-8?B?SnYwN0JnL1ptR2Zyd0diaWR1elB0cE91ZGhmRUJ3c05TN3hSL0hjNU11Tzl3?=
- =?utf-8?B?L2RJY2N0UVdwN2NZR3JtMlBjTWZlMmRQYnVVUW44NFp6Z0ZGOTVrR3krUWZs?=
- =?utf-8?B?WVh2eEg4clZjb3lzM1VqL0FZNHc0R2xDRHM2ME83L1VxUzlqQnVrMU9sZ1lo?=
- =?utf-8?B?V0VhcXltL2NXWHlNempGQU12SFFuaFBWWkdyMFUyOEg5Zmc5M3Yrc3VXbWtN?=
- =?utf-8?B?UCtGcW9RZVdvNkVqZXZaTjYxdDhqQ1hTZHRLL2VabEEzbUdUdUVaTGFMcmZ6?=
- =?utf-8?B?YlpscGlBemVuYzlyTkNDdEV5ZTdvMUg1MVlhMi9zdkxvV3d3WmJMdURSZVkv?=
- =?utf-8?B?OXZmb2Q2ZWJId1VtTVoxOUhlZGw5WTVIdDFLZGVXRDQzRXJNdVJFT0VoNGNJ?=
- =?utf-8?B?VVpJbE5tRU00N0hBZTdQUUo0cGtoRjZqL2VGV3ZLa1hOVmIvSzJ5bStkaUJz?=
- =?utf-8?B?Mm0ya0pZY1FMYXNLbEhZbTVuZHA0WlY0RGFXVmRmVVZJSmEvK2kzWTN0WFFl?=
- =?utf-8?B?MGY1alRqa0ZxV2tDMjZ1eWxFQW1BZzRtbWgvYm00RUxiaHZhK3pwY0tVeENQ?=
- =?utf-8?B?eER3QjlaV0l2MHpsaUFCblkwODBkVmd1Qm5kMDg4N1ZhQm1nSkFzd09xRGZR?=
- =?utf-8?B?TDV5MWJ0TEJZWFcwanBoRlBUYXJpS1g1dTVuRmZ2elhQcFNZeXEwOXFSOCs1?=
- =?utf-8?B?ZTVDY25JY3k3b1Y2M092V3NsSEdOcmpaRmdMY3RLbm5OenlWMHorV0EweTY1?=
- =?utf-8?B?NWx4d0pCVVozRWFjS2l4aTFFdVpwaVJKNmNxNlk4Nisrem9nMXgyVno3SWNr?=
- =?utf-8?B?L0xxYkRDNE5aa2I5enJHN2tSWmtRTld5QjVRcUEwSFEvSVI2QW0xWE9RcjVR?=
- =?utf-8?B?WVcrUEg2UGNrVlhzY0RvWVNnQ2FhZXdxM0phN3RtNEdLMUlJcDhMRG5ZY2Zp?=
- =?utf-8?B?VDVNdTZWMTBBc3ZYcWFDK3JGVWo3OCs3bXhMR1Y0dkY4aW9LTU4xa2p0S0t5?=
- =?utf-8?B?b0RMYkZIRHo0Nkx3Q0ZZRDgxMk5USC91OGdNSGJoQVUzY1AvMUFTVmxzUEw5?=
- =?utf-8?B?aEZJSzBjdG1FcUpyTU9vQ2MvWmZPbTYvT0M2YXh6eGFUMkNEN1dYK21OQjhR?=
- =?utf-8?B?aEx1R1NhWTN1MmsxWStOR1gyWUxTYWRMVWF2ajBqODVCcThzYVI1ZTBHanNq?=
- =?utf-8?B?THBwQUVTM2JxVU1rUXJvd3NmSG5Cckd1MkVmVDVUaTFoT0tjMXFOdm90MnVM?=
- =?utf-8?B?OWdNVjRtY1pTcTRzSEtsYm52RlBNWjJNbitrTS9xeC9tRlVDL3ZuTmJpWXIz?=
- =?utf-8?B?RnZpL3VLMjlPUG5sd0RTV0dUUGQ3SENwZHIyUThOWVFrYkxxL3hqdU5IZlAy?=
- =?utf-8?B?KzFrWUQ1K3Y0ZThtTHpEaXh6K3VqT2lQWGpidEh1ei9Rdmp2bllHbU5MeHBa?=
- =?utf-8?B?WCtSQUU1VTZKbkloUGszZmRPcjIyS3lidllyU2RDa0llSFdTM1dCQVdYQ0hu?=
- =?utf-8?B?aStvREJYZUliS2tHUTJORzNVQjM0czAvVERFSTdCRTQ2aTlicFJuWGh3SWtn?=
- =?utf-8?B?VFBQZENRVkExNmRYdU5TTkJYbUJVaTJMeGVLK0kxOEROdklqRDljNGVHNHlK?=
- =?utf-8?B?alVvNkprdEppdjA0ellTQWNGMHExNGp6VUhCa05LaWVmS2ovU3lSeDJveElU?=
- =?utf-8?B?eFoyMlM3ZVNOWTVSVUdHaWdjNm5ET0tqTHJmMFBCWGM4M2hHNmFxTXEySlZk?=
- =?utf-8?B?Wm5tYWZvK3R4UVhyK3VHUVFLWlZONUgzMkxBQkNPWGtnSm14NDRVcDVaKzk0?=
- =?utf-8?B?VGg5ZzM4clNFY0pJcjczVjN0UFdJZStrUVBOVlo1TGVuVDl6enB2SExZNGkx?=
- =?utf-8?Q?zqzeWTIdgmmdCOIj9eaYg+inQ?=
+	=?utf-8?B?c2twTGw5WWdnSHY3dlk4YjlVcEkzMXlMTHhWSkFRZG1yRW9UUFFqbHVTK014?=
+ =?utf-8?B?UGJucS9BOUp2azVzdjhrQ2cxK0ZoS2lYN0c0R3o4TFMxaVJCWVJDcWF5SXdj?=
+ =?utf-8?B?U2h3Yk1FWXNqMm1LdTRPQnhzMFhjaG1OTzZBUmF6NjlydVJrbEo1R1drNStp?=
+ =?utf-8?B?V0ErdUZiVTVuVnl3bEhBVjE3MVpUSDBHeW5kSkNNeUQ3S21zYncrNDRHSGNs?=
+ =?utf-8?B?RFF4U0VVOWI5Qzk3Q3I4SnV0N0IzVWhkUVpsTDVLU0ZLMzN3S3ppNE54QTdI?=
+ =?utf-8?B?N3JwclBRdU93K3k0RlVmMndDZnZPdTN5OHgrZHhkUG94TXBpRGdGUUVibEN1?=
+ =?utf-8?B?YTNBTk9VeUpZUDJnNmtWRDUwYkJTZElyalNuT1JNYnVLN3c5NTBCUS9mU0Va?=
+ =?utf-8?B?SFlPT2FNakVxVm5GWnBVcW8weGM4N3g5Mnl3NUVWbVZuMEpXTk1FL05nMVg4?=
+ =?utf-8?B?KzlSdnAwWnh2MUhPMkVkaWF4TDJhSFUzRGZxWE5hcGM4L25nZkEzaEpYYjVC?=
+ =?utf-8?B?U2diMWZxYitzR2xtOVppMHFWd0VTS3l1QkdsY0RwR2dxemE0SmlVREVXZzc3?=
+ =?utf-8?B?bC9KQ0Y0RllCaDNENDBFeUZWRnlGVTMxVlN5R08reWpkK3RIb0R2NXhHd1Fu?=
+ =?utf-8?B?U01YdDVpTHVPRW4yRU16TE81SkowZUpHRmE3bTUzL1dHZVljNkpWUFJsOUVM?=
+ =?utf-8?B?MUtNVG9uMlNzQmJqNk5xaW5ScWdwazhVRmU3cjdHRWxER2NiMXk4UU1DUWw3?=
+ =?utf-8?B?elJkOGZSWkVsWGEwdXcwTUZnWGZlMFNJdDRkZW9Yd1FUUXhkMis3WDVCRUth?=
+ =?utf-8?B?bVZraG1mek9kZFErSlRQWE5pcGp0ek90d0F3aHV0R0tTdHBaVWQ4YnU2aXBZ?=
+ =?utf-8?B?YmlDeTRNL0tPYkdMeHZnTEJzVjZMblpjL3ZqcjhHek1ScDJLNE5HSWNQSXhs?=
+ =?utf-8?B?OXM5VkJ5QUw0VkQwNUNVZWVISytnREdrS1RJNkQzM0ZYbTZ6dUZuTDNXQ0U0?=
+ =?utf-8?B?UHpuOUNZQ3IzWmFlZFgrM3N0RUxqNEt5bE5aUzRyUlZYbDNUR2JZQVFwTTYr?=
+ =?utf-8?B?UWxIbk9BN3g0bG16bGJwaWYvbW1ob0pHRGV2V1E5amNNYzJJdjVPQzI0alJj?=
+ =?utf-8?B?b0NnODFkYTh1bDBEQTBCMkNwSlMvQUQ5UWhMeUdaeWtTTU1qVEdNUCtobVo4?=
+ =?utf-8?B?cDdhc2FCNkJSNnNFV1oxY2cvM0tMZ29vbTZadFZzUmdWVGRMSWwzNHFldm96?=
+ =?utf-8?B?dk9WRjZlaVdHc2NPVGN5OFB5RnlHTSthRlNBMnpFZVcvTUwwdDZ1Kzl3dW9S?=
+ =?utf-8?B?K05oM3V5Nk9KSVRaMGJTcndBTUdCTHgrS0dwSFFpZXVZMWFPQXphSGxHcHNZ?=
+ =?utf-8?B?aGtRN1JaQ2FCWXBGYTcrWldvNVRYUnllSEZFRURJOThPczVidUlQbDZCaHU1?=
+ =?utf-8?B?S3ROOGhrSTgzMzhFS1dnS1o2REF3czB4ckVXZGJBR3dPcm9SbXlSeDNkT0xo?=
+ =?utf-8?B?aUVEWE96NHZ5aENFWHhSbCtNWE5NdmhTV1hIdnhhYVYxV2JhWjBIRHNQaGp5?=
+ =?utf-8?B?UGlrMnFTWUVYVHJhVXdETnV5ekxwSG1XTHBVSTVUajlKQTNPUElHc0ZMVFRs?=
+ =?utf-8?B?dGIvYWVGRWZNRGVpdWg4RExDbkFjekt5d3MvNHcvYzFzY2Joais5VzNVeFkz?=
+ =?utf-8?B?ZU5tYjBqMDRqLzUyZ1JkbEJlZUZWNW1OUm9uN3pjK0pPZG5UdTQzQ3FsTXIy?=
+ =?utf-8?B?S1hoYjVXRy9NdUQ3L3l0eUJXdWtXSlZ5N1drV1F3bmxzVDdkcmEvNWZ3K0J0?=
+ =?utf-8?B?My82bGJOREw5a1F3bWR1L0VHSEJvNkxPaFNRdU9VM0tFYmY2dVhwRXhWb01Z?=
+ =?utf-8?B?WUM0SXozSmRGMS8rSzh5RklCd2JJSWc1ZkovRDI3NUxPTWVLUG5CZHJXQ09V?=
+ =?utf-8?B?V0ZsTW90WmdWR1lyR21RSUVKQTBhT1M5dWFwMGd1b3VHZFdUTHd6all6bXlz?=
+ =?utf-8?B?dzVXOGxNQVpOQzYwcnhwenFBVFZDTlc3QmdHY015YndzVkc3dEt2bVlhbTRQ?=
+ =?utf-8?B?WW5WWWJRUUdTa0lacjRFNmFVRzhLVTBlUnV0OVY2VHVFMS9XNnkzeVZkOTJP?=
+ =?utf-8?Q?EXX8O0Rxd7kRP0btI4rF4Sf5i?=
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 69d27505-6321-4eec-fc3c-08dc2e58df59
+X-MS-Exchange-CrossTenant-Network-Message-Id: b93f765b-08c5-4aa0-6f1c-08dc2e5e0133
 X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Feb 2024 19:04:02.0329
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Feb 2024 19:40:46.3176
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: RC59FrQORRspkEp/6HiZABArSug8zHdoEs1h/jSzEdEFQyaQigT7n4MNIlCaR2Tdq4+uWZcbMtX8GRfx09hznw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8044
+X-MS-Exchange-CrossTenant-UserPrincipalName: iWSyuPn2bQR1DPzNGxst6HU5hOb4pQsZRmjkKNDLyebt6l9AKlS7LjCFZx2ZGxAkMWpwtjIEI9bo6iz6e37fSQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB7136
 
-On 2/15/2024 12:47, Ville Syrjälä wrote:
-> On Thu, Feb 15, 2024 at 12:20:56PM -0600, Mario Limonciello wrote:
->> On 2/14/2024 17:13, Ville Syrjälä wrote:
->>> On Wed, Feb 14, 2024 at 03:57:54PM -0600, Mario Limonciello wrote:
->>>> Some manufacturers have intentionally put an EDID that differs from
->>>> the EDID on the internal panel on laptops.  Drivers that prefer to
->>>> fetch this EDID can set a bit on the drm_connector to indicate that
->>>> the DRM EDID helpers should try to fetch it and it is preferred if
->>>> it's present.
->>>>
->>>> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
->>>> ---
->>>>    drivers/gpu/drm/Kconfig     |   1 +
->>>>    drivers/gpu/drm/drm_edid.c  | 109 +++++++++++++++++++++++++++++++++---
->>>>    include/drm/drm_connector.h |   6 ++
->>>>    include/drm/drm_edid.h      |   1 +
->>>>    4 files changed, 109 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
->>>> index 872edb47bb53..3db89e6af01d 100644
->>>> --- a/drivers/gpu/drm/Kconfig
->>>> +++ b/drivers/gpu/drm/Kconfig
->>>> @@ -8,6 +8,7 @@
->>>>    menuconfig DRM
->>>>    	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
->>>>    	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && HAS_DMA
->>>> +	depends on (ACPI_VIDEO || ACPI_VIDEO=n)
->>>>    	select DRM_PANEL_ORIENTATION_QUIRKS
->>>>    	select DRM_KMS_HELPER if DRM_FBDEV_EMULATION
->>>>    	select FB_CORE if DRM_FBDEV_EMULATION
->>>> diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
->>>> index 923c4423151c..cdc30c6d05d5 100644
->>>> --- a/drivers/gpu/drm/drm_edid.c
->>>> +++ b/drivers/gpu/drm/drm_edid.c
->>>> @@ -28,6 +28,7 @@
->>>>     * DEALINGS IN THE SOFTWARE.
->>>>     */
->>>>    
->>>> +#include <acpi/video.h>
->>>>    #include <linux/bitfield.h>
->>>>    #include <linux/cec.h>
->>>>    #include <linux/hdmi.h>
->>>> @@ -2188,6 +2189,58 @@ drm_do_probe_ddc_edid(void *data, u8 *buf, unsigned int block, size_t len)
->>>>    	return ret == xfers ? 0 : -1;
->>>>    }
->>>>    
->>>> +/**
->>>> + * drm_do_probe_acpi_edid() - get EDID information via ACPI _DDC
->>>> + * @data: struct drm_connector
->>>> + * @buf: EDID data buffer to be filled
->>>> + * @block: 128 byte EDID block to start fetching from
->>>> + * @len: EDID data buffer length to fetch
->>>> + *
->>>> + * Try to fetch EDID information by calling acpi_video_get_edid() function.
->>>> + *
->>>> + * Return: 0 on success or error code on failure.
->>>> + */
->>>> +static int
->>>> +drm_do_probe_acpi_edid(void *data, u8 *buf, unsigned int block, size_t len)
->>>> +{
->>>> +	struct drm_connector *connector = data;
->>>> +	struct drm_device *ddev = connector->dev;
->>>> +	struct acpi_device *acpidev = ACPI_COMPANION(ddev->dev);
->>>> +	unsigned char start = block * EDID_LENGTH;
->>>> +	void *edid;
->>>> +	int r;
->>>> +
->>>> +	if (!acpidev)
->>>> +		return -ENODEV;
->>>> +
->>>> +	switch (connector->connector_type) {
->>>> +	case DRM_MODE_CONNECTOR_LVDS:
->>>> +	case DRM_MODE_CONNECTOR_eDP:
->>>> +		break;
->>>> +	default:
->>>> +		return -EINVAL;
->>>> +	}
->>>
->>> We could have other types of connectors that want this too.
->>> I don't see any real benefit in having this check tbh. Drivers
->>> should simply notset the flag on connectors where it won't work,
->>> and only the driver can really know that.
->>
->> Ack.
->>
->>>
->>>> +	/* fetch the entire edid from BIOS */
->>>> +	r = acpi_video_get_edid(acpidev, ACPI_VIDEO_DISPLAY_LCD, -1, &edid);
->>>> +	if (r < 0) {
->>>> +		DRM_DEBUG_KMS("Failed to get EDID from ACPI: %d\n", r);
->>>> +		return r;
->>>> +	}
->>>> +	if (len > r || start > r || start + len > r) {
->>>> +		r = -EINVAL;
->>>> +		goto cleanup;
->>>> +	}
->>>> +
->>>> +	memcpy(buf, edid + start, len);
->>>> +	r = 0;
->>>> +
->>>> +cleanup:
->>>> +	kfree(edid);
->>>> +
->>>> +	return r;
->>>> +}
->>>> +
->>>>    static void connector_bad_edid(struct drm_connector *connector,
->>>>    			       const struct edid *edid, int num_blocks)
->>>>    {
->>>> @@ -2621,7 +2674,8 @@ EXPORT_SYMBOL(drm_probe_ddc);
->>>>     * @connector: connector we're probing
->>>>     * @adapter: I2C adapter to use for DDC
->>>>     *
->>>> - * Poke the given I2C channel to grab EDID data if possible.  If found,
->>>> + * If the connector allows it, try to fetch EDID data using ACPI. If not found
->>>> + * poke the given I2C channel to grab EDID data if possible.  If found,
->>>>     * attach it to the connector.
->>>>     *
->>>>     * Return: Pointer to valid EDID or NULL if we couldn't find any.
->>>> @@ -2629,20 +2683,50 @@ EXPORT_SYMBOL(drm_probe_ddc);
->>>>    struct edid *drm_get_edid(struct drm_connector *connector,
->>>>    			  struct i2c_adapter *adapter)
->>>>    {
->>>> -	struct edid *edid;
->>>> +	struct edid *edid = NULL;
->>>>    
->>>>    	if (connector->force == DRM_FORCE_OFF)
->>>>    		return NULL;
->>>>    
->>>> -	if (connector->force == DRM_FORCE_UNSPECIFIED && !drm_probe_ddc(adapter))
->>>> -		return NULL;
->>>> +	if (connector->acpi_edid_allowed)
->>>> +		edid = _drm_do_get_edid(connector, drm_do_probe_acpi_edid, connector, NULL);
->>>> +
->>>> +	if (!edid) {
->>>> +		if (connector->force == DRM_FORCE_UNSPECIFIED && !drm_probe_ddc(adapter))
->>>> +			return NULL;
->>>> +		edid = _drm_do_get_edid(connector, drm_do_probe_ddc_edid, adapter, NULL);
->>>> +	}
->>>>    
->>>> -	edid = _drm_do_get_edid(connector, drm_do_probe_ddc_edid, adapter, NULL);
->>>>    	drm_connector_update_edid_property(connector, edid);
->>>>    	return edid;
->>>>    }
->>>>    EXPORT_SYMBOL(drm_get_edid);
->>>>    
->>>> +/**
->>>> + * drm_edid_read_acpi - get EDID data, if available
->>>> + * @connector: connector we're probing
->>>> + *
->>>> + * Use the BIOS to attempt to grab EDID data if possible.
->>>> + *
->>>> + * The returned pointer must be freed using drm_edid_free().
->>>> + *
->>>> + * Return: Pointer to valid EDID or NULL if we couldn't find any.
->>>> + */
->>>> +const struct drm_edid *drm_edid_read_acpi(struct drm_connector *connector)
->>>> +{
->>>> +	const struct drm_edid *drm_edid;
->>>> +
->>>> +	if (connector->force == DRM_FORCE_OFF)
->>>> +		return NULL;
->>>> +
->>>> +	drm_edid = drm_edid_read_custom(connector, drm_do_probe_acpi_edid, connector);
->>>> +
->>>> +	/* Note: Do *not* call connector updates here. */
->>>> +
->>>> +	return drm_edid;
->>>> +}
->>>> +EXPORT_SYMBOL(drm_edid_read_acpi);
->>>> +
->>>>    /**
->>>>     * drm_edid_read_custom - Read EDID data using given EDID block read function
->>>>     * @connector: Connector to use
->>>> @@ -2727,10 +2811,11 @@ const struct drm_edid *drm_edid_read_ddc(struct drm_connector *connector,
->>>>    EXPORT_SYMBOL(drm_edid_read_ddc);
->>>>    
->>>>    /**
->>>> - * drm_edid_read - Read EDID data using connector's I2C adapter
->>>> + * drm_edid_read - Read EDID data using BIOS or connector's I2C adapter
->>>>     * @connector: Connector to use
->>>>     *
->>>> - * Read EDID using the connector's I2C adapter.
->>>> + * Read EDID from BIOS if allowed by connector or by using the connector's
->>>> + * I2C adapter.
->>>>     *
->>>>     * The EDID may be overridden using debugfs override_edid or firmware EDID
->>>>     * (drm_edid_load_firmware() and drm.edid_firmware parameter), in this priority
->>>> @@ -2742,10 +2827,18 @@ EXPORT_SYMBOL(drm_edid_read_ddc);
->>>>     */
->>>>    const struct drm_edid *drm_edid_read(struct drm_connector *connector)
->>>>    {
->>>> +	const struct drm_edid *drm_edid = NULL;
->>>> +
->>>>    	if (drm_WARN_ON(connector->dev, !connector->ddc))
->>>>    		return NULL;
->>>>    
->>>> -	return drm_edid_read_ddc(connector, connector->ddc);
->>>> +	if (connector->acpi_edid_allowed)
->>>
->>> That should probably be called 'prefer_acpi_edid' or something
->>> since it's the first choice when the flag is set.
->>
->> OK.
->>
->>>
->>> But I'm not so sure there's any real benefit in having this
->>> flag at all. You anyway have to modify the driver to use this,
->>> so why not just have the driver do the call directly instead of
->>> adding this extra detour via the flag?
->>
->> This was proposed by Maxime Ripard during v4.
->>
->> https://lore.kernel.org/dri-devel/ysm2e3vczov7z7vezmexe35fjnkhsakud3elsgggedhk2lknlz@cx7j44y354db/
-> 
-> Which somewhat ignores Jani's concerns about potentially
-> bogus EDIDs coming from ACPI, as well as not allowing
-> the driver to dictate the priority between ACPI vs. DDC
-> vs. whatever else methods are available. Eg. i915 has
-> at least one other place where it could get the EDID.
-> So I don't think i915 could use this version.
-> 
-> But as long we still have the individual methods available
-> as separate exported functions I suppose drivers can still
-> choose to stitch their own thing together.
-> 
-> I just don't see much point in having that midlayer.
-> I don't think drivers can just plug that thing straight
-> into an existing vfunc or can they? If not, then they still
-> have to implement the actual function where it gets called.
-> And once you're doing that, calling two functions instead of
-> one seems about the same amount of work as setting that flag.
-> 
-> But if people think it's actually useful for them
-> I won't stand in the way.
+On 2/13/2024 23:24, Daniel van Vugt wrote:
+> Until now, deferred console takeover only meant defer until there is
+> output. But that risks stepping on the toes of userspace splash screens,
+> as console messages may appear before the splash screen. So check the
+> command line for the expectation of userspace splash and if present then
+> extend the deferral until the first switch.
 
-The series as is works on an OEM laptop I have on my desk with
-an amdgpu that has the EDID in the BIOS.
-
-All that had to be done for amdgpu was to set the flag (which is what 
-patch 4 does).
+I think your comment from the earlier version that this can still happen 
+on simpledrm (albeit less frequently) is very relevant here for the 
+commit message.
 
 > 
->>
->>>
->>>> +		drm_edid = drm_edid_read_acpi(connector);
->>>> +
->>>> +	if (!drm_edid)
->>>> +		drm_edid = drm_edid_read_ddc(connector, connector->ddc);
->>>> +
->>>> +	return drm_edid;
->>>>    }
->>>>    EXPORT_SYMBOL(drm_edid_read);
->>>>    
->>>> diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
->>>> index fe88d7fc6b8f..74ed47f37a69 100644
->>>> --- a/include/drm/drm_connector.h
->>>> +++ b/include/drm/drm_connector.h
->>>> @@ -1886,6 +1886,12 @@ struct drm_connector {
->>>>    
->>>>    	/** @hdr_sink_metadata: HDR Metadata Information read from sink */
->>>>    	struct hdr_sink_metadata hdr_sink_metadata;
->>>> +
->>>> +	/**
->>>> +	 * @acpi_edid_allowed: Get the EDID from the BIOS, if available.
->>>> +	 * This is only applicable to eDP and LVDS displays.
->>>> +	 */
->>>> +	bool acpi_edid_allowed;
->>>
->>> Aren't there other bools/small stuff in there for tighter packing?
->>
->> Does the compiler automatically do the packing if you put bools nearby
->> in a struct?  If so; TIL.
-> 
-> Yes. Well, depends on the types and their alignment requirements
-> of course, and/or whether you specified __packed or not.
-> 
-> You can use 'pahole' to find the holes in structures.
+> v2: Added Kconfig option instead of hard coding "splash".
+> v3: Default to disabled, not "splash". If enabled then take over on
+>      switch rather than on first output after switch.
 > 
 
-Thanks!  I don't see a __packed attribute on struct drm_connector, but 
-I'll put it near by other bools in case that changes in the future.
+These you'll want below the cutlist (---)
 
->>
->>>
->>>>    };
->>>>    
->>>>    #define obj_to_connector(x) container_of(x, struct drm_connector, base)
->>>> diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
->>>> index 7923bc00dc7a..1c1ee927de9c 100644
->>>> --- a/include/drm/drm_edid.h
->>>> +++ b/include/drm/drm_edid.h
->>>> @@ -459,5 +459,6 @@ bool drm_edid_is_digital(const struct drm_edid *drm_edid);
->>>>    
->>>>    const u8 *drm_find_edid_extension(const struct drm_edid *drm_edid,
->>>>    				  int ext_id, int *ext_index);
->>>> +const struct drm_edid *drm_edid_read_acpi(struct drm_connector *connector);
->>>>    
->>>>    #endif /* __DRM_EDID_H__ */
->>>> -- 
->>>> 2.34.1
->>>
+Also I think you should mention in the commit message that the 
+indication of a userspace splash is set by the Kconfig.
+
+> Closes: https://bugs.launchpad.net/bugs/1970069
+> Cc: Mario Limonciello <mario.limonciello@amd.com>
+> Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
+> ---
+>   drivers/video/console/Kconfig    | 12 +++++++++
+>   drivers/video/fbdev/core/fbcon.c | 44 +++++++++++++++++++++++++++++---
+>   2 files changed, 52 insertions(+), 4 deletions(-)
 > 
+> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+> index bc31db6ef7..2f9435335f 100644
+> --- a/drivers/video/console/Kconfig
+> +++ b/drivers/video/console/Kconfig
+> @@ -138,6 +138,18 @@ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+>   	  by the firmware in place, rather then replacing the contents with a
+>   	  black screen as soon as fbcon loads.
+>   
+> +config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
+> +	string "Command line parameter to defer takeover to first switch"
+> +	depends on FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+> +	default ""
+> +	help
+> +	  If enabled this defers further the framebuffer console taking over
+> +	  until the first console switch has occurred. And even then only if
+> +	  the specified parameter is found on the command line. This ensures
+> +	  fbcon does not interrupt userspace splash screens such as Plymouth
+> +	  which may be yet to start rendering at the time of the first console
+> +	  output.
+> +
+>   config STI_CONSOLE
+>   	bool "STI text console"
+>   	depends on PARISC && HAS_IOMEM
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 1183e7a871..e5d841ab03 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -76,6 +76,7 @@
+>   #include <linux/crc32.h> /* For counting font checksums */
+>   #include <linux/uaccess.h>
+>   #include <asm/irq.h>
+> +#include <asm/cmdline.h>
+>   
+>   #include "fbcon.h"
+>   #include "fb_internal.h"
+> @@ -3348,7 +3349,7 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+>   {
+>   	WARN_CONSOLE_UNLOCKED();
+>   
+> -	pr_info("fbcon: Taking over console\n");
+> +	pr_info("fbcon: Taking over console for output\n");
+>   
+>   	dummycon_unregister_output_notifier(&fbcon_output_nb);
+>   
+> @@ -3357,6 +3358,27 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+>   
+>   	return NOTIFY_OK;
+>   }
+> +
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
+> +static int initial_console;
+> +static struct notifier_block fbcon_switch_nb;
+> +
+> +static int fbcon_switch_notifier(struct notifier_block *nb,
+> +				 unsigned long action, void *data)
+> +{
+> +	struct vc_data *vc = data;
+> +
+> +	WARN_CONSOLE_UNLOCKED();
+> +
+> +	if (vc->vc_num != initial_console) {
+> +		pr_info("fbcon: Taking over console for switch\n");
+> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
+> +		schedule_work(&fbcon_deferred_takeover_work);
+> +	}
+> +
+> +	return NOTIFY_OK;
+> +}
+> +#endif
+>   #endif
+
+Once you start adding nested #ifdef, I think it's very useful to add a 
+comment on the #endif to make it easier to follow the code.
+
+IE
+#endif /* CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION */
+
+>   
+>   static void fbcon_start(void)
+> @@ -3368,8 +3390,18 @@ static void fbcon_start(void)
+>   		deferred_takeover = false;
+>   
+>   	if (deferred_takeover) {
+> -		fbcon_output_nb.notifier_call = fbcon_output_notifier;
+> -		dummycon_register_output_notifier(&fbcon_output_nb);
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
+> +		if (cmdline_find_option_bool(boot_command_line,
+> +		      CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION)) {
+> +			initial_console = fg_console;
+> +			fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
+> +			dummycon_register_switch_notifier(&fbcon_switch_nb);
+> +		} else
+> +#endif
+> +		{
+> +			fbcon_output_nb.notifier_call = fbcon_output_notifier;
+> +			dummycon_register_output_notifier(&fbcon_output_nb);
+> +		}
+>   		return;
+>   	}
+>   #endif
+> @@ -3416,8 +3448,12 @@ void __exit fb_console_exit(void)
+>   {
+>   #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+>   	console_lock();
+> -	if (deferred_takeover)
+> +	if (deferred_takeover) {
+>   		dummycon_unregister_output_notifier(&fbcon_output_nb);
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER_CONDITION
+> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
+> +#endif
+> +	}
+>   	console_unlock();
+>   
+>   	cancel_work_sync(&fbcon_deferred_takeover_work);
 

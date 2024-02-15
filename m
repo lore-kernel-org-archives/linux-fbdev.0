@@ -1,68 +1,67 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43C0C12AADA
-	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 12:06:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1C0C12BEA1
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 12:07:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707998795; cv=none; b=JlQfiJ2wSqYwqg+nsN9APoFJPhRHtgYZZ7ASDPCmwLG1hL67iquZnYFVANwORo3Z+yP1Roar4e4wBaqDdJqmx32JfT9q36V/OPXFCZKMhFkD4le431vDR+J7Lrt/rj0g1v2+Yj6tXUvhBHbakGpydFi2Sb3j8rC1zcK/vcM3dow=
+	t=1707998823; cv=none; b=NfUEOOvFP/ia3/25jc4gHbv/KDlF5BiuCq88aqOAvChVO8oCSf9CvZF3hu1gILr+QVxK31thcAmiitasXLMilMtgSVHbJw5jN6XtAphi1uMbRCz7+G7t/ClUqvK1jxxrkHextkj5DMIBNiUAXDQe/Bgit4MzmSV5HDSmlnlpp+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707998795; c=relaxed/simple;
-	bh=w9U1H09U+2f4ftaRuPUfEvrB/jRLSmaCK86+AH3G8uE=;
+	s=arc-20240116; t=1707998823; c=relaxed/simple;
+	bh=6HsBMbgzYfxwG4TUH3pKnkkz/36cZRYAsjlWFRO45NM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=R78PkAjoPTj7y8htaxf0abk8Ltd9bSynY041BFJN01mRhh/MYVkNxqPstSpRPT/Mix3YwzQvIWGQ6oabXSK+d7ePWI/nOWRcCrFWfmpXr20XVgdKB9rr0AhQMFs5vWl6cZK32VmmyN5gXgh+jbOTAJVyESrVchV3Cr3KlQA35Hc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=J3bMSFGD; arc=none smtp.client-ip=209.85.128.54
+	 Content-Type:Content-Disposition:In-Reply-To; b=ASvcUiQGdRjW2VBp0Hn2b9AkZxPoqR1ukCaQF/QzC0Z/mmqLzR33DYhdJtN/SeinGP/7xTtsmtYK0igkOPr/cgES0rotcuHSxOSZ9yDCFDt16btZX9ul+FCZi+JqWD5TIazJYPawh/kGzvwZIGFaROp15Cc1gJIJcJnFTIyVIY0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=sx1FDUZs; arc=none smtp.client-ip=209.85.167.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="J3bMSFGD"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-41202eae372so6217695e9.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 04:06:32 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sx1FDUZs"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-511acd26c2bso1047483e87.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 04:07:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1707998791; x=1708603591; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1707998819; x=1708603619; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=VMgDoMHIzFuqODakLtjtNeclHHbG8KPNcm8YqaMnNoA=;
-        b=J3bMSFGD5OBNJr+AA72dX4JgkgCFxiiD8jUwEklru6Pr74joyi4BKKoa+zEZOYddeF
-         wckQY+Gzlw7+3qtzUc9fTI+skaM8ImPVPfyGtkRIjsvUr7yZqur9fZtrfNKlYu3/7oB3
-         1RoXLLipAQeNwr5nbkOnErbf7WSGmUZseAOxlyMuInOjwL76+n8SBsZIYKeUaFn2HGrE
-         2Wbf9XJej97Uw8skwR+QCsgAOJmD/RleUVbV/tEiI9noh2vZQ8Ct0PKhrk7OC/yQcf0o
-         TYgFYJnm3FpjLJonXuogsK8WljO15+6ud15aMC6laAeFyxM3J8idGMhjM8d6bOhyXmM/
-         433Q==
+        bh=6HsBMbgzYfxwG4TUH3pKnkkz/36cZRYAsjlWFRO45NM=;
+        b=sx1FDUZsIAYbIqa8fcta1xmjkAnPpCzNRLAif8KNIL9LpPbZCNglyD0nrdzXavxJJE
+         UQxeZ7sdJLhmmOQ7ztbqdvcgUWB3w7i6Li3us+vxbMz9brfywL6skjBrJ0HqWVuBSike
+         kAThfOZOlAJUnI66Act5tjcCLsDpkZk921ODv68Zjt5aO25lIu36yCV+iQqhoqOBrC5X
+         ehM+0tbyMGawhRE+TB74vXRWb/BAl4XSfWsNysEPZUur774fc+3IvoFpK94p2GEhgQ82
+         ng7tke+3xVmQb7GMTLjHoFCX08nl2zClOsBOeMO7OmkXUU4AFdGj93tI7fMwvzWOJIaZ
+         CaOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707998791; x=1708603591;
+        d=1e100.net; s=20230601; t=1707998819; x=1708603619;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=VMgDoMHIzFuqODakLtjtNeclHHbG8KPNcm8YqaMnNoA=;
-        b=Ab6V4SBFpE4J3lFi0Hu596EUKCxiBHyLCQqB4kFvAjUoAkGbhGd3JffMJS5/ABJZVt
-         dNCTabG0DVOZsY/KiTXeZFdPaE8Vg919S1Zjgn15dIdDUJHC4cUQRdiDU3RlJMjOQobm
-         uFWL1itFkgGO1i4Io54P+D9jIcwUEtNED6RzTCtgpoZD0vXaLXdqCN8QdzBvSyP6vEpl
-         a7UfK4zs0JuYSQum5x6Jxxg+sVszso+1Djz/2kK0deFR+a9zOL+njz9POyHc75jlH8pJ
-         Fq/wKEzd/WldOglbiXZMzwKdgjLqsVXkpdQBqJm/Q6Aek9UfSS08AOYPu8txhaNFc3fI
-         rZ0g==
-X-Forwarded-Encrypted: i=1; AJvYcCUsvhf0SDXYGPUmTMrgrO95ALE8wYod8+8K0Q0Rf6DvWKwmHVwwvFPPMH7y1IPDhou9x72EL6b5Mm/OwlhaRviS5s0uUPoBTP5uE24=
-X-Gm-Message-State: AOJu0Yyc6QYpDcxIURwEa+KIdN6glO1PUXZEBR5gxlcBVo2pEw8OALNe
-	1xTWr9e0jOyOUr81fm39MbF8y85YVOWVzaM5NWJTKuUePuJ9djPyFyZPQ4JOxBg=
-X-Google-Smtp-Source: AGHT+IFXsJnSJU/aoEXOC+yNwsZ//mKJH3nNdWKrq+duj3XBkzFcLIjieh7WMKZqSCQMPoyrY6E43A==
-X-Received: by 2002:adf:f50d:0:b0:33b:4649:a1e0 with SMTP id q13-20020adff50d000000b0033b4649a1e0mr1195842wro.15.1707998791423;
-        Thu, 15 Feb 2024 04:06:31 -0800 (PST)
+        bh=6HsBMbgzYfxwG4TUH3pKnkkz/36cZRYAsjlWFRO45NM=;
+        b=xMN8Oag6Kju4jadXHxeYgPMmaGF2VtKiZFk7Vxk5JkTMmKFaOWPyLuqJC7+FvpJIjm
+         RCK636Zvza6FULLEGNCLal/oE1ZazB1ssscu8Ve1G5gIIYybIBNNByzklNbKXe35Bi7y
+         Wk36LmT+lnhmG7Ct/ztdlSpOL1a1DEWD9cqqiLrs6bKWgxgI0duvLl7aFZZeQ7O4JIDR
+         q8mQpAKAa09sUsqr/hCOWVxsXkerPZ1EmvPT2F9URpI4otjKOkqbcwmRqQQB5UPQ3P3u
+         238doBX74C8mrOngrTVdTrrYS8hX5g0ddD8vngzKW4nHckSg0laQ5jeRQ44060eWPumK
+         B8aA==
+X-Forwarded-Encrypted: i=1; AJvYcCUO5t/GmP+bUlI3W9GFy8J+X3PTlbzE6c/y5Nh/08JE8XTmAiHVBkhiNofdkTLTbkcLryXxB2yVqTa7qhXr4uulqWQraF9J327L53k=
+X-Gm-Message-State: AOJu0YycgwEd2mCFliCeeu9/z4pPxU/83XCD80WJXX4GWM7hY9RJ9Wfv
+	leldZQqlx9E7TL579txZLKsbPregrQddHlk+gIojNikzigwtJo+4D5Uw+3/eGac=
+X-Google-Smtp-Source: AGHT+IEvCAE2Hh2zJZuwx6DONXdXfWx3DTN1g6LukJQSKZzMSvJwK0E8L2N9izM+RVK89lmD04+0vg==
+X-Received: by 2002:a05:6512:3130:b0:511:82b7:9fb7 with SMTP id p16-20020a056512313000b0051182b79fb7mr1408077lfd.13.1707998819594;
+        Thu, 15 Feb 2024 04:06:59 -0800 (PST)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id x13-20020a5d54cd000000b0033cf5094fcesm1620967wrv.36.2024.02.15.04.06.30
+        by smtp.gmail.com with ESMTPSA id t10-20020a05600c450a00b004122cfb5c5asm171291wmo.12.2024.02.15.04.06.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Feb 2024 04:06:31 -0800 (PST)
-Date: Thu, 15 Feb 2024 12:06:29 +0000
+        Thu, 15 Feb 2024 04:06:59 -0800 (PST)
+Date: Thu, 15 Feb 2024 12:06:57 +0000
 From: Daniel Thompson <daniel.thompson@linaro.org>
 To: Thomas Zimmermann <tzimmermann@suse.de>
 Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de, javierm@redhat.com,
 	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-input@vger.kernel.org, linux-pwm@vger.kernel.org,
-	Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Subject: Re: [PATCH 04/10] hid/hid-picolcd: Remove struct
- backlight_ops.check_fb
-Message-ID: <20240215120629.GH9758@aspen.lan>
+	linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH 05/10] backlight/aat2870-backlight: Remove struct
+ backlight.check_fb
+Message-ID: <20240215120657.GI9758@aspen.lan>
 References: <20240212162645.5661-1-tzimmermann@suse.de>
- <20240212162645.5661-5-tzimmermann@suse.de>
+ <20240212162645.5661-6-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -71,34 +70,16 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240212162645.5661-5-tzimmermann@suse.de>
+In-Reply-To: <20240212162645.5661-6-tzimmermann@suse.de>
 
-On Mon, Feb 12, 2024 at 05:16:37PM +0100, Thomas Zimmermann wrote:
-> The driver sets struct fb_info.bl_dev to the correct backlight
-> device.
-
-This looks like it was copied from a different patch since you
-added code to do this as part of the patch!
-
-> Thus rely on the backlight core code to match backlight
-> and framebuffer devices, and remove the extra check_fb function
-> from struct backlight_ops.
-> <snip>
-> diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-> index d7dddd99d325e..4500f6e03d32f 100644
-> --- a/drivers/hid/hid-picolcd_fb.c
-> +++ b/drivers/hid/hid-picolcd_fb.c
-> @@ -493,6 +493,10 @@ int picolcd_init_framebuffer(struct picolcd_data *data)
->  	info->fix = picolcdfb_fix;
->  	info->fix.smem_len   = PICOLCDFB_SIZE*8;
+On Mon, Feb 12, 2024 at 05:16:38PM +0100, Thomas Zimmermann wrote:
+> The driver's implementation of check_fb always returns true, which
+> is the default if no implementation has been set. So remove the code
+> from the driver.
 >
-> +#ifdef CONFIG_HID_PICOLCD_BACKLIGHT
-> +	info->bl_dev = data->backlight;
-> +#endif
-> +
->  	fbdata = info->par;
->  	spin_lock_init(&fbdata->lock);
->  	fbdata->picolcd = data;
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
 Daniel.

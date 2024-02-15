@@ -1,202 +1,95 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com [209.85.219.169])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D631B12BF0A;
-	Thu, 15 Feb 2024 12:23:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D429312F396
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 13:31:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707999831; cv=none; b=uEujIiakA59Sah93yQGlA343FVHbqkXNIaBjk9QCIID4gZEI5Qzfp6OikCcxsJU+lhKbWz48osalb5IujD3TB73u5g8UgNRWQCQu3Ylt2OmdsKnJPDKS9BzpVSgQIS96V42e5QrSrScf3cS9FMr943zlvZWRgSaCeiGaV/L3vm8=
+	t=1708003911; cv=none; b=RuC/v/nJQn6EU+UmpzJkb+w9IId6342mvc+Ni/0KE529YNrh6XRlZ03QAaE8DTFQkhAkMQm1VuzTPHOj8zbt0Ybdpv69mOlZBUoVJM95+9EL/RUSv7mEDh/7TfkEkPjHyfs7mQnfazE80qCgFuN8cgnfjNvjzOOcIZAm5VgdypA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707999831; c=relaxed/simple;
-	bh=ryXmnrVKdJ1IArgbO2BYploNe2lnXcSAchTy7PIdIS4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nkBM8dXbSuEz12NYFenmjC8Gk2bAYlRRwS3b5MssaQR00L7FHsdbl29+fje+wJO72c6uOCzRPBBmghlpz71oB/fFj/8z2Cb1xP41j/307uSFgkFxtD4Fexkv++qlf0QJBa6Rxrs0O+4urr1DKCv88UwI6Kt98cwo6I8niFJqDW8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AkIrjtZZ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2H1WnTaa; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AkIrjtZZ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2H1WnTaa; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1708003911; c=relaxed/simple;
+	bh=lUl0Pib7si2dQHCXFrZb+InEVOkZVwOiAw43kh+jhak=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dhCB6t2bezkuT8Rs3vHAWhw6Or8wJzqwqi9utx5sKDexguU9N92WXCzpP7geD8OGiQPc5+Xp/quRGOzscDmT4jBH62IPiLXccJGA2cWQkdNvwEv6Cj5BnpQDykQLOrrXtmMOC004ptvc6oFwpvGzubX3PNdeSB4lV9wrBgt3CJU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=BqGCzj/G; arc=none smtp.client-ip=209.85.219.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AkIrjtZZ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2H1WnTaa";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AkIrjtZZ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2H1WnTaa"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AE70022031;
-	Thu, 15 Feb 2024 12:23:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1707999821; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/U6IOQnQ9ULxqaNESpPiiOjak9SURfZzGnFmX/IjxEY=;
-	b=AkIrjtZZEVtDAFn9jXGZtbagNGWHuxq3IJPaA9xl0/PtGsnmw6NcLPCgPQ93zVgkHmQNGm
-	uK9HNkgdugSlWX/rpuHg6qBVpOB3nn+aUatljjablitZxY/SHYJmKaAJQdEsjdhUIHG6nj
-	R7/eUTdt3b2q8eItziNDW9PC0R6Ky/w=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1707999821;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/U6IOQnQ9ULxqaNESpPiiOjak9SURfZzGnFmX/IjxEY=;
-	b=2H1WnTaaHm9T8o62IZKF/gnL7LWzFfrG6KKWSjrfBCKS2ZbazyuWgKpnzqlUSGJQ2yQa5O
-	poKcn9yFTOqetKDg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1707999821; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/U6IOQnQ9ULxqaNESpPiiOjak9SURfZzGnFmX/IjxEY=;
-	b=AkIrjtZZEVtDAFn9jXGZtbagNGWHuxq3IJPaA9xl0/PtGsnmw6NcLPCgPQ93zVgkHmQNGm
-	uK9HNkgdugSlWX/rpuHg6qBVpOB3nn+aUatljjablitZxY/SHYJmKaAJQdEsjdhUIHG6nj
-	R7/eUTdt3b2q8eItziNDW9PC0R6Ky/w=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1707999821;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/U6IOQnQ9ULxqaNESpPiiOjak9SURfZzGnFmX/IjxEY=;
-	b=2H1WnTaaHm9T8o62IZKF/gnL7LWzFfrG6KKWSjrfBCKS2ZbazyuWgKpnzqlUSGJQ2yQa5O
-	poKcn9yFTOqetKDg==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 6A0D11346A;
-	Thu, 15 Feb 2024 12:23:41 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 2CNtGE0CzmXADAAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Thu, 15 Feb 2024 12:23:41 +0000
-Message-ID: <288a480c-74e9-49dd-a58d-294792771ea6@suse.de>
-Date: Thu, 15 Feb 2024 13:23:41 +0100
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BqGCzj/G"
+Received: by mail-yb1-f169.google.com with SMTP id 3f1490d57ef6-dc6d8bd612dso806111276.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 05:31:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1708003909; x=1708608709; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yGh//nbX6ksAbjoH86pu+1OoxjeTYU/3tdUOfH2WwY4=;
+        b=BqGCzj/G9jhFSsh2Za755/LzU6uyT+nqeNHXOXWrVvZpkLqcH6kmzgf4tPtVkwkEU0
+         wyf4WLzEQMX1M5SRb9clyi+Wdlay+Rj3eHfkjDTKRJCeBQ5oJAaHdR739mCMQ0siELsY
+         pMJ4k9VWaGRJ5KWxpNJKYgc2ezLDBvP27pFM9/oAuXmwlEVFp9qUZnpYcCWRIHkcj3AB
+         vZ2lGqYF2zsUly9WRW5AgoT6GXIqqR4cK0IiLdb30LSDU5k9ul21dtva44MEhEtMEhsa
+         4JFzDwH3I9iI/ebxA/XSbuogUGtrJJo0jsA7Qcel1rqwY+WfQASMKFs9+z71WRRioqem
+         0bXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708003909; x=1708608709;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=yGh//nbX6ksAbjoH86pu+1OoxjeTYU/3tdUOfH2WwY4=;
+        b=s75oMdEHsc36HKy/67bADf8ZfR4i7gAY2Yp4eJITbbI9beAWPvqYH11dNXtGtrEw5j
+         VvgLmorhPjfg/PzfdpdHGx/HjBfbGqeG5rDhGlp+Dzm70HIiy+fqV8TDKVY9KQBCkSxv
+         JrBL7vxCWnRmWYHagOa1QjHuCvJbQpguNT8kVTsRg+myHuAHpWfXmF0GSrrYQDocDwb9
+         XaID4zhUCvdstE8gQwHbicCj6u21xxxwPWuubr6mBB9ZXx3OWq6A6a1VLbPeTrHDQdcO
+         xajLLeq71fZDQ+zCAH5XrMHNrw2C/oqyASXxCPDoOKN2DgZ8zd5o6VJdsZwlFLjT/CoL
+         WBnQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWs/u99S9NM6jpuD0JTxzJprDdpAFq80euJmOFJ5SOxLsnfJoqHeJg5fLOu9HcwPs0DJPJEhk4ho9W8RbxOJmCpNuU7uCwJDEc7VPo=
+X-Gm-Message-State: AOJu0YwSZ9P7N7K+F/RtJb7s4x0S6jRFc7i+pETIvTlHnIDXF7GSdYrM
+	HmNE4Z+Ghp4N44B7uxVASKHnX3VTEWtCZhVKxdqfZqH1gfvcwPnXf1nOkMeU1r+YDambPYCFLG2
+	84XPRmTFEZ6cSPSX+3Bq1dQ5ioGKY7igF5I+Iug==
+X-Google-Smtp-Source: AGHT+IHl3qgWvQCqRJMe39KHtu2wuTpCX4Lckf3lqFQQ+kVziMGrJ7Juv/tfm7isqbWZN8sE5IWX6zuYqEnZ+zYcRZE=
+X-Received: by 2002:a25:b949:0:b0:dcb:b41c:77ef with SMTP id
+ s9-20020a25b949000000b00dcbb41c77efmr1387473ybm.24.1708003908799; Thu, 15 Feb
+ 2024 05:31:48 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/10] backlight: Replace struct fb_info in interfaces
-Content-Language: en-US
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de, javierm@redhat.com,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
-References: <20240212162645.5661-1-tzimmermann@suse.de>
- <20240215121326.GL9758@aspen.lan>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240215121326.GL9758@aspen.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=AkIrjtZZ;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=2H1WnTaa
-X-Spamd-Result: default: False [-3.30 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:98:from];
-	 BAYES_HAM(-3.00)[100.00%];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 DKIM_TRACE(0.00)[suse.de:+];
-	 MX_GOOD(-0.01)[];
-	 RCPT_COUNT_SEVEN(0.00)[9];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 FREEMAIL_CC(0.00)[kernel.org,gmail.com,gmx.de,redhat.com,lists.freedesktop.org,vger.kernel.org];
-	 RCVD_TLS_ALL(0.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: AE70022031
-X-Spam-Level: 
-X-Spam-Score: -3.30
-X-Spam-Flag: NO
+References: <20240213-ktd2801-deps-v1-1-7feb5385eb9a@skole.hr>
+In-Reply-To: <20240213-ktd2801-deps-v1-1-7feb5385eb9a@skole.hr>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 15 Feb 2024 14:31:37 +0100
+Message-ID: <CACRpkdYm0dNZZvzAZ-VQ+MaHeL7NmGCmCVw42WMx6BFf4Lw0Pw@mail.gmail.com>
+Subject: Re: [PATCH] backlight: ktd2801: depend on GPIOLIB
+To: =?UTF-8?Q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@kernel.org>, 
+	Karel Balej <balejk@matfyz.cz>, dri-devel@lists.freedesktop.org, 
+	linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi
+On Tue, Feb 13, 2024 at 7:13=E2=80=AFPM Duje Mihanovi=C4=87 <duje.mihanovic=
+@skole.hr> wrote:
 
-Am 15.02.24 um 13:13 schrieb Daniel Thompson:
-> On Mon, Feb 12, 2024 at 05:16:33PM +0100, Thomas Zimmermann wrote:
->> Backlight drivers implement struct backlight_ops.check_fb, which
->> uses struct fb_info in its interface. Replace the callback with one
->> the does not use fb_info.
->>
->> In DRM, we have several drivers that implement backlight support. By
->> including <linux/backlight.h> these drivers depend on <linux/fb.h>.
->> At the same time, fbdev is deprecated for new drivers and likely to
->> be replaced on many systems.
->>
->> This patchset is part of a larger effort to implement the backlight
->> code without depending on fbdev.
->>
->> Patch 1 makes the backlight core match backlight and framebuffer
->> devices via struct fb_info.bl_dev. Patches 2 to 9 then go through
->> drivers and remove unnecessary implementations of check_fb. Finally,
->> patch 10 replaces the check_fb hook with controls_device, which
->> uses the framebuffer's Linux device instead of the framebuffer.
-> I won't reply individually but I also took a look at the patches for
-> the combo devices and it all looked good to me from a backlight
-> point of view.
+> LEDS_EXPRESSWIRE depends on GPIOLIB, and so must anything selecting it:
 >
-> However I don't want to drop Reviewed-by: on them since it risks those
-> bit being mistaken for an ack and merged ahead of the patch 1...
-
-Thanks for reviewing. Unless someone objects, my intention is to merge 
-everything via the drm-misc, so all patches should go in at once. I do 
-have a lot more patches that untangle backlight and fbdev almost 
-completely, but most of these changes are in the actual graphics drivers 
-rather than the backlight core code. So hopefully everything can go 
-through the DRM tree; or maybe the fbdev tree.
-
-Best regards
-Thomas
-
+> WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
+>   Depends on [n]: NEW_LEDS [=3Dy] && GPIOLIB [=3Dn]
+>   Selected by [m]:
+>   - BACKLIGHT_KTD2801 [=3Dm] && HAS_IOMEM [=3Dy] && BACKLIGHT_CLASS_DEVIC=
+E [=3Dm]
 >
->
-> Daniel.
+> Fixes: 66c76c1cd984 ("backlight: Add Kinetic KTD2801 backlight support")
+> Signed-off-by: Duje Mihanovi=C4=87 <duje.mihanovic@skole.hr>
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
+Technically you can also select GPIOLIB, because it is available on
+all platforms, so it may be easier for users, but then you never know
+which GPIOs you get in practice.
+
+Yours,
+Linus Walleij

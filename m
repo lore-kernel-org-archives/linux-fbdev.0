@@ -1,99 +1,83 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 551F9127B73
-	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 11:49:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D6AA12BE85
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 12:02:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707997749; cv=none; b=HUlfEwAO2J+XV5MhKL0bVXntWAuM4EGtT4YSONrCLLhfW7+/PKZnMjFPFqQwukmoXalB/b7/c/WKR5lEYe02VS9oxT0bsreJqwDYHWv2YhXllALY5wqz3TQQM2qMFN0QWHa7rPJ9jsRphGyYPDOBJ98QSOUtQxJoj3fm2vVrAkk=
+	t=1707998560; cv=none; b=T2Si9c2rRLZUUE2IKBmKBa89tiwCgmILTK68JWFO8iC50z10s338g503SxZpSkFOv3XQvrmapM+SKGZPUQtoGRh1lV1nJx4HtK53BFk8hmT0sPx4aKyQbh614exvBpHIol7vc2gPxtGJjMd16qu6zMNRENBZ1fU3qPyxrO7pdq0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707997749; c=relaxed/simple;
-	bh=PMdqF4BxnLzSwd0JYe63JOfvhqT8FaZryFeHRQWW11s=;
+	s=arc-20240116; t=1707998560; c=relaxed/simple;
+	bh=vbgRA2GMlce397fPZXf/sJUC3uP4O/JDU4BLWHn2As8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Zbl9mG2BKpHaeR/qPizwnS74dFZTvcXx0cZBxy04Okoyb0mZBqolpbvsgiqOshy0fMwcWqqIZ1xeut+Pyt8FbLWGfu/baDg4B/XtI0Ie1AzZ27m8Y79H/++woR9iDdrdXtT8KvwL1+9oWjgrQBw4UZq5fFBG2/TsBjfxgAVBXaU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=vKlbrH81; arc=none smtp.client-ip=209.85.128.49
+	 Content-Type:Content-Disposition:In-Reply-To; b=Om4McCNfCPL4uZL2Vjr/vmfv9Eyd/XaUE9LYXdqWdDLqKQa2+qzfZ0x5M6ssTUiGqk0scAnFTz44QVqXYcj/bED4hiaYMYeAzuXwqtvEA96y3JsL5wGlV+ijZmpxckVSdgyjwuz1A8dUvGRo4PJFcGTO6ALvYI6CRuB+/B9KtlQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=OsXwhnjD; arc=none smtp.client-ip=209.85.221.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vKlbrH81"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-40fd72f7125so6482495e9.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 03:49:07 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OsXwhnjD"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-33cddf4b4b5so564122f8f.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 04:02:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1707997745; x=1708602545; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=PMdqF4BxnLzSwd0JYe63JOfvhqT8FaZryFeHRQWW11s=;
-        b=vKlbrH81Q+fNYSZKaT93vsQazhllFw8PvlBaU03WUt0/++t49vHhlKe0JNGETVRW2s
-         kpR7EZ8M+YM02cLkCmX87qdi/NqoewiErV7xTEOalX5BATkMLfrM0dEAZxv84Rq6JYNW
-         JqPvkLSMR+re/+fyZT0LHags8GPH11gzWMPLz8UKwR/DG1MpTg7DItUfEaPQVEJR5U9a
-         ihYZFgbAHaOyID1M1P1C+ahOICc1r2hTWtyFU4UxyN1vMPocW7vm374UjYtCOXwc4wab
-         QQmFKHhUR1EJxyOOdakdtCLw66r6hysdLkxBne8cGhk4MuhUwL7o+lJY3PNlXBxmLqif
-         D+HQ==
+        d=linaro.org; s=google; t=1707998557; x=1708603357; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=vbgRA2GMlce397fPZXf/sJUC3uP4O/JDU4BLWHn2As8=;
+        b=OsXwhnjDPFNVM5GLiZ0J0gJL5R+PQeoy7maGkeplncYqGcEqXpR0WYYO6wzGFQPvGE
+         CSBv5XrWnYh4va0cWj+Rw28nlEUU8bohKN7lurdLy0i4Fpc4vkGjSM9DPd2ZvIiM4kSY
+         zB+Ja5yP0M1QkDqHIcTkPh3GPbMyevli6gfyjtNQbRQ5fKjRCMTPyZMfBOH3XhuRVlCN
+         akltg8uPN/4zw54CZ97TnEbL1xU2fpfSqHSH1lqPWlqjifRxdUIyKtxMm+LnQD4s1f88
+         7+ajLJHMZnE2ByIbvcdxP9WsGlVUuFZ3zrHe59t7gPjABpNUv/bTOleJWL8OfqqBZDFE
+         MBZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707997745; x=1708602545;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=PMdqF4BxnLzSwd0JYe63JOfvhqT8FaZryFeHRQWW11s=;
-        b=EheR/ybhJClXiUrjyVd0ZI6+L6EzBAqWlOC8Dna8ubt93410+SoxJCkiLcqrrEMJ0a
-         umsT3Me9kEK6ZbV+MPNHtMLBQbNlchMvVTMW6+YwJxHvdT2vl9DePyPH2v7mK8Sz6VL5
-         sZ8dMZS1osoE4FiSXA6nS0WCmJk+ZYIQ2gZswOlKpNoyVCs1g/s0MSfQEOkR3a3zMMAl
-         Vc8JQNMfXpqQK0T7106+dbCGBV5tJXeOo3bXmCJNHBe0GizZ93eKHDBJ4AW3KHoSoRct
-         uaNQFpuN995MV3bRJgasshgBFGLp6MBWR6B5X548k2Z9Yw19ie5Gf8xH/UwKQ6pYbsKD
-         LS1w==
-X-Forwarded-Encrypted: i=1; AJvYcCXIwjNCpJP7J+GoSXiOK5DChwTZwtTVcQV4Qn30JrP56oAj6UBu4NWkEPf5Z7i08jqTUiQAAyxW3Q/NX36ZBfl57SANa3MbcOSdLt8=
-X-Gm-Message-State: AOJu0Yz9l0FAiirtDAXlFQ/OlHmOC7LsQrpVrESTFX5Ev1vZlEyuR88c
-	dQVsQBIfib+fYcw7oNn2Y4yY/tSLRqhypZYgMmu2U638t6hCGrVwk6q19FMNDn0=
-X-Google-Smtp-Source: AGHT+IEPqfe0lQU32GGuFkM16RloqQWYNuLy7eiEqCzQNMdjhgJO3HI8g7e/KPfBuJeESwNfUgFUDQ==
-X-Received: by 2002:a05:600c:470b:b0:40e:a32c:988d with SMTP id v11-20020a05600c470b00b0040ea32c988dmr1202419wmo.4.1707997745749;
-        Thu, 15 Feb 2024 03:49:05 -0800 (PST)
+        d=1e100.net; s=20230601; t=1707998557; x=1708603357;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vbgRA2GMlce397fPZXf/sJUC3uP4O/JDU4BLWHn2As8=;
+        b=p+a10XgneJONhxE3r1LLneJJ73bXQVRc9RV4gWFMN6BeGqbDaHdV9HJ5Hj9CfnLRsh
+         pOrRmyvF65BFjKQ8K2j9M32/GI9071pdZhkhIeC83RQtB3dNIS4rzn5lHs9Me3PGUmgd
+         4N8pPGYjB6U7Y0Ho21gMce6p4IRDR8E6eCnYXSDERwUwDQYLagehiIUdVZWCp23RmPj9
+         hek4pbWaTNiPGnKPL2Urt5lDXUyx0xFPwtHRzakvRiK91JBbeJ12Ah+teKbemmK4amyo
+         4fe633U5LxtYSFxZ06AvCSs9r0l1Wurfwh3btaPBbwH8XxjEkSc9eKj1On23eK8pxj3O
+         2gWA==
+X-Forwarded-Encrypted: i=1; AJvYcCVDJ1cX/ftKfXB9Z7sMgPDsU4BFpZsc45HvDAj3/KTiYXkDr+iT3Df+8lBPaZgdmuA6IT7vG/G/S1cOpul5FPXSOU18LkbhWITDLec=
+X-Gm-Message-State: AOJu0YxeTZ8+TCH1lF9OlR/7gyf+Q+NslDpvcKpT0Dfx2hJVPIpUDku3
+	QTIN4B7Pbq5Je9nAeKlyhxhtaIpOLT6nWb/S0Jxymk6NlEdWgm7fP4yiOk7p1UY=
+X-Google-Smtp-Source: AGHT+IHkovjjm6uiGh8NEiN+5Igji2gmONxw1ozHtZ/fWfNAab/0bhMXeBul3IX7/uedCw8IfPnK6w==
+X-Received: by 2002:adf:cf10:0:b0:33b:2884:edf2 with SMTP id o16-20020adfcf10000000b0033b2884edf2mr1196357wrj.56.1707998556956;
+        Thu, 15 Feb 2024 04:02:36 -0800 (PST)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id n15-20020a7bcbcf000000b0041076fc2a61sm4778156wmi.5.2024.02.15.03.49.04
+        by smtp.gmail.com with ESMTPSA id bo2-20020a056000068200b0033cdbebfda7sm1407012wrb.14.2024.02.15.04.02.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Feb 2024 03:49:05 -0800 (PST)
-Date: Thu, 15 Feb 2024 11:49:03 +0000
+        Thu, 15 Feb 2024 04:02:36 -0800 (PST)
+Date: Thu, 15 Feb 2024 12:02:34 +0000
 From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Arnd Bergmann <arnd@arndb.de>, Flavio Suligoi <f.suligoi@asem.it>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Jianhua Lu <lujianhua000@gmail.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	Helge Deller <deller@gmx.de>, Jingoo Han <jingoohan1@gmail.com>,
-	Karel Balej <balejk@matfyz.cz>, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-leds@vger.kernel.org
-Subject: Re: [PATCH 1/2] Revert "leds: Only descend into leds directory when
- CONFIG_NEW_LEDS is set"
-Message-ID: <20240215114903.GF9758@aspen.lan>
-References: <20240212-expresswire-deps-v1-0-685ad10cd693@skole.hr>
- <20240212-expresswire-deps-v1-1-685ad10cd693@skole.hr>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de, javierm@redhat.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH 01/10] backlight: Match backlight device against struct
+ fb_info.bl_dev
+Message-ID: <20240215120234.GG9758@aspen.lan>
+References: <20240212162645.5661-1-tzimmermann@suse.de>
+ <20240212162645.5661-2-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240212-expresswire-deps-v1-1-685ad10cd693@skole.hr>
+In-Reply-To: <20240212162645.5661-2-tzimmermann@suse.de>
 
-On Mon, Feb 12, 2024 at 09:03:25PM +0100, Duje Mihanović wrote:
-> This reverts commit b1ae40a5db6191c42e2e45d726407096f030ee08.
+On Mon, Feb 12, 2024 at 05:16:34PM +0100, Thomas Zimmermann wrote:
+> Framebuffer drivers for devices with dedicated backlight are supposed
+> to set struct fb_info.bl_dev to the backlight's respective device. Use
+> the value to match backlight and framebuffer in the backlight core code.
 >
-> The ExpressWire library introduced in 25ae5f5f4168 ("leds: Introduce
-> ExpressWire library") does not depend on NEW_LEDS, but without this
-> revert it would never get compiled if NEW_LEDS is not enabled. Revert
-> this commit to allow the library to be compiled.
->
-> Link: https://lore.kernel.org/2cacd8dc-6150-4aa2-af9e-830a202fb0a8@app.fastmail.com
-> Suggested-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
-
-Interesting that this could be a revert!
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
 Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 

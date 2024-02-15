@@ -1,69 +1,74 @@
-Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55D6A12AADB
-	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 11:44:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C73B912AAF4
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 11:48:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707997482; cv=none; b=sEEn8EPmMCQcyPXGkGD704DZ8JK+2wKKflCGglkIO+f/omD2X1gaO7x+CAsaRHbHsGCeWwSCFP+bONpywfbxx7FaUFuArYoDAWjrJ7DKv1Li4wla+DI4EBONo+OE+Z/BGqFkT96mmA6vggTj/XGqqU7gQ3s4YU7NPVtHRucclt4=
+	t=1707997717; cv=none; b=rdFSfuZYtjiCvHPmDTHihfVFCgpqYkPCdAw7m1Tp52yhkiOBXtq6l+ZphLMelKJYWABVBCaYBZoBnIVlk7TmMxJcwFhK4sZLDSu/qgA7VdpQMDCxcovNAxAsC4nxHdnoOsimFdvxM4bNh+BmgoMnroLdavHa0sAtA+sieLVwU2g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707997482; c=relaxed/simple;
-	bh=4EXfMA/5RJ5DHbaIGMJZ+ohUmy7XRCcrHj0wk7tuQco=;
+	s=arc-20240116; t=1707997717; c=relaxed/simple;
+	bh=FaR+rwTP87J6jI3GhtgMXyL1UpaYTYZi7hZBMtfoOLw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uLo8f9LqClM90dukmqgEEUhXJlKedvUtunTGmyTbk/hh5D2FH+LJAVobfw3OZmGusz3scp9zM1sW930B1T1bzbiDthPYQDeltH91ver02JgaAmrMHpFO4bqvavuHspjutSuOv9KDdVM6Qz5PpMM44oyNAHBuTMuIwpUC0FCzP5o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=kdmfDuII; arc=none smtp.client-ip=209.85.167.54
+	 Content-Type:Content-Disposition:In-Reply-To; b=VIow4WmhTQnset7Kk07CkuwIYoM6HbbB/MuIqNhLL/zqr+jwOrLvwwiULrfKNskLy5ZMgrlixu5KHvULHMwMARS7x/3n3JDrSrXAL2isHEkHGo/iA2YkUbqefNEa+A9OpitOBlHb6JOQiUyhEhlrHpt8XQmKOlzs64gHhOB9CwA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Gny9/BCp; arc=none smtp.client-ip=209.85.128.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kdmfDuII"
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5116b540163so1223008e87.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 03:44:40 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Gny9/BCp"
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-411f165ef9bso6826535e9.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Feb 2024 03:48:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1707997478; x=1708602278; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1707997714; x=1708602514; darn=vger.kernel.org;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=s0Dx5FtY4ggm/AcNbdXVVFP1mItC63qDUNAWfsNzDFY=;
-        b=kdmfDuII8ME87+n4zKvi9LNMBGioOXzfzBJV9537N90tvwNiiYQc0H9U1oq8U31XRL
-         g/5uDJhj6pzRCtDTUrj+InWjQER1DTuXuLvcwuh5MgliGVhaKsg0ngxa0I2UA/RjarVW
-         6emkK1nJyRqlTyHJWzCTEz/7PueX1qQLcpXggsyTIWGM3F8dE9CSyc2FOQJVk486Mc9f
-         f8tM6nWeTE8jFGXq4ZdVC5pu80t7KPEIzubel1pMSQbd7pJXbTh1tTU2VppmjjKdXHt8
-         wXwpjGm/V9HcKWrLll9EUMWtJXsserjfVBSCkEQ4A9rARfNzPU0upGvsBwQktm9lbjjq
-         Y4aw==
+        bh=DroRDiixIta52dRC0kBdYzbBsXfxkiN1Si4pySYG4VM=;
+        b=Gny9/BCp7iqVOJLUyqZ0dxeN+cd4IZKyOobTfX6l/tL5oSnMN9vq8fsJKsousx9Rui
+         QFsOtZnJDsRtQ1IPmENihjPXfF7msEtcwwG/iMM65yfQ8PzjPG6TUqIW5SMIuHncxH7g
+         mdy9hYKroAQ9jP6kDZEtXX3238awHWQIHLqQuBFiXf3UcZRdY4vpVpQcOR/iM5xRtcFg
+         CuiBiTy2QAtCs/XCmtt5oIy4lulJQZ4SBCvQS3uwN3PRjFNuliKSg8eZeFaliKa+mrmR
+         Zm89HBwl/Gyycs7E95vCTg5VHyNx+d1KF/YaxjgHM6LYJK6fzePUm9mw9e3MsmD8X0S5
+         Nl/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1707997478; x=1708602278;
+        d=1e100.net; s=20230601; t=1707997714; x=1708602514;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=s0Dx5FtY4ggm/AcNbdXVVFP1mItC63qDUNAWfsNzDFY=;
-        b=jW0fPN/8+EhGjHfPMW6yBLuB1y/FFm/dI2nTXOxJTyFNcOFNvhOy3oWyfoAXztpLmO
-         Tp4cIEcM99fUB8DxnpAHhk5DiaaEHkz2VMHiWcBYtotafQdwFpszXDEWUfQcnqtl2Gs7
-         BrsPlQ22yLaWnP6bCnWoDBewopMhVBSIBjBQ7uVbT/GnfOgKgaDHRIjbMlasHroK+i6M
-         a0qrDVEhd00h4Mcwx+ERldRpoEdw9HgalDGutkExtQRnc9m7wjAgInlKWBXy6OgCVX0Z
-         hc/OG51oSs8PX9KEZPIP9sW33aKXp9RMrK82B0i7f0qCW5FrvpRccYij1jBABKzEoM8/
-         wmHg==
-X-Forwarded-Encrypted: i=1; AJvYcCUc5dEOv8OKpaxK0l/1Hgg3GRoTA1UkNYn5b4bqB1qn21KLwk/99VuTgztizqRJ+h3p/uHaXnjccu73Mpi7eU3m92AXS5xZG4XkDmA=
-X-Gm-Message-State: AOJu0YyOsnoeWldImnzcW80ip4H/oLTyeS2Oma2r/yNYeGt3Mwl+CuQC
-	EQ2PycylwSijIyobxOPHffpA1XIwHkq7w66cPkbD2y2Dds43mYx5fsoow3DQ4rk=
-X-Google-Smtp-Source: AGHT+IEu0C6G66d14pfWgMYK2wzM1oPNS0d7EodOMsfiSkKWIbZuEl20a097XvjUuM1uqVFibSZSPQ==
-X-Received: by 2002:ac2:58d5:0:b0:511:69bf:d1b0 with SMTP id u21-20020ac258d5000000b0051169bfd1b0mr1243154lfo.51.1707997478365;
-        Thu, 15 Feb 2024 03:44:38 -0800 (PST)
+        bh=DroRDiixIta52dRC0kBdYzbBsXfxkiN1Si4pySYG4VM=;
+        b=CEK5XoY4ETOzi0M9zue7IiByJ3IWcmt1FXBXchQifieNKlzTqw8GwZhfZ5R3qTQJ83
+         CxKQnoJalpnZlVGafXQmaWHB9geBa18uHGjsLupGbdPI0t5SER713eqqMo9+Iy/hBbsy
+         EKJI8VZh5xTY9COiunex091dWw8dOk408ZsvAaBMIbtpNz4ipItESFiumvdeGclWZDoT
+         Mf5QCovSkvEgTrlXMoS5aN3bnY1ujkdA9zGXHqLB0pjnK6ZzL1QR3EIZ1DD7qvopV2zQ
+         urNv9xWcfOrmYbKH8jdaWyygEoThcUlG4icVUZ4jrLMbG1IDIAz9XB1yVGw+b+r4MrIY
+         Qd3g==
+X-Forwarded-Encrypted: i=1; AJvYcCX0XIzqTN0z02VCSoe/HO+Hv3mfBCj2MI4yn+nVSks3YeBaiR9GHWEe+qcRnZhLKuVcw2IoOmPkXOzxD8KpiZ/ndhLW8bECtK+bb/U=
+X-Gm-Message-State: AOJu0Yyw61jbXRum2vGKLEEz7oiSEh5QH9/ZbVcEx7LVQv2PNT+UgD6E
+	HanECtV9jZcwF9zoIYWv49+WgsiI1onfH0icADmx5ACP0GQK3nFaJdnoEWtuqz4=
+X-Google-Smtp-Source: AGHT+IGOdMVWbwspHZiG2UkONtI3ot5v2Yf7yd80zwMxWdUapC4d2kyA5ljlBgnTJ25oK0jtN78zUA==
+X-Received: by 2002:a05:600c:45c6:b0:412:1500:beaa with SMTP id s6-20020a05600c45c600b004121500beaamr1042184wmo.40.1707997713895;
+        Thu, 15 Feb 2024 03:48:33 -0800 (PST)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id c8-20020a7bc848000000b00410794ddfc6sm4787174wml.35.2024.02.15.03.44.37
+        by smtp.gmail.com with ESMTPSA id t4-20020a5d5344000000b0033ce214a97csm1543569wrv.17.2024.02.15.03.48.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Feb 2024 03:44:38 -0800 (PST)
-Date: Thu, 15 Feb 2024 11:44:36 +0000
+        Thu, 15 Feb 2024 03:48:33 -0800 (PST)
+Date: Thu, 15 Feb 2024 11:48:31 +0000
 From: Daniel Thompson <daniel.thompson@linaro.org>
 To: Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>,
+Cc: Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
 	Linus Walleij <linus.walleij@linaro.org>,
-	Arnd Bergmann <arnd@kernel.org>, Karel Balej <balejk@matfyz.cz>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: ktd2801: depend on GPIOLIB
-Message-ID: <20240215114436.GC9758@aspen.lan>
-References: <20240213-ktd2801-deps-v1-1-7feb5385eb9a@skole.hr>
+	Arnd Bergmann <arnd@arndb.de>, Flavio Suligoi <f.suligoi@asem.it>,
+	Hans de Goede <hdegoede@redhat.com>,
+	Jianhua Lu <lujianhua000@gmail.com>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Helge Deller <deller@gmx.de>, Jingoo Han <jingoohan1@gmail.com>,
+	Karel Balej <balejk@matfyz.cz>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-leds@vger.kernel.org
+Subject: Re: [PATCH 2/2] leds: expresswire: don't depend on NEW_LEDS
+Message-ID: <20240215114831.GE9758@aspen.lan>
+References: <20240212-expresswire-deps-v1-0-685ad10cd693@skole.hr>
+ <20240212-expresswire-deps-v1-2-685ad10cd693@skole.hr>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -73,17 +78,24 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240213-ktd2801-deps-v1-1-7feb5385eb9a@skole.hr>
+In-Reply-To: <20240212-expresswire-deps-v1-2-685ad10cd693@skole.hr>
 
-On Tue, Feb 13, 2024 at 07:12:33PM +0100, Duje Mihanović wrote:
-> LEDS_EXPRESSWIRE depends on GPIOLIB, and so must anything selecting it:
+On Mon, Feb 12, 2024 at 09:03:26PM +0100, Duje Mihanović wrote:
+> The ExpressWire library does not depend on NEW_LEDS and selecting it
+> from a subsystem other than LEDs may cause Kconfig warnings:
 >
 > WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
->   Depends on [n]: NEW_LEDS [=y] && GPIOLIB [=n]
->   Selected by [m]:
->   - BACKLIGHT_KTD2801 [=m] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=m]
+>   Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=y]
+>   Selected by [y]:
+>   - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=y]
 >
-> Fixes: 66c76c1cd984 ("backlight: Add Kinetic KTD2801 backlight support")
+> Move it out of the "if NEW_LEDS" block to allow selection from other
+> subsystems (in particular backlight) without raising this warning.
+>
+> Link: https://lore.kernel.org/20240212111819.936815-1-arnd@kernel.org
+> Reported-by: Arnd Bergmann <arnd@arndb.de>
+> Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Fixes: 25ae5f5f4168 ("leds: Introduce ExpressWire library")
 > Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
 
 Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>

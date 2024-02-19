@@ -1,165 +1,95 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FCFE23769
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 Feb 2024 09:39:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64941376EC;
+	Mon, 19 Feb 2024 15:02:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708335594; cv=none; b=ljkAvuRVszSEnhMD91w1zb4ebFD9dgf8wi4zwIADlfBtJMFLAt3135gGov8SzBoYxWO1BEXsky7vy0wj+R619EejRHBcAc7bBIOsjwKGCl/R69kvDDuUzXo+tZ9a2ouLKzesV3j5+kI6+xo2QHdgSPVIWDgY+nC2eZMAjpAn4vU=
+	t=1708354935; cv=none; b=VnNAFEhOw4f/M9nJiHm8hhiPIKrzRnx7Y3aZsAJfmdMgpK7WfNUkfy9x9tNFZA3MFCjbATqEax4S3uDYAfCfOVTCoIslDN9k0twKdrYDkpy7GpfYDWOMovAem3iz8e9HU65a/e0C4Dx4fNJNu0GnD3t+7CMgJXhkhTQ6fzoxiYw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708335594; c=relaxed/simple;
-	bh=TIlZd7q4Z6tbEfuhrEfXDY6DdOUfqPjIVTQ5Xjw1w5M=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LkzSOxCqDL8VJctFsM+Awf3H3aS+aq4U/yyokFp7NGlcmW+i/6dMNA1yl6pwiORDcQKEJj9waywYGrXFmhfqew4vZ+7Yzym97Pw1h8xrDOpZcOAggS9w0uIT1yXw2qICkoME0YJrdjpnNk8b/hrzAvSeV83AXx/yZFIdUmF575I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zR0z5HFB; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=fgl1fLWs; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zR0z5HFB; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=fgl1fLWs; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1708354935; c=relaxed/simple;
+	bh=rLJTGIJL4PehKGlrZU7auEkJi81q+N3ek1Fb//6b2lU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RBRD9thT9UqcFB7Y8qrfY0ITJnO1p6BH13TWmh1mrYraUuByOJ1LAUYQGO4Wi7EvQ5zwut/u/Ib7wjVxmT5OMfN6li0U/x2EJjv2Zq2D0C1lPKvLUczQSa0U0kE5cMmLKg/aF9w/qUQ7aVV9nbGzNXVEcZYk3Z18Lht8g/SFbqE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=onEMj+ii; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zR0z5HFB";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="fgl1fLWs";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zR0z5HFB";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="fgl1fLWs"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 34C642206A;
-	Mon, 19 Feb 2024 09:39:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1708335590; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=lw8ihCA+TSshMjQKBUCRdVsaAOjufcWn1kWaOxuNW8c=;
-	b=zR0z5HFBxtR/Mnlnephq2ZdvR1AB22iTjUfCMRHHgVW2GlxNJjHd/E7mf1bo41dy5l5Z7q
-	BZcDEbKVSXweYAurVEke8urMPUv9Ukxh/4mnfILsYEh84GyWvg1qX2CaDVa02PP+A/IYFU
-	/Q/KDO0kOHRSCha6tz83DX4oIQKD8jc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1708335590;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=lw8ihCA+TSshMjQKBUCRdVsaAOjufcWn1kWaOxuNW8c=;
-	b=fgl1fLWsnPgnu3BhcrwfCy8NATCwrmJhe0vbaJlmcovXRexB/JYnmuEIpj+96yT2WUMno8
-	Uwe6oxJe8F3k+oDg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1708335590; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=lw8ihCA+TSshMjQKBUCRdVsaAOjufcWn1kWaOxuNW8c=;
-	b=zR0z5HFBxtR/Mnlnephq2ZdvR1AB22iTjUfCMRHHgVW2GlxNJjHd/E7mf1bo41dy5l5Z7q
-	BZcDEbKVSXweYAurVEke8urMPUv9Ukxh/4mnfILsYEh84GyWvg1qX2CaDVa02PP+A/IYFU
-	/Q/KDO0kOHRSCha6tz83DX4oIQKD8jc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1708335590;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=lw8ihCA+TSshMjQKBUCRdVsaAOjufcWn1kWaOxuNW8c=;
-	b=fgl1fLWsnPgnu3BhcrwfCy8NATCwrmJhe0vbaJlmcovXRexB/JYnmuEIpj+96yT2WUMno8
-	Uwe6oxJe8F3k+oDg==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id D5EEC139F7;
-	Mon, 19 Feb 2024 09:39:49 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 4GYSM+Uh02XlUAAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Mon, 19 Feb 2024 09:39:49 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	kherbst@redhat.com,
-	lyude@redhat.com,
-	dakr@redhat.com,
-	jani.nikula@linux.intel.com,
-	daniel@ffwll.ch,
-	airlied@gmail.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-staging@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Jani Nikula <jani.nikula@intel.com>
-Subject: [PATCH v3 9/9] fbdev: Clean up include statements in header file
-Date: Mon, 19 Feb 2024 10:37:34 +0100
-Message-ID: <20240219093941.3684-10-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240219093941.3684-1-tzimmermann@suse.de>
-References: <20240219093941.3684-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="onEMj+ii"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0611C433F1;
+	Mon, 19 Feb 2024 15:02:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1708354934;
+	bh=rLJTGIJL4PehKGlrZU7auEkJi81q+N3ek1Fb//6b2lU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=onEMj+iiSDkatOTkAQmMp147ZZR5yupKFlcfK1mqOwtUu6bAHjeXimLFyOsoIEnot
+	 dW1x3BaY8y6lJxZ2RcKU7dNy8BvgIKE+iEMuXhwN3fgS7hq5iYwBXMeJJtCpfIw6uj
+	 /53G5OInSS5NmMpmaoPhSVRQNCVYb16Wk3DCBYzmj05L9eCHoe58+a5ZYAU9eHabTL
+	 zhemj43OVZjL7J/CB1blxdEGsTH05gZCbRF0vIkg8e5p00ss0wZkSqCiIa0qXOEs+F
+	 OUVWliCKfqWJGoxb1DwmCLspBGTZLwfI5+DNxy8cBFUVqu4oBlOuD0DCxci2MuIy7v
+	 WlDM2s9I8pLGw==
+Date: Mon, 19 Feb 2024 15:02:09 +0000
+From: Lee Jones <lee@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, jingoohan1@gmail.com,
+	deller@gmx.de, javierm@redhat.com, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-pwm@vger.kernel.org
+Subject: Re: [PATCH 00/10] backlight: Replace struct fb_info in interfaces
+Message-ID: <20240219150209.GB10170@google.com>
+References: <20240212162645.5661-1-tzimmermann@suse.de>
+ <20240215121326.GL9758@aspen.lan>
+ <288a480c-74e9-49dd-a58d-294792771ea6@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spamd-Result: default: False [4.88 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 R_RATELIMIT(0.00)[to_ip_from(RL9pqk354j4esf7wsagg6iyf8a)];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 RCPT_COUNT_TWELVE(0.00)[14];
-	 MID_CONTAINS_FROM(1.00)[];
-	 FREEMAIL_TO(0.00)[gmx.de,redhat.com,linux.intel.com,ffwll.ch,gmail.com,linuxfoundation.org];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-0.02)[54.72%]
-X-Spam-Level: ****
-X-Spam-Score: 4.88
-X-Spam-Flag: NO
+In-Reply-To: <288a480c-74e9-49dd-a58d-294792771ea6@suse.de>
 
-Include mutex.h, printk.h and types.h, remove several unnecessary
-include statements, and sort the list alphabetically.
+On Thu, 15 Feb 2024, Thomas Zimmermann wrote:
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Jani Nikula <jani.nikula@intel.com>
-Acked-by: Helge Deller <deller@gmx.de>
----
- include/linux/fb.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+> Hi
+> 
+> Am 15.02.24 um 13:13 schrieb Daniel Thompson:
+> > On Mon, Feb 12, 2024 at 05:16:33PM +0100, Thomas Zimmermann wrote:
+> > > Backlight drivers implement struct backlight_ops.check_fb, which
+> > > uses struct fb_info in its interface. Replace the callback with one
+> > > the does not use fb_info.
+> > > 
+> > > In DRM, we have several drivers that implement backlight support. By
+> > > including <linux/backlight.h> these drivers depend on <linux/fb.h>.
+> > > At the same time, fbdev is deprecated for new drivers and likely to
+> > > be replaced on many systems.
+> > > 
+> > > This patchset is part of a larger effort to implement the backlight
+> > > code without depending on fbdev.
+> > > 
+> > > Patch 1 makes the backlight core match backlight and framebuffer
+> > > devices via struct fb_info.bl_dev. Patches 2 to 9 then go through
+> > > drivers and remove unnecessary implementations of check_fb. Finally,
+> > > patch 10 replaces the check_fb hook with controls_device, which
+> > > uses the framebuffer's Linux device instead of the framebuffer.
+> > I won't reply individually but I also took a look at the patches for
+> > the combo devices and it all looked good to me from a backlight
+> > point of view.
+> > 
+> > However I don't want to drop Reviewed-by: on them since it risks those
+> > bit being mistaken for an ack and merged ahead of the patch 1...
+> 
+> Thanks for reviewing. Unless someone objects, my intention is to merge
+> everything via the drm-misc, so all patches should go in at once. I do have
+> a lot more patches that untangle backlight and fbdev almost completely, but
+> most of these changes are in the actual graphics drivers rather than the
+> backlight core code. So hopefully everything can go through the DRM tree; or
+> maybe the fbdev tree.
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 8f70ca727a30d..708e6a177b1be 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -2,15 +2,15 @@
- #ifndef _LINUX_FB_H
- #define _LINUX_FB_H
- 
--#include <linux/refcount.h>
--#include <linux/kgdb.h>
- #include <uapi/linux/fb.h>
- 
- #define FBIO_CURSOR            _IOWR('F', 0x08, struct fb_cursor_user)
- 
--#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/printk.h>
-+#include <linux/refcount.h>
-+#include <linux/types.h>
- #include <linux/workqueue.h>
--#include <linux/list.h>
- 
- #include <asm/fb.h>
- 
+This is only acceptable if the maintainers of those trees can provide me
+with a pull-request to a succinct (_only_ these patches) immutable
+branch.  If this is not possible, then I should like to merge the set
+through the Backlight tree and I can provide everyone else with said PR.
+
 -- 
-2.43.0
-
+Lee Jones [李琼斯]

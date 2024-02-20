@@ -1,74 +1,74 @@
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D23F5F544
-	for <linux-fbdev@vger.kernel.org>; Tue, 20 Feb 2024 09:17:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C4CE60ECB
+	for <linux-fbdev@vger.kernel.org>; Tue, 20 Feb 2024 09:18:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708420658; cv=none; b=SQCtZtJJ4ew28JNnJGj7He7AUIXE5zhjCGhLJIlSWt9PG7WiLbPaT8RFhkYYcdzV+r1WYsh4aXBrZBSXkGdOQkUYCJUzGnNksr3ypu6mhOiRu4kcRAV+MEnXZPx0qhGaVgXrupU00qYN0EpSllcjMx/E0Z4D4r2QMMiRwmRyGB8=
+	t=1708420714; cv=none; b=Y+qqD1bZYVQI4SsfdpmNa9K61N+odv2aFc1rjLa5bzq2Qd8smfW6lQKudGkmCf+MB32OhAFR/pkspB8USlMLQL/9peuuQ+R9aerqKoF4g2fHoay/oLvsqmCjmw3dw934IBCyTF6If8LKtTKhht6jrmnUrqRR20PF0+VrZAgkG9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708420658; c=relaxed/simple;
-	bh=nkf5Q/o2N6uxU/krrkxMdk5G+u0NWrK1OwF42W4+exU=;
+	s=arc-20240116; t=1708420714; c=relaxed/simple;
+	bh=Pjpym6pBWsftiIYC3BXDjxDftaIjTZrVIrPNdDqVV+U=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=sVcuLn8mYG2u6F/xUa7sN2YE+H1qiRh90CT+Yduu4ZCg9eH0zgdd+SmJQTteFE8p3stcyPPNkrmWLQooRlY/IdOPJd3KtPR+TeeP5ThRo+Ez4X9AF7kUK1z9X+seus+Ft2/MQKxssUyC2+Aybw6zz8sRzKr7oL3AvEQwFhm6nuc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=iDr2UPuq; arc=none smtp.client-ip=170.10.133.124
+	 MIME-Version:Content-Type; b=ZR/JAT8visOOq9crN9mc159W5BseRNk744bXktGjKh2fMbalTwipiykaBquL80QmW/kVhBtB26sLbVRl6Y55LKXYIF3tCeL6zZLV5jBHJtOmAudZkEg2M77NtPZVOqeG3q1057vF/x3XwwzNYRhU+J0+7EN1/xP8kLIV8oX2KGU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=fzeibqOF; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iDr2UPuq"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="fzeibqOF"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1708420655;
+	s=mimecast20190719; t=1708420712;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=QdkBCPYDeheTT+uzHIWpGEdO4JJdk+hRLV0yR8IOegg=;
-	b=iDr2UPuqSmqV1pN+Y21cU4GThe5oUZm58FpuUsKR23GoECXUPKvMDRIABRNNMriv5ecAo8
-	XEIUAQYaA2vGSw7pt8k++p4FocMwjvFWRVcfYzjzuuYGSjFrixo4fNSDo0IN8PO9mM/VCp
-	wLcmTeguPPD6G2P4kfJJ4I+QcjemMpk=
-Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
- [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=vkzby9wfQQhUZRcpTbjHhp7P8uZMSLkRfL4T/QvrGZM=;
+	b=fzeibqOFR6I0bPKENMFbyZu99C1K7QyPoXCFajwmIV1UIhT0imIg0ngad+Ers4txEZqgqX
+	tlH4D+U2kQi7IBFjR1OZGVzQq3ql6XF1Tm1lJzp7Dd1RzSWK6Z/m43V+7TKqgCgDGd2Lbj
+	DWEtPDCBhcBuy9ZIGWUCK62ecjoM6IU=
+Received: from mail-lf1-f72.google.com (mail-lf1-f72.google.com
+ [209.85.167.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-686-PyGm2Kw5Pcy1PNMgt0UE1g-1; Tue, 20 Feb 2024 04:17:34 -0500
-X-MC-Unique: PyGm2Kw5Pcy1PNMgt0UE1g-1
-Received: by mail-lj1-f199.google.com with SMTP id 38308e7fff4ca-2d244967778so7021021fa.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 20 Feb 2024 01:17:33 -0800 (PST)
+ us-mta-692-8SsjARYRMnmNk4qhy_VM3A-1; Tue, 20 Feb 2024 04:18:30 -0500
+X-MC-Unique: 8SsjARYRMnmNk4qhy_VM3A-1
+Received: by mail-lf1-f72.google.com with SMTP id 2adb3069b0e04-512a9c0c05cso2261857e87.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 20 Feb 2024 01:18:30 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1708420652; x=1709025452;
+        d=1e100.net; s=20230601; t=1708420709; x=1709025509;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=QdkBCPYDeheTT+uzHIWpGEdO4JJdk+hRLV0yR8IOegg=;
-        b=ErIKXXVi9Einwqm0kEiqoVx+XEZUMmwFUB6gS4a0nT/SgHxlllHfF1ruZewKIrFgF0
-         J+F/FQQQccU9Olnyujlxl5Drt/EjWyaYLa3MjDkCZEaSiiH6I4UTLmAzqtqNouSqMPar
-         vG6HflR1Pjwhk0JM/qa6F6JkmQTUoMNFPvhbZgFawYgZWPbBC4PbB5EMx48Kha6mWB5i
-         y5lmRCJHiHpWYWxgUaii7wLMr6Q7J5uo/JXjXY8MXXdzr7BEHC3oz6Ypqtzqiw+ylxws
-         nu8fDF4Yk+ufxhOFstOQXOtLWm5Ndva5OjF/4kiY51ruumeJNzrhgA1pN/YZ92d44xQ7
-         tRvw==
-X-Forwarded-Encrypted: i=1; AJvYcCXbPUW1G8essVbyyAqXRfJpPWcxnkedifY62jnguGsDe8JHm/BXiTgC7ebrsls2n790xWUMEOeJ0+85HXU1aB8omhyZiXLvHKPhP50=
-X-Gm-Message-State: AOJu0YzUcqGjI/sbOqBMUyEjwjz+1erm/+g1Ujk6FNp9ekKTMDq6TzGW
-	9ZBrTw+vkxg9UPykxSiKyI9EACTo38yw9VGjy4g5WXwA5Y40TXZ2/LItgW4vV/56qQStGTRs3Nl
-	foNCY+x5iDXuo9qu6kCh6hPvj3RvtUDmS235qLDNn3pDLNnP3DRpjDm1MipVK
-X-Received: by 2002:ac2:5e62:0:b0:512:a93a:f5a5 with SMTP id a2-20020ac25e62000000b00512a93af5a5mr4159540lfr.19.1708420652692;
-        Tue, 20 Feb 2024 01:17:32 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGAJvY45CWeh5zWa4RXaJeTqSuMBy6I0QeL2Im2jjuR1AxRWVjKK6LynUjbfe5DTheoNd69ag==
-X-Received: by 2002:ac2:5e62:0:b0:512:a93a:f5a5 with SMTP id a2-20020ac25e62000000b00512a93af5a5mr4159530lfr.19.1708420652349;
-        Tue, 20 Feb 2024 01:17:32 -0800 (PST)
+        bh=vkzby9wfQQhUZRcpTbjHhp7P8uZMSLkRfL4T/QvrGZM=;
+        b=N+2kmEo23vf5Lkg0dCAabqHKr4xk7U6B16YK9ADHNQ3ohMfkpho4kVGRgPDQlatNEu
+         bOtmn1HTLy0OiNCZyT84qsUfDGWWW39sN2j0jLQVTOdgT35hIo0r4INZy3VhdBcILDLq
+         knx3QJGibVSFw63Zhxe7TwjN4kJNSrnYPbFm3CzkAT/XeJ7HoQBWUgWoCSDU+jISiZPu
+         zrbaOZJz4/ZsCnB0N/lIJdYZYV/m/mkBjpJV+wouIJhRH2qAQtIlFLXNxhaNa8lxX1Ap
+         hh9Mfnb+oS/CgfWWiVUvuJ5b4WeuT3Go4cgdUuIqYnbsiFJcbn+qwr1IxWjFlTMdfGdg
+         cqNA==
+X-Forwarded-Encrypted: i=1; AJvYcCWqXOIJk8Kd2bbsxC0CG6XSP0SxLlQ7hCtnZLgd+DntzZcmEWDvFnV5faMTmbj9LdokC0soRMG3aqhp2YCUgJ5seuhSFmAZns5LTA8=
+X-Gm-Message-State: AOJu0YyVBvwWovUGgydEpBlET6k7IZAX3VlXRcOWfJeAkFUfKtmR/6eR
+	ZrntTsQnTopmIqAP7FQsAiNOwO4sQyRUy2NCqMXDQUT5r0Hf/imSDUuFj2Rr/VIcbElI6YALHWF
+	meta4Koap6qL0iRsPLV5A0CRRR8IFyxRiEfT+DqNLcG+lybLFVMYtLw5w/kx7
+X-Received: by 2002:a05:6512:159:b0:512:a93a:f5a1 with SMTP id m25-20020a056512015900b00512a93af5a1mr4334353lfo.36.1708420708952;
+        Tue, 20 Feb 2024 01:18:28 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHEEqm11cyvxMjF1g+2iM0xRpkZ3M4fWTa6V4c4a2kufWdQQu89dk7xHknoOQDeqxrJBoK9pA==
+X-Received: by 2002:a05:6512:159:b0:512:a93a:f5a1 with SMTP id m25-20020a056512015900b00512a93af5a1mr4334341lfo.36.1708420708638;
+        Tue, 20 Feb 2024 01:18:28 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id s6-20020a05600c45c600b00412696bd7d9sm4074941wmo.41.2024.02.20.01.17.32
+        by smtp.gmail.com with ESMTPSA id v21-20020a05600c445500b0041266f5b041sm5575587wmn.34.2024.02.20.01.18.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Feb 2024 01:17:32 -0800 (PST)
+        Tue, 20 Feb 2024 01:18:28 -0800 (PST)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, lee@kernel.org,
  daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
  linux-input@vger.kernel.org, linux-pwm@vger.kernel.org, Thomas Zimmermann
- <tzimmermann@suse.de>
-Subject: Re: [PATCH 01/10] backlight: Match backlight device against struct
- fb_info.bl_dev
-In-Reply-To: <20240212162645.5661-2-tzimmermann@suse.de>
+ <tzimmermann@suse.de>, Robin van der Gracht <robin@protonic.nl>
+Subject: Re: [PATCH 02/10] auxdisplay/ht16k33: Remove struct
+ backlight_ops.check_fb
+In-Reply-To: <20240212162645.5661-3-tzimmermann@suse.de>
 References: <20240212162645.5661-1-tzimmermann@suse.de>
- <20240212162645.5661-2-tzimmermann@suse.de>
-Date: Tue, 20 Feb 2024 10:17:31 +0100
-Message-ID: <87bk8bjxzo.fsf@minerva.mail-host-address-is-not-set>
+ <20240212162645.5661-3-tzimmermann@suse.de>
+Date: Tue, 20 Feb 2024 10:18:27 +0100
+Message-ID: <878r3fjxy4.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,48 +79,14 @@ Content-Type: text/plain
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-Hello Thomas,
-
-> Framebuffer drivers for devices with dedicated backlight are supposed
-> to set struct fb_info.bl_dev to the backlight's respective device. Use
-> the value to match backlight and framebuffer in the backlight core code.
+> The driver sets struct fb_info.bl_dev to the correct backlight
+> device. Thus rely on the backlight core code to match backlight
+> and framebuffer devices, and remove the extra check_fb function
+> from struct backlight_ops.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Robin van der Gracht <robin@protonic.nl>
 > ---
->  drivers/video/backlight/backlight.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 86e1cdc8e3697..48844a4f28ad3 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -98,7 +98,8 @@ static int fb_notifier_callback(struct notifier_block *self,
->  {
->  	struct backlight_device *bd;
->  	struct fb_event *evdata = data;
-> -	int node = evdata->info->node;
-> +	struct fb_info *info = evdata->info;
-> +	int node = info->node;
->  	int fb_blank = 0;
->  
->  	/* If we aren't interested in this event, skip it immediately ... */
-> @@ -110,8 +111,12 @@ static int fb_notifier_callback(struct notifier_block *self,
->  
->  	if (!bd->ops)
->  		goto out;
-> -	if (bd->ops->check_fb && !bd->ops->check_fb(bd, evdata->info))
-> +	else if (bd->ops->check_fb && !bd->ops->check_fb(bd, info))
->  		goto out;
-> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
-> +	else if (info->bl_dev && info->bl_dev != bd)
-
-If the driver doesn't provide a struct backlight_ops .check_fb callback, I
-think that having an info->bl_dev should be mandatory ? Or at least maybe
-there should be a warning if info->bl_dev isn't set ?
-
-The would be a driver bug, right ?
-
-Regardless, the change makes sense to me.
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 

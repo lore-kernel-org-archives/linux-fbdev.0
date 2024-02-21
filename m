@@ -1,187 +1,140 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4139C3D548
-	for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 10:29:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B6BF3F9C9
+	for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 11:20:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708511372; cv=none; b=Djwequ/2mnabHf30ftrK2W4DsH34INNlRtlbM7ak1zviFInHW6gFjLAug04Hd3Ft6rQwJ+fpUQenKWc2hc+F/uZMsRxJAmPh20PtFnl615J20mUFusRHkpN/f2tA6yUmlFuOZ/89ORpR98XBuy9dwRmarY1CZ/QX6k75a6Sp6jg=
+	t=1708514413; cv=none; b=StEMM94f8YU4wYgsE0FuwJbw4BqaEvJcdNqi9e/eyZA6SVG4tZ3Hz8t8dUwBJz5cmXjp/UoA8usDq4OQH2EXE0tdDlnFIqTK/Xt3+Xvj6c+eQ9h1tZvL7dTaNKHGOu2PlIvOSAGjNh4HN53lvnB6kTevhegbiQ5wWLBMy/pZHiA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708511372; c=relaxed/simple;
-	bh=twX8j/ixrN1n0s18kM4q5DijhduzIKisxdYaAz11BI4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ntwhBxRFSwOlguTv0TJsFLmZMAEJvu2pDBE+p41zlaL83mSmOyI1G1fCEZWWQv1xXdKYgzEC/i8TtN6Swa50wTC9znNZYoem8Ns/GS4KW5LvI/l8bEqAJ+OEqw5pgTdjEL1umNhbLDGh9+9R/hMyqDLdu4Q9zxdEvOCYQzzn2aM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vgfzViyY; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ekv0GzAZ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vgfzViyY; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ekv0GzAZ; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1708514413; c=relaxed/simple;
+	bh=t6Jx31rq5xX7REiRG38utqdz4b1fpoQ9OdaCX+5oH6I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ky/n2i98yWKVHbAv2T+o4l+8/kwTf3Eg8x3sjR8/zIGjFxoqBfsdUK6YmKr1K4X98IgIueKFq6v48/XKxL9o+OtSX4Om2BoTu9jLDkopcIcFpT7sB4utsIs0PSfT+NwS+Eld0MqXnZ6yKPIInVgyfQC1LyurrkC8r88r9+ihO0A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=h+AOcz7e; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vgfzViyY";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ekv0GzAZ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vgfzViyY";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ekv0GzAZ"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 739CD1FB4A;
-	Wed, 21 Feb 2024 10:29:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1708511368; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=4TjGp6KjsshNSG7LSF6ngwAFPLMsqacgy1eInZVMors=;
-	b=vgfzViyYKU7LHH7UPLieXa5jvulwlRR2r63mqSeCerSHJLCGLqZ4GiWnGQWFkCRMFBNdQ2
-	LYBJgEGuFxnCc+P3yCdG4BH5p3FUvFD3JRelFBSbl4btRn999tLbyY6jsowU4KLrEIPiwx
-	+V6RDuYlF273xUEr8hUHMoq5S51QcaY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1708511368;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=4TjGp6KjsshNSG7LSF6ngwAFPLMsqacgy1eInZVMors=;
-	b=ekv0GzAZqViOjE5NUZRPod8zZxYnPiXlONM7vOIhXIzqq7JRKe9afh8TefszYEODhK1e59
-	EH0lABXmRKwWhsCQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1708511368; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=4TjGp6KjsshNSG7LSF6ngwAFPLMsqacgy1eInZVMors=;
-	b=vgfzViyYKU7LHH7UPLieXa5jvulwlRR2r63mqSeCerSHJLCGLqZ4GiWnGQWFkCRMFBNdQ2
-	LYBJgEGuFxnCc+P3yCdG4BH5p3FUvFD3JRelFBSbl4btRn999tLbyY6jsowU4KLrEIPiwx
-	+V6RDuYlF273xUEr8hUHMoq5S51QcaY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1708511368;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=4TjGp6KjsshNSG7LSF6ngwAFPLMsqacgy1eInZVMors=;
-	b=ekv0GzAZqViOjE5NUZRPod8zZxYnPiXlONM7vOIhXIzqq7JRKe9afh8TefszYEODhK1e59
-	EH0lABXmRKwWhsCQ==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 0F2D5139D1;
-	Wed, 21 Feb 2024 10:29:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 5pBWAojQ1WUPFgAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 21 Feb 2024 10:29:28 +0000
-Message-ID: <1e577f18-c6f7-44e7-b50f-720915f257eb@suse.de>
-Date: Wed, 21 Feb 2024 11:29:27 +0100
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="h+AOcz7e"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-33d61e39912so1326588f8f.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 03:20:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1708514409; x=1709119209; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=3IS7GmUQyf4Yyr+5gHh+d/StyGrTtVUVJakHsBQ6JDE=;
+        b=h+AOcz7eu1boC0vHSNLbMnZgvn8VVxWe1wSbQEy1wox8oosxGCNa4raY1wzMV4IOSd
+         aPKR75PgDzTv+Af91Lqz5Whe61mtVnI/zty+irFslmn+J5JiBxgGwWn+tNe4OZTJNWtC
+         AI+LAYtSMxiatdMs0HD5WPIJowWp+3ghSHLAAMt+a+9F/9Meq1CERhOnCsblEtTxwh0w
+         cHMiAC9sHw/Z2fb41YEJIusiDkRgvyCe/kc8SvpH24kkHfW3MFdhooB2Ro1QtuBgBf2o
+         IY0VYneg5yn+cb5MgsY2UPiYO4j+4mDPa17UCa2EEVAICPYK/DXjqvCReV/J4f6zoUFW
+         TyNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708514409; x=1709119209;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3IS7GmUQyf4Yyr+5gHh+d/StyGrTtVUVJakHsBQ6JDE=;
+        b=Bq+8ozTVldsladJaor/PuRI7THt98NXl0r4HSfeSVwUSxpPMa5TAgHAPeF+RtQhDtA
+         gMpVYJjjVg3VDt+aMQn4eUfmYEbVTgivLLJvO/5tVoiIFpEH/aP4RB7p4hThfRMVzGyD
+         /pyr/t01LcU1Hbf1QS4UoEnGasmxqlXf8+8z2iM/i31Q6qnMpNO8WPkGlWcyqX61mx4b
+         K1vhnwJrLSmS+Hr/Kx3sqtyixwvzO9noRjByfOXH/gzV3HlHPngjlkdqZsZ7hkyC88IJ
+         RTGDwmrm14vzwj7cDFqP/WW8Pvo+FtYH7HO04GKMSBMY5tu+jVJrhmAErOQgVMkT/Owr
+         OmjA==
+X-Forwarded-Encrypted: i=1; AJvYcCV1o2GR5oDbAx/UsjI9kGXdUhpMlmZlbIDWBhIIlYKQGc4g9wdSd/rqhvK5TAt3w1l3pfYtNbl+Ygisc6o0zx6royoTbWOXtaZ6j9M=
+X-Gm-Message-State: AOJu0YwlNCPHzSOhrAjpEFJsNz8Nw5D8Pg0QzVTk1ID2rQ1fwmNCEfyd
+	29xKX2ktfZU06liOEoJ8IKBf0NQi0qULcJF5EqBZy0mXUDrxlnYVG8F4/n5OdsA=
+X-Google-Smtp-Source: AGHT+IFiJJDtB9EWh/YWcgzszDlU4x8SjMxMWN9afl/QitAi2hghHKAv2cmSNEg07ItVMniNr+hMeA==
+X-Received: by 2002:a05:6000:1841:b0:33d:839b:113b with SMTP id c1-20020a056000184100b0033d839b113bmr630280wri.15.1708514409453;
+        Wed, 21 Feb 2024 03:20:09 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id bn7-20020a056000060700b0033d3ff1cb67sm11304851wrb.66.2024.02.21.03.20.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 21 Feb 2024 03:20:09 -0800 (PST)
+Date: Wed, 21 Feb 2024 11:20:07 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Luca Weiss <luca@z3ntu.xyz>
+Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"G.Shark Jeong" <gshark.jeong@gmail.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Maximilian Weigand <mweigand@mweigand.net>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: Re: [PATCH 3/4] backlight: lm3630a: Use backlight_get_brightness
+ helper in update_status
+Message-ID: <20240221112007.GJ6716@aspen.lan>
+References: <20240220-lm3630a-fixups-v1-0-9ca62f7e4a33@z3ntu.xyz>
+ <20240220-lm3630a-fixups-v1-3-9ca62f7e4a33@z3ntu.xyz>
+ <20240220141107.GF6716@aspen.lan>
+ <5027630.31r3eYUQgx@g550jk>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/9] backlight/corgi-lcd: Include <linux/backlight.h>
-Content-Language: en-US
-To: deller@gmx.de, kherbst@redhat.com, lyude@redhat.com, dakr@redhat.com,
- jani.nikula@linux.intel.com, daniel@ffwll.ch, airlied@gmail.com,
- gregkh@linuxfoundation.org, Daniel Thompson <daniel.thompson@linaro.org>,
- Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- nouveau@lists.freedesktop.org, linux-staging@lists.linux.dev
-References: <20240219093941.3684-1-tzimmermann@suse.de>
- <20240219093941.3684-2-tzimmermann@suse.de>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240219093941.3684-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=vgfzViyY;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ekv0GzAZ
-X-Spamd-Result: default: False [-3.21 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:98:from];
-	 DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
-	 BAYES_HAM(-2.91)[99.63%];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 DKIM_TRACE(0.00)[suse.de:+];
-	 MX_GOOD(-0.01)[];
-	 RCPT_COUNT_TWELVE(0.00)[15];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email];
-	 FREEMAIL_TO(0.00)[gmx.de,redhat.com,linux.intel.com,ffwll.ch,gmail.com,linuxfoundation.org,linaro.org,kernel.org];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 739CD1FB4A
-X-Spam-Level: 
-X-Spam-Score: -3.21
-X-Spam-Flag: NO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5027630.31r3eYUQgx@g550jk>
 
-cc'ing backlight maintainers
-
-Am 19.02.24 um 10:37 schrieb Thomas Zimmermann:
-> Resolves the proxy include via <linux/fb.h>, which does not require the
-> backlight header.
+On Tue, Feb 20, 2024 at 05:43:32PM +0100, Luca Weiss wrote:
+> On Dienstag, 20. Februar 2024 15:11:07 CET Daniel Thompson wrote:
+> > On Tue, Feb 20, 2024 at 12:11:21AM +0100, Luca Weiss wrote:
+> > > As per documentation "drivers are expected to use this function in their
+> > > update_status() operation to get the brightness value.".
+> > >
+> > > With this we can also drop the manual backlight_is_blank() handling
+> > > since backlight_get_brightness() is already handling this correctly.
+> > >
+> > > Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+> >
+> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> >
+> > However...
+> >
+> > > ---
+> > >  	/* disable sleep */
+> > > @@ -201,9 +202,9 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+> > >  		goto out_i2c_err;
+> > >  	usleep_range(1000, 2000);
+> > >  	/* minimum brightness is 0x04 */
+> > > -	ret = lm3630a_write(pchip, REG_BRT_A, bl->props.brightness);
+> > > +	ret = lm3630a_write(pchip, REG_BRT_A, brightness);
+> >
+> > ... then handling of the minimum brightness looks weird in this driver.
+> >
+> > The range of the backlight is 0..max_brightness. Sadly the drivers
+> > are inconsistant regarding whether zero means off or just minimum,
+> > however three certainly isn't supposed to mean off! In other words the
+> > offsetting should be handled by driver rather than hoping userspace has
+> > some magic LM3630A mode.
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->   drivers/video/backlight/corgi_lcd.c | 1 +
->   1 file changed, 1 insertion(+)
+> I could also try and fix that..
 >
-> diff --git a/drivers/video/backlight/corgi_lcd.c b/drivers/video/backlight/corgi_lcd.c
-> index 0a57033ae31d1..dd765098ad989 100644
-> --- a/drivers/video/backlight/corgi_lcd.c
-> +++ b/drivers/video/backlight/corgi_lcd.c
-> @@ -11,6 +11,7 @@
->    *	by Eric Miao <eric.miao@marvell.com>
->    */
->   
-> +#include <linux/backlight.h>
->   #include <linux/module.h>
->   #include <linux/kernel.h>
->   #include <linux/init.h>
+> 1. Treat 1..4 as 4, so have backlight on at that minimum level? Probably
+> wouldn't be noticable that brightness 1=2=3=4. And the backlight will be
+> on compared to off as it is now.
+>
+> 2. Decrease max_brightness by 4 values, so probably 0..251 and shift the
+> values up in the driver so we get 4..255?
+>
+> Or would you have some other idea here?
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+I think #2 is the right option but shouldn't it be decrease max_brightness
+by 3, yielding 0..252 .
 
+Only nitpicking on that because, given how old this driver is I'd like
+to be conservative. I don't expect there to be userspaces with magic
+LM3630A modes but there could be some that assume #0 is off! Hence I
+wanted to make sure we are on the same page.
+
+
+Daniel.

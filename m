@@ -1,100 +1,89 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A99A33F8E4
-	for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 09:52:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50CBB3D566
+	for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 10:18:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708509174; cv=none; b=R2RRUkwAb7jcLLQpsCGXvLvrbjkWqOzuiz+5HbtwdESV+0b3dY2C5NF8jomEA5JMjhxplSb8asbdtO9yXW/VzBfA8yl+14tV8Ke/A5z42n83gxtUgXf8EUrIB7F+laMdyyDbUc7q6DFjuIry5TWIuKkV0I5DrAGXM/MwqH7DR6k=
+	t=1708510727; cv=none; b=aZjuN6shnM/uD+jMrgQJZ3IJ6OhaGacO7n4RWRSkCvlwOCTvdG3VfLOpNA0v8bd/6om4LxpNYm8hnlX3QWOg++5QyJm7wl/dK/VblapvUwyIaxpO1+oWkN52pCBnrrJlQ1HMfa2Ki+29GUEhoP/bBDk+iHBY6iKbe1uyUBCghNw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708509174; c=relaxed/simple;
-	bh=hpQIzkAUkfjw1oAO8oKeaMgVV1gBPRjHKKseAjgbpXs=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Byfmn9EAd49qmT44fl5IinSn08supOVF+xvhqbiZgHHG0PQrLHt0To8uZBlRc9X1FyQ2iVUp9uyMyYMSGCg3VNzogyqEZDaTEv5ajwk7C9ZTrtbR/w4ZzyRY3LJJKb2wXMJqUrYRq+ASx75nohI5CqQ9jpFldP4LK/Q3qBRrPnA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fglnTSOa; arc=none smtp.client-ip=209.85.216.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1708510727; c=relaxed/simple;
+	bh=Kz0el0TMjoNI2QnXHyxF2PvVpo76TlArIWhUIRqIk4M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CoqBlV3ouDHdb+bAGSBpdrjOaYwfNF/j7/5wHIZ65qdic7yLphrBce+nVDZ+q8ecA4pUwOLMw7tsZw2aHfebEayw00z17xOoCfrXLWWpj5k1jhZEjJC4wVmh1ob9pPwnDE7qB4OytO4km9rdli3I/AqyhgzmWcegiCe7dokEDc8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=o2y6YKmm; arc=none smtp.client-ip=209.85.208.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fglnTSOa"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-299e4b352cdso1066095a91.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 01:52:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="o2y6YKmm"
+Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-563d32ee33aso7182849a12.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 02:18:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1708509172; x=1709113972; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=umbo7IOMB+N5hMU5uXuhZHNVgY+ZT3DkUOlBqWz8poY=;
-        b=fglnTSOaH3vr+7m3nZ9hZe5kBDQryDFO8lpqHKs/pIJgDSSZMUpul3OXxLMmoLXkGd
-         Wi1r1xLNL6wC3PpWvxlyucEAV66L+t1uV2O5KRKg2KgU3jmP+kx2NHdk42vpogbZzNwp
-         RbEuYvrhZJfSC7N5E4g5jNXV4BTVRKB3hUz2Cx+UXyFu86asQ1vYOVCXPG2e/UXGiWzC
-         zBpX4Pu3gLnHsIBggRlJ27TkSn7r7QpFnKWsjlTc/Fij20eaiMUie03yfrpIutBIbseL
-         MlVI24x+0/lv7yWWJYA8FYb6fSO2+omBtMW5m+xUbXxB25WcX2fYkGtYmY6OicscoIPs
-         tPKg==
+        d=linaro.org; s=google; t=1708510723; x=1709115523; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=UOZWXYz0ax9PLPpkQLJdzcrN4l+8sAJvZhLzcXx8cHQ=;
+        b=o2y6YKmmnee3ooMs6ptM6cHg9V0KN/AXqiVpLslvg/lw2+r+vjeluYeU4cH6KYI1Lt
+         +WZrliqxDBTc9/2/C/FCfb99trkisJQLKaEvzzEDZzOQLbIkXtk0Jo6Y3FXOClKs4GAK
+         zKUntUTjMXLhW5t1v1D3Gyv0Xf8uANa/fWHsrr7nZDfVBQIFHS2FdaRcXPplZ5IzB7RZ
+         SVQTCORWEVB0EgzdN9j9l2nw80ncDVmvE4d2yCz4kDqyZfq6HMvYcepwNOKjvvSxYSNK
+         vlIys6wOkgqevhhGeF7FM1J6iYyk0r5syowT0AxNU0rV2kOkvV5wc04JNybkmX+QiDti
+         wAOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1708509172; x=1709113972;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=umbo7IOMB+N5hMU5uXuhZHNVgY+ZT3DkUOlBqWz8poY=;
-        b=WsS//dtwFc0rRPbaJgqKbFPXHpclMhDUEJzLk2JMtx+xW9Tkz+027SfoRida6je+r3
-         rldHnTd9A4j3Zt4woGuMRaWbvLSViLGSYK5nySmqWnoajSGsO1hipkYkMFhP5mFZGmDB
-         AdWhSH2kPpTwy+Z/DEu0otDexOkD/+DnJu1JQLDOEZgWfpVYuu2KMcyOZ6VPIoWrlWZ4
-         LEvXwW5hCW92V22tLrTz4Xm63VK/FIeD86RCmCVXrOcX+ZfhkicUNEJYtT9IWCDt/85Q
-         N6lK2x9N0D3Bmgb3hyqxBB/SwtO7i84zdj7e/cU7Hjv5MTYGR/JAt1yxDYQSbMf2ldtM
-         0Njw==
-X-Forwarded-Encrypted: i=1; AJvYcCUmKt/doRGpdT/DovUx6KJqNxbzCuKoa4MxvvSa+kReGYf+YaoYEL0yGsnrCZL/ulnSLWPYCC3vbGtMHh4+YiG0pgjnRLGWHGcREHg=
-X-Gm-Message-State: AOJu0YxSP9dDTbaoOJ1juNjdqq5vnd4OG73g13t1X8Kbr+mOIZAoKcn9
-	dKYTtkEmjigM5ycLrP/CrDf2JW2ndpyI73NTJQ0lHvB0XwL0GX79
-X-Google-Smtp-Source: AGHT+IHVR2SHjyVF3c5NtEANlYKund2uDElKO0tgKWeUMqRiBx6wQMP4L/8c6ILH58TxmxIy3JESng==
-X-Received: by 2002:a17:90a:68cf:b0:29a:1b37:4bfd with SMTP id q15-20020a17090a68cf00b0029a1b374bfdmr666223pjj.7.1708509171837;
-        Wed, 21 Feb 2024 01:52:51 -0800 (PST)
-Received: from localhost.localdomain ([222.151.198.97])
-        by smtp.gmail.com with ESMTPSA id y3-20020a17090a8b0300b0029942a73eaesm9124093pjn.9.2024.02.21.01.52.50
+        d=1e100.net; s=20230601; t=1708510723; x=1709115523;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UOZWXYz0ax9PLPpkQLJdzcrN4l+8sAJvZhLzcXx8cHQ=;
+        b=YkxZEpZaQ19IjSkzqG18rKd5/T/kA3yqrqMxor+/veko7DBqIgx8dLY/9amwcaAsQT
+         pnSpFu9L/S+hi8E28BZlVFxdtENbX2LvHj+AbTB2wEpu1ajJRminZ05HiJbzxttvXSsU
+         SWg+pOjshTufbFQSyI+XeRvb9JIGjuKRKOqEh/4Ftt7R1q+OjYL7URlAC3Wd/KwKC8pu
+         bTrFjqtbcyPDMEq8ezYUTnQrvGcdrf7eFMjr4EwGKdG0B33hYxcAkBsKajEE5dYVYkpS
+         3zCDWAEMoH4sdQu3MW8Oy1tYMofqIOxeTjaQ7WdGQLgZFhZwRHSp419ySVdWcv11s2YI
+         6uHQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUF+yQhe1sGeWsigzpVMbUxYLBPv+gk9vsg7mLsB9QmOFgNJYmY5X1/mxD1k6y2rE6byAC61IkUUOOf9N9c33UOJmfFc5UmLz0D48k=
+X-Gm-Message-State: AOJu0YyrbKeb2LulF9i/Lfx9Dy0jhVxhvEMkZtoiCgvom1xeYearag1H
+	bgymhi3Fx1kpvvVakHXk1XtCAPlyu2lUNYyj+VslQIg1QH8zWUgEncNM3K93TuZH/6chvrX8S3i
+	h
+X-Google-Smtp-Source: AGHT+IEeRDPAMZ7wla9T06jLLenh+NdcXBE8k3BklG5ivy4o/djY/xTj8ppS5RuIiGGOVuLlBqRm3g==
+X-Received: by 2002:aa7:c58a:0:b0:564:b822:9204 with SMTP id g10-20020aa7c58a000000b00564b8229204mr3848417edq.17.1708510723630;
+        Wed, 21 Feb 2024 02:18:43 -0800 (PST)
+Received: from localhost ([102.222.70.76])
+        by smtp.gmail.com with ESMTPSA id s1-20020a056402164100b00563f918c76asm4454659edx.52.2024.02.21.02.18.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Feb 2024 01:52:51 -0800 (PST)
-From: sawara04.o@gmail.com
-To: gregkh@linuxfoundation.org,
-	sawara04.o@gmail.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: [PATCH] staging: fbtft: Fix "space prohibited before that close parenthesis ')'" error reported by checkpatch
-Date: Wed, 21 Feb 2024 18:54:04 +0900
-Message-Id: <20240221095404.592464-1-sawara04.o@gmail.com>
-X-Mailer: git-send-email 2.39.3
+        Wed, 21 Feb 2024 02:18:43 -0800 (PST)
+Date: Wed, 21 Feb 2024 13:18:38 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: sawara04.o@gmail.com
+Cc: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+Subject: Re: [PATCH] staging: fbtft: Fix "space prohibited before that close
+ parenthesis ')'" error reported by checkpatch
+Message-ID: <87f76339-3ace-4cbe-bdb9-266a86bf55eb@moroto.mountain>
+References: <20240221095404.592464-1-sawara04.o@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240221095404.592464-1-sawara04.o@gmail.com>
 
-From: Kyoji Ogasawara <sawara04.o@gmail.com>
+On Wed, Feb 21, 2024 at 06:54:04PM +0900, sawara04.o@gmail.com wrote:
+> From: Kyoji Ogasawara <sawara04.o@gmail.com>
+> 
+> Since whitespace is prohibited before that close parenthesis ')' in a
+> conditional statements, remove it and fix checkpatch.pl error "space prohibited before that
+> close parenthesis ')'".
+> 
+> Signed-off-by: Kyoji Ogasawara <sawara04.o@gmail.com>
 
-Since whitespace is prohibited before that close parenthesis ')' in a
-conditional statements, remove it and fix checkpatch.pl error "space prohibited before that
-close parenthesis ')'".
+This breaks the build.  You could do a search for it.
 
-Signed-off-by: Kyoji Ogasawara <sawara04.o@gmail.com>
----
- drivers/staging/fbtft/fbtft-bus.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+https://lore.kernel.org/all/?q=define_fbtft_write_reg
 
-diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-index 3d422bc11641..02a16671f2a1 100644
---- a/drivers/staging/fbtft/fbtft-bus.c
-+++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -62,9 +62,9 @@ out:									      \
- }                                                                             \
- EXPORT_SYMBOL(func);
- 
--define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
-+define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
- define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
--define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-+define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
- 
- void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
- {
--- 
-2.39.3
+regards,
+dan carpenter
 

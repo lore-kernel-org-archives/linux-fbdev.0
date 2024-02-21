@@ -1,122 +1,210 @@
-Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D843877644
-	for <linux-fbdev@vger.kernel.org>; Tue, 20 Feb 2024 17:07:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5252D3D55B;
+	Wed, 21 Feb 2024 09:23:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708448864; cv=none; b=drdHCYfuPsMw06flpBslCMg5PtXu6ELM2JokS974TUviANoPwCyu1+d6xSGkSdPcxQ31BSRfRgJxYanFwujwg6AEhCtsJBV4u3Qq+GVv2GMbxJ2kB4gj/oodRU6X6N0k16Y1D1h4+C+uLhc0h3kgkVujzArV+w3OpwD5alBiZeA=
+	t=1708507403; cv=none; b=Dbt/6SJfw84UJATs/0fTw8P3WtgQfyHtJHEz593dFXkqd1W6fh5s7PddAyiVt16zKHLUSNGNUC8NL0NB1aBGjFclgbzUTBkyN49nqKV/VpEXrAsECQnFCfWvnpAJqIQ2S+yPzn1q46uKmY2Go4bkvPPuik0PHyxyB0v91riGPAA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708448864; c=relaxed/simple;
-	bh=5/bi1QgRjF6knCi0qXssJ/goXm/3I+MJaDD3TiEGDHI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FmNaLMUYZvoSl7AZF9XO/o/M0eHRrtpo1pQtUOo6JwbxFZAFJBekAzZb9tXYun1MewHbXVuMoYVWG1sSaNxL3Mn1JYGynsI41om8CJ1plon0m0miYiitvRE6IZI0/cX5oIQmOj/AKfjwlII42hauu7LqgHSpCIrJznA8BOebbD8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=I6+n8kWE; arc=none smtp.client-ip=209.85.167.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1708507403; c=relaxed/simple;
+	bh=9HneibxCG1NkU56lKKP5LsAMpSx4jwBIinBDn3SDcQo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=F/hENS4YovFRvBheT0PkoscIDSxw/gcdEl5EW/oeuuwHo44lrlOj0aopvQ/ApVjrje6J5gn707yooToRMJ7Aa4kHIfYobmYjZLVIJOwYfhc2x51oiwDy/jQkG1XFFJjap3o2DKuQpluaTP9WNrJ3EnO+45i3isWOB4qPVgK0zP4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Zjv/klIi; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JUZ91t7T; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Zjv/klIi; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JUZ91t7T; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="I6+n8kWE"
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-512c4442095so1298721e87.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 20 Feb 2024 09:07:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1708448861; x=1709053661; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=mShveTDs8o2HzJ7EXJAElPOAOERFmO61toHHqLsbnwI=;
-        b=I6+n8kWEWB3rLVaVyyiUFGyFJWQEAc6wf/NLMbg8JyW7gFjFkl5HR1yTWDFlzKCTdR
-         K7qsF/+uxTkqWRbmkEFlYtU25tGY3cT7mNe/4iSW4Sc+TxrPAcv6KP4sOpNDvyi0YEr+
-         apyOGy0MP58u93fImfmfDR/xwC8mocuBUdIwfe5bVHLFTgDXNX9uihooy29dH4kEHm8P
-         L0x3axKKbQ10rb9v8D6K95Th38GAyGrST7dLlCmIP/DZ+eYnbmED5Ovcnykf9vfJwt07
-         1MHly4Kw6zB9NvjvQv802LNgyTv6TQhJ2Js1xF1Tfxf7mMhanU9GSvFzowxz9UbcV+wx
-         M1fQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1708448861; x=1709053661;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mShveTDs8o2HzJ7EXJAElPOAOERFmO61toHHqLsbnwI=;
-        b=Md7ddIqvLAd1ufTXepy+SnjE1UdEaIh7lNM8/F7ox5A/UubmjNlB7LyuLqyZiXKBAm
-         kLU6aXbL3dlXJpMvYF3hQWu90nmgupnB4DkMPBuUsiPcCnLtA1kEnWvSFWrc6TlR6Vng
-         ozar9MCLiY0x58SEmfTmLDuCOmJ4CziOjpGo0MJM2jzQedSNpavCgcw/TiAvEsx15nYU
-         Fufln5h0YszHjq/asZ9YAeBNH85Scu6ZrD7WATYKrfqE7elNXEb0LqamJwNQSx0D2WAL
-         B2SzSPK6NNApmrAwq0pPzpXr7QEf7Wf5ZxCtDSzLYZ3XJ7Kc+vxOL5fFJjpbAUBsAnfI
-         RHAw==
-X-Forwarded-Encrypted: i=1; AJvYcCVeZ6Hdo2JBgJcl5BeJBU+ssT3eDEMXxvsug9ey1BeA/7Xk++El7BX9l6HgJQFXtoyaNsEXl0e8qbOtGT6I+4GSU4I+r071GVefFZ4=
-X-Gm-Message-State: AOJu0YwPBM/OmMg/xP2GIF5o2biF0GRk7QMUpt3R5zRY+X+ydATaUVX2
-	Z72srk6on3yKSW2qgPEjnjHuIlvSZk1aVAXXxeRzi+UIsSwTOsFrTbCaKj1mgrI=
-X-Google-Smtp-Source: AGHT+IGSj4UFEzJ2QdkqJnyaxs4ii6FgzfPObw02jZbt679agm5/qstPtdmgxKLIT0ezZ9Hr8LkbUQ==
-X-Received: by 2002:a05:6512:102f:b0:512:96f3:413b with SMTP id r15-20020a056512102f00b0051296f3413bmr7991228lfr.26.1708448860804;
-        Tue, 20 Feb 2024 09:07:40 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id z20-20020a05600c221400b0040fddaf9ff4sm15131450wml.40.2024.02.20.09.07.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Feb 2024 09:07:40 -0800 (PST)
-Date: Tue, 20 Feb 2024 17:07:38 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Luca Weiss <luca@z3ntu.xyz>
-Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"G.Shark Jeong" <gshark.jeong@gmail.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@linaro.org>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Maximilian Weigand <mweigand@mweigand.net>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: Re: [PATCH 4/4] ARM: dts: qcom: msm8974-hammerhead: Hook up backlight
-Message-ID: <20240220170738.GI6716@aspen.lan>
-References: <20240220-lm3630a-fixups-v1-0-9ca62f7e4a33@z3ntu.xyz>
- <20240220-lm3630a-fixups-v1-4-9ca62f7e4a33@z3ntu.xyz>
- <20240220141210.GG6716@aspen.lan>
- <2444202.ElGaqSPkdT@g550jk>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Zjv/klIi";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JUZ91t7T";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Zjv/klIi";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JUZ91t7T"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 880B32205B;
+	Wed, 21 Feb 2024 09:23:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1708507399; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=mlwxUsar9qsnJji6/TOyKLeApaAnM6kT9bkCyRhsrDc=;
+	b=Zjv/klIiePjnZh3LALfdjlerJGJdnthfdRvw2vGjI7FnePsCnCe06e+kdZVCTV1u/SPAAj
+	cETOzDFWhN7o7IjHUR1+O5Xm6FXTGfc9wi2tenvSdo3z42zD0eqTw29rDc4X90nee/F0ah
+	6YZ9tzOqufSt9lLhg7yhOMwvg1mmy1A=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1708507399;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=mlwxUsar9qsnJji6/TOyKLeApaAnM6kT9bkCyRhsrDc=;
+	b=JUZ91t7TZZ0oHeAOCysrjoYLPBPX4+ndhE9OFQ8EICLdJdD61Esxl5uNvVpM4t755wsB5I
+	S277QK3wo4F2NfAg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1708507399; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=mlwxUsar9qsnJji6/TOyKLeApaAnM6kT9bkCyRhsrDc=;
+	b=Zjv/klIiePjnZh3LALfdjlerJGJdnthfdRvw2vGjI7FnePsCnCe06e+kdZVCTV1u/SPAAj
+	cETOzDFWhN7o7IjHUR1+O5Xm6FXTGfc9wi2tenvSdo3z42zD0eqTw29rDc4X90nee/F0ah
+	6YZ9tzOqufSt9lLhg7yhOMwvg1mmy1A=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1708507399;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=mlwxUsar9qsnJji6/TOyKLeApaAnM6kT9bkCyRhsrDc=;
+	b=JUZ91t7TZZ0oHeAOCysrjoYLPBPX4+ndhE9OFQ8EICLdJdD61Esxl5uNvVpM4t755wsB5I
+	S277QK3wo4F2NfAg==
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 44C5413A25;
+	Wed, 21 Feb 2024 09:23:19 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id 8BRoDwfB1WWYBgAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Wed, 21 Feb 2024 09:23:19 +0000
+Message-ID: <dfb06240-bd67-43fb-93d7-4fce9184fb20@suse.de>
+Date: Wed, 21 Feb 2024 10:23:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2444202.ElGaqSPkdT@g550jk>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 00/10] backlight: Replace struct fb_info in interfaces
+To: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, jingoohan1@gmail.com,
+ deller@gmx.de, javierm@redhat.com, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-pwm@vger.kernel.org
+References: <20240212162645.5661-1-tzimmermann@suse.de>
+ <20240215121326.GL9758@aspen.lan>
+ <288a480c-74e9-49dd-a58d-294792771ea6@suse.de>
+ <20240219150209.GB10170@google.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20240219150209.GB10170@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spamd-Result: default: False [-3.09 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 BAYES_HAM(-3.00)[100.00%];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_SEVEN(0.00)[9];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 FREEMAIL_CC(0.00)[linaro.org,gmail.com,gmx.de,redhat.com,lists.freedesktop.org,vger.kernel.org];
+	 RCVD_TLS_ALL(0.00)[];
+	 MID_RHS_MATCH_FROM(0.00)[]
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Spam-Score: -3.09
 
-On Tue, Feb 20, 2024 at 05:45:32PM +0100, Luca Weiss wrote:
-> On Dienstag, 20. Februar 2024 15:12:10 CET Daniel Thompson wrote:
-> > On Tue, Feb 20, 2024 at 12:11:22AM +0100, Luca Weiss wrote:
-> > > Connect the panel with the backlight nodes so that the backlight can be
-> > > turned off when the display is blanked.
-> > >
-> > > Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
-> >
-> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> >
-> >
-> > > ---
-> > >  arch/arm/boot/dts/qcom/qcom-msm8974-lge-nexus5-hammerhead.dts | 4 +++-
-> > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/arch/arm/boot/dts/qcom/qcom-msm8974-lge-nexus5-hammerhead.dts b/arch/arm/boot/dts/qcom/qcom-msm8974-lge-nexus5-hammerhead.dts
-> > > index 4aaae8537a3f..8eaa5b162815 100644
-> > > --- a/arch/arm/boot/dts/qcom/qcom-msm8974-lge-nexus5-hammerhead.dts
-> > > +++ b/arch/arm/boot/dts/qcom/qcom-msm8974-lge-nexus5-hammerhead.dts
-> > > @@ -182,7 +182,7 @@ &blsp2_i2c5 {
-> > >  	status = "okay";
-> > >  	clock-frequency = <355000>;
-> > >
-> > > -	led-controller@38 {
-> > > +	backlight: led-controller@38 {
-> >
-> > Again... a minor nit regarding existing problems but this node doesn't
-> > follow the generic naming recommendations:
-> > https://devicetree-specification.readthedocs.io/en/stable/devicetree-basics.html#generic-names-recommendation
+Hi
+
+Am 19.02.24 um 16:02 schrieb Lee Jones:
+> On Thu, 15 Feb 2024, Thomas Zimmermann wrote:
 >
-> "led-controller" is listed on that page, or do you mean something else?
+>> Hi
+>>
+>> Am 15.02.24 um 13:13 schrieb Daniel Thompson:
+>>> On Mon, Feb 12, 2024 at 05:16:33PM +0100, Thomas Zimmermann wrote:
+>>>> Backlight drivers implement struct backlight_ops.check_fb, which
+>>>> uses struct fb_info in its interface. Replace the callback with one
+>>>> the does not use fb_info.
+>>>>
+>>>> In DRM, we have several drivers that implement backlight support. By
+>>>> including <linux/backlight.h> these drivers depend on <linux/fb.h>.
+>>>> At the same time, fbdev is deprecated for new drivers and likely to
+>>>> be replaced on many systems.
+>>>>
+>>>> This patchset is part of a larger effort to implement the backlight
+>>>> code without depending on fbdev.
+>>>>
+>>>> Patch 1 makes the backlight core match backlight and framebuffer
+>>>> devices via struct fb_info.bl_dev. Patches 2 to 9 then go through
+>>>> drivers and remove unnecessary implementations of check_fb. Finally,
+>>>> patch 10 replaces the check_fb hook with controls_device, which
+>>>> uses the framebuffer's Linux device instead of the framebuffer.
+>>> I won't reply individually but I also took a look at the patches for
+>>> the combo devices and it all looked good to me from a backlight
+>>> point of view.
+>>>
+>>> However I don't want to drop Reviewed-by: on them since it risks those
+>>> bit being mistaken for an ack and merged ahead of the patch 1...
+>> Thanks for reviewing. Unless someone objects, my intention is to merge
+>> everything via the drm-misc, so all patches should go in at once. I do have
+>> a lot more patches that untangle backlight and fbdev almost completely, but
+>> most of these changes are in the actual graphics drivers rather than the
+>> backlight core code. So hopefully everything can go through the DRM tree; or
+>> maybe the fbdev tree.
+> This is only acceptable if the maintainers of those trees can provide me
+> with a pull-request to a succinct (_only_ these patches) immutable
+> branch.  If this is not possible, then I should like to merge the set
+> through the Backlight tree and I can provide everyone else with said PR.
 
-That's the point ;-). It is supposed to be called backlight@38!
+I see, there's a separate backlight tree.
 
+I'm going to send another revision of this patchset. You either merge 
+all of the patches via the backlight tree, or you could just merge 
+patches 1, 5 and 6 for now. I'll take care to get the rest merged via 
+other trees and I'll re-submoit patch 10 for a final clean up. Your choice.
 
-Daniel.
+Best regards
+Thomas
+
+>
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

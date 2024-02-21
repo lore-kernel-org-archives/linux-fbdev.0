@@ -1,194 +1,100 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E3523D996;
-	Wed, 21 Feb 2024 09:43:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A99A33F8E4
+	for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 09:52:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708508615; cv=none; b=FOyjR7aZbSOJNs2JBKWMMt7KrM7EJYoc2hTVlR5M70ixuMqwUB6qC2a6UgMNNqO9cRXQbi6EWvsrNXkoivuX5VRmMmKdtR+vJdA1KoZFzr785G9HCUSf02j4lm3xgb7+ijd1zyVUVgWjKc+NI9C8eu7uf1W5QVqw937Y5MQp9bU=
+	t=1708509174; cv=none; b=R2RRUkwAb7jcLLQpsCGXvLvrbjkWqOzuiz+5HbtwdESV+0b3dY2C5NF8jomEA5JMjhxplSb8asbdtO9yXW/VzBfA8yl+14tV8Ke/A5z42n83gxtUgXf8EUrIB7F+laMdyyDbUc7q6DFjuIry5TWIuKkV0I5DrAGXM/MwqH7DR6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708508615; c=relaxed/simple;
-	bh=dm6dUWs5eYK7iDD0KXEIKym4BzOLgtmh5PvRibkkMSc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gfIyRIPr5kCcUyxU1Z7dHwmgp2DBLXWr71kDunSxAVnOhcVvuiAY9T2CHucliz8OZ25qHGjxgfZ0LblUB9zY/hIt7TOZ4ZJXAAqAinhLn3/Sxb9L66JZhy+B3rJjRItsBGDmy4xESc9nvzTLq18PNqybcC8a/y7nq8rVDfsa8Jo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Pa/61KEn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=pZCukhie; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Pa/61KEn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=pZCukhie; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1708509174; c=relaxed/simple;
+	bh=hpQIzkAUkfjw1oAO8oKeaMgVV1gBPRjHKKseAjgbpXs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Byfmn9EAd49qmT44fl5IinSn08supOVF+xvhqbiZgHHG0PQrLHt0To8uZBlRc9X1FyQ2iVUp9uyMyYMSGCg3VNzogyqEZDaTEv5ajwk7C9ZTrtbR/w4ZzyRY3LJJKb2wXMJqUrYRq+ASx75nohI5CqQ9jpFldP4LK/Q3qBRrPnA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fglnTSOa; arc=none smtp.client-ip=209.85.216.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Pa/61KEn";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="pZCukhie";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Pa/61KEn";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="pZCukhie"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id BA1782212A;
-	Wed, 21 Feb 2024 09:43:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1708508608; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2vbH6fXbw5kSaZe8A6x1Pisz/54U5gjhrI6eNLro4oQ=;
-	b=Pa/61KEnUsNnytdLB8GtCF/LdojJ8cxpXJ3Z8dySP0iUXfys7ORmXoeGfQxfpN8Wt1YL/M
-	5qSEHYaK2KVjhoY9UktzMc40m3tV8P4XNDOpDOiBxoAhE+vRsm1ILcG9l5NAWOkChRBEIW
-	EMoScmgkEGQrqfXdCl+ZMp3DUosRHLI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1708508608;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2vbH6fXbw5kSaZe8A6x1Pisz/54U5gjhrI6eNLro4oQ=;
-	b=pZCukhiepzqX7o8ZwERsMLn7dqMUJW1wOQO4dzmZS8SH6y8zuH3JGxQk+aj9UwLgow89ox
-	cJR4WxQgE2VqssBg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1708508608; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2vbH6fXbw5kSaZe8A6x1Pisz/54U5gjhrI6eNLro4oQ=;
-	b=Pa/61KEnUsNnytdLB8GtCF/LdojJ8cxpXJ3Z8dySP0iUXfys7ORmXoeGfQxfpN8Wt1YL/M
-	5qSEHYaK2KVjhoY9UktzMc40m3tV8P4XNDOpDOiBxoAhE+vRsm1ILcG9l5NAWOkChRBEIW
-	EMoScmgkEGQrqfXdCl+ZMp3DUosRHLI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1708508608;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2vbH6fXbw5kSaZe8A6x1Pisz/54U5gjhrI6eNLro4oQ=;
-	b=pZCukhiepzqX7o8ZwERsMLn7dqMUJW1wOQO4dzmZS8SH6y8zuH3JGxQk+aj9UwLgow89ox
-	cJR4WxQgE2VqssBg==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 576AE13A25;
-	Wed, 21 Feb 2024 09:43:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id aGPBE8DF1WUpCwAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 21 Feb 2024 09:43:28 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: lee@kernel.org,
-	daniel.thompson@linaro.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de,
-	andy@kernel.org,
-	robin@protonic.nl,
-	javierm@redhat.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fglnTSOa"
+Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-299e4b352cdso1066095a91.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Feb 2024 01:52:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1708509172; x=1709113972; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=umbo7IOMB+N5hMU5uXuhZHNVgY+ZT3DkUOlBqWz8poY=;
+        b=fglnTSOaH3vr+7m3nZ9hZe5kBDQryDFO8lpqHKs/pIJgDSSZMUpul3OXxLMmoLXkGd
+         Wi1r1xLNL6wC3PpWvxlyucEAV66L+t1uV2O5KRKg2KgU3jmP+kx2NHdk42vpogbZzNwp
+         RbEuYvrhZJfSC7N5E4g5jNXV4BTVRKB3hUz2Cx+UXyFu86asQ1vYOVCXPG2e/UXGiWzC
+         zBpX4Pu3gLnHsIBggRlJ27TkSn7r7QpFnKWsjlTc/Fij20eaiMUie03yfrpIutBIbseL
+         MlVI24x+0/lv7yWWJYA8FYb6fSO2+omBtMW5m+xUbXxB25WcX2fYkGtYmY6OicscoIPs
+         tPKg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708509172; x=1709113972;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=umbo7IOMB+N5hMU5uXuhZHNVgY+ZT3DkUOlBqWz8poY=;
+        b=WsS//dtwFc0rRPbaJgqKbFPXHpclMhDUEJzLk2JMtx+xW9Tkz+027SfoRida6je+r3
+         rldHnTd9A4j3Zt4woGuMRaWbvLSViLGSYK5nySmqWnoajSGsO1hipkYkMFhP5mFZGmDB
+         AdWhSH2kPpTwy+Z/DEu0otDexOkD/+DnJu1JQLDOEZgWfpVYuu2KMcyOZ6VPIoWrlWZ4
+         LEvXwW5hCW92V22tLrTz4Xm63VK/FIeD86RCmCVXrOcX+ZfhkicUNEJYtT9IWCDt/85Q
+         N6lK2x9N0D3Bmgb3hyqxBB/SwtO7i84zdj7e/cU7Hjv5MTYGR/JAt1yxDYQSbMf2ldtM
+         0Njw==
+X-Forwarded-Encrypted: i=1; AJvYcCUmKt/doRGpdT/DovUx6KJqNxbzCuKoa4MxvvSa+kReGYf+YaoYEL0yGsnrCZL/ulnSLWPYCC3vbGtMHh4+YiG0pgjnRLGWHGcREHg=
+X-Gm-Message-State: AOJu0YxSP9dDTbaoOJ1juNjdqq5vnd4OG73g13t1X8Kbr+mOIZAoKcn9
+	dKYTtkEmjigM5ycLrP/CrDf2JW2ndpyI73NTJQ0lHvB0XwL0GX79
+X-Google-Smtp-Source: AGHT+IHVR2SHjyVF3c5NtEANlYKund2uDElKO0tgKWeUMqRiBx6wQMP4L/8c6ILH58TxmxIy3JESng==
+X-Received: by 2002:a17:90a:68cf:b0:29a:1b37:4bfd with SMTP id q15-20020a17090a68cf00b0029a1b374bfdmr666223pjj.7.1708509171837;
+        Wed, 21 Feb 2024 01:52:51 -0800 (PST)
+Received: from localhost.localdomain ([222.151.198.97])
+        by smtp.gmail.com with ESMTPSA id y3-20020a17090a8b0300b0029942a73eaesm9124093pjn.9.2024.02.21.01.52.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 21 Feb 2024 01:52:51 -0800 (PST)
+From: sawara04.o@gmail.com
+To: gregkh@linuxfoundation.org,
+	sawara04.o@gmail.com
 Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	linux-input@vger.kernel.org,
-	linux-pwm@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	=?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Subject: [PATCH v2 04/10] hid/hid-picolcd: Remove struct backlight_ops.check_fb
-Date: Wed, 21 Feb 2024 10:41:31 +0100
-Message-ID: <20240221094324.27436-5-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240221094324.27436-1-tzimmermann@suse.de>
-References: <20240221094324.27436-1-tzimmermann@suse.de>
+	linux-staging@lists.linux.dev
+Subject: [PATCH] staging: fbtft: Fix "space prohibited before that close parenthesis ')'" error reported by checkpatch
+Date: Wed, 21 Feb 2024 18:54:04 +0900
+Message-Id: <20240221095404.592464-1-sawara04.o@gmail.com>
+X-Mailer: git-send-email 2.39.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spam-Level: 
-X-Spam-Score: -4.30
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 REPLY(-4.00)[];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 R_RATELIMIT(0.00)[to_ip_from(RLbrmj4aennmrpd7btm9n9zy3k)];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 RCPT_COUNT_TWELVE(0.00)[13];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
-	 FREEMAIL_TO(0.00)[kernel.org,linaro.org,gmail.com,gmx.de,protonic.nl,redhat.com];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[]
-X-Spam-Flag: NO
 
-Update the driver to initialize struct fb_info.bl_dev to its backlight
-device, if any. Thus rely on the backlight core code to match backlight
-and framebuffer devices, and remove the extra check_fb function from
-struct backlight_ops.
+From: Kyoji Ogasawara <sawara04.o@gmail.com>
 
-v2:
-	* protect against CONFIG_FB_BACKLIGHT (Javier, kernel test robot)
-	* reword commit message (Daniel)
+Since whitespace is prohibited before that close parenthesis ')' in a
+conditional statements, remove it and fix checkpatch.pl error "space prohibited before that
+close parenthesis ')'".
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: "Bruno Prémont" <bonbons@linux-vserver.org>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Signed-off-by: Kyoji Ogasawara <sawara04.o@gmail.com>
 ---
- drivers/hid/hid-picolcd_backlight.c | 7 -------
- drivers/hid/hid-picolcd_fb.c        | 6 ++++++
- 2 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hid/hid-picolcd_backlight.c b/drivers/hid/hid-picolcd_backlight.c
-index 5bd2a8c4bbd66..08d16917eb60b 100644
---- a/drivers/hid/hid-picolcd_backlight.c
-+++ b/drivers/hid/hid-picolcd_backlight.c
-@@ -9,7 +9,6 @@
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 3d422bc11641..02a16671f2a1 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,9 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
  
- #include <linux/hid.h>
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
  
--#include <linux/fb.h>
- #include <linux/backlight.h>
- 
- #include "hid-picolcd.h"
-@@ -39,15 +38,9 @@ static int picolcd_set_brightness(struct backlight_device *bdev)
- 	return 0;
- }
- 
--static int picolcd_check_bl_fb(struct backlight_device *bdev, struct fb_info *fb)
--{
--	return fb && fb == picolcd_fbinfo((struct picolcd_data *)bl_get_data(bdev));
--}
--
- static const struct backlight_ops picolcd_blops = {
- 	.update_status  = picolcd_set_brightness,
- 	.get_brightness = picolcd_get_brightness,
--	.check_fb       = picolcd_check_bl_fb,
- };
- 
- int picolcd_init_backlight(struct picolcd_data *data, struct hid_report *report)
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index d7dddd99d325e..750206f5fc674 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -493,6 +493,12 @@ int picolcd_init_framebuffer(struct picolcd_data *data)
- 	info->fix = picolcdfb_fix;
- 	info->fix.smem_len   = PICOLCDFB_SIZE*8;
- 
-+#ifdef CONFIG_FB_BACKLIGHT
-+#ifdef CONFIG_HID_PICOLCD_BACKLIGHT
-+	info->bl_dev = data->backlight;
-+#endif
-+#endif
-+
- 	fbdata = info->par;
- 	spin_lock_init(&fbdata->lock);
- 	fbdata->picolcd = data;
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
 -- 
-2.43.0
+2.39.3
 

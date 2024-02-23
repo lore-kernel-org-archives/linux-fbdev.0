@@ -1,48 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3FFC5D750;
-	Fri, 23 Feb 2024 15:54:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB3DD8565A;
+	Fri, 23 Feb 2024 16:28:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708703655; cv=none; b=k3XFfSnYr56JRos7/MbxivsU5LEcRoUgvQbIjV+7Hb6gaaHNyy1m26lngMzLhVZ1NAifIAUq8/kfbpBzXNi8AyD7F89mYsjRDmKMki/tP4KqWQsgLE+S/EbYzbHqaTbAjQHv39Gx/w8X0zUV2jo2IJs6iMW8vkg+dcXvbjNgRu4=
+	t=1708705730; cv=none; b=m/kxe+ri34L3fLWtjzaHE9Fq76rHhao/85dZiI7Ekx91r7m2glNenUwcQN4QckN9JOZwYCpeUAhK9rxUNWqquMrND2/aBmsuYkeBkw98Wxs1lr/t31pgks4wgu9ssYppraYXxlsV6MZtdEAktfZyl0BrJVXutkHk64DJedRPwoQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708703655; c=relaxed/simple;
-	bh=ZmMfeIezk17nGjdTO/Z3REthdAgXIK1fQj7QC6r47z8=;
+	s=arc-20240116; t=1708705730; c=relaxed/simple;
+	bh=wEGHK2WBxOjfXbevpTQb3aIk60mWJqBlr3ZiHUy36VM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=QHgdpPGq3CypmbvO8Kr7adyD7fvuSigMCMZYD3tpHU0RVU5rFxKjleV4qA1+qA+q1BDM0xbb91K8WO9ti75NQhjIlOAAFb/apq4uBkZHYfKSm2VDTpnYPPTyuNBYrR5r7CsD4U61CG0mKGaL8FRj4niA9jJIHD9r04VEwsrksvI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r1XxEo3o; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=c5LpBTfAdsI0+JtLxfifOIwJ1OiRqv4X3fWl7Q9VOODOD7GBLkxzGryCIGjVzkA0udxsBq7rzNKZTQj2zJi2WVC7WwHSjV9e3FpzzfzajWqFuiG3gTu4wU8x9QfGiKyL3gz2MRmXCxuJ/2qSiSHTFOFxS+VkF1qs/eIJWcHQAjY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SkYRUySC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r1XxEo3o"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C903CC433F1;
-	Fri, 23 Feb 2024 15:54:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SkYRUySC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 203AAC43390;
+	Fri, 23 Feb 2024 16:28:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708703655;
-	bh=ZmMfeIezk17nGjdTO/Z3REthdAgXIK1fQj7QC6r47z8=;
+	s=k20201202; t=1708705729;
+	bh=wEGHK2WBxOjfXbevpTQb3aIk60mWJqBlr3ZiHUy36VM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=r1XxEo3oy+d1t8vPKLoJbxuutY7k+6GhiI6iLMURCdwm2J55wvZpF8FXctsqgJf/X
-	 PszC5HMV2RJ317DTqkdG9Ue1WYTFAF4X5/J3wTjfXMsd5tSY62MQwcAmP0gjIJ+6MJ
-	 9oVTbOK25gsNcUomFTY4uk6iJ9MB9G3OLLPW5YjY+LgDWq1SMDm7be9ZLVf4dhYRDq
-	 YTlrtexsTn5gNviFB+Q6Jv0wz5kYSXFS6bIfUccvx/3hdP1xqNZ3PXSD3ANbkA+cqO
-	 WnFnUUMhm4n8SovhIje73o1m+Ko2Zmb/58vE0s5/byZEoODyRG3EOFzGT5sebBKdgm
-	 a/ao45y3QGakQ==
+	b=SkYRUySC7rIkFog+P2vIgPZHmirWaNLzsVE0UJf5iJ3cwiTt8uvDiENx72N+umzwI
+	 7+LpOSjln0PwmN+WL+WJsNu9O54/1X+4a2Efdt6pwBgSdyEzVf4Z2MhV+yypmC3SFx
+	 pFGEi1SyLtad8/y+2LEQ+PWe+aC2rJHYaYWN4nxvOv0Yc95mbWb/VfZhCH4WR3yLHO
+	 gUiKSg78OTlnbEr8Lg15KyOEyAmA5unW7M0YUxmCU24Or7ZsU7kbVW4GBRc5fvNNA2
+	 MigHG6/ia+IBaOYVyqirFWnnIzM9ERex4xaaVYv2Xa1jEmH/NKIjeKcCdd5mV52iv7
+	 MbHyGG4dbBDsg==
 From: Lee Jones <lee@kernel.org>
-To: Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Flavio Suligoi <f.suligoi@asem.it>, Hans de Goede <hdegoede@redhat.com>, 
- Jianhua Lu <lujianhua000@gmail.com>, 
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
- Helge Deller <deller@gmx.de>, Jingoo Han <jingoohan1@gmail.com>, 
- Karel Balej <balejk@matfyz.cz>, dri-devel@lists.freedesktop.org, 
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-leds@vger.kernel.org, kernel test robot <lkp@intel.com>
-In-Reply-To: <20240216-expresswire-deps-v2-0-8be59c4a75f5@skole.hr>
-References: <20240216-expresswire-deps-v2-0-8be59c4a75f5@skole.hr>
-Subject: Re: [PATCH v2 0/2] leds: expresswire: Fix dependencies
-Message-Id: <170870365155.1722159.6291358322517617428.b4-ty@kernel.org>
-Date: Fri, 23 Feb 2024 15:54:11 +0000
+To: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Luca Weiss <luca@z3ntu.xyz>, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20240220153532.76613-5-daniel.thompson@linaro.org>
+References: <20240220153532.76613-1-daniel.thompson@linaro.org>
+ <20240220153532.76613-5-daniel.thompson@linaro.org>
+Subject: Re: (subset) [PATCH RESEND 4/4] backlight: mp3309c: Fully
+ initialize backlight_properties during probe
+Message-Id: <170870572786.1740438.15453067020985270956.b4-ty@kernel.org>
+Date: Fri, 23 Feb 2024 16:28:47 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -53,19 +48,17 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.12.4
 
-On Fri, 16 Feb 2024 22:15:42 +0100, Duje Mihanović wrote:
-> LEDS_EXPRESSWIRE does not depend on NEW_LEDS in practice but still does
-> in Kconfig. Fix up its Kconfig entry to reflect this and fix a Kconfig
-> warning.
+On Tue, 20 Feb 2024 15:35:27 +0000, Daniel Thompson wrote:
+> props is stack allocated and, although this driver initializes all the
+> fields that are not "owned" by the framework, we'd still like to ensure
+> it is zeroed to avoid problems from this driver if the fields change.
 > 
 > 
 
 Applied, thanks!
 
-[1/2] Revert "leds: Only descend into leds directory when CONFIG_NEW_LEDS is set"
-      commit: 7a28f9cf6b7c8cad760b4d4ee7f53231cd76d8e4
-[2/2] leds: expresswire: don't depend on NEW_LEDS
-      commit: 8cd0da0634222ceb434281f3034ad773ddfe0f4f
+[4/4] backlight: mp3309c: Fully initialize backlight_properties during probe
+      commit: 50a2c0aee92699ed47076636b652f9d27a20fbef
 
 --
 Lee Jones [李琼斯]

@@ -1,68 +1,103 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3294282883;
-	Fri, 23 Feb 2024 14:50:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2235224E8;
+	Fri, 23 Feb 2024 14:58:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708699832; cv=none; b=foaEu8v2MFkpIh+Ec5YhigI0i2IhlBZEuJxA4a/TfgAH7rx3nfd/sYQ8cLukBdxur7LP6+K/SwS/VLOSzRdAqFwckmVqdNphRIbRwQsgaBVn2VZjNjNrIyIFYX2MSdSb0JP4rTAcpBmh6IAZIffxPdUq7WWUyA2yd1MR1dzz4pc=
+	t=1708700298; cv=none; b=MopD/0QtkZzhZaVKin+gdgSpj8ItXgtt0H84EQ3hOKTDzDpj4KuTndjT1k5NfxKouHv177hcmemEhv88ijPKGnL0sd9vrcxCWulwzqc4pONIDFCcRduPtI9YpVTBoLewGaovOumWtYwu0QX9qD/FBuG59SK6gKzec9S3iAZYa0U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708699832; c=relaxed/simple;
-	bh=uTDFI3qXOS3f4GpeIF/0ruRqhLbU5D7lTlLgmM2NO8Y=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=do5NCwg5nUW14Z6LFG88Mvgjo+xzb93u9H1l1w0QOA4dHNuyw/LNOO6BQpdYxGzdQNyfhsLwyK9Knrof98eZTsreUDPFCYSBC/K99lla8tXQ4M9ko6n+ykDKBDU9Zz3IdzzEMiOmbO7HqBPOSBbSvvgz/hmzUQjuXtSM5/Iiq8U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iTvL5YBJ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1708700298; c=relaxed/simple;
+	bh=e/c+ZP0Jj4k3w0h5haFdrTRJ1bfgB9ofQ999qSO4ojE=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=s7T3mqH7SgJSZ/HCvN5TYUtHv3U0uAJ0TP0AEB5a7YMeYfZ4fWRxS+uhoqoYLzr/ugCRdoU/XIz93je1sSLunj3PQKXOtRr1XE/HmonL9/RclXYX29W1QXvv03uXgUmrSRf6TFPGiUJyXc9/KtHaz1ouXTZ+SiVpgvpguF3CfxI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mHqGNexv; arc=none smtp.client-ip=209.85.222.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iTvL5YBJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F0A9C433F1;
-	Fri, 23 Feb 2024 14:50:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708699830;
-	bh=uTDFI3qXOS3f4GpeIF/0ruRqhLbU5D7lTlLgmM2NO8Y=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=iTvL5YBJSskBOLBGMDEhZ7s7Pf4O0ymZO6zF9fbdIw2+1L2vU31g94wp3QbyS4EFN
-	 xabHX4yt8L/M8rMef6156JtTh1SLGUXN7wqblmmHLo1o4qLos20Lo72WOrQIqET+VE
-	 7l2jGYbq0cvJGTceZbuvwhXin9jfVaEhju0d2B3zvDFCwg0qZAZd/rrSdyTzxqzNxq
-	 VY1ZtN5Df83RZeb2wBKNmzgboZdAG3ySD+FwHT11TxSPz/xx3psIs4kd4wEBdvkS/a
-	 TvaZ+v6ao78nwp1ocYINZztYgwdfMwolRS/DhS1ilaeCjeR+FXgeA0XXiAfKG9WANU
-	 q1zbYllLWpUzA==
-From: Lee Jones <lee@kernel.org>
-To: Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Cc: Karel Balej <balejk@matfyz.cz>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
-In-Reply-To: <20240210-ktd2801-static-v1-1-90ad2e2e8483@skole.hr>
-References: <20240210-ktd2801-static-v1-1-90ad2e2e8483@skole.hr>
-Subject: Re: (subset) [PATCH] backlight: ktd2801: make timing struct static
-Message-Id: <170869982803.1679597.4693204509792498409.b4-ty@kernel.org>
-Date: Fri, 23 Feb 2024 14:50:28 +0000
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mHqGNexv"
+Received: by mail-qk1-f178.google.com with SMTP id af79cd13be357-787ac650561so46934085a.3;
+        Fri, 23 Feb 2024 06:58:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1708700295; x=1709305095; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=4NDgszGodt3V3j5Lshn/mpqkCU7z4gbtXsqxc5uCqIs=;
+        b=mHqGNexvWpeU/ZgOiIQTs2aPWEXsfemo6w+GBxcNwBBW6M+JC6yWd2JO+My244pBU2
+         grJfTMMkXD4E97441OyjOO6fsgd4evYiIULqvs8kGcjEzcMhBUSFbOnuSdaBjNmPRzpi
+         a2TM7KCT7ILcll82iYZpUbaMFnicdDuXPySneK12evUh9Ez0596ChQwz6tkKZV7rDHry
+         XkoCZC+pNPp/2Z13mXVVDuvx+dozy/rXUKAfNSCWA2oqKHHflht9jj1AUPmnCKQcISdZ
+         YzecxUPDA/67JZaD5rWghKHMhB5budsv9n3rijfVXnm/hVz5Djv8/pFcMMjQHskHprtV
+         q5Hg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708700295; x=1709305095;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4NDgszGodt3V3j5Lshn/mpqkCU7z4gbtXsqxc5uCqIs=;
+        b=VTJqspGYSQwUYSXojzNcASV88q/jndHv0RHyuRSoyjguvzjXzNS6ZpJ9OnzfJXQch4
+         /73JDaS+e7FwNb6qUfdLIVGf1rMNQrZmXjogRW9BmGj8GBST4xGJxmQ+9Vw9YH2J5vFg
+         CgPdWxvsX+OfKjks0piXLPwD3yHD3h3nPj2uyucFvG4MovpMR3GzkoQPyrUWYPnF+42i
+         25lSlkZvmRMa2T6vXF4JvrLLecjfBKqfYD3c4CChnegmXOhNZbY08WS/mA2gOItHfd90
+         SOw7wMq/2ecIS36tnrUKV7zZ54Nauq8gZp+mD8XvL1igVJc2EJ+t32GLuI4if2oECN2o
+         A4LA==
+X-Forwarded-Encrypted: i=1; AJvYcCVLWI/H3JY8ZvnETbyQNSCgSFUYIJerWOgH1xIWebuYnF4rgSixOybT/4nqxV0bbtqz8IF7wp2C2fqTS+G2NoyG1yqFpAdayDTr9KTwnQ3cFznf0890kHoVeVPaJrB3ZLUJc2k3Ef0y6Q0=
+X-Gm-Message-State: AOJu0YyRSNrnhR8vJIueVXw6WF1BiJCaH2ouoxtEloVUoNWYahmIqoXZ
+	8w8CPVFUOjfohHe20gSDn2BAeGSYdwhkVEnZLdb9HunQQbY/KPYq
+X-Google-Smtp-Source: AGHT+IEpyx0dsbf4zcMWVmdW7wGWEWgrp0gOO7dTGs80H6Cm9yC9Adhi9vVXdU35s6LBJonWqi7ozQ==
+X-Received: by 2002:a05:620a:4692:b0:787:746e:5ba8 with SMTP id bq18-20020a05620a469200b00787746e5ba8mr48329qkb.13.1708700295326;
+        Fri, 23 Feb 2024 06:58:15 -0800 (PST)
+Received: from Wayne (host-24-138-28-86.public.eastlink.ca. [24.138.28.86])
+        by smtp.gmail.com with ESMTPSA id wa23-20020a05620a4d1700b0078742e741cfsm6552865qkn.61.2024.02.23.06.58.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 23 Feb 2024 06:58:14 -0800 (PST)
+Date: Fri, 23 Feb 2024 10:58:12 -0400
+From: Samuel Kayode <samkay014@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: sm750fb: rename function deGetTransparency()
+Message-ID: <ZdiyhAwNTPmbS3E0@Wayne>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Sat, 10 Feb 2024 17:16:17 +0100, Duje Mihanović wrote:
-> The struct containing the KTD2801 timing can be made static as it's not
-> referenced outside the KTD2801 driver. Do this to prevent sparse
-> complaints.
-> 
-> 
+Rename function deGetTransparency to de_get_transparency to fix
+checkpatch warning Avoid CamelCase.
 
-Applied, thanks!
+Signed-off-by: Samuel Kayode <samkay014@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-[1/1] backlight: ktd2801: make timing struct static
-      commit: ed2ac75acf99d33444a5d440fcad4261ad6f0d5c
-
---
-Lee Jones [李琼斯]
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 44b9e3fe3a41..ad9d8bd34e5a 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -284,7 +284,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 	return 0;
+ }
+ 
+-static unsigned int deGetTransparency(struct lynx_accel *accel)
++static unsigned int de_get_transparency(struct lynx_accel *accel)
+ {
+ 	unsigned int de_ctrl;
+ 
+@@ -391,7 +391,7 @@ int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
+ 		DE_CONTROL_ROP_SELECT | DE_CONTROL_COMMAND_HOST_WRITE |
+ 		DE_CONTROL_HOST | DE_CONTROL_STATUS;
+ 
+-	write_dpr(accel, DE_CONTROL, de_ctrl | deGetTransparency(accel));
++	write_dpr(accel, DE_CONTROL, de_ctrl | de_get_transparency(accel));
+ 
+ 	/* Write MONO data (line by line) to 2D Engine data port */
+ 	for (i = 0; i < height; i++) {
+-- 
+2.34.1
 

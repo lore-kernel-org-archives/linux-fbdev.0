@@ -1,80 +1,75 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail5.25mail.st (mail5.25mail.st [74.50.62.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64DD7128815;
-	Fri, 23 Feb 2024 17:02:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 244EA9443
+	for <linux-fbdev@vger.kernel.org>; Sun, 25 Feb 2024 06:47:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.50.62.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708707745; cv=none; b=NljWXrqEg53VKSaaGHf9e/mbxzd95o/tJOn1SgXOynHSnuYRRZ0TEt20TPM/fC0FZqB6fJx+PKJa3ysjRStUquMUpQxr14HguutUfY+g6D9oHBKV8tgX7Y1LJEPXdcB1vCPvyGC+eo0UiL1MRNpmsmVdtfqjW6l0WAaKqkCJOuE=
+	t=1708843650; cv=none; b=HwWnyoer3znECFIQXQDFa+2FiKHo+Oykj2hcCLirzuKdgKKfOx6tTXBEFVL1caTkEQhFzBlBCFzHLOTZ7kAvEQUyRBDHe5pChLFQXQIKNwnkR4ycWKLTbaqqj5tb23uKvlj5pMsmsCFFadGLtEK5cvb1ia9IBm3M/ybyRJDEhyQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708707745; c=relaxed/simple;
-	bh=2o5JTRd3DSLZEMCMjL2aEPBU20fNxBNrc7mjVBw+7kc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=tg+QMNmlMSb8G2DhJiHuWUU68XP6j9rUGlcGSyIdc+HaznXyFPIK9h4LGgbQpwVSo9TrWgeiHbv2EnHc1alkExjPdf19uhgFZJwbNwtcLxqOmKwuRckXUctwSl88PGqPsm9+CggLaW0yB6+yRw9HJMq4GwG30UrhHRAtQKvheNQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=o+1xBZ+4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1708843650; c=relaxed/simple;
+	bh=YKwC/ei/4U0z7yRBMBOlycIs3Tdvan58ObTypyZhS8s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=G65x/r/CRPiPRm79gzvH+LLNyZWBPnpO2VNWrOgGPmemEZU5cEDV9eTYHhvvMu7VUNSJahoWE53KTjzIkOsoUf4QxFlfl95vKEPKqd1kqBTPu8P4hbNpIF+cwWD9a5xDNTbyjq1m7zOVBg/4uxJ7o/a3sfBAz6XeWtD8JAlkLaQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomide.com; spf=fail smtp.mailfrom=atomide.com; dkim=pass (2048-bit key) header.d=atomide.com header.i=@atomide.com header.b=piIAc2PE; arc=none smtp.client-ip=74.50.62.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomide.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=atomide.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="o+1xBZ+4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6338FC433F1;
-	Fri, 23 Feb 2024 17:02:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708707745;
-	bh=2o5JTRd3DSLZEMCMjL2aEPBU20fNxBNrc7mjVBw+7kc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=o+1xBZ+4fsS6hVxXlzE4Esjcw5DWE+4AqLCXAV/E6hescN5VFBzaVp5Ml59UVr1Vj
-	 NzMDNV2UJfA3il+FBx6bweSe4q5iNn+Y/+Okyy8D9oxMiQJFZ7ov+9NLXfrATx7QB+
-	 XvZXB3wXhotzo91inun1fUnroamTPKzvz5IwEWq5UPGOpRldJMjPJc9i8upC/fq++8
-	 FQlwge+dM5xQ14mVJVPiJ0s3ILgC5sJg1czRw6U13HxhT74bm8j+UbSL+41i/95ral
-	 vu/+41W8+SF6cvkjkAKA2HG8euWXKsu98br8kgE2I8D8kcRd5Xk5bIIG9HoQYnHKY6
-	 SlXDMhmaJSzog==
-From: Lee Jones <lee@kernel.org>
-To: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org, 
- Lee Jones <lee@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- "G.Shark Jeong" <gshark.jeong@gmail.com>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konrad.dybcio@linaro.org>, Rob Herring <robh+dt@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Maximilian Weigand <mweigand@mweigand.net>, Luca Weiss <luca@z3ntu.xyz>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- devicetree@vger.kernel.org
-In-Reply-To: <20240220-lm3630a-fixups-v1-0-9ca62f7e4a33@z3ntu.xyz>
-References: <20240220-lm3630a-fixups-v1-0-9ca62f7e4a33@z3ntu.xyz>
-Subject: Re: (subset) [PATCH 0/4] Various fixes for the lm3630a backlight
- driver
-Message-Id: <170870774114.1756675.11800657479764151316.b4-ty@kernel.org>
-Date: Fri, 23 Feb 2024 17:02:21 +0000
+	dkim=pass (2048-bit key) header.d=atomide.com header.i=@atomide.com header.b="piIAc2PE"
+Received: from localhost (91-158-86-216.elisa-laajakaista.fi [91.158.86.216])
+	by mail5.25mail.st (Postfix) with ESMTPSA id 621426049D;
+	Sun, 25 Feb 2024 06:47:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=atomide.com;
+	s=25mailst; t=1708843648;
+	bh=YKwC/ei/4U0z7yRBMBOlycIs3Tdvan58ObTypyZhS8s=;
+	h=From:To:Cc:Subject:Date:From;
+	b=piIAc2PERi+kMc/Tlm4QZJucjdb8100JLjfzCFxUBxO55hHO7ozpP4mpgu3m9DVDi
+	 TxZSpFqariESKNoh2d/R3wVHzSZqoyN2KS1noZd9tIPQabz7W0dZSnAHgUbrdTpK3D
+	 NUxPubA37ed5DnzbKSZ+et6NcitZND895TpyhQhllElwR7YjZAYrji8QhonqOsvVg2
+	 2v50qFhGNhfIxMHb1g2EqWN38HwuFpb/EzLm4Jmyv1/EsRqhSakj0iwpTLjmbUtllB
+	 vyu+yT+W/NBoHb8ck0ov9ClUMPUWwTVw6kvYM6r3gyTrZAQ0ipmis3VAXRcOhxLwk/
+	 ZwUc8p1L3Cxmw==
+From: Tony Lindgren <tony@atomide.com>
+To: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Helge Deller <deller@gmx.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v2 0/2] Fixes for omapdrm console
+Date: Sun, 25 Feb 2024 08:46:53 +0200
+Message-ID: <20240225064700.48035-1-tony@atomide.com>
+X-Mailer: git-send-email 2.43.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.4
 
-On Tue, 20 Feb 2024 00:11:18 +0100, Luca Weiss wrote:
-> On the MSM8974 Nexus 5 and OnePlus One phones (latter doesn't have
-> display upstream) the display backlight was turning off whenever you
-> would write a brightness to sysfs since a recent commit to the driver
-> (kernel v6.5).
-> 
->   backlight: lm3630a: Turn off both led strings when display is blank
-> 
-> [...]
+Here are two fixes for omapdrm console.
 
-Applied, thanks!
+Regards,
 
-[1/4] backlight: lm3630a: Initialize backlight_properties on init
-      commit: 4602c7615989e6e7052e317995a66014eb318082
-[2/4] backlight: lm3630a: Don't set bl->props.brightness in get_brightness
-      commit: ebb3b9a65b56e9b21841ab9a15b946407cd6b104
-[3/4] backlight: lm3630a: Use backlight_get_brightness helper in update_status
-      commit: 3c40590fafd4cc2447fb482a640c450e1a58ffa1
+Tony
 
---
-Lee Jones [李琼斯]
+Changes since v1:
 
+- Add FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS to use with
+  FB_DEFAULT_DEFERRED_OPS as suggested by Thomas
+
+Tony Lindgren (2):
+  drm/omapdrm: Fix console by implementing fb_dirty
+  drm/omapdrm: Fix console with deferred ops
+
+ drivers/gpu/drm/omapdrm/omap_fbdev.c | 39 +++++++++++++++++++---------
+ include/linux/fb.h                   |  4 +++
+ 2 files changed, 31 insertions(+), 12 deletions(-)
+
+-- 
+2.43.1

@@ -1,91 +1,164 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27C75EC7;
-	Mon, 26 Feb 2024 12:52:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 190548592F
+	for <linux-fbdev@vger.kernel.org>; Mon, 26 Feb 2024 15:52:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708951936; cv=none; b=Uxv4b0txT1EGdLGs1I8Bo7GQ1cI3ZbjLV5A68SW+mqP9qVmu484bL7GrgwxQthNu/fqHv3VWtP3CKqcqqgnP6xygjyV2Z4VLWmWIi0ntn4COORcLrjXhQTBXukq1TlaBpflscclJ+U34NvUba/R3mgHdgdb1P0A9BffocjsVBmo=
+	t=1708962722; cv=none; b=CbVLqs71MyKlBHvd2xt/3iEGglWvn1tOLKSGST4ZtiOb/d6MrdLRcnp0v7zlVH9zaQqRszEn2+Mp8H4WMxm9dbgIhZjZWDWJzstAN6Q6E3ZioLaaQSZObtp/tk3EMsOoZz9FLczE1we+nwgD5Fca1nnXLrra79DQRgpma23Di1E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708951936; c=relaxed/simple;
-	bh=fZH+U9WKhQH4ZWiXzAST0yU7viLHXCnk1wkEi0y7miE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dJhHgCv4xtR65K/XTls50YSU8v41qagAWpx42OayLmkfJachj3vPADcWMH2GUZ8tXqGH4vvoQCzJTCjKV0rL/O1wLkolflqiZGISL9FxURsGdXvZwZNDdT/p3f3BpMST5JMKEmUO55xWUS/REktqzWI5s6Z8VxwMB4xMi4O/C8U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rT5LQvi/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1708962722; c=relaxed/simple;
+	bh=4AsTNZ30+tE2qP7aKE3qwCaW72A6stH1s4P5QBsgrak=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DamHcWO/STKHN8reaGB71/i/TxMBMQ0LUpqklVYt4p1/58zMsI/MGgYLobQrIn2DYYHvP3s0ITZQ/eS32dRPQB4b5Df8gmWIZ2CQuKDWu/TIMAmtNw3tbcEisrOHvqAIcN5kZTlHw//LQRzNvB8MJzjocRzm+N32//tyReiAAXs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=MaNCkGVG; arc=none smtp.client-ip=209.85.167.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rT5LQvi/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1491CC433C7;
-	Mon, 26 Feb 2024 12:52:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708951936;
-	bh=fZH+U9WKhQH4ZWiXzAST0yU7viLHXCnk1wkEi0y7miE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rT5LQvi/Ie8zpJvS9vTRBFbcNvWb2YZ6Litpoc2gmG/iVgPfsgrb5U2NHi/2A9xE4
-	 lfYNYvIJYx8n2BPx8hOQWCqp77EqUemTpWwi0bjalxN6PUyRAUd+uTt68QJEAH7bNi
-	 TrkonldQtBcKZFnjoMMril65adw08G/kq/EN1kX9J8/opb5lZmsdHa4i++3V4al16h
-	 1fAYo1HNPK+qqNolVsVHgVze3jPPPw1A5wCQHPKEIDqkfHzgLE6gTcpDEcJppTFHQV
-	 MtvsQqOMspRMmvXXC+M3vCh8aOKQtVvTaisxDc/sv0aWMs2vMcVcbL7ehh0Xq4pcB1
-	 Hk62H+O5pyklQ==
-Date: Mon, 26 Feb 2024 12:52:09 +0000
-From: Lee Jones <lee@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>, deller@gmx.de,
-	kherbst@redhat.com, lyude@redhat.com, dakr@redhat.com,
-	daniel@ffwll.ch, airlied@gmail.com, gregkh@linuxfoundation.org,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH v3 1/9] backlight/corgi-lcd: Include <linux/backlight.h>
-Message-ID: <20240226125209.GB23065@google.com>
-References: <20240219093941.3684-1-tzimmermann@suse.de>
- <20240219093941.3684-2-tzimmermann@suse.de>
- <1e577f18-c6f7-44e7-b50f-720915f257eb@suse.de>
- <20240223105652.GT10170@google.com>
- <874jdvo3ia.fsf@intel.com>
- <20240226123313.GA23065@google.com>
- <62ad32cb-3fd1-4c21-ab2c-a194e559d12a@suse.de>
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="MaNCkGVG"
+Received: by mail-oi1-f171.google.com with SMTP id 5614622812f47-3bc21303a35so1416707b6e.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Feb 2024 07:52:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1708962720; x=1709567520; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=CUSSeKCNfrI8SENdwKZ8ZDRRQjwEDrUx9VFbPLeuRnM=;
+        b=MaNCkGVGuliNvsHSgDdbxbILOwZfJaafmk7gn5cokZG+D2q+2eY/WeiZ7SrTlAkTwb
+         sqRJ8jvk8kIV9qk4SKw9q6Mv/qUg3j+WWgEXPC8zubZrqIvYbSPM0uNMmnc5qiKx5+oE
+         mgOjvmIoeznTX8eolEtCGVma7TeTeSdbsAA0I=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708962720; x=1709567520;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=CUSSeKCNfrI8SENdwKZ8ZDRRQjwEDrUx9VFbPLeuRnM=;
+        b=sBjEY2C3XbYZOGaVKNFZGHpVx4Vt8x34Ns6D9j95lRIOhczaSrg0oq6178h7EWSxCx
+         6n5ZT9tXx6/VMgUA94oWzoxWi+vpU2LDcEQe9qAZ/ccbG/K6LbIstKa8X9ntELyYBLnO
+         1tnQXdBNkPgVNgB+BZM31+ghxxk3sHaZG7rP3z4ABLAjd3fC6X583XfmQEiiSRf7Fo5J
+         VSXV9Xn7zPZ1NJ30UVHVl7Vlti+hyXS+f0hLT6YCuwzqYMS+qgy5NTnzzZrSDAAt0XLe
+         0bUA9NI3xn6Wfz5um2L31e0OAMSdrsnTJVAXPHxuJB+tevouccpKnkzy2ef40vY/SMs5
+         PbaA==
+X-Gm-Message-State: AOJu0YzP1+cZ8ee7OIu/8nWH9zF27fjep8RHN2uPbdSjTMPpD9ZXsw9C
+	0qtub8HFEtSSQFHr3I35oUDlnOHLxt/RaT+PAhlc1VzcZjWO3ySfDfgPIXrLdSwBFSm8G00yRHx
+	0mByNSOMz7jNCacuZGLQXh7pc+SStu5NzskKKK2UnlSvI7Y0d
+X-Google-Smtp-Source: AGHT+IEdiQ4U3Em4o9sDuL5RsHg1cNC4nB6yTF5zoOIg2giWwAyj6LuCUE3soBJh3R3CnQ3rPqB5bTGOiWA/ta2lfdE=
+X-Received: by 2002:a05:6871:3427:b0:21e:be91:ae48 with SMTP id
+ nh39-20020a056871342700b0021ebe91ae48mr8491032oac.1.1708962720214; Mon, 26
+ Feb 2024 07:52:00 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <62ad32cb-3fd1-4c21-ab2c-a194e559d12a@suse.de>
+References: <20240208114411.14604-1-jirislaby@kernel.org>
+In-Reply-To: <20240208114411.14604-1-jirislaby@kernel.org>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Mon, 26 Feb 2024 16:51:49 +0100
+Message-ID: <CAKMK7uH-22rmncSn0iP2qdeUNEsmOQgG5xHcOPTLwnwqANtvYQ@mail.gmail.com>
+Subject: Re: [PATCH] fbcon: always restore the old font data in fbcon_do_set_font()
+To: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, Ubisectech Sirius <bugreport@ubisectech.com>, 
+	Helge Deller <deller@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
 
-On Mon, 26 Feb 2024, Thomas Zimmermann wrote:
+On Thu, 8 Feb 2024 at 12:44, Jiri Slaby (SUSE) <jirislaby@kernel.org> wrote:
+>
+> Commit a5a923038d70 (fbdev: fbcon: Properly revert changes when
+> vc_resize() failed) started restoring old font data upon failure (of
+> vc_resize()). But it performs so only for user fonts. It means that the
+> "system"/internal fonts are not restored at all. So in result, the very
+> first call to fbcon_do_set_font() performs no restore at all upon
+> failing vc_resize().
+>
+> This can be reproduced by Syzkaller to crash the system on the next
+> invocation of font_get(). It's rather hard to hit the allocation failure
+> in vc_resize() on the first font_set(), but not impossible. Esp. if
+> fault injection is used to aid the execution/failure. It was
+> demonstrated by Sirius:
+>   BUG: unable to handle page fault for address: fffffffffffffff8
+>   #PF: supervisor read access in kernel mode
+>   #PF: error_code(0x0000) - not-present page
+>   PGD cb7b067 P4D cb7b067 PUD cb7d067 PMD 0
+>   Oops: 0000 [#1] PREEMPT SMP KASAN
+>   CPU: 1 PID: 8007 Comm: poc Not tainted 6.7.0-g9d1694dc91ce #20
+>   Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014
+>   RIP: 0010:fbcon_get_font+0x229/0x800 drivers/video/fbdev/core/fbcon.c:2286
+>   Call Trace:
+>    <TASK>
+>    con_font_get drivers/tty/vt/vt.c:4558 [inline]
+>    con_font_op+0x1fc/0xf20 drivers/tty/vt/vt.c:4673
+>    vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+>    vt_ioctl+0x632/0x2ec0 drivers/tty/vt/vt_ioctl.c:752
+>    tty_ioctl+0x6f8/0x1570 drivers/tty/tty_io.c:2803
+>    vfs_ioctl fs/ioctl.c:51 [inline]
+>   ...
+>
+> So restore the font data in any case, not only for user fonts. Note the
+> later 'if' is now protected by 'old_userfont' and not 'old_data' as the
+> latter is always set now. (And it is supposed to be non-NULL. Otherwise
+> we would see the bug above again.)
+>
+> Signed-off-by: Jiri Slaby (SUSE) <jirislaby@kernel.org>
+> Fixes: a5a923038d70 ("fbdev: fbcon: Properly revert changes when vc_resize() failed")
+> Cc: Ubisectech Sirius <bugreport@ubisectech.com>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
 
-> Hi
-> 
-> Am 26.02.24 um 13:33 schrieb Lee Jones:
-> > On Mon, 26 Feb 2024, Jani Nikula wrote:
-> > 
-> > > On Fri, 23 Feb 2024, Lee Jones <lee@kernel.org> wrote:
-> > > > On Wed, 21 Feb 2024, Thomas Zimmermann wrote:
-> > > > 
-> > > > > cc'ing backlight maintainers
-> > > > I cannot review/accept patches like this.
-> > > > 
-> > > > Please submit a [RESEND].
-> > > I bounced the original [1] to you. Please consider acking to merge the
-> > > one-line #include addition via fbdev so we don't have to respin the
-> > > series for no good reason.
-> > The "good reason" would be that it was not sent properly in the first
-> > place.  My kernel.org mail is filtered by the recipients headers.  If
-> > the original wasn't sent to me, bouncing won't work either.  I've since
-> > reviewed the patch and seen the set on LORE.  This is non-optimal.
-> > Please use get_maintainer.pl next time.
-> > 
-> > This time only, patch is:
-> > 
-> > Acked-by: Lee Jones <lee@kernel.org>
-> 
-> No problem, I'll send out another series. I just didn't get to do it.
+Reviewing patches to code where assignments in if conditions are still
+cool is a pain :-/
 
-No need to do that now on my behalf.  You have my Ack.
+Merged to drm-misc-fixes with reported/tested-by credit tag for sirius added.
+
+Thanks a lot!
+-Sima
+
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 17a9fc80b4e4..98d0e2dbcd2f 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2395,11 +2395,9 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+>         struct fbcon_ops *ops = info->fbcon_par;
+>         struct fbcon_display *p = &fb_display[vc->vc_num];
+>         int resize, ret, old_userfont, old_width, old_height, old_charcount;
+> -       char *old_data = NULL;
+> +       u8 *old_data = vc->vc_font.data;
+>
+>         resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
+> -       if (p->userfont)
+> -               old_data = vc->vc_font.data;
+>         vc->vc_font.data = (void *)(p->fontdata = data);
+>         old_userfont = p->userfont;
+>         if ((p->userfont = userfont))
+> @@ -2433,13 +2431,13 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+>                 update_screen(vc);
+>         }
+>
+> -       if (old_data && (--REFCOUNT(old_data) == 0))
+> +       if (old_userfont && (--REFCOUNT(old_data) == 0))
+>                 kfree(old_data - FONT_EXTRA_WORDS * sizeof(int));
+>         return 0;
+>
+>  err_out:
+>         p->fontdata = old_data;
+> -       vc->vc_font.data = (void *)old_data;
+> +       vc->vc_font.data = old_data;
+>
+>         if (userfont) {
+>                 p->userfont = old_userfont;
+> --
+> 2.43.0
+>
+
 
 -- 
-Lee Jones [李琼斯]
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

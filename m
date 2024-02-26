@@ -1,33 +1,33 @@
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D50071CA8A
-	for <linux-fbdev@vger.kernel.org>; Mon, 26 Feb 2024 08:26:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCD76208A4
+	for <linux-fbdev@vger.kernel.org>; Mon, 26 Feb 2024 09:01:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708936003; cv=none; b=S0EolWWL7EMHBbkAJklmNhtea4LJq4tyWPtyO2OY9jfAsEWUrcDqFHxGdjwPWQu3lOJCDVWAICF1uNmQLqvlIolxog6F64Vr65Fwsa/fggAmZxWo4WTH1nGDf5xElrOusLEMpksvncpWcxGOAGRYdnu88Qr56YnfJtNazUXDY5A=
+	t=1708938080; cv=none; b=jqdVot4SNdp9BPOipARRvxgf/tEEEcPvLX/OEg11EDUsTqAxI8PohYsnQi32KlnCbCkv/i/osF9ASVMdI0qRXI+zs+n/5WdhdWbLv3w7DpaKCaOKoEIz3KVZxOXxlvFIc1gGyfs7rovE6kUQzmG6RfDaA4dBHR6cqSxvQ3bi7Q4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708936003; c=relaxed/simple;
-	bh=2FnXXEnnlfLjVMRPVhp9bmiZ8nPsEr4fD3to3+ENwGE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GO/53hc+B+TnoO3j/ZdDebHswtX3fck2MvaI4jbaeXLKblTdEV0XqRScxr0s+8Ud0zMtmDkyy32PhkTXE/fdjoCzDVsRKLiBkXvflaC3A4uyiuMbQFGFh5fAiaT3ZYlcHE1QwyMBSx+vySooyJA237pMearLNV/l1EsvDnUxpY0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=wlLYXQ1v; arc=none smtp.client-ip=213.167.242.64
+	s=arc-20240116; t=1708938080; c=relaxed/simple;
+	bh=TrzznGj+9QHW2rg6AAhuJo8UOZUrp43vQa3s2F58xdw=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=GAjxC43ufnFN3+wkaMo5/KVsiiTkV2eeX3YE2B1S2Y3Nu/ubZNTTplQVzoar+QROc9XfTNcLfCrNPhxYVNpVD1+rY3Qs7eNuI/XQDcm2fzsWfeSm3YfcDHImC+yvPWAEXLGHa9R68xtu/hTmHfdCSrfQj6G+NB8uULeAKokCxrI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=jXsvWkuL; arc=none smtp.client-ip=213.167.242.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="wlLYXQ1v"
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="jXsvWkuL"
 Received: from [192.168.88.20] (91-154-35-128.elisa-laajakaista.fi [91.154.35.128])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id D2173672;
-	Mon, 26 Feb 2024 09:26:27 +0100 (CET)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 18538D52;
+	Mon, 26 Feb 2024 10:01:02 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1708935988;
-	bh=2FnXXEnnlfLjVMRPVhp9bmiZ8nPsEr4fD3to3+ENwGE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=wlLYXQ1vuSASSMJJyr1WMzRUZ/ldhaTh0/hppSaRZitRe/uIS/6SLBGNfqyDEN4Sh
-	 Xu5gV8Dfva/NgXmgJhp95KaPWo+qL4YXTgfi0Id160fU6aNOOEKzdebSNHGDkK72dq
-	 8Bgeru0y74Zcw5d2qtdASw9NzsV9RX7UCzovpMfI=
-Message-ID: <43fc93f1-d602-47ae-98e5-ee6be4ea5192@ideasonboard.com>
-Date: Mon, 26 Feb 2024 10:26:35 +0200
+	s=mail; t=1708938062;
+	bh=TrzznGj+9QHW2rg6AAhuJo8UOZUrp43vQa3s2F58xdw=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
+	b=jXsvWkuL8reypA7F9OjhNj5bo+9E1NGxaQNrkFxcr2q5tsW7TkCynWGiyzOuohhGQ
+	 hi/bd66ognOzJhfHtolICb5Dd4pyRnbrYoMnIweFU2uInn19lYPjfxGKLlgNSDncTX
+	 ks9aV5iwzYG0Ozce1XwTvb2kZOhIGvtX+S9ajMoI=
+Message-ID: <42255362-4720-414e-b442-f98355e92968@ideasonboard.com>
+Date: Mon, 26 Feb 2024 11:01:10 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -37,6 +37,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 0/2] Fixes for omapdrm console
 Content-Language: en-US
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 To: Tony Lindgren <tony@atomide.com>
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
@@ -45,7 +46,7 @@ Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
  Helge Deller <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
  Sam Ravnborg <sam@ravnborg.org>
 References: <20240225064700.48035-1-tony@atomide.com>
-From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+ <43fc93f1-d602-47ae-98e5-ee6be4ea5192@ideasonboard.com>
 Autocrypt: addr=tomi.valkeinen@ideasonboard.com; keydata=
  xsFNBE6ms0cBEACyizowecZqXfMZtnBniOieTuFdErHAUyxVgtmr0f5ZfIi9Z4l+uUN4Zdw2
  wCEZjx3o0Z34diXBaMRJ3rAk9yB90UJAnLtb8A97Oq64DskLF81GCYB2P1i0qrG7UjpASgCA
@@ -89,37 +90,22 @@ Autocrypt: addr=tomi.valkeinen@ideasonboard.com; keydata=
  ueeIlwJl5CpT5l8RpoZXEOVtXYn8zzOJ7oGZYINRV9Pf8qKGLf3Dft7zKBP832I3PQjeok7F
  yjt+9S+KgSFSHP3Pa4E7lsSdWhSlHYNdG/czhoUkSCN09C0rEK93wxACx3vtxPLjXu6RptBw
  3dRq7n+mQChEB1am0BueV1JZaBboIL0AGlSJkm23kw==
-In-Reply-To: <20240225064700.48035-1-tony@atomide.com>
+In-Reply-To: <43fc93f1-d602-47ae-98e5-ee6be4ea5192@ideasonboard.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi Tony,
+On 26/02/2024 10:26, Tomi Valkeinen wrote:
+> Hi Tony,
+> 
+> On 25/02/2024 08:46, Tony Lindgren wrote:
+>> Here are two fixes for omapdrm console.
+> 
+> How is it broken? I don't usually use the console (or fbdev) but 
+> enabling it now, it seems to work fine for me, on DRA76 EVM with HDMI 
+> output.
 
-On 25/02/2024 08:46, Tony Lindgren wrote:
-> Here are two fixes for omapdrm console.
-
-How is it broken? I don't usually use the console (or fbdev) but 
-enabling it now, it seems to work fine for me, on DRA76 EVM with HDMI 
-output.
+After applying your patches, I see a lot of cache-related artifacts on 
+the screen when updating the fb.
 
   Tomi
-
-> 
-> Regards,
-> 
-> Tony
-> 
-> Changes since v1:
-> 
-> - Add FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS to use with
->    FB_DEFAULT_DEFERRED_OPS as suggested by Thomas
-> 
-> Tony Lindgren (2):
->    drm/omapdrm: Fix console by implementing fb_dirty
->    drm/omapdrm: Fix console with deferred ops
-> 
->   drivers/gpu/drm/omapdrm/omap_fbdev.c | 39 +++++++++++++++++++---------
->   include/linux/fb.h                   |  4 +++
->   2 files changed, 31 insertions(+), 12 deletions(-)
-> 
 

@@ -1,78 +1,65 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4117C139583
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 11:34:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 207F71419AA
+	for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 13:47:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709033674; cv=none; b=epUiGkXwVqt2k0t0/6wuTqCZsZinN904H4ES6yDrTz/DhxSLbqfDVoWMlaFEkVX7mVcROv48XpvD4cEa/d8P14mkg+rETU9WXtYNSI9yg2Ke9EdszwRHjj4s1bsjOt9Hmsc3fN5H/D1t5aPp8dYcxy24grTXrohCAMbXFTtpGrE=
+	t=1709041642; cv=none; b=VaUFB37JieXoz0p99ce+avM8KFJqfSIb86MHl1SmUH1solyUPg6jfH2CQclk/EiIcreeAALsDitDl5VV71V1yZCgajenMHSIq5WWno6dui7bqpTmnV+RC2h4jtenFqcd6+KVS8Dy7vGyZ+MXDfihaKhkCxWM+avWf+QBZQyhTag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709033674; c=relaxed/simple;
-	bh=WQzzqhShFqXB5Pa64qzI7klCAa2A52a5oP6xcrcj18A=;
+	s=arc-20240116; t=1709041642; c=relaxed/simple;
+	bh=roxPi8rz4oNq2vNNNxEbsD8R+MWfx531DvbZ2mENdBo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lcyZaGI3W5/WuLtzwrXH1AlJdAv+wU2aqq+wrPNGpyK4tnDCdn5ay0IoGgz2gDyOhUm0fLxKec6xF80UPO3kOZa842rzbesepi1DYA3Brd2OXixQ7IFa5NqbGF6ZRwuJu+eHUP8y6LqAPDvSXJnVWzZApZob0gqTIXqPjAxzi/0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CmGh9HIv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Vdmp/aZ7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CmGh9HIv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Vdmp/aZ7; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=c/jNYfFa2gsXL/MicszK9YEX6Ru8UQOss9IES/7xyy8rCnANr19E0YuJMbyOcg0CDfHWY/IFbML9S8699lRHv4ffDZEmq8jdSJ7MKcqwPYRXWiiImA2EbYV3xbVfv2Wrj0jTjpm8Lzsuspie5bx2XoATmjap+e5IpwygmZI5Kc0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=ezYz7Fw3; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CmGh9HIv";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Vdmp/aZ7";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CmGh9HIv";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Vdmp/aZ7"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 4111A222B2;
-	Tue, 27 Feb 2024 11:34:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709033669; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ezYz7Fw3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1709041639;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
-	b=CmGh9HIv2CXBLMeaObEYs0MwzkMOANECl8eQDItHY1I/AvpHvg9KxgV0ch9olr+1Btq9O5
-	kaa88lm1kGmuv56IDw9X1CtfIhNjCq2QeKfvSoq8iCAXY6QvNOto3zyaoR1FxBgQFZOZFa
-	waBGfmawjw5l4+gp+7uv6i2zkP/iiUo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709033669;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
-	b=Vdmp/aZ7hbp0EgFOk0daczWTVFQvXqPcLNcWCYUuBfLT1Z2PyjJlfqOUwGfkOA0qHEBwYG
-	J677IZw/E+nUeQCA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709033669; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
-	b=CmGh9HIv2CXBLMeaObEYs0MwzkMOANECl8eQDItHY1I/AvpHvg9KxgV0ch9olr+1Btq9O5
-	kaa88lm1kGmuv56IDw9X1CtfIhNjCq2QeKfvSoq8iCAXY6QvNOto3zyaoR1FxBgQFZOZFa
-	waBGfmawjw5l4+gp+7uv6i2zkP/iiUo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709033669;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
-	b=Vdmp/aZ7hbp0EgFOk0daczWTVFQvXqPcLNcWCYUuBfLT1Z2PyjJlfqOUwGfkOA0qHEBwYG
-	J677IZw/E+nUeQCA==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id E5F8713216;
-	Tue, 27 Feb 2024 11:34:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 4WO9NsTI3WUZUAAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Tue, 27 Feb 2024 11:34:28 +0000
-Message-ID: <fe31468c-8f84-4e02-a0c1-6429e4630d86@suse.de>
-Date: Tue, 27 Feb 2024 12:34:28 +0100
+	 in-reply-to:in-reply-to:references:references;
+	bh=hTVBC0lkZuIsWB3rrhjB8rqd7JwC06vqd7+76BYU8ms=;
+	b=ezYz7Fw3t3tTBNX1V6aRqlnALqblL4K9+X6eyyhSPulEbEgryJkoRzNRBnyZYQh3UMN160
+	QR7Z1X7xPhsMBxxeraza0QyIbeDJTGLhujVYFKrS22F1VmYdumBrPTa5vKq7N+wPK0grvC
+	Utj+CkRctf1b/JwOlANDs88Iee+DOMw=
+Received: from mail-lj1-f197.google.com (mail-lj1-f197.google.com
+ [209.85.208.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-518-9wxpbIM8OlGJ1Fd31u6sqQ-1; Tue, 27 Feb 2024 08:47:17 -0500
+X-MC-Unique: 9wxpbIM8OlGJ1Fd31u6sqQ-1
+Received: by mail-lj1-f197.google.com with SMTP id 38308e7fff4ca-2d27af05d98so30151331fa.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 05:47:17 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709041636; x=1709646436;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=hTVBC0lkZuIsWB3rrhjB8rqd7JwC06vqd7+76BYU8ms=;
+        b=QKpfkxFIIEDYuhB2rVSz+y233uKb5ECO6jDSr9zLs+9uDdXm9SbyK0s49qv9u3uwM7
+         HsczNe7nVIevifXceC0bA8g2l+7ybObrPgDw1cIsQ5ANp/N+Lt6D30kFJL50V7pGkNM4
+         j/4fYPviemJIyK8og8lCjiQ9KBr220FH9Ul/d123dlHkz/gHaSF1RLRcQd73UTfXIac9
+         wd9L7fEGOwPBXuV/EVi1nQtcxxwh0BpJ5XT16bpkHup7GERacY3Z2RatCExp2mj/oFYs
+         xizHZ31Zz1JAZOlRrbd7yrdt9bomXzOcxEMb43PekpRAZfzZlmSTzm+kDU9Zr7WxRTX3
+         LxBA==
+X-Forwarded-Encrypted: i=1; AJvYcCXzyACzTlwxkxLN6zD/YO4qrV36golwg7qmLYzageZhC/DphZePSbPjeK54j44l6ZCWyCUgr+EHTA878I47mwyEWvYkgoT56qhlrqc=
+X-Gm-Message-State: AOJu0YypDu2txQ3arotmQ0BNtreJNqJIUHS4cTYkm/Vn4rqDW2tFH3YI
+	LVa5Te3M1k8ZQtO4/T0ojY9WetW0qYw6dsAIMcBQQgckU1MrRZ1CxtAhrcYKPZgLtPDSTv7ENgG
+	t9YIFhtA8cy2kyuv4C1omCTlLtAf2eIsvMCPqo423hfaqXEbmGaXKSo7wGN0+
+X-Received: by 2002:ac2:5d24:0:b0:512:e4f4:b562 with SMTP id i4-20020ac25d24000000b00512e4f4b562mr5674285lfb.31.1709041636291;
+        Tue, 27 Feb 2024 05:47:16 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IGLf7Vwour/XjLoxR2iw6tIoak85hY2uSnJmHhcKtZd8K/kuXb6PkldJJSdOoGoEaALcMMGrQ==
+X-Received: by 2002:ac2:5d24:0:b0:512:e4f4:b562 with SMTP id i4-20020ac25d24000000b00512e4f4b562mr5674270lfb.31.1709041635850;
+        Tue, 27 Feb 2024 05:47:15 -0800 (PST)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id xa9-20020a170907b9c900b00a3e7a2d9ac4sm783359ejc.6.2024.02.27.05.47.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 27 Feb 2024 05:47:15 -0800 (PST)
+Message-ID: <f3cdd944-5e68-49e5-bae8-4bc1f9f59131@redhat.com>
+Date: Tue, 27 Feb 2024 14:47:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -80,255 +67,254 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] Fixes for omapdrm console
-Content-Language: en-US
-To: Tony Lindgren <tony@atomide.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+Subject: Re: [PATCH 2/2] fbcon: Defer console takeover for splash screens to
+ first switch
+Content-Language: en-US, nl
+To: Daniel van Vugt <daniel.van.vugt@canonical.com>
+Cc: Mario Limonciello <mario.limonciello@amd.com>,
  Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Sam Ravnborg <sam@ravnborg.org>
-References: <20240225064700.48035-1-tony@atomide.com>
- <43fc93f1-d602-47ae-98e5-ee6be4ea5192@ideasonboard.com>
- <42255362-4720-414e-b442-f98355e92968@ideasonboard.com>
- <ab0b8471-97a6-479a-88aa-9bb25e91fb8a@suse.de>
- <20240226112549.GU5299@atomide.com> <20240227070624.GB52537@atomide.com>
- <7d98a0cd-e6d5-460d-8b91-35fa340736dd@suse.de>
- <20240227080146.GW5299@atomide.com>
- <587d60ae-221b-4c02-9891-17dc608009d3@suse.de>
- <20240227094651.GX5299@atomide.com> <20240227101934.GC52537@atomide.com>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240227101934.GC52537@atomide.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spam-Level: 
-X-Spam-Score: -4.29
-X-Spamd-Result: default: False [-4.29 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 BAYES_HAM(-3.00)[100.00%];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 RCPT_COUNT_SEVEN(0.00)[11];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 FREEMAIL_CC(0.00)[ideasonboard.com,lists.freedesktop.org,vger.kernel.org,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de,redhat.com,ravnborg.org];
-	 RCVD_TLS_ALL(0.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[]
-X-Spam-Flag: NO
+ Jani Nikula <jani.nikula@intel.com>, Danilo Krummrich <dakr@redhat.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Sebastien Bacher <seb128@ubuntu.com>
+References: <20240202085408.23251-1-daniel.van.vugt@canonical.com>
+ <20240202085408.23251-2-daniel.van.vugt@canonical.com>
+ <7817a2a2-b07d-4e9d-85e6-c11c5720d66e@redhat.com>
+ <39ffe230-36ac-484a-8fc1-0a12d6c38d82@canonical.com>
+From: Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <39ffe230-36ac-484a-8fc1-0a12d6c38d82@canonical.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi
+Hi,
 
-Am 27.02.24 um 11:19 schrieb Tony Lindgren:
-> * Tony Lindgren <tony@atomide.com> [240227 11:47]:
->> * Thomas Zimmermann <tzimmermann@suse.de> [240227 09:16]:
->>> I just realized the fb_deferred_io_mmap() is already exported. So please use
->>> it instead of duplicating the code in omapdrm.
+On 2/27/24 02:06, Daniel van Vugt wrote:
+> On 27/2/24 02:23, Hans de Goede wrote:
+>> Hi All,
+>>
+>> On 2/2/24 09:53, Daniel van Vugt wrote:
+>>> Until now, deferred console takeover only meant defer until there is
+>>> output. But that risks stepping on the toes of userspace splash screens,
+>>> as console messages may appear before the splash screen. So check for the
+>>> "splash" parameter (as used by Plymouth) and if present then extend the
+>>> deferral until the first switch.
+>>
+>> Daniel, thank you for your patch but I do not believe that this
+>> is the right solution. Deferring fbcon takeover further then
+>> after the first text is output means that any errors about e.g.
+>> a corrupt initrd or the kernel erroring out / crashing will not
+>> be visible.
+> 
+> That's not really correct. If a boot failure has occurred after the splash then
+> pressing escape shows the log.
+
+Hmm, I guess this is with the latest plymouth which has a builtin terminal
+emulator for kernels without VT support ? Pressing ESC does not to a VC
+switch and AFAICT that is what you are triggering on to allow fbcon takeover
+after this patches.
+
+> If a boot failure has occurred before the splash
+> then it can be debugged visually by rebooting without the "splash" parameter.
+
+Which requires the user to know this and requires the user to know how to
+edit kernel cmdline parameters in e.g. grub. This is not a good user
+experience. We want inexperienced users to just be able to point
+a phone camera at the screen and take a picture of the errors.
+
+
+>> When the kernel e.g. oopses or panics because of not finding
+>> its rootfs (I tested the latter option when writing the original
+>> deferred fbcon takeover code) then fbcon must takeover and
+>> print the messages from the dying kernel so that the user has
+>> some notion of what is going wrong.
+> 
+> Indeed, just reboot without the "splash" parameter to do that.
+
+Again not something beginning Linux users will be able to do,
+what happened to "Ubuntu: Linux for Human Beings" ?
+
+>> And since your patch seems to delay switching till the first
+>> vc-switch this means that e.g. even after say gdm refusing
+>> to start because of issues there still will be no text
+>> output. This makes debugging various issues much harder.
+> 
+> I've debugged many gdm failures and it is never useful to use the console for
+> those. Reboot and get the system journal instead.
+
+But users will not see any errors now, meaning they don't
+even know where to begin with troubleshooting ...
+
+>> Moreover Fedora has been doing flickerfree boot for many
+>> years without needing this.
+> 
+> I believe Fedora has a mostly working solution, but not totally reliable, as
+> mentioned in the commit message:
+> 
+> "even systems whose splash exists in initrd may not be not immune because they
+>  still rely on racing against all possible kernel messages that might
+>  trigger the fbcon takeover"
+
+Only very serious kernel errors like oopses or panics will
+trigger the takeover and that is *exactly* what we want.
+
+There is a race where plymouth may hide such vary serious
+messages, if plymouth does manage to start before the errors,
+but that is actually an existing issue which we don't want
+to make bigger by *always* hiding such errors.
+
+>> The kernel itself will be quiet as long as you set
+>> CONFIG_CONSOLE_LOGLEVEL_QUIET=3 Ubuntu atm has set this
+>> to 4 which means any kernel pr_err() or dev_err()
+>> messages will get through and since there are quite
+>> a few false positives of those Ubuntu really needs
+>> to set CONFIG_CONSOLE_LOGLEVEL_QUIET=3 to fix part of:
+>> https://bugs.launchpad.net/bugs/1970069
+> 
+> Incorrect. In my testing some laptops needed log level as low as 2 to go quiet.
+> And the Ubuntu kernel team is never going to fix all those for non-sponsored
+> devices.
+
+Notice that atm Ubuntu's kernel is using the too high
+CONFIG_CONSOLE_LOGLEVEL_QUIET=4 with
+CONFIG_CONSOLE_LOGLEVEL_QUIET=3 getting any errors logged
+to the console should be very very rare.
+
+The only thing I can think of is if the kernel oopses
+/ WARN()s early on but the cause is innocent enough
+that the boot happily continues.
+
+In that case actually showing the oops/WARN() is a good
+thing.
+
+For all the years Fedora has had flickerfree boot I have
+seen zero bug reports about this. If you have examples
+of this actually being a problem please file bugs for
+them (launchpad or bugzilla.kernel.org is fine) and
+then lets take a look at those bugs and fix them.
+
+These should be so rare that I'm not worried about this
+becoming a never ending list of bugs (unlike pr_err() /
+dev_err() messages of which there are simply too many).
+
+>> After that it is "just" a matter of not making userspace
+>> output anything unless it has errors to report.
+>>
+>> systemd already is quiet by default (only logging
+>> errors) when quiet is on the kernel commandline.
+> 
+> Unfortunately not true for Ubuntu. We carry a noisy systemd patch which I'm
+> told we can't remove in the short term:
+> 
+> https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/1970069/comments/39
+
+Well then make the patch less noisy? Suppressing non
+error message unless in debug mode should be easy
+even with a downstream patch.
+
+> Thanks for your input, but I respectfully disagree and did consider these
+> points already.
+
+Sorry, but your real problem here seems to be your
+noisy downstream systemd patch. I'm not going to ack
+a kernel patch which I consider a bad idea because
+Ubuntu has a non standard systemd patch which is
+to trigger happy with spamming the console.
+
+So this is still a NACK from me.
+
+Regards,
+
+Hans
+
+
+
+
+
+>>> Closes: https://bugs.launchpad.net/bugs/1970069
+>>> Cc: Mario Limonciello <mario.limonciello@amd.com>
+>>> Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
+>>> ---
+>>>  drivers/video/fbdev/core/fbcon.c | 32 +++++++++++++++++++++++++++++---
+>>>  1 file changed, 29 insertions(+), 3 deletions(-)
 >>>
->>> [1] https://elixir.bootlin.com/linux/v6.7/source/drivers/video/fbdev/core/fb_defio.c#L237
->> Yeah I have now:
+>>> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+>>> index 63af6ab034..5b9f7635f7 100644
+>>> --- a/drivers/video/fbdev/core/fbcon.c
+>>> +++ b/drivers/video/fbdev/core/fbcon.c
+>>> @@ -76,6 +76,7 @@
+>>>  #include <linux/crc32.h> /* For counting font checksums */
+>>>  #include <linux/uaccess.h>
+>>>  #include <asm/irq.h>
+>>> +#include <asm/cmdline.h>
+>>>  
+>>>  #include "fbcon.h"
+>>>  #include "fb_internal.h"
+>>> @@ -146,6 +147,7 @@ static inline void fbcon_map_override(void)
+>>>  
+>>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+>>>  static bool deferred_takeover = true;
+>>> +static int initial_console = -1;
+>>>  #else
+>>>  #define deferred_takeover false
+>>>  #endif
+>>> @@ -3341,7 +3343,7 @@ static void fbcon_register_existing_fbs(struct work_struct *work)
+>>>  	console_unlock();
+>>>  }
+>>>  
+>>> -static struct notifier_block fbcon_output_nb;
+>>> +static struct notifier_block fbcon_output_nb, fbcon_switch_nb;
+>>>  static DECLARE_WORK(fbcon_deferred_takeover_work, fbcon_register_existing_fbs);
+>>>  
+>>>  static int fbcon_output_notifier(struct notifier_block *nb,
+>>> @@ -3358,6 +3360,21 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+>>>  
+>>>  	return NOTIFY_OK;
+>>>  }
+>>> +
+>>> +static int fbcon_switch_notifier(struct notifier_block *nb,
+>>> +				 unsigned long action, void *data)
+>>> +{
+>>> +	struct vc_data *vc = data;
+>>> +
+>>> +	WARN_CONSOLE_UNLOCKED();
+>>> +
+>>> +	if (vc->vc_num != initial_console) {
+>>> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
+>>> +		dummycon_register_output_notifier(&fbcon_output_nb);
+>>> +	}
+>>> +
+>>> +	return NOTIFY_OK;
+>>> +}
+>>>  #endif
+>>>  
+>>>  static void fbcon_start(void)
+>>> @@ -3370,7 +3387,14 @@ static void fbcon_start(void)
+>>>  
+>>>  	if (deferred_takeover) {
+>>>  		fbcon_output_nb.notifier_call = fbcon_output_notifier;
+>>> -		dummycon_register_output_notifier(&fbcon_output_nb);
+>>> +		fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
+>>> +		initial_console = fg_console;
+>>> +
+>>> +		if (cmdline_find_option_bool(boot_command_line, "splash"))
+>>> +			dummycon_register_switch_notifier(&fbcon_switch_nb);
+>>> +		else
+>>> +			dummycon_register_output_notifier(&fbcon_output_nb);
+>>> +
+>>>  		return;
+>>>  	}
+>>>  #endif
+>>> @@ -3417,8 +3441,10 @@ void __exit fb_console_exit(void)
+>>>  {
+>>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+>>>  	console_lock();
+>>> -	if (deferred_takeover)
+>>> +	if (deferred_takeover) {
+>>>  		dummycon_unregister_output_notifier(&fbcon_output_nb);
+>>> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
+>>> +	}
+>>>  	console_unlock();
+>>>  
+>>>  	cancel_work_sync(&fbcon_deferred_takeover_work);
 >>
->> static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
->> {
->> 	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
->>
->> 	return fb_deferred_io_mmap(info, vma);
->> }
->>
->>> I also noticed that omapdrm does not yet select the correct Kconfig symbols.
->>> That can be fixed by
->>>
->>>   1) creating Kconfig FB_DMAMEM_HELPERS_DEFERRED that are similar to their
->>> SYSMEM equivalent at [2]. The tokens should look like this
->>>
->>> configFB_DMAMEM_HELPERS_DEFERRED  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_SYSMEM_HELPERS_DEFERRED>
->>> bool
->>> depends onFB_CORE  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_CORE>
->>> selectFB_DEFERRED_IO  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_DEFERRED_IO>
->>> selectFB_DMAMEM_HELPERS  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_SYSMEM_HELPERS>
->> OK
->>
->>>    2) and selecting it instead of FB_DMAMEM_HELPERS under omapdrm's Kconfig
->>> symbol.
->> OK
-> So here's what I have now, does that look OK?
-
-Looks good. You can add
-
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-to the final patch.
-
-Best regards
-Thomas
-
->
-> Regards,
->
-> Tony
->
-> 8< -------------------------
-> diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm/Kconfig
-> --- a/drivers/gpu/drm/omapdrm/Kconfig
-> +++ b/drivers/gpu/drm/omapdrm/Kconfig
-> @@ -4,7 +4,7 @@ config DRM_OMAP
->   	depends on DRM && OF
->   	depends on ARCH_OMAP2PLUS
->   	select DRM_KMS_HELPER
-> -	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
-> +	select FB_DMAMEM_HELPERS_DEFERRED if DRM_FBDEV_EMULATION
->   	select VIDEOMODE_HELPERS
->   	select HDMI
->   	default n
-> diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omapdrm/omap_fbdev.c
-> --- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
-> +++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
-> @@ -51,6 +51,10 @@ static void pan_worker(struct work_struct *work)
->   	omap_gem_roll(bo, fbi->var.yoffset * npages);
->   }
->   
-> +FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS(omap_fbdev,
-> +				   drm_fb_helper_damage_range,
-> +				   drm_fb_helper_damage_area)
-> +
->   static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
->   		struct fb_info *fbi)
->   {
-> @@ -78,11 +82,9 @@ static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
->   
->   static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
->   {
-> -	struct drm_fb_helper *helper = info->par;
-> -	struct drm_framebuffer *fb = helper->fb;
-> -	struct drm_gem_object *bo = drm_gem_fb_get_obj(fb, 0);
-> +	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
->   
-> -	return drm_gem_mmap_obj(bo, omap_gem_mmap_size(bo), vma);
-> +	return fb_deferred_io_mmap(info, vma);
->   }
->   
->   static void omap_fbdev_fb_destroy(struct fb_info *info)
-> @@ -94,6 +96,7 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
->   
->   	DBG();
->   
-> +	fb_deferred_io_cleanup(info);
->   	drm_fb_helper_fini(helper);
->   
->   	omap_gem_unpin(bo);
-> @@ -104,15 +107,19 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
->   	kfree(fbdev);
->   }
->   
-> +/*
-> + * For now, we cannot use FB_DEFAULT_DEFERRED_OPS and fb_deferred_io_mmap()
-> + * because we use write-combine.
-> + */
->   static const struct fb_ops omap_fb_ops = {
->   	.owner = THIS_MODULE,
-> -	__FB_DEFAULT_DMAMEM_OPS_RDWR,
-> +	__FB_DEFAULT_DEFERRED_OPS_RDWR(omap_fbdev),
->   	.fb_check_var	= drm_fb_helper_check_var,
->   	.fb_set_par	= drm_fb_helper_set_par,
->   	.fb_setcmap	= drm_fb_helper_setcmap,
->   	.fb_blank	= drm_fb_helper_blank,
->   	.fb_pan_display = omap_fbdev_pan_display,
-> -	__FB_DEFAULT_DMAMEM_OPS_DRAW,
-> +	__FB_DEFAULT_DEFERRED_OPS_DRAW(omap_fbdev),
->   	.fb_ioctl	= drm_fb_helper_ioctl,
->   	.fb_mmap	= omap_fbdev_fb_mmap,
->   	.fb_destroy	= omap_fbdev_fb_destroy,
-> @@ -213,6 +220,15 @@ static int omap_fbdev_create(struct drm_fb_helper *helper,
->   	fbi->fix.smem_start = dma_addr;
->   	fbi->fix.smem_len = bo->size;
->   
-> +	/* deferred I/O */
-> +	helper->fbdefio.delay = HZ / 20;
-> +	helper->fbdefio.deferred_io = drm_fb_helper_deferred_io;
-> +
-> +	fbi->fbdefio = &helper->fbdefio;
-> +	ret = fb_deferred_io_init(fbi);
-> +	if (ret)
-> +		goto fail;
-> +
->   	/* if we have DMM, then we can use it for scrolling by just
->   	 * shuffling pages around in DMM rather than doing sw blit.
->   	 */
-> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
-> --- a/drivers/video/fbdev/core/Kconfig
-> +++ b/drivers/video/fbdev/core/Kconfig
-> @@ -144,6 +144,12 @@ config FB_DMAMEM_HELPERS
->   	select FB_SYS_IMAGEBLIT
->   	select FB_SYSMEM_FOPS
->   
-> +config FB_DMAMEM_HELPERS_DEFERRED
-> +	bool
-> +	depends on FB_CORE
-> +	select FB_DEFERRED_IO
-> +	select FB_DMAMEM_HELPERS
-> +
->   config FB_IOMEM_FOPS
->   	tristate
->   	depends on FB_CORE
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -686,6 +686,10 @@ extern int fb_deferred_io_fsync(struct file *file, loff_t start,
->   	__FB_GEN_DEFAULT_DEFERRED_OPS_RDWR(__prefix, __damage_range, sys) \
->   	__FB_GEN_DEFAULT_DEFERRED_OPS_DRAW(__prefix, __damage_area, sys)
->   
-> +#define FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS(__prefix, __damage_range, __damage_area) \
-> +	__FB_GEN_DEFAULT_DEFERRED_OPS_RDWR(__prefix, __damage_range, sys) \
-> +	__FB_GEN_DEFAULT_DEFERRED_OPS_DRAW(__prefix, __damage_area, sys)
-> +
->   /*
->    * Initializes struct fb_ops for deferred I/O.
->    */
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+> 
 

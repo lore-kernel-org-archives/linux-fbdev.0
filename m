@@ -1,320 +1,198 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com [209.85.219.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 207F71419AA
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 13:47:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2AEE145351;
+	Tue, 27 Feb 2024 15:42:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709041642; cv=none; b=VaUFB37JieXoz0p99ce+avM8KFJqfSIb86MHl1SmUH1solyUPg6jfH2CQclk/EiIcreeAALsDitDl5VV71V1yZCgajenMHSIq5WWno6dui7bqpTmnV+RC2h4jtenFqcd6+KVS8Dy7vGyZ+MXDfihaKhkCxWM+avWf+QBZQyhTag=
+	t=1709048535; cv=none; b=aE2IVL4oC/XbovkX8jmCM8tVb8Nz1v6r962UYPTzYxDQ+F4IkVT3AK0IwilGyPTFF5Tkf3oIdrE/c8/byAwY8yRJdw3SQSTuzfaaj5OsKxPHz3sWtzVAXfqCyd7zPR1QoI100Etw/OVDbUrXsAJPU/F9AGOEhUyNMYbNtu9bD0U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709041642; c=relaxed/simple;
-	bh=roxPi8rz4oNq2vNNNxEbsD8R+MWfx531DvbZ2mENdBo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=c/jNYfFa2gsXL/MicszK9YEX6Ru8UQOss9IES/7xyy8rCnANr19E0YuJMbyOcg0CDfHWY/IFbML9S8699lRHv4ffDZEmq8jdSJ7MKcqwPYRXWiiImA2EbYV3xbVfv2Wrj0jTjpm8Lzsuspie5bx2XoATmjap+e5IpwygmZI5Kc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=ezYz7Fw3; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ezYz7Fw3"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1709041639;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hTVBC0lkZuIsWB3rrhjB8rqd7JwC06vqd7+76BYU8ms=;
-	b=ezYz7Fw3t3tTBNX1V6aRqlnALqblL4K9+X6eyyhSPulEbEgryJkoRzNRBnyZYQh3UMN160
-	QR7Z1X7xPhsMBxxeraza0QyIbeDJTGLhujVYFKrS22F1VmYdumBrPTa5vKq7N+wPK0grvC
-	Utj+CkRctf1b/JwOlANDs88Iee+DOMw=
-Received: from mail-lj1-f197.google.com (mail-lj1-f197.google.com
- [209.85.208.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-518-9wxpbIM8OlGJ1Fd31u6sqQ-1; Tue, 27 Feb 2024 08:47:17 -0500
-X-MC-Unique: 9wxpbIM8OlGJ1Fd31u6sqQ-1
-Received: by mail-lj1-f197.google.com with SMTP id 38308e7fff4ca-2d27af05d98so30151331fa.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 05:47:17 -0800 (PST)
+	s=arc-20240116; t=1709048535; c=relaxed/simple;
+	bh=8RA+fvGI7H8/KVOcw5fiLDDRe4rFaB568t+6OOKeC2k=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=p+3x4ApVRN1NxraBXCIS33KMvabtzT2MR8CoZaM/kuuahjCX2hC3bzrKN9DATmLxIFy/7C7mo5yvopxsDp8U9LKgr7QmK4MM5TMYcC4DZe3k+ik67c7DoZXOzfiWL7uCwM5Kamql3o0SzTFvmrZidFQrakqwTJ6p4PzZdaL+T9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.219.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yb1-f173.google.com with SMTP id 3f1490d57ef6-dcbc00f6c04so4540504276.3;
+        Tue, 27 Feb 2024 07:42:13 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709041636; x=1709646436;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hTVBC0lkZuIsWB3rrhjB8rqd7JwC06vqd7+76BYU8ms=;
-        b=QKpfkxFIIEDYuhB2rVSz+y233uKb5ECO6jDSr9zLs+9uDdXm9SbyK0s49qv9u3uwM7
-         HsczNe7nVIevifXceC0bA8g2l+7ybObrPgDw1cIsQ5ANp/N+Lt6D30kFJL50V7pGkNM4
-         j/4fYPviemJIyK8og8lCjiQ9KBr220FH9Ul/d123dlHkz/gHaSF1RLRcQd73UTfXIac9
-         wd9L7fEGOwPBXuV/EVi1nQtcxxwh0BpJ5XT16bpkHup7GERacY3Z2RatCExp2mj/oFYs
-         xizHZ31Zz1JAZOlRrbd7yrdt9bomXzOcxEMb43PekpRAZfzZlmSTzm+kDU9Zr7WxRTX3
-         LxBA==
-X-Forwarded-Encrypted: i=1; AJvYcCXzyACzTlwxkxLN6zD/YO4qrV36golwg7qmLYzageZhC/DphZePSbPjeK54j44l6ZCWyCUgr+EHTA878I47mwyEWvYkgoT56qhlrqc=
-X-Gm-Message-State: AOJu0YypDu2txQ3arotmQ0BNtreJNqJIUHS4cTYkm/Vn4rqDW2tFH3YI
-	LVa5Te3M1k8ZQtO4/T0ojY9WetW0qYw6dsAIMcBQQgckU1MrRZ1CxtAhrcYKPZgLtPDSTv7ENgG
-	t9YIFhtA8cy2kyuv4C1omCTlLtAf2eIsvMCPqo423hfaqXEbmGaXKSo7wGN0+
-X-Received: by 2002:ac2:5d24:0:b0:512:e4f4:b562 with SMTP id i4-20020ac25d24000000b00512e4f4b562mr5674285lfb.31.1709041636291;
-        Tue, 27 Feb 2024 05:47:16 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGLf7Vwour/XjLoxR2iw6tIoak85hY2uSnJmHhcKtZd8K/kuXb6PkldJJSdOoGoEaALcMMGrQ==
-X-Received: by 2002:ac2:5d24:0:b0:512:e4f4:b562 with SMTP id i4-20020ac25d24000000b00512e4f4b562mr5674270lfb.31.1709041635850;
-        Tue, 27 Feb 2024 05:47:15 -0800 (PST)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id xa9-20020a170907b9c900b00a3e7a2d9ac4sm783359ejc.6.2024.02.27.05.47.14
+        d=1e100.net; s=20230601; t=1709048528; x=1709653328;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=PepN+vzOJ7FGNHjryvCGPsAuXBvDik+gwGMOhn9mKt8=;
+        b=N6wctiwwpFmbv9BAb4BDuHk+YeQStoucApHGbpiSurAtmjS+jzhQX7qlLRFr+duC6C
+         i9MVPilOmUcq8Wkhp4vcwRicsn8diYVNOuWM/+J1Dt7N8ywLcHbH1vyHBRlVTFzHgl+N
+         3Zx4YH7juiK/0xiQ/1GFLd5/3jJDaX3xXZE+cZPEJBRSB6kWAA59g+6AUDkdYSbW2SQo
+         xfyUrt+VRUvq+nVXerSZN4F+u4+FIio/j6vboTtkFrktSGotG3Ag56K/J640SpUvZZCp
+         nx0lshSzedd4PZHYdCG2snii/suD2IL6CDHIhOZf9ko6+oTv3peosKRrOoqKSQYViXzB
+         iJPQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXm10v4OnaK9P/TbR7VSgCjlnzcpR8Y/+Fhaml50F3CKFgjrlJf2tm0mVTOM/Y5OWgRG6jUPKQ/wiw6QsSfwEZtSDcG7RnBVE5f2EPlVmjYeYxBjB2sk5OnVR3mKGlQOh8dB/SWiknRx6kL0mQ7L4kdleIidZQBhnpW8nJH7OqR2ujunPIVVPXCjpH1wWqm3TR6eYnP7kDSzvBsZtsS6W6U0aIhNnCAXzhvR4bKqYnSYw+ZJntdfUPj3iitrnnGSW3qevnDM3LZtOh52/pwyB4S7s7bAFw5wst5Z4SSVBZjBtrMMR9YSoBbCdmeqrLAcxWEM7Ex4CxBp4Zq2NlTqyprkzNnfp0sqqOLaHZP8a8G1vqrBIAkBKc=
+X-Gm-Message-State: AOJu0YxiTJXYjYkKWUAJeLrwAm230U/o2QoC7OBIVdKcytvGlV5Bt9wj
+	qXKEwCo5iZu9GXXZzXzcoXdw6sosomujJt7hRfNgrWD2CxsWuIuDZhyPGR5ndmk=
+X-Google-Smtp-Source: AGHT+IEUcfdqh71Dtl7eW8/tkosUi5WmMzjDNAqSGpKFhGK2wgo/gMrGDS2YM3WM69M9FP1mi9359g==
+X-Received: by 2002:a25:6c8a:0:b0:dcc:b719:4e4f with SMTP id h132-20020a256c8a000000b00dccb7194e4fmr2370192ybc.53.1709048527700;
+        Tue, 27 Feb 2024 07:42:07 -0800 (PST)
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
+        by smtp.gmail.com with ESMTPSA id g12-20020a25ef0c000000b00dcd56356c80sm1422691ybd.47.2024.02.27.07.42.07
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 27 Feb 2024 05:47:15 -0800 (PST)
-Message-ID: <f3cdd944-5e68-49e5-bae8-4bc1f9f59131@redhat.com>
-Date: Tue, 27 Feb 2024 14:47:14 +0100
+        Tue, 27 Feb 2024 07:42:07 -0800 (PST)
+Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-dbed0710c74so3987152276.1;
+        Tue, 27 Feb 2024 07:42:07 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWfO9wEY764J3VK0NnmS+VTkQP0AFYTR2L5vMuQPjIzDvPJ6Lycky+djp5Jk3CC6Cw0GP14KSOvyzmF6Q4u2nYJmLf+xNJjeAd6qMOTYMQjcvHKzn8XrdLkadou7G68TT1YOPw9q50Tvb+RBmjt/0xtsO/lkkDan/E6aBlNur4hugmS5Su0FY1LleKIREhLOdZ3yMZ8JpX5u7jQYov4PtgeAaE1SeLQp19kxkbzwiFBHnfOugndwJ7/KcAWtpzFAeEZbb2wShKjGGbVSAqo8fLS2uY9uuou03yUNvunllulsLwD20XLvIK0cq8BtR8ATlv1bO4XlWWWkasJNTjM8GVPaRwgBc4ICsAdFpklxyiO7rE/PnIDPro=
+X-Received: by 2002:a05:6902:2412:b0:dc7:4cb1:6817 with SMTP id
+ dr18-20020a056902241200b00dc74cb16817mr2901377ybb.22.1709048525820; Tue, 27
+ Feb 2024 07:42:05 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] fbcon: Defer console takeover for splash screens to
- first switch
-Content-Language: en-US, nl
-To: Daniel van Vugt <daniel.van.vugt@canonical.com>
-Cc: Mario Limonciello <mario.limonciello@amd.com>,
- Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Jani Nikula <jani.nikula@intel.com>, Danilo Krummrich <dakr@redhat.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Sebastien Bacher <seb128@ubuntu.com>
-References: <20240202085408.23251-1-daniel.van.vugt@canonical.com>
- <20240202085408.23251-2-daniel.van.vugt@canonical.com>
- <7817a2a2-b07d-4e9d-85e6-c11c5720d66e@redhat.com>
- <39ffe230-36ac-484a-8fc1-0a12d6c38d82@canonical.com>
-From: Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <39ffe230-36ac-484a-8fc1-0a12d6c38d82@canonical.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <cover.1704788539.git.ysato@users.sourceforge.jp> <222dd134b5e1c8cc5baa7afc64a3441a8174e979.1704788539.git.ysato@users.sourceforge.jp>
+In-Reply-To: <222dd134b5e1c8cc5baa7afc64a3441a8174e979.1704788539.git.ysato@users.sourceforge.jp>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 27 Feb 2024 16:41:53 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVxWrrKT8H_47EPjZ61QnEvvtrZYXFo=FmozhVeYf=4Bw@mail.gmail.com>
+Message-ID: <CAMuHMdVxWrrKT8H_47EPjZ61QnEvvtrZYXFo=FmozhVeYf=4Bw@mail.gmail.com>
+Subject: Re: [DO NOT MERGE v6 14/37] clk: Compatible with narrow registers
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
+	Rob Herring <robh+dt@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Thomas Gleixner <tglx@linutronix.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, 
+	Helge Deller <deller@gmx.de>, Heiko Stuebner <heiko@sntech.de>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, 
+	Yang Xiwen <forbidden405@foxmail.com>, Sebastian Reichel <sre@kernel.org>, 
+	Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@suse.cz>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
+	David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Stephen Rothwell <sfr@canb.auug.org.au>, Azeem Shaikh <azeemshaikh38@gmail.com>, 
+	Javier Martinez Canillas <javierm@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
+	Lukas Bulwahn <lukas.bulwahn@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
+	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
+	Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Sato-san,
 
-On 2/27/24 02:06, Daniel van Vugt wrote:
-> On 27/2/24 02:23, Hans de Goede wrote:
->> Hi All,
->>
->> On 2/2/24 09:53, Daniel van Vugt wrote:
->>> Until now, deferred console takeover only meant defer until there is
->>> output. But that risks stepping on the toes of userspace splash screens,
->>> as console messages may appear before the splash screen. So check for the
->>> "splash" parameter (as used by Plymouth) and if present then extend the
->>> deferral until the first switch.
->>
->> Daniel, thank you for your patch but I do not believe that this
->> is the right solution. Deferring fbcon takeover further then
->> after the first text is output means that any errors about e.g.
->> a corrupt initrd or the kernel erroring out / crashing will not
->> be visible.
-> 
-> That's not really correct. If a boot failure has occurred after the splash then
-> pressing escape shows the log.
+On Tue, Jan 9, 2024 at 9:24=E2=80=AFAM Yoshinori Sato
+<ysato@users.sourceforge.jp> wrote:
+> divider and gate only support 32-bit registers.
+> Older hardware uses narrower registers, so I want to be able to handle
+> 8-bit and 16-bit wide registers.
+>
+> Seven clk_divider flags are used, and if I add flags for 8bit access and
+> 16bit access, 8bit will not be enough, so I expanded it to u16.
+>
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
-Hmm, I guess this is with the latest plymouth which has a builtin terminal
-emulator for kernels without VT support ? Pressing ESC does not to a VC
-switch and AFAICT that is what you are triggering on to allow fbcon takeover
-after this patches.
+Thanks for your patch!
 
-> If a boot failure has occurred before the splash
-> then it can be debugged visually by rebooting without the "splash" parameter.
+> --- a/drivers/clk/clk-gate.c
+> +++ b/drivers/clk/clk-gate.c
+> @@ -143,6 +161,18 @@ struct clk_hw *__clk_hw_register_gate(struct device =
+*dev,
+>                         return ERR_PTR(-EINVAL);
+>                 }
 
-Which requires the user to know this and requires the user to know how to
-edit kernel cmdline parameters in e.g. grub. This is not a good user
-experience. We want inexperienced users to just be able to point
-a phone camera at the screen and take a picture of the errors.
+Please add a check for invalid CLK_GATE_HIWORD_MASK
+and register width combinations:
 
+                if (clk_gate_flags & (CLK_GATE_REG_16BIT | CLK_GATE_REG_8BI=
+T)) {
+                        pr_err("HIWORD_MASK needs 32-bit registers\n");
+                        return ERR_PTR(-EINVAL);
+                }
 
->> When the kernel e.g. oopses or panics because of not finding
->> its rootfs (I tested the latter option when writing the original
->> deferred fbcon takeover code) then fbcon must takeover and
->> print the messages from the dying kernel so that the user has
->> some notion of what is going wrong.
-> 
-> Indeed, just reboot without the "splash" parameter to do that.
+>         }
+> +       if (clk_gate_flags & CLK_GATE_REG_16BIT) {
+> +               if (bit_idx > 15) {
+> +                       pr_err("gate bit exceeds 16 bits\n");
+> +                       return ERR_PTR(-EINVAL);
+> +               }
+> +       }
+> +       if (clk_gate_flags & CLK_GATE_REG_8BIT) {
+> +               if (bit_idx > 7) {
+> +                       pr_err("gate bit exceeds 8 bits\n");
+> +                       return ERR_PTR(-EINVAL);
+> +               }
+> +       }
+>
+>         /* allocate the gate */
+>         gate =3D kzalloc(sizeof(*gate), GFP_KERNEL);
+> diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+> index ace3a4ce2fc9..e2dfc1f083f4 100644
+> --- a/include/linux/clk-provider.h
+> +++ b/include/linux/clk-provider.h
+> @@ -508,12 +508,16 @@ void of_fixed_clk_setup(struct device_node *np);
+>   * CLK_GATE_BIG_ENDIAN - by default little endian register accesses are =
+used for
+>   *     the gate register.  Setting this flag makes the register accesses=
+ big
+>   *     endian.
+> + * CLK_GATE_REG_8BIT - by default 32bit register accesses are used for
+> + *     the gate register.  Setting this flag makes the register accesses=
+ 8bit.
+> + * CLK_GATE_REG_16BIT - by default 32bit register accesses are used for
+> + *     the gate register.  Setting this flag makes the register accesses=
+ 16bit.
+>   */
+>  struct clk_gate {
+>         struct clk_hw hw;
+>         void __iomem    *reg;
+>         u8              bit_idx;
+> -       u8              flags;
+> +       u32             flags;
 
-Again not something beginning Linux users will be able to do,
-what happened to "Ubuntu: Linux for Human Beings" ?
+There is no need to increase the size of the flags field for the gate clock=
+.
 
->> And since your patch seems to delay switching till the first
->> vc-switch this means that e.g. even after say gdm refusing
->> to start because of issues there still will be no text
->> output. This makes debugging various issues much harder.
-> 
-> I've debugged many gdm failures and it is never useful to use the console for
-> those. Reboot and get the system journal instead.
+>         spinlock_t      *lock;
+>  };
+>
+> @@ -522,6 +526,8 @@ struct clk_gate {
+>  #define CLK_GATE_SET_TO_DISABLE                BIT(0)
+>  #define CLK_GATE_HIWORD_MASK           BIT(1)
+>  #define CLK_GATE_BIG_ENDIAN            BIT(2)
+> +#define CLK_GATE_REG_8BIT              BIT(3)
+> +#define CLK_GATE_REG_16BIT             BIT(4)
+>
+>  extern const struct clk_ops clk_gate_ops;
+>  struct clk_hw *__clk_hw_register_gate(struct device *dev,
 
-But users will not see any errors now, meaning they don't
-even know where to begin with troubleshooting ...
+The rest LGTM.
 
->> Moreover Fedora has been doing flickerfree boot for many
->> years without needing this.
-> 
-> I believe Fedora has a mostly working solution, but not totally reliable, as
-> mentioned in the commit message:
-> 
-> "even systems whose splash exists in initrd may not be not immune because they
->  still rely on racing against all possible kernel messages that might
->  trigger the fbcon takeover"
+Gr{oetje,eeting}s,
 
-Only very serious kernel errors like oopses or panics will
-trigger the takeover and that is *exactly* what we want.
+                        Geert
 
-There is a race where plymouth may hide such vary serious
-messages, if plymouth does manage to start before the errors,
-but that is actually an existing issue which we don't want
-to make bigger by *always* hiding such errors.
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
->> The kernel itself will be quiet as long as you set
->> CONFIG_CONSOLE_LOGLEVEL_QUIET=3 Ubuntu atm has set this
->> to 4 which means any kernel pr_err() or dev_err()
->> messages will get through and since there are quite
->> a few false positives of those Ubuntu really needs
->> to set CONFIG_CONSOLE_LOGLEVEL_QUIET=3 to fix part of:
->> https://bugs.launchpad.net/bugs/1970069
-> 
-> Incorrect. In my testing some laptops needed log level as low as 2 to go quiet.
-> And the Ubuntu kernel team is never going to fix all those for non-sponsored
-> devices.
-
-Notice that atm Ubuntu's kernel is using the too high
-CONFIG_CONSOLE_LOGLEVEL_QUIET=4 with
-CONFIG_CONSOLE_LOGLEVEL_QUIET=3 getting any errors logged
-to the console should be very very rare.
-
-The only thing I can think of is if the kernel oopses
-/ WARN()s early on but the cause is innocent enough
-that the boot happily continues.
-
-In that case actually showing the oops/WARN() is a good
-thing.
-
-For all the years Fedora has had flickerfree boot I have
-seen zero bug reports about this. If you have examples
-of this actually being a problem please file bugs for
-them (launchpad or bugzilla.kernel.org is fine) and
-then lets take a look at those bugs and fix them.
-
-These should be so rare that I'm not worried about this
-becoming a never ending list of bugs (unlike pr_err() /
-dev_err() messages of which there are simply too many).
-
->> After that it is "just" a matter of not making userspace
->> output anything unless it has errors to report.
->>
->> systemd already is quiet by default (only logging
->> errors) when quiet is on the kernel commandline.
-> 
-> Unfortunately not true for Ubuntu. We carry a noisy systemd patch which I'm
-> told we can't remove in the short term:
-> 
-> https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/1970069/comments/39
-
-Well then make the patch less noisy? Suppressing non
-error message unless in debug mode should be easy
-even with a downstream patch.
-
-> Thanks for your input, but I respectfully disagree and did consider these
-> points already.
-
-Sorry, but your real problem here seems to be your
-noisy downstream systemd patch. I'm not going to ack
-a kernel patch which I consider a bad idea because
-Ubuntu has a non standard systemd patch which is
-to trigger happy with spamming the console.
-
-So this is still a NACK from me.
-
-Regards,
-
-Hans
-
-
-
-
-
->>> Closes: https://bugs.launchpad.net/bugs/1970069
->>> Cc: Mario Limonciello <mario.limonciello@amd.com>
->>> Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
->>> ---
->>>  drivers/video/fbdev/core/fbcon.c | 32 +++++++++++++++++++++++++++++---
->>>  1 file changed, 29 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
->>> index 63af6ab034..5b9f7635f7 100644
->>> --- a/drivers/video/fbdev/core/fbcon.c
->>> +++ b/drivers/video/fbdev/core/fbcon.c
->>> @@ -76,6 +76,7 @@
->>>  #include <linux/crc32.h> /* For counting font checksums */
->>>  #include <linux/uaccess.h>
->>>  #include <asm/irq.h>
->>> +#include <asm/cmdline.h>
->>>  
->>>  #include "fbcon.h"
->>>  #include "fb_internal.h"
->>> @@ -146,6 +147,7 @@ static inline void fbcon_map_override(void)
->>>  
->>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->>>  static bool deferred_takeover = true;
->>> +static int initial_console = -1;
->>>  #else
->>>  #define deferred_takeover false
->>>  #endif
->>> @@ -3341,7 +3343,7 @@ static void fbcon_register_existing_fbs(struct work_struct *work)
->>>  	console_unlock();
->>>  }
->>>  
->>> -static struct notifier_block fbcon_output_nb;
->>> +static struct notifier_block fbcon_output_nb, fbcon_switch_nb;
->>>  static DECLARE_WORK(fbcon_deferred_takeover_work, fbcon_register_existing_fbs);
->>>  
->>>  static int fbcon_output_notifier(struct notifier_block *nb,
->>> @@ -3358,6 +3360,21 @@ static int fbcon_output_notifier(struct notifier_block *nb,
->>>  
->>>  	return NOTIFY_OK;
->>>  }
->>> +
->>> +static int fbcon_switch_notifier(struct notifier_block *nb,
->>> +				 unsigned long action, void *data)
->>> +{
->>> +	struct vc_data *vc = data;
->>> +
->>> +	WARN_CONSOLE_UNLOCKED();
->>> +
->>> +	if (vc->vc_num != initial_console) {
->>> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
->>> +		dummycon_register_output_notifier(&fbcon_output_nb);
->>> +	}
->>> +
->>> +	return NOTIFY_OK;
->>> +}
->>>  #endif
->>>  
->>>  static void fbcon_start(void)
->>> @@ -3370,7 +3387,14 @@ static void fbcon_start(void)
->>>  
->>>  	if (deferred_takeover) {
->>>  		fbcon_output_nb.notifier_call = fbcon_output_notifier;
->>> -		dummycon_register_output_notifier(&fbcon_output_nb);
->>> +		fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
->>> +		initial_console = fg_console;
->>> +
->>> +		if (cmdline_find_option_bool(boot_command_line, "splash"))
->>> +			dummycon_register_switch_notifier(&fbcon_switch_nb);
->>> +		else
->>> +			dummycon_register_output_notifier(&fbcon_output_nb);
->>> +
->>>  		return;
->>>  	}
->>>  #endif
->>> @@ -3417,8 +3441,10 @@ void __exit fb_console_exit(void)
->>>  {
->>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->>>  	console_lock();
->>> -	if (deferred_takeover)
->>> +	if (deferred_takeover) {
->>>  		dummycon_unregister_output_notifier(&fbcon_output_nb);
->>> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
->>> +	}
->>>  	console_unlock();
->>>  
->>>  	cancel_work_sync(&fbcon_deferred_takeover_work);
->>
-> 
-
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

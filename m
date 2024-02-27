@@ -1,225 +1,334 @@
-Received: from mail5.25mail.st (mail5.25mail.st [74.50.62.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 066D41386A5
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 10:20:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.50.62.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4117C139583
+	for <linux-fbdev@vger.kernel.org>; Tue, 27 Feb 2024 11:34:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709029204; cv=none; b=Y0sLzx4XUhIjQt4D3g8cGgqI+6OpgvY74/uGbY9tBScRGHJqyEAewlcet8LUFRHej7OdyjYmy+l4srkOxFi5cfptZui/5Ewaib1f+9c/W2qluKQW9WYuUJcJt0m9LxUinfe+nbmFer0CCTwlQZDh7J2AmIpHxjk2LcMznJbQ6qI=
+	t=1709033674; cv=none; b=epUiGkXwVqt2k0t0/6wuTqCZsZinN904H4ES6yDrTz/DhxSLbqfDVoWMlaFEkVX7mVcROv48XpvD4cEa/d8P14mkg+rETU9WXtYNSI9yg2Ke9EdszwRHjj4s1bsjOt9Hmsc3fN5H/D1t5aPp8dYcxy24grTXrohCAMbXFTtpGrE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709029204; c=relaxed/simple;
-	bh=LyAbhudhxSq3yLeTK1bjs5FR0ITxA277HoI8dQfVDHw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L9eRV4S463PpWmfJsR9pmNHhZ01ZPLb+nWxOUi6VNS6/5tOjcaG7pmGLPV2i128Axlb2XUym/sUGlkvzGLchhIE27YUk5Du2vBWkcuudK7IM5NI/KzRa/7+fD8UeUbA9TfmSQozvwHS20MbNo2WM1AXdHwKxB5sSiqHPbXoXnFA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomide.com; spf=fail smtp.mailfrom=atomide.com; dkim=pass (2048-bit key) header.d=atomide.com header.i=@atomide.com header.b=FzQIWa/0; arc=none smtp.client-ip=74.50.62.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomide.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=atomide.com
+	s=arc-20240116; t=1709033674; c=relaxed/simple;
+	bh=WQzzqhShFqXB5Pa64qzI7klCAa2A52a5oP6xcrcj18A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lcyZaGI3W5/WuLtzwrXH1AlJdAv+wU2aqq+wrPNGpyK4tnDCdn5ay0IoGgz2gDyOhUm0fLxKec6xF80UPO3kOZa842rzbesepi1DYA3Brd2OXixQ7IFa5NqbGF6ZRwuJu+eHUP8y6LqAPDvSXJnVWzZApZob0gqTIXqPjAxzi/0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CmGh9HIv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Vdmp/aZ7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CmGh9HIv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Vdmp/aZ7; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=atomide.com header.i=@atomide.com header.b="FzQIWa/0"
-Received: from localhost (91-158-86-216.elisa-laajakaista.fi [91.158.86.216])
-	by mail5.25mail.st (Postfix) with ESMTPSA id A843760449;
-	Tue, 27 Feb 2024 10:19:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=atomide.com;
-	s=25mailst; t=1709029201;
-	bh=LyAbhudhxSq3yLeTK1bjs5FR0ITxA277HoI8dQfVDHw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FzQIWa/0QMI6mN04+ST5VP548LMGjL6oRyM8Ax/v/MTR+mHrH5/9a+DlRDy6phGcD
-	 laiFZXZue1Y+exdbh0v+QuUlo68/i2jXcYFwoPWhO3HfV255NUTFCbJtIWmhqn1vI4
-	 wD2rbkGvqEJeGZuavOvNzO50mb+eTYiSRSnWF6tAkRIGbwjMfoW+6b1rRjXgSoNS8s
-	 CNWguV29qaNxMRLzfwgdsv5Q/Md0iHFq4ZP0jwn8zTi0ZUJ325RUTgu/4FBpkYOAeM
-	 LApL1P6s019FyXnlrftk6wA3bDloRkrRwuYkOlJplzxOLHO5MipAlDguf24oeJavpN
-	 d1LJyv2yA11Sg==
-Date: Tue, 27 Feb 2024 12:19:34 +0200
-From: Tony Lindgren <tony@atomide.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Helge Deller <deller@gmx.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v2 0/2] Fixes for omapdrm console
-Message-ID: <20240227101934.GC52537@atomide.com>
-References: <20240225064700.48035-1-tony@atomide.com>
- <43fc93f1-d602-47ae-98e5-ee6be4ea5192@ideasonboard.com>
- <42255362-4720-414e-b442-f98355e92968@ideasonboard.com>
- <ab0b8471-97a6-479a-88aa-9bb25e91fb8a@suse.de>
- <20240226112549.GU5299@atomide.com>
- <20240227070624.GB52537@atomide.com>
- <7d98a0cd-e6d5-460d-8b91-35fa340736dd@suse.de>
- <20240227080146.GW5299@atomide.com>
- <587d60ae-221b-4c02-9891-17dc608009d3@suse.de>
- <20240227094651.GX5299@atomide.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CmGh9HIv";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Vdmp/aZ7";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CmGh9HIv";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Vdmp/aZ7"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4111A222B2;
+	Tue, 27 Feb 2024 11:34:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1709033669; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
+	b=CmGh9HIv2CXBLMeaObEYs0MwzkMOANECl8eQDItHY1I/AvpHvg9KxgV0ch9olr+1Btq9O5
+	kaa88lm1kGmuv56IDw9X1CtfIhNjCq2QeKfvSoq8iCAXY6QvNOto3zyaoR1FxBgQFZOZFa
+	waBGfmawjw5l4+gp+7uv6i2zkP/iiUo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1709033669;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
+	b=Vdmp/aZ7hbp0EgFOk0daczWTVFQvXqPcLNcWCYUuBfLT1Z2PyjJlfqOUwGfkOA0qHEBwYG
+	J677IZw/E+nUeQCA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1709033669; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
+	b=CmGh9HIv2CXBLMeaObEYs0MwzkMOANECl8eQDItHY1I/AvpHvg9KxgV0ch9olr+1Btq9O5
+	kaa88lm1kGmuv56IDw9X1CtfIhNjCq2QeKfvSoq8iCAXY6QvNOto3zyaoR1FxBgQFZOZFa
+	waBGfmawjw5l4+gp+7uv6i2zkP/iiUo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1709033669;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=tAdwtJgErkyqRMnETFdn7U9Hd2GLdabzPlwGdd+ipUU=;
+	b=Vdmp/aZ7hbp0EgFOk0daczWTVFQvXqPcLNcWCYUuBfLT1Z2PyjJlfqOUwGfkOA0qHEBwYG
+	J677IZw/E+nUeQCA==
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id E5F8713216;
+	Tue, 27 Feb 2024 11:34:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id 4WO9NsTI3WUZUAAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Tue, 27 Feb 2024 11:34:28 +0000
+Message-ID: <fe31468c-8f84-4e02-a0c1-6429e4630d86@suse.de>
+Date: Tue, 27 Feb 2024 12:34:28 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/2] Fixes for omapdrm console
+Content-Language: en-US
+To: Tony Lindgren <tony@atomide.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Sam Ravnborg <sam@ravnborg.org>
+References: <20240225064700.48035-1-tony@atomide.com>
+ <43fc93f1-d602-47ae-98e5-ee6be4ea5192@ideasonboard.com>
+ <42255362-4720-414e-b442-f98355e92968@ideasonboard.com>
+ <ab0b8471-97a6-479a-88aa-9bb25e91fb8a@suse.de>
+ <20240226112549.GU5299@atomide.com> <20240227070624.GB52537@atomide.com>
+ <7d98a0cd-e6d5-460d-8b91-35fa340736dd@suse.de>
+ <20240227080146.GW5299@atomide.com>
+ <587d60ae-221b-4c02-9891-17dc608009d3@suse.de>
+ <20240227094651.GX5299@atomide.com> <20240227101934.GC52537@atomide.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20240227101934.GC52537@atomide.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240227094651.GX5299@atomide.com>
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spam-Level: 
+X-Spam-Score: -4.29
+X-Spamd-Result: default: False [-4.29 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 BAYES_HAM(-3.00)[100.00%];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 RCPT_COUNT_SEVEN(0.00)[11];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 FREEMAIL_CC(0.00)[ideasonboard.com,lists.freedesktop.org,vger.kernel.org,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de,redhat.com,ravnborg.org];
+	 RCVD_TLS_ALL(0.00)[];
+	 MID_RHS_MATCH_FROM(0.00)[]
+X-Spam-Flag: NO
 
-* Tony Lindgren <tony@atomide.com> [240227 11:47]:
-> * Thomas Zimmermann <tzimmermann@suse.de> [240227 09:16]:
-> > I just realized the fb_deferred_io_mmap() is already exported. So please use
-> > it instead of duplicating the code in omapdrm.
-> > 
-> > [1] https://elixir.bootlin.com/linux/v6.7/source/drivers/video/fbdev/core/fb_defio.c#L237
-> 
-> Yeah I have now:
-> 
-> static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
-> {
-> 	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
-> 
-> 	return fb_deferred_io_mmap(info, vma);
-> }
-> 
-> > I also noticed that omapdrm does not yet select the correct Kconfig symbols.
-> > That can be fixed by
-> > 
-> >  1) creating Kconfig FB_DMAMEM_HELPERS_DEFERRED that are similar to their
-> > SYSMEM equivalent at [2]. The tokens should look like this
-> > 
-> > configFB_DMAMEM_HELPERS_DEFERRED  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_SYSMEM_HELPERS_DEFERRED>
-> > bool
-> > depends onFB_CORE  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_CORE>
-> > selectFB_DEFERRED_IO  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_DEFERRED_IO>
-> > selectFB_DMAMEM_HELPERS  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_SYSMEM_HELPERS>
-> 
-> OK
-> 
-> >   2) and selecting it instead of FB_DMAMEM_HELPERS under omapdrm's Kconfig
-> > symbol.
-> 
-> OK
+Hi
 
-So here's what I have now, does that look OK?
+Am 27.02.24 um 11:19 schrieb Tony Lindgren:
+> * Tony Lindgren <tony@atomide.com> [240227 11:47]:
+>> * Thomas Zimmermann <tzimmermann@suse.de> [240227 09:16]:
+>>> I just realized the fb_deferred_io_mmap() is already exported. So please use
+>>> it instead of duplicating the code in omapdrm.
+>>>
+>>> [1] https://elixir.bootlin.com/linux/v6.7/source/drivers/video/fbdev/core/fb_defio.c#L237
+>> Yeah I have now:
+>>
+>> static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+>> {
+>> 	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
+>>
+>> 	return fb_deferred_io_mmap(info, vma);
+>> }
+>>
+>>> I also noticed that omapdrm does not yet select the correct Kconfig symbols.
+>>> That can be fixed by
+>>>
+>>>   1) creating Kconfig FB_DMAMEM_HELPERS_DEFERRED that are similar to their
+>>> SYSMEM equivalent at [2]. The tokens should look like this
+>>>
+>>> configFB_DMAMEM_HELPERS_DEFERRED  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_SYSMEM_HELPERS_DEFERRED>
+>>> bool
+>>> depends onFB_CORE  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_CORE>
+>>> selectFB_DEFERRED_IO  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_DEFERRED_IO>
+>>> selectFB_DMAMEM_HELPERS  <https://elixir.bootlin.com/linux/latest/K/ident/CONFIG_FB_SYSMEM_HELPERS>
+>> OK
+>>
+>>>    2) and selecting it instead of FB_DMAMEM_HELPERS under omapdrm's Kconfig
+>>> symbol.
+>> OK
+> So here's what I have now, does that look OK?
 
-Regards,
+Looks good. You can add
 
-Tony
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-8< -------------------------
-diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm/Kconfig
---- a/drivers/gpu/drm/omapdrm/Kconfig
-+++ b/drivers/gpu/drm/omapdrm/Kconfig
-@@ -4,7 +4,7 @@ config DRM_OMAP
- 	depends on DRM && OF
- 	depends on ARCH_OMAP2PLUS
- 	select DRM_KMS_HELPER
--	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
-+	select FB_DMAMEM_HELPERS_DEFERRED if DRM_FBDEV_EMULATION
- 	select VIDEOMODE_HELPERS
- 	select HDMI
- 	default n
-diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omapdrm/omap_fbdev.c
---- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
-+++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
-@@ -51,6 +51,10 @@ static void pan_worker(struct work_struct *work)
- 	omap_gem_roll(bo, fbi->var.yoffset * npages);
- }
- 
-+FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS(omap_fbdev,
-+				   drm_fb_helper_damage_range,
-+				   drm_fb_helper_damage_area)
-+
- static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
- 		struct fb_info *fbi)
- {
-@@ -78,11 +82,9 @@ static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
- 
- static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
--	struct drm_fb_helper *helper = info->par;
--	struct drm_framebuffer *fb = helper->fb;
--	struct drm_gem_object *bo = drm_gem_fb_get_obj(fb, 0);
-+	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
- 
--	return drm_gem_mmap_obj(bo, omap_gem_mmap_size(bo), vma);
-+	return fb_deferred_io_mmap(info, vma);
- }
- 
- static void omap_fbdev_fb_destroy(struct fb_info *info)
-@@ -94,6 +96,7 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
- 
- 	DBG();
- 
-+	fb_deferred_io_cleanup(info);
- 	drm_fb_helper_fini(helper);
- 
- 	omap_gem_unpin(bo);
-@@ -104,15 +107,19 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
- 	kfree(fbdev);
- }
- 
-+/*
-+ * For now, we cannot use FB_DEFAULT_DEFERRED_OPS and fb_deferred_io_mmap()
-+ * because we use write-combine.
-+ */
- static const struct fb_ops omap_fb_ops = {
- 	.owner = THIS_MODULE,
--	__FB_DEFAULT_DMAMEM_OPS_RDWR,
-+	__FB_DEFAULT_DEFERRED_OPS_RDWR(omap_fbdev),
- 	.fb_check_var	= drm_fb_helper_check_var,
- 	.fb_set_par	= drm_fb_helper_set_par,
- 	.fb_setcmap	= drm_fb_helper_setcmap,
- 	.fb_blank	= drm_fb_helper_blank,
- 	.fb_pan_display = omap_fbdev_pan_display,
--	__FB_DEFAULT_DMAMEM_OPS_DRAW,
-+	__FB_DEFAULT_DEFERRED_OPS_DRAW(omap_fbdev),
- 	.fb_ioctl	= drm_fb_helper_ioctl,
- 	.fb_mmap	= omap_fbdev_fb_mmap,
- 	.fb_destroy	= omap_fbdev_fb_destroy,
-@@ -213,6 +220,15 @@ static int omap_fbdev_create(struct drm_fb_helper *helper,
- 	fbi->fix.smem_start = dma_addr;
- 	fbi->fix.smem_len = bo->size;
- 
-+	/* deferred I/O */
-+	helper->fbdefio.delay = HZ / 20;
-+	helper->fbdefio.deferred_io = drm_fb_helper_deferred_io;
-+
-+	fbi->fbdefio = &helper->fbdefio;
-+	ret = fb_deferred_io_init(fbi);
-+	if (ret)
-+		goto fail;
-+
- 	/* if we have DMM, then we can use it for scrolling by just
- 	 * shuffling pages around in DMM rather than doing sw blit.
- 	 */
-diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
---- a/drivers/video/fbdev/core/Kconfig
-+++ b/drivers/video/fbdev/core/Kconfig
-@@ -144,6 +144,12 @@ config FB_DMAMEM_HELPERS
- 	select FB_SYS_IMAGEBLIT
- 	select FB_SYSMEM_FOPS
- 
-+config FB_DMAMEM_HELPERS_DEFERRED
-+	bool
-+	depends on FB_CORE
-+	select FB_DEFERRED_IO
-+	select FB_DMAMEM_HELPERS
-+
- config FB_IOMEM_FOPS
- 	tristate
- 	depends on FB_CORE
-diff --git a/include/linux/fb.h b/include/linux/fb.h
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -686,6 +686,10 @@ extern int fb_deferred_io_fsync(struct file *file, loff_t start,
- 	__FB_GEN_DEFAULT_DEFERRED_OPS_RDWR(__prefix, __damage_range, sys) \
- 	__FB_GEN_DEFAULT_DEFERRED_OPS_DRAW(__prefix, __damage_area, sys)
- 
-+#define FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS(__prefix, __damage_range, __damage_area) \
-+	__FB_GEN_DEFAULT_DEFERRED_OPS_RDWR(__prefix, __damage_range, sys) \
-+	__FB_GEN_DEFAULT_DEFERRED_OPS_DRAW(__prefix, __damage_area, sys)
-+
- /*
-  * Initializes struct fb_ops for deferred I/O.
-  */
+to the final patch.
+
+Best regards
+Thomas
+
+>
+> Regards,
+>
+> Tony
+>
+> 8< -------------------------
+> diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm/Kconfig
+> --- a/drivers/gpu/drm/omapdrm/Kconfig
+> +++ b/drivers/gpu/drm/omapdrm/Kconfig
+> @@ -4,7 +4,7 @@ config DRM_OMAP
+>   	depends on DRM && OF
+>   	depends on ARCH_OMAP2PLUS
+>   	select DRM_KMS_HELPER
+> -	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+> +	select FB_DMAMEM_HELPERS_DEFERRED if DRM_FBDEV_EMULATION
+>   	select VIDEOMODE_HELPERS
+>   	select HDMI
+>   	default n
+> diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+> --- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
+> +++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+> @@ -51,6 +51,10 @@ static void pan_worker(struct work_struct *work)
+>   	omap_gem_roll(bo, fbi->var.yoffset * npages);
+>   }
+>   
+> +FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS(omap_fbdev,
+> +				   drm_fb_helper_damage_range,
+> +				   drm_fb_helper_damage_area)
+> +
+>   static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
+>   		struct fb_info *fbi)
+>   {
+> @@ -78,11 +82,9 @@ static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
+>   
+>   static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+>   {
+> -	struct drm_fb_helper *helper = info->par;
+> -	struct drm_framebuffer *fb = helper->fb;
+> -	struct drm_gem_object *bo = drm_gem_fb_get_obj(fb, 0);
+> +	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
+>   
+> -	return drm_gem_mmap_obj(bo, omap_gem_mmap_size(bo), vma);
+> +	return fb_deferred_io_mmap(info, vma);
+>   }
+>   
+>   static void omap_fbdev_fb_destroy(struct fb_info *info)
+> @@ -94,6 +96,7 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
+>   
+>   	DBG();
+>   
+> +	fb_deferred_io_cleanup(info);
+>   	drm_fb_helper_fini(helper);
+>   
+>   	omap_gem_unpin(bo);
+> @@ -104,15 +107,19 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
+>   	kfree(fbdev);
+>   }
+>   
+> +/*
+> + * For now, we cannot use FB_DEFAULT_DEFERRED_OPS and fb_deferred_io_mmap()
+> + * because we use write-combine.
+> + */
+>   static const struct fb_ops omap_fb_ops = {
+>   	.owner = THIS_MODULE,
+> -	__FB_DEFAULT_DMAMEM_OPS_RDWR,
+> +	__FB_DEFAULT_DEFERRED_OPS_RDWR(omap_fbdev),
+>   	.fb_check_var	= drm_fb_helper_check_var,
+>   	.fb_set_par	= drm_fb_helper_set_par,
+>   	.fb_setcmap	= drm_fb_helper_setcmap,
+>   	.fb_blank	= drm_fb_helper_blank,
+>   	.fb_pan_display = omap_fbdev_pan_display,
+> -	__FB_DEFAULT_DMAMEM_OPS_DRAW,
+> +	__FB_DEFAULT_DEFERRED_OPS_DRAW(omap_fbdev),
+>   	.fb_ioctl	= drm_fb_helper_ioctl,
+>   	.fb_mmap	= omap_fbdev_fb_mmap,
+>   	.fb_destroy	= omap_fbdev_fb_destroy,
+> @@ -213,6 +220,15 @@ static int omap_fbdev_create(struct drm_fb_helper *helper,
+>   	fbi->fix.smem_start = dma_addr;
+>   	fbi->fix.smem_len = bo->size;
+>   
+> +	/* deferred I/O */
+> +	helper->fbdefio.delay = HZ / 20;
+> +	helper->fbdefio.deferred_io = drm_fb_helper_deferred_io;
+> +
+> +	fbi->fbdefio = &helper->fbdefio;
+> +	ret = fb_deferred_io_init(fbi);
+> +	if (ret)
+> +		goto fail;
+> +
+>   	/* if we have DMM, then we can use it for scrolling by just
+>   	 * shuffling pages around in DMM rather than doing sw blit.
+>   	 */
+> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+> --- a/drivers/video/fbdev/core/Kconfig
+> +++ b/drivers/video/fbdev/core/Kconfig
+> @@ -144,6 +144,12 @@ config FB_DMAMEM_HELPERS
+>   	select FB_SYS_IMAGEBLIT
+>   	select FB_SYSMEM_FOPS
+>   
+> +config FB_DMAMEM_HELPERS_DEFERRED
+> +	bool
+> +	depends on FB_CORE
+> +	select FB_DEFERRED_IO
+> +	select FB_DMAMEM_HELPERS
+> +
+>   config FB_IOMEM_FOPS
+>   	tristate
+>   	depends on FB_CORE
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -686,6 +686,10 @@ extern int fb_deferred_io_fsync(struct file *file, loff_t start,
+>   	__FB_GEN_DEFAULT_DEFERRED_OPS_RDWR(__prefix, __damage_range, sys) \
+>   	__FB_GEN_DEFAULT_DEFERRED_OPS_DRAW(__prefix, __damage_area, sys)
+>   
+> +#define FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS(__prefix, __damage_range, __damage_area) \
+> +	__FB_GEN_DEFAULT_DEFERRED_OPS_RDWR(__prefix, __damage_range, sys) \
+> +	__FB_GEN_DEFAULT_DEFERRED_OPS_DRAW(__prefix, __damage_area, sys)
+> +
+>   /*
+>    * Initializes struct fb_ops for deferred I/O.
+>    */
+
 -- 
-2.43.1
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

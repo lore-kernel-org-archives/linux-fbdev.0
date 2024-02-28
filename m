@@ -1,115 +1,340 @@
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp-relay-canonical-1.canonical.com (smtp-relay-canonical-1.canonical.com [185.125.188.121])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2264D4F896;
-	Tue, 27 Feb 2024 18:48:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C479823CB;
+	Wed, 28 Feb 2024 02:00:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.188.121
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709059706; cv=none; b=YLLPKGjvNGtfqe6En1Kt+QT7ZvIeHAagE5BGVTtXnb9ExDYIMKWy9AEbsE2C3YQ0drXkx1Zf6jyr2POqTxY+DmzDlyAVq8OnhCJRNBDelHB+6lXl5NOWmi13jWShWUwFUZUauDL5BbboNP/AdIczO37ygYyfBmc8SVfl72wEbiY=
+	t=1709085625; cv=none; b=feDhTpy2hDZx/Q4bvJvFXEyjOTkwh/of3DHB7nB9z/LDYID0bLb4G6JB7CGLfloqXN/8Gta/OBmA2OMUuzha/qHJmeCxw5pXorMn5PshTxDbFxjZqS29NoUJ0LVXp7ZISLXPgwH4EeZAW7X/INfBFGKBLz65XJCdtbUq9thFhiU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709059706; c=relaxed/simple;
-	bh=K6sBGdbZzNVAu30o0m9zj5R6b0ZvSIScFMAacNUig9k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=A9L8f+yCZiWrsb9KFzREKfCR9sCKBAgVji3Y2ouVkSSIBu0BUatdVNH9K9JNvfIRINxvuaQIgo2se0RQ792Ypy7pa3E16+nSKk/XZuY0a5/lQCcxA1qSJo8gYWpsgic6ATP7+KIQZTo8eRsXxOGZI3zThVdxV1vOSmVtfYxmZ4E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-607e54b6cf5so636757b3.0;
-        Tue, 27 Feb 2024 10:48:23 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709059703; x=1709664503;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZBLgqi5po9yo82z/olqeDeT73/ia9ZIG/TwGXRPLny8=;
-        b=duqhZPgkWmeoxbNs7ktjq+XRA1m9gLxuWC99Ub1nfIbCpbiohp88opEaFLo/haU3L7
-         7pAMS52PDb6kwRYcmk2P0EckVMrTw58qhZZN1Mkd0kV8c9YOUJjQfkqBVm+v9ZnMa01c
-         sGO3Dxtsn4FGRxpEkt4VTt3f8SIQRqZPk1ClMCh4wF2Z4rbJl9Ch5jb3hVIlN6hUK9QX
-         bb1VnYXh42KcjJrvk/c0uPVLDjMzDPETwrERa4M629O0LrPufFbIa+zK5Ljov/wdR1MW
-         yBkTU9jFYsZXa62aukcdgsO3ty5ulYVMxwLQ40FsZJg2pS8tAgyvhuPxVCXEzPw0qmWk
-         rCmw==
-X-Forwarded-Encrypted: i=1; AJvYcCWu7F2I90K4SWitxrjT90gyrCacDx0G9zUeRvajk8JusIFZj3CT2sDk0VgoVSZk7u8zUf4EXpZTpmFxVVcu4BuofNYWplGVMeeauFIxmTiEIFh2b69Y94WZzFtpWJOQKv8MXduGzS5mugpVsq1WA4n1302hVeS08nxRo33RXV1xNuivKJwVoRc1XwyjZYttQNQTiJy8CH+GhVfZiHJKq+B5mfiPWV4U42WEofHVe8CD6wjENqnVKJCNRSbDRUzyphPveQwpqtdUTlpEDsILjKXGedwCJpJKB2k0Lb4nfBaDjlUaqN0JvpX0xWLZa5kkbcoK1gAeFzg7YjEjvTODzNis7AlCNH88bEuZ6qwcyUsz6OEGEwMEbGo=
-X-Gm-Message-State: AOJu0YxW6cXm9QGzKfil3bq9p9KV44qxAz2yeSDQBprfSlR+t0INSkIm
-	KtJgkItIbKgqdA9Ys0846GGIF4vMxK9hah65qk2QLV3enx+p2+A2M9JiojLThQc9ww==
-X-Google-Smtp-Source: AGHT+IHp4ttFqyGxEuYRKTECeut2dpV2OBGlwHOfXPHFmeefIycTWfO9rwvdcCsBB23ujkYLAW1KtA==
-X-Received: by 2002:a81:84d7:0:b0:609:106b:5bbb with SMTP id u206-20020a8184d7000000b00609106b5bbbmr183556ywf.9.1709059703123;
-        Tue, 27 Feb 2024 10:48:23 -0800 (PST)
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com. [209.85.219.176])
-        by smtp.gmail.com with ESMTPSA id d199-20020a0ddbd0000000b0060867d09de2sm1909370ywe.29.2024.02.27.10.48.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 27 Feb 2024 10:48:23 -0800 (PST)
-Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-dbed179f0faso56062276.1;
-        Tue, 27 Feb 2024 10:48:23 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXfuBPDJb2rm861gPTQwoiwXHdP1paOOqnalj+4pZEw0ubdMsjI0JKEuYXJAFnyQ2XOAP78A2M/j3AFM9Q5B8oIvzRfTIXTy1F0rQ0YDw4VsHPad8VRXx8jN+A682GpBQgC7XVuF+IbnX7hx3ttVRqvdWzvWnTZIxlpJPrr8nscLSlTl9/EsRNtQWA3eRh9aZjC8VODywahcnXGX2hmNJItGTEgMFjravnW2YOdwmgHitMo8EIL2JeGyE6KYFH/YIJZXQM96KLW9LXWrGoxzmuvVf4ny74n3JEasqbyXWws0UKPeFp6IDnqfOSTORYkzcNDilElpLtNSuwOvuVBIx0/ZL2jN0dXSh9cDdNthCM39asos+vE2mc=
-X-Received: by 2002:a25:414a:0:b0:dc7:494e:ff33 with SMTP id
- o71-20020a25414a000000b00dc7494eff33mr220625yba.7.1709059702806; Tue, 27 Feb
- 2024 10:48:22 -0800 (PST)
+	s=arc-20240116; t=1709085625; c=relaxed/simple;
+	bh=mmXpn8sDYCTuM9uJB4D+ETFrQFELdYHE5vXv0qFOPb8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Ym4+NEhQeGi6Lp/LTkVDEHXncNhZqudfRMqvV7HFt+IM+J5Emlfc9aiH+WjBgmzQxlSt2RTHS/9OfdeHmVKNLjwQtCfNVWCr890c2SmUlXhMkiy1dNut7WXAUcVg/bk5qpuvH6OtWzQuGCQM/jXvAIjJXxGiMaadVU2i+zbTiuI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com; spf=pass smtp.mailfrom=canonical.com; dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b=UgDZBHvt; arc=none smtp.client-ip=185.125.188.121
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=canonical.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=canonical.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com header.b="UgDZBHvt"
+Received: from [192.168.178.2] (unknown [58.7.187.102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id F11383F709;
+	Wed, 28 Feb 2024 02:00:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+	s=20210705; t=1709085614;
+	bh=n+Qxvwa6/Lmg8IrAABOmQtN+Tn/Hh3PpwEHjX6UuBtI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type;
+	b=UgDZBHvthsBlKYE3AtgPSc0sOLqc7gaJbT3E6Vi4lBrhKfQUjEQpKSIJU9bYKu/M0
+	 KfWJhRtFjLizMB0m3WfUto3yUwLiqoCh+/eJH1nNAyOS8nxyAPseTzoXHeIwIKAAp5
+	 YXwAE721wv+t36ekPacR+Ue4W9YkbhCt6Zg//la2/cfCHz5pHdxlOLncEidfSnBonQ
+	 jh4zIfWT6rj3UHTM3gVbcwmICOkoBdXFzTJ4MbHbj2d6ZS2yEL4+V6rHqe/Kk27bOp
+	 1x/0vIk1NiVlfQxBFlzYUe2CpwNy3OV2Pi9J5Y+pmw/FhJKVY+5XF83uel6WcQM5KW
+	 em3gVtRIweUJA==
+Message-ID: <b98562cc-c4ca-4a74-a0c1-e1192e67d19c@canonical.com>
+Date: Wed, 28 Feb 2024 10:00:05 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1704788539.git.ysato@users.sourceforge.jp> <f1f58604dd76520005c12479fada0b70ac210f89.1704788539.git.ysato@users.sourceforge.jp>
-In-Reply-To: <f1f58604dd76520005c12479fada0b70ac210f89.1704788539.git.ysato@users.sourceforge.jp>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 27 Feb 2024 19:48:10 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUxZzBD0WRhx07MYdLvamg+1twRvAxGMRM5+4-pYeDTRQ@mail.gmail.com>
-Message-ID: <CAMuHMdUxZzBD0WRhx07MYdLvamg+1twRvAxGMRM5+4-pYeDTRQ@mail.gmail.com>
-Subject: Re: [DO NOT MERGE v6 34/37] sh: Add dtbs target support.
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
-	Rob Herring <robh+dt@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Thomas Gleixner <tglx@linutronix.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Lee Jones <lee@kernel.org>, 
-	Helge Deller <deller@gmx.de>, Heiko Stuebner <heiko@sntech.de>, 
-	Jernej Skrabec <jernej.skrabec@gmail.com>, Chris Morgan <macromorgan@hotmail.com>, 
-	Yang Xiwen <forbidden405@foxmail.com>, Sebastian Reichel <sre@kernel.org>, 
-	Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@suse.cz>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
-	David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Stephen Rothwell <sfr@canb.auug.org.au>, Azeem Shaikh <azeemshaikh38@gmail.com>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Palmer Dabbelt <palmer@rivosinc.com>, Bin Meng <bmeng@tinylab.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Lukas Bulwahn <lukas.bulwahn@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
-	Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] fbcon: Defer console takeover for splash screens to
+ first switch
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Mario Limonciello <mario.limonciello@amd.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+ Jani Nikula <jani.nikula@intel.com>, Danilo Krummrich <dakr@redhat.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Sebastien Bacher <seb128@ubuntu.com>
+References: <20240202085408.23251-1-daniel.van.vugt@canonical.com>
+ <20240202085408.23251-2-daniel.van.vugt@canonical.com>
+ <7817a2a2-b07d-4e9d-85e6-c11c5720d66e@redhat.com>
+ <39ffe230-36ac-484a-8fc1-0a12d6c38d82@canonical.com>
+ <f3cdd944-5e68-49e5-bae8-4bc1f9f59131@redhat.com>
+Content-Language: en-US
+From: Daniel van Vugt <daniel.van.vugt@canonical.com>
+In-Reply-To: <f3cdd944-5e68-49e5-bae8-4bc1f9f59131@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jan 9, 2024 at 9:24=E2=80=AFAM Yoshinori Sato
-<ysato@users.sourceforge.jp> wrote:
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+On 27/2/24 21:47, Hans de Goede wrote:
+> Hi,
+> 
+> On 2/27/24 02:06, Daniel van Vugt wrote:
+>> On 27/2/24 02:23, Hans de Goede wrote:
+>>> Hi All,
+>>>
+>>> On 2/2/24 09:53, Daniel van Vugt wrote:
+>>>> Until now, deferred console takeover only meant defer until there is
+>>>> output. But that risks stepping on the toes of userspace splash screens,
+>>>> as console messages may appear before the splash screen. So check for the
+>>>> "splash" parameter (as used by Plymouth) and if present then extend the
+>>>> deferral until the first switch.
+>>>
+>>> Daniel, thank you for your patch but I do not believe that this
+>>> is the right solution. Deferring fbcon takeover further then
+>>> after the first text is output means that any errors about e.g.
+>>> a corrupt initrd or the kernel erroring out / crashing will not
+>>> be visible.
+>>
+>> That's not really correct. If a boot failure has occurred after the splash then
+>> pressing escape shows the log.
+> 
+> Hmm, I guess this is with the latest plymouth which has a builtin terminal
+> emulator for kernels without VT support ? Pressing ESC does not to a VC
+> switch and AFAICT that is what you are triggering on to allow fbcon takeover
+> after this patches.
+> 
+>> If a boot failure has occurred before the splash
+>> then it can be debugged visually by rebooting without the "splash" parameter.
+> 
+> Which requires the user to know this and requires the user to know how to
+> edit kernel cmdline parameters in e.g. grub. This is not a good user
+> experience. We want inexperienced users to just be able to point
+> a phone camera at the screen and take a picture of the errors.
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+As the person who contributes most to Ubuntu bug triage I have a pretty good
+idea of what users experience. And when they do experience boot failures it's
+either with a blank screen already (because userspace, not the kernel's fault),
+or they report an error message to us that's not relevant to the real failure.
 
-Gr{oetje,eeting}s,
+In both cases our users understand (or learn quickly) the ease with which they
+can reboot either to recovery mode, or a previous kernel. We then direct them
+to collect the full log of the failed boot. Because even if they were booting
+with a full text console, most of those bugs don't reveal themselves on the
+console. If they did then they'd be visible in the system journal along with
+everything else.
 
-                        Geert
+What is not a "good user experience" is the boot messages people are shown on
+every boot.
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+> 
+> 
+>>> When the kernel e.g. oopses or panics because of not finding
+>>> its rootfs (I tested the latter option when writing the original
+>>> deferred fbcon takeover code) then fbcon must takeover and
+>>> print the messages from the dying kernel so that the user has
+>>> some notion of what is going wrong.
+>>
+>> Indeed, just reboot without the "splash" parameter to do that.
+> 
+> Again not something beginning Linux users will be able to do,
+> what happened to "Ubuntu: Linux for Human Beings" ?
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+It is more user-friendly than it sounds. Just reboot, trigger the grub menu and
+select recovery mode or an older kernel (which is always available).
+
+I think some boot failures also take you to the grub menu automatically next time?
+
+> 
+>>> And since your patch seems to delay switching till the first
+>>> vc-switch this means that e.g. even after say gdm refusing
+>>> to start because of issues there still will be no text
+>>> output. This makes debugging various issues much harder.
+>>
+>> I've debugged many gdm failures and it is never useful to use the console for
+>> those. Reboot and get the system journal instead.
+> 
+> But users will not see any errors now, meaning they don't
+> even know where to begin with troubleshooting ...
+
+Indeed. I deal with those users every day and they log their bugs against the
+wrong components, understandably. We then work with them to triage and reassign
+the issue to the right place.
+
+> 
+>>> Moreover Fedora has been doing flickerfree boot for many
+>>> years without needing this.
+>>
+>> I believe Fedora has a mostly working solution, but not totally reliable, as
+>> mentioned in the commit message:
+>>
+>> "even systems whose splash exists in initrd may not be not immune because they
+>>  still rely on racing against all possible kernel messages that might
+>>  trigger the fbcon takeover"
+> 
+> Only very serious kernel errors like oopses or panics will
+> trigger the takeover and that is *exactly* what we want.
+> 
+> There is a race where plymouth may hide such vary serious
+> messages, if plymouth does manage to start before the errors,
+> but that is actually an existing issue which we don't want
+> to make bigger by *always* hiding such errors.
+> 
+>>> The kernel itself will be quiet as long as you set
+>>> CONFIG_CONSOLE_LOGLEVEL_QUIET=3 Ubuntu atm has set this
+>>> to 4 which means any kernel pr_err() or dev_err()
+>>> messages will get through and since there are quite
+>>> a few false positives of those Ubuntu really needs
+>>> to set CONFIG_CONSOLE_LOGLEVEL_QUIET=3 to fix part of:
+>>> https://bugs.launchpad.net/bugs/1970069
+>>
+>> Incorrect. In my testing some laptops needed log level as low as 2 to go quiet.
+>> And the Ubuntu kernel team is never going to fix all those for non-sponsored
+>> devices.
+> 
+> Notice that atm Ubuntu's kernel is using the too high
+> CONFIG_CONSOLE_LOGLEVEL_QUIET=4 with
+> CONFIG_CONSOLE_LOGLEVEL_QUIET=3 getting any errors logged
+> to the console should be very very rare.
+> 
+> The only thing I can think of is if the kernel oopses
+> / WARN()s early on but the cause is innocent enough
+> that the boot happily continues.
+> 
+> In that case actually showing the oops/WARN() is a good
+> thing.
+> 
+> For all the years Fedora has had flickerfree boot I have
+> seen zero bug reports about this. If you have examples
+> of this actually being a problem please file bugs for
+> them (launchpad or bugzilla.kernel.org is fine) and
+> then lets take a look at those bugs and fix them.
+> 
+> These should be so rare that I'm not worried about this
+> becoming a never ending list of bugs (unlike pr_err() /
+> dev_err() messages of which there are simply too many).
+
+I personally own many laptops with so many different boot messages that it's
+overwhelming for me already to report bugs for each of them. Hence this patch.
+
+Also I don't own all the laptops in the world, so fixing all the errors just
+for my collection wouldn't solve all cases. Whereas this patch does.
+
+> 
+>>> After that it is "just" a matter of not making userspace
+>>> output anything unless it has errors to report.
+>>>
+>>> systemd already is quiet by default (only logging
+>>> errors) when quiet is on the kernel commandline.
+>>
+>> Unfortunately not true for Ubuntu. We carry a noisy systemd patch which I'm
+>> told we can't remove in the short term:
+>>
+>> https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/1970069/comments/39
+> 
+> Well then make the patch less noisy? Suppressing non
+> error message unless in debug mode should be easy
+> even with a downstream patch.
+> 
+>> Thanks for your input, but I respectfully disagree and did consider these
+>> points already.
+> 
+> Sorry, but your real problem here seems to be your
+> noisy downstream systemd patch. I'm not going to ack
+> a kernel patch which I consider a bad idea because
+> Ubuntu has a non standard systemd patch which is
+> to trigger happy with spamming the console.
+
+Indeed the systemd patch is a big problem. We seem to have had it for 9 years
+or so. I only just discovered it recently and would love to drop it, but was
+told we can't. Its main problem is that it uses the console as a communication
+pipe to plymouth. So simply making it less noisy isn't possible without
+disabling its functionality. It was seemingly intended to run behind the
+splash, but since it does fsck it tends to run before the splash (because DRM
+startup takes a few more seconds).
+
+> 
+> So this is still a NACK from me.
+> 
+> Regards,
+> 
+> Hans
+> 
+> 
+> 
+> 
+> 
+>>>> Closes: https://bugs.launchpad.net/bugs/1970069
+>>>> Cc: Mario Limonciello <mario.limonciello@amd.com>
+>>>> Signed-off-by: Daniel van Vugt <daniel.van.vugt@canonical.com>
+>>>> ---
+>>>>  drivers/video/fbdev/core/fbcon.c | 32 +++++++++++++++++++++++++++++---
+>>>>  1 file changed, 29 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+>>>> index 63af6ab034..5b9f7635f7 100644
+>>>> --- a/drivers/video/fbdev/core/fbcon.c
+>>>> +++ b/drivers/video/fbdev/core/fbcon.c
+>>>> @@ -76,6 +76,7 @@
+>>>>  #include <linux/crc32.h> /* For counting font checksums */
+>>>>  #include <linux/uaccess.h>
+>>>>  #include <asm/irq.h>
+>>>> +#include <asm/cmdline.h>
+>>>>  
+>>>>  #include "fbcon.h"
+>>>>  #include "fb_internal.h"
+>>>> @@ -146,6 +147,7 @@ static inline void fbcon_map_override(void)
+>>>>  
+>>>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+>>>>  static bool deferred_takeover = true;
+>>>> +static int initial_console = -1;
+>>>>  #else
+>>>>  #define deferred_takeover false
+>>>>  #endif
+>>>> @@ -3341,7 +3343,7 @@ static void fbcon_register_existing_fbs(struct work_struct *work)
+>>>>  	console_unlock();
+>>>>  }
+>>>>  
+>>>> -static struct notifier_block fbcon_output_nb;
+>>>> +static struct notifier_block fbcon_output_nb, fbcon_switch_nb;
+>>>>  static DECLARE_WORK(fbcon_deferred_takeover_work, fbcon_register_existing_fbs);
+>>>>  
+>>>>  static int fbcon_output_notifier(struct notifier_block *nb,
+>>>> @@ -3358,6 +3360,21 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+>>>>  
+>>>>  	return NOTIFY_OK;
+>>>>  }
+>>>> +
+>>>> +static int fbcon_switch_notifier(struct notifier_block *nb,
+>>>> +				 unsigned long action, void *data)
+>>>> +{
+>>>> +	struct vc_data *vc = data;
+>>>> +
+>>>> +	WARN_CONSOLE_UNLOCKED();
+>>>> +
+>>>> +	if (vc->vc_num != initial_console) {
+>>>> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
+>>>> +		dummycon_register_output_notifier(&fbcon_output_nb);
+>>>> +	}
+>>>> +
+>>>> +	return NOTIFY_OK;
+>>>> +}
+>>>>  #endif
+>>>>  
+>>>>  static void fbcon_start(void)
+>>>> @@ -3370,7 +3387,14 @@ static void fbcon_start(void)
+>>>>  
+>>>>  	if (deferred_takeover) {
+>>>>  		fbcon_output_nb.notifier_call = fbcon_output_notifier;
+>>>> -		dummycon_register_output_notifier(&fbcon_output_nb);
+>>>> +		fbcon_switch_nb.notifier_call = fbcon_switch_notifier;
+>>>> +		initial_console = fg_console;
+>>>> +
+>>>> +		if (cmdline_find_option_bool(boot_command_line, "splash"))
+>>>> +			dummycon_register_switch_notifier(&fbcon_switch_nb);
+>>>> +		else
+>>>> +			dummycon_register_output_notifier(&fbcon_output_nb);
+>>>> +
+>>>>  		return;
+>>>>  	}
+>>>>  #endif
+>>>> @@ -3417,8 +3441,10 @@ void __exit fb_console_exit(void)
+>>>>  {
+>>>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+>>>>  	console_lock();
+>>>> -	if (deferred_takeover)
+>>>> +	if (deferred_takeover) {
+>>>>  		dummycon_unregister_output_notifier(&fbcon_output_nb);
+>>>> +		dummycon_unregister_switch_notifier(&fbcon_switch_nb);
+>>>> +	}
+>>>>  	console_unlock();
+>>>>  
+>>>>  	cancel_work_sync(&fbcon_deferred_takeover_work);
+>>>
+>>
+> 

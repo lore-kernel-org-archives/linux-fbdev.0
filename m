@@ -1,90 +1,103 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.rosalinux.ru (mail.rosalinux.ru [195.19.76.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 871925F569;
-	Fri,  1 Mar 2024 09:25:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 027236CDB8
+	for <linux-fbdev@vger.kernel.org>; Fri,  1 Mar 2024 11:35:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.19.76.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709285144; cv=none; b=nF9sQjg9SjVboGTsDVtoy26iHAe97wLwwjZfU7Xxqbn+oe/yHkL6ig53KogiobfZuaX8kZ51Sb34P6dIZEG9qP0Pt3zi25oTbvCZE95Sgr84PdB1Nnw/aK0ZrRdjFfOZHGBIHyODNpWxeZ/UsnR8s4eBwAGhgO5gosVF8tjV1cs=
+	t=1709292957; cv=none; b=g9LUdmHHpUo9YflUolm+84SGv+jK5p065FVgfg8V9VmR3gGM9fXYaNmpBYc2dh4ia1NohV0+ZF+1iO4rk/LH0qh3SWBtViYP2WJuDRis8jLx29hgJYETPs4S/94RW/cWeUy6Hn4MBOel7vYN93tsuMmo0Wl1DLXZTFUGpVVbjQc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709285144; c=relaxed/simple;
-	bh=GJAQUgPGV7UUTOMrMUMTnzOXlD6ghx4aZYMSn9Gbj5M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hsWvaZapMgG8MSTm0QHNG6N7xJey5Uyl63QACxoz9O7YOF1PXYvJNztWcScDC3H/B8yPBWI+kaoLTYxG13+ZiBB8WFUlwNtX7GO/NsAtDiywT9aJ1cHC+U4Gz2oC4kTsW6axCLjGDQ/+O1A+QO4JRGithV38Xms+7c9+hGS4HJQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-1d95d67ff45so16040555ad.2;
-        Fri, 01 Mar 2024 01:25:43 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709285143; x=1709889943;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=OXWMw6pAsiGYzdNx+w6Q2+x0DaSbJ210Wdmf7IDSwcE=;
-        b=HBuJMqt/33PAfg00XooN9LB0PkZ/XjY9EtaD7P4nu0s4BCgNbU1u3Hrh4XX3qJcMJb
-         lUgPKgszkN/ST2/2n9XisrfAHK/qOzy7CN+f8Co8Qe1DfgpyCcas2eGrr7V5DEjGKDGa
-         K8CIzBBlZarBLCNtnPO+QfmJn5k4AUuj+V+06C3FxBN2Qmq3/Swy9D986aUgvzPVMIFZ
-         tK/HQZF3OcdVlvgS9bU9vwxQEfkG3WXQKW9p3EUq9yBFlOw77dIvgz0DT0vxmmZ4ebW2
-         L+wXE3Flz8Y4eM4+RH6Gdo7iHeIbKr820AYDIkpkCp5pMPJ+SE8N9K9e9rLpQnwgJBkC
-         uMLw==
-X-Forwarded-Encrypted: i=1; AJvYcCXJklnkWEvUqeFQ1GUajv6WGF96fSz555A9e6ZuVGMhMvS2KSSLh7NB4O5swFJt3BhrnK7kByX4YwZipZSRI+mXoL8QJ0FOgp6MtVW09wINJKc5V39JnwDcqyZWW8GhJqgrpY+ZtbxCH1xg4jfn1Hz0t5//XjehL4Or6nDJ1VtOBhIcLNfYeyY=
-X-Gm-Message-State: AOJu0YzNcXHPHQ/AtQCrm0rJ26Pt0vz/Gy2hv3vMN9XTPAtyxcxkG5OF
-	QswzU0/GLeqFRShyxEmX3Pp0ThXF4oGdwoFTLxT3iJ41cDI4KcTP
-X-Google-Smtp-Source: AGHT+IF/Ali+iq2it4mBYZ6Hp48G9qyMwdaeV6hXW5BlAgiCCv092V5PsmqkYC1zOt9KytHj+WDcAw==
-X-Received: by 2002:a17:903:98d:b0:1db:faa6:d4a9 with SMTP id mb13-20020a170903098d00b001dbfaa6d4a9mr1387902plb.69.1709285142693;
-        Fri, 01 Mar 2024 01:25:42 -0800 (PST)
-Received: from liuwe-devbox-debian-v2 ([20.69.120.36])
-        by smtp.gmail.com with ESMTPSA id ix19-20020a170902f81300b001db45b65e13sm2953154plb.279.2024.03.01.01.25.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Mar 2024 01:25:42 -0800 (PST)
-Date: Fri, 1 Mar 2024 09:25:40 +0000
-From: Wei Liu <wei.liu@kernel.org>
-To: Helge Deller <deller@gmx.de>
-Cc: Michael Kelley <mhklinux@outlook.com>,
-	"wei.liu@kernel.org" <wei.liu@kernel.org>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	"haiyangz@microsoft.com" <haiyangz@microsoft.com>,
-	"decui@microsoft.com" <decui@microsoft.com>,
-	"drawat.floss@gmail.com" <drawat.floss@gmail.com>,
-	"javierm@redhat.com" <javierm@redhat.com>,
-	"daniel@ffwll.ch" <daniel@ffwll.ch>,
-	"airlied@gmail.com" <airlied@gmail.com>
-Subject: Re: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
- hvfb_getmem()
-Message-ID: <ZeGfFAWD0KfClwWI@liuwe-devbox-debian-v2>
-References: <20240201060022.233666-1-mhklinux@outlook.com>
- <f2fe331b-06cb-4729-888f-1f5eafe18d0f@suse.de>
- <SN6PR02MB4157811F082C62B6132EC283D44B2@SN6PR02MB4157.namprd02.prod.outlook.com>
- <8f6efa96-0744-4313-bb15-b38a992e05fc@gmx.de>
+	s=arc-20240116; t=1709292957; c=relaxed/simple;
+	bh=VxMwlPmyLqrmV/iJHNW0APD+AzM24+JdL8iQ00ER42Y=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=cDmd0jderUAA+SEwg4i64VP7xkAdFEIy3CpTpF3lUHm8g5St0OVUmQIzjDTO4sJA/hU2ctcfrft39VjH+ibUOHC6gRmSCG+Xm5ZdAHsEDlqYST8Wqvf/42jgYOxzAHQIsex348CHX0Pxbb+mlfwIpoRhPvvmawkh2mqzCWJA5f4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rosalinux.ru; spf=pass smtp.mailfrom=rosalinux.ru; dkim=pass (2048-bit key) header.d=rosalinux.ru header.i=@rosalinux.ru header.b=fdk0hSQA; arc=none smtp.client-ip=195.19.76.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rosalinux.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rosalinux.ru
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=rosalinux.ru header.i=@rosalinux.ru header.b="fdk0hSQA"
+Received: from localhost (localhost [127.0.0.1])
+	by mail.rosalinux.ru (Postfix) with ESMTP id BA7AFDD794063;
+	Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
+Received: from mail.rosalinux.ru ([127.0.0.1])
+	by localhost (mail.rosalinux.ru [127.0.0.1]) (amavisd-new, port 10032)
+	with ESMTP id t6YX3ZWUrrNT; Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.rosalinux.ru (Postfix) with ESMTP id 89A8BDD79406B;
+	Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rosalinux.ru 89A8BDD79406B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rosalinux.ru;
+	s=1D4BB666-A0F1-11EB-A1A2-F53579C7F503; t=1709292949;
+	bh=VJ2zoNTUueL/JHteCNWD30APnwn3/VJRPo8jrelaiZg=;
+	h=From:To:Date:Message-Id:MIME-Version;
+	b=fdk0hSQASucZG7BJAPYeqXiOuY+4Xwk717AEnrrSLhuIoXoYpqBromV2LY0e5jz9W
+	 ay4HjtXPGCHWKmgPdL/WZxIaLcLTQ/7FnyuwRg7RxieTGVJSSploErni5VKPkjwHma
+	 lBB2z5oWlbGuFcZVrvgooQu8r2OCSJ2h+FnE2+DVFezsAaZtbHXrHYnEEsN9Mo2ltY
+	 6yrlUpGOECzshC8Y5PH/e7tdSt0YI7NAYh3MC8CV4YXJtrEOOlAQHxAIH83+j0JVs8
+	 /7wKQZXMKSzZu/uD/LLi8aFnUgcjftS5/YMo6o7pA5BQIekqdVYOJaZ2MDH/hZa0uZ
+	 FOIwRXq8tDDBw==
+X-Virus-Scanned: amavisd-new at rosalinux.ru
+Received: from mail.rosalinux.ru ([127.0.0.1])
+	by localhost (mail.rosalinux.ru [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id 9A5XyZWdS1Qe; Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
+Received: from ubuntu.localdomain (unknown [144.206.93.23])
+	by mail.rosalinux.ru (Postfix) with ESMTPSA id 5A50ADD794063;
+	Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
+From: Aleksandr Burakov <a.burakov@rosalinux.ru>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+	Helge Deller <deller@gmx.de>
+Cc: Aleksandr Burakov <a.burakov@rosalinux.ru>,
+	linux-fbdev@vger.kernel.org,
+	lvc-project@linuxtesting.org
+Subject: [PATCH] fbdev: fixed typo in hw_bitblt_1 and hw_bitblt_2
+Date: Fri,  1 Mar 2024 14:35:43 +0300
+Message-Id: <20240301113543.24312-1-a.burakov@rosalinux.ru>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8f6efa96-0744-4313-bb15-b38a992e05fc@gmx.de>
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Feb 09, 2024 at 04:53:37PM +0100, Helge Deller wrote:
-> On 2/9/24 16:23, Michael Kelley wrote:
-> > From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Thursday, February 1, 2024 12:17 AM
-[...]
-> > 
-> > Wei Liu and Helge Deller --
-> > 
-> > Should this fix go through the Hyper-V tree or the fbdev tree?   I'm not
-> > aware of a reason that it really matters, but it needs to be one or the
-> > other, and sooner rather than later, because the Hyper-V driver is broken
-> > starting in 6.8-rc1.
-> 
-> I'm fine with either.
-> If there is an upcoming hyper-v pull request, I'm fine if this is included
-> there. If not, let me know and I can take it via fbdev.
+There are some actions with value 'tmp' but 'dst_addr' is checked instead=
+.
+It is obvious that a copy-paste error was made here and the value
+of variable 'tmp' should be checked here.
 
-I've applied this to the hyperv-fixes tree. Thanks.
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+Signed-off-by: Aleksandr Burakov <a.burakov@rosalinux.ru>
+---
+ drivers/video/fbdev/via/accel.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/via/accel.c b/drivers/video/fbdev/via/ac=
+cel.c
+index 0a1bc7a4d785..1e04026f0809 100644
+--- a/drivers/video/fbdev/via/accel.c
++++ b/drivers/video/fbdev/via/accel.c
+@@ -115,7 +115,7 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u=
+32 width, u32 height,
+=20
+ 	if (op !=3D VIA_BITBLT_FILL) {
+ 		tmp =3D src_mem ? 0 : src_addr;
+-		if (dst_addr & 0xE0000007) {
++		if (tmp & 0xE0000007) {
+ 			printk(KERN_WARNING "hw_bitblt_1: Unsupported source "
+ 				"address %X\n", tmp);
+ 			return -EINVAL;
+@@ -260,7 +260,7 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u=
+32 width, u32 height,
+ 		writel(tmp, engine + 0x18);
+=20
+ 		tmp =3D src_mem ? 0 : src_addr;
+-		if (dst_addr & 0xE0000007) {
++		if (tmp & 0xE0000007) {
+ 			printk(KERN_WARNING "hw_bitblt_2: Unsupported source "
+ 				"address %X\n", tmp);
+ 			return -EINVAL;
+--=20
+2.25.1
+

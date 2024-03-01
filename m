@@ -1,103 +1,148 @@
-Received: from mail.rosalinux.ru (mail.rosalinux.ru [195.19.76.54])
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12olkn2068.outbound.protection.outlook.com [40.92.22.68])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 027236CDB8
-	for <linux-fbdev@vger.kernel.org>; Fri,  1 Mar 2024 11:35:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.19.76.54
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709292957; cv=none; b=g9LUdmHHpUo9YflUolm+84SGv+jK5p065FVgfg8V9VmR3gGM9fXYaNmpBYc2dh4ia1NohV0+ZF+1iO4rk/LH0qh3SWBtViYP2WJuDRis8jLx29hgJYETPs4S/94RW/cWeUy6Hn4MBOel7vYN93tsuMmo0Wl1DLXZTFUGpVVbjQc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709292957; c=relaxed/simple;
-	bh=VxMwlPmyLqrmV/iJHNW0APD+AzM24+JdL8iQ00ER42Y=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=cDmd0jderUAA+SEwg4i64VP7xkAdFEIy3CpTpF3lUHm8g5St0OVUmQIzjDTO4sJA/hU2ctcfrft39VjH+ibUOHC6gRmSCG+Xm5ZdAHsEDlqYST8Wqvf/42jgYOxzAHQIsex348CHX0Pxbb+mlfwIpoRhPvvmawkh2mqzCWJA5f4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rosalinux.ru; spf=pass smtp.mailfrom=rosalinux.ru; dkim=pass (2048-bit key) header.d=rosalinux.ru header.i=@rosalinux.ru header.b=fdk0hSQA; arc=none smtp.client-ip=195.19.76.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rosalinux.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rosalinux.ru
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88A032570;
+	Fri,  1 Mar 2024 16:41:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.22.68
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1709311310; cv=fail; b=IFP2YhYPCpk0fWLEjDa8zWppFo+vku3ozu4aU6e8pxGHh7A/SjmQHTIqNdoaRUaSrbcWY7K5TRzxYlwdMmx+YlIfu/VH8Lhxjh7lYMv2STyGBamDYkdJgURPALP/gmE7qIzqGeG+yc9HjtzX1uuZ5fCJK19p5/dkMvi//ihFJ5w=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1709311310; c=relaxed/simple;
+	bh=G9HsVcXZ9lsxWGm5x/K64SwnIBZv2ywawVTZH6OCNV0=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=s5Si6SraWGDnHU0H3UTivP3Mr7Xx+kARiKfCSQtOirwCs0ih2sOsthqzcSKuIs2V9QYeAJBCvFy4G1ofd0RX4MqKoHVvkPPmLy6d/PxNlEjzH8XVbdYraFihDlJGHQ5/qXO11zgNOiQphFlAix3BaQ6VS2uoOmGUBwXsqF8Bh6c=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=kwnUg2m/; arc=fail smtp.client-ip=40.92.22.68
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rosalinux.ru header.i=@rosalinux.ru header.b="fdk0hSQA"
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rosalinux.ru (Postfix) with ESMTP id BA7AFDD794063;
-	Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
-Received: from mail.rosalinux.ru ([127.0.0.1])
-	by localhost (mail.rosalinux.ru [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id t6YX3ZWUrrNT; Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rosalinux.ru (Postfix) with ESMTP id 89A8BDD79406B;
-	Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rosalinux.ru 89A8BDD79406B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rosalinux.ru;
-	s=1D4BB666-A0F1-11EB-A1A2-F53579C7F503; t=1709292949;
-	bh=VJ2zoNTUueL/JHteCNWD30APnwn3/VJRPo8jrelaiZg=;
-	h=From:To:Date:Message-Id:MIME-Version;
-	b=fdk0hSQASucZG7BJAPYeqXiOuY+4Xwk717AEnrrSLhuIoXoYpqBromV2LY0e5jz9W
-	 ay4HjtXPGCHWKmgPdL/WZxIaLcLTQ/7FnyuwRg7RxieTGVJSSploErni5VKPkjwHma
-	 lBB2z5oWlbGuFcZVrvgooQu8r2OCSJ2h+FnE2+DVFezsAaZtbHXrHYnEEsN9Mo2ltY
-	 6yrlUpGOECzshC8Y5PH/e7tdSt0YI7NAYh3MC8CV4YXJtrEOOlAQHxAIH83+j0JVs8
-	 /7wKQZXMKSzZu/uD/LLi8aFnUgcjftS5/YMo6o7pA5BQIekqdVYOJaZ2MDH/hZa0uZ
-	 FOIwRXq8tDDBw==
-X-Virus-Scanned: amavisd-new at rosalinux.ru
-Received: from mail.rosalinux.ru ([127.0.0.1])
-	by localhost (mail.rosalinux.ru [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id 9A5XyZWdS1Qe; Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
-Received: from ubuntu.localdomain (unknown [144.206.93.23])
-	by mail.rosalinux.ru (Postfix) with ESMTPSA id 5A50ADD794063;
-	Fri,  1 Mar 2024 14:35:49 +0300 (MSK)
-From: Aleksandr Burakov <a.burakov@rosalinux.ru>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-	Helge Deller <deller@gmx.de>
-Cc: Aleksandr Burakov <a.burakov@rosalinux.ru>,
-	linux-fbdev@vger.kernel.org,
-	lvc-project@linuxtesting.org
-Subject: [PATCH] fbdev: fixed typo in hw_bitblt_1 and hw_bitblt_2
-Date: Fri,  1 Mar 2024 14:35:43 +0300
-Message-Id: <20240301113543.24312-1-a.burakov@rosalinux.ru>
-X-Mailer: git-send-email 2.25.1
+	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="kwnUg2m/"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=DS3YZffbgTqo8pRGMUFN37sGBNIWFsYkrGlMnVLQ7bq3YqC/BK8RODYotiKzwfUnFyUSm1tQRIKR8G/ziBNMxAJbVu80wxrONo1ClttqHmTXXSetl/P3P9l9XEeIDBlhQ5n964WHuB13M0MVsqnI2PZpZ28uvcWhhwGZyJUMfgRs9SC66U0f6seU6KnbrNvJ7hVTV2iRNpar3RXmUJ0DVpvXSbzjlGcdLshjP8+zOfehvKCirK85p0FDTJ0M7gwjIfL5Jl21awN3Jf1vV73Fv/jKkcm+vLzusXA444txixzdA2a/rUDH/uqUq8AYrDZmPuO6vCIwqs/CL82x3PjMtw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Q0/Id39riAABkADgUo2zzD8Hb6ezSQpuYbZkSh9YAjg=;
+ b=EbKRYb0GUaGmsOvrNv+8YQ+C4UT4rt7oWq154/mwbDKVPWqTwjGQO1ICpISJdpBkZSTkPRQ9RouvfvSN0OoufoGt2a5tvldCzhIZK2WjUKjUxABxFKoCcs8edj00zCR1nQtRCJcfEQfP4ZKgzvULBJPKVZv1ICaScOulsbvnMi4A+gDfeblscAYtRgQK16ZBtwBG+7ixqpRv2LFz11a8kq5SonEp2z36SSf3EN3NqXlQcO8fRdFp0QwBeriuGRUHJbKmP8eqBYCC6kLNXpfwGCY+c6NzlbbRfs9b+WIm+0WH6HTY6BmU7iYhtd1pzEPloaf0YmDaxsEJtU4vgMnA1w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Q0/Id39riAABkADgUo2zzD8Hb6ezSQpuYbZkSh9YAjg=;
+ b=kwnUg2m/Ua15zCU4jAwjVLoz29vqmzs6SAw6wN9fk+U1ZOr1CUggHTEuExUCxqb9LblMgL//qfwHPsKAL+tOhuHoJNKAQBLrlu4BamJJakyLi6Rk+0up/15/yuGwGFRflTP2rJ3/7D85n5hHat2v9EPXtvTkR87DDIs3Dmw/wSXWPDlmIHqqc6zwRTmGuemrYOrKD9G474mpDJZ5hmrlthnCkl89qLUg0RQTIp6EqSjKNGJeWlt8aMh8jSolJIi9JM6F0bOk5c2Sarcsf0WY/mVOdQNHYdat8sT9iCvoa/JyZAQWGyBWnqLTQcQ40y1MhMCMM+RxsgUuFChy2A5ATQ==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by SJ0PR02MB7840.namprd02.prod.outlook.com (2603:10b6:a03:328::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7339.32; Fri, 1 Mar
+ 2024 16:41:46 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::67a9:f3c0:f57b:86dd]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::67a9:f3c0:f57b:86dd%5]) with mapi id 15.20.7339.031; Fri, 1 Mar 2024
+ 16:41:45 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: Wei Liu <wei.liu@kernel.org>, Helge Deller <deller@gmx.de>
+CC: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, Thomas
+ Zimmermann <tzimmermann@suse.de>, "haiyangz@microsoft.com"
+	<haiyangz@microsoft.com>, "decui@microsoft.com" <decui@microsoft.com>,
+	"drawat.floss@gmail.com" <drawat.floss@gmail.com>, "javierm@redhat.com"
+	<javierm@redhat.com>, "daniel@ffwll.ch" <daniel@ffwll.ch>,
+	"airlied@gmail.com" <airlied@gmail.com>
+Subject: RE: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
+ hvfb_getmem()
+Thread-Topic: [PATCH 1/1] fbdev/hyperv_fb: Fix logic error for Gen2 VMs in
+ hvfb_getmem()
+Thread-Index: AQHaVNQQLtKdxJeAI0qs1qW1SCByZbD1JHwAgA0F6sCAAAw7gIAglJEAgAB5dfA=
+Date: Fri, 1 Mar 2024 16:41:45 +0000
+Message-ID:
+ <SN6PR02MB41574E4874A1A23A8A9ECFB7D45E2@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20240201060022.233666-1-mhklinux@outlook.com>
+ <f2fe331b-06cb-4729-888f-1f5eafe18d0f@suse.de>
+ <SN6PR02MB4157811F082C62B6132EC283D44B2@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <8f6efa96-0744-4313-bb15-b38a992e05fc@gmx.de>
+ <ZeGfFAWD0KfClwWI@liuwe-devbox-debian-v2>
+In-Reply-To: <ZeGfFAWD0KfClwWI@liuwe-devbox-debian-v2>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-tmn: [UuVsuDFLzXWgzGHqDYUF5D6gdOCXhiHL]
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|SJ0PR02MB7840:EE_
+x-ms-office365-filtering-correlation-id: 84975581-7ea5-4742-ee99-08dc3a0e7ba1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:
+ tzZawiFGfB25RhGUX+yiTBIK/SHHQ4Re0hsaJHmPxlrU/+0vyQZGFqH7dMnze16ZOYvqbmNh9ZibhpRl3CHqfRbVldpN+bfdo+5C5w+G1GBs3R3SmJlIwQuPv44vJyBaCBXnuJsHknIq9mHGTZVKShD9Ms4cg19ifc5o6UZb0v7+GqBobXNgj4pI3ylfMrDA315xo1t3XujFeEGB3I2t5lmQ7RdIVpFzDEcQmWjAaY/Pcg1fwJa4D83aAIkr9lzkFDR+3CYB1w4miQRz720KlKDJW+rY8kulhdxn0VzCS2svhHKWasljRlMyAdNCV4Z9qp5J7vq30JLXxZ0E+WX0JMLBM8soCt9bgj19jNHuLs3JiZbWw+7CYyBCCbmH9qh+NohZTcz0i4jHU3BopivTw6OkcxSocHfwIPU5FzEsJUUpy3J3tWx210L7E51AqXwBdOB8ZqTURngTH9Yuj/Rh3gzPb0if48n94veoxFKyjn+F/RkNks+GrE7BgGdyDn4sNPsybUfPLaKgze8F8BssTRCw32bcYH7H6JQBqLXZvYctL/5ONL+zOA9TReznUEMt
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?MovUHqfaLecOdfbmiR3RB/nujnVv3F2wI9VRXypRl2YPfsdBnhly/N6nXN9L?=
+ =?us-ascii?Q?Vxdo3u23rQM/TnWQHXLxoq0ltpjLtf1X6uO0LpgRaUJ/cNmnKX/5WCVyqHGL?=
+ =?us-ascii?Q?1FU1pyDbr2J8I8eSVkN7H+tMMXnlg52l5s9Vkr6/iNMK0t7Lg5kqyHrzXyrb?=
+ =?us-ascii?Q?RODShSb8QczO+Ga258tD9YQjYk9uM/zifFhMhWTlYZl+y4XQGHfQX50XAbnO?=
+ =?us-ascii?Q?Jyuqn/jKPYUP8A+KYWaC5OjvzmM9UtytLtRlJh1PfaI1mLn9lrF+QOLpqWxh?=
+ =?us-ascii?Q?uIqO24Vvsm5hs4s09YQRk6JoLD3cX1LXJwS/z3KXD5BnDevRtmV8q8UncTy1?=
+ =?us-ascii?Q?AirwUmzcFEqfYhPS1z0TnsiCSxAEUfvh51Vm3vNTKELp7wUB4zZ+GqeDG5eF?=
+ =?us-ascii?Q?sifniGZP4x0vqlEKtXZWCbg2+UpTdoHIimSdml6K4ZasDttOB3rBXtY4u8VJ?=
+ =?us-ascii?Q?asH1RZ9ITdjJ+uZDbcxbr95EPaLUObdMx3rDYS0Ibcpfk5g3A8Aply+mMSrE?=
+ =?us-ascii?Q?hOw+ZJ85ruTozSDT4YV1S9gCMBbnDa5yqLcTwGuLsthQ3xVqZLor2yPF14p3?=
+ =?us-ascii?Q?G9OnV0RWxT2ut29/2N98bJJ6PdPa/Wo9hBAFAMPIitpSu7LSPz1JbvI4u6UU?=
+ =?us-ascii?Q?F9YqD87iqPDCtjAtTAfCvKf1gEeIkT5DelrRQpfs3dWkMzD0tCqOIV64AHeh?=
+ =?us-ascii?Q?qM4Fl9C/4tR/AOrMgs8RkGAiCYZuZY+bvqGGg7VVnZ4Q9wIE8Y+/JKFvI7Az?=
+ =?us-ascii?Q?RK+G5OMMmax19Dw6cOLKN6NUxD85O4W5jf43r/GZr5GKRNASUsInuhvez/PO?=
+ =?us-ascii?Q?xOFpFlqRM675DhchZjVRobsmu5ug06g/NANN/ZKSf6y0soV8+PjGcdgVLN+l?=
+ =?us-ascii?Q?92kQdfCvOjzS8G9RKUiwjMHsv3j3FUR0p1pnuTKuDIS9GbHcGoyw0ANHsHdH?=
+ =?us-ascii?Q?g2H8G+MWizV/OiyqJeLATBWKqKwARMO65TNoOLZOFQu0yHyrNy28M0/ZArBy?=
+ =?us-ascii?Q?VqDJP9xlsjSB+A0ERdDpIZYHI0adCiqNPgQ/cmAGilGHH6c94m7mMeJAWk94?=
+ =?us-ascii?Q?82FRFrxXCOctAXlFnQFKepaRSOWuztSMfDvdYMFnIbeZHqqd68SzF66lFZ3A?=
+ =?us-ascii?Q?Sf5qwsEmgHiatdrcFuoCgvFCPIMRV4x46Z2KVGu7l4IjwB2iSzYaUpSCj5Fd?=
+ =?us-ascii?Q?4jun4zMF7I4UNCCRY+ZiLD9KKmCMrq6OTbXhNQ=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 84975581-7ea5-4742-ee99-08dc3a0e7ba1
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Mar 2024 16:41:45.7887
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR02MB7840
 
-There are some actions with value 'tmp' but 'dst_addr' is checked instead=
-.
-It is obvious that a copy-paste error was made here and the value
-of variable 'tmp' should be checked here.
+From: Wei Liu <wei.liu@kernel.org> Sent: Friday, March 1, 2024 1:26 AM
+>=20
+> On Fri, Feb 09, 2024 at 04:53:37PM +0100, Helge Deller wrote:
+> > On 2/9/24 16:23, Michael Kelley wrote:
+> > > From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Thursday, Februar=
+y 1, 2024 12:17 AM
+> [...]
+> > >
+> > > Wei Liu and Helge Deller --
+> > >
+> > > Should this fix go through the Hyper-V tree or the fbdev tree?   I'm =
+not
+> > > aware of a reason that it really matters, but it needs to be one or t=
+he
+> > > other, and sooner rather than later, because the Hyper-V driver is br=
+oken
+> > > starting in 6.8-rc1.
+> >
+> > I'm fine with either.
+> > If there is an upcoming hyper-v pull request, I'm fine if this is inclu=
+ded
+> > there. If not, let me know and I can take it via fbdev.
+>=20
+> I've applied this to the hyperv-fixes tree. Thanks.
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
+Thanks, Wei, for picking up this patch as well as several others of mine.
 
-Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-Signed-off-by: Aleksandr Burakov <a.burakov@rosalinux.ru>
----
- drivers/video/fbdev/via/accel.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/via/accel.c b/drivers/video/fbdev/via/ac=
-cel.c
-index 0a1bc7a4d785..1e04026f0809 100644
---- a/drivers/video/fbdev/via/accel.c
-+++ b/drivers/video/fbdev/via/accel.c
-@@ -115,7 +115,7 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u=
-32 width, u32 height,
-=20
- 	if (op !=3D VIA_BITBLT_FILL) {
- 		tmp =3D src_mem ? 0 : src_addr;
--		if (dst_addr & 0xE0000007) {
-+		if (tmp & 0xE0000007) {
- 			printk(KERN_WARNING "hw_bitblt_1: Unsupported source "
- 				"address %X\n", tmp);
- 			return -EINVAL;
-@@ -260,7 +260,7 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u=
-32 width, u32 height,
- 		writel(tmp, engine + 0x18);
-=20
- 		tmp =3D src_mem ? 0 : src_addr;
--		if (dst_addr & 0xE0000007) {
-+		if (tmp & 0xE0000007) {
- 			printk(KERN_WARNING "hw_bitblt_2: Unsupported source "
- 				"address %X\n", tmp);
- 			return -EINVAL;
---=20
-2.25.1
-
+Michael

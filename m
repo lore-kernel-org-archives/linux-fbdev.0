@@ -1,143 +1,143 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5D3C2374B;
-	Mon,  4 Mar 2024 10:32:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD0936AFD;
+	Mon,  4 Mar 2024 10:38:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709548366; cv=none; b=V5NpLQeBfbPIXuCC7sCRDkHDaxmlbFm0cWLdwJ0jPIwBm4vauItF+PibmzMg4LFayVz36K6jMBt0Wd4E0UEDyRPkYu9M6GFI8Vja8JdXiXi7eW9DfUcWQ+cO9JcLu9r+3E+kansfraJm0Sf2WAd5N+H/j8m8h0DFKSZxDeGZ30Y=
+	t=1709548708; cv=none; b=neHe/Y9ds4usNOnugGZRt6RVB0E2FX3R/gqVXjj4agLlLE3XWYxuH87x9jOV0XhpFWy3M6/jX+h6o0P/yQ//UppZniy257odHVARx0gmTiLbICfGoNkUzYX5SPpQ9y7AVIPM4dqh0VwwmvrXzoZ0kepeaCX3AjMQ1vUti2+gBpo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709548366; c=relaxed/simple;
-	bh=SgrhrKqFxPZUTMdnIQ3bg5MPDHm7GHUVOLSkAfhlWUw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lnHLRdYCoFoubNgjxwRbtXI/W3jekqgcw4n5SDfBwQxyBF2ki1eZQkUHDizqh/oQWrJAAqMiWaNgDsBTiDDS0FvIhUXOUPSVwfbqoMcn0tXvtOel0QTKL7PROdyTyQUui1ocXvMMQBRQlfEEFYFmGntdGVO2rGOEWrOlIhJfBwQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
+	s=arc-20240116; t=1709548708; c=relaxed/simple;
+	bh=MkGmoaUa2/fKKQGOeE6dIrIhxm7hRLYJFNirFb+l+CM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BkvjtCkWqOLExrXBuLH6bA4TwXf4sh9c6cmfSqpxySXvnb357Crvy1mVOJc5Zdtv1EpszMFoQfZUabmpv4uRbQ6Z8So79ND+Z7HQfXkn2Po1/NBm7Rt8KGD9wkPl1Tglm6X6BaKSI7b1jqnOZSN8KinHNF2/FEK7J3SJPhcW8YY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Br3bE28p; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=r9rao9pD; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=sKxDlXcE; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Uu7Ext8z; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Br3bE28p";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="r9rao9pD";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="sKxDlXcE";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Uu7Ext8z"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 181464E16F;
-	Mon,  4 Mar 2024 10:32:43 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id ECBF64E1B1;
+	Mon,  4 Mar 2024 10:38:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1709548704; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=7knSlm+Xpz79/wAHVMqO9b7j5pNgWs2u9Mnb/BYTBvw=;
+	b=Br3bE28pWqvogHlWf8fRZ8ugTUz7OIFkZdZGP3b8iD287614SGEjWyoY+7l+Klkmt+8mVy
+	1xaNYlfeduOyQTKOmV5FVI1+10oxdid/CEoQrfTWQktJRmKOAe2Few8SVcJ1WGReIB3Dm0
+	hvglzldjd6VLkRUmjeld1kaEgRwC6sY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1709548704;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=7knSlm+Xpz79/wAHVMqO9b7j5pNgWs2u9Mnb/BYTBvw=;
+	b=r9rao9pDfbZfv0nim7tX82CynDya97UVgObySznDvV9Mo4IRlAV39FBRMr2QDBO7LTGU56
+	YAwFon53U3myziCg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1709548702; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=7knSlm+Xpz79/wAHVMqO9b7j5pNgWs2u9Mnb/BYTBvw=;
+	b=sKxDlXcEet3xyZlJ6DgHRdVXZ39rQ6B697kzUbwmr2crMqnUAu66XSY7sznbPFba/J/Yml
+	YDJdIvknNAqqH2x7QVPxOEYVSMy7HGDNP+xunGq1goG9KfAIqT4F8P8liksB32VIVLbguX
+	I+tGLDdToTv5g9c3UvZrWuWuJvqU/xk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1709548702;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=7knSlm+Xpz79/wAHVMqO9b7j5pNgWs2u9Mnb/BYTBvw=;
+	b=Uu7Ext8zCTL2u5ll5E0jWv74v6MycogfTUQ3Fe0AZEzSStXBzLtTSO88a8lzQG/GinPvZh
+	FWnByVlaMRExgZDg==
 Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id CE63C13419;
-	Mon,  4 Mar 2024 10:32:42 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id A19DD13419;
+	Mon,  4 Mar 2024 10:38:22 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id oKW5MEqj5WXVGgAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Mon, 04 Mar 2024 10:32:42 +0000
-Message-ID: <eed9bb0f-486f-47f3-b4b5-c07adda4a1c7@suse.de>
-Date: Mon, 4 Mar 2024 11:32:42 +0100
+	id UzjRJZ6k5WUQHAAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Mon, 04 Mar 2024 10:38:22 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: mpe@ellerman.id.au,
+	jani.nikula@intel.com,
+	naresh.kamboju@linaro.org,
+	deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	lkft-triage@lists.linaro.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH] fbdev/chipsfb: Include <linux/backlight.h>
+Date: Mon,  4 Mar 2024 11:38:01 +0100
+Message-ID: <20240304103820.16708-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.44.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: include linux/backlight.h from asm/backlight.h
-To: Jani Nikula <jani.nikula@intel.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: dri-devel@lists.freedesktop.org, lkft-triage@lists.linaro.org,
- linux-kernel@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>,
- Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
-References: <CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com>
- <20240304095512.742348-1-jani.nikula@intel.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240304095512.742348-1-jani.nikula@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Level: 
+Content-Transfer-Encoding: 8bit
 Authentication-Results: smtp-out1.suse.de;
 	none
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	 REPLY(-4.00)[]
-X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: 181464E16F
+X-Spamd-Result: default: False [2.80 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	 R_MISSING_CHARSET(2.50)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_SEVEN(0.00)[9];
+	 MID_CONTAINS_FROM(1.00)[];
+	 DBL_BLOCKED_OPENRESOLVER(0.00)[gmx.de:email,linaro.org:email,suse.de:email,lists.freedesktop.org:email,intel.com:email];
+	 FREEMAIL_TO(0.00)[ellerman.id.au,intel.com,linaro.org,gmx.de];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-2.10)[95.65%]
+X-Spam-Level: **
+X-Spam-Score: 2.80
 X-Spam-Flag: NO
 
-Hi
+Fix builds with CONFIG_PMAC_BACKLIGHT=y. The include statement for
+the backlight header has recently been removed from <linux/fb.h>.
 
-Am 04.03.24 um 10:55 schrieb Jani Nikula:
-> Removal of the backlight include from fb.h uncovered an implicit
-> dependency in powerpc asm/backlight.h. Add the explicit include.
->
-> Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
-> Closes: https://lore.kernel.org/r/CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com
-> Fixes: 11b4eedfc87d ("fbdev: Do not include <linux/backlight.h> in header")
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->
-> ---
->
-> Not even compile tested!
+Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+Closes: https://lore.kernel.org/dri-devel/CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com/
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 11b4eedfc87d ("fbdev: Do not include <linux/backlight.h> in header")
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/chipsfb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-That's one of the cases that's hard to catch unless you get the config 
-right.
-
-> ---
->   arch/powerpc/include/asm/backlight.h | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/arch/powerpc/include/asm/backlight.h b/arch/powerpc/include/asm/backlight.h
-> index 1b5eab62ed04..275d5bb9aa04 100644
-> --- a/arch/powerpc/include/asm/backlight.h
-> +++ b/arch/powerpc/include/asm/backlight.h
-> @@ -10,6 +10,7 @@
->   #define __ASM_POWERPC_BACKLIGHT_H
->   #ifdef __KERNEL__
->   
-> +#include <linux/backlight.h>
-
-Thanks, but I think this should go directly into chipsfb.c. I would have 
-provided a patch already, if our mail server didn't have issues this 
-morning. Let me try again.
-
-Best regards
-Thomas
-
->   #include <linux/fb.h>
->   #include <linux/mutex.h>
->   
-
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index b80711f13df8a..b16a905588fed 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include <linux/aperture.h>
++#include <linux/backlight.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+2.44.0
 

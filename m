@@ -1,84 +1,102 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 618003AC14
-	for <linux-fbdev@vger.kernel.org>; Mon,  4 Mar 2024 11:08:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E397376FD;
+	Mon,  4 Mar 2024 11:16:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709550518; cv=none; b=k+MpiEUGltuy6nvei+Jav2yfke3HsmJl2hBa2ZkX4XDuFkwpPugfTs0CqDClgT6a4jouL4lLv42U48/vnxketyRdumQwQ+mGWSoXrRW0PGOTQb/OWXU+7Xk+134dUgJcT14cBKj+O0l5Y0loIIDIVnHuO4ji/xEXUeJX9jEU2Wg=
+	t=1709551004; cv=none; b=cSDc3z0D09HjI1/eXoNwzys8Q7/Fcfe+I99YxsMvR6+vzKWj5Uax3MBkK4+Ci7OcRCWtZtxHROYyiaBq2/OAYlOD0tdjjA4U/+SbgTayymd088pyUGrPqVz7PMRTpoWUI6nZQLXmmnrUH/k93Tcax0DKpYIvEIzeXUtT9LLVoKw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709550518; c=relaxed/simple;
-	bh=J8QRT14PUSYYy03uk34X/ZoBf4XH47r3nKBEcmsMw+Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rgv1KSBVDCR8Knj122I4DKnNDZ/CRVYUikZFCk4IICwNWAuVm2Gzrz5a6d4vn60KOt/yZMATdqhBJ4e/NxgV+m4/RGCOgOScrccoixXNHP5iHTXvHxicA6ZZXSs36UVIwIr5dWoBSTV7PsKpcHoqzNiJ5JA0KesQTG0K74HmmTY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QpCHFWAc; arc=none smtp.client-ip=209.85.221.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1709551004; c=relaxed/simple;
+	bh=AQrOOWHGmfRbYvwpO+pjPTsk5el/uOh59X3PKshhoZI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Ap9jXiDp23pvIosWwOcHQqLW1ks85AOEuzTxBlmPF4W7Z7bmXPsDiaH5QaRfR7H/SZiclIRzkbLkqHwpp+MKklaXuunKAQllcgC+vvSf0wfu69J5qRdIhakIMrbyAEwSXM7kNmHZSu/4PD7e0rvFgEfXSP1t0i3SAH/A60TjnFI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=c5wNRuRw; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QpCHFWAc"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-33e17342ea7so2087596f8f.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 04 Mar 2024 03:08:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1709550515; x=1710155315; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=J8QRT14PUSYYy03uk34X/ZoBf4XH47r3nKBEcmsMw+Q=;
-        b=QpCHFWAcdkI19m5G5tOzbJ3x9HmLEVLjsi0QPJvVtC7fQLG1EB949j73nYX8DniMzl
-         n0WmnDKEZRkfUIPY2sX8i0ywd4Z9O3wPfuMyC5HoipsvPH0bOY0lgDCdcWz5jSc+Aa8U
-         rFw9GaHB9X0eFeGs4CtJ7rgVv+vqBXnxYxHnJZtXOMYSi0eSwv9leeyrxY1M+I52of9j
-         uKSFZb57rpzopLO1OuFDSQfkNPBn0ZTAkxbjDgbg8vvj1fWPhXp9ocEKgI0UROrTXIvI
-         AHbtsaZW0x/6v2t7GLeM0vC9DL6AfKI5H3nqd79Q1RCm2JGi3agN7V9AjGixc1M7JO62
-         3Flw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709550515; x=1710155315;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=J8QRT14PUSYYy03uk34X/ZoBf4XH47r3nKBEcmsMw+Q=;
-        b=dwh1IlMNR+tzCWuVcyv1KJkdnLd28LNXirmTk7CWpKUWVUw9x1J0O+NmxIqrjVls2N
-         jU1oFUq+AZlUcZkmQ1iUWtudE9rg4CW1byzIRlFdb5XEabQwqa1Pax+fglq462+WSvCx
-         unwm4TkNZvnx8J+RR7INfXv2h4IZ039XTn6mjuo/38+tPzGvmNCOrl5yc5eR3RB4eS+N
-         K7K8aAGFpIMd9/Kt8EbtZkDPa8gxLDJDqm5AVnU/FM3gOmGX8V+sFtQTj2gQR+b1jZYE
-         fzpVff6Xm2pkpGyv5qe5NyI7caEyABUb/1HC+Z/mN58I60sdC3nBQLefIomQID2+4ILl
-         IUvQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXV10stB27akA6baJgKqZl0cNv/dncugurHqWrbtRLLNCracNU6dg2DVuyGPm/PQs0yqV6Z5OfxsImXI2EIyZTbSoV6RFD85VNOxgA=
-X-Gm-Message-State: AOJu0YwslKa8w9721hY+tGIvE6m8RFqwY15YGWwPwHo7ePi5pGdO/ajW
-	dNS8aSAG9uePsxALFmdKeIRDSdF9zG0NEoOsQby8OAcGuXjgpjWZrC4TZEcx4ko=
-X-Google-Smtp-Source: AGHT+IHM96X7a2A8hQD7HFP/kAS8dWVSqvNaJeysD5QyLGeU4kUUmWcLPlRWWkxANifuMKzE4sEu1g==
-X-Received: by 2002:a05:6000:124f:b0:33b:5725:e516 with SMTP id j15-20020a056000124f00b0033b5725e516mr5363029wrx.51.1709550514754;
-        Mon, 04 Mar 2024 03:08:34 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id a16-20020a5d53d0000000b0033de10c9efcsm11932573wrw.114.2024.03.04.03.08.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Mar 2024 03:08:34 -0800 (PST)
-Date: Mon, 4 Mar 2024 11:08:32 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] backlight: pandora_bl: Drop unneeded ENOMEM error
- message
-Message-ID: <20240304110832.GG102563@aspen.lan>
-References: <20240304-backlight-probe-v1-0-e5f57d0df6e6@linaro.org>
- <20240304-backlight-probe-v1-7-e5f57d0df6e6@linaro.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="c5wNRuRw"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1709551002; x=1741087002;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=AQrOOWHGmfRbYvwpO+pjPTsk5el/uOh59X3PKshhoZI=;
+  b=c5wNRuRw2Br9zWrDIxm2EDYf5alEfVQXN4uMCBb+N47mT17B62eW5jaY
+   Kn34mmAEM6G1YJwjOtSnRaunW4aGoUstDBxgyQRPYxH6nsMDD3bJr5kh+
+   CtT8Qh9AMbKen2yLgXgI6S4rpHzyr+sKUiYsIgTblHLtsKg88PMlT0TUA
+   iak/UGrAdchKj9RPHz+x2ehvdfs7WhiOf+/PJhX99aJjxlrUqZy3jRZVc
+   m5hMZwoA0bpPt04cM3qE9KSw0qXSmF+c21UCCKG6jwZqbx+pApjypz6bE
+   2v1RLQPr94DfyLEK3NK+0NrIxbrmecoCeNi0Q+CfZHmgDMQhIx6ApGqIU
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11002"; a="14680366"
+X-IronPort-AV: E=Sophos;i="6.06,203,1705392000"; 
+   d="scan'208";a="14680366"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2024 03:16:41 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.06,203,1705392000"; 
+   d="scan'208";a="9541582"
+Received: from syakovle-mobl1.ger.corp.intel.com (HELO localhost) ([10.252.51.3])
+  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2024 03:16:37 -0800
+From: Jani Nikula <jani.nikula@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, mpe@ellerman.id.au,
+ naresh.kamboju@linaro.org, deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ lkft-triage@lists.linaro.org, linux-kernel@vger.kernel.org, Thomas
+ Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH] fbdev/chipsfb: Include <linux/backlight.h>
+In-Reply-To: <20240304103820.16708-1-tzimmermann@suse.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20240304103820.16708-1-tzimmermann@suse.de>
+Date: Mon, 04 Mar 2024 13:16:26 +0200
+Message-ID: <878r2y5jsl.fsf@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240304-backlight-probe-v1-7-e5f57d0df6e6@linaro.org>
+Content-Type: text/plain
 
-On Mon, Mar 04, 2024 at 11:11:44AM +0100, Krzysztof Kozlowski wrote:
-> Core code already prints detailed information about failure of memory
-> allocation.
+On Mon, 04 Mar 2024, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Fix builds with CONFIG_PMAC_BACKLIGHT=y. The include statement for
+> the backlight header has recently been removed from <linux/fb.h>.
 >
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+> Closes: https://lore.kernel.org/dri-devel/CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com/
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: 11b4eedfc87d ("fbdev: Do not include <linux/backlight.h> in header")
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Jani Nikula <jani.nikula@intel.com>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+I would've added the include in arch/powerpc/include/asm/backlight.h
+[1], but either way is fine by me.
+
+Reviewed-by: Jani Nikula <jani.nikula@intel.com>
 
 
-Daniel.
+[1] https://lore.kernel.org/r/20240304095512.742348-1-jani.nikula@intel.com
+
+> ---
+>  drivers/video/fbdev/chipsfb.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+> index b80711f13df8a..b16a905588fed 100644
+> --- a/drivers/video/fbdev/chipsfb.c
+> +++ b/drivers/video/fbdev/chipsfb.c
+> @@ -15,6 +15,7 @@
+>   */
+>  
+>  #include <linux/aperture.h>
+> +#include <linux/backlight.h>
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+>  #include <linux/errno.h>
+
+-- 
+Jani Nikula, Intel

@@ -1,91 +1,100 @@
-Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com [209.85.221.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC21A17541
-	for <linux-fbdev@vger.kernel.org>; Mon,  4 Mar 2024 08:20:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1E68208A2;
+	Mon,  4 Mar 2024 09:55:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709540457; cv=none; b=mHP6M4SoDJ2Jethz2nQFzguw4kexnm0rksq8wPQuv1YwMIyjTolGfyXIODj1NtM24rDI7ZfeHB1kDvIXb6vd2s4NQdB9HYcNZivOXsNK1CmljLxOeobq0VgTWEY4k9BMIB67WPYEYppEd16p69sAGUfAFAo4MQNMrBX45iS+Txw=
+	t=1709546131; cv=none; b=KcFNo6xINQv33OLT7DMJS6H5OKNjp2ya/T4kuXbwZAQtGiTUDkiWyOgGPgxmO3PKchuFLFlE5OAi6qCa6Z0rhOT4Btq+QEjy4wc5205Gj5MwYE/py3yCRNSFJGLhf9e4SelLEHV75cvHSFtX1umSXZU+3h0q0+FWS23roPal0Ag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709540457; c=relaxed/simple;
-	bh=h5skSJ29Rx6hMZ+bxWVfh2F6h/C4mmQL7SPqvYCARcU=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=AA9+cJ37AIHfCABl27TiOZHezYkEILq4XurMcSQ7N7c8+KKO6nMZjGASfxnGY+35B1xBt+RxB1+amzAfLFmkrIKrN04Z9ZxoLt7+zAJkomyaYGLMedESI953aZXJwWwfg5e6DyJlxG9FFUfOJH3kN57Y+uOeZux0fWj3RAkOh8w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=btDQsP2I; arc=none smtp.client-ip=209.85.221.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1709546131; c=relaxed/simple;
+	bh=tGGIjtvf2OqUUpfEvU1EyE4HH8U209KvVuAbHYsXd6A=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=OP2a4+G+8rl7GS7Lhtxe0jZeKcvbC6IgQA2EvtqH68PjOqKs40va/RVJeSQCe8hS4BQ94HDiXOSoWRTHR8nw1CyFH6+Gfpil4MEj5fMKwyzVlr1A9im7x9qcdqUBZQDqCewjOUZ4Lr1DeEJN0VOLRHkv87DtdILP2sz3tfkOvBg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=C8v3+ZIp; arc=none smtp.client-ip=192.198.163.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="btDQsP2I"
-Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-4d371351b62so103250e0c.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 04 Mar 2024 00:20:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1709540454; x=1710145254; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=yyEcn3m2A7yavQvE00TpjSl9UF2QJItgWnXnzeCS3YM=;
-        b=btDQsP2IT56FcWf2WcP40xueffLSrtGE0oxbS3l0iP96DPZVY4rOlxLi7r+01vDos/
-         D1ZzVTxKNMVXtQAUiXE1//XsZyERj6Xl0zb47/YwqYJIU3wa3CU+RjC34a8TKcbsMUtx
-         5hasdMWTrQC1fS0R0ryyM/grqTfsUFOWLwdJ7MNykPBfZIdYU42RWbhQ4DLtw5OtDzrv
-         eApK4+bqwML1Uc1fe7jrXpsQXCG0aDlfRJ2j7plFJtrJjs+Inksl9uc1UI02E1C2UB9n
-         RkWR0CsSmnhG3wtsFdgekAKGMDsFgRuyepQknNOuKOc6q/dI7DTz15VAOIWme4tQpqn8
-         c7nA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709540454; x=1710145254;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=yyEcn3m2A7yavQvE00TpjSl9UF2QJItgWnXnzeCS3YM=;
-        b=hBWPBCOzeyOs/iAl07KeWnJEX17wm7JV/NHPRSLSYG6IpyMTqsGWO+suNGyx66Verv
-         H+8+PhksXF0YcMwX+/fJhNyPV/J3LNWexZHu7bLRMUq2tBmhLinaWAOrtEZbdojxR17c
-         Y4inhzuMBA5sY3icxx3y9hqhh1a6wCj8h2vPrJvr6kqCGxrlSeOkXfc/QkGA2mQBNVKQ
-         ZFwHhorbbEU09Ot068XoZnpO6JD7vjdMzXLwnE3T1DoLvWSpA2ENObNoSlvyjr4qtnZO
-         cx2MPciro61SM6obEUl2R6jHT0Mdfl9dPCM6yMVFJHhJaFMLaAyJPA1CnDG4UJxEiyPf
-         VgLg==
-X-Forwarded-Encrypted: i=1; AJvYcCWmiGTg6daQC9FftgdhIksIxKSucVCIBl7dsvbffxr89dkzA0BSPeZN+Ip+qwIQEYSujQuKRZr8f+tqX1VaAHTCkqwFqrJPa33Px44=
-X-Gm-Message-State: AOJu0YzonkVO0SIIJfwyQKYzW236x1M3Pc50M2C3GYENRqLze5tsqQWk
-	kOvkIV+7jUTJ39EkbkmyR4FWaTzheyaXkQDWIyfrYguIhteY0v+vSMWfj1uUUFqTLPosLMJuJme
-	uOzKSFJW4Sw3tf6apbqT22+YS8Z3F9iExIaxt5Q==
-X-Google-Smtp-Source: AGHT+IHi5xUT6VReqMwudYvcimoxVjZtj0eGM2mqhV92LARqhWB+invYdIZQv1GlviuVLJkoncYGckQNqOnQq2cbuuE=
-X-Received: by 2002:a05:6122:917:b0:4d3:4aad:a8c6 with SMTP id
- j23-20020a056122091700b004d34aada8c6mr5928625vka.0.1709540454609; Mon, 04 Mar
- 2024 00:20:54 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="C8v3+ZIp"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1709546129; x=1741082129;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=tGGIjtvf2OqUUpfEvU1EyE4HH8U209KvVuAbHYsXd6A=;
+  b=C8v3+ZIp8FldoJsjrciDDtKs1srhE/DgqU2INnEKQty6DM9IvBrs0z8/
+   Nd/rzDZwkfAvlQ0dABF1pyUawGwkuEmf/pMkYDNX4gON3JB7sacJnsA4u
+   gfOXzXidGT1FqJJ3k4Q3Ns2w2+2T1NpRFlPiRo3fZd48caMuJJ5OWGI4v
+   CjUkS5li04bjZr+2WCIKJM+Cxpi2z5eKEIMqe50Am+kdPp9sa+coYNBbd
+   40Zzbz4qokcKbs4Lc+d3av/sw41zvHh+GbQ98dkznS9HbL+gkzV1+AR88
+   9BL/fOXcMyax+TqD/K4AdgxvEGoLGm6LL1TGpa2jN80Le7ki2aNsSS3xN
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11002"; a="7799078"
+X-IronPort-AV: E=Sophos;i="6.06,203,1705392000"; 
+   d="scan'208";a="7799078"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2024 01:55:28 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.06,203,1705392000"; 
+   d="scan'208";a="39934272"
+Received: from syakovle-mobl1.ger.corp.intel.com (HELO localhost) ([10.252.51.3])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2024 01:55:24 -0800
+From: Jani Nikula <jani.nikula@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org
+Cc: jani.nikula@intel.com,
+	dri-devel@lists.freedesktop.org,
+	lkft-triage@lists.linaro.org,
+	linux-kernel@vger.kernel.org,
+	Naresh Kamboju <naresh.kamboju@linaro.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH] powerpc: include linux/backlight.h from asm/backlight.h
+Date: Mon,  4 Mar 2024 11:55:12 +0200
+Message-Id: <20240304095512.742348-1-jani.nikula@intel.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com>
+References: <CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Naresh Kamboju <naresh.kamboju@linaro.org>
-Date: Mon, 4 Mar 2024 13:50:43 +0530
-Message-ID: <CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com>
-Subject: fbdev/chipsfb.c:401:31: error: invalid use of undefined type 'struct backlight_device'
-To: open list <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, lkft-triage@lists.linaro.org
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
 
-The powerpc ppc6xx_defconfig builds failed on today's Linux next tag
-next-20240304.
+Removal of the backlight include from fb.h uncovered an implicit
+dependency in powerpc asm/backlight.h. Add the explicit include.
 
-Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
+Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+Closes: https://lore.kernel.org/r/CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com
+Fixes: 11b4eedfc87d ("fbdev: Do not include <linux/backlight.h> in header")
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 
-Build log:
----------
-drivers/video/fbdev/chipsfb.c: In function 'chipsfb_pci_init':
-drivers/video/fbdev/chipsfb.c:401:31: error: invalid use of undefined
-type 'struct backlight_device'
-  401 |                 pmac_backlight->props.power = FB_BLANK_UNBLANK;
-      |                               ^~
+---
 
-Steps to reproduce:
- # tuxmake --runtime podman --target-arch powerpc --toolchain gcc-13
---kconfig ppc6xx_defconfig
- - https://storage.tuxsuite.com/public/linaro/lkft/builds/2dDE297yLFrAr3gigIDy8tIleDh/tuxmake_reproducer.sh
+Not even compile tested!
+---
+ arch/powerpc/include/asm/backlight.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Links:
-- https://qa-reports.linaro.org/lkft/linux-next-master/build/next-20240304/testrun/22919857/suite/build/test/gcc-13-ppc6xx_defconfig/details/
-- https://qa-reports.linaro.org/lkft/linux-next-master/build/next-20240304/testrun/22919857/suite/build/test/gcc-13-ppc6xx_defconfig/log
-- https://qa-reports.linaro.org/lkft/linux-next-master/build/next-20240304/testrun/22919857/suite/build/test/gcc-13-ppc6xx_defconfig/history/
+diff --git a/arch/powerpc/include/asm/backlight.h b/arch/powerpc/include/asm/backlight.h
+index 1b5eab62ed04..275d5bb9aa04 100644
+--- a/arch/powerpc/include/asm/backlight.h
++++ b/arch/powerpc/include/asm/backlight.h
+@@ -10,6 +10,7 @@
+ #define __ASM_POWERPC_BACKLIGHT_H
+ #ifdef __KERNEL__
+ 
++#include <linux/backlight.h>
+ #include <linux/fb.h>
+ #include <linux/mutex.h>
+ 
+-- 
+2.39.2
 
-
---
-Linaro LKFT
-https://lkft.linaro.org

@@ -1,60 +1,61 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E89A922085
-	for <linux-fbdev@vger.kernel.org>; Mon,  4 Mar 2024 10:11:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8AFE0224EE
+	for <linux-fbdev@vger.kernel.org>; Mon,  4 Mar 2024 10:11:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709547116; cv=none; b=mSBrH/+u/OyVKe/sIpOpiQM76+XZZ//cC3wOKuOsphKGynb60hULrVYiLs9UG/6Wx+mc5BYRE61vb3PZ0q3Ujp0PZRRnYTatrLVKmTKe9Ioo+96bIoyZ/oAd6KzYQnz1BXFEmRjzkgXdQt/vlYKx2d3yG1QDj9wxrj6RE275I7A=
+	t=1709547118; cv=none; b=mONDF7/V9wo0UzXaJ0fjNNXkA7Kf4WGuXExk3ffRxmaiHmKnAGlYziWHHxHPzCIJgIDOeO2wD8QnRJGA9ZVixzPuKdwk8gbeX4Z9/3jT+4IEp5TMlYHipfUjTmFHK4adpcQC6oIpd4hD4uOXY/d0sJ+wCxNonDN8RpZ703pzhrs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709547116; c=relaxed/simple;
-	bh=OH7NMQUj9xup9rOtpZMXbczseEaMEMJgnLbgyXngbZ4=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Z1FYAI9btGO/nQx/GGmafNgyF3ghlYrJaBAjPMEKXI374E+TSUvOSGh2oU97By7Pt75nh3IUao5V9NhzcxrqNM7s0wuSa6eGHMq7LIl8KfAbqMKGJVWQps8s4EL4DF9zSzTr2fT/GQQrBSpCNIFLxfAGROI3jXCd/LCdq4NZGn0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hlyBhynW; arc=none smtp.client-ip=209.85.218.46
+	s=arc-20240116; t=1709547118; c=relaxed/simple;
+	bh=L1gsWac4GlPBRR3BJYIkKHgN/RCN5L6+vXyGAdt7/+A=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=BITybuMuDqtCmD9cKX1Fe3mmXv5Ud9FKaEDzWg1q7q0Q5RCISIdFyl6hML9D8G1nrw3Ozs1e76Coq/BZfQVx3WgB3Fcn0v6TvTygdgpSUUBwcgvMv73rxkg1lHNkOzORvgR7gbEbwAMOSYOpei/38P1zJeYJCAbEjLVv5EU/ul8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FaixYMHg; arc=none smtp.client-ip=209.85.218.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hlyBhynW"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-a3ddc13bbb3so880895466b.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 04 Mar 2024 02:11:54 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FaixYMHg"
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a44cdb2d3a6so237957066b.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 04 Mar 2024 02:11:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1709547113; x=1710151913; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=eJK/ZZpOUq8+bFA/FBthzsUU3+Ts6yS8JiIZkaVwCyU=;
-        b=hlyBhynW729WFxDQjyzZsDDcaree00/gxK60+775ICMvcymNJO1Qvd78odEq5fm/ew
-         m8nCNKv3xNh3ym8HbYPRA09/zgm/QENu1HpxhgXLHrRzeIPsKWZnXJnUjqpOohl3Y1+s
-         /EyvcRFDR8YiK9vqX+r5jxcAjGwmhpMYUYhTjWIxVFp5J0X7/IottpFBpuLD/t2pROpc
-         RFG+2f5r7/gFWF6rIkfeXax6z6q8XrdxxpIFVlcBiHX9kOi1tpPwroYoHsytfghuqobS
-         UGocS172vg7S+UzzfmH+4DLx+fYnNSBvuUoqt4+rwYCIMFmLDxYybuMhx2xq5+hXC+3J
-         ZSog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709547113; x=1710151913;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1709547114; x=1710151914; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=eJK/ZZpOUq8+bFA/FBthzsUU3+Ts6yS8JiIZkaVwCyU=;
-        b=maEcr4p6D7EgCjY/eM46WvBvD/sItVM5SgrPwS/fg2XMx9oN/QTGnEu8gu32GsNnBY
-         sT83Z0Utm5PRPJQmZPydZgO88ExiYNn6KJl14goeg8jSBk0vlk8Zvr60atwl0TdAj2ir
-         IEEwq6WQ0GDSrvE2nMmHtC7gEYN+xZczAKflVCGWljVM5nbL7UXLwi1F4+GjDqlePjgl
-         OCR0ICjXpmDTvACmHCc4xHiLNUFapGB2FNC23/jsvNKLLjFyAAJjxILePdSUFsKl5+za
-         AqF5RFd4BREvBlplqNaye1ih39LcwpK40duCkizGWQahOhFjQVFtezanuyqEIN1z4RdR
-         0iuQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVkUoVC+5e1HZx74N6YGOwU55tKbyZa1JM/PBI79W/TvC6CAXQxBcdqYqUJ88/gnfzC3W29apPO1BqNZPg1ez8y8s8CP67UPYyWD4U=
-X-Gm-Message-State: AOJu0YwmB43OJ/92cOIYnYEYRKk0pZr/GAEv2lvtDRRvhbM6SrpWYUvs
-	dfplXyq92uYjGKAJuy1j7ofe4eozRaMuPfD6572g+UwLW69ucK2kAVYnp22c4ut6XpVcwv2JxI0
-	W
-X-Google-Smtp-Source: AGHT+IHZE7yeVB2iVKBhJxbVE1pgPHbTCTtzc2QKtPQnk0+uRO6kJqqAwgSPdV91EQzA6wVWbRasbw==
-X-Received: by 2002:a17:906:1155:b0:a45:73b0:bcc3 with SMTP id i21-20020a170906115500b00a4573b0bcc3mr705495eja.34.1709547112780;
-        Mon, 04 Mar 2024 02:11:52 -0800 (PST)
+        bh=2l7UpgtGLmRWEg57s509hO79ijY7GD7vXKq1B5m81jQ=;
+        b=FaixYMHgXS2yUzge5gKjfWneC0/ZlCBYgnmPsea8XRPIMJ5trYiJ/P/tC9hbbFsrxZ
+         OBH2SxhPmDKbmaxy4ZlU30UmuUiMzRFnUtpn3NyOvWQvHzgpFXG3GG6Xr0lHhoovKfU2
+         Lc2WPeDw1ZHPLlFgWugPHtgZ/jDUMcdEAOPZwzzyRrbi7crrS9iXDYyKjW5ieFlEWfmt
+         HayzcHVnCeCIgrsBfXQN8eE1ZV+qDiPL3JC1c4QKdRxrx0cPQsfUap7ofPIdpvoBd57/
+         mb038C3mlOG0nNxFVt+lg6jybNzdq+G4qVMwnoUxDebocUGe5+siXDlo+XX1JV0UZ+wj
+         dtdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709547114; x=1710151914;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=2l7UpgtGLmRWEg57s509hO79ijY7GD7vXKq1B5m81jQ=;
+        b=dMwprqpxwIEgjV0LSFEwf8fXaLtZJebXmzSYKRgphP0C/s6YXi2de7yLOgpOT3Wsio
+         urgI9Ols/wFR5VCbdVXJzVs5/8mUITtLhG3vcuTEFioIYcHIq9Lb0HLMtk4gc4pUrf3n
+         ImwumsJkiC3I3hDZUu7h8LPhQp6HVTvXnHwQn7fKgjiUwUTHRUpRc7vMslmgrGAbMVK5
+         qY6vm4dAWj2Lt+dj/0GlB6Ln/edRncEOMGde/WM+Q1xtjhLo8SIWp88kI3q8X8dV6haf
+         dOiM8nln60hhxJWOlY9opCBSS/HKZEnoiv22NwJxa18iX3oZk+ltXB2dKrPlRC7PQ0ok
+         eP+w==
+X-Forwarded-Encrypted: i=1; AJvYcCWA4CQpckdPwZb+6+1CLD2XA/N2EtIm6wbhVKZuXKARCg6f6toLTdwTJo/DyZ5wTiA4IlbQT21Zq5nUySCIyzHaKhKWjYTbmiBZCOA=
+X-Gm-Message-State: AOJu0Yw7MvbHQ2P2s+opjgHTyytA47xqEK4LmBoY8n+Fu0ttbKz71UHH
+	UNbvVEmAzwckCHE398WJukpUd7K9hz5xrbGO9jOa+4WJ0XNRal724gHFK5ftYzo7ax07QZeZNdF
+	o
+X-Google-Smtp-Source: AGHT+IHrMdwkW1PUb9mRl/nOw9W89HypdtSeRHnOOx6YuKOHBeKBikpsljjl7tT07UnolQyMcxLIZA==
+X-Received: by 2002:a17:906:f8d6:b0:a45:2e21:c78c with SMTP id lh22-20020a170906f8d600b00a452e21c78cmr2053919ejb.13.1709547114198;
+        Mon, 04 Mar 2024 02:11:54 -0800 (PST)
 Received: from [127.0.1.1] ([178.197.222.97])
-        by smtp.gmail.com with ESMTPSA id ef11-20020a17090697cb00b00a44bc99cd89sm2938481ejb.42.2024.03.04.02.11.51
+        by smtp.gmail.com with ESMTPSA id ef11-20020a17090697cb00b00a44bc99cd89sm2938481ejb.42.2024.03.04.02.11.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Mar 2024 02:11:52 -0800 (PST)
+        Mon, 04 Mar 2024 02:11:53 -0800 (PST)
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH 0/7] backlight: Simplify probe in few drivers
-Date: Mon, 04 Mar 2024 11:11:37 +0100
-Message-Id: <20240304-backlight-probe-v1-0-e5f57d0df6e6@linaro.org>
+Date: Mon, 04 Mar 2024 11:11:38 +0100
+Subject: [PATCH 1/7] backlight: gpio: Simplify with dev_err_probe()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -63,9 +64,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAFme5WUC/x3MQQqAIBRF0a3IHyeoRYO2Eg00X/UpUjQiCPeeN
- DyDe1/KSIxMg3gp4ebM4azQjaB5s+cKyb6ajDKdalUnnZ33g9ftkjEFB9lqD2gs6HtDtYoJCz/
- /cZxK+QD3cVb4YQAAAA==
+Message-Id: <20240304-backlight-probe-v1-1-e5f57d0df6e6@linaro.org>
+References: <20240304-backlight-probe-v1-0-e5f57d0df6e6@linaro.org>
+In-Reply-To: <20240304-backlight-probe-v1-0-e5f57d0df6e6@linaro.org>
 To: Lee Jones <lee@kernel.org>, 
  Daniel Thompson <daniel.thompson@linaro.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
@@ -73,53 +74,54 @@ Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, 
  Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1126;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1176;
  i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
- bh=OH7NMQUj9xup9rOtpZMXbczseEaMEMJgnLbgyXngbZ4=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBl5Z5dtncXmblc14GzkUUxjTcJ79A3s5elTn7Qu
- /wxqyXw/CGJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZeWeXQAKCRDBN2bmhouD
- 135QEACP8yEtprvbd9at0xw0H2t+hJLRhjMI+Ro3IfuXFHyJyqBFmK0784zd1uuuICJCToCMhCk
- I4lE8leqiLL2WM/2dCZLBkPdy9oXnZ4MYAi1jXXmkljBr4tyHFs6ZbaIS4SZxYWG5x/7XGok+r4
- o09ykWvDXg0SjjvwHCKAPl7MlBOQrrN3XblcBBDSvE1KKz5lUrWPTUh6o1Kkw/8Qx5oc3aSxcpq
- Qwn9pxptQ62HWVmlbIISMUUMlC/qzML+MlEx8k5JuD7ECLA6UkJ2d+E0zMOY3hkytKOFENnLiQ2
- U8X5F+gGqIv5kexKKXS/HmWAHS9vKrA3UlPjI11r/ggruvLdkc8VPOo3MfrBE4IN+yDD04d+Wez
- EEHxsWDbcwqvcWdtOY04P7roKxbtSCHBq2MoVbgHoBEbjVpZQN6ngIg44eUPTP5PFYE4sU4zLQI
- fjtkvo2wSlNdFhnHxvPx6rhgtMRgt1xF+GfNT2yJz+zVgqSbhG+i7bnHK70LCZ6Gvuxv6xo9r9/
- GDRkLun9z4dDpm3XOgWAT5vi6+5mE7p4Xm7YtEO1TDnXmk8hArv2O8iFBpNdsnCRGbnIFXlBqP6
- vZLzU5YWBVi7MfziBeYwz/u5lzxzN+HFD6INptjm55Nff+kgSDCA5zmn5nzRWtkn9bzC2xOz5Ur
- aScFZfLhOOHRV8Q==
+ bh=L1gsWac4GlPBRR3BJYIkKHgN/RCN5L6+vXyGAdt7/+A=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBl5Z5hj0XQi7kaF+7e81MFcwlKfdVr65vaHpPDi
+ MjsbG2Is3OJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZeWeYQAKCRDBN2bmhouD
+ 1ygRD/938KcTcARGYikW/nyTzAfcX6ZC3q6UvmWTsLjqnFXltYckmIM/zt+gzWek4+bhQ9S1KS7
+ Qmd2iAiCs6EU8ne7ebg+KIqQO44shqs+JFKqcyukBmdZ5f3P9ijrQk45S6KhhX0Z6PPohIoi98W
+ GvTvFNX35xb/bjClwx8vtCuk8hJo6PolwiWsStWd2eenHGpk3qbOIiLVSV/NeF4TOsyVWpkNpET
+ 9BaDnLv0gBXAePVN6cy9mRLzD5JmzucY8gGBktV+zPhsbpNrTBDOJ/TNiydgwTxSVnJ+q24kWkl
+ saS6lwMG7z2+0bfaiYCq/Aw+MicguWKUDtkyBTa2qqvmhYpP1URYMiOmjk2+aq1t/fpHJuvqrP5
+ BhpZUHSlr+ck2ZbOJ2ckKXJ5SN3E1gVNVBYieebwzJ8G5m3mXZBKqOOvfQNMeSNfclN94ICR2QL
+ nQIXGnO9EV/OwjRtKLapX9M5FYXsGLYvjXSpP+Af3WU6JHlkhnjGTOSnFBEWujD5yINuJJEF5/a
+ qqopAv0qk5pujRsYiT85L6ZtryQOrZjznB6t3TdaO4dWZPnx8TcRSDulZLen4+WD7vcwUlw3yQl
+ L+GrxwPMuZbqP03xEch1aBS3qvs+KFKTbyngpjIdSk7pFs8yUL+CTQ8q4+egzW+n9eEhvoBjZiB
+ UtT5J0qdAwvwdTA==
 X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
  fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 
-Hi,
+Common pattern of handling deferred probe can be simplified with
+dev_err_probe().  Less code and also it prints the error value.
 
-Simplify old code in few backlight drivers.
-
-Best regards,
-Krzysztof
-
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
-Krzysztof Kozlowski (7):
-      backlight: gpio: Simplify with dev_err_probe()
-      backlight: l4f00242t03: Simplify with dev_err_probe()
-      backlight: bd6107: Handle deferred probe
-      backlight: as3711_bl: Handle deferred probe
-      backlight: lm3630a_bl: Handle deferred probe
-      backlight: lm3630a_bl: Simplify probe return on gpio request error
-      backlight: pandora_bl: Drop unneeded ENOMEM error message
-
- drivers/video/backlight/as3711_bl.c      |  6 ++----
- drivers/video/backlight/bd6107.c         |  9 +++------
  drivers/video/backlight/gpio_backlight.c | 10 +++-------
- drivers/video/backlight/l4f00242t03.c    | 34 +++++++++++++-------------------
- drivers/video/backlight/lm3630a_bl.c     | 13 +++++-------
- drivers/video/backlight/pandora_bl.c     |  4 +---
- 6 files changed, 28 insertions(+), 48 deletions(-)
----
-base-commit: 1870cdc0e8dee32e3c221704a2977898ba4c10e8
-change-id: 20240304-backlight-probe-31dee1efe662
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-Best regards,
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index d28c30b2a35d..9f960f853b6e 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -64,13 +64,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	def_value = device_property_read_bool(dev, "default-on");
+ 
+ 	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
+-	if (IS_ERR(gbl->gpiod)) {
+-		ret = PTR_ERR(gbl->gpiod);
+-		if (ret != -EPROBE_DEFER)
+-			dev_err(dev,
+-				"Error: The gpios parameter is missing or invalid.\n");
+-		return ret;
+-	}
++	if (IS_ERR(gbl->gpiod))
++		return dev_err_probe(dev, PTR_ERR(gbl->gpiod),
++				     "Error: The gpios parameter is missing or invalid.\n");
+ 
+ 	memset(&props, 0, sizeof(props));
+ 	props.type = BACKLIGHT_RAW;
+
 -- 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+2.34.1
 

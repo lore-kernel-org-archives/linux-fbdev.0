@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8985B10A35;
-	Mon,  4 Mar 2024 21:38:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02EAA61675;
+	Mon,  4 Mar 2024 21:45:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709588310; cv=none; b=o51pXPQGcN3Zh3lVBgwLnJu0D6CdWOiukkosde5bzd7DQgRrqUniRzwrE2HZqaacqSO7gb3TlR/0HzyzhOh64zUupdRiBtwlwf/s/tuUu+uajpSk817XcI+jhEgn5oiFoklf9p2orVgYqH5s3+eWg6t0O7kQSMahwZLTwngBJ1E=
+	t=1709588759; cv=none; b=hhaXznbaR+dXkcBtCZ7F2W4KJrghJOthAp5qBU2Vhr5JINLkt7AtsTEoEiZxsSCTdcQZIYEMzYUnQvoEl72SML2Go9t/gs+TG3Ax0Wr6EQrLTiE5dQoB/J0Xv4w50qbne39TQKmVA+0OJB4m5ikdjlEiUuDiwYlybj/ekyMWBXg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709588310; c=relaxed/simple;
-	bh=PC6zL4h3LKIdUzzqZrucuPaH7GDCAhLJZG936/nd77Y=;
+	s=arc-20240116; t=1709588759; c=relaxed/simple;
+	bh=KebFIugYVCXkOlv7H6Xh4Ak3iGjYVdxCWWCuF0w//jo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=n+vi5JhpvHrPPYCP2TCj/ivmKvwrO90d7Ga5ykRKr4jE0fLFhUq99d24YZgpD0DdwRcGuwULGZ+iq9zhVB4+1sx+hza4Ig+kxzigMtPG94vJhOmsNNUm5qk/oK2Tyab+pNmXifI9Crfs1TGaNvZ0tUiJSJJzBdGXpmyaDWlvIB8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=xGPvFLP+; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=ckliFOOpR7MeTZzxgjOUazfXiyqCP9By9jElOj5Gmndx2W7jniZwTiVMXIsiLgRvFNy6VRlDWHllh3diAjoKtpdXM6K8bOaSbPGrLSYM59A7I0hTV0640NzF0DhidfKxHmaBos+/r4sKEHVrPpMjylOw97cMp5vkEy2VVeXsnpg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=GeLq7F7O; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="xGPvFLP+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA7C3C433C7;
-	Mon,  4 Mar 2024 21:38:29 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="GeLq7F7O"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89BD2C433F1;
+	Mon,  4 Mar 2024 21:45:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1709588310;
-	bh=PC6zL4h3LKIdUzzqZrucuPaH7GDCAhLJZG936/nd77Y=;
+	s=korg; t=1709588758;
+	bh=KebFIugYVCXkOlv7H6Xh4Ak3iGjYVdxCWWCuF0w//jo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=xGPvFLP+Ch3YDCfMXNq1DJJQmgxcHBTEEpjE4j/23/z+b81vx9+Yy2mznJKbYB0Sg
-	 N3HJIVle84Y8wfeizCidOCqs3YIdsNsvpEigJkNvXHkYN1lJ8PbWzecFUFkOnAa4/G
-	 w7jlAvuTo+LJyLQti6H6KBO2np1m70bDDKhIfUZc=
+	b=GeLq7F7OqevbWhkEEQILaIHVvYAZEGQ3oaJFcJPlwNMAeB4SlPibmZF1DyyF32TLA
+	 16HHpGpXsI1Zq2fZiQQu+Dh7483HowBwp1fLViVxAgqFc23PiPSYIWSOtZR8AaRgot
+	 qxuF3c43qkZmEspY3Nf6+97PR3kNT1SH4/wQCOj4=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -35,12 +35,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	dri-devel@lists.freedesktop.org,
 	Daniel Vetter <daniel.vetter@ffwll.ch>,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6 059/143] fbcon: always restore the old font data in fbcon_do_set_font()
-Date: Mon,  4 Mar 2024 21:22:59 +0000
-Message-ID: <20240304211551.816836539@linuxfoundation.org>
+Subject: [PATCH 6.1 068/215] fbcon: always restore the old font data in fbcon_do_set_font()
+Date: Mon,  4 Mar 2024 21:22:11 +0000
+Message-ID: <20240304211559.140747119@linuxfoundation.org>
 X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240304211549.876981797@linuxfoundation.org>
-References: <20240304211549.876981797@linuxfoundation.org>
+In-Reply-To: <20240304211556.993132804@linuxfoundation.org>
+References: <20240304211556.993132804@linuxfoundation.org>
 User-Agent: quilt/0.67
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -52,7 +52,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.6-stable review patch.  If anyone has any objections, please let me know.
+6.1-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -111,10 +111,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index f157a5a1dffcf..24035b4f2cd70 100644
+index fa205be94a4b8..14498a0d13e0b 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2398,11 +2398,9 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+@@ -2397,11 +2397,9 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
  	struct fbcon_ops *ops = info->fbcon_par;
  	struct fbcon_display *p = &fb_display[vc->vc_num];
  	int resize, ret, old_userfont, old_width, old_height, old_charcount;
@@ -127,7 +127,7 @@ index f157a5a1dffcf..24035b4f2cd70 100644
  	vc->vc_font.data = (void *)(p->fontdata = data);
  	old_userfont = p->userfont;
  	if ((p->userfont = userfont))
-@@ -2436,13 +2434,13 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+@@ -2435,13 +2433,13 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
  		update_screen(vc);
  	}
  

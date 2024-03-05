@@ -1,112 +1,83 @@
-Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 272F57F7FC;
-	Tue,  5 Mar 2024 08:21:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.154.21.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC4F6548E8
+	for <linux-fbdev@vger.kernel.org>; Tue,  5 Mar 2024 09:05:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709626867; cv=none; b=FAvWVmu5bWTTAH7cAGR32qZbOMO1mUghzyMwmoJ9FXcRqN8F6kBP/VhOp+xPyi5doWJxPsvgsdhIdrPkyfbNYZYQkG8P4f60JjD/8QPUcs0FVOCcin3BUzZ8lVztGR+lrbNLqwqUM6tJb9RNyewtWjHmnlzUVmZL+khdnT33G2Q=
+	t=1709629539; cv=none; b=o7trazrwqvMnVYcpRKf7Eyvuu0fMrR5FFxrwGyOfOY3MU6wZneVo/vJ8vkksUZr24rSXXMxIyZ2asa4/qEDRkPhCTxogYrgOguVjEavBDz7gxxnDpjf0fFwN+uIDGlzw7tcbtfzC8j84AQLIS6+iKRgXYzXZAdyG/hCHCBlhDRY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709626867; c=relaxed/simple;
-	bh=96liCdQ/6gUqP6tRhpRaW4I5SFxA+uBNhElug/7lyAc=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=rQXp458Nu8oPKATZh73P5TTC69UcH3MAQ7QikM7PDY2PKLMJzZKwi6ffJSIUxMuSEQ87cNKJTqCxPhmcpRP8y8g/HM/vJFjwtS/w/q6Q4FidI+W5ElXzur4wDhyxKssEhWL4AAAMXHrYHL0dQEZ+S+yNwNXeLqFpCIQEyFTHum4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=omp.ru; spf=pass smtp.mailfrom=omp.ru; arc=none smtp.client-ip=90.154.21.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=omp.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=omp.ru
-Received: from localhost.localdomain (78.37.41.175) by msexch01.omp.ru
- (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1258.12; Tue, 5 Mar
- 2024 11:20:55 +0300
-From: Roman Smirnov <r.smirnov@omp.ru>
-To: Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
-CC: Roman Smirnov <r.smirnov@omp.ru>, Sergey Shtylyov <s.shtylyov@omp.ru>,
-	Karina Yankevich <k.yankevich@omp.ru>, <linux-fbdev@vger.kernel.org>,
-	<dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
-	<lvc-project@linuxtesting.org>
-Subject: [PATCH] fbmon: prevent division by zero in fb_videomode_from_videomode()
-Date: Tue, 5 Mar 2024 11:20:40 +0300
-Message-ID: <20240305082040.7445-1-r.smirnov@omp.ru>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1709629539; c=relaxed/simple;
+	bh=Hy//Hzvgbunb5xsN63aD2HSruKb+IayJoR8TyJL4Oto=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CJGuQyL13JHYyIhYGa15FRiOHPU7HO8msV6vWnXZf7dABkvJN3NDjs/eNviiCpiFhoFeFc4im0KIWNzvPdwTu/x54Sbzq4OXInHeDnZM2llCujoKK3H/pE46Bqr30U5Q6F/qw9dfKLaB9FYi7gPeXPKKOuRHMeb014F2LpU8d2k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=D2bBAjaP; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="D2bBAjaP"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-412e96284b9so3437895e9.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 05 Mar 2024 01:05:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1709629536; x=1710234336; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=iVyff6pSUeH7eXbrIj/i6abg3oo4j85mjc8PEacBjjE=;
+        b=D2bBAjaPpwq7O0TT18Q8eNV6IB2CMZIv1+EPS+loG+bcNp+AFP+/XOzN7n4RTAM37z
+         lDH6LVyCvyw1V1zyfHwbz+1yHzyunjboQicGLK6hxAoXjUUJ6usER1IRNgqWUKe6K3Cj
+         DiKN6IeKlayNEOpBlDlkKEEqAZcmXwkDFclVZZmgATBioSYDtqdcyOXrXgf4l9NUrruY
+         hnu9iVH0/8YNrxntot0G//qlmzZTfM5WUDwEeR8kHMWJXY6lVPCzo0Nu2I3V4tbNxKs9
+         P/QhqJHqKDmI5fhMoG3+J4rBUyhNb37NNNoTEZ/gwIE2hu8OcKFr9vAhTanVPCSes3T9
+         vo6A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709629536; x=1710234336;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iVyff6pSUeH7eXbrIj/i6abg3oo4j85mjc8PEacBjjE=;
+        b=OF5JWK40GVMC+YPrUKEzqW9/iNt6JRrhzUi70WxvIeFJYJMioBYgXdeZAVoHsVlDER
+         JWEBFANv7QpWxxWz6SOL0Z6+m82t2Xf7T737yLAcaNXTA0miZ4IFqqcgIo6ETC6aR3W8
+         1raY1k3ng1dDpG2V4HZICTL6WxLkOZvGaKUJOLrt1NRJV+4UpkRXJcs3XwOu0dXkw8u1
+         DpTC+Pt4RoEAcjjTKQxl+wtihECbS2Yuu5AFSiRnBB5mYdaGxROpH0y1DFXsBlUbAXBZ
+         Aemey724xizGlt/xpmX+pFTgvGmUfYkyqK/yDv70KE66KAtIf2ptscntQbWN6/RmXb3c
+         nmhA==
+X-Forwarded-Encrypted: i=1; AJvYcCWb52y07aom+zY/pQ3IvZzUfg/8Fcd08b5akNqjUdzodK8LTuxyw5O+9fSiBaR5eZtaTtIwqF1UCjTLSSqe8l8zUUrgq8ARRfnJgBY=
+X-Gm-Message-State: AOJu0YxSoIoWsjOQ5Bt9H2fGzjdUnF4JFLc+1a13iwe8X2vpWMM72ngj
+	Ynbigoak6vfW032xHWlSJj6pW2wkuIXfIwHCE+rFJyW1TopF0ldDTutifnDH9N8=
+X-Google-Smtp-Source: AGHT+IE3V7x03ggowAKVgcziDcq2QmZUnrNLZGdToxQ4bVq1RxNhNEasbMMg5KQP4v70Va8u3fFnoQ==
+X-Received: by 2002:a05:600c:474c:b0:412:c9e5:b2d7 with SMTP id w12-20020a05600c474c00b00412c9e5b2d7mr7368975wmo.19.1709629536061;
+        Tue, 05 Mar 2024 01:05:36 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id ay37-20020a05600c1e2500b00412e7dde7d9sm3637450wmb.15.2024.03.05.01.05.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 05 Mar 2024 01:05:35 -0800 (PST)
+Date: Tue, 5 Mar 2024 09:05:36 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/7] backlight: gpio: Simplify with dev_err_probe()
+Message-ID: <20240305090536.GJ102563@aspen.lan>
+References: <20240305-backlight-probe-v2-0-609b0cf24bde@linaro.org>
+ <20240305-backlight-probe-v2-1-609b0cf24bde@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
- (10.188.4.12)
-X-KSE-ServerInfo: msexch01.omp.ru, 9
-X-KSE-AntiSpam-Interceptor-Info: scan successful
-X-KSE-AntiSpam-Version: 6.1.0, Database issued on: 03/05/2024 08:01:11
-X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
-X-KSE-AntiSpam-Method: none
-X-KSE-AntiSpam-Rate: 59
-X-KSE-AntiSpam-Info: Lua profiles 183947 [Mar 05 2024]
-X-KSE-AntiSpam-Info: Version: 6.1.0.3
-X-KSE-AntiSpam-Info: Envelope from: r.smirnov@omp.ru
-X-KSE-AntiSpam-Info: LuaCore: 8 0.3.8 4a99897b35b48c45ee5c877607d26a2d9f419920
-X-KSE-AntiSpam-Info: {rep_avail}
-X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
-X-KSE-AntiSpam-Info: {relay has no DNS name}
-X-KSE-AntiSpam-Info: {SMTP from is not routable}
-X-KSE-AntiSpam-Info: {Found in DNSBL: 78.37.41.175 in (user) dbl.spamhaus.org}
-X-KSE-AntiSpam-Info:
-	omp.ru:7.1.1;78.37.41.175:7.4.1,7.7.3;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;127.0.0.199:7.1.2
-X-KSE-AntiSpam-Info: {cloud_iprep_silent}
-X-KSE-AntiSpam-Info: ApMailHostAddress: 78.37.41.175
-X-KSE-AntiSpam-Info: {DNS response errors}
-X-KSE-AntiSpam-Info: Rate: 59
-X-KSE-AntiSpam-Info: Status: not_detected
-X-KSE-AntiSpam-Info: Method: none
-X-KSE-AntiSpam-Info: Auth:dmarc=temperror header.from=omp.ru;spf=temperror
- smtp.mailfrom=omp.ru;dkim=none
-X-KSE-Antiphishing-Info: Clean
-X-KSE-Antiphishing-ScanningType: Heuristic
-X-KSE-Antiphishing-Method: None
-X-KSE-Antiphishing-Bases: 03/05/2024 08:07:00
-X-KSE-Antivirus-Interceptor-Info: scan successful
-X-KSE-Antivirus-Info: Clean, bases: 3/5/2024 3:38:00 AM
-X-KSE-Attachment-Filter-Triggered-Rules: Clean
-X-KSE-Attachment-Filter-Triggered-Filters: Clean
-X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240305-backlight-probe-v2-1-609b0cf24bde@linaro.org>
 
-The expression htotal * vtotal can have a zero value 
-on overflow. It is necessary to prevent division by
-zero like in fb_var_to_videomode().
+On Tue, Mar 05, 2024 at 09:11:56AM +0100, Krzysztof Kozlowski wrote:
+> Common pattern of handling deferred probe can be simplified with
+> dev_err_probe().  Less code and also it prints the error value.
+>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Found by Linux Verification Center (linuxtesting.org) with Svace.
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Signed-off-by: Roman Smirnov <r.smirnov@omp.ru>
-Reviewed-by: Sergey Shtylyov <s.shtylyov@omp.ru>
----
- drivers/video/fbdev/core/fbmon.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 79e5bfbdd34c..bd98b138da6a 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1311,7 +1311,7 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
- int fb_videomode_from_videomode(const struct videomode *vm,
- 				struct fb_videomode *fbmode)
- {
--	unsigned int htotal, vtotal;
-+	unsigned int htotal, vtotal, hfreq;
- 
- 	fbmode->xres = vm->hactive;
- 	fbmode->left_margin = vm->hback_porch;
-@@ -1345,7 +1345,8 @@ int fb_videomode_from_videomode(const struct videomode *vm,
- 		 vm->vsync_len;
- 	/* prevent division by zero */
- 	if (htotal && vtotal) {
--		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
-+		hfreq = vm->pixelclock / htotal;
-+		fbmode->refresh = hfreq / vtotal;
- 	/* a mode must have htotal and vtotal != 0 or it is invalid */
- 	} else {
- 		fbmode->refresh = 0;
--- 
-2.34.1
-
+Daniel.

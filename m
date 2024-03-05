@@ -1,54 +1,54 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A630B11198;
-	Tue,  5 Mar 2024 10:30:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B76A6633F1;
+	Tue,  5 Mar 2024 10:45:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709634625; cv=none; b=oz7dpDbTBY/gzwsVd2j+yWW5I7T4b9KEAPrG53F5s53uPF0qRgX2/oIQPCACKq04YM04n6V2FmZI3qk7IYHYDYKf+lUJiR4AUhXAjuPRQjsTGGcz2GvjBxxwuIctgET63oGNzDC+4Jn2eU+jgRlKkHe9x5Qo7/lmOUNsLvQ/ZtI=
+	t=1709635505; cv=none; b=ZNldbGOabh9l2l2YdhSmyVHdSqNvM27Pbck6WNpd2SnkO05a5fZXgvSM22iHMtH9UeuD0w6IwP7lHQlOGXP7IIoZ0sRQlR2byN0T1cHdAFB0TcAn+Y3Jmjo2AnYLGavtFnDUGedXT+kkK+uc80PDWIMtN6KrbqPDlj11MTAGfqs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709634625; c=relaxed/simple;
-	bh=NFHYZPCn1iRdzYwgW5HIMl0T/4npS5nF2/vEjh+JuOs=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=NCGqzquQeztemzsLXLknPR8S3aHznQ71VPT/f3WPE0Q99TUEiMEQDISU64eEg0iBDI4jwV7xIL8tsB9puaYJ/Dr7GJY1Lwb+hxHodvuAgq0RtRhTUSy51pKcrlTomwGq1hv/Ldi20BAjsjRxFEa/Oqi53EaCUk2u2nvmtn2Pzc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZFTxySPR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1709635505; c=relaxed/simple;
+	bh=8VjRaJlSO52iUgJuSPtyZYPQMgxH2rtz0BnF9RAJWh4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sYw8VEfswU3RP9VbjkkPB5hp+xczzvnVV/ng8gqrlc61Vzgk8LyiUujzObgqd4KUWhiY4AA7YloWPWO9yfTLzuB9rk9Vk26vbqGsiNQ30qx2GqrAHdMlKSHAPEMOvjnjhzkSZR39v68/1xQyJ0SqldyVlw40unRCCzz8gPf+s0k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ib32rDTh; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZFTxySPR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFA5DC433C7;
-	Tue,  5 Mar 2024 10:30:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ib32rDTh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC4A1C433C7;
+	Tue,  5 Mar 2024 10:45:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1709634625;
-	bh=NFHYZPCn1iRdzYwgW5HIMl0T/4npS5nF2/vEjh+JuOs=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=ZFTxySPRZx59XD3uzj19WgnlvWjAgsAma51hEVMdNa1Slm5uVyfvgeeghyi6U/ewx
-	 nYHtHCFdJ7KfvL0M471EaXSHXN3G8cXXzkL73uuky/BkJEjwZ033+xNMz9DwjrSaiM
-	 iMYCJCPsV+5mBBsu0Kz1CbGEL7PEeIsRI+OSB4qayHDrNp26r2FXnuK+h0Hpy090dG
-	 +EUczuIuHBwuUO/1fH8Z/u8K9ZpK5aAU3OUx4JbgnZgwRNiMEtiFyRo1HqaXHPbkfn
-	 dFTmQ/yQd0qUjctrtxumpJPJHbKUK2ochzOrndK0Gzlpd18jkpewFO/JyAHXnPvUer
-	 RA2EPQpyTikCA==
+	s=k20201202; t=1709635505;
+	bh=8VjRaJlSO52iUgJuSPtyZYPQMgxH2rtz0BnF9RAJWh4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Ib32rDTh4IJYYPZKnoiSk9MLqhEOKNsNr1vEYi4ugZ0s5BDM8Mht4heLcu0Udkxag
+	 8v0nX4T7ukk8LMFRAhRQ8uqDx/xOQMPUzeSu60R3VdRhJXj4O1nzOR8eaFlbL96JFu
+	 soCK+s47ucZI/XIqYtx+PY1I8b9MWsw3ywh3jfQzPQwrVWfkAyOWd7ozPyvoqOQ9yM
+	 AbwvJ/0dBjchXuN1RaH6qMHcgF372gCrI9vBrJ8IhsR0g//jDRywFazfy74BqdAVD5
+	 303nVglW7uUTyNujcbgQtlD1sEJ/4m7n7RG5j2qbbcbwFNhdVwxcL9msRwmNIq3Nlr
+	 Hlyk7IKCnXt0w==
+Date: Tue, 5 Mar 2024 10:44:59 +0000
 From: Lee Jones <lee@kernel.org>
-To: andy@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
- deller@gmx.de, robin@protonic.nl, javierm@redhat.com, 
- Thomas Zimmermann <tzimmermann@suse.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
-In-Reply-To: <20240304163220.19144-1-tzimmermann@suse.de>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: andy@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	deller@gmx.de, robin@protonic.nl, javierm@redhat.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v3 00/10] backlight: Replace struct fb_info in interfaces
+Message-ID: <20240305104459.GA86322@google.com>
 References: <20240304163220.19144-1-tzimmermann@suse.de>
-Subject: Re: [PATCH v3 00/10] backlight: Replace struct fb_info in
- interfaces
-Message-Id: <170963462254.80615.15102290140369290410.b4-ty@kernel.org>
-Date: Tue, 05 Mar 2024 10:30:22 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.4
+In-Reply-To: <20240304163220.19144-1-tzimmermann@suse.de>
 
-On Mon, 04 Mar 2024 17:29:45 +0100, Thomas Zimmermann wrote:
+On Mon, 04 Mar 2024, Thomas Zimmermann wrote:
+
 > Backlight drivers implement struct backlight_ops.check_fb, which
 > uses struct fb_info in its interface. Replace the callback with one
 > that does not use fb_info.
@@ -58,31 +58,56 @@ On Mon, 04 Mar 2024 17:29:45 +0100, Thomas Zimmermann wrote:
 > At the same time, fbdev is deprecated for new drivers and likely to
 > be replaced on many systems.
 > 
-> [...]
+> This patchset is part of a larger effort to implement the backlight
+> code without depending on fbdev.
+> 
+> Patch 1 makes the backlight core match backlight and framebuffer
+> devices via struct fb_info.bl_dev. Patches 2 to 9 then go through
+> drivers and remove unnecessary implementations of check_fb. Finally,
+> patch 10 replaces the check_fb hook with controls_device, which
+> uses the framebuffer's Linux device instead of the framebuffer.
+> 
+> v3:
+> 	* hide CONFIG_FB_BACKLIGHT behind fb_bl_device() (Lee)
+> 	* if-else cleanups (Andy)
+> 	* fix commit message of patch 2 (Andy)
+> v2:
+> 	* fix hid-picolcd for CONFIG_FB_BACKLIGHT=n
+> 	* fixes to commit messages
+> 
+> Thomas Zimmermann (10):
+>   backlight: Match backlight device against struct fb_info.bl_dev
+>   auxdisplay/ht16k33: Remove struct backlight_ops.check_fb
+>   hid/hid-picolcd: Fix initialization order
+>   hid/hid-picolcd: Remove struct backlight_ops.check_fb
+>   backlight/aat2870-backlight: Remove struct backlight.check_fb
+>   backlight/pwm-backlight: Remove struct backlight_ops.check_fb
+>   fbdev/sh_mobile_lcdc_fb: Remove struct backlight_ops.check_fb
+>   fbdev/ssd1307fb: Init backlight before registering framebuffer
+>   fbdev/ssd1307fb: Remove struct backlight_ops.check_fb
+>   backlight: Add controls_device callback to struct backlight_ops
+> 
+>  drivers/auxdisplay/ht16k33.c             |  8 ------
+>  drivers/hid/hid-picolcd_backlight.c      |  7 ------
+>  drivers/hid/hid-picolcd_core.c           | 14 +++++------
+>  drivers/hid/hid-picolcd_fb.c             |  6 +++++
+>  drivers/video/backlight/aat2870_bl.c     |  7 ------
+>  drivers/video/backlight/backlight.c      |  8 ++++--
+>  drivers/video/backlight/bd6107.c         | 12 ++++-----
+>  drivers/video/backlight/gpio_backlight.c | 12 ++++-----
+>  drivers/video/backlight/lv5207lp.c       | 12 ++++-----
+>  drivers/video/backlight/pwm_bl.c         | 12 ---------
+>  drivers/video/fbdev/core/fb_backlight.c  |  5 ++++
+>  drivers/video/fbdev/sh_mobile_lcdcfb.c   |  7 ------
+>  drivers/video/fbdev/ssd1307fb.c          | 31 +++++++++---------------
+>  include/linux/backlight.h                | 16 ++++++------
+>  include/linux/fb.h                       |  9 +++++++
+>  include/linux/pwm_backlight.h            |  1 -
+>  16 files changed, 70 insertions(+), 97 deletions(-)
 
-Applied, thanks!
+All applied.  Submitted for build testing.
 
-[01/10] backlight: Match backlight device against struct fb_info.bl_dev
-        commit: 67716b34e1be2beb7464f9b9d0b47b2cc7dbc208
-[02/10] auxdisplay/ht16k33: Remove struct backlight_ops.check_fb
-        commit: 747554336b46a26fcdf47e2e48044c7e175b6a5f
-[03/10] hid/hid-picolcd: Fix initialization order
-        commit: d55b578e3b0cd6abdc52e2c34d88dd3487bb10a2
-[04/10] hid/hid-picolcd: Remove struct backlight_ops.check_fb
-        commit: 09ca774d2e87f9b086b23354b1605709fb50205f
-[05/10] backlight/aat2870-backlight: Remove struct backlight.check_fb
-        commit: 61e837e975abcb4d278c3427d927e1cbaaed0090
-[06/10] backlight/pwm-backlight: Remove struct backlight_ops.check_fb
-        commit: 9c2be31d2951c8dce90950db000c095330406f94
-[07/10] fbdev/sh_mobile_lcdc_fb: Remove struct backlight_ops.check_fb
-        commit: a2a8fbdb54a78fd18850cd0b74b465657ffb1e0c
-[08/10] fbdev/ssd1307fb: Init backlight before registering framebuffer
-        commit: 5500326bd33e52230866f50770ca822ce400a4ab
-[09/10] fbdev/ssd1307fb: Remove struct backlight_ops.check_fb
-        commit: d1b82cc44fd8be4013538992814c45f0e55c02b4
-[10/10] backlight: Add controls_device callback to struct backlight_ops
-        commit: 7e508af663e20e9e40003bb30e06b926c754159b
+Will follow-up with a PR once that's passed.
 
---
+-- 
 Lee Jones [李琼斯]
-

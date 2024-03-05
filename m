@@ -1,208 +1,100 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A115F537E5;
-	Tue,  5 Mar 2024 09:09:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E61BD4DA1F;
+	Tue,  5 Mar 2024 09:13:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709629765; cv=none; b=Nh6pw13lPFhsvdlO0/y4eyOHMNzeSPRgVIZzt8ynLeCpgCsSShKlaGew1Kwk73SqAd5I1Y/yxzDbcya6D5Hb2gaNFWBBB73znDt1tyZHmCpz2Sp1NG3ktGOwgNCI0ScPcMW8nIx1OjzwI66s/8ETDCEhUFl8QK9ikL+5NLMDkn0=
+	t=1709630013; cv=none; b=aFEDS3gfhenmmC12tEnOsq6BLYNYWUNc4UjkV8ufxAJushPRq/r7fvfm6DNLoRzNoOctrri8uRS/9JyK1Vl6EHXi4NhJopC9pSZMDBPscoxH848DMG2XgjDeusiJA7YyPaWE7LxzWMlgytj4Ol6ASWb41dhKWNnK0CRCCi0NYf0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709629765; c=relaxed/simple;
-	bh=dD6oJ1tw3lJemOCAeta+UGXBZxmMDo2ATIvfTasxZ5k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hLsjhAEtoIPPNK8g2LupT9WIdsLgtI2RmvM7IyFS31e0uRNrPSdHktLQKjvHmDenrGqOG3I7Vy7MbfPfLxUeAod2yP4LOSpIpx9K/nKZKqDF4zX9w52KbjqZ9xTkgUxapny+DW77oXKmrubTh2x2VCZb5XmIjX+i4IseLSvoA7w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lML4VmjS; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=wbL9187w; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lML4VmjS; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=wbL9187w; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1709630013; c=relaxed/simple;
+	bh=3mXN8KKW4waYOcWzjRN9oSLaIcwuzNcqm3YSkZxcpzY=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=qXc/ir3KYRwdSBhcvzp2fRoHyObTbrYIw7yjzC+UCn3OR4KPFPhNnjlDn3PY8qOeoxnWgNC/HqaFU7TT56b0VVGuszpnCMX9ZzcOZleX0Z5I8TsR3h41b7vHu/h2TtsEPnBVFHv9z/Qv3TTcpZ35k3qz0bX5bAMkmkDC0JCbIUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Gt0Ahmyo; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lML4VmjS";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="wbL9187w";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lML4VmjS";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="wbL9187w"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A62276AA36;
-	Tue,  5 Mar 2024 09:09:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709629755; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ExrC55p7rOd+2RKId8GNbrv3KOFKzMlHTaFnRAZmg9s=;
-	b=lML4VmjST9+3hxiLPBDz8P5qe3cSbT+7Wrh+jyjuLhNKhgYkDfSYgKvYk26pTa5At17JpF
-	NC7EJiIyORuV7LKsT/fIwnR9jhsp5+kDor2EwKEXkdOWpPPwnSh+alfHOCRJKEw6+nH+Og
-	pjLdSE8EndYAyNFsJmdEPZLil99VEcY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709629755;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ExrC55p7rOd+2RKId8GNbrv3KOFKzMlHTaFnRAZmg9s=;
-	b=wbL9187we++oFbQu3wEAlU8s2ABcoSkG8zDGreff30y6L8pG+rgdUnbhXrmlLIYPFNrIkB
-	0Hlk5m7beOUOiABg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709629755; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ExrC55p7rOd+2RKId8GNbrv3KOFKzMlHTaFnRAZmg9s=;
-	b=lML4VmjST9+3hxiLPBDz8P5qe3cSbT+7Wrh+jyjuLhNKhgYkDfSYgKvYk26pTa5At17JpF
-	NC7EJiIyORuV7LKsT/fIwnR9jhsp5+kDor2EwKEXkdOWpPPwnSh+alfHOCRJKEw6+nH+Og
-	pjLdSE8EndYAyNFsJmdEPZLil99VEcY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709629755;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ExrC55p7rOd+2RKId8GNbrv3KOFKzMlHTaFnRAZmg9s=;
-	b=wbL9187we++oFbQu3wEAlU8s2ABcoSkG8zDGreff30y6L8pG+rgdUnbhXrmlLIYPFNrIkB
-	0Hlk5m7beOUOiABg==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id D2A4713A8A;
-	Tue,  5 Mar 2024 09:09:14 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id UBmdMDrh5mUSYgAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Tue, 05 Mar 2024 09:09:14 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: mpe@ellerman.id.au,
-	jani.nikula@intel.com,
-	naresh.kamboju@linaro.org,
-	deller@gmx.de,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	aneesh.kumar@kernel.org,
-	naveen.n.rao@linux.ibm.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	lkft-triage@lists.linaro.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 3/3] arch/powerpc: Remove <linux/fb.h> from backlight code
-Date: Tue,  5 Mar 2024 10:01:00 +0100
-Message-ID: <20240305090910.26742-4-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240305090910.26742-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Gt0Ahmyo"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1709630012; x=1741166012;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=3mXN8KKW4waYOcWzjRN9oSLaIcwuzNcqm3YSkZxcpzY=;
+  b=Gt0Ahmyous3C15cJfbUaMnCp+ZskDMj2eu/chCdW81oul/E1pvRT8YcA
+   JGEN8XdOtFSSZ10smz/RARTlKHjrBh0I5BesAnFHKFrH7kmv1xq8PCywB
+   dAcj0HI04GugZhckXjK6nPygEzx14q3nSVrp7gTdSSDs0TabTmU5SNJUO
+   XjbQYIOG9KTU1ACh+L1arpx65DOVziq/NINxjQJXuYlCihcyGDxAOW25d
+   oCe2/ivPDIIZnZEKPQZiplyLqRs7OeaMJ1qyfp++oNunCys05aHkluCdi
+   m6futw8sPtVppHM7PVbiGiUoJ4tmHh6xtCkUwBsvcB7NunPIrT99IAzB8
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11003"; a="4031546"
+X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
+   d="scan'208";a="4031546"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Mar 2024 01:13:30 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
+   d="scan'208";a="46836038"
+Received: from omakhlou-mobl4.amr.corp.intel.com (HELO localhost) ([10.252.51.143])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Mar 2024 01:13:24 -0800
+From: Jani Nikula <jani.nikula@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, mpe@ellerman.id.au,
+ naresh.kamboju@linaro.org, deller@gmx.de, npiggin@gmail.com,
+ christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org,
+ naveen.n.rao@linux.ibm.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ lkft-triage@lists.linaro.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v2 2/3] macintosh/via-pmu-backlight: Include
+ <linux/backlight.h>
+In-Reply-To: <20240305090910.26742-3-tzimmermann@suse.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 References: <20240305090910.26742-1-tzimmermann@suse.de>
+ <20240305090910.26742-3-tzimmermann@suse.de>
+Date: Tue, 05 Mar 2024 11:13:20 +0200
+Message-ID: <87plw92g9b.fsf@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spamd-Result: default: False [4.90 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 R_RATELIMIT(0.00)[to_ip_from(RL9wq65f3r6cge75md5ma8xy98)];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 RCPT_COUNT_TWELVE(0.00)[14];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email];
-	 FREEMAIL_TO(0.00)[ellerman.id.au,intel.com,linaro.org,gmx.de,gmail.com,csgroup.eu,kernel.org,linux.ibm.com];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[]
-X-Spam-Level: ****
-X-Spam-Score: 4.90
-X-Spam-Flag: NO
+Content-Type: text/plain
 
-Replace <linux/fb.h> with a forward declaration in <asm/backlight.h> to
-resolves an unnecessary dependency. Remove pmac_backlight_curve_lookup()
-and struct fb_info from source and header files. The function and the
-framebuffer struct is unused. No functional changes.
+On Tue, 05 Mar 2024, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Fix builds with CONFIG_PMAC_BACKLIGHT=y. The include statement for the
+> backlight header has recently been removed from <linux/fb.h>. Add it to
+> via-pmu-backlight.c to get the necessary symbols.
+>
+> Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+> Closes: https://lore.kernel.org/dri-devel/CA+G9fYsAk5TbqqxFC2W4oHLGA0CbTHMxbeq8QayFXTU75YiueA@mail.gmail.com/
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: 11b4eedfc87d ("fbdev: Do not include <linux/backlight.h> in header")
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Jani Nikula <jani.nikula@intel.com>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- arch/powerpc/include/asm/backlight.h        |  5 ++--
- arch/powerpc/platforms/powermac/backlight.c | 26 ---------------------
- 2 files changed, 2 insertions(+), 29 deletions(-)
+Reviewed-by: Jani Nikula <jani.nikula@intel.com>
 
-diff --git a/arch/powerpc/include/asm/backlight.h b/arch/powerpc/include/asm/backlight.h
-index 1b5eab62ed047..061a910d74929 100644
---- a/arch/powerpc/include/asm/backlight.h
-+++ b/arch/powerpc/include/asm/backlight.h
-@@ -10,15 +10,14 @@
- #define __ASM_POWERPC_BACKLIGHT_H
- #ifdef __KERNEL__
- 
--#include <linux/fb.h>
- #include <linux/mutex.h>
- 
-+struct backlight_device;
-+
- /* For locking instructions, see the implementation file */
- extern struct backlight_device *pmac_backlight;
- extern struct mutex pmac_backlight_mutex;
- 
--extern int pmac_backlight_curve_lookup(struct fb_info *info, int value);
--
- extern int pmac_has_backlight_type(const char *type);
- 
- extern void pmac_backlight_key(int direction);
-diff --git a/arch/powerpc/platforms/powermac/backlight.c b/arch/powerpc/platforms/powermac/backlight.c
-index aeb79a8b3e109..12bc01353bd3c 100644
---- a/arch/powerpc/platforms/powermac/backlight.c
-+++ b/arch/powerpc/platforms/powermac/backlight.c
-@@ -9,7 +9,6 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/fb.h>
- #include <linux/backlight.h>
- #include <linux/adb.h>
- #include <linux/pmu.h>
-@@ -72,31 +71,6 @@ int pmac_has_backlight_type(const char *type)
- 	return 0;
- }
- 
--int pmac_backlight_curve_lookup(struct fb_info *info, int value)
--{
--	int level = (FB_BACKLIGHT_LEVELS - 1);
--
--	if (info && info->bl_dev) {
--		int i, max = 0;
--
--		/* Look for biggest value */
--		for (i = 0; i < FB_BACKLIGHT_LEVELS; i++)
--			max = max((int)info->bl_curve[i], max);
--
--		/* Look for nearest value */
--		for (i = 0; i < FB_BACKLIGHT_LEVELS; i++) {
--			int diff = abs(info->bl_curve[i] - value);
--			if (diff < max) {
--				max = diff;
--				level = i;
--			}
--		}
--
--	}
--
--	return level;
--}
--
- static void pmac_backlight_key_worker(struct work_struct *work)
- {
- 	if (atomic_read(&kernel_backlight_disabled))
+> ---
+>  drivers/macintosh/via-pmu-backlight.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
+> index c2d87e7fa85be..89450645c2305 100644
+> --- a/drivers/macintosh/via-pmu-backlight.c
+> +++ b/drivers/macintosh/via-pmu-backlight.c
+> @@ -10,6 +10,7 @@
+>  
+>  #include <asm/ptrace.h>
+>  #include <linux/adb.h>
+> +#include <linux/backlight.h>
+>  #include <linux/pmu.h>
+>  #include <asm/backlight.h>
+
 -- 
-2.44.0
-
+Jani Nikula, Intel

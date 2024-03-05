@@ -1,213 +1,88 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF0D8548EE;
-	Tue,  5 Mar 2024 10:18:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A630B11198;
+	Tue,  5 Mar 2024 10:30:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709633890; cv=none; b=eGGxlxRuN7kSfb8f0LRq6y1AD/7nPkFokYD7ONeqH3BRqME9m1VFn6Gv8A2O0pfbPkdXAjtsFlqamhWjgR67QhjkDwK9lv/ler6RgKK1A6iHVZH8QCRHg0FWLj0QqvXae7YPvqib8E/fHFjrfBbL+PBxr5I3Zr61vDa5v4894YA=
+	t=1709634625; cv=none; b=oz7dpDbTBY/gzwsVd2j+yWW5I7T4b9KEAPrG53F5s53uPF0qRgX2/oIQPCACKq04YM04n6V2FmZI3qk7IYHYDYKf+lUJiR4AUhXAjuPRQjsTGGcz2GvjBxxwuIctgET63oGNzDC+4Jn2eU+jgRlKkHe9x5Qo7/lmOUNsLvQ/ZtI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709633890; c=relaxed/simple;
-	bh=sSl0n9baNHDuCeFsUsy3o89fqeTeqg0TGryIM+JbRus=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=P97myaE1atCopKk0okfCKkt0XFBbVIX4z1HtjTJ1u08E/dzX/3Tlir0ij7hRTPBJb2cBUazKCH5n54CNsPKCn8uZ8L7sYt4lFJxa/7Hk5s1atvmF6wPACPk7/1SQ6E9Hjix9xwLDZCE0ZTLDD2lcF3+xlp/A1xrFgZYsf50+xK4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=oQFQAhRt; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=BJ+wf17h; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=oQFQAhRt; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=BJ+wf17h; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1709634625; c=relaxed/simple;
+	bh=NFHYZPCn1iRdzYwgW5HIMl0T/4npS5nF2/vEjh+JuOs=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=NCGqzquQeztemzsLXLknPR8S3aHznQ71VPT/f3WPE0Q99TUEiMEQDISU64eEg0iBDI4jwV7xIL8tsB9puaYJ/Dr7GJY1Lwb+hxHodvuAgq0RtRhTUSy51pKcrlTomwGq1hv/Ldi20BAjsjRxFEa/Oqi53EaCUk2u2nvmtn2Pzc0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZFTxySPR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="oQFQAhRt";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="BJ+wf17h";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="oQFQAhRt";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="BJ+wf17h"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 01E3F76B98;
-	Tue,  5 Mar 2024 10:18:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709633887; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XHoj87o+0g5i2kqapJljsWDPdSV/f39cRJJacqXEtVs=;
-	b=oQFQAhRtRdn5iXITsoHlVkGlrrUD0V0IpHNoUCBZ+lHHf1t9WnhIzyM1uQ/t1BjT13G9pM
-	4RYOR4QUtYh8wtjkKrD+Tc0N9BiAqiDwye+l6tc0cohaaYkpnLM05YL77k7gXb3z/YFjmg
-	3/9WOtYsi9qRNpQxjSfn6WxVP3Ei81c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709633887;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XHoj87o+0g5i2kqapJljsWDPdSV/f39cRJJacqXEtVs=;
-	b=BJ+wf17hzmMpd+lCtUbE4ZviDv2CGpkauSuYwJtv4xwQuWd6JZZDJyDFANcnpgACPTBmVK
-	8F93PXYOdL1cnFAQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709633887; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XHoj87o+0g5i2kqapJljsWDPdSV/f39cRJJacqXEtVs=;
-	b=oQFQAhRtRdn5iXITsoHlVkGlrrUD0V0IpHNoUCBZ+lHHf1t9WnhIzyM1uQ/t1BjT13G9pM
-	4RYOR4QUtYh8wtjkKrD+Tc0N9BiAqiDwye+l6tc0cohaaYkpnLM05YL77k7gXb3z/YFjmg
-	3/9WOtYsi9qRNpQxjSfn6WxVP3Ei81c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709633887;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XHoj87o+0g5i2kqapJljsWDPdSV/f39cRJJacqXEtVs=;
-	b=BJ+wf17hzmMpd+lCtUbE4ZviDv2CGpkauSuYwJtv4xwQuWd6JZZDJyDFANcnpgACPTBmVK
-	8F93PXYOdL1cnFAQ==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id A567513A5D;
-	Tue,  5 Mar 2024 10:18:06 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id BGl7Jl7x5mUHdwAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Tue, 05 Mar 2024 10:18:06 +0000
-Message-ID: <a4a77ad1-1f3c-45ca-9385-436a8bfe5bc3@suse.de>
-Date: Tue, 5 Mar 2024 11:18:05 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZFTxySPR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFA5DC433C7;
+	Tue,  5 Mar 2024 10:30:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1709634625;
+	bh=NFHYZPCn1iRdzYwgW5HIMl0T/4npS5nF2/vEjh+JuOs=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=ZFTxySPRZx59XD3uzj19WgnlvWjAgsAma51hEVMdNa1Slm5uVyfvgeeghyi6U/ewx
+	 nYHtHCFdJ7KfvL0M471EaXSHXN3G8cXXzkL73uuky/BkJEjwZ033+xNMz9DwjrSaiM
+	 iMYCJCPsV+5mBBsu0Kz1CbGEL7PEeIsRI+OSB4qayHDrNp26r2FXnuK+h0Hpy090dG
+	 +EUczuIuHBwuUO/1fH8Z/u8K9ZpK5aAU3OUx4JbgnZgwRNiMEtiFyRo1HqaXHPbkfn
+	 dFTmQ/yQd0qUjctrtxumpJPJHbKUK2ochzOrndK0Gzlpd18jkpewFO/JyAHXnPvUer
+	 RA2EPQpyTikCA==
+From: Lee Jones <lee@kernel.org>
+To: andy@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
+ deller@gmx.de, robin@protonic.nl, javierm@redhat.com, 
+ Thomas Zimmermann <tzimmermann@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
+In-Reply-To: <20240304163220.19144-1-tzimmermann@suse.de>
+References: <20240304163220.19144-1-tzimmermann@suse.de>
+Subject: Re: [PATCH v3 00/10] backlight: Replace struct fb_info in
+ interfaces
+Message-Id: <170963462254.80615.15102290140369290410.b4-ty@kernel.org>
+Date: Tue, 05 Mar 2024 10:30:22 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbmon: prevent division by zero in
- fb_videomode_from_videomode()
-Content-Language: en-US
-To: Roman Smirnov <r.smirnov@omp.ru>, Daniel Vetter <daniel@ffwll.ch>,
- Helge Deller <deller@gmx.de>
-Cc: Sergey Shtylyov <s.shtylyov@omp.ru>, Karina Yankevich
- <k.yankevich@omp.ru>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- lvc-project@linuxtesting.org
-References: <20240305082040.7445-1-r.smirnov@omp.ru>
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240305082040.7445-1-r.smirnov@omp.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=oQFQAhRt;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=BJ+wf17h
-X-Spamd-Result: default: False [-2.30 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 XM_UA_NO_VERSION(0.01)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 DWL_DNSWL_MED(-2.00)[suse.de:dkim];
-	 BAYES_HAM(-0.00)[30.91%];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 DKIM_TRACE(0.00)[suse.de:+];
-	 MX_GOOD(-0.01)[];
-	 RCPT_COUNT_SEVEN(0.00)[9];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim];
-	 FREEMAIL_TO(0.00)[omp.ru,ffwll.ch,gmx.de];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 MID_RHS_MATCH_FROM(0.00)[]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 01E3F76B98
-X-Spam-Level: 
-X-Spam-Score: -2.30
-X-Spam-Flag: NO
+X-Mailer: b4 0.12.4
 
-Hi
+On Mon, 04 Mar 2024 17:29:45 +0100, Thomas Zimmermann wrote:
+> Backlight drivers implement struct backlight_ops.check_fb, which
+> uses struct fb_info in its interface. Replace the callback with one
+> that does not use fb_info.
+> 
+> In DRM, we have several drivers that implement backlight support. By
+> including <linux/backlight.h> these drivers depend on <linux/fb.h>.
+> At the same time, fbdev is deprecated for new drivers and likely to
+> be replaced on many systems.
+> 
+> [...]
 
-Am 05.03.24 um 09:20 schrieb Roman Smirnov:
-> The expression htotal * vtotal can have a zero value
-> on overflow. It is necessary to prevent division by
-> zero like in fb_var_to_videomode().
->
-> Found by Linux Verification Center (linuxtesting.org) with Svace.
->
-> Signed-off-by: Roman Smirnov <r.smirnov@omp.ru>
-> Reviewed-by: Sergey Shtylyov <s.shtylyov@omp.ru>
-> ---
->   drivers/video/fbdev/core/fbmon.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-> index 79e5bfbdd34c..bd98b138da6a 100644
-> --- a/drivers/video/fbdev/core/fbmon.c
-> +++ b/drivers/video/fbdev/core/fbmon.c
-> @@ -1311,7 +1311,7 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
->   int fb_videomode_from_videomode(const struct videomode *vm,
->   				struct fb_videomode *fbmode)
->   {
-> -	unsigned int htotal, vtotal;
-> +	unsigned int htotal, vtotal, hfreq;
->   
->   	fbmode->xres = vm->hactive;
->   	fbmode->left_margin = vm->hback_porch;
-> @@ -1345,7 +1345,8 @@ int fb_videomode_from_videomode(const struct videomode *vm,
->   		 vm->vsync_len;
->   	/* prevent division by zero */
->   	if (htotal && vtotal) {
-> -		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
-> +		hfreq = vm->pixelclock / htotal;
-> +		fbmode->refresh = hfreq / vtotal;
+Applied, thanks!
 
-I think this can change the end result because of integer rounding on 
-the intermediate result. Maybe use
+[01/10] backlight: Match backlight device against struct fb_info.bl_dev
+        commit: 67716b34e1be2beb7464f9b9d0b47b2cc7dbc208
+[02/10] auxdisplay/ht16k33: Remove struct backlight_ops.check_fb
+        commit: 747554336b46a26fcdf47e2e48044c7e175b6a5f
+[03/10] hid/hid-picolcd: Fix initialization order
+        commit: d55b578e3b0cd6abdc52e2c34d88dd3487bb10a2
+[04/10] hid/hid-picolcd: Remove struct backlight_ops.check_fb
+        commit: 09ca774d2e87f9b086b23354b1605709fb50205f
+[05/10] backlight/aat2870-backlight: Remove struct backlight.check_fb
+        commit: 61e837e975abcb4d278c3427d927e1cbaaed0090
+[06/10] backlight/pwm-backlight: Remove struct backlight_ops.check_fb
+        commit: 9c2be31d2951c8dce90950db000c095330406f94
+[07/10] fbdev/sh_mobile_lcdc_fb: Remove struct backlight_ops.check_fb
+        commit: a2a8fbdb54a78fd18850cd0b74b465657ffb1e0c
+[08/10] fbdev/ssd1307fb: Init backlight before registering framebuffer
+        commit: 5500326bd33e52230866f50770ca822ce400a4ab
+[09/10] fbdev/ssd1307fb: Remove struct backlight_ops.check_fb
+        commit: d1b82cc44fd8be4013538992814c45f0e55c02b4
+[10/10] backlight: Add controls_device callback to struct backlight_ops
+        commit: 7e508af663e20e9e40003bb30e06b926c754159b
 
-   if (htotal && vtotal && (vm->pixelclock / htotal >= vtotal))
-
-for the test. That rules out overflowing multiplication and sets refresh 
-to 0 in such cases.
-
-Best regards
-Thomas
-
->   	/* a mode must have htotal and vtotal != 0 or it is invalid */
->   	} else {
->   		fbmode->refresh = 0;
-
--- 
 --
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Lee Jones [李琼斯]
 

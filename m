@@ -1,61 +1,62 @@
-Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
+Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FD0D5491A;
-	Tue,  5 Mar 2024 12:21:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68B9A5A4FE;
+	Tue,  5 Mar 2024 12:21:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709641284; cv=none; b=IWPnw5BDBRO1A+0mDilYMkflXkGqAiRrI9TUqX+EiELvsYLXHO9MIu+4MzyJPN4s/EnDAS2tx1h2U6rnb0Kia3el/+hTpDcPMUDgegEI6dd/nbVISELypihoifjbl8ewb+QRAsfype4NkSgNTH2EUibdwiaW91f1kXQlFbCmzLs=
+	t=1709641287; cv=none; b=Lmv3sinIR822i2PoLV0P/C5S7nWmdB7n0YfnWl/DLu1od2hbXjChPsFvFxdzx6VVjYpVVxqQw1acDM/sWFncBYtBH1xyhCMVAdeQeJv1p47+KMFKrUlps1QnUrkUjLK77D1b0B5NLOubUuPIVSyJjyxpPCF4YY5ds8LdUQW5wmw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709641284; c=relaxed/simple;
-	bh=GN1G4NyMvWBolsspYbu0gF+ZyFJ3Ms4SmSjQgZCesZk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XCMCBIMLb6vyleJ59fXZAExY8CrfuX0Q24Yzqz/utkpbSU6sgpeulLWdXvWiehK2EBXmjqeHKwwpU8XXLT1fdt0w2NNerPndI1GTaNkaH6tUTYzYRPaTwK79sZCERXa0T4ZfxYUmQfAnzBd7bdvL3Dx2qPeaZ3rnH2o+wpHcaHQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=marliere.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=marliere.net header.i=@marliere.net header.b=iJ+9TT5d; arc=none smtp.client-ip=209.85.214.172
+	s=arc-20240116; t=1709641287; c=relaxed/simple;
+	bh=wPqgO6x1c97ZMRaqAAcxuPo7qKZW50BhJ1TgJiyowRg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=gY7nkkOnP10367vgmZ71IgUIXkHl964YZZ/uLqGv/N8vOrUgtGrXy/ilX4tQWy0Yqv4tRy+DmY3dqQT9B8QKUcGxwVr4RI+STZ7AdmsYM8rUoo/GYQFjxKtHqyRn/JidF/lJrC5GvcDnSBNBariMyONZwldvdoSFHaMIsvP2UXI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=marliere.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=marliere.net header.i=@marliere.net header.b=FT7/iUAn; arc=none smtp.client-ip=209.85.210.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=marliere.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=marliere.net header.i=@marliere.net header.b="iJ+9TT5d"
-Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-1dc13fb0133so41329365ad.3;
-        Tue, 05 Mar 2024 04:21:22 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=marliere.net header.i=@marliere.net header.b="FT7/iUAn"
+Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-6e64647af39so97039b3a.1;
+        Tue, 05 Mar 2024 04:21:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709641282; x=1710246082;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:dkim-signature:from:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=RpDVIywGu+mJvIXOFGxusadZf1l18EI+lUGuf5OSG+4=;
-        b=R1pwsboTgLv0Q+aJShFP3sihtAbizo0JYA9MD0MZTLwaPdywArMxhFgHrXUXW5c6Ae
-         YWSUwx+9FnFsNg5TOp2V+loWD1uoo3bRGVWyoZJfn616F8pg6iwUIaGerJ85/+E9Qyck
-         8I8YINFDqU2LsacMp5yNGVGA0rMxbm9SWlfhwl3peHQDHkj6JsTxsJY5R6t5mWs1k+Xw
-         0RAMM5Mx2HVBB6VveRAoIuA9/EDm/HbIFXfWKQidfBBQWjYdbN/ctjx7b2Rsj3EBMRof
-         kXIcoTIIBCN2S/++ZLKhG9vKDkJp8kb5bF+WbATsCYcyrAfU47F6DCzwGsITMThugzAJ
-         YaYg==
-X-Forwarded-Encrypted: i=1; AJvYcCWIe3befuwjHjUPFI8uB6r2ZN440sBQTdEwuTxuf+E2p3wZputuWq6B3MkahITFsd3uHXCvAZMR6qaKFVMjeIdE39qZTfaZNL1sH/WzLhMV50ypLnKKH2ziJmUZoQswIqPRsxsSt0064PM=
-X-Gm-Message-State: AOJu0YxCFF7BS+rol8Z1rwrv5UHzQbryYEXeZl35l+D/FN53XyTsQw3m
-	De4OgvoR5aJlXQc4Dcewl376NLam0brCsO5QXjIjgeqD7FImBeVx
-X-Google-Smtp-Source: AGHT+IHpuMsf1ZJiOZka7p/FiwnMuc/YVUhf1GFTqo6hGAt/L35GMeh9daxAanvulu3wfU0Wk0zdRg==
-X-Received: by 2002:a17:902:cec9:b0:1dd:151b:fa9e with SMTP id d9-20020a170902cec900b001dd151bfa9emr1851559plg.63.1709641282330;
-        Tue, 05 Mar 2024 04:21:22 -0800 (PST)
+        d=1e100.net; s=20230601; t=1709641286; x=1710246086;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:dkim-signature:from:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=EB+zvigNjipJqZrGtyuvHVekbcDWdJOO5TYIKi4KvqM=;
+        b=gM/HDK196LGhxs2MyN1G29qnGXRclN/ZGLqqFpn3zA8J/dZn5ndMhR3JFCxiZw6ljm
+         xM5BxR7QYzDIjzmByCLWMoPq23iYoKHspJf4NilcTAAaPb13jjG42dQIEqhAIgy4nlXQ
+         BunqZ0OKPd6ajxVqs6BNXhx8DFk7wVQqIM8E8oW/NpkxhlY3X2zI6yiocPU2QNfWstQv
+         NiqGf8rr7WvGSDHuiwc/4csixnzo6HhY7BHsv+/839ofTAYFkxdxPXsK+QBZ27NQ22FO
+         xLh0OPxkcAKrINZn90KI3Y7genn9XDgiSo5i858uRACJwmsBqcu3HBM3kg/IpPFiWyP2
+         BsAw==
+X-Forwarded-Encrypted: i=1; AJvYcCVdpMBUIDN+tSQ02x7UIMDzRKHs/0f7qt+EBKqaDlnHeCu77BUN+q99zpps7ZcVGyirTdRaxEpnmpt04vq9y4L6HK5bWhwCRo7XU7sXwUPa0ogkixF9UBNfSa480BRhdb3XK6fv3KU8eH0=
+X-Gm-Message-State: AOJu0YyM5JKLqH4KOLie+T2ODxrCmz0s1bkGTlRfA3c8I4GVeQBYhaXS
+	bQrFSmzGeCHGJeJFtOevYUnyDszb0nbcABx3SI+aSsNmuU0g0YJb
+X-Google-Smtp-Source: AGHT+IEsx2oyGpXbYX5zFlR9y9i1MJGRXxMf1XwxwrBx6v8x/fHt2MRSi5W1e5+ZtQQm1dIQybLYIA==
+X-Received: by 2002:aa7:88c5:0:b0:6e4:f4b4:9ea2 with SMTP id k5-20020aa788c5000000b006e4f4b49ea2mr16673906pff.32.1709641285659;
+        Tue, 05 Mar 2024 04:21:25 -0800 (PST)
 Received: from mail.marliere.net ([24.199.118.162])
-        by smtp.gmail.com with ESMTPSA id j12-20020a170902c3cc00b001dca9a6fdf1sm10417663plj.183.2024.03.05.04.21.21
+        by smtp.gmail.com with ESMTPSA id du6-20020a056a002b4600b006e5933a0da9sm8833564pfb.165.2024.03.05.04.21.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Mar 2024 04:21:21 -0800 (PST)
+        Tue, 05 Mar 2024 04:21:25 -0800 (PST)
 From: "Ricardo B. Marliere" <ricardo@marliere.net>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marliere.net;
-	s=2024; t=1709641280;
+	s=2024; t=1709641284;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=RpDVIywGu+mJvIXOFGxusadZf1l18EI+lUGuf5OSG+4=;
-	b=iJ+9TT5dKkMjIRx6HClkAtVYkv5PJw1hJ2pBMHTSHZAU2Cwwiaz6oDN1HQjLJZkZBkg44k
-	oJwJV/wspoHpN/bhReO/C1kYz8Ym4d0pkvSjvWclaVcG6YejmoSD53YkjBY6sYYP9YcNdd
-	Uu3q8tw1UaIWEcs/82XxeaN70bAlL075PlmMUgGL4zu7w82GZdmXRErGlrvHZJGkNl0H1o
-	uZforwhiX9rLptLwKZ/ctiV/ER1IRtRMaKxzK9i9iLN7xSgDYIx0nThgdvopGvQvcpjafR
-	utMLG3Znu6Scdkl+ZqeK2VsUQOmF7kgUZypSFQhilD2yop71ZgW7hje0cI4wRw==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=EB+zvigNjipJqZrGtyuvHVekbcDWdJOO5TYIKi4KvqM=;
+	b=FT7/iUAnqYSX1LAYGofJsvMLqVcEZ5Vp+GZkvigG5oabTdXc+QhEgU2Vz2W7ukhClIFg6M
+	hnagd15E1pJ75mZMc2US/FdDKhZREZOKezgQICrnczAMcy6Pjv5eOW7fD5kF5bOfAMrEnA
+	Hd1wMF9gDMUOnrLkQNp9naj0pVxRjjPbRB4wRl+Q6Sg3+Z6LXNns13JVMxeDLXGIGqGY2b
+	mXqZc8zGvJ7J2v7jMgSKadHWXRYZri+AoJKDS24Py1YrvE8HSxLKuXXBth6QHQ8LqWZvo4
+	p2v4rRP+RIk4hpGUnDkA93rU7AIxr7m2kWW075vKTTzIHj16NBDAJT4Q0y7Kag==
 Authentication-Results: ORIGINATING;
 	auth=pass smtp.auth=ricardo@marliere.net smtp.mailfrom=ricardo@marliere.net
-Subject: [PATCH 0/2] video: backlight: constify struct class usage
-Date: Tue, 05 Mar 2024 09:21:16 -0300
-Message-Id: <20240305-class_cleanup-backlight-v1-0-c0e15cc25be1@marliere.net>
+Date: Tue, 05 Mar 2024 09:21:17 -0300
+Subject: [PATCH 1/2] video: backlight: make backlight_class constant
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -64,52 +65,127 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIADwO52UC/x3MQQqDMBBA0avIrBsYEy21VykicRx1MKSSURHEu
- zd0+Rb/X6CchBXexQWJD1H5xozyUQDNPk5sZMgGi7ZCh7Wh4FU7Cuzjvpre0xJkmjfztH1Tkns
- h1gy5XhOPcv7Pn/a+fwyupjJpAAAA
+Message-Id: <20240305-class_cleanup-backlight-v1-1-c0e15cc25be1@marliere.net>
+References: <20240305-class_cleanup-backlight-v1-0-c0e15cc25be1@marliere.net>
+In-Reply-To: <20240305-class_cleanup-backlight-v1-0-c0e15cc25be1@marliere.net>
 To: Lee Jones <lee@kernel.org>, 
  Daniel Thompson <daniel.thompson@linaro.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
  linux-kernel@vger.kernel.org, "Ricardo B. Marliere" <ricardo@marliere.net>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=815; i=ricardo@marliere.net;
- h=from:subject:message-id; bh=GN1G4NyMvWBolsspYbu0gF+ZyFJ3Ms4SmSjQgZCesZk=;
- b=owEBbQKS/ZANAwAKAckLinxjhlimAcsmYgBl5w49ttMZGRTTzHYaea508k7VdAAv+U7ckzf2N
- /sm626lc0mJAjMEAAEKAB0WIQQDCo6eQk7jwGVXh+HJC4p8Y4ZYpgUCZecOPQAKCRDJC4p8Y4ZY
- pnYdD/9qO73gM1EqWw5mEM2tjBt0xEpPH7+BhtYqEeXSt9wLxreoBjFgEIIdt6Pjb8+HT0NMVOR
- 7QFk/LhkWF0x3mRveAAeV9IpmlmwCynDkZmNq0S+Dzcb3vdONtUGfB10fBG1JQW8Rq2GSEMF4tl
- qVYEsSj/hqZ3I9Kbf8ZxaAqmEn53mF3AbsCq5HIr9RHASNjLyfLyIhKDvQ2M7cVjLZs+GAensbz
- cVIfpLdMVMjL500gO1kHvIu/OiO5A7YboYhzbluh/YKMqqVv7SmKnRUGWi3RE5xjue+hs+R9BvF
- QmGDYygj63SNsJMe/XHjq82KfdJIkK+7r3fGRCIcgW0kapVDj1JVwO1Jtia4r0bY3FnlCAmZZbE
- 6BC/1AEtxu9Tqem9SpCQWR3cKppkNKiMKl3dmYwvJsYWIEwQpp7eD3i3BAVhaTAcr7WNKc6y74Y
- nOsYcoVypc5G4JiMc15z77lD5NcliNqbgss7rw+dNvSCvsohCN5Ft3MlyPr2HdBYRJ0YSK44TQz
- FAelFLufkW/fKuLgYG3p5u9BAkHm3w8FGZC5xeVXeiZs2JqRwgKWM8QFk6o5TKaaBU/Mp5+E6tR
- C4xA+ul3A24g6qGPW9HXD0WEFPrhRC6kjPJWciPAp1F1BE4QgheZULODGFmCqG8R0pz6Ash/CmY
- bcg2BTnQ5o9Ocug==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3316; i=ricardo@marliere.net;
+ h=from:subject:message-id; bh=wPqgO6x1c97ZMRaqAAcxuPo7qKZW50BhJ1TgJiyowRg=;
+ b=owEBbQKS/ZANAwAKAckLinxjhlimAcsmYgBl5w49fb2fHi43ZPpQ2hgetHTWppuTBPoASWbre
+ ej/ze4OJJaJAjMEAAEKAB0WIQQDCo6eQk7jwGVXh+HJC4p8Y4ZYpgUCZecOPQAKCRDJC4p8Y4ZY
+ psSXD/9N3DmlQ1MjAQcQFB7xpnrLJU/FzcyKQaoKqqJgaoAY6UJcBawC55DUL1mkUBMICTknNau
+ KYRSOjxQG6RnO5VnKEZk8sCzO4MtM4ZO0pUG9whq3ga8adY/wTOIbWEYwu4PhSba20K3sPDk5lu
+ /0mAzm02RUfz5BCOkoIzHYfFUp/KbEkT7In7xSQ97MifeVOHsWyfCXNSiVmW/Za/zM3vLufhL4R
+ lYnAk/A/oZgmH2FcLHcby9FWNLlvpgp/lW/4xAJZ6/jKZXW76EC4wKCrrTOWrVWfliY0ZfnCCLq
+ xlS3jxoM8kt2sm7yubV8BDM0R8PPXgIrNphespzfGNUxPA/f+pwSwVzCR870uMOzwb+LdgUZeL+
+ hVt/O0/UUn7Da+oqvVqUeTVgvgrbpitdNKGHzxXNabcQ283dVbymV9VFNxvtL7UGDEhAryj8m48
+ T4Vi95NdTluJNgsMzznNP4ncWNKu7UmIKhcs0ZiuFOKEADWJQ8sZd/UVYvu/XwalFp4/hZYA7uP
+ ljzVoFuGyZnsXoIYBb1RFzSl473QMvQZU/pbDJolgn6SZyrnEJ7jFMVWc9/12CaWnlDUscbS+cR
+ SP46VN9s2gs2oEYqWQoh6VEpm0lsI5VcoOTpl3ZyrChv9LGl5t+7Zq5RP/0S4SOxbPuJa2RhQ0N
+ y1mxM9Oy9FBAhGg==
 X-Developer-Key: i=ricardo@marliere.net; a=openpgp;
  fpr=030A8E9E424EE3C0655787E1C90B8A7C638658A6
 
-This is a simple and straight forward cleanup series that aims to make the
-class structures in backlight constant. This has been possible since 2023
-[1].
+Since commit 43a7206b0963 ("driver core: class: make class_register() take
+a const *"), the driver core allows for struct class to be in read-only
+memory, so move the backlight_class structure to be declared at build time
+placing it into read-only memory, instead of having to be dynamically
+allocated at boot time.
 
-[1]: https://lore.kernel.org/all/2023040248-customary-release-4aec@gregkh/
-
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
 ---
-Ricardo B. Marliere (2):
-      video: backlight: make backlight_class constant
-      video: backlight: lcd: make lcd_class constant
-
  drivers/video/backlight/backlight.c | 29 ++++++++++++++++-------------
- drivers/video/backlight/lcd.c       | 23 +++++++++++++----------
- 2 files changed, 29 insertions(+), 23 deletions(-)
----
-base-commit: cd1995b6ac7384149ad755b74e3c3eb25195ab81
-change-id: 20240305-class_cleanup-backlight-62b91c38005e
+ 1 file changed, 16 insertions(+), 13 deletions(-)
 
-Best regards,
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 86e1cdc8e369..d2feaebfd84a 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -317,8 +317,6 @@ static ssize_t scale_show(struct device *dev,
+ }
+ static DEVICE_ATTR_RO(scale);
+ 
+-static struct class *backlight_class;
+-
+ #ifdef CONFIG_PM_SLEEP
+ static int backlight_suspend(struct device *dev)
+ {
+@@ -369,6 +367,12 @@ static struct attribute *bl_device_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(bl_device);
+ 
++static const struct class backlight_class = {
++	.name = "backlight",
++	.dev_groups = bl_device_groups,
++	.pm = &backlight_class_dev_pm_ops,
++};
++
+ /**
+  * backlight_force_update - tell the backlight subsystem that hardware state
+  *   has changed
+@@ -418,7 +422,7 @@ struct backlight_device *backlight_device_register(const char *name,
+ 	mutex_init(&new_bd->update_lock);
+ 	mutex_init(&new_bd->ops_lock);
+ 
+-	new_bd->dev.class = backlight_class;
++	new_bd->dev.class = &backlight_class;
+ 	new_bd->dev.parent = parent;
+ 	new_bd->dev.release = bl_device_release;
+ 	dev_set_name(&new_bd->dev, "%s", name);
+@@ -510,7 +514,7 @@ struct backlight_device *backlight_device_get_by_name(const char *name)
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device_by_name(backlight_class, name);
++	dev = class_find_device_by_name(&backlight_class, name);
+ 
+ 	return dev ? to_backlight_device(dev) : NULL;
+ }
+@@ -678,7 +682,7 @@ struct backlight_device *of_find_backlight_by_node(struct device_node *node)
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device(backlight_class, NULL, node, of_parent_match);
++	dev = class_find_device(&backlight_class, NULL, node, of_parent_match);
+ 
+ 	return dev ? to_backlight_device(dev) : NULL;
+ }
+@@ -746,20 +750,19 @@ EXPORT_SYMBOL(devm_of_find_backlight);
+ 
+ static void __exit backlight_class_exit(void)
+ {
+-	class_destroy(backlight_class);
++	class_unregister(&backlight_class);
+ }
+ 
+ static int __init backlight_class_init(void)
+ {
+-	backlight_class = class_create("backlight");
+-	if (IS_ERR(backlight_class)) {
+-		pr_warn("Unable to create backlight class; errno = %ld\n",
+-			PTR_ERR(backlight_class));
+-		return PTR_ERR(backlight_class);
++	int ret;
++
++	ret = class_register(&backlight_class);
++	if (ret) {
++		pr_warn("Unable to create backlight class; errno = %d\n", ret);
++		return ret;
+ 	}
+ 
+-	backlight_class->dev_groups = bl_device_groups;
+-	backlight_class->pm = &backlight_class_dev_pm_ops;
+ 	INIT_LIST_HEAD(&backlight_dev_list);
+ 	mutex_init(&backlight_dev_list_mutex);
+ 	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
+
 -- 
-Ricardo B. Marliere <ricardo@marliere.net>
+2.43.0
 

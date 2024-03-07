@@ -1,217 +1,199 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com [209.85.208.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 521BB80607;
-	Wed,  6 Mar 2024 12:29:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 964556310D
+	for <linux-fbdev@vger.kernel.org>; Thu,  7 Mar 2024 07:37:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709728186; cv=none; b=JlfZVn9BM/IN1FhZM1unihbJCOn54S1lO4+r/ju0YOIIphK3hms8bJFAsoq2ClxIRMkc9bHtMlS/hRlTLN/48CxI9s4n+zY8nBsu4e1i4uW80aPjhNNC2ygIHlOwXBLElarc4COOg1O4QYxPEBPwyJQu6cF7RlWpKlyAmGzPm1w=
+	t=1709797051; cv=none; b=a8N1JvuRmoqYlhT9eZi7fAGQvMRpt7Q1tinfmmokt7FyLFtIBH28LBMPm5PDUEhGuywa/2dw5YB8uk12BPERwL1Bnasb8HqIKpWtdd6nFnVl70+V5J2du/xx7vggqj4UwE8uEIH62Df8kvP3YZVYDie4/cmrFRqyi8Qq7rXMXE4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709728186; c=relaxed/simple;
-	bh=F0Tw4x4wxA83WbI8UtDAHqU2XXTBPLlZw3tIVOH5GOk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NbAKA0JMnNHqQ6aDHwUvABMjPPM3+ZvRbbOoV7mY7+FaTxZhRyQoBsn9k8AhKJi32W8mpqMvtVkmFad83RS1m6d4AA/9CSQt2vMFs3NqzEQk2pFAHpny72IbJV1fuXVfyggDcfMuzXxZY2lZ8ToCj7e6+g8LKqhShN1eehvlZPo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ncXMa+EF; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Jq8LPHqS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ncXMa+EF; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Jq8LPHqS; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1709797051; c=relaxed/simple;
+	bh=wMor+BeQBq5zWjjzqH7OTa0oyJ4srZyiumVjhOHw774=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=rfS4GHJ2YqGRxWCHaTfKdq8nGlfqXGJ2iZRVTkH9Zj9zFp1ecFd8E5N5rfeOui8iS8gblI/LyT4IdOz6WJYx31OXQM8Zf9SQ8FTSIA29bOsyhAWyijDOzopKkcEKAd1mTJNuwPHI/iy+cgkNCoJkR3BqsTfm8A2WZN5gxjwsUPE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=S8Z9whF4; arc=none smtp.client-ip=209.85.208.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ncXMa+EF";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Jq8LPHqS";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ncXMa+EF";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Jq8LPHqS"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 5C5754ED4B;
-	Wed,  6 Mar 2024 12:29:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709728183; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=299andLo8CD0Xa8La9on+/jSs0H+mryiPZNMgllG54Y=;
-	b=ncXMa+EFJ3AZfkV5rm6p7jlw5ccVC5/iTPzRn5ZKlaR19gDmgaKmoSjuM3mrdTzneHWPC9
-	d8ViQlAJ2M2VZ0hlsAD+dc5nz9ghW+feYmDV9GYWxPCBMpAjDxDUk6+HojBk3/S6tZ8lRZ
-	2ei7vEo+kK3366uHRh3QUtIP3qGyGWk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709728183;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=299andLo8CD0Xa8La9on+/jSs0H+mryiPZNMgllG54Y=;
-	b=Jq8LPHqSatrU8uU98u9cNckJrMxKHfSp+CTvTAa4kS1axoUAYJNcT29or2pa85+pvstrw1
-	jCwEuaHNDQ9+WSAQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1709728183; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=299andLo8CD0Xa8La9on+/jSs0H+mryiPZNMgllG54Y=;
-	b=ncXMa+EFJ3AZfkV5rm6p7jlw5ccVC5/iTPzRn5ZKlaR19gDmgaKmoSjuM3mrdTzneHWPC9
-	d8ViQlAJ2M2VZ0hlsAD+dc5nz9ghW+feYmDV9GYWxPCBMpAjDxDUk6+HojBk3/S6tZ8lRZ
-	2ei7vEo+kK3366uHRh3QUtIP3qGyGWk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1709728183;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=299andLo8CD0Xa8La9on+/jSs0H+mryiPZNMgllG54Y=;
-	b=Jq8LPHqSatrU8uU98u9cNckJrMxKHfSp+CTvTAa4kS1axoUAYJNcT29or2pa85+pvstrw1
-	jCwEuaHNDQ9+WSAQ==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id EBC781377D;
-	Wed,  6 Mar 2024 12:29:42 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id KIkWOLZh6GWdTgAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 06 Mar 2024 12:29:42 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: mpe@ellerman.id.au,
-	jani.nikula@intel.com,
-	naresh.kamboju@linaro.org,
-	deller@gmx.de,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	aneesh.kumar@kernel.org,
-	naveen.n.rao@linux.ibm.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	lkft-triage@lists.linaro.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 3/3] arch/powerpc: Remove <linux/fb.h> from backlight code
-Date: Wed,  6 Mar 2024 13:28:20 +0100
-Message-ID: <20240306122935.10626-4-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240306122935.10626-1-tzimmermann@suse.de>
-References: <20240306122935.10626-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="S8Z9whF4"
+Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-5643ae47cd3so641214a12.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 06 Mar 2024 23:37:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1709797047; x=1710401847; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1kw0N/eOAnZk7gfPXfHIs1qJP19DGGStl8rmjj+wRpo=;
+        b=S8Z9whF4gX8tIeB5a72SW7XXBayxFUWB44j/V2pLHFzKbWHDxUo7vH5Sbrdr0Odi28
+         H/jzAwSI8+E4ujcG+IqwWVGQBejLg8bs/3RKz0Eq4QvFD+WGYEKTS1lEdYEbP7KB2qYb
+         E6C+vFXDfOKFdLPuj/8bgPKUssFmmdrkfNsjfyuEFX/n/7vixE/MyQUI7EB+uIwWZQH0
+         aDTqPrTlgx5IgBsL14GDzllLebA9Qauq7ePx33oYQs7id28wJvEfYSbu6rZHs2RI2eOp
+         MY4HazJQteiDS2NaLBjDns7TTM/TlwPwsGt4DwB7oDUb6zdYiJ0Bkia3nYK/cpE3CxLJ
+         GqLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709797047; x=1710401847;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1kw0N/eOAnZk7gfPXfHIs1qJP19DGGStl8rmjj+wRpo=;
+        b=sx/PuJF5b8iAWzlbmj3e6AAvcjzx8NtDbFw4p+NWLbMFF2Py4gee/WvJzTSbVv50Xr
+         aY1FpKlw0ymsPypaUd+STYrfnYRQaphA8llFgmsAZli0Mf2NxkQch7o15bD9IB4Q+3rq
+         RSOc85jHaXrsORh/BjAvmWIofiesxTT6iVLhGTtBFsB/YDyuEzoqAvwyLqEFWCgw0xRU
+         bzJiDOADivPvgj+HvUWHNgwimmpmq7bbindyMa9uxp9nUberDtzsxtYS4oPCSDyba/fc
+         oQqJuGvtS9CRJQl+E+GgAfEyG+EiRf9faFXxzQzFJ7Qa+UITfw3DZQfieiqdwacQ5UYS
+         EX/A==
+X-Forwarded-Encrypted: i=1; AJvYcCXzN1CvAJSUOlpACcNmYyAqfeLgw79Dh8j/oUZVKRf2HwNOyhIAuMCOlmJJZFUFAy02uINn3Wif6+ddALsfYxEcd//uWKMSuyeaWfA=
+X-Gm-Message-State: AOJu0YxLAFRXao3H2JRQgFziZntFb0aXwk4s8LgPYOgaFVZlr7vwyeRl
+	2XqV3sedX8e6ZjnMgGgQfQCHjg2fTL6j+L7p/MW+2T7//oUUorjyk1RxQgZn3FEflXZ49BfBHpe
+	GCRoi5OA/Wb0L+CqyTRTTeJ/Ji/IDm2MpiVKy1Q==
+X-Google-Smtp-Source: AGHT+IEanJhlxrJ0m3zCL0/FeuJM7oxCf5rvMMCu8nSAcar4vS1rMrFlRHpWwKJ8Ocvgn+dG5rIRCHc9Y5rV3Z2n5EY=
+X-Received: by 2002:a05:6402:1ec9:b0:568:316:2616 with SMTP id
+ g9-20020a0564021ec900b0056803162616mr1744389edg.15.1709797046953; Wed, 06 Mar
+ 2024 23:37:26 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spam-Level: 
-X-Spam-Score: -0.30
-X-Spamd-Result: default: False [-0.30 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 R_MISSING_CHARSET(2.50)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 REPLY(-4.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 R_RATELIMIT(0.00)[to_ip_from(RL9wq65f3r6cge75md5ma8xy98)];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-1.000];
-	 RCPT_COUNT_TWELVE(0.00)[14];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,intel.com:email];
-	 FREEMAIL_TO(0.00)[ellerman.id.au,intel.com,linaro.org,gmx.de,gmail.com,csgroup.eu,kernel.org,linux.ibm.com];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[]
-X-Spam-Flag: NO
+References: <20240305-class_cleanup-drm-v1-0-94f82740525a@marliere.net>
+ <20240305-class_cleanup-drm-v1-4-94f82740525a@marliere.net> <CABdmKX0VGyBdTo8gzEocyz2HFcqEtu_31PYVjWzioBdCbnXW6w@mail.gmail.com>
+In-Reply-To: <CABdmKX0VGyBdTo8gzEocyz2HFcqEtu_31PYVjWzioBdCbnXW6w@mail.gmail.com>
+From: Sumit Semwal <sumit.semwal@linaro.org>
+Date: Thu, 7 Mar 2024 13:07:15 +0530
+Message-ID: <CAO_48GH_RyeTkUsZ9Ad=o2D+Poh3DVQnXiOmyApuWy2Ycn5P5w@mail.gmail.com>
+Subject: Re: [PATCH RESEND drm-misc 4/4] dma-buf: heaps: make dma_heap_class constant
+To: "T.J. Mercier" <tjmercier@google.com>
+Cc: "Ricardo B. Marliere" <ricardo@marliere.net>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>, 
+	Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, 
+	John Stultz <jstultz@google.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Replace <linux/fb.h> with a forward declaration in <asm/backlight.h> to
-resolve an unnecessary dependency. Remove pmac_backlight_curve_lookup()
-and struct fb_info from source and header files. The function and the
-framebuffer struct are unused. No functional changes.
+Hello Ricardo,
 
-v3:
-	* Add Fixes tag (Christophe)
-	* fix typos in commit message (Jani)
+On Tue, 5 Mar 2024 at 22:37, T.J. Mercier <tjmercier@google.com> wrote:
+>
+> On Tue, Mar 5, 2024 at 3:34=E2=80=AFAM Ricardo B. Marliere <ricardo@marli=
+ere.net> wrote:
+> >
+> > Since commit 43a7206b0963 ("driver core: class: make class_register() t=
+ake
+> > a const *"), the driver core allows for struct class to be in read-only
+> > memory, so move the dma_heap_class structure to be declared at build ti=
+me
+> > placing it into read-only memory, instead of having to be dynamically
+> > allocated at boot time.
+> >
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
+> > ---
+> >  drivers/dma-buf/dma-heap.c | 26 ++++++++++++++------------
+> >  1 file changed, 14 insertions(+), 12 deletions(-)
+> >
+> > diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
+> > index 84ae708fafe7..bcca6a2bbce8 100644
+> > --- a/drivers/dma-buf/dma-heap.c
+> > +++ b/drivers/dma-buf/dma-heap.c
+> > @@ -43,10 +43,18 @@ struct dma_heap {
+> >         struct cdev heap_cdev;
+> >  };
+> >
+> > +static char *dma_heap_devnode(const struct device *dev, umode_t *mode)
+> > +{
+> > +       return kasprintf(GFP_KERNEL, "dma_heap/%s", dev_name(dev));
+> > +}
+> > +
+> >  static LIST_HEAD(heap_list);
+> >  static DEFINE_MUTEX(heap_list_lock);
+> >  static dev_t dma_heap_devt;
+> > -static struct class *dma_heap_class;
+> > +static struct class dma_heap_class =3D {
+> > +       .name =3D DEVNAME,
+> > +       .devnode =3D dma_heap_devnode,
+> > +};
+> >  static DEFINE_XARRAY_ALLOC(dma_heap_minors);
+> >
+> >  static int dma_heap_buffer_alloc(struct dma_heap *heap, size_t len,
+> > @@ -261,7 +269,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap=
+_export_info *exp_info)
+> >                 goto err1;
+> >         }
+> >
+> > -       dev_ret =3D device_create(dma_heap_class,
+> > +       dev_ret =3D device_create(&dma_heap_class,
+> >                                 NULL,
+> >                                 heap->heap_devt,
+> >                                 NULL,
+> > @@ -291,7 +299,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap=
+_export_info *exp_info)
+> >         return heap;
+> >
+> >  err3:
+> > -       device_destroy(dma_heap_class, heap->heap_devt);
+> > +       device_destroy(&dma_heap_class, heap->heap_devt);
+> >  err2:
+> >         cdev_del(&heap->heap_cdev);
+> >  err1:
+> > @@ -301,11 +309,6 @@ struct dma_heap *dma_heap_add(const struct dma_hea=
+p_export_info *exp_info)
+> >         return err_ret;
+> >  }
+> >
+> > -static char *dma_heap_devnode(const struct device *dev, umode_t *mode)
+> > -{
+> > -       return kasprintf(GFP_KERNEL, "dma_heap/%s", dev_name(dev));
+> > -}
+> > -
+> >  static int dma_heap_init(void)
+> >  {
+> >         int ret;
+> > @@ -314,12 +317,11 @@ static int dma_heap_init(void)
+> >         if (ret)
+> >                 return ret;
+> >
+> > -       dma_heap_class =3D class_create(DEVNAME);
+> > -       if (IS_ERR(dma_heap_class)) {
+> > +       ret =3D class_register(&dma_heap_class);
+> > +       if (ret) {
+> >                 unregister_chrdev_region(dma_heap_devt, NUM_HEAP_MINORS=
+);
+> > -               return PTR_ERR(dma_heap_class);
+> > +               return ret;
+> >         }
+> > -       dma_heap_class->devnode =3D dma_heap_devnode;
+> >
+> >         return 0;
+> >  }
+> >
+> > --
+> > 2.43.0
+>
+> Reviewed-by: T.J. Mercier <tjmercier@google.com>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: d565dd3b0824 ("[PATCH] powerpc: More via-pmu backlight fixes")
-Reviewed-by: Jani Nikula <jani.nikula@intel.com>
----
- arch/powerpc/include/asm/backlight.h        |  5 ++--
- arch/powerpc/platforms/powermac/backlight.c | 26 ---------------------
- 2 files changed, 2 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/backlight.h b/arch/powerpc/include/asm/backlight.h
-index 1b5eab62ed047..061a910d74929 100644
---- a/arch/powerpc/include/asm/backlight.h
-+++ b/arch/powerpc/include/asm/backlight.h
-@@ -10,15 +10,14 @@
- #define __ASM_POWERPC_BACKLIGHT_H
- #ifdef __KERNEL__
- 
--#include <linux/fb.h>
- #include <linux/mutex.h>
- 
-+struct backlight_device;
-+
- /* For locking instructions, see the implementation file */
- extern struct backlight_device *pmac_backlight;
- extern struct mutex pmac_backlight_mutex;
- 
--extern int pmac_backlight_curve_lookup(struct fb_info *info, int value);
--
- extern int pmac_has_backlight_type(const char *type);
- 
- extern void pmac_backlight_key(int direction);
-diff --git a/arch/powerpc/platforms/powermac/backlight.c b/arch/powerpc/platforms/powermac/backlight.c
-index aeb79a8b3e109..12bc01353bd3c 100644
---- a/arch/powerpc/platforms/powermac/backlight.c
-+++ b/arch/powerpc/platforms/powermac/backlight.c
-@@ -9,7 +9,6 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/fb.h>
- #include <linux/backlight.h>
- #include <linux/adb.h>
- #include <linux/pmu.h>
-@@ -72,31 +71,6 @@ int pmac_has_backlight_type(const char *type)
- 	return 0;
- }
- 
--int pmac_backlight_curve_lookup(struct fb_info *info, int value)
--{
--	int level = (FB_BACKLIGHT_LEVELS - 1);
--
--	if (info && info->bl_dev) {
--		int i, max = 0;
--
--		/* Look for biggest value */
--		for (i = 0; i < FB_BACKLIGHT_LEVELS; i++)
--			max = max((int)info->bl_curve[i], max);
--
--		/* Look for nearest value */
--		for (i = 0; i < FB_BACKLIGHT_LEVELS; i++) {
--			int diff = abs(info->bl_curve[i] - value);
--			if (diff < max) {
--				max = diff;
--				level = i;
--			}
--		}
--
--	}
--
--	return level;
--}
--
- static void pmac_backlight_key_worker(struct work_struct *work)
- {
- 	if (atomic_read(&kernel_backlight_disabled))
--- 
-2.44.0
+FWIW, please free to add my
+Acked-by: Sumit Semwal <sumit.semwal@linaro.org>
 
+>
+>
+> Is this really a resend? I don't see anything on lore and I can't
+> recall seeing this patch in my inbox before.
+
+
+Best,
+Sumit.
+
+--=20
+Thanks and regards,
+
+Sumit Semwal (he / him)
+Tech Lead - LCG, Vertical Technologies
+Linaro.org =E2=94=82 Open source software for ARM SoCs

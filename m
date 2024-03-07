@@ -1,199 +1,186 @@
-Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com [209.85.208.53])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 964556310D
-	for <linux-fbdev@vger.kernel.org>; Thu,  7 Mar 2024 07:37:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EA291C2A3;
+	Thu,  7 Mar 2024 08:59:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1709797051; cv=none; b=a8N1JvuRmoqYlhT9eZi7fAGQvMRpt7Q1tinfmmokt7FyLFtIBH28LBMPm5PDUEhGuywa/2dw5YB8uk12BPERwL1Bnasb8HqIKpWtdd6nFnVl70+V5J2du/xx7vggqj4UwE8uEIH62Df8kvP3YZVYDie4/cmrFRqyi8Qq7rXMXE4=
+	t=1709801986; cv=none; b=kHojo4cI7fw/FC3KXzVp1aj0zskeLAkdd/YPzimwun7X6CyIjzBkB9OGCT7lYtccLwqhkLBh/w4cSBbR+lOO7fgwHNFLES3lPOSZJoX59FfEsJXxwF2rwuHo7nlKfoBl+Z20h81W5qXvZh3X7U4cEPjKOtrRQM/gkyMIgtIMIWs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1709797051; c=relaxed/simple;
-	bh=wMor+BeQBq5zWjjzqH7OTa0oyJ4srZyiumVjhOHw774=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rfS4GHJ2YqGRxWCHaTfKdq8nGlfqXGJ2iZRVTkH9Zj9zFp1ecFd8E5N5rfeOui8iS8gblI/LyT4IdOz6WJYx31OXQM8Zf9SQ8FTSIA29bOsyhAWyijDOzopKkcEKAd1mTJNuwPHI/iy+cgkNCoJkR3BqsTfm8A2WZN5gxjwsUPE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=S8Z9whF4; arc=none smtp.client-ip=209.85.208.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1709801986; c=relaxed/simple;
+	bh=ZDsYXwiTTgifrM7aKCBBIntVddtFklS2hnxDsSUEIx8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cRHC8I1Sv/2tzyN7ShlSIyYJ5XzJmAPBlF0AYIbUTkjnaGbyP3owQLj27gva2URckwCAPYtADJ+6x/XEM3eAyyU3c+Ys9uIqsbch9R3HJD/1W/YpJYQ/kTQNOrcvzEp//4rKOsbnko2zqXTAohl8+bexozrnAq7zlKbYeibtgok=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=VvQogetT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qmb0ocOp; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=VvQogetT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qmb0ocOp; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="S8Z9whF4"
-Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-5643ae47cd3so641214a12.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 06 Mar 2024 23:37:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1709797047; x=1710401847; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=1kw0N/eOAnZk7gfPXfHIs1qJP19DGGStl8rmjj+wRpo=;
-        b=S8Z9whF4gX8tIeB5a72SW7XXBayxFUWB44j/V2pLHFzKbWHDxUo7vH5Sbrdr0Odi28
-         H/jzAwSI8+E4ujcG+IqwWVGQBejLg8bs/3RKz0Eq4QvFD+WGYEKTS1lEdYEbP7KB2qYb
-         E6C+vFXDfOKFdLPuj/8bgPKUssFmmdrkfNsjfyuEFX/n/7vixE/MyQUI7EB+uIwWZQH0
-         aDTqPrTlgx5IgBsL14GDzllLebA9Qauq7ePx33oYQs7id28wJvEfYSbu6rZHs2RI2eOp
-         MY4HazJQteiDS2NaLBjDns7TTM/TlwPwsGt4DwB7oDUb6zdYiJ0Bkia3nYK/cpE3CxLJ
-         GqLQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709797047; x=1710401847;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=1kw0N/eOAnZk7gfPXfHIs1qJP19DGGStl8rmjj+wRpo=;
-        b=sx/PuJF5b8iAWzlbmj3e6AAvcjzx8NtDbFw4p+NWLbMFF2Py4gee/WvJzTSbVv50Xr
-         aY1FpKlw0ymsPypaUd+STYrfnYRQaphA8llFgmsAZli0Mf2NxkQch7o15bD9IB4Q+3rq
-         RSOc85jHaXrsORh/BjAvmWIofiesxTT6iVLhGTtBFsB/YDyuEzoqAvwyLqEFWCgw0xRU
-         bzJiDOADivPvgj+HvUWHNgwimmpmq7bbindyMa9uxp9nUberDtzsxtYS4oPCSDyba/fc
-         oQqJuGvtS9CRJQl+E+GgAfEyG+EiRf9faFXxzQzFJ7Qa+UITfw3DZQfieiqdwacQ5UYS
-         EX/A==
-X-Forwarded-Encrypted: i=1; AJvYcCXzN1CvAJSUOlpACcNmYyAqfeLgw79Dh8j/oUZVKRf2HwNOyhIAuMCOlmJJZFUFAy02uINn3Wif6+ddALsfYxEcd//uWKMSuyeaWfA=
-X-Gm-Message-State: AOJu0YxLAFRXao3H2JRQgFziZntFb0aXwk4s8LgPYOgaFVZlr7vwyeRl
-	2XqV3sedX8e6ZjnMgGgQfQCHjg2fTL6j+L7p/MW+2T7//oUUorjyk1RxQgZn3FEflXZ49BfBHpe
-	GCRoi5OA/Wb0L+CqyTRTTeJ/Ji/IDm2MpiVKy1Q==
-X-Google-Smtp-Source: AGHT+IEanJhlxrJ0m3zCL0/FeuJM7oxCf5rvMMCu8nSAcar4vS1rMrFlRHpWwKJ8Ocvgn+dG5rIRCHc9Y5rV3Z2n5EY=
-X-Received: by 2002:a05:6402:1ec9:b0:568:316:2616 with SMTP id
- g9-20020a0564021ec900b0056803162616mr1744389edg.15.1709797046953; Wed, 06 Mar
- 2024 23:37:26 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="VvQogetT";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qmb0ocOp";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="VvQogetT";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qmb0ocOp"
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 5E8EC38949;
+	Thu,  7 Mar 2024 08:59:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1709801982; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Zr1vglmdaTVF4Y5C+JCtluV3UMYKqQ7gx5fxIkqkoVw=;
+	b=VvQogetTf/95bbo74xOfRkUqpGRuCqV9YNka3pz/Zykuze2ZUAaUNpq0zEYSmeg0X5fjZc
+	8lXmLoHrJxzonV1kp7l4kApYKMYwIL1XhKjZxtSY7iAqhsQ0j2pC2j474z3eoWNWziX+xF
+	2ySMB7eNyX6wdrVLiFrW0U47LyomLeQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1709801982;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Zr1vglmdaTVF4Y5C+JCtluV3UMYKqQ7gx5fxIkqkoVw=;
+	b=qmb0ocOpIGTIw5ApzfJWBCPw7A+4Qx5qBRNg+/IikDhX+q3h6wUBU/NyGbwRQje2tgWsu4
+	OZngehUOQKu3GPBA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1709801982; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Zr1vglmdaTVF4Y5C+JCtluV3UMYKqQ7gx5fxIkqkoVw=;
+	b=VvQogetTf/95bbo74xOfRkUqpGRuCqV9YNka3pz/Zykuze2ZUAaUNpq0zEYSmeg0X5fjZc
+	8lXmLoHrJxzonV1kp7l4kApYKMYwIL1XhKjZxtSY7iAqhsQ0j2pC2j474z3eoWNWziX+xF
+	2ySMB7eNyX6wdrVLiFrW0U47LyomLeQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1709801982;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Zr1vglmdaTVF4Y5C+JCtluV3UMYKqQ7gx5fxIkqkoVw=;
+	b=qmb0ocOpIGTIw5ApzfJWBCPw7A+4Qx5qBRNg+/IikDhX+q3h6wUBU/NyGbwRQje2tgWsu4
+	OZngehUOQKu3GPBA==
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id F209813997;
+	Thu,  7 Mar 2024 08:59:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id EV+QOf2B6WW7FAAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Thu, 07 Mar 2024 08:59:41 +0000
+Message-ID: <2c8ef49b-f20b-47f7-ad4e-2adcfd370024@suse.de>
+Date: Thu, 7 Mar 2024 09:59:41 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240305-class_cleanup-drm-v1-0-94f82740525a@marliere.net>
- <20240305-class_cleanup-drm-v1-4-94f82740525a@marliere.net> <CABdmKX0VGyBdTo8gzEocyz2HFcqEtu_31PYVjWzioBdCbnXW6w@mail.gmail.com>
-In-Reply-To: <CABdmKX0VGyBdTo8gzEocyz2HFcqEtu_31PYVjWzioBdCbnXW6w@mail.gmail.com>
-From: Sumit Semwal <sumit.semwal@linaro.org>
-Date: Thu, 7 Mar 2024 13:07:15 +0530
-Message-ID: <CAO_48GH_RyeTkUsZ9Ad=o2D+Poh3DVQnXiOmyApuWy2Ycn5P5w@mail.gmail.com>
-Subject: Re: [PATCH RESEND drm-misc 4/4] dma-buf: heaps: make dma_heap_class constant
-To: "T.J. Mercier" <tjmercier@google.com>
-Cc: "Ricardo B. Marliere" <ricardo@marliere.net>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>, 
-	Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, 
-	John Stultz <jstultz@google.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/3] arch/powerpc: Resolve backlight include
+ dependencies
+Content-Language: en-US
+To: mpe@ellerman.id.au, jani.nikula@intel.com, naresh.kamboju@linaro.org,
+ deller@gmx.de, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ lkft-triage@lists.linaro.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20240306122935.10626-1-tzimmermann@suse.de>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20240306122935.10626-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Level: 
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spamd-Result: default: False [-3.09 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 XM_UA_NO_VERSION(0.01)[];
+	 FROM_HAS_DN(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 TO_DN_NONE(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_TWELVE(0.00)[13];
+	 FREEMAIL_TO(0.00)[ellerman.id.au,intel.com,linaro.org,gmx.de,gmail.com,csgroup.eu,kernel.org,linux.ibm.com];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[];
+	 MID_RHS_MATCH_FROM(0.00)[]
+X-Spam-Score: -3.09
+X-Spam-Flag: NO
 
-Hello Ricardo,
+If there are no further comments, I'm going to merge this patchset in 
+time for today's PR of drm-misc-next-fixes.
 
-On Tue, 5 Mar 2024 at 22:37, T.J. Mercier <tjmercier@google.com> wrote:
+Am 06.03.24 um 13:28 schrieb Thomas Zimmermann:
+> After cleaning up <linux/fb.h> in commit 11b4eedfc87d ("fbdev: Do
+> not include <linux/backlight.h> in header"), building with
+> CONFIG_PMAC_BACKLIGHT=y returns errors about missing declarations.
+> Patches 1 and 2 resolve the errors. Patch 1 has been reviewed at [1].
+> Patch 3 removes another dependency between backlight and fbdev code.
 >
-> On Tue, Mar 5, 2024 at 3:34=E2=80=AFAM Ricardo B. Marliere <ricardo@marli=
-ere.net> wrote:
-> >
-> > Since commit 43a7206b0963 ("driver core: class: make class_register() t=
-ake
-> > a const *"), the driver core allows for struct class to be in read-only
-> > memory, so move the dma_heap_class structure to be declared at build ti=
-me
-> > placing it into read-only memory, instead of having to be dynamically
-> > allocated at boot time.
-> >
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
-> > ---
-> >  drivers/dma-buf/dma-heap.c | 26 ++++++++++++++------------
-> >  1 file changed, 14 insertions(+), 12 deletions(-)
-> >
-> > diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
-> > index 84ae708fafe7..bcca6a2bbce8 100644
-> > --- a/drivers/dma-buf/dma-heap.c
-> > +++ b/drivers/dma-buf/dma-heap.c
-> > @@ -43,10 +43,18 @@ struct dma_heap {
-> >         struct cdev heap_cdev;
-> >  };
-> >
-> > +static char *dma_heap_devnode(const struct device *dev, umode_t *mode)
-> > +{
-> > +       return kasprintf(GFP_KERNEL, "dma_heap/%s", dev_name(dev));
-> > +}
-> > +
-> >  static LIST_HEAD(heap_list);
-> >  static DEFINE_MUTEX(heap_list_lock);
-> >  static dev_t dma_heap_devt;
-> > -static struct class *dma_heap_class;
-> > +static struct class dma_heap_class =3D {
-> > +       .name =3D DEVNAME,
-> > +       .devnode =3D dma_heap_devnode,
-> > +};
-> >  static DEFINE_XARRAY_ALLOC(dma_heap_minors);
-> >
-> >  static int dma_heap_buffer_alloc(struct dma_heap *heap, size_t len,
-> > @@ -261,7 +269,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap=
-_export_info *exp_info)
-> >                 goto err1;
-> >         }
-> >
-> > -       dev_ret =3D device_create(dma_heap_class,
-> > +       dev_ret =3D device_create(&dma_heap_class,
-> >                                 NULL,
-> >                                 heap->heap_devt,
-> >                                 NULL,
-> > @@ -291,7 +299,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap=
-_export_info *exp_info)
-> >         return heap;
-> >
-> >  err3:
-> > -       device_destroy(dma_heap_class, heap->heap_devt);
-> > +       device_destroy(&dma_heap_class, heap->heap_devt);
-> >  err2:
-> >         cdev_del(&heap->heap_cdev);
-> >  err1:
-> > @@ -301,11 +309,6 @@ struct dma_heap *dma_heap_add(const struct dma_hea=
-p_export_info *exp_info)
-> >         return err_ret;
-> >  }
-> >
-> > -static char *dma_heap_devnode(const struct device *dev, umode_t *mode)
-> > -{
-> > -       return kasprintf(GFP_KERNEL, "dma_heap/%s", dev_name(dev));
-> > -}
-> > -
-> >  static int dma_heap_init(void)
-> >  {
-> >         int ret;
-> > @@ -314,12 +317,11 @@ static int dma_heap_init(void)
-> >         if (ret)
-> >                 return ret;
-> >
-> > -       dma_heap_class =3D class_create(DEVNAME);
-> > -       if (IS_ERR(dma_heap_class)) {
-> > +       ret =3D class_register(&dma_heap_class);
-> > +       if (ret) {
-> >                 unregister_chrdev_region(dma_heap_devt, NUM_HEAP_MINORS=
-);
-> > -               return PTR_ERR(dma_heap_class);
-> > +               return ret;
-> >         }
-> > -       dma_heap_class->devnode =3D dma_heap_devnode;
-> >
-> >         return 0;
-> >  }
-> >
-> > --
-> > 2.43.0
+> Compile tested with ppc6xx_defconfig.
 >
-> Reviewed-by: T.J. Mercier <tjmercier@google.com>
-
-
-FWIW, please free to add my
-Acked-by: Sumit Semwal <sumit.semwal@linaro.org>
-
+> v3:
+> 	* add Fixes tag and fix typos in patch 3
+> v2:
+> 	* via-pmu-backlight: fix build errors
+> 	* powerpc: resolve dependency between fbdev and backlight
 >
+> [1] https://patchwork.freedesktop.org/series/130661/
 >
-> Is this really a resend? I don't see anything on lore and I can't
-> recall seeing this patch in my inbox before.
+> Thomas Zimmermann (3):
+>    fbdev/chipsfb: Include <linux/backlight.h>
+>    macintosh/via-pmu-backlight: Include <linux/backlight.h>
+>    arch/powerpc: Remove <linux/fb.h> from backlight code
+>
+>   arch/powerpc/include/asm/backlight.h        |  5 ++--
+>   arch/powerpc/platforms/powermac/backlight.c | 26 ---------------------
+>   drivers/macintosh/via-pmu-backlight.c       |  1 +
+>   drivers/video/fbdev/chipsfb.c               |  1 +
+>   4 files changed, 4 insertions(+), 29 deletions(-)
+>
 
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 
-Best,
-Sumit.
-
---=20
-Thanks and regards,
-
-Sumit Semwal (he / him)
-Tech Lead - LCG, Vertical Technologies
-Linaro.org =E2=94=82 Open source software for ARM SoCs

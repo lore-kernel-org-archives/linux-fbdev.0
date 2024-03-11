@@ -1,124 +1,117 @@
-Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7485920317
-	for <linux-fbdev@vger.kernel.org>; Sun, 10 Mar 2024 12:35:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 920013FB39;
+	Mon, 11 Mar 2024 14:05:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710074134; cv=none; b=VEgLrSJJlYzR3mOANMdIM+7iVf9JnWPp5ROwzlqTTFVZG335+yU6/hYqSaGB27q3RagfngirNfr1Yyq2mvsZ3sgHtkp0ok9MUnkIqBxrIbgaJ020xlj8H6+hESWNCfOJ5Vcm44W83mRyCU4gyZpsUA5jqeECSxDfYR42wV+XAOc=
+	t=1710165950; cv=none; b=JR82+Qs3izLhv+68XixuG4XemSk+I4CQYhnY4lpDbl7lIrcelTE7SqQhJDPL9+d/k0vw4u1BHxW1rTz8oDnvMl/guSjm//sN4cGokSF3Kh+Jhv8zIWQGvnWi5QXnaChONR8saPujNAQKjIEQlteV2pI/aiZIukBJsKxRjECvRFQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710074134; c=relaxed/simple;
-	bh=eVb3cFCjq/wLYohZULzNmR4wY1wWmg+rXCBfYx/lovk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NgQfm8+K/x2NH3nbkGN2Ke4+T6Wdioqyyh+SXnoO2HgH9XJQiqHaP2v5m7UIcjXT566rz5ovkb5sDhh+zUq0Rq76h32oZjbPBzvGVXpPChlffgMooR0JiFPkt6DOcfWNJLSobzGbsBkcUwZp6LGQ31HptVQQwofRKC5PjIqMAQM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=XrZGVqiL; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=m3RslpyQ; arc=none smtp.client-ip=46.30.211.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	s=arc-20240116; t=1710165950; c=relaxed/simple;
+	bh=UHMR4pqbVOsU7aLmYcmKHPDC47wVCRagl/RwfRJq63k=;
+	h=MIME-Version:Message-Id:In-Reply-To:References:Date:From:To:Cc:
+	 Subject:Content-Type; b=VToyh24Z3j1n406RWUnu8ILXnzoM+MgEBNxNBtfIdHY4i3C8Dz5a4lBryBEzh3OvSo7VilJh2wx0NmgwCmsIx5j7kWHaOhZkP79+y2E3fkasCMmD55IlKg1St1xPbv2ftP5IeAfoyqDlhM169qGSHtHvNKkZmJ8B2nV0VdEMxaQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RrdbAr2g; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="XrZGVqiL";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="m3RslpyQ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=YPj7mJSOmbCaNiEGC/t0Gr13wSnOz33kScWhnHNog2A=;
-	b=XrZGVqiLZ7HmxgauHv34KliKYg3bdIPWco3WbmOUS/lB8zsCC5CO+ZmGjgOxo2GjOG74rWmUTzeTD
-	 b/mY6sUBDEHan3+MiNqavhep1+qPHkyBDaWl6exwf4yZnQXZflm2ZNKhjgrSRP7oI7myR7O69SGebo
-	 XlYfPZUDqofK/AVeAQ8SbwF/6PyanxchTuw/gVeaNJjgYIqCt52w0/UnbwyIPRtB3Doc3R096J0hgI
-	 65BFZAHEQ6DOTY5XCc3HExn3ycYD4hb6fzaL/ouKN7wTNatsDLSWPfo0LIq8G88c92fKpkXAryb068
-	 idmG4syFCwOqfBYTzt3xyh947vR51BQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=YPj7mJSOmbCaNiEGC/t0Gr13wSnOz33kScWhnHNog2A=;
-	b=m3RslpyQ6rat08/y9fWoWhKLFFXulH2lxA/XDZXt362zndzEJbzwHFpTAVufQTF1BKRUZp5V6l5Ws
-	 lWldjHQAQ==
-X-HalOne-ID: 84422ca7-deda-11ee-9cef-31e85a7fa845
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay4.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
-	id 84422ca7-deda-11ee-9cef-31e85a7fa845;
-	Sun, 10 Mar 2024 12:34:22 +0000 (UTC)
-Date: Sun, 10 Mar 2024 13:34:20 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: kernel test robot <lkp@intel.com>
-Cc: Sam Ravnborg via B4 Relay <devnull+sam.ravnborg.org@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Arnd Bergmann <arnd@kernel.org>,
-	Andreas Larsson <andreas@gaisler.com>,
-	oe-kbuild-all@lists.linux.dev, netdev@vger.kernel.org,
-	Helge Deller <deller@gmx.de>, Randy Dunlap <rdunlap@infradead.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
-	Kjetil Oftedal <oftedal@gmail.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 14/28] sparc32: Drop unused mmu models
-Message-ID: <20240310123420.GA989676@ravnborg.org>
-References: <20240309-sunset-v2-14-f09912574d2c@ravnborg.org>
- <202403101854.Z94SAU13-lkp@intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RrdbAr2g"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9134DC433F1;
+	Mon, 11 Mar 2024 14:05:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1710165950;
+	bh=UHMR4pqbVOsU7aLmYcmKHPDC47wVCRagl/RwfRJq63k=;
+	h=In-Reply-To:References:Date:From:To:Cc:Subject:From;
+	b=RrdbAr2gSdjhpVdUBVPwYvAG4+DM+/qYkT05L4bnOO+la235nWy4j4FPFjdoOsM6w
+	 guAHI05KdupyQoxAymBRuof8g6z2NDTM2A87A5QE0pTYOyWxCJnp+JqL3RPp5TD6wI
+	 C4a9eFYmb4yCv0F9mqpXpCvUOBdou5kwkIyNPbuThJegi9X4od2mKpkMilbZkhXyd7
+	 kusPYGGkciIOZ6QfOEsAXx8nI0Ci2WeajJ10zhBw9LqRiaDZVpN/JriVfMa/lDjLXQ
+	 zeCSrVdLQZfEzneHRSSSIYaJWk/XfrjLb1yE0JE+TyOFwkSMYICfOkpS4U40Vl1ezu
+	 ASvyAsULDBg7Q==
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+	by mailfauth.nyi.internal (Postfix) with ESMTP id 68A761200088;
+	Mon, 11 Mar 2024 10:05:48 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute5.internal (MEProxy); Mon, 11 Mar 2024 10:05:48 -0400
+X-ME-Sender: <xms:ug_vZTcns5F4VmSCmWfMFHId3q_1TySUB9svi28M7jXUMKjzZWEcfg>
+    <xme:ug_vZZM4LR-RfsVVNtvCkpGCLxiYOIumDRJbGSaSg7X8TpXw8TVAVj-MIoktW5qc4
+    EBKqnTmKtQEBtwS4cI>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrjedugdeitdcutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugeskhgvrhhnvghlrdhorhhgqeenucggtffrrg
+    htthgvrhhnpeejvddvjeffveevffdvjeejgedukeegfffhkeektdduffffueekffffudef
+    vddvgfenucffohhmrghinhepvghvvghrhihthhhinhhgvddrtghomhenucevlhhushhtvg
+    hrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnugdomhgvshhmthhp
+    rghuthhhphgvrhhsohhnrghlihhthidquddvkeehudejtddvgedqvdekjedttddvieegqd
+    grrhhnugeppehkvghrnhgvlhdrohhrghesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:ug_vZciA-X89FEkRLmH215-3DCIfaE78E_Bfi-DInAFk0Bgv0Va0fg>
+    <xmx:ug_vZU_xMhQH6SZHBrp1cIU0BKMmfi5uN5ICgrxlkRt0bOe_npcSrQ>
+    <xmx:ug_vZft8lZE6MOdPg3eeqURAlEm5sOtM_senXg9kxOnU_aomYU47XA>
+    <xmx:vA_vZalNjXxjw9dINZlH-FGuq_Ai571BMTrFHUfKs9bLNSBRXUSje_g8Tyc>
+Feedback-ID: i36794607:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 94D7FB6008D; Mon, 11 Mar 2024 10:05:46 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.11.0-alpha0-251-g8332da0bf6-fm-20240305.001-g8332da0b
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <202403101854.Z94SAU13-lkp@intel.com>
+Message-Id: <e387ad3c-7646-49b6-a5f5-afd287556d8c@app.fastmail.com>
+In-Reply-To: <20240309-sunset-v2-28-f09912574d2c@ravnborg.org>
+References: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
+ <20240309-sunset-v2-28-f09912574d2c@ravnborg.org>
+Date: Mon, 11 Mar 2024 15:05:25 +0100
+From: "Arnd Bergmann" <arnd@kernel.org>
+To: "Sam Ravnborg" <sam@ravnborg.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Andreas Larsson" <andreas@gaisler.com>
+Cc: "Helge Deller" <deller@gmx.de>, "Randy Dunlap" <rdunlap@infradead.org>,
+ "John Paul Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>,
+ "Mark Cave-Ayland" <mark.cave-ayland@ilande.co.uk>,
+ "Kjetil Oftedal" <oftedal@gmail.com>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Alan Stern" <stern@rowland.harvard.edu>, "Jaroslav Kysela" <perex@perex.cz>,
+ "Takashi Iwai" <tiwai@suse.com>, sparclinux@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 28/28] fbdev/p9100: Drop now unused driver p9100
+Content-Type: text/plain
 
-Hi kernel test robot et al.
+On Sat, Mar 9, 2024, at 19:15, Sam Ravnborg via B4 Relay wrote:
+> From: Sam Ravnborg <sam@ravnborg.org>
+>
+> The p9100 driver is only relevant for the Sparcbook 3 machine,
+> and with sun4m support removed this driver is no longer relevant.
+>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Acked-by: Arnd Bergmann <arnd@kernel.org>
+> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Arnd Bergmann <arnd@kernel.org>
+> Cc: Andreas Larsson <andreas@gaisler.com>
+> Cc: Helge Deller <deller@gmx.de>
+> ---
+>  drivers/video/fbdev/Kconfig  |   8 -
+>  drivers/video/fbdev/Makefile |   1 -
+>  drivers/video/fbdev/p9100.c  | 372 -------------------------------------------
+>  3 files changed, 381 deletions(-)
 
-On Sun, Mar 10, 2024 at 06:37:53PM +0800, kernel test robot wrote:
-> Hi Sam,
-> 
-> kernel test robot noticed the following build warnings:
-> 
-> [auto build test WARNING on 84b76d05828a1909e20d0f66553b876b801f98c8]
-> 
-> url:    https://github.com/intel-lab-lkp/linux/commits/Sam-Ravnborg-via-B4-Relay/sparc32-Update-defconfig-to-LEON-SMP/20240310-021717
-> base:   84b76d05828a1909e20d0f66553b876b801f98c8
-> patch link:    https://lore.kernel.org/r/20240309-sunset-v2-14-f09912574d2c%40ravnborg.org
-> patch subject: [PATCH v2 14/28] sparc32: Drop unused mmu models
-> config: sparc-randconfig-r113-20240310 (https://download.01.org/0day-ci/archive/20240310/202403101854.Z94SAU13-lkp@intel.com/config)
-> compiler: sparc-linux-gcc (GCC) 13.2.0
-> reproduce: (https://download.01.org/0day-ci/archive/20240310/202403101854.Z94SAU13-lkp@intel.com/reproduce)
-> 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202403101854.Z94SAU13-lkp@intel.com/
-> 
-> sparse warnings: (new ones prefixed by >>)
-> >> arch/sparc/mm/srmmu.c:49:5: sparse: sparse: symbol 'vac_line_size' was not declared. Should it be static?
-> 
-> vim +/vac_line_size +49 arch/sparc/mm/srmmu.c
-> 
-> accf032cfa582e Sam Ravnborg   2012-05-19  46  
-> ^1da177e4c3f41 Linus Torvalds 2005-04-16  47  int vac_cache_size;
-> 9d262d95114cf2 Guenter Roeck  2017-04-01  48  EXPORT_SYMBOL(vac_cache_size);
-> ^1da177e4c3f41 Linus Torvalds 2005-04-16 @49  int vac_line_size;
-> ^1da177e4c3f41 Linus Torvalds 2005-04-16  50  
+I tried to figure out if there are other drivers in the same
+category and found the list at
+https://everything2.com/title/Sun+graphics+cards
 
-vac_line_size is no longer used and can be deleted.
-vac_cache_size is never written to and can be deleted too.
+As far as I can tell, the only SBUS graphics that were
+shipped on sparc64 are FB_FFB and FB_CG6, so we could
+go further and remove BW2, CG3, TCX, CG14 and LEO as
+well.
 
-vac_cache_size is used in shmparam_32.h like this:
-#define SHMLBA (vac_cache_size ? vac_cache_size : PAGE_SIZE)
+No need to change anything here for the moment, dropping
+p9100 is already a step in the right direction.
 
-The same file has:
-#define __ARCH_FORCE_SHMLBA	1
-
-If I understand it right then when SHMLBA equals PAGE_SIZE then there is
-no need to define __ARCH_FORCE_SHMLBA and sparc32 can use the asm-generic
-variant of shmparam.h
-
-I will do this change in v3.
-
-	Sam
+     Arnd

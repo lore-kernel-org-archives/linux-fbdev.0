@@ -1,298 +1,256 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86E3D7BAF6;
-	Tue, 12 Mar 2024 14:24:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 101E47A70A
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 15:48:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710253456; cv=none; b=JxMh4WCObDJWrKmNZC0Yfm8E08tTNpbx6te6GlY7wkVOlWtHPxedUj8hGSCTEQHCeFmxuVaWsabylPIqhJMCWOJLf8p4TEpyYPN2uoH4LkAXoa9PmvnQxvFrp7Trx4KgNws9dHq8sX+lE9rCveW308FwwHHMygX9FqpZAQU1X0c=
+	t=1710258521; cv=none; b=L4wnGmK42krx6Kas9uWrCkhb+QerzJmw/xWPZY0GAAkm+Nn27v+0ido45kIdc86BNSRdp/iN/GbZn+JxED3p7zUSYiN/9nAQCe3qt6F2jiaMusrjMBJmKq3R1mkQ6TVJCS8MuGz3FWqRrYANOdNBHssMp4NKjvZtMA4B0uFEXNQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710253456; c=relaxed/simple;
-	bh=q6T87hUD5gO8HiHv1jhJS969Nl+81V50e8kMxP7/ldY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DMZHmV27/dLkzBws4I1iFi1LUmEP1nWXdliWYqApqSeyz83AEXxgLFIbLUiSrTARzYHaYLbxHPjVb9ygciLFg8+58mNElg602sUgkNCULctASxTSv3annaBi/WRwAGUU2lpOxDpaTM/H/S4658lRDDWab8Rh0LCpfAACfc9qscM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RaCO4OmZ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1710258521; c=relaxed/simple;
+	bh=dL2UG/dyidCH+K9j9iWHQ1j0M10haldjAmZsnn3JJzk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ClFf7KlkgoDX8ueh3YDR+CI2KedppMMwHp75+Z27/Z8xtylqbYA5qBYx0ON9UzokiyBy2g0ii1m6kOgwZsx2tszK52Uz7uWMADCE6lNd9F2Qp2U1ARFS4W4Uk3wbett3RcjdC9MJR5PjLQAUWSuxtnspgpaAQ+fwjnf9hXzbvXA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yRkGpNSg; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MeszIvPB; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yRkGpNSg; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MeszIvPB; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RaCO4OmZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 412B4C43394;
-	Tue, 12 Mar 2024 14:24:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1710253456;
-	bh=q6T87hUD5gO8HiHv1jhJS969Nl+81V50e8kMxP7/ldY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=RaCO4OmZ+q0+oNKx8K06PtTZVOYs3I8UUZiOAAkOl2/SMpmFUF9yQvJhhuetTg8QR
-	 ICzmzW26NLjOjxriPkRChGkKoQSOBHsd1PYJeRpmGxntQrwvz3R9l6fLHVviE6KntR
-	 PiKLgdxjEZeUm4+hmNcjLdyXFYMd5j33GvsZ3dJ1AZJZxhqRBoTT0PMI+yu27Bw6FF
-	 y+LtvCY+R/48LHdEIn44l5fKWhlJB+qyTZ6dLfmP0V1cpwQzqPoDo+mfB1carZiIKN
-	 ChleVdq159G21ulUzQt0Qjq2AJSkmWBRRTSikxSG+Ax0/wQV/Gp1ABcgmVez1DY77b
-	 LQLpmsRLaKf1A==
-From: legion@kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>
-Cc: Alexey Gladkov <legion@kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	kbd@lists.linux.dev,
-	linux-api@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	linux-serial@vger.kernel.org
-Subject: [PATCH v3 2/2] VT: Allow to get max font width and height
-Date: Tue, 12 Mar 2024 15:23:58 +0100
-Message-ID: <78fcb9ad77b88edee8768806ce6a4d23f6d33118.1710252966.git.legion@kernel.org>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yRkGpNSg";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MeszIvPB";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yRkGpNSg";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MeszIvPB"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 1A7FE5D6C6;
+	Tue, 12 Mar 2024 15:48:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710258517; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6CtdHZn7M++63gs8y2acpS5Q+y2lx0SFvFzxFePDYuE=;
+	b=yRkGpNSgCGXF6W8E8SP6Qyhozp6Wok7czo3W537itjlnv2lLxvh9Q6S0XOgJGeux+miF19
+	Vbe52ZgRQ//a8CbG5Okp0AWHbhbTqjyb54drkBhUs4yjqdTNRibT53HoUOcgjIWdfWnhmk
+	tKiajGoglSqYkwUMfyJPFQCqDmta/Is=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710258517;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6CtdHZn7M++63gs8y2acpS5Q+y2lx0SFvFzxFePDYuE=;
+	b=MeszIvPBmQvYtJABOSEuf3uPcF2VTBvSVRGZD0D1HfTW9TfiKba+kHK6b42dXqD5nH+ldJ
+	6NHODzX+2ClIGIBQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710258517; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6CtdHZn7M++63gs8y2acpS5Q+y2lx0SFvFzxFePDYuE=;
+	b=yRkGpNSgCGXF6W8E8SP6Qyhozp6Wok7czo3W537itjlnv2lLxvh9Q6S0XOgJGeux+miF19
+	Vbe52ZgRQ//a8CbG5Okp0AWHbhbTqjyb54drkBhUs4yjqdTNRibT53HoUOcgjIWdfWnhmk
+	tKiajGoglSqYkwUMfyJPFQCqDmta/Is=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710258517;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6CtdHZn7M++63gs8y2acpS5Q+y2lx0SFvFzxFePDYuE=;
+	b=MeszIvPBmQvYtJABOSEuf3uPcF2VTBvSVRGZD0D1HfTW9TfiKba+kHK6b42dXqD5nH+ldJ
+	6NHODzX+2ClIGIBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D54F51364F;
+	Tue, 12 Mar 2024 15:48:36 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id nimeMlR58GUhPwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 12 Mar 2024 15:48:36 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: daniel@ffwll.ch,
+	airlied@gmail.com,
+	deller@gmx.de,
+	javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 00/43] drm: Provide fbdev emulation per memory manager
+Date: Tue, 12 Mar 2024 16:44:55 +0100
+Message-ID: <20240312154834.26178-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1710252966.git.legion@kernel.org>
-References: <cover.1708960303.git.legion@kernel.org> <cover.1710252966.git.legion@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+Authentication-Results: smtp-out2.suse.de;
+	none
+X-Spamd-Result: default: False [-2.10 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_SEVEN(0.00)[7];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FREEMAIL_TO(0.00)[ffwll.ch,gmail.com,gmx.de,redhat.com];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-3.00)[100.00%]
+X-Spam-Score: -2.10
+X-Spam-Flag: NO
 
-From: Alexey Gladkov <legion@kernel.org>
+DRM provides 3 different memory managers with slightly different
+characteristics: DMA-based, SHMEM-based and TTM. This effects fbdev
+emulation as each requires different handling of mmap(). This series
+reworks fbdev emualtion to provide an optimized emulation for each
+of the memory managers.
 
-The Console drivers has more restrictive font size limits than vt_ioctl.
-This leads to errors that are difficult to handle. If a font whose size
-is not supported is used, an EINVAL error will be returned, which is
-also returned in case of errors in the font itself. At the moment there
-is no way to understand what font sizes the current console driver
-supports.
+Patch 1 fixes a minor bug in fbdev-generic.
 
-To solve this problem, we need to transfer information about the
-supported font to userspace from the console driver.
+Patches 2 to 8 implement fbdev-shmem, which is optimized for drivers
+with SHMEM-based allocation. Patches 2 to 7 prepare deferred I/O to
+support driver-custom page lookups. When the mmap'ed framebuffer sees
+a pagefault, the deferred-I/O code can ask the graphics driver of the
+page (instead of trying to detect it by itself). Using this hook,
+patch 8 implements fbdev-shmem. The code is similar to fbdev-generic,
+but does not require an additional shadow buffer for mmap(). Mmap'ed
+pages are instead provided from the GEM buffer object. That saves a
+few MiB of framebuffer memory and copying between the internal buffers.
 
-Signed-off-by: Alexey Gladkov <legion@kernel.org>
----
- drivers/video/console/newport_con.c | 21 +++++++++++++++++----
- drivers/video/console/sticon.c      | 25 +++++++++++++++++++++++--
- drivers/video/console/vgacon.c      | 21 ++++++++++++++++++++-
- drivers/video/fbdev/core/fbcon.c    | 22 +++++++++++++++++++++-
- 4 files changed, 81 insertions(+), 8 deletions(-)
+Patches 9 to 20 convert SHMEM-based drivers to fbdev-shmem.
 
-diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-index e8e4f82cd4a1..87f174a95fa8 100644
---- a/drivers/video/console/newport_con.c
-+++ b/drivers/video/console/newport_con.c
-@@ -33,6 +33,9 @@
- 
- #define NEWPORT_LEN	0x10000
- 
-+#define NEWPORT_MAX_FONT_WIDTH 8
-+#define NEWPORT_MAX_FONT_HEIGHT 16
-+
- #define FONT_DATA ((unsigned char *)font_vga_8x16.data)
- 
- static unsigned char *font_data[MAX_NR_CONSOLES];
-@@ -328,8 +331,8 @@ static void newport_init(struct vc_data *vc, int init)
- {
- 	int cols, rows;
- 
--	cols = newport_xsize / 8;
--	rows = newport_ysize / 16;
-+	cols = newport_xsize / NEWPORT_MAX_FONT_WIDTH;
-+	rows = newport_ysize / NEWPORT_MAX_FONT_HEIGHT;
- 	vc->vc_can_do_color = 1;
- 	if (init) {
- 		vc->vc_cols = cols;
-@@ -507,8 +510,8 @@ static int newport_set_font(int unit, struct console_font *op, unsigned int vpit
- 
- 	/* ladis: when I grow up, there will be a day... and more sizes will
- 	 * be supported ;-) */
--	if ((w != 8) || (h != 16) || (vpitch != 32)
--	    || (op->charcount != 256 && op->charcount != 512))
-+	if ((w != NEWPORT_MAX_FONT_WIDTH) || (h != NEWPORT_MAX_FONT_HEIGHT) ||
-+	    (vpitch != 32) || (op->charcount != 256 && op->charcount != 512))
- 		return -EINVAL;
- 
- 	if (!(new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size,
-@@ -569,6 +572,15 @@ static int newport_font_default(struct vc_data *vc, struct console_font *op, cha
- 	return newport_set_def_font(vc->vc_num, op);
- }
- 
-+static int newport_font_info(struct vc_data *vc, struct console_font_info *info)
-+{
-+	info->min_width = info->max_width = NEWPORT_MAX_FONT_WIDTH;
-+	info->min_height = info->max_height = NEWPORT_MAX_FONT_HEIGHT;
-+	info->flags = KD_FONT_INFO_FLAG_LOW_SIZE | KD_FONT_INFO_FLAG_HIGH_SIZE;
-+
-+	return 0;
-+}
-+
- static int newport_font_set(struct vc_data *vc, struct console_font *font,
- 			    unsigned int vpitch, unsigned int flags)
- {
-@@ -688,6 +700,7 @@ const struct consw newport_con = {
- 	.con_scroll	  = newport_scroll,
- 	.con_switch	  = newport_switch,
- 	.con_blank	  = newport_blank,
-+	.con_font_info	  = newport_font_info,
- 	.con_font_set	  = newport_font_set,
- 	.con_font_default = newport_font_default,
- 	.con_save_screen  = newport_save_screen
-diff --git a/drivers/video/console/sticon.c b/drivers/video/console/sticon.c
-index 992a4fa431aa..d32ca458eb77 100644
---- a/drivers/video/console/sticon.c
-+++ b/drivers/video/console/sticon.c
-@@ -56,6 +56,11 @@
- #define BLANK 0
- static int vga_is_gfx;
- 
-+#define STICON_MIN_FONT_WIDTH 6
-+#define STICON_MIN_FONT_HEIGHT 6
-+#define STICON_MAX_FONT_WIDTH 32
-+#define STICON_MAX_FONT_HEIGHT 32
-+
- #define STI_DEF_FONT	sticon_sti->font
- 
- /* borrowed from fbcon.c */
-@@ -180,8 +185,10 @@ static int sticon_set_font(struct vc_data *vc, struct console_font *op,
- 	struct sti_cooked_font *cooked_font;
- 	unsigned char *data = op->data, *p;
- 
--	if ((w < 6) || (h < 6) || (w > 32) || (h > 32) || (vpitch != 32)
--	    || (op->charcount != 256 && op->charcount != 512))
-+	if (!in_range(w, STICON_MIN_FONT_WIDTH, STICON_MAX_FONT_WIDTH) ||
-+	    !in_range(h, STICON_MIN_FONT_HEIGHT, STICON_MAX_FONT_HEIGHT) ||
-+	    (vpitch != 32) ||
-+	    (op->charcount != 256 && op->charcount != 512))
- 		return -EINVAL;
- 	pitch = ALIGN(w, 8) / 8;
- 	bpc = pitch * h;
-@@ -273,6 +280,19 @@ static int sticon_font_set(struct vc_data *vc, struct console_font *font,
- 	return sticon_set_font(vc, font, vpitch);
- }
- 
-+static int sticon_font_info(struct vc_data *vc, struct console_font_info *info)
-+{
-+	info->min_width = STICON_MIN_FONT_WIDTH;
-+	info->min_height = STICON_MIN_FONT_HEIGHT;
-+
-+	info->max_width = STICON_MAX_FONT_WIDTH;
-+	info->max_height = STICON_MAX_FONT_HEIGHT;
-+
-+	info->flags = KD_FONT_INFO_FLAG_LOW_SIZE | KD_FONT_INFO_FLAG_HIGH_SIZE;
-+
-+	return 0;
-+}
-+
- static void sticon_init(struct vc_data *c, int init)
- {
-     struct sti_struct *sti = sticon_sti;
-@@ -371,6 +391,7 @@ static const struct consw sti_con = {
- 	.con_scroll		= sticon_scroll,
- 	.con_switch		= sticon_switch,
- 	.con_blank		= sticon_blank,
-+	.con_font_info		= sticon_font_info,
- 	.con_font_set		= sticon_font_set,
- 	.con_font_default	= sticon_font_default,
- 	.con_build_attr		= sticon_build_attr,
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 8ef1579fa57f..b75d31ef3353 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -61,6 +61,10 @@ static struct vgastate vgastate;
- #define BLANK 0x0020
- 
- #define VGA_FONTWIDTH       8   /* VGA does not support fontwidths != 8 */
-+
-+#define VGACON_MAX_FONT_WIDTH VGA_FONTWIDTH
-+#define VGACON_MAX_FONT_HEIGHT 32
-+
- /*
-  *  Interface used by the world
-  */
-@@ -1013,6 +1017,19 @@ static int vgacon_adjust_height(struct vc_data *vc, unsigned fontheight)
- 	return 0;
- }
- 
-+static int vgacon_font_info(struct vc_data *vc, struct console_font_info *info)
-+{
-+	info->min_width = VGACON_MAX_FONT_WIDTH;
-+	info->min_height = 0;
-+
-+	info->max_width = VGACON_MAX_FONT_WIDTH;
-+	info->max_height = VGACON_MAX_FONT_HEIGHT;
-+
-+	info->flags = KD_FONT_INFO_FLAG_LOW_SIZE | KD_FONT_INFO_FLAG_HIGH_SIZE;
-+
-+	return 0;
-+}
-+
- static int vgacon_font_set(struct vc_data *c, struct console_font *font,
- 			   unsigned int vpitch, unsigned int flags)
- {
-@@ -1022,7 +1039,8 @@ static int vgacon_font_set(struct vc_data *c, struct console_font *font,
- 	if (vga_video_type < VIDEO_TYPE_EGAM)
- 		return -EINVAL;
- 
--	if (font->width != VGA_FONTWIDTH || font->height > 32 || vpitch != 32 ||
-+	if (font->width != VGACON_MAX_FONT_WIDTH ||
-+	    font->height > VGACON_MAX_FONT_HEIGHT || vpitch != 32 ||
- 	    (charcount != 256 && charcount != 512))
- 		return -EINVAL;
- 
-@@ -1177,6 +1195,7 @@ const struct consw vga_con = {
- 	.con_scroll = vgacon_scroll,
- 	.con_switch = vgacon_switch,
- 	.con_blank = vgacon_blank,
-+	.con_font_info = vgacon_font_info,
- 	.con_font_set = vgacon_font_set,
- 	.con_font_get = vgacon_font_get,
- 	.con_resize = vgacon_resize,
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 46823c2e2ba1..e10abe416159 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -101,6 +101,9 @@ enum {
- 	FBCON_LOGO_DONTSHOW	= -3	/* do not show the logo */
- };
- 
-+#define FBCON_MAX_FONT_WIDTH 32
-+#define FBCON_MAX_FONT_HEIGHT 32
-+
- static struct fbcon_display fb_display[MAX_NR_CONSOLES];
- 
- static struct fb_info *fbcon_registered_fb[FB_MAX];
-@@ -2456,6 +2459,21 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
- 	return ret;
- }
- 
-+
-+static int fbcon_font_info(struct vc_data *vc, struct console_font_info *info)
-+{
-+	info->min_width = 0;
-+	info->min_height = 0;
-+
-+	info->max_width = FBCON_MAX_FONT_WIDTH;
-+	info->max_height = FBCON_MAX_FONT_HEIGHT;
-+
-+	info->flags = KD_FONT_INFO_FLAG_LOW_SIZE | KD_FONT_INFO_FLAG_HIGH_SIZE;
-+
-+	return 0;
-+}
-+
-+
- /*
-  *  User asked to set font; we are guaranteed that charcount does not exceed 512
-  *  but lets not assume that, since charcount of 512 is small for unicode support.
-@@ -2483,7 +2501,8 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
- 	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
- 		return -EINVAL;
- 
--	if (font->width > 32 || font->height > 32)
-+	if (font->width > FBCON_MAX_FONT_WIDTH ||
-+	    font->height > FBCON_MAX_FONT_HEIGHT)
- 		return -EINVAL;
- 
- 	/* Make sure drawing engine can handle the font */
-@@ -3158,6 +3177,7 @@ static const struct consw fb_con = {
- 	.con_scroll 		= fbcon_scroll,
- 	.con_switch 		= fbcon_switch,
- 	.con_blank 		= fbcon_blank,
-+	.con_font_info 		= fbcon_font_info,
- 	.con_font_set 		= fbcon_set_font,
- 	.con_font_get 		= fbcon_get_font,
- 	.con_font_default	= fbcon_set_def_font,
+Patch 21 adds damage handling and deferred I/O to fbdev-dma. Such
+code has been tested on the DMA-based omapdrm and can be adopted for
+all drivers.
+
+Patches 22 to 41 convert DMA-based drivers to fbdev-dma. These drivers
+could not use it because of the missing support for damage handling.
+
+Patch 42 renames fbdev-generic to fbdev-ttm. Only TTM-based drivers
+still use it, so building it can be linked to TTM as well.
+
+Patch 43 cleans up the documentation.
+
+Tested with simpledrm, vc4 and amdgpu.
+
+Thomas Zimmermann (43):
+  drm/fbdev-generic: Do not set physical framebuffer address
+  fbdev/deferred-io: Move pageref setup into separate helper
+  fbdev/deferred-io: Clean up pageref on lastclose
+  fbdev/deferred-io: Test screen_buffer for vmalloc'ed memory
+  fbdev/deferred-io: Test smem_start for I/O memory
+  fbdev/deferred-io: Always call get_page() for framebuffer pages
+  fbdev/deferred-io: Provide get_page hook in struct fb_deferred_io
+  drm/fbdev: Add fbdev-shmem
+  drm/ast: Use fbdev-shmem
+  drm/gud: Use fbdev-shmem
+  drm/hyperv: Use fbdev-shmem
+  drm/mgag200: Use fbdev-shmem
+  drm/solomon: Use fbdev-shmem
+  drm/tiny/cirrus: Use fbdev-shmem
+  drm/tiny/gm12u320: Use fbdev-shmem
+  drm/tiny/ofdrm: Use fbdev-shmem
+  drm/tiny/simpledrm: Use fbdev-shmem
+  drm/udl: Use fbdev-shmem
+  drm/virtio: Use fbdev-shmem
+  drm/vkms: Use fbdev-shmem
+  drm/fbdev-dma: Implement damage handling and deferred I/O
+  drm/arm/komeda: Use fbdev-dma
+  drm/hisilicon/kirin: Use fbdev-dma
+  drm/imx/lcdc: Use fbdev-dma
+  drm/ingenic: Use fbdev-dma
+  drm/mediatek: Use fbdev-dma
+  drm/panel/panel-ilitek-9341: Use fbdev-dma
+  drm/renesas/rcar-du: Use fbdev-dma
+  drm/renesas/rz-du: Use fbdev-dma
+  drm/renesas/shmobile: Use fbdev-dma
+  drm/rockchip: Use fbdev-dma
+  drm/tiny/hx8357d: Use fbdev-dma
+  drm/tiny/ili9163: Use fbdev-dma
+  drm/tiny/ili9225: Use fbdev-dma
+  drm/tiny/ili9341: Use fbdev-dma
+  drm/tiny/ili9486: Use fbdev-dma
+  drm/tiny/mi0283qt: Use fbdev-dma
+  drm/tiny/panel-mipi-dbi: Use fbdev-dma
+  drm/tiny/repaper: Use fbdev-dma
+  drm/tiny/st7586: Use fbdev-dma
+  drm/tiny/st7735r: Use fbdev-dma
+  drm/fbdev-generic: Convert to fbdev-ttm
+  drm/fbdev: Clean up fbdev documentation
+
+ Documentation/gpu/drm-kms-helpers.rst         |  12 +-
+ Documentation/gpu/todo.rst                    |  13 -
+ drivers/gpu/drm/Makefile                      |   6 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c       |   6 +-
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |   4 +-
+ drivers/gpu/drm/ast/ast_drv.c                 |   4 +-
+ drivers/gpu/drm/drm_drv.c                     |   2 +-
+ drivers/gpu/drm/drm_fb_helper.c               |  11 +-
+ drivers/gpu/drm/drm_fbdev_dma.c               |  65 +++-
+ drivers/gpu/drm/drm_fbdev_shmem.c             | 316 ++++++++++++++++++
+ .../{drm_fbdev_generic.c => drm_fbdev_ttm.c}  |  81 +++--
+ drivers/gpu/drm/gud/gud_drv.c                 |   4 +-
+ .../gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   |   4 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |   4 +-
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c       |   4 +-
+ drivers/gpu/drm/imx/lcdc/imx-lcdc.c           |   4 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |   4 +-
+ drivers/gpu/drm/loongson/Kconfig              |   1 +
+ drivers/gpu/drm/loongson/lsdc_drv.c           |   4 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |   4 +-
+ drivers/gpu/drm/mgag200/mgag200_drv.c         |   4 +-
+ drivers/gpu/drm/nouveau/nouveau_drm.c         |   6 +-
+ drivers/gpu/drm/panel/panel-ilitek-ili9341.c  |   4 +-
+ drivers/gpu/drm/qxl/qxl_drv.c                 |   4 +-
+ drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c |   4 +-
+ drivers/gpu/drm/renesas/rz-du/rzg2l_du_drv.c  |   4 +-
+ .../gpu/drm/renesas/shmobile/shmob_drm_drv.c  |   4 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |   4 +-
+ drivers/gpu/drm/solomon/ssd130x.c             |   4 +-
+ drivers/gpu/drm/tiny/bochs.c                  |   4 +-
+ drivers/gpu/drm/tiny/cirrus.c                 |   4 +-
+ drivers/gpu/drm/tiny/gm12u320.c               |   4 +-
+ drivers/gpu/drm/tiny/hx8357d.c                |   4 +-
+ drivers/gpu/drm/tiny/ili9163.c                |   4 +-
+ drivers/gpu/drm/tiny/ili9225.c                |   4 +-
+ drivers/gpu/drm/tiny/ili9341.c                |   4 +-
+ drivers/gpu/drm/tiny/ili9486.c                |   4 +-
+ drivers/gpu/drm/tiny/mi0283qt.c               |   4 +-
+ drivers/gpu/drm/tiny/ofdrm.c                  |   4 +-
+ drivers/gpu/drm/tiny/panel-mipi-dbi.c         |   4 +-
+ drivers/gpu/drm/tiny/repaper.c                |   4 +-
+ drivers/gpu/drm/tiny/simpledrm.c              |   4 +-
+ drivers/gpu/drm/tiny/st7586.c                 |   4 +-
+ drivers/gpu/drm/tiny/st7735r.c                |   4 +-
+ drivers/gpu/drm/udl/udl_drv.c                 |   4 +-
+ drivers/gpu/drm/vboxvideo/vbox_drv.c          |   4 +-
+ drivers/gpu/drm/virtio/virtgpu_drv.c          |   4 +-
+ drivers/gpu/drm/vkms/vkms_drv.c               |   4 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |   4 +-
+ drivers/video/fbdev/core/fb_defio.c           |  82 +++--
+ include/drm/drm_fbdev_generic.h               |  15 -
+ include/drm/drm_fbdev_shmem.h                 |  15 +
+ include/drm/drm_fbdev_ttm.h                   |  15 +
+ include/drm/drm_mode_config.h                 |   4 +-
+ include/linux/fb.h                            |   1 +
+ 55 files changed, 593 insertions(+), 210 deletions(-)
+ create mode 100644 drivers/gpu/drm/drm_fbdev_shmem.c
+ rename drivers/gpu/drm/{drm_fbdev_generic.c => drm_fbdev_ttm.c} (76%)
+ delete mode 100644 include/drm/drm_fbdev_generic.h
+ create mode 100644 include/drm/drm_fbdev_shmem.h
+ create mode 100644 include/drm/drm_fbdev_ttm.h
+
 -- 
 2.44.0
 

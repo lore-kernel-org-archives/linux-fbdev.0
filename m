@@ -1,110 +1,193 @@
-Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F4527D406
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 16:08:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7741F7C6DE
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 16:14:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710259700; cv=none; b=I+f3D/EdmOwE5RTlvwc4nV35IlxQNgPCayAiEWe5Mt7uy1+luo6x/NSP6Qzsw+T6Rc6GCA9A/Yb+TNwRwzpqppxTHTvwKXGyc4ymuFpxL2hDHcble3SvI8ojKF5NjThXDy0xCGfQa+YI/rBotBw5e4ES8xHAfqSwLqyUmSpHOPE=
+	t=1710260101; cv=none; b=KJ4mo+NlVAKn7tbIQvLTJXl/a6WL2W7Z9nzDwKkXsV9bDzR0r+RdLfMAq6N6sZZVtvptJW4854FtMb3/8jDDS35e+iFaXdPWgLQzQuRO6THgXi8jTZh2aQT9PfMgd/LQe4f83DGwpm5ocUaMBHcM3UE81PqLKP67ZVlnIMlGGPs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710259700; c=relaxed/simple;
-	bh=Az4ylA0pPHPMXNAXpe4V+gZrQIfIie5XU9giy6iYiPU=;
+	s=arc-20240116; t=1710260101; c=relaxed/simple;
+	bh=Qi6ZI87pVhUK8ITtTtHmaudIUkUt6jZD6kJnW5j8jFE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mdgmn+3b5n+pNc4bu0rIIug/dbteo/J8EePnP8JA/ECYIOeia8eLxRk4BiqrIMuaBTcX1pYteG2So0DpjXVrbkyacBBKXOA8kakAueMdDq0w4/CMu9hPpg9F8pkqW3ziW+KyAToo7c4BtmCs97mpK8kKBXA4Q5gB7e3lvABSp0o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NY9ArJxr; arc=none smtp.client-ip=209.85.208.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 To:Cc:Content-Type; b=hx7vW9nVHGWHlktCVSuonvsXJz9hsFOjRMWMwSbD04Gul/kYcTn1Zu44da4OkRBySbT0cbsI7AnD/K3J8uFpN76iO4nwNPXtdAxzv5eXPViJelGwZYSn6hK4sIws6CsChtpx1TFR5hMCppQIwFejNHWIBc8WjjVOTs8vLbx++WQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NY9ArJxr"
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-2d3b93e992aso53436041fa.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 09:08:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1710259697; x=1710864497; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=0X3bh6regalLfza/VqXtw3dY8qNGGSgfK0NBO0mq7Yo=;
-        b=NY9ArJxrAg2qpZCMQBggtN6TTqSlxCGxUxdZkPz1Yf7xS01SHbxHbqgfRWFTtmbjOX
-         uD1EnTSa+SsYdlknnc9N02t7NhAvXV9s05UfB6Shp/GKNpHkw14cV0sMNvdp7q3RmcCz
-         VDwEaGwTD3lhM7Ug49LZR9NmAzXAt1sJLBNluDj+b373h2phPv05ch0mHoo1jSLiUQqN
-         Ea3SQ0rGGHL/fUQ1YkwdcrkgoeUSjQhJKb5uX4Z99uxfW0fULGlsPp6hCrKeLWQhgb4H
-         kzVx7IUa7U4L1dq7nEwgBNiWoGzndDXuwNrZh9DVaZ5VxaYtfuaRIYe3K5HDPt4eX4jf
-         pjcw==
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-609f1f97864so56857477b3.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 09:14:59 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710259697; x=1710864497;
+        d=1e100.net; s=20230601; t=1710260098; x=1710864898;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=0X3bh6regalLfza/VqXtw3dY8qNGGSgfK0NBO0mq7Yo=;
-        b=uIveKMxLgarh/0KBaYiZJ4fK/KlomTW8r2O8RQHFBUtiF+y3DD3ZpjLUrlyG2L75vU
-         13Bro2Z7ukk1bBTv9uGEUJrgHZec2W+S5sO/MCdkEtHzyOOkO2MSnzs+zEt7Dh9aLcWz
-         NbBhrF7J0NilPrIgedFgXJpiVvePUtTa8hX+/v0M3xdjHAVBz3llpov1WA++QnoP7+Sh
-         pMDUV4Z2LPt2sD98ysbwgsdidaobD5BUEjh7Ip52FnZsY9+P1/wTpRfIE+grMe21pMA6
-         cY+XwBTyDVWqDuczfg/vs+By+Xs5MzBFtUpacPxnoKZkaNvhytsakoiUmphVQuFKo3h9
-         GxEg==
-X-Forwarded-Encrypted: i=1; AJvYcCUUjc+28O5CJ57J5Ku6fLDy7PmJ8m8JBUSf7av2lFnnXcVBVDZ6J+YnW5+BThlQ1vnk425Y+L1plsEvtiXaJURi6x7PMGz2vrig43A=
-X-Gm-Message-State: AOJu0Yxz8HBj7kNSE1jZchVReodwRBzva373PyBKDmrCRQptio3qQNSp
-	btZq0B3k9Y4VNRymZtbg6YwSq6BjeePKBAFu8ekILXC6vifz+odapxTgoMb1YnwvY6j/tqwZ//4
-	sfh+aLhi3/b5KO3ReXhMiPD+Ozzc=
-X-Google-Smtp-Source: AGHT+IGYIvZqarMg5Vm2nKOnutiSU8XvApjVKUHqujlgz1UN8eZq3ic9oExfiZabCfDqH/yPYDlMcbT3eWthw0T2HO8=
-X-Received: by 2002:a05:651c:2207:b0:2d4:4777:e2d8 with SMTP id
- y7-20020a05651c220700b002d44777e2d8mr3555811ljq.13.1710259697156; Tue, 12 Mar
- 2024 09:08:17 -0700 (PDT)
+        bh=5zhIqrp+JPMaViw5gjMSbfJFkQ4tb5ZNwsMB/45s1rM=;
+        b=WeLF7kNlI74AnT7ZH1X6+/RoohqWhPVYBq/x/623ZAnVKA9cvy8XxY9WdhrWISWKXM
+         GvThdaa6+3DtKrJVzSI1H5VffCijaVCGTGvsroWcYA3jIGws4FFWZ+bFyDbKHH/XdDAF
+         SgPHBVHs/ymr1RXHRNa/9AAHgfoEmO0KeVJGhnUHlzYeBuE35m2uwTYLFk91qmOKySiE
+         ApzkDff6X1b6g3bpRWIkHgmdayBu4d2ALAXuTY8cxtaYaYHDsbSFZwyDT+YTLBdHUl6c
+         yQdbJlMcFxBcMTcAoIYHCNKnZIhSHKhIi12DXVKZ9qjmaE97ztQimAifeRAnh8s1Lvhy
+         RtVg==
+X-Forwarded-Encrypted: i=1; AJvYcCVyRVnNUuMzCDK0/KeEDRqrTRoctGMaBtzxc/v/7CgRr+Yd33Ash/qZu3j1/f8qD3nCpjVFxiqhM3Yj/XQNXQuzHO09BQoDSDV6n3I=
+X-Gm-Message-State: AOJu0YwYg3xKFOjlXXVUTGmtFzcvxy2NNJguMr4a1yXvsPSZJCE/sLfr
+	kUOEjxDitvidgJjfh5Ho1aMu9YxD5X4lrLUtq3iQeorjbVtE7fxbMc0muoJoais=
+X-Google-Smtp-Source: AGHT+IGLhAXlUo1JvwF/aCe1ZltEyb0n4N6cnNi6qdgqo2dkg3jd4wugrzsQwee5kUchqwrkjwjmUQ==
+X-Received: by 2002:a25:1f41:0:b0:dcf:309d:cc2b with SMTP id f62-20020a251f41000000b00dcf309dcc2bmr7387950ybf.18.1710260098031;
+        Tue, 12 Mar 2024 09:14:58 -0700 (PDT)
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com. [209.85.128.171])
+        by smtp.gmail.com with ESMTPSA id w130-20020a25df88000000b00dcd307dc310sm1820382ybg.56.2024.03.12.09.14.57
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 12 Mar 2024 09:14:57 -0700 (PDT)
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-60a0579a955so45697257b3.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 09:14:57 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXyNWO8p9MBwf/en64HC/A1BfLhE2BsJlDEyFmAz0Z3RJMVN0rmaMMzHeUy3luI/eNpMoKgBz33dZ+ZneAydkExIZpfwAAjbhGRLkA=
+X-Received: by 2002:a25:2b01:0:b0:dcf:fc74:358a with SMTP id
+ r1-20020a252b01000000b00dcffc74358amr6857356ybr.10.1710260097591; Tue, 12 Mar
+ 2024 09:14:57 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240312154834.26178-1-tzimmermann@suse.de> <20240312154834.26178-12-tzimmermann@suse.de>
-In-Reply-To: <20240312154834.26178-12-tzimmermann@suse.de>
-From: Deepak Rawat <drawat.floss@gmail.com>
-Date: Tue, 12 Mar 2024 09:08:06 -0700
-Message-ID: <CAHFnvW2-QYRCXdYe47txBvpj4N=NNLsPqS0pkRAiJBJMsE+Ksg@mail.gmail.com>
-Subject: Re: [PATCH 11/43] drm/hyperv: Use fbdev-shmem
+References: <20240312154834.26178-1-tzimmermann@suse.de> <20240312154834.26178-9-tzimmermann@suse.de>
+In-Reply-To: <20240312154834.26178-9-tzimmermann@suse.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 12 Mar 2024 17:14:46 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVqWF=M=6aPRxZ0MBqPVM_wk2x+Oike6za754riHWusSA@mail.gmail.com>
+Message-ID: <CAMuHMdVqWF=M=6aPRxZ0MBqPVM_wk2x+Oike6za754riHWusSA@mail.gmail.com>
+Subject: Re: [PATCH 08/43] drm/fbdev: Add fbdev-shmem
 To: Thomas Zimmermann <tzimmermann@suse.de>
 Cc: daniel@ffwll.ch, airlied@gmail.com, deller@gmx.de, javierm@redhat.com, 
 	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Deepak Rawat <drawat.floss@gmail.com>
+Hi Thomas,
 
-On Tue, Mar 12, 2024 at 8:48=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse=
+On Tue, Mar 12, 2024 at 4:48=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
 .de> wrote:
->
-> Implement fbdev emulation with fbdev-shmem. Avoids the overhead of
-> fbdev-generic's additional shadow buffering. No functional changes.
+> Add an fbdev emulation for SHMEM-based memory managers. The code is
+> similar to fbdev-generic, but does not require an addition shadow
+> buffer for mmap(). Fbdev-shmem operates directly on the buffer object's
+> SHMEM pages. Fbdev's deferred-I/O mechanism updates the hardware state
+> on write operations.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Deepak Rawat <drawat.floss@gmail.com>
-> ---
->  drivers/gpu/drm/hyperv/hyperv_drm_drv.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hy=
-perv/hyperv_drm_drv.c
-> index cff85086f2d66..ff93e08d5036d 100644
-> --- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-> +++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-> @@ -11,7 +11,7 @@
->  #include <drm/drm_aperture.h>
->  #include <drm/drm_atomic_helper.h>
->  #include <drm/drm_drv.h>
-> -#include <drm/drm_fbdev_generic.h>
-> +#include <drm/drm_fbdev_shmem.h>
->  #include <drm/drm_gem_shmem_helper.h>
->  #include <drm/drm_simple_kms_helper.h>
->
-> @@ -149,7 +149,7 @@ static int hyperv_vmbus_probe(struct hv_device *hdev,
->                 goto err_free_mmio;
->         }
->
-> -       drm_fbdev_generic_setup(dev, 0);
-> +       drm_fbdev_shmem_setup(dev, 0);
->
->         return 0;
->
-> --
-> 2.44.0
->
+
+Thanks for your patch!
+
+> --- /dev/null
+> +++ b/drivers/gpu/drm/drm_fbdev_shmem.c
+
+> +static int drm_fbdev_shmem_helper_fb_probe(struct drm_fb_helper *fb_help=
+er,
+> +                                          struct drm_fb_helper_surface_s=
+ize *sizes)
+> +{
+> +       struct drm_client_dev *client =3D &fb_helper->client;
+> +       struct drm_device *dev =3D fb_helper->dev;
+> +       struct drm_client_buffer *buffer;
+> +       struct drm_gem_shmem_object *shmem;
+> +       struct drm_framebuffer *fb;
+> +       struct fb_info *info;
+> +       u32 format;
+> +       struct iosys_map map;
+> +       int ret;
+> +
+> +       drm_dbg_kms(dev, "surface width(%d), height(%d) and bpp(%d)\n",
+> +                   sizes->surface_width, sizes->surface_height,
+> +                   sizes->surface_bpp);
+> +
+> +       format =3D drm_mode_legacy_fb_format(sizes->surface_bpp, sizes->s=
+urface_depth);
+
+Oops, one more caller of the imprecise
+let's-guess-the-format-from-bpp-and-depth machinery to get rid of...
+
+> +       buffer =3D drm_client_framebuffer_create(client, sizes->surface_w=
+idth,
+> +                                              sizes->surface_height, for=
+mat);
+
+[...]
+
+> +}
+
+> +/**
+> + * drm_fbdev_shmem_setup() - Setup fbdev emulation for GEM SHMEM helpers
+> + * @dev: DRM device
+> + * @preferred_bpp: Preferred bits per pixel for the device.
+> + *                 32 is used if this is zero.
+> + *
+> + * This function sets up fbdev emulation for GEM DMA drivers that suppor=
+t
+> + * dumb buffers with a virtual address and that can be mmap'ed.
+> + * drm_fbdev_shmem_setup() shall be called after the DRM driver register=
+ed
+> + * the new DRM device with drm_dev_register().
+> + *
+> + * Restore, hotplug events and teardown are all taken care of. Drivers t=
+hat do
+> + * suspend/resume need to call drm_fb_helper_set_suspend_unlocked() them=
+selves.
+> + * Simple drivers might use drm_mode_config_helper_suspend().
+> + *
+> + * This function is safe to call even when there are no connectors prese=
+nt.
+> + * Setup will be retried on the next hotplug event.
+> + *
+> + * The fbdev is destroyed by drm_dev_unregister().
+> + */
+> +void drm_fbdev_shmem_setup(struct drm_device *dev, unsigned int preferre=
+d_bpp)
+
+As this is a completely new function, can we please get a
+preferred_format parameter instead?
+
+> +{
+> +       struct drm_fb_helper *fb_helper;
+> +       int ret;
+> +
+> +       drm_WARN(dev, !dev->registered, "Device has not been registered.\=
+n");
+> +       drm_WARN(dev, dev->fb_helper, "fb_helper is already set!\n");
+> +
+> +       fb_helper =3D kzalloc(sizeof(*fb_helper), GFP_KERNEL);
+> +       if (!fb_helper)
+> +               return;
+> +       drm_fb_helper_prepare(dev, fb_helper, preferred_bpp, &drm_fbdev_s=
+hmem_helper_funcs);
+> +
+> +       ret =3D drm_client_init(dev, &fb_helper->client, "fbdev", &drm_fb=
+dev_shmem_client_funcs);
+> +       if (ret) {
+> +               drm_err(dev, "Failed to register client: %d\n", ret);
+> +               goto err_drm_client_init;
+> +       }
+> +
+> +       drm_client_register(&fb_helper->client);
+> +
+> +       return;
+> +
+> +err_drm_client_init:
+> +       drm_fb_helper_unprepare(fb_helper);
+> +       kfree(fb_helper);
+> +}
+> +EXPORT_SYMBOL(drm_fbdev_shmem_setup);
+
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

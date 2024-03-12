@@ -1,112 +1,89 @@
-Received: from mailrelay1-1.pub.mailoutpod3-cph3.one.com (mailrelay1-1.pub.mailoutpod3-cph3.one.com [46.30.211.240])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB64A537EE
-	for <linux-fbdev@vger.kernel.org>; Mon, 11 Mar 2024 17:48:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F03678286;
+	Tue, 12 Mar 2024 14:24:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710179326; cv=none; b=LcAFx/8EcoMixHZDA8H2lNyUlmQyHMVtH11bkdjYYc45EgI2iYph49AArcw6yGUFlMEujEPmaXbFlpIG6/1SIQDubIERVUk1VA8BDdYnbVQjr3tPuGQFdkMjm4EOH59B1yECwYG8FvFmueoE/BYLVTcYlL1NPrSPKjTRPZsbv7I=
+	t=1710253452; cv=none; b=DcuJkG6SgXYI13YRmN4YKja8o1tHpKeplgp7WIkWLuw1vROADVYL9XeukdLlVvG0mgY6LAYvAFsUoYNJu/nhGQSLKtIxufI/vvW1Pr21dKwE8Z+Q9Esotj7ThFcNq3C4awQJcsy8+vWQp6yiCN8Wk8CCbheC8R2YorB+trDKBvk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710179326; c=relaxed/simple;
-	bh=xtOyqNO3xR4fygOmCmugqJOIeJt5oCnIz1hqQsZQrws=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BhX8iK+zi53EMxOZeeSkioLoyVYRbmgI83DD328pFXxSSVuKrgOltFeHZ4vHA4ExaCcoDYDQiXUVFuUxntZwJI1Wo+2p2voffJcg0UD+Rw1LnE5JuF19SS87/692aI1fKQ3GiI5yqwHeBHOiI8Ik10gDhQCDUkdB2o/PW9c/oBc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=V7yP0SMK; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=nS1rWewz; arc=none smtp.client-ip=46.30.211.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	s=arc-20240116; t=1710253452; c=relaxed/simple;
+	bh=qpr3oDr5denGURn+3TLpW0eVsEAWpGD6RfS4albEsBY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ooAEr5gvcUhLnodgSc08Q9aN1pR+vXrLb4fTCq63iAJQw+tx4cjantRwgOp0cbHKcfiJFsF80XzVpTMvzk9V7oY4kNaybeTGfM+xZDgZm4fYWZjivKPe7/SbIp/sNo27mQR9RkS5cemMKkTHJ2i/iyjKU5pXNojLRthnj3RPM0I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gG4TwGYy; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="V7yP0SMK";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="nS1rWewz"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=cd5g7+y3ZJJCh2Ko+xCMBEZ+m4kbDCL/fdaw/LYfBo8=;
-	b=V7yP0SMKbtgW1/HQYCOzC88dDIeiQDR2Ols3pu6JLi17oRPwJyP2/PaicGD4OjxZngIUcb3JaUQg6
-	 vAwkp8FiBv58goGE3h6vex+GEXo5WLLp1G0/IcHBC9vQYgRlp852LiD+c0eKSza2vdgF4yMh1bmcfP
-	 PiF/bnUtIcH+ABSO+CJTZnvKLreabOzhsT7cE0lpeP0YQMCGeYLUrb0zHfwEr6TKykJaUqqhp8fqrz
-	 3jdnm/+lvXEUco7FgFCmoFDFSLyxNoOwZ4T/HV/51c3onW24oZaKZHdwiNSUKTs3hVlvYu94UYgbC5
-	 fGk0kFjSIRt2l6TwkcX31WZGQ87b2nA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=cd5g7+y3ZJJCh2Ko+xCMBEZ+m4kbDCL/fdaw/LYfBo8=;
-	b=nS1rWewzFdGnrHoc1+TIrcLhB69z5yEplIxJH+LbMmLD1HhpYnBKAKBpO7Dyn2rNeb/sLg+/4KKdR
-	 oCgyyaDCA==
-X-HalOne-ID: 6f272b20-dfcf-11ee-93aa-1ff1563c5748
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay1.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id 6f272b20-dfcf-11ee-93aa-1ff1563c5748;
-	Mon, 11 Mar 2024 17:47:32 +0000 (UTC)
-Date: Mon, 11 Mar 2024 18:47:31 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: "David S . Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>, Helge Deller <deller@gmx.de>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
-	Kjetil Oftedal <oftedal@gmail.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 28/28] fbdev/p9100: Drop now unused driver p9100
-Message-ID: <20240311174731.GB1369531@ravnborg.org>
-References: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
- <20240309-sunset-v2-28-f09912574d2c@ravnborg.org>
- <e387ad3c-7646-49b6-a5f5-afd287556d8c@app.fastmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gG4TwGYy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B519EC433F1;
+	Tue, 12 Mar 2024 14:24:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1710253451;
+	bh=qpr3oDr5denGURn+3TLpW0eVsEAWpGD6RfS4albEsBY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=gG4TwGYyOAJNWY3JrsgJRCsHgbB4CJ7VnI46zq3sEoMoeXjtYfna6hEM67zCPXI4Z
+	 UZeaOaU2zyGISvFxdri98/FssO/Vu4v52BaYLlLf6oKttIeolEUDvNFxinvvkN1dAu
+	 Nqm3wgKMvEIiMVp1YIWaZk5k+kPFYOn2k7tG2EwCXSAXoPtC9EQD0onVSfKJNk/O4j
+	 gocIj5rJzoE0z/xXMA7PAYnfkpnY1JiNBAoirLlrjERtizhn93REUYYpcmf8mrvbfg
+	 tsVhkEkz/Ff05dQoKH4nokHVQabLDcyNdYaUUqtreFWAa/Naykn7e+zEgVvVtpX0+U
+	 uq2l1H0Z3ihUg==
+From: legion@kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>
+Cc: Alexey Gladkov <legion@kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	kbd@lists.linux.dev,
+	linux-api@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-serial@vger.kernel.org
+Subject: [PATCH v3 0/2] VT: Add ability to get font requirements
+Date: Tue, 12 Mar 2024 15:23:56 +0100
+Message-ID: <cover.1710252966.git.legion@kernel.org>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <cover.1708960303.git.legion@kernel.org>
+References: <cover.1708960303.git.legion@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e387ad3c-7646-49b6-a5f5-afd287556d8c@app.fastmail.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Arnd.
+From: Alexey Gladkov <legion@kernel.org>
 
-On Mon, Mar 11, 2024 at 03:05:25PM +0100, Arnd Bergmann wrote:
-> On Sat, Mar 9, 2024, at 19:15, Sam Ravnborg via B4 Relay wrote:
-> > From: Sam Ravnborg <sam@ravnborg.org>
-> >
-> > The p9100 driver is only relevant for the Sparcbook 3 machine,
-> > and with sun4m support removed this driver is no longer relevant.
-> >
-> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > Acked-by: Arnd Bergmann <arnd@kernel.org>
-> > Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > Cc: "David S. Miller" <davem@davemloft.net>
-> > Cc: Arnd Bergmann <arnd@kernel.org>
-> > Cc: Andreas Larsson <andreas@gaisler.com>
-> > Cc: Helge Deller <deller@gmx.de>
-> > ---
-> >  drivers/video/fbdev/Kconfig  |   8 -
-> >  drivers/video/fbdev/Makefile |   1 -
-> >  drivers/video/fbdev/p9100.c  | 372 -------------------------------------------
-> >  3 files changed, 381 deletions(-)
-> 
-> I tried to figure out if there are other drivers in the same
-> category and found the list at
-> https://everything2.com/title/Sun+graphics+cards
-> 
-> As far as I can tell, the only SBUS graphics that were
-> shipped on sparc64 are FB_FFB and FB_CG6, so we could
-> go further and remove BW2, CG3, TCX, CG14 and LEO as
-> well.
+We now have KD_FONT_OP_SET_TALL, but in fact such large fonts cannot be
+loaded. No console driver supports tall fonts. Unfortunately, userspace
+cannot distinguish the lack of support in the driver from errors in the
+font itself. In all cases, EINVAL will be returned.
 
-Looks like you are right, so we can drop more - good.
-As you already wrote - let's get the current patch set processed first.
+This patchset adds a separate ioctl to obtain the font parameters
+supported by the console driver.
 
-I did a quick hack on top of my current sparc32 patches.
-This is nice reduction of ~2700 lines and 5 fbdev drivers less to care
-about.
+v3:
+* Added the use of the in_range macro.
+* Squashed the commits that add ioctl to console divers.
 
-	Sam
+v2:
+* Instead of the KDFONTOP extension, a new ioctl has been added to
+  obtain font information.
+
+---
+
+Alexey Gladkov (2):
+  VT: Add KDFONTINFO ioctl
+  VT: Allow to get max font width and height
+
+ drivers/tty/vt/vt.c                 | 24 ++++++++++++++++++++++++
+ drivers/tty/vt/vt_ioctl.c           | 13 +++++++++++++
+ drivers/video/console/newport_con.c | 21 +++++++++++++++++----
+ drivers/video/console/sticon.c      | 25 +++++++++++++++++++++++--
+ drivers/video/console/vgacon.c      | 21 ++++++++++++++++++++-
+ drivers/video/fbdev/core/fbcon.c    | 22 +++++++++++++++++++++-
+ include/linux/console.h             |  2 ++
+ include/linux/vt_kern.h             |  1 +
+ include/uapi/linux/kd.h             | 13 ++++++++++++-
+ 9 files changed, 133 insertions(+), 9 deletions(-)
+
+-- 
+2.44.0
+

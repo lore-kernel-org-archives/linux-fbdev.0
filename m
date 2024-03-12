@@ -1,76 +1,76 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D19E7CF10
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 15:48:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21AD07A70A
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 15:48:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710258532; cv=none; b=eCEw2WrpLvV7XdXCrcjol+e/5K5ugZkzGh9YaLVl3cY5orbearaQfTZOXVa0figAquZ6+6qmNpZMxTwq87n7ayqKqFNx8jroN90nb4UG3RCk48c6aCT8YyjM/m/TFK/tXH7nYBYvjNV3wuyIkZ3A22C7BpfdvXUaSpTxQnt/1VU=
+	t=1710258533; cv=none; b=Hmm4/UKNvhISWXBN01a2ezduzIvyqU2McYjLoyjXUbMbBckAlv6QvfEfIXopBrliVKRJt4YN8xxRYPlFdzOmyhlzWU2GeIwP3UpU5iPuBN7fFf+fDShGJ0UGhYjJmQw9nl5ofy2+thpxIF+5m95SsTyEU/30VUplzQGpArqsmmE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710258532; c=relaxed/simple;
-	bh=VDppfFcEIZ26yVt1lJEK/yQgKszZatTL8YWoTR2ptlM=;
+	s=arc-20240116; t=1710258533; c=relaxed/simple;
+	bh=oSOHcyP0Bqs9yguppWm4YlVgCkBL6MiXCBDGSQ9GkWc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PghBCeJ8ctV+sIwjBzl+fuZpyLwrkjgPOK0+JipoTXT2N1uqqhbGdOyUTl6m52cWKlTh/IPs6Zipa7yeaOLdf+4ydfKNiygZNwEjS1GJ6LGqIp4cyqcUwlcO7eW0KKHNNe5HXWkqdUi4L7EaQNqlxVOSzO7YCC77BJ2veyifv4I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fP5z2wXT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8+HOXcPy; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fP5z2wXT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8+HOXcPy; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version:Content-Type; b=tqZThFfsIsxocZQAxAFUl8/IjTSvtwSN1Ngc3QMCjDzhIMg6pNSLinI/YaA2nn427E61hPDfIxXrtw/qYA7nk7MFfioZNWtkfOXDUWH9idMmqh1jToZWsNmqMs+F3oXU2ZkDlN1gP1O6n4xyGkGcA1+tHyy4VnqgkvNANzwY9U4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zl0++YKb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=BiqH/pPb; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zl0++YKb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=BiqH/pPb; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fP5z2wXT";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8+HOXcPy";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fP5z2wXT";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8+HOXcPy"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zl0++YKb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="BiqH/pPb";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zl0++YKb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="BiqH/pPb"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 72ACF3788D;
-	Tue, 12 Mar 2024 15:48:49 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8B8743788A;
+	Tue, 12 Mar 2024 15:48:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1710258529; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
+	t=1710258528; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ol7aSm+N80Qv9pQUo9Esqqz5r4Ajx8xV6UnU98he6y0=;
-	b=fP5z2wXTJgx23UZuHj7Dn3arcbyLpIachdtuAYKYbjSQFEK8kOg9OmL+FguHXCuUfUW6sf
-	6eZmHuUxKzDhFbPjVrE/xdNW+bO6KG9P0JoZ3XSM6sYn9PXmBtxVymx9nt/GunLDmOD2Uj
-	eGht9t6CwSHw4HG5ksxiY46g+mEQQnA=
+	bh=dlOkLgyECt6izJv/Ij1/xYwf7WvifjAXRqFzZEWeX/s=;
+	b=zl0++YKbhYp1y3dxMI4LkoCXEBtYQU0Dk2llghEO3sOqd0Qy/c85fZpR081Q1+VcmdvRkD
+	768r/LBj4Y3z71Q1gy0GYgYiXGijsWtvub316FSrIGcbWrHi+YkGL1U5aLH1oqkiC+GKR5
+	OQ10QJpSY1lMSDmTqXfVVDWisZ/2vx8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1710258529;
+	s=susede2_ed25519; t=1710258528;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
+	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ol7aSm+N80Qv9pQUo9Esqqz5r4Ajx8xV6UnU98he6y0=;
-	b=8+HOXcPyVaQoIXjwXBKSxiQeZQ/W7lRuA6SEHd1DYLu49fMa1L0OSbHaJ0Bgq1PwmETyOK
-	X5S2/azVOUw9MdBQ==
+	bh=dlOkLgyECt6izJv/Ij1/xYwf7WvifjAXRqFzZEWeX/s=;
+	b=BiqH/pPbx7w833fn2NclwjVqQpKNrfy4maGrxaGF6mucldsfnNbKgcAMVc3LDGSbZqOrmz
+	Bzxelo1nl3fWU6CQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1710258529; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
+	t=1710258528; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ol7aSm+N80Qv9pQUo9Esqqz5r4Ajx8xV6UnU98he6y0=;
-	b=fP5z2wXTJgx23UZuHj7Dn3arcbyLpIachdtuAYKYbjSQFEK8kOg9OmL+FguHXCuUfUW6sf
-	6eZmHuUxKzDhFbPjVrE/xdNW+bO6KG9P0JoZ3XSM6sYn9PXmBtxVymx9nt/GunLDmOD2Uj
-	eGht9t6CwSHw4HG5ksxiY46g+mEQQnA=
+	bh=dlOkLgyECt6izJv/Ij1/xYwf7WvifjAXRqFzZEWeX/s=;
+	b=zl0++YKbhYp1y3dxMI4LkoCXEBtYQU0Dk2llghEO3sOqd0Qy/c85fZpR081Q1+VcmdvRkD
+	768r/LBj4Y3z71Q1gy0GYgYiXGijsWtvub316FSrIGcbWrHi+YkGL1U5aLH1oqkiC+GKR5
+	OQ10QJpSY1lMSDmTqXfVVDWisZ/2vx8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1710258529;
+	s=susede2_ed25519; t=1710258528;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
+	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ol7aSm+N80Qv9pQUo9Esqqz5r4Ajx8xV6UnU98he6y0=;
-	b=8+HOXcPyVaQoIXjwXBKSxiQeZQ/W7lRuA6SEHd1DYLu49fMa1L0OSbHaJ0Bgq1PwmETyOK
-	X5S2/azVOUw9MdBQ==
+	bh=dlOkLgyECt6izJv/Ij1/xYwf7WvifjAXRqFzZEWeX/s=;
+	b=BiqH/pPbx7w833fn2NclwjVqQpKNrfy4maGrxaGF6mucldsfnNbKgcAMVc3LDGSbZqOrmz
+	Bzxelo1nl3fWU6CQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3219113976;
-	Tue, 12 Mar 2024 15:48:49 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4BCA413976;
+	Tue, 12 Mar 2024 15:48:48 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id YMOGCmF58GUhPwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 12 Mar 2024 15:48:49 +0000
+	id EAQIEWB58GUhPwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 12 Mar 2024 15:48:48 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: daniel@ffwll.ch,
 	airlied@gmail.com,
@@ -79,10 +79,10 @@ To: daniel@ffwll.ch,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Lechner <david@lechnology.com>
-Subject: [PATCH 41/43] drm/tiny/st7735r: Use fbdev-dma
-Date: Tue, 12 Mar 2024 16:45:36 +0100
-Message-ID: <20240312154834.26178-42-tzimmermann@suse.de>
+	=?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Subject: [PATCH 38/43] drm/tiny/panel-mipi-dbi: Use fbdev-dma
+Date: Tue, 12 Mar 2024 16:45:33 +0100
+Message-ID: <20240312154834.26178-39-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240312154834.26178-1-tzimmermann@suse.de>
 References: <20240312154834.26178-1-tzimmermann@suse.de>
@@ -92,23 +92,26 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
 Authentication-Results: smtp-out1.suse.de;
 	none
-X-Spamd-Result: default: False [0.89 / 50.00];
+X-Spam-Level: 
+X-Spam-Score: -4.31
+X-Spamd-Result: default: False [-4.31 / 50.00];
 	 ARC_NA(0.00)[];
 	 RCVD_VIA_SMTP_AUTH(0.00)[];
 	 FROM_HAS_DN(0.00)[];
 	 TO_DN_SOME(0.00)[];
 	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
 	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
 	 REPLY(-4.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 R_RATELIMIT(0.00)[to_ip_from(RLw9gjjhh8cousxs3wi4trssza)];
 	 RCVD_COUNT_THREE(0.00)[3];
 	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
 	 RCPT_COUNT_SEVEN(0.00)[8];
 	 MID_CONTAINS_FROM(1.00)[];
 	 FREEMAIL_TO(0.00)[ffwll.ch,gmail.com,gmx.de,redhat.com];
@@ -116,25 +119,25 @@ X-Spamd-Result: default: False [0.89 / 50.00];
 	 FROM_EQ_ENVFROM(0.00)[];
 	 MIME_TRACE(0.00)[0:+];
 	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-0.01)[49.64%]
-X-Spam-Score: 0.89
+	 BAYES_HAM(-0.01)[47.73%]
 X-Spam-Flag: NO
 
 Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
-damage handling, which is required by st7735r. Avoids the overhead of
-fbdev-generic's additional shadow buffering. No functional changes.
+damage handling, which is required by panel-mipi-dbi. Avoids the
+overhead of fbdev-generic's additional shadow buffering. No functional
+changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: David Lechner <david@lechnology.com>
+Cc: "Noralf Trønnes" <noralf@tronnes.org>
 ---
- drivers/gpu/drm/tiny/st7735r.c | 4 ++--
+ drivers/gpu/drm/tiny/panel-mipi-dbi.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/tiny/st7735r.c b/drivers/gpu/drm/tiny/st7735r.c
-index 477eb36fbb70d..1676da00883d3 100644
---- a/drivers/gpu/drm/tiny/st7735r.c
-+++ b/drivers/gpu/drm/tiny/st7735r.c
-@@ -18,7 +18,7 @@
+diff --git a/drivers/gpu/drm/tiny/panel-mipi-dbi.c b/drivers/gpu/drm/tiny/panel-mipi-dbi.c
+index f80a141fcf365..4cc4ca787c7d1 100644
+--- a/drivers/gpu/drm/tiny/panel-mipi-dbi.c
++++ b/drivers/gpu/drm/tiny/panel-mipi-dbi.c
+@@ -16,7 +16,7 @@
  
  #include <drm/drm_atomic_helper.h>
  #include <drm/drm_drv.h>
@@ -143,7 +146,7 @@ index 477eb36fbb70d..1676da00883d3 100644
  #include <drm/drm_gem_atomic_helper.h>
  #include <drm/drm_gem_dma_helper.h>
  #include <drm/drm_managed.h>
-@@ -241,7 +241,7 @@ static int st7735r_probe(struct spi_device *spi)
+@@ -335,7 +335,7 @@ static int panel_mipi_dbi_spi_probe(struct spi_device *spi)
  
  	spi_set_drvdata(spi, drm);
  

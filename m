@@ -1,41 +1,41 @@
 Received: from vern.gendns.com (vern.gendns.com [98.142.107.122])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFE2914403E
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 22:21:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0791144042
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 22:21:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=98.142.107.122
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710282066; cv=none; b=LyYSP2gQbqX0j5jptHcty8oMFhcXLAd8aQObfhER/CGhhq1b+LIQ/EILg8k68nC8RJnUrkEXHouQjjihvEu5a790pHQ1RnZe57TFUIhOwCsVKmN109vp/Zf/11DO8Bd15xLUXtuNKgnmZGnTPZiTojqSNslCnqtP0zfsDPGcTDE=
+	t=1710282076; cv=none; b=l6tnuf41Sl155xFzb9eoqp9CshBWC5dqXYVpaTTxyJN9Jr9XGqQqTYqPFEIfoJgycPsidQPLp6k8xWGS4owTrsktUw5domzmTJGhj+iQlUmQcgvVVq0gyEbNS7hhRw6RqZfOgZztFeMbDkBVKPc+3xl4f543+tb5Bf4vQ7zbae8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710282066; c=relaxed/simple;
-	bh=cI1QXDbeuAYTzxLMyjo71BHdSyj2ooORl+ImCAKNETM=;
+	s=arc-20240116; t=1710282076; c=relaxed/simple;
+	bh=jmVTcFGQOLaGDg2qHr90+6PuSx6qxsixSQI893RYA/g=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HqwHrv8Z+R2SId+Om3VujALrfcpamNgjGDnTUcBM7czQN+HZ7Zlz6tpgchq/hew/TLiwzSPlqTHez0Z+jP11m76dVuNiTZZ2xXzRouZUr9gFh6hdNYq1bDtROAA1Uz34TVyKv9ZQa4qC+0vDtaETni5WDeXfNM2c1wzSRDXGw+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com; spf=pass smtp.mailfrom=lechnology.com; dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b=1CkLrVad; arc=none smtp.client-ip=98.142.107.122
+	 In-Reply-To:Content-Type; b=HoU+SjqJGByd9tMEclbplmcJgWNfEEc7RzCVAjIs1Hq11tSs2d4jV9NZ0c1Hc17+yBKdnwzQE6acJeaeOkja8q8NpLMn2iUXmyCojxZ364vsJFE3ZX9+LDgOywsgI2vpLp7mPOS1enKGcGYDyrpUzxJzbyNgv9zdDQHt1SDg3/Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com; spf=pass smtp.mailfrom=lechnology.com; dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b=f7BQ3/NU; arc=none smtp.client-ip=98.142.107.122
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lechnology.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="1CkLrVad"
+	dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="f7BQ3/NU"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
 	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
 	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
 	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=8bpIdd3zxFSgnsVtpa/X5e5qanpEpPooRSM39Q40DaM=; b=1CkLrVad7ctnpggclaBS7J0VHt
-	2KdMtWrZcCAcY+9urLm/UrwgqcWm7oDYrBNhMRWTbQO/4L0V2gwHcduGqY4v4SND95oElKkhQx8Uf
-	d0nn9ZzA4M1IfA4EQNMgsdk2ZKAGKUk5itsys0+56Cjd7UpdZjBBaBIgpeufQPJSsWlL6YJaaO6xs
-	W56fWSDdpk9ajjsdlGr1tGGl//SKLhW5AvhgUpktNju4oIcGK7KuVTBEmNC3kPkoVD60pKJv/Sh8b
-	nmHR8FQOil34zNPgTmBZU/rUDOcKRK4EtZCyrAV9Oc5WAo0B3o/jk0mSuVibzuN43Y7fnI6vP5jfn
-	iD3W2Q8Q==;
+	bh=9aa2ye3Zag5hNT3ydhHengIjs6DAAqNnjpk1R1p1xSE=; b=f7BQ3/NUv7kSiDnTuvxvlTfXLl
+	G1oKZqTGxVdfihFMqxzinOQDdgUVirhTuwGBVD6rE/orJm+32+/FTs8Iu4R28/qp+5FnWe87ch0Bb
+	UGBOnMOl8kqNmPnh3Tc5B7mQDPIi11/DieHpz+b+NP8nZXQiySjjUDFGgxDt71Kea9j70rbVGgPSJ
+	H7FrI2atO7d9b95mKZ67seBOvvtDJv8MiObogewT7EcfnS4ytXabYbkmtNp9nYNI0XN9eceXCjz6I
+	Tipi144s4/zy2ZVJPPn4kiZbbWNiMF7LF2UcI3Emb/bDhsxuoNOnYLcQYc9Il+9iYDHEy4VsbTpmd
+	aA9KDXFg==;
 Received: from ip98-183-112-25.ok.ok.cox.net ([98.183.112.25]:57282 helo=[192.168.0.142])
 	by vern.gendns.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
 	(Exim 4.96.2)
 	(envelope-from <david@lechnology.com>)
-	id 1rkAWG-00035r-30;
-	Tue, 12 Mar 2024 18:21:02 -0400
-Message-ID: <71275d0d-37f0-4a68-ba3d-d1d358afb60b@lechnology.com>
-Date: Tue, 12 Mar 2024 17:21:02 -0500
+	id 1rkAWQ-00035r-33;
+	Tue, 12 Mar 2024 18:21:12 -0400
+Message-ID: <ebf80582-39fb-40c4-920d-9dde562f4224@lechnology.com>
+Date: Tue, 12 Mar 2024 17:21:12 -0500
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,13 +43,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 40/43] drm/tiny/st7586: Use fbdev-dma
+Subject: Re: [PATCH 41/43] drm/tiny/st7735r: Use fbdev-dma
 Content-Language: en-US
 To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
  airlied@gmail.com, deller@gmx.de, javierm@redhat.com
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20240312154834.26178-1-tzimmermann@suse.de>
- <20240312154834.26178-41-tzimmermann@suse.de>
+ <20240312154834.26178-42-tzimmermann@suse.de>
 From: David Lechner <david@lechnology.com>
 Autocrypt: addr=david@lechnology.com; keydata=
  xsFNBFFxkZ8BEADXzbnj9t8XSZYxKJGHdHqYgEBVzRElb3+f11qhDZKzVCMsn1+AN+PlHqC7
@@ -93,7 +93,7 @@ Autocrypt: addr=david@lechnology.com; keydata=
  +M4GyTil33pnBXEZp29nh7ev4VJ96sVvnQFzls3motvG+pq/c37Ms1gYayeCzA2iCDuKx6Zk
  ybHg7IzNEduqZQ4bkaBpnEt+vwE3Gg5l4dAUFWAs9qY13nyBANQ282FNctziEHCUJZ/Map6T
  dzHWO6hU1HuvmlwcJSFCOey8yhkt386E6KfVYzrIhwTtabg+DLyMZK40Rop1VcU7Nx0M
-In-Reply-To: <20240312154834.26178-41-tzimmermann@suse.de>
+In-Reply-To: <20240312154834.26178-42-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
@@ -109,7 +109,7 @@ X-Source-Dir:
 
 On 3/12/24 10:45 AM, Thomas Zimmermann wrote:
 > Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
-> damage handling, which is required by st7586. Avoids the overhead of
+> damage handling, which is required by st7735r. Avoids the overhead of
 > fbdev-generic's additional shadow buffering. No functional changes.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>

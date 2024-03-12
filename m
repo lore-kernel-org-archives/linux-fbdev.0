@@ -1,35 +1,76 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E5F87D3F8
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 15:48:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98AD87D3FF
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 15:48:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710258529; cv=none; b=czusmS/V/cYZczCqR8Hc+TuBnjIasXkUt71H8Kofo4xgICq3ay3I49pV2kkNC2nGhOCVLHoZsxzjyMLqSC2N0qgslNqILMsfCRwRI9H4yPUNV3D3PM1OY6bXu1E6/Gbx56fyrXoinFSajPwe0/50qlqMdbeDOknAriKj5CTbtBs=
+	t=1710258529; cv=none; b=f3LabU0JS7dwv4xqhieUYV0QxHviaaGRKNacpRYw1RSHxsadgNuT7IWOg5ldMw1FiLI2voIgQehUAXOyDad95J791Npj0APagV4Oa9WJKwCSyKIySmQiAWunwfRRKsAQ006dZE+WnYgz/t2ThW5cuVWSvKwz8+por8lobepf57Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1710258529; c=relaxed/simple;
-	bh=Flu46HyLqa9jSJlFuH/x24joklcUsfbc8EUq4vY5sR8=;
+	bh=bS0SDVlJ8KrEnZ5aE3lx2PonwpkBw0TLY2m+oHAmrjY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PKJv5xK9mAtZvrlCtObXhtTHLzkLxmPG2YxQXVzd4f2DW8EHnCV2U4npxFoVdir/F7ZfOMYJtBblFJiaRkx222Fks+jpNoWDTL16Bsz2+L6YXPiRImdqaGeJaYvTiBywj2ei12FyfH1XgDKWO4hMO4T30v4YjIAydGDMb4wjzGc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
+	 MIME-Version; b=BtbKsTgsrEFws+6Qd6yJZ5zlTAKsJUPkLVP5r+4n8N0cyw81FLQv0tUY8Nfvw4uHn8YClUn8es8auok7W8Bu0QYyCgSsDZAA3KAPqJl40/NSXfEKFIHobpmr/ZDBHoDbWDU7LyFPJTe4/By0Vpz64vepzPLd7j7HGA1TS6cZksU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=SvT+OA2Y; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=RYrJKX+B; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=SvT+OA2Y; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=RYrJKX+B; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="SvT+OA2Y";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="RYrJKX+B";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="SvT+OA2Y";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="RYrJKX+B"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 9A0A55D6D3;
-	Tue, 12 Mar 2024 15:48:45 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 9FC6D5D6CC;
+	Tue, 12 Mar 2024 15:48:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710258524; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=OXFdnlzdGByMsY9pFY4Mifj9IG/C+80tZQ/+RvnyxIQ=;
+	b=SvT+OA2YXGzj7VDfc3xYhA91jCM1ikkj50IGTWz+aLsoiyP02BcUMeFDg5Y8PK+4qnZhRk
+	hZp0u2uCcOJc2CauIWf57joHLf8l9DUX3VeJCQjbyCeksmT30kXWth6eU3MM0A7Itzw9EL
+	vG2Pfj6tJI7NqioaT2lWQT0SOJOZG+g=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710258524;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=OXFdnlzdGByMsY9pFY4Mifj9IG/C+80tZQ/+RvnyxIQ=;
+	b=RYrJKX+BJkE/nOx1AX2hgXoeC01UnQEJvxN9HZGtP436j9cAnyvx4MBnePX5SAEIfToy48
+	4/tPHKiUCHomiZDA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710258524; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=OXFdnlzdGByMsY9pFY4Mifj9IG/C+80tZQ/+RvnyxIQ=;
+	b=SvT+OA2YXGzj7VDfc3xYhA91jCM1ikkj50IGTWz+aLsoiyP02BcUMeFDg5Y8PK+4qnZhRk
+	hZp0u2uCcOJc2CauIWf57joHLf8l9DUX3VeJCQjbyCeksmT30kXWth6eU3MM0A7Itzw9EL
+	vG2Pfj6tJI7NqioaT2lWQT0SOJOZG+g=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710258524;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=OXFdnlzdGByMsY9pFY4Mifj9IG/C+80tZQ/+RvnyxIQ=;
+	b=RYrJKX+BJkE/nOx1AX2hgXoeC01UnQEJvxN9HZGtP436j9cAnyvx4MBnePX5SAEIfToy48
+	4/tPHKiUCHomiZDA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 521D51364F;
-	Tue, 12 Mar 2024 15:48:45 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 5F6661364F;
+	Tue, 12 Mar 2024 15:48:44 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 4AmpEl158GUhPwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 12 Mar 2024 15:48:45 +0000
+	id mLf5FVx58GUhPwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 12 Mar 2024 15:48:44 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: daniel@ffwll.ch,
 	airlied@gmail.com,
@@ -38,11 +79,10 @@ To: daniel@ffwll.ch,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
-Subject: [PATCH 28/43] drm/renesas/rcar-du: Use fbdev-dma
-Date: Tue, 12 Mar 2024 16:45:23 +0100
-Message-ID: <20240312154834.26178-29-tzimmermann@suse.de>
+	Paul Cercueil <paul@crapouillou.net>
+Subject: [PATCH 25/43] drm/ingenic: Use fbdev-dma
+Date: Tue, 12 Mar 2024 16:45:20 +0100
+Message-ID: <20240312154834.26178-26-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240312154834.26178-1-tzimmermann@suse.de>
 References: <20240312154834.26178-1-tzimmermann@suse.de>
@@ -56,44 +96,60 @@ Content-Transfer-Encoding: 8bit
 X-Spam-Level: 
 Authentication-Results: smtp-out2.suse.de;
 	none
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	 TAGGED_RCPT(0.00)[renesas];
-	 REPLY(-4.00)[]
-X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: 9A0A55D6D3
+X-Spamd-Result: default: False [0.90 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 URIBL_BLOCKED(0.00)[suse.de:email,crapouillou.net:email];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 R_MISSING_CHARSET(2.50)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 REPLY(-4.00)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_SEVEN(0.00)[8];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FREEMAIL_TO(0.00)[ffwll.ch,gmail.com,gmx.de,redhat.com];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-0.00)[33.51%]
+X-Spam-Score: 0.90
 X-Spam-Flag: NO
 
 Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
-damage handling, which is required by rcar-du. Avoids the overhead of
+damage handling, which is required by ingenic. Avoids the overhead of
 fbdev-generic's additional shadow buffering. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c | 4 ++--
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
-index dee530e4c8b27..fb719d9aff10d 100644
---- a/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
-+++ b/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
-@@ -20,7 +20,7 @@
- 
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_drv.h>
+diff --git a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+index 0751235007a7e..39fa291f43dd1 100644
+--- a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
++++ b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+@@ -31,7 +31,7 @@
+ #include <drm/drm_encoder.h>
+ #include <drm/drm_gem_dma_helper.h>
+ #include <drm/drm_fb_dma_helper.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_dma.h>
- #include <drm/drm_gem_dma_helper.h>
- #include <drm/drm_managed.h>
- #include <drm/drm_probe_helper.h>
-@@ -716,7 +716,7 @@ static int rcar_du_probe(struct platform_device *pdev)
+ #include <drm/drm_fourcc.h>
+ #include <drm/drm_framebuffer.h>
+ #include <drm/drm_gem_atomic_helper.h>
+@@ -1399,7 +1399,7 @@ static int ingenic_drm_bind(struct device *dev, bool has_components)
+ 		goto err_clk_notifier_unregister;
+ 	}
  
- 	drm_info(&rcdu->ddev, "Device %s probed\n", dev_name(&pdev->dev));
- 
--	drm_fbdev_generic_setup(&rcdu->ddev, 32);
-+	drm_fbdev_dma_setup(&rcdu->ddev, 32);
+-	drm_fbdev_generic_setup(drm, 32);
++	drm_fbdev_dma_setup(drm, 32);
  
  	return 0;
  

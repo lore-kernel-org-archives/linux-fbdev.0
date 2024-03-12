@@ -1,598 +1,110 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F05D7D066
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 15:48:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F4527D406
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 16:08:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710258533; cv=none; b=Ho8ukCyOtXFea0nZuq2MjlpnmBjyOlK7J47qpfGEKC5YZO9f2uXwSLLvnY19fSbAQQWkHGRdcQCEUEyDjAwAa+Du0YF3MiIxdtjM+GsBl6CN48ukhJAWNGIkAc0KkJVFgDAFlKBt/Ggo4BGsbWXBQtSRXe6GZA9MPVNowAemsOU=
+	t=1710259700; cv=none; b=I+f3D/EdmOwE5RTlvwc4nV35IlxQNgPCayAiEWe5Mt7uy1+luo6x/NSP6Qzsw+T6Rc6GCA9A/Yb+TNwRwzpqppxTHTvwKXGyc4ymuFpxL2hDHcble3SvI8ojKF5NjThXDy0xCGfQa+YI/rBotBw5e4ES8xHAfqSwLqyUmSpHOPE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710258533; c=relaxed/simple;
-	bh=K+hrZfOz0EnCE936pLI4WdPPmo70ejkVtMa4/vbdepQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=e0wWPAF7dDSBpdrV36KCkzroLIUTib9XYGN5q+w/ZLG08hgpx4V7vXxP4TH6/7OHi6UYDKPG7cm2j7GH4e+zEkCXabLoWHlH6HdWsLVKET899KLGr6M+/AL4sM/gjmtnjflur4iI90xJsezcLOoghEU4qrRWypQo8Exyj5ecu+U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B41E63788E;
-	Tue, 12 Mar 2024 15:48:49 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 79A6B13977;
-	Tue, 12 Mar 2024 15:48:49 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 6FxYHGF58GUhPwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 12 Mar 2024 15:48:49 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: daniel@ffwll.ch,
-	airlied@gmail.com,
-	deller@gmx.de,
-	javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 42/43] drm/fbdev-generic: Convert to fbdev-ttm
-Date: Tue, 12 Mar 2024 16:45:37 +0100
-Message-ID: <20240312154834.26178-43-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240312154834.26178-1-tzimmermann@suse.de>
-References: <20240312154834.26178-1-tzimmermann@suse.de>
+	s=arc-20240116; t=1710259700; c=relaxed/simple;
+	bh=Az4ylA0pPHPMXNAXpe4V+gZrQIfIie5XU9giy6iYiPU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mdgmn+3b5n+pNc4bu0rIIug/dbteo/J8EePnP8JA/ECYIOeia8eLxRk4BiqrIMuaBTcX1pYteG2So0DpjXVrbkyacBBKXOA8kakAueMdDq0w4/CMu9hPpg9F8pkqW3ziW+KyAToo7c4BtmCs97mpK8kKBXA4Q5gB7e3lvABSp0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NY9ArJxr; arc=none smtp.client-ip=209.85.208.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NY9ArJxr"
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-2d3b93e992aso53436041fa.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 09:08:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1710259697; x=1710864497; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0X3bh6regalLfza/VqXtw3dY8qNGGSgfK0NBO0mq7Yo=;
+        b=NY9ArJxrAg2qpZCMQBggtN6TTqSlxCGxUxdZkPz1Yf7xS01SHbxHbqgfRWFTtmbjOX
+         uD1EnTSa+SsYdlknnc9N02t7NhAvXV9s05UfB6Shp/GKNpHkw14cV0sMNvdp7q3RmcCz
+         VDwEaGwTD3lhM7Ug49LZR9NmAzXAt1sJLBNluDj+b373h2phPv05ch0mHoo1jSLiUQqN
+         Ea3SQ0rGGHL/fUQ1YkwdcrkgoeUSjQhJKb5uX4Z99uxfW0fULGlsPp6hCrKeLWQhgb4H
+         kzVx7IUa7U4L1dq7nEwgBNiWoGzndDXuwNrZh9DVaZ5VxaYtfuaRIYe3K5HDPt4eX4jf
+         pjcw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710259697; x=1710864497;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0X3bh6regalLfza/VqXtw3dY8qNGGSgfK0NBO0mq7Yo=;
+        b=uIveKMxLgarh/0KBaYiZJ4fK/KlomTW8r2O8RQHFBUtiF+y3DD3ZpjLUrlyG2L75vU
+         13Bro2Z7ukk1bBTv9uGEUJrgHZec2W+S5sO/MCdkEtHzyOOkO2MSnzs+zEt7Dh9aLcWz
+         NbBhrF7J0NilPrIgedFgXJpiVvePUtTa8hX+/v0M3xdjHAVBz3llpov1WA++QnoP7+Sh
+         pMDUV4Z2LPt2sD98ysbwgsdidaobD5BUEjh7Ip52FnZsY9+P1/wTpRfIE+grMe21pMA6
+         cY+XwBTyDVWqDuczfg/vs+By+Xs5MzBFtUpacPxnoKZkaNvhytsakoiUmphVQuFKo3h9
+         GxEg==
+X-Forwarded-Encrypted: i=1; AJvYcCUUjc+28O5CJ57J5Ku6fLDy7PmJ8m8JBUSf7av2lFnnXcVBVDZ6J+YnW5+BThlQ1vnk425Y+L1plsEvtiXaJURi6x7PMGz2vrig43A=
+X-Gm-Message-State: AOJu0Yxz8HBj7kNSE1jZchVReodwRBzva373PyBKDmrCRQptio3qQNSp
+	btZq0B3k9Y4VNRymZtbg6YwSq6BjeePKBAFu8ekILXC6vifz+odapxTgoMb1YnwvY6j/tqwZ//4
+	sfh+aLhi3/b5KO3ReXhMiPD+Ozzc=
+X-Google-Smtp-Source: AGHT+IGYIvZqarMg5Vm2nKOnutiSU8XvApjVKUHqujlgz1UN8eZq3ic9oExfiZabCfDqH/yPYDlMcbT3eWthw0T2HO8=
+X-Received: by 2002:a05:651c:2207:b0:2d4:4777:e2d8 with SMTP id
+ y7-20020a05651c220700b002d44777e2d8mr3555811ljq.13.1710259697156; Tue, 12 Mar
+ 2024 09:08:17 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	 REPLY(-4.00)[]
-X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: B41E63788E
-X-Spam-Flag: NO
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+References: <20240312154834.26178-1-tzimmermann@suse.de> <20240312154834.26178-12-tzimmermann@suse.de>
+In-Reply-To: <20240312154834.26178-12-tzimmermann@suse.de>
+From: Deepak Rawat <drawat.floss@gmail.com>
+Date: Tue, 12 Mar 2024 09:08:06 -0700
+Message-ID: <CAHFnvW2-QYRCXdYe47txBvpj4N=NNLsPqS0pkRAiJBJMsE+Ksg@mail.gmail.com>
+Subject: Re: [PATCH 11/43] drm/hyperv: Use fbdev-shmem
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: daniel@ffwll.ch, airlied@gmail.com, deller@gmx.de, javierm@redhat.com, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Only TTM-based drivers use fbdev-generic. Rename it to fbdev-ttm and
-change the symbol infix from _generic_ to _ttm_. Link the source file
-into TTM helpers, so that it is only build if TTM-based drivers have
-been selected. Select DRM_TTM_HELPER for loongson.
+Reviewed-by: Deepak Rawat <drawat.floss@gmail.com>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- Documentation/gpu/drm-kms-helpers.rst         |  2 +-
- drivers/gpu/drm/Makefile                      |  5 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c       |  6 +-
- .../{drm_fbdev_generic.c => drm_fbdev_ttm.c}  | 80 +++++++++----------
- .../gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   |  4 +-
- drivers/gpu/drm/loongson/Kconfig              |  1 +
- drivers/gpu/drm/loongson/lsdc_drv.c           |  4 +-
- drivers/gpu/drm/nouveau/nouveau_drm.c         |  6 +-
- drivers/gpu/drm/qxl/qxl_drv.c                 |  4 +-
- drivers/gpu/drm/tiny/bochs.c                  |  4 +-
- drivers/gpu/drm/vboxvideo/vbox_drv.c          |  4 +-
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |  4 +-
- include/drm/drm_fbdev_generic.h               | 15 ----
- include/drm/drm_fbdev_ttm.h                   | 15 ++++
- 14 files changed, 77 insertions(+), 77 deletions(-)
- rename drivers/gpu/drm/{drm_fbdev_generic.c => drm_fbdev_ttm.c} (76%)
- delete mode 100644 include/drm/drm_fbdev_generic.h
- create mode 100644 include/drm/drm_fbdev_ttm.h
-
-diff --git a/Documentation/gpu/drm-kms-helpers.rst b/Documentation/gpu/drm-kms-helpers.rst
-index 59cfe8a7a8bac..e46ab9b670acd 100644
---- a/Documentation/gpu/drm-kms-helpers.rst
-+++ b/Documentation/gpu/drm-kms-helpers.rst
-@@ -116,7 +116,7 @@ fbdev Helper Functions Reference
- .. kernel-doc:: drivers/gpu/drm/drm_fb_helper.c
-    :export:
- 
--.. kernel-doc:: drivers/gpu/drm/drm_fbdev_generic.c
-+.. kernel-doc:: drivers/gpu/drm/drm_fbdev_ttm.c
-    :export:
- 
- format Helper Functions Reference
-diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-index 50a2f0cffdac2..7bd4c525fd825 100644
---- a/drivers/gpu/drm/Makefile
-+++ b/drivers/gpu/drm/Makefile
-@@ -117,6 +117,7 @@ drm_vram_helper-y := drm_gem_vram_helper.o
- obj-$(CONFIG_DRM_VRAM_HELPER) += drm_vram_helper.o
- 
- drm_ttm_helper-y := drm_gem_ttm_helper.o
-+drm_ttm_helper-$(CONFIG_DRM_FBDEV_EMULATION) += drm_fbdev_ttm.o
- obj-$(CONFIG_DRM_TTM_HELPER) += drm_ttm_helper.o
- 
- #
-@@ -142,9 +143,7 @@ drm_kms_helper-y := \
- 	drm_self_refresh_helper.o \
- 	drm_simple_kms_helper.o
- drm_kms_helper-$(CONFIG_DRM_PANEL_BRIDGE) += bridge/panel.o
--drm_kms_helper-$(CONFIG_DRM_FBDEV_EMULATION) += \
--	drm_fbdev_generic.o \
--	drm_fb_helper.o
-+drm_kms_helper-$(CONFIG_DRM_FBDEV_EMULATION) += drm_fb_helper.o
- obj-$(CONFIG_DRM_KMS_HELPER) += drm_kms_helper.o
- 
- #
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-index 6acffedf648c8..e13c03d29c162 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-@@ -24,7 +24,7 @@
- 
- #include <drm/amdgpu_drm.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_gem.h>
- #include <drm/drm_managed.h>
- #include <drm/drm_pciids.h>
-@@ -2308,9 +2308,9 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
- 	    !list_empty(&adev_to_drm(adev)->mode_config.connector_list)) {
- 		/* select 8 bpp console on low vram cards */
- 		if (adev->gmc.real_vram_size <= (32*1024*1024))
--			drm_fbdev_generic_setup(adev_to_drm(adev), 8);
-+			drm_fbdev_ttm_setup(adev_to_drm(adev), 8);
- 		else
--			drm_fbdev_generic_setup(adev_to_drm(adev), 32);
-+			drm_fbdev_ttm_setup(adev_to_drm(adev), 32);
- 	}
- 
- 	ret = amdgpu_debugfs_init(adev);
-diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_ttm.c
-similarity index 76%
-rename from drivers/gpu/drm/drm_fbdev_generic.c
-rename to drivers/gpu/drm/drm_fbdev_ttm.c
-index b4659cd6285ab..2114a589bd7d3 100644
---- a/drivers/gpu/drm/drm_fbdev_generic.c
-+++ b/drivers/gpu/drm/drm_fbdev_ttm.c
-@@ -10,10 +10,10 @@
- #include <drm/drm_gem.h>
- #include <drm/drm_print.h>
- 
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- 
- /* @user: 1=userspace, 0=fbcon */
--static int drm_fbdev_generic_fb_open(struct fb_info *info, int user)
-+static int drm_fbdev_ttm_fb_open(struct fb_info *info, int user)
- {
- 	struct drm_fb_helper *fb_helper = info->par;
- 
-@@ -24,7 +24,7 @@ static int drm_fbdev_generic_fb_open(struct fb_info *info, int user)
- 	return 0;
- }
- 
--static int drm_fbdev_generic_fb_release(struct fb_info *info, int user)
-+static int drm_fbdev_ttm_fb_release(struct fb_info *info, int user)
- {
- 	struct drm_fb_helper *fb_helper = info->par;
- 
-@@ -34,11 +34,11 @@ static int drm_fbdev_generic_fb_release(struct fb_info *info, int user)
- 	return 0;
- }
- 
--FB_GEN_DEFAULT_DEFERRED_SYSMEM_OPS(drm_fbdev_generic,
-+FB_GEN_DEFAULT_DEFERRED_SYSMEM_OPS(drm_fbdev_ttm,
- 				   drm_fb_helper_damage_range,
- 				   drm_fb_helper_damage_area);
- 
--static void drm_fbdev_generic_fb_destroy(struct fb_info *info)
-+static void drm_fbdev_ttm_fb_destroy(struct fb_info *info)
- {
- 	struct drm_fb_helper *fb_helper = info->par;
- 	void *shadow = info->screen_buffer;
-@@ -56,19 +56,19 @@ static void drm_fbdev_generic_fb_destroy(struct fb_info *info)
- 	kfree(fb_helper);
- }
- 
--static const struct fb_ops drm_fbdev_generic_fb_ops = {
-+static const struct fb_ops drm_fbdev_ttm_fb_ops = {
- 	.owner		= THIS_MODULE,
--	.fb_open	= drm_fbdev_generic_fb_open,
--	.fb_release	= drm_fbdev_generic_fb_release,
--	FB_DEFAULT_DEFERRED_OPS(drm_fbdev_generic),
-+	.fb_open	= drm_fbdev_ttm_fb_open,
-+	.fb_release	= drm_fbdev_ttm_fb_release,
-+	FB_DEFAULT_DEFERRED_OPS(drm_fbdev_ttm),
- 	DRM_FB_HELPER_DEFAULT_OPS,
--	.fb_destroy	= drm_fbdev_generic_fb_destroy,
-+	.fb_destroy	= drm_fbdev_ttm_fb_destroy,
- };
- 
- /*
-  * This function uses the client API to create a framebuffer backed by a dumb buffer.
-  */
--static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
-+static int drm_fbdev_ttm_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 					     struct drm_fb_helper_surface_size *sizes)
- {
- 	struct drm_client_dev *client = &fb_helper->client;
-@@ -108,7 +108,7 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 
- 	drm_fb_helper_fill_info(info, fb_helper, sizes);
- 
--	info->fbops = &drm_fbdev_generic_fb_ops;
-+	info->fbops = &drm_fbdev_ttm_fb_ops;
- 
- 	/* screen */
- 	info->flags |= FBINFO_VIRTFB | FBINFO_READS_FAST;
-@@ -137,9 +137,9 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	return ret;
- }
- 
--static void drm_fbdev_generic_damage_blit_real(struct drm_fb_helper *fb_helper,
--					       struct drm_clip_rect *clip,
--					       struct iosys_map *dst)
-+static void drm_fbdev_ttm_damage_blit_real(struct drm_fb_helper *fb_helper,
-+					   struct drm_clip_rect *clip,
-+					   struct iosys_map *dst)
- {
- 	struct drm_framebuffer *fb = fb_helper->fb;
- 	size_t offset = clip->y1 * fb->pitches[0];
-@@ -176,8 +176,8 @@ static void drm_fbdev_generic_damage_blit_real(struct drm_fb_helper *fb_helper,
- 	}
- }
- 
--static int drm_fbdev_generic_damage_blit(struct drm_fb_helper *fb_helper,
--					 struct drm_clip_rect *clip)
-+static int drm_fbdev_ttm_damage_blit(struct drm_fb_helper *fb_helper,
-+				     struct drm_clip_rect *clip)
- {
- 	struct drm_client_buffer *buffer = fb_helper->buffer;
- 	struct iosys_map map, dst;
-@@ -201,7 +201,7 @@ static int drm_fbdev_generic_damage_blit(struct drm_fb_helper *fb_helper,
- 		goto out;
- 
- 	dst = map;
--	drm_fbdev_generic_damage_blit_real(fb_helper, clip, &dst);
-+	drm_fbdev_ttm_damage_blit_real(fb_helper, clip, &dst);
- 
- 	drm_client_buffer_vunmap(buffer);
- 
-@@ -211,8 +211,8 @@ static int drm_fbdev_generic_damage_blit(struct drm_fb_helper *fb_helper,
- 	return ret;
- }
- 
--static int drm_fbdev_generic_helper_fb_dirty(struct drm_fb_helper *helper,
--					     struct drm_clip_rect *clip)
-+static int drm_fbdev_ttm_helper_fb_dirty(struct drm_fb_helper *helper,
-+					 struct drm_clip_rect *clip)
- {
- 	struct drm_device *dev = helper->dev;
- 	int ret;
-@@ -221,7 +221,7 @@ static int drm_fbdev_generic_helper_fb_dirty(struct drm_fb_helper *helper,
- 	if (!(clip->x1 < clip->x2 && clip->y1 < clip->y2))
- 		return 0;
- 
--	ret = drm_fbdev_generic_damage_blit(helper, clip);
-+	ret = drm_fbdev_ttm_damage_blit(helper, clip);
- 	if (drm_WARN_ONCE(dev, ret, "Damage blitter failed: ret=%d\n", ret))
- 		return ret;
- 
-@@ -234,12 +234,12 @@ static int drm_fbdev_generic_helper_fb_dirty(struct drm_fb_helper *helper,
- 	return 0;
- }
- 
--static const struct drm_fb_helper_funcs drm_fbdev_generic_helper_funcs = {
--	.fb_probe = drm_fbdev_generic_helper_fb_probe,
--	.fb_dirty = drm_fbdev_generic_helper_fb_dirty,
-+static const struct drm_fb_helper_funcs drm_fbdev_ttm_helper_funcs = {
-+	.fb_probe = drm_fbdev_ttm_helper_fb_probe,
-+	.fb_dirty = drm_fbdev_ttm_helper_fb_dirty,
- };
- 
--static void drm_fbdev_generic_client_unregister(struct drm_client_dev *client)
-+static void drm_fbdev_ttm_client_unregister(struct drm_client_dev *client)
- {
- 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
- 
-@@ -252,14 +252,14 @@ static void drm_fbdev_generic_client_unregister(struct drm_client_dev *client)
- 	}
- }
- 
--static int drm_fbdev_generic_client_restore(struct drm_client_dev *client)
-+static int drm_fbdev_ttm_client_restore(struct drm_client_dev *client)
- {
- 	drm_fb_helper_lastclose(client->dev);
- 
- 	return 0;
- }
- 
--static int drm_fbdev_generic_client_hotplug(struct drm_client_dev *client)
-+static int drm_fbdev_ttm_client_hotplug(struct drm_client_dev *client)
- {
- 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
- 	struct drm_device *dev = client->dev;
-@@ -284,32 +284,32 @@ static int drm_fbdev_generic_client_hotplug(struct drm_client_dev *client)
- err_drm_fb_helper_fini:
- 	drm_fb_helper_fini(fb_helper);
- err_drm_err:
--	drm_err(dev, "fbdev: Failed to setup generic emulation (ret=%d)\n", ret);
-+	drm_err(dev, "fbdev: Failed to setup emulation (ret=%d)\n", ret);
- 	return ret;
- }
- 
--static const struct drm_client_funcs drm_fbdev_generic_client_funcs = {
-+static const struct drm_client_funcs drm_fbdev_ttm_client_funcs = {
- 	.owner		= THIS_MODULE,
--	.unregister	= drm_fbdev_generic_client_unregister,
--	.restore	= drm_fbdev_generic_client_restore,
--	.hotplug	= drm_fbdev_generic_client_hotplug,
-+	.unregister	= drm_fbdev_ttm_client_unregister,
-+	.restore	= drm_fbdev_ttm_client_restore,
-+	.hotplug	= drm_fbdev_ttm_client_hotplug,
- };
- 
- /**
-- * drm_fbdev_generic_setup() - Setup generic fbdev emulation
-+ * drm_fbdev_ttm_setup() - Setup fbdev emulation for TTM-based drivers
-  * @dev: DRM device
-  * @preferred_bpp: Preferred bits per pixel for the device.
-  *
-- * This function sets up generic fbdev emulation for drivers that supports
-+ * This function sets up fbdev emulation for TTM-based drivers that support
-  * dumb buffers with a virtual address and that can be mmap'ed.
-- * drm_fbdev_generic_setup() shall be called after the DRM driver registered
-+ * drm_fbdev_ttm_setup() shall be called after the DRM driver registered
-  * the new DRM device with drm_dev_register().
-  *
-  * Restore, hotplug events and teardown are all taken care of. Drivers that do
-  * suspend/resume need to call drm_fb_helper_set_suspend_unlocked() themselves.
-  * Simple drivers might use drm_mode_config_helper_suspend().
-  *
-- * In order to provide fixed mmap-able memory ranges, generic fbdev emulation
-+ * In order to provide fixed mmap-able memory ranges, fbdev emulation
-  * uses a shadow buffer in system memory. The implementation blits the shadow
-  * fbdev buffer onto the real buffer in regular intervals.
-  *
-@@ -318,7 +318,7 @@ static const struct drm_client_funcs drm_fbdev_generic_client_funcs = {
-  *
-  * The fbdev is destroyed by drm_dev_unregister().
-  */
--void drm_fbdev_generic_setup(struct drm_device *dev, unsigned int preferred_bpp)
-+void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int preferred_bpp)
- {
- 	struct drm_fb_helper *fb_helper;
- 	int ret;
-@@ -329,9 +329,9 @@ void drm_fbdev_generic_setup(struct drm_device *dev, unsigned int preferred_bpp)
- 	fb_helper = kzalloc(sizeof(*fb_helper), GFP_KERNEL);
- 	if (!fb_helper)
- 		return;
--	drm_fb_helper_prepare(dev, fb_helper, preferred_bpp, &drm_fbdev_generic_helper_funcs);
-+	drm_fb_helper_prepare(dev, fb_helper, preferred_bpp, &drm_fbdev_ttm_helper_funcs);
- 
--	ret = drm_client_init(dev, &fb_helper->client, "fbdev", &drm_fbdev_generic_client_funcs);
-+	ret = drm_client_init(dev, &fb_helper->client, "fbdev", &drm_fbdev_ttm_client_funcs);
- 	if (ret) {
- 		drm_err(dev, "Failed to register client: %d\n", ret);
- 		goto err_drm_client_init;
-@@ -346,4 +346,4 @@ void drm_fbdev_generic_setup(struct drm_device *dev, unsigned int preferred_bpp)
- 	kfree(fb_helper);
- 	return;
- }
--EXPORT_SYMBOL(drm_fbdev_generic_setup);
-+EXPORT_SYMBOL(drm_fbdev_ttm_setup);
-diff --git a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-index 57c21ec452b70..9f9b19ea05879 100644
---- a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-+++ b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-@@ -17,7 +17,7 @@
- #include <drm/drm_aperture.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_gem_vram_helper.h>
- #include <drm/drm_managed.h>
-@@ -339,7 +339,7 @@ static int hibmc_pci_probe(struct pci_dev *pdev,
- 		goto err_unload;
- 	}
- 
--	drm_fbdev_generic_setup(dev, 32);
-+	drm_fbdev_ttm_setup(dev, 32);
- 
- 	return 0;
- 
-diff --git a/drivers/gpu/drm/loongson/Kconfig b/drivers/gpu/drm/loongson/Kconfig
-index 8e59753e532de..9ed463a76ae29 100644
---- a/drivers/gpu/drm/loongson/Kconfig
-+++ b/drivers/gpu/drm/loongson/Kconfig
-@@ -6,6 +6,7 @@ config DRM_LOONGSON
- 	depends on LOONGARCH || MIPS || COMPILE_TEST
- 	select DRM_KMS_HELPER
- 	select DRM_TTM
-+	select DRM_TTM_HELPER
- 	select I2C
- 	select I2C_ALGOBIT
- 	help
-diff --git a/drivers/gpu/drm/loongson/lsdc_drv.c b/drivers/gpu/drm/loongson/lsdc_drv.c
-index d8ff60b46abe6..adc7344d2f807 100644
---- a/drivers/gpu/drm/loongson/lsdc_drv.c
-+++ b/drivers/gpu/drm/loongson/lsdc_drv.c
-@@ -10,7 +10,7 @@
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_gem_framebuffer_helper.h>
- #include <drm/drm_ioctl.h>
- #include <drm/drm_modeset_helper.h>
-@@ -314,7 +314,7 @@ static int lsdc_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (ret)
- 		return ret;
- 
--	drm_fbdev_generic_setup(ddev, 32);
-+	drm_fbdev_ttm_setup(ddev, 32);
- 
- 	return 0;
- }
-diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
-index a947e1d5f309a..a58c31089613e 100644
---- a/drivers/gpu/drm/nouveau/nouveau_drm.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
-@@ -32,7 +32,7 @@
- 
- #include <drm/drm_aperture.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_gem_ttm_helper.h>
- #include <drm/drm_ioctl.h>
- #include <drm/drm_vblank.h>
-@@ -846,9 +846,9 @@ static int nouveau_drm_probe(struct pci_dev *pdev,
- 		goto fail_drm_dev_init;
- 
- 	if (nouveau_drm(drm_dev)->client.device.info.ram_size <= 32 * 1024 * 1024)
--		drm_fbdev_generic_setup(drm_dev, 8);
-+		drm_fbdev_ttm_setup(drm_dev, 8);
- 	else
--		drm_fbdev_generic_setup(drm_dev, 32);
-+		drm_fbdev_ttm_setup(drm_dev, 32);
- 
- 	quirk_broken_nv_runpm(pdev);
- 	return 0;
-diff --git a/drivers/gpu/drm/qxl/qxl_drv.c b/drivers/gpu/drm/qxl/qxl_drv.c
-index beee5563031aa..5eb3f5719fdf3 100644
---- a/drivers/gpu/drm/qxl/qxl_drv.c
-+++ b/drivers/gpu/drm/qxl/qxl_drv.c
-@@ -37,7 +37,7 @@
- #include <drm/drm_aperture.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_file.h>
- #include <drm/drm_gem_ttm_helper.h>
- #include <drm/drm_module.h>
-@@ -118,7 +118,7 @@ qxl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (ret)
- 		goto modeset_cleanup;
- 
--	drm_fbdev_generic_setup(&qdev->ddev, 32);
-+	drm_fbdev_ttm_setup(&qdev->ddev, 32);
- 	return 0;
- 
- modeset_cleanup:
-diff --git a/drivers/gpu/drm/tiny/bochs.c b/drivers/gpu/drm/tiny/bochs.c
-index c23c9f0cf49cb..2d7ad808cc0e2 100644
---- a/drivers/gpu/drm/tiny/bochs.c
-+++ b/drivers/gpu/drm/tiny/bochs.c
-@@ -7,7 +7,7 @@
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_drv.h>
- #include <drm/drm_edid.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_fourcc.h>
- #include <drm/drm_framebuffer.h>
- #include <drm/drm_gem_framebuffer_helper.h>
-@@ -670,7 +670,7 @@ static int bochs_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent
- 	if (ret)
- 		goto err_hw_fini;
- 
--	drm_fbdev_generic_setup(dev, 32);
-+	drm_fbdev_ttm_setup(dev, 32);
- 	return ret;
- 
- err_hw_fini:
-diff --git a/drivers/gpu/drm/vboxvideo/vbox_drv.c b/drivers/gpu/drm/vboxvideo/vbox_drv.c
-index cd9e66a06596a..ef36834c8673c 100644
---- a/drivers/gpu/drm/vboxvideo/vbox_drv.c
-+++ b/drivers/gpu/drm/vboxvideo/vbox_drv.c
-@@ -14,7 +14,7 @@
- #include <drm/drm_aperture.h>
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_file.h>
- #include <drm/drm_ioctl.h>
- #include <drm/drm_managed.h>
-@@ -80,7 +80,7 @@ static int vbox_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (ret)
- 		goto err_irq_fini;
- 
--	drm_fbdev_generic_setup(&vbox->ddev, 32);
-+	drm_fbdev_ttm_setup(&vbox->ddev, 32);
- 
- 	return 0;
- 
-diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-index d3e308fdfd5be..9fcbd640278bb 100644
---- a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-+++ b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-@@ -36,7 +36,7 @@
- 
- #include <drm/drm_aperture.h>
- #include <drm/drm_drv.h>
--#include <drm/drm_fbdev_generic.h>
-+#include <drm/drm_fbdev_ttm.h>
- #include <drm/drm_gem_ttm_helper.h>
- #include <drm/drm_ioctl.h>
- #include <drm/drm_module.h>
-@@ -1676,7 +1676,7 @@ static int vmw_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	vmw_fifo_resource_inc(vmw);
- 	vmw_svga_enable(vmw);
--	drm_fbdev_generic_setup(&vmw->drm,  0);
-+	drm_fbdev_ttm_setup(&vmw->drm,  0);
- 
- 	vmw_debugfs_gem_init(vmw);
- 	vmw_debugfs_resource_managers_init(vmw);
-diff --git a/include/drm/drm_fbdev_generic.h b/include/drm/drm_fbdev_generic.h
-deleted file mode 100644
-index 75799342098dc..0000000000000
---- a/include/drm/drm_fbdev_generic.h
-+++ /dev/null
-@@ -1,15 +0,0 @@
--/* SPDX-License-Identifier: MIT */
--
--#ifndef DRM_FBDEV_GENERIC_H
--#define DRM_FBDEV_GENERIC_H
--
--struct drm_device;
--
--#ifdef CONFIG_DRM_FBDEV_EMULATION
--void drm_fbdev_generic_setup(struct drm_device *dev, unsigned int preferred_bpp);
--#else
--static inline void drm_fbdev_generic_setup(struct drm_device *dev, unsigned int preferred_bpp)
--{ }
--#endif
--
--#endif
-diff --git a/include/drm/drm_fbdev_ttm.h b/include/drm/drm_fbdev_ttm.h
-new file mode 100644
-index 0000000000000..9e6c3bdf35376
---- /dev/null
-+++ b/include/drm/drm_fbdev_ttm.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: MIT */
-+
-+#ifndef DRM_FBDEV_TTM_H
-+#define DRM_FBDEV_TTM_H
-+
-+struct drm_device;
-+
-+#ifdef CONFIG_DRM_FBDEV_EMULATION
-+void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int preferred_bpp);
-+#else
-+static inline void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int preferred_bpp)
-+{ }
-+#endif
-+
-+#endif
--- 
-2.44.0
-
+On Tue, Mar 12, 2024 at 8:48=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
+>
+> Implement fbdev emulation with fbdev-shmem. Avoids the overhead of
+> fbdev-generic's additional shadow buffering. No functional changes.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Deepak Rawat <drawat.floss@gmail.com>
+> ---
+>  drivers/gpu/drm/hyperv/hyperv_drm_drv.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hy=
+perv/hyperv_drm_drv.c
+> index cff85086f2d66..ff93e08d5036d 100644
+> --- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
+> +++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
+> @@ -11,7 +11,7 @@
+>  #include <drm/drm_aperture.h>
+>  #include <drm/drm_atomic_helper.h>
+>  #include <drm/drm_drv.h>
+> -#include <drm/drm_fbdev_generic.h>
+> +#include <drm/drm_fbdev_shmem.h>
+>  #include <drm/drm_gem_shmem_helper.h>
+>  #include <drm/drm_simple_kms_helper.h>
+>
+> @@ -149,7 +149,7 @@ static int hyperv_vmbus_probe(struct hv_device *hdev,
+>                 goto err_free_mmio;
+>         }
+>
+> -       drm_fbdev_generic_setup(dev, 0);
+> +       drm_fbdev_shmem_setup(dev, 0);
+>
+>         return 0;
+>
+> --
+> 2.44.0
+>

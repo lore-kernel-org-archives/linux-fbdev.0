@@ -1,126 +1,144 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 829E9446A0
-	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 14:03:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67F2947A60
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 15:49:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710338625; cv=none; b=UAbd56cdKDj818Xdya4N3QBf5CjSfYqA+BulHjV9stAo3Yq0ycmbfDa7Po9dTlBcz7yKCLTed0xaQ20NGARzmACyzlXmFjOTc0DDWXnoId5uw5rA5zXkjUTUR+EiqBMavZWdcKD1amSrBeU7Igum9w7I91MHXNanJXasqM67sO0=
+	t=1710344944; cv=none; b=Do8zubehErINo45rulFsppZJ35NODk40jwzkAMl6zIsY3Q76iK09JFKxlzIHMoUrIFZ95bpsuzY+dlwzO56JKlxyEtD6DWp953vlLl5PZBzWU6/7ZBdS6W2URkwg30aEzbcwBk0y9DMJvWGFIV2vm+c6yGSxTdqJxo+NHhK8ksg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710338625; c=relaxed/simple;
-	bh=huMv9uc9yHqLmX3xwNuScOZ0wNK0YtAHjR8bE2xUiuw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=g6MxjzZkEvyyMkg5rDN9ADJIAnRIlpSGcJEMepxvsK1sajCgARPrtUyTavLUBzCqTPqEcfwersF1EDSC7o/vfQpIloPoFqGGCCEJW6a89fI3D4h6dVNFslD2egtptapM6H2HX9hGgvhHIYJM0QAgbNhspAa/Y9CAd4it1BVGTu0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=AlJbZnN8; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1710344944; c=relaxed/simple;
+	bh=UrCIzyzr4Dy86L9i6wzSUbdR3jPB3SfaIZlAZsb6Dm4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Y9MXIAYhcU4vOV63k4oCKpQniNXIJayJ267lfKMlBO8Gfvk/7tZ0Deqb69yiWoB7hYRjIW7fczoI7OW1ZoG30Ase5Zs2t79x4VV4eW7ErVsg1Fqk38VV1k2qUfEPmF7jHLR33Z8tpsTgThyCODRiPo/FXdHRVYOn48GcWV2pTt0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=eG3j+5/N; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CNaFGsgE; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=eG3j+5/N; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CNaFGsgE; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="AlJbZnN8"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1710338622;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gxcyuud9PUU21oCT7HcyvGU9X3hZha1Ay6YbgZqHGYc=;
-	b=AlJbZnN8OHz9UoMzuKKA9DTBGrdOkc1Amj3p1KTmUl56L7A2jCxPogU6H0pRr5PBFe6e0u
-	aYqB2wussyQpfGD0T/lpjpd8aopWqgcal3satv7ZX8+/+GUQs/jbVV/NyDja2y+zkFx4jE
-	+i2P3IC0yWfPlgJv/xT9zL00Dmp6C4M=
-Received: from mail-yw1-f200.google.com (mail-yw1-f200.google.com
- [209.85.128.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-609-LiR7-0tjNyuKwRdlLQSewA-1; Wed, 13 Mar 2024 10:03:39 -0400
-X-MC-Unique: LiR7-0tjNyuKwRdlLQSewA-1
-Received: by mail-yw1-f200.google.com with SMTP id 00721157ae682-609d95434daso95618777b3.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 07:03:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710338619; x=1710943419;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Gxcyuud9PUU21oCT7HcyvGU9X3hZha1Ay6YbgZqHGYc=;
-        b=cwQajt0MZ5a+GJzXvmtD6NgnA8TMN+m4H0tRcYB1Gve9qledp+FMHGsZRxtGRtfjmV
-         pcJAIQgKU0HRBAf4uDAWs81tZ4byzAteYoiaq186htR2FS/Lnr/NXm1x/e6JYJxYhpFP
-         cvUd9sitx4b7hbFRlJNFS4NKF6R25npHYvA8vpddIrXmuOuh+ID+i2Yqn5q5Nl6f4v+Q
-         3Yzgkcg1/8mJXGIPIU7XUkMOaOXynTv6/vY33ItaL9BBen0RPF4kg/cvIRt5VrqMFfMu
-         hBxQVPCgeepgu/ZjBts0n2F5Buwnh5KbLuCmHOAbCd/bLDd4loLDr5jO8h+ry+gpeDlH
-         9TmA==
-X-Gm-Message-State: AOJu0YytPPTZSKsRyUQhHkQFHuZb0pNnEqesmXr8ppm8fP9/GeIx6dzr
-	F4ioWTXBi0qzWigAo5JPkP0L1VpMGaUvCJ6Dik37uUkAUqiYEUQ5SZzdcOjtFrVPmyk802Qc0Tr
-	fpJmrY6S+5BzbsTwKC27RTDni/5uHM/VLdmi5DYxLl0ZuryrcMwDH2XSGQY+y
-X-Received: by 2002:a0d:eb81:0:b0:60a:15c9:1600 with SMTP id u123-20020a0deb81000000b0060a15c91600mr2846632ywe.37.1710338618999;
-        Wed, 13 Mar 2024 07:03:38 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGPG5IRrHrKwPgd/9Dh8Z9VwqPTesqBfo+4n0SoH+KhHZfNsII+UVsHejM49YUTC1uVCrEY0g==
-X-Received: by 2002:a0d:eb81:0:b0:60a:15c9:1600 with SMTP id u123-20020a0deb81000000b0060a15c91600mr2846610ywe.37.1710338618766;
-        Wed, 13 Mar 2024 07:03:38 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:c:37e0:ced3:55bd:f454:e722? ([2a01:e0a:c:37e0:ced3:55bd:f454:e722])
-        by smtp.gmail.com with ESMTPSA id v17-20020a81b711000000b0060a3b09a5c2sm1705232ywh.84.2024.03.13.07.03.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 13 Mar 2024 07:03:38 -0700 (PDT)
-Message-ID: <b35f1b2f-82c1-4c7e-a449-54e29000cfb6@redhat.com>
-Date: Wed, 13 Mar 2024 15:03:37 +0100
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="eG3j+5/N";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CNaFGsgE";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="eG3j+5/N";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CNaFGsgE"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8DB3721C89;
+	Wed, 13 Mar 2024 15:49:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710344940; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QzT8f3Jf+KPnpm4sqyZWeBrc/YaULixAXlhpCJEpFKY=;
+	b=eG3j+5/Nr6vS3K47JCzsjFu2BkyGcHxuK8qgItdffjBVEkkq9RJwybaBcCUi4StS/p7BAb
+	jip8jGJPfRpjLDTaV2T11mc4pc+FOezrylPGVLCS/+S3lrcQNG6o3VVn6u82d23GJO4j9t
+	vIIhEGhfrB8bXDU8xLuDDsC/RPhsnnE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710344940;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QzT8f3Jf+KPnpm4sqyZWeBrc/YaULixAXlhpCJEpFKY=;
+	b=CNaFGsgE3kmyRNK0TSCG7JlQ7n/+iJVKYOF0FmG/eDHnZZLy74J3MsoGTJlJ+ahkFZtJTw
+	0Nh/b7wRyRR2h0Dw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710344940; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QzT8f3Jf+KPnpm4sqyZWeBrc/YaULixAXlhpCJEpFKY=;
+	b=eG3j+5/Nr6vS3K47JCzsjFu2BkyGcHxuK8qgItdffjBVEkkq9RJwybaBcCUi4StS/p7BAb
+	jip8jGJPfRpjLDTaV2T11mc4pc+FOezrylPGVLCS/+S3lrcQNG6o3VVn6u82d23GJO4j9t
+	vIIhEGhfrB8bXDU8xLuDDsC/RPhsnnE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710344940;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=QzT8f3Jf+KPnpm4sqyZWeBrc/YaULixAXlhpCJEpFKY=;
+	b=CNaFGsgE3kmyRNK0TSCG7JlQ7n/+iJVKYOF0FmG/eDHnZZLy74J3MsoGTJlJ+ahkFZtJTw
+	0Nh/b7wRyRR2h0Dw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3DC911397F;
+	Wed, 13 Mar 2024 15:49:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id vxUqDezK8WUhfQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 13 Mar 2024 15:49:00 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/6] backlight: Remove struct backlight_properties.fb_blank
+Date: Wed, 13 Mar 2024 16:44:59 +0100
+Message-ID: <20240313154857.12949-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.44.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 12/43] drm/mgag200: Use fbdev-shmem
-Content-Language: en-US, fr
-To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
- airlied@gmail.com, deller@gmx.de, javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Dave Airlie <airlied@redhat.com>
-References: <20240312154834.26178-1-tzimmermann@suse.de>
- <20240312154834.26178-13-tzimmermann@suse.de>
-From: Jocelyn Falempe <jfalempe@redhat.com>
-In-Reply-To: <20240312154834.26178-13-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: **
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spamd-Result: default: False [2.96 / 50.00];
+	 ARC_NA(0.00)[];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 R_MISSING_CHARSET(2.50)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_SEVEN(0.00)[8];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FREEMAIL_TO(0.00)[kernel.org,linaro.org,gmail.com,gmx.de];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 RCVD_TLS_ALL(0.00)[];
+	 BAYES_HAM(-1.94)[94.70%]
+X-Spam-Score: 2.96
+X-Spam-Flag: NO
 
-Hi,
+The field fb_blank in struct backlight_properties has been marked for
+removal. Remove it in favor of the power and state fields.
 
-Thanks, it looks good to me.
+Patches 1 to 5 prepare several backlight drivers. They remove fb_blank
+or replace driver code with existing helpers.
 
-Reviewed-by: Jocelyn Falempe <jfalempe@redhat.com>
+Patch 6 removes fb_blank from backlight core and drivers. This resolves
+another dependency between backlight nad fbdev.
+
+Thomas Zimmermann (6):
+  auxdisplay/ht16k33: Replace use of fb_blank with backlight helper
+  backlight/omap1-bl: Remove unused struct
+    omap_backlight_config.set_power
+  backlight/omap1-bl: Replace FB_BLANK_ states with simple on/off
+  fbdev/omap2/omapfb: Replace use of fb_blank with backlight helpers
+  staging/fbtft: Remove reference to fb_blank
+  backlight: Remove fb_blank from struct backlight_properties
+
+ drivers/auxdisplay/ht16k33.c                  |  7 +--
+ drivers/staging/fbtft/fb_ssd1351.c            |  4 +-
+ drivers/staging/fbtft/fbtft-core.c            |  5 +-
+ drivers/video/backlight/backlight.c           |  2 -
+ drivers/video/backlight/mp3309c.c             |  1 -
+ drivers/video/backlight/omap1_bl.c            | 50 ++++++++-----------
+ drivers/video/fbdev/atmel_lcdfb.c             |  1 -
+ .../omap2/omapfb/displays/panel-dsi-cm.c      |  7 +--
+ .../omapfb/displays/panel-sony-acx565akm.c    | 10 +---
+ include/linux/backlight.h                     | 25 +---------
+ include/linux/platform_data/omap1_bl.h        |  1 -
+ 11 files changed, 29 insertions(+), 84 deletions(-)
 
 -- 
-
-Jocelyn
-
-On 12/03/2024 16:45, Thomas Zimmermann wrote:
-> Implement fbdev emulation with fbdev-shmem. Avoids the overhead of
-> fbdev-generic's additional shadow buffering. No functional changes.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Jocelyn Falempe <jfalempe@redhat.com>
-> ---
->   drivers/gpu/drm/mgag200/mgag200_drv.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/mgag200/mgag200_drv.c b/drivers/gpu/drm/mgag200/mgag200_drv.c
-> index 573dbe256aa8b..65f2ed18b31c5 100644
-> --- a/drivers/gpu/drm/mgag200/mgag200_drv.c
-> +++ b/drivers/gpu/drm/mgag200/mgag200_drv.c
-> @@ -12,7 +12,7 @@
->   #include <drm/drm_aperture.h>
->   #include <drm/drm_atomic_helper.h>
->   #include <drm/drm_drv.h>
-> -#include <drm/drm_fbdev_generic.h>
-> +#include <drm/drm_fbdev_shmem.h>
->   #include <drm/drm_file.h>
->   #include <drm/drm_ioctl.h>
->   #include <drm/drm_managed.h>
-> @@ -285,7 +285,7 @@ mgag200_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   	 * FIXME: A 24-bit color depth does not work with 24 bpp on
->   	 * G200ER. Force 32 bpp.
->   	 */
-> -	drm_fbdev_generic_setup(dev, 32);
-> +	drm_fbdev_shmem_setup(dev, 32);
->   
->   	return 0;
->   }
+2.44.0
 

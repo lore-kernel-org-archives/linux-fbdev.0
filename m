@@ -1,121 +1,107 @@
-Received: from vern.gendns.com (vern.gendns.com [98.142.107.122])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0791144042
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 Mar 2024 22:21:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=98.142.107.122
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3093912E54
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 06:49:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710282076; cv=none; b=l6tnuf41Sl155xFzb9eoqp9CshBWC5dqXYVpaTTxyJN9Jr9XGqQqTYqPFEIfoJgycPsidQPLp6k8xWGS4owTrsktUw5domzmTJGhj+iQlUmQcgvVVq0gyEbNS7hhRw6RqZfOgZztFeMbDkBVKPc+3xl4f543+tb5Bf4vQ7zbae8=
+	t=1710312552; cv=none; b=NzPu6tToJ630jHwIpr6s6aDvn+mVJNJaQxcMTFPnuskaDMkp2mINgtQ+MSgilb7uYECQzM01W0hyoSchOAfRNh9bWu2cUjp21L3HN6KMBpqN2QLbLC8+mvG58k/ypOLW8Vq75GhYHoO8nEm4A/Gp045o4HwS6E1bXHZfU6qI0gc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710282076; c=relaxed/simple;
-	bh=jmVTcFGQOLaGDg2qHr90+6PuSx6qxsixSQI893RYA/g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HoU+SjqJGByd9tMEclbplmcJgWNfEEc7RzCVAjIs1Hq11tSs2d4jV9NZ0c1Hc17+yBKdnwzQE6acJeaeOkja8q8NpLMn2iUXmyCojxZ364vsJFE3ZX9+LDgOywsgI2vpLp7mPOS1enKGcGYDyrpUzxJzbyNgv9zdDQHt1SDg3/Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com; spf=pass smtp.mailfrom=lechnology.com; dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b=f7BQ3/NU; arc=none smtp.client-ip=98.142.107.122
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lechnology.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="f7BQ3/NU"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=9aa2ye3Zag5hNT3ydhHengIjs6DAAqNnjpk1R1p1xSE=; b=f7BQ3/NUv7kSiDnTuvxvlTfXLl
-	G1oKZqTGxVdfihFMqxzinOQDdgUVirhTuwGBVD6rE/orJm+32+/FTs8Iu4R28/qp+5FnWe87ch0Bb
-	UGBOnMOl8kqNmPnh3Tc5B7mQDPIi11/DieHpz+b+NP8nZXQiySjjUDFGgxDt71Kea9j70rbVGgPSJ
-	H7FrI2atO7d9b95mKZ67seBOvvtDJv8MiObogewT7EcfnS4ytXabYbkmtNp9nYNI0XN9eceXCjz6I
-	Tipi144s4/zy2ZVJPPn4kiZbbWNiMF7LF2UcI3Emb/bDhsxuoNOnYLcQYc9Il+9iYDHEy4VsbTpmd
-	aA9KDXFg==;
-Received: from ip98-183-112-25.ok.ok.cox.net ([98.183.112.25]:57282 helo=[192.168.0.142])
-	by vern.gendns.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.96.2)
-	(envelope-from <david@lechnology.com>)
-	id 1rkAWQ-00035r-33;
-	Tue, 12 Mar 2024 18:21:12 -0400
-Message-ID: <ebf80582-39fb-40c4-920d-9dde562f4224@lechnology.com>
-Date: Tue, 12 Mar 2024 17:21:12 -0500
+	s=arc-20240116; t=1710312552; c=relaxed/simple;
+	bh=YmGhpF67UQkXDrjW1tdhJtif7Mb5bOO6MU/H0fI9Ehw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JgwUc1K8bf/+aYJj2dNgLfJKUvFWnJZceLVKZKfeOLgHIHFKO7FTcSZpGo7jd29Ub2EuG0d+TEyaZTaVWl+goKKdyP8baB8Hidq9cAp3RQUDtOatx4gXAnK3TWF9PPXkvFbk7ux7dmAOGfV9xCCyXkGuaIvfyuKeuWHwuMrwW1Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rkIQ5-0003qH-Ik; Wed, 13 Mar 2024 07:48:57 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rkIQ3-006404-W6; Wed, 13 Mar 2024 07:48:56 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rkIQ3-005E6s-2f;
+	Wed, 13 Mar 2024 07:48:55 +0100
+Date: Wed, 13 Mar 2024 07:48:55 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, andy@kernel.org, daniel.thompson@linaro.org, 
+	jingoohan1@gmail.com, deller@gmx.de, robin@protonic.nl, javierm@redhat.com, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v4 00/10] backlight: Replace struct fb_info in interfaces
+Message-ID: <heasef3pdfyj7xyngnvbg527pc5uyy2v6hatz4wr6q3sfkhw3h@f4lnresjcnmb>
+References: <20240305162425.23845-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 41/43] drm/tiny/st7735r: Use fbdev-dma
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
- airlied@gmail.com, deller@gmx.de, javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240312154834.26178-1-tzimmermann@suse.de>
- <20240312154834.26178-42-tzimmermann@suse.de>
-From: David Lechner <david@lechnology.com>
-Autocrypt: addr=david@lechnology.com; keydata=
- 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
-In-Reply-To: <20240312154834.26178-42-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - vern.gendns.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lechnology.com
-X-Get-Message-Sender-Via: vern.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: vern.gendns.com: davidmain@lechnology.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-
-On 3/12/24 10:45 AM, Thomas Zimmermann wrote:
-> Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
-> damage handling, which is required by st7735r. Avoids the overhead of
-> fbdev-generic's additional shadow buffering. No functional changes.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: David Lechner <david@lechnology.com>
-> ---
-
-Acked-by: David Lechner <david@lechnology.com>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="fazplp4fyrovvxv2"
+Content-Disposition: inline
+In-Reply-To: <20240305162425.23845-1-tzimmermann@suse.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
 
+--fazplp4fyrovvxv2
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello Thomas,
+
+On Tue, Mar 05, 2024 at 05:22:33PM +0100, Thomas Zimmermann wrote:
+> Backlight drivers implement struct backlight_ops.check_fb, which
+> uses struct fb_info in its interface. Replace the callback with one
+> that does not use fb_info.
+>=20
+> In DRM, we have several drivers that implement backlight support. By
+> including <linux/backlight.h> these drivers depend on <linux/fb.h>.
+> At the same time, fbdev is deprecated for new drivers and likely to
+> be replaced on many systems.
+>=20
+> This patchset is part of a larger effort to implement the backlight
+> code without depending on fbdev.
+>=20
+> Patch 1 makes the backlight core match backlight and framebuffer
+> devices via struct fb_info.bl_dev. Patches 2 to 9 then go through
+> drivers and remove unnecessary implementations of check_fb. Finally,
+> patch 10 replaces the check_fb hook with controls_device, which
+> uses the framebuffer's Linux device instead of the framebuffer.
+
+I assume the merge plan for this series is via drm-misc in one go?
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--fazplp4fyrovvxv2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmXxTFYACgkQj4D7WH0S
+/k4WCgf+N9+ghi7jxWwK3i7nnF9402Id/hmnbKSiQ/2mzmtMu7hWnXpywzKwVGNy
+JuwbngFjANW8HquzInPZ0cOClpGx2dm5i2YsAqyDnOZO2Jg3zT1VOVZkd+/YzOI4
+FWBxp3T0ZUTmE1Fh0ohTEL+lL49F7nJXmeZNUMqWec4BwT09Eu71ZRseDMjL4Ar3
+bO9k6WkqF7/v+sWljRUWjvcAvRC/El4JMjyLTb9xS/UarDtjSbxePHZB6d9lf6St
+Dm0sgkqb/+jaZhY5kM1d0HJaEE1Wdef63pW2tDIunfj5L5PBveSw8xHMiipSCd4e
+9krdHDOzOyL/lPFi7CSq7i85LSyypg==
+=uhXV
+-----END PGP SIGNATURE-----
+
+--fazplp4fyrovvxv2--

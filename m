@@ -1,93 +1,70 @@
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
+Received: from sonata.ens-lyon.org (domu-toccata.ens-lyon.fr [140.77.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 179CD4C601;
-	Wed, 13 Mar 2024 16:45:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5544B69D0E;
+	Wed, 13 Mar 2024 16:55:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=140.77.166.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710348338; cv=none; b=M6u8f09kZXEZc6iUNsTHBUeE6MGhz15WAkA+qHrK7/RmA2NAu6ar/YxLfHYaalxVMHVvvjOwp9mfP4AB4/spohOOZJ1N6EG9l0tSQwoE4je/ZWU0fmG4ZGuNw4somZC2pltWPh3sDCLKfZ2WxJk2CvRQGPQNVKNfiAXxYOsWDjA=
+	t=1710348955; cv=none; b=AwKVix2iU7uOD0ohXs4NdIbhE014ABJGqJI1VCpjciDbMWFXADEmT5e/uLaYIOqvoRKBnUJ1IqlRhkyQWOc5OGRvyK0TonseVUqj/FBOT1Cs/FctdbMemunwQLJXY0EGpspEbwWkKHGOE/OpP9Kb2H+6M40vT6GQgD22Vx+Qs98=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710348338; c=relaxed/simple;
-	bh=RCZRlA8JjobyI7uYwn6+TIQ89XFi+Weg06bIukrpTJY=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WSVOiCvbhgfuvxvB+Y9GwEX1wsAQi3tDoHCk4zSij6z3yNbidFXrJgXPdIjPAMzHxVu8RMWp9WwltLE2eTEcopdC1xh58sbyPHXo+vVdNRDycpY0jsY2SqEp6q4gUKDL78+qX69JhAKZnxMY6vglLBpYrkTudvUrrWoJwDiWjSo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=DkRIXAEy; arc=none smtp.client-ip=217.70.183.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="DkRIXAEy"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 39FC71C0008;
-	Wed, 13 Mar 2024 16:45:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1710348334;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=XuQ0UqQl11m0NvvFOq43PqxRfN+fKrgvj7VWFDw8fu8=;
-	b=DkRIXAEyUDiUQjQZfqTt26mQA8FYL6PzLpC4AgCnEmDFvlAqW+OPoXDI9PhHHoV0PP5oFl
-	cuho564tPB50t6qdDQm97ywWKsVAJVvw/ytOG2N+sNf3MP91DMwN/JxYfr+CTmglUzvByl
-	bRU5Y9hNmN5ZsaFgWRG/8wXjVQ53HzvzawOPfKWiH4vX9q5tSGAfm1LSH+pLErftptCpBw
-	TXfT0mj5/I9SL09ifeBRTSB5vywWBXDG9isFgnbZQ0UAuvRt9wpmzztTVjgajt98o6gW8I
-	ieNOllXoFMT4e8IhbIPcQMMLqnYvgS8MR0tjZT3rVTzP8OoIRcys2hRN1ECokA==
-Date: Wed, 13 Mar 2024 17:45:31 +0100
-From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>, Alexey
- Gladkov <legion@kernel.org>, Jiry Slaby <jirislaby@kernel.org>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
+	s=arc-20240116; t=1710348955; c=relaxed/simple;
+	bh=uQ27L82IN+pO3gKw7fNot9AAXBlmK7vhd2zvZSNftMQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JzF+2RjwebVBhjcBB1iST+Rt7TLrIf999m76cghYDLQEx2AAOphdDcG/NHaK2qTyRRp50F/C+wDxlRxZ5Bu7VbtI0Jtpo2Hmk3XF1uMOf9HxTAgR7WrpTBlfUUIrgxDhu3+h9aMNKJOkTaUV2OHzMVFiiLhL2VlBO41zi7rWiWM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ens-lyon.org; spf=pass smtp.mailfrom=bounce.ens-lyon.org; arc=none smtp.client-ip=140.77.166.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ens-lyon.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bounce.ens-lyon.org
+Received: from localhost (localhost [127.0.0.1])
+	by sonata.ens-lyon.org (Postfix) with ESMTP id F36B5A025E;
+	Wed, 13 Mar 2024 17:55:50 +0100 (CET)
+Received: from sonata.ens-lyon.org ([127.0.0.1])
+	by localhost (sonata.ens-lyon.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4jaCCMw4pp_3; Wed, 13 Mar 2024 17:55:50 +0100 (CET)
+Received: from begin (nat-inria-interne-52-gw-01-bso.bordeaux.inria.fr [194.199.1.52])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by sonata.ens-lyon.org (Postfix) with ESMTPSA id CBC1DA022C;
+	Wed, 13 Mar 2024 17:55:50 +0100 (CET)
+Received: from samy by begin with local (Exim 4.97)
+	(envelope-from <samuel.thibault@ens-lyon.org>)
+	id 1rkRtO-00000002Kq8-2CXV;
+	Wed, 13 Mar 2024 17:55:50 +0100
+Date: Wed, 13 Mar 2024 17:55:50 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Luca Ceresoli <luca.ceresoli@bootlin.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+	Alexey Gladkov <legion@kernel.org>,
+	Jiry Slaby <jirislaby@kernel.org>, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] fbcon: Increase maximum font width x height to 64 x 64
-Message-ID: <20240313174531.2579df0f@booty>
-In-Reply-To: <20240312213902.3zvqaghlopjusv6m@begin>
+Message-ID: <20240313165550.g66jo2y4ciozxlil@begin>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+	Alexey Gladkov <legion@kernel.org>,
+	Jiry Slaby <jirislaby@kernel.org>, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 References: <20240312213902.3zvqaghlopjusv6m@begin>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
+ <20240313174531.2579df0f@booty>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-GND-Sasl: luca.ceresoli@bootlin.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240313174531.2579df0f@booty>
+Organization: I am not organized
+User-Agent: NeoMutt/20170609 (1.8.3)
 
-Hello Samuel,
+Luca Ceresoli, le mer. 13 mars 2024 17:45:31 +0100, a ecrit:
+> Using 'git format-patch' and 'git send-email' is *very* recommended as
+> it will take care of all the formatting for you.
 
-On Tue, 12 Mar 2024 22:39:02 +0100
-Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+It's quite a pitty that git cannot simply consume the output of diff.
 
-> This remains relatively simple by just enlarging integers.
-> 
-> It wouldn't be that simple to get to the console's 64x128 maximum, as it would
-> require 128b integers.
-> 
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> 
-> Index: linux-6.4/drivers/video/fbdev/core/fbcon.c
-> ===================================================================
+Now I'll have to download 8GB of linux tree only for a simple patch...
 
-This patch is clearly not formatted according to the standard format
-and it does not apply with 'git am'.
-
-Using 'git format-patch' and 'git send-email' is *very* recommended as
-it will take care of all the formatting for you. Maintainers and
-anybody interested in your patch will be able to apply it easily.
-
-All the info you need are at
-https://docs.kernel.org/process/submitting-patches.html
-
-> --- linux-6.4.orig/drivers/video/fbdev/core/fbcon.c
-> +++ linux-6.4/drivers/video/fbdev/core/fbcon.c
-
-Apparently you are not using git to track your changes, so I recommend
-using it to have all the git utilities available.
-
-Best regards,
-Luca
-
--- 
-Luca Ceresoli, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Samuel

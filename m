@@ -1,73 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD1D065BC7;
-	Wed, 13 Mar 2024 16:33:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 179CD4C601;
+	Wed, 13 Mar 2024 16:45:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710347636; cv=none; b=BCnKlFf1nsYQYiFYjjuKk0kyW8PU6hDwJddtABpNL2DuvJSuj6YndTwbEwLlgdkmRGV2YbKW9+OWYUCPp4DrVCvAZmmLnO7wvVLtMDhw8t19dolgsSmw1ciz/6jxWIcNLPTPaBVBUpNxKnyWoAqysL+3yxF+E8QjWfmC0j+/JzE=
+	t=1710348338; cv=none; b=M6u8f09kZXEZc6iUNsTHBUeE6MGhz15WAkA+qHrK7/RmA2NAu6ar/YxLfHYaalxVMHVvvjOwp9mfP4AB4/spohOOZJ1N6EG9l0tSQwoE4je/ZWU0fmG4ZGuNw4somZC2pltWPh3sDCLKfZ2WxJk2CvRQGPQNVKNfiAXxYOsWDjA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710347636; c=relaxed/simple;
-	bh=Z8+NUNpRE+2VDl0oGhDDoGU2zsP/cVwd07jGMJxdApE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=drdNpWmAVNk2EcY5P0/L0fjccK9gdgNoANdRs5eZ3mbR91QPyEYfLkpu9xDclhEmUBtzcpqs3GwSz0qSThBs8+8XAaSmDrrl39RhRJIqUNzRfXl2rdnL9FaG7rnh+sqMosdUCaZLbh2Y+mc7sOsu3UKMoR9NfTW5FTj378uElCA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B1mcMxZY; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1710348338; c=relaxed/simple;
+	bh=RCZRlA8JjobyI7uYwn6+TIQ89XFi+Weg06bIukrpTJY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=WSVOiCvbhgfuvxvB+Y9GwEX1wsAQi3tDoHCk4zSij6z3yNbidFXrJgXPdIjPAMzHxVu8RMWp9WwltLE2eTEcopdC1xh58sbyPHXo+vVdNRDycpY0jsY2SqEp6q4gUKDL78+qX69JhAKZnxMY6vglLBpYrkTudvUrrWoJwDiWjSo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=DkRIXAEy; arc=none smtp.client-ip=217.70.183.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B1mcMxZY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4303DC43390;
-	Wed, 13 Mar 2024 16:33:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1710347635;
-	bh=Z8+NUNpRE+2VDl0oGhDDoGU2zsP/cVwd07jGMJxdApE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=B1mcMxZY2FUzH8ySkDlroxMN/syRJftbD0gVPi2ZOlRKaZf+rc5UBbvcr1apBJHtK
-	 tv3LB+b+KJm5anJtYokkac4MlQJ1q94JpldrlZLhHN/QUfqg6ipUdnAHGkNbtUs/jc
-	 mpaVb68go5pPQwRsM02tzbpQcU89FO7zIOBB15oaNgn11w+lAgEUuPXFkAFleH5bJn
-	 obcLd1E9pAciaXEaSBA999ISHlXaHotl+/x6wWULWhpxZOa9z0LbVCDruZ1LGmMQFn
-	 CYLGRVeV5NKZS6UNp32PlJIWYYFHYaWcSUf96MJXxn+NIo0BTLC9lt3c29st1hf5v0
-	 5fFzDzpRnRkdw==
-Date: Wed, 13 Mar 2024 16:33:51 +0000
-From: Lee Jones <lee@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH 2/6] backlight/omap1-bl: Remove unused struct
- omap_backlight_config.set_power
-Message-ID: <20240313163351.GH1522089@google.com>
-References: <20240313154857.12949-1-tzimmermann@suse.de>
- <20240313154857.12949-3-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="DkRIXAEy"
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 39FC71C0008;
+	Wed, 13 Mar 2024 16:45:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1710348334;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=XuQ0UqQl11m0NvvFOq43PqxRfN+fKrgvj7VWFDw8fu8=;
+	b=DkRIXAEyUDiUQjQZfqTt26mQA8FYL6PzLpC4AgCnEmDFvlAqW+OPoXDI9PhHHoV0PP5oFl
+	cuho564tPB50t6qdDQm97ywWKsVAJVvw/ytOG2N+sNf3MP91DMwN/JxYfr+CTmglUzvByl
+	bRU5Y9hNmN5ZsaFgWRG/8wXjVQ53HzvzawOPfKWiH4vX9q5tSGAfm1LSH+pLErftptCpBw
+	TXfT0mj5/I9SL09ifeBRTSB5vywWBXDG9isFgnbZQ0UAuvRt9wpmzztTVjgajt98o6gW8I
+	ieNOllXoFMT4e8IhbIPcQMMLqnYvgS8MR0tjZT3rVTzP8OoIRcys2hRN1ECokA==
+Date: Wed, 13 Mar 2024 17:45:31 +0100
+From: Luca Ceresoli <luca.ceresoli@bootlin.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>, Alexey
+ Gladkov <legion@kernel.org>, Jiry Slaby <jirislaby@kernel.org>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbcon: Increase maximum font width x height to 64 x 64
+Message-ID: <20240313174531.2579df0f@booty>
+In-Reply-To: <20240312213902.3zvqaghlopjusv6m@begin>
+References: <20240312213902.3zvqaghlopjusv6m@begin>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240313154857.12949-3-tzimmermann@suse.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-GND-Sasl: luca.ceresoli@bootlin.com
 
-On Wed, 13 Mar 2024, Thomas Zimmermann wrote:
+Hello Samuel,
 
-> The callback set_power in struct omap_backlight_config is not
-> implemented anywhere. Remove it from the structure and driver.
+On Tue, 12 Mar 2024 22:39:02 +0100
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+
+> This remains relatively simple by just enlarging integers.
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/video/backlight/omap1_bl.c     | 3 ---
->  include/linux/platform_data/omap1_bl.h | 1 -
->  2 files changed, 4 deletions(-)
+> It wouldn't be that simple to get to the console's 64x128 maximum, as it would
+> require 128b integers.
+> 
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> 
+> Index: linux-6.4/drivers/video/fbdev/core/fbcon.c
+> ===================================================================
 
-Just a quick one - I'm sure Daniel will be here soon to conduct a proper
-review.
+This patch is clearly not formatted according to the standard format
+and it does not apply with 'git am'.
 
-Could you attempt to use the subject line format expected by a given
-subsystem please?
+Using 'git format-patch' and 'git send-email' is *very* recommended as
+it will take care of all the formatting for you. Maintainers and
+anybody interested in your patch will be able to apply it easily.
 
-`git log --oneline -- <subsystem>` is your friend.
+All the info you need are at
+https://docs.kernel.org/process/submitting-patches.html
 
-Thanks.
+> --- linux-6.4.orig/drivers/video/fbdev/core/fbcon.c
+> +++ linux-6.4/drivers/video/fbdev/core/fbcon.c
+
+Apparently you are not using git to track your changes, so I recommend
+using it to have all the git utilities available.
+
+Best regards,
+Luca
 
 -- 
-Lee Jones [李琼斯]
+Luca Ceresoli, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

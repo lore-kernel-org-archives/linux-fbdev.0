@@ -1,35 +1,35 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67F6D47A64
-	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 15:49:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53FD3481C6
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 15:49:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710344945; cv=none; b=eAcdYf+cx++6My78cIHs7uW925nG8w+bh9yk0W60JiEXXW+uHVNHVsAkpnS3PzDvfH5G5ZZO236t8ScYIXA6nWAV/XP8dyS9gJ9qJYyleEuOfMObw0R+CwDYZSJ0FeO5rSoSXAic0arA0TUMwD1Trt4enBwzeU0eqgXfjHRqLE4=
+	t=1710344946; cv=none; b=k9u88yZnxuMgBqVr+IYfmrCw7YrJ/8yJDC6cMyV7JcK8Ic19BLKYhnXEM4C9ULUswW0dOpNI5S/McAE0iiGYRE++8cEd3wty1HEYCE0tct7Nv9Wamf5WlLBQ69D2zFJeHAsCGoNgk+ZUvHN8x0QTlGpWW71Vq+2ATE1mvFr7Wjo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710344945; c=relaxed/simple;
-	bh=6jtMupn0duZFMu+LVmT90WuesrqiqdTYw42c+bvUfss=;
+	s=arc-20240116; t=1710344946; c=relaxed/simple;
+	bh=BpXtIomxBoqRRW7yfeB4qH6/qSggk08LUZc3d9Rb+08=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YaTUVgIv8+KS7c8yPuXmsZ2KVeJFqVYMTWBmVe5J5wK7h+L92s8Uv4W29tD4HP0Le7C7gyUE/HxjVtFIT5y3W0Wj2+5hh5nH+wK8N6KgP4SvEqSLJYkl5rWkXcg1VcbMz7pFi/Ck3A3DvigQQ4bxYFCYGvkJjVEKbO4LnstEVig=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=ZK2cwarCx1xQhYWotnE/nTmjGrT0XP591Dbp4Bem6J0b5CEuuFT4CYJe091mhg8L+RunU6tkuWxRXo9QXiBhWMydw+pqWDa6SwfaCpeTUlbhIJidUso0mar2nYXIM50P0kHWsdWY+sCDvQUUb9BksUxGmaYr2ZfX9EikLpDSjXw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id D716921C8F;
-	Wed, 13 Mar 2024 15:49:00 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B2E841F7CE;
+	Wed, 13 Mar 2024 15:49:01 +0000 (UTC)
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 85D88139B1;
-	Wed, 13 Mar 2024 15:49:00 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7549E139B1;
+	Wed, 13 Mar 2024 15:49:01 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id YB9NH+zK8WUhfQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 13 Mar 2024 15:49:00 +0000
+	id OHU8G+3K8WUhfQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 13 Mar 2024 15:49:01 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: lee@kernel.org,
 	daniel.thompson@linaro.org,
@@ -38,12 +38,10 @@ To: lee@kernel.org,
 Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Robin van der Gracht <robin@protonic.nl>,
-	Miguel Ojeda <ojeda@kernel.org>
-Subject: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with backlight helper
-Date: Wed, 13 Mar 2024 16:45:00 +0100
-Message-ID: <20240313154857.12949-2-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 4/6] fbdev/omap2/omapfb: Replace use of fb_blank with backlight helpers
+Date: Wed, 13 Mar 2024 16:45:03 +0100
+Message-ID: <20240313154857.12949-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240313154857.12949-1-tzimmermann@suse.de>
 References: <20240313154857.12949-1-tzimmermann@suse.de>
@@ -55,46 +53,69 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Spam-Level: 
-Authentication-Results: smtp-out1.suse.de;
+Authentication-Results: smtp-out2.suse.de;
 	none
 X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 X-Spamd-Result: default: False [-4.00 / 50.00];
 	 REPLY(-4.00)[]
 X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: D716921C8F
+X-Rspamd-Queue-Id: B2E841F7CE
 X-Spam-Flag: NO
 
-Replace the use of struct backlight_properties.fb_blank with a
-call to backlight_get_brightness(). The helper implement the same
-logic as the driver's function.
+Replace the use of struct backlight_properties.fb_blank with backlight
+helpers. This effects testing if the backlight is blanked and reading
+the backlight's brightness level.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Robin van der Gracht <robin@protonic.nl>
-Cc: Miguel Ojeda <ojeda@kernel.org>
 ---
- drivers/auxdisplay/ht16k33.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 6 +-----
+ .../fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c   | 9 ++-------
+ 2 files changed, 3 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/auxdisplay/ht16k33.c b/drivers/auxdisplay/ht16k33.c
-index a90430b7d07ba..83db829b97a5e 100644
---- a/drivers/auxdisplay/ht16k33.c
-+++ b/drivers/auxdisplay/ht16k33.c
-@@ -314,14 +314,9 @@ static int ht16k33_initialize(struct ht16k33_priv *priv)
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+index adb8881bac285..47683a6c00767 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+@@ -356,11 +356,7 @@ static int dsicm_bl_update_status(struct backlight_device *dev)
  
- static int ht16k33_bl_update_status(struct backlight_device *bl)
+ static int dsicm_bl_get_intensity(struct backlight_device *dev)
  {
--	int brightness = bl->props.brightness;
-+	int brightness = backlight_get_brightness(bl);
- 	struct ht16k33_priv *priv = bl_get_data(bl);
- 
--	if (bl->props.power != FB_BLANK_UNBLANK ||
--	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
--	    bl->props.state & BL_CORE_FBBLANK)
--		brightness = 0;
+-	if (dev->props.fb_blank == FB_BLANK_UNBLANK &&
+-			dev->props.power == FB_BLANK_UNBLANK)
+-		return dev->props.brightness;
 -
- 	return ht16k33_brightness_set(priv, brightness);
+-	return 0;
++	return backlight_get_brightness(dev);
  }
  
+ static const struct backlight_ops dsicm_bl_ops = {
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+index 685c63aa4e030..9d3ce234a7874 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+@@ -340,11 +340,7 @@ static int acx565akm_bl_update_status(struct backlight_device *dev)
+ 
+ 	dev_dbg(&ddata->spi->dev, "%s\n", __func__);
+ 
+-	if (dev->props.fb_blank == FB_BLANK_UNBLANK &&
+-			dev->props.power == FB_BLANK_UNBLANK)
+-		level = dev->props.brightness;
+-	else
+-		level = 0;
++	level = backlight_get_brightness(dev);
+ 
+ 	if (ddata->has_bc)
+ 		acx565akm_set_brightness(ddata, level);
+@@ -363,8 +359,7 @@ static int acx565akm_bl_get_intensity(struct backlight_device *dev)
+ 	if (!ddata->has_bc)
+ 		return -ENODEV;
+ 
+-	if (dev->props.fb_blank == FB_BLANK_UNBLANK &&
+-			dev->props.power == FB_BLANK_UNBLANK) {
++	if (!backlight_is_blank(dev)) {
+ 		if (ddata->has_bc)
+ 			return acx565akm_get_actual_brightness(ddata);
+ 		else
 -- 
 2.44.0
 

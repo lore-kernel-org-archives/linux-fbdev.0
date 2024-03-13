@@ -1,85 +1,92 @@
-Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailrelay1-1.pub.mailoutpod3-cph3.one.com (mailrelay1-1.pub.mailoutpod3-cph3.one.com [46.30.211.240])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9553B5644F
-	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 17:44:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DEF76FE3A
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 17:54:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.240
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710351863; cv=none; b=il/0GL2hxfWGak7GVccZYEo4M7wGHLPDfx2/iT+fk/rfXvGYr6xkY6PQYMlSSRUPGZqMgnza+vy2UQabwXkZKMopwGuopYw83MumtlwtldkrwGThBa8sWIuv6+pSdvirU93MKpvSYiYyCstmsfVt7vrRIds270i1NbBJPPVMFpM=
+	t=1710352487; cv=none; b=lPH9tS8UU32Zw92dtlWqE+zC7BKLYXtN/ywMuXiMYPJVS1Ewv8bdT6e8Atq/MdmnV2+8L6xgAPPgPBIP+EfaPM40/FIhvoXH500ywFJAmdd5oRgzQXxJjFJWPGKlt2ndf/4v2rKHF6I1o/iWE1LtBqt/c460VVNG44HSmsoRgkI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710351863; c=relaxed/simple;
-	bh=hCUUui1NbQfp/vSqXOMgH0Aw3ATqns8Rr34Fh87bhTI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FwlOoQUh8o8Ecn/iO49E4NbxTgW5flZmPCDAbJy0rzJHV9v9yTlV3AmCA3lew4B8lkx6VpY/rYmO9gwFgTI5Y7X2z2XbvMnxRauD6eUiZqwx7DQWensMZCmhO/Utn9rPWad9wvXHon+zl7oIBI0xxswM1QftlkLUzxeyjtVOuNI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HcgBxOwl; arc=none smtp.client-ip=209.85.216.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1710352487; c=relaxed/simple;
+	bh=UUwKPoYxVZAxVfghjFtyV/bduPt/4WokWoj91qWs8ys=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jVtgsh/OmIOnSPp1kV+rM8URZ58ynw6NPfHxGP9ohM+cXF6K7TIs07Fr1Lk1wf2B5J4B1guOiK5gRI0FG+3Dl2JibSm6fCt1/TMyFaWpwY5YMbwwH3dheEubzrTw6FkCz+VFMpGVFs+GQqbS2zBGq6oUxkgwIPoJcfgmpvCV9ts=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=wJQ0A8Lb; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=UqBQ9eLR; arc=none smtp.client-ip=46.30.211.240
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HcgBxOwl"
-Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-29b7caa88c6so140433a91.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 10:44:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="wJQ0A8Lb";
+	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="UqBQ9eLR"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1710351862; x=1710956662; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hCUUui1NbQfp/vSqXOMgH0Aw3ATqns8Rr34Fh87bhTI=;
-        b=HcgBxOwlA4jQleOkrx7I2iXfoEqHMlRTLiIEUApbscr8M2PLY67Jh9QRmGlN7tsIPj
-         F4pg6Xx0Ssmw5ENaDhc+DUhOT43K+pSmFEwbGYwPgq1vIJ8zMZ4p6q9HizdKPOLEatPf
-         VtHXKqjKCSEBGrNjUWA/pirguKcCdufsIwB+I7ucMWLr3fnQYCvvCONsaYWrm3CpvhzD
-         XylsIqfY1NV2Uj+9qxWEbF6hiVYUjsWYiLtQuMG0kgE+NCXkRim0jcdiCeGUkl5PBZHf
-         Udf5VVPYvWzsAwHTkxkqLepbDAMT7k/hDFUeRt6a0JTgvpylULU4lozspqCgJqhHgGzB
-         DfxQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710351862; x=1710956662;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hCUUui1NbQfp/vSqXOMgH0Aw3ATqns8Rr34Fh87bhTI=;
-        b=wbHukdivUWGO020lK4JUdPYYfZ9ck/S45cZa8YjGuUMxYnFktjDwhmzyd1bOd5JdY2
-         DYLRPPKJeLJEnkmyHaTaovb5TsHdPpT6PXR3E0eS/fuA0i434oUiDwd6scLsp56E4smS
-         irRAFKxJmMgYhqnHt+IsKfUWpEyj4WR8WrY6BCSd1Mir+2ZaLUk0d0cMXnm8bzZCSH34
-         GrqgloE0iQ8ZI8n2Rm9rkxNKfpWCu6icdvfsKgHQtOf7j8Xto7P2e8Ww8Biu4bvVxMd0
-         d3wRIOo3am3SJ8aGVRJK3Aqo2u8seApjCbdKXda2+2lVqaTWsgFXdQ9s12iMZ4eG2iiP
-         NPfQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWaGS7XOCZEA9zOJEt+hx5I38g2brG6HQHRcRrEXpm7EFHHbjCSgUmseiyGI/bfumunyiklhzp9X0kLNzrbgJcOGsRW8Q3OwgkdDVw=
-X-Gm-Message-State: AOJu0Yz/6PuwCt7xKdzWHFfnWIBIwKvyhmFP/Jao2MekF8aVeMDyyfIz
-	YtNyby8YY6rP1jWsw1pVfupTIwgvT1ohAjFdFmPqNB/XsFkPJ9nVeMhg4ma+sJ1zuLu72IO8tOe
-	r818hR3HXFP1uLCaeObmQWRkP5vY=
-X-Google-Smtp-Source: AGHT+IF9f9pLaLdPeTSCtAhybglIyQQ2XIUnjYf9d7DmVSyCMeubFDXCZGcM00CwqQ2KUlRJTxsSfizN1sbtkt9PlhI=
-X-Received: by 2002:a17:90b:4c81:b0:29c:71d2:ac2a with SMTP id
- my1-20020a17090b4c8100b0029c71d2ac2amr806844pjb.18.1710351861647; Wed, 13 Mar
- 2024 10:44:21 -0700 (PDT)
+	d=ravnborg.org; s=rsa2;
+	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
+	 message-id:subject:cc:to:from:date:from;
+	bh=772gv0JFjk24UCM4cXblvdaXj1GC71JgGxfdqwm4GgA=;
+	b=wJQ0A8Lbb1Xga0BFZIWaKqg16NJx7gVz/Wsn0pF+4poPI04akZHGDpSFAL1/8bmZymQcpMtG8jPYH
+	 lf00fW1KOruhECI8D7QRJnifmgiO6V7RoH4o3wDxKASON30Z1zsgXvhVfKblLJUeCag1BgsIDYhRuY
+	 pEPLEOh8YGNeJNJWMvAH1J5vOfEVq000HckKdtbA2CHHCsmIiBoZBDo887af40vwGpvycWvMr2mwL5
+	 2B4O393PIY4AQ0xVcFnvD8pqILa3nuVXhXpffS15JuGXTNs10EDWRc1pyQv+PwfNqG+mca0GdZkiB8
+	 f2TdKKUMSKIbkytdvCERBl8Q9t/RSRQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=ed2;
+	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
+	 message-id:subject:cc:to:from:date:from;
+	bh=772gv0JFjk24UCM4cXblvdaXj1GC71JgGxfdqwm4GgA=;
+	b=UqBQ9eLRkbthSkCT9NUcgsB2UZ89uLjCiqtU80xsUK47Vb7s9qpcv98ZurrTTlHtOyJwZw131xfEI
+	 C2Vh64HDw==
+X-HalOne-ID: c011b02b-e162-11ee-b64b-1ff1563c5748
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+	by mailrelay1.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
+	id c011b02b-e162-11ee-b64b-1ff1563c5748;
+	Wed, 13 Mar 2024 17:54:36 +0000 (UTC)
+Date: Wed, 13 Mar 2024 18:54:34 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Andy Shevchenko <andy@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>, lee@kernel.org,
+	daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	Robin van der Gracht <robin@protonic.nl>,
+	Miguel Ojeda <ojeda@kernel.org>
+Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
+ backlight helper
+Message-ID: <20240313175434.GA96726@ravnborg.org>
+References: <20240313154857.12949-1-tzimmermann@suse.de>
+ <20240313154857.12949-2-tzimmermann@suse.de>
+ <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240313154857.12949-1-tzimmermann@suse.de> <20240313154857.12949-2-tzimmermann@suse.de>
- <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com> <03ea1afa-e54b-4f31-bf07-03d9cdbacaea@moroto.mountain>
-In-Reply-To: <03ea1afa-e54b-4f31-bf07-03d9cdbacaea@moroto.mountain>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Wed, 13 Mar 2024 18:44:08 +0100
-Message-ID: <CANiq72kJj+Mz6QAMuk7y-OeymWZKo9K9ccXaRwR2r0AkHmeKdw@mail.gmail.com>
-Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
- backlight helper
-To: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, Andy Shevchenko <andy@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, lee@kernel.org, daniel.thompson@linaro.org, 
-	jingoohan1@gmail.com, deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	Robin van der Gracht <robin@protonic.nl>, Miguel Ojeda <ojeda@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com>
 
-On Wed, Mar 13, 2024 at 6:11=E2=80=AFPM Dan Carpenter <dan.carpenter@linaro=
-.org> wrote:
->
-> Is there an advantage to making this const?
+Hi Miguel.
 
-Not much in this case -- it is more about trying to be const-correct
-where possible.
+On Wed, Mar 13, 2024 at 05:08:08PM +0100, Miguel Ojeda wrote:
+> Hi Thomas,
+> 
+> Thanks for this!
+> 
+> Cc'ing Andy and Geert -- the new maintainer and reviewer.
+> 
+> Also, a couple quick notes below since I am here...
+> 
+> On Wed, Mar 13, 2024 at 4:49 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >
+> > Replace the use of struct backlight_properties.fb_blank with a
+> > call to backlight_get_brightness(). The helper implement the same
+> > logic as the driver's function.
+> 
+> It is not exactly the same logic since `backlight_is_blank` accounts
+> for `BL_CORE_SUSPENDED`.
 
-Cheers,
-Miguel
+The driver does not set BL_CORE_SUSPENDRESUME so that part is a nop.
+
+	Sam

@@ -1,254 +1,99 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com [209.85.215.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F1AE47A7C
-	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 15:49:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67EEA47A40
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 16:08:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710344946; cv=none; b=OEiB3zec3c6EHTsHTfOve1oU89os6no0AlDlHGbQ8W4sZfFPXSPUHzP+8TZ91wPsoFetlas/3vEE7+EDsTzDl9+30BUQYMXHFtwJSGZKdcy7SPT+CJPeGigCzMY1jLcRfNgTgC8vt5lQ75cRfS3et2rgowXy++EaJezr7aniYcQ=
+	t=1710346101; cv=none; b=sACoUc32s+YMnt21aS+OGoLmrO7Ob3B3E1c8j0YyjK4YJtmXfgW+yGsjZP909yCy1XGXeHv6U9zcy8tfKWKgChDhYeLvYTacePKaez555ait7SqikWm89W4Aoy0JiHnrf/Pi+jU5SokwO/JmkZ9xxRzZ6LC8+NIGQGrap6Ricro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710344946; c=relaxed/simple;
-	bh=bz2369fO5egRM97p0xzze78iGeY1pwRTmS0pjLe0mXs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CCrrM4H62JEeMAhJQh2T5r67dylN1bB29RGzryaZtS8UEr/veazNEWiiV3w8VTCQlVfqu+GQxF0N7aQMXsUh66E9FNJH8hO0SrVpm4mkjI3rs4iXG7kD4toRAMhoRj6trLVv9vAY2Bihjxa3+5D9V+Hbz/yz2yhABjlNNiBMqe8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CB6Si6yP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qXc8TWau; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CB6Si6yP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qXc8TWau; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1710346101; c=relaxed/simple;
+	bh=CovmuhB1AdolpKpkG/Fj3Mesft/l/SlOhQMcpkg7uZg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=LBMymT5WeT72BcneSXf+bSZ6hm/QtZDQTYVIhgaqSeI8/q/JvD9DBCtUKaNrqZLYdQ3ecLE0D6zlCtMQV/xYiQaLW0w9FIJf4NJqBRRPRloSs4nfbCNEnXa4NfRTEsQ06jzbvx3GyDT80wAAgpxQgkTn8lTMi6YJWC9+4U9PbVc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nw7qr+eS; arc=none smtp.client-ip=209.85.215.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CB6Si6yP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qXc8TWau";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CB6Si6yP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qXc8TWau"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 6DDAB21C95;
-	Wed, 13 Mar 2024 15:49:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1710344941; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=AUl7RM8pQSDLJcba+A10kl49yP/390cYF3cmxjxvIHg=;
-	b=CB6Si6yPSpqmPCe8FGfZmrspJjJbjTpE3+sZgmwewcVotiglq/0TXPex1Wo1tjLRk7t8mi
-	67YH41y3+ItgTvyynazp/nljQa66C7epyyeAsGYs4nEJc1oDSCKILEGrSSrJfDQv3tbCQx
-	GuXBCF2KinGTJKhjVO0+eaIHmbltTpY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1710344941;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=AUl7RM8pQSDLJcba+A10kl49yP/390cYF3cmxjxvIHg=;
-	b=qXc8TWauJO/M7JOO5O/03ir0/lrg+Say4XkDe4zDtn3eoxEjE/jrZ5OmmfHTNFunZY+tm5
-	3SSvJwUKJyLbGsCw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1710344941; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=AUl7RM8pQSDLJcba+A10kl49yP/390cYF3cmxjxvIHg=;
-	b=CB6Si6yPSpqmPCe8FGfZmrspJjJbjTpE3+sZgmwewcVotiglq/0TXPex1Wo1tjLRk7t8mi
-	67YH41y3+ItgTvyynazp/nljQa66C7epyyeAsGYs4nEJc1oDSCKILEGrSSrJfDQv3tbCQx
-	GuXBCF2KinGTJKhjVO0+eaIHmbltTpY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1710344941;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=AUl7RM8pQSDLJcba+A10kl49yP/390cYF3cmxjxvIHg=;
-	b=qXc8TWauJO/M7JOO5O/03ir0/lrg+Say4XkDe4zDtn3eoxEjE/jrZ5OmmfHTNFunZY+tm5
-	3SSvJwUKJyLbGsCw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2D7551397F;
-	Wed, 13 Mar 2024 15:49:01 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id mAu3Ce3K8WUhfQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 13 Mar 2024 15:49:01 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: lee@kernel.org,
-	daniel.thompson@linaro.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 3/6] backlight/omap1-bl: Replace FB_BLANK_ states with simple on/off
-Date: Wed, 13 Mar 2024 16:45:02 +0100
-Message-ID: <20240313154857.12949-4-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240313154857.12949-1-tzimmermann@suse.de>
-References: <20240313154857.12949-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nw7qr+eS"
+Received: by mail-pg1-f170.google.com with SMTP id 41be03b00d2f7-5e4f79007ffso3600242a12.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 09:08:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1710346100; x=1710950900; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=P6ULIWkqwYtQwHi0nH3X4LEjPNLviw6dhHiCy7dWpr8=;
+        b=Nw7qr+eSWuP1XJxMU8zgIWlLcCRI3KYmnQJwD+d/nzM4pa8OkaEWZ08gYaCFuYpSVH
+         afLHt+hEz3rukrscHX5LZjvOT4xDzGja8B8eAwV1KxvzHRiRhbUh/7QhbSQVQamUcXo8
+         tsAOD91F1KVIeYyOS3kaJ3qsOqOh2P+z9jI0vS3J7scgxtGePIbc4EM7sVW7fEXOFBaU
+         iGpdqbxXodg+3ojU4sCngKRQ2BGyhuqUWG4e98LLQlUV/2UJNY0ja2c+1pBEurMynvxm
+         Ye+mrt8V+tIKvhrW6taVh6mKW6gvnWNJ4+dI8Kbp4CMF4Dtg6HXLErnu/oJ3iyBsQZrM
+         xBxQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710346100; x=1710950900;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=P6ULIWkqwYtQwHi0nH3X4LEjPNLviw6dhHiCy7dWpr8=;
+        b=q/i25cUqPzIdHdb3ImMLMhXn/I3CD+fRUvYkSIVo4M7mDw9vVYWdgQwpsOUXq/nIaf
+         XOH+3cFHpwdHfBytX8jjIYwnoaoAghYIZKqn5G1ywG8bnnC08cFQTlcHaCbvgkyLA79E
+         96cQw83mvbv54fiK+5Wka/U0xQgA/fyAcl0TSLRwhKXEOWm6mdB2/SGp3M6cFza9C6Kp
+         5sxVDxJXc3/D90N77cufZWzWdmch2PiOCSP4cRznLiXNhfkYKHchkF3GpXRvSpp18e8a
+         haUtvvs/GaYuxi8Qs93X+zcAAEn8OFzW4gg3H5yQ1ys91617MAZ0aL+I93TKvJDy0IU/
+         cxpg==
+X-Forwarded-Encrypted: i=1; AJvYcCWhYfMBVjHoLMZ59VZbAAyzjlvQ8I8CljrVTvPQar7nUCkEY/65MIwYzUDQLPQyWthho19gjSs76Q4iKDbQLp/yuaO4VeyzveHIudY=
+X-Gm-Message-State: AOJu0YymZtmjB6prwJTFyaPxOjz7iD+XWL3fUcq2eV6qSnlUlMvDNumy
+	tdmFdEXdckejqzHAMhZQNK78aAK6luD2Uz+h0ULkvgZMPWcCd5jPo0ZiD7wA7IoApdyJ75AUam6
+	GiNKcM2eqlykKUBPHec5SrcV3qXcZHK5RK+Cg3Q==
+X-Google-Smtp-Source: AGHT+IFw4NlwXdq8k5AaP0t6MV8Oqx6Tr91pjx5TGQukQAekNWRrB6XIh8BPrzA3MuN0QBTfxmlK7KxNwQu9LllcLBE=
+X-Received: by 2002:a17:90a:a008:b0:29b:bbde:8f19 with SMTP id
+ q8-20020a17090aa00800b0029bbbde8f19mr3568139pjp.33.1710346099732; Wed, 13 Mar
+ 2024 09:08:19 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Spamd-Result: default: False [0.89 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 URIBL_BLOCKED(0.00)[suse.de:email];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 REPLY(-4.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 RCPT_COUNT_SEVEN(0.00)[8];
-	 MID_CONTAINS_FROM(1.00)[];
-	 FREEMAIL_TO(0.00)[kernel.org,linaro.org,gmail.com,gmx.de];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-0.01)[50.14%]
-X-Spam-Score: 0.89
-X-Spam-Flag: NO
+References: <20240313154857.12949-1-tzimmermann@suse.de> <20240313154857.12949-2-tzimmermann@suse.de>
+In-Reply-To: <20240313154857.12949-2-tzimmermann@suse.de>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Wed, 13 Mar 2024 17:08:08 +0100
+Message-ID: <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com>
+Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
+ backlight helper
+To: Thomas Zimmermann <tzimmermann@suse.de>, Andy Shevchenko <andy@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
+	deller@gmx.de, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, Robin van der Gracht <robin@protonic.nl>, 
+	Miguel Ojeda <ojeda@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The backlight is on for fb_blank eq FB_BLANK_UNBLANK, or off for
-any other value in fb_blank. But the field fb_blank in struct
-backlight_properties is deprecated and should not be used any
-longer.
+Hi Thomas,
 
-Replace the test for fb_blank in omap's backlight code with a
-simple boolean parameter and push the test into the update_status
-helper. Instead of reading fb_blank directly, decode the backlight
-device's status with backlight_is_blank().
+Thanks for this!
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/backlight/omap1_bl.c | 46 ++++++++++++++----------------
- 1 file changed, 21 insertions(+), 25 deletions(-)
+Cc'ing Andy and Geert -- the new maintainer and reviewer.
 
-diff --git a/drivers/video/backlight/omap1_bl.c b/drivers/video/backlight/omap1_bl.c
-index 84d148f385951..3fd8bbb7f5877 100644
---- a/drivers/video/backlight/omap1_bl.c
-+++ b/drivers/video/backlight/omap1_bl.c
-@@ -9,7 +9,6 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
--#include <linux/fb.h>
- #include <linux/backlight.h>
- #include <linux/slab.h>
- #include <linux/platform_data/omap1_bl.h>
-@@ -20,7 +19,7 @@
- #define OMAPBL_MAX_INTENSITY		0xff
- 
- struct omap_backlight {
--	int powermode;
-+	bool power;
- 	int current_intensity;
- 
- 	struct device *dev;
-@@ -37,21 +36,14 @@ static inline void omapbl_send_enable(int enable)
- 	omap_writeb(enable, OMAP_PWL_CLK_ENABLE);
- }
- 
--static void omapbl_blank(struct omap_backlight *bl, int mode)
-+static void omapbl_power(struct omap_backlight *bl, bool on)
- {
--	switch (mode) {
--	case FB_BLANK_NORMAL:
--	case FB_BLANK_VSYNC_SUSPEND:
--	case FB_BLANK_HSYNC_SUSPEND:
--	case FB_BLANK_POWERDOWN:
--		omapbl_send_intensity(0);
--		omapbl_send_enable(0);
--		break;
--
--	case FB_BLANK_UNBLANK:
-+	if (on) {
- 		omapbl_send_intensity(bl->current_intensity);
- 		omapbl_send_enable(1);
--		break;
-+	} else {
-+		omapbl_send_intensity(0);
-+		omapbl_send_enable(0);
- 	}
- }
- 
-@@ -61,7 +53,7 @@ static int omapbl_suspend(struct device *dev)
- 	struct backlight_device *bl_dev = dev_get_drvdata(dev);
- 	struct omap_backlight *bl = bl_get_data(bl_dev);
- 
--	omapbl_blank(bl, FB_BLANK_POWERDOWN);
-+	omapbl_power(bl, false);
- 	return 0;
- }
- 
-@@ -70,33 +62,37 @@ static int omapbl_resume(struct device *dev)
- 	struct backlight_device *bl_dev = dev_get_drvdata(dev);
- 	struct omap_backlight *bl = bl_get_data(bl_dev);
- 
--	omapbl_blank(bl, bl->powermode);
-+	omapbl_power(bl, bl->power);
- 	return 0;
- }
- #endif
- 
--static int omapbl_set_power(struct backlight_device *dev, int state)
-+static void omapbl_set_power(struct backlight_device *dev, bool on)
- {
- 	struct omap_backlight *bl = bl_get_data(dev);
- 
--	omapbl_blank(bl, state);
--	bl->powermode = state;
--
--	return 0;
-+	omapbl_power(bl, on);
-+	bl->power = on;
- }
- 
- static int omapbl_update_status(struct backlight_device *dev)
- {
- 	struct omap_backlight *bl = bl_get_data(dev);
-+	bool power;
- 
- 	if (bl->current_intensity != dev->props.brightness) {
--		if (bl->powermode == FB_BLANK_UNBLANK)
-+		if (bl->power)
- 			omapbl_send_intensity(dev->props.brightness);
- 		bl->current_intensity = dev->props.brightness;
- 	}
- 
--	if (dev->props.fb_blank != bl->powermode)
--		omapbl_set_power(dev, dev->props.fb_blank);
-+	if (backlight_is_blank(dev))
-+		power = false;
-+	else
-+		power = true;
-+
-+	if (power != bl->power)
-+		omapbl_set_power(dev, power);
- 
- 	return 0;
- }
-@@ -136,7 +132,7 @@ static int omapbl_probe(struct platform_device *pdev)
- 	if (IS_ERR(dev))
- 		return PTR_ERR(dev);
- 
--	bl->powermode = FB_BLANK_POWERDOWN;
-+	bl->power = false;
- 	bl->current_intensity = 0;
- 
- 	bl->pdata = pdata;
--- 
-2.44.0
+Also, a couple quick notes below since I am here...
 
+On Wed, Mar 13, 2024 at 4:49=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
+>
+> Replace the use of struct backlight_properties.fb_blank with a
+> call to backlight_get_brightness(). The helper implement the same
+> logic as the driver's function.
+
+It is not exactly the same logic since `backlight_is_blank` accounts
+for `BL_CORE_SUSPENDED`.
+
+> -       int brightness =3D bl->props.brightness;
+> +       int brightness =3D backlight_get_brightness(bl);
+
+This can be `const` now (or even removed and have the call embedded below).
+
+Cheers,
+Miguel

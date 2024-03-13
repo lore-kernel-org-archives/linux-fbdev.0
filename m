@@ -1,101 +1,125 @@
-Received: from mailrelay3-1.pub.mailoutpod3-cph3.one.com (mailrelay3-1.pub.mailoutpod3-cph3.one.com [46.30.211.242])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4ECA869DF4
-	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 18:03:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.242
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C824535B7
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 21:36:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710353009; cv=none; b=ROQMoxSpX9nrNcgOtPlbjuYyUi64nhvYkCD+4AdGngF++TiThJHhe84/rAtAKnqTTxE56QianLy4cnk2feBvohIi9xY68FPfH3+Ex0wB4Ev9Y7fV3qbMiDQFUWnl4kZKJDaGAdT/U7QnL4ezITqce42qgu4/w1tdulz1LfLlJco=
+	t=1710365812; cv=none; b=XHoRGmu41V+iYl/YMESO/xKkRMfhpOeTsQvAW3WA31v2/tt/UoAQMNWsX4UAobFpOCCYp18GH7EFsBW+djpKYqbqRU2KwG2vc9i/gr85o1PsLKP53F6kLeH4qBfN5wDVVFZ/GwTjR/c8Z1YhFao1iH9mqd0SujM9XT3wXQMnMgQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710353009; c=relaxed/simple;
-	bh=ZpttA8+hb/NixojX4dDgWmtMSlr++0GFXAQgIDK8A0g=;
+	s=arc-20240116; t=1710365812; c=relaxed/simple;
+	bh=glrAd7XBqPELw6mAyBrQxWn5qdaq0KM0oKch/fQW2/4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iCKvVwNXEmDVb2s3Z4JWB3s/UNHip/65N9RmDSwo2eEth3b/0x3DPq0eBrG0d1EBTUpLB2XELmCNfymA048VIibdK9sFusjmA16og3Utb8SSpNsgT3b9C8dIgJOXYtaAxovBL/peDIJx4hGWSro3mp9+nI7pLyJ44mq15c5HBGQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=tevnMCJk; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=TZO+r5m+; arc=none smtp.client-ip=46.30.211.242
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="tevnMCJk";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="TZO+r5m+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=6PGWeMg8CNoy/+zkkS9L2OPt1xF6lAFCedewPNY1+gY=;
-	b=tevnMCJk8m3Q3lHNsK/vsFd2oLyyaME32NEciLoUeFC62HGUXH4g1OqCUCC6bVzRwREk3f/d3M8Z4
-	 XIKt+Ehv2gkYhwPMDxdWedKZrHVdc2SirJJ+oJZqIocTcLDG/kYW8XaHwfXlRJBVTlC8ZxROp6Gee0
-	 HLXtwDdwjOw2v5PegqtMzvnrezq8tR3ThfQZHSGPcWKU5YvJeP5Zps70UcFVSJyDaj3lfNiCCJ0qaM
-	 dCrN0huZ2hN67MNXSb+Isi7ftollrRSn2NitD4/N0BP68deC6aW6Z6wpNdAbj6pReA8wETL6Azhem3
-	 W67wvtOViZ4hxwa+c22pdEeVup7YAlA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=6PGWeMg8CNoy/+zkkS9L2OPt1xF6lAFCedewPNY1+gY=;
-	b=TZO+r5m+DD97Bajo9cNaV45NQ+MWPh5byWOV27p3eZWWpbwJ2ah9m2/MBz7lI9UZ+pxMqwI15gqq5
-	 GbscVlPCg==
-X-HalOne-ID: d2e14a62-e163-11ee-a17c-ff813d2dbafc
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay3.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id d2e14a62-e163-11ee-a17c-ff813d2dbafc;
-	Wed, 13 Mar 2024 18:02:18 +0000 (UTC)
-Date: Wed, 13 Mar 2024 19:02:16 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
-	deller@gmx.de, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: Re: [PATCH 2/6] backlight/omap1-bl: Remove unused struct
- omap_backlight_config.set_power
-Message-ID: <20240313180216.GD96726@ravnborg.org>
-References: <20240313154857.12949-1-tzimmermann@suse.de>
- <20240313154857.12949-3-tzimmermann@suse.de>
+	 Content-Type:Content-Disposition:In-Reply-To; b=slGULlQpyBSM3Fj+A96mbfn4sceB/bgrOx9N9shItwl7D8PWOISXUAp97wFokuDP4ncdgeveyR+xHYxsWq4DB56kFS87rRmt9oNGmQ6OiubRwNvXEhLYh7rE2x+bQJFE3V+6W7mlvD0LBsxTSkW7WYQql+WfxnFb4y9uTVJDLso=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rkWHD-0001HS-TG; Wed, 13 Mar 2024 22:36:43 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rkWHC-006Bjl-Tv; Wed, 13 Mar 2024 22:36:42 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rkWHC-005gLf-2i;
+	Wed, 13 Mar 2024 22:36:42 +0100
+Date: Wed, 13 Mar 2024 22:36:42 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Lee Jones <lee@kernel.org>, 
+	Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	kernel@pengutronix.de, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] backlight: lp8788: Drop support for platform data
+Message-ID: <7nvqboywxhviyuzkiesy4qfqybxx7vc5sw2seluc3dwnhk3q5h@hlzwxhnm2q6r>
+References: <20240313124828.861731-2-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="rrug4xskydudt2mq"
 Content-Disposition: inline
-In-Reply-To: <20240313154857.12949-3-tzimmermann@suse.de>
+In-Reply-To: <20240313124828.861731-2-u.kleine-koenig@pengutronix.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-On Wed, Mar 13, 2024 at 04:45:01PM +0100, Thomas Zimmermann wrote:
-> The callback set_power in struct omap_backlight_config is not
-> implemented anywhere. Remove it from the structure and driver.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  drivers/video/backlight/omap1_bl.c     | 3 ---
->  include/linux/platform_data/omap1_bl.h | 1 -
->  2 files changed, 4 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/omap1_bl.c b/drivers/video/backlight/omap1_bl.c
-> index 69a49384b3de4..84d148f385951 100644
-> --- a/drivers/video/backlight/omap1_bl.c
-> +++ b/drivers/video/backlight/omap1_bl.c
-> @@ -39,9 +39,6 @@ static inline void omapbl_send_enable(int enable)
->  
->  static void omapbl_blank(struct omap_backlight *bl, int mode)
->  {
-> -	if (bl->pdata->set_power)
-> -		bl->pdata->set_power(bl->dev, mode);
+
+--rrug4xskydudt2mq
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello,
+
+On Wed, Mar 13, 2024 at 01:48:27PM +0100, Uwe Kleine-K=F6nig wrote:
+> diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backligh=
+t/lp8788_bl.c
+> index 31f97230ee50..f3a89677c31c 100644
+> --- a/drivers/video/backlight/lp8788_bl.c
+> +++ b/drivers/video/backlight/lp8788_bl.c
+> @@ -12,7 +12,6 @@
+>  #include <linux/mfd/lp8788.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> -#include <linux/pwm.h>
+>  #include <linux/slab.h>
+> =20
+>  /* Register address */
+> @@ -31,149 +30,41 @@
+>  #define MAX_BRIGHTNESS			127
+>  #define DEFAULT_BL_NAME			"lcd-backlight"
+> =20
+> -struct lp8788_bl_config {
+> -	enum lp8788_bl_ctrl_mode bl_mode;
+> -	enum lp8788_bl_dim_mode dim_mode;
+> -	enum lp8788_bl_full_scale_current full_scale;
+> -	enum lp8788_bl_ramp_step rise_time;
+> -	enum lp8788_bl_ramp_step fall_time;
+> -	enum pwm_polarity pwm_pol;
+> -};
 > -
->  	switch (mode) {
->  	case FB_BLANK_NORMAL:
->  	case FB_BLANK_VSYNC_SUSPEND:
-> diff --git a/include/linux/platform_data/omap1_bl.h b/include/linux/platform_data/omap1_bl.h
-> index 5e8b17d77a5fe..3d0bab31a0a94 100644
-> --- a/include/linux/platform_data/omap1_bl.h
-> +++ b/include/linux/platform_data/omap1_bl.h
-> @@ -6,7 +6,6 @@
->  
->  struct omap_backlight_config {
->  	int default_intensity;
-> -	int (*set_power)(struct device *dev, int state);
->  };
->  
->  #endif
-> -- 
-> 2.44.0
+>  struct lp8788_bl {
+>  	struct lp8788 *lp;
+>  	struct backlight_device *bl_dev;
+> -	struct lp8788_backlight_platform_data *pdata;
+> -	enum lp8788_bl_ctrl_mode mode;
+>  	struct pwm_device *pwm;
+
+Actually this pwm_device member should be dropped, too. I wonder why
+this even passes a W=3D1 build without a warning ...
+
+@Lee: Feel free to fix this up while applying, or tell me if you prefer
+an incremental fixup or a complete v2.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--rrug4xskydudt2mq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmXyHGkACgkQj4D7WH0S
+/k4u0QgArwWZJ34iALZlyB21fTRNwZLFRkn8DH8i/rtsUENrdd5riGV7cah3K30s
+4ctn1nCAv6m4RYIbvPuroR5DzCnzL3wKMzuD/ppwNtKIB9gAxUaJA5cBenfjBy0u
+aMlLsKzZzE/UG/m3e3/FOqhn/Z9WZfCJX2mpCikA1w84EO1bYYO6VSTOjye+0gtN
+w/9a7picJxEmSYYAG1zARRiQB8bFTQ6oUwjJQ+dkThAN8R5mX2nkDOVH6t0POQrI
+iBqTzn9jhT560SNjYmv9TJRE8Xul7jr6zgOq9GwD6F8WvDY4/WNzU/qljrwoKCX8
+icE/sHySbg0K2hUhVNRUzTXMBVLL1w==
+=dgpE
+-----END PGP SIGNATURE-----
+
+--rrug4xskydudt2mq--

@@ -1,69 +1,85 @@
-Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 265BD5339D;
-	Wed, 13 Mar 2024 17:40:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9553B5644F
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 17:44:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710351625; cv=none; b=BfqOO75JgKnArnLMLXx3pOBbCrGQatcZqWK2FKyoZloaPv18y6puooOWpBKFDldETPmfwu/Br6Rlsd9HVi1g9ZuuFcaoC38lEQHX/ohnuhXxu6Cy8pFCAk7z8zCzyULttxucQ0uLW7Lz+r2u39+WGSE8+feaDOPZAjtZHUBeDVc=
+	t=1710351863; cv=none; b=il/0GL2hxfWGak7GVccZYEo4M7wGHLPDfx2/iT+fk/rfXvGYr6xkY6PQYMlSSRUPGZqMgnza+vy2UQabwXkZKMopwGuopYw83MumtlwtldkrwGThBa8sWIuv6+pSdvirU93MKpvSYiYyCstmsfVt7vrRIds270i1NbBJPPVMFpM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710351625; c=relaxed/simple;
-	bh=SHNsFKcCjctU1oTQ2mrNyrwS3y3J6rO1/xV8aRmrQC8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=u9Cmt48HSg5nAr7Lxr8XUYxpznXf7uFQDMwei3nevBwbsZ9HekepRWlrT3GUtSiW0PRiQv/RCRPP8CMQq8wcvh70RPHqVjNGDDyA8AajcmoOlwgQFQFRqDBbz6EpQi7EwECZ9EM9TcONqgQWy5u1cFtHrTpwXIZldi9pui2pbKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bulatov.me; spf=pass smtp.mailfrom=bulatov.me; dkim=pass (2048-bit key) header.d=bulatov.me header.i=@bulatov.me header.b=RU3pp7G9; arc=none smtp.client-ip=80.241.56.161
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bulatov.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bulatov.me
+	s=arc-20240116; t=1710351863; c=relaxed/simple;
+	bh=hCUUui1NbQfp/vSqXOMgH0Aw3ATqns8Rr34Fh87bhTI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FwlOoQUh8o8Ecn/iO49E4NbxTgW5flZmPCDAbJy0rzJHV9v9yTlV3AmCA3lew4B8lkx6VpY/rYmO9gwFgTI5Y7X2z2XbvMnxRauD6eUiZqwx7DQWensMZCmhO/Utn9rPWad9wvXHon+zl7oIBI0xxswM1QftlkLUzxeyjtVOuNI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HcgBxOwl; arc=none smtp.client-ip=209.85.216.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bulatov.me header.i=@bulatov.me header.b="RU3pp7G9"
-Received: from smtp2.mailbox.org (smtp2.mailbox.org [IPv6:2001:67c:2050:b231:465::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4TvyTH4KGdz9t90;
-	Wed, 13 Mar 2024 18:40:19 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bulatov.me; s=MBO0001;
-	t=1710351619;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=kiU9ZS2IFj0jAOjFbYcHToCkrWqaZyIxflp0svWWa7c=;
-	b=RU3pp7G9GRS5GhwWDm7jamZALtbJdawmrR5UZSFtgdQyZImf9ep9v4ah6vlXmAI7/jNXJG
-	ZT+Y5XWdb8ptYbLCdov9aWbTNjtLWvJ6g1P+VGWrRCd2jlTLTJc+oWNb89zVh5wH/kt8ZR
-	4AZVuhOUp8my9byOkRbAYq80Ab5WTE9UCLO1qrcaoYAYWmJ4njIpi3OWFv5pz4gdj2LktX
-	HEBFENIer+eRkaWrrMc+LLsRUb0xRJW6R/ZBbbQ59PvFJ/D6yoI8FNYVENKJRQT6x1ogb9
-	PmhEHOBrVZ9Hiopccb/dOs+1/L1YfN/39Cb1iiL14v8AnJ6U11U4MuIeozuOaQ==
-Date: Wed, 13 Mar 2024 18:40:15 +0100
-From: Oleg Bulatov <oleg@bulatov.me>
-To: legion@kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kbd@lists.linux.dev, 
-	linux-api@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] VT: Allow to get max font width and height
-Message-ID: <c3wrf2h7h45h2vee7gc42zmy43rsh7niueknvsrlsibnae4pdw@4u6b4qulfe6r>
-References: <cover.1708960303.git.legion@kernel.org>
- <cover.1710252966.git.legion@kernel.org>
- <78fcb9ad77b88edee8768806ce6a4d23f6d33118.1710252966.git.legion@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HcgBxOwl"
+Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-29b7caa88c6so140433a91.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 10:44:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1710351862; x=1710956662; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hCUUui1NbQfp/vSqXOMgH0Aw3ATqns8Rr34Fh87bhTI=;
+        b=HcgBxOwlA4jQleOkrx7I2iXfoEqHMlRTLiIEUApbscr8M2PLY67Jh9QRmGlN7tsIPj
+         F4pg6Xx0Ssmw5ENaDhc+DUhOT43K+pSmFEwbGYwPgq1vIJ8zMZ4p6q9HizdKPOLEatPf
+         VtHXKqjKCSEBGrNjUWA/pirguKcCdufsIwB+I7ucMWLr3fnQYCvvCONsaYWrm3CpvhzD
+         XylsIqfY1NV2Uj+9qxWEbF6hiVYUjsWYiLtQuMG0kgE+NCXkRim0jcdiCeGUkl5PBZHf
+         Udf5VVPYvWzsAwHTkxkqLepbDAMT7k/hDFUeRt6a0JTgvpylULU4lozspqCgJqhHgGzB
+         DfxQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710351862; x=1710956662;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=hCUUui1NbQfp/vSqXOMgH0Aw3ATqns8Rr34Fh87bhTI=;
+        b=wbHukdivUWGO020lK4JUdPYYfZ9ck/S45cZa8YjGuUMxYnFktjDwhmzyd1bOd5JdY2
+         DYLRPPKJeLJEnkmyHaTaovb5TsHdPpT6PXR3E0eS/fuA0i434oUiDwd6scLsp56E4smS
+         irRAFKxJmMgYhqnHt+IsKfUWpEyj4WR8WrY6BCSd1Mir+2ZaLUk0d0cMXnm8bzZCSH34
+         GrqgloE0iQ8ZI8n2Rm9rkxNKfpWCu6icdvfsKgHQtOf7j8Xto7P2e8Ww8Biu4bvVxMd0
+         d3wRIOo3am3SJ8aGVRJK3Aqo2u8seApjCbdKXda2+2lVqaTWsgFXdQ9s12iMZ4eG2iiP
+         NPfQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWaGS7XOCZEA9zOJEt+hx5I38g2brG6HQHRcRrEXpm7EFHHbjCSgUmseiyGI/bfumunyiklhzp9X0kLNzrbgJcOGsRW8Q3OwgkdDVw=
+X-Gm-Message-State: AOJu0Yz/6PuwCt7xKdzWHFfnWIBIwKvyhmFP/Jao2MekF8aVeMDyyfIz
+	YtNyby8YY6rP1jWsw1pVfupTIwgvT1ohAjFdFmPqNB/XsFkPJ9nVeMhg4ma+sJ1zuLu72IO8tOe
+	r818hR3HXFP1uLCaeObmQWRkP5vY=
+X-Google-Smtp-Source: AGHT+IF9f9pLaLdPeTSCtAhybglIyQQ2XIUnjYf9d7DmVSyCMeubFDXCZGcM00CwqQ2KUlRJTxsSfizN1sbtkt9PlhI=
+X-Received: by 2002:a17:90b:4c81:b0:29c:71d2:ac2a with SMTP id
+ my1-20020a17090b4c8100b0029c71d2ac2amr806844pjb.18.1710351861647; Wed, 13 Mar
+ 2024 10:44:21 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <78fcb9ad77b88edee8768806ce6a4d23f6d33118.1710252966.git.legion@kernel.org>
-X-Rspamd-Queue-Id: 4TvyTH4KGdz9t90
+References: <20240313154857.12949-1-tzimmermann@suse.de> <20240313154857.12949-2-tzimmermann@suse.de>
+ <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com> <03ea1afa-e54b-4f31-bf07-03d9cdbacaea@moroto.mountain>
+In-Reply-To: <03ea1afa-e54b-4f31-bf07-03d9cdbacaea@moroto.mountain>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Wed, 13 Mar 2024 18:44:08 +0100
+Message-ID: <CANiq72kJj+Mz6QAMuk7y-OeymWZKo9K9ccXaRwR2r0AkHmeKdw@mail.gmail.com>
+Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
+ backlight helper
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Andy Shevchenko <andy@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, lee@kernel.org, daniel.thompson@linaro.org, 
+	jingoohan1@gmail.com, deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
+	Robin van der Gracht <robin@protonic.nl>, Miguel Ojeda <ojeda@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 12, 2024 at 03:23:58PM +0100, legion@kernel.org wrote:
->  drivers/video/console/newport_con.c | 21 +++++++++++++++++----
->  drivers/video/console/sticon.c      | 25 +++++++++++++++++++++++--
->  drivers/video/console/vgacon.c      | 21 ++++++++++++++++++++-
->  drivers/video/fbdev/core/fbcon.c    | 22 +++++++++++++++++++++-
->  4 files changed, 81 insertions(+), 8 deletions(-)
+On Wed, Mar 13, 2024 at 6:11=E2=80=AFPM Dan Carpenter <dan.carpenter@linaro=
+.org> wrote:
+>
+> Is there an advantage to making this const?
 
-newport_con.c is an interesting one, apparently it's for SGI Indy and
-Indigo2, both are discontinued in 1997. Do we still have a way to test
-this driver?
+Not much in this case -- it is more about trying to be const-correct
+where possible.
 
-Oleg
+Cheers,
+Miguel

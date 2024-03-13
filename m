@@ -1,92 +1,84 @@
-Received: from mailrelay1-1.pub.mailoutpod3-cph3.one.com (mailrelay1-1.pub.mailoutpod3-cph3.one.com [46.30.211.240])
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [46.30.211.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DEF76FE3A
-	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 17:54:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56AF44D599
+	for <linux-fbdev@vger.kernel.org>; Wed, 13 Mar 2024 18:01:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710352487; cv=none; b=lPH9tS8UU32Zw92dtlWqE+zC7BKLYXtN/ywMuXiMYPJVS1Ewv8bdT6e8Atq/MdmnV2+8L6xgAPPgPBIP+EfaPM40/FIhvoXH500ywFJAmdd5oRgzQXxJjFJWPGKlt2ndf/4v2rKHF6I1o/iWE1LtBqt/c460VVNG44HSmsoRgkI=
+	t=1710352900; cv=none; b=hJ/0UkcrvZ4Nq+SYl8AI58Qv88UMBM6Ixb/EkEK4/VjRnZ55Mux9HI8/L8y2PlwzxJt5DI0+NotUViwhMK5N+ASgsC6InwxEiaZYW6cfqu9ZBK9EHvJcF8Gditb5MRuhG+a0CEs+MpjofHEDA8dzqqtaVgORVZovsl1FXAvw1ws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710352487; c=relaxed/simple;
-	bh=UUwKPoYxVZAxVfghjFtyV/bduPt/4WokWoj91qWs8ys=;
+	s=arc-20240116; t=1710352900; c=relaxed/simple;
+	bh=jbi1xGhYZSgZ7tq2Twfwbl4xBHjFmcYSMPhyLIA55yY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jVtgsh/OmIOnSPp1kV+rM8URZ58ynw6NPfHxGP9ohM+cXF6K7TIs07Fr1Lk1wf2B5J4B1guOiK5gRI0FG+3Dl2JibSm6fCt1/TMyFaWpwY5YMbwwH3dheEubzrTw6FkCz+VFMpGVFs+GQqbS2zBGq6oUxkgwIPoJcfgmpvCV9ts=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=wJQ0A8Lb; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=UqBQ9eLR; arc=none smtp.client-ip=46.30.211.240
+	 Content-Type:Content-Disposition:In-Reply-To; b=MFEyiveFN0ISb8Gvc33NSN+8ewdTKq/yujCCY+F0pX2YHY8f9hfV+gO1640pMkIcxuEwV97hy/F7rxpdXWwiCYCm3mTjK5jqBMbBWEINaQH9tCt8ZS8FFYS/8G16ZFRZQTLhqsnc9kkNoSUaFVoFr3ua1V+MfMlWbp9gEmNcjeU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=jHylGeIv; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=jhFCSZBv; arc=none smtp.client-ip=46.30.211.178
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="wJQ0A8Lb";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="UqBQ9eLR"
+	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="jHylGeIv";
+	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="jhFCSZBv"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-	 message-id:subject:cc:to:from:date:from;
-	bh=772gv0JFjk24UCM4cXblvdaXj1GC71JgGxfdqwm4GgA=;
-	b=wJQ0A8Lbb1Xga0BFZIWaKqg16NJx7gVz/Wsn0pF+4poPI04akZHGDpSFAL1/8bmZymQcpMtG8jPYH
-	 lf00fW1KOruhECI8D7QRJnifmgiO6V7RoH4o3wDxKASON30Z1zsgXvhVfKblLJUeCag1BgsIDYhRuY
-	 pEPLEOh8YGNeJNJWMvAH1J5vOfEVq000HckKdtbA2CHHCsmIiBoZBDo887af40vwGpvycWvMr2mwL5
-	 2B4O393PIY4AQ0xVcFnvD8pqILa3nuVXhXpffS15JuGXTNs10EDWRc1pyQv+PwfNqG+mca0GdZkiB8
-	 f2TdKKUMSKIbkytdvCERBl8Q9t/RSRQ==
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=4rlXTwAFyuTm9avHYsJU7aqjVe3TlVfEuupS9PnmcmI=;
+	b=jHylGeIvg1EqZg33U1cBL0AE4k6y3QBTOqlL04mnFXMsdMPrmRypJ2ydnguQJZ5cVsBi07MpCm49C
+	 vFXkQia1PI1i0AzXy3FCghpUTL52SGjWJroWEO6LGERZ+1XiYPiQzjo+P/LzO4p40QBCfQcXkco//P
+	 nWbAyMv3eeobvANOKOspRpgGWAST/3LgjAfDotbDxUwjXfzDlWn1eXNsiO0l58c9OXQwdzKk3eh6AX
+	 DnCwDDKaloa8RLGc4G5RvjyWDWwyIewhM8An36V5n7kndjcMqFSy0mes88nxcXqAkIuKQeY9c0MBBb
+	 NjRFiEQMbyCu2UgPSyz299220Ut/oPg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
 	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-	 message-id:subject:cc:to:from:date:from;
-	bh=772gv0JFjk24UCM4cXblvdaXj1GC71JgGxfdqwm4GgA=;
-	b=UqBQ9eLRkbthSkCT9NUcgsB2UZ89uLjCiqtU80xsUK47Vb7s9qpcv98ZurrTTlHtOyJwZw131xfEI
-	 C2Vh64HDw==
-X-HalOne-ID: c011b02b-e162-11ee-b64b-1ff1563c5748
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=4rlXTwAFyuTm9avHYsJU7aqjVe3TlVfEuupS9PnmcmI=;
+	b=jhFCSZBvgXRzc76qH36LZTh0Bd7D1jojW03Yfd7T10v468cP+qf4PA2CnqUjWcTavOaKfYKH3IV3E
+	 VDj1ZZjDg==
+X-HalOne-ID: 927d3bf4-e163-11ee-8bee-119507214a65
 Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay1.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id c011b02b-e162-11ee-b64b-1ff1563c5748;
-	Wed, 13 Mar 2024 17:54:36 +0000 (UTC)
-Date: Wed, 13 Mar 2024 18:54:34 +0100
+	by mailrelay3.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
+	id 927d3bf4-e163-11ee-8bee-119507214a65;
+	Wed, 13 Mar 2024 18:00:28 +0000 (UTC)
+Date: Wed, 13 Mar 2024 19:00:27 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Andy Shevchenko <andy@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>, lee@kernel.org,
-	daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Robin van der Gracht <robin@protonic.nl>,
-	Miguel Ojeda <ojeda@kernel.org>
-Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
- backlight helper
-Message-ID: <20240313175434.GA96726@ravnborg.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	deller@gmx.de, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+Subject: Re: [PATCH 3/6] backlight/omap1-bl: Replace FB_BLANK_ states with
+ simple on/off
+Message-ID: <20240313180027.GB96726@ravnborg.org>
 References: <20240313154857.12949-1-tzimmermann@suse.de>
- <20240313154857.12949-2-tzimmermann@suse.de>
- <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com>
+ <20240313154857.12949-4-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANiq72=5V_XChzDhaaWNC+B4LP7gqivPZj5Y10qqS4SkQTGB_A@mail.gmail.com>
+In-Reply-To: <20240313154857.12949-4-tzimmermann@suse.de>
 
-Hi Miguel.
+Hi Thomas,
 
-On Wed, Mar 13, 2024 at 05:08:08PM +0100, Miguel Ojeda wrote:
-> Hi Thomas,
+On Wed, Mar 13, 2024 at 04:45:02PM +0100, Thomas Zimmermann wrote:
+> The backlight is on for fb_blank eq FB_BLANK_UNBLANK, or off for
+> any other value in fb_blank. But the field fb_blank in struct
+> backlight_properties is deprecated and should not be used any
+> longer.
 > 
-> Thanks for this!
+> Replace the test for fb_blank in omap's backlight code with a
+> simple boolean parameter and push the test into the update_status
+> helper. Instead of reading fb_blank directly, decode the backlight
+> device's status with backlight_is_blank().
 > 
-> Cc'ing Andy and Geert -- the new maintainer and reviewer.
-> 
-> Also, a couple quick notes below since I am here...
-> 
-> On Wed, Mar 13, 2024 at 4:49 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >
-> > Replace the use of struct backlight_properties.fb_blank with a
-> > call to backlight_get_brightness(). The helper implement the same
-> > logic as the driver's function.
-> 
-> It is not exactly the same logic since `backlight_is_blank` accounts
-> for `BL_CORE_SUSPENDED`.
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-The driver does not set BL_CORE_SUSPENDRESUME so that part is a nop.
+My biased opinion is that the approach in this patch is a little bit
+better:
+https://lore.kernel.org/lkml/20230107-sam-video-backlight-drop-fb_blank-v1-13-1bd9bafb351f@ravnborg.org/
+
+I never came around resending this series it seems.
 
 	Sam

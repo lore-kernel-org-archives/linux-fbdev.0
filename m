@@ -1,92 +1,97 @@
-Received: from mail-yw1-f181.google.com (mail-yw1-f181.google.com [209.85.128.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ABB5EEC4
-	for <linux-fbdev@vger.kernel.org>; Thu, 14 Mar 2024 08:35:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A3916BB58
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 Mar 2024 08:57:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710405309; cv=none; b=lxNS9M0GWTY1b2naLML6B11CmHgN/UAdq0GtZOeEWxAiQuS0Ep8AdM9xOBBtjdP3hMjAnCn5M0EcAzsZzr0OvFY4dICjJ7KgzY9CfoG0oz5VtbXwSukP9biCs3Px+5NQYr2QhDADNhWw7KOEXDLyXHOuWK9HkqqYpU9nwurUSU0=
+	t=1710406645; cv=none; b=UfySueDiVyqVvvQtiUMDn0XDQjHGljEyJ4TJHf+GiayTOruo8NG/ZHly8SX3hUYSYFCETg4Q8TWV4EMcm0ejUOTlCKCJvXdmTavkM1GigBx//lomWY6NJjVfzwhUBHWK/SOh767lIzpe2DDufj8aJXoeLcKto2BSFyZPFxs6Q1Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710405309; c=relaxed/simple;
-	bh=iJSyQnvWTeQ+IiOTUArzFAvii3jXluVUZO36gwrG8fQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=C75CmI5048irJlhM7AB8Kha+LcwENwAj1tK+pGWhYaLUcs7NcG4nRBjCtoZ/xqFlF32QR63//W2Hzk3WPjAtCbYVP0MTQdCUFY8FwSyTxC8vKKZ3GSrmYwmMooKtL+ViWnUER58A2Ki9q8iEgcno6vQpRxikj7Yenhs5oCeMa24=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f181.google.com with SMTP id 00721157ae682-6099703e530so6767387b3.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 Mar 2024 01:35:07 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710405306; x=1711010106;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=jZOxcwDirhcwqixj1qjfT/PStYtmu0hBzxyawzPkVJ0=;
-        b=e3b4PDhrA/6xqy+UvQPVcSZennkGF6QcDp+/bfb8XG0PFmxN+FT6gMXAqm8A/vYiZJ
-         hPV5EV2VxINQXzhjrN0HJ6IPUAVN+FEZhWOVpX9GHeDIwlWpdWZipBXfNNAoK7Yzx0vI
-         N0/W6CzZaP5FQwJgzxqvXdwh547EWFFJIJw9Yu1bKS8jgMYRdEsZFWsmqIyIZlxtD/6n
-         k1yg9gk4XPSWMPuWzHBPgOrS6uNSuIo72tYGg1xz5NbrO/NwQdrnwbDT6yfrPoCeTu7w
-         f24OY7emdrqTOiQyt4bdCNTkjFGclJQiUfVJ69ok7Gr/79wP8p5D+bSUkL1Y1hbCaLFv
-         Mu7Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUsXiz92e+knJZb0KS5MYib4zeo1EDZ/AKDCSyD3Tzxlk1DiqyguulUCZghcPTvzaXZg+5vMUbSwzNFS3jO4bjpgivOmlekBY5FSRA=
-X-Gm-Message-State: AOJu0YxtvaiTapxxwIQhW+iPOhKJpo33oEkUC2VCqHw6V7K2d+Y8BG98
-	8AfnNzJQ/kK5NEoG/Mz/az4xbKQHz1cz6T4NR61+KB0SVD87lmeejPNME2YbcG8=
-X-Google-Smtp-Source: AGHT+IGpr11caj6CpPzo9KvVHvjkaOM2ULfhqKnYteB1bWGnlHxeRwYC1E0xwXUpwCfYvAKezYzZQw==
-X-Received: by 2002:a0d:fd46:0:b0:609:bab6:d70d with SMTP id n67-20020a0dfd46000000b00609bab6d70dmr983079ywf.43.1710405306042;
-        Thu, 14 Mar 2024 01:35:06 -0700 (PDT)
-Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com. [209.85.219.174])
-        by smtp.gmail.com with ESMTPSA id j20-20020a817654000000b0060a5c6d333asm186494ywk.22.2024.03.14.01.35.05
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 14 Mar 2024 01:35:05 -0700 (PDT)
-Received: by mail-yb1-f174.google.com with SMTP id 3f1490d57ef6-dcbcea9c261so624123276.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 Mar 2024 01:35:05 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXVn7d5/4WGbndVFC9n0vJnJg8Orkc7pbcpsgL90zbPlFSv8k222eKKxqDHnbNQ2FNcfw5ueh9RgzG3VTN9y03rwLbbf8tHKoPcQsE=
-X-Received: by 2002:a25:aa2d:0:b0:dca:c369:fac8 with SMTP id
- s42-20020a25aa2d000000b00dcac369fac8mr1122089ybi.1.1710405305661; Thu, 14 Mar
- 2024 01:35:05 -0700 (PDT)
+	s=arc-20240116; t=1710406645; c=relaxed/simple;
+	bh=6kaBC/L6/i/c9FtxT1pwrVSyAW4gc0ChoE8pXr3thDo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=L7ZEyftHkRZnB7zTx864GKOSsDKi0fLge8j1MY9wPPN3hC2/I7fDN9nx9jbm3HJnadjZXztrBvNeA9eXWHi3iPWZ6Tjn3aaOl2UfSJZ6rNpS22VQoykvYwYfUClMuMrE2QIp7z1jByVG97nBO/VDFXPOv5vILGxOKU/biJPArEY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=tMISvzzp; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=F4dgznld; arc=none smtp.client-ip=46.30.211.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="tMISvzzp";
+	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="F4dgznld"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=rsa2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=gxeb8AAu1YVsY/Xu6cmaPpMTJxALfCwDGY4BFKWNTso=;
+	b=tMISvzzpQfd7Nl6C/TYf8qmDPtMdAYFHHyAvDU6DPfHN4J2rE1m11N1WkILSyP2QGa6k4beUmhJcY
+	 L6gN0v0NT10Lf3vRkFeDIAdTpfs8w2qxL41IDc8kU4hGXHFLEvHfszfcPzoDG7JMxUKx3RngjNItGA
+	 dXyzrGTRrn+xspYYLj5LTZ/IyaaWEGFH+asZ9t+ADP/WIxLZuqDnXOhwz1s4aSZ7wI5dpu6JZInWjs
+	 zq8ferYlKEuLCaU6NtUHH5shnWmu9YZm94Y6QJsUvLLz52LYNVVGcd2+ggov4NNm3+Hi1EFfJqlAJF
+	 1jIBb56EYEme84yADTgPTZexfUukbMw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=ed2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=gxeb8AAu1YVsY/Xu6cmaPpMTJxALfCwDGY4BFKWNTso=;
+	b=F4dgznldQA9WofOy8/5yBC+gXByvmy8MIjbkHVPROzUkOPFffQ0cDMmDL7Zv5zYxQznOD8h3CFZrJ
+	 8KNTlCvAw==
+X-HalOne-ID: d7a52303-e1e0-11ee-a435-31e85a7fa845
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+	by mailrelay4.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
+	id d7a52303-e1e0-11ee-a435-31e85a7fa845;
+	Thu, 14 Mar 2024 08:57:13 +0000 (UTC)
+Date: Thu, 14 Mar 2024 09:57:11 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	deller@gmx.de, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+Subject: Re: [PATCH 3/6] backlight/omap1-bl: Replace FB_BLANK_ states with
+ simple on/off
+Message-ID: <20240314085711.GA126747@ravnborg.org>
+References: <20240313154857.12949-1-tzimmermann@suse.de>
+ <20240313154857.12949-4-tzimmermann@suse.de>
+ <20240313180027.GB96726@ravnborg.org>
+ <bf7b7e88-a7b4-427d-b38c-d3c9cc568aaf@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240313154857.12949-1-tzimmermann@suse.de> <20240313154857.12949-2-tzimmermann@suse.de>
-In-Reply-To: <20240313154857.12949-2-tzimmermann@suse.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 14 Mar 2024 09:34:53 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXE+ZjQjdKz15enO9MJBu=LjmP=06RPMrtWVkzXqvoVXA@mail.gmail.com>
-Message-ID: <CAMuHMdXE+ZjQjdKz15enO9MJBu=LjmP=06RPMrtWVkzXqvoVXA@mail.gmail.com>
-Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
- backlight helper
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
-	deller@gmx.de, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, Robin van der Gracht <robin@protonic.nl>, 
-	Miguel Ojeda <ojeda@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bf7b7e88-a7b4-427d-b38c-d3c9cc568aaf@suse.de>
 
-On Wed, Mar 13, 2024 at 4:49=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
-.de> wrote:
-> Replace the use of struct backlight_properties.fb_blank with a
-> call to backlight_get_brightness(). The helper implement the same
-> logic as the driver's function.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+On Thu, Mar 14, 2024 at 09:16:15AM +0100, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 13.03.24 um 19:00 schrieb Sam Ravnborg:
+> > Hi Thomas,
+> > 
+> > On Wed, Mar 13, 2024 at 04:45:02PM +0100, Thomas Zimmermann wrote:
+> > > The backlight is on for fb_blank eq FB_BLANK_UNBLANK, or off for
+> > > any other value in fb_blank. But the field fb_blank in struct
+> > > backlight_properties is deprecated and should not be used any
+> > > longer.
+> > > 
+> > > Replace the test for fb_blank in omap's backlight code with a
+> > > simple boolean parameter and push the test into the update_status
+> > > helper. Instead of reading fb_blank directly, decode the backlight
+> > > device's status with backlight_is_blank().
+> > > 
+> > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> > My biased opinion is that the approach in this patch is a little bit
+> > better:
+> > https://lore.kernel.org/lkml/20230107-sam-video-backlight-drop-fb_blank-v1-13-1bd9bafb351f@ravnborg.org/
+> > 
+> > I never came around resending this series it seems.
+> 
+> Oh, that series has been around for over a year. I don't care about which
+> patches go in as long as they remove the dependency on <linux/fb.h>. I saw
+> that Dan has already r-b'ed the current patchset, but if you prefer I'll
+> adopt yours.
+Whatever works for you. It is trivial stuff and as long as we get it
+cleaned up that is fine. You are pushing for this now - so whatever is
+easiest for you.
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+	Sam

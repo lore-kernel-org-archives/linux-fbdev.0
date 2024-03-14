@@ -1,384 +1,159 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2049.outbound.protection.outlook.com [40.107.94.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EF3B6CDB5
-	for <linux-fbdev@vger.kernel.org>; Thu, 14 Mar 2024 11:35:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710416140; cv=none; b=abxebEMIXo75cqJRcXlSt+kxEagAkmVsuZaO6/mMS/3ZaFmyu+9w43YpKg9tKOOVC0VfjXaJAeuKsckd2t29dUwZ3FiQqio1rY4xID+K9XeSdMowtpKvp28YCyG+c0TeadhaEGmUxqWecQh8q2dlxmbGBwdW5eCTT13kRMQdGg0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710416140; c=relaxed/simple;
-	bh=g2FvV2a/76PoLAhdO8gpdq5YlLgPaBxWjYrgLTRBR20=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=jpH7BqgkcGwjhUaCbRYqiBXu6RnW4WnaOo7MbnMx394PDj2g8pRIPBReHDw/coQ1FTP2Lx3C3Jv9mBuqob/1cHyE5FKwNQfSkzP9fT9fHxsCYmzTTLqp0URGgx5gG+MyPnKX5bRkOIJtFP1QxEE+GqHRNcUv4ychM5U15HW2sAs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rkjMz-0006vq-E7; Thu, 14 Mar 2024 12:35:33 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rkjMy-006IlX-BZ; Thu, 14 Mar 2024 12:35:32 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1rkjMy-0060TP-0q;
-	Thu, 14 Mar 2024 12:35:32 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	kernel@pengutronix.de,
-	linux-pwm@vger.kernel.org
-Subject: [PATCH v2] backlight: lp8788: Drop support for platform data
-Date: Thu, 14 Mar 2024 12:35:28 +0100
-Message-ID: <20240314113529.923708-2-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.43.0
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BEC35A0FD
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 Mar 2024 12:48:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.94.49
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1710420493; cv=fail; b=pUImtiUGttCMsjordcoT1yhq0KyX93r9JVQUAkx08Nnz9duncKTN10gLzHMB/4XSN7HSaJuj1Z2b3QMiTCJpDhAj0cQM/FHvvepq2RICyA3JyjnKbcLnhNp0zy5S9xKABndtfV6EsfptQStcPWBfVg8bPmlL8rqW53BI9JjPnH8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1710420493; c=relaxed/simple;
+	bh=4WY1AvZo9R2p9D7J146g8M8jccq0mxa7/TDQf8joVHE=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=KrsQI72Kfh2USDaZoU83WoQrydgWlbQEt2QweloSjC6FS2uguJ2Q80otdeJTJ4m5Sn+rzv/I2XOJl3O31wtwYeh+O7aGW7bkGdISrm26OfNxhRG4mofJjKWWA85PA96OIacHKHBmGPg7mMPeIUoGZ+QvDdJRnoVEQusedQYY+tU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it; spf=pass smtp.mailfrom=asem.it; dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b=BPQGXcTg; arc=fail smtp.client-ip=40.107.94.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=asem.it
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b="BPQGXcTg"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OBaeJDfdezR1PpKqnScis7oO2KGQua9If+F923cYX5AQ4p8YHEXAmklklidxhr1h8/VzY90Vt+WG1KX2MhFwal95dUll6A+dZu8hPUhsJ58XD+tBNLlwiivQWnk9dxYzTigyFyiqpgT0SG8pwK618Ll0oAKalHsjnkC/g0nxJmMmWHfAy7va9i7oKaythjYgjqNjDd22kEZJXu3aBf+yCauC1EZB21Srua48nmVdo/Tel1xD/nfierh2M8BbIazsE9w/vYSLL+RucXOafcIRUZ525/lGs6qp8DEH1lfK8y/ApeJtaEKpcrKll2g5uFDgQ1/W8UZh46v3VY4beoVc6A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=mh6lNc7pOrUKmI9HfUpXNbVrRxWa2ReqPD5RlDpDIv4=;
+ b=FxFNg0VgGF3QCz6Qp8oSn5UGGRINIzMeS3A9Un/8D4/jbIhJHBfbW9fgWHLYvxk7Z0pDHV7tCO65/SZCsmHC69Kmupz+aCb9HPmvice2OldeMJ3Ff++/ZPp2seOiFl+7Du9q7nl94U7Ot9m3xMrprQ2qnH7lhKdtDoAzkYIm+VNWyrNdpvXsX7Zgu4GH4mC9TrI/kf1c6KPyM+0t9RrPn2Z5x9CWoMg0nC9kC445P0goJAqefAYhQz3neWyIXg8taHSkLoRm5eOwu0piybbWMKs3ZgfSPbY5LA4iY8vnfUkH8+k9+iaH+BwJC3m0Xrmqtgis/5mPj+WpQj2v5n7LMw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
+ header.d=asem.it; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=mh6lNc7pOrUKmI9HfUpXNbVrRxWa2ReqPD5RlDpDIv4=;
+ b=BPQGXcTg60waAzf2ExzaO7P20rPJrHV4PFJnLaqNNny8DdyGjE5f9Ha/ZHmsMC3xXt++OREpr4Echtx8U48DSceBMiXmlulo2CR5UQt+Ae9XdqLGPbJeIlQ+Ks1NhwFGP+7RNdGPWmAp6u2qNymD14sxJFjy0eAJ5sv9eW2WXJQADi9kava9SdtGlPRizzxVHlwUbbysCAn6CGoTVQ0d/VRTcQRiaj2LNqj/aGEv7EuS7cQ8UtDoLfDUrbsbor7Am0juvHEk4FXy5djjK+6/Ud2cyNV09p+mE3s073yVp5FGknA3xqRIDf6uGSn1QJMbOukDv/yddyMFMhx4+/1jrw==
+Received: from PH0PR22MB3789.namprd22.prod.outlook.com (2603:10b6:510:29c::11)
+ by MW4PR22MB3740.namprd22.prod.outlook.com (2603:10b6:303:1bb::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7386.20; Thu, 14 Mar
+ 2024 12:48:05 +0000
+Received: from PH0PR22MB3789.namprd22.prod.outlook.com
+ ([fe80::35ce:ff48:fa8b:d4a7]) by PH0PR22MB3789.namprd22.prod.outlook.com
+ ([fe80::35ce:ff48:fa8b:d4a7%7]) with mapi id 15.20.7362.035; Thu, 14 Mar 2024
+ 12:48:05 +0000
+From: FLAVIO SULIGOI <f.suligoi@asem.it>
+To: 'Thomas Zimmermann' <tzimmermann@suse.de>, "lee@kernel.org"
+	<lee@kernel.org>, "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
+	"jingoohan1@gmail.com" <jingoohan1@gmail.com>, "deller@gmx.de"
+	<deller@gmx.de>
+CC: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, Nicolas
+ Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni
+	<alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>
+Subject: RE: [PATCH 6/6] backlight: Remove fb_blank from struct
+ backlight_properties
+Thread-Topic: [PATCH 6/6] backlight: Remove fb_blank from struct
+ backlight_properties
+Thread-Index: AQHadg3bN5HiBZ02nkGErYV+WgtSQA==
+Date: Thu, 14 Mar 2024 12:48:04 +0000
+Message-ID:
+ <PH0PR22MB3789B2F1312E97EFFD8932FDF9292@PH0PR22MB3789.namprd22.prod.outlook.com>
+References: <20240313154857.12949-1-tzimmermann@suse.de>
+ <20240313154857.12949-7-tzimmermann@suse.de>
+In-Reply-To: <20240313154857.12949-7-tzimmermann@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=asem.it;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PH0PR22MB3789:EE_|MW4PR22MB3740:EE_
+x-ms-office365-filtering-correlation-id: 53815148-9959-4b66-a21b-08dc4424fdeb
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:
+ HBlFhFxbAcWD0LiXXf4McZIdn3K5CaPKn27iRpSl5o3metX4VPj9CLUH0N4MTwPgix10bX3YOMpCxQCEOv0/Y5BK0+sw53h7BBWpVdYTQ01WkVCoz3Wk9k3lvZTQsVng4T8L4ewjAcQP/2G7lEnlk7o5e5CT5gnqW8/IG35IOyHOY3tIK1KkwZHGsaIRxFN2JBhDIr+1pfrlMlSTWebPahqHUwWxG+njd2MHL7PCoAVyVCvFX4eTFy1Y3P37IVQ2kds0kVsTqbphAER7eitkhkXwI19SgqCnyeQJkw11P29+0UF3EqV0ih1slKfebmyHICWp7nhLLUWbYUVa0+aljdsACqsI/SXnWtBwymmHQ0AIEsjhFjTRIglK1fyFAtZG3TT9ftffmWMzJRlhtmAEGMCc4Q4ZrWkPBGjmdJkf5oIIUB2zw71LPCDIJV9L89kTlPwRbVG6uE/kdh7FL73oR+c236sCHn2UgjetzMC2SPKpLtZVYx6790Hqr/2e9B7ro5WWWbfHRx8287sWBZwCffRuKZiPWM1UTHBMmIhBKqcYSETqXBwizXhP7lSCnZKdMfuxqas66VzDyKKxI9qO76fl794mTVoInK0sxZew0KjUJudyj/37UtS+hOQbWFN/z/6DNPkGoho5A3Vr5oOey8o+4gSCyH9g4uhO/6WBCVfZHRIHKgqkeACEnrP8zvP4bW2sUCNmslSt4Mcp6DJ1Tg==
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR22MB3789.namprd22.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(1800799015)(7416005)(376005)(38070700009);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?SSgzRmn0hAuWgV8UF3IBJoFXu8SWMbdxAqf/fERkyK0700LxhEmo4Pujk8wl?=
+ =?us-ascii?Q?+5BtNc6lcf8VqJ766K7oBGr59WwMuZJktoZw56bXUzV3zUWoCR1U9W/CpcD+?=
+ =?us-ascii?Q?jwCaw05aKv6nEbMz/HU2UxX522WfKBx8Jj2SJ6ivkgj36b2Fh6iD7nROZ4Yn?=
+ =?us-ascii?Q?lVRKlAzbjoc71yWPVyZ0bhFOZ2mqpaI5LW+Qv0cyYX+AWZaPxj2s+blVp3Db?=
+ =?us-ascii?Q?UFoxHPg12RNH34vWYmiAbwMff3qtXjIMW2EmpY0nYDUAB+KdcTBOCY4/OjLp?=
+ =?us-ascii?Q?D+NFNVtan1H9G2TaLIdNDX5Kr7w2J8HTDiD0wJMkqBlrxlXHaMgzvpg1j3P8?=
+ =?us-ascii?Q?MqcAFdZOmMj11t6OdXpDUq8xlxTP217viyv5aztQeFx5YnoQzA2ulpEi954T?=
+ =?us-ascii?Q?UI5Tg4sjDMSHUfDnMnTiTSF7JTW9tAZuA6IXV0vPh0KjJyZTwNU0OWJesR23?=
+ =?us-ascii?Q?ChWzWMUbIZIwXIaGoEugkNZZSdRpc/t4o2oW2VnVaPI56JH3Mk4EbT0k/Lpi?=
+ =?us-ascii?Q?F8MDBma/XhAYU3uQvd2C/11cgYFUVmm3eNoQBgQgDohl49M+4C/ww7KPuek2?=
+ =?us-ascii?Q?ZaN3o20RWoH6e9QMZebyw/8oSbI8J40jRrGi4w7d67KllUtlqcqMn1HiT7Ye?=
+ =?us-ascii?Q?sTevP37bRAMpPZMl5ExUfA+bj3CukwjQsSysJkSK9TIDWf9zhsPMiJQIWiyN?=
+ =?us-ascii?Q?LriS6U/FhvRlFyRQSskMrumGBOwaAeQ+OkzniAnx0mmy+hM2TLaGZjrLrAjk?=
+ =?us-ascii?Q?w8HoIcUG3tnb4PaE1VfC6R2niRUlS1He3WmOPq6RTibKW5EpFJ/Jnd5Cva+w?=
+ =?us-ascii?Q?Vvx5Tgev/FDRmRp4eZNCk/i9tgc/f8c4vqgloyDq0ei0cDpgBIG3GV+CDKAg?=
+ =?us-ascii?Q?nQcb2jRg7TAMe6STsTn+2K9dxkcRjnacf/Yi7KSITLGXBWfSF0u0X3MYGOn4?=
+ =?us-ascii?Q?U9dpFbe7jZadE4LktORKafEVkc5aLLCY+RdJv0yvms2sAooUC3WKp47lj7zU?=
+ =?us-ascii?Q?/5x4jlQMGG99arSxsyPrS9LwINOf0L/ox7JniBwWN6O57NbVfA6xudwaCsX2?=
+ =?us-ascii?Q?LAgxRT53wdsJbRRBCMgRRD4vK+bsQM+kXjFXAitDeTnWQlxtgynorHS80+PS?=
+ =?us-ascii?Q?AnytzmCPYzPYxqretSuXLxb1tMInV96cfLzCWEBK6c5PrUnBXOi1zm6JpqFb?=
+ =?us-ascii?Q?CnWtNfINkXF5961JKOYiLYgLpW5Hh37SbwdpMWh9Pag/J3hSREuJnfoZ8+H+?=
+ =?us-ascii?Q?nCJyOHp59w+xaqF7qQ8XYZjh1Hnb2hWLZiLa9sS9Y2TQl2Berj4DID488aZW?=
+ =?us-ascii?Q?VWUw+8M03ZaQf5bKcOypmn7YvXl0CCMh/Upooyz/tX9NbEm754DMm5xkUyb4?=
+ =?us-ascii?Q?BWl4v35EkkfP1ndfnfWINlEwXlq1XVA5OSzMyPia9REuwnkre0HNF7AqDOhn?=
+ =?us-ascii?Q?4nK5Jq4cHHNTiL7pxU6+RSLDvQimCPN30suDgxfnf2NWo2VDy5UDFK43dYNB?=
+ =?us-ascii?Q?mZgac3GY9ckomw6/7ykj0y6XaRAF8F0h61wIh2tZm96zeKHSbyUvw7jyDvHF?=
+ =?us-ascii?Q?01AdJVMRyfN6mkpFI/iH4kLlpSkYL/dAgPsj+3UnUn7Q39nLxy6GM6NFxi1W?=
+ =?us-ascii?Q?uHeJycLkWW4L7l5m88GGRHM=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=10006; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=g2FvV2a/76PoLAhdO8gpdq5YlLgPaBxWjYrgLTRBR20=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBl8uECYhOw+Z3KflaiPkVaU63r+1ZPfAAMMzjEF 9glc8EAYzuJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZfLhAgAKCRCPgPtYfRL+ Tnm4B/0YHLgD8QKnOqM5I6xI7VAHP8MyGa/w0KShtQPv3VWODnzxtZL5yVroY/yEHEY0M0Z2cIN m6t5Hbr7MUgOx7TdwOyMd1sTlO62WIMauQ/ohMus1yPX1DY3el6VmPt5vCRtTjRNyb05NJlIX/s lepSh3ekFc7+93rP2TjSPOxe8IurA7N9xS1oGVAjJeqA58Z80rxw0zWJ63iE9D8EVVExULhNwNx r+sUPFtmXuNOWWa7uyMVKIWopShFfb+mBmyILrFLyQE4ZqYT8BSVL3XtfkqxO/yjU/hz0qcCs5e MeC/LHdsAmGhmiNVNrxhvOBYB4fCbSLuWJAWnkIbf2JnznFt
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR22MB3789.namprd22.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 53815148-9959-4b66-a21b-08dc4424fdeb
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Mar 2024 12:48:04.9103
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 855b093e-7340-45c7-9f0c-96150415893e
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: JdrgEE4rTS5rv/+lvNJkfI3mtmhR1RKIcOCZpXpF6Wwk4zgkkDuOZ3qE+qYRPSL+PQ+QNiVZapUI88qZl23++mE6ZKxRO85BBIFlm9s611VUHM4PiGkbQy0cNOlajy/Z
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR22MB3740
 
-The backlight driver supports getting passed platform data. However this
-isn't used. This allows to remove quite some dead code from the driver
-because bl->pdata is always NULL, and so bl->mode is always
-LP8788_BL_REGISTER_ONLY.
+Hi Thomas,
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
-Changes since (implicit) v1 archived at
-https://lkml.kernel.org/20240313124828.861731-2-u.kleine-koenig@pengutronix.de:
+...
 
- - Also drop struct pwm_device *pwm member from struct lp8788_bl
+>  drivers/video/backlight/mp3309c.c             |  1 -
 
-I'm surprised that this didn't fail to compile ...
+...
 
-Best regards
-Uwe
+> diff --git a/drivers/video/backlight/mp3309c.c
+> b/drivers/video/backlight/mp3309c.c
+> index 34d71259fac1d..059f4ddbbc842 100644
+> --- a/drivers/video/backlight/mp3309c.c
+> +++ b/drivers/video/backlight/mp3309c.c
+> @@ -378,7 +378,6 @@ static int mp3309c_probe(struct i2c_client *client)
+>         props.scale =3D BACKLIGHT_SCALE_LINEAR;
+>         props.type =3D BACKLIGHT_RAW;
+>         props.power =3D FB_BLANK_UNBLANK;
+> -       props.fb_blank =3D FB_BLANK_UNBLANK;
+>         chip->bl =3D devm_backlight_device_register(chip->dev, "mp3309c",
+>                                                   chip->dev, chip,
+>                                                   &mp3309c_bl_ops, &props=
+);=20
 
- drivers/video/backlight/lp8788_bl.c | 151 ++--------------------------
- include/linux/mfd/lp8788.h          |  36 -------
- 2 files changed, 8 insertions(+), 179 deletions(-)
+...
 
-diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
-index d1a14b0db265..d173e93f6348 100644
---- a/drivers/video/backlight/lp8788_bl.c
-+++ b/drivers/video/backlight/lp8788_bl.c
-@@ -12,7 +12,6 @@
- #include <linux/mfd/lp8788.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
--#include <linux/pwm.h>
- #include <linux/slab.h>
- 
- /* Register address */
-@@ -31,149 +30,40 @@
- #define MAX_BRIGHTNESS			127
- #define DEFAULT_BL_NAME			"lcd-backlight"
- 
--struct lp8788_bl_config {
--	enum lp8788_bl_ctrl_mode bl_mode;
--	enum lp8788_bl_dim_mode dim_mode;
--	enum lp8788_bl_full_scale_current full_scale;
--	enum lp8788_bl_ramp_step rise_time;
--	enum lp8788_bl_ramp_step fall_time;
--	enum pwm_polarity pwm_pol;
--};
--
- struct lp8788_bl {
- 	struct lp8788 *lp;
- 	struct backlight_device *bl_dev;
--	struct lp8788_backlight_platform_data *pdata;
--	enum lp8788_bl_ctrl_mode mode;
--	struct pwm_device *pwm;
- };
- 
--static struct lp8788_bl_config default_bl_config = {
--	.bl_mode    = LP8788_BL_REGISTER_ONLY,
--	.dim_mode   = LP8788_DIM_EXPONENTIAL,
--	.full_scale = LP8788_FULLSCALE_1900uA,
--	.rise_time  = LP8788_RAMP_8192us,
--	.fall_time  = LP8788_RAMP_8192us,
--	.pwm_pol    = PWM_POLARITY_NORMAL,
--};
--
--static inline bool is_brightness_ctrl_by_pwm(enum lp8788_bl_ctrl_mode mode)
--{
--	return mode == LP8788_BL_COMB_PWM_BASED;
--}
--
--static inline bool is_brightness_ctrl_by_register(enum lp8788_bl_ctrl_mode mode)
--{
--	return mode == LP8788_BL_REGISTER_ONLY ||
--		mode == LP8788_BL_COMB_REGISTER_BASED;
--}
--
- static int lp8788_backlight_configure(struct lp8788_bl *bl)
- {
--	struct lp8788_backlight_platform_data *pdata = bl->pdata;
--	struct lp8788_bl_config *cfg = &default_bl_config;
- 	int ret;
- 	u8 val;
- 
--	/*
--	 * Update chip configuration if platform data exists,
--	 * otherwise use the default settings.
--	 */
--	if (pdata) {
--		cfg->bl_mode    = pdata->bl_mode;
--		cfg->dim_mode   = pdata->dim_mode;
--		cfg->full_scale = pdata->full_scale;
--		cfg->rise_time  = pdata->rise_time;
--		cfg->fall_time  = pdata->fall_time;
--		cfg->pwm_pol    = pdata->pwm_pol;
--	}
--
- 	/* Brightness ramp up/down */
--	val = (cfg->rise_time << LP8788_BL_RAMP_RISE_SHIFT) | cfg->fall_time;
-+	val = (LP8788_RAMP_8192us << LP8788_BL_RAMP_RISE_SHIFT) | LP8788_RAMP_8192us;
- 	ret = lp8788_write_byte(bl->lp, LP8788_BL_RAMP, val);
- 	if (ret)
- 		return ret;
- 
- 	/* Fullscale current setting */
--	val = (cfg->full_scale << LP8788_BL_FULLSCALE_SHIFT) |
--		(cfg->dim_mode << LP8788_BL_DIM_MODE_SHIFT);
-+	val = (LP8788_FULLSCALE_1900uA << LP8788_BL_FULLSCALE_SHIFT) |
-+		(LP8788_DIM_EXPONENTIAL << LP8788_BL_DIM_MODE_SHIFT);
- 
- 	/* Brightness control mode */
--	switch (cfg->bl_mode) {
--	case LP8788_BL_REGISTER_ONLY:
--		val |= LP8788_BL_EN;
--		break;
--	case LP8788_BL_COMB_PWM_BASED:
--	case LP8788_BL_COMB_REGISTER_BASED:
--		val |= LP8788_BL_EN | LP8788_BL_PWM_INPUT_EN |
--			(cfg->pwm_pol << LP8788_BL_PWM_POLARITY_SHIFT);
--		break;
--	default:
--		dev_err(bl->lp->dev, "invalid mode: %d\n", cfg->bl_mode);
--		return -EINVAL;
--	}
--
--	bl->mode = cfg->bl_mode;
-+	val |= LP8788_BL_EN;
- 
- 	return lp8788_write_byte(bl->lp, LP8788_BL_CONFIG, val);
- }
- 
--static void lp8788_pwm_ctrl(struct lp8788_bl *bl, int br, int max_br)
--{
--	unsigned int period;
--	unsigned int duty;
--	struct device *dev;
--	struct pwm_device *pwm;
--
--	if (!bl->pdata)
--		return;
--
--	period = bl->pdata->period_ns;
--	duty = br * period / max_br;
--	dev = bl->lp->dev;
--
--	/* request PWM device with the consumer name */
--	if (!bl->pwm) {
--		pwm = devm_pwm_get(dev, LP8788_DEV_BACKLIGHT);
--		if (IS_ERR(pwm)) {
--			dev_err(dev, "can not get PWM device\n");
--			return;
--		}
--
--		bl->pwm = pwm;
--
--		/*
--		 * FIXME: pwm_apply_args() should be removed when switching to
--		 * the atomic PWM API.
--		 */
--		pwm_apply_args(pwm);
--	}
--
--	pwm_config(bl->pwm, duty, period);
--	if (duty)
--		pwm_enable(bl->pwm);
--	else
--		pwm_disable(bl->pwm);
--}
--
- static int lp8788_bl_update_status(struct backlight_device *bl_dev)
- {
- 	struct lp8788_bl *bl = bl_get_data(bl_dev);
--	enum lp8788_bl_ctrl_mode mode = bl->mode;
- 
- 	if (bl_dev->props.state & BL_CORE_SUSPENDED)
- 		bl_dev->props.brightness = 0;
- 
--	if (is_brightness_ctrl_by_pwm(mode)) {
--		int brt = bl_dev->props.brightness;
--		int max = bl_dev->props.max_brightness;
--
--		lp8788_pwm_ctrl(bl, brt, max);
--	} else if (is_brightness_ctrl_by_register(mode)) {
--		u8 brt = bl_dev->props.brightness;
--
--		lp8788_write_byte(bl->lp, LP8788_BL_BRIGHTNESS, brt);
--	}
-+	lp8788_write_byte(bl->lp, LP8788_BL_BRIGHTNESS, bl_dev->props.brightness);
- 
- 	return 0;
- }
-@@ -187,29 +77,15 @@ static int lp8788_backlight_register(struct lp8788_bl *bl)
- {
- 	struct backlight_device *bl_dev;
- 	struct backlight_properties props;
--	struct lp8788_backlight_platform_data *pdata = bl->pdata;
--	int init_brt;
--	char *name;
- 
- 	props.type = BACKLIGHT_PLATFORM;
- 	props.max_brightness = MAX_BRIGHTNESS;
- 
- 	/* Initial brightness */
--	if (pdata)
--		init_brt = min_t(int, pdata->initial_brightness,
--				props.max_brightness);
--	else
--		init_brt = 0;
--
--	props.brightness = init_brt;
-+	props.brightness = 0;
- 
- 	/* Backlight device name */
--	if (!pdata || !pdata->name)
--		name = DEFAULT_BL_NAME;
--	else
--		name = pdata->name;
--
--	bl_dev = backlight_device_register(name, bl->lp->dev, bl,
-+	bl_dev = backlight_device_register(DEFAULT_BL_NAME, bl->lp->dev, bl,
- 				       &lp8788_bl_ops, &props);
- 	if (IS_ERR(bl_dev))
- 		return PTR_ERR(bl_dev);
-@@ -229,16 +105,7 @@ static void lp8788_backlight_unregister(struct lp8788_bl *bl)
- static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
- 				     struct device_attribute *attr, char *buf)
- {
--	struct lp8788_bl *bl = dev_get_drvdata(dev);
--	enum lp8788_bl_ctrl_mode mode = bl->mode;
--	char *strmode;
--
--	if (is_brightness_ctrl_by_pwm(mode))
--		strmode = "PWM based";
--	else if (is_brightness_ctrl_by_register(mode))
--		strmode = "Register based";
--	else
--		strmode = "Invalid mode";
-+	const char *strmode = "Register based";
- 
- 	return scnprintf(buf, PAGE_SIZE, "%s\n", strmode);
- }
-@@ -265,8 +132,6 @@ static int lp8788_backlight_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	bl->lp = lp;
--	if (lp->pdata)
--		bl->pdata = lp->pdata->bl_pdata;
- 
- 	platform_set_drvdata(pdev, bl);
- 
-diff --git a/include/linux/mfd/lp8788.h b/include/linux/mfd/lp8788.h
-index 3d5c480d58ea..46d8fa779134 100644
---- a/include/linux/mfd/lp8788.h
-+++ b/include/linux/mfd/lp8788.h
-@@ -12,7 +12,6 @@
- 
- #include <linux/gpio.h>
- #include <linux/irqdomain.h>
--#include <linux/pwm.h>
- #include <linux/regmap.h>
- 
- #define LP8788_DEV_BUCK		"lp8788-buck"
-@@ -88,12 +87,6 @@ enum lp8788_charger_event {
- 	CHARGER_DETECTED,
- };
- 
--enum lp8788_bl_ctrl_mode {
--	LP8788_BL_REGISTER_ONLY,
--	LP8788_BL_COMB_PWM_BASED,	/* PWM + I2C, changed by PWM input */
--	LP8788_BL_COMB_REGISTER_BASED,	/* PWM + I2C, changed by I2C */
--};
--
- enum lp8788_bl_dim_mode {
- 	LP8788_DIM_EXPONENTIAL,
- 	LP8788_DIM_LINEAR,
-@@ -206,31 +199,6 @@ struct lp8788_charger_platform_data {
- 				enum lp8788_charger_event event);
- };
- 
--/*
-- * struct lp8788_backlight_platform_data
-- * @name                  : backlight driver name. (default: "lcd-backlight")
-- * @initial_brightness    : initial value of backlight brightness
-- * @bl_mode               : brightness control by pwm or lp8788 register
-- * @dim_mode              : dimming mode selection
-- * @full_scale            : full scale current setting
-- * @rise_time             : brightness ramp up step time
-- * @fall_time             : brightness ramp down step time
-- * @pwm_pol               : pwm polarity setting when bl_mode is pwm based
-- * @period_ns             : platform specific pwm period value. unit is nano.
--			    Only valid when bl_mode is LP8788_BL_COMB_PWM_BASED
-- */
--struct lp8788_backlight_platform_data {
--	char *name;
--	int initial_brightness;
--	enum lp8788_bl_ctrl_mode bl_mode;
--	enum lp8788_bl_dim_mode dim_mode;
--	enum lp8788_bl_full_scale_current full_scale;
--	enum lp8788_bl_ramp_step rise_time;
--	enum lp8788_bl_ramp_step fall_time;
--	enum pwm_polarity pwm_pol;
--	unsigned int period_ns;
--};
--
- /*
-  * struct lp8788_led_platform_data
-  * @name         : led driver name. (default: "keyboard-backlight")
-@@ -272,7 +240,6 @@ struct lp8788_vib_platform_data {
-  * @buck2_dvs    : gpio configurations for buck2 dvs
-  * @chg_pdata    : platform data for charger driver
-  * @alarm_sel    : rtc alarm selection (1 or 2)
-- * @bl_pdata     : configurable data for backlight driver
-  * @led_pdata    : configurable data for led driver
-  * @vib_pdata    : configurable data for vibrator driver
-  * @adc_pdata    : iio map data for adc driver
-@@ -294,9 +261,6 @@ struct lp8788_platform_data {
- 	/* rtc alarm */
- 	enum lp8788_alarm_sel alarm_sel;
- 
--	/* backlight */
--	struct lp8788_backlight_platform_data *bl_pdata;
--
- 	/* current sinks */
- 	struct lp8788_led_platform_data *led_pdata;
- 	struct lp8788_vib_platform_data *vib_pdata;
+I've just tested your change with my board with the mp3309c backlight and a=
+ll is ok.
+Thanks and best regards
+Flavio
 
-base-commit: e8f897f4afef0031fe618a8e94127a0934896aba
--- 
-2.43.0
-
+Tested-by: Flavio Suligoi <f.suligoi@asem.it>

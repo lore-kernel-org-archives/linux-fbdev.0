@@ -1,38 +1,38 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E88961758D;
-	Fri, 15 Mar 2024 09:02:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B00EE17BC9
+	for <linux-fbdev@vger.kernel.org>; Fri, 15 Mar 2024 09:06:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710493355; cv=none; b=nAtlT6lNOLSs4rFen5/jJp1CesmjOPyxXnVXXvNo8qYoCsvSN8onF585IWMWY4eYYL3iIv2q0Gp5PuhZqvmfHrOJE3pTyXEdbLrphOm3DqBw80bIsQ2ho+VvmcCSem5ItE82X/aaCUJT1T/QCk1tdMGuShtOLCUUd9dFUL/Ur2Q=
+	t=1710493580; cv=none; b=iXIjogtUEAANXtnxnUFgIQsfqvjfIth51u6jKI8ZwM92Ni5pc2oPJToeUcVclxDpFlWASWUVfX++nWhKSPYu3R1kRoOKWwtIp03wj1Jxy2SuTpxYAKy485D7li47cDN+s4CP/dJRjCNESrAo0e7V7hN+SDr5sgUarwdrWdl9h+4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710493355; c=relaxed/simple;
-	bh=bwCR+VnsxqQgPasjc/7mEkkM562fmlEMD5U1h82YHVI=;
+	s=arc-20240116; t=1710493580; c=relaxed/simple;
+	bh=PdeiSzvu8MNPwNrWg9/CHbuM6OQjBWW4xClgTV1gxfM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=adN4cMrEfSHYF+/7v/aYCehgQvYzBvUy1FKZAMcnITK4i+d0hspbI2ijx14DTe0XcX7GXcZEHHpyUvcxPwu4mCSYQVDfdmUspwO9jKOXHgp6uU8gvff2KmI1R5LHw73iXt+O0gBbZaIhajLbtF69Ff5IMzk/RoufpBOjEMO+V0w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=luIYzghi; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=mxgSfFqRYe89O1aGsNYWfoSJxfp6kvc6zXvmKnNzc3dOoDftKIHp5T+5Y4gdjRmTogfXrptGTeGwQJkylGTe3IEv01X74CCMX1kwjHmumTrA/2Tum+rdndqoCNDhXL99KWokijoa3OKUZxyRPta2fE7DJZHnyEyHIc+suhZ0YYM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=ExlmJqja; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="luIYzghi"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="ExlmJqja"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1710493346; x=1711098146; i=deller@gmx.de;
-	bh=8QSAngh93Fh7RS7D0R2QjSELDi+nntpa83PPWvfuPLo=;
+	s=s31663417; t=1710493575; x=1711098375; i=deller@gmx.de;
+	bh=xWnm5fzbu+/lsgcIZaxsIkN7fjQEdlHpyZ2xhQyBHPM=;
 	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
 	 In-Reply-To;
-	b=luIYzghiLxwdAyZ83XQhMDwCJSaGBXxBhjpmWMy59qPfp6J1cT51m4X92EhgbjYD
-	 yfyEvPMfYk0GCKrU6YzkNO2wbpkYxYQAnmgvXuuPhEElvTB/1jIMgBbu9BhUfiXfA
-	 yfGxAQxRKGpUt5iMK6KNgQi0JctEvZQpoxxJi0HFBxsqGYjxsaGXQwVZTrlOURrbs
-	 EltPPsJV0qSGUVgmRAuUlkDO9sAuLmZeg2Gn1+xxKIH4v/T6eM8ZWkcn9gbO6oMIW
-	 67g46eu4XQW8hGEpA2ZokTD+m5zi7EM40+44mXhGSmzfYUzQj7JWLfQfYuNvGx8cN
-	 2BhpEpRNiCoPDsm84w==
+	b=ExlmJqjaC9zTTmRy1Cn0Dt9As8xmckeXGZbBvnT2G+cIQo/udHKAR2n1YI5Rg/Md
+	 bvTj3/vi8K4TEqVPsOkAES9YyPiH4DKSHIq5AuRb/jV1yi2Y1mCtBYgxWubEZsErL
+	 jRuAQfzpQ6aGR5t6L951Z2OZeIRj2/h+CurnIuxK/bp9dizg3laDgLBOESjDaic7X
+	 tOddxsiXtwsg3YuSPjx8nbBgHFiBGg4Jd3vMbunV46h1+ngwa7yKjiNt6u3Opklez
+	 yMOKO8BXE3hCd5RU0oa1gW/wBorALwUD4iIheB1Pz88BwMvE48ohuKUnJt6bQ2dp2
+	 b6vTQYMiCB20+0OzJQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([94.134.155.107]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M9Wyy-1rfZHa0hQS-005VuE; Fri, 15
- Mar 2024 10:02:26 +0100
-Message-ID: <5fccb301-4119-4b26-accb-abc24ade2b0d@gmx.de>
-Date: Fri, 15 Mar 2024 10:02:24 +0100
+Received: from [192.168.20.55] ([94.134.155.107]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MKKYx-1rVR0b3rhf-00Ln5B; Fri, 15
+ Mar 2024 10:06:14 +0100
+Message-ID: <2a05244c-de5e-4be5-8700-4d32bce28d2f@gmx.de>
+Date: Fri, 15 Mar 2024 10:06:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,13 +40,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/mb862xxfb: Fix defined but not used error
+Subject: Re: [PATCH] fbdev: fixed typo in hw_bitblt_1 and hw_bitblt_2
 Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- tzimmermann@suse.de
-References: <20240229115010.748435-1-mpe@ellerman.id.au>
+To: Aleksandr Burakov <a.burakov@rosalinux.ru>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, lvc-project@linuxtesting.org
+References: <20240301113543.24312-1-a.burakov@rosalinux.ru>
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -91,85 +90,71 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240229115010.748435-1-mpe@ellerman.id.au>
+In-Reply-To: <20240301113543.24312-1-a.burakov@rosalinux.ru>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:oa3Lg6BTYi/59RnYVtUSbuy01UHFdC0MXqi5ZN7nMXUHEle99vW
- BvXMz4V0bAUE2IY/GfuHS0+98S76AaGsfBkTHQsaSEZmfocavvv0q0yT1FehHFAPIFvWujA
- jhQ0BeLa2YbMxQUbvC55vs0xcSCRpX7UkOUr/swqjDl0A0SQhUb1KwrAx96ND/gaR1s/697
- 0OrsiskN5jiCuZgsGW5mA==
+X-Provags-ID: V03:K1:2ZypnXC9GYrSpqUWEwil6BNBRIsI1gP6qtvGHzR9xFQIyHxMdfQ
+ qhSC0kMxxsH7ZV+YHm7W263F00x86f6MpOVLL6k4nma0uEOzeTyKnyzpJbO9W5RizxoQZfb
+ xXxaiqmzPUZNXtQSQjpA3pNQ/o1Zc/mFqEraq0XGYDEFRBbeJ7LYkvnOez/m03Zx+M9GvAi
+ zRsr2VOE4UAlwOUQQcASQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:eF0nIZtkgwE=;RU7KXo1IKfoT2UTfCt87aJSd7aS
- IlpUCHigT7ccCuMrsA8ZNN3GBn49gf1U/ZOXWSkDvTjtqdEBKC/wP6j7rSnWYcX7bjm6FwBn0
- qShFiq6QIDDk7QGdFGwTxwPBO+5+mNiJgoXMNlmaQJDg2SDSiRMBcM3kacfgJkn9/u6AXxxYD
- 7B2P9VpZ86ydaetkb/1PZiXQl9u1dqJX5WNOrIIXugy7Fz54aSnKzxGodRfgHpQcVA7vi7AMA
- trIb1Vstgl+zw7xyf/U3Yu97GlADu7vYFE1rYsZd2KzTIXZNo8/PTy8955rYW11dYtBihFsfy
- odJ8mzm8elOaOp/67pGP8BR7hFMFh8OafkZQmoEGJGwr/WvNPOVeiuOMd37uMfDJEwp3xGQ+1
- 6jBJzV6aibgcIGWQksgDwtNe4CzTBeno+xgXbJse8pc90grNsBUCaBf/0Brw2ww4AnNjQI0yl
- 4rmTyTMnoh5SqnE16KjHmNtUIXpMsSVxaOj517kZJYvoW0zwSRyHyAiAPCnUQuz+XJxK0AAP0
- egeEEp7REIEe46iEOYbo1tkuHOhGEMHNDTYE6+7ZFUlwDrAI4RIkrDcj4XNZkbhbxIUisF1cb
- o9UtykUZmiBCUeFPsZlFPg7On/LjZTjnfdHCexc/EQaDlWMrmOIHfJfmatyU31ysb6bFwWXHl
- iZtE/F/JKe9vBwp036AIS0hQhaid7HqAi4LCR7Rae+vIzctz7BWQRlGVOa1AQZbGmYV3YPXcL
- 4uYuvFEoWR0ks0Ii+PYDlEymFRM783waq7kx4uh+Kp6MfDhNZWCTMgAzR7BLP06slNZiU4uvK
- Mxld2tTxi1k8Tk6Z2y91UAzQWoefekQ7wSSDWxb/wvf6I=
+UI-OutboundReport: notjunk:1;M01:P0:HUEzXjyRnE0=;Ba54Y9SrATBMM3LFQA5eEXMaZrn
+ paHkaD7ks+Z4BmDG1tgXNmuBZqpkUGO78M7Ojjb2cSXGxYp1w1b9Qmjx12FE2CYVK3Oz8rNzZ
+ /Ns6IjOHcvm9n+V9U+FOlIBDGWD/1LZw2JhdXiPNSqsC9EZFNMfLF/aUDctyNUg7gggmrMTNG
+ 2bIEP+kXTuPiPRA5evWLC/LeOQR+tufqyIrkb+urlUM9EcFI9k8h6IFyF8kYZl1uzizyq6PCf
+ LMhdIJ+fDMsAtXfwUweNn6vD4h5UFfKsOU0Y8GH+gd5erRnm204LZUTbK5q49gHBmV71v+kp/
+ EY2lKcMJvWQzq/Q9FFHyitgjunG3Aarwq+70d0b55i5mwyXZ6WHT/a77fSov5G+Ovbqt9vLGW
+ 8eQ+wiak8pGhBxrMtL9gFUyR3B4GwfQjUYe5yQ0qRalfmEvYZnbw+0CSWWT8S2pshM/Ffb9Jy
+ TO+3znvLiu2que37jsSU06WQUHr760xkOMa+cWZuVngPhr1RFc/qnpR1JP/YrBQE9Em0Er7nz
+ f3cAb6mBcRzEHDMichNQNOK8s85Wyh+YQjqJXRoJf8nEBovZAziAcGekAc782bZqqX/Nxh3wo
+ u7IrcWiCaTBvuP91BqrhbvZLbbPfG8wz06JgUctYZIP7NEv98xdqEDeccuHyQlAtWUzy9+uxF
+ UZFovhJ5XFA6cGoqUYk8DK7LNbFIPXjxLS/Ly5ZhnVUmhwEcZh32Z2oClZh0ZzBC+/RfUIdbO
+ Vln3+Bxcd9dz7ywGANcUFNZkNejZUbcQFVM25va5M1c4brpa+QGAy1ABLnex9JFlwKoSeUoXz
+ byegTFw9QDfsWr4z7mY8c68XVqnKuRLI47z0/topRrxss=
 
-On 2/29/24 12:50, Michael Ellerman wrote:
-> socrates_gc_mode is defined at the top-level but then only used inside
-> an #ifdef CONFIG_FB_MB862XX_LIME, leading to an error with some configs:
+On 3/1/24 12:35, Aleksandr Burakov wrote:
+> There are some actions with value 'tmp' but 'dst_addr' is checked instea=
+d.
+> It is obvious that a copy-paste error was made here and the value
+> of variable 'tmp' should be checked here.
 >
->    drivers/video/fbdev/mb862xx/mb862xxfbdrv.c:36:31: error: =E2=80=98soc=
-rates_gc_mode=E2=80=99 defined but not used
->       36 | static struct mb862xx_gc_mode socrates_gc_mode =3D {
+> Found by Linux Verification Center (linuxtesting.org) with SVACE.
 >
-> Fix it by moving socrates_gc_mode inside that ifdef, immediately prior
-> to the only function where it's used.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+> Signed-off-by: Aleksandr Burakov <a.burakov@rosalinux.ru>
 
 applied.
 Thanks!
 Helge
 
+
 > ---
->   drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 18 +++++++++---------
->   1 file changed, 9 insertions(+), 9 deletions(-)
+>   drivers/video/fbdev/via/accel.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/=
-fbdev/mb862xx/mb862xxfbdrv.c
-> index 7c402e9fd7a9..baec312d7b33 100644
-> --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> @@ -32,15 +32,6 @@
->   #define CARMINE_MEM_SIZE	0x8000000
->   #define DRV_NAME		"mb862xxfb"
+> diff --git a/drivers/video/fbdev/via/accel.c b/drivers/video/fbdev/via/a=
+ccel.c
+> index 0a1bc7a4d785..1e04026f0809 100644
+> --- a/drivers/video/fbdev/via/accel.c
+> +++ b/drivers/video/fbdev/via/accel.c
+> @@ -115,7 +115,7 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, =
+u32 width, u32 height,
 >
-> -#if defined(CONFIG_SOCRATES)
-> -static struct mb862xx_gc_mode socrates_gc_mode =3D {
-> -	/* Mode for Prime View PM070WL4 TFT LCD Panel */
-> -	{ "800x480", 45, 800, 480, 40000, 86, 42, 33, 10, 128, 2, 0, 0, 0 },
-> -	/* 16 bits/pixel, 16MB, 133MHz, SDRAM memory mode value */
-> -	16, 0x1000000, GC_CCF_COT_133, 0x4157ba63
-> -};
-> -#endif
-> -
->   /* Helpers */
->   static inline int h_total(struct fb_var_screeninfo *var)
->   {
-> @@ -666,6 +657,15 @@ static int mb862xx_gdc_init(struct mb862xxfb_par *p=
-ar)
->   	return 0;
->   }
+>   	if (op !=3D VIA_BITBLT_FILL) {
+>   		tmp =3D src_mem ? 0 : src_addr;
+> -		if (dst_addr & 0xE0000007) {
+> +		if (tmp & 0xE0000007) {
+>   			printk(KERN_WARNING "hw_bitblt_1: Unsupported source "
+>   				"address %X\n", tmp);
+>   			return -EINVAL;
+> @@ -260,7 +260,7 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, =
+u32 width, u32 height,
+>   		writel(tmp, engine + 0x18);
 >
-> +#if defined(CONFIG_SOCRATES)
-> +static struct mb862xx_gc_mode socrates_gc_mode =3D {
-> +	/* Mode for Prime View PM070WL4 TFT LCD Panel */
-> +	{ "800x480", 45, 800, 480, 40000, 86, 42, 33, 10, 128, 2, 0, 0, 0 },
-> +	/* 16 bits/pixel, 16MB, 133MHz, SDRAM memory mode value */
-> +	16, 0x1000000, GC_CCF_COT_133, 0x4157ba63
-> +};
-> +#endif
-> +
->   static int of_platform_mb862xx_probe(struct platform_device *ofdev)
->   {
->   	struct device_node *np =3D ofdev->dev.of_node;
+>   		tmp =3D src_mem ? 0 : src_addr;
+> -		if (dst_addr & 0xE0000007) {
+> +		if (tmp & 0xE0000007) {
+>   			printk(KERN_WARNING "hw_bitblt_2: Unsupported source "
+>   				"address %X\n", tmp);
+>   			return -EINVAL;
 

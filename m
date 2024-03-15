@@ -1,237 +1,106 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F84317C61;
-	Fri, 15 Mar 2024 09:35:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3055D28E3C;
+	Fri, 15 Mar 2024 13:06:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710495355; cv=none; b=JY41meN/Lh1RXt3SaKEfwXW++xfd+7rLkEJ4nWlBg4oTEsRjye0MXMdDgL2208Fgd/nKV+/khBVrnS8NioU3HJwH2FLNEq4UPbUfpMKwyK/43IiEb3K6LQw9lNKZLLhV5J4qeuKT1Bki5ZJv1BqMNNnZXv44t8r3bZT090K4KIg=
+	t=1710508003; cv=none; b=XA406mTee6WbUlZtVsg0VMU6ggKNVFCIYpOyYKbR+m1BAMsQkaoE2/Lh3C5ivhAOa+XfHz1ZjxPdRnIrnyiI2L5iJPvuxVM7TZX2bxEBg9eFWXfm+DRM0hEoxMsJIYOprBB3GVCnSn44BMitrwn+Y/5pHnWbExW0kqux1oaUtmE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710495355; c=relaxed/simple;
-	bh=IGZj8niLOUD7teMx4iptS+sQpMGkLSgrcwjHOtgFJi4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=terdfMjaoiBveQl/eJlAtTzQT5JIeNe4iLso4qurdKO2Z5nqNdao/c+fsR4H+cYHZzuDB+zw3roBPV5u5sloKuwCtKy9RUPlHU9me60LhSR/73TuB26/p/wQXue8l+4eVSIFIFQ/J00FVlQH83/Os0o0sPaTc9ZbwcBqvUvhUKg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=l6xpHM69; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1710508003; c=relaxed/simple;
+	bh=pAuOxrGJjw+WcXIsvKFpQEfMzj7cwcNiaJNToVzH3Qc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ff1aOPQQ1o5iXzEWVTx1JgZ5vJkWQp+MPgtS8TwKBt0gvEKTZYmeZFhwqKNHZiLubUw4+KA1ZQvUlKcept8y3zTPH2QRStregBo0wO3ro06IfYOMsvDIRf3SbFfKe1N4/ZBbt/+xhTCFzaMJDr0UnQ29vYEWSXYl19OZRZBxpgc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YJlxCRrv; arc=none smtp.client-ip=209.85.210.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="l6xpHM69"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1710495341; x=1711100141; i=deller@gmx.de;
-	bh=BSFsXVVkqiqnk4vcRljvGoO6ApkWxhy8vwfugbN2UFI=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=l6xpHM69sgOJ3NMGz+1AeZ6EDKi8VKkaLzcmWFu3bmeooMI3wPwGmUxUb/sKECfb
-	 bfzUyDGBmCMa4JwFJHH0Fa82oEEV9UKCXdoWC7xHxeFEP79GRdhiptPTkbcFLq+OT
-	 0K+eU3uuWCtKCU22NHmENBVqC7H0KVRRB0qvBnyQ5guc1YY/8XONeftz/LM6/pG/E
-	 TN7AWEAgiUWGEWNH6zTHkVdhGce0dQJp2CVoJFJFKhh1TlpPaK2F/igEo7GGAN2Wk
-	 JQSqfBdARbouansM/G1RUhh+/ID0tx5rTfI6UFMjARUBhVA7V6Txg/uTSRR8Zc0Vw
-	 /NnsKBLTJTFCMpZj+w==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([94.134.155.107]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MVeMG-1rJfBZ24pA-00RcVT; Fri, 15
- Mar 2024 10:35:41 +0100
-Message-ID: <d7ca4ae3-4bcc-49f0-a819-4ad88907b93c@gmx.de>
-Date: Fri, 15 Mar 2024 10:35:40 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YJlxCRrv"
+Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-6e6cb0f782bso1688840b3a.1;
+        Fri, 15 Mar 2024 06:06:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1710508001; x=1711112801; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1NY1O0ew0W7ggm7j9xxECvAoyGcWbE8/Wq9boK0lbYA=;
+        b=YJlxCRrvFkfyT7x8p6puPuxjyYnxMSwF0Q+QSEQUGBXLwWH685RKzaG0zEkx+datJ4
+         KP3rlmO2Zq8rZfKuMnkSf2Bj3QdyJ+9dMAwYA0w1PpSFZwtCdjsNsd/c/dkxQUXxeaEs
+         un/O0QtIE5is8pe0vpry0WyCckrQn2xWs5juibbl6zvoUTN/SPKSmj7vEVohgTjiGd71
+         Z4IL0WXEsAhvMCEyFajKrbM3ZXhNsBN8OqJ8aSMHyIB7wvsOhERVMBKzDtkP43md+jXU
+         x4IsWNpd0dNvGthlvg0k2f8ulUO/KHHG1CxSzdfrYdzSM1PEQfIBKyYhIY17Tz1WWLTO
+         O/aw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710508001; x=1711112801;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1NY1O0ew0W7ggm7j9xxECvAoyGcWbE8/Wq9boK0lbYA=;
+        b=Ud+0P1J12KUK9z2xDpSfuXYXfdmvFH4oioZ+pgpw6x2R86Lun0uGujIEL85kBDRudU
+         psPFVHq4USwzVq0c8DaADXrPauqzg2Mq1cJdrlRp9lJZ0WIe8AnuA8jBeJLkdyohZeWx
+         jeFxKZ6Qc1/GttZnUxvamIp41ra60BEgpMxFXk3pKtU6mh0pz68o8p0HPoZS5NZAa9OC
+         VLS1xjL/I5GfzCHopE2HDcgYOPuDhyjk0eHP4vaLAp8LK1FXGFZ1kCy3SxEOYEd0iedG
+         MEqtmLX/nx/SrgP6HJRQdCDi64HSP3dVQvSzqb1THfInEgFAstEhL2r03sE+rW+C2JrZ
+         uurA==
+X-Forwarded-Encrypted: i=1; AJvYcCVb/oLPbQQ4JK+0T8odqucHGJa53gaVp7rsUdfgjlaNAQ0196vrTsYDcN/kYyiGQ0cVeuUQ6Lz4HAxzaX1NrwNWNaZ/IDmngatFFmkWUv1GJ+051PBceYkmws29BZMx1YH4LWZzCVxxclw=
+X-Gm-Message-State: AOJu0YzOq+zcKqmtoHRDBnEjmnbVKxWFgyaUfSukfqguSncrrsK6Pojq
+	x8i4JvQqf8vpO7a67dgavWGDHthxt+XM+DJlfz+MlwQd2ULtjY2U
+X-Google-Smtp-Source: AGHT+IHp3wY7HaOB/AXDMYPVMVe0FLS60qkHQi/s9HluWJwdOEJAqeMHDfX/YkdOWLYIGINrsaasnw==
+X-Received: by 2002:a05:6a20:959a:b0:1a3:18be:9b18 with SMTP id iu26-20020a056a20959a00b001a318be9b18mr5058987pzb.26.1710508001267;
+        Fri, 15 Mar 2024 06:06:41 -0700 (PDT)
+Received: from Ubuntu.. ([160.202.10.71])
+        by smtp.googlemail.com with ESMTPSA id i3-20020a056a00004300b006e56e5c09absm3408220pfk.14.2024.03.15.06.06.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 Mar 2024 06:06:40 -0700 (PDT)
+From: Chandra Pratap <chandrapratap3519@gmail.com>
+To: outreachy@lists.linux.dev
+Cc: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Chandra Pratap <chandrapratap3519@gmail.com>
+Subject: [PATCH] staging: sm750fb: Replace comparisons with NULL and 0
+Date: Fri, 15 Mar 2024 18:31:11 +0530
+Message-ID: <20240315130400.11540-1-chandrapratap3519@gmail.com>
+X-Mailer: git-send-email 2.43.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbcon: Increase maximum font width x height to 64 x 64
-Content-Language: en-US
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
- linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
- Alexey Gladkov <legion@kernel.org>, Jiry Slaby <jirislaby@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240313165934.557879-1-samuel.thibault@ens-lyon.org>
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240313165934.557879-1-samuel.thibault@ens-lyon.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9UMPx34FgMJDlkPgsGQqOWFYUXv9F1RzGoD84LbFXOmKCsKvuyb
- PeZLiSW13Fi5JJsSxr4c7t4DxwRJ6/QpMadAm6yNweRAqxQe4/FDh1QtN/Zqht1RTZmCc77
- ud9Z7tkrxg3pttaYbqf7RzE55SpBJGu9ankVAgFHTKjQSf2bD+JLXV3hVCPoKMfqA03GNQO
- whewmeZOOp6Yep/5TB7BQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:dTj5WPzDIcY=;rgvcHdFwjjFrSgt8O3IefyhYJZA
- RqfQbdHr8o/Rc01HBCidMByK+xCJxUYn62E6C1wUxFD6BcELdwc4bCq2dXkKmvDdfqKPQ2gh6
- bwVKiNcuHfAx7RY3Z9l13G9YgD05giyeESNM9msHO3JurypxiYyGPd46my7EMte+zAtt4lHk9
- F4Bz5d7wGbH89lS961gYJ7MTMwHg7F44OmivKsLqMHBevMvruCEz/nToYHj4HhBjAlm4DaygF
- Tb/1CIsBgmo9r6MOlXs4QH/kSHfqckP9dwadfdn3swciK8jrXHDRmpQCylChB7TREXG5kgcs0
- 2oiR2g4IVeA4lb9chd4Gu9rq43j/8qtkW3r0VUT0sYq3NDxnYNDBJaZA3/XqEzqBcKwsXuD7S
- lejLorf3eZqkXqBy3c7Ds2wLoOH9UEJ8GY4VWjf2fJ9wB77gusIbrESYEgLYNUutJdLKKIb5M
- KZbxP4f3ax7cCOKw7fx0aCLVMr7yT9CasCr2ckMUoKyJL6s+Ek+Anr4Q01zMN4xIzzsR54aAf
- UDGk/GiN38A+B4bF6d8m8Ibj4dpDoP7uPa16ADotszBVIHk3fk+BmoJOfxJPlB/PMbeGuwyIe
- RU2CZj94f6FKfi41YTR4frpmLExQzk793Vu+HGISxF5UOa91UJ/2E/v6oouuCp8MwIYeUQjIc
- 6lPBvpSPxm2Spf4bYsIk+BMRKHC5HAr5gzUnqG35AqApM44cyWTAgZEP58OerxOUwe+HbiIVV
- DuB4Ya6WLcV6Bc7ym/qQvKPoM7zRuRzRuo1u1lZiLFFwz4RwXs0gT7XHIC5XXZvDtSSaynMLr
- 4QRdZk++Q7f/FvplOQAraU5LPVQQOzkSVbMmNIRJerFOc=
+Content-Transfer-Encoding: 8bit
 
-You should have marked this patch with "v2"...
+Replace '(foo != NULL)' with '(foo)' and 'x != 0'
+with 'x' to adhere to the coding standards.
 
-On 3/13/24 17:59, Samuel Thibault wrote:
-> This remains relatively simple by just enlarging integers.
+Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I like the patch, but I still see some u32...
-drivers/video/fbdev/vt8623fb.c:         info->pixmap.blit_x =3D (bpp =3D=
-=3D 4) ? (1 << (8 - 1)) : (~(u32)0);
-drivers/video/fbdev/arkfb.c:            info->pixmap.blit_x =3D (bpp =3D=
-=3D 4) ? (1 << (8 - 1)) : (~(u32)0);
-drivers/video/fbdev/core/fbmem.c:               fb_info->pixmap.blit_x =3D=
- ~(u32)0;
-drivers/video/fbdev/s3fb.c:             info->pixmap.blit_x =3D (bpp =3D=
-=3D 4) ? (1 << (8 - 1)) : (~(u32)0);
-
-And please check blit_y too.
-
-> It wouldn't be that simple to get to the console's 64x128 maximum, as it=
- would
-> require 128b integers.
-
-How realistic are fonts > 64x64 pixels ?
-If they are, using the bitmap_xx functions (include/linux/bitmap.h)
-now instead would be better.
-
-Helge
-
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> ---
->   drivers/video/fbdev/core/fbcon.c | 17 ++++++++++-------
->   include/linux/fb.h               | 10 +++++-----
->   2 files changed, 15 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index 46823c2e2ba1..849562f92bd5 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -101,6 +101,9 @@ enum {
->   	FBCON_LOGO_DONTSHOW	=3D -3	/* do not show the logo */
->   };
->
-> +#define FBCON_MAX_FONT_WIDTH	(sizeof(((struct fb_pixmap *) 0)->blit_x) =
-* 8)
-> +#define FBCON_MAX_FONT_HEIGHT	(sizeof(((struct fb_pixmap *) 0)->blit_y)=
- * 8)
-> +
->   static struct fbcon_display fb_display[MAX_NR_CONSOLES];
->
->   static struct fb_info *fbcon_registered_fb[FB_MAX];
-> @@ -2483,12 +2486,12 @@ static int fbcon_set_font(struct vc_data *vc, st=
-ruct console_font *font,
->   	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
->   		return -EINVAL;
->
-> -	if (font->width > 32 || font->height > 32)
-> +	if (font->width > FBCON_MAX_FONT_WIDTH || font->height > FBCON_MAX_FON=
-T_HEIGHT)
->   		return -EINVAL;
->
->   	/* Make sure drawing engine can handle the font */
-> -	if (!(info->pixmap.blit_x & BIT(font->width - 1)) ||
-> -	    !(info->pixmap.blit_y & BIT(font->height - 1)))
-> +	if (!(info->pixmap.blit_x & BIT_ULL(font->width - 1)) ||
-> +	    !(info->pixmap.blit_y & BIT_ULL(font->height - 1)))
->   		return -EINVAL;
->
->   	/* Make sure driver can handle the font length */
-> @@ -3082,8 +3085,8 @@ void fbcon_get_requirement(struct fb_info *info,
->   			vc =3D vc_cons[i].d;
->   			if (vc && vc->vc_mode =3D=3D KD_TEXT &&
->   			    info->node =3D=3D con2fb_map[i]) {
-> -				caps->x |=3D 1 << (vc->vc_font.width - 1);
-> -				caps->y |=3D 1 << (vc->vc_font.height - 1);
-> +				caps->x |=3D 1ULL << (vc->vc_font.width - 1);
-> +				caps->y |=3D 1ULL << (vc->vc_font.height - 1);
->   				charcnt =3D vc->vc_font.charcount;
->   				if (caps->len < charcnt)
->   					caps->len =3D charcnt;
-> @@ -3094,8 +3097,8 @@ void fbcon_get_requirement(struct fb_info *info,
->
->   		if (vc && vc->vc_mode =3D=3D KD_TEXT &&
->   		    info->node =3D=3D con2fb_map[fg_console]) {
-> -			caps->x =3D 1 << (vc->vc_font.width - 1);
-> -			caps->y =3D 1 << (vc->vc_font.height - 1);
-> +			caps->x =3D 1ULL << (vc->vc_font.width - 1);
-> +			caps->y =3D 1ULL << (vc->vc_font.height - 1);
->   			caps->len =3D vc->vc_font.charcount;
->   		}
->   	}
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index 05dc9624897d..2bac166cd3f2 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -144,8 +144,8 @@ struct fb_event {
->   };
->
->   struct fb_blit_caps {
-> -	u32 x;
-> -	u32 y;
-> +	u64 x;
-> +	u64 y;
->   	u32 len;
->   	u32 flags;
->   };
-> @@ -192,10 +192,10 @@ struct fb_pixmap {
->   	u32 scan_align;		/* alignment per scanline		*/
->   	u32 access_align;	/* alignment per read/write (bits)	*/
->   	u32 flags;		/* see FB_PIXMAP_*			*/
-> -	u32 blit_x;             /* supported bit block dimensions (1-32)*/
-> -	u32 blit_y;             /* Format: blit_x =3D 1 << (width - 1)    */
-> +	u64 blit_x;             /* supported bit block dimensions (1-64)*/
-> +	u64 blit_y;             /* Format: blit_x =3D 1 << (width - 1)    */
->   	                        /*         blit_y =3D 1 << (height - 1)   */
-> -	                        /* if 0, will be set to 0xffffffff (all)*/
-> +	                        /* if 0, will be set to ~0ull (all)     */
->   	/* access methods */
->   	void (*writeio)(struct fb_info *info, void __iomem *dst, void *src, u=
-nsigned int size);
->   	void (*readio) (struct fb_info *info, void *dst, void __iomem *src, u=
-nsigned int size);
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 04c1b32a22c5..4537f007a810 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -926,7 +926,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		goto NO_PARAM;
+ 	}
+ 
+-	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
++	while ((opt = strsep(&src, ":")) && *opt) {
+ 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
+ 		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
+ 
+@@ -1147,7 +1147,7 @@ static int __init lynxfb_setup(char *options)
+ 	 * strsep() updates @options to pointer after the first found token
+ 	 * it also returns the pointer ahead the token.
+ 	 */
+-	while ((opt = strsep(&options, ":")) != NULL) {
++	while ((opt = strsep(&options, ":"))) {
+ 		/* options that mean for any lynx chips are configured here */
+ 		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
+ 			g_noaccel = 1;
+-- 
+2.43.2
 

@@ -1,38 +1,38 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19DDB17559;
-	Fri, 15 Mar 2024 08:44:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E88961758D;
+	Fri, 15 Mar 2024 09:02:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710492258; cv=none; b=V/Sm/uUMCbnB/994chPYfL1YDSbjUhf1Y2Eh4bZgA8LBN9u1YKFpqfYgmiAJP7p0JUxu+0MWmimh5wbhSHfeLL1ke7tN9EPbng42ouvtQFGgEUhP1Q4fOPYaHzfPsr3+Kb5xmw1D2G225PgS3LfVhL2xI/pP4ti7KxUWvdmkgeA=
+	t=1710493355; cv=none; b=nAtlT6lNOLSs4rFen5/jJp1CesmjOPyxXnVXXvNo8qYoCsvSN8onF585IWMWY4eYYL3iIv2q0Gp5PuhZqvmfHrOJE3pTyXEdbLrphOm3DqBw80bIsQ2ho+VvmcCSem5ItE82X/aaCUJT1T/QCk1tdMGuShtOLCUUd9dFUL/Ur2Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710492258; c=relaxed/simple;
-	bh=87b2vqsW/gW7SOXRyOtq/VrkOM6YrZRFbDDN/uOdmtg=;
+	s=arc-20240116; t=1710493355; c=relaxed/simple;
+	bh=bwCR+VnsxqQgPasjc/7mEkkM562fmlEMD5U1h82YHVI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=n42qHT8jOyKnrdRr+8IZcpbcQV8JW8nDLujVC9yJC9PxwYIXC++OLaQSFnEJPOBajt9jckqpWAy3gYV/5c5/NBnH575j8sBPiRouei5rtkhlbBQe9W/UWr7Ymn9ST1a0E06inBN5edmOaeJ7rc4mSinLdGyCulFcsIfJ4xzw6Ho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=P3u0epMx; arc=none smtp.client-ip=212.227.17.21
+	 In-Reply-To:Content-Type; b=adN4cMrEfSHYF+/7v/aYCehgQvYzBvUy1FKZAMcnITK4i+d0hspbI2ijx14DTe0XcX7GXcZEHHpyUvcxPwu4mCSYQVDfdmUspwO9jKOXHgp6uU8gvff2KmI1R5LHw73iXt+O0gBbZaIhajLbtF69Ff5IMzk/RoufpBOjEMO+V0w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=luIYzghi; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="P3u0epMx"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="luIYzghi"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1710492249; x=1711097049; i=deller@gmx.de;
-	bh=z21ODUA1mNLuZNRTs2+1Da8p6DxdGZIZqzjsQxJQ2K4=;
+	s=s31663417; t=1710493346; x=1711098146; i=deller@gmx.de;
+	bh=8QSAngh93Fh7RS7D0R2QjSELDi+nntpa83PPWvfuPLo=;
 	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
 	 In-Reply-To;
-	b=P3u0epMxNLoBuVfxp/ZTGBzMgTvDNampVV/PtWEoYfhjgXUHjoxFqd7iKTpslkKw
-	 GhzfWrcge0PVLZ4hT3DlRRmM7kuBO4IYhh05ZacIEJ5P0CeoaR8pdkBuegoVSdZPl
-	 R6CMU99p9DwSpeqEdUn8en2Wh9p+oSVBaO7FIr0l6qr0+fEQqoPpfQwpy0e66I5og
-	 GDHfpCX4aP2sc7IjMJfXn55Zxxhcx9vgnzzNqrtXm/jdcQYJ0BM1Lobn2fXa4upw2
-	 p1E6vMApdsumhYftNQaZChqo0bcjYDNS2FAggoxQqDIIx6TD5WQX7zBhsDTlxBUV+
-	 tEKdnBa51Wukv3x37w==
+	b=luIYzghiLxwdAyZ83XQhMDwCJSaGBXxBhjpmWMy59qPfp6J1cT51m4X92EhgbjYD
+	 yfyEvPMfYk0GCKrU6YzkNO2wbpkYxYQAnmgvXuuPhEElvTB/1jIMgBbu9BhUfiXfA
+	 yfGxAQxRKGpUt5iMK6KNgQi0JctEvZQpoxxJi0HFBxsqGYjxsaGXQwVZTrlOURrbs
+	 EltPPsJV0qSGUVgmRAuUlkDO9sAuLmZeg2Gn1+xxKIH4v/T6eM8ZWkcn9gbO6oMIW
+	 67g46eu4XQW8hGEpA2ZokTD+m5zi7EM40+44mXhGSmzfYUzQj7JWLfQfYuNvGx8cN
+	 2BhpEpRNiCoPDsm84w==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([94.134.155.107]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mr9G2-1qyIMJ2GhS-00oEZ3; Fri, 15
- Mar 2024 09:44:09 +0100
-Message-ID: <64bbc4dd-b617-4f3d-809e-763bedf37fb7@gmx.de>
-Date: Fri, 15 Mar 2024 09:44:08 +0100
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M9Wyy-1rfZHa0hQS-005VuE; Fri, 15
+ Mar 2024 10:02:26 +0100
+Message-ID: <5fccb301-4119-4b26-accb-abc24ade2b0d@gmx.de>
+Date: Fri, 15 Mar 2024 10:02:24 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,15 +40,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbmon: prevent division by zero in
- fb_videomode_from_videomode()
+Subject: Re: [PATCH] fbdev/mb862xxfb: Fix defined but not used error
 Content-Language: en-US
-To: Roman Smirnov <r.smirnov@omp.ru>, Daniel Vetter <daniel@ffwll.ch>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
- Sergey Shtylyov <s.shtylyov@omp.ru>, Karina Yankevich <k.yankevich@omp.ru>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org
-References: <20240305135150.23240-1-r.smirnov@omp.ru>
+To: Michael Ellerman <mpe@ellerman.id.au>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ tzimmermann@suse.de
+References: <20240229115010.748435-1-mpe@ellerman.id.au>
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -93,69 +91,85 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240305135150.23240-1-r.smirnov@omp.ru>
+In-Reply-To: <20240229115010.748435-1-mpe@ellerman.id.au>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:yUkUDlTs45ggPXHdj7xIpPUfdry3SvhegN7JuxR+2kOrW1+Ys5Q
- YRH9/74b8L/ITmIGWrtjepoLsk86OuDgTphT2+/1eeaupotuVa9NxdNGsaJez/7d8jUyKGk
- T+3BRf7C8gixFX8jCPecj4WO8+4XyGYaruEAiyXuy6hVbatprSMBw+ON8FxWwsDpcQ636Qr
- IgEtvJ/MiX40efManxLQw==
+X-Provags-ID: V03:K1:oa3Lg6BTYi/59RnYVtUSbuy01UHFdC0MXqi5ZN7nMXUHEle99vW
+ BvXMz4V0bAUE2IY/GfuHS0+98S76AaGsfBkTHQsaSEZmfocavvv0q0yT1FehHFAPIFvWujA
+ jhQ0BeLa2YbMxQUbvC55vs0xcSCRpX7UkOUr/swqjDl0A0SQhUb1KwrAx96ND/gaR1s/697
+ 0OrsiskN5jiCuZgsGW5mA==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:tJ4pLWTNd7M=;8atSOyHZrm7NCU3S6v9G3/d83N2
- TOzwFLNnP4ewNliW506wSzypHu10DCAkf3p5U7cXQJA5XJCAKt6jwvMbBexLpHlkJWki9UUYA
- woKYFVrfBXwU5Xl703/SMScP0ZXs+tklLjhewHQ0bzyx47tsWbfHktiDxCgLS8MF4UNfjwjMN
- i81BptkxkO45/HVU/48n33HM00lSleX83E4HKkM8YJSQp1QHLgxCOZOBtMc5hb21dT0n3T5/F
- EfrThsjTEFRgUP6waOsMLSxG7pG8DQ9XOmmmkLfI5i6yTC+1UJpF5Mw2dLAhfaS5Pz4wZe8qN
- ZiZ0Ot/t8n7lWCArSIFgeTPBgNYTgn+YzFW5DW6piCxzRTqr5vruhyrhcBYsLunUIMJojYAex
- ARbK19tPOBbJud+q/1Fo7BcqkL8bgpsISfxC+bgGLhAK/xM9dDRZ7vgI7GQO/xGPMQM4Svf//
- DLxpp1GjI0bZgvQVqHH2UAutcgwr1trq0pW9F4/y9xlTvUtQkqLH4MUc2KXqclNsZQORliJIn
- 0jsxV6LuclTHOmAawkVW85mA4ggq0alJehxBJwNVIevJpE1hoet/J0hhaw2hY4y8vw2wpaU4F
- XmHev1kO9gUXmHndYeOLt6h8WXvM7fY+Pg87SjdnY9EfCms4G5efF0B1M63sY+QH5Q8dJVdiE
- 0DR81p5EKxjm8aTshJCzlEacSN5RCn7ulT37OXYtrIWoNJiGegPNSfTxYD0RdJWj1QKRLPa8S
- IbRqLnyjLXyq7F3XlqyJSxJVrPjOZ6mNwaZ4k264WIzq21g34xL7TqAMu0vYo5sgRVuNTe+7M
- OtI94od5Cnn4rnHyPNpqzX/Cg5j3Wx4Q1iw4IIRnYpCco=
+UI-OutboundReport: notjunk:1;M01:P0:eF0nIZtkgwE=;RU7KXo1IKfoT2UTfCt87aJSd7aS
+ IlpUCHigT7ccCuMrsA8ZNN3GBn49gf1U/ZOXWSkDvTjtqdEBKC/wP6j7rSnWYcX7bjm6FwBn0
+ qShFiq6QIDDk7QGdFGwTxwPBO+5+mNiJgoXMNlmaQJDg2SDSiRMBcM3kacfgJkn9/u6AXxxYD
+ 7B2P9VpZ86ydaetkb/1PZiXQl9u1dqJX5WNOrIIXugy7Fz54aSnKzxGodRfgHpQcVA7vi7AMA
+ trIb1Vstgl+zw7xyf/U3Yu97GlADu7vYFE1rYsZd2KzTIXZNo8/PTy8955rYW11dYtBihFsfy
+ odJ8mzm8elOaOp/67pGP8BR7hFMFh8OafkZQmoEGJGwr/WvNPOVeiuOMd37uMfDJEwp3xGQ+1
+ 6jBJzV6aibgcIGWQksgDwtNe4CzTBeno+xgXbJse8pc90grNsBUCaBf/0Brw2ww4AnNjQI0yl
+ 4rmTyTMnoh5SqnE16KjHmNtUIXpMsSVxaOj517kZJYvoW0zwSRyHyAiAPCnUQuz+XJxK0AAP0
+ egeEEp7REIEe46iEOYbo1tkuHOhGEMHNDTYE6+7ZFUlwDrAI4RIkrDcj4XNZkbhbxIUisF1cb
+ o9UtykUZmiBCUeFPsZlFPg7On/LjZTjnfdHCexc/EQaDlWMrmOIHfJfmatyU31ysb6bFwWXHl
+ iZtE/F/JKe9vBwp036AIS0hQhaid7HqAi4LCR7Rae+vIzctz7BWQRlGVOa1AQZbGmYV3YPXcL
+ 4uYuvFEoWR0ks0Ii+PYDlEymFRM783waq7kx4uh+Kp6MfDhNZWCTMgAzR7BLP06slNZiU4uvK
+ Mxld2tTxi1k8Tk6Z2y91UAzQWoefekQ7wSSDWxb/wvf6I=
 
-On 3/5/24 14:51, Roman Smirnov wrote:
-> The expression htotal * vtotal can have a zero value on
-> overflow.
-
-I'm not sure if thos always results in zero in kernel on overflow.
-Might be architecture-depended too, but let's assume it
-can become zero, ....
-
-> It is necessary to prevent division by zero like in
-> fb_var_to_videomode().
+On 2/29/24 12:50, Michael Ellerman wrote:
+> socrates_gc_mode is defined at the top-level but then only used inside
+> an #ifdef CONFIG_FB_MB862XX_LIME, leading to an error with some configs:
 >
-> Found by Linux Verification Center (linuxtesting.org) with Svace.
+>    drivers/video/fbdev/mb862xx/mb862xxfbdrv.c:36:31: error: =E2=80=98soc=
+rates_gc_mode=E2=80=99 defined but not used
+>       36 | static struct mb862xx_gc_mode socrates_gc_mode =3D {
 >
-> Signed-off-by: Roman Smirnov <r.smirnov@omp.ru>
-> Reviewed-by: Sergey Shtylyov <s.shtylyov@omp.ru>
-> ---
->   V1 -> V2: Replaced the code of the first version with a check.
+> Fix it by moving socrates_gc_mode inside that ifdef, immediately prior
+> to the only function where it's used.
 >
->   drivers/video/fbdev/core/fbmon.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core=
-/fbmon.c
-> index 79e5bfbdd34c..b137590386da 100644
-> --- a/drivers/video/fbdev/core/fbmon.c
-> +++ b/drivers/video/fbdev/core/fbmon.c
-> @@ -1344,7 +1344,7 @@ int fb_videomode_from_videomode(const struct video=
-mode *vm,
->   	vtotal =3D vm->vactive + vm->vfront_porch + vm->vback_porch +
->   		 vm->vsync_len;
->   	/* prevent division by zero */
-> -	if (htotal && vtotal) {
-> +	if (htotal && vtotal && (vm->pixelclock / htotal >=3D vtotal)) {
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-why don't you then simply check for
-	if .. ((htotal * vtotal) =3D=3D 0) ...
-instead?
-
+applied.
+Thanks!
 Helge
 
->   		fbmode->refresh =3D vm->pixelclock / (htotal * vtotal);
->   	/* a mode must have htotal and vtotal !=3D 0 or it is invalid */
->   	} else {
+> ---
+>   drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 18 +++++++++---------
+>   1 file changed, 9 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/=
+fbdev/mb862xx/mb862xxfbdrv.c
+> index 7c402e9fd7a9..baec312d7b33 100644
+> --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+> +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+> @@ -32,15 +32,6 @@
+>   #define CARMINE_MEM_SIZE	0x8000000
+>   #define DRV_NAME		"mb862xxfb"
+>
+> -#if defined(CONFIG_SOCRATES)
+> -static struct mb862xx_gc_mode socrates_gc_mode =3D {
+> -	/* Mode for Prime View PM070WL4 TFT LCD Panel */
+> -	{ "800x480", 45, 800, 480, 40000, 86, 42, 33, 10, 128, 2, 0, 0, 0 },
+> -	/* 16 bits/pixel, 16MB, 133MHz, SDRAM memory mode value */
+> -	16, 0x1000000, GC_CCF_COT_133, 0x4157ba63
+> -};
+> -#endif
+> -
+>   /* Helpers */
+>   static inline int h_total(struct fb_var_screeninfo *var)
+>   {
+> @@ -666,6 +657,15 @@ static int mb862xx_gdc_init(struct mb862xxfb_par *p=
+ar)
+>   	return 0;
+>   }
+>
+> +#if defined(CONFIG_SOCRATES)
+> +static struct mb862xx_gc_mode socrates_gc_mode =3D {
+> +	/* Mode for Prime View PM070WL4 TFT LCD Panel */
+> +	{ "800x480", 45, 800, 480, 40000, 86, 42, 33, 10, 128, 2, 0, 0, 0 },
+> +	/* 16 bits/pixel, 16MB, 133MHz, SDRAM memory mode value */
+> +	16, 0x1000000, GC_CCF_COT_133, 0x4157ba63
+> +};
+> +#endif
+> +
+>   static int of_platform_mb862xx_probe(struct platform_device *ofdev)
+>   {
+>   	struct device_node *np =3D ofdev->dev.of_node;
 

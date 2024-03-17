@@ -1,74 +1,72 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81DAC171A4
-	for <linux-fbdev@vger.kernel.org>; Sun, 17 Mar 2024 12:43:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0852018EAD
+	for <linux-fbdev@vger.kernel.org>; Sun, 17 Mar 2024 12:49:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710679438; cv=none; b=dkqk5Dva9T2Bps1O6eVPjTiSwmaBEYNSUJr2V44JouExPHH0iAmg5HB+KQ1MMhjS9xqUkla+WoHRBHsbDI3Q2v8i7iKLnKUN31Uu/WasYl6U2NZyehlR8OEuNC/uDLGuongQsk+v3BWizkD2PX1b2gC8zib/+YkPIPr9XvpOFNs=
+	t=1710679758; cv=none; b=BrL3rbYbh8f8Q/Z+ZPnhYU7sezZ1sSiq1erPdUtQvNpCAn6Dly2IJBBFBAOzKs323vkqQemU3/oYHmmDdKabOOLWZBXR7E6CVR3pZ6Nda24D6iQIMZvqEWF1UgaTpgkOyK1NVUSdUNw4WK5tDZHCwSc45zZMt0xiozbBHsWiqrY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710679438; c=relaxed/simple;
-	bh=WKiTALtlDL7QY+Y8Ji4R5ehoxoGydHZf4GaXq6b4fI8=;
+	s=arc-20240116; t=1710679758; c=relaxed/simple;
+	bh=NI+xMCYTH6kp3uc/3thfY0aIeJEKNVJjzBQWU38wnY0=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=NCcGdHPLDrByX5p6mEgnUKGf32M9vXK43s06zEMCxA263MqMr8iw5g3Yaiq+K/gfLgTCfmr3Cpg38siOTnr6EavhLPwxNo4znWC3iO4/v7kFSOiLH8TFGsLE5sQV5M30Luy8Rnyx/wLxO2Ciqn0RoeysN3TPoOdurGazHB3fpu0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=YeSKGQjq; arc=none smtp.client-ip=170.10.129.124
+	 MIME-Version:Content-Type; b=dCT+7vb7ah+fbo+LbIMPgDX8EcJhi1JBLHlhJs7RBWxRAMagUSoFXg51+N3gxVDJiRdtAJVdw5HxBnbQfYKeHW0LiJhb2oByxjKCjDzz4FWOxhdRhBjhIdbWkehOK9VdrWdF5qXSFxHDuZTbh7tSaHJ3lBRKe6wSGr8H2jX6+kg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=ipxeKbjn; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="YeSKGQjq"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ipxeKbjn"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1710679435;
+	s=mimecast20190719; t=1710679755;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=g97Ft8nUAWlVJEyr5loNfYtK+BYJCYuBkpmr21j3gu4=;
-	b=YeSKGQjqWJbPRB1kQJbo+hbsYv+Xvg9m/HJ2qYiTUoxrAttEGMhAdsdCKKSKIDS3mEji0D
-	vXmSIZxxa2O9JI8/SftM5Ys3AIBQgkhaBAuaJsQhfo77KtSYzuheTiLZUU1P8jMIG2YyJt
-	aMsfcb2tl4/xByr28FMKgIEzq1NhYtk=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=qSPsm2ZZVDvV0AkFvIhTyz4e6z0+4CVE3yr2sbXPMBw=;
+	b=ipxeKbjn/JhtNGFu4o4Es/SsKgwtKWXoKyvguLa8VgewjxYteCp/VcA7CcJjTRs1hnQd+Q
+	mQkHVsCmJB+1KzMtR56IMWe+YBdrJLDwo9kVJSvKiwHPAFPnZjf+DY9lNMmkNWjhaiO2a8
+	UuIYDAeptCmrPJZiPFAuEmbR5KmDw8w=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-45-WRoocMjVO7elvajTu9wumA-1; Sun, 17 Mar 2024 08:43:53 -0400
-X-MC-Unique: WRoocMjVO7elvajTu9wumA-1
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-341726a5f6cso87491f8f.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 17 Mar 2024 05:43:53 -0700 (PDT)
+ us-mta-76-QN0mP3BYOL2ZOypsZFalxg-1; Sun, 17 Mar 2024 08:49:14 -0400
+X-MC-Unique: QN0mP3BYOL2ZOypsZFalxg-1
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-4140408c7faso9637335e9.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 17 Mar 2024 05:49:13 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710679432; x=1711284232;
+        d=1e100.net; s=20230601; t=1710679753; x=1711284553;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=g97Ft8nUAWlVJEyr5loNfYtK+BYJCYuBkpmr21j3gu4=;
-        b=moP2i68q06pTH8dvFnQp1Lo8ulIdK6kKvao1NukfoAipuvbxe26/6cfKpfjiWQmSZQ
-         mmLYSGcm9WsyJNTS2qnJt2Nr6VHnQw8PlbgCoHtEw7cNJgw3ysV6vtr+AmCI/yTlA5vR
-         u247M5ehvjbRjpjaPDfpJliIXWQgO73m9yS3eku+l6amCC3kV14yGktSJWNXRhLN9/cc
-         P1eSdodQaKj1vQD3D7xdHXqc7bNYIeEDVob6LjNR5GOlrqH6SOCU5KRugtm6o8vMDMMp
-         kOfV0xt8jregigYJDDQh8f+stvEhX/Idzq0NwOs8Shx55obVpTWWxXfftvebewVhREsb
-         f+RQ==
-X-Gm-Message-State: AOJu0YylCYiZ1iDb05Ox9rKnZOJj5W3mrLtIz3f0tGNZYBBtSkbSo0YB
-	3XqxZmJfDvVwFrFExunSPLJ5mBbL739KNm7uhC/JqopPXw9kpp3T7e8tfVjPiS3MoiNzlPB8FjM
-	r4IJPWVTcKrMOJZZR5AzQHUOZOlVqFCHcRJNd5J7EyBV1zHTN5HPJ/tFW7rZs
-X-Received: by 2002:adf:ec11:0:b0:33e:bdea:629e with SMTP id x17-20020adfec11000000b0033ebdea629emr6419951wrn.37.1710679432555;
-        Sun, 17 Mar 2024 05:43:52 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEb8z95q6yjzbWmLdjxBFXe9pJhFiak8PYhL/obq1KoS1/orvJFLwJ2wJ3LLVi5KBSwFjnBaA==
-X-Received: by 2002:adf:ec11:0:b0:33e:bdea:629e with SMTP id x17-20020adfec11000000b0033ebdea629emr6419935wrn.37.1710679432123;
-        Sun, 17 Mar 2024 05:43:52 -0700 (PDT)
+        bh=qSPsm2ZZVDvV0AkFvIhTyz4e6z0+4CVE3yr2sbXPMBw=;
+        b=Njg9i3Fdcxho0oMQFP8pyf0k7mZ5turnlHwJ+/KTEb6pT7uAVBzp0z8EuufmEVitcb
+         UZBCOIqz35Tq4ckkqQvzZk/6vKp6n2lHcunMX7N470zY+MKvjygl4yHPIKHqHP1iTBf5
+         DIb0FsYMneHYDKUdGCZozi+g94Co2uivhpWIjuVmu5JmnRZGF4GWj3IJrTFVzEYihxWQ
+         XHiAI1C6TFZzWZTR02AEI9dmgwKLzZ/9AbTRVWROiwI2P8zwXJRaHjDjNVfz522sICy9
+         LFbHJ7z2SjKvR2kH2j8ahOTdFguQ4EdKOX5byt+uZV/XeybK/vrU81aER/xKJKWfgLyT
+         sAsA==
+X-Gm-Message-State: AOJu0YzTKlvCIyKccKO5ord2UiFUX3PS5luEZe942Yd0sL+m6bp6eFq7
+	V8UFlwXuadAf2OwgXrlKJdr5oRkFjeOELKH5NDFXf3/btK5DH+CXgGkfPr4HdZsAmvlSy5JVqjz
+	adMRjr49E66TXG9o64MPn7XVLp63zMTrX+LHwZ8Zx0fJAk6Y7Zwm6/JsR4j9G
+X-Received: by 2002:a05:600c:1f85:b0:414:24b:2f4e with SMTP id je5-20020a05600c1f8500b00414024b2f4emr4685033wmb.39.1710679752781;
+        Sun, 17 Mar 2024 05:49:12 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHs3diPQvSiy1+AZquGxl82tDDaYoG/FSkcFhi7h/8bS28ZCJWxwnlxo1bAMtufKaIY9J43Qw==
+X-Received: by 2002:a05:600c:1f85:b0:414:24b:2f4e with SMTP id je5-20020a05600c1f8500b00414024b2f4emr4685025wmb.39.1710679752393;
+        Sun, 17 Mar 2024 05:49:12 -0700 (PDT)
 Received: from localhost (231.red-83-48-46.staticip.rima-tde.net. [83.48.46.231])
-        by smtp.gmail.com with ESMTPSA id bk28-20020a0560001d9c00b0033e22a7b3f8sm2503074wrb.75.2024.03.17.05.43.51
+        by smtp.gmail.com with ESMTPSA id j16-20020a05600c191000b00413f035d58esm11642656wmq.10.2024.03.17.05.49.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Mar 2024 05:43:51 -0700 (PDT)
+        Sun, 17 Mar 2024 05:49:12 -0700 (PDT)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
  airlied@gmail.com, deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thomas
- Zimmermann <tzimmermann@suse.de>, Zack Rusin <zackr@vmware.com>, Maarten
- Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, stable@vger.kernel.org
-Subject: Re: [PATCH 01/43] drm/fbdev-generic: Do not set physical
- framebuffer address
-In-Reply-To: <20240312154834.26178-2-tzimmermann@suse.de>
+ Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 02/43] fbdev/deferred-io: Move pageref setup into
+ separate helper
+In-Reply-To: <20240312154834.26178-3-tzimmermann@suse.de>
 References: <20240312154834.26178-1-tzimmermann@suse.de>
- <20240312154834.26178-2-tzimmermann@suse.de>
-Date: Sun, 17 Mar 2024 13:43:51 +0100
-Message-ID: <87a5mxgha0.fsf@minerva.mail-host-address-is-not-set>
+ <20240312154834.26178-3-tzimmermann@suse.de>
+Date: Sun, 17 Mar 2024 13:49:11 +0100
+Message-ID: <877ci1gh14.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,59 +77,22 @@ Content-Type: text/plain
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-Hello Thomas,
+> Set up struct fb_deferred_io_pageref in th new helper function
 
-> Framebuffer memory is allocated via vmalloc() from non-contiguous
+the
 
-It's vmalloc() true, but through vzmalloc() so I would mention that
-function instead in the commit message.
-
-> physical pages. The physical framebuffer start address is therefore
-> meaningless. Do not set it.
+> fb_deferred_io_pageref_lookup(), which runs when the pageref is first
+> taken. Remove the setup code from the rest of the code.
 >
-> The value is not used within the kernel and only exported to userspace
-> on dedicated ARM configs. No functional change is expected.
+> At first, the code allocates the memory of all pageref structs. The
+> setup of the various fields happens when the pageref is required.
 >
-
-How's that info used? Does user-space assumes that the whole memory range
-is contiguous in physical memory or just cares about the phyisical start
-address ?
-
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: a5b44c4adb16 ("drm/fbdev-generic: Always use shadow buffering")
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: Zack Rusin <zackr@vmware.com>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: <stable@vger.kernel.org> # v6.4+
 > ---
->  drivers/gpu/drm/drm_fbdev_generic.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-> index d647d89764cb9..b4659cd6285ab 100644
-> --- a/drivers/gpu/drm/drm_fbdev_generic.c
-> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
-> @@ -113,7 +113,6 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
->  	/* screen */
->  	info->flags |= FBINFO_VIRTFB | FBINFO_READS_FAST;
->  	info->screen_buffer = screen_buffer;
-> -	info->fix.smem_start = page_to_phys(vmalloc_to_page(info->screen_buffer));
->  	info->fix.smem_len = screen_size;
->  
-
-Makes sense:
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-What about drivers/gpu/drm/drm_fb_helper.c btw? Since the memory range
-allocated may not be physically contiguous if a platform uses an IOMMU ?
-
-Asking because I don't really know how these exported values are used...
-I just know that is when the CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM is enabled.
-
---
+-- 
 Best regards,
 
 Javier Martinez Canillas

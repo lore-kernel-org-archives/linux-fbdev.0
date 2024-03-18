@@ -1,132 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp16.bhosted.nl (smtp16.bhosted.nl [94.124.121.27])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98EA426AD8;
-	Mon, 18 Mar 2024 08:44:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ECC728DB3
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 09:07:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=94.124.121.27
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710751457; cv=none; b=lAq4ipeAop024IhpIJd4O1H1JmBXSUiIO9NSuNzC81lc48tYqa0TYuj57beIRHeD9CPqDyxeEUlO8Dt4atIhH1sRBwV3dURJftXtAstYe23XFwU0xwls+dv/Lg+SbP2qLAfORwITI14ZlNTc+nbRM8PCqc1PfXRZFkAabE4tyxw=
+	t=1710752867; cv=none; b=KhDW1vwP3I8hHOdD6Qm9JQsxUV7mlV3dzo4jhh1Xbw18/hXiLDTzbTj0+59EoRKeeQRnXIX0ZWF0GttDQCqNdmDT1eYRjM9gV8tLRodcpoqn8RFyqVa+1QI0I7RFfgGKeFwu1pqpquQ9cpYsJfvGfhz2zibWYbmqTkRSAOsZfUQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710751457; c=relaxed/simple;
-	bh=tgAPjvF3ioJGuh/k4VH4nzhLxQlR7APgozh3yQXWWXk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cEb5VYDU95Zcc+B0UC5ZUZ7yYqHZMmkROXCVTzwI19Ve0kbnvmwbI//SVaVRSQeefbW5By5U4Cw2oRgduii4wK5HlYOuyNMN9pwC10lSq02mz7raG5CAEIEyllSKTn7vAzbjuRcUMuNQLIX3SVRsqQrZ/UQqXwXP4apbUAihOGQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CSEd7k75; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1710752867; c=relaxed/simple;
+	bh=oDrMrlYSuxrgaoSfTWeaii5crOeguX/3uHvQtjSWjFo=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SU20JVk3UatvA7VyCZZzTpJT7wkWXe85BjbbBJxbQY+wxJ/315fPS40ien55CL1XLW3XxVSJjEb+Otu2zgeKEnNwlGa8Y3OadQBaIRe5ieXeZZW2NjqLFdO4MieyMWwxmjN/jV+BB1bkyfgpe94QfJLXAs6FFxmNfFKBSwYmTeg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=protonic.nl; spf=pass smtp.mailfrom=protonic.nl; dkim=pass (2048-bit key) header.d=protonic.nl header.i=@protonic.nl header.b=ewu7LAl9; arc=none smtp.client-ip=94.124.121.27
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=protonic.nl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonic.nl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CSEd7k75"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD604C43390;
-	Mon, 18 Mar 2024 08:44:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1710751457;
-	bh=tgAPjvF3ioJGuh/k4VH4nzhLxQlR7APgozh3yQXWWXk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CSEd7k75BiPJDsR6nMMSvz1HnRuZFCyR006gvaJMOqeHmtY535njdAhdxnB7s3Vly
-	 1t5Eh7L+cvgzBzAsS/8h9KIANO/PCFX+p5hgwWwNiIkvdd8xhckgNeP4yFGBrVO6z6
-	 5pklNU/U49/G2SYbSqPcXgOcu9ggw4nTfucaoZbquimYqPT3QqAJc4xVLdr2tr4+cH
-	 wQlwW1zFgtq1ZLXfW07XG2O+ojyenkAV0dswz/S7W3JU+n/daTDSPpin4fj72UqtNv
-	 xnrcqXWBFQkEhhqeI7jzV1g0UWGqtl3hLvYIbyKb5Eaj9Mynh+NsT0ahZ0+kXDvwAw
-	 t1HhanHBmNYrw==
-Date: Mon, 18 Mar 2024 09:44:14 +0100
-From: Maxime Ripard <mripard@kernel.org>
+	dkim=pass (2048-bit key) header.d=protonic.nl header.i=@protonic.nl header.b="ewu7LAl9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=protonic.nl; s=202111;
+	h=content-transfer-encoding:content-type:mime-version:references:in-reply-to:
+	 message-id:subject:cc:to:from:date:from;
+	bh=FoIRlkqO1ctp4s2PeetRomEn5bkVsq7p5O2sYKCStY8=;
+	b=ewu7LAl9hGfWHdB4/VRMy3TXUslfNg2HFaTeTI2PpqE4C6Vo6H1vDt6RgKLSk4gFkU50Aj2pHYtSy
+	 hakOwv5p2GKUeqGCNHQbPc7vXUflHZcdfZPFxoqwMUlXuHZc3kwQAW2gk+7DrEI2C9wz945QAuB8eF
+	 mPTCZdHoghSPfCPM6KQ0OpjaQJGiUVzhFJQxM/5MIA4XE8h60OTQAfsAzsDlDjRqRL5Yms7+xTOBgp
+	 NJJWXq0D03AESW53VuSlkTSZgfe3442wnffO1Rm9d9RdBPAuIvDxKwC9l7axcI1i3bKgtnwXpgGGfz
+	 td9ho0wYr2rrtHhv521NtOvbzXbiSpA==
+X-MSG-ID: d02c6a3a-e506-11ee-844c-005056817704
+Date: Mon, 18 Mar 2024 10:06:31 +0100
+From: Robin van der Gracht <robin@protonic.nl>
 To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Zack Rusin <zack.rusin@broadcom.com>, daniel@ffwll.ch, 
-	airlied@gmail.com, deller@gmx.de, javierm@redhat.com, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, Zack Rusin <zackr@vmware.com>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, stable@vger.kernel.org
-Subject: Re: [PATCH 01/43] drm/fbdev-generic: Do not set physical framebuffer
- address
-Message-ID: <20240318-dark-mongoose-of-camouflage-7ac6ed@houat>
-References: <20240312154834.26178-1-tzimmermann@suse.de>
- <20240312154834.26178-2-tzimmermann@suse.de>
- <CABQX2QPJJFrARdteFFZ8f33hvDx-HSyOQJQ7AMFK4C8C=BquTQ@mail.gmail.com>
- <e684558e-8308-4d73-b920-547f9012a2cb@suse.de>
+Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+ deller@gmx.de, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, Miguel Ojeda
+ <ojeda@kernel.org>
+Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
+ backlight helper
+Message-ID: <20240318100631.253b2d8e@erd007.prtnl>
+In-Reply-To: <20240313154857.12949-2-tzimmermann@suse.de>
+References: <20240313154857.12949-1-tzimmermann@suse.de>
+	<20240313154857.12949-2-tzimmermann@suse.de>
+Organization: Protonic Holland
+X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="a7vnwfog3n7f6fea"
-Content-Disposition: inline
-In-Reply-To: <e684558e-8308-4d73-b920-547f9012a2cb@suse.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
+Hi Thomas,
 
---a7vnwfog3n7f6fea
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thank you for submitting your patch, it looks fine to me.
 
-On Mon, Mar 18, 2024 at 08:59:01AM +0100, Thomas Zimmermann wrote:
-> Hi
->=20
-> Am 18.03.24 um 03:35 schrieb Zack Rusin:
-> > On Tue, Mar 12, 2024 at 11:48=E2=80=AFAM Thomas Zimmermann <tzimmermann=
-@suse.de> wrote:
-> > > Framebuffer memory is allocated via vmalloc() from non-contiguous
-> > > physical pages. The physical framebuffer start address is therefore
-> > > meaningless. Do not set it.
-> > >=20
-> > > The value is not used within the kernel and only exported to userspace
-> > > on dedicated ARM configs. No functional change is expected.
-> > >=20
-> > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > > Fixes: a5b44c4adb16 ("drm/fbdev-generic: Always use shadow buffering")
-> > > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > > Cc: Javier Martinez Canillas <javierm@redhat.com>
-> > > Cc: Zack Rusin <zackr@vmware.com>
-> > > Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> > > Cc: Maxime Ripard <mripard@kernel.org>
-> > > Cc: <stable@vger.kernel.org> # v6.4+
-> > > ---
-> > >   drivers/gpu/drm/drm_fbdev_generic.c | 1 -
-> > >   1 file changed, 1 deletion(-)
-> > >=20
-> > > diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/dr=
-m_fbdev_generic.c
-> > > index d647d89764cb9..b4659cd6285ab 100644
-> > > --- a/drivers/gpu/drm/drm_fbdev_generic.c
-> > > +++ b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > @@ -113,7 +113,6 @@ static int drm_fbdev_generic_helper_fb_probe(stru=
-ct drm_fb_helper *fb_helper,
-> > >          /* screen */
-> > >          info->flags |=3D FBINFO_VIRTFB | FBINFO_READS_FAST;
-> > >          info->screen_buffer =3D screen_buffer;
-> > > -       info->fix.smem_start =3D page_to_phys(vmalloc_to_page(info->s=
-creen_buffer));
-> > >          info->fix.smem_len =3D screen_size;
-> > >=20
-> > >          /* deferred I/O */
-> > > --
-> > > 2.44.0
-> > >=20
-> > Good idea. I think given that drm_leak_fbdev_smem is off by default we
-> > could remove the setting of smem_start by all of the in-tree drm
-> > drivers (they all have open source userspace that won't mess around
-> > with fbdev fb) - it will be reset to 0 anyway. Actually, I wonder if
-> > we still need drm_leak_fbdev_smem at all...
->=20
-> All I know is that there's an embedded userspace driver that requires that
-> setting. I don't even know which hardware.
+Reviewed-by: Robin van der Gracht <robin@protonic.nl>
 
-The original Mali driver (ie, lima) used to require it, that's why we
-introduced it in the past.
+On Wed, 13 Mar 2024 16:45:00 +0100
+Thomas Zimmermann <tzimmermann@suse.de> wrote:
 
-I'm not sure if the newer versions of that driver, or if newer Mali
-generations (ie, panfrost and panthor) closed source driver would
-require it, so it might be worth removing if it's easy enough to revert.
-
-Maxime
-
---a7vnwfog3n7f6fea
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCZff+0QAKCRDj7w1vZxhR
-xbbfAP9Pld0vccS27vREZ3xsYkeM/kiU0yHFImyTFQZWfZWwiAD/aouRJnuZ7N1x
-BfTpDauyPANFnaIznKrfRtKrI2D+4QU=
-=utup
------END PGP SIGNATURE-----
-
---a7vnwfog3n7f6fea--
+> Replace the use of struct backlight_properties.fb_blank with a
+> call to backlight_get_brightness(). The helper implement the same
+> logic as the driver's function.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Robin van der Gracht <robin@protonic.nl>
+> Cc: Miguel Ojeda <ojeda@kernel.org>
+> ---
+>  drivers/auxdisplay/ht16k33.c | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> diff --git a/drivers/auxdisplay/ht16k33.c
+> b/drivers/auxdisplay/ht16k33.c index a90430b7d07ba..83db829b97a5e
+> 100644 --- a/drivers/auxdisplay/ht16k33.c
+> +++ b/drivers/auxdisplay/ht16k33.c
+> @@ -314,14 +314,9 @@ static int ht16k33_initialize(struct
+> ht16k33_priv *priv) 
+>  static int ht16k33_bl_update_status(struct backlight_device *bl)
+>  {
+> -	int brightness = bl->props.brightness;
+> +	int brightness = backlight_get_brightness(bl);
+>  	struct ht16k33_priv *priv = bl_get_data(bl);
+>  
+> -	if (bl->props.power != FB_BLANK_UNBLANK ||
+> -	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
+> -	    bl->props.state & BL_CORE_FBBLANK)
+> -		brightness = 0;
+> -
+>  	return ht16k33_brightness_set(priv, brightness);
+>  }
+>  

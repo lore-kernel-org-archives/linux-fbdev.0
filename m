@@ -1,84 +1,121 @@
-Received: from out-188.mta1.migadu.com (out-188.mta1.migadu.com [95.215.58.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f201.google.com (mail-yw1-f201.google.com [209.85.128.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E36359B64
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 22:22:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 274585FB99
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 23:46:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710800553; cv=none; b=eifDpV9g6hjlgMSgC00R5q037ctFkD4zuZfEMYJl3Zy5/I2e0FWzPEgz4oZPLyJ7kQB1/NKhwHPJrFoPOVbtsWvdnCoC5pWDfYwjSmEPIQjt0zQ0JW65X7sf2l6iyHAPKAzus6urVpwg11VEuxAfolMp194K9Jod2+UTLCR4y6w=
+	t=1710805596; cv=none; b=C43hkF7u/TAIjuY2LPec5qLvpkiP8vQen8MRhkL4PcIp0F0DnMkYJMWFdvrPe61RMUlwWVNtOGqUYdnw/0xtgAlGhTORPGArxgkyDDel5tJ7mVXhelrwbaiQYeT5VzU+yxklade/cAHp/t1EtUG6+oo2iVBCiS/B0QjT6V33GCs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710800553; c=relaxed/simple;
-	bh=NH+Tp4njbCnGeIjkqDzQGdWfaRlH9xlNHrb5HNjj4Hw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iSpJaYwv/C0G8su2RofjbChG7E/mRh5HpAKo9GP9NRJZ2gEOgNc6h7JurhTAUFGry6BRQgKiQ1nUhwADCUlwZtmncXHT8rMR4wBB7DdUOY4fpHECJXlBYVE47ic8MQV23GvayZXqyXcDxzUdCEF2syFW8m0cn6/beX+XvasFWhQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=nOX1kQV8; arc=none smtp.client-ip=95.215.58.188
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1710805596; c=relaxed/simple;
+	bh=SWuJT1od1lHkTaQ+y94pwMpDIt4RqOBKy+5+YAjUbf4=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=ZiJngoUwdw0hxM6FfKzY4KWKGFoI4vqxUmj5OfHil64T2+vFBfL88vDzJI4kBqCU7MDtn5AIO4ouJaTRNGQ860dGAjtVTtt3a7Kvdcl3/AQV56SUXAL/KDQKt9vsylR4kX2oWJgw2W6eG+wD3ebnA+7GnsQAyNukbgwt71V76BU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=l2VuDwZ0; arc=none smtp.client-ip=209.85.128.201
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="nOX1kQV8"
-Message-ID: <0d56ea1c-6b9c-41bf-9f65-63693fb3e266@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1710800549;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=OYCVjE5ZicCEWStHRAbjTxuiDF06WEh4aBTViF8yw7s=;
-	b=nOX1kQV8nz92heW7po3QpM00qJz9FKsarhIkPrgA3dBVJLztZqVXYXnp1HmdN21j4o2Zbp
-	iwNTn4PcDReX7Gln+btzSehV0WlhoDtf2+gw0ALegvkeAWkRdmVcHKCzM3/TUtsYZ5dvfB
-	4kE7gU0+8wNrAbicy2RKqu5EFZPcmKI=
-Date: Tue, 19 Mar 2024 06:22:19 +0800
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="l2VuDwZ0"
+Received: by mail-yw1-f201.google.com with SMTP id 00721157ae682-60832a48684so76736017b3.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 16:46:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1710805594; x=1711410394; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=lT28vCErvodzmWvEdtP7ojnGOwo1TugtSNi45cBTyks=;
+        b=l2VuDwZ0O+mCqYjzUCoRSpxZdjBLHdJbTilEFvdppRrDtPdHK+7/I7TBhh52nOZXuu
+         QV65Y7RAx0Eic7RrjoNpx1lAl+gpbzXeiVYgtHxGH0RWIgNr8u7cOjU1Q9mPmsxOzpiV
+         PqTgBzzCtH4XseLw2IwMgYR65/9ElAR7Lhl7VHlmSAy1uRxpWvvxVFjYowHi86tlI2ts
+         VxK7JWFCCN/2b1/gp2fMXM9ulxmWKF28tZ1UkqsKwbmSLLc9qrlwoCBCHTKtQe/xJR37
+         j1r3tQ6Y56ByXHYDfDOP1bnhbJHt9tHDfqZ/Huqm8Ozlq8Bxa8osJGVJ1rpUBg8kgznF
+         p+aQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710805594; x=1711410394;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=lT28vCErvodzmWvEdtP7ojnGOwo1TugtSNi45cBTyks=;
+        b=dvBr8DwG2Cq60F43flQ6Xa9AiGvFeK+v2aKhw7Qj7OXQ+e3RuQoVgSuNo1QBbFgVSY
+         vua7BQdV36MmclhPEwx1IpZFUE+qShDZT9VwT2/I867o9a0v8Tnon5hiBmggeNmV/hwx
+         BVW09NFSU3UmEI4OudF8hsrKpbDMRooTfzDFrPlAZmYKdJEqGbvz+tDUmZZNVgZhGmIR
+         b+WA5AXS5GSLd5mnWgbpdhj6QzgqxCf9GFA+/2baVKwyJf978y/X1FToHnlwCtzUb20U
+         81m433ITjlMuCC26qfSqHQQB/hdB4tavf2G0s9XRxM+Cy7UNfXxiDKks8Yy5YbKIsK/7
+         UnNg==
+X-Gm-Message-State: AOJu0YyKcVtdQfIOK0/mnOVkvuZOmZMTiIXhfXiqYNHop0O+MuDpadKb
+	oC3FvWf/3rwigJ0Y55IRmS4RaHGOoqhz4h2gfxSA9LEiWXLzbZLUuEuZ2UpMlOTYcNnKiixi67R
+	q3/GTR/EGsrsZsXuWcFliXA==
+X-Google-Smtp-Source: AGHT+IFVl8OTSlqtieEkI8wlprKnHSBkJvt5RLX/AaTjUcSMTHpdrj19ejltSZTNHQk3a+JhkINV8z81NefWgOfVyg==
+X-Received: from jstitt-linux1.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
+ (user=justinstitt job=sendgmr) by 2002:a0d:d64e:0:b0:609:f0f0:20c4 with SMTP
+ id y75-20020a0dd64e000000b00609f0f020c4mr2543290ywd.4.1710805594283; Mon, 18
+ Mar 2024 16:46:34 -0700 (PDT)
+Date: Mon, 18 Mar 2024 23:46:33 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Subject: Re: [01/43] drm/fbdev-generic: Do not set physical framebuffer
- address
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
- airlied@gmail.com, deller@gmx.de, javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Zack Rusin <zackr@vmware.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, stable@vger.kernel.org
-References: <20240312154834.26178-2-tzimmermann@suse.de>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Sui Jingfeng <sui.jingfeng@linux.dev>
-In-Reply-To: <20240312154834.26178-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+Mime-Version: 1.0
+X-B4-Tracking: v=1; b=H4sIAFjS+GUC/x3NQQ7CIBBA0as0s3aSARpbvIpxUWDQ2dBmUKJpe
+ vcSl2/z/w6VVbjCbdhBuUmVtXSYywDxtZQno6RusGRHcmbG+tYStx8mlcZasUniFXNI3HD5GEu UA0acQnRu8n4mf4Ue25SzfP+j++M4Tu6YecV4AAAA
+X-Developer-Key: i=justinstitt@google.com; a=ed25519; pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1710805593; l=1826;
+ i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
+ bh=SWuJT1od1lHkTaQ+y94pwMpDIt4RqOBKy+5+YAjUbf4=; b=trEZV2UKkAi41dKgex75moannI2KQl33HA1LGTyC7NWX4DdBAQaDs4goCEd3ncaVz44gcj6o8
+ 7tqlG14jzZGAGKGyXgxHyxdOo/JVZkY5LfpDC2UOEB9knhmDvAxhv/j
+X-Mailer: b4 0.12.3
+Message-ID: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+Subject: [PATCH] video: fbdev: au1200fb: replace deprecated strncpy with strscpy
+From: Justin Stitt <justinstitt@google.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
+	Justin Stitt <justinstitt@google.com>
+Content-Type: text/plain; charset="utf-8"
 
-Hi,
+strncpy() is deprecated for use on NUL-terminated destination strings
+[1] and as such we should prefer more robust and less ambiguous string
+interfaces.
 
+Let's use the new 2-argument strscpy() which guarantees NUL-termination
+on the destination buffer while also simplifying the syntax. Note that
+strscpy() will not NUL-pad the destination buffer like strncpy() does.
 
-On 2024/3/12 23:44, Thomas Zimmermann wrote:
-> Framebuffer memory is allocated via vmalloc() from non-contiguous
-> physical pages. The physical framebuffer start address is therefore
-> meaningless. Do not set it.
->
-> The value is not used within the kernel and only exported to userspace
-> on dedicated ARM configs. No functional change is expected.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: a5b44c4adb16 ("drm/fbdev-generic: Always use shadow buffering")
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: Zack Rusin <zackr@vmware.com>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: <stable@vger.kernel.org> # v6.4+
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> Reviewed-by: Zack Rusin <zack.rusin@broadcom.com>
+However, the NUL-padding behavior of strncpy() is not required since
+fbdev is already NUL-allocated from au1200fb_drv_probe() ->
+frameuffer_alloc(), rendering any additional NUL-padding redundant.
+|	p = kzalloc(fb_info_size + size, GFP_KERNEL);
 
+Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
+Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
+Link: https://github.com/KSPP/linux/issues/90
+Cc: linux-hardening@vger.kernel.org
+Signed-off-by: Justin Stitt <justinstitt@google.com>
+---
+Note: build-tested only.
 
-Reviewed-by: Sui Jingfeng <sui.jingfeng@linux.dev>
+Found with: $ rg "strncpy\("
+---
+ drivers/video/fbdev/au1200fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested-by: Sui Jingfeng <sui.jingfeng@linux.dev>
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 6f20efc663d7..e718fea63662 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1557,7 +1557,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
+ 		return ret;
+ 	}
+ 
+-	strncpy(fbi->fix.id, "AU1200", sizeof(fbi->fix.id));
++	strscpy(fbi->fix.id, "AU1200");
+ 	fbi->fix.smem_start = fbdev->fb_phys;
+ 	fbi->fix.smem_len = fbdev->fb_len;
+ 	fbi->fix.type = FB_TYPE_PACKED_PIXELS;
 
--- 
+---
+base-commit: bf3a69c6861ff4dc7892d895c87074af7bc1c400
+change-id: 20240318-strncpy-drivers-video-fbdev-au1200fb-c-7bc337998096
+
 Best regards,
-Sui
+--
+Justin Stitt <justinstitt@google.com>
 

@@ -1,93 +1,110 @@
-Received: from smtp16.bhosted.nl (smtp16.bhosted.nl [94.124.121.27])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ECC728DB3
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 09:07:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=94.124.121.27
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCE522C190
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 09:24:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710752867; cv=none; b=KhDW1vwP3I8hHOdD6Qm9JQsxUV7mlV3dzo4jhh1Xbw18/hXiLDTzbTj0+59EoRKeeQRnXIX0ZWF0GttDQCqNdmDT1eYRjM9gV8tLRodcpoqn8RFyqVa+1QI0I7RFfgGKeFwu1pqpquQ9cpYsJfvGfhz2zibWYbmqTkRSAOsZfUQ=
+	t=1710753845; cv=none; b=re3NEmYeTLWCb4leRl4vfE8v2NQUW0H8Z6RMCutDEAT3yRcTWPwGkMxFtSdTbvjBpszJw3OXilDnGpldWBblY+5r5xyLXuuKumkZ6PLZkZArs5gjcc8DUlDdlNfrPQ59hac6/4mzpBcsBuAVLZQ0/5hVqbk29txlnxy6JsfQvNg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710752867; c=relaxed/simple;
-	bh=oDrMrlYSuxrgaoSfTWeaii5crOeguX/3uHvQtjSWjFo=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=SU20JVk3UatvA7VyCZZzTpJT7wkWXe85BjbbBJxbQY+wxJ/315fPS40ien55CL1XLW3XxVSJjEb+Otu2zgeKEnNwlGa8Y3OadQBaIRe5ieXeZZW2NjqLFdO4MieyMWwxmjN/jV+BB1bkyfgpe94QfJLXAs6FFxmNfFKBSwYmTeg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=protonic.nl; spf=pass smtp.mailfrom=protonic.nl; dkim=pass (2048-bit key) header.d=protonic.nl header.i=@protonic.nl header.b=ewu7LAl9; arc=none smtp.client-ip=94.124.121.27
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=protonic.nl
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonic.nl
+	s=arc-20240116; t=1710753845; c=relaxed/simple;
+	bh=HXeG6B2ZIkpjqfiEX0Oj79UwA1A5T2aAgs8tbYybwuA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PvI76ZS5oQLoq2dvf8CIcHU3Aro1bFiqB0DHZRhylfNWI2Y0/a8zHBbCCKf0gvFGCWxF642xXNlJpQVQ7EdqWhZrdkfI9CnWO8Yi8POGYcXSR7mxSNItCzwJCa/0WWOFikSZU60tGufGGcDCBaQkS1sqlJOgREgcgFei800nEI0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=jVNYeG/N; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonic.nl header.i=@protonic.nl header.b="ewu7LAl9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=protonic.nl; s=202111;
-	h=content-transfer-encoding:content-type:mime-version:references:in-reply-to:
-	 message-id:subject:cc:to:from:date:from;
-	bh=FoIRlkqO1ctp4s2PeetRomEn5bkVsq7p5O2sYKCStY8=;
-	b=ewu7LAl9hGfWHdB4/VRMy3TXUslfNg2HFaTeTI2PpqE4C6Vo6H1vDt6RgKLSk4gFkU50Aj2pHYtSy
-	 hakOwv5p2GKUeqGCNHQbPc7vXUflHZcdfZPFxoqwMUlXuHZc3kwQAW2gk+7DrEI2C9wz945QAuB8eF
-	 mPTCZdHoghSPfCPM6KQ0OpjaQJGiUVzhFJQxM/5MIA4XE8h60OTQAfsAzsDlDjRqRL5Yms7+xTOBgp
-	 NJJWXq0D03AESW53VuSlkTSZgfe3442wnffO1Rm9d9RdBPAuIvDxKwC9l7axcI1i3bKgtnwXpgGGfz
-	 td9ho0wYr2rrtHhv521NtOvbzXbiSpA==
-X-MSG-ID: d02c6a3a-e506-11ee-844c-005056817704
-Date: Mon, 18 Mar 2024 10:06:31 +0100
-From: Robin van der Gracht <robin@protonic.nl>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
- deller@gmx.de, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, Miguel Ojeda
- <ojeda@kernel.org>
-Subject: Re: [PATCH 1/6] auxdisplay/ht16k33: Replace use of fb_blank with
- backlight helper
-Message-ID: <20240318100631.253b2d8e@erd007.prtnl>
-In-Reply-To: <20240313154857.12949-2-tzimmermann@suse.de>
-References: <20240313154857.12949-1-tzimmermann@suse.de>
-	<20240313154857.12949-2-tzimmermann@suse.de>
-Organization: Protonic Holland
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-pc-linux-gnu)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="jVNYeG/N"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1710753842;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/N8QI1fD+bgjmIz5nIr2cRdeL0rDB9RnDP3ak0Rbm4Y=;
+	b=jVNYeG/NCdQaPJH2Zob6YGdits5mpKtCK3Y8FX3GeuqdcPMQ+cwEopvqTbnUFEfgR1VhW1
+	cTZYOIp2HnUcnlsnCkhu8ZqSBRazcWdoDl6GGIrHDn95OcVQP9+hnOK1jphvipmynqkF0K
+	4RPoQ0tI4w21S1vmGx3fFm8lehp284E=
+Received: from mail-lf1-f69.google.com (mail-lf1-f69.google.com
+ [209.85.167.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-253-XNGxsDp3O2mOtnNdV83pGg-1; Mon, 18 Mar 2024 05:24:00 -0400
+X-MC-Unique: XNGxsDp3O2mOtnNdV83pGg-1
+Received: by mail-lf1-f69.google.com with SMTP id 2adb3069b0e04-513b3ca9650so3417266e87.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 02:24:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710753839; x=1711358639;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=/N8QI1fD+bgjmIz5nIr2cRdeL0rDB9RnDP3ak0Rbm4Y=;
+        b=g5faV/ms1hUnEliONYCnYF289OX8f8WVX7z3JjnL4Pvgqva8DlHZcee1WNVC3XuExu
+         k2voFhfIg8uodLwt2VbBNDKKvEOc3lcYITqIkBIBhKTGRbiiRCIdsiiShoxLJFF7uB4F
+         KLUx+3ktkd+fcc1a0MMcvJGuThhA+Q5h5mFBgKpStpgqqWGh7q8FbEU/ezENSjW7dlLx
+         mBTUuoxLWlwr3+KZphaDLBLa4LkDqf1+O4dg37yPXD+Q5nIIZbpWzdwkEez9Zx8/voiO
+         y2NVOG8sDA0Q6r6G/EK8kdinCyYLegFDvIY9Fn+txi3fvmupS490zGqtodIEWdg/WiEq
+         z/Rg==
+X-Gm-Message-State: AOJu0YxlF7NXr444lYnTPDql7pqZa8AdMyIR5aF91/8qIleCbnJ8FYmp
+	9tH1dCEDHSM+ObB1e3NcDCtbFv0JhwiWxjLnIwDuG4vPIwIoc6JuGrQJT5PuiyVyXGu6NQ0uSDc
+	enD9kPfNpEn87fHvptzfD17bXLMdDwUScEik4TM3w9Aia2Z2vOSQP0GzwqsW3
+X-Received: by 2002:ac2:5b5e:0:b0:513:d1cd:b902 with SMTP id i30-20020ac25b5e000000b00513d1cdb902mr7025550lfp.32.1710753839198;
+        Mon, 18 Mar 2024 02:23:59 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHkd8Us4BsgSEBSOtJqvIraSi5b4WjtSpS7BNTLWU2+C3Ui6W+LGv0gz1InPWlQ6qJvrN+wzw==
+X-Received: by 2002:ac2:5b5e:0:b0:513:d1cd:b902 with SMTP id i30-20020ac25b5e000000b00513d1cdb902mr7025539lfp.32.1710753838871;
+        Mon, 18 Mar 2024 02:23:58 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:c:37e0:ced3:55bd:f454:e722? ([2a01:e0a:c:37e0:ced3:55bd:f454:e722])
+        by smtp.gmail.com with ESMTPSA id u6-20020a05600c19c600b0041413546e5bsm1270407wmq.0.2024.03.18.02.23.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 18 Mar 2024 02:23:58 -0700 (PDT)
+Message-ID: <20d4da39-8dbc-4593-87b8-308c75c0fa82@redhat.com>
+Date: Mon, 18 Mar 2024 10:23:57 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 12/43] drm/mgag200: Use fbdev-shmem
+Content-Language: en-US, fr
+To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+ airlied@gmail.com, deller@gmx.de, javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Dave Airlie <airlied@redhat.com>
+References: <20240312154834.26178-1-tzimmermann@suse.de>
+ <20240312154834.26178-13-tzimmermann@suse.de>
+ <b35f1b2f-82c1-4c7e-a449-54e29000cfb6@redhat.com>
+ <1fb62a54-ee77-46bf-9d38-dcc0ceb37533@suse.de>
+From: Jocelyn Falempe <jfalempe@redhat.com>
+In-Reply-To: <1fb62a54-ee77-46bf-9d38-dcc0ceb37533@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi Thomas,
 
-Thank you for submitting your patch, it looks fine to me.
 
-Reviewed-by: Robin van der Gracht <robin@protonic.nl>
-
-On Wed, 13 Mar 2024 16:45:00 +0100
-Thomas Zimmermann <tzimmermann@suse.de> wrote:
-
-> Replace the use of struct backlight_properties.fb_blank with a
-> call to backlight_get_brightness(). The helper implement the same
-> logic as the driver's function.
+On 18/03/2024 08:56, Thomas Zimmermann wrote:
+> Hi
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Robin van der Gracht <robin@protonic.nl>
-> Cc: Miguel Ojeda <ojeda@kernel.org>
-> ---
->  drivers/auxdisplay/ht16k33.c | 7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
+> Am 13.03.24 um 15:03 schrieb Jocelyn Falempe:
+>> Hi,
+>>
+>> Thanks, it looks good to me.
+>>
+>> Reviewed-by: Jocelyn Falempe <jfalempe@redhat.com>
 > 
-> diff --git a/drivers/auxdisplay/ht16k33.c
-> b/drivers/auxdisplay/ht16k33.c index a90430b7d07ba..83db829b97a5e
-> 100644 --- a/drivers/auxdisplay/ht16k33.c
-> +++ b/drivers/auxdisplay/ht16k33.c
-> @@ -314,14 +314,9 @@ static int ht16k33_initialize(struct
-> ht16k33_priv *priv) 
->  static int ht16k33_bl_update_status(struct backlight_device *bl)
->  {
-> -	int brightness = bl->props.brightness;
-> +	int brightness = backlight_get_brightness(bl);
->  	struct ht16k33_priv *priv = bl_get_data(bl);
->  
-> -	if (bl->props.power != FB_BLANK_UNBLANK ||
-> -	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
-> -	    bl->props.state & BL_CORE_FBBLANK)
-> -		brightness = 0;
-> -
->  	return ht16k33_brightness_set(priv, brightness);
->  }
->  
+> Thanks. Do you still have access to that broken realtime system? I 
+> wonder if this patch makes a difference, as there's now one large 
+> memcpy() less.
+
+Hi,
+
+Sure, I'll do some latency tests if I can get access to that server again.
+
+Best regards,
+
+> 
+> Best regards
+> Thomas
+> 
+

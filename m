@@ -1,142 +1,84 @@
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2073.outbound.protection.outlook.com [40.107.237.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 241013612C;
-	Mon, 18 Mar 2024 11:18:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.237.73
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710760707; cv=fail; b=TrvSqUWVJiu89EPkxp9p2nMp/HXh8uw4G9gA0IXPpwydyQIny5dvlYLfUQaa/yXKUKxoThvba/nmpjHQFsuySElYuct/hjd+TMCEB60eM96VZz9rydXPFOHIBL9AJt3wAsSjHn8Uptsr3Wxs6hArWzmyP68YpjVUBgnkgEyiPLI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710760707; c=relaxed/simple;
-	bh=cvOet1D9kJ8Ptt5gVjtjCJ2rM+LMJmVDeqTgAV+AKeo=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=fJ4NmMlTtQGGHqFfmIP9lW3jjZmGliO9Ke7FrxR90RBi2IEyjFhuqYGA16lkrYgsm5/Dvtz0WspfZIBlaUxwY8OuftXxUACi3C989/d5izD007OsA2qj0KqlX1pxnG7Gb/28mNTePmFvrLgbjHAUq1CumWzLn9mhkz4Kw0RV2Bw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it; spf=pass smtp.mailfrom=asem.it; dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b=EfVpeZjs; arc=fail smtp.client-ip=40.107.237.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=asem.it
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D069F37162
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 11:45:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.45
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1710762327; cv=none; b=QXEUiY6EPEo62w76qhW7EL6qV4n1AP2nitRXSKkSMynNUxJ9vhmENLR4K4ikNKqYQ0mQT21/mAInGw+UKhnehXvcJAMRcsiljBylJf7VjqxV5ffLWy/ifDhdzqIpcxLbpFwd4L64fEQge1QCdmmuot8XcIkxaWePV1XBM0U9gho=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1710762327; c=relaxed/simple;
+	bh=DAioQ/fXGesI6b7MLNItTlGNHaD8NUjTvUnQ6rS0NfQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DdddTH3bDvNu4W9W0BVuR8Gh/baO3S6VsLOiE4AMP3aqOU2vnd2YDfsQyYN+cs7P4ffZhAfOqvrnDPcsGeaspiM4Vng0/Pe8EEpGtKIbJmCh79PmaOTkLFC7ClOqqjE5nTKyXX4lD4KHA+/wCcT4q7yproFPOcrBeEiIr0erLBk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=cR1Kg8er; arc=none smtp.client-ip=209.85.167.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b="EfVpeZjs"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bUUvgFZhILi7Tx7wROEWiIhgGkXUkMNnPMDYim11ZkZXhaIa4aRJ2/18oLmb+1EsYH5OhPcIGReCPVQZofvm6UNntGCDJHJ0s2yNg31Otpc84pMl3a15TuasfQQCGH49Imq3BEZXxiSi6X5dj+DAFCz13hTy06GL5YodhQQqBj4jTKhU+d9lUFsj/tn95+n/qeGK2s4p6F8ZXqzgPUBmex3Uj9GbhDHw1mPMgpYXkEc9olhBCmS3nyxgXm8ofXhjNmsBdBbP/9oaJqbNcHZ3uyGYFml5WQYVMnivfmktK6eAy9rUmQuAJpuMsiBzGMhBDRxO6XEcePhvVuRIxtyxVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4Q7s2oeB8PjHAoDn6LW/FRIrE6Tm52EMITyyGLnEHXE=;
- b=hWKGZsoofDFe4QzBccGcI5mbleVrTerv/10pfKfAsuR+KpNKNH1V13immdm//b9s1BSGjpkVre80t1xSyUkXiR4bAPU7xHu5ra7QeG3E1QqoAASnKXiJk6KCxY83u05kffCJ35LJS8bGfKNAIgLtuMjrrqlQkv+nI50glZs6fPmiZUqMH/mLc/fLjAeLaPEhtd77Kiyr1xm+xvO+dslo/sNcNeyDZDgIz+VoWfC0X6hlZLj+hHBYJ1al5Beci4LmP6H1x2kl2eSQjFK7Gp/qUWeTheuGuy/whdVR3TeZs2OrqczwuoJGDAPlIZhHiEr3WBEeDOjl8zNa+L1BM9ZHyQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
- header.d=asem.it; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4Q7s2oeB8PjHAoDn6LW/FRIrE6Tm52EMITyyGLnEHXE=;
- b=EfVpeZjsQ+dxSQFgey8m5WIxNw4qUMw57mCgja6g/s9XF5et3qkzm+I4+N8/Yfa28EQk+jojRFUcL934RSLiNDXBSudPlYeMd7lak6rQFkBvXVMUgkzL8Co3EJPfpD06EHWI6C9p6LidZmtXueLkiRqwgKgO3JtQkGhrYJ6woGCGx+O3u+j9DpdXixmluC4udMzloNRGbn7CaefxMStoD7qu4HJiJm2KNed4lpD1vGlJusAeGEQWVihHebL3XNI7s4QKv6SS0ZKZ0XDa9XSY3CC1/RL9de+BgpzgbF+YDaE1/iksLFPJrCXjAPWHAxIwaj0hOg4mzSflFIC5dpRRQg==
-Received: from PH0PR22MB3789.namprd22.prod.outlook.com (2603:10b6:510:29c::11)
- by PH7PR22MB3685.namprd22.prod.outlook.com (2603:10b6:510:1d4::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7386.26; Mon, 18 Mar
- 2024 11:18:21 +0000
-Received: from PH0PR22MB3789.namprd22.prod.outlook.com
- ([fe80::35ce:ff48:fa8b:d4a7]) by PH0PR22MB3789.namprd22.prod.outlook.com
- ([fe80::35ce:ff48:fa8b:d4a7%7]) with mapi id 15.20.7386.025; Mon, 18 Mar 2024
- 11:18:21 +0000
-From: FLAVIO SULIGOI <f.suligoi@asem.it>
-To: 'Dan Carpenter' <dan.carpenter@linaro.org>, Andy Shevchenko
-	<andriy.shevchenko@linux.intel.com>
-CC: Lee Jones <lee@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: RE: [PATCH] backlight: mp3309c: fix signedness bug in
- mp3309c_parse_fwnode()
-Thread-Topic: [PATCH] backlight: mp3309c: fix signedness bug in
- mp3309c_parse_fwnode()
-Thread-Index: AQHaeSX7sx3kNaLcF0SXkvq4SwekQQ==
-Date: Mon, 18 Mar 2024 11:18:20 +0000
-Message-ID:
- <PH0PR22MB37894A0A8F267262A2A9C0A3F92D2@PH0PR22MB3789.namprd22.prod.outlook.com>
-References: <74347f67-360d-4513-8939-595e3c4764fa@moroto.mountain>
-In-Reply-To: <74347f67-360d-4513-8939-595e3c4764fa@moroto.mountain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=asem.it;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: PH0PR22MB3789:EE_|PH7PR22MB3685:EE_
-x-ms-office365-filtering-correlation-id: d5c1708b-ac0e-49a2-4403-08dc473d1e7e
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info:
- Mqia5YLOMwOlaPuxhbyzY0CtWAI3rragLclSKvlbfVjx/FA8+LUb1EXbUroz612M5RSANvkeeDjPziCryhehF15tpr1QH9XR1eiA8m2J+U0ufG47hgWRbl78GTVVgkHZhZE5877QIcVeqO+pwHTyEV4ipHFnAm1PDaRRVIu1s5S5TF/hPAY8JGL8IFi+eOc22Ejr1LaAUZJYSXfliLomwsjkVIW2ogPdG4JBZCN6D1r/0sjjrAQE1fKAuyF2cMnKbZwW3bhRu+0QYlDbBYancrtBNCL463detpj7mxXZhnjW/j3DvWSMr6kpOK2t1qnREmAWqdbDjjxpRKKbvWXB6Z8m+9TVSBQROQjRGEmtKHpDlb0ZH+Yo8tDKuN4MZcHBMeBj3iLE5NeO8flou52izqIGJN0///msai1JYu7WF7KFm0TbiH1YQ8T8LWrRxcDnGA60mdlIHFWaA8p2NgdLzGtHmh5bFTx4iGAI41NoL5wKrAT3+aVtfnZ6Cwg1e9eNUpw1s+ucOeG/pQtcwA+QdptXjBKu+pt2C1ERz+gJYYDI1OkcAOweUjA/yCMXVOW/Hxb0qLpAcHl8eaWVAA1i9aNOGVEp87Sm/b7542j6HtnhPZeaXlK26rWX1MpgGAlf6JkVms+bqwkyHlAI10tLGQEP4djAW4tNu7clXjv8Ux8PAIGsxl/0yqRbnzlhKJFEaBQLBEhrQUPiBwizBCh2Og==
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR22MB3789.namprd22.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(366007)(1800799015)(7416005)(38070700009);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?NlxnOYpFJS/WVEtnmekhvgM2oG0U7mrTo4khGgA6a0TLYBcdJsMCRi06lCJn?=
- =?us-ascii?Q?LA18yrKcK9Frm+ZHXM4rhFzLvJRv/IG385oPy+D0T9WsAgQF3NezmUZH+VXA?=
- =?us-ascii?Q?39Uecp57hp1g49g+aTQzNiMn9a9cnJMsk2uwx0wJgnQ0NHcxrSPepvCqOqtb?=
- =?us-ascii?Q?x7w7WHOeQ4ZPgY4CgAMwtwmIPG2Dkkix9N0kupo5RbMrZ76SCKbCWng5UY2e?=
- =?us-ascii?Q?mjwHAvzLZ104zjP6ZDjt2hr9E+WZSHXxrz02XaMXOOhe5pD14zlS4iEdtenw?=
- =?us-ascii?Q?tk/CYOwxaztA1U6ogA9wri9HIlRG7XM3QjwaofFFIZzZSIrOdlDNntw5/7f1?=
- =?us-ascii?Q?JB7HqM0Y3hd7TR96N2ut120qZYYamMjj9/1ETrJt695+/Kf3isPjhUq/lIS0?=
- =?us-ascii?Q?4gzHVQTozVQs9fN7VznOvFBgODKXdgdBFTpHA3wy0m8InWsvnBtyNYtltBZ3?=
- =?us-ascii?Q?TTTCcr+ffluXWN0H8EouVTL+uuGkg/KUtTvTkhM5CU6CEJrukMgE4S8tk4hv?=
- =?us-ascii?Q?7V2todh3ziJXBLxaP1HWqaVRCFPBhBKj4cpuiWrfR/f78kx7Gz4LC4avMt/C?=
- =?us-ascii?Q?wzYaG21xIiOJpJYBRKj5SYA13iml9/AUMEARuBinwoj6YIU7HL+tISk3X04w?=
- =?us-ascii?Q?0r97nEhHV0slVkvBRuN6xCCvojIRCyFe+axXDk+L34Dq4AiI7O7dG/yTtz6x?=
- =?us-ascii?Q?0LziNgbR22FkGmReSvGNM7EJWmKCYj31GvcseqcT/ohiGkRFPlmHQndpdwrY?=
- =?us-ascii?Q?y6n39B3B2dNl61tj0pJa/2oHjn6c2OSvnB07XHdnFQSr0bN95AsEHqZsuSYm?=
- =?us-ascii?Q?9l7ydYmYTpg1LIEuKRHEXu5FUIsADpzzOx1cxyBIsnM2klXlkSdP2g8WmCIw?=
- =?us-ascii?Q?a1kDoezROgTCZ+vpbCYhPWPjQc+PtQueqIp+p/dK5UdAXt2Fgt7QsISlLYdI?=
- =?us-ascii?Q?/nNBOPiX392y7qXqA2wcMpK9lSs7Ubd7Vy799iRoD0JWB5IOW0zpc0baxgy+?=
- =?us-ascii?Q?kNZvuRHyOZHZnhm6b0vVosOIZuOfsUx2997fPqNbwNyN93WXsv3ERTn70VAr?=
- =?us-ascii?Q?Rpl8/Pn+MiFjZBJmFQeMOCXm+rFdmiA0W2bwcp2Lz2/+pFrTIhAmOGdman5v?=
- =?us-ascii?Q?4eJq1QezwSlppGk9RBxJ9llA+NegeM5lHdD9Ta0nU4sTfhqXWUZ15fJ+RU5e?=
- =?us-ascii?Q?BWABO5o4Vbk0zeuqstKAjmhAnQrn1r9OZzzNxs0DR/IaEhDFdboSviDG74n6?=
- =?us-ascii?Q?PDRV/88Z5YfSDdOsD7n1Kc9HT/5FALpA1+ARwxAkdEmHm0A22TKYoFHFEdAl?=
- =?us-ascii?Q?j3FLp+aNj67PK3uJAGi07oUMyfQeyfnmYKtoR2X65ezJpk2NULwE+7u9LW2l?=
- =?us-ascii?Q?dHeBaxbBV6R5jThV7tCWz9NepL1yebstHUUIImYZvSeddM1ckzVjcjAr2SQS?=
- =?us-ascii?Q?hzUr1vB5aH2LFMuZEta6Sd8zx0M7qh+jf5Er0Kq/z9usgw/xA17mqa3Y4Fql?=
- =?us-ascii?Q?uXOUn4r1/+kJyg6MHvM3wWyJNu+wyNFFB9HIdqYgsJPb9uxdZTTDg0pcCvWL?=
- =?us-ascii?Q?J813qzutT8oJ9Q5MzLVS1MSQaWLTJ/JoaBoCjhomhWFxx7FC/H436stBArYq?=
- =?us-ascii?Q?yu1VNQ3yKDbykM1u6YH5BBw=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cR1Kg8er"
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-513e25afabaso1477740e87.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 04:45:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1710762324; x=1711367124; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=DAioQ/fXGesI6b7MLNItTlGNHaD8NUjTvUnQ6rS0NfQ=;
+        b=cR1Kg8erAOSrQhlu7s5kPJQx7M6BWNAsyWM9cJPHdxpNSVT7uz8juz09QfJqO3FFGe
+         IgYmTWH8ltepzVrR+T03aiqneEa/xacGJvAZhmx8nsZ3PU6z8g1BSNMbk+G1edvFCnzU
+         0ZBHgC7actvvJp74UxmhWv3hBo9vIfTkMvVTGe/sjFYZanr1by319lc8gSDzopvQt6aO
+         1s0JZwEl+LOehqrwuAJgjy3l3pXwlZTqIVR6DENt5VJbfSFxFScCkdg/1kdNpryrp4Lj
+         CeGnxxiQchfw80/kbso7YqK2yTuWXJwRHjwvt6Z3GBxut9ACcr4xCsHUIC53pYALHZIM
+         ptPQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710762324; x=1711367124;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DAioQ/fXGesI6b7MLNItTlGNHaD8NUjTvUnQ6rS0NfQ=;
+        b=bojAzCACM8xNtEs6Ap4aigCtfM4V1f+ij7IpEEFESd7ZmxQ0oFrvwwu6Zz3gIlaAg1
+         O9ZV5yYis6wXYyy22Plt29P/j1qhWI6X6KO04Z1bSKpHTXwt8A2JRGyYJmHeDmKoAZDS
+         oG9X8i+QjojOHh8CGUYTooW0QmYuuWZ4p9rOZvZ6TubvHVVXzQDsZu0BNEK3cfHt1RRX
+         W/hHD4eNeadpIbLAGritlamNcFaEhacQndLgEXVfUVDFyu8wI/g2nWkRQT1huzNsZSdu
+         CCEFWYvli5iNOS0jAdVtT8ms/9FVMCOJuv9ReiTXiSdXyS8MS3agbUOkwiouebL4kBjH
+         d/Kg==
+X-Forwarded-Encrypted: i=1; AJvYcCVw3IhTrlc2VmEHueDsnJ2QxjtyNyFXwNt7LbvTTWM5jV8xjw0nWwEvjp37ap+Ce1ylB4fPOB8l/97hQ5Bbjwr8VfmiZ45iNGLEzmc=
+X-Gm-Message-State: AOJu0YzYTOaaqkSqS+HLybMWNyvS7Q6rQXAihoX9k0HVRXqE8tl7FP/O
+	026A21lsNO4f33fut7b/9OETONkAYwQQguWpdD2JFgnkj1lGRzT82Eh87C01qgs=
+X-Google-Smtp-Source: AGHT+IG8MlqV0IFElrl61OyL7fOfY/41Sw8w0N8TxSEMfr6QmXvjIx0dLThL/ol2w3e+kJgFYFOgnA==
+X-Received: by 2002:a05:6512:348a:b0:513:ca72:7229 with SMTP id v10-20020a056512348a00b00513ca727229mr6293669lfr.69.1710762324024;
+        Mon, 18 Mar 2024 04:45:24 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id m2-20020a05600c3b0200b004142894df64sm976341wms.5.2024.03.18.04.45.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Mar 2024 04:45:23 -0700 (PDT)
+Date: Mon, 18 Mar 2024 11:45:21 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev
+Subject: Re: [PATCH 2/6] backlight/omap1-bl: Remove unused struct
+ omap_backlight_config.set_power
+Message-ID: <20240318114521.GC16260@aspen.lan>
+References: <20240313154857.12949-1-tzimmermann@suse.de>
+ <20240313154857.12949-3-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: asem.it
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR22MB3789.namprd22.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d5c1708b-ac0e-49a2-4403-08dc473d1e7e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Mar 2024 11:18:20.9565
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 855b093e-7340-45c7-9f0c-96150415893e
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: gbxVntwZCZ5huYKYrtZvqddYt2D+xwUJAAyapVrz2Y5WfLkPnUGq4Sk4jCSEXzyUfvO8PS2aRWDxbRbeVnK5Mn0i863W3MJ853O0EAYR9AwCkJCCw158ruYEMiGZizpp
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR22MB3685
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240313154857.12949-3-tzimmermann@suse.de>
 
-Hi Dan,
+On Wed, Mar 13, 2024 at 04:45:01PM +0100, Thomas Zimmermann wrote:
+> The callback set_power in struct omap_backlight_config is not
+> implemented anywhere. Remove it from the structure and driver.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-> The "num_levels" variable is used to store error codes from
-> device_property_count_u32() so it needs to be signed.  This doesn't cause=
- an
-> issue at runtime because devm_kcalloc() won't allocate negative sizes.
-> However, it's still worth fixing.
->=20
-> Fixes: b54c828bdba9 ("backlight: mp3309c: Make use of device properties")
-> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-I've just tested on my board with the mp3309c chip, all is ok.
-Thanks!
 
-Tested-by: Flavio Suligoi <f.suligoi@asem.it>
-
+Daniel.

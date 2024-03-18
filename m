@@ -1,98 +1,93 @@
-Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com [209.85.208.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B317137702
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 12:09:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D5EA54BFA
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 17:03:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710763744; cv=none; b=XxOhLOMU6kLo18pn8Gu40teG5KWwilHGuAL6Qr8iVlscmaM2yMO5vcQ8QEMgGxWyoF1doMUcNKA3UIq3FLycsBUmlrk0Er2VZWYSr4WsynrOXKWr3qbN9q/9j0PhBxYwzpFpXlKsfhO1yiVeks5DgxnPFtpM7AtKcy5Ib9gGEKA=
+	t=1710781403; cv=none; b=cq20rLHtJ9jzOxYm/pET1go3kkM8Swi8VEBRJfCdSMfQLfaYLJo3Xo7hjAKyYSHor7LxAMvsUJBaFmJkAvT92+SAihWKxZW4djMpzcnm49TC0qndktSCeVZpjG0EqU4tIkZssGiNoDulK/rWQDByIv7+TfeQUqRhn7ITDrMRfgY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710763744; c=relaxed/simple;
-	bh=xAybBLkWgFxKDG7sYQQx+lNSx140fHQbpq7UeP5HG4I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B6mUMofgH9Giz4+A/AHOkRe2hlJK1HL9nOfuH0UFqGrdT51S8aHe5fH0pV1hmL5IfpZHNHEvHIk9TKWnRkDs+vH/fevRaQzxIOulUTR3wP/aIX1n8Rp4eE774LOAIXggUVC2+XhBXoNL8PmJHloDLJRAfFmjbV+tjDH0L9uf/Is=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=yXSWqhHS; arc=none smtp.client-ip=209.85.208.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1710781403; c=relaxed/simple;
+	bh=SjhErBo/gjNOx6SunTc3Ck2gc22M52ZfrVZpLB7NRWM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=MddE4uu0k5nbALJwxi/USomIKcjbFQVBjnUOGfCGLTo2y4SSozIHUZp06bqVcyofsvE0u/4mwCYfLm3zCv5Dm3djzmkmz1eHM1hILlZQbwf1GE/JE7jadaII3dk+VhavRVuIBDQHQeuwHsmbGsbavV4BzocTDbeBW1IxvUjsnPQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=XTNx+MaB; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yXSWqhHS"
-Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-2d49f7e5c2cso21182161fa.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 05:09:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710763741; x=1711368541; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=xAybBLkWgFxKDG7sYQQx+lNSx140fHQbpq7UeP5HG4I=;
-        b=yXSWqhHSOVZOKI1lR2i6flU3ZfTG4whNMnXSvFUz+XulWTL9sSp+7w9eWkeufbWzH7
-         1Gm8bNK3FDPsBGNcR9niS7bHSs/9GmEpudtokkbGNFNG8HI++Y2nNyZHp+dLp3CLVsyY
-         PcUlKEPkRm+dZYuLb9AsSYCDbT8dpMGpixuP9QURccPmvroBBkGcUeLULMqA5kXEkHHE
-         HyWgLGHvI3jW7bL3nkjQqJfSZQ1zU7RG043FWykZIQwdZxPpE5ox3BwUkshR0/4MOUHm
-         UEcjyFSxxX5I4R+/V+PmO6SB6qd5rkxsdO2mFYS6AYfN+BRpTheLC4TRiDHC4SIn0EMt
-         zYaA==
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="XTNx+MaB"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1710781400;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=B7uD9tCcL5UMzFWwVdaPHucWFHqjdQjWPl2cOgnahzc=;
+	b=XTNx+MaBwACNAT3Balt1r36KeOlc5NZrKzuRwi5fGFFgVB3Utt1B1ooGNlit/m/YDr+lFj
+	xGJ6DYrb68Uf2hmif76rz5hEXaUFAGXrGMpL+UcCcA/Z0+pMpcfdH2xXdElljoXaEb9CA0
+	r8wz6BDEpdaezVcAQJhA8F2bL3DO2Cw=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-436-_lB8MuBTOASH3TYRLp-fZQ-1; Mon, 18 Mar 2024 13:03:19 -0400
+X-MC-Unique: _lB8MuBTOASH3TYRLp-fZQ-1
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-33ed234bcb1so1308310f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 10:03:19 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710763741; x=1711368541;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xAybBLkWgFxKDG7sYQQx+lNSx140fHQbpq7UeP5HG4I=;
-        b=YkkT10jl07V8HAS4J597LXSciMh+n2ac4IYxb2NRXCIJyY53SK8foyl00SCJSqPGs/
-         qEe2lJIZ0PmYtqoR4Pbocf7YL5/AXFMHhzLBY7iRjrLHRzGYGfPgYD90eV7UdpIt5zXS
-         RW2oAh5DiOUrH8bjbpiiwzz2TrJwAM8bwkRgkqgXxIzjAESCermFpvW+IvaGrBQozLA8
-         lj0aTeVvVYwHmUjjNZUP1P4DA/bMn/15zSisCVY4TghiRBFpIGWZAWnrYv5BmsQ63eyB
-         AO7DcWohDtyN5hrfu8GAhtI6JG2ILbTD5E8oLwod0I+uG/jvKQ45ycNtmBHxzIxL7ICL
-         kMdw==
-X-Forwarded-Encrypted: i=1; AJvYcCW25Q1503lBFSBpqZoq36pgp9nyAn2gYZ7+9YPKhC1pAcmXA7/3gylcJgmKfXfYWobiVvt/l0QsTaeJRRo12LHYHqW4VTbY0VrTJdE=
-X-Gm-Message-State: AOJu0YyopFcWbdLbL4w0vphNV9nqZqwM9H6RI5fpZKaqLSAzu3PFc/sz
-	FA6rO7qLBcMBC3IKEhdMfysscCr7CuCEh5EGXHXSk8uEMilIjCTb49wBa3tWdpc=
-X-Google-Smtp-Source: AGHT+IH0Qo1V/USqCdqcNMm459DG/tRzeARTYW0jeYurKwM5uusC9A3CrTByB/OVG1fAn26K2fG9eA==
-X-Received: by 2002:a2e:9cc2:0:b0:2d4:8d75:7a69 with SMTP id g2-20020a2e9cc2000000b002d48d757a69mr4921690ljj.45.1710763740965;
-        Mon, 18 Mar 2024 05:09:00 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id k3-20020adff5c3000000b0033e7eba040dsm9779310wrp.97.2024.03.18.05.08.59
+        d=1e100.net; s=20230601; t=1710781397; x=1711386197;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=B7uD9tCcL5UMzFWwVdaPHucWFHqjdQjWPl2cOgnahzc=;
+        b=OFmejbjxWu+aTXq+oO7ts5vTPAq14zd+8CnWYH2QvLqtKOhCmO8JAYZCT4tlhjw76i
+         ywMXNqK+343GKOWVnNEW4Q0pPY5HocFCnDWZwo0v3mdy4n4ypryTfXcCX09wWt5tul67
+         dOvw+K3II5mRVeMyLLat9zrMWiaY3XXUaM/Lhxd5xzg/O3bG9J2SbEiv3+3Q9YcIFH0R
+         dlq9xKrbcqZ6DjCZkG5EautHKr0X2HzA+VY5npkf9Qe1vQ1SE1ufGXEyc/+0zkwmEm8D
+         dxGLE/wZsMCPCbNNiyz2yYIPH3GNucXj5YnrOq0gZQ6pEz3s5p81K8OePoejmIbbhFJN
+         oqbQ==
+X-Gm-Message-State: AOJu0YzLJRAKWEM4K1pLXX+fRfqhOju7fISounkqF164y7HeREIHaYQF
+	j0pTp1+bU7piQqlszd3kNdyBESj+DNNVRQG8275bKnaYrvZ+JhQS1EiLgUPgPm+14yVts8NdX+R
+	IzMobLG6rQcKYR7C6wX9BUJybSCqih3W/AhZWow4MOmXMIs37lkmF9YxgvfAS3si+4hXR
+X-Received: by 2002:a05:6000:c82:b0:33e:d20:651c with SMTP id dp2-20020a0560000c8200b0033e0d20651cmr159703wrb.17.1710781397706;
+        Mon, 18 Mar 2024 10:03:17 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IH8jsZcNWZc618FelFUJ5coAJsNdV/LuwV54MiWjO1BnXgoHyTKmi2EC3uPOAtP61yHsDM4/A==
+X-Received: by 2002:a05:6000:c82:b0:33e:d20:651c with SMTP id dp2-20020a0560000c8200b0033e0d20651cmr159684wrb.17.1710781397299;
+        Mon, 18 Mar 2024 10:03:17 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id q15-20020adff78f000000b0033e192a5852sm10223961wrp.30.2024.03.18.10.03.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Mar 2024 05:09:00 -0700 (PDT)
-Date: Mon, 18 Mar 2024 12:08:58 +0000
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, Flavio Suligoi <f.suligoi@asem.it>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>
-Subject: Re: [PATCH 6/6] backlight: Remove fb_blank from struct
- backlight_properties
-Message-ID: <20240318120858.GE16260@aspen.lan>
-References: <20240313154857.12949-1-tzimmermann@suse.de>
- <20240313154857.12949-7-tzimmermann@suse.de>
+        Mon, 18 Mar 2024 10:03:17 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+ airlied@gmail.com, deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thomas
+ Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 05/43] fbdev/deferred-io: Test smem_start for I/O memory
+In-Reply-To: <20240312154834.26178-6-tzimmermann@suse.de>
+References: <20240312154834.26178-1-tzimmermann@suse.de>
+ <20240312154834.26178-6-tzimmermann@suse.de>
+Date: Mon, 18 Mar 2024 18:03:16 +0100
+Message-ID: <87plvrfp63.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240313154857.12949-7-tzimmermann@suse.de>
+Content-Type: text/plain
 
-On Wed, Mar 13, 2024 at 04:45:05PM +0100, Thomas Zimmermann wrote:
-> Remove the field fb_blank from struct backlight_properties and remove
-> all code that still sets or reads it. Backlight blank status is now
-> tracked exclusively in struct backlight_properties.state.
->
-> The core backlight code keeps the fb_blank and state fields in sync,
-> but doesn't do anything else with fb_blank. Several drivers initialize
-> fb_blank to FB_BLANK_UNBLANK to enable the backlight. This is already
-> the default for the state field. So we can delete the fb_blank code
-> from core and drivers and rely on the state field.
+Thomas Zimmermann <tzimmermann@suse.de> writes:
+
+> Test smem_start before looking up pages from its value. Return
+> NULL if it is unset. This will result in a SIGBUS signal.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Flavio Suligoi <f.suligoi@asem.it>
-> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
-> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Cc: Claudiu Beznea <claudiu.beznea@tuxon.dev>
+> ---
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
+-- 
+Best regards,
 
-Daniel.
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

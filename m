@@ -1,136 +1,211 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A9BF36B1C
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 11:45:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04E43376F5
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 12:06:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710762329; cv=none; b=BbvnQzmxYUNqzEcGh53hp7jP3cYUnBLzgkeS04QN2+Ke3lO/ss3aNlfsCZZbR5wugYtOii+/gGJj/R2WmXRShg7MHvGQv3JGDlrFrALRXunBdV2R3aqSJb+1ShDpgN7q2GnvjOrXLbMnHDfKJu2RVW6cOynAKF17SMG7f313Oj0=
+	t=1710763600; cv=none; b=ie9cMry9SLgJZyi9GffuP6roBq15u4tJKTlL7BjFqI16SKVvlfaKmlBKSmKx5EtBQuKPLRyZNA94G0drmD2Fv9BLniwpvTFkPMD6FFO6HwWp7irbPZA7dRfC3HZyM7twwcK4LyevE2OFPrhxRlmguZqswEWROey0pAza+41cjxk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710762329; c=relaxed/simple;
-	bh=be7OLiwDtXiXg4HWzormu0V9WhxKXXtlnHhYFcoHQOs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YX2mFqngv4thvtZX8xU+X/uFlcmnvfaQDPzgRgQ/Xcy2fsKLrIRTI4y+x7lK6y1JAVETPVBKekwbaSMObDbjvLDpJ1Zm9U2U3O3WixYeEPJGQjirGNkEx3l5CVE/G9R+JY1e3aLGxjt/X/7XNFEtHl1JpMqQqpx64VhrHyTQc6w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=vUjgoQkP; arc=none smtp.client-ip=213.167.242.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	s=arc-20240116; t=1710763600; c=relaxed/simple;
+	bh=5FQe1aiH0qWj6oZI7Tk9LlLy4zlqbVeJd6fRNtSR/AA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TfL03dXMrcOn2vEuxJsxppdv+2AZ3KvY7Jm24tNHkWwWON1zpZtC0Keh+Qm4fKb1RU4GxdBjVqyOPkuphte/6/Q0/5p4wBwd8bPOo5C50tvDRbaO+1Ym3w3BL1dfqFP1q2EwgmCq/A1uvHLwadq03NyTYKlmaML1kXzfY2pxVMk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=zZtMDr3L; arc=none smtp.client-ip=209.85.221.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="vUjgoQkP"
-Received: from [192.168.88.20] (91-154-34-181.elisa-laajakaista.fi [91.154.34.181])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id CCFFC7E9;
-	Mon, 18 Mar 2024 12:44:58 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1710762299;
-	bh=be7OLiwDtXiXg4HWzormu0V9WhxKXXtlnHhYFcoHQOs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=vUjgoQkP0unfftql9Wmue7kAWlmaaKO4V6Y3si9Sufg6TQCxNEmKO3wWMXIqR0uR4
-	 fVG8evQ5Z00OiAhYB2z5ETFh+umsK3HVmTgPp3wXhd62lK/Xk2N7HSphR23JJdw+3J
-	 56ehimYXR83Yr5L3JmYR7qeN8HH/nEu8yQXyFFDU=
-Message-ID: <6e2bc221-6cb2-436c-b8fd-4c2feb405904@ideasonboard.com>
-Date: Mon, 18 Mar 2024 13:45:21 +0200
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zZtMDr3L"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-3416df43cabso638949f8f.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 05:06:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1710763595; x=1711368395; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=eHGPA8dgPTqYeKubjV9R4JW3cUfS+CCAqVnDiKpMYxc=;
+        b=zZtMDr3LXRfDL8c2/97NUiNknUzhH8vCmjZyivYKC+9sZM6sP7tSzTo9E2UWdUyR1U
+         xpqSqXnTUJLCvmpjARQMFM8TRdJe5m3/6+3sQbyUG0ApOxiLN8XDBoZz652PC794QT3M
+         spC27Q3VN4x/mxFzWE2rUP2vwnj3OaEjb06/G+O+X85HpVdXuz6dfiHVtaWIVD0gxSUP
+         It5iMZGl7YZ+cMI4f5b2x36H78XON0hO83ZPbiQRUiLNk69m/urjctDbJACxy1MselLO
+         tMZhBCLenCnmSBX5C2oQ5GUWVgPkW3XtsvErVjBCICJlfF41TIhV4+W/C+DntIScuP3/
+         ZE7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710763595; x=1711368395;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=eHGPA8dgPTqYeKubjV9R4JW3cUfS+CCAqVnDiKpMYxc=;
+        b=I33x6gcZgP5RKogNPA0p1ghSIGydmHNI1UgtA63g9n25L5agrF3pce4DSAAdIJPJLW
+         KXRP4E2PXipWkEWiIsSBSZz5wrx73QpUqkestRrSgJf0AigjgATAd/1qm74L8mBPrJG0
+         lUkvU8Gf3e/xoirqQ6ReZwaQKiAPacB5iV+CZl/bMRZFeHV5O1xN4HUc+0fvWbwrzn2N
+         qAtkjl4McyYFDfQNJS69qW2irdZ0hJFkiZEnhFIETW/MeESvzfSSA6Ldx79qRzkVs/MQ
+         ANMxXDdPgA6BZaTTEROijD34+ykvb35VUzq6sUZPhin0BJeVuqkp7eCbggj2P8BqOAcL
+         xFGg==
+X-Forwarded-Encrypted: i=1; AJvYcCU3lzI1fcSNTFWQ1svFGyLkTu8Fo7xrJl1YdPgQgEhydScdPCCaDYn8R5wV5W9w5+qA5RYykSu/VzIN0j1iMsxN8aIX/UTsGm3yALY=
+X-Gm-Message-State: AOJu0Yyhmw8C0cIcdbqmO7yYTDX21d84JqLkLPMAttQpZGzeLdo5a+tl
+	BDZ65q/1opS/NS6ePcKJuOG+GdDKYGrkKFPPK7jvj0uS5Ip26nJzzsk+hsxjloI=
+X-Google-Smtp-Source: AGHT+IEMesT0g6EwJo8XKWWsj5lGZcP15znRyUjF4kLCBSkASIwGULeoWki8V8Svi3DzX0aQUU2RlQ==
+X-Received: by 2002:adf:fd4d:0:b0:33e:9b42:b9f with SMTP id h13-20020adffd4d000000b0033e9b420b9fmr9549400wrs.4.1710763595268;
+        Mon, 18 Mar 2024 05:06:35 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id v18-20020adfe4d2000000b0033ec9936909sm9636114wrm.39.2024.03.18.05.06.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Mar 2024 05:06:34 -0700 (PDT)
+Date: Mon, 18 Mar 2024 12:06:32 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev
+Subject: Re: [PATCH 3/6] backlight/omap1-bl: Replace FB_BLANK_ states with
+ simple on/off
+Message-ID: <20240318120632.GD16260@aspen.lan>
+References: <20240313154857.12949-1-tzimmermann@suse.de>
+ <20240313154857.12949-4-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/2] Fixes for omapdrm console
-Content-Language: en-US
-To: Tony Lindgren <tony@atomide.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
- Sam Ravnborg <sam@ravnborg.org>
-References: <20240228063540.4444-1-tony@atomide.com>
-From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
-Autocrypt: addr=tomi.valkeinen@ideasonboard.com; keydata=
- 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
-In-Reply-To: <20240228063540.4444-1-tony@atomide.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240313154857.12949-4-tzimmermann@suse.de>
 
-Hi,
+On Wed, Mar 13, 2024 at 04:45:02PM +0100, Thomas Zimmermann wrote:
+> The backlight is on for fb_blank eq FB_BLANK_UNBLANK, or off for
+> any other value in fb_blank. But the field fb_blank in struct
+> backlight_properties is deprecated and should not be used any
+> longer.
+>
+> Replace the test for fb_blank in omap's backlight code with a
+> simple boolean parameter and push the test into the update_status
+> helper. Instead of reading fb_blank directly, decode the backlight
+> device's status with backlight_is_blank().
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/video/backlight/omap1_bl.c | 46 ++++++++++++++----------------
+>  1 file changed, 21 insertions(+), 25 deletions(-)
+>
+> diff --git a/drivers/video/backlight/omap1_bl.c b/drivers/video/backlight/omap1_bl.c
+> index 84d148f385951..3fd8bbb7f5877 100644
+> --- a/drivers/video/backlight/omap1_bl.c
+> +++ b/drivers/video/backlight/omap1_bl.c
+> @@ -9,7 +9,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
+> -#include <linux/fb.h>
+>  #include <linux/backlight.h>
+>  #include <linux/slab.h>
+>  #include <linux/platform_data/omap1_bl.h>
+> @@ -20,7 +19,7 @@
+>  #define OMAPBL_MAX_INTENSITY		0xff
+>
+>  struct omap_backlight {
+> -	int powermode;
+> +	bool power;
 
-On 28/02/2024 08:35, Tony Lindgren wrote:
-> Here are two fixes for omapdrm for missing drm_framebuffer_funcs.dirty
-> that needs to be paired with omap_framebuffer_dirty(), and to add
-> FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS so things behave as earlier with
-> drm_fb_helper_sys_write(). Without these fixes, the console won't update
-> for the command mode displays. And likely mmap() using writes can miss
-> updates as noted by Thomas.
-> 
-> Regards,
-> 
-> Tony
-> 
-> Changes since v2:
-> - Fix cache issue noted by Tomi using custom omap_fbdev_fb_mmap() as
->    suggested by Thomas
-> 
-> - Add FB_DMAMEM_HELPERS_DEFERRED Kconfig option and use it for omapdrm
->    as noted by Thomas
-> 
-> Changes since v1:
-> 
-> - Add FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS to use with
->    FB_DEFAULT_DEFERRED_OPS as suggested by Thomas
-> 
-> Tony Lindgren (2):
->    drm/omapdrm: Fix console by implementing fb_dirty
->    drm/omapdrm: Fix console with deferred ops
-> 
->   drivers/gpu/drm/omapdrm/Kconfig      |  2 +-
->   drivers/gpu/drm/omapdrm/omap_fbdev.c | 40 +++++++++++++++++++++++-----
->   drivers/video/fbdev/core/Kconfig     |  6 +++++
->   include/linux/fb.h                   |  4 +++
->   4 files changed, 45 insertions(+), 7 deletions(-)
-> 
+The new name is hard to read in several of the conditionals below (which
+were previously "documented" by the comparisons to constants.
 
-Looks fine to me, I'll apply to drm-misc-next.
+This boolean effectively controls what we send to omapbl_send_enable().
+On that basis I'd rather it was called something like "enabled".
 
-  Tomi
 
+>  	int current_intensity;
+>
+>  	struct device *dev;
+> @@ -37,21 +36,14 @@ static inline void omapbl_send_enable(int enable)
+>  	omap_writeb(enable, OMAP_PWL_CLK_ENABLE);
+>  }
+>
+> -static void omapbl_blank(struct omap_backlight *bl, int mode)
+> +static void omapbl_power(struct omap_backlight *bl, bool on)
+
+As above omapbl_enable would be better.
+
+
+>  {
+> -	switch (mode) {
+> -	case FB_BLANK_NORMAL:
+> -	case FB_BLANK_VSYNC_SUSPEND:
+> -	case FB_BLANK_HSYNC_SUSPEND:
+> -	case FB_BLANK_POWERDOWN:
+> -		omapbl_send_intensity(0);
+> -		omapbl_send_enable(0);
+> -		break;
+> -
+> -	case FB_BLANK_UNBLANK:
+> +	if (on) {
+>  		omapbl_send_intensity(bl->current_intensity);
+>  		omapbl_send_enable(1);
+> -		break;
+> +	} else {
+> +		omapbl_send_intensity(0);
+> +		omapbl_send_enable(0);
+>  	}
+>  }
+>
+> @@ -61,7 +53,7 @@ static int omapbl_suspend(struct device *dev)
+>  	struct backlight_device *bl_dev = dev_get_drvdata(dev);
+>  	struct omap_backlight *bl = bl_get_data(bl_dev);
+>
+> -	omapbl_blank(bl, FB_BLANK_POWERDOWN);
+> +	omapbl_power(bl, false);
+>  	return 0;
+>  }
+>
+> @@ -70,33 +62,37 @@ static int omapbl_resume(struct device *dev)
+>  	struct backlight_device *bl_dev = dev_get_drvdata(dev);
+>  	struct omap_backlight *bl = bl_get_data(bl_dev);
+>
+> -	omapbl_blank(bl, bl->powermode);
+> +	omapbl_power(bl, bl->power);
+>  	return 0;
+>  }
+>  #endif
+>
+> -static int omapbl_set_power(struct backlight_device *dev, int state)
+> +static void omapbl_set_power(struct backlight_device *dev, bool on)
+
+May also like a new name...
+
+
+>  {
+>  	struct omap_backlight *bl = bl_get_data(dev);
+>
+> -	omapbl_blank(bl, state);
+> -	bl->powermode = state;
+> -
+> -	return 0;
+> +	omapbl_power(bl, on);
+> +	bl->power = on;
+>  }
+>
+>  static int omapbl_update_status(struct backlight_device *dev)
+>  {
+>  	struct omap_backlight *bl = bl_get_data(dev);
+> +	bool power;
+>
+>  	if (bl->current_intensity != dev->props.brightness) {
+> -		if (bl->powermode == FB_BLANK_UNBLANK)
+> +		if (bl->power)
+>  			omapbl_send_intensity(dev->props.brightness);
+>  		bl->current_intensity = dev->props.brightness;
+>  	}
+>
+> -	if (dev->props.fb_blank != bl->powermode)
+> -		omapbl_set_power(dev, dev->props.fb_blank);
+> +	if (backlight_is_blank(dev))
+> +		power = false;
+> +	else
+> +		power = true;
+
+I'd be happy with:
+
+    enable = !backlight_is_blank()
+
+
+Daniel.

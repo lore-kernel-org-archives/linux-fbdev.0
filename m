@@ -1,61 +1,84 @@
-Received: from esa12.hc1455-7.c3s2.iphmx.com (esa12.hc1455-7.c3s2.iphmx.com [139.138.37.100])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1461F7C092;
-	Tue, 19 Mar 2024 09:23:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.138.37.100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2D2B7CF3A
+	for <linux-fbdev@vger.kernel.org>; Tue, 19 Mar 2024 09:39:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710840232; cv=none; b=uBIfYte4AqojKrcKd0foXTWEsjswluoR2AbcwU0Dv3kzTts1AS4cyrg2MoeLjLOqWKx/y/RT1Y3SCsefctzmuALaup7hiTM12+skrQRQgypG8eK1KmX1ztMu7+tKpED6ebotzryCJ7na+iWCne8JhyhsVaNo+62cctceQI2rhI0=
+	t=1710841161; cv=none; b=J1ZElLFnc3iwDFvQornbg+zgsZtQoeYbud5tVfw6FAbZMl+ACUasL+5kkCOXG8/9Egl/aIgBf4RJjQJU51niqZonRojurmcGMs9E5e8Edkvel94FkIZKIxczG0D0Tu3jj6yvWeXUJHiR5SvFjvDFMPAK7t2lPioanQ5oAc4w2yE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710840232; c=relaxed/simple;
-	bh=uliAvHNLwCXnZkojCT8TwBWAkEuheEAUGuxMOUqlJQs=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=bELMp0BwaZu9xjdNBhm7mYY9LzFOw+FvUWvGS97nhaqtyMsK0Gz2Fam6CneUxNpaclTFv8E+g5AACA5rwXjKr2wuNA+8+vrO3kQInO+tWkWMcf5LvbVKfmQJCB1LjQT0l+PxFQrZdg8rrOxLwszJy+aeu3WCGkdefi+NmLMxEBk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=RjPsCsTS; arc=none smtp.client-ip=139.138.37.100
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fujitsu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fujitsu.com
+	s=arc-20240116; t=1710841161; c=relaxed/simple;
+	bh=E8EZV1ToCgbH1ToBgK37C3F5uIGQkGe3GARNgFrnR2A=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uHHhE3/Fymt+yKl+i4XqQ12xEk/8nUlwdmqo1Lay8+ahqJfCMZpuhuy4n8TerswZvAa5UkqQcxDqzI6BwHYFXAQBt9Miq/tvvP+hBgoWsEO6AsZzCxDb1fGpRy/bnADnRvicIQUnh3RCTv5EpBkNJh4oj+BSNaN03Kv8LwfmN4c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jtqU+Da7; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=dX5kaYRJ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jtqU+Da7; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=dX5kaYRJ; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="RjPsCsTS"
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
-  t=1710840230; x=1742376230;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=uliAvHNLwCXnZkojCT8TwBWAkEuheEAUGuxMOUqlJQs=;
-  b=RjPsCsTSwTS9MKAmk7uJP0yadmUjijnaeNZdd6nlDwMxy4eio8aCFfKZ
-   QRFVDZO+LFNEds/7QJcrJ2CScYSFAqSb14Pj7bRZDfZGGteHqBWYso66c
-   3aQMKTR2+k6V1VYFDvIcW7Wq5a28ETk75H1pIrpPWa8DeddWIJAJU0VPz
-   iCGzGiquv4WaUGy53HxkBLdaVhYbkasEzRkBnUPiMusRIhWXveZcDhktk
-   mXiJjC1lQisxM88Pxh4lrVrOoZmjUFXRtDTT+YIBjjy3mv1ET0FvndEPD
-   jlLx2wCZF5/Iaas86t2joHIpULZ/vX4nKDoXOcoJ/HfaKybZIwlfrZHdv
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11017"; a="132025580"
-X-IronPort-AV: E=Sophos;i="6.07,136,1708354800"; 
-   d="scan'208";a="132025580"
-Received: from unknown (HELO oym-r2.gw.nic.fujitsu.com) ([210.162.30.90])
-  by esa12.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2024 18:23:46 +0900
-Received: from oym-m2.gw.nic.fujitsu.com (oym-nat-oym-m2.gw.nic.fujitsu.com [192.168.87.59])
-	by oym-r2.gw.nic.fujitsu.com (Postfix) with ESMTP id 8150CEB469;
-	Tue, 19 Mar 2024 18:23:44 +0900 (JST)
-Received: from kws-ab3.gw.nic.fujitsu.com (kws-ab3.gw.nic.fujitsu.com [192.51.206.21])
-	by oym-m2.gw.nic.fujitsu.com (Postfix) with ESMTP id 7E7C8BF4BA;
-	Tue, 19 Mar 2024 18:23:43 +0900 (JST)
-Received: from edo.cn.fujitsu.com (edo.cn.fujitsu.com [10.167.33.5])
-	by kws-ab3.gw.nic.fujitsu.com (Postfix) with ESMTP id 143F72009327B;
-	Tue, 19 Mar 2024 18:23:43 +0900 (JST)
-Received: from localhost.localdomain (unknown [10.167.226.45])
-	by edo.cn.fujitsu.com (Postfix) with ESMTP id 82B531A006B;
-	Tue, 19 Mar 2024 17:23:42 +0800 (CST)
-From: Li Zhijian <lizhijian@fujitsu.com>
-To: linux-kernel@vger.kernel.org
-Cc: Li Zhijian <lizhijian@fujitsu.com>,
-	Helge Deller <deller@gmx.de>,
-	linux-omap@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jtqU+Da7";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="dX5kaYRJ";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jtqU+Da7";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="dX5kaYRJ"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D5F8E37612;
+	Tue, 19 Mar 2024 09:39:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710841157; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=JUep0UaZBgvgcjPAzjRBxeOi0HIeRPaS0YhTrsJRSj8=;
+	b=jtqU+Da7sxmuevtNDRVJ9ZPNHSnqKluEVfnQGRftFIxMaY9JHH3uakKHgYMAjGvHGUOhYp
+	bBVKq5CbtrX/X0WSUT9nLG6hXBE3oJi0kGrE/5reNdb6lDjwJagXiTRiJS5Z0xBdrfZpWp
+	qFSikuVA31cKMNlewtUoAvhJGAyTms8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710841157;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=JUep0UaZBgvgcjPAzjRBxeOi0HIeRPaS0YhTrsJRSj8=;
+	b=dX5kaYRJ5dJxmQBGupTa3H3uR1zlIg+wXki8m9n6gcMz0LfEW/5G/cyqbDf47cvRAdFE3k
+	WKSV3QKG9c1F4wCA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710841157; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=JUep0UaZBgvgcjPAzjRBxeOi0HIeRPaS0YhTrsJRSj8=;
+	b=jtqU+Da7sxmuevtNDRVJ9ZPNHSnqKluEVfnQGRftFIxMaY9JHH3uakKHgYMAjGvHGUOhYp
+	bBVKq5CbtrX/X0WSUT9nLG6hXBE3oJi0kGrE/5reNdb6lDjwJagXiTRiJS5Z0xBdrfZpWp
+	qFSikuVA31cKMNlewtUoAvhJGAyTms8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710841157;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=JUep0UaZBgvgcjPAzjRBxeOi0HIeRPaS0YhTrsJRSj8=;
+	b=dX5kaYRJ5dJxmQBGupTa3H3uR1zlIg+wXki8m9n6gcMz0LfEW/5G/cyqbDf47cvRAdFE3k
+	WKSV3QKG9c1F4wCA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 88D3C136A5;
+	Tue, 19 Mar 2024 09:39:17 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id zUcZIEVd+WU6GAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 19 Mar 2024 09:39:17 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de,
+	andy@kernel.org,
+	geert@linux-m68k.org,
+	dan.carpenter@linaro.org,
+	sam@ravnborg.org
+Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH v3] video: fbdev: panel-tpo-td043mtea1: Convert sprintf() family to sysfs_emit() family
-Date: Tue, 19 Mar 2024 17:23:33 +0800
-Message-Id: <20240319092333.1590322-1-lizhijian@fujitsu.com>
-X-Mailer: git-send-email 2.31.1
+	linux-staging@lists.linux.dev,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 0/6] backlight: Remove struct backlight_properties.fb_blank
+Date: Tue, 19 Mar 2024 10:37:19 +0100
+Message-ID: <20240319093915.31778-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.44.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -63,74 +86,68 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-TM-AS-Product-Ver: IMSS-9.1.0.1417-9.0.0.1002-28260.006
-X-TM-AS-User-Approved-Sender: Yes
-X-TMASE-Version: IMSS-9.1.0.1417-9.0.1002-28260.006
-X-TMASE-Result: 10--5.404400-10.000000
-X-TMASE-MatchedRID: 6n1zk+md1nUbO59FK9BdmJiHtCNYjckMjkDrBOJwwnQ8JmmJxjOaQXVX
-	Q3/qdw5yDiqGKKMcNgRhoUIS5GGeEs1HQN/TlJ3ZOIQ9GP2P2u/0swHSFcVJ6L42hLbi424DjcR
-	qQigdY124xAnoO+Mv0IWyDkw3lKgbePWEUnWb98FBDn6Fjq77jgYAPqHoVmYR31GU/N5W5BC/BR
-	68O365bjSAa8O4E9d0Ei2pD9yuITrs7aQkqkpFynaNJ/iTxXCafS0Ip2eEHnz3IzXlXlpamPoLR
-	4+zsDTtD12T7q2dIUvMX2qxXxibj0gxzbnU/ZVszazffbEGxPolyY0b9FK6Ag==
-X-TMASE-SNAP-Result: 1.821001.0001-0-1-22:0,33:0,34:0-0
+X-Spam-Score: 2.85
+X-Spamd-Result: default: False [2.85 / 50.00];
+	 RCVD_VIA_SMTP_AUTH(0.00)[];
+	 TO_DN_SOME(0.00)[];
+	 R_MISSING_CHARSET(2.50)[];
+	 BROKEN_CONTENT_TYPE(1.50)[];
+	 RCVD_COUNT_THREE(0.00)[3];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 FREEMAIL_TO(0.00)[kernel.org,linaro.org,gmail.com,gmx.de,linux-m68k.org,ravnborg.org];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 BAYES_HAM(-0.85)[85.37%];
+	 ARC_NA(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 RCPT_COUNT_TWELVE(0.00)[12];
+	 MID_CONTAINS_FROM(1.00)[];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 RCVD_TLS_ALL(0.00)[]
+X-Spam-Level: **
+Authentication-Results: smtp-out1.suse.de;
+	none
+X-Spam-Flag: NO
 
-Per filesystems/sysfs.rst, show() should only use sysfs_emit()
-or sysfs_emit_at() when formatting the value to be returned to user space.
+The field fb_blank in struct backlight_properties has been marked for
+removal. Remove it in favor of the power and state fields.
 
-coccinelle complains that there are still a couple of functions that use
-snprintf(). Convert them to sysfs_emit().
+Patches 1 to 5 prepare several backlight drivers. They remove fb_blank
+or replace driver code with existing helpers.
 
-sprintf() and scnprintf() will be converted as well if they have.
+Patch 6 removes fb_blank from backlight core and drivers. This resolves
+another dependency between backlight nad fbdev.
 
-Generally, this patch is generated by
-make coccicheck M=<path/to/file> MODE=patch \
-COCCI=scripts/coccinelle/api/device_attr_show.cocci
+v2:
+- omap1: replace 'power' with 'enable'
+- clarify commit messages
 
-No functional change intended
+Thomas Zimmermann (6):
+  auxdisplay: ht16k33: Replace use of fb_blank with backlight helper
+  backlight: omap1: Remove unused struct omap_backlight_config.set_power
+  backlight: omap1: Replace FB_BLANK_ states with simple on/off
+  fbdev: omap2/omapfb: Replace use of fb_blank with backlight helpers
+  staging: fbtft: Remove reference to fb_blank
+  backlight: Remove fb_blank from struct backlight_properties
 
-CC: Helge Deller <deller@gmx.de>
-CC: linux-omap@vger.kernel.org
-CC: linux-fbdev@vger.kernel.org
-CC: dri-devel@lists.freedesktop.org
-Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
----
-V3:
-   split it from a mess of drm,fbdev, becuase they are not the same subsystem.
+ drivers/auxdisplay/ht16k33.c                  |  7 +--
+ drivers/staging/fbtft/fb_ssd1351.c            |  4 +-
+ drivers/staging/fbtft/fbtft-core.c            |  5 +-
+ drivers/video/backlight/backlight.c           |  2 -
+ drivers/video/backlight/mp3309c.c             |  1 -
+ drivers/video/backlight/omap1_bl.c            | 47 +++++++------------
+ drivers/video/fbdev/atmel_lcdfb.c             |  1 -
+ .../omap2/omapfb/displays/panel-dsi-cm.c      |  7 +--
+ .../omapfb/displays/panel-sony-acx565akm.c    | 10 +---
+ include/linux/backlight.h                     | 25 +---------
+ include/linux/platform_data/omap1_bl.h        |  1 -
+ 11 files changed, 26 insertions(+), 84 deletions(-)
 
-V2:
-   Fix missing '+' before '=' in drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-
-This is a part of the work "Fix coccicheck device_attr_show warnings"[1]
-Split them per subsystem so that the maintainer can review it easily
-[1] https://lore.kernel.org/lkml/20240116041129.3937800-1-lizhijian@fujitsu.com/
----
- .../omap2/omapfb/displays/panel-tpo-td043mtea1.c     | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-index 477789cff8e0..3624452e1dd0 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-@@ -228,14 +228,10 @@ static ssize_t tpo_td043_gamma_show(struct device *dev,
- 	int ret;
- 	int i;
- 
--	for (i = 0; i < ARRAY_SIZE(ddata->gamma); i++) {
--		ret = snprintf(buf + len, PAGE_SIZE - len, "%u ",
--				ddata->gamma[i]);
--		if (ret < 0)
--			return ret;
--		len += ret;
--	}
--	buf[len - 1] = '\n';
-+	for (i = 0; i < ARRAY_SIZE(ddata->gamma); i++)
-+		len += sysfs_emit_at(buf, len, "%u ", ddata->gamma[i]);
-+	if (len)
-+		buf[len - 1] = '\n';
- 
- 	return len;
- }
 -- 
-2.29.2
+2.44.0
 

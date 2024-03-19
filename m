@@ -1,204 +1,132 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E66E0537E6
-	for <linux-fbdev@vger.kernel.org>; Tue, 19 Mar 2024 08:07:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35A0651C5F;
+	Tue, 19 Mar 2024 08:12:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.154.21.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710835636; cv=none; b=uHs9KrlVreR5Qfth9iXwR3JU5gR82VK1hSgfcq1/eiRpCXv6Gn2VoUpSnJouDduosGcaPj8LxmvSLgh+p00Nz/yOj/YXpRN7VpiHUZMe964TrSuwKQn2SN6UVqJcGfI8GG3ZKexmPqd19RtupTsxIZOFXyoCh8/CzDbUWRkOyG4=
+	t=1710835957; cv=none; b=ECefPDykVXKeZuaIcOBk+HpOmS0qe4MU2ynvwu6MaKqXiezTNOQU8EoCSIOr1AG9MW1IaPrCnft8dBwv/oAkul9830dummtyoD3HLYu4jgGiFcO/RU61OMBCQQKMmUObgEY+JoSB3avkon5Q7dIEkZiZ0lS3d0CDWszfp7IsKAs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710835636; c=relaxed/simple;
-	bh=BWfuo9855ONPF1k1D4oUaIBz6CAGhQMFb/rHZw4p2oE=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=DwuWaiVUcZFyok232osTs1iB81D35IA8/pBPvrGWVnfDUFY08f+nn2eX0TiiWO78gPe2kaNfXrkX7TUwljqi+TFudeYuZ0Pa1Vt/M9QAMuMpFBoeLbYDoxK2G2zNXARppqvMYUItI/jAyEXbDlPHzhxjtfcdMYjnPe9yzF5mrRM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=pK7+2DYV; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pK7+2DYV"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-33ddd1624beso3235787f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 19 Mar 2024 01:07:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710835632; x=1711440432; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :references:cc:to:content-language:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=spYxpIEXYSNCSvAxWfrD34Q6PwS/7IJ3TtTp+AY4irk=;
-        b=pK7+2DYVqiVYb1RfP+VxSnGlaKTUC3zv8IZIXwKegYU5cPJ0kz2TOitEGgua72XG3x
-         5WHXs3z1DoELhnKYNMdlIT0oYngdHq8TZyvR4D31rzH3nhf1KnnCoZSp2YXjGbFgvJP8
-         e7urFdJT2v9it+7RfMXNuObtYMeFGBXWeKgkzRs8Jqg7ifB37+FL/m+29PUCZG3biP1X
-         yc+SSpEBzrVsJygRDTiUNHekIA4BcIoREdlfFFfbR2BQLzE73TjWk2yq2lOljvijDqen
-         QOGa+ziELW6Abb144XiV1f9TOkcStPrh/BtKfAHshM0FEPKycYzL9TeQIuRWJhXB3jjn
-         aH+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710835632; x=1711440432;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :references:cc:to:content-language:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=spYxpIEXYSNCSvAxWfrD34Q6PwS/7IJ3TtTp+AY4irk=;
-        b=omwY2pS9765WzWTtCVEYDXvr2aQF2gEZVaiBXSNthP+yAVyMoZFL4zEZ4X3DCEfXQC
-         MJ8+GgOR01dNrw8HBlnD/v1b4bxa+WKxvKt3qASMq+WOCun4mgT4FL4j9iVrbpbXberN
-         J490cRK/Nw0KVxomyY54WiXOEtqqjcTHrKM2T5s8ZP3JtCrkJYvol8DwrGCPzn/nUDKb
-         eejBOoVAJdVlSju+2VYmK84q/DfLAnmMEfZdA2ybb+9DE7ZWcWKJoPQkarbpHD00Ho/G
-         bnrkJMiJBgyNEayWiz3NcMqcfUNrISxYkYNMqrN04afO2O5HGtcem+bOA9phFEhA09tE
-         OudQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU0L0IjfAiIOMSv+5wejvgNBAQtufobrr/QHvIeXU+CGegBMsUkdx0DfoLyayzXXGczvyQ5Pt3n+mfhXSvu3p8+h9YfxGjUyna2eN8=
-X-Gm-Message-State: AOJu0YwUVosLD/yAfPbcvndCqG/4NKQBrpHDx3bQL5VOv9AGO04xQVEn
-	hga567eWdKCRo5s4+6y/hCttYJuzJ89D50fIgCk3mmjWM9782F4R7G+wJf3IvGk=
-X-Google-Smtp-Source: AGHT+IFcvq6E9fBSZM2MY1IqdcxNGVVY1riao78wmDDVCMtvpbhSlftq640TPYVM8TuqdrlVOk7mkg==
-X-Received: by 2002:adf:e2ca:0:b0:33e:764b:ab17 with SMTP id d10-20020adfe2ca000000b0033e764bab17mr1433241wrj.14.1710835632086;
-        Tue, 19 Mar 2024 01:07:12 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:982:cbb0:2fcf:6f16:3b3b:da8e? ([2a01:e0a:982:cbb0:2fcf:6f16:3b3b:da8e])
-        by smtp.gmail.com with ESMTPSA id bu27-20020a056000079b00b0033ecbfc6941sm11461315wrb.110.2024.03.19.01.07.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 19 Mar 2024 01:07:11 -0700 (PDT)
-Message-ID: <9907040c-7e25-4aa5-a4be-6f4820e335f1@linaro.org>
-Date: Tue, 19 Mar 2024 09:07:10 +0100
+	s=arc-20240116; t=1710835957; c=relaxed/simple;
+	bh=9caLd301JPjjyVwXBcpRgYu6Tjsc9zw0rESPSmtUeG8=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=tU3JKU60o5/DLKv27tUX30v7+UA5c4GmQ4qLKdifXplg49RRUG5erd+PiyThbhoOJcULk0ccIAZKnD0RtksvVxwLHxcw6XwC51yQw746UX2KBs/0NmkkvGaEVuaLjH75/RcV7SpC8c/dwRvO3pPM8jf7tUX7rWf5X6ZNBk7CHDY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=omp.ru; spf=pass smtp.mailfrom=omp.ru; arc=none smtp.client-ip=90.154.21.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=omp.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=omp.ru
+Received: from msexch01.omp.ru (10.188.4.12) by msexch02.omp.ru (10.188.4.13)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1258.12; Tue, 19 Mar
+ 2024 11:12:23 +0300
+Received: from msexch01.omp.ru ([fe80::485b:1c4a:fb7f:c753]) by
+ msexch01.omp.ru ([fe80::485b:1c4a:fb7f:c753%5]) with mapi id 15.02.1258.012;
+ Tue, 19 Mar 2024 11:12:23 +0300
+From: Roman Smirnov <r.smirnov@omp.ru>
+To: Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>
+CC: Thomas Zimmermann <tzimmermann@suse.de>, Sergey Shtylyov
+	<s.shtylyov@omp.ru>, Karina Yankevich <k.yankevich@omp.ru>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"lvc-project@linuxtesting.org" <lvc-project@linuxtesting.org>
+Subject: Re: [PATCH v2] fbmon: prevent division by zero in
+ fb_videomode_from_videomode()
+Thread-Topic: [PATCH v2] fbmon: prevent division by zero in
+ fb_videomode_from_videomode()
+Thread-Index: AQHabwRs4YTUR6hF/0+sHxdCA/um27E4WY8AgATgDMOAAId3gIABCvMT
+Date: Tue, 19 Mar 2024 08:12:23 +0000
+Message-ID: <57b3f6a6cc184c8ead51ecc50669b503@omp.ru>
+References: <20240305135150.23240-1-r.smirnov@omp.ru>
+ <64bbc4dd-b617-4f3d-809e-763bedf37fb7@gmx.de>
+ <9688d1d453b0472cb90f5e2151cbd2f8@omp.ru>,<b5d52c4c-534f-4897-ab96-351f09bee89a@gmx.de>
+In-Reply-To: <b5d52c4c-534f-4897-ab96-351f09bee89a@gmx.de>
+Accept-Language: ru-RU, en-US
+Content-Language: ru-RU
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-kse-serverinfo: msexch02.omp.ru, 9
+x-kse-antivirus-interceptor-info: scan successful
+x-kse-antivirus-info: Clean, bases: 3/19/2024 6:00:00 AM
+x-kse-attachment-filter-triggered-rules: Clean
+x-kse-attachment-filter-triggered-filters: Clean
+x-kse-bulkmessagesfiltering-scan-result: InTheLimit
+Content-Type: text/plain; charset="koi8-r"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Reply-To: neil.armstrong@linaro.org
-Subject: Re: [PATCH v2] drm,fbdev: td043mtea1: Convert sprintf() family to
- sysfs_emit() family
-Content-Language: en-US, fr
-To: Li Zhijian <lizhijian@fujitsu.com>, linux-kernel@vger.kernel.org
-Cc: Jessica Zhang <quic_jesszhan@quicinc.com>, Sam Ravnborg
- <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
- Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240319035555.1577734-1-lizhijian@fujitsu.com>
-Autocrypt: addr=neil.armstrong@linaro.org; keydata=
- xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
- GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
- BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
- qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
- 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
- AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
- OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
- Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
- YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
- GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
- UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
- GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
- yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
- QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
- SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
- 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
- Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
- oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
- M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
- 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
- KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
- 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
- QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
-Organization: Linaro Developer Services
-In-Reply-To: <20240319035555.1577734-1-lizhijian@fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Hi,
+On Mon, 18 Mar 2024 20:15:55 +0100 Helge Deller wrote:
+> On 3/18/24 09:11, Roman Smirnov wrote:
+> > On Fri, 15 Mar 2024 09:44:08 +0100 Helge Deller wrote:
+> > > On 3/5/24 14:51, Roman Smirnov wrote:
+> > > > The expression htotal * vtotal can have a zero value on
+> > > > overflow.
+> > >
+> > > I'm not sure if those always results in zero in kernel on overflow.
+> > > Might be architecture-depended too, but let's assume it
+> > > can become zero, ....
+> > >
+> > > > It is necessary to prevent division by zero like in
+> > > > fb_var_to_videomode().
+> > > >
+> > > > Found by Linux Verification Center (linuxtesting.org) with Svace.
+> > > >
+> > > > Signed-off-by: Roman Smirnov <r.smirnov@omp.ru>
+> > > > Reviewed-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+> > > > ---
+> > > >    V1 -> V2: Replaced the code of the first version with a check.
+> > > >
+> > > >    drivers/video/fbdev/core/fbmon.c | 2 +-
+> > > >    1 file changed, 1 insertion(+), 1 deletion(-)
+> > > >
+> > > > diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev=
+/core/fbmon.c
+> > > > index 79e5bfbdd34c..b137590386da 100644
+> > > > --- a/drivers/video/fbdev/core/fbmon.c
+> > > > +++ b/drivers/video/fbdev/core/fbmon.c
+> > > > @@ -1344,7 +1344,7 @@ int fb_videomode_from_videomode(const struct =
+videomode *vm,
+> > > >         vtotal =3D vm->vactive + vm->vfront_porch + vm->vback_porch=
+ +
+> > > >                  vm->vsync_len;
+> > > >         /* prevent division by zero */
+> > > > -     if (htotal && vtotal) {
+> > > > +     if (htotal && vtotal && (vm->pixelclock / htotal >=3D vtotal)=
+) {
+> > >
+> > > why don't you then simply check for
+> > >          if .. ((htotal * vtotal) =3D=3D 0) ...
+> > > instead?
+> > >
+> > > Helge
+> >
+> > Thomas Zimmermann from the previous discussion said:
+> > On Tue, 5 Mar 2024 11:18:05 +0100 Thomas Zimmerman wrote:
+> > > Maybe use
+> > >
+> > >     if (htotal && vtotal && (vm->pixelclock / htotal >=3D vtotal))
+> > >
+> > > for the test. That rules out overflowing multiplication and sets
+> > > refresh to 0 in such cases.
+> >
+> > This prevents overflow, which is also a problematic case.
+>
+> I don't like adding another division here and I doubt we have
+> a problem with possible overflow.
+> So, I suggest to keep it simple, something like:
+>        ...
+>        total =3D htotal * vtotal;
+>        if (total)
+>                fbmode->refresh =3D vm->pixelclock / total;
+>        else...
 
-On 19/03/2024 04:55, Li Zhijian wrote:
-> Per filesystems/sysfs.rst, show() should only use sysfs_emit()
-> or sysfs_emit_at() when formatting the value to be returned to user space.
-> 
-> coccinelle complains that there are still a couple of functions that use
-> snprintf(). Convert them to sysfs_emit().
-> 
-> sprintf() and scnprintf() will be converted as well if they have.
-> 
-> Generally, this patch is generated by
-> make coccicheck M=<path/to/file> MODE=patch \
-> COCCI=scripts/coccinelle/api/device_attr_show.cocci
-> 
-> No functional change intended
+Okay, I'll prepare a third version with that change:
 
-Please split patches in 2, while the driver targets the same hw, they
-are not under the same subsystems.
+    if (htotal && vtotal && (htotal * vtotal))
 
-Neil
-
-> 
-> CC: Neil Armstrong <neil.armstrong@linaro.org>
-> CC: Jessica Zhang <quic_jesszhan@quicinc.com>
-> CC: Sam Ravnborg <sam@ravnborg.org>
-> CC: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> CC: Maxime Ripard <mripard@kernel.org>
-> CC: Thomas Zimmermann <tzimmermann@suse.de>
-> CC: David Airlie <airlied@gmail.com>
-> CC: Daniel Vetter <daniel@ffwll.ch>
-> CC: Helge Deller <deller@gmx.de>
-> CC: linux-omap@vger.kernel.org
-> CC: linux-fbdev@vger.kernel.org
-> CC: dri-devel@lists.freedesktop.org
-> Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
-> ---
-> V2:
->     Fix missing '+' before '=' in drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> 
-> This is a part of the work "Fix coccicheck device_attr_show warnings"[1]
-> Split them per subsystem so that the maintainer can review it easily
-> [1] https://lore.kernel.org/lkml/20240116041129.3937800-1-lizhijian@fujitsu.com/
-> ---
->   drivers/gpu/drm/panel/panel-tpo-td043mtea1.c        | 13 ++++---------
->   .../omap2/omapfb/displays/panel-tpo-td043mtea1.c    | 12 ++++--------
->   2 files changed, 8 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c b/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
-> index cf4609bb9b1d..0983fe47eb5a 100644
-> --- a/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
-> +++ b/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
-> @@ -242,16 +242,11 @@ static ssize_t gamma_show(struct device *dev, struct device_attribute *attr,
->   	struct td043mtea1_panel *lcd = dev_get_drvdata(dev);
->   	ssize_t len = 0;
->   	unsigned int i;
-> -	int ret;
->   
-> -	for (i = 0; i < ARRAY_SIZE(lcd->gamma); i++) {
-> -		ret = snprintf(buf + len, PAGE_SIZE - len, "%u ",
-> -			       lcd->gamma[i]);
-> -		if (ret < 0)
-> -			return ret;
-> -		len += ret;
-> -	}
-> -	buf[len - 1] = '\n';
-> +	for (i = 0; i < ARRAY_SIZE(lcd->gamma); i++)
-> +		len += sysfs_emit_at(buf, len, "%u ", lcd->gamma[i]);
-> +	if (len)
-> +		buf[len - 1] = '\n';
->   
->   	return len;
->   }
-> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> index 477789cff8e0..3624452e1dd0 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> @@ -228,14 +228,10 @@ static ssize_t tpo_td043_gamma_show(struct device *dev,
->   	int ret;
->   	int i;
->   
-> -	for (i = 0; i < ARRAY_SIZE(ddata->gamma); i++) {
-> -		ret = snprintf(buf + len, PAGE_SIZE - len, "%u ",
-> -				ddata->gamma[i]);
-> -		if (ret < 0)
-> -			return ret;
-> -		len += ret;
-> -	}
-> -	buf[len - 1] = '\n';
-> +	for (i = 0; i < ARRAY_SIZE(ddata->gamma); i++)
-> +		len += sysfs_emit_at(buf, len, "%u ", ddata->gamma[i]);
-> +	if (len)
-> +		buf[len - 1] = '\n';
->   
->   	return len;
->   }
+I think that will be enough.
 

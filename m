@@ -1,121 +1,173 @@
-Received: from mail-yw1-f201.google.com (mail-yw1-f201.google.com [209.85.128.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from esa10.hc1455-7.c3s2.iphmx.com (esa10.hc1455-7.c3s2.iphmx.com [139.138.36.225])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 274585FB99
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 23:46:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 016207BAF0;
+	Tue, 19 Mar 2024 03:43:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.138.36.225
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710805596; cv=none; b=C43hkF7u/TAIjuY2LPec5qLvpkiP8vQen8MRhkL4PcIp0F0DnMkYJMWFdvrPe61RMUlwWVNtOGqUYdnw/0xtgAlGhTORPGArxgkyDDel5tJ7mVXhelrwbaiQYeT5VzU+yxklade/cAHp/t1EtUG6+oo2iVBCiS/B0QjT6V33GCs=
+	t=1710819813; cv=none; b=tE9To8zQ09REN3dik5L3c1mduj9jHO8ei3knfrIyGphtHtGUHp05idZY2NKVWZMeib7b5xh1+gCgkMnlFrcqZxIaQLIaPgT9857wXbnFAqlcRc4taI0UCeXqMhvPLkz7FNlisoNECVuBtRV+d5uIzrAyzuXtFy8SNldzxRQewQ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710805596; c=relaxed/simple;
-	bh=SWuJT1od1lHkTaQ+y94pwMpDIt4RqOBKy+5+YAjUbf4=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=ZiJngoUwdw0hxM6FfKzY4KWKGFoI4vqxUmj5OfHil64T2+vFBfL88vDzJI4kBqCU7MDtn5AIO4ouJaTRNGQ860dGAjtVTtt3a7Kvdcl3/AQV56SUXAL/KDQKt9vsylR4kX2oWJgw2W6eG+wD3ebnA+7GnsQAyNukbgwt71V76BU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=l2VuDwZ0; arc=none smtp.client-ip=209.85.128.201
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com
+	s=arc-20240116; t=1710819813; c=relaxed/simple;
+	bh=kpIQQ4UHhSRaPRBqYrLlxC1aJHMqE9Os3Z55I7joDmI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=DMWQBs6oA9AjtGcsUns+19RV1X9mPVYjvH7E+q6RUETAy0q5OoP+EE4Qc89SJvLK2qoqFoBrzElwR3jd5CFNlgssvt+aHX4l39hwCcil88+3sVF6FcNEZ0s3lz04LzKxAEeSqu4QdvED8U1jb/J/3cK2r9LmJM61hl/0vrDXb6o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=eepE6FvZ; arc=none smtp.client-ip=139.138.36.225
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fujitsu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fujitsu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="l2VuDwZ0"
-Received: by mail-yw1-f201.google.com with SMTP id 00721157ae682-60832a48684so76736017b3.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 18 Mar 2024 16:46:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1710805594; x=1711410394; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=lT28vCErvodzmWvEdtP7ojnGOwo1TugtSNi45cBTyks=;
-        b=l2VuDwZ0O+mCqYjzUCoRSpxZdjBLHdJbTilEFvdppRrDtPdHK+7/I7TBhh52nOZXuu
-         QV65Y7RAx0Eic7RrjoNpx1lAl+gpbzXeiVYgtHxGH0RWIgNr8u7cOjU1Q9mPmsxOzpiV
-         PqTgBzzCtH4XseLw2IwMgYR65/9ElAR7Lhl7VHlmSAy1uRxpWvvxVFjYowHi86tlI2ts
-         VxK7JWFCCN/2b1/gp2fMXM9ulxmWKF28tZ1UkqsKwbmSLLc9qrlwoCBCHTKtQe/xJR37
-         j1r3tQ6Y56ByXHYDfDOP1bnhbJHt9tHDfqZ/Huqm8Ozlq8Bxa8osJGVJ1rpUBg8kgznF
-         p+aQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710805594; x=1711410394;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=lT28vCErvodzmWvEdtP7ojnGOwo1TugtSNi45cBTyks=;
-        b=dvBr8DwG2Cq60F43flQ6Xa9AiGvFeK+v2aKhw7Qj7OXQ+e3RuQoVgSuNo1QBbFgVSY
-         vua7BQdV36MmclhPEwx1IpZFUE+qShDZT9VwT2/I867o9a0v8Tnon5hiBmggeNmV/hwx
-         BVW09NFSU3UmEI4OudF8hsrKpbDMRooTfzDFrPlAZmYKdJEqGbvz+tDUmZZNVgZhGmIR
-         b+WA5AXS5GSLd5mnWgbpdhj6QzgqxCf9GFA+/2baVKwyJf978y/X1FToHnlwCtzUb20U
-         81m433ITjlMuCC26qfSqHQQB/hdB4tavf2G0s9XRxM+Cy7UNfXxiDKks8Yy5YbKIsK/7
-         UnNg==
-X-Gm-Message-State: AOJu0YyKcVtdQfIOK0/mnOVkvuZOmZMTiIXhfXiqYNHop0O+MuDpadKb
-	oC3FvWf/3rwigJ0Y55IRmS4RaHGOoqhz4h2gfxSA9LEiWXLzbZLUuEuZ2UpMlOTYcNnKiixi67R
-	q3/GTR/EGsrsZsXuWcFliXA==
-X-Google-Smtp-Source: AGHT+IFVl8OTSlqtieEkI8wlprKnHSBkJvt5RLX/AaTjUcSMTHpdrj19ejltSZTNHQk3a+JhkINV8z81NefWgOfVyg==
-X-Received: from jstitt-linux1.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
- (user=justinstitt job=sendgmr) by 2002:a0d:d64e:0:b0:609:f0f0:20c4 with SMTP
- id y75-20020a0dd64e000000b00609f0f020c4mr2543290ywd.4.1710805594283; Mon, 18
- Mar 2024 16:46:34 -0700 (PDT)
-Date: Mon, 18 Mar 2024 23:46:33 +0000
+	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="eepE6FvZ"
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
+  t=1710819810; x=1742355810;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=kpIQQ4UHhSRaPRBqYrLlxC1aJHMqE9Os3Z55I7joDmI=;
+  b=eepE6FvZN/CHPrX9S9SP94HYskLsurYEDaOmfcPvfRi1ytwv5oYblRo2
+   8R7EF3tVM1+AAAPSz5GcjdFj3nPJPzorLRA6Rhqw1sucKGx1O+5lQk2P7
+   WKgZF9lD4vkpNsyer2LgZMYqc/xLUHHMplXc/6c4S7Ks2dzbIGiQAHjhw
+   mHkoCE1iMDJKRyyChBwHt4sNoJTDmyhC1LNfZz5UCqk034Gku0pldsmXP
+   SW6Ng8DPjG6NqSXSfvAAVA1+7JAq8rROU1FYtc/D/MNon5sMnlffgnMNo
+   UUOi69CCpzcO9VhVP9sQeKoKGJk6mG4+HOKzumpHmlI+mLHMKQrmS1Wa2
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11017"; a="140288667"
+X-IronPort-AV: E=Sophos;i="6.07,135,1708354800"; 
+   d="scan'208";a="140288667"
+Received: from unknown (HELO oym-r1.gw.nic.fujitsu.com) ([210.162.30.89])
+  by esa10.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2024 12:43:20 +0900
+Received: from oym-m3.gw.nic.fujitsu.com (oym-nat-oym-m3.gw.nic.fujitsu.com [192.168.87.60])
+	by oym-r1.gw.nic.fujitsu.com (Postfix) with ESMTP id 06072D4800;
+	Tue, 19 Mar 2024 12:43:18 +0900 (JST)
+Received: from kws-ab3.gw.nic.fujitsu.com (kws-ab3.gw.nic.fujitsu.com [192.51.206.21])
+	by oym-m3.gw.nic.fujitsu.com (Postfix) with ESMTP id 27E56D561B;
+	Tue, 19 Mar 2024 12:43:17 +0900 (JST)
+Received: from edo.cn.fujitsu.com (edo.cn.fujitsu.com [10.167.33.5])
+	by kws-ab3.gw.nic.fujitsu.com (Postfix) with ESMTP id A4CF120099077;
+	Tue, 19 Mar 2024 12:43:16 +0900 (JST)
+Received: from localhost.localdomain (unknown [10.167.226.45])
+	by edo.cn.fujitsu.com (Postfix) with ESMTP id 1BBD41A006B;
+	Tue, 19 Mar 2024 11:43:15 +0800 (CST)
+From: Li Zhijian <lizhijian@fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: Li Zhijian <lizhijian@fujitsu.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Jessica Zhang <quic_jesszhan@quicinc.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Helge Deller <deller@gmx.de>,
+	linux-omap@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] drm,fbdev: td043mtea1: Convert sprintf() family to sysfs_emit() family
+Date: Tue, 19 Mar 2024 11:43:10 +0800
+Message-Id: <20240319034310.1574349-1-lizhijian@fujitsu.com>
+X-Mailer: git-send-email 2.31.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAFjS+GUC/x3NQQ7CIBBA0as0s3aSARpbvIpxUWDQ2dBmUKJpe
- vcSl2/z/w6VVbjCbdhBuUmVtXSYywDxtZQno6RusGRHcmbG+tYStx8mlcZasUniFXNI3HD5GEu UA0acQnRu8n4mf4Ue25SzfP+j++M4Tu6YecV4AAAA
-X-Developer-Key: i=justinstitt@google.com; a=ed25519; pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1710805593; l=1826;
- i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
- bh=SWuJT1od1lHkTaQ+y94pwMpDIt4RqOBKy+5+YAjUbf4=; b=trEZV2UKkAi41dKgex75moannI2KQl33HA1LGTyC7NWX4DdBAQaDs4goCEd3ncaVz44gcj6o8
- 7tqlG14jzZGAGKGyXgxHyxdOo/JVZkY5LfpDC2UOEB9knhmDvAxhv/j
-X-Mailer: b4 0.12.3
-Message-ID: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
-Subject: [PATCH] video: fbdev: au1200fb: replace deprecated strncpy with strscpy
-From: Justin Stitt <justinstitt@google.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
-	Justin Stitt <justinstitt@google.com>
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-TM-AS-Product-Ver: IMSS-9.1.0.1417-9.0.0.1002-28260.004
+X-TM-AS-User-Approved-Sender: Yes
+X-TMASE-Version: IMSS-9.1.0.1417-9.0.1002-28260.004
+X-TMASE-Result: 10--6.993400-10.000000
+X-TMASE-MatchedRID: vWLMKRYJCzcbO59FK9BdmJiHtCNYjckMjkDrBOJwwnQ8JmmJxjOaQXVX
+	Q3/qdw5yDiqGKKMcNgRhoUIS5GGeEs1HQN/TlJ3ZOIQ9GP2P2u9hCyUKzFE4pMOmbgJn0O1cd5G
+	gTXcmX3z/gi5MRR1gmuKPZyvBQlTFs+DazrJbzs47I8qKHhHKyIY+g3uPA6ifU5+divxV/olaTW
+	107FjPHDnpYPqS6jzx8tvnLY6Q4L+1UOlz1sLXchF4zyLyne+AUrr7Qc5WhKhzvn1t6wuaa+zst
+	h4cn4jroa8IWqgpLBOAMuqetGVetksDkkP3zIjq3QfwsVk0UbtuRXh7bFKB7sO0UlcJEGWrCrSW
+	yB8sgMMkRgrwE4e1Kc/TqvYMYi+tH8FerAT0dJY=
+X-TMASE-SNAP-Result: 1.821001.0001-0-1-22:0,33:0,34:0-0
 
-strncpy() is deprecated for use on NUL-terminated destination strings
-[1] and as such we should prefer more robust and less ambiguous string
-interfaces.
+Per filesystems/sysfs.rst, show() should only use sysfs_emit()
+or sysfs_emit_at() when formatting the value to be returned to user space.
 
-Let's use the new 2-argument strscpy() which guarantees NUL-termination
-on the destination buffer while also simplifying the syntax. Note that
-strscpy() will not NUL-pad the destination buffer like strncpy() does.
+coccinelle complains that there are still a couple of functions that use
+snprintf(). Convert them to sysfs_emit().
 
-However, the NUL-padding behavior of strncpy() is not required since
-fbdev is already NUL-allocated from au1200fb_drv_probe() ->
-frameuffer_alloc(), rendering any additional NUL-padding redundant.
-|	p = kzalloc(fb_info_size + size, GFP_KERNEL);
+sprintf() and scnprintf() will be converted as well if they have.
 
-Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
-Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
-Link: https://github.com/KSPP/linux/issues/90
-Cc: linux-hardening@vger.kernel.org
-Signed-off-by: Justin Stitt <justinstitt@google.com>
+Generally, this patch is generated by
+make coccicheck M=<path/to/file> MODE=patch \
+COCCI=scripts/coccinelle/api/device_attr_show.cocci
+
+No functional change intended
+
+CC: Neil Armstrong <neil.armstrong@linaro.org>
+CC: Jessica Zhang <quic_jesszhan@quicinc.com>
+CC: Sam Ravnborg <sam@ravnborg.org>
+CC: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+CC: Maxime Ripard <mripard@kernel.org>
+CC: Thomas Zimmermann <tzimmermann@suse.de>
+CC: David Airlie <airlied@gmail.com>
+CC: Daniel Vetter <daniel@ffwll.ch>
+CC: Helge Deller <deller@gmx.de>
+CC: linux-omap@vger.kernel.org
+CC: linux-fbdev@vger.kernel.org
+CC: dri-devel@lists.freedesktop.org
+Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
 ---
-Note: build-tested only.
-
-Found with: $ rg "strncpy\("
+This is a part of the work "Fix coccicheck device_attr_show warnings"[1]
+Split them per subsystem so that the maintainer can review it easily
+[1] https://lore.kernel.org/lkml/20240116041129.3937800-1-lizhijian@fujitsu.com/
 ---
- drivers/video/fbdev/au1200fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/panel/panel-tpo-td043mtea1.c        | 13 ++++---------
+ .../omap2/omapfb/displays/panel-tpo-td043mtea1.c    | 12 ++++--------
+ 2 files changed, 8 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
-index 6f20efc663d7..e718fea63662 100644
---- a/drivers/video/fbdev/au1200fb.c
-+++ b/drivers/video/fbdev/au1200fb.c
-@@ -1557,7 +1557,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
- 		return ret;
- 	}
+diff --git a/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c b/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
+index cf4609bb9b1d..0983fe47eb5a 100644
+--- a/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
++++ b/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
+@@ -242,16 +242,11 @@ static ssize_t gamma_show(struct device *dev, struct device_attribute *attr,
+ 	struct td043mtea1_panel *lcd = dev_get_drvdata(dev);
+ 	ssize_t len = 0;
+ 	unsigned int i;
+-	int ret;
  
--	strncpy(fbi->fix.id, "AU1200", sizeof(fbi->fix.id));
-+	strscpy(fbi->fix.id, "AU1200");
- 	fbi->fix.smem_start = fbdev->fb_phys;
- 	fbi->fix.smem_len = fbdev->fb_len;
- 	fbi->fix.type = FB_TYPE_PACKED_PIXELS;
-
----
-base-commit: bf3a69c6861ff4dc7892d895c87074af7bc1c400
-change-id: 20240318-strncpy-drivers-video-fbdev-au1200fb-c-7bc337998096
-
-Best regards,
---
-Justin Stitt <justinstitt@google.com>
+-	for (i = 0; i < ARRAY_SIZE(lcd->gamma); i++) {
+-		ret = snprintf(buf + len, PAGE_SIZE - len, "%u ",
+-			       lcd->gamma[i]);
+-		if (ret < 0)
+-			return ret;
+-		len += ret;
+-	}
+-	buf[len - 1] = '\n';
++	for (i = 0; i < ARRAY_SIZE(lcd->gamma); i++)
++		len += sysfs_emit_at(buf, len, "%u ", lcd->gamma[i]);
++	if (len)
++		buf[len - 1] = '\n';
+ 
+ 	return len;
+ }
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+index 477789cff8e0..040a17a05baa 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+@@ -228,14 +228,10 @@ static ssize_t tpo_td043_gamma_show(struct device *dev,
+ 	int ret;
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(ddata->gamma); i++) {
+-		ret = snprintf(buf + len, PAGE_SIZE - len, "%u ",
+-				ddata->gamma[i]);
+-		if (ret < 0)
+-			return ret;
+-		len += ret;
+-	}
+-	buf[len - 1] = '\n';
++	for (i = 0; i < ARRAY_SIZE(ddata->gamma); i++)
++		len = sysfs_emit_at(buf, len, "%u ", ddata->gamma[i]);
++	if (len)
++		buf[len - 1] = '\n';
+ 
+ 	return len;
+ }
+-- 
+2.29.2
 

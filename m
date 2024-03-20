@@ -1,71 +1,71 @@
-Received: from mail-il1-f202.google.com (mail-il1-f202.google.com [209.85.166.202])
+Received: from mail-yw1-f201.google.com (mail-yw1-f201.google.com [209.85.128.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9146E85C58
-	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 23:04:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.202
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D9CE86128
+	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 23:22:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710975889; cv=none; b=C465AjGvutgsHcCq+Sa+fmNu2DyYyS3yVnf/eBoCItHIgZcjUzOl6sX8caMJftSMzfOZuSKIyIJ3lx2ONwDjVvku/TDr33IQD+KzUKNJL2CuXD777Dcqd0uGVYyDy6KGIkz+a2a/8xrKysEbtPmgdMdbYVMfL/uIvC1C7PrmPUg=
+	t=1710976925; cv=none; b=Bz5sKphDLaHl5Zb6T9ITn9Uj5BDpkukC1Fpj+mZwgGSoTPIcXMJcAwKPs3VB/zhwRVYlxR2mv8HNMo3MmmoX8BEqh8/F6lQrxOOx9N5nqt1seTxz6GZc98Yi4a6hGFZsSJP/CYCgvzD3VflrvcNbwNo8otv2UCf1yM4hOGYemnU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710975889; c=relaxed/simple;
-	bh=xdt3WcZtzp6V+dVSO0oQ0nQ4PjO+mTElm8qjYyLdYhc=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=AVZYBuen3hmcoRBGlh97rgsmncENb4XKAf6wZZ3K+Sp+/wLvWF2d33cnKXm+pEycQkzeF3oj11ZlwQnZbExto80i7YqUPmPV5EDISAgFoWOyk30I2KL/d1ovrthu8gwqUJUYTIDLRvrE7Fn6BxWZVexUewFemY3UrizCCqrbiHU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=Q76+N/er; arc=none smtp.client-ip=209.85.166.202
+	s=arc-20240116; t=1710976925; c=relaxed/simple;
+	bh=LstULD3SZgSv3OfqQEREHb9PlnHVDFzksy2daTuKq/I=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=uIekWKvXw4E1EwmYrDZYe6aO6hyS+hHt/vQS+2RQ52geAOkN9wXlhatNQs2G7rC+yjUOyE36cOg+9ITi9rLiUYN9a2T5TDn1OxCx3BEs4EvJcpDMQ9qUwhMg9ucMfeGo5Vp/Q1K0qu/Ow3eEeIrgpS7QHqwHMXrQ43HtyuHZMr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=uopcagLU; arc=none smtp.client-ip=209.85.128.201
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--justinstitt.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Q76+N/er"
-Received: by mail-il1-f202.google.com with SMTP id e9e14a558f8ab-3668f754090so4223865ab.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 16:04:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="uopcagLU"
+Received: by mail-yw1-f201.google.com with SMTP id 00721157ae682-60ab69a9e6fso19661797b3.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 16:22:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1710975887; x=1711580687; darn=vger.kernel.org;
+        d=google.com; s=20230601; t=1710976922; x=1711581722; darn=vger.kernel.org;
         h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=g2+RO3cMaS60sPuOhp6UDFq45HF6306U2TZ9coJYJqo=;
-        b=Q76+N/erYG4HtEVqddQUCkoP6uaBdSlr/7SIL5ilXWCfLNZV8voEEccSiVjDX7ZUT2
-         JTZz38Mo2VJOI57FfdHbdIVL4xcFr/Utqwz3bYIuIoDfAnALOPY1gNUint4hd84Eb4bD
-         Hx27l25S2yOx9dvDB9Q4dsHnAZoEWLPYOHeSgPaszW+KYh2/GsNFE8NHMfcQV0WGSO+z
-         YZL4KANTuoSqL7gl0NIha6SX8Gyw+Q50qce20yBhak9s6VYlI6RROqsOyjjKuEQAYDa2
-         SNUxmERbOcYsPIhXVj86sRJAF6CPB+9dsePqXiP/DDEHCKTfwM/SGm4/iDQDazHoomfR
-         bgqg==
+        bh=31u9h4pRsIoYT5xL2+2Sx/Q3BDCy9WQzGQxSt0T02WU=;
+        b=uopcagLUe9FUu5r+Uju/IIdjmlZvPd8g8tPAHZeY1L74ucLYao2lqvpJWWEkGKRz78
+         xrkjAjMclpsRi8qc1hy5NIbfcaioJnTkBNbugXLKVpGzvzo5IHVDHbIBJjgeT5HQkXzB
+         iqcD1xaTHex0kL7fWJ7049ZAhs8Nbx+Bvg/GU1Q/XA1+racvK/Df+zYoY48PRta1V1lK
+         5tyflTyWUhpq+pC+ZE6YyXwvLY3wZcSYObhcLy7nukRavgR2B/U4VJeLX08y+trMRrQl
+         8kcqT9YdLMjujjOp/aQQFG/vMjfNIHJrIJcmQ1LdRl8mKopXzHwjDQO9LLFSL+Ap3Jt7
+         k0+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710975887; x=1711580687;
+        d=1e100.net; s=20230601; t=1710976922; x=1711581722;
         h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=g2+RO3cMaS60sPuOhp6UDFq45HF6306U2TZ9coJYJqo=;
-        b=GBOENcIFmIt7vzcheN5GMrrtQm6ZxDNtzH06r/E5jN6DkAFZB4grqKSyGwhErZQ+9x
-         mYomrVbd1YEZ3oKmJqA9dqgq338fhyVHpNNRAhwJfxrvKJJiloMAeHKnyisOh0TyDqdk
-         9PUwcO5vKaSk1wVg/PlEhVKII+RM7+tg+PckDLeb194sTmNCVZa9skRmukATiGff6NJk
-         sOiuQu1KEwH3djCJH/b3qvyj+wZlIF/ZMVIDD2LXjgwvoBaLlrtB9Xzyd/QM9RIurdxm
-         QXOVA0PIAopDbweJC3EvWL6zfVaWjtdEctw0T+Gfk7tZoGorF4n2vqA+rHp/LhS4SZMv
-         eSRw==
-X-Gm-Message-State: AOJu0YylzyOxpFOxun3Za1TNbMsrowFiOuR6yJU8j7nYNHX30sJkNGXd
-	7E+tPo1c+U2W00Ai++Sn3NpofwukdDZpSS37AFXkeyHgIIYac/gFTZ/eWpgypGMPOo3kI671MTh
-	SRFtqZeoSNzSkp/ldbRXQFA==
-X-Google-Smtp-Source: AGHT+IE0SUB2ouJtetdQjpyRX2R1ogJVbIpFy4IGejw06L4AAiIp+tvbaFIe6uUWSz0Q/ZKxotmWusw1YlBBb6OKEg==
+        bh=31u9h4pRsIoYT5xL2+2Sx/Q3BDCy9WQzGQxSt0T02WU=;
+        b=ibzxZi5FZPB7GXiIpZX9NmTQHa6zf2y3YtNlqc0Q1JwPypIEKfUwdrMG1LQL6ZYCMi
+         O7F9tCYLT1zCJRDfppnbmHQhs99tcZg06Kn1hRFHVkVTfVywu6kSa0SggDAFA2xxv71R
+         uhzivfNlgzb6yoZ+/YnwZcwiIcwvUEOmnlkNsFaOOLOSWt/VZbuJDWiIkq7Q8iQOKlAB
+         91IL7u8ZchJzwqIu//aHht+QGnRBRUldEmTkCzNHZgwJGyAzzPukD2Tqwc2WWlcLMeXv
+         X9Faf6CxWK08tTPjkaO1of/+8puB34e1qVRHFGnmZmCIEp/QAFZXf6hL9sG/KAn3C0Zl
+         k1vQ==
+X-Gm-Message-State: AOJu0YwhV6NJjrjxBNtAHFb/OFSXFzAZkiHgJzBhZCJXdJ/r3BFPisgh
+	x7JWi81tjCAz4Jejmi+pqf0VJQVf0hphW9ZjnUz3BPuMsptn5Wrf4IY+kT9dYgdpt0ysQflz+Er
+	cDtPQpUl7iGmB4vB5jQHRnA==
+X-Google-Smtp-Source: AGHT+IEbxaoDxR39hoPNgni/Vs4CVRqb2djIgFXCSM9OsEXWBDwH4FweLj7pnfzYDXD3ipk1F2Hy16EUjCN+ESro/Q==
 X-Received: from jstitt-linux1.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
- (user=justinstitt job=sendgmr) by 2002:a05:6e02:1d92:b0:366:a77e:62dc with
- SMTP id h18-20020a056e021d9200b00366a77e62dcmr201298ila.2.1710975886819; Wed,
- 20 Mar 2024 16:04:46 -0700 (PDT)
-Date: Wed, 20 Mar 2024 23:04:44 +0000
+ (user=justinstitt job=sendgmr) by 2002:a25:4b84:0:b0:dcc:2267:796e with SMTP
+ id y126-20020a254b84000000b00dcc2267796emr201630yba.2.1710976922546; Wed, 20
+ Mar 2024 16:22:02 -0700 (PDT)
+Date: Wed, 20 Mar 2024 23:22:02 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAItr+2UC/x3NwQrCMAyA4VcZORuoXSnDVxEPW5pqLt1INEzG3
- t3i8bv8/wHGKmxwGw5QdjFZW8f1MgC95vZklNINMcQUxhjQ3tpo+2JRcVZDl8Ir1qWw48fZ5ro gYRpznihxzTRBb23KVfb/5/44zx9EVBqXdwAAAA==
+X-B4-Tracking: v=1; b=H4sIAJlv+2UC/x3MwQqDMAwA0F+RnBdoqzL1V8YOs4maw6okUjbEf
+ 7d4fJd3gLEKGwzVAcpZTNZU4B8VxOWTZkahYgguNK4ODm3XFLc/kkpmNcxCvOJCX8GIY/QdtV3 bP/0EpdiUJ/nd/et9nhdMvlXFbgAAAA==
 X-Developer-Key: i=justinstitt@google.com; a=ed25519; pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1710975885; l=2023;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1710976921; l=1895;
  i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
- bh=xdt3WcZtzp6V+dVSO0oQ0nQ4PjO+mTElm8qjYyLdYhc=; b=f19YsudHfgvlM7ugu8UM5KyMcxaGHMzV60fbyToO/flwakuV05BaMfUOCc7dw5o6ikznP7JLg
- lq8Lb1GsU1SB6+LQuJnlOA6neOghUGwiYYU+BFbN8vqiabgKJN2iJdY
+ bh=LstULD3SZgSv3OfqQEREHb9PlnHVDFzksy2daTuKq/I=; b=asHNy0GS4ziNs7+teZK7JmBwmWLU7eI7UJYX/Jv9UFQa5idrd1r/icfuQF/NfP0K1Tp7LHyZY
+ MGpRYh9EuvuDYbE8MrciB/WCTNc+XdNdU97Xs+IFqzbG81WPC/L/6PW
 X-Mailer: b4 0.12.3
-Message-ID: <20240320-strncpy-drivers-video-fbdev-uvesafb-c-v1-1-fd6af3766c80@google.com>
-Subject: [PATCH] fbdev: uvesafb: replace deprecated strncpy with strscpy_pad
+Message-ID: <20240320-strncpy-drivers-video-hdmi-c-v1-1-f9a08168cdaf@google.com>
+Subject: [PATCH] video/hdmi: prefer length specifier in format over string copying
 From: Justin Stitt <justinstitt@google.com>
-To: Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>
+To: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
 	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
 	Justin Stitt <justinstitt@google.com>
@@ -75,23 +75,10 @@ strncpy() is deprecated for use on NUL-terminated destination strings
 [1] and as such we should prefer more robust and less ambiguous string
 interfaces.
 
-We expect v86d_path to be NUL-terminated based on its use with the
-C-string format specifier in printf-likes:
-|	pr_err("failed to execute %s\n", v86d_path);
-and
-|	return snprintf(buf, PAGE_SIZE, "%s\n", v86d_path);
-
-Let's also opt to pad v86d_path since it may get used in and around
-userspace:
-|	return call_usermodehelper(v86d_path, argv, envp, UMH_WAIT_PROC);
-
-Considering the above, strscpy_pad() is the best replacement as it
-guarantees both NUL-termination and NUL-padding on the destination
-buffer.
-
-Note that this patch relies on the _new_ 2-argument versions of
-strscpy() and strscpy_pad() introduced in Commit e6584c3964f2f ("string:
-Allow 2-argument strscpy()").
+It looks like the main use of strncpy() here is to limit the amount of
+bytes printed from hdmi_log() by using a tmp buffer and limiting the
+number of bytes copied. Really, we should use the %.<len>s format
+qualifier to achieve this.
 
 Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
 Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html
@@ -103,26 +90,37 @@ Note: build-tested only.
 
 Found with: $ rg "strncpy\("
 ---
- drivers/video/fbdev/uvesafb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/hdmi.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
-index e1f421e91b4f..8b554fcf1bfb 100644
---- a/drivers/video/fbdev/uvesafb.c
-+++ b/drivers/video/fbdev/uvesafb.c
-@@ -1867,7 +1867,7 @@ static ssize_t v86d_show(struct device_driver *dev, char *buf)
- static ssize_t v86d_store(struct device_driver *dev, const char *buf,
- 		size_t count)
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 03c7f27dde49..ba301f3f4951 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -1310,17 +1310,11 @@ static void hdmi_spd_infoframe_log(const char *level,
+ 				   struct device *dev,
+ 				   const struct hdmi_spd_infoframe *frame)
  {
--	strncpy(v86d_path, buf, PATH_MAX - 1);
-+	strscpy_pad(v86d_path, buf);
- 	return count;
+-	u8 buf[17];
+-
+ 	hdmi_infoframe_log_header(level, dev,
+ 				  (const struct hdmi_any_infoframe *)frame);
+ 
+-	memset(buf, 0, sizeof(buf));
+-
+-	strncpy(buf, frame->vendor, 8);
+-	hdmi_log("    vendor: %s\n", buf);
+-	strncpy(buf, frame->product, 16);
+-	hdmi_log("    product: %s\n", buf);
++	hdmi_log("    vendor: %.8s\n", frame->vendor);
++	hdmi_log("    product: %.16s\n", frame->product);
+ 	hdmi_log("    source device information: %s (0x%x)\n",
+ 		hdmi_spd_sdi_get_name(frame->sdi), frame->sdi);
  }
- static DRIVER_ATTR_RW(v86d);
 
 ---
 base-commit: a4145ce1e7bc247fd6f2846e8699473448717b37
-change-id: 20240320-strncpy-drivers-video-fbdev-uvesafb-c-43668c4ef6c8
+change-id: 20240320-strncpy-drivers-video-hdmi-c-bc18d585971f
 
 Best regards,
 --

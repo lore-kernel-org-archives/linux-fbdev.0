@@ -1,38 +1,38 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 807292BB19;
-	Wed, 20 Mar 2024 07:56:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A69F2C85A;
+	Wed, 20 Mar 2024 08:12:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710921392; cv=none; b=A8IqYTjbEd/0iETMDyp5upD4ICaMlrC349YM3BKH0oyae6D+E9PedCZ4Z7En/DkyD/WgruhgipDldF4Cf1dQ5dWgFKS4R8PjPtiy9xCg6iFLmYosj9XuGqC5GJlkV+geh2MEj6bmcg9agcBWF8Xg5ZWpVKOukMOAqTitmZKYeuA=
+	t=1710922368; cv=none; b=ZeH826Y55+rJLC1zIqhAD2jDWqEnfOnZQYyJfQcG3cBT8lWvwRCOdd72BQp8uy9h3Z2c9tD3lal1wrxhr++U62/ogPlg7J3VlZODIyCbhhX7Jd5auCJUiC1YgEy5iR7NWZ6JBPCAditJPooPTsgrJz2KvNc5/rOWfLBluvOwXHs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710921392; c=relaxed/simple;
-	bh=CH3vWWYWC1I+cdZBrNQ6agk8eeoxsdROQ90+TZWo7LE=;
+	s=arc-20240116; t=1710922368; c=relaxed/simple;
+	bh=JcNzj/0EtMHAtn14gq4mUAgKfkqyj8QlY/dSVFHL1z8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jtfv21cwbSNH0a+2VywBhAS0s4HunV1ZJ1i9qDQglw8ZKZlgaBWGRWRWMEM6UZA2BdwQByWUQOuc0dMfbhPC+rv2r09qR0FQacCRSBf2tbt5lB1+V8bvU7M6LjsbHE0mgHnD5oUYw1Gwfe1KCr9+yMr23JkI/Mj3cLoOkoy/QkU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=dGTNLMij; arc=none smtp.client-ip=212.227.15.15
+	 In-Reply-To:Content-Type; b=pdYAGtNimUWdWIH/XaiwSuOhF4djFy4rr8c01rVfgzsWtSF/RzDEHneVtfYkHbGx1V2vN3BGELGsDU8qDtiMhLMpE+9fo5FMME+V5z/q7HaIKHLl2ukDbTmkTte/m4VVls8jHiHLDqrIIZqJDlg92z6escu/5PGmeVzR/h7Oa5A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=YJXieyJr; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="dGTNLMij"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="YJXieyJr"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1710921382; x=1711526182; i=deller@gmx.de;
-	bh=uvNvLuBszXgVYXZdSwPN8AD8tI3aDeN137XHcSipi7k=;
+	s=s31663417; t=1710922360; x=1711527160; i=deller@gmx.de;
+	bh=qi698Fr0cK/LGYkHXD/4rGactapeAbDOhymD1DLW/A0=;
 	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
 	 In-Reply-To;
-	b=dGTNLMijWBCSnsnpKyu9jeH4t26aIHEqWZKWWz1Q5JjQVClXVKM8FOAECKL/S/63
-	 bOZ+ge2GuW8KuWyMbTG6K1Hg5uBOnspl4myc0wjtbp75swaN/C3hJJr3YsYiKFsXN
-	 zAcu7xOJwbY+W4ld31MmUlfU21B+lZMw9835g+yaxRd1Srf3fy2ldzZ1B62xdRpGz
-	 xWGjNLgxJfM6tXSzrJN1ZDlWSqKbv40zWpVT9ttSC44EqEDi7+C3Dc1jWPQLJ39Rz
-	 vHj+sJei3DVCjPrhskStU3oMgDs44vVfkGcenI6FahB2tMUwwqEyzy/thcFKTow6L
-	 rf+m7563E2IN4ohSzg==
+	b=YJXieyJruFzfF6yXeMG/LMaNhuXrfojPYvhJ9bKeGu5ARuhbCaP1/zwlfSsDEkSc
+	 /oCK0Zyc6/9LYZGL5eXbw24g6YHA703ja33yJCpLkYywtbNKGS/hy9x3wljaJK6ni
+	 9ZX7/NUpW/WybXzj2I64xKdU0/+apGafuSb9QrA2Jd+HrQmctwccqSOsW5IKDFMSf
+	 gHTctUbOGcgbPDmRtZXFBHdMLvNFDOWXHZzToEJASUCNRuXLr0S2LHS3RpBu3omaR
+	 dNsMczh3gOmULuayqFPaFI04JAMhLz4u0Rehp6A1jMuIvu8X6QEBNCdu1BgwIJ4Jl
+	 ot4jKB7RLhmCLHybeA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([94.134.145.175]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MNKhs-1rOA1c0WaY-00OmMw; Wed, 20
- Mar 2024 08:56:22 +0100
-Message-ID: <53670007-edbc-4762-9e57-0b3c29220d9e@gmx.de>
-Date: Wed, 20 Mar 2024 08:56:21 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MDysg-1rfC5E1Ieq-00A0yq; Wed, 20
+ Mar 2024 09:12:40 +0100
+Message-ID: <6cef8e77-dca8-4c8f-9af5-62586578609a@gmx.de>
+Date: Wed, 20 Mar 2024 09:12:39 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,14 +40,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video: fbdev: au1200fb: replace deprecated strncpy with
- strscpy
+Subject: Re: [PATCH v3] video: fbdev: panel-tpo-td043mtea1: Convert sprintf()
+ family to sysfs_emit() family
 Content-Language: en-US
-To: Justin Stitt <justinstitt@google.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org,
- Kees Cook <keescook@chromium.org>
-References: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+To: Li Zhijian <lizhijian@fujitsu.com>, linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <20240319092333.1590322-1-lizhijian@fujitsu.com>
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -92,73 +91,94 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+In-Reply-To: <20240319092333.1590322-1-lizhijian@fujitsu.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:KVcYXRTYi2Yl5N9QohZQn/e0yOrgjT69zc3Q76tdh+qsSd+Y//N
- rBBJAWMM7rwJUzE3exqHGaxYi/aFQRZi4pws9yNsVwMzyt6spfwMjDvzniE7mUR39LexH2s
- LZ9GviBWFVbgL4lB/psgfP58G8YRR3IXjZ1nGQhyGukK0goqDFzrEkvRCi2kUAvHzKhARV1
- sqi6/2eLCK3f0FPOOwvqA==
+X-Provags-ID: V03:K1:DLWcJwmNZ97AysVmjGiBxzRfzOzprNYeT4qnhhw4Xji4rUuvAzV
+ 7J7beNhn9NVGOhZUH/mR+dccYsWTIkZTb0ChZK2h8c+J/vXnxoCBYjOt1FNx74rF6YhRL0U
+ ylUbB4rmSlRnPe8qdx8Kwh25np6b+DgHnEdjRDENKL1qkJtsOXxtS8SlExalHQAa5aVLdTp
+ cxCVi4xrFD20tlZ2ct14g==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:icEX6fWXWvo=;z2Bz9nQdvbUGV/r49J5VgTvdJ38
- 3dc52GR2rrmGYRXBG6b1E0EEM7X6Jq03onspRoFdX2TJZKZ19XDSq6kUTWMYRT8ndpN97qaRw
- P76jvans/XJ9ZQrHteLT8dGfzeIuoRN4c/t1OGgrQzODoNsnrjBq3k5huJJy6aN/OvZPbMnle
- Cb4gm3Z4E+i3iF9BGmvsi9uIzxuwQ12rZmq1ZXZO64/gD04X9ykkmFib6ThqcHoPFTP8iVkrg
- kW0svK3y6kCnJrLjSPUew3RwxrtZ/5grrQiNN/SUnwItQ7e59V1XM6cXGlyXoYePaUnpMdcF5
- /KzysVx9oYuVjcgOuD0XJ07QwS+vHUy/BmeDmrGrGuDuychPuXwqUQBT/3qxssIuAraYilXUv
- ZGI3zGPKv4ppRnVl4/STTAQ6dcvHV6WvaymYWrfhiXggmNNjVZW2iFJnWEyfjSqPNrMNGcIfw
- y8idPwOJlpIviD+4Hzsvi9qFMm8GDVrgw4PZK7cdiboPTW7A8Ibl4G2ic0bPXiy1EiG5r3wGl
- +O7xtwY8xPnpeL4EAAtLKDdAKqc3YelTkyZU8EsolrofMSYfOCqU/o088lhkmApg+Sq1yRsGQ
- F42047QvvoAox3UaYkiOxMR/yA6ryX6ENDcFx7/ghizBzLHpFaV8BVFwBEh+pNsemgu6Xiw9g
- Z22haWTtuApmH6PKgbJz5ZHJT0jjGI3Y/AXX98rZFcM82vxi4vAOILSHpK9nHJpjAIl0q8Vqn
- fxf3ooZ/e+ga90d4Eubk8PF7GgGX958/FSGEeWnK6WBMOlpTzVtAkXBsJ3H29BBYdGqNWpXSm
- luLTw+BTXcv9C5ztxNAhRrL0bm2WgO98hbPnv6MI0WrL4=
+UI-OutboundReport: notjunk:1;M01:P0:rXL+fvDm1co=;ZBP+SfNavm5a+fpFx63zYFa3BC+
+ OrqwBCMFT1cuu8t2mA81YX38gjPRPNIfYqXileQLaQEhKUoSWbiJqkTx3AKJjX78e+W+LhkPR
+ zVXYX0qJKWBLTK8qiwSh1HvXXbw0A537dARGLdugz74ZoIvyWnOv5wX3gzZ9jJucbZLgHdPnb
+ yh5+oU+6/etSy2fVZQFnAEE9S9xZv563K9Kht+zw+nD2RXC0E3hyBEMv4CljigWPU7yKmrXb4
+ Oc9ABkOZorhfHwksDvbLvLpUcUNJtIJPWGPn+zhLFIdCzax32WXfu/z/MT0wmlgnqxSCpwNTe
+ kKAITUVVmNACKxtOhh/3X0B1dqggCq85LeXJGUpz4Jgrw0dD1zbCFt3lDLBraLsmn6NcCzRk/
+ nqI8YsAHqX+ldUS06ltdd31xCia+ra0XrZmicz/v3t4qxv6vW/LDr9hwMZ4VVxrwtcBApN35F
+ tLDJy428LSW8UiboN5IVTniKhOOxrvmswHsY0idJso5tZsQleSHDTe87ybc3ibTOp0i7Otfso
+ BxnF21XYPVNYgfoQZVPETxR97re/t2N1+SaPeBpy3WaUFL9Qx1vdo7RbHQ776Rm/QOlpAdFmd
+ /GJDlZTZllGokzRFeGXljPlxsSAEFKhowTiZzhA0Mr/mxJL3RTfQD+2PcX53bPlo0W9NsWkKC
+ /qw/GM2CiB+vbguBLbmc0ksUz4ULmVmty3Ru87gYt6dPcJ3FLShy6BEQJomYyGyvKMvbODyH3
+ gLvkouADIqtog5zUTJbPs8CYQv955JNOLaJlp8dCfHXkxxpmM1893QTFAHA0o/jVBAbdUfCX8
+ POIU6mv4I12EkgyWCBHycFIEVaUFs2Ri3vJvZf1SFPPLk=
 
-On 3/19/24 00:46, Justin Stitt wrote:
-> strncpy() is deprecated for use on NUL-terminated destination strings
-> [1] and as such we should prefer more robust and less ambiguous string
-> interfaces.
+On 3/19/24 10:23, Li Zhijian wrote:
+> Per filesystems/sysfs.rst, show() should only use sysfs_emit()
+> or sysfs_emit_at() when formatting the value to be returned to user spac=
+e.
 >
-> Let's use the new 2-argument strscpy() which guarantees NUL-termination
-> on the destination buffer while also simplifying the syntax. Note that
-> strscpy() will not NUL-pad the destination buffer like strncpy() does.
+> coccinelle complains that there are still a couple of functions that use
+> snprintf(). Convert them to sysfs_emit().
 >
-> However, the NUL-padding behavior of strncpy() is not required since
-> fbdev is already NUL-allocated from au1200fb_drv_probe() ->
-> frameuffer_alloc(), rendering any additional NUL-padding redundant.
-> |	p =3D kzalloc(fb_info_size + size, GFP_KERNEL);
+> sprintf() and scnprintf() will be converted as well if they have.
 >
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#str=
-ncpy-on-nul-terminated-strings [1]
-> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.=
-html [2]
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
-> ---
-> Note: build-tested only.
+> Generally, this patch is generated by
+> make coccicheck M=3D<path/to/file> MODE=3Dpatch \
+> COCCI=3Dscripts/coccinelle/api/device_attr_show.cocci
 >
-> Found with: $ rg "strncpy\("
-> ---
->   drivers/video/fbdev/au1200fb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> No functional change intended
 >
-> diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200=
-fb.c
-> index 6f20efc663d7..e718fea63662 100644
-> --- a/drivers/video/fbdev/au1200fb.c
-> +++ b/drivers/video/fbdev/au1200fb.c
-> @@ -1557,7 +1557,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_de=
-vice *fbdev)
->   		return ret;
->   	}
->
-> -	strncpy(fbi->fix.id, "AU1200", sizeof(fbi->fix.id));
-> +	strscpy(fbi->fix.id, "AU1200");
+> CC: Helge Deller <deller@gmx.de>
+> CC: linux-omap@vger.kernel.org
+> CC: linux-fbdev@vger.kernel.org
+> CC: dri-devel@lists.freedesktop.org
+> Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
 
-I wonder if you really build-tested this, as this driver is for the mips a=
-rchitecture...
-And I don't see a strscpy() function which takes just 2 arguments.
-But I might be wrong....
-
+applied to fbdev git tree.
+Thanks!
 Helge
+
+> ---
+> V3:
+>     split it from a mess of drm,fbdev, becuase they are not the same sub=
+system.
+>
+> V2:
+>     Fix missing '+' before '=3D' in drivers/video/fbdev/omap2/omapfb/dis=
+plays/panel-tpo-td043mtea1.c
+>
+> This is a part of the work "Fix coccicheck device_attr_show warnings"[1]
+> Split them per subsystem so that the maintainer can review it easily
+> [1] https://lore.kernel.org/lkml/20240116041129.3937800-1-lizhijian@fuji=
+tsu.com/
+> ---
+>   .../omap2/omapfb/displays/panel-tpo-td043mtea1.c     | 12 ++++--------
+>   1 file changed, 4 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mt=
+ea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+> index 477789cff8e0..3624452e1dd0 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+> @@ -228,14 +228,10 @@ static ssize_t tpo_td043_gamma_show(struct device =
+*dev,
+>   	int ret;
+>   	int i;
+>
+> -	for (i =3D 0; i < ARRAY_SIZE(ddata->gamma); i++) {
+> -		ret =3D snprintf(buf + len, PAGE_SIZE - len, "%u ",
+> -				ddata->gamma[i]);
+> -		if (ret < 0)
+> -			return ret;
+> -		len +=3D ret;
+> -	}
+> -	buf[len - 1] =3D '\n';
+> +	for (i =3D 0; i < ARRAY_SIZE(ddata->gamma); i++)
+> +		len +=3D sysfs_emit_at(buf, len, "%u ", ddata->gamma[i]);
+> +	if (len)
+> +		buf[len - 1] =3D '\n';
+>
+>   	return len;
+>   }
+

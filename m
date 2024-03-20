@@ -1,115 +1,133 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24F9D1DFC6;
-	Wed, 20 Mar 2024 18:10:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D736F36B01
+	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 22:35:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710958250; cv=none; b=rnGubfJiXQ/hIsH7qcuvUxIllVrhPRjGCxyeQupP0Guk8YFqKg2pWf7TsAOfdqHZkvSl3BEpGsG/4oCYBTy8JjnKkHgAhbA9SjA/MLzeaIn1AjK6Du4mwg9iYTthnpJx9ZZpLRyBgquZvDFzX3UB9goMCjAcPCxBDxfYte6e6Cc=
+	t=1710974143; cv=none; b=lwU5XXeapsjWkCeKFQ+AhuUCs8qCDm2W1yhQU7ti+4LB6V1zU+Sstz956CChPH9C2b1XgzExjY2iafi0rAkTmOIFuLY9KJyVCrAFOcyYOcv2HrwbBNnp8ymOTLEoz9b/9a/pZEYHKGU1gwCpvtHuMOc1ugHDf7G7aXYZ7BNkBbU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710958250; c=relaxed/simple;
-	bh=848BvPcWVF2HeOCahhaa+N1S4L9jNZkkt4RSFKyn3JE=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=XlnKrfb2pyS83Qdut5QV+vKAZ9QYIquPkj/bZKkDNLevtIg1fNAk8z7vKusfW/th89HwUDTSz5NFOogA+iAi3NAdTGaZ/MFK8SZphlMoF1W2BtJLB6xWHlr9fndjGwTvKrmrxpp62CLb9BdOs5ZiX03ziWKpiL0z/YpVQd4yy7s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=W0y0sftJ; arc=none smtp.client-ip=209.85.214.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1710974143; c=relaxed/simple;
+	bh=NMlbaJEt7YuPuHyd8puVAOBb7ZGjFfwrKm2bJ1oJU84=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CFwMoc6W5YdKIbVRnyVYgs2KMV02h7a0pB7M+hULu9b3U0okE5h024hS+Czf4PW5bdrbmeQ34uFFKldBXowGZjGZ2kZwVWsrXr4mDaMdjKMrp9QWWUP82J7cets5NS+UU55DJFWizk4K1oYc7zccXFEz649DVeT1a/CtF1a7JTk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=eV/obVnn; arc=none smtp.client-ip=209.85.208.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W0y0sftJ"
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-1e0025ef1efso486985ad.1;
-        Wed, 20 Mar 2024 11:10:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="eV/obVnn"
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-2d687da75c4so4839071fa.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 15:35:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1710958248; x=1711563048; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=google.com; s=20230601; t=1710974139; x=1711578939; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=3wOSVnh8h74qXknR828f/YsEXGTUbMVRuCYez3A0XkI=;
-        b=W0y0sftJroLPXTI7nBDugrpgncuIICXny3NMzKL3Mb/q/1RX8Bu9hEGKwl3XIExd2K
-         QRlJ8NnGTwySUykkUjwrm9C08iXOJIhnMLUnPvVxgJVRsNhY3S2aeNuRK8vvsuFkpyBY
-         u6vUinhNEM2CTE/i3tUt9+mdMnKZyhj7rxxEqKygdNtlL9xtcPDPZIc3W8a9jgmrlzdn
-         +1IOtgILIONsMw7es6hx/xUbsvpBlkaZCkvYcEsAHvbKVDp+UapREBfh8him3X6JroCf
-         rEAC8o+3iH0BLT7MGmyZGH+c8o+jTDCxOJ4p/P62Kqyda2h9m3xrPXGdbLHCXFyyPVEo
-         GvJQ==
+        bh=n/Eqc8JOcHZY7IXZvTiJ/8bJTfQGWaXx+KUSs3MCDdw=;
+        b=eV/obVnn+pkRFC3DIHtOu5DiaFg9XNthy/K/L8aCgvXkkVDNtcfuWph3MLxuKV98UX
+         M0JYxVfXuG+JJokGK4wic7VpBuTRAZOWTbXrsPtAKPSUtBcw8TBRijyUyponujSD3QS2
+         +Z2nqUTZmEvsKLFJyNZoig9Vr/F5mxjH3UqxHkK+w0MUE5HqWbGoWGmVjZWB8gyKoLCi
+         lTXr6JXgp1RRCl7og/nEiCyZXQbkHWWGQvvUavvB5FvqthlhPN7NcPPCIL0oLeCvqx81
+         VsqJtBQXQE0v88j4tshpdM8NspKjyTVDY7oIIRJHurS42m2GpMGgXR8mx/Ry+Y+TpaZ/
+         XoEA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710958248; x=1711563048;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1710974139; x=1711578939;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3wOSVnh8h74qXknR828f/YsEXGTUbMVRuCYez3A0XkI=;
-        b=p8LKLsthUg/exjSv4oeU+toG4bOFJYVSDEeeLpMrvLUfBdDRtge3u5r4HQqVFA0WhH
-         YFdvgqSSgY6UJunjQJWq2S2Nna5Q2vVuz9s48aKkA7xzALpXbWkb3i4WP19f1bLKqrGe
-         fIU5SFDE99IBJkUaMmc3SQpIIdIk5a8/2SABbJTyBCXzZm0iZZntDxR/T2fyM7UnGsWm
-         gVFzet2HiSiX9UPkNr+BHTkDVHYD/pSgSWD2RExuo32sScDfmMZQfNtM6RKOz3Z9Bu9a
-         RBZtTt294WThI4XaoG+ox4t1C5Hgz9ezk9y4qQEA8ABYCQYt8Ozoge1+Tthns8QcolHW
-         Bw5g==
-X-Forwarded-Encrypted: i=1; AJvYcCWSM4CxHwZB2VZp+9dJJhlaFVjjnwYdKR7WyS+xaxxv3aA9PNWMteLGmjQ6zQxelur0qwWqMx6sdq9LkpMp8sqgC8/Y5OjJBM5iHtu6z36JP+wnEaPHCd18ZstlGWn4e+d3ziQbqxf2Ff4=
-X-Gm-Message-State: AOJu0YybSox5fI+AG0bW0YbWbCpYevR3La426coLc20s0ioZsBBXS85/
-	sIQn9sw+DqdMw4b/s2fDz4ugzTNnvli6Q1GLiIIxI/aVDZLQ+a5R
-X-Google-Smtp-Source: AGHT+IH5KlQLZQNDTUaXrq3NSLSPo+atEeIskKFkKOrkBpYI4cNWqfz39ro+Xce65d9Nj1senb0PSg==
-X-Received: by 2002:a17:902:e551:b0:1dd:c24d:4d1f with SMTP id n17-20020a170902e55100b001ddc24d4d1fmr20977195plf.67.1710958248113;
-        Wed, 20 Mar 2024 11:10:48 -0700 (PDT)
-Received: from Ubuntu2.. ([106.194.60.208])
-        by smtp.googlemail.com with ESMTPSA id jc14-20020a17090325ce00b001dd707d5fe6sm13947043plb.158.2024.03.20.11.10.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Mar 2024 11:10:47 -0700 (PDT)
-From: Chandra Pratap <chandrapratap3519@gmail.com>
-To: 
-Cc: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev,
-	Chandra Pratap <chandrapratap3519@gmail.com>
-Subject: [PATCH v2] staging: sm750fb: Replace comparisons with NULL and 0
-Date: Wed, 20 Mar 2024 23:39:43 +0530
-Message-Id: <20240320180943.3683-1-chandrapratap3519@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <c4a5e9e8-214a-4ac0-b8ee-01a9e7a1e5f9@moroto.mountain>
-References: <c4a5e9e8-214a-4ac0-b8ee-01a9e7a1e5f9@moroto.mountain>
+        bh=n/Eqc8JOcHZY7IXZvTiJ/8bJTfQGWaXx+KUSs3MCDdw=;
+        b=Wyvp4tb4sSjB+BHPsh5lBuHttJlYq8PhVYtWhJeDYwPw16B8OpcGBKBLsjK/RyNo77
+         xuCGXK/Zoh8ktE+nO3P1Gp638gTFUGykw6wpzMa1p49sHehmv2BpbocT0icKfpufdib7
+         NkgfaIh5STGM3U+EfUN9TxPfjqTEtt2h3lC/Nb3gdwn6qQtg7t3b7J4BjKsP5MaDTvbd
+         o73o2aHC9KCIddCECQSIJAZkDc0xDoE7VgiJch0f+lrOpvdfiJZAfn+fPj1OFdc40sN6
+         qGocW1PQJLwf7EUUCF/IJCRHl5vjoqLJczXp3A70blgxlNjAlm+5cAzAv3WgGOqIDhc2
+         obbg==
+X-Gm-Message-State: AOJu0YynQ5S3rZNgC4y0VFFL4JGPJLl9mW4D2ZAR94vwEN1SP//AgbZt
+	iOTgyXbB+RdHbR2ZEMOj8B8x3PN3SqTDVaAgLRoDcE2L/ERM6C3Xc3k4ZRNPOfiLEY6REJNzdhO
+	MWdkCr5Yf/7+pZx6vk57qRl5ZINUPuCpHH6PU
+X-Google-Smtp-Source: AGHT+IEn5Owi2sPtfaUxycTRYFwNeKA+Pm2rq41oCVa8/UT2ciC5oEejXaO971X27DHZCT9SSJ+kpz2ClHcFLTEpRno=
+X-Received: by 2002:a19:431c:0:b0:513:e17d:cf3c with SMTP id
+ q28-20020a19431c000000b00513e17dcf3cmr8896729lfa.1.1710974138867; Wed, 20 Mar
+ 2024 15:35:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+ <53670007-edbc-4762-9e57-0b3c29220d9e@gmx.de>
+In-Reply-To: <53670007-edbc-4762-9e57-0b3c29220d9e@gmx.de>
+From: Justin Stitt <justinstitt@google.com>
+Date: Wed, 20 Mar 2024 15:35:26 -0700
+Message-ID: <CAFhGd8ppVq9aGbfFLeL30jQ15KHS=FoLh0c1udXo=Z+pCfXL1g@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: au1200fb: replace deprecated strncpy with strscpy
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
+	Kees Cook <keescook@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Replace '(opt != NULL)' with '(opt)' and '(*opt != 0)'
-with '(*opt != '\0')' to adhere to the coding standards.
+Hi,
 
-Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
----
-Changes in v2:
-  - Update the commit message to reflect the changes better
-  - replace (*opt) with (*opt != '\0')
+On Wed, Mar 20, 2024 at 12:56=E2=80=AFAM Helge Deller <deller@gmx.de> wrote=
+:
+>
+> On 3/19/24 00:46, Justin Stitt wrote:
+> > strncpy() is deprecated for use on NUL-terminated destination strings
+> > [1] and as such we should prefer more robust and less ambiguous string
+> > interfaces.
+> >
+> > Let's use the new 2-argument strscpy() which guarantees NUL-termination
+> > on the destination buffer while also simplifying the syntax. Note that
+> > strscpy() will not NUL-pad the destination buffer like strncpy() does.
+> >
+> > However, the NUL-padding behavior of strncpy() is not required since
+> > fbdev is already NUL-allocated from au1200fb_drv_probe() ->
+> > frameuffer_alloc(), rendering any additional NUL-padding redundant.
+> > |     p =3D kzalloc(fb_info_size + size, GFP_KERNEL);
+> >
+> > Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#st=
+rncpy-on-nul-terminated-strings [1]
+> > Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en=
+.html [2]
+> > Link: https://github.com/KSPP/linux/issues/90
+> > Cc: linux-hardening@vger.kernel.org
+> > Signed-off-by: Justin Stitt <justinstitt@google.com>
+> > ---
+> > Note: build-tested only.
+> >
+> > Found with: $ rg "strncpy\("
+> > ---
+> >   drivers/video/fbdev/au1200fb.c | 2 +-
+> >   1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au120=
+0fb.c
+> > index 6f20efc663d7..e718fea63662 100644
+> > --- a/drivers/video/fbdev/au1200fb.c
+> > +++ b/drivers/video/fbdev/au1200fb.c
+> > @@ -1557,7 +1557,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_d=
+evice *fbdev)
+> >               return ret;
+> >       }
+> >
+> > -     strncpy(fbi->fix.id, "AU1200", sizeof(fbi->fix.id));
+> > +     strscpy(fbi->fix.id, "AU1200");
+>
+> I wonder if you really build-tested this, as this driver is for the mips =
+architecture...
+> And I don't see a strscpy() function which takes just 2 arguments.
+> But I might be wrong....
 
- drivers/staging/sm750fb/sm750.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I did build successfully :thumbs_up:
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 04c1b32a22c5..0391235c5666 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -926,7 +926,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
- 		goto NO_PARAM;
- 	}
- 
--	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-+	while ((opt = strsep(&src, ":"))  && *opt != '\0') {
- 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
- 		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
- 
-@@ -1147,7 +1147,7 @@ static int __init lynxfb_setup(char *options)
- 	 * strsep() updates @options to pointer after the first found token
- 	 * it also returns the pointer ahead the token.
- 	 */
--	while ((opt = strsep(&options, ":")) != NULL) {
-+	while ((opt = strsep(&options, ":"))) {
- 		/* options that mean for any lynx chips are configured here */
- 		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
- 			g_noaccel = 1;
--- 
-2.34.1
+Commit e6584c3964f2f ("string: Allow 2-argument strscpy()") introduced
+this new strscpy() form; it is present in string.h on Linus' tree.
 
+>
+> Helge
+
+Thanks
+Justin

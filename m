@@ -1,63 +1,66 @@
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
+Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com [209.85.208.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9B344AED1
-	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 02:44:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AEDF134AB
+	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 05:08:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710902650; cv=none; b=jV69u9ZM4uVbLLA/AWCaaqPN5VxjC475m6iJKKb50NTxyovfKoU54N5EQQv1CT4ZWIaQk3iRNdV+6U7E0Trpkh4uv7EkCUud/qF2KFQRpzpoQbpnY9WJsjCLtScRDGbIc7EnsU+RsCO3D2bFkafXikVm7J21NVmPCTqPPdu9AV4=
+	t=1710911303; cv=none; b=TWX+ab56LGmPbBlCv7LL1HrKrzBd2MDzhnPfVKw2rKGt4mrCjGZtyv8gJWA2XUIGtnKlCfzZ6+ADSoGx9FAWcepobLbHbWdDQNXBSKGRUp6wnmgAxILnFv0qYgEx698YKYRzXdZIfkE1iyp3IKaLxjhrYtfRf6De0RhGqnJN0u0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710902650; c=relaxed/simple;
-	bh=PfIOWQapDLAw+W44Ln09xHd20/IykxP4ixCfdV5vP2E=;
+	s=arc-20240116; t=1710911303; c=relaxed/simple;
+	bh=A1dK1FDTClBBeiIDvehBrkcgKHtbJHgy2lmHel3n8Ls=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tx5/nNmeeSe/A7RXLEUlljRzumcafJfwPMbHAlOBNrCUzy7kw7Bjjcly9iBCKVlbdtrmHmpxOULfRfY1WNJokpJqE88WQmLyWe2Eh/KbkczrX0T1L+NE0lPGzu1QZVU7zs1WJs6ay8TvfNVZTsHDUmwnt6TtAj7RSE5S6bka8dk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=S7sB6OwL; arc=none smtp.client-ip=209.85.210.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=BVTOCW3KkJPt6yMEXURlsQwijrJj2D17UDyRZH7TqE+BNTc/605/lPeJO0732OWE90eQX55Tjw/ti6dBH0CKxdPqrBbc2aN3sDqXbd5CM4wtchARNGu0oMZ5sI2TDoOQ5eQW5t/0X8LUHXpbg5fyGo2CmbpkNyF7An/ZbccpSsE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=DuLHqj6W; arc=none smtp.client-ip=209.85.208.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="S7sB6OwL"
-Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-6e6bee809b8so5786099b3a.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 19 Mar 2024 19:44:08 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="DuLHqj6W"
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-2d4360ab3daso96496351fa.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 19 Mar 2024 22:08:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1710902648; x=1711507448; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1710911299; x=1711516099; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=GfIBZvZR+X0639t+/0R7E3839UBAFzDwhD9FbKyVE5k=;
-        b=S7sB6OwLK6P0pkurhfOGXCzFnM5ucGpaw+lrFgbTEk9kQexlgcNJATYaIJX0IJ12cr
-         ACv6H81BiGUdn6B/4XPrEhf92KtL1zma4jAwnWc8RuPZuljuZxio3QPELQfmrN8YhunT
-         CoQNd3vRTYjg9BcqSTJ053MjW2itNE0dnsy9w=
+        bh=MDbezmp48NlomGRK//vO3jPNjuF0l+ROTMlkX7vEssc=;
+        b=DuLHqj6W1YbmyNs1g15iazEbCojzBV07d6eorjVbB/ca8Oc+Ju8bQj65li77j/8VKu
+         TrFotgday53zih+GRo0bq5746Y18XKfT9GEmD+pdu0yDsZtvNE0kFNsOXJwC1Osx16kL
+         FS3oVZbYuOuPtAq52ljQff4SHpA0QyYW7VnJtDR9aE3jnDuPBBeB0PK/hy15hZY00zzB
+         k449PxsDSXW2WYwgAUQlWo5USKzinkUB2UXqv1n3bCWfWcPu9nVX6lXAvlgOryqStodX
+         PecJ3cn0A//6c2inmfc309ng70/57weJoOqRl6tUqXW7q4Fj8r4+N7PJ6+JaVz9qyY5g
+         lsng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710902648; x=1711507448;
+        d=1e100.net; s=20230601; t=1710911299; x=1711516099;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=GfIBZvZR+X0639t+/0R7E3839UBAFzDwhD9FbKyVE5k=;
-        b=rhRMBORNOx8q/I1umx0/Sfx7RWnLXiTg8Ci9BxkdaVUZV3q8miVJaXFotF+gcjvdbq
-         Qy1qb0OoXulEfGWvUrx4BcY6zYTij/ZF1ShU7qI64uf+pA6Sj41P/qPUddMmQwOU+6Qf
-         DPx4crxM4Y2XaFyRmQ8jVrH0cHMitKSQp6tJYLEleszfvZvEG721kIrBK9TWfoAieC6j
-         dvua7BRjKO0Nl6GFYTZeNHzPmRBJdGRI8SnUClx+yXFXyTJYeXMIPw5NmnYbveKTIdZw
-         1wlKUIQ/oiSb4MTztg+aQ0R2qKypOTBF7oNDF/RoD+84h9kO/fYslS7vev8lRYalO83p
-         keBA==
-X-Forwarded-Encrypted: i=1; AJvYcCWsDEIKwlpPM4X53wQmJyn4Y7mpUR/mjOFOpwq+0M1GiZLfgzy5tSkNapItVgiMAonpFrpRjr9mQMaLqc0h5VMXGAazVoKHEnRnq3k=
-X-Gm-Message-State: AOJu0Yz+xAx82lN6UmNYVKq4H/3dzgc2aJIt5XIq+7x7kAmtpCAOxpyn
-	5aAbGou478V9xHUWigfRSAobqEa1YqmURJLq27RD0kiKPbaVzZAjZRE8JhuAqg==
-X-Google-Smtp-Source: AGHT+IGknCDJeS90RO8ehnRZ7gHMFeBw03OZmeGDsZgVqTGTubjzVOjL99+92Uvx9d7Hh1AaJIztzQ==
-X-Received: by 2002:a05:6a00:4609:b0:6e7:3254:a4fd with SMTP id ko9-20020a056a00460900b006e73254a4fdmr946741pfb.8.1710902648109;
-        Tue, 19 Mar 2024 19:44:08 -0700 (PDT)
-Received: from www.outflux.net ([198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id m24-20020a63f618000000b005e43cb66a7asm9830852pgh.87.2024.03.19.19.44.07
+        bh=MDbezmp48NlomGRK//vO3jPNjuF0l+ROTMlkX7vEssc=;
+        b=Sa80Sziag3NyxKXcO3lSOWQB9qZkOe2KuxwSRG6C6njQHlsfLcNNVT1r+Sz0Cyj/C/
+         +/5EMNMIdUifHhuIZWesbjBrkxgJuLSwzMHNlLo+yFUbMawccN9/03jYmftjoeEkMzTX
+         RwtXrWRpY6TbnzdpdbgI9vIJ29RG+5fRPrTIkzcmC+uokF+7ZwflR4Fr1/il/V+9/y6E
+         zn62sww2gusHQ4R6kVdwvRbMVWJUI6KS0ANv7s3iYMfxnTD8TkjLnsezv1/M2uWRAwHE
+         bKdDwwN1uC95i7x3u0YLJU0nAdQhfmZDKbOqInxTIBmcNaluMceumnLqoKFxBdN3eOHP
+         1uOA==
+X-Forwarded-Encrypted: i=1; AJvYcCV7x7qZTkeD5eHMrT5u03BS0bM+moQdF8gCJgugypnm8CxDu0IGdbP3F30oWqAcLV5Vm76mGBRW/7a7IS2U4WbaTn9D+sPUgpJah60=
+X-Gm-Message-State: AOJu0YyDJScdFFYFmORVTPdMNHqFilxbvX6BnYH6UZRZLEBT4pqtjatS
+	8gsjFAw76016/Hw8KuyC73l1k3B5XTkzSgS4Se/+3vA6OLx4nP5onrgKu009i1Q=
+X-Google-Smtp-Source: AGHT+IFHREE/lnhx8SjTOBAgPbDyrtU66YBCV4semN7SKN8NIdNLbGqeziR344GPCdUdj1AZEkyvFQ==
+X-Received: by 2002:a2e:a724:0:b0:2d5:9703:263c with SMTP id s36-20020a2ea724000000b002d59703263cmr2766745lje.4.1710911299145;
+        Tue, 19 Mar 2024 22:08:19 -0700 (PDT)
+Received: from localhost ([102.222.70.76])
+        by smtp.gmail.com with ESMTPSA id l13-20020a05600c4f0d00b0041409d4841dsm912164wmq.33.2024.03.19.22.08.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Mar 2024 19:44:07 -0700 (PDT)
-Date: Tue, 19 Mar 2024 19:44:06 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Justin Stitt <justinstitt@google.com>
-Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-	linux-hardening@vger.kernel.org
-Subject: Re: [PATCH] video: fbdev: au1200fb: replace deprecated strncpy with
- strscpy
-Message-ID: <202403191944.B66E4853@keescook>
-References: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+        Tue, 19 Mar 2024 22:08:18 -0700 (PDT)
+Date: Wed, 20 Mar 2024 08:08:15 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Chandra Pratap <chandrapratap3519@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+	outreachy@lists.linux.dev
+Subject: Re: [PATCH] staging: sm750fb: Replace comparisons with NULL and 0
+Message-ID: <c4a5e9e8-214a-4ac0-b8ee-01a9e7a1e5f9@moroto.mountain>
+References: <20240319181735.366565-1-chandrapratap3519@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -66,31 +69,22 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+In-Reply-To: <20240319181735.366565-1-chandrapratap3519@gmail.com>
 
-On Mon, Mar 18, 2024 at 11:46:33PM +0000, Justin Stitt wrote:
-> strncpy() is deprecated for use on NUL-terminated destination strings
-> [1] and as such we should prefer more robust and less ambiguous string
-> interfaces.
+On Tue, Mar 19, 2024 at 11:47:35PM +0530, Chandra Pratap wrote:
+> Replace '(foo != NULL)' with '(foo)' and 'x != 0'
+> with 'x' to adhere to the coding standards.
 > 
-> Let's use the new 2-argument strscpy() which guarantees NUL-termination
-> on the destination buffer while also simplifying the syntax. Note that
-> strscpy() will not NUL-pad the destination buffer like strncpy() does.
-> 
-> However, the NUL-padding behavior of strncpy() is not required since
-> fbdev is already NUL-allocated from au1200fb_drv_probe() ->
-> frameuffer_alloc(), rendering any additional NUL-padding redundant.
-> |	p = kzalloc(fb_info_size + size, GFP_KERNEL);
-> 
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
-> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
 
-Yup, looks correct.
+In your commit message use "opt" and "*opt" instead of "foo" and "x".
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+Removing the != NULL is fine, but the *opt != 0 should be changed to
+(*opt != '\0').  There are times where comparing against zero helps
+readability.  I wrote a blog about this, but I had forgotten the case
+with the NUL terminator...
 
--- 
-Kees Cook
+https://staticthinking.wordpress.com/2024/02/20/when-to-use-0/
+
+regards,
+dan carpenter
+

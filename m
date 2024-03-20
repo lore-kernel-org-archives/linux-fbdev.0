@@ -1,90 +1,164 @@
-Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com [209.85.208.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AEDF134AB
-	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 05:08:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 807292BB19;
+	Wed, 20 Mar 2024 07:56:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710911303; cv=none; b=TWX+ab56LGmPbBlCv7LL1HrKrzBd2MDzhnPfVKw2rKGt4mrCjGZtyv8gJWA2XUIGtnKlCfzZ6+ADSoGx9FAWcepobLbHbWdDQNXBSKGRUp6wnmgAxILnFv0qYgEx698YKYRzXdZIfkE1iyp3IKaLxjhrYtfRf6De0RhGqnJN0u0=
+	t=1710921392; cv=none; b=A8IqYTjbEd/0iETMDyp5upD4ICaMlrC349YM3BKH0oyae6D+E9PedCZ4Z7En/DkyD/WgruhgipDldF4Cf1dQ5dWgFKS4R8PjPtiy9xCg6iFLmYosj9XuGqC5GJlkV+geh2MEj6bmcg9agcBWF8Xg5ZWpVKOukMOAqTitmZKYeuA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710911303; c=relaxed/simple;
-	bh=A1dK1FDTClBBeiIDvehBrkcgKHtbJHgy2lmHel3n8Ls=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BVTOCW3KkJPt6yMEXURlsQwijrJj2D17UDyRZH7TqE+BNTc/605/lPeJO0732OWE90eQX55Tjw/ti6dBH0CKxdPqrBbc2aN3sDqXbd5CM4wtchARNGu0oMZ5sI2TDoOQ5eQW5t/0X8LUHXpbg5fyGo2CmbpkNyF7An/ZbccpSsE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=DuLHqj6W; arc=none smtp.client-ip=209.85.208.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1710921392; c=relaxed/simple;
+	bh=CH3vWWYWC1I+cdZBrNQ6agk8eeoxsdROQ90+TZWo7LE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jtfv21cwbSNH0a+2VywBhAS0s4HunV1ZJ1i9qDQglw8ZKZlgaBWGRWRWMEM6UZA2BdwQByWUQOuc0dMfbhPC+rv2r09qR0FQacCRSBf2tbt5lB1+V8bvU7M6LjsbHE0mgHnD5oUYw1Gwfe1KCr9+yMr23JkI/Mj3cLoOkoy/QkU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=dGTNLMij; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="DuLHqj6W"
-Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-2d4360ab3daso96496351fa.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 19 Mar 2024 22:08:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710911299; x=1711516099; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=MDbezmp48NlomGRK//vO3jPNjuF0l+ROTMlkX7vEssc=;
-        b=DuLHqj6W1YbmyNs1g15iazEbCojzBV07d6eorjVbB/ca8Oc+Ju8bQj65li77j/8VKu
-         TrFotgday53zih+GRo0bq5746Y18XKfT9GEmD+pdu0yDsZtvNE0kFNsOXJwC1Osx16kL
-         FS3oVZbYuOuPtAq52ljQff4SHpA0QyYW7VnJtDR9aE3jnDuPBBeB0PK/hy15hZY00zzB
-         k449PxsDSXW2WYwgAUQlWo5USKzinkUB2UXqv1n3bCWfWcPu9nVX6lXAvlgOryqStodX
-         PecJ3cn0A//6c2inmfc309ng70/57weJoOqRl6tUqXW7q4Fj8r4+N7PJ6+JaVz9qyY5g
-         lsng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710911299; x=1711516099;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MDbezmp48NlomGRK//vO3jPNjuF0l+ROTMlkX7vEssc=;
-        b=Sa80Sziag3NyxKXcO3lSOWQB9qZkOe2KuxwSRG6C6njQHlsfLcNNVT1r+Sz0Cyj/C/
-         +/5EMNMIdUifHhuIZWesbjBrkxgJuLSwzMHNlLo+yFUbMawccN9/03jYmftjoeEkMzTX
-         RwtXrWRpY6TbnzdpdbgI9vIJ29RG+5fRPrTIkzcmC+uokF+7ZwflR4Fr1/il/V+9/y6E
-         zn62sww2gusHQ4R6kVdwvRbMVWJUI6KS0ANv7s3iYMfxnTD8TkjLnsezv1/M2uWRAwHE
-         bKdDwwN1uC95i7x3u0YLJU0nAdQhfmZDKbOqInxTIBmcNaluMceumnLqoKFxBdN3eOHP
-         1uOA==
-X-Forwarded-Encrypted: i=1; AJvYcCV7x7qZTkeD5eHMrT5u03BS0bM+moQdF8gCJgugypnm8CxDu0IGdbP3F30oWqAcLV5Vm76mGBRW/7a7IS2U4WbaTn9D+sPUgpJah60=
-X-Gm-Message-State: AOJu0YyDJScdFFYFmORVTPdMNHqFilxbvX6BnYH6UZRZLEBT4pqtjatS
-	8gsjFAw76016/Hw8KuyC73l1k3B5XTkzSgS4Se/+3vA6OLx4nP5onrgKu009i1Q=
-X-Google-Smtp-Source: AGHT+IFHREE/lnhx8SjTOBAgPbDyrtU66YBCV4semN7SKN8NIdNLbGqeziR344GPCdUdj1AZEkyvFQ==
-X-Received: by 2002:a2e:a724:0:b0:2d5:9703:263c with SMTP id s36-20020a2ea724000000b002d59703263cmr2766745lje.4.1710911299145;
-        Tue, 19 Mar 2024 22:08:19 -0700 (PDT)
-Received: from localhost ([102.222.70.76])
-        by smtp.gmail.com with ESMTPSA id l13-20020a05600c4f0d00b0041409d4841dsm912164wmq.33.2024.03.19.22.08.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Mar 2024 22:08:18 -0700 (PDT)
-Date: Wed, 20 Mar 2024 08:08:15 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Chandra Pratap <chandrapratap3519@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev
-Subject: Re: [PATCH] staging: sm750fb: Replace comparisons with NULL and 0
-Message-ID: <c4a5e9e8-214a-4ac0-b8ee-01a9e7a1e5f9@moroto.mountain>
-References: <20240319181735.366565-1-chandrapratap3519@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="dGTNLMij"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1710921382; x=1711526182; i=deller@gmx.de;
+	bh=uvNvLuBszXgVYXZdSwPN8AD8tI3aDeN137XHcSipi7k=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=dGTNLMijWBCSnsnpKyu9jeH4t26aIHEqWZKWWz1Q5JjQVClXVKM8FOAECKL/S/63
+	 bOZ+ge2GuW8KuWyMbTG6K1Hg5uBOnspl4myc0wjtbp75swaN/C3hJJr3YsYiKFsXN
+	 zAcu7xOJwbY+W4ld31MmUlfU21B+lZMw9835g+yaxRd1Srf3fy2ldzZ1B62xdRpGz
+	 xWGjNLgxJfM6tXSzrJN1ZDlWSqKbv40zWpVT9ttSC44EqEDi7+C3Dc1jWPQLJ39Rz
+	 vHj+sJei3DVCjPrhskStU3oMgDs44vVfkGcenI6FahB2tMUwwqEyzy/thcFKTow6L
+	 rf+m7563E2IN4ohSzg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([94.134.145.175]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MNKhs-1rOA1c0WaY-00OmMw; Wed, 20
+ Mar 2024 08:56:22 +0100
+Message-ID: <53670007-edbc-4762-9e57-0b3c29220d9e@gmx.de>
+Date: Wed, 20 Mar 2024 08:56:21 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240319181735.366565-1-chandrapratap3519@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] video: fbdev: au1200fb: replace deprecated strncpy with
+ strscpy
+Content-Language: en-US
+To: Justin Stitt <justinstitt@google.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org,
+ Kees Cook <keescook@chromium.org>
+References: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20240318-strncpy-drivers-video-fbdev-au1200fb-c-v1-1-680802a9f10a@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:KVcYXRTYi2Yl5N9QohZQn/e0yOrgjT69zc3Q76tdh+qsSd+Y//N
+ rBBJAWMM7rwJUzE3exqHGaxYi/aFQRZi4pws9yNsVwMzyt6spfwMjDvzniE7mUR39LexH2s
+ LZ9GviBWFVbgL4lB/psgfP58G8YRR3IXjZ1nGQhyGukK0goqDFzrEkvRCi2kUAvHzKhARV1
+ sqi6/2eLCK3f0FPOOwvqA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:icEX6fWXWvo=;z2Bz9nQdvbUGV/r49J5VgTvdJ38
+ 3dc52GR2rrmGYRXBG6b1E0EEM7X6Jq03onspRoFdX2TJZKZ19XDSq6kUTWMYRT8ndpN97qaRw
+ P76jvans/XJ9ZQrHteLT8dGfzeIuoRN4c/t1OGgrQzODoNsnrjBq3k5huJJy6aN/OvZPbMnle
+ Cb4gm3Z4E+i3iF9BGmvsi9uIzxuwQ12rZmq1ZXZO64/gD04X9ykkmFib6ThqcHoPFTP8iVkrg
+ kW0svK3y6kCnJrLjSPUew3RwxrtZ/5grrQiNN/SUnwItQ7e59V1XM6cXGlyXoYePaUnpMdcF5
+ /KzysVx9oYuVjcgOuD0XJ07QwS+vHUy/BmeDmrGrGuDuychPuXwqUQBT/3qxssIuAraYilXUv
+ ZGI3zGPKv4ppRnVl4/STTAQ6dcvHV6WvaymYWrfhiXggmNNjVZW2iFJnWEyfjSqPNrMNGcIfw
+ y8idPwOJlpIviD+4Hzsvi9qFMm8GDVrgw4PZK7cdiboPTW7A8Ibl4G2ic0bPXiy1EiG5r3wGl
+ +O7xtwY8xPnpeL4EAAtLKDdAKqc3YelTkyZU8EsolrofMSYfOCqU/o088lhkmApg+Sq1yRsGQ
+ F42047QvvoAox3UaYkiOxMR/yA6ryX6ENDcFx7/ghizBzLHpFaV8BVFwBEh+pNsemgu6Xiw9g
+ Z22haWTtuApmH6PKgbJz5ZHJT0jjGI3Y/AXX98rZFcM82vxi4vAOILSHpK9nHJpjAIl0q8Vqn
+ fxf3ooZ/e+ga90d4Eubk8PF7GgGX958/FSGEeWnK6WBMOlpTzVtAkXBsJ3H29BBYdGqNWpXSm
+ luLTw+BTXcv9C5ztxNAhRrL0bm2WgO98hbPnv6MI0WrL4=
 
-On Tue, Mar 19, 2024 at 11:47:35PM +0530, Chandra Pratap wrote:
-> Replace '(foo != NULL)' with '(foo)' and 'x != 0'
-> with 'x' to adhere to the coding standards.
-> 
+On 3/19/24 00:46, Justin Stitt wrote:
+> strncpy() is deprecated for use on NUL-terminated destination strings
+> [1] and as such we should prefer more robust and less ambiguous string
+> interfaces.
+>
+> Let's use the new 2-argument strscpy() which guarantees NUL-termination
+> on the destination buffer while also simplifying the syntax. Note that
+> strscpy() will not NUL-pad the destination buffer like strncpy() does.
+>
+> However, the NUL-padding behavior of strncpy() is not required since
+> fbdev is already NUL-allocated from au1200fb_drv_probe() ->
+> frameuffer_alloc(), rendering any additional NUL-padding redundant.
+> |	p =3D kzalloc(fb_info_size + size, GFP_KERNEL);
+>
+> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#str=
+ncpy-on-nul-terminated-strings [1]
+> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.=
+html [2]
+> Link: https://github.com/KSPP/linux/issues/90
+> Cc: linux-hardening@vger.kernel.org
+> Signed-off-by: Justin Stitt <justinstitt@google.com>
+> ---
+> Note: build-tested only.
+>
+> Found with: $ rg "strncpy\("
+> ---
+>   drivers/video/fbdev/au1200fb.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200=
+fb.c
+> index 6f20efc663d7..e718fea63662 100644
+> --- a/drivers/video/fbdev/au1200fb.c
+> +++ b/drivers/video/fbdev/au1200fb.c
+> @@ -1557,7 +1557,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_de=
+vice *fbdev)
+>   		return ret;
+>   	}
+>
+> -	strncpy(fbi->fix.id, "AU1200", sizeof(fbi->fix.id));
+> +	strscpy(fbi->fix.id, "AU1200");
 
-In your commit message use "opt" and "*opt" instead of "foo" and "x".
+I wonder if you really build-tested this, as this driver is for the mips a=
+rchitecture...
+And I don't see a strscpy() function which takes just 2 arguments.
+But I might be wrong....
 
-Removing the != NULL is fine, but the *opt != 0 should be changed to
-(*opt != '\0').  There are times where comparing against zero helps
-readability.  I wrote a blog about this, but I had forgotten the case
-with the NUL terminator...
-
-https://staticthinking.wordpress.com/2024/02/20/when-to-use-0/
-
-regards,
-dan carpenter
-
+Helge

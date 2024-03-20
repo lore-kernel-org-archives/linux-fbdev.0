@@ -1,184 +1,160 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2062.outbound.protection.outlook.com [40.107.93.62])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A69F2C85A;
-	Wed, 20 Mar 2024 08:12:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710922368; cv=none; b=ZeH826Y55+rJLC1zIqhAD2jDWqEnfOnZQYyJfQcG3cBT8lWvwRCOdd72BQp8uy9h3Z2c9tD3lal1wrxhr++U62/ogPlg7J3VlZODIyCbhhX7Jd5auCJUiC1YgEy5iR7NWZ6JBPCAditJPooPTsgrJz2KvNc5/rOWfLBluvOwXHs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710922368; c=relaxed/simple;
-	bh=JcNzj/0EtMHAtn14gq4mUAgKfkqyj8QlY/dSVFHL1z8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pdYAGtNimUWdWIH/XaiwSuOhF4djFy4rr8c01rVfgzsWtSF/RzDEHneVtfYkHbGx1V2vN3BGELGsDU8qDtiMhLMpE+9fo5FMME+V5z/q7HaIKHLl2ukDbTmkTte/m4VVls8jHiHLDqrIIZqJDlg92z6escu/5PGmeVzR/h7Oa5A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=YJXieyJr; arc=none smtp.client-ip=212.227.15.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBA7A39850
+	for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 08:46:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.93.62
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1710924374; cv=fail; b=snkjsO1YNr9JPmtBI3i9vUBuu0lIvuKTVEP3zBucp9UpdzItfk44Qnvmyb4Y8AeZdALNiF7d+yrA91uSWgjiv7cYGlVUfy212sE6DcWc3Zp9RdmMGUy4zJ1SpduJ4FLedR3ekbZpXrSfi+KWpNJ+18IGhw31E4QKE/oa6R+miGk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1710924374; c=relaxed/simple;
+	bh=MlTL46Lub++UYBcQVJQ96wVxnJGxb3eT+W2dc5AUj7E=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=k8AB0nWG01DCq6OC8vdj9Wp5xxEUrrITtqcUjyQgIkQl2g4nX6TmTjlY8V7x8KIDb4Qb7IC5teV/G+brEXjWIqkwyGqGZbgAIUt0aZUXLGVlNa0Uyh0JnGZ6g4EgpaH9p50rUvAEcuiNZsFdYrb3rb2CtSDn+Vh3TCRLtHWGPyM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it; spf=pass smtp.mailfrom=asem.it; dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b=AEMh41pQ; arc=fail smtp.client-ip=40.107.93.62
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=asem.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="YJXieyJr"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1710922360; x=1711527160; i=deller@gmx.de;
-	bh=qi698Fr0cK/LGYkHXD/4rGactapeAbDOhymD1DLW/A0=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=YJXieyJruFzfF6yXeMG/LMaNhuXrfojPYvhJ9bKeGu5ARuhbCaP1/zwlfSsDEkSc
-	 /oCK0Zyc6/9LYZGL5eXbw24g6YHA703ja33yJCpLkYywtbNKGS/hy9x3wljaJK6ni
-	 9ZX7/NUpW/WybXzj2I64xKdU0/+apGafuSb9QrA2Jd+HrQmctwccqSOsW5IKDFMSf
-	 gHTctUbOGcgbPDmRtZXFBHdMLvNFDOWXHZzToEJASUCNRuXLr0S2LHS3RpBu3omaR
-	 dNsMczh3gOmULuayqFPaFI04JAMhLz4u0Rehp6A1jMuIvu8X6QEBNCdu1BgwIJ4Jl
-	 ot4jKB7RLhmCLHybeA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([94.134.145.175]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MDysg-1rfC5E1Ieq-00A0yq; Wed, 20
- Mar 2024 09:12:40 +0100
-Message-ID: <6cef8e77-dca8-4c8f-9af5-62586578609a@gmx.de>
-Date: Wed, 20 Mar 2024 09:12:39 +0100
+	dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b="AEMh41pQ"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=W1UsZ8g69N/pFppqxNhq67KMlQ/dHXNbgpkJvB5JMVvkL9oVVQReKtifFsNa4Gosc78hs46OiZXE7U2Lyh3X9woqMdULslAFRhaPsSsWLVycJ6NHsEeLIMxqNcgkY7qeSAgtrgE6lc5OS2DlDl2I2AJ9ohFJxuLs9iF900moNL8Q3gIrjZgYfyZ8nmMhf3HHasiqr5ZL/SAMUIF4V3VnDE8/70Vp++xUIVwunrPJxMu7p4VYk2U0y+EmdLwuy50uKE0aRuFiX8v3teLA8qoVDGZ0doRgcbLDI5J2n5xjjJjKB/uZBtcefGHF3Dn0nmPvTHAgh7XfhMrcsOtd2qc4Bw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=MlTL46Lub++UYBcQVJQ96wVxnJGxb3eT+W2dc5AUj7E=;
+ b=jVMl3uoM+YMrfGZg2m5lRvYNOzAcr2vY8uL6+2LE990UIskv/y6hgUMLDgTf8mz/yuu7bBbTlWq9oewBDKS11fUosREcehbRD/6E+1E7qbgoKbuNiR5aOVVaW0rI6oe+Umj04OhXZx9GhDZSwXMmZaE/mtH4Qy6CQUemrUfDWe+J0qUw8PdLoVB4mMUhs8kkdCove0JPvdOrABD7dB75uylc8LacEtjY7zj1yiz+XcNau7dFkGhNNV/u9I3GErGxeje3u5Jxi/ou3xIHB5dg1KV/k63CHZvZx3gsL09QwKOe1yZxx+lHOS6/MwcNm3AhjQGI0XcXx7ucPBcvmpVpVw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
+ header.d=asem.it; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MlTL46Lub++UYBcQVJQ96wVxnJGxb3eT+W2dc5AUj7E=;
+ b=AEMh41pQIoZIpU1hjMuxh6Qp7NHp0jBr/vYIUa3qFAaJA/Zk0oz/bp0FJBX1bs+yuAGSvi7JoLMULXKRfNcSi0wu4uWESw8DnEttrDdmAG8Copku9S9ot2sPaACO1jD8unUHiIMS8L5CVnFTUYT5dLAXHnWOVB0KhUFY20VballZ5eXjB2yBVTIOhVHRBHI2IeZZsL4xttpZFbRq7WlvcyjUoj2uCESZdE8RGXZgWcGiPAKZtFSchjjY5l5PyX+kDtEUAgII3gplP9oxja27Bte6XMovhs9Hf8QKVLcTID3NuLVlu7MjtL3SkI9q3xchwqCeHFZrtpKRedLBChULSw==
+Received: from PH0PR22MB3789.namprd22.prod.outlook.com (2603:10b6:510:29c::11)
+ by PH7PR22MB3037.namprd22.prod.outlook.com (2603:10b6:510:133::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7386.30; Wed, 20 Mar
+ 2024 08:46:08 +0000
+Received: from PH0PR22MB3789.namprd22.prod.outlook.com
+ ([fe80::35ce:ff48:fa8b:d4a7]) by PH0PR22MB3789.namprd22.prod.outlook.com
+ ([fe80::35ce:ff48:fa8b:d4a7%7]) with mapi id 15.20.7386.025; Wed, 20 Mar 2024
+ 08:46:08 +0000
+From: FLAVIO SULIGOI <f.suligoi@asem.it>
+To: 'Thomas Zimmermann' <tzimmermann@suse.de>, "lee@kernel.org"
+	<lee@kernel.org>, "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
+	"jingoohan1@gmail.com" <jingoohan1@gmail.com>, "deller@gmx.de"
+	<deller@gmx.de>, "andy@kernel.org" <andy@kernel.org>, "geert@linux-m68k.org"
+	<geert@linux-m68k.org>, "dan.carpenter@linaro.org"
+	<dan.carpenter@linaro.org>, "sam@ravnborg.org" <sam@ravnborg.org>
+CC: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, Nicolas
+ Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni
+	<alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>
+Subject: RE: [PATCH v2 6/6] backlight: Remove fb_blank from struct
+ backlight_properties
+Thread-Topic: [PATCH v2 6/6] backlight: Remove fb_blank from struct
+ backlight_properties
+Thread-Index: AQHaeqMNhOWwbc8AK0uuu/eEdiHVPQ==
+Date: Wed, 20 Mar 2024 08:46:08 +0000
+Message-ID:
+ <PH0PR22MB37892E08DA11EDF48D956646F9332@PH0PR22MB3789.namprd22.prod.outlook.com>
+References: <20240319093915.31778-1-tzimmermann@suse.de>
+ <20240319093915.31778-7-tzimmermann@suse.de>
+In-Reply-To: <20240319093915.31778-7-tzimmermann@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=asem.it;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PH0PR22MB3789:EE_|PH7PR22MB3037:EE_
+x-ms-office365-filtering-correlation-id: b8e674a0-92ea-4b7e-7c3a-08dc48ba2fac
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:
+ Uia8SWZ6iwZHVn3IFvl4QcN5YSTzmVCL0kjbR4683tK5//UXt5g/7MWNbka9QbXIgquPyop/l6TSKJLc8Y6J8EmNaGQdr/lpp2jRxkBBWlxAUoiP2D25CKex2V7/g8b0Vi4DrGdqASrIMJWjBlVj3CONXqMY7WUh3u49EOfsXu50ORs9OcPgPD5EFIPKgMf80aul+IBdQ8xKLnPtFPE/ej8znkpXXB9Df6ACwyeeqOLPjvc49txIqN+4xGvLDPMg8yrC+lcbFxMCxIVG7wF4S5Rly5mtuAGvoc0r9LOMTu6S1emcBTrpRq1EBdnStb4kxARl8YnMnDWYNSESUJbNjUs0SQ2HSaResp85ZTRrwFc4kw1Qn3IFTxbRXFs1KxAuV8rkdnqeyzcED++nei54oTB2jucC0c9Wxy/inxr+0de04Wli909Pom83rPS0y4ypiNIDZfhNZdGAlTe44AaeFWt7UFFqzPhO4YZVdIqhUgz0yB6iZIOo80ie+VZY84ZTlJT57YqjTi4L0lXtmftuhxSAlYxUijc+S9rJVMzFu9MvLIh0cwHgwkm4MW1YMtBChSd+kYMVu7CdRI+2nxoIjeroVABKwIFBx0bjEZ0UH8284Q7UkhVinatg2M5afz3HKFWEjf6QRhg+0JSe+gM0Bund2eqUzzolJQtqqNtIrVaXrV33x0d6wuWmyJQ5TBuo2TIrmbU/OBiVa9IgbyEW4w==
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR22MB3789.namprd22.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(366007)(1800799015)(7416005)(38070700009);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?QGF0V1zuQUghERBvaiP2IGcQbE3n5YqYQWywHwno2yzWeo7M5bxVtog1u8ci?=
+ =?us-ascii?Q?PddTduzaqPpiGPtvo6b2++dDx6IRxRnT1QXDtyetvn0NQDheLbV/T8AuM/bt?=
+ =?us-ascii?Q?BT4e+FB38VjGybyUYmkws8k8j8Q0yDJ7eUxPyaCGo1C8JjrBs2SIIMLESjPe?=
+ =?us-ascii?Q?f0cIu82Vn29boJPRtN2u7UACWEvtNifAImf6kAKuwx5CTVSZZCEGw3cysejD?=
+ =?us-ascii?Q?sXzrFQX53diGgt/Sn+eIK2OlFd0z9fnP8cim+fpuFeGyD+jUe05NVFLchcpN?=
+ =?us-ascii?Q?x0GljW20U38xHx7CJ+qjTjLCdhXLBTemz+11zOU1/MlGFhsYFH16rc0JTZc8?=
+ =?us-ascii?Q?noxkrrqNGQgqKhBDtoBPSi5VD/EFcTbSmRCWf81Yjv9f+cC5asqLRPqtQhCt?=
+ =?us-ascii?Q?ltM1m7gAtSBSCDyHjr6RZEnHi30n5JcSJxCiTHvd8sB3dx0dP8Yc5FVygjT9?=
+ =?us-ascii?Q?uAC4VlskFnDG26SC9fX614/zG1N9zG6pHtrm0gPrweJAGCMKqLRULwwPmfZC?=
+ =?us-ascii?Q?Zw/pPQq8al4SDibHVoKZRqd+Z9+LxaXUpu6RZZqBb7jVICqnqkCNojnWVzp/?=
+ =?us-ascii?Q?mIKi1KGvp0GOZGRwcVgZ07r3Ce0Tltxr0KZVvhp3BJdPJv0qgA3O6ok+Du2u?=
+ =?us-ascii?Q?L7STibGQTTEbxwgSzwXyrhaq91gQQitUPRFc3s7REc19udaUPS33frkjMSqR?=
+ =?us-ascii?Q?nYQIGQ3D3mAarz16K0z/muq3ProWG9l2z8C1uvTLMkhwIZbRdy2i1exri7C7?=
+ =?us-ascii?Q?YUMzo2QvVKuPoGSMY2FeK6jyL9RcPgAEQhLgC011bnoCNWa1OQn2qkT436/s?=
+ =?us-ascii?Q?sV0HawKVw7jwtSjiYqOZekOho+rqjhHn1mSxNZJAVUO4CBn8KXf0D5yWLqdn?=
+ =?us-ascii?Q?jz5vPQp/JnqnHBwI4KLr7cFDlTq3vHRFk9u7ZK+ckhIRrP+exv25K7LYP7E4?=
+ =?us-ascii?Q?riQKa94bq0lhPebcG18akvKZ4yq9vVXphhek8RNwUPNQFA9R3Nwto9uq+L8O?=
+ =?us-ascii?Q?V0Httyf2FDK9K2TeKM6Q8uWhYuxkoeU5FEpNrmarU2ekTMdXschuxFm9+djx?=
+ =?us-ascii?Q?eL8gOl+Y0dfcxKDaJdUgkY+UlJzN5CTZff9eCaq4XzGMaPRA+sWM8syoA7Ur?=
+ =?us-ascii?Q?g5EzH22bgifJfjk21i8E4CZ7w9ef5+7IjhfRzLhC9ug3AA5atuvekiSI15CW?=
+ =?us-ascii?Q?miTmk3n1NHcYD0cRY5mWx6Nf/5Xl2mtVrkiehCLKcomU8eCuLHzVbznMl/ga?=
+ =?us-ascii?Q?MwCEF02QZqeKPXJsGHK8U/nTMqW4k3X3NoLE1+hkBxzenCiNmQ4pkmf4VV2O?=
+ =?us-ascii?Q?PUc+oQwtz/GZ7LvsIrXylSz7YMN8a2zvv+v/4CD74Tfkmj/URecwao5ZTzID?=
+ =?us-ascii?Q?iN2KIvjol7OwfCMgqtY1/Q+9fgBURJl4GaZ9F/lQDUe+6p6uMlbz/opTZy07?=
+ =?us-ascii?Q?0Za3HKlPrBOyeKXEh6eRA3jJyYqEVOeuqrp8trEA57wzXgbD82QA7SlvCkIr?=
+ =?us-ascii?Q?evrkzd+AFZ2ggiUDvp9APQIQUEr9n0WdmdVrrSwRMactZt50gLfWFsKoO34C?=
+ =?us-ascii?Q?sJnef3kI2SOhdbNYnRd3ThtLujiQvvzCdD9Mi5Uu/dkfQhcZPnUUXm1+V8Xz?=
+ =?us-ascii?Q?V+aO3VVR+2tt0w2ZLS5y/A0=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] video: fbdev: panel-tpo-td043mtea1: Convert sprintf()
- family to sysfs_emit() family
-Content-Language: en-US
-To: Li Zhijian <lizhijian@fujitsu.com>, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <20240319092333.1590322-1-lizhijian@fujitsu.com>
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240319092333.1590322-1-lizhijian@fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:DLWcJwmNZ97AysVmjGiBxzRfzOzprNYeT4qnhhw4Xji4rUuvAzV
- 7J7beNhn9NVGOhZUH/mR+dccYsWTIkZTb0ChZK2h8c+J/vXnxoCBYjOt1FNx74rF6YhRL0U
- ylUbB4rmSlRnPe8qdx8Kwh25np6b+DgHnEdjRDENKL1qkJtsOXxtS8SlExalHQAa5aVLdTp
- cxCVi4xrFD20tlZ2ct14g==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:rXL+fvDm1co=;ZBP+SfNavm5a+fpFx63zYFa3BC+
- OrqwBCMFT1cuu8t2mA81YX38gjPRPNIfYqXileQLaQEhKUoSWbiJqkTx3AKJjX78e+W+LhkPR
- zVXYX0qJKWBLTK8qiwSh1HvXXbw0A537dARGLdugz74ZoIvyWnOv5wX3gzZ9jJucbZLgHdPnb
- yh5+oU+6/etSy2fVZQFnAEE9S9xZv563K9Kht+zw+nD2RXC0E3hyBEMv4CljigWPU7yKmrXb4
- Oc9ABkOZorhfHwksDvbLvLpUcUNJtIJPWGPn+zhLFIdCzax32WXfu/z/MT0wmlgnqxSCpwNTe
- kKAITUVVmNACKxtOhh/3X0B1dqggCq85LeXJGUpz4Jgrw0dD1zbCFt3lDLBraLsmn6NcCzRk/
- nqI8YsAHqX+ldUS06ltdd31xCia+ra0XrZmicz/v3t4qxv6vW/LDr9hwMZ4VVxrwtcBApN35F
- tLDJy428LSW8UiboN5IVTniKhOOxrvmswHsY0idJso5tZsQleSHDTe87ybc3ibTOp0i7Otfso
- BxnF21XYPVNYgfoQZVPETxR97re/t2N1+SaPeBpy3WaUFL9Qx1vdo7RbHQ776Rm/QOlpAdFmd
- /GJDlZTZllGokzRFeGXljPlxsSAEFKhowTiZzhA0Mr/mxJL3RTfQD+2PcX53bPlo0W9NsWkKC
- /qw/GM2CiB+vbguBLbmc0ksUz4ULmVmty3Ru87gYt6dPcJ3FLShy6BEQJomYyGyvKMvbODyH3
- gLvkouADIqtog5zUTJbPs8CYQv955JNOLaJlp8dCfHXkxxpmM1893QTFAHA0o/jVBAbdUfCX8
- POIU6mv4I12EkgyWCBHycFIEVaUFs2Ri3vJvZf1SFPPLk=
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR22MB3789.namprd22.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b8e674a0-92ea-4b7e-7c3a-08dc48ba2fac
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Mar 2024 08:46:08.0556
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 855b093e-7340-45c7-9f0c-96150415893e
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: gxlYx/GBwTPOhFv6WLlC4pVqrTf5vQtzjklq6tR5vSX2p89kqn9LQuAr/R8SA7N8vH1qP7wieJ6WSPOADTbYyzovzczWsbgCmpVsNUzwYbo17cydRbCSsQLwZzg+ZIuE
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR22MB3037
 
-On 3/19/24 10:23, Li Zhijian wrote:
-> Per filesystems/sysfs.rst, show() should only use sysfs_emit()
-> or sysfs_emit_at() when formatting the value to be returned to user spac=
-e.
->
-> coccinelle complains that there are still a couple of functions that use
-> snprintf(). Convert them to sysfs_emit().
->
-> sprintf() and scnprintf() will be converted as well if they have.
->
-> Generally, this patch is generated by
-> make coccicheck M=3D<path/to/file> MODE=3Dpatch \
-> COCCI=3Dscripts/coccinelle/api/device_attr_show.cocci
->
-> No functional change intended
->
-> CC: Helge Deller <deller@gmx.de>
-> CC: linux-omap@vger.kernel.org
-> CC: linux-fbdev@vger.kernel.org
-> CC: dri-devel@lists.freedesktop.org
-> Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
+Hi Thomas,
 
-applied to fbdev git tree.
-Thanks!
-Helge
+...
+> Remove the field fb_blank from struct backlight_properties and remove all
+> code that still sets or reads it. Backlight blank status is now tracked e=
+xclusively
+> in struct backlight_properties.state.
+>=20
+> The core backlight code keeps the fb_blank and state fields in sync, but =
+doesn't
+> do anything else with fb_blank. Several drivers initialize fb_blank to
+> FB_BLANK_UNBLANK to enable the backlight. This is already the default for
+> the state field. So we can delete the fb_blank code from core and drivers=
+ and
+> rely on the state field.
+>=20
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Flavio Suligoi <f.suligoi@asem.it>
+> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> Cc: Claudiu Beznea <claudiu.beznea@tuxon.dev>
+> Tested-by: Flavio Suligoi <f.suligoi@asem.it>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Reviewed-by: Dan Carpenter <dan.carpenter@linaro.org>
+...
 
-> ---
-> V3:
->     split it from a mess of drm,fbdev, becuase they are not the same sub=
-system.
->
-> V2:
->     Fix missing '+' before '=3D' in drivers/video/fbdev/omap2/omapfb/dis=
-plays/panel-tpo-td043mtea1.c
->
-> This is a part of the work "Fix coccicheck device_attr_show warnings"[1]
-> Split them per subsystem so that the maintainer can review it easily
-> [1] https://lore.kernel.org/lkml/20240116041129.3937800-1-lizhijian@fuji=
-tsu.com/
-> ---
->   .../omap2/omapfb/displays/panel-tpo-td043mtea1.c     | 12 ++++--------
->   1 file changed, 4 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mt=
-ea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> index 477789cff8e0..3624452e1dd0 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> @@ -228,14 +228,10 @@ static ssize_t tpo_td043_gamma_show(struct device =
-*dev,
->   	int ret;
->   	int i;
->
-> -	for (i =3D 0; i < ARRAY_SIZE(ddata->gamma); i++) {
-> -		ret =3D snprintf(buf + len, PAGE_SIZE - len, "%u ",
-> -				ddata->gamma[i]);
-> -		if (ret < 0)
-> -			return ret;
-> -		len +=3D ret;
-> -	}
-> -	buf[len - 1] =3D '\n';
-> +	for (i =3D 0; i < ARRAY_SIZE(ddata->gamma); i++)
-> +		len +=3D sysfs_emit_at(buf, len, "%u ", ddata->gamma[i]);
-> +	if (len)
-> +		buf[len - 1] =3D '\n';
->
->   	return len;
->   }
-
+Can you explain what are the differences between the version 1 and version =
+2 of the patch?
+Thanks,
+Flavio

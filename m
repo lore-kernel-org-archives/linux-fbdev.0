@@ -1,92 +1,116 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53AD0E57B;
-	Thu, 21 Mar 2024 18:21:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 069E013340A;
+	Thu, 21 Mar 2024 18:29:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711045266; cv=none; b=LBE+3M/EMvu7HcUi++c1jxAXuVvINK6d0PcZJ3xor3nYAmtCc91vHzhEJFUTLIsgTH7K1r0kFBCTMwpSq76+nQK6tWz6sEAOBKxkTq3ycetikGRXYvpSQIachtlzKjduqfp8RhWYlDzxBcxryHE2ZTEGmyQA0DnHsj2qirHDg7M=
+	t=1711045772; cv=none; b=oX7DLvtlT7TV2fYJp5Gbz/0tBwEb9bHWq0jJW0nbO+HXIioxQaHTRiRXDCxLuO0Mnv4bqn0FtlA2FaREIKBvGbkViIwupuCdcySUjsE47/bN0zue0BWE75FVdHioJyyBYU8mjVwaQWyGwUq0tyfN0vVwhB7Avcs+1J1aB9tjgX8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711045266; c=relaxed/simple;
-	bh=ws772LLUo2NYBpe+TOV5Ew1eplmKjtjeSFBhExfwHl0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=twMAtfbE7yDKg124hGIUUcD5e71uLxHBaVK11lfJjIZUZhjFncpUBqWY+URllnKcfoH/JjN5aevdP4gdchLVk/II2qdVHrldipwgi7gvup7Y5iJTzsc4dW4MFgTXq7UsNyXZUkawrvvycrcAPhO9dXSTZ9tqKJs7XPRHG9vEQu0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LWBVo4RR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1711045772; c=relaxed/simple;
+	bh=E3plSq6pMYSImGt0wVp3XxOmTpdXXINVNGbm/p3aTMM=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=o7FzY30gT7MhJq8aJGOCFuHbkEfZcDOgvd9UbFL7fpAK3/5ExsPsFk/bcy/jbrSxowkMgj8Dh6iBdtjSSpPidGQGpaL4eGNdusYRp66+9sQqUyHj6YXCPQcc1DCKDnDucpCCMqW7SlMb46AcT9FhKiqVFf/TyY2ZwkXvmKBH1Nk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=h9RRziWb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LWBVo4RR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 971D4C433C7;
-	Thu, 21 Mar 2024 18:21:03 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="h9RRziWb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D14BC433C7;
+	Thu, 21 Mar 2024 18:29:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711045265;
-	bh=ws772LLUo2NYBpe+TOV5Ew1eplmKjtjeSFBhExfwHl0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LWBVo4RRJzUlUL7ViIUBdyWP8q1KZhV1RZopZzohV+GcH56jbISx+T5hsSsp8Z5u3
-	 LakHKg2b3EqDyhuSioLa6eF7f/bnp6tLGITEM9zwyX87ms79fUcaQULjr+lZK+hDzD
-	 cIz0MreCHhwPuDg96Z7KYpgoCC4pK2P69r2I1wWfZecC+6dhXNODJNrebHANafLg0G
-	 NsLARGQZiQP/yVfAtRLpSg2ZiAnlKwn1P3HvwhIb/46Me+rGcZGreD0UTs17m5WB/A
-	 XxbCMg9WkEPfv9uIRC+g8VOFe0ZHBiDFs2jFSD62G63B52tW9oJD6U92AASo+GWaM7
-	 rZoSza4ofnEkQ==
-Date: Thu, 21 Mar 2024 18:21:00 +0000
-From: Lee Jones <lee@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
-	andy@kernel.org, geert@linux-m68k.org, dan.carpenter@linaro.org,
-	sam@ravnborg.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: Re: [PATCH v2 0/6] backlight: Remove struct
- backlight_properties.fb_blank
-Message-ID: <20240321182100.GJ13211@google.com>
-References: <20240319093915.31778-1-tzimmermann@suse.de>
+	s=k20201202; t=1711045771;
+	bh=E3plSq6pMYSImGt0wVp3XxOmTpdXXINVNGbm/p3aTMM=;
+	h=Date:From:To:Subject:From;
+	b=h9RRziWb4sYzLp83UC+myLIxGZ/xZ+Gb9KE5rKE69gcMKZfFVp0mKxn6VGkqWkqpi
+	 a8cjiOJh05K6IN965aaGSlxOhQWF+DAfT4wcoHM3wyN68EKL8h0AjsBs4pDUhwbFTE
+	 1iN2lNLZjKHHdin8q4T0gTh7apB39S5UhJvbslWqvRexHqU9L7YJMQs0x4vrWeXiBl
+	 AXTuWEeQZgia0PwCw+pSgbyMNyIE7VzoRSSTiyd4yfR60c/zM4guwUtx6jprHyRl9D
+	 xC4aTeow+XHH+lZ81TNZaR8xUrMLaEYV+vsl9Ljdf42AjYiHWMTbQuy9yGR4Sz4zWo
+	 W8uPB5/7uaahw==
+Date: Thu, 21 Mar 2024 19:29:26 +0100
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and cleanups for v6.9-rc1
+Message-ID: <Zfx8hg0RRDmKbJ0O@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240319093915.31778-1-tzimmermann@suse.de>
 
-On Tue, 19 Mar 2024, Thomas Zimmermann wrote:
+Hi Linus,
 
-> The field fb_blank in struct backlight_properties has been marked for
-> removal. Remove it in favor of the power and state fields.
-> 
-> Patches 1 to 5 prepare several backlight drivers. They remove fb_blank
-> or replace driver code with existing helpers.
-> 
-> Patch 6 removes fb_blank from backlight core and drivers. This resolves
-> another dependency between backlight nad fbdev.
-> 
-> v2:
-> - omap1: replace 'power' with 'enable'
-> - clarify commit messages
-> 
-> Thomas Zimmermann (6):
->   auxdisplay: ht16k33: Replace use of fb_blank with backlight helper
->   backlight: omap1: Remove unused struct omap_backlight_config.set_power
->   backlight: omap1: Replace FB_BLANK_ states with simple on/off
->   fbdev: omap2/omapfb: Replace use of fb_blank with backlight helpers
->   staging: fbtft: Remove reference to fb_blank
->   backlight: Remove fb_blank from struct backlight_properties
-> 
->  drivers/auxdisplay/ht16k33.c                  |  7 +--
->  drivers/staging/fbtft/fb_ssd1351.c            |  4 +-
->  drivers/staging/fbtft/fbtft-core.c            |  5 +-
->  drivers/video/backlight/backlight.c           |  2 -
->  drivers/video/backlight/mp3309c.c             |  1 -
->  drivers/video/backlight/omap1_bl.c            | 47 +++++++------------
->  drivers/video/fbdev/atmel_lcdfb.c             |  1 -
->  .../omap2/omapfb/displays/panel-dsi-cm.c      |  7 +--
->  .../omapfb/displays/panel-sony-acx565akm.c    | 10 +---
->  include/linux/backlight.h                     | 25 +---------
->  include/linux/platform_data/omap1_bl.h        |  1 -
->  11 files changed, 26 insertions(+), 84 deletions(-)
+please pull fixes and cleanups for the fbdev subsystem for kernel 6.9-rc1.
 
-Is everyone okay with this being pushed through Backlight?
+Beside the typical bunch of smaller fixes, the Linux console now allows fonts
+up to a size of 64 x 128 pixels.
 
-I can send out a PR to an immutable branch for others to pull from.
+Thanks!
+Helge
 
--- 
-Lee Jones [李琼斯]
+----------------------------------------------------------------
+The following changes since commit 41bccc98fb7931d63d03f326a746ac4d429c1dd3:
+
+  Linux 6.8-rc2 (2024-01-28 17:01:12 -0800)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.9-rc1
+
+for you to fetch changes up to 0688d3b1d882dd1dcf73305306e71ebf1653f595:
+
+  fbdev: panel-tpo-td043mtea1: Convert sprintf() to sysfs_emit() (2024-03-20 09:02:32 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.9-rc1:
+
+- Allow console fonts up to 64x128 pixels (Samuel Thibault)
+- Prevent division-by-zero in fb monitor code (Roman Smirnov)
+- Drop Renesas ARM platforms from Mobile LCDC framebuffer driver
+  (Geert Uytterhoeven)
+- Various code cleanups in viafb, uveafb and mb862xxfb drivers by
+  Aleksandr Burakov, Li Zhijian and Michael Ellerman
+
+----------------------------------------------------------------
+Aleksandr Burakov (1):
+      fbdev: viafb: fix typo in hw_bitblt_1 and hw_bitblt_2
+
+Geert Uytterhoeven (1):
+      fbdev: Restrict FB_SH_MOBILE_LCDC to SuperH
+
+Li Zhijian (2):
+      fbdev: uvesafb: Convert sprintf/snprintf to sysfs_emit
+      fbdev: panel-tpo-td043mtea1: Convert sprintf() to sysfs_emit()
+
+Michael Ellerman (1):
+      fbdev: mb862xxfb: Fix defined but not used error
+
+Roman Smirnov (1):
+      fbmon: prevent division by zero in fb_videomode_from_videomode()
+
+Samuel Thibault (1):
+      fbcon: Increase maximum font width x height to 64 x 128
+
+ drivers/firmware/efi/earlycon.c                        |  2 +-
+ drivers/video/fbdev/Kconfig                            |  2 +-
+ drivers/video/fbdev/arkfb.c                            | 15 +++++++++++----
+ drivers/video/fbdev/core/fbcon.c                       | 16 +++++++++-------
+ drivers/video/fbdev/core/fbmem.c                       | 12 ++++++------
+ drivers/video/fbdev/core/fbmon.c                       |  7 ++++---
+ drivers/video/fbdev/core/svgalib.c                     | 15 +++++++++++----
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c             | 18 +++++++++---------
+ .../fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c | 12 ++++--------
+ drivers/video/fbdev/s3fb.c                             | 15 +++++++++++----
+ drivers/video/fbdev/uvesafb.c                          |  2 +-
+ drivers/video/fbdev/vga16fb.c                          |  6 +++++-
+ drivers/video/fbdev/via/accel.c                        |  4 ++--
+ drivers/video/fbdev/vt8623fb.c                         | 15 +++++++++++----
+ drivers/video/sticore.c                                |  2 +-
+ include/linux/fb.h                                     | 18 ++++++++++++------
+ include/linux/font.h                                   |  3 ++-
+ lib/fonts/fonts.c                                      | 15 +++++++++------
+ 18 files changed, 110 insertions(+), 69 deletions(-)

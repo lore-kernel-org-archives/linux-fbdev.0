@@ -1,93 +1,88 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68C153B1AA
-	for <linux-fbdev@vger.kernel.org>; Thu, 21 Mar 2024 05:41:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8BFC76052;
+	Thu, 21 Mar 2024 16:12:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1710999702; cv=none; b=UrWGre2f4MaUMXumTfnpoqZeWZoDunDVAV+gfZYSuQ8aLo40Ie2nqhQJdNi7Tdkl7jOzAIP/tbdK9djD0bXg5vswQjOD0vEEy9dmqcEX1ca0wqQT5A6GlWh8InIGO3fqqFph6lLctDh5RTuPdeodfjwUo68L8n5+APfZcx0cddc=
+	t=1711037570; cv=none; b=WkJzC+oTWNHd6dtipmN8BUPIZwYc15fD8e7qgsnbzHNcPMSUEpY0lSE5NMCw8Z5svDgEVCAT/JhUZwHRToEfKUDlKm4AN/1YHdO5Sq00FgjZnWOprz6pON0lBX+S5KhfNWoUB1nC9KkIs+5I+geIxLaSTGyRpfKCN8KMBHxgg5g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1710999702; c=relaxed/simple;
-	bh=sLCJ5w7ZjIc5OwI8r6fw90adJAwfvrKs/3vsEHc06vo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JzC1zF5/V/H16mWBvDkImtSwHYXYnzqbX0WujTjTtIDXKP3pwLHG6ILgpZvA0jQgnJ+h4hUr1kKCnW4Bh1snVEqd/CN4AtkESczE1R1SVu36GMPLQsxYbFCda69SfUno+7aCZCHDPSNryRq5IATgDRFjbofszAFwTxT3zHZdrJc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NGYuGR/K; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1711037570; c=relaxed/simple;
+	bh=6NPow3V/0Wt+lAq16jw5Ca4MIxYnRXOGaHoibGDMLas=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=qLeX+xgLplH61z1lH4uf+KDQO4AWMiY9g/9QM4fepDJ+ie39OEB4l19SZ54htyXl18CTEAQrwTAFYdlfcRWmrC06VUBpTARJ50W6VOLeQobWvHTVgnG/UdLxuzbPWkeLcUu/5M8AkxkmnZeByZbdo0NnyojulkhEE7ILoAKvkBc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=o6zvo+K0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NGYuGR/K"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-413f4cb646dso4294065e9.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Mar 2024 22:41:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710999699; x=1711604499; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Zm+dDDn/qjmssizpNHCqnR6eRhc+Lz6SbwtuAIJ0yjA=;
-        b=NGYuGR/Kti50Mc0lathcf0N6IcRQM03sKHvQYt6ENoNUZdv1GLqSkhfqFHKBK8p71O
-         T1hYI21l++lUobPtPJzwkwAOt5X83AkTzSDf6EGFQdzS2C4apaqpJ8bcVxUAEafuQwTD
-         ghjfPAhoHGDSUqQL94H9CB+9OGWyDSUj/CCWa0gvOn4+gay9nsjzSzuYDoJW6bK6XKj3
-         G8lK7OV6BMrMRYrPehLwOLPbrbrjPp+4WoE7dDUJG19G6REZj0k/BfKNLmiCbTELewsR
-         MjJhJFrvj1sxtYHZIYlPyWh/DfQAq/KnCaBbDtb+o2+0BSSy5kqMH+ennDL81KpQHke2
-         p2RQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710999699; x=1711604499;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Zm+dDDn/qjmssizpNHCqnR6eRhc+Lz6SbwtuAIJ0yjA=;
-        b=YkKH37UMicVQR5lFCCR4sZ36W5+Op2WBQ7ly90FgCboDO9fyv1B9yUrD0NQE0ri/Uv
-         eVE75AZnOVuGVCt3GZoPI1iValVwdw+PIaMcaGnLw1dDBsUVRzfA83hjw126/qyfhBZz
-         +3LryB53F9v/vemL4gfXYnHi4Qsn0U3zUU33UEFITbQ+ffPUPwhySSqDG1wEN5eX5ck/
-         Y2sxfjGEOdEqwGURW8Q7upN0v3qpTrkUbkjYl0PrQRSf0BDrRhqATRxTX7XmZ809Tzuj
-         DTy4uhgsjtH2JFtYUvDQKkLbaZAN7AA0rhGkM8Zn3NRe34nY1YRn1z8Iyuk9qcBaWKZ5
-         lO4Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUPfBxJpSuhhE/j699voYARSVuP3HB2fb2TkDsU/GVEeal/EGWxiy8C0NgLGP67b55vrXd2ekcBJhKf1JYapkYiyBRnHD7ANLTnLrc=
-X-Gm-Message-State: AOJu0YyzUJo5sYWE9rtPXHtKv/szGWmDOfNXjVqMrf2xYN7COkbouFnh
-	B1Sas0jBGR2aUKH0iOseGyXTCrulTeSnTrzNtSSVMCjs7piPgwsi0ROXXldPhwQ=
-X-Google-Smtp-Source: AGHT+IFDFiJPls7HzGZtyNHBa42C+coG8tOL6Rb1hcMWDpZDq0e6ExNBc1UHVkYbAtN2t7TZXly4Yg==
-X-Received: by 2002:a05:600c:310a:b0:413:ca0:5cd1 with SMTP id g10-20020a05600c310a00b004130ca05cd1mr488156wmo.39.1710999698539;
-        Wed, 20 Mar 2024 22:41:38 -0700 (PDT)
-Received: from localhost ([102.222.70.76])
-        by smtp.gmail.com with ESMTPSA id fm22-20020a05600c0c1600b004147266a37dsm1370015wmb.30.2024.03.20.22.41.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Mar 2024 22:41:38 -0700 (PDT)
-Date: Thu, 21 Mar 2024 08:41:34 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Chandra Pratap <chandrapratap3519@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev
-Subject: Re: [PATCH v2] staging: sm750fb: Replace comparisons with NULL and 0
-Message-ID: <51797d72-056b-4762-a328-1d968803b931@moroto.mountain>
-References: <c4a5e9e8-214a-4ac0-b8ee-01a9e7a1e5f9@moroto.mountain>
- <20240320180943.3683-1-chandrapratap3519@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="o6zvo+K0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D381C43390;
+	Thu, 21 Mar 2024 16:12:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711037569;
+	bh=6NPow3V/0Wt+lAq16jw5Ca4MIxYnRXOGaHoibGDMLas=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=o6zvo+K0z+pthjZ1rv6n6C6QkLMLKSKM2m1xQZmtsoZLeZe26l7Xg0v6zgdenfeST
+	 +FiZQeUsfbyMDZk/sAsYu0fS01skXvmUXQW9YJ4ho8Any/kw2K+DRzw0BSeAVIkQ97
+	 YUcDnn95rFH+LWuaqmd5033Gi6VrGLFYJ1VBXfsqF53sbn8p7yttSksCBesdctu46T
+	 nE3GZik+UOEfPMxXitw8aRBOeCOHxcbvWLRzNg8bQgZI3MIQkK1B8axnS2JqCLn0Cu
+	 H9WvM3ahpkpNOCxYW0/m39nDz/knHPt9vsEn2eXyM46wpzxmx2bduXUikq0vVeUdtC
+	 ZCs9gbiaK3K2w==
+From: Lee Jones <lee@kernel.org>
+To: lee@kernel.org, andy@kernel.org, daniel.thompson@linaro.org, 
+ jingoohan1@gmail.com, deller@gmx.de, robin@protonic.nl, javierm@redhat.com, 
+ Thomas Zimmermann <tzimmermann@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
+In-Reply-To: <20240305162425.23845-1-tzimmermann@suse.de>
+References: <20240305162425.23845-1-tzimmermann@suse.de>
+Subject: Re: [PATCH v4 00/10] backlight: Replace struct fb_info in
+ interfaces
+Message-Id: <171103756721.89062.17090257592751026195.b4-ty@kernel.org>
+Date: Thu, 21 Mar 2024 16:12:47 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240320180943.3683-1-chandrapratap3519@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.12.4
 
-On Wed, Mar 20, 2024 at 11:39:43PM +0530, Chandra Pratap wrote:
-> Replace '(opt != NULL)' with '(opt)' and '(*opt != 0)'
-> with '(*opt != '\0')' to adhere to the coding standards.
+On Tue, 05 Mar 2024 17:22:33 +0100, Thomas Zimmermann wrote:
+> Backlight drivers implement struct backlight_ops.check_fb, which
+> uses struct fb_info in its interface. Replace the callback with one
+> that does not use fb_info.
 > 
-> Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
-> ---
-> Changes in v2:
->   - Update the commit message to reflect the changes better
->   - replace (*opt) with (*opt != '\0')
+> In DRM, we have several drivers that implement backlight support. By
+> including <linux/backlight.h> these drivers depend on <linux/fb.h>.
+> At the same time, fbdev is deprecated for new drivers and likely to
+> be replaced on many systems.
 > 
+> [...]
 
-Thanks!
+Applied, thanks!
 
-Reviewed-by: Dan Carpenter <dan.carpenter@linaro.org>
+[01/10] backlight: Match backlight device against struct fb_info.bl_dev
+        commit: f1ecddf747f0d734682152b37c927aa958a51497
+[02/10] auxdisplay/ht16k33: Remove struct backlight_ops.check_fb
+        commit: dddfda7d5f12a7b48aeca6c3840167529c8cd34a
+[03/10] hid/hid-picolcd: Fix initialization order
+        commit: a951a15002da620871d8f3d8218c043cdc4c2471
+[04/10] hid/hid-picolcd: Remove struct backlight_ops.check_fb
+        commit: b3c52552f8d8a816bda2bda984411c73f4dd0b87
+[05/10] backlight/aat2870-backlight: Remove struct backlight.check_fb
+        commit: 0e03c96046405281fb072c05a7810d2661a2f334
+[06/10] backlight/pwm-backlight: Remove struct backlight_ops.check_fb
+        commit: 78534967e7cb3c2fbfcb2d37820b51a80c570f90
+[07/10] fbdev/sh_mobile_lcdc_fb: Remove struct backlight_ops.check_fb
+        commit: b853c08cd6598b3b3ff91cb2bba336bfef9c0ac4
+[08/10] fbdev/ssd1307fb: Init backlight before registering framebuffer
+        commit: d5ae81e965953da27cf46db6281d6a6a28eaaccb
+[09/10] fbdev/ssd1307fb: Remove struct backlight_ops.check_fb
+        commit: ec5925ef4a2dfd7ee060f4fd2a2e8036f8a94e8e
+[10/10] backlight: Add controls_device callback to struct backlight_ops
+        commit: 2e427743de015c1ac047036ef495c3f004105439
 
-regards,
-dan carpenter
-
+--
+Lee Jones [李琼斯]
 

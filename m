@@ -1,124 +1,119 @@
-Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F01A53E2E;
-	Fri, 22 Mar 2024 15:17:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C4485A106;
+	Fri, 22 Mar 2024 16:10:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711120621; cv=none; b=YHpAZOTOCtBujXbB7UfoT2HPMvtPNof9bny2bSKzOH2VNF05tzQc+C23cQHF0K5C4BGkBsQcY0Ac/w4MYYCtO6zHXBJrS25dHWJ1HJn0Q8chm3ys+Pg94ySliZjBPP/LvEcjSnX/iV+PSL3U5ib0QssFNb7LnJCDLY4t7PL4d34=
+	t=1711123818; cv=none; b=Zg0yFqEqrID+cVPscoyMmYmToLyJXsDAK7NspnAIh5cpD/AzIpVlKjjzAb77gY0FNInAuwTrvouFDHNNPJHwbKxX5cjJEMIES/+mrfz4iV2oikyyD3X2pgsNwqyxoRT3DbGX6P8ooDZtwEeeE1+6kbvw2NytSBZ+n6iLQP++QTo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711120621; c=relaxed/simple;
-	bh=hzlDQWpaAy8XRudP0fe8Wk/SvOdLzdb9nk6RY9sJYQk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=nzSteaD8CusvP1Y7bilUE4gNoXQczvgIsZ+EyEldFZRZmYvtw7m67DdQiEapVcwaBo5i6ycqx9tWBQ6hL3AUVLpcUKVfB0I5nIj65VihtZk5ytV6i/5/0fj9/eNRI/ztuWYiKjOXhDTVYayFibN6lblagAlQ47sxcAGKF5aWf4g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cL45VbWw; arc=none smtp.client-ip=209.85.214.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1711123818; c=relaxed/simple;
+	bh=Qjtq2wXAU324eUdNx1w4/HYyFHq77oZw5qpk2Noef4c=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=ujTRjrAyAeO0rpWv86soQsP4uEeTmrTy70Zu04biSpZRUFQybvej/hThOYDYjlBPowPFMs2HSa6aneU70xiBGaKfcmOErDW7MDh6avdqgzB+Q/8d6sqB5ewCfHUMU3Flqjo0LB1N/cnP3cUVqcqDKJi5DycGQ7nfZD+fJlRSOAY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NEa+617z; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cL45VbWw"
-Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-1def142ae7bso19332875ad.3;
-        Fri, 22 Mar 2024 08:17:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711120620; x=1711725420; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ZvNCq/vUyxBpwJ9D5tVxN8w0d8YTtddgB0nD7H1fQsk=;
-        b=cL45VbWwOUwpl3J9IPFSkYgKmMWS6We+9nraluxWbKqs+RljLnN3FfB15QqSPsmmHJ
-         IJbHRY52EIizejeOSrIExuQT4FZitXmUasjPpc5M8Trcs5hTIoYG/3pKh6fzWQ8DgxSI
-         I9MwrAMDJX8CdlIuYN64xyevn5eRa/xuWJTrZ+1bRp6KUfHDIDn8TlF2rKeiSIlfP049
-         u2/I/ybnJNgN2H6DsRs04bNab5tS4bf0Qp+RW4H90Dk1XeHW5turpqjXp0+peMCFicll
-         Mg6eVS9/OyN7OEbDmC/xIw/HKE0e5nd/GWh/xMsch6oUeNzObJcfii19+9QDmt/wzwFl
-         IyGQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711120620; x=1711725420;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZvNCq/vUyxBpwJ9D5tVxN8w0d8YTtddgB0nD7H1fQsk=;
-        b=duLbCosF+gxRXzRjPnmx3GG8y3n6cWEEVVkwoj9oGttcp1RWIudwQ1Vm29BBNI0fNG
-         yShLZB/Z3qxSeyJtwT6RyWtFACukAC5HMHVktAmzmhZThN8qMzuVLliRxffp8wmrKfnu
-         3FaRwb85U8Tfgq3nNNR1GHhIcj6UFxMhenWGAaV0jwdtXWii9nwEKF+Y6t7N3lU29hwB
-         MNvClc6igkWhjYjXq0FqBiaVXk9bGJCKjArvfx1Jj9Ui87yz5HRMV/+GsbngtqR4zZ2X
-         TyBC63rHu4rm/kKNeoOsbOj/c+dxUSKWq61Z4Rjc4e9URiUhyvEl8yhru/8fosur1GHe
-         jlew==
-X-Forwarded-Encrypted: i=1; AJvYcCXjvxuSzd/G5YlTJwZT0wx3HxKT1euZ3QCbPsR0upZEGkSA6Go10XW0ZRP8iTNtykoqpRPjgFTvBeBFJWpva1WIBALIZqSzvj4rm7L8lvTVUd6MiLaZd1Crqf00+H/HDJ0BFJLE3qZNQJA=
-X-Gm-Message-State: AOJu0YzX4X2GpvLEJNG+nDagDmSQieCbtv951oce9Zb/S2GPpZQVqdKj
-	2I6+y3yasNFvW9aF/PMHheSiNb4F0DHOL7IdBC3JRVoYi9SuAd6q
-X-Google-Smtp-Source: AGHT+IHCgCDL1PxwCnR3s/HSd6meeWjhLlcVL81UDri0NQht+8M2mFw3XMHbUNeMHzSDAayeOBa9Eg==
-X-Received: by 2002:a17:902:ce0d:b0:1dd:ae5b:86f1 with SMTP id k13-20020a170902ce0d00b001ddae5b86f1mr59698plg.29.1711120619504;
-        Fri, 22 Mar 2024 08:16:59 -0700 (PDT)
-Received: from Ubuntu2.. ([14.139.121.51])
-        by smtp.googlemail.com with ESMTPSA id p5-20020a170902e34500b001e0287592c4sm2024809plc.267.2024.03.22.08.16.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Mar 2024 08:16:58 -0700 (PDT)
-From: Chandra Pratap <chandrapratap3519@gmail.com>
-To: 
-Cc: sudipm.mukherjee@gmail.com,
-	dan.carpenter@linaro.org,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev,
-	Chandra Pratap <chandrapratap3519@gmail.com>
-Subject: [PATCH v3] staging: sm750fb: Replace comparisons with NULL and 0
-Date: Fri, 22 Mar 2024 20:46:33 +0530
-Message-Id: <20240322151633.16485-1-chandrapratap3519@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <2024032208-blunt-ferocity-22f4@gregkh>
-References: <2024032208-blunt-ferocity-22f4@gregkh>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NEa+617z"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8369DC433C7;
+	Fri, 22 Mar 2024 16:10:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711123817;
+	bh=Qjtq2wXAU324eUdNx1w4/HYyFHq77oZw5qpk2Noef4c=;
+	h=Date:From:To:Subject:From;
+	b=NEa+617zEcJHGxnmY6gCZqYL2SUxo3byK5uzGBirzzdmRUJjHjb3ZeZ9nM81YbTVr
+	 l6DhzWMMUYoRZ+LiMG3OUArLCtqMLdE3r5lug6wdPYflty7Rmhwzc5Zlb80SXngBK3
+	 4DeJaO9DiF/VO0rquE/4uFsfqH/LHSxUlKhnilIqA/EQwKErEuBMhgHfEouYj5S5G8
+	 l7gaDuUZ2OAnwYLI/au7QaUKWkHKBbDAcRUy6HDiz68t8zjnMlswqUOn4PQ8eDssOQ
+	 aLnf7n/jdJpg7IyvO4uJAHH/poexRbAIeMShJRlLKCUI+w1tIOgMMBLDIZvk31TxvQ
+	 273DabFMr7b0Q==
+Date: Fri, 22 Mar 2024 17:10:13 +0100
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and cleanups for v6.9-rc1 (v2)
+Message-ID: <Zf2tZcWuMMQGFGgb@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Replace '(opt != NULL)' with '(opt)' and '(*opt != 0)'
-with '(*opt != '\0')' to adhere to the coding standards.
+Hi Linus,
 
-Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
----
+Yesterday's fbdev tree showed one small compiler warning which has been fixed
+in this pull request.
 
-Please ignore the other v3 patch I sent, I forgot to write
-the change log in that patch. Apologies for any incovenienece
-caused.
+So, please pull the latest fixes and cleanups for the fbdev drivers for kernel 6.9-rc1.
 
-Changes in v2:
-  - Update the commit message to reflect the changes better
-  - Replace (*opt) with (*opt != '\0')
+Beside the typical bunch of smaller fixes, the Linux console now allows fonts
+up to a size of 64 x 128 pixels.
 
-Changes in v3:
-  - Remove unncessary spacing
+Thanks!
+Helge
 
- drivers/staging/sm750fb/sm750.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+----------------------------------------------------------------
+The following changes since commit 41bccc98fb7931d63d03f326a746ac4d429c1dd3:
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 04c1b32a22c5..c4b944f82fb9 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -926,7 +926,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
- 		goto NO_PARAM;
- 	}
- 
--	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-+	while ((opt = strsep(&src, ":")) && *opt != '\0') {
- 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
- 		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
- 
-@@ -1147,7 +1147,7 @@ static int __init lynxfb_setup(char *options)
- 	 * strsep() updates @options to pointer after the first found token
- 	 * it also returns the pointer ahead the token.
- 	 */
--	while ((opt = strsep(&options, ":")) != NULL) {
-+	while ((opt = strsep(&options, ":"))) {
- 		/* options that mean for any lynx chips are configured here */
- 		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
- 			g_noaccel = 1;
--- 
-2.34.1
+  Linux 6.8-rc2 (2024-01-28 17:01:12 -0800)
 
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.9-rc1
+
+for you to fetch changes up to 0688d3b1d882dd1dcf73305306e71ebf1653f595:
+
+  fbdev: panel-tpo-td043mtea1: Convert sprintf() to sysfs_emit() (2024-03-20 09:02:32 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.9-rc1:
+
+- Allow console fonts up to 64x128 pixels (Samuel Thibault)
+- Prevent division-by-zero in fb monitor code (Roman Smirnov)
+- Drop Renesas ARM platforms from Mobile LCDC framebuffer driver
+  (Geert Uytterhoeven)
+- Various code cleanups in viafb, uveafb and mb862xxfb drivers by
+  Aleksandr Burakov, Li Zhijian and Michael Ellerman
+
+----------------------------------------------------------------
+Aleksandr Burakov (1):
+      fbdev: viafb: fix typo in hw_bitblt_1 and hw_bitblt_2
+
+Geert Uytterhoeven (1):
+      fbdev: Restrict FB_SH_MOBILE_LCDC to SuperH
+
+Li Zhijian (2):
+      fbdev: uvesafb: Convert sprintf/snprintf to sysfs_emit
+      fbdev: panel-tpo-td043mtea1: Convert sprintf() to sysfs_emit()
+
+Michael Ellerman (1):
+      fbdev: mb862xxfb: Fix defined but not used error
+
+Roman Smirnov (1):
+      fbmon: prevent division by zero in fb_videomode_from_videomode()
+
+Samuel Thibault (1):
+      fbcon: Increase maximum font width x height to 64 x 128
+
+ drivers/firmware/efi/earlycon.c                        |  2 +-
+ drivers/video/fbdev/Kconfig                            |  2 +-
+ drivers/video/fbdev/arkfb.c                            | 15 +++++++++++----
+ drivers/video/fbdev/core/fbcon.c                       | 16 +++++++++-------
+ drivers/video/fbdev/core/fbmem.c                       | 12 ++++++------
+ drivers/video/fbdev/core/fbmon.c                       |  7 ++++---
+ drivers/video/fbdev/core/svgalib.c                     | 15 +++++++++++----
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c             | 18 +++++++++---------
+ .../fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c | 12 ++++--------
+ drivers/video/fbdev/s3fb.c                             | 15 +++++++++++----
+ drivers/video/fbdev/uvesafb.c                          |  2 +-
+ drivers/video/fbdev/vga16fb.c                          |  6 +++++-
+ drivers/video/fbdev/via/accel.c                        |  4 ++--
+ drivers/video/fbdev/vt8623fb.c                         | 15 +++++++++++----
+ drivers/video/sticore.c                                |  2 +-
+ include/linux/fb.h                                     | 18 ++++++++++++------
+ include/linux/font.h                                   |  3 ++-
+ lib/fonts/fonts.c                                      | 15 +++++++++------
+ 18 files changed, 110 insertions(+), 69 deletions(-)

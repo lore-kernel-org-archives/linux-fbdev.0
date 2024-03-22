@@ -1,108 +1,124 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E5D047A60;
-	Fri, 22 Mar 2024 14:25:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F01A53E2E;
+	Fri, 22 Mar 2024 15:17:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711117540; cv=none; b=jS8ohh5+CjVdB1SVBMqFAsL7Lws3bQAUPiTI7KNP5uHhcWs4ekpTKZkgiPyURfO9LD2jRah5OPj05qgcelNo+bF/LETDM0kWwQPyqqbH5G78hfYkNUTn91vWrS/N488d9SHlZP+/k2HCwUYp5N5lZJpEey9mJ9p7XD8soyzj49I=
+	t=1711120621; cv=none; b=YHpAZOTOCtBujXbB7UfoT2HPMvtPNof9bny2bSKzOH2VNF05tzQc+C23cQHF0K5C4BGkBsQcY0Ac/w4MYYCtO6zHXBJrS25dHWJ1HJn0Q8chm3ys+Pg94ySliZjBPP/LvEcjSnX/iV+PSL3U5ib0QssFNb7LnJCDLY4t7PL4d34=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711117540; c=relaxed/simple;
-	bh=p34/324xP2XXUiHY7h/GE3DoOsaLPBDkUoaF7CbR5ro=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=I3A1bPnMoVMXblK8ykf5tauTBISEPMG5yefEy+EnOBhXms4sDwomAJY/c0B5MuaIz80+oYwONVTsamtRFfb74RYuTNVDYZpt/RlAFLrd1LNNGNnaAs0pQuFm58c0qESun/6ofckTIbR7UGarFV40+rWJnpJaTP9jN63D/gZZTww=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Yz1Nyi7V; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1711120621; c=relaxed/simple;
+	bh=hzlDQWpaAy8XRudP0fe8Wk/SvOdLzdb9nk6RY9sJYQk=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=nzSteaD8CusvP1Y7bilUE4gNoXQczvgIsZ+EyEldFZRZmYvtw7m67DdQiEapVcwaBo5i6ycqx9tWBQ6hL3AUVLpcUKVfB0I5nIj65VihtZk5ytV6i/5/0fj9/eNRI/ztuWYiKjOXhDTVYayFibN6lblagAlQ47sxcAGKF5aWf4g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cL45VbWw; arc=none smtp.client-ip=209.85.214.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Yz1Nyi7V"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6E8EC43399;
-	Fri, 22 Mar 2024 14:25:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1711117540;
-	bh=p34/324xP2XXUiHY7h/GE3DoOsaLPBDkUoaF7CbR5ro=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Yz1Nyi7VaAjRIUJ2aXFHrvz2lf7erBm5c0SU0+6squjXOGPIZvxVYw7d79Zyvofez
-	 2bcuX0dqsmIhU6kqfF0f4AKk3/GBAs4I3RxiRmzXdW/cdWnza79lNjiccNYHqQQvd9
-	 B8uUanqtD52mlr2k9Vr710DR2Gg2OYf4tQ6auJ5A=
-Date: Fri, 22 Mar 2024 15:25:37 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Chandra Pratap <chandrapratap3519@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, dan.carpenter@linaro.org,
-	teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev
-Subject: Re: [PATCH v3] staging: sm750fb: Replace comparisons with NULL and 0
-Message-ID: <2024032226-gorgeous-snowbird-25b1@gregkh>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cL45VbWw"
+Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-1def142ae7bso19332875ad.3;
+        Fri, 22 Mar 2024 08:17:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1711120620; x=1711725420; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ZvNCq/vUyxBpwJ9D5tVxN8w0d8YTtddgB0nD7H1fQsk=;
+        b=cL45VbWwOUwpl3J9IPFSkYgKmMWS6We+9nraluxWbKqs+RljLnN3FfB15QqSPsmmHJ
+         IJbHRY52EIizejeOSrIExuQT4FZitXmUasjPpc5M8Trcs5hTIoYG/3pKh6fzWQ8DgxSI
+         I9MwrAMDJX8CdlIuYN64xyevn5eRa/xuWJTrZ+1bRp6KUfHDIDn8TlF2rKeiSIlfP049
+         u2/I/ybnJNgN2H6DsRs04bNab5tS4bf0Qp+RW4H90Dk1XeHW5turpqjXp0+peMCFicll
+         Mg6eVS9/OyN7OEbDmC/xIw/HKE0e5nd/GWh/xMsch6oUeNzObJcfii19+9QDmt/wzwFl
+         IyGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711120620; x=1711725420;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ZvNCq/vUyxBpwJ9D5tVxN8w0d8YTtddgB0nD7H1fQsk=;
+        b=duLbCosF+gxRXzRjPnmx3GG8y3n6cWEEVVkwoj9oGttcp1RWIudwQ1Vm29BBNI0fNG
+         yShLZB/Z3qxSeyJtwT6RyWtFACukAC5HMHVktAmzmhZThN8qMzuVLliRxffp8wmrKfnu
+         3FaRwb85U8Tfgq3nNNR1GHhIcj6UFxMhenWGAaV0jwdtXWii9nwEKF+Y6t7N3lU29hwB
+         MNvClc6igkWhjYjXq0FqBiaVXk9bGJCKjArvfx1Jj9Ui87yz5HRMV/+GsbngtqR4zZ2X
+         TyBC63rHu4rm/kKNeoOsbOj/c+dxUSKWq61Z4Rjc4e9URiUhyvEl8yhru/8fosur1GHe
+         jlew==
+X-Forwarded-Encrypted: i=1; AJvYcCXjvxuSzd/G5YlTJwZT0wx3HxKT1euZ3QCbPsR0upZEGkSA6Go10XW0ZRP8iTNtykoqpRPjgFTvBeBFJWpva1WIBALIZqSzvj4rm7L8lvTVUd6MiLaZd1Crqf00+H/HDJ0BFJLE3qZNQJA=
+X-Gm-Message-State: AOJu0YzX4X2GpvLEJNG+nDagDmSQieCbtv951oce9Zb/S2GPpZQVqdKj
+	2I6+y3yasNFvW9aF/PMHheSiNb4F0DHOL7IdBC3JRVoYi9SuAd6q
+X-Google-Smtp-Source: AGHT+IHCgCDL1PxwCnR3s/HSd6meeWjhLlcVL81UDri0NQht+8M2mFw3XMHbUNeMHzSDAayeOBa9Eg==
+X-Received: by 2002:a17:902:ce0d:b0:1dd:ae5b:86f1 with SMTP id k13-20020a170902ce0d00b001ddae5b86f1mr59698plg.29.1711120619504;
+        Fri, 22 Mar 2024 08:16:59 -0700 (PDT)
+Received: from Ubuntu2.. ([14.139.121.51])
+        by smtp.googlemail.com with ESMTPSA id p5-20020a170902e34500b001e0287592c4sm2024809plc.267.2024.03.22.08.16.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 22 Mar 2024 08:16:58 -0700 (PDT)
+From: Chandra Pratap <chandrapratap3519@gmail.com>
+To: 
+Cc: sudipm.mukherjee@gmail.com,
+	dan.carpenter@linaro.org,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	outreachy@lists.linux.dev,
+	Chandra Pratap <chandrapratap3519@gmail.com>
+Subject: [PATCH v3] staging: sm750fb: Replace comparisons with NULL and 0
+Date: Fri, 22 Mar 2024 20:46:33 +0530
+Message-Id: <20240322151633.16485-1-chandrapratap3519@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <2024032208-blunt-ferocity-22f4@gregkh>
 References: <2024032208-blunt-ferocity-22f4@gregkh>
- <20240322141031.2776-1-chandrapratap3519@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240322141031.2776-1-chandrapratap3519@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Fri, Mar 22, 2024 at 07:40:31PM +0530, Chandra Pratap wrote:
-> Replace '(opt != NULL)' with '(opt)' and '(*opt != 0)'
-> with '(*opt != '\0')' to adhere to the coding standards.
-> 
-> Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 04c1b32a22c5..c4b944f82fb9 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -926,7 +926,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
->  		goto NO_PARAM;
->  	}
->  
-> -	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-> +	while ((opt = strsep(&src, ":")) && *opt != '\0') {
->  		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
->  		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
->  
-> @@ -1147,7 +1147,7 @@ static int __init lynxfb_setup(char *options)
->  	 * strsep() updates @options to pointer after the first found token
->  	 * it also returns the pointer ahead the token.
->  	 */
-> -	while ((opt = strsep(&options, ":")) != NULL) {
-> +	while ((opt = strsep(&options, ":"))) {
->  		/* options that mean for any lynx chips are configured here */
->  		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
->  			g_noaccel = 1;
-> -- 
-> 2.34.1
-> 
+Replace '(opt != NULL)' with '(opt)' and '(*opt != 0)'
+with '(*opt != '\0')' to adhere to the coding standards.
 
-Hi,
+Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
+---
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+Please ignore the other v3 patch I sent, I forgot to write
+the change log in that patch. Apologies for any incovenienece
+caused.
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+Changes in v2:
+  - Update the commit message to reflect the changes better
+  - Replace (*opt) with (*opt != '\0')
 
-- This looks like a new version of a previously submitted patch, but you
-  did not list below the --- line any changes from the previous version.
-  Please read the section entitled "The canonical patch format" in the
-  kernel file, Documentation/process/submitting-patches.rst for what
-  needs to be done here to properly describe this.
+Changes in v3:
+  - Remove unncessary spacing
 
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
+ drivers/staging/sm750fb/sm750.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-thanks,
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 04c1b32a22c5..c4b944f82fb9 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -926,7 +926,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		goto NO_PARAM;
+ 	}
+ 
+-	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
++	while ((opt = strsep(&src, ":")) && *opt != '\0') {
+ 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
+ 		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
+ 
+@@ -1147,7 +1147,7 @@ static int __init lynxfb_setup(char *options)
+ 	 * strsep() updates @options to pointer after the first found token
+ 	 * it also returns the pointer ahead the token.
+ 	 */
+-	while ((opt = strsep(&options, ":")) != NULL) {
++	while ((opt = strsep(&options, ":"))) {
+ 		/* options that mean for any lynx chips are configured here */
+ 		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
+ 			g_noaccel = 1;
+-- 
+2.34.1
 
-greg k-h's patch email bot

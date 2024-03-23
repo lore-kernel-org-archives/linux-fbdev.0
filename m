@@ -1,133 +1,89 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f182.google.com (mail-qt1-f182.google.com [209.85.160.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C60F10F1;
-	Sat, 23 Mar 2024 02:59:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2928B539E
+	for <linux-fbdev@vger.kernel.org>; Sat, 23 Mar 2024 06:17:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711162747; cv=none; b=ShsmTCsfIxOvZYrLOH7uAAQFwsva9jmEA3sp8eZDxD2dkl5ThLMzth0NuuER4BiYISLYRma55SLMbsUMfBSJwkmS0Sc7FQ3SjexaiPbUrajaoCIbUUkF9MJ2vE9OQd4ed7ZsLjQAC1mhmD0qmaV5E1ukBRDBQhQlcgwM1YXfzXc=
+	t=1711174633; cv=none; b=nKIEtqSQm27QgN8ofYvj1uI1p3KdUoroS2YiDiWBANfVJoXdoy8FHCQ9ido6DFLDhPrhLYTY8DAw5/9uc1aJo8ddfuv4pHs5rblHsqy6KiUXRgWhUo5fTAzXg/NejcwNI2ic+sB5KF6ZFrLWMLJFFjgu/2xkI7iyo+vmWUP1DzQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711162747; c=relaxed/simple;
-	bh=PM5nJFRDqlMt0stkr83Pd4pF6Hmt+v56xfP6Bj06vZY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Sox/dbGEA/vbMTJKqKWjHuokKpy7XgV/N3y+au9Mx/6ARqOvQJUF3musOOQZcPs6KhFHmUxghx0K3TYjrto2uUz0dZg5cbq1uwta1D44TDJNBYxRUsF5+ea+yETaKlAmpHhBYgPsVgaqufOT0Jmx+5uTl+5lkdgYmUPYm/f+OTA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=D51Kwxbx; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1711174633; c=relaxed/simple;
+	bh=dqG0Z288zz1kSYusNKw5auggaqGEU0D07aewlJFuyP0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=qJyO1/vXL+oIvSDAlwxm++lKmndAJnSoAgE1NCqbXJ5Dfa8KBu3xAYJRZvPSkR71nG7tc7CEB5ZHJS16B9Isz+/CZDLVLSIfUAprz2Pl78Vu1kUCwf0CoUL/jt57RjjvDEg9r2ky0MQ2GreKCWk2p0eKBSL+id88YCZEFi1TdO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=draconx.ca; spf=none smtp.mailfrom=draconx.ca; dkim=pass (2048-bit key) header.d=draconx-ca.20230601.gappssmtp.com header.i=@draconx-ca.20230601.gappssmtp.com header.b=N+9QMxOp; arc=none smtp.client-ip=209.85.160.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=draconx.ca
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=draconx.ca
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="D51Kwxbx"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1711162745; x=1742698745;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=PM5nJFRDqlMt0stkr83Pd4pF6Hmt+v56xfP6Bj06vZY=;
-  b=D51KwxbxzXvoxun+QEF0uJwP/6XcTGZaS0HAK83fz2VpH3qGVBwZNnNC
-   UtjS8sebqM6VQj1NFckQnnS4+/ymTb27PiPkzFxEqfwbDPLUunERgxfUI
-   Kf+Sq1cJcm0IjSHC4A13MnrCEAmWUEAPzAXetBwl8f40RXVWizZiL0jTq
-   cwrey1nYNYvly0oJjj5ErUFL3CvraHknHG/TOT/olghPdmYIO+a6eAuc7
-   M8UU9yySZjcfGzaJB/YoGor+NyJKSJprVrZv8xH2QAN44EjwmuCTTQ6BI
-   CPbL1HIPsl5kCASS2XgYNal+hVYLwVwBbnCIdzrZqTzJfYIU1vDd9zQve
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11021"; a="28705476"
-X-IronPort-AV: E=Sophos;i="6.07,148,1708416000"; 
-   d="scan'208";a="28705476"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Mar 2024 19:59:04 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,148,1708416000"; 
-   d="scan'208";a="19783746"
-Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.88.188])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Mar 2024 19:59:03 -0700
-Date: Fri, 22 Mar 2024 19:59:02 -0700
-From: Alison Schofield <alison.schofield@intel.com>
-To: Chandra Pratap <chandrapratap3519@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, dan.carpenter@linaro.org,
-	teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org, outreachy@lists.linux.dev
-Subject: Re: [PATCH v3] staging: sm750fb: Replace comparisons with NULL and 0
-Message-ID: <Zf5FdsiaVPQ6iz2r@aschofie-mobl2>
-References: <2024032208-blunt-ferocity-22f4@gregkh>
- <20240322151633.16485-1-chandrapratap3519@gmail.com>
+	dkim=pass (2048-bit key) header.d=draconx-ca.20230601.gappssmtp.com header.i=@draconx-ca.20230601.gappssmtp.com header.b="N+9QMxOp"
+Received: by mail-qt1-f182.google.com with SMTP id d75a77b69052e-430b74c17aaso21047821cf.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 22 Mar 2024 23:17:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=draconx-ca.20230601.gappssmtp.com; s=20230601; t=1711174631; x=1711779431; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=YUD52ht+HR3l3eedQqUGqKmwp+yFV4q4zkif3Vs2Vr0=;
+        b=N+9QMxOpE0VJj9HzfPOcRHSV6xmUV/bor65C35aNwmZxESfBFPV0AEBi++5mqP0UmB
+         9fTFz2RyhrPeotg95inB9669MVDiP7Uc6RyBIDyRdACUUdDBDCS1IACWuDrQG6OJwg8K
+         5zTDiIkh+RT90TNKdnUwcubnQ5aW5R9nDtkS3/iXNpDX84mZnXry75hFWr+2VTzZyL2f
+         i69Y5MNkTETI5j6z1Fo2rRNsNIx6jS9CfW34mwC8N7BThAbNyp5KJ/r2zQmPSSPJVbux
+         PY/T6xp2SuiVh9uccdivjOvDkLw9o4BZLewGj3sK1HFXsOw4autrDA9e7Kv8bcBVyVP1
+         Dlyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711174631; x=1711779431;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YUD52ht+HR3l3eedQqUGqKmwp+yFV4q4zkif3Vs2Vr0=;
+        b=cs3luLzbrBA87JtVAxIXCKhQf7HqzIo2o0JxPBeFGl0HhF3bZeDa7BuDSQPAzVDa/n
+         +S/Ws2nw7IpwHVRvNblfUk0neMc7Nmes7VbDJOIem2RvrvPcipIc/+wXSrWbBW1rvyY4
+         k9gaHNwiC2xq4yfRajqpdATZLAAPrrVjtI5lNJbzzYH0CXGh91FLeNjMJy87lOl4DNvA
+         5lQmtYC4jCC7W24xsbSrAdEnSFUZc6unabHvGyrun7NcJFJwEtlnPYG7YglETA9/Eb2T
+         Uzaa5TF8zrWjeRRcADBiWDS+nV6Ejxvy7cEMpcq9Xya7Q03H5hQmT0E1l6GcqJt42pvS
+         JYRw==
+X-Gm-Message-State: AOJu0YyWysjE4eR1EwTMSCN0SsaqkYXtxkcFQ6GuQoLB2Vki/6xOpDbo
+	C3IiTqsLEanhe4s4Nm9pe5VlebIKpR6jabyj2f4uySJP8eMQovPkwX3avFUOOy4=
+X-Google-Smtp-Source: AGHT+IHsW+rCkfYvisR1ygy31z8BZc9G7J8m+4nL2/pwwjaGvRY/EyVRR4S6gmRAATdetLzbqae2KA==
+X-Received: by 2002:ac8:7c47:0:b0:431:458a:8ea5 with SMTP id o7-20020ac87c47000000b00431458a8ea5mr220141qtv.55.1711174631036;
+        Fri, 22 Mar 2024 23:17:11 -0700 (PDT)
+Received: from [192.168.0.50] (dhcp-24-53-241-2.cable.user.start.ca. [24.53.241.2])
+        by smtp.gmail.com with ESMTPSA id bb40-20020a05622a1b2800b00431435c34b1sm196691qtb.60.2024.03.22.23.17.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 22 Mar 2024 23:17:10 -0700 (PDT)
+Message-ID: <25ecf18b-7533-410a-9b1f-6c11343b8565@draconx.ca>
+Date: Sat, 23 Mar 2024 02:17:08 -0400
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240322151633.16485-1-chandrapratap3519@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: Select I/O-memory framebuffer ops for SBus
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
+ Sam Ravnborg <sam@ravnborg.org>, Arnd Bergmann <arnd@arndb.de>,
+ Geert Uytterhoeven <geert+renesas@glider.be>, stable@vger.kernel.org,
+ Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de
+References: <20240322083005.24269-1-tzimmermann@suse.de>
+ <877chu1r8s.fsf@minerva.mail-host-address-is-not-set>
+From: Nick Bowler <nbowler@draconx.ca>
+In-Reply-To: <877chu1r8s.fsf@minerva.mail-host-address-is-not-set>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 22, 2024 at 08:46:33PM +0530, Chandra Pratap wrote:
-> Replace '(opt != NULL)' with '(opt)' and '(*opt != 0)'
-> with '(*opt != '\0')' to adhere to the coding standards.
+On 2024-03-22 06:43, Javier Martinez Canillas wrote:
+> Thomas Zimmermann <tzimmermann@suse.de> writes:
 > 
-> Signed-off-by: Chandra Pratap <chandrapratap3519@gmail.com>
-> ---
-> 
-> Please ignore the other v3 patch I sent, I forgot to write
-> the change log in that patch. Apologies for any incovenienece
-> caused.
+>> Framebuffer I/O on the Sparc Sbus requires read/write helpers for
+>> I/O memory. Select FB_IOMEM_FOPS accordingly.
+>>
+>> Reported-by: Nick Bowler <nbowler@draconx.ca>
 
-Hi Chandra,
-
-No need to apologize, but you do need to send a v4. Any change
-in the patch is a new rev - even if that change is to the
-changelog. Maintainers are using automated tooling to grab
-the latest revisions and two patches with the same version 
-number will be disregarded. 
-
-Please send a v4 with:
-
-Changes in v4:
-  - Include the changelog.
-
-While you're at it, reverse the order of this changelog.
-Put most recent revisions first - ie 4,3,2 order.
-
-Also, post the patch as a new message, not a reply to prior
-patches.
+Applied on top of 6.8 and the build is successful.
 
 Thanks,
-Alison
-
-
-> 
-> Changes in v2:
->   - Update the commit message to reflect the changes better
->   - Replace (*opt) with (*opt != '\0')
-> 
-> Changes in v3:
->   - Remove unncessary spacing
-> 
->  drivers/staging/sm750fb/sm750.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 04c1b32a22c5..c4b944f82fb9 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -926,7 +926,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
->  		goto NO_PARAM;
->  	}
->  
-> -	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-> +	while ((opt = strsep(&src, ":")) && *opt != '\0') {
->  		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
->  		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
->  
-> @@ -1147,7 +1147,7 @@ static int __init lynxfb_setup(char *options)
->  	 * strsep() updates @options to pointer after the first found token
->  	 * it also returns the pointer ahead the token.
->  	 */
-> -	while ((opt = strsep(&options, ":")) != NULL) {
-> +	while ((opt = strsep(&options, ":"))) {
->  		/* options that mean for any lynx chips are configured here */
->  		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
->  			g_noaccel = 1;
-> -- 
-> 2.34.1
-> 
-> 
+  Nick

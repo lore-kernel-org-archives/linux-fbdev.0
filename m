@@ -1,89 +1,82 @@
-Received: from mail-qt1-f182.google.com (mail-qt1-f182.google.com [209.85.160.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2928B539E
-	for <linux-fbdev@vger.kernel.org>; Sat, 23 Mar 2024 06:17:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAF909454
+	for <linux-fbdev@vger.kernel.org>; Sat, 23 Mar 2024 06:59:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711174633; cv=none; b=nKIEtqSQm27QgN8ofYvj1uI1p3KdUoroS2YiDiWBANfVJoXdoy8FHCQ9ido6DFLDhPrhLYTY8DAw5/9uc1aJo8ddfuv4pHs5rblHsqy6KiUXRgWhUo5fTAzXg/NejcwNI2ic+sB5KF6ZFrLWMLJFFjgu/2xkI7iyo+vmWUP1DzQ=
+	t=1711177165; cv=none; b=GBVPTbXEQ3gMkAdzymLJuuhbQoE3a4c3jFjfSnzZt2NrSCd+ZMgQbfL/I1o/Zb0j4iOYrySHtq5D3t8J3t84p68wxOjVjR02ks91CUC0AKMld+El2utKDyC8hyepH0t7KDwQotsZoKI3/YFA47Ct0WZNvOnm9rypAZJq2ug5VkY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711174633; c=relaxed/simple;
-	bh=dqG0Z288zz1kSYusNKw5auggaqGEU0D07aewlJFuyP0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qJyO1/vXL+oIvSDAlwxm++lKmndAJnSoAgE1NCqbXJ5Dfa8KBu3xAYJRZvPSkR71nG7tc7CEB5ZHJS16B9Isz+/CZDLVLSIfUAprz2Pl78Vu1kUCwf0CoUL/jt57RjjvDEg9r2ky0MQ2GreKCWk2p0eKBSL+id88YCZEFi1TdO4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=draconx.ca; spf=none smtp.mailfrom=draconx.ca; dkim=pass (2048-bit key) header.d=draconx-ca.20230601.gappssmtp.com header.i=@draconx-ca.20230601.gappssmtp.com header.b=N+9QMxOp; arc=none smtp.client-ip=209.85.160.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=draconx.ca
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=draconx.ca
+	s=arc-20240116; t=1711177165; c=relaxed/simple;
+	bh=nRJDueQBDn4xbmbB65HmUo5mxerLOF+EPeE6Yi0Vi9s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rRdXEqLX3rDq1Oc3UeULC7Ve6wV85f1a/8nCJ0J2vps1ALUN9f3EAUcdnOXjFVdyhmuTZnFk+l/vAkSx9rZWko8h1RK8TXTZPMCTjXtJbMtm8zodD/GXsKMuJpFS6wXfa7YOu8nlOn8J5Jwp2Tyru5nF/RVT09/vT0ehIEecZx4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=i6jnN+xq; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=cVjUCt3q; arc=none smtp.client-ip=46.30.211.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=draconx-ca.20230601.gappssmtp.com header.i=@draconx-ca.20230601.gappssmtp.com header.b="N+9QMxOp"
-Received: by mail-qt1-f182.google.com with SMTP id d75a77b69052e-430b74c17aaso21047821cf.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Mar 2024 23:17:11 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="i6jnN+xq";
+	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="cVjUCt3q"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=draconx-ca.20230601.gappssmtp.com; s=20230601; t=1711174631; x=1711779431; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=YUD52ht+HR3l3eedQqUGqKmwp+yFV4q4zkif3Vs2Vr0=;
-        b=N+9QMxOpE0VJj9HzfPOcRHSV6xmUV/bor65C35aNwmZxESfBFPV0AEBi++5mqP0UmB
-         9fTFz2RyhrPeotg95inB9669MVDiP7Uc6RyBIDyRdACUUdDBDCS1IACWuDrQG6OJwg8K
-         5zTDiIkh+RT90TNKdnUwcubnQ5aW5R9nDtkS3/iXNpDX84mZnXry75hFWr+2VTzZyL2f
-         i69Y5MNkTETI5j6z1Fo2rRNsNIx6jS9CfW34mwC8N7BThAbNyp5KJ/r2zQmPSSPJVbux
-         PY/T6xp2SuiVh9uccdivjOvDkLw9o4BZLewGj3sK1HFXsOw4autrDA9e7Kv8bcBVyVP1
-         Dlyw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711174631; x=1711779431;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YUD52ht+HR3l3eedQqUGqKmwp+yFV4q4zkif3Vs2Vr0=;
-        b=cs3luLzbrBA87JtVAxIXCKhQf7HqzIo2o0JxPBeFGl0HhF3bZeDa7BuDSQPAzVDa/n
-         +S/Ws2nw7IpwHVRvNblfUk0neMc7Nmes7VbDJOIem2RvrvPcipIc/+wXSrWbBW1rvyY4
-         k9gaHNwiC2xq4yfRajqpdATZLAAPrrVjtI5lNJbzzYH0CXGh91FLeNjMJy87lOl4DNvA
-         5lQmtYC4jCC7W24xsbSrAdEnSFUZc6unabHvGyrun7NcJFJwEtlnPYG7YglETA9/Eb2T
-         Uzaa5TF8zrWjeRRcADBiWDS+nV6Ejxvy7cEMpcq9Xya7Q03H5hQmT0E1l6GcqJt42pvS
-         JYRw==
-X-Gm-Message-State: AOJu0YyWysjE4eR1EwTMSCN0SsaqkYXtxkcFQ6GuQoLB2Vki/6xOpDbo
-	C3IiTqsLEanhe4s4Nm9pe5VlebIKpR6jabyj2f4uySJP8eMQovPkwX3avFUOOy4=
-X-Google-Smtp-Source: AGHT+IHsW+rCkfYvisR1ygy31z8BZc9G7J8m+4nL2/pwwjaGvRY/EyVRR4S6gmRAATdetLzbqae2KA==
-X-Received: by 2002:ac8:7c47:0:b0:431:458a:8ea5 with SMTP id o7-20020ac87c47000000b00431458a8ea5mr220141qtv.55.1711174631036;
-        Fri, 22 Mar 2024 23:17:11 -0700 (PDT)
-Received: from [192.168.0.50] (dhcp-24-53-241-2.cable.user.start.ca. [24.53.241.2])
-        by smtp.gmail.com with ESMTPSA id bb40-20020a05622a1b2800b00431435c34b1sm196691qtb.60.2024.03.22.23.17.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Mar 2024 23:17:10 -0700 (PDT)
-Message-ID: <25ecf18b-7533-410a-9b1f-6c11343b8565@draconx.ca>
-Date: Sat, 23 Mar 2024 02:17:08 -0400
+	d=ravnborg.org; s=rsa2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=kHVpvatmACLIHkQBpgUbroXh+MVsVFpq6tArzu/ykOs=;
+	b=i6jnN+xq/VdVv+HkVL4ICMSlaFskB+k+43rEVsmWuJAGORLjqZZsVKaV5JWuTtZco2dadtZR3to5y
+	 srXJuv/2I75lVQj/mnuN94BytRg6V6uiKXOPWFFdA4OwAUmZdaPlaIbx3lVSxo3DgiMtY/yu/dGrXx
+	 Ba6KzApuIu+Tl8OeXqFTIW7Nthk1MHU8XI0ChjY7bWLpFWf7zLLa+yeeCCVqTx4tDVn7Y7mxpjI+nW
+	 vy6yFbjPZUVnbgPlarPlipdN16ijfQal4Cm5PAwQSeNbwB+DCIUOUu25XMmn+dQW7F5u7JaXSNAoLe
+	 4+YHY7YW1+iQv9YyHkWHGp6O8yIC+UA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=ed2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=kHVpvatmACLIHkQBpgUbroXh+MVsVFpq6tArzu/ykOs=;
+	b=cVjUCt3qIpk1zz093kSoT9yNiAJtNN/6tMO6ofj+yw9LAoN5BEKt6xyNp3YuH+U6MZ5+0Xq5QAGoe
+	 mPps64CAw==
+X-HalOne-ID: b499b8b2-e8e2-11ee-9527-31e85a7fa845
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+	by mailrelay4.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
+	id b499b8b2-e8e2-11ee-9527-31e85a7fa845;
+	Sat, 23 Mar 2024 06:58:10 +0000 (UTC)
+Date: Sat, 23 Mar 2024 07:58:09 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: nbowler@draconx.ca, deller@gmx.de, javierm@redhat.com,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] fbdev: Select I/O-memory framebuffer ops for SBus
+Message-ID: <20240323065809.GA886373@ravnborg.org>
+References: <20240322083005.24269-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: Select I/O-memory framebuffer ops for SBus
-Content-Language: en-US
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
- Sam Ravnborg <sam@ravnborg.org>, Arnd Bergmann <arnd@arndb.de>,
- Geert Uytterhoeven <geert+renesas@glider.be>, stable@vger.kernel.org,
- Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de
-References: <20240322083005.24269-1-tzimmermann@suse.de>
- <877chu1r8s.fsf@minerva.mail-host-address-is-not-set>
-From: Nick Bowler <nbowler@draconx.ca>
-In-Reply-To: <877chu1r8s.fsf@minerva.mail-host-address-is-not-set>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240322083005.24269-1-tzimmermann@suse.de>
 
-On 2024-03-22 06:43, Javier Martinez Canillas wrote:
-> Thomas Zimmermann <tzimmermann@suse.de> writes:
+On Fri, Mar 22, 2024 at 09:29:46AM +0100, Thomas Zimmermann wrote:
+> Framebuffer I/O on the Sparc Sbus requires read/write helpers for
+> I/O memory. Select FB_IOMEM_FOPS accordingly.
 > 
->> Framebuffer I/O on the Sparc Sbus requires read/write helpers for
->> I/O memory. Select FB_IOMEM_FOPS accordingly.
->>
->> Reported-by: Nick Bowler <nbowler@draconx.ca>
-
-Applied on top of 6.8 and the build is successful.
-
-Thanks,
-  Nick
+> Reported-by: Nick Bowler <nbowler@draconx.ca>
+> Closes: https://lore.kernel.org/lkml/5bc21364-41da-a339-676e-5bb0f4faebfb@draconx.ca/
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: 8813e86f6d82 ("fbdev: Remove default file-I/O implementations")
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Javier Martinez Canillas <javierm@redhat.com>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: <stable@vger.kernel.org> # v6.8+
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>

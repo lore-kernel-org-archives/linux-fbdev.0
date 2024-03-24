@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C6AB18FC60;
-	Sun, 24 Mar 2024 22:41:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 362BD1E85A3;
+	Sun, 24 Mar 2024 22:54:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711320104; cv=none; b=cdoAKSzATyfLQqHWgAOAjjBYxKyZmiaDG9UdNEaRbhp51giWyWoh9bKOWOJqh19+EO21gOvKJcxuooqvFTS8oD7OuCAbs2D7p29+Xv5Uk//VJExaeL0W9Ci5aILZcSJ+xgiTfbkvTYT3urk0cjzYD/5/muBU+heywgF2PNmATyM=
+	t=1711320881; cv=none; b=HAUQQn+mf264rB9JF2iLLrP87bf0K9mu1D51e1Ruhsx2IxaK/yAQrTT3srum8FPMJRVp7Y5/WhpSWsvg1qHkmrNUAZ1TK56uhhfUhWp8Pdqdtl+/hwmAkhpiPxmjRR0DgkyBj+bzps8HdQVwwZm5/dHaPtML7ec1ueoQv/ZFMfA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711320104; c=relaxed/simple;
-	bh=mhk8zIC6m7tv0PpL5NQAiFH7vaX9lHUJnHwBiBZ7lbY=;
+	s=arc-20240116; t=1711320881; c=relaxed/simple;
+	bh=Vql+8js91BRX0rn5qU3meYIvkq3/iZebYzGwS509XTc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sodeZI69U3IQhzWeqfC8ghhZND51nmZ06gtsZJjvYOjpGYhJU0Z057p82d0zaN/7GWIvBLlSZuS24QY/0Pv2qbgTy1OCLdGaGLzdJJpB6uIsqPqr/D7H3aWpGQwEhVOomAASxFp6AzAtTnC/6tUcl0NOUmMR1G91+UUyfy/mBi4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PZgeuHrD; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=BIW+fn+wkDUQ14UxBMnnSv/lmzmkAd0TOzONmb+7XWehLInjjyG6JytsUUbSSaGByhMbg573kKrDqyrSbEdFas94f54D/ELf+yEZme9Hp+n+ENgLDHv+MTBdk27U6yUNJbaN5HDbVBrYcWoxeJ/8SCJoaMoUsmUu1pej+zsp5o4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XH0PZUU/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PZgeuHrD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F3A3C433A6;
-	Sun, 24 Mar 2024 22:41:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XH0PZUU/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F9E0C43330;
+	Sun, 24 Mar 2024 22:54:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711320104;
-	bh=mhk8zIC6m7tv0PpL5NQAiFH7vaX9lHUJnHwBiBZ7lbY=;
+	s=k20201202; t=1711320880;
+	bh=Vql+8js91BRX0rn5qU3meYIvkq3/iZebYzGwS509XTc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=PZgeuHrDoNvBX1Gd3YNCBEZ8NqMo/76FabatF4z1MJ6zV5LkrwJc+I96ltuHCNOvM
-	 8hTau5qPH1O4ImGoq+7ndXdLPRDRHbyGBGVTuJf7UieKvTxamVOJdxQ0nsz3MW6BvP
-	 7cyYoqt7p5wsruUxm8pIF/7DIvANYyPBy4I72w5eteRwU80CVCwlaWXKFMVrf0gWMU
-	 cO3jOck4+086E3AW9CWwBOyfj3UxRO2XcVVt9qImVAvV/JeVh8F6Q0RwZoHM6S/DEU
-	 EGyZM5BYomPQ13OLmB1lVB0hDfeWQaNY4ePCtxse60Uq8OCxP5HnoqblhGEhttAqST
-	 hXkyswoEwcxRg==
+	b=XH0PZUU/46IFy8sp/+S5J2rWTXJcondn8GwtpQ6j2PcAO4JftmUyhtMoBm8y8xmZr
+	 nJT1PggckArlgyaFJseQHRKMSTLT8Q8EMeu4O0EFrsYIcCWIaS+qQCtAOV+MDe7I9s
+	 Fww8XlgD3i5NEG9pax/uQeuiF0Dok6MDFkHzgPnNgVFCfMtcQQFS9L/pSK/lzTNifm
+	 eVHba0MMrcPYWG+yjUmp1SwXOab8LmJEAMRW3OElxQ9gNLGq8dnicv+otg1UJD562O
+	 w1bX2UbvY8YajhxVPWIrYyX62G+w81kp/BTkgWZlbLcGQcrSfYL8N7ovfr/WXq7s36
+	 zQ+z3p4GVRdow==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -41,12 +41,12 @@ Cc: Randy Dunlap <rdunlap@infradead.org>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.8 412/715] drivers/ps3: select VIDEO to provide cmdline functions
-Date: Sun, 24 Mar 2024 18:29:51 -0400
-Message-ID: <20240324223455.1342824-413-sashal@kernel.org>
+Subject: [PATCH 6.7 444/713] drivers/ps3: select VIDEO to provide cmdline functions
+Date: Sun, 24 Mar 2024 18:42:50 -0400
+Message-ID: <20240324224720.1345309-445-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240324223455.1342824-1-sashal@kernel.org>
-References: <20240324223455.1342824-1-sashal@kernel.org>
+In-Reply-To: <20240324224720.1345309-1-sashal@kernel.org>
+References: <20240324224720.1345309-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -90,7 +90,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-index e9c1087dd42ec..706194e5f0b46 100644
+index a44869e5ea70f..1bd1b0b49bc62 100644
 --- a/arch/powerpc/platforms/ps3/Kconfig
 +++ b/arch/powerpc/platforms/ps3/Kconfig
 @@ -67,6 +67,7 @@ config PS3_VUART

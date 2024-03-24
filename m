@@ -1,82 +1,81 @@
-Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAF909454
-	for <linux-fbdev@vger.kernel.org>; Sat, 23 Mar 2024 06:59:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22471DDBC
+	for <linux-fbdev@vger.kernel.org>; Sun, 24 Mar 2024 20:03:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711177165; cv=none; b=GBVPTbXEQ3gMkAdzymLJuuhbQoE3a4c3jFjfSnzZt2NrSCd+ZMgQbfL/I1o/Zb0j4iOYrySHtq5D3t8J3t84p68wxOjVjR02ks91CUC0AKMld+El2utKDyC8hyepH0t7KDwQotsZoKI3/YFA47Ct0WZNvOnm9rypAZJq2ug5VkY=
+	t=1711310627; cv=none; b=qGyRxGRMaHRHWBchRxVZssXepw5XGHYnSUWiXZ6tXuQO3ZIWym/6TvoASrrJwnl5CjXxI9ZFB36HEyxWFzal1ye/WhGC3oo8TMX4Q4lm9zQPHfhA6pojVYGhsOH/5/M9hiIGptCyZUH5elsD4BA8IFUDsej5Lj3c6t3UvKxThDU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711177165; c=relaxed/simple;
-	bh=nRJDueQBDn4xbmbB65HmUo5mxerLOF+EPeE6Yi0Vi9s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rRdXEqLX3rDq1Oc3UeULC7Ve6wV85f1a/8nCJ0J2vps1ALUN9f3EAUcdnOXjFVdyhmuTZnFk+l/vAkSx9rZWko8h1RK8TXTZPMCTjXtJbMtm8zodD/GXsKMuJpFS6wXfa7YOu8nlOn8J5Jwp2Tyru5nF/RVT09/vT0ehIEecZx4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=i6jnN+xq; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=cVjUCt3q; arc=none smtp.client-ip=46.30.211.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	s=arc-20240116; t=1711310627; c=relaxed/simple;
+	bh=cqBlhRUEL9bZZOdcM5Vyv15/CsDGCd6WAdiYTcNbm/4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Content-Type; b=d7+Cs0XwjMs4FNiRBP4KXQPqiU/qqjQ0kqZ5An1U5bkc4NbpzFj/HTZd53Df95nXSfDzSJ4B/eCAyo1F6RTwsXs0SdSfwLFLiluoi0NypRGCtXj1thUKjAWoJJhPkY07jf4bQDAlEAkcUrNNROUB4QYERpKbe+xDUSj7etEmuwg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=f1/62anz; arc=none smtp.client-ip=209.85.167.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="i6jnN+xq";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="cVjUCt3q"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f1/62anz"
+Received: by mail-oi1-f181.google.com with SMTP id 5614622812f47-3c3acf4b0e1so2288155b6e.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 24 Mar 2024 13:03:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=kHVpvatmACLIHkQBpgUbroXh+MVsVFpq6tArzu/ykOs=;
-	b=i6jnN+xq/VdVv+HkVL4ICMSlaFskB+k+43rEVsmWuJAGORLjqZZsVKaV5JWuTtZco2dadtZR3to5y
-	 srXJuv/2I75lVQj/mnuN94BytRg6V6uiKXOPWFFdA4OwAUmZdaPlaIbx3lVSxo3DgiMtY/yu/dGrXx
-	 Ba6KzApuIu+Tl8OeXqFTIW7Nthk1MHU8XI0ChjY7bWLpFWf7zLLa+yeeCCVqTx4tDVn7Y7mxpjI+nW
-	 vy6yFbjPZUVnbgPlarPlipdN16ijfQal4Cm5PAwQSeNbwB+DCIUOUu25XMmn+dQW7F5u7JaXSNAoLe
-	 4+YHY7YW1+iQv9YyHkWHGp6O8yIC+UA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=kHVpvatmACLIHkQBpgUbroXh+MVsVFpq6tArzu/ykOs=;
-	b=cVjUCt3qIpk1zz093kSoT9yNiAJtNN/6tMO6ofj+yw9LAoN5BEKt6xyNp3YuH+U6MZ5+0Xq5QAGoe
-	 mPps64CAw==
-X-HalOne-ID: b499b8b2-e8e2-11ee-9527-31e85a7fa845
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay4.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
-	id b499b8b2-e8e2-11ee-9527-31e85a7fa845;
-	Sat, 23 Mar 2024 06:58:10 +0000 (UTC)
-Date: Sat, 23 Mar 2024 07:58:09 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: nbowler@draconx.ca, deller@gmx.de, javierm@redhat.com,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] fbdev: Select I/O-memory framebuffer ops for SBus
-Message-ID: <20240323065809.GA886373@ravnborg.org>
-References: <20240322083005.24269-1-tzimmermann@suse.de>
+        d=gmail.com; s=20230601; t=1711310625; x=1711915425; darn=vger.kernel.org;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5MqsOoodGzZPtDV9EL9+Kx91oMWToSpmgmM8is9DfYQ=;
+        b=f1/62anz/gUQsXTjziOJtwdlLzvG1mY/QXTNjfsIML9fLO2wmBsbVYPX03q0ur8WRN
+         Pq+w4CsW2/LAz5a+DA1zSjfD4vmXl/mhM4KNHUfmzlYcIWRZiJCH0+ST96fWGZOWFnlH
+         CsUQtwOqVcoju+SJWbBniFw/Oub4ivAQEFUZR9PADnu4OgtGY6aeeniNmKWxK+j1Vf2E
+         ntEOi7GCfJvlkfDkGtrj1sNa4gpw3RI9Wy8wsFFwPNGe0797TCXc7xKX8/c6clY5bNMr
+         bW52oIyszytEp2prbBxx5UOMIo9SOHjL/0hAjfjiVLemTjVQ5DTIAe1+nyOOlnuixsIO
+         PfqQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711310625; x=1711915425;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5MqsOoodGzZPtDV9EL9+Kx91oMWToSpmgmM8is9DfYQ=;
+        b=rWz2iPv5iDYtL09blEzCZjrCGQOSnqR43WYKmG5nV4JzdnkvWo1H1d2bXGVID/FFQ8
+         nMUETRUOewwIcpeL3XXLjaG2dN+w3LzJ3/MOnrKlKU0CRJqgR6RtvhHMswYAzD/hDt+5
+         LGbMWIs8T4Nxc9Vu8/tfw5oWm0T4oH+7zkk9kFes68nRFr9plUlQyHhFokYOXGkRTYqJ
+         eBarGTPe0eLB8JURMppzLwgAxqSCfkgfzr3pTBUp+u1/pXwV117wT07WOcVNRBhWEfMn
+         YdQ1PUs6x+Bj6J73v6BRlH0RplNnvMQz9e+Hip+RF70SiNwTcSBj5DuI15c4brprSb+W
+         grcA==
+X-Gm-Message-State: AOJu0YyW0kDGLiBHjzHSqpufuRh0GoII1edG1YxaVyhkgELmd6RicxKr
+	DfXZ2uV4KGhed274E+EnF5oGw902sZAXkfrpCxqjIsojtY/Q+AEgIMBv3c5a3Dfbpkrl9+bugTZ
+	fXAauGChxS4TF/VFbQwSISNxytfxX+cBG
+X-Google-Smtp-Source: AGHT+IFPMjMKPTILWB3bmZraV+HizVc43SF0gCPWoPoWBMHsyz+FrrObCmeHRIiskvn43gADQZAskkPWfTuZVPuRJfA=
+X-Received: by 2002:a05:6808:17a1:b0:3c1:e79e:5b2a with SMTP id
+ bg33-20020a05680817a100b003c1e79e5b2amr8169752oib.29.1711310625067; Sun, 24
+ Mar 2024 13:03:45 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240322083005.24269-1-tzimmermann@suse.de>
+References: <CAGRSmLuWKhmthR=evQ7-5MKnE44ABsCdqQeysUyMG7ssQkKCEw@mail.gmail.com>
+In-Reply-To: <CAGRSmLuWKhmthR=evQ7-5MKnE44ABsCdqQeysUyMG7ssQkKCEw@mail.gmail.com>
+From: "David F." <df7729@gmail.com>
+Date: Sun, 24 Mar 2024 13:03:34 -0700
+Message-ID: <CAGRSmLtkaq+cyjrB600LYr=6G2jj+vkWbM1SgBk18mW3yjSYfA@mail.gmail.com>
+Subject: Re: Wake from Sleep doesn't work
+To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 22, 2024 at 09:29:46AM +0100, Thomas Zimmermann wrote:
-> Framebuffer I/O on the Sparc Sbus requires read/write helpers for
-> I/O memory. Select FB_IOMEM_FOPS accordingly.
-> 
-> Reported-by: Nick Bowler <nbowler@draconx.ca>
-> Closes: https://lore.kernel.org/lkml/5bc21364-41da-a339-676e-5bb0f4faebfb@draconx.ca/
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: 8813e86f6d82 ("fbdev: Remove default file-I/O implementations")
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: <stable@vger.kernel.org> # v6.8+
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+More details on this - if you enable DRM it will wake, but because DRM
+locks up on so many systems, can't use it.  It's when using the basic
+EFI and VGA fbdev driver that doesn't wake.
+
+On Wed, Jan 11, 2023 at 1:51=E2=80=AFPM David F. <df7729@gmail.com> wrote:
+>
+> When a system is using fbdev and goes to sleep and wakes, the system
+> works fine but the screen remains black, fbdev doesn't wake up.
+>
+> There was a patch from 2009 but I doubt it would apply today.
+>
+> Is there a way to make fbdev wake properly?
+>
+> Thanks.

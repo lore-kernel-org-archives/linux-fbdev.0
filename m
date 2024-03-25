@@ -1,316 +1,89 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1150513E89A;
-	Mon, 25 Mar 2024 04:51:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80E6C18D893
+	for <linux-fbdev@vger.kernel.org>; Mon, 25 Mar 2024 10:50:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711342283; cv=none; b=hgIH9SgHFL6Y55E9LAkSeIS5Wn9Q8vJ01Sx3ISsJfIqG7+cBJIj2ZZWE20hsGHk0FlykUL3CvmLi1mxKrJOq+GtItTVOmpx/gxDZU/xiMS1EbmQL2G//xKUHM7M8mo1bHvTKisL+cyvemrB9NcC2si0jo927fL4JxidOCWkEeos=
+	t=1711363821; cv=none; b=PazWq4TQvWabvaJH5i3TNCSrNan+IOmDo6YmLnOaZaHni2O8jyHXXFnNlqgUTcYwkwzUz/BNFtlfS7pQCSo8/3lR4cAhCIW+g56wvS1T6U2ofoB5OcCf9PO1l/7Z56+tqDWttWigFncjpjYO08rnpzFK8qg1cdsrjVGyRe5P2nY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711342283; c=relaxed/simple;
-	bh=1dupGJjayt9J9ALK6Ao1nxUbp35Ho7Ved31CSubHb0Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=avsdWdPTvT39E9+XFa6cbP4Qj8JA6PrH1W27iVaS4ZxFQe/qR9YpJoX+RI3F6HJ5x3I4MPrNjpqEDb8RqnpwauDqVbg5GxJ6DEIJqL2Sz6g0lL7aVFFdTulCM7PrqWXArb8OOscSDWCp/HpfmPoWaG3MmfA9eswx6Bnelay7gBQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=N65sXHly; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1711363821; c=relaxed/simple;
+	bh=XpSiYldKH5rIkhRiCFgClqdFkLlO1k1YxneIR82EqBg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=c7MNpFTHNcSgOhe9Oo7yRI44soVun+YN4Oc5uD8qoGB6eGPJcmdOB5dqYct0dSANUuD/D3Acw+VVx4WV1pT5OmIlma5xyzjzkQvmed7FLFqeudkV9atFYyY4Y9NCFrxoShdU918ezrJlgBzLzcr+aP2+qGqxn2ekd9C/JzCRvLM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=GF3E4fxs; arc=none smtp.client-ip=209.85.221.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="N65sXHly"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1711342240; x=1711947040; i=deller@gmx.de;
-	bh=YWplhpM8Fa3pbw4y9TvIF8wTthCvp6mn6m4D3Ro2qGs=;
-	h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
-	b=N65sXHlysQo7Nlk7li2pe4+QnBL7hKhtXr36PuEZs9hwP9ULJMfowXnDm2pOWrC0
-	 uzcvUjytd/UAiS75L/EPwO99XbC1PI8nWl1LCuT8hkFhMWKSbRpqBN+XKjuAjYIF6
-	 FDpU7J2RAHncPTap2IIl80rcoYfqUU98rbopP+svzgH4d9zrTjaAneMv/lN3gjAci
-	 HKytVVl7kOq0Ras8FCY0RvHF4X3kZcOCIuPyK7UWOQnS7xceDUNMkc5z+CzQzCwUd
-	 DkXycNhjSbSOKpkhVDSaMMNwLGrVUvkx8lq7D7WaYe+zY5VUWguIRUSgwE29Yw+oN
-	 5YJnuR0QG/D3/D5DNw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([89.244.186.175]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M3UZG-1rpAG20gxG-000ZxP; Mon, 25
- Mar 2024 05:50:40 +0100
-Message-ID: <fb66cb66-4381-48ad-8a40-b317c5ffa4ed@gmx.de>
-Date: Mon, 25 Mar 2024 05:50:37 +0100
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GF3E4fxs"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-341cf28e013so350835f8f.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 Mar 2024 03:50:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1711363817; x=1711968617; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=XpSiYldKH5rIkhRiCFgClqdFkLlO1k1YxneIR82EqBg=;
+        b=GF3E4fxs7ZgQHREtg/UvCmGvUR2sMSIhAmulkcBsUYdofEVT8Jsid0iVZZzYZvqMdq
+         whsvXwQknR3OAo1ak6eI68kLYO7llUBarje3QIRXAeSfVj8wmfhI5oMqg8DE+JbVnM+I
+         NHE9jMLjaMA3s4v56WfgvRP58wl0U6xOiuS0vvVbfLnO57Vt4ZoUf3t49HFA4cgBhlnQ
+         rdm8QbnoKDxgnPvyFyCeyJ4Rm79CCjvmng+5Z2Z4nYvXGMzGUXf4CmTM+O+2AQ/WB22n
+         ljdv5rbov0rTVB8qj36mR8NmuEFDUjGN/7bVIaJP4GvNgXtlOyvio1t9lJTcH6afEa7i
+         6MgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711363817; x=1711968617;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XpSiYldKH5rIkhRiCFgClqdFkLlO1k1YxneIR82EqBg=;
+        b=WD3l/w7hUCe77w+kg3//qeHFykxOmvTuIVZXru4Nfn1+NODgK+iPd/HTnClVzbfCXI
+         qVvmMU/1jzzGIfgTW1NCDcYpez1TM+orfawJZzB4U56AMfxc+/4W+doBd6SeO6IF6btr
+         VKAWl5wTlFiL17faIWBB6D8gb2UO/EapAa1U+7HlEVlran8ojejmZ/xLzfqz4m6f/DhY
+         O7Y1En0Syq94+Vtt7scpmBlImoQ59nyxCzeyjQcYh0vz+GsZrpe7ljBpnY99RRHFWpfY
+         27f4VSe41qbX8SAR0vAlidZS8rwSKUUtfgIokML3s9i0TEm/NqPXDTeCKtzPnz1xBCaH
+         FzKg==
+X-Forwarded-Encrypted: i=1; AJvYcCWcaisxM8AEvgoesST9qSu2Cs7ESyRvP9u65YZlFiTtRudr08/kOQ5T5N4BfjyX2aA0elMOic1oZySbdZHEj2Xz5I7OXSGPtntrOQ8=
+X-Gm-Message-State: AOJu0Yz31/+i7evZc+oRlXxgFBuB/cjE7IE9h8nqHPcRPeygul7lM99P
+	grOiz+YB2u+m1ZctObdRRAdYhr/p1cL3xCV4fZE2iVstMPnoGrnlfxQME2NINlc=
+X-Google-Smtp-Source: AGHT+IFuSkdlp7LEl6nvNwBzRtkkJeI8XfwfHdqVCFMNn64T6V7hkopceJ42fI6HjzHaQgPcNU0RLA==
+X-Received: by 2002:a05:6000:1b92:b0:33d:2d07:b567 with SMTP id r18-20020a0560001b9200b0033d2d07b567mr4711630wru.24.1711363816892;
+        Mon, 25 Mar 2024 03:50:16 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id ay9-20020a5d6f09000000b0033b87c2725csm9338898wrb.104.2024.03.25.03.50.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 Mar 2024 03:50:15 -0700 (PDT)
+Date: Mon, 25 Mar 2024 10:50:13 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: "Ricardo B. Marliere" <ricardo@marliere.net>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 1/2] video: backlight: make backlight_class constant
+Message-ID: <20240325105013.GA182091@aspen.lan>
+References: <20240305-class_cleanup-backlight-v1-0-c0e15cc25be1@marliere.net>
+ <20240305-class_cleanup-backlight-v1-1-c0e15cc25be1@marliere.net>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] video: fbdev: replace of_graph_get_next_endpoint()
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Alexey Brodkin <abrodkin@synopsys.com>, Daniel Vetter <daniel@ffwll.ch>,
- David Airlie <airlied@gmail.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>,
- Neil Armstrong <neil.armstrong@linaro.org>, Rob Herring
- <robh+dt@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-rpi-kernel@lists.infradead.org
-References: <877chr6mu5.wl-kuninori.morimoto.gx@renesas.com>
- <874jcv6msn.wl-kuninori.morimoto.gx@renesas.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <874jcv6msn.wl-kuninori.morimoto.gx@renesas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:wJ7zXPDTrliMLMjo4tDZcS6Up5C23HMOJCMnPMsA1vtTj3DQJcA
- vUjypbOPGQ/jh6nPbGgk//ZtmeV0kzFklyZGaiETTWLi59W+PhPHsdLVK1yvRMyz3jOsP06
- PyLHoZgJI49p7hzesa1d6Znp+q5Qpon+YacA29L/6rxqX2QuCAljOhAM12s10VRyndwBdto
- 8WFUB8F1Tst/Hx+jKKPpQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:jAdfYIBa2v8=;vB7o+63MKFbLCCmtkc4kwgTp1GE
- QlwbvQNhfDxZpJzthTZPiTObJ0GPE0HgQuKPO0Lw9cUOUR06Ox238l/2TqTzztnehZ0pTcTK2
- HmzjIbiz8bti9SitZh5AwNCO886EQSSEEGYEpLL8EzOGZGUOYtBsbG2jMgL2nsz0h5Fr2LRll
- dspgx7Y2APOCyf9vGukpGB6eKFS/zEbkAppSkc7cdXR6gKObFQC2Tm5OG0uuj8TyBmJ5QQbOm
- 0mzQpeax/RVZL40twAf3+0Y+DsOM1fY1ADLntP+Qa1iWuRTVv40wKfLwZsMp4K1mWgQqRsbq3
- koCYy+rvF6obLLwxOmTsJjSemiG5vngCk3YqQjiCpM+dzvj8sIS6vTueNCnkr84J0NYf7gZPk
- 1FWeExamROTDv5RDyi+kmYHOF8EP56N8zGGwzKEBgIH7DULQ1j0B6Q4sqsK8iDMgym+HsqU29
- rpg1+jckGxr2Vnb/7zwFQKnu3q/EN/BeeMtrHlRVCutuH1SaRn9cK843TcPbdBwbA1kUI559g
- KSF2m6zFhHnq91g6iBWww+0cYdFHELxWbSkfZkCCWYn93g7i+Z82sdPnYqhP8i2//aByS7Mdt
- zSPeJ7PblfMGv4puj0MdZuSMliOuJvGzzFMt/YqzkdgArFEdKLrpyC2cJMyolBivSO58KYwxf
- qoKzle8sDXXH9tTJ+4xNhYkP+J5Q0kYXDTnoh/TsSWQU4zoO7/fn6YzciqJ7z0ibipPTssEy3
- 8zWedYwlKwfb9B76TNCM6KgdtoVgYGdA/FRYzAoN3bSv1kQEXPhvaUejiUNrOpj/XikzgshMu
- UFe/kEshYrlKcs9ooMAAr/+3L05CHWwwyzL83uWTToZv8=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240305-class_cleanup-backlight-v1-1-c0e15cc25be1@marliere.net>
 
-On 3/25/24 03:57, Kuninori Morimoto wrote:
->  From DT point of view, in general, drivers should be asking for a
-> specific port number because their function is fixed in the binding.
+On Tue, Mar 05, 2024 at 09:21:17AM -0300, Ricardo B. Marliere wrote:
+> Since commit 43a7206b0963 ("driver core: class: make class_register() take
+> a const *"), the driver core allows for struct class to be in read-only
+> memory, so move the backlight_class structure to be declared at build time
+> placing it into read-only memory, instead of having to be dynamically
+> allocated at boot time.
 >
-> of_graph_get_next_endpoint() doesn't match to this concept.
->
-> Simply replace
->
-> 	- of_graph_get_next_endpoint(xxx, NULL);
-> 	+ of_graph_get_endpoint_by_regs(xxx, 0, -1);
->
-> Link: https://lore.kernel.org/r/20240202174941.GA310089-robh@kernel.org
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
 
-applied to fbdev git tree.
-
-Thanks!
-Helge
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
-> ---
->   drivers/video/fbdev/omap2/omapfb/dss/dsi.c    |  3 ++-
->   drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 20 +------------------
->   drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c  |  3 ++-
->   drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c  |  3 ++-
->   drivers/video/fbdev/omap2/omapfb/dss/venc.c   |  3 ++-
->   drivers/video/fbdev/pxafb.c                   |  2 +-
->   include/video/omapfb_dss.h                    |  3 ---
->   7 files changed, 10 insertions(+), 27 deletions(-)
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/=
-fbdev/omap2/omapfb/dss/dsi.c
-> index b7eb17a16ec4..1f13bcf73da5 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-> @@ -28,6 +28,7 @@
->   #include <linux/debugfs.h>
->   #include <linux/pm_runtime.h>
->   #include <linux/of.h>
-> +#include <linux/of_graph.h>
->   #include <linux/of_platform.h>
->   #include <linux/component.h>
->
-> @@ -5079,7 +5080,7 @@ static int dsi_probe_of(struct platform_device *pd=
-ev)
->   	struct device_node *ep;
->   	struct omap_dsi_pin_config pin_cfg;
->
-> -	ep =3D omapdss_of_get_first_endpoint(node);
-> +	ep =3D of_graph_get_endpoint_by_regs(node, 0, -1);
->   	if (!ep)
->   		return 0;
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c b/drivers/vid=
-eo/fbdev/omap2/omapfb/dss/dss-of.c
-> index 0282d4eef139..14965a3fd05b 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-> @@ -130,24 +130,6 @@ static struct device_node *omapdss_of_get_remote_po=
-rt(const struct device_node *
->   	return np;
->   }
->
-> -struct device_node *
-> -omapdss_of_get_first_endpoint(const struct device_node *parent)
-> -{
-> -	struct device_node *port, *ep;
-> -
-> -	port =3D omapdss_of_get_next_port(parent, NULL);
-> -
-> -	if (!port)
-> -		return NULL;
-> -
-> -	ep =3D omapdss_of_get_next_endpoint(port, NULL);
-> -
-> -	of_node_put(port);
-> -
-> -	return ep;
-> -}
-> -EXPORT_SYMBOL_GPL(omapdss_of_get_first_endpoint);
-> -
->   struct omap_dss_device *
->   omapdss_of_find_source_for_first_ep(struct device_node *node)
->   {
-> @@ -155,7 +137,7 @@ omapdss_of_find_source_for_first_ep(struct device_no=
-de *node)
->   	struct device_node *src_port;
->   	struct omap_dss_device *src;
->
-> -	ep =3D omapdss_of_get_first_endpoint(node);
-> +	ep =3D of_graph_get_endpoint_by_regs(node, 0, -1);
->   	if (!ep)
->   		return ERR_PTR(-EINVAL);
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/vide=
-o/fbdev/omap2/omapfb/dss/hdmi4.c
-> index f05b4e35a842..8f407ec134dc 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-> @@ -20,6 +20,7 @@
->   #include <linux/pm_runtime.h>
->   #include <linux/clk.h>
->   #include <linux/of.h>
-> +#include <linux/of_graph.h>
->   #include <linux/regulator/consumer.h>
->   #include <linux/component.h>
->   #include <video/omapfb_dss.h>
-> @@ -529,7 +530,7 @@ static int hdmi_probe_of(struct platform_device *pde=
-v)
->   	struct device_node *ep;
->   	int r;
->
-> -	ep =3D omapdss_of_get_first_endpoint(node);
-> +	ep =3D of_graph_get_endpoint_by_regs(node, 0, -1);
->   	if (!ep)
->   		return 0;
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/vide=
-o/fbdev/omap2/omapfb/dss/hdmi5.c
-> index 03292945b1d4..4ad219f522b9 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-> @@ -25,6 +25,7 @@
->   #include <linux/pm_runtime.h>
->   #include <linux/clk.h>
->   #include <linux/of.h>
-> +#include <linux/of_graph.h>
->   #include <linux/regulator/consumer.h>
->   #include <linux/component.h>
->   #include <video/omapfb_dss.h>
-> @@ -561,7 +562,7 @@ static int hdmi_probe_of(struct platform_device *pde=
-v)
->   	struct device_node *ep;
->   	int r;
->
-> -	ep =3D omapdss_of_get_first_endpoint(node);
-> +	ep =3D of_graph_get_endpoint_by_regs(node, 0, -1);
->   	if (!ep)
->   		return 0;
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video=
-/fbdev/omap2/omapfb/dss/venc.c
-> index c9d40e28a06f..0bd80d3b8f1b 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-> @@ -24,6 +24,7 @@
->   #include <linux/regulator/consumer.h>
->   #include <linux/pm_runtime.h>
->   #include <linux/of.h>
-> +#include <linux/of_graph.h>
->   #include <linux/component.h>
->
->   #include <video/omapfb_dss.h>
-> @@ -764,7 +765,7 @@ static int venc_probe_of(struct platform_device *pde=
-v)
->   	u32 channels;
->   	int r;
->
-> -	ep =3D omapdss_of_get_first_endpoint(node);
-> +	ep =3D of_graph_get_endpoint_by_regs(node, 0, -1);
->   	if (!ep)
->   		return 0;
->
-> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-> index fa943612c4e2..2ef56fa28aff 100644
-> --- a/drivers/video/fbdev/pxafb.c
-> +++ b/drivers/video/fbdev/pxafb.c
-> @@ -2171,7 +2171,7 @@ static int of_get_pxafb_mode_info(struct device *d=
-ev,
->   	u32 bus_width;
->   	int ret, i;
->
-> -	np =3D of_graph_get_next_endpoint(dev->of_node, NULL);
-> +	np =3D of_graph_get_endpoint_by_regs(dev->of_node, 0, -1);
->   	if (!np) {
->   		dev_err(dev, "could not find endpoint\n");
->   		return -EINVAL;
-> diff --git a/include/video/omapfb_dss.h b/include/video/omapfb_dss.h
-> index e8eaac2cb7b8..a8c0c3eeeb5b 100644
-> --- a/include/video/omapfb_dss.h
-> +++ b/include/video/omapfb_dss.h
-> @@ -819,9 +819,6 @@ struct device_node *
->   omapdss_of_get_next_endpoint(const struct device_node *parent,
->   			     struct device_node *prev);
->
-> -struct device_node *
-> -omapdss_of_get_first_endpoint(const struct device_node *parent);
-> -
->   struct omap_dss_device *
->   omapdss_of_find_source_for_first_ep(struct device_node *node);
->   #else
-
+Daniel.

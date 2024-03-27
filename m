@@ -1,69 +1,162 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61BB0F4FB;
-	Wed, 27 Mar 2024 00:47:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F702C6AD;
+	Wed, 27 Mar 2024 08:14:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711500436; cv=none; b=KZrMYUuRTTOGVHvltL6k9USnDR2VF6bsvtlddvVpTOwuZa3qzVwgG07wV/s+U8QDgqrC8Ms/ZkmBEuO1sotpYmRu7aLa/qLY0m9jcwikM+INqT33eL2gziymfy4J6xp/A5RRzE9dFOpUbXZ30uM76hrQ8MZgf8gFXE+OI5URSyU=
+	t=1711527254; cv=none; b=RUCkH3KopeOUOCu5N0FNvXvJ1ckoJ9emaKoALtjTm8RW1J6gcQfL9hCqeHL2JJgqzt2XMBzSjUHfM9zVYosV2rCBx2Zage1x025dSnQQ7O6VgE6lK5wnSrr1OlBCSQroTQB6eTmGmiDXQuSqkLmMXh6H09tqRfxEiizPbFlyaqs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711500436; c=relaxed/simple;
-	bh=2q5crH4HwBtEVMAdw9c1ugeNy2Oyqk30hp+EirVO3q0=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hkWMNTzbZfTgA/IEK/JK4+B3v+mSz4F4UIfx8jWMKdsdXRYM468WolThpJmZcjldQiYiJ6V404RZu7IVIxEvecn6uZ5hlm61RPXIxMnleGnLxuMfGp/TnnNoplqsZH1bymKTDlsOWOugTIC/5Ldq1Xneczg6q9NQGyW050/URjU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UezsQDLg; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1711527254; c=relaxed/simple;
+	bh=CqkMA+lMjZOPJlgF/DafLECzWQuIokS7odHaJiZI3A0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=N/Sda/iI8kEnBcG6fA+HnlV1yFsqwFjoGFY+ldbB3gddgssCAWOuJctuAEQyofE0AbSjxu6XZgdIsn5HODtL9bt3sJQuPNxDskv2D3r8p8jnSOGPcezV5Y+PapVUNIaQBj3OTFONQ1cNe4JzlCrswuoVj4GWuP2ErmcACOjmGB0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Mawn47hY; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UezsQDLg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7EB0C433C7;
-	Wed, 27 Mar 2024 00:47:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711500435;
-	bh=2q5crH4HwBtEVMAdw9c1ugeNy2Oyqk30hp+EirVO3q0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=UezsQDLgF9nL66A4jsvBTDD2EOr0eqDdVGhmNGprFvTwmA1eJHgPOWS9WJ7ECimcd
-	 RDE0aan9K8Zg8d9M25lbWh96ZCpZ7y0mP+R19goxTSdH2JUd8JcPPdRW83X8rI6QM8
-	 MJUThd//pIxYMao207aSg2QzHNfqWYJLPbB+dCwBN2EVPijRRPNUhHocfcqdZVwTSk
-	 P3meIA4B8q4n+12qJIk0cKVZsdNFWx3sQ+EkouWPRC+ZdDc/jHiwushF/bhTIdgyqo
-	 iwYU8SW6CRg3wKHM6DqpqtfSkZUOfF7qjVM0qmdXWxlmO2PGuFkWXuQEEE+muZ3xGT
-	 sSHlZk7LNCyaw==
-Date: Tue, 26 Mar 2024 17:47:13 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: llvm@lists.linux.dev, Arnd Bergmann <arnd@arndb.de>, Dmitry Torokhov
- <dmitry.torokhov@gmail.com>, Claudiu Manoil <claudiu.manoil@nxp.com>,
- Vladimir Oltean <vladimir.oltean@nxp.com>, Saeed Mahameed
- <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>, Ariel Elior
- <aelior@marvell.com>, Manish Chopra <manishc@marvell.com>, Hans de Goede
- <hdegoede@redhat.com>, Ilpo =?UTF-8?B?SsOkcnZpbmVu?=
- <ilpo.jarvinen@linux.intel.com>, Maximilian Luz <luzmaximilian@gmail.com>,
- Hannes Reinecke <hare@kernel.org>, "Martin K. Petersen"
- <martin.petersen@oracle.com>, Helge Deller <deller@gmx.de>, Masahiro Yamada
- <masahiroy@kernel.org>, Nathan Chancellor <nathan@kernel.org>, Nicolas
- Schier <nicolas@fjasle.eu>, Johannes Berg <johannes@sipsolutions.net>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Nick
- Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>,
- Justin Stitt <justinstitt@google.com>, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- linux-rdma@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kbuild@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- linux-sound@vger.kernel.org
-Subject: Re: [PATCH 0/9] enabled -Wformat-truncation for clang
-Message-ID: <20240326174713.49f3a9ce@kernel.org>
-In-Reply-To: <20240326223825.4084412-1-arnd@kernel.org>
-References: <20240326223825.4084412-1-arnd@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Mawn47hY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1711527233; x=1712132033; i=deller@gmx.de;
+	bh=yURPtcVZg1YfdN89pi22a9VWPyDqYm49v3p+PFgem9s=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=Mawn47hY0h8XnZ2+IUYHSyJBveDvW8QSaxq9Rovw7VzjxJh3zpK1rttvbRj+T5Up
+	 RbaBssZrbQcsVyCQ2nfRBjcjl3ZhJ572P7aH0mgpK12bGNNi9ZsN2lXNsg7bTr1ce
+	 Sty7Crp3EfQJ3fnKiCwKIVP8HXU5abpU4CmSMGMvWQLkFS+UZi70wTnjRYlQEjnHj
+	 0LJjqj1BozFti8muJAJpi3IGDug+XkBMcX52Vlk7CknOhBgAiYOkM1+8zqRJ++e/j
+	 7z9ACiUOFZapk9NHlQHJuI9ossDguWIOW6z6wINAjWugGtPz7qi+bp+LvH5qQ0KmU
+	 Yvfi07VOXmWglAj0Vw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([89.244.187.174]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MybGX-1snOV21dkb-00yz9Q; Wed, 27
+ Mar 2024 09:13:53 +0100
+Message-ID: <a9bdefa3-2162-4ca1-a020-95e4e9d1ecdf@gmx.de>
+Date: Wed, 27 Mar 2024 09:13:51 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/9] fbdev: shmobile: fix snprintf truncation
+To: Arnd Bergmann <arnd@kernel.org>, llvm@lists.linux.dev,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20240326223825.4084412-1-arnd@kernel.org>
+ <20240326223825.4084412-2-arnd@kernel.org>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20240326223825.4084412-2-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:9l8Ajuf8MU+eu7I7//8FmwZ6ItRejn74X3wHKuGH1DnsTKG9g28
+ d7T6Ams4vxLTSh+ZI6MjAxCYWTjTH1cdbcjgLxrPK7QtSNGF+in5moOFeLYAHsFYjuKU9YV
+ ZJYPp1nASoImLtIP94azdyPa0QhR2WqHAsZRFfZ1MlY3cf3OubbwWWcpKUBoAsW4AXXOsK6
+ +s1l9HlTYT3OG4Cn4ervQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:7LvRfy1nIfA=;CBa9xFAMCzAR6YbKkRNV0nxjc6X
+ nYq7Sa6RRrfq4q93XOxT+A5gpbKMMJEXefTZKQJJPymMAJK0UATQxkWncQa3c3ul3a5cDSq/D
+ 47XpSpftyADDAdObbIA1yrarc5NEfr9tvBW8sMuGjTG7wpuLP4/C/TOYFE4F2z/mcGh2IRWu2
+ yYGAp8rI470OvTy2gdVJxy2iXrj8jcfmPSj/bo1VJrjY2CAYlQ9kxWMSkjt99Nu43sr+hU7ac
+ 1vw3NRRakQDq9C6y3SX1muKsGMUvfBWDf20myW7jSY8Dau9uz02ICfzwaU0HSdhPkgcetrsIl
+ LCRiQFHkfjp4uhJPEkZigB86XA2Q2Yh8NybEQeitTf67igSbVDXx0ys/qr9afEydXX+wCC7Ow
+ 2TvgZGnlCyPg/MyRAGBUoZ+2UT/5enUM3fiwW11e0+VLHzXsXPby7U9yI0i1ate7LewzSbHpf
+ xcPruFRP/Dx3McPsOkeJUlbgtvj8PVQaBhdpzIuD0qHdlzBh0kQkAxYEbIhrZ7WLU1pMDO0IE
+ K7+9oAuEG6j3K9uUuraoy0DpB7kj8ASwi/zxpIiPy6+4SE65ojEJS0nAGZ/8j+G9BEGRvQYQy
+ OcjjWrT8kpp07mtoGNKRGAZDdzqCz3UVgwGFjiUo3tiGG/DHvHilraRUy46TdwbZLmzBjjVw7
+ ds+f+0Rl/iVuq2THmihcjwdYu8T73Sro2SiMLxeFrXtBhKmINPKK3zNO4rYsmwvPD6tJEZuOX
+ pry5J8Pwhh7ncbrlFKfrg1YntZWexpbMe7j8fuCruXxGNuGFUPURUWxZ0cCeXIjYObthR4a9X
+ olBak6nfX2vx3BNuJAa6GX/zoCMAwA1BOx863fjvZhbro=
 
-On Tue, 26 Mar 2024 23:37:59 +0100 Arnd Bergmann wrote:
-> I hope that the patches can get picked up by platform maintainers
-> directly, so the final patch can go in later on.
+On 3/26/24 23:38, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The name of the overlay does not fit into the fixed-length field:
+>
+> drivers/video/fbdev/sh_mobile_lcdcfb.c:1577:2: error: 'snprintf' will al=
+ways be truncated; specified size is 16, but format string expands to at l=
+east 25
+>
+> Make it short enough by changing the string.
+>
+> Fixes: c5deac3c9b22 ("fbdev: sh_mobile_lcdc: Implement overlays support"=
+)
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-platform == subsystem? :)
+applied to fbdev git tree.
+
+Thanks!
+Helge
+
+
+> ---
+>   drivers/video/fbdev/sh_mobile_lcdcfb.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbde=
+v/sh_mobile_lcdcfb.c
+> index eb2297b37504..d35d2cf99998 100644
+> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> @@ -1575,7 +1575,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lc=
+dc_overlay *ovl)
+>   	 */
+>   	info->fix =3D sh_mobile_lcdc_overlay_fix;
+>   	snprintf(info->fix.id, sizeof(info->fix.id),
+> -		 "SH Mobile LCDC Overlay %u", ovl->index);
+> +		 "SHMobile ovl %u", ovl->index);
+>   	info->fix.smem_start =3D ovl->dma_handle;
+>   	info->fix.smem_len =3D ovl->fb_size;
+>   	info->fix.line_length =3D ovl->pitch;
+

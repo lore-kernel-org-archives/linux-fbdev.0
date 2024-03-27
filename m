@@ -1,162 +1,81 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F702C6AD;
-	Wed, 27 Mar 2024 08:14:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8847112F596;
+	Wed, 27 Mar 2024 14:41:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711527254; cv=none; b=RUCkH3KopeOUOCu5N0FNvXvJ1ckoJ9emaKoALtjTm8RW1J6gcQfL9hCqeHL2JJgqzt2XMBzSjUHfM9zVYosV2rCBx2Zage1x025dSnQQ7O6VgE6lK5wnSrr1OlBCSQroTQB6eTmGmiDXQuSqkLmMXh6H09tqRfxEiizPbFlyaqs=
+	t=1711550460; cv=none; b=LWEZsGLanME+kkcPx0zGM5prI3xuWSbkNj9Pp685HwdLnFnxJB7zJTj+4CkZmGxdzGLMkhFW9d4qGe1zAG8/18XRW9R1xKA5mEoxthfxw2F833T8Dg+zi+17DcU1LVGjITjlNK7Dz5ni5fhVyvupuQEONi1vL4F+uQU6j9FBRD4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711527254; c=relaxed/simple;
-	bh=CqkMA+lMjZOPJlgF/DafLECzWQuIokS7odHaJiZI3A0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=N/Sda/iI8kEnBcG6fA+HnlV1yFsqwFjoGFY+ldbB3gddgssCAWOuJctuAEQyofE0AbSjxu6XZgdIsn5HODtL9bt3sJQuPNxDskv2D3r8p8jnSOGPcezV5Y+PapVUNIaQBj3OTFONQ1cNe4JzlCrswuoVj4GWuP2ErmcACOjmGB0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Mawn47hY; arc=none smtp.client-ip=212.227.17.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1711550460; c=relaxed/simple;
+	bh=etoXGKS/bod6uqXXqWmf822cjNH0YwXrASWCSTR3924=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=aLB6H2hVVVU722OBeqD0piEzZam6RBSRmGrZGrbEvCXwIVWBQepZzIIjZZ66EPUeHjbgolDJ7ozUWfuWQG14d4dxJMjOxqZa/WAhrKGA3nJjOoFveUDoohhYn1kCLUm7QKuxS6NqiuAYYBJEJC91WcZBTlm8OcmGoSvXfIFn5ak=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UJyQ62ea; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Mawn47hY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1711527233; x=1712132033; i=deller@gmx.de;
-	bh=yURPtcVZg1YfdN89pi22a9VWPyDqYm49v3p+PFgem9s=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=Mawn47hY0h8XnZ2+IUYHSyJBveDvW8QSaxq9Rovw7VzjxJh3zpK1rttvbRj+T5Up
-	 RbaBssZrbQcsVyCQ2nfRBjcjl3ZhJ572P7aH0mgpK12bGNNi9ZsN2lXNsg7bTr1ce
-	 Sty7Crp3EfQJ3fnKiCwKIVP8HXU5abpU4CmSMGMvWQLkFS+UZi70wTnjRYlQEjnHj
-	 0LJjqj1BozFti8muJAJpi3IGDug+XkBMcX52Vlk7CknOhBgAiYOkM1+8zqRJ++e/j
-	 7z9ACiUOFZapk9NHlQHJuI9ossDguWIOW6z6wINAjWugGtPz7qi+bp+LvH5qQ0KmU
-	 Yvfi07VOXmWglAj0Vw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([89.244.187.174]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MybGX-1snOV21dkb-00yz9Q; Wed, 27
- Mar 2024 09:13:53 +0100
-Message-ID: <a9bdefa3-2162-4ca1-a020-95e4e9d1ecdf@gmx.de>
-Date: Wed, 27 Mar 2024 09:13:51 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UJyQ62ea"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CACB6C433C7;
+	Wed, 27 Mar 2024 14:40:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711550460;
+	bh=etoXGKS/bod6uqXXqWmf822cjNH0YwXrASWCSTR3924=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=UJyQ62eaFgB4l/rTygMBfshzpR0FJS1cOfcmC44nuZh8aBglBszB+ehVxSMrf/sm0
+	 vcw/Iy4ZxzjCsFdm+QlDnqbRv5ozkbYY2I7ezdkqxKQ4Kb1br6SSNWOy94a/1zwgJL
+	 zmGbLIeCtTMzyoBYOv2jKDAngeSMf/7HjbjtnjCADzPEsBobOAmfnc78cvPLvWdTgC
+	 rj8AyeTbPb9I6BCymrriAzfbP3spMnPI/et6NveMdVpP8148tJbt3Hp/cPCEoEhdJp
+	 /so6t3C5ARwWMLP/Hf62qi+jXS9YmftVm/Ol5m6LDC3jZZfM+ro9qLYOUZPanjsB9J
+	 NEEjFJvOY+xag==
+From: Lee Jones <lee@kernel.org>
+To: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
+ deller@gmx.de, andy@kernel.org, geert@linux-m68k.org, 
+ dan.carpenter@linaro.org, sam@ravnborg.org, 
+ Thomas Zimmermann <tzimmermann@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev
+In-Reply-To: <20240319093915.31778-1-tzimmermann@suse.de>
+References: <20240319093915.31778-1-tzimmermann@suse.de>
+Subject: Re: [PATCH v2 0/6] backlight: Remove struct
+ backlight_properties.fb_blank
+Message-Id: <171155045756.1586093.3975287359071936779.b4-ty@kernel.org>
+Date: Wed, 27 Mar 2024 14:40:57 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/9] fbdev: shmobile: fix snprintf truncation
-To: Arnd Bergmann <arnd@kernel.org>, llvm@lists.linux.dev,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Zimmermann <tzimmermann@suse.de>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20240326223825.4084412-1-arnd@kernel.org>
- <20240326223825.4084412-2-arnd@kernel.org>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240326223825.4084412-2-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9l8Ajuf8MU+eu7I7//8FmwZ6ItRejn74X3wHKuGH1DnsTKG9g28
- d7T6Ams4vxLTSh+ZI6MjAxCYWTjTH1cdbcjgLxrPK7QtSNGF+in5moOFeLYAHsFYjuKU9YV
- ZJYPp1nASoImLtIP94azdyPa0QhR2WqHAsZRFfZ1MlY3cf3OubbwWWcpKUBoAsW4AXXOsK6
- +s1l9HlTYT3OG4Cn4ervQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:7LvRfy1nIfA=;CBa9xFAMCzAR6YbKkRNV0nxjc6X
- nYq7Sa6RRrfq4q93XOxT+A5gpbKMMJEXefTZKQJJPymMAJK0UATQxkWncQa3c3ul3a5cDSq/D
- 47XpSpftyADDAdObbIA1yrarc5NEfr9tvBW8sMuGjTG7wpuLP4/C/TOYFE4F2z/mcGh2IRWu2
- yYGAp8rI470OvTy2gdVJxy2iXrj8jcfmPSj/bo1VJrjY2CAYlQ9kxWMSkjt99Nu43sr+hU7ac
- 1vw3NRRakQDq9C6y3SX1muKsGMUvfBWDf20myW7jSY8Dau9uz02ICfzwaU0HSdhPkgcetrsIl
- LCRiQFHkfjp4uhJPEkZigB86XA2Q2Yh8NybEQeitTf67igSbVDXx0ys/qr9afEydXX+wCC7Ow
- 2TvgZGnlCyPg/MyRAGBUoZ+2UT/5enUM3fiwW11e0+VLHzXsXPby7U9yI0i1ate7LewzSbHpf
- xcPruFRP/Dx3McPsOkeJUlbgtvj8PVQaBhdpzIuD0qHdlzBh0kQkAxYEbIhrZ7WLU1pMDO0IE
- K7+9oAuEG6j3K9uUuraoy0DpB7kj8ASwi/zxpIiPy6+4SE65ojEJS0nAGZ/8j+G9BEGRvQYQy
- OcjjWrT8kpp07mtoGNKRGAZDdzqCz3UVgwGFjiUo3tiGG/DHvHilraRUy46TdwbZLmzBjjVw7
- ds+f+0Rl/iVuq2THmihcjwdYu8T73Sro2SiMLxeFrXtBhKmINPKK3zNO4rYsmwvPD6tJEZuOX
- pry5J8Pwhh7ncbrlFKfrg1YntZWexpbMe7j8fuCruXxGNuGFUPURUWxZ0cCeXIjYObthR4a9X
- olBak6nfX2vx3BNuJAa6GX/zoCMAwA1BOx863fjvZhbro=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.12.4
 
-On 3/26/24 23:38, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The name of the overlay does not fit into the fixed-length field:
->
-> drivers/video/fbdev/sh_mobile_lcdcfb.c:1577:2: error: 'snprintf' will al=
-ways be truncated; specified size is 16, but format string expands to at l=
-east 25
->
-> Make it short enough by changing the string.
->
-> Fixes: c5deac3c9b22 ("fbdev: sh_mobile_lcdc: Implement overlays support"=
-)
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Tue, 19 Mar 2024 10:37:19 +0100, Thomas Zimmermann wrote:
+> The field fb_blank in struct backlight_properties has been marked for
+> removal. Remove it in favor of the power and state fields.
+> 
+> Patches 1 to 5 prepare several backlight drivers. They remove fb_blank
+> or replace driver code with existing helpers.
+> 
+> Patch 6 removes fb_blank from backlight core and drivers. This resolves
+> another dependency between backlight nad fbdev.
+> 
+> [...]
 
-applied to fbdev git tree.
+Applied, thanks!
 
-Thanks!
-Helge
+[1/6] auxdisplay: ht16k33: Replace use of fb_blank with backlight helper
+      commit: 7f17d16ea8b470e068bf53835bf05a995bc445db
+[2/6] backlight: omap1: Remove unused struct omap_backlight_config.set_power
+      commit: 06239b0914ad09e3f051f5f36280206f09533622
+[3/6] backlight: omap1: Replace FB_BLANK_ states with simple on/off
+      commit: c42cf539bed201cb774c65b8963faf7aaf5633f7
+[4/6] fbdev: omap2/omapfb: Replace use of fb_blank with backlight helpers
+      commit: fa10b6597b12a384357f422bb160d2833d2bba22
+[5/6] staging: fbtft: Remove reference to fb_blank
+      commit: d126df04320d4d82bc85273b8af89ea0a22565d3
+[6/6] backlight: Remove fb_blank from struct backlight_properties
+      commit: 95342cdb3f438d378f48e4db188aa217b9b0a66e
 
-
-> ---
->   drivers/video/fbdev/sh_mobile_lcdcfb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbde=
-v/sh_mobile_lcdcfb.c
-> index eb2297b37504..d35d2cf99998 100644
-> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> @@ -1575,7 +1575,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lc=
-dc_overlay *ovl)
->   	 */
->   	info->fix =3D sh_mobile_lcdc_overlay_fix;
->   	snprintf(info->fix.id, sizeof(info->fix.id),
-> -		 "SH Mobile LCDC Overlay %u", ovl->index);
-> +		 "SHMobile ovl %u", ovl->index);
->   	info->fix.smem_start =3D ovl->dma_handle;
->   	info->fix.smem_len =3D ovl->fb_size;
->   	info->fix.line_length =3D ovl->pitch;
+--
+Lee Jones [李琼斯]
 

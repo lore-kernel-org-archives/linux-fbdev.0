@@ -1,92 +1,100 @@
-Received: from mailrelay5-1.pub.mailoutpod3-cph3.one.com (mailrelay5-1.pub.mailoutpod3-cph3.one.com [46.30.211.244])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 842A750A93
-	for <linux-fbdev@vger.kernel.org>; Thu, 28 Mar 2024 07:25:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.244
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 725EE7B3EB;
+	Thu, 28 Mar 2024 10:11:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711610719; cv=none; b=VOufxGuno77FnggwwWvqanilranyNeiVlgUup/jy54YXjHqtggTVCwnq2t+kuOb2zIMGSvrdf+jDyyNBZXFN0VLGC48YWSoIoEkbSmW5O7ftQTLOKPFL13wLp/XptfMYaqwHvE9+J8yF+q8Nfqt/Z3nyZsMG6l6q8tRKt8yx0lo=
+	t=1711620686; cv=none; b=BL3okYDl+2GsjDb+qCDH8IsCubvEqaHA7yX7iRIx5asqVcjf3rE1vlVCT7OXUbZd+aZrIy5E6JgPBL4ONwIDmDY7Um0/4RwgGDyVahTmlsA4FgL8NKVNFKsg/tMN1UcadVS6SuzXu7Qyw1Xbvh61enAXV2Rsvv1pc7HOLzWmQ/8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711610719; c=relaxed/simple;
-	bh=5ouWhom1WgEvr+UIkAhFMpNB+A6ib/M6M2/Q60VF/0Y=;
+	s=arc-20240116; t=1711620686; c=relaxed/simple;
+	bh=/iYJllScuVN6X9EML6q5PXNHY8zPt1H2IRj7tnZN5Eg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YDfitdWRGE+fPXOgxsueQGlQLey8MV16hzowo3DQrN250gBEqhboMmJ8tFkr0hsKUjPdOZ211zuJEBKZhkTtgOV8A12ywOVhL9yCTAuH1Fc8rUEG++aMnabovbRPIR1sbjXtjvHFcNpouLm1+eWcFI1boU1Y4SYjgdIOkVIadK0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=FO3avDbt; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=tWmWJ3ND; arc=none smtp.client-ip=46.30.211.244
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=pB7sp0+kO3pSGivJOuRWvt3ZjqfI4kX1JxX8YMgQtuC/y14LvBmHmtLWLhA7sL6MC8WeaZycsOHbg5hSa3hVKgMj2Q22YPMVQMeyT8pX0QoT7yJT/D8Dv8t/b+MqYjaUfMO9AA5tP9b/WVRTRnzJqAYnUPKnpgBFnmsmhfT2U/w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZnuMpnRg; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="FO3avDbt";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="tWmWJ3ND"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=dyKv5n7Yl7LRdH+1tEzFGNQHD1DRdGd99PJrS6/p+zs=;
-	b=FO3avDbtCVJhZmbtPb25Z7M92okwL42Lwzwk0Xt1eFKNFfW85ebYPD1a4Iz7nbfQa1BVxuB2fck3t
-	 dV01QiC6wivs5sf4FR4Dwcj/7zxIoo8LiqS5TizyDmf/zwISEz8XHoo+q0YBAqS+W/jFG4FUQ44kvh
-	 t0uaYwTBtz7fuc9aKHnSrFR3GY32xONVYLJIM0g3hDiXwbLR9BD/o3eEuUuj3l3UwYm6F6muVvvj3L
-	 eaFcKcGJK55ShMf9yqSyFAGh9is77eUJyw3RtIOaPW++JhkBvC7HK4Ge1s3CMNfQOfP48o4EmSO883
-	 mKHiYwbBSpWF7oBq3uTpz9wEoyMQoiA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=dyKv5n7Yl7LRdH+1tEzFGNQHD1DRdGd99PJrS6/p+zs=;
-	b=tWmWJ3NDZTn8BTwQyoXUT6BJQOWPfdg24c2VPAtEdn8oRObE4JrU9XMtFz3jWr/w4xs53mowsZ7/3
-	 oWNGr4OCg==
-X-HalOne-ID: 4ddcab29-ecd4-11ee-9a1b-9fce02cdf4bb
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay5.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id 4ddcab29-ecd4-11ee-9a1b-9fce02cdf4bb;
-	Thu, 28 Mar 2024 07:25:09 +0000 (UTC)
-Date: Thu, 28 Mar 2024 08:25:07 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZnuMpnRg"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 205E1C433C7;
+	Thu, 28 Mar 2024 10:11:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711620685;
+	bh=/iYJllScuVN6X9EML6q5PXNHY8zPt1H2IRj7tnZN5Eg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ZnuMpnRgXxbyxxVjxbv6mntmLR20Py4SnOpS2JcomdOHGP9F6hYdITusD2bexeDz3
+	 MwFi7L/pK6aQoOWMRifhNVe/Yi48dxiBYvJe0SJyq1ya1L6R4t1+N6s5d5tx+I+/2P
+	 crAHyaqUi+/3HoOs+4FDzRMDJ8NKUPKpx/HgLWBSalu3NjXcYzY8JpzvDeOmdpJiKI
+	 US+5Czvt2RJH5UPYJIRVMWZIYbS0ptRkZ88CUARpjh+bTun5qYRaWEjGNBG+7UHO1e
+	 qlQpILAtKBaxWhR+y+7+xZ63Q9oH9kaNCrQLBC5xZTSL4BdPGWg7vcz7HlqPyU6A7K
+	 ZuuwglAW4DGRg==
+Date: Thu, 28 Mar 2024 10:11:20 +0000
+From: Lee Jones <lee@kernel.org>
 To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: arnd@arndb.de, javierm@redhat.com, deller@gmx.de,
-	sui.jingfeng@linux.dev, linux-arch@vger.kernel.org,
+Cc: andy@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	deller@gmx.de, robin@protonic.nl, javierm@redhat.com,
 	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-sh@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-parisc@vger.kernel.org,
-	linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v2 2/3] arch: Remove struct fb_info from video helpers
-Message-ID: <20240328072507.GC1573630@ravnborg.org>
-References: <20240327204450.14914-1-tzimmermann@suse.de>
- <20240327204450.14914-3-tzimmermann@suse.de>
+	linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: [GIT PULL] Immutable branch between MFD, Auxdisplay, HID and FB due
+ for the v6.9 merge window
+Message-ID: <20240328101120.GX13211@google.com>
+References: <20240305162425.23845-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20240327204450.14914-3-tzimmermann@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240305162425.23845-1-tzimmermann@suse.de>
 
-Hi Thomas,
-On Wed, Mar 27, 2024 at 09:41:30PM +0100, Thomas Zimmermann wrote:
-> The per-architecture video helpers do not depend on struct fb_info
-> or anything else from fbdev. Remove it from the interface and replace
-> fb_is_primary_device() with video_is_primary_device(). The new helper
-> is similar in functionality, but can operate on non-fbdev devices.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Andreas Larsson <andreas@gaisler.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: x86@kernel.org
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Enjoy!
+
+The following changes since commit 4cece764965020c22cff7665b18a012006359095:
+
+  Linux 6.9-rc1 (2024-03-24 14:10:05 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-auxdisplay-hid-fb-v6.9
+
+for you to fetch changes up to 0a4be7263749945a3882f7a0e2e5b1c45c31064e:
+
+  backlight: Add controls_device callback to struct backlight_ops (2024-03-28 10:09:06 +0000)
+
+----------------------------------------------------------------
+Immutable branch between MFD, Auxdisplay, HID and FB due for the v6.9 merge window
+
+----------------------------------------------------------------
+Thomas Zimmermann (10):
+      backlight: Match backlight device against struct fb_info.bl_dev
+      auxdisplay: ht16k33: Remove struct backlight_ops.check_fb
+      hid: hid-picolcd: Fix initialization order
+      hid: hid-picolcd: Remove struct backlight_ops.check_fb
+      backlight: aat2870-backlight: Remove struct backlight.check_fb
+      backlight: pwm-backlight: Remove struct backlight_ops.check_fb
+      fbdev: sh_mobile_lcdc_fb: Remove struct backlight_ops.check_fb
+      fbdev: ssd1307fb: Init backlight before registering framebuffer
+      fbdev: ssd1307fb: Remove struct backlight_ops.check_fb
+      backlight: Add controls_device callback to struct backlight_ops
+
+ drivers/auxdisplay/ht16k33.c             |  8 --------
+ drivers/hid/hid-picolcd_backlight.c      |  7 -------
+ drivers/hid/hid-picolcd_core.c           | 14 +++++++-------
+ drivers/hid/hid-picolcd_fb.c             |  6 ++++++
+ drivers/video/backlight/aat2870_bl.c     |  7 -------
+ drivers/video/backlight/backlight.c      |  8 ++++++--
+ drivers/video/backlight/bd6107.c         | 12 ++++++------
+ drivers/video/backlight/gpio_backlight.c | 12 ++++++------
+ drivers/video/backlight/lv5207lp.c       | 12 ++++++------
+ drivers/video/backlight/pwm_bl.c         | 12 ------------
+ drivers/video/fbdev/core/fb_backlight.c  |  6 ++++++
+ drivers/video/fbdev/sh_mobile_lcdcfb.c   |  7 -------
+ drivers/video/fbdev/ssd1307fb.c          | 31 +++++++++++--------------------
+ include/linux/backlight.h                | 16 ++++++++--------
+ include/linux/fb.h                       |  9 +++++++++
+ include/linux/pwm_backlight.h            |  1 -
+ 16 files changed, 71 insertions(+), 97 deletions(-)
+
+-- 
+Lee Jones [李琼斯]

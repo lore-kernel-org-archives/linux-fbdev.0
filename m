@@ -1,42 +1,42 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 725EE7B3EB;
-	Thu, 28 Mar 2024 10:11:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A0AD537E1;
+	Thu, 28 Mar 2024 10:32:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711620686; cv=none; b=BL3okYDl+2GsjDb+qCDH8IsCubvEqaHA7yX7iRIx5asqVcjf3rE1vlVCT7OXUbZd+aZrIy5E6JgPBL4ONwIDmDY7Um0/4RwgGDyVahTmlsA4FgL8NKVNFKsg/tMN1UcadVS6SuzXu7Qyw1Xbvh61enAXV2Rsvv1pc7HOLzWmQ/8=
+	t=1711621974; cv=none; b=mjUsrrBJciztde4riB7dwr5ndp7cgcSdGn0Lz5rvSX+UHqjOxlw/hH5X0iTUvt/LPiqwoMqgpDrsszFuj2jROkyTURB0LdGJUx2ZHseGOcvdk9esVV7tTXjviggosldO9h0aOVMVIohRvS271LxLlmVTfQMB4P45smNV+8U7Lwg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711620686; c=relaxed/simple;
-	bh=/iYJllScuVN6X9EML6q5PXNHY8zPt1H2IRj7tnZN5Eg=;
+	s=arc-20240116; t=1711621974; c=relaxed/simple;
+	bh=OjnZXo6Q9uDkGmIDHFIa6XgV3eDBiEPaBDR+3c4XXrg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pB7sp0+kO3pSGivJOuRWvt3ZjqfI4kX1JxX8YMgQtuC/y14LvBmHmtLWLhA7sL6MC8WeaZycsOHbg5hSa3hVKgMj2Q22YPMVQMeyT8pX0QoT7yJT/D8Dv8t/b+MqYjaUfMO9AA5tP9b/WVRTRnzJqAYnUPKnpgBFnmsmhfT2U/w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZnuMpnRg; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=hUZXsDYhgEObLAxniUN1D8J+H3P9ZbxXthib0dY1TR6PxVZ1nPeDxdUO//KnjrMfc/tF9V4VYFH5Q0YRS15FZ80s+dOf1q4YoNTP2WQyASK5f+3ho2I8/HliG0S0snq92VxzEfxlFI6SjAfRxJEgcXpc8aRItJZ7x5ux+RDy3cM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MB90J5XA; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZnuMpnRg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 205E1C433C7;
-	Thu, 28 Mar 2024 10:11:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MB90J5XA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E461C433F1;
+	Thu, 28 Mar 2024 10:32:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711620685;
-	bh=/iYJllScuVN6X9EML6q5PXNHY8zPt1H2IRj7tnZN5Eg=;
+	s=k20201202; t=1711621974;
+	bh=OjnZXo6Q9uDkGmIDHFIa6XgV3eDBiEPaBDR+3c4XXrg=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZnuMpnRgXxbyxxVjxbv6mntmLR20Py4SnOpS2JcomdOHGP9F6hYdITusD2bexeDz3
-	 MwFi7L/pK6aQoOWMRifhNVe/Yi48dxiBYvJe0SJyq1ya1L6R4t1+N6s5d5tx+I+/2P
-	 crAHyaqUi+/3HoOs+4FDzRMDJ8NKUPKpx/HgLWBSalu3NjXcYzY8JpzvDeOmdpJiKI
-	 US+5Czvt2RJH5UPYJIRVMWZIYbS0ptRkZ88CUARpjh+bTun5qYRaWEjGNBG+7UHO1e
-	 qlQpILAtKBaxWhR+y+7+xZ63Q9oH9kaNCrQLBC5xZTSL4BdPGWg7vcz7HlqPyU6A7K
-	 ZuuwglAW4DGRg==
-Date: Thu, 28 Mar 2024 10:11:20 +0000
+	b=MB90J5XAetTAhGkp36UhtimN7sGX8q7bMdb3bYZQhfawv/QLXsuDgqwNYuF7Ur8v4
+	 HCwiH0xZGF3dCoFWXgWIJav5GXgpsPrbF2IZPP9scPq5I1nU8W8lYR4e8M7LSNF+ws
+	 3lv5coUVqaI+NQcXfIPnmVckRXF+QCjsV4Iri56t8Er3/Yc4K8lVwFrvagm0UIEF24
+	 OoLfjUQMKzvC3CzY3zKVf88R02Ra+WIbsjeDygI1moDWsoeqoh9j7C96gvNNjbp12H
+	 eIa0yn27M8aeqrUMv2IRhviXR5JtHmxZAmhbr15cT51dWPPMEb3Mb/bFERfRLFd4UW
+	 p4ZUmovLC/tOA==
+Date: Thu, 28 Mar 2024 10:32:48 +0000
 From: Lee Jones <lee@kernel.org>
 To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: andy@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
-	deller@gmx.de, robin@protonic.nl, javierm@redhat.com,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-input@vger.kernel.org, linux-pwm@vger.kernel.org
-Subject: [GIT PULL] Immutable branch between MFD, Auxdisplay, HID and FB due
- for the v6.9 merge window
-Message-ID: <20240328101120.GX13211@google.com>
-References: <20240305162425.23845-1-tzimmermann@suse.de>
+Cc: daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
+	andy@kernel.org, geert@linux-m68k.org, dan.carpenter@linaro.org,
+	sam@ravnborg.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+Subject: [GIT PULL] Immutable branch between MFD, Auxdisplay, Staging, fbdev
+ and OMAP due for the v6.9 merge window
+Message-ID: <20240328103248.GY13211@google.com>
+References: <20240319093915.31778-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -46,7 +46,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240305162425.23845-1-tzimmermann@suse.de>
+In-Reply-To: <20240319093915.31778-1-tzimmermann@suse.de>
 
 Enjoy!
 
@@ -56,45 +56,36 @@ The following changes since commit 4cece764965020c22cff7665b18a012006359095:
 
 are available in the Git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-auxdisplay-hid-fb-v6.9
+  git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-auxdisplay-staging-omap-v6.9
 
-for you to fetch changes up to 0a4be7263749945a3882f7a0e2e5b1c45c31064e:
+for you to fetch changes up to 4551978bb50a8d59b49629deebacd73478a8b1e1:
 
-  backlight: Add controls_device callback to struct backlight_ops (2024-03-28 10:09:06 +0000)
-
-----------------------------------------------------------------
-Immutable branch between MFD, Auxdisplay, HID and FB due for the v6.9 merge window
+  backlight: Remove fb_blank from struct backlight_properties (2024-03-28 10:16:26 +0000)
 
 ----------------------------------------------------------------
-Thomas Zimmermann (10):
-      backlight: Match backlight device against struct fb_info.bl_dev
-      auxdisplay: ht16k33: Remove struct backlight_ops.check_fb
-      hid: hid-picolcd: Fix initialization order
-      hid: hid-picolcd: Remove struct backlight_ops.check_fb
-      backlight: aat2870-backlight: Remove struct backlight.check_fb
-      backlight: pwm-backlight: Remove struct backlight_ops.check_fb
-      fbdev: sh_mobile_lcdc_fb: Remove struct backlight_ops.check_fb
-      fbdev: ssd1307fb: Init backlight before registering framebuffer
-      fbdev: ssd1307fb: Remove struct backlight_ops.check_fb
-      backlight: Add controls_device callback to struct backlight_ops
+Immutable branch between MFD, Auxdisplay, Staging, fbdev and OMAP due for the v6.9 merge window
 
- drivers/auxdisplay/ht16k33.c             |  8 --------
- drivers/hid/hid-picolcd_backlight.c      |  7 -------
- drivers/hid/hid-picolcd_core.c           | 14 +++++++-------
- drivers/hid/hid-picolcd_fb.c             |  6 ++++++
- drivers/video/backlight/aat2870_bl.c     |  7 -------
- drivers/video/backlight/backlight.c      |  8 ++++++--
- drivers/video/backlight/bd6107.c         | 12 ++++++------
- drivers/video/backlight/gpio_backlight.c | 12 ++++++------
- drivers/video/backlight/lv5207lp.c       | 12 ++++++------
- drivers/video/backlight/pwm_bl.c         | 12 ------------
- drivers/video/fbdev/core/fb_backlight.c  |  6 ++++++
- drivers/video/fbdev/sh_mobile_lcdcfb.c   |  7 -------
- drivers/video/fbdev/ssd1307fb.c          | 31 +++++++++++--------------------
- include/linux/backlight.h                | 16 ++++++++--------
- include/linux/fb.h                       |  9 +++++++++
- include/linux/pwm_backlight.h            |  1 -
- 16 files changed, 71 insertions(+), 97 deletions(-)
+----------------------------------------------------------------
+Thomas Zimmermann (6):
+      auxdisplay: ht16k33: Replace use of fb_blank with backlight helper
+      backlight: omap1: Remove unused struct omap_backlight_config.set_power
+      backlight: omap1: Replace FB_BLANK_ states with simple on/off
+      fbdev: omap2/omapfb: Replace use of fb_blank with backlight helpers
+      staging: fbtft: Remove reference to fb_blank
+      backlight: Remove fb_blank from struct backlight_properties
+
+ drivers/auxdisplay/ht16k33.c                       |  7 +---
+ drivers/staging/fbtft/fb_ssd1351.c                 |  4 +-
+ drivers/staging/fbtft/fbtft-core.c                 |  5 +--
+ drivers/video/backlight/backlight.c                |  2 -
+ drivers/video/backlight/mp3309c.c                  |  1 -
+ drivers/video/backlight/omap1_bl.c                 | 47 +++++++++-------------
+ drivers/video/fbdev/atmel_lcdfb.c                  |  1 -
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |  7 +---
+ .../omap2/omapfb/displays/panel-sony-acx565akm.c   | 10 +----
+ include/linux/backlight.h                          | 25 +-----------
+ include/linux/platform_data/omap1_bl.h             |  1 -
+ 11 files changed, 26 insertions(+), 84 deletions(-)
 
 -- 
 Lee Jones [李琼斯]

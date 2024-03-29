@@ -1,32 +1,32 @@
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id DC3862C6B1;
-	Fri, 29 Mar 2024 17:28:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id EEA1C1C0DD4;
+	Fri, 29 Mar 2024 17:38:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711733299; cv=none; b=u7dI508rtx6Z16ZaxkTfMp5UcG7lue6BUOK20bIXxKQndl4fXge3qwJdG/uvHH8Lpg9ORTFKkzGvB03esYpr9nHpDTJy4Tp3hkOaN+uot95j/2puiGjtnR3z//z281Bvs6fbi6q14N7mbiDELbcjROOdse8kKZtCQvLndGPcH94=
+	t=1711733908; cv=none; b=sAtvxwdYpkoyUPS6jJ92ZkZ6hJkF548GKZ74QjRpiNOVEwjCVYsK969Yo1ThaEpoJspl+Li+ggibESCxumNTbpKh4bU9o6tqDqhtqaiSyVxPo9sXL3yiXKzCjwBWLhMnYsFX/AWtPt7ZBfL2dtU9ASq78XXpgi70gtmITIbjIHA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711733299; c=relaxed/simple;
-	bh=5OTy7gEiB0MehyXiA8ckm5yZu56ghrSzHmEKebqNyZI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IExqr47qtA43qK8Mt4/rvwQL5XR6U7EAz0WnlT1Oa1D223U7nUHIVwvJSFtX2fPUxvzMK7EU0N9FWlSidgeUTQsGKTiIAlsd911Cc4nEYSDg/2ulrOQ90ePpmPAMPc1a36yxq9mQEDVQUKxmvgWSPwG34+34eGYd8Ih/a0FBZJI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=XrEkKJJt; arc=none smtp.client-ip=13.77.154.182
+	s=arc-20240116; t=1711733908; c=relaxed/simple;
+	bh=q/8RTlTCNVVq2gV/jmDeJz3eDbWffIS/IhFa2nYJb/Y=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=XAHlQdVXu8/yU8G2dxzx4bjjQBnRpJPWh3KsJ/nfMBCyRELQHrNcMFJ9EthjNOPzJKtYEWUY2p0hzsjtnylmssZBpxj8/KcE130pr/I+coOdv4Ky4KDQ9/DsduulEaxkTBOJKkCzVFMFX2D4K75pOAMVVvglfRZVIRtCbjnyPdQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=cX2kQ6f7; arc=none smtp.client-ip=13.77.154.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="XrEkKJJt"
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="cX2kQ6f7"
 Received: from [100.64.128.229] (unknown [20.29.225.195])
-	by linux.microsoft.com (Postfix) with ESMTPSA id F025F20E6F42;
-	Fri, 29 Mar 2024 10:28:15 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com F025F20E6F42
+	by linux.microsoft.com (Postfix) with ESMTPSA id 8A372201F16E;
+	Fri, 29 Mar 2024 10:38:24 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 8A372201F16E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1711733297;
-	bh=hch/u335H6D65pAq1bDA626o2AaqkCTmqwNWGWUzaXQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XrEkKJJt6g8HyXm3jZAF8E57Do87RTxZglc6cC0o43MP2NX5o9fCXJHTExY/dAQ/f
-	 f2qf//hgOJoYeQz3kWbMxVUQtZEgvE6g4GwBWadhhokiIrZHjqHT8byECFNEk5rKZ/
-	 NBwIhYPs8iqVP/jGZMjSxiobOhdcZIdQ4D7M2vdM=
-Message-ID: <ceeaafe1-49d5-4602-8251-eed63a1be2b6@linux.microsoft.com>
-Date: Fri, 29 Mar 2024 10:28:14 -0700
+	s=default; t=1711733906;
+	bh=8tbmpJNBNI1k4VwDOIxfkmsXDU989tyOYol27bNqXbk=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
+	b=cX2kQ6f74T2I03q55Vd7kF3+Ls664raID5hfw7D0UiNwgBbbYkRGavQTlFAnCbM9L
+	 kqCM/BoF10ug6vQ7GnbaoopFkzr692jiKyEuH/t4hii+FxMUY4ZI5aXzomIEuN7X2P
+	 bcPCAeq2cVRN3AzaLSxywZzWIrVSy1L+jsCYyD5A=
+Message-ID: <5181b1e8-032d-473b-92f3-0402bebad1b4@linux.microsoft.com>
+Date: Fri, 29 Mar 2024 10:38:23 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -36,6 +36,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v0 02/14] drm/amdgpu,drm/radeon: Make I2C terminology more
  inclusive
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
 To: Andi Shyti <andi.shyti@linux.intel.com>
 Cc: Alex Deucher <alexander.deucher@amd.com>,
  =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -82,41 +83,38 @@ Cc: Alex Deucher <alexander.deucher@amd.com>,
 References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
  <20240329170038.3863998-3-eahariha@linux.microsoft.com>
  <Zgb3VYsgLjhJ2HKs@ashyti-mobl2.lan>
+ <ceeaafe1-49d5-4602-8251-eed63a1be2b6@linux.microsoft.com>
 Content-Language: en-CA
-From: Easwar Hariharan <eahariha@linux.microsoft.com>
-In-Reply-To: <Zgb3VYsgLjhJ2HKs@ashyti-mobl2.lan>
+In-Reply-To: <ceeaafe1-49d5-4602-8251-eed63a1be2b6@linux.microsoft.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 3/29/2024 10:16 AM, Andi Shyti wrote:
-> Hi Easwar,
-> 
-> On Fri, Mar 29, 2024 at 05:00:26PM +0000, Easwar Hariharan wrote:
->> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
-> 
-> I don't understand why we forget that i3c is 1.1.1 :-)
+On 3/29/2024 10:28 AM, Easwar Hariharan wrote:
+> On 3/29/2024 10:16 AM, Andi Shyti wrote:
+>> Hi Easwar,
+>>
 
-That's because it's a copy-paste error from Wolfram's cover letter. :) I'll update
-next go-around.
+<snip>
 
+>>
+>> The specification talks about:
+>>
+>>  - master -> controller
+>>  - slave -> target (and not client)
+>>
+>> But both you and Wolfram have used client. I'd like to reach
+>> some more consistency here.
 > 
->> with more appropriate terms. Inspired by and following on to Wolfram's
->> series to fix drivers/i2c/[1], fix the terminology for users of
->> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
->> in the specification.
+> I had the impression that remote targets (i.e external to the device) were to be called clients,
+> e.g. the QSFP FRUs in drivers/infiniband, and internal ones targets.
+> I chose the terminology according to that understanding, but now I can't find where I got that
+> information.
 > 
-> The specification talks about:
-> 
->  - master -> controller
->  - slave -> target (and not client)
-> 
-> But both you and Wolfram have used client. I'd like to reach
-> some more consistency here.
+> Thanks,
+> Easwar
 
-I had the impression that remote targets (i.e external to the device) were to be called clients,
-e.g. the QSFP FRUs in drivers/infiniband, and internal ones targets.
-I chose the terminology according to that understanding, but now I can't find where I got that
-information.
+Ah, it was in Wolfram's individual commit messages "They are also more specific because we distinguish now between a remote
+entity ("client") and a local one ("target")."
 
 Thanks,
 Easwar

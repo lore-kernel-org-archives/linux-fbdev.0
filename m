@@ -1,154 +1,146 @@
-Received: from JPN01-OS0-obe.outbound.protection.outlook.com (mail-os0jpn01on2125.outbound.protection.outlook.com [40.107.113.125])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE4A17E6;
-	Mon,  1 Apr 2024 00:06:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.113.125
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711929982; cv=fail; b=loCGj4VIBXGjfIJatBmFdutKHAKMsfC+iejhmK622eVS/fZcLXd6Y+4YCc74Rpd7Z3hJjEBRlDNwsbbPspv/XvDJi3IVrcdL58amjLrW6/XVzSpZ007WAQtG9GP2c0EGb2NHCPqe5L3DzbRnRW4V3/9ZZQmD4YISU7KglGeSSbM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1711929982; c=relaxed/simple;
-	bh=MiUpDz8lcoTxKFsuFJyr3KqsbS/xFRnCWmcPywIV9ck=;
-	h=Message-ID:To:In-Reply-To:References:From:Subject:Content-Type:
-	 Date:MIME-Version; b=se0wYXDs65UsKgsStI1VY2A5CPfaqX9+XE/d1NtiplzB1ZSBkqcGuTCwJz+newBkkDjE1ZGdeFjwMT4yGWyQJdUEZRskSKEYY7KWZTFJzf5RdoowwGaZfBLEpJa7zKLwYguQDai798STidTXRQo3RcmJSQmJsMKtFYzKR8R4qEE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=ajsi5Qo7; arc=fail smtp.client-ip=40.107.113.125
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46B8C1E888;
+	Mon,  1 Apr 2024 13:03:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1711976630; cv=none; b=efrPEvKDrnglGvmhYf0rmq1tKwf/SbKb7zMjDo5C68QfVKD3R0yBaWPfpA0EAzgeZZwzF62Hysmzmursy/a8YlN9VAGMCOVAUp7IOetpjEXXh4LgmmqegPFq5XSKetphAP70b8y0e6G2uvaC+lFEE+1s7/GHTWa3ZIVM/tTN+eg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1711976630; c=relaxed/simple;
+	bh=6IX8cDFUlSsk6IxtbhcF68yxgznuBZCAUSinqNSI60Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TL2whoBUq9rL4IQyYOEjNJ9s8cLnvFwJMvl0v+OSvQ2V3IpgOpGRGmxZFB6KjxMz0mVrex/cMx+hvt9OJ4jR6ygcfZLPJXzdFGk1r3htJ7L24qneeWTAv7KKH5t31glw6+t8c43KZFF2spw5x6qa/s/Nnt+tDI9Q2Q0cJzwHw4M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=t9tDxF+B; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="ajsi5Qo7"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=GGd04lIRmHTwlKVah01q7DBjtB4sIhSstIt+1P2vs3SQX/HmoH3HogWUb3YffthC1IOCJh9z4IkFvQLpo4Ume7wxakf3f+UyatrFt6cU9YpAP2c8BbBzfuzz7Mop3UShSWY3c651tWa/I7RTCvt8sOPNFbi89fm3jSwfliUYB7Lm8LK+CEOPqK+8uYqvbpQffj/avO8TmX4FZ37pwtPzZFq3hwEEvYT9l4Iu9RuvMd1FERu0NHFNstwIV31S+LXlA1z/I3KQVs9ljSp4mr0Wf+LPpeTCcwmfwsfrQY1PSBGpSWLhKgOlaJumiUfLDuU+7Iz8zsUf4ibfe7598rbbKA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=y8t4OQznVBGLLmBFnjQ/lO6G9QF4zCO9P6FQQUWVcwE=;
- b=mZeEaJWRLA1/yJrl/l67CabKsWln274sdiNl28r3padM9B3tD846QhW6gOplFs6wzwJ6rnK4me2AZx5Jev49xrTKOd9dxWDymzIGC+SnuZL7Skp0IgmOR/AYqOc4qE4Xtlxn2wucumgkdJAfbFe+Ov0Gz0LOlWxg+04+1FYqFgP1fuybF7zpG1hGC/k4epucYctunyCLv5sn5rS7hpLTDzK591imkgzuNl1zYGtzRy/Bs+o2ubU1pOPlCXYGTiGaUn/agiZ7l5rQNSQiql6LCH9OcDDKSUMqPpQ9M/a6LRjiUZB2btqcXl30Q6HY8KpN2nHVefXICIHyIgR/MeXsDg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
- dkim=pass header.d=renesas.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=y8t4OQznVBGLLmBFnjQ/lO6G9QF4zCO9P6FQQUWVcwE=;
- b=ajsi5Qo76m1robVzDnHCP+mRDDZs8ps+23iGfUumj2k/FUGPhK1EF5mAmHEJNZQVK98ZOLLTTKbVfqoQWoMJfpV+K6jt17D4wtG6yL/ZJ31e7ctQEOc0+1xOIW62/xArpFDHmz9jy9yq31uynl+3iVcQJh5079AOCNC671QpxeA=
-Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
- (2603:1096:400:3a9::11) by OS3PR01MB7826.jpnprd01.prod.outlook.com
- (2603:1096:604:177::9) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.46; Mon, 1 Apr
- 2024 00:06:18 +0000
-Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
- ([fe80::131e:55c0:a4a0:713b]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
- ([fe80::131e:55c0:a4a0:713b%7]) with mapi id 15.20.7386.025; Mon, 1 Apr 2024
- 00:06:18 +0000
-Message-ID: <871q7queti.wl-kuninori.morimoto.gx@renesas.com>
-To: "Lad Prabhakar" <prabhakar.csengg@gmail.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Eugen Hristev <eugen.hristev@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Maxime Ripard <mripard@kernel.org>, Michal Simek <michal.simek@amd.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, Rob Herring <robh+dt@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Thomas Zimmermann <tzimmermann@suse.de>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, coresight@lists.linaro.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
-In-Reply-To: <87cyrauf0x.wl-kuninori.morimoto.gx@renesas.com>
-References: <87cyrauf0x.wl-kuninori.morimoto.gx@renesas.com>
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Subject: [PATCH v2 8/8] fbdev: omapfb: use of_graph_get_remote_port()
-Content-Type: text/plain; charset=US-ASCII
-Date: Mon, 1 Apr 2024 00:06:17 +0000
-X-ClientProxiedBy: TYCP286CA0258.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:400:455::6) To TYCPR01MB10914.jpnprd01.prod.outlook.com
- (2603:1096:400:3a9::11)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="t9tDxF+B"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91F3AC43390;
+	Mon,  1 Apr 2024 13:03:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711976629;
+	bh=6IX8cDFUlSsk6IxtbhcF68yxgznuBZCAUSinqNSI60Q=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=t9tDxF+B/kICX01tgWTInIvIoSP9ORRRD9KOxwP84iHOUi0SKK/Ie42RUnp7t63FN
+	 HVqjkZ5KlC6r9xKWCl/PeAJMG/KIh5KXuih4+kiHghdkd8/st153SMr/ZNhz+ZL23p
+	 D6EuKGrsL+Ai1zBEWIcpOvcddijki3UnjLotM8odP4gXTf7VBLo8n3OihiTeVz6O/V
+	 93Vr1FFFPxCnRAvBkZ9v758Qjjkohp6VSPznDAbcnaGecnpbMEcO5WLl7vGxIXqsxs
+	 CUw4xRe+JpxokeW//OF/xQU0Z3nndTfOdl9EVWPpGm58X/UdaltgtXdup/n47CR6ru
+	 8Mu87fvXgThzg==
+Date: Mon, 1 Apr 2024 08:03:47 -0500
+From: Rob Herring <robh@kernel.org>
+To: Patrick Gansterer <paroga@paroga.com>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v5 1/2] dt-bindings: backlight: Add Texas Instruments
+ LM3509
+Message-ID: <20240401130347.GA274540-robh@kernel.org>
+References: <20240330145931.729116-1-paroga@paroga.com>
+ <20240330145931.729116-2-paroga@paroga.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|OS3PR01MB7826:EE_
-X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:
-	opXV4EKHvPqWxDO9bNiaozBSMAKd58IgIKRmhLsW0QWJzcfAxzCVoHeFbuVFMj5QTFoC3ZAKNMG/plu8g871uP2MxNRqB1MDfocZKMiKDB2V/f1gEpa4gQkeTKISrDsg5LwU65NwVL9a3wpYsWHbvV5R3X6irbgbIvYPsmHumG2TrfzgLZERkjBm+ci/0rpesV/7sIG+tV+N7t18JolBKE69VSU3ibvvPxU1th09/JFP3q5s4YlGwPGTMT2PaJkH6YyHB9v0Tz0VoNtcon+F6wu1mqVLgQfFvWWNhevFPB15oG64GS9d9/5c5zlS+tlUT6hPqo2K48prcV28O7d/L4+uGINScoa/pOvyDdkSzLGr6D/awN66gQGqYDlC3BNTiqToX8Wgt96JkTQ8sRt6P2Qq+vl3y6/SbRh7GL1JtM2H50w7Uvifp5wO/O1AWis3bfnK7qqV7FYMquTNHkAdFk7GkJSKHnCIYqJdJZ3oAoXRD3vqwshhraiWLMv7fMRjlMA/XXFBH4534UIk95xmPt6eap2M1xjTVTURW5MaQLZfvWGdXZsfZwXxB3JGyue0ZoqNVkS0BgCVDxvWNhQya9E4zbN1tewnxRbC0a3DlYSFuL21xrLW1HvbSq9teT6rmrMT8pIoO3WCaiaM4h4JsXm2QO+qrQi4di8qF/5KlrftiUBHH8JvBhY4C03gZWEme0SuRIst0lYxOCDZnAyosy+dynKTQ9p1PqIC5Kc7qic=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(7416005)(376005)(52116005)(1800799015)(366007)(921011)(38350700005);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?EXXeE3LkUYxCaNUoKT858kGzkMZ5gLi4nxKdLhLuNkPjznRfPw8ozJ1aYMBv?=
- =?us-ascii?Q?O0rCj+fkezs5/+SgXifa2fLBOwPIc/TrrJByvN7+pYgfV4aeeLEHd/nigBMc?=
- =?us-ascii?Q?pbfRfInc5YNU0ejcFr4RsenO2LqwlDj8BRbRjVd5WYib24GFrVm7Wi+oBeoY?=
- =?us-ascii?Q?H2b0htFyEHYkhWrfRpkvRRy9jzYOvOdEnfuC100SIIJPIrSDjUMAREwkQsma?=
- =?us-ascii?Q?/EYNhyvFli1WonmzIZEDyFUa3fRcUcQ6sSo7lZ+Nty+lSp/vF8fQYBVg6uKq?=
- =?us-ascii?Q?PXdlnR6KFr3cS8FHjGozpfZnTm3Ah3Wyf2BUmoHKMXSC7H6CujxPY6wl1RGG?=
- =?us-ascii?Q?cMKDj3t52V6rNDqbjktGt5kd2odOXenPiH7NZUScqSwRFXM8WOl9OXD9UpPu?=
- =?us-ascii?Q?XicxddWfXdSV727xLz2xdsEAnjlNzfwDptPjtR4jJKk/W0FyWtZcz+6AzGvV?=
- =?us-ascii?Q?uV/K9Ga3uA6xZfK1djtgYYUlI87Hd5xqmrcUIx0sX77w+32AyYjZ2q4AFPZD?=
- =?us-ascii?Q?pxXVMDU5QQADISoERhFDCXOwrapBros1P3mjVnlaVUidB8oos35eZbtU0+/s?=
- =?us-ascii?Q?pZaOQUR1CSaXIIoFBNfBWQbJ6l/GQEiKmGKm3s2ls2OBNwacm+6vhF23SdHO?=
- =?us-ascii?Q?b60l7cCGc9EzIZnDdBumKN9n2WfDpWm6osRjoAcF5ghbG4hvtb1DcceIHfy/?=
- =?us-ascii?Q?s8KI7lp9+n56nRkt748UUm8NieCVGE+cql0py2azQfgDcjspN1sNBja8ilXM?=
- =?us-ascii?Q?Z+9cQK3wFMwHtU02SCPIihqxwgviaN6+NflO4WJWApRY4mo4ASrtzvZBM8rK?=
- =?us-ascii?Q?HCAPLkGvvxWmMAQjVDMIeVdXCQPHfgF/V662NZELz5emAGPtBueutT46dIRm?=
- =?us-ascii?Q?fQt4aP3VAz69lKnU3FvIy6WVcDonNd2vxO+ShjPX9B9j4OlfIHVlq385HUGC?=
- =?us-ascii?Q?cRr8Lr1lEK23H/+LDYkLWImmKl9yBgFP0Xp9tlr5ZMozwn+gl1pfXtmIEtGX?=
- =?us-ascii?Q?7b1/SJ+Ir62T0Md9TiDbjEDrurVrYK+UhbT41LOh4kMmL9wfLfM+DnU8Dnrj?=
- =?us-ascii?Q?rs2lQ/hIS17PCJfjf3BQnr8lS7xH1GmzbXkXMcj5ZbX0bbK89QkiOCJViw6Z?=
- =?us-ascii?Q?yCaeeI2yTqnHiKuUXZ2EfZ37ftxs8ksK9ZIyDxTYayCEzHhN6uV4galDTF5g?=
- =?us-ascii?Q?+7Uue81IoUbmQSNpZzBR7MWLTptsn/A/S2vLi8G/Oc1H8pLQgjOyWGNoxaJT?=
- =?us-ascii?Q?omPMNfUckFMlV5tUBnlM9iPqqAR4UrA6wmvknOeg6YU7CAmI5Hr95oL/ZfDs?=
- =?us-ascii?Q?EWGkiNP8FqgswWjznx/7a3vupnCOPt2NYsVu+Cud41e9n0+OvC+27ZXFE47c?=
- =?us-ascii?Q?0XKFj3mNvj3Uflm8vz/u69Jwu7l8ZkgBbJV1Qhreh+Xi4mOtdM5+ZT3kc4VX?=
- =?us-ascii?Q?1KFcVDIvZ/BaEOiA3RQ+RpOuw6DKTEzblNQPfcw7Eyi3wFICu/XTkNme8b+F?=
- =?us-ascii?Q?iw03aDaV9uN/4R53P76zkQK3EplJBWI5D+AkY75G2KuCugBtjtY88UwwFuOK?=
- =?us-ascii?Q?2yCQIQxUzH4DUZxgVpZ5W7Wb9YEgWHtFkBs7O0jLa55SjE6MMQH8RuuOYpbi?=
- =?us-ascii?Q?wdntqZUkcjMCx7X/8umcbZg=3D?=
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0e43baf5-9ada-4da6-1068-08dc51df8de7
-X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Apr 2024 00:06:18.2112
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: PpI3xk5flFnl1rsJ9sjnLhGOGO+XZ3rhoW5qE8puW9hyjkcSPCWye4+RfdY+mVTRwtlkh6YCgr4CzRSS60HL578ZeRl5ZNclYzFJ/YLAcoYhG1kC68CGqEtwoC8OPhkz
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS3PR01MB7826
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240330145931.729116-2-paroga@paroga.com>
 
-We already have of_graph_get_remote_port(), Let's use it.
+On Sat, Mar 30, 2024 at 03:59:24PM +0100, Patrick Gansterer wrote:
+> Add Device Tree bindings for Texas Instruments LM3509 - a
+> High Efficiency Boost for White LED's and/or OLED Displays
+> 
+> Signed-off-by: Patrick Gansterer <paroga@paroga.com>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> ---
+>  .../bindings/leds/backlight/ti,lm3509.yaml    | 139 ++++++++++++++++++
+>  1 file changed, 139 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml b/Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml
+> new file mode 100644
+> index 000000000000..b67f67648852
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml
+> @@ -0,0 +1,139 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/leds/backlight/ti,lm3509.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: TI LM3509 High Efficiency Boost for White LED's and/or OLED Displays
+> +
+> +maintainers:
+> +  - Patrick Gansterer <paroga@paroga.com>
+> +
+> +description:
+> +  The LM3509 current mode boost converter offers two separate outputs.
+> +  https://www.ti.com/product/LM3509
+> +
+> +properties:
+> +  compatible:
+> +    const: ti,lm3509
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 0
+> +
+> +  reset-gpios:
+> +    maxItems: 1
+> +
+> +  ti,brightness-rate-of-change-us:
+> +    description: Brightness Rate of Change in microseconds.
+> +    enum: [51, 13000, 26000, 52000]
+> +
+> +  ti,oled-mode:
+> +    description: Enable OLED mode.
+> +    type: boolean
+> +
+> +patternProperties:
+> +  "^led@[01]$":
+> +    type: object
+> +    description: Properties for a string of connected LEDs.
+> +
+> +    allOf:
 
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
----
- drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+You don't need allOf here.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-index 14965a3fd05b..4040e247e026 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-@@ -117,19 +117,6 @@ u32 dss_of_port_get_port_number(struct device_node *port)
- 	return reg;
- }
- 
--static struct device_node *omapdss_of_get_remote_port(const struct device_node *node)
--{
--	struct device_node *np;
--
--	np = of_graph_get_remote_endpoint(node);
--	if (!np)
--		return NULL;
--
--	np = of_get_next_parent(np);
--
--	return np;
--}
--
- struct omap_dss_device *
- omapdss_of_find_source_for_first_ep(struct device_node *node)
- {
-@@ -141,7 +128,7 @@ omapdss_of_find_source_for_first_ep(struct device_node *node)
- 	if (!ep)
- 		return ERR_PTR(-EINVAL);
- 
--	src_port = omapdss_of_get_remote_port(ep);
-+	src_port = of_graph_get_remote_port(ep);
- 	if (!src_port) {
- 		of_node_put(ep);
- 		return ERR_PTR(-EINVAL);
--- 
-2.25.1
+> +      - $ref: common.yaml#
+> +
+> +    properties:
+> +      reg:
+> +        description:
+> +          The control register that is used to program the two current sinks.
+> +          The LM3509 has two registers (BMAIN and BSUB) and are represented
+> +          as 0 or 1 in this property. The two current sinks can be controlled
+> +          independently with both registers, or register BMAIN can be
+> +          configured to control both sinks with the led-sources property.
+> +        minimum: 0
+> +        maximum: 1
+> +
+> +      label: true
+> +
+> +      led-sources:
+> +        allOf:
 
+Or here.
+
+> +          - minItems: 1
+> +            maxItems: 2
+> +            items:
+> +              minimum: 0
+> +              maximum: 1

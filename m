@@ -1,91 +1,229 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F20E605CE
-	for <linux-fbdev@vger.kernel.org>; Tue,  2 Apr 2024 10:52:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8EB377F1B;
+	Tue,  2 Apr 2024 11:02:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712055169; cv=none; b=p+PN0nxlwpb2fWKNVulVjbFBh98IUg1Yp7c3r4gtU0FfGmqrqgC6CDyKiasNBW8r9t0L2xobgzQpqiA6JjixiALMOTdpP48m3eygqcIqN1BBcWNly6BUnQ8sVzplx8wD+W8ffoNGhphTM1G+hsUo9mjF+eET28JL9D35L9+k9dc=
+	t=1712055745; cv=none; b=MdSis70d6eUMDI5PIW6dAox/LPTK9bfJFMMNk0q8PBj9Iiam+8qYG1t8/wZanOl85ppv8br04fxAYbius39iqBWMOuGC5JXmTvnUjyKTWYqAM/P1I0c038N2gg5nDz7XSdALk5ieArmLfMSxHYQYGTXxfN1U2izKWjxL7sjJXnU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712055169; c=relaxed/simple;
-	bh=1YTxvmjRmcfQlUlxr5z5vqfrDT+DzwsPEc5WOijGjCk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=udyarVWvIbzJy151MTvMwLegOrLJrijh/5CkSWagSRAn9fMl+VbvBR5DbZz11KRM9k0VYaHx4qBkKKpB+KtJQesizscH64kN5ohbRiWFRTVifZ9XfoAKc200Es4G66YQrN4nQ7UTIm6QsU7u+cE9Lu1H0w1HE0KhoqDX+8Hi29U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FMzRviN9; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FMzRviN9"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-41569f1896dso10076605e9.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 Apr 2024 03:52:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1712055166; x=1712659966; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=1YTxvmjRmcfQlUlxr5z5vqfrDT+DzwsPEc5WOijGjCk=;
-        b=FMzRviN9kJYq46OxwaxbRd/nN2UPA9XWrpWlawBOC8GeXU9+UlJV5BuzAlsb+bY8bn
-         IzH/UPbOlXSLmtFVckYS9+z8mjhYf4tivwDRdQMN7VLK4e9DHq6kMejHxUZYTQALjWr4
-         dXh4y5sj+kayoN/n7cj5V9rxajPGLURnjoa9pAzFH0wyekg1tFMqp+3S7c1Lal7enfdE
-         0TiezpZ3rhDhS8Z1zOqt9trTk35pWYIPIy2KobpoyY+SVEpZKMP/5wgNPNfzPTXlthOC
-         QalGY/8/a1FrL1UkvPduHYrnsJajPwn8ETHhTmzEOzpNMiUSQfgDutzomW1NThYY7QTW
-         xTjQ==
+	s=arc-20240116; t=1712055745; c=relaxed/simple;
+	bh=syS53TaP5xr+RBfcVafSpph7BiRYEvMuSuViwqVPUAs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ERiuDWOnlBtrKRKePtfgeOpbc4H7CEia+36S+39DFYS9iW/UQIHbL9UgZ70v4hD5i7MPwMUuH4LnJMI7l5jXq7vEwa+XSea2BcE1ly0JDWVBZcqy6E+QD9VikYin5u52N/4Mjg5hqg/y5xs/EhYkFV1qyAQJv9h727XhRzxnhr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-415584360c0so18263695e9.1;
+        Tue, 02 Apr 2024 04:02:23 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712055166; x=1712659966;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20230601; t=1712055742; x=1712660542;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=1YTxvmjRmcfQlUlxr5z5vqfrDT+DzwsPEc5WOijGjCk=;
-        b=EpUI9fPy6AfkzUC3u6d25wz0jetniDzxiwJKQrDBxsH/xpY1OuqQ0NO2W6iP5qkoNS
-         kbvFeDc3Kxzn49vcy2wIAEyLTVqtvvmFZg/0qfJn58Q4Zx3n4a+Sj5tV8XzjImeMWF29
-         exhYxgNQSaA/4F+Ny9xeMnvYyRG1FJur+NRNJ34WRHtOI9yOBExrVeeK3YrRkzLNcVq7
-         l662xsyn/teiNhq9GBZs/C2qxqDu+E3nLe69QhvnsK65uEd2+tBelv2F9OJ36okBj87K
-         cSJclRLuh9+Tp9xq/mpNnbj9hY2RHy1Z5gaUBhEqr8ReJXmXb1yOQuGzONWSDPSJT5hl
-         EvOQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWJvr3xyZoEZUYUspgfRy4FnzGFcVvsKtt2PqclaeE4YKG3scUxAklOsok1HO/y2ElLeTUrCqA8q5KvqS3/+Exl6nY3Z/0APTPDLKQ=
-X-Gm-Message-State: AOJu0Ywlrr4eOECIUM1WrE2kuZiDDWjR6fuE34HbJDS93WhGtUyrtJTQ
-	o7BFxgN44xxl2aDXTYhzORc6d9sIOd/w7BhAAVsAXnBMSLx9NRjUu03RBXeOwKg=
-X-Google-Smtp-Source: AGHT+IECFFC2QpBeFxWbttS37ljtNH1Md/XKAYuE3SMOGvLg9paIl3bsTuA0JUInIDn5SAMDlrEOBQ==
-X-Received: by 2002:a05:600c:2983:b0:414:56ec:22e7 with SMTP id r3-20020a05600c298300b0041456ec22e7mr9343996wmd.21.1712055165953;
-        Tue, 02 Apr 2024 03:52:45 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id fs11-20020a05600c3f8b00b004146dd6bfe2sm17450520wmb.47.2024.04.02.03.52.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Apr 2024 03:52:45 -0700 (PDT)
-Date: Tue, 2 Apr 2024 11:52:43 +0100
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Patrick Gansterer <paroga@paroga.com>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, Lee Jones <lee@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v5 2/2] backlight: Add new lm3509 backlight driver
-Message-ID: <20240402105243.GA25200@aspen.lan>
-References: <20240330145931.729116-1-paroga@paroga.com>
- <20240330145931.729116-3-paroga@paroga.com>
+        bh=Io4rbOkovnV2rRCmQ11vxGTzUj5kuj9+rol3bt/mr48=;
+        b=Yy+9wn+yqvUIKvWiMi6F4wShKEDhgHZntROLVlyS4nf1OZHScaLNQgtuHyTQc224u0
+         fRaDZXadSTLQzCXXDOuaLiVNWjMl3fg2mWfzRduT6wAeTP9FAVIKTdGl+X6eNj9pVsyQ
+         LP1vSh28tJr587FCZhRHWdLGKpJxL0n4tdqdrtEaWWc9uEim4t4NnXtaQThU+PKIdpMr
+         qOIH1Ja2+70xcOy1UllgUNUGCcJA45B/J/j1h5R4+RU0XZ9rQ8N0mHKFHcyN403EEBfQ
+         WX9fpE/pLhoFat1y2hQJ2wQIveUEImj5MHYM734+Z9Y/JSyvjKQJO8C0AbcOhRqiav5D
+         AuRw==
+X-Forwarded-Encrypted: i=1; AJvYcCX7WdiXDZVnuJsHW4zah8bYEb0XyVoKzq087hDuFnGDgj1SXddiLrkHq3R2zlT0Y+4dJnLKaTr0byJcBQsei2Q+m8ZI4sFaiHsUCSGLcq9GUeX/ifEIA9VQVpfqlCZNvyxyNHBW2xw1PkqUhFt08rfIn1iblQazc5bKTUU71jRCqI0mXOw=
+X-Gm-Message-State: AOJu0YwMHAzpSzxkXUt32+3Ar37Mk/Y+pIeOdcz4esAHfJTAMyfCuDP5
+	AF8krJcTB4xE8XEYkKtWpd9SiXCgJbEISaKIMjGXubgZmQ2wz/9Y/XwHfrZvm1U=
+X-Google-Smtp-Source: AGHT+IEw/WKBY4iyFrYhB7Iu4Y2WLb+Ml0G3jylTOHEj7zys8rr8dpOOhPc8kbi7CB7K5X9ygrBsFA==
+X-Received: by 2002:a05:6000:1562:b0:343:39ef:53b0 with SMTP id 2-20020a056000156200b0034339ef53b0mr9835351wrz.24.1712055742012;
+        Tue, 02 Apr 2024 04:02:22 -0700 (PDT)
+Received: from ?IPV6:2a0b:e7c0:0:107::aaaa:69? ([2a0b:e7c0:0:107::aaaa:69])
+        by smtp.gmail.com with ESMTPSA id dn2-20020a0560000c0200b0033e25c39ac3sm13889079wrb.80.2024.04.02.04.02.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 Apr 2024 04:02:21 -0700 (PDT)
+Message-ID: <74ca50e0-61b1-4d4c-85dd-a5d920548c04@kernel.org>
+Date: Tue, 2 Apr 2024 13:02:20 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240330145931.729116-3-paroga@paroga.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RESEND PATCH v3 1/2] VT: Add KDFONTINFO ioctl
+To: Alexey Gladkov <legion@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kbd@lists.linux.dev,
+ linux-api@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-serial@vger.kernel.org, Helge Deller <deller@gmx.de>
+References: <cover.1710252966.git.legion@kernel.org>
+ <cover.1712053848.git.legion@kernel.org>
+ <ed056326540f04b72c97a276fbcc316e1b2f6371.1712053848.git.legion@kernel.org>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <ed056326540f04b72c97a276fbcc316e1b2f6371.1712053848.git.legion@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Sat, Mar 30, 2024 at 03:59:25PM +0100, Patrick Gansterer wrote:
-> This is a general driver for LM3509 backlight chip of TI.
-> LM3509 is High Efficiency Boost for White LEDs and/or OLED Displays with
-> Dual Current Sinks. This driver supports OLED/White LED select, brightness
-> control and sub/main control.
-> The datasheet can be found at http://www.ti.com/product/lm3509.
->
-> Signed-off-by: Patrick Gansterer <paroga@paroga.com>
+Hi,
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+On 02. 04. 24, 12:32, Alexey Gladkov wrote:
+> Each driver has its own restrictions on font size. There is currently no
+> way to understand what the requirements are. The new ioctl allows
+> userspace to get the minmum and maximum font size values.
 
+minimum
 
-Daniel.
+> Acked-by: Helge Deller <deller@gmx.de>
+> Signed-off-by: Alexey Gladkov <legion@kernel.org>
+> ---
+>   drivers/tty/vt/vt.c       | 24 ++++++++++++++++++++++++
+>   drivers/tty/vt/vt_ioctl.c | 13 +++++++++++++
+>   include/linux/console.h   |  2 ++
+>   include/linux/vt_kern.h   |  1 +
+>   include/uapi/linux/kd.h   | 13 ++++++++++++-
+>   5 files changed, 52 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+> index 156efda7c80d..8c2a3d98b5ec 100644
+> --- a/drivers/tty/vt/vt.c
+> +++ b/drivers/tty/vt/vt.c
+> @@ -4680,6 +4680,30 @@ int con_font_op(struct vc_data *vc, struct console_font_op *op)
+>   	return -ENOSYS;
+>   }
+>   
+> +int con_font_info(struct vc_data *vc, struct console_font_info *info)
+> +{
+> +	int rc = -EINVAL;
+
+This initialization appears to be unneeded.
+
+> +
+> +	info->min_height = 0;
+> +	info->max_height = max_font_height;
+> +
+> +	info->min_width = 0;
+> +	info->max_width = max_font_width;
+> +
+> +	info->flags = KD_FONT_INFO_FLAG_LOW_SIZE | KD_FONT_INFO_FLAG_HIGH_SIZE;
+> +
+> +	console_lock();
+> +	if (vc->vc_mode != KD_TEXT)
+> +		rc = -EINVAL;
+> +	else if (vc->vc_sw->con_font_info)
+> +		rc = vc->vc_sw->con_font_info(vc, info);
+> +	else
+> +		rc = -ENOSYS;
+> +	console_unlock();
+> +
+> +	return rc;
+> +}
+> +
+>   /*
+>    *	Interface exported to selection and vcs.
+>    */
+> diff --git a/drivers/tty/vt/vt_ioctl.c b/drivers/tty/vt/vt_ioctl.c
+> index 8c685b501404..b3b4e4b69366 100644
+> --- a/drivers/tty/vt/vt_ioctl.c
+> +++ b/drivers/tty/vt/vt_ioctl.c
+> @@ -479,6 +479,19 @@ static int vt_k_ioctl(struct tty_struct *tty, unsigned int cmd,
+>   		break;
+>   	}
+>   
+> +	case KDFONTINFO: {
+> +		struct console_font_info fnt_info;
+> +
+> +		if (copy_from_user(&fnt_info, up, sizeof(fnt_info)))
+> +			return -EFAULT;
+
+Who uses the copied values?
+
+> +		ret = con_font_info(vc, &fnt_info);
+> +		if (ret)
+> +			return ret;
+> +		if (copy_to_user(up, &fnt_info, sizeof(fnt_info)))
+
+We should do the preferred sizeof(*up) here...
+
+> +			return -EFAULT;
+> +		break;
+> +	}
+> +
+>   	default:
+>   		return -ENOIOCTLCMD;
+>   	}
+...
+> --- a/include/uapi/linux/kd.h
+> +++ b/include/uapi/linux/kd.h
+> @@ -183,8 +183,19 @@ struct console_font {
+>   
+>   #define KD_FONT_FLAG_DONT_RECALC 	1	/* Don't recalculate hw charcell size [compat] */
+>   
+> +#define KDFONTINFO	0x4B73	/* font information */
+
+Why not properly define the number using IOC() et al.? K (that 0x4b) is 
+even reserved for kd.h.
+
+> +#define KD_FONT_INFO_FLAG_LOW_SIZE	(1U << 0) /* 256 */
+> +#define KD_FONT_INFO_FLAG_HIGH_SIZE	(1U << 1) /* 512 */
+
+_BITUL()
+
+> +struct console_font_info {
+> +	unsigned int min_width, min_height;	/* minimal font size */
+> +	unsigned int max_width, max_height;	/* maximum font size */
+> +	unsigned int flags;			/* KD_FONT_INFO_FLAG_* */
+
+This does not look like a well-defined™ and extendable uapi structure. 
+While it won't change anything here, still use fixed-length __u32.
+
+And you should perhaps add some reserved fields. Do not repeat the same 
+mistakes as your predecessors with the current kd uapi.
+
+> +};
+
+thanks,
+-- 
+js
+suse labs
+

@@ -1,36 +1,61 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13E9F45008;
-	Tue,  2 Apr 2024 08:29:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E8FE17C7C;
+	Tue,  2 Apr 2024 09:00:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712046598; cv=none; b=r/bLCT0Y3qYYjDcakFtv42gnCJjbOBipGKbW52Fry7yxzLh/tBd563n28l2qXGPLZK4w0/uk6+V3M45W5QaFGucMuV0z1ZOXN9wI7g7xhDlAcHGTDgr9sMaxFMwm3kY4vLq0om4PWIlwkNErTbvb5oigX+6RcWq+iK0Q8FMOXgU=
+	t=1712048434; cv=none; b=LvL6sZzrhoaxmwLgBE24upsDIZtNGHhr0/ldGJWiqcL8JAIl2/Vv88aaunQ+ZBtaSTBQvu1DaBX3tacgHiQIDpbBIb6SMJ7l6E08ZXRNfO1jB/GGVu/wI0Z0Xok6Txd+Px2dUNasEdlqTK7jCdNpTTbLe+ynnDx5yjCpTB/Bn8U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712046598; c=relaxed/simple;
-	bh=KLiOyU5gxLUsegc5eE8/HwQZQ1rmvicDU4hOpKd3aeo=;
+	s=arc-20240116; t=1712048434; c=relaxed/simple;
+	bh=eL1PiuC+OxtsN6+5kmmUfS/ddM6OPqhmPRBb17Qn1mo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BLuoTD1n1sYBxD/oGgzj7yIfBMEBo74YOZ1h1M4w1UzudHhb9RA6KFjbH2AuQxDHZQHKHr8kjioin0ef5jQ29plFeiEhTEPsGrloZLox/5jDkl/KESvm1ZkvPCi5PBfizKxjJKIZ+RlW7Fc/WJX2wSOvRUPj2e5OndarLHKFxyg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l55a3AM4; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=nWFZNCDhOnS0sS79rSN4JPtIw7lhaEd/X9y9f8QukWoiQud15m0gW6I46lE5mI2wbYYUai1K73VlH+HFCi95A/wNf3gM47irkDzyYub6rs9VXPZ8J6qAO7V6mHCJEkUjIAArvvQ4x743mcbEWNt33ZBE2waz9X/wJ67Rv6YXuuw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Qp9OqSaH; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l55a3AM4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A6A2C43394;
-	Tue,  2 Apr 2024 08:29:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712046597;
-	bh=KLiOyU5gxLUsegc5eE8/HwQZQ1rmvicDU4hOpKd3aeo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=l55a3AM46XbBh4JItwGhAxKslyWIKIYKui6nTuLqnelnvoCzqlpqOBF855wp5JiYA
-	 Yowmji/9KFQKT7t3FXrheQWOfrZKhf4TXyansdGzhWv+JZ0NKjtP2vXTecC/0VBNXb
-	 iyeRoNhrs0sqvkO3VW5XtNeqcA6vj8bE4n+Bku10Paa7Sw2yozjgMMQor1qpvpJeni
-	 NYcWL13S4L1UDvWSpOd96u0uvRmBx+otENbremo5gbkAPR5nG4KtoKeteSAikD4VQo
-	 aHJSXR2CScq7H9dhwpbQ9dZeGJASNTbz3sbft5dih+eH9O18+aPLDPwjNCJ64V3l+M
-	 Jnld7gjc+HRxA==
-Date: Tue, 2 Apr 2024 09:29:51 +0100
-From: Simon Horman <horms@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qp9OqSaH"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-41568096c4aso9815115e9.0;
+        Tue, 02 Apr 2024 02:00:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1712048431; x=1712653231; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=S7HP43l12eov1KUoh9mzxUyEYfgWNMnEq1EVajRpXoI=;
+        b=Qp9OqSaHyxdnx5Nn4yKbDWyqbqKRlqe60Udo5gEMOunhoZAWFoGpQcdVvpDiGRsRON
+         /LHR+o3ujfPQkG/cm0EXm17JIqjTFBWRiQ728dZ4SMVQPxeMCOePw5Wu33gqNYJBL4Qy
+         4mfI/m4MfO8HRgciDR1+9Wxl7RaIR+ts4nmz8xjtSTBz51A6i9DWSCoPJc2OABO6nWjO
+         3kJZyNa0//m7Ilc9WF6diIZAIn1roBO0wKay6KN67oqjEUtWtWeiCffxyTk1H0G5scxu
+         hw1TaTGn+jlmKTth0vjHwHtjdz47cYbWEp5NwbkISF/TK+0DnAIinELyyCWKkeQcX1G4
+         ning==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712048431; x=1712653231;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=S7HP43l12eov1KUoh9mzxUyEYfgWNMnEq1EVajRpXoI=;
+        b=R4Q86+dQkZGLI9xNEsDy1/OT2a5/m1JE47Ie7rvoznVTLaJqBb23R1E3tlXNctPtUq
+         twrU/JbrnAZ4G2Gb29kAw40CvtlhdK1/Us8Tk6mTzS+kcZBciFii1VhPE0Nr4QQitnBP
+         Ws3m3/R5pyfOq2Iyw1TNZe5b7fdx73UnjDAaYmlhXQbvVwGdXtPiBT5LjDgjGnakDhX1
+         Rj4L9kF1J1LhCXn66cZGkRPwtEyCgksZ2b4eVtuYX7T2bo6ohSv74E0TasnOs9Sc3rZj
+         rzTvHDBvi55LAAhEWdHlTF/xe+mUrc+HD5zPJ6H6la3PwDu8NRw+Bm//pd6Iz2OXaHNP
+         bIYQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWyBhfBB7doqy1ibeuoF6oEP64WvaE5kmUtndI3nnxhp1gOQOCBeMfz7z9n2y182/V62PT2XRPgb/Mltks94FtFXPswg5ttacMzDIszjneMVz6CZaAHul7PCzjGxJwAi41cXkncUdALjmPL1CiWVmaRGF3HsUb0Z1ro1bxhP35RsopfS1a3T1QWu4iM3qVhZwDJ4T/mRaCsAgWyyEa7D0u/5fdu48a2r2c5Y2qB1m9+9vBH/fjbx8saxg==
+X-Gm-Message-State: AOJu0YyMPVZOmr35b1JqPQVufzXd0r56exbSFGKfXqtGHnEooyvzKFJd
+	LDJwQHQa5zz2G21al44b1oSqBYX+1YhY+DJVPh0BgiiucnqPmBcR
+X-Google-Smtp-Source: AGHT+IG8frznok1aF9okpQQTY2pR3XWd8JzFp2tX7BIUva1VqLJJmQZ3+crxPhY7ojqin4XV81Hf4w==
+X-Received: by 2002:a05:6000:1143:b0:33d:b2d6:b3a6 with SMTP id d3-20020a056000114300b0033db2d6b3a6mr7466595wrx.48.1712048430463;
+        Tue, 02 Apr 2024 02:00:30 -0700 (PDT)
+Received: from localhost ([81.168.73.77])
+        by smtp.gmail.com with ESMTPSA id l2-20020adff482000000b0033ec312cd8asm13554997wro.33.2024.04.02.02.00.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Apr 2024 02:00:29 -0700 (PDT)
+Date: Tue, 2 Apr 2024 10:00:28 +0100
+From: Martin Habets <habetsm.xilinx@gmail.com>
 To: Easwar Hariharan <eahariha@linux.microsoft.com>
 Cc: Edward Cree <ecree.xilinx@gmail.com>,
-	Martin Habets <habetsm.xilinx@gmail.com>,
 	"David S. Miller" <davem@davemloft.net>,
 	Eric Dumazet <edumazet@google.com>,
 	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
@@ -47,7 +72,24 @@ Cc: Edward Cree <ecree.xilinx@gmail.com>,
 	"open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
 	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
 Subject: Re: [PATCH v0 10/14] sfc: falcon: Make I2C terminology more inclusive
-Message-ID: <20240402082951.GG26556@kernel.org>
+Message-ID: <20240402090028.GA1759653@gmail.com>
+Mail-Followup-To: Easwar Hariharan <eahariha@linux.microsoft.com>,
+	Edward Cree <ecree.xilinx@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	"open list:SFC NETWORK DRIVER" <netdev@vger.kernel.org>,
+	"open list:SFC NETWORK DRIVER" <linux-net-drivers@amd.com>,
+	open list <linux-kernel@vger.kernel.org>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+	"open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>,
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>,
+	"open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS" <nouveau@lists.freedesktop.org>,
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+	"open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
+	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
 References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
  <20240329170038.3863998-11-eahariha@linux.microsoft.com>
 Precedence: bulk
@@ -73,5 +115,25 @@ On Fri, Mar 29, 2024 at 05:00:34PM +0000, Easwar Hariharan wrote:
 > 
 > Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Reviewed-by: Martin Habets <habetsm.xilinx@gmail.com>
 
+> ---
+>  drivers/net/ethernet/sfc/falcon/falcon.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/sfc/falcon/falcon.c b/drivers/net/ethernet/sfc/falcon/falcon.c
+> index 7a1c9337081b..147e7c8e3c02 100644
+> --- a/drivers/net/ethernet/sfc/falcon/falcon.c
+> +++ b/drivers/net/ethernet/sfc/falcon/falcon.c
+> @@ -367,7 +367,7 @@ static const struct i2c_algo_bit_data falcon_i2c_bit_operations = {
+>  	.getsda		= falcon_getsda,
+>  	.getscl		= falcon_getscl,
+>  	.udelay		= 5,
+> -	/* Wait up to 50 ms for slave to let us pull SCL high */
+> +	/* Wait up to 50 ms for client to let us pull SCL high */
+>  	.timeout	= DIV_ROUND_UP(HZ, 20),
+>  };
+>  
+> -- 
+> 2.34.1
+> 

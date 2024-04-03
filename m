@@ -1,47 +1,46 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E02316ABC3;
-	Wed,  3 Apr 2024 17:19:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DC6716C6AF;
+	Wed,  3 Apr 2024 17:19:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712164779; cv=none; b=DKkkkGdLUqakfqrfyRVbv6lVUMdXU1GypoWfXL6gtjy67Fvhql3xT15oPvZpGcRwKVGpEfoStrCK3FGUmaRD/B7InNbxUb8PfWddDAJZxLyAG2RJ4CjznWhy5FvK32akyb5MTwhYAJqcpjcp1r/pHAFUFxlsEXg15LwfFTAR4Ro=
+	t=1712164796; cv=none; b=d0hJWBnlwMxkvVs62GFbIRwRyBECl0R+NAaON6COtK1HYZYBYKlJbVHHhRINoVs/svV+1xrEXllge+DPCzBgIuXR4fLwWp4UGFPm+03VivOSNnRUXgUmYeKh+AXd6olQ0djN2EYEcHqnasGQj9Emwrve9Z8fUIPZcLPOlueuPSQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712164779; c=relaxed/simple;
-	bh=3R/oYCngnfBm8uj5KvKZdVhP62XlJbJ3bOKSaBb7XQ0=;
+	s=arc-20240116; t=1712164796; c=relaxed/simple;
+	bh=KGum2UiFM/XeeIttcKMIY9uAmatsd+1YLL7DOdMp7+8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Kqx6f8EdLd0FOoSusxJSL2wfuEkEmZ4xT3TUYRN34hFX5Hfw+BxSTgE6L2kp8tlVeKWxhMo9b5YR9F0OHUCzCST4xIsbzH4ohrROAF2yI+kM/TrM0d9weJmM8Au1CH/NdkHwGb0UFPrYbcwCvkGV3eDHf63VRB5HyGzzNIZ75TU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BlQixzev; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=mWmmdUq+sBMQJaWL2XztEKBKjBk57mPtMnzxxU4aIR6IlZ+IJWFQlve5DwO4Mk0yFAeOQVt4lTfLqaGjwBX1W+Mm/HCdrVLNZPT8TmWMDg2rMMY1I8wbOYoU+8bV7TJTuin9K6FuuON7TQWyIxCT3mz9VKI34g2FTQj5tWigkLI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PCQsrJfT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BlQixzev"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 01C79C433F1;
-	Wed,  3 Apr 2024 17:19:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PCQsrJfT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18E58C43399;
+	Wed,  3 Apr 2024 17:19:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712164779;
-	bh=3R/oYCngnfBm8uj5KvKZdVhP62XlJbJ3bOKSaBb7XQ0=;
+	s=k20201202; t=1712164796;
+	bh=KGum2UiFM/XeeIttcKMIY9uAmatsd+1YLL7DOdMp7+8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BlQixzevE7Ty6J8NjQKx1cMg5eZsKe7PJCJ8ULBosh/52mWwmZD2nfhMP/Nn2GQi3
-	 7WNxCi+guJwElUOcGXJx6UtXTfliUB1f1CKfLFiLKsJe05bU7+h/wXbd4Wm58MO86r
-	 L+TN3AuAJMSMHm5VMgV9fbRoy2fZq0bCGtntJD9Jnuv7GXbKKIS/XWW3av7Po0Wv/2
-	 vND7aktX3m++FeSdyIhLy9mawI4/mc0dQE4uMSslu8wZkrDhkhNbd8qIEcijGDoVLH
-	 mtnb6VUzA4pMh7iTCzDzRr7xHmrw/pZD2Dn+mRl8wLa3f1FahBY5FH9/GsER36lRfg
-	 f9H30JdybstQw==
+	b=PCQsrJfTDaw3HvOiW8yvSYuqMSxCVV0rzqNZUUrPLVnLirwb6CwFpYewl3Mwsx5Dd
+	 mpP0tFx1aJGWVHCIvhAqOKrrD/5LeFntN2CdNcSlDlx0s/Z6qjcFL6+nlQ/mrlAeLn
+	 htgkXvNOW/Qjm6/diuMmLFOs4GhWuCvOAW2Go8/6FRmcFfDdYVn7KTSohlC4/1tzKd
+	 tpVKRPPuQZPwYRIiCaVGQ2p7kaS5piqZjZlLsoPKBbO6joRImnMOzvD+ZiHmM0tnGI
+	 zhSTBwEny55U3Qn4sd2Wa9bwF9rBH/IZtjzkfU0G4aosjBcAqOKSQUwN8zl2b+7w+N
+	 /6PDqikSghgXA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Cc: Roman Smirnov <r.smirnov@omp.ru>,
-	Sergey Shtylyov <s.shtylyov@omp.ru>,
+Cc: Aleksandr Burakov <a.burakov@rosalinux.ru>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	daniel@ffwll.ch,
+	FlorianSchandinat@gmx.de,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 15/15] fbmon: prevent division by zero in fb_videomode_from_videomode()
-Date: Wed,  3 Apr 2024 13:18:59 -0400
-Message-ID: <20240403171909.345570-15-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 6/8] fbdev: viafb: fix typo in hw_bitblt_1 and hw_bitblt_2
+Date: Wed,  3 Apr 2024 13:19:39 -0400
+Message-ID: <20240403171945.350716-6-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240403171909.345570-1-sashal@kernel.org>
-References: <20240403171909.345570-1-sashal@kernel.org>
+In-Reply-To: <20240403171945.350716-1-sashal@kernel.org>
+References: <20240403171945.350716-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -50,52 +49,48 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.84
+X-stable-base: Linux 5.15.153
 Content-Transfer-Encoding: 8bit
 
-From: Roman Smirnov <r.smirnov@omp.ru>
+From: Aleksandr Burakov <a.burakov@rosalinux.ru>
 
-[ Upstream commit c2d953276b8b27459baed1277a4fdd5dd9bd4126 ]
+[ Upstream commit bc87bb342f106a0402186bcb588fcbe945dced4b ]
 
-The expression htotal * vtotal can have a zero value on
-overflow. It is necessary to prevent division by zero like in
-fb_var_to_videomode().
+There are some actions with value 'tmp' but 'dst_addr' is checked instead.
+It is obvious that a copy-paste error was made here and the value
+of variable 'tmp' should be checked here.
 
-Found by Linux Verification Center (linuxtesting.org) with Svace.
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-Signed-off-by: Roman Smirnov <r.smirnov@omp.ru>
-Reviewed-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+Signed-off-by: Aleksandr Burakov <a.burakov@rosalinux.ru>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/fbmon.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/via/accel.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index b0e690f41025a..9ca99da3a56a0 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1311,7 +1311,7 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
- int fb_videomode_from_videomode(const struct videomode *vm,
- 				struct fb_videomode *fbmode)
- {
--	unsigned int htotal, vtotal;
-+	unsigned int htotal, vtotal, total;
+diff --git a/drivers/video/fbdev/via/accel.c b/drivers/video/fbdev/via/accel.c
+index 0a1bc7a4d7853..1e04026f08091 100644
+--- a/drivers/video/fbdev/via/accel.c
++++ b/drivers/video/fbdev/via/accel.c
+@@ -115,7 +115,7 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
  
- 	fbmode->xres = vm->hactive;
- 	fbmode->left_margin = vm->hback_porch;
-@@ -1344,8 +1344,9 @@ int fb_videomode_from_videomode(const struct videomode *vm,
- 	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
- 		 vm->vsync_len;
- 	/* prevent division by zero */
--	if (htotal && vtotal) {
--		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
-+	total = htotal * vtotal;
-+	if (total) {
-+		fbmode->refresh = vm->pixelclock / total;
- 	/* a mode must have htotal and vtotal != 0 or it is invalid */
- 	} else {
- 		fbmode->refresh = 0;
+ 	if (op != VIA_BITBLT_FILL) {
+ 		tmp = src_mem ? 0 : src_addr;
+-		if (dst_addr & 0xE0000007) {
++		if (tmp & 0xE0000007) {
+ 			printk(KERN_WARNING "hw_bitblt_1: Unsupported source "
+ 				"address %X\n", tmp);
+ 			return -EINVAL;
+@@ -260,7 +260,7 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 		writel(tmp, engine + 0x18);
+ 
+ 		tmp = src_mem ? 0 : src_addr;
+-		if (dst_addr & 0xE0000007) {
++		if (tmp & 0xE0000007) {
+ 			printk(KERN_WARNING "hw_bitblt_2: Unsupported source "
+ 				"address %X\n", tmp);
+ 			return -EINVAL;
 -- 
 2.43.0
 

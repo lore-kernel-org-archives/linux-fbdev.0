@@ -1,102 +1,96 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8815514C58A;
-	Wed,  3 Apr 2024 16:44:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5287157E98;
+	Wed,  3 Apr 2024 17:17:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712162667; cv=none; b=nhTNRSV7xxoJ/IvNkGllDjOJJWWzfecBBLKHXLyhOv+2UEgHuk2w7eCc90A+81hdWQOI+l8SbpiiVGrzGE3GzMz82ed/+kDpUTOyMHwHSqOlIfYr3/oz657PqDyO7gHhsJxEeEQbJNLMCbae8QWe9trJgoKp1WsL0FcB3xSkS00=
+	t=1712164662; cv=none; b=ajlFmX8F5FvDR5e7Fbdd/L3oQSE1giMkMsCuVKMC08WFD0bSebN7vfFnGmXx9P+TraOSYiHxgZyA/hG2pJzmpmNFdKwJQWxDKJdXyxMMulOIrHfI4ph5bIpqjJF6xuUDyd+kpW0m9ZmNhBX+7UpiqnjwnuR1hW4vujVhXDOmwsg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712162667; c=relaxed/simple;
-	bh=E/xU54rEeo/oDDTNeLyTGcgPNTZZ5c2Rcpkp/VoXpog=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pD5TQx9Pm3ronVSBxEpVwlifgVb8FO2guqkwjLjq8K6g25kobPztvPB0ueCqdz/+WnwhiICvWRF1GC6QusT0fggjJWO0PJwNhPWyA+oWqFv12mQXjgFiaV/YOX3n2ub6uxwu9hC8CU4d5kJaZrXuKbVwZG0EN/kJK7WYDghhKv8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=enc6td2/; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+	s=arc-20240116; t=1712164662; c=relaxed/simple;
+	bh=KGum2UiFM/XeeIttcKMIY9uAmatsd+1YLL7DOdMp7+8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mQMXQ7HXpEfeRQ2mv/MvGglubAT5Kyfrs9l+ePXCeUp05jyrYOdvII5XPnU/o4jFy+LOmcbxN2/vF4xCvL0g3k6SkH9PsNqm8TXtrAd6DOrvGKofGdZQB5e8qVRoAAjz0MuCNFqJMKzx/hLbYnADjyOYmAfdV7lETdP3VlwRyUQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Btoww99A; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="enc6td2/"
-Received: from [100.64.216.231] (unknown [20.29.225.195])
-	by linux.microsoft.com (Postfix) with ESMTPSA id DEC6420E8CB1;
-	Wed,  3 Apr 2024 09:44:25 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com DEC6420E8CB1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1712162666;
-	bh=JXwsd2AxoIuTbqYYBsm2eaH2T3RMwYhW+EuWf51ajaI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=enc6td2/9wYk/5AJ75GJ+d2KStC4HCCxos5X3NVTZDD2/oIurKS5e5aSfxG20NTAn
-	 i6QoaGybHsOcc9F8ukHIPO521Uu8BoKDrrjEMr1X1WvCtk0DqcVkd5bYcJVQCFeQeI
-	 efLmLz3IHfJYxowLOTc8KrIggtvkr42zcNpYJ/Ys=
-Message-ID: <2d2a22a5-25cf-4b15-904e-7928a92d6ff5@linux.microsoft.com>
-Date: Wed, 3 Apr 2024 09:44:24 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Btoww99A"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E34BDC433C7;
+	Wed,  3 Apr 2024 17:17:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712164661;
+	bh=KGum2UiFM/XeeIttcKMIY9uAmatsd+1YLL7DOdMp7+8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Btoww99AWM2bjTJCml6pfB/UFaa6gDGrradiZKVSUdd/DRrfJV+XLt8zuyFfK8056
+	 TRXz66vQ3G13mDUnKyqU0DmBtccFZNiOInyRBP2Vab5Df58glGie9c7RjNCdEEO5Bv
+	 PeEWQjOLA1LV0E/c6fYOB5If04g5VW3jd3hQ8gxNoVn2VqiMPV7/L7kOpOP/jGVrYS
+	 g8w9Yt2iwXrsbMpz/2oJ0q/Mn+X483OdWf6H8ETwZBBDrlN9K/X+BpefZI5B6Yr2N8
+	 Z3+8tBtNus0naJsuY5CNRuaC4fYny1qzg192wddjOhOaa1QRjlvbqMcNIvpb9D396L
+	 J3yNnBjFORlyQ==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Aleksandr Burakov <a.burakov@rosalinux.ru>,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	FlorianSchandinat@gmx.de,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.8 21/28] fbdev: viafb: fix typo in hw_bitblt_1 and hw_bitblt_2
+Date: Wed,  3 Apr 2024 13:16:23 -0400
+Message-ID: <20240403171656.335224-21-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240403171656.335224-1-sashal@kernel.org>
+References: <20240403171656.335224-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v0 01/14] IB/hfi1, IB/qib: Make I2C terminology more
- inclusive
-To: Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
- Leon Romanovsky <leon@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>,
- "open list:HFI1 DRIVER" <linux-rdma@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
- "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
- "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
- <intel-gfx@lists.freedesktop.org>,
- "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
- <intel-xe@lists.freedesktop.org>,
- "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
- <nouveau@lists.freedesktop.org>,
- "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
- "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
- "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
-References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
- <20240329170038.3863998-2-eahariha@linux.microsoft.com>
- <20240403083025.GT11187@unreal>
- <0214214a-73c4-46b4-a099-189036954aa1@cornelisnetworks.com>
-Content-Language: en-CA
-From: Easwar Hariharan <eahariha@linux.microsoft.com>
-In-Reply-To: <0214214a-73c4-46b4-a099-189036954aa1@cornelisnetworks.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.8.3
+Content-Transfer-Encoding: 8bit
 
-On 4/3/2024 8:54 AM, Dennis Dalessandro wrote:
-> 
-> On 4/3/24 4:30 AM, Leon Romanovsky wrote:
->> On Fri, Mar 29, 2024 at 05:00:25PM +0000, Easwar Hariharan wrote:
->>> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
->>> with more appropriate terms. Inspired by and following on to Wolfram's series
->>> to fix drivers/i2c[1], fix the terminology where I had a role to play, now that
->>> the approved verbiage exists in the specification.
->>>
->>> Compile tested, no functionality changes intended
->>>
->>> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
->>>
->>> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
->>> ---
->>>  drivers/infiniband/hw/hfi1/chip.c           |  6 ++--
->>>  drivers/infiniband/hw/hfi1/chip.h           |  2 +-
->>>  drivers/infiniband/hw/hfi1/chip_registers.h |  2 +-
->>>  drivers/infiniband/hw/hfi1/file_ops.c       |  2 +-
->>>  drivers/infiniband/hw/hfi1/firmware.c       | 22 ++++++-------
->>>  drivers/infiniband/hw/hfi1/pcie.c           |  2 +-
->>>  drivers/infiniband/hw/hfi1/qsfp.c           | 36 ++++++++++-----------
->>>  drivers/infiniband/hw/hfi1/user_exp_rcv.c   |  2 +-
->>>  drivers/infiniband/hw/qib/qib_twsi.c        |  6 ++--
->>>  9 files changed, 40 insertions(+), 40 deletions(-)
->>
->> hfi1 and qib work perfectly fine with the current terminology. There is
->> no need to change old code just for the sake of change.
->>
->> Let's drop this patch.
-> 
-> Agreed.
+From: Aleksandr Burakov <a.burakov@rosalinux.ru>
 
-Will drop in v1.
+[ Upstream commit bc87bb342f106a0402186bcb588fcbe945dced4b ]
 
-Thanks,
-Easwar
+There are some actions with value 'tmp' but 'dst_addr' is checked instead.
+It is obvious that a copy-paste error was made here and the value
+of variable 'tmp' should be checked here.
+
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Signed-off-by: Aleksandr Burakov <a.burakov@rosalinux.ru>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/via/accel.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/via/accel.c b/drivers/video/fbdev/via/accel.c
+index 0a1bc7a4d7853..1e04026f08091 100644
+--- a/drivers/video/fbdev/via/accel.c
++++ b/drivers/video/fbdev/via/accel.c
+@@ -115,7 +115,7 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
+ 
+ 	if (op != VIA_BITBLT_FILL) {
+ 		tmp = src_mem ? 0 : src_addr;
+-		if (dst_addr & 0xE0000007) {
++		if (tmp & 0xE0000007) {
+ 			printk(KERN_WARNING "hw_bitblt_1: Unsupported source "
+ 				"address %X\n", tmp);
+ 			return -EINVAL;
+@@ -260,7 +260,7 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 		writel(tmp, engine + 0x18);
+ 
+ 		tmp = src_mem ? 0 : src_addr;
+-		if (dst_addr & 0xE0000007) {
++		if (tmp & 0xE0000007) {
+ 			printk(KERN_WARNING "hw_bitblt_2: Unsupported source "
+ 				"address %X\n", tmp);
+ 			return -EINVAL;
+-- 
+2.43.0
+

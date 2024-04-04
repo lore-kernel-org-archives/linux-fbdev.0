@@ -1,101 +1,216 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A31C516FF29;
-	Wed,  3 Apr 2024 17:20:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from sakura.ysato.name (ik1-413-38519.vs.sakura.ne.jp [153.127.30.23])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CAABA1BC3E;
+	Thu,  4 Apr 2024 05:00:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=153.127.30.23
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712164849; cv=none; b=OHcsuFihWV3PaVUn3ppSwIu35KdR9e0MnljP5bSR3q5Ci62nO2TJ4cKbTHFk1bCpzZuD6zztqJHA7iHzdBH2V/CtNLblB6m7uBPpaxU0wah2AqciUShqpMO71i7hd4YFybOMLB7DWDdL7NxJJOyzYSMP/c9JSuKL0hmvffj6ab4=
+	t=1712206848; cv=none; b=j3amKnyF2VFRMBX6tWb4O0bU8UFmdNVBmNa/U61sKFWLyFpPX+xRanAJx6XIt5Q+5oKEXf9UH6h0z1dAf7D88FCSZXwkVXC/jMLhrVzfEen2XsbETOorLV7H5JSAgbze31V2CdAP7n1IF9rRvbZiHiCzasPFw/8fq2frRRLXVEg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712164849; c=relaxed/simple;
-	bh=OVKcgb9zjiNlhCzNE3c8lkJ7toq0usAeeT9Ux2Oi8ew=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Yz4aFGfCv/Ll5+mDJo1+/iCq4au1QA7dIcbXv7LdKY006b9egcv/VqCEmKMvm56LvmRzYk15zFfRpp0U+WvqyQ79O/b/aGUA6tpPC87vP/MwbXOFktvoB+f3YnCv4Mabqm4Mzkq0Y6QtZdQ4lJyvu2zCrNU5/0ozpK0wqh8ZV0g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f1bLCtQF; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f1bLCtQF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B155C433F1;
-	Wed,  3 Apr 2024 17:20:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712164849;
-	bh=OVKcgb9zjiNlhCzNE3c8lkJ7toq0usAeeT9Ux2Oi8ew=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=f1bLCtQFl0XnQ/G+RX+NcXYdgVjh18yKaP58T3rMHYaAzuiB/r9xErQJiHI3GOHlq
-	 JsNMOlq7ymrXUvWT6UJCrwabuxrlcFHpjrA+68GuCfPeK2cFGjRMFTAk/S9kCQiNTp
-	 GryBhu239XRuzXTSAkBn0lYUmiSz2bvM279kJJ9BecvN76qwGV0VYLfNyqnaYmAUlN
-	 539MM/kFWpDGW7M1lAe8CHlSL0NgUavUVZqkMRa6j6Vs1YB5iM/Pqb8W4il7FKbQnt
-	 FZE3b7+XRrjlzpUyMBJKCVWsp5XR20dU5dhgrzaJjj17Rach70OpnGXA9NFxrPg4Bc
-	 /wVJB3txzKuew==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Roman Smirnov <r.smirnov@omp.ru>,
-	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	s=arc-20240116; t=1712206848; c=relaxed/simple;
+	bh=2Ln8/beSX9+5TT32ruO4321U5//ekhXDgwV6jyytobg=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=PuCNZYqejvGKc2y3apqNT0IZobvUOn7aTnKErG3dfnmWFokuz+6uNSyumrfsiQIEqtA8ehimENiD0F5sisu6pmmYYegldGaLsr9KjHloMqwpvYJ4XPOpoltB/lWOZHecJvEwI/CTCIc37S0fg+8Tsrj3lMcv/NRGCoUxGoyh+HI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=users.sourceforge.jp; spf=fail smtp.mailfrom=users.sourceforge.jp; arc=none smtp.client-ip=153.127.30.23
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=users.sourceforge.jp
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=users.sourceforge.jp
+Received: from SIOS1075.ysato.name (al128006.dynamic.ppp.asahi-net.or.jp [111.234.128.6])
+	by sakura.ysato.name (Postfix) with ESMTPSA id E13311C03E9;
+	Thu,  4 Apr 2024 14:00:43 +0900 (JST)
+From: Yoshinori Sato <ysato@users.sourceforge.jp>
+To: linux-sh@vger.kernel.org
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Lee Jones <lee@kernel.org>,
 	Helge Deller <deller@gmx.de>,
-	Sasha Levin <sashal@kernel.org>,
-	daniel@ffwll.ch,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.19 5/5] fbmon: prevent division by zero in fb_videomode_from_videomode()
-Date: Wed,  3 Apr 2024 13:20:38 -0400
-Message-ID: <20240403172041.354877-5-sashal@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240403172041.354877-1-sashal@kernel.org>
-References: <20240403172041.354877-1-sashal@kernel.org>
+	Heiko Stuebner <heiko.stuebner@cherry.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	David Rientjes <rientjes@google.com>,
+	Hyeonggon Yoo <42.hyeyoo@gmail.com>,
+	Vlastimil Babka <vbabka@suse.cz>,
+	Baoquan He <bhe@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Guo Ren <guoren@kernel.org>,
+	Azeem Shaikh <azeemshaikh38@gmail.com>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Manikanta Guntupalli <manikanta.guntupalli@amd.com>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	linux-ide@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-pci@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v7 05/37] sh: GENERIC_IRQ_CHIP support for CONFIG_OF=y
+Date: Thu,  4 Apr 2024 13:59:30 +0900
+Message-Id: <6e73949abe8d5f4f5bc229716f9a2cfb7db21626.1712205900.git.ysato@users.sourceforge.jp>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <cover.1712205900.git.ysato@users.sourceforge.jp>
+References: <cover.1712205900.git.ysato@users.sourceforge.jp>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 4.19.311
 Content-Transfer-Encoding: 8bit
 
-From: Roman Smirnov <r.smirnov@omp.ru>
+Remove unused function prototype.
+Add helper update_sr_imask. use for SH7751 irq driver.
+Add stub intc_finalize.
 
-[ Upstream commit c2d953276b8b27459baed1277a4fdd5dd9bd4126 ]
-
-The expression htotal * vtotal can have a zero value on
-overflow. It is necessary to prevent division by zero like in
-fb_var_to_videomode().
-
-Found by Linux Verification Center (linuxtesting.org) with Svace.
-
-Signed-off-by: Roman Smirnov <r.smirnov@omp.ru>
-Reviewed-by: Sergey Shtylyov <s.shtylyov@omp.ru>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 ---
- drivers/video/fbdev/core/fbmon.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/sh/include/asm/io.h       |  2 ++
+ arch/sh/include/asm/irq.h      | 10 ++++++++--
+ arch/sh/kernel/cpu/Makefile    |  5 +----
+ arch/sh/kernel/cpu/irq/imask.c | 17 +++++++++++++++++
+ include/linux/sh_intc.h        |  7 ++++++-
+ 5 files changed, 34 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 8607439d69328..e4040fb860bbc 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1309,7 +1309,7 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
- int fb_videomode_from_videomode(const struct videomode *vm,
- 				struct fb_videomode *fbmode)
- {
--	unsigned int htotal, vtotal;
-+	unsigned int htotal, vtotal, total;
+diff --git a/arch/sh/include/asm/io.h b/arch/sh/include/asm/io.h
+index cf5eab840d57..5c544cf5201b 100644
+--- a/arch/sh/include/asm/io.h
++++ b/arch/sh/include/asm/io.h
+@@ -121,7 +121,9 @@ __BUILD_MEMORY_STRING(__raw_, q, u64)
  
- 	fbmode->xres = vm->hactive;
- 	fbmode->left_margin = vm->hback_porch;
-@@ -1342,8 +1342,9 @@ int fb_videomode_from_videomode(const struct videomode *vm,
- 	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
- 		 vm->vsync_len;
- 	/* prevent division by zero */
--	if (htotal && vtotal) {
--		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
-+	total = htotal * vtotal;
-+	if (total) {
-+		fbmode->refresh = vm->pixelclock / total;
- 	/* a mode must have htotal and vtotal != 0 or it is invalid */
- 	} else {
- 		fbmode->refresh = 0;
+ #define ioport_map ioport_map
+ #define ioport_unmap ioport_unmap
++#ifndef CONFIG_SH_DEVICE_TREE
+ #define pci_iounmap pci_iounmap
++#endif
+ 
+ #define ioread8 ioread8
+ #define ioread16 ioread16
+diff --git a/arch/sh/include/asm/irq.h b/arch/sh/include/asm/irq.h
+index 0f384b1f45ca..3d897229dcc4 100644
+--- a/arch/sh/include/asm/irq.h
++++ b/arch/sh/include/asm/irq.h
+@@ -16,8 +16,8 @@
+ /*
+  * Simple Mask Register Support
+  */
+-extern void make_maskreg_irq(unsigned int irq);
+-extern unsigned short *irq_mask_register;
++
++void update_sr_imask(unsigned int irq, bool enable);
+ 
+ /*
+  * PINT IRQs
+@@ -54,4 +54,10 @@ extern void irq_finish(unsigned int irq);
+ 
+ #include <asm-generic/irq.h>
+ 
++/* SH3/4 INTC stuff */
++/* IRL level 0 - 15 */
++#define NR_IRL 15
++/* IRL0 -> IRQ16 */
++#define IRL_BASE_IRQ	16
++
+ #endif /* __ASM_SH_IRQ_H */
+diff --git a/arch/sh/kernel/cpu/Makefile b/arch/sh/kernel/cpu/Makefile
+index e00ebf134985..ad12807fae9c 100644
+--- a/arch/sh/kernel/cpu/Makefile
++++ b/arch/sh/kernel/cpu/Makefile
+@@ -20,7 +20,4 @@ ifndef CONFIG_COMMON_CLK
+ obj-y += clock.o
+ obj-$(CONFIG_SH_CLK_CPG_LEGACY)	+= clock-cpg.o
+ endif
+-ifndef CONFIG_GENERIC_IRQ_CHIP
+-obj-y	+= irq/
+-endif
+-obj-y	+= init.o fpu.o pfc.o proc.o
++obj-y	+= init.o fpu.o pfc.o proc.o irq/
+diff --git a/arch/sh/kernel/cpu/irq/imask.c b/arch/sh/kernel/cpu/irq/imask.c
+index 572585c3f2fd..7589ca7c506c 100644
+--- a/arch/sh/kernel/cpu/irq/imask.c
++++ b/arch/sh/kernel/cpu/irq/imask.c
+@@ -51,6 +51,7 @@ static inline void set_interrupt_registers(int ip)
+ 		     : "t");
+ }
+ 
++#ifndef CONFIG_GENERIC_IRQ_CHIP
+ static void mask_imask_irq(struct irq_data *data)
+ {
+ 	unsigned int irq = data->irq;
+@@ -83,3 +84,19 @@ void make_imask_irq(unsigned int irq)
+ 	irq_set_chip_and_handler_name(irq, &imask_irq_chip, handle_level_irq,
+ 				      "level");
+ }
++#else
++void update_sr_imask(unsigned int irq, bool enable)
++{
++	if (enable) {
++		set_bit(irq, imask_mask);
++		interrupt_priority = IMASK_PRIORITY -
++		  find_first_bit(imask_mask, IMASK_PRIORITY);
++	} else {
++		clear_bit(irq, imask_mask);
++		if (interrupt_priority < IMASK_PRIORITY - irq)
++			interrupt_priority = IMASK_PRIORITY - irq;
++	}
++	set_interrupt_registers(interrupt_priority);
++}
++EXPORT_SYMBOL(update_sr_imask);
++#endif
+diff --git a/include/linux/sh_intc.h b/include/linux/sh_intc.h
+index 27ae79191bdc..994b5b05a0d7 100644
+--- a/include/linux/sh_intc.h
++++ b/include/linux/sh_intc.h
+@@ -139,8 +139,13 @@ struct intc_desc symbol __initdata = {					\
+ int register_intc_controller(struct intc_desc *desc);
+ int intc_set_priority(unsigned int irq, unsigned int prio);
+ int intc_irq_lookup(const char *chipname, intc_enum enum_id);
++#ifndef CONFIG_SH_DEVICE_TREE
+ void intc_finalize(void);
+-
++#else
++static inline void intc_finalize(void)
++{
++}
++#endif
+ #ifdef CONFIG_INTC_USERIMASK
+ int register_intc_userimask(unsigned long addr);
+ #else
 -- 
-2.43.0
+2.39.2
 

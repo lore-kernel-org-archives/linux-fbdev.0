@@ -1,123 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37B935B1F6;
-	Thu,  4 Apr 2024 07:45:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 668C885644
+	for <linux-fbdev@vger.kernel.org>; Thu,  4 Apr 2024 12:18:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712216753; cv=none; b=ouZu7hph2kN0yLB9wOU1LNCqG8inih8id23lXkx2L1NQkxhRp0ZpQVY+WVZo5cdiR83FOYn8kOv6OsybtlcSdgnIDx4D8f8rRGIzACmN1SXlXTgNegKMHK/l+vZpwEqG+zuNtvGnJFRiUnHuGXSx8QyzZzk3ZdU+nG6tJMo9czA=
+	t=1712233110; cv=none; b=sytIN4NR/DIdL0ay1/EKTm2vCM9i0C58bXpRk+EI/lb6ZaxdOp+zkhKZ0OY5oIpgKTvia9QsI3b0AACqWcJDSfeAa9kbJBz0UibtrWkcG9CXvc09+D8exLkfys5suowjpplyPqwDEDx+fi1QzENZTLxKXVMW7xVVK4FuiqixLu4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712216753; c=relaxed/simple;
-	bh=vcETtOrVy9bTRvDJ6u7ogSjCKNt7NXEhds5NARQGbPY=;
-	h=Date:Content-Type:MIME-Version:From:To:Cc:In-Reply-To:References:
-	 Message-Id:Subject; b=cAZ4eJJecI/TZQEysaTarMoXp+vAzdB+usGAnFAGiSCfHpORW84txP0OZH4IK/38mhR41MtKD7vI0thnZApjXoY1E/53vjB6blU1TtplkKStEQm5mmO+PWaQi/SfKijUt3aVnGMV1DfUcUxqcpPM1WvHWpxFvfHWP3W3hmUmY5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ahmcg0O/; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ahmcg0O/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5535EC433F1;
-	Thu,  4 Apr 2024 07:45:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712216752;
-	bh=vcETtOrVy9bTRvDJ6u7ogSjCKNt7NXEhds5NARQGbPY=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-	b=ahmcg0O/wVgUSHDmaLqFtCVQppeFQLHTQcwLUR3ZoemzEiydJLq5n65V+ZZF4U3Z/
-	 iZTZ2dGWs5n/xGsr2C9Ro8bxdpCo0mryC+/NJ293dDVVrTasGOJjky78rF1l0Vh5Cj
-	 ewN+vdhM+Vk7MvaEXrP9a5f9hvvIhXjlvvkp5fjW6hQf8tlH5S2zNXD299vhN6PNvh
-	 Y5zEUTiauyseC4AumRqKYaxCMkjyr8HU9RPqz7Q7M32OkZevScqGC8ldR1pXRVNnPN
-	 lCtMqbIda7OLCc5vYYCtjdUg0R4nqeFderQtkQlFlCIFJl63TPR9JxYni0ko+ATY12
-	 3JVV8cyIjyi9Q==
-Date: Thu, 04 Apr 2024 02:45:51 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=arc-20240116; t=1712233110; c=relaxed/simple;
+	bh=d1KxWKIJ3YaIZNwhY4R410HK/60lYdy/l8iO/RibO9A=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=eM6QYiEVJ16/Ls+FMqnV1AdvLn0OkhNEXmTsL9YVOP2mqe3H8r0JwMJkNnaKgx5MtJd2onX4ow2FLt4oE2fM6SDghqkCqdwme2QAVvatkNCNKFlpMS2eK0mxtyR74DSpV112dYj6tj0AhNW9gxM5/UG2kJ7JATKpuUD5+8hSCmM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <l.stach@pengutronix.de>)
+	id 1rsM2z-0002UY-Aw; Thu, 04 Apr 2024 14:18:25 +0200
+Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+	(envelope-from <l.stach@pengutronix.de>)
+	id 1rsM2y-00AN0T-MN; Thu, 04 Apr 2024 14:18:24 +0200
+From: Lucas Stach <l.stach@pengutronix.de>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	kernel@pengutronix.de,
+	patchwork-lst@pengutronix.de
+Subject: [PATCH] drivers: video: logo: Don't mention the full path of the input in output
+Date: Thu,  4 Apr 2024 14:18:24 +0200
+Message-Id: <20240404121824.3330254-1-l.stach@pengutronix.de>
+X-Mailer: git-send-email 2.39.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Rob Herring <robh@kernel.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, 
- linux-ide@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, 
- Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org, 
- Sam Ravnborg <sam@ravnborg.org>, Stephen Boyd <sboyd@kernel.org>, 
- linux-sh@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
- Thomas Gleixner <tglx@linutronix.de>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- devicetree@vger.kernel.org, Helge Deller <deller@gmx.de>, 
- dri-devel@lists.freedesktop.org, Jonathan Corbet <corbet@lwn.net>, 
- Biju Das <biju.das.jz@bp.renesas.com>, Guenter Roeck <linux@roeck-us.net>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Damien Le Moal <dlemoal@kernel.org>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
- Anup Patel <apatel@ventanamicro.com>, Maxime Ripard <mripard@kernel.org>, 
- Chris Morgan <macromorgan@hotmail.com>, Jiri Slaby <jirislaby@kernel.org>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
- Thomas Zimmermann <tzimmermann@suse.de>, 
- Javier Martinez Canillas <javierm@redhat.com>, 
- David Rientjes <rientjes@google.com>, 
- Azeem Shaikh <azeemshaikh38@gmail.com>, Conor Dooley <conor+dt@kernel.org>, 
- Arnd Bergmann <arnd@arndb.de>, Rich Felker <dalias@libc.org>, 
- linux-fbdev@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- Daniel Vetter <daniel@ffwll.ch>, linux-serial@vger.kernel.org, 
- linux-pci@vger.kernel.org, Niklas Cassel <cassel@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>, Max Filippov <jcmvbkbc@gmail.com>, 
- Manikanta Guntupalli <manikanta.guntupalli@amd.com>, 
- Guo Ren <guoren@kernel.org>, Jacky Huang <ychuang3@nuvoton.com>, 
- linux-clk@vger.kernel.org, David Airlie <airlied@gmail.com>, 
- Magnus Damm <magnus.damm@gmail.com>, 
- Geert Uytterhoeven <geert+renesas@glider.be>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Herve Codina <herve.codina@bootlin.com>, Vlastimil Babka <vbabka@suse.cz>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Shawn Guo <shawnguo@kernel.org>, Heiko Stuebner <heiko.stuebner@cherry.de>, 
- Baoquan He <bhe@redhat.com>, Kefeng Wang <wangkefeng.wang@huawei.com>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>
-In-Reply-To: <8d8dec2d75890f3a14632c9606c332fb11d89a95.1712207606.git.ysato@users.sourceforge.jp>
-References: <cover.1712207606.git.ysato@users.sourceforge.jp>
- <8d8dec2d75890f3a14632c9606c332fb11d89a95.1712207606.git.ysato@users.sourceforge.jp>
-Message-Id: <171221675032.1570606.17195739558800384053.robh@kernel.org>
-Subject: Re: [RESEND v7 19/37] dt-bindings: interrupt-controller:
- renesas,sh7751-irl-ext: Add json-schema
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: l.stach@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
+This change strips $abs_srctree of the input file containing the
+PNM data in the generated output. The motivation for this change
+is Yocto emitting a build warning
 
-On Thu, 04 Apr 2024 14:14:30 +0900, Yoshinori Sato wrote:
-> Renesas SH7751 external interrupt encoder json-schema.
-> 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> ---
->  .../renesas,sh7751-irl-ext.yaml               | 57 +++++++++++++++++++
->  1 file changed, 57 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/renesas,sh7751-irl-ext.yaml
-> 
+    WARNING: linux-foo-6.8-r0 do_package_qa: QA Issue:
+    File /usr/src/debug/linux-foo/6.8-r0/drivers/video/logo/logo_linux_clut224.c
+    in package linux-foo-src contains reference to TMPDIR
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+So this change brings us one step closer to make the build result
+reproducible independent of the build path.
 
-yamllint warnings/errors:
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+---
+ drivers/video/logo/pnmtologo.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/interrupt-controller/renesas,sh7751-irl-ext.example.dtb: interrupt-controller@a4000000: #interrupt-cells:0:0: 2 was expected
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/renesas,sh7751-irl-ext.yaml#
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/8d8dec2d75890f3a14632c9606c332fb11d89a95.1712207606.git.ysato@users.sourceforge.jp
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
+diff --git a/drivers/video/logo/pnmtologo.c b/drivers/video/logo/pnmtologo.c
+index 2434a25afb64..59ccd721e8af 100644
+--- a/drivers/video/logo/pnmtologo.c
++++ b/drivers/video/logo/pnmtologo.c
+@@ -223,6 +223,18 @@ static inline int is_equal(struct color c1, struct color c2)
+ 
+ static void write_header(void)
+ {
++	const char *abs_srctree = getenv("abs_srctree");
++	const char *rel_filename;
++
++	if (abs_srctree &&
++	    !strncmp(abs_srctree, filename, strlen(abs_srctree))) {
++		rel_filename = filename + strlen(abs_srctree);
++		while (*rel_filename == '/')
++			++rel_filename;
++	} else {
++		rel_filename = filename;
++	}
++
+ 	/* open logo file */
+ 	if (outputname) {
+ 		out = fopen(outputname, "w");
+@@ -235,7 +247,7 @@ static void write_header(void)
+ 	fputs("/*\n", out);
+ 	fputs(" *  DO NOT EDIT THIS FILE!\n", out);
+ 	fputs(" *\n", out);
+-	fprintf(out, " *  It was automatically generated from %s\n", filename);
++	fprintf(out, " *  It was automatically generated from %s\n", rel_filename);
+ 	fputs(" *\n", out);
+ 	fprintf(out, " *  Linux logo %s\n", logoname);
+ 	fputs(" */\n\n", out);
+-- 
+2.39.2
 

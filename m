@@ -1,121 +1,152 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 097F61BDCD
-	for <linux-fbdev@vger.kernel.org>; Thu,  4 Apr 2024 16:44:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B6625337B;
+	Thu,  4 Apr 2024 16:48:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712249063; cv=none; b=aDWUdtRVtMSMTmJw1EdgXOrMwPTDvwC+luzQv0zgSJii65WqR1QZ3aDdSRiSt24gf7CrhOSvTU9Dgyb6ggUjeJyQbWXzx3um6K8PoAPbhZZ/sMbpvDhC7LmGMfN0dgRTng13v6yn4wlbQytAB1KJpQ1yXbvDnRR0GynGhEWFgak=
+	t=1712249327; cv=none; b=EHhKHln7ScCbeZ8fiZTyuojfILqzfORIZBN6KiQ7/bmISRSYB/LFhwrqwy8CKmXHXYFw3OogxYUp/2X3fdM6aQ+pSmPYotkjhT3guwM6hWVmR2oIIyOHLycBn4Gu3qShs68wAkVvX1SKEyvmPUMKvSNdMntSiSYGpJ1RPmxrULg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712249063; c=relaxed/simple;
-	bh=TZIfQPgqs7Z3WF96QK1RbB8zUhL/7+50O2ZLuWcegkE=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=LxN13+T5tW1kQNpdu0Z4hXKXKwqNIe/XPS4WpuNWu5WAbfg7tgutFdMeWlxuWT15aYS7fw8aCT/NKyCfDwoDjsaDpHZkE04PLuPhV2fFvrLlwWky+NPGkQqHP5R6WL+QUoU6noEiCzYhTRYligEW/pC8Z7ZN6MCLEdePTN/NqgE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[IPv6:::1])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <l.stach@pengutronix.de>)
-	id 1rsQCI-0000iB-KZ; Thu, 04 Apr 2024 18:44:18 +0200
-Message-ID: <6ae0c57c2176364c8001397d647f9d9fb792fba7.camel@pengutronix.de>
-Subject: Re: [PATCH] drivers: video: logo: Don't mention the full path of
- the input in output
-From: Lucas Stach <l.stach@pengutronix.de>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	kernel@pengutronix.de, patchwork-lst@pengutronix.de
-Date: Thu, 04 Apr 2024 18:44:17 +0200
-In-Reply-To: <c3108939-9e6f-489d-9954-82bd6c2dd3b0@gmx.de>
-References: <20240404121824.3330254-1-l.stach@pengutronix.de>
-	 <c3108939-9e6f-489d-9954-82bd6c2dd3b0@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
+	s=arc-20240116; t=1712249327; c=relaxed/simple;
+	bh=f0ZUc9cVkTYbWSm7SlkoyeQqtebVeW+MGfGHY9LAnds=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XkIv6zwE50hT+qH/4962mP55oKdMlopZnvJYnZQJIW8Qyl4IlaQdkQx1KLzxF4bNjxGb4IenYuop5uRB+Nz6/2IBGpdpcXZovcNLQdxmOD+jXUugf88bhrxYz6OqcbZC1cda4j4VzASQ7742PPTmqG+w+56byOifBfuiOEHwpVU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=K6ovYBBY; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="K6ovYBBY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 01DCEC433B2;
+	Thu,  4 Apr 2024 16:48:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712249327;
+	bh=f0ZUc9cVkTYbWSm7SlkoyeQqtebVeW+MGfGHY9LAnds=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=K6ovYBBYue9PM8NYfR7YR7xtB4whDjLcBUCl3DhZaB6oF3Hh1QGo6IYwTa/jtb5IV
+	 SJSicYDiRwiOCN8IdaRtBdQgTDx1J53CG/bVCcE3xEegd0umAbjISGW/i47PcRqajk
+	 6GusCggLy9XxctVsC27cT9gPXSN68HdIomjHPQqEf7MGLpTX2J+GA02Jhv3z9sEIcu
+	 65JnbqsBAWB829JqkRYC/EjjscXNWSQN7HrbuoEawtyWxiSONajpsAJrveIvGHapUV
+	 T0bVd8ses2r9LgZR3jSv8xmzMpBeq97ITtsq+hOSE3+YFElkoStrsuFrGW0OOHCGyw
+	 eNETT5AZQt1Sg==
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-2d700beb60bso21464621fa.1;
+        Thu, 04 Apr 2024 09:48:46 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCU5vi4+zUMV6D5P1DLp9/oBQeYc8fDZQwMNZxiHvpIU8X+ReWTEGqfwm6JgE3WJjgUlOEflw+ryKJrOHcmZ0d7tNkzhB0TnTEQTrxnv3dWBJ7EwjjX5CPTuc5z6Ap1nLZvfQ2Csv0fges0Nrie0tWpWLyq4kWMjgXO4EKTK8OHSPaXxSJY6NSizB0zTohkmCxK8Zic54tKt2htiT/32VgeVT9JrUV3MI+x37YXulmkrZjqNP+SBcyEh/EkLJ9NY9VKhlaw9tvV7GpSpCzC+iBB7tesmAJ9MLgBliq/F2y53ur5CQ565Y6eLWF457YUeShDvFa0eY76UfQf0apUGLlQLIuWv/Bss9+5q0nWAOi5WMbnGkW9XevQ=
+X-Gm-Message-State: AOJu0YxjASAg226CYO0YGGxy83/2ltWxPq0Yd3EvARdsCK4UioKa9Osm
+	KmdUIrhjqXxJ1Li0oJTe4xui4IUoUvrC9ypOBsfDT1FOCZOuhBBfEOCqfTdb2MNcb4s/Ob7e6eK
+	7Hdr5WqFTc3lMorIieHg6Kx3wxg==
+X-Google-Smtp-Source: AGHT+IGA/B0Olc8HVdDCHlF8+fjMTjFHUiVbJhjDnxrx6ejO3lXuUhtHy5hp5vmBhc80/3eocgT9w6rQF0BvJQeGA5M=
+X-Received: by 2002:a05:651c:1417:b0:2d3:8c1f:c0ff with SMTP id
+ u23-20020a05651c141700b002d38c1fc0ffmr2449840lje.16.1712249325311; Thu, 04
+ Apr 2024 09:48:45 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
-X-SA-Exim-Mail-From: l.stach@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+References: <cover.1712207606.git.ysato@users.sourceforge.jp> <a4ce7771faec761b9bbb91ff6694a99e5bc293b6.1712207606.git.ysato@users.sourceforge.jp>
+In-Reply-To: <a4ce7771faec761b9bbb91ff6694a99e5bc293b6.1712207606.git.ysato@users.sourceforge.jp>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 4 Apr 2024 11:48:32 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqLG+v1ujhMM45dQcMXiQkCvjif3pAWZxgeAcKFMe9Sy9Q@mail.gmail.com>
+Message-ID: <CAL_JsqLG+v1ujhMM45dQcMXiQkCvjif3pAWZxgeAcKFMe9Sy9Q@mail.gmail.com>
+Subject: Re: [RESEND v7 06/37] sh: kernel/setup Update DT support.
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
+	Niklas Cassel <cassel@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner <tglx@linutronix.de>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>, 
+	Heiko Stuebner <heiko.stuebner@cherry.de>, Shawn Guo <shawnguo@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+	Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, 
+	David Rientjes <rientjes@google.com>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
+	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Kefeng Wang <wangkefeng.wang@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, 
+	Javier Martinez Canillas <javierm@redhat.com>, Guo Ren <guoren@kernel.org>, 
+	Azeem Shaikh <azeemshaikh38@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
+	Herve Codina <herve.codina@bootlin.com>, 
+	Manikanta Guntupalli <manikanta.guntupalli@amd.com>, Anup Patel <apatel@ventanamicro.com>, 
+	Biju Das <biju.das.jz@bp.renesas.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
+	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Am Donnerstag, dem 04.04.2024 um 15:15 +0200 schrieb Helge Deller:
-> On 4/4/24 14:18, Lucas Stach wrote:
-> > This change strips $abs_srctree of the input file containing the
-> > PNM data in the generated output. The motivation for this change
-> > is Yocto emitting a build warning
-> >=20
-> >      WARNING: linux-foo-6.8-r0 do_package_qa: QA Issue:
-> >      File /usr/src/debug/linux-foo/6.8-r0/drivers/video/logo/logo_linux=
-_clut224.c
-> >      in package linux-foo-src contains reference to TMPDIR
-> >=20
-> > So this change brings us one step closer to make the build result
-> > reproducible independent of the build path.
-> >=20
-> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > ---
-> >   drivers/video/logo/pnmtologo.c | 14 +++++++++++++-
-> >   1 file changed, 13 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/drivers/video/logo/pnmtologo.c b/drivers/video/logo/pnmtol=
-ogo.c
-> > index 2434a25afb64..59ccd721e8af 100644
-> > --- a/drivers/video/logo/pnmtologo.c
-> > +++ b/drivers/video/logo/pnmtologo.c
-> > @@ -223,6 +223,18 @@ static inline int is_equal(struct color c1, struct=
- color c2)
-> >=20
-> >   static void write_header(void)
-> >   {
-> > +	const char *abs_srctree =3D getenv("abs_srctree");
-> > +	const char *rel_filename;
-> > +
-> > +	if (abs_srctree &&
-> > +	    !strncmp(abs_srctree, filename, strlen(abs_srctree))) {
-> > +		rel_filename =3D filename + strlen(abs_srctree);
-> > +		while (*rel_filename =3D=3D '/')
-> > +			++rel_filename;
-> > +	} else {
-> > +		rel_filename =3D filename;
-> > +	}
-> > +
-> >   	/* open logo file */
-> >   	if (outputname) {
-> >   		out =3D fopen(outputname, "w");
-> > @@ -235,7 +247,7 @@ static void write_header(void)
-> >   	fputs("/*\n", out);
-> >   	fputs(" *  DO NOT EDIT THIS FILE!\n", out);
-> >   	fputs(" *\n", out);
-> > -	fprintf(out, " *  It was automatically generated from %s\n", filename=
-);
-> > +	fprintf(out, " *  It was automatically generated from %s\n", rel_file=
-name);
->=20
-> can't you use instead: ?
-> > +	fprintf(out, " *  It was automatically generated from %s\n", basename=
-(filename));
->=20
-The difference to basename is that this keeps the path in the source
-tree intact, e.g. it shortens the absolute path to
-"drivers/video/logo/logo_linux_clut224.c", so the comment in the
-generated file still has a full reference to the file location in the
-source tree. It only strips out the part of the path that is host
-dependent.
+On Thu, Apr 4, 2024 at 12:15=E2=80=AFAM Yoshinori Sato
+<ysato@users.sourceforge.jp> wrote:
+>
+> Fix extrnal fdt initialize and bootargs.
 
-Regards,
-Lucas
+What is the problem you are trying to solve?
 
-> Helge
->=20
->=20
-> >   	fputs(" *\n", out);
-> >   	fprintf(out, " *  Linux logo %s\n", logoname);
-> >   	fputs(" */\n\n", out);
->=20
+And a typo.
 
+>
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> ---
+>  arch/sh/Kconfig             | 23 +++++++++++------------
+>  arch/sh/include/asm/setup.h |  1 +
+>  arch/sh/kernel/setup.c      | 36 +++++++++++++++++++++++-------------
+>  3 files changed, 35 insertions(+), 25 deletions(-)
+>
+> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+> index 6711cde0d973..242cf30e704d 100644
+> --- a/arch/sh/Kconfig
+> +++ b/arch/sh/Kconfig
+> @@ -708,17 +708,22 @@ config ROMIMAGE_MMCIF
+>           first part of the romImage which in turn loads the rest the ker=
+nel
+>           image to RAM using the MMCIF hardware block.
+>
+> +config CMDLINE
+> +       string "Kernel command line arguments string"
+> +       default "console=3DttySC1,115200"
+> +
+>  choice
+>         prompt "Kernel command line"
+> -       optional
+> -       default CMDLINE_OVERWRITE
+> -       depends on !OF || USE_BUILTIN_DTB
+> +       default CMDLINE_BOOTLOADER
+> +
+> +config CMDLINE_BOOTLOADER
+> +       bool "Use bootloader kernel arguments"
+
+This should be the preferred, normal, default way. So why is it a user
+visible option?
+
+>         help
+> -         Setting this option allows the kernel command line arguments
+> -         to be set.
+> +         Uses the command-line options passed by the boot loader.
+> +         If boot loader dosen't provide kernel argments, Use built-in ar=
+gments.
+
+typos
+
+bootloader in some spots, "boot loader" in others. Go with the former.
+
+>
+>  config CMDLINE_OVERWRITE
+> -       bool "Overwrite bootloader kernel arguments"
+> +       bool "Overwrite built-in kernel arguments"
+
+The original made more sense to me. The default should be to use
+bootloader args. Any built-in kernel command line should be prepend,
+append (extend), or overwrite/replace.
+
+Rob

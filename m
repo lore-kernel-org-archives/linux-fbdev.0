@@ -1,118 +1,127 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5D1E76AB6;
-	Fri,  5 Apr 2024 16:30:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF06917108E
+	for <linux-fbdev@vger.kernel.org>; Fri,  5 Apr 2024 16:58:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712334622; cv=none; b=X+dGDtMA5WYPLN63jCyQtuYGwjr7hnu0YVKXDxbEuF6VqqD+WykxglO3Nk6orTE71Q3mXuVoglEaocm9am8l5DBDPOZo45oBISQkA5kqPK5j5X8cVKbYrLA33V4xN4+jhQmUq5HdA/V34ecjWr7ms0w+VsV+CMgBJoQpFumpfFY=
+	t=1712336286; cv=none; b=JzwwJx/9piea0/vRXq2irkn41gVNUY4hlPgZu9EwCCbBp0MkRivV/3ecBjrlz7picsqEf3TkBXXBGbb6e0LEs0myKt+y/pvoIvi3hd0e3ViYaKCMjd+lEKXXEZr2X9retyP+vFHu8Na2qu7hHZCiaOADam7YqFN0AHTLvANGP0Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712334622; c=relaxed/simple;
-	bh=JoKQWpVUXVsBSo1x1Idtb87+5vnLdbcK1yTV2XBkRHc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bUyhZB1RStGHVkEYGZM+Tqe13OHbSzo8cVhdOVChogPoH7TO2G1coozSnTsTwvl4TyHPZMI88vZLsuS+V1Vq/VcYwWTBLcon6eJhCnWOVJuBwWsXQX7RPRK4Y/0KB8gYb/3rg21iD+NDKaOjmRfrE2+tg/wzQ3KytfZNP8v961U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=DvATwmVZ; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+	s=arc-20240116; t=1712336286; c=relaxed/simple;
+	bh=5AW1eKgNf7MUu4dM7zRPWY+xw2bFTvlrZtGPjFMFryk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wq/QIOCKU5fr/+KMW3UTFCzZwjEcUfTdRIRsRUY32Sa8fzWvmGNpqGqrT9hbRCxcPESpWUXiTaET91LRLHKl3eQC6ySybEJ3a5TUNQ7HGrxaUuIVNR8eiQGkcjawHyBNkklDW5lbsuylie2ZpSeeUuNl3geMXoi7JgPGl1b9nSM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZdGD97Az; arc=none smtp.client-ip=209.85.210.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="DvATwmVZ"
-Received: from [100.64.217.16] (unknown [20.29.225.195])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 6099820E98B9;
-	Fri,  5 Apr 2024 09:30:14 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 6099820E98B9
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1712334614;
-	bh=w130JaeBPpS+L9M4QU8ZQXXwRcANcq5ZUO69X1bKRmU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=DvATwmVZCnu2mWeOkHNjSOn3NP+uGroDac1iSpu2wd+v3d//PQw85B2Bdx0Po6Lvd
-	 ZjMGVuaZ73P4XTz+rG7byN35W0KUrpl5gZ3alXfZ8frHGqOGX4PxPO84VA9eudZIJk
-	 732o/mFjv1LuWV0m4a0o7Gs9Fy/VV5ERgAzWEo3E=
-Message-ID: <e6b04b76-c695-47b4-9432-f2316e174585@linux.microsoft.com>
-Date: Fri, 5 Apr 2024 09:30:13 -0700
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZdGD97Az"
+Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-6ecf406551aso1566925b3a.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 05 Apr 2024 09:58:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1712336284; x=1712941084; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=VxOrpUcgWV1BIbN70ZBNYzAG96ZmcBy16Bx9JpTxO+Y=;
+        b=ZdGD97AzgpYGmeDMhyvJLmYFU81/b5Esk7PtWUCXapuQp4NHZywdE6hF5EjuLPVQ3+
+         kF/JJjC0MkZ43sbv7UUtxeo03i/zCK68iW0OQDiZgmPmDLY8S7HPOi/lIxYvu4EFokub
+         PXRilZyikkA7gfJGWDN1+uC9QL1sabQz+Wjv0ak8taECpSdjZcVVBn/5nMMrutGJ0Tjo
+         2HZqVRVFEeDeaE2Q9fbWDxgF618E7BD7nWOPAAZLqKTmdkSVmrFf2mK+TYWmVLcdOtcp
+         KHuotfO3O6tVzO1f0XMzP5FSRGmPw4ZB0WImnfB5Y/y8zw0eLTUIDvtDVoWsouWyc8Xx
+         xzJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712336284; x=1712941084;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VxOrpUcgWV1BIbN70ZBNYzAG96ZmcBy16Bx9JpTxO+Y=;
+        b=dpTwQbUC1tO+bHGyuF8g74qFzeFT2TJ2Gi9Cfk5BXVlRJsyPM6eteva0HJIKrVoaMk
+         wwTHLfDKQ6AVSnuGX6IZSC+FTJquPjVU6ycxvlIXp1WHIdt5vnKEbXmBvaNSSGTFVTe9
+         0uZ2uvmU+XtWF3OuYoad6cEFJsJgyaUK9E/eAQ7fjF5cUkWocArx2mb9+G3p7imZlYmS
+         iW7JHRbzCtVQiQqWXbDxH0JGQ55CnoSkS8A6qcKBwW/EBR2E3qwBAbW//ES894IuaD3x
+         e+X112Hmjsvxw6EE1wtPY5DuUbLGu/FkvzA0Z5D1aegxDG8ybVQrLag7PuAZyOZjBIun
+         3IuQ==
+X-Gm-Message-State: AOJu0YzWOEJxIaPeqwKxZkGbqdMrvtN7wNITBBXZgTT3aTlhX3JLlijd
+	aEDdr6AgMytvhDNw850K63K2AMwutQ+xGJzGN9UVLgUz1A3pvKwOa9Ud2ENDdyST5kI95Us=
+X-Google-Smtp-Source: AGHT+IF8+QcgSzXuJgKfFeVtRFmbVoLvx0pIjuAHQZQ5xpIO1ad1rxcl4fMvBNa0DNG870OGXhAphg==
+X-Received: by 2002:a05:6a00:6508:b0:6ec:d950:fd59 with SMTP id hc8-20020a056a00650800b006ecd950fd59mr1796570pfb.29.1712336283914;
+        Fri, 05 Apr 2024 09:58:03 -0700 (PDT)
+Received: from localhost.localdomain ([168.138.41.106])
+        by smtp.gmail.com with ESMTPSA id c17-20020aa78c11000000b006ed0199bd57sm1447393pfd.177.2024.04.05.09.58.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Apr 2024 09:58:03 -0700 (PDT)
+From: purofle <purofle@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-staging@lists.linux.dev,
+	gregkh@linuxfoundation.org,
+	purofle <purofle@gmail.com>
+Subject: [PATCH] staging: fbtft: fb_st7789v: support setting offset
+Date: Sat,  6 Apr 2024 00:57:47 +0800
+Message-ID: <20240405165747.93377-1-purofle@gmail.com>
+X-Mailer: git-send-email 2.44.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v0 13/14] drm/nouveau: Make I2C terminology more inclusive
-To: Danilo Krummrich <dakr@redhat.com>, Karol Herbst <kherbst@redhat.com>,
- Lyude Paul <lyude@redhat.com>, David Airlie <airlied@gmail.com>,
- Daniel Vetter <daniel@ffwll.ch>,
- "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
- <dri-devel@lists.freedesktop.org>,
- "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
- <nouveau@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
- "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
- "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
- <intel-gfx@lists.freedesktop.org>,
- "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
- <intel-xe@lists.freedesktop.org>,
- "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
- "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
- "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
-References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
- <20240329170038.3863998-14-eahariha@linux.microsoft.com>
- <4dc6fb16-3d85-4a7f-85f9-ed249da0df1a@redhat.com>
-Content-Language: en-CA
-From: Easwar Hariharan <eahariha@linux.microsoft.com>
-In-Reply-To: <4dc6fb16-3d85-4a7f-85f9-ed249da0df1a@redhat.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 4/5/2024 9:15 AM, Danilo Krummrich wrote:
-> Hi Easwar,
-> 
-> On 3/29/24 18:00, Easwar Hariharan wrote:
->> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
->> with more appropriate terms. Inspired by and following on to Wolfram's
->> series to fix drivers/i2c/[1], fix the terminology for users of
->> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
->> in the specification.
->>
->> Compile tested, no functionality changes intended
->>
->> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
->>
->> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
->> ---
->>   drivers/gpu/drm/nouveau/dispnv04/dfp.c             | 14 +++++++-------
->>   .../gpu/drm/nouveau/include/nvkm/subdev/bios/dcb.h |  2 +-
->>   drivers/gpu/drm/nouveau/nouveau_bios.c             |  4 ++--
->>   3 files changed, 10 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/nouveau/dispnv04/dfp.c b/drivers/gpu/drm/nouveau/dispnv04/dfp.c
->> index d5b129dc623b..65b791006b19 100644
->> --- a/drivers/gpu/drm/nouveau/dispnv04/dfp.c
->> +++ b/drivers/gpu/drm/nouveau/dispnv04/dfp.c
->> @@ -149,7 +149,7 @@ void nv04_dfp_update_fp_control(struct drm_encoder *encoder, int mode)
->>       }
->>   }
->>   -static struct drm_encoder *get_tmds_slave(struct drm_encoder *encoder)
->> +static struct drm_encoder *get_tmds_client(struct drm_encoder *encoder)
->>   {
->>       struct drm_device *dev = encoder->dev;
->>       struct dcb_output *dcb = nouveau_encoder(encoder)->dcb;
->> @@ -172,7 +172,7 @@ static struct drm_encoder *get_tmds_slave(struct drm_encoder *encoder)
->>           struct dcb_output *slave_dcb = nouveau_encoder(slave)->dcb;
->>             if (slave_dcb->type == DCB_OUTPUT_TMDS && get_slave_funcs(slave) &&
->> -            slave_dcb->tmdsconf.slave_addr == dcb->tmdsconf.slave_addr)
->> +            slave_dcb->tmdsconf.client_addr == dcb->tmdsconf.client_addr)
->>               return slave;
-> 
-> While, personally, I think master/slave was well suiting for the device relationship
-> on those busses, I think that if we change it up to conform with the change in
-> specification, we should make sure to update drivers consistently.
-> 
-> We should make sure to also change the names of the sourrounding structures and variable
-> names, otherwise we just make this code harder to read.
-> 
-> - Danilo
-> 
+Some screen sizes using st7789v chips are different from 240x320,
+and offsets need to be set to display all images properly.
 
-Thanks for the review, and for the appetite to go further! So we are on the same page, you would prefer
-renaming to controller/target like the feedback on other drm drivers (i915, gma500, radeon)?
+Signed-off-by: purofle <purofle@gmail.com>
+---
+ drivers/staging/fbtft/fb_st7789v.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-Thanks,
-Easwar
+diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
+index 861a15414..d47ab4262 100644
+--- a/drivers/staging/fbtft/fb_st7789v.c
++++ b/drivers/staging/fbtft/fb_st7789v.c
+@@ -30,6 +30,12 @@
+ 
+ #define HSD20_IPS 1
+ 
++#define WIDTH 240
++#define HEIGHT 320
++
++#define LEFT_OFFSET 0
++#define TOP_OFFSET 0
++
+ /**
+  * enum st7789v_command - ST7789V display controller commands
+  *
+@@ -349,6 +355,21 @@ static int set_gamma(struct fbtft_par *par, u32 *curves)
+ 	return 0;
+ }
+ 
++static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
++{
++	unsigned int x = xs + TOP_OFFSET, y = xe + TOP_OFFSET;
++
++	write_reg(par, MIPI_DCS_SET_COLUMN_ADDRESS, (x >> 8) & 0xFF, xs & 0xFF,
++		  (y >> 8) & 0xFF, xe & 0xFF);
++
++	x = ys + LEFT_OFFSET, y = ye + LEFT_OFFSET;
++
++	write_reg(par, MIPI_DCS_SET_PAGE_ADDRESS, (x >> 8) & 0xFF, ys & 0xFF,
++		  (y >> 8) & 0xFF, ye & 0xFF);
++
++	write_reg(par, MIPI_DCS_WRITE_MEMORY_START);
++}
++
+ /**
+  * blank() - blank the display
+  *
+@@ -379,6 +400,7 @@ static struct fbtft_display display = {
+ 		.set_var = set_var,
+ 		.set_gamma = set_gamma,
+ 		.blank = blank,
++		.set_addr_win = set_addr_win,
+ 	},
+ };
+ 
+-- 
+2.44.0
 

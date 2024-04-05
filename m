@@ -1,147 +1,121 @@
-Received: from mail-oo1-f68.google.com (mail-oo1-f68.google.com [209.85.161.68])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC2D416D318;
-	Fri,  5 Apr 2024 14:27:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.68
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0672016F917;
+	Fri,  5 Apr 2024 15:43:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712327266; cv=none; b=nCjVEGPGRp8CDWnDa5m21wvI0sv/BAN5Rwlmx4v1TLJkX+u5dJogxHgyxu70EpC1hTYd6GwmDRimzQeI3YgRpXvaZyGMkcSrDxjrbJjjoQAmi0/IxjkeqG/2jV5ToFZt///XgsbyA9vAPW4IavBFfUlMfDqD0+sTcg2CTYBdqwk=
+	t=1712331825; cv=none; b=Jq9k1sQ1POgcUI4GfyguIflZExuM5K8cWyKKdkP+RkZOg39hIp11pCmyvvfI5RQXqlL9ziakM16uUtdtK3lluN+97/0FvCQkEvUDCqZnOWZrZBOYCEL02mas7wF9m1PwmRq4llwnTPxWXc75Q9+DJ7AVmdjun9Xo/PM8QFPihnY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712327266; c=relaxed/simple;
-	bh=txEEOwGjitw5rYbE/djW7+ZIv3gDGXm7WfJRnMoiIpc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lC5PA6t0dEz9Qe9B0/6A+EfvB85FUtV9Aj0vz31vylYOHroDwJXPt1fXkGhkWeVesp7+lBunadSSYmX/qPbTgV8i1ZXfT+HfGgtzp1YyT72hUSQifgUeunKyvCd4vFMiowr5X+zpCfGEo/bCtJOkihULJcmdBtgDh9NSJWYSrAQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.161.68
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oo1-f68.google.com with SMTP id 006d021491bc7-5a9ec68784cso630986eaf.2;
-        Fri, 05 Apr 2024 07:27:44 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712327264; x=1712932064;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PocJzIJm9BmbxkIOP3QKpq0ppKs7IoB/uMDxWflb82Q=;
-        b=Ej0LcxuzAzpqLtxsBDs5INfO0bVTvSutmGch2FeGi4aH1gUgVd7Om+65NdgukYI2Jx
-         LvHanbFp9LoqY0NBnoKIhBD/mA14jqQ5kpwLvzrbdta2Os9SrxJ6FvjothH/xJF2jQWY
-         ant4amW0MoUoM2Rb7AAmFnFsKc5M+89ZdMSip5hFeSBfbOWVLMPKLbKHNDo9ZmjZ3pXq
-         oVuQll8urXmCSzDVUejFuXZxn7yyPkW3ts30Gc7DHfEEvtyxFCtQICCzhp5vgDc9Eh2T
-         zL10TFlO8kPvJvR3Gqu7E4hqFNeEv+hqrUERN829yRs/UgA0flL6FirlYTHjzjG/wFCa
-         40nA==
-X-Forwarded-Encrypted: i=1; AJvYcCUEsLCt6GAsPxamr3GPvD0Bi6/RE60k+pncQoArtURGpH94Xo4ylaNPZebgnKT0LuLVPrMIgl4gPoORARSB0fAui3+nxNCwPf2dSNyKNdUz4aZtAzrTfnPbtGDbFIelVCUTEkyilTf2/82jHkPyFpJGQzFNuTZOm6tPxValcV4jhBuWjBe5TvTNMyn0axxKvky92otKiPNHnn9xoqeyoj+/KjoYU8xxm2jl8XWCh/KlTlQSGES3TYzwsvvnunKK6YPr70SjOH+ii/eQqBp6qCu1gvR29E7AedQ5Uxu0SPVraeLGprCVbax+F7LQtWOC/D+6C0dYwmropJJbP7wQ4+ifFWen2uUmhlzF+9+oBGrZoiOD/O9Dr2M=
-X-Gm-Message-State: AOJu0YzliBBMMdH5OU0mGt2056PuEb+J8BmrAZEPYPbg+iTwNC+I0req
-	jQHJafjzzarLa6ZZXlZ+25J0YVWqIZh5k4bIHcUyKshYfjrDr6oqhN79LKh+JEDLyg==
-X-Google-Smtp-Source: AGHT+IG33HrZubBpzY8CpjRIQwVD80jMhPy2dSPTMGLUVGxGflRdQJ0BZwQCntKNtwbopvefvVBfOQ==
-X-Received: by 2002:a0d:c845:0:b0:610:ca8b:9a1a with SMTP id k66-20020a0dc845000000b00610ca8b9a1amr1164098ywd.46.1712320862179;
-        Fri, 05 Apr 2024 05:41:02 -0700 (PDT)
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com. [209.85.219.176])
-        by smtp.gmail.com with ESMTPSA id jw1-20020a05690c74c100b006144dd11472sm331431ywb.83.2024.04.05.05.41.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 05 Apr 2024 05:41:02 -0700 (PDT)
-Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-dc74e33fe1bso2067042276.0;
-        Fri, 05 Apr 2024 05:41:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCV0xJzsjm2isj8Cc+w+NQb30rBTV98QfS4Uo5wL6Sr0oiul+gz+xIigjwnQ8P6Hv4wksmkydeB6mzO+9oMQPmPq7BnWrD6FVyoUurMotxGzeXkyp8FQ94Z6cKYTwS2g/vzAlrYTtkYV7ThBiZU03NlEbeUw74VWdoAQM4r8WeQHHDWkL1HDyV6D3UHz6WatyOjpv93Mf5OlXEn5I+1xVEr5Sq3BnGNmowDyfTEVpA9n0PM3tzJny1j+CCgVqm5AoYJNDDB/DxAbHmjf5R9cY0Fjbxina0zMeRKHDsCtKlb9GrztaU04qKbWhTFtknnQiqPJGdSdQMnQSwtaV5aa7b5hB9XkL0uohwER8VgW3t7MjkrVEv73TTQ=
-X-Received: by 2002:a05:6902:c06:b0:dcf:56c5:4298 with SMTP id
- fs6-20020a0569020c0600b00dcf56c54298mr1422009ybb.12.1712320861884; Fri, 05
- Apr 2024 05:41:01 -0700 (PDT)
+	s=arc-20240116; t=1712331825; c=relaxed/simple;
+	bh=GLYjitsvkl7e7DDPD5ICwfMOzIGkz/pBD2SvMceBBKo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=hvr11bvElZNlVzl9bZxOKTd3ZyXFM3Vl5QX+DDzxNubaOCpkuaWdz9zXH3UH8hT160J/KTgsUC+HCzb6ZAjtrnOBq8HIuwTI5P+qjVVZMw1TBHJqhd5bMXp1I5Q6wEGba3R/6WmPu1YzXUxHFIpl53g/cdwxEKfn1SnFd8Gq3mo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=qb93qjIV; arc=none smtp.client-ip=148.163.156.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="qb93qjIV"
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 435ERLCp007273;
+	Fri, 5 Apr 2024 15:43:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=Ud3E4K/jMbq9dT0lA4HOVwcj6RCy+VLBGogAjeFdCZg=;
+ b=qb93qjIVL0Y+3bQbSiOSj5+AVMnePnzdV3rTBfYuWD0nGMTf/ZQCaCOr1JjOla3+4+xR
+ iJXkCjaZqnXc1DLMkrkHMGjlIvMfHyaH90PosRmc7m7+bJPzgJMJRGIU2GiVdcmHi3Or
+ JQI6DDjH8CtBdQC5k+/0wuAdb44XNayhryJ6f3ZmNIJ/YKIZtBgyob2/+4/jRtThoRXc
+ jHOqAVUjlJ635CFWP95irqZqHvGqJ8rPDivMs9K4f5eMLTs0SNdOF7BD3+4Y2nqsOY4a
+ dXdd99/RJHvNWxMrrFNX4wdY/n+Xe0YtgFaZj5c3irCWNplMhjmZvV4/yBOs/e/wTiFb yQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xak2rr8v2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 05 Apr 2024 15:43:39 +0000
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 435Fhdkk015292;
+	Fri, 5 Apr 2024 15:43:39 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xak2rr8v1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 05 Apr 2024 15:43:39 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 435CxA5w008681;
+	Fri, 5 Apr 2024 15:43:38 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3x9epwb997-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 05 Apr 2024 15:43:37 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 435FhW3a31130302
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 5 Apr 2024 15:43:34 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4113020043;
+	Fri,  5 Apr 2024 15:43:32 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1092D20040;
+	Fri,  5 Apr 2024 15:43:32 +0000 (GMT)
+Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  5 Apr 2024 15:43:32 +0000 (GMT)
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Arnd Bergmann <arnd@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+        linux-kernel@vger.kernel.org, Niklas Schnelle <schnelle@linux.ibm.com>
+Subject: [PATCH 0/1] vgacon: Handle HAS_IOPORT dependencies
+Date: Fri,  5 Apr 2024 17:43:30 +0200
+Message-Id: <20240405154331.292421-1-schnelle@linux.ibm.com>
+X-Mailer: git-send-email 2.40.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: M_PwfAPfdO4op4D1Ug7JiyYPfxxX23BG
+X-Proofpoint-ORIG-GUID: 3H4jt0DmnB4aMS1B2rnZS9r3XQpwDgm-
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1712207606.git.ysato@users.sourceforge.jp> <1db8627e4ca50b9d2d27e95d245518cac1cd62dc.1712207606.git.ysato@users.sourceforge.jp>
-In-Reply-To: <1db8627e4ca50b9d2d27e95d245518cac1cd62dc.1712207606.git.ysato@users.sourceforge.jp>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 5 Apr 2024 14:40:50 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWnioh8er_xDvEY8ny9TgEyfb9AR-p2paS7D4OrbKykvg@mail.gmail.com>
-Message-ID: <CAMuHMdWnioh8er_xDvEY8ny9TgEyfb9AR-p2paS7D4OrbKykvg@mail.gmail.com>
-Subject: Re: [RESEND v7 13/37] dt-bindings: clock: sh7750-cpg: Add
- renesas,sh7750-cpg header.
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
-	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner <tglx@linutronix.de>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>, 
-	Heiko Stuebner <heiko.stuebner@cherry.de>, Shawn Guo <shawnguo@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, 
-	David Rientjes <rientjes@google.com>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
-	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Kefeng Wang <wangkefeng.wang@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Guo Ren <guoren@kernel.org>, 
-	Azeem Shaikh <azeemshaikh38@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Herve Codina <herve.codina@bootlin.com>, 
-	Manikanta Guntupalli <manikanta.guntupalli@amd.com>, Anup Patel <apatel@ventanamicro.com>, 
-	Biju Das <biju.das.jz@bp.renesas.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-05_16,2024-04-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
+ spamscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501 mlxscore=0
+ malwarescore=0 clxscore=1015 phishscore=0 mlxlogscore=999 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2404010000
+ definitions=main-2404050112
 
-Hi Sato-san,
+Hi Greg, Helge,
 
-Thanks for the update!
+This is a follow up in my ongoing effort of making inb()/outb() and
+similar I/O port accessors compile-time optional. Previously I sent this
+as a treewide series titled "treewide: Remove I/O port accessors for
+HAS_IOPORT=n" with the latest being its 5th version[0]. With a significant
+subset of patches merged I've changed over to per-subsystem series. These
+series are stand alone and should be merged via the relevant tree such
+that with all subsystems complete we can follow this up with the final
+patch that will make the I/O port accessors compile-time optional.
 
-On Thu, Apr 4, 2024 at 7:15=E2=80=AFAM Yoshinori Sato
-<ysato@users.sourceforge.jp> wrote:
->
-> SH7750 CPG Clock output define.
+The current state of the full series with changes to the remaining subsystems
+and the aforementioned final patch can be found for your convenience on my
+git.kernel.org tree in the has_ioport branch[1]. As for compile-time vs runtime
+see Linus' reply to my first attempt[2].
 
-(from my comments on v6) Please improve the patch description.
+Thanks,
+Niklas
 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+[0] https://lore.kernel.org/all/20230522105049.1467313-1-schnelle@linux.ibm.com/
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/niks/linux.git/log/?h=has_ioport
+[2] https://lore.kernel.org/lkml/CAHk-=wg80je=K7madF4e7WrRNp37e3qh6y10Svhdc7O8SZ_-8g@mail.gmail.com/
 
-> index 000000000000..04c10b0834ee
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/clock/renesas,sh7750-cpg.yaml
+Niklas Schnelle (1):
+  vgacon: add HAS_IOPORT dependencies
 
-The actual bindings LGTM.
+ drivers/video/console/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/sh7750-cpg.h>
-> +    cpg: clock-controller@ffc00000 {
-> +        #clock-cells =3D <1>;
-> +        #power-domain-cells =3D <0>;
-> +        compatible =3D "renesas,sh7751r-cpg";
-> +        clocks =3D <&extal>;
-> +        clock-names =3D "extal";
-> +        reg =3D <0xffc00000 20>, <0xfe0a0000 16>;
-> +        reg-names =3D "FRQCR", "CLKSTP00";
-> +        renesas,mode =3D <0>;
-> +    };
+-- 
+2.40.1
 
-Please read
-https://docs.kernel.org/devicetree/bindings/dts-coding-style.html#order-of-=
-properties-in-device-node
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

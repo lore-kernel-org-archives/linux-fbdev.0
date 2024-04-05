@@ -1,133 +1,115 @@
-Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com [209.85.219.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0C991607A6
-	for <linux-fbdev@vger.kernel.org>; Fri,  5 Apr 2024 10:18:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.117.254.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9450316DEA5;
+	Fri,  5 Apr 2024 12:32:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712312323; cv=none; b=tFVXZ94E2Dfgfd9cH0hNGWAFLqKkGR4MMu3tlODLf3N2bLCGPxQDi//MQl82ehKIaBhSpdV1XGuFJJeBhHsmvlrn3DTV/Fjrk16Q42sMQDemtrR5DyCnmlu1KVVuQvc4bu6AHapkST0oA0mwX7Ktn5YtwfIG/1or0xZCjbYBLjU=
+	t=1712320332; cv=none; b=oin4xQYxqoesX1p7kEm88v1LcIh7REm/H1Rzpb9u+5UluRhArQVu0C6F+EwJ4U5jRNnSUQA5wFLx+QDL2gItMyysVApvupI2zBKHch2nkVx9Qe3zwHJRr294onE7ngZYvGsvxvzuo7ktMiwi1BHNkjXxsUkwxu4NmzDKUeCOCSM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712312323; c=relaxed/simple;
-	bh=5fZz+hrMjs1KcvnTZOEbAJMZkLsCTGpJnRmjeSMAJeQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n5/Be8LL3kO1PL5yujXK0E2+H1cYPfwEFcGOElr6lYixYAIbMD1v/nGlZQE3mVKHin/6LRnrkw8/0zl3tUhWC0NEXNB6lquGGYAQ2c/a+GdHng4VIi49gob368pXi7uRnN3XJr93VwAxxlfiAIunav0a0fGrZ+yfNRh7DWGcug8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; spf=pass smtp.mailfrom=sang-engineering.com; dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b=TbhXudkY; arc=none smtp.client-ip=194.117.254.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="TbhXudkY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	sang-engineering.com; h=date:from:to:cc:subject:message-id
-	:references:mime-version:content-type:in-reply-to; s=k1; bh=XRZ/
-	7f9TpBVm+EqkcIlzKupPDZE9c/6S0MGx+T9aWhU=; b=TbhXudkYnme5n6iHh1a7
-	RBdhDu2GT6+9PAy8ABhR4DJ4AFeu9vn7KF9NnItdIjxg3lODlyxOWMQzmHvBjUuV
-	6C2iJlxx9lPXa2C8k2zkTkCSAQ80w4ipFFE24BRkYFzXyEK7FP0vMNw5j1O2wMwt
-	rY3DTBf3ZIZFcTyDbCkD+x2BtRIlE2QfpykSPGqfi0fAa4E69G+hgGGV7l0hOuGb
-	eRpF0U2crVKhUWxUBjAZhcKkAmkgy6/e5eOeLvTbIQriGrx9zqcvXZvr+o3oYemF
-	ZV3lsTAHA9m7SGPcs05kwS6QKI/86ISnt7+jeteV6CxjkYrq8U88Su9gL7GEhrTR
-	qA==
-Received: (qmail 4072572 invoked from network); 5 Apr 2024 12:18:37 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 5 Apr 2024 12:18:37 +0200
-X-UD-Smtp-Session: l3s3148p1@a0Brx1YVfIUgAwDPXwEGAANOsN0UmmrN
-Date: Fri, 5 Apr 2024 12:18:37 +0200
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-To: Easwar Hariharan <eahariha@linux.microsoft.com>
-Cc: 
-	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>, "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>, 
-	open list <linux-kernel@vger.kernel.org>, 
-	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>, 
-	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>, 
-	"open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS" <nouveau@lists.freedesktop.org>, 
-	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, 
-	"open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH v0 00/14] Make I2C terminology more inclusive for I2C
- Algobit and consumers
-Message-ID: <ffumcagmzdstcf3qcn3f26555pnu7i6azjppciyd4zvcoit7pv@vu262tsfnqyr>
-Mail-Followup-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Easwar Hariharan <eahariha@linux.microsoft.com>, 
-	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>, "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>, 
-	open list <linux-kernel@vger.kernel.org>, 
-	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>, 
-	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>, 
-	"open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS" <nouveau@lists.freedesktop.org>, 
-	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, 
-	"open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
-References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
+	s=arc-20240116; t=1712320332; c=relaxed/simple;
+	bh=RB1Wd/l8LoElaNdtvFRK6lkrvSeTO+EqCHYvOY2uo9k=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Vcd53BblRdWhkH3/OY2IylBbqdArQoDEDQAU89QBqfVv7YYdWsINkBCHusfKJcP3zgsQdZ2CCr85kOcRGLKq4Aw9se/dtPDwa1lwgpJqEJZXS/2eeMzDv2PUpKSeP7dzunik+V5eB0QO5QZVfX5OsvxsbEI7/fJu/cmUEWwciws=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.219.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yb1-f169.google.com with SMTP id 3f1490d57ef6-dcc71031680so2104444276.2;
+        Fri, 05 Apr 2024 05:32:10 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712320328; x=1712925128;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=/bPulDFyqKcNHOqZbTas5oGwjflVlb0IvXxADWNRbac=;
+        b=MPlvI2s8USkd0KUwDLyzT+44IipyacqoM3eSrOXEnaE+gq/5eri1jvCAFInTymt60z
+         REU/Xv5JsI4t7qr17Xnw+FIDmUxaLz7gsDwdCATDwL4saADckMYtHthVLdhZjH4WnVkI
+         HNmDc5maAvcDHpP8QIc+gi4SIJ7qQHSvwOpCpAw14M34yvFCdM4lTsL//m/wELHt3DrF
+         xCzxk0tHygg8yKgui6SNjP9VEBw9MCjbiZR9HYwoxG9s1tsg1f3UKX2ja26i2NdU7l6K
+         IF6LPaov4qX7thKBssjGWuISdK8f4InaEyHqbsyt6dnrBeG3EEVVFTShBlccg7+s9F3F
+         AZVQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWL5nURRwxemR+6FpvigBrmySRwBvKpTecJEy/+pr7a/EPAndTOjR1HayG/9Cwqlxk1bQHM9EH6lT/rfRGBLnCz1SSwBQ03t9FaEezpmkYkReHuLJhfU93oj3ltN6sRC0VvGpnpDpeqITVL8H3noqnNYVa7xvMWbD8HbQA0geo9wf9XXi30uxCvWsVdrgft6rHgcKw/6kreLrVOWUp0Zj7Ww+cJNduKmoj9PlChpSP6qyq+Yvwt4/i9VTAbDYg1js+vlRnsdYmQaXBe2BEK6VrEXkOIVoX48ghA6ij+LwxKLjzxYsUo9NLl9GydVMZRYi0SIQA0UqQ8fDy/6FdrKGj7Qx59s7lf0Ovu443QwAKZhY05OJRpi2g=
+X-Gm-Message-State: AOJu0YzEmVMQJ17wtrOGRxANtnDxvTZ4n3IIxa58hBJWlw07SqnqyyIe
+	Vhmkx6r/UINMq4po4OpwPVcvZiW/5XlcYCRpEU6lwQK/5/+1wIQOtr6wJq+Az4k=
+X-Google-Smtp-Source: AGHT+IGgevHEpkwMOS5F8pl4dvxc5ZuXVYL1BPsil8rGe3AWrEo/ncgGoEdKh0U9XNWHI/dLAToN5Q==
+X-Received: by 2002:a5b:ac6:0:b0:dc6:d457:ac92 with SMTP id a6-20020a5b0ac6000000b00dc6d457ac92mr984772ybr.31.1712320327715;
+        Fri, 05 Apr 2024 05:32:07 -0700 (PDT)
+Received: from mail-yw1-f181.google.com (mail-yw1-f181.google.com. [209.85.128.181])
+        by smtp.gmail.com with ESMTPSA id h4-20020a25b184000000b00dcf35be9f51sm284055ybj.24.2024.04.05.05.32.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 05 Apr 2024 05:32:07 -0700 (PDT)
+Received: by mail-yw1-f181.google.com with SMTP id 00721157ae682-6151d2489b4so23214527b3.0;
+        Fri, 05 Apr 2024 05:32:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWCCz7fA2Scgs08FC+THMGTgCJv9gl18fLbu1NXBD3XzOowX1J9JcPetsrnxejSXGejHF+zEgnxKFVCryqhlpXFJLiq8yL9Ok95qeT9dVG16h9hICUfo2sOC80D4xpJv5saikGuc+5vBPGB+DmhdCAI044MiNxsoco8Ipre4i6/Er5NMsFq5TejWgZ2ESX8iTy19C+7OO8WOuJHYlCQwAujhrufjL8tccWpg7TajjzsOoIJty+1t8QPiM4CJwBktcNvAvplAFecd2lTEZ8bE1bpEpqLs9jcitN5ETCzEYTVp5luw4SM0BwiTPXmMp8SZwD8F/oGc02IUWHwYVhgsbMX3G+BhIwkQGWfTox/izi0nC6dt/xETRw=
+X-Received: by 2002:a5b:4ca:0:b0:dcd:19ba:10df with SMTP id
+ u10-20020a5b04ca000000b00dcd19ba10dfmr1040280ybp.56.1712320326217; Fri, 05
+ Apr 2024 05:32:06 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wrrai2fidezv42rs"
-Content-Disposition: inline
-In-Reply-To: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
+References: <cover.1712207606.git.ysato@users.sourceforge.jp> <4ac65d0f311e890c1ca92bf057c70954ec7ac351.1712207606.git.ysato@users.sourceforge.jp>
+In-Reply-To: <4ac65d0f311e890c1ca92bf057c70954ec7ac351.1712207606.git.ysato@users.sourceforge.jp>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 5 Apr 2024 14:31:54 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXvL0fWGrn+KNDvXcioYnY-=3WmGtcdFkC82L7tL__+wA@mail.gmail.com>
+Message-ID: <CAMuHMdXvL0fWGrn+KNDvXcioYnY-=3WmGtcdFkC82L7tL__+wA@mail.gmail.com>
+Subject: Re: [RESEND v7 09/37] dt-binding: Add compatible SH7750 SoC
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
+	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner <tglx@linutronix.de>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>, 
+	Heiko Stuebner <heiko.stuebner@cherry.de>, Shawn Guo <shawnguo@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+	Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, 
+	David Rientjes <rientjes@google.com>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
+	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Kefeng Wang <wangkefeng.wang@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, 
+	Javier Martinez Canillas <javierm@redhat.com>, Guo Ren <guoren@kernel.org>, 
+	Azeem Shaikh <azeemshaikh38@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
+	Herve Codina <herve.codina@bootlin.com>, 
+	Manikanta Guntupalli <manikanta.guntupalli@amd.com>, Anup Patel <apatel@ventanamicro.com>, 
+	Biju Das <biju.das.jz@bp.renesas.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
+	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Apr 4, 2024 at 7:15=E2=80=AFAM Yoshinori Sato
+<ysato@users.sourceforge.jp> wrote:
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
---wrrai2fidezv42rs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hello Easwar,
+Gr{oetje,eeting}s,
 
-On Fri, Mar 29, 2024 at 05:00:24PM +0000, Easwar Hariharan wrote:
-> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
-> with more appropriate terms. Inspired by and following on to Wolfram's
-> series to fix drivers/i2c/[1], fix the terminology for users of the
-> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
-> in the specification.
+                        Geert
 
-I really appreciate that you want to assist in this task to improve the
-I2C core. I do. I am afraid, however, that you took the second step
-before the first one, though. As I mentioned in my original cover
-letter, this is not only about renaming but also improving the I2C API
-(splitting up header files...). So, drivers are not a priority right
-now. They can be better fixed once the core is ready.
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-It is true that I changed quite some controller drivers within the i2c
-realm. I did this to gain experience. As you also noticed quite some
-questions came up. We need to agree on answers first. And once we are
-happy with the answers we found, then IMO we can go outside of the i2c
-realm and send patches to other subsystems referencing agreed
-precedence. I intentionally did not go outside i2c yet. Since your
-patches are already there, you probably want to foster them until they
-are ready for inclusion. Yet, regarding further patches, my suggestion
-is to wait until the core is ready. That might take a while, though.
-However, there is enough to discuss until the core is ready. So, your
-collaboration there is highly appreciated!
-
-> The last patch updating the .master_xfer method to .xfer depends on
-> patch 1 of Wolfram's series below, but the series is otherwise
-> independent. It may make sense for the last patch to go in with
-
-Please drop the last patch from this series. It will nicely remove the
-dependency. Also, like above, I first want to gain experience with i2c
-before going to other subsystems. That was intended.
-
-All the best and happy hacking,
-
-   Wolfram
-
-
---wrrai2fidezv42rs
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmYPz/kACgkQFA3kzBSg
-Kbb2khAArgkbDpks50YTmBYCaMaPYcuR0VEc60/+z8tRAlS4IKaYIXzw2LEXG7Lz
-vJE8MMcWs6lGZjapOyfhFrB/U9Zu8Ffpg1qataFG3ZnRZG6BYb8i2cCTCwK9h4Vk
-KfijUXjmqXMGKRcaUcIYL/IxYZYRP0Y9yYGfBibDtxV7hnMakp6+XXbfM8FVCj1g
-iW3ORBfLYR32dJxnI4unFt15e2aXFDQkJDLqBJ4WGynGPaGr0lmfQpWQDP2aYlN0
-Dyormc+6tCEOAN6PBG0cssZbMUj4ABQYOxxNhQ8hP6gAqkMuqqC1+nHAH3PNQjkf
-VHMYFPogE0LGrCOOVKzgeU3QIfF9MABirrNB8bx+K3tl1te0EWse1u4CXIKrmBZ7
-VS1fVRMUdS25YnzNM5cfZQTGv2JxgebrXUqN1bneFpKmISO66p2hF3/8lsaPO8Rw
-6QOTRpcHay1sESrreLn9gAj/NeddgU7XhI3oGqk6PQyYQrE5LbTh0wuZil02rwjJ
-ea29MTkK7muy5fQT9dDHOk38fjG0jk48Oyk5NBVMboeLKlvPy6OTiXG6Z1lifGga
-xZe0cBBoH5gHPY6ZIVh4HaHfbmzt5jGIpzf8Sx9E9n03K6Njewqu+Wxm24AMr/OR
-79BvBK0rlCVMmck+ZJiW969Q/G9JKFieQnUDqHlMc5nIAHMB0Lw=
-=T3F5
------END PGP SIGNATURE-----
-
---wrrai2fidezv42rs--
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

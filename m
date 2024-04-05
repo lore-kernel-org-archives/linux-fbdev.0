@@ -1,127 +1,116 @@
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF06917108E
-	for <linux-fbdev@vger.kernel.org>; Fri,  5 Apr 2024 16:58:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6B606171665;
+	Fri,  5 Apr 2024 17:09:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712336286; cv=none; b=JzwwJx/9piea0/vRXq2irkn41gVNUY4hlPgZu9EwCCbBp0MkRivV/3ecBjrlz7picsqEf3TkBXXBGbb6e0LEs0myKt+y/pvoIvi3hd0e3ViYaKCMjd+lEKXXEZr2X9retyP+vFHu8Na2qu7hHZCiaOADam7YqFN0AHTLvANGP0Q=
+	t=1712336948; cv=none; b=lZgEAcJpi0EuTYhG3IP8tS2jmzCzAhuK4F1nWZDxCx39bre0U8T8Bz6XFlweZN13a/tP/kCn+nlwK75ov5Mcz5iyTyratYW9BtS38wdheL4b5L8QGaankWXrenimTwGzIB7leCyt5bSLksnZyjtu78zcmDqQyyciX5LOifrhvXM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712336286; c=relaxed/simple;
-	bh=5AW1eKgNf7MUu4dM7zRPWY+xw2bFTvlrZtGPjFMFryk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wq/QIOCKU5fr/+KMW3UTFCzZwjEcUfTdRIRsRUY32Sa8fzWvmGNpqGqrT9hbRCxcPESpWUXiTaET91LRLHKl3eQC6ySybEJ3a5TUNQ7HGrxaUuIVNR8eiQGkcjawHyBNkklDW5lbsuylie2ZpSeeUuNl3geMXoi7JgPGl1b9nSM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZdGD97Az; arc=none smtp.client-ip=209.85.210.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1712336948; c=relaxed/simple;
+	bh=OM9kF5Ok4AlVSJh6BtuRbZ33DwIULAuWvK9ebNB9Dws=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=fSJvLFf80fPSM9ButAafmech00q3dOui1oiC/4+t3xAKfI6OGHWLlJL25IOB4dYjTl+MVTLWdC+JeyDBldC0/y+5IEqW5yIMJgLBpNC5H0s5sc3Lu70KVztPhjPpJxTV7ZQeBIoUCH29p/qBOVpPS2lrexbWBJN4MslsiHLO+CQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=C0d1SRjy; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZdGD97Az"
-Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-6ecf406551aso1566925b3a.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 05 Apr 2024 09:58:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1712336284; x=1712941084; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=VxOrpUcgWV1BIbN70ZBNYzAG96ZmcBy16Bx9JpTxO+Y=;
-        b=ZdGD97AzgpYGmeDMhyvJLmYFU81/b5Esk7PtWUCXapuQp4NHZywdE6hF5EjuLPVQ3+
-         kF/JJjC0MkZ43sbv7UUtxeo03i/zCK68iW0OQDiZgmPmDLY8S7HPOi/lIxYvu4EFokub
-         PXRilZyikkA7gfJGWDN1+uC9QL1sabQz+Wjv0ak8taECpSdjZcVVBn/5nMMrutGJ0Tjo
-         2HZqVRVFEeDeaE2Q9fbWDxgF618E7BD7nWOPAAZLqKTmdkSVmrFf2mK+TYWmVLcdOtcp
-         KHuotfO3O6tVzO1f0XMzP5FSRGmPw4ZB0WImnfB5Y/y8zw0eLTUIDvtDVoWsouWyc8Xx
-         xzJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712336284; x=1712941084;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=VxOrpUcgWV1BIbN70ZBNYzAG96ZmcBy16Bx9JpTxO+Y=;
-        b=dpTwQbUC1tO+bHGyuF8g74qFzeFT2TJ2Gi9Cfk5BXVlRJsyPM6eteva0HJIKrVoaMk
-         wwTHLfDKQ6AVSnuGX6IZSC+FTJquPjVU6ycxvlIXp1WHIdt5vnKEbXmBvaNSSGTFVTe9
-         0uZ2uvmU+XtWF3OuYoad6cEFJsJgyaUK9E/eAQ7fjF5cUkWocArx2mb9+G3p7imZlYmS
-         iW7JHRbzCtVQiQqWXbDxH0JGQ55CnoSkS8A6qcKBwW/EBR2E3qwBAbW//ES894IuaD3x
-         e+X112Hmjsvxw6EE1wtPY5DuUbLGu/FkvzA0Z5D1aegxDG8ybVQrLag7PuAZyOZjBIun
-         3IuQ==
-X-Gm-Message-State: AOJu0YzWOEJxIaPeqwKxZkGbqdMrvtN7wNITBBXZgTT3aTlhX3JLlijd
-	aEDdr6AgMytvhDNw850K63K2AMwutQ+xGJzGN9UVLgUz1A3pvKwOa9Ud2ENDdyST5kI95Us=
-X-Google-Smtp-Source: AGHT+IF8+QcgSzXuJgKfFeVtRFmbVoLvx0pIjuAHQZQ5xpIO1ad1rxcl4fMvBNa0DNG870OGXhAphg==
-X-Received: by 2002:a05:6a00:6508:b0:6ec:d950:fd59 with SMTP id hc8-20020a056a00650800b006ecd950fd59mr1796570pfb.29.1712336283914;
-        Fri, 05 Apr 2024 09:58:03 -0700 (PDT)
-Received: from localhost.localdomain ([168.138.41.106])
-        by smtp.gmail.com with ESMTPSA id c17-20020aa78c11000000b006ed0199bd57sm1447393pfd.177.2024.04.05.09.58.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Apr 2024 09:58:03 -0700 (PDT)
-From: purofle <purofle@gmail.com>
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-staging@lists.linux.dev,
-	gregkh@linuxfoundation.org,
-	purofle <purofle@gmail.com>
-Subject: [PATCH] staging: fbtft: fb_st7789v: support setting offset
-Date: Sat,  6 Apr 2024 00:57:47 +0800
-Message-ID: <20240405165747.93377-1-purofle@gmail.com>
-X-Mailer: git-send-email 2.44.0
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="C0d1SRjy"
+Received: from [100.64.217.16] (unknown [20.29.225.195])
+	by linux.microsoft.com (Postfix) with ESMTPSA id C079220E98C5;
+	Fri,  5 Apr 2024 10:09:06 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com C079220E98C5
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1712336947;
+	bh=8/pqkmLMlPcre5fV5qkvKEs/2rR9bcZxNm4kNFHWSjQ=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=C0d1SRjyurGtxNvhWTTmtbPSCA+yIp/OoN3XC/p90jKg2/Te57kQIcZHNpxQ3N2VQ
+	 sXQcWE6qovKVAf63szhiTG9qVBhLM1mFp1anVH+P8e81uOq0H+Hm08czNqSAQAwLsT
+	 RqFrEA3QupgZYOJZGbxAxqLnmILZ6wWm5h9HB87o=
+Message-ID: <3bd8d2f6-dfe1-479f-bff1-f2921b1940ed@linux.microsoft.com>
+Date: Fri, 5 Apr 2024 10:09:05 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v0 00/14] Make I2C terminology more inclusive for I2C
+ Algobit and consumers
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>,
+ "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
+ <nouveau@lists.freedesktop.org>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
+ "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
+ <ffumcagmzdstcf3qcn3f26555pnu7i6azjppciyd4zvcoit7pv@vu262tsfnqyr>
+Content-Language: en-CA
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+In-Reply-To: <ffumcagmzdstcf3qcn3f26555pnu7i6azjppciyd4zvcoit7pv@vu262tsfnqyr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Some screen sizes using st7789v chips are different from 240x320,
-and offsets need to be set to display all images properly.
+Hi Wolfram,
 
-Signed-off-by: purofle <purofle@gmail.com>
----
- drivers/staging/fbtft/fb_st7789v.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+On 4/5/2024 3:18 AM, Wolfram Sang wrote:
+> Hello Easwar,
+> 
+> On Fri, Mar 29, 2024 at 05:00:24PM +0000, Easwar Hariharan wrote:
+>> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
+>> with more appropriate terms. Inspired by and following on to Wolfram's
+>> series to fix drivers/i2c/[1], fix the terminology for users of the
+>> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+>> in the specification.
+> 
+> I really appreciate that you want to assist in this task to improve the
+> I2C core. I do. I am afraid, however, that you took the second step
+> before the first one, though. As I mentioned in my original cover
+> letter, this is not only about renaming but also improving the I2C API
+> (splitting up header files...). So, drivers are not a priority right
+> now. They can be better fixed once the core is ready.
+>
 
-diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-index 861a15414..d47ab4262 100644
---- a/drivers/staging/fbtft/fb_st7789v.c
-+++ b/drivers/staging/fbtft/fb_st7789v.c
-@@ -30,6 +30,12 @@
- 
- #define HSD20_IPS 1
- 
-+#define WIDTH 240
-+#define HEIGHT 320
-+
-+#define LEFT_OFFSET 0
-+#define TOP_OFFSET 0
-+
- /**
-  * enum st7789v_command - ST7789V display controller commands
-  *
-@@ -349,6 +355,21 @@ static int set_gamma(struct fbtft_par *par, u32 *curves)
- 	return 0;
- }
- 
-+static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
-+{
-+	unsigned int x = xs + TOP_OFFSET, y = xe + TOP_OFFSET;
-+
-+	write_reg(par, MIPI_DCS_SET_COLUMN_ADDRESS, (x >> 8) & 0xFF, xs & 0xFF,
-+		  (y >> 8) & 0xFF, xe & 0xFF);
-+
-+	x = ys + LEFT_OFFSET, y = ye + LEFT_OFFSET;
-+
-+	write_reg(par, MIPI_DCS_SET_PAGE_ADDRESS, (x >> 8) & 0xFF, ys & 0xFF,
-+		  (y >> 8) & 0xFF, ye & 0xFF);
-+
-+	write_reg(par, MIPI_DCS_WRITE_MEMORY_START);
-+}
-+
- /**
-  * blank() - blank the display
-  *
-@@ -379,6 +400,7 @@ static struct fbtft_display display = {
- 		.set_var = set_var,
- 		.set_gamma = set_gamma,
- 		.blank = blank,
-+		.set_addr_win = set_addr_win,
- 	},
- };
- 
--- 
-2.44.0
+Sorry, got excited. :) There were drivers I'd been part of that I specifically
+wanted to fixup, but then the scope grew to other users of algobit.
+
+> It is true that I changed quite some controller drivers within the i2c
+> realm. I did this to gain experience. As you also noticed quite some
+> questions came up. We need to agree on answers first. And once we are
+> happy with the answers we found, then IMO we can go outside of the i2c
+> realm and send patches to other subsystems referencing agreed
+> precedence. I intentionally did not go outside i2c yet. Since your
+> patches are already there, you probably want to foster them until they
+> are ready for inclusion.
+
+Sorry, I don't quite follow what you mean by foster in this context. Are
+you asking me to hold off on merging the series, or to follow through on
+getting it merged?
+
+ Yet, regarding further patches, my suggestion
+> is to wait until the core is ready. That might take a while, though.
+> However, there is enough to discuss until the core is ready. So, your
+> collaboration there is highly appreciated!
+> 
+>> The last patch updating the .master_xfer method to .xfer depends on
+>> patch 1 of Wolfram's series below, but the series is otherwise
+>> independent. It may make sense for the last patch to go in with
+> 
+> Please drop the last patch from this series. It will nicely remove the
+> dependency. Also, like above, I first want to gain experience with i2c
+> before going to other subsystems. That was intended.
+>
+
+Will do, thanks!
+
+> All the best and happy hacking,
+> 
+>    Wolfram
+> 
 

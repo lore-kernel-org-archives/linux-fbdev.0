@@ -1,255 +1,133 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 191B317721;
-	Fri,  5 Apr 2024 09:04:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0C991607A6
+	for <linux-fbdev@vger.kernel.org>; Fri,  5 Apr 2024 10:18:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.117.254.33
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712307869; cv=none; b=giC8/D86pp78vwztcvEKYVq/bieXqxL1/GdigGj9CFoRCPR253CA3s8kEzXKEVeq3hUGvqUAJUnO9992sl6gGrrK4Bb5RTauIKJ5xbOxOYUqV8pjZ9Zoehj67PZaYFOS5oo1VLetCncRklUDJGMWCvSi1rh5AThxYRI/WgfH9Ng=
+	t=1712312323; cv=none; b=tFVXZ94E2Dfgfd9cH0hNGWAFLqKkGR4MMu3tlODLf3N2bLCGPxQDi//MQl82ehKIaBhSpdV1XGuFJJeBhHsmvlrn3DTV/Fjrk16Q42sMQDemtrR5DyCnmlu1KVVuQvc4bu6AHapkST0oA0mwX7Ktn5YtwfIG/1or0xZCjbYBLjU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712307869; c=relaxed/simple;
-	bh=CZ7sdleduXPFl026NflXweEHKoQ3VxVB/rZ/gonnO14=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BRXfKaoUj3UdX3Xh7cexJkp/mGWvubYXAtk0rCmfvq51aSRxEXIvdvec8NF5ZpWam9sLbfvCu4z+U3g3c0v3xn5mAcGiRy44TCZS5z7miPFvrt7O8Ww4KwN2PbmZkFIiMawtoUEBJUys4j8PKEiVpTpy8qs/0hVL8o7WMBEngO8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=NTHIOwZ+; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=KToj6Ik8; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=NTHIOwZ+; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=KToj6Ik8; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1712312323; c=relaxed/simple;
+	bh=5fZz+hrMjs1KcvnTZOEbAJMZkLsCTGpJnRmjeSMAJeQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=n5/Be8LL3kO1PL5yujXK0E2+H1cYPfwEFcGOElr6lYixYAIbMD1v/nGlZQE3mVKHin/6LRnrkw8/0zl3tUhWC0NEXNB6lquGGYAQ2c/a+GdHng4VIi49gob368pXi7uRnN3XJr93VwAxxlfiAIunav0a0fGrZ+yfNRh7DWGcug8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; spf=pass smtp.mailfrom=sang-engineering.com; dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b=TbhXudkY; arc=none smtp.client-ip=194.117.254.33
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="NTHIOwZ+";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="KToj6Ik8";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="NTHIOwZ+";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="KToj6Ik8"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 1491D1F78A;
-	Fri,  5 Apr 2024 09:04:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1712307866; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=q6m7RkFG+I05tVEKqU5D+NUntnuekF2Z+soqECDuzWU=;
-	b=NTHIOwZ+L3b2OUEsvJLD8ClmWEK1V9PGjFmF3hXDlTtwirb0F7vborCm2hzx0SiFnjhbIv
-	zzjmLpjtndDKGRKFQdcMcew0yVU0osvQibX+CHvUnAA8pJZGyIsXDp0AdfGiyaEVYugdhw
-	ZyfnpyppmEFhkJ8JcRJr91khwROWpFk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1712307866;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=q6m7RkFG+I05tVEKqU5D+NUntnuekF2Z+soqECDuzWU=;
-	b=KToj6Ik8dGLGisbepSgkxn4mN2+dzr6QWAUlbfj7teTNyD0Xb003EKLmDQCOQOFBFeFQjI
-	d81wCJIrvTO/D4Bw==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=NTHIOwZ+;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=KToj6Ik8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1712307866; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=q6m7RkFG+I05tVEKqU5D+NUntnuekF2Z+soqECDuzWU=;
-	b=NTHIOwZ+L3b2OUEsvJLD8ClmWEK1V9PGjFmF3hXDlTtwirb0F7vborCm2hzx0SiFnjhbIv
-	zzjmLpjtndDKGRKFQdcMcew0yVU0osvQibX+CHvUnAA8pJZGyIsXDp0AdfGiyaEVYugdhw
-	ZyfnpyppmEFhkJ8JcRJr91khwROWpFk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1712307866;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=q6m7RkFG+I05tVEKqU5D+NUntnuekF2Z+soqECDuzWU=;
-	b=KToj6Ik8dGLGisbepSgkxn4mN2+dzr6QWAUlbfj7teTNyD0Xb003EKLmDQCOQOFBFeFQjI
-	d81wCJIrvTO/D4Bw==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 98D09139F1;
-	Fri,  5 Apr 2024 09:04:25 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id LEQAJJm+D2ZoTwAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Fri, 05 Apr 2024 09:04:25 +0000
-Message-ID: <c281bb8e-0719-4b28-a637-56615ad16913@suse.de>
-Date: Fri, 5 Apr 2024 11:04:25 +0200
+	dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="TbhXudkY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	sang-engineering.com; h=date:from:to:cc:subject:message-id
+	:references:mime-version:content-type:in-reply-to; s=k1; bh=XRZ/
+	7f9TpBVm+EqkcIlzKupPDZE9c/6S0MGx+T9aWhU=; b=TbhXudkYnme5n6iHh1a7
+	RBdhDu2GT6+9PAy8ABhR4DJ4AFeu9vn7KF9NnItdIjxg3lODlyxOWMQzmHvBjUuV
+	6C2iJlxx9lPXa2C8k2zkTkCSAQ80w4ipFFE24BRkYFzXyEK7FP0vMNw5j1O2wMwt
+	rY3DTBf3ZIZFcTyDbCkD+x2BtRIlE2QfpykSPGqfi0fAa4E69G+hgGGV7l0hOuGb
+	eRpF0U2crVKhUWxUBjAZhcKkAmkgy6/e5eOeLvTbIQriGrx9zqcvXZvr+o3oYemF
+	ZV3lsTAHA9m7SGPcs05kwS6QKI/86ISnt7+jeteV6CxjkYrq8U88Su9gL7GEhrTR
+	qA==
+Received: (qmail 4072572 invoked from network); 5 Apr 2024 12:18:37 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 5 Apr 2024 12:18:37 +0200
+X-UD-Smtp-Session: l3s3148p1@a0Brx1YVfIUgAwDPXwEGAANOsN0UmmrN
+Date: Fri, 5 Apr 2024 12:18:37 +0200
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: Easwar Hariharan <eahariha@linux.microsoft.com>
+Cc: 
+	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>, "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>, 
+	open list <linux-kernel@vger.kernel.org>, 
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>, 
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>, 
+	"open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS" <nouveau@lists.freedesktop.org>, 
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, 
+	"open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH v0 00/14] Make I2C terminology more inclusive for I2C
+ Algobit and consumers
+Message-ID: <ffumcagmzdstcf3qcn3f26555pnu7i6azjppciyd4zvcoit7pv@vu262tsfnqyr>
+Mail-Followup-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Easwar Hariharan <eahariha@linux.microsoft.com>, 
+	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>, "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>, 
+	open list <linux-kernel@vger.kernel.org>, 
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>, 
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>, 
+	"open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS" <nouveau@lists.freedesktop.org>, 
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>, 
+	"open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/3] arch: Remove fbdev dependency from video helpers
-To: arnd@arndb.de, sam@ravnborg.org, javierm@redhat.com, deller@gmx.de,
- sui.jingfeng@linux.dev
-Cc: linux-arch@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
- linux-kernel@vger.kernel.org
-References: <20240329203450.7824-1-tzimmermann@suse.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240329203450.7824-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Flag: NO
-X-Spam-Score: -5.50
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 1491D1F78A
-X-Spam-Level: 
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-5.50 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_LOW(-1.00)[suse.de:dkim];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	XM_UA_NO_VERSION(0.01)[];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[arndb.de,ravnborg.org,redhat.com,gmx.de,linux.dev];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCPT_COUNT_TWELVE(0.00)[18];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_NONE(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap2.dmz-prg2.suse.org:helo,imap2.dmz-prg2.suse.org:rdns,suse.de:dkim]
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="wrrai2fidezv42rs"
+Content-Disposition: inline
+In-Reply-To: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
 
-Hi,
 
-if there are no further comments, can this series be merged through 
-asm-generic?
+--wrrai2fidezv42rs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Best regards
-Thomas
+Hello Easwar,
 
-Am 29.03.24 um 21:32 schrieb Thomas Zimmermann:
-> Make architecture helpers for display functionality depend on general
-> video functionality instead of fbdev. This avoids the dependency on
-> fbdev and makes the functionality available for non-fbdev code.
->
-> Patch 1 replaces the variety of Kconfig options that control the
-> Makefiles with CONFIG_VIDEO. More fine-grained control of the build
-> can then be done within each video/ directory; see parisc for an
-> example.
->
-> Patch 2 replaces fb_is_primary_device() with video_is_primary_device(),
-> which has no dependencies on fbdev. The implementation remains identical
-> on all affected platforms. There's one minor change in fbcon, which is
-> the only caller of fb_is_primary_device().
->
-> Patch 3 renames the source and header files from fbdev to video.
->
-> v3:
-> - arc, arm, arm64, sh, um: generate asm/video.h (Sam, Helge, Arnd)
-> - fix typos (Sam)
-> v2:
-> - improve cover letter
-> - rebase onto v6.9-rc1
->
-> Thomas Zimmermann (3):
->    arch: Select fbdev helpers with CONFIG_VIDEO
->    arch: Remove struct fb_info from video helpers
->    arch: Rename fbdev header and source files
->
->   arch/arc/include/asm/fb.h                    |  8 ------
->   arch/arm/include/asm/fb.h                    |  6 -----
->   arch/arm64/include/asm/fb.h                  | 10 --------
->   arch/loongarch/include/asm/{fb.h => video.h} |  8 +++---
->   arch/m68k/include/asm/{fb.h => video.h}      |  8 +++---
->   arch/mips/include/asm/{fb.h => video.h}      | 12 ++++-----
->   arch/parisc/Makefile                         |  2 +-
->   arch/parisc/include/asm/fb.h                 | 14 -----------
->   arch/parisc/include/asm/video.h              | 16 ++++++++++++
->   arch/parisc/video/Makefile                   |  2 +-
->   arch/parisc/video/{fbdev.c => video-sti.c}   |  9 ++++---
->   arch/powerpc/include/asm/{fb.h => video.h}   |  8 +++---
->   arch/powerpc/kernel/pci-common.c             |  2 +-
->   arch/sh/include/asm/fb.h                     |  7 ------
->   arch/sparc/Makefile                          |  4 +--
->   arch/sparc/include/asm/{fb.h => video.h}     | 15 +++++------
->   arch/sparc/video/Makefile                    |  2 +-
->   arch/sparc/video/fbdev.c                     | 26 --------------------
->   arch/sparc/video/video.c                     | 25 +++++++++++++++++++
->   arch/um/include/asm/Kbuild                   |  2 +-
->   arch/x86/Makefile                            |  2 +-
->   arch/x86/include/asm/fb.h                    | 19 --------------
->   arch/x86/include/asm/video.h                 | 21 ++++++++++++++++
->   arch/x86/video/Makefile                      |  3 ++-
->   arch/x86/video/{fbdev.c => video.c}          | 21 +++++++---------
->   drivers/video/fbdev/core/fbcon.c             |  2 +-
->   include/asm-generic/Kbuild                   |  2 +-
->   include/asm-generic/{fb.h => video.h}        | 17 +++++++------
->   include/linux/fb.h                           |  2 +-
->   29 files changed, 124 insertions(+), 151 deletions(-)
->   delete mode 100644 arch/arc/include/asm/fb.h
->   delete mode 100644 arch/arm/include/asm/fb.h
->   delete mode 100644 arch/arm64/include/asm/fb.h
->   rename arch/loongarch/include/asm/{fb.h => video.h} (86%)
->   rename arch/m68k/include/asm/{fb.h => video.h} (86%)
->   rename arch/mips/include/asm/{fb.h => video.h} (76%)
->   delete mode 100644 arch/parisc/include/asm/fb.h
->   create mode 100644 arch/parisc/include/asm/video.h
->   rename arch/parisc/video/{fbdev.c => video-sti.c} (78%)
->   rename arch/powerpc/include/asm/{fb.h => video.h} (76%)
->   delete mode 100644 arch/sh/include/asm/fb.h
->   rename arch/sparc/include/asm/{fb.h => video.h} (75%)
->   delete mode 100644 arch/sparc/video/fbdev.c
->   create mode 100644 arch/sparc/video/video.c
->   delete mode 100644 arch/x86/include/asm/fb.h
->   create mode 100644 arch/x86/include/asm/video.h
->   rename arch/x86/video/{fbdev.c => video.c} (66%)
->   rename include/asm-generic/{fb.h => video.h} (89%)
->
+On Fri, Mar 29, 2024 at 05:00:24PM +0000, Easwar Hariharan wrote:
+> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
+> with more appropriate terms. Inspired by and following on to Wolfram's
+> series to fix drivers/i2c/[1], fix the terminology for users of the
+> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+> in the specification.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+I really appreciate that you want to assist in this task to improve the
+I2C core. I do. I am afraid, however, that you took the second step
+before the first one, though. As I mentioned in my original cover
+letter, this is not only about renaming but also improving the I2C API
+(splitting up header files...). So, drivers are not a priority right
+now. They can be better fixed once the core is ready.
 
+It is true that I changed quite some controller drivers within the i2c
+realm. I did this to gain experience. As you also noticed quite some
+questions came up. We need to agree on answers first. And once we are
+happy with the answers we found, then IMO we can go outside of the i2c
+realm and send patches to other subsystems referencing agreed
+precedence. I intentionally did not go outside i2c yet. Since your
+patches are already there, you probably want to foster them until they
+are ready for inclusion. Yet, regarding further patches, my suggestion
+is to wait until the core is ready. That might take a while, though.
+However, there is enough to discuss until the core is ready. So, your
+collaboration there is highly appreciated!
+
+> The last patch updating the .master_xfer method to .xfer depends on
+> patch 1 of Wolfram's series below, but the series is otherwise
+> independent. It may make sense for the last patch to go in with
+
+Please drop the last patch from this series. It will nicely remove the
+dependency. Also, like above, I first want to gain experience with i2c
+before going to other subsystems. That was intended.
+
+All the best and happy hacking,
+
+   Wolfram
+
+
+--wrrai2fidezv42rs
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmYPz/kACgkQFA3kzBSg
+Kbb2khAArgkbDpks50YTmBYCaMaPYcuR0VEc60/+z8tRAlS4IKaYIXzw2LEXG7Lz
+vJE8MMcWs6lGZjapOyfhFrB/U9Zu8Ffpg1qataFG3ZnRZG6BYb8i2cCTCwK9h4Vk
+KfijUXjmqXMGKRcaUcIYL/IxYZYRP0Y9yYGfBibDtxV7hnMakp6+XXbfM8FVCj1g
+iW3ORBfLYR32dJxnI4unFt15e2aXFDQkJDLqBJ4WGynGPaGr0lmfQpWQDP2aYlN0
+Dyormc+6tCEOAN6PBG0cssZbMUj4ABQYOxxNhQ8hP6gAqkMuqqC1+nHAH3PNQjkf
+VHMYFPogE0LGrCOOVKzgeU3QIfF9MABirrNB8bx+K3tl1te0EWse1u4CXIKrmBZ7
+VS1fVRMUdS25YnzNM5cfZQTGv2JxgebrXUqN1bneFpKmISO66p2hF3/8lsaPO8Rw
+6QOTRpcHay1sESrreLn9gAj/NeddgU7XhI3oGqk6PQyYQrE5LbTh0wuZil02rwjJ
+ea29MTkK7muy5fQT9dDHOk38fjG0jk48Oyk5NBVMboeLKlvPy6OTiXG6Z1lifGga
+xZe0cBBoH5gHPY6ZIVh4HaHfbmzt5jGIpzf8Sx9E9n03K6Njewqu+Wxm24AMr/OR
+79BvBK0rlCVMmck+ZJiW969Q/G9JKFieQnUDqHlMc5nIAHMB0Lw=
+=T3F5
+-----END PGP SIGNATURE-----
+
+--wrrai2fidezv42rs--

@@ -1,78 +1,72 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com [209.85.210.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A834E131BCF;
-	Tue,  9 Apr 2024 15:49:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDB1B12FB38
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Apr 2024 16:39:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712677768; cv=none; b=jDzEM2RnEV6nVGl4rr6Gy1jNzCHWybfNXcLMMqUuAE/fXZMxSFUpjj8MK8Pa539gFwblCcvunsyn9eNuhbWWHy73GO05rx+bKpw3eWRWMR6eIoTkn2Sp1AQcfCg1mPXBR994MxjpXd05XW4b4DW1t44EZd07wesZSYXjOyszCvs=
+	t=1712680758; cv=none; b=om10fxiwGZ2g/gPtEB6zCNKZG7+MS2jZxB2px2HH+3DQeCmq6HPY44sYXaU4IWUK4qky6szoty2pt6Zlksu1slgAkyc3sxuN3ndE6R6O7WK/TiDBd5cc/ro/UgMDsQyKfg9PKASMwcdGedW3v2I6i1t918RSkFSbiDwgnkCwLbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712677768; c=relaxed/simple;
-	bh=uwl+DYO34osnS4Se+9oQAPTyhZwBq5JpKEjFYv+yrok=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qUBNo4u2gfN8zIu2YCVZljhQTv+tRjizylYxki37w2NtnPINvqZO3TVjXGOiAe5fiCVfhqjjcp9t3WvpxzuE7feLF3lb4UgGFmXDn+OLOnUaXjHwfe4hfXgvrB1YacYmqU7gXN+WnARY8sVK1F+bk9VJyvTLNhL/CdX3MrCK2Rs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=sYVQGSAK; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1712680758; c=relaxed/simple;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	h=From:Content-Type:Mime-Version:Subject:Message-Id:Date:Cc:To; b=hV44phx8svtVt5ouAudKwfvQ24atYBCOjvKhDZ6cbCWvEtxkRXyCAKjhs8FAdq5sJN6B6yRcvfXjhdXjAvPYQi9bdSkgq9e/nQ7ADiXB6Boj19KRGjBxtoxI3yGqIGrSGEaBox720R9y4aA94yYWxNLNLZa+9kQy9zvNAIR72uU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Kg/sl78H; arc=none smtp.client-ip=209.85.210.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="sYVQGSAK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 092C0C43390;
-	Tue,  9 Apr 2024 15:49:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1712677768;
-	bh=uwl+DYO34osnS4Se+9oQAPTyhZwBq5JpKEjFYv+yrok=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sYVQGSAKJJEWvkbsD7b+ll3+gutvTtk8gmvhpGDd60ykr3R5MXLBPQ5G/D+eIso/c
-	 bPWVuDRsCe2zxTDges9Bx99qGzo1+Rp84OvsRYy0QUYI8YOvZPFR6jr3HomhpTUFU9
-	 MXQE6P+sKPn2f1Evf4SmSSMsvQTYVw7mVV1HO7Ao=
-Date: Tue, 9 Apr 2024 17:49:25 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: purofle <purofle@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH] staging: fbtft: fb_st7789v: support setting offset
-Message-ID: <2024040935-naturist-skimmer-391f@gregkh>
-References: <20240405165747.93377-1-purofle@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kg/sl78H"
+Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-6ea243406f0so414527a34.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 09 Apr 2024 09:39:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1712680756; x=1713285556; darn=vger.kernel.org;
+        h=to:cc:date:message-id:subject:mime-version
+         :content-transfer-encoding:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+        b=Kg/sl78H1vJFFtkVrIn5IbBDflfdQUrhtprIjLaLxOVD28FEmAkOIwZghL6vaTaCBO
+         vds6lRIC5Ph3f10FYp3a+jpN2qnd7Z2+OPLN1QfWYpFMtd6rL2H6jIn2HlH28j9+f+Vk
+         9IFi9jQPxL6hoQJ9baiQf4hM5kitp8lGIy0YRsRGI3jCZ9l/aWHVMLfQTRpMVMsdS332
+         +3J587sqe6tuoAYMxHbUyM5zerxvrxv4XhXK6baS5/Ib1HzddkPJbh3RwwhZzo6VlPNE
+         W2ftFH7HvtMYDnRKqq9WUR6766oY/E4t2GjrUZZLteh1vvuPdaa1mz0Bms4MkzktjpRd
+         trnw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712680756; x=1713285556;
+        h=to:cc:date:message-id:subject:mime-version
+         :content-transfer-encoding:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+        b=GmJXYCqidHgkyUwuBE3h91/t44WdylxKzmDTqe509R+Jqm65zqsg6ghAhmYmqMXtJM
+         aHCO3LaaVV+HYjHk5h/owTsRjswmLCdT9Vocp7fjFWpJI6kETS6Z4yh0eS/8wdc/4nm5
+         SuSdKb9KZxz/YrgVL7Fof4IV37eV+VtDYpYcocaL55mycQkHquj2U92ak/X+74FWfbcq
+         ZvZr8ej43qqJpKHPs11ofPQlwzhyyd4L8P1DWuBArVAxbA+AHP1cUvr4m0x/Iz/4Jjrz
+         /DTVQaV47xWy0w8YQSji0YbCHYpeVQbXSC2QwtKJ0HgNrrCeBidAOaSiQ86cxQcp96Gt
+         L86w==
+X-Forwarded-Encrypted: i=1; AJvYcCWvt2nFjp6/QMwoq0E6EIlHjEIg1c/I6qIeg4GuM3kv9czD342IvjwkHY0YAfy35ZOydi9IyIBb60di+Hw+TlJptj0V3FKV+9tGsNo=
+X-Gm-Message-State: AOJu0YwVv0Mnc7jclCdn4/FRmS8qgNiwdTsrV5MJtqjDxr5pgXyMYvKM
+	D+k/R/mCxkK5p72+zPid7oIPNiTCRIeAMlvuBgkW48e7EGN317yJdaDPEuYRVwZwVtgIX58=
+X-Google-Smtp-Source: AGHT+IGJ5lNrHVrSwjpXPTtHBITp8Ar+HPnfk7p7X7Bx+D51y+T47ROSf82PBpkVELv/QS3b8b7J4w==
+X-Received: by 2002:a9d:734c:0:b0:6ea:1e87:4389 with SMTP id l12-20020a9d734c000000b006ea1e874389mr363607otk.8.1712680755955;
+        Tue, 09 Apr 2024 09:39:15 -0700 (PDT)
+Received: from smtpclient.apple ([172.93.220.120])
+        by smtp.gmail.com with ESMTPSA id g4-20020a633744000000b005f05b06229dsm8481034pgn.41.2024.04.09.09.39.13
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 09 Apr 2024 09:39:15 -0700 (PDT)
+From: purofle <purofle@gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240405165747.93377-1-purofle@gmail.com>
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3774.500.171.1.1\))
+Subject: Re: [PATCH] staging: fbtft: fb_st7789v: support setting offset
+Message-Id: <6012A476-14B0-4910-8DDB-98BE0BFC9074@gmail.com>
+Date: Wed, 10 Apr 2024 00:39:10 +0800
+Cc: dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org,
+ linux-staging@lists.linux.dev,
+ purofle@gmail.com
+To: gregkh@linuxfoundation.org
+X-Mailer: Apple Mail (2.3774.500.171.1.1)
 
-On Sat, Apr 06, 2024 at 12:57:47AM +0800, purofle wrote:
-> Some screen sizes using st7789v chips are different from 240x320,
-> and offsets need to be set to display all images properly.
-> 
-> Signed-off-by: purofle <purofle@gmail.com>
-
-We need a semi-real name here please.
-
-> ---
->  drivers/staging/fbtft/fb_st7789v.c | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
-> 
-> diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-> index 861a15414..d47ab4262 100644
-> --- a/drivers/staging/fbtft/fb_st7789v.c
-> +++ b/drivers/staging/fbtft/fb_st7789v.c
-> @@ -30,6 +30,12 @@
->  
->  #define HSD20_IPS 1
->  
-> +#define WIDTH 240
-> +#define HEIGHT 320
-
-So you are now hard-coding the size?
-
-> +
-> +#define LEFT_OFFSET 0
-> +#define TOP_OFFSET 0
-
-Is this always going to be 0, if so, why need it at all?
-
-
-thanks,
-
-greg k-h

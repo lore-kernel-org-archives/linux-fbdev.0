@@ -1,108 +1,98 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBCD3179661;
-	Wed, 10 Apr 2024 16:14:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2621C15ADBF;
+	Wed, 10 Apr 2024 16:29:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712765666; cv=none; b=toSQmRGGbkg10eVGT8qArQzkoxU9x9jmtzQKLhLye5g3aFsf6dE+ZglLtUlVYXn7buOugRopGvtIi1pxGKvyztWzNJcxblEBDdTdqRgQPf0KRYHbAz8nCpivDzOy94amD9EOhhvQprR6QNA/Aw2tWX775KjYqnM+CPuCD9peB0E=
+	t=1712766565; cv=none; b=o7a9b2h1vww+M5ZUttEXH7O00dDKPabwg660/D43XZQqPjcPJ2u+KJufugeBW11+Lwe92WOQHy7mW3srXUBehoX9fnWu3lx2pqduvpv0neR3a3zH/RvXprud9p/TWKDY5oo9GNzXCllHCUhTD1Fy5LCYScVurE7ATRLhQt5ga6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712765666; c=relaxed/simple;
-	bh=eHcJpndqtwzVN4cnsL6DiGE1t1qVRN1vvary0pO1BDY=;
+	s=arc-20240116; t=1712766565; c=relaxed/simple;
+	bh=YSAPIOtYNplSycjf3v7XSTEn1r+NDjIrTJDrbvJR6wQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ozFjXKWqdwyFUdMlrfm0zRcMN9b8gFcOWpo/wkKmf/iZPxeRy/Nj7NjsU4SHNNLPm/e45EnKFbE1sbLTmhzjrsW8DALbqexK4CjUbAByOXNEmhavB2fSGZgnaBfc/KxrrAVBh9IsVxwnB9T8ASOGqOnl+86YZqLL3adNxYdCwQM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N0NE2a+/; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=DSwwGr6g8CXPJmYzVSmFJA7IgeUryVwdMnkqGtw88RdTA/io4qVlbMzLdV6XZ+Sfz9saRakrra90f5tPe/YM9ps2nH1w5RID5kpQIl6xRCE/8wlDQmVfvghdFE2FkFgkNquy2InEO/ZTMM0JeQvq5iS9NuXBNzQ496jwRJTCr/4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hfoDkDZm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N0NE2a+/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B322C43390;
-	Wed, 10 Apr 2024 16:14:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hfoDkDZm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5E97C433F1;
+	Wed, 10 Apr 2024 16:29:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712765665;
-	bh=eHcJpndqtwzVN4cnsL6DiGE1t1qVRN1vvary0pO1BDY=;
+	s=k20201202; t=1712766564;
+	bh=YSAPIOtYNplSycjf3v7XSTEn1r+NDjIrTJDrbvJR6wQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=N0NE2a+/DKgfgfuti9GGK+eIDEk0hKZ18PD1VzDiP8iyljJDxoRzb7Vc82KCHDDvF
-	 JGyscqiN44sPoe4Cse1eENYPhS1dALUbxPkdOz7pWYD6ruI2t38Kp1jLnNH1ovP4BX
-	 jBMnB5Re4HXGi7y2oSoyRdMEzFbZZvteW31kt0EF4VHfdiNNOU6pd7/3vQqp9qgjo0
-	 WR5H1mcrRsbMYcm1Qqp5TBu4lA015E0UfNrJ2f0ev5K+J9aMVTQhNrdOKF350G+4Uu
-	 O2PTIcTaq/g3UTTm5obrzRLQe+cwRn389Sf1a7pPUuMUeh/hXNoZWv0k+Hx6hmW8pr
-	 IPZtXg1Sc4fjg==
-Date: Wed, 10 Apr 2024 11:14:23 -0500
-From: Rob Herring <robh@kernel.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Azeem Shaikh <azeemshaikh38@gmail.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	linux-ide@vger.kernel.org, Hyeonggon Yoo <42.hyeyoo@gmail.com>,
-	linux-renesas-soc@vger.kernel.org, Helge Deller <deller@gmx.de>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	Stephen Boyd <sboyd@kernel.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	David Rientjes <rientjes@google.com>, Baoquan He <bhe@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Herve Codina <herve.codina@bootlin.com>, devicetree@vger.kernel.org,
-	linux-sh@vger.kernel.org, Lee Jones <lee@kernel.org>,
-	Kefeng Wang <wangkefeng.wang@huawei.com>,
-	Manikanta Guntupalli <manikanta.guntupalli@amd.com>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Max Filippov <jcmvbkbc@gmail.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>, Guo Ren <guoren@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	David Airlie <airlied@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Linus Walleij <linus.walleij@linaro.org>, linux-pci@vger.kernel.org,
-	Sergey Shtylyov <s.shtylyov@omp.ru>,
-	Heiko Stuebner <heiko.stuebner@cherry.de>,
-	Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Anup Patel <apatel@ventanamicro.com>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Jacky Huang <ychuang3@nuvoton.com>, linux-serial@vger.kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	linux-clk@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Bjorn Helgaas <bhelgaas@google.com>, Rich Felker <dalias@libc.org>,
-	Arnd Bergmann <arnd@arndb.de>, Maxime Ripard <mripard@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [RESEND v7 17/37] dt-bindings: interrupt-controller:
- renesas,sh7751-intc: Add json-schema
-Message-ID: <171276565286.385332.7851969997819611251.robh@kernel.org>
-References: <cover.1712207606.git.ysato@users.sourceforge.jp>
- <cd7aae0800d9fc97f4d265c34ad4ac8c19dfd8f3.1712207606.git.ysato@users.sourceforge.jp>
+	b=hfoDkDZmkfM1oz64jIu5UjxX41RaJQV5t+KnioNgququptp/uL1Ngg3yuFw1jrM/Y
+	 Avy/wg6bFnwXimgGm2fPCTdKORiXvuF0RWNGJpH7/YgrC40a9EBz0Xs9rieevLBPMt
+	 bma23ZzR1JhK3g7R4/R7mMGL+wxGQLxJi8gjMnNQUoXxG/jNS4IWef++uCTdR6yZDo
+	 gUchAkh8ExprvWjL093grl2C0CGwdLVq5zlN4LWAxGkyJqKPKaHzA4mUkFeDkTUMJn
+	 BooX7ewcIzpZI91f2IykdEFzrSV9im+noRy4iUgJCnXr0dJ62xpQ84nyIc7gkUpzpU
+	 XPDKOkCeDKp6A==
+Date: Wed, 10 Apr 2024 18:29:19 +0200
+From: Alexey Gladkov <legion@kernel.org>
+To: Jiri Slaby <jirislaby@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	LKML <linux-kernel@vger.kernel.org>, kbd@lists.linux.dev,
+	linux-api@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	linux-serial@vger.kernel.org, Helge Deller <deller@gmx.de>
+Subject: Re: [RESEND PATCH v3 1/2] VT: Add KDFONTINFO ioctl
+Message-ID: <Zha-X8QS_8L9eF0r@example.org>
+References: <cover.1710252966.git.legion@kernel.org>
+ <cover.1712053848.git.legion@kernel.org>
+ <ed056326540f04b72c97a276fbcc316e1b2f6371.1712053848.git.legion@kernel.org>
+ <74ca50e0-61b1-4d4c-85dd-a5d920548c04@kernel.org>
+ <ZgwF72yHH_0-A4FW@example.org>
+ <6bb4f4fb-573c-4f63-967c-2cb08514fc91@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <cd7aae0800d9fc97f4d265c34ad4ac8c19dfd8f3.1712207606.git.ysato@users.sourceforge.jp>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6bb4f4fb-573c-4f63-967c-2cb08514fc91@kernel.org>
 
-
-On Thu, 04 Apr 2024 14:14:28 +0900, Yoshinori Sato wrote:
-> Renesas SH7751 INTC json-schema.
+On Wed, Apr 03, 2024 at 07:27:55AM +0200, Jiri Slaby wrote:
+> On 02. 04. 24, 15:19, Alexey Gladkov wrote:
+> >>> --- a/include/uapi/linux/kd.h
+> >>> +++ b/include/uapi/linux/kd.h
+> ...
+> >>> +struct console_font_info {
+> >>> +	unsigned int min_width, min_height;	/* minimal font size */
+> >>> +	unsigned int max_width, max_height;	/* maximum font size */
+> >>> +	unsigned int flags;			/* KD_FONT_INFO_FLAG_* */
+> >>
+> >> This does not look like a well-defined™ and extendable uapi structure.
+> >> While it won't change anything here, still use fixed-length __u32.
+> >>
+> >> And you should perhaps add some reserved fields. Do not repeat the same
+> >> mistakes as your predecessors with the current kd uapi.
+> > 
+> > I thought about it, but I thought it would be overengineering.
 > 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> ---
->  .../renesas,sh7751-intc.yaml                  | 53 +++++++++++++++++++
->  1 file changed, 53 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/renesas,sh7751-intc.yaml
+> It would not. UAPI structs are set in stone once released.
 > 
+> And in this case, it's likely you would want to know more info about 
+> fonts in the future.
+> 
+> > Can you suggest how best to do this?
+> 
+> Given you have flags in there already (to state that the structure 
+> contains more), just add an array of u32 reserved[] space. 3 or 5, I 
+> would say (to align the struct to 64bit).
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+struct console_font_info {
+       __u32 min_width, min_height;    /* minimal font size */
+       __u32 max_width, max_height;    /* maximum font size */
+       __u32  flags;                   /* KD_FONT_INFO_FLAG_* */
+       __u32 reserved[5];              /* This field is reserved forfuture use. Must be 0. */
+};
+
+So, struct should be like this ?
+
+I wouldn't add the version to the flags. Maybe it would be better to add a
+separate field with the version?
+
+-- 
+Rgrds, legion
 

@@ -1,120 +1,113 @@
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from aposti.net (aposti.net [89.234.176.197])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 428AC15EFA0;
-	Wed, 10 Apr 2024 14:23:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4BD216D9D6
+	for <linux-fbdev@vger.kernel.org>; Wed, 10 Apr 2024 15:10:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.234.176.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712759023; cv=none; b=F0XYrRFj1l+kzW3xA1Yh9K6y54smcg7K6olBSq863Q1KGe2KF+3qYdVtrbhqRe02P5+D2oQpYAB08JuojiG5gr3eZnWBD4NIUYFwKEU8XkpldFiwzZWt6LdVUAYVFHY1ZcYCyu2zg81xICZS+iT31clfL+mnhHz+DXK4Qj0DqIw=
+	t=1712761816; cv=none; b=d5zULTRnOhIRdQaHq5sItKeRomIiTeYj2a7SHd/y829Fr0f8di+xMHr1RyleTOBMlIBGLOtCn/0NwnEJlT6f7X9MPM0Ff+Q5fVPbxJW/4hf/OeMZUfez21JCO0VPfigCg/XEshbF2jVgR5cmc1cha8/t+nzyvM2kWnSRedAodRc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712759023; c=relaxed/simple;
-	bh=HnqCMIOfXdvvaRzyYrBMGnzCyFc1Yaa5gsY5UY7IZiM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=RZlwP9WKzs+T37fMAqgzWKxxmuV9A72ZBR/1b09wbCeI5uJLI4YZI3aBzcdrxQ7RQRwm6TuVcmnjC8/Tlan0qvzDCGJIPkmEk1mxheR7egFvpOF8Xeq5XfaIFEifQPew8SYf3uvkSwIZXwRGXdlcxlj8JUT843fIwRZ6cr9JHrc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=bqAmOYB4; arc=none smtp.client-ip=148.163.156.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	s=arc-20240116; t=1712761816; c=relaxed/simple;
+	bh=Co1SQ6GE6T051mn3vT7c8jAw7bRbn42H4NdaZEtCmgc=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=sKv+g6v8MhOzwlbVD9cXZsCpdJ0dj+kMyAOU0CC6QPywRRt1abxnRPWP1GqAuWzV0AdtLBYPUGE1WO6F7+XxxW6dVT1ynwcUDtWKOU/yT3zIjGiXIi2N/d50y96hrQGTFEszovYFxMmMuSguDwKC216M9cBl5P4/r2wwR22fTas=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net; spf=pass smtp.mailfrom=crapouillou.net; dkim=pass (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b=2OHlHTn6; arc=none smtp.client-ip=89.234.176.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=crapouillou.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="bqAmOYB4"
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43AEGwLT010910;
-	Wed, 10 Apr 2024 14:23:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=x8VM+V1w3JAbArcaOhRzXIT7eX6+wJ3KM9tG1h/57jY=;
- b=bqAmOYB4FA4e1u2bo/CdkEy2lc4V4yDNs5doytqkxfk9273gu3+p3gyU8ZdB10kEnbuf
- pYqYPE+OR8ECF6uFeOPU+z96LeEN/rxvJcvxoagckPXPjLW4mXDkTCd9vC7F+3f7evek
- DGREVZbkhaRr5rcHtcp7VD7gogmeNVSStayx4C9dNeDxxOm101QCMH1akg85LHYBFE6k
- Jb3v2bpH44N420NfkuRlb6/eNExsQyWQyYxONYF8EzXkKzAJYS8E5mpAy2RmsKnIiGut
- TTjAW8mS0Xse6tn3NdJ17m4gyGJ7/iBKXiFmlIACvh6x/9lRRteIqkXv8DmU1532FFyV nw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdvd3g0j1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 14:23:36 +0000
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43AENajw020763;
-	Wed, 10 Apr 2024 14:23:36 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdvd3g0hx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 14:23:36 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 43ADXLcr019109;
-	Wed, 10 Apr 2024 14:23:35 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3xbh40dcp1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 14:23:35 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 43AENTjd51577226
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 10 Apr 2024 14:23:31 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9743B20043;
-	Wed, 10 Apr 2024 14:23:29 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7338D20040;
-	Wed, 10 Apr 2024 14:23:29 +0000 (GMT)
-Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 10 Apr 2024 14:23:29 +0000 (GMT)
-From: Niklas Schnelle <schnelle@linux.ibm.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Arnd Bergmann <arnd@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, Niklas Schnelle <schnelle@linux.ibm.com>
-Subject: [PATCH 0/1] video: Handle HAS_IOPORT dependencies
-Date: Wed, 10 Apr 2024 16:23:28 +0200
-Message-Id: <20240410142329.3567824-1-schnelle@linux.ibm.com>
-X-Mailer: git-send-email 2.40.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Ra6IE6pqmL5Hws10lxl50yDsGPY_Khnh
-X-Proofpoint-GUID: YfSjbfW578ouNsYRTVHjOFvbmD3NPvTP
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	dkim=pass (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="2OHlHTn6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
+	s=mail; t=1712761237;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=M7TbgmR15fUYIO1G4L4ZqQXlgG8ohcl+qb8Wp0ehvr8=;
+	b=2OHlHTn6OMO4uk7hRd1TizpmugQw75/YCcxxQ50lF4XgIxZKKMXUx7m29MG3iIR9nJ1bdN
+	7Fmk1GGoK48dEyhdjBnl2GNyqnitfdwLyRGosNN/btAaSDpXIluNVkJo26UlFFGX5JWv2D
+	ITx6xpUGwEVcPIXhL8B6vLOMXviPXJU=
+Message-ID: <60659ae26e88491a51ecbff3f273444d334c5c87.camel@crapouillou.net>
+Subject: Re: [PATCH v2 25/43] drm/ingenic: Use fbdev-dma
+From: Paul Cercueil <paul@crapouillou.net>
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+ deller@gmx.de,  airlied@gmail.com, daniel@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Date: Wed, 10 Apr 2024 17:00:35 +0200
+In-Reply-To: <20240410130557.31572-26-tzimmermann@suse.de>
+References: <20240410130557.31572-1-tzimmermann@suse.de>
+	 <20240410130557.31572-26-tzimmermann@suse.de>
+Autocrypt: addr=paul@crapouillou.net; prefer-encrypt=mutual;
+ keydata=mQENBF0KhcEBCADkfmrzdTOp/gFOMQX0QwKE2WgeCJiHPWkpEuPH81/HB2dpjPZNW03ZM
+ LQfECbbaEkdbN4YnPfXgcc1uBe5mwOAPV1MBlaZcEt4M67iYQwSNrP7maPS3IaQJ18ES8JJ5Uf5Uz
+ FZaUawgH+oipYGW+v31cX6L3k+dGsPRM0Pyo0sQt52fsopNPZ9iag0iY7dGNuKenaEqkYNjwEgTtN
+ z8dt6s3hMpHIKZFL3OhAGi88wF/21isv0zkF4J0wlf9gYUTEEY3Eulx80PTVqGIcHZzfavlWIdzhe
+ +rxHTDGVwseR2Y1WjgFGQ2F+vXetAB8NEeygXee+i9nY5qt9c07m8mzjABEBAAG0JFBhdWwgQ2VyY
+ 3VlaWwgPHBhdWxAY3JhcG91aWxsb3UubmV0PokBTgQTAQoAOBYhBNdHYd8OeCBwpMuVxnPua9InSr
+ 1BBQJdCoXBAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEHPua9InSr1BgvIH/0kLyrI3V0f
+ 33a6D3BJwc1grbygPVYGuC5l5eMnAI+rDmLR19E2yvibRpgUc87NmPEQPpbbtAZt8On/2WZoE5OIP
+ dlId/AHNpdgAtGXo0ZX4LGeVPjxjdkbrKVHxbcdcnY+zzaFglpbVSvp76pxqgVg8PgxkAAeeJV+ET
+ 4t0823Gz2HzCL/6JZhvKAEtHVulOWoBh368SYdolp1TSfORWmHzvQiCCCA+j0cMkYVGzIQzEQhX7U
+ rf9N/nhU5/SGLFEi9DcBfXoGzhyQyLXflhJtKm3XGB1K/pPulbKaPcKAl6rIDWPuFpHkSbmZ9r4KF
+ lBwgAhlGy6nqP7O3u7q23hRW5AQ0EXQqFwQEIAMo+MgvYHsyjX3Ja4Oolg1Txzm8woj30ch2nACFC
+ qaO0R/1kLj2VVeLrDyQUOlXx9PD6IQI4M8wy8m0sR4wV2p/g/paw7k65cjzYYLh+FdLNyO7IWYXnd
+ JO+wDPi3aK/YKUYepqlP+QsmaHNYNdXEQDRKqNfJg8t0f5rfzp9ryxd1tCnbV+tG8VHQWiZXNqN70
+ 62DygSNXFUfQ0vZ3J2D4oAcIAEXTymRQ2+hr3Hf7I61KMHWeSkCvCG2decTYsHlw5Erix/jYWqVOt
+ X0roOOLqWkqpQQJWtU+biWrAksmFmCp5fXIg1Nlg39v21xCXBGxJkxyTYuhdWyu1yDQ+LSIUAEQEA
+ AYkBNgQYAQoAIBYhBNdHYd8OeCBwpMuVxnPua9InSr1BBQJdCoXBAhsMAAoJEHPua9InSr1B4wsH/
+ Az767YCT0FSsMNt1jkkdLCBi7nY0GTW+PLP1a4zvVqFMo/vD6uz1ZflVTUAEvcTi3VHYZrlgjcxmc
+ Gu239oruqUS8Qy/xgZBp9KF0NTWQSl1iBfVbIU5VV1vHS6r77W5x0qXgfvAUWOH4gmN3MnF01SH2z
+ McLiaUGF+mcwl15rHbjnT3Nu2399aSE6cep86igfCAyFUOXjYEGlJy+c6UyT+DUylpjQg0nl8MlZ/
+ 7Whg2fAU9+FALIbQYQzGlT4c71SibR9T741jnegHhlmV4WXXUD6roFt54t0MSAFSVxzG8mLcSjR2c
+ LUJ3NIPXixYUSEn3tQhfZj07xIIjWxAYZo=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-10_04,2024-04-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 suspectscore=0
- clxscore=1015 mlxlogscore=999 impostorscore=0 spamscore=0 adultscore=0
- mlxscore=0 phishscore=0 lowpriorityscore=0 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2404010000 definitions=main-2404100104
 
-Hi Helge (again ;-)),
+Le mercredi 10 avril 2024 =C3=A0 15:02 +0200, Thomas Zimmermann a =C3=A9cri=
+t=C2=A0:
+> Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
+> damage handling, which is required by ingenic. Avoids the overhead of
+> fbdev-generic's additional shadow buffering. No functional changes.
+>=20
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Paul Cercueil <paul@crapouillou.net>
 
-This is a follow up in my ongoing effort of making inb()/outb() and
-similar I/O port accessors compile-time optional. Previously I sent this
-as a treewide series titled "treewide: Remove I/O port accessors for
-HAS_IOPORT=n" with the latest being its 5th version[0]. With a significant
-subset of patches merged I've changed over to per-subsystem series. These
-series are stand alone and should be merged via the relevant tree such
-that with all subsystems complete we can follow this up with the final
-patch that will make the I/O port accessors compile-time optional.
+Acked-by: Paul Cercueil <paul@crapouillou.net>
 
-The current state of the full series with changes to the remaining subsystems
-and the aforementioned final patch can be found for your convenience on my
-git.kernel.org tree in the has_ioport branch[1]. As for compile-time vs runtime
-see Linus' reply to my first attempt[2].
+Cheers,
+-Paul
 
-Thanks,
-Niklas
-
-[0] https://lore.kernel.org/all/20230522105049.1467313-1-schnelle@linux.ibm.com/
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/niks/linux.git/log/?h=has_ioport
-[2] https://lore.kernel.org/lkml/CAHk-=wg80je=K7madF4e7WrRNp37e3qh6y10Svhdc7O8SZ_-8g@mail.gmail.com/
-
-Niklas Schnelle (1):
-  video: Handle HAS_IOPORT dependencies
-
- include/video/vga.h | 35 +++++++++++++++++++++++++----------
- 1 file changed, 25 insertions(+), 10 deletions(-)
-
--- 
-2.40.1
+> ---
+> =C2=A0drivers/gpu/drm/ingenic/ingenic-drm-drv.c | 4 ++--
+> =C2=A01 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> index 0751235007a7e..39fa291f43dd1 100644
+> --- a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> +++ b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> @@ -31,7 +31,7 @@
+> =C2=A0#include <drm/drm_encoder.h>
+> =C2=A0#include <drm/drm_gem_dma_helper.h>
+> =C2=A0#include <drm/drm_fb_dma_helper.h>
+> -#include <drm/drm_fbdev_generic.h>
+> +#include <drm/drm_fbdev_dma.h>
+> =C2=A0#include <drm/drm_fourcc.h>
+> =C2=A0#include <drm/drm_framebuffer.h>
+> =C2=A0#include <drm/drm_gem_atomic_helper.h>
+> @@ -1399,7 +1399,7 @@ static int ingenic_drm_bind(struct device *dev,
+> bool has_components)
+> =C2=A0		goto err_clk_notifier_unregister;
+> =C2=A0	}
+> =C2=A0
+> -	drm_fbdev_generic_setup(drm, 32);
+> +	drm_fbdev_dma_setup(drm, 32);
+> =C2=A0
+> =C2=A0	return 0;
+> =C2=A0
 

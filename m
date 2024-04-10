@@ -1,213 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9376715957F;
-	Wed, 10 Apr 2024 12:16:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BA3715B565
+	for <linux-fbdev@vger.kernel.org>; Wed, 10 Apr 2024 13:06:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712751390; cv=none; b=nj71+ZIRUaj0Zz6aX1kTOKWhgSVMM4iC+Fe0WuOSkycpGefrzkn7kjDfuhll1WrG328UnnBeMd/2o0i90cFMaIVOENmdWGEvziZQynQKDqVQuoNXtrRoNK9UV5qbXaf+2fMGO5oM+i9fWTnIVxKRc0d241g4ehc09aPL4eCxErk=
+	t=1712754364; cv=none; b=aAUHJtGXrZP7ecoJMXGgyBhjmNUhlkDhUFJQTY/xntPqavyg++hMhVTVLJclyfvdRA1h1cp+ff5oWr/F91qCULgoOkoF/jzmDIJEgwo+6daVb96fzVBwHjr3fiwUv7ja9FfJoKrvxuLIaufj8I0huZgl0E9fMY/CeScpJzHSkqo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712751390; c=relaxed/simple;
-	bh=uqgIbQjDdQ7mXlLuRp0MGBFFQHK0OHDSrqq0mSqlVPU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qZGekQ+2MB6KFpKG5NNIIcMnNGFEdE9L8QYVnySrTXJYSHZ4819R2dDVPfa/umWbhKGrm5k/cCqJZDOk54JACrE/8Kjz1oUahAGqloDmCdE97KKgEzjQ5YZ5jrGmwLwyPOWtsEPZAqQ87sy0C06nXpvs2yVsmCxbdu/knyc7aVk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g+G9RV4B; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g+G9RV4B"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA30DC433C7;
-	Wed, 10 Apr 2024 12:16:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712751390;
-	bh=uqgIbQjDdQ7mXlLuRp0MGBFFQHK0OHDSrqq0mSqlVPU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=g+G9RV4BO0X3JsN/4qj/fub/YCO1DybeOA5yiCnNbFx3qhkImsTvXTWQ79tkGkp1i
-	 VUYo/Xh+LaQIJ3EyEZ1gfvBdVXQWpImOH3Ks5aDGqrtuu7ZRf959UinfC11+FR7nNy
-	 4M0WFulk4cnWOsQA0YA7SEISW7DLRwmtgHTwDf4pplsY9D5Ikf0fH3zDjT6Jr5Wui1
-	 s8N61TgN8zWUlMmCSoSOF5Xa1dspvlcq51zUskwiRaJ36rsGZ5wf89rT5r8fxFRZpk
-	 xf931uUP91Pl/8O+3CN2NdTNbzb6pEmifUJujQp40Mr7p3mYKFDqrmXin8Na+GBtLB
-	 T6FpY0ioZg8og==
-Date: Wed, 10 Apr 2024 07:16:27 -0500
-From: Rob Herring <robh@kernel.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>,
-	Daniel Vetter <daniel@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>,
-	Heiko Stuebner <heiko.stuebner@cherry.de>,
-	Shawn Guo <shawnguo@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Arnd Bergmann <arnd@arndb.de>, David Rientjes <rientjes@google.com>,
-	Hyeonggon Yoo <42.hyeyoo@gmail.com>,
-	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Kefeng Wang <wangkefeng.wang@huawei.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Guo Ren <guoren@kernel.org>, Azeem Shaikh <azeemshaikh38@gmail.com>,
-	Max Filippov <jcmvbkbc@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Herve Codina <herve.codina@bootlin.com>,
-	Manikanta Guntupalli <manikanta.guntupalli@amd.com>,
-	Anup Patel <apatel@ventanamicro.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Sergey Shtylyov <s.shtylyov@omp.ru>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [RESEND v7 12/37] dt-bindings: pci: pci-sh7751: Add SH7751 PCI
-Message-ID: <20240410121627.GA4069350-robh@kernel.org>
-References: <cover.1712207606.git.ysato@users.sourceforge.jp>
- <5ab3c5952b49d7998734855e2ec1ee980795a724.1712207606.git.ysato@users.sourceforge.jp>
+	s=arc-20240116; t=1712754364; c=relaxed/simple;
+	bh=aO+v3dYoSXZYGrdiUbp9tmY7/A90cV1TrDf98ymjpoA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=oW8BODPsteQMbRIWFaSJ5T9L0CG8VhF+oh/jK5hGZXuEEA4lNhqczKZndmJLbAhkYXfLdbY6B9TdKQueNrRz0GJZfexxQqRACkEr6fdIyZ0+8zwaEKyedOyC9F/kcPuvFEqJ0RxFUGVfTrsdLuAwDQ1OyrSfCFPC5FO8jbaRHxE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id CFBA45CDA4;
+	Wed, 10 Apr 2024 13:06:00 +0000 (UTC)
+Authentication-Results: smtp-out2.suse.de;
+	none
+Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 9C9F913AA2;
+	Wed, 10 Apr 2024 13:06:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap2.dmz-prg2.suse.org with ESMTPSA
+	id CB77JLiOFmYdEgAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Wed, 10 Apr 2024 13:06:00 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	deller@gmx.de,
+	airlied@gmail.com,
+	daniel@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 06/43] fbdev/deferred-io: Always call get_page() for framebuffer pages
+Date: Wed, 10 Apr 2024 15:02:02 +0200
+Message-ID: <20240410130557.31572-7-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240410130557.31572-1-tzimmermann@suse.de>
+References: <20240410130557.31572-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5ab3c5952b49d7998734855e2ec1ee980795a724.1712207606.git.ysato@users.sourceforge.jp>
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Spam-Flag: NO
+X-Spam-Score: -4.00
+X-Rspamd-Queue-Id: CFBA45CDA4
 
-On Thu, Apr 04, 2024 at 02:14:23PM +0900, Yoshinori Sato wrote:
-> Renesas SH7751 PCI Controller json-schema.
-> 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> ---
->  .../bindings/pci/renesas,sh7751-pci.yaml      | 89 +++++++++++++++++++
->  1 file changed, 89 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/pci/renesas,sh7751-pci.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/pci/renesas,sh7751-pci.yaml b/Documentation/devicetree/bindings/pci/renesas,sh7751-pci.yaml
-> new file mode 100644
-> index 000000000000..115c2bb67339
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/pci/renesas,sh7751-pci.yaml
-> @@ -0,0 +1,89 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/pci/renesas,sh7751-pci.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Renesas SH7751 PCI Host controller
-> +
-> +maintainers:
-> +  - Yoshinori Sato <ysato@users.sourceforge.jp>
-> +
-> +allOf:
-> +  - $ref: /schemas/pci/pci-bus.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    const: renesas,sh7751-pci
-> +
-> +  reg:
-> +    minItems: 2
-> +    maxItems: 2
-> +
-> +  reg-names:
-> +    items:
-> +      - const: PCI Controller
-> +      - const: Bus State Controller
-> +
+Unconditionally call get_page() after looking up a page from the
+framebuffer memory. Guarantees that we always hold a reference.
 
-> +  "#interrupt-cells":
-> +    const: 1
-> +
-> +  "#address-cells":
-> +    const: 3
-> +
-> +  "#size-cells":
-> +    const: 2
-> +
-> +  ranges: true
-> +
-> +  dma-ranges: true
+This change also refactors the code such that it can support a
+driver-supplied get_page helper. This will be useful for DRM's
+fbdev emulation.
 
-All 5 of these are defined in pci-bus-common.yaml, so you can drop them.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ drivers/video/fbdev/core/fb_defio.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-> +
-> +  interrupt-controller: true
-> +
-> +  renesas,bus-arbit-round-robin:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: |
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index fe84218ded457..6e0bbcfdb01b5 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -23,7 +23,7 @@
+ #include <linux/rmap.h>
+ #include <linux/pagemap.h>
+ 
+-static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
++static struct page *fb_deferred_io_get_page(struct fb_info *info, unsigned long offs)
+ {
+ 	const void *screen_buffer = info->screen_buffer;
+ 	struct page *page = NULL;
+@@ -33,6 +33,9 @@ static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs
+ 	else if (info->fix.smem_start)
+ 		page = pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
+ 
++	if (page)
++		get_page(page);
++
+ 	return page;
+ }
+ 
+@@ -129,12 +132,10 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
+ 	if (offset >= info->fix.smem_len)
+ 		return VM_FAULT_SIGBUS;
+ 
+-	page = fb_deferred_io_page(info, offset);
++	page = fb_deferred_io_get_page(info, offset);
+ 	if (!page)
+ 		return VM_FAULT_SIGBUS;
+ 
+-	get_page(page);
+-
+ 	if (vmf->vma->vm_file)
+ 		page->mapping = vmf->vma->vm_file->f_mapping;
+ 	else
+-- 
+2.44.0
 
-Don't need '|'.
-
-> +      Set DMA bus arbitration to round robin.
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - "#interrupt-cells"
-
-> +  - "#address-cells"
-> +  - "#size-cells"
-> +  - ranges
-
-These 3 are already required, so drop.
-
-> +  - interrupt-map
-> +  - interrupt-map-mask
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> +    pci@fe200000 {
-> +            compatible = "renesas,sh7751-pci";
-> +            #address-cells = <3>;
-> +            #size-cells = <2>;
-> +            #interrupt-cells = <1>;
-> +            interrupt-controller;
-> +            device_type = "pci";
-> +            bus-range = <0 0>;
-> +            ranges = <0x02000000 0 0xfd000000 0xfd000000 0 0x01000000>,
-> +                     <0x01000000 0 0x00000000 0xfe240000 0 0x00040000>;
-> +            dma-ranges = <0x02000000 0 0xc000000 0x0c000000 0 0x04000000>;
-> +            reg = <0xfe200000 0x0400>,
-> +                  <0xff800000 0x0100>;
-> +            interrupt-map = <0x0000 0 0 1 &julianintc 5 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0000 0 0 2 &julianintc 6 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0000 0 0 3 &julianintc 7 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0000 0 0 4 &julianintc 8 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0800 0 0 1 &julianintc 6 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0800 0 0 2 &julianintc 7 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0800 0 0 3 &julianintc 8 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x0800 0 0 4 &julianintc 5 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x1000 0 0 1 &julianintc 7 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x1000 0 0 2 &julianintc 8 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x1000 0 0 3 &julianintc 5 IRQ_TYPE_LEVEL_LOW>,
-> +                            <0x1000 0 0 4 &julianintc 6 IRQ_TYPE_LEVEL_LOW>;
-> +            interrupt-map-mask = <0x1800 0 0 7>;
-> +    };
-> -- 
-> 2.39.2
-> 

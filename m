@@ -1,78 +1,37 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCB8815B995
-	for <linux-fbdev@vger.kernel.org>; Wed, 10 Apr 2024 13:06:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8994015DBB7
+	for <linux-fbdev@vger.kernel.org>; Wed, 10 Apr 2024 13:06:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712754368; cv=none; b=mzIZw8x6vB9DEMP9w0z/nvRA05WUVQ2/sd7x7+wE4grged+9/b3GfojbgNhP8EPlQg49zmBayMsUT6kj/kQYssS4FBxYS3sI5Vx5dRY6SLQkRyEme05Q4J7QVligAaQh4ltHcyY6AXPYVZR5lOLDN21t2lDmp4SNJ1PCC8bjkTk=
+	t=1712754369; cv=none; b=f4FDGrlsc8kUzxs/wj2UjmFPATeauFyBBxb9SAFFgqtF1UuwHL4b+TULH/orQH/ZHPCa40VDnafgipODQUdAl0xu0TuC2sPUeBS/npvzummh7GGJQrfVP2BFjhsdYV2WAp1Cr6uvjKTVKa0NJoBwe0wcmSw8YwV3Pq1Vwmk3XNc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712754368; c=relaxed/simple;
-	bh=N52aWKpglV8IBk938alokF4d/WbC9Zry5gD+EBVcZHE=;
+	s=arc-20240116; t=1712754369; c=relaxed/simple;
+	bh=grfiF49c8/ZgjpztMMDXnj3IXzIjXvVfon19oYLeQYQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VVARAbPnPZBV5v+HAoTCz4rYc1BonuPsGJQmQ4b9m13903Y+gmtktqNiUb2TqaIC+Er7VX0YrO3HLptv6SA8YkuHDGNlqtcozj9rkB+TrMVs+/demE1MTJEzLESw7NUhpSZyMK30tdNBvqpZrYTZHgZ/a08udAS+ScjwzYAr75s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Iu7pQJPv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=if4QqV3R; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Iu7pQJPv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=if4QqV3R; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version:Content-Type; b=FFzGj+Hp+pksPmJX6j85aeZdAa1bbQYLjZvq3thwSyCjiUdGO76LjNA3582WIsq90IJnNzleQrfuV6wRsqNV/BYSfyfU0dL94sObE6hVY53nP77ndwsVWFUMazuQ/+BRzqom14Mz3g6cEQCW25Uo4gY/4G09gzwiMgDPMvp/KkM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Iu7pQJPv";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="if4QqV3R";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Iu7pQJPv";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="if4QqV3R"
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
+Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 79ABF351EF;
-	Wed, 10 Apr 2024 13:06:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1712754363; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YoOQGHHUnfMmOvOugi1BdFBr6ahWKUu5Rtgj79ZYMgI=;
-	b=Iu7pQJPv2u6t4x18P0+UbG379rlePnz1dcWAsvJlp+WRvxQC/vB10f55jyYvhd6FNP66Xx
-	bOtIWuCU5mydM3VUOi7LhmCk42Q6L+JHBpzxxcqp9SXQ7IDXK9+eaqTEhA2D/X6IOR2hqz
-	tabZTw85UFRX5DwoVF0wN7w6MGuqqCM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1712754363;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YoOQGHHUnfMmOvOugi1BdFBr6ahWKUu5Rtgj79ZYMgI=;
-	b=if4QqV3RxKGekVOo2ya1BqUZrLTWlVO3ccjfaC85xlZdadII8VQCOD4WuhAlAdQ0jYtw0u
-	ZpS3uBWq/1Yfy3Bw==
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 6BBA9351F1;
+	Wed, 10 Apr 2024 13:06:04 +0000 (UTC)
 Authentication-Results: smtp-out1.suse.de;
 	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1712754363; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YoOQGHHUnfMmOvOugi1BdFBr6ahWKUu5Rtgj79ZYMgI=;
-	b=Iu7pQJPv2u6t4x18P0+UbG379rlePnz1dcWAsvJlp+WRvxQC/vB10f55jyYvhd6FNP66Xx
-	bOtIWuCU5mydM3VUOi7LhmCk42Q6L+JHBpzxxcqp9SXQ7IDXK9+eaqTEhA2D/X6IOR2hqz
-	tabZTw85UFRX5DwoVF0wN7w6MGuqqCM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1712754363;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YoOQGHHUnfMmOvOugi1BdFBr6ahWKUu5Rtgj79ZYMgI=;
-	b=if4QqV3RxKGekVOo2ya1BqUZrLTWlVO3ccjfaC85xlZdadII8VQCOD4WuhAlAdQ0jYtw0u
-	ZpS3uBWq/1Yfy3Bw==
 Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 485BC1390D;
-	Wed, 10 Apr 2024 13:06:03 +0000 (UTC)
+	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 2231313A94;
+	Wed, 10 Apr 2024 13:06:04 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id AK59ELuOFmYdEgAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 10 Apr 2024 13:06:03 +0000
+	id EJQsB7yOFmYdEgAAn2gu4w
+	(envelope-from <tzimmermann@suse.de>); Wed, 10 Apr 2024 13:06:04 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	deller@gmx.de,
@@ -80,10 +39,14 @@ To: javierm@redhat.com,
 	daniel@ffwll.ch
 Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 17/43] drm/tiny/simpledrm: Use fbdev-shmem
-Date: Wed, 10 Apr 2024 15:02:13 +0200
-Message-ID: <20240410130557.31572-18-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Rodrigo Siqueira <rodrigosiqueiramelo@gmail.com>,
+	Melissa Wen <melissa.srw@gmail.com>,
+	=?UTF-8?q?Ma=C3=ADra=20Canal?= <mairacanal@riseup.net>,
+	Haneen Mohammed <hamohammed.sa@gmail.com>
+Subject: [PATCH v2 20/43] drm/vkms: Use fbdev-shmem
+Date: Wed, 10 Apr 2024 15:02:16 +0200
+Message-ID: <20240410130557.31572-21-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240410130557.31572-1-tzimmermann@suse.de>
 References: <20240410130557.31572-1-tzimmermann@suse.de>
@@ -93,66 +56,59 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Score: -6.80
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 X-Spam-Level: 
-X-Spamd-Result: default: False [-6.80 / 50.00];
+X-Spamd-Result: default: False [-4.00 / 50.00];
 	REPLY(-4.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FREEMAIL_TO(0.00)[redhat.com,gmx.de,gmail.com,ffwll.ch];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,imap2.dmz-prg2.suse.org:helo,imap2.dmz-prg2.suse.org:rdns];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
+	TAGGED_RCPT(0.00)[]
+X-Spam-Flag: NO
+X-Spam-Score: -4.00
+X-Rspamd-Queue-Id: 6BBA9351F1
 
 Implement fbdev emulation with fbdev-shmem. Avoids the overhead of
 fbdev-generic's additional shadow buffering. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Rodrigo Siqueira <rodrigosiqueiramelo@gmail.com>
+Cc: Melissa Wen <melissa.srw@gmail.com>
+Cc: "Maíra Canal" <mairacanal@riseup.net>
+Cc: Haneen Mohammed <hamohammed.sa@gmail.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
 ---
- drivers/gpu/drm/tiny/simpledrm.c | 4 ++--
+ drivers/gpu/drm/vkms/vkms_drv.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/tiny/simpledrm.c b/drivers/gpu/drm/tiny/simpledrm.c
-index 7ce1c46176750..3cb09ad5f7537 100644
---- a/drivers/gpu/drm/tiny/simpledrm.c
-+++ b/drivers/gpu/drm/tiny/simpledrm.c
+diff --git a/drivers/gpu/drm/vkms/vkms_drv.c b/drivers/gpu/drm/vkms/vkms_drv.c
+index dd0af086e7fa9..8dc9dc13896e9 100644
+--- a/drivers/gpu/drm/vkms/vkms_drv.c
++++ b/drivers/gpu/drm/vkms/vkms_drv.c
 @@ -17,7 +17,7 @@
- #include <drm/drm_damage_helper.h>
- #include <drm/drm_device.h>
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_atomic_helper.h>
  #include <drm/drm_drv.h>
 -#include <drm/drm_fbdev_generic.h>
 +#include <drm/drm_fbdev_shmem.h>
- #include <drm/drm_format_helper.h>
- #include <drm/drm_framebuffer.h>
- #include <drm/drm_gem_atomic_helper.h>
-@@ -1026,7 +1026,7 @@ static int simpledrm_probe(struct platform_device *pdev)
- 	if (color_mode == 16)
- 		color_mode = sdev->format->depth; // can be 15 or 16
+ #include <drm/drm_file.h>
+ #include <drm/drm_gem_framebuffer_helper.h>
+ #include <drm/drm_ioctl.h>
+@@ -223,7 +223,7 @@ static int vkms_create(struct vkms_config *config)
+ 	if (ret)
+ 		goto out_devres;
  
--	drm_fbdev_generic_setup(dev, color_mode);
-+	drm_fbdev_shmem_setup(dev, color_mode);
+-	drm_fbdev_generic_setup(&vkms_device->drm, 0);
++	drm_fbdev_shmem_setup(&vkms_device->drm, 0);
  
  	return 0;
- }
+ 
 -- 
 2.44.0
 

@@ -1,150 +1,106 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C088E156976
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Apr 2024 19:21:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3898F8F44;
+	Wed, 10 Apr 2024 04:54:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712690502; cv=none; b=KSY3bpi4DSfH2dqn9w0wsiOCCJbi+fF5Zb63BrMhDrmPHRXTYy3/DA22I9K3WreED6TKmlAI2lRR6kcDz1kB3EBNdnK2AW9zmJt43NldrtLz85g1T5GdNRkPxMGYsCiCV3hvlFU7zy9M6KY8fJfJbbm+oqOHsdTZJNa4rTX26rU=
+	t=1712724877; cv=none; b=mjueXHuWRhdcPzJoAZPpJ7c0ZdPIpsUXLaanGmm0+CCXoQhMtp0gU3mdznDDuKF/XvmCR0FiU7c8zp23iNFt2jnOw4sHu6Syhi7KjKenwMtJUL6bYMr4I3O9kenogIGqLKCY/+EQ4CYn5o+4g7nxAg7PciNXd9O4V3eD2Z3zwyI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712690502; c=relaxed/simple;
-	bh=jvMI53KJIMLfRD1iwwuF/8wUDvcZozfCeiLbp+bSkh4=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ixU+xyTBbHDIlDyYD4sdTPSV6EGEaXP9tKQPSCjfpKUnuQZR19h68iOjssHYYqCMCNH8Oxx2W3ij1XdYYKK0B1q+n5ybM6lG6YbkrROyM38Xwnq7/G0e59lQwvxxsEsOCchbXqasKTI8LFF16xMmOH1Oc+Zp/evxoR86J+f4Dhs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=c9lRsjF9; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=gnB65wRc; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	s=arc-20240116; t=1712724877; c=relaxed/simple;
+	bh=+PP+7xyp7mZeBlJnB62bonN9tv8yVzjzZGET211dMwM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XtshnCDaHoijMGaozOG2fJ8MAvuh5GNv47SQjk7LvxAVzMkVWlELkd6kWFDh8H5obf7qPZcG3b++k4idK0vX55UzPlwDftsY8FHLI4cgBN3eDRxh6sE5d3Pehlau+1KKFjsAS8NAmgqiVZy7FR/6q05cN7moRNaGUjd4MnDzZj8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=eDUMyuaU; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="c9lRsjF9";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="gnB65wRc"
-Date: Tue, 9 Apr 2024 21:21:35 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1712690498;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NbYDuH8UvmmedQECl/5+GU9kJDM7MRwKRcu5e0t3/LY=;
-	b=c9lRsjF9sB0XHQEcUJwP63q3auV+7aEk0/kF2y4JfemP33gcyTbtsAVC5refyNKkTQBSa0
-	F8tt39/m8OCPxnpTd6ATJImnVodNVVSPuqaKHAEWn2fqLQn4HLXHiRcig3xXMz/imXOH2V
-	oo0WqUh9LuzHabmzKDREQk1EH+K5nP3IR8rCXRwcjiBpKariJc7Y2DvEg6Ssl2EZWNUy3R
-	qQJG1RsCOcEXxxJhMQziL0sMV4UHFTji6zIKm2QS1LBrlmgKQc11b8JnPXEzXGnEUJi+h4
-	ZiVe0OHwo4B7hUoPs8+SpIeUE7erzIyLW+WnGbwtp9AiOuPdUIBCapHzV/ODAg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1712690498;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NbYDuH8UvmmedQECl/5+GU9kJDM7MRwKRcu5e0t3/LY=;
-	b=gnB65wRcdTieOc9VSdQ5MJUTJ+PaYqf5ECEvJAqtHVDSOGyiTwtX1bF4K2+dnqxkj3BwU2
-	RmkpTtUeUtn09ODw==
-From: Nam Cao <namcao@linutronix.de>
-To: Yuguo Pei <purofle@gmail.com>
-Cc: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: Re: [PATCH v2] staging: fbtft: fb_st7789v: support setting offset
-Message-ID: <20240409212135.72cbac3a@namcao>
-In-Reply-To: <20240409180900.31347-2-purofle@gmail.com>
-References: <20240409180900.31347-2-purofle@gmail.com>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eDUMyuaU"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=8C+0CGPOaTrvPlLGeH5cZbzRihud44TyrcpJRxDnZNY=; b=eDUMyuaUPQlEYoqqBbVcd0mNq3
+	WD7AN98JJQlkqSSqKRNgVSlPVTgSbUU88ZuqzVKVnWuSluqAbwNbRWd7/rT1OXXTta1mpPYZh208c
+	syqZZZTpXdNyz3Ff1l1ZtA9Y9tXHfsq08Dbo49JxDS9DGhb0bc0USjmd0WzUOiCkMLhKxqz2kSvLr
+	j0LDikEvbOOUNe0Du4ciGkLjM6iOro5uIsfqi7E6DowK9fFehrMgq/gX2Dq1GlM5O09LJ5MWGTFpS
+	w+OwdeaQTb67WQjbjoa7tsK/rX0b29Cx556UdfDbBAubFQhER57NFYkiUIZ4M7hvnY2rlqpfYF+Th
+	dGMem+Lg==;
+Received: from [50.53.2.121] (helo=[192.168.254.15])
+	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1ruPyh-000000055W4-1nEZ;
+	Wed, 10 Apr 2024 04:54:31 +0000
+Message-ID: <c5436115-0b26-4369-8d71-154cc3c95659@infradead.org>
+Date: Tue, 9 Apr 2024 21:54:27 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev/sh7760fb: allow modular build
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20240210053938.30558-1-rdunlap@infradead.org>
+ <4d01127a9130ce46b7c1d447811c89c1d1503199.camel@physik.fu-berlin.de>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <4d01127a9130ce46b7c1d447811c89c1d1503199.camel@physik.fu-berlin.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 10/Apr/2024 Yuguo Pei wrote:
-> Some screen sizes using st7789v chips are different from 240x320,
-> and offsets need to be set to display all images properly.
+Hi,
+
+Will someone be merging this patch?
+
+thanks.
+
+On 2/10/24 1:31 AM, John Paul Adrian Glaubitz wrote:
+> On Fri, 2024-02-09 at 21:39 -0800, Randy Dunlap wrote:
+>> There is no reason to prohibit sh7760fb from being built as a
+>> loadable module as suggested by Geert, so change the config symbol
+>> from bool to tristate to allow that and change the FB dependency as
+>> needed.
+>>
+>> Fixes: f75f71b2c418 ("fbdev/sh7760fb: Depend on FB=y")
+>> Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Javier Martinez Canillas <javierm@redhat.com>
+>> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
+>> Cc: Helge Deller <deller@gmx.de>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: dri-devel@lists.freedesktop.org
+>> ---
+>>  drivers/video/fbdev/Kconfig |    4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -1645,8 +1645,8 @@ config FB_COBALT
+>>  	select FB_IOMEM_HELPERS
+>>  
+>>  config FB_SH7760
+>> -	bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
+>> -	depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+>> +	tristate "SH7760/SH7763/SH7720/SH7721 LCDC support"
+>> +	depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+>>  		|| CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
+>>  	select FB_IOMEM_HELPERS
+>>  	help
 > 
-> For those who use screens with offset, they only need to modify the values
-> of size and offset, and do not need to a new set_addr_win function.
-
-If I understand the patch correctly, you are adding a new feature so that
-people can change the screen offset? And from the patch, I think users
-are supposed change the values of macros LEFT_OFFSET and TOP_OFFSET?
-
-I hope I don't misunderstand anything, because I would be against this
-approach. Asking users to modify the source code doesn't sound like a
-good idea. If this is really needed, I suggest adding new device tree
-properties instead.
-
-> Signed-off-by: Yuguo Pei <purofle@gmail.com>
-> ---
-> v2: modify Signed-off-by, fix explanation of changes
+> Acked-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
 > 
->  drivers/staging/fbtft/fb_st7789v.c | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
+> Adrian
 > 
-> diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-> index 861a154144e6..d47ab4262374 100644
-> --- a/drivers/staging/fbtft/fb_st7789v.c
-> +++ b/drivers/staging/fbtft/fb_st7789v.c
-> @@ -30,6 +30,12 @@
->  
->  #define HSD20_IPS 1
->  
-> +#define WIDTH 240
-> +#define HEIGHT 320
-> +
-> +#define LEFT_OFFSET 0
-> +#define TOP_OFFSET 0
-> +
->  /**
->   * enum st7789v_command - ST7789V display controller commands
->   *
-> @@ -349,6 +355,21 @@ static int set_gamma(struct fbtft_par *par, u32 *curves)
->  	return 0;
->  }
->  
-> +static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
-> +{
-> +	unsigned int x = xs + TOP_OFFSET, y = xe + TOP_OFFSET;
-> +
-> +	write_reg(par, MIPI_DCS_SET_COLUMN_ADDRESS, (x >> 8) & 0xFF, xs & 0xFF,
-                                                                     ^ should be x?
-> +		  (y >> 8) & 0xFF, xe & 0xFF);
-                                   ^ should be y?
 
-As noted above, I don't think this is correct. The spec says this register should
-be written with:
-	- upper 8 bit of SC
-	- lower 8 bit of SC
-	- upper 8 bit of EC
-	- lower 8 bit of EC
-...and I don't think the code does that correctly.
-
-> +	x = ys + LEFT_OFFSET, y = ye + LEFT_OFFSET;
-> +
-> +	write_reg(par, MIPI_DCS_SET_PAGE_ADDRESS, (x >> 8) & 0xFF, ys & 0xFF,
-> +		  (y >> 8) & 0xFF, ye & 0xFF);
-
-Same problem as above?
-
-> +	write_reg(par, MIPI_DCS_WRITE_MEMORY_START);
-> +}
-> +
->  /**
->   * blank() - blank the display
->   *
-> @@ -379,6 +400,7 @@ static struct fbtft_display display = {
->  		.set_var = set_var,
->  		.set_gamma = set_gamma,
->  		.blank = blank,
-> +		.set_addr_win = set_addr_win,
->  	},
->  };
->
-
-Because I don't think the implementation is correct, as pointed out above,
-I have to ask: has this patch been tested with hardware? Is there
-really a use case here? I wouldn't like to add code that is not really
-used..
-
-Best regards,
-Nam
-
-
+-- 
+#Randy

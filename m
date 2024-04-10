@@ -1,215 +1,105 @@
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37A6F15A491;
-	Wed, 10 Apr 2024 10:56:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 264A615957F;
+	Wed, 10 Apr 2024 12:12:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712746601; cv=none; b=Xw7KZlmi450PumnbVWjwds06wXL+3LrGUS2eQ6fxM5dGO/iwiaCvGvcpID4wngNYPk+5O7qwI+HksFtYPmLHaTzBxGyo1UnQAy8EHNtzuL+EgCFlx4jbey7QhdZXgDroG3o81YheYv6chbc9vj3qiQRPBdeW2g1VAYqkrEq9SG8=
+	t=1712751180; cv=none; b=gFn+/qMpnTEtf4n0WXB+CT6otXXxc/eh57FIBoFqJf7stY+dRx5e4Hj3Y7zX/PXoEbz+Z24rCU3Rv3zCnl7s4IOP8ROh7WOn1XdV5IM0nNor8vYTQ3u13IYnTjJPrhOj3jsB5k5NSTrbM1UxT7gW4ryG7UGPCYzHkBVLklqKWcM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712746601; c=relaxed/simple;
-	bh=aMubXWwJQtUUOvZ4Fovzz7ZsADEzMON7kUCfnjy54vE=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=h2OXJtc8XybIrDW7k3LseMJDjyMhCcZ2aZ0kuy6cKKehOKpM/puazqZxlJcwbMsuEfXVTgpfVcoLw8YE1ZV9fSONP+QoXcunqL/ak2y5CX4KDTA8J6U8YO4wWvs0CWsgpDD/iSzCo/kemaElljRQVKI6bWSewvREXNQQU8IByps=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=s6ZhzPwM; arc=none smtp.client-ip=148.163.156.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	s=arc-20240116; t=1712751180; c=relaxed/simple;
+	bh=I+uJ1g7ySn5pqQmYvDmMibVK1q6lbK+Bix95dorw6lU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=eLEACflXpnChF2LYzocD6/FrWbRCd/RJ/fcbrHXE3WdV5EDYEqfbjXCJkiv/ocouddTThT1h+EhHfAUUyJBu13OCXraW6GH3rb4JdeYkDuj6ocTJiEgEPIWyFk/hHeC0hcZMKQ4amGXD+9WQQLwVDSMHqn21msH9xxJI2UQQ3rU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kOMDK3vF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="s6ZhzPwM"
-Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43AAqsQ0023054;
-	Wed, 10 Apr 2024 10:56:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=cUqfhbJx+4Wg3bxA8zKrjHOA4D9BAigt9Hhl1lEmrQo=;
- b=s6ZhzPwMMajLOcpcH9Vwt7AHRbV7eosB9/J/9PDoE6YzATVC/d8CVBtufufAMjCxp5m0
- oFxstByVx9d9UwbNoMulGRtQaUUPJu3b8pEjhgwXXC+BaL2oSd2qBBg8aFR6zX2XMvET
- kdm6smvecnW/wVGQFQorPzPjfKBCQ+rnPClwpPWr09D+IYPYvkeOFmIjxEuyLLK1YAKr
- 9LfoSNoizyNbasmAfXGC+JrMJQQ87P2opvEiR2/GAi+9xNTVNq7NYGaWa1xWTM4TvHVe
- eGxLmXHBeRLnjOKxS/5BYzP/HMwuIycD6PCq9YRBYJksRaa5xG5Zd3SdYUcZX5KEcWj4 CQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdsd4g08m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 10:56:33 +0000
-Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43AAuXWq027473;
-	Wed, 10 Apr 2024 10:56:33 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdsd4g08g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 10:56:33 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 43A8YZlE021511;
-	Wed, 10 Apr 2024 10:56:32 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xbjxkv0jj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Apr 2024 10:56:32 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 43AAuRtB46858726
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 10 Apr 2024 10:56:29 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 26B4A20040;
-	Wed, 10 Apr 2024 10:56:27 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 02ECF2004B;
-	Wed, 10 Apr 2024 10:56:27 +0000 (GMT)
-Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 10 Apr 2024 10:56:26 +0000 (GMT)
-From: Niklas Schnelle <schnelle@linux.ibm.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Arnd Bergmann <arnd@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, Niklas Schnelle <schnelle@linux.ibm.com>
-Subject: [PATCH v2 1/1] fbdev: add HAS_IOPORT dependencies
-Date: Wed, 10 Apr 2024 12:56:26 +0200
-Message-Id: <20240410105626.2743168-2-schnelle@linux.ibm.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20240410105626.2743168-1-schnelle@linux.ibm.com>
-References: <20240410105626.2743168-1-schnelle@linux.ibm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kOMDK3vF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CEC7C433F1;
+	Wed, 10 Apr 2024 12:12:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712751179;
+	bh=I+uJ1g7ySn5pqQmYvDmMibVK1q6lbK+Bix95dorw6lU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=kOMDK3vFckM481hPOtZFhyKikOF3E4sh/IDM/dHw7maAVbf24YzaX16PZz1lHCKkE
+	 yQLUyvsY6KbqzOEajn838MLjoKGk82wWjSvTJ8KpF6qo31BiVsd7vOlWQKWIAYW0/N
+	 rFTo6GtFKmziqfgF56pI5TdOhpbR74Wt8t3ypDAHgm2fXuorpLjpdyB7IH9cesq7ro
+	 BUlOqMHrA3Xf8jFiYJEZg59QKGILaQ7SKd0Rtp4sbANhYFtFjgDpGbLMb74tZINAfK
+	 SSVUaBALP0ZpgOIfCNghzgGmu/7SJ9TtQgJL63wk1Epjv1PzciMgOzGbRQ4hicMWO5
+	 ceWsnnaXb0l3A==
+Date: Wed, 10 Apr 2024 07:12:57 -0500
+From: Rob Herring <robh@kernel.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	linux-ide@vger.kernel.org, Chris Morgan <macromorgan@hotmail.com>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-pci@vger.kernel.org,
+	Jiri Slaby <jirislaby@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	David Airlie <airlied@gmail.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Anup Patel <apatel@ventanamicro.com>, linux-serial@vger.kernel.org,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Lee Jones <lee@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	devicetree@vger.kernel.org,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+	Azeem Shaikh <azeemshaikh38@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Hyeonggon Yoo <42.hyeyoo@gmail.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Stephen Boyd <sboyd@kernel.org>, Jacky Huang <ychuang3@nuvoton.com>,
+	Manikanta Guntupalli <manikanta.guntupalli@amd.com>,
+	Damien Le Moal <dlemoal@kernel.org>, Rich Felker <dalias@libc.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Heiko Stuebner <heiko.stuebner@cherry.de>,
+	Arnd Bergmann <arnd@arndb.de>, David Rientjes <rientjes@google.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	dri-devel@lists.freedesktop.org,
+	Michael Turquette <mturquette@baylibre.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>,
+	linux-kernel@vger.kernel.org,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Helge Deller <deller@gmx.de>, Guo Ren <guoren@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	Guenter Roeck <linux@roeck-us.net>, linux-sh@vger.kernel.org,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [RESEND v7 09/37] dt-binding: Add compatible SH7750 SoC
+Message-ID: <171275117279.4069088.5374906172942938203.robh@kernel.org>
+References: <cover.1712207606.git.ysato@users.sourceforge.jp>
+ <4ac65d0f311e890c1ca92bf057c70954ec7ac351.1712207606.git.ysato@users.sourceforge.jp>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 2NC-cVop20iqCSKtOmd0cgs6vR6rfu3R
-X-Proofpoint-ORIG-GUID: CkuigeIMlVP2S1dywEOumcAavocQLm1M
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-10_04,2024-04-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- mlxlogscore=999 malwarescore=0 phishscore=0 lowpriorityscore=0 spamscore=0
- suspectscore=0 clxscore=1015 adultscore=0 bulkscore=0 priorityscore=1501
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2404010000 definitions=main-2404100079
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ac65d0f311e890c1ca92bf057c70954ec7ac351.1712207606.git.ysato@users.sourceforge.jp>
 
-In a future patch HAS_IOPORT=n will disable inb()/outb() and friends at
-compile time. We thus need to add HAS_IOPORT as dependency for those
-drivers using them.
 
-Co-developed-by: Arnd Bergmann <arnd@kernel.org>
-Signed-off-by: Arnd Bergmann <arnd@kernel.org>
-Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
----
-Note: This patch does not depend any not-yet-mainline HAS_IOPORT changes
-and may be merged via subsystem specific trees at your earliest
-convenience.
+On Thu, 04 Apr 2024 14:14:20 +0900, Yoshinori Sato wrote:
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> ---
+>  Documentation/devicetree/bindings/timer/renesas,tmu.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
 
-v1 -> v2:
-- Add dependency for FB_ARC
-
- drivers/video/fbdev/Kconfig | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 197b6d5268e9..76bbfd3767da 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -157,7 +157,7 @@ config FB_IMX
- 
- config FB_CYBER2000
- 	tristate "CyberPro 2000/2010/5000 support"
--	depends on FB && PCI && (BROKEN || !SPARC64)
-+	depends on FB && PCI && HAS_IOPORT && (BROKEN || !SPARC64)
- 	select FB_IOMEM_HELPERS
- 	help
- 	  This enables support for the Integraphics CyberPro 20x0 and 5000
-@@ -245,7 +245,7 @@ config FB_FM2
- 
- config FB_ARC
- 	tristate "Arc Monochrome LCD board support"
--	depends on FB && (X86 || COMPILE_TEST)
-+	depends on FB && HAS_IOPORT && (X86 || COMPILE_TEST)
- 	select FB_SYSMEM_HELPERS_DEFERRED
- 	help
- 	  This enables support for the Arc Monochrome LCD board. The board
-@@ -1046,7 +1046,7 @@ config FB_ATY_BACKLIGHT
- 
- config FB_S3
- 	tristate "S3 Trio/Virge support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1107,7 +1107,7 @@ config FB_SAVAGE_ACCEL
- 
- config FB_SIS
- 	tristate "SiS/XGI display support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select BOOT_VESA_SUPPORT if FB_SIS = y
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-@@ -1138,7 +1138,7 @@ config FB_SIS_315
- 
- config FB_VIA
- 	tristate "VIA UniChrome (Pro) and Chrome9 display support"
--	depends on FB && PCI && GPIOLIB && I2C && (X86 || COMPILE_TEST)
-+	depends on FB && PCI && GPIOLIB && I2C && HAS_IOPORT && (X86 || COMPILE_TEST)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1177,7 +1177,7 @@ endif
- 
- config FB_NEOMAGIC
- 	tristate "NeoMagic display support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1204,7 +1204,7 @@ config FB_KYRO
- 
- config FB_3DFX
- 	tristate "3Dfx Banshee/Voodoo3/Voodoo5 display support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1252,7 +1252,7 @@ config FB_VOODOO1
- 
- config FB_VT8623
- 	tristate "VIA VT8623 support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1267,7 +1267,7 @@ config FB_VT8623
- 
- config FB_TRIDENT
- 	tristate "Trident/CyberXXX/CyberBlade support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1290,7 +1290,7 @@ config FB_TRIDENT
- 
- config FB_ARK
- 	tristate "ARK 2000PV support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1814,7 +1814,7 @@ config FB_SSD1307
- 
- config FB_SM712
- 	tristate "Silicon Motion SM712 framebuffer support"
--	depends on FB && PCI
-+	depends on FB && PCI && HAS_IOPORT
- 	select FB_IOMEM_HELPERS
- 	help
- 	  Frame buffer driver for the Silicon Motion SM710, SM712, SM721
--- 
-2.40.1
+Acked-by: Rob Herring <robh@kernel.org>
 

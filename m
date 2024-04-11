@@ -1,86 +1,67 @@
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8B0913E04A;
-	Thu, 11 Apr 2024 07:32:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3508313DDD6;
+	Thu, 11 Apr 2024 10:51:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712820741; cv=none; b=FdQ6mS3QnqC8suk+cGYcL+hRJ9ZsxN9pKE5VzfsZ9BKUVSEPfNAXvnf/3mhk3kpdA8Sh1uaYsaJ/FVBFD0R0hmopetekIDegbwIDCP+bwKmYaIpNBzGxTehEazJLt3pjOShW2CnqQ3HeO9Ac/B0j1wlP7t/vndfA7OWIFXyFPO0=
+	t=1712832715; cv=none; b=jxRsGCZb4Dr5JTqA5l6KJMUoMBx1dR5VSjz5DXvrT2knDieFTZmJg6VlA0mA7RBtfrqMZEa5M0CDf3URrS0M5Mw0fk29HP/TezfakojAIp2jlL9NVe7W+FkLicwvdBiHuXyViOnaVDM5x8nBhmUDjIL28NNvEjTUNq7wyP2Uu90=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712820741; c=relaxed/simple;
-	bh=o9XNePphrFGLADbN374hkRmD+LG18cKySdDPj/hyjWA=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Wr3IPut8i9YaO38Zz2967ckpGob73xOFEcNFWG10fSoAjApcckHOlBNVL8tc8CF0LVvVPGZ8vphHvyw3vzAxln5JW5bMOFUg9czCF/eLrsoxnzqqIzcQ57A4DRivuAZMyuGhTjj7fECjkjHdThgmpc95wRjk6yqWtm9hClmWuXs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b=M2lOxx7X; arc=none smtp.client-ip=130.133.4.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
+	s=arc-20240116; t=1712832715; c=relaxed/simple;
+	bh=D6JMxryqqfDxqjFdDz0KsohI3fQ2DDEdBVnKin6QWQc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=tZfqdcp6Al5pTWX1hnxwYiOmhLZORUxOoUWci7EUC/+JtpCTJNmlQJxKctxvKawl1atUcpYrSRmydKRjYsWbIz1RDgFkpenZv2DBj8DcBKncGLrk5BO/OkP4LG30AWYT3GTXeffDFLVy/ny9mfBGZX1rmABKAW2csjST7FPqfMU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qixGdOXI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b="M2lOxx7X"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=QPDpZoE/tjUUBV8p6vi4T9AN0aehyjX15I4+zRojGDo=; t=1712820737; x=1713425537; 
-	b=M2lOxx7XCAryXeWFDXXIQvdJ4W+/7Qx8wrQ81e+OOifF9rD6ep9dmWsKh7NW3IIusFjmEQlTglW
-	wPZZDjfqZFsve0tYHSbOG1D2Lo2UWz25uuHXAvjNH9r20v3JJy4G4mbzBFqePUWkcBQSY7otOJZhB
-	S3kAvCDPxgJUxkH1WOeCM2/oCexAm/bUA+a8YJIF2FUAE4Djbp3JojyFIWbY5Hajdi4LhI361xaEy
-	r1aNywcwYy4K+2i/w56PGm3rsEVdgavxY2S1lirY/5IfgyzaLSi8GZN/CZuwxe5fLSYFtICLZHoPH
-	sclBtU+IMKk2ZqdGvtS0wYmSv9TRIQADr2LA==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.97)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1ruout-00000002zUf-32Mw; Thu, 11 Apr 2024 09:32:15 +0200
-Received: from p5b13a9fd.dip0.t-ipconnect.de ([91.19.169.253] helo=[192.168.178.20])
-          by inpost2.zedat.fu-berlin.de (Exim 4.97)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1ruout-00000002XFi-27xs; Thu, 11 Apr 2024 09:32:15 +0200
-Message-ID: <404299f95cf50003eeee5d6598bd484117fe5378.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH] fbdev/sh7760fb: allow modular build
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Helge Deller <deller@gmx.de>, Randy Dunlap <rdunlap@infradead.org>, 
-	linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Zimmermann
- <tzimmermann@suse.de>, Javier Martinez Canillas <javierm@redhat.com>, Sam
- Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Date: Thu, 11 Apr 2024 09:32:14 +0200
-In-Reply-To: <5191337e-9ffc-44b7-9700-eb5f1f2fc4cc@gmx.de>
-References: <20240210053938.30558-1-rdunlap@infradead.org>
-	 <4d01127a9130ce46b7c1d447811c89c1d1503199.camel@physik.fu-berlin.de>
-	 <c5436115-0b26-4369-8d71-154cc3c95659@infradead.org>
-	 <5191337e-9ffc-44b7-9700-eb5f1f2fc4cc@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.0 
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qixGdOXI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 202F5C433F1;
+	Thu, 11 Apr 2024 10:51:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712832714;
+	bh=D6JMxryqqfDxqjFdDz0KsohI3fQ2DDEdBVnKin6QWQc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=qixGdOXI0gJNkpiYUoUXv3CP0K3DF+6hg/K07WmVGHFC9ZsXILb3cL8+bG4GAEIcs
+	 6PZ3xzj2YJuGKxlDVr5moi5gyqbLDJhyL3V4hRx9xzX7DvhYmARbYKE83RxKpaf53i
+	 rSUWduG3Pd0usx4EySllM2tARdS//1pq60QjEbcrrETRiZnN0m2shAbip2m6P4Phvk
+	 Q2EhcQ1eRYPiHiesoBe9ig57hWTlyg7OjsFRTUQX9471yUtOsyHXwhyLHED+I5zCw7
+	 d+Pht1PXHWHM6qjpSLkaIeqXHLPBT2t68d631E8LdeCzfK6Uhq0m4f+5AvkXNs08x5
+	 bqu7kfLaG58OQ==
+From: Lee Jones <lee@kernel.org>
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ kernel@pengutronix.de, dri-devel@lists.freedesktop.org
+In-Reply-To: <20240329133839.550065-2-u.kleine-koenig@pengutronix.de>
+References: <20240329133839.550065-2-u.kleine-koenig@pengutronix.de>
+Subject: Re: (subset) [PATCH v3] backlight: lp8788: Drop support for
+ platform data
+Message-Id: <171283271286.2290145.16947522198877039372.b4-ty@kernel.org>
+Date: Thu, 11 Apr 2024 11:51:52 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-ZEDAT-Hint: PO
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.12.4
 
-On Wed, 2024-04-10 at 15:17 +0200, Helge Deller wrote:
-> On 4/10/24 06:54, Randy Dunlap wrote:
-> > Hi,
-> >=20
-> > Will someone be merging this patch?
->=20
-> I've just added it to the fbdev git tree.
+On Fri, 29 Mar 2024 14:38:39 +0100, Uwe Kleine-König wrote:
+> The backlight driver supports getting passed platform data. However this
+> isn't used. This allows to remove quite some dead code from the driver
+> because bl->pdata is always NULL, and so bl->mode is always
+> LP8788_BL_REGISTER_ONLY.
+> 
+> 
 
-Ah, good. Then I can drop it from my queue again.
+Applied, thanks!
 
-Adrian
+[1/1] backlight: lp8788: Drop support for platform data
+      commit: 150476e60a80ebb93d49aae7b636934eb04b83d2
 
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+--
+Lee Jones [李琼斯]
+

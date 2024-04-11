@@ -1,44 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 618BF149E17;
-	Thu, 11 Apr 2024 11:39:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4272D149C4F;
+	Thu, 11 Apr 2024 11:39:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712835584; cv=none; b=do52KZPAa13S3Afy6chaxYePTEP9I33kVBsQroma4FTfs7KMWK4lZEKEUrHnbv5QqfrYD2kmeUgVSUPTRBZQod62wq/3M6u+Pmq1g3fHv3UAQE4Mm6AVfUD2jad7pYZxnAKRqHEmXuW2pmE7sHqyGCgy/TcCtXhtEJN5kG6lUcs=
+	t=1712835586; cv=none; b=eOgoY5hEg4EHlVoWrixWnGH6uIHazJl1iu1XDh5vbTMl8fdgMugGrCQ2qjnTRT9VYM6fHbzLgjSceKSSV/YpnbvzHwKTvJfkiEBuarDeA2MFVbw87R9BnwaW0Mxuis3iMc0rmHpzyORLXzI8Fftw42zWjqdQR+QRqAPNY5+dUAw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712835584; c=relaxed/simple;
-	bh=X9vV5K79v2Fsvok6tE2lAzLxQa6MEqPuFqe5Gd+2Kr4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=jhT2w18fUDzHV8QDW8CCzmdZt1Wk4LVEjciS55RSlfApnBYwhf9QgxjKbeGNcV2qkdpqWll2YY0g7FpMCNOZNN48SWvfSgyYP9hZikxf/8rMbR7l4OxvD1HcxNlIUWYj3mRNMG4dI5ywIlo6LytsrXhY4zK0HwDE2aH8z4fzjsY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ri+HxRUr; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1712835586; c=relaxed/simple;
+	bh=7EFwvVMuQn70XRVguNSGzqoYr22N/NAtZcQsB+LnsEg=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=YL1KNiaSJp2pDeWQDs8DZYizlDyH46ifmU00IOXj58kB7de2gAh7PPMOCXT0XwsDGLpi5HuV43/FuP93WYYbYDhoD6FP7BVXf/0l1dUQfQ8fUiPKkHNn670yI4pFkk5cxWXqmsUYyiJloKy9BlDYk2UxPuU6QLMygGR4MTohNns=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b0n7KVm5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ri+HxRUr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 629A0C43390;
-	Thu, 11 Apr 2024 11:39:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b0n7KVm5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B308C43390;
+	Thu, 11 Apr 2024 11:39:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712835584;
-	bh=X9vV5K79v2Fsvok6tE2lAzLxQa6MEqPuFqe5Gd+2Kr4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=ri+HxRUr5vyTIfa0Unyvmv2zEC8qGF5cLrMibV08si52f6ZHji6gEMu5rgiw81Pfx
-	 mD+rI6qNqEnXZmcc1JOmYqOc0IaJKv/fgnjxRYFJcYIN2TOG8sD1HzOR7x0ucW+lSP
-	 1+w6CGAigsZGgZuobueP/ZQevDlDGhsZndaKji8yEshG3Dt8CApShNHq9NivFpzoYO
-	 9i+yytz0HEWGm+262QBJIxr3/7zPtJXkTer7+LjhVDr369FrB9EKQkr5Ke/Hw/bePW
-	 id7vDgr4xIrsdYM+bdxJzZ9wcodWF7pzHbjzpewhl3j8Jgqa9P4pG8pfiwRaHrTxTI
-	 DW2Lb2kUsIufw==
+	s=k20201202; t=1712835586;
+	bh=7EFwvVMuQn70XRVguNSGzqoYr22N/NAtZcQsB+LnsEg=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=b0n7KVm5wYeNXeZ+XnzXB1T2YmToafnWpN+T+r3+hpqq+Oj00V6TKtelpkSyu+xj5
+	 b9VTXuRx29AZ6yNygBfIiVIGu1ZH1tRO6MKMNzl7vm1nyNofF7R6a+Cv0DbGGs12Kj
+	 b4A1+kHJ2MCWrFtjFhT0K4tUVgekgi4QnuOHotZAmq4zCcgGjdxbFsxTcd57+g71su
+	 VDThpy8LKz64KHkpZgG6LkF3jScn2grHEZCBT6MBzgBtRJALvSOU8xs269bb+C9Ivs
+	 RqYmTVB4xUk3LKnZ0SKXrXBUOj3cxyFGBZIHI9wUYsJfSBpitIDOotCyI9mI26yM9F
+	 M/VdILKn+BeQg==
 From: Lee Jones <lee@kernel.org>
 To: Lee Jones <lee@kernel.org>, 
  Daniel Thompson <daniel.thompson@linaro.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- kernel@pengutronix.de, linux-pwm@vger.kernel.org
-In-Reply-To: <20240314113529.923708-2-u.kleine-koenig@pengutronix.de>
-References: <20240314113529.923708-2-u.kleine-koenig@pengutronix.de>
-Subject: Re: (subset) [PATCH v2] backlight: lp8788: Drop support for
- platform data
-Message-Id: <171283558214.2316283.6027739768348217475.b4-ty@kernel.org>
-Date: Thu, 11 Apr 2024 12:39:42 +0100
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20240327174714.519577-1-krzysztof.kozlowski@linaro.org>
+References: <20240327174714.519577-1-krzysztof.kozlowski@linaro.org>
+Subject: Re: (subset) [PATCH] video: backlight: otm3225a: drop driver owner
+ assignment
+Message-Id: <171283558431.2316283.17972686274458544587.b4-ty@kernel.org>
+Date: Thu, 11 Apr 2024 12:39:44 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -49,18 +49,16 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.12.4
 
-On Thu, 14 Mar 2024 12:35:28 +0100, Uwe Kleine-König wrote:
-> The backlight driver supports getting passed platform data. However this
-> isn't used. This allows to remove quite some dead code from the driver
-> because bl->pdata is always NULL, and so bl->mode is always
-> LP8788_BL_REGISTER_ONLY.
+On Wed, 27 Mar 2024 18:47:14 +0100, Krzysztof Kozlowski wrote:
+> Core in spi_register_driver() already sets the .owner, so driver
+> does not need to.
 > 
 > 
 
 Applied, thanks!
 
-[1/1] backlight: lp8788: Drop support for platform data
-      commit: 150476e60a80ebb93d49aae7b636934eb04b83d2
+[1/1] video: backlight: otm3225a: drop driver owner assignment
+      commit: 9db7677e33b646a7fd60d35cbd4ab99886057a85
 
 --
 Lee Jones [李琼斯]

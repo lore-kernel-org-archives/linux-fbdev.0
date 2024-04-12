@@ -1,239 +1,98 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ECCC14E2C8;
-	Thu, 11 Apr 2024 14:00:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C12423778
+	for <linux-fbdev@vger.kernel.org>; Fri, 12 Apr 2024 18:57:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712844023; cv=none; b=XRy+sC7yqNsirSDjEDHHx4P+/nFMZ6N1pIdIbQtF1z5656sN84tIj6VsFKayvBnp0AO+zl/pgXJdY9pGi7LEM4A7KGOQ+folF4euMyrD3Fwu0PdPuK/IgvzRfjO/WdcomStiq7ici5/kpIdaGp3YBibDibjaWZns1zso8Tdf4D8=
+	t=1712948258; cv=none; b=mz71JkewULeh+sqAaIPelHvi0GoSC+cQOkTIXwO3yAz6l4exNo1L6aXiYDvdxFuwjdxQ99oogg7B1s/sJ2ulkWsiKKPpGvJPAXe1coKruCwQ9L5f6BVAODGGK2eoK8R/hL/azBGtr6ekceMvwhMAYjLQHty/dNZ1fe9C7E4JerE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712844023; c=relaxed/simple;
-	bh=tRqmwlzhcYdgVr2YujS1WgTqkzUd0nEXs80I0voRZ+c=;
+	s=arc-20240116; t=1712948258; c=relaxed/simple;
+	bh=EQ6Lmy5pGSwuV/tq+q7lx5fLarfb7SpMCoGAnUzNdmQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fQmJBxqLBSL/CaLPMizOHVM4HrtlV/BCh94Tq5IU+EDU9j2EyKDNoLNAv4+mq48watUtCnmKYsnQxHInGgRfZEflKyVtZj5omPkNXzte0iv/akVX8EFqmJ7AvuEdjMlQ5pNCMJZNyEptX2kUA9bXUG1I5i4zy5IaWxLDnt1Jo40=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IuYQoFWL; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=mUd+6NBmwSmw0rFSzRWzG6ijVUPdnfZoX3By0VUltd3mzFVXwlX1vzqzzVrqPzun/IQbsZGReDgCmtQDeKPQwDu03Np8GOxv2SCBFw3psZ8Ilr/Wyw9C/XqVgSj8YLmR7peSa6evSBrHL9oxdEnt1KCmXGVxsp9JYNjvLYXi6os=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=heg5wQ1/; arc=none smtp.client-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IuYQoFWL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4C7FC113CD;
-	Thu, 11 Apr 2024 14:00:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712844022;
-	bh=tRqmwlzhcYdgVr2YujS1WgTqkzUd0nEXs80I0voRZ+c=;
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="heg5wQ1/"
+Received: from pendragon.ideasonboard.com (85-76-16-252-nat.elisa-mobile.fi [85.76.16.252])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 276E99D5;
+	Fri, 12 Apr 2024 20:56:50 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1712948210;
+	bh=EQ6Lmy5pGSwuV/tq+q7lx5fLarfb7SpMCoGAnUzNdmQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=IuYQoFWLDW0TewoWOc1egpvTc7oRKlFdRDOxTdOO6mj8F+jf/LWNPnH6utlZMgCRp
-	 Wlm7VdDje7q00dBLqJawgrlJWje3n8r7h5914tgSM1R4vzFi/aElZWtaxhbFhhmRgC
-	 e58DoLz7Np5deIUBaY59yKM3JF4OYy/zVNTZAdncc0IZG9wlVf/Lp3ONzbho3qDhxA
-	 7PiLNDS4jimFjHuyBxgGXNcQIY7QPBXIJgMAFhYS1GK6mqT4LKEvKcSN1Nce0pzVqp
-	 IrVB4USDmK+/pPizmKeVnvc18vBGueLeCeNv0UC1glnbvyiNGiLZG0DyscUb1jvVjk
-	 uYc17bsqWwNLA==
-Date: Thu, 11 Apr 2024 16:00:16 +0200
-From: Helge Deller <deller@kernel.org>
-To: Niklas Schnelle <schnelle@linux.ibm.com>
-Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@kernel.org>,
-	Heiko Carstens <hca@linux.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] video: Handle HAS_IOPORT dependencies
-Message-ID: <Zhfs8CN5XdgldKUn@carbonx1>
-References: <20240410142329.3567824-1-schnelle@linux.ibm.com>
- <20240410142329.3567824-2-schnelle@linux.ibm.com>
+	b=heg5wQ1/OiOxSF4jNQ+5JzQD8R+2hMo3gbGy9lxCC0u/klzDgBZOrGnyLajzoZUSI
+	 B9zef6hH+nDHEGxBc0fKBKCekVJdQDIM5bZLWbr2ST6XQdeGWGW9uE4aCPFlhXwq5Y
+	 IDY0aB6mBLXZA/DlumEmhGAqj9sGGOGwDG9XPGtA=
+Date: Fri, 12 Apr 2024 21:57:24 +0300
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: javierm@redhat.com, deller@gmx.de, airlied@gmail.com, daniel@ffwll.ch,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
+Subject: Re: [PATCH v2 28/43] drm/renesas/rcar-du: Use fbdev-dma
+Message-ID: <20240412185724.GL31122@pendragon.ideasonboard.com>
+References: <20240410130557.31572-1-tzimmermann@suse.de>
+ <20240410130557.31572-29-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20240410142329.3567824-2-schnelle@linux.ibm.com>
+In-Reply-To: <20240410130557.31572-29-tzimmermann@suse.de>
 
-* Niklas Schnelle <schnelle@linux.ibm.com>:
-> In a future patch HAS_IOPORT=n will disable inb()/outb() and friends at
-> compile time. We thus need to #ifdef functions and their callsites which
-> unconditionally use these I/O accessors. In the include/video/vga.h
-> these are conveniently all those functions with the vga_io_* prefix.
+Hi Thomas,
 
-Why don't you code it like in the patch below?
-inb_p(), outb_p() and outw() would then need to be defined externally
-without an implementation so that they would generate link time errors
-(instead of compile time errors).
+Thank you for the patch.
 
-diff --git a/include/video/vga.h b/include/video/vga.h
-index 947c0abd04ef..32c915e109fa 100644
---- a/include/video/vga.h
-+++ b/include/video/vga.h
-@@ -203,18 +203,20 @@ extern int restore_vga(struct vgastate *state);
- 
- static inline unsigned char vga_io_r (unsigned short port)
- {
--	return inb_p(port);
-+	return IS_ENABLED(CONFIG_HAS_IOPORT) ? inb_p(port) : 0;
- }
- 
- static inline void vga_io_w (unsigned short port, unsigned char val)
- {
--	outb_p(val, port);
-+	if (IS_ENABLED(CONFIG_HAS_IOPORT))
-+		outb_p(val, port);
- }
- 
- static inline void vga_io_w_fast (unsigned short port, unsigned char reg,
- 				  unsigned char val)
- {
--	outw(VGA_OUT16VAL (val, reg), port);
-+	if (IS_ENABLED(CONFIG_HAS_IOPORT))
-+		outw(VGA_OUT16VAL (val, reg), port);
- }
- 
- static inline unsigned char vga_mm_r (void __iomem *regbase, unsigned short port)
-
-
-
+On Wed, Apr 10, 2024 at 03:02:24PM +0200, Thomas Zimmermann wrote:
+> Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
+> damage handling, which is required by rcar-du. Avoids the overhead of
+> fbdev-generic's additional shadow buffering. No functional changes.
 > 
-> Co-developed-by: Arnd Bergmann <arnd@kernel.org>
-> Signed-off-by: Arnd Bergmann <arnd@kernel.org>
-> Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Cc: Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+
+On a side note, I noticed that drm_fbdev_generic_client_funcs and
+drm_fbdev_dma_client_funcs point to functions that are identical. Would
+there be a way to avoid the code duplication ?
+
 > ---
-> Note: This patch does not depend any not-yet-mainline HAS_IOPORT changes
-> and may be merged via subsystem specific trees at your earliest
-> convenience.
+>  drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
->  include/video/vga.h | 35 +++++++++++++++++++++++++----------
->  1 file changed, 25 insertions(+), 10 deletions(-)
-> 
-> diff --git a/include/video/vga.h b/include/video/vga.h
-> index 947c0abd04ef..ed89295941c4 100644
-> --- a/include/video/vga.h
-> +++ b/include/video/vga.h
-> @@ -201,6 +201,7 @@ extern int restore_vga(struct vgastate *state);
->   * generic VGA port read/write
->   */
+> diff --git a/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
+> index dee530e4c8b27..fb719d9aff10d 100644
+> --- a/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
+> +++ b/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
+> @@ -20,7 +20,7 @@
 >  
-> +#ifdef CONFIG_HAS_IOPORT
->  static inline unsigned char vga_io_r (unsigned short port)
->  {
->  	return inb_p(port);
-> @@ -210,12 +211,12 @@ static inline void vga_io_w (unsigned short port, unsigned char val)
->  {
->  	outb_p(val, port);
->  }
-> -
->  static inline void vga_io_w_fast (unsigned short port, unsigned char reg,
->  				  unsigned char val)
->  {
->  	outw(VGA_OUT16VAL (val, reg), port);
->  }
-> +#endif /* CONFIG_HAS_IOPORT */
+>  #include <drm/drm_atomic_helper.h>
+>  #include <drm/drm_drv.h>
+> -#include <drm/drm_fbdev_generic.h>
+> +#include <drm/drm_fbdev_dma.h>
+>  #include <drm/drm_gem_dma_helper.h>
+>  #include <drm/drm_managed.h>
+>  #include <drm/drm_probe_helper.h>
+> @@ -716,7 +716,7 @@ static int rcar_du_probe(struct platform_device *pdev)
 >  
->  static inline unsigned char vga_mm_r (void __iomem *regbase, unsigned short port)
->  {
-> @@ -235,28 +236,34 @@ static inline void vga_mm_w_fast (void __iomem *regbase, unsigned short port,
+>  	drm_info(&rcdu->ddev, "Device %s probed\n", dev_name(&pdev->dev));
 >  
->  static inline unsigned char vga_r (void __iomem *regbase, unsigned short port)
->  {
-> -	if (regbase)
-> -		return vga_mm_r (regbase, port);
-> -	else
-> +#ifdef CONFIG_HAS_IOPORT
-> +	if (!regbase)
->  		return vga_io_r (port);
-> +	else
-> +#endif /* CONFIG_HAS_IOPORT */
-> +		return vga_mm_r (regbase, port);
->  }
+> -	drm_fbdev_generic_setup(&rcdu->ddev, 32);
+> +	drm_fbdev_dma_setup(&rcdu->ddev, 32);
 >  
->  static inline void vga_w (void __iomem *regbase, unsigned short port, unsigned char val)
->  {
-> -	if (regbase)
-> -		vga_mm_w (regbase, port, val);
-> -	else
-> +#ifdef CONFIG_HAS_IOPORT
-> +	if (!regbase)
->  		vga_io_w (port, val);
-> +	else
-> +#endif /* CONFIG_HAS_IOPORT */
-> +		vga_mm_w (regbase, port, val);
->  }
+>  	return 0;
 >  
->  
->  static inline void vga_w_fast (void __iomem *regbase, unsigned short port,
->  			       unsigned char reg, unsigned char val)
->  {
-> -	if (regbase)
-> -		vga_mm_w_fast (regbase, port, reg, val);
-> -	else
-> +#ifdef CONFIG_HAS_IOPORT
-> +	if (!regbase)
->  		vga_io_w_fast (port, reg, val);
-> +	else
-> +#endif /* CONFIG_HAS_IOPORT */
-> +		vga_mm_w_fast (regbase, port, reg, val);
->  }
->  
->  
-> @@ -280,6 +287,7 @@ static inline void vga_wcrt (void __iomem *regbase, unsigned char reg, unsigned
->  #endif /* VGA_OUTW_WRITE */
->  }
->  
-> +#ifdef CONFIG_HAS_IOPORT
->  static inline unsigned char vga_io_rcrt (unsigned char reg)
->  {
->          vga_io_w (VGA_CRT_IC, reg);
-> @@ -295,6 +303,7 @@ static inline void vga_io_wcrt (unsigned char reg, unsigned char val)
->          vga_io_w (VGA_CRT_DC, val);
->  #endif /* VGA_OUTW_WRITE */
->  }
-> +#endif /* CONFIG_HAS_IOPORT */
->  
->  static inline unsigned char vga_mm_rcrt (void __iomem *regbase, unsigned char reg)
->  {
-> @@ -333,6 +342,7 @@ static inline void vga_wseq (void __iomem *regbase, unsigned char reg, unsigned
->  #endif /* VGA_OUTW_WRITE */
->  }
->  
-> +#ifdef CONFIG_HAS_IOPORT
->  static inline unsigned char vga_io_rseq (unsigned char reg)
->  {
->          vga_io_w (VGA_SEQ_I, reg);
-> @@ -348,6 +358,7 @@ static inline void vga_io_wseq (unsigned char reg, unsigned char val)
->          vga_io_w (VGA_SEQ_D, val);
->  #endif /* VGA_OUTW_WRITE */
->  }
-> +#endif /* CONFIG_HAS_IOPORT */
->  
->  static inline unsigned char vga_mm_rseq (void __iomem *regbase, unsigned char reg)
->  {
-> @@ -385,6 +396,7 @@ static inline void vga_wgfx (void __iomem *regbase, unsigned char reg, unsigned
->  #endif /* VGA_OUTW_WRITE */
->  }
->  
-> +#ifdef CONFIG_HAS_IOPORT
->  static inline unsigned char vga_io_rgfx (unsigned char reg)
->  {
->          vga_io_w (VGA_GFX_I, reg);
-> @@ -400,6 +412,7 @@ static inline void vga_io_wgfx (unsigned char reg, unsigned char val)
->          vga_io_w (VGA_GFX_D, val);
->  #endif /* VGA_OUTW_WRITE */
->  }
-> +#endif /* CONFIG_HAS_IOPORT */
->  
->  static inline unsigned char vga_mm_rgfx (void __iomem *regbase, unsigned char reg)
->  {
-> @@ -434,6 +447,7 @@ static inline void vga_wattr (void __iomem *regbase, unsigned char reg, unsigned
->          vga_w (regbase, VGA_ATT_W, val);
->  }
->  
-> +#ifdef CONFIG_HAS_IOPORT
->  static inline unsigned char vga_io_rattr (unsigned char reg)
->  {
->          vga_io_w (VGA_ATT_IW, reg);
-> @@ -445,6 +459,7 @@ static inline void vga_io_wattr (unsigned char reg, unsigned char val)
->          vga_io_w (VGA_ATT_IW, reg);
->          vga_io_w (VGA_ATT_W, val);
->  }
-> +#endif /* CONFIG_HAS_IOPORT */
->  
->  static inline unsigned char vga_mm_rattr (void __iomem *regbase, unsigned char reg)
->  {
-> -- 
-> 2.40.1
-> 
+
+-- 
+Regards,
+
+Laurent Pinchart

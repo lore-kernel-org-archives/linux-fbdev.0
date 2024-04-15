@@ -1,82 +1,59 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 740A12E3E0;
-	Sun, 14 Apr 2024 18:54:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1E711DA32;
+	Mon, 15 Apr 2024 06:43:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713120891; cv=none; b=b58rj7/Lz2RtDUJb97PTztD1vm4AeT555m3HW0jKew27RN9CI32gG64BPTXoA/oIuJXk/7ldKHH5eiQnlJZf4CO8vJSiCnhDuqEfb1mvUhmygnA/qtkk/C8DrwK5eUFlWL2RSbL7EVpV7h5PnbZg/teLEpkp0DnSiC4KYZXzCS8=
+	t=1713163424; cv=none; b=svpXc588tyOY0XGdVm6X8F/k4SPrDUtK0Q6InRzts12XtSY3K6vjQZLiaR6WMigfROXajh+2Fm+PCMVEB6TE3eCsC32wSXE2M/SLOXU7SMPJTEn9G49NVSRkMxxsVSnyr4f3hd43+UPXrcT7J5f+Q8v7I0ebgvj2FwmELi2duPk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713120891; c=relaxed/simple;
-	bh=PJYzGTJWdJ4l39vPejCJ8w6VfNZCoY78ujqO75wJNYU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=B9obzvQwiUBbajpUpUAkOJHjxIZPKYtVo8oJ7acREJFoW3w5iKVqPzrfw2/Q2Q77Cd8hBRoMmrVsy7wog+oP54CWL/MrN9DNWmMIS5zEo2PnfPhHPzpY7Nl4Opgs143zQalzYkIzmrDs0heiG2OPwMfy303SxcKEXDbemzxsyQA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TZB1elG4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1713163424; c=relaxed/simple;
+	bh=DNNTj+ykDgM/JD4IQplT3/fMLpZxUwGg0a/sfofypEA=;
+	h=Message-ID:Date:From:To:Subject:In-Reply-To:References:Cc; b=ZCCgibunc6qrM6l4PKvxq6O6a3v8jnEIE94JC5fmV9hRmEao6MlaMwHLu/Lheg2KHBstMDUHts/Xqd141DKWXfBIbw4yxkUGT8KZQt0sqJyxDF2IQzR1X2ue+3acY+3HFHw0ozccJ9VvbN1yYFeRHujKIY/wdcBPSTj5ekUP7LQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=grJH5ukb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TZB1elG4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F02EFC072AA;
-	Sun, 14 Apr 2024 18:54:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="grJH5ukb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2321C3277B;
+	Mon, 15 Apr 2024 06:43:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713120891;
-	bh=PJYzGTJWdJ4l39vPejCJ8w6VfNZCoY78ujqO75wJNYU=;
-	h=From:To:Cc:Subject:Date:From;
-	b=TZB1elG4wxmqfAuHagIJREBBuzfQk5pWxN+iKXLUVUOAvNxmo2yEIAxuQMx1msk5C
-	 Lqrxx0jlz4TR257DGzoYi2AlAqetFrjvCrNS9BfHZGFJItVO1aqCd4qshnczeto2Pr
-	 Hjl7zm0TVvDIEEZAo/FFsvO2URkx56v/Y+rCtHvGSzi851gwc9ujEAvWIw4pwHLjxp
-	 geZ+GXZSD7WufwEi+OwDOGS1gcnKXjWkV5lAOBhZMpnpSHsHV96eRaIGXIXm5dAHiN
-	 fehXKBmqblkioO2YM8Xoeo3q7WX2CUwP5EJ2sq0/vZeivLAK531nEvUMXSmErUMdlw
-	 aZfws6hOURzBA==
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Lee Jones <lee@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH] const_structs.checkpatch: add lcd_ops
-Date: Sun, 14 Apr 2024 20:54:40 +0200
-Message-Id: <20240414185440.288812-1-krzk@kernel.org>
-X-Mailer: git-send-email 2.34.1
+	s=k20201202; t=1713163424;
+	bh=DNNTj+ykDgM/JD4IQplT3/fMLpZxUwGg0a/sfofypEA=;
+	h=Date:From:To:Subject:In-Reply-To:References:Cc:From;
+	b=grJH5ukbJiygA1ARCF3SJlQpcu7vxzkD7XPDygzVcrACtm6Szv3GGaQrXSobFRN+I
+	 Y+oYQKWHJCSt2JIbappiAkmsXTwOUhR2133qqVLZasThzLBoVJcHVJbvMdkqXQTV3X
+	 jMjfep2N3bgFTN38PXBJvBZagZELuCrinl7zA0g0g6W62xF+erU9VZRFyuNMsyy0ZW
+	 8h3E2ryxXET7ISmwUOTyS6LfJGvJ5Wkch2fUvlZbNBUqe/N7ST0ooKwdI/u7vvSlcy
+	 2cXi7wxJdQX8QgduyJGXMm5r94cWapN8vWhC4+ZC17VD/PPyZe8F3y6+PmK+iT+/iv
+	 Ux0CxPLeK4qAQ==
+Message-ID: <5843f81d9ca77b26aeb25504f9c8a4f6@kernel.org>
+Date: Mon, 15 Apr 2024 06:43:41 +0000
+From: "Maxime Ripard" <mripard@kernel.org>
+To: "Thomas Zimmermann" <tzimmermann@suse.de>
+Subject: Re: [PATCH v2 01/43] drm/fbdev-generic: Do not set physical
+ framebuffer address
+In-Reply-To: <20240410130557.31572-2-tzimmermann@suse.de>
+References: <20240410130557.31572-2-tzimmermann@suse.de>
+Cc: airlied@gmail.com, daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org, javierm@redhat.com, linux-fbdev@vger.kernel.org, stable@vger.kernel.org, "Maarten
+ Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>, "Sui
+ Jingfeng" <sui.jingfeng@linux.dev>, "Zack Rusin" <zack.rusin@broadcom.com>, "Zack
+ Rusin" <zackr@vmware.com>
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-'struct lcd_ops' is not modified by core code.
+On Wed, 10 Apr 2024 15:01:57 +0200, Thomas Zimmermann wrote:
+> Framebuffer memory is allocated via vzalloc() from non-contiguous
+> physical pages. The physical framebuffer start address is therefore
+> meaningless. Do not set it.
+> 
+> The value is not used within the kernel and only exported to userspace
+> 
+> [ ... ]
 
-Suggested-by: Thomas Weißschuh <linux@weissschuh.net>
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Maxime Ripard <mripard@kernel.org>
 
----
-
-Patch making lcd_ops const in progress:
-https://lore.kernel.org/r/20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org
-
-Cc: Lee Jones <lee@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- scripts/const_structs.checkpatch | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/scripts/const_structs.checkpatch b/scripts/const_structs.checkpatch
-index fa96cfd16e99..52e5bfb61fd0 100644
---- a/scripts/const_structs.checkpatch
-+++ b/scripts/const_structs.checkpatch
-@@ -39,6 +39,7 @@ kgdb_arch
- kgdb_io
- kobj_type
- kset_uevent_ops
-+lcd_ops
- lock_manager_operations
- machine_desc
- microcode_ops
--- 
-2.34.1
-
+Thanks!
+Maxime

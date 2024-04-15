@@ -1,80 +1,81 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D517200BF;
-	Mon, 15 Apr 2024 06:56:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F1EA210FB
+	for <linux-fbdev@vger.kernel.org>; Mon, 15 Apr 2024 06:59:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713164203; cv=none; b=gY08r6WuRymqRxTG4n/m0tOEozsX/vEME8bM3w6foGGOeZBXTGedM+RgCLFNOR8TAALzQz7uE5DkJ3Pnxde8H/svjg7+b1Wib6CKMCC1lA3+jD1xHeue/3Ct5dt7/FKVDIWWPJeJ9Kauq9Wi12vIXUpsGmMH6ChOq1yyci/S/6k=
+	t=1713164393; cv=none; b=A0XGP4LiujWu3zja9B8ETcNXa8ncCEzinlwjMJXIQcRxyQa9S0S4SvKZoAKDpOuJer4yfmyumcyJVlsmD9e92tLGcGiutJxwqQcGuUewPt7Icutx6oAE0nbq4bHLWtz27xcrctykPmOP5conSuhd5hksOLpOI9TJIwtKAi/lr10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713164203; c=relaxed/simple;
-	bh=duW+8BbuFjm+gR6nar48iQgihNHtVUYE9gO/STS64Ps=;
+	s=arc-20240116; t=1713164393; c=relaxed/simple;
+	bh=5h928eFocgW88L+oEYPNPtX94W6WJ1MGtpoXAIBkz9M=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sJL8Qt0YTFoAwQjjZal4T9FH8narFXqDWN6x15YSsLb5uXYfn3m7C8yv9+0nJWfD97w6PKp2X3Px+hJm3FtFNLs9boXFyEn+nd5XKey49ZTBCTcbJmY1QEHIj+X3Pg2Z0+j6fk8rS1De8HiyNpNDThlFjOfuYeFzSG5gy6k5Xyw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CwP7y0NJ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MK+ewrVZ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CwP7y0NJ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MK+ewrVZ; arc=none smtp.client-ip=195.135.223.130
+	 In-Reply-To:Content-Type; b=bkHv8iUQPjMTjLA66OQvplQWBK0arGOPvWvSoTfoUEV343QIEiuxUlEpvA20cjY6/wPm9hEtgI3/IsaKrxM1GYJXS65SuFVIQ/759byIwPrizHlJAtnfuzMgaa/SQ8EVQDEVBgTfRsZFGUxynTojL65pyeB3qDU4pUVhaDWQ0c4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=W57Qlb4L; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mJoyKw+k; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=W57Qlb4L; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mJoyKw+k; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CwP7y0NJ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MK+ewrVZ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CwP7y0NJ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MK+ewrVZ"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="W57Qlb4L";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mJoyKw+k";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="W57Qlb4L";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mJoyKw+k"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 2D93334543;
-	Mon, 15 Apr 2024 06:56:33 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2D68934A45;
+	Mon, 15 Apr 2024 06:59:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1713164193; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1713164390; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=QVONDjkvCUBoX9Fi9jRqnNKspLMCrAX5ZdlsaW1EyQc=;
-	b=CwP7y0NJCGtTzmdGQMM48un+Pq214ylZ53B0EqUTPHxivOx8FonhItNaB5ahUmYnbPSgyi
-	w2fE+T0eNgZThdNAY5w47hndGzBvIUblazR8XmKF/Ys7RytDUa4aYO09X5Qh/uQjjSLoLR
-	WWPP6qTOw8FX69YLUhd2KJwWbwzxhao=
+	bh=NMP0mHn68SJwonTba0/3fUA3+732vI0M0+NXCMYPSYA=;
+	b=W57Qlb4LxNBgl/Nn5Xngz6wB0TyfoSEGbUOQH1ALMauT4HZkdaIzlNOApsvGbhyyhgq12E
+	bJs7TMDQk4MyDt828Ah/gr0GiZ1CMYYIuJZAjGS2Lwum7bQRSTfuIF2kLZEuyfPadOIUAQ
+	uXEjkixaimKv82JZKtoR2VExLe2P5kY=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1713164193;
+	s=susede2_ed25519; t=1713164390;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=QVONDjkvCUBoX9Fi9jRqnNKspLMCrAX5ZdlsaW1EyQc=;
-	b=MK+ewrVZg4BTrrwIqw2DWIFZd6g3IZYnaCc/Z0Y696FZ5kFVc8yaRVLj+/ThGhLE6JiXzE
-	DieBfEzi0MJdOJBg==
+	bh=NMP0mHn68SJwonTba0/3fUA3+732vI0M0+NXCMYPSYA=;
+	b=mJoyKw+kBW7vGnjmSzeU1MK52hnWIVjiaAVqd3rccBF3T44/y2A7iyc/lH5s/W0lx1rmkG
+	Y//StwTcaL6KbhBQ==
 Authentication-Results: smtp-out1.suse.de;
-	none
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=W57Qlb4L;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=mJoyKw+k
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1713164193; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1713164390; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=QVONDjkvCUBoX9Fi9jRqnNKspLMCrAX5ZdlsaW1EyQc=;
-	b=CwP7y0NJCGtTzmdGQMM48un+Pq214ylZ53B0EqUTPHxivOx8FonhItNaB5ahUmYnbPSgyi
-	w2fE+T0eNgZThdNAY5w47hndGzBvIUblazR8XmKF/Ys7RytDUa4aYO09X5Qh/uQjjSLoLR
-	WWPP6qTOw8FX69YLUhd2KJwWbwzxhao=
+	bh=NMP0mHn68SJwonTba0/3fUA3+732vI0M0+NXCMYPSYA=;
+	b=W57Qlb4LxNBgl/Nn5Xngz6wB0TyfoSEGbUOQH1ALMauT4HZkdaIzlNOApsvGbhyyhgq12E
+	bJs7TMDQk4MyDt828Ah/gr0GiZ1CMYYIuJZAjGS2Lwum7bQRSTfuIF2kLZEuyfPadOIUAQ
+	uXEjkixaimKv82JZKtoR2VExLe2P5kY=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1713164193;
+	s=susede2_ed25519; t=1713164390;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=QVONDjkvCUBoX9Fi9jRqnNKspLMCrAX5ZdlsaW1EyQc=;
-	b=MK+ewrVZg4BTrrwIqw2DWIFZd6g3IZYnaCc/Z0Y696FZ5kFVc8yaRVLj+/ThGhLE6JiXzE
-	DieBfEzi0MJdOJBg==
+	bh=NMP0mHn68SJwonTba0/3fUA3+732vI0M0+NXCMYPSYA=;
+	b=mJoyKw+kBW7vGnjmSzeU1MK52hnWIVjiaAVqd3rccBF3T44/y2A7iyc/lH5s/W0lx1rmkG
+	Y//StwTcaL6KbhBQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A2C6C1368B;
-	Mon, 15 Apr 2024 06:56:32 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id EC1F81368B;
+	Mon, 15 Apr 2024 06:59:49 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([10.150.64.162])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id DrrkJaDPHGZKBwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 15 Apr 2024 06:56:32 +0000
-Message-ID: <b4cafdd1-c1b0-4abd-a849-8132c19d1525@suse.de>
-Date: Mon, 15 Apr 2024 08:56:31 +0200
+	id A2EFOGXQHGZzCAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 15 Apr 2024 06:59:49 +0000
+Message-ID: <65d0f3f4-24be-453e-89cc-502609357a8d@suse.de>
+Date: Mon, 15 Apr 2024 08:59:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,20 +83,14 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/18] backlight: Constify lcd_ops
-To: Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
- =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
- Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>,
- Alexander Shiyan <shc_work@mail.ru>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
- linux-omap@vger.kernel.org
-References: <20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org>
+Subject: Re: [PATCH v2 28/43] drm/renesas/rcar-du: Use fbdev-dma
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: javierm@redhat.com, deller@gmx.de, airlied@gmail.com, daniel@ffwll.ch,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
+References: <20240410130557.31572-1-tzimmermann@suse.de>
+ <20240410130557.31572-29-tzimmermann@suse.de>
+ <20240412185724.GL31122@pendragon.ideasonboard.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -122,102 +117,101 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org>
+In-Reply-To: <20240412185724.GL31122@pendragon.ideasonboard.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Level: 
-X-Spamd-Result: default: False [-4.29 / 50.00];
+X-Spamd-Result: default: False [-3.00 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
 	XM_UA_NO_VERSION(0.01)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[20];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[kernel.org,linaro.org,gmail.com,gmx.de,linux-vserver.org,mail.ru,pengutronix.de];
-	MIME_TRACE(0.00)[0:+];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de,mail.ru];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	TO_DN_SOME(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	FREEMAIL_CC(0.00)[redhat.com,gmx.de,gmail.com,ffwll.ch,lists.freedesktop.org,vger.kernel.org,ideasonboard.com];
 	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	MID_RHS_MATCH_FROM(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCPT_COUNT_SEVEN(0.00)[8];
+	TAGGED_RCPT(0.00)[renesas];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	DKIM_TRACE(0.00)[suse.de:+];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
-X-Spam-Score: -4.29
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 2D68934A45
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 X-Spam-Flag: NO
+X-Spam-Score: -3.00
 
 Hi
 
-for patches 16, 17 and 18:
+Am 12.04.24 um 20:57 schrieb Laurent Pinchart:
+> Hi Thomas,
+>
+> Thank you for the patch.
+>
+> On Wed, Apr 10, 2024 at 03:02:24PM +0200, Thomas Zimmermann wrote:
+>> Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
+>> damage handling, which is required by rcar-du. Avoids the overhead of
+>> fbdev-generic's additional shadow buffering. No functional changes.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+>> Cc: Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+>
+> On a side note, I noticed that drm_fbdev_generic_client_funcs and
+> drm_fbdev_dma_client_funcs point to functions that are identical. Would
+> there be a way to avoid the code duplication ?
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+I avoided this so far as I don't want to accidentally de-duplicate 
+functions that later turn out to not be identical. But it is on the TODO 
+list.
 
 Best regards
 Thomas
 
-Am 14.04.24 um 18:35 schrieb Krzysztof Kozlowski:
-> Hi,
 >
-> Dependencies
-> ============
-> All further patches depend on the first patch.  Therefore everything
-> could go via backlight tree (please ack) or via cross-tree pulls. Or
-> whatever maintainer choose, just coordinate this with backlight.
->
-> Best regards,
-> Krzysztof
->
-> ---
-> Krzysztof Kozlowski (18):
->        backlight: Constify lcd_ops
->        backlight: ams369fg06: Constify lcd_ops
->        backlight: corgi_lcd: Constify lcd_ops
->        backlight: hx8357: Constify lcd_ops
->        backlight: ili922x: Constify lcd_ops
->        backlight: ili9320: Constify lcd_ops
->        backlight: jornada720_lcd: Constify lcd_ops
->        backlight: l4f00242t03: Constify lcd_ops
->        backlight: lms283gf05: Constify lcd_ops
->        backlight: lms501kf03: Constify lcd_ops
->        backlight: ltv350qv: Constify lcd_ops
->        backlight: otm3225a: Constify lcd_ops
->        backlight: platform_lcd: Constify lcd_ops
->        backlight: tdo24m: Constify lcd_ops
->        HID: picoLCD: Constify lcd_ops
->        fbdev: clps711x: Constify lcd_ops
->        fbdev: imx: Constify lcd_ops
->        fbdev: omap: lcd_ams_delta: Constify lcd_ops
->
->   drivers/hid/hid-picolcd_lcd.c            | 2 +-
->   drivers/video/backlight/ams369fg06.c     | 2 +-
->   drivers/video/backlight/corgi_lcd.c      | 2 +-
->   drivers/video/backlight/hx8357.c         | 2 +-
->   drivers/video/backlight/ili922x.c        | 2 +-
->   drivers/video/backlight/ili9320.c        | 2 +-
->   drivers/video/backlight/jornada720_lcd.c | 2 +-
->   drivers/video/backlight/l4f00242t03.c    | 2 +-
->   drivers/video/backlight/lcd.c            | 4 ++--
->   drivers/video/backlight/lms283gf05.c     | 2 +-
->   drivers/video/backlight/lms501kf03.c     | 2 +-
->   drivers/video/backlight/ltv350qv.c       | 2 +-
->   drivers/video/backlight/otm3225a.c       | 2 +-
->   drivers/video/backlight/platform_lcd.c   | 2 +-
->   drivers/video/backlight/tdo24m.c         | 2 +-
->   drivers/video/fbdev/clps711x-fb.c        | 2 +-
->   drivers/video/fbdev/imxfb.c              | 2 +-
->   drivers/video/fbdev/omap/lcd_ams_delta.c | 2 +-
->   include/linux/lcd.h                      | 6 +++---
->   19 files changed, 22 insertions(+), 22 deletions(-)
-> ---
-> base-commit: 9ed46da14b9b9b2ad4edb3b0c545b6dbe5c00d39
-> change-id: 20240414-video-backlight-lcd-ops-276d8439ffb8
->
-> Best regards,
+>> ---
+>>   drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c b/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
+>> index dee530e4c8b27..fb719d9aff10d 100644
+>> --- a/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
+>> +++ b/drivers/gpu/drm/renesas/rcar-du/rcar_du_drv.c
+>> @@ -20,7 +20,7 @@
+>>   
+>>   #include <drm/drm_atomic_helper.h>
+>>   #include <drm/drm_drv.h>
+>> -#include <drm/drm_fbdev_generic.h>
+>> +#include <drm/drm_fbdev_dma.h>
+>>   #include <drm/drm_gem_dma_helper.h>
+>>   #include <drm/drm_managed.h>
+>>   #include <drm/drm_probe_helper.h>
+>> @@ -716,7 +716,7 @@ static int rcar_du_probe(struct platform_device *pdev)
+>>   
+>>   	drm_info(&rcdu->ddev, "Device %s probed\n", dev_name(&pdev->dev));
+>>   
+>> -	drm_fbdev_generic_setup(&rcdu->ddev, 32);
+>> +	drm_fbdev_dma_setup(&rcdu->ddev, 32);
+>>   
+>>   	return 0;
+>>   
 
 -- 
 --

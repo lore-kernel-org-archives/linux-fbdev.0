@@ -1,57 +1,57 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5CED13CFA9
-	for <linux-fbdev@vger.kernel.org>; Mon, 15 Apr 2024 12:55:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E73E745D5
+	for <linux-fbdev@vger.kernel.org>; Mon, 15 Apr 2024 12:58:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713185723; cv=none; b=H/0bixRWpCCVIW/Mr2BznnG7WFEIl7KkwHD9w9m8c/5OUSKNVEQYrcu1zPRKTzozpLfSPZe1z5/K7O3ozFMafV4khYg5bYnJ5xsMJZj5GouVateDU14BWbtkFlVpgDJzq274tUwNKc1DxBD/nnuGnzFevhZwMVZdzcROXODSz0M=
+	t=1713185886; cv=none; b=QLC1gU+ep1AiGNwyHa34zScEKcYRRNPDAXOe22J/P74mecEghWCoXc+C5eb6um3CmjYQ9Bk10puY03PZ9MjekCePzaI39XJMEH8Ij/izcSIRotKfVB71ju7uP/pZdgH5yS54RGJYgPP/13p8QtPpL0xAb4e0UlFv56yekGtmF04=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713185723; c=relaxed/simple;
-	bh=w28Vgzy/l8vd8BHW49TVBr3mcKt4Lu6grGdOVajJg6Q=;
+	s=arc-20240116; t=1713185886; c=relaxed/simple;
+	bh=JuY8Z9SFKAjd485RmpEzDICfCQ5m1DLNGhij0gfh/6A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lqCZfXmdlTFTOd5D7K7zmIKpYS2rqHSuQHe7Rm5p3fYEmE0Jcm4byWUviSc/2HvrYRpfL7vk/gfrLjvbDLFsa09mrmhHWYufqX8FWL9q2ShDvpSbzdfz1dTZuIccpL8hvBgr2MJcp38Ego7uABYmC1dBDf+/IXK7lChfXpt/Njg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=lRp5mflH; arc=none smtp.client-ip=209.85.128.48
+	 Content-Type:Content-Disposition:In-Reply-To; b=LGmb406IyZdON5a11rUL3keO8BGlPWOv/HMwPm97tcdAM45nYuYs+l+JDJdZx935RrK+tdb8H58ykXgzyGnYfsXubdNMxtWa3F8iOsCMZ0RRVOx3KbT1bCTbgaahUxvInbtFlEmJtrxwf4JpPXZom8NtlWgnUiIEIK1n5HscH8U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=AiokVn3p; arc=none smtp.client-ip=209.85.221.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lRp5mflH"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-418671bac0aso3531485e9.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 15 Apr 2024 05:55:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AiokVn3p"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-343f1957ffcso1813221f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Apr 2024 05:58:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1713185719; x=1713790519; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1713185883; x=1713790683; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=w28Vgzy/l8vd8BHW49TVBr3mcKt4Lu6grGdOVajJg6Q=;
-        b=lRp5mflHObnS+9j81fxt5C0JNjn674hgOaIPVtkWZq8AqNw7yMJ+viv9BzJahXKISB
-         C38YlUxu2TFABzsp3FvLg7xzucit1SFGvokikGVqZtnbkHmQnHsp9V3c8L5SGYPJ2Ca5
-         yPNLHCJjEgrBkAWnE3T+c+rVJvCUssEPz5XA3QS0Mu1oS1ivlbf7/7KBW8tp8VrwLgWW
-         IlIoT7YNp4Rm932+rzXaFSm3oC7ib5xFS7VzP7kkS9Tm0iXotZ3RklmJ5ywUGYrgPFzF
-         28QBBHOf6+ES4BF1dQRdnSjeHN/Zlx/Hak2pa42H3HvMLt98HZEQel4T7HNazTFzsIj8
-         v+9w==
+        bh=tLf6fjTVo3wUpV33VREESp7KlEYlqmXsy5vGMydSZn8=;
+        b=AiokVn3p5J7rw6aHxKGQ4DO0ZtXqAG1EQ/RcKvpwk3/FaLLKAb5HVvqqxaAqie6oy7
+         AZlO1P6MdMUCEfya+KJEdzzVjP72OP17GzKVbNyVbgvea5G685QIT7f0NgKfn2QHYDH/
+         rZgaYT1LE0wcvSIJp7fgzD3d9RcCxocKDGaa8eFTwP9DJdRGiTyU7OAcs3kNIRKR99JZ
+         nXzqPcAFHxpRF94VNnGUnwKb9JgnzeFrs7TIKO/Sg4mt3vupA4sXxrjHVIF6ICMni3t7
+         95u5xfDfFY+jZdiv4njyD9hd3sTxdfQiKNSWNNJXm3BvGJl0Ru3Q0tq2ntg2822UzMrV
+         h1PA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713185719; x=1713790519;
+        d=1e100.net; s=20230601; t=1713185883; x=1713790683;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=w28Vgzy/l8vd8BHW49TVBr3mcKt4Lu6grGdOVajJg6Q=;
-        b=kRRJSPmxA0ZLWhsbU0Bbqw7JxkaTQUahSa3dUIMliaRwtDe1Cb577ioncQilfIQVC8
-         LERXF60T4dnaYQvnyyqmxrT3KNlmjbrgZsFa9kzSNDrzUi1jYLUIgkRIsLmkt7VAISse
-         GKCcwx+7ecAsvc3oRiwnktujzvgEzVAEswryqBFYQnsKGfLMbAAP1ArmXguX/C0QRXOZ
-         FsL7r27lnL7QAiDQwb0MqgjmAgZHSFa6aPvpWRhw8fd8b1vfbXUm+ruS1B39NNx1Sscc
-         /TVNmgdTS+2J09UX4kkZHqt6YenNXHGAyyhGX1hNTqZY6cmYiEf8+g++a+E+kK95NEb5
-         Hk2A==
-X-Forwarded-Encrypted: i=1; AJvYcCV8qABfylfEa70HlxxKUlDuD8gABOFvHi2daIo+N0WADacdlPY5H/pBUQ0AS4y33hKM4/hTQTavuvCmjap+VHb38nxelFDyUksZ+h0=
-X-Gm-Message-State: AOJu0Ywl4kCVcNvMaPBDJE1Cv/9tq+yigYyWDmICDRkVJkfUGu51BDS0
-	7gQI96FleOW7ACkuxKukJDst/+OFLYPQZm/2AoISt7/rqqo5dp4hDCW1B4b2EFg=
-X-Google-Smtp-Source: AGHT+IHtbwzdHFlfRbkSxCve8iZ6ujqhwgWjkWmq8yTpU351E4Av/06V3X/v4naeroGsr+pFHM+HYQ==
-X-Received: by 2002:a05:600c:3582:b0:416:9cf8:cf05 with SMTP id p2-20020a05600c358200b004169cf8cf05mr7326072wmq.18.1713185719212;
-        Mon, 15 Apr 2024 05:55:19 -0700 (PDT)
+        bh=tLf6fjTVo3wUpV33VREESp7KlEYlqmXsy5vGMydSZn8=;
+        b=dMH9EqrBdvItLbTt0qEa9wKrnKkXIskhA0MyazxC2eZhJtKHIfwZZ9dZMiLr2XHYBb
+         CEZQ+/02R8wJGiFUkbHTzGs3rQir7oO/g0BJNgNFzhVhMfMFsX2hVSxJ2nH9UcJ2CLmM
+         dOS7iNwAct5gXeAZjzADg1q7yaRYwTa2ekYwNijmKfTAKrP6bKbH7jYo4xTUIr/8asE2
+         85j+DABuAO2XfN0hPwjDh4vyQGHY9iOt4/sGLoS+jULeGOfk1yFn+nANCAPXpEQ6b62/
+         B6YBgGVS1QPAzdzBBZER9xux18TrHOGpl/SKOFwjJTCYtG1xZ1TjH+jY4uoJlnhsCn7B
+         cukA==
+X-Forwarded-Encrypted: i=1; AJvYcCVUEM4hrN2Z4nHKvZXlOa1E0jkOfY0Ioz/z27iLn1t/64r9ucbaP9KtwpZKAcJC50fzwg8xxoyziVXjr8PI2rzlhg/Xv1Pfd5+3R3E=
+X-Gm-Message-State: AOJu0YzaYLnU3/oyHEkOI4N8Rua+KUEbgJLzqX9xd8pQKV75b9/P3p61
+	3CBJJdGXEMrPM3G+0i/+tkALvshWcJ138hlB1XEmS/HGoaQEz0kuSHVS5FwvW8I=
+X-Google-Smtp-Source: AGHT+IEAm03/mAgN/wD9H5pLJe3fIVolEbWIhU988XB39qknEhlAzrxruGN5U/LF93zzxG0bYawaFQ==
+X-Received: by 2002:a5d:595b:0:b0:345:e750:6d6c with SMTP id e27-20020a5d595b000000b00345e7506d6cmr7277507wri.30.1713185882741;
+        Mon, 15 Apr 2024 05:58:02 -0700 (PDT)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id s11-20020a05600c45cb00b00417f65f148esm13117334wmo.31.2024.04.15.05.55.18
+        by smtp.gmail.com with ESMTPSA id f18-20020adfe912000000b00343d6c7240fsm12032238wrm.35.2024.04.15.05.58.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Apr 2024 05:55:18 -0700 (PDT)
-Date: Mon, 15 Apr 2024 13:55:17 +0100
+        Mon, 15 Apr 2024 05:58:02 -0700 (PDT)
+Date: Mon, 15 Apr 2024 13:58:00 +0100
 From: Daniel Thompson <daniel.thompson@linaro.org>
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
@@ -67,10 +67,9 @@ Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
 	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
 	linux-omap@vger.kernel.org
-Subject: Re: [PATCH 14/18] backlight: tdo24m: Constify lcd_ops
-Message-ID: <20240415125517.GN222427@aspen.lan>
+Subject: Re: [PATCH 00/18] backlight: Constify lcd_ops
+Message-ID: <20240415125800.GO222427@aspen.lan>
 References: <20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org>
- <20240414-video-backlight-lcd-ops-v1-14-9b37fcbf546a@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,15 +78,73 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240414-video-backlight-lcd-ops-v1-14-9b37fcbf546a@kernel.org>
+In-Reply-To: <20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org>
 
-On Sun, Apr 14, 2024 at 06:36:12PM +0200, Krzysztof Kozlowski wrote:
-> 'struct lcd_ops' is not modified by core backlight code, so it can be
-> made const for increased code safety.
+On Sun, Apr 14, 2024 at 06:35:58PM +0200, Krzysztof Kozlowski wrote:
+> Hi,
 >
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Dependencies
+> ============
+> All further patches depend on the first patch.  Therefore everything
+> could go via backlight tree (please ack) or via cross-tree pulls. Or
+> whatever maintainer choose, just coordinate this with backlight.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Thanks for the tidy up.
+
+I've added my Reviewed-by: to all the backlight patches (for Lee) and
+I'm happy with the other patches too... but I didn't want my R-b on the
+HID and fbdev patches to be confused for an ack.
 
 
 Daniel.
+
+
+> ---
+> Krzysztof Kozlowski (18):
+>       backlight: Constify lcd_ops
+>       backlight: ams369fg06: Constify lcd_ops
+>       backlight: corgi_lcd: Constify lcd_ops
+>       backlight: hx8357: Constify lcd_ops
+>       backlight: ili922x: Constify lcd_ops
+>       backlight: ili9320: Constify lcd_ops
+>       backlight: jornada720_lcd: Constify lcd_ops
+>       backlight: l4f00242t03: Constify lcd_ops
+>       backlight: lms283gf05: Constify lcd_ops
+>       backlight: lms501kf03: Constify lcd_ops
+>       backlight: ltv350qv: Constify lcd_ops
+>       backlight: otm3225a: Constify lcd_ops
+>       backlight: platform_lcd: Constify lcd_ops
+>       backlight: tdo24m: Constify lcd_ops
+>       HID: picoLCD: Constify lcd_ops
+>       fbdev: clps711x: Constify lcd_ops
+>       fbdev: imx: Constify lcd_ops
+>       fbdev: omap: lcd_ams_delta: Constify lcd_ops
+>
+>  drivers/hid/hid-picolcd_lcd.c            | 2 +-
+>  drivers/video/backlight/ams369fg06.c     | 2 +-
+>  drivers/video/backlight/corgi_lcd.c      | 2 +-
+>  drivers/video/backlight/hx8357.c         | 2 +-
+>  drivers/video/backlight/ili922x.c        | 2 +-
+>  drivers/video/backlight/ili9320.c        | 2 +-
+>  drivers/video/backlight/jornada720_lcd.c | 2 +-
+>  drivers/video/backlight/l4f00242t03.c    | 2 +-
+>  drivers/video/backlight/lcd.c            | 4 ++--
+>  drivers/video/backlight/lms283gf05.c     | 2 +-
+>  drivers/video/backlight/lms501kf03.c     | 2 +-
+>  drivers/video/backlight/ltv350qv.c       | 2 +-
+>  drivers/video/backlight/otm3225a.c       | 2 +-
+>  drivers/video/backlight/platform_lcd.c   | 2 +-
+>  drivers/video/backlight/tdo24m.c         | 2 +-
+>  drivers/video/fbdev/clps711x-fb.c        | 2 +-
+>  drivers/video/fbdev/imxfb.c              | 2 +-
+>  drivers/video/fbdev/omap/lcd_ams_delta.c | 2 +-
+>  include/linux/lcd.h                      | 6 +++---
+>  19 files changed, 22 insertions(+), 22 deletions(-)
+> ---
+> base-commit: 9ed46da14b9b9b2ad4edb3b0c545b6dbe5c00d39
+> change-id: 20240414-video-backlight-lcd-ops-276d8439ffb8
+>
+> Best regards,
+> --
+> Krzysztof Kozlowski <krzk@kernel.org>
+>

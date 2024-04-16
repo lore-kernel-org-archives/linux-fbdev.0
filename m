@@ -1,73 +1,75 @@
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3D8E1DFEF
-	for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 12:23:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E1031D530
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 12:33:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713270188; cv=none; b=DAkkG3S6mXMZ1R8v/+WKtuPYmipwri1xQHOXyGp8YLPRVJo8GYn/S6QHJgvo7gB8ekhniisNHz7c1DARAvDc1bmxacFABxQAlGzIQ7HKzf9c0+jH0LNScS11UjSRou7f3wqoaLFTR3oW8ep3PRVPX6ZQ6XCeEgjTnsmpRbjqUsc=
+	t=1713270795; cv=none; b=DwxJIxZREppPI28w6VrlxoYARo7oi8DSB8nFqE4hDfRAZ2v9c3t4zwrf4lw6JWWGEYsd1tU9vZKHx3Ke8L82Qvdqk7QMTkGWlGMWSVm6e08TFrWbWH/pXExNmkHKhpQscWDZn7uYneISQFz+4LCaS4bJs4oUMLQMxIWKEnslAO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713270188; c=relaxed/simple;
-	bh=C1jUeqwDwmjObgO1egTxhOoGgeyaGrt608rckVXXR60=;
+	s=arc-20240116; t=1713270795; c=relaxed/simple;
+	bh=71kAcH0Ruy7gzYqTjdqkkTTJv72Cwo3DCuopOV5ws5E=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=ev+V8u6A/xIx1a/vs6wlPzL9dkRUXfjtOm5Tfv1heXawIhB2wiNA9XR8oqNhPs0QQ4zrOs5kpcXmELBC61fbLZEBeerpNOU0cDqaJZXI8otLo24Kb0/AiUOdbHRaTYLMDSAHCYzT3bFjheHqvEKcj3Eg/Xj6nKorNd+/3Oy+eZc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=cVlJIpo9; arc=none smtp.client-ip=170.10.129.124
+	 MIME-Version:Content-Type; b=VeYjsc1TSat5MYgPLMVhHyQipheMaE51XjqB32xl081NGqr9Y28JiSKf3Pi/ZC1X50iijZOlw4ec7Jh88pFKMznVq2xYIdN34majZHWXEFiK3OB32/T8R9i8BlLz4npm5qedoUceisOSbgObZFz2OPCBQ8W2yBOMWwnTEVeJWo4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Uucimjug; arc=none smtp.client-ip=170.10.129.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="cVlJIpo9"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Uucimjug"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1713270185;
+	s=mimecast20190719; t=1713270792;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=tEDYzTJZLPP5KChkZiTTbiufy8jdzN3WLrTioTKBrxM=;
-	b=cVlJIpo978XRs0VmraPq8ZYDvpQ+ICQ5VL17SfGoRfYO2Wm3HtKWfov8FxNeuupko5GPrX
-	JavoxiAiTLGLmplUiO7kS18HQ8XDFHztfW6HyLKYxvLMG9olVcoiAzjH7EAtvCg/nkEsIN
-	bqbzaAzpAU9Up56A9Lj+OmtdhowmtcE=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=xteOWPcjWbwNGVchkja51XJnWeQI8eB6ajK9N4gBt+o=;
+	b=UucimjugR9z9p6iPit+NatbTGKEDiuJM1Pe50qSrmfCjWZWB8fSE6L3zmwXG3xq5e4AMBW
+	RDpLeA9zKCOiCnbBUuOd5KYQuaWgrdEOWSX7hgX5Mhsu9OVGel5SDaPTp+dtMWXHdhuxx4
+	1K72qyKtxVQCYhMNZecIZ+JTGajOhMY=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-295-38Gx8actMzm357dPsMsJkQ-1; Tue, 16 Apr 2024 08:23:04 -0400
-X-MC-Unique: 38Gx8actMzm357dPsMsJkQ-1
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-343f8b51910so2470966f8f.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 05:23:04 -0700 (PDT)
+ us-mta-683-VYnGWzABM6GIC95hTROiWA-1; Tue, 16 Apr 2024 08:33:10 -0400
+X-MC-Unique: VYnGWzABM6GIC95hTROiWA-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-417bf71efb4so22960675e9.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 05:33:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713270183; x=1713874983;
+        d=1e100.net; s=20230601; t=1713270789; x=1713875589;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=tEDYzTJZLPP5KChkZiTTbiufy8jdzN3WLrTioTKBrxM=;
-        b=DS24D2m/E/840cOMgsIfGrMkMFoXWGcKAPp28DGT1cVkRnzttB7V8nca+edTz6An9X
-         py9iIMtdbHE0d7kpa8zHy5Lwv5PYDlzfv3NIeAnfdFdILzxtJKb6blbCI6HPpkPSMVcK
-         T2sDLpuU3jzZBUCNkm0TEMGCh8TQTKo86v0hOJBAtG10t51f3EcNxJKFF1BzSZVNHnS6
-         tcpCjmlf5UJr6aSoZ2V7DGgtYedRc9sHY3ZXFwjargGywKO37dbUtTiz0ujqayGLQNG/
-         06DXDfIhG/u5ZkQRO79AZ+SbcL9SgbRHl1BYn7vtBs0AUNpEjwa9pBf9pWjVonTGyPvO
-         HLCQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVmhk8s42rwqem0zdEkb4EZyybpD5+SbsE6SN++pihru/dW3lGgYD269JxSwFk+Q4NiDD4OumZgdBKWG8x9HQoAlH4UTZq9E8/FobE=
-X-Gm-Message-State: AOJu0YzSI5B7AbgR5UB6jZib8iH6wCGyATK8qnq5CAo/ZgyXKms/J7QV
-	ESSdU1xnJoRzaTsaHDCuizpWkBDoiaZfZ7Eu+NisKnaYM2xEkmn9G7is4+CnWediPNb0YnyYlec
-	Utim9PdCPG7C/UxchpDRiL0/QLSf88JGmyy8zJk0X9QmUEYEEgNwHESpRvrk4
-X-Received: by 2002:a5d:4842:0:b0:346:407a:a2d7 with SMTP id n2-20020a5d4842000000b00346407aa2d7mr8119510wrs.71.1713270183321;
-        Tue, 16 Apr 2024 05:23:03 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEQETyZGkr3zNvPiiskHfwVE8JtadFYNoQLFHO5x2CPEx0WHJkHTgGo6tl9Ypq1n5XapvvE+g==
-X-Received: by 2002:a5d:4842:0:b0:346:407a:a2d7 with SMTP id n2-20020a5d4842000000b00346407aa2d7mr8119495wrs.71.1713270182944;
-        Tue, 16 Apr 2024 05:23:02 -0700 (PDT)
+        bh=xteOWPcjWbwNGVchkja51XJnWeQI8eB6ajK9N4gBt+o=;
+        b=U7OnMLBCrgT2ANilNhuUbLrOELoknNYcZiwM3jxkMswZQ8Uq1EViXNJRJ5BwDgBYWO
+         MxJ0QUsBR3Tzk1PN3YLTLNyuevTIQSnswBe6pH+V69gGv6/U7BjO0pRChd1x9Dk0u/yq
+         Wsd7MqwmYcnPlwkD4pDrito5PoYfjdw+pOIy9xA2cKDmDYGVr14ikzb0ZFjKu9nLmM+0
+         XUNBdJUgQUV7eoipeL8cGFM1ReDCgFRQszh3rafUzMrhNGakJuAJxkA3Z6wKn9ZO9njt
+         32cI/SjKGda7Ih2RuaeyGnFMd7HtsJ+5BO0LnSfaDYpjnDYH6732qTiBQgVrgWb8oGuP
+         cTvQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVGDUXzt1U6AXbUnxqoRATPKTVH/GJbw5F/Cths8UOOsNDyIKBWOgrqPNqj3BhepdTzA3E5Y3ic3xsubVBICy2pEINxuaTonaPzpAw=
+X-Gm-Message-State: AOJu0YymMub6gU0pN2/6ccpib8K58XMNFgKUMVQqQNNJfZD7FMt5e05R
+	My3E7kwXOD9ZNZzfk/jU7HRKayU6IixsLqMZODhNrvDXG+gQVaXlOloEBMmNZcgf//OoJnxrBBo
+	eB4KdQvFlAFrU5m87hjTynsZeGy1569LmffHlcvXaOB8E09lWc9lPLLil986I
+X-Received: by 2002:a05:600c:1d22:b0:418:7ec1:7bdb with SMTP id l34-20020a05600c1d2200b004187ec17bdbmr2355533wms.5.1713270789572;
+        Tue, 16 Apr 2024 05:33:09 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IF6QlHuOYFx5st5AynBIsSw9LG3X1l/uiKueZt8fUqUQ3eyo5dEWcdcofbF7Vx3r0j/oQ4jGg==
+X-Received: by 2002:a05:600c:1d22:b0:418:7ec1:7bdb with SMTP id l34-20020a05600c1d2200b004187ec17bdbmr2355502wms.5.1713270789093;
+        Tue, 16 Apr 2024 05:33:09 -0700 (PDT)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id i4-20020a5d6304000000b003437ad152f9sm14755120wru.105.2024.04.16.05.23.02
+        by smtp.gmail.com with ESMTPSA id p15-20020a05600c468f00b00417da22df18sm19407022wmo.9.2024.04.16.05.33.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Apr 2024 05:23:02 -0700 (PDT)
+        Tue, 16 Apr 2024 05:33:08 -0700 (PDT)
 From: Javier Martinez Canillas <javierm@redhat.com>
 To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
  airlied@gmail.com, daniel@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 08/43] drm/fbdev: Add fbdev-shmem
-In-Reply-To: <6cdccec9-e1a1-477b-a41a-4fb9d94d3238@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Thomas
+ Zimmermann <tzimmermann@suse.de>, Xinliang Liu <xinliang.liu@linaro.org>,
+ Tian Tao <tiantao6@hisilicon.com>, Xinwei Kong
+ <kong.kongxinwei@hisilicon.com>, Sumit Semwal <sumit.semwal@linaro.org>,
+ Yongqin Liu <yongqin.liu@linaro.org>, John Stultz <jstultz@google.com>
+Subject: Re: [PATCH v2 23/43] drm/hisilicon/kirin: Use fbdev-dma
+In-Reply-To: <20240410130557.31572-24-tzimmermann@suse.de>
 References: <20240410130557.31572-1-tzimmermann@suse.de>
- <20240410130557.31572-9-tzimmermann@suse.de>
- <87r0f54kir.fsf@minerva.mail-host-address-is-not-set>
- <6cdccec9-e1a1-477b-a41a-4fb9d94d3238@suse.de>
-Date: Tue, 16 Apr 2024 14:23:00 +0200
-Message-ID: <87y19d5wez.fsf@minerva.mail-host-address-is-not-set>
+ <20240410130557.31572-24-tzimmermann@suse.de>
+Date: Tue, 16 Apr 2024 14:33:07 +0200
+Message-ID: <87v84h5vy4.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -78,34 +80,22 @@ Content-Type: text/plain
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-[...]
+> Implement fbdev emulation with fbdev-dma. Fbdev-dma now supports
+> damage handling, which is required by kirin. Avoids the overhead of
+> fbdev-generic's additional shadow buffering. No functional changes.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Xinliang Liu <xinliang.liu@linaro.org>
+> Cc: Tian Tao <tiantao6@hisilicon.com>
+> Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+> Cc: Sumit Semwal <sumit.semwal@linaro.org>
+> Cc: Yongqin Liu <yongqin.liu@linaro.org>
+> Cc: John Stultz <jstultz@google.com>
+> ---
+>  drivers/gpu/drm/hisilicon/kirin/kirin_drm_drv.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
->>
->> I guess is OK because is_vmalloc_addr() is always true for this case ?
->
-> It's not a vmalloc'ed address, but see patch 7. Fbdev-shmem uses a new 
-> get_page callback in fb_defio. It provides the necessary page directly 
-> to fb_defio.
->
-
-Thanks! That was the missing piece of the puzzle.  I didn't look at that
-patch because I noticed that already had a r-b. It makes more sense now :)
-
->
->>
->> This also made me think why info->fix.smem_len is really needed. Can't we
->> make the fbdev core to only look at that if info->screen_size is not set ?
->
-> The fbdev core doesn't use smem_len AFAICT. But smem_len is part of the 
-> fbdev UAPI, so I set it. I assume that programs use it to go to the end 
-> of the framebuffer memory.
->
-
-I see. Makes sense.
-
-> Best regards
-> Thomas
->
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
 -- 
 Best regards,

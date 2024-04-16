@@ -1,96 +1,262 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F0625A10B
-	for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 12:43:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3314E12BE8C
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 12:44:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713271386; cv=none; b=XFHjiYQjHO6NH1QgC5ZaBvHoyHG081WMfM18t9rYm7vSId111SJ9bWDmcKZopCALuOTlFsW1fhC4pEqEE/uCCNscCZ9NkX2LXG74ZY7HcMLX7B0VkS4xVy916RDB3mc2olcLIHBWQ+/EsOl6Bs0czERwvJ3s4+UOOABlMi2astc=
+	t=1713271497; cv=none; b=u+Lhw2lDhTuwKz5xHnS4Ac26N9imGShmmhCWMg7sjwDl7xky8lGUe9BjZemQdTAxpGq8oMRjfycyg63XrBDKVjSOwdLogtYtIr7pC6zsd/KfyrKyfsBor6wm4vI/GADovVMGzUDsh6xHs+82+Kps3HOFYNnszyE28qJUz5sTCkw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713271386; c=relaxed/simple;
-	bh=8ZQfDvNnVhfCGJoBxreuHdTcbRRbTrKnHF7f0x5/Zwo=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=GimY4wQeVOvxLxXvA5G9ARurKQJgjnTQuNBEfTol8wtyXEG5CV2F5cCkmqzY9LUFWakf4tXwcOQtLpdbo/+gRzBLhdKolHR8nZLqJ7tyaivg5pSNANVVokWp23xwTjieWU399u83ACIxSp4v62ZhfU7JU1p5BF6ZZFVWiJTzl0E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=OvXrqIc5; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1713271497; c=relaxed/simple;
+	bh=KMACsG+jKksmk8S1xoyAEwbew5CyIPTu4g/24LEWO0k=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AM3+2ZmfxJ04JuihrUjRUNIEgIEhjLkTNYomh3uDhLyDAbWz2ULwLjrKykN0vfj2+SXB2M8fGcqmydXCOQfXnMgVWoh8B8TcAdBHAmdh7dExNp53i+Mc130tjpEPnkn1G8xExbsKfrxUbkGouBfAzLsVVhgEb508vxp7UWEWu0A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=IGk/LXsv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=M1/YZYRE; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=IGk/LXsv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=M1/YZYRE; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="OvXrqIc5"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1713271384;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jp49m6q3lvmw6iA15TwLy3GUIM4dsmTXh/SR2TtsRNM=;
-	b=OvXrqIc5TMNKNcuSlEtKMlrl9V3POhsQ/1/dMFzevGlJXe4d7lhCkDJvEiCap/Og4pKFQC
-	nkoCELhprLKZHYsuC9fBlVh1p+ZXKfMpFqN7l6Ou0XNiEYsBK86zswFrgzn9IoXKs0RO2c
-	57x4YMCWv0OU1TvT5KBy1wd3y4IyH4Q=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-613-PSKzgdYfMtuCDXu_KYdRRg-1; Tue, 16 Apr 2024 08:42:58 -0400
-X-MC-Unique: PSKzgdYfMtuCDXu_KYdRRg-1
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-346d3020e08so2918937f8f.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 05:42:54 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713271372; x=1713876172;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Jp49m6q3lvmw6iA15TwLy3GUIM4dsmTXh/SR2TtsRNM=;
-        b=APD37NG+HOusWqm1Ej+RLwWzcO3/AKXtBCmNUJKWAbufgJfIN6p/xv9oxTazvLR1kY
-         MpeeKQxZrUYxZpTRKlQQEdsNn1xVruS9+hU2VYIkjj2kBetVErgRRTVM8XRe2L25rTmx
-         qaxGK5TQpZNEqn3JNAGlcx0mOtaf2LmbjI+jZmZwSshX4sUn/HO5Co3VGM0NozTnEpyu
-         XVFbTOsCxbdoDBU2Lta7FulF9f7OtVsmsEnY/eVoZulCFWG96ckhoyViO7R4+1ImBPel
-         ftM0S2/zsA9mav+mNr94a1gqSK8QS0l+xstiKz4u6x5KlslziYYevF3uA7wMY0nJTjU0
-         wOVQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUV6AJkPPK7XXURl/7EQskY98c6C7l1+XD33eVQGqNMAdldUjWU6GC3+aCrA4pGMyf0eVgRacoF9OpKYa3VW6OEzxROMSNCjrH3ObE=
-X-Gm-Message-State: AOJu0YwnN2yH6IkFHXV6luKAwQAKyvmZNtk50PjLPJt50efdMi3kZJcr
-	KWvC7X7tSxQScj/X+gp1ew9AruTr8wX8izfBXXkKa2wM5xFCw8ed0nZAYXv2X+P7pkf2uhNY/jT
-	ni8MqQv7cEOVWag5wwrzRt46wk27O/jEwsUctlRRkiLF+ZBTKEy+QzS2W8alW
-X-Received: by 2002:a5d:59ad:0:b0:343:96b2:c12e with SMTP id p13-20020a5d59ad000000b0034396b2c12emr10492729wrr.15.1713271372084;
-        Tue, 16 Apr 2024 05:42:52 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHWAwkGQawPnsu/BKlaYNsy3l/ywFd+6gzgL6urgpasKJvexa/njCiAedgEaXEOrEB/bm/ZGw==
-X-Received: by 2002:a5d:59ad:0:b0:343:96b2:c12e with SMTP id p13-20020a5d59ad000000b0034396b2c12emr10492712wrr.15.1713271371692;
-        Tue, 16 Apr 2024 05:42:51 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id r26-20020adfb1da000000b0033e745b8bcfsm14963657wra.88.2024.04.16.05.42.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Apr 2024 05:42:51 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
- airlied@gmail.com, daniel@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Thomas
- Zimmermann <tzimmermann@suse.de>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH v2 43/43] drm/fbdev: Clean up fbdev documentation
-In-Reply-To: <20240410130557.31572-44-tzimmermann@suse.de>
-References: <20240410130557.31572-1-tzimmermann@suse.de>
- <20240410130557.31572-44-tzimmermann@suse.de>
-Date: Tue, 16 Apr 2024 14:42:50 +0200
-Message-ID: <8734rl5vhx.fsf@minerva.mail-host-address-is-not-set>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="IGk/LXsv";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="M1/YZYRE";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="IGk/LXsv";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="M1/YZYRE"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2ECE737473;
+	Tue, 16 Apr 2024 12:44:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713271493; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=AuBMf/Uad19yCYIhnpOyVDrb5x8OWL2p4o577aT1akk=;
+	b=IGk/LXsvyRiDACZaWz65kwfi/Ua7ySbxMkqnjk1xGvzgVX6ZSJ9FfZqQbre3rLQAK4fE0w
+	kVSZ1730Z/YeINkI7DHkF8HYDpB5xdtbsmWX2zTPSx+oaoN1hTTmBq6W56hNho1qQBYdJT
+	WR6jRmn6lnC6znTr4+toTBi/VxqDpg0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713271493;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=AuBMf/Uad19yCYIhnpOyVDrb5x8OWL2p4o577aT1akk=;
+	b=M1/YZYREQ0Q81ljq9Eej6XFLzNlRqV0KKz/tYiOsRJWs2GiuAZMeH1GF4gb0M9Sn+rG7DG
+	1O/GrADTR94mQbCw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="IGk/LXsv";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="M1/YZYRE"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713271493; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=AuBMf/Uad19yCYIhnpOyVDrb5x8OWL2p4o577aT1akk=;
+	b=IGk/LXsvyRiDACZaWz65kwfi/Ua7ySbxMkqnjk1xGvzgVX6ZSJ9FfZqQbre3rLQAK4fE0w
+	kVSZ1730Z/YeINkI7DHkF8HYDpB5xdtbsmWX2zTPSx+oaoN1hTTmBq6W56hNho1qQBYdJT
+	WR6jRmn6lnC6znTr4+toTBi/VxqDpg0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713271493;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=AuBMf/Uad19yCYIhnpOyVDrb5x8OWL2p4o577aT1akk=;
+	b=M1/YZYREQ0Q81ljq9Eej6XFLzNlRqV0KKz/tYiOsRJWs2GiuAZMeH1GF4gb0M9Sn+rG7DG
+	1O/GrADTR94mQbCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id EB68613432;
+	Tue, 16 Apr 2024 12:44:52 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id +qJON8RyHmaERwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 16 Apr 2024 12:44:52 +0000
+Message-ID: <18d461b6-8086-42f5-b629-b673daa04bd7@suse.de>
+Date: Tue, 16 Apr 2024 14:44:52 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 21/43] drm/fbdev-dma: Implement damage handling and
+ deferred I/O
+To: Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
+ airlied@gmail.com, daniel@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20240410130557.31572-1-tzimmermann@suse.de>
+ <20240410130557.31572-22-tzimmermann@suse.de>
+ <871q757b73.fsf@minerva.mail-host-address-is-not-set>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <871q757b73.fsf@minerva.mail-host-address-is-not-set>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.50 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	MX_GOOD(-0.01)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_TO(0.00)[redhat.com,gmx.de,gmail.com,ffwll.ch];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 2ECE737473
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Flag: NO
+X-Spam-Score: -4.50
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+Hi
 
-> Rewrite some docs that are not up-to-date any longer. Remove the TODO
-> item for fbdev-generic conversion, as the helper has been replaced. Make
-> documentation for DMA, SHMEM and TTM emulation available.
+Am 16.04.24 um 14:18 schrieb Javier Martinez Canillas:
+> Thomas Zimmermann <tzimmermann@suse.de> writes:
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> ---
+>> Add support for damage handling and deferred I/O to fbdev-dma. This
+>> enables fbdev-dma to support all DMA-memory-based DRM drivers, even
+>> such with a dirty callback in their framebuffers.
+>>
+>> The patch adds the code for deferred I/O and also sets a dedicated
+>> helper for struct fb_ops.fb_mmap that support coherent mappings.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   drivers/gpu/drm/drm_fbdev_dma.c | 65 ++++++++++++++++++++++++++-------
+>>   1 file changed, 51 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/drivers/gpu/drm/drm_fbdev_dma.c b/drivers/gpu/drm/drm_fbdev_dma.c
+>> index 6c9427bb4053b..8ffd072368bca 100644
+>> --- a/drivers/gpu/drm/drm_fbdev_dma.c
+>> +++ b/drivers/gpu/drm/drm_fbdev_dma.c
+>> @@ -4,6 +4,7 @@
+>>   
+>>   #include <drm/drm_crtc_helper.h>
+>>   #include <drm/drm_drv.h>
+>> +#include <drm/drm_fb_dma_helper.h>
+>>   #include <drm/drm_fb_helper.h>
+>>   #include <drm/drm_framebuffer.h>
+>>   #include <drm/drm_gem_dma_helper.h>
+>> @@ -35,6 +36,22 @@ static int drm_fbdev_dma_fb_release(struct fb_info *info, int user)
+>>   	return 0;
+>>   }
+>>   
+>> +FB_GEN_DEFAULT_DEFERRED_SYSMEM_OPS(drm_fbdev_dma,
+>> +				   drm_fb_helper_damage_range,
+>> +				   drm_fb_helper_damage_area);
+>> +
+> Shouldn't this be FB_GEN_DEFAULT_DEFERRED_DMAMEM_OPS() instead ?
+>
+> I know that right now the macros are the same but I believe that it was
+> added it for a reason ?
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Oh, thanks for noticing! I asked for that macro specifically for this 
+reason. It went through the omap tree and hadn't arrived in 
+drm-misc-next when I first made these patches. I'll update the patch 
+accordingly.
+
+>
+>> +static int drm_fbdev_dma_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+>> +{
+>> +	struct drm_fb_helper *fb_helper = info->par;
+>> +	struct drm_framebuffer *fb = fb_helper->fb;
+>> +	struct drm_gem_dma_object *dma = drm_fb_dma_get_gem_obj(fb, 0);
+>> +
+>> +	if (!dma->map_noncoherent)
+>> +		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+> I noticed that some drivers do:
+>
+>                   vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
+>
+> I see that vm_get_page_prot() is a per-architecture function, but I don't
+> know about the implications of getting the pgprot_t from the vma->vm_flags
+> set or just using the current vma->vm_page_prot value...
+
+That's in interesting observation. The code in the patch adds a WC flag 
+to the existing vm_page_prot. The code in your example first creates a 
+new vm_page_prot from the vm_flags field. Fbdev drivers generally use 
+the former approach. So where does the original vm_page_prot value come 
+from? (I think that's also the question behind your comment.)
+
+I've looked through the kernel's mmap code from the syscall [1] to the 
+place where it invokes the mmap callback. [2] Shortly before doing so, 
+mmap_region() set's vm_page_prot from vm_flags like in your example. [3] 
+I would assume there's no reason for drivers to call vm_get_page_prot() 
+by themselves. DRM drivers specially seem to have the habit of doing so.
+
+Best regards
+Thomas
+
+[1] 
+https://elixir.bootlin.com/linux/v6.8/source/arch/x86/kernel/sys_x86_64.c#L86
+[2] https://elixir.bootlin.com/linux/v6.8/source/mm/mmap.c#L2829
+[3] https://elixir.bootlin.com/linux/v6.8/source/mm/mmap.c#L2824
+
+
+>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+>
+> --
+> Best regards,
+>
+> Javier Martinez Canillas
+> Core Platforms
+> Red Hat
+>
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

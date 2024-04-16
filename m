@@ -1,134 +1,109 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1260129A7B
-	for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 12:52:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C132130AC3
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 16:03:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.60.130.6
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713271946; cv=none; b=hI9CfG5taQbnqrmQYVcDIsEzYlpDNyOUl5yMoI6Hd9W+wwkUTQg9LvvVnh3CQzdgl3jVwkCvSL8+6VFHmLd/r+D8KxQUTZKkzbR9jROV7Ug/GNnOS2xQtRszu8A6qAV5CgSfSC9C98A1zn7EqkRN70wRgqhoW8q7LbY/xBGY33s=
+	t=1713283425; cv=none; b=DWr02gTbJawyEUeFyCsgHAyvyUBW3FPNPPuZY70yY3x+GT+vs6iAg8NCyRXAoyTQnkwyHFRRM2cVdX+I2U7r5SE/sGHoKk+3XHA2uxW4VLkLo3gW7U2V9rXbvG1hWQ+FNGsQX1LYqoBIcSxNJuC05BHanmXfXOhoZQwKSz/sb4Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713271946; c=relaxed/simple;
-	bh=bHfGOFEGRHP3cUTy7CN8AginmZyAOrLmUV0i0kCs/yw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=jkwMS5C18NoNODgUgZ9wqf5Gxzszq2ZLk4j993BkoNK8oMLXdC3bZKwc3+ClbwGMOoMyrI03qTDjlbZ1U0vfzFXAAS1B68KqdrcDmRhsZm47RNWSMI43LEVZujau0ieP4hU/YTNV8ecw9jd4d/L2AL4ckex6pmHbFQ7N7JMFF6E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=ZTaqsBgH; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1713283425; c=relaxed/simple;
+	bh=QnwEYUnAMy4ho8UqAYwwApVBxejvQ+9/8j4xlbVh6V4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Abf6qJ5O6mqpxKBRKETNEa4b4sJQojBOiW5U1paooF8dhQYCYfR+JFvegqUSuz7tNrwX7ndECn86G/XldP8Ucxjqa9cnE3jMnwadXBKYUOV4dbt7i37v2mKsaWNSKugO7ayh6bxWbT2p9tWOSy+jtTFQ9NWZd8uSyMfArDFDjaU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=aga9EUgt; arc=none smtp.client-ip=178.60.130.6
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZTaqsBgH"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1713271943;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zxlFUfTeSgKCsCdKtJ0S6d32bgkTGD79E4bwSfj5zbI=;
-	b=ZTaqsBgH7QS/hcD+JXi9Q48qC10fLorExSc9RUooKTrqliKV5eYIEL/eJTQm5Hg7+gRDtc
-	6iqk1FkgRzAol6o36v3bn6LH/vb/XP21a/x8/JU4uucMfPrZkg34uqML8fvKOMpYhTUitv
-	aawBRRTdTffwcfA/trgbR3D0Lg0sOqQ=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-484-Ktjpl-lpMz2nLpM-XLE33A-1; Tue, 16 Apr 2024 08:52:22 -0400
-X-MC-Unique: Ktjpl-lpMz2nLpM-XLE33A-1
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-417fb8195d7so15525005e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Apr 2024 05:52:22 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713271941; x=1713876741;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=zxlFUfTeSgKCsCdKtJ0S6d32bgkTGD79E4bwSfj5zbI=;
-        b=FnWaJIZbxaIK0762oZgt1tdfQJt2rd+2hmZUvHv/Po3br9NPWKxA/vqURvCtJ8i2XU
-         BL+yndAi2yZ7hKVGxeLmutG4kSupE7Lag9oPtiauY0/ZH3jkWdG2MHrNldQ+rzwgBeJx
-         NEJR3iokcsHQL4kP8K23iH1GOI6Ny0cisp+j77o+QClguj0AtF5bxGZpmgPAufuXKmVG
-         DR4g3HTF3tUMiVE88O0L9y/jizV7eRLvxM15WfpR/tS0Oicy20H0pdV1UDjGkaxpC1++
-         DoAjnv/rwEUCHVoqnsprL71AJ3R4cmpTMXcNZKrW0t3Mi5gvdcijx8rn/3Ga1iaCWvnn
-         R/aQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXEG1MnIt+NazlSR3P4WXVk6OJK3/5talmDMHbhQco5cTlIj1sJF0TfoCsfxN1vIf85oFKvnV+zjgU55w3s29W/+wwaJIR2usnO1gc=
-X-Gm-Message-State: AOJu0Yw+XpgA3XOEzUs54zcygmENu7/A0WCNBqm0G5WL5inb+r71+cd8
-	pHZUJtKTbvPtx3YL8vntXsS/7PnK9tMoPKYcTkosoBHXCbSxBNZShY7d4pvfx/92iIqDNeGeJMs
-	mDOD5aAj2qqyDmL4EcKBS8anlT7RgJj6/Jaz+0ZA3EiYEY0ryZpGnIBroFgRk
-X-Received: by 2002:a05:600c:4f49:b0:417:f526:6cc3 with SMTP id m9-20020a05600c4f4900b00417f5266cc3mr8922263wmq.20.1713271941000;
-        Tue, 16 Apr 2024 05:52:21 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IH25PNtyLwQbkK6cR9rp8WCEMDH38TwHqAQN8DUaQuPcNKQqbZiGlv1wsD/OJ9PLvJxgvGQsA==
-X-Received: by 2002:a05:600c:4f49:b0:417:f526:6cc3 with SMTP id m9-20020a05600c4f4900b00417f5266cc3mr8922247wmq.20.1713271940487;
-        Tue, 16 Apr 2024 05:52:20 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id f18-20020adfe912000000b00343d6c7240fsm14804520wrm.35.2024.04.16.05.52.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Apr 2024 05:52:20 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
- airlied@gmail.com, daniel@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 21/43] drm/fbdev-dma: Implement damage handling and
- deferred I/O
-In-Reply-To: <18d461b6-8086-42f5-b629-b673daa04bd7@suse.de>
-References: <20240410130557.31572-1-tzimmermann@suse.de>
- <20240410130557.31572-22-tzimmermann@suse.de>
- <871q757b73.fsf@minerva.mail-host-address-is-not-set>
- <18d461b6-8086-42f5-b629-b673daa04bd7@suse.de>
-Date: Tue, 16 Apr 2024 14:52:19 +0200
-Message-ID: <87zftt4gho.fsf@minerva.mail-host-address-is-not-set>
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="aga9EUgt"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+	List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=rAUIS3yVirb3SdFi4Pa0WJBsT+vscixY4akkzpTzcpc=; b=aga9EUgtFG6ylbk/Wfmgqy3zJA
+	Gf76NLyMS2DuunIzWQW4JngA/dcFKj1PMVrjYoaEMtKDwSbA5MeurY6N8TPA/pdMyI7GnnRlTQ/Hj
+	3Ov0XJPm2NYuKJ2hVMEvSZUE8cmmNI4mLnUjkkZl+yGnwHcVdNV/ogAtHy2ZPI5Wl/6BKZCzfprrT
+	7NBhvwak/3iKWraoPbQA75YkUonkyUY5f4z62eDgtGIQVzclbnkSJ0e4CdZB6p+yaACwXiyK4qae4
+	YYy5svolZuB5yb1LYQ1lnxkIb8g4ijCdm0F6eayceV+W/kC0K/XcUzuYPHjWeRQfqdfjfDMXiO94K
+	VrYcXUcg==;
+Received: from [177.34.169.177] (helo=[192.168.0.139])
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+	id 1rwlHJ-005DZu-HC; Tue, 16 Apr 2024 18:03:25 +0200
+Message-ID: <da33f59f-b5b1-4216-b58e-231c9a659574@igalia.com>
+Date: Tue, 16 Apr 2024 13:03:15 -0300
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 20/43] drm/vkms: Use fbdev-shmem
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+ deller@gmx.de, airlied@gmail.com, daniel@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ Rodrigo Siqueira <rodrigosiqueiramelo@gmail.com>,
+ Melissa Wen <melissa.srw@gmail.com>, =?UTF-8?Q?Ma=C3=ADra_Canal?=
+ <mairacanal@riseup.net>, Haneen Mohammed <hamohammed.sa@gmail.com>
+References: <20240410130557.31572-1-tzimmermann@suse.de>
+ <20240410130557.31572-21-tzimmermann@suse.de>
+Content-Language: en-US
+From: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
+Autocrypt: addr=mcanal@igalia.com; keydata=
+ xjMEZIsaeRYJKwYBBAHaRw8BAQdAGU6aY8oojw61KS5rGGMrlcilFqR6p6ID45IZ6ovX0h3N
+ H01haXJhIENhbmFsIDxtY2FuYWxAaWdhbGlhLmNvbT7CjwQTFggANxYhBDMCqFtIvFKVRJZQ
+ hDSPnHLaGFVuBQJkixp5BQkFo5qAAhsDBAsJCAcFFQgJCgsFFgIDAQAACgkQNI+cctoYVW5u
+ GAEAwpaC5rI3wD8zqETKwGVoXd6+AbmGfZuVD40xepy7z/8BAM5w95/oyPsHUqOsg/xUTlNp
+ rlbhA+WWoaOXA3XgR+wCzjgEZIsaeRIKKwYBBAGXVQEFAQEHQGoOK0jgh0IorMAacx6WUUWb
+ s3RLiJYWUU6iNrk5wWUbAwEIB8J+BBgWCAAmFiEEMwKoW0i8UpVEllCENI+cctoYVW4FAmSL
+ GnkFCQWjmoACGwwACgkQNI+cctoYVW6cqwD/Q9R98msvkhgRvi18fzUPFDwwogn+F+gQJJ6o
+ pwpgFkAA/R2zOfla3IT6G3SBoV5ucdpdCpnIXFpQLbmfHK7dXsAC
+In-Reply-To: <20240410130557.31572-21-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+On 4/10/24 10:02, Thomas Zimmermann wrote:
+> Implement fbdev emulation with fbdev-shmem. Avoids the overhead of
+> fbdev-generic's additional shadow buffering. No functional changes.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-> Hi
->
-> Am 16.04.24 um 14:18 schrieb Javier Martinez Canillas:
->> Thomas Zimmermann <tzimmermann@suse.de> writes:
->>
+Acked-by: Maíra Canal <mcanal@igalia.com>
 
-[...]
+Best Regards,
+- Maíra
 
->>> +static int drm_fbdev_dma_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
->>> +{
->>> +	struct drm_fb_helper *fb_helper = info->par;
->>> +	struct drm_framebuffer *fb = fb_helper->fb;
->>> +	struct drm_gem_dma_object *dma = drm_fb_dma_get_gem_obj(fb, 0);
->>> +
->>> +	if (!dma->map_noncoherent)
->>> +		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
->> I noticed that some drivers do:
->>
->>                   vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
->>
->> I see that vm_get_page_prot() is a per-architecture function, but I don't
->> know about the implications of getting the pgprot_t from the vma->vm_flags
->> set or just using the current vma->vm_page_prot value...
->
-> That's in interesting observation. The code in the patch adds a WC flag 
-> to the existing vm_page_prot. The code in your example first creates a 
-> new vm_page_prot from the vm_flags field. Fbdev drivers generally use 
-> the former approach. So where does the original vm_page_prot value come 
-> from? (I think that's also the question behind your comment.)
->
-
-Yes, also if the vm_flags were set (and where) for this VMA.
-
-> I've looked through the kernel's mmap code from the syscall [1] to the 
-> place where it invokes the mmap callback. [2] Shortly before doing so, 
-> mmap_region() set's vm_page_prot from vm_flags like in your example. [3] 
-> I would assume there's no reason for drivers to call vm_get_page_prot() 
-> by themselves. DRM drivers specially seem to have the habit of doing so.
->
-
-Got it, makes sense. Thanks for taking a look.
-
-> Best regards
-> Thomas
->
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+> Cc: Rodrigo Siqueira <rodrigosiqueiramelo@gmail.com>
+> Cc: Melissa Wen <melissa.srw@gmail.com>
+> Cc: "Maíra Canal" <mairacanal@riseup.net>
+> Cc: Haneen Mohammed <hamohammed.sa@gmail.com>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> ---
+>   drivers/gpu/drm/vkms/vkms_drv.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/vkms/vkms_drv.c b/drivers/gpu/drm/vkms/vkms_drv.c
+> index dd0af086e7fa9..8dc9dc13896e9 100644
+> --- a/drivers/gpu/drm/vkms/vkms_drv.c
+> +++ b/drivers/gpu/drm/vkms/vkms_drv.c
+> @@ -17,7 +17,7 @@
+>   #include <drm/drm_atomic.h>
+>   #include <drm/drm_atomic_helper.h>
+>   #include <drm/drm_drv.h>
+> -#include <drm/drm_fbdev_generic.h>
+> +#include <drm/drm_fbdev_shmem.h>
+>   #include <drm/drm_file.h>
+>   #include <drm/drm_gem_framebuffer_helper.h>
+>   #include <drm/drm_ioctl.h>
+> @@ -223,7 +223,7 @@ static int vkms_create(struct vkms_config *config)
+>   	if (ret)
+>   		goto out_devres;
+>   
+> -	drm_fbdev_generic_setup(&vkms_device->drm, 0);
+> +	drm_fbdev_shmem_setup(&vkms_device->drm, 0);
+>   
+>   	return 0;
+>   

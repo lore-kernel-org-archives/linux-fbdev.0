@@ -1,128 +1,99 @@
-Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from e3i51.smtp2go.com (e3i51.smtp2go.com [158.120.84.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 497021411CF;
-	Wed, 17 Apr 2024 14:18:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5CCB147C68
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Apr 2024 15:31:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=158.120.84.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713363509; cv=none; b=OOf+g1t3UMwaBP0FGQDIyM+627Rdbgkj2SQjsaB2g3/MIwZ4YwrJn+7ikMvz0/HuhtNVoKblCUKnp5pUR8ISlCkZj1dtPbzac1k9RxQhEMBhe1GTG+h3YsPq1yBxMrrjUuAnzDCodwnlmnGeIholhST3IlJCxW4eVA1r7zLjbd8=
+	t=1713367881; cv=none; b=ITQRWaWavL9cyW2s6NkIctcGyiyUlJLiaEeUxlrT3Scu0ianQqSYpR5vjQ6Q1FBl+4hEcXKk2dKNcRAlvdebyqSK+XRnrlud/wxyQgX1Bsw7FGxgJxEL2zaZixdXUWTKD0umRPgk6hNqk+7W5qUK11JE3Z8cHFaQFaYJRdjW2d0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713363509; c=relaxed/simple;
-	bh=WaC2druakjJV+zFjmdeikwA3CiyuPhwF8v+9yEn8j10=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZpTsN9n1YIFznBF/oxG2wioPwUme4TkhyapOjjXiUs+jJTjZAiPckSDufJewJXP04sokyqCYiXzDMVNhfCVFnaNs/qhTPWX16d3Q1JWnbrYh9c5/TajJkqBLIK2JxhMtTAHdxee0QHDwtFcyolxA22gO+BFDBjrRV4J0LnjFul4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-61af74a010aso17307637b3.0;
-        Wed, 17 Apr 2024 07:18:26 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713363504; x=1713968304;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=avO898yqsUcNC4lZWFklgBAuRw3SczTcgwrfOeGT8Mg=;
-        b=Ncm2Yga1n56LP7oXyhMsBNhPxWhbDQSEYBs8ULP+V9Odr+RKmvYIUObx/wyL6ptUir
-         vBCaxqYyEZ2fURyhssqDHNIGKvNe4pQubEgyiEvk2EWfW9TX+xJWla37U5tW8mfCUYC2
-         GnjHtf9gHYMA6KvG9PMSmh9iM4rDptoQFIJWJKdWU/Q3s83FviT5mCJAZ80iaUcR2zXm
-         ctgP2t/1SxlafP6Hf0tR6FxNHtEhRfUjEwlDPf9fTmh1n+DoJEmfJS7VACMsMEh/wr2b
-         9zcbPhSZPkdEFLsnNCGBySOTwATza+O+01tgmBetzcaTm8d1Z4OoU0VtfHG820beSmBP
-         VITQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVSkGuH7Bdkez58ADtazhBuXlKENhvGJxNT4YQ3wjmi4pfZlnFev4+98tkjvqAFgqy/MASHnJVBUe4m70pUidsX91ML7wIB7ZCyueZmbBR4pMirqkHkezbhVe5ujY/idpenaiub1hkwUBubRFqSaBbPql/1OaYf2txi2bihEvYw7yG5UqHOeodf4FW+E/6/hHiG9rsV0xeEgwprE/2425XWJgvjMRD4LzhVP3D0wWJzdGJqN3FbIIcLg4sToWD0hs+yCAvttsdyV9sj0XSZARPWwHqkl0WaJP7NK5S1WPvZOJReDwIC4z92
-X-Gm-Message-State: AOJu0YzGCjhrCmJSG4im9P3cdJY8gQTvd0tG44uyQyx8YI+lQoRjyOZt
-	jeFr8pnJGIvUMtbc6qv2Q6cM9X0IUIGSm+k6Tn77TtbLfImle0DVktx29RAv+jA=
-X-Google-Smtp-Source: AGHT+IFNO9uc2PTPZrzIN0HtgGbUW+GpsqSP8Iw4/SFGdULVtPKSlG1+gVUNT/iY40JpD87PHMZWGA==
-X-Received: by 2002:a05:690c:d1b:b0:61b:123e:7210 with SMTP id cn27-20020a05690c0d1b00b0061b123e7210mr1232006ywb.40.1713363503429;
-        Wed, 17 Apr 2024 07:18:23 -0700 (PDT)
-Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com. [209.85.219.180])
-        by smtp.gmail.com with ESMTPSA id jf4-20020a05690c700400b0061129ac87fcsm2976926ywb.113.2024.04.17.07.18.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 17 Apr 2024 07:18:23 -0700 (PDT)
-Received: by mail-yb1-f180.google.com with SMTP id 3f1490d57ef6-de45d4ca525so55953276.0;
-        Wed, 17 Apr 2024 07:18:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUsKjbTmAezX/6x3516iFFJ8JJ1Ek8ovhwn5lHF7UI7NriWn6QKXZ9lYeTSseyxUw39gVPS1Ius+N6BQ5WSaWvJwdLAi6aCXsk5AlcGJi5XKU+NPrz5b5wVVAj2BTaB+gmF6/uSsJ6JXX4Gj/oxYmpoNIa3h8F1sULE9k7eRpa8mSUG/zAdC3LZXqsoCdKpCWoCpMYf1soi3igM960If8T5pFNOMP7/tlMLfpOaXvI+odT3cpaRBvhoCMXSYdd5Ti7ZcmLYrRr91VQ6u/l81gLboQ5qSCHv8ENaVYYQmvapHaFk2mMd5xSh
-X-Received: by 2002:a81:ff02:0:b0:618:94a6:6ca1 with SMTP id
- k2-20020a81ff02000000b0061894a66ca1mr10536616ywn.27.1713363502402; Wed, 17
- Apr 2024 07:18:22 -0700 (PDT)
+	s=arc-20240116; t=1713367881; c=relaxed/simple;
+	bh=dgCz2SWncqiO+Q6bWQmQ5trn7DREaGzNKuFcjXqMQKk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=tXFysn8Iv7rpBTp8V4zwMN+S3cx1RWwr4/3iDXa7NBnBrE1Md21goXiBaVHCYBIwa3ERtPgKkY8qFKIrzdWNxp1yGwM1vIie7fXVIu4Gbr72Jqkz09fQoSliBGR0zBxrXGdPznaJAuXThSukXvcWjHHvAjv/PkmXaKge6oE36Co=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it; spf=pass smtp.mailfrom=em1174574.asem.it; dkim=pass (2048-bit key) header.d=smtpcorp.com header.i=@smtpcorp.com header.b=LeQsxAV4; dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b=SaZWuFhR; arc=none smtp.client-ip=158.120.84.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=em1174574.asem.it
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=smtpcorp.com header.i=@smtpcorp.com header.b="LeQsxAV4";
+	dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b="SaZWuFhR"
+Received: from [10.86.249.198] (helo=asas054.asem.intra)
+	by smtpcorp.com with esmtpa (Exim 4.96.1-S2G)
+	(envelope-from <f.suligoi@asem.it>)
+	id 1rx7Fg-Dv6PUh-0c;
+	Wed, 17 Apr 2024 15:31:12 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+	 Wed, 17 Apr 2024 17:31:10 +0200
+From: Flavio Suligoi <f.suligoi@asem.it>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Dan Carpenter <dan.carpenter@linaro.org>
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v1 0/1] backlight: mp3309c: fix leds flickering in pwm mode
+Date: Wed, 17 Apr 2024 17:31:04 +0200
+Message-Id: <20240417153105.1794134-1-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240214215756.6530-1-mario.limonciello@amd.com>
- <20240214215756.6530-4-mario.limonciello@amd.com> <Zc1JEg5mC0ww_BeU@intel.com>
- <9831e9bc-d55f-4a72-950a-684a757af59c@amd.com> <Zc5cPjpNZydqKeS8@intel.com> <ecbaadf9-dfa1-46af-9a7e-cfd7aa1120be@amd.com>
-In-Reply-To: <ecbaadf9-dfa1-46af-9a7e-cfd7aa1120be@amd.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 17 Apr 2024 16:18:10 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdV1XYpu3JeP3W-dZpO8kmN75XckuPRnw2zLW-ZqD4634g@mail.gmail.com>
-Message-ID: <CAMuHMdV1XYpu3JeP3W-dZpO8kmN75XckuPRnw2zLW-ZqD4634g@mail.gmail.com>
-Subject: Re: [PATCH v6 3/5] drm: Add support to get EDID from ACPI
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, 
-	Daniel Vetter <daniel@ffwll.ch>, Jani Nikula <jani.nikula@linux.intel.com>, 
-	Alex Deucher <alexander.deucher@amd.com>, Hans de Goede <hdegoede@redhat.com>, 
-	"open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>, amd-gfx@lists.freedesktop.org, 
-	"open list:USB SUBSYSTEM" <linux-usb@vger.kernel.org>, linux-fbdev@vger.kernel.org, 
-	nouveau@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, 
-	platform-driver-x86@vger.kernel.org, intel-xe@lists.freedesktop.org, 
-	linux-renesas-soc@vger.kernel.org, 
-	"open list:ACPI" <linux-acpi@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
-	Melissa Wen <mwen@igalia.com>, Mark Pearson <mpearson-lenovo@squebb.ca>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Apr 2024 15:31:10.0467 (UTC) FILETIME=[4621B530:01DA90DC]
+X-smtpcorp-track: 1rx7FgDv6elh0c.HztUDgdIOQXm6
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=smtpcorp.com;
+ i=@smtpcorp.com; q=dns/txt; s=a1-4; t=1713367875; h=feedback-id :
+ x-smtpcorp-track : date : message-id : to : subject : from : reply-to
+ : sender : list-unsubscribe;
+ bh=krcOgqXsGe7x+1M7PzgJWjOituJS8hooQQYOs5GAeeo=;
+ b=LeQsxAV4FEJVXr0/X90DLNVSjjT9O+KK74/V2X7YihR6rcWUBQKuTuiCI35UidbhTEhUf
+ ntp3VBWtabCByCvr01w2KTya+R7jxd2hzve+NWvbPMFL980ZlClqQoEYWEtL6My5KVRlqqs
+ qXglu2n5Fhq8HEqVw/vBU8IFLHiETHi9EBPeuzpq8Kzrkwyn3gJcYL5MjIlLXBtebTZOdSc
+ vpvuZpETlxV+u7ZZpI4kfFuYFYLe17F04mNmtDkiV2LdTqYTQi0sBW/FZw9d0RG48BDIRXj
+ BHrO4fELPXgjIrUe3nXm9dY366xoRbPH3MMeiBt7ZRjo8QRDobrYOzrp2YrQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it;
+ i=@asem.it; q=dns/txt; s=s1174574; t=1713367875; h=from : subject : to
+ : message-id : date; bh=krcOgqXsGe7x+1M7PzgJWjOituJS8hooQQYOs5GAeeo=;
+ b=SaZWuFhRRDRQH7WyFm9OKqiEnaeAHC7T8yIk2sTX5X5rLjPFt2gwhcnNCmo/ug8bCj8/0
+ rJVd1Ah1r5DqSqo2NG0GeFfiuKRijIFfAdBZKaXSKMIGb/oF1eY/TeZAi4IMRCKKrdtA+43
+ WMmjI+Km5vHM8UbtJ2D1tGTbRATiPXJaSX34qNbCGFvWV8KaRfs0AtvL5NweKYO5u+kaGj0
+ oDUQvozeMXF7TJn2nxDo7sFuD3VnCSFrVVEPfDXmxOVLJ5OK7XVn4ZHVlnu16yV7X2WLLP2
+ ZeejHFetuezYk5vFfPh4Q97OTSD8S1CR3Dvf+bbsi3wI591unWzGqXbQBfAQ==
 
-Hi Mario,
+The mp3309 has two configuration registers, named according to their
+address (0x00 and 0x01).
+In the second register (0x01), the bit DIMS (Dimming Mode Select) must
+be always 0 (zero), in both analog (via i2c commands) and pwm dimming
+mode.
 
-On Thu, Feb 15, 2024 at 8:04=E2=80=AFPM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
-> On 2/15/2024 12:47, Ville Syrj=C3=A4l=C3=A4 wrote:
-> > On Thu, Feb 15, 2024 at 12:20:56PM -0600, Mario Limonciello wrote:
-> >> On 2/14/2024 17:13, Ville Syrj=C3=A4l=C3=A4 wrote:
-> >>> On Wed, Feb 14, 2024 at 03:57:54PM -0600, Mario Limonciello wrote:
-> >>>> --- a/include/drm/drm_connector.h
-> >>>> +++ b/include/drm/drm_connector.h
-> >>>> @@ -1886,6 +1886,12 @@ struct drm_connector {
-> >>>>
-> >>>>            /** @hdr_sink_metadata: HDR Metadata Information read fro=
-m sink */
-> >>>>            struct hdr_sink_metadata hdr_sink_metadata;
-> >>>> +
-> >>>> +  /**
-> >>>> +   * @acpi_edid_allowed: Get the EDID from the BIOS, if available.
-> >>>> +   * This is only applicable to eDP and LVDS displays.
-> >>>> +   */
-> >>>> +  bool acpi_edid_allowed;
-> >>>
-> >>> Aren't there other bools/small stuff in there for tighter packing?
-> >>
-> >> Does the compiler automatically do the packing if you put bools nearby
-> >> in a struct?  If so; TIL.
-> >
-> > Yes. Well, depends on the types and their alignment requirements
-> > of course, and/or whether you specified __packed or not.
-> >
-> > You can use 'pahole' to find the holes in structures.
->
-> Thanks!  I don't see a __packed attribute on struct drm_connector, but
-> I'll put it near by other bools in case that changes in the future.
+In the initial driver version, the DIMS bit was set in pwm mode and
+reset in analog mode.
+But if the DIMS bit is set in pwm dimming mode and other devices are
+connected on the same i2c bus, every i2c commands on the bus generates a
+flickering on the LEDs powered by the mp3309c.
 
-FTR, don't add __packed unless you have a very good reason to do so.
-With __packed, the compiler will emit multiple byte-accesses to
-access multi-byte integrals on platforms that do not support unaligned
-memory access.
+This change concerns the chip initialization and does not impact any
+existing device-tree configuration.
 
-Gr{oetje,eeting}s,
+I created this device driver for one of our boards, where both dimming
+modes (pwm and analog by i2c commands) can be used.
+This board uses the same i2c bus for the mp3309c and for an at24cs32
+eeprom.
+During further tests, I realized that, when the mp3309c is used in pwm
+mode, every read operation on the eeprom caused a backlight flickering.
+This is why I made this device driver modification.
 
-                        Geert
+Flavio Suligoi (1):
+  backlight: mp3309c: fix leds flickering in pwm mode
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+ drivers/video/backlight/mp3309c.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+-- 
+2.34.1
+

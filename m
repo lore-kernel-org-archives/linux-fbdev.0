@@ -1,314 +1,115 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0300851004;
-	Wed, 17 Apr 2024 07:07:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C7E342A93
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Apr 2024 07:30:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713337637; cv=none; b=opiaXrAThxT9zgJEg5FClD6RUvRg3sl5QvFO/1MKSAO/6iirdLL7o/pamvATvYbO+uqRCdfLhyoHpOsmAgzXrS0qTsyKETE15iu4uDS0R4L2qaT0AY+sBtgYEDQP9RDci8nJPXCGMtrhz6RU49LIv/f9kYKqVnxGL12mh83lUNc=
+	t=1713339049; cv=none; b=GoXvmMZBQIMn9RF+/QM8axRU1BhYWMdcqCmHL+BeWHqkOiI2YpKvO8zgVUnYCQDcGfQ3fqNEG0Y6JHRt6ztejN0l9Fo3uWMIQkCAOSGDiafVOsl9/eIFerFMKt71Ufy1qHDuQWMY8Wheb/rRxIaNpjxbdRD4CLq/5gHPhcqQ/Vk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713337637; c=relaxed/simple;
-	bh=mH1Op3mNuCa9nI4NldsC+UBBMwUWlrZl8DwT/K1vkac=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H+ZI6gQDx1EL+vHHok4vgW207g8tzoYMS6K0zLyP/DByN3OxgkGnby0gytM8+504FlY++lW1ZwdaAJDrI78k/FFbrW0SsAPpAcd3sM6FjmgdyiMP0N4VNbnYTAffyGpBVOi3DMFCxgCbsMNrx93cnPTlkofOrli2UMA9EtEh4Y4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=aN4QeJ/V; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="aN4QeJ/V"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AC31C072AA;
-	Wed, 17 Apr 2024 07:07:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1713337636;
-	bh=mH1Op3mNuCa9nI4NldsC+UBBMwUWlrZl8DwT/K1vkac=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aN4QeJ/V0+eD/+MifPfYMhJ+1zhx+Uowm9hvTUc/eXfW3SztydKBvFTRshnoFmQpl
-	 WAFNITwr9Vz68Onkkrz2QpYOI9FlcbgfwEtk9La1bghA7hghu+ZJp8CLMAn5LeiTOw
-	 rjeq3xK5qMwN4CtKNSAEhqorx2osAORynYLLY9Z8=
-Date: Wed, 17 Apr 2024 09:07:11 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: A <ashokemailat@yahoo.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev
-Subject: Re: [PATCH] staging: fbtft Removed redundant parentheses
-Message-ID: <2024041724-barricade-hardly-c554@gregkh>
-References: <cc9b9357d30c4abac7301767ff01fe7947f811c4.camel.ref@yahoo.com>
- <cc9b9357d30c4abac7301767ff01fe7947f811c4.camel@yahoo.com>
+	s=arc-20240116; t=1713339049; c=relaxed/simple;
+	bh=CY5vZpppUnJD5B5cVidYvEinCvrVfBOPSlq3gg5gbiU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ecHIJiVTKDA3mWOCytwA9IW8w50swTKuaVitPcnnhAGrdIEIC9HvdRiuve7zmlxpgLM1RxC0H2owQreAh7sUpA0Kd5W/WcEaJkcNP9ryCzGjqYIg1FJptMrX87773sPVc5mdme0RCDHhBWEEwfQOQGtlkes9M1MBYIJRbcFaP8U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-6181d032bf9so50827347b3.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Apr 2024 00:30:47 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1713339045; x=1713943845;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=xtInziVXajqdYdbn8kqIjqOC2K657alE2kZmp/MOz+Q=;
+        b=KqQXO2+4MudZKaFXKGc3YX1P/vIWQ3UUvHdFrYTFpYrPkkd5wnZxc+BjijFc/bRZBO
+         wDLKZgRQ87cIRt9fWISKm2W0ppr5YwV3q3l2sa7/7xX9yK4MJH1T5noxjliOKnMvSWcW
+         9MiPNgJ0MxidgUDR213GUiB4Xgdj25M+FJBcYd7GXlKkjVz3U/6qGB7aTdFPn1rHD7GL
+         V4TWi120bfxdPj0Nj0GSZZO3DKgD5kGAmrrn7jIUWunDfzcN72/PGidj9sEKgSx2fBZ8
+         RSSwsUBTEuPsTrgeOwiI/A8FObvA/1DRsBPb/GUvKOJ8vTFfohx01jUNaR52bz0eXwTE
+         ptDA==
+X-Forwarded-Encrypted: i=1; AJvYcCUqSuS2IPrL6uVPlXdXMvpc/WKwCM2FuZDi0TEWB7SxW23/5BpNxM6VtnXbiiYoDXlri3G5CfWn8Y5GHyjL8Ol/yqFqBdpvl4DX1XY=
+X-Gm-Message-State: AOJu0YwL+OP+dTHFpT0ncipk5FRWfDC6nAN3ng5YVk2HsAruu2HnFkaa
+	vjBMnlE5Wd7sb/XXMqOGImHhZ5FyByF92D8WYH+F8dhu/AxugBoSiloTX9pA
+X-Google-Smtp-Source: AGHT+IFN1sSbKorW/YOvRfRNxcsTOuIGvDWhWQJIReQ0u9FM+tE5cb3FHgM8qIyli3PX3qw+0nEVAw==
+X-Received: by 2002:a0d:df15:0:b0:61a:df6b:9d71 with SMTP id i21-20020a0ddf15000000b0061adf6b9d71mr6246363ywe.48.1713339045271;
+        Wed, 17 Apr 2024 00:30:45 -0700 (PDT)
+Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com. [209.85.219.177])
+        by smtp.gmail.com with ESMTPSA id cs20-20020a05690c0ed400b006144cc8edccsm2809421ywb.140.2024.04.17.00.30.44
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 17 Apr 2024 00:30:44 -0700 (PDT)
+Received: by mail-yb1-f177.google.com with SMTP id 3f1490d57ef6-dcd7c526cc0so5073638276.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Apr 2024 00:30:44 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWtv85B0zwg6cBaCWi79w4Ce0Vazdp/waHLXchsdIYwMG/gQWsVBgHU7raFR71O/dYZf3fSpiEaJvVNK8P2WnBbcjI4XiN1LDDEaKE=
+X-Received: by 2002:a05:6902:1b93:b0:dcf:288e:21ca with SMTP id
+ ei19-20020a0569021b9300b00dcf288e21camr16085636ybb.11.1713339044217; Wed, 17
+ Apr 2024 00:30:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cc9b9357d30c4abac7301767ff01fe7947f811c4.camel@yahoo.com>
+References: <20240410130557.31572-1-tzimmermann@suse.de> <20240410130557.31572-9-tzimmermann@suse.de>
+ <87r0f54kir.fsf@minerva.mail-host-address-is-not-set> <6cdccec9-e1a1-477b-a41a-4fb9d94d3238@suse.de>
+In-Reply-To: <6cdccec9-e1a1-477b-a41a-4fb9d94d3238@suse.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 17 Apr 2024 09:30:31 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVJCKnJi-jk1wipUgLfbEqneBpmG5OsMMnMAnhAW9xApQ@mail.gmail.com>
+Message-ID: <CAMuHMdVJCKnJi-jk1wipUgLfbEqneBpmG5OsMMnMAnhAW9xApQ@mail.gmail.com>
+Subject: Re: [PATCH v2 08/43] drm/fbdev: Add fbdev-shmem
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de, airlied@gmail.com, daniel@ffwll.ch, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 16, 2024 at 01:14:52PM -0700, A wrote:
-> >From 6dbcb120581fc7cb45812193227b0a197abd8ba4 Mon Sep 17 00:00:00 2001
-> From: Ashok Kumar <ashokemailat@yahoo.com>
-> Date: Tue, 16 Apr 2024 09:19:32 -0700
-> Subject: [PATCH] [PATCH] staging: fbtft Removed redundant parentheses on
->  logical expr
-> 
-> Adhere to Linux Kernel coding style removed redundant parentheses,
-> multiple blank lines and indentation alignment.
-> 
-> Reported by checkpatch.pl
-> 
-> ------
-> fb_ili9320.c
-> 
-> +       if ((devcode != 0x0000) && (devcode != 0x9320))
-> 
-> ------
-> fb_ra8875.c
-> 
-> CHECK: Unnecessary parentheses around 'par->info->var.xres == 320'
-> +      if ((par->info->var.xres == 320) && (par->info->var.yres ==
-> 240)) {
-> 
-> ------
-> fb_ssd1325.c
-> 
-> CHECK: Please don't use multiple blank lines
-> ------
-> 
-> fb_tinylcd.c    - indentation adjustment
-> 
-> -----
-> fbtft-bus.c
-> 
-> CHECK: Unnecessary parentheses around 'par->spi->bits_per_word == 8'
-> 
-> ------
-> fbtft-core.c
-> 
-> CHECK: Please don't use multiple blank lines
-> 
-> CHECK: Unnecessary parentheses around '!txbuflen'
-> 
-> CHECK: Please don't use multiple blank lines
-> ------
-> 
-> Signed-off-by: Ashok Kumar <ashokemailat@yahoo.com>
-> ---
->  drivers/staging/fbtft/fb_ili9320.c | 2 +-
->  drivers/staging/fbtft/fb_ra8875.c  | 8 ++++----
->  drivers/staging/fbtft/fb_ssd1325.c | 2 --
->  drivers/staging/fbtft/fb_tinylcd.c | 2 +-
->  drivers/staging/fbtft/fbtft-bus.c  | 6 +++---
->  drivers/staging/fbtft/fbtft-core.c | 7 +------
->  6 files changed, 10 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/staging/fbtft/fb_ili9320.c
-> b/drivers/staging/fbtft/fb_ili9320.c
-> index 0be7c2d51548..409b54cc562e 100644
-> --- a/drivers/staging/fbtft/fb_ili9320.c
-> +++ b/drivers/staging/fbtft/fb_ili9320.c
-> @@ -37,7 +37,7 @@ static int init_display(struct fbtft_par *par)
->  	devcode = read_devicecode(par);
->  	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "Device code:
-> 0x%04X\n",
->  		      devcode);
-> -	if ((devcode != 0x0000) && (devcode != 0x9320))
-> +	if (devcode != 0x0000 && devcode != 0x9320)
->  		dev_warn(par->info->device,
->  			 "Unrecognized Device code: 0x%04X (expected
-> 0x9320)\n",
->  			devcode);
-> diff --git a/drivers/staging/fbtft/fb_ra8875.c
-> b/drivers/staging/fbtft/fb_ra8875.c
-> index 398bdbf53c9a..4b79fb48c5f0 100644
-> --- a/drivers/staging/fbtft/fb_ra8875.c
-> +++ b/drivers/staging/fbtft/fb_ra8875.c
-> @@ -50,7 +50,7 @@ static int init_display(struct fbtft_par *par)
->  
->  	par->fbtftops.reset(par);
->  
-> -	if ((par->info->var.xres == 320) && (par->info->var.yres ==
-> 240)) {
-> +	if (par->info->var.xres == 320 && par->info->var.yres == 240)
-> {
->  		/* PLL clock frequency */
->  		write_reg(par, 0x88, 0x0A);
->  		write_reg(par, 0x89, 0x02);
-> @@ -74,8 +74,8 @@ static int init_display(struct fbtft_par *par)
->  		write_reg(par, 0x1D, 0x0E);
->  		write_reg(par, 0x1E, 0x00);
->  		write_reg(par, 0x1F, 0x02);
-> -	} else if ((par->info->var.xres == 480) &&
-> -		   (par->info->var.yres == 272)) {
-> +	} else if (par->info->var.xres == 480 &&
-> +		   par->info->var.yres == 272) {
->  		/* PLL clock frequency  */
->  		write_reg(par, 0x88, 0x0A);
->  		write_reg(par, 0x89, 0x02);
-> @@ -111,7 +111,7 @@ static int init_display(struct fbtft_par *par)
->  		write_reg(par, 0x04, 0x01);
->  		mdelay(1);
->  		/* horizontal settings */
-> -		write_reg(par, 0x14, 0x4F);
-> +write_reg(par, 0x14, 0x4F);
->  		write_reg(par, 0x15, 0x05);
->  		write_reg(par, 0x16, 0x0F);
->  		write_reg(par, 0x17, 0x01);
-> diff --git a/drivers/staging/fbtft/fb_ssd1325.c
-> b/drivers/staging/fbtft/fb_ssd1325.c
-> index 796a2ac3e194..69aa808c7e23 100644
-> --- a/drivers/staging/fbtft/fb_ssd1325.c
-> +++ b/drivers/staging/fbtft/fb_ssd1325.c
-> @@ -109,8 +109,6 @@ static int set_gamma(struct fbtft_par *par, u32
-> *curves)
->  {
->  	int i;
->  
-> -	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "%s()\n", __func__);
-> -
->  	for (i = 0; i < GAMMA_LEN; i++) {
->  		if (i > 0 && curves[i] < 1) {
->  			dev_err(par->info->device,
-> diff --git a/drivers/staging/fbtft/fb_tinylcd.c
-> b/drivers/staging/fbtft/fb_tinylcd.c
-> index 9469248f2c50..60cda57bcb33 100644
-> --- a/drivers/staging/fbtft/fb_tinylcd.c
-> +++ b/drivers/staging/fbtft/fb_tinylcd.c
-> @@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
->  	write_reg(par, 0xE5, 0x00);
->  	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
->  	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
-> -		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
-> +		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
->  	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
->  	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
->  	udelay(250);
-> diff --git a/drivers/staging/fbtft/fbtft-bus.c
-> b/drivers/staging/fbtft/fbtft-bus.c
-> index 3d422bc11641..02d7dbd38678 100644
-> --- a/drivers/staging/fbtft/fbtft-bus.c
-> +++ b/drivers/staging/fbtft/fbtft-bus.c
-> @@ -62,9 +62,9 @@
-> out:									      \
->  }                                                                    
-> \
->  EXPORT_SYMBOL(func);
->  
-> -define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
-> +define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8,)
->  define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16,
-> cpu_to_be16)
-> -define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-> +define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16,)
->  
->  void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
->  {
-> @@ -85,7 +85,7 @@ void fbtft_write_reg8_bus9(struct fbtft_par *par, int
-> len, ...)
->  	if (len <= 0)
->  		return;
->  
-> -	if (par->spi && (par->spi->bits_per_word == 8)) {
-> +	if (par->spi && par->spi->bits_per_word == 8) {
->  		/* we're emulating 9-bit, pad start of buffer with no-
-> ops
->  		 * (assuming here that zero is a no-op)
->  		 */
-> diff --git a/drivers/staging/fbtft/fbtft-core.c
-> b/drivers/staging/fbtft/fbtft-core.c
-> index 38845f23023f..98ffca49df81 100644
-> --- a/drivers/staging/fbtft/fbtft-core.c
-> +++ b/drivers/staging/fbtft/fbtft-core.c
-> @@ -216,8 +216,6 @@ static void fbtft_reset(struct fbtft_par *par)
->  	if (!par->gpio.reset)
->  		return;
->  
-> -	fbtft_par_dbg(DEBUG_RESET, par, "%s()\n", __func__);
-> -
->  	gpiod_set_value_cansleep(par->gpio.reset, 1);
->  	usleep_range(20, 40);
->  	gpiod_set_value_cansleep(par->gpio.reset, 0);
-> @@ -667,7 +665,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct
-> fbtft_display *display,
->  		txbuflen = 0;
->  
->  #ifdef __LITTLE_ENDIAN
-> -	if ((!txbuflen) && (bpp > 8))
-> +	if (!txbuflen && bpp > 8)
->  		txbuflen = PAGE_SIZE; /* need buffer for byteswapping
-> */
->  #endif
->  
-> @@ -1053,8 +1051,6 @@ static int fbtft_verify_gpios(struct fbtft_par
-> *par)
->  	struct fbtft_platform_data *pdata = par->pdata;
->  	int i;
->  
-> -	fbtft_par_dbg(DEBUG_VERIFY_GPIOS, par, "%s()\n", __func__);
-> -
->  	if (pdata->display.buswidth != 9 &&  par->startbyte == 0 &&
->  	    !par->gpio.dc) {
->  		dev_err(par->info->device,
-> @@ -1159,7 +1155,6 @@ int fbtft_probe_common(struct fbtft_display
-> *display,
->  		dev = &pdev->dev;
->  
->  	if (unlikely(display->debug & DEBUG_DRIVER_INIT_FUNCTIONS))
-> -		dev_info(dev, "%s()\n", __func__);
->  
->  	pdata = dev->platform_data;
->  	if (!pdata) {
-> -- 
-> 2.34.1
-> 
-> 
+Hi Thomas,
 
-Hi,
+On Tue, Apr 16, 2024 at 2:07=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
+> Am 16.04.24 um 13:25 schrieb Javier Martinez Canillas:
+> > Thomas Zimmermann <tzimmermann@suse.de> writes:
+> > Do I understand correctly that info->fix.smem_start doesn't have to be =
+set
+> > because that's only used for I/O memory?
+>
+> It's the start of the framebuffer memory in physical memory. Setting
+> smem_start only makes sense if the framebuffer is physically continuous,
+> which isn't the case here.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+Nothing really needs fix.smem_start, it's mainly for informative use.
+However, if smem_start is not page-aligned, userspace does need to
+know the start offset inside the page (see below).
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+> > This also made me think why info->fix.smem_len is really needed. Can't =
+we
+> > make the fbdev core to only look at that if info->screen_size is not se=
+t ?
+>
+> The fbdev core doesn't use smem_len AFAICT. But smem_len is part of the
+> fbdev UAPI, so I set it. I assume that programs use it to go to the end
+> of the framebuffer memory.
 
-- Your patch contains warnings and/or errors noticed by the
-  scripts/checkpatch.pl tool.
+On fbdev drivers also exporting MMIO to userspace, /dev/fbX contains
+two parts: first the frame buffer, followed by the MMIO registers.
+Both parts are an integral number of pages, based on fix.smem_{start,len}
+resp. fix.mmio_{start,len}.
 
-- Your patch is malformed (tabs converted to spaces, linewrapped, etc.)
-  and can not be applied.  Please read the file,
-  Documentation/process/email-clients.rst in order to fix this.
+Old XFree86 used the MMIO part to implement hardware acceleration
+when running on top of fbdev.
 
-- Your patch was attached, please place it inline so that it can be
-  applied directly from the email message itself.
+Gr{oetje,eeting}s,
 
-- Your patch did many different things all at once, making it difficult
-  to review.  All Linux kernel patches need to only do one thing at a
-  time.  If you need to do multiple things (such as clean up all coding
-  style issues in a file/driver), do it in a sequence of patches, each
-  one doing only one thing.  This will make it easier to review the
-  patches to ensure that they are correct, and to help alleviate any
-  merge issues that larger patches can cause.
+                        Geert
 
-- You did not specify a description of why the patch is needed, or
-  possibly, any description at all, in the email body.  Please read the
-  section entitled "The canonical patch format" in the kernel file,
-  Documentation/process/submitting-patches.rst for what is needed in
-  order to properly describe the change.
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-- You did not write a descriptive Subject: for the patch, allowing Greg,
-  and everyone else, to know what this patch is all about.  Please read
-  the section entitled "The canonical patch format" in the kernel file,
-  Documentation/process/submitting-patches.rst for what a proper
-  Subject: line should look like.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

@@ -1,58 +1,78 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D6A654FBD;
-	Fri, 19 Apr 2024 08:33:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7058754776
+	for <linux-fbdev@vger.kernel.org>; Fri, 19 Apr 2024 08:33:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713515621; cv=none; b=Xn/uu2hBnNbUT9dVjOIYG5DvUrEYYIWyQ9f57wPmsokpBx/6V6jPm8zbk3OubthkDgxY/awHBEItnMDDG4OsNnvxK0B8SSjcEgxdS668vIL6D+3rkvKOR1TlyKmggbxIZs0wUWygoQrLEcnvuzrwo/IZH2RSnGM2tLbp0dq0nZ0=
+	t=1713515621; cv=none; b=AaqMt/UabUAarMxIh1synDqZLPKV9fPqNnO4kF/HKe3rbpox2sxCrMSjQMG3/jzLVY0lVJvQgJ2d6U/vH9fXzxOOO7gfXAnTxnXg9SvRErXEyGfl4R9552WucgktxAnFZY/8YBzVVuH+1Zp2GkIDl1w1v2o1og1ZQ2rsm1f/onE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1713515621; c=relaxed/simple;
-	bh=yUTT/BsavEY92mydX2L4Md+rJ16mCVnB3JnE+Z1ZhYw=;
+	bh=aO+v3dYoSXZYGrdiUbp9tmY7/A90cV1TrDf98ymjpoA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eyr2Qlu9bV1ybTVTscRDxqT3gQVfq7bLs6poKtUyJpP68reFPSqND7Sw8ChVdvak5w1XovuqlKpdp9iGSxfH6NMmR2aFYAfOAS5liU7OWWPuhj8J8ohDKokTzjeud2ARCJvTGU9WM5u9TPh0C9XYUgDvy3rJkX4Yk2oM4G3Q4CU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=y2UJax0t; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Q+Sw9bjz; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=PMBt7Dv6B0DN251a1Hz+FUjk67kAoWaPjxURP1Mtc6/WHcUA8rDJuTPJ5RqNLMrHwTNsKbFONhjl6sHCj25IIn4eMyrJlQ1rQhahzOOdWAgecQhiVwf/Yf4OCJBtOlWgNZOYmz0iZa3/tVBagestwmYAn5mfKTzdG4CbINjH1dE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=hpvd0Sqs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=f8h7GP86; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=hpvd0Sqs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=f8h7GP86; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="y2UJax0t";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Q+Sw9bjz"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="hpvd0Sqs";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="f8h7GP86";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="hpvd0Sqs";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="f8h7GP86"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 9F5733757B;
-	Fri, 19 Apr 2024 08:33:36 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B23395BFE7;
+	Fri, 19 Apr 2024 08:33:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1713515616; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1713515617; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=/mq/lkQh4x3KA2MtCgwt0aXOtawttZvqhrviIfs7Oow=;
-	b=y2UJax0tgcelybXaF7SLCGRGz166/mobyhcC6G89zXMDDI9ktW7MaqVG531snbDizMswpO
-	1CkrxHc8PE3WcnmTKnNZ5/Ljy+S0X+VTxv6yT3/3gm2ghxp0WGNWfKEXNSQdLA0qwKUN6O
-	I5dUD0CGUk5lgFwvEvtXWGPdAe8I1cU=
+	bh=o4jPlZuj0Q+ErpYW6zQWL3WWeg0XScKVPX36+ssyfA8=;
+	b=hpvd0Sqs7Myi2WqGPoVf2yzFHZxTeoSzm8g2//vSUpSV7sOkobufNsOMLa2AFkI6AltPm5
+	iC1RU0DbLRB7pWYf0CVSBk85ISxECf61rh3daAFLhPpZ+uhOnJwh/VP3AcrLCsfpNgxkiT
+	lZH7aBVomJxnKyE/3CyhhULxPt7G3tY=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1713515616;
+	s=susede2_ed25519; t=1713515617;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=/mq/lkQh4x3KA2MtCgwt0aXOtawttZvqhrviIfs7Oow=;
-	b=Q+Sw9bjzIOxWGoEnwy7DbDvMrNg5YpHVlBMC2KuTqa04OGuAwJ2aRZo3sOrZ/l4j3V7iHc
-	E9Sga0aBiIh+JDCw==
+	bh=o4jPlZuj0Q+ErpYW6zQWL3WWeg0XScKVPX36+ssyfA8=;
+	b=f8h7GP86+e3KWsv3z1GWOBLZ1ETcT6a2HDNt87PQC5I1pQlyIMzyqMpQ11sxqOOqA7zjon
+	Ot1varOwIswOfVCQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713515617; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=o4jPlZuj0Q+ErpYW6zQWL3WWeg0XScKVPX36+ssyfA8=;
+	b=hpvd0Sqs7Myi2WqGPoVf2yzFHZxTeoSzm8g2//vSUpSV7sOkobufNsOMLa2AFkI6AltPm5
+	iC1RU0DbLRB7pWYf0CVSBk85ISxECf61rh3daAFLhPpZ+uhOnJwh/VP3AcrLCsfpNgxkiT
+	lZH7aBVomJxnKyE/3CyhhULxPt7G3tY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713515617;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=o4jPlZuj0Q+ErpYW6zQWL3WWeg0XScKVPX36+ssyfA8=;
+	b=f8h7GP86+e3KWsv3z1GWOBLZ1ETcT6a2HDNt87PQC5I1pQlyIMzyqMpQ11sxqOOqA7zjon
+	Ot1varOwIswOfVCQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4FB931395B;
-	Fri, 19 Apr 2024 08:33:36 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7FCA813991;
+	Fri, 19 Apr 2024 08:33:37 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id sEVNEmAsImb9agAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 19 Apr 2024 08:33:36 +0000
+	id iLcBHmEsImb9agAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 19 Apr 2024 08:33:37 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	deller@gmx.de,
@@ -60,16 +80,10 @@ To: javierm@redhat.com,
 	daniel@ffwll.ch
 Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Zack Rusin <zackr@vmware.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	stable@vger.kernel.org,
-	Zack Rusin <zack.rusin@broadcom.com>,
-	Sui Jingfeng <sui.jingfeng@linux.dev>
-Subject: [PATCH v3 01/43] drm/fbdev-generic: Do not set physical framebuffer address
-Date: Fri, 19 Apr 2024 10:28:54 +0200
-Message-ID: <20240419083331.7761-2-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 06/43] fbdev/deferred-io: Always call get_page() for framebuffer pages
+Date: Fri, 19 Apr 2024 10:28:59 +0200
+Message-ID: <20240419083331.7761-7-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240419083331.7761-1-tzimmermann@suse.de>
 References: <20240419083331.7761-1-tzimmermann@suse.de>
@@ -80,57 +94,83 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
 X-Spam-Flag: NO
-X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: 9F5733757B
+X-Spam-Score: -6.80
+X-Spam-Level: 
+X-Spamd-Result: default: False [-6.80 / 50.00];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[redhat.com,gmx.de,gmail.com,ffwll.ch];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
 
-Framebuffer memory is allocated via vzalloc() from non-contiguous
-physical pages. The physical framebuffer start address is therefore
-meaningless. Do not set it.
+Unconditionally call get_page() after looking up a page from the
+framebuffer memory. Guarantees that we always hold a reference.
 
-The value is not used within the kernel and only exported to userspace
-on dedicated ARM configs. No functional change is expected.
-
-v2:
-- refer to vzalloc() in commit message (Javier)
+This change also refactors the code such that it can support a
+driver-supplied get_page helper. This will be useful for DRM's
+fbdev emulation.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: a5b44c4adb16 ("drm/fbdev-generic: Always use shadow buffering")
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Maxime Ripard <mripard@kernel.org>
-Cc: <stable@vger.kernel.org> # v6.4+
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Reviewed-by: Zack Rusin <zack.rusin@broadcom.com>
-Reviewed-by: Sui Jingfeng <sui.jingfeng@linux.dev>
-Tested-by: Sui Jingfeng <sui.jingfeng@linux.dev>
-Acked-by: Maxime Ripard <mripard@kernel.org>
 ---
- drivers/gpu/drm/drm_fbdev_generic.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/core/fb_defio.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-index be357f926faec..97e579c33d84a 100644
---- a/drivers/gpu/drm/drm_fbdev_generic.c
-+++ b/drivers/gpu/drm/drm_fbdev_generic.c
-@@ -113,7 +113,6 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	/* screen */
- 	info->flags |= FBINFO_VIRTFB | FBINFO_READS_FAST;
- 	info->screen_buffer = screen_buffer;
--	info->fix.smem_start = page_to_phys(vmalloc_to_page(info->screen_buffer));
- 	info->fix.smem_len = screen_size;
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index fe84218ded457..6e0bbcfdb01b5 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -23,7 +23,7 @@
+ #include <linux/rmap.h>
+ #include <linux/pagemap.h>
  
- 	/* deferred I/O */
+-static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
++static struct page *fb_deferred_io_get_page(struct fb_info *info, unsigned long offs)
+ {
+ 	const void *screen_buffer = info->screen_buffer;
+ 	struct page *page = NULL;
+@@ -33,6 +33,9 @@ static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs
+ 	else if (info->fix.smem_start)
+ 		page = pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
+ 
++	if (page)
++		get_page(page);
++
+ 	return page;
+ }
+ 
+@@ -129,12 +132,10 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
+ 	if (offset >= info->fix.smem_len)
+ 		return VM_FAULT_SIGBUS;
+ 
+-	page = fb_deferred_io_page(info, offset);
++	page = fb_deferred_io_get_page(info, offset);
+ 	if (!page)
+ 		return VM_FAULT_SIGBUS;
+ 
+-	get_page(page);
+-
+ 	if (vmf->vma->vm_file)
+ 		page->mapping = vmf->vma->vm_file->f_mapping;
+ 	else
 -- 
 2.44.0
 

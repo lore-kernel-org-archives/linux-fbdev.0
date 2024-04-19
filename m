@@ -1,115 +1,97 @@
-Received: from sonic302-22.consmr.mail.ne1.yahoo.com (sonic302-22.consmr.mail.ne1.yahoo.com [66.163.186.148])
+Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98DB213A871
-	for <linux-fbdev@vger.kernel.org>; Fri, 19 Apr 2024 18:14:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=66.163.186.148
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C973522071;
+	Fri, 19 Apr 2024 18:52:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713550481; cv=none; b=HUPHkyiHsvneyk/E34DyZvMQGCTunqU93ECEfQIj/QlMRtiQkP2O559yMhVSVPRvBm3nhlt2O8HlOOJZFwpmuQC226iOtIumsgZmKrM4Ef1mGVTSdV0WZL3Tj2ksnxc5N8959fGJYikOK9L9QwoqAMJeBZSx4Pr9RQwiDOgTxNA=
+	t=1713552770; cv=none; b=hBcfy645LfwN/iHK7+eW38rzDspRY3TL83YMK3uDhnz2onzdSlcewk5SwR72qr8tah8FbGrQIaaOQP0z1QMVVq4kmUM+tHj8RcqKP4jqWn9Br6z3uMERjBGofPSZKRZu5Ps/IUvSGR6hoD4b44mVzX9DQhOhL0IHhD6jI1HReLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713550481; c=relaxed/simple;
-	bh=blljeHd9x0gxpn93U2C8DaW0yA8kvS6g/Q5C5nSZpfE=;
-	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version:
-	 References; b=swmlC1XPJ4pwwgWfppjvqdDgyJDg+znWTi/VokD/lPyEBJAhJn410wGnKft+MhQ47j+lck+UGTz9beMonhrJexB+iehRTkFlg7eWVqtN6BxrpWlqd78yFxsKl1fM8KYra6YDVKWHoUMMPjUvqvF33/7rHdUnlGHUkb1zMheSp0M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com; spf=pass smtp.mailfrom=yahoo.com; dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b=U2J+heSV; arc=none smtp.client-ip=66.163.186.148
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.com
+	s=arc-20240116; t=1713552770; c=relaxed/simple;
+	bh=U09zZHjB+LeME5+ai5JqJLnKOWOODtaYa79Abej4COY=;
+	h=Date:From:To:Cc:Message-ID:In-Reply-To:Subject:MIME-Version:
+	 Content-Type; b=c6dbNMso0+7d5PXSc2jz9IlebFpBTp6sKSz7THYF2IzvjcWkMRHJZ311Cr43vuoMeqgEsbXBNhUyTC7ZZZmtsJ597daE++HGTx3fCRM52WV4fnJzbx0sBj+4VuS8WxtJH5lCeolZ9QitPiNt93TG16aWGHW/DPj1dW+OXkTbpMU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GIFgQKGM; arc=none smtp.client-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b="U2J+heSV"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1713550472; bh=RG/96UbEdQ52BT0k7TkxJ3eNd7aF8qeJn1MJEz+axZc=; h=Subject:From:To:Cc:Date:References:From:Subject:Reply-To; b=U2J+heSVn22zgiy3gd/X4M6nStUwNs2orl0ZbKREUZjXkU0SxEDtRLKs4+FLnzV8yQNDmZmZqFWYVPs1PoRkh4Kbm/NDHa/c4YuqWmXCOWH9c64HNlHrB2mrb6VqiuBU1E8HuZXYzkGJYoiewpbWmig268bee9FYLMx0HChct1uOioxypYcz/S2RKYRMjSYT8ADe6/hhj9e/6D+Uw3u5l2Ge4NqR2emqukxUuMR+wEsj4FYCdOPlRuEdZaRH29g/Ux5gMnes1SRsQOCPLZB23cIivhWPBPK4aqTgu3N9Dio9nZchCgH1k5aUl7ebao0O3oCLDAx5wKCo9f02wM069Q==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1713550472; bh=52EeZNcVeydDfVmho0x49q2csL5NOoSPeXTRUU9Gu2K=; h=X-Sonic-MF:Subject:From:To:Date:From:Subject; b=WZdFtzE/6wkSfYusokCS8j0XtOa5e8IQQACyei3StN+kZvxw1899h18QWp1yATh65Pl9ynp4ib8ZgZb86fn85heSbTlIFm0uINeXjDX18Y3ExRQ1wQ49RlZ0LnVKnLojxxqk/aITUHSQUWUd9CV18Tq5zugkrosgyMkIMPBnq7m/X+fRSTH82NiF+8QmH22+VaiWWRsjJHOE1LQZ3W0zqoyKwzg9LCzpadr3kuCDykxl/wVTHUssU/yDkwtprmdefjdNX+s4HpCufTWPWLHiNzP5f3pNHBUvO4+SxvVz9/rWcP52mKiqmk2KKTheOBocRjOvcx45LMEkpkf/sR2Nqg==
-X-YMail-OSG: e3gt4eoVM1nSYo.FK8LfKpIhGX4b9fecFRCvCnUBSr0WQrciss7EyRTloalubBa
- evlFHT1GrinFRAOhXeHK6yXFR.q8TqByobyZ11NzOg6wwQ0FsTelCw6FtrXZKHuOh09v7T65XcXG
- c93m_oaHdaJOPm89vxLvFrAIMsYH5CbxvKnDvU44_Jl_j_jxQvnh7m37Z_fTR6m54PEkclTr9B9l
- Tw8Q48bda4f4QPNuwjgIyuAQkBd61EEx2qqjEuvCyfHLprAnbdq4KWJrkX09d1xBK1PBcNCLmVDd
- AzCxEwBSoi6y59gfRxqNcjow7Q4g9_.o1Sff4TuTE6nlmRew_kKTsAWsFqgavvtFysIF2gFzNzTC
- XLFfU0JPEw_sG0nYSTRQEv0wDbYayEiKJNnoC.Ms9DcyK5R_jqMYFYA4rHbw2OopW.1M_6JHaUrF
- U5SMAz4oRHdpWvFqdzp7I1A65IQjFOL1QeF2FQO3QeUDvy9nUfQuLFq88RCz4iJIsLl8mtIl9buT
- cE.2BAwy4V7XA1i4jcBmIUMB92KItRoTaR37dmPXoIlWStIG.EOypwwj1eYOYSZNcGBVchYUkMUe
- kDXD2tMq0c_Ho6a82R2Hor8u_CBAkwpVXUY0uVcXEcEN2ej1PGE6BN3DYh97If3nxlqzf8b4sHLc
- aRVacWi9wq7iDDiqURn5l1jcX7wXLzD3hoU5MXntdqZtk.yelaxVh5S6sEpEQdoMdiqLckqANI.f
- YAhcSoK2RMkFIrB69QYqwIdr7k9cl2wvdsznB3SiyZ1T2FVpkg6YdGVNYCjDespEdHvVe10ijW_6
- mRfuSt_IKyawsHyb5xGsOh3x7pLxmZL6iecezqknA9XMyjJzHsdZk7Ra5KcawBnSqLnXZzYpROH4
- 3h_Pzq8TK8S4i.qREWgedGl6l.LYZ2Lha_yLgXSWZnLTqp1tALivXx5nxLedBIxXhhFst4cnjSdA
- Wx6YQQt6JZTBA9QtCZtRE02WJdzw8J.5TMQOpI1DT5f847IO9GDw682jYZVs.2VasAp7E54O8In4
- PObCWFYlKVYxLgOmZ0I3rkWwtJmfsPbwsPUHeCajcl5EsU5i._nQKSbKhnDNhH2PInAAVVoo_hvg
- hgloVBRhKwHPi8uoXGWYSfqiXTHFohfNdfYYmkTf5tJOPU5d0D_FyA3W922IwfQBm3T_hBJJ4sew
- qhHbOAwRQ6T58c9lw5o3X7TxxMUJbBcdYHUMvpl1m2G_Xczg5BNyxu8oZAvudKoo7kCBFuGcETCw
- PPttj7ZQmBSLQSAhGho5BWIhKzSLGuXEU7lXp7A74.k99PG0NpKrWbzLVZPffeOtSGzSgLS51dex
- rWderropquae7ISoo51qrxjTTyolWecnHUWPhnP6_tKus_jWP5UXYvqpV2VyRSSkZ9E5eSDHhVAS
- gGFOhPFC.mCGdK671VM0S_riM3ZNY3UbgY.R2GfEx1LqAB2M.bwn068M.6ABKCXkqXQQq2c8rAYX
- GxXaiTUjvV3i_b9W.s_qE._Lh3NAKzCaSJQ.mE8oRcBHjfebbbHbE9clOXHA1QIhYUSPDMVoijyL
- llzYG8.MQv2zbJLOwRceXXJwH5flSChhkpcbKZ_yIwYf6.hQG.YJSdjSJP6EEHdu_6AOhdsiBGUG
- m63ulRslibRTGsZV3wpf.gjA_rWOfhD.nS4S5tG5pv2OAZcccg9brpbgeSI2Idy4T5Z1ufiptbv7
- 94.CjaaV7EIxzEGNedmQOn_eaHHSVu8HHNZpusGmWMRDbYSd1QK.UzZd6CFdCzorg.boPTh1bAN_
- 8nQqhyUb.MnSQ1xro31c2N2AoM_uNN3DmDEdxuQN3.Fz0fLdKRHCq78yxYI75IbXjbO8JDs1eM_G
- yvCztbZiXrCFzVRtFbZV_7DSR.Y5VN8_hSJBM4ddhFOdnEjhmSlAk_2XANNsBh.AUgmr4dPEemZW
- aK_lCKLjbIqETWwvN8QheQM2c.emmT6bBtXbY7Q4k0ZEcmQ4Vlz7g2qvEPdqS7LaU2dVo4V7O_N.
- HiCv5vUO5a0arvHwIHKlfRaLbizTTfNgx4AWFTcNcNSpZ3nyjgxBC7GdLKO0Uz930ZefL0OONtHj
- zK8Ee9qDnmseHDnodSr9i5NJpSwLUU5tpZzDnn0Yfi8BGNaFaCMD.5HNoR8tt05KuY4gXix2eS1y
- Wt.vx0U696NEOp6FCH1VTVMoGYx3HEKjayiof6oN76uWrGLGPyFNvtAGSY9M3KTz405aOstV_t5Q
- SqM9QJ_7zgjlFnON_5wka2ih2VZS7mMXe4oT4QDlPfGB01oaR9_mjS5JkhfGXEFhWfePTWuVS6MC
- _SnW3Opp0fjXXNM_iRGoMF.5LGjluVfQydZFxg99f
-X-Sonic-MF: <ashokemailat@yahoo.com>
-X-Sonic-ID: 78246457-ecc3-42ca-977f-d023cbde13c7
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic302.consmr.mail.ne1.yahoo.com with HTTP; Fri, 19 Apr 2024 18:14:32 +0000
-Received: by hermes--production-bf1-5cc9fc94c8-2vdn9 (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID ee5c49b4a47ca886366b559aa52960a3;
-          Fri, 19 Apr 2024 18:04:23 +0000 (UTC)
-Message-ID: <452e4a2dcdc7020f75b84d787297a1d17a21ca81.camel@yahoo.com>
-Subject: [PATCH] staging:fbtft:fb_ili9320 Removed redundant Parentheses
-From: A <ashokemailat@yahoo.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	outreachy@lists.linux.dev
-Cc: ashokemailat@yahoo.com
-Date: Fri, 19 Apr 2024 11:04:21 -0700
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.44.4-0ubuntu2 
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GIFgQKGM"
+Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-6ed112c64beso2161481b3a.1;
+        Fri, 19 Apr 2024 11:52:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1713552768; x=1714157568; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:subject:in-reply-to
+         :message-id:cc:to:from:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=U09zZHjB+LeME5+ai5JqJLnKOWOODtaYa79Abej4COY=;
+        b=GIFgQKGM7UZvAJxWDW5H0HV11jZ7taoOFX6bXJfUEojBq1SdIGyQcKs/CJRQgTNHow
+         gDicpbF2Qx3gBUfFq0z0+zVzA/hDoGmnMQTCbN0+vwByDXW6QVae6uA0z5jor3H6gh0I
+         yqgE6Nv1vbgwjR3J1M4K7B2gO6DWCV1en3DbbVfjG1YEVwAhiEHtZGJju8vWS+eGm65T
+         F5E88q46i2wena1Rh+4qBrawY+VQcFkTrmt43SakHYds1y4/Wcu251WyMzxVh3PncYx/
+         jCBEidmBC9ujpjjZIUEMkwYLchmxS9KEuaECPVNseJVodrTcil9VPSw/0XBI0YFHz+q+
+         dnQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1713552768; x=1714157568;
+        h=content-transfer-encoding:mime-version:subject:in-reply-to
+         :message-id:cc:to:from:date:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=U09zZHjB+LeME5+ai5JqJLnKOWOODtaYa79Abej4COY=;
+        b=BZNAjGfj/bYpFH8OJgV0KcgXCVc5lJ9mK6ZRGzB8S62LToNcj8rmHY4MRIH2fBIS1K
+         7kDPQ3zupazmVrDRkMqGV3D2myAzAfxpgkK/olXtDetV+y5giFrSzwp1Z45Oil/5C3ec
+         ea7HW5Lw/+zSLqv43qFJ4mRc5nrfsaZiLAICjg23u4R3xnLumVM+okbqpp+GpHEw4u6R
+         z4BBvPxOYYwQbRdnjDhPD1P8xyckjURitVei9gEMrUcQqSCh80kqVkM6P9xRSP3fK1XL
+         7YhbQfx2p/pcukxSt2wzzbuaVpE/wBcz70JFwL7RtViBg1ihePuGX9VVx1MjWeDB4o93
+         Aj8A==
+X-Forwarded-Encrypted: i=1; AJvYcCUT8pfGij4rdtD1lLjL3fO4Doe/z4hIY2I7UErI5N9xBABVYw9ZGty5bkUEbN0WoQDsbgJ8dqZzmBvjKbaOOyZUUKEYIeU5US95WFk4FfWYc/QI50IFYetbWmhkGhRxeUoItT4YlGyO81A=
+X-Gm-Message-State: AOJu0Yy0oowaCdJ5ZiWT1qSrwWMRlW3yUKpbsDst1t8CoH5Zh3IPBoP5
+	dJy4QVkLcGIO7Pb1Kj4v4QXJMUtnTnMOGsl9u0rWZQe3hFfy4+8u
+X-Google-Smtp-Source: AGHT+IHEQHOBvKuseE8etys53e1nv+ZkHGMM/0X950aYj5fjviZRpom/z8ITcLkYd++IcqbesMEaPw==
+X-Received: by 2002:a05:6a00:1794:b0:6ee:1b6e:662a with SMTP id s20-20020a056a00179400b006ee1b6e662amr4300891pfg.32.1713552767935;
+        Fri, 19 Apr 2024 11:52:47 -0700 (PDT)
+Received: from [127.0.0.1] ([106.194.121.201])
+        by smtp.gmail.com with ESMTPSA id b19-20020a056a000cd300b006f0af5bfda5sm2272744pfv.102.2024.04.19.11.52.43
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 19 Apr 2024 11:52:47 -0700 (PDT)
+Date: Sat, 20 Apr 2024 00:22:41 +0530 (GMT+05:30)
+From: Shresth Prasad <shresthprasad7@gmail.com>
+To: daniel.thompson@linaro.org
+Cc: deller@gmx.de, dri-devel@lists.freedesktop.org,
+	javier.carrasco.cruz@gmail.com, jingoohan1@gmail.com,
+	julia.lawall@inria.fr, lee@kernel.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, shresthprasad7@gmail.com,
+	skhan@linuxfoundation.org
+Message-ID: <819a56c3-bbaf-4d5e-87de-78c1312c56d1@gmail.com>
+In-Reply-To: <20240419111613.GA12884@aspen.lan>
+Subject: Re: [PATCH][next] drivers: video: Simplify device_node cleanup
+ using __free
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <452e4a2dcdc7020f75b84d787297a1d17a21ca81.camel.ref@yahoo.com>
-X-Mailer: WebService/1.1.22256 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
-
-From 51e98164e314a2d1d834d2a9baea21a9823650bb Mon Sep 17 00:00:00 2001
-From: Ashok Kumar <ashokemailat@yahoo.com>
-Date: Fri, 19 Apr 2024 10:32:48 -0700
-Subject: [PATCH] staging:fbtft:fb_ili9320 Removed redundant
- Parentheses
-
-Adhere to Linux kernel coding style.
-Reported by checkpatch
-
-CHECK: Unnecessary parentheses around 'devcode !=3D 0x0000'
-+       if ((devcode !=3D 0x0000) && (devcode !=3D 0x9320))
-
-Signed-off-by: Ashok Kumar <ashokemailat@yahoo.com>
----
- drivers/staging/fbtft/fb_ili9320.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/fbtft/fb_ili9320.c
-b/drivers/staging/fbtft/fb_ili9320.c
-index 0be7c2d51548..409b54cc562e 100644
---- a/drivers/staging/fbtft/fb_ili9320.c
-+++ b/drivers/staging/fbtft/fb_ili9320.c
-@@ -37,7 +37,7 @@ static int init_display(struct fbtft_par *par)
- 	devcode =3D read_devicecode(par);
- 	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "Device code:
-0x%04X\n",
- 		      devcode);
--	if ((devcode !=3D 0x0000) && (devcode !=3D 0x9320))
-+	if (devcode !=3D 0x0000 && devcode !=3D 0x9320)
- 		dev_warn(par->info->device,
- 			 "Unrecognized Device code: 0x%04X (expected
-0x9320)\n",
- 			devcode);
---=20
-2.34.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Correlation-ID: <819a56c3-bbaf-4d5e-87de-78c1312c56d1@gmail.com>
 
 
+> Please fix the subject line to be "backlight: <driver>: ...". I came
+> very close to deleting this patch without reading it ;-) .
+
+Really sorry about that, I'll fix it.
+
+> Do we need to get dev->of_node at all? The device, which we are
+> borrowing, already owns a reference to the node so I don't see
+> any point in this function taking an extra one.
+>
+> So why not simply make this:
+>
+> =C2=A0=C2=A0=C2=A0 struct device_node *np =3D dev->of_node;
+
+Looking at it again, I'm not sure why the call to `of_node_put` is there in=
+ the first place. I think removing it will be fine.
+
+I'll fix both of these issues and send a patch v2.
+
+Regards,
+Shresth

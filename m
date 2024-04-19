@@ -1,133 +1,164 @@
-Received: from mail-pg1-f175.google.com (mail-pg1-f175.google.com [209.85.215.175])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0DA8194C99;
-	Thu, 18 Apr 2024 19:43:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 711AFDDCD;
+	Fri, 19 Apr 2024 06:44:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713469395; cv=none; b=Ll2qLMpq+QTcUbXQ9ODFVpFQJdPWddW6xScNrEUYkf4ynMwOu81YI2HelC7Cs+bK1R02FP+n4DOeQ0c/5sR9OtfRkK57wA+/wjsRocGTKC86tJHLgqmwN/9F3O06mlAYKd7yYykah9yG8WLjqyAtvM1LzmyXfOuLZ3V4FGanjjA=
+	t=1713509077; cv=none; b=CXtFJTwmgxSfgGunGrSCAj1tR2x8F8EdQgVzSm83tuASpY7kwcNyxvjQUPJwscMty4A3yaDpApmArYRO931e1zmoCQyDWDdeN7720js1a8JAnti6QCuQm3nrCy10s7q6rZ881lwX4lDhuy3nkUNFgVxJf6bDS/ENrhdN9Hki8es=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713469395; c=relaxed/simple;
-	bh=MRNTrJBsF17use9WkK4TN13OK8uoCL9+cnCZ1MkhyUM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DzrDhaZqQlXdjEPX7dlO/U6wC+eZpytWjfGLJggqR2iax/VF7XT5dG8FjFxDxDq5FX6LZRXlQlPSeGZtDNrUwH4AP7fcQFnIqJPCRTbpi8rq0YOG3feWKgsDimAf2GkphnBDxEtB7GFBPb2R+byYzP+4qnOx1RHZ/p42pWLj4pk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QYjvgj4p; arc=none smtp.client-ip=209.85.215.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1713509077; c=relaxed/simple;
+	bh=nZE8GP15Tpu8RoAw/K0BsUWuKsEVSKd62qJfcUEAEXw=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ut1KtWK4y9LqERPRtOXr9tKasmpMusIuxq5hQBlxHw6XevYQViYjBNTCisYSsMOCqAER7ntXLNKEkEA5XhNTLrPAfl0v9K/Gb60WsxqddcdZCMlTX+yQglNK1+pz9ds0Di0dHB5Y80IlS/UbwZkWGWMtJURa5yXbSkGxwgB1WTc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=PIWehuEj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=c0EPZo5H; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=PIWehuEj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=c0EPZo5H; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QYjvgj4p"
-Received: by mail-pg1-f175.google.com with SMTP id 41be03b00d2f7-5cedfc32250so837233a12.0;
-        Thu, 18 Apr 2024 12:43:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1713469393; x=1714074193; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=38lT2Q9/Wtu/x/mwT7pRtKT/XjJGw1DkTWZ0TLbddro=;
-        b=QYjvgj4pxOtj83a5qdh2tYbszSgpIqhx83tuNucLK2vFnEENQfvFXxzdrbuiUJTSiA
-         UXtitUOdKDBpt1O4smOBQil/zdeNlHmouelLiaisJKFzaQ40inHewFTXw4OpZZg/Boh1
-         dHKHWkF6k+7H1t+gY043GwTJr1uwOQJLEQn8m2xaRKi/x3oPyTzczU79EgLa5NaL0MaN
-         ZI1XP9HCjgxcftIMl8Wd7aTeAq2mNtaE9icv0pm4yCr1+RltE7H835k+7EyEgfh31vjL
-         Ulea9DCdHLyX6OKCkjSixHyUWKB4Z+xTo+twqepf/v/MLkKJScEavCixdAnwjZ/gb2DF
-         tUOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713469393; x=1714074193;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=38lT2Q9/Wtu/x/mwT7pRtKT/XjJGw1DkTWZ0TLbddro=;
-        b=OZ8q25xGZ9HNI/0qBDIRgfgjXbvEwj1nilpvhk1heZU1MhtvEArmylYU1GL5Y6uzHE
-         5Bdvuo/ekCNXkJZt6SEaWKK3csmDVoyOS3R8BmkR6TDe/uHDIsijdVAV614JvQ5vhg3Y
-         jxQPh12PPkYKQUDOqWvdA0z05n562ZROFgRsv3sah6tgAPFVe0IVIxs0K3AuO4L0faN1
-         EnPToIZyIfhqo77t8e9ABWZHKnPqwcC2OLgJRKnqRZCtfuehsGYfW0i+WTIhqAuHCgZL
-         90V+1RX8H8xp18ulnAZCW9Z27U1SQLpyBaCIKOWsi54f36hmoojSG7P6sk4yaRL+9af4
-         ZhjA==
-X-Forwarded-Encrypted: i=1; AJvYcCX9OM8gQ5LV69Jx/w7H0Zka9+tj4fQ79zLETGBBfd2CFolfNvhCvma0bFgPPa9hrV4BAiutENDva/UUFPljYhOeYD5pc7wY6O5zg3m8tyjw5IjNNOPOjFNoemsoY4j1Si88nRSDsjE2E5Q=
-X-Gm-Message-State: AOJu0Yy+51bzK6PMnmuRAGXilbIs/95B6iCG10qhCUsa8u5IPJ6gViUH
-	pYTEuOc/GsuPIouEDlFOi1VlrWmJz0aveFgN0vBxegN1M+k+ytPR
-X-Google-Smtp-Source: AGHT+IFL5Cd2jMq39QbvOOpOS8FadIfe4V5Nx3bG2ekmukhNfIWjmkm1cizoU6hL1T9tr5VD1xV4Pw==
-X-Received: by 2002:a17:90b:3108:b0:2ab:e1ae:d4c6 with SMTP id gc8-20020a17090b310800b002abe1aed4c6mr145328pjb.32.1713469393079;
-        Thu, 18 Apr 2024 12:43:13 -0700 (PDT)
-Received: from localhost.localdomain ([2401:4900:8099:de35:15c0:2623:bd0c:2046])
-        by smtp.gmail.com with ESMTPSA id b24-20020a17090aa59800b002a67b6f4417sm3556327pjq.24.2024.04.18.12.43.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Apr 2024 12:43:12 -0700 (PDT)
-From: Shresth Prasad <shresthprasad7@gmail.com>
-To: lee@kernel.org,
-	daniel.thompson@linaro.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org,
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="PIWehuEj";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="c0EPZo5H";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="PIWehuEj";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="c0EPZo5H"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 8C9F25D3A1;
+	Fri, 19 Apr 2024 06:44:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713509068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UROJHqQVwW/+GHHAIwwIcUJ9WuKIRocbwkF9swP1GXo=;
+	b=PIWehuEjC16feTeJ8/Qm0TYOcWGEk/uFIRzimIKUVBEYRjZLo1buiKnkMRTWGFyBtWlkED
+	eSi3YhncHR5gYmFESoCK+xQ2UI4XtXB6uszcnUJlVU8c2qJtkoSW0EeNQvjbY3zkLHrlW1
+	mLPZZgExGzEbDG+g2nuqAvOBcGEWFWA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713509068;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UROJHqQVwW/+GHHAIwwIcUJ9WuKIRocbwkF9swP1GXo=;
+	b=c0EPZo5HDSDWsu1bCIdkfiiFI5aY4sF/T3JgxIfnTNMUUlYT8/mW/pT3GlIvL6FoaZtCYQ
+	ZsU/k9baZQ+279CQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713509068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UROJHqQVwW/+GHHAIwwIcUJ9WuKIRocbwkF9swP1GXo=;
+	b=PIWehuEjC16feTeJ8/Qm0TYOcWGEk/uFIRzimIKUVBEYRjZLo1buiKnkMRTWGFyBtWlkED
+	eSi3YhncHR5gYmFESoCK+xQ2UI4XtXB6uszcnUJlVU8c2qJtkoSW0EeNQvjbY3zkLHrlW1
+	mLPZZgExGzEbDG+g2nuqAvOBcGEWFWA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713509068;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UROJHqQVwW/+GHHAIwwIcUJ9WuKIRocbwkF9swP1GXo=;
+	b=c0EPZo5HDSDWsu1bCIdkfiiFI5aY4sF/T3JgxIfnTNMUUlYT8/mW/pT3GlIvL6FoaZtCYQ
+	ZsU/k9baZQ+279CQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3055A13687;
+	Fri, 19 Apr 2024 06:44:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id d0WbCswSImYIRgAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Fri, 19 Apr 2024 06:44:28 +0000
+Date: Fri, 19 Apr 2024 08:44:35 +0200
+Message-ID: <878r19voks.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Helge Deller <deller@gmx.de>
+Cc: Takashi Iwai <tiwai@suse.de>,
+	Nam Cao <namcao@linutronix.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
 	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	skhan@linuxfoundation.org,
-	javier.carrasco.cruz@gmail.com,
-	Shresth Prasad <shresthprasad7@gmail.com>,
-	Julia Lawall <julia.lawall@inria.fr>
-Subject: [PATCH][next] drivers: video: Simplify device_node cleanup using __free
-Date: Fri, 19 Apr 2024 01:13:02 +0530
-Message-ID: <20240418194302.1466-1-shresthprasad7@gmail.com>
-X-Mailer: git-send-email 2.44.0
+	dri-devel@lists.freedesktop.org,
+	bigeasy@linutronix.de,
+	patrik.r.jakobsson@gmail.com,
+	LKML <linux-kernel@vger.kernel.org>,
+	Vegard Nossum <vegard.nossum@oracle.com>,
+	George Kennedy <george.kennedy@oracle.com>,
+	Darren Kenny <darren.kenny@oracle.com>,
+	chuansheng.liu@intel.com
+Subject: Re: [bug-report] task info hung problem in fb_deferred_io_work()
+In-Reply-To: <a7843657-c3f6-4d2e-8c36-5541d4c52956@gmx.de>
+References: <271372d6-e665-4e7f-b088-dee5f4ab341a@oracle.com>
+	<20240418160652.68df1a86@namcao>
+	<87ttjywxv5.wl-tiwai@suse.de>
+	<a7843657-c3f6-4d2e-8c36-5541d4c52956@gmx.de>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: -1.80
+X-Spam-Level: 
+X-Spamd-Result: default: False [-1.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TAGGED_RCPT(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
+	FREEMAIL_TO(0.00)[gmx.de];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[suse.de,linutronix.de,oracle.com,ffwll.ch,vger.kernel.org,lists.freedesktop.org,gmail.com,intel.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	TO_DN_SOME(0.00)[]
 
-Add `__free` function attribute to `np` device_node pointer
-initialisation and remove of_node_put cleanup for this pointer.
+On Thu, 18 Apr 2024 21:29:57 +0200,
+Helge Deller wrote:
+> 
+> On 4/18/24 16:26, Takashi Iwai wrote:
+> > On Thu, 18 Apr 2024 16:06:52 +0200,
+> > Nam Cao wrote:
+> >> 
+> >> On 2024-04-18 Harshit Mogalapalli wrote:
+> >>> While fuzzing 5.15.y kernel with Syzkaller, we noticed a INFO: task hung
+> >>> bug in fb_deferred_io_work()
+> >> 
+> >> Which framebuffer device are you using exactly? It is possible that
+> >> the problem is with the device driver, not core framebuffer.
+> > 
+> > Note that it was already known that using flush_delayed_work() caused
+> > a problem.  See the thread of the fix patch:
+> >    https://lore.kernel.org/all/20230129082856.22113-1-tiwai@suse.de/
+> 
+> Harshit reported the hung tasks with kernel v5.15-stable, and can even reproduce
+> that issue with kernel v6.9-rc4 although it has all of your patches from
+> that referenced mail thread applied.
+> So, what does your statement that "it was already known that it causes problems" exactly mean?
+> Can it be fixed? Is someone looking into fixing it?
 
-The `__free` attribute is used for scope based cleanup instead of
-manually freeing the resource using `of_node_put`, making cleanup
-simpler and safer.
+My original fix was intentionally with cancel_delayed_work_sync()
+because flush_delayed_work() didn't work.  We knew that it'd miss some
+last-minute queued change, but it's better than crash, so it was
+applied in that way.
 
-Suggested-by: Julia Lawall <julia.lawall@inria.fr>
-Signed-off-by: Shresth Prasad <shresthprasad7@gmail.com>
----
- drivers/video/backlight/sky81452-backlight.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+Then later on, the commit 33cd6ea9c067 changed cancel_*() to
+flush_delayed_work() blindly, and the known problem resurfaced again.
 
-diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
-index eb18c6eb0ff0..3c5d8125080c 100644
---- a/drivers/video/backlight/sky81452-backlight.c
-+++ b/drivers/video/backlight/sky81452-backlight.c
-@@ -182,7 +182,7 @@ static const struct attribute_group sky81452_bl_attr_group = {
- static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
- 							struct device *dev)
- {
--	struct device_node *np = of_node_get(dev->of_node);
-+	struct device_node *np __free(device_node) = of_node_get(dev->of_node);
- 	struct sky81452_bl_platform_data *pdata;
- 	int num_entry;
- 	unsigned int sources[6];
-@@ -194,10 +194,8 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
- 	}
- 
- 	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
--	if (!pdata) {
--		of_node_put(np);
-+	if (!pdata)
- 		return ERR_PTR(-ENOMEM);
--	}
- 
- 	of_property_read_string(np, "name", &pdata->name);
- 	pdata->ignore_pwm = of_property_read_bool(np, "skyworks,ignore-pwm");
-@@ -217,7 +215,6 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
- 					num_entry);
- 		if (ret < 0) {
- 			dev_err(dev, "led-sources node is invalid.\n");
--			of_node_put(np);
- 			return ERR_PTR(-EINVAL);
- 		}
- 
-@@ -237,7 +234,6 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
- 	if (ret < 0)
- 		pdata->boost_current_limit = 2750;
- 
--	of_node_put(np);
- 	return pdata;
- }
- #else
--- 
-2.44.0
 
+Takashi

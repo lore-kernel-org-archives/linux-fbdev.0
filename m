@@ -1,154 +1,161 @@
-Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E07502AF16;
-	Fri, 19 Apr 2024 07:50:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3244C51004
+	for <linux-fbdev@vger.kernel.org>; Fri, 19 Apr 2024 08:33:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713513031; cv=none; b=m6GZoh0k1hmZkWob7W93G87jGhug2nlnl8QfyY/AiZSi2V188qEC04pIOREpDycTTaZI8/ZlTXhTIG67EIQAWDBhgNB/L6L5EzJeji4uEy+25zvh2M4cihYHQlPX1Ga1TTxaQy78fcVRxaTGy1IwwvvN7n/788jw/qXoQF4FPxs=
+	t=1713515620; cv=none; b=W3fIRzAS7mVhRnf0y8Pa4jDxR2uN6YRbgyxVukp8crxyE6jB/oCetN0vw66O9bVN7pV2AImgqUpnUyGc/khkpgmAgpmZvKz7nIW2C/C/EBhyVyRVK3niQeBIFq4QC6Z5h+cMnFLnOlVlQ0VONh19CnXz0soj/KJap4EkG+5sREo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713513031; c=relaxed/simple;
-	bh=IwP5Q2CZtoLD6hOLk/T2CJKuHVjlSaG23PDrcTqomUw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mOxQ9BxwRrbC6hcZs9nBKQLUV/HpRkPwt4TAbS+Z/QAnaaU2rXaCF/nqy0S8niIh4tqCPtSJMpifhc9HGebKtocipSiNWfrX7cW2AgwV1Agnyan10ua0PJCl3rGds/GUjWgjDyNiX4v8/Gcd7NnatY8KXZHE+zsOYKAkmIGS4xw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iQYXpb1k; arc=none smtp.client-ip=209.85.128.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1713515620; c=relaxed/simple;
+	bh=6NHhI1/f36d9+0rpkVWqt23p9nfGPylkEaPSwhRQz1s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=D7taf2Fpa7FWIjc8uVigLFGCdHOFG8CPMF+dhhb7FLIKPgq2nhaoCtAk0dufXSlzj3ahQYxLtcYilBEGCtuJ/jiGbJ+mHNAmEUg3vSphGzf4JFNxgth29dvJXiNjYPmio5UiE+adAxTXWxS9fgz1OghwKM99xf+3nZQXTzXj0hE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ltKKSG50; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=U34I+b7p; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ltKKSG50; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=U34I+b7p; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iQYXpb1k"
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-61ae4743d36so19875367b3.2;
-        Fri, 19 Apr 2024 00:50:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1713513029; x=1714117829; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=eSU5Y3VbJeh45hJUwql0V9IYMZAkub8x03JCZpm2gGg=;
-        b=iQYXpb1kWoyEyqHq3gQWCKMqu7lgntEjweMP1r3gPS2n+ojSoOSpTg9yWqOdT4ngIP
-         TWwL/ns8g6qxhDNs+fW7oTkpI29gRFaCAW9I5nj52QaoeBetdQpDUC9v8dzvjzbXrZOk
-         a7h5BlfFZiUNt8LWuSBEPOncyDZ5jbMcPVDOYnmOlS8/sqV8d6+QC4rfwjX39UiaDVQ6
-         wqsrPE1U+UZAh3gk+d1RGHretdhSHIRL/NrHLXRr5tsTKkLZ6kTguPTi2y7/ut6eIsBl
-         moL/2h8LAUAfZDjAP2vcLE/oVWclAXJ3y/Ik6gvx8bpV033S7DjBqU1nrnIgmwIyXLwe
-         Iarg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713513029; x=1714117829;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=eSU5Y3VbJeh45hJUwql0V9IYMZAkub8x03JCZpm2gGg=;
-        b=FqTOjzYDCpPF2v5Iy2mBV7kmrH4cfn8YpV6bOcwplf+H37P/XL0NfhB79+fqZD6kx8
-         AG2HY1/DscAqfGySfu0pFAP0jB4FnyxtwpaYX1CYdqVRCzmGREEe/69BpdRnmzwASDVr
-         +TJDxOS2CUWeNzVOy4QG6W/FvqcJLLKKO/uo77ZZ6++TojpjCbFyEaJl9yY92HkcBnez
-         /SVHtD4n9KwCjtzxUcWXbUXghyBKUTar29m4z67ATjnfp3sAL2THvHRrqka88CQanuhT
-         i2d5jjvubFNmPO+BjMRSQ1N25WZyxhzCDb/92YIw7LuEpl2Y+PE7fJpg1S2Sh+PFhO4H
-         dwxw==
-X-Forwarded-Encrypted: i=1; AJvYcCWHVmlwLT50uPHRnrpTo5CQYKUjs8/GMSdGUdyX5udr3Ofbj1hCj70qTlggLCnOBhgM0WK9d9+KfQaGG90EY2OLlKowTfTSdioFKiO1FRDmqpAc2KDlYXSIkmhr1OUVlW4CgjjLFwIpFEA=
-X-Gm-Message-State: AOJu0YzHDtd3QexEojZq3mxZqqO9NhrnfME/Q/F2DSCIRS14ED/Qmlnt
-	6vZM1BgC9H/P/vXPVwKTvSkEzo+gLcd+eHIcHKMLOOcjt6fZYNpwDz3mUd+LFdaxZ1kv7hfKplz
-	eTkixTKfkyPt5+iokN/bxYlnxw/0=
-X-Google-Smtp-Source: AGHT+IFjQHVch/EGEw8Lj0yIUwAdtgGagHkwnPrfEadrcXcE/jctm5NT1wWlYtcC3vYWlm5NliWpFryraTYpllWgJgw=
-X-Received: by 2002:a05:690c:7207:b0:618:6aa1:a972 with SMTP id
- jl7-20020a05690c720700b006186aa1a972mr1293822ywb.5.1713513028797; Fri, 19 Apr
- 2024 00:50:28 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ltKKSG50";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="U34I+b7p";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ltKKSG50";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="U34I+b7p"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 499673757F;
+	Fri, 19 Apr 2024 08:33:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713515617; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6oNAN117oUsDvrSMdXnfdZZrJ5BgRROAhbs+ZdDMtKU=;
+	b=ltKKSG50lf+JUmjugpDz1WDZqXfoU4bYwaVp5//WLvbb2Woxn29IkEoxXwA+KEzS1yvLNA
+	tiMfrKANqI3sYVyJihR1fwBicb0WBzD4TDr/BpmwET1HoJ+A9SrStuj3Fkt6Ffo3NUHoCc
+	uf1UhpPfeHxHeImrpG6bgIJLS6p0+Ag=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713515617;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6oNAN117oUsDvrSMdXnfdZZrJ5BgRROAhbs+ZdDMtKU=;
+	b=U34I+b7p+NcxSPh5y8lSP/f48hskvJJkpZ+jj8riAN8uPC9r1ny5JQ122VGsFgwPR4TV9K
+	S/xHyjWDVfuPACAA==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=ltKKSG50;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=U34I+b7p
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1713515617; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6oNAN117oUsDvrSMdXnfdZZrJ5BgRROAhbs+ZdDMtKU=;
+	b=ltKKSG50lf+JUmjugpDz1WDZqXfoU4bYwaVp5//WLvbb2Woxn29IkEoxXwA+KEzS1yvLNA
+	tiMfrKANqI3sYVyJihR1fwBicb0WBzD4TDr/BpmwET1HoJ+A9SrStuj3Fkt6Ffo3NUHoCc
+	uf1UhpPfeHxHeImrpG6bgIJLS6p0+Ag=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1713515617;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6oNAN117oUsDvrSMdXnfdZZrJ5BgRROAhbs+ZdDMtKU=;
+	b=U34I+b7p+NcxSPh5y8lSP/f48hskvJJkpZ+jj8riAN8uPC9r1ny5JQ122VGsFgwPR4TV9K
+	S/xHyjWDVfuPACAA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 160951398D;
+	Fri, 19 Apr 2024 08:33:37 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id EOgwBGEsImb9agAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 19 Apr 2024 08:33:37 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	deller@gmx.de,
+	airlied@gmail.com,
+	daniel@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 04/43] fbdev/deferred-io: Test screen_buffer for vmalloc'ed memory
+Date: Fri, 19 Apr 2024 10:28:57 +0200
+Message-ID: <20240419083331.7761-5-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240419083331.7761-1-tzimmermann@suse.de>
+References: <20240419083331.7761-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <271372d6-e665-4e7f-b088-dee5f4ab341a@oracle.com>
- <20240418160652.68df1a86@namcao> <87ttjywxv5.wl-tiwai@suse.de>
- <a7843657-c3f6-4d2e-8c36-5541d4c52956@gmx.de> <878r19voks.wl-tiwai@suse.de>
- <5febb249-1d4d-4ea7-b031-1df4d14620d2@oracle.com> <8734rhvlr2.wl-tiwai@suse.de>
-In-Reply-To: <8734rhvlr2.wl-tiwai@suse.de>
-From: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-Date: Fri, 19 Apr 2024 09:50:17 +0200
-Message-ID: <CAMeQTsbEjUyOYDAF-kFwTcovLr+8gHQGa27jPkeeJqmLhwbTag@mail.gmail.com>
-Subject: Re: [bug-report] task info hung problem in fb_deferred_io_work()
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>, Helge Deller <deller@gmx.de>, 
-	Nam Cao <namcao@linutronix.de>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, bigeasy@linutronix.de, 
-	LKML <linux-kernel@vger.kernel.org>, Vegard Nossum <vegard.nossum@oracle.com>, 
-	George Kennedy <george.kennedy@oracle.com>, Darren Kenny <darren.kenny@oracle.com>, 
-	chuansheng.liu@intel.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:email];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCVD_COUNT_TWO(0.00)[2];
+	FREEMAIL_TO(0.00)[redhat.com,gmx.de,gmail.com,ffwll.ch];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 499673757F
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Flag: NO
+X-Spam-Score: -3.01
 
-On Fri, Apr 19, 2024 at 9:45=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wrote:
->
-> On Fri, 19 Apr 2024 09:39:09 +0200,
-> Harshit Mogalapalli wrote:
-> >
-> > Hi Takashi,
-> >
-> > On 19/04/24 12:14, Takashi Iwai wrote:
-> > > On Thu, 18 Apr 2024 21:29:57 +0200,
-> > > Helge Deller wrote:
-> > >>
-> > >> On 4/18/24 16:26, Takashi Iwai wrote:
-> > >>> On Thu, 18 Apr 2024 16:06:52 +0200,
-> > >>> Nam Cao wrote:
-> > >>>>
-> > >>>> On 2024-04-18 Harshit Mogalapalli wrote:
-> > >>>>> While fuzzing 5.15.y kernel with Syzkaller, we noticed a INFO: ta=
-sk hung
-> > >>>>> bug in fb_deferred_io_work()
-> > >>>>
-> > >>>> Which framebuffer device are you using exactly? It is possible tha=
-t
-> > >>>> the problem is with the device driver, not core framebuffer.
-> > >>>
-> > >>> Note that it was already known that using flush_delayed_work() caus=
-ed
-> > >>> a problem.  See the thread of the fix patch:
-> > >>>     https://lore.kernel.org/all/20230129082856.22113-1-tiwai@suse.d=
-e/
-> > >>
-> > >> Harshit reported the hung tasks with kernel v5.15-stable, and can ev=
-en reproduce
-> > >> that issue with kernel v6.9-rc4 although it has all of your patches =
-from
-> > >> that referenced mail thread applied.
-> > >> So, what does your statement that "it was already known that it caus=
-es problems" exactly mean?
-> > >> Can it be fixed? Is someone looking into fixing it?
-> > >
-> > > My original fix was intentionally with cancel_delayed_work_sync()
-> > > because flush_delayed_work() didn't work.  We knew that it'd miss som=
-e
-> > > last-minute queued change, but it's better than crash, so it was
-> > > applied in that way.
-> > >
-> >
-> > Thanks for sharing these details.
-> >
-> > > Then later on, the commit 33cd6ea9c067 changed cancel_*() to
-> > > flush_delayed_work() blindly, and the known problem resurfaced again.
-> > >
-> >
-> > I have reverted that commit, but still could see some other task hung
-> > message as shared here on other reply:
-> >
-> > https://lore.kernel.org/all/d2485cb9-277d-4b8e-9794-02f1efababc9@oracle=
-.com/
->
-> Yes, then it could be a different cause, I suppose.
-> The crash with flush_delayed_work() was a real crash, no hanging task,
-> IIRC.
+Framebuffers in virtual memory are available via screen_buffer. Use
+it instead of screen_base and avoid the type casting.
 
-Neither cancel_delayed_work_sync() or flush_delayed_work() prevent new
-work from being scheduled after they return. But
-cancel_delayed_work_sync() at least makes sure the queue is empty so
-the problem becomes less apparent.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ drivers/video/fbdev/core/fb_defio.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Could this explain what we're seeing?
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index f23b1cbe67192..b38f775cd39dd 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -25,11 +25,11 @@
+ 
+ static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
+ {
+-	void *screen_base = (void __force *) info->screen_base;
++	const void *screen_buffer = info->screen_buffer;
+ 	struct page *page;
+ 
+-	if (is_vmalloc_addr(screen_base + offs))
+-		page = vmalloc_to_page(screen_base + offs);
++	if (is_vmalloc_addr(screen_buffer + offs))
++		page = vmalloc_to_page(screen_buffer + offs);
+ 	else
+ 		page = pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
+ 
+-- 
+2.44.0
 
->
-> Can you reproduce the issue with the latest Linus upstream, too?
->
->
-> thanks,
->
-> Takashi

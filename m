@@ -1,194 +1,111 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B6CA155328
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Apr 2024 19:29:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 174C6FC18;
+	Tue, 23 Apr 2024 01:20:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713814161; cv=none; b=mWjwt6z8jXOQpgWi5ec3tJ1T4pEvExizDOhrPgPZ6YVEW6lYOQWo21vuRUi62deptgoTiLle3oyVszViExBOFJKCBuyZio9c/vsnl/PaEqDXY3x3gZ0N93SfKV6bNVgzlqZk+FCSksZo/wkccF796PA2VRK20cLUXgsw8eLvAng=
+	t=1713835228; cv=none; b=RoRinJpLNfnv9Ar3N5W7D2WgTaG6In6FtxsSrkBvsJEd9C12rKEjHeH8afRfqkzDrjwrDV9Pl/mGRDIPnInDDGmQcN3JiadGp522519xvsLj2yvx7DH4SI5qpEDYpuVFPAT+FVSF645rwxHeqWYJYawr39EcNX9TnO6QD2wwOs8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713814161; c=relaxed/simple;
-	bh=Sl3bg4WlJGYpNQQ2XrWaH54qrlh04DWMOhfUk4PpecA=;
-	h=MIME-Version:Message-Id:In-Reply-To:References:Date:From:To:Cc:
-	 Subject:Content-Type; b=JEJsuiQnvj8p2CsZFaMQlpJgesQLw4bxiXh2rXxYi/pRtw41tbvIdOQS7egN9xMTDBp9QKom3hZo4H+n44OszNwx4OIHcy0QyR4wPtirg0JqiN3ROdrioRuMoMLiknS/okDXFgoGm4YcesoaXiIgj9OPQejqgbSM+9A5s7qKsLE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uufkU32l; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1713835228; c=relaxed/simple;
+	bh=8uMzQyWJm5Y6tVm722cv22TcEYfdMGHPWQCXt/bK0jM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=qNsZiEpXB73vnhU5HgPvCAG2xPklTziISBdvZbPfgxFZCWT0ctnTMrwUODN63xh4lVTuXeT1SA2cJoCZef72iMOdt8i85ZbsFLxy0M3hIccioFbAyUQP4EjymRycj14F8ao5UrEf8vB/2yy+xWqffO0dMN+bw5YOSK84xrdXAx0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HWKtVIWy; arc=none smtp.client-ip=209.85.222.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uufkU32l"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8694EC4AF07;
-	Mon, 22 Apr 2024 19:29:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713814161;
-	bh=Sl3bg4WlJGYpNQQ2XrWaH54qrlh04DWMOhfUk4PpecA=;
-	h=In-Reply-To:References:Date:From:To:Cc:Subject:From;
-	b=uufkU32lzLrSCIFH39eg5bL0sBEX4btzkYstwIw3Po4n5lORy/Zy4G/SKX8+VDDzc
-	 AZW8YTOORvr4D1V5NTd0wzX0yuISECS1JGYpSguukh7VCBPBWYhw37XJowS/ubGO4U
-	 1ugZTzpE2CqlR8OW4oJqt10v7DjNGYanTwBHTA46cuyYuhjyt4k9FET21paVXngWFB
-	 StWS+5PJcPuZ/w2lRXZTN6Q9QNj9sQTX4sqVxlG1MKq+74qtSllAh43lq+EKydXAGU
-	 34RSIQb4FaAq9k0FVtxG/VGCraYIQwMlOFN8G1Pww7ykG726Zlc/bUlCJvlfHYczH/
-	 nRcnC6lZluyHw==
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-	by mailfauth.nyi.internal (Postfix) with ESMTP id 7EF181200066;
-	Mon, 22 Apr 2024 15:29:19 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute5.internal (MEProxy); Mon, 22 Apr 2024 15:29:19 -0400
-X-ME-Sender: <xms:j7omZhjlP81AZHYOK7fB-YL4puJb2jcvH7SRTVbSUlPZViGspNXMyQ>
-    <xme:j7omZmA3HhaaFT3AokDixKUozs2VMXaNQVEhb0keRZ59x9q15dIbSFNYJGTevw89j
-    PKe3FtnS1aBQ-vk7do>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrudekledgudeflecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
-    enucfjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugeskhgvrhhnvghlrdhorhhgqeenucggtf
-    frrghtthgvrhhnpedvveeigfetudegveeiledvgfevuedvgfetgeefieeijeejffeggeeh
-    udegtdevheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhroh
-    hmpegrrhhnugdomhgvshhmthhprghuthhhphgvrhhsohhnrghlihhthidquddvkeehudej
-    tddvgedqvdekjedttddvieegqdgrrhhnugeppehkvghrnhgvlhdrohhrghesrghrnhgusg
-    druggv
-X-ME-Proxy: <xmx:j7omZhEsftRQyr4t7KGM57W5nx9vhCHXsNRcnzCuXPLc-kt3W7W27A>
-    <xmx:j7omZmR133dXUwOEhLDCN4ECAkYyDyP98bWp4qj3nw9lQTKuzOv-vg>
-    <xmx:j7omZuyXEPq5fKcU6bu36b_MeUgMUNRHoCkhyDQ97KFDPRP4jCYQtg>
-    <xmx:j7omZs5TBZh7F08mE_vcVF4LJKrMba23xrU7LeHj5TsCR5tggSUqfA>
-    <xmx:j7omZjxUFdxBz5hzgZ3VciArKk1jsZrREZlmc6rgvwh78sWWeaLLzBHp>
-Feedback-ID: i36794607:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id 3515AB6008D; Mon, 22 Apr 2024 15:29:19 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.11.0-alpha0-386-g4cb8e397f9-fm-20240415.001-g4cb8e397
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HWKtVIWy"
+Received: by mail-qk1-f174.google.com with SMTP id af79cd13be357-78efd533a00so351519085a.0;
+        Mon, 22 Apr 2024 18:20:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1713835226; x=1714440026; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/X3oWVdwceQfK7JUbUass9+jsVy5WEkRvYuO9s5FjoI=;
+        b=HWKtVIWyLLY4UkJskjIIXOmK1wYYxOS0HGaV8AUm95Ic/wT2JgIYIz9I5gIXpZ5wo0
+         gSoJYiH6c/R1kunAuD0ng3OYHytGwqIo1Co2LEbKalterG+65yxezM5V42Zpqu8aWiK2
+         B018X7QqaJ/bUHNwj9IDNcKCvdz7p8U6z5jaNl/ibXtUYHj0q9X/PGPTj6+CTk0BGWOz
+         sBSEa06aoaI9KR8AI2KFCf/iknl9T2mDMBY5wC5n/5rRL6tYAnt+ztEneLxUhBvnxcnp
+         na+cqB0PjQDOcr+Yq5Xl7Z5QecpanXQYD45rWOXQFQhc6rVZIcNE++NVuy2fPC9sYV/x
+         NrVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1713835226; x=1714440026;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/X3oWVdwceQfK7JUbUass9+jsVy5WEkRvYuO9s5FjoI=;
+        b=WX7ny5kIO24Qzoyw2+ezipw0cXjIZDj5KoiECVz7HzT+5ElX/MWswjOJ74NiTMZHKP
+         n2C4p48gvdIJi4mTH/m4IeE94/h5/kQaJQyrye6kLSje+Utrerevm7iXJEmkBZ5Av4NS
+         Et+aDPZNaNmpOlRF0LxgIKDUw/jZWvdQr/49gP3E8Sru36fqzbtOmNwaQDgx5HSwnOVD
+         19PkImcs59Y3CL5gJKBftcGoToQB++Sl6LNuocuhOL+dkYbGFIYuH5vwUB+UZGCLddF5
+         qb+1wgY3ZfaY4VprWau5Q9UQkYDFDjo+nSWNP0beEEqsZbHB60x2fQNzCrXeh0hAS+dG
+         nYGQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWi823t2uKTZnZen9/JfniGmoLQB5euL9wmlWNAuKTmHwkUr/Af0STiDd4kEiWXpiZXpBw7dTwTlB7poev8O5xwJbQHqxZt1yDp8aM9mwiuKHbXANrYDNSPN+GAJNjJZk2S1MZJGFYSApE=
+X-Gm-Message-State: AOJu0YypEaW2lNZWwgja33TTCLM9r6gDiPI7NPTQqWqolNjGjZZJDBfP
+	vl3RFlcYaL09taAK56c4wxeeHgHo5Rf4vFEzDMA7IwcEr2ri5BI3
+X-Google-Smtp-Source: AGHT+IHNrFNlRd8vHin4jO4b0/uHrTcFQKkQwjaNMI1A7Rs0w4RKZLqx3b3gXukSPNY57d4AO6waKw==
+X-Received: by 2002:ad4:57d3:0:b0:69b:63d2:6bc3 with SMTP id y19-20020ad457d3000000b0069b63d26bc3mr10704024qvx.5.1713835225910;
+        Mon, 22 Apr 2024 18:20:25 -0700 (PDT)
+Received: from sheunl-pc.ht.home ([2607:9880:4327:ffae:7c2b:7751:30a3:52c9])
+        by smtp.gmail.com with ESMTPSA id p11-20020a0cf54b000000b0069b58f8c33dsm4813265qvm.45.2024.04.22.18.20.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 22 Apr 2024 18:20:25 -0700 (PDT)
+From: Abdulrasaq Lawani <abdulrasaqolawani@gmail.com>
+To: deller@gmx.de,
+	sam@ravnborg.org,
+	tzimmermann@suse.de,
+	christophe.jaillet@wanadoo.fr,
+	u.kleine-koenig@pengutronix.de,
+	julia.lawall@inria.fr
+Cc: Abdulrasaq Lawani <abdulrasaqolawani@gmail.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	skhan@linuxfoundation.org,
+	javier.carrasco.cruz@gmail.com
+Subject: [PATCH] video: fbdev: replacing of_node_put with __free(device_node)
+Date: Mon, 22 Apr 2024 21:20:21 -0400
+Message-Id: <20240423012021.56470-1-abdulrasaqolawani@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-Id: <a666e39d-a894-4e27-aac4-65d11a18358a@app.fastmail.com>
-In-Reply-To: <26c23fb8557d806c12a246caa575e4f4fc4ea27a.camel@linux.ibm.com>
-References: <20240410142329.3567824-1-schnelle@linux.ibm.com>
- <20240410142329.3567824-2-schnelle@linux.ibm.com> <Zhfs8CN5XdgldKUn@carbonx1>
- <26c23fb8557d806c12a246caa575e4f4fc4ea27a.camel@linux.ibm.com>
-Date: Mon, 22 Apr 2024 21:28:58 +0200
-From: "Arnd Bergmann" <arnd@kernel.org>
-To: "Niklas Schnelle" <schnelle@linux.ibm.com>,
- "Helge Deller" <deller@kernel.org>
-Cc: "Helge Deller" <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, "Heiko Carstens" <hca@linux.ibm.com>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] video: Handle HAS_IOPORT dependencies
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-On Mon, Apr 22, 2024, at 10:34, Niklas Schnelle wrote:
-> On Thu, 2024-04-11 at 16:00 +0200, Helge Deller wrote:
->> * Niklas Schnelle <schnelle@linux.ibm.com>:
->> > In a future patch HAS_IOPORT=n will disable inb()/outb() and friends at
->> > compile time. We thus need to #ifdef functions and their callsites which
->> > unconditionally use these I/O accessors. In the include/video/vga.h
->> > these are conveniently all those functions with the vga_io_* prefix.
->> 
->> Why don't you code it like in the patch below?
->> inb_p(), outb_p() and outw() would then need to be defined externally
->> without an implementation so that they would generate link time errors
->> (instead of compile time errors).
->
-> This may be personal preference but I feel like link time errors would
-> be very late to catch a configuration that can't work. Also this would
-> bypass the __compiletime_error("inb()) requires CONFIG_HAS_IOPORT");
-> added instead of the in*()/out*() helpers to make it easy to spot the
-> problem.
->
-> I'm not a fan of #ifdeffery either but I think in this case it is
-> simple, well enough contained and overall there aren't that many spots
-> where we need to exclude just some sections of code vs entire drivers
-> with vga.h probably being the worst of them all.
+Replaced instance of of_node_put with __free(device_node)
+to simplify code and protect against any memory leaks
+due to future changes in the control flow.
 
-Agreed. I also tried to see if we can move stuff out of vga.h
-to have it included in fewer places, as almost everything that
-uses this header already has a HAS_IOPORT dependency, but that
-would be a lot more work.
+Suggested-by: Julia Lawall <julia.lawall@inria.fr>
+Signed-off-by: Abdulrasaq Lawani <abdulrasaqolawani@gmail.com>
+---
+ drivers/video/fbdev/offb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-The other one that gains a few ugly #ifdefs is the 8250 driver,
-everything else is already merged in linux-next or needs a simple
-Kconfig dependency.
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index b421b46d88ef..ea38a260774b 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -357,7 +357,7 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 			par->cmap_type = cmap_gxt2000;
+ 	} else if (of_node_name_prefix(dp, "vga,Display-")) {
+ 		/* Look for AVIVO initialized by SLOF */
+-		struct device_node *pciparent = of_get_parent(dp);
++		struct device_node *pciparent __free(device_node) = of_get_parent(dp);
+ 		const u32 *vid, *did;
+ 		vid = of_get_property(pciparent, "vendor-id", NULL);
+ 		did = of_get_property(pciparent, "device-id", NULL);
+@@ -369,7 +369,6 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 			if (par->cmap_adr)
+ 				par->cmap_type = cmap_avivo;
+ 		}
+-		of_node_put(pciparent);
+ 	} else if (dp && of_device_is_compatible(dp, "qemu,std-vga")) {
+ #ifdef __BIG_ENDIAN
+ 		const __be32 io_of_addr[3] = { 0x01000000, 0x0, 0x0 };
+-- 
+2.34.1
 
-I think we can make the vga.h file a little more readable
-by duplicating the functions and still keep the __compiletime_error()
-version in asm/io.h, see below.
-
-    Arnd
-
-
-diff --git a/include/video/vga.h b/include/video/vga.h
-index 947c0abd04ef..7e1d8252b732 100644
---- a/include/video/vga.h
-+++ b/include/video/vga.h
-@@ -197,6 +197,23 @@ struct vgastate {
- extern int save_vga(struct vgastate *state);
- extern int restore_vga(struct vgastate *state);
- 
-+static inline unsigned char vga_mm_r (void __iomem *regbase, unsigned short port)
-+{
-+	return readb (regbase + port);
-+}
-+
-+static inline void vga_mm_w (void __iomem *regbase, unsigned short port, unsigned char val)
-+{
-+	writeb (val, regbase + port);
-+}
-+
-+static inline void vga_mm_w_fast (void __iomem *regbase, unsigned short port,
-+				  unsigned char reg, unsigned char val)
-+{
-+	writew (VGA_OUT16VAL (val, reg), regbase + port);
-+}
-+
-+#ifdef CONFIG_HAS_IOPORT
- /*
-  * generic VGA port read/write
-  */
-@@ -217,22 +234,6 @@ static inline void vga_io_w_fast (unsigned short port, unsigned char reg,
- 	outw(VGA_OUT16VAL (val, reg), port);
- }
- 
--static inline unsigned char vga_mm_r (void __iomem *regbase, unsigned short port)
--{
--	return readb (regbase + port);
--}
--
--static inline void vga_mm_w (void __iomem *regbase, unsigned short port, unsigned char val)
--{
--	writeb (val, regbase + port);
--}
--
--static inline void vga_mm_w_fast (void __iomem *regbase, unsigned short port,
--				  unsigned char reg, unsigned char val)
--{
--	writew (VGA_OUT16VAL (val, reg), regbase + port);
--}
--
- static inline unsigned char vga_r (void __iomem *regbase, unsigned short port)
- {
- 	if (regbase)
-@@ -258,7 +259,25 @@ static inline void vga_w_fast (void __iomem *regbase, unsigned short port,
- 	else
- 		vga_io_w_fast (port, reg, val);
- }
-+#else
- 
-+static inline unsigned char vga_r (void __iomem *regbase, unsigned short port)
-+{
-+	return vga_mm_r(regbase, port);
-+}
-+
-+static inline void vga_w(void __iomem *regbase, unsigned short port, unsigned char val)
-+{
-+	vga_mm_w (regbase, port, val);
-+}
-+
-+static inline void vga_w_fast (void __iomem *regbase, unsigned short port,
-+			       unsigned char reg, unsigned char val)
-+{
-+	vga_mm_w_fast(regbase, port, reg, val);
-+}
-+
-+#endif
- 
- /*
-  * VGA CRTC register read/write

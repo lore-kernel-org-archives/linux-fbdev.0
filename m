@@ -1,97 +1,108 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+Received: from mailrelay3-1.pub.mailoutpod3-cph3.one.com (mailrelay3-1.pub.mailoutpod3-cph3.one.com [46.30.211.242])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CABE13D287;
-	Tue, 23 Apr 2024 17:36:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6977D13E881
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Apr 2024 18:02:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.242
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713893790; cv=none; b=HFOEOkkdIeiuBxA+/HOzUzr4fHOPZFWuJBVzBf7HCT8oKXtuhoU8amWrLmk7DdQoNmTB262vKeJ75dBYo49NssKUclfcZSe40ywFo5CqT8ParY+LflN3qLz777y+yaZEI0FWHU1wQ6EN9mfjnhC9dUEsn/AT1g/6Ee/1ol6YBE4=
+	t=1713895356; cv=none; b=AoxBh/BOmXYLemu1y2rAhq4UVCGxu5D3ei2xvLXSDhJoyv17YHmJsNaLxpu4n8hpmpXlrPe8uo4PlkKsQin7uWGA2utsynkxUplwSK0qtBnxTFDAWzuD6++fybMHYINEnPr18WsldzfzvnGIL9n+X2IrnuYnw4cT2mzXkMkoL6I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713893790; c=relaxed/simple;
-	bh=96a/hF+nh+YvRKYaFLg+hwTfTv2zLQG6m8D8hdW3Yfg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Y42CXCso8wXgjBp2IvPDBoBIbtsHhCJ53QKKIrHk7ehXnOPFBsoKc/S3AP0ZRJK+YH93CS9bV2A2166ADYhofGeZZ8hJjS301HkMH7HhZhwdgz5JzsshwB16hqP1SqRwU30dnG62tc67Rz02oed5vVmnJXVNP2da2TzmJ+uDV9U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=IJ/F6wjh; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1713895356; c=relaxed/simple;
+	bh=mmtsBmibN1yGrAOOBOq7tt4DhIUx2MTlpkSj1eOKU5s=;
+	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=oMypfB5gLAq/QHJYiy2r9qAqxY8JZqr6BzCFP0t/x/Fz1SyVJVnvq1/q1wtAbIcckrQYxCw8bSIIWKcZcF5M7lqpnKNJG/kQTb7ZXvDe3p48pl6e+0pv3svZzV2RV6W5+74hP4GEs2U66dUgNQ82hoOSiR5x77+E6QLPpwwtjh8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=tiXjiwul; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=HfWeE/u/; arc=none smtp.client-ip=46.30.211.242
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="IJ/F6wjh"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1713893789; x=1745429789;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=96a/hF+nh+YvRKYaFLg+hwTfTv2zLQG6m8D8hdW3Yfg=;
-  b=IJ/F6wjhSvyR2WfVA9NpK1mpb+KqRNG7kXpuDJPK1bjAMgf5pTkZ37Ig
-   WQAET8xEhcwIqnc+XETAjMVICS+QWcc87lJRQw8kB+JpomDfK77qipDZ7
-   BjcrE8m7uMtBbCpCV2m4RKgwR0fdB3FGhsfORm7SnTJH8rl43EwIwZxDc
-   n8F1LB5r6kuVRpW6tv/jBfWOMgKtjPEWVvoa57FyB+9pJw8ZoC5NApH5X
-   F7+JB1NgaAdqCfc9ViIDIxXIss6HtQ9eQS5Zj4qY2cDzLZad67qkBw6JK
-   Zc6uLquGOuycRUiRL40LP+mxMqo+fRVQnFRD+QT5zYIA7RUqGLkOCl1K+
-   w==;
-X-CSE-ConnectionGUID: lzhs5B+zTL6K40jkYPWPMA==
-X-CSE-MsgGUID: t2V7o337QeKERsxV+S+ehQ==
-X-IronPort-AV: E=McAfee;i="6600,9927,11053"; a="9658607"
-X-IronPort-AV: E=Sophos;i="6.07,222,1708416000"; 
-   d="scan'208";a="9658607"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Apr 2024 10:36:29 -0700
-X-CSE-ConnectionGUID: /8VeUUHTSHibYtTrwOiQ+g==
-X-CSE-MsgGUID: kF4oE0xRSe6ufvujCxDwqg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,222,1708416000"; 
-   d="scan'208";a="47713735"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by fmviesa002.fm.intel.com with ESMTP; 23 Apr 2024 10:36:26 -0700
-Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 7EF5A192; Tue, 23 Apr 2024 20:36:25 +0300 (EEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
+	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="tiXjiwul";
+	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="HfWeE/u/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=rsa1;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:to:from:
+	 date:from;
+	bh=QCtZv2hKR4TC2H8Xchi6BYje0EdwUJ959Ulh1BBi7BU=;
+	b=tiXjiwulObS5EhcPzBhcVI2b7lyYjbhyrN+eScXsvRPf4CNWM0mzep8evt/KlX081DuECo1DQzvk1
+	 wh1MmubDWKPpi1oCcXnnTeTwWGiaHZvyWX54QHWQETldd7n02Dy7XeAZxJXbF62UeR4Y8ovwmTG2h/
+	 zR7q3kIBfD44p/kz90excP2SMKqNX3fsDfoQhA9jSaZsFcdlhVIn9hXhLQ0zTkmC0yJhb1xUrfO8nr
+	 97Y/6MTQX2EPS+R3oWPQM8B+4lRwr4FvsPIelDz4z87plAov9qBeXcBLWVtOs9U2guU+NGPpN8TE/F
+	 JPgrGgj1BwmyI3XjPqR/8abBf7BSYHg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=ed1;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:to:from:
+	 date:from;
+	bh=QCtZv2hKR4TC2H8Xchi6BYje0EdwUJ959Ulh1BBi7BU=;
+	b=HfWeE/u/gBKw47N8oqIKQ7L5OJBjREBgJDf8mNUmiG3dJJPOazjw4Bgsd5yuaEF2d3z7H8kD48Zbl
+	 QMi8vYgAQ==
+X-HalOne-ID: 9dd17742-019b-11ef-8cb9-5166eb5bc2d3
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+	by mailrelay3.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
+	id 9dd17742-019b-11ef-8cb9-5166eb5bc2d3;
+	Tue, 23 Apr 2024 18:02:26 +0000 (UTC)
+Date: Tue, 23 Apr 2024 20:02:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "David S. Miller" <davem@davemloft.net>,
+	Arnd Bergmann <arnd@kernel.org>,
+	Andreas Larsson <andreas@gaisler.com>, Helge Deller <deller@gmx.de>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
+	Kjetil Oftedal <oftedal@gmail.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Helge Deller <deller@gmx.de>
-Subject: [PATCH v1 1/1] fbtft: seps525: Don't use "proxy" headers
-Date: Tue, 23 Apr 2024 20:36:23 +0300
-Message-ID: <20240423173623.2748621-1-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.43.0.rc1.1336.g36b5255a03ac
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 00/28] sparc32: sunset sun4m and sun4d
+Message-ID: <20240423180216.GA906720@ravnborg.org>
+References: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
 
-Update header inclusions to follow IWYU (Include What You Use)
-principle.
+Hi Andreas,
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/staging/fbtft/fb_seps525.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+On Sat, Mar 09, 2024 at 07:15:21PM +0100, Sam Ravnborg via B4 Relay wrote:
+> This is the second attempt to sunset sun4m and sun4d.
+> See [1] for the inital attempt.
+> 
+> The sun4m and sun4d parts of the kernel have seen no real interest
+> for several years now. Last time a few people surfaced, but it was
+> either due to a personal project or for nostalgic reasons.
+> It is time to let go and drop the parts of sparc32 that in reality
+> are not in use.
+> 
+> LEON from Frontgrade Gaisler is the only real user of sparc32,
+> and this patchset reduces sparc32 to what is required by LEON.
+> 
+> The defconfig is first adapted to the one used by Gaisler.
+> Then the patches removes sun4m and sun4d specific
+> implementations such as small drivers, SMP support, IRQ suppor etc.
+> 
+> Removing sun4m and sun4d support allowed removal of the run time
+> patching of the code as well as a lot of assembler code.
+> The result is a much cleaner assembler code that is easier to
+> understand and thus maintain and extend.
+> 
+> Changes in v2:
+>   - Rebased on top of Andreas' for-next branch
+>   - Collected ack's
+>   - Added patch to remove cpuid patching (Andreas)
+>   - Run-time testing using qemu (Andreas, Mark Cave-Ayland)
 
-diff --git a/drivers/staging/fbtft/fb_seps525.c b/drivers/staging/fbtft/fb_seps525.c
-index 05882e2cde7f..46c257308b49 100644
---- a/drivers/staging/fbtft/fb_seps525.c
-+++ b/drivers/staging/fbtft/fb_seps525.c
-@@ -16,11 +16,10 @@
-  * GNU General Public License for more details.
-  */
- 
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/gpio.h>
-+#include <linux/bits.h>
- #include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
- 
- #include "fbtft.h"
- 
--- 
-2.43.0.rc1.1336.g36b5255a03ac
+Please let me know if you expect me to rebase this on for-next.
+I have not yet tried if there are merge conflicts but can take a look in
+a some days if required.
 
+That is assuming you agree with the sunset of the sun platforms...
+
+	Sam

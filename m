@@ -1,108 +1,144 @@
-Received: from mailrelay3-1.pub.mailoutpod3-cph3.one.com (mailrelay3-1.pub.mailoutpod3-cph3.one.com [46.30.211.242])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6977D13E881
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Apr 2024 18:02:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.242
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D26B336D;
+	Wed, 24 Apr 2024 06:34:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713895356; cv=none; b=AoxBh/BOmXYLemu1y2rAhq4UVCGxu5D3ei2xvLXSDhJoyv17YHmJsNaLxpu4n8hpmpXlrPe8uo4PlkKsQin7uWGA2utsynkxUplwSK0qtBnxTFDAWzuD6++fybMHYINEnPr18WsldzfzvnGIL9n+X2IrnuYnw4cT2mzXkMkoL6I=
+	t=1713940470; cv=none; b=RK45h0FMjlxoDnQ8nHmkR40BWcupKCs3d3LDCLIu3A2o/6K7yZUEW/Kin5+OYxqFBi0bWB5TbNNl8oP0URkExJ6t881TE44lhCVg5T1+ghRXzYXjGEMzs5/IhMqQSnqzLWpPMVvxxhtYyG+4AEHg++0I3ZY+2p/ToxKXeW2y0TM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713895356; c=relaxed/simple;
-	bh=mmtsBmibN1yGrAOOBOq7tt4DhIUx2MTlpkSj1eOKU5s=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oMypfB5gLAq/QHJYiy2r9qAqxY8JZqr6BzCFP0t/x/Fz1SyVJVnvq1/q1wtAbIcckrQYxCw8bSIIWKcZcF5M7lqpnKNJG/kQTb7ZXvDe3p48pl6e+0pv3svZzV2RV6W5+74hP4GEs2U66dUgNQ82hoOSiR5x77+E6QLPpwwtjh8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=tiXjiwul; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=HfWeE/u/; arc=none smtp.client-ip=46.30.211.242
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	s=arc-20240116; t=1713940470; c=relaxed/simple;
+	bh=qhmThP7INdCC8VBW2wlRiFNJE/7ZEzBRMxYW6QhxoFA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=PAQqmwtO/UBmiOlwZk+Vwa71VtOp6mbl39OK6blF6INqqFSGWeDzRpOW8As7oDc9HkCqoDPSCKUp4TP7ZPfKWbRDsM1+fgOG9jqt91ebtbDNX5UUbt1A4pSPnfzCcH7QVu53rwqIU2vPZnWfA4XXtawWyhdRED/PgmKkkpIiQqw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RWTar0a8; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="tiXjiwul";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="HfWeE/u/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:to:from:
-	 date:from;
-	bh=QCtZv2hKR4TC2H8Xchi6BYje0EdwUJ959Ulh1BBi7BU=;
-	b=tiXjiwulObS5EhcPzBhcVI2b7lyYjbhyrN+eScXsvRPf4CNWM0mzep8evt/KlX081DuECo1DQzvk1
-	 wh1MmubDWKPpi1oCcXnnTeTwWGiaHZvyWX54QHWQETldd7n02Dy7XeAZxJXbF62UeR4Y8ovwmTG2h/
-	 zR7q3kIBfD44p/kz90excP2SMKqNX3fsDfoQhA9jSaZsFcdlhVIn9hXhLQ0zTkmC0yJhb1xUrfO8nr
-	 97Y/6MTQX2EPS+R3oWPQM8B+4lRwr4FvsPIelDz4z87plAov9qBeXcBLWVtOs9U2guU+NGPpN8TE/F
-	 JPgrGgj1BwmyI3XjPqR/8abBf7BSYHg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:to:from:
-	 date:from;
-	bh=QCtZv2hKR4TC2H8Xchi6BYje0EdwUJ959Ulh1BBi7BU=;
-	b=HfWeE/u/gBKw47N8oqIKQ7L5OJBjREBgJDf8mNUmiG3dJJPOazjw4Bgsd5yuaEF2d3z7H8kD48Zbl
-	 QMi8vYgAQ==
-X-HalOne-ID: 9dd17742-019b-11ef-8cb9-5166eb5bc2d3
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay3.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id 9dd17742-019b-11ef-8cb9-5166eb5bc2d3;
-	Tue, 23 Apr 2024 18:02:26 +0000 (UTC)
-Date: Tue, 23 Apr 2024 20:02:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "David S. Miller" <davem@davemloft.net>,
-	Arnd Bergmann <arnd@kernel.org>,
-	Andreas Larsson <andreas@gaisler.com>, Helge Deller <deller@gmx.de>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
-	Kjetil Oftedal <oftedal@gmail.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 00/28] sparc32: sunset sun4m and sun4d
-Message-ID: <20240423180216.GA906720@ravnborg.org>
-References: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RWTar0a8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B8E8C113CE;
+	Wed, 24 Apr 2024 06:34:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1713940469;
+	bh=qhmThP7INdCC8VBW2wlRiFNJE/7ZEzBRMxYW6QhxoFA=;
+	h=From:Subject:Date:To:Cc:From;
+	b=RWTar0a8DvsCOmkBnZc1XtDy8jLSKLsyxGfEbMelOUS3FNkvVfyg2qLCEoAe/zejo
+	 nch9CXCF+72DS5YL4G1/NBQlMwdkS4sVlYbtugJeG49a6h7jFiaoY9fT0ftBK7evGh
+	 llHrzgHVTnex0e4DHzSv8KcDCZ8s4cHXklXGVJkA9f8gTpzOJGvvWzynoK9PFpyBcO
+	 rDUstvFlFXN50vWY/6UyAOOtJe+QEpGVamnBKMC9RtCkLgPz2dYYcIov/28yfyLA1X
+	 SRVq0lCvn0ndJ1+rtrXZrR2K3naOATxOjXXfEm7QIYD2wb4qtwg+FfCdFIWaKzQass
+	 oUiKLou3u+ujg==
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v2 00/19] backlight: Constify lcd_ops
+Date: Wed, 24 Apr 2024 08:33:26 +0200
+Message-Id: <20240424-video-backlight-lcd-ops-v2-0-1aaa82b07bc6@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIALanKGYC/4WNTQqDMBBGryKz7hSNqX+r3qO4MMlEB8VIIqFFv
+ HtTL9Dle/C974BAnilAlx3gKXJgtyYQtwz0NKwjIZvEIHIhc1lIjGzIoRr0vPA47bhog24LKOr
+ KNLJsrVUNpPXmyfL7Kr/6xBOH3fnPdRSLn/3fjAXm2KqytlrZh6yG50x+peXu/Aj9eZ5fcJ8xu
+ L8AAAA=
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ =?utf-8?q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, 
+ Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>, 
+ Alexander Shiyan <shc_work@mail.ru>, Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+ linux-omap@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Thomas Zimmermann <tzimmermann@suse.de>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2739; i=krzk@kernel.org;
+ h=from:subject:message-id; bh=qhmThP7INdCC8VBW2wlRiFNJE/7ZEzBRMxYW6QhxoFA=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBmKKfa2cwIQ6siUozSMkADWp+Mx0tCvS7bXKbhN
+ kGbbX8WNSaJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZiin2gAKCRDBN2bmhouD
+ 14E6D/4vCOuf8a/6KvYfDc5C87F/x5Tj0g6zD9S7ZKUXm6YoQPhQot7+GqfYpM80vLaVm9IkH7R
+ nhERFkiurnMemsKWYDGZz8T9XskGMcNkH3tg/bnC6aP152F3HTC9WjrRZCjHFwCO+7gAUPt4p2i
+ rG2kA1WgBrSWx/YZ9anVXuy4El/xkp1VQPfT8JfAEiWteQM3hnyT36vrzlm5kTwbGhV747+rMEf
+ meeIhJ/nU/usE9ahohS1RDKIRlgeIKS79LJEppW8PnLZpeKCE+s7/0ANmN2vDujJ5W1nG53w5qx
+ fu8a32llePUQOwx3ryJ6ZPOL+d70Xn+qupqHkL2yV7YDBQcPvK7YtTIxwErpcV3hkeFCA4j1LHm
+ xUZf+sCmVr33GFFCPip+B2APJiVlJkPX4vevH7LFcHck/hoBYV2pdiWRnWS/SrE014rLC6v7GS1
+ uwShpE6kyTgs7UfIMi/CoD5tSHLrH6Gh14uNRYxaydE0cXMw5Wz5Sjono2PdP9WX2W7gaXUORfR
+ hu69i+67wp5rEQ9tYFOsf7PjpcQseQCCZ79Iklgi+NdKfb2zbAZooZ7QoUJiVLYOIu8CcpzxKCJ
+ 36tO34XyNIjlS8wILZfctqwOZHouL8Cj5ndg+NmB6b64GIVJTmeeX/W22nIelIBzqvOVDOhCAxW
+ gJl0a+pdXCHlMFw==
+X-Developer-Key: i=krzk@kernel.org; a=openpgp;
+ fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 
-Hi Andreas,
+Hi,
 
-On Sat, Mar 09, 2024 at 07:15:21PM +0100, Sam Ravnborg via B4 Relay wrote:
-> This is the second attempt to sunset sun4m and sun4d.
-> See [1] for the inital attempt.
-> 
-> The sun4m and sun4d parts of the kernel have seen no real interest
-> for several years now. Last time a few people surfaced, but it was
-> either due to a personal project or for nostalgic reasons.
-> It is time to let go and drop the parts of sparc32 that in reality
-> are not in use.
-> 
-> LEON from Frontgrade Gaisler is the only real user of sparc32,
-> and this patchset reduces sparc32 to what is required by LEON.
-> 
-> The defconfig is first adapted to the one used by Gaisler.
-> Then the patches removes sun4m and sun4d specific
-> implementations such as small drivers, SMP support, IRQ suppor etc.
-> 
-> Removing sun4m and sun4d support allowed removal of the run time
-> patching of the code as well as a lot of assembler code.
-> The result is a much cleaner assembler code that is easier to
-> understand and thus maintain and extend.
-> 
-> Changes in v2:
->   - Rebased on top of Andreas' for-next branch
->   - Collected ack's
->   - Added patch to remove cpuid patching (Andreas)
->   - Run-time testing using qemu (Andreas, Mark Cave-Ayland)
+Changes in v2:
+- Collect tags, including wrongly places Thomas' tag (which requires me
+  to manually edit 15 other patches to drop it).
+- Combine here checkpatch patch:
+  https://lore.kernel.org/all/20240414185440.288812-1-krzk@kernel.org/
+- Link to v1: https://lore.kernel.org/r/20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org
 
-Please let me know if you expect me to rebase this on for-next.
-I have not yet tried if there are merge conflicts but can take a look in
-a some days if required.
+Dependencies
+============
+All further patches depend on the first patch.  Therefore everything
+could go via backlight tree (please ack) or via cross-tree pulls. Or
+whatever maintainer choose, just coordinate this with backlight.
 
-That is assuming you agree with the sunset of the sun platforms...
+Best regards,
+Krzysztof
 
-	Sam
+---
+Krzysztof Kozlowski (19):
+      backlight: Constify lcd_ops
+      backlight: ams369fg06: Constify lcd_ops
+      backlight: corgi_lcd: Constify lcd_ops
+      backlight: hx8357: Constify lcd_ops
+      backlight: ili922x: Constify lcd_ops
+      backlight: ili9320: Constify lcd_ops
+      backlight: jornada720_lcd: Constify lcd_ops
+      backlight: l4f00242t03: Constify lcd_ops
+      backlight: lms283gf05: Constify lcd_ops
+      backlight: lms501kf03: Constify lcd_ops
+      backlight: ltv350qv: Constify lcd_ops
+      backlight: otm3225a: Constify lcd_ops
+      backlight: platform_lcd: Constify lcd_ops
+      backlight: tdo24m: Constify lcd_ops
+      HID: picoLCD: Constify lcd_ops
+      fbdev: clps711x: Constify lcd_ops
+      fbdev: imx: Constify lcd_ops
+      fbdev: omap: lcd_ams_delta: Constify lcd_ops
+      const_structs.checkpatch: add lcd_ops
+
+ drivers/hid/hid-picolcd_lcd.c            | 2 +-
+ drivers/video/backlight/ams369fg06.c     | 2 +-
+ drivers/video/backlight/corgi_lcd.c      | 2 +-
+ drivers/video/backlight/hx8357.c         | 2 +-
+ drivers/video/backlight/ili922x.c        | 2 +-
+ drivers/video/backlight/ili9320.c        | 2 +-
+ drivers/video/backlight/jornada720_lcd.c | 2 +-
+ drivers/video/backlight/l4f00242t03.c    | 2 +-
+ drivers/video/backlight/lcd.c            | 4 ++--
+ drivers/video/backlight/lms283gf05.c     | 2 +-
+ drivers/video/backlight/lms501kf03.c     | 2 +-
+ drivers/video/backlight/ltv350qv.c       | 2 +-
+ drivers/video/backlight/otm3225a.c       | 2 +-
+ drivers/video/backlight/platform_lcd.c   | 2 +-
+ drivers/video/backlight/tdo24m.c         | 2 +-
+ drivers/video/fbdev/clps711x-fb.c        | 2 +-
+ drivers/video/fbdev/imxfb.c              | 2 +-
+ drivers/video/fbdev/omap/lcd_ams_delta.c | 2 +-
+ include/linux/lcd.h                      | 6 +++---
+ scripts/const_structs.checkpatch         | 1 +
+ 20 files changed, 23 insertions(+), 22 deletions(-)
+---
+base-commit: a59668a9397e7245b26e9be85d23f242ff757ae8
+change-id: 20240414-video-backlight-lcd-ops-276d8439ffb8
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzk@kernel.org>
+

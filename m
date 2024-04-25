@@ -1,100 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF9F11494BC;
-	Thu, 25 Apr 2024 14:58:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A42714D716;
+	Thu, 25 Apr 2024 15:04:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714057089; cv=none; b=khsGGdkeRZFdXgtKiPBr+iKFqqTtkrTCxcKVFqbS9vtrxgcPO9RtguwIiop46/FeH2x1vgIpmAX78V93Q6ehydjwYvkERTE/OxVS1+QORFvgnjzd1u7y4xVtTC93jCJUBEP7UjoqQHzM9Y7nAZ41IeTsOCVY6oZ0mBFNPejIRbM=
+	t=1714057499; cv=none; b=KidPL0Y0MdhQv7/j3TOv1yaPqT/z9NaB3qYnxD/P4JXk/1Orp1vAGaPEZgZ4o9Eh2N9/N5XNzy/Qw+79Qlq3nCHmBDoE3frgFdNkCV6FP+6ympsjK+AZHzx8MerVjhg+wjg7arxIK17vAADSXRDnfp0pfPcjNex6kOcj/9l37F4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714057089; c=relaxed/simple;
-	bh=zyuU7aypTY7g7YWDgpvL/ij2MOClcEQlWT1WF9DZpnE=;
+	s=arc-20240116; t=1714057499; c=relaxed/simple;
+	bh=Ebs59IXexhzqLXqVggapRFuVaAJDANXqVUimkFuzG2I=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qrBNY80yHLRGqkwMG2TsWRB5IIqre21Kp+rx4FyhesahgHFaHDJZzaKp8ovctqLmQL5LL41gTBkDI+ZspZF0mXNBbfAueKQs9EbmF2oS2z/tAfrlTcBMK0VTtQMnP70DF8RPjAs91knQH0QfhYafZSFchBMn27VMkkAUCFg9VqA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BtLHAqD5; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=iz2cF3J2PW1d8+25wmziIgcRnLrE/Wi9wJxMgBnM5NGuY/C/vdBeuLHxi3Gs35jrGNMfnFmHCDgMQ955jnmSAz2QnV24zmAHoG14UKFeSL5GjqP3BGMotijzW0qf9C95WjNJaT46xGjKCqBJDyiF7Z5CNpNcqMcePM+dF2FqLlk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EEIKu4Eo; arc=none smtp.client-ip=198.175.65.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BtLHAqD5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9A06C113CC;
-	Thu, 25 Apr 2024 14:58:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714057089;
-	bh=zyuU7aypTY7g7YWDgpvL/ij2MOClcEQlWT1WF9DZpnE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=BtLHAqD5xWO6OKKeia9yyRqUbAZB0xhKytVz5eaC5G5Ya1YPReGVbVAaF7/ZaKn9E
-	 /YuLVEgSYmSyITwT+i4uYE8KjcE9QsaA7lfLMFml/bQbHVooHG5gooswSTbsbxGkVb
-	 GmNqGaU0umBagSSt43PXEn7MfPYYrh/LXo7BxRaX+gCVpY0xbFfTVd1CyJVq44PgVk
-	 ijSEO/PN4GdaRWue3P0ayedh8e881ZCREpETeTeD7+LPthn+ICOFyrYRdiNqOwueVG
-	 ATod9Y9lk0OwDZmw/nbgeV3Q/0A5a65xik1HCpPMMXHzvhkd1Dz9D4tRGGhx7TSgTg
-	 Qw41nwqdHBLPg==
-Date: Thu, 25 Apr 2024 16:58:06 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>, David Lechner <dlechner@baylibre.com>, 
-	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EEIKu4Eo"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1714057498; x=1745593498;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Ebs59IXexhzqLXqVggapRFuVaAJDANXqVUimkFuzG2I=;
+  b=EEIKu4Eov+xtIbAUMByelqaVYNn+95PMWNES9FukOmIkv+aqXHLM1oZg
+   LYYrHfzOY3jw2jDDKplEcE/RmKmg7k11ZXe0J6Eam1RAPhqrE3KvTKiPw
+   TvTthpFUdFl82fMrlpKsnEmFUNK60dPskG8WbKZnB092yi3sLHVdniK3X
+   7kmRtpOEXAEeAeOyEJ4vTlMoXSmMKfpCHqlzpNUwLGffX0r7e1TcaWcia
+   eclWTk7DoijBxl1+3BaAv9RdeNOxUl7dc703Oj3D9TsUR32i1Pggs67d2
+   M3L0yVZRP7VPyltvEBnIbp3beft1kkwYbOxWgImB4X+gVKcyEy97GoZ0F
+   w==;
+X-CSE-ConnectionGUID: mBdWe2olSQCQ9A6FP5FMZA==
+X-CSE-MsgGUID: wmL8M6AqTxeWSq7KjSwxjg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11055"; a="27206832"
+X-IronPort-AV: E=Sophos;i="6.07,229,1708416000"; 
+   d="scan'208";a="27206832"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2024 08:04:57 -0700
+X-CSE-ConnectionGUID: dj7BiCPeTHSZbsuGpPWT7A==
+X-CSE-MsgGUID: JTzKIusPSDCIclQtHdW4rA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,229,1708416000"; 
+   d="scan'208";a="29887001"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2024 08:04:54 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.97)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1s00eY-000000012AE-3W0q;
+	Thu, 25 Apr 2024 18:04:50 +0300
+Date: Thu, 25 Apr 2024 18:04:50 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Maxime Ripard <mripard@kernel.org>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+	Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+	David Lechner <dlechner@baylibre.com>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
 Subject: Re: [PATCH v1 1/1] drm/ili9341: Remove the duplicative driver
-Message-ID: <20240425-perky-myrtle-gorilla-e1e24f@penduick>
+Message-ID: <ZipxEk9Lpff1kB7b@smile.fi.intel.com>
 References: <20240425124208.2255265-1-andriy.shevchenko@linux.intel.com>
+ <20240425-perky-myrtle-gorilla-e1e24f@penduick>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="74envoxrgvwfu67m"
-Content-Disposition: inline
-In-Reply-To: <20240425124208.2255265-1-andriy.shevchenko@linux.intel.com>
-
-
---74envoxrgvwfu67m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20240425-perky-myrtle-gorilla-e1e24f@penduick>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 
-Hi,
+On Thu, Apr 25, 2024 at 04:58:06PM +0200, Maxime Ripard wrote:
+> Hi,
+> 
+> On Thu, Apr 25, 2024 at 03:42:07PM +0300, Andy Shevchenko wrote:
+> > First of all, the driver was introduced when it was already
+> > two drivers available for Ilitek 9341 panels.
+> > 
+> > Second, the most recent (fourth!) driver has incorporated this one
+> > and hence, when enabled, it covers the provided functionality.
+> > 
+> > Taking into account the above, remove duplicative driver and make
+> > maintenance and support eaiser for everybody.
+> > 
+> > Also see discussion [1] for details about Ilitek 9341 duplication
+> > code.
+> > 
+> > Link: https://lore.kernel.org/r/ZXM9pG-53V4S8E2H@smile.fi.intel.com [1]
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> 
+> I think it should be the other way around and we should remove the
+> mipi-dbi handling from panel/panel-ilitek-ili9341.c
 
-On Thu, Apr 25, 2024 at 03:42:07PM +0300, Andy Shevchenko wrote:
-> First of all, the driver was introduced when it was already
-> two drivers available for Ilitek 9341 panels.
->=20
-> Second, the most recent (fourth!) driver has incorporated this one
-> and hence, when enabled, it covers the provided functionality.
->=20
-> Taking into account the above, remove duplicative driver and make
-> maintenance and support eaiser for everybody.
->=20
-> Also see discussion [1] for details about Ilitek 9341 duplication
-> code.
->=20
-> Link: https://lore.kernel.org/r/ZXM9pG-53V4S8E2H@smile.fi.intel.com [1]
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Then please do it! I whining already for a few years about this.
 
-I think it should be the other way around and we should remove the
-mipi-dbi handling from panel/panel-ilitek-ili9341.c
+> It's basically two drivers glued together for no particular reason and
+> handling two very different use cases which just adds more complexity
+> than it needs to.
+> 
+> And it's the only driver doing so afaik, so it's definitely not "least
+> surprise" compliant.
 
-It's basically two drivers glued together for no particular reason and
-handling two very different use cases which just adds more complexity
-than it needs to.
-
-And it's the only driver doing so afaik, so it's definitely not "least
-surprise" compliant.
-
-Maxime
+-- 
+With Best Regards,
+Andy Shevchenko
 
 
---74envoxrgvwfu67m
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCZipveQAKCRAnX84Zoj2+
-dvmrAX9etHoRYY5/bI3esFlwYvaOtVaTDgXGupHx8xowA1Hxjt+tFOdluSqL/hlq
-SI1l4y8BfRsxjM/ARJYlGvp4Wnn0sIUBposLg8sGbgX1rxcALiJweK1Et3vTt3+S
-QMlLOJkL9w==
-=4TjG
------END PGP SIGNATURE-----
-
---74envoxrgvwfu67m--

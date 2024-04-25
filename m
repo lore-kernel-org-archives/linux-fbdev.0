@@ -1,168 +1,391 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DBBF84DEE;
-	Thu, 25 Apr 2024 11:35:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC81912BF04;
+	Thu, 25 Apr 2024 12:42:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714044954; cv=none; b=qK9Cej8KpRIwOhtnSZNP8W5DHWNoKK9YqokTJ5E9pN5wXFFdxmAgyl2OzDzD1JzPoYcYFj9/28VaAIq0q3FURv7Kq9/xxCdeBu5DaLo14LUazZONyJzy0EPBycurJX6jRK6bbEgj5W7Xv4dB01FpSGBOPplEekCsOgX9fM2Uy3Y=
+	t=1714048937; cv=none; b=qSmrMjSpYRT0AZB+pvWBwatHSOz9OvMAl8LyZwp79AipEpF24RpgjTZHa66LXjF7qcAivHHcTMm2iEQtLtceUC4hA8ch/e7yUp/5oxq1eR6SJggwI7PhgI2hdEycPEl5NCDM34AS83Mtz/bBOhAmuQ8CTsdJHm8G4CzrL9xfTg4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714044954; c=relaxed/simple;
-	bh=62rGSpnWaxxUaRbRg+LNUd0Vy12ZjbRKCfLvcC0SDdo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Zc3E3jQ3XNKtIvewlnO0Dm2a7JrOiv+LYGLflAqpKhNdg1gKLlKBeN71rQSKw56tCnL07jpqXULMqB4q6Ywu6y7GtyWDeRwJCTuatNJ9hZFdMBM8UioMmCm40/HX4Q2+AomyffwXpYOv2vQGSr2cwlPN1YE6IheJRwLCMdUJHMg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=YVR/bz//; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1714048937; c=relaxed/simple;
+	bh=Xd08opKedHrtsU4GnsZbUiXElSa9U0/jkuoALRq3DZw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ToyWAcKDUpDOJXgD/ilPJOhRwW3QLGsppQeFlg8hCAOvXGzauWE3chuw/8dOhXM7ptDJChmwqjVQzxm7T4nBJnC+iv307T7nmxZjLuP7yaXE023MTH7trvLGVbnGmlOVQQEjE/ph0LF3+kEIqjtch4VmXDSabuP8qGZMVsG6RRw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ij7oVQmi; arc=none smtp.client-ip=198.175.65.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="YVR/bz//"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1714044942; x=1714649742; i=deller@gmx.de;
-	bh=Wd75oAOWRnH4MgUUY1TJVV9iqximUQMOF5SkISYOC+Q=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=YVR/bz//9KPFntYUdJremhvXdpR2DQpePQxqpKNQkbE9MZAxUKkcGbwymChfBT19
-	 zNGSnDVtgaLThv4rgSXNc+07q/IFoD3JnCYb4IFoex7EJLsZLJRBhxTFklSP4U+RS
-	 +XYERZOOa5whhyS3YBMBVETJGVboy7m+R+Lqjt4PAJVAbOE19Jb7Aki2OyZP4Ssyu
-	 RAwqvxhnqsng6X3/zf9Nhv+TBtpKr8Zi5SuByv+FuQwQUuposD6oB97z491uX17Yj
-	 GqmXmtwVSRr8IrksRPS3AFCsprRXxvaSuN9IPLEPFIGejid9j2KaPcJ1jBTEKyasg
-	 wFtHsrI59/yNXxsVYQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MdebB-1sZZK32rFR-00ZfO1; Thu, 25
- Apr 2024 13:35:42 +0200
-Message-ID: <f3e4e710-a392-4924-94c1-6dd52c803f9a@gmx.de>
-Date: Thu, 25 Apr 2024 13:35:41 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ij7oVQmi"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1714048936; x=1745584936;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Xd08opKedHrtsU4GnsZbUiXElSa9U0/jkuoALRq3DZw=;
+  b=ij7oVQmixMX5go7zjoiieegSJIiC9FpzV+dECme6hc/Ce/p9yr+KwEwg
+   aeviq23W+pogOotFYTfhpv+RkmSHC2LtRqWhviRUGIHgVOdp+9HJ/g8en
+   7qYtVCkZwG8tzcM7Ub8jPQfiNnX2IlhCK2aR5FY02JWkRNngrw6aXWZHT
+   eUPO/HwLdKBpY1aXrrEDyv+Q1T/3imhWDwrYkRZ51YvgtVncDpxCXAfQ+
+   Dw8StnNd6mBdM+Vp6a953CbmL+kviKXosoWKOKHlrkMJzeVVlmYMo1uDx
+   df55aTp/Rb0Y0iZNBG3aaTJTMRoMm6H7rpRw5fl5aFFeI4/0FReXTe9Ql
+   w==;
+X-CSE-ConnectionGUID: ZpeM2JNFRjafSKQlzu0Zuw==
+X-CSE-MsgGUID: +V8ND44PRVSWylxUpLf2ow==
+X-IronPort-AV: E=McAfee;i="6600,9927,11054"; a="9555807"
+X-IronPort-AV: E=Sophos;i="6.07,229,1708416000"; 
+   d="scan'208";a="9555807"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2024 05:42:15 -0700
+X-CSE-ConnectionGUID: feb0LlWDTY6pGqiTfw9FeA==
+X-CSE-MsgGUID: i5mRVIGfShCstltnol8NSg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,229,1708416000"; 
+   d="scan'208";a="62539171"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orviesa001.jf.intel.com with ESMTP; 25 Apr 2024 05:42:12 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id EA79253E; Thu, 25 Apr 2024 15:42:10 +0300 (EEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	=?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v1 1/1] drm/ili9341: Remove the duplicative driver
+Date: Thu, 25 Apr 2024 15:42:07 +0300
+Message-ID: <20240425124208.2255265-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.43.0.rc1.1336.g36b5255a03ac
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/3] VT: Add KDFONTINFO ioctl
-To: Alexey Gladkov <legion@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jirislaby@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- kbd@lists.linux.dev, linux-api@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-serial@vger.kernel.org
-References: <cover.1712080158.git.legion@kernel.org>
- <cover.1713375378.git.legion@kernel.org>
- <bd2755e7b6ebe9b49e82d04d9908a176e0fe2f15.1713375378.git.legion@kernel.org>
- <9019dc74-35ad-43d7-8763-cea3da93e9c1@gmx.de> <ZiD50WZZv3OOad7L@example.org>
- <9993ad2d-48a8-43be-ae41-4b8d710c1ea7@gmx.de> <Zio5JfRBvzxuVUbX@example.org>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <Zio5JfRBvzxuVUbX@example.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:qG0SgbS54dSqSDLb/4RqUArtcDUwbeC5rZ406sdxMI1Hr3XO42/
- BzusuIvXIZbIKT/Jzz3vWxcAwDZIA//T1d2C6bCGDkqkkKv3nMd2yQWy6K+zE+Q/ifyGnPK
- rka5hfHK0W/Bz2FjGF9yAARKlrxm/oUiEBddRR0XEc1M5o9tXvqKzoDoW+J+ExFm7T5ynS0
- N2EmJEv880IYvkgdN1pvg==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:HY9J8ff6syI=;IqxmUssLChGH6UiPde+YNC40L99
- cN2erDiCmy11HUyqa9cEOfWtlGVwCfxPFnokA72A+tNP4it8uJX71/vdNwypLpjm7GS6etrVp
- sv69ExfSvkOw4q/xSyor9G2V1m+iRnlm0EF1HaOXIYdZzajW57caJClasjNDvFWpgtBe98kYO
- rAyEwLins6ep4Pi4RuR0FHIsaI/R3UhSUYw2vyk6342S2c+0ecO1JCxZVEvUiqlf/OuQSNZbg
- 3aVVOdyc4T5uF0GHwkd1Huq+2AacHbFlGvEocop4ZaVee6iBfEdGUDw/pxK3l0kvdyNF9oF5B
- fdm46+RWXQ3OllePSnLxu1IU3DZS/OmP1AYggsGXitcSnqVFQzzuqb/nHJwoz++kGCmJx2WVV
- i574CQD1zzaJHjl3I9mn/jQFjo1gFIpuy8//lBUPZzWVyB7rYGUIvCElrzZxVHWmOqN8wWmnx
- tzl3zeknR9V13KaB5O9py+R1MFWXNcmNkdqpDQeH4dWZuwdZpgmJemIm8zDD0UjPWEVWVMPYx
- pyGKDauVnRwRGl4fO9qM/FMLrqvtf54nZqLqXPiJxB/O0CHXEM6CviEm7AHAzLgbIpcpujPLw
- uYH/NccNV9Hb9iS6g8LotqIj2F+otXLTyL5hesPD4OC2AyWrJDRUosrpLfi2m8TJn4UGJ78Ky
- lMOk0p7viFXRQnKf/sg0sswCCgowkeumPBYYyq4uN+UmrDAMgeq5RPnAb42BwhkgzGpvcWy1f
- +Adj1UVaFc4JCK9IX4OuTWOQu+rpqtTdY3QO3TtobJItrXXlJ6+3uDeTqlME7TqLtPHQUur7e
- YqJNpicFrLid1PXb6qjteO0PkXybFRYNiHY+/SgafAIZ0=
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On 4/25/24 13:06, Alexey Gladkov wrote:
-> On Thu, Apr 25, 2024 at 12:33:28PM +0200, Helge Deller wrote:
->>>>> diff --git a/include/uapi/linux/kd.h b/include/uapi/linux/kd.h
->>>>> index 8ddb2219a84b..68b715ad4d5c 100644
->>>>> --- a/include/uapi/linux/kd.h
->>>>> +++ b/include/uapi/linux/kd.h
->>>>> @@ -185,6 +185,20 @@ struct console_font {
->>>>>
->>>>>     #define KD_FONT_FLAG_DONT_RECALC 	1	/* Don't recalculate hw char=
-cell size [compat] */
->>>>>
->>>>> +/* font information */
->>>>> +
->>>>> +#define KD_FONT_INFO_FLAG_LOW_SIZE	_BITUL(0) /* 256 */
->>>>> +#define KD_FONT_INFO_FLAG_HIGH_SIZE	_BITUL(1) /* 512 */
->>>>
->>>> Do we really need those bits?
->>>> You set a default min/max font size in con_font_info() above,
->>>> and all drivers can override those values.
->>>> So, there are always min/max sizes available.
->>>
->>> These bits are not about the minimum and maximum glyph size, but about=
- the
->>> number of glyphs in the font.
->>>
->>> Maybe this is an overkill, but sticon has this check:
->>>
->>> if ((w < 6) || (h < 6) || (w > 32) || (h > 32) || (vpitch !=3D 32)
->>>       || (op->charcount !=3D 256 && op->charcount !=3D 512))
->>>
->>> [ to be honest, I don=E2=80=99t know why this driver doesn=E2=80=99t a=
-ccept a glyph of
->>> width 4 ]
->>
->> I think there was no technical limitation when I added that.
->> It's just that the font would be so small...
->
-> If so, then I can remove min_height/min_width from the ioctl structure.
-> And most likely the flags can also be left empty since at the moment all
-> drivers support 512.
+First of all, the driver was introduced when it was already
+two drivers available for Ilitek 9341 panels.
 
-Yes, I think that's ok.
+Second, the most recent (fourth!) driver has incorporated this one
+and hence, when enabled, it covers the provided functionality.
 
-Helge
+Taking into account the above, remove duplicative driver and make
+maintenance and support eaiser for everybody.
+
+Also see discussion [1] for details about Ilitek 9341 duplication
+code.
+
+Link: https://lore.kernel.org/r/ZXM9pG-53V4S8E2H@smile.fi.intel.com [1]
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/gpu/drm/tiny/Kconfig   |  13 --
+ drivers/gpu/drm/tiny/Makefile  |   1 -
+ drivers/gpu/drm/tiny/ili9341.c | 253 ---------------------------------
+ 3 files changed, 267 deletions(-)
+ delete mode 100644 drivers/gpu/drm/tiny/ili9341.c
+
+diff --git a/drivers/gpu/drm/tiny/Kconfig b/drivers/gpu/drm/tiny/Kconfig
+index f6889f649bc1..2ab07bd0bb44 100644
+--- a/drivers/gpu/drm/tiny/Kconfig
++++ b/drivers/gpu/drm/tiny/Kconfig
+@@ -134,19 +134,6 @@ config TINYDRM_ILI9225
+ 
+ 	  If M is selected the module will be called ili9225.
+ 
+-config TINYDRM_ILI9341
+-	tristate "DRM support for ILI9341 display panels"
+-	depends on DRM && SPI
+-	select DRM_KMS_HELPER
+-	select DRM_GEM_DMA_HELPER
+-	select DRM_MIPI_DBI
+-	select BACKLIGHT_CLASS_DEVICE
+-	help
+-	  DRM driver for the following Ilitek ILI9341 panels:
+-	  * YX240QV29-T 2.4" 240x320 TFT (Adafruit 2.4")
+-
+-	  If M is selected the module will be called ili9341.
+-
+ config TINYDRM_ILI9486
+ 	tristate "DRM support for ILI9486 display panels"
+ 	depends on DRM && SPI
+diff --git a/drivers/gpu/drm/tiny/Makefile b/drivers/gpu/drm/tiny/Makefile
+index 76dde89a044b..37cc9b27e79d 100644
+--- a/drivers/gpu/drm/tiny/Makefile
++++ b/drivers/gpu/drm/tiny/Makefile
+@@ -10,7 +10,6 @@ obj-$(CONFIG_DRM_SIMPLEDRM)		+= simpledrm.o
+ obj-$(CONFIG_TINYDRM_HX8357D)		+= hx8357d.o
+ obj-$(CONFIG_TINYDRM_ILI9163)		+= ili9163.o
+ obj-$(CONFIG_TINYDRM_ILI9225)		+= ili9225.o
+-obj-$(CONFIG_TINYDRM_ILI9341)		+= ili9341.o
+ obj-$(CONFIG_TINYDRM_ILI9486)		+= ili9486.o
+ obj-$(CONFIG_TINYDRM_MI0283QT)		+= mi0283qt.o
+ obj-$(CONFIG_TINYDRM_REPAPER)		+= repaper.o
+diff --git a/drivers/gpu/drm/tiny/ili9341.c b/drivers/gpu/drm/tiny/ili9341.c
+deleted file mode 100644
+index 47b61c3bf145..000000000000
+--- a/drivers/gpu/drm/tiny/ili9341.c
++++ /dev/null
+@@ -1,253 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * DRM driver for Ilitek ILI9341 panels
+- *
+- * Copyright 2018 David Lechner <david@lechnology.com>
+- *
+- * Based on mi0283qt.c:
+- * Copyright 2016 Noralf Trønnes
+- */
+-
+-#include <linux/backlight.h>
+-#include <linux/delay.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/module.h>
+-#include <linux/property.h>
+-#include <linux/spi/spi.h>
+-
+-#include <drm/drm_atomic_helper.h>
+-#include <drm/drm_drv.h>
+-#include <drm/drm_fbdev_generic.h>
+-#include <drm/drm_gem_atomic_helper.h>
+-#include <drm/drm_gem_dma_helper.h>
+-#include <drm/drm_managed.h>
+-#include <drm/drm_mipi_dbi.h>
+-#include <drm/drm_modeset_helper.h>
+-#include <video/mipi_display.h>
+-
+-#define ILI9341_FRMCTR1		0xb1
+-#define ILI9341_DISCTRL		0xb6
+-#define ILI9341_ETMOD		0xb7
+-
+-#define ILI9341_PWCTRL1		0xc0
+-#define ILI9341_PWCTRL2		0xc1
+-#define ILI9341_VMCTRL1		0xc5
+-#define ILI9341_VMCTRL2		0xc7
+-#define ILI9341_PWCTRLA		0xcb
+-#define ILI9341_PWCTRLB		0xcf
+-
+-#define ILI9341_PGAMCTRL	0xe0
+-#define ILI9341_NGAMCTRL	0xe1
+-#define ILI9341_DTCTRLA		0xe8
+-#define ILI9341_DTCTRLB		0xea
+-#define ILI9341_PWRSEQ		0xed
+-
+-#define ILI9341_EN3GAM		0xf2
+-#define ILI9341_PUMPCTRL	0xf7
+-
+-#define ILI9341_MADCTL_BGR	BIT(3)
+-#define ILI9341_MADCTL_MV	BIT(5)
+-#define ILI9341_MADCTL_MX	BIT(6)
+-#define ILI9341_MADCTL_MY	BIT(7)
+-
+-static void yx240qv29_enable(struct drm_simple_display_pipe *pipe,
+-			     struct drm_crtc_state *crtc_state,
+-			     struct drm_plane_state *plane_state)
+-{
+-	struct mipi_dbi_dev *dbidev = drm_to_mipi_dbi_dev(pipe->crtc.dev);
+-	struct mipi_dbi *dbi = &dbidev->dbi;
+-	u8 addr_mode;
+-	int ret, idx;
+-
+-	if (!drm_dev_enter(pipe->crtc.dev, &idx))
+-		return;
+-
+-	DRM_DEBUG_KMS("\n");
+-
+-	ret = mipi_dbi_poweron_conditional_reset(dbidev);
+-	if (ret < 0)
+-		goto out_exit;
+-	if (ret == 1)
+-		goto out_enable;
+-
+-	mipi_dbi_command(dbi, MIPI_DCS_SET_DISPLAY_OFF);
+-
+-	mipi_dbi_command(dbi, ILI9341_PWCTRLB, 0x00, 0xc1, 0x30);
+-	mipi_dbi_command(dbi, ILI9341_PWRSEQ, 0x64, 0x03, 0x12, 0x81);
+-	mipi_dbi_command(dbi, ILI9341_DTCTRLA, 0x85, 0x00, 0x78);
+-	mipi_dbi_command(dbi, ILI9341_PWCTRLA, 0x39, 0x2c, 0x00, 0x34, 0x02);
+-	mipi_dbi_command(dbi, ILI9341_PUMPCTRL, 0x20);
+-	mipi_dbi_command(dbi, ILI9341_DTCTRLB, 0x00, 0x00);
+-
+-	/* Power Control */
+-	mipi_dbi_command(dbi, ILI9341_PWCTRL1, 0x23);
+-	mipi_dbi_command(dbi, ILI9341_PWCTRL2, 0x10);
+-	/* VCOM */
+-	mipi_dbi_command(dbi, ILI9341_VMCTRL1, 0x3e, 0x28);
+-	mipi_dbi_command(dbi, ILI9341_VMCTRL2, 0x86);
+-
+-	/* Memory Access Control */
+-	mipi_dbi_command(dbi, MIPI_DCS_SET_PIXEL_FORMAT, MIPI_DCS_PIXEL_FMT_16BIT);
+-
+-	/* Frame Rate */
+-	mipi_dbi_command(dbi, ILI9341_FRMCTR1, 0x00, 0x1b);
+-
+-	/* Gamma */
+-	mipi_dbi_command(dbi, ILI9341_EN3GAM, 0x00);
+-	mipi_dbi_command(dbi, MIPI_DCS_SET_GAMMA_CURVE, 0x01);
+-	mipi_dbi_command(dbi, ILI9341_PGAMCTRL,
+-			 0x0f, 0x31, 0x2b, 0x0c, 0x0e, 0x08, 0x4e, 0xf1,
+-			 0x37, 0x07, 0x10, 0x03, 0x0e, 0x09, 0x00);
+-	mipi_dbi_command(dbi, ILI9341_NGAMCTRL,
+-			 0x00, 0x0e, 0x14, 0x03, 0x11, 0x07, 0x31, 0xc1,
+-			 0x48, 0x08, 0x0f, 0x0c, 0x31, 0x36, 0x0f);
+-
+-	/* DDRAM */
+-	mipi_dbi_command(dbi, ILI9341_ETMOD, 0x07);
+-
+-	/* Display */
+-	mipi_dbi_command(dbi, ILI9341_DISCTRL, 0x08, 0x82, 0x27, 0x00);
+-	mipi_dbi_command(dbi, MIPI_DCS_EXIT_SLEEP_MODE);
+-	msleep(100);
+-
+-	mipi_dbi_command(dbi, MIPI_DCS_SET_DISPLAY_ON);
+-	msleep(100);
+-
+-out_enable:
+-	switch (dbidev->rotation) {
+-	default:
+-		addr_mode = ILI9341_MADCTL_MX;
+-		break;
+-	case 90:
+-		addr_mode = ILI9341_MADCTL_MV;
+-		break;
+-	case 180:
+-		addr_mode = ILI9341_MADCTL_MY;
+-		break;
+-	case 270:
+-		addr_mode = ILI9341_MADCTL_MV | ILI9341_MADCTL_MY |
+-			    ILI9341_MADCTL_MX;
+-		break;
+-	}
+-	addr_mode |= ILI9341_MADCTL_BGR;
+-	mipi_dbi_command(dbi, MIPI_DCS_SET_ADDRESS_MODE, addr_mode);
+-	mipi_dbi_enable_flush(dbidev, crtc_state, plane_state);
+-out_exit:
+-	drm_dev_exit(idx);
+-}
+-
+-static const struct drm_simple_display_pipe_funcs ili9341_pipe_funcs = {
+-	DRM_MIPI_DBI_SIMPLE_DISPLAY_PIPE_FUNCS(yx240qv29_enable),
+-};
+-
+-static const struct drm_display_mode yx240qv29_mode = {
+-	DRM_SIMPLE_MODE(240, 320, 37, 49),
+-};
+-
+-DEFINE_DRM_GEM_DMA_FOPS(ili9341_fops);
+-
+-static const struct drm_driver ili9341_driver = {
+-	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+-	.fops			= &ili9341_fops,
+-	DRM_GEM_DMA_DRIVER_OPS_VMAP,
+-	.debugfs_init		= mipi_dbi_debugfs_init,
+-	.name			= "ili9341",
+-	.desc			= "Ilitek ILI9341",
+-	.date			= "20180514",
+-	.major			= 1,
+-	.minor			= 0,
+-};
+-
+-static const struct of_device_id ili9341_of_match[] = {
+-	{ .compatible = "adafruit,yx240qv29" },
+-	{ }
+-};
+-MODULE_DEVICE_TABLE(of, ili9341_of_match);
+-
+-static const struct spi_device_id ili9341_id[] = {
+-	{ "yx240qv29", 0 },
+-	{ }
+-};
+-MODULE_DEVICE_TABLE(spi, ili9341_id);
+-
+-static int ili9341_probe(struct spi_device *spi)
+-{
+-	struct device *dev = &spi->dev;
+-	struct mipi_dbi_dev *dbidev;
+-	struct drm_device *drm;
+-	struct mipi_dbi *dbi;
+-	struct gpio_desc *dc;
+-	u32 rotation = 0;
+-	int ret;
+-
+-	dbidev = devm_drm_dev_alloc(dev, &ili9341_driver,
+-				    struct mipi_dbi_dev, drm);
+-	if (IS_ERR(dbidev))
+-		return PTR_ERR(dbidev);
+-
+-	dbi = &dbidev->dbi;
+-	drm = &dbidev->drm;
+-
+-	dbi->reset = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+-	if (IS_ERR(dbi->reset))
+-		return dev_err_probe(dev, PTR_ERR(dbi->reset), "Failed to get GPIO 'reset'\n");
+-
+-	dc = devm_gpiod_get_optional(dev, "dc", GPIOD_OUT_LOW);
+-	if (IS_ERR(dc))
+-		return dev_err_probe(dev, PTR_ERR(dc), "Failed to get GPIO 'dc'\n");
+-
+-	dbidev->backlight = devm_of_find_backlight(dev);
+-	if (IS_ERR(dbidev->backlight))
+-		return PTR_ERR(dbidev->backlight);
+-
+-	device_property_read_u32(dev, "rotation", &rotation);
+-
+-	ret = mipi_dbi_spi_init(spi, dbi, dc);
+-	if (ret)
+-		return ret;
+-
+-	ret = mipi_dbi_dev_init(dbidev, &ili9341_pipe_funcs, &yx240qv29_mode, rotation);
+-	if (ret)
+-		return ret;
+-
+-	drm_mode_config_reset(drm);
+-
+-	ret = drm_dev_register(drm, 0);
+-	if (ret)
+-		return ret;
+-
+-	spi_set_drvdata(spi, drm);
+-
+-	drm_fbdev_generic_setup(drm, 0);
+-
+-	return 0;
+-}
+-
+-static void ili9341_remove(struct spi_device *spi)
+-{
+-	struct drm_device *drm = spi_get_drvdata(spi);
+-
+-	drm_dev_unplug(drm);
+-	drm_atomic_helper_shutdown(drm);
+-}
+-
+-static void ili9341_shutdown(struct spi_device *spi)
+-{
+-	drm_atomic_helper_shutdown(spi_get_drvdata(spi));
+-}
+-
+-static struct spi_driver ili9341_spi_driver = {
+-	.driver = {
+-		.name = "ili9341",
+-		.of_match_table = ili9341_of_match,
+-	},
+-	.id_table = ili9341_id,
+-	.probe = ili9341_probe,
+-	.remove = ili9341_remove,
+-	.shutdown = ili9341_shutdown,
+-};
+-module_spi_driver(ili9341_spi_driver);
+-
+-MODULE_DESCRIPTION("Ilitek ILI9341 DRM driver");
+-MODULE_AUTHOR("David Lechner <david@lechnology.com>");
+-MODULE_LICENSE("GPL");
+-- 
+2.43.0.rc1.1336.g36b5255a03ac
 

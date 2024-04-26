@@ -1,110 +1,94 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+Received: from smtp-out3.simply.com (smtp-out3.simply.com [94.231.106.210])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A42714D716;
-	Thu, 25 Apr 2024 15:04:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFB43469D;
+	Fri, 26 Apr 2024 16:31:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=94.231.106.210
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714057499; cv=none; b=KidPL0Y0MdhQv7/j3TOv1yaPqT/z9NaB3qYnxD/P4JXk/1Orp1vAGaPEZgZ4o9Eh2N9/N5XNzy/Qw+79Qlq3nCHmBDoE3frgFdNkCV6FP+6ympsjK+AZHzx8MerVjhg+wjg7arxIK17vAADSXRDnfp0pfPcjNex6kOcj/9l37F4=
+	t=1714149087; cv=none; b=QacFyPiI6dFQz5XX9DaSS2RwRGiTEw9RJ4VbziV9Gkzrc/KWyCLiRBAckivQJs462i2VsX3S2oCu1qDmOZCA1cA7Djs1fOB4pLJyIGqAa+4WhNLfjnX3cE2tGQaqg/1/wba+pEClUYeciyI1jU0K1V7m8KnDGtWTHOtROeSXpg8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714057499; c=relaxed/simple;
-	bh=Ebs59IXexhzqLXqVggapRFuVaAJDANXqVUimkFuzG2I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iz2cF3J2PW1d8+25wmziIgcRnLrE/Wi9wJxMgBnM5NGuY/C/vdBeuLHxi3Gs35jrGNMfnFmHCDgMQ955jnmSAz2QnV24zmAHoG14UKFeSL5GjqP3BGMotijzW0qf9C95WjNJaT46xGjKCqBJDyiF7Z5CNpNcqMcePM+dF2FqLlk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EEIKu4Eo; arc=none smtp.client-ip=198.175.65.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1714149087; c=relaxed/simple;
+	bh=7dZ7krTYAZxq8cPoPdHSIbY+K7yXIIJx3qWxQhJ/RRk=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:References:
+	 In-Reply-To:Content-Type; b=HDeaKGWWM+6FKQfSBnILJSQM4g232iG90fbqndQ+LN+GR2rBbj/jtirYLRH4lvL2O6hwNB+AQcN5M+sDIK2mMn7dZk4yg7LMZRo4kEJFkYlv/Uryr+VNEk6AsqFFDGUgDHfOun2/+XLSPztyJj1rWNNO6gSDmVmhZXNdB1TTE5g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gaisler.com; spf=pass smtp.mailfrom=gaisler.com; dkim=pass (1024-bit key) header.d=gaisler.com header.i=@gaisler.com header.b=Qip71L1C; arc=none smtp.client-ip=94.231.106.210
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gaisler.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gaisler.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EEIKu4Eo"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1714057498; x=1745593498;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Ebs59IXexhzqLXqVggapRFuVaAJDANXqVUimkFuzG2I=;
-  b=EEIKu4Eov+xtIbAUMByelqaVYNn+95PMWNES9FukOmIkv+aqXHLM1oZg
-   LYYrHfzOY3jw2jDDKplEcE/RmKmg7k11ZXe0J6Eam1RAPhqrE3KvTKiPw
-   TvTthpFUdFl82fMrlpKsnEmFUNK60dPskG8WbKZnB092yi3sLHVdniK3X
-   7kmRtpOEXAEeAeOyEJ4vTlMoXSmMKfpCHqlzpNUwLGffX0r7e1TcaWcia
-   eclWTk7DoijBxl1+3BaAv9RdeNOxUl7dc703Oj3D9TsUR32i1Pggs67d2
-   M3L0yVZRP7VPyltvEBnIbp3beft1kkwYbOxWgImB4X+gVKcyEy97GoZ0F
-   w==;
-X-CSE-ConnectionGUID: mBdWe2olSQCQ9A6FP5FMZA==
-X-CSE-MsgGUID: wmL8M6AqTxeWSq7KjSwxjg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11055"; a="27206832"
-X-IronPort-AV: E=Sophos;i="6.07,229,1708416000"; 
-   d="scan'208";a="27206832"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2024 08:04:57 -0700
-X-CSE-ConnectionGUID: dj7BiCPeTHSZbsuGpPWT7A==
-X-CSE-MsgGUID: JTzKIusPSDCIclQtHdW4rA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,229,1708416000"; 
-   d="scan'208";a="29887001"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2024 08:04:54 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.97)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1s00eY-000000012AE-3W0q;
-	Thu, 25 Apr 2024 18:04:50 +0300
-Date: Thu, 25 Apr 2024 18:04:50 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Maxime Ripard <mripard@kernel.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
-	David Lechner <dlechner@baylibre.com>, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v1 1/1] drm/ili9341: Remove the duplicative driver
-Message-ID: <ZipxEk9Lpff1kB7b@smile.fi.intel.com>
-References: <20240425124208.2255265-1-andriy.shevchenko@linux.intel.com>
- <20240425-perky-myrtle-gorilla-e1e24f@penduick>
+	dkim=pass (1024-bit key) header.d=gaisler.com header.i=@gaisler.com header.b="Qip71L1C"
+Received: from localhost (localhost [127.0.0.1])
+	by smtp.simply.com (Simply.com) with ESMTP id 4VQysF4BZqz681r;
+	Fri, 26 Apr 2024 18:31:13 +0200 (CEST)
+Received: from [10.10.15.10] (h-98-128-223-123.NA.cust.bahnhof.se [98.128.223.123])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(Client did not present a certificate)
+	by smtp.simply.com (Simply.com) with ESMTPSA id 4VQysD6C6Lz681M;
+	Fri, 26 Apr 2024 18:31:12 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gaisler.com;
+	s=unoeuro; t=1714149073;
+	bh=7dZ7krTYAZxq8cPoPdHSIbY+K7yXIIJx3qWxQhJ/RRk=;
+	h=Date:From:Subject:To:References:In-Reply-To;
+	b=Qip71L1CB2hsoOlwuKmcv17dZwZJcIodp8s9eiGLiE2SdJKEkPWTctJVORe6CHLyw
+	 w1vgSpFi5Etpn/M8S373xPLJoB8krfHcRZKzkUxQEs9wK1YY2FZkFjRYS1WsI7YWxh
+	 vepEI2N+D2i5R7QMzj66NgwXNxt6h05IqlTiooW4=
+Message-ID: <7749e9f4-2540-4618-8689-b6bb757f9cd0@gaisler.com>
+Date: Fri, 26 Apr 2024 18:31:12 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240425-perky-myrtle-gorilla-e1e24f@penduick>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mozilla Thunderbird
+From: Andreas Larsson <andreas@gaisler.com>
+Subject: Re: [PATCH v2 00/28] sparc32: sunset sun4m and sun4d
+To: Sam Ravnborg <sam@ravnborg.org>, "David S. Miller" <davem@davemloft.net>,
+ Arnd Bergmann <arnd@kernel.org>, Helge Deller <deller@gmx.de>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
+ Kjetil Oftedal <oftedal@gmail.com>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alan Stern <stern@rowland.harvard.edu>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, sparclinux@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-sound@vger.kernel.org
+References: <20240309-sunset-v2-0-f09912574d2c@ravnborg.org>
+ <20240423180216.GA906720@ravnborg.org>
+Content-Language: en-US
+In-Reply-To: <20240423180216.GA906720@ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 25, 2024 at 04:58:06PM +0200, Maxime Ripard wrote:
-> Hi,
-> 
-> On Thu, Apr 25, 2024 at 03:42:07PM +0300, Andy Shevchenko wrote:
-> > First of all, the driver was introduced when it was already
-> > two drivers available for Ilitek 9341 panels.
-> > 
-> > Second, the most recent (fourth!) driver has incorporated this one
-> > and hence, when enabled, it covers the provided functionality.
-> > 
-> > Taking into account the above, remove duplicative driver and make
-> > maintenance and support eaiser for everybody.
-> > 
-> > Also see discussion [1] for details about Ilitek 9341 duplication
-> > code.
-> > 
-> > Link: https://lore.kernel.org/r/ZXM9pG-53V4S8E2H@smile.fi.intel.com [1]
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> 
-> I think it should be the other way around and we should remove the
-> mipi-dbi handling from panel/panel-ilitek-ili9341.c
+On 2024-04-23 20:02, Sam Ravnborg wrote:
+> Please let me know if you expect me to rebase this on for-next.
+> I have not yet tried if there are merge conflicts but can take a look in
+> a some days if required.
 
-Then please do it! I whining already for a few years about this.
+My local testing branch for this patchset rebased with trivial fixups,
+so no immediate rebase and resubmission is needed. I do run into some
+strange problems on SMP with this patchset plus your CAS patchset, that
+I do not get when I rebase the Linux patches from our kernel release
+that has my CAS patchset. With no CAS at all these things fails even
+worse, so do I need one or the other for these tests.
 
-> It's basically two drivers glued together for no particular reason and
-> handling two very different use cases which just adds more complexity
-> than it needs to.
-> 
-> And it's the only driver doing so afaik, so it's definitely not "least
-> surprise" compliant.
+I will need to dig deeper into figuring out the problems seems to be due
+to something in any of your two patchsets in themselves or if it is
+something else. I do need some additional fixes from our kernel release
+for SMP to work properly, so it could also be that there is something
+with my combination of your patches and my patches adapted on top of
+yours.
 
--- 
-With Best Regards,
-Andy Shevchenko
+There are also some needed fixes for LEON that relies upon code removed
+in this patchset. Maybe the best solution for that would be if I submit
+those and you then rebase upon them.
 
+> That is assuming you agree with the sunset of the sun platforms...
 
+I do agree with the idea in general, but being busy with other things I
+have had little time to dig into this lately.
+
+Thanks,
+Andreas

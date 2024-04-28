@@ -1,72 +1,87 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from out203-205-221-155.mail.qq.com (out203-205-221-155.mail.qq.com [203.205.221.155])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0E0A4EB41;
-	Sun, 28 Apr 2024 11:48:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B608B44C6F;
+	Sun, 28 Apr 2024 12:37:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.205.221.155
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714304940; cv=none; b=VqSrBjj422qQ2pnQABuowl+r8ABMv1VkuiyxrG+ggWWYbg1uoMvl0pT+VBqpB/8jMF5vk+x3/vJmaX8iY79A3k8U5a+40hhQ5p6rkWmHy+nWe2+O86eIXHCqnZvTLI7xOiqR+Nkw6SFbHGsJWjMQAiPkg6tmbVyhJNf0t7d7W3k=
+	t=1714307857; cv=none; b=cdjmtAjn1q4JJA482NXgcsjoOILgrZc6B/iyqz0ugpSHIMTX4QG5G7fmdOg+CbmB/afGRw92WaNJgvNtxylmZAHgz5WTRsAfzYtnGv0AsxWQ2ypWENpJnE9r4r7XXv56GEmUiNSgoa7GJDocciXuyTvvnAIZTNt+9YkFn5a2JMQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714304940; c=relaxed/simple;
-	bh=OnI6cUk44LsQbKr/M0rkgGZtY7M8erbagdEljkfjqQI=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=dhK383eMONQr8swDBIRv5tACrZlNwyMZFVFezYCQ0/Qz+nhLxOF8RPlPlkxl5NHIIzlsZmVOvmIpDZ0TikLEz0HiKWAXQezvvyfGTM6yyP8CWOjNOb8MShKjx57Fp/xECiS00iAGrvNW8ctB3vpZ51lw3dHZRvQzGN79yqkEs2A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AT3rvuF5; arc=none smtp.client-ip=209.85.214.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1714307857; c=relaxed/simple;
+	bh=TmOhP4qc8Qi8jh/T/QcsP5k7J4MiQIZY8f+q7/ewjis=;
+	h=Message-ID:From:To:Subject:Date:MIME-Version; b=P+vNRCcHMlVUF2NhvUioksnJX1RDeLCD/Fdb9/mSTWhemvRtiNqyioHB7HD+oIu/6UVv/N6mMZFzE6BlpdHaiv0lErgmVzYg/USX6bAwx+7neF0bkxZXLuESd+f1zPPQ0CbseoyyBEhgP2Mj+/iJKW7kmUF5YeclUaczAuYtLp0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=ayQam/nL; arc=none smtp.client-ip=203.205.221.155
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AT3rvuF5"
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-1e51398cc4eso32784865ad.2;
-        Sun, 28 Apr 2024 04:48:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1714304938; x=1714909738; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=OnI6cUk44LsQbKr/M0rkgGZtY7M8erbagdEljkfjqQI=;
-        b=AT3rvuF5k9WSAtYA92vqqRTUz53gyDzPkwyBhtlU1X1Zo2MPM8BJG9tSvKYj2px0as
-         QqoHWcDwUHcWqb/y07dhZcNTB6mCkRvOJ3t4uaRSqNJW0nEXKA7eaXxw4dTXLw+98DcU
-         CoFSD9GYc1yCv44W5NuOIM5ThoiUyt6OjIOR5r9Z5vOK7QJWVTEbLCHcAfqx4O+RJzal
-         uGBxSmoC9wx86J2rRtu5Yvp/zsmlbZk9eBBaaSZ48wuyxbgfFfk1yPRJAxRlt1yMRb0d
-         vrxwIRucEwTUjFZBOIYwxBl9ER+tRA8SHn6Yvb8GqUscAlzXvJjhTIO2NEHYHGrDSFEv
-         N0Zg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714304938; x=1714909738;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=OnI6cUk44LsQbKr/M0rkgGZtY7M8erbagdEljkfjqQI=;
-        b=UssuiSCU61yXcPI2qTXG2CCExzbhOqHdVxtwVwCRFjzz3lQUZ1/iBXjfHJ7o/8CyFU
-         eGtOIZWTSqKNfb66y41IB5xgJWBW23ia538zAQjlzObDWVllmCgEJ0+oA5qZmghYuca3
-         Avv937Jz5gGkqZj4b/VMdNZtIjkUSfofLfkWMAUbWpQ9JPknOPt6XYJzaQURm5rhqRVr
-         4pNkLkaLEC6Hi6wt0KwPQ1LBFYhwqbGTH8rUQOgLta4Iq/1x8AxuVYfYp3aAHyUUbo9I
-         AO29IPLnv4pFC99RXi4mS3YHM96GUz73+msQPTpnvlNrLkJJIEAJ0mpadCGk/SIGEEfO
-         NzGw==
-X-Forwarded-Encrypted: i=1; AJvYcCWM0f6TRnWCyRISuslXdiFqN+oz5vd3uzqhKwK1gyQwZaEoLOnEIwfK/9eNN+0EzMrCZ8FJl0ZapTJ8FT77kAZrQrSo2Uw/rfNwf/i2h8DL48PoR+cRbq8S+WnK/MddPS3Fvf7vQxGcAz0=
-X-Gm-Message-State: AOJu0YzeUc2OIrwwznlu6EapgUjWfAKpbt1M/IvAVvrwcS7lb+kqfl2P
-	cXFpoo99BxoFMIOsHVk6S0Ey5kYz/lMpS0o4HJFSPo+JA2F/DNAkiy+cgT/H84ExcjN40uC8lz3
-	DZDM4v2OB0fn3OUtH+8GsuFCoRpuIxQ==
-X-Google-Smtp-Source: AGHT+IHvwz4nmdunBr6J2yHHs8FhQymazg6kf8ScSAEcvNAnXFEsWfAvs5rH77tf3wCOJPv/oQPjDRBhRwGD7Ji4RbI=
-X-Received: by 2002:a17:902:f547:b0:1eb:fc2:1eed with SMTP id
- h7-20020a170902f54700b001eb0fc21eedmr8045865plf.41.1714304938213; Sun, 28 Apr
- 2024 04:48:58 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="ayQam/nL"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1714307545; bh=WhRK7c5VI5zG7dpXv/k2M42hjr8IyRYvYtQoYcJ0eOU=;
+	h=From:To:Subject:Date;
+	b=ayQam/nLt2FDlH16TSK1lgc2CoL/nYgXtdi4Z4c9h9jk7MAaWLta1X4UTmU/Dyjn5
+	 9HYs7gl3+nxLSj8nYe6cR01jbB1aTYOGZW1DoUViXi8/9Mf3j/0fEaAcggXsToWqVn
+	 2TfilTe9VQUR/1mgrku9e2JkBwOpnTBzrFtuS5v0=
+Received: from pipishuo-OMEN-by-HP-Laptop-16-b0xxx.. ([123.115.148.131])
+	by newxmesmtplogicsvrszb9-0.qq.com (NewEsmtp) with SMTP
+	id 4C8B4CD2; Sun, 28 Apr 2024 20:19:08 +0800
+X-QQ-mid: xmsmtpt1714306748t5cry6yph
+Message-ID: <tencent_FDF9E162435F21368C39AB61255D2F2C8D08@qq.com>
+X-QQ-XMAILINFO: MR/iVh5QLeiesT/qxp6yj39CByasNjpnL5Z9mIbo5D+NZ9po4qliBl7DIFt78D
+	 ITDjU605nzcmebLng8uzqyv7GojIslOw3SROUovLp80U7NtYgHQnx+0tG0sDkC4/pM60JQYKoO7t
+	 Sc+vbmlLFOlv7X0tMWf3+tqikoA56BEh+DMM5Dk1GSPcU9TD+GBbEd1roUWxE4AFFwgCR0iDXn8Z
+	 LaXMgDB6PqBeaz1v8uoeiG1eh5QLGos1LwTtyWf36ATlikbNTZIsVpx7vIVHcWrbXfismzSPwC0G
+	 +XCifmb0TFFO07iC2Lx9MyQjno6okveCNNfKqna0LEGzNp0oQ/GGvZiPpXQJAe/+dVs1Yz1zXVjl
+	 w0hKCqlP5nWcES09G7l18v93GFj85xB2QdzDiwhUc3cFs9gu1+w/yvaCVE8t0a9RHi/xmps0szop
+	 LN/43paZ/CXvrvxBV/VHobonLF1cePaUBzMk/ECZl5iPF+/d+0G1Uc7Yn77KUminZ091tYdvjEwt
+	 2fCPcK2cmxfhPXR2/zB3zArhQNnd2XtBJ50S5fP2MRvQhocC1n80yo0trCqnUgF/g20xmoWdrks6
+	 HLJYE0cjSdT+iEVS5YfFs6YPJoSYS6z5+AwZiaowHzc8U+3hXN8PYsYmWDFHERA20ph5hrKc/7Xv
+	 agjPWoZ6Z0jq/Nx0+EIFGTfUTkDocBNNuu8r7BXAixw9JmosQKKI1fYOsQftT+Tt5XanuVvw5msF
+	 URs7/MTpd7ccZ2Uy604K2VaoBx+w5YCUFzLDETlEkR1HCL+m/vWpCYMHimitSueAmWxL7U9vb2vK
+	 7BcryxX+D7XLOL7LVFFenBBKXXwDsCsRM6P/KOpR5gboNr2z4SvJDjgWI7Nloi3g6FyoyXc8VMtm
+	 jyq6qdeBlI8XArgDPCYq2PNXnDyuvB/V6QO0x5sEBxGdi+Lp7lU4lkbfms6e3HijM4uAUcb8aGAw
+	 us/kan5KW3wwyvPVYAEtBKLnJcWR/OY9UMG+5SYU7lU2/8AWvgsEg/VKHtMaSdtOJBEQWZSmrVXA
+	 YzeRrEoJ9G5TB+eSHCM9xEtP82Ca6j4UXkIpg0/Q==
+X-QQ-XMRINFO: OD9hHCdaPRBwq3WW+NvGbIU=
+From: pipishuo <1289151713@qq.com>
+To: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	1289151713@qq.com
+Subject: [PATCH] staging: fbtft:fixes unnecessary parentheses
+Date: Sun, 28 Apr 2024 20:19:08 +0800
+X-OQ-MSGID: <20240428121908.16060-1-1289151713@qq.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Shresth Prasad <shresthprasad7@gmail.com>
-Date: Sun, 28 Apr 2024 17:18:46 +0530
-Message-ID: <CAE8VWiK8sOm6=q4JoTV7kCjQ-b3feO0FYqjQc_TZvLGe6Oi2zw@mail.gmail.com>
-Subject: Re: [PATCH v2][next] backlight: sky81452-backlight: Remove
- unnecessary call to of_node_get
-To: Shresth Prasad <shresthprasad7@gmail.com>
-Cc: daniel.thompson@linaro.org, deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	Javier Carrasco <javier.carrasco.cruz@gmail.com>, jingoohan1@gmail.com, lee@kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Shuah Khan <skhan@linuxfoundation.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi, any updates on this?
-Has this patch been accepted?
+This patch fixes the checks reported by checkpatch.pl
+for unnecessary parentheses
 
-Regards,
-Shresth
+Signed-off-by: pipishuo <1289151713@qq.com>
+---
+ drivers/staging/fbtft/fb_ili9320.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/fbtft/fb_ili9320.c b/drivers/staging/fbtft/fb_ili9320.c
+index 0be7c2d51548..045275a9bc0b 100644
+--- a/drivers/staging/fbtft/fb_ili9320.c
++++ b/drivers/staging/fbtft/fb_ili9320.c
+@@ -37,7 +37,8 @@ static int init_display(struct fbtft_par *par)
+ 	devcode = read_devicecode(par);
+ 	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "Device code: 0x%04X\n",
+ 		      devcode);
+-	if ((devcode != 0x0000) && (devcode != 0x9320))
++	if (devcode != 0x0000 &&
++	    devcode != 0x9320)
+ 		dev_warn(par->info->device,
+ 			 "Unrecognized Device code: 0x%04X (expected 0x9320)\n",
+ 			devcode);
+-- 
+2.34.1
+

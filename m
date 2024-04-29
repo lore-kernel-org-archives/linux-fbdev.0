@@ -1,103 +1,120 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07C9C3C24;
-	Mon, 29 Apr 2024 11:39:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D6DC6CDB7;
+	Mon, 29 Apr 2024 12:19:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714390749; cv=none; b=EYdt7JP3Fniln9ORe5iaO4HEO+QoMDKnPuIald4Be6WMcbQn3FOdNa8pxRhT4WdaVKIZoFQyvuzqCUHOm9uUpt8bQMPqKzv1Pn5JCDoweLmUU2/hdUOQjp7WFqmG5KNogEvusYy3RBsnfCcI+pY9+/VxQA1UlaqWdsmyw1mTroY=
+	t=1714393198; cv=none; b=kjWj2T/fXJYUrsezgRj0bM9FWjwEosPstbbLeL3bzEdQZW4+NhlO2nR+prs6OLCmmPkSOTkjR89LW+7pJoY0YlUwb7mlQeu1Hjkn1FrQsSvZ6cg6WVO9mQqwNzLc7D9wl/xF02Z323Q4EoubFe2le5cboCbcTdXhhnd+knv9/FM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714390749; c=relaxed/simple;
-	bh=uZu3wKHQNWr0ZLymAFjd5ivV78yNbTAn33ozggWSTE0=;
+	s=arc-20240116; t=1714393198; c=relaxed/simple;
+	bh=CjtZnAARk7MKINso2pTgQybSMs6C5wNrBPWS1UNyhEI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PH1kE/m6n/e0WBIRTH1FKIF+sWAjfWngKmvGkUCowhTNEb9B3E5XOBDkTepz716SKHBC19Dtao6aBQqiFLeL20R9EP0KP38wfQslhMB4ki70G7/yxtjoLDANmgTWeLu2DEq8llzQHM5eyrB5NcsrT+yqN+aFRYxW030pSZIaqTw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HC+nGYW2; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=J9y5BXTnKPgTiJlZ0Kouf7dYoPAxH85lyzVKrs9lGLJ7BQd5LpgEbQiXFfsKLezpQii0hQYdxDWaiAOA2XFScTGLAIFKQHtXvreg2+UTg12Yno+HmZwfiQS/i4yeuSlCr2evpxTS2uIty5L5E/ynP3i2Tp1WtkiiDf7E+abHpss=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=YfN9xvJ2; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HC+nGYW2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A805C113CD;
-	Mon, 29 Apr 2024 11:39:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714390748;
-	bh=uZu3wKHQNWr0ZLymAFjd5ivV78yNbTAn33ozggWSTE0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HC+nGYW2S8rw/A3OruRlx4jB+D0gz6jk7NqR9R3PD4B/0HEXqW+bZlzv5BlOdJrrY
-	 35TrG6u24kc/7Igpkw3xHpC+21isyj/mWgnZaz7LUqmvQhTK0ATuaZwqpAgWjUXkI9
-	 qK4HvdMYxr/fLAh8VFLa7Y7Wh3NOqqp0VQ2Qrkq+2K+0xti8Dz4wpSBsp26g9nXvK6
-	 GOL3H26QxYWHjhZi3rPuusu+SBqJpF9boYvhrXddnSQMK8CEnNcfWqsCg8MvbXQFye
-	 0ENWLu3F3Wxv5CffhqU4AovNvY79Jb0X2BrlZp1mDFVfpaUjT3EPaFa42qr3QA+Zxf
-	 DUIqQ5gZ080tQ==
-Date: Mon, 29 Apr 2024 13:39:06 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>, David Lechner <dlechner@baylibre.com>, 
-	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="YfN9xvJ2"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1714393198; x=1745929198;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=CjtZnAARk7MKINso2pTgQybSMs6C5wNrBPWS1UNyhEI=;
+  b=YfN9xvJ2u7XoDEhwinQb5vQG0+M9BWiMm0nlN2hx4Oxc/TVtc127RKkU
+   B2xy7hq2RQb5opgXf+Lm5ecZnpIK0cTRb+COTFkYSvvR5+HEh6ZGLATBX
+   IOWBXBs9afsxFU/00V1+A3p5og90UuirsEhbZLbhYin0ZXlF8Oj6J0G7G
+   sXefOTAdcT4rDUOMOdNKNGue8XjfzYR/l8jRm6E/os76EIt4WsQIOy22n
+   AYx0q4H9wl9YZPlZEcZsj3nvpw9P2RFKetWoDq9Mc0BI7UPfjZYEvVAoj
+   Z/5cqlwDNTU+szy2gYEDLir2/MMR5VkcXFQpQ3zW6C5GlCrXG2eNSfHfA
+   A==;
+X-CSE-ConnectionGUID: AGwHbl2cTJ+gFqL37r4uCw==
+X-CSE-MsgGUID: Suql+Y3WTreQorJX4dBLqA==
+X-IronPort-AV: E=McAfee;i="6600,9927,11057"; a="10213654"
+X-IronPort-AV: E=Sophos;i="6.07,239,1708416000"; 
+   d="scan'208";a="10213654"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2024 05:19:57 -0700
+X-CSE-ConnectionGUID: vyCOCsvpTuyxEkTv0uZI+A==
+X-CSE-MsgGUID: BeR9vZjTQTSfzUNPU3CIBg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,239,1708416000"; 
+   d="scan'208";a="26169766"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2024 05:19:54 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.97)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1s1Pz5-00000002KT3-0EnX;
+	Mon, 29 Apr 2024 15:19:51 +0300
+Date: Mon, 29 Apr 2024 15:19:50 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Maxime Ripard <mripard@kernel.org>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+	Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+	David Lechner <dlechner@baylibre.com>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
 Subject: Re: [PATCH v1 1/1] drm/ili9341: Remove the duplicative driver
-Message-ID: <20240429-gorgeous-beetle-of-downpour-492bbd@houat>
+Message-ID: <Zi-QZmwa1kIAv0sP@smile.fi.intel.com>
 References: <20240425124208.2255265-1-andriy.shevchenko@linux.intel.com>
  <20240425-perky-myrtle-gorilla-e1e24f@penduick>
  <ZipxEk9Lpff1kB7b@smile.fi.intel.com>
+ <20240429-gorgeous-beetle-of-downpour-492bbd@houat>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="ypdsdw5t4cfybdrt"
-Content-Disposition: inline
-In-Reply-To: <ZipxEk9Lpff1kB7b@smile.fi.intel.com>
-
-
---ypdsdw5t4cfybdrt
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20240429-gorgeous-beetle-of-downpour-492bbd@houat>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 
-On Thu, Apr 25, 2024 at 06:04:50PM +0300, Andy Shevchenko wrote:
-> On Thu, Apr 25, 2024 at 04:58:06PM +0200, Maxime Ripard wrote:
-> > Hi,
-> >=20
-> > On Thu, Apr 25, 2024 at 03:42:07PM +0300, Andy Shevchenko wrote:
-> > > First of all, the driver was introduced when it was already
-> > > two drivers available for Ilitek 9341 panels.
-> > >=20
-> > > Second, the most recent (fourth!) driver has incorporated this one
-> > > and hence, when enabled, it covers the provided functionality.
-> > >=20
-> > > Taking into account the above, remove duplicative driver and make
-> > > maintenance and support eaiser for everybody.
-> > >=20
-> > > Also see discussion [1] for details about Ilitek 9341 duplication
-> > > code.
-> > >=20
-> > > Link: https://lore.kernel.org/r/ZXM9pG-53V4S8E2H@smile.fi.intel.com [=
-1]
-> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> >=20
-> > I think it should be the other way around and we should remove the
-> > mipi-dbi handling from panel/panel-ilitek-ili9341.c
->=20
-> Then please do it! I whining already for a few years about this.
+On Mon, Apr 29, 2024 at 01:39:06PM +0200, Maxime Ripard wrote:
+> On Thu, Apr 25, 2024 at 06:04:50PM +0300, Andy Shevchenko wrote:
+> > On Thu, Apr 25, 2024 at 04:58:06PM +0200, Maxime Ripard wrote:
+> > > On Thu, Apr 25, 2024 at 03:42:07PM +0300, Andy Shevchenko wrote:
+> > > > First of all, the driver was introduced when it was already
+> > > > two drivers available for Ilitek 9341 panels.
+> > > > 
+> > > > Second, the most recent (fourth!) driver has incorporated this one
+> > > > and hence, when enabled, it covers the provided functionality.
+> > > > 
+> > > > Taking into account the above, remove duplicative driver and make
+> > > > maintenance and support eaiser for everybody.
+> > > > 
+> > > > Also see discussion [1] for details about Ilitek 9341 duplication
+> > > > code.
+> > > > 
+> > > > Link: https://lore.kernel.org/r/ZXM9pG-53V4S8E2H@smile.fi.intel.com [1]
+> > > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > > 
+> > > I think it should be the other way around and we should remove the
+> > > mipi-dbi handling from panel/panel-ilitek-ili9341.c
+> > 
+> > Then please do it! I whining already for a few years about this.
+> 
+> I have neither the hardware nor the interest to do so. Seems it looks
+> like you have plenty of the latter at least, I'm sure you'll find some
+> time to tackle this.
 
-I have neither the hardware nor the interest to do so. Seems it looks
-like you have plenty of the latter at least, I'm sure you'll find some
-time to tackle this.
+Hmm... Since the use of Arduino part in panel IliTek 9341 is clarified
+in this thread, I won't use that, but I have no time to clean up the mess
+in DRM in the nearest future, sorry. And TBH it seems you, guys, know much
+better what you want.
 
-Maxime
+FYI:
+The drivers/gpu/drm/tiny/mi0283qt.c works for me (the plenty of the HW
+you referred to).
 
---ypdsdw5t4cfybdrt
-Content-Type: application/pgp-signature; name="signature.asc"
+TL;DR: consider this as a (bug/feature/cleanup) report.
 
------BEGIN PGP SIGNATURE-----
+-- 
+With Best Regards,
+Andy Shevchenko
 
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCZi+G2QAKCRAnX84Zoj2+
-dpzEAX9NlMH8mHXaP+9bA+sNZT1R3FNYhW4Pt/1Pn1ubi1pgXk5iBoL6JrqISoVP
-QXA4pXMBgORaHd6OB/qFoTj87/v5BZX5gZC0QpOeO4bItwlvpgRISkUwBwjWNi6u
-pd9y46+Yag==
-=V5/I
------END PGP SIGNATURE-----
 
---ypdsdw5t4cfybdrt--

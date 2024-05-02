@@ -1,65 +1,104 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CFE513C820;
-	Thu,  2 May 2024 17:26:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB95442AB6;
+	Thu,  2 May 2024 20:01:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714670799; cv=none; b=ZCAd/SmVsHMO8t25x6LQFUKWJt+cKx0Ut214w6YHprqbskQwK+iLIpTOE8K8mDogLzNt0kY85nBI55bXf35I+5u0OGz5oW/LsRMo1RYG1Fw1m6Wiq0OYqkd8pXKJziIk/u+cGA3GTPO5emwRJGcG3lKl5FTC8s1zaypntHgJpPk=
+	t=1714680080; cv=none; b=CB8OL6Ko5SoJ5nhyl1iRTUFLK/x4qLCof9mVp0aeiDyAum2wA/+VMiXAkWnAm5XqmJUA8PIajKH38tV/94Ea465nnRRDCSqRpNRT3uYv0lKmJXOEoAxHrbmZ8M+EEZWtEfS5ZYOJkDxAOzaMdHJQOWPt71LY/E3ux+srHkf8G/k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714670799; c=relaxed/simple;
-	bh=ZaiiRZ2rHARj9qlIVThHOdD9gBPLlRdbHjtki6AAwhM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=CmSsR2TAo13FGbNx3raR3kgtYJ/xd0gUWdxq4OjK52Wp0CPbr9+1QCyw5PZ1fiYRZP8XSpA/weAQbN9QlmjawjbjdY9U5FXOwV/QeeDY3kHXuUecd2aq0k+X/E5513d+JY05fBjOI6WvDTwf90fQ7VsENJIunyu+1g/+A2D9Rj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LdpCAseE; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1714680080; c=relaxed/simple;
+	bh=rTBDgCqzm9I1eNIhz2jjJ+hF2kv0hFIJO1QBgNYCLzQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=fmF/8bQZlZObpKwiJYF75sCMGYas54SexWgfL3HNVBpiiJWxT+CRTwZL2NyzvH4FyRT9jao4Jf7uWhilL/eVnqCJ/rNU8Sq4oghLp0hgw6bzTtD9H6hkFefyxogp8g42Mj2/sQ6u4x6iT24cwuGxbG3glMPNPcz5hzRtwhdtjuw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=e95T3MQ+; arc=none smtp.client-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LdpCAseE"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A1FCC113CC;
-	Thu,  2 May 2024 17:26:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714670798;
-	bh=ZaiiRZ2rHARj9qlIVThHOdD9gBPLlRdbHjtki6AAwhM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=LdpCAseEXC1l0+nRg+IFZwPvDYNnioSl5U++nFBZrw8Aa40h7cPTx6ym1wzsOFPqX
-	 nl0O5Ffm38F29REUyV9MATORkoPzLjho+VnQTvs4vVzYdSBK+Jd2DfHzKXvcstlY57
-	 R1kFl9hJUtJQ9FykDhHys2FIFa29Qiz9cJH3pUR02e5ArKGDwGFAGXhWYKiHfAAyRm
-	 G+zDk3TpR/2Y/1wm2MbzSA6jBcpByiqBQtnEJORz1J+HqNBlwvRtHmb3wHaapNpe73
-	 CIs3p7n6GrJz22v9+2qP7CSVWYHOpMBbefhxDeZWQt1CRelkbopMn5U3xnfToo8h7n
-	 6jsfMgtcz/Zyw==
-From: Lee Jones <lee@kernel.org>
-To: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
- deller@gmx.de, Shresth Prasad <shresthprasad7@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, javier.carrasco.cruz@gmail.com, 
- skhan@linuxfoundation.org, julia.lawall@inria.fr
-In-Reply-To: <20240502172121.8695-2-shresthprasad7@gmail.com>
-References: <20240502172121.8695-2-shresthprasad7@gmail.com>
-Subject: Re: (subset) [RESEND][PATCH v3][next] backlight:
- sky81452-backlight: Remove unnecessary call to of_node_get
-Message-Id: <171467079621.1227065.12439900385268240993.b4-ty@kernel.org>
-Date: Thu, 02 May 2024 18:26:36 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e95T3MQ+"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-1eab16dcfd8so72687255ad.0;
+        Thu, 02 May 2024 13:01:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1714680078; x=1715284878; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=uaz8rW2sq3u4mWnq4w7bNSJ13vyEsIaZonXWAGwzYCs=;
+        b=e95T3MQ+LQ9CYNyuyd/nfwMfPVgORSFWEnzXbiwxX+NUXZAZyqsSejrgiCPXLdJvU7
+         lWmZ9t4nyg2lWZ830keQ6UzrGOETWzWhUYi/5RbmCfXpgPkkcMnVb4ZtcJTYuCnyEAe5
+         /ZWA61cV8hY17Cqn7rECASpt2j10qHPBs2iLVpM99EOrU+B+zrCXnYWOnJtOuj5aZLfQ
+         cDVIGvORh0NTR7FSNKizwcBFacdO+3uINRR3fsNHODu8UWTByTD59xfID9c0ff3VKdrQ
+         7wTukWuiuWl7vmJjV1NR7JA/MmUZJ9JAaRnhFLWzy2VO/AuCwb7WX5ulIjYqYxVmEuIA
+         FUXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714680078; x=1715284878;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=uaz8rW2sq3u4mWnq4w7bNSJ13vyEsIaZonXWAGwzYCs=;
+        b=pK7jIJcE/G9wDenNsyONG9HhlNJF2LspQ65kof1g8A1ZFPOqZYKGTSM9c+0byxogRH
+         1lw8PF+OqSZjDi+OlLqGW0Iw/SM2u7jfDVOsA4jncCLnkPohPoL//xLGf1wvG++yAUq9
+         gBfxWeZkJ45SpzOm2koW5pMYGN5R4M5mIJQ98anYK4WvKiASvc6JIi9HCfaBUfLtsCIY
+         +1+WwltWCb2TkE9jg2m10yijculxJyElcSoMCHDzIpfceuBfikp5hthSLL0dY8KCNA1P
+         juRukRf91krul0Af5WqfEZ4Ov6cEGBHcIp74rpFQwgkBBNAGUBmcdq4529UvsZcwO4k+
+         MYEQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUjOBdk5E4WFvsyxiwXVuJqSJXVvlugOaLrRe62tAw0/EigSzJ9qaNoUs70vNgucwcmYrwzcMvxGLSdSa2ek1iXE5KhpBQQsAy3M5/D
+X-Gm-Message-State: AOJu0YzZ9ctdXcHEWvZw7kEZYkQ/aXH2fBOZ9DWzGXbC7g7QGP7joKku
+	O+5kVhNLlo2r42cFa4OGzvkCZQTonGcmog6oQN7Vh/nyU+xwaSgVhsyhTBYl
+X-Google-Smtp-Source: AGHT+IFo69+W9OhD2MlkT00tcySGlmudG12kCBNx4rppmHaul9a8Wp/3Zo1K5hFmMcCmZomdYMRhxg==
+X-Received: by 2002:a17:903:246:b0:1e5:d021:cf02 with SMTP id j6-20020a170903024600b001e5d021cf02mr870737plh.36.1714680077654;
+        Thu, 02 May 2024 13:01:17 -0700 (PDT)
+Received: from localhost ([115.96.207.161])
+        by smtp.gmail.com with ESMTPSA id i16-20020a170902c95000b001ecc3a62b7esm1732757pla.45.2024.05.02.13.01.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 May 2024 13:01:17 -0700 (PDT)
+Date: Fri, 3 May 2024 01:30:11 +0530
+From: Aryabhatta Dey <aryabhattadey35@gmail.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org
+Cc: deller@gmx.de, tzimmermann@suse.de, sam@ravnborg.org, 
+	christophe.jaillet@wanadoo.fr, javier.carrasco.cruz@gmail.com, skhan@linuxfoundation.org
+Subject: [PATCH] Remove of_node_put from drivers/video/fbdev/offb.c
+Message-ID: <ipercce5fi5islpzglwkxsz5fyffooxz4cn4luxa3y25yfvawf@lbt46vliet6v>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Thu, 02 May 2024 22:51:21 +0530, Shresth Prasad wrote:
-> `dev->of_node` already has a reference to the device_node and calling
-> of_node_get on it is unnecessary. All conresponding calls to
-> of_node_put are also removed.
-> 
-> 
+Add __free(device_node) to the declaration of the pointer pointing to the pci
+parent.
+This change replaces the manual clean up done by of_node_put() with scope based
+memory management.
 
-Applied, thanks!
+Signed-off-by: Aryabhatta Dey <aryabhattadey35@gmail.com>
+Suggested-by: Julia Lawall <julia.lawall@inria.fr>
+---
+ drivers/video/fbdev/offb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-[1/1] backlight: sky81452-backlight: Remove unnecessary call to of_node_get
-      commit: 4da294108e38bf9cd5c62c2caa47611e5dbb7fb1
-
---
-Lee Jones [李琼斯]
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index b421b46d88ef..ea38a260774b 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -357,7 +357,7 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 			par->cmap_type = cmap_gxt2000;
+ 	} else if (of_node_name_prefix(dp, "vga,Display-")) {
+ 		/* Look for AVIVO initialized by SLOF */
+-		struct device_node *pciparent = of_get_parent(dp);
++		struct device_node *pciparent __free(device_node) = of_get_parent(dp);
+ 		const u32 *vid, *did;
+ 		vid = of_get_property(pciparent, "vendor-id", NULL);
+ 		did = of_get_property(pciparent, "device-id", NULL);
+@@ -369,7 +369,6 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 			if (par->cmap_adr)
+ 				par->cmap_type = cmap_avivo;
+ 		}
+-		of_node_put(pciparent);
+ 	} else if (dp && of_device_is_compatible(dp, "qemu,std-vga")) {
+ #ifdef __BIG_ENDIAN
+ 		const __be32 io_of_addr[3] = { 0x01000000, 0x0, 0x0 };
+-- 
+2.44.0
 

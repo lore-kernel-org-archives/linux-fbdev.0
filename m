@@ -1,115 +1,133 @@
-Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE646200C1;
-	Thu,  2 May 2024 06:20:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFECF819;
+	Thu,  2 May 2024 06:37:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714630808; cv=none; b=uzq1uY47CbC6uLvwJdEM23KvLvqMNZDkA1YT5fcn6yqhK9EvY5FiOaXpdDA/nXaSTmjBz9r9vyGOuZGgKVCR3sVS7tbB3K/EOMxcBUKcl5qBNfA5eDKG9nMMCquIXO9AlinDQsKn9QaZJNP8QkOXz/U6XQZGSqol1X9eLrDn78A=
+	t=1714631829; cv=none; b=rD3TMCbFzq7oArNzxnr06gx3W4Ts8gTaDbMl+U4eEn6UFeNB5gsbPsY0Dg5TeaVTp1iRr8DaXxo98weXcpayOVsvpr5aaunHkkyfnWegaJo6WuuC6Is2BZMXkvdWlUN1sC8cEwMKUrzSCLYBALp0jaDUn0q2wI3lIO4d7OHlqKo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714630808; c=relaxed/simple;
-	bh=VyEoVuiaYCnu0a/sKyNsC18VH2c5Qw5Z3+UdTP90Fug=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=N93pCgH+jB1PNkl5krLSbN2d/nEes3dYtd0115xLnPLz1oDDCh/lauGRgjKsRq0/rd/cy6hm2dp3Zx3w9feiRb1vv9Q/FmTWzBs6aRCB6gcEo/4rDt5/6AN0F//VEGxKfS7guNnpd9XVEC+cptBMA3y+zgJT6mUV7MH+G4/EYqE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BqTVVEol; arc=none smtp.client-ip=209.85.210.174
+	s=arc-20240116; t=1714631829; c=relaxed/simple;
+	bh=+AGde7ihoVL37RNfwg2ChkKnBeZbRb8zV7vZfOgq33c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nH8ToHoir727riz92chxtCR2HLJWu1jCFowP0WbgGFMPE7z7ybXjTYXQx3XIqAdui8CwGOW32M727eP+UfXNmOxhRoveKnEzpPzj24K8ZP2KEg+zgndlgBMv2v7BTt1LPty/pm6uwA7EG2RYGsC1WbimzLc0XCdkCKpWytefl/0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=X/cfPT9/; arc=none smtp.client-ip=209.85.214.177
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BqTVVEol"
-Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-6edb76d83d0so6554148b3a.0;
-        Wed, 01 May 2024 23:20:06 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X/cfPT9/"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-1ec4dd8525cso19819535ad.3;
+        Wed, 01 May 2024 23:37:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1714630806; x=1715235606; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dgakmapef0h80N+jtF51dv68wB35uuo/PTTHrmoZruM=;
-        b=BqTVVEolUJyh/CheLOOPtRpcxVOz9v4F/x4ahStM3onwr9515GZigWIGOedg46Nr7z
-         /CWCbSn58xmjgTiGRnayFpXEdr0zDCnEjAqzfEYhc16UwQX7HOv+wq0xnqxTJoAQE0d+
-         9I9ngQodH6sxLpi6gQU1U9pE8Ha+2xW+2w67DfxXTjFzxwuY8z1WE+Q07INSEkJ7Jpb9
-         kCfKuBdSn8IarYGXAxu7qmqZJfiDCUZOYTgI2YBhp/YWA36UiAHJjbFTpBAwFORcaOGY
-         /jnW9yL6pD4kj01Pmbw8xi4WPgrMtZ/8EjZsHRtf/k2DCG689QohuZQ6PNl0qG9kj9Ia
-         eEYA==
+        d=gmail.com; s=20230601; t=1714631827; x=1715236627; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=BoLV4NBTi5WshpxXLizBmf79HWwJfptg7//iRnwuPL0=;
+        b=X/cfPT9/34432LS4NL37vOIFs89N8f87G6haaKx8vVFUfB4mbe7kLFD/koClphcUJa
+         YthT8yug3FcSH6vpymlvynraBXxgq52jMrU6X91feSKUwl+miBzhyQUArMD7KaGhVGBb
+         OZnN6gKm2gk0pfaRJWxNvQFECYDTUSWcpz8wACCLy3+capfGfOYjyI7TlQoNLVPjPxFR
+         1oYKkh+4rH7i8TGGQY42e3BjgaHyWDgH8iVc7scaOohAfAY2cZ9J4lTJ5VOO59D4jmoJ
+         hmhQqll4Tvd46BP0Lnp2/9wRE0QOga2s1LirWFNZ6dQrBcCysZMYdxBKId1wWz3Fm2wf
+         b10A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714630806; x=1715235606;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dgakmapef0h80N+jtF51dv68wB35uuo/PTTHrmoZruM=;
-        b=fAGId7FQR6CYotcwNgRa63PJv7AiQmBKNWqNfqB/C9EQVzkm9vfYDMd45xSyFTTlG9
-         zRvZUfpNoywzX/9oRMvJZrGhci5tyK4Hm2rBF4i4K4P0MQzVftb+1amhfsrO92UBZ9/k
-         LtRRvmtSO6PxOXnGYQ1tY8v/Hq9/AgUq3aMREWKzW74pmN/r0A6rU9VY9p4yBJLrDF0V
-         jkynA5O8xHPhra31Nm0ORhjD4r4+bfrds88mooJ92itQh3nHACcggd0Fx32xpADkh3Ja
-         VrfFwBBzxyVnuSUBpsLIiOWkoxGKdYCgGY4a8AGqTrV1VcnxtxEnaN0yEv+KXEX94r7f
-         xa9A==
-X-Forwarded-Encrypted: i=1; AJvYcCWr+AOYa9glw7JPZX1j7VriXbqkYERYM2lsOv0pFHJNmoFglT1zOjlKb9Qhkb5fPZlJeM2x6F7v8w/AQVmxmwDAzYl64G68lozC/iUhxHvW6rwM8Y+TRPibSirkHUt0GVQaRsp+ViI1wKk=
-X-Gm-Message-State: AOJu0YxhdY2rasp0pnEYzA7hODiJ0wOa0tJvpXVDi7eKhmhZP6j2tpRR
-	MGOE6U7tLj2+0dGBQCnUiJYviOavGu95iMFGBX4P7erW03ddBWzyDKYGMOIB3xzWf9DcvJ1E4WV
-	r/m4w4E02K9Z0wUBSvSa225PcAq4=
-X-Google-Smtp-Source: AGHT+IGw7RzP7UzHjMbV/OepNR4EpONmEDOtas5IFiGjBTRnwEvzrxz/pCfwVHCFI9ryiW74MuQPtzxxUTUbsrc7WiM=
-X-Received: by 2002:a05:6a21:6d8b:b0:1a3:ae75:d6f5 with SMTP id
- wl11-20020a056a216d8b00b001a3ae75d6f5mr6426998pzb.20.1714630806165; Wed, 01
- May 2024 23:20:06 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1714631827; x=1715236627;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BoLV4NBTi5WshpxXLizBmf79HWwJfptg7//iRnwuPL0=;
+        b=hsSxGBgbgGdjfNZU3ayomvocVsfy93JSqq4YsZJZtPnn5XerMPl/eHCXxnNu1dx63h
+         S32g6YfcMpWawzpSLSDKDBRs3QGTkn4iDP7NHdb839Hf8bm6aVcVgxNkPLOqkADFwews
+         DxrR0aofjmH29xwM5jN8OQfJZ4LYJIGz7XlAnwWkEuqGAMQuyJoYSiV7t1/y3Cg0z7O0
+         VhboLr5Nw7POPo8FZ+vRsJR60dgAyVi0nok95ArY989FQ2VUrEEGojkpoxIzDDGbZZ9S
+         Gt1inXBL4sDGhHM5/0anYj7oQtSTAP2zm9tx5Ca7F3cQzHS3aAKNAo64OtPIInDhPeTs
+         xePw==
+X-Forwarded-Encrypted: i=1; AJvYcCULIKhSudAQzZNJnsSiQHPoa44RjJ5qQ6a0k9836a+b+GK9Pn/KtjyAHwl4j0sNr4oDi/vZrCgJhZ9MFoye/rGccadCGqs1wGg2v9S9ZqCw+Jn4j9XdN3AblwIoWzWpC6HLN7MAVTtOOvw=
+X-Gm-Message-State: AOJu0YwzJP4vKnqnclmiChYtkd6NCb7B9sWQe37ag6Kq6cin9IylEvXG
+	LXd0ZWVHp1YS6Csn2PaPWCmUC7Fb1Pte9dcByB+DQX5z3eKDsfIj
+X-Google-Smtp-Source: AGHT+IGRsFloWjksJZp0KragxTnZKgqBKV04pCsU3xT3150e9iJsRxDV8vqtiXoBmaMkF0RRlmSAFA==
+X-Received: by 2002:a17:902:e883:b0:1e3:e4ff:7054 with SMTP id w3-20020a170902e88300b001e3e4ff7054mr6427245plg.38.1714631826997;
+        Wed, 01 May 2024 23:37:06 -0700 (PDT)
+Received: from shresth-aspirea71576g.abesec.ac.in ([139.5.197.146])
+        by smtp.gmail.com with ESMTPSA id lf4-20020a170902fb4400b001e8d180766dsm450881plb.278.2024.05.01.23.37.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 May 2024 23:37:06 -0700 (PDT)
+From: Shresth Prasad <shresthprasad7@gmail.com>
+To: lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	javier.carrasco.cruz@gmail.com,
+	skhan@linuxfoundation.org,
+	julia.lawall@inria.fr,
+	Shresth Prasad <shresthprasad7@gmail.com>
+Subject: [PATCH v3][next] backlight: sky81452-backlight: Remove unnecessary call to of_node_get
+Date: Thu,  2 May 2024 12:06:22 +0530
+Message-ID: <20240502063621.65687-2-shresthprasad7@gmail.com>
+X-Mailer: git-send-email 2.45.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240501125146.33648-1-prosunofficial@gmail.com>
- <20240501140144.GA10180@aspen.lan> <alpine.DEB.2.22.394.2405011618351.3278@hadrien>
-In-Reply-To: <alpine.DEB.2.22.394.2405011618351.3278@hadrien>
-From: Shresth Prasad <shresthprasad7@gmail.com>
-Date: Thu, 2 May 2024 11:49:54 +0530
-Message-ID: <CAE8VWiLZvmeMdR5rsJ7vugXPyW6ABMZZwPRhJ=iU-KXqOJZ77w@mail.gmail.com>
-Subject: Re: [PATCH] backlight: sky81452-backlight: replace of_node_put with __free
-To: Julia Lawall <julia.lawall@inria.fr>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, R Sundar <prosunofficial@gmail.com>, 
-	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, skhan@linuxfoundation.org, 
-	javier.carrasco.cruz@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-I'll remove the unnecessary braces and resend the patch.
+`dev->of_node` already has a reference to the device_node and calling
+of_node_get on it is unnecessary. All conresponding calls to
+of_node_put are also removed.
 
-Regards,
-Shresth
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Shresth Prasad <shresthprasad7@gmail.com>
+---
+Changes in v3:
+    - Remove unnecessary braces
 
-On Wed, May 1, 2024 at 7:49=E2=80=AFPM Julia Lawall <julia.lawall@inria.fr>=
- wrote:
->
->
->
-> On Wed, 1 May 2024, Daniel Thompson wrote:
->
-> > On Wed, May 01, 2024 at 06:21:46PM +0530, R Sundar wrote:
-> > > Use the new cleanup magic to replace of_node_put() with
-> > > __free(device_node) marking to auto release when they get out of scop=
-e.
-> > >
-> > > Suggested-by: Julia Lawall <julia.lawall@inria.fr>
-> > > Signed-off-by: R Sundar <prosunofficial@gmail.com>
-> >
-> > Thanks for the patch but I think this one is a more appropriate
-> > solution to this issue:
-> > https://lore.kernel.org/all/20240421104916.312588-2-shresthprasad7@gmai=
-l.com/
->
-> Maybe neither one is perfect?  The one I see at that link has:
->
->         if (!pdata) {
-> -               of_node_put(np);
->                 return ERR_PTR(-ENOMEM);
->         }
->
-> which has unneeded {}
->
-> julia
->
->
-> >
-> >
-> > Daniel.
-> >
+ drivers/video/backlight/sky81452-backlight.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
+index eb18c6eb0ff0..19f9f84a9fd6 100644
+--- a/drivers/video/backlight/sky81452-backlight.c
++++ b/drivers/video/backlight/sky81452-backlight.c
+@@ -182,7 +182,7 @@ static const struct attribute_group sky81452_bl_attr_group = {
+ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 							struct device *dev)
+ {
+-	struct device_node *np = of_node_get(dev->of_node);
++	struct device_node *np = dev->of_node;
+ 	struct sky81452_bl_platform_data *pdata;
+ 	int num_entry;
+ 	unsigned int sources[6];
+@@ -194,10 +194,8 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 	}
+ 
+ 	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+-	if (!pdata) {
+-		of_node_put(np);
++	if (!pdata)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 
+ 	of_property_read_string(np, "name", &pdata->name);
+ 	pdata->ignore_pwm = of_property_read_bool(np, "skyworks,ignore-pwm");
+@@ -217,7 +215,6 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 					num_entry);
+ 		if (ret < 0) {
+ 			dev_err(dev, "led-sources node is invalid.\n");
+-			of_node_put(np);
+ 			return ERR_PTR(-EINVAL);
+ 		}
+ 
+@@ -237,7 +234,6 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 	if (ret < 0)
+ 		pdata->boost_current_limit = 2750;
+ 
+-	of_node_put(np);
+ 	return pdata;
+ }
+ #else
+-- 
+2.45.0
+

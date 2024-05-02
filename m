@@ -1,104 +1,112 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB95442AB6;
-	Thu,  2 May 2024 20:01:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3B8A357CB9;
+	Thu,  2 May 2024 22:26:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714680080; cv=none; b=CB8OL6Ko5SoJ5nhyl1iRTUFLK/x4qLCof9mVp0aeiDyAum2wA/+VMiXAkWnAm5XqmJUA8PIajKH38tV/94Ea465nnRRDCSqRpNRT3uYv0lKmJXOEoAxHrbmZ8M+EEZWtEfS5ZYOJkDxAOzaMdHJQOWPt71LY/E3ux+srHkf8G/k=
+	t=1714688799; cv=none; b=H5rOr9VvlIH0qj8R+JOubV1FpIeriGGTzNSfUeTJkazkTtayuA0DGwBNbTz/O8WXJwGpUO+e8tBQWdV+wXj0SY31WgLjrD7ZEO8EyF5IFNKz6UVzCX0FF+iZadums8CxAYK2CL5oo+RaTUkt3I9LEheAjlDPrMa3WZNR/1HhFjA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714680080; c=relaxed/simple;
-	bh=rTBDgCqzm9I1eNIhz2jjJ+hF2kv0hFIJO1QBgNYCLzQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=fmF/8bQZlZObpKwiJYF75sCMGYas54SexWgfL3HNVBpiiJWxT+CRTwZL2NyzvH4FyRT9jao4Jf7uWhilL/eVnqCJ/rNU8Sq4oghLp0hgw6bzTtD9H6hkFefyxogp8g42Mj2/sQ6u4x6iT24cwuGxbG3glMPNPcz5hzRtwhdtjuw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=e95T3MQ+; arc=none smtp.client-ip=209.85.214.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1714688799; c=relaxed/simple;
+	bh=tzRQzMAo0KYbIQARBspopH2O28PH5OzJsS1h1UoNqJY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Ap3bR+Dkdqxe3KCEwbaZs0diB3yVgDVwhorh/DhDVGgLLnDmGvAR3ZH+CBUyEkWRkM1e9//NZ6wpQmkbksDYdSFhT5lZ9TUOtL1bJkbvoFz8jccpDA66HuWGb7VuH7Mn3TgER4tgwPe4z3SiK9QwF0m10X0Nsmtws90z3nxXgiI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=NhCrLKdI; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e95T3MQ+"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-1eab16dcfd8so72687255ad.0;
-        Thu, 02 May 2024 13:01:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1714680078; x=1715284878; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=uaz8rW2sq3u4mWnq4w7bNSJ13vyEsIaZonXWAGwzYCs=;
-        b=e95T3MQ+LQ9CYNyuyd/nfwMfPVgORSFWEnzXbiwxX+NUXZAZyqsSejrgiCPXLdJvU7
-         lWmZ9t4nyg2lWZ830keQ6UzrGOETWzWhUYi/5RbmCfXpgPkkcMnVb4ZtcJTYuCnyEAe5
-         /ZWA61cV8hY17Cqn7rECASpt2j10qHPBs2iLVpM99EOrU+B+zrCXnYWOnJtOuj5aZLfQ
-         cDVIGvORh0NTR7FSNKizwcBFacdO+3uINRR3fsNHODu8UWTByTD59xfID9c0ff3VKdrQ
-         7wTukWuiuWl7vmJjV1NR7JA/MmUZJ9JAaRnhFLWzy2VO/AuCwb7WX5ulIjYqYxVmEuIA
-         FUXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714680078; x=1715284878;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uaz8rW2sq3u4mWnq4w7bNSJ13vyEsIaZonXWAGwzYCs=;
-        b=pK7jIJcE/G9wDenNsyONG9HhlNJF2LspQ65kof1g8A1ZFPOqZYKGTSM9c+0byxogRH
-         1lw8PF+OqSZjDi+OlLqGW0Iw/SM2u7jfDVOsA4jncCLnkPohPoL//xLGf1wvG++yAUq9
-         gBfxWeZkJ45SpzOm2koW5pMYGN5R4M5mIJQ98anYK4WvKiASvc6JIi9HCfaBUfLtsCIY
-         +1+WwltWCb2TkE9jg2m10yijculxJyElcSoMCHDzIpfceuBfikp5hthSLL0dY8KCNA1P
-         juRukRf91krul0Af5WqfEZ4Ov6cEGBHcIp74rpFQwgkBBNAGUBmcdq4529UvsZcwO4k+
-         MYEQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUjOBdk5E4WFvsyxiwXVuJqSJXVvlugOaLrRe62tAw0/EigSzJ9qaNoUs70vNgucwcmYrwzcMvxGLSdSa2ek1iXE5KhpBQQsAy3M5/D
-X-Gm-Message-State: AOJu0YzZ9ctdXcHEWvZw7kEZYkQ/aXH2fBOZ9DWzGXbC7g7QGP7joKku
-	O+5kVhNLlo2r42cFa4OGzvkCZQTonGcmog6oQN7Vh/nyU+xwaSgVhsyhTBYl
-X-Google-Smtp-Source: AGHT+IFo69+W9OhD2MlkT00tcySGlmudG12kCBNx4rppmHaul9a8Wp/3Zo1K5hFmMcCmZomdYMRhxg==
-X-Received: by 2002:a17:903:246:b0:1e5:d021:cf02 with SMTP id j6-20020a170903024600b001e5d021cf02mr870737plh.36.1714680077654;
-        Thu, 02 May 2024 13:01:17 -0700 (PDT)
-Received: from localhost ([115.96.207.161])
-        by smtp.gmail.com with ESMTPSA id i16-20020a170902c95000b001ecc3a62b7esm1732757pla.45.2024.05.02.13.01.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 May 2024 13:01:17 -0700 (PDT)
-Date: Fri, 3 May 2024 01:30:11 +0530
-From: Aryabhatta Dey <aryabhattadey35@gmail.com>
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org
-Cc: deller@gmx.de, tzimmermann@suse.de, sam@ravnborg.org, 
-	christophe.jaillet@wanadoo.fr, javier.carrasco.cruz@gmail.com, skhan@linuxfoundation.org
-Subject: [PATCH] Remove of_node_put from drivers/video/fbdev/offb.c
-Message-ID: <ipercce5fi5islpzglwkxsz5fyffooxz4cn4luxa3y25yfvawf@lbt46vliet6v>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="NhCrLKdI"
+Received: from [100.64.232.195] (unknown [20.29.225.195])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 518C5206B4FD;
+	Thu,  2 May 2024 15:26:37 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 518C5206B4FD
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1714688797;
+	bh=NzMrFwSnELsNTouka86zwY4xBu0HDKLPheXHNRlf/UY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NhCrLKdI/ZqOMxIi0x/9IcKVE1fu8SJgV6IOu9yOzA4/X9AoPavE5e5S65Ugw3uBC
+	 sulaSRBperkkDcIDt2jCnwInTZEDOTYmaUAyGGeCvlgfS23LBxyBkoeXTUrIdi6qwD
+	 4F+b4DUgYEKEoHW556opdVdEoci1DJoGsON85j90=
+Message-ID: <076e0a0d-ad26-490e-9784-300ed52637ca@linux.microsoft.com>
+Date: Thu, 2 May 2024 15:26:36 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 12/12] fbdev/viafb: Make I2C terminology more inclusive
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Helge Deller <deller@gmx.de>,
+ "open list:VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER"
+ <linux-fbdev@vger.kernel.org>,
+ "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>,
+ "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
+ <nouveau@lists.freedesktop.org>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>
+References: <20240430173812.1423757-1-eahariha@linux.microsoft.com>
+ <20240430173812.1423757-13-eahariha@linux.microsoft.com>
+ <271ad513-0ea1-45df-ba0f-51582474ff34@suse.de>
+Content-Language: en-CA
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+In-Reply-To: <271ad513-0ea1-45df-ba0f-51582474ff34@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Add __free(device_node) to the declaration of the pointer pointing to the pci
-parent.
-This change replaces the manual clean up done by of_node_put() with scope based
-memory management.
+On 5/2/2024 3:46 AM, Thomas Zimmermann wrote:
+> 
+> 
+> Am 30.04.24 um 19:38 schrieb Easwar Hariharan:
+>> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+>> with more appropriate terms. Inspired by and following on to Wolfram's
+>> series to fix drivers/i2c/[1], fix the terminology for users of
+>> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+>> in the specification.
+>>
+>> Compile tested, no functionality changes intended
+>>
+>> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
+>>
+>> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+> 
+> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+> 
 
-Signed-off-by: Aryabhatta Dey <aryabhattadey35@gmail.com>
-Suggested-by: Julia Lawall <julia.lawall@inria.fr>
----
- drivers/video/fbdev/offb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Thanks for the ack! I had been addressing feedback as I got it on the v0 series, and it seems
+I missed out on updating viafb and smscufx to spec-compliant controller/target terminology like
+the v0->v1 changelog calls out before posting v1.
 
-diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-index b421b46d88ef..ea38a260774b 100644
---- a/drivers/video/fbdev/offb.c
-+++ b/drivers/video/fbdev/offb.c
-@@ -357,7 +357,7 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
- 			par->cmap_type = cmap_gxt2000;
- 	} else if (of_node_name_prefix(dp, "vga,Display-")) {
- 		/* Look for AVIVO initialized by SLOF */
--		struct device_node *pciparent = of_get_parent(dp);
-+		struct device_node *pciparent __free(device_node) = of_get_parent(dp);
- 		const u32 *vid, *did;
- 		vid = of_get_property(pciparent, "vendor-id", NULL);
- 		did = of_get_property(pciparent, "device-id", NULL);
-@@ -369,7 +369,6 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
- 			if (par->cmap_adr)
- 				par->cmap_type = cmap_avivo;
- 		}
--		of_node_put(pciparent);
- 	} else if (dp && of_device_is_compatible(dp, "qemu,std-vga")) {
- #ifdef __BIG_ENDIAN
- 		const __be32 io_of_addr[3] = { 0x01000000, 0x0, 0x0 };
--- 
-2.44.0
+For smscufx, I feel phrasing the following line (as an example)
 
+> -/* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, host, 
+> +/* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, *controller*, 
+
+would actually impact readability negatively, so I propose to leave smscufx as is.
+
+For viafb, I propose making it compliant with the spec using the controller/target terminology and
+posting a v2 respin (which I can send out as soon as you say) and ask you to review again.
+
+What do you think?
+
+Thanks,
+Easwar
+
+>> ---
+>>   drivers/video/fbdev/via/chip.h    |  8 ++++----
+>>   drivers/video/fbdev/via/dvi.c     | 24 ++++++++++++------------
+>>   drivers/video/fbdev/via/lcd.c     |  6 +++---
+>>   drivers/video/fbdev/via/via_aux.h |  2 +-
+>>   drivers/video/fbdev/via/via_i2c.c | 12 ++++++------
+>>   drivers/video/fbdev/via/vt1636.c  |  6 +++---
+>>   6 files changed, 29 insertions(+), 29 deletions(-)
+>>
+
+<snip>

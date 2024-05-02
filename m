@@ -1,471 +1,585 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4FB35D903;
-	Thu,  2 May 2024 10:46:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03BB415AAB8;
+	Thu,  2 May 2024 16:02:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714646770; cv=none; b=O+bPw5tmmK47WwxE0r3H5qhbevqgQLbg1TtFOGJMpislnfnCb8UNV/+zhWGLGULJUFWWhsRLShrS3pGWLvlCv3rkjxuY2T+KHIavo9eii4BsnGlCjduvrP9dt+w3LWCMkgW7mkAQUOo6LnrpszWm+C8tSGS/soXmkJMEqb2e1bE=
+	t=1714665742; cv=none; b=HBRu5wfIFYXHoSam9CU+3YTyKFYtxerOTZGUjq2CngF3tPDGBSIb55lyBbFUEXbnMf+EPzAwE0DKAqW0qvtBHExGCzlDKPP+YYhSF9UpeaRj4HyJdOSRIke03F1y5onAhBJD3wTp5X1YNvvCoAwuunr1Z9jDcPSfAdC5NxlhozY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714646770; c=relaxed/simple;
-	bh=u3YBowyQIANHMcTK7kxk0HNHLL5iznKNxq9nzrT0K48=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sInHys0uH/CDhkBzl8i1eD6iSkAwrqXZUyhnNjRaMZgY2ksDevvtHSt3m6OIOuzNKX3/Me9q1gFsGTwTQKQ0gcA2ondYlMduAgTOzHfODLwmJkyK1CEWTZCkqOTbUtUBBJXjXQyrvxTng8QfuYTxLpzVYVSlmKRDKHTAudOTdQg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=EcpiCXhP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5G7GFDoC; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=EcpiCXhP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5G7GFDoC; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1714665742; c=relaxed/simple;
+	bh=ev7mc20lWUMUIosgZeG3aGc56E+eLpNmk0BooYVv7Hs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VzH+kIOssYBgIS/g7FTh5Z+29CqmHSM04jSjMmVep1gwXwsoRB5einpY4hntoS1quqrx1pbLxhuP90iWgVtjnKnQ3ETb5+rZQsyEV9Xh90tj+fI8UFW9IzI2alU92fZF7949mvqBzoLPW++FSRusFOkgJtf75GLItEfSvQwuu4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ul3r1jd2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="EcpiCXhP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5G7GFDoC";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="EcpiCXhP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5G7GFDoC"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 080261FBF9;
-	Thu,  2 May 2024 10:46:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1714646766; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=zrXOa0VVlZDvgwP96iZpHXIU4P3xQQOxjymEw8QiRWI=;
-	b=EcpiCXhPUIhb0RMHJ4fGpeieAw2MIHoEgzD+S6scRJ8JnFf+qjmqDV7vnUZV430ZxbgnAU
-	9ykV8DOJl9wwBV4BC1+MQrE96FtFArDpm+l67OiYAK6dkb5y60K1lT5DxHS5qMMHdvyNcA
-	5Mb/GKZQAJW8oZWunuK6IIEQOsm6ccI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1714646766;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=zrXOa0VVlZDvgwP96iZpHXIU4P3xQQOxjymEw8QiRWI=;
-	b=5G7GFDoCXtGPCKcTVXHf4u4b11gWpVq9y7l1On/+0MNaHZHn6/8d/TWtssHqI6x9PxuRPk
-	+8qoNrIAQn6cQIBw==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=EcpiCXhP;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=5G7GFDoC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1714646766; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=zrXOa0VVlZDvgwP96iZpHXIU4P3xQQOxjymEw8QiRWI=;
-	b=EcpiCXhPUIhb0RMHJ4fGpeieAw2MIHoEgzD+S6scRJ8JnFf+qjmqDV7vnUZV430ZxbgnAU
-	9ykV8DOJl9wwBV4BC1+MQrE96FtFArDpm+l67OiYAK6dkb5y60K1lT5DxHS5qMMHdvyNcA
-	5Mb/GKZQAJW8oZWunuK6IIEQOsm6ccI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1714646766;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=zrXOa0VVlZDvgwP96iZpHXIU4P3xQQOxjymEw8QiRWI=;
-	b=5G7GFDoCXtGPCKcTVXHf4u4b11gWpVq9y7l1On/+0MNaHZHn6/8d/TWtssHqI6x9PxuRPk
-	+8qoNrIAQn6cQIBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 976F81386E;
-	Thu,  2 May 2024 10:46:05 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id MAAXI+1uM2aNFgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 02 May 2024 10:46:05 +0000
-Message-ID: <271ad513-0ea1-45df-ba0f-51582474ff34@suse.de>
-Date: Thu, 2 May 2024 12:46:05 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ul3r1jd2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 472D4C113CC;
+	Thu,  2 May 2024 16:02:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714665741;
+	bh=ev7mc20lWUMUIosgZeG3aGc56E+eLpNmk0BooYVv7Hs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ul3r1jd2mrPVrS7kJ0eA4oCXt81kZ/bQgCYCrADu4PcSM/+Z1B6fHAYovmH7W/gyG
+	 E5FuvPNt1cAIkJStGSswJuh3yUb0ERZ6U2iWVSNDoo8Yo6gRKXNmA/Is/w6cIBSHCD
+	 C6E2BkevcfOjlCBrYN0KY3QiFnCU5RsLSVcYHyS+dZH+0hfzQCLQidiFQYEhu2Frpc
+	 le/IP+UqSM66Q+wU0yytPPEfPoeGbzF5qlrrLVrU+ry26uWls/AZxF1/8k5u6bB61D
+	 /tbcqRbwlvjGO38iAtCzvV4lP8QHjXBFhxfOqQO/dW4tNQPeAsXdv+1Iw2DKzgXYKU
+	 p5GbLQISVVD5A==
+Date: Thu, 2 May 2024 17:02:06 +0100
+From: Lee Jones <lee@kernel.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Helge Deller <deller@gmx.de>,
+	Heiko Stuebner <heiko.stuebner@cherry.de>,
+	Shawn Guo <shawnguo@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>, David Rientjes <rientjes@google.com>,
+	Hyeonggon Yoo <42.hyeyoo@gmail.com>,
+	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Guo Ren <guoren@kernel.org>, Azeem Shaikh <azeemshaikh38@gmail.com>,
+	Max Filippov <jcmvbkbc@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Manikanta Guntupalli <manikanta.guntupalli@amd.com>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [RESEND v7 24/37] mfd: sm501: Convert platform_data to OF
+ property
+Message-ID: <20240502160206.GV5338@google.com>
+References: <cover.1712207606.git.ysato@users.sourceforge.jp>
+ <814758bd6df0d66dca52a2c207405e0049445c80.1712207606.git.ysato@users.sourceforge.jp>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 12/12] fbdev/viafb: Make I2C terminology more inclusive
-To: Easwar Hariharan <eahariha@linux.microsoft.com>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Helge Deller <deller@gmx.de>,
- "open list:VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER"
- <linux-fbdev@vger.kernel.org>,
- "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
- open list <linux-kernel@vger.kernel.org>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
- "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
- "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
- <intel-gfx@lists.freedesktop.org>,
- "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
- <intel-xe@lists.freedesktop.org>,
- "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
- <nouveau@lists.freedesktop.org>,
- "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
- "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>
-References: <20240430173812.1423757-1-eahariha@linux.microsoft.com>
- <20240430173812.1423757-13-eahariha@linux.microsoft.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240430173812.1423757-13-eahariha@linux.microsoft.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Flag: NO
-X-Spam-Score: -5.00
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 080261FBF9
-X-Spam-Level: 
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-5.00 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[suse.de:dkim];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	XM_UA_NO_VERSION(0.01)[];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[linux.microsoft.com,gmx.de,vger.kernel.org,lists.freedesktop.org];
-	MIME_TRACE(0.00)[0:+];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_DN_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCPT_COUNT_TWELVE(0.00)[13];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[renesas];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <814758bd6df0d66dca52a2c207405e0049445c80.1712207606.git.ysato@users.sourceforge.jp>
 
+On Thu, 04 Apr 2024, Yoshinori Sato wrote:
 
-
-Am 30.04.24 um 19:38 schrieb Easwar Hariharan:
-> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
-> with more appropriate terms. Inspired by and following on to Wolfram's
-> series to fix drivers/i2c/[1], fix the terminology for users of
-> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
-> in the specification.
->
-> Compile tested, no functionality changes intended
->
-> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
->
-> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
-
-Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-
+> Various parameters of SM501 can be set using platform_data,
+> so parameters cannot be passed in the DeviceTree target.
+> Expands the parameters set in platform_data so that they can be
+> specified using DeviceTree properties.
+> 
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 > ---
->   drivers/video/fbdev/via/chip.h    |  8 ++++----
->   drivers/video/fbdev/via/dvi.c     | 24 ++++++++++++------------
->   drivers/video/fbdev/via/lcd.c     |  6 +++---
->   drivers/video/fbdev/via/via_aux.h |  2 +-
->   drivers/video/fbdev/via/via_i2c.c | 12 ++++++------
->   drivers/video/fbdev/via/vt1636.c  |  6 +++---
->   6 files changed, 29 insertions(+), 29 deletions(-)
->
-> diff --git a/drivers/video/fbdev/via/chip.h b/drivers/video/fbdev/via/chip.h
-> index f0a19cbcb9e5..1ea6d4ce79e7 100644
-> --- a/drivers/video/fbdev/via/chip.h
-> +++ b/drivers/video/fbdev/via/chip.h
-> @@ -69,7 +69,7 @@
->   #define     VT1632_TMDS             0x01
->   #define     INTEGRATED_TMDS         0x42
->   
-> -/* Definition TMDS Trasmitter I2C Slave Address */
-> +/* Definition TMDS Trasmitter I2C Client Address */
->   #define     VT1632_TMDS_I2C_ADDR    0x10
->   
->   /**************************************************/
-> @@ -88,21 +88,21 @@
->   #define     TX_DATA_DDR_MODE        0x04
->   #define     TX_DATA_SDR_MODE        0x08
->   
-> -/* Definition LVDS Trasmitter I2C Slave Address */
-> +/* Definition LVDS Trasmitter I2C Client Address */
->   #define     VT1631_LVDS_I2C_ADDR    0x70
->   #define     VT3271_LVDS_I2C_ADDR    0x80
->   #define     VT1636_LVDS_I2C_ADDR    0x80
->   
->   struct tmds_chip_information {
->   	int tmds_chip_name;
-> -	int tmds_chip_slave_addr;
-> +	int tmds_chip_client_addr;
->   	int output_interface;
->   	int i2c_port;
->   };
->   
->   struct lvds_chip_information {
->   	int lvds_chip_name;
-> -	int lvds_chip_slave_addr;
-> +	int lvds_chip_client_addr;
->   	int output_interface;
->   	int i2c_port;
->   };
-> diff --git a/drivers/video/fbdev/via/dvi.c b/drivers/video/fbdev/via/dvi.c
-> index 13147e3066eb..db7db26416c3 100644
-> --- a/drivers/video/fbdev/via/dvi.c
-> +++ b/drivers/video/fbdev/via/dvi.c
-> @@ -70,7 +70,7 @@ bool viafb_tmds_trasmitter_identify(void)
->   	/* Check for VT1632: */
->   	viaparinfo->chip_info->tmds_chip_info.tmds_chip_name = VT1632_TMDS;
->   	viaparinfo->chip_info->
-> -		tmds_chip_info.tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
-> +		tmds_chip_info.tmds_chip_client_addr = VT1632_TMDS_I2C_ADDR;
->   	viaparinfo->chip_info->tmds_chip_info.i2c_port = VIA_PORT_31;
->   	if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID)) {
->   		/*
-> @@ -128,14 +128,14 @@ bool viafb_tmds_trasmitter_identify(void)
->   	viaparinfo->chip_info->
->   		tmds_chip_info.tmds_chip_name = NON_TMDS_TRANSMITTER;
->   	viaparinfo->chip_info->tmds_chip_info.
-> -		tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
-> +		tmds_chip_client_addr = VT1632_TMDS_I2C_ADDR;
->   	return false;
->   }
->   
->   static void tmds_register_write(int index, u8 data)
->   {
->   	viafb_i2c_writebyte(viaparinfo->chip_info->tmds_chip_info.i2c_port,
-> -			    viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr,
-> +			    viaparinfo->chip_info->tmds_chip_info.tmds_chip_client_addr,
->   			    index, data);
->   }
->   
-> @@ -144,7 +144,7 @@ static int tmds_register_read(int index)
->   	u8 data;
->   
->   	viafb_i2c_readbyte(viaparinfo->chip_info->tmds_chip_info.i2c_port,
-> -			   (u8) viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr,
-> +			   (u8) viaparinfo->chip_info->tmds_chip_info.tmds_chip_client_addr,
->   			   (u8) index, &data);
->   	return data;
->   }
-> @@ -152,7 +152,7 @@ static int tmds_register_read(int index)
->   static int tmds_register_read_bytes(int index, u8 *buff, int buff_len)
->   {
->   	viafb_i2c_readbytes(viaparinfo->chip_info->tmds_chip_info.i2c_port,
-> -			    (u8) viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr,
-> +			    (u8) viaparinfo->chip_info->tmds_chip_info.tmds_chip_client_addr,
->   			    (u8) index, buff, buff_len);
->   	return 0;
->   }
-> @@ -256,14 +256,14 @@ static int viafb_dvi_query_EDID(void)
->   
->   	DEBUG_MSG(KERN_INFO "viafb_dvi_query_EDID!!\n");
->   
-> -	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr;
-> -	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = 0xA0;
-> +	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_client_addr;
-> +	viaparinfo->chip_info->tmds_chip_info.tmds_chip_client_addr = 0xA0;
->   
->   	data0 = (u8) tmds_register_read(0x00);
->   	data1 = (u8) tmds_register_read(0x01);
->   	if ((data0 == 0) && (data1 == 0xFF)) {
->   		viaparinfo->chip_info->
-> -			tmds_chip_info.tmds_chip_slave_addr = restore;
-> +			tmds_chip_info.tmds_chip_client_addr = restore;
->   		return EDID_VERSION_1;	/* Found EDID1 Table */
->   	}
->   
-> @@ -280,8 +280,8 @@ static void dvi_get_panel_size_from_DDCv1(
->   
->   	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv1 \n");
->   
-> -	restore = tmds_chip->tmds_chip_slave_addr;
-> -	tmds_chip->tmds_chip_slave_addr = 0xA0;
-> +	restore = tmds_chip->tmds_chip_client_addr;
-> +	tmds_chip->tmds_chip_client_addr = 0xA0;
->   	for (i = 0x25; i < 0x6D; i++) {
->   		switch (i) {
->   		case 0x36:
-> @@ -306,7 +306,7 @@ static void dvi_get_panel_size_from_DDCv1(
->   
->   	DEBUG_MSG(KERN_INFO "DVI max pixelclock = %d\n",
->   		tmds_setting->max_pixel_clock);
-> -	tmds_chip->tmds_chip_slave_addr = restore;
-> +	tmds_chip->tmds_chip_client_addr = restore;
->   }
->   
->   /* If Disable DVI, turn off pad */
-> @@ -427,7 +427,7 @@ void viafb_dvi_enable(void)
->   				viafb_i2c_writebyte(viaparinfo->chip_info->
->   					tmds_chip_info.i2c_port,
->   					viaparinfo->chip_info->
-> -					tmds_chip_info.tmds_chip_slave_addr,
-> +					tmds_chip_info.tmds_chip_client_addr,
->   					0x08, data);
->   			}
->   		}
-> diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
-> index beec5c8d4d08..9a6e4ac9e551 100644
-> --- a/drivers/video/fbdev/via/lcd.c
-> +++ b/drivers/video/fbdev/via/lcd.c
-> @@ -147,7 +147,7 @@ bool viafb_lvds_trasmitter_identify(void)
->   		return true;
->   	/* Check for VT1631: */
->   	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name = VT1631_LVDS;
-> -	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr =
-> +	viaparinfo->chip_info->lvds_chip_info.lvds_chip_client_addr =
->   		VT1631_LVDS_I2C_ADDR;
->   
->   	if (check_lvds_chip(VT1631_DEVICE_ID_REG, VT1631_DEVICE_ID)) {
-> @@ -161,7 +161,7 @@ bool viafb_lvds_trasmitter_identify(void)
->   
->   	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
->   		NON_LVDS_TRANSMITTER;
-> -	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr =
-> +	viaparinfo->chip_info->lvds_chip_info.lvds_chip_client_addr =
->   		VT1631_LVDS_I2C_ADDR;
->   	return false;
->   }
-> @@ -327,7 +327,7 @@ static int lvds_register_read(int index)
->   	u8 data;
->   
->   	viafb_i2c_readbyte(VIA_PORT_2C,
-> -			(u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
-> +			(u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_client_addr,
->   			(u8) index, &data);
->   	return data;
->   }
-> diff --git a/drivers/video/fbdev/via/via_aux.h b/drivers/video/fbdev/via/via_aux.h
-> index 0933bbf20e58..e2b617b1e6fd 100644
-> --- a/drivers/video/fbdev/via/via_aux.h
-> +++ b/drivers/video/fbdev/via/via_aux.h
-> @@ -24,7 +24,7 @@ struct via_aux_drv {
->   	struct list_head chain;		/* chain to support multiple drivers */
->   
->   	struct via_aux_bus *bus;	/* the I2C bus used */
-> -	u8 addr;			/* the I2C slave address */
-> +	u8 addr;			/* the I2C client address */
->   
->   	const char *name;	/* human readable name of the driver */
->   	void *data;		/* private data of this driver */
-> diff --git a/drivers/video/fbdev/via/via_i2c.c b/drivers/video/fbdev/via/via_i2c.c
-> index 582502810575..907c739475d0 100644
-> --- a/drivers/video/fbdev/via/via_i2c.c
-> +++ b/drivers/video/fbdev/via/via_i2c.c
-> @@ -104,7 +104,7 @@ static void via_i2c_setsda(void *data, int state)
->   	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
->   }
->   
-> -int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
-> +int viafb_i2c_readbyte(u8 adap, u8 client_addr, u8 index, u8 *pdata)
->   {
->   	int ret;
->   	u8 mm1[] = {0x00};
-> @@ -115,7 +115,7 @@ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
->   	*pdata = 0;
->   	msgs[0].flags = 0;
->   	msgs[1].flags = I2C_M_RD;
-> -	msgs[0].addr = msgs[1].addr = slave_addr / 2;
-> +	msgs[0].addr = msgs[1].addr = client_addr / 2;
->   	mm1[0] = index;
->   	msgs[0].len = 1; msgs[1].len = 1;
->   	msgs[0].buf = mm1; msgs[1].buf = pdata;
-> @@ -128,7 +128,7 @@ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
->   	return ret;
->   }
->   
-> -int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
-> +int viafb_i2c_writebyte(u8 adap, u8 client_addr, u8 index, u8 data)
->   {
->   	int ret;
->   	u8 msg[2] = { index, data };
-> @@ -137,7 +137,7 @@ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
->   	if (!via_i2c_par[adap].is_active)
->   		return -ENODEV;
->   	msgs.flags = 0;
-> -	msgs.addr = slave_addr / 2;
-> +	msgs.addr = client_addr / 2;
->   	msgs.len = 2;
->   	msgs.buf = msg;
->   	ret = i2c_transfer(&via_i2c_par[adap].adapter, &msgs, 1);
-> @@ -149,7 +149,7 @@ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
->   	return ret;
->   }
->   
-> -int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len)
-> +int viafb_i2c_readbytes(u8 adap, u8 client_addr, u8 index, u8 *buff, int buff_len)
->   {
->   	int ret;
->   	u8 mm1[] = {0x00};
-> @@ -159,7 +159,7 @@ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len
->   		return -ENODEV;
->   	msgs[0].flags = 0;
->   	msgs[1].flags = I2C_M_RD;
-> -	msgs[0].addr = msgs[1].addr = slave_addr / 2;
-> +	msgs[0].addr = msgs[1].addr = client_addr / 2;
->   	mm1[0] = index;
->   	msgs[0].len = 1; msgs[1].len = buff_len;
->   	msgs[0].buf = mm1; msgs[1].buf = buff;
-> diff --git a/drivers/video/fbdev/via/vt1636.c b/drivers/video/fbdev/via/vt1636.c
-> index 8d8cfdb05618..614e5c29a449 100644
-> --- a/drivers/video/fbdev/via/vt1636.c
-> +++ b/drivers/video/fbdev/via/vt1636.c
-> @@ -44,7 +44,7 @@ u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
->   	u8 data;
->   
->   	viafb_i2c_readbyte(plvds_chip_info->i2c_port,
-> -			   plvds_chip_info->lvds_chip_slave_addr, index, &data);
-> +			   plvds_chip_info->lvds_chip_client_addr, index, &data);
->   	return data;
->   }
->   
-> @@ -60,7 +60,7 @@ void viafb_gpio_i2c_write_mask_lvds(struct lvds_setting_information
->   	data = (data & (~io_data.Mask)) | io_data.Data;
->   
->   	viafb_i2c_writebyte(plvds_chip_info->i2c_port,
-> -			    plvds_chip_info->lvds_chip_slave_addr, index, data);
-> +			    plvds_chip_info->lvds_chip_client_addr, index, data);
->   }
->   
->   void viafb_init_lvds_vt1636(struct lvds_setting_information
-> @@ -113,7 +113,7 @@ bool viafb_lvds_identify_vt1636(u8 i2c_adapter)
->   	DEBUG_MSG(KERN_INFO "viafb_lvds_identify_vt1636.\n");
->   
->   	/* Sense VT1636 LVDS Transmiter */
-> -	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr =
-> +	viaparinfo->chip_info->lvds_chip_info.lvds_chip_client_addr =
->   		VT1636_LVDS_I2C_ADDR;
->   
->   	/* Check vendor ID first: */
+>  drivers/mfd/sm501.c           | 315 ++++++++++++++++++++++++++++++++++
+>  drivers/video/fbdev/sm501fb.c | 106 ++++++++++++
+>  2 files changed, 421 insertions(+)
+
+I don't know exactly what this is, but I do know that I don't like it.
+
+If you manage to get it through another maintainer, more power to you,
+but it is not suitable for MFD.
+
+> diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+> index b3592982a83b..98a69e254f5f 100644
+> --- a/drivers/mfd/sm501.c
+> +++ b/drivers/mfd/sm501.c
+> @@ -82,6 +82,16 @@ struct sm501_devdata {
+>  	unsigned int			 rev;
+>  };
+>  
+> +struct sm501_config_props_uint {
+> +	char *name;
+> +	u32 shift;
+> +};
+> +
+> +struct sm501_config_props_flag {
+> +	char *clr_name;
+> +	char *set_name;
+> +	u32 bit;
+> +};
+>  
+>  #define MHZ (1000 * 1000)
+>  
+> @@ -1370,6 +1380,305 @@ static int sm501_init_dev(struct sm501_devdata *sm)
+>  	return 0;
+>  }
+>  
+> +static const struct sm501_config_props_uint misc_timing[] = {
+> +	{"delay",    0},
+> +	{"-",        3},
+> +	{"divider",  4},
+> +	{"-",        6},
+> +	{"sm0",      8},
+> +	{"-",       12},
+> +	{"sm1",     16},
+> +	{"-",       20},
+> +	{"xc",      24},
+> +	{"-",       26},
+> +	{"ex",      28},
+> +	{NULL,      32},
+> +};
+> +
+> +static const struct sm501_config_props_flag misc_timing_flag[] = {
+> +	{"usb-host-normal",          "usb-host-simulation",    3},
+> +	{"no-acpi-control",          "acpi-control",           6},
+> +	{"pll-debug-input",          "pll-debug-output",       7},
+> +	{"sdram-clock-mode0-288mhz", "sdram-clock-mode0-div", 12},
+> +	{"sdram-clock-mode1-288mhz", "sdram-clock-mode1-div", 20},
+> +	{"usb-over-current-detect-disable",
+> +	 "usb-over-current-detect-enable",  23},
+> +	{},
+> +};
+> +
+> +static const struct sm501_config_props_uint misc_control[] = {
+> +	{"hold",     18},
+> +	{"refresh",  21},
+> +	{"-",        23},
+> +	{"usbclk",   28},
+> +	{"pad",      30},
+> +	{NULL,       32},
+> +};
+> +
+> +static const struct sm501_config_props_flag misc_control_flag[] = {
+> +	{"vr-mmio-30mb",            "vr-mmio-62mb",             4},
+> +	{"usb-port-master",         "usb-port-slave",           9},
+> +	{"burst-length-8",          "burst-length-1",          10},
+> +	{"usb-slave-cpu",           "usb-slave-8051",          11},
+> +	{"dac-power-enable",        "dac-power-disable",       12},
+> +	{"pll-clock-count-disable", "pll-clock-count-enable",  15},
+> +	{"interrupt-normal",        "interrupt-invarted",      16},
+> +	{"sh-ready-low",            "sh-ready-high",           17},
+> +	{"xtal-freq-24mhz",         "xtal-freq-12mhz",         24},
+> +	{"panel-data-18bit",        "panel-dtat-24bit",        25},
+> +	{"latch-address-disable",   "latch-address-enable",    26},
+> +	{"uart1",                   "ssp1",                    27},
+> +	{},
+> +};
+> +
+> +/* Read configuration values */
+> +static void sm501_of_read_config(struct device *dev, struct device_node *np,
+> +				 const char *prefix,
+> +				 const struct sm501_config_props_uint *props,
+> +				 const struct sm501_config_props_flag *props_flag,
+> +				 struct sm501_reg_init *ret)
+> +{
+> +	struct device_node *child;
+> +	char *name;
+> +	u32 shift;
+> +	u32 width;
+> +	u32 mask;
+> +	u32 val;
+> +
+> +	ret->mask = ~0;
+> +	ret->set = 0;
+> +
+> +	child = of_get_child_by_name(np, prefix);
+> +	if (!child)
+> +		return;
+> +
+> +	while (props->name) {
+> +		name = props->name;
+> +		shift = props->shift;
+> +		props++;
+> +
+> +		if (name[0] == '-' ||
+> +		    of_property_read_u32(child, name, &val))
+> +			continue;
+> +
+> +		width = props->shift - shift;
+> +		mask = (1 << width) - 1;
+> +		if (mask < val) {
+> +			dev_warn(dev, "%s invalid value %d", name, val);
+> +			continue;
+> +		}
+> +		mask = ~(mask << shift);
+> +		ret->mask &= mask;
+> +		ret->set |= val << shift;
+> +	}
+> +	while (props_flag->clr_name) {
+> +		val = ~0;
+> +		if (of_property_read_bool(child, props_flag->clr_name))
+> +			val = 0;
+> +		else if (of_property_read_bool(child, props_flag->set_name))
+> +			val = 1;
+> +		if (val != ~0) {
+> +			val <<= (props_flag->bit & 31);
+> +			mask = 1 << (props_flag->bit & 31);
+> +			ret->mask &= ~mask;
+> +			ret->set |= val;
+> +		}
+> +		props_flag++;
+> +	}
+> +}
+> +
+> +/* Read GPIO control */
+> +/*
+> + * DT example.
+> + * gpio-pin-control {
+> + *   pin@0 {
+> + *	 gpio-port;
+> + *   };
+> + *   pin@1 {
+> + *	 function;
+> + *   };
+> + * };
+> + */
+> +static void sm501_of_read_gpio(struct device *dev, struct device_node *np,
+> +			       struct sm501_reg_init *hi, struct sm501_reg_init *low)
+> +{
+> +	struct device_node *gpio_group, *pin;
+> +	const char *prop_mode;
+> +	unsigned int pin_no;
+> +	int mode;
+> +	u64 mask;
+> +	u64 set;
+> +
+> +	mask = ~0;
+> +	set = 0;
+> +	gpio_group = of_get_child_by_name(np, "gpio-pin-control");
+> +	if (gpio_group) {
+> +		for_each_child_of_node(gpio_group, pin) {
+> +			mode = -1;
+> +			if (sscanf(pin->full_name, "pin@%u", &pin_no) == 1) {
+> +				if (of_property_read_bool(pin, "gpio-port"))
+> +					mode = 0;
+> +				else if (of_property_read_bool(pin, "function"))
+> +					mode = 1;
+> +			}
+> +			/* GPIO0 - 47 and 55 -63 */
+> +			if (mode < 0 ||
+> +			    (pin_no >= 64 || (pin_no >= 48 && pin_no <= 54))) {
+> +				dev_warn(dev,
+> +					 "%s mode %s is invalid.", pin->name, prop_mode);
+> +			} else {
+> +				mask &= ~(1 << pin_no);
+> +				set |= mode << pin_no;
+> +			}
+> +		}
+> +	}
+> +	hi->set = set >> 32;
+> +	low->set = set & 0xffffffff;
+> +	hi->mask = mask >> 32;
+> +	low->mask = mask & 0xffffffff;
+> +}
+> +
+> +static inline int read_i2c_prop(struct device *dev, struct device_node *child,
+> +				const char *name, u32 *val)
+> +{
+> +	if (of_property_read_u32(child, name, val)) {
+> +		dev_warn(dev, "%s/%s not found. skip it.", of_node_full_name(child), name);
+> +		return -ENOENT;
+> +	}
+> +	return 0;
+> +}
+> +
+> +/* Read GPIO I2C configuration */
+> +/*
+> + * DT example.
+> + * gpio-i2c {
+> + *    i2c@0 {
+> + *	sda = <gpio-pin>;
+> + *	scl = <gpio-pin>;
+> + *	delay = <delay>;
+> + *	timeout = <timeout>;
+> + *    };
+> + *    i2c@1 {
+> + *      :
+> + *    };
+> + *    :
+> + * };
+> + */
+> +static int sm501_parse_dt_gpio_i2c(struct device *dev, struct sm501_platdata *plat,
+> +				   struct device_node *np)
+> +{
+> +	struct device_node *i2c_group, *child;
+> +	unsigned int i;
+> +	u32 i2c_nr;
+> +	int err;
+> +
+> +	i2c_group = of_get_child_by_name(np, "gpio-i2c");
+> +	if (!i2c_group)
+> +		return 0;
+> +
+> +	i2c_nr = of_get_child_count(i2c_group);
+> +	plat->gpio_i2c = devm_kzalloc(dev, sizeof(*plat->gpio_i2c) * i2c_nr,
+> +				      GFP_KERNEL);
+> +	if (!plat->gpio_i2c)
+> +		return -ENOMEM;
+> +
+> +	plat->gpio_i2c_nr = i2c_nr;
+> +	i = 0;
+> +	for_each_child_of_node(i2c_group, child) {
+> +		u32 bus;
+> +
+> +		if (sscanf(child->full_name, "i2c@%u", &bus) != 1) {
+> +			dev_warn(dev, "Unknown address %s\n", child->name);
+> +			continue;
+> +		}
+> +
+> +		err = 0;
+> +		plat->gpio_i2c[i].bus_num = bus;
+> +		err += read_i2c_prop(dev, child, "sda", &plat->gpio_i2c[i].pin_sda);
+> +		err += read_i2c_prop(dev, child, "scl", &plat->gpio_i2c[i].pin_scl);
+> +		err += read_i2c_prop(dev, child, "delay", &plat->gpio_i2c[i].udelay);
+> +		err += read_i2c_prop(dev, child, "timeout", &plat->gpio_i2c[i].timeout);
+> +		if (err == 0)
+> +			i++;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* Read device functions */
+> +static u32 sm501_read_devices(struct device *dev, struct device_node *np)
+> +{
+> +	static const char * const funcname[] = {
+> +		"usb-host", "usb-slave", "ssp0", "ssp1",
+> +		"uart0", "uart1", "fbaccel", "ac97",
+> +		"i2s", "gpio",
+> +	};
+> +	struct property *prop;
+> +	unsigned int i;
+> +	const char *s;
+> +	u32 ret = 0;
+> +
+> +	of_property_for_each_string(np, "smi,devices", prop, s) {
+> +		for (i = 0; i < ARRAY_SIZE(funcname); i++) {
+> +			if (strcmp(s, funcname[i]) == 0) {
+> +				ret |= 1 << i;
+> +				goto next;
+> +			}
+> +		}
+> +		dev_warn(dev, "Unknown device function '%s'", s);
+> +next:
+> +	}
+> +	if (!ret)
+> +		dev_warn(dev, "devices not defined. disable all functions.");
+> +	return ret;
+> +}
+> +
+> +/* Build platform_data from OF property */
+> +struct plat_dt {
+> +	struct sm501_platdata plat;
+> +	struct sm501_initdata init;
+> +};
+> +
+> +static int sm501_parse_dt(struct sm501_devdata *sm, struct device_node *np)
+> +{
+> +	struct sm501_platdata *plat;
+> +	struct plat_dt *dt_p;
+> +	u32 word;
+> +	int ret;
+> +
+> +	dt_p = devm_kzalloc(sm->dev, sizeof(*dt_p), GFP_KERNEL);
+> +	if (!dt_p)
+> +		return -ENOMEM;
+> +
+> +	plat = &dt_p->plat;
+> +	plat->init = &dt_p->init;
+> +
+> +	plat->init->devices = sm501_read_devices(sm->dev, np);
+> +	/* mclk and m1xclk are not u32, so convert between them using intermediate variables. */
+> +	of_property_read_u32(np, "smi,mclk", &word);
+> +	plat->init->mclk = word;
+> +	of_property_read_u32(np, "smi,m1xclk", &word);
+> +	plat->init->m1xclk = word;
+> +
+> +	sm501_of_read_config(sm->dev, np, "misc-timing",
+> +			     misc_timing, misc_timing_flag,
+> +			     &plat->init->misc_timing);
+> +	sm501_of_read_config(sm->dev, np, "misc-control",
+> +			     misc_control, misc_control_flag,
+> +			     &plat->init->misc_control);
+> +	sm501_of_read_gpio(sm->dev, np,
+> +			   &plat->init->gpio_high, &plat->init->gpio_low);
+> +
+> +	if (IS_ENABLED(CONFIG_MFD_SM501_GPIO) &&
+> +	    (plat->init->devices & SM501_USE_GPIO)) {
+> +		ret = sm501_parse_dt_gpio_i2c(sm->dev, plat, np);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +	sm->platdata = plat;
+> +	return 0;
+> +}
+> +
+>  static int sm501_plat_probe(struct platform_device *dev)
+>  {
+>  	struct sm501_devdata *sm;
+> @@ -1406,6 +1715,12 @@ static int sm501_plat_probe(struct platform_device *dev)
+>  		goto err_res;
+>  	}
+>  
+> +	if (IS_ENABLED(CONFIG_OF) && dev->dev.of_node) {
+> +		ret = sm501_parse_dt(sm, dev->dev.of_node);
+> +		if (ret)
+> +			goto err_res;
+> +	}
+> +
+>  	platform_set_drvdata(dev, sm);
+>  
+>  	sm->regs = ioremap(sm->io_res->start, resource_size(sm->io_res));
+> diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+> index d6fdc1737cd2..5de00f2570aa 100644
+> --- a/drivers/video/fbdev/sm501fb.c
+> +++ b/drivers/video/fbdev/sm501fb.c
+> @@ -1932,6 +1932,106 @@ static int sm501fb_start_one(struct sm501fb_info *info,
+>  	return 0;
+>  }
+>  
+> +#if defined(CONFIG_OF)
+> +static u32 read_display_flags(struct device_node *np)
+> +{
+> +	static const char * const name[] = {
+> +		"use-init-done", "disable-at-exit", "use-hwcursor", "use-hwaccel",
+> +		"panel-no-fpen", "panel-no-vbiasen", "panel-inv-fpen", "panel-inv-vbiasen",
+> +	};
+> +
+> +	struct property *prop;
+> +	unsigned int i;
+> +	const char *s;
+> +	u32 ret = 0;
+> +
+> +	of_property_for_each_string(np, "smi,flags", prop, s) {
+> +		for (i = 0; i < ARRAY_SIZE(name); i++) {
+> +			if (strcmp(s, name[i]) == 0) {
+> +				ret |= 1 << i;
+> +				break;
+> +			}
+> +		}
+> +	}
+> +	return ret;
+> +}
+> +
+> +/* parse CRT / panel configuration */
+> +static struct sm501_platdata_fbsub *dt_fbsub(struct device *dev,
+> +					     struct device_node *np,
+> +					     const char *name)
+> +{
+> +	struct sm501_platdata_fbsub *fbsub = NULL;
+> +	struct fb_videomode *def_mode = NULL;
+> +	struct device_node *child;
+> +	const void *p_edid;
+> +	u32 flags = 0;
+> +	u32 bpp = 0;
+> +	int len;
+> +
+> +	child = of_get_child_by_name(np, name);
+> +	if (child == NULL)
+> +		return NULL;
+> +
+> +	p_edid = of_get_property(child, "edid", &len);
+> +	if (p_edid && len == EDID_LENGTH) {
+> +		struct fb_monspecs *specs;
+> +		u8 *edid;
+> +
+> +		edid = kmemdup(p_edid, EDID_LENGTH, GFP_KERNEL);
+> +		if (edid) {
+> +			specs = kzalloc(sizeof(*specs), GFP_KERNEL);
+> +			if (specs) {
+> +				fb_edid_to_monspecs(edid, specs);
+> +				def_mode = specs->modedb;
+> +			}
+> +		}
+> +		kfree(edid);
+> +	}
+> +
+> +	of_property_read_u32(child, "bpp", &bpp);
+> +
+> +	/* If flags property is obtained, fbsub is returned. */
+> +	flags = read_display_flags(child);
+> +	if (flags) {
+> +		fbsub = devm_kzalloc(dev, sizeof(*fbsub), GFP_KERNEL);
+> +		if (fbsub) {
+> +			fbsub->def_mode = def_mode;
+> +			fbsub->def_bpp = bpp;
+> +			fbsub->flags = flags;
+> +		}
+> +	}
+> +	return fbsub;
+> +}
+> +
+> +/* Build platform_data from OF property */
+> +static struct sm501_platdata_fb *pdata_from_dt(struct device *dev, struct device_node *np)
+> +{
+> +	enum sm501_fb_routing fb_route = SM501_FB_OWN;
+> +	struct sm501_platdata_fb *pdata = NULL;
+> +	struct sm501_platdata_fbsub *fb_crt;
+> +	struct sm501_platdata_fbsub *fb_pnl;
+> +	unsigned int flags = 0;
+> +
+> +	if (of_property_read_bool(np, "route-crt-panel"))
+> +		fb_route = SM501_FB_CRT_PANEL;
+> +	if (of_property_read_bool(np, "swap-fb-endian"))
+> +		flags = SM501_FBPD_SWAP_FB_ENDIAN;
+> +	fb_crt = dt_fbsub(dev, np, "crt");
+> +	fb_pnl = dt_fbsub(dev, np, "panel");
+> +	if (fb_crt || fb_pnl) {
+> +		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+> +		if (pdata) {
+> +			pdata->fb_route = fb_route;
+> +			pdata->flags = flags;
+> +			pdata->fb_crt = fb_crt;
+> +			pdata->fb_pnl = fb_pnl;
+> +		}
+> +	}
+> +	return pdata;
+> +}
+> +#endif
+> +
+>  static int sm501fb_probe(struct platform_device *pdev)
+>  {
+>  	struct sm501fb_info *info;
+> @@ -1974,6 +2074,12 @@ static int sm501fb_probe(struct platform_device *pdev)
+>  				if (info->edid_data)
+>  					found = 1;
+>  			}
+> +			/* Get platform data compatible configuration */
+> +			if (!found) {
+> +				info->pdata = pdata_from_dt(dev, np);
+> +				if (info->pdata)
+> +					found = 1;
+> +			}
+>  		}
+>  #endif
+>  		if (!found) {
+> -- 
+> 2.39.2
+> 
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Lee Jones [李琼斯]

@@ -1,79 +1,133 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD4C51EA6F;
-	Thu,  2 May 2024 16:48:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B87616FF38;
+	Thu,  2 May 2024 17:23:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714668538; cv=none; b=d2+qCaOlqUL5NU0ck+YPILxaA6/go2Z9ocUyEspnzJz0oLKSsBaUnaOhMLpg/u2iP+cRxu/SnrRZ01siLTm3TLatFz6T8lABmdZrcoXCRsjXjsZjMiV5lo/tUkZMMJZ8fYONopgYPPjZESa1Llnmo+bcbAsgAs7VLP0HuFhHsPY=
+	t=1714670640; cv=none; b=NIZyHdjgFPV5nrtugjebqJDE1azLMHvDq1P48A/oZdLhZll5wn8r6TbRULhpPtjjm1DPhfbi7pt4oo2f2c3OcRbOfmGL7ugLtFswwRl8v537Gy+pVBboBmXv9T4jN2lZ+ew4p06kkfCCUK0xPaIJm8nteaQUR2bBgjXs/Y5exrk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714668538; c=relaxed/simple;
-	bh=6KSW55LKrRMaLuZTWE2c+MuzCl3d3O1DhTlxbvZ2JOc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tYdNjcrRCHDcoqM9gcmUsqUlEuKKNCs29TtVO6JwBxHhAKiAI+mtAty1ECKThRewWZux/cjCaroRDNK6N5gE+DoFhBuUPIHlNB/e8Fo+9K+2wnOPdmqoagJZ1RFpLol4lMPIbzsMMrDXkCU826ofIQo02EiVk5YqDpHBpncpzJw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B9jc74OP; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1714670640; c=relaxed/simple;
+	bh=+AGde7ihoVL37RNfwg2ChkKnBeZbRb8zV7vZfOgq33c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JFRgwvY4uBN9/u4qREd8Zja+owqPC4qzzCKasaJ0gR24aXr4vQLyMHhOOhzR44r0nqgzcrq9s6m6QAgTe7YOP+02c4lXaZaov2rbk3Gh/Tq/+nYP6SZ0dHQdwE3LCVp7cWuWVlELNs2aUF9xYF64lubMgOGN4vb+LhHjTuavj6g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hOwoRAri; arc=none smtp.client-ip=209.85.214.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B9jc74OP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C6B0C4AF14;
-	Thu,  2 May 2024 16:48:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714668538;
-	bh=6KSW55LKrRMaLuZTWE2c+MuzCl3d3O1DhTlxbvZ2JOc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=B9jc74OP9o36h9eW28C1v+9ASBIYZVP17c1rbyhjlN+tm/BtN0ttPRjAtTGrLdJmn
-	 sJ9Lxxa6d9V4ar4afrdx8JuGN/m6sNRB3oNc4qS7L5Fg+i08TLm9FKOkZ73G78YH5g
-	 CPxx8DvpGBSZ7m//fmNKO8SMHK5dqv50PHCNDMNysfmGnaMFy+ZPsSTFYXhbUny71p
-	 IddfpncgZfgxa1EGeHC+P1t2JF0Be0inNgaSMBE8r0KuomUDtN47BRa1Yz/GiVCQhw
-	 cJSoesmxBtR6Od6CDGmYMHJkUqM2rPjX/R1GqkcTMOmd0+j3SVGZ0Wr19gKy+Y3LHE
-	 nJBeMzQ+XGctA==
-Date: Thu, 2 May 2024 17:48:53 +0100
-From: Lee Jones <lee@kernel.org>
-To: Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Dan Carpenter <dan.carpenter@linaro.org>,
-	Flavio Suligoi <f.suligoi@asem.it>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: (subset) [PATCH v1 1/1] backlight: mp3309c: fix leds flickering
- in pwm mode
-Message-ID: <20240502164853.GB1200070@google.com>
-References: <20240417153105.1794134-1-f.suligoi@asem.it>
- <20240417153105.1794134-2-f.suligoi@asem.it>
- <171466849494.1206441.17324969195592920195.b4-ty@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hOwoRAri"
+Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-1ec69e3dbe5so25319805ad.0;
+        Thu, 02 May 2024 10:23:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1714670638; x=1715275438; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=BoLV4NBTi5WshpxXLizBmf79HWwJfptg7//iRnwuPL0=;
+        b=hOwoRArihruWh461sb14KUBy2pt34t0m5KO4CDcaWWdHjmV92ae9UQ7+QtCjaRYlDw
+         uys/S8AAbO1h8bCZi/yfsueSpNWTsRUOjSxVovIgNqNDTAFPWZ+q/809wLL4E7vkfi9G
+         OVcDYeZzoszbF+KcXxN8zhdQfdFTwrgImXknLKc1nUXprrBjczODuZkfY1M7FNeJxEmo
+         xjF91PxwHSOJeDKed4+mBmcEPj16KHsyIEVSdlHImvu4yo+k6Ii7tgx+omEIIdSETd9q
+         TCt87muL7qOBUfHMSjMjl7Ur4C8Be4oHWpf5CqxnEfXy+j/u9BL5O046CvYV4o875dbA
+         dO6g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714670638; x=1715275438;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BoLV4NBTi5WshpxXLizBmf79HWwJfptg7//iRnwuPL0=;
+        b=ajfmtpJTftrnNYPLUx5tD1Ir4ThRR9chrCzt8st+Aj2/0h9FLsnMbTY2FnIAnM+0xb
+         5+sOlm8w9xakReHena2feVTWZyQTmFY75mAlBOX8fpDDMsdSlZP7jZj/PqcedwRlRccC
+         w+2/8XYxnuEdMJ49m//sFtVltppT4u3ArLtDh922P1+rTYJDmnPE3162PNX6Q4X/3DfT
+         U9AKJHcNMR9ftOiq/ifa+1mlnaL/ywQichGZm5Dc2U+fI2md24o9h2x9MWuetpAELLiQ
+         SOGEf1/xZWoybFIpn9BAm3gjnsbqb6eeVwfBER6zlfsR3Tp/ka0/3Jxl1GJqdYbNo1Zz
+         31sw==
+X-Forwarded-Encrypted: i=1; AJvYcCVBbkIQucZVsWGzE78woDhBUsClhJdR4UAQ3vZYRq1aubpvxBvhj6g4AyD7nk0wRTMPJc7WTUEyl+75/pwzijlQZlIx1y4ps37AusLRoN75PdsOvmPhBwfMPen1ntKoejtpRUUfNsSy7/A=
+X-Gm-Message-State: AOJu0Yzcp9x6vOXhc4mxqDsuWiOfq6oLh343AEFiPz/RNKGQyyp0FlDO
+	lhWjpOuTirHzs1JPJlKXtIl0FIVzVqJOJXahbCjGfYzVPRHLIvkY
+X-Google-Smtp-Source: AGHT+IEyeN+w/2GKnAAXaO0iG1dRQeaeYXXU53saYgxjY5324IkOkLk95/QiEGVAl7Bnc0yRghOx1w==
+X-Received: by 2002:a17:902:da8d:b0:1e9:cf94:5bea with SMTP id j13-20020a170902da8d00b001e9cf945beamr433078plx.35.1714670638524;
+        Thu, 02 May 2024 10:23:58 -0700 (PDT)
+Received: from localhost.localdomain ([2401:4900:5fc9:c3c6:40e7:b56b:5c47:4a78])
+        by smtp.gmail.com with ESMTPSA id t12-20020a170902bc4c00b001e4565a2596sm1568513plz.92.2024.05.02.10.23.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 May 2024 10:23:58 -0700 (PDT)
+From: Shresth Prasad <shresthprasad7@gmail.com>
+To: lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	javier.carrasco.cruz@gmail.com,
+	skhan@linuxfoundation.org,
+	julia.lawall@inria.fr,
+	Shresth Prasad <shresthprasad7@gmail.com>
+Subject: [RESEND][PATCH v3][next] backlight: sky81452-backlight: Remove unnecessary call to of_node_get
+Date: Thu,  2 May 2024 22:51:21 +0530
+Message-ID: <20240502172121.8695-2-shresthprasad7@gmail.com>
+X-Mailer: git-send-email 2.45.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <171466849494.1206441.17324969195592920195.b4-ty@kernel.org>
 
-On Thu, 02 May 2024, Lee Jones wrote:
+`dev->of_node` already has a reference to the device_node and calling
+of_node_get on it is unnecessary. All conresponding calls to
+of_node_put are also removed.
 
-> On Wed, 17 Apr 2024 17:31:05 +0200, Flavio Suligoi wrote:
-> > The mp3309 has two configuration registers, named according to their
-> > address (0x00 and 0x01).
-> > In the second register (0x01), the bit DIMS (Dimming Mode Select) must
-> > be always 0 (zero), in both analog (via i2c commands) and pwm dimming
-> > mode.
-> > 
-> > In the initial driver version, the DIMS bit was set in pwm mode and
-> > reset in analog mode.
-> > But if the DIMS bit is set in pwm dimming mode and other devices are
-> > connected on the same i2c bus, every i2c commands on the bus generates a
-> > flickering on the LEDs powered by the mp3309c.
-> > 
-> > [...]
-> 
-> Applied, thanks!
-> 
-> [1/1] backlight: mp3309c: fix leds flickering in pwm mode
->       commit: ce60cddc2abf61902dfca71d630624db95315124
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Shresth Prasad <shresthprasad7@gmail.com>
+---
+Changes in v3:
+    - Remove unnecessary braces
 
-Applied, but in future it's; I2C, PWM and LED, thanks.
+ drivers/video/backlight/sky81452-backlight.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
+index eb18c6eb0ff0..19f9f84a9fd6 100644
+--- a/drivers/video/backlight/sky81452-backlight.c
++++ b/drivers/video/backlight/sky81452-backlight.c
+@@ -182,7 +182,7 @@ static const struct attribute_group sky81452_bl_attr_group = {
+ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 							struct device *dev)
+ {
+-	struct device_node *np = of_node_get(dev->of_node);
++	struct device_node *np = dev->of_node;
+ 	struct sky81452_bl_platform_data *pdata;
+ 	int num_entry;
+ 	unsigned int sources[6];
+@@ -194,10 +194,8 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 	}
+ 
+ 	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+-	if (!pdata) {
+-		of_node_put(np);
++	if (!pdata)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 
+ 	of_property_read_string(np, "name", &pdata->name);
+ 	pdata->ignore_pwm = of_property_read_bool(np, "skyworks,ignore-pwm");
+@@ -217,7 +215,6 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 					num_entry);
+ 		if (ret < 0) {
+ 			dev_err(dev, "led-sources node is invalid.\n");
+-			of_node_put(np);
+ 			return ERR_PTR(-EINVAL);
+ 		}
+ 
+@@ -237,7 +234,6 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 	if (ret < 0)
+ 		pdata->boost_current_limit = 2750;
+ 
+-	of_node_put(np);
+ 	return pdata;
+ }
+ #else
 -- 
-Lee Jones [李琼斯]
+2.45.0
+

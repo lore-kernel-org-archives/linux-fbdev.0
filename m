@@ -1,56 +1,32 @@
-Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com [209.85.210.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB6711EEFC
-	for <linux-fbdev@vger.kernel.org>; Fri,  3 May 2024 20:22:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.51
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 79E654F88C;
+	Fri,  3 May 2024 21:04:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714767736; cv=none; b=ZC47b5g7bj3zgwqfwid7SZUBIHdKJBeV0zdscZuaIhcUT732RfftScxuBasqUmMsWy8BEx2VzIzIKPLNdWYCcuAiH/mJPyT79bvZjRq68dGlukuX/FWtkg4LiPXaxg7Y0lxLM5nGpM/dUXKlccWTN+QmumW/01Ar06nVpfz/zwc=
+	t=1714770258; cv=none; b=jSM59hrgP4VABD28zjgdicY86hAo9yJ9S8+DQlip9f/fi3ayInjZbJP6h671jaf+NVdADGuanC/zsoekjJQrnXY7iUR+fZ7Y2r8I8PIlFU90+zKoosq5Egl2AtBJZb09tveoBcWH9K15FaZDxKF6MC9jaQJwYeeqqeTGywM1wC4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714767736; c=relaxed/simple;
-	bh=ztL/yZzTvv1lZ/jW0/9n7LnKjNbna0voRPIdpF5eSQ8=;
+	s=arc-20240116; t=1714770258; c=relaxed/simple;
+	bh=Nbscw4yqCbNyXzKumjiJ6SnfGBiOJh1OdsY1PrcQhD4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QbrvYQIK+lq12DoG0nwKwZUjA6sRFcidnf4olusC3OstjlFsuI55iKWN5u6k3IR9WW0kZ8K0uyc3F9DcCrrzKMudkPLii3s6mZfLNTSrAelMg1IOPFqFaBR4BKlYxqS4DYio0/UVGs2wapRrRq0xng1WobWn1npjOeEunZQ3GwU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=NMWOBpQr; arc=none smtp.client-ip=209.85.210.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
+	 In-Reply-To:Content-Type; b=cYHbhLiYZr+vjwqN3i1sGHdg+JvQ2FpS1OyuPO6BT5zF1RR9Q1LN94ec70RakJ0cxtfYK1KC8um4aT/WGnwx+XprqzW8mlXNabmmDgO6haAYAA0+SN4Ijg4UA3KFO5yL9PKK+awIaYiIwr4z+UbJZBKwOkjRHtB71qxxImIB8/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=R95ODi0E; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="NMWOBpQr"
-Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-6ef88ce8701so22371a34.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 03 May 2024 13:22:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google; t=1714767734; x=1715372534; darn=vger.kernel.org;
-        h=in-reply-to:autocrypt:from:references:cc:to:subject:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=d5fajemw5ffMUrrk7CmI0KPhcJFVul6X9DAC7JgbWY8=;
-        b=NMWOBpQrI3lBK1mXSFCTB29f1LxpfgMcNzZwt9lMYzLCy3NZ6SfU+GFr8diA5L8Djj
-         PoKUYOlNpDoR1xyDWTrr1xOh6cVx4dbtH1WeD2VP/Je5kv30fLshpR9wRZDX6BuifOeb
-         Hs08PkBpBaAclb+bmE/poEclBf70Pu3w+OkG4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714767734; x=1715372534;
-        h=in-reply-to:autocrypt:from:references:cc:to:subject:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=d5fajemw5ffMUrrk7CmI0KPhcJFVul6X9DAC7JgbWY8=;
-        b=fir9hq8O7SYl7xK4a2+0zKdmTPNd77y6xiZh4dkFJTJ42tHPuU9rUd8PEDFfMVLJ2t
-         ViaQoKr6vFR2vzcc7FYz/PhklepyG6RQ0lzZrV+8T86wnDHmffdAikLq0uAt12HbNpU9
-         +fHqLVJDeCnb7ZQMI22e+PrmLvZUh2z/P2+1Yk9dQOfYp5ABOOKPmO73Sj+dijCdtyuj
-         j75VQ+uIscrYICSKvZWHyRYYBHRMZBfFASoZQIDtdydKntwBm8XttauYjjHOqaAVgTvp
-         3NsAV8vn0YorZP8NGOtM21iBvnoqFVDj4ZGiZ7hH8q5n5By/lbyOQVHKZzmm/zlgz0Et
-         TW3w==
-X-Forwarded-Encrypted: i=1; AJvYcCXh5fjlFuSgxCJxFfYwexd5hfcwnub/VLz/bTiVHBwD3/2CV2byOMIirvy/Q9fSSef8CBqta7QFiOvvnfpkfaweMAeYPdaXSkZ6G0I=
-X-Gm-Message-State: AOJu0YxrnI0VXdCBsxJdTdf5vNi7x3567W1mU06rqDYLG7gkfmLJfn7h
-	MEEomBdB+pVhFJHxqpQ1NM+fE5TstCiUaIf6ZFB1yFyVRet0GNxKbgOPIUh/Og==
-X-Google-Smtp-Source: AGHT+IHr/Ta3IY4AjlsBc5dtZ8kw8iu0/amikrFp49iwDsSsHxs4B+ogNlKjCyY2h0sihTpVHSEXOw==
-X-Received: by 2002:a05:6830:3a0c:b0:6ef:a130:a55d with SMTP id di12-20020a0568303a0c00b006efa130a55dmr3942940otb.20.1714767734058;
-        Fri, 03 May 2024 13:22:14 -0700 (PDT)
-Received: from [10.67.48.245] ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id g26-20020a05620a13da00b007907319aa02sm1511838qkl.67.2024.05.03.13.22.12
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 03 May 2024 13:22:13 -0700 (PDT)
-Message-ID: <05a5e893-12f7-49fd-9a9a-abd387571f9b@broadcom.com>
-Date: Fri, 3 May 2024 13:22:10 -0700
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="R95ODi0E"
+Received: from [100.65.192.193] (unknown [20.236.11.102])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 63C2320B2C82;
+	Fri,  3 May 2024 14:04:15 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 63C2320B2C82
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1714770255;
+	bh=9otFudNnFQ6Fo0AyB5+q1vjaZY01jz77AOepixB8ajU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=R95ODi0EifMs1TvCW5Xi0ANNjrXhlylciEvEb+9fFDkejLw2UxdIH3aGbHKy7QAHQ
+	 NWlrzEfHb6xtWLUH40yuYEifdcRcVe9EtnlzXoUvrNfv8Q272I9YgK7RtIx4+a2iR3
+	 bBhVE+Q3+pDSWqYdVXn/BDnCIJulJzU3uuDx3v5E=
+Message-ID: <4f1e429c-794b-457c-ab1d-85eb97dc81c3@linux.microsoft.com>
+Date: Fri, 3 May 2024 14:04:15 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -58,198 +34,127 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: Have CONFIG_FB_NOTIFY be tristate
-To: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Thomas Zimmermann <tzimmermann@suse.de>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Sam Ravnborg <sam@ravnborg.org>,
+Subject: Re: [PATCH v2 03/12] drm/i915: Make I2C terminology more inclusive
+To: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Cc: Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Zhenyu Wang <zhenyuw@linux.intel.com>,
+ Zhi Wang <zhi.wang.linux@gmail.com>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>,
+ "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ "open list:INTEL GVT-g DRIVERS (Intel GPU Virtualization)"
+ <intel-gvt-dev@lists.freedesktop.org>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
+ <nouveau@lists.freedesktop.org>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
  "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
- "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>
-References: <20240503192858.103640-1-florian.fainelli@broadcom.com>
- <8e1867fc-34da-457c-b95a-2d51ea97336a@app.fastmail.com>
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-Autocrypt: addr=florian.fainelli@broadcom.com; keydata=
- xsBNBFPAG8ABCAC3EO02urEwipgbUNJ1r6oI2Vr/+uE389lSEShN2PmL3MVnzhViSAtrYxeT
- M0Txqn1tOWoIc4QUl6Ggqf5KP6FoRkCrgMMTnUAINsINYXK+3OLe7HjP10h2jDRX4Ajs4Ghs
- JrZOBru6rH0YrgAhr6O5gG7NE1jhly+EsOa2MpwOiXO4DE/YKZGuVe6Bh87WqmILs9KvnNrQ
- PcycQnYKTVpqE95d4M824M5cuRB6D1GrYovCsjA9uxo22kPdOoQRAu5gBBn3AdtALFyQj9DQ
- KQuc39/i/Kt6XLZ/RsBc6qLs+p+JnEuPJngTSfWvzGjpx0nkwCMi4yBb+xk7Hki4kEslABEB
- AAHNMEZsb3JpYW4gRmFpbmVsbGkgPGZsb3JpYW4uZmFpbmVsbGlAYnJvYWRjb20uY29tPsLB
- IQQQAQgAywUCZWl41AUJI+Jo+hcKAAG/SMv+fS3xUQWa0NryPuoRGjsA3SAUAAAAAAAWAAFr
- ZXktdXNhZ2UtbWFza0BwZ3AuY29tjDAUgAAAAAAgAAdwcmVmZXJyZWQtZW1haWwtZW5jb2Rp
- bmdAcGdwLmNvbXBncG1pbWUICwkIBwMCAQoFF4AAAAAZGGxkYXA6Ly9rZXlzLmJyb2FkY29t
- Lm5ldAUbAwAAAAMWAgEFHgEAAAAEFQgJChYhBNXZKpfnkVze1+R8aIExtcQpvGagAAoJEIEx
- tcQpvGagWPEH/2l0DNr9QkTwJUxOoP9wgHfmVhqc0ZlDsBFv91I3BbhGKI5UATbipKNqG13Z
- TsBrJHcrnCqnTRS+8n9/myOF0ng2A4YT0EJnayzHugXm+hrkO5O9UEPJ8a+0553VqyoFhHqA
- zjxj8fUu1px5cbb4R9G4UAySqyeLLeqnYLCKb4+GklGSBGsLMYvLmIDNYlkhMdnnzsSUAS61
- WJYW6jjnzMwuKJ0ZHv7xZvSHyhIsFRiYiEs44kiYjbUUMcXor/uLEuTIazGrE3MahuGdjpT2
- IOjoMiTsbMc0yfhHp6G/2E769oDXMVxCCbMVpA+LUtVIQEA+8Zr6mX0Yk4nDS7OiBlvOwE0E
- U8AbwQEIAKxr71oqe+0+MYCc7WafWEcpQHFUwvYLcdBoOnmJPxDwDRpvU5LhqSPvk/yJdh9k
- 4xUDQu3rm1qIW2I9Puk5n/Jz/lZsqGw8T13DKyu8eMcvaA/irm9lX9El27DPHy/0qsxmxVmU
- pu9y9S+BmaMb2CM9IuyxMWEl9ruWFS2jAWh/R8CrdnL6+zLk60R7XGzmSJqF09vYNlJ6Bdbs
- MWDXkYWWP5Ub1ZJGNJQ4qT7g8IN0qXxzLQsmz6tbgLMEHYBGx80bBF8AkdThd6SLhreCN7Uh
- IR/5NXGqotAZao2xlDpJLuOMQtoH9WVNuuxQQZHVd8if+yp6yRJ5DAmIUt5CCPcAEQEAAcLB
- gQQYAQIBKwUCU8AbwgUbDAAAAMBdIAQZAQgABgUCU8AbwQAKCRCTYAaomC8PVQ0VCACWk3n+
- obFABEp5Rg6Qvspi9kWXcwCcfZV41OIYWhXMoc57ssjCand5noZi8bKg0bxw4qsg+9cNgZ3P
- N/DFWcNKcAT3Z2/4fTnJqdJS//YcEhlr8uGs+ZWFcqAPbteFCM4dGDRruo69IrHfyyQGx16s
- CcFlrN8vD066RKevFepb/ml7eYEdN5SRALyEdQMKeCSf3mectdoECEqdF/MWpfWIYQ1hEfdm
- C2Kztm+h3Nkt9ZQLqc3wsPJZmbD9T0c9Rphfypgw/SfTf2/CHoYVkKqwUIzI59itl5Lze+R5
- wDByhWHx2Ud2R7SudmT9XK1e0x7W7a5z11Q6vrzuED5nQvkhAAoJEIExtcQpvGagugcIAJd5
- EYe6KM6Y6RvI6TvHp+QgbU5dxvjqSiSvam0Ms3QrLidCtantcGT2Wz/2PlbZqkoJxMQc40rb
- fXa4xQSvJYj0GWpadrDJUvUu3LEsunDCxdWrmbmwGRKqZraV2oG7YEddmDqOe0Xm/NxeSobc
- MIlnaE6V0U8f5zNHB7Y46yJjjYT/Ds1TJo3pvwevDWPvv6rdBeV07D9s43frUS6xYd1uFxHC
- 7dZYWJjZmyUf5evr1W1gCgwLXG0PEi9n3qmz1lelQ8lSocmvxBKtMbX/OKhAfuP/iIwnTsww
- 95A2SaPiQZA51NywV8OFgsN0ITl2PlZ4Tp9hHERDe6nQCsNI/Us=
-In-Reply-To: <8e1867fc-34da-457c-b95a-2d51ea97336a@app.fastmail.com>
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256;
-	boundary="000000000000ae343e061792795f"
-
---000000000000ae343e061792795f
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ Zhi Wang <zhiwang@kernel.org>
+References: <20240503181333.2336999-1-eahariha@linux.microsoft.com>
+ <20240503181333.2336999-4-eahariha@linux.microsoft.com>
+ <ZjU8NB-71xWI2X73@intel.com>
+Content-Language: en-CA
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+In-Reply-To: <ZjU8NB-71xWI2X73@intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 5/3/24 12:45, Arnd Bergmann wrote:
-> On Fri, May 3, 2024, at 21:28, Florian Fainelli wrote:
->> Android devices in recovery mode make use of a framebuffer device to
->> provide an user interface. In a GKI configuration that has CONFIG_FB=m,
->> but CONFIG_FB_NOTIFY=y, loading the fb.ko module will fail with:
+On 5/3/2024 12:34 PM, Rodrigo Vivi wrote:
+> On Fri, May 03, 2024 at 06:13:24PM +0000, Easwar Hariharan wrote:
+>> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+>> with more appropriate terms. Inspired by and following on to Wolfram's
+>> series to fix drivers/i2c/[1], fix the terminology for users of
+>> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+>> in the specification.
 >>
->> fb: Unknown symbol fb_notifier_call_chain (err -2)
+>> Compile tested, no functionality changes intended
 >>
->> Have CONFIG_FB_NOTIFY be tristate, just like CONFIG_FB such that both
->> can be loaded as module with fb_notify.ko first, and fb.ko second.
+>> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
 >>
->> Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
+>> Reviewed-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+>> Acked-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
 > 
-> I see two problems here, so I don't think this is the right
-> approach:
-> 
->   1. I don't understand your description: Since fb_notifier_call_chain()
->      is an exported symbol, it should work for both FB_NOTIFY=y and
->      FB_NOTIFY=m, unless something in Android drops the exported
->      symbols for some reason.
+> It looks like the ack is not needed since we are merging this through
+> drm-intel-next. But I'm planing to merge this only after seeing the
+> main drivers/i2c accepting the new terminology. So we don't have a
+> risk of that getting push back and new names there and we having
+> to rename it once again.
 
-The symbol is still exported in the Android tree. The issue is that the 
-GKI defconfig does not enable any CONFIG_FB options at all. This is left 
-for SoC vendors to do in their own "fragment" which would add 
-CONFIG_FB=m. That implies CONFIG_FB_NOTIFY=y which was not part of the 
-original kernel image we build/run against, and so we cannot resolve the 
-symbol.
-
-This could be resolved by having the GKI kernel have CONFIG_FB_NOTIFY=y 
-but this is a bit wasteful (not by much since the code is very slim 
-anyway) and it does require making changes specifically to the Android 
-tree which could be beneficial upstream, hence my attempt at going 
-upstream first.
-
-IMHO it makes sense for all subsystem supporting code to be completely 
-modular or completely built-in, or at least allowed to be.
+Just to be explicit, did you want me to remove the Acked-by in v3, or will you when you pull
+the patch into drm-intel-next?
 
 > 
->   2. This breaks if any of the four callers of fb_register_client()
->      are built-in while CONFIG_FB_NOTIFY is set to =m:
-
-Ah good point, I missed that part, thanks, adding "select FB_NOTIFY" 
-ought to be enough for those.
-
+> (more below)
 > 
-> $ git grep -w fb_register_client
-> arch/arm/mach-pxa/am200epd.c:   fb_register_client(&am200_fb_notif);
-> drivers/leds/trigger/ledtrig-backlight.c:       ret = fb_register_client(&n->notifier);
-> drivers/video/backlight/backlight.c:    return fb_register_client(&bd->fb_notif);
-> drivers/video/backlight/lcd.c:  return fb_register_client(&ld->fb_notif);
+>> Acked-by: Zhi Wang <zhiwang@kernel.org>
+>> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 > 
-> Somewhat related but not directly addressing your patch, I wonder
-> if Android itself could migrate to using FB_CORE=m FB=n FB_NOTIFY=n
-> instead and use simpledrm for the console in place of the legacy
-> fbdev layer.
+> Cc: Jani Nikula <jani.nikula@intel.com>
+> 
+> Jani, what bits were you concerned that were not necessarily i2c?
+> I believe although not necessarily/directly i2c, I believe they
+> are related and could benefit from the massive single shot renable.
+> or do you have any better split to suggest here?
+> 
+> (more below)
+> 
+>> ---
+>>  drivers/gpu/drm/i915/display/dvo_ch7017.c     | 14 ++++-----
+>>  drivers/gpu/drm/i915/display/dvo_ch7xxx.c     | 18 +++++------
+>>  drivers/gpu/drm/i915/display/dvo_ivch.c       | 16 +++++-----
+>>  drivers/gpu/drm/i915/display/dvo_ns2501.c     | 18 +++++------
+>>  drivers/gpu/drm/i915/display/dvo_sil164.c     | 18 +++++------
+>>  drivers/gpu/drm/i915/display/dvo_tfp410.c     | 18 +++++------
+>>  drivers/gpu/drm/i915/display/intel_bios.c     | 22 +++++++-------
+>>  drivers/gpu/drm/i915/display/intel_ddi.c      |  2 +-
+>>  .../gpu/drm/i915/display/intel_display_core.h |  2 +-
+>>  drivers/gpu/drm/i915/display/intel_dsi.h      |  2 +-
+>>  drivers/gpu/drm/i915/display/intel_dsi_vbt.c  | 20 ++++++-------
+>>  drivers/gpu/drm/i915/display/intel_dvo.c      | 14 ++++-----
+>>  drivers/gpu/drm/i915/display/intel_dvo_dev.h  |  2 +-
+>>  drivers/gpu/drm/i915/display/intel_gmbus.c    |  4 +--
+>>  drivers/gpu/drm/i915/display/intel_sdvo.c     | 30 +++++++++----------
+>>  drivers/gpu/drm/i915/display/intel_vbt_defs.h |  4 +--
+>>  drivers/gpu/drm/i915/gvt/edid.c               | 28 ++++++++---------
+>>  drivers/gpu/drm/i915/gvt/edid.h               |  4 +--
+>>  drivers/gpu/drm/i915/gvt/opregion.c           |  2 +-
+>>  19 files changed, 119 insertions(+), 119 deletions(-)
+>>
 
-That is beyond my reach :)
--- 
-Florian
+<snip>
 
+>> diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+>> index c17462b4c2ac..64db211148a8 100644
+>> --- a/drivers/gpu/drm/i915/display/intel_ddi.c
+>> +++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+>> @@ -4332,7 +4332,7 @@ static int intel_ddi_compute_config_late(struct intel_encoder *encoder,
+>>  									connector->tile_group->id);
+>>  
+>>  	/*
+>> -	 * EDP Transcoders cannot be ensalved
+>> +	 * EDP Transcoders cannot be slaves
+> 
+>                                      ^ here
+> perhaps you meant 'targeted' ?
+> 
+>>  	 * make them a master always when present
 
---000000000000ae343e061792795f
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
+<snip>
 
-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
-riBJ/K1AFUjRAjFhGV64l++td7dkmnq/X8ET75ti+w1s4FRpFqkD2m7pg5NxdsZphYIXAgMBAAGj
-QjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSP8Et/qC5FJK5N
-UPpjmove4t0bvDANBgkqhkiG9w0BAQsFAAOCAQEAS0DbwFCq/sgM7/eWVEVJu5YACUGssxOGhigH
-M8pr5nS5ugAtrqQK0/Xx8Q+Kv3NnSoPHRHt44K9ubG8DKY4zOUXDjuS5V2yq/BKW7FPGLeQkbLmU
-Y/vcU2hnVj6DuM81IcPJaP7O2sJTqsyQiunwXUaMld16WCgaLx3ezQA3QY/tRG3XUyiXfvNnBB4V
-14qWtNPeTCekTBtzc3b0F5nCH3oO4y0IrQocLP88q1UOD5F+NuvDV0m+4S4tfGCLw0FREyOdzvcy
-a5QBqJnnLDMfOjsl0oZAzjsshnjJYS8Uuu7bVW/fhO4FCU29KNhyztNiUGUe65KXgzHZs7XKR1g/
-XzCCBVgwggRAoAMCAQICDBP8P9hKRVySg3Qv5DANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJC
-RTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTExMC8GA1UEAxMoR2xvYmFsU2lnbiBHQ0MgUjMg
-UGVyc29uYWxTaWduIDIgQ0EgMjAyMDAeFw0yMjA5MTAxMjE4MTFaFw0yNTA5MTAxMjE4MTFaMIGW
-MQswCQYDVQQGEwJJTjESMBAGA1UECBMJS2FybmF0YWthMRIwEAYDVQQHEwlCYW5nYWxvcmUxFjAU
-BgNVBAoTDUJyb2FkY29tIEluYy4xGTAXBgNVBAMTEEZsb3JpYW4gRmFpbmVsbGkxLDAqBgkqhkiG
-9w0BCQEWHWZsb3JpYW4uZmFpbmVsbGlAYnJvYWRjb20uY29tMIIBIjANBgkqhkiG9w0BAQEFAAOC
-AQ8AMIIBCgKCAQEA+oi3jMmHltY4LMUy8Up5+1zjd1iSgUBXhwCJLj1GJQF+GwP8InemBbk5rjlC
-UwbQDeIlOfb8xGqHoQFGSW8p9V1XUw+cthISLkycex0AJ09ufePshLZygRLREU0H4ecNPMejxCte
-KdtB4COST4uhBkUCo9BSy1gkl8DJ8j/BQ1KNUx6oYe0CntRag+EnHv9TM9BeXBBLfmMRnWNhvOSk
-nSmRX0J3d9/G2A3FIC6WY2XnLW7eAZCQPa1Tz3n2B5BGOxwqhwKLGLNu2SRCPHwOdD6e0drURF7/
-Vax85/EqkVnFNlfxtZhS0ugx5gn2pta7bTdBm1IG4TX+A3B1G57rVwIDAQABo4IB3jCCAdowDgYD
-VR0PAQH/BAQDAgWgMIGjBggrBgEFBQcBAQSBljCBkzBOBggrBgEFBQcwAoZCaHR0cDovL3NlY3Vy
-ZS5nbG9iYWxzaWduLmNvbS9jYWNlcnQvZ3NnY2NyM3BlcnNvbmFsc2lnbjJjYTIwMjAuY3J0MEEG
-CCsGAQUFBzABhjVodHRwOi8vb2NzcC5nbG9iYWxzaWduLmNvbS9nc2djY3IzcGVyc29uYWxzaWdu
-MmNhMjAyMDBNBgNVHSAERjBEMEIGCisGAQQBoDIBKAowNDAyBggrBgEFBQcCARYmaHR0cHM6Ly93
-d3cuZ2xvYmFsc2lnbi5jb20vcmVwb3NpdG9yeS8wCQYDVR0TBAIwADBJBgNVHR8EQjBAMD6gPKA6
-hjhodHRwOi8vY3JsLmdsb2JhbHNpZ24uY29tL2dzZ2NjcjNwZXJzb25hbHNpZ24yY2EyMDIwLmNy
-bDAoBgNVHREEITAfgR1mbG9yaWFuLmZhaW5lbGxpQGJyb2FkY29tLmNvbTATBgNVHSUEDDAKBggr
-BgEFBQcDBDAfBgNVHSMEGDAWgBSWM9HmWBdbNHWKgVZk1b5I3qGPzzAdBgNVHQ4EFgQUUwwfJ6/F
-KL0fRdVROal/Lp4lAF0wDQYJKoZIhvcNAQELBQADggEBAKBgfteDc1mChZjKBY4xAplC6uXGyBrZ
-kNGap1mHJ+JngGzZCz+dDiHRQKGpXLxkHX0BvEDZLW6LGOJ83ImrW38YMOo3ZYnCYNHA9qDOakiw
-2s1RH00JOkO5SkYdwCHj4DB9B7KEnLatJtD8MBorvt+QxTuSh4ze96Jz3kEIoHMvwGFkgObWblsc
-3/YcLBmCgaWpZ3Ksev1vJPr5n8riG3/N4on8gO5qinmmr9Y7vGeuf5dmZrYMbnb+yCBalkUmZQwY
-NxADYvcRBA0ySL6sZpj8BIIhWiXiuusuBmt2Mak2eEv0xDbovE6Z6hYyl/ZnRadbgK/ClgbY3w+O
-AfUXEZ0xggJtMIICaQIBATBrMFsxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52
-LXNhMTEwLwYDVQQDEyhHbG9iYWxTaWduIEdDQyBSMyBQZXJzb25hbFNpZ24gMiBDQSAyMDIwAgwT
-/D/YSkVckoN0L+QwDQYJYIZIAWUDBAIBBQCggdQwLwYJKoZIhvcNAQkEMSIEIPYlzyafppPUgUET
-V8ad29DQ2dN7x8X+MiTfSCYiLDSIMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcN
-AQkFMQ8XDTI0MDUwMzIwMjIxNFowaQYJKoZIhvcNAQkPMVwwWjALBglghkgBZQMEASowCwYJYIZI
-AWUDBAEWMAsGCWCGSAFlAwQBAjAKBggqhkiG9w0DBzALBgkqhkiG9w0BAQowCwYJKoZIhvcNAQEH
-MAsGCWCGSAFlAwQCATANBgkqhkiG9w0BAQEFAASCAQA56+GxQg3ePoGCHaYFl0FVqs3H+DzxfhK1
-oMuZG8nC/1PYCgnoSgjk44C6XUwqNq75HgsQCnfxTpWb4dFvnAiu91vuiwmuqZF2d3/rkn4cF9LU
-vOUviONEVP8H3ojRYx3IE4BcoVqe9sg7li3IU661YvA36byZ4vxpwSshkH43fVNl8niqqHQqg6/n
-RjosYvfkubrrMRmB0JKho6N+otCJ9UqW7d8PZLeDPuOEFZBcdZ1QWo6yiEtG8FC4F+7e7om/ZHsH
-vOCTX3VRJdB+1oTeRAkfWpoOzFoZct+HBsQC3MN8S6w7kDB3W0Qj4whN+Cxv0Nt7PhvGE2JoJaJi
-6+9p
---000000000000ae343e061792795f--
+This is not actually I2C related as far as I could tell when I was making the change, so this was more of a typo fix.
+
+If we want to improve this, a quick check with the eDP v1.5a spec suggests using primary/secondary instead,
+though in a global fashion rather than specifically for eDP transcoders. There is also source/sink terminology
+in the spec related to DP encoders.
+
+Which would be a more acceptable change here?
+
+Thanks,
+Easwar

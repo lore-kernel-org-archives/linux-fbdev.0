@@ -1,130 +1,189 @@
-Received: from sonic304-21.consmr.mail.ne1.yahoo.com (sonic304-21.consmr.mail.ne1.yahoo.com [66.163.191.147])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 863B2156C52
-	for <linux-fbdev@vger.kernel.org>; Fri,  3 May 2024 16:50:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=66.163.191.147
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B135541A80;
+	Fri,  3 May 2024 18:14:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714755047; cv=none; b=qh6OA8Chi3FVkJ2jZibqxzYmRMfVgOOijVGDyf20McLwUYPLcwLb6h1kHtgr0ioz5gg8XMogwKDABO7N9OgQIxXAAvx4z8p6pkNxNmq4dHiw9yQ6/+AsenXKueg66p0nbd9uskQ6RzunSnMrLeoPFOoirc1ueuo81kdEfrEKdhw=
+	t=1714760042; cv=none; b=a3Mp31wRLkH4uGmaSRGiUAizhNkLhYhohUYoyEk5gZFmYWKXXYX8h2e8DtbPWLQbDgzcUbvrELxSm6pxEjLGxqKAESKWcQtd2ICealce0tKstqbKHDy1e+FqapLo/O6jzAjyb4watBWuStNxhJn0cxeeJM8Aj3ez5rZaBhLYuPY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714755047; c=relaxed/simple;
-	bh=OpuBHTwhnfArlf2PsQ6g2wnS/DKkhtNrSqNbd0Cd8cY=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=E8Yo1BkFXxphRc3aVfbnhEng03jmfgcKcMZ23ko9RiO6e5KJbvxEAo1nKbKkY7z7TbwXZmmsE+3U+GF0yOaAUEOjzri3B5VPE7olQUEASmE/fryBsxOhmHc0YyF+667bmrumJ9ckYJY5YQ55n49rFA+MuR8ixT9f59gwBxwb7iQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com; spf=pass smtp.mailfrom=yahoo.com; dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b=kPZy6Sj2; arc=none smtp.client-ip=66.163.191.147
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.com
+	s=arc-20240116; t=1714760042; c=relaxed/simple;
+	bh=5krfrUCEeWficu1QJGsQsOe283vA8jy1feYZfvpZZI0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=nOmXH16E/KXOu5Taij+kOM/GoE0I1ye3GvjM/rr/3mFQP5a/aX6xaNX2Fjc5u9uLCjxHRK+v0fpFXWplvBMXehVg/Jnj0XKC3Pymzh6dCp+H/4/u25v5H+yX6p9nc3FQRRnoyStMeTMyeBIIIRzI6foE0tHTfc+iqtxBJSDvgN4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=DNUkSqts; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b="kPZy6Sj2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1714755044; bh=OpuBHTwhnfArlf2PsQ6g2wnS/DKkhtNrSqNbd0Cd8cY=; h=Date:From:To:Cc:In-Reply-To:References:Subject:From:Subject:Reply-To; b=kPZy6Sj2+mu+YJ/leZPNjcmKEDE0pl2P8drWNUnqlYQsFR3xFHFNNIOqIwE53i3aq6OhZyhq+OlbO1Vay+5KLzi3k/u4HOuaBw68zEW0xcKQrGB4y5QEVUjQ3hF7Gzd1Ys9Kp1FbrPdjpL+/wSPaXRLZZ1NhJP03SMY1uEVdJde+sPpz0J3oPjegcI3AZ8rhnRcrHSywYy3Blt1lbFDlvLUzMDDS8FT3KW8/hvLlnuuMCXZ9SwNlmOBqABAjx7Ylhwm+KwubLCYXxXUsPg9Vn1iAVJIM5ROangUNfRO+rca3bExxjm8YP5aVO5iFV9xOaErM+ZsPjzB36LSKrw+kmA==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1714755044; bh=RMWEDaYeZhcrS7Bi1gxI2B6M21JtD11WSt65H1rSUiJ=; h=X-Sonic-MF:Date:From:To:Subject:From:Subject; b=SZNYFTb11uy6HlOqMqwxdIA0ug4OiLp4TE4w9UIsJuq7A1/ohJyJOGKdfMQx2sQm49QoW3aljOKS8nYd3uRWF5nIbnMJHanNwXvbMFDxwgsr8luq5B+I1I82BIDEKENO5vABx7CEIxpyfTrPRWzJ2ADAAnQgEXElfHEBYqPOyJkoZQhT7K50xpCXqp0UPe9+4NQkjc+ECnLQkjtex2KCqqjV7VoydnhKyhfEfTR9E/mAk230KGGFgI42e+ekEPb0uJk7kuVrZbA9zTLg1uh+byyZZH5uEIXH0+yKfyqO/sUOzpXQjMD3AhXtIczZJt+UUszGaqgIXWxNqJ72BkeyAg==
-X-YMail-OSG: u7CikhkVM1mEMBJgRhgeFfykAxEVELBK2D8SuCjgxXEHVfhg2Mh1jCun.7euP4n
- YuKTaefJTFGNeHA6y0GKN8r5o3pt6uZ4L7fJsdR9huBW4xI._HbSxGmtwL7Q.r.q2HNLUhrxNcqJ
- iQk0clfL4rJB7emk22t.djOQDkv.3brzpvxYm7mD76etPxjsHtjznB4tUyLYzXFO.6IDvqV7cuVU
- s7YU8V1I5QXnD2RY954jhO_zWBG1FHHEhnmc2lafLzGClMxUD1sSeuRmEUnPzd9UJb1XvnNuPzoR
- HDhGIP5Qbmk9vsiiNBfzez4x4g8KFg3M.G5Uk5n2WX7L_k6B9_ZGCVtrDh348xQOjY1Y_1Cd81b4
- noQswoJiZsryvGYbOrdRyqJAQrn1NxglYFDVVQ8ihsj3JFsAg8idJ57wbS4lW1zJR0z2hwX0D5L8
- Ah9_5UWH5vGNxPLESZLBXSsL8X91UjsCxu6TnFw7uhzNds6_ofPqhWISo6wokWtoHo4s5i_Dd1g1
- pgusS5pHJ1PX8KPBpv1fMxnUGbma5Mq06lphYU_SSXY4i5qCBUK37DNnJIV5AgXDEbpreAvPY5KN
- vR8Tb6Q2yF6axmhLYw2qwsfnAUr0vA_Jzc2pUUzAeDxF6I0UPkjLA7a7yiaDIczakKX6dwdSJ.mG
- 58OM_lkjw52d71AdkfrDJUX2MksGHq1K63WSXuFurdzA3S18AlusvV.5PFProfYCIRztn0BDISD2
- Qa0GpFEiFwlzby4x0fgGxV8dJZ7Xq5ugd4xBCV.6.A2dnjy26PjzG0jwSLH9GPjFaJGaVk9uUasX
- Ix6sSXmG_K_jm3KYote_PDn6JLIa0hbq_HNpR__3cjgTP1plr_6Akyd1GFihjkHF_mscqbk6S76Q
- jpIhhLUmyHcsZ.NWMfj678JphFYyxPaOOxLXXAMfL_zhiEjNUJvyW4VexTTgNZ3xy4unuIoacAoJ
- i65ljO1IAGxShzOLanEqKFAMguiVBBN84wbYDBpr0kbG1lU32E1cGTIczqgW2w82DRV0zMHp7_sk
- RkIuj5k_JzxlnN5zNfGNQ27h3I4gVCCP9gOc5wekqRwLV8ifLYRb0bPkd8tD7JmD2LZ4W42b5344
- HsLeoU48IJJDVr0YJZVirumWrxsKvF2I3o7_KXaVyliAP25U_deLjmT.BBE1UONAftNh2kNMOZhG
- ak5IKdiwLyK6_12ip8oazaBJj_0W2q_gqrvjiq4bKG6iI._HycRHunW22uHeF9wvQrk5tc_APutn
- ySnbWQ9ziXxvaBWtboypHwNZUDPR.1KsQgcqJSY2RL3r9XfaUo845YNVfdFuXJRnWkIvdttDKler
- fyJKbvSmeSCJKhNzvxBHRQYh5n.3NYvEikv_TsZJacJhbUnWXZUvXasP37MGyoQ7GLT5da687ovE
- MPDnTVH5iJuFgVqg.nx3oyRUA1nTBGBfvFZYSiKFVAvWHa4stTt3NH3SSaTDdTBWfIGRsYGhkvLA
- dGy3Z7XijAEEDsjVV7IcaVpLVWIbJ5jIIBJ13eYMxWVJ5f4A4lIZrv_SZBpvByB1sfv.DS7gSonq
- 1VNOutIuK8hijTa9otiRaFsP5_Q0XVFGUteywvHokJuiKc9VgRr3JHFzTPQ4VicD_5wUtc5IFJ1G
- Whv.16lmZ496l.ekC09_B7nK3cP4JcBG1bvLevBfXuZGDgqGnk69NAcG7XfInLZXd.siTtH_j2Hu
- Um8ryul1Tv18C0USqxm8iwpFTlN8Nnzyfmboy0o0wiQplgRXpa.HUUaRAp_Q1evqftIW2KXhIQd.
- PgvidYsIBtF.XIaFWMsLdcMg1GvBlnp_6PRqwXVoLM2PAqh5VqVkQQTOfaBeMPEn8jtbd6qNLLqP
- 0LUJpjXA1La1EIPftMu6oPuaNY5s2vCt4KwXJcivqOm8eJpB7YSB6SjubeIV9IqXdILqqdTIJ5I1
- loXhSfvkPvTocCDcdoz7FvbKaejGqeAjQjG8RIM0v82Pdtw0DCF.8aCwGPn7CiVmUwVA3AB8L30S
- N_n9FCd6TcDBPoK5HwRSX..z0kdfVosVSs6SS2qsrOs3jY06vlXP0PhNz2EG_YmgI7YvRoqKxbY7
- PKcwpvJsXvM7YBuftOiseBjk3I_KzychmFW.f.Ls34I5eM8XzWMW0LfYeBAwTIprJKhvL6V_Vrms
- tgESrkIU7v9UtaRwWh7DKRHDJUDHgqExo6lBS0mqHPrUKy.hVNgkJlB2PDa_Qv4JSP3Rf1VmTgvH
- Fcv96CSp4tjyCAXFkI47vWUo4VCWan1qd7NG.JaBVJ1kVaf_Z0uiLr9CVPVJD6A.o_UxUDqo-
-X-Sonic-MF: <ashokemailat@yahoo.com>
-X-Sonic-ID: b20f7dc0-ce88-4f67-8215-c25d657d58b6
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic304.consmr.mail.ne1.yahoo.com with HTTP; Fri, 3 May 2024 16:50:44 +0000
-Date: Fri, 3 May 2024 16:20:24 +0000 (UTC)
-From: Ashok Kumar <ashokemailat@yahoo.com>
-To: Julia Lawall <julia.lawall@inria.fr>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, 
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, 
-	"linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"outreachy@lists.linux.dev" <outreachy@lists.linux.dev>
-Message-ID: <1389558595.6771301.1714753224419@mail.yahoo.com>
-In-Reply-To: <c8d24241-1763-f7b7-4491-2e5aa3ea3be@inria.fr>
-References: <ZjRDUO6/M+RDCcQJ.ref@c> <ZjRDUO6/M+RDCcQJ@c> <c8d24241-1763-f7b7-4491-2e5aa3ea3be@inria.fr>
-Subject: Re: [PATCH] staging: fb_tinylcd Alignment to open parenthesis
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="DNUkSqts"
+Received: from rrs24-12-35.corp.microsoft.com (unknown [131.107.8.16])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 1DBB620B2C82;
+	Fri,  3 May 2024 11:13:59 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1DBB620B2C82
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1714760039;
+	bh=t+bej/Nszfp4Y3aAKK+ve+PXcHDiGLvMwGoKGwruaU0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=DNUkSqtsm6b3XI7FuFq/j+HJpnUQJ32mAJ++/DwNJ3GGcuMwqkilZaB6IiZlNPSmm
+	 ldOTvkNccJ4qVk3MI2EkzRUpVxeU8sfwD6q5LTxBNrYdg9CFW+jmdjvWvwGxkImQR7
+	 ulzhaJogqcXmtU4cfYAaVycpjIavI6G7SrciLi7M=
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+To: 
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	amd-gfx@lists.freedesktop.org (open list:RADEON and AMDGPU DRM DRIVERS),
+	dri-devel@lists.freedesktop.org (open list:DRM DRIVERS),
+	linux-kernel@vger.kernel.org (open list),
+	intel-gfx@lists.freedesktop.org (open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS),
+	intel-xe@lists.freedesktop.org (open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS),
+	nouveau@lists.freedesktop.org (open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS),
+	linux-i2c@vger.kernel.org (open list:I2C SUBSYSTEM HOST DRIVERS),
+	linux-media@vger.kernel.org (open list:BTTV VIDEO4LINUX DRIVER),
+	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
+	Easwar Hariharan <eahariha@linux.microsoft.com>
+Subject: [PATCH v2 00/12] Make I2C terminology more inclusive for I2C Algobit and consumers
+Date: Fri,  3 May 2024 18:13:21 +0000
+Message-Id: <20240503181333.2336999-1-eahariha@linux.microsoft.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: WebService/1.1.22256 YMailNorrin
+Content-Transfer-Encoding: 8bit
+
+I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+with more appropriate terms. Inspired by and following on to Wolfram's
+series to fix drivers/i2c/[1], fix the terminology for users of the
+I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+in the specification.
+
+Compile tested, no functionality changes intended
+
+Please chime in with your opinions and suggestions.
+
+This series is based on 3d25a941ea50 ("Merge tag 'block-6.9-20240503' of git://git.kernel.dk/linux")
+
+[1]:
+https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
+----
+
+changelog:
+v1->v2:
+- v1 link: https://lore.kernel.org/all/20240430173812.1423757-1-eahariha@linux.microsoft.com/ 
+- Switch to specification verbiage master->controller, slave->target,
+  drop usage of host/client [Thomas]
+- Pick up Reviewed-bys and Acked-bys from Rodrigo, Zhi, and Thomas [gma500, i915]
+- Fix up some straggler master/slave terms in amdgpu, cx25821, ivtv,
+  cx23885
+
+v0->v1:
+- v0 link: https://lore.kernel.org/all/20240329170038.3863998-1-eahariha@linux.microsoft.com/
+- Drop drivers/infiniband patches [Leon, Dennis]
+- Switch to specification verbiage master->controller, slave->target,
+  drop usage of client [Andi, Ville, Jani, Christian]
+- Add I3C specification version in commit messages [Andi]
+- Pick up Reviewed-bys from Martin and Simon [sfc]
+- Drop i2c/treewide patch to make this series independent from Wolfram's
+  ([1]) [Wolfram]
+- Split away drm/nouveau patch to allow expansion into non-I2C
+  non-inclusive terms
+----
+
+Easwar Hariharan (12):
+  drm/amdgpu, drm/radeon: Make I2C terminology more inclusive
+  drm/gma500: Make I2C terminology more inclusive
+  drm/i915: Make I2C terminology more inclusive
+  media: au0828: Make I2C terminology more inclusive
+  media: cobalt: Make I2C terminology more inclusive
+  media: cx18: Make I2C terminology more inclusive
+  media: cx25821: Make I2C terminology more inclusive
+  media: ivtv: Make I2C terminology more inclusive
+  media: cx23885: Make I2C terminology more inclusive
+  sfc: falcon: Make I2C terminology more inclusive
+  fbdev/smscufx: Make I2C terminology more inclusive
+  fbdev/viafb: Make I2C terminology more inclusive
+
+ .../gpu/drm/amd/amdgpu/amdgpu_atomfirmware.c  |  8 ++---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_i2c.c       | 10 +++----
+ drivers/gpu/drm/amd/amdgpu/atombios_i2c.c     |  8 ++---
+ drivers/gpu/drm/amd/amdgpu/atombios_i2c.h     |  2 +-
+ drivers/gpu/drm/amd/amdgpu/smu_v11_0_i2c.c    | 20 ++++++-------
+ .../gpu/drm/amd/display/dc/bios/bios_parser.c |  2 +-
+ .../drm/amd/display/dc/bios/bios_parser2.c    |  2 +-
+ .../drm/amd/display/dc/core/dc_link_exports.c |  4 +--
+ drivers/gpu/drm/amd/display/dc/dc.h           |  2 +-
+ drivers/gpu/drm/amd/display/dc/dce/dce_i2c.c  |  4 +--
+ .../display/include/grph_object_ctrl_defs.h   |  2 +-
+ drivers/gpu/drm/amd/include/atombios.h        |  2 +-
+ drivers/gpu/drm/amd/include/atomfirmware.h    | 26 ++++++++--------
+ .../powerplay/hwmgr/vega20_processpptables.c  |  4 +--
+ .../amd/pm/powerplay/inc/smu11_driver_if.h    |  2 +-
+ .../inc/pmfw_if/smu11_driver_if_arcturus.h    |  2 +-
+ .../inc/pmfw_if/smu11_driver_if_navi10.h      |  2 +-
+ .../pmfw_if/smu11_driver_if_sienna_cichlid.h  |  2 +-
+ .../inc/pmfw_if/smu13_driver_if_aldebaran.h   |  2 +-
+ .../inc/pmfw_if/smu13_driver_if_v13_0_0.h     |  2 +-
+ .../inc/pmfw_if/smu13_driver_if_v13_0_7.h     |  2 +-
+ .../gpu/drm/amd/pm/swsmu/smu11/arcturus_ppt.c |  4 +--
+ .../amd/pm/swsmu/smu11/sienna_cichlid_ppt.c   |  8 ++---
+ drivers/gpu/drm/gma500/cdv_intel_lvds.c       |  2 +-
+ drivers/gpu/drm/gma500/intel_bios.c           | 22 +++++++-------
+ drivers/gpu/drm/gma500/intel_bios.h           |  4 +--
+ drivers/gpu/drm/gma500/intel_gmbus.c          |  2 +-
+ drivers/gpu/drm/gma500/psb_drv.h              |  2 +-
+ drivers/gpu/drm/gma500/psb_intel_drv.h        |  2 +-
+ drivers/gpu/drm/gma500/psb_intel_lvds.c       |  4 +--
+ drivers/gpu/drm/gma500/psb_intel_sdvo.c       | 26 ++++++++--------
+ drivers/gpu/drm/i915/display/dvo_ch7017.c     | 14 ++++-----
+ drivers/gpu/drm/i915/display/dvo_ch7xxx.c     | 18 +++++------
+ drivers/gpu/drm/i915/display/dvo_ivch.c       | 16 +++++-----
+ drivers/gpu/drm/i915/display/dvo_ns2501.c     | 18 +++++------
+ drivers/gpu/drm/i915/display/dvo_sil164.c     | 18 +++++------
+ drivers/gpu/drm/i915/display/dvo_tfp410.c     | 18 +++++------
+ drivers/gpu/drm/i915/display/intel_bios.c     | 22 +++++++-------
+ drivers/gpu/drm/i915/display/intel_ddi.c      |  2 +-
+ .../gpu/drm/i915/display/intel_display_core.h |  2 +-
+ drivers/gpu/drm/i915/display/intel_dsi.h      |  2 +-
+ drivers/gpu/drm/i915/display/intel_dsi_vbt.c  | 20 ++++++-------
+ drivers/gpu/drm/i915/display/intel_dvo.c      | 14 ++++-----
+ drivers/gpu/drm/i915/display/intel_dvo_dev.h  |  2 +-
+ drivers/gpu/drm/i915/display/intel_gmbus.c    |  4 +--
+ drivers/gpu/drm/i915/display/intel_sdvo.c     | 30 +++++++++----------
+ drivers/gpu/drm/i915/display/intel_vbt_defs.h |  4 +--
+ drivers/gpu/drm/i915/gvt/edid.c               | 28 ++++++++---------
+ drivers/gpu/drm/i915/gvt/edid.h               |  4 +--
+ drivers/gpu/drm/i915/gvt/opregion.c           |  2 +-
+ drivers/gpu/drm/radeon/atombios.h             | 16 +++++-----
+ drivers/gpu/drm/radeon/atombios_i2c.c         |  4 +--
+ drivers/gpu/drm/radeon/radeon_combios.c       | 28 ++++++++---------
+ drivers/gpu/drm/radeon/radeon_i2c.c           | 10 +++----
+ drivers/gpu/drm/radeon/radeon_mode.h          |  6 ++--
+ drivers/media/pci/cobalt/cobalt-i2c.c         |  6 ++--
+ drivers/media/pci/cx18/cx18-av-firmware.c     |  8 ++---
+ drivers/media/pci/cx18/cx18-cards.c           |  6 ++--
+ drivers/media/pci/cx18/cx18-cards.h           |  4 +--
+ drivers/media/pci/cx18/cx18-gpio.c            |  6 ++--
+ drivers/media/pci/cx23885/cx23885-core.c      |  6 ++--
+ drivers/media/pci/cx23885/cx23885-f300.c      |  8 ++---
+ drivers/media/pci/cx23885/cx23885-i2c.c       |  6 ++--
+ drivers/media/pci/cx23885/cx23885.h           |  2 +-
+ drivers/media/pci/cx25821/cx25821-core.c      |  2 +-
+ drivers/media/pci/cx25821/cx25821-i2c.c       |  6 ++--
+ .../media/pci/cx25821/cx25821-medusa-video.c  |  2 +-
+ drivers/media/pci/cx25821/cx25821.h           |  2 +-
+ drivers/media/pci/ivtv/ivtv-i2c.c             | 20 ++++++-------
+ drivers/media/usb/au0828/au0828-i2c.c         |  4 +--
+ drivers/media/usb/au0828/au0828-input.c       |  2 +-
+ drivers/net/ethernet/sfc/falcon/falcon.c      |  2 +-
+ drivers/video/fbdev/smscufx.c                 |  4 +--
+ drivers/video/fbdev/via/chip.h                |  8 ++---
+ drivers/video/fbdev/via/dvi.c                 | 24 +++++++--------
+ drivers/video/fbdev/via/lcd.c                 |  6 ++--
+ drivers/video/fbdev/via/via_aux.h             |  2 +-
+ drivers/video/fbdev/via/via_i2c.c             | 12 ++++----
+ drivers/video/fbdev/via/vt1636.c              |  6 ++--
+ 79 files changed, 321 insertions(+), 321 deletions(-)
 
 
-On Thursday, May 2, 2024 at 11:54:58 PM PDT, Julia Lawall <julia.lawall@inr=
-ia.fr> wrote:=20
+base-commit: 3d25a941ea5013b552b96330c83052ccace73a48
+-- 
+2.34.1
 
-
-
-
-
-
-
-On Thu, 2 May 2024, Ashok Kumar wrote:
-
-> Corrected coding style CHECK: Alignment should match open parenthesis
-
-Ashok, I think the code is nicer as is, because it has all the constant
-numbers lined up.
-
-julia
-
-Thanks for the update I will ignore this change.=C2=A0
-
-Is there a list of exceptions to the checkpatch information that we can ign=
-ore in general.
-
-
->
-> Signed-off-by: Ashok Kumar <ashokemailat@yahoo.com>
-> ---
->=C2=A0 drivers/staging/fbtft/fb_tinylcd.c | 2 +-
->=C2=A0 1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/f=
-b_tinylcd.c
-> index 9469248f2c50..60cda57bcb33 100644
-> --- a/drivers/staging/fbtft/fb_tinylcd.c
-> +++ b/drivers/staging/fbtft/fb_tinylcd.c
-> @@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
->=C2=A0 =C2=A0=C2=A0=C2=A0 write_reg(par, 0xE5, 0x00);
->=C2=A0 =C2=A0=C2=A0=C2=A0 write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
->=C2=A0 =C2=A0=C2=A0=C2=A0 write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x0=
-0, 0x00,
-> -=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0 =C2=A0 =C2=A0 0x00, 0x35, 0=
-x33, 0x00, 0x00, 0x00);
-> +=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0 0x00, 0x35, 0x33, 0x00, 0x0=
-0, 0x00);
->=C2=A0 =C2=A0=C2=A0=C2=A0 write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
->=C2=A0 =C2=A0=C2=A0=C2=A0 write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
->=C2=A0 =C2=A0=C2=A0=C2=A0 udelay(250);
-> --
-> 2.34.1
->
->
->

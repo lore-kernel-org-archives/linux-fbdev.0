@@ -1,155 +1,102 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from fout8-smtp.messagingengine.com (fout8-smtp.messagingengine.com [103.168.172.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B983B53372;
-	Fri,  3 May 2024 09:55:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EDF11514E5;
+	Fri,  3 May 2024 15:29:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.151
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714730119; cv=none; b=XukFcF05x1my8JTcwYnJt0sm1duxTIon5zDOi6SKRU08oGAGCvyLe78gkNIQhmPQyeVwkGdk9X5K0pAQp3POHXhI6cAJN8wYerlQmkHpaFwg5BlJvbb427KLlYpcq3QmLaNhpuj8pHfzRJ5GQ7jGnSBH4yXuzNN7Ch74h8I4ukg=
+	t=1714750167; cv=none; b=LmZuMp+/ZDCzvL60q+wLJRNAUuHhlMv2bnrQVLfFQbmWx3ZzWaIyF7OcMWiDSllDokFpXrKGpB9hUbguy2ucDlAvyc+tVPHoLZwbf15lC1RiLnsU5IcqUPENhCn2Tx2QIv3l172gTwz5QHvYqTX5j3rN8y52EwgxQS3ATED3RVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714730119; c=relaxed/simple;
-	bh=2ZuH8DJWKdI8xZCLGCNsawY8TILgFbvsCfAw9mJuqqQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C/n3/M49g3E1toxDnJrND6HsNbj5iigZcdFffX2fukTWZdaz14xP9dONg5F0GBz3mi8COMF6GbODK1dBkVrNElPX0OzAh0AEEbAPNzPNrOo+LBopJml2jPJwAT/kepks+0u2EFkiJ6Wfwr7XQfSPU4Wu4Plmdg/2LdNFkOYnaDE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uUgmLlcY; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1714750167; c=relaxed/simple;
+	bh=PaJ11yyj1u29gk5++0CUbqbvDFcDQTeM1r/sMnrKg80=;
+	h=MIME-Version:Message-Id:In-Reply-To:References:Date:From:To:Cc:
+	 Subject:Content-Type; b=SyOXzmpVQlrQzJ2GrCvm255C7nwD7Oa/2elDdCEfGdXFe55dNXkRL+FKnmbeoU2AsM8ENpnUL0vKOUoDUA8dX4gJGaRo0wRMM8fpu2rs6O3udQz0yw3Cx9bZr1PXpJ70eqYJbNROWT1dy2GgdxkoeeEitCLyNF82uVBK9iSMYxU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=iCIMBune; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=YGYORuir; arc=none smtp.client-ip=103.168.172.151
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uUgmLlcY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 176ECC116B1;
-	Fri,  3 May 2024 09:55:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714730119;
-	bh=2ZuH8DJWKdI8xZCLGCNsawY8TILgFbvsCfAw9mJuqqQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=uUgmLlcYkJi4Y9gh/4f5/UdhgmN1qqy6bsEAoLCyzmpGORX35Th540t8i7lEGvXZ4
-	 WCILsRry+m8Vughb03wMZaLhX+rlvn4toLuPxwUuGEGrVLZYPeUZykQie/nHgSITYl
-	 Lq0bqWxJphmgtfw8yawhscCNwgGc+BEmGFd3USkh7wlNcYCTglcafrpsFwhDBQiP1q
-	 UqvqK7tjZhkeq9yjIzsYXdm9qlpI6SW63uidnuhg8wes1IeOZkp5a5zvMuwok1CmVQ
-	 26FNNz6vSyamHDnWtksDmjRLupE/t+lEHA81eAhGFs81luI64SE3dlOfalYaZiASl/
-	 WS/3KIIK8LsKA==
-Date: Fri, 3 May 2024 10:55:12 +0100
-From: Lee Jones <lee@kernel.org>
-To: Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>,
-	Jiri Kosina <jikos@kernel.org>,
-	Benjamin Tissoires <bentiss@kernel.org>,
-	Alexander Shiyan <shc_work@mail.ru>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
-	linux-omap@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
-	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Subject: Re: [PATCH v2 00/19] backlight: Constify lcd_ops
-Message-ID: <20240503095512.GQ1227636@google.com>
-References: <20240424-video-backlight-lcd-ops-v2-0-1aaa82b07bc6@kernel.org>
- <171472928415.1323021.3458121588308140519.b4-ty@kernel.org>
- <20240503094319.GP1227636@google.com>
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="iCIMBune";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="YGYORuir"
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+	by mailfout.nyi.internal (Postfix) with ESMTP id 7458013800CE;
+	Fri,  3 May 2024 11:29:25 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute5.internal (MEProxy); Fri, 03 May 2024 11:29:25 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm2; t=1714750165; x=1714836565; bh=wY9DfsGGwL
+	3WFFF4rDuowcVoD3Ri5Gt9+AThm6ztR9E=; b=iCIMBune9biZ7be+dtUP878Q93
+	Sf0/XN8Sm61VPWCl1b9XK9If8cW2NiSS5w8EN0UdqYwtWGC3lSFvxF7sK3ZoUXid
+	5GjXllhLlIQJlyGLKwpwZSQhLHi9iGX82dEGqYJebU3idupbr9mH/XwyWj0oduvF
+	dUz5eEp9/javg0G5T9NUaSVglGyA9v8/mRLxLArru1L5igJOrYs2YUWreSrOwuHM
+	CVWLY8ndAFhGtAYovQyFB2GnGehAOAhxahrl3fHIIa2ZihXc1GT1iqEhIpOlS0Yf
+	/v2Y1GOUoLhcGagBCanDzlDDDoSP55O6gaC/niPzveq/W5uG+Jxfvm4WD7XA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm3; t=1714750165; x=1714836565; bh=wY9DfsGGwL3WFFF4rDuowcVoD3Ri
+	5Gt9+AThm6ztR9E=; b=YGYORuirzvgEP0dcRoZGmyspLXOo9wube2DJxbfTkMkp
+	pSAyVvzV2X8BfeyP036rsP6YbbUa31Z9bl3rkPV8q5/WGPfRk9Cw9/MK8lAums1N
+	05B9yIqHGJPstrbSw34nT/W/6Wu3BbSKGp7rS0bN7N6O3eK67ugjij3+HValFMvt
+	7SHUIIM2VQOonhAY3JHTRnmmzeu0AP1HnKNyaf55JcNnxDETqCs0oO2LmInbVcdu
+	ygz3WG6a8ImuZp8LsKjGOeaNW3edEe95Ak7x44udV75neIGR6ifS7xiaJfklKpGI
+	XXLMYaKRieG8lu+pZgEWV+nvBhcqLqJ68z7i1RVGWQ==
+X-ME-Sender: <xms:1AI1Zgt-RIf_MVtvc0LxunzLgTpoVcbbLYSEIa1hyWRYUFiD8CIQHQ>
+    <xme:1AI1ZteogSVAZzkbj9oTdYREHhPVxjCqEGNlGGfJTwPaihNSEop06Q-q30wvqDJep
+    4fCBjLFa0eHCvwjEY0>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrvddvtddgkeekucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:1AI1ZrxleoU7IxogrTww9AbE64uBICl1mz4_eLBng6a7XhGVW_5e8Q>
+    <xmx:1AI1ZjOlt-JjJyw4GOyKHNjqRF3I2A828aNCnba5Xgdx-mcNldY4iw>
+    <xmx:1AI1Zg_t5Ed5yE51wnoAw7ipvQj1dt8MiH-w0kjpB-_Qpd81NgpqOw>
+    <xmx:1AI1ZrUFL1bIWpD3lQZXqt7G_yN21Kblz2B54NWe1vNc13E_hoY1Sw>
+    <xmx:1QI1Zhj1BGPg0_SHCyV2Ty4IxZgKxMv84vxZso-bp7v4cPVRi_L31pPt>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 96CCDB6008D; Fri,  3 May 2024 11:29:24 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.11.0-alpha0-417-gddc99d37d-fm-hotfix-20240424.001-g2c179674
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240503094319.GP1227636@google.com>
+Message-Id: <2f8cfd1d-a478-4666-a181-040c8d92e8fd@app.fastmail.com>
+In-Reply-To: <c281bb8e-0719-4b28-a637-56615ad16913@suse.de>
+References: <20240329203450.7824-1-tzimmermann@suse.de>
+ <c281bb8e-0719-4b28-a637-56615ad16913@suse.de>
+Date: Fri, 03 May 2024 17:29:04 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Thomas Zimmermann" <tzimmermann@suse.de>,
+ "Sam Ravnborg" <sam@ravnborg.org>,
+ "Javier Martinez Canillas" <javierm@redhat.com>,
+ "Helge Deller" <deller@gmx.de>, sui.jingfeng@linux.dev
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/3] arch: Remove fbdev dependency from video helpers
+Content-Type: text/plain
 
-On Fri, 03 May 2024, Lee Jones wrote:
+On Fri, Apr 5, 2024, at 11:04, Thomas Zimmermann wrote:
+> Hi,
+>
+> if there are no further comments, can this series be merged through 
+> asm-generic?
 
-> On Fri, 03 May 2024, Lee Jones wrote:
-> 
-> > On Wed, 24 Apr 2024 08:33:26 +0200, Krzysztof Kozlowski wrote:
-> > > Changes in v2:
-> > > - Collect tags, including wrongly places Thomas' tag (which requires me
-> > >   to manually edit 15 other patches to drop it).
-> > > - Combine here checkpatch patch:
-> > >   https://lore.kernel.org/all/20240414185440.288812-1-krzk@kernel.org/
-> > > - Link to v1: https://lore.kernel.org/r/20240414-video-backlight-lcd-ops-v1-0-9b37fcbf546a@kernel.org
-> > > 
-> > > [...]
-> > 
-> > Applied, thanks!
-> > 
-> > [01/19] backlight: Constify lcd_ops
-> >         commit: 9258e31adebf0ccf0797867841f3f9800695dba2
-> > [02/19] backlight: ams369fg06: Constify lcd_ops
-> >         commit: 8053c4fa200c3fef07859bac9469ad3f26f5aba1
-> > [03/19] backlight: corgi_lcd: Constify lcd_ops
-> >         commit: 18c5d4ab9f6312f2c9c6c409287d552112db810a
-> > [04/19] backlight: hx8357: Constify lcd_ops
-> >         commit: 1d669c1998b559393ec2eaac0449f4989a255049
-> > [05/19] backlight: ili922x: Constify lcd_ops
-> >         commit: e77fef89de954b1557cb91b64696cd4fc06c80ad
-> > [06/19] backlight: ili9320: Constify lcd_ops
-> >         commit: 06cfc92faa1eabb2ea226c58d6fd0b5ab117ee39
-> > [07/19] backlight: jornada720_lcd: Constify lcd_ops
-> >         commit: a54b4999dc204bc5839bb70602078c7c8e4a5010
-> > [08/19] backlight: l4f00242t03: Constify lcd_ops
-> >         commit: 657e6c1b270e9f4a890059f5d08a08ea842fa1a8
-> > [09/19] backlight: lms283gf05: Constify lcd_ops
-> >         commit: 66e5a10818fd332e973d36429e36f4c436a86a91
-> > [10/19] backlight: lms501kf03: Constify lcd_ops
-> >         commit: 31c205d1e8426dd0cce0143c500ff1ff71fe64d1
-> > [11/19] backlight: ltv350qv: Constify lcd_ops
-> >         commit: 24424f84d7568d9d794657622e080b1cba1e9290
-> > [12/19] backlight: otm3225a: Constify lcd_ops
-> >         commit: 02949072ee8fb6141cd8ac2be9867ef466580ddb
-> > [13/19] backlight: platform_lcd: Constify lcd_ops
-> >         commit: d217a8d5a39851caa16996756682715c9debb4a9
-> > [14/19] backlight: tdo24m: Constify lcd_ops
-> >         commit: c7a1809d1982f671e66a4b1c1ffd8bdd5ba260aa
-> > [15/19] HID: picoLCD: Constify lcd_ops
-> >         commit: 238724635763e7c5d82c0581b0c49e5dfdd5505a
-> > [16/19] fbdev: clps711x: Constify lcd_ops
-> >         commit: 55d9a955375af3b3fd5725a9b5cbc658d4bdd244
-> > [17/19] fbdev: imx: Constify lcd_ops
-> >         commit: a6abbb5783345c4c7cc9fbd583b81e167bd0207d
-> > [18/19] fbdev: omap: lcd_ams_delta: Constify lcd_ops
-> >         commit: ca991e8e096c9f0cff0300289e2d4813192b8ef3
-> > [19/19] const_structs.checkpatch: add lcd_ops
-> >         commit: f02aeccbec6108d768f54d31e7cb48b06c0e3814
-> 
-> Please ensure you use checkpatch.pl before submitting:
-> 
-> ====
-> 
-> ERROR: Does not appear to be a unified-diff format patch
-> 
-> total: 1 errors, 0 warnings, 0 lines checked
-> 
-> NOTE: For some of the reported defects, checkpatch may be able to
->       mechanically convert to the typical style using --fix or --fix-inplace.
-> 
-> "[PATCH v2 19/19] const_structs.checkpatch: add lcd_ops" has style problems, please review.
-> 
-> NOTE: If any of the errors are false positives, please report
->       them to the maintainer, see CHECKPATCH in MAINTAINERS.
-> WARNING: Missing commit description - Add an appropriate one
-> 
-> ERROR: Missing Signed-off-by: line(s)
-> 
-> total: 1 errors, 1 warnings, 7 lines checked
-> 
-> NOTE: For some of the reported defects, checkpatch may be able to
->       mechanically convert to the typical style using --fix or --fix-inplace.
-> 
-> Your patch has style problems, please review.
-> 
-> NOTE: If any of the errors are false positives, please report
->       them to the maintainer, see CHECKPATCH in MAINTAINERS.
-> 
-> ====
-> 
-> Some of them are a little odd.  I fixed the relevant ones
+Sorry for the delay, I've merged these for asm-generic now.
 
-Change of plan - I actually can't find anything to fix.
-
-All of this reports seem bogus!
-
--- 
-Lee Jones [李琼斯]
+      Arnd

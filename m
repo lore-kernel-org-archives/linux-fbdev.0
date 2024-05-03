@@ -1,39 +1,32 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65D444AED7;
-	Fri,  3 May 2024 15:32:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 102A6156883;
+	Fri,  3 May 2024 16:48:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714750360; cv=none; b=OV2HBrgiY1KaF0JyMP7xOWziQPefEMO8QP7XoLBQwdnytO9OTbb5MfyZVQ1YCIVYvZszbUqVXYmzlBf0g86oTGUvk2qr22FqUYLAUGGr5mo/dh8QXFgqrdlzZOBle6RiAKGO+vfK2n8kBp8iNADz9lLSBGh3oFC6L4xqK7VTxP4=
+	t=1714754936; cv=none; b=f2mrXmtqKGvkwLvg5nxf2daDQVVQEWf2Puuuehw9Frl32b2syOX4vl424PjlK0FBh3ZTu4Pq/JLljKjz2BhAHB3LHksv4sGq3vLFny84w8uMpDiw1RIsZSSZ8dQRS2VUQui/12v9fSW2wrO3bRtl+K2r5NbdRwKivBzUQqxLbEc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714750360; c=relaxed/simple;
-	bh=tKoOu+7zl6984Zo1ilV+FMzyq8BU3CQhO45WpXQ6Rhw=;
+	s=arc-20240116; t=1714754936; c=relaxed/simple;
+	bh=CspOZzK8dhzgARH67jnkfnWSdxxjtsk7C78dj0N5S78=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JjNuW4iDGL/Q8BlLS90LZvTpzFp51oQiZC37VpoyS8GJNHN2UUBFKOaA9BAjQ5BrozyN2YLgpCj9lFSovTDlrnazYAWOJxZDFK9SihqRqk8DDT395Psr7de2L+dVUqqeFJWhhC3v88HoQKUaSikhP9TlkLlyZyqC7sdu0qyk7lU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AB5E833B95;
-	Fri,  3 May 2024 15:32:37 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2BFDA139CB;
-	Fri,  3 May 2024 15:32:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id G/TgBZQDNWZ9LgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 03 May 2024 15:32:36 +0000
-Message-ID: <ec59624e-c872-4205-a45c-97163ae33301@suse.de>
-Date: Fri, 3 May 2024 17:32:35 +0200
+	 In-Reply-To:Content-Type; b=Z2Qx5FXL0MG35FSMYjA1+54oAFZ/pe68crPJiMuY/fZMXwIyQChbQAIt+CdSV9JzL7FSNZzTnwQOr9WfZG52ZgqkR8ZFvMXzcQM8C5cj3KPNGpcXHi/gkEjzvPL4yz8Oq2TyQZwibiQpRTSXPjw+oEpsRBGH4G44vlCIj6z+UoY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=rkGr+1kX; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="rkGr+1kX"
+Received: from [100.65.224.148] (unknown [20.236.10.206])
+	by linux.microsoft.com (Postfix) with ESMTPSA id ED65B20B2C82;
+	Fri,  3 May 2024 09:48:53 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com ED65B20B2C82
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1714754934;
+	bh=GAu8Rak4A+pCgzw/uvyDGmtVcqwJgPNajSTWUoSmEQw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=rkGr+1kX0SctOUPwkhdrQ4qFQeA027/UkwhMstN1oK11s07V0R7Wi7aRofjAnlC1w
+	 NT0xX9K1RqDBBTorM82GqIiYoTbasEg2t4t6Fe9M8VXV9I+qcP4kpK+ALqrx64mma1
+	 /QTPAvj8aVxAk84+SPJbJzAv82Hdw3+D0Hq7DSGc=
+Message-ID: <6256cc5a-9ff0-4a1f-8eba-f70b7c571631@linux.microsoft.com>
+Date: Fri, 3 May 2024 09:48:53 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,86 +34,77 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/3] arch: Remove fbdev dependency from video helpers
-To: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
- sui.jingfeng@linux.dev
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
- linux-kernel@vger.kernel.org
-References: <20240329203450.7824-1-tzimmermann@suse.de>
- <c281bb8e-0719-4b28-a637-56615ad16913@suse.de>
- <2f8cfd1d-a478-4666-a181-040c8d92e8fd@app.fastmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <2f8cfd1d-a478-4666-a181-040c8d92e8fd@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH v1 12/12] fbdev/viafb: Make I2C terminology more inclusive
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Helge Deller <deller@gmx.de>,
+ "open list:VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER"
+ <linux-fbdev@vger.kernel.org>,
+ "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>,
+ "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
+ <nouveau@lists.freedesktop.org>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>
+References: <20240430173812.1423757-1-eahariha@linux.microsoft.com>
+ <20240430173812.1423757-13-eahariha@linux.microsoft.com>
+ <271ad513-0ea1-45df-ba0f-51582474ff34@suse.de>
+ <076e0a0d-ad26-490e-9784-300ed52637ca@linux.microsoft.com>
+ <f1eccd9d-885f-4508-9325-3454ecc35eae@suse.de>
+Content-Language: en-CA
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+In-Reply-To: <f1eccd9d-885f-4508-9325-3454ecc35eae@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Spam-Flag: NO
-X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: AB5E833B95
 
-
-
-Am 03.05.24 um 17:29 schrieb Arnd Bergmann:
-> On Fri, Apr 5, 2024, at 11:04, Thomas Zimmermann wrote:
->> Hi,
+On 5/3/2024 12:39 AM, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 03.05.24 um 00:26 schrieb Easwar Hariharan:
+>> On 5/2/2024 3:46 AM, Thomas Zimmermann wrote:
+>>>
+>>> Am 30.04.24 um 19:38 schrieb Easwar Hariharan:
+>>>> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+>>>> with more appropriate terms. Inspired by and following on to Wolfram's
+>>>> series to fix drivers/i2c/[1], fix the terminology for users of
+>>>> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+>>>> in the specification.
+>>>>
+>>>> Compile tested, no functionality changes intended
+>>>>
+>>>> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
+>>>>
+>>>> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>>
+>> Thanks for the ack! I had been addressing feedback as I got it on the v0 series, and it seems
+>> I missed out on updating viafb and smscufx to spec-compliant controller/target terminology like
+>> the v0->v1 changelog calls out before posting v1.
 >>
->> if there are no further comments, can this series be merged through
->> asm-generic?
-> Sorry for the delay, I've merged these for asm-generic now.
+>> For smscufx, I feel phrasing the following line (as an example)
+>>
+>>> -/* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, host,
+>>> +/* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, *controller*,
+>> would actually impact readability negatively, so I propose to leave smscufx as is.
+> 
+> Why? I don't see much of a difference.
+> 
+>>
+>> For viafb, I propose making it compliant with the spec using the controller/target terminology and
+>> posting a v2 respin (which I can send out as soon as you say) and ask you to review again.
+>>
+>> What do you think?
+> 
+> I think we should adopt the spec's language everywhere. That makes it possible to grep the spec for terms used in the source code. Using 'host' in smscufx appears to introduce yet another term. If you are worried about using 'I2C controller' and 'controller' in the same sentence, you can replace 'I2C controller' with 'DDC channel'. That's even more precise about the purpose of this code.
 
-Thank you so much!
+Great, thanks! That was exactly my concern, I will fix up smscufx and send a v2.
 
->
->        Arnd
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Thanks,
+Easwar
 

@@ -1,120 +1,112 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from relay.smtp-ext.broadcom.com (relay.smtp-ext.broadcom.com [192.19.144.207])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5AED19470;
-	Fri,  3 May 2024 19:03:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CE8363CF;
+	Fri,  3 May 2024 19:29:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.19.144.207
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714763003; cv=none; b=a2hhQxBQW1gtTjXnbKb8TlIIkTWi6EsCnUsQKzEV32XGgDDx4J2sOdrHUiUQxpTU6b3HO0YRT2fIoNeoBETZUWpodEUAEV4dtuZjdCH71wAmLhTNG1EY+Mv7L69l3jPyhg4jjB4jb9Po+ZDCu5BI9jngYZuQyAWJXSkbfSglSx4=
+	t=1714764568; cv=none; b=EBgcx2Myxck139qsiwXCfZtW1iX6qon8Q03FLQkC7oIprgusLlvlbC7tkEesaduplw/1Hx1AikDf8ft93xLGmtZUidfWAPNSpDqXMIHNpL6rMT/9+8Yfhb3F0tvyWDc33C+VG+Zy/WC+5KgEIo4tCgEvjcAM9jg+xjWmXdMcnfQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714763003; c=relaxed/simple;
-	bh=pJM8i96ujPL/T4zAJrJuNpEQ+W+V/MxYLMvJEqYmBvg=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=l2vXJt7J6P0g/6pe7lIigS0kCnoLcdf3FnLWmtgyVVKEEtwszIZjxNQbFGbO3cXQjLl0FnuiKTrwB20vSDbNSXHpF5eMt/6EINPvlibMg2jptR3sq9yuY6fksJUgUS5umT3pNT94F3TkFMY2WUSE49741j6xiMr0h5u+twZdw2s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nJwQoM2R; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1714764568; c=relaxed/simple;
+	bh=9ZqHM4abn7CpGGthTHlMK+mT3y3FvF3yKb+/l5xV6mY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UwrqJ8Q6KkBmArhozq4/POKl8nIH4QIQc2+kpvPgGMJgHcscPjUlNaRQFz98w6fQ56kcF4IbJqi0ACpYCHOam/1LGZ2g71al25zrTypEa890uvHQMbSpyq3dIn0+L2s9bizGdBFP8bYuAfmMZrubalkmuApVCkinREGMXEQdaKM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=Yphn7V1+; arc=none smtp.client-ip=192.19.144.207
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nJwQoM2R"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C6EDC116B1;
-	Fri,  3 May 2024 19:03:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714763002;
-	bh=pJM8i96ujPL/T4zAJrJuNpEQ+W+V/MxYLMvJEqYmBvg=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=nJwQoM2R038ROrePBZmLBa9LYRKlWHdPcGcYai07pnFJYM6UTHODQtRliqexPCOgg
-	 WyQenZ6EGL6INqEuQpZnvuyV5VrXQkVxgu74DZj4mKJs4LRaGTYwzIsNSmCZMTrvwZ
-	 AUXClks0NGxZ0OY3IItj4fPXk/lqFMVEPDE771iQqnaGMB3uQmEjnOz0KCG/IFR60O
-	 own53ZbY1D1FjeQObRwkIrGaVe0hJC8+m+TOnlN7L5tjp+ohRqe+SAjcjAt7CrKDh0
-	 Elyj8osbsh3KXPBnBAL9C3QOyL3fEJVeH9a0hjbk8fgnvV8hCcO7v0AbQ1+m679Nsi
-	 GrNG8hEtpghEA==
-Date: Fri, 3 May 2024 20:03:14 +0100
-From: Mauro Carvalho Chehab <mchehab@kernel.org>
-To: Easwar Hariharan <eahariha@linux.microsoft.com>
-Cc: linux-media@vger.kernel.org (open list:MEDIA INPUT INFRASTRUCTURE
- (V4L/DVB)), linux-kernel@vger.kernel.org (open list), Wolfram Sang
- <wsa+renesas@sang-engineering.com>, amd-gfx@lists.freedesktop.org (open
- list:RADEON and AMDGPU DRM DRIVERS), dri-devel@lists.freedesktop.org (open
- list:DRM DRIVERS), intel-gfx@lists.freedesktop.org (open list:INTEL DRM
- DISPLAY FOR XE AND I915 DRIVERS), intel-xe@lists.freedesktop.org (open
- list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS),
- nouveau@lists.freedesktop.org (open list:DRM DRIVER FOR NVIDIA
- GEFORCE/QUADRO GPUS), linux-i2c@vger.kernel.org (open list:I2C SUBSYSTEM
- HOST DRIVERS), linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
-Subject: Re: [PATCH v0 04/14] media: au0828: Make I2C terminology more
- inclusive
-Message-ID: <20240503200314.51e8439a@sal.lan>
-In-Reply-To: <20240329170038.3863998-5-eahariha@linux.microsoft.com>
-References: <20240329170038.3863998-1-eahariha@linux.microsoft.com>
-	<20240329170038.3863998-5-eahariha@linux.microsoft.com>
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-redhat-linux-gnu)
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="Yphn7V1+"
+Received: from mail-lvn-it-01.lvn.broadcom.net (mail-lvn-it-01.lvn.broadcom.net [10.36.132.253])
+	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id DE0E2C0003CA;
+	Fri,  3 May 2024 12:29:17 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com DE0E2C0003CA
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
+	s=dkimrelay; t=1714764557;
+	bh=9ZqHM4abn7CpGGthTHlMK+mT3y3FvF3yKb+/l5xV6mY=;
+	h=From:To:Cc:Subject:Date:From;
+	b=Yphn7V1+cQVI97VgfZU/RfjVHnOBn0Sr3tpVctdb4+KZQQjXiQPaNSSZWaNecPp/k
+	 sy96J/1ekIIYg2n/PwyFWpUiTfyj0HzmktQsHeq5OG/oMvNn9qr9AgqsJ3NefXqaCj
+	 D+zbsE71Wl3MeDwmF/D+cHagadkhkLF2m8rps+qM=
+Received: from fainelli-desktop.igp.broadcom.net (fainelli-desktop.dhcp.broadcom.net [10.67.48.245])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail-lvn-it-01.lvn.broadcom.net (Postfix) with ESMTPSA id E35D018041CAC4;
+	Fri,  3 May 2024 12:29:15 -0700 (PDT)
+From: Florian Fainelli <florian.fainelli@broadcom.com>
+To: linux-kernel@vger.kernel.org
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Helge Deller <deller@gmx.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
+	dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER)
+Subject: [PATCH] fbdev: Have CONFIG_FB_NOTIFY be tristate
+Date: Fri,  3 May 2024 12:28:54 -0700
+Message-Id: <20240503192858.103640-1-florian.fainelli@broadcom.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Em Fri, 29 Mar 2024 17:00:28 +0000
-Easwar Hariharan <eahariha@linux.microsoft.com> escreveu:
+Android devices in recovery mode make use of a framebuffer device to
+provide an user interface. In a GKI configuration that has CONFIG_FB=m,
+but CONFIG_FB_NOTIFY=y, loading the fb.ko module will fail with:
 
-> I2C v7, SMBus 3.2, and I3C specifications have replaced "master/slave"
-> with more appropriate terms. Inspired by and following on to Wolfram's
-> series to fix drivers/i2c/[1], fix the terminology for users of
-> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
-> in the specification.
-> 
-> Compile tested, no functionality changes intended
+fb: Unknown symbol fb_notifier_call_chain (err -2)
 
-Current media drivers are perfectly fine with the current terminology. 
-None of them implement the above new standards.
+Have CONFIG_FB_NOTIFY be tristate, just like CONFIG_FB such that both
+can be loaded as module with fb_notify.ko first, and fb.ko second.
 
-Please drop patches for current stuff under drivers/media.
+Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
+---
+ drivers/video/fbdev/core/Kconfig     | 2 +-
+ drivers/video/fbdev/core/fb_notify.c | 3 +++
+ include/linux/fb.h                   | 2 +-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
-Regards,
-Mauro
+diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+index db09fe87fcd4..036af8b5914a 100644
+--- a/drivers/video/fbdev/core/Kconfig
++++ b/drivers/video/fbdev/core/Kconfig
+@@ -8,7 +8,7 @@ config FB_CORE
+ 	tristate
+ 
+ config FB_NOTIFY
+-	bool
++	tristate
+ 
+ config FIRMWARE_EDID
+ 	bool "Enable firmware EDID"
+diff --git a/drivers/video/fbdev/core/fb_notify.c b/drivers/video/fbdev/core/fb_notify.c
+index 10e3b9a74adc..ef707e092344 100644
+--- a/drivers/video/fbdev/core/fb_notify.c
++++ b/drivers/video/fbdev/core/fb_notify.c
+@@ -52,3 +52,6 @@ int fb_notifier_call_chain(unsigned long val, void *v)
+ 	return blocking_notifier_call_chain(&fb_notifier_list, val, v);
+ }
+ EXPORT_SYMBOL_GPL(fb_notifier_call_chain);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Frame buffer notifier support");
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 0dd27364d56f..8c7ae5997278 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -156,7 +156,7 @@ struct fb_blit_caps {
+ 	u32 flags;
+ };
+ 
+-#ifdef CONFIG_FB_NOTIFY
++#if IS_ENABLED(CONFIG_FB_NOTIFY)
+ extern int fb_register_client(struct notifier_block *nb);
+ extern int fb_unregister_client(struct notifier_block *nb);
+ extern int fb_notifier_call_chain(unsigned long val, void *v);
+-- 
+2.34.1
 
-> 
-> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
-> 
-> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
-> ---
->  drivers/media/usb/au0828/au0828-i2c.c   | 4 ++--
->  drivers/media/usb/au0828/au0828-input.c | 2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/media/usb/au0828/au0828-i2c.c b/drivers/media/usb/au0828/au0828-i2c.c
-> index 749f90d73b5b..3e66d42bf134 100644
-> --- a/drivers/media/usb/au0828/au0828-i2c.c
-> +++ b/drivers/media/usb/au0828/au0828-i2c.c
-> @@ -23,7 +23,7 @@ MODULE_PARM_DESC(i2c_scan, "scan i2c bus at insmod time");
->  #define I2C_WAIT_DELAY 25
->  #define I2C_WAIT_RETRY 1000
->  
-> -static inline int i2c_slave_did_read_ack(struct i2c_adapter *i2c_adap)
-> +static inline int i2c_client_did_read_ack(struct i2c_adapter *i2c_adap)
->  {
->  	struct au0828_dev *dev = i2c_adap->algo_data;
->  	return au0828_read(dev, AU0828_I2C_STATUS_201) &
-> @@ -35,7 +35,7 @@ static int i2c_wait_read_ack(struct i2c_adapter *i2c_adap)
->  	int count;
->  
->  	for (count = 0; count < I2C_WAIT_RETRY; count++) {
-> -		if (!i2c_slave_did_read_ack(i2c_adap))
-> +		if (!i2c_client_did_read_ack(i2c_adap))
->  			break;
->  		udelay(I2C_WAIT_DELAY);
->  	}
-> diff --git a/drivers/media/usb/au0828/au0828-input.c b/drivers/media/usb/au0828/au0828-input.c
-> index 3d3368202cd0..98a57b6e02e2 100644
-> --- a/drivers/media/usb/au0828/au0828-input.c
-> +++ b/drivers/media/usb/au0828/au0828-input.c
-> @@ -30,7 +30,7 @@ struct au0828_rc {
->  	int polling;
->  	struct delayed_work work;
->  
-> -	/* i2c slave address of external device (if used) */
-> +	/* i2c client address of external device (if used) */
->  	u16 i2c_dev_addr;
->  
->  	int  (*get_key_i2c)(struct au0828_rc *ir);

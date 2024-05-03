@@ -1,200 +1,243 @@
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2086.outbound.protection.outlook.com [40.107.236.86])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ECDD146D5B;
-	Fri,  3 May 2024 07:35:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.236.86
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714721750; cv=fail; b=lYg32xhw2/H7KQbiXca8OnIyq2JEc9k81If3nyqfUPIJSPBZsbSD8KYY3DOABWAT7GbQeBOy8zRtZ3xWONqbGci5h24iMPL1LhJAH3/4LQpZwesh0n7+9gWBR8r43g7C6fzhYLRxDRkKBnZcNTQlHyBj8hLGTJPckmov3xasIIY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714721750; c=relaxed/simple;
-	bh=vQylMQ5kggv+G89EPV933Kzwm9ZadfbHkyTtUADdB38=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=JN0xzT5y+AOJDdE3pDOonwQj54sOWL5QlCt+tqW7l0o/oV7B9nA4pDkKUaPVJlAiY+tcaTamoTmtmCs3yOHPM37PRPqAvROL9l7svZh4qMK23qPteyS1SGlA29bTQVLBgWUlgHMEjPO5z3sgSMfW7UPHOrae4vAMOJXzkkrCgSc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it; spf=pass smtp.mailfrom=asem.it; dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b=nbnFHRok; arc=fail smtp.client-ip=40.107.236.86
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=asem.it
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=asem.it
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E14331474AB;
+	Fri,  3 May 2024 07:39:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1714721979; cv=none; b=pQz1hGCQXS2f6LsijHEq74e4k02q4D9Z5RwdqvjtRvA/mBliP7ldZZDLRBDt12+nWXI/HHS32cS9Uaz+Rq2xyvSIc2Bv+r/iIMTwxRRjrn/ORODnsuo9Z3aXkC/Y9lnawFDnwBFdBeELHX+g48j2242pkjqrNTgk7AFQmzkfHt0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1714721979; c=relaxed/simple;
+	bh=GQBew1/qJlvNTkgxM4kDUOeCxcM8UIukTDBqToT6Fbk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CIpQWAVJaHF/SqI6fWkeF0HJ5wl38VVZ6O9v2iZwagtpMuU4pp2gr4YCGqXP5EJn1p00XkuJZz7CEYYH3t9GlZ7+lHvAY2G4VDabAwSwvy/5Y9D/vovMzz4l+OOnmpxK3RCzvAtxO8Yd49WIaMj4PKK2qEBn5tlJaekGpzYAgKY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=l1WAHkFt; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=WugzJKS8; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=z+pKQcos; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=b1FkdEyV; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b="nbnFHRok"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=jyCZ9O+3W/RmATRso27X5+PMp/6JI0WmB41BRtuf7Tl3aS3fyRNlpK5BGMZCxbWLEt/bW/qMnjtbGv8oPGBz6gzTje9pY5IKs1iyHul/t/gg0O+eJvXubrM8Xg5TpXbTuLfj6QAeZvFx6POmXmsW7sFOImjita6WOUNBKijpnAhaC9UnxG7C0VjFzKfg056rnb6nHjFmxQPior9izJsPzZecPlqSE+HGo3/ZfFwwyr2jWcGTUzQ0rT1HQgohNrSUs80In5G9uITHmzP4GQOoSHMy/br1sEx61nRu1eRXBu/A8eC/mkZDg3r5Y1ZnXScLjXeVZMmCUs4ARQyUlDwtJA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vQylMQ5kggv+G89EPV933Kzwm9ZadfbHkyTtUADdB38=;
- b=bvspqSN39aHc+6axD5G/j0+fjpvymKa58LqLOQcXTfhS6vqqP5m3ne+PTOd6mZd/XxUuMMJrlj9ZK8MUXUaPqxrifP3AZqy0PJkBvXHNni8LCiZCfzgNS/UdatvfbR0RQs2az2M2qoKsNob1NPMdZ05VnFR7EQy5kqeiCfl7inJ1z2UN7ffAf3vqalXnrMuRCHLy0/EkpvcPJojIWwjWFLMfpBpbG9nsP3VucHtgI2wEnxTYtZVxaUGMOrxQyqGFQZG0Ovob+UJT4xO0JNLf62aSEVxgcJupt5I23ASDSmgqgSQirnehUJA6voS1mqxe9apcV1WB800GcdjMm4fthQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
- header.d=asem.it; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vQylMQ5kggv+G89EPV933Kzwm9ZadfbHkyTtUADdB38=;
- b=nbnFHRokMxJq4/FAfXueUtT5dFLUeY87wDwufIbzR2H7fSIUfBVu4ynWqzheobeybWSEKS57IU9Z2aJuYCy3dIKsx589hFZnVo65f7T2ZcEQBn/Rk69cV4TaINFiLPrbin4CGp7jPBpGy3TlWF7yHFczvEnY+EzJ745JF01j1agujx3yoqVNfv3aTUr8qu0165CrTB2dmnpeh81PaEoubL/awGzSeL6x/ZzlEclxMlIbuvM0b20zm+p8XfxUGzDNhiVSU8UeXc99vwSMXVS9St1O+M95GQMASU3k5A/6mb5CxBtZQdfuMpYzE64RvJZt8BNdZYnzjDdCBK9ch2rshg==
-Received: from PH0PR22MB3789.namprd22.prod.outlook.com (2603:10b6:510:29c::11)
- by EA2PR22MB5329.namprd22.prod.outlook.com (2603:10b6:303:25d::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7544.30; Fri, 3 May
- 2024 07:35:44 +0000
-Received: from PH0PR22MB3789.namprd22.prod.outlook.com
- ([fe80::e21a:e0c7:aff:b839]) by PH0PR22MB3789.namprd22.prod.outlook.com
- ([fe80::e21a:e0c7:aff:b839%4]) with mapi id 15.20.7544.029; Fri, 3 May 2024
- 07:35:44 +0000
-From: FLAVIO SULIGOI <f.suligoi@asem.it>
-To: 'Lee Jones' <lee@kernel.org>
-CC: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han
-	<jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, Dan Carpenter
-	<dan.carpenter@linaro.org>, "dri-devel@lists.freedesktop.org"
-	<dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org"
-	<linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>
-Subject: RE: EXTERNAL: Re: (subset) [PATCH v1 1/1] backlight: mp3309c: fix
- leds flickering in pwm mode
-Thread-Topic: EXTERNAL: Re: (subset) [PATCH v1 1/1] backlight: mp3309c: fix
- leds flickering in pwm mode
-Thread-Index: AQHanLCP5TSeO9WjhUOCMksauhdR0bGEJ9mAgADpMWCAAAalgIAAB4lg
-Date: Fri, 3 May 2024 07:35:44 +0000
-Message-ID:
- <PH0PR22MB3789923F70E128DB14DCD073FA1F2@PH0PR22MB3789.namprd22.prod.outlook.com>
-References: <20240417153105.1794134-1-f.suligoi@asem.it>
- <20240417153105.1794134-2-f.suligoi@asem.it>
- <171466849494.1206441.17324969195592920195.b4-ty@kernel.org>
- <20240502164853.GB1200070@google.com>
- <PH0PR22MB37891FE6DC843E8EF05BDF7DFA1F2@PH0PR22MB3789.namprd22.prod.outlook.com>
- <20240503070717.GB1227636@google.com>
-In-Reply-To: <20240503070717.GB1227636@google.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=asem.it;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: PH0PR22MB3789:EE_|EA2PR22MB5329:EE_
-x-ms-office365-filtering-correlation-id: 3a4156c3-9b4f-4e1b-14dd-08dc6b43a439
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;ARA:13230031|366007|376005|1800799015|38070700009;
-x-microsoft-antispam-message-info:
- =?utf-8?B?NkJQOUY2OTA3QnQrWHJ3WmhHRUZsNTBoQVZXTEwwWktmVWlqdnQwK2VOYWVS?=
- =?utf-8?B?S3NXN21nK0JqYmVHQld6NitRd2RZb2hkbzB1WWxyRFJMcjNueVZpelgwdkZj?=
- =?utf-8?B?YXdUdkFDektCdU1vT0o3bzB6cm96dno0WVhaUjRuTGhqTTN6cU5sZXhwbjNt?=
- =?utf-8?B?MW95aTE5dFVpWUN2R2NQVFVaRHRscnFBc01TZGE1VVVIWVppbk1oLzF1dGc5?=
- =?utf-8?B?Zk1jYXRKU1NQQUNJSnp6aWkrYWR6QndSS09aVUNEYWdUU0pPY1N6ZTRZdWdy?=
- =?utf-8?B?VVJmeVAySUs4VG1lN0tEWjhpOGdJWTBqMEl0N1UwYWlWTEFleUFYMVIvS2xO?=
- =?utf-8?B?Z0N5QjR4bVk3T0hSa1NHMGhpemxIbkZra1FzOW5yQXM0ZktpZDJiOGxsT1Nu?=
- =?utf-8?B?RUMrQ3FBTjI0S0VIYkU3dXFGbmI3MWFSWDJBMkRydk1JRVM2TG0xTTYzS2sr?=
- =?utf-8?B?VkJCTHA1ZGd2OG1KZ3BQWThiQTBRb2lXRDVTMnJoNStoMVBzekNadHRQRnFP?=
- =?utf-8?B?TEtGYTVvaGZOQkZUWU5VVUJvTUNHRkdaWWxqL1BGM1hFem5DY1p1TktsRERG?=
- =?utf-8?B?MFpVNnkwaUYxQW1MM1h3Z0tDTXhqMlpLWFlza3VxQW5GaEc0Q1NKclNZQWNu?=
- =?utf-8?B?allEWW0vUmx5T2JLVXMvVmp2amJRN0k2MzhSd3oyYy9kUldYclkvZDROR21R?=
- =?utf-8?B?SnRhc1lSZnZSSVhEeE10b0NmN0hNTnRKb2VtbC93SzUvMkpRUlFaUGxISSs4?=
- =?utf-8?B?b0h5UWpUVlhNRTZYSTczcmt1S0x1Sk5qbnYzOCtSeHQ1bjRXcnhvZDJvazNw?=
- =?utf-8?B?TFpyenhqcEowQWhQT2lmdExSNVllWjJCWDQ0c3ZXMjVIL3psTUhkODJDM3Rv?=
- =?utf-8?B?ZnlKR0o3L0lqRHVjWXpGdkhtQWJ6TmdyZ0t2QjZEdVZQRVdBaVBSTTdwRFBa?=
- =?utf-8?B?dkJ3MHB6cUZ4TFdtWHJSNzcwa3cyU1RHWHVQL2tNVFZoaHVKVldrQTBkcWJS?=
- =?utf-8?B?RDdSQ0pKRHBUSTBwcEhCMHk0VzlFeXpMb3pFUDRJNGpka1EwSHphU0FIVXhR?=
- =?utf-8?B?VlF5UlpoWnJJYXdLbGtHVkpPSFlmWTcyZUhVT1BWQ1ZXbUxpL1ZGYTVmQ2dt?=
- =?utf-8?B?WUU1aW5aVGlIeGpGYlJmQkUxVkhCbkRTNVErTk5QZVREZmtHSFFxK29mK1JW?=
- =?utf-8?B?M2JuRTVtOVdNQ0IxNi8yOHBLRHZza3AzdmoxRUZWTHMyVmVlUFF1azhlZlps?=
- =?utf-8?B?TGIrSG9NR2dRUHVZZVlaOHVScHNvZmdsSHpOL09hdnJldHNJS0JLWmZZZVFM?=
- =?utf-8?B?V3BFYmpJTE0vZjlBT0d3NVRjUkZnOUZKaUZSTnExWFl3a3ZDTStTeDBNSlB4?=
- =?utf-8?B?ZVROVm13MUJTbnk2TTJNa2ViMTlaaUpQdTlJR2N5Nm5ENFVrTS9RK1FUM3dM?=
- =?utf-8?B?Z0xVQTJ4d21FZk5KTWo0R1ZTcVdiR01Eei9ONUQ2eGxDRWIwTGFiV2w5Yndj?=
- =?utf-8?B?YnRTaUZYWjUxOFkwMlllc2RVNGU2Rzd0cFBVSEVzK0p5TUxvVmFkYU45SGlM?=
- =?utf-8?B?bXpOSHh4WFNJR2luOGxpaVhBcnZsUGpFOE1nSHFscnVIZ1o2bklsVlNseGRp?=
- =?utf-8?B?V2dyeHoza2ZaWDRhdThDVGVKNkJ0eUkxdFBxa2hGRUJIbFVSVitGTW5PRCtE?=
- =?utf-8?B?R3NJYkFIZ1MzU05VcFMvckZwcVAvRWk5QnhNTGZPT0kxOW9menVidER3anU2?=
- =?utf-8?Q?ObhPIb+B7/MXkINLsShUNdDXVQz0MwTv8F/IjBX?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR22MB3789.namprd22.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(366007)(376005)(1800799015)(38070700009);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?UmhMTDNBeDhTUnB3MGl0a0xTUkxFUkJWR0V3U2RpS2hneVVJZnlkdmxNWm8y?=
- =?utf-8?B?R090TE5kZDJGdkpQZW8xY0JKWEtxS3Vwc01zTEZlV3ZJb1F6RDJCUzYydVd4?=
- =?utf-8?B?eFZTRWVZZk9FaEVDTDFCYldvOWNFeXF4N0crRXlrdklHdEYram9DcmxtZWJO?=
- =?utf-8?B?SkFhMUZCMS9Sa05BanZNYWU5WU5wdlQ4aXFPVDg2d0IwckZOa2lyVlBsUFF2?=
- =?utf-8?B?VkVGRUxJU281WTdiSi9rZlAxTkhWelM2UXV6d1F5TXMzWUxTd0lpSGMvVTdy?=
- =?utf-8?B?b0tRZVBCdStoWVhyYVpFaEdGeHlXWTZ1NmxPUjVTbGJITWhVOUw5VUEzdFFJ?=
- =?utf-8?B?SmtWSzAvUWsrc1Y5SysxcjdYYU83akdPb2FCcnMzaW5EWTY2UHAvZzB4YVpp?=
- =?utf-8?B?OE9oOStGSENaY20weGxnWlk0ZnhQOHZ0VU54V3dFRUNtbUpQVWR0b2JPNnBB?=
- =?utf-8?B?anpxMTZQOVlIQVNONFR3aVF6U21YeEJxd05KNW1qVFJHdFV2UXRQd1VnU0Fq?=
- =?utf-8?B?Q1NIaWYwMEVQYVlLNHZCS0pGNVV2ZEhaQ1JxK1haQmFtaGNHK0VYMjhUcUFq?=
- =?utf-8?B?Wm1pazY3RDcrWDN0U0NzTE1aeU11MlhCSnE2eXI3dUR3WGRyekpUWjZmQmhL?=
- =?utf-8?B?THRMNHhoR2hMZW1qbDRFRytydHV2cktFUm5WS2NMQU8wZ2lCMFdXdTcrNno3?=
- =?utf-8?B?RitGaGFybGhWMk5nYm9JRm5xRFFnWG1wZ2VsWUVYMFpYRUFZQnZ4VUsvR21J?=
- =?utf-8?B?aTl0bUh1RTJkM2RUUnlvVUROTllrcGxuVzdGM3hla3V2Ym9ZZk9GSE52MXNv?=
- =?utf-8?B?T2RZWHJQcTlZc2ZoV0RPWGxuQlFFMTZ5aGc2TmlaR2tBWGk4RXVEZG45MDdW?=
- =?utf-8?B?UDNaemYvcmQvNzRCejFWQ3I3REJTdCtHMVNEbFFZdVE5cTNtakVzUTZwNWxx?=
- =?utf-8?B?aEVZOWc4ZTVHYzA4aE9lM0phUFdaWkFJZ3hab3R4alp5NWZIemM3YkVvTlVJ?=
- =?utf-8?B?R2dGTXFvTkpldGl2a2x1WU5XdHdCS25kN0hYV09EWUNhTWRHR2t0azN6V3E3?=
- =?utf-8?B?TENxbEdHL2V2K29zQmNxcHlqYzJOU1VYeDh5R0xGOWdVNlNrOXBLdGg0dGx5?=
- =?utf-8?B?QkVLUTN3VTgzZDd1cUx6VXp5UklPZ3lHY1BkNW00YS9SUzFaS2RqbzdMT2I3?=
- =?utf-8?B?ZHFOalFncWJldnBhajhqTk1kN1BwNGFrZ0lYbndMZHVYT2FMdlM3dXF2eS9B?=
- =?utf-8?B?QWRzeVNZcjlOTS9JZ2FEWVlyK2xHSVdSSHl5U1FsUG9aWjZQNzBEUUIzQlF3?=
- =?utf-8?B?ZjZuRHR3M1VRZEI1eDVkSWRXMS9IZlg1NlU1dWRzVWFab3U0cnZWNE85ZkFP?=
- =?utf-8?B?RWxVZUhUM3VYYVEyN3ZYTzJnZk9UUFFNTjR6UVJiT1V2eGFaYU84SkFPVW9K?=
- =?utf-8?B?bU9hNHR4TkNPREs0RTRJR1BqZXFaNUhWSEJ3Mlp0TUxQSnd3c2kvbStqRTVj?=
- =?utf-8?B?UjRwakVuNjh6bnNXTk9QYUFhNXZyK3JSdnJqNU90c25obnR6QldDcUgyMW5L?=
- =?utf-8?B?Ykt1YWNMMXpKcFJPU1Fab0lWTmlVUU9LeEZNaXpyQnJUQVRCMjdzWXJCancv?=
- =?utf-8?B?UjN1ZkphRGhlZDA3QTlkMDV1OXhnSFFTdVB4RzhQeTlWTDhUK2FmblZIbXZ4?=
- =?utf-8?B?YWNiTm9VUkNRTmRBUFNEZGR5RVJqTFBxT25RKzB5cHJpUGJOcFlHTDFrbi80?=
- =?utf-8?B?UlhvRzlPVllGSC9kVndQT3JJcU8yYjFPMm8xZ2gveVFSU3FOaDNaTW05czh0?=
- =?utf-8?B?ZitXNWwvVmhzOGdkd0xxTlg4Qms1d3p4WDVCMHNseW1pMGZ6bWhWSnJTbFlI?=
- =?utf-8?B?REo2OXc3dnNUWDNqMTloRGNHNFdOcFhINVBieWpBeEpNbmJPOXJTeXNoSTZl?=
- =?utf-8?B?WlJxREJCS0trVmwwUy9BZlFiN2N2QVZmS05aM2FxOU5wTzV1a2F6ZHhUb3U4?=
- =?utf-8?B?TGI4QnowMmhHK3plTXhxWXBLSWFBU1E0M2o3ak5ST3Y4UUFhTkg2MzVhaDFH?=
- =?utf-8?B?UzVIcW5KUTFZMTNvYlp2dW9DQlIraWxYY0FnOWNwZm9lWkNMSFJvalVaSE9Z?=
- =?utf-8?B?QUJMOGZyYzhhMXlWbm1FSlRBemlpZUlvSVJEKzZqK2gxMFpXMzBHNU1Cakxw?=
- =?utf-8?Q?lGmZ7gBDWVGVVUC0h7T7Qp8=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="l1WAHkFt";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="WugzJKS8";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="z+pKQcos";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="b1FkdEyV"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id EC3D122B72;
+	Fri,  3 May 2024 07:39:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1714721976; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=zC4n5/KOp6vqeKDwDsLw1bD+2gPkRxe5hP009QMQGPI=;
+	b=l1WAHkFtzff0Oi1c7MksftylSip13XAhH4VQNnKW4CvonoMIP/x3yN6AtWOvWRj5kToJVL
+	QMjyx8ywHcelra0n4bmMrNXUh+wDpOKCFr+Ef9bZocseOaXQxd+3Fh6zsUr6vXZ/rYzA/a
+	6sgt2qWdKSYnSLm/hptwGXKwJwoFzzU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1714721976;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=zC4n5/KOp6vqeKDwDsLw1bD+2gPkRxe5hP009QMQGPI=;
+	b=WugzJKS82ovy1MgZm3UqVt3p4qhDofDMmmRaTt8k18I0ecI+Ths+TIRQQxqjgstOSgaqTn
+	G0FlmF4AuVIiXoDg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=z+pKQcos;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=b1FkdEyV
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1714721975; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=zC4n5/KOp6vqeKDwDsLw1bD+2gPkRxe5hP009QMQGPI=;
+	b=z+pKQcos0Tld6Da6Fm8P+48qV7IvUHlNuLUJRwhN8nZSApr7JXhJeCaf1XKIUTONmvrfHy
+	LV3bse4K9zcE0VA7gI3S8rv6BRsqTNXkeDb3T7Y9JtQxjb+8ww7Vlb6fBMYzAjsLibPWFI
+	6fv0TZzYKGmB7yJbLjEa7mH0yYNa1EE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1714721975;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=zC4n5/KOp6vqeKDwDsLw1bD+2gPkRxe5hP009QMQGPI=;
+	b=b1FkdEyVIqEA9KzBsgkLfnGrLxatk7E0y0n/8TwK/h1copLY7D18TuZkj2fEpOD0aRpinu
+	SRPPz36nEQT8fwDA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 977A3139CB;
+	Fri,  3 May 2024 07:39:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([10.150.64.162])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id U2nQI7eUNGbqCwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 03 May 2024 07:39:35 +0000
+Message-ID: <f1eccd9d-885f-4508-9325-3454ecc35eae@suse.de>
+Date: Fri, 3 May 2024 09:39:35 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: asem.it
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR22MB3789.namprd22.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3a4156c3-9b4f-4e1b-14dd-08dc6b43a439
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 May 2024 07:35:44.1606
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 855b093e-7340-45c7-9f0c-96150415893e
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: EVKj6AOaQTMua7gUKBVjDoi83q1G8R+VvbMYgEWSm7WP/f78VVxYgrVmWPAu0LEwhAwhWAFiTIhN9CcP2WesYCUyiMlMJEmeu1vR0Vhn0KLOJKeDOsKEAiFaEEOBcJzP
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: EA2PR22MB5329
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 12/12] fbdev/viafb: Make I2C terminology more inclusive
+To: Easwar Hariharan <eahariha@linux.microsoft.com>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Helge Deller <deller@gmx.de>,
+ "open list:VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER"
+ <linux-fbdev@vger.kernel.org>,
+ "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>,
+ "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
+ <nouveau@lists.freedesktop.org>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>
+References: <20240430173812.1423757-1-eahariha@linux.microsoft.com>
+ <20240430173812.1423757-13-eahariha@linux.microsoft.com>
+ <271ad513-0ea1-45df-ba0f-51582474ff34@suse.de>
+ <076e0a0d-ad26-490e-9784-300ed52637ca@linux.microsoft.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <076e0a0d-ad26-490e-9784-300ed52637ca@linux.microsoft.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Score: -5.00
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: EC3D122B72
+X-Spam-Level: 
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-5.00 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_MED(-2.00)[suse.de:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_TO(0.00)[linux.microsoft.com,gmx.de,vger.kernel.org,lists.freedesktop.org];
+	MIME_TRACE(0.00)[0:+];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_DN_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[renesas];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:email]
 
-SGkgTGVlLA0KDQouLi4NCg0KPiBTdWJqZWN0OiBSZTogRVhURVJOQUw6IFJlOiAoc3Vic2V0KSBb
-UEFUQ0ggdjEgMS8xXSBiYWNrbGlnaHQ6IG1wMzMwOWM6DQo+IGZpeCBsZWRzIGZsaWNrZXJpbmcg
-aW4gcHdtIG1vZGUNCj4gDQo+IE9uIEZyaSwgMDMgTWF5IDIwMjQsIEZMQVZJTyBTVUxJR09JIHdy
-b3RlOg0KPiANCj4gPiBIaSBMZWUsDQo+ID4NCj4gPiAuLi4NCj4gPg0KPiA+ID4gU3ViamVjdDog
-RVhURVJOQUw6IFJlOiAoc3Vic2V0KSBbUEFUQ0ggdjEgMS8xXSBiYWNrbGlnaHQ6IG1wMzMwOWM6
-DQo+ID4gPiBmaXggbGVkcyBmbGlja2VyaW5nIGluIHB3bSBtb2RlDQo+ID4gPg0KPiA+ID4gW1Vz
-ZSBjYXV0aW9uIHdpdGggbGlua3MgJiBhdHRhY2htZW50c10NCj4gPiA+DQo+ID4gPg0KPiA+ID4N
-Cj4gPiA+IE9uIFRodSwgMDIgTWF5IDIwMjQsIExlZSBKb25lcyB3cm90ZToNCj4gPiA+DQo+ID4g
-PiA+IE9uIFdlZCwgMTcgQXByIDIwMjQgMTc6MzE6MDUgKzAyMDAsIEZsYXZpbyBTdWxpZ29pIHdy
-b3RlOg0KPiA+ID4gPiA+IFRoZSBtcDMzMDkgaGFzIHR3byBjb25maWd1cmF0aW9uIHJlZ2lzdGVy
-cywgbmFtZWQgYWNjb3JkaW5nIHRvDQo+ID4gPiA+ID4gdGhlaXIgYWRkcmVzcyAoMHgwMCBhbmQg
-MHgwMSkuDQo+ID4gPiA+ID4gSW4gdGhlIHNlY29uZCByZWdpc3RlciAoMHgwMSksIHRoZSBiaXQg
-RElNUyAoRGltbWluZyBNb2RlDQo+ID4gPiA+ID4gU2VsZWN0KSBtdXN0IGJlIGFsd2F5cyAwICh6
-ZXJvKSwgaW4gYm90aCBhbmFsb2cgKHZpYSBpMmMNCj4gPiA+ID4gPiBjb21tYW5kcykgYW5kIHB3
-bSBkaW1taW5nIG1vZGUuDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJbiB0aGUgaW5pdGlhbCBkcml2
-ZXIgdmVyc2lvbiwgdGhlIERJTVMgYml0IHdhcyBzZXQgaW4gcHdtIG1vZGUNCj4gPiA+ID4gPiBh
-bmQgcmVzZXQgaW4gYW5hbG9nIG1vZGUuDQo+ID4gPiA+ID4gQnV0IGlmIHRoZSBESU1TIGJpdCBp
-cyBzZXQgaW4gcHdtIGRpbW1pbmcgbW9kZSBhbmQgb3RoZXIgZGV2aWNlcw0KPiA+ID4gPiA+IGFy
-ZSBjb25uZWN0ZWQgb24gdGhlIHNhbWUgaTJjIGJ1cywgZXZlcnkgaTJjIGNvbW1hbmRzIG9uIHRo
-ZSBidXMNCj4gPiA+ID4gPiBnZW5lcmF0ZXMgYSBmbGlja2VyaW5nIG9uIHRoZSBMRURzIHBvd2Vy
-ZWQgYnkgdGhlIG1wMzMwOWMuDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBbLi4uXQ0KPiA+ID4gPg0K
-PiA+ID4gPiBBcHBsaWVkLCB0aGFua3MhDQo+ID4gPiA+DQo+ID4gPiA+IFsxLzFdIGJhY2tsaWdo
-dDogbXAzMzA5YzogZml4IGxlZHMgZmxpY2tlcmluZyBpbiBwd20gbW9kZQ0KPiA+ID4gPiAgICAg
-ICBjb21taXQ6IGNlNjBjZGRjMmFiZjYxOTAyZGZjYTcxZDYzMDYyNGRiOTUzMTUxMjQNCj4gPiA+
-DQo+ID4gPiBBcHBsaWVkLCBidXQgaW4gZnV0dXJlIGl0J3M7IEkyQywgUFdNIGFuZCBMRUQsIHRo
-YW5rcy4NCj4gPg0KPiA+IFNvcnJ5IGZvciBteSBxdWVzdGlvbiwgYnV0IGRvIHlvdSBtZWFuIHRo
-YXQgSSBhbHNvIGhhdmUgdG8gYWRkIHRoZQ0KPiA+IEkyQywgUFdNIGFuZCBMRUQgbWFpbGluZyBs
-aXN0cyBpbiBteSBtZXNzYWdlcyByZWxhdGVkIHRvIHRoZSBtcDMzMzA5Yw0KPiBwYXRjaGVzPw0K
-PiANCj4gSnVzdCB1c2UgcHJvcGVyIGNhcGl0YWxpc2F0aW9uIHdoZW4geW91IGFiYnJldmlhdGUg
-dGhlIG5hbWVzIHRoZXNlDQo+IHN1YnN5c3RlbXMgcGxlYXNlLg0KDQpBaCwgb2ssIEkgZ290IGl0
-IQ0KDQo+IA0KPiAtLQ0KPiBMZWUgSm9uZXMgW+adjueQvOaWr10NCg0KVGhhbmtzIGZvciB5b3Vy
-IGV4cGxhbmF0aW9uLA0KRmxhdmlvDQo=
+Hi
+
+Am 03.05.24 um 00:26 schrieb Easwar Hariharan:
+> On 5/2/2024 3:46 AM, Thomas Zimmermann wrote:
+>>
+>> Am 30.04.24 um 19:38 schrieb Easwar Hariharan:
+>>> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+>>> with more appropriate terms. Inspired by and following on to Wolfram's
+>>> series to fix drivers/i2c/[1], fix the terminology for users of
+>>> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+>>> in the specification.
+>>>
+>>> Compile tested, no functionality changes intended
+>>>
+>>> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
+>>>
+>>> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>
+> Thanks for the ack! I had been addressing feedback as I got it on the v0 series, and it seems
+> I missed out on updating viafb and smscufx to spec-compliant controller/target terminology like
+> the v0->v1 changelog calls out before posting v1.
+>
+> For smscufx, I feel phrasing the following line (as an example)
+>
+>> -/* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, host,
+>> +/* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, *controller*,
+> would actually impact readability negatively, so I propose to leave smscufx as is.
+
+Why? I don't see much of a difference.
+
+>
+> For viafb, I propose making it compliant with the spec using the controller/target terminology and
+> posting a v2 respin (which I can send out as soon as you say) and ask you to review again.
+>
+> What do you think?
+
+I think we should adopt the spec's language everywhere. That makes it 
+possible to grep the spec for terms used in the source code. Using 
+'host' in smscufx appears to introduce yet another term. If you are 
+worried about using 'I2C controller' and 'controller' in the same 
+sentence, you can replace 'I2C controller' with 'DDC channel'. That's 
+even more precise about the purpose of this code.
+
+Best regards
+Thomas
+
+>
+> Thanks,
+> Easwar
+>
+>>> ---
+>>>    drivers/video/fbdev/via/chip.h    |  8 ++++----
+>>>    drivers/video/fbdev/via/dvi.c     | 24 ++++++++++++------------
+>>>    drivers/video/fbdev/via/lcd.c     |  6 +++---
+>>>    drivers/video/fbdev/via/via_aux.h |  2 +-
+>>>    drivers/video/fbdev/via/via_i2c.c | 12 ++++++------
+>>>    drivers/video/fbdev/via/vt1636.c  |  6 +++---
+>>>    6 files changed, 29 insertions(+), 29 deletions(-)
+>>>
+> <snip>
+>
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

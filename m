@@ -1,72 +1,66 @@
-Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8296E4689
-	for <linux-fbdev@vger.kernel.org>; Sat,  4 May 2024 11:18:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AD171CF8D;
+	Sat,  4 May 2024 11:46:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1714821491; cv=none; b=u3rrYey1WpXqVcWGtW8Vxkn8ewD1yaO1xdjQqn84e4NPE8daMRJDNqZEcX1wibZLCcyyx+Bjf8g5g9UoUJTQaTSkY2vfGOGwC/6gUJCnItrGYtyw/+abMv30i70r4JylA6NX/H8KjgsGOPuK+HCB0pGp5Mjq4VCFlH6TBiGTitI=
+	t=1714823193; cv=none; b=kmUr91DhmifZyoMtZQ58+abWZLR1sgTQqthkUkdac9Lavsf9b/JUWzP9vvYzB/de+XCMxck45hBUMGAZxLHZawgTjpZ9j33sYfLxCB52Akf03biV5jZMKNn9wAK6tdfWy72AEx0ELor08lg9wM/pNnPPPM07+iiAPcfKtggZUm0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1714821491; c=relaxed/simple;
-	bh=smELU36PpAU3prIkce0be7IjpSNr4t5xDRxPzlw1+z4=;
+	s=arc-20240116; t=1714823193; c=relaxed/simple;
+	bh=qQXVDmyCOh7VCNUbBBWBaLbWHRimpTQLcNFH0D/M+ts=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qDDewyha8aWnpdEacbXBr6lmbtyvee9ACnvxuzayX0gCRX5Jv0mbDTU6yNbAdqrQAx59+rOVdcQMdUO4gKF2sQT27IYRBWaSi3v8xAEWs45k92PrpmNrCk+3MGmXpg6p5bQ1O2NNDkCYr9K4MvDZfiw0TdC50MCZoIMyH10rddU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=i1aTwC4N; arc=none smtp.client-ip=209.85.208.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=dOzqM452ywJFpgtn0bUXeynVDlPsLe71aVhaPLHkh8OyEBa1IsL7EeGBZeNv7G0dnDrqDyMoE8HBkBtawVo6XOIjBRM/29RiqFnWc/xCl6fK0DFEhoqX78tJQVUlsYze10KSLNovH+kdgaLCZtvg7qia5wPBhBOxuqY6Jlylbno=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jwFTIK/Q; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="i1aTwC4N"
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-2e242b1dfd6so6085921fa.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 04 May 2024 04:18:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1714821488; x=1715426288; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=yv9FzWOzBDzyrTcS40BSQArXvrw2k2j9CKdjQ6IcHqo=;
-        b=i1aTwC4NEW3INdzcaNBVaLUCr6SdSrcrrvlIKuqGTwswEUDUB0w6G6n2TGMwp0RsBS
-         bqj0RroFlXEq9ieRVn+8HIdc7x5wUoJw9fJZMpO3MJsJTscERmSk78nGnzXGO23oiK0M
-         bvaMVmlPHhdJP81x5xKg4dLu3hYkdTTwI6lnm/okJ2Fvqm1OuoklHiMuEEMWPr2bnLdG
-         jYJoqsXrQKDqoEcEkFC59LhbIqGIy+/+5NAkp0M/5aGwzPiX9+/3grjZrDQek5pvimmw
-         30pt/FqjTW+xqExwaHo7dpuWZG9bCw/j6A/rTKb0LSr9Hk49qoU7iUB5xhoOGMl1U9Xa
-         Z+jQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714821488; x=1715426288;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yv9FzWOzBDzyrTcS40BSQArXvrw2k2j9CKdjQ6IcHqo=;
-        b=aLfmYODRXAYbbF6cFU8LjVm8AsFyW9vxCAhSzf+Ep8pAnferIcGWXp7eGApzrX5Y8n
-         ZThJflA11oFIlZrQKYY4aNgsyLyR8MQmtRxj5J0pSE5iOSlpYjm6KlVYcg3JbFYbRXhy
-         7MLPltYnSdrHbDud3kTJMYYMxnKSzs8gD3lS80eb79vjwdb/zXQnhYpTgSKYh1n1Dpkq
-         cG0spBer9UdtoF8UkWr7AZeZYy/YTR/W7x2GtWk6hSCZK7mEr3X9lZdujdzXChv1P1YP
-         P1hatKGA+c8JMmtSN5rfoldPoL8StAFSARCkkIK41v0+VyBWU8lUgSGpqpOzXSVSQtgS
-         T70A==
-X-Forwarded-Encrypted: i=1; AJvYcCVmXxG7MHn4PU+97INqp+XXDb5ypl01Sss4fgATtirjLA08AFMiBIKh677tVN5N2HBIHiemYe7h5EWP3EVrsHdlmtlZ1pf2Kdm6wGY=
-X-Gm-Message-State: AOJu0YzYqEo2kzMMtMxObrKVKOz6wf0GJwMalQAHXu9u+p1uMuXD+qwM
-	dS/fW3ighK2ro4a63+q0+rZNZfPuISXpFEse9wD9KIgL4KG8kl/nC7oRLlPG928=
-X-Google-Smtp-Source: AGHT+IEggVHErInNqsEkGN4lf9Fm25s9yd+oVBzpPNb90IQ2CCo7mKtWyU3ysBaUz2WYQTnosuIkqw==
-X-Received: by 2002:a2e:9dd4:0:b0:2e2:2791:9842 with SMTP id x20-20020a2e9dd4000000b002e227919842mr3499876ljj.44.1714821487428;
-        Sat, 04 May 2024 04:18:07 -0700 (PDT)
-Received: from localhost ([102.222.70.76])
-        by smtp.gmail.com with ESMTPSA id je8-20020a05600c1f8800b0041bf28aa11dsm8916105wmb.42.2024.05.04.04.18.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 May 2024 04:18:07 -0700 (PDT)
-Date: Sat, 4 May 2024 14:17:59 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Ashok Kumar <ashokemailat@yahoo.com>
-Cc: Julia Lawall <julia.lawall@inria.fr>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"outreachy@lists.linux.dev" <outreachy@lists.linux.dev>
-Subject: Re: [PATCH] staging: fb_tinylcd Alignment to open parenthesis
-Message-ID: <45366e52-47e7-4e9d-a2a2-7eede9d3b450@moroto.mountain>
-References: <ZjRDUO6/M+RDCcQJ.ref@c>
- <ZjRDUO6/M+RDCcQJ@c>
- <c8d24241-1763-f7b7-4491-2e5aa3ea3be@inria.fr>
- <1389558595.6771301.1714753224419@mail.yahoo.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jwFTIK/Q"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1714823192; x=1746359192;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=qQXVDmyCOh7VCNUbBBWBaLbWHRimpTQLcNFH0D/M+ts=;
+  b=jwFTIK/Q8JsDVy6kkVuGtgbMPOZ4ea1BUwd2SyIAnaFU/f5RG+QZ0puu
+   0L3SKgt590mJFihgxhlrs+oARx+uUl6CD6pkubNIv0gnWCQju96TJjGVA
+   LZCIiLadje7QoBWsaSwSQ83kyKSaKE+/tLtmZc+XvIXC05HZbv4mZ1DrA
+   A1InqydvaQSjeEmkTC8Js6AUzs3i5/TEMa8js8CsIJd9peBV1JjMs6UXd
+   EyfuYxvJkuD5hgngsxs2ze1Wrmy9PBwUSULYX1Y8uYVXRSeFgGFnRVuK+
+   U+uJqx6F29H1UqUpstdaAcImp5CMBELslq3FxxOp1F8FhnCuOVv226h93
+   A==;
+X-CSE-ConnectionGUID: 58UNHcDbSH6k7DQME4FR4Q==
+X-CSE-MsgGUID: Q/h1b0sjQdeQMBhczRl6Sw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11063"; a="36012712"
+X-IronPort-AV: E=Sophos;i="6.07,253,1708416000"; 
+   d="scan'208";a="36012712"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 May 2024 04:46:31 -0700
+X-CSE-ConnectionGUID: UwtQGMebQa+3N6cKVb31yQ==
+X-CSE-MsgGUID: S5sYHNEeRVSJl+dF0XdkXg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,253,1708416000"; 
+   d="scan'208";a="32506763"
+Received: from lkp-server01.sh.intel.com (HELO e434dd42e5a1) ([10.239.97.150])
+  by orviesa005.jf.intel.com with ESMTP; 04 May 2024 04:46:27 -0700
+Received: from kbuild by e434dd42e5a1 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1s3DqT-000CjU-1h;
+	Sat, 04 May 2024 11:46:25 +0000
+Date: Sat, 4 May 2024 19:46:10 +0800
+From: kernel test robot <lkp@intel.com>
+To: Florian Fainelli <florian.fainelli@broadcom.com>,
+	linux-kernel@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>, Arnd Bergmann <arnd@arndb.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] fbdev: Have CONFIG_FB_NOTIFY be tristate
+Message-ID: <202405041939.MNsieCv5-lkp@intel.com>
+References: <20240503192858.103640-1-florian.fainelli@broadcom.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -75,18 +69,38 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1389558595.6771301.1714753224419@mail.yahoo.com>
+In-Reply-To: <20240503192858.103640-1-florian.fainelli@broadcom.com>
 
-On Fri, May 03, 2024 at 04:20:24PM +0000, Ashok Kumar wrote:
-> 
-> Is there a list of exceptions to the checkpatch information that we can ignore in general.
-> 
+Hi Florian,
 
-For Greg's subsystems ignore the warning about extra parentheses.
-You can search on lore for if a patch has been patch has been sent
-before.  Otherwise ignore checkpatch if it tells you to do something
-that makes the code less readable.
+kernel test robot noticed the following build errors:
 
-regards,
-dan carpenter
+[auto build test ERROR on drm-misc/drm-misc-next]
+[also build test ERROR on drm-tip/drm-tip linus/master v6.9-rc6 next-20240503]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
+url:    https://github.com/intel-lab-lkp/linux/commits/Florian-Fainelli/fbdev-Have-CONFIG_FB_NOTIFY-be-tristate/20240504-033139
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20240503192858.103640-1-florian.fainelli%40broadcom.com
+patch subject: [PATCH] fbdev: Have CONFIG_FB_NOTIFY be tristate
+config: powerpc-randconfig-001-20240504 (https://download.01.org/0day-ci/archive/20240504/202405041939.MNsieCv5-lkp@intel.com/config)
+compiler: powerpc-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240504/202405041939.MNsieCv5-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202405041939.MNsieCv5-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   powerpc-linux-ld: drivers/leds/trigger/ledtrig-backlight.o: in function `bl_trig_deactivate':
+>> ledtrig-backlight.c:(.text+0x360): undefined reference to `fb_unregister_client'
+   powerpc-linux-ld: drivers/leds/trigger/ledtrig-backlight.o: in function `bl_trig_activate':
+>> ledtrig-backlight.c:(.text+0x3e8): undefined reference to `fb_register_client'
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

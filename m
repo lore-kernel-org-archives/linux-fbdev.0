@@ -1,96 +1,142 @@
-Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B47415E5D7
-	for <linux-fbdev@vger.kernel.org>; Tue,  7 May 2024 13:42:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.53
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4D7E716D4C6;
+	Tue,  7 May 2024 18:16:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715089363; cv=none; b=HJId4bo/sD0NvEQbO2XovK9wgRUZxtjl+ctyQg8wcMyNWPAdpxdGJzIlpFkSpuwNqBEO3weO4fd1Wg417McBKRVVVcfYzzpirI6AO6Xbqhb2pzXF252h5PxDdxRo6zzW6rJ3UjoUtzvZK79MmzbWrUKHuooJATvNJnM0Mk8M2ds=
+	t=1715105779; cv=none; b=DzWWAQKBxAfwwHtekB48haxJVaJ4et38nNJuX0qd3ii8sgChbVc4iSqog2meIu1CGJOVVZWf2U7KYEzGqwyKUDDfUYLTeqHix5aMG8CXDgf4iLGyalHwluXAJubbzKMTwJdBGYcATg00O6ZbQKm5QmCSSYJOEeQ1GOP1EmN9ixk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715089363; c=relaxed/simple;
-	bh=RNmcCGwn/9/Ko6Q/dYPFgq3QsYqQcfCFf9m2+RNV4HU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jCCXXJwogVbt3aKadGwEfQVydqkQRhMUEdgqBy8+bVlulkN+g9QR+M3Ho3+a+xoi28CTkgF8rrbiIU+ITklQx8TpC6/de9tLTktpB/7SIs8BiEDJ526OIo9LkmXaEQgAnM1cCEytjS7Yt4UUVaedDIj9qu9XL+6w/uZx2STMDcw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=EM6D5uBt; arc=none smtp.client-ip=209.85.167.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1715105779; c=relaxed/simple;
+	bh=wWjeFhQmx4RAgiRysXr20ZnNZGZCeLrDNtRy30798z4=;
+	h=Message-ID:Date:MIME-Version:Subject:Cc:References:From:To:
+	 In-Reply-To:Content-Type; b=sSepa0NwLUDU/MCedXw2OgFvVEKQbKUrg7RRPQqmWLqWDmqCLBsKJ+r2A1DL4qEzwKGE8cdjqDHLI9gTjXf7X6NixhrhvNa/jGikC50zQZWxvuUBHBGDEO2+1CiCOcq914sgwjUBvKzOrH6uyoCHMhlU4GW/kRjcfstEyIhwu40=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=DzBShiH1; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EM6D5uBt"
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-51f72a29f13so3846510e87.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 07 May 2024 06:42:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1715089359; x=1715694159; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ofLWh7+7lynH4ssD7W2H3GNyThDD7FYWFzKSbNNIGKY=;
-        b=EM6D5uBtVlEU+n43qaoL1hr3JnBjtUe/oCp3lglu3n33yAw0HtWVY3NlfGPmQURieS
-         OCbbGGcUn2rBBiLtImkm0KcGmtxr8+H/spSJIIFVhvXQk+7EZ+LEdgq5z0K3+w07NDuy
-         VxFKF5Dy5yaJLpxPlG1ZBqDn66m8FEGWZBn65FvFNnDOPhmdeKe9WXjl4V+rsg4K8EOc
-         FKz/x5TXTWId3zVEk60imGeaDIwnUSDhFjdFDbNE5IbwhhpGu8OgNU5/ZKv/jgRyOIVo
-         Uf+R8YQY8x9tlE1uivrnJtxP+GxTG42YoxYhszRrbCZkIWWvnyVUzmxTK2AFHh+bEMKW
-         t3pg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715089359; x=1715694159;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ofLWh7+7lynH4ssD7W2H3GNyThDD7FYWFzKSbNNIGKY=;
-        b=UOdxNHFzLuZ9dweVK/+5oM05DcZHBfCB5HdC9TmdlpuBt4FGMQXUgWWvJ0h3tOCXUk
-         lBxVt5ePmbyKNdtCa+zFYF7ZyKyTxU0R36guy+ONz2s3PA5/zpDgc1ltn3aft6/8+1T5
-         K3TmV+8ztV8ae3a29ihn0TTfOvDWCndFltmxMkeN9RAnotE5DKAiTJCHqxq2a182hbRj
-         U9hoJekI/8euETWqEMVe6r9ScFWA+TZ2oWZEAM7k5IbypLm0QZMqFO8E5hB4gQjEifSE
-         YU8jM1v0wCzWUV9M0Hgsx/afKyHjAiSdJW+WIfDiL34G9FtnQK4MDwjap5612DNqJTlD
-         sd7w==
-X-Forwarded-Encrypted: i=1; AJvYcCXl4XtULTGNnjVUjCeL6jts/8Wjw0UC6H+zYqmF1rBHwLgtQWDQX1dYE3fJUrUUR8vL2ZwZl7jKx4hJrR7AtNlXsY+LaMszN5kyhLs=
-X-Gm-Message-State: AOJu0Ywp3sEwfUZBaatOcUgXkstCR5qwbGveDCPmuTgy81P4DkLsmdzG
-	0oQMDwp5tK4O5cB81BfBOJu0RADhdfHnMh+tenQHtDXUgr5dYHxMxhEJtkirfEg=
-X-Google-Smtp-Source: AGHT+IEcEQ1M88NR4vmUiqGMt8ZxsM659IZuZ4CO8gzi53YrJgC5MzydtewGy6QWY5cBxG7eM8j7VQ==
-X-Received: by 2002:ac2:483a:0:b0:51e:11d5:bca3 with SMTP id 26-20020ac2483a000000b0051e11d5bca3mr8661395lft.18.1715089359358;
-        Tue, 07 May 2024 06:42:39 -0700 (PDT)
-Received: from eriador.lumag.spb.ru (dzdbxzyyyyyyyyyyyykxt-3.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::227])
-        by smtp.gmail.com with ESMTPSA id j6-20020ac24546000000b0051da3abd6c8sm2109596lfm.150.2024.05.07.06.42.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 May 2024 06:42:39 -0700 (PDT)
-Date: Tue, 7 May 2024 16:42:37 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: Ashok Kumar <ashokemailat@yahoo.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, outreachy@lists.linux.dev
-Subject: Re: [RFC] CamelCase can it be fixed per Checkpatch.pl script
-Message-ID: <uewpqrf2hkczmxftsl5pb2lx4tylxcntxqn5cwmlcrx3w54mu5@bc7nta7chbkm>
-References: <ZjmsAVlZmA5sje/Y.ref@c>
- <ZjmsAVlZmA5sje/Y@c>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="DzBShiH1"
+Received: from [192.168.49.54] (c-73-118-245-227.hsd1.wa.comcast.net [73.118.245.227])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 62C1B20B2C82;
+	Tue,  7 May 2024 11:16:16 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 62C1B20B2C82
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1715105777;
+	bh=PBRGTo20ufCiYvX5W3y8n5KQS3c/rPiOhM35HSOsaRQ=;
+	h=Date:Subject:Cc:References:From:To:In-Reply-To:From;
+	b=DzBShiH152LXFot+KucPmQbM03mnN+laHxZysZ8V2qQxlMhZsTtUKqypgwJBIJvdJ
+	 n4Dz3w5CxX9vwpxTmKdIir2/VI20bIqZRRAfX/Mkdm6k/UIvMPkOxKqoliWGntbNPc
+	 Ks6+pWYVRh/88H64gqZiZ1m1bIkwqOD3hIiBq8OM=
+Message-ID: <0a6d4fa9-169f-425b-93d6-04314c617090@linux.microsoft.com>
+Date: Tue, 7 May 2024 11:16:15 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZjmsAVlZmA5sje/Y@c>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 01/12] drm/amdgpu, drm/radeon: Make I2C terminology
+ more inclusive
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>,
+ "open list:DRM DRIVER FOR NVIDIA GEFORCE/QUADRO GPUS"
+ <nouveau@lists.freedesktop.org>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ "open list:BTTV VIDEO4LINUX DRIVER" <linux-media@vger.kernel.org>,
+ "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+ "Pan, Xinhui" <Xinhui.Pan@amd.com>, Harry Wentland <harry.wentland@amd.com>,
+ Leo Li <sunpeng.li@amd.com>, Rodrigo Siqueira <Rodrigo.Siqueira@amd.com>,
+ Evan Quan <evan.quan@amd.com>, Hawking Zhang <Hawking.Zhang@amd.com>,
+ Candice Li <candice.li@amd.com>, Ran Sun <sunran001@208suo.com>,
+ Alexander Richards <electrodeyt@gmail.com>, Wolfram Sang <wsa@kernel.org>,
+ Andi Shyti <andi.shyti@linux.intel.com>,
+ Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+ Heiko Stuebner <heiko@sntech.de>, Heiner Kallweit <hkallweit1@gmail.com>,
+ Hamza Mahfooz <hamza.mahfooz@amd.com>, Ruan Jinjie <ruanjinjie@huawei.com>,
+ Aurabindo Pillai <aurabindo.pillai@amd.com>, Wayne Lin <wayne.lin@amd.com>,
+ Samson Tam <samson.tam@amd.com>, Alvin Lee <alvin.lee2@amd.com>,
+ Sohaib Nadeem <sohaib.nadeem@amd.com>, Charlene Liu <charlene.liu@amd.com>,
+ Tom Chung <chiahsuan.chung@amd.com>, Alan Liu <haoping.liu@amd.com>,
+ Bhawanpreet Lakha <Bhawanpreet.Lakha@amd.com>,
+ Meenakshikumar Somasundaram <meenakshikumar.somasundaram@amd.com>,
+ George Shen <george.shen@amd.com>, Aric Cyr <aric.cyr@amd.com>,
+ Nicholas Kazlauskas <nicholas.kazlauskas@amd.com>,
+ Qingqing Zhuo <Qingqing.Zhuo@amd.com>, Dillon Varone
+ <dillon.varone@amd.com>, Lijo Lazar <lijo.lazar@amd.com>,
+ Asad kamal <asad.kamal@amd.com>, Kenneth Feng <kenneth.feng@amd.com>,
+ Ma Jun <Jun.Ma2@amd.com>, Darren Powell <darren.powell@amd.com>,
+ Yang Wang <kevinyang.wang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Yifan Zhang <yifan1.zhang@amd.com>, Le Ma <Le.Ma@amd.com>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ open list <linux-kernel@vger.kernel.org>
+References: <20240503181333.2336999-1-eahariha@linux.microsoft.com>
+ <20240503181333.2336999-2-eahariha@linux.microsoft.com>
+Content-Language: en-CA
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>
+In-Reply-To: <20240503181333.2336999-2-eahariha@linux.microsoft.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, May 06, 2024 at 09:20:17PM -0700, Ashok Kumar wrote:
-> Found some files in Staging Drivers for which checkpatch.pl throws a CHECK to
-> +remove CamelCase.
+On 5/3/2024 11:13 AM, Easwar Hariharan wrote:
+> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+> with more appropriate terms. Inspired by and following on to Wolfram's
+> series to fix drivers/i2c/[1], fix the terminology for users of
+> I2C_ALGOBIT bitbanging interface, now that the approved verbiage exists
+> in the specification.
 > 
-> For instance in program vt6655/card.c find the usage of CamelCase as
-> i) Variable names eg: &priv->apTD0Rings[0]
-> ii) Function names eg: void CARDvSafeResetRx(
+> Compile tested, no functionality changes intended
 > 
-> Note: some of the functions are
-> +static functions
+> [1]: https://lore.kernel.org/all/20240322132619.6389-1-wsa+renesas@sang-engineering.com/
 > 
-> Reviewed lore and seems in some instances removing CamelCase was allowed and in
-> +some case removing them was disallowed.
-> 
-> Hence wanted comments if we should change them or not.
+> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+> ---
+>  .../gpu/drm/amd/amdgpu/amdgpu_atomfirmware.c  |  8 +++---
+>  drivers/gpu/drm/amd/amdgpu/amdgpu_i2c.c       | 10 +++----
+>  drivers/gpu/drm/amd/amdgpu/atombios_i2c.c     |  8 +++---
+>  drivers/gpu/drm/amd/amdgpu/atombios_i2c.h     |  2 +-
+>  drivers/gpu/drm/amd/amdgpu/smu_v11_0_i2c.c    | 20 ++++++-------
+>  .../gpu/drm/amd/display/dc/bios/bios_parser.c |  2 +-
+>  .../drm/amd/display/dc/bios/bios_parser2.c    |  2 +-
+>  .../drm/amd/display/dc/core/dc_link_exports.c |  4 +--
+>  drivers/gpu/drm/amd/display/dc/dc.h           |  2 +-
+>  drivers/gpu/drm/amd/display/dc/dce/dce_i2c.c  |  4 +--
+>  .../display/include/grph_object_ctrl_defs.h   |  2 +-
+>  drivers/gpu/drm/amd/include/atombios.h        |  2 +-
+>  drivers/gpu/drm/amd/include/atomfirmware.h    | 26 ++++++++---------
+>  .../powerplay/hwmgr/vega20_processpptables.c  |  4 +--
+>  .../amd/pm/powerplay/inc/smu11_driver_if.h    |  2 +-
+>  .../inc/pmfw_if/smu11_driver_if_arcturus.h    |  2 +-
+>  .../inc/pmfw_if/smu11_driver_if_navi10.h      |  2 +-
+>  .../pmfw_if/smu11_driver_if_sienna_cichlid.h  |  2 +-
+>  .../inc/pmfw_if/smu13_driver_if_aldebaran.h   |  2 +-
+>  .../inc/pmfw_if/smu13_driver_if_v13_0_0.h     |  2 +-
+>  .../inc/pmfw_if/smu13_driver_if_v13_0_7.h     |  2 +-
+>  .../gpu/drm/amd/pm/swsmu/smu11/arcturus_ppt.c |  4 +--
+>  .../amd/pm/swsmu/smu11/sienna_cichlid_ppt.c   |  8 +++---
+>  drivers/gpu/drm/radeon/atombios.h             | 16 +++++------
+>  drivers/gpu/drm/radeon/atombios_i2c.c         |  4 +--
+>  drivers/gpu/drm/radeon/radeon_combios.c       | 28 +++++++++----------
+>  drivers/gpu/drm/radeon/radeon_i2c.c           | 10 +++----
+>  drivers/gpu/drm/radeon/radeon_mode.h          |  6 ++--
+>  28 files changed, 93 insertions(+), 93 deletions(-)
+>
 
-It's better to work with the corresponding driver maintainer. Generic
-comment is that functions must be renamed, while variables / fields
-naming usually depends on the maintainer's decision.
+<snip>
 
--- 
-With best wishes
-Dmitry
+Hello Christian, Daniel, David, others,
+
+Could you re-review v2 since the feedback provided in v0 [1] has now been addressed? I can send v3 with
+all other feedback and signoffs from the other maintainers incorporated when I have something for amdgpu 
+and radeon.
+
+Thanks,
+Easwar
+
+[1] https://lore.kernel.org/all/53f3afba-4759-4ea1-b408-8a929b26280c@amd.com/

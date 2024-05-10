@@ -1,99 +1,123 @@
-Received: from sonic301-32.consmr.mail.ne1.yahoo.com (sonic301-32.consmr.mail.ne1.yahoo.com [66.163.184.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91F2F383B5
-	for <linux-fbdev@vger.kernel.org>; Thu,  9 May 2024 17:19:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=66.163.184.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69ABC168AFC;
+	Fri, 10 May 2024 14:55:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715275180; cv=none; b=oItojSkLn52A6j6o2OiATP60dxTP0BSNL4IdKGfkl1DJFTyULgAGYPXpsD6tkez1WswKFPmzT8HtYT7s9sxh5RFVsl2T8U7amua9mGx2xUcA74XTYMO9HDzpzKvbuqAIpdAWOKB7VoKcXXLdLTmBb1LJDDRhhmsGsCM6A9pFoMA=
+	t=1715352942; cv=none; b=ZGYUFXvxWMHPFUU7kbYZIr023198we/j+wiGZ86sv7GOygbLOOY8fmr4xchowQFNEVQTtDzwDwxFBcp0cIOfw2qa1ZdT0qTkHYSgUcG+VEzeldlH4zKY5rnX+DE1epxWakWCkgw1mZfYc87i6KYfHsjkuKpvv5HM3UA6DRDh0p4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715275180; c=relaxed/simple;
-	bh=lPwiKuRV4pwIKYvBI0L3A7kueSDCMOHQdhNSH02aozE=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:References; b=X5uEU90i4xOORg1NZo3Z5J636r+IMzjaoeewLMQVszSXatSZFovl8D2gOnUFS2/X+2Y/xOOPAwI2j6HoB7y/fSk0JNDz543YKWrq4w+N02WEVXWucsOfB7tlTcHIHPiUpRmTVI6c5UHeiagwmd4nAJ9RtIlKZYGZ5t8NzIPeW7c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com; spf=pass smtp.mailfrom=yahoo.com; dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b=E/sGQ9XS; arc=none smtp.client-ip=66.163.184.201
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.com
+	s=arc-20240116; t=1715352942; c=relaxed/simple;
+	bh=sLxTchYz896sDj6qbtwDuUDSEIrv3OIFfIsIipZpE5U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sGwqQCepcSKbgbemV/dptfixidGWezFD6/dE4IploauNfCurmQ5myBjBLUPnlODCanzScemsDf440nwX/Jbbk4vq+lvPirAb6YSAx1lZhBb2jm+YZaQyYCazmvkCNs2Azor6W0tb0mugwJy6b6SJKqN55pOATTlw/bgdf3OKCnE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Qk+QHBRU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b="E/sGQ9XS"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1715275172; bh=NZbNRrxw4TZ5GUHo6xbduEkO3V+u7bBWuS3fZOqgnWw=; h=Date:From:To:Subject:References:From:Subject:Reply-To; b=E/sGQ9XSQAInYBcCAr59IhHBQXni3bhPlU8Kgm/Pj2cAKpb7uaK7/kw+fMjFppy3kOTBmW/jtCEybtg5MTLzsOTnCCpr3HUpu3TzWcIfIFQDJQu5759hjR4DtUBtmkafrOO2eNix8t9aF0lAj3kIdV8dhv5SfVUOu3od6OcBe3c4z4WpnsMxptvobPv1Pk8OeKjm3LRk4bVIS966ZDuofIppwtnj7qdm/nxtGlN663ayGGissB3ntg5xnJa1hlEnF12BJavjN7OlsU/yXiv2o01KflE0vMWU4TdLKYnq6cZMTc2ReWhkGOoPzFr2U2SdTFjFh1XMYh0PonQNfyaVhw==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1715275172; bh=6PzBqGn1mN9HfO1K0PxSsW8pRPgg8FNbGJqdYvpAzIJ=; h=X-Sonic-MF:Date:From:To:Subject:From:Subject; b=TctDPwm9EgDLpZ/B2h55RnpXsINTP9p71zzI1BEiiBtvCvHK6dA3/YCzFgbDwKRsiuNglTgrYhgeBY1S5cYEoIAwID4w9u0NbQiayRURmi9d2MMmwwsXsXZ1t3lVdtm5xtJQAaBjeFmIqsoPSuDJHnVnZHkFuDjGQO4WAusoiaDmaGgDMcCiCcCX5rrPEDZcznVLcT18OXAJPjoWb18iqc9jLoepNM/HF9eM8gy16Nyy+IP4NelqwaY673PQgNBkgl51wGW0u49MaGfl2s9nRFwNvw2WvzsJXeTqNCGcpSN3W+jM1pKVDE/z5LM71ZbT2Vl8hCQNwbGRTpIfTt3bHw==
-X-YMail-OSG: PkdX.QkVM1kpyhiQ7hOHI.512rSweFleKGxwxW59QRIDbtep3ObYtuyUTwSuxff
- AGaSjyJQsnB6yDFrwLl5iVQ3dNJ6YOFVA4fptDODHPf_y9mSfTjaD9McrOuOCsf6vGNW3MEZHk49
- jA.xARcbFCCqbR14Nq7JCBA_KrFXRu8m3g81G_Dmz.XnIH4mr_t6npgLLarcq.V2jsucCDS1m2Jk
- oEZViNZo_Ls78C91WAAeCRs_vEGQMns8eR4jdjXN14gdiwGcF5IA4BAARXHxZ_L0AXdb2E2G3hFz
- 75lwFDVVypkctsXxNYeVYqhbgJD0NwUHycxRPNaZKO7gjO3YHFSxtZ.zqK7SeTITncn6C09nczVA
- CXfSohnBV4vNf0FqPfMe4GBCX.5ahxuh6xeKk_M4OwSWmDK6rXmlsEGxtMxheds5Pkrh82p9Hl5a
- eQWiayE2GYQlRmfZeDjzFb53uupFXxYxm00Pzgznc0yrPOmAXE.n4pbOe7AD1OW70Bwht9tjyMgW
- b2cq2c_3BbF3xEMti2hM8l_SlsQ1q6rGUDDlFICDJ4s7fhsgPGknwJslqXrBznmhhYhguiatRJXg
- KtS.RiZhpvCYt0Uc9o0H4f7enyEXGqjpRC1RFasWtRRPMUdLRsWgL8e3GfzfKhqz6Gfsaq0MCgxu
- 0rqWszq_Y4_iB0YJo6_C.bt8BOoyKkWsxqYE49lsLKFgGSZZ7yorp25FxAlM2ks4erHf9I0EoGSW
- asSbVHGJyCZ_w2JDWLOLg6iNVnMozj.dE.ua_L6kCF.KqLFr7guemEyuWiGLoYCoVpboEn6k9OK_
- QKj1ZNkU6BB0DuNqYdfjNadhZE3yJvhOxBjfO2LmwJ7h56qvpeqfhCH5990jorXPK4vpeS12Ap8J
- HkeY8g2vSdQqCBZSizCOeWWPljDPopP5a7JmxNRDqkrynzoLXCgAk6KQ0O0m_0t2W0hGZgg87wF1
- aLpmntWbCcLlC6dJR7ZQrMgodV460CrRrg1qBAeGsKmbUFBm7joDLK6wMyeur9PjX3Q7xLYlYN2E
- BEaPipw3TSD3xeDLOam3EaIN4o9viXOTasTRC_6871iskeYLJ6hgPwIV_10BlpG2QmazMxC_Yd_x
- ymLm.ThPVTNmB.K5nWl5FbBzWg8JljuH5yvyvzcdZPSGQsvCCVJcWsDkPRlzt70ZBwQYOq09anuP
- SyOtbvNgUisYCxgyikZX9Brf.tx4LJV9p6b28W2enzdiMZv4INj6bvKN2AbJetGrHaiOLSxcvD4Y
- p3tBIK51D8hpbzZLC6xYUn0.y2YDonFezMIbMpngkJ1LdsS66Nl40FfPp2lteqtJvlAVtufr5GLE
- I6bf6kl07TBCZN3L59QNceTG22lDe4C40E1qm4Rr7_b2iNmURWKr9mLBHECB98t4V4CIBalf8YH9
- _mcUJP_a4R55nOWd.0VN31up_HbQ1DBsX0ds_CRBibSl8DlIvZI8.3oKsQEPrTOYZcGU2MiwK9Xv
- 3HWcsQKjB_7fEsXuN0kSF8rJQhQ4CPZrYEHo65LvNbnMe9SFC0PmYFkymEcw7XyV1VSY5RvJaVDX
- 3IeeFx8r_z9SeU3v5KrZ0idxMvLuZU9tiNsYZGZDaJXDaZgAw.jiy.szEZIMt_5yxETOLkiWn2Vf
- ATR1_IjwgvJGkos5Ki9bodAMtycLm1ibnGuB8ZtXX9ahIDAbwRKtbN.C4nWnlHfjw7aL5sU4v1OV
- mdpcCflLVin2haFqC7Gi_gjA0Coxsn_cFg73mdH3VxvqJS7J5vTPJkof7HVGGAMxFFNG29cM6q9o
- UYGKEWV0Unv3_GGPu4VXJ3wx9GKRR0PIWCvq0sCsYGMR780K0yuOGET3jeQ73m79exLF.jMMvCWM
- qHpUsdxEfyw7MAUiIZus_0BER_N6aUtRDj2o3OsKRsBqaZ8WfMmvfsHbDOEiof.t3CEvYkPyFTF5
- c3TKCjl3q4MofUDMMMlhYLZnO.kfqpJg0.KwRv29iF.o.ZJ20zfNzIQFK1lK1ZunWVd6gbmKBYdR
- NaCA6CMmMN0xq4IPpsacONpQLsGtgi7o0eUklNph_jVV_EonFhLQaW36Ji047gqf6.4CTFXpq2kS
- 7SHGeg_x9XttOrknHlHix61fWTBwih3G4PXXbVvt5A6AstCbqd__7jLjQnYOesn8p7rKkPRXsJdZ
- 382CdREwKOniRcxTqHvI6U9FI9Y3MzB7fGVU89c_lZRzoA.UALDNvtwX.S_CTe4vnhYpR5qfcLJV
- 4Yzl0VgX.bzMUwXpK1wzoxDp.dpYm4_SkFSKeq7LjD.2srIBDXx9yWjP6rlkxoKjVFz5mXC01x6g
- zGg--
-X-Sonic-MF: <ashokemailat@yahoo.com>
-X-Sonic-ID: baa26a51-26d1-4fe6-8191-d04c43177dae
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic301.consmr.mail.ne1.yahoo.com with HTTP; Thu, 9 May 2024 17:19:32 +0000
-Received: by hermes--production-bf1-5cc9fc94c8-dv569 (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 6f8786067ae67dbd6de1c4462c36a576;
-          Thu, 09 May 2024 17:19:26 +0000 (UTC)
-Date: Thu, 9 May 2024 10:19:23 -0700
-From: Ashok Kumar <ashokemailat@yahoo.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qk+QHBRU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B805BC113CC;
+	Fri, 10 May 2024 14:55:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715352942;
+	bh=sLxTchYz896sDj6qbtwDuUDSEIrv3OIFfIsIipZpE5U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Qk+QHBRUz835G4CYflpo32U3bgdyaL3BSq2dIP7JPTBxppCQBluDy5JvM3o97jF80
+	 iEALaNAdz3a/+xGsLAEiu9b9vQ8IOnPt5tIhImEP0eGpneYwpJjwpuG02fLkJ3yi68
+	 nhbRbKKys1TrAkL5vW0TVsZ1OZcRgEjvN426FUx7zeuaqiU+tMqyApz+JEHhGlVjsp
+	 zDEVo4rZ2XssiB7JTh43TEhLtOPYXIZhhcknhTJmh/C+HOdQCExA3ZWfYGTj7MIeOv
+	 FQzyk2hH6uVo11vyU+GDq7RXKXBnosQk38Lr2DJANEJLXeauHqnO5s9JAJ0Ew2Q7b5
+	 NjdJU+QN1zb3Q==
+Date: Fri, 10 May 2024 15:55:34 +0100
+From: Lee Jones <lee@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>,
+	Jiri Kosina <jikos@kernel.org>,
+	Benjamin Tissoires <bentiss@kernel.org>,
+	Alexander Shiyan <shc_work@mail.ru>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>,
 	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev
-Subject: [PATCH] staging:vme_user: Add blank line after struct decl
-Message-ID: <Zj0Fm+vBdzPHlZKS@c>
+	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
+	linux-omap@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
+Subject: [GIT PULL] Immutable branch between Backlight, HID and fbdev due for
+ the v6.10 merge window
+Message-ID: <20240510145534.GD6146@google.com>
+References: <20240424-video-backlight-lcd-ops-v2-0-1aaa82b07bc6@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <Zj0Fm+vBdzPHlZKS.ref@c>
-X-Mailer: WebService/1.1.22321 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240424-video-backlight-lcd-ops-v2-0-1aaa82b07bc6@kernel.org>
 
-Added blank line after struct declarions for improving readability indicated by
-checkpatch.pl
+Enjoy!
 
-Signed-off-by: Ashok Kumar <ashokemailat@yahoo.com>
----
- drivers/staging/vme_user/vme_user.c | 1 +
- 1 file changed, 1 insertion(+)
+The following changes since commit 4cece764965020c22cff7665b18a012006359095:
 
-diff --git a/drivers/staging/vme_user/vme_user.c b/drivers/staging/vme_user/vme_user.c
-index 36183f923768..5829a4141561 100644
---- a/drivers/staging/vme_user/vme_user.c
-+++ b/drivers/staging/vme_user/vme_user.c
-@@ -106,6 +106,7 @@ static struct vme_dev *vme_user_bridge;		/* Pointer to user device */
- static const struct class vme_user_sysfs_class = {
- 	.name = DRIVER_NAME,
- };
-+
- static const int type[VME_DEVS] = {	MASTER_MINOR,	MASTER_MINOR,
- 					MASTER_MINOR,	MASTER_MINOR,
- 					SLAVE_MINOR,	SLAVE_MINOR,
+  Linux 6.9-rc1 (2024-03-24 14:10:05 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-hid-fbdev-lcd-scripts-v6.10
+
+for you to fetch changes up to 82b9007bc4f8c22975d640d7df6743366f25a353:
+
+  const_structs.checkpatch: add lcd_ops (2024-05-03 10:45:55 +0100)
+
+----------------------------------------------------------------
+Immutable branch between Backlight, HID and fbdev due for the v6.10 merge window
+
+----------------------------------------------------------------
+Krzysztof Kozlowski (19):
+      backlight: lcd: Constify lcd_ops
+      backlight: ams369fg06: Constify lcd_ops
+      backlight: corgi_lcd: Constify lcd_ops
+      backlight: hx8357: Constify lcd_ops
+      backlight: ili922x: Constify lcd_ops
+      backlight: ili9320: Constify lcd_ops
+      backlight: jornada720_lcd: Constify lcd_ops
+      backlight: l4f00242t03: Constify lcd_ops
+      backlight: lms283gf05: Constify lcd_ops
+      backlight: lms501kf03: Constify lcd_ops
+      backlight: ltv350qv: Constify lcd_ops
+      backlight: otm3225a: Constify lcd_ops
+      backlight: platform_lcd: Constify lcd_ops
+      backlight: tdo24m: Constify lcd_ops
+      HID: picoLCD: Constify lcd_ops
+      fbdev: clps711x: Constify lcd_ops
+      fbdev: imx: Constify lcd_ops
+      fbdev: omap: lcd_ams_delta: Constify lcd_ops
+      const_structs.checkpatch: add lcd_ops
+
+ drivers/hid/hid-picolcd_lcd.c            | 2 +-
+ drivers/video/backlight/ams369fg06.c     | 2 +-
+ drivers/video/backlight/corgi_lcd.c      | 2 +-
+ drivers/video/backlight/hx8357.c         | 2 +-
+ drivers/video/backlight/ili922x.c        | 2 +-
+ drivers/video/backlight/ili9320.c        | 2 +-
+ drivers/video/backlight/jornada720_lcd.c | 2 +-
+ drivers/video/backlight/l4f00242t03.c    | 2 +-
+ drivers/video/backlight/lcd.c            | 4 ++--
+ drivers/video/backlight/lms283gf05.c     | 2 +-
+ drivers/video/backlight/lms501kf03.c     | 2 +-
+ drivers/video/backlight/ltv350qv.c       | 2 +-
+ drivers/video/backlight/otm3225a.c       | 2 +-
+ drivers/video/backlight/platform_lcd.c   | 2 +-
+ drivers/video/backlight/tdo24m.c         | 2 +-
+ drivers/video/fbdev/clps711x-fb.c        | 2 +-
+ drivers/video/fbdev/imxfb.c              | 2 +-
+ drivers/video/fbdev/omap/lcd_ams_delta.c | 2 +-
+ include/linux/lcd.h                      | 6 +++---
+ scripts/const_structs.checkpatch         | 1 +
+ 20 files changed, 23 insertions(+), 22 deletions(-)
+
 -- 
-2.34.1
-
+Lee Jones [李琼斯]

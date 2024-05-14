@@ -1,123 +1,127 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69ABC168AFC;
-	Fri, 10 May 2024 14:55:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 635BC13FD8D;
+	Tue, 14 May 2024 13:09:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715352942; cv=none; b=ZGYUFXvxWMHPFUU7kbYZIr023198we/j+wiGZ86sv7GOygbLOOY8fmr4xchowQFNEVQTtDzwDwxFBcp0cIOfw2qa1ZdT0qTkHYSgUcG+VEzeldlH4zKY5rnX+DE1epxWakWCkgw1mZfYc87i6KYfHsjkuKpvv5HM3UA6DRDh0p4=
+	t=1715692153; cv=none; b=dw/GFeo+NOIRgCzwEGqREDYLjf/gV9EIYVyeqz93rFk0PgGN6/XQAROSUzySjgQRVSNRMVLxIb6GzjkKsqHZBL/NZFCeyMWr1H51qXdEaatZzR0oxIIbVGhuaWDcpI3+EnFIKWUBwm52ep/aVpk8TK6tiHUNyrBZa4WXtgOQz7g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715352942; c=relaxed/simple;
-	bh=sLxTchYz896sDj6qbtwDuUDSEIrv3OIFfIsIipZpE5U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sGwqQCepcSKbgbemV/dptfixidGWezFD6/dE4IploauNfCurmQ5myBjBLUPnlODCanzScemsDf440nwX/Jbbk4vq+lvPirAb6YSAx1lZhBb2jm+YZaQyYCazmvkCNs2Azor6W0tb0mugwJy6b6SJKqN55pOATTlw/bgdf3OKCnE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Qk+QHBRU; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1715692153; c=relaxed/simple;
+	bh=c7p08TmeWGdJ7F5vTrKlh4woXOixn8qwNLoKd8sqpWA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=YYAcwh4dZlLsjN0rLDdggEvzlmTgoizGiKCyz45AOBk+TqShVWj1CdJ/dxPY/H/6ioopiHUKds++NiBXuwC1HigO50vjki1BavG9bq1JPEA6erPGQbpbKngXyD6IgIxGmYmByuX7gTIlzd6KeRU7DjQoAfjWcmQh9q8w0HR/Jl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=nRZq4ENh; arc=none smtp.client-ip=148.163.158.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qk+QHBRU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B805BC113CC;
-	Fri, 10 May 2024 14:55:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1715352942;
-	bh=sLxTchYz896sDj6qbtwDuUDSEIrv3OIFfIsIipZpE5U=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Qk+QHBRUz835G4CYflpo32U3bgdyaL3BSq2dIP7JPTBxppCQBluDy5JvM3o97jF80
-	 iEALaNAdz3a/+xGsLAEiu9b9vQ8IOnPt5tIhImEP0eGpneYwpJjwpuG02fLkJ3yi68
-	 nhbRbKKys1TrAkL5vW0TVsZ1OZcRgEjvN426FUx7zeuaqiU+tMqyApz+JEHhGlVjsp
-	 zDEVo4rZ2XssiB7JTh43TEhLtOPYXIZhhcknhTJmh/C+HOdQCExA3ZWfYGTj7MIeOv
-	 FQzyk2hH6uVo11vyU+GDq7RXKXBnosQk38Lr2DJANEJLXeauHqnO5s9JAJ0Ew2Q7b5
-	 NjdJU+QN1zb3Q==
-Date: Fri, 10 May 2024 15:55:34 +0100
-From: Lee Jones <lee@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>,
-	Jiri Kosina <jikos@kernel.org>,
-	Benjamin Tissoires <bentiss@kernel.org>,
-	Alexander Shiyan <shc_work@mail.ru>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
-	linux-omap@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
-	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Subject: [GIT PULL] Immutable branch between Backlight, HID and fbdev due for
- the v6.10 merge window
-Message-ID: <20240510145534.GD6146@google.com>
-References: <20240424-video-backlight-lcd-ops-v2-0-1aaa82b07bc6@kernel.org>
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="nRZq4ENh"
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44EBUDW3009717;
+	Tue, 14 May 2024 13:09:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=I17vbZiH4iZTzoMc8v6V70YjIxKVGmNtw1dSKswROtA=;
+ b=nRZq4ENhHTnEPXpKw9DWDZV5Dti5eZ7Z2kt/z/vTSZonTbA0a7SaC+VeuENJmXv3LWva
+ SqASApuVQ7h6DfMSt4hwXeOcSQ4MJxNyt4HFMs2DYAiLB4J/K4UrdA7cFC58EvJ5v/XU
+ r08+yy0Q9lS77Ynjoa83UcOf8axMOPjrYyDSK7fz8QoRWVsacNm7gB1L2SWlnDxkrhaY
+ ZtIcuM/1LdxnG5Smter+9GpBskInnpnzdgTaXrUCvlZK54UPPDpBLkb3dmFFyESOWSZN
+ CmWOvtow3RjQBTAXAAr5IeVCGgMDkIo/QK5eI0jd4F2mw6e6lthySIXQrffd2NU0umyO Lg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y474u07m4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 14 May 2024 13:09:05 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44ED94nS030706;
+	Tue, 14 May 2024 13:09:04 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y474u07m2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 14 May 2024 13:09:04 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44EB4ohd020388;
+	Tue, 14 May 2024 13:09:04 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3y2kcywnmy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 14 May 2024 13:09:04 +0000
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44ED90Ba42795386
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 14 May 2024 13:09:02 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C61FE58053;
+	Tue, 14 May 2024 13:09:00 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 658F458061;
+	Tue, 14 May 2024 13:08:59 +0000 (GMT)
+Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 14 May 2024 13:08:59 +0000 (GMT)
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Arnd Bergmann <arnd@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+        linux-kernel@vger.kernel.org, Niklas Schnelle <schnelle@linux.ibm.com>
+Subject: [PATCH v2 0/1] video: Handle HAS_IOPORT dependencies
+Date: Tue, 14 May 2024 15:08:57 +0200
+Message-Id: <20240514130858.3048650-1-schnelle@linux.ibm.com>
+X-Mailer: git-send-email 2.40.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: QykJcn6P0RM7EhaMWuoj5CLTQ0u91Zv4
+X-Proofpoint-GUID: JNmgGelJt1xlrLlfze0rHv1rqWBc4L-F
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240424-video-backlight-lcd-ops-v2-0-1aaa82b07bc6@kernel.org>
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-05-14_06,2024-05-14_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxscore=0
+ suspectscore=0 lowpriorityscore=0 priorityscore=1501 malwarescore=0
+ spamscore=0 impostorscore=0 adultscore=0 mlxlogscore=999 phishscore=0
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2405010000 definitions=main-2405140093
 
-Enjoy!
+Hi,
 
-The following changes since commit 4cece764965020c22cff7665b18a012006359095:
+This is a follow up in my ongoing effort of making inb()/outb() and
+similar I/O port accessors compile-time optional. Previously I sent this
+as a treewide series titled "treewide: Remove I/O port accessors for
+HAS_IOPORT=n" with the latest being its 5th version[0]. With a significant
+subset of patches merged I've changed over to per-subsystem series. These
+series are stand alone and should be merged via the relevant tree such
+that with all subsystems complete we can follow this up with the final
+patch that will make the I/O port accessors compile-time optional.
 
-  Linux 6.9-rc1 (2024-03-24 14:10:05 -0700)
+The current state of the full series with changes to the remaining subsystems
+and the aforementioned final patch can be found for your convenience on my
+git.kernel.org tree in the has_ioport branch[1]. As for compile-time vs runtime
+see Linus' reply to my first attempt[2].
 
-are available in the Git repository at:
+Changes since v1:
+- Moved vga_mm_r(), vga_mm_w(), vga_mm_w_fast() above #ifdef CONFIG_HAS_IOPORT
+  to use them in with or without I/O port variants.
+- Duplicated vga_r(), vga_w(), vga_w_fast() functions as non-I/O port variants
+  to get rid of in-code #ifdef (Arnd)
+- Got rid of if (regbase) logic inversion needed for in-code #ifdef
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-hid-fbdev-lcd-scripts-v6.10
+Thanks,
+Niklas
 
-for you to fetch changes up to 82b9007bc4f8c22975d640d7df6743366f25a353:
+[0] https://lore.kernel.org/all/20230522105049.1467313-1-schnelle@linux.ibm.com/
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/niks/linux.git/log/?h=has_ioport
+[2] https://lore.kernel.org/lkml/CAHk-=wg80je=K7madF4e7WrRNp37e3qh6y10Svhdc7O8SZ_-8g@mail.gmail.com/
 
-  const_structs.checkpatch: add lcd_ops (2024-05-03 10:45:55 +0100)
+Niklas Schnelle (1):
+  video: Handle HAS_IOPORT dependencies
 
-----------------------------------------------------------------
-Immutable branch between Backlight, HID and fbdev due for the v6.10 merge window
-
-----------------------------------------------------------------
-Krzysztof Kozlowski (19):
-      backlight: lcd: Constify lcd_ops
-      backlight: ams369fg06: Constify lcd_ops
-      backlight: corgi_lcd: Constify lcd_ops
-      backlight: hx8357: Constify lcd_ops
-      backlight: ili922x: Constify lcd_ops
-      backlight: ili9320: Constify lcd_ops
-      backlight: jornada720_lcd: Constify lcd_ops
-      backlight: l4f00242t03: Constify lcd_ops
-      backlight: lms283gf05: Constify lcd_ops
-      backlight: lms501kf03: Constify lcd_ops
-      backlight: ltv350qv: Constify lcd_ops
-      backlight: otm3225a: Constify lcd_ops
-      backlight: platform_lcd: Constify lcd_ops
-      backlight: tdo24m: Constify lcd_ops
-      HID: picoLCD: Constify lcd_ops
-      fbdev: clps711x: Constify lcd_ops
-      fbdev: imx: Constify lcd_ops
-      fbdev: omap: lcd_ams_delta: Constify lcd_ops
-      const_structs.checkpatch: add lcd_ops
-
- drivers/hid/hid-picolcd_lcd.c            | 2 +-
- drivers/video/backlight/ams369fg06.c     | 2 +-
- drivers/video/backlight/corgi_lcd.c      | 2 +-
- drivers/video/backlight/hx8357.c         | 2 +-
- drivers/video/backlight/ili922x.c        | 2 +-
- drivers/video/backlight/ili9320.c        | 2 +-
- drivers/video/backlight/jornada720_lcd.c | 2 +-
- drivers/video/backlight/l4f00242t03.c    | 2 +-
- drivers/video/backlight/lcd.c            | 4 ++--
- drivers/video/backlight/lms283gf05.c     | 2 +-
- drivers/video/backlight/lms501kf03.c     | 2 +-
- drivers/video/backlight/ltv350qv.c       | 2 +-
- drivers/video/backlight/otm3225a.c       | 2 +-
- drivers/video/backlight/platform_lcd.c   | 2 +-
- drivers/video/backlight/tdo24m.c         | 2 +-
- drivers/video/fbdev/clps711x-fb.c        | 2 +-
- drivers/video/fbdev/imxfb.c              | 2 +-
- drivers/video/fbdev/omap/lcd_ams_delta.c | 2 +-
- include/linux/lcd.h                      | 6 +++---
- scripts/const_structs.checkpatch         | 1 +
- 20 files changed, 23 insertions(+), 22 deletions(-)
+ include/video/vga.h | 58 ++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 42 insertions(+), 16 deletions(-)
 
 -- 
-Lee Jones [李琼斯]
+2.40.1
+

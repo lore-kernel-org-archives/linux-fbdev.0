@@ -1,126 +1,191 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9374214B97A
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 May 2024 15:16:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F8F11CFBC;
+	Fri, 17 May 2024 09:16:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1715872617; cv=none; b=SaaNUU3fUiUIG6PmzQXE9XsxJ1a82Lehv2wAXwSAVxOXOhXQlqIo9Tb1vTN3//YXR4w98S+HILImqa8TwAfhnfbAQZVQiBFU7sgkOrbtyia3+xN0Ph0othNi2f0c2i1FFQd6JF4O/MAu91S9WZzyA7H/b1BY80m1bMpnT8h3+Do=
+	t=1715937369; cv=none; b=Ky+lNV7Fit6tpsCSZZ+IIyUcItC2O4NPHXWw165C4WEpCfymGBSM1Sm+aT/2BJLH4qw2DsVGhTmfKNFNfRJYt88HrkHL2f0/AJ7lYJwKNRk/QNg5+XBuK9uzpbvyHmwu127mw83sWMxOnyBV8/i83K1r59spMnTelc+q02Gjx5Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1715872617; c=relaxed/simple;
-	bh=IaLO8A8eOYs5s/2/cuHYZ/9daRCUlFtjjAcRYjoYHbc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MJYXyOm1disYtEI+8fgmlUvWEl95HOw5qhUplVrO1RWao1Cn2Lzo00NV9vensP4yxdfqkBefYlMwb5TR/O7l0V2luetm27iOJW7OcWpuwSMdizTnvAW25yHH+D0dJe6UJeEbf9ssLgkkYP7tCjeVlQu/fH0zRaRJfcZ4vj9jQ3I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=MTi60K/j; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1715937369; c=relaxed/simple;
+	bh=wY4YgXdaqsAKUexBfgDDerI/9Bx+fOhmVvc6Lpv7OVE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UsGji0P0jS7xaF5PCqyCQSv9vuD/r0tD7JSAHmqxEBulkysSJw8cq6FhuJj6eRuoBrlhV2Q9BRjul3rot/bxbm4igWOWV5UEKSKuAifZfhW4oA5b+QG+uQIJG0tYaKGOFDyhi+MI1g1teLH9Cq2iLf9UvSq5ol1Ue7ZCsw2cgW8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=BbghCkdX; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=jt+OyQXy; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MSoh9Pd4; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=6EmY1xnz; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MTi60K/j"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1715872614;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4iOgbS6qeObzrg8GE2s02mcHzXvs1fEJ62WhOsFVoik=;
-	b=MTi60K/jLSn8zKSdbGer4zTj9B9rr/JDF5y+0W+BDb0K5x18JKkX7QTTHVzpO4BahP4WGo
-	ny86Zl68GF6mMD5wxIONQnojqFhPZdV0VbsZYhN1hJhEC93Ic26yW45pqXcfn9Kumnme38
-	oPCaZqAy5weFk4t5y9vAwZB7wO2hWG4=
-Received: from mail-lf1-f71.google.com (mail-lf1-f71.google.com
- [209.85.167.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-659-KNn3foIKPF-I4T7Hfl2dEQ-1; Thu, 16 May 2024 11:16:51 -0400
-X-MC-Unique: KNn3foIKPF-I4T7Hfl2dEQ-1
-Received: by mail-lf1-f71.google.com with SMTP id 2adb3069b0e04-5222a0800f0so6938878e87.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 May 2024 08:16:51 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715872610; x=1716477410;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=4iOgbS6qeObzrg8GE2s02mcHzXvs1fEJ62WhOsFVoik=;
-        b=sEw1ZCW9vrPHzr2ViBg9OFwzt/KeLabheDnNJfbWWeulZOTIDp47Sh6DRlqh8gQtR7
-         JSv0l4Img3eBF22osHAfW+faK0AEQYiXGz+Dw/Xu1JFOx1xh1rwBBpPqvuNCV/fCQmw4
-         VJ4xaXGUKKADUuTpVMK0TLmEvkEavy3yXij/YSP65KP8kOm51HbVtYZDO9OnVY33FCbc
-         i8oBCyn66OM3pD3GA5D22Pr0YBs5bh5cLlXsfpDcBzPTHAoBV4G0E2dn9zndmJXPGq53
-         m5YKZnGaP84qqhDSSmsT3IiChlqYS7KJHGrnyDIb1xCuZXWr6aZHQYaMeG60QjBLM81Y
-         5wgg==
-X-Forwarded-Encrypted: i=1; AJvYcCWCXTsfxjLiG1tz0ZUhhAqsjMdsCZv6vRvUzMAkjoY8hjVnJeTQVZCbaiwx/td3N6omeo3Mpmcd7MGjuYtmV4FRTdFtTMWgOeht8dQ=
-X-Gm-Message-State: AOJu0YwBbpBraCMCIy5vsB4mERi7qyOyWu9gxTCH+BzI2W4erjnkq1H0
-	3MiG5Gfzw2AJjU9HUf3du1dIWmxaPKZBWfVXmfA6CVz/DlV75pWXt10scQJN/J/wnKMCvDeUlOR
-	8Cyp6Z+qXBE80q3AJvoSN07NFrFqeVINCgYXvj3AIcZDBjvJ+VfObcAbNv7EW
-X-Received: by 2002:a05:6512:444:b0:51f:3e0c:ace3 with SMTP id 2adb3069b0e04-5220fd7c6bdmr16656970e87.16.1715872609965;
-        Thu, 16 May 2024 08:16:49 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGn+FVB1tK34ViV8+agUiDomeCaRnMnSEIgSm4pt/ya2IBcjeS4X3/vaKP4GVA4MVD2ub1n+A==
-X-Received: by 2002:a05:6512:444:b0:51f:3e0c:ace3 with SMTP id 2adb3069b0e04-5220fd7c6bdmr16656944e87.16.1715872609565;
-        Thu, 16 May 2024 08:16:49 -0700 (PDT)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a5a60eabd3csm596814866b.108.2024.05.16.08.16.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 16 May 2024 08:16:49 -0700 (PDT)
-Message-ID: <b9a5068c-8760-4f92-8a1b-bd276532109d@redhat.com>
-Date: Thu, 16 May 2024 17:16:47 +0200
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="BbghCkdX";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="jt+OyQXy";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MSoh9Pd4";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="6EmY1xnz"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id D221C5D1B3;
+	Fri, 17 May 2024 09:16:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1715937362; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9wYWAx2PYyOTbB/LCI3hz7bjDkyxOkz1uapIAToUark=;
+	b=BbghCkdXksejkuJqJmch5Ijt4sdQZ5TDSe2a19haeMF2gXOdFAXHuIFAVy/ycjGDKXOahM
+	3s35YHDhSOBZ0DBIbMJoZwDe1zdv8qmX78wJczE5ydgpmTceUqPruOPYs17PnMEifYtyGx
+	Kf3WP8IRkhI9Qg1w1JdkXa4wR3S5njo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1715937362;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9wYWAx2PYyOTbB/LCI3hz7bjDkyxOkz1uapIAToUark=;
+	b=jt+OyQXy4hJ1K2TSadbh5/0IARkIyYzVbNsRzT7YZJa0Y75FPbMfmoXTKJXCnAHwr/gG2B
+	W7bx/+2Y8JLZKpAQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=MSoh9Pd4;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=6EmY1xnz
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1715937361; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9wYWAx2PYyOTbB/LCI3hz7bjDkyxOkz1uapIAToUark=;
+	b=MSoh9Pd4EH3z9qXcQcZ1OGdOiRW1eI7a9BCPHTXAOfjkWkcMJzvy2v535t1mnqA5yaLg6e
+	KIcpJzCLRWJuOmJ/gF0nIaQShxltOwTdd0B3ersi5TNR0Tlqj9WyvqXlkG2ubPrJbsH3G/
+	znOmxD/guKNiOlbjZztNkImArw9SnKE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1715937361;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9wYWAx2PYyOTbB/LCI3hz7bjDkyxOkz1uapIAToUark=;
+	b=6EmY1xnz1/aS9A/f+O8Sf2mvTZcnlnUMR9VLtbJP9DiseQxwfCCDwKxnhj+6NTN3hoLP9f
+	n7zleX6+JlE9M5Ag==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 57EBD13991;
+	Fri, 17 May 2024 09:16:01 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 0dNMFFEgR2ZkfAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 17 May 2024 09:16:01 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: arnd@arndb.de,
+	chaitanya.kumar.borah@intel.com,
+	suresh.kumar.kurmi@intel.com,
+	jani.saarinen@intel.com,
+	davem@davemloft.net,
+	andreas@gaisler.com,
+	tglx@linutronix.de,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	x86@kernel.org,
+	hpa@zytor.com,
+	rafael@kernel.org,
+	hdegoede@redhat.com
+Cc: linux-arch@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH] arch: Fix name collision with ACPI's video.o
+Date: Fri, 17 May 2024 11:14:33 +0200
+Message-ID: <20240517091557.25800-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.45.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ACPI: video: Fix name collision with architecture's
- video.o
-To: Thomas Zimmermann <tzimmermann@suse.de>,
- "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: lenb@kernel.org, arnd@arndb.de, chaitanya.kumar.borah@intel.com,
- suresh.kumar.kurmi@intel.com, jani.saarinen@intel.com,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-gfx@lists.freedesktop.org, linux-arch@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240516124317.710-1-tzimmermann@suse.de>
- <CAJZ5v0gw620SLfxM66FfVeWMTN=dSZZtpH-=mFT_0HsumT3SsA@mail.gmail.com>
- <1850b44d-e468-44db-82b7-f57e77fe49ba@redhat.com>
- <82731e7d-e34f-46c4-8f54-c5d7d3d60b5a@suse.de>
-Content-Language: en-US, nl
-From: Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <82731e7d-e34f-46c4-8f54-c5d7d3d60b5a@suse.de>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Score: -5.01
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: D221C5D1B3
+X-Spam-Level: 
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-5.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_MED(-2.00)[suse.de:dkim];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	ARC_NA(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[22];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:email];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DKIM_TRACE(0.00)[suse.de:+]
 
-Hi,
+Commit 2fd001cd3600 ("arch: Rename fbdev header and source files")
+renames the video source files under arch/ such that they do not
+refer to fbdev any longer. The new files named video.o conflict with
+ACPI's video.ko module. Modprobing the ACPI module can then fail with
+warnings about missing symbols, as shown below.
 
-On 5/16/24 5:11 PM, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 16.05.24 um 17:03 schrieb Hans de Goede:
->> Hi,
->>
->> On 5/16/24 3:04 PM, Rafael J. Wysocki wrote:
->>> CC Hans who has been doing the majority of the ACPI video work.
->>>
->>> On Thu, May 16, 2024 at 2:43 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
->>>> Commit 2fd001cd3600 ("arch: Rename fbdev header and source files")
->>>> renames the video source files under arch/ such that they does not
->>>> refer to fbdev any longer. The new files named video.o conflict with
->>>> ACPI's video.ko module.
->>> And surely nobody knew or was unable to check upfront that there was a
->>> video.ko already in the kernel.
->> Sorry, but nack for this change. I very deliberately kept the module-name
->> as video when renaming the actual .c file from video.c to acpi_video.c
->> because many people pass drivers/video/acpi_video.c module arguments
->> on the kernel commandline using video.param=val .
->>
->> Try e.g. doing a duckduckgo search for 1 off:
->>
->> "video.only_lcd"
->> "video.allow_duplicates"
->> "video.brightness_switch_enabled"
-> 
-> Ok, that makes sense. I'll rename the other files.
+  (i915_selftest:1107) igt_kmod-WARNING: i915: Unknown symbol acpi_video_unregister (err -2)
+  (i915_selftest:1107) igt_kmod-WARNING: i915: Unknown symbol acpi_video_register_backlight (err -2)
+  (i915_selftest:1107) igt_kmod-WARNING: i915: Unknown symbol __acpi_video_get_backlight_type (err -2)
+  (i915_selftest:1107) igt_kmod-WARNING: i915: Unknown symbol acpi_video_register (err -2)
 
-Great, thank you.
+Fix the issue by renaming the architecture's video.o to video-common.o.
 
-Regards,
+Reported-by: Chaitanya Kumar Borah <chaitanya.kumar.borah@intel.com>
+Closes: https://lore.kernel.org/intel-gfx/9dcac6e9-a3bf-4ace-bbdc-f697f767f9e0@suse.de/T/#t
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 2fd001cd3600 ("arch: Rename fbdev header and source files")
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+---
+ arch/sparc/video/Makefile                    | 2 +-
+ arch/sparc/video/{video.c => video-common.c} | 0
+ arch/x86/video/Makefile                      | 2 +-
+ arch/x86/video/{video.c => video-common.c}   | 0
+ 4 files changed, 2 insertions(+), 2 deletions(-)
+ rename arch/sparc/video/{video.c => video-common.c} (100%)
+ rename arch/x86/video/{video.c => video-common.c} (100%)
 
-Hans
-
+diff --git a/arch/sparc/video/Makefile b/arch/sparc/video/Makefile
+index fdf83a408d750..dcfbe7a5912c0 100644
+--- a/arch/sparc/video/Makefile
++++ b/arch/sparc/video/Makefile
+@@ -1,3 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
+-obj-y	+= video.o
++obj-y	+= video-common.o
+diff --git a/arch/sparc/video/video.c b/arch/sparc/video/video-common.c
+similarity index 100%
+rename from arch/sparc/video/video.c
+rename to arch/sparc/video/video-common.c
+diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
+index fdf83a408d750..dcfbe7a5912c0 100644
+--- a/arch/x86/video/Makefile
++++ b/arch/x86/video/Makefile
+@@ -1,3 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
+-obj-y	+= video.o
++obj-y	+= video-common.o
+diff --git a/arch/x86/video/video.c b/arch/x86/video/video-common.c
+similarity index 100%
+rename from arch/x86/video/video.c
+rename to arch/x86/video/video-common.c
+-- 
+2.45.0
 

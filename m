@@ -1,153 +1,236 @@
-Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx101.easyname.com (mx101.easyname.com [217.74.15.6])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C5ED256A;
-	Tue, 21 May 2024 07:41:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F12468C1F;
+	Sun, 26 May 2024 11:10:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.74.15.6
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716277295; cv=none; b=EvFzVjXabgvQjvKYgcGihKQzAdbuTi8492Au87MxqFg7BUpQiKhdKgTOO32t90c84lgs1w5UguAiSnji7nTEgLx3c96iVbffKcAq3ONcPM4Iq9Vp+XFZy0QqhdJif2Tz3dT/kD5IotsQp4S2bf2o6Ybpz6IcrVmDEBfdxfAddlM=
+	t=1716721838; cv=none; b=LoVyBcNnR+brLyWFSG05BQNZYLpYd5ViLY76N6KLo89xdqGVpaNtR3eaEMVgU0caeVtLJqaJM5OciLsaa0Mkx+F3Zl5LG/HjgBx8l/cdkRxHarRE5tMEM/2AbV04714eVgJXSOjNNPXVU67mfuAL7Upz+nGvVV62Ct+nvjTBlRo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716277295; c=relaxed/simple;
-	bh=sQGLxa8ogX8RYZzuIg3igjIdlDpi7EPN50nm5hGFykw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=EHNRS0VbNtkC9gzLBOiDY4htvo0Mvisd1/Ma7gv4sd0laIkysIySX2ebuDebqsLYOUIzbkfZeckxeZkQJoTkTKnM7WOzWTIcM51d0oeUGBRgPsrfWf6dS+6T5Y/k0BsLj9N0imuOmlpvL0l/k8valF4u8nCjsPv6gTXqVgd70C4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-61816fc256dso34082977b3.0;
-        Tue, 21 May 2024 00:41:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716277291; x=1716882091;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WETFSWDeBrd8hie/jL0FRiOzrF4PlBR3z9DNDu6qHzE=;
-        b=NzXOGItKNwuea+/+Tx+c9QHL4w3WMhoKgCDhoDgZS5pNrisCiwJfO+nwsfFwk32iqh
-         RJ2No4X+xQ03kYnNp34TUD5jXp5YNP0Y/sJ4N9Qvh1RtDGvZHJqykJDYituAPR291zg4
-         s3OwQcIac+wxy7OUOq6kekB/vqvyK4q+RrMe9ODORqkPfU5vRF3UX7H33CDzSgQQryzB
-         0/dbz4C9Jz1/iJGyBBvtJLruJdggVJK49EI8Dqv447nZetmu/zAi0V4s0mnvnFZLtWX4
-         fh1OhqYRQuJP89INEZGewJdGcJcKM4MHn2/mTPqZkgOAGn6eztFhFqm+ibN756fSiNkm
-         3Kvg==
-X-Forwarded-Encrypted: i=1; AJvYcCUitpllR0WMFEV48tBzT3Dz4fkXOwVl1rWIJe9PrBMqCuc5NOOoHOAlK3nMlzuGCN7UYWw72LlukEVVKmvKDNM+CLs2md3oT3QId4bC9HCUALjLgxL6L/6lJM0Ec1G42H3hm4asnZWmDK3OtZ2isNv+8JRwGVTZvNxCY6Gwq99nZ6H9LRaMwLNavKFVv76fEPA3NON/tj4hhA7lS1JZZ10wHV1JaCud7NDRQI8TeoNdQLxniCds7nBKakGDTVHF1vHedu8HVIbyA1kxG6B9pWhSPdfNMIgN2uzNsEifvL3GbeatSe+IfhtyRdBuA+wEmQMmvl3T4HxWntHqd1hwTN5j9qL4l+8lqxxJkPzA32QylEWyU2vCfE0=
-X-Gm-Message-State: AOJu0YwD+N3/mY6UTJ74Y/rpGzWRKs0YrrtJxenVHhWN29FGeL7MYcVx
-	1e3M7ajXVD580sX333Uk0AAqmY57AW3d79Fs/w9QgnkfqT9ubfMiYhysG/bN
-X-Google-Smtp-Source: AGHT+IGftlXaBmin9/8SVBcXlvn4iHcTs6DhlgBwChGLMxTccq7qrPkzijral7e9b9QrvepOUqlBIQ==
-X-Received: by 2002:a81:7b09:0:b0:618:b08:2ab6 with SMTP id 00721157ae682-627b5c795f7mr37818117b3.47.1716277290360;
-        Tue, 21 May 2024 00:41:30 -0700 (PDT)
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com. [209.85.219.176])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-6209e3792f0sm53026447b3.123.2024.05.21.00.41.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 21 May 2024 00:41:29 -0700 (PDT)
-Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-dee9943a293so3333622276.0;
-        Tue, 21 May 2024 00:41:28 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUaR4ygibIAFqqaP3i98l+aX47/ywwBtnzyjST6haD+R5cmAqJJqK3DoRShPs+2O9hrPjgVg6btjOCouHTLAUr4sCcLAqdbCLko5DNOQj7xkOnQAE1mX70RoymksFWgrWBkqQupCdBwea4ic/+WGUsWdWb65dLIW/PD+e6fAZVUQHFQ5q6+KAUYGzqyQgGH3PnXGlRddWb73LbGkDj0p+urQeSziE7Nm8kfG053huC+kASso7oT8Bq+qVCFknEadUnzZD3K21Vvl/OgHB6JqlVBpF32y7T7RoJMzxu0rHHiuTNjQRLBcM4xbqIEPQiHPJc9cLHIEnUL0wliTOTyyxwfPYRA7aMtEJzbUNuuquim1gvkEeZAlSk=
-X-Received: by 2002:a05:6902:220c:b0:de8:a770:4812 with SMTP id
- 3f1490d57ef6-df4a41d6187mr6078081276.40.1716277288715; Tue, 21 May 2024
- 00:41:28 -0700 (PDT)
+	s=arc-20240116; t=1716721838; c=relaxed/simple;
+	bh=HY1XGPRrGqBxDcvdxT1bi7hAHQ+KaBmx83f1g1P+lH0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SbwWmoNXi7MQZbIu4BGz/oLBZBVeHaLIou3wVvAv+Teaw0Kip1uSFN2iISK9zMGNThseyrYR0cdQx/gkWM9BKXJHYh2Wv6yfE3iHmBlAYRnmdwfx0af1R1qqxxzhaOfO33t3TZqB+/yUkf29O097jh09zgjWmK5RVKdAFkN0QX0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=paroga.com; spf=pass smtp.mailfrom=paroga.com; dkim=pass (2048-bit key) header.d=paroga.com header.i=@paroga.com header.b=N8TXraIw; dkim=pass (2048-bit key) header.d=paroga.com header.i=@paroga.com header.b=N8TXraIw; arc=none smtp.client-ip=217.74.15.6
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=paroga.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=paroga.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=paroga.com header.i=@paroga.com header.b="N8TXraIw";
+	dkim=pass (2048-bit key) header.d=paroga.com header.i=@paroga.com header.b="N8TXraIw"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=paroga.com;
+	 s=easyname; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=TXVzlDmNhLCq95/mMjyunngNK+mLMLLWMLMstZdKwDc=; b=N8TXraIwOC2y+kydJ70DzvW0uS
+	AZTB3Gi5ydGCdlnLyXdSwQmiY/uguhznTruMwtdSiF1h/CyvGHWJjDFDkdIgONPLPcx5l+7rrvTma
+	5G6qr2Lzo5rAu4f6i38Kz/WushONNwzk5h4xWebTwLLONb97e1rJNL1HV0PcVACqxzJ/zJlc4kzlw
+	lcknmQhsZrKFiivjc7wx1TNGh035FpF9E0g5CrqtispiMkelO4radvvPbePzY4aP/WzCnC4OSdVak
+	6DuNoeDfgy/qxqF8Fej8MPzEjCNSUcypwfCSSwHIeEKgcvR8GuUkQ6JMV0UNpolo3l4cREaGEDvh3
+	VAhCKJew==;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=paroga.com;
+	 s=easyname; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=TXVzlDmNhLCq95/mMjyunngNK+mLMLLWMLMstZdKwDc=; b=N8TXraIwOC2y+kydJ70DzvW0uS
+	AZTB3Gi5ydGCdlnLyXdSwQmiY/uguhznTruMwtdSiF1h/CyvGHWJjDFDkdIgONPLPcx5l+7rrvTma
+	5G6qr2Lzo5rAu4f6i38Kz/WushONNwzk5h4xWebTwLLONb97e1rJNL1HV0PcVACqxzJ/zJlc4kzlw
+	lcknmQhsZrKFiivjc7wx1TNGh035FpF9E0g5CrqtispiMkelO4radvvPbePzY4aP/WzCnC4OSdVak
+	6DuNoeDfgy/qxqF8Fej8MPzEjCNSUcypwfCSSwHIeEKgcvR8GuUkQ6JMV0UNpolo3l4cREaGEDvh3
+	VAhCKJew==;
+Received: from 84-115-225-171.cable.dynamic.surfer.at ([84.115.225.171] helo=localhost.localdomain)
+	by mx.easyname.com with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <paroga@paroga.com>)
+	id 1sBBTv-00073L-Ts; Sun, 26 May 2024 10:52:08 +0000
+From: Patrick Gansterer <paroga@paroga.com>
+To: dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Cc: Patrick Gansterer <paroga@paroga.com>,
+	Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Pavel Machek <pavel@ucw.cz>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Helge Deller <deller@gmx.de>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v6 1/2] dt-bindings: backlight: Add Texas Instruments LM3509
+Date: Sun, 26 May 2024 12:51:29 +0200
+Message-ID: <20240526105136.721529-2-paroga@paroga.com>
+X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20240526105136.721529-1-paroga@paroga.com>
+References: <20240526105136.721529-1-paroga@paroga.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1712207606.git.ysato@users.sourceforge.jp> <0a30dbe6d096c38d612279349293162a2ccca149.1712207606.git.ysato@users.sourceforge.jp>
-In-Reply-To: <0a30dbe6d096c38d612279349293162a2ccca149.1712207606.git.ysato@users.sourceforge.jp>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 21 May 2024 09:41:17 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUQ4u2yiDbEobVqD5y_MtU+XU19cx_kWT66yv1jGZMk6Q@mail.gmail.com>
-Message-ID: <CAMuHMdUQ4u2yiDbEobVqD5y_MtU+XU19cx_kWT66yv1jGZMk6Q@mail.gmail.com>
-Subject: Re: [RESEND v7 15/37] clk: renesas: Add SH7750/7751 CPG Driver
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
-	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner <tglx@linutronix.de>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>, 
-	Heiko Stuebner <heiko.stuebner@cherry.de>, Shawn Guo <shawnguo@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, 
-	David Rientjes <rientjes@google.com>, Hyeonggon Yoo <42.hyeyoo@gmail.com>, 
-	Vlastimil Babka <vbabka@suse.cz>, Baoquan He <bhe@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Kefeng Wang <wangkefeng.wang@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Guo Ren <guoren@kernel.org>, 
-	Azeem Shaikh <azeemshaikh38@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Jonathan Corbet <corbet@lwn.net>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Herve Codina <herve.codina@bootlin.com>, 
-	Manikanta Guntupalli <manikanta.guntupalli@amd.com>, Anup Patel <apatel@ventanamicro.com>, 
-	Biju Das <biju.das.jz@bp.renesas.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Sam Ravnborg <sam@ravnborg.org>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Easy-Autoreply: EN
 
-Hi Sato-san,
+Add Device Tree bindings for Texas Instruments LM3509 - a
+High Efficiency Boost for White LED's and/or OLED Displays
 
-On Thu, Apr 4, 2024 at 7:15=E2=80=AFAM Yoshinori Sato
-<ysato@users.sourceforge.jp> wrote:
-> Renesas SH7750 and SH7751 series CPG driver.
-> This driver supported frequency control and clock gating.
->
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+Signed-off-by: Patrick Gansterer <paroga@paroga.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+ .../bindings/leds/backlight/ti,lm3509.yaml    | 136 ++++++++++++++++++
+ 1 file changed, 136 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml
 
-Thanks for the update!
+diff --git a/Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml b/Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml
+new file mode 100644
+index 000000000000..482fae71dd53
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/ti,lm3509.yaml
+@@ -0,0 +1,136 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/ti,lm3509.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: TI LM3509 High Efficiency Boost for White LED's and/or OLED Displays
++
++maintainers:
++  - Patrick Gansterer <paroga@paroga.com>
++
++description:
++  The LM3509 current mode boost converter offers two separate outputs.
++  https://www.ti.com/product/LM3509
++
++properties:
++  compatible:
++    const: ti,lm3509
++
++  reg:
++    maxItems: 1
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  reset-gpios:
++    maxItems: 1
++
++  ti,brightness-rate-of-change-us:
++    description: Brightness Rate of Change in microseconds.
++    enum: [51, 13000, 26000, 52000]
++
++  ti,oled-mode:
++    description: Enable OLED mode.
++    type: boolean
++
++patternProperties:
++  "^led@[01]$":
++    type: object
++    description: Properties for a string of connected LEDs.
++    $ref: common.yaml#
++
++    properties:
++      reg:
++        description:
++          The control register that is used to program the two current sinks.
++          The LM3509 has two registers (BMAIN and BSUB) and are represented
++          as 0 or 1 in this property. The two current sinks can be controlled
++          independently with both registers, or register BMAIN can be
++          configured to control both sinks with the led-sources property.
++        minimum: 0
++        maximum: 1
++
++      label: true
++
++      led-sources:
++        minItems: 1
++        maxItems: 2
++        items:
++          minimum: 0
++          maximum: 1
++
++      default-brightness:
++        minimum: 0
++        maximum: 31
++        default: 18
++
++      max-brightness:
++        minimum: 0
++        maximum: 31
++        default: 31
++
++    required:
++      - reg
++
++    additionalProperties: false
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        backlight@36 {
++            compatible = "ti,lm3509";
++            reg = <0x36>;
++            reset-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
++
++            ti,oled-mode;
++            ti,brightness-rate-of-change-us = <52000>;
++
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            led@0 {
++                reg = <0>;
++                led-sources = <0 1>;
++                label = "lcd-backlight";
++                default-brightness = <12>;
++                max-brightness = <31>;
++            };
++        };
++    };
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        backlight@36 {
++            compatible = "ti,lm3509";
++            reg = <0x36>;
++
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            led@0 {
++                reg = <0>;
++                default-brightness = <12>;
++            };
++
++            led@1 {
++                reg = <1>;
++                default-brightness = <15>;
++            };
++        };
++    };
+-- 
+2.45.1
 
-As you plan to send a v8 soon, I'm sending you a comment from the
-(incomplete) review I started a while ago...
-
-> --- /dev/null
-> +++ b/drivers/clk/renesas/clk-sh7750.c
-
-> +static int register_pll(struct device_node *node, struct cpg_priv *cpg)
-> +{
-> +       const char *clk_name =3D node->name;
-> +       const char *parent_name;
-> +       struct clk_init_data init =3D {
-> +               .name =3D PLLOUT,
-> +               .ops =3D &pll_ops,
-> +               .flags =3D 0,
-> +               .num_parents =3D 1,
-> +       };
-> +       int ret;
-> +
-> +       parent_name =3D of_clk_get_parent_name(node, 0);
-> +       init.parent_names =3D &parent_name;
-> +       cpg->hw.init =3D &init;
-> +
-> +       ret =3D of_clk_hw_register(node, &cpg->hw);
-> +       if (ret < 0)
-> +               pr_err("%pOF: failed to add provider %s (%d)\n",
-
-I think you retained the wrong error message?
-"%s: failed to register %s pll clock (%d)\n" sounds more suitable to me.
-
-> +                      node, clk_name, ret);
-> +       return ret;
-> +}
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

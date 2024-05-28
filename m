@@ -1,107 +1,82 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 019301EEF7;
-	Mon, 27 May 2024 19:35:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9ED5F770EB;
+	Tue, 28 May 2024 03:32:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716838558; cv=none; b=DyqBrc8FjeM4929Kh76h7ZC4CjD3Xh/Ln2SxDv3OyvHOwTMN037Ya1iJ9ebZMeIsOhi/WRURiWaR2FE56oE6N4kRaTyEHt8gG6E3epxQkymAhqCBm+1LCOXhcszKsgXg2O+vy/BvfIEYjcFO0gxoURu7LdUTSSlPceYZj4oJ2ik=
+	t=1716867177; cv=none; b=Y2m3dlFA8BCKuJZJV5zXFEGqZT3g0VxuSnsghFOes4w9XRvxppGNZ9/0RB+MKI+LWyKtqk9GKDeU0DTbyYjYaBatGKRl7TmCMqhC1+oxCKdE1ZnQPrQXT4W2x2KJuVV1sZoeaUYPdrLROXcaU9Jg0mDq7vUTE2S/mwCVyj1Imyk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716838558; c=relaxed/simple;
-	bh=RnQsE+g1WbsoIYd0GlNAqXRKKt0zYGbgChagRPzx2f8=;
+	s=arc-20240116; t=1716867177; c=relaxed/simple;
+	bh=p0xyb7fqak+0yHFBMltmTH/YOTsYExkhQUF1Aa7Y7jw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fCC0V5Fq41LO0bo29nXMYguBAnIDcougmUBGkk+c9KlaaBPqJFJfp0KFkAG+nGpNpbHneyMEi/vY7SSvU1geHju4nNUQmaBmFmgprgrUwQ6hZXWc2m45svcrYa5HeyWyUGhBX4Dc4Q7oYNg7HXIclu+l8iJ0kiMarhseNt64xxg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=QDFYxLtl; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=jqDnBaUCZAXH1tx3Rn3Tk3WTr5/vpHZXD1aH0j4p6D9udx8e04FAA8xlPHhvmIB5kAMUWPwrs9/05qP1eygqQRu1QUKJdQZokAcNObGaYks2Ukhv26vj39plCgM7nqTzvTbeQW+Gm/82x9mb9HvqyJbb9QfV3b4qnamsuuXLxqI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TEJ6271u; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="QDFYxLtl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9A7C2BBFC;
-	Mon, 27 May 2024 19:35:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1716838557;
-	bh=RnQsE+g1WbsoIYd0GlNAqXRKKt0zYGbgChagRPzx2f8=;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TEJ6271u"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C56E5C4AF07;
+	Tue, 28 May 2024 03:32:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1716867177;
+	bh=p0xyb7fqak+0yHFBMltmTH/YOTsYExkhQUF1Aa7Y7jw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QDFYxLtlMMM/Kiva+32zRAY/H3v8IT268DronmdEEM32NIYmDxwHw3KCGuA7ZJiuY
-	 dNpBuMFHUl/OX8ir6P5tbEOJg/rBQxk++f6k3uHRiP3SpogDeSRS6xcLFu+kvJ4mQd
-	 mcha9L9o28E96x4V5t2RqiR9ofpIUG2o87FlsYtU=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Sam Ravnborg <sam@ravnborg.org>,
+	b=TEJ6271ulxaWFPUetfpguvjPL1Kc9dGTgEgdxoJKkcZgP+OCB4DYuc+zLy/cfHChU
+	 OdcZUCnh+2A9WYYFOVTcp4r+KBuarX1L5LB2cugyeKwh3wvSAcw1YZFIH0Y2tFATwQ
+	 /1XNSSCTBVTMaUSrcMKox5xr3AUqzgs+mYI6nLWfsS4TPs0CO8KU7EmMVphlkEd70H
+	 pdjffoqxc6ervpAJIu5d01jz0PaQuxJL7rWqs0bvx4qRFxplRCKrnkWoUt9IWLby+j
+	 IT6OGMfljVNPKOkx1sHhVlaLlLbn7bbKFRYlL6BseD+kNob8p7h6aP8zxjj9pc0/gU
+	 cmoRbCuJAGs9Q==
+From: Bjorn Andersson <andersson@kernel.org>
+To: ~postmarketos/upstreaming@lists.sr.ht,
+	phone-devel@vger.kernel.org,
+	Lee Jones <lee@kernel.org>,
+	Daniel Thompson <daniel.thompson@linaro.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
 	Helge Deller <deller@gmx.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"G.Shark Jeong" <gshark.jeong@gmail.com>,
+	Konrad Dybcio <konrad.dybcio@linaro.org>,
+	Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Maximilian Weigand <mweigand@mweigand.net>,
+	Luca Weiss <luca@z3ntu.xyz>
+Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.8 399/493] fbdev: sh7760fb: allow modular build
-Date: Mon, 27 May 2024 20:56:41 +0200
-Message-ID: <20240527185643.328813921@linuxfoundation.org>
-X-Mailer: git-send-email 2.45.1
-In-Reply-To: <20240527185626.546110716@linuxfoundation.org>
-References: <20240527185626.546110716@linuxfoundation.org>
-User-Agent: quilt/0.67
-X-stable: review
-X-Patchwork-Hint: ignore
+	linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: Re: (subset) [PATCH 0/4] Various fixes for the lm3630a backlight driver
+Date: Mon, 27 May 2024 22:32:19 -0500
+Message-ID: <171686715165.523693.10910758933738092076.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240220-lm3630a-fixups-v1-0-9ca62f7e4a33@z3ntu.xyz>
+References: <20240220-lm3630a-fixups-v1-0-9ca62f7e4a33@z3ntu.xyz>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-6.8-stable review patch.  If anyone has any objections, please let me know.
 
-------------------
+On Tue, 20 Feb 2024 00:11:18 +0100, Luca Weiss wrote:
+> On the MSM8974 Nexus 5 and OnePlus One phones (latter doesn't have
+> display upstream) the display backlight was turning off whenever you
+> would write a brightness to sysfs since a recent commit to the driver
+> (kernel v6.5).
+> 
+>   backlight: lm3630a: Turn off both led strings when display is blank
+> 
+> [...]
 
-From: Randy Dunlap <rdunlap@infradead.org>
+Applied, thanks!
 
-[ Upstream commit 51084f89d687e14d96278241e5200cde4b0985c7 ]
+[4/4] ARM: dts: qcom: msm8974-hammerhead: Hook up backlight
+      commit: e23dfb4ee30a120a947abb94a718ccc1eb5f87ff
 
-There is no reason to prohibit sh7760fb from being built as a
-loadable module as suggested by Geert, so change the config symbol
-from bool to tristate to allow that and change the FB dependency as
-needed.
-
-Fixes: f75f71b2c418 ("fbdev/sh7760fb: Depend on FB=y")
-Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Acked-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Acked-by: Javier Martinez Canillas <javierm@redhat.com>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ba4ab33f6094b..411bf2b2c4d03 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1680,8 +1680,8 @@ config FB_COBALT
- 	select FB_IOMEM_HELPERS
- 
- config FB_SH7760
--	bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
--	depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
-+	tristate "SH7760/SH7763/SH7720/SH7721 LCDC support"
-+	depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
- 		|| CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
- 	select FB_IOMEM_HELPERS
- 	help
+Best regards,
 -- 
-2.43.0
-
-
-
+Bjorn Andersson <andersson@kernel.org>

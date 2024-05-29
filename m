@@ -1,59 +1,34 @@
-Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A45D615B10A
-	for <linux-fbdev@vger.kernel.org>; Wed, 29 May 2024 14:34:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5362C79DC;
+	Wed, 29 May 2024 14:53:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716993291; cv=none; b=Us1nXrEAsBZGP9hAlcXpZEg5q4PGjHjMGPcc1Gh5fNv7z54jGRLn5RpVG9VblkHABRxtNCGkPIKx1Vzq22xlvKzf/7nuhkQaDzIUectUe1b37K38soJGRK54pARgZvNz0b/pfzvwy4ycMb9OuIinq82XLvxeX7esh8ryuelwL18=
+	t=1716994388; cv=none; b=CQ1f41C1sxAX5vi+IXIu884OnscJAXvu/6OSEDGi7j7xNy7z9mfAB8n1sEW51fgaDvWuXv41pvuet7DEkytmVIkpjzDy7H4Yi9Q0PBIM4zRtsbUoKmVn9QYd9AA/N9ubLC+WMgakPWSNTrIBBu1GS7GVjtMVm40ow5AClBf99LQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716993291; c=relaxed/simple;
-	bh=k7aaJ0aPxRXPQFxTOi8dMi8Z12jZrKn8v3x0yJrtjGQ=;
+	s=arc-20240116; t=1716994388; c=relaxed/simple;
+	bh=IPyfsviMHfRYRP5OZ3gUy0wQdIM5xIEx1uKWNBREPF0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fALtaYSBjcwmPuHGjF7S/YvOMazN8vkCIuBmvWOuM3MxPTZv7lZDTM5lcKewULkq++XvRIXh17rtnIEVh4FDdHOlilTyWeWm5RrvMC37EVnum0wN8zptvenLg7Jo7sHwTOt5QR3cVLD1g/tcs7YN3qK/jc/oTi0zMwiv1/48UW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Fdbn+eQu; arc=none smtp.client-ip=209.85.167.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=lflj3jk08pDB9zwoFZlNpACHpg5X9sKf50h+vr7wvA7BZuvugLrWkVWAISJZxgJHOJeC67wSb1K4Ehzrukj1MivwrRCy9Kx/7Ma5s64dyJbWA1jXbTOhsuN0KSCNsjZpnMxzLl4BBJgbCX7qSBk1bIPw/54zi1EpAmwrltjn4ws=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=gipnSN5D; arc=none smtp.client-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Fdbn+eQu"
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-52b0d25b54eso1121005e87.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 29 May 2024 07:34:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1716993288; x=1717598088; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8JbUSA/b9Yufp8s/14Kjq4lmABtbQeUkHaO5aqXlw+o=;
-        b=Fdbn+eQuOeHEQWkgEoBNSnIyjsH8jo39iOSwMRGMv1NEmQXlzKz9uM6PbSocwdwylA
-         9lJ3uSQVvYjJyvauMvK0IGlk6a5nLAp+cbNnfHD95szaFE8pp3d2TfXCweuxBfi9cyg5
-         j/fooZgboN3LQzqWjHA3cpay63fn0Jfh/f+KNMG43AY+hVjD0/RLWZZrfrBi+hIewes3
-         OzXFBfAQTmzOTH8DsTc/s8+MyR7G76k2L8R1RUPvsv4cLAIF7oYqDH7NsOSkoW8QljKe
-         bHOxy+FWJPD8MtPsoXSlVU/3ZKFWFEwjjzl42kFhVjt2JHAxPSeLSQ8GOcTp1dEw8b7u
-         ughQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716993288; x=1717598088;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8JbUSA/b9Yufp8s/14Kjq4lmABtbQeUkHaO5aqXlw+o=;
-        b=wryhMCe9bQODYcDHSchrJOP5Oa918MrTH9pe7jZyNfVrmjV04i/kVhvP//cjHk3PcV
-         x1hY0Io4GkRQOBaSPcWkTFWtRuJP8zDcBa8kJP65aFFLwGe4I0qRX1N3PCH5QwibBWdQ
-         kQUClZBGYHHR6AUyJti0ayPk5mTh3xzqD4ojI4t9KwjaqUx0bHCqYn4IY97idb6rz1PB
-         i1nNl+Ek8Gos5O/eyBK/LID889wnlhQFjdyfrJ+li1T64YFQwESrZk557N4BXU4HRtcA
-         Gczq/WuECNB3k9hViq+PMnPzRgSmvrTrRri3/FNnglFX6YVHO/FQ4tVI2JQuKQ/ftTaZ
-         LS3g==
-X-Forwarded-Encrypted: i=1; AJvYcCWXk9XyMTiQ0ww3DZpEv+H0SY+qWeWJUY/a+E9CsoIifbPYLCQwyfLn+8sFrrAC5VY5YpJFihCM0bAdQ9A5ZW3nQqX3jpd8r2zU80Y=
-X-Gm-Message-State: AOJu0YxZ4Us+VV9+8xx6ow01lzmS1VMlw8OmrCiWJrVtnpaPWe17/sLY
-	4Yzf5ERfeKbBgONNAMjatthddIG8b7NwEv6wZ8KuS/i3eMJzRFwArO3S9zsTAsU=
-X-Google-Smtp-Source: AGHT+IG3K+ljsCGYaD/stGYSzU8eiALGsrunqkKd/2A+qzz3MjkiDrfMI9pSxgVRd/o4UWSEa9q4pQ==
-X-Received: by 2002:a05:6512:527:b0:529:b691:e37e with SMTP id 2adb3069b0e04-529b691e9d2mr5105087e87.40.1716993287614;
-        Wed, 29 May 2024 07:34:47 -0700 (PDT)
-Received: from localhost ([102.222.70.76])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a64a03e574dsm74882966b.14.2024.05.29.07.34.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 May 2024 07:34:46 -0700 (PDT)
-Date: Wed, 29 May 2024 17:34:41 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="gipnSN5D"
+Received: from pendragon.ideasonboard.com (81-175-209-231.bb.dnainternet.fi [81.175.209.231])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 12868A27;
+	Wed, 29 May 2024 16:53:01 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1716994381;
+	bh=IPyfsviMHfRYRP5OZ3gUy0wQdIM5xIEx1uKWNBREPF0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gipnSN5DBSj7oGWyxrhcwgzrXtRO4mDyWNTPqcrwjA/+03UGbhkwmzFj8ylSGPTqL
+	 KGy13WpqOq5al1juCr4RQwjk+vfLlpsYbUU3HFJ2gx6Vx6PLgMiKZhLCbATiKFN75Q
+	 FEuwyHELmIqr5ylVSDlC+XDIecCjxRDc1itzm03g=
+Date: Wed, 29 May 2024 17:52:53 +0300
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Dan Carpenter <dan.carpenter@linaro.org>
 Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
 	prabhakar.csengg@gmail.com,
 	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -77,46 +52,67 @@ Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
 	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
 	linux-media@vger.kernel.org, linux-staging@lists.linux.dev
 Subject: Re: [PATCH v2 resend 2/8] hwtracing: use for_each_endpoint_of_node()
-Message-ID: <7fbf421c-6477-4fc4-93a5-10e2788522c4@moroto.mountain>
+Message-ID: <20240529145253.GE19014@pendragon.ideasonboard.com>
 References: <87ikyx4hm1.wl-kuninori.morimoto.gx@renesas.com>
  <87fru14hl7.wl-kuninori.morimoto.gx@renesas.com>
  <20240529004047.GB1436@pendragon.ideasonboard.com>
+ <7fbf421c-6477-4fc4-93a5-10e2788522c4@moroto.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20240529004047.GB1436@pendragon.ideasonboard.com>
+In-Reply-To: <7fbf421c-6477-4fc4-93a5-10e2788522c4@moroto.mountain>
 
-On Wed, May 29, 2024 at 03:40:47AM +0300, Laurent Pinchart wrote:
-> > @@ -286,7 +286,7 @@ static int of_get_coresight_platform_data(struct device *dev,
-> >  	}
-> >  
-> >  	/* Iterate through each output port to discover topology */
-> > -	while ((ep = of_graph_get_next_endpoint(parent, ep))) {
-> > +	for_each_endpoint_of_node(parent, ep) {
-> >  		/*
-> >  		 * Legacy binding mixes input/output ports under the
-> >  		 * same parent. So, skip the input ports if we are dealing
+On Wed, May 29, 2024 at 05:34:41PM +0300, Dan Carpenter wrote:
+> On Wed, May 29, 2024 at 03:40:47AM +0300, Laurent Pinchart wrote:
+> > > @@ -286,7 +286,7 @@ static int of_get_coresight_platform_data(struct device *dev,
+> > >  	}
+> > >  
+> > >  	/* Iterate through each output port to discover topology */
+> > > -	while ((ep = of_graph_get_next_endpoint(parent, ep))) {
+> > > +	for_each_endpoint_of_node(parent, ep) {
+> > >  		/*
+> > >  		 * Legacy binding mixes input/output ports under the
+> > >  		 * same parent. So, skip the input ports if we are dealing
+> > 
+> > I think there's a bug below. The loop contains
+> > 
+> > 		ret = of_coresight_parse_endpoint(dev, ep, pdata);
+> > 		if (ret)
+> > 			return ret;
+> > 
+> > which leaks the reference to ep. This is not introduced by this patch,
 > 
-> I think there's a bug below. The loop contains
+> Someone should create for_each_endpoint_of_node_scoped().
 > 
-> 		ret = of_coresight_parse_endpoint(dev, ep, pdata);
-> 		if (ret)
-> 			return ret;
-> 
-> which leaks the reference to ep. This is not introduced by this patch,
+> #define for_each_endpoint_of_node_scoped(parent, child) \
+>         for (struct device_node *child __free(device_node) =           \
+>              of_graph_get_next_endpoint(parent, NULL); child != NULL;  \
+>              child = of_graph_get_next_endpoint(parent, child))
 
-Someone should create for_each_endpoint_of_node_scoped().
+I was thinking about that too :-) I wondered if we should then bother
+taking and releasing references, given that references to the children
+can't be leaked out of the loop. My reasoning was that the parent
+device_node is guaranteed to be valid throughout the loop, so borrowing
+references to children instead of creating new ones within the loop
+should be fine. This assumes that endpoints and ports can't vanish while
+the parent is there. Thinking further about it, it may not be a safe
+assumption for the future. As we anyway use functions internally that
+create new references, we can as well handle them correctly.
 
-#define for_each_endpoint_of_node_scoped(parent, child) \
-        for (struct device_node *child __free(device_node) =           \
-             of_graph_get_next_endpoint(parent, NULL); child != NULL;  \
-             child = of_graph_get_next_endpoint(parent, child))
+Using this new macro, the loop body would need to call of_node_get() if
+it wants to get a reference out of the loop. That's the right thing to
+do, and I think it would be less error-prone than having to drop
+references when exiting from the loop as we do today. It would still be
+nice if we could have an API that allows catching this missing
+of_node_get() automatically, but I don't see a simple way to do so at
+the moment.
 
-regards,
-dan carpenter
+-- 
+Regards,
 
+Laurent Pinchart

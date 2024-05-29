@@ -1,117 +1,193 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 77888647;
-	Wed, 29 May 2024 12:30:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3EA610A03;
+	Wed, 29 May 2024 12:56:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716985818; cv=none; b=k1g1msfgw8WzuVNWjLwVkzyNLRD28jJfCc1NcehB0uTtnmWFaNQEabNNMjpV0pZhFknqF3D6F5y3eZ0XxwNJB377WuN0tGkMIlL3VAGuFzu2jFVFh7GUQvFdcedFtwx/RPX8AhurA8BRa5mU3Kjsqgd1wPj8gg/iCgYXMYuBFZ0=
+	t=1716987376; cv=none; b=q+8YcJ+cPGttXCf5trwTid44wvv3en2q3uxT1l1tR/iwsaH7assjczmQA+S5nTSF30X/G4lkTL8CEQ+63oOx+/YPVtKGENv9ZDZoNVMmffhplct1mpaNvzzoZ5RhX7IOZvwjbWwFsSX1XkkGHQOOQzK6vVt2hJenYO6euBROuJI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716985818; c=relaxed/simple;
-	bh=DGfatGcTzFpAvYuN4A7ArzVL/lkr9IM2WyCWk2K7P+U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YWNoT2NMP2EpgGZYNVBQgbx4Uh7j8lgA/zZSPoyi1ZnFhJSE5YAnTp+65M6LEvJy7RZTEVZjnWwwOGI28BHe4hGMihLXWedIQNmZzYG866kLUXj2EkMyS/Y+ug2bykQNlKSD1lMMIeCVYsjc+QFq1MjeE/baQMcc3VrCWLt824g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D024D339;
-	Wed, 29 May 2024 05:30:39 -0700 (PDT)
-Received: from [192.168.1.100] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8B1073F762;
-	Wed, 29 May 2024 05:30:12 -0700 (PDT)
-Message-ID: <941db167-fda5-4d57-9623-58d8b8c0a7b5@arm.com>
-Date: Wed, 29 May 2024 13:30:13 +0100
+	s=arc-20240116; t=1716987376; c=relaxed/simple;
+	bh=gz8z8N5bHTtjf1WXKP3VLR7zy+2ou75tSdQdUmX2Vx4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DUb0B9xOXxoMuH01AVMLxEZlGBXuUrooLiiQuc3cCnPj37fNkeTH+RZ8w3JBtwsyy4aMfLmnvoqbQcEwAVREWF/YUiEcDl+QfZQTute1igQWYb9dfvT504BD/qHemH7O4xpcQ6EjybLqcAuA+FwHIX8kH7tFEZcRmxtOC9Kun5c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KVTQ3Yk8; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KVTQ3Yk8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1716987375; x=1748523375;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=gz8z8N5bHTtjf1WXKP3VLR7zy+2ou75tSdQdUmX2Vx4=;
+  b=KVTQ3Yk8L6lLF0SlKKAnpEMyUVPKkDcnDzC9DQYWKx+Ee0D/j5wS8jWj
+   aFE+70oEJD0vC9u1uUJTx/ampL9Tphh3THlJyyPS8Ukn4kn18vvVUsK8c
+   4s9mGPkKa1XoMOK/7X+qmVpTAseosXptqqlj7jbPtCoyc8I4jDU5KSXBV
+   ZHmZgTGM5Q+ATf42JFns4GxYgQrNbEb9+5wFl2g4Q6y/E4ErrTyoJrPj7
+   8E8hN6wW4BQGj/jW3HIXeINSUo4GBUqncw1erGowPuuHp5DyryA0S1unS
+   xhT7kAM7DoFzyHUDZK4LhEkHaj0jz1lqSUiNcammTvzyVDIKVtG8yVu1P
+   g==;
+X-CSE-ConnectionGUID: BSG6Xos3Sp+uL1jtf0ROkw==
+X-CSE-MsgGUID: M3losH2pRy2/1+utwYVpyw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11087"; a="13618479"
+X-IronPort-AV: E=Sophos;i="6.08,198,1712646000"; 
+   d="scan'208";a="13618479"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 May 2024 05:56:13 -0700
+X-CSE-ConnectionGUID: H5QcdFF9TbONM172UGdoGg==
+X-CSE-MsgGUID: zqE6bIAkQpSvlFOcfBHkJw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,198,1712646000"; 
+   d="scan'208";a="35963852"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 May 2024 05:56:00 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.97)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1sCIqP-0000000BnVT-2SiK;
+	Wed, 29 May 2024 15:55:53 +0300
+Date: Wed, 29 May 2024 15:55:53 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>,
+	Heiko Stuebner <heiko.stuebner@cherry.de>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Masahiro Yamada <masahiroy@kernel.org>, Baoquan He <bhe@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Azeem Shaikh <azeemshaikh38@gmail.com>, Guo Ren <guoren@kernel.org>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Hugo Villeneuve <hvilleneuve@dimonoff.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [DO NOT MERGE v8 08/36] clocksource: sh_tmu: CLOCKSOURCE support.
+Message-ID: <Zlcl2QxRDDrGh7Ru@smile.fi.intel.com>
+References: <cover.1716965617.git.ysato@users.sourceforge.jp>
+ <f40e91e3f010880b0cf7a1c3a18d0c57bb55d93a.1716965617.git.ysato@users.sourceforge.jp>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 resend 2/8] hwtracing: use for_each_endpoint_of_node()
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- "coresight@lists.linaro.org" <coresight@lists.linaro.org>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- prabhakar.csengg@gmail.com,
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
- David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
- linux-staging@lists.linux.dev, linux-media@vger.kernel.org,
- Daniel Vetter <daniel@ffwll.ch>, Suzuki K Poulose <suzuki.poulose@arm.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Eugen Hristev <eugen.hristev@collabora.com>, Rob Herring
- <robh+dt@kernel.org>, Maxime Ripard <mripard@kernel.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Michal Simek <michal.simek@amd.com>, linux-arm-kernel@lists.infradead.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Claudiu Beznea <claudiu.beznea@tuxon.dev>,
- Thomas Zimmermann <tzimmermann@suse.de>
-References: <87ikyx4hm1.wl-kuninori.morimoto.gx@renesas.com>
- <87fru14hl7.wl-kuninori.morimoto.gx@renesas.com>
- <20240529004047.GB1436@pendragon.ideasonboard.com>
-Content-Language: en-US
-From: James Clark <james.clark@arm.com>
-In-Reply-To: <20240529004047.GB1436@pendragon.ideasonboard.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f40e91e3f010880b0cf7a1c3a18d0c57bb55d93a.1716965617.git.ysato@users.sourceforge.jp>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+
+On Wed, May 29, 2024 at 05:00:54PM +0900, Yoshinori Sato wrote:
+> Allows initialization as CLOCKSOURCE.
+
+...
+
+> -	dev_info(&ch->tmu->pdev->dev, "ch%u: used for %s clock events\n",
+> -		 ch->index, periodic ? "periodic" : "oneshot");
+> +	pr_info("%s ch%u: used for %s clock events\n",
+> +		ch->tmu->name, ch->index, periodic ? "periodic" : "oneshot");
+
+This is a step back change. We should use dev_*() if we have a device
+available. And I believe this is the case (at least for the previous boards),
+no?
+
+...
+
+> -	ch->irq = platform_get_irq(tmu->pdev, index);
+> +	if (tmu->np)
+> +		ch->irq = of_irq_get(tmu->np, index);
+> +	else if (tmu->pdev)
+> +		ch->irq = platform_get_irq(tmu->pdev, index);
+
+I found these changes counterproductive. Instead better to have up to three
+files to cover:
+- the common code (library)
+- the platform device support
+- the pure OF support.
+
+...
+
+> -	res = platform_get_resource(tmu->pdev, IORESOURCE_MEM, 0);
+> -	if (!res) {
+> -		dev_err(&tmu->pdev->dev, "failed to get I/O memory\n");
+> -		return -ENXIO;
+> +	if (tmu->pdev) {
+> +		res = platform_get_resource(tmu->pdev, IORESOURCE_MEM, 0);
+> +		if (!res) {
+> +			pr_err("sh_tmu failed to get I/O memory\n");
+> +			return -ENXIO;
+> +		}
+> +
+> +		tmu->mapbase = ioremap(res->start, resource_size(res));
+
+devm_platform_ioremap_resource() should be good to have.
+Again, consider proper splitting.
+
+>  	}
+> +	if (tmu->np)
+> +		tmu->mapbase = of_iomap(tmu->np, 0);
+
+So, how many boards are non-OF compatible? Maybe makes sense to move them to OF
+and drop these platform code entirely from everywhere?
+
+...
+
+> +	tmu->name = dev_name(&pdev->dev);
+> +	tmu->clk = clk_get(&tmu->pdev->dev, "fck");
+
+devm_ approach can help a lot in case of platform device code.
+
+> +	if (IS_ERR(tmu->clk)) {
+> +		dev_err(&tmu->pdev->dev, "cannot get clock\n");
+> +		return PTR_ERR(tmu->clk);
+
+		return dev_err_probe() ?
+
+> +	}
+
+-- 
+With Best Regards,
+Andy Shevchenko
 
 
-
-On 29/05/2024 01:40, Laurent Pinchart wrote:
-> Hi Morimoto-san,
-> 
-> Thank you for the patch.
-> 
-> On Tue, May 28, 2024 at 11:55:32PM +0000, Kuninori Morimoto wrote:
->> We already have for_each_endpoint_of_node(), don't use
->> of_graph_get_next_endpoint() directly. Replace it.
->>
->> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
->> Reviewed-by: Suzuki K Poulose <suzuki.poulose@arm.com>
->> ---
->>  drivers/hwtracing/coresight/coresight-platform.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/hwtracing/coresight/coresight-platform.c b/drivers/hwtracing/coresight/coresight-platform.c
->> index 9d550f5697fa8..e9683e613d520 100644
->> --- a/drivers/hwtracing/coresight/coresight-platform.c
->> +++ b/drivers/hwtracing/coresight/coresight-platform.c
->> @@ -275,7 +275,7 @@ static int of_get_coresight_platform_data(struct device *dev,
->>  	 */
->>  	if (!parent) {
->>  		/*
->> -		 * Avoid warnings in of_graph_get_next_endpoint()
->> +		 * Avoid warnings in for_each_endpoint_of_node()
->>  		 * if the device doesn't have any graph connections
->>  		 */
->>  		if (!of_graph_is_present(node))
->> @@ -286,7 +286,7 @@ static int of_get_coresight_platform_data(struct device *dev,
->>  	}
->>  
->>  	/* Iterate through each output port to discover topology */
->> -	while ((ep = of_graph_get_next_endpoint(parent, ep))) {
->> +	for_each_endpoint_of_node(parent, ep) {
->>  		/*
->>  		 * Legacy binding mixes input/output ports under the
->>  		 * same parent. So, skip the input ports if we are dealing
-> 
-> I think there's a bug below. The loop contains
-> 
-> 		ret = of_coresight_parse_endpoint(dev, ep, pdata);
-> 		if (ret)
-> 			return ret;
-> 
-> which leaks the reference to ep. This is not introduced by this patch,
-> so
-> 
-
-Nice catch, I will send a patch.
-
-Also:
-
-Reviewed-by: James Clark <james.clark@arm.com>
-
-> Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> 

@@ -1,143 +1,122 @@
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E0C014AA9;
-	Wed, 29 May 2024 13:06:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A45D615B10A
+	for <linux-fbdev@vger.kernel.org>; Wed, 29 May 2024 14:34:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716988014; cv=none; b=lt9WJjYIPNF8ZNu4S5I3VpsDLL0ho7oO473IkLAsF/N9LBJbTK0u77lkKQ8WIe2HNbKg/1Z16Rp2TF7v4LdTvhyh/VTiH3Lqb6+ugSuSeyqe8GrLAf3VUqyKJMB/a9LTMUOmN2VfIEltWQ7A2ZgerN+M879H6zAMncKtdBbUAUQ=
+	t=1716993291; cv=none; b=Us1nXrEAsBZGP9hAlcXpZEg5q4PGjHjMGPcc1Gh5fNv7z54jGRLn5RpVG9VblkHABRxtNCGkPIKx1Vzq22xlvKzf/7nuhkQaDzIUectUe1b37K38soJGRK54pARgZvNz0b/pfzvwy4ycMb9OuIinq82XLvxeX7esh8ryuelwL18=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716988014; c=relaxed/simple;
-	bh=Gydwrm8d+mV9pgzpyR75u2RXMfJN81LViSApnAgE098=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QjGxEjre8HAncQY/BwRI0kKXb2uujyQbrQItyA2UFw9l7w3zNRgAvlURB22L9opvbwL+Llj5Zx4b76xt4kaxNclX+VnghEITybnCjixU6yL1bG/apLAcf7mqqWijVT40Uxiiz97/LNclHpZF3DJyirU3BVt5pJLvslo8aKYNo1s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-62a2424ecdaso21226727b3.1;
-        Wed, 29 May 2024 06:06:52 -0700 (PDT)
+	s=arc-20240116; t=1716993291; c=relaxed/simple;
+	bh=k7aaJ0aPxRXPQFxTOi8dMi8Z12jZrKn8v3x0yJrtjGQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fALtaYSBjcwmPuHGjF7S/YvOMazN8vkCIuBmvWOuM3MxPTZv7lZDTM5lcKewULkq++XvRIXh17rtnIEVh4FDdHOlilTyWeWm5RrvMC37EVnum0wN8zptvenLg7Jo7sHwTOt5QR3cVLD1g/tcs7YN3qK/jc/oTi0zMwiv1/48UW0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Fdbn+eQu; arc=none smtp.client-ip=209.85.167.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Fdbn+eQu"
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-52b0d25b54eso1121005e87.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 29 May 2024 07:34:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1716993288; x=1717598088; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=8JbUSA/b9Yufp8s/14Kjq4lmABtbQeUkHaO5aqXlw+o=;
+        b=Fdbn+eQuOeHEQWkgEoBNSnIyjsH8jo39iOSwMRGMv1NEmQXlzKz9uM6PbSocwdwylA
+         9lJ3uSQVvYjJyvauMvK0IGlk6a5nLAp+cbNnfHD95szaFE8pp3d2TfXCweuxBfi9cyg5
+         j/fooZgboN3LQzqWjHA3cpay63fn0Jfh/f+KNMG43AY+hVjD0/RLWZZrfrBi+hIewes3
+         OzXFBfAQTmzOTH8DsTc/s8+MyR7G76k2L8R1RUPvsv4cLAIF7oYqDH7NsOSkoW8QljKe
+         bHOxy+FWJPD8MtPsoXSlVU/3ZKFWFEwjjzl42kFhVjt2JHAxPSeLSQ8GOcTp1dEw8b7u
+         ughQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716988011; x=1717592811;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xVFbPQ9StvkoNrq/0lKZWIQ4ZOA4XJTj64cZbKmwivY=;
-        b=JGGSK+QdZF1tXfN7HWaizV9lCegpQN2zxXCF1VmtX/yvXJnhDhAWWlwVsXnZlokmji
-         SSNp1XJQuV0+2JGyU2yoV5HswGN33ydHIdYb6sLGGdql3wSQDunxUHaLIrz/ZPqtFsaA
-         KNuRRh0gzXaxlBIVUiUwFMJ5lzoYvRZTXFZHCh0H1zSX4M3STo07gydHB3jwWxSsCpID
-         Z9VCrEwAz2oaTdUo6wZQJGH0tAHWorvoqksik8aO/KUgmhCByWi5375pcfA38IsWESLX
-         P3RKSoDOI4o8ibqk8lyu05pZEUzoy4F//w3c7NUsKZa/SzR7VhrEFfZoEP8KNULFi3ld
-         JIkQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVuOsYbYY50fLN+9TGuZlsLc2uiXKJTJMl0rg2saFwkp+94Xvt/Mw9+pUVmU5CbDXfEbWRe0+qjPbqZDHak0qmZE+rldpFKDw2CKQ1lqLedKFGdGkA3drftjqHD77qfQH+CrKYGWIRR+ovzMtzDrSQXR9+59utqs1HPafJvOE+i/stTrGGuGo+SacM0FvwblIWuQsHpcW0cfUPjLaN0rQj9DwS/C2eZnZi9Mgv+duBmQLx2Czctupy4SrbDzu8gh+hB83yNIZ0FfYqclUwiXVLDjECq0PQ/tfu4ccRBl8EY0z7KM+CLOczAg2m/Vwj/TOsEgLy+UlCJUQAmWSQ8eUpzRjzRHzHtPdOVHvQVl7ywwP9D5iRSxEI=
-X-Gm-Message-State: AOJu0YyxSbWgAjFpzVnuqi8DYbxfz6Lap6OhBhZ1e9KfYqVyw+sG2Wm1
-	KmVeOq2kdWbB+HgpJGDC7vUUjtFvJVNLarQbGHCWO6CJkUddaclVT9T+0PshNRE=
-X-Google-Smtp-Source: AGHT+IFZbNxrq1Y2GcpogkFIJxEEueLh2Pk3k4cqJqns+GErJM+NsuI+yxGgvad9/NZwUzuAxwqHqg==
-X-Received: by 2002:a81:6d01:0:b0:61b:1e81:4eb8 with SMTP id 00721157ae682-62a08d74106mr138719307b3.9.1716988010153;
-        Wed, 29 May 2024 06:06:50 -0700 (PDT)
-Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com. [209.85.219.173])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-62a0a56c166sm23852597b3.142.2024.05.29.06.06.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 May 2024 06:06:49 -0700 (PDT)
-Received: by mail-yb1-f173.google.com with SMTP id 3f1490d57ef6-dfa4ad7f6dfso587358276.1;
-        Wed, 29 May 2024 06:06:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCV3pDuDzRbDY+9yUA5NOXzVQwOp/xs7J2mlpVeZogS4DlAaO2iiIpdUmTxE1NVcHGdjY2rDo/eAmjNhn7Op1n/HTwJJc/xVBQkmofGgkMGQZWYbzA61vikHK5vopMzpJcJtYJsQNIgHvfzB/tIjWQeWGjI35ZW4fOFdNs0LzQfyJtzz++aolL7Tn4Ot+L96du9DQ1iKzxkU9pU40MjMg13tcbrakZBCKqZWVpAN3c3gafErgRWyHt0REkoYPEMoB1uukMkZgm4zkJaZx6ZK4ZO4xG+P4wD+/eZOKqeqyKYnt6OT2BgIx4Y8t/5TQ+ILeAU4+gNAeHdETDL1xzvzZPq6RP+yH8tyOUcv/u9noPa8EmE4B24/U/U=
-X-Received: by 2002:a25:a565:0:b0:dfa:48ec:c4b2 with SMTP id
- 3f1490d57ef6-dfa48ecc64cmr1707039276.22.1716988008813; Wed, 29 May 2024
- 06:06:48 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1716993288; x=1717598088;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8JbUSA/b9Yufp8s/14Kjq4lmABtbQeUkHaO5aqXlw+o=;
+        b=wryhMCe9bQODYcDHSchrJOP5Oa918MrTH9pe7jZyNfVrmjV04i/kVhvP//cjHk3PcV
+         x1hY0Io4GkRQOBaSPcWkTFWtRuJP8zDcBa8kJP65aFFLwGe4I0qRX1N3PCH5QwibBWdQ
+         kQUClZBGYHHR6AUyJti0ayPk5mTh3xzqD4ojI4t9KwjaqUx0bHCqYn4IY97idb6rz1PB
+         i1nNl+Ek8Gos5O/eyBK/LID889wnlhQFjdyfrJ+li1T64YFQwESrZk557N4BXU4HRtcA
+         Gczq/WuECNB3k9hViq+PMnPzRgSmvrTrRri3/FNnglFX6YVHO/FQ4tVI2JQuKQ/ftTaZ
+         LS3g==
+X-Forwarded-Encrypted: i=1; AJvYcCWXk9XyMTiQ0ww3DZpEv+H0SY+qWeWJUY/a+E9CsoIifbPYLCQwyfLn+8sFrrAC5VY5YpJFihCM0bAdQ9A5ZW3nQqX3jpd8r2zU80Y=
+X-Gm-Message-State: AOJu0YxZ4Us+VV9+8xx6ow01lzmS1VMlw8OmrCiWJrVtnpaPWe17/sLY
+	4Yzf5ERfeKbBgONNAMjatthddIG8b7NwEv6wZ8KuS/i3eMJzRFwArO3S9zsTAsU=
+X-Google-Smtp-Source: AGHT+IG3K+ljsCGYaD/stGYSzU8eiALGsrunqkKd/2A+qzz3MjkiDrfMI9pSxgVRd/o4UWSEa9q4pQ==
+X-Received: by 2002:a05:6512:527:b0:529:b691:e37e with SMTP id 2adb3069b0e04-529b691e9d2mr5105087e87.40.1716993287614;
+        Wed, 29 May 2024 07:34:47 -0700 (PDT)
+Received: from localhost ([102.222.70.76])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a64a03e574dsm74882966b.14.2024.05.29.07.34.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 May 2024 07:34:46 -0700 (PDT)
+Date: Wed, 29 May 2024 17:34:41 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	prabhakar.csengg@gmail.com,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+	Eugen Hristev <eugen.hristev@collabora.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Helge Deller <deller@gmx.de>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Rob Herring <robh+dt@kernel.org>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+	coresight@lists.linaro.org, dri-devel@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+	linux-media@vger.kernel.org, linux-staging@lists.linux.dev
+Subject: Re: [PATCH v2 resend 2/8] hwtracing: use for_each_endpoint_of_node()
+Message-ID: <7fbf421c-6477-4fc4-93a5-10e2788522c4@moroto.mountain>
+References: <87ikyx4hm1.wl-kuninori.morimoto.gx@renesas.com>
+ <87fru14hl7.wl-kuninori.morimoto.gx@renesas.com>
+ <20240529004047.GB1436@pendragon.ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1716965617.git.ysato@users.sourceforge.jp> <b1fc49269919c7d6c2e5c607ae29d1a6f2ab40d2.1716965617.git.ysato@users.sourceforge.jp>
-In-Reply-To: <b1fc49269919c7d6c2e5c607ae29d1a6f2ab40d2.1716965617.git.ysato@users.sourceforge.jp>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 29 May 2024 15:06:36 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWdR=SfNBFdABXRqdng8b=68mP_BnnXfpQcUvjCmvOmVA@mail.gmail.com>
-Message-ID: <CAMuHMdWdR=SfNBFdABXRqdng8b=68mP_BnnXfpQcUvjCmvOmVA@mail.gmail.com>
-Subject: Re: [DO NOT MERGE v8 13/36] dt-bindings: clock: sh7750-cpg: Add
- renesas,sh7750-cpg header.
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>, 
-	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner <tglx@linutronix.de>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>, 
-	Heiko Stuebner <heiko.stuebner@cherry.de>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Chris Morgan <macromorgan@hotmail.com>, Sebastian Reichel <sre@kernel.org>, 
-	Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Masahiro Yamada <masahiroy@kernel.org>, Baoquan He <bhe@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Kefeng Wang <wangkefeng.wang@huawei.com>, Stephen Rothwell <sfr@canb.auug.org.au>, 
-	Azeem Shaikh <azeemshaikh38@gmail.com>, Guo Ren <guoren@kernel.org>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
-	Herve Codina <herve.codina@bootlin.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Anup Patel <apatel@ventanamicro.com>, 
-	Jacky Huang <ychuang3@nuvoton.com>, Hugo Villeneuve <hvilleneuve@dimonoff.com>, 
-	Jonathan Corbet <corbet@lwn.net>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Sam Ravnborg <sam@ravnborg.org>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Sergey Shtylyov <s.shtylyov@omp.ru>, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240529004047.GB1436@pendragon.ideasonboard.com>
 
-Hi Sato-san,
+On Wed, May 29, 2024 at 03:40:47AM +0300, Laurent Pinchart wrote:
+> > @@ -286,7 +286,7 @@ static int of_get_coresight_platform_data(struct device *dev,
+> >  	}
+> >  
+> >  	/* Iterate through each output port to discover topology */
+> > -	while ((ep = of_graph_get_next_endpoint(parent, ep))) {
+> > +	for_each_endpoint_of_node(parent, ep) {
+> >  		/*
+> >  		 * Legacy binding mixes input/output ports under the
+> >  		 * same parent. So, skip the input ports if we are dealing
+> 
+> I think there's a bug below. The loop contains
+> 
+> 		ret = of_coresight_parse_endpoint(dev, ep, pdata);
+> 		if (ret)
+> 			return ret;
+> 
+> which leaks the reference to ep. This is not introduced by this patch,
 
-Thanks for the update!
+Someone should create for_each_endpoint_of_node_scoped().
 
-On Wed, May 29, 2024 at 10:01=E2=80=AFAM Yoshinori Sato
-<ysato@users.sourceforge.jp> wrote:
-> SH7750 CPG Clock output define.
+#define for_each_endpoint_of_node_scoped(parent, child) \
+        for (struct device_node *child __free(device_node) =           \
+             of_graph_get_next_endpoint(parent, NULL); child != NULL;  \
+             child = of_graph_get_next_endpoint(parent, child))
 
-(from my comments on v6 and v7) Please improve the patch description.
+regards,
+dan carpenter
 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/clock/renesas,sh7750-cpg.yaml
-> @@ -0,0 +1,107 @@
-
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/sh7750-cpg.h>
-> +    cpg: clock-controller@ffc00000 {
-> +        compatible =3D "renesas,sh7751r-cpg";
-> +        reg =3D <0xffc00000 20>, <0xfe0a0000 16>;
-> +        reg-names =3D "FRQCR", "CLKSTP00";
-> +        clocks =3D <&extal>;
-> +        clock-names =3D "extal";
-> +        renesas,mode =3D <0>;
-
-Nit: please move "renesas,mode" last.
-
-> +        #clock-cells =3D <1>;
-> +        #power-domain-cells =3D <0>;
-> +    };
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

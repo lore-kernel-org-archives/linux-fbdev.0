@@ -1,126 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2170117DE34;
-	Wed, 29 May 2024 10:44:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 77888647;
+	Wed, 29 May 2024 12:30:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1716979477; cv=none; b=WMzKELM5gyoB7wnNVxVvzP2/JyD3oCoPMHriiPCwdxR8yj7QV53ilpY7WHR/+gl5FFdMAbw2Kq+OoFPkztzFY9XrfZGLFtp/A9puQuWxTFQVJlIlUcqkCuuoUR3lnD/yn8frt9irWxB5ffnuqXLbZEmnyFMf9MVlR9K7G1IuyXI=
+	t=1716985818; cv=none; b=k1g1msfgw8WzuVNWjLwVkzyNLRD28jJfCc1NcehB0uTtnmWFaNQEabNNMjpV0pZhFknqF3D6F5y3eZ0XxwNJB377WuN0tGkMIlL3VAGuFzu2jFVFh7GUQvFdcedFtwx/RPX8AhurA8BRa5mU3Kjsqgd1wPj8gg/iCgYXMYuBFZ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1716979477; c=relaxed/simple;
-	bh=s8KdvSWO6HOHAGUGJGDqeLCe+B13uuVSOHh4kq7jejg=;
-	h=Date:Content-Type:MIME-Version:From:To:Cc:In-Reply-To:References:
-	 Message-Id:Subject; b=sOCqmyku1LmOeA6fDcAM58vKG6wkdnBlsRmhftQ5gBRmhDYiMXsiNH4Ne4gqeohS7s/mEOYoX36n2I2y2p7WMkwfFtTH/A0TaJJb8gdcTrbo/imEEfcFe0tV8/axSuDcAF2tHgal36Hr3IxAuoOAnOOJU5fKPZW/JkDmmGZawzQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O9K3lbkl; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O9K3lbkl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E84BC4AF09;
-	Wed, 29 May 2024 10:44:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716979476;
-	bh=s8KdvSWO6HOHAGUGJGDqeLCe+B13uuVSOHh4kq7jejg=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-	b=O9K3lbklkKB2Jie3QsfACPrRW8c9tFLYnkt2tyMY+RcM+3fncWnIGqA95YTsAs6pq
-	 0TJ5GwnaVa2sm1Exchz9DLbs1vX7ah6j0w9svRttzVoAy7miEcSpSFwJj+4Eo3NS63
-	 SSG7q2XZ8fIizkOYQr1q/gRO85p14BNgBY/F0xQ8MXtejL9Qvb3+2Y6DNz9/d7sQUi
-	 C40NMghnMIyZm5CgFiYpZL5BuEs4I2w/hXqSsFwxgttEkIbNTo0QFTIrPXormX7ptW
-	 mBOMq4TNRfeYnCXCSNnTOafBydgMPca//J5IUGd3kLly0wh9soHqYlgOkexrkNY+SE
-	 lqfzyYAot6hjw==
-Date: Wed, 29 May 2024 05:44:35 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=arc-20240116; t=1716985818; c=relaxed/simple;
+	bh=DGfatGcTzFpAvYuN4A7ArzVL/lkr9IM2WyCWk2K7P+U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YWNoT2NMP2EpgGZYNVBQgbx4Uh7j8lgA/zZSPoyi1ZnFhJSE5YAnTp+65M6LEvJy7RZTEVZjnWwwOGI28BHe4hGMihLXWedIQNmZzYG866kLUXj2EkMyS/Y+ug2bykQNlKSD1lMMIeCVYsjc+QFq1MjeE/baQMcc3VrCWLt824g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D024D339;
+	Wed, 29 May 2024 05:30:39 -0700 (PDT)
+Received: from [192.168.1.100] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8B1073F762;
+	Wed, 29 May 2024 05:30:12 -0700 (PDT)
+Message-ID: <941db167-fda5-4d57-9623-58d8b8c0a7b5@arm.com>
+Date: Wed, 29 May 2024 13:30:13 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Thomas Gleixner <tglx@linutronix.de>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- Hugo Villeneuve <hvilleneuve@dimonoff.com>, 
- Herve Codina <herve.codina@bootlin.com>, linux-clk@vger.kernel.org, 
- Rich Felker <dalias@libc.org>, Jonathan Corbet <corbet@lwn.net>, 
- Arnd Bergmann <arnd@arndb.de>, dri-devel@lists.freedesktop.org, 
- Heiko Stuebner <heiko.stuebner@cherry.de>, 
- Max Filippov <jcmvbkbc@gmail.com>, 
- Neil Armstrong <neil.armstrong@linaro.org>, linux-ide@vger.kernel.org, 
- Magnus Damm <magnus.damm@gmail.com>, Guenter Roeck <linux@roeck-us.net>, 
- Sergey Shtylyov <s.shtylyov@omp.ru>, linux-kernel@vger.kernel.org, 
- Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
- Wolfram Sang <wsa+renesas@sang-engineering.com>, 
- linux-serial@vger.kernel.org, 
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>, 
- Jiri Slaby <jirislaby@kernel.org>, Daniel Vetter <daniel@ffwll.ch>, 
- Michael Turquette <mturquette@baylibre.com>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- Sebastian Reichel <sre@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
- Jacky Huang <ychuang3@nuvoton.com>, Niklas Cassel <cassel@kernel.org>, 
- linux-fbdev@vger.kernel.org, Azeem Shaikh <azeemshaikh38@gmail.com>, 
- devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, 
- David Airlie <airlied@gmail.com>, linux-sh@vger.kernel.org, 
- Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org, 
- linux-renesas-soc@vger.kernel.org, 
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, 
- Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- Stephen Rothwell <sfr@canb.auug.org.au>, 
- Kefeng Wang <wangkefeng.wang@huawei.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Masahiro Yamada <masahiroy@kernel.org>, 
- Javier Martinez Canillas <javierm@redhat.com>, 
- Maxime Ripard <mripard@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, 
- Jernej Skrabec <jernej.skrabec@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, 
- Baoquan He <bhe@redhat.com>, Guo Ren <guoren@kernel.org>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, 
- Anup Patel <apatel@ventanamicro.com>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee@kernel.org>, 
- Bjorn Helgaas <bhelgaas@google.com>
-In-Reply-To: <d54cb668f3f19221fdbf34a70a9123fb3a6b4004.1716965617.git.ysato@users.sourceforge.jp>
-References: <cover.1716965617.git.ysato@users.sourceforge.jp>
- <d54cb668f3f19221fdbf34a70a9123fb3a6b4004.1716965617.git.ysato@users.sourceforge.jp>
-Message-Id: <171697947401.1106915.1101535794733326128.robh@kernel.org>
-Subject: Re: [DO NOT MERGE v8 24/36] dt-binding: sh: cpus: Add SH CPUs
- json-schema
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 resend 2/8] hwtracing: use for_each_endpoint_of_node()
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ "coresight@lists.linaro.org" <coresight@lists.linaro.org>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ prabhakar.csengg@gmail.com,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
+ linux-staging@lists.linux.dev, linux-media@vger.kernel.org,
+ Daniel Vetter <daniel@ffwll.ch>, Suzuki K Poulose <suzuki.poulose@arm.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Eugen Hristev <eugen.hristev@collabora.com>, Rob Herring
+ <robh+dt@kernel.org>, Maxime Ripard <mripard@kernel.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Michal Simek <michal.simek@amd.com>, linux-arm-kernel@lists.infradead.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+ Thomas Zimmermann <tzimmermann@suse.de>
+References: <87ikyx4hm1.wl-kuninori.morimoto.gx@renesas.com>
+ <87fru14hl7.wl-kuninori.morimoto.gx@renesas.com>
+ <20240529004047.GB1436@pendragon.ideasonboard.com>
+Content-Language: en-US
+From: James Clark <james.clark@arm.com>
+In-Reply-To: <20240529004047.GB1436@pendragon.ideasonboard.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
 
-On Wed, 29 May 2024 17:01:10 +0900, Yoshinori Sato wrote:
-> Renesas SH series and compatible ISA CPUs.
+
+On 29/05/2024 01:40, Laurent Pinchart wrote:
+> Hi Morimoto-san,
 > 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> ---
->  .../devicetree/bindings/sh/cpus.yaml          | 63 +++++++++++++++++++
->  1 file changed, 63 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/sh/cpus.yaml
+> Thank you for the patch.
+> 
+> On Tue, May 28, 2024 at 11:55:32PM +0000, Kuninori Morimoto wrote:
+>> We already have for_each_endpoint_of_node(), don't use
+>> of_graph_get_next_endpoint() directly. Replace it.
+>>
+>> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>> Reviewed-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+>> ---
+>>  drivers/hwtracing/coresight/coresight-platform.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/hwtracing/coresight/coresight-platform.c b/drivers/hwtracing/coresight/coresight-platform.c
+>> index 9d550f5697fa8..e9683e613d520 100644
+>> --- a/drivers/hwtracing/coresight/coresight-platform.c
+>> +++ b/drivers/hwtracing/coresight/coresight-platform.c
+>> @@ -275,7 +275,7 @@ static int of_get_coresight_platform_data(struct device *dev,
+>>  	 */
+>>  	if (!parent) {
+>>  		/*
+>> -		 * Avoid warnings in of_graph_get_next_endpoint()
+>> +		 * Avoid warnings in for_each_endpoint_of_node()
+>>  		 * if the device doesn't have any graph connections
+>>  		 */
+>>  		if (!of_graph_is_present(node))
+>> @@ -286,7 +286,7 @@ static int of_get_coresight_platform_data(struct device *dev,
+>>  	}
+>>  
+>>  	/* Iterate through each output port to discover topology */
+>> -	while ((ep = of_graph_get_next_endpoint(parent, ep))) {
+>> +	for_each_endpoint_of_node(parent, ep) {
+>>  		/*
+>>  		 * Legacy binding mixes input/output ports under the
+>>  		 * same parent. So, skip the input ports if we are dealing
+> 
+> I think there's a bug below. The loop contains
+> 
+> 		ret = of_coresight_parse_endpoint(dev, ep, pdata);
+> 		if (ret)
+> 			return ret;
+> 
+> which leaks the reference to ep. This is not introduced by this patch,
+> so
 > 
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Nice catch, I will send a patch.
 
-yamllint warnings/errors:
+Also:
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/sh/cpus.example.dtb: cpu@0: 'clock-names', 'dcache-line-size', 'dcache-size', 'icache-line-size', 'icache-size' do not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/sh/cpus.yaml#
+Reviewed-by: James Clark <james.clark@arm.com>
 
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/d54cb668f3f19221fdbf34a70a9123fb3a6b4004.1716965617.git.ysato@users.sourceforge.jp
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+> Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> 

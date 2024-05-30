@@ -1,86 +1,91 @@
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A805210197
-	for <linux-fbdev@vger.kernel.org>; Thu, 30 May 2024 06:40:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DABED46B83;
+	Thu, 30 May 2024 17:15:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717051212; cv=none; b=rLxSyCUo0tjEUzDm5v+2Gw0nBYXOSpjN4/Z4tvh97Y/ViHMt6z1EC4y6aT9eg+Lf9aooERO2V5weuPUhEQYKcdiaJbgsszsMEiqOPwwhVCMuXSVkrmBdFqxgsDI6SGavJtHT0C7GCwLzcklE2LRy8KGs7S1Hs0V4xUaJRXMf4TU=
+	t=1717089307; cv=none; b=O9PuDTxAynvSCMvCASyaYo1I3RecJtwTgVkpc1WmGIn52TdB8+JAU+wIF44SrGb+qE7zc93+E+boOwjL9uzO4/MMUhEIVcO4l4/yjMsMOwj4J5BNjbFTbXxnhmNfVL6VJ//ZuUT4Ifhxtr8sZ/Eu80ucEUqJ12Xk5s0t4Qt1kT8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717051212; c=relaxed/simple;
-	bh=ylScWtRnNsvzxfLN7SlSXfogkUEyR/tv1L2cL+EG+QE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GuqYVZQOAFF20zS+ZqHLii8u0DE4bpS5M5nrRHQaeYMaFyEjK7nATe8J1dCgb1HiNz5rCnzC5fHmXc4FlspmBT1U9oOVDmjBOL2GvtSAHj52hp/5vu8MiyjIS4JacxoMnKtXXvQ5d8CS3M14H7kO1MlRUM1l1oxfVruNFHsLUTE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=jdItoEE8; arc=none smtp.client-ip=209.85.208.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1717089307; c=relaxed/simple;
+	bh=URqPQnPy5FP44S2DmmqfTAsVuS00f5pQbyJiST5YKkM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=r1JkxNiOKNdJKCu1HHPrc48g0xt8DByT/2s2sk8nE8PMwKSPg/9BShmVGoB9XdtKkeqi2milVLBGy55aYG6PEu+bPSipYu2XBKLMgXmkVWMhatz3kUJoGouJN5rys4EinJkzfQLY3KIoJDjmYo6FmlLeWj5n8dZOPQK2lEbtjjM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M+fVHIQp; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jdItoEE8"
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-5755fafa5a7so510867a12.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 29 May 2024 23:40:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1717051209; x=1717656009; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=hbYS8lpXExj7GV7sixwHtaV70JUaIYUrLKDua6V9Rwg=;
-        b=jdItoEE8ukXj3bDxNj0BLRK+V5SxlP/UMUv4C7f4inSddLFjxjXJ3CUpH2Xj7S1y1A
-         dmLygG6qgGwSDVDnVZPLUi6n0B+7CuCWRhsykN1AfxDXYyEnHamAtth6/VpwOgiEbGIg
-         3trUkj4k2Isgp6xs12aSZo4hBZhXPgdGHhGGTnHj/4hPMqMv8NdmTZs32xSeSoeaf50a
-         pM2ujgMul60x2hc4ljghwV/Og4YTnUDJAvbd/uGLIwPXW05lWgoezCD2l6ftyP/CGToD
-         58sie2vvhDcav9Mz2JPpgy2D/v5aTaCuC8HWKkXmwe+XyvUtGw7CCO5tNo8nUruouqQO
-         72PA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717051209; x=1717656009;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hbYS8lpXExj7GV7sixwHtaV70JUaIYUrLKDua6V9Rwg=;
-        b=CMPbt3FXmbflz4zK1uDPkK7TkqDXH1xmdDq3yyg48Utj/5Y660mU/4Pa3icPR1klZl
-         lbR9Dp5ZjsXV2INcYLZzECpxE3IRYCvqFn/RKZFMWNXeYMK+ao43Cg1LSwx3PBRZL+Kj
-         GFXIwHXIq40egqdpIO92X7fwDPGoHKMph33LALvc9EZ7FYkU3ET9Dt3bLsbShTMbVMYR
-         J2lB8K498Boe5Nui3AETb3+CSKqBqDx29CZGv4kKa2nM+1u3kmTI0prEJbi/hqE00s1/
-         Flccj/RA4Etdaj6UeJBeYv7OELkIH0vuV3LXwnXVA8/IErFjnG+PkeVfwgMJQpimi6za
-         ZyAA==
-X-Forwarded-Encrypted: i=1; AJvYcCVDIJ0npyS2Md2qLAXl6PGBYQqVyDSjnCFLXKnGEpBcXQ6jgtP0R4qg/b2DRmNIbmU6c4Xw60n9K2qcOroJPtRY178O14SD4djcUjk=
-X-Gm-Message-State: AOJu0YyaiYGskK5nifJrwBIvTIMZ5HvRispBv22jsf+qveJh2eQrxFt6
-	7qi56V4NKhxHNj8vuQHxO+VaA2CtdYLr3PfHO1HuPGGFIFi/ZgsdcWVGO95eX2A=
-X-Google-Smtp-Source: AGHT+IE6/VTwKZTsEcVkjHDXiwR4jbhWUjQNX+Zpjmyoqeke5OVHzCiHycLfInR8VWcYgsER/P3wXg==
-X-Received: by 2002:a50:9316:0:b0:579:c2fe:886 with SMTP id 4fb4d7f45d1cf-57a177b15b9mr645619a12.14.1717051209214;
-        Wed, 29 May 2024 23:40:09 -0700 (PDT)
-Received: from localhost ([102.222.70.76])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-579d69b49basm4770207a12.88.2024.05.29.23.40.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 May 2024 23:40:08 -0700 (PDT)
-Date: Thu, 30 May 2024 09:40:05 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Lad Prabhakar <prabhakar.csengg@gmail.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
-	Eugen Hristev <eugen.hristev@collabora.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Helge Deller <deller@gmx.de>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M+fVHIQp"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8289C32782;
+	Thu, 30 May 2024 17:15:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1717089306;
+	bh=URqPQnPy5FP44S2DmmqfTAsVuS00f5pQbyJiST5YKkM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=M+fVHIQpg0T/3eHcd7tocoywDYwP17uK8cfkJ9zDeNZG04tV2jk609zvJsgA4Hw5k
+	 JWHPG8Rl9ABZDwBSelkCaspwJo+IzT70B44yyNeUkgNAcbfkvtnET3NeL2SpjlSA1F
+	 hHBHeenJ3skGKNDm2yi5jpgB37DFn2OOSXSyx5TQy8VZIEfoVo195wBfpt5pQKaklJ
+	 HWffN+mjUuHC0vpZiAQsmgeW2cNOaLYDhsqv0Gl3kRlhQ75j5lF3kjyN0p+zZ2LykL
+	 8JZbuS9JYpvHpH2Ms4zZSpwAOi2BnRmi0dEEztlj2vh8seGJcK1FRaLwKJspFOkLwL
+	 5ATVzGSbzf5sA==
+Date: Thu, 30 May 2024 12:15:03 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
 	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
 	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	coresight@lists.linaro.org, dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-	linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH v3 7/9] staging: media: atmel: use
- for_each_endpoint_of_node()
-Message-ID: <f0f1b989-2166-44ad-ba70-caf56a4d93c4@moroto.mountain>
-References: <87le3soy08.wl-kuninori.morimoto.gx@renesas.com>
- <87bk4ooxya.wl-kuninori.morimoto.gx@renesas.com>
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Lee Jones <lee@kernel.org>, Helge Deller <deller@gmx.de>,
+	Heiko Stuebner <heiko.stuebner@cherry.de>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Masahiro Yamada <masahiroy@kernel.org>, Baoquan He <bhe@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Azeem Shaikh <azeemshaikh38@gmail.com>, Guo Ren <guoren@kernel.org>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Hugo Villeneuve <hvilleneuve@dimonoff.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [DO NOT MERGE v8 00/36] Device Tree support for SH7751 based
+ board
+Message-ID: <20240530171503.GA551834@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -89,54 +94,19 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87bk4ooxya.wl-kuninori.morimoto.gx@renesas.com>
+In-Reply-To: <cover.1716965617.git.ysato@users.sourceforge.jp>
 
-On Thu, May 30, 2024 at 02:06:22AM +0000, Kuninori Morimoto wrote:
-> We already have for_each_endpoint_of_node(), don't use
-> of_graph_get_next_endpoint() directly. Replace it.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> ---
->  .../staging/media/deprecated/atmel/atmel-sama5d2-isc.c    | 8 ++------
->  .../staging/media/deprecated/atmel/atmel-sama7g5-isc.c    | 8 ++------
->  2 files changed, 4 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/staging/media/deprecated/atmel/atmel-sama5d2-isc.c b/drivers/staging/media/deprecated/atmel/atmel-sama5d2-isc.c
-> index 31b2b48085c59..3b28a232418a9 100644
-> --- a/drivers/staging/media/deprecated/atmel/atmel-sama5d2-isc.c
-> +++ b/drivers/staging/media/deprecated/atmel/atmel-sama5d2-isc.c
-> @@ -333,20 +333,16 @@ static const u32 isc_sama5d2_gamma_table[][GAMMA_ENTRIES] = {
->  static int isc_parse_dt(struct device *dev, struct isc_device *isc)
->  {
->  	struct device_node *np = dev->of_node;
-> -	struct device_node *epn = NULL;
-> +	struct device_node *epn;
->  	struct isc_subdev_entity *subdev_entity;
->  	unsigned int flags;
->  	int ret;
->  
->  	INIT_LIST_HEAD(&isc->subdev_entities);
->  
-> -	while (1) {
-> +	for_each_endpoint_of_node(np, epn) {
->  		struct v4l2_fwnode_endpoint v4l2_epn = { .bus_type = 0 };
->  
-> -		epn = of_graph_get_next_endpoint(np, epn);
-> -		if (!epn)
-> -			return 0;
-> -
->  		ret = v4l2_fwnode_endpoint_parse(of_fwnode_handle(epn),
->  						 &v4l2_epn);
->  		if (ret) {
+On Wed, May 29, 2024 at 05:00:46PM +0900, Yoshinori Sato wrote:
+> This is an updated version of something I wrote about 7 years ago.
+> Minimum support for R2D-plus and LANDISK.
+> I think R2D-1 will work if you add AX88796 to dts.
+> And board-specific functions and SCI's SPI functions are not supported.
 
-This introduces a Smatch warning because now "ret" is uninitialized if
-the for_each_endpoint_of_node() list is empty.  Is that something which
-is possible?
+I don't understand the point of this.  It's marked "DO NOT MERGE", so
+what do you want me to do?  I've posted comments several times and
+they've never been addressed, so I don't think there's any point in
+looking at this again:
 
-I've been meaning to make a list of loops which always iterate at least
-one time.  for_each_cpu() etc.
+  https://lore.kernel.org/r/20240404134652.GA1910402@bhelgaas
 
-regards,
-dan carpenter
-
+Bjorn

@@ -1,216 +1,231 @@
-Received: from JPN01-OS0-obe.outbound.protection.outlook.com (mail-os0jpn01on2040.outbound.protection.outlook.com [40.107.113.40])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97AAA1836FE;
-	Thu, 30 May 2024 23:52:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.113.40
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717113156; cv=fail; b=cRKcYF/ecP6h8fy9FbxoLGXVt7ekaCMhW7Q4dXb099p1UQR2Pct+nicLaOYJwwjWj2Zqv8R24BoPl/6axY2oZ8aS/2jdYsiJXoQmWFU+jnFlFC7wxFgzSPzUaEHr5MlSWBOr3//1QvwLMsH08ApE12OJENfAQbOsu8TdAe20J9E=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717113156; c=relaxed/simple;
-	bh=8rwk8VdbsLll4W7O0yBALGp9/qtYSeKJgt+le2usN6A=;
-	h=Message-ID:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 Date:MIME-Version; b=ckFYRj4fYwTN9t9DuM0WNCA+b6I5DMLDrLbRr2K/WtIBCTEJW3uAbTCGrvWnxBvZxw7dMsoIKkLSqR8cK8YYYM/yF1VVIC03JSl5qaa7n26wifnUfTs8IAapP/Y4yhB2XlTc6rRw8dR/IvlUp4LFlnK/8SP7e9oOGcYYZd98qqA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=R7YbDDVW; arc=fail smtp.client-ip=40.107.113.40
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D3CF1CD35;
+	Fri, 31 May 2024 09:57:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717149425; cv=none; b=G3XdTga2krT/U3hOn7davQ/wxbcVaccYs1RIR6zOWy/ymL1O18Uxk2TnmpfKewfBaXHgCVy6YGkBnowmQg99yLuNZdQvRU0Fph2w6xYo/pYgjNns2IQUEB3btyerL+v/4VCirNJQiQ6aZcQu34S2YtjEacbmSYGTZXKlYIyLGww=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717149425; c=relaxed/simple;
+	bh=pG1FuJNpg4iD5VvuUxyaJG1TPUBzdsFzeembK8i33cE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QSooPByyUkRjkWzBjLh9BoUUR0xWLdDPQmL7VUmXupIGXM6npxUaaZ4ppyNso7km0sJopNLEs4TVdEg5IgahXYmSWpUKq5934p0e6xDaSUltaW92PinNGwqv020vsZa3iIBGASytf3rySiuJNqEWwmCnncAqwLZ6wB96oRCi8RE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hu5bMmVB; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="R7YbDDVW"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=PCydzrahAE1oj2xj0bUUlZSPk5kUzbONj1lZztXoOTBj44za0LXEGaWaPqrfM7yjL65muYF1toHMEKLrfId2VG23X5+Di5o65Bap+zu0OLiEkWnPxcaawhOULfbS8Meqrg7QRYd7lc1Lbfbp3e3B4maBcuAsSWLYE5L6SHh28qKyzhcja8ZgUWtDOxn4qk71hFAa+yQl4B9zDxSxtu0hOf/Zuk1LOyaXIYB9YSrTqFZfis8J5uZC+MjUFg50+ON+3AfJZMMtWYqRJvKzW8JjbIvl/mJ3k7BAbx1Ehs/6RM2e1BgeXIURm+azD1gYFGFbBPihThQu+4NCjptMP0Owew==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=F61pW/JXlCPlMpAXeCuGrjvAZex4ZZCkfe74gqj6NLM=;
- b=Y28Z+dUa+EHSZ9aN1dC/Bt5DE6LzI/asYzfGyavyLKSP1KkYWGXIKBdgnXZr98fYn6QZd2mejTlJ5Bt/BW7xfRB8cKfdEUmFGNSM2B29Ge7DYFoj6SnDyFxi5INtXrCtObqplVZ8R15y8SEWpuFPzM5M2LkReYdCOpC5HBhtpDl6nFBpv6blg1NK9t4sgmwHyylMVq+yiB2Q724zMvJO02Gm034d3rNLWHT81RwSn33y4p+G9FNC4FO2g0u5Ylnz7h5Aalg67eI/p4o0HNgqLEYHoM/KH8d3XTFAmyfU6xFnh/HTTKDquqZnUkFpqMb00eYNMxTrD0gAG745XjCupA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
- dkim=pass header.d=renesas.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=F61pW/JXlCPlMpAXeCuGrjvAZex4ZZCkfe74gqj6NLM=;
- b=R7YbDDVWF/Ar0eB0OxQIWMgsHukBcHHb/xymMnBiJp8KZNF9mAQFxAK+qMouw23pbjz6kGoXCEC6hmzLQIa38Gv3BqHZgti6cZzr3TwWIaAXVCp/L5XCsPmqJmgkfYkHSnD9PnQ4dTRIJawMmKQ1nBujmdPaip4V3Uk+x0wBjNc=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=renesas.com;
-Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
- (2603:1096:400:3a9::11) by TY3PR01MB10061.jpnprd01.prod.outlook.com
- (2603:1096:400:1de::9) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7633.23; Thu, 30 May
- 2024 23:52:30 +0000
-Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
- ([fe80::c568:1028:2fd1:6e11]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
- ([fe80::c568:1028:2fd1:6e11%4]) with mapi id 15.20.7633.021; Thu, 30 May 2024
- 23:52:30 +0000
-Message-ID: <87sexy97sy.wl-kuninori.morimoto.gx@renesas.com>
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-To: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Lad Prabhakar <prabhakar.csengg@gmail.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hu5bMmVB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65A56C116B1;
+	Fri, 31 May 2024 09:56:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1717149424;
+	bh=pG1FuJNpg4iD5VvuUxyaJG1TPUBzdsFzeembK8i33cE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hu5bMmVBc986akPDt9Ge9tIAY28LTFO3zwiOt/Joe+hTEGWcqkK1uspvfXfUgXXxe
+	 37xIAg+mkLYdlb3Hs9WdiXpCF1VeQrUhl78CihP1szlXYNSBa15MdkJ/xVV25GxxSe
+	 GoFHLTigYu0YGr12LUzpQPJDP6vTnVpL49ILbXi3zxAMPLAoxFNkYdK1EVTmNJFn7f
+	 CA1vM3tFKh3BQ8+a2Mrj8F6+o+ltODCoNMa/d4HHrTNiLP+FE/f+tft+dne1biNKt8
+	 EM2SBRlBln82aT4Aeemi64mL4//CHv+Iem7UQVhtCKN9l9VGh3B5qbmCfUa1q0Ty4h
+	 r2ZCGXufem1Qw==
+Date: Fri, 31 May 2024 10:56:50 +0100
+From: Lee Jones <lee@kernel.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-sh@vger.kernel.org, Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, David Airlie <airlied@gmail.com>,
 	Daniel Vetter <daniel@ffwll.ch>,
-	David Airlie <airlied@gmail.com>,
-	Eugen Hristev <eugen.hristev@collabora.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Helge Deller <deller@gmx.de>,
 	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
 	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	coresight@lists.linaro.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-fbdev@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-omap@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH v3 4/9] media: platform: microchip: use for_each_endpoint_of_node()
-In-Reply-To: <330e0f46-567a-460c-ad88-1f6acb2c2fe4@moroto.mountain>
-References: <87le3soy08.wl-kuninori.morimoto.gx@renesas.com>
-	<87fru0oxyq.wl-kuninori.morimoto.gx@renesas.com>
-	<330e0f46-567a-460c-ad88-1f6acb2c2fe4@moroto.mountain>
-User-Agent: Wanderlust/2.15.9 Emacs/29.3 Mule/6.0
-Content-Type: text/plain; charset=US-ASCII
-Date: Thu, 30 May 2024 23:52:29 +0000
-X-ClientProxiedBy: TYAPR01CA0171.jpnprd01.prod.outlook.com
- (2603:1096:404:ba::15) To TYCPR01MB10914.jpnprd01.prod.outlook.com
- (2603:1096:400:3a9::11)
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Helge Deller <deller@gmx.de>,
+	Heiko Stuebner <heiko.stuebner@cherry.de>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Masahiro Yamada <masahiroy@kernel.org>, Baoquan He <bhe@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Kefeng Wang <wangkefeng.wang@huawei.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Azeem Shaikh <azeemshaikh38@gmail.com>, Guo Ren <guoren@kernel.org>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Hugo Villeneuve <hvilleneuve@dimonoff.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Sergey Shtylyov <s.shtylyov@omp.ru>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	linux-ide@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [DO NOT MERGE v8 23/36] mfd: sm501: Convert platform_data to OF
+ property
+Message-ID: <20240531095650.GD8682@google.com>
+References: <cover.1716965617.git.ysato@users.sourceforge.jp>
+ <c139d3a42c61d978296aa2e513de073c643e4fbe.1716965617.git.ysato@users.sourceforge.jp>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|TY3PR01MB10061:EE_
-X-MS-Office365-Filtering-Correlation-Id: c2ad1a00-e2a1-4a6b-e9e3-08dc81039129
-X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230031|376005|7416005|52116005|1800799015|366007|38350700005;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?graHr/WQWDHFNaMByLhW86/b+uSUIKIMxXEhxAF1YN9tohNDf6+catUoMqc3?=
- =?us-ascii?Q?yJEMArsWcIdGhGrmWJe8ncniEEEJP0H20x+2TGl5GOdwZ8G+drWhV74FUs9k?=
- =?us-ascii?Q?3aef6ME2w5NeyMzqyNCr6yfo4ZvFrd+KsYQ1X90McAckgqrVpOPwsyaltX7Z?=
- =?us-ascii?Q?DpQcUKuE65Wp/V0D1gjbFP1EDiXpqAepzdCctOWhDr2sUCi58oUtXQmiSVSj?=
- =?us-ascii?Q?XUZ0kBoMXEHUz6ZZIJac0VBjDJrxI/QOMS+/xFxviYplJfJyLF8PmcbGtyW8?=
- =?us-ascii?Q?GUQp4J8i7mB7Vyq+RSB8/3rmZw1o5KZJGFtTKc2eWX6FIIPvaalPsDM4MYWQ?=
- =?us-ascii?Q?BJa7ws4MtnGtFjroJ2Q2sUmjMSvP5fc2LXoNvqjnGAbrlhX0bAMRRnUCpI52?=
- =?us-ascii?Q?XNoXz5Njr4Qzq+EZUAnXEXL7MoW3XMEeArHh5nEXpb4aQm8xMk0Tn4ueFkZw?=
- =?us-ascii?Q?cxLyouZLRC7F/dM0gniORbZwa5VfH/hF3ZRB6+2l6oZHxNknslwTsTzF38r2?=
- =?us-ascii?Q?I+88i7ceW7D/Zhca5EWC0a1SguxV+ZZNm5yT8d/lPziuVxAFDN20fwlrzFe8?=
- =?us-ascii?Q?AEagj9sptB23ZqCj2aU1mAKimsjVpmfO7FbHxKuowO/cYeEKG4CVstCFGXgL?=
- =?us-ascii?Q?TZhpno1cpuoFOTeseRcZMFEPaAz211hb+Jv+UcIvwQ3Ft9B0KqT1wtBV688N?=
- =?us-ascii?Q?3fmreNx18L6LHEpvSYslJVGFhxfnR6sib0BPW+Usaym2dN2gtQue43aDluBy?=
- =?us-ascii?Q?auWqihDrwZd+ZNfw3+VlYnLTf4Khl8cfkaO6B5wLUrvYIY7kzu7zXE+y8Qc0?=
- =?us-ascii?Q?NmTATuET5vDL/z/McYQAI8epER4JNkGJQ0R+3tNBJ0+4phLzJQVx7zP3jK0H?=
- =?us-ascii?Q?lP9JSWTiY4rgH5ikRC7QlxSSM6moVduuPX+woyocN9uh0BBrZNioMe72Sqjy?=
- =?us-ascii?Q?Qi18aSKmRnqgKTqkFNgvxMIA6244Vzl0LCgPHzaYk3FY+w/Luhn6OI+8Ed3r?=
- =?us-ascii?Q?iFuFSRJbHIhyOdPdXIosM5+u7joGFwJARSouomxrKoJEH3RDCC741ZTPZXNn?=
- =?us-ascii?Q?d9vG2X5qDFTqLZD7m1vYncTLUhhL3wj8yDvLwLAMXHfZArOoq5p5OciMmcIh?=
- =?us-ascii?Q?DIvWq8jrubDon3E8aiCJmNqzHJC0xlzOL9QNUM/r1KpCeAc7nTtPIeYgY9Zb?=
- =?us-ascii?Q?zCXATRxyEEu3pI0lYTz4nyN60X6foVA7L9CQlPv4+yKZ7jvccIDdietZsQNh?=
- =?us-ascii?Q?fcczvpU52/TT3Re+8YV9v4/ujpod2y4HJDB+gMNnb0V1TmVBdwG6gsDXsHuP?=
- =?us-ascii?Q?jr6AC1CUy91jOsndd/y2ON4V?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(7416005)(52116005)(1800799015)(366007)(38350700005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?5hDoSgmYO+q5S4yVA0bILdNhm1OvGy5KwqY/GbS7hRMZWvyle0bl26raGqHa?=
- =?us-ascii?Q?Pw1GpgYk9vjmZVMiMT/2ZS9VwfbwYSY3Y01gAeI8wJnKYGeZWq11nLMuRRQ4?=
- =?us-ascii?Q?Xv3Yhexb5h2ghwDz4z8zYkBnTn/uZP1Yd8Pka1jrd+MkGYbOLeK4paxohCmj?=
- =?us-ascii?Q?2evIgXgDzcr8u64a4l2uIZQUlfahXwO66yHJ00cs0FVLEF+DuAKzTHN+K3jA?=
- =?us-ascii?Q?jvCcHJGLcPs28aT7tCrCFeqMzXiefs41R5WpalQxyePU0yRqM+YAM2+4NpS9?=
- =?us-ascii?Q?9B5hNsb7g9J8CcaJD8zSUE4sOlCIkE1CmPCU5Tvjm4r0cRUdaTFAf5QYv1py?=
- =?us-ascii?Q?2IpF8KgEPy0r6N61IZ69GgO3HZAbr3FAIa4EkpJ3CUUKEWrPTkzKtO0IXH32?=
- =?us-ascii?Q?LXxUkHiutdMtWK1KzdFMGPkfk9VrID2Lo706UmZ6JUr67UCJ80qUALwy6RU9?=
- =?us-ascii?Q?n5yWdeJ66ymoWns+FrZ4GJzZkjb5G9xVKcQntYwDbsVAm1UFREgkIxj0Tej+?=
- =?us-ascii?Q?h2hFBXDlj5Kh98avkStiAkxlwtKZM3YRH+PCL9OFLfoxUFl7ZpjRv5elW34F?=
- =?us-ascii?Q?GaLAX1HaLupcXoQcS0Log1YeWLd/WOv/kJKLl22k5ahiJEl5ajdpzp908OTn?=
- =?us-ascii?Q?qynasB+j/GQ3gt16k4UwAPAKJHXm8cqYum8LA3t46DCwZ7sOlb6p0KGlXt9n?=
- =?us-ascii?Q?qvOzPaLwF1suSXpB0Mvy75IG0xx27K5SBdJ5Cgol6n1WqldjeoPOX12eWV6m?=
- =?us-ascii?Q?FSGDR4jwJKL/KpuamPqWepkLro7TIeBLkEsT7ZHV1bAkPDBnUzNZOU4qhUf/?=
- =?us-ascii?Q?rXpJAk1nRfq4CDJl+ZT2+XYQOaUhwq8vNq5zHma9Ps1hyIlhFSzaYlajitUU?=
- =?us-ascii?Q?cV62VZ4ouO/6B4BBSYwl+b6VVHMHiYc98NrfH7teLFQId2Vcz4yLsIdhXwUw?=
- =?us-ascii?Q?WPqkGoHI1RldxdzG35awZ36SprnfJIC6VyPTOOo9MAQkHs9yO04Nx4jk5MU/?=
- =?us-ascii?Q?CTWqM82nsSW7nDwWEMBlDaUnGvuYOE/ZlNsTpk28sPPguVkBJBpfV6GbbIVb?=
- =?us-ascii?Q?DxRxMtDhzrJWNdOLclP0i3z4S+pwClcB7rnEPnHdr3zvPgNKptzWjmvfX+Oa?=
- =?us-ascii?Q?IgNwHeCEwGqX09qms0GQLpP6WDGTjmrus+UB0vH9ecjI65eMnuXYKK89SsN3?=
- =?us-ascii?Q?I/dmyuoXLyknfKDz50JLtnDZypdB2On1DVwvaPicEuoHEPTQj2i9E8RRUXDd?=
- =?us-ascii?Q?uFEdUATl+3PrUeUR1wP+4CLyqNqi4UN32m+MUfBjEkMk3O+5HJUoc6HAifpY?=
- =?us-ascii?Q?UdUfWAjDEnT6/xpCWS6NZHYKfLM90p3NOAQjxX4kkqMXmZ8UFhQt3jQHVLt/?=
- =?us-ascii?Q?O6M0alkFtQapiZTBdzsa1MfZXm9xEs17/uMTC0XUrFlbC9vNSYgMuSwagmwh?=
- =?us-ascii?Q?Fy6hcQ26iOBaHpVMQHdEcbTUCVnNtZ3MJRQYQ8HhzFyrE9lBP+r+TXNDRTfY?=
- =?us-ascii?Q?Vs3pYbdLdFtrIRiSlCOVWvqzbpnVEZ7GhugTwFCehoulDgaaEyXVaHLWMX5n?=
- =?us-ascii?Q?Ae/dDeMGHMRp+vTTV4/3GIrIs67Tgx9Qhd432SbhB0i4BqUE//2i+0ichVam?=
- =?us-ascii?Q?wh+hTP19eArPC3KB0+HmjJc=3D?=
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c2ad1a00-e2a1-4a6b-e9e3-08dc81039129
-X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 May 2024 23:52:30.1623
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5jhiCDGb3VE7PDZ4GvJFd3dKXs65r6FsZ48At/j1L5dalTOewpvwl96+BkTpxGI1QYIqHpUE/tIEqO5rlHwqQmEGpn/wQhq8bUn7w7OM7x1XCwXMAnTkd/poua9kLrjX
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY3PR01MB10061
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c139d3a42c61d978296aa2e513de073c643e4fbe.1716965617.git.ysato@users.sourceforge.jp>
 
+On Wed, 29 May 2024, Yoshinori Sato wrote:
 
-Hi Dan, Rob, Helge
-
-> > -	while (1) {
-> > +	for_each_endpoint_of_node(np, epn) {
-> >  		struct v4l2_fwnode_endpoint v4l2_epn = { .bus_type = 0 };
-> > -
-> > -		epn = of_graph_get_next_endpoint(np, epn);
-> > -		if (!epn)
-> > -			return 0;
-> > +		int ret;
-> >  
-> >  		ret = v4l2_fwnode_endpoint_parse(of_fwnode_handle(epn),
-> >  						 &v4l2_epn);
-> >  		if (ret) {
-> > -			ret = -EINVAL;
-> > +			of_node_put(epn);
-> >  			dev_err(dev, "Could not parse the endpoint\n");
-> > -			break;
-> > +			return -EINVAL;
-> >  		}
-> >  
-> >  		subdev_entity = devm_kzalloc(dev, sizeof(*subdev_entity),
-> >  					     GFP_KERNEL);
-> >  		if (!subdev_entity) {
-> > -			ret = -ENOMEM;
-> > -			break;
-> > +			of_node_put(epn);
-> > +			return -ENOMEM;
-> >  		}
-> >  		subdev_entity->epn = epn;
+> Various parameters of SM501 can be set using platform_data,
+> so parameters cannot be passed in the DeviceTree target.
+> Expands the parameters set in platform_data so that they can be
+> specified using DeviceTree properties.
 > 
-> This code is an example of what Laurent was talking about.  We're taking
-> storing "subdev_entity->epn = epn" but then not incrementing the
-> refcount.  Perhaps it's not necessary?
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> ---
+>  drivers/mfd/sm501.c           | 238 ++++++++++++++++++++++++++++++++++
+>  drivers/video/fbdev/sm501fb.c |  87 +++++++++++++
+>  2 files changed, 325 insertions(+)
 > 
-> The difference between this and _scoped() would be if we stored epn and
-> then returned.  I feel like that's less common.  We could detect that
-> sort of thing using static analysis if it turned out to be an issue.
+> diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+> index b3592982a83b..d373aded0c3b 100644
+> --- a/drivers/mfd/sm501.c
+> +++ b/drivers/mfd/sm501.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/gpio/driver.h>
+>  #include <linux/gpio/machine.h>
+>  #include <linux/slab.h>
+> +#include <linux/clk.h>
+>  
+>  #include <linux/sm501.h>
+>  #include <linux/sm501-regs.h>
+> @@ -82,6 +83,16 @@ struct sm501_devdata {
+>  	unsigned int			 rev;
+>  };
+>  
+> +struct sm501_config_props_uint {
+> +	char *name;
+> +	u32 shift;
+> +};
+> +
+> +struct sm501_config_props_flag {
+> +	char *clr_name;
+> +	char *set_name;
+> +	u32 bit;
+> +};
+>  
+>  #define MHZ (1000 * 1000)
+>  
+> @@ -1370,6 +1381,227 @@ static int sm501_init_dev(struct sm501_devdata *sm)
+>  	return 0;
+>  }
+>  
+> +#define FIELD_WIDTH 4
+> +struct dt_values {
+> +	char *name;
+> +	unsigned int offset;
+> +	unsigned int width;
+> +	char *val[(1 << FIELD_WIDTH) + 1];
+> +};
+> +
+> +#define fld(_name, _offset, _width, ...)	\
+> +	{ \
+> +		.name = _name, \
+> +		.offset = _offset, \
+> +		.width = _width,	\
+> +		.val = { __VA_ARGS__, NULL},	\
+> +	}
+> +
+> +static const struct dt_values misc_timing[] = {
+> +	fld("ex", 28, 4,
+> +	    "none", "16", "32", "48", "64", "80", "96", "112",
+> +	    "128", "144", "160", "176", "192", "208", "224", "240"),
+> +	fld("xc", 24, 2, "internal-pll", "hclk", "gpio30"),
+> +	fld("us", 23, 1, "disable", "enable"),
+> +	fld("ssm1", 20, 1, "288", "divider"),
+> +	fld("sm1", 16, 4,
+> +	    "1", "2", "4", "8", "16", "32", "64", "128",
+> +	    "3", "6", "12", "24", "48", "96", "192", "384"),
+> +	fld("ssm0", 12, 1, "288", "divider"),
+> +	fld("sm0", 8, 4,
+> +	    "1", "2", "4", "8", "16", "32", "64", "128",
+> +	    "3", "6", "12", "24", "48", "96", "192", "384"),
+> +	fld("deb", 7, 1, "input-reference", "output"),
+> +	fld("a", 6, 1, "no-acpi", "acpi"),
+> +	fld("divider", 4, 2, "336", "288", "240", "192"),
+> +	fld("u", 3, 1, "normal", "simulation"),
+> +	fld("delay", 0, 3, "none", "0.5", "1.0", "1.5", "2.0", "2.5"),
+> +	{ .name = NULL },
+> +};
+> +
+> +static const struct dt_values misc_control[] = {
+> +	fld("pad", 30, 2, "24", "12", "8"),
+> +	fld("usbclk", 28, 2, "xtal", "96", "48"),
+> +	fld("ssp", 27, 1, "uart1", "ssp1"),
+> +	fld("lat", 26, 1, "disable", "enable"),
+> +	fld("fp", 25, 1, "18", "24"),
+> +	fld("freq", 24, 1, "24", "12"),
+> +	fld("refresh", 21, 2, "8", "16", "32", "64"),
+> +	fld("hold", 18, 3, "fifo-empty", "8", "16", "24", "32"),
+> +	fld("sh", 17, 1, "active-low", "active-high"),
+> +	fld("ii", 16, 1, "normal", "inverted"),
+> +	fld("pll", 15, 1, "disable", "enable"),
+> +	fld("gap", 13, 2, "0"),
+> +	fld("dac", 12, 1, "enable", "disable"),
+> +	fld("mc", 11, 1, "cpu", "8051"),
+> +	fld("bl", 10, 8, "1"),
+> +	fld("usb", 9, 1, "master", "slave"),
+> +	fld("vr", 4, 1, "0x1e00000", "0x3e00000"),
+> +	{ .name = NULL },
+> +};
 
-Thank you for pointing good sample, Dan.
+I've been avoiding this set for a while now!
 
-But I wonder should this patch-set include and use _scoped() macro ?
-If above is just a comment, _scoped() macro will be separate patch-set.
-If above is pointing the issue, v4 need to have _scoped() macro.
+I appreciate the amount of work that you've put into this, but this is a
+bit of a disaster.  It's a hell of lot of over-complex infrastructure
+just to pull out some values from DT.
 
-Thank you for your help !!
-Best regards
----
-Kuninori Morimoto
+Forgive me if I have this wrong, but it looks like you're defining
+various structs then populating static versions with hard-coded offsets
+into DT arrays!  Then you have a bunch of hoop-jumpy functions to
+firstly parse the offset-structs, then conduct look-ups to pull the
+final value which in turn gets shifted into an encoded variable ready
+for to write out to the registers.  Bonkers.
+
+What does 'timing' even mean in this context?  Clocks?
+
+What other devices require this kind of handling?  Why is this device so
+different from all other supported devices to date?  Instead of
+attempting to shoehorn this into a 20 year old driver, why not reshape
+it to bring it into alignment with how we do things today?
+
+E.g. handle all clocking from the clock driver, all display settings
+(including timing?) from the display driver, etc.
+
+-- 
+Lee Jones [李琼斯]

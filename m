@@ -1,53 +1,66 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3925D194AC3;
-	Wed,  5 Jun 2024 12:42:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FEB113A86B
+	for <linux-fbdev@vger.kernel.org>; Thu,  6 Jun 2024 13:10:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1717591362; cv=none; b=I8NGvmQ872ezt4+3ZqCqT/4AOk/sdF49yAgeHNmrzqIfVUQL6+frpWA0ZBqJ+QO67M85RmuexjR7L0Tn87DVbJTGF+ojTGYB5dqTzX2FMQ7TyeQasgS+OuApt83L55BObZJG2hXO8mY9MprtS5vrxJdQUsvHd+hHQ5hxA444OTc=
+	t=1717679431; cv=none; b=l6jHe/H2IQg22yfbp6zS14pFGsA9T/eD4QaBGZve3MKDxQqwZvlsT/gJotOCMYMsySs4+RR6BNQnvpHdbNuCDU2T6dFU8jsl9P2ULWN1Lz+URSMLyIhh7mWzas3ieNsYk+uNv5QIkosSDdJLFg8oXcJgpVqRB+O+gPMT9HjBgG8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1717591362; c=relaxed/simple;
-	bh=JbMspYh1b0RcaRaZ4nSseQoB5VDk9OVF1ggAJwKyX0c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DktvWBmas+p+erlFlRKPBAPhJqOzHQb+U3Fh9A4NKf1JT4U29zuTIth9+IvsSlrgdp/uocc9uUvj39h9vy4tSaZdiBEZ4a3oFEKAgbE0IzgTcqmkIZUeWmw2F/vr6c5NLphIUu7k03I8OfM0YBPe66DdJ1EW20A2x3dVIFOJTjg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILOFt2xD; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1717679431; c=relaxed/simple;
+	bh=zT88eZfNNd+RiyI4o59iAJCPJIAf8oivhPTjWxX35MQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=jOs3U3gPItnU0CMfoK8gAtAOw9F3pTxeCuFw4yRGDmAtL+QqOmhX/jVK8ckkZ6Ok5c01ULabvrwFAuUDSEl41IofCg5prZiSwARA88FnUPAh6OPgffINWLGoL5FhoWejda2G3YGT4OXAzfm08Fu2PfSWIrpv//LYNgXizbhv4hI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=fDx1Lh6r; arc=none smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILOFt2xD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B84BDC3277B;
-	Wed,  5 Jun 2024 12:42:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1717591361;
-	bh=JbMspYh1b0RcaRaZ4nSseQoB5VDk9OVF1ggAJwKyX0c=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ILOFt2xD7wv3XSFL/Cri4khqdWptym7ANOG/4VoOSIU6GYv/imhzyE0nDIi5OcTH7
-	 2WKMz29L/Imc4RyomBpYlSaP4T8juOkF1UG1fLQqvZh+51YhLmt8wvwR23q5zRkDvm
-	 ifvyHnPzxQOm83q02E4pqABsSGGGRyfSaXytxQBwsjxnjXneCFyCLB+pVL7O1Mq9oW
-	 i69CU7n25Dj0vdzbgXbpRvA2V43sh+YXctBOPetZ35qdBvos/5xtRAY+NlYgxfuNDt
-	 jvjkEbsmK08r1Cy9zAKQw/BRCcy9a/OQzeba0xiWhyI6mXX8KOMG04Sy6JUs6b5skX
-	 DuUN7PQd+W6fA==
-Received: from johan by xi.lan with local (Exim 4.97.1)
-	(envelope-from <johan@kernel.org>)
-	id 1sEpyV-000000007jb-1M1P;
-	Wed, 05 Jun 2024 14:42:43 +0200
-Date: Wed, 5 Jun 2024 14:42:43 +0200
-From: Johan Hovold <johan@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	Jonathan Cameron <jic23@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>,
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fDx1Lh6r"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-a68ca4d6545so173154366b.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 06 Jun 2024 06:10:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1717679428; x=1718284228; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=LLTo6IN//CUfT633Q+EgtwxBk4Zhgr8yvAaTHaRrJKc=;
+        b=fDx1Lh6rX1LDP8w/JsHdvLHz6V6cyvu0Vc8B/sXq4YtcwW1DmqkH+afCojavFduOcZ
+         W/iz5jps5OsEzdRzyqWum3X1ZH2mcBRUS8rhCi2WXEb3qhKOvY2hcu3JIXz0pEEJ8Wpa
+         IFT3ASthAA3NgddTEw5N+hLmRycL/jwcPCoKTzD2JjR9HdXMEmBywKEV2WC2kNrMeMUJ
+         kqCUS3sxhg0mG+dkjghTfr51mJdZuN8a5YmSxnqkyZnTSYfIy7Ybs6XQWmSmTQ3be1Dl
+         Iz/l2+dm/W2xjGTI/gWFY9djaSSlciEJ2JGHp0rCK5mDJfJwAeqSoOPGOPePQKsx7330
+         yAKw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1717679428; x=1718284228;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=LLTo6IN//CUfT633Q+EgtwxBk4Zhgr8yvAaTHaRrJKc=;
+        b=tdrZ2/WB5brEekYpyzORfl4lavmXSc1Fd/xIzNh5yf62Z7peGln+j16Wb8RJ9QwQO9
+         Ts3lqHpLZ1/AajSduaI7YCwTtWRCOniGjc5VLr0wCW1EdD62gb21HejmwAIHpmwmBQVV
+         ovtVIv8Q24w83HXjdWBj1tCFKTXrNoF8Tt57DxTpDPxudxaCcMTDqYAhHFE947LPQX5i
+         Kors9SlPK41rST4LLXplQQl1vIy+j0GAyo2Nw1Y/nSa3FeK6EzY380UPskT0xXLish3v
+         b/tpH/Cm9L6wkb/AAP+9FFbcVUFwT1Oaw+kK64sVLhlgIvKfE20kKGqT7yPy5MLydIEo
+         JLfw==
+X-Forwarded-Encrypted: i=1; AJvYcCUvZv0M0lW7mtFNJcLKSTEZsnJpLZMLhzTPrC4u64KCirmrVeU+qk5Q2tMEbmkFVbK+6HlkwfEfWNU1K5p3UegkwMIGTgl6kckK3nU=
+X-Gm-Message-State: AOJu0YwtY/7c8lcBtI0/q7F/am0FTqyeIQNWU0jv8KvTGN4Ryb2DtMIj
+	DsInQeeczHozabVq23/qW7T4E6Pd9mlXS3mzOvn4/+ERbGvtz1XvZszRcWxNzEw=
+X-Google-Smtp-Source: AGHT+IE/O3Z7xTXrhanwtiiAy00RvXG9RUOoWD1wIob6c3DU4S0+HjI1sOf6DL7JHERx+RQuhoT5dg==
+X-Received: by 2002:a17:906:e218:b0:a68:a476:6957 with SMTP id a640c23a62f3a-a6c7650a2ffmr216652566b.24.1717679428406;
+        Thu, 06 Jun 2024 06:10:28 -0700 (PDT)
+Received: from localhost ([102.222.70.76])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a6c8070e82esm94963466b.161.2024.06.06.06.10.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Jun 2024 06:10:27 -0700 (PDT)
+Date: Thu, 6 Jun 2024 16:10:23 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Patrick Gansterer <paroga@paroga.com>
+Cc: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <daniel.thompson@linaro.org>,
 	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v1 0/4] lm3533: Remove the outdated drivers
-Message-ID: <ZmBdQygUaVzxieH9@hovoldconsulting.com>
-References: <20240531170844.1595468-1-andriy.shevchenko@linux.intel.com>
- <ZloFgnKC6S2B_oz0@smile.fi.intel.com>
- <ZloGLmlfHIfWfWV9@smile.fi.intel.com>
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] backlight: lm3509_bl: Fix NULL vs IS_ERR() check in
+ register() function
+Message-ID: <187b5bc5-a010-46c2-8ead-980df9efae79@moroto.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -56,28 +69,34 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ZloGLmlfHIfWfWV9@smile.fi.intel.com>
+X-Mailer: git-send-email haha only kidding
 
-On Fri, May 31, 2024 at 08:17:34PM +0300, Andy Shevchenko wrote:
-> +Cc: Johan (via kernel.org)
-> 
-> On Fri, May 31, 2024 at 08:14:43PM +0300, Andy Shevchenko wrote:
-> > On Fri, May 31, 2024 at 07:56:12PM +0300, Andy Shevchenko wrote:
-> > > Driver is quite outdated from the Linux kernel internal APIs
-> > > perspective. In particular GPIO code is using legacy calls,
-> > > that started being replaced by a new API ca. 2014, i.e. ten
-> > > years ago.
-> > > 
-> > > Suggested-by: Linus Walleij <linus.walleij@linaro.org>
-> > 
-> > >  drivers/mfd/lm3533-core.c           | 645 -------------------
-> > 
-> > Oops, still leftovers: one file and Kconfig/Makefile updates...
-> > If needed I'll send a v2, but now I leave it to Lee and Johan to decide
-> > the destiny of the drivers.
+The devm_backlight_device_register() doesn't return NULL, it returns
+error pointers.  Update the error checking to match.
 
-I prefer to keep them as I just mentioned here:
+Fixes: b72755f5b577 ("backlight: Add new lm3509 backlight driver")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+---
+ drivers/video/backlight/lm3509_bl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-	https://lore.kernel.org/lkml/ZmBcvtLCzllQDWVX@hovoldconsulting.com/
+diff --git a/drivers/video/backlight/lm3509_bl.c b/drivers/video/backlight/lm3509_bl.c
+index ab57f79ffe23..c93cdedff5ad 100644
+--- a/drivers/video/backlight/lm3509_bl.c
++++ b/drivers/video/backlight/lm3509_bl.c
+@@ -114,9 +114,10 @@ lm3509_backlight_register(struct device *dev, const char *name_suffix,
+ 	}
+ 
+ 	bd = devm_backlight_device_register(dev, label, dev, data, ops, &props);
+-	if (bd)
+-		backlight_update_status(bd);
++	if (IS_ERR(bd))
++		return bd;
+ 
++	backlight_update_status(bd);
+ 	return bd;
+ }
+ 
+-- 
+2.43.0
 
-Johan

@@ -1,99 +1,79 @@
-Received: from mailrelay1-1.pub.mailoutpod3-cph3.one.com (mailrelay1-1.pub.mailoutpod3-cph3.one.com [46.30.211.240])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7004B16E881
-	for <linux-fbdev@vger.kernel.org>; Wed, 12 Jun 2024 10:19:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07D0B17D899
+	for <linux-fbdev@vger.kernel.org>; Wed, 12 Jun 2024 13:41:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718187556; cv=none; b=KRfpy6aAgOFE2ggyXW5IUFIZ+3Y0zElHp/lmyIAhpIGugvQQnOce1D/IdZJT3S7dfCvB3ekQntQO1kwoArFyxspzvgioChGM61ZGbGobzyNHckJfrrYGFU/H9Q3r/LEXDKrf1FG3WKofdsHy3MIbpsVtAoJa1iXRMphYjLTfC0E=
+	t=1718199690; cv=none; b=i/ISM7aEJX/+EX+WN4vPR4piETNH511HBV+YYXUtCz08oaJ46r1nOdnnTe+MbgP+N/Gq7WtLuB1hxSqtffW8eQGbSmW36fVXeF2OYIJCnWZRiDzuC3nZKGeTMKAWHpPf+NaxrxRlwGM9Qsplq1w5eXnTI5mUYGl4ThGslD3gFkA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718187556; c=relaxed/simple;
-	bh=ovNo9GtRTlkwlssn/HiOD9hpv7sqkXelq8K9GlKM2ao=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jRM0b2cVuGlkkDYHPPi7ZnblvHh14DddSAa2B1kEZS2So0SieZKer+7CAM5kJapeBe7y94RTAR4W5OgOuP//tkwe9Badt1xW2enQf76CmIWLPUsghThr2lcOac1wZNyq13dq9aEnryrpJg5iTHxNu6Q9iIYUpox1kZQNRePV0RY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=nAExHd22; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=s1YeLXkz; arc=none smtp.client-ip=46.30.211.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="nAExHd22";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="s1YeLXkz"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-	 message-id:subject:cc:to:from:date:from;
-	bh=af9tXlANVtlQwBmD+QdoVRddc7MbwnrlvWQxh4+FXXs=;
-	b=nAExHd22AYzTdymX0eFUsjJ2mlWPhKSOdWtU0yVqH2bU9ovLQRKQeZhur+KfJ9CFef2wWc47Eb1wg
-	 woOvVerA19jBz+5gvLQEOBBtyke7o+GbIukjEuM3ZFXjpkaEcRfRSsbO5e2Apkledi0IcxtO6RpbyB
-	 QVjxpoYsI2Mh4yHhhzdKehjFYvAnjtfAP07u/G3JZzmhsgldRIlHn08Vj/yKZWjbyDzIlv0Ue+38LA
-	 H1SDzlwLvEI6KctWEaonN+QYNeUO17NX70Vm9iAfNb2NuWGsn5OsIsUE2DLVUcKwgDKX5Hlwd21HQ7
-	 7c4aw7cmCTxMos5o7CTNRG41oGsfTmQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-	 message-id:subject:cc:to:from:date:from;
-	bh=af9tXlANVtlQwBmD+QdoVRddc7MbwnrlvWQxh4+FXXs=;
-	b=s1YeLXkzSJLX/9K3+GaWebedmZYs8udZAJgDQJzsM/hyEHA4ts5BOcNk1YM3j2Pq+9DSbxCaHCu5j
-	 +qO1afiCQ==
-X-HalOne-ID: 0c327bce-28a5-11ef-a645-bf3d7f4c9d3b
-Received: from ravnborg.org (2-105-16-150-cable.dk.customer.tdc.net [2.105.16.150])
-	by mailrelay1.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id 0c327bce-28a5-11ef-a645-bf3d7f4c9d3b;
-	Wed, 12 Jun 2024 10:18:03 +0000 (UTC)
-Date: Wed, 12 Jun 2024 12:18:02 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
-	deller@gmx.de, linus.walleij@linaro.org, f.suligoi@asem.it,
-	ukleinek@kernel.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org
-Subject: Re: [PATCH 01/17] backlight: Add BL_CORE_ constants for power states
-Message-ID: <20240612101802.GA595554@ravnborg.org>
-References: <20240611125321.6927-1-tzimmermann@suse.de>
- <20240611125321.6927-2-tzimmermann@suse.de>
- <20240611175544.GC545417@ravnborg.org>
- <736884a4-8077-422d-8877-6ac4af58a85b@suse.de>
+	s=arc-20240116; t=1718199690; c=relaxed/simple;
+	bh=CnPobtnE+Wb5WRYgbTH3tSYYFBD6ULiUlMynyKZIOP0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=HyDqCPhnuvsByFH8UAtf1P9JMpQXL4NFa0GiyDFQcuAZjC0pBnyt4nDiFrfO+UxqRomOJBOilYdW1fNmH8SOkilfNGH0hbx/peyju1hywJXJC42v00paElPperUYfSeht34VfZK152VdpNRFXuKTVuz4M9BPrYYe6fDfjBhH/NE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:170b:1b4a:247:a009])
+	by andre.telenet-ops.be with bizsmtp
+	id adhK2C0073axqkY01dhKtR; Wed, 12 Jun 2024 15:41:20 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1sHOD0-008cdj-7Y;
+	Wed, 12 Jun 2024 15:41:19 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1sHOE3-00EaMZ-A5;
+	Wed, 12 Jun 2024 15:41:19 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Helge Deller <deller@gmx.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] video/logo: Make logo data const again
+Date: Wed, 12 Jun 2024 15:41:17 +0200
+Message-Id: <1ea18c51dd1c029e3c50bfb082f5942b58b7360c.1718199543.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <736884a4-8077-422d-8877-6ac4af58a85b@suse.de>
 
-Hi Thomas,
+As gcc-4.1 is no longer supported, the logo data can be made const
+again.  Hence revert commit 15e3252464432a29 ("fbdev: work around old
+compiler bug").
 
-On Wed, Jun 12, 2024 at 09:26:11AM +0200, Thomas Zimmermann wrote:
-> Hi Sam,
-> 
-> long time no see.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/video/logo/pnmtologo.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Had some spare time between jobs, started on my new job last week.
-Time will tell if there will be energy and time for hobby stuff.
+diff --git a/drivers/video/logo/pnmtologo.c b/drivers/video/logo/pnmtologo.c
+index 8080c4d9c4a23fbb..28d9f0b907a99a05 100644
+--- a/drivers/video/logo/pnmtologo.c
++++ b/drivers/video/logo/pnmtologo.c
+@@ -238,7 +238,7 @@ static void write_header(void)
+ 	fprintf(out, " *  Linux logo %s\n", logoname);
+ 	fputs(" */\n\n", out);
+ 	fputs("#include <linux/linux_logo.h>\n\n", out);
+-	fprintf(out, "static unsigned char %s_data[] __initdata = {\n",
++	fprintf(out, "static const unsigned char %s_data[] __initconst = {\n",
+ 		logoname);
+ }
+ 
+@@ -375,7 +375,7 @@ static void write_logo_clut224(void)
+ 	fputs("\n};\n\n", out);
+ 
+ 	/* write logo clut */
+-	fprintf(out, "static unsigned char %s_clut[] __initdata = {\n",
++	fprintf(out, "static const unsigned char %s_clut[] __initconst = {\n",
+ 		logoname);
+ 	write_hex_cnt = 0;
+ 	for (i = 0; i < logo_clutsize; i++) {
+-- 
+2.34.1
 
-> > 
-> > On top of this - many users of the power states could benefit using the
-> > backlight_enable()/backlight_disable() helpers, but that's another story.
-> 
-> Should I attempt to fix that? Many drivers appear to do something like
-> 
->   props.brightness = ...
->   props.power = UNBLANK
->   backlight_update_status()
-> 
-> That's the same pattern as in backlight_enable().
-
-I would keep the changes at a minimum, hoping someone else jumps in and
-do the cleanup. Then you can keep the patches that remove the fbdev
-dependency simple and easy to review (and thus get applied).
-Maybe the obvious places, and do the simple replacement for the rest..
-
-The drivers initialize and use the backlight properties in interesting
-ways so that would require a bit more effort to implement and review.
-
-I did it once for most of drm - but it was buggy so I ended up scrapping
-the patches :-(
-
-	Sam

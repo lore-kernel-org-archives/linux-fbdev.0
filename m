@@ -1,39 +1,39 @@
-Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [195.130.132.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07D0B17D899
-	for <linux-fbdev@vger.kernel.org>; Wed, 12 Jun 2024 13:41:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 015ED1E504
+	for <linux-fbdev@vger.kernel.org>; Wed, 12 Jun 2024 13:42:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718199690; cv=none; b=i/ISM7aEJX/+EX+WN4vPR4piETNH511HBV+YYXUtCz08oaJ46r1nOdnnTe+MbgP+N/Gq7WtLuB1hxSqtffW8eQGbSmW36fVXeF2OYIJCnWZRiDzuC3nZKGeTMKAWHpPf+NaxrxRlwGM9Qsplq1w5eXnTI5mUYGl4ThGslD3gFkA=
+	t=1718199756; cv=none; b=UW3raOllcGdyMMgzoLp+9q9UIvEABvPftlMgHcCMPhnFnybj9g5jjaRzteAaiJyopc4Ju5U+XHatfp1hgTJITjjB2hKagNaU/rHjaGc4bXzEM45bQTgqKfrmHauzyVRoRSxbXKNUoUW5Sb4arkFeSbtEAJL+gPV3e9/BmIYryMg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718199690; c=relaxed/simple;
-	bh=CnPobtnE+Wb5WRYgbTH3tSYYFBD6ULiUlMynyKZIOP0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=HyDqCPhnuvsByFH8UAtf1P9JMpQXL4NFa0GiyDFQcuAZjC0pBnyt4nDiFrfO+UxqRomOJBOilYdW1fNmH8SOkilfNGH0hbx/peyju1hywJXJC42v00paElPperUYfSeht34VfZK152VdpNRFXuKTVuz4M9BPrYYe6fDfjBhH/NE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.53
+	s=arc-20240116; t=1718199756; c=relaxed/simple;
+	bh=84VAyrU/6BHGLHSQRkCLi+n3OPH6tYImSm3m5ByeYHk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=QB52mZF0gmICXcQgNKa09l27hdM5BLzA/+R/XwoQ3Diry0BfhiEOEbdC/pas2RqS6wdoSzCZJ/9BEkws45QmitUlSaNtUCZp6u2EPEYaWUyGpeNLjiEpcIfhtAhNiswBzy6UcAo7deCtFEKV5lqSz/88nbz+/hm1zDMLKORUSzo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:170b:1b4a:247:a009])
-	by andre.telenet-ops.be with bizsmtp
-	id adhK2C0073axqkY01dhKtR; Wed, 12 Jun 2024 15:41:20 +0200
+	by xavier.telenet-ops.be with bizsmtp
+	id adiX2C00J3axqkY01diXux; Wed, 12 Jun 2024 15:42:31 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1sHOD0-008cdj-7Y;
-	Wed, 12 Jun 2024 15:41:19 +0200
+	id 1sHOEA-008cnA-2T;
+	Wed, 12 Jun 2024 15:42:31 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1sHOE3-00EaMZ-A5;
-	Wed, 12 Jun 2024 15:41:19 +0200
+	id 1sHOFD-00EaNg-5F;
+	Wed, 12 Jun 2024 15:42:31 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Helge Deller <deller@gmx.de>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] video/logo: Make logo data const again
-Date: Wed, 12 Jun 2024 15:41:17 +0200
-Message-Id: <1ea18c51dd1c029e3c50bfb082f5942b58b7360c.1718199543.git.geert+renesas@glider.be>
+Subject: [PATCH] video/logo: Remove linux_serial_image comments
+Date: Wed, 12 Jun 2024 15:42:29 +0200
+Message-Id: <427f78490365b38195f142d0aad7c9594a5bdd76.1718199686.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -43,37 +43,27 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-As gcc-4.1 is no longer supported, the logo data can be made const
-again.  Hence revert commit 15e3252464432a29 ("fbdev: work around old
-compiler bug").
+The last user of the serial_console ASCII image was removed in v2.1.115.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/video/logo/pnmtologo.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/linux_logo.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/video/logo/pnmtologo.c b/drivers/video/logo/pnmtologo.c
-index 8080c4d9c4a23fbb..28d9f0b907a99a05 100644
---- a/drivers/video/logo/pnmtologo.c
-+++ b/drivers/video/logo/pnmtologo.c
-@@ -238,7 +238,7 @@ static void write_header(void)
- 	fprintf(out, " *  Linux logo %s\n", logoname);
- 	fputs(" */\n\n", out);
- 	fputs("#include <linux/linux_logo.h>\n\n", out);
--	fprintf(out, "static unsigned char %s_data[] __initdata = {\n",
-+	fprintf(out, "static const unsigned char %s_data[] __initconst = {\n",
- 		logoname);
- }
+diff --git a/include/linux/linux_logo.h b/include/linux/linux_logo.h
+index d4d5b93efe8435bd..e37699b7e8393df0 100644
+--- a/include/linux/linux_logo.h
++++ b/include/linux/linux_logo.h
+@@ -10,9 +10,6 @@
+  *  Copyright (C) 2001 Greg Banks <gnb@alphalink.com.au>
+  *  Copyright (C) 2001 Jan-Benedict Glaw <jbglaw@lug-owl.de>
+  *  Copyright (C) 2003 Geert Uytterhoeven <geert@linux-m68k.org>
+- *
+- *  Serial_console ascii image can be any size,
+- *  but should contain %s to display the version
+  */
  
-@@ -375,7 +375,7 @@ static void write_logo_clut224(void)
- 	fputs("\n};\n\n", out);
- 
- 	/* write logo clut */
--	fprintf(out, "static unsigned char %s_clut[] __initdata = {\n",
-+	fprintf(out, "static const unsigned char %s_clut[] __initconst = {\n",
- 		logoname);
- 	write_hex_cnt = 0;
- 	for (i = 0; i < logo_clutsize; i++) {
+ #include <linux/init.h>
 -- 
 2.34.1
 

@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17CEF1877;
-	Thu, 13 Jun 2024 21:12:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FC3371747;
+	Thu, 13 Jun 2024 21:30:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718313174; cv=none; b=a1KOR1ICI95ziX/nSk4QKVVmTsmTVqNAQaWqiJD49/yrBf/LCB41ps62IWTAC/Vpi9AzzndrBbVSR8b1PVTmOH06pQJM9fU9yFLxFI3uv79GND1IWhwnHwgMkWkEYnkVoTPMS1zeqYsM7dk76SpZ8V+FqZjwJMtkuXqy+4gEbbs=
+	t=1718314235; cv=none; b=bOxrPuQhD/MKIR3xBn9Yj2UR0RIx11Pzta5CqRpncuKlM/kfj2BZv5ETP0CmjEpweS1WLapDAPqiDBsNoEQ2fTDB4LYfQVorTJuLds+DPr1uoGoOcYpmwhecEJrN4rLuHtc748MgXRQ3MVix48Dmg33RMvOhzHD6wuZ1GLdpnfA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718313174; c=relaxed/simple;
-	bh=9tQSYSgyBhMSDag4XhwdfDSaNudYfQHJ7twOkn5RodU=;
+	s=arc-20240116; t=1718314235; c=relaxed/simple;
+	bh=w9PU2XazI/1wtaRpK+o/sHM1sY9+OEXCKdI/pViCadw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gmT+crXiV3z2IZ4FRUp0JscQChr2V2X7FAAC01jmT7ekevq2G0x3HlTKP4dxhLfPg2qpcJefc9UA6uuo6JEQl3zlTqpmBSuqhX75t3lH/g0iaksUzTbdGGo6zAAJnRqVTFljxJ9X0Qr00qR9CjlvQ2zyi/1UsJLifzZXc8J5cbM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=OzNTpt+G; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=Sp/FBVbEJckYIkvgeaiadm6QcvKmLrXilHn4nvUSfetYTAKcQ8fh5gsYsUcQpvaQ0dL3IpQa8gkq+nw5J9pY82pLFcZw0gBemh+JoOmB3QRa3An6PYgq+HEo5Zw7zg/RXSiwg1H/oA6YajoadxvSUlFWrBc5DpxAEgS4rMQ05b4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=p15MkdbR; arc=none smtp.client-ip=212.227.17.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="OzNTpt+G"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="p15MkdbR"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1718313163; x=1718917963; i=deller@gmx.de;
-	bh=CTyDv+PUvlT1RKfroSpzt4fEEz6wcmrhbKFLHShyk/s=;
+	s=s31663417; t=1718314207; x=1718919007; i=deller@gmx.de;
+	bh=M+FLaVcT0LhG7HPlKtaV7DfrhDySDe5fxZhV7l6aw2M=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=OzNTpt+GNyXg5g/VPjh7EQ+GTHBLNXRBNuaRDtLYeENJ8FL+VrIHI5eSTqYp5uMO
-	 gYn9YPJr2WswRq8l0bbE9JTBnXf4syy3KgVq9MwZ/upXUCwNijoBAwwWWGWspAAJR
-	 jrI3w407I0XIyr0plyOHTq8i6FOE83GdoAL0ukdDze6XK42gSwaK9Z1bFZqArQLP/
-	 4ilzqpy4e3xvdgL2K8n0A4RSKrOn6S5peTnmGfGjN8Ubxq5RBYk73QE+9LroaJUk6
-	 0nrpHzL273qiEsnGTEbYslFV9Vlq32+oYu+Wztij4L6iB0ErPMC3U30KD+qWhVf39
-	 5p4VyXxezCpBmh9YfA==
+	b=p15MkdbRbQCACUzzzu+VWdU1QVwALK3sA+QT2DqzUR6EA4jdoRT0aqFGE1cXXMrS
+	 unQuZvh5nu9/wfqJka+jzUg9qFtWaoMKoJRxQ+P26SvV+ktQ/siuk8THJfQSEZtKh
+	 3uy2aIrEUiE2r80QRon+w1bRyHghKa+6AhtarT8rRo/oENblRNcxtS9lCrymY5W8v
+	 9V05Fvj0odlPM6Mvkhof3WJlu+Ta7HqwGyp1Eiq/0Fkhp38Kyl+O2W6vmMhlO1bPg
+	 lBOSv9k1EXPwwmu7QOuOZa9NhWBuSbFwen4gejxYLajUe4zEl0eJL13Ezz3VDDA6K
+	 vqXO9p35E0v5TUdmcw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([83.135.217.92]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mj8mb-1swRpe1tqf-00l3MM; Thu, 13
- Jun 2024 23:12:43 +0200
-Message-ID: <3adfc015-b54e-4ff6-831c-60d55118079b@gmx.de>
-Date: Thu, 13 Jun 2024 23:12:42 +0200
+Received: from [192.168.20.55] ([83.135.217.92]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MryXN-1snbsA217F-00qGBk; Thu, 13
+ Jun 2024 23:30:07 +0200
+Message-ID: <5d8d2efe-45dd-4033-aaae-e7f923ef9e76@gmx.de>
+Date: Thu, 13 Jun 2024 23:30:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: vfb: add missing MODULE_DESCRIPTION() macro
-To: Jeff Johnson <quic_jjohnson@quicinc.com>
+Subject: Re: [PATCH] fbdev: vesafb: Detect VGA compatibility from screen
+ info's VESA attributes
+To: Thomas Zimmermann <tzimmermann@suse.de>, sam@ravnborg.org,
+ javierm@redhat.com, hpa@zytor.com
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <20240612-md-drivers-video-fbdev-vfb-v1-1-9bcbc286aac4@quicinc.com>
+ stable@vger.kernel.org
+References: <20240613090240.7107-1-tzimmermann@suse.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,60 +95,107 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240612-md-drivers-video-fbdev-vfb-v1-1-9bcbc286aac4@quicinc.com>
+In-Reply-To: <20240613090240.7107-1-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:jIUSLwIzNEpQok55aYoZICYDlbc7/7+gm3YIqdUOA2gwA8qy3nv
- 7FpWYj/aUzZTdd6gCOH7VSplne1xQBuirUbuafoa2ysu1mBvWe59NYfWxlmTX3ATHoVR/Yr
- OpjHj8IkEfQW2a++VB370xWF0n8o6IwDOHz1/lNhH+UvSkW7mZVjXgYqrKHXyDJV1Qv/yDP
- mvZl0dHnMG+fBlPN32k9A==
+X-Provags-ID: V03:K1:CIvh9Sq72L3aovFbBuEWTa4wKFZV9W+x9cxqUQ8VJu0dwiyxIaQ
+ D0sNDRFtQ2uX2wwcTld99nDRnvqMI4nGSeeRJ6mp/PnR8E2Aui1TeHw4LQ+YAalIYT8Nle+
+ F2Olcm6+bAdLwagza6TxZ04EK7t0+cTr+/IkL9kNGU1o3x9zaijtTJ6bz4wwNb4Rf9Dbc/J
+ 0iQ0YxVupLdgzzHy0CFBQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:FvdmspNuxYE=;1hmwyW7XroWlZjZTcT7rWWJOlux
- JtMiLQJWmbPnsICiW+BGaYnLZK3MicdcmcQbXgs4YFF3yUq6+UUTmynC5qQfgLj2P2coug0/1
- NQ11mdHxSxgxJ/7zer0Nqp2Ic7z7bJuirZf6MyobIdZvw1gHIu0ZdHSj9gFsntu+m5C8AswIn
- A05LbbWZgBwyTOeX2/GphJwRFNZqu0IB6xYbztur8DUoL63V17H2UQss+Kow67Jvs6DF/WngU
- HMHzD1hJcoWLWjCwN8Dydv66JDQdIcLPzYB7VNYyyqrieDYwt6b6rfuaVY00quorqnTbHqA7j
- YKNUkmC4P5ZFj/v1GHc4kuNquunTPEM9xW1PJxVznDe6MjKD6fzMiRPvbkxacedOTtLPS0kfP
- fEvaKWE45tI/ovcXMfcubjlK+8d9TCBj/1fgzdweCG/raJ49XkkYTrNjCyEiaFLxH+K4cIV66
- Khp5xsARKuNcymotKTZVRiJzs/4aGgvEu4djKso71eYqwePUnwmqT0EzVofBuDVSW2KPwioz3
- QWG8x/dEZycnPO0e03xMGpTXhYkw05fVaIwQ5ZbPVX+I9dyXSANFDifw3ziTyi2RTY5voXfCJ
- glCOFd7xdCeYjlWEW5xgzyFwWdemDCRMhQlEZTX6u391dpKT+HT82GwdE/R3PdZqVclwBoAQF
- 6ynuPN6ymqCWwtjCcPjqmukksd3oMxrliiRI29q6xzgkx84WQ9vyHc0P8Odh7u/a2hyuvirUv
- fLpuAmDpZQ4L9uqBAxmKlgYFstvVWAcdbVm3kwXdz4l25NUXQHCA+coFRASLHokymeY+x9YqD
- TogiN6PCf2uXica4v9EVrUZVuFmEYGrEQfvOqkAhEEKY8=
+UI-OutboundReport: notjunk:1;M01:P0:mXuTNfgv1qc=;zGblu22QTNPoMbN62vu9nOvUy40
+ Wl2fHNKqexYS2cqveLq3ZE8WMNdPifAkR2xv9uVlaLn6QSuqKDlaXT6X8qOXMGntS/vFqYpLG
+ RgyHQlleIAGQiUlIcy71GNRFfWUBVZTs3Y3ZOLEePXg55EJ7CcPIFzWdOSbYLsZDNooKH8Y10
+ gpcCxhVAYIU7TJbe5md19NmR6Su4uE+oXc+K/9NX1nWe1kBSiF/vk7PhYfKU1SYm7c11tBm26
+ GKhJL3B/Ts2zATfB6DHtoOW9jKhmvwdvgISQGHZHfIDMfUdfYvP6ohVeJGJQNiQAJHXVjYh0V
+ Ir7nbGkRnbLDCtTJUyem0pwhRhSEYQE/KwtOpXSRJxuHPcptsh9tibTJa3HC+1mga86C00lY4
+ wM9EdSwhpqAbYmZGZ6Uqkc7nBiBdFeKG9CNwkVTNEjMTzmgKe5GsLCNr9P47mcAh6/tgm8FTH
+ LHJv/B36VPb1BfmmZo4s6uUxBNPRRPdbmHj8HY+2dSCINCJ2D+n90vh28ZG/btbl5nYUAzRCo
+ onu0ogYuSxr3y7seDMhYMkLl+2gu7nwltfpTzICZEg2pUcNfVjKwJAp8wPXM5p1Xe2e+JzV/L
+ tr8HBAGHxayzNRmt/2xbJ6IywWZ7Zp39I9t1rB/yGTh6m7lrO1AKu9DZBh9vHZ2DD8hORtZe7
+ VzDgpBvwfYKSaaT3Z/5OII7VR9m/T/HgqGXGtSlQR3RVuaruBe9biiyIFQjfsUE3B6sWdiDY1
+ 4epVM1UO2YZ7iZFfTrpzZaoj0J6o9NUZs/TjZ8ZBUnpxP7f24PsSlcigF7nlVD+s11cgkO+/x
+ OXMwY/QYWqv8g4y/ZfLzdtpmyHmj6WGRsrI5WZICHI7HU=
 
-On 6/13/24 04:44, Jeff Johnson wrote:
-> With ARCH=3Dx86, make allmodconfig && make W=3D1 C=3D1 reports:
-> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/video/fbdev/vf=
-b.o
+On 6/13/24 11:02, Thomas Zimmermann wrote:
+> Test the vesa_attributes field in struct screen_info for compatibility
+> with VGA hardware. Vesafb currently tests bit 1 in screen_info's
+> capabilities field, It sets the framebuffer address size and is
+> unrelated to VGA.
 >
-> Add the missing invocation of the MODULE_DESCRIPTION() macro.
+> Section 4.4 of the Vesa VBE 2.0 specifications defines that bit 5 in
+> the mode's attributes field signals VGA compatibility. The mode is
+> compatible with VGA hardware if the bit is clear. In that case, the
+> driver can access VGA state of the VBE's underlying hardware. The
+> vesafb driver uses this feature to program the color LUT in palette
+> modes. Without, colors might be incorrect.
 >
-> Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+> The problem got introduced in commit 89ec4c238e7a ("[PATCH] vesafb: Fix
+> incorrect logo colors in x86_64"). It incorrectly stores the mode
+> attributes in the screen_info's capabilities field and updates vesafb
+> accordingly. Later, commit 5e8ddcbe8692 ("Video mode probing support for
+> the new x86 setup code") fixed the screen_info, but did not update vesaf=
+b.
+> Color output still tends to work, because bit 1 in capabilities is
+> usually 0.
+>
+> Besides fixing the bug in vesafb, this commit introduces a helper that
+> reads the correct bit from screen_info.
 
-All 6 fbdev driver patches applied to fbdev git tree.
-Thank you Jeff!
+Nice catch, Thomas!
+
+But do we really need this additional helper?
+
+
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: 5e8ddcbe8692 ("Video mode probing support for the new x86 setup c=
+ode")
+> Cc: <stable@vger.kernel.org> # v2.6.23+
+
+> ---
+>   drivers/video/fbdev/vesafb.c | 2 +-
+>   include/linux/screen_info.h  | 5 +++++
+>   2 files changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+> index 8ab64ae4cad3e..5a161750a3aee 100644
+> --- a/drivers/video/fbdev/vesafb.c
+> +++ b/drivers/video/fbdev/vesafb.c
+> @@ -271,7 +271,7 @@ static int vesafb_probe(struct platform_device *dev)
+>   	if (si->orig_video_isVGA !=3D VIDEO_TYPE_VLFB)
+>   		return -ENODEV;
+>
+> -	vga_compat =3D (si->capabilities & 2) ? 0 : 1;
+> +	vga_compat =3D !__screen_info_vbe_mode_nonvga(si);
+
+Instead maybe just this: ?
+  +	/* mode is VGA-compatible if BIT 5 is _NOT_ set */
+  +	vga_compat =3D (si->vesa_attributes & BIT(5)) =3D=3D 0;
+
+I suggest to make patch small, esp. if you ask for backport to v2.6.23+.
 
 Helge
 
-> ---
->   drivers/video/fbdev/vfb.c | 1 +
->   1 file changed, 1 insertion(+)
+>   	vesafb_fix.smem_start =3D si->lfb_base;
+>   	vesafb_defined.bits_per_pixel =3D si->lfb_depth;
+>   	if (15 =3D=3D vesafb_defined.bits_per_pixel)
+> diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+> index 75303c126285a..95f2a339de329 100644
+> --- a/include/linux/screen_info.h
+> +++ b/include/linux/screen_info.h
+> @@ -49,6 +49,11 @@ static inline u64 __screen_info_lfb_size(const struct=
+ screen_info *si, unsigned
+>   	return lfb_size;
+>   }
 >
-> diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-> index f86149ba3835..158e48385c24 100644
-> --- a/drivers/video/fbdev/vfb.c
-> +++ b/drivers/video/fbdev/vfb.c
-> @@ -546,5 +546,6 @@ static void __exit vfb_exit(void)
->
->   module_exit(vfb_exit);
->
-> +MODULE_DESCRIPTION("Virtual Frame Buffer driver");
->   MODULE_LICENSE("GPL");
->   #endif				/* MODULE */
->
-> ---
-> base-commit: 83a7eefedc9b56fe7bfeff13b6c7356688ffa670
-> change-id: 20240612-md-drivers-video-fbdev-vfb-a4ed3808e861
->
+> +static inline bool __screen_info_vbe_mode_nonvga(const struct screen_in=
+fo *si)
+> +{
+> +	return si->vesa_attributes & BIT(5); // VGA if _not_ set
+> +}
+> +
+>   static inline unsigned int __screen_info_video_type(unsigned int type)
+>   {
+>   	switch (type) {
 

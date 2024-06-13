@@ -1,44 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6706317FD;
-	Thu, 13 Jun 2024 16:48:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54FA714A4D2;
+	Thu, 13 Jun 2024 17:20:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718297285; cv=none; b=LCqjRdkU2uhFmnzsLmbTHLJpCt6DGHyTPQmwVO+S9oGuaS7FFBdyPKTQGgQO5unPZLHbKY4/FghL6qkStCaVEAahS4fUlNGsOav8JQ2Bot4Je6EEIElkjktWQJngj4fWxMOAc65B/UbsAuy0fXCo9kAFaICROaDRlRaHOy2aRYc=
+	t=1718299213; cv=none; b=gxmUJFIinl5Iq9J2HDhdmpmKvTufg9IGeelcGsYe5Y7jiZmlJbnw8rJeyO04Lm3vPkEsx/hi7aHEWvc2QQS50tzRZoFtKMgDxi02jjjENUXSUhinjzsOIoDnIJjcoXO4tpxImJ5PvImSnSgoPUDRzZTHY7JWMQvgctiRBoUxaMQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718297285; c=relaxed/simple;
-	bh=AJl67d8slnynIjtfzAGyDRCCHUC9dNMUzxCpIOQc+nk=;
+	s=arc-20240116; t=1718299213; c=relaxed/simple;
+	bh=Apy/YJfzCXG5qBffjVb5Em/7Y/ajo8ZRh+LCsukDKns=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=a1krORvCl8R6S5SRWxECjs/ytk8bQuN4/LxqJdE9lcdMKGlsQT6batiQ4DDyny/8vgfKy5v5HCPmoypgVRu+IDktzMY5LmEG0dHzi/Wet5kt9fcbaZViIbQy8IGBgJ1iDCKm1HQfA9nEfSg2cMRnWZMzv4w/PWSefDdjX8VRvIw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jFIsMXMs; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=ifx9IjiCMm46I1p1wTvzGACANJBojIW3v8ckfBxhZvcRFSKHthJp9Co45mAuit4PeIM4jbW5/2+iQf1Sm85XkmRtjno3btbPmP4e23PD8xDFvmJGICWusS6pXPeB1ADvzlZQvpcDZSNANHNWwXBIZqst5a6k+PJdXFF6lFdMn6k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kXFfAgqG; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jFIsMXMs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33A62C2BBFC;
-	Thu, 13 Jun 2024 16:48:03 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kXFfAgqG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66789C2BBFC;
+	Thu, 13 Jun 2024 17:20:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718297285;
-	bh=AJl67d8slnynIjtfzAGyDRCCHUC9dNMUzxCpIOQc+nk=;
+	s=k20201202; t=1718299212;
+	bh=Apy/YJfzCXG5qBffjVb5Em/7Y/ajo8ZRh+LCsukDKns=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=jFIsMXMsqyze/Z8v8/dCBH6z8+PH7v0VhR21enZw/mKLXpd2yA5UKmd9ZI+HmmHOr
-	 SlS/6ZqRAW4O9bgxtS7vHQGsxDBZ4oyWpjTK9LGu7MrDOYhmLl6hR9DsJjPxcWbt17
-	 jm7fV9vzwQ/Ht77V8LZikuWrBANBwzKZHiXgA1QnUwafXf9+gZGg2dGIZvdGh572nI
-	 8u3i5uFK3JkwYfaOsmzE8HeUgpZrNXk84jgmjHfzD9cV8Z5vGeDsxWdLkKURfMp3B9
-	 BJaqQV6OtfVwLFHf22SBJKPlh/3Si7zG2rqhnV4WsU8f+zm9AykHp+hDypM+FqhBSC
-	 xzI6Zn5PMI42A==
+	b=kXFfAgqGGfRDajw1ZdSl8ujZ8VNXRrUmaB5qtDjpeh2Z+N7taNOmSuloB3JcuLlxY
+	 cQn7auRp4fQYw9q4qszuzglsJCU4SucZjkUAaahDbFKjsIUGkRvXpP28EcpM0Agd9K
+	 n8d6bfEiH0f0BmM9k7yQCnIqphMMFwSJc9DQSOvYG5VyhINGHmMerx0TozM2JWMXJX
+	 jp0xnrq5xZme5OE7Lfk6dn0LQxUWD094vSQxaCEtvXPP0ZS3q3C5r0ygn1by4LYoFv
+	 98QoRL7uyWnk0lrdx5nK4cw8ssU22dTHjOyn6y7qQGitRvmteIrGdvFrr/zCW+s5Bf
+	 yMtoAR8UHUmOQ==
 From: Lee Jones <lee@kernel.org>
-To: Patrick Gansterer <paroga@paroga.com>, 
- Dan Carpenter <dan.carpenter@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, 
+To: Daniel Thompson <daniel.thompson@linaro.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ Jeff Johnson <quic_jjohnson@quicinc.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
  linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <187b5bc5-a010-46c2-8ead-980df9efae79@moroto.mountain>
-References: <187b5bc5-a010-46c2-8ead-980df9efae79@moroto.mountain>
-Subject: Re: (subset) [PATCH] backlight: lm3509_bl: Fix NULL vs IS_ERR()
- check in register() function
-Message-Id: <171829728292.2711571.6119910061158578189.b4-ty@kernel.org>
-Date: Thu, 13 Jun 2024 17:48:02 +0100
+In-Reply-To: <20240612-md-drivers-video-backlight-v1-1-f4ca1beb36cc@quicinc.com>
+References: <20240612-md-drivers-video-backlight-v1-1-f4ca1beb36cc@quicinc.com>
+Subject: Re: (subset) [PATCH] backlight: add missing MODULE_DESCRIPTION()
+ macros
+Message-Id: <171829921116.2731555.2620177411029795057.b4-ty@kernel.org>
+Date: Thu, 13 Jun 2024 18:20:11 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -49,16 +48,20 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.13.0
 
-On Thu, 06 Jun 2024 16:10:23 +0300, Dan Carpenter wrote:
-> The devm_backlight_device_register() doesn't return NULL, it returns
-> error pointers.  Update the error checking to match.
+On Wed, 12 Jun 2024 07:12:31 -0700, Jeff Johnson wrote:
+> With ARCH=x86, make allmodconfig && make W=1 C=1 reports:
+> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/video/backlight/platform_lcd.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/video/backlight/rt4831-backlight.o
+> 
+> Add the missing invocations of the MODULE_DESCRIPTION() macro.
 > 
 > 
+> [...]
 
 Applied, thanks!
 
-[1/1] backlight: lm3509_bl: Fix NULL vs IS_ERR() check in register() function
-      commit: 90b7f2ead953aab5677ae8235d78841cee8fd13e
+[1/1] backlight: add missing MODULE_DESCRIPTION() macros
+      commit: 7857f5c38d04a38e7a20060a6d370caf0424aa4e
 
 --
 Lee Jones [李琼斯]

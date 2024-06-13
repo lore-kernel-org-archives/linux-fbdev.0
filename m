@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A847F13A256
-	for <linux-fbdev@vger.kernel.org>; Thu, 13 Jun 2024 21:06:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17CEF1877;
+	Thu, 13 Jun 2024 21:12:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718312802; cv=none; b=GA6AikAJkX+XWJq0jqV7OuUM7CHj9ieWn2/8q/+kF6vuUvIWY/Dtk/mtUNFTstigxXseay7ojYqdIvZxq8PgrVuwjB+7zM9BMvbMPluI2Z0Mo0d7tp1Lpiks2iz+tjKgFBRkej+BCeSPxN8u8V+OklUb6xTgbxm3fYOMCJm7T/g=
+	t=1718313174; cv=none; b=a1KOR1ICI95ziX/nSk4QKVVmTsmTVqNAQaWqiJD49/yrBf/LCB41ps62IWTAC/Vpi9AzzndrBbVSR8b1PVTmOH06pQJM9fU9yFLxFI3uv79GND1IWhwnHwgMkWkEYnkVoTPMS1zeqYsM7dk76SpZ8V+FqZjwJMtkuXqy+4gEbbs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718312802; c=relaxed/simple;
-	bh=VbsKgENJ3nJ3O3S+7c7fxSpJORZrm3j++AE0eJJhasU=;
+	s=arc-20240116; t=1718313174; c=relaxed/simple;
+	bh=9tQSYSgyBhMSDag4XhwdfDSaNudYfQHJ7twOkn5RodU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gZTRsfC4lcpcmpqE0UNbSn047f1OvH/ICrIfoUx1lhktUq/qLdHweLEKtXn9yB0LNlU3xG5uxl/OriVmCgf+DIyVyRE8L7Z6RPVQ3mtaKvKPQp+lUyraiFJmhqAs3ojSkcfnqorJ2/x/VtvJD/OadcapZHvP9Aa2ANWyrfhYei8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=WnXGfIV2; arc=none smtp.client-ip=212.227.17.20
+	 In-Reply-To:Content-Type; b=gmT+crXiV3z2IZ4FRUp0JscQChr2V2X7FAAC01jmT7ekevq2G0x3HlTKP4dxhLfPg2qpcJefc9UA6uuo6JEQl3zlTqpmBSuqhX75t3lH/g0iaksUzTbdGGo6zAAJnRqVTFljxJ9X0Qr00qR9CjlvQ2zyi/1UsJLifzZXc8J5cbM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=OzNTpt+G; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="WnXGfIV2"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="OzNTpt+G"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1718312795; x=1718917595; i=deller@gmx.de;
-	bh=ITwk7WySaOrd5yfjYem/YIWT3S6C4qRWHKcP7yybcEU=;
+	s=s31663417; t=1718313163; x=1718917963; i=deller@gmx.de;
+	bh=CTyDv+PUvlT1RKfroSpzt4fEEz6wcmrhbKFLHShyk/s=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=WnXGfIV24axP2JRSDbisdOsNjNxf2jjmp98/wHRy1q/2DKltzV+/u1aoh9vRM0rO
-	 lLv5X02aWMixsa4HaSj12CnbeorqrXToi6baBXjdIe8EsmeViMsC1k/25na4ng7WE
-	 qfDK00LFx5LVSHST+zjFz/i1cc+cClmjUqqUbg+yqsfJGU7bRQMkLF39GdUcaFZUN
-	 QqAFi1SXJgGebhOgV4RqG72cbtScDDtojiJJwgsMDSYAty05ULyZ+L/Ghvkulq6iD
-	 MBhnr4HjkERQtv5yQlK0WYUTZvjWoP+YJbzNKm0LNgOX8Ko6yvpynzgzdeW2HiEZL
-	 W6RVcMY39sZTuvbqzw==
+	b=OzNTpt+GNyXg5g/VPjh7EQ+GTHBLNXRBNuaRDtLYeENJ8FL+VrIHI5eSTqYp5uMO
+	 gYn9YPJr2WswRq8l0bbE9JTBnXf4syy3KgVq9MwZ/upXUCwNijoBAwwWWGWspAAJR
+	 jrI3w407I0XIyr0plyOHTq8i6FOE83GdoAL0ukdDze6XK42gSwaK9Z1bFZqArQLP/
+	 4ilzqpy4e3xvdgL2K8n0A4RSKrOn6S5peTnmGfGjN8Ubxq5RBYk73QE+9LroaJUk6
+	 0nrpHzL273qiEsnGTEbYslFV9Vlq32+oYu+Wztij4L6iB0ErPMC3U30KD+qWhVf39
+	 5p4VyXxezCpBmh9YfA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([83.135.217.92]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MHGCu-1sDTwI3rA8-0042sy; Thu, 13
- Jun 2024 23:06:34 +0200
-Message-ID: <384f31e3-1d88-4374-b27c-4e7d8f0cd136@gmx.de>
-Date: Thu, 13 Jun 2024 23:06:33 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mj8mb-1swRpe1tqf-00l3MM; Thu, 13
+ Jun 2024 23:12:43 +0200
+Message-ID: <3adfc015-b54e-4ff6-831c-60d55118079b@gmx.de>
+Date: Thu, 13 Jun 2024 23:12:42 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video/logo: Remove linux_serial_image comments
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <427f78490365b38195f142d0aad7c9594a5bdd76.1718199686.git.geert+renesas@glider.be>
+Subject: Re: [PATCH] fbdev: vfb: add missing MODULE_DESCRIPTION() macro
+To: Jeff Johnson <quic_jjohnson@quicinc.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <20240612-md-drivers-video-fbdev-vfb-v1-1-9bcbc286aac4@quicinc.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,55 +93,60 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <427f78490365b38195f142d0aad7c9594a5bdd76.1718199686.git.geert+renesas@glider.be>
+In-Reply-To: <20240612-md-drivers-video-fbdev-vfb-v1-1-9bcbc286aac4@quicinc.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:da6QO1h1RyC6rasuZKzWFsx7J+xzBykhfS7rD4BXLF3kkz74zHK
- eVCfp5s6QQTFCfsHZitgRM8B/ljt0Wh42sTTB+vZfJNy0HHtRD7Ll6UdRJ1ceZuaostI0i8
- qvcaDBzvsUSb5zkgXwzxnn2BT1fBuNOOVGa0r6JLiMILJUs7vVpTlXsCimGMknwv1gJ0Gtj
- L0EWdi8srbFOKi011ixXw==
+X-Provags-ID: V03:K1:jIUSLwIzNEpQok55aYoZICYDlbc7/7+gm3YIqdUOA2gwA8qy3nv
+ 7FpWYj/aUzZTdd6gCOH7VSplne1xQBuirUbuafoa2ysu1mBvWe59NYfWxlmTX3ATHoVR/Yr
+ OpjHj8IkEfQW2a++VB370xWF0n8o6IwDOHz1/lNhH+UvSkW7mZVjXgYqrKHXyDJV1Qv/yDP
+ mvZl0dHnMG+fBlPN32k9A==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:7X9Q4VtFepk=;YJ1y+IOKpEfFJSsf3etIY15SKIp
- dVpikQLVCbjQBrCWdoftjg6w7rd+hHjprqEG+JHw32UGftbTslBaX2/vCdUnGxwhdtPlYk/rK
- 5rcwtW0lLOY2phqpE0DIp/7IdA2OsslQTaaQ7m+SrzkySlxkPK/eSJEgZRUDfxTULDF5k7q3g
- Tx8QWc9USD/lrr8SNGXxa49+D+PCEsCN6si0Ip7qQIoTr4bmomN3i4bQQ2LiKMFEBHND0rDPI
- LK6566LxqkQYJWWJYqiHTkdtWcvl2asmcedh7nmQwzUDz+Ut59ZjMQiWhNHtqQdJ3G7J35zdP
- Ni5tmdGcP3RqWoT0+lMUnNwyl0V+ft3J156s3KNCq9NpGqRm8+xF3qdVY383kXCmGcOprak6y
- 9fknxgh0aTnpDY9ogSeOY0MFbC+ISyrmD2n18yj4Uu64Ndq2wT9XfwnpE9ZinSCSyoXnRQVL6
- puhf6mXFu+DVmNemqPhHBxnLvKvAYPWLgMGfAd99hm2G+36M4jsyWAnHjtq6t0YRybvfffjQ+
- CFxIG83X27tbp7ba0zLzkqoC35CMCovK3a/dI4lEBx9DA5RyStts1vIWIr6G90K4AbZe0vNd9
- hge2+ByV3IiCvwKNLhvP+uvTi/nUmXSSd8ytjrvLjgkBqi7pOFzxdABhiNLwiKEIVbE4ErNo7
- 8YlNSvNfL/FVyXmnhQI6GOxB033D7uYxJ/lXv2cC9TyL2FHEZvBGT3LulhrmdEnuYUYSfrD6T
- ZTSOV656GMcgmsR80NyG9KP4mjk9V6lpLpEBBakdBrv9qJ659FAaf9rEaI5Iu1pc8jZ1awE7y
- wpMAIERWvHIsXABJYqzgNkK9PLF3CV8XNyF+Pl4GUgu1E=
+UI-OutboundReport: notjunk:1;M01:P0:FvdmspNuxYE=;1hmwyW7XroWlZjZTcT7rWWJOlux
+ JtMiLQJWmbPnsICiW+BGaYnLZK3MicdcmcQbXgs4YFF3yUq6+UUTmynC5qQfgLj2P2coug0/1
+ NQ11mdHxSxgxJ/7zer0Nqp2Ic7z7bJuirZf6MyobIdZvw1gHIu0ZdHSj9gFsntu+m5C8AswIn
+ A05LbbWZgBwyTOeX2/GphJwRFNZqu0IB6xYbztur8DUoL63V17H2UQss+Kow67Jvs6DF/WngU
+ HMHzD1hJcoWLWjCwN8Dydv66JDQdIcLPzYB7VNYyyqrieDYwt6b6rfuaVY00quorqnTbHqA7j
+ YKNUkmC4P5ZFj/v1GHc4kuNquunTPEM9xW1PJxVznDe6MjKD6fzMiRPvbkxacedOTtLPS0kfP
+ fEvaKWE45tI/ovcXMfcubjlK+8d9TCBj/1fgzdweCG/raJ49XkkYTrNjCyEiaFLxH+K4cIV66
+ Khp5xsARKuNcymotKTZVRiJzs/4aGgvEu4djKso71eYqwePUnwmqT0EzVofBuDVSW2KPwioz3
+ QWG8x/dEZycnPO0e03xMGpTXhYkw05fVaIwQ5ZbPVX+I9dyXSANFDifw3ziTyi2RTY5voXfCJ
+ glCOFd7xdCeYjlWEW5xgzyFwWdemDCRMhQlEZTX6u391dpKT+HT82GwdE/R3PdZqVclwBoAQF
+ 6ynuPN6ymqCWwtjCcPjqmukksd3oMxrliiRI29q6xzgkx84WQ9vyHc0P8Odh7u/a2hyuvirUv
+ fLpuAmDpZQ4L9uqBAxmKlgYFstvVWAcdbVm3kwXdz4l25NUXQHCA+coFRASLHokymeY+x9YqD
+ TogiN6PCf2uXica4v9EVrUZVuFmEYGrEQfvOqkAhEEKY8=
 
-On 6/12/24 15:42, Geert Uytterhoeven wrote:
-> The last user of the serial_console ASCII image was removed in v2.1.115.
+On 6/13/24 04:44, Jeff Johnson wrote:
+> With ARCH=3Dx86, make allmodconfig && make W=3D1 C=3D1 reports:
+> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/video/fbdev/vf=
+b.o
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Add the missing invocation of the MODULE_DESCRIPTION() macro.
+>
+> Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
 
-
-applied.
-Thanks!
+All 6 fbdev driver patches applied to fbdev git tree.
+Thank you Jeff!
 
 Helge
 
 > ---
->   include/linux/linux_logo.h | 3 ---
->   1 file changed, 3 deletions(-)
+>   drivers/video/fbdev/vfb.c | 1 +
+>   1 file changed, 1 insertion(+)
 >
-> diff --git a/include/linux/linux_logo.h b/include/linux/linux_logo.h
-> index d4d5b93efe8435bd..e37699b7e8393df0 100644
-> --- a/include/linux/linux_logo.h
-> +++ b/include/linux/linux_logo.h
-> @@ -10,9 +10,6 @@
->    *  Copyright (C) 2001 Greg Banks <gnb@alphalink.com.au>
->    *  Copyright (C) 2001 Jan-Benedict Glaw <jbglaw@lug-owl.de>
->    *  Copyright (C) 2003 Geert Uytterhoeven <geert@linux-m68k.org>
-> - *
-> - *  Serial_console ascii image can be any size,
-> - *  but should contain %s to display the version
->    */
+> diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
+> index f86149ba3835..158e48385c24 100644
+> --- a/drivers/video/fbdev/vfb.c
+> +++ b/drivers/video/fbdev/vfb.c
+> @@ -546,5 +546,6 @@ static void __exit vfb_exit(void)
 >
->   #include <linux/init.h>
+>   module_exit(vfb_exit);
+>
+> +MODULE_DESCRIPTION("Virtual Frame Buffer driver");
+>   MODULE_LICENSE("GPL");
+>   #endif				/* MODULE */
+>
+> ---
+> base-commit: 83a7eefedc9b56fe7bfeff13b6c7356688ffa670
+> change-id: 20240612-md-drivers-video-fbdev-vfb-a4ed3808e861
+>
 

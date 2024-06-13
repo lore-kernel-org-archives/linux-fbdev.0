@@ -1,84 +1,159 @@
-Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C55A14C59A
-	for <linux-fbdev@vger.kernel.org>; Thu, 13 Jun 2024 19:18:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.80
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36A8B139CE2
+	for <linux-fbdev@vger.kernel.org>; Thu, 13 Jun 2024 21:06:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718306304; cv=none; b=PayFaTQHc9eH1OKcQPZYdoNawmQ2kI8/4ca97jpmFdD+R1YT7YEHOBxxzysWSlTZVphtzVMRzRMPTbTugl29c5IhaVXiV9tY2jsDANcTQOQGQPqy4vwY8T1bXkaT6US45+yhF8hPKJ8jbGyT/i2eWL+pIBWTbw0tIRPFhBPOeaw=
+	t=1718312788; cv=none; b=uU/pjV0bD3p8t3SEVnwwQ4qcfsMlJvm3DWAlFivzBv7XwNzdyz8Iefbw3t/TewCvW/bhhsMKOdtaZrT1xEh4Rjvv+mjl5PmgnytVZOtsecFOEe7MXCYoNVJaetavCmrW2x+2TJmdXMrOn8NlasZwe7AsnZWmy3cBJ6q6F8zCtDc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718306304; c=relaxed/simple;
-	bh=FnN05GM8vDYZMAvxvHkfN+j13yu2M7/BW/pNimOsW8w=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=BbebGDHkeaDHXjKIGgslcrERjKuzWW2xO9UM+4fDc/N0P83DRLocnqN7JsxxwRLhsPJRlSDO7KGV8FAeJtMeXUcX6yFEurPC6QlhEdEL6LViYgau5yBhr+Y11Olo09C67NEkbqHIXeHrLE7npgpA8Y/gGyF+7XF1O40Pku5INFY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.80
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4W0XHq5qNCz4x2LQ
-	for <linux-fbdev@vger.kernel.org>; Thu, 13 Jun 2024 21:18:15 +0200 (CEST)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:be2a:f066:50f0:dff7])
-	by michel.telenet-ops.be with bizsmtp
-	id b7J62C00A3w30qz067J6ad; Thu, 13 Jun 2024 21:18:08 +0200
-Received: from rox.of.borg ([192.168.97.57])
-	by ramsan.of.borg with esmtp (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1sHpwS-00Ax6x-Fm;
-	Thu, 13 Jun 2024 21:18:06 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1sHpxW-00FL8f-GF;
-	Thu, 13 Jun 2024 21:18:06 +0200
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Jocelyn Falempe <jfalempe@redhat.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>,
-	Daniel Vetter <daniel@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 4/7] drm/panic: Spelling s/formater/formatter/
-Date: Thu, 13 Jun 2024 21:18:02 +0200
-Message-Id: <5a11f8caf8759aaa22d421034d3047368e9d5f33.1718305355.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1718305355.git.geert+renesas@glider.be>
-References: <cover.1718305355.git.geert+renesas@glider.be>
+	s=arc-20240116; t=1718312788; c=relaxed/simple;
+	bh=l289HTUXdYTnHJPLaf7TEL/8cV0z97W5P57ZIv7m8IA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FfEJcipf1lPQSqkUJcvQj5NVaWvLWCUEeC/rRXeeLwG74CbfT1h7J/K8QqYP+gtgNwiUwYMjXBUS/2dmg6SuPuOTr20wiOVvaQJlevd9mix0YCChVKYDrvCNU4Ewe1Rf1t9XspZ6JAvSWhYHccjPx2J2sNye2i6JR+ejDgNAAC4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=VAbdZP3x; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="VAbdZP3x"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1718312778; x=1718917578; i=deller@gmx.de;
+	bh=mKeKaB45Mvm9ojxZe34BD21OCSnrwP8XDXXlHo8Ra70=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=VAbdZP3xmLDBYP1Jt9Pz/sVGT72mCF46KqfInkxli1AV8xMfsCI7Z2BB+1js9wyv
+	 mx3KedGDDNJSVo9DKhoClCRP8v19f3SF/TeCTZZKZdEPAGKUIll7g0dgE8gJdx7J4
+	 tz3TyQBM9SzhSU30bfS57EKa/3PDQjFdvjae5RSDXcGoNUc9FYTNXS+ah/47q59/c
+	 3/SlsflW4ftIRFg+g8+a2du661CR27oS2CJEz0c2F62HVaJg1/GplgFMW+MGFlxNw
+	 tHrZvr4NgOo59iuxSNhfVS43nbApUtRyV+CO5TeBV1MvBqdVdauLyQyB3pnTQ2tEy
+	 PRay2wSZ4z3usOPRdA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([83.135.217.92]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N4z6q-1sRrYs35OO-013ovC; Thu, 13
+ Jun 2024 23:06:18 +0200
+Message-ID: <77c4c6a9-b3ea-4b59-a76e-4df20528f754@gmx.de>
+Date: Thu, 13 Jun 2024 23:06:17 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] video/logo: Make logo data const again
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <1ea18c51dd1c029e3c50bfb082f5942b58b7360c.1718199543.git.geert+renesas@glider.be>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <1ea18c51dd1c029e3c50bfb082f5942b58b7360c.1718199543.git.geert+renesas@glider.be>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:zOjXs4vDBJRmXROdZGlRMloueU8T6TyCmMFsO+NW6OMDSA9vC5m
+ ZQM6BBv0IDhp2HuKQeQ8loDiY0/BIVmFWVKDvG5KwOlI2jsFRWXcopovEnBnpyRBvfUhpZo
+ OFd8pM6SuFpgiqQwO+FpDGisXTCTJKUMQ8ug9OJA9TUn/tETrYmelTp1jo5GEaXbNJJBhNz
+ 7VkD+tvZ+SRKvWLcKp/MQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:dy8DHBxtiyM=;egjRitOsveNPXvbk93J7mGAy/6W
+ lO1tB998AsbYE3YITkFZC3HJs7DiE9sOSopaO4/ZSq9E50d/PET7/ei+J3c7TH5ND70mLxxsW
+ ns7emn0NxTZdUfXM/VvwndwaINq4fHK55jMdnJZkrumCBGHf0UL5oVSRSMa5+MRDipqEWylxk
+ kyOn0Nxo9Z0tTH9TvwF1N0VuRJpS6aQjifcakrRNFj7TANF+c9rYCa4of3nTqQ87V0F03Itis
+ 9ZaSkOgrnjtCKVQGuw438EW0Gy2Qgiq8z4XGT3LSKS6on1NqmyJycUC0vOgpRSdwiyI2wq7fa
+ P7zXgXDn9n1QZcKO1MsYnMqjX/FHCn6JrDo7PkkUqkgSl0GQxF7uX/gnixU8JTY183sh2LnDP
+ RwMCXqF/pObX6oPIM14RI5/WYlhcSo+hYn8UQ1VGBplBXid904OEtnfGEnUcv4YRLkmH2ed50
+ yjiKbRoCFpythhXcWX6AKr5EXyLnyBDgLkSrC/uriXJXvR4JJ3nU1QaWSgzdB/DtwkZgEVnla
+ DNBE6PfbUTzlEcnwWFPoDHJ4RF/PEaY0WXBQlsJNUF3y5ZYuHRULb/Eer40e3QaB0iA5fMrcM
+ al4YHZowWk3XkkqC6L9dxw1y0J+/CB/YQfMFoDwbakxIgGna27tIT1aZqyOlZ8IGUy5+pvmzV
+ 2Be2YJAz0ATu9qdb83f1lNz68nPutW97dKEcO6XU3e1x5lNjbiW4r32bi54DK1XnnU2tVWRZV
+ keULqIbIA6ljdY+N0ZY1I75MXX/I1DO7ZQoHVuEF2itDAj23zEAQzXkAFsnD9MW2rln4gE2ra
+ 60duWOjnShX+/ZJ5iQOKUqOPfy1TEbYcBRjgKkYNNLG0Y=
 
-Fix a misspelling of "formatter".
+On 6/12/24 15:41, Geert Uytterhoeven wrote:
+> As gcc-4.1 is no longer supported, the logo data can be made const
+> again.  Hence revert commit 15e3252464432a29 ("fbdev: work around old
+> compiler bug").
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Fixes: 54034bebb22fd4be ("drm/panic: Add a kmsg panic screen")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v2:
-  - New.
----
- drivers/gpu/drm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+applied.
+Thanks!
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index a9972ce05d7e6fe4..e3c51009d9b476b3 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -138,7 +138,7 @@ config DRM_PANIC_DEBUG
- 	  If in doubt, say "N".
- 
- config DRM_PANIC_SCREEN
--	string "Panic screen formater"
-+	string "Panic screen formatter"
- 	default "user"
- 	depends on DRM_PANIC
- 	help
--- 
-2.34.1
+Helge
+
+> ---
+>   drivers/video/logo/pnmtologo.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/logo/pnmtologo.c b/drivers/video/logo/pnmtolo=
+go.c
+> index 8080c4d9c4a23fbb..28d9f0b907a99a05 100644
+> --- a/drivers/video/logo/pnmtologo.c
+> +++ b/drivers/video/logo/pnmtologo.c
+> @@ -238,7 +238,7 @@ static void write_header(void)
+>   	fprintf(out, " *  Linux logo %s\n", logoname);
+>   	fputs(" */\n\n", out);
+>   	fputs("#include <linux/linux_logo.h>\n\n", out);
+> -	fprintf(out, "static unsigned char %s_data[] __initdata =3D {\n",
+> +	fprintf(out, "static const unsigned char %s_data[] __initconst =3D {\n=
+",
+>   		logoname);
+>   }
+>
+> @@ -375,7 +375,7 @@ static void write_logo_clut224(void)
+>   	fputs("\n};\n\n", out);
+>
+>   	/* write logo clut */
+> -	fprintf(out, "static unsigned char %s_clut[] __initdata =3D {\n",
+> +	fprintf(out, "static const unsigned char %s_clut[] __initconst =3D {\n=
+",
+>   		logoname);
+>   	write_hex_cnt =3D 0;
+>   	for (i =3D 0; i < logo_clutsize; i++) {
 

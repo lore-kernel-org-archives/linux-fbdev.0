@@ -1,185 +1,120 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com [209.85.219.169])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D06913F421;
-	Thu, 13 Jun 2024 09:02:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AAA984D03;
+	Thu, 13 Jun 2024 09:33:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718269369; cv=none; b=Vj2QellXzi3AKxBcdancKUc5V6aZqqAyl63I3j/EKhxIfbgUGfitPlMjP2NadGQmY5st+S+PfFJFgIlkWCWlZP7TBpEvq3sA1nk+MSlg098U9tqNxg1GXhqH1v6XkeV3ZQVGFgvyB7G3kc8Mw+WMuM8bdIuelHsmvNKfj8Xvy24=
+	t=1718271182; cv=none; b=PCE9nW74ll0Ofi85R+UvOYCT/fRbURqurbb+DFi4yK7c8dwoP5tkvRGvM3gjRBac+KYYW36yv2gKbjvC7TOvsTfswEJo1UsO9KDJvIKrMTzIOkolIOOQErRBv8ke/32e/Mtc4xx0m9llGdbFLzLFGPb/aIxdzNw/GYm3/qzo5/I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718269369; c=relaxed/simple;
-	bh=iDhareU5SkOa05ZzgiJgRQj3kzXnJKuHzPl/A+ifQvI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hNlGR4yEpu2oIBuZhtgH6OBb1dPqesGUSD8SEaAENLUukyafn02uBVDIGfY76f1PtKpEKQINC9qAEb2ktx8PIV2nIU1q/6RQP3BtzTBf1SlfYZHpdP/QB+6eNUHZmuD4WGIHCF+7qwRPXy6ylPxoqmp5btpDl2D8rqRcADIlonw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gMSrLkSX; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=GKzis372; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gMSrLkSX; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=GKzis372; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gMSrLkSX";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="GKzis372";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gMSrLkSX";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="GKzis372"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 73A8B5D079;
-	Thu, 13 Jun 2024 09:02:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1718269365; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pIVDisUcR8VzoZKPTV+OuoRv5XGyVWJlmcO4Rce/v2I=;
-	b=gMSrLkSXexMPw9/kUjkJSX1TOuZj/aS7qWXH/Ji6l4XWan6aU1xNEBElCer1QSjJeWO1bK
-	AFL0QvLJNX1DQ4l1mB/3fK2fRTWDtdtpo9C7+CtcPOA+vPbFwEyrNvFXqqWPwSp0wcTirM
-	pHrdzYpjtnKOQM9lNd0h0eB3Kwd84TM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1718269365;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pIVDisUcR8VzoZKPTV+OuoRv5XGyVWJlmcO4Rce/v2I=;
-	b=GKzis372FGj5MdEJcQ4TN/+ZVtiIfVnL68wH45TH6k9woqsa6JaqR+mzITfbKxdkbk68sl
-	TQVBMr3q9Z4LbMDQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=gMSrLkSX;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=GKzis372
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1718269365; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pIVDisUcR8VzoZKPTV+OuoRv5XGyVWJlmcO4Rce/v2I=;
-	b=gMSrLkSXexMPw9/kUjkJSX1TOuZj/aS7qWXH/Ji6l4XWan6aU1xNEBElCer1QSjJeWO1bK
-	AFL0QvLJNX1DQ4l1mB/3fK2fRTWDtdtpo9C7+CtcPOA+vPbFwEyrNvFXqqWPwSp0wcTirM
-	pHrdzYpjtnKOQM9lNd0h0eB3Kwd84TM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1718269365;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pIVDisUcR8VzoZKPTV+OuoRv5XGyVWJlmcO4Rce/v2I=;
-	b=GKzis372FGj5MdEJcQ4TN/+ZVtiIfVnL68wH45TH6k9woqsa6JaqR+mzITfbKxdkbk68sl
-	TQVBMr3q9Z4LbMDQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 392E713A7F;
-	Thu, 13 Jun 2024 09:02:45 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id HZSjDLW1ambHZgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 13 Jun 2024 09:02:45 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	sam@ravnborg.org,
-	javierm@redhat.com,
-	hpa@zytor.com
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	stable@vger.kernel.org
-Subject: [PATCH] fbdev: vesafb: Detect VGA compatibility from screen info's VESA attributes
-Date: Thu, 13 Jun 2024 11:02:22 +0200
-Message-ID: <20240613090240.7107-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.45.2
+	s=arc-20240116; t=1718271182; c=relaxed/simple;
+	bh=Nq8DE0/Yz7oo5eVhfZiwcymEEXI/u8zw17jUMNn5pbQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nH5vatqhORC41wikQg4sthYmxzAJaciEH1fxTXV4XxMOuVr7rmP+kE9bF2ozWJIXsSUM35K+rEHjMSToynQUpPXdZ+gS5T31E+h7u+QI1jf+620+F16OmrdIJivvBuAUosCoYXinGwh4NCFfoHfjH93T0hgvGpqxeEppuSjO82s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.219.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yb1-f169.google.com with SMTP id 3f1490d57ef6-dfefe1a9f01so932261276.2;
+        Thu, 13 Jun 2024 02:33:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1718271178; x=1718875978;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Lhk7FkMhRX3Hop+f1KznOVEB0LMy596r2N2+WQDXxi0=;
+        b=L/8OIhFr6kjNuPEJSxDehjENbJc+2l0F3EyE+gOZHuNUiWQOSbOhcflae9E0CTZadN
+         DB/yOhTR51w4m3GueD8Gp1TDaYKLRsm+7AupSaQuukyW0LkKv1I1hiVtPrJZ0WiH0/nS
+         2R97SrB7Re2LRlp4MUoO2BrcoSLo3jZqCwFI/v1fM8vI3o6r7RzycRcjm+q0MYcaMONS
+         6CzuwFyJwBgdC8G4z303MygP08DKeqK2XPKUeyEy+c0hX3Poh/isHJsZExfe9tDpjghB
+         67+xEgPe/EEq/7Xdlgm+g+ytJypqFJHh/0iE8RV1B0eA2kC303lAwjZwbydH9sJy/v4+
+         p1gQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX2kj0TZCZjFvsiGeryg0zNmwDsB7IYQXjwrHheGmJcAjC7IRBpQOCTkMEY8aEzhyyjfebWic/EXjgmPnhSxvQmDTSB3Hctu5guSAAdoLEAOCFxXou4a0DLQX1fGdSe/0vFMEY8gL1AHpgJgYIbGQ==
+X-Gm-Message-State: AOJu0YzYYrQ00OJVAdtLCeVJJMfKpzeyuusVZOcmpjQXGax4IzqYPLPD
+	wqjvW+Og+GAgBuRCDmDLCzPlQJkJt58JBlO+8XYwbTyM3TR3Hq/H1GbcksOK
+X-Google-Smtp-Source: AGHT+IEnjaHR+YGdHQdnKzt90p2kGsihvVGTe2KOUnpgEqII7mQbOUs7L+qj20GZlKTtP2yuS4k8Hw==
+X-Received: by 2002:a25:83d1:0:b0:dfb:4ae:27c with SMTP id 3f1490d57ef6-dfe68c09aadmr4545205276.42.1718271177661;
+        Thu, 13 Jun 2024 02:32:57 -0700 (PDT)
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com. [209.85.128.171])
+        by smtp.gmail.com with ESMTPSA id 3f1490d57ef6-dff048767e2sm147229276.17.2024.06.13.02.32.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 13 Jun 2024 02:32:56 -0700 (PDT)
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-627e3368394so8734107b3.2;
+        Thu, 13 Jun 2024 02:32:56 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVTYPbgFBz+/SYUAEytbKotMT2vjcCWGl/NRwMFnt73kdhMt+0Ly8FYaLwDxPKm+D/9mDUO7aQBUwhgUle+kxk47WUTtJKwgYyIWS7KJzyg12K6hEw35r06DKbbft6+bOzmvDspp55kmLVLPyaePQ==
+X-Received: by 2002:a81:89c2:0:b0:62f:74d5:5e64 with SMTP id
+ 00721157ae682-62fb8575257mr38097387b3.22.1718271175624; Thu, 13 Jun 2024
+ 02:32:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 73A8B5D079
-X-Spam-Score: -3.01
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[gmx.de,ravnborg.org,redhat.com,zytor.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+References: <cover.1718199918.git.geert+renesas@glider.be> <386a229b-6904-465d-b772-921f99815e8c@redhat.com>
+In-Reply-To: <386a229b-6904-465d-b772-921f99815e8c@redhat.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 13 Jun 2024 11:32:42 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWy15T1JPH6w=xLyx_-zpHJA_VUe_Mu+h5zNPXEZw8+RQ@mail.gmail.com>
+Message-ID: <CAMuHMdWy15T1JPH6w=xLyx_-zpHJA_VUe_Mu+h5zNPXEZw8+RQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] drm/panic: Fixes and graphical logo
+To: Jocelyn Falempe <jfalempe@redhat.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
+	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Test the vesa_attributes field in struct screen_info for compatibility
-with VGA hardware. Vesafb currently tests bit 1 in screen_info's
-capabilities field, It sets the framebuffer address size and is
-unrelated to VGA.
+Hi Jocelyn,
 
-Section 4.4 of the Vesa VBE 2.0 specifications defines that bit 5 in
-the mode's attributes field signals VGA compatibility. The mode is
-compatible with VGA hardware if the bit is clear. In that case, the
-driver can access VGA state of the VBE's underlying hardware. The
-vesafb driver uses this feature to program the color LUT in palette
-modes. Without, colors might be incorrect.
+On Thu, Jun 13, 2024 at 10:38=E2=80=AFAM Jocelyn Falempe <jfalempe@redhat.c=
+om> wrote:
+> On 12/06/2024 15:54, Geert Uytterhoeven wrote:
+> > If drm/panic is enabled, a user-friendly message is shown on screen whe=
+n
+> > a kernel panic occurs, together with an ASCII art penguin logo.
+> > Of course we can do better ;-)
+> > Hence this patch series extends drm/panic to draw the monochrome
+> > graphical boot logo, when available, preceded by the customary fix.
+>
+> Thanks for your patch.
+>
+> I've tested it, and it works great.
 
-The problem got introduced in commit 89ec4c238e7a ("[PATCH] vesafb: Fix
-incorrect logo colors in x86_64"). It incorrectly stores the mode
-attributes in the screen_info's capabilities field and updates vesafb
-accordingly. Later, commit 5e8ddcbe8692 ("Video mode probing support for
-the new x86 setup code") fixed the screen_info, but did not update vesafb.
-Color output still tends to work, because bit 1 in capabilities is
-usually 0.
+Thank you!
 
-Besides fixing the bug in vesafb, this commit introduces a helper that
-reads the correct bit from screen_info.
+> You need to rebase your series on top of drm-misc-next, because it
+> conflicts with a series I pushed last week:
+> https://patchwork.freedesktop.org/series/134286/
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: 5e8ddcbe8692 ("Video mode probing support for the new x86 setup code")
-Cc: <stable@vger.kernel.org> # v2.6.23+
----
- drivers/video/fbdev/vesafb.c | 2 +-
- include/linux/screen_info.h  | 5 +++++
- 2 files changed, 6 insertions(+), 1 deletion(-)
+I had seen that you said you had pushed this to drm-misc-next[1]
+before I posted my series, but couldn't find the actual commits in
+drm-misc/for-linux-next, which is still at commit dfc1209ed5a3861c
+("arm/komeda: Remove all CONFIG_DEBUG_FS conditional compilations",
+so I assumed you just forgot to push?
+However, the latest pull request[2] does include them, while linux-next
+does not.
 
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index 8ab64ae4cad3e..5a161750a3aee 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -271,7 +271,7 @@ static int vesafb_probe(struct platform_device *dev)
- 	if (si->orig_video_isVGA != VIDEO_TYPE_VLFB)
- 		return -ENODEV;
- 
--	vga_compat = (si->capabilities & 2) ? 0 : 1;
-+	vga_compat = !__screen_info_vbe_mode_nonvga(si);
- 	vesafb_fix.smem_start = si->lfb_base;
- 	vesafb_defined.bits_per_pixel = si->lfb_depth;
- 	if (15 == vesafb_defined.bits_per_pixel)
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index 75303c126285a..95f2a339de329 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -49,6 +49,11 @@ static inline u64 __screen_info_lfb_size(const struct screen_info *si, unsigned
- 	return lfb_size;
- }
- 
-+static inline bool __screen_info_vbe_mode_nonvga(const struct screen_info *si)
-+{
-+	return si->vesa_attributes & BIT(5); // VGA if _not_ set
-+}
-+
- static inline unsigned int __screen_info_video_type(unsigned int type)
- {
- 	switch (type) {
--- 
-2.45.2
+Has the drm-misc git repo moved?
 
+Thanks!
+
+[1] https://lore.kernel.org/all/3649ff15-df2b-49ba-920f-c418355d79b5@redhat=
+.com/
+[2] "[PULL] drm-misc-next"
+    https://lore.kernel.org/all/20240613-cicada-of-infinite-unity-0955ca@ho=
+uat/
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

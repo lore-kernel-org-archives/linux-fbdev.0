@@ -1,28 +1,28 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDAAD13DDD8;
-	Thu, 13 Jun 2024 11:39:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CFAE82C76;
+	Thu, 13 Jun 2024 11:58:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718278799; cv=none; b=P/goXVyIFsmUEYIZ3aj1AOozJcn5a/Isr9x3E6OmBrNxxgjU42lChEJ0eS+5D6zlJNIrFlKMFv/HPpFU2cgZpRT9qdLEzVuuzLh1ixUrTJb8fHhjN+Kd6Ry4WlXjfyjY/IKn81MrlK63Vf8kdzoB2jX5TdFbK24WhmcEBAUBbuY=
+	t=1718279909; cv=none; b=N6Tz7Z3u08LMz2rF/GCpK2XcTW9kzWcztCgvJZk5OfOldQE+1wJj2hqbdd7/nUmQNrIod222PPN5UyMQxcZO34qebv5Z/R1oo5r21k6msuLSzm1AfO3eAE9InGKSzEvmMJG6ZansaCrEWzcyfTvZ+/ubFWtajO6GiF+8TWmnL60=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718278799; c=relaxed/simple;
-	bh=yBhofhADsMvnMWPHz8AjOvmPTGaBt+PagTG+hbEV/NE=;
+	s=arc-20240116; t=1718279909; c=relaxed/simple;
+	bh=E+MXnAK9OCf8WXKt0ZV2hbsQLnMLxeiUBYieiCS0H2o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=esN7xgZ+RIxcFyThGKvwjfcaQ1K87DETIcRim0eMu4euTY1z2rnSXi911rFw0UFyoON/3XfmJyQDxbtFsWBklUpRWC7tIiuTnlAFLChHmm+9ZIsatKB8DAGqkkAPZaQRjPvhkz8hkxoT5QDOmxl36neOXzBvm1OjMqt+7jrftuU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=RWZtVPh+; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=Ec9q8KFDLSj+3p/uhNxhoObA0hUc+KK/+iItTYwTrjgOups6vAfFfdlvqHs+KiIJJeWIwwwYjeKUmSr/X/D91jh7niQLr3ueRrnNaCn18SuoOks1RW7uV0eBWjSP7SCLn4GHnoYKBoOk0JZMr1ip6o9kw3udSB+ZjjBfRfQgwE4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Pd6fpWCB; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="RWZtVPh+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41B43C2BBFC;
-	Thu, 13 Jun 2024 11:39:58 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Pd6fpWCB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BEF0C2BBFC;
+	Thu, 13 Jun 2024 11:58:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1718278798;
-	bh=yBhofhADsMvnMWPHz8AjOvmPTGaBt+PagTG+hbEV/NE=;
+	s=korg; t=1718279909;
+	bh=E+MXnAK9OCf8WXKt0ZV2hbsQLnMLxeiUBYieiCS0H2o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=RWZtVPh+4zwnVj7C5co6QVCTAqhD/lDg1UuxtowEb8m1K3UxoHpSlaTD5Zh6k+AE7
-	 3lGY4CnsjPoXiRA4zlSbiL3nNRQ/ZK6/9X28AeLAzKRQVjc+O2cvLEl1Hg4J3MbiFC
-	 +tf3QLCb9ku8YHSMIxY3f9UcjPf8HKU50un0i4CI=
+	b=Pd6fpWCBhuMPEAwjEy19/NkwjHB8qnkm8qDw0WgQ4YAsYQchdSBwxxi2gXegK1pVx
+	 6gxmsIpvYI2zVZJrqbnn0EJmjHBW/cVavQvxNr6i6ERcSw2Y5qlV9YRenB38SkGPE5
+	 KumAYH4wULKXFuEK2Yn3kNqOb36VCMtkA6widqCY=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -37,12 +37,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 4.19 073/213] fbdev: sh7760fb: allow modular build
-Date: Thu, 13 Jun 2024 13:32:01 +0200
-Message-ID: <20240613113230.824017541@linuxfoundation.org>
+Subject: [PATCH 5.4 077/202] fbdev: sh7760fb: allow modular build
+Date: Thu, 13 Jun 2024 13:32:55 +0200
+Message-ID: <20240613113230.745852233@linuxfoundation.org>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240613113227.969123070@linuxfoundation.org>
-References: <20240613113227.969123070@linuxfoundation.org>
+In-Reply-To: <20240613113227.759341286@linuxfoundation.org>
+References: <20240613113227.759341286@linuxfoundation.org>
 User-Agent: quilt/0.67
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-4.19-stable review patch.  If anyone has any objections, please let me know.
+5.4-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -86,10 +86,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 8e224ee27ade9..12846837f5de0 100644
+index 0396df868bc79..8a3014455327b 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -2084,8 +2084,8 @@ config FB_COBALT
+@@ -2031,8 +2031,8 @@ config FB_COBALT
  	depends on FB && MIPS_COBALT
  
  config FB_SH7760

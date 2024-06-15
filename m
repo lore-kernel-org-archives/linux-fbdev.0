@@ -1,106 +1,102 @@
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49C41195B2E;
-	Fri, 14 Jun 2024 12:04:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04C9A1798C;
+	Sat, 15 Jun 2024 06:25:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718366669; cv=none; b=EPtjUtEQD6/Jx2G7mZA/90yb3vZY7jRY5PK2qoGhWDG8cjU+a1JC3AgqMX2FjoM/PvxHfuoeUOrX3aY3e9N0PZKXo7jhxeWQubai+x8wFJ/9pR50FwKqu9NsiymfS5AVkk3J+fNSQ44pHVxCMCUWErclYkBn6UK90njpylHla0Y=
+	t=1718432714; cv=none; b=AEv2rrj+vqjxMfR8h9LN2UENZMFm6Bbdp3THpEu8d11XwC6j8oUe75rXvP+osHK+GnC5/iW4bzNbyxbsXg1PPZXAPZAepKNqNAB9g2BL5Dw7fs8j/ST0fPM97a5ki/FGy9t4QMmOT18TQsaBlk63PhzwMCO46naX+LQoQ0B5XqU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718366669; c=relaxed/simple;
-	bh=ySfgBRoyQ1djsPjzR4KlUp1ITUBtOx3b10XESW5KDt4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=C+BDsYE7q7MdikFiN3X3ci8NmaW/y43LkNdZnfnOvXl52l0v/uvtgR2plArCy79YBW1kzuctQ3l/z8/TMrTzUvxQQOcNm4y58rBzBVXG74oMVe3dPUVc/f7lJz+SWw9wcDi4Ij164p41C1h7a9smKNhhVtz2bWTZk9kXeMGyl/A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-6333082fb8fso167587b3.2;
-        Fri, 14 Jun 2024 05:04:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718366664; x=1718971464;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8ovNrKBz6SE0Xp6qLyWrHKke2Z46ajqO3lSt7jQEreM=;
-        b=o3nw6KqQQrRHN8U9BGo7IuqlXwjpk1zvPDh/cXb7JB3fC1nCCnRNkTEbx7UGEHns6k
-         SRjz0o8l8/EV9hcRSp+AJn3ufL4vufEP6qJsT/dkdA8t5VgmxZatv+WWnz4rpag23Dm0
-         hhuk8pVLwodk6zzvNS0vTMgDC/WnWFJzxGKF0+CU5YEPukITmUpkhOKL5V9ih+m+mRIF
-         LbtpSaWiWHTTpj9rzYb5wrloTylpUXSJ1LJrI2kYKJjbPcE3naopX87yej+M1H0pFgT2
-         S78q6ilzqXzUeT8PFm0uaGWQJc4UptyHEnGqw/YWXDWmfg2ikNZOXtuTANKXldS7Qo7o
-         N0mQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXZNCrTZ49G07MdsrjdAJuW63n2fuaQSMEveEWuE/gQBEhI3JVXrKQ13gKh7jr2HKsoA+8owycrcUhG2XgHfY/Gr6bau4IJzHEiHevmd7maXY4+kcYaIFMy3HtU36WHFtHOzmtC/EslMGvPxn3Lsg==
-X-Gm-Message-State: AOJu0YxKgvfdsdCCiY+ZQ8gyg9eyj3Vdb7SdcZtVe2L2lh00koPqfwc8
-	EDOrg91MMFCqDHmKhISIalwdwXv7hYJdEujQpDFWBEk5AbLnrAaqvQajX22m
-X-Google-Smtp-Source: AGHT+IFIOtKAR0nY7aoEZsz3zwd7HFTxy0dmv8SoXNEl/qxrMpNi2Hxdd55LL+o6eJ8MUuNZOf75pA==
-X-Received: by 2002:a0d:f083:0:b0:627:dfbd:89e with SMTP id 00721157ae682-6322206f4e4mr20968907b3.11.1718366664440;
-        Fri, 14 Jun 2024 05:04:24 -0700 (PDT)
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com. [209.85.128.180])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-63118e99877sm4384307b3.64.2024.06.14.05.04.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 14 Jun 2024 05:04:24 -0700 (PDT)
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-630640c1e14so26442607b3.1;
-        Fri, 14 Jun 2024 05:04:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXJb/rDZMava6zHD7X3IkX2LYjFoW28N6Yeb1BAN1UKhGbf/DzW5OL0N2X3p8NcLSAM33vgnUoDJoLY2xSbWwG94mgFvsD1Pt0nmt+SLXv+x6EWRggNyd4CrIqgh8SsGAKOo+nZQl/VwO0rJK1LGg==
-X-Received: by 2002:a0d:c304:0:b0:61b:349c:817 with SMTP id
- 00721157ae682-63222560c71mr22278067b3.12.1718366662348; Fri, 14 Jun 2024
- 05:04:22 -0700 (PDT)
+	s=arc-20240116; t=1718432714; c=relaxed/simple;
+	bh=zU2ttL5/qBiAy68a//LaIE31Xa+l2SJsshCWjBPUvk8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=go8IqIkckQLJst5vBv60GfbgpIvsGxrClS97ezNINcwDUYoZtXF8DWuhB9TI0IOImCwLYvuIDHXgFy1auaHNaWS/sALTlj7D8J+HNhWuDqAWETbMOtCONip7FwSVkUrS/vJCqidPyFkQEDqTYoTbqaNNMVI7K/LU1l4oYwpFesg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=CMdxIfNi; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="CMdxIfNi"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45F4tiNJ003425;
+	Sat, 15 Jun 2024 06:25:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=54/pi1I6kA1yluGezlXCaJ
+	ZDaE3jYglkDAh2PuWXhZE=; b=CMdxIfNiEz4OWWeaIF/8dt3Y5WF450NuIlrWzp
+	5upRngDaqpxG9wvjLOKdaDKiyk6d843LvLHW7LZso7mlk5aFDVXBnXiZgsGXuHXn
+	/YzOetMrXngcZLRvpKoVguIHCVTMqx0seo5DFXY/kzUGn2ZQDBSBYwzGIMnC5U+t
+	NV58QG34e6AGpjgX9hDphg8HvsQjjWZL1iSA+/wBIwFxTIM4zPgYPunLTELGdaxi
+	0KmNYZT+6HJukqkLPv+4ZA7vv2LwrTyulqi1srLICzNbGV1wNOCgDTNGP4T/zmFN
+	ujuJxSoU69wAEDLOclzuorxRwZ5W3SpIBp/dU16ynPe9p9+Q==
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ys36385r9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 15 Jun 2024 06:25:04 +0000 (GMT)
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+	by NALASPPMTA03.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 45F6P2g1009381
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 15 Jun 2024 06:25:02 GMT
+Received: from [169.254.0.1] (10.49.16.6) by nalasex01a.na.qualcomm.com
+ (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Fri, 14 Jun
+ 2024 23:25:02 -0700
+From: Jeff Johnson <quic_jjohnson@quicinc.com>
+Date: Fri, 14 Jun 2024 23:25:00 -0700
+Subject: [PATCH] fbdev: offb: add missing MODULE_DESCRIPTION() macro
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1718305355.git.geert+renesas@glider.be> <3f1a5f56213f3e4584773eb2813e212b2dff6d14.1718305355.git.geert+renesas@glider.be>
- <f2c00c97-4d2d-4cb8-aa9b-e9c458ca9e65@redhat.com>
-In-Reply-To: <f2c00c97-4d2d-4cb8-aa9b-e9c458ca9e65@redhat.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 14 Jun 2024 14:04:08 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVWR=XgMi_9-K_FxJ9wUForvrNLG-QH0K7DvCOJsRGD7Q@mail.gmail.com>
-Message-ID: <CAMuHMdVWR=XgMi_9-K_FxJ9wUForvrNLG-QH0K7DvCOJsRGD7Q@mail.gmail.com>
-Subject: Re: [PATCH v2 7/7] drm/panic: Add support for drawing a monochrome
- graphical logo
-To: Jocelyn Falempe <jfalempe@redhat.com>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20240614-md-powerpc-drivers-video-fbdev-v1-1-5803b38dba18@quicinc.com>
+X-B4-Tracking: v=1; b=H4sIALszbWYC/x3NQQrCMBBA0auUWTvQ1FrUq4iLJDOxAzYJE42F0
+ rsbXb7N/xsUVuEC124D5SpFUmwwhw78bOODUagZhn4Y+8mMuBDm9GHNHkmlshasQpwwOOKKJvD
+ RDyea6HyBFsnKQdb/4HZvdrYwOrXRz7/sU+J7xcWWFyvs+xcv350xjwAAAA==
+To: Helge Deller <deller@gmx.de>
+CC: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+        <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>,
+        "Jeff
+ Johnson" <quic_jjohnson@quicinc.com>
+X-Mailer: b4 0.13.0
+X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: 5dlPrCBJIeJnN-zF3RN_EYQwZzw1Xpo2
+X-Proofpoint-ORIG-GUID: 5dlPrCBJIeJnN-zF3RN_EYQwZzw1Xpo2
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-06-15_03,2024-06-14_03,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ clxscore=1015 impostorscore=0 bulkscore=0 malwarescore=0 suspectscore=0
+ phishscore=0 adultscore=0 priorityscore=1501 spamscore=0 mlxlogscore=999
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2405170001 definitions=main-2406150046
 
-Hi Jocelyn,
+With ARCH=powerpc, make allmodconfig && make W=1 C=1 reports:
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/video/fbdev/offb.o
 
-On Fri, Jun 14, 2024 at 11:55=E2=80=AFAM Jocelyn Falempe <jfalempe@redhat.c=
-om> wrote:
-> On 13/06/2024 21:18, Geert Uytterhoeven wrote:
-> > Re-use the existing support for boot-up logos to draw a monochrome
-> > graphical logo in the DRM panic handler.  When no suitable graphical
-> > logo is available, the code falls back to the ASCII art penguin logo.
-> >
-> > Note that all graphical boot-up logos are freed during late kernel
-> > initialization, hence a copy must be made for later use.
->
-> Would it be possible to have the logo not in the __init section if
-> DRM_PANIC is set ?
+Add the missing invocation of the MODULE_DESCRIPTION() macro.
 
-That would be rather complicated.  The C source files for the logos
-(there can be multiple) are generated by drivers/video/logo/pnmtologo.c.
+Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+---
+ drivers/video/fbdev/offb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> The patch looks good to me anyway.
->
-> Reviewed-by: Jocelyn Falempe <jfalempe@redhat.com>
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index ea38a260774b..e8ff33894603 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -717,4 +717,5 @@ static void __exit offb_exit(void)
+ }
+ module_exit(offb_exit);
+ 
++MODULE_DESCRIPTION("Open Firmware frame buffer device driver");
+ MODULE_LICENSE("GPL");
 
-Thanks!
+---
+base-commit: 83a7eefedc9b56fe7bfeff13b6c7356688ffa670
+change-id: 20240614-md-powerpc-drivers-video-fbdev-1fe3c25d6d89
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

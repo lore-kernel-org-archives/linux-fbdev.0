@@ -1,80 +1,41 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8525022EFB;
-	Mon, 17 Jun 2024 11:30:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F1BB195FD2;
+	Mon, 17 Jun 2024 12:43:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718623838; cv=none; b=Nc5hzDjyAQbmdITwXtMkzY2Qe3gkQF03GE4adMgLWI00rn0+JWkqe/JPyD8b74rMeQ97y3lXc9l0DBNP+6q/9uqV1tkAmJ7Ttim1kJkhPrfnTTzAxXanU3evLc1rFaxbDoLeLGA7UU2LOsU80pJDwULgJJyCpLElHzF3JyxozwI=
+	t=1718628188; cv=none; b=f2Bu+BAKCwFUCxVcIZTkt7QPv/aFweMn18Q0DF7fb5RbdB2dLXVaLV/suVQ6w3E/ku9QASXDM+Qz5wS0ET1FXl5UqkdhyEDgsrXNvSSgkHI0VKUrAXF1P2Yt1vzlK9RXYZB/uk4atN+mVg1W/39E4JUBxkGXClOFjVGOyNKExNc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718623838; c=relaxed/simple;
-	bh=Qoc9WHVZconzmKN+0+48dr+hcu1W3NzMNGrimLmv60M=;
+	s=arc-20240116; t=1718628188; c=relaxed/simple;
+	bh=yvd9o/Qkt3lo4YXw/psYYeivIy21uPHvOst4VD1kGNE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X1guAc0EurBPA69Nh7dEMKc3RBet6H00p1F04HgQNvFZZitxKsR90H+GLK5y4hDzibSrPdbLqbYyKq/27ZFJxhlPT5gQpQ6t44m1C9HdERfE9tnzumthI3Am8S1DOklND73AOVaLKlxRXLH+mx0ahSz4cAZFl5Aeg/tw5Kw4vOo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Vup28Lq0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7nSk4AmQ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Vup28Lq0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7nSk4AmQ; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=SGCiioVLCcGf7f4BcMgn5384OFlSo5CBc0hG1mNFEhRfZuQpxOCSDMOu/NZ60MmpAYVaoYElkVgo927UnqoPOuYuvRxxNIITmVPzyAtaBIqj/6jiPVHNxeF1eCr/tBl7k8dqpOjmJe8dGQckrmwpiS/7dvaAeGieOllkHzftTdo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=typiv+Th; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Vup28Lq0";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7nSk4AmQ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Vup28Lq0";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7nSk4AmQ"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AD777380DF;
-	Mon, 17 Jun 2024 11:30:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1718623834; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=35T6Lbygzo99p8cpzRF+8zLNEX9o24w4/w6FrwnW0rU=;
-	b=Vup28Lq0UCHNSy31GUUc6uJ47xwBN6174UVcikNf8C56E/RchibynN3XX8A4ENSa6goX/2
-	DeSrkHv4YuLOCJbTflSvNVi6PKpuJjaOkizHB2/GpCuUjL8PjpthLLmh0sstN2SA+Gi1cu
-	AU0UbrTGidmIW5cziN5tQhom+PlclDE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1718623834;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=35T6Lbygzo99p8cpzRF+8zLNEX9o24w4/w6FrwnW0rU=;
-	b=7nSk4AmQCnXSxWJoqq9jHFNdTT5Dxn4yPxTfr3Nn/hPwITEQB2NlNMJUS7cIsZzQn8P+rc
-	c+tWW+gdbWmxmXAA==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1718623834; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=35T6Lbygzo99p8cpzRF+8zLNEX9o24w4/w6FrwnW0rU=;
-	b=Vup28Lq0UCHNSy31GUUc6uJ47xwBN6174UVcikNf8C56E/RchibynN3XX8A4ENSa6goX/2
-	DeSrkHv4YuLOCJbTflSvNVi6PKpuJjaOkizHB2/GpCuUjL8PjpthLLmh0sstN2SA+Gi1cu
-	AU0UbrTGidmIW5cziN5tQhom+PlclDE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1718623834;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=35T6Lbygzo99p8cpzRF+8zLNEX9o24w4/w6FrwnW0rU=;
-	b=7nSk4AmQCnXSxWJoqq9jHFNdTT5Dxn4yPxTfr3Nn/hPwITEQB2NlNMJUS7cIsZzQn8P+rc
-	c+tWW+gdbWmxmXAA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7C42313AAA;
-	Mon, 17 Jun 2024 11:30:34 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id zp4ZHVoecGZMHQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 17 Jun 2024 11:30:34 +0000
-Message-ID: <f42169dc-ebcd-4df9-8119-3dbac28746de@suse.de>
-Date: Mon, 17 Jun 2024 13:30:34 +0200
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="typiv+Th"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1718628169; x=1719232969; i=deller@gmx.de;
+	bh=yvd9o/Qkt3lo4YXw/psYYeivIy21uPHvOst4VD1kGNE=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=typiv+ThXbjT/2Dz7upgnb6Hn74s5h62xlPKAmEegpA33Ih8g+meTJhVn6k+PA2P
+	 GMe2nOyucnuLVCkM6bA/pFoiQ1IO3A6ToYSrXkJ9r11RzKFQTN4Faucrwr9jFISb9
+	 V92JZcQ9zrxVGoumqxb61n7K4O4cEdzaEUP9iHEQpQjK1f6Xvg3L/PVJ3srHnSqEg
+	 YF+y1oC+k6FGaTQrqwXdtQzWQrEH81t4P6RIytz0gdPmENUJRMKERBQuuK1tqfI7S
+	 sjGOzUhkHb50eP97/SPdn+/mhYNo9bFw/CHtTqPMcSBqh5Xq3sMT1T3D1n5C+pAMI
+	 9C7CEcKu7pN3eXjL+A==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([83.135.217.92]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mzyyk-1sYFoN0Fde-011su5; Mon, 17
+ Jun 2024 14:42:49 +0200
+Message-ID: <60216bc6-cde3-4927-81a1-ec808f5ba4d3@gmx.de>
+Date: Mon, 17 Jun 2024 14:42:48 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -84,147 +45,157 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2] fbdev: vesafb: Detect VGA compatibility from screen
  info's VESA attributes
-To: deller@gmx.de, sam@ravnborg.org, javierm@redhat.com, hpa@zytor.com
+To: Thomas Zimmermann <tzimmermann@suse.de>, sam@ravnborg.org,
+ javierm@redhat.com, hpa@zytor.com
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  stable@vger.kernel.org
 References: <20240617110725.23330-1-tzimmermann@suse.de>
+ <f42169dc-ebcd-4df9-8119-3dbac28746de@suse.de>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240617110725.23330-1-tzimmermann@suse.de>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <f42169dc-ebcd-4df9-8119-3dbac28746de@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.29
-X-Spam-Level: 
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:X4VJogwKxbmJ3Lib0sd/Qlz26/uPGKH25L9BYglWneHSPrkX8of
+ 0L2JPE3HybLh9OQj77RWNwAR2mNRmOXD17LOKXHf0w2XkrWgJnpj23K+3u9jlVoW+RRYu34
+ kUl1+zEFv2ZpFuTbnA2ATEl2Sg4PGwOut2UarErYMv4iWKGEMPtzX5uTEehPKCyl2obxOko
+ GmoReheyCdj2MHvUGJDSQ==
 X-Spam-Flag: NO
-X-Spamd-Result: default: False [-4.29 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	XM_UA_NO_VERSION(0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FREEMAIL_TO(0.00)[gmx.de,ravnborg.org,redhat.com,zytor.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TO_DN_NONE(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email]
+UI-OutboundReport: notjunk:1;M01:P0:ae57VLU5580=;C5zWINxEcmkdkeePxv16mjMFp6i
+ vbBvBw8TQxmbbEqOhOrK0gp05SByMLAwO2ORijZr2nQ0J2UmIx+WhlTMVaXetF2EfSFp/btTC
+ bsl43pmaEov9e+R17E/1U9D5EsjA5A/Xcxd4RyX6yfvYTrHwhDvcqIJFRvajYPyxlJSzBNX4e
+ AQF9UMxQk2If6iLygAHjZq8r8X1G2A/eoTcnA+yFYQ2uRo0UIj01XYL8liqW7dqAIzTvCSNEC
+ bbFkXg6J/pK5oInEGkLWL3Jqp1vXNXtTFhY4yPK2FE0CLi5+pGDyMMD6sxc22geu/3Qz2lH4X
+ hLG25741qdBv0q2hzweepx7iQ7aWYaLgXMwHVCguwagdzoumjaQuS4Bk4VnaRnqkZ1lCNYt91
+ Tg7pb8P4TLDKa44vHjoaI1BV9Jb0KLz2viPYJybPRPIdX3h59XjAmup9HLYP7pEj/IZ+MZozj
+ pvZ0wTzI+cyHMKK+Ah6ngX9aOd4r08Xu/5bnjx5m7/7/NTfo32lbSvjZcUz2tWkSDnC1JyzS/
+ XTzC7MrLkCue6YDt+VsPJtjQOoc3nf0IWJlJ5OOFtwOBqqR0nP8I+LYl4jsFe9Ued3E45sonY
+ hzLCGPwfF7jN59Vktv+MtQIl+19yWSGDnzy8Tb7mFU6nXi1TEjND3fKfIXVjZs+cbWYc2Hxdr
+ Twdr3rwGmHGkIiLl+d/Zx77abwfnQH+QJQOaJpBQLjwhBmZ7sOpZcAJOPbdBe6M5SY14YCtte
+ UFLWeHhANpvGCOFTpQK686PInbJUJnH93385QOLNBCrzb9X7uZLjvxuAev9ncC2Xu9o4BSAVt
+ BGIrzwvqOqwLXkX/QjCCD+9lItLhT7sV/Ue0ChuJTx7do=
 
-
-
-Am 17.06.24 um 13:06 schrieb Thomas Zimmermann:
-> Test the vesa_attributes field in struct screen_info for compatibility
-> with VGA hardware. Vesafb currently tests bit 1 in screen_info's
-> capabilities field, It sets the framebuffer address size and is
-> unrelated to VGA.
+On 6/17/24 13:30, Thomas Zimmermann wrote:
 >
-> Section 4.4 of the Vesa VBE 2.0 specifications defines that bit 5 in
-> the mode's attributes field signals VGA compatibility. The mode is
-> compatible with VGA hardware if the bit is clear. In that case, the
-> driver can access VGA state of the VBE's underlying hardware. The
-> vesafb driver uses this feature to program the color LUT in palette
-> modes. Without, colors might be incorrect.
 >
-> The problem got introduced in commit 89ec4c238e7a ("[PATCH] vesafb: Fix
-> incorrect logo colors in x86_64"). It incorrectly stores the mode
-> attributes in the screen_info's capabilities field and updates vesafb
-> accordingly. Later, commit 5e8ddcbe8692 ("Video mode probing support for
-> the new x86 setup code") fixed the screen_info, but did not update vesafb.
-> Color output still tends to work, because bit 1 in capabilities is
-> usually 0.
+> Am 17.06.24 um 13:06 schrieb Thomas Zimmermann:
+>> Test the vesa_attributes field in struct screen_info for compatibility
+>> with VGA hardware. Vesafb currently tests bit 1 in screen_info's
+>> capabilities field, It sets the framebuffer address size and is
+>> unrelated to VGA.
+>>
+>> Section 4.4 of the Vesa VBE 2.0 specifications defines that bit 5 in
+>> the mode's attributes field signals VGA compatibility. The mode is
+>> compatible with VGA hardware if the bit is clear. In that case, the
+>> driver can access VGA state of the VBE's underlying hardware. The
+>> vesafb driver uses this feature to program the color LUT in palette
+>> modes. Without, colors might be incorrect.
+>>
+>> The problem got introduced in commit 89ec4c238e7a ("[PATCH] vesafb: Fix
+>> incorrect logo colors in x86_64"). It incorrectly stores the mode
+>> attributes in the screen_info's capabilities field and updates vesafb
+>> accordingly. Later, commit 5e8ddcbe8692 ("Video mode probing support fo=
+r
+>> the new x86 setup code") fixed the screen_info, but did not update vesa=
+fb.
+>> Color output still tends to work, because bit 1 in capabilities is
+>> usually 0.
+>>
+>> Besides fixing the bug in vesafb, this commit introduces a helper that
+>> reads the correct bit from screen_info.
+>>
+>> v2:
+>> - clarify comment on non-VGA modes (Helge)
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Fixes: 5e8ddcbe8692 ("Video mode probing support for the new x86 setup =
+code")
+>> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+>> Cc: <stable@vger.kernel.org> # v2.6.23+
+>> ---
+>> =C2=A0 drivers/video/fbdev/vesafb.c |=C2=A0 2 +-
+>> =C2=A0 include/linux/screen_info.h=C2=A0 | 10 ++++++++++
+>> =C2=A0 2 files changed, 11 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.=
+c
+>> index 8ab64ae4cad3e..5a161750a3aee 100644
+>> --- a/drivers/video/fbdev/vesafb.c
+>> +++ b/drivers/video/fbdev/vesafb.c
+>> @@ -271,7 +271,7 @@ static int vesafb_probe(struct platform_device *dev=
+)
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (si->orig_video_isVGA !=3D VIDEO_TYPE=
+_VLFB)
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -ENODEV;
+>> -=C2=A0=C2=A0=C2=A0 vga_compat =3D (si->capabilities & 2) ? 0 : 1;
+>> +=C2=A0=C2=A0=C2=A0 vga_compat =3D !__screen_info_vbe_mode_nonvga(si);
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 vesafb_fix.smem_start =3D si->lfb_base;
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 vesafb_defined.bits_per_pixel =3D si->lf=
+b_depth;
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (15 =3D=3D vesafb_defined.bits_per_pi=
+xel)
+>> diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+>> index 75303c126285a..d21f8e4e9f4a4 100644
+>> --- a/include/linux/screen_info.h
+>> +++ b/include/linux/screen_info.h
+>> @@ -49,6 +49,16 @@ static inline u64 __screen_info_lfb_size(const struc=
+t screen_info *si, unsigned
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return lfb_size;
+>> =C2=A0 }
+>> +static inline bool __screen_info_vbe_mode_nonvga(const struct screen_i=
+nfo *si)
+>> +{
+>> +=C2=A0=C2=A0=C2=A0 /*
+>> +=C2=A0=C2=A0=C2=A0=C2=A0 * VESA modes typically run on VGA hardware. S=
+et bit 5 signal that this
 >
-> Besides fixing the bug in vesafb, this commit introduces a helper that
-> reads the correct bit from screen_info.
->
-> v2:
-> - clarify comment on non-VGA modes (Helge)
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: 5e8ddcbe8692 ("Video mode probing support for the new x86 setup code")
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: <stable@vger.kernel.org> # v2.6.23+
-> ---
->   drivers/video/fbdev/vesafb.c |  2 +-
->   include/linux/screen_info.h  | 10 ++++++++++
->   2 files changed, 11 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-> index 8ab64ae4cad3e..5a161750a3aee 100644
-> --- a/drivers/video/fbdev/vesafb.c
-> +++ b/drivers/video/fbdev/vesafb.c
-> @@ -271,7 +271,7 @@ static int vesafb_probe(struct platform_device *dev)
->   	if (si->orig_video_isVGA != VIDEO_TYPE_VLFB)
->   		return -ENODEV;
->   
-> -	vga_compat = (si->capabilities & 2) ? 0 : 1;
-> +	vga_compat = !__screen_info_vbe_mode_nonvga(si);
->   	vesafb_fix.smem_start = si->lfb_base;
->   	vesafb_defined.bits_per_pixel = si->lfb_depth;
->   	if (15 == vesafb_defined.bits_per_pixel)
-> diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-> index 75303c126285a..d21f8e4e9f4a4 100644
-> --- a/include/linux/screen_info.h
-> +++ b/include/linux/screen_info.h
-> @@ -49,6 +49,16 @@ static inline u64 __screen_info_lfb_size(const struct screen_info *si, unsigned
->   	return lfb_size;
->   }
->   
-> +static inline bool __screen_info_vbe_mode_nonvga(const struct screen_info *si)
-> +{
-> +	/*
-> +	 * VESA modes typically run on VGA hardware. Set bit 5 signal that this
+> 'signals'
 
-'signals'
+I've fixed this up in your patch and applied it to the fbdev git tree.
+No need to send new patch...
 
-> +	 * is not the case. Drivers can then not make use of VGA resources. See
-> +	 * Sec 4.4 of the VBE 2.0 spec.
-> +	 */
-> +	return si->vesa_attributes & BIT(5);
-> +}
-> +
->   static inline unsigned int __screen_info_video_type(unsigned int type)
->   {
->   	switch (type) {
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Thanks!
+Helge

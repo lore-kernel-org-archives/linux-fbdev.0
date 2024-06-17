@@ -1,41 +1,65 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45B2129410;
-	Mon, 17 Jun 2024 05:59:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAB8818FC88
+	for <linux-fbdev@vger.kernel.org>; Mon, 17 Jun 2024 07:30:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718603952; cv=none; b=CpEvbHXgDjR9//2I8yTtVjZy/LPCTjdyOnmx0i17hQs4jnL3qYkMqqnFShsOF6U0HRkSOeU8Pvs3wPjPMIbiyVK+E95khCswc7Jzep7pm8U+0lrRHDoGKT4RJTmmN7K6HTqUU/6kD3dgSGI5cTRAocvuKufXesMUVAyFUvnTekI=
+	t=1718609425; cv=none; b=K94Eo49pV3GrsMCNOB2eCUV4M0ZBEEa+fuDzvlypQ+TU9XbDI5VZZ5+CyI7pybc2zljGow9CTERcsnJCD+z5pQneM6H4FIECfhVnkQhHXdplL7dHY+Npj0gSGJanBgDVQ5KPc8RujJbuDaey4Hl3NQ8/SkiT1t5LqBPJ8vaqQW4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718603952; c=relaxed/simple;
-	bh=8HWnEAM5qJiSGGnzdr1SHnF5Yk7BBE162aZw1/6Vd5Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=GYRuF2waYSo5klGxhyjzYOdhloeRDwgmWgfN8Ivco4skr/V6zHrCVFGCFxS8IiR4xQ5GDHJxqpuCE2JMK3SsHRHsbiYjCnmvLDBQttW1xe3qE8s1T+UEqsD+vqBKybW13KgzTWKD6DzdPMrTfimU35XRFIxfZ9IGsOHxMkMErwU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=moZ+hifb; arc=none smtp.client-ip=212.227.17.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1718609425; c=relaxed/simple;
+	bh=gEldI8SY6eGQdXXA08PGCTyjYAYBvdvuimrdpkVw3aE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mJbcGu2un2avUdQRrZaGL2Mzk1NP+0+c2x0Cv5VEEH2oQBAtgwmZC6Nqf6fRbvicXsnPsPC/vgYz2v0aiZQ1dwZVRqBs7T8ch2G6h+w7HOJJ/SzSf7XCXTvRBkL6nTr1D0DmrnSPlgrxahBMMrVBO1UxWGik0Vp3c/KZFxGvQ2s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JzvJQLlc; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="moZ+hifb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1718603935; x=1719208735; i=deller@gmx.de;
-	bh=+HdE+GKlMXl1Tr/7+VvWnOUp6XAauHEgbZXiKGTwqjY=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=moZ+hifb7+2byidQb+PospfdMsn1Zgn3Xo3BCmvjHldxseo5W7XbFBPZAvgiqiwf
-	 ExuDsCkWhbE2WjcI06jpa8VtgBqqi3w6F+XSr5hktTPFv9zWDrccRY/R/vFh9ra7F
-	 KIIe/4PTgB8l5Bkc4D4mDemYPVdGtXz+3iBmzy6HiH0s8V6nMCTnGIoc2U0byXWBM
-	 0v96nQvnBrn7iPqSPCwBlrGSwCx5MpoC8I0cD6cH7fRvwpq8wYGQr0FCTa1jQXJmU
-	 KCZL38a8kP7dBcoBh7jJkQOgnNh7fXEY7Bk7Ndb6g7Nwk/7U4SEuLDHhqRF02c5Kp
-	 ZlFzlLpg1jTQW9AakQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([83.135.217.92]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MNKlu-1s33u12UrS-00RiwV; Mon, 17
- Jun 2024 07:58:55 +0200
-Message-ID: <85ef9e82-558b-4a96-9667-acb2038716fe@gmx.de>
-Date: Mon, 17 Jun 2024 07:58:54 +0200
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JzvJQLlc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1718609422;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=nH7NF47wiN5yYt3CYf79aIVqL/Dl6DPgZQONYE92Y0w=;
+	b=JzvJQLlcprNm25RLQncmQDGyIUtw1QrWdt1oZ2Dt7AKHlJFX5VZCQsyOgFA6Y0G6feSHNO
+	LtkEgg5VRhIbXNgVsp1ffFs8e0m33zacuDI0a/bBi9XG+icgWBEVJCp7YinLphvbl3h8Tf
+	FbH4qj7gZW28+LblzRcgjLJRMXmobMw=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-654-SKEgt4VjOsOn0wmLBkyIuA-1; Mon, 17 Jun 2024 03:29:40 -0400
+X-MC-Unique: SKEgt4VjOsOn0wmLBkyIuA-1
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-42120e123beso35518775e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jun 2024 00:29:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1718609380; x=1719214180;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=nH7NF47wiN5yYt3CYf79aIVqL/Dl6DPgZQONYE92Y0w=;
+        b=sXwc3GyPNIs+dSxNCoAudrf561rfEZzWu4k5H5zDMbwCwIJ4ABnnEhgtuuj1NJV2nU
+         SyYURjKW2a0txPJtN3VzdYcZJvJya5u1xmjH4traTD5r0uVRV/UMpj1MF+Y6U3YyE9W7
+         R5eedcs9df5ipr+gh/QCdn5eeqh/b7OY5GBZBGsupcA7rNx8CkER5GWXBeTufJXJmrw0
+         YTSGJMigaUztnabechHMMX3i8MZ/KEYBpdUV2zPRClMRi6lTN8YzoQLAloMz04PIf697
+         D0e1/YTZ7bFUssLal5MAHbP4vIhO86OhXL1mK1bgqd5fJ8V9e2urVQzFr/vOxzF4X3jm
+         ztlA==
+X-Forwarded-Encrypted: i=1; AJvYcCWgIAH7i6P8v0m6dQJymww06/6kSGkdEpn4mlDPOubjeoZDLmY05XzpTYYIkJn8mQ9J5/TLYPeBJNKpKZNxrFD88JnVl9sixGmljRc=
+X-Gm-Message-State: AOJu0YwYl3/nTu8ZV7fjltHxpAr73Ed1yFKLWzDpVNXzLUPwpZqj/ill
+	PgVAaFAIUImdtEgIuVxECSrqsKsjFuwCdrz/QmwI6gYWMeUzoGqSNUAvD5CmI84qR0UcVTkL2/r
+	LOt7UeTaI166htkm8ocPJXIL8b4knvnwnd7qf87TmzQT7q1m8Fz20BHumAxtT
+X-Received: by 2002:a05:600c:3514:b0:421:7bb1:eb9b with SMTP id 5b1f17b1804b1-42304844abfmr95161315e9.28.1718609379787;
+        Mon, 17 Jun 2024 00:29:39 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHNol8wq1CXKJ8SwcNyP7NAVPlUEp/Y2i/P5kX0p598nmFsmM+2aodmq6E1g2pO2gIIdkl2YQ==
+X-Received: by 2002:a05:600c:3514:b0:421:7bb1:eb9b with SMTP id 5b1f17b1804b1-42304844abfmr95161155e9.28.1718609379373;
+        Mon, 17 Jun 2024 00:29:39 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:c:37e0:38da:a7d9:7cc9:db3e? ([2a01:e0a:c:37e0:38da:a7d9:7cc9:db3e])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-422f6320bd8sm150669275e9.32.2024.06.17.00.29.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 17 Jun 2024 00:29:38 -0700 (PDT)
+Message-ID: <cb70ad62-e927-4020-b2d9-84b7c7a607bf@redhat.com>
+Date: Mon, 17 Jun 2024 09:29:37 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,163 +67,106 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 resend 0/9] use for_each_endpoint_of_node()
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-staging@lists.linux.dev
-References: <87v828s7v0.wl-kuninori.morimoto.gx@renesas.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <87v828s7v0.wl-kuninori.morimoto.gx@renesas.com>
+Subject: Re: [PATCH v2 5/7] drm/panic: Convert to drm_fb_clip_offset()
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ kernel test robot <lkp@intel.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ oe-kbuild-all@lists.linux.dev, Helge Deller <deller@gmx.de>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org
+References: <3121082eb4beb461773ebb6f656ed9b4286967ee.1718305355.git.geert+renesas@glider.be>
+ <202406151811.yEIZ6203-lkp@intel.com>
+ <CAMuHMdVvJwEbbEG6_4T2g0sHFyKehkQ81Ekc2Bi65Oq3hvNiDg@mail.gmail.com>
+ <CAMuHMdX4VCrV9VPFT5412ccaG7AwqGUH_c-Tcy2NXLk3AapNBw@mail.gmail.com>
+Content-Language: en-US, fr
+From: Jocelyn Falempe <jfalempe@redhat.com>
+In-Reply-To: <CAMuHMdX4VCrV9VPFT5412ccaG7AwqGUH_c-Tcy2NXLk3AapNBw@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:r0x1YfLuiViZYe+gRUIZyYs9KMqwrj7gg4vqYWHQP3jzzu2J2vQ
- 2tA003nABkGX+yvWQkfU8XfHklcBtSm0Wk4Jib1U1P7v2u/iTTKsefJnNPU7zBsQUvpoWDY
- Bn97gMMD8ClI4sMqYXlRU2gmkdVHmgiwNe0FWx6oEivrXOZFg0HjHB+pDYAbxel4ny1fI56
- Vvcf2gdthOWGl1QdLYmtg==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:rOPvLsu7E7Q=;zPfU/y0veqh7r5Vxg96s5cXbnKr
- szn5uukJBNKOnveJzIvo5sofwj0ra7O3U1JtSOTROyDEFaTdcUujIK2DzuQ5aL163PoLlxYbz
- lRpdoa7b/gTmgFwqk1ZtEgfOkNOHKEJGlTM6wewTjT1gAb82o58Ah5bblijFZVisF7ygu7MBi
- 7qqz+K2rO5C0bniLuIZpIvpmihi9nUrRQ/SJJCeIILo13rLm8GswW3qP50Zbmz6swsQtslGyB
- BHkvhlh4ly7NiYRXMYQkCwaHcttbRsyzrAB45hBbfXQngmx+lbKdguE/jWkTKtWWaz2CF/4RV
- zh5yCzgQCB2MoLZbSg+1oekh2AeBNcDaDISxC4pq0r2hQBgnQYffI+WJM7o4hNaataW1l3bSQ
- jRLIPbH/MiyRFZMMkvUtYHVBDQlR6HA688uyvx7lIfKFSFtxaOXBylBCMQVTdJB+xjiUjmzO5
- MllyqMhw6HmjeyNqE0f/iVbiRJAfLvjWJexg2D/1MONQCojodcE5SmdE14dhw2U7zQbsTQVzy
- cX2+ho69aZrPvQ8sjfXL6dZrnWV9DvOuXDlPhrVavrDCfCNBDfbmyQZ0alXEO5gPlASVhXY4j
- vaWcDD64r803Bo+r2+41t7qS+higsB1oAWrQYZS6A8m2VuVIzHXyb5QLS0cJERe00eGHneYOW
- JMs/lBQW6Ed9YwfKn+53pPW4UkdWWmcjN479B4TKG1PXYDKcJPa6rTXGKWPOy9CGIkHVxmtvC
- jJ08xps8/aDUW5Mw1cZFgUtH9NbS6QTPQMs15+Hi5xhHk3Z4rlEmvn+bSOwjUZClL8cUe8/G8
- mn1ZLkTeqpIU7AkYt90yIwiS9MNvTAUtD6UFlrtspejxM=
+Content-Transfer-Encoding: 8bit
 
-On 6/17/24 02:58, Kuninori Morimoto wrote:
-> Hi Rob, Helge, +Sakari, +Hans
 
-Hi Kuninori,
 
-> 2 weeks past. This is resend v4 patch-set.
-> I add +Sakari, +Hans on To.
->
-> We already have for_each_endpoint_of_node(), but some drivers are
-> not using it. This patch-set replace it.
->
-> This patch-set is related to "OF" (=3D Rob), but many driveres are for
-> "MultiMedia" (=3D Helge). I'm not sure who handle these.
+On 16/06/2024 11:12, Geert Uytterhoeven wrote:
+> On Sun, Jun 16, 2024 at 11:08 AM Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> On Sat, Jun 15, 2024 at 12:55 PM kernel test robot <lkp@intel.com> wrote:
+>>> kernel test robot noticed the following build errors:
+>>>
+>>> [auto build test ERROR on drm-misc/drm-misc-next]
+>>> [cannot apply to linus/master v6.10-rc3 next-20240613]
+>>> [If your patch is applied to the wrong git tree, kindly drop us a note.
+>>> And when submitting patch, we suggest to use '--base' as documented in
+>>> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+>>>
+>>> url:    https://github.com/intel-lab-lkp/linux/commits/Geert-Uytterhoeven/drm-panic-Fix-uninitialized-drm_scanout_buffer-set_pixel-crash/20240614-032053
+>>> base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+>>> patch link:    https://lore.kernel.org/r/3121082eb4beb461773ebb6f656ed9b4286967ee.1718305355.git.geert%2Brenesas%40glider.be
+>>> patch subject: [PATCH v2 5/7] drm/panic: Convert to drm_fb_clip_offset()
+>>> config: x86_64-randconfig-003-20240615 (https://download.01.org/0day-ci/archive/20240615/202406151811.yEIZ6203-lkp@intel.com/config)
+>>> compiler: gcc-13 (Ubuntu 13.2.0-4ubuntu3) 13.2.0
+>>> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240615/202406151811.yEIZ6203-lkp@intel.com/reproduce)
+>>>
+>>> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+>>> the same patch/commit), kindly add following tags
+>>> | Reported-by: kernel test robot <lkp@intel.com>
+>>> | Closes: https://lore.kernel.org/oe-kbuild-all/202406151811.yEIZ6203-lkp@intel.com/
+>>>
+>>> All errors (new ones prefixed by >>):
+>>>
+>>>>> depmod: ERROR: Cycle detected: drm -> drm_kms_helper -> drm
+>>>     depmod: ERROR: Found 2 modules in dependency cycles!
+>>
+>> Oops, so DRM core cannot call any of the helpers, and DRM_PANIC
+>> selecting DRM_KMS_HELPER was wrong in the first place?
+> 
+> Q: So how does this work with DRM_PANIC calling
+>     drm_fb_helper_emergency_disable()?
+> A: drm_fb_helper_emergency_disable() is a dummy if
+>     !CONFIG_DRM_FBDEV_EMULATION, so I guess no one tried to build
+>     a failing randconfig with CONFIG_DRM_FBDEV_EMULATION=y yet.
 
-I applied the two fbdev patches (#8 and #9), but I'm not maintainer for "m=
-ultimedia".
-For multimedia I expect people from linux-media@vger.kernel.org to pick yo=
-ur patches.
+drm_fb_helper_emergency_disable() is part of the series
+https://patchwork.freedesktop.org/series/132720/
+which, after discussing it on IRC with sima and Javier, is not a good 
+solution, and is abandoned.
 
-Helge
+I think the "select DRM_KMS_HELPER" is a leftover from earlier version 
+of drm_panic, that used the color conversion function from 
+drm_kms_helper, but that has changed in v10 and later.
 
->
-> I noticed that my posted 1 patch on (A) was not yet included on
-> linus/master. I have included it.
->
-> Dan is indicating it needs _scoped() macro, but it is new new feature.
-> So I think we want to have separate this patch-set and _scoped() patch-s=
-et.
-> I asked it to ML/Maintainer but no responce, so v4 doesn't include it.
-> It will be handled by other patch-set in the future.
->
-> [o] done
-> [*] this patch-set
->
-> 	[o] tidyup of_graph_get_endpoint_count()
-> (A)	[o] replace endpoint func - use endpoint_by_regs()
-> 	[*] replace endpoint func - use for_each()
-> 	[ ] add new port function
-> 	[ ] add new endpoint function
->
-> v3 -> v4
-> 	- fixup ret handling
->
-> v2 -> v3
-> 	- don't initialize pointer.
-> 	- add Reviewed-by / Acked-by
-> 	- include not-yet applied missing patch
->
-> v1 -> v2
-> 	- fixup TI patch
->
-> Link: https://lore.kernel.org/r/8734sf6mgn.wl-kuninori.morimoto.gx@renes=
-as.com
-> Link: https://lore.kernel.org/r/87cyrauf0x.wl-kuninori.morimoto.gx@renes=
-as.com
-> Link: https://lore.kernel.org/r/87le3soy08.wl-kuninori.morimoto.gx@renes=
-as.com
->
-> Kuninori Morimoto (9):
->    gpu: drm: replace of_graph_get_next_endpoint()
->    gpu: drm: use for_each_endpoint_of_node()
->    hwtracing: use for_each_endpoint_of_node()
->    media: platform: microchip: use for_each_endpoint_of_node()
->    media: platform: ti: use for_each_endpoint_of_node()
->    media: platform: xilinx: use for_each_endpoint_of_node()
->    staging: media: atmel: use for_each_endpoint_of_node()
->    video: fbdev: use for_each_endpoint_of_node()
->    fbdev: omapfb: use of_graph_get_remote_port()
->
->   drivers/gpu/drm/drm_of.c                      |  4 +++-
->   drivers/gpu/drm/omapdrm/dss/base.c            |  3 +--
->   .../drm/panel/panel-raspberrypi-touchscreen.c |  2 +-
->   drivers/gpu/drm/tiny/arcpgu.c                 |  2 +-
->   .../hwtracing/coresight/coresight-platform.c  |  4 ++--
->   .../microchip/microchip-sama5d2-isc.c         | 21 +++++++------------
->   .../microchip/microchip-sama7g5-isc.c         | 21 +++++++------------
->   .../media/platform/ti/am437x/am437x-vpfe.c    | 12 +++++------
->   .../media/platform/ti/davinci/vpif_capture.c  | 14 ++++++-------
->   drivers/media/platform/xilinx/xilinx-vipp.c   |  9 ++------
->   .../deprecated/atmel/atmel-sama5d2-isc.c      | 10 +++------
->   .../deprecated/atmel/atmel-sama7g5-isc.c      | 10 +++------
->   drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 15 +------------
->   .../omap2/omapfb/dss/omapdss-boot-init.c      |  3 +--
->   14 files changed, 46 insertions(+), 84 deletions(-)
->
+drm_panic is called from the drm_core code, so in fact it can't depends 
+on the kms helper.
+
+I don't see a good solution to workaround this circular dependency, 
+maybe depends on DRM_KMS_HELPER being built-in ? (so that means drm_core 
+will also be built-in). But that means platform that build drm core as 
+module, won't be able to use drm_panic.
+
+There are a few of them in the kernel tree:
+rg -l CONFIG_DRM=m
+arch/powerpc/configs/85xx/stx_gp3_defconfig
+arch/powerpc/configs/ppc6xx_defconfig
+arch/powerpc/configs/skiroot_defconfig
+arch/powerpc/configs/pmac32_defconfig
+arch/mips/configs/ci20_defconfig
+arch/arc/configs/axs101_defconfig
+arch/arc/configs/axs103_smp_defconfig
+arch/riscv/configs/defconfig
+arch/parisc/configs/generic-32bit_defconfig
+arch/arm/configs/davinci_all_defconfig
+arch/arm/configs/omap2plus_defconfig
+arch/arm/configs/pxa_defconfig
+arch/arm64/configs/defconfig
+
+> 
+> Gr{oetje,eeting}s,
+> 
+>                          Geert
+> 
+
+-- 
+
+Jocelyn
 

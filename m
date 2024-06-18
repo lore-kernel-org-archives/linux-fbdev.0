@@ -1,61 +1,61 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86CA416DC2D
-	for <linux-fbdev@vger.kernel.org>; Tue, 18 Jun 2024 14:02:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8CB816DC3F
+	for <linux-fbdev@vger.kernel.org>; Tue, 18 Jun 2024 14:02:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718719359; cv=none; b=nfUCS1Ox0QWESiqTuaxMByJLs8Fq1RmiommcNn534wV1Gjh+tJlCJ8QHTyAwEiNxclcbW4ykcrAzdwe9e+sy4Oq+JW5C04vwXlhxhGU6+hKEoCtlVjBuw7zpNfWEI9XR3Ld/FpnBsLWP/OUYFLCP9m4HRd7O67oSA5PzButnkbo=
+	t=1718719359; cv=none; b=Vhl998lFxLdyrqQcW4HROdFWYTjkVWZdSd1yOsGO7hGMPwWMqal+7rKvb5R9vdetAE3ya7REPH7atmSodbRgrM/6iGjN6DkiEsGOGlIb4pQZz+Qkkg3NAjE39Xlnoihgx+ROytutAoT/QRw2Jd5YnzCD2zfll73QT1Wpred6C64=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1718719359; c=relaxed/simple;
-	bh=PLtj7bSe++tHU1muE0ellbCUBsOVwaNLui/U8TXTses=;
+	bh=fMDqf1KM7W/RA77rezMz3nE602KNHtmJiEMO09XyypI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WrLv0HIR1+xb731nZV0MmTH0hRwOxZ2osDkuOwN5PSmrXyRu2KfE3qM5ymANFmy1O3m6T8DwN1GY7Znd6KkDK3vGJBabmGG4571uiv40prHw1g8z/kG2ZJB6+CFHHV/QgrjuZxhwGPz71/M3EF/D95/DDc8CtrqLw0W9439A6D8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=vypcjnui; arc=none smtp.client-ip=209.85.221.43
+	 In-Reply-To:To:Cc; b=mutdELBoTBpmmvvjX7TYuhuRVJye9muGUs8q3Birl1dLHkPb6XV18rs7a8ykG5L7ZRgQheI7hiBHDDQId0wgwMHvd6+3Ky9Ao8FIsHmd7u/h+5ruUEW7FDJVvjG/EeVCtA3zLIAxLEWcrVuTy4pWDo5jzkiMigZxzMBDTwtQJRw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=g8K4zTrc; arc=none smtp.client-ip=209.85.221.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="vypcjnui"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-35f14af40c2so4574739f8f.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jun 2024 07:02:36 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="g8K4zTrc"
+Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-35f1dc4ab9aso4506277f8f.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jun 2024 07:02:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1718719355; x=1719324155; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1718719356; x=1719324156; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=uJg4U+PW9Snx8tG5VLs4l5kg/oNVaqq+3EVHHkcbQfc=;
-        b=vypcjnuiJke07aPcLopSP2JneN2mnNHmsXw7xgLzXa8jq9pBV2NnxEs9W+AMySMcgx
-         FPkt95Cny9Mdqq2ai6lF+rlm1p1WW9eVGUSCXhQT3AM3GENw2atiJQXAW2GK+o4WOtZZ
-         Q7oJWFTF6MilkHHPKrpD90AS2Dvl/4qG9RHqvCkun8W36XnGuCK2WEz0fL7QFdPUXWp0
-         rkKohkFRmS5HFQbKZsS7dFJI7iM5uv5J9+Nw5F/qasNfFHJS/vDk5zMpZE6cO0FT1m58
-         Z27OzAdR0/8QGEE+zIwpmy8iGhrz982wj7bLXgayPypcH9dCwNfb+z42JC1jhOQwIYFw
-         IM2w==
+        bh=6PSO/1gMPYozHX3dfKEvclJiI5tF+MksrCbjn3VycYQ=;
+        b=g8K4zTrcB5EEc2FjvPAPTibOgigNssdsV0Nav1MvTRwvBEVeKKcNyCf350+kHi1RAH
+         vaDci42ni4P+wOPxWdToieOVNFY4ssEsd8GmFNH6B0p6BFfsYUOZ6li14l2kfbJZI7+u
+         5aF9XLQQVHY7zqc71qz5/tbc4wnAFU7u0xv8EA89jwNXgOdc99zzCEnqohzanEDLsYzn
+         d4FjMocb0KXlkvti6BbNhsXCAr/dG5cR4M9tEDbvp0lwSZ4QmmZ59/IMivxMe+204EBr
+         SaGcZzGpz+KUk98e8pFOc63fkqgOYh7RZZHCom7GJmd9ovd9v2stUaSwGHx/9G42oyuw
+         meOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718719355; x=1719324155;
+        d=1e100.net; s=20230601; t=1718719356; x=1719324156;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=uJg4U+PW9Snx8tG5VLs4l5kg/oNVaqq+3EVHHkcbQfc=;
-        b=agx7gAvmcOqD9tKlZjzTfGv5uzfD3ZoDuRlXf2JgUI3oDN9kI7ka9a+0nbGUClHcuj
-         scsfdejS++kMwiP8QZHWLLRhwyGANHbCi/DbGi5+HdeSgED8YFtszPA6lfMioin/OflT
-         yIwVapC5fXdpO3DdwLRW/WGMGR5Yv86f9NAzu1sLMjvLMD5AmwC6Ge3W+pttmH5paHiL
-         eZW6IxS7N7m1rpu0fYsx/eV1GvwjVWneYHHiXdFsdeZLfbonF7kZ9Oi8tpEuCjZ22cu1
-         sVonx1/6o2v3QZhmhrdrGHZSEQmG3Fxt+G8HvxOBkSY7xN1SDaN3lj78SzUAfC7BbLHq
-         UeCA==
-X-Forwarded-Encrypted: i=1; AJvYcCVn7oZKu6ZHjzl3pVQpwuksEMzL76DVx0/oXx+Wwfvw12hufXYuN6SuEdibzCk28ozIR+uP6r3QFVR462Uix5m4K8kJGLfgREB+HQc=
-X-Gm-Message-State: AOJu0YxDeG0e4IGcuPeQ29tcgAzYdL9i+b7KSY4HBWmSbypiQvHOBkTo
-	pEW/04KckX7e0IaV5SIs1Qye/ypcNeQ9Ry/nwD/jhZd3H5WNeF5yA7sV3KDMujo=
-X-Google-Smtp-Source: AGHT+IEpUUcK2t2NT0uyE9LsIkX7F9ePlZPM6Wgs49S7h0PwgLnOw5XdUvtGqV7G0aa932wJUiWaZg==
-X-Received: by 2002:a5d:5607:0:b0:362:ea80:db0d with SMTP id ffacd0b85a97d-362ea80dc64mr155775f8f.11.1718719354954;
-        Tue, 18 Jun 2024 07:02:34 -0700 (PDT)
+        bh=6PSO/1gMPYozHX3dfKEvclJiI5tF+MksrCbjn3VycYQ=;
+        b=OX4vf145gL6NLWPsu1hSE2IsZBZHCLPKaKZC8gEs9jYerz84bqYxTZ54AxRSP2wVqm
+         leFSforUYmgrdsEtgK9XTJzlnNTFsUee00w5xsV01U6i7UiDJLFjU+c0HeMsMjTncT01
+         +pwBQXQ68X7UiQi83HB41mUwPwQVQUvOCV+/NBtSpY/MhBd3BWoGer4/aopWDK5SLAaH
+         C8XmjMivco0lUc5nEMcihKhdRpT4n1x2itaP01W1tTrsnfK3ierPg9n27+9QBmm62ZsF
+         lT26elx0P3wrwAR6zfXQw0mtKbOTJ3qpkFFfGmGWsirTKRUSZtvFqYZ3Bz9TIahgCQfH
+         o1Ag==
+X-Forwarded-Encrypted: i=1; AJvYcCX9njwuH2Zd38LWhPy8j6yTSFFbQ791tbTytJ/+WOTej6kNidddtaTSu0e0VON8UhECLBBv6jHjaZxDNBBb351Ru8RvH6LHKP/logQ=
+X-Gm-Message-State: AOJu0Yy4PclLuB6XqVLFIhMIBjf9VKIJw3WzIZbbwmV+l0T1XLE3/dCt
+	zXGFCigtagHcaqYeVOvqsI4qMk+1O2QHxvFCXXyn/Kt+pmsm+8g/Ybl82C3EVF0=
+X-Google-Smtp-Source: AGHT+IFhaLPzqepPaG30Gpc5wKJD8gFH+IxtsauFUs+mCd/Kver+eAIQm2Ywl7oZ1ItrgT/c7vP4Wg==
+X-Received: by 2002:a5d:6192:0:b0:362:6e61:a342 with SMTP id ffacd0b85a97d-3626e61a39bmr1041071f8f.36.1718719355495;
+        Tue, 18 Jun 2024 07:02:35 -0700 (PDT)
 Received: from [127.0.1.1] (frhb82016ds.ikexpress.com. [185.246.87.17])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-360750f22absm14412546f8f.79.2024.06.18.07.02.34
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-360750f22absm14412546f8f.79.2024.06.18.07.02.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Jun 2024 07:02:34 -0700 (PDT)
+        Tue, 18 Jun 2024 07:02:35 -0700 (PDT)
 From: Guillaume Stols <gstols@baylibre.com>
-Date: Tue, 18 Jun 2024 14:02:33 +0000
-Subject: [PATCH 1/9] dt-bindings: iio: adc: adi,ad7606: add missing
- datasheet link
+Date: Tue, 18 Jun 2024 14:02:34 +0000
+Subject: [PATCH 2/9] dt-bindings: iio: adc: adi,ad7606: comment and sort
+ the compatible names
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240618-cleanup-ad7606-v1-1-f1854d5c779d@baylibre.com>
+Message-Id: <20240618-cleanup-ad7606-v1-2-f1854d5c779d@baylibre.com>
 References: <20240618-cleanup-ad7606-v1-0-f1854d5c779d@baylibre.com>
 In-Reply-To: <20240618-cleanup-ad7606-v1-0-f1854d5c779d@baylibre.com>
 To: Lars-Peter Clausen <lars@metafoo.de>, 
@@ -81,25 +81,31 @@ Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
  dlechner@baylibre.com
 X-Mailer: b4 0.14.0
 
-Add AD7606-5 datasheet link.
+AD7606-8 is referred to as AD7606 by Analog Devices. This comment aims
+to avoid confusion. Also the compatible names were not sorted by
+alphabetical order.
 
 Signed-off-by: Guillaume Stols <gstols@baylibre.com>
 ---
- Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-index 7fa46df1f4fb..d55c58400df5 100644
+index d55c58400df5..00fdaed11cbd 100644
 --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
 +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-@@ -11,6 +11,7 @@ maintainers:
+@@ -20,9 +20,9 @@ properties:
+   compatible:
+     enum:
+       - adi,ad7605-4
+-      - adi,ad7606-8
+-      - adi,ad7606-6
+       - adi,ad7606-4
++      - adi,ad7606-6
++      - adi,ad7606-8  # Referred to as AD7606 (without -8) in the datasheet
+       - adi,ad7606b
+       - adi,ad7616
  
- description: |
-   Analog Devices AD7606 Simultaneous Sampling ADC
-+  https://www.analog.com/media/en/technical-documentation/data-sheets/AD7605-4.pdf
-   https://www.analog.com/media/en/technical-documentation/data-sheets/ad7606_7606-6_7606-4.pdf
-   https://www.analog.com/media/en/technical-documentation/data-sheets/AD7606B.pdf
-   https://www.analog.com/media/en/technical-documentation/data-sheets/AD7616.pdf
 
 -- 
 2.34.1

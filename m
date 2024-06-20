@@ -1,212 +1,212 @@
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56C6B15886B
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Jun 2024 19:36:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 449DE2BCF7
+	for <linux-fbdev@vger.kernel.org>; Thu, 20 Jun 2024 06:40:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1718825773; cv=none; b=U94ZYCd3BUJ8bizBGyFBZ1R0k3gpr8extpqgNfZZv1GElYw5cTw3PWQOGTfInl8U1R7CR2qW25gJqNh4opS/l+jtXzlheL0POmBUzfnT4rs4Pbp7O+4avCDoSdZ8+IcFrzpoPvdU6dZ2pH/ScyzzJBzAIpH0jueD1PXZ/QD0Ebg=
+	t=1718865609; cv=none; b=qdVhlgbvYXQhTIIdUKY3vWpnCm17MPtcDaRde/OtAvvaeW7kCKft57uOMFuR3t7cUFM40p71qzl/EUGnKhwMJviMZ1uRfqmnqxVnN9STZmlEPUIWRXSTld+wrUhLGNXvr1XsUYaqKsyT/NB4SWRL6yhKxBZVFc6w+QQlYGauy8Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1718825773; c=relaxed/simple;
-	bh=b6KdZZ9MVHXlW6Kzlm1yP66Bz8tcUOfRhuVRKx4scF4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=o0CCV/5hq+IiwDuwNlrfCKkCxf0S6r0h1xpTyTkZcsr+08Z/xH/BiJmwxY/GyPTjkIoFRgEhiYTlFLbOHupDoplxhzq98uJbREIkOHe63tbSR9Wk+LR9HAXi51KjBOZGHij5ZCmtHFJhnR6HKvMPabAGSCm+6WeS1nLHgOvK5rg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=pf774buo; arc=none smtp.client-ip=209.85.218.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1718865609; c=relaxed/simple;
+	bh=ebUerJObxcab5NaJiCqBaNg7e4jB/HqdvbhRq52GmaU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cccXwN27dyqIzQZEwtoTiIkpPlLcd6OoIKO2JVhvZUmvLK2eYTbldQzxxGtgCOVCZFyZEobeHrZmqOp50lY5Wg7x6ZwZ8I28ObIEaeph778THPFSY4ayYiQA4DU0QE2g8sIcjmtYwDWXOpcjEAKhn2mD3LxrrZSNsAo+Zl8UjO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fV6QC1Ce; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=0tVsN7dp; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fV6QC1Ce; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=0tVsN7dp; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="pf774buo"
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-a6f11a2d18aso11299466b.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jun 2024 12:36:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1718825768; x=1719430568; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vnLZjzsiZJ7wwEMZFq71NfmdNt4xwTT/ZS6jS7RPwME=;
-        b=pf774buo4m0BBEzx/ciencbovn0EECfbMXFrORG8KoJng/yxCZXKLirumtEErdubfm
-         Zpsts3AroP1ZezlxAzSf7ego/3eaKRJoLEAON8NBMRaL3u3CVdnHkKEIU60edojqOABN
-         WHfUYjnzvuJG5pva1rtCBMGGrLGieYoN9ZYk09YkMO5G2s/pgwkpKbq3rf0nPfIg/eOJ
-         A/w8WZXc9ljsQDrW/It+woeE0Y1Y7tPrAKudgV3ceb5ahJeG/eoLaYl2ZH9mu/8HYn1H
-         KI+vdaek4hYRVV56o3Z2BOxmVj6x2zGwxwM+5mSjQTko24yD+etgSfhlKZ9eAmUty6uK
-         AI8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718825768; x=1719430568;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vnLZjzsiZJ7wwEMZFq71NfmdNt4xwTT/ZS6jS7RPwME=;
-        b=WqcnaayMuAiH+hY5+yNgpOF7wmU1S2wxQcFucgq/Q6LIZdYcXYEDp5mQJoDMA7K1nk
-         lRNzg17bOGpRvW3tUXK1D7yrnInU52pDmBAcTcil34ChaSiagBYJEIlQc6SamFTGn4u9
-         4qBVpcRfQ5Gt4i53eCNs5VDKT7A423dTRsa3jpYynGnHo5rfHbcDhVeji1xkHL3igCmu
-         F/kI2DHHAsX1823PmHP7Z+Sx0BANNYVWZAXMZbwSokrEOHEPAh6P4apf2aVPyzFXgCcY
-         iRbAzg/UszW1KJIeKa5lEP0NT9JtkZ/7aP6jepQzOPX2dFF4mZPY561YDrWvcrcD2Lzu
-         k0rQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXkQnyDSPXj0ly6/8Tfbx6JfwBp9W9VmCWy0QwENIvTcGhav74jUwt+6JmYSX58Ely3RBTgHX9hsh6jv6XmyeCvq2mGiz7Xh34EjsA=
-X-Gm-Message-State: AOJu0YwM2B/XZ0AOJSpRMJrKz2rH5iyoMCiPSQYB3PsSgR0ZFMj7WJb7
-	AoK2QVECpWmTBSmkLZzfc2HcHAahNzKn6k5oaNunrBfWcp+WO0hW+Sd2lTD44FMjiepHb1KFTZH
-	yV9o=
-X-Google-Smtp-Source: AGHT+IGIHtLyHv1BeR7I51HKBBQr1rPaFSrD0CBlXThWh80UhE0jre2aByQrY4pyvX81yH54k+ylqw==
-X-Received: by 2002:a17:907:175e:b0:a6f:1166:fb7a with SMTP id a640c23a62f3a-a6fab614d2cmr160009166b.32.1718825768582;
-        Wed, 19 Jun 2024 12:36:08 -0700 (PDT)
-Received: from localhost ([2a02:8071:b783:6940:36f3:9aff:fec2:7e46])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a6f56ecdd79sm697709866b.132.2024.06.19.12.36.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Jun 2024 12:36:08 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <daniel.thompson@linaro.org>,
-	Jingoo Han <jingoohan1@gmail.com>
-Cc: Helge Deller <deller@gmx.de>,
-	Jianhua Lu <lujianhua000@gmail.com>,
-	Flavio Suligoi <f.suligoi@asem.it>,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH] backlight: Drop explicit initialization of struct i2c_device_id::driver_data to 0
-Date: Wed, 19 Jun 2024 21:35:57 +0200
-Message-ID: <20240619193558.2543645-2-u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fV6QC1Ce";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="0tVsN7dp";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fV6QC1Ce";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="0tVsN7dp"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 1B7691F795;
+	Thu, 20 Jun 2024 06:40:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1718865605; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UH1n0fI6xXK4E7uTAmr/28rp7by9nn20YzAJ8qbVhK8=;
+	b=fV6QC1CeF7UbqAzubGDeEXlUXsbp+3g/ZnRwSMVdjIohKL1Zn61GeJpurDF+EPNe+H9E2A
+	m3mxOX4FATu5l6YzM7/vF2VVfLal3aOvo8iesvgEpoFU9RqlrpkCOEyIc+Bhu2YV7u1nP8
+	hysnRxugkJpjx56sj+olLLcFDKkp/XY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1718865605;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UH1n0fI6xXK4E7uTAmr/28rp7by9nn20YzAJ8qbVhK8=;
+	b=0tVsN7dpjh5fnAOd7T/z9I47GkTnatN/vINiWzsWNGjlW4RXmAAw2KO/LTs3/yYzXJJMUs
+	qulX5yIirp0UHJDQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1718865605; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UH1n0fI6xXK4E7uTAmr/28rp7by9nn20YzAJ8qbVhK8=;
+	b=fV6QC1CeF7UbqAzubGDeEXlUXsbp+3g/ZnRwSMVdjIohKL1Zn61GeJpurDF+EPNe+H9E2A
+	m3mxOX4FATu5l6YzM7/vF2VVfLal3aOvo8iesvgEpoFU9RqlrpkCOEyIc+Bhu2YV7u1nP8
+	hysnRxugkJpjx56sj+olLLcFDKkp/XY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1718865605;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UH1n0fI6xXK4E7uTAmr/28rp7by9nn20YzAJ8qbVhK8=;
+	b=0tVsN7dpjh5fnAOd7T/z9I47GkTnatN/vINiWzsWNGjlW4RXmAAw2KO/LTs3/yYzXJJMUs
+	qulX5yIirp0UHJDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CCD3F1369F;
+	Thu, 20 Jun 2024 06:40:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Fc0pMMTOc2ZQPwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 20 Jun 2024 06:40:04 +0000
+Message-ID: <8cab29df-6490-4a5e-999f-0e734e396303@suse.de>
+Date: Thu, 20 Jun 2024 08:40:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4552; i=u.kleine-koenig@baylibre.com; h=from:subject; bh=b6KdZZ9MVHXlW6Kzlm1yP66Bz8tcUOfRhuVRKx4scF4=; b=owGbwMvMwMXY3/A7olbonx/jabUkhrRiYznNlJmzDTYGHym8Y3STZYvRHxGeSCG2q8r2N2TnW j6aHfyyk9GYhYGRi0FWTJHFvnFNplWVXGTn2n+XYQaxMoFMYeDiFICJ7PrFwTDJupbj79UPj/V4 H01h0JPJ8tXuuF/9Nv7Dlusr1Fd+l4oUn6fB96JT2aRduDpkzd43zxe1hVz5qlzzR1kh+X2D0sY tNRc+rL85Uaixg1Vdpk/3/6S1M3Umhmd/q26c/ElBtKYn5XStUpZm45V5t56yHS3+H8SucjiZY8 eCvb6vXfVzeQI9VmX+7Dis5xe1y8TYt8KBIXD1tTsfU5gmni07oa0SJ76tROuDSe6qfvGfdcIzd NSlL66fzcO+XInBzTHshED9w9r9Cq/mOYlHR3hxs8w13ntM9vVyEaUn8184bnu3QX6a7fuYY5cW q8dcs9vwPMFLT91NMCHgtlGF0SQug6r88J6efuHj+lu8AA==
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+User-Agent: Mozilla Thunderbird
+Subject: Re: "firmware/sysfb: Set firmware-framebuffer parent device" breaks
+ lightdm on Ubuntu 22.04 using amdgpu
+To: =?UTF-8?B?TWFyZWsgT2zFocOhaw==?= <maraeo@gmail.com>
+Cc: javierm@redhat.com, pjones@redhat.com, deller@gmx.de, ardb@kernel.org,
+ dri-devel <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org,
+ "Deucher, Alexander" <Alexander.Deucher@amd.com>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+References: <CAAxE2A7qK1-b5g1RR-GJ+QTLEr_OxEr9vcZGEOkZY9yLOFLb5w@mail.gmail.com>
+ <5f4c828c-8564-4e4e-a418-3250fadb660a@suse.de>
+ <CAAxE2A4QBteFPpYgd9N+D+TPdjvHDmtLBf5YsaNw9xB09CtAYQ@mail.gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <CAAxE2A4QBteFPpYgd9N+D+TPdjvHDmtLBf5YsaNw9xB09CtAYQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.29
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-4.29 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	TO_DN_SOME(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_TLS_ALL(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[redhat.com,gmx.de,kernel.org,lists.freedesktop.org,vger.kernel.org,amd.com];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email]
 
-These drivers don't use the driver_data member of struct i2c_device_id,
-so don't explicitly initialize this member.
+Hi
 
-This prepares putting driver_data in an anonymous union which requires
-either no initialization or named designators. But it's also a nice
-cleanup on its own.
+Am 19.06.24 um 20:40 schrieb Marek Olšák:
+> Attached is the revert commit that works for me. Tested with Radeon
+> 6800 and Radeon 7900XTX.
 
-While add it, also remove commas after the sentinel entries.
+Thanks. That's the same revert that I did. Let's see if my bisecting 
+turns up something.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
----
- drivers/video/backlight/adp8870_bl.c | 2 +-
- drivers/video/backlight/bd6107.c     | 2 +-
- drivers/video/backlight/ktz8866.c    | 4 ++--
- drivers/video/backlight/lm3509_bl.c  | 5 ++++-
- drivers/video/backlight/lm3630a_bl.c | 2 +-
- drivers/video/backlight/lm3639_bl.c  | 2 +-
- drivers/video/backlight/lv5207lp.c   | 2 +-
- drivers/video/backlight/mp3309c.c    | 2 +-
- 8 files changed, 12 insertions(+), 9 deletions(-)
+Best regards
+Thomas
 
-diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
-index 6bb18dc970e9..ad4bd4c8f441 100644
---- a/drivers/video/backlight/adp8870_bl.c
-+++ b/drivers/video/backlight/adp8870_bl.c
-@@ -963,7 +963,7 @@ static SIMPLE_DEV_PM_OPS(adp8870_i2c_pm_ops, adp8870_i2c_suspend,
- 			adp8870_i2c_resume);
- 
- static const struct i2c_device_id adp8870_id[] = {
--	{ "adp8870", 0 },
-+	{ "adp8870" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, adp8870_id);
-diff --git a/drivers/video/backlight/bd6107.c b/drivers/video/backlight/bd6107.c
-index 6be2c67ba85c..90764f83d2f1 100644
---- a/drivers/video/backlight/bd6107.c
-+++ b/drivers/video/backlight/bd6107.c
-@@ -180,7 +180,7 @@ static void bd6107_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id bd6107_ids[] = {
--	{ "bd6107", 0 },
-+	{ "bd6107" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, bd6107_ids);
-diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backlight/ktz8866.c
-index 014877b5a984..2e508741c0af 100644
---- a/drivers/video/backlight/ktz8866.c
-+++ b/drivers/video/backlight/ktz8866.c
-@@ -179,8 +179,8 @@ static void ktz8866_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id ktz8866_ids[] = {
--	{ "ktz8866", 0 },
--	{},
-+	{ "ktz8866" },
-+	{}
- };
- MODULE_DEVICE_TABLE(i2c, ktz8866_ids);
- 
-diff --git a/drivers/video/backlight/lm3509_bl.c b/drivers/video/backlight/lm3509_bl.c
-index c93cdedff5ad..11b8e1824e07 100644
---- a/drivers/video/backlight/lm3509_bl.c
-+++ b/drivers/video/backlight/lm3509_bl.c
-@@ -311,7 +311,10 @@ static void lm3509_remove(struct i2c_client *client)
- 	regmap_write(data->regmap, REG_GP, 0x00);
- }
- 
--static const struct i2c_device_id lm3509_id[] = { { LM3509_NAME, 0 }, {} };
-+static const struct i2c_device_id lm3509_id[] = {
-+	{ LM3509_NAME },
-+	{}
-+};
- 
- MODULE_DEVICE_TABLE(i2c, lm3509_id);
- 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 76d47e2e8242..37651c2b9393 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -596,7 +596,7 @@ static void lm3630a_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id lm3630a_id[] = {
--	{LM3630A_NAME, 0},
-+	{ LM3630A_NAME },
- 	{}
- };
- 
-diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
-index 564f62acd721..37ccc631c498 100644
---- a/drivers/video/backlight/lm3639_bl.c
-+++ b/drivers/video/backlight/lm3639_bl.c
-@@ -403,7 +403,7 @@ static void lm3639_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id lm3639_id[] = {
--	{LM3639_NAME, 0},
-+	{ LM3639_NAME },
- 	{}
- };
- 
-diff --git a/drivers/video/backlight/lv5207lp.c b/drivers/video/backlight/lv5207lp.c
-index 0cf00fee0f60..5f60989fa70f 100644
---- a/drivers/video/backlight/lv5207lp.c
-+++ b/drivers/video/backlight/lv5207lp.c
-@@ -132,7 +132,7 @@ static void lv5207lp_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id lv5207lp_ids[] = {
--	{ "lv5207lp", 0 },
-+	{ "lv5207lp" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, lv5207lp_ids);
-diff --git a/drivers/video/backlight/mp3309c.c b/drivers/video/backlight/mp3309c.c
-index a28036c964af..2bdb20129c81 100644
---- a/drivers/video/backlight/mp3309c.c
-+++ b/drivers/video/backlight/mp3309c.c
-@@ -400,7 +400,7 @@ static const struct of_device_id mp3309c_match_table[] = {
- MODULE_DEVICE_TABLE(of, mp3309c_match_table);
- 
- static const struct i2c_device_id mp3309c_id[] = {
--	{ "mp3309c", 0 },
-+	{ "mp3309c" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, mp3309c_id);
+>
+> Marek
+>
+>
+> Marek
+>
+> On Wed, Jun 19, 2024 at 9:50 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>> Hi
+>>
+>> Am 13.06.24 um 07:59 schrieb Marek Olšák:
+>>> Hi Thomas,
+>>>
+>>> Commit 9eac534db0013aff9b9124985dab114600df9081 as per the title
+>>> breaks (crashes?) lightdm (login screen) such that all I get is the
+>>> terminal. It's also reproducible with tag v6.9 where the commit is
+>>> present.
+>> I was able to reproduce the problem with Ubutu 22.04 and later under
+>> qemu plus qxl, sort of. I login via gdm3 and then the quest machine
+>> switches off entirely.
+>>
+>>> Reverting the commit fixes lightdm. A workaround is to bypass lightdm
+>>> by triggering auto-login. This is a bug report.
+>> The problem is that reverting the commit doesn't fix the issue for me.
+>> I'll try to do my own bisecting.
+>>
+>> Best regards
+>> Thomas
+>>
+>>> (For AMD folks: It's also reproducible with amd-staging-drm-next.)
+>>>
+>>> Marek
+>> --
+>> --
+>> Thomas Zimmermann
+>> Graphics Driver Developer
+>> SUSE Software Solutions Germany GmbH
+>> Frankenstrasse 146, 90461 Nuernberg, Germany
+>> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+>> HRB 36809 (AG Nuernberg)
+>>
 
-base-commit: 2102cb0d050d34d50b9642a3a50861787527e922
 -- 
-2.43.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

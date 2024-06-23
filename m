@@ -1,202 +1,175 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C64F24436;
-	Sat, 22 Jun 2024 07:54:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A63F820E6;
+	Sun, 23 Jun 2024 15:28:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719042870; cv=none; b=Ep9p/jEjzeh/whhk3ibeca+sitV1cKTYAtzvD37A2BTRM7S0aSS/FD7gnp9LX6ErNkIv6L2pU+w5pth+cNoag4zXA9S5xva9wZkgZeVMPXXcavvVc1NNdbqV8d55MvlBroOFWcVGlNMRNRwZ/X5I+5Oaa/ij3sW+EgrYHQgg1xU=
+	t=1719156516; cv=none; b=Dm+OqHEqeequqrLjtm/74ohwAaykNmR3SVfWsxmxipybdzl8mAMqrl2n8HCogLxb+RD1iKNoSzIVIVuJvckRUW1Pt7LfKSODggozx8tgj2lgOk5uPOzuc29QuaxfqcTnIXHZH2uUoe5B7XueRw2ExgKDjeyDCOFXGcbvbdOOp88=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719042870; c=relaxed/simple;
-	bh=qpQGmj4rBCIweNf7PCZQQ/27qUTjNmjhX7qcZ18Hrj4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Qytg/Pr1y8g9f0LsLuljwQIKk179Z8nfPWpOtFn6+/9D9QhDQJeBr2VDw66Lwp87XeKaFWXinxohl0NH3bigUt+F6CfeRusM3ZjEAqeUXrJj8NmfV1kFd8nK20kO/b3Z9Yrx3zVGcYNEGiPT/CndvnPL1R8mRZff95ZDleOZ7x0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Ro/i8Mik; arc=none smtp.client-ip=212.227.15.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1719156516; c=relaxed/simple;
+	bh=juAAtNDoXkujZsCYp+htIv9eQw5xQOTNlXW2GleCTnY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MxJhIj8kR092TZ4oZJvK9BeW9oV217OX6YFaa8RkAtRp/FgwSdDU+J4w7uCjeY1H70di6xXXCbfPkafnbwN4ESy8nAWsAG8fTSDP/8cVJYj81LVzvK6OoWraT0ZgCP84/MNy1iIrBorKQWfp3ZWxWukTIe5T3FL3hEPHMB9clNc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ssrh0gMm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Ro/i8Mik"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1719042854; x=1719647654; i=deller@gmx.de;
-	bh=K1RBLojDabEhnbj0us/zxlBeoNaITVfFIU0Qe0YFMx8=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=Ro/i8Mik95o4vc1p6evD2vZGVh4BjOkMd+PMpvlG7S+bT1xzkb4uSnwvF9tYPx3b
-	 DPZsfrVsDjQ53Guz3Y3vBOylfwzDxkjSVSr28hNVAvbKnYvIEmRx5kf77KPdxqlaE
-	 N4/bxfsZlnmeYuXNorJIrRYfW8CKDZZ5p6F+S7NuFFAdhF1EOod9+sjkwEsE8Dgth
-	 MKcjNbsvbNi1j2wmQZo28LxFxIxvT7ku6ovowFuEnZW9gMTPTSt2c6oVlUh00x9Af
-	 reP3vzTEpJXB8xTu4Q1JpjwdK0PuYsRlFQA9mcvFHVbjJH8nnlSIlHanwXf3LnyBf
-	 sUQne6+uLs1n4jYgpQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.133]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MlNpH-1smbsZ1cwH-00ffvD; Sat, 22
- Jun 2024 09:54:14 +0200
-Message-ID: <e3639dd9-0a94-41a0-b9d2-93fc1c7b610e@gmx.de>
-Date: Sat, 22 Jun 2024 09:54:12 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ssrh0gMm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71FC7C2BD10;
+	Sun, 23 Jun 2024 15:28:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1719156516;
+	bh=juAAtNDoXkujZsCYp+htIv9eQw5xQOTNlXW2GleCTnY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Ssrh0gMmmwTzfwTdEihNbsE96GNNjPWOPGObkKNNZakIGeBYHQA0BGzqa88VPdIIh
+	 PBFGSSx3O68SMMVzu6cnRsBxhrQJbVIfZNu4uT3Fs236FCFqfX06pVXyf6mWQz24Dk
+	 bQkB/DGMiNKEY8ZKJ3Sxx8/cmkqVqGjMDAFN9RD38Zp4v0PjCoLCGawmt2SDtDz99F
+	 WCJ6fN+vBBfwhy4jXT90zFXcaMi82wWdRf/Ym97umoYtkS9MXWE2vsiSpRR3TKM9rA
+	 WxyW/2kH/6J+T625BUVgMN27aKPp4nA49cL8Hec23p+xFlnhuP6VcqypaB1N/O2B0p
+	 sh5uoRIJWAUfA==
+Date: Sun, 23 Jun 2024 16:28:27 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Guillaume Stols <gstols@baylibre.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Michael Hennerich
+ <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Beniamin Bia <beniamin.bia@analog.com>, Stefan Popa
+ <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ devicetree@vger.kernel.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ jstephan@baylibre.com, dlechner@baylibre.com
+Subject: Re: [PATCH 3/9] dt-bindings: iio: adc: adi,ad7606: improve
+ descriptions
+Message-ID: <20240623162827.45220840@jic23-huawei>
+In-Reply-To: <20240618-cleanup-ad7606-v1-3-f1854d5c779d@baylibre.com>
+References: <20240618-cleanup-ad7606-v1-0-f1854d5c779d@baylibre.com>
+	<20240618-cleanup-ad7606-v1-3-f1854d5c779d@baylibre.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] tty: vt: add missing MODULE_DESCRIPTION() macros
-To: Jeff Johnson <quic_jjohnson@quicinc.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-References: <20240621-md-i386-drivers-video-console-v1-1-e533652b7ebb@quicinc.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240621-md-i386-drivers-video-console-v1-1-e533652b7ebb@quicinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ZgeHwQZeM2qB/3xMG/pvhOJpWqFsZQjLJhG2Bz364/V30+M937C
- 49sDWXEdWryFyvIqjdVL3sqRHvKuI4az5BqV0wjR7LJCNrp3aD0F/ZLPOiijVFAdciJiJQF
- CPQJ1wQYoG3GFk1QEUgvdkfCvm9szrNX1WJS7M0rJY57bejWLPvSgZnjdmSTP8KQ81WAtQp
- 3nA4fdUlI7X11I0MTcv+g==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:AW2mNykeSow=;3n1zN481VMjh7+6wUWBt9KM3pYF
- 2LorQ8W/iwXASvWy9GgThda2uBZwmZx7WQtzNCym/4MIazd1DfcMQ/l+cG1MQCuQYAVrdFJxq
- kUvzP85ULx/L+gnI0dRD6WMToDE7nmTiZ9HWBnegQBjE5YJtdaLinGgpXDut29V+/RND4pJyw
- IV0dm2PfBEsx7TeEFMNKmpHGZyaMItvUgcL8NvLDehY0/bBsfgNCrxO15BgxipUC9wuBXIvba
- q9PE52KxegZkKKCmX8pHd0yiT4kLPHjjLo2ZMUPOCUb2NjIMpIbd5z/74oStfOT2l/sLn1UcZ
- OjlHtGXB9lvSvtqTGGFDK2TC8V2TcAiRTSZlUxlbuDQprfDImaLDGlgsdlpEKXsQ0PBUeRN1b
- gtLNLTHAGdkBvfkm0DZTtdBob5pUGwo+qXL5FmqhlxyWboSwdE0oUIbLwE1MH3w2NUPAM0dfc
- 7zpF9SJ7P5JFz9GBJmCIPq5QL+sGp2njUpuYLdGNOheTDg4SQyF7YPjuwxxzpwAE048wISwla
- fyL5b4ZDCB1Kgiu+tO+b9fPMVUnV1hoWgj7mH+5je+Bs9EJSWDOHP6ssu1pyXZe85stVxJhBL
- ZM3OU6QxSwbA92nyhzSIae7RhYAlnYuohycIA0p1u2Gts+L4vDDLxvOdsrfxJe2gzxXSNZLp3
- t2XuQ7nGY7R3V9Dvr7Gxt1iTAbs1INAvzhPBUUgYx6/dJouM+SSDkU/Y+YIbJh+wAM7pk8eCi
- b6AoD3TbWRlaE9/EwCj1hcmeW7kLag3w67pgP5whEB9EQeHmcvBZ5d/s/P8umoXkapTZX97mW
- tbPkJZLvLiQoh6qFE75r/vmH2WsMb8akeewOW00CPXCiw=
 
-On 6/22/24 08:07, Jeff Johnson wrote:
-> With ARCH=3Di386, make allmodconfig && make W=3D1 C=3D1 reports:
-> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/video/console/=
-mdacon.o
->
-> Add the missing invocation of the MODULE_DESCRIPTION() macro to all
-> files which have a MODULE_LICENSE().
->
-> This includes three other files which, although they did not produce a
-> warning with the i386 allmodconfig configuration, may cause this
-> warning with other configurations.
->
-> Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+On Tue, 18 Jun 2024 14:02:35 +0000
+Guillaume Stols <gstols@baylibre.com> wrote:
 
-Patch title adjusted to:
-  video: console: add missing MODULE_DESCRIPTION() macros
+> Reword a few descriptions, and normalize the text width to 80 characters.
 
-and applied to the fbdev git tree.
+Don't rewrap text in a patch that does anything else as those real
+changes are hidden.
 
-Thanks,
-Helge
+Even if you are changing the text, minimise rewraps to those necessary
+to avoid lines getting too long and fix them up in a follow up patch
+that just rewraps.
 
+I think most of the changes are fine, but it's really hard to spot
+the real changes in here!
+
+>=20
+> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
 > ---
->   drivers/video/console/mdacon.c      | 1 +
->   drivers/video/console/newport_con.c | 1 +
->   drivers/video/console/sticon.c      | 1 +
->   drivers/video/console/vgacon.c      | 1 +
->   4 files changed, 4 insertions(+)
->
-> diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdac=
-on.c
-> index c0e1f4554a44..d52cd99cd18b 100644
-> --- a/drivers/video/console/mdacon.c
-> +++ b/drivers/video/console/mdacon.c
-> @@ -561,5 +561,6 @@ static void __exit mda_console_exit(void)
->   module_init(mda_console_init);
->   module_exit(mda_console_exit);
->
-> +MODULE_DESCRIPTION("MDA based console driver");
->   MODULE_LICENSE("GPL");
->
-> diff --git a/drivers/video/console/newport_con.c b/drivers/video/console=
-/newport_con.c
-> index a51cfc1d560e..242415366074 100644
-> --- a/drivers/video/console/newport_con.c
-> +++ b/drivers/video/console/newport_con.c
-> @@ -744,4 +744,5 @@ static struct gio_driver newport_driver =3D {
->   };
->   module_driver(newport_driver, gio_register_driver, gio_unregister_driv=
-er);
->
-> +MODULE_DESCRIPTION("SGI Newport console driver");
->   MODULE_LICENSE("GPL");
-> diff --git a/drivers/video/console/sticon.c b/drivers/video/console/stic=
-on.c
-> index 4c7b4959a1aa..f1f3ee8e5e8a 100644
-> --- a/drivers/video/console/sticon.c
-> +++ b/drivers/video/console/sticon.c
-> @@ -391,4 +391,5 @@ static int __init sticonsole_init(void)
->   }
->
->   module_init(sticonsole_init);
-> +MODULE_DESCRIPTION("HP STI console driver");
->   MODULE_LICENSE("GPL");
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgac=
-on.c
-> index 7597f04b0dc7..37bd18730fe0 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -1222,4 +1222,5 @@ void vgacon_register_screen(struct screen_info *si=
-)
->   	vga_si =3D si;
->   }
->
-> +MODULE_DESCRIPTION("VGA based console driver");
->   MODULE_LICENSE("GPL");
->
-> ---
-> base-commit: 6ba59ff4227927d3a8530fc2973b80e94b54d58f
-> change-id: 20240621-md-i386-drivers-video-console-ae292c09bb67
->
+>  .../devicetree/bindings/iio/adc/adi,ad7606.yaml    | 61 ++++++++++++----=
+------
+>  1 file changed, 34 insertions(+), 27 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/=
+Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> index 00fdaed11cbd..80866940123c 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> @@ -36,64 +36,71 @@ properties:
+>    avcc-supply: true
+> =20
+>    interrupts:
+> +    description:
+> +      The BUSY pin falling edge indicates that the conversion is over, a=
+nd thus
+> +      new data is available.
+>      maxItems: 1
+> =20
+>    adi,conversion-start-gpios:
+>      description:
+> -      Must be the device tree identifier of the CONVST pin.
+> -      This logic input is used to initiate conversions on the analog
+> -      input channels. As the line is active high, it should be marked
+> -      GPIO_ACTIVE_HIGH.
+> +      Must be the device tree identifier of the CONVST pin(s). This logi=
+c input
+
+Why plural when it has maxitems 1?
+
+> +      is used to initiate conversions on the analog input channels. As t=
+he line
+> +      is active high, it should be marked GPIO_ACTIVE_HIGH.
+
+If you drop the plural change don't rewrap this in v2, it is unnecessary no=
+ise
+that takes away from the real improvements.
+>      maxItems: 1
+> =20
+>    reset-gpios:
+>      description:
+> -      Must be the device tree identifier of the RESET pin. If specified,
+> -      it will be asserted during driver probe. As the line is active hig=
+h,
+> -      it should be marked GPIO_ACTIVE_HIGH.
+> +      Must be the device tree identifier of the RESET pin. If specified,=
+ it will
+> +      be asserted during driver probe. On the AD7606x, as the line is ac=
+tive
+> +      high, it should be marked GPIO_ACTIVE_HIGH. On the AD7616, as the =
+line is
+> +      active low, it should be marked GPIO_ACTIVE_LOW.
+>      maxItems: 1
+
+
+> =20
+>    adi,range-gpios:
+>      description:
+> -      Must be the device tree identifier of the RANGE pin. The polarity =
+on
+> -      this pin determines the input range of the analog input channels. =
+If
+> -      this pin is tied to a logic high, the analog input range is =C2=B1=
+10V for
+> -      all channels. If this pin is tied to a logic low, the analog input=
+ range
+> +      Must be the device tree identifier of the RANGE pin. The state on =
+this
+> +      pin determines the input range of the analog input channels. If th=
+is pin
+> +      is tied to a logic high, the analog input range is =C2=B110V for a=
+ll channels.
+> +      On the AD760X, if this pin is tied to a logic low, the analog inpu=
+t range
+>        is =C2=B15V for all channels. As the line is active high, it shoul=
+d be marked
+> -      GPIO_ACTIVE_HIGH.
+> +      GPIO_ACTIVE_HIGH. On the AD7616, there are 2 pins, and if the 2 pi=
+ns are
+> +      tied to a logic high, software mode is enabled, otherwise one of t=
+he 3
+> +      possible range values is selected.
+
+With max items 1 how do we have 2?
+
+>      maxItems: 1
+> =20
+>    adi,oversampling-ratio-gpios:
+>      description:
+> -      Must be the device tree identifier of the over-sampling
+> -      mode pins. As the line is active high, it should be marked
+> -      GPIO_ACTIVE_HIGH.
+> +      Must be the device tree identifier of the over-sampling mode pins.=
+ As the
+> +      line is active high, it should be marked GPIO_ACTIVE_HIGH. On the =
+AD7606X
+> +      parts that support it, if all 3 pins are tied to a logic high, sof=
+tware
+> +      mode is enabled.
+>      maxItems: 3
+
 

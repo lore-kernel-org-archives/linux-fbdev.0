@@ -1,106 +1,99 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7496AF9F0;
-	Sun, 23 Jun 2024 15:49:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A14B01386B3
+	for <linux-fbdev@vger.kernel.org>; Mon, 24 Jun 2024 11:31:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719157770; cv=none; b=FanhjgOIhUO1xesJ42CnaTjZ3o94vEgkf2UkpxUtxwZKd7H30PhBSHI+pOrC4P8basjK/NAucMA0fYhXvlLf3npYNv1RA+RHZuv0GnTILHgs0ZyiE42J2aomuNIZtmGdpuB+3eOa9XMjEFRpeT0aHaFmOollD2A9WlQs+USSneE=
+	t=1719228707; cv=none; b=CZ5AGfcjoyOLQggVBIqenlTavueyjTtFq9iZleHkTd3aEfxjNGA1v/4bKhCOMeEJoXtPGt9/W6K0Pz4N/cyi09VwXh0dNsBE1Y96TuCg6QUNQQdee5zb0s+JTS7I1mlQWdZqvKwrWv4UcSPxW4MQ9flJRq0Bpcx1VFXKsIuBIvA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719157770; c=relaxed/simple;
-	bh=yTJvxHgHRHuY1rMYzUx6RddPEDw9lS+t+x9ruVt783c=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fqmcQWtUqbtIfB/x6PLuB1GjmURnklrb9Cd6os2biBdfEhb63ojlCGLY1JYKiGhMGX8SZSIYdJq1zZwND0NhB0CWggtT6guJD8KWIuMUq3PLGt16icMSgY8EqQzGXZVwCUcghFD9HLzA/Zf39If7M2TALQKuV+0rUyHGpgFki4E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tw1v0+EG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1719228707; c=relaxed/simple;
+	bh=PLsJnmgzNEr0q4/QEXYiEXtI2V426A0O6oJ503oVeyA=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=i/hgFH1eoq/Iolru7YEuow9PJYl24o2VFLfsSPw8EXtBdfHEFqnAthzN2sNZzHYwPzyUDlc3SedeRwZVduKKd44n36NRgUFOm6OyEGjRjldhdz3liFnV0QmBHvEBGwnwQVkupkqgG+VCGBoOWr5qpHEIuq/gHy/bs5Bx0d0Dzaw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=iH+vbe2j; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tw1v0+EG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E998CC2BD10;
-	Sun, 23 Jun 2024 15:49:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719157769;
-	bh=yTJvxHgHRHuY1rMYzUx6RddPEDw9lS+t+x9ruVt783c=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=tw1v0+EGLX3NUf0lMQL8wS1FwyD696x5mkkJvyRp2t/IwWTw9SY64HIKlTHRgGDWa
-	 1YFKCnf4ROfED72rq26laaN3LfgWlokAdIzsX95RQqyiCQjO8FghmsON7xaNSxUjy3
-	 lv/UNhLjjvZIg0Uh/WCQykls3oZ4JOtvkB6OircBhidbmhtxXmkBBcTwyUBJt29Scu
-	 Ehnw9cpjNDjsQQMTgsQ7VPZIbP6uPGE+v0uPe9jWfXUYPm+lEjRdbxccazcpPdtkxJ
-	 RlymGm5AtEiW6zWvukWvGQVY5Go8XZ7Vf5lip2OjNylk5fB7yls0fAl3y7nvWI0Wuu
-	 NC4BHFhheuzcw==
-Date: Sun, 23 Jun 2024 16:49:20 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Michael Hennerich
- <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
- Beniamin Bia <beniamin.bia@analog.com>, Stefan Popa
- <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- devicetree@vger.kernel.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- jstephan@baylibre.com, dlechner@baylibre.com
-Subject: Re: [PATCH 9/9] iio: adc: ad7606: fix standby gpio state to match
- the documentation
-Message-ID: <20240623164920.48dda649@jic23-huawei>
-In-Reply-To: <20240618-cleanup-ad7606-v1-9-f1854d5c779d@baylibre.com>
-References: <20240618-cleanup-ad7606-v1-0-f1854d5c779d@baylibre.com>
-	<20240618-cleanup-ad7606-v1-9-f1854d5c779d@baylibre.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-pc-linux-gnu)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iH+vbe2j"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1719228704;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=z1Rc1emYuXh/HewWkHo067TK+khtKA7f3ilfM7ZwWq0=;
+	b=iH+vbe2jyKO6CYIICIJy+qw/3TpZ1txpQTyY8BgeZR9OOmVEaSBggqsEBa5VA7Wbs0VeMQ
+	n5nR3Ug8KleFOw3KsA/VoszOAzePYdaplZ3l0nvnihrUqpd3tDW8Owpvg0vKVYC6XH4W56
+	TVpfzTOiiPzNOORK+ZLrYinIF7NmKKA=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-580-dsZZvVjgNOSszxr-fZuMBw-1; Mon, 24 Jun 2024 07:31:43 -0400
+X-MC-Unique: dsZZvVjgNOSszxr-fZuMBw-1
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-366e0a4c965so980153f8f.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jun 2024 04:31:43 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1719228702; x=1719833502;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=z1Rc1emYuXh/HewWkHo067TK+khtKA7f3ilfM7ZwWq0=;
+        b=jGcJwULP3ii3bcF7aaH0yYywN8sKwR+uCxT+68a6deAoP2ORIYeI6XkHkivkeQ0/Jg
+         XFM0W1Q+u7N8LYAfzrCUfHAwuHTfLC/n4x/GqUbQ9XeN/vtROuphqdkR248QGtpUpObI
+         U5Y0ArU00uyKFjyijm5C2GVc6sFOZoM2nBL2b94AccQJJkS1pAwEG9B3TYhwbTLjNwNr
+         6IPnpixhnXZ2kwrs1Qlj/BUAwE+OZi/sb3paoSaY8ChtRibmdBBN93GjiERHLyuk+vVO
+         gxCyrvD/rPDuRlDOQyGVQW6eOIcz8/YzqYLYEhrzEg+jlWf/jdusMKXeUd7AE6DPxACU
+         izRw==
+X-Forwarded-Encrypted: i=1; AJvYcCWpLkUfwDEvvjRTpyL6238xNZpKlQh1396YHWepdgtWP8Da+tB5GIzi61dpQKq1qpj50ewBKOer+M6tOSeOqJhTEOADPCVEAPeYAEs=
+X-Gm-Message-State: AOJu0Yx/jPX1SCubtEQVzQobRWOz2fgIYxipyeuqQWGHHnNJ5T9XwsL3
+	nLVx4fl9K+rW2ZbDS1JAv+F9NO3H9wkbAn85bXUikUkRRL5impk8DIYAsQuojvXYwzEnu1uUTjg
+	snE1maQe4rm6yY2C19/uNeghjD2LL0xVWsrJalckhvhv8q5DdjJWxUG6SQqCuYtqr1Yeh
+X-Received: by 2002:a05:6000:1a8d:b0:366:f00f:8656 with SMTP id ffacd0b85a97d-366f00f8687mr2489937f8f.55.1719228702102;
+        Mon, 24 Jun 2024 04:31:42 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFEjXWAJo0A3ZGNhrE3FY0LNEuVP1fHqKxJAk1B5YvPPlS1HLStfakEN0O/4kfL+9PdRhZvqA==
+X-Received: by 2002:a05:6000:1a8d:b0:366:f00f:8656 with SMTP id ffacd0b85a97d-366f00f8687mr2489920f8f.55.1719228701746;
+        Mon, 24 Jun 2024 04:31:41 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:c:37e0:38da:a7d9:7cc9:db3e? ([2a01:e0a:c:37e0:38da:a7d9:7cc9:db3e])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-366389b8922sm9792777f8f.28.2024.06.24.04.31.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Jun 2024 04:31:41 -0700 (PDT)
+Message-ID: <2f54c321-1832-4931-8148-5eece4ef4915@redhat.com>
+Date: Mon, 24 Jun 2024 13:31:40 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/7] drm/panic: Fixes and graphical logo
+From: Jocelyn Falempe <jfalempe@redhat.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+References: <cover.1718305355.git.geert+renesas@glider.be>
+ <b4caed34-bed4-4b72-9bb0-353ef63fe867@redhat.com>
+Content-Language: en-US, fr
+In-Reply-To: <b4caed34-bed4-4b72-9bb0-353ef63fe867@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On Tue, 18 Jun 2024 14:02:41 +0000
-Guillaume Stols <gstols@baylibre.com> wrote:
-
-> The binding's documentation specifies that "As the line is active low, it
-> should be marked GPIO_ACTIVE_LOW". However, in the driver, it was handled
-> the opposite way. This commit sets the driver's behaviour in sync with the
-> documentation
+On 21/06/2024 10:55, Jocelyn Falempe wrote:
+> Hi,
 > 
-> Fixes: 722407a4e8c0 ("staging:iio:ad7606: Use GPIO descriptor API")
-> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+> I want to push at least the first patch that is an important fix.
+> But if there are no objections, I can push the whole series except patch 
+> 5 "drm/panic: Convert to drm_fb_clip_offset()" which causes some build 
+> issue.
 
-This sound dangerous.  If anyone is using the driver before this an it's
-working they indeed have the pin inverted wrt to the docs, but
-as it works for them this will be a regression.
+I just pushed them to drm-misc-next.
+Thanks all.
 
-So messy corner - do we fix the docs or the driver?  I'm not sure which
-is more painful. In theory the DT binding might be in use by another
-OS or similar which might have a non broken driver, but I suspect it isn't.
-Whereas perhaps the driver as it stands is in use on Linux.
-
-AD folk: You will get the support calls, do you want to risk them or
-should we change the docs (and maybe add a note on it being 'odd' wrt
-to the documentation as we are treating it as an active !standy pin)
-> ---
->  drivers/iio/adc/ad7606.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/iio/adc/ad7606.c b/drivers/iio/adc/ad7606.c
-> index 502344e019e0..05addea105f0 100644
-> --- a/drivers/iio/adc/ad7606.c
-> +++ b/drivers/iio/adc/ad7606.c
-> @@ -438,7 +438,7 @@ static int ad7606_request_gpios(struct ad7606_state *st)
->  		return PTR_ERR(st->gpio_range);
->  
->  	st->gpio_standby = devm_gpiod_get_optional(dev, "standby",
-> -						   GPIOD_OUT_HIGH);
-> +						   GPIOD_OUT_LOW);
->  	if (IS_ERR(st->gpio_standby))
->  		return PTR_ERR(st->gpio_standby);
->  
-> @@ -681,7 +681,7 @@ static int ad7606_suspend(struct device *dev)
->  
->  	if (st->gpio_standby) {
->  		gpiod_set_value(st->gpio_range, 1);
-> -		gpiod_set_value(st->gpio_standby, 0);
-> +		gpiod_set_value(st->gpio_standby, 1);
->  	}
->  
->  	return 0;
+> Best regards,
 > 
 

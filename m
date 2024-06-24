@@ -1,138 +1,99 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9955161FF5;
-	Mon, 24 Jun 2024 13:16:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F129813DB83
+	for <linux-fbdev@vger.kernel.org>; Mon, 24 Jun 2024 13:29:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719235018; cv=none; b=iFszls0j/OfkjqVK/aflpHP20A1uvnhBpgex0AwU8dURsnYJARKgtTtSZlPmYzD1DuUbWxb+qKqPGYRVfJcCm6o16iUc7u6TUgNssuf300QpbbzntTqmDN9SRLliokmMpJBaPimaorRmeGRX6SA4A2yEKNOU9UrwwhglysjYgSA=
+	t=1719235759; cv=none; b=Buxlpxcweq/5cZZefEFkj2b8qJcb/OgtAPB6eNoJLsJ3bMrMyCJiaU40ekUHSxOzXjwT8NMbpyntRkGaAiAdGUvZ4L0ALu2x5I90Hi6KQBGnB33nGIm4srlI5YRTsLVAD7tsi7weuaq8gFuXVvwV9q0hM3D7+sj0djT/y3H2wJU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719235018; c=relaxed/simple;
-	bh=j3tSMrNeaGr/GDA1b1OfEDf0WMzQpAsWSoGQg7nQuP8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hIjqszlsMiOGtbUulrORcwZafCDC9CkBlqUGvGYTszSIU4MdRHSlCGSUMpw03n1Sph7zP+LrnL4hmYDvLhkCb27CphLVblmtMA9EwXrGjHl0EzIkcSW0hCAiNPQvXySWPsHDM+RDv3IZg15qoQVvB2sENd/me2kUW2yWfrfXyvs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=0UVNZPOC; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1719235759; c=relaxed/simple;
+	bh=8eQ3vjWbIPNKuR00ZsA+8U+jf29/BI77yt+GVwyLS6U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=oRox4JX3gFGo2dWtUCdh9hbBECIaq4hWCHWYCz6WsfVPv3PU0XS6fXQ/LxnfPiA9bYZv8evY+2Nr2YUFaLgfVUO0/JWy6p4LosfGXK2IrEBji5IXarqtnjkB6dCvQGzTMnR7IVLFINUqSm4aKZOVuPxr+O0y6N0E8Y+oepb3yv8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nvSHYiCf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="0UVNZPOC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD099C2BBFC;
-	Mon, 24 Jun 2024 13:16:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1719235018;
-	bh=j3tSMrNeaGr/GDA1b1OfEDf0WMzQpAsWSoGQg7nQuP8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=0UVNZPOCgNL3Z2mOu+qR47HGLZKP0+08/YM6rEFZ3lEL0EEFSSXSiOmO1UXek/4/F
-	 qhC+gyxQn9Sr56P1iJ153yCcOyJSx9MRilZ5mN7bHYbzt0Psr0pG2bwhu7vV2+6qyj
-	 FAphyBwKfczxSMMotk9p0+Zm4Kq/SoAt9fDW/XpU=
-Date: Mon, 24 Jun 2024 15:16:55 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Shiva Kiran K <shiva_kr@riseup.net>
-Cc: Roshan Khatri <topofeverest8848@gmail.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: Remove unnecessary parentheses
-Message-ID: <2024062443-udder-spotted-cc0d@gregkh>
-References: <20240617142746.51885-2-shiva_kr@riseup.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nvSHYiCf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E997C2BBFC;
+	Mon, 24 Jun 2024 13:29:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1719235758;
+	bh=8eQ3vjWbIPNKuR00ZsA+8U+jf29/BI77yt+GVwyLS6U=;
+	h=From:To:Cc:Subject:Date:From;
+	b=nvSHYiCfHEXLj4nyHmXwZT3bnft5CSmbgDuQWyL5boDFTHbKKg/JCwxGIiU8gCBO8
+	 uRSFZWnb204PWvsiGogWeqhfDA9gYjldF0/Gu8TsqlTn0SdXXz/0UghDH4BFiw28RI
+	 ZuwDJFm9fvwwumPt96Zzd4SoKh4ZHPoWjXB8e2DGTVIvV0JoQvd5qd61GWIePwcS1g
+	 x/s53S0KMZ7QIw6ZyDDqLWTA6IYE0LGPtoqqd+N+fe9CccUBvfGVWo1ZYes4ajDT4g
+	 7/16a2WO1p4kXUV7N51OmJQGadmQuF3MD8rb1Gp1vddaVBx3EYB6w+7Kcl8AhB6sLL
+	 bGFttOMlrRvsg==
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
+To: Helge Deller <deller@gmx.de>
+Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] fbdev: Drop explicit initialization of struct i2c_device_id::driver_data to 0
+Date: Mon, 24 Jun 2024 15:29:04 +0200
+Message-ID: <20240624132905.1245221-2-ukleinek@kernel.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240617142746.51885-2-shiva_kr@riseup.net>
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1628; i=ukleinek@kernel.org; h=from:subject; bh=xekor7BpsrcZ5xz5Zo5vwbnz9/ZrRZLKRNB4Gve+3UA=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBmeXShGQ6GmX9WaV1ylibHoJMCVX8p4Vcjw86+p XuHx2uFTUSJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZnl0oQAKCRCPgPtYfRL+ Ts/vCACzjHkYq9eKhcW9TqLnmR1Jc+TGYte+X1GTpUKTliNQP8sAK1r7dO/5VeKOO4U/lZXQQha efc7SFj5jL0dinYFv4PFgV6zi6v3MeBoZ4EXpeunTsvqRi2wkcWQPm3cjCzQcsNp7Gn6ugb3S4E xXLpdm8dQ2pBiKJXbSghFJSKDy98X6wpF2YLzi86DLc7u2FiA/KdKOwMjVvDYzSeitp4P4gor0M kjoxcMs3cDaPAyltjb/a8ssmVjNTjQAfFOpsIpR0SIrCqfpwSPua+91xMfh2fhf9z58SU/diKpP gT9zVfi2K+dHJTUxaeOLwPlewib7tfkf8cR5Oso+Ra0ZAdGI
+X-Developer-Key: i=ukleinek@kernel.org; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
 
-On Mon, Jun 17, 2024 at 07:57:47PM +0530, Shiva Kiran K wrote:
-> Remove unnecessary parentheses in `if` statements.
-> Reported by checkpatch.pl
-> 
-> Signed-off-by: Shiva Kiran K <shiva_kr@riseup.net>
-> ---
->  drivers/staging/fbtft/fb_ili9320.c | 2 +-
->  drivers/staging/fbtft/fb_ra8875.c  | 2 +-
->  drivers/staging/fbtft/fbtft-bus.c  | 2 +-
->  drivers/staging/fbtft/fbtft-core.c | 2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/staging/fbtft/fb_ili9320.c b/drivers/staging/fbtft/fb_ili9320.c
-> index 0be7c2d51..409b54cc5 100644
-> --- a/drivers/staging/fbtft/fb_ili9320.c
-> +++ b/drivers/staging/fbtft/fb_ili9320.c
-> @@ -37,7 +37,7 @@ static int init_display(struct fbtft_par *par)
->  	devcode = read_devicecode(par);
->  	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "Device code: 0x%04X\n",
->  		      devcode);
-> -	if ((devcode != 0x0000) && (devcode != 0x9320))
-> +	if (devcode != 0x0000 && devcode != 0x9320)
->  		dev_warn(par->info->device,
->  			 "Unrecognized Device code: 0x%04X (expected 0x9320)\n",
->  			devcode);
-> diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-> index 398bdbf53..ce305a0be 100644
-> --- a/drivers/staging/fbtft/fb_ra8875.c
-> +++ b/drivers/staging/fbtft/fb_ra8875.c
-> @@ -50,7 +50,7 @@ static int init_display(struct fbtft_par *par)
->  
->  	par->fbtftops.reset(par);
->  
-> -	if ((par->info->var.xres == 320) && (par->info->var.yres == 240)) {
-> +	if (par->info->var.xres == 320 && par->info->var.yres == 240) {
->  		/* PLL clock frequency */
->  		write_reg(par, 0x88, 0x0A);
->  		write_reg(par, 0x89, 0x02);
-> diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-> index 3d422bc11..ab903c938 100644
-> --- a/drivers/staging/fbtft/fbtft-bus.c
-> +++ b/drivers/staging/fbtft/fbtft-bus.c
-> @@ -85,7 +85,7 @@ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
->  	if (len <= 0)
->  		return;
->  
-> -	if (par->spi && (par->spi->bits_per_word == 8)) {
-> +	if (par->spi && par->spi->bits_per_word == 8) {
->  		/* we're emulating 9-bit, pad start of buffer with no-ops
->  		 * (assuming here that zero is a no-op)
->  		 */
-> diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-> index c8d52c63d..64babfe3a 100644
-> --- a/drivers/staging/fbtft/fbtft-core.c
-> +++ b/drivers/staging/fbtft/fbtft-core.c
-> @@ -666,7 +666,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
->  		txbuflen = 0;
->  
->  #ifdef __LITTLE_ENDIAN
-> -	if ((!txbuflen) && (bpp > 8))
-> +	if (!txbuflen && bpp > 8)
->  		txbuflen = PAGE_SIZE; /* need buffer for byteswapping */
->  #endif
->  
-> -- 
-> 2.45.2
-> 
+From: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 
-Hi,
+These drivers don't use the driver_data member of struct i2c_device_id,
+so don't explicitly initialize this member.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+This prepares putting driver_data in an anonymous union which requires
+either no initialization or named designators. But it's also a nice
+cleanup on its own.
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+---
+ drivers/video/fbdev/matrox/matroxfb_maven.c | 2 +-
+ drivers/video/fbdev/ssd1307fb.c             | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-- You sent a patch that has been sent multiple times in the past few
-  days, and is identical to ones that has been recently rejected.
-  Please always look at the mailing list traffic to determine if you are
-  duplicating other people's work.
+diff --git a/drivers/video/fbdev/matrox/matroxfb_maven.c b/drivers/video/fbdev/matrox/matroxfb_maven.c
+index b15a8ad92ba7..dcfae770b42d 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_maven.c
++++ b/drivers/video/fbdev/matrox/matroxfb_maven.c
+@@ -1282,7 +1282,7 @@ static void maven_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id maven_id[] = {
+-	{ "maven", 0 },
++	{ "maven" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, maven_id);
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 3f30af3c059e..aa6cc0a8151a 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -782,10 +782,10 @@ static void ssd1307fb_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id ssd1307fb_i2c_id[] = {
+-	{ "ssd1305fb", 0 },
+-	{ "ssd1306fb", 0 },
+-	{ "ssd1307fb", 0 },
+-	{ "ssd1309fb", 0 },
++	{ "ssd1305fb" },
++	{ "ssd1306fb" },
++	{ "ssd1307fb" },
++	{ "ssd1309fb" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
 
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
+base-commit: f76698bd9a8ca01d3581236082d786e9a6b72bb7
+-- 
+2.43.0
 
-thanks,
-
-greg k-h's patch email bot

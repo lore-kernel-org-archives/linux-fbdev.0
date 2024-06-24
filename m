@@ -1,125 +1,115 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+Received: from msa.smtpout.orange.fr (smtp-83.smtpout.orange.fr [80.12.242.83])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3248319B5A7;
-	Mon, 24 Jun 2024 15:30:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FEDF22313;
+	Mon, 24 Jun 2024 19:59:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.83
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719243055; cv=none; b=Tv5c0n79h3Ringl6TYuJF6rxomBEP25iAV8r7hLnTnbmCyK8ahzu6IFjngtTGn+jGAnDcrG8NTsAV3zp25bklOIU3lFX157OLjH8xdqExL0ip21ujf/7KRc63i+jgcZBhsn6V/shTiAYuy5350WRDq5h/vHvFoz0LjExCRDl2ek=
+	t=1719259191; cv=none; b=uiWo68J3BtipzZDE19PHSoTt0aSz9eT03Dmfa711E8qSH89yABVZmxrsE8ys9BwGpAsJVYDsOa+q5dOIM2voq4qrSSeVQqDw4/qKrGeoYHl8DhxQUxUXHO5xi+LOhhQnLrAUbbw+g8UO8g+iZjKUQJX6b3IYrXHWBxodxfWNd7s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719243055; c=relaxed/simple;
-	bh=Jkeimj0HklVuSImq8IB7VcmxLmbEpZozN1KItY60wHY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Xz6tv+5Hpr+JdX2K1KWJKMYqBjDpzg/NQ5adA7gxXhWcpIlZzWMLTiebCA8gBHblGtFqorG7fWDO1ved1ePPD/LH8+8EOybX2bKy4ecITKHEhUtWPxNKtx5sabr14wyQc4zjl7qleuB8xJtxihbZYtQIOZOlV76Zv3A1HHuH8wc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NY/QOOtA; arc=none smtp.client-ip=209.85.221.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1719259191; c=relaxed/simple;
+	bh=vCqRmHL7cYxTlVI258Ronb2EAVfusmQTE3q/msKfOU0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Mjwl3YKS/Yw3NTNTW/GYKwCR+FL0RNLqsupMtWbiW/uxTS5/d7cJ9d745rgKkw+DQhizPAheNEdSbwnD91rc7q4Fa/As9m6QhtQ/IhnVLGSZ/ORyBzPVG2EIBRkqrOGrJfPZ3c9DfZhGWo4uhu7hrBcHCB8Xpcd8nEQuw62rdb0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=aqhg+JBN; arc=none smtp.client-ip=80.12.242.83
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NY/QOOtA"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-366dcd21604so1685982f8f.1;
-        Mon, 24 Jun 2024 08:30:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1719243052; x=1719847852; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=5Wh7xrbjfwGsyfIEZVLHT3Izn0pKIYJ7wtYXXb68AeA=;
-        b=NY/QOOtAcIJ5OFg9GJBfzUu0H2l1o78byHFCtYf5Ca55Mr368hALMqz7mYFVqEbeRW
-         LpbXUGQ8Xn5pCPcpOTDygrf6txblJsDWxJZFyOmfbz/0ZKCQyzF1bvfmCzsu31w8hGN4
-         OXdkEB9dBLtQvYK+OfdfM6Q72C9XWpuCQEhsEreHz5dAY1YkWCK77NvgAmkBnMD0LRBO
-         E7xMww+IwlOSIDM65d0Va9Q3F/0sGKdn1sm0U5gKULEijpo3XNmrKNIjJRkIpIJjPWwK
-         cuK73LLsFtflyMhYSeEU/FfJ1FHrMUcO5VOt3SHmuQX8D2bPIr2JVaZXFBlPxLnFTyYK
-         9eoQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1719243052; x=1719847852;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5Wh7xrbjfwGsyfIEZVLHT3Izn0pKIYJ7wtYXXb68AeA=;
-        b=J2sfRPhzDSjo2vUwji1/bVsUCu0WXt9sMPJoVCz6K8ce2A2bfpidkTKIJ7mZDSxKJj
-         ez9WdUYaiAjkLf3ivZguCMiVjI9SROzW5yd9PMkjRhSU9sspJjIjGUvnOhWDieKRhZHz
-         chfJsURen4tyCBj16/cew0uAOTJO6Ees+GJO3xwwfps0JiEHmM2F//ah0XeiDPoK1+jq
-         nfCTMjBmzl8i2jbLNDfpx5cyXmCbBRxlAm3YWVjbi4uoJVnucRs17DLtXzjAtpcCDY2X
-         EOui1RwGr2i3tE9bBzTT0O2m953BZjt6El7oiMuuYJEUSzmOjX+sKJ1/9l4C2QEtIzo5
-         cK+g==
-X-Forwarded-Encrypted: i=1; AJvYcCXWDID5nob8HRZ5ZHDtSyZrT0FS7MmkPvx/gwqePU+kgwgYxGX0NctbrP/CobFSoLd1dtRlOgSLPB68FiOy0r+qfOgr/Z1oVAgd4QRQWTx6UcCw6jvMZZcL/P1B1BGkjaUax0r8zra2vxg=
-X-Gm-Message-State: AOJu0Yz77/hqSwgiQm2B4gkUP2IZ9jQdz6UFxiqVBOmIifEPBbUO7jPu
-	YdmcmfrOc53q2V9/23TcbEMrj4WpCXH9q3426pGGN+C93F0Te8WZ
-X-Google-Smtp-Source: AGHT+IHupmj7SCP4Ewzmje7FjrNNDa0FXZUj53f7H62eDvPdjfYU4zbcbpHiI4rU495sq99AOfQkuQ==
-X-Received: by 2002:adf:fe83:0:b0:363:341:1cf2 with SMTP id ffacd0b85a97d-366e7a1bf24mr3680117f8f.22.1719243051993;
-        Mon, 24 Jun 2024 08:30:51 -0700 (PDT)
-Received: from [127.0.1.1] (84-115-213-103.cable.dynamic.surfer.at. [84.115.213.103])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-366383f65bcsm10300418f8f.13.2024.06.24.08.30.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Jun 2024 08:30:51 -0700 (PDT)
-From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Mon, 24 Jun 2024 17:30:50 +0200
-Subject: [PATCH] backlight: lm3509_bl: Fix early returns in
- for_each_child_of_node()
+	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="aqhg+JBN"
+Received: from fedora.home ([86.243.222.230])
+	by smtp.orange.fr with ESMTPA
+	id Lpqrsf3K7qnVgLpqrsXGhT; Mon, 24 Jun 2024 21:59:46 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
+	s=t20230301; t=1719259186;
+	bh=PKvXmWL5ia+tMLrsPCdtaw8yQlKmPVzcIZ50EnxNumY=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=aqhg+JBNDULyFJdYyzAawWk2UelUDJ7vZGWcpuDed6f1j963n0r7rQGpxDOc0LNuJ
+	 x0kQoBY+wTeKvUkka2MrNEKIX4sRKiMdhnLL+4YhyQMgduhDZgD7+5Xjrie5kO0TuX
+	 zHn41oG70Ybt0Aev6DzSLEsisnJ1KTkuyb32VplrZkyZvKHdFK1OeaqOvjrLsB+B6K
+	 0LgOjHSyE45ZLum68oKQtxu+5QN7jb2NLlH00Gml6LW3MqcMUbetckwGd6HJy0afQa
+	 yRHkQyunEGbdyuGXr4WzyxKmp3xsixlNpr+TyKxs5LxpHS6CTWZKKaL8mevX/vDqAS
+	 g+3HZ35IODryA==
+X-ME-Helo: fedora.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Mon, 24 Jun 2024 21:59:46 +0200
+X-ME-IP: 86.243.222.230
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] fbdev: mmp: Constify struct mmp_overlay_ops
+Date: Mon, 24 Jun 2024 21:59:42 +0200
+Message-ID: <c5c1a26fdbf0895d1b17010f1c2da44b18b4ae55.1719259171.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.45.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240624-lm3509_bl_scoped-v1-1-ceba9df38f23@gmail.com>
-X-B4-Tracking: v=1; b=H4sIACmReWYC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxMDMyMT3ZxcY1MDy/iknPji5PyC1BRdc1NLC+M0cwOjxNQUJaC2gqLUtMw
- KsJHRsbW1AMX6te1iAAAA
-To: Lee Jones <lee@kernel.org>, 
- Daniel Thompson <daniel.thompson@linaro.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>, 
- Julia Lawall <julia.lawall@inria.fr>, 
- Javier Carrasco <javier.carrasco.cruz@gmail.com>
-X-Mailer: b4 0.14-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1719243050; l=1581;
- i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
- bh=Jkeimj0HklVuSImq8IB7VcmxLmbEpZozN1KItY60wHY=;
- b=dLuEs9T9Fo7tpWo0a2PCCOune3MeuOXpQnuPNcFgGP/8HLubrH5V+/hb65u77OmE18D/kkEUv
- dvDLEsZbEFgDtOpUEjJpH8cSXjKhih53IfobyhxwhHWOKeHvu0f7wWc
-X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
- pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
+Content-Transfer-Encoding: 8bit
 
-The for_each_child_of_node() macro automatically decrements the child
-refcount at the end of every iteration. On early exits, of_node_put()
-must be used to manually decrement the refcount and avoid memory leaks.
+'struct mmp_overlay_ops' is not modified in this driver.
 
-The scoped version of the macro accounts for such early breaks, fixing
-the early exits without the need for explicit calls to of_node_put().
+Constifying this structure moves some data to a read-only section, so
+increase overall security.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Reported-by: Julia Lawall <julia.lawall@inria.fr>
-Closes: https://lore.kernel.org/r/202406172314.2vVgelaS-lkp@intel.com/
-Fixes: b72755f5b577 ("backlight: Add new lm3509 backlight driver")
-Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+On a x86_64, with allmodconfig, as an example:
+Before:
+======
+   text	   data	    bss	    dec	    hex	filename
+  11798	    555	     16	  12369	   3051	drivers/video/fbdev/mmp/hw/mmp_ctrl.o
+
+After:
+=====
+   text	   data	    bss	    dec	    hex	filename
+  11834	    507	     16	  12357	   3045	drivers/video/fbdev/mmp/hw/mmp_ctrl.o
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/video/backlight/lm3509_bl.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Compile tested-only
+---
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 2 +-
+ include/video/mmp_disp.h              | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/backlight/lm3509_bl.c b/drivers/video/backlight/lm3509_bl.c
-index c93cdedff5ad..7a36f5c08640 100644
---- a/drivers/video/backlight/lm3509_bl.c
-+++ b/drivers/video/backlight/lm3509_bl.c
-@@ -157,10 +157,9 @@ static int lm3509_parse_led_sources(struct device_node *node,
- static int lm3509_parse_dt_node(struct device *dev,
- 				struct lm3509_bl_led_data *led_data)
- {
--	struct device_node *child;
- 	int seen_led_sources = 0;
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+index 76b50b6c98ad..a20a2c408127 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+@@ -313,7 +313,7 @@ static void path_set_mode(struct mmp_path *path, struct mmp_mode *mode)
+ 	mutex_unlock(&path->access_ok);
+ }
  
--	for_each_child_of_node(dev->of_node, child) {
-+	for_each_child_of_node_scoped(dev->of_node, child) {
- 		struct lm3509_bl_led_data *ld;
- 		int ret;
- 		u32 reg;
-
----
-base-commit: f76698bd9a8ca01d3581236082d786e9a6b72bb7
-change-id: 20240624-lm3509_bl_scoped-75983f702aed
-
-Best regards,
+-static struct mmp_overlay_ops mmphw_overlay_ops = {
++static const struct mmp_overlay_ops mmphw_overlay_ops = {
+ 	.set_fetch = overlay_set_fetch,
+ 	.set_onoff = overlay_set_onoff,
+ 	.set_win = overlay_set_win,
+diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
+index a722dcbf5073..41354bd49895 100644
+--- a/include/video/mmp_disp.h
++++ b/include/video/mmp_disp.h
+@@ -156,7 +156,7 @@ struct mmp_overlay {
+ 	int status;
+ 	struct mutex access_ok;
+ 
+-	struct mmp_overlay_ops *ops;
++	const struct mmp_overlay_ops *ops;
+ };
+ 
+ /* panel type */
+@@ -299,7 +299,7 @@ struct mmp_path_info {
+ 	int overlay_num;
+ 	void (*set_mode)(struct mmp_path *path, struct mmp_mode *mode);
+ 	void (*set_onoff)(struct mmp_path *path, int status);
+-	struct mmp_overlay_ops *overlay_ops;
++	const struct mmp_overlay_ops *overlay_ops;
+ 	void *plat_data;
+ };
+ 
 -- 
-Javier Carrasco <javier.carrasco.cruz@gmail.com>
+2.45.2
 

@@ -1,187 +1,125 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B01519B5A3;
-	Mon, 24 Jun 2024 15:28:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3248319B5A7;
+	Mon, 24 Jun 2024 15:30:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719242909; cv=none; b=Af0RGaVFTqrdOvxAbK2ZDFuqwO/burbmzXFxV3vj/lqGZTIIgInLXDfSAL4acFJPKAK7EgimaOqrbqb1PITMqv0OBMJ1RbRXvBiJGz/mpTXsI9XY32ko2fiYb6y5J4qJLhNt/TcWB8JZHBrq1ck6UyiZhm7PPIHPqsFSibRbEew=
+	t=1719243055; cv=none; b=Tv5c0n79h3Ringl6TYuJF6rxomBEP25iAV8r7hLnTnbmCyK8ahzu6IFjngtTGn+jGAnDcrG8NTsAV3zp25bklOIU3lFX157OLjH8xdqExL0ip21ujf/7KRc63i+jgcZBhsn6V/shTiAYuy5350WRDq5h/vHvFoz0LjExCRDl2ek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719242909; c=relaxed/simple;
-	bh=/jzCXC6oKzBSshTYLo/hBT/TskDUVHvKywUc/cXrFlg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fezGu6gQTHzRgDJ5WgO0wz4ogruiV6CiqMrpMop0hCV2AXtMy29n/9JsoYUPF5+YxKU7YH2/0WAtn647PzC2lyBDPw5OQ8rWOrmvnnyTtB3ZjFrq7VNCXh73uCBBjkJOz1eEfsUur9tWu+tRBjezU6IwR0WcrVv5LUsrzPCxxHE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id E03CD219CB;
-	Mon, 24 Jun 2024 15:20:37 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8F25013ACD;
-	Mon, 24 Jun 2024 15:20:37 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id aBmjIcWOeWbqGgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 24 Jun 2024 15:20:37 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: lee@kernel.org,
-	daniel.thompson@linaro.org,
-	sam@ravnborg.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de,
-	linus.walleij@linaro.org,
-	f.suligoi@asem.it,
-	ukleinek@kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-pwm@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 01/17] backlight: Add BACKLIGHT_POWER_ constants for power states
-Date: Mon, 24 Jun 2024 17:19:56 +0200
-Message-ID: <20240624152033.25016-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240624152033.25016-1-tzimmermann@suse.de>
-References: <20240624152033.25016-1-tzimmermann@suse.de>
+	s=arc-20240116; t=1719243055; c=relaxed/simple;
+	bh=Jkeimj0HklVuSImq8IB7VcmxLmbEpZozN1KItY60wHY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Xz6tv+5Hpr+JdX2K1KWJKMYqBjDpzg/NQ5adA7gxXhWcpIlZzWMLTiebCA8gBHblGtFqorG7fWDO1ved1ePPD/LH8+8EOybX2bKy4ecITKHEhUtWPxNKtx5sabr14wyQc4zjl7qleuB8xJtxihbZYtQIOZOlV76Zv3A1HHuH8wc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NY/QOOtA; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NY/QOOtA"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-366dcd21604so1685982f8f.1;
+        Mon, 24 Jun 2024 08:30:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1719243052; x=1719847852; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=5Wh7xrbjfwGsyfIEZVLHT3Izn0pKIYJ7wtYXXb68AeA=;
+        b=NY/QOOtAcIJ5OFg9GJBfzUu0H2l1o78byHFCtYf5Ca55Mr368hALMqz7mYFVqEbeRW
+         LpbXUGQ8Xn5pCPcpOTDygrf6txblJsDWxJZFyOmfbz/0ZKCQyzF1bvfmCzsu31w8hGN4
+         OXdkEB9dBLtQvYK+OfdfM6Q72C9XWpuCQEhsEreHz5dAY1YkWCK77NvgAmkBnMD0LRBO
+         E7xMww+IwlOSIDM65d0Va9Q3F/0sGKdn1sm0U5gKULEijpo3XNmrKNIjJRkIpIJjPWwK
+         cuK73LLsFtflyMhYSeEU/FfJ1FHrMUcO5VOt3SHmuQX8D2bPIr2JVaZXFBlPxLnFTyYK
+         9eoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1719243052; x=1719847852;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=5Wh7xrbjfwGsyfIEZVLHT3Izn0pKIYJ7wtYXXb68AeA=;
+        b=J2sfRPhzDSjo2vUwji1/bVsUCu0WXt9sMPJoVCz6K8ce2A2bfpidkTKIJ7mZDSxKJj
+         ez9WdUYaiAjkLf3ivZguCMiVjI9SROzW5yd9PMkjRhSU9sspJjIjGUvnOhWDieKRhZHz
+         chfJsURen4tyCBj16/cew0uAOTJO6Ees+GJO3xwwfps0JiEHmM2F//ah0XeiDPoK1+jq
+         nfCTMjBmzl8i2jbLNDfpx5cyXmCbBRxlAm3YWVjbi4uoJVnucRs17DLtXzjAtpcCDY2X
+         EOui1RwGr2i3tE9bBzTT0O2m953BZjt6El7oiMuuYJEUSzmOjX+sKJ1/9l4C2QEtIzo5
+         cK+g==
+X-Forwarded-Encrypted: i=1; AJvYcCXWDID5nob8HRZ5ZHDtSyZrT0FS7MmkPvx/gwqePU+kgwgYxGX0NctbrP/CobFSoLd1dtRlOgSLPB68FiOy0r+qfOgr/Z1oVAgd4QRQWTx6UcCw6jvMZZcL/P1B1BGkjaUax0r8zra2vxg=
+X-Gm-Message-State: AOJu0Yz77/hqSwgiQm2B4gkUP2IZ9jQdz6UFxiqVBOmIifEPBbUO7jPu
+	YdmcmfrOc53q2V9/23TcbEMrj4WpCXH9q3426pGGN+C93F0Te8WZ
+X-Google-Smtp-Source: AGHT+IHupmj7SCP4Ewzmje7FjrNNDa0FXZUj53f7H62eDvPdjfYU4zbcbpHiI4rU495sq99AOfQkuQ==
+X-Received: by 2002:adf:fe83:0:b0:363:341:1cf2 with SMTP id ffacd0b85a97d-366e7a1bf24mr3680117f8f.22.1719243051993;
+        Mon, 24 Jun 2024 08:30:51 -0700 (PDT)
+Received: from [127.0.1.1] (84-115-213-103.cable.dynamic.surfer.at. [84.115.213.103])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-366383f65bcsm10300418f8f.13.2024.06.24.08.30.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Jun 2024 08:30:51 -0700 (PDT)
+From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Date: Mon, 24 Jun 2024 17:30:50 +0200
+Subject: [PATCH] backlight: lm3509_bl: Fix early returns in
+ for_each_child_of_node()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: E03CD219CB
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spam-Score: -4.00
-X-Spam-Level: 
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240624-lm3509_bl_scoped-v1-1-ceba9df38f23@gmail.com>
+X-B4-Tracking: v=1; b=H4sIACmReWYC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIxMDMyMT3ZxcY1MDy/iknPji5PyC1BRdc1NLC+M0cwOjxNQUJaC2gqLUtMw
+ KsJHRsbW1AMX6te1iAAAA
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>, 
+ Julia Lawall <julia.lawall@inria.fr>, 
+ Javier Carrasco <javier.carrasco.cruz@gmail.com>
+X-Mailer: b4 0.14-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1719243050; l=1581;
+ i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
+ bh=Jkeimj0HklVuSImq8IB7VcmxLmbEpZozN1KItY60wHY=;
+ b=dLuEs9T9Fo7tpWo0a2PCCOune3MeuOXpQnuPNcFgGP/8HLubrH5V+/hb65u77OmE18D/kkEUv
+ dvDLEsZbEFgDtOpUEjJpH8cSXjKhih53IfobyhxwhHWOKeHvu0f7wWc
+X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
+ pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
 
-Duplicate FB_BLANK_ constants as BACKLIGHT_POWER__ constants in the
-backlight header file. Allows backlight drivers to avoid including
-the fbdev header file and removes a compile-time dependency between
-the two subsystems.
+The for_each_child_of_node() macro automatically decrements the child
+refcount at the end of every iteration. On early exits, of_node_put()
+must be used to manually decrement the refcount and avoid memory leaks.
 
-The new BACKLIGHT_POWER_ constants have the same values as their
-FB_BLANK_ counterparts. Hence UAPI and internal semantics do not
-change. The backlight drivers can be converted one by one. Each
-instance of FB_BLANK_UNBLANK becomes BACKLIGHT_POWER_ON, each of
-FB_BLANK_POWERDOWN becomes BACKLIGHT_POWER_OFF, and FB_BLANK_NORMAL
-becomes BACKLIGHT_POWER_REDUCED.
+The scoped version of the macro accounts for such early breaks, fixing
+the early exits without the need for explicit calls to of_node_put().
 
-Backlight code or drivers do not use FB_BLANK_VSYNC_SUSPEND and
-FB_BLANK_HSYNC_SUSPEND, so no new constants for these are being
-added.
-
-The semantics of FB_BLANK_NORMAL appear inconsistent. In fbdev,
-NORMAL means display off with sync enabled. In backlight code,
-this translates to turn the backlight off, but some drivers
-interpret it as backlight on. So we keep the current code as is,
-but mark BACKLIGHT_POWER_REDUCED as deprecated. Drivers should be
-fixed and the constant removed. This affects ams369fg06 and a few
-DRM panel drivers.
-
-v2:
-- rename BL_CORE_ power constants to BACKLIGHT_POWER_ (Sam)
-- fix documentation
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Julia Lawall <julia.lawall@inria.fr>
+Closes: https://lore.kernel.org/r/202406172314.2vVgelaS-lkp@intel.com/
+Fixes: b72755f5b577 ("backlight: Add new lm3509 backlight driver")
+Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- .../ABI/stable/sysfs-class-backlight          |  7 ++++---
- include/linux/backlight.h                     | 20 +++++++++++--------
- 2 files changed, 16 insertions(+), 11 deletions(-)
+ drivers/video/backlight/lm3509_bl.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/Documentation/ABI/stable/sysfs-class-backlight b/Documentation/ABI/stable/sysfs-class-backlight
-index 023fb52645f8..6102d6bebdf9 100644
---- a/Documentation/ABI/stable/sysfs-class-backlight
-+++ b/Documentation/ABI/stable/sysfs-class-backlight
-@@ -3,10 +3,11 @@ Date:		April 2005
- KernelVersion:	2.6.12
- Contact:	Richard Purdie <rpurdie@rpsys.net>
- Description:
--		Control BACKLIGHT power, values are FB_BLANK_* from fb.h
-+		Control BACKLIGHT power, values are compatible with
-+		FB_BLANK_* from fb.h
- 
--		 - FB_BLANK_UNBLANK (0)   : power on.
--		 - FB_BLANK_POWERDOWN (4) : power off
-+		 - 0 (FB_BLANK_UNBLANK)   : power on.
-+		 - 4 (FB_BLANK_POWERDOWN) : power off
- Users:		HAL
- 
- What:		/sys/class/backlight/<backlight>/brightness
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 19a1c0e22629..ea9c1bc8148e 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -209,15 +209,19 @@ struct backlight_properties {
- 	 * attribute: /sys/class/backlight/<backlight>/bl_power
- 	 * When the power property is updated update_status() is called.
- 	 *
--	 * The possible values are: (0: full on, 1 to 3: power saving
--	 * modes; 4: full off), see FB_BLANK_XXX.
-+	 * The possible values are: (0: full on, 4: full off), see
-+	 * BACKLIGHT_POWER constants.
- 	 *
--	 * When the backlight device is enabled @power is set
--	 * to FB_BLANK_UNBLANK. When the backlight device is disabled
--	 * @power is set to FB_BLANK_POWERDOWN.
-+	 * When the backlight device is enabled, @power is set to
-+	 * BACKLIGHT_POWER_ON. When the backlight device is disabled,
-+	 * @power is set to BACKLIGHT_POWER_OFF.
- 	 */
- 	int power;
- 
-+#define BACKLIGHT_POWER_ON		(0)
-+#define BACKLIGHT_POWER_OFF		(4)
-+#define BACKLIGHT_POWER_REDUCED		(1) // deprecated; don't use in new code
-+
- 	/**
- 	 * @type: The type of backlight supported.
- 	 *
-@@ -346,7 +350,7 @@ static inline int backlight_enable(struct backlight_device *bd)
- 	if (!bd)
- 		return 0;
- 
--	bd->props.power = FB_BLANK_UNBLANK;
-+	bd->props.power = BACKLIGHT_POWER_ON;
- 	bd->props.state &= ~BL_CORE_FBBLANK;
- 
- 	return backlight_update_status(bd);
-@@ -361,7 +365,7 @@ static inline int backlight_disable(struct backlight_device *bd)
- 	if (!bd)
- 		return 0;
- 
--	bd->props.power = FB_BLANK_POWERDOWN;
-+	bd->props.power = BACKLIGHT_POWER_OFF;
- 	bd->props.state |= BL_CORE_FBBLANK;
- 
- 	return backlight_update_status(bd);
-@@ -380,7 +384,7 @@ static inline int backlight_disable(struct backlight_device *bd)
-  */
- static inline bool backlight_is_blank(const struct backlight_device *bd)
+diff --git a/drivers/video/backlight/lm3509_bl.c b/drivers/video/backlight/lm3509_bl.c
+index c93cdedff5ad..7a36f5c08640 100644
+--- a/drivers/video/backlight/lm3509_bl.c
++++ b/drivers/video/backlight/lm3509_bl.c
+@@ -157,10 +157,9 @@ static int lm3509_parse_led_sources(struct device_node *node,
+ static int lm3509_parse_dt_node(struct device *dev,
+ 				struct lm3509_bl_led_data *led_data)
  {
--	return bd->props.power != FB_BLANK_UNBLANK ||
-+	return bd->props.power != BACKLIGHT_POWER_ON ||
- 	       bd->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK);
- }
+-	struct device_node *child;
+ 	int seen_led_sources = 0;
  
+-	for_each_child_of_node(dev->of_node, child) {
++	for_each_child_of_node_scoped(dev->of_node, child) {
+ 		struct lm3509_bl_led_data *ld;
+ 		int ret;
+ 		u32 reg;
+
+---
+base-commit: f76698bd9a8ca01d3581236082d786e9a6b72bb7
+change-id: 20240624-lm3509_bl_scoped-75983f702aed
+
+Best regards,
 -- 
-2.45.2
+Javier Carrasco <javier.carrasco.cruz@gmail.com>
 

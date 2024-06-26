@@ -1,85 +1,70 @@
-Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7DB7149E06
-	for <linux-fbdev@vger.kernel.org>; Wed, 26 Jun 2024 11:52:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C2A11836DD;
+	Wed, 26 Jun 2024 15:50:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719402740; cv=none; b=AcOaIUX8LWiN38sPdy4srqcTtt3ZMair5IsTrlQrizusEObZ73Se7MtHm2bx2PF4caA5d8W2ZsZdUfy7bNagm8oVUh7wcQNt1eHehpH+XaeqgTDqpASv50cCdcxng0FFA0njOxmHzQIrmGXxW3CSfLv3MoOjB9PoGN7uGdPIjCY=
+	t=1719417009; cv=none; b=U/K/XT/nnHo+6XQHijRug7gBncbgIViJK/NYs0st/rOIrxq1oxwz64+tZXjEOK/ZCZa28SXCaf1dFI98pmTXVCzzdGsSFm0Knmq2lZhn4bl4OAUHtMDgoflIo6f49RuzflUQsB472q7nu0ImQ1qV2qYfDxAP8hAZfqbCVH9DUXY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719402740; c=relaxed/simple;
-	bh=xpjrjZmRsZz45Y4K6cy5Tahj6SJPohhDcpzY7RpiacU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tfzF+Z3puomKlPYHkH17e4zopAQ567PmzNThR9gZQapxpr040D6emeQ+7kWrlhvus/1RUWWpwv22+JYRju8RVxM6MQ6trB8ANs+RCf1mQTYubADtdGVILz1wpoU8Hj9gAIHRX06LhVfavHEUxgw9XF15CtLVN97tg6mY6ODeMqM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=n/K3zpan; arc=none smtp.client-ip=209.85.167.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1719417009; c=relaxed/simple;
+	bh=MpTrKsJUpc3vIWujjuh/gx4N6wsWK1H9HtIbFojUBqE=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=FjqUaEvdOpgNvaCF4iWEJ2q3bxa8kcNXF2m8G7zVX7G0+V3SBOsrWzCijAuCiG0HbLFzZR+T32ujsfOKhMIqtbD8WWUPrJdppmpn0AEyJOWBsZoPB6jBY1UkYOQ4SyCJOy+KV7HzpeqK3wq1GJcwKVLsd0dxtlugJYCX25JC6tk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BBreXn76; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="n/K3zpan"
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-52cd6784aa4so5928006e87.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jun 2024 04:52:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1719402737; x=1720007537; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xpjrjZmRsZz45Y4K6cy5Tahj6SJPohhDcpzY7RpiacU=;
-        b=n/K3zpanWGKqPhLK59mSDivOMI1MC2+Qos/dqLjhqOsz7xGe7hr8nScuL9i3G/V/Vb
-         ULG76D40rp5OZmWsmzZfZ3M6wS81Fcrkh4xXXqGB5XJ5ofDgSaP/SzFnjLsYl5C3CAiI
-         EBLShuGW9uIoSFHQg1be8jg0qauh7B38uqcU4W7rEUeJbUtSVuaHrc+1zIVDNxgYSgqW
-         63Ng9xsZXdasff1r5iIjywsn/0blwRidzLKpWrs1qlTwV7mzWgTXCKBmd01cLPkfhlmG
-         RD+MiPy3jrewQppmRI8yIDHGUyTcjd2We0vyLOlDQsv8WcIw9pPcLZRQVG/wjEHF8jzh
-         Dfyg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1719402737; x=1720007537;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xpjrjZmRsZz45Y4K6cy5Tahj6SJPohhDcpzY7RpiacU=;
-        b=iXhcmMcaUXg8/sH/sedfWLRYA67Ay2dGd1CKrU1ZvzK23oaRm/EVaxPsUua8ftUsLJ
-         diloHj78+W74zsDoHORaRW5W1YGtGzBijXlRmezeL+50qnQaQjzCeUF98KAdJsu7PtRC
-         tZDkM3swTzU3bAFVQvFCx3aqIzMlSrLfXxPA2s7N5mlGnhHyXzgEuZ/yQXmf2cGL1LeX
-         0WeHvRRxfNEeVlFx7Xhd4jHPIPYwKeQHt4C5V0KQMt7uGo+qEEvX27s8LIYsioH/38p6
-         wXiLUPK78/2ZnWEA072rSea2Xc7+r0tG9yrRLRqRLCQx6v/t5bkf1iUJ7Bm4Xk+hmLqL
-         FjFQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWJBCzeIC9a+N5lb2rGTH8K5zAJPnsg/bkBwshnMo+5+MPrqnSP26eVz9v1AU9RQMsGJhhsOn4VB27W4es07qV9wgEZGqNEzTqUJxE=
-X-Gm-Message-State: AOJu0YyNW9P0uwN2SqygHwh//DSfGOxNmjQXqGNfovDe/mO1d8PCnyQk
-	JcpxmI+wIjT/4Nog473guybZrsJ0LCasrvTzZhpJ+/PgZPuuSlZWCnsqT6ryyiM+C5/uU/K4mal
-	qWEdeSnTyxfPGiOST0BlEENa7aMCclJ2CM5n9bl67iHUv6faumBg=
-X-Google-Smtp-Source: AGHT+IFt5Y6rNkv7qP0DY/jJs8uCxG3fud41/0H3+Siz9GLV1bZC8qZKtVnvB2O2VW30MKoOlKv1yDATTfc64MFALP0=
-X-Received: by 2002:ac2:4e09:0:b0:52c:d80e:55a5 with SMTP id
- 2adb3069b0e04-52ce183aa97mr7510215e87.41.1719402737078; Wed, 26 Jun 2024
- 04:52:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BBreXn76"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B98CC116B1;
+	Wed, 26 Jun 2024 15:50:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1719417009;
+	bh=MpTrKsJUpc3vIWujjuh/gx4N6wsWK1H9HtIbFojUBqE=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=BBreXn76aoPBMO8gmGLsb8fv02MT/QD+Lg/K/mQ0q0IG/L1E+S71HO111ec2CEmT2
+	 OPXYe0sxsNtkfwcwc3YjQ3NVrpCYbYxbRYV1vwAqu/TeqCRLslw1eNATLdr8mT1yoS
+	 nqsaqspv4mQ0ZMOiFTOzyeQaJhw6RdTmqmVm79f9nu8IEsHtz4B4i/GIY8Ik9HFZ7p
+	 A9i82eNNgBClHb9unPHpdrJbnAAn6Y6BtOMZ6CX2ni1A4IrIHZmzye4m/xotaOjnhJ
+	 KmA39VtHg7mdSA75d/wbugzmQfHowwGVQ8biWs64vsb3MlXbN4TGyMNJF/Lpu/uS4B
+	 iZif98AMGeLzQ==
+From: Lee Jones <lee@kernel.org>
+To: Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>, 
+ Julia Lawall <julia.lawall@inria.fr>
+In-Reply-To: <20240624-lm3509_bl_scoped-v1-1-ceba9df38f23@gmail.com>
+References: <20240624-lm3509_bl_scoped-v1-1-ceba9df38f23@gmail.com>
+Subject: Re: (subset) [PATCH] backlight: lm3509_bl: Fix early returns in
+ for_each_child_of_node()
+Message-Id: <171941700713.2526873.6218687584902221299.b4-ty@kernel.org>
+Date: Wed, 26 Jun 2024 16:50:07 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240624152033.25016-1-tzimmermann@suse.de> <20240624152033.25016-6-tzimmermann@suse.de>
-In-Reply-To: <20240624152033.25016-6-tzimmermann@suse.de>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 26 Jun 2024 13:52:05 +0200
-Message-ID: <CACRpkdb9CNMw1z8q6gQb0Pi6fZhOfXCoiM1s5QdszRqgbxa+Lw@mail.gmail.com>
-Subject: Re: [PATCH v2 05/17] backlight: gpio-backlight: Use backlight power constants
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, daniel.thompson@linaro.org, sam@ravnborg.org, 
-	jingoohan1@gmail.com, deller@gmx.de, f.suligoi@asem.it, ukleinek@kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-pwm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.13.0
 
-On Mon, Jun 24, 2024 at 5:20=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
-.de> wrote:
+On Mon, 24 Jun 2024 17:30:50 +0200, Javier Carrasco wrote:
+> The for_each_child_of_node() macro automatically decrements the child
+> refcount at the end of every iteration. On early exits, of_node_put()
+> must be used to manually decrement the refcount and avoid memory leaks.
+> 
+> The scoped version of the macro accounts for such early breaks, fixing
+> the early exits without the need for explicit calls to of_node_put().
+> 
+> [...]
 
-> Replace FB_BLANK_ constants with their counterparts from the
-> backlight subsystem. The values are identical, so there's no
-> change in functionality.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Applied, thanks!
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+[1/1] backlight: lm3509_bl: Fix early returns in for_each_child_of_node()
+      commit: b337cc3ce47549528fc3ee0b8c7ebd33348a3126
 
-Yours,
-Linus Walleij
+--
+Lee Jones [李琼斯]
+

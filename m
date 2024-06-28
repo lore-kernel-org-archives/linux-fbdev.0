@@ -1,131 +1,106 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C308310A14;
-	Fri, 28 Jun 2024 07:17:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21D671C0053
+	for <linux-fbdev@vger.kernel.org>; Fri, 28 Jun 2024 14:48:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719559027; cv=none; b=ACvg4HiY7GlChqU0MRxwN+NbpLRqOgWJJXPC5GtNsyCzl5+vHPY/8Mezs5/lnrnsvCVdmiB4BMckR9ZDjJ9O3F1zrC1zO4N7YV1rQKjoIo4wY8Eyb42/HrT5CKFOBgAcRvMCLrK9ht6w4pMzZTBM3SmSUpKGY3NtulrrYXZmzrU=
+	t=1719586121; cv=none; b=RoReDYADVAwhM8VEGVJD+Pv66dXq611oXS99JX/PR7hJidsHYacZc4DjLQDyzy8ek8YeGv2d+hvb5fc4SOWGsrYmmXvn+AUy9pd+3BYtVZCPMh858hYK0FloknEvVUDOSgNMPTlxX89RoaCg3UHnyajUA22n/vxkmNhztGN1r+Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719559027; c=relaxed/simple;
-	bh=DmlFcDAuhQL5dAxseaJPHDWyJzFoqXVVTL5/VSU9j+A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hC8sLrkI/jVqL3hF0L0LPme4moT7Pb//8GZoSWHVuOKMymzUCb+whwQ8iYwi/GKWX8ayRWllp/NENJ/jqO0Hg1sXD+1ZTTw/uez/oBahWgbok8F9SG9vm7YiZp5M1hkWzFcFuj1u6ZnOrzT7nXWcWMW0M9KwOl3V9cv1ysZuZ14=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=A78BQxXc; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1719586121; c=relaxed/simple;
+	bh=PLtj7bSe++tHU1muE0ellbCUBsOVwaNLui/U8TXTses=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=CwVDP9ueA/cM9YBWQwQuWR6NlSdbFKDzyF/MpqDfTuBAXryFqaqWLOngijYlPq0ruUaeNlAvsL1U6nnyk+7S5s29J4nDxdOEEX8xdmsazszBm1NEO0iItmoWwg5MzZNVufKJvTHIXgJ8IRxJm4NJX2M4PUYNpsreQeVWAvq81to=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=v6jOUtlZ; arc=none smtp.client-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="A78BQxXc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1719559007; x=1720163807; i=deller@gmx.de;
-	bh=BVCvxso8LWcDBYVgY2qR9LImDTuBOXdQaYFxMSV7Poc=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=A78BQxXc9VkBkMEX/sLHLzPceiNsRLnEajv/nSvoQDQKk6nwv8WvFqmENu6Z7iVJ
-	 3J6Z6IQUYYeTpiWDfIkkzsb9OmNGkDPyrjMNpEan/GpW3rCUKm0gV78xdtbat73Gx
-	 48uQsEvZTGbCXbfc2vSjdLxFmdbJW7xFLImM1fWcCspO58SmVMZwp4gtfYmG5K7MG
-	 MaDrgXw/+y/umPnUByR92FGHZcHNG1OdAN6VsjdEqq0KU0QDzQPi0DfoIiDdrNWnR
-	 DR9LGXC+hO+9c5hr7vyhfboTScIge+2qjK71tJHGAANS2RS3oB3RM57d9fgxNgFlI
-	 0/JFw1wQzXBOogB4DA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.78]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M59C8-1sLzv03e68-004JhY; Fri, 28
- Jun 2024 09:16:46 +0200
-Message-ID: <72418d4e-76ac-44ae-9f4a-f314d925f928@gmx.de>
-Date: Fri, 28 Jun 2024 09:16:45 +0200
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="v6jOUtlZ"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-42566fb8302so5394075e9.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Jun 2024 07:48:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1719586118; x=1720190918; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=uJg4U+PW9Snx8tG5VLs4l5kg/oNVaqq+3EVHHkcbQfc=;
+        b=v6jOUtlZtIeACeLCCkYRk2O8ycfb6qRg/MEUNbSK0nsQ6wujLPYBGgHiKPJWTqjbz2
+         m7LspueVlAWnBhfoV7BBOAEwO5uORdW3RjH+qNHIwj99m5nExCisGlkPvOlFpMMbapcG
+         e5tG5LIFzE+E8q0Ytn5RUsN2OYGGWehui86FNrSpP6IGbUtHZj8p9THStSUL8q+7F4N5
+         9mWHNSqrwVLxp73SAHWWRWUTHQSAUFBc/Wpa8pYkoKhYmP3uA0TIqnF3yqviKFg+bU/q
+         k0CjSbL58MiJYm0KC7vGvuahzbvOPL6NSTur+KkqYu1fidzSe4jieagZWOmIFi7dhUFy
+         ufKQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1719586118; x=1720190918;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uJg4U+PW9Snx8tG5VLs4l5kg/oNVaqq+3EVHHkcbQfc=;
+        b=UldajAJJTD9FUMnat7cPrIuHSY5HEJjJUNSe7GZS2jYWRGDl2SDolnYlC3mqNhfx0Q
+         6oT36b4m1xA1UGt0LHaZwZpLyCToeGguyVTOW8ZZP+IGFxA4XaxRMiB/ZSWc/DEWphUG
+         RK2D1kxgAYEpEDglGO7OHuZWqJ+hBpq91zRt8vjuHOavw6bC7stwrZ2fUJG9mWh27rJO
+         4nnyaGReAQQ2PcirXQj5DR1ZanehtJC760F8eVuJjxkpMComIcEVFCvNkuydMi/PV+Lz
+         YUIsyAVDQRt9He3kCllLa+CVrd9X8BdfCj1Y0rA9HPEza3/yLnptUkzHwbW4Dk08xpDs
+         TZxA==
+X-Forwarded-Encrypted: i=1; AJvYcCVO10zUqhc5MUL6gQdCmUqo0jkqut+B9CKKHl82O0niAjRFWZOtUioXaaMuIMa8oVVOkvROYG7F6FvtATa3X6lbo3wHaXCbzM2R6yM=
+X-Gm-Message-State: AOJu0YzR5JPqHWTW06MTv70nDBuwE4T8IUp8TQTYYr9MhnXEXlKWhr+6
+	sHkCCouYjhRPGlRmNTa5smtkIGhjOwE4dgBTKsr2fizvnlPKL+knjO9ZRpPVc5k=
+X-Google-Smtp-Source: AGHT+IFZJvZcGme5tYJIDm7Fn4HGpd/PyLd+v7/pwoRVXETsHGa6eBvd/qNPMGWqDBbSv0goSqbC5g==
+X-Received: by 2002:a05:600c:54cc:b0:425:624e:d80a with SMTP id 5b1f17b1804b1-425624ed961mr46300535e9.24.1719586118172;
+        Fri, 28 Jun 2024 07:48:38 -0700 (PDT)
+Received: from [127.0.1.1] (frhb82016ds.ikexpress.com. [185.246.87.17])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4256af55c0asm37972575e9.15.2024.06.28.07.48.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Jun 2024 07:48:37 -0700 (PDT)
+From: Guillaume Stols <gstols@baylibre.com>
+Date: Fri, 28 Jun 2024 14:48:19 +0000
+Subject: [PATCH v2 01/10] dt-bindings: iio: adc: adi,ad7606: add missing
+ datasheet link
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: omap2: Return clk_prepare_enable to transfer the
- error
-To: Chen Ni <nichen@iscas.ac.cn>, laurent.pinchart@ideasonboard.com,
- kuninori.morimoto.gx@renesas.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20240628032812.280895-1-nichen@iscas.ac.cn>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
- HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
- r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
- CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
- 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
- dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
- Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
- GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
- aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
- 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
- ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
- FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
- uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
- uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
- REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
- qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
- iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
- gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
- Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
- qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
- 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
- dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
- rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
- UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
- eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
- ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
- dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
- lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
- 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
- xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
- wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
- fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
- Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
- l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
- RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
- BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
- Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
- XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
- MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
- FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
- 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
- ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240628032812.280895-1-nichen@iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:dx4qoQlPZaG6FI2b4ClufdZB9k9eYU8N+FyxceWck9YLG9mnnvO
- cLvm3Jjf3/GL3vdpDT3+wZIiB18yfBzs+cSnGdz1cATRfzYcWPoaG48DYmWw0LZLP2uB+hl
- Xz1dsb005pu3di56zns6CUzjK67p2JnASgQUHLCr8PybEKwHqP9Fan+NRl6E0W6a+mS3n9Z
- YACq+irr0j5MqkfxnQFMg==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:3LYUJZkI6qQ=;SZ013v6RcqX/uXL1yPPXZ2LVXAM
- hV96OijzHdb9eYhtjVlvsYFhuZ4upnwebPkwdFeSVQuLgmpulCUVs40DJZ9eVd6+2idD50CN3
- ZT2OyFT/d7pPu8EKJPtsqlmco3WtVrHQmRP83ukosUNmPqFqwcRZ7uUTWIMlZNBOVfTCX4wEp
- 4SE+Yg3u1pK/K/vVfoS33jhjtFumUN188DQa6UrZEytSdsJ1dJgfZ40oFYgmvnvZ/ir4gBWKh
- DxEb8oPZjMXirKy2ExwYPZG6TiyiJPYoSjn1UaNMYtnliNCHCYGKnR3491j8T/XICjVNxVDy5
- oRFffHXehNR431+BXnwv+NEGTq2YtnX9HCDNovCNOW3NG619g5yocmwWZillPb7AAUrR+6C7d
- e8GrtREfjAOXsI0HwejhNNurTnc4NAzvPsBF7LsXDC5JMWoptL2Z8sDNZCtZ8BmoVvdWhF1RJ
- 7pSNdREXqONcwmtX2liPGzwpvT19ANw+pr1SqrVKgZ36+rWMWbLnMKbQrRNg4dhC7YXmpksd7
- lKjsDKihYhv4eSUjjYe9Dq9hrOfPN3P6ZlCnQF1a3Caadj3cyrm7gY929Nih2JccIwl5oUsOq
- VE1nI9dq2U3PP8Ek91kEfdayj/w95HhhBV5GjDr+vW/E8rBtC2O/qwrLGnxz+gVpct4T4OpmA
- 7zOb+fb0Qe0ct5526Jm0RJ/jaiEtQ+9P1WxUrDRk+BCjOEF9qSs5vzLZJxxyoBmslEP2voYxr
- mg/OqxT7V7H+Zg5vxQXGTNAVQKe6CkKE+1Tpb0xyDl4uQTPEhDQIu1hIz3owAyR9QJMq9tTkQ
- uAx2yRizO8u+LmSkAxHNqVhajdc5Dp4C8lloHVIje+trU=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240628-cleanup-ad7606-v2-1-96e02f90256d@baylibre.com>
+References: <20240628-cleanup-ad7606-v2-0-96e02f90256d@baylibre.com>
+In-Reply-To: <20240628-cleanup-ad7606-v2-0-96e02f90256d@baylibre.com>
+To: Lars-Peter Clausen <lars@metafoo.de>, 
+ Michael Hennerich <Michael.Hennerich@analog.com>, 
+ Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Beniamin Bia <beniamin.bia@analog.com>, 
+ Stefan Popa <stefan.popa@analog.com>
+Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Michael Hennerich <michael.hennerich@analog.com>, 
+ linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Guillaume Stols <gstols@baylibre.com>, jstephan@baylibre.com, 
+ dlechner@baylibre.com
+X-Mailer: b4 0.14.0
 
-On 6/28/24 05:28, Chen Ni wrote:
-> Return clk_prepare_enable() in order to transfer the error if it fails.
->
-> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
-> ---
->   drivers/video/fbdev/omap2/omapfb/dss/venc.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
+Add AD7606-5 datasheet link.
 
-applied.
-Thanks!
-Helge
+Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+---
+ Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+index 7fa46df1f4fb..d55c58400df5 100644
+--- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+@@ -11,6 +11,7 @@ maintainers:
+ 
+ description: |
+   Analog Devices AD7606 Simultaneous Sampling ADC
++  https://www.analog.com/media/en/technical-documentation/data-sheets/AD7605-4.pdf
+   https://www.analog.com/media/en/technical-documentation/data-sheets/ad7606_7606-6_7606-4.pdf
+   https://www.analog.com/media/en/technical-documentation/data-sheets/AD7606B.pdf
+   https://www.analog.com/media/en/technical-documentation/data-sheets/AD7616.pdf
+
+-- 
+2.34.1
 

@@ -1,72 +1,81 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFF6519DF9F;
-	Thu, 27 Jun 2024 20:32:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEEC01C6A4;
+	Fri, 28 Jun 2024 03:29:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719520329; cv=none; b=A2Io8zlP35RRyi6kRVZF4gIIqucn2bzD2NYwvQnSddbENsFoq7WBZSDhqiZBl/AzbgOQRHSZhI5gt1VWnPOK1v+53hgF+cGWo+m7gJR+ZmeNXDRjKWD/OoklkIbvc4qKZcqO6XagyILyvCwQwsrT26aotpcPst6krnUq4H1JR1Q=
+	t=1719545400; cv=none; b=QCyaCD5NVLlLjfxDVRBAaSvk3sPqmTselQqHjhT0eWQAr7DKpDI8DViIAx0cXLNSH1g4z0zVCjCQN4wTYfyGSU6JztEd/5EHe5D2LlC3rxqYODGE3KxB0R+xGujM+Tn2Tzpl2g5w+yXCQ+6zhpAhHKc/GAlrhf43FRn6It0A8FY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719520329; c=relaxed/simple;
-	bh=f/LUCfA5QLVPUl99ZElq63cLHz53TISpyJapyBPiBF4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rch1XmfjKXuPoDgUQ7rC0VzsgCx/EzOdRSWJ96Wi15OlLhuGzlrMY/Pf9MUO9dU0XZfmN3tscujCCYrxEOZh297c5BfuSAdLqHTnTj4Ssc0ALGDWnYnCKUuqF0GekCeqGrx8gJvwcyVPCwTTa8fo3MZ5Fz0j3njcye4eLZKdVGg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=seMWQcWx; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="seMWQcWx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C2F2C2BBFC;
-	Thu, 27 Jun 2024 20:32:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719520329;
-	bh=f/LUCfA5QLVPUl99ZElq63cLHz53TISpyJapyBPiBF4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=seMWQcWxbnmmUGEsSIBNLCuiNqcp3TmbnpEgEfTuTVTiOz15fREUwIpWJ9urKLU8L
-	 l5SHItAGEgaqRDyuBSJOyhmHGaLcOQP+rZYz3vpO2kSd8oku4FzNZuYaqpXOng7oxd
-	 N8dx/t+9imWpICv1ieMHK9yCjYhOyy7dlpT/yavMarrcVLIWtcOmSL1B516sz9SUg7
-	 0efgzYtLhlPTm/Y03cTDVwMSkeZLt/fjfPeSfjLQ829/TEDYPHYMU2uB6pBjfhLxi6
-	 kvylseYzJSN5cDx3XtYoo2YzNZNHMT50MopJL8beZChVOLNaLEyRAuK120nCknkLrl
-	 7XO/MNd1KwB6A==
-Date: Thu, 27 Jun 2024 14:32:08 -0600
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: linux-iio@vger.kernel.org,
-	Michael Hennerich <michael.hennerich@analog.com>,
-	Beniamin Bia <beniamin.bia@analog.com>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Stefan Popa <stefan.popa@analog.com>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	dlechner@baylibre.com, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, jstephan@baylibre.com,
-	Jonathan Cameron <jic23@kernel.org>, devicetree@vger.kernel.org,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Subject: Re: [PATCH 2/9] dt-bindings: iio: adc: adi,ad7606: comment and sort
- the compatible names
-Message-ID: <171952032004.478307.5280182877867747227.robh@kernel.org>
-References: <20240618-cleanup-ad7606-v1-0-f1854d5c779d@baylibre.com>
- <20240618-cleanup-ad7606-v1-2-f1854d5c779d@baylibre.com>
+	s=arc-20240116; t=1719545400; c=relaxed/simple;
+	bh=X8j+d7Ppn01ukU2yrL8s3zRacqDFRpKXE/Iqg1qpifw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=hevr+Ifm4axU0xtoOmWpTnI5jkglJ9W4ly0nNTYsfw2SSBsmYc50IQ2p1g/tN5s5COAjNb30hEwc8cdNDm0tRDxz+4XcI3XACaTJFgu88BWG87rISt33GV6oiZjQn+gS6I4MQ5zFLJ310u+7KE9xQ4nr9a+eC/lCZpCzhLvUBsQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost (unknown [124.16.138.129])
+	by APP-03 (Coremail) with SMTP id rQCowADn7tYoLn5mB1vZEg--.9834S2;
+	Fri, 28 Jun 2024 11:29:44 +0800 (CST)
+From: Chen Ni <nichen@iscas.ac.cn>
+To: deller@gmx.de,
+	laurent.pinchart@ideasonboard.com,
+	kuninori.morimoto.gx@renesas.com
+Cc: linux-omap@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Chen Ni <nichen@iscas.ac.cn>
+Subject: [PATCH] fbdev: omap2: Return clk_prepare_enable to transfer the error
+Date: Fri, 28 Jun 2024 11:28:12 +0800
+Message-Id: <20240628032812.280895-1-nichen@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240618-cleanup-ad7606-v1-2-f1854d5c779d@baylibre.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowADn7tYoLn5mB1vZEg--.9834S2
+X-Coremail-Antispam: 1UD129KBjvdXoWruF1DuFyDCw4kZw1kuF4rZrb_yoW3Arc_Ca
+	nrurZxGF9xtrWvk3Wrtws8CrZ2y3WIqFyfur92g3yfKry7Cr1fXryDZr13A3yDXr40yFyD
+	ur17X340yr1fujkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbckFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j
+	6F4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26F
+	4UJVW0owAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv
+	7VC0I7IYx2IY67AKxVWUXVWUAwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r
+	1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY02Avz4vE14v_
+	Gr4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxV
+	WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI
+	7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
+	1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI
+	42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x0JUShFxUUUUU=
+X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
 
+Return clk_prepare_enable() in order to transfer the error if it fails.
 
-On Tue, 18 Jun 2024 14:02:34 +0000, Guillaume Stols wrote:
-> AD7606-8 is referred to as AD7606 by Analog Devices. This comment aims
-> to avoid confusion. Also the compatible names were not sorted by
-> alphabetical order.
-> 
-> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
-> ---
->  Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
+Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+index 0bd80d3b8f1b..d13ad00d353b 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+@@ -903,9 +903,7 @@ static int venc_runtime_resume(struct device *dev)
+ 	if (r < 0)
+ 		return r;
+ 
+-	clk_prepare_enable(venc.tv_dac_clk);
+-
+-	return 0;
++	return clk_prepare_enable(venc.tv_dac_clk);
+ }
+ 
+ static const struct dev_pm_ops venc_pm_ops = {
+-- 
+2.25.1
 

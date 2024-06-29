@@ -1,95 +1,93 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F2D61DDCE;
-	Fri, 28 Jun 2024 15:55:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94FB1D52D;
+	Sat, 29 Jun 2024 15:18:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719590142; cv=none; b=t4UwuRVZItlbZdu4QxL3I3dczJpUgEOwxMwMjOzswgQxx0gY9cuzROOQ3y+jyPgHkDMUwVIWI6IX4Ct+XpfdZfUzc75ZQoqUl5EPfBLDGnUI1mfDUTcxngftft8/mUIJsUl68wiDVnNXNPTLt796q+u5B+qoWTaT7OQIi8kcFZ8=
+	t=1719674299; cv=none; b=jUQmcvK8DqCeUn36NSFhOrhkgUHIoSBttytuXJstWflrvHz1OQIMKaknfv02shkBHkyt2Bo6zk2z4SXFaDd97LI6Zu9Ucg9yTsBAIdSKFROXZyWYR9fHPbHo+MetC8maZdUDUnbeAIDpljxtH5qIzffXKoiGrLdWIUoCP6MZRCg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719590142; c=relaxed/simple;
-	bh=URRi992TQ7aXCtyL2imN9bCzmKL0wiYUQpclACuFpEo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iOeB/qw4kdaPFZKiQUmSGmn+bsnMmZKUsy+keIY55zfiQtIZuv2J5gqfD8Gvyyd53JaekN1wja+WjXRN8z3eQ/G3qfAzpZamYsezn96SHA3MGzOvrSzBakwz1LkxiUDfesRWU7y4SSbfu9Gw8zpch8tTZLlSxREDWxa5URjVz+Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iTzHK5yg; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1719674299; c=relaxed/simple;
+	bh=2VZg0DiVwXfQn0oTJcUgu6YPNRakn5BvaJs4gnYzPDA=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MSxl0DHwipfMPzJiLte0qx4hf8vKRxh0i/VRtFJH14UWPDjof46u8MekwlJ1EhtFxdkpmEEQzswqF+v8JEhcZfTt63fne4XNXC3H+cpuMgT+zJMJp7fkSiAo5XYsVQhZV+6ylJXXJmnYtO+0dzYph0Z1DKxp6BHwfVtGeHRrGtk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I9Cb+wFx; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iTzHK5yg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31636C116B1;
-	Fri, 28 Jun 2024 15:55:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I9Cb+wFx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97C6CC2BBFC;
+	Sat, 29 Jun 2024 15:18:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719590142;
-	bh=URRi992TQ7aXCtyL2imN9bCzmKL0wiYUQpclACuFpEo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=iTzHK5ygWsirW9aK+43y3X2uup/IgkEIgGiT6SOMnRcuS1up+rXFY1e31RrM2FFKy
-	 87LrJamCoDHm3W4b64NwOZYrUepnuYJhSTdN++BNwYUGDGMb/Px7Wu1F795fLkx2eI
-	 8re0TJd6xIzEYmrHzJvoRocU4tn8HoY51lrvqTbL50r52QkbWd2AXtwuolpe8NhFni
-	 H5cRIgOfOsX+/VWhVMmXqqqRurvYKyy5x9Z5ojjuhNO4VQVoZdmNPZ7gmD0QpXqYMd
-	 GWTa0eRb4WWyVmty/HNHpzkaZ7cXzQFvAoa8byXGYG/3lolo/9a2BD5tEDXlfGV/UR
-	 t46LBkQytKbqw==
-Date: Fri, 28 Jun 2024 16:55:37 +0100
-From: Conor Dooley <conor@kernel.org>
+	s=k20201202; t=1719674298;
+	bh=2VZg0DiVwXfQn0oTJcUgu6YPNRakn5BvaJs4gnYzPDA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=I9Cb+wFxdaIFJtaZ2z8K4/HWNmPWIkh9gboO83Zlkt7d9d2RqT8Jz1kN0FoyCaFbJ
+	 6pKiiVhzMW5vw1tw5UZTdCxGjagEqSPXCFncq1u9QUWZA/jAWzKn78jEU+j1ZrbhFo
+	 fuUILwmwR0N4XWF1zmWdGQtROk8rCNzZKpYHFAOuhzMKu1N8eOJEWQAvH9/IblkDKY
+	 xGhUwxuiTZGpAMMaILflvbjmjU5GXy4SC73zo5EK38puD/oHPVZZkHzIU0Y5NLyRzA
+	 mytSSKiZXygJKp6R6ksWC3CDK11sM7a9tnZGdn/kOOWYsDuBurmp26vjgsQ4pVWorj
+	 VJQIlUNTsomOg==
+Date: Sat, 29 Jun 2024 16:18:08 +0100
+From: Jonathan Cameron <jic23@kernel.org>
 To: Guillaume Stols <gstols@baylibre.com>
-Cc: Lars-Peter Clausen <lars@metafoo.de>,
-	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Beniamin Bia <beniamin.bia@analog.com>,
-	Stefan Popa <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	jstephan@baylibre.com, dlechner@baylibre.com
-Subject: Re: [PATCH v2 00/10] iio: adc: ad7606: Improvements
-Message-ID: <20240628-postwar-scaling-cb7d7b1f4f3c@spud>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Michael Hennerich
+ <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Beniamin Bia <beniamin.bia@analog.com>, Stefan Popa
+ <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ devicetree@vger.kernel.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ jstephan@baylibre.com, dlechner@baylibre.com
+Subject: Re: [PATCH v2 01/10] dt-bindings: iio: adc: adi,ad7606: add missing
+ datasheet link
+Message-ID: <20240629161808.6c15bcb9@jic23-huawei>
+In-Reply-To: <20240628-cleanup-ad7606-v2-1-96e02f90256d@baylibre.com>
 References: <20240628-cleanup-ad7606-v2-0-96e02f90256d@baylibre.com>
- <20240628-trustful-urchin-741943d2e98d@spud>
+	<20240628-cleanup-ad7606-v2-1-96e02f90256d@baylibre.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="1r0wTlUg045hSqKl"
-Content-Disposition: inline
-In-Reply-To: <20240628-trustful-urchin-741943d2e98d@spud>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+On Fri, 28 Jun 2024 14:48:19 +0000
+Guillaume Stols <gstols@baylibre.com> wrote:
+
+> Add AD7606-5 datasheet link.
+> 
+> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+You need to pick up all the tags given on earlier versions.
+Rob acked this one for example on Thursday and you sent this update
+on Friday so should have seen that to pick it up.
+
+If there are substantial changes and it is appropriate to drop a tag,
+say so below the ---
+ 
+Applied with tag from Rob put in place.
+
+Thanks,
+
+Jonathan
 
 
---1r0wTlUg045hSqKl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> ---
+>  Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> index 7fa46df1f4fb..d55c58400df5 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> @@ -11,6 +11,7 @@ maintainers:
+>  
+>  description: |
+>    Analog Devices AD7606 Simultaneous Sampling ADC
+> +  https://www.analog.com/media/en/technical-documentation/data-sheets/AD7605-4.pdf
+>    https://www.analog.com/media/en/technical-documentation/data-sheets/ad7606_7606-6_7606-4.pdf
+>    https://www.analog.com/media/en/technical-documentation/data-sheets/AD7606B.pdf
+>    https://www.analog.com/media/en/technical-documentation/data-sheets/AD7616.pdf
+> 
 
-On Fri, Jun 28, 2024 at 04:53:50PM +0100, Conor Dooley wrote:
-> On Fri, Jun 28, 2024 at 02:48:18PM +0000, Guillaume Stols wrote:
-> > This series adds the following improvements over the current AD7606's
-> > driver implementation:
-> >=20
-> > - Fix wrong usage of gpio array
-> > - Fix standby that was documented as ACTIVE_LOW but handled in the
-> >   driver as if it was ACTIVE_HIGH
-> > - Improve dt-bindings documentation
-> > - Switch mutex lock to scoped guard
-> >=20
-> > Signed-off-by: Guillaume Stols <gstols@baylibre.com>
->=20
-> You missed Acks from Rob on several patches that he gave yesterday:
-> https://lore.kernel.org/all/171952025424.477297.14698127361119381011.robh=
-@kernel.org/
-
-You also seem to be missing acks from me..
-
-
---1r0wTlUg045hSqKl
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZn7c+QAKCRB4tDGHoIJi
-0m6MAP0Z9O5/rr2y0HYTaG/DQiDb7KpCDtJscXb2HxZbtv54xwEAxfmNZrMiAyj9
-92XZNTRo0wEO6Q0WpkCrc2aMweGrSAk=
-=I6rP
------END PGP SIGNATURE-----
-
---1r0wTlUg045hSqKl--

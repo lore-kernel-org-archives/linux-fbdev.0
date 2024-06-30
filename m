@@ -1,84 +1,162 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F04812FB0A;
-	Sat, 29 Jun 2024 15:38:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFCB113DBB3;
+	Sun, 30 Jun 2024 14:00:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719675536; cv=none; b=UuuNORPQQvrJkBy48/DRK06g9ZtHUQXVNFKjwfMEXFoit/Pq3jNH/FS2w8KasFM/Ab6P9trBv0Do4Z8UIMgyKgokKGfoa+yep6h0E+18F+wogtsvDjz6zAtN0UgN2cUJLQEOSiBHIqk8mQt/M84Lc5rKPEaoNqSC1v8KAu/kbMM=
+	t=1719756014; cv=none; b=WJvf0E7ZLU5E90290TwoX2cmzeO6iHc7O6UzMy3oFyuZ4yrMC/sj/fBpUL7l9pWeX5b2vJerdl3GKm0vhUS6sWycFR4/5OxqcOKABEycIl17djQFrpXBIJRl3HXIeDCkSduzFcB4wfrG/jj2954MBygTrQ9yqMvBGW6oT1ZSSwM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719675536; c=relaxed/simple;
-	bh=w5KItqDIKE1p3uvX9oUdr2VMhdVrSQkIWAiPqx16K64=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tbVjvHhMWhzFUz/oWxseeNbtx6nCrRren5CUTl5VT9P7FlnqGDNUkQ6ojEeE4L+X8yjENp+7d3tPHBDSnTg2f0CPkupIgdIwC/Kbfo9IeaNLoXnureK3EMWVOhjgeWh04ogUoxGuWnsMzdnQva54SAh5h1rrDlThzp8q3y5bINc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jkT1Ce5i; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1719756014; c=relaxed/simple;
+	bh=ih12JHTetNkTeksjpMCJOXUWcwVm9PgEUMFbcuLoU/8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=W2k3AkMlCefmFaoYMb81dDn3SguF2TAvWg+xJae3yoRmQiNYSUqeCHHERNTiFnYf1yabEO6vceRnXNIjHsJINyFM6xadHsd/m1+FWBVBzJxD31xHvAHooheruGDIWSrVMP2sGSNbXOE7AtQFO+WVI4LC+WeRK67bqsMUVtnbIEU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=deRF3w+6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jkT1Ce5i"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2BBB1C2BBFC;
-	Sat, 29 Jun 2024 15:38:49 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="deRF3w+6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D4F8C2BD10;
+	Sun, 30 Jun 2024 14:00:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719675535;
-	bh=w5KItqDIKE1p3uvX9oUdr2VMhdVrSQkIWAiPqx16K64=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=jkT1Ce5iaYIBwSnNqY19yNOtHJ9/Mf+X9G1daByOqFqZHaVnHZ7yzDp0az55yytNQ
-	 c58T0Rf6oUqxz1Dcvb3MC17dpTFstkguPhNXH4+X0v48Kxo+0N44DAYyIGD9mVPynt
-	 koaySiaeRvjgU7CttiB4fWSWsXgnUuQrpMwo9X8eT+7P3QfTnysO2ZNd9IUp8WAmWJ
-	 7lfKwmwZs9l1ZW0wbGFO1WlOCsWSchvDpXLvYgnuXzGIflN4sIyZ7h4SldAMcR7enP
-	 eAhE4mIQdaeDoMCazHyK02i0p7jhjd9qSMzEDdElWH5FK4BDfCOOdyPnutn4Ng2FGg
-	 D8inQcZqiM75A==
-Date: Sat, 29 Jun 2024 16:38:45 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Conor Dooley <conor@kernel.org>
-Cc: Guillaume Stols <gstols@baylibre.com>, Lars-Peter Clausen
- <lars@metafoo.de>, Michael Hennerich <Michael.Hennerich@analog.com>, Rob
- Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Beniamin Bia <beniamin.bia@analog.com>,
- Stefan Popa <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- devicetree@vger.kernel.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- jstephan@baylibre.com, dlechner@baylibre.com
-Subject: Re: [PATCH v2 00/10] iio: adc: ad7606: Improvements
-Message-ID: <20240629163845.0a8ed683@jic23-huawei>
-In-Reply-To: <20240628-postwar-scaling-cb7d7b1f4f3c@spud>
+	s=k20201202; t=1719756014;
+	bh=ih12JHTetNkTeksjpMCJOXUWcwVm9PgEUMFbcuLoU/8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=deRF3w+6o/GL1cKMQ/2DJZ4IzzKBGmfvH1u3HoP9jgvptYbMijXhjrbJosjHVYgN+
+	 bbDZQFfk/jsMJA8dI+R1aXHRaYp9HR4cs84Gm75Xp/CHGDB3EWA+YGx0GSrUqCOX9r
+	 uNltKMWWm4DsM/GWTGtppo2HJixdTfsh+kDwNVGezEcbNAc0SmJqMqXQIZw1ryzku5
+	 LStHO9pEpZ04QNAi8snj1PuUrDhJDADEcqO9gYRuGvBxEfqf3zSa/VIxK8pn0vwwon
+	 W1Hz2wkB96yOZ/5+xz7Dx+LWe4+QFZCBYphWWCGRf1kO5VnZMfSdDS93+NAxGqk+1P
+	 JPzEFWjjEoh+w==
+Date: Sun, 30 Jun 2024 15:00:08 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Guillaume Stols <gstols@baylibre.com>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Beniamin Bia <beniamin.bia@analog.com>,
+	Stefan Popa <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	jstephan@baylibre.com, dlechner@baylibre.com
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: adc: adi,ad7606: comment and
+ sort the compatible names
+Message-ID: <20240630-darling-dairy-f161f784f45a@spud>
 References: <20240628-cleanup-ad7606-v2-0-96e02f90256d@baylibre.com>
-	<20240628-trustful-urchin-741943d2e98d@spud>
-	<20240628-postwar-scaling-cb7d7b1f4f3c@spud>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-pc-linux-gnu)
+ <20240628-cleanup-ad7606-v2-2-96e02f90256d@baylibre.com>
+ <20240629162223.5b8d35b8@jic23-huawei>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="gveNh7Lwv1kh1y0C"
+Content-Disposition: inline
+In-Reply-To: <20240629162223.5b8d35b8@jic23-huawei>
 
-On Fri, 28 Jun 2024 16:55:37 +0100
-Conor Dooley <conor@kernel.org> wrote:
 
-> On Fri, Jun 28, 2024 at 04:53:50PM +0100, Conor Dooley wrote:
-> > On Fri, Jun 28, 2024 at 02:48:18PM +0000, Guillaume Stols wrote:  
-> > > This series adds the following improvements over the current AD7606's
-> > > driver implementation:
-> > > 
-> > > - Fix wrong usage of gpio array
-> > > - Fix standby that was documented as ACTIVE_LOW but handled in the
-> > >   driver as if it was ACTIVE_HIGH
-> > > - Improve dt-bindings documentation
-> > > - Switch mutex lock to scoped guard
-> > > 
-> > > Signed-off-by: Guillaume Stols <gstols@baylibre.com>  
-> > 
-> > You missed Acks from Rob on several patches that he gave yesterday:
-> > https://lore.kernel.org/all/171952025424.477297.14698127361119381011.robh@kernel.org/  
-> 
-> You also seem to be missing acks from me..
-> 
+--gveNh7Lwv1kh1y0C
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I picked up the first 2 with the acks scraped from v1.
-There are enough minor changes that I've requested in the other patches
-that I'd like a v3 fixing those.  Obviously make sure to gather up appropriate
-acks.  You may want to wait a few days first though as there are a couple
-of DT patches in here that need tags.
+On Sat, Jun 29, 2024 at 04:22:23PM +0100, Jonathan Cameron wrote:
+> On Fri, 28 Jun 2024 14:48:20 +0000
+> Guillaume Stols <gstols@baylibre.com> wrote:
+>=20
+> > AD7606-8 is referred to as AD7606 by Analog Devices. This comment aims
+> > to avoid confusion. Also the compatible names were not sorted by
+> > alphabetical order.
+> >=20
+> > Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+>=20
+> So b4 interestingly picked up both acks from Rob and Conor on this
+> one but I can't figure out where Conor's one came from so I've dropped
+> it.
 
-Jonathan
+My copy of b4 (0.14-dev-d4707) doesn't create one for me:
+/stuff/b4/b4.sh shazam -s -S -t shazam 20240628-cleanup-ad7606-v2-2-96e02f9=
+0256d@baylibre.com
+Grabbing thread from lore.kernel.org/all/20240628-cleanup-ad7606-v2-2-96e02=
+f90256d@baylibre.com/t.mbox.gz
+Checking for newer revisions
+Grabbing search results from lore.kernel.org
+Analyzing 20 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  =E2=9C=93 [PATCH v2 1/10] dt-bindings: iio: adc: adi,ad7606: add missing =
+datasheet link
+    + Acked-by: Rob Herring (Arm) <robh@kernel.org> (=E2=9C=93 DKIM/kernel.=
+org)
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 2/10] dt-bindings: iio: adc: adi,ad7606: comment and =
+sort the compatible names
+    + Acked-by: Rob Herring (Arm) <robh@kernel.org> (=E2=9C=93 DKIM/kernel.=
+org)
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 3/10] dt-bindings: iio: adc: adi,ad7606: normalize te=
+xtwidth
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 4/10] dt-bindings: iio: adc: adi,ad7606: improve desc=
+riptions
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 5/10] dt-bindings: iio: adc: adi,ad7606: add supply p=
+roperties
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 6/10] dt-bindings: iio: adc: adi,ad7606: fix example
+    + Acked-by: Conor Dooley <conor.dooley@microchip.com> (=E2=9C=93 DKIM/k=
+ernel.org)
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 7/10] dt-bindings: iio: adc: adi,ad7606: add conditio=
+ns
+    + Reviewed-by: Conor Dooley <conor.dooley@microchip.com> (=E2=9C=93 DKI=
+M/kernel.org)
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 8/10] iio: adc: ad7606: fix oversampling gpio array
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 9/10] iio: adc: ad7606: fix standby gpio state to mat=
+ch the documentation
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  =E2=9C=93 [PATCH v2 10/10] iio: adc: ad7606: switch mutexes to scoped_gua=
+rd
+    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+  ---
+  =E2=9C=93 Signed: DKIM/baylibre-com.20230601.gappssmtp.com (From: gstols@=
+baylibre.com)
+---
+Total patches: 10
+---
+ Base: using specified base-commit 07d4d0bb4a8ddcc463ed599b22f510d5926c2495
+Applying: dt-bindings: iio: adc: adi,ad7606: add missing datasheet link
+Applying: dt-bindings: iio: adc: adi,ad7606: comment and sort the compatibl=
+e names
+Applying: dt-bindings: iio: adc: adi,ad7606: normalize textwidth
+Applying: dt-bindings: iio: adc: adi,ad7606: improve descriptions
+Applying: dt-bindings: iio: adc: adi,ad7606: add supply properties
+Applying: dt-bindings: iio: adc: adi,ad7606: fix example
+Applying: dt-bindings: iio: adc: adi,ad7606: add conditions
+Applying: iio: adc: ad7606: fix oversampling gpio array
+Applying: iio: adc: ad7606: fix standby gpio state to match the documentati=
+on
+Applying: iio: adc: ad7606: switch mutexes to scoped_guard
+
+tbh, I'm not actually sure why I didn't ack those patches on v1, they
+were all pretty trivial...
+
+--gveNh7Lwv1kh1y0C
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZoFk6AAKCRB4tDGHoIJi
+0iCnAP9zN8Iaxw1TB9IzX2VNxydUR9jq65UV0PytiU1hFDgMQQEApfnWKy+/gsil
+FNtAR3ceR9p8FnAxjYeK0lPqkRL+PAQ=
+=m4Qw
+-----END PGP SIGNATURE-----
+
+--gveNh7Lwv1kh1y0C--

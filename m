@@ -1,162 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFCB113DBB3;
-	Sun, 30 Jun 2024 14:00:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9925413AA35
+	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jul 2024 11:07:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1719756014; cv=none; b=WJvf0E7ZLU5E90290TwoX2cmzeO6iHc7O6UzMy3oFyuZ4yrMC/sj/fBpUL7l9pWeX5b2vJerdl3GKm0vhUS6sWycFR4/5OxqcOKABEycIl17djQFrpXBIJRl3HXIeDCkSduzFcB4wfrG/jj2954MBygTrQ9yqMvBGW6oT1ZSSwM=
+	t=1719832029; cv=none; b=n/OXmrLHiCeN1A5gqTXDozGA39SrjjXHylfoKDRI6qLKjZpDa2r/NgiLiTpzf1GNYyCw6/XO7GmBb+BNQvPVtzSv2BD94wLjiR8pDC/Ug3H2q7LYGOE2hNO93a99SjBj6A2Ihlk/HURNut0lSmiPioUwqasY6H02cijE+ZNe3lQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1719756014; c=relaxed/simple;
-	bh=ih12JHTetNkTeksjpMCJOXUWcwVm9PgEUMFbcuLoU/8=;
+	s=arc-20240116; t=1719832029; c=relaxed/simple;
+	bh=mspCSm1Vdj6ktOD3Y0CZpX7dyAkG6pnZ9CbiAu76viU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=W2k3AkMlCefmFaoYMb81dDn3SguF2TAvWg+xJae3yoRmQiNYSUqeCHHERNTiFnYf1yabEO6vceRnXNIjHsJINyFM6xadHsd/m1+FWBVBzJxD31xHvAHooheruGDIWSrVMP2sGSNbXOE7AtQFO+WVI4LC+WeRK67bqsMUVtnbIEU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=deRF3w+6; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=ubRHKfZrpAyk04K4U0u9KUT9CWaBRV3FIe5npOxR32nC2FgIe+SE/5TI1Qd9e8mbDYqbb5zHnmblMLh7RAkZ0h9DXFDJOAlgTdQR6hdo8Qw4cbTc8bNFJsT9pKc7jpm31QB7U+eWXURhXFO2kQ34iUlHH5HYo8Lgr1xSv+TXCM0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tj/2+Jzt; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="deRF3w+6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D4F8C2BD10;
-	Sun, 30 Jun 2024 14:00:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719756014;
-	bh=ih12JHTetNkTeksjpMCJOXUWcwVm9PgEUMFbcuLoU/8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=deRF3w+6o/GL1cKMQ/2DJZ4IzzKBGmfvH1u3HoP9jgvptYbMijXhjrbJosjHVYgN+
-	 bbDZQFfk/jsMJA8dI+R1aXHRaYp9HR4cs84Gm75Xp/CHGDB3EWA+YGx0GSrUqCOX9r
-	 uNltKMWWm4DsM/GWTGtppo2HJixdTfsh+kDwNVGezEcbNAc0SmJqMqXQIZw1ryzku5
-	 LStHO9pEpZ04QNAi8snj1PuUrDhJDADEcqO9gYRuGvBxEfqf3zSa/VIxK8pn0vwwon
-	 W1Hz2wkB96yOZ/5+xz7Dx+LWe4+QFZCBYphWWCGRf1kO5VnZMfSdDS93+NAxGqk+1P
-	 JPzEFWjjEoh+w==
-Date: Sun, 30 Jun 2024 15:00:08 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Guillaume Stols <gstols@baylibre.com>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Beniamin Bia <beniamin.bia@analog.com>,
-	Stefan Popa <stefan.popa@analog.com>, linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	jstephan@baylibre.com, dlechner@baylibre.com
-Subject: Re: [PATCH v2 02/10] dt-bindings: iio: adc: adi,ad7606: comment and
- sort the compatible names
-Message-ID: <20240630-darling-dairy-f161f784f45a@spud>
-References: <20240628-cleanup-ad7606-v2-0-96e02f90256d@baylibre.com>
- <20240628-cleanup-ad7606-v2-2-96e02f90256d@baylibre.com>
- <20240629162223.5b8d35b8@jic23-huawei>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tj/2+Jzt"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-42562fde108so21161615e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jul 2024 04:07:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1719832026; x=1720436826; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=V41EHoOA8oeYm9MwEGsDwJlgg36OM1Uo8B4nv2YSUdQ=;
+        b=tj/2+JztZxaF2CUM+1WplQyZJrroNKXRYmF156H26Yk8isSSJAY4aahO4vQjc5pqyN
+         EiH0X1H8XTYjK499DMKYm4OW9Yb9F9kCIGkJd2vJzyvEG77WMeSTJ05XjJmR781v08pt
+         P+GsOB5kFbmhU/ZGIIjwB2e+MQ8ak5FVd4bJG5zE4TSiZpL8a7rKRLX8/cAdHja/uE98
+         KA8qNrqGM/f4M90zvYe2H1r9ldTjQtYbUHmFA5w2kfc6YuCiSRtU7z9/jvLFWqz2I3FV
+         issuzOxTfnZ7AojPn37ODOLGppnne6yTcyqNJpLTR+C5nX1l+V0bYXdv6WXOuOLZdCl3
+         4tCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1719832026; x=1720436826;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=V41EHoOA8oeYm9MwEGsDwJlgg36OM1Uo8B4nv2YSUdQ=;
+        b=c06WmQq0L9N9nXB5ZI/P/Gq2ftamTao3YF3Vjx6TsUdRU5y0sQQ3O8lBlenajZd1dK
+         d98bW0n9WnV1b+2ILSeL/5FCqIKPJdc1BPVU/gikynLf41ald29o5ktDmX1c8Ww5sZRo
+         NAZFW0PKzIcYxcqwmCrmfKClHMgzjh9pFcntEfM4WsoJ8kI+iksT7IP/cNprETSYVdGr
+         2jIVQkSVaWpdWHhWdCkYktiLmI74OnuLxCNL1tfxjbfroltmRZgi27Yx50CA4WvKeJbo
+         zw8c96cr8zxex4malQE2fc/ceARRedVpY0Jl6WwaTmBm9aRZpgpAPFdWcy3jc8hyWmJQ
+         cBcQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUAh+rfDbF63tvKSrLAQO7icauV+7rJ2AmxNJwCcWgv+aq4Mcp0bg5KLKVwWTsvSGDVWirGaso8gja6lNvFKE2/kBoTlJl/1vz5Wgg=
+X-Gm-Message-State: AOJu0YxT4vZL1mOXUZAF82UXamgllWSoRXDdFamrO9Gwmgdtq7ZbDLeO
+	NXaT2ixvwe7waoimsKlYpGyCk6C4IXTkMgEB51A8Woaa7TlAUvRTbwPh0O1muFw=
+X-Google-Smtp-Source: AGHT+IFrc5q/iQ835841xqoTCs84v4Tn4y6GVrTE/IwJP2R3sKwPXf4KgBB7h/5TJq9srkNcgP/PCA==
+X-Received: by 2002:a05:600c:6a8d:b0:425:77b4:366d with SMTP id 5b1f17b1804b1-4257a02f3f6mr35378515e9.11.1719832025941;
+        Mon, 01 Jul 2024 04:07:05 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4256af5b61bsm149932085e9.17.2024.07.01.04.07.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 01 Jul 2024 04:07:05 -0700 (PDT)
+Date: Mon, 1 Jul 2024 12:07:03 +0100
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, sam@ravnborg.org, jingoohan1@gmail.com, deller@gmx.de,
+	linus.walleij@linaro.org, f.suligoi@asem.it, ukleinek@kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v2 00/17] backlight: Introduce power-state constants
+Message-ID: <20240701110703.GA15322@aspen.lan>
+References: <20240624152033.25016-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="gveNh7Lwv1kh1y0C"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240629162223.5b8d35b8@jic23-huawei>
+In-Reply-To: <20240624152033.25016-1-tzimmermann@suse.de>
+
+On Mon, Jun 24, 2024 at 05:19:55PM +0200, Thomas Zimmermann wrote:
+> The backlight code currently uses fbdev's FB_BLANK_ constants to
+> represent power states UNBLANK and POWERDOWN. Introduce dedicated
+> backlight constants to remove this dependency on fbdev.
+>
+> Patch 1 introduces BACKLIGHT_POWER_ON and BACKLIGHT_POWER_OFF, which
+> replace constants from fbdev. There's also BACKLIGHT_POWER_REDUCED,
+> which is required by a few drivers that appear to use incorrect or
+> uncommon blanking semantics.
+>
+> The rest of the patchset converts backlight drivers. The new
+> constants' values are identical to the old ones, so the driver
+> conversion can be done one-by-one.
+>
+> There are many more backlight drivers in other subsystems. These
+> can later be converted when the new constants have been merged.
+> Once merged, several include statements for <linux/fb.h> can be
+> removed (specifically under drivers/platform/x86/).
+>
+> This patchset is part of a larger effort to implement the backlight
+> code without depending on fbdev and ultimatively remove fbdev
+> dependencies from the kernel.
+>
+> v2:
+> - rename BL_CORE_ power constants to BACKLIGHT_POWER_ (Sam)
+> - fix documentation
+>
+> Thomas Zimmermann (17):
+>   backlight: Add BACKLIGHT_POWER_ constants for power states
+>   backlight: aat2870-backlight: Use blacklight power constants
+>   backlight: ams369fb06: Use backlight power constants
+>   backlight: corgi-lcd: Use backlight power constants
+>   backlight: gpio-backlight: Use backlight power constants
+>   backlight: ipaq-micro-backlight: Use backlight power constants
+>   backlight: journada_bl: Use backlight power constants
+>   backlight: kb3886-bl: Use backlight power constants
+>   backlight: ktd253-backlight: Use backlight power constants
+>   backlight: led-backlight: Use backlight power constants
+>   backlight: lm3533-backlight: Use backlight power constants
+>   backlight: mp3309c: Use backlight power constants
+>   backlight: pandora-backlight: Use backlight power constants
+>   backlight: pcf50633-backlight: Use backlight power constants
+>   backlight: pwm-backlight: Use backlight power constants
+>   backlight: rave-sp-backlight: Use backlight power constants
+>   backlight: sky81452-backlight: Use backlight power constants
+
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
---gveNh7Lwv1kh1y0C
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sat, Jun 29, 2024 at 04:22:23PM +0100, Jonathan Cameron wrote:
-> On Fri, 28 Jun 2024 14:48:20 +0000
-> Guillaume Stols <gstols@baylibre.com> wrote:
->=20
-> > AD7606-8 is referred to as AD7606 by Analog Devices. This comment aims
-> > to avoid confusion. Also the compatible names were not sorted by
-> > alphabetical order.
-> >=20
-> > Signed-off-by: Guillaume Stols <gstols@baylibre.com>
->=20
-> So b4 interestingly picked up both acks from Rob and Conor on this
-> one but I can't figure out where Conor's one came from so I've dropped
-> it.
-
-My copy of b4 (0.14-dev-d4707) doesn't create one for me:
-/stuff/b4/b4.sh shazam -s -S -t shazam 20240628-cleanup-ad7606-v2-2-96e02f9=
-0256d@baylibre.com
-Grabbing thread from lore.kernel.org/all/20240628-cleanup-ad7606-v2-2-96e02=
-f90256d@baylibre.com/t.mbox.gz
-Checking for newer revisions
-Grabbing search results from lore.kernel.org
-Analyzing 20 messages in the thread
-Looking for additional code-review trailers on lore.kernel.org
-Checking attestation on all messages, may take a moment...
----
-  =E2=9C=93 [PATCH v2 1/10] dt-bindings: iio: adc: adi,ad7606: add missing =
-datasheet link
-    + Acked-by: Rob Herring (Arm) <robh@kernel.org> (=E2=9C=93 DKIM/kernel.=
-org)
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 2/10] dt-bindings: iio: adc: adi,ad7606: comment and =
-sort the compatible names
-    + Acked-by: Rob Herring (Arm) <robh@kernel.org> (=E2=9C=93 DKIM/kernel.=
-org)
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 3/10] dt-bindings: iio: adc: adi,ad7606: normalize te=
-xtwidth
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 4/10] dt-bindings: iio: adc: adi,ad7606: improve desc=
-riptions
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 5/10] dt-bindings: iio: adc: adi,ad7606: add supply p=
-roperties
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 6/10] dt-bindings: iio: adc: adi,ad7606: fix example
-    + Acked-by: Conor Dooley <conor.dooley@microchip.com> (=E2=9C=93 DKIM/k=
-ernel.org)
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 7/10] dt-bindings: iio: adc: adi,ad7606: add conditio=
-ns
-    + Reviewed-by: Conor Dooley <conor.dooley@microchip.com> (=E2=9C=93 DKI=
-M/kernel.org)
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 8/10] iio: adc: ad7606: fix oversampling gpio array
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 9/10] iio: adc: ad7606: fix standby gpio state to mat=
-ch the documentation
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  =E2=9C=93 [PATCH v2 10/10] iio: adc: ad7606: switch mutexes to scoped_gua=
-rd
-    + Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-  ---
-  =E2=9C=93 Signed: DKIM/baylibre-com.20230601.gappssmtp.com (From: gstols@=
-baylibre.com)
----
-Total patches: 10
----
- Base: using specified base-commit 07d4d0bb4a8ddcc463ed599b22f510d5926c2495
-Applying: dt-bindings: iio: adc: adi,ad7606: add missing datasheet link
-Applying: dt-bindings: iio: adc: adi,ad7606: comment and sort the compatibl=
-e names
-Applying: dt-bindings: iio: adc: adi,ad7606: normalize textwidth
-Applying: dt-bindings: iio: adc: adi,ad7606: improve descriptions
-Applying: dt-bindings: iio: adc: adi,ad7606: add supply properties
-Applying: dt-bindings: iio: adc: adi,ad7606: fix example
-Applying: dt-bindings: iio: adc: adi,ad7606: add conditions
-Applying: iio: adc: ad7606: fix oversampling gpio array
-Applying: iio: adc: ad7606: fix standby gpio state to match the documentati=
-on
-Applying: iio: adc: ad7606: switch mutexes to scoped_guard
-
-tbh, I'm not actually sure why I didn't ack those patches on v1, they
-were all pretty trivial...
-
---gveNh7Lwv1kh1y0C
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZoFk6AAKCRB4tDGHoIJi
-0iCnAP9zN8Iaxw1TB9IzX2VNxydUR9jq65UV0PytiU1hFDgMQQEApfnWKy+/gsil
-FNtAR3ceR9p8FnAxjYeK0lPqkRL+PAQ=
-=m4Qw
------END PGP SIGNATURE-----
-
---gveNh7Lwv1kh1y0C--
+Daniel.

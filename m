@@ -1,88 +1,102 @@
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CB101741D8;
-	Wed,  3 Jul 2024 11:08:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00DDF1BC23;
+	Thu,  4 Jul 2024 15:46:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720004907; cv=none; b=d6ubwfGEhtmqWOueRtN1FpBx5ipI3vEzAugwi1BfU5EOPcdlAauZZumxB5YRqBKQZPRui1s5CTrjgDyApHogVj7RRN1ANAj4kUyPF3S7G+gfzYsMMn7lnFTqpGJES5JGBIAaLCHJJi0XT0Bp28nluvlYAY6YjgMjLsri/6nRn5I=
+	t=1720107962; cv=none; b=aQoC96zrXMWjRxkCY81xkPhmvoYRlLzPwOLCVGJJHEgW1lrtlZiujnGrIgOO4yQjV5bk4GZWJTpqXhmXW6dWlDqUth3bYjOHcbIoRSZ7pvo2nrXItC16d8/P8SERrLDuNOJiz0ncXRDWYKx491U9BfALekiaFt2s/WGpw1Y9P9E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720004907; c=relaxed/simple;
-	bh=RGfWciQkHzZq7C05OxQDAd8nHDJ/nb20nhb3H7x/P88=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=jn0hNQ9btSj54hIf5LJshuKHYBvE23r4v8+p0Omg2X9tIhR1X/jvEfYNh8fAfQwABft/MglcquaPHvhipGeeKBTq8IWNZuBoaaqI6OEg9OUojIxhfWE1m+uRw2+GQxsKzX2NNLZPROkcT2kIC+eStnv8eZGEUMJU9PbAvqP+G0M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=POT+OZvP; arc=none smtp.client-ip=209.85.208.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1720107962; c=relaxed/simple;
+	bh=ikOqTh/MUlIZlNenqgKLen74t9yi5HfP2j1aIiu+p2c=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=PbGMwueS1yhZLQL0UIZbYG3lytPgYZMn//KrFXd5eCQ9F6lDIZ1pFtwyWgWpgbYv7sELHX2LLykTkmg7JXP+KHF9q0kgheDoa5QlatTcjS8BI5pq6vDKhwnAP+A9uBYP+2emIE20yH4jCLSZWz6tVVRfP+po/vxvNv+Vd0z+kSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M79pxWxm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="POT+OZvP"
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-58ba3e37feeso2346463a12.3;
-        Wed, 03 Jul 2024 04:08:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1720004904; x=1720609704; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=RGfWciQkHzZq7C05OxQDAd8nHDJ/nb20nhb3H7x/P88=;
-        b=POT+OZvP+iuEvMCz9gpDRvkymCisD5PP1sntp840d2AtyVFsHOQt+jsY8Wy7D+nEFw
-         oMnKhotPLmRjub7FF1owveZrOkcGhW2QIlqwlBPiUQkG/fZH7yzD7kKXTjZS/nmyY1tn
-         OfyVYwbc5XTBIxGDF4ye5zjFd/F79yzZbCoTXxirZE9CffPQsRGMUzN2NyzwmxYokiRz
-         b3pMMzuMWV/KS7hqnba3NTzd+P+uKPOSHlICYn+oDy5TxOhJhlL7G4lkManStW9zfLH8
-         UJwsWz0aoDZiRx/3NhDk0p0H7pxY9NaYzqhN+N4ODKobnh9cp77QB+oTiH67Edi1u4jK
-         H6BQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1720004904; x=1720609704;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=RGfWciQkHzZq7C05OxQDAd8nHDJ/nb20nhb3H7x/P88=;
-        b=iIBtx6Az7gY8xRcJVQB1V7wNqx2g/0RjGPFJu0n8ZR4IvL5gYWUnEiUEnumKbLjOy5
-         aQqLee4mscOZvifMtO0uQ69dtiTym2woyvAbSEPi6VvbRKp6ER+MH5QZpM0YhNAaAnRo
-         5bPcbxbRSzw1hH0k6w5xM7Xxd6OQBFQjyWCpwd3cD+qtc7YiwR6PaqkwL66etElBwqGH
-         qJakl5pOSJldtFzKFGMoYr6JHK7A+09L3LZptgXdTRNpwHAQ9gMAO7LtZ4qgwvPTq3uY
-         2QzTG+LbVB752by2PyVNbCwL4FMBVVHOwlmljtfTf58HyOlgAE2FMQg11svM6rB3XN+U
-         6eRg==
-X-Forwarded-Encrypted: i=1; AJvYcCVx9Tgso7O14FUvxVKMkH+cGXyTjJnogzL5JymFyb7uhBVbdjBabxMzkzJXV8QoPoS/mDfUMzMOF+O1LYGUixqmlirhYI+Zs1odoEd6B/32OqovarVzvcHVHBx04v0w1P8tJ6HOI8KORWr7LpuHjdy+tk0ow4VxSQYPP/BUpvAq2Zg45Z+6
-X-Gm-Message-State: AOJu0YzUGWlf5YF+XE8jLbfY8x8NopcUrcBSvYt3sx+bqBHxCbL229oq
-	INrax0b/udaVl2t36JY1dypBn7G5zKLZ8P9sV1JGbrRhIGyYnuRh
-X-Google-Smtp-Source: AGHT+IEKrnywZf4/o21me6pqT1Qouo23xRlPrFEmiNPXTCykCCNHVCiQ1YMGa43eM3RTFIW2cBAovA==
-X-Received: by 2002:a17:906:a0d9:b0:a72:8066:c76f with SMTP id a640c23a62f3a-a751445f161mr643058166b.63.1720004903583;
-        Wed, 03 Jul 2024 04:08:23 -0700 (PDT)
-Received: from ?IPv6:2003:f6:ef1c:c500:ee59:d953:f148:40ba? (p200300f6ef1cc500ee59d953f14840ba.dip0.t-ipconnect.de. [2003:f6:ef1c:c500:ee59:d953:f148:40ba])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-36789fd7a0esm3795483f8f.104.2024.07.03.04.08.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jul 2024 04:08:23 -0700 (PDT)
-Message-ID: <8010eaf5300d2dcf928812693379b649b77f0e0f.camel@gmail.com>
-Subject: Re: [PATCH v3 8/8] iio: adc: ad7606: switch mutexes to scoped_guard
-From: Nuno =?ISO-8859-1?Q?S=E1?= <noname.nuno@gmail.com>
-To: Guillaume Stols <gstols@baylibre.com>, Lars-Peter Clausen
- <lars@metafoo.de>,  Michael Hennerich <Michael.Hennerich@analog.com>,
- Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Jonathan Cameron
- <Jonathan.Cameron@huawei.com>, jstephan@baylibre.com, dlechner@baylibre.com
-Date: Wed, 03 Jul 2024 13:12:16 +0200
-In-Reply-To: <20240702-cleanup-ad7606-v3-8-57fd02a4e2aa@baylibre.com>
-References: <20240702-cleanup-ad7606-v3-0-57fd02a4e2aa@baylibre.com>
-	 <20240702-cleanup-ad7606-v3-8-57fd02a4e2aa@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.2 
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M79pxWxm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3EF0BC3277B;
+	Thu,  4 Jul 2024 15:45:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1720107961;
+	bh=ikOqTh/MUlIZlNenqgKLen74t9yi5HfP2j1aIiu+p2c=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=M79pxWxmvR20BDCjHvKzcsgsT1LIbfvpngUCC02oPX6v+Y2srb89pSrp3fccLxCBO
+	 SU3mS+j37mhQQYlLmjwuU7f6Jf3pEcAFQ2aSx5+qTYw8nVdfCSUmb/ZXFPxrLUq6iN
+	 Nhrq3DmaphKiBgmnDKEkGl6hgHscKSEe/+VuD+qtsa1gjFV+TWEkIp8iATOJDMIWO8
+	 LA0TotsZ4+rHRNZ74n36LNdYVDrS8QCHTIo7ZQVPqZOdff7Jog86xAPFC4h2C54yNQ
+	 QNFqnx/bowx/0494Gm1k2A3DulJO8Tnkq0induXo3w8ks8htsLoQL3jUbi31Ornl3p
+	 Q8FF13SfEsG+Q==
+From: Lee Jones <lee@kernel.org>
+To: lee@kernel.org, daniel.thompson@linaro.org, sam@ravnborg.org, 
+ jingoohan1@gmail.com, deller@gmx.de, linus.walleij@linaro.org, 
+ f.suligoi@asem.it, ukleinek@kernel.org, 
+ Thomas Zimmermann <tzimmermann@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-pwm@vger.kernel.org
+In-Reply-To: <20240624152033.25016-1-tzimmermann@suse.de>
+References: <20240624152033.25016-1-tzimmermann@suse.de>
+Subject: Re: [PATCH v2 00/17] backlight: Introduce power-state constants
+Message-Id: <172010795899.506663.6662347475872437728.b4-ty@kernel.org>
+Date: Thu, 04 Jul 2024 16:45:58 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.13.0
 
-On Tue, 2024-07-02 at 17:34 +0000, Guillaume Stols wrote:
-> Switching to scoped_guard simplifies the code and avoids to take care to
-> unlock the mutex in case of premature return.
->=20
-> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
-> ---
+On Mon, 24 Jun 2024 17:19:55 +0200, Thomas Zimmermann wrote:
+> The backlight code currently uses fbdev's FB_BLANK_ constants to
+> represent power states UNBLANK and POWERDOWN. Introduce dedicated
+> backlight constants to remove this dependency on fbdev.
+> 
+> Patch 1 introduces BACKLIGHT_POWER_ON and BACKLIGHT_POWER_OFF, which
+> replace constants from fbdev. There's also BACKLIGHT_POWER_REDUCED,
+> which is required by a few drivers that appear to use incorrect or
+> uncommon blanking semantics.
+> 
+> [...]
 
-Reviewed-by: Nuno Sa <nuno.sa@analog.com>
+Applied, thanks!
 
+[01/17] backlight: Add BACKLIGHT_POWER_ constants for power states
+        commit: a1cacb8a8e70c38ec0c78910c668abda99fcb780
+[02/17] backlight: aat2870-backlight: Use blacklight power constants
+        commit: 26dcf62333f1c1ec33a469339a287ab8eecfb06e
+[03/17] backlight: ams369fb06: Use backlight power constants
+        commit: 1adf98242e0ec33f15c4f7a1e86ad76abf209665
+[04/17] backlight: corgi-lcd: Use backlight power constants
+        commit: e263c051910190feba884179aef15e548273a7aa
+[05/17] backlight: gpio-backlight: Use backlight power constants
+        commit: ef51815c5f970b228a775ceb3bb06ce46fe9ff86
+[06/17] backlight: ipaq-micro-backlight: Use backlight power constants
+        commit: b6675c59473a26dec33281e4e872cf09f6321523
+[07/17] backlight: journada_bl: Use backlight power constants
+        commit: 6910d19bb861db0721a171f4e351c290a40f1d19
+[08/17] backlight: kb3886-bl: Use backlight power constants
+        commit: cebc25971f7f988dfd4d6c7269deea4c1ca5898e
+[09/17] backlight: ktd253-backlight: Use backlight power constants
+        commit: def5831f09db8937218be50fc652d20c0a68e417
+[10/17] backlight: led-backlight: Use backlight power constants
+        commit: 814d3e820039348f1467ada9a8a812c0b80733de
+[11/17] backlight: lm3533-backlight: Use backlight power constants
+        commit: 761c83910b3d10e731b03438b883d271c295a9a5
+[12/17] backlight: mp3309c: Use backlight power constants
+        commit: c2d9c4934bf4e12b531312bbf02a8543f6a23aae
+[13/17] backlight: pandora-backlight: Use backlight power constants
+        commit: d4db2f193490415386ee13f714a0940943cbb149
+[14/17] backlight: pcf50633-backlight: Use backlight power constants
+        commit: eca6b3ddfc554a9a51795cf035ccd60f2d842074
+[15/17] backlight: pwm-backlight: Use backlight power constants
+        commit: eb1c4b6ddde6867498ead8d4b92d6abb5f736a7d
+[16/17] backlight: rave-sp-backlight: Use backlight power constants
+        commit: 22f8a85ef0c563ba7e53d9ece39c1f2dc99f53ed
+[17/17] backlight: sky81452-backlight: Use backlight power constants
+        commit: 1df5aa3754cac2045998ca505edb84d994786c67
+
+--
+Lee Jones [李琼斯]
 

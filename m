@@ -1,102 +1,90 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00DDF1BC23;
-	Thu,  4 Jul 2024 15:46:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A0AB13A89C;
+	Fri,  5 Jul 2024 08:39:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.84
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720107962; cv=none; b=aQoC96zrXMWjRxkCY81xkPhmvoYRlLzPwOLCVGJJHEgW1lrtlZiujnGrIgOO4yQjV5bk4GZWJTpqXhmXW6dWlDqUth3bYjOHcbIoRSZ7pvo2nrXItC16d8/P8SERrLDuNOJiz0ncXRDWYKx491U9BfALekiaFt2s/WGpw1Y9P9E=
+	t=1720168748; cv=none; b=Av+Jd+tTA7q8hOkhGrA8VLrgp+CN6cOMDdw2fPXPi7hJDP3+P1/4q3rq94sYCNioxnFEMfzXdHI5rgWzqf/jHSJmhrICN9Ikg/YtmXTYA+0aUampCN4V2s3sUvTIIT34bDGoqblM2uwsBj95nvQZvXsPtKizP0kiDQhqTypJOBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720107962; c=relaxed/simple;
-	bh=ikOqTh/MUlIZlNenqgKLen74t9yi5HfP2j1aIiu+p2c=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=PbGMwueS1yhZLQL0UIZbYG3lytPgYZMn//KrFXd5eCQ9F6lDIZ1pFtwyWgWpgbYv7sELHX2LLykTkmg7JXP+KHF9q0kgheDoa5QlatTcjS8BI5pq6vDKhwnAP+A9uBYP+2emIE20yH4jCLSZWz6tVVRfP+po/vxvNv+Vd0z+kSg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M79pxWxm; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M79pxWxm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3EF0BC3277B;
-	Thu,  4 Jul 2024 15:45:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1720107961;
-	bh=ikOqTh/MUlIZlNenqgKLen74t9yi5HfP2j1aIiu+p2c=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=M79pxWxmvR20BDCjHvKzcsgsT1LIbfvpngUCC02oPX6v+Y2srb89pSrp3fccLxCBO
-	 SU3mS+j37mhQQYlLmjwuU7f6Jf3pEcAFQ2aSx5+qTYw8nVdfCSUmb/ZXFPxrLUq6iN
-	 Nhrq3DmaphKiBgmnDKEkGl6hgHscKSEe/+VuD+qtsa1gjFV+TWEkIp8iATOJDMIWO8
-	 LA0TotsZ4+rHRNZ74n36LNdYVDrS8QCHTIo7ZQVPqZOdff7Jog86xAPFC4h2C54yNQ
-	 QNFqnx/bowx/0494Gm1k2A3DulJO8Tnkq0induXo3w8ks8htsLoQL3jUbi31Ornl3p
-	 Q8FF13SfEsG+Q==
-From: Lee Jones <lee@kernel.org>
-To: lee@kernel.org, daniel.thompson@linaro.org, sam@ravnborg.org, 
- jingoohan1@gmail.com, deller@gmx.de, linus.walleij@linaro.org, 
- f.suligoi@asem.it, ukleinek@kernel.org, 
- Thomas Zimmermann <tzimmermann@suse.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-pwm@vger.kernel.org
-In-Reply-To: <20240624152033.25016-1-tzimmermann@suse.de>
-References: <20240624152033.25016-1-tzimmermann@suse.de>
-Subject: Re: [PATCH v2 00/17] backlight: Introduce power-state constants
-Message-Id: <172010795899.506663.6662347475872437728.b4-ty@kernel.org>
-Date: Thu, 04 Jul 2024 16:45:58 +0100
+	s=arc-20240116; t=1720168748; c=relaxed/simple;
+	bh=5fvsKBlfEtsQZGxnWPk3P4v8CcjcRH+tIFtsRrT5g34=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Lb4UAv7r1HcAn6xeag91MSJgoYDzdc/H6f3Hqhcp8mwJsN98M59kB2otZl4RujRYx4MpPTuYG7aaZQnpQuvhJ0z5XQfwpiL6ZFrPCjUoYRYRmkXfqpYUjHEwIYN5ZLd3XpIheCjmmQhWWnLgTMs5UbjaErobnDYLDOcnuFduiOY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.84
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost (unknown [124.16.138.129])
+	by APP-05 (Coremail) with SMTP id zQCowAA3PeUesYdm612lAQ--.42588S2;
+	Fri, 05 Jul 2024 16:38:54 +0800 (CST)
+From: Chen Ni <nichen@iscas.ac.cn>
+To: lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Chen Ni <nichen@iscas.ac.cn>
+Subject: [PATCH] backlight: l4f00242t03: Add check for spi_setup
+Date: Fri,  5 Jul 2024 16:38:34 +0800
+Message-Id: <20240705083834.3006465-1-nichen@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.13.0
+X-CM-TRANSID:zQCowAA3PeUesYdm612lAQ--.42588S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrtw4xAr4xAr47ZFyUWr1xKrg_yoWDGFXE9w
+	n2v3yxurWjgr409r47J3WfAayS9F45WFWrWF4v934SyasxXrn3ZrWjqrnrWFyUZr18JF9x
+	C3ZFkryfZry7JjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUb2kFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
+	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
+	cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
+	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc2xSY4AK67AK6r43MxAI
+	w28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr
+	4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxG
+	rwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJw
+	CI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2
+	z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUjAhL5UUUUU==
+X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
 
-On Mon, 24 Jun 2024 17:19:55 +0200, Thomas Zimmermann wrote:
-> The backlight code currently uses fbdev's FB_BLANK_ constants to
-> represent power states UNBLANK and POWERDOWN. Introduce dedicated
-> backlight constants to remove this dependency on fbdev.
-> 
-> Patch 1 introduces BACKLIGHT_POWER_ON and BACKLIGHT_POWER_OFF, which
-> replace constants from fbdev. There's also BACKLIGHT_POWER_REDUCED,
-> which is required by a few drivers that appear to use incorrect or
-> uncommon blanking semantics.
-> 
-> [...]
+Add check for the return value of spi_setup() and return the error
+if it fails in order to catch the error.
 
-Applied, thanks!
+Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
+---
+ drivers/video/backlight/l4f00242t03.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-[01/17] backlight: Add BACKLIGHT_POWER_ constants for power states
-        commit: a1cacb8a8e70c38ec0c78910c668abda99fcb780
-[02/17] backlight: aat2870-backlight: Use blacklight power constants
-        commit: 26dcf62333f1c1ec33a469339a287ab8eecfb06e
-[03/17] backlight: ams369fb06: Use backlight power constants
-        commit: 1adf98242e0ec33f15c4f7a1e86ad76abf209665
-[04/17] backlight: corgi-lcd: Use backlight power constants
-        commit: e263c051910190feba884179aef15e548273a7aa
-[05/17] backlight: gpio-backlight: Use backlight power constants
-        commit: ef51815c5f970b228a775ceb3bb06ce46fe9ff86
-[06/17] backlight: ipaq-micro-backlight: Use backlight power constants
-        commit: b6675c59473a26dec33281e4e872cf09f6321523
-[07/17] backlight: journada_bl: Use backlight power constants
-        commit: 6910d19bb861db0721a171f4e351c290a40f1d19
-[08/17] backlight: kb3886-bl: Use backlight power constants
-        commit: cebc25971f7f988dfd4d6c7269deea4c1ca5898e
-[09/17] backlight: ktd253-backlight: Use backlight power constants
-        commit: def5831f09db8937218be50fc652d20c0a68e417
-[10/17] backlight: led-backlight: Use backlight power constants
-        commit: 814d3e820039348f1467ada9a8a812c0b80733de
-[11/17] backlight: lm3533-backlight: Use backlight power constants
-        commit: 761c83910b3d10e731b03438b883d271c295a9a5
-[12/17] backlight: mp3309c: Use backlight power constants
-        commit: c2d9c4934bf4e12b531312bbf02a8543f6a23aae
-[13/17] backlight: pandora-backlight: Use backlight power constants
-        commit: d4db2f193490415386ee13f714a0940943cbb149
-[14/17] backlight: pcf50633-backlight: Use backlight power constants
-        commit: eca6b3ddfc554a9a51795cf035ccd60f2d842074
-[15/17] backlight: pwm-backlight: Use backlight power constants
-        commit: eb1c4b6ddde6867498ead8d4b92d6abb5f736a7d
-[16/17] backlight: rave-sp-backlight: Use backlight power constants
-        commit: 22f8a85ef0c563ba7e53d9ece39c1f2dc99f53ed
-[17/17] backlight: sky81452-backlight: Use backlight power constants
-        commit: 1df5aa3754cac2045998ca505edb84d994786c67
-
---
-Lee Jones [李琼斯]
+diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
+index dd0874f8c7ff..a4e27adee8ac 100644
+--- a/drivers/video/backlight/l4f00242t03.c
++++ b/drivers/video/backlight/l4f00242t03.c
+@@ -166,6 +166,7 @@ static const struct lcd_ops l4f_ops = {
+ static int l4f00242t03_probe(struct spi_device *spi)
+ {
+ 	struct l4f00242t03_priv *priv;
++	int ret;
+ 
+ 	priv = devm_kzalloc(&spi->dev, sizeof(struct l4f00242t03_priv),
+ 				GFP_KERNEL);
+@@ -174,7 +175,9 @@ static int l4f00242t03_probe(struct spi_device *spi)
+ 
+ 	spi_set_drvdata(spi, priv);
+ 	spi->bits_per_word = 9;
+-	spi_setup(spi);
++	ret = spi_setup(spi);
++	if (ret < 0)
++		return ret;
+ 
+ 	priv->spi = spi;
+ 
+-- 
+2.25.1
 

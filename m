@@ -1,36 +1,36 @@
 Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A547022318;
-	Sat, 13 Jul 2024 15:35:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6523E629E4;
+	Sat, 13 Jul 2024 15:50:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720884944; cv=none; b=X3GNdGYwq52KEsRvRqe3mKnz9g4fgy9sd7ft7E7OqMUkcSmLVK700GUZihFsn0exCSyXSKWcyAfe3dhPmcWLdv87vE8SvINK7a3/ohaP/fvrfyDyXzbGnPCD0BbyaAyMoAnD/MNaUvpdOYvdFFyjrCTUxy2akom9qqeOV15nF6I=
+	t=1720885810; cv=none; b=t940IQczcGjQPN/lrze0+z0YVQQkYLdL6F3yMQ7/tGdqO+Tlan8pSH8DoQhsID6hgI3gUr1l8GnpKbHz2mw8JyCpWIIrPJ/O9pevWlfieO50nng5zvROQGzmRzBGD9SB2OrHtUsQGVnTOkQaKzJrRyEM3WAJrTGswKhWwnTVIJM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720884944; c=relaxed/simple;
-	bh=Hzx4jXYfR48a5NNIXZ6q4jR9oFl2lLbXwlEJFK/dl8k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=P4CoDHGUqGqmtV28MkraU8FQ+zC9yFNRgWzw0CPVBsWaeJEzr3hENSpl7xGlzl/dDEnotHR4VYkymfSek0tiIV0lfUQxj7of0NX8a80ezBE7dqDBYhuZPEIorh2YSoL1eJMqQHqWge+Ddvw/ssILDCTpA5JqjO/0kGxwoIYa0IQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=skrZZD4L; arc=none smtp.client-ip=85.214.62.61
+	s=arc-20240116; t=1720885810; c=relaxed/simple;
+	bh=ym9kq30myjxMGzu6rRXn5NSy1q9t0pn9/4qyaF7Rerg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XfQ0Srdv5ArKMMcv9ukQ8erAqnwNDl4EroiyVyzMmxol6EbM+W2nHV2kxxNOHPxqXoJX4FPBQnXPlEGQfPbdqV+93OhsPYzMA8tuOjLZOWjqwkN1/83INW9+Rde5bQ4EwDaGWFwtdoD2REZoaEsCIvz3pTuFisNqAG0rrgXnN6M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=rqiku9PL; arc=none smtp.client-ip=85.214.62.61
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="skrZZD4L"
+	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="rqiku9PL"
 Received: from tr.lan (ip-86-49-120-218.bb.vodafone.cz [86.49.120.218])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
 	(No client certificate requested)
 	(Authenticated sender: marex@denx.de)
-	by phobos.denx.de (Postfix) with ESMTPSA id 0747F874AC;
-	Sat, 13 Jul 2024 17:35:33 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTPSA id F1B8A884EA;
+	Sat, 13 Jul 2024 17:50:05 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-	s=phobos-20191101; t=1720884934;
-	bh=R8x8SOnjSlig4/B74pItuN9fRZ0Xwlht5fPrjiL7tgM=;
+	s=phobos-20191101; t=1720885806;
+	bh=cA2Q2MbVe9fskbOQDrWM2YYpTo6SJI1WDaOk84HRv6E=;
 	h=From:To:Cc:Subject:Date:From;
-	b=skrZZD4L3XEQqgU+V4vyIzS7I+JCBpVZ5fxx5Cx4x/B9EK9E9hWjyruFvZHAhsCri
-	 7LcSPKnIZIvvvJZ/6XPdf2dRpXDSXvgOIMitIfFu7en6Z1gNTgGLmpbv6NGl+IKMl7
-	 x9i/uQicqbnNa5hdzW8w9fq6rOXUdOUj6vQNVaK3Nu8/istUP0khmd1mF3zMDQZDlB
-	 QA4w4mM0D3lZ3azOXK6m/jm54/kJT4otgiXRVj/oEHQdA/x4sjEjlYDNfSe3B7LY6N
-	 i+LOC5BXX0QoBVlXfz4kuxj/y7NL/YTi0g65Oa4bxsNZnFbKIPZ8HbZBRBxyopvlus
-	 uQCevR8gGXLbg==
+	b=rqiku9PLrtGSmTxzkGlpWeUXVCdxPDgk2i7Hv6kkcYdDs1G9wBO4P5B7So0feFGLW
+	 kz6sLNG80uAr9KjwjNyDKejV/yeMNRs/kJSl3SsjokT8fdu0cdNBF3uUwc4p53g86z
+	 hWiZBad9VxlyCAI+FtCPlOsnXg0b68TGbeVH2xe6MDoVbh/oZqhRkyyjFF43Ih7h6S
+	 R/hBcgFBVtGHZ8hZ5j5GzagLLtm4MmUfGRNE3iWxPnff9/1tmeFUXgaG04bAKAyB6i
+	 WIobz/AAixPeEj+dFJ7V6YBLf3g/ee71B582rutt1bL07AT4rxwmRTg6G6EADdG12u
+	 J0nliiIJoQfyg==
 From: Marek Vasut <marex@denx.de>
 To: linux-media@vger.kernel.org
 Cc: Marek Vasut <marex@denx.de>,
@@ -50,9 +50,9 @@ Cc: Marek Vasut <marex@denx.de>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev
-Subject: [PATCH] gpu: ipu-v3: image-convert: Drop unused single conversion request code
-Date: Sat, 13 Jul 2024 17:35:00 +0200
-Message-ID: <20240713153524.107019-1-marex@denx.de>
+Subject: [PATCH 1/2] gpu: ipu-v3: vdic: Simplify ipu_vdi_setup()
+Date: Sat, 13 Jul 2024 17:48:01 +0200
+Message-ID: <20240713154934.109318-1-marex@denx.de>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -64,8 +64,9 @@ Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
 X-Virus-Status: Clean
 
-Neither ipu_image_convert_sync() nor ipu_image_convert() is used or call
-from anywhere. Remove this unused code.
+The 'code' parameter only ever selects between YUV 4:2:0 and 4:2:2
+subsampling, turn it into boolean to select exactly that and update
+related code accordingly.
 
 Signed-off-by: Marek Vasut <marex@denx.de>
 ---
@@ -87,152 +88,73 @@ Cc: linux-fbdev@vger.kernel.org
 Cc: linux-media@vger.kernel.org
 Cc: linux-staging@lists.linux.dev
 ---
- drivers/gpu/ipu-v3/ipu-image-convert.c | 76 --------------------------
- include/video/imx-ipu-image-convert.h  | 46 ----------------
- 2 files changed, 122 deletions(-)
+ drivers/gpu/ipu-v3/ipu-vdi.c               | 14 +++-----------
+ drivers/staging/media/imx/imx-media-vdic.c |  3 +--
+ include/video/imx-ipu-v3.h                 |  2 +-
+ 3 files changed, 5 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-image-convert.c b/drivers/gpu/ipu-v3/ipu-image-convert.c
-index 841316582ea9d..c87866253eee9 100644
---- a/drivers/gpu/ipu-v3/ipu-image-convert.c
-+++ b/drivers/gpu/ipu-v3/ipu-image-convert.c
-@@ -2395,82 +2395,6 @@ void ipu_image_convert_unprepare(struct ipu_image_convert_ctx *ctx)
+diff --git a/drivers/gpu/ipu-v3/ipu-vdi.c b/drivers/gpu/ipu-v3/ipu-vdi.c
+index a593b232b6d3e..4df2821977c0c 100644
+--- a/drivers/gpu/ipu-v3/ipu-vdi.c
++++ b/drivers/gpu/ipu-v3/ipu-vdi.c
+@@ -117,10 +117,10 @@ void ipu_vdi_set_motion(struct ipu_vdi *vdi, enum ipu_motion_sel motion_sel)
  }
- EXPORT_SYMBOL_GPL(ipu_image_convert_unprepare);
+ EXPORT_SYMBOL_GPL(ipu_vdi_set_motion);
  
--/*
-- * "Canned" asynchronous single image conversion. Allocates and returns
-- * a new conversion run.  On successful return the caller must free the
-- * run and call ipu_image_convert_unprepare() after conversion completes.
-- */
--struct ipu_image_convert_run *
--ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
--		  struct ipu_image *in, struct ipu_image *out,
--		  enum ipu_rotate_mode rot_mode,
--		  ipu_image_convert_cb_t complete,
--		  void *complete_context)
--{
--	struct ipu_image_convert_ctx *ctx;
--	struct ipu_image_convert_run *run;
--	int ret;
--
--	ctx = ipu_image_convert_prepare(ipu, ic_task, in, out, rot_mode,
--					complete, complete_context);
--	if (IS_ERR(ctx))
--		return ERR_CAST(ctx);
--
--	run = kzalloc(sizeof(*run), GFP_KERNEL);
--	if (!run) {
--		ipu_image_convert_unprepare(ctx);
--		return ERR_PTR(-ENOMEM);
--	}
--
--	run->ctx = ctx;
--	run->in_phys = in->phys0;
--	run->out_phys = out->phys0;
--
--	ret = ipu_image_convert_queue(run);
--	if (ret) {
--		ipu_image_convert_unprepare(ctx);
--		kfree(run);
--		return ERR_PTR(ret);
--	}
--
--	return run;
--}
--EXPORT_SYMBOL_GPL(ipu_image_convert);
--
--/* "Canned" synchronous single image conversion */
--static void image_convert_sync_complete(struct ipu_image_convert_run *run,
--					void *data)
--{
--	struct completion *comp = data;
--
--	complete(comp);
--}
--
--int ipu_image_convert_sync(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
--			   struct ipu_image *in, struct ipu_image *out,
--			   enum ipu_rotate_mode rot_mode)
--{
--	struct ipu_image_convert_run *run;
--	struct completion comp;
--	int ret;
--
--	init_completion(&comp);
--
--	run = ipu_image_convert(ipu, ic_task, in, out, rot_mode,
--				image_convert_sync_complete, &comp);
--	if (IS_ERR(run))
--		return PTR_ERR(run);
--
--	ret = wait_for_completion_timeout(&comp, msecs_to_jiffies(10000));
--	ret = (ret == 0) ? -ETIMEDOUT : 0;
--
--	ipu_image_convert_unprepare(run->ctx);
--	kfree(run);
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(ipu_image_convert_sync);
--
- int ipu_image_convert_init(struct ipu_soc *ipu, struct device *dev)
+-void ipu_vdi_setup(struct ipu_vdi *vdi, u32 code, int xres, int yres)
++void ipu_vdi_setup(struct ipu_vdi *vdi, bool yuv422not420, int xres, int yres)
  {
- 	struct ipu_image_convert_priv *priv;
-diff --git a/include/video/imx-ipu-image-convert.h b/include/video/imx-ipu-image-convert.h
-index 3c71b8b94b33a..39906b0cbf2d8 100644
---- a/include/video/imx-ipu-image-convert.h
-+++ b/include/video/imx-ipu-image-convert.h
-@@ -149,50 +149,4 @@ int ipu_image_convert_queue(struct ipu_image_convert_run *run);
-  */
- void ipu_image_convert_abort(struct ipu_image_convert_ctx *ctx);
+ 	unsigned long flags;
+-	u32 pixel_fmt, reg;
++	u32 reg;
  
--/**
-- * ipu_image_convert() - asynchronous image conversion request
-- *
-- * @ipu:	the IPU handle to use for the conversion
-- * @ic_task:	the IC task to use for the conversion
-- * @in:		input image format
-- * @out:	output image format
-- * @rot_mode:	rotation mode
-- * @complete:	run completion callback
-- * @complete_context:	a context pointer for the completion callback
-- *
-- * Request a single image conversion. Returns the run that has been queued.
-- * A conversion context is automatically created and is available in run->ctx.
-- * As with ipu_image_convert_prepare(), the input/output formats and rotation
-- * mode must already meet IPU retrictions.
-- *
-- * On successful return the caller can queue more run requests if needed, using
-- * the prepared context in run->ctx. The caller is responsible for unpreparing
-- * the context when no more conversion requests are needed.
-- */
--struct ipu_image_convert_run *
--ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
--		  struct ipu_image *in, struct ipu_image *out,
--		  enum ipu_rotate_mode rot_mode,
--		  ipu_image_convert_cb_t complete,
--		  void *complete_context);
+ 	spin_lock_irqsave(&vdi->lock, flags);
+ 
+@@ -131,16 +131,8 @@ void ipu_vdi_setup(struct ipu_vdi *vdi, u32 code, int xres, int yres)
+ 	 * Full motion, only vertical filter is used.
+ 	 * Burst size is 4 accesses
+ 	 */
+-	if (code == MEDIA_BUS_FMT_UYVY8_2X8 ||
+-	    code == MEDIA_BUS_FMT_UYVY8_1X16 ||
+-	    code == MEDIA_BUS_FMT_YUYV8_2X8 ||
+-	    code == MEDIA_BUS_FMT_YUYV8_1X16)
+-		pixel_fmt = VDI_C_CH_422;
+-	else
+-		pixel_fmt = VDI_C_CH_420;
 -
--/**
-- * ipu_image_convert_sync() - synchronous single image conversion request
-- *
-- * @ipu:	the IPU handle to use for the conversion
-- * @ic_task:	the IC task to use for the conversion
-- * @in:		input image format
-- * @out:	output image format
-- * @rot_mode:	rotation mode
-- *
-- * Carry out a single image conversion. Returns when the conversion
-- * completes. The input/output formats and rotation mode must already
-- * meet IPU retrictions. The created context is automatically unprepared
-- * and the run freed on return.
-- */
--int ipu_image_convert_sync(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
--			   struct ipu_image *in, struct ipu_image *out,
--			   enum ipu_rotate_mode rot_mode);
--
--
- #endif /* __IMX_IPU_IMAGE_CONVERT_H__ */
+ 	reg = ipu_vdi_read(vdi, VDI_C);
+-	reg |= pixel_fmt;
++	reg |= yuv422not420 ? VDI_C_CH_422 : VDI_C_CH_420;
+ 	reg |= VDI_C_BURST_SIZE2_4;
+ 	reg |= VDI_C_BURST_SIZE1_4 | VDI_C_VWM1_CLR_2;
+ 	reg |= VDI_C_BURST_SIZE3_4 | VDI_C_VWM3_CLR_2;
+diff --git a/drivers/staging/media/imx/imx-media-vdic.c b/drivers/staging/media/imx/imx-media-vdic.c
+index 09da4103a8dbe..ea5b4ef3573de 100644
+--- a/drivers/staging/media/imx/imx-media-vdic.c
++++ b/drivers/staging/media/imx/imx-media-vdic.c
+@@ -376,8 +376,7 @@ static int vdic_start(struct vdic_priv *priv)
+ 	 * only supports 4:2:2 or 4:2:0, and this subdev will only
+ 	 * negotiate 4:2:2 at its sink pads.
+ 	 */
+-	ipu_vdi_setup(priv->vdi, MEDIA_BUS_FMT_UYVY8_2X8,
+-		      infmt->width, infmt->height);
++	ipu_vdi_setup(priv->vdi, true, infmt->width, infmt->height);
+ 	ipu_vdi_set_field_order(priv->vdi, V4L2_STD_UNKNOWN, infmt->field);
+ 	ipu_vdi_set_motion(priv->vdi, priv->motion);
+ 
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index c422a403c0990..75f435d024895 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -466,7 +466,7 @@ void ipu_ic_dump(struct ipu_ic *ic);
+ struct ipu_vdi;
+ void ipu_vdi_set_field_order(struct ipu_vdi *vdi, v4l2_std_id std, u32 field);
+ void ipu_vdi_set_motion(struct ipu_vdi *vdi, enum ipu_motion_sel motion_sel);
+-void ipu_vdi_setup(struct ipu_vdi *vdi, u32 code, int xres, int yres);
++void ipu_vdi_setup(struct ipu_vdi *vdi, bool yuv422not420, int xres, int yres);
+ void ipu_vdi_unsetup(struct ipu_vdi *vdi);
+ int ipu_vdi_enable(struct ipu_vdi *vdi);
+ int ipu_vdi_disable(struct ipu_vdi *vdi);
 -- 
 2.43.0
 

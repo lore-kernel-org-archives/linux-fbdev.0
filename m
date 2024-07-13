@@ -1,164 +1,238 @@
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D9B4155C95;
-	Thu, 11 Jul 2024 12:57:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A547022318;
+	Sat, 13 Jul 2024 15:35:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1720702656; cv=none; b=WKtQ+JRPLK9SRYGEC/0d7SEwuFLq+Zlf5lOpMdYx+e4CndtOrh5giu4mNC2KU5xj6BU63V2kSFAhi1euqgfLKecsteyjIKXbkgQjStyvk24GNmHucBrzpF5xgZwf17wLra6zOUfjuTCldCvoKcghzwV7JI0b863ICxxXswSzxgQ=
+	t=1720884944; cv=none; b=X3GNdGYwq52KEsRvRqe3mKnz9g4fgy9sd7ft7E7OqMUkcSmLVK700GUZihFsn0exCSyXSKWcyAfe3dhPmcWLdv87vE8SvINK7a3/ohaP/fvrfyDyXzbGnPCD0BbyaAyMoAnD/MNaUvpdOYvdFFyjrCTUxy2akom9qqeOV15nF6I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1720702656; c=relaxed/simple;
-	bh=IgnTnnjkD8FFGi6ivzy/g9+noQ1C0Ks2nR19HopGtQc=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Ltwn991fJJKAYGT0cT3egnR3ibbLQSTXiS2UBElbGmIaHUi2Pkb7FPgWmkf2OtjaWqdw8Tw8c6X1cku8fhdPemGE2Hgy5zSoRouiBunLc9PLofXWV26kPpug14DxQmK1AKtqdTd/LzgBHzZaNu3eWPNNi0HCG1cGAnFdcD1NR6I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b=ZagcQCku; arc=none smtp.client-ip=130.133.4.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
+	s=arc-20240116; t=1720884944; c=relaxed/simple;
+	bh=Hzx4jXYfR48a5NNIXZ6q4jR9oFl2lLbXwlEJFK/dl8k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=P4CoDHGUqGqmtV28MkraU8FQ+zC9yFNRgWzw0CPVBsWaeJEzr3hENSpl7xGlzl/dDEnotHR4VYkymfSek0tiIV0lfUQxj7of0NX8a80ezBE7dqDBYhuZPEIorh2YSoL1eJMqQHqWge+Ddvw/ssILDCTpA5JqjO/0kGxwoIYa0IQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=skrZZD4L; arc=none smtp.client-ip=85.214.62.61
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b="ZagcQCku"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=UP29LTmvlHTs/OoBfoU8insLR5ShRbL+0hC3P+TNI/s=; t=1720702652; x=1721307452; 
-	b=ZagcQCkubL7WN9c6ifIlQ7V4f1nvNypRwbpsOr6yNJz/zLKkc5CVkwSmdVykIAiceMjcd+tlFhi
-	Z6esyr52TZWMGkYUYwtfh4H7TJxIH53oxLXtYWkJqIjS35ZZHJ2g53M3oeryf9QNQolTvtRVjoF6O
-	u+FRxbjhG18U6NMR7SiNrhLOGniHRXNrKp+vU+UWbYbCUI9ApaVeOTAiS/WjNP3zByje+XK+Sk3YG
-	Kclf0XoiA/XnE0aNwqxLeSwyjkoa6HNjucmI1UC1H5o1HeWUMK9OZsjmHNhQVuyvxZtxcmS/Z4ZIG
-	fwhQz6fKZeF1nxzzy9c4NHDkCvz66FCT+fvg==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.98)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1sRtMO-00000003KGI-40qJ; Thu, 11 Jul 2024 14:57:20 +0200
-Received: from p5b13a475.dip0.t-ipconnect.de ([91.19.164.117] helo=[192.168.178.20])
-          by inpost2.zedat.fu-berlin.de (Exim 4.98)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1sRtMO-00000001SHj-2Zok; Thu, 11 Jul 2024 14:57:20 +0200
-Message-ID: <cb7a69949c08be858b107a2b8184d1da92d794a0.camel@physik.fu-berlin.de>
-Subject: Re: [DO NOT MERGE v8 20/36] serial: sh-sci: fix SH4 OF support.
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org
-Cc: Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,  Geert Uytterhoeven
- <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@kernel.org>,  David Airlie <airlied@gmail.com>, Daniel
- Vetter <daniel@ffwll.ch>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
- Thomas Zimmermann <tzimmermann@suse.de>, Thomas Gleixner
- <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>,  Lorenzo
- Pieralisi <lpieralisi@kernel.org>, Krzysztof =?UTF-8?Q?Wilczy=C5=84ski?=
- <kw@linux.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jirislaby@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Daniel Lezcano
- <daniel.lezcano@linaro.org>, Rich Felker <dalias@libc.org>, Lee Jones
- <lee@kernel.org>, Helge Deller <deller@gmx.de>, Heiko Stuebner
- <heiko.stuebner@cherry.de>, Neil Armstrong <neil.armstrong@linaro.org>,
- Chris Morgan <macromorgan@hotmail.com>, Sebastian Reichel <sre@kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
- Masahiro Yamada <masahiroy@kernel.org>, Baoquan He <bhe@redhat.com>, Andrew
- Morton <akpm@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>,
- Kefeng Wang <wangkefeng.wang@huawei.com>, Stephen Rothwell
- <sfr@canb.auug.org.au>, Azeem Shaikh <azeemshaikh38@gmail.com>, Guo Ren
- <guoren@kernel.org>, Max Filippov <jcmvbkbc@gmail.com>,  Jernej Skrabec
- <jernej.skrabec@gmail.com>, Herve Codina <herve.codina@bootlin.com>, Andy
- Shevchenko <andriy.shevchenko@linux.intel.com>, Anup Patel
- <apatel@ventanamicro.com>,  Jacky Huang <ychuang3@nuvoton.com>, Hugo
- Villeneuve <hvilleneuve@dimonoff.com>, Jonathan Corbet <corbet@lwn.net>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>, Uwe
- =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Sam Ravnborg
- <sam@ravnborg.org>, Javier Martinez Canillas <javierm@redhat.com>, Sergey
- Shtylyov <s.shtylyov@omp.ru>, Laurent Pinchart
- <laurent.pinchart+renesas@ideasonboard.com>, linux-ide@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, 
- linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Date: Thu, 11 Jul 2024 14:57:18 +0200
-In-Reply-To: <57525900a4876323467612d73eded183315c1680.1716965617.git.ysato@users.sourceforge.jp>
-References: <cover.1716965617.git.ysato@users.sourceforge.jp>
-	 <57525900a4876323467612d73eded183315c1680.1716965617.git.ysato@users.sourceforge.jp>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.3 
+	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="skrZZD4L"
+Received: from tr.lan (ip-86-49-120-218.bb.vodafone.cz [86.49.120.218])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	(No client certificate requested)
+	(Authenticated sender: marex@denx.de)
+	by phobos.denx.de (Postfix) with ESMTPSA id 0747F874AC;
+	Sat, 13 Jul 2024 17:35:33 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+	s=phobos-20191101; t=1720884934;
+	bh=R8x8SOnjSlig4/B74pItuN9fRZ0Xwlht5fPrjiL7tgM=;
+	h=From:To:Cc:Subject:Date:From;
+	b=skrZZD4L3XEQqgU+V4vyIzS7I+JCBpVZ5fxx5Cx4x/B9EK9E9hWjyruFvZHAhsCri
+	 7LcSPKnIZIvvvJZ/6XPdf2dRpXDSXvgOIMitIfFu7en6Z1gNTgGLmpbv6NGl+IKMl7
+	 x9i/uQicqbnNa5hdzW8w9fq6rOXUdOUj6vQNVaK3Nu8/istUP0khmd1mF3zMDQZDlB
+	 QA4w4mM0D3lZ3azOXK6m/jm54/kJT4otgiXRVj/oEHQdA/x4sjEjlYDNfSe3B7LY6N
+	 i+LOC5BXX0QoBVlXfz4kuxj/y7NL/YTi0g65Oa4bxsNZnFbKIPZ8HbZBRBxyopvlus
+	 uQCevR8gGXLbg==
+From: Marek Vasut <marex@denx.de>
+To: linux-media@vger.kernel.org
+Cc: Marek Vasut <marex@denx.de>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	David Airlie <airlied@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Helge Deller <deller@gmx.de>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Steve Longerbeam <slongerbeam@gmail.com>,
+	dri-devel@lists.freedesktop.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev
+Subject: [PATCH] gpu: ipu-v3: image-convert: Drop unused single conversion request code
+Date: Sat, 13 Jul 2024 17:35:00 +0200
+Message-ID: <20240713153524.107019-1-marex@denx.de>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-ZEDAT-Hint: PO
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
 
-Hi Yoshinori,
+Neither ipu_image_convert_sync() nor ipu_image_convert() is used or call
+from anywhere. Remove this unused code.
 
-On Wed, 2024-05-29 at 17:01 +0900, Yoshinori Sato wrote:
-> - Separated RZ's earlycon initialization from normal SCIF.
-> - fix earlyprintk hung (NULL pointer reference).
-> - fix SERIAL_SH_SCI_EARLYCON enablement
+Signed-off-by: Marek Vasut <marex@denx.de>
+---
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: imx@lists.linux.dev
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: linux-staging@lists.linux.dev
+---
+ drivers/gpu/ipu-v3/ipu-image-convert.c | 76 --------------------------
+ include/video/imx-ipu-image-convert.h  | 46 ----------------
+ 2 files changed, 122 deletions(-)
 
-I feel like this could actually be split into three patches.
+diff --git a/drivers/gpu/ipu-v3/ipu-image-convert.c b/drivers/gpu/ipu-v3/ipu-image-convert.c
+index 841316582ea9d..c87866253eee9 100644
+--- a/drivers/gpu/ipu-v3/ipu-image-convert.c
++++ b/drivers/gpu/ipu-v3/ipu-image-convert.c
+@@ -2395,82 +2395,6 @@ void ipu_image_convert_unprepare(struct ipu_image_convert_ctx *ctx)
+ }
+ EXPORT_SYMBOL_GPL(ipu_image_convert_unprepare);
+ 
+-/*
+- * "Canned" asynchronous single image conversion. Allocates and returns
+- * a new conversion run.  On successful return the caller must free the
+- * run and call ipu_image_convert_unprepare() after conversion completes.
+- */
+-struct ipu_image_convert_run *
+-ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+-		  struct ipu_image *in, struct ipu_image *out,
+-		  enum ipu_rotate_mode rot_mode,
+-		  ipu_image_convert_cb_t complete,
+-		  void *complete_context)
+-{
+-	struct ipu_image_convert_ctx *ctx;
+-	struct ipu_image_convert_run *run;
+-	int ret;
+-
+-	ctx = ipu_image_convert_prepare(ipu, ic_task, in, out, rot_mode,
+-					complete, complete_context);
+-	if (IS_ERR(ctx))
+-		return ERR_CAST(ctx);
+-
+-	run = kzalloc(sizeof(*run), GFP_KERNEL);
+-	if (!run) {
+-		ipu_image_convert_unprepare(ctx);
+-		return ERR_PTR(-ENOMEM);
+-	}
+-
+-	run->ctx = ctx;
+-	run->in_phys = in->phys0;
+-	run->out_phys = out->phys0;
+-
+-	ret = ipu_image_convert_queue(run);
+-	if (ret) {
+-		ipu_image_convert_unprepare(ctx);
+-		kfree(run);
+-		return ERR_PTR(ret);
+-	}
+-
+-	return run;
+-}
+-EXPORT_SYMBOL_GPL(ipu_image_convert);
+-
+-/* "Canned" synchronous single image conversion */
+-static void image_convert_sync_complete(struct ipu_image_convert_run *run,
+-					void *data)
+-{
+-	struct completion *comp = data;
+-
+-	complete(comp);
+-}
+-
+-int ipu_image_convert_sync(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+-			   struct ipu_image *in, struct ipu_image *out,
+-			   enum ipu_rotate_mode rot_mode)
+-{
+-	struct ipu_image_convert_run *run;
+-	struct completion comp;
+-	int ret;
+-
+-	init_completion(&comp);
+-
+-	run = ipu_image_convert(ipu, ic_task, in, out, rot_mode,
+-				image_convert_sync_complete, &comp);
+-	if (IS_ERR(run))
+-		return PTR_ERR(run);
+-
+-	ret = wait_for_completion_timeout(&comp, msecs_to_jiffies(10000));
+-	ret = (ret == 0) ? -ETIMEDOUT : 0;
+-
+-	ipu_image_convert_unprepare(run->ctx);
+-	kfree(run);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(ipu_image_convert_sync);
+-
+ int ipu_image_convert_init(struct ipu_soc *ipu, struct device *dev)
+ {
+ 	struct ipu_image_convert_priv *priv;
+diff --git a/include/video/imx-ipu-image-convert.h b/include/video/imx-ipu-image-convert.h
+index 3c71b8b94b33a..39906b0cbf2d8 100644
+--- a/include/video/imx-ipu-image-convert.h
++++ b/include/video/imx-ipu-image-convert.h
+@@ -149,50 +149,4 @@ int ipu_image_convert_queue(struct ipu_image_convert_run *run);
+  */
+ void ipu_image_convert_abort(struct ipu_image_convert_ctx *ctx);
+ 
+-/**
+- * ipu_image_convert() - asynchronous image conversion request
+- *
+- * @ipu:	the IPU handle to use for the conversion
+- * @ic_task:	the IC task to use for the conversion
+- * @in:		input image format
+- * @out:	output image format
+- * @rot_mode:	rotation mode
+- * @complete:	run completion callback
+- * @complete_context:	a context pointer for the completion callback
+- *
+- * Request a single image conversion. Returns the run that has been queued.
+- * A conversion context is automatically created and is available in run->ctx.
+- * As with ipu_image_convert_prepare(), the input/output formats and rotation
+- * mode must already meet IPU retrictions.
+- *
+- * On successful return the caller can queue more run requests if needed, using
+- * the prepared context in run->ctx. The caller is responsible for unpreparing
+- * the context when no more conversion requests are needed.
+- */
+-struct ipu_image_convert_run *
+-ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+-		  struct ipu_image *in, struct ipu_image *out,
+-		  enum ipu_rotate_mode rot_mode,
+-		  ipu_image_convert_cb_t complete,
+-		  void *complete_context);
+-
+-/**
+- * ipu_image_convert_sync() - synchronous single image conversion request
+- *
+- * @ipu:	the IPU handle to use for the conversion
+- * @ic_task:	the IC task to use for the conversion
+- * @in:		input image format
+- * @out:	output image format
+- * @rot_mode:	rotation mode
+- *
+- * Carry out a single image conversion. Returns when the conversion
+- * completes. The input/output formats and rotation mode must already
+- * meet IPU retrictions. The created context is automatically unprepared
+- * and the run freed on return.
+- */
+-int ipu_image_convert_sync(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+-			   struct ipu_image *in, struct ipu_image *out,
+-			   enum ipu_rotate_mode rot_mode);
+-
+-
+ #endif /* __IMX_IPU_IMAGE_CONVERT_H__ */
+-- 
+2.43.0
 
-Adrian
-
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/tty/serial/Kconfig  | 2 +-
->  drivers/tty/serial/sh-sci.c | 6 +++---
->  2 files changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-> index 4fdd7857ef4d..eeb22b582470 100644
-> --- a/drivers/tty/serial/Kconfig
-> +++ b/drivers/tty/serial/Kconfig
-> @@ -664,7 +664,7 @@ config SERIAL_SH_SCI_EARLYCON
->  	depends on SERIAL_SH_SCI=3Dy
->  	select SERIAL_CORE_CONSOLE
->  	select SERIAL_EARLYCON
-> -	default ARCH_RENESAS
-> +	default ARCH_RENESAS || SUPERH
-> =20
->  config SERIAL_SH_SCI_DMA
->  	bool "DMA support" if EXPERT
-> diff --git a/drivers/tty/serial/sh-sci.c b/drivers/tty/serial/sh-sci.c
-> index f738980a8b2c..068f483401e3 100644
-> --- a/drivers/tty/serial/sh-sci.c
-> +++ b/drivers/tty/serial/sh-sci.c
-> @@ -2723,7 +2723,7 @@ static int sci_remap_port(struct uart_port *port)
->  	if (port->membase)
->  		return 0;
-> =20
-> -	if (port->dev->of_node || (port->flags & UPF_IOREMAP)) {
-> +	if (dev_of_node(port->dev) || (port->flags & UPF_IOREMAP)) {
->  		port->membase =3D ioremap(port->mapbase, sport->reg_size);
->  		if (unlikely(!port->membase)) {
->  			dev_err(port->dev, "can't remap port#%d\n", port->line);
-> @@ -3551,8 +3551,8 @@ static int __init hscif_early_console_setup(struct =
-earlycon_device *device,
-> =20
->  OF_EARLYCON_DECLARE(sci, "renesas,sci", sci_early_console_setup);
->  OF_EARLYCON_DECLARE(scif, "renesas,scif", scif_early_console_setup);
-> -OF_EARLYCON_DECLARE(scif, "renesas,scif-r7s9210", rzscifa_early_console_=
-setup);
-> -OF_EARLYCON_DECLARE(scif, "renesas,scif-r9a07g044", rzscifa_early_consol=
-e_setup);
-> +OF_EARLYCON_DECLARE(rzscifa, "renesas,scif-r7s9210", rzscifa_early_conso=
-le_setup);
-> +OF_EARLYCON_DECLARE(rzscifa, "renesas,scif-r9a07g044", rzscifa_early_con=
-sole_setup);
->  OF_EARLYCON_DECLARE(scifa, "renesas,scifa", scifa_early_console_setup);
->  OF_EARLYCON_DECLARE(scifb, "renesas,scifb", scifb_early_console_setup);
->  OF_EARLYCON_DECLARE(hscif, "renesas,hscif", hscif_early_console_setup);
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

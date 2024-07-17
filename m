@@ -1,98 +1,133 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E4783BBF7
-	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jul 2024 09:02:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B71AE17E908
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jul 2024 10:05:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1721206927; cv=none; b=Y6pkUPypkqBzCyznAQMrEqKM1QhLCoLNbBFpCsd6La+LW1T+mXPQ97qYJVUNfEepvV3L4s9beWLPH/wMi8KsBbNTOymiByUY6VhqI1lejsLDui5evemJXBSiC1WrvVA1LK+gx/dqXtpcQ248fhX9SH/zpDYVomYF36GNSfU5HFQ=
+	t=1721210749; cv=none; b=oGJxb1YRibI9EXKdz1rIvgzhysuIgW2mrYTRPeq93CZXs5eUVHkLjSGE/XKdWNBNhG0egI7a+QWOfqp/+lazSTQfCwuergr1iXEpDFJyxAMLyhacOwXNo7GTSeM6uDXQKum4g6KMDAYSdjJIUdrUrAeiFhIXRrNFJYHyiJ4UVm8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1721206927; c=relaxed/simple;
-	bh=2/iSQxDuuZvpcbDb284y6zAsfOC1+tJkVR0628zbgWc=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mZs5UF2KY224BEaS2y3ITun2iAMzQOfv69nwlxx/jcVkQDZg/pNz3n+9G0Cs+9nImAenlrszLQuxMEAtbSusSzLwv0gJq5RlyWH9kmxiDp8K4WqghhLevb3xPdu2rY0Au5etTAxEJ51W3j/sY70UZU7jjwMoYbXcPITumzQ223c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=MKq2AgCD; arc=none smtp.client-ip=170.10.129.124
+	s=arc-20240116; t=1721210749; c=relaxed/simple;
+	bh=pzlczSgIwURpCz9vCGhpCop7+ZzG3dvlybeLgb8qzhQ=;
+	h=From:To:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=XByakitSZM7O5160vmAEGlrOusou2NiHPTAAye14gh/rT4BESsYQob2wcM805hDmILB6DvwPOVse8bR8xX2hkrgCFN4dogylZArioDPg/gqGJk1D3JY5ivBYgFyOzxGjs+gnnQHWvYQcAHNFP0Ki/QtnKte16C2THWanrU3/LoA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=XJXu4GRj; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MKq2AgCD"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="XJXu4GRj"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1721206925;
+	s=mimecast20190719; t=1721210746;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NVfoZPm4V6TXucNzTnDE8mLk5shM2EgWGkd75vWlkjU=;
-	b=MKq2AgCD36+itLXDaQv4PbOhltgP6X22eO7zv5LKbLYhDWnmi9lzhl+I2XpBcp3RwqxsKu
-	FG39oVN/nWQorFE7T+iPnP2Yfv4vr98tRvMacvcbNpIvnxq+GeSvzzTkLTBTgvRzuJQz7b
-	PTv5MxV5yuDLk3ZjI7hGXM6rHW2VclM=
-Received: from mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-629-axAEi_4uPaC0AwQw8inVnw-1; Wed,
- 17 Jul 2024 05:01:59 -0400
-X-MC-Unique: axAEi_4uPaC0AwQw8inVnw-1
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 97A181955D4B;
-	Wed, 17 Jul 2024 09:01:57 +0000 (UTC)
-Received: from hydra.redhat.com (unknown [10.39.194.18])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 5B8681955F3B;
-	Wed, 17 Jul 2024 09:01:53 +0000 (UTC)
-From: Jocelyn Falempe <jfalempe@redhat.com>
-To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>,
-	Daniel Vetter <daniel@ffwll.ch>,
-	Helge Deller <deller@gmx.de>,
-	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Jocelyn Falempe <jfalempe@redhat.com>,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH 3/3] drm/panic: Remove build time dependency with FRAMEBUFFER_CONSOLE
-Date: Wed, 17 Jul 2024 10:48:41 +0200
-Message-ID: <20240717090102.968152-4-jfalempe@redhat.com>
-In-Reply-To: <20240717090102.968152-1-jfalempe@redhat.com>
+	bh=9XVOmJ5qZrjBzzyMjCpJUJSvkbzb7dNjfwAsLgNQSeI=;
+	b=XJXu4GRjFMpicj9YFuDWop2HTBUs0rxxnGzqfrRPpNx2SRWr+dIFCdyFahTfo4Rl6P73tx
+	LSi7dzo6qYyrtuZMbQRMn4PFOSKqpsmk6+8UWKboIFPLji+PwXoXEaawzwTy9gXMBKjiXg
+	bnKJ+bBR6V4fM9q84G22PF0bjtFB/3Q=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-74-QAlJ1NyPPXuWs89zrwAHaw-1; Wed, 17 Jul 2024 06:05:45 -0400
+X-MC-Unique: QAlJ1NyPPXuWs89zrwAHaw-1
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-367a3052cfaso5564152f8f.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jul 2024 03:05:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1721210744; x=1721815544;
+        h=mime-version:message-id:date:references:in-reply-to:subject:to:from
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=9XVOmJ5qZrjBzzyMjCpJUJSvkbzb7dNjfwAsLgNQSeI=;
+        b=nyfIKwEHrANIRayl5i2nZ6fGcTJhi2EqkOIZy5Aq5wP/DdE/2wSoNXQAQGCa2pUX8M
+         okwU1PDnclASDD3wjob5BT/O6+ezVCYx8xA+rQb90Nmoid6qJBX+NwBu8rI8WG/zmBmV
+         ZPcgOPaJDQcA6PM+dX2KYI8ftkEd5AoaQ9VAiYVnBpnPGFJKkviU5sYPiMls+DATxbOT
+         0xJ05uVPxq/JnKn5WZk1CXuOFcwo8rKH2Xoqe77T+/AvPUc+KNyClXhFGDnUDQojPpch
+         v7XfF5LB3cRDM1OcsEAHvoI92y4pD5lQhC8zsHdS/pcb554hOAPPcbUUewKFhjwHY7Ku
+         FuPw==
+X-Forwarded-Encrypted: i=1; AJvYcCU55G2fNENGHRJx6tyKURItK/bub5w3FObYpGrtng4Jq7Lb30JnteayZV7oRPxrHFnbL3AIdBdDnDU2g1Nj0v9yUlxP3PPyIrI/Z+Q=
+X-Gm-Message-State: AOJu0Yy2MlpTBn/VZ9Q3eQ0TOt8BHWU8QqvEeNmmbULScTHs72NAG+ZJ
+	wI2CgXuVp8/dtV5/B1K7kyoBKQ+Vt1NHKbfI3wFXhJbEQZHvMzoHsibn7xnv9PzowAMIJw6/KdA
+	2IJbWt7M7c8aUZLfqnZt2PcgWdGESmUZ98OreoaeMvcKjiTN1zCCNto/USdDb
+X-Received: by 2002:a05:6000:184a:b0:367:f054:620a with SMTP id ffacd0b85a97d-3683164e06bmr1376765f8f.30.1721210743908;
+        Wed, 17 Jul 2024 03:05:43 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFFyrK5oxCiDB6/FrZj9Bduj3f7Nd98eJNJ/eqEUmn3jqfve7vxK7uYWjf+/MzztI+lNDC9JQ==
+X-Received: by 2002:a05:6000:184a:b0:367:f054:620a with SMTP id ffacd0b85a97d-3683164e06bmr1376729f8f.30.1721210743535;
+        Wed, 17 Jul 2024 03:05:43 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3680dafbe7csm11270820f8f.83.2024.07.17.03.05.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 17 Jul 2024 03:05:43 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Jocelyn Falempe <jfalempe@redhat.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>, "Jiri Slaby
+ (SUSE)" <jirislaby@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Geert Uytterhoeven
+ <geert+renesas@glider.be>, Samuel Thibault <samuel.thibault@ens-lyon.org>,
+ Jocelyn Falempe <jfalempe@redhat.com>, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 1/3] drm/panic: Add drm_panic_is_enabled()
+In-Reply-To: <20240717090102.968152-2-jfalempe@redhat.com>
 References: <20240717090102.968152-1-jfalempe@redhat.com>
+ <20240717090102.968152-2-jfalempe@redhat.com>
+Date: Wed, 17 Jul 2024 12:05:42 +0200
+Message-ID: <8734o85o5l.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+Content-Type: text/plain
 
-Now that fbcon has the skip_panic option, there is no more conflicts
-between drm_panic and fbcon.
-Remove the build time dependency, so they can be both enabled.
+Jocelyn Falempe <jfalempe@redhat.com> writes:
 
-Signed-off-by: Jocelyn Falempe <jfalempe@redhat.com>
----
- drivers/gpu/drm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hello Jocelyn,
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 6dd0016fc9cd..a22cab218004 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -107,7 +107,7 @@ config DRM_KMS_HELPER
- 
- config DRM_PANIC
- 	bool "Display a user-friendly message when a kernel panic occurs"
--	depends on DRM && !(FRAMEBUFFER_CONSOLE && VT_CONSOLE)
-+	depends on DRM
- 	select FONT_SUPPORT
- 	help
- 	  Enable a drm panic handler, which will display a user-friendly message
+> It allows to check if the drm device supports drm_panic.
+> Prepare the work to have better integration with fbcon and vtconsole.
+>
+> Signed-off-by: Jocelyn Falempe <jfalempe@redhat.com>
+> ---
+>  drivers/gpu/drm/drm_panic.c | 20 ++++++++++++++++++++
+>  include/drm/drm_panic.h     |  2 ++
+>  2 files changed, 22 insertions(+)
+>
+> diff --git a/drivers/gpu/drm/drm_panic.c b/drivers/gpu/drm/drm_panic.c
+> index 948aed00595e..d9a25c2d0a65 100644
+> --- a/drivers/gpu/drm/drm_panic.c
+> +++ b/drivers/gpu/drm/drm_panic.c
+> @@ -703,6 +703,26 @@ static void debugfs_register_plane(struct drm_plane *plane, int index)
+>  static void debugfs_register_plane(struct drm_plane *plane, int index) {}
+>  #endif /* CONFIG_DRM_PANIC_DEBUG */
+>  
+> +/**
+> + * drm_panic_is_enabled
+> + * @dev: the drm device that may supports drm_panic
+> + *
+> + * returns true if the drm device supports drm_panic
+> + */
+> +bool drm_panic_is_enabled(struct drm_device *dev)
+> +{
+> +	struct drm_plane *plane;
+> +
+> +	if (!dev->mode_config.num_total_plane)
+> +		return false;
+> +
+> +	drm_for_each_plane(plane, dev)
+> +		if (plane->helper_private && plane->helper_private->get_scanout_buffer)
+> +			return true;
+> +	return false;
+> +}
+> +EXPORT_SYMBOL(drm_panic_is_enabled);
+> +
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
 -- 
-2.45.2
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

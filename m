@@ -1,65 +1,65 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5680C762D0
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jul 2024 07:04:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 258946F30B
+	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jul 2024 07:06:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1721286255; cv=none; b=CDNbkUHTj+M33IqWAmdjKL56TdWe2n5cogM3dBK7vsyUUsdMCuOgJMa3dImwO//UwUkTwpx80NymupQqYbGzrHijFbY54ILHd+1aFGKpRL2mHApigwFl7HBfza1h+HQ7pONAi/RxJZVmWVnVXxR4gCL8Uh4J1lGCuMzGD9pAGmQ=
+	t=1721286368; cv=none; b=N/fjg3ZXrrl73+5LThwbz2Cy1QP7l/eK49Y1624QRNShJowoMPvWbiTE2QEsIFl8zZZ9zwXICayQy6YWkIwBjKz1TAitiDr8tTJRYPRfWodyzLrtGI0iGLhmgoe3UtcsmBo7nfFWFIVMOdc8MOXqtiF4vW3D05G4rjjUJhHpk5Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1721286255; c=relaxed/simple;
-	bh=Qy5XXJ89Ktic3Aa1K9odT3n9Ohijkwg0eluVKDn6+pM=;
+	s=arc-20240116; t=1721286368; c=relaxed/simple;
+	bh=uA0JGGjakiMbR9WsA7dhks+DdnDu6St2X1YRdoaTlws=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=MTRg6j0PwGOuoAaFSKTlBMP45DLs/tTOBchrdnbh5RGMcjVhIt1CuxinQr7vPdQaffjyu5c7e2c9Vy0tb07pmDvFjGUfRsF0UUj1unF3/dJwTOlO8TwJasF8KyjuU+F/3KhZ0MCP+QxDwfGd5ptEr//Q0b4HeovF6p+ADV9PkOo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=igvG32IN; arc=none smtp.client-ip=170.10.129.124
+	 In-Reply-To:Content-Type; b=elUKAiC7ihS3HBpKrY4e56D8Dn7XswZT2F8mAJlBPRtt7TUwq5clHPLZ0L0DFM4Qbdu1661Phf4M/VBOXYGlBACzxQQF43+GgC3v5IqxplynEdArFafTeIfJfJ/rx4tLKb7vymIIhoG3P4gSU+XSQ6YeuUvM/w1otZXJFYEQNJE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JW9XMahH; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="igvG32IN"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JW9XMahH"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1721286253;
+	s=mimecast20190719; t=1721286366;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=yzJwnsiZ2ke6MzC/8F3MYwH+Ub1DtGJI2z59uDcufYU=;
-	b=igvG32INRv8MmFVioxnoKG0vY0NUv85PZUTkmlchIZdI875/4cffKeEbL+2iNGIxcOcspk
-	y1GmZF4+cQbqgYmwKw4e+9FZTtB/LVCffiQJfVTTpOtFBqDXZbOvy1WaGkBtGSjhUUyOWo
-	Wtp9vnE3oe3+9JOYnAcF0/b7szu6S34=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=LZ1lU4s3MEl0eqBrDrKpVc0POkcvbrGUvI/MYSaxt9I=;
+	b=JW9XMahHpN9JlXItgjKirIQ2J7fVIUqpwRNQJqJ33LLNJo1XiyAYv4U+PB76JJrMFG4ZlI
+	cIW3tBTFdsdN7pf4I9ovUcSWoDwtiwkrH5/asx0b7ooH3hDMlBD9NkS6uEl8HuOG4qis2M
+	9fVbe3VNeTgIznaRJURJMyfuWPR28RQ=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-679-WQHsaoHaNZ-psbe88xEY4A-1; Thu, 18 Jul 2024 03:04:08 -0400
-X-MC-Unique: WQHsaoHaNZ-psbe88xEY4A-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-42674318a4eso4359455e9.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 18 Jul 2024 00:04:08 -0700 (PDT)
+ us-mta-456-wJHjrgcuP0eGtiLVpf4oOg-1; Thu, 18 Jul 2024 03:06:04 -0400
+X-MC-Unique: wJHjrgcuP0eGtiLVpf4oOg-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4265464ddc9so2012135e9.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 18 Jul 2024 00:06:04 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1721286247; x=1721891047;
+        d=1e100.net; s=20230601; t=1721286363; x=1721891163;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=yzJwnsiZ2ke6MzC/8F3MYwH+Ub1DtGJI2z59uDcufYU=;
-        b=wdasG13xNjamD73/FAw+6IDGgXxXyqkif6xxfHX8QKtE8aWgwL6/zXLgUSqnTZhsjX
-         Z7QKcGwWZ/e/4DG5jURHhmCc9kbFNuvz9XHxEeWQvAab3fmq7eH0WNX24Yo+vnWFdX/j
-         D/nPNslBo9msPm4dy6toTWWhL+KJ7L88lNNDLWr4h7BptePeUEP1n5txgj//eiV+BC1W
-         /0hkW/Cb8REIIv13bljb/uZ9f4o1pFdgyNrmtTljVN7PQ8lvLTjC3rgwhN4fIRreOKuV
-         gl/nLMNTtSG2UgPi+L+twIAmEEjDVXT9AVQMKs6Mh3dpHt/g8rgZi/kI8RbaP+npPP46
-         RpbQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXx3Q/np9h33Ce1lnbquSkm/i6HsUN1KwWWmTrDsfBqdhit0RFeBEX4dCyCb2xx8iROf1+FAvGHYwjjAs/3yCLGaHx0zbVDpqQfPLU=
-X-Gm-Message-State: AOJu0Ywm2ar8VlJ4cChi1CiPj//pZ5EnHW4Av4+eFhMjBVd+RnsKbbY2
-	KuD1usUL3MUmBi7+kHcdPQ69DbwyVQagTlqCPRgb2x1IERQD5rVqjkVOiLiXfxqAeFrX8KRMW1/
-	U16PwxTTc2G8oDOYkvSZqVtG6N1jyFXxOMVGt4xfIU+oboocM11bBf7P/PyT4
-X-Received: by 2002:a05:600c:1f89:b0:425:64c5:5780 with SMTP id 5b1f17b1804b1-427c2cad7d5mr36509525e9.1.1721286247224;
-        Thu, 18 Jul 2024 00:04:07 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IF/KUVPhRm2HpDoAZJMxonN2aOgQWPFNeB5yzFSNwGye7MxC3l02lsOkLZOMlNf7V+jEkpGEg==
-X-Received: by 2002:a05:600c:1f89:b0:425:64c5:5780 with SMTP id 5b1f17b1804b1-427c2cad7d5mr36509225e9.1.1721286246782;
-        Thu, 18 Jul 2024 00:04:06 -0700 (PDT)
+        bh=LZ1lU4s3MEl0eqBrDrKpVc0POkcvbrGUvI/MYSaxt9I=;
+        b=UMFSaIZ3xE2qrUfDGlxnQS1EO2JpZNvQCKy8SLFEDeXvuXUsoC5tKk+udEafyrB1Cq
+         hPAkiaFutdc3D5t4X6vjIWhbzzKRa6XcR/rZQt6I6uRRmksMnvEhmAmR2jiNircWXlqE
+         iN1cc0MoYhc7vKDjA00y7a+ATvQpJ4VbKwu/TMhnX3TG1oYMFhJdDjYtCo0wNs/DhRNT
+         Kw36OYfDh23meLygkCmvCCVmRPy6hxeg95FSTjQuOoFoSpPf8bPp3ih/6x1fT+v0Q4KW
+         v2xhXPi0YbCLnYnRMIm/KRExuUGmaBSwHrrBc72q3W1oYXl4maV9nsBLCVU9WRssQSwO
+         PLRw==
+X-Forwarded-Encrypted: i=1; AJvYcCXDn2ewiACzdLiSErw+Oyz+Kt/+C7Un9g/GCF3CDsWxSPSp7+/D8zT1O8c/aBM6KrVY599aMshHyxSgHaI/+puUMgMFXSYjoekJqEc=
+X-Gm-Message-State: AOJu0Yyve8izqLLNhKcpG1Mwm3a1EfcndXMw1YYEAt/nrBYhiXgc8DfK
+	urgvhqvdUClPdfK9z2E8TgdxT7F5ZScmNyf+h+6edtMnMvnS902a6cnIaSb/gjQ+B4/MQ5tE66G
+	2gdjUrfKDvTbdyRrw1DEL/TTS+RowCw8LPsoWSgwxUFSJQBTkoRxgu//waAxA
+X-Received: by 2002:a05:600c:a41:b0:424:a7f1:ba2 with SMTP id 5b1f17b1804b1-427c83abaacmr11056335e9.17.1721286363342;
+        Thu, 18 Jul 2024 00:06:03 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHa7qUlOIVPtRLS94vJ5+kzoefqLguJcUGf7zXA8087LONGESX8WhOSNJuoCKzvG05hbn781w==
+X-Received: by 2002:a05:600c:a41:b0:424:a7f1:ba2 with SMTP id 5b1f17b1804b1-427c83abaacmr11056155e9.17.1721286362999;
+        Thu, 18 Jul 2024 00:06:02 -0700 (PDT)
 Received: from ?IPV6:2a01:e0a:c:37e0:ced3:55bd:f454:e722? ([2a01:e0a:c:37e0:ced3:55bd:f454:e722])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-427c77d810dsm23762885e9.26.2024.07.18.00.04.05
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-427c77f21bdsm23840755e9.29.2024.07.18.00.06.02
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 18 Jul 2024 00:04:06 -0700 (PDT)
-Message-ID: <34305c58-38a6-4b5a-9777-69833aefa003@redhat.com>
-Date: Thu, 18 Jul 2024 09:04:04 +0200
+        Thu, 18 Jul 2024 00:06:02 -0700 (PDT)
+Message-ID: <93589af2-dcfc-437b-85ca-b0029f4d6401@redhat.com>
+Date: Thu, 18 Jul 2024 09:06:01 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -67,7 +67,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] drm/panic: Add drm_panic_is_enabled()
+Subject: Re: [PATCH 2/3] fbcon: Add an option to disable fbcon in panic.
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
  David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
@@ -79,109 +79,64 @@ To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  linux-fbdev@vger.kernel.org
 References: <20240717090102.968152-1-jfalempe@redhat.com>
- <20240717090102.968152-2-jfalempe@redhat.com>
- <ZpfeiMj48JQTQcOE@phenom.ffwll.local>
+ <20240717090102.968152-3-jfalempe@redhat.com>
+ <ZpfdcC2Es9rweHW_@phenom.ffwll.local>
 Content-Language: en-US, fr
 From: Jocelyn Falempe <jfalempe@redhat.com>
-In-Reply-To: <ZpfeiMj48JQTQcOE@phenom.ffwll.local>
+In-Reply-To: <ZpfdcC2Es9rweHW_@phenom.ffwll.local>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
-On 17/07/2024 17:08, Daniel Vetter wrote:
-> On Wed, Jul 17, 2024 at 10:48:39AM +0200, Jocelyn Falempe wrote:
->> It allows to check if the drm device supports drm_panic.
->> Prepare the work to have better integration with fbcon and vtconsole.
+On 17/07/2024 17:04, Daniel Vetter wrote:
+> On Wed, Jul 17, 2024 at 10:48:40AM +0200, Jocelyn Falempe wrote:
+>> This is required to avoid conflict between DRM_PANIC, and fbcon. If
+>> a drm device already handle panic with drm_panic, it should set
+>> the skip_panic field in fb_info, so that fbcon will stay quiet, and
+>> not overwrite the panic_screen.
 >>
 >> Signed-off-by: Jocelyn Falempe <jfalempe@redhat.com>
 >> ---
->>   drivers/gpu/drm/drm_panic.c | 20 ++++++++++++++++++++
->>   include/drm/drm_panic.h     |  2 ++
->>   2 files changed, 22 insertions(+)
+>>   drivers/gpu/drm/drm_fb_helper.c  | 2 ++
+>>   drivers/video/fbdev/core/fbcon.c | 7 ++++++-
+>>   include/linux/fb.h               | 1 +
+>>   3 files changed, 9 insertions(+), 1 deletion(-)
 >>
->> diff --git a/drivers/gpu/drm/drm_panic.c b/drivers/gpu/drm/drm_panic.c
->> index 948aed00595e..d9a25c2d0a65 100644
->> --- a/drivers/gpu/drm/drm_panic.c
->> +++ b/drivers/gpu/drm/drm_panic.c
->> @@ -703,6 +703,26 @@ static void debugfs_register_plane(struct drm_plane *plane, int index)
->>   static void debugfs_register_plane(struct drm_plane *plane, int index) {}
->>   #endif /* CONFIG_DRM_PANIC_DEBUG */
+>> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+>> index e2e19f49342e..3662d664d8f9 100644
+>> --- a/drivers/gpu/drm/drm_fb_helper.c
+>> +++ b/drivers/gpu/drm/drm_fb_helper.c
+>> @@ -40,6 +40,7 @@
+>>   #include <drm/drm_fourcc.h>
+>>   #include <drm/drm_framebuffer.h>
+>>   #include <drm/drm_modeset_helper_vtables.h>
+>> +#include <drm/drm_panic.h>
+>>   #include <drm/drm_print.h>
+>>   #include <drm/drm_vblank.h>
 >>   
->> +/**
->> + * drm_panic_is_enabled
->> + * @dev: the drm device that may supports drm_panic
->> + *
->> + * returns true if the drm device supports drm_panic
->> + */
->> +bool drm_panic_is_enabled(struct drm_device *dev)
->> +{
->> +	struct drm_plane *plane;
->> +
->> +	if (!dev->mode_config.num_total_plane)
->> +		return false;
->> +
->> +	drm_for_each_plane(plane, dev)
->> +		if (plane->helper_private && plane->helper_private->get_scanout_buffer)
->> +			return true;
->> +	return false;
->> +}
->> +EXPORT_SYMBOL(drm_panic_is_enabled);
-> 
-> This feels like overkill since you currently only have one user in the
-> fbdev emulation code, but maybe useful in some other places ...
-> 
->> +
->>   /**
->>    * drm_panic_register() - Initialize DRM panic for a device
->>    * @dev: the drm device on which the panic screen will be displayed.
->> diff --git a/include/drm/drm_panic.h b/include/drm/drm_panic.h
->> index 73bb3f3d9ed9..c3a358dc3e27 100644
->> --- a/include/drm/drm_panic.h
->> +++ b/include/drm/drm_panic.h
->> @@ -148,11 +148,13 @@ struct drm_scanout_buffer {
+>> @@ -524,6 +525,7 @@ struct fb_info *drm_fb_helper_alloc_info(struct drm_fb_helper *fb_helper)
+>>   	fb_helper->info = info;
+>>   	info->skip_vt_switch = true;
 >>   
->>   #ifdef CONFIG_DRM_PANIC
+>> +	info->skip_panic = drm_panic_is_enabled(fb_helper->dev);
+>>   	return info;
 >>   
->> +bool drm_panic_is_enabled(struct drm_device *dev);
+>>   err_release:
 > 
-> Since it's internal only, this should be in
-> drivers/gpu/drm/drm_crtc_internal.h and not int he include for drivers.
-
-Yes, that makes sense, drivers won't need that API.
-
-> With that:
+> Bit a bikeshed, but I'd split this patch out since it's for drm's fbdev
+> emulation, not the fbcon core code. With that:
 > 
 > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> 
->>   void drm_panic_register(struct drm_device *dev);
->>   void drm_panic_unregister(struct drm_device *dev);
-> 
-> These two are only used in drm.ko. Can you please move them to
-> drm_crtc_internal.h too and drop the EXPORT_SYMBOL in a follow-up patch?
-> We're trying to limit the exported interface and official headers to
-> really only the pieces drivers actually need.
 
-Sure, I'll add this to my next drm_panic series.
+Agreed, I considered doing that when writing the patch, but as it was 1 
+line, I kept it with the fbcon change.
 
-> 
-> Thanks, Sima
-> 
->>   
->>   #else
->>   
->> +bool drm_panic_is_enabled(struct drm_device *dev) {return false; }
->>   static inline void drm_panic_register(struct drm_device *dev) {}
->>   static inline void drm_panic_unregister(struct drm_device *dev) {}
->>   
->> -- 
->> 2.45.2
->>
-> 
-
-Best regards,
+Thanks,
 
 -- 
 
 Jocelyn
+
+> 
 

@@ -1,191 +1,124 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D34E47E0E8
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jul 2024 09:30:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 160577D3EF;
+	Thu, 18 Jul 2024 09:54:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1721295014; cv=none; b=SQz5zcNyUpWScy9NGfJkKrprfJE1JWiviuIXQvkuAlLcMuvGORe6ZaWGpW+Zb0IKBm96gBqeoWRVjEbcOWrXKMfYd8ZRjeWa9i4aptmVK+p0BpnlusHqe6zOx61gCkXgtZpF+CkvlAEY6zjxsEhIsxI1qXIm/nctuvFmZI/t7SA=
+	t=1721296485; cv=none; b=B1FYghFs5/yQINEbjh8hOhXArLgezDjgpk7y4xy4CSN7WD8e5pnwZpRIK5vtYfLBMDrsifBkQ+QImoXMWieHUg0vjr8Pv+Hq81MGMhg/tCW2VRJI6bcVYqG/BZSdlLemLsOjlX4DFkjyu47DEZn9/fE/MyBPqLYwZGAu4mVJQCI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1721295014; c=relaxed/simple;
-	bh=jaPjAHgp3deTV1Hq8fkYFnQEa60iTiIYvv2Kc0Wj2KQ=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
-	 In-Reply-To:Content-Type; b=KUUNmv7DzoToV4z8BIW3ghemCfaKSVXtTrRizz9JxonD6xrN1onyUe7V5S8FKtFa8DbNv6liAhZE0vaG3sVc7iWAThBkINQRA/XOa0isP4pfS++PqQr9RKfPXMTq5ci9j6U/OTK1LJ86v+r2uu2kIyDXAEwI7HYj4oTeltCL3ho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=hTFcveIE; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1721296485; c=relaxed/simple;
+	bh=LNvfFe6lpclQyzVtfWGQIEmYsoX37dvAyhtKRFDDsFM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=U5OnOxPEWzh+j1BEC7BDYa198tPa4UdWLn3iaCZEoqeh9LJM15NYRZVISo+MPQUzJveubQNKhmZSKcJozyVsFDrKEKAvpFMXsydxNRJFNkUC2h3GR3137V3LwtQfnBxLZfMNe/XlclaZFel4cxlR+N1z+mQCzfBqjZ3A7etCtqs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=djTNqt3x; arc=none smtp.client-ip=198.175.65.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="hTFcveIE"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1721295011;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9q9HLC7V8MLZ80zJXfERHHxdoqrkWdriaq68Cy7rAuA=;
-	b=hTFcveIE2UJM/N1l+u2lJ7OGRbfBHK9QNCVLI1kMeF/kbP0Hl2INszc9uvLMGN+6thPvnx
-	jfPxh3OV98M/qvwdGNhpPBfJjJWymem5VJVcSbkXYX3mBsOLLR/Kw6utkTTnJHbnUKdV6w
-	cZnSt+qLE9BTLiocBSs0bvPY1UkZc4Q=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-631-NF89YZoWM9eAewfpw3ZT5w-1; Thu, 18 Jul 2024 05:30:08 -0400
-X-MC-Unique: NF89YZoWM9eAewfpw3ZT5w-1
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-426703ac975so700195e9.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 18 Jul 2024 02:30:08 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1721295007; x=1721899807;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :to:from:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9q9HLC7V8MLZ80zJXfERHHxdoqrkWdriaq68Cy7rAuA=;
-        b=rlmYMBrb5YR0q3b06QyEJwATxrEJsKcrLsA5RvfF3S6X17TubOdfK0VLLW2wR69/dY
-         yW+1fl3Fh1Fb2wsnp4xbGyiwL6irb0/Swu770VQnpril7M47Gy1Za3UaSCT49p2H66Uq
-         bMsDIeG7A4j0pGlEGPnv56W9oo0HMPwn2rcuINkBL0LL6cqG2IM7L0mEjrJOGWH2m3eV
-         DY0jfFWXPJsj02qFweBa6kzM6VXtmXrrlD57hUJRGc3o5HZpZcf/pOF0qkg6BKvBEtqH
-         myiRfjAHorggjXYXumzFug9yvkTBq87xCnYxFmp0EF4j8k+qXnxote61OAPFkJNOYHFK
-         NBVg==
-X-Forwarded-Encrypted: i=1; AJvYcCUqeCGLaw/bczMB1Az5mYbDH07It1vlWsaHgiGY1VdU/akOKzFWlCZznjwk+9jWsNneRkBOeiaxx43B9Gvp8i6zmq4Ii0xB8rK8e9A=
-X-Gm-Message-State: AOJu0Yxul2x7zytklcFelT63PYy6+c0qzAD1sw78itjiSsrPv5ymuQ9Y
-	JZgHqlMNuS7egXkW61YpHJZY/0Mt1XzOA+TQqEKqzi7p2bKWqMt8ISPiuAGUXEBBHvtP+yY8gfL
-	3zgtOV2KRKVaZ+gIrN5cby7HDSkOXiEYISsTOg73oAvkyGnhw75ZOVLVO604K
-X-Received: by 2002:a05:600c:1c9d:b0:426:711c:6591 with SMTP id 5b1f17b1804b1-427d2a85815mr2795355e9.4.1721295007407;
-        Thu, 18 Jul 2024 02:30:07 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IE+8ttf1s3egHR+h5cLkePronykxkc0Zd3hb0OjoNA8amSZdiUzePN3sl9hakq1rcMyxyqpXw==
-X-Received: by 2002:a05:600c:1c9d:b0:426:711c:6591 with SMTP id 5b1f17b1804b1-427d2a85815mr2795035e9.4.1721295006929;
-        Thu, 18 Jul 2024 02:30:06 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:c:37e0:ced3:55bd:f454:e722? ([2a01:e0a:c:37e0:ced3:55bd:f454:e722])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-427d2b1f1e1sm3094685e9.30.2024.07.18.02.30.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 18 Jul 2024 02:30:06 -0700 (PDT)
-Message-ID: <60419d31-f467-4277-97da-23c9573af2bf@redhat.com>
-Date: Thu, 18 Jul 2024 11:30:05 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="djTNqt3x"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1721296484; x=1752832484;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=LNvfFe6lpclQyzVtfWGQIEmYsoX37dvAyhtKRFDDsFM=;
+  b=djTNqt3x0NVN/TPsCHJHQUKmNhkIE2DW7FcWg333NVa9X9SX/OqGlMrz
+   uBFZK3HjNMdiulFJhnPKNClBeGUrSJ7Es3doFdFtFkef4ul5hYNmLvOLz
+   zUH8isZdJ2m3pnothz+TDORmgjT7NAzCAVCaUQ97qu0OZgGqPf0PqaDG+
+   Y+TeeibqrjJcmZXF+efKfediQGcK5XI/drXLGKgNJKHXgKCAsJ4G+auJF
+   OnFIIePgyQyF/Ffr8FuyxtNgrLJpGA8W6bjWbXdDBJyK+1k8+xWwfwaj7
+   LUCAqtQWFRfIW9YqYgmYFB2hEUpkwhb9vR7ae0pwakT8OaBJNvDk5Syu8
+   g==;
+X-CSE-ConnectionGUID: b1tkrImdQ8qPoITdBycwYA==
+X-CSE-MsgGUID: Ww5gAsH/Sk604LI8rp9e6w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11136"; a="18805822"
+X-IronPort-AV: E=Sophos;i="6.09,217,1716274800"; 
+   d="scan'208";a="18805822"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jul 2024 02:54:43 -0700
+X-CSE-ConnectionGUID: 2zJkzbk3Qg25Fe946qM/UA==
+X-CSE-MsgGUID: 9WjGZjySSfipH90FxDXWBg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,217,1716274800"; 
+   d="scan'208";a="73943022"
+Received: from bergbenj-mobl1.ger.corp.intel.com (HELO intel.com) ([10.245.246.52])
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jul 2024 02:54:38 -0700
+Date: Thu, 18 Jul 2024 11:54:34 +0200
+From: Andi Shyti <andi.shyti@linux.intel.com>
+To: Easwar Hariharan <eahariha@linux.microsoft.com>
+Cc: Jani Nikula <jani.nikula@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+	Zhenyu Wang <zhenyuw@linux.intel.com>,
+	Zhi Wang <zhi.wang.linux@gmail.com>,
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>,
+	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>,
+	"open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:INTEL GVT-g DRIVERS (Intel GPU Virtualization)" <intel-gvt-dev@lists.freedesktop.org>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Andi Shyti <andi.shyti@linux.intel.com>,
+	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+	Zhi Wang <zhiwang@kernel.org>
+Subject: Re: [PATCH v4 3/6] drm/i915: Make I2C terminology more inclusive
+Message-ID: <ZpjmWtmaiu294ca_@ashyti-mobl2.lan>
+References: <20240711052734.1273652-1-eahariha@linux.microsoft.com>
+ <20240711052734.1273652-4-eahariha@linux.microsoft.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] drm/panic: Add drm_panic_is_enabled()
-From: Jocelyn Falempe <jfalempe@redhat.com>
-To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
- "Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Samuel Thibault <samuel.thibault@ens-lyon.org>,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org
-References: <20240717090102.968152-1-jfalempe@redhat.com>
- <20240717090102.968152-2-jfalempe@redhat.com>
- <ZpfeiMj48JQTQcOE@phenom.ffwll.local>
- <34305c58-38a6-4b5a-9777-69833aefa003@redhat.com>
-Content-Language: en-US, fr
-In-Reply-To: <34305c58-38a6-4b5a-9777-69833aefa003@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240711052734.1273652-4-eahariha@linux.microsoft.com>
 
+Hi Easwar,
 
+On Thu, Jul 11, 2024 at 05:27:31AM +0000, Easwar Hariharan wrote:
+> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+> with more appropriate terms. Inspired by Wolfram's series to fix drivers/i2c/,
+> fix the terminology for users of I2C_ALGOBIT bitbanging interface, now that
+> the approved verbiage exists in the specification.
+> 
+> Reviewed-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+> Acked-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+> Acked-by: Zhi Wang <zhiwang@kernel.org>
+> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+> ---
+>  drivers/gpu/drm/i915/display/dvo_ch7017.c     | 14 ++++-----
+>  drivers/gpu/drm/i915/display/dvo_ch7xxx.c     | 18 +++++------
+>  drivers/gpu/drm/i915/display/dvo_ivch.c       | 16 +++++-----
+>  drivers/gpu/drm/i915/display/dvo_ns2501.c     | 18 +++++------
+>  drivers/gpu/drm/i915/display/dvo_sil164.c     | 18 +++++------
+>  drivers/gpu/drm/i915/display/dvo_tfp410.c     | 18 +++++------
+>  drivers/gpu/drm/i915/display/intel_bios.c     | 22 +++++++-------
+>  .../gpu/drm/i915/display/intel_display_core.h |  2 +-
+>  drivers/gpu/drm/i915/display/intel_dsi.h      |  2 +-
+>  drivers/gpu/drm/i915/display/intel_dsi_vbt.c  | 20 ++++++-------
+>  drivers/gpu/drm/i915/display/intel_dvo.c      | 14 ++++-----
+>  drivers/gpu/drm/i915/display/intel_dvo_dev.h  |  2 +-
+>  drivers/gpu/drm/i915/display/intel_gmbus.c    |  4 +--
+>  drivers/gpu/drm/i915/display/intel_sdvo.c     | 30 +++++++++----------
+>  drivers/gpu/drm/i915/display/intel_vbt_defs.h |  4 +--
+>  drivers/gpu/drm/i915/gvt/edid.c               | 28 ++++++++---------
+>  drivers/gpu/drm/i915/gvt/edid.h               |  4 +--
+>  drivers/gpu/drm/i915/gvt/opregion.c           |  2 +-
+>  18 files changed, 118 insertions(+), 118 deletions(-)
 
-On 18/07/2024 09:04, Jocelyn Falempe wrote:
-> 
-> 
-> On 17/07/2024 17:08, Daniel Vetter wrote:
->> On Wed, Jul 17, 2024 at 10:48:39AM +0200, Jocelyn Falempe wrote:
->>> It allows to check if the drm device supports drm_panic.
->>> Prepare the work to have better integration with fbcon and vtconsole.
->>>
->>> Signed-off-by: Jocelyn Falempe <jfalempe@redhat.com>
->>> ---
->>>   drivers/gpu/drm/drm_panic.c | 20 ++++++++++++++++++++
->>>   include/drm/drm_panic.h     |  2 ++
->>>   2 files changed, 22 insertions(+)
->>>
->>> diff --git a/drivers/gpu/drm/drm_panic.c b/drivers/gpu/drm/drm_panic.c
->>> index 948aed00595e..d9a25c2d0a65 100644
->>> --- a/drivers/gpu/drm/drm_panic.c
->>> +++ b/drivers/gpu/drm/drm_panic.c
->>> @@ -703,6 +703,26 @@ static void debugfs_register_plane(struct 
->>> drm_plane *plane, int index)
->>>   static void debugfs_register_plane(struct drm_plane *plane, int 
->>> index) {}
->>>   #endif /* CONFIG_DRM_PANIC_DEBUG */
->>> +/**
->>> + * drm_panic_is_enabled
->>> + * @dev: the drm device that may supports drm_panic
->>> + *
->>> + * returns true if the drm device supports drm_panic
->>> + */
->>> +bool drm_panic_is_enabled(struct drm_device *dev)
->>> +{
->>> +    struct drm_plane *plane;
->>> +
->>> +    if (!dev->mode_config.num_total_plane)
->>> +        return false;
->>> +
->>> +    drm_for_each_plane(plane, dev)
->>> +        if (plane->helper_private && 
->>> plane->helper_private->get_scanout_buffer)
->>> +            return true;
->>> +    return false;
->>> +}
->>> +EXPORT_SYMBOL(drm_panic_is_enabled);
->>
->> This feels like overkill since you currently only have one user in the
->> fbdev emulation code, but maybe useful in some other places ...
->>
->>> +
->>>   /**
->>>    * drm_panic_register() - Initialize DRM panic for a device
->>>    * @dev: the drm device on which the panic screen will be displayed.
->>> diff --git a/include/drm/drm_panic.h b/include/drm/drm_panic.h
->>> index 73bb3f3d9ed9..c3a358dc3e27 100644
->>> --- a/include/drm/drm_panic.h
->>> +++ b/include/drm/drm_panic.h
->>> @@ -148,11 +148,13 @@ struct drm_scanout_buffer {
->>>   #ifdef CONFIG_DRM_PANIC
->>> +bool drm_panic_is_enabled(struct drm_device *dev);
->>
->> Since it's internal only, this should be in
->> drivers/gpu/drm/drm_crtc_internal.h and not int he include for drivers.
-> 
-> Yes, that makes sense, drivers won't need that API.
-> 
->> With that:
->>
->> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->>
->>>   void drm_panic_register(struct drm_device *dev);
->>>   void drm_panic_unregister(struct drm_device *dev);
->>
->> These two are only used in drm.ko. Can you please move them to
->> drm_crtc_internal.h too and drop the EXPORT_SYMBOL in a follow-up patch?
->> We're trying to limit the exported interface and official headers to
->> really only the pieces drivers actually need.
-> 
-> Sure, I'll add this to my next drm_panic series.
+it's a complex/long patch and I want to make sure there are no
+subtle errors. I will submit another round of tests and if it
+convinces me, I will take it in.
 
-I think this also applies to drm_panic_init() and drm_panic_exit(), that 
-I introduce in my QR code series:
-https://patchwork.freedesktop.org/patch/604890/?series=135944&rev=2
-I will move them to drm_crtc_internal.h
+The failures you see[*] are definitely not related to this patch,
+but better safe safe safe than sorry sorry sorry :-)
 
-> 
->>
->> Thanks, Sima
->>
->>>   #else
->>> +bool drm_panic_is_enabled(struct drm_device *dev) {return false; }
->>>   static inline void drm_panic_register(struct drm_device *dev) {}
->>>   static inline void drm_panic_unregister(struct drm_device *dev) {}
->>> -- 
->>> 2.45.2
->>>
->>
-> 
-> Best regards,
-> 
+Thanks,
+Andi
 
+[*] https://patchwork.freedesktop.org/series/131867/

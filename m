@@ -1,124 +1,154 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 160577D3EF;
-	Thu, 18 Jul 2024 09:54:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C53B13B7AF;
+	Thu, 18 Jul 2024 15:56:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1721296485; cv=none; b=B1FYghFs5/yQINEbjh8hOhXArLgezDjgpk7y4xy4CSN7WD8e5pnwZpRIK5vtYfLBMDrsifBkQ+QImoXMWieHUg0vjr8Pv+Hq81MGMhg/tCW2VRJI6bcVYqG/BZSdlLemLsOjlX4DFkjyu47DEZn9/fE/MyBPqLYwZGAu4mVJQCI=
+	t=1721318169; cv=none; b=Pw8aEJiend8/JT/QiV0JJEj3dE+ki2NKGKN1B3KLmLGiZPMHm2ajgpxKYxJR+EwjN3E0N9ayUsnfTmdq07BOPnTCfYwDJPno/zXMTEKAfYdqaXXKgMWayLj9f9CXTJtMu3mKDDcgMGV+/Jt+juEGON+4dwJvSoLL8WV4YOZKfak=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1721296485; c=relaxed/simple;
-	bh=LNvfFe6lpclQyzVtfWGQIEmYsoX37dvAyhtKRFDDsFM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=U5OnOxPEWzh+j1BEC7BDYa198tPa4UdWLn3iaCZEoqeh9LJM15NYRZVISo+MPQUzJveubQNKhmZSKcJozyVsFDrKEKAvpFMXsydxNRJFNkUC2h3GR3137V3LwtQfnBxLZfMNe/XlclaZFel4cxlR+N1z+mQCzfBqjZ3A7etCtqs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=djTNqt3x; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1721318169; c=relaxed/simple;
+	bh=wFUzftDcteRmA2NyKmVxglS13LnS1utkda/P2FIp9y4=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=oBtEueVtk9o8/lKgRIM/UF38XX/9CIAn+WLUz8dHtOGFtnUmrZZ7ws2hjVqBzFgiKlSSPoAwo+6T69GeAhyzdyQV2AvXI1LVWi1upM8pV798CHE7VJ107+IzQ4zWgxhaeq/c7shjkawIeLBM1ri525KGmO9QkbcgOGigrTT4ZIA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A/We4EpV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="djTNqt3x"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1721296484; x=1752832484;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=LNvfFe6lpclQyzVtfWGQIEmYsoX37dvAyhtKRFDDsFM=;
-  b=djTNqt3x0NVN/TPsCHJHQUKmNhkIE2DW7FcWg333NVa9X9SX/OqGlMrz
-   uBFZK3HjNMdiulFJhnPKNClBeGUrSJ7Es3doFdFtFkef4ul5hYNmLvOLz
-   zUH8isZdJ2m3pnothz+TDORmgjT7NAzCAVCaUQ97qu0OZgGqPf0PqaDG+
-   Y+TeeibqrjJcmZXF+efKfediQGcK5XI/drXLGKgNJKHXgKCAsJ4G+auJF
-   OnFIIePgyQyF/Ffr8FuyxtNgrLJpGA8W6bjWbXdDBJyK+1k8+xWwfwaj7
-   LUCAqtQWFRfIW9YqYgmYFB2hEUpkwhb9vR7ae0pwakT8OaBJNvDk5Syu8
-   g==;
-X-CSE-ConnectionGUID: b1tkrImdQ8qPoITdBycwYA==
-X-CSE-MsgGUID: Ww5gAsH/Sk604LI8rp9e6w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11136"; a="18805822"
-X-IronPort-AV: E=Sophos;i="6.09,217,1716274800"; 
-   d="scan'208";a="18805822"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jul 2024 02:54:43 -0700
-X-CSE-ConnectionGUID: 2zJkzbk3Qg25Fe946qM/UA==
-X-CSE-MsgGUID: 9WjGZjySSfipH90FxDXWBg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,217,1716274800"; 
-   d="scan'208";a="73943022"
-Received: from bergbenj-mobl1.ger.corp.intel.com (HELO intel.com) ([10.245.246.52])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jul 2024 02:54:38 -0700
-Date: Thu, 18 Jul 2024 11:54:34 +0200
-From: Andi Shyti <andi.shyti@linux.intel.com>
-To: Easwar Hariharan <eahariha@linux.microsoft.com>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Zhenyu Wang <zhenyuw@linux.intel.com>,
-	Zhi Wang <zhi.wang.linux@gmail.com>,
-	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-gfx@lists.freedesktop.org>,
-	"open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS" <intel-xe@lists.freedesktop.org>,
-	"open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
-	open list <linux-kernel@vger.kernel.org>,
-	"open list:INTEL GVT-g DRIVERS (Intel GPU Virtualization)" <intel-gvt-dev@lists.freedesktop.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Andi Shyti <andi.shyti@linux.intel.com>,
-	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
-	"open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
-	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-	Zhi Wang <zhiwang@kernel.org>
-Subject: Re: [PATCH v4 3/6] drm/i915: Make I2C terminology more inclusive
-Message-ID: <ZpjmWtmaiu294ca_@ashyti-mobl2.lan>
-References: <20240711052734.1273652-1-eahariha@linux.microsoft.com>
- <20240711052734.1273652-4-eahariha@linux.microsoft.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A/We4EpV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30B90C116B1;
+	Thu, 18 Jul 2024 15:56:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1721318169;
+	bh=wFUzftDcteRmA2NyKmVxglS13LnS1utkda/P2FIp9y4=;
+	h=Date:From:To:Subject:From;
+	b=A/We4EpVLkmBtNutObcnOePbkR1hlJ25HJp7KdxvYECL6I796uRDuyixuchZ9xAdP
+	 s81JdowqonElXN3CO3FFGBTkSyqQoxmGAseD43XboRPlseBxcOWHv0spuDx569RCHi
+	 tRQtGSA9rupij0leRbfIYGo0hmuGSo0VleOPJyIwdUi8Qp523L1u2BVK6N97RiwIz2
+	 i79fgH0Wuow94uOy1k1K+ksl5j1hx1u7i7Kt6t1JprdUV5yooXp9xEmjd3IkcLj38V
+	 t7if0aqAMlAdrSPqGDSyxX2nRTwsdYWq+UJEUdku1uWjyYf14o02pXEKObEsfKRs9V
+	 WjFzCrcWSI4dw==
+Date: Thu, 18 Jul 2024 17:56:03 +0200
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and cleanups for v6.11-rc1
+Message-ID: <Zpk7E3ZBlh2UdXy2@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20240711052734.1273652-4-eahariha@linux.microsoft.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Easwar,
+Hi Linus,
 
-On Thu, Jul 11, 2024 at 05:27:31AM +0000, Easwar Hariharan wrote:
-> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
-> with more appropriate terms. Inspired by Wolfram's series to fix drivers/i2c/,
-> fix the terminology for users of I2C_ALGOBIT bitbanging interface, now that
-> the approved verbiage exists in the specification.
-> 
-> Reviewed-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
-> Acked-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
-> Acked-by: Zhi Wang <zhiwang@kernel.org>
-> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
-> ---
->  drivers/gpu/drm/i915/display/dvo_ch7017.c     | 14 ++++-----
->  drivers/gpu/drm/i915/display/dvo_ch7xxx.c     | 18 +++++------
->  drivers/gpu/drm/i915/display/dvo_ivch.c       | 16 +++++-----
->  drivers/gpu/drm/i915/display/dvo_ns2501.c     | 18 +++++------
->  drivers/gpu/drm/i915/display/dvo_sil164.c     | 18 +++++------
->  drivers/gpu/drm/i915/display/dvo_tfp410.c     | 18 +++++------
->  drivers/gpu/drm/i915/display/intel_bios.c     | 22 +++++++-------
->  .../gpu/drm/i915/display/intel_display_core.h |  2 +-
->  drivers/gpu/drm/i915/display/intel_dsi.h      |  2 +-
->  drivers/gpu/drm/i915/display/intel_dsi_vbt.c  | 20 ++++++-------
->  drivers/gpu/drm/i915/display/intel_dvo.c      | 14 ++++-----
->  drivers/gpu/drm/i915/display/intel_dvo_dev.h  |  2 +-
->  drivers/gpu/drm/i915/display/intel_gmbus.c    |  4 +--
->  drivers/gpu/drm/i915/display/intel_sdvo.c     | 30 +++++++++----------
->  drivers/gpu/drm/i915/display/intel_vbt_defs.h |  4 +--
->  drivers/gpu/drm/i915/gvt/edid.c               | 28 ++++++++---------
->  drivers/gpu/drm/i915/gvt/edid.h               |  4 +--
->  drivers/gpu/drm/i915/gvt/opregion.c           |  2 +-
->  18 files changed, 118 insertions(+), 118 deletions(-)
+please pull a bunch of usual cleanups for the fbdev drivers for kernel 6.11-rc1.
 
-it's a complex/long patch and I want to make sure there are no
-subtle errors. I will submit another round of tests and if it
-convinces me, I will take it in.
+Thanks!
+Helge
 
-The failures you see[*] are definitely not related to this patch,
-but better safe safe safe than sorry sorry sorry :-)
+----------------------------------------------------------------
+The following changes since commit 83a7eefedc9b56fe7bfeff13b6c7356688ffa670:
 
-Thanks,
-Andi
+  Linux 6.10-rc3 (2024-06-09 14:19:43 -0700)
 
-[*] https://patchwork.freedesktop.org/series/131867/
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.11-rc1
+
+for you to fetch changes up to 8b5ea9029b03efda74292c57e0377a98ed0b7434:
+
+  fbdev: viafb: Make I2C terminology more inclusive (2024-07-11 12:07:48 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.11-rc1:
+
+- Detect VGA compatibility from VESA attributes [Thomas Zimmermann]
+- Make I2C terminology more inclusive in smscufx and viafb [Easwar Hariharan]
+- Add lots of missing MODULE_DESCRIPTION() macros [Jeff Johnson]
+- Logo code cleanups [Geert Uytterhoeven]
+- Minor fixes by Chen Ni, Kuninori Morimoto, Uwe Kleine-König and Christophe Jaillett
+
+----------------------------------------------------------------
+Chen Ni (1):
+      fbdev: omap2: Return clk_prepare_enable to transfer the error
+
+Christophe JAILLET (1):
+      fbdev: mmp: Constify struct mmp_overlay_ops
+
+Easwar Hariharan (2):
+      fbdev: smscufx: Make I2C terminology more inclusive
+      fbdev: viafb: Make I2C terminology more inclusive
+
+Geert Uytterhoeven (2):
+      video/logo: Make logo data const again
+      video/logo: Remove linux_serial_image comments
+
+Jeff Johnson (11):
+      fbdev: matroxfb: add missing MODULE_DESCRIPTION() macros
+      fbdev: viafb: add missing MODULE_DESCRIPTION() macro
+      fbdev: kyro: add missing MODULE_DESCRIPTION() macro
+      fbdev: goldfishfb: add missing MODULE_DESCRIPTION() macro
+      fbdev: macmodes: add missing MODULE_DESCRIPTION() macro
+      fbdev: vfb: add missing MODULE_DESCRIPTION() macro
+      fbdev: offb: add missing MODULE_DESCRIPTION() macro
+      fbdev: c2p_planar: add missing MODULE_DESCRIPTION() macro
+      fbdev: amifb: add missing MODULE_DESCRIPTION() macro
+      video: console: add missing MODULE_DESCRIPTION() macros
+      video: agp: add remaining missing MODULE_DESCRIPTION() macros
+
+Kuninori Morimoto (2):
+      fbdev: omapdss: use for_each_endpoint_of_node()
+      fbdev: omapfb: use of_graph_get_remote_port()
+
+Thomas Zimmermann (1):
+      fbdev: vesafb: Detect VGA compatibility from screen info's VESA attributes
+
+Uwe Kleine-König (1):
+      fbdev: Drop explicit initialization of struct i2c_device_id::driver_data to 0
+
+ drivers/char/agp/ali-agp.c                         |  1 +
+ drivers/char/agp/alpha-agp.c                       |  1 +
+ drivers/char/agp/amd-k7-agp.c                      |  1 +
+ drivers/char/agp/ati-agp.c                         |  1 +
+ drivers/char/agp/efficeon-agp.c                    |  1 +
+ drivers/char/agp/nvidia-agp.c                      |  1 +
+ drivers/char/agp/parisc-agp.c                      |  1 +
+ drivers/char/agp/sworks-agp.c                      |  1 +
+ drivers/video/console/mdacon.c                     |  1 +
+ drivers/video/console/newport_con.c                |  1 +
+ drivers/video/console/sticon.c                     |  1 +
+ drivers/video/console/vgacon.c                     |  1 +
+ drivers/video/fbdev/amifb.c                        |  1 +
+ drivers/video/fbdev/c2p_planar.c                   |  1 +
+ drivers/video/fbdev/goldfishfb.c                   |  1 +
+ drivers/video/fbdev/kyro/fbdev.c                   |  1 +
+ drivers/video/fbdev/macmodes.c                     |  1 +
+ drivers/video/fbdev/matrox/matroxfb_DAC1064.c      |  1 +
+ drivers/video/fbdev/matrox/matroxfb_Ti3026.c       |  1 +
+ drivers/video/fbdev/matrox/matroxfb_accel.c        |  1 +
+ drivers/video/fbdev/matrox/matroxfb_maven.c        |  2 +-
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c              |  2 +-
+ drivers/video/fbdev/offb.c                         |  1 +
+ drivers/video/fbdev/omap2/omapfb/dss/dss-of.c      | 15 +-------------
+ .../fbdev/omap2/omapfb/dss/omapdss-boot-init.c     |  3 +--
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c        |  4 +---
+ drivers/video/fbdev/smscufx.c                      |  4 ++--
+ drivers/video/fbdev/ssd1307fb.c                    |  8 ++++----
+ drivers/video/fbdev/vesafb.c                       |  2 +-
+ drivers/video/fbdev/vfb.c                          |  1 +
+ drivers/video/fbdev/via/chip.h                     |  8 ++++----
+ drivers/video/fbdev/via/dvi.c                      | 24 +++++++++++-----------
+ drivers/video/fbdev/via/lcd.c                      |  6 +++---
+ drivers/video/fbdev/via/via_aux.h                  |  2 +-
+ drivers/video/fbdev/via/via_i2c.c                  | 12 +++++------
+ drivers/video/fbdev/via/viafbdev.c                 |  1 +
+ drivers/video/fbdev/via/vt1636.c                   |  6 +++---
+ drivers/video/logo/pnmtologo.c                     |  4 ++--
+ include/linux/linux_logo.h                         |  3 ---
+ include/linux/screen_info.h                        | 10 +++++++++
+ include/video/mmp_disp.h                           |  4 ++--
+ 41 files changed, 78 insertions(+), 64 deletions(-)

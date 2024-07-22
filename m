@@ -1,205 +1,128 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69F5A8F5E
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jul 2024 14:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F16422F2B
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jul 2024 14:15:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1721657584; cv=none; b=QoZh0iu2uepPRBsBsO6onbiJiMMFQxwad9ENicxu9sG+6xsGRh1sh+OK3U3DH+6EyizavcxB6aA8iQu6InX01ul8uj0R2RgD1GCCdGt67wTLy8dlSqy9k8uxtVVl+YnIts4s9t3DztndDsP3G7fGvG5JM2zwc287cZtf/HXzR6E=
+	t=1721657757; cv=none; b=Kfv1nQFEo3KONMfnEZdAn9lYs1r2dOxesln98h6JIpsR17V80eyZfEb/Gr3qv45I6vnFl6nALu55np9meL8p8piFHIl3tWrBE+fbJtXEwfi9t3HikDc8y+Wm4tBdK8UOtGgd4HZ4Q9odhBmbY9pVwtDN9IkCTqRb0bY0LGGYK6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1721657584; c=relaxed/simple;
-	bh=Ac0ZVFezlunGPwPXMVZW5bxBBc/RGcpHkhCF3Mu5yoA=;
+	s=arc-20240116; t=1721657757; c=relaxed/simple;
+	bh=/bMCdeAxD7K7BVgmnDjAgP6K3m38Gu8o6wtZ2yOsJU4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bU/th6Vd/L8UaQXaO7qMnSbSJ8FwYc4Q+wMeHznxWRPkZ0IgBKYjiOISvw/XjzXpfsoQGKA84lFhQGuLCNdki7nTh3ucwLTzKLDCyoDGVJ5r9NvpoKGGTqIL4vKtQjJj49SVgMDGlZyPKRkMu5XrPhBPXwF3WbPd+L40Y/uoSeY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=giUCwqx5; arc=none smtp.client-ip=209.85.128.54
+	 Content-Type:Content-Disposition:In-Reply-To; b=jAwh4gLudoTkUD8lqre4zGXSK9FHgjMsbCMGlAJ1kxBkq1IfX5BVOCej7/HY3l0EGdtx9JnwuaG/aIy+Z/m9Kp2wTLlGOtoIZMAPzXftaXIPBmtxNdcA8vbHddZxOxE5nHgk54h0XppJRV05uhrlZ4DqUO8op930XB+ikFkw/5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=ZUzFTEuW; arc=none smtp.client-ip=209.85.128.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="giUCwqx5"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-42111cf2706so5035555e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jul 2024 07:13:02 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="ZUzFTEuW"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-426659ff58bso5017405e9.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jul 2024 07:15:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1721657581; x=1722262381; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:mail-followup-to:message-id:subject:cc:to
-         :from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/Tgbm5Spa6iNkRq2Ux0zzj+WvaN7ol/xJ5I1VMsf8wA=;
-        b=giUCwqx5TOsMiiOYTyefyb54PRX1ac9GYkm+BaIVksZx6VEOTWewc9yyT07Z6KQ8dF
-         NYfEWPhJ+GLgPwvNKu/lFiVImFNAb+XcI/hCc2qTsBr1YBuzwKFFtswrKwUQ3Afa+WDi
-         IUFMEkVaESZkdO+rh2M4DtWWJosj/3FizblLk=
+        d=ffwll.ch; s=google; t=1721657754; x=1722262554; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=kx0TDuI5m4f7x9Raak4pwIhIi0qr9N6AUQbyBu7jk58=;
+        b=ZUzFTEuW+Va0VQGICJNQHdT7Hve0n6AeQR08q2MMrDDB5CqDcykRON6BYdMPq1evYZ
+         xOu+bCxcnSGL0hufw7fF/q0lh3X3nLG46AjAx24ng3AAilzKfPRauSLge1TbcKlxmv4M
+         kHsOpMhFMYEkF4fwlUe/czwrS+pLLTVASzANc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1721657581; x=1722262381;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:mail-followup-to:message-id:subject:cc:to
-         :from:date:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/Tgbm5Spa6iNkRq2Ux0zzj+WvaN7ol/xJ5I1VMsf8wA=;
-        b=KjRrIXy0uCnUyYFriUJ/rYbhBvab0+fbICy9uGKcwqbCGcy3CtRKChNGi5cIeb5DFb
-         QW95figqQEdyMqS7iqdLD5OrtrpqYFivgbeIz/dQRpK6Q0veUBv5+nBklw+xHHGF7dCY
-         17gb7lltwxmPtfM216OY9PjyCN/KI5mMAYCuiD/uIB8hkelHT/98v6xmDOATvp1+tx1G
-         F1kitWkUteJ04+x74vyelGNzYifHML9VIlXVrqOzglinqcOg+z+zTZ2KieHCQW14YR6u
-         yJDwyT0kUgBVz0o2aNb4KlPKdLsYDbT29kj4NIi9fXbJ61FJgkB0/kqOSKlJTKRRmbkt
-         fMpw==
-X-Forwarded-Encrypted: i=1; AJvYcCVeHQcRjlFLLh2IlZqIZrCpLN7ct0vGGLySE0WHzCGxW2hW/xcPxVCq2ths+FqXd8vYpmBkWErJsfTORyGErz3gPXmD48WypVWiCZw=
-X-Gm-Message-State: AOJu0YxVqlAySUaY3Pj/YgNXLiDPGLhDI3dnPF2oUhHdVmMuIGOaWz6c
-	eEScYKXQpozO6gVfTmJ0gab+K6O2ekZkbrLGWX7us0ZeKBkM1hk+o/5vH65AB8Q=
-X-Google-Smtp-Source: AGHT+IEWsvPxVi7zS2plkJNlwJ+meC0H3C4mcFP8YEp/srMJx9fmtOr9AjHG6UxguTL2eGdmswxsrw==
-X-Received: by 2002:a05:600c:4f4b:b0:427:9f71:16ba with SMTP id 5b1f17b1804b1-427daa927f5mr33298725e9.5.1721657580586;
-        Mon, 22 Jul 2024 07:13:00 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1721657754; x=1722262554;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=kx0TDuI5m4f7x9Raak4pwIhIi0qr9N6AUQbyBu7jk58=;
+        b=aZR3qC4bYFuelJgp8rRARz+yJP+pVe7f+nRVgf7klPDjg+iCbQeVJ+V1jly1nSO1yz
+         Svyv/eCLooAR6Reih+mAUruD+lpHrGDURDcF/e/q5Gv8YCrs66KFoxHFMEODQDaM8T+I
+         hSueN+pKQiLdpQWLhRUpiYhAofEgwnaLEkYkBNX2FZRAu7q6550mGd2tnRaD8+vl0lJN
+         g8GENFbg32oVXvC+lrUnsOXyN4CjB6djSOqnbFIbVYEZDSxbOV8SssOEkl5d4qEGmJaG
+         ekeZWp1yltJNG1x0TN7tDC7j32sD8tCi1igWIar26BJm07H/Pln09agzA5BYc6QZAoTV
+         8V+Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVP3wLzhhfsprvzFYtBqkyc1VawGDu8Z4btsdKu78og+KQMVum+T432yuhWdR4+bQpuA/VNobqiE10p45N5d53kcWF8jEINFIFJcS8=
+X-Gm-Message-State: AOJu0YxkZLGt0PggYrcgzr+xAIe4zaiHhUVMn62q/gy5jHFtkO09hh4/
+	PSwWXY+jmW46gh8ag/m839Ie0cBsS8078vQDWrSlh235HatUHF2HGTuk6RJVvgs=
+X-Google-Smtp-Source: AGHT+IEzv1gd5cKrmvegzH0V6jzWs76B0Fz3js/yNH+DTr8Mw5A+t9aAP9Md+Wa9gE0EqI3ymSu7Cw==
+X-Received: by 2002:a05:6000:2a1:b0:367:4d9d:56a6 with SMTP id ffacd0b85a97d-369b6750465mr3248168f8f.1.1721657754218;
+        Mon, 22 Jul 2024 07:15:54 -0700 (PDT)
 Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-427d6901781sm129162825e9.14.2024.07.22.07.12.59
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3687868b5fdsm8596021f8f.38.2024.07.22.07.15.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jul 2024 07:12:59 -0700 (PDT)
-Date: Mon, 22 Jul 2024 16:12:57 +0200
+        Mon, 22 Jul 2024 07:15:53 -0700 (PDT)
+Date: Mon, 22 Jul 2024 16:15:51 +0200
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
 To: Jocelyn Falempe <jfalempe@redhat.com>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
-	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
+Cc: lkp@intel.com, Daniel Vetter <daniel@ffwll.ch>,
+	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
 	Javier Martinez Canillas <javierm@redhat.com>,
-	Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 1/3] drm/panic: Add drm_panic_is_enabled()
-Message-ID: <Zp5o6fnBuTlxm-X_@phenom.ffwll.local>
-Mail-Followup-To: Jocelyn Falempe <jfalempe@redhat.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
-	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-References: <20240717090102.968152-1-jfalempe@redhat.com>
- <20240717090102.968152-2-jfalempe@redhat.com>
- <ZpfeiMj48JQTQcOE@phenom.ffwll.local>
- <34305c58-38a6-4b5a-9777-69833aefa003@redhat.com>
- <60419d31-f467-4277-97da-23c9573af2bf@redhat.com>
+	oe-kbuild-all@lists.linux.dev
+Subject: Re: [PATCH] fbcon: Use oops_in_progress instead of panic_cpu
+Message-ID: <Zp5pl4kcu9q6FWTP@phenom.ffwll.local>
+References: <202407210203.2ISiIC9m-lkp@intel.com>
+ <20240722114800.174558-1-jfalempe@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <60419d31-f467-4277-97da-23c9573af2bf@redhat.com>
+In-Reply-To: <20240722114800.174558-1-jfalempe@redhat.com>
 X-Operating-System: Linux phenom 6.9.7-amd64 
 
-On Thu, Jul 18, 2024 at 11:30:05AM +0200, Jocelyn Falempe wrote:
+On Mon, Jul 22, 2024 at 01:47:51PM +0200, Jocelyn Falempe wrote:
+> Panic_cpu is not exported, so it can't be used if fbcon is used as
+> a module. Use oops_in_progress in this case, but non-fatal oops won't
+> be printed.
 > 
-> 
-> On 18/07/2024 09:04, Jocelyn Falempe wrote:
-> > 
-> > 
-> > On 17/07/2024 17:08, Daniel Vetter wrote:
-> > > On Wed, Jul 17, 2024 at 10:48:39AM +0200, Jocelyn Falempe wrote:
-> > > > It allows to check if the drm device supports drm_panic.
-> > > > Prepare the work to have better integration with fbcon and vtconsole.
-> > > > 
-> > > > Signed-off-by: Jocelyn Falempe <jfalempe@redhat.com>
-> > > > ---
-> > > >   drivers/gpu/drm/drm_panic.c | 20 ++++++++++++++++++++
-> > > >   include/drm/drm_panic.h     |  2 ++
-> > > >   2 files changed, 22 insertions(+)
-> > > > 
-> > > > diff --git a/drivers/gpu/drm/drm_panic.c b/drivers/gpu/drm/drm_panic.c
-> > > > index 948aed00595e..d9a25c2d0a65 100644
-> > > > --- a/drivers/gpu/drm/drm_panic.c
-> > > > +++ b/drivers/gpu/drm/drm_panic.c
-> > > > @@ -703,6 +703,26 @@ static void debugfs_register_plane(struct
-> > > > drm_plane *plane, int index)
-> > > >   static void debugfs_register_plane(struct drm_plane *plane,
-> > > > int index) {}
-> > > >   #endif /* CONFIG_DRM_PANIC_DEBUG */
-> > > > +/**
-> > > > + * drm_panic_is_enabled
-> > > > + * @dev: the drm device that may supports drm_panic
-> > > > + *
-> > > > + * returns true if the drm device supports drm_panic
-> > > > + */
-> > > > +bool drm_panic_is_enabled(struct drm_device *dev)
-> > > > +{
-> > > > +    struct drm_plane *plane;
-> > > > +
-> > > > +    if (!dev->mode_config.num_total_plane)
-> > > > +        return false;
-> > > > +
-> > > > +    drm_for_each_plane(plane, dev)
-> > > > +        if (plane->helper_private &&
-> > > > plane->helper_private->get_scanout_buffer)
-> > > > +            return true;
-> > > > +    return false;
-> > > > +}
-> > > > +EXPORT_SYMBOL(drm_panic_is_enabled);
-> > > 
-> > > This feels like overkill since you currently only have one user in the
-> > > fbdev emulation code, but maybe useful in some other places ...
-> > > 
-> > > > +
-> > > >   /**
-> > > >    * drm_panic_register() - Initialize DRM panic for a device
-> > > >    * @dev: the drm device on which the panic screen will be displayed.
-> > > > diff --git a/include/drm/drm_panic.h b/include/drm/drm_panic.h
-> > > > index 73bb3f3d9ed9..c3a358dc3e27 100644
-> > > > --- a/include/drm/drm_panic.h
-> > > > +++ b/include/drm/drm_panic.h
-> > > > @@ -148,11 +148,13 @@ struct drm_scanout_buffer {
-> > > >   #ifdef CONFIG_DRM_PANIC
-> > > > +bool drm_panic_is_enabled(struct drm_device *dev);
-> > > 
-> > > Since it's internal only, this should be in
-> > > drivers/gpu/drm/drm_crtc_internal.h and not int he include for drivers.
-> > 
-> > Yes, that makes sense, drivers won't need that API.
-> > 
-> > > With that:
-> > > 
-> > > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > > 
-> > > >   void drm_panic_register(struct drm_device *dev);
-> > > >   void drm_panic_unregister(struct drm_device *dev);
-> > > 
-> > > These two are only used in drm.ko. Can you please move them to
-> > > drm_crtc_internal.h too and drop the EXPORT_SYMBOL in a follow-up patch?
-> > > We're trying to limit the exported interface and official headers to
-> > > really only the pieces drivers actually need.
-> > 
-> > Sure, I'll add this to my next drm_panic series.
-> 
-> I think this also applies to drm_panic_init() and drm_panic_exit(), that I
-> introduce in my QR code series:
-> https://patchwork.freedesktop.org/patch/604890/?series=135944&rev=2
-> I will move them to drm_crtc_internal.h
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202407210203.2ISiIC9m-lkp@intel.com/
+> Signed-off-by: Jocelyn Falempe <jfalempe@redhat.com>
 
-Yup.
--Sima
+Yeah it's not great but gets the job done.
 
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+
+Cheers, Sima
+
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 > 
-> > 
-> > > 
-> > > Thanks, Sima
-> > > 
-> > > >   #else
-> > > > +bool drm_panic_is_enabled(struct drm_device *dev) {return false; }
-> > > >   static inline void drm_panic_register(struct drm_device *dev) {}
-> > > >   static inline void drm_panic_unregister(struct drm_device *dev) {}
-> > > > -- 
-> > > > 2.45.2
-> > > > 
-> > > 
-> > 
-> > Best regards,
-> > 
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 498d9c07df80..2e093535884b 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -64,6 +64,8 @@
+>  #include <linux/console.h>
+>  #include <linux/string.h>
+>  #include <linux/kd.h>
+> +#include <linux/panic.h>
+> +#include <linux/printk.h>
+>  #include <linux/slab.h>
+>  #include <linux/fb.h>
+>  #include <linux/fbcon.h>
+> @@ -272,7 +274,14 @@ static int fbcon_get_rotate(struct fb_info *info)
+>  
+>  static bool fbcon_skip_panic(struct fb_info *info)
+>  {
+> +/* panic_cpu is not exported, and can't be used if built as module. Use
+> + * oops_in_progress instead, but non-fatal oops won't be printed.
+> + */
+> +#if defined(MODULE)
+> +	return (info->skip_panic && unlikely(oops_in_progress));
+> +#else
+>  	return (info->skip_panic && unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID));
+> +#endif
+>  }
+>  
+>  static inline int fbcon_is_inactive(struct vc_data *vc, struct fb_info *info)
+> 
+> base-commit: 7e33fc2ff6754b5ff39b11297f713cd0841d9962
+> -- 
+> 2.45.2
 > 
 
 -- 

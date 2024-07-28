@@ -1,66 +1,48 @@
-Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
+Received: from msa.smtpout.orange.fr (smtp-83.smtpout.orange.fr [80.12.242.83])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D94583CF65;
-	Sat, 27 Jul 2024 09:31:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE9AC2E859;
+	Sun, 28 Jul 2024 18:30:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.83
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722072701; cv=none; b=MOP+XQrolYLJLJGRDFN+dco9o3VicbwyYFlHlhvcfFd9lPJyp7Nq2yhqltUo+dbNdkg0k4XfdAp57zqOV+UsaBm7y6t4f+r9nWDnE5eSFafay7iAXqdIckNngOrI0Kb5STLDfl5dcD81X6B7n0H/Y51M5oeUM9epsG+OAqa8fnA=
+	t=1722191416; cv=none; b=Y1K1LPaFAQ6JaKa4EsLJqIJPaqn7ad3swl2/oRgbtBEk3NlgNAdCXxSUqgfpOrIdhDOG6TDkjSgT5UIf/TDWOtmV2kjG79CDHzl29lUBWd7I3YilMhRMU3RgN6L2UtOHUjDhLFQKsvtvd1cvfTiLG9ApMn3JIPGmF2oIk77BQNE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722072701; c=relaxed/simple;
-	bh=/qFW5Ca5kgqHBPu15m59/5gnXX3T+j5zWhdd3LNCfmw=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=XbMh/avU6Wnx+3AlHBnJmSmUSnc68QqSbW/yUmCxxN/NxOmkHIORVewwyS4TbbP2E6I9jAvoWx6IPXHPU34MyrNLye7lbqtTPBp36wEz/6g/KCVkGoE7PAwkJSJu+QuQR9tbSwo4lRM9vNO8ZfughJITKD6TLbUVLY3Fp85pte0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C2XsBDDV; arc=none smtp.client-ip=209.85.210.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1722191416; c=relaxed/simple;
+	bh=Po+jf59OgWZe7ga6gwE7Q3SbHfhVlVjb7CMLEJgb/90=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LRJnB1EMKp5tCemcqE48vZpuo9B02ADKgPYbBj8x+lgAXACXO+rFLPYihPeIKyseMjhltDqn9L+6VXgSKkz44r/QWBVNRUdgkLH+Dx9yPVTTzJMcv7TKslSBF8ejYAmPEX1xy5VwRgN4fF167sVQEhbC8KTh+EGbG4MUPwT9ZXs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=mKJ18isf; arc=none smtp.client-ip=80.12.242.83
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C2XsBDDV"
-Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-70eaf5874ddso1450472b3a.3;
-        Sat, 27 Jul 2024 02:31:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1722072699; x=1722677499; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=KZ6xbkKisMWheOb5DEgUNo89JS6VKyra5I1hoBscMO0=;
-        b=C2XsBDDV21B0f7CUkruuMzO57DAeSvZuWKcsCnCn4UasbzJTfxweGkT6IJj1tHthZe
-         UYXQm0b3H8Hro/px0ouq8U4Uxum7p2X/PSjcdsXI7LWamhl13ACvz5CM9iGItqMeq1YW
-         juDTlKKS6OimW1HXfDk8PcSR8ZrDq1ngdo2pX7DoxKw/V8KQSOtR9Pb0wkkl6nBi9u+X
-         MJYFMBA1L3qxuXLvzKv3ZWUMaiDwcmwlPYCAIcLUk8DC83ZsgqOXifOVVZoqrMfOaHTB
-         m6PgO0IdYgvAeM6NXwMfghYlqIeMO4uMXtoMH0EQDBFbAQy2N34Cl1KuPVP/V4jlh27P
-         vcIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722072699; x=1722677499;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=KZ6xbkKisMWheOb5DEgUNo89JS6VKyra5I1hoBscMO0=;
-        b=rk9sKCRBvY43qtoB1927vUWt84wiHzDpH/m4sELpeHiro4ntOuaU64rxO8iulWuYK7
-         1U2APdkIe5d+M4kMI7zhc3OVDKejcZDFkkl4XksF7xBHm+tXziixulH9469qNTt3yhtC
-         byZcx3HP+SoTLsxDLWS/FPoN+SF2WGFHmsI8PDoak47GfBaVr574d8MPu2ioZMgV5iKZ
-         72tBF/WLxfGJb3MJVE0tMJlibngtwFWvsQ6/xE9DD0tz4VWmwftcBhvYMY7M59mnCBix
-         dIHRjSlzxGT8w/DREx4tcJL86627s6lHNo5hHfjW957Ia2wcT18bvZjPUQE4twuuleV/
-         BK+Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUapREsRouVUbm8Jq86vcl/purYQw1lm69Gysn6prLmu7KolxiHkjPs89kcSpOqGhRUyR0gjoLsEpZ1LWkThijy2aZjVBx/2sIXRlKZ2R0IhJFKiY6sUYXRXTqI7fmKGZ+9WXzjLIS4V30=
-X-Gm-Message-State: AOJu0YwqjlWrW2RK+qjDNFzjcwi+tp1g7E/ju3mwEFbftcHzg/SP/JiG
-	oek4fj2cqawFztnTQqhCrX0ufaLSYugkteZwZzZhKnWsTo1ZCsco
-X-Google-Smtp-Source: AGHT+IGl8+M8s7vYPYnrmY+kyvUAZGBLMAvnuu5Uxvsd7sa9rLn8732cnUOfBx8BnCpGmzJ47DNlxA==
-X-Received: by 2002:a05:6a00:138e:b0:70d:37f4:2c73 with SMTP id d2e1a72fcca58-70ecea13e6amr2223477b3a.10.1722072698999;
-        Sat, 27 Jul 2024 02:31:38 -0700 (PDT)
-Received: from Riyan.inspiron ([122.176.193.50])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-70ead8a2bebsm3880245b3a.212.2024.07.27.02.31.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 27 Jul 2024 02:31:38 -0700 (PDT)
-From: Riyan Dhiman <riyandhiman14@gmail.com>
-To: gregkh@linuxfoundation.org
-Cc: dri-devel@lists.freedesktop.org,
+	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="mKJ18isf"
+Received: from fedora.home ([90.11.132.44])
+	by smtp.orange.fr with ESMTPA
+	id Y8ehskV3jYjQzY8ehsdEJs; Sun, 28 Jul 2024 20:30:06 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
+	s=t20230301; t=1722191406;
+	bh=aHRr46GwE+uyksv7tBA8rAadSHSqFFR/MCO6+hVj1uk=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=mKJ18isfp/UdJbLq8eTjt5hzxV/dfxabgAVcoQ2rAdaQF3R2TphCNVVEvEyk7Crnq
+	 Qa47ZnqQyvVssPt0mh70NxxDhTdVxbh6U5Kq+q8Om4oYsNuLzV7hJyUqhjUfjVGYjh
+	 ktORbHXZsHJjr88ahzm48Wztm+4qlsNiUEYicMzECtX6+dXg6vVy1kDBAo/tzDMtMa
+	 XWacCL7jCB+tYoz34cMJRn68ge5VqW7guGKORGI4/2+z96jdEG0wINVC/J3H/u5D/8
+	 zw6jamr2TE3F4WOQOc8EE0z73bxTWSBhNYe63fqPJm4NxNCbZ1nHY4KjXg4W4k1KZ9
+	 3cuLhiiu6jpoQ==
+X-ME-Helo: fedora.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sun, 28 Jul 2024 20:30:06 +0200
+X-ME-IP: 90.11.132.44
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
 	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Riyan Dhiman <riyandhiman14@gmail.com>
-Subject: [PATCH] staging: fbtft: Fix mutex and spinlock without comment warning
-Date: Sat, 27 Jul 2024 15:01:06 +0530
-Message-Id: <20240727093106.11214-1-riyandhiman14@gmail.com>
-X-Mailer: git-send-email 2.39.2
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] fbdev/hpfb: Fix an error handling path in hpfb_dio_probe()
+Date: Sun, 28 Jul 2024 20:29:47 +0200
+Message-ID: <dc4fe3d857849ac63131c5620f1bacf1a3d7172e.1722191367.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.45.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -69,38 +51,48 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Adhere to Linux kernel coding style
+If an error occurs after request_mem_region(), a corresponding
+release_mem_region() should be called, as already done in the remove
+function.
 
-Reported by checkpatch:
-
-CHECK: spinlock_t definition without comment
-CHECK: mutex definition without comment
-
-Signed-off-by: Riyan Dhiman <riyandhiman14@gmail.com>
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/staging/fbtft/fbtft.h | 2 ++
- 1 file changed, 2 insertions(+)
+*Not* even compile tested only.
+I don't know on what architecture it relies on.
 
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index f86ed9d470b8..3e00a26a29d5 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -202,6 +202,7 @@ struct fbtft_par {
- 	u8 *buf;
- 	u8 startbyte;
- 	struct fbtft_ops fbtftops;
-+	/* Spinlock to ensure thread-safe access to dirty_lines_start and dirty_lines_end */
- 	spinlock_t dirty_lock;
- 	unsigned int dirty_lines_start;
- 	unsigned int dirty_lines_end;
-@@ -218,6 +219,7 @@ struct fbtft_par {
- 	} gpio;
- 	const s16 *init_sequence;
- 	struct {
-+		/* Mutex to synchronize access to gamma curve locking */
- 		struct mutex lock;
- 		u32 *curves;
- 		int num_values;
+So it is provided as-is
+---
+ drivers/video/fbdev/hpfb.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
+index 66fac8e5393e..87b8dcdc1cf3 100644
+--- a/drivers/video/fbdev/hpfb.c
++++ b/drivers/video/fbdev/hpfb.c
+@@ -342,12 +342,17 @@ static int hpfb_dio_probe(struct dio_dev *d, const struct dio_device_id *ent)
+ 	}
+ 	printk(KERN_INFO "Topcat found at DIO select code %d "
+ 	       "(secondary id %02x)\n", d->scode, (d->id >> 8) & 0xff);
+-	if (hpfb_init_one(paddr, vaddr)) {
+-		if (d->scode >= DIOII_SCBASE)
+-			iounmap((void *)vaddr);
+-		return -ENOMEM;
+-	}
++	if (hpfb_init_one(paddr, vaddr))
++		goto err_unmap;
++
+ 	return 0;
++
++err_unmap:
++	if (d->scode >= DIOII_SCBASE)
++		iounmap((void *)vaddr);
++	release_mem_region(d->resource.start, resource_size(&d->resource));
++
++	return -ENOMEM;
+ }
+ 
+ static void hpfb_remove_one(struct dio_dev *d)
 -- 
-2.39.2
+2.45.2
 

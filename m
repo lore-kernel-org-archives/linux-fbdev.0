@@ -1,79 +1,96 @@
-Received: from smtp.smtpout.orange.fr (smtp-22.smtpout.orange.fr [80.12.242.22])
+Received: from mail-ot1-f46.google.com (mail-ot1-f46.google.com [209.85.210.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 585F2770F6;
-	Mon, 29 Jul 2024 20:30:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 014BD18A93C
+	for <linux-fbdev@vger.kernel.org>; Mon, 29 Jul 2024 21:35:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722285045; cv=none; b=llZOfbARxCiFDuxGRZlfVevODh3OzcoRU5d1MZxsmUbcwAPnjm0ufkK8XgV89uP1EGmO2G0d4ucZL1jf2iKBoARfDDoKcDIijQWXV1PLh7rmwPP2yB0nTkpE5pm5c3BS7Aw14FMZ/PSZlS82vUyM1EEFcbmfR3Tgo40s+I9/sjM=
+	t=1722288941; cv=none; b=NS3x8IozDWBQHifXXrB4nKPHMWGGuOmwMhIn5LUGwXc8+dxnKyYdym4v/9vQ0Zs5VdghBPc6yjYtc8g9ceERxhx8m3Z65svOscCYSaKG0pbCm1TwlGSJkQUtyp+j0rljDBiPbxBdsYV3PIDGxX1bdNl+AnoFyjxf3Fu4ODrlJEc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722285045; c=relaxed/simple;
-	bh=3iBi276QMKrstE80w/QQ4LQjbIoVMq1d8UN3s3vHzck=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=o/2ShsjPbJp1rio0Ztxq2PBgLCw0m2nkqZz3KLVGcPWFUAEzf3Q3CwPNsAKHGRhxCx1Tuze5YuxTV4LpoTdJEspyyPYwM9gMXrPtZCCfbKtWc/Cup0yDm/yqOxaqIhl2hT0Qi7VX1KKcKfVV4ujS8F7Spn7NrVnf1IZpL9rymy4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=VOXTlI3C; arc=none smtp.client-ip=80.12.242.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1722288941; c=relaxed/simple;
+	bh=DhOLdiM9YWhv6ZcKyKdrGJbx+EvMKRcY5IZ/2bt8Y9w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HEO9ECUuMQHe2xk2ldmDdcca5tETTJSStQ8PTQk5Z76kRMUOaHqFdz2ffulKK9F9xKWn6JhHgpOhkuDOAkQ9D1ARYMl5HYAScA0AnUjw6mnS4z577mi8WkgpmYBaxSPdJB8lsvHry+YIn/KVBGQsB86xgldKDWt7rjZdW52wK0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=sZqvj1Ze; arc=none smtp.client-ip=209.85.210.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="VOXTlI3C"
-Received: from [192.168.1.37] ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id YX0rsofdW6NRTYX0rsbYtL; Mon, 29 Jul 2024 22:30:34 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1722285035;
-	bh=KGacKLXgEMga9PvcN1pKMM3xGXU2O6qYmPh2vo3fje4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:From;
-	b=VOXTlI3C1yxm634ADdu8Ct0o6s57EC3ZmzkKkHi4UEEyUM5Ff3xYey7pjbXDkEGXP
-	 b2veknTxzzFBd+nyXJMGozbIRfnGS0nG8PDwHepOnvAgHBa1RgvXmdN7kbuoJSFWwT
-	 mYaPI3lYB1mflwqU1VVP7CAgiHEMfLTu9C+y+87iC5OuOMbjGiu31ZAwIElJPS9ebz
-	 hm3mpi6JRREhYGPuYBRs0RCz61lKYc7lpDQCda3nFbylvaTMyliq50lDXj1Kk5aM22
-	 tVr1ExmHPmYAXUDOAIPcElpfSMGm689kiNJDkzs0KY+yDcOWvGfVTkYCyLk1r/9HiW
-	 yaKvq2NxhadjQ==
-X-ME-Helo: [192.168.1.37]
-X-ME-Auth: bWFyaW9uLmphaWxsZXRAd2FuYWRvby5mcg==
-X-ME-Date: Mon, 29 Jul 2024 22:30:35 +0200
-X-ME-IP: 90.11.132.44
-Message-ID: <aa9fd67e-3498-4152-abbd-3f2f40b0e294@wanadoo.fr>
-Date: Mon, 29 Jul 2024 22:30:33 +0200
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sZqvj1Ze"
+Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-7093705c708so3972440a34.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 Jul 2024 14:35:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1722288939; x=1722893739; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=8jCZ4dJacok9yS/sGhPIVw4hVTsTqbKuUreZrjjqP2I=;
+        b=sZqvj1ZefP41wGT5cKfvYjUgsSEWnLED+8SZ8UWuiFkEQaapBicrOvzh7j0fFw14S7
+         GrvoOwAYGzJfSbiy2404qrobEOzOoAd1OR5i832vT9n4ZsuKr5CC274YKICZSXaK5O1h
+         9AgWyC73iWi3TOPioWrZ1z8Pq4SF6UWbxGJoJf77wwptsMwN0brgKJvJaKSEp4P/78Ht
+         7Uix2+d1Kex2S6/yxxXWHzIkjek4/X5oxppNKArEhXCcOdi64JEcvJqc1lM+zzRgZaH2
+         G75ExpGW0uXR2uPCy3DLXefqM1cx7DlPi2dzCyLtIVMwB/raea7lxNlIKC0ahGgJwRR3
+         lhCw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1722288939; x=1722893739;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8jCZ4dJacok9yS/sGhPIVw4hVTsTqbKuUreZrjjqP2I=;
+        b=L5WjFdG+vJeLbct9Ll2i7oynJgMeQjb2eXdfgGEGxJVjuaAoooqI2fnhSZQyfSkhpS
+         JrvaBaOf4xnhYK7JDF4AIVW/jQdJ3GI85799wXQVywfLOYyllFAJ3aIi0zKeENMqY+wc
+         bQWs8sB8lMzvdNSDxgJ8mggGArsE42SJ7NXoxB6GIHcyVIxg+ZAi7PY69NCdugOgRXIZ
+         7gl6TNgAnBMlNQ2yO6bMYOoY4+cp+wNfLBkv5lYGB8en1c2YnlpoCiOTZSLHZitnq8me
+         QvoIicaQWdzS4TsmPzxX+awlGU6u5xGM3UNeElbuowkFzKtFD1WESgs3J5deGZmlfgCk
+         EVlg==
+X-Forwarded-Encrypted: i=1; AJvYcCW1ohgDBlKCpi0Il2XdOrq1vEbmcWoBgjgw4ofRlB39X7SZs6liRoq16x3/dttDEAT8YWnzRLC84l5+7eS4p3+pxfdGtra64Y6D76s=
+X-Gm-Message-State: AOJu0YyPKB/reu9eszOjuxbgOFN+IItnQL86pj8LZCCNkUwVAJTqyB7z
+	TcGhg5jo4AFRB4AIkasailuy8PcjasrAQGm++NFMlfg3GZ53vHjKmWKH/fXJQ1k=
+X-Google-Smtp-Source: AGHT+IHDvjNGEn3OlMcAR6Il1gwE9cH+Q82mJfYpkkx7Ley40Dv5Z1neEY9qJN9BU+smiLkpIMX/Og==
+X-Received: by 2002:a05:6870:46a9:b0:254:8afa:6914 with SMTP id 586e51a60fabf-267d4eedec3mr10816825fac.34.1722288939167;
+        Mon, 29 Jul 2024 14:35:39 -0700 (PDT)
+Received: from localhost ([2603:8080:b800:f700::17c0])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7095aeb0acdsm61008a34.64.2024.07.29.14.35.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Jul 2024 14:35:38 -0700 (PDT)
+Date: Mon, 29 Jul 2024 16:35:36 -0500
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Helge Deller <deller@gmx.de>
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] fbdev/hpfb: Fix an error handling path in
+ hpfb_dio_probe()
+Message-ID: <9cc6ac18-3804-486a-8549-fd13b6ae121e@suswa.mountain>
+References: <dc4fe3d857849ac63131c5620f1bacf1a3d7172e.1722191367.git.christophe.jaillet@wanadoo.fr>
+ <698958fb-4fc8-4288-b067-5843c651b093@gmx.de>
+ <ac4c6712-c47b-4414-9640-3018bf09e8fa@suswa.mountain>
+ <9dbb2b52-4fc9-4bbf-a6a2-ab6ec32adb8f@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/hpfb: Fix an error handling path in
- hpfb_dio_probe()
-To: Helge Deller <deller@gmx.de>, Dan Carpenter <dan.carpenter@linaro.org>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <dc4fe3d857849ac63131c5620f1bacf1a3d7172e.1722191367.git.christophe.jaillet@wanadoo.fr>
- <698958fb-4fc8-4288-b067-5843c651b093@gmx.de>
- <ac4c6712-c47b-4414-9640-3018bf09e8fa@suswa.mountain>
- <9dbb2b52-4fc9-4bbf-a6a2-ab6ec32adb8f@gmx.de>
-Content-Language: en-US, fr-FR
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <9dbb2b52-4fc9-4bbf-a6a2-ab6ec32adb8f@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
 
-Le 29/07/2024 à 22:09, Helge Deller a écrit :
+On Mon, Jul 29, 2024 at 10:09:39PM +0200, Helge Deller wrote:
 > On 7/29/24 17:59, Dan Carpenter wrote:
->> On Mon, Jul 29, 2024 at 10:13:17AM +0200, Helge Deller wrote:
->>> On 7/28/24 20:29, Christophe JAILLET wrote:
->>>> If an error occurs after request_mem_region(), a corresponding
->>>> release_mem_region() should be called, as already done in the remove
->>>> function.
->>>
->>> True.
->>>
->>>> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
->>>
->>> I think we can drop this "Fixes" tag, as it gives no real info.
->>
->> If we're backporting patches then these tags really are useful.  As
->> I've been doing more and more backporting, I've come to believe this
->> more firmly.
+> > On Mon, Jul 29, 2024 at 10:13:17AM +0200, Helge Deller wrote:
+> > > On 7/28/24 20:29, Christophe JAILLET wrote:
+> > > > If an error occurs after request_mem_region(), a corresponding
+> > > > release_mem_region() should be called, as already done in the remove
+> > > > function.
+> > > 
+> > > True.
+> > > 
+> > > > Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> > > 
+> > > I think we can drop this "Fixes" tag, as it gives no real info.
+> > 
+> > If we're backporting patches then these tags really are useful.  As
+> > I've been doing more and more backporting, I've come to believe this
+> > more firmly.
 > 
 > Sure, "Fixes" tags are useful, but only if they really refer
 > to another patch which introduced the specific issue.
@@ -82,52 +99,24 @@ Le 29/07/2024 à 22:09, Helge Deller a écrit :
 > just the initial git commit. It has no relation to why release_mem_region()
 > might have been initially missed. See:
 
-I agree that the description of this specific tag is not useful by itself.
+In the last couple stable kernels we've backported some pretty serious
+networking commits that have Linux-2.6.12-rc2 for the Fixes tag.  So if
+it's security related that's really important information.
 
-But at least it means: should it be backported, it can be done up to 
-there. (and sometimes LWN gives some statistics on how long it took to 
-fix an "issue", should it be considered as such)
+For minor stuff like this, the commit will be backported as far back as
+possible and until it ends up in a list of failed commits.
 
-Without it, it is not easy to guess in which branch the patch is meaningful.
+When I'm reviewing the list of failed patches and there is no Fixes tag
+I think maybe it was backported to all the affected kernels?  In that
+case, I could have skipped the manual review if the patch was just
+tagged correctly.  Then I wonder, why wasn't it tagged?  I just assume
+it was sloppiness honestly.  I'm probably not going to spend that much
+time on it, but it's annoying.
 
-I'll sent a v2 with your suggested minimal change, but I'll keep the 
-Fixes tag.
+When a commit lists Linux-2.6.12-rc2 as the Fixes then it still ends up
+in the failed list.  But it can't affect too many users if we're only
+getting around to fixing it now.  It's easier to ignore.
 
+regards,
+dan carpenter
 
-Up to you to remove it or not, and to add a <stable@kernel.org> or a 
-<stable+noautosel@kernel.org> or none of them.
-
-Any solution is fine with me.
-
-
-> 
->   commit 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 (tag: v2.6.12-rc2)
-> Author: Linus Torvalds <torvalds@ppc970.osdl.org>
-> Date:   Sat Apr 16 15:20:36 2005 -0700
-> 
->      Linux-2.6.12-rc2
-> 
->      Initial git repository build. I'm not bothering with the full history,
->      even though we have it. We can create a separate "historical" git
->      archive of that later if we want to, and in the meantime it's about
->      3.2GB when imported into git - space that would just make the early
->      git days unnecessarily complicated, when we don't have a lot of good
->      infrastructure for it.
-> 
-> Helge
-> 
-> 
-
-On:
-
- > HP300 are old HP machines with an m68k CPU.
- > Not sure if someone still has such a machine 🙂
-
-so it really was the one I found on wikipedia, LoL!
-
-So, another way to "fix" the issue is maybe to deprecate the driver or 
-everything related to this old architecture?
-
-No strong opinion about it.
-
-CJ

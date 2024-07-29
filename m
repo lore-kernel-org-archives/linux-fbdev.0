@@ -1,98 +1,102 @@
-Received: from msa.smtpout.orange.fr (smtp-83.smtpout.orange.fr [80.12.242.83])
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE9AC2E859;
-	Sun, 28 Jul 2024 18:30:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.83
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5479377115;
+	Mon, 29 Jul 2024 02:22:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722191416; cv=none; b=Y1K1LPaFAQ6JaKa4EsLJqIJPaqn7ad3swl2/oRgbtBEk3NlgNAdCXxSUqgfpOrIdhDOG6TDkjSgT5UIf/TDWOtmV2kjG79CDHzl29lUBWd7I3YilMhRMU3RgN6L2UtOHUjDhLFQKsvtvd1cvfTiLG9ApMn3JIPGmF2oIk77BQNE=
+	t=1722219747; cv=none; b=mRJM+JtaNuVCoeIxJlrAKgD1DVurHqiF2oMhqlD1LRVG33uBVeAhQordb0UOOHuNdSRQOy0TDvTJP5H1AQ1sPDm5hkUNtzSs26jC/8oGZOX0NE9KXYA9vU8/fC6j//ARGWlS4/ZE/kGZ/Ce2Q1hJY7dpVBh07Lumze+5MO3CQFM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722191416; c=relaxed/simple;
-	bh=Po+jf59OgWZe7ga6gwE7Q3SbHfhVlVjb7CMLEJgb/90=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LRJnB1EMKp5tCemcqE48vZpuo9B02ADKgPYbBj8x+lgAXACXO+rFLPYihPeIKyseMjhltDqn9L+6VXgSKkz44r/QWBVNRUdgkLH+Dx9yPVTTzJMcv7TKslSBF8ejYAmPEX1xy5VwRgN4fF167sVQEhbC8KTh+EGbG4MUPwT9ZXs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=mKJ18isf; arc=none smtp.client-ip=80.12.242.83
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1722219747; c=relaxed/simple;
+	bh=CZKG2W8b4fXshq2AjImQLIyJ7j8t8NCttg1FUvcwDuA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EAJbdi2pzU+yK/tr9llY31SHkkEmDlCadfXB+2mll67C8/hXPx4ATrt7i9kyCzFTwj2PeWrq1nL0fhhN/wh3comoah7L5v2qPBR94ZFXBXxLMcR4dp/JBdgtyvXgow8L8hzTXDIcickTl7nqj1USWTsioCau+SkVofQBIy4Uyk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=vJVMmbll; arc=none smtp.client-ip=85.214.62.61
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="mKJ18isf"
-Received: from fedora.home ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id Y8ehskV3jYjQzY8ehsdEJs; Sun, 28 Jul 2024 20:30:06 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1722191406;
-	bh=aHRr46GwE+uyksv7tBA8rAadSHSqFFR/MCO6+hVj1uk=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=mKJ18isfp/UdJbLq8eTjt5hzxV/dfxabgAVcoQ2rAdaQF3R2TphCNVVEvEyk7Crnq
-	 Qa47ZnqQyvVssPt0mh70NxxDhTdVxbh6U5Kq+q8Om4oYsNuLzV7hJyUqhjUfjVGYjh
-	 ktORbHXZsHJjr88ahzm48Wztm+4qlsNiUEYicMzECtX6+dXg6vVy1kDBAo/tzDMtMa
-	 XWacCL7jCB+tYoz34cMJRn68ge5VqW7guGKORGI4/2+z96jdEG0wINVC/J3H/u5D/8
-	 zw6jamr2TE3F4WOQOc8EE0z73bxTWSBhNYe63fqPJm4NxNCbZ1nHY4KjXg4W4k1KZ9
-	 3cuLhiiu6jpoQ==
-X-ME-Helo: fedora.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sun, 28 Jul 2024 20:30:06 +0200
-X-ME-IP: 90.11.132.44
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH] fbdev/hpfb: Fix an error handling path in hpfb_dio_probe()
-Date: Sun, 28 Jul 2024 20:29:47 +0200
-Message-ID: <dc4fe3d857849ac63131c5620f1bacf1a3d7172e.1722191367.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.45.2
+	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="vJVMmbll"
+Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+	(No client certificate requested)
+	(Authenticated sender: marex@denx.de)
+	by phobos.denx.de (Postfix) with ESMTPSA id 34250886A7;
+	Mon, 29 Jul 2024 04:22:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+	s=phobos-20191101; t=1722219739;
+	bh=YaMbFqhcu2EaD0ILHrZLda28agFKudS98OiBGCkFSS4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=vJVMmbllQBeM0Cu+Yih74QhmSwkWbPGYiojLP3+AgwlOZj0nl02Y1MpHTMGxGPEh7
+	 CwiLq3SAcOtF5vyvSS0mQOzG2qCPj5KKRdXIUXuPpet0pdyUxIc8opFqzt54r/1Tvi
+	 ISrtEMrzEoEDipL+FTtx1RkgzgSvi9zJ8gYl5YtzmgwpSNxqk9L5VwQb0PEXos97F/
+	 AOnG2m6IhD1fg51frrufKot5sva0ny3hkXD0e7+ROAm+oMUTeHyTYY+DbjakZ4dAej
+	 AG7rQ5G7E3Z1ptZ6Ywa0A5bohfYqD5jgPZ4IF7T+Vg4m4MTDGTd+S8uimC//gBPjOG
+	 Q/P96Zk0g7F0Q==
+Message-ID: <8aea6cc0-10bf-48b8-add9-eb3f1caa2d66@denx.de>
+Date: Mon, 29 Jul 2024 04:16:46 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
+ deinterlacer driver
+To: Nicolas Dufresne <nicolas@ndufresne.ca>, linux-media@vger.kernel.org
+Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
+ <deller@gmx.de>, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Philipp Zabel <p.zabel@pengutronix.de>, Sascha Hauer
+ <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Steve Longerbeam <slongerbeam@gmail.com>, dri-devel@lists.freedesktop.org,
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+References: <20240724002044.112544-1-marex@denx.de>
+ <20240724002044.112544-2-marex@denx.de>
+ <5e5fba4fd6c3c0c9df23697bd328367e5fdfa923.camel@ndufresne.ca>
+Content-Language: en-US
+From: Marek Vasut <marex@denx.de>
+In-Reply-To: <5e5fba4fd6c3c0c9df23697bd328367e5fdfa923.camel@ndufresne.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
 
-If an error occurs after request_mem_region(), a corresponding
-release_mem_region() should be called, as already done in the remove
-function.
+On 7/24/24 6:08 PM, Nicolas Dufresne wrote:
+> Hi Marek,
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-*Not* even compile tested only.
-I don't know on what architecture it relies on.
+Hi,
 
-So it is provided as-is
----
- drivers/video/fbdev/hpfb.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+> Le mercredi 24 juillet 2024 à 02:19 +0200, Marek Vasut a écrit :
+>> Introduce dedicated memory-to-memory IPUv3 VDI deinterlacer driver.
+>> Currently the IPUv3 can operate VDI in DIRECT mode, from sensor to
+>> memory. This only works for single stream, that is, one input from
+>> one camera is deinterlaced on the fly with a helper buffer in DRAM
+>> and the result is written into memory.
+>>
+>> The i.MX6Q/QP does support up to four analog cameras via two IPUv3
+>> instances, each containing one VDI deinterlacer block. In order to
+>> deinterlace all four streams from all four analog cameras live, it
+>> is necessary to operate VDI in INDIRECT mode, where the interlaced
+>> streams are written to buffers in memory, and then deinterlaced in
+>> memory using VDI in INDIRECT memory-to-memory mode.
+> 
+> Just a quick design question. Is it possible to chain the deinterlacer and the
+> csc-scaler ?
 
-diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
-index 66fac8e5393e..87b8dcdc1cf3 100644
---- a/drivers/video/fbdev/hpfb.c
-+++ b/drivers/video/fbdev/hpfb.c
-@@ -342,12 +342,17 @@ static int hpfb_dio_probe(struct dio_dev *d, const struct dio_device_id *ent)
- 	}
- 	printk(KERN_INFO "Topcat found at DIO select code %d "
- 	       "(secondary id %02x)\n", d->scode, (d->id >> 8) & 0xff);
--	if (hpfb_init_one(paddr, vaddr)) {
--		if (d->scode >= DIOII_SCBASE)
--			iounmap((void *)vaddr);
--		return -ENOMEM;
--	}
-+	if (hpfb_init_one(paddr, vaddr))
-+		goto err_unmap;
-+
- 	return 0;
-+
-+err_unmap:
-+	if (d->scode >= DIOII_SCBASE)
-+		iounmap((void *)vaddr);
-+	release_mem_region(d->resource.start, resource_size(&d->resource));
-+
-+	return -ENOMEM;
- }
- 
- static void hpfb_remove_one(struct dio_dev *d)
--- 
-2.45.2
+I think you could do that.
 
+> If so, it would be much more efficient if all this could be
+> combined into the existing m2m driver, since you could save a memory rountrip
+> when needing to deinterlace, change the colorspace and possibly scale too.
+
+The existing PRP/IC driver is similar to what this driver does, yes, but 
+it uses a different DMA path , I believe it is IDMAC->PRP->IC->IDMAC . 
+This driver uses IDMAC->VDI->IC->IDMAC . I am not convinced mixing the 
+two paths into a single driver would be beneficial, but I am reasonably 
+sure it would be very convoluted. Instead, this driver could be extended 
+to do deinterlacing and scaling using the IC if that was needed. I think 
+that would be the cleaner approach.

@@ -1,122 +1,132 @@
-Received: from mail-ot1-f46.google.com (mail-ot1-f46.google.com [209.85.210.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 014BD18A93C
-	for <linux-fbdev@vger.kernel.org>; Mon, 29 Jul 2024 21:35:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.46
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 95C441465A7;
+	Tue, 30 Jul 2024 02:03:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722288941; cv=none; b=NS3x8IozDWBQHifXXrB4nKPHMWGGuOmwMhIn5LUGwXc8+dxnKyYdym4v/9vQ0Zs5VdghBPc6yjYtc8g9ceERxhx8m3Z65svOscCYSaKG0pbCm1TwlGSJkQUtyp+j0rljDBiPbxBdsYV3PIDGxX1bdNl+AnoFyjxf3Fu4ODrlJEc=
+	t=1722305015; cv=none; b=rrJ6ExKoA1OAO6ZgiSYCvyM8bSOXvhr8riYPvxc4iuISdKHxfghyXgoXE1cSpfuWFcBOzL0D3opQwnkDbTwLNhoIrXJN8uXW8tvOOKgQHTHgLa1rVdpUP09RMuNvcZaZHQi5RffnGG9SFCEFUCYfPxsPlDVVDmsSaz83s3ydgfU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722288941; c=relaxed/simple;
-	bh=DhOLdiM9YWhv6ZcKyKdrGJbx+EvMKRcY5IZ/2bt8Y9w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HEO9ECUuMQHe2xk2ldmDdcca5tETTJSStQ8PTQk5Z76kRMUOaHqFdz2ffulKK9F9xKWn6JhHgpOhkuDOAkQ9D1ARYMl5HYAScA0AnUjw6mnS4z577mi8WkgpmYBaxSPdJB8lsvHry+YIn/KVBGQsB86xgldKDWt7rjZdW52wK0M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=sZqvj1Ze; arc=none smtp.client-ip=209.85.210.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1722305015; c=relaxed/simple;
+	bh=5gJuI16tBQK0NwhmwPpGqD5+uu0a+NDMtcA4FN2ggb4=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=CH9FEdmYw/eShApdyen3YDJVVEYpPhM3DBq6ZEJ2f4NtoQ43MWia9DweTQ4O1Eg76WzkkjT16l5PffdUqpbvUEPSqFuf3dyPCvFJoQIF/HrQ1lR5Ee9MPzyCXGnCvfbXnW5iukjuSF6yXpFHaL10g7GApTOnAmyTXCZNNbqEFPI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=neZhOk35; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sZqvj1Ze"
-Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-7093705c708so3972440a34.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 Jul 2024 14:35:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1722288939; x=1722893739; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8jCZ4dJacok9yS/sGhPIVw4hVTsTqbKuUreZrjjqP2I=;
-        b=sZqvj1ZefP41wGT5cKfvYjUgsSEWnLED+8SZ8UWuiFkEQaapBicrOvzh7j0fFw14S7
-         GrvoOwAYGzJfSbiy2404qrobEOzOoAd1OR5i832vT9n4ZsuKr5CC274YKICZSXaK5O1h
-         9AgWyC73iWi3TOPioWrZ1z8Pq4SF6UWbxGJoJf77wwptsMwN0brgKJvJaKSEp4P/78Ht
-         7Uix2+d1Kex2S6/yxxXWHzIkjek4/X5oxppNKArEhXCcOdi64JEcvJqc1lM+zzRgZaH2
-         G75ExpGW0uXR2uPCy3DLXefqM1cx7DlPi2dzCyLtIVMwB/raea7lxNlIKC0ahGgJwRR3
-         lhCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722288939; x=1722893739;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8jCZ4dJacok9yS/sGhPIVw4hVTsTqbKuUreZrjjqP2I=;
-        b=L5WjFdG+vJeLbct9Ll2i7oynJgMeQjb2eXdfgGEGxJVjuaAoooqI2fnhSZQyfSkhpS
-         JrvaBaOf4xnhYK7JDF4AIVW/jQdJ3GI85799wXQVywfLOYyllFAJ3aIi0zKeENMqY+wc
-         bQWs8sB8lMzvdNSDxgJ8mggGArsE42SJ7NXoxB6GIHcyVIxg+ZAi7PY69NCdugOgRXIZ
-         7gl6TNgAnBMlNQ2yO6bMYOoY4+cp+wNfLBkv5lYGB8en1c2YnlpoCiOTZSLHZitnq8me
-         QvoIicaQWdzS4TsmPzxX+awlGU6u5xGM3UNeElbuowkFzKtFD1WESgs3J5deGZmlfgCk
-         EVlg==
-X-Forwarded-Encrypted: i=1; AJvYcCW1ohgDBlKCpi0Il2XdOrq1vEbmcWoBgjgw4ofRlB39X7SZs6liRoq16x3/dttDEAT8YWnzRLC84l5+7eS4p3+pxfdGtra64Y6D76s=
-X-Gm-Message-State: AOJu0YyPKB/reu9eszOjuxbgOFN+IItnQL86pj8LZCCNkUwVAJTqyB7z
-	TcGhg5jo4AFRB4AIkasailuy8PcjasrAQGm++NFMlfg3GZ53vHjKmWKH/fXJQ1k=
-X-Google-Smtp-Source: AGHT+IHDvjNGEn3OlMcAR6Il1gwE9cH+Q82mJfYpkkx7Ley40Dv5Z1neEY9qJN9BU+smiLkpIMX/Og==
-X-Received: by 2002:a05:6870:46a9:b0:254:8afa:6914 with SMTP id 586e51a60fabf-267d4eedec3mr10816825fac.34.1722288939167;
-        Mon, 29 Jul 2024 14:35:39 -0700 (PDT)
-Received: from localhost ([2603:8080:b800:f700::17c0])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7095aeb0acdsm61008a34.64.2024.07.29.14.35.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jul 2024 14:35:38 -0700 (PDT)
-Date: Mon, 29 Jul 2024 16:35:36 -0500
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Helge Deller <deller@gmx.de>
-Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] fbdev/hpfb: Fix an error handling path in
- hpfb_dio_probe()
-Message-ID: <9cc6ac18-3804-486a-8549-fd13b6ae121e@suswa.mountain>
-References: <dc4fe3d857849ac63131c5620f1bacf1a3d7172e.1722191367.git.christophe.jaillet@wanadoo.fr>
- <698958fb-4fc8-4288-b067-5843c651b093@gmx.de>
- <ac4c6712-c47b-4414-9640-3018bf09e8fa@suswa.mountain>
- <9dbb2b52-4fc9-4bbf-a6a2-ab6ec32adb8f@gmx.de>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="neZhOk35"
+Received: from [192.168.49.54] (c-73-118-245-227.hsd1.wa.comcast.net [73.118.245.227])
+	by linux.microsoft.com (Postfix) with ESMTPSA id AA20620B7165;
+	Mon, 29 Jul 2024 19:03:31 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com AA20620B7165
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1722305013;
+	bh=T8coAm5q0CSJOJYA2CaVwB4weZg41nUZwF8ur3BSbes=;
+	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
+	b=neZhOk35gk3ArYbtwdYJiUYeUVpuCtaY75cRf6NPYFuCU9VOeKeGpDeKezrD9B75g
+	 knbZhVGSCoxH74cXLYqoX+XaHjuC7NBlApoV0P0k/GaThp9LMi7YNSKLf+QoAv54J7
+	 96LjXOX3kwzeSxTrZgVlYlVUSCcHbvT/YRzfWBpg=
+Message-ID: <c8023385-8fb8-432c-acf6-10e9a2894e2a@linux.microsoft.com>
+Date: Mon, 29 Jul 2024 19:03:28 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9dbb2b52-4fc9-4bbf-a6a2-ab6ec32adb8f@gmx.de>
+User-Agent: Mozilla Thunderbird
+Cc: eahariha@linux.microsoft.com,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-gfx@lists.freedesktop.org>, Wenjing Liu <wenjing.liu@amd.com>,
+ "open list:INTEL DRM DISPLAY FOR XE AND I915 DRIVERS"
+ <intel-xe@lists.freedesktop.org>, Samson Tam <samson.tam@amd.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>,
+ "open list:I2C SUBSYSTEM HOST DRIVERS" <linux-i2c@vger.kernel.org>,
+ Charlene Liu <charlene.liu@amd.com>, Leo Li <sunpeng.li@amd.com>,
+ Bob Zhou <bob.zhou@amd.com>, Harry Wentland <harry.wentland@amd.com>,
+ "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+ Sohaib Nadeem <sohaib.nadeem@amd.com>, Yifan Zhang <yifan1.zhang@amd.com>,
+ Le Ma <le.ma@amd.com>, Aric Cyr <aric.cyr@amd.com>,
+ Aurabindo Pillai <aurabindo.pillai@amd.com>, Li Ma <li.ma@amd.com>,
+ Ran Sun <sunran001@208suo.com>, Evan Quan <evan.quan@amd.com>,
+ Candice Li <candice.li@amd.com>, Rodrigo Siqueira
+ <Rodrigo.Siqueira@amd.com>, Dillon Varone <dillon.varone@amd.com>,
+ Ruan Jinjie <ruanjinjie@huawei.com>, Hamza Mahfooz <hamza.mahfooz@amd.com>,
+ Umio Yasuno <coelacanth_dream@protonmail.com>, Alvin Lee
+ <alvin.lee2@amd.com>, Ma Jun <Jun.Ma2@amd.com>,
+ Lijo Lazar <lijo.lazar@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Darren Powell <darren.powell@amd.com>, Qingqing Zhuo
+ <Qingqing.Zhuo@amd.com>, Tom Chung <chiahsuan.chung@amd.com>,
+ Nicholas Kazlauskas <nicholas.kazlauskas@amd.com>,
+ Meenakshikumar Somasundaram <meenakshikumar.somasundaram@amd.com>,
+ George Shen <george.shen@amd.com>,
+ Bhawanpreet Lakha <Bhawanpreet.Lakha@amd.com>, Alex Hung
+ <alex.hung@amd.com>, Wayne Lin <wayne.lin@amd.com>,
+ Hawking Zhang <Hawking.Zhang@amd.com>, Likun Gao <Likun.Gao@amd.com>,
+ Alexander Richards <electrodeyt@gmail.com>
+Subject: Re: [PATCH v4 1/6] drm/amdgpu, drm/radeon: Make I2C terminology more
+ inclusive
+To: Alex Deucher <alexander.deucher@amd.com>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ "Pan, Xinhui" <Xinhui.Pan@amd.com>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Andi Shyti <andi.shyti@linux.intel.com>,
+ Wolfram Sang <wsa@kernel.org>,
+ "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
+ "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>
+References: <20240711052734.1273652-1-eahariha@linux.microsoft.com>
+ <20240711052734.1273652-2-eahariha@linux.microsoft.com>
+Content-Language: en-US
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+In-Reply-To: <20240711052734.1273652-2-eahariha@linux.microsoft.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 29, 2024 at 10:09:39PM +0200, Helge Deller wrote:
-> On 7/29/24 17:59, Dan Carpenter wrote:
-> > On Mon, Jul 29, 2024 at 10:13:17AM +0200, Helge Deller wrote:
-> > > On 7/28/24 20:29, Christophe JAILLET wrote:
-> > > > If an error occurs after request_mem_region(), a corresponding
-> > > > release_mem_region() should be called, as already done in the remove
-> > > > function.
-> > > 
-> > > True.
-> > > 
-> > > > Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> > > 
-> > > I think we can drop this "Fixes" tag, as it gives no real info.
-> > 
-> > If we're backporting patches then these tags really are useful.  As
-> > I've been doing more and more backporting, I've come to believe this
-> > more firmly.
+On 7/10/2024 10:27 PM, Easwar Hariharan wrote:
+> I2C v7, SMBus 3.2, and I3C 1.1.1 specifications have replaced "master/slave"
+> with more appropriate terms. Inspired by Wolfram's series to fix drivers/i2c/,
+> fix the terminology for users of I2C_ALGOBIT bitbanging interface, now that
+> the approved verbiage exists in the specification.
 > 
-> Sure, "Fixes" tags are useful, but only if they really refer
-> to another patch which introduced the specific issue.
+> Acked-by: Alex Deucher <alexander.deucher@amd.com>
+> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+> ---
+>  .../gpu/drm/amd/amdgpu/amdgpu_atomfirmware.c  |  8 +++---
+>  drivers/gpu/drm/amd/amdgpu/amdgpu_i2c.c       | 10 +++----
+>  drivers/gpu/drm/amd/amdgpu/atombios_i2c.c     |  8 +++---
+>  drivers/gpu/drm/amd/amdgpu/atombios_i2c.h     |  2 +-
+>  drivers/gpu/drm/amd/amdgpu/smu_v11_0_i2c.c    | 20 ++++++-------
+>  .../gpu/drm/amd/display/dc/bios/bios_parser.c |  2 +-
+>  .../drm/amd/display/dc/bios/bios_parser2.c    |  2 +-
+>  .../drm/amd/display/dc/core/dc_link_exports.c |  4 +--
+>  drivers/gpu/drm/amd/display/dc/dc.h           |  2 +-
+>  drivers/gpu/drm/amd/display/dc/dce/dce_i2c.c  |  4 +--
+>  .../display/include/grph_object_ctrl_defs.h   |  2 +-
+>  drivers/gpu/drm/amd/include/atombios.h        |  2 +-
+>  drivers/gpu/drm/amd/include/atomfirmware.h    | 26 ++++++++---------
+>  .../powerplay/hwmgr/vega20_processpptables.c  |  4 +--
+>  .../amd/pm/powerplay/inc/smu11_driver_if.h    |  2 +-
+>  .../inc/pmfw_if/smu11_driver_if_arcturus.h    |  2 +-
+>  .../inc/pmfw_if/smu11_driver_if_navi10.h      |  2 +-
+>  .../pmfw_if/smu11_driver_if_sienna_cichlid.h  |  2 +-
+>  .../inc/pmfw_if/smu13_driver_if_aldebaran.h   |  2 +-
+>  .../inc/pmfw_if/smu13_driver_if_v13_0_0.h     |  2 +-
+>  .../inc/pmfw_if/smu13_driver_if_v13_0_7.h     |  2 +-
+>  .../gpu/drm/amd/pm/swsmu/smu11/arcturus_ppt.c |  4 +--
+>  .../amd/pm/swsmu/smu11/sienna_cichlid_ppt.c   |  8 +++---
+>  drivers/gpu/drm/radeon/atombios.h             | 16 +++++------
+>  drivers/gpu/drm/radeon/atombios_i2c.c         |  4 +--
+>  drivers/gpu/drm/radeon/radeon_combios.c       | 28 +++++++++----------
+>  drivers/gpu/drm/radeon/radeon_i2c.c           | 10 +++----
+>  drivers/gpu/drm/radeon/radeon_mode.h          |  6 ++--
+>  28 files changed, 93 insertions(+), 93 deletions(-)
 > 
-> But the tag 1da177e4c3f4 ("Linux-2.6.12-rc2") isn't useful, as it's
-> just the initial git commit. It has no relation to why release_mem_region()
-> might have been initially missed. See:
 
-In the last couple stable kernels we've backported some pretty serious
-networking commits that have Linux-2.6.12-rc2 for the Fixes tag.  So if
-it's security related that's really important information.
+Hi Alex, Christian, Xinhui, David, Daniel, others
 
-For minor stuff like this, the commit will be backported as far back as
-possible and until it ends up in a list of failed commits.
+This is the only patch in the series not merged into a tree. Is
+something needed from me to move this forward?
 
-When I'm reviewing the list of failed patches and there is no Fixes tag
-I think maybe it was backported to all the affected kernels?  In that
-case, I could have skipped the manual review if the patch was just
-tagged correctly.  Then I wonder, why wasn't it tagged?  I just assume
-it was sloppiness honestly.  I'm probably not going to spend that much
-time on it, but it's annoying.
-
-When a commit lists Linux-2.6.12-rc2 as the Fixes then it still ends up
-in the failed list.  But it can't affect too many users if we're only
-getting around to fixing it now.  It's easier to ignore.
-
-regards,
-dan carpenter
-
+Thanks,
+Easwar

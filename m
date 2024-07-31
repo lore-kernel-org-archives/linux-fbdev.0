@@ -1,36 +1,36 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F6C51A7F7E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9956C1AED4A
 	for <linux-fbdev@vger.kernel.org>; Wed, 31 Jul 2024 13:01:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722430899; cv=none; b=HyTfm9ImywQVbWDEPJJc93yMn4CasvoMU4Vcf3oWz23MaI1lK9JJodMSfLn0EmPDfhCikHclHaFPXzOP8eX7KNODtljYKwBVHKOLh1nXSPWjyJBzgey2ASG5gMFVuzkDZ2/IUFNHrfm+5Wm7HM2Q/K9muxim8NbI1GG5eJIQvB8=
+	t=1722430899; cv=none; b=PbU7QFPfM4osQuRl1kyZgtohkxZ2Qw/vTNjKXnjnBMEqwfvJ7ZAYO32MI0TNvReMg2z2c3T4AeCZKmWtrRyd1H6Bnj9ow5RXtO0DlbqgexaYdzJU2YBNiAsCZp5cbvHasS+5Xf6EV5zGfs8phPLWsc2LHgwxqi6HfkGOujUMgvs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1722430899; c=relaxed/simple;
-	bh=htFulFtTFCvEQvVVDlKY3RWeKyLnQHshfyV0J+OtM2g=;
+	bh=86aJ3U+OhGzHlqgJd4eWXAwDAKABbmTPR1hlwTXHCIE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VOSs3ceY3rDPlsiY1f4r+HGAmpOmXXM2C463vIEJ6qBoKZsseODxf/vMbTR/jz1q+4XnJXWfqQW6hdvc+1oVfVWE3/97Vac/Fax63KrXA022HxgjuZ2z2U2nVPOo3dMlqTEYv5udlBC6OaMgtsFUGJ/pYrmFxkA2ebjeazBwIQk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=F7BIuUkzDvpSOdx/83yQwypUjO2RmrjAorwGGTM1auq8wd4FTFicrCc1Zlo6x3sQuJCMLrMWD64jcbHRGwWinLaGrYLdFbZVSQwYIwViU8G2RUU7pqRedUIn5p+6U1PQ+Mk3xbhILlpFlC7Vy3kmdGjJUfv/Zm2nw0KOW/pKRRs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id BFE8B21B70;
-	Wed, 31 Jul 2024 13:01:35 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 0A94D1F833;
+	Wed, 31 Jul 2024 13:01:36 +0000 (UTC)
+Authentication-Results: smtp-out2.suse.de;
 	none
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9135913AD8;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C5D6313297;
 	Wed, 31 Jul 2024 13:01:35 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id SMQ1Iq81qmYzWQAAD6G6ig
+	id SEURL681qmYzWQAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Wed, 31 Jul 2024 13:01:35 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: gregkh@linuxfoundation.org,
@@ -38,10 +38,12 @@ To: gregkh@linuxfoundation.org,
 Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 1/2] staging: fbtft: Use backlight power constants
-Date: Wed, 31 Jul 2024 14:58:51 +0200
-Message-ID: <20240731130130.1148153-2-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Jens Frederich <jfrederich@gmail.com>,
+	Jon Nettleton <jon.nettleton@gmail.com>
+Subject: [PATCH 2/2] staging: olpc_dcon: Use backlight power constants
+Date: Wed, 31 Jul 2024 14:58:52 +0200
+Message-ID: <20240731130130.1148153-3-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240731130130.1148153-1-tzimmermann@suse.de>
 References: <20240731130130.1148153-1-tzimmermann@suse.de>
@@ -55,73 +57,44 @@ Content-Transfer-Encoding: 8bit
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Spam-Score: -4.00
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: BFE8B21B70
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
+	REPLY(-4.00)[];
+	TAGGED_RCPT(0.00)[]
+X-Rspamd-Queue-Id: 0A94D1F833
+X-Spam-Level: 
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spam-Score: -4.00
 
 Replace FB_BLANK_ constants with their counterparts from the
 backlight subsystem. The values are identical, so there's no
 change in functionality or semantics.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Jens Frederich <jfrederich@gmail.com>
+Cc: Jon Nettleton <jon.nettleton@gmail.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/staging/fbtft/fb_ssd1351.c | 2 +-
- drivers/staging/fbtft/fbtft-core.c | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/staging/olpc_dcon/olpc_dcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
-index ca2cba2185ae..cee4cecb23a5 100644
---- a/drivers/staging/fbtft/fb_ssd1351.c
-+++ b/drivers/staging/fbtft/fb_ssd1351.c
-@@ -213,7 +213,7 @@ static void register_onboard_backlight(struct fbtft_par *par)
- 	struct backlight_properties bl_props = { 0, };
+diff --git a/drivers/staging/olpc_dcon/olpc_dcon.c b/drivers/staging/olpc_dcon/olpc_dcon.c
+index 08ec3aae90ea..4cb904a5f8f4 100644
+--- a/drivers/staging/olpc_dcon/olpc_dcon.c
++++ b/drivers/staging/olpc_dcon/olpc_dcon.c
+@@ -544,7 +544,7 @@ static const struct backlight_ops dcon_bl_ops = {
+ static struct backlight_properties dcon_bl_props = {
+ 	.max_brightness = 15,
+ 	.type = BACKLIGHT_RAW,
+-	.power = FB_BLANK_UNBLANK,
++	.power = BACKLIGHT_POWER_ON,
+ };
  
- 	bl_props.type = BACKLIGHT_RAW;
--	bl_props.power = FB_BLANK_POWERDOWN;
-+	bl_props.power = BACKLIGHT_POWER_OFF;
- 
- 	bd = backlight_device_register(dev_driver_string(par->info->device),
- 				       par->info->device, par, &bl_ops,
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 8e2fd0c0fee2..ab53698dae32 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -152,7 +152,7 @@ static int fbtft_backlight_get_brightness(struct backlight_device *bd)
- void fbtft_unregister_backlight(struct fbtft_par *par)
- {
- 	if (par->info->bl_dev) {
--		par->info->bl_dev->props.power = FB_BLANK_POWERDOWN;
-+		par->info->bl_dev->props.power = BACKLIGHT_POWER_OFF;
- 		backlight_update_status(par->info->bl_dev);
- 		backlight_device_unregister(par->info->bl_dev);
- 		par->info->bl_dev = NULL;
-@@ -178,7 +178,7 @@ void fbtft_register_backlight(struct fbtft_par *par)
- 
- 	bl_props.type = BACKLIGHT_RAW;
- 	/* Assume backlight is off, get polarity from current state of pin */
--	bl_props.power = FB_BLANK_POWERDOWN;
-+	bl_props.power = BACKLIGHT_POWER_OFF;
- 	if (!gpiod_get_value(par->gpio.led[0]))
- 		par->polarity = true;
- 
-@@ -801,7 +801,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
- 
- 	/* Turn on backlight if available */
- 	if (fb_info->bl_dev) {
--		fb_info->bl_dev->props.power = FB_BLANK_UNBLANK;
-+		fb_info->bl_dev->props.power = BACKLIGHT_POWER_ON;
- 		fb_info->bl_dev->ops->update_status(fb_info->bl_dev);
- 	}
- 
+ static int dcon_reboot_notify(struct notifier_block *nb,
 -- 
 2.45.2
 

@@ -1,91 +1,50 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09C0B1AED46;
-	Wed, 31 Jul 2024 12:35:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F6C51A7F7E
+	for <linux-fbdev@vger.kernel.org>; Wed, 31 Jul 2024 13:01:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722429339; cv=none; b=Uzd4b2yqDI1bEUU4qW5jDg5IwcK15pavv9aQeQXBEOkZoBJt8I2rVWuHTAhq6dqQ1/u+seBgbkG8XQZRa0tM/9ul5uOTx9hTP3ycCChUhGyKbO+3IJOOBEr7XaFI1Bd9YUS7etjKiTSmbdXIa5QZ5UcgPxZkKxCfA9UrbhJr5W4=
+	t=1722430899; cv=none; b=HyTfm9ImywQVbWDEPJJc93yMn4CasvoMU4Vcf3oWz23MaI1lK9JJodMSfLn0EmPDfhCikHclHaFPXzOP8eX7KNODtljYKwBVHKOLh1nXSPWjyJBzgey2ASG5gMFVuzkDZ2/IUFNHrfm+5Wm7HM2Q/K9muxim8NbI1GG5eJIQvB8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722429339; c=relaxed/simple;
-	bh=ukpxQXSYDkc1ACZBIUdyI4e8sf3Ya2W6ayLHGwFAd4M=;
+	s=arc-20240116; t=1722430899; c=relaxed/simple;
+	bh=htFulFtTFCvEQvVVDlKY3RWeKyLnQHshfyV0J+OtM2g=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HG1t+WcOFo6MVYl7xA+4rsYlhtKZ9UJHD2/sBEJ3iUYsf8hIr3Nt22nEFcm6fnCWrEcL23a5fau0MJSGnoFeJ6H2sdSbcUG2eZPosG56G8+vu9JnH8e98cYNjMfG6xGxggQUejfVIHQi66b3l51/ThK7lpVO2gWnyeQHcg0juTs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=mmN4Yh/k; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=vsUeDmCE; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=mmN4Yh/k; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=vsUeDmCE; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=VOSs3ceY3rDPlsiY1f4r+HGAmpOmXXM2C463vIEJ6qBoKZsseODxf/vMbTR/jz1q+4XnJXWfqQW6hdvc+1oVfVWE3/97Vac/Fax63KrXA022HxgjuZ2z2U2nVPOo3dMlqTEYv5udlBC6OaMgtsFUGJ/pYrmFxkA2ebjeazBwIQk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="mmN4Yh/k";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="vsUeDmCE";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="mmN4Yh/k";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="vsUeDmCE"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id E80C321B1B;
-	Wed, 31 Jul 2024 12:35:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1722429306; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zc9nJhKTizoTXPGtuht3nktFTrniChSObo107zV4LkQ=;
-	b=mmN4Yh/k3NSPWWEbqlFMIyg+7BnTGoxAdz4jqZw9enwE7r4x6pGc++JR0UFBEgRF1IO3O9
-	S0fIObqnvwcjm/b9+wCR8atyP+h8i0aWn9ZnhgVC3p2pI0UMpfGV43thPeYACp50hQAcIz
-	IqCWphlmpzZ/nmXfdK4lg/gWumAnoVY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1722429306;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zc9nJhKTizoTXPGtuht3nktFTrniChSObo107zV4LkQ=;
-	b=vsUeDmCEEbBPvCADe7g6l/NEUTocw/rQjoScBB5+o1pUx0+uLNjvgCquyDkNjB+PXYubpZ
-	ZZ/L2Iaur6PENiAg==
+	by smtp-out1.suse.de (Postfix) with ESMTPS id BFE8B21B70;
+	Wed, 31 Jul 2024 13:01:35 +0000 (UTC)
 Authentication-Results: smtp-out1.suse.de;
 	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1722429306; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zc9nJhKTizoTXPGtuht3nktFTrniChSObo107zV4LkQ=;
-	b=mmN4Yh/k3NSPWWEbqlFMIyg+7BnTGoxAdz4jqZw9enwE7r4x6pGc++JR0UFBEgRF1IO3O9
-	S0fIObqnvwcjm/b9+wCR8atyP+h8i0aWn9ZnhgVC3p2pI0UMpfGV43thPeYACp50hQAcIz
-	IqCWphlmpzZ/nmXfdK4lg/gWumAnoVY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1722429306;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zc9nJhKTizoTXPGtuht3nktFTrniChSObo107zV4LkQ=;
-	b=vsUeDmCEEbBPvCADe7g6l/NEUTocw/rQjoScBB5+o1pUx0+uLNjvgCquyDkNjB+PXYubpZ
-	ZZ/L2Iaur6PENiAg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B845D13297;
-	Wed, 31 Jul 2024 12:35:06 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9135913AD8;
+	Wed, 31 Jul 2024 13:01:35 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 0DqrK3ovqmYiUQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 31 Jul 2024 12:35:06 +0000
+	id SMQ1Iq81qmYzWQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 31 Jul 2024 13:01:35 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-omap@vger.kernel.org,
+To: gregkh@linuxfoundation.org,
+	deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 6/9] fbdev: omapfb: Use backlight power constants
-Date: Wed, 31 Jul 2024 14:33:47 +0200
-Message-ID: <20240731123502.1145082-7-tzimmermann@suse.de>
+Subject: [PATCH 1/2] staging: fbtft: Use backlight power constants
+Date: Wed, 31 Jul 2024 14:58:51 +0200
+Message-ID: <20240731130130.1148153-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240731123502.1145082-1-tzimmermann@suse.de>
-References: <20240731123502.1145082-1-tzimmermann@suse.de>
+In-Reply-To: <20240731130130.1148153-1-tzimmermann@suse.de>
+References: <20240731130130.1148153-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -93,76 +52,76 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Spam-Score: -4.00
 X-Spam-Level: 
-X-Spamd-Result: default: False [0.40 / 50.00];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_TO(0.00)[gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RCVD_TLS_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
 X-Spam-Flag: NO
-X-Spam-Score: 0.40
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: BFE8B21B70
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
 
 Replace FB_BLANK_ constants with their counterparts from the
 backlight subsystem. The values are identical, so there's no
 change in functionality or semantics.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Helge Deller <deller@gmx.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c      | 4 ++--
- .../video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c  | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/fbtft/fb_ssd1351.c | 2 +-
+ drivers/staging/fbtft/fbtft-core.c | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-index 274bdf7b3b45..35ed1b2db993 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-@@ -1215,7 +1215,7 @@ static int dsicm_probe(struct platform_device *pdev)
+diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
+index ca2cba2185ae..cee4cecb23a5 100644
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -213,7 +213,7 @@ static void register_onboard_backlight(struct fbtft_par *par)
+ 	struct backlight_properties bl_props = { 0, };
  
- 		ddata->bldev = bldev;
+ 	bl_props.type = BACKLIGHT_RAW;
+-	bl_props.power = FB_BLANK_POWERDOWN;
++	bl_props.power = BACKLIGHT_POWER_OFF;
  
--		bldev->props.power = FB_BLANK_UNBLANK;
-+		bldev->props.power = BACKLIGHT_POWER_ON;
- 		bldev->props.brightness = 255;
+ 	bd = backlight_device_register(dev_driver_string(par->info->device),
+ 				       par->info->device, par, &bl_ops,
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 8e2fd0c0fee2..ab53698dae32 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -152,7 +152,7 @@ static int fbtft_backlight_get_brightness(struct backlight_device *bd)
+ void fbtft_unregister_backlight(struct fbtft_par *par)
+ {
+ 	if (par->info->bl_dev) {
+-		par->info->bl_dev->props.power = FB_BLANK_POWERDOWN;
++		par->info->bl_dev->props.power = BACKLIGHT_POWER_OFF;
+ 		backlight_update_status(par->info->bl_dev);
+ 		backlight_device_unregister(par->info->bl_dev);
+ 		par->info->bl_dev = NULL;
+@@ -178,7 +178,7 @@ void fbtft_register_backlight(struct fbtft_par *par)
  
- 		dsicm_bl_update_status(bldev);
-@@ -1253,7 +1253,7 @@ static void dsicm_remove(struct platform_device *pdev)
+ 	bl_props.type = BACKLIGHT_RAW;
+ 	/* Assume backlight is off, get polarity from current state of pin */
+-	bl_props.power = FB_BLANK_POWERDOWN;
++	bl_props.power = BACKLIGHT_POWER_OFF;
+ 	if (!gpiod_get_value(par->gpio.led[0]))
+ 		par->polarity = true;
  
- 	bldev = ddata->bldev;
- 	if (bldev != NULL) {
--		bldev->props.power = FB_BLANK_POWERDOWN;
-+		bldev->props.power = BACKLIGHT_POWER_OFF;
- 		dsicm_bl_update_status(bldev);
- 		backlight_device_unregister(bldev);
+@@ -801,7 +801,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 
+ 	/* Turn on backlight if available */
+ 	if (fb_info->bl_dev) {
+-		fb_info->bl_dev->props.power = FB_BLANK_UNBLANK;
++		fb_info->bl_dev->props.power = BACKLIGHT_POWER_ON;
+ 		fb_info->bl_dev->ops->update_status(fb_info->bl_dev);
  	}
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-index 71d2e015960c..e0747a90dc50 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-@@ -753,7 +753,7 @@ static int acx565akm_probe(struct spi_device *spi)
- 	}
  
- 	memset(&props, 0, sizeof(props));
--	props.power = FB_BLANK_UNBLANK;
-+	props.power = BACKLIGHT_POWER_ON;
- 	props.type = BACKLIGHT_RAW;
- 
- 	bldev = backlight_device_register("acx565akm", &ddata->spi->dev,
 -- 
 2.45.2
 

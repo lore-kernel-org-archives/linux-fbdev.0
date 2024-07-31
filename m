@@ -1,142 +1,141 @@
-Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
+Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com [209.85.167.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 672DE18C925
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Jul 2024 16:05:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 014AE16938C;
+	Wed, 31 Jul 2024 07:05:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722355531; cv=none; b=LkSYVvNWqGXiicw9HKDrFtRLXMWZBWs9yEMkv0qbisA/M0EIBsCoAF2J8gz++ZKhifjjVeGoPfe9Us2UxR4zuj3xdfMvaeqpfQPLKApLAkfDl+LwOfBPVWzOTkjgz0WUejBX0bbUHBaG4t5xaRwTpwjR3BQPfKXWBX8JeLn4/IA=
+	t=1722409519; cv=none; b=K6Mm9nvb4GkXDi9A4Ot8hIlo5J+kMhCj/KWek6CqInOcY1UZZQYAU2BSWXhloQSITi+QKVHEDGXz0WWkrortentsSyVIR3DQ/qNciPizRsvShvIOYcYEFD8+rjJ3Rm4sYAWReKadStsiw/54y3w96ROofWtWnEmGIdbrl2ERqVk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722355531; c=relaxed/simple;
-	bh=ciJceeDlK4Y/meCsbSLF/LMnhpaQTDx0EUKSZhsR9W4=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=G2K6/unD51V9Qe83FdNytw7FCwdsWReYa/fP2hHbtU92CBFCiHsZHO3z8By1Uy0y5T+uUdC933FgJpa6R3dSelviO0NBIo/ZERo42F20xelRdYflhpDZBjSTfECM8rG4oRgJGpCTNyqBhZ8ttodDJBHBgfPnTehQER/FCQuwTRg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca; spf=none smtp.mailfrom=ndufresne.ca; dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b=XdOCXwhp; arc=none smtp.client-ip=209.85.222.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ndufresne.ca
+	s=arc-20240116; t=1722409519; c=relaxed/simple;
+	bh=FonBXi+Q3MfNSZ+aBoUgss5VhQKs37vqijFK12+g2IY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=beWYpddB8um1jwV9VBikwscHcFbzQgSZQtMrJ21u8RQ8toYjG8ehq8irqq4pwoaWTeRHonXwumwfhmY3/asFw680gJA8M3/0WvZ61do6v5AX6Ld4NYCqoXSTSjmtLryfQ8AutSXErCv70SwX0plxVm1q+9iz8EdvKeZXBXuOo9g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QiRuR+9Z; arc=none smtp.client-ip=209.85.167.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b="XdOCXwhp"
-Received: by mail-qk1-f178.google.com with SMTP id af79cd13be357-7a1d7bc07b7so295106285a.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 30 Jul 2024 09:05:29 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QiRuR+9Z"
+Received: by mail-oi1-f177.google.com with SMTP id 5614622812f47-3db23a60850so2835098b6e.0;
+        Wed, 31 Jul 2024 00:05:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ndufresne-ca.20230601.gappssmtp.com; s=20230601; t=1722355528; x=1722960328; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=ciJceeDlK4Y/meCsbSLF/LMnhpaQTDx0EUKSZhsR9W4=;
-        b=XdOCXwhpN0yub2HlUY6AQOOhY9sYPsEVQzdax6eDLWt8kGCIkdoJ92Eexduf8+fa5D
-         Zu+rztyRtF71yc/v3fPYnJOu3PhYSJnHB521bhFYC88LXNWdQzp9uUERsT/fD4oxIY/2
-         04Oc64A4I8Dyw0F+OZb9Az3ROBCcdYYy5kMuAiw0WtL5B5JQwm987vaX4tLOccXLgb7K
-         zjFyWwHIPo3grguRWzvI9qyy1YCwIGb8FiBiPtR0SXgxEAd/UaYFLYQmjZSD4XO6YOFA
-         gbAGo1bFnFzlhfn37th8drHnuJryw78AfOitHEdeMlYzT6NHF3xzXWLDh3H9NGTFuttV
-         /lGA==
+        d=gmail.com; s=20230601; t=1722409517; x=1723014317; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=mrCAXXCSMmjbL6R33sl32ct6gbQlsIym8nsT33zM3Rc=;
+        b=QiRuR+9ZkthR3axb2Br7v9FCCWo4z9d3iGIXXVPzX3VUYeD1WaeKAR7It3AZvRv6Gp
+         kdWIneqDbVo9uy6i3MconZZtm+s9i6yw/HyvBh141ijM3/6q0APkf/Zs/A45QK6H70oJ
+         sd/xcisnVqoflNsa97Quv+C0D4Cz3wGtM0X8wAClTfNOxh1nA7xA79DnULD/b9rIlc+a
+         K2cpu3G3Jdg8L8Mhfy80hIKcerUiCdbf+DNd7Rr2xcRfE+bQbHAVHhx3V/s0grLYhdFc
+         hlIvvBprhtyexbGSNe2DlVxuT2M0upnrEi5eAFtcVTaOuWqfaWLe/4c6iuk+3p7d8MDA
+         nm6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722355528; x=1722960328;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ciJceeDlK4Y/meCsbSLF/LMnhpaQTDx0EUKSZhsR9W4=;
-        b=NOPCu0g2gfkxr4vkDWFQeRidfb9TE8+ksPH5LJERyNT6IcAf+pntW75zHurtK2IvGS
-         Tj96NbUaNp1YzVOdGX/d4nc9vXc56n06t+Y2TBrEHTGrlKwd57KAAYGPAi7N5cc6hPvp
-         21lNDMQU3hFqNAIRAdWijRUZDwmWkv4WKBKpXwvm+Ia0Ka//xUmzTabV/+lIEjz5bYtk
-         rXBsNecD0aoGz3OsLs173A1VQnCfu8zsjooZG4cZRR8V7rA62FfXM5mrksEAiZ13O6BB
-         P08iJgiz0dNjNrIwYNpMMzZmtgBUx+tj6ArTrQFgrNZbA7wAVbqrNTyqHSdi93a40n5w
-         SB4g==
-X-Forwarded-Encrypted: i=1; AJvYcCU6OPLv4is+U0mi3If88Qjzc4RJURF0OuG8xZKMpV2pWWZuwHfJxZL17a9lOFKnMI0mBqhjA/plwuBTum9xOKMsuT6QpyQj7f+AOuk=
-X-Gm-Message-State: AOJu0YwWC++blMuqy6NSYEg1A5InWXMeEretZEn6kK3L/aPpAhsBQFg5
-	n7CcgJY+Rclz7lKuPphW9Zh5uFgk/ED+45mE/7E37w3mZh+mnPf2UbNtvOqskjM=
-X-Google-Smtp-Source: AGHT+IEqLv3C2h4BQ+3fI7pKVhff0eutIQIkZ2jsV14fbu5lHsoFKAnZxlGiOhZ4pHufize9xVS64Q==
-X-Received: by 2002:a05:620a:4090:b0:79b:efe1:1222 with SMTP id af79cd13be357-7a1e52fbb32mr1673543485a.63.1722355528312;
-        Tue, 30 Jul 2024 09:05:28 -0700 (PDT)
-Received: from nicolas-tpx395.lan ([2606:6d00:15:820c::580])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-7a1d745f06asm644089685a.134.2024.07.30.09.05.27
+        d=1e100.net; s=20230601; t=1722409517; x=1723014317;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=mrCAXXCSMmjbL6R33sl32ct6gbQlsIym8nsT33zM3Rc=;
+        b=xL2Pr7hpkk5TqQkBgsQwGHsrSn5TRHP+Y+mGfKslloRyznB5ucH0gDOV/JPNJ695AG
+         l12qe3AcdNmYy6hQ4e0q+DeXkyvL1D3iHt8fQ9s2IBk3yLxEMVWU9/OV92zfPFeq6JPG
+         YgSBo1pLh5PLcQbE4H4pEII9+hZY7X2AkoG8jFScJiY0s56kloPwVQXPDhFDg9MoYLBI
+         NJV2lo1/zEA3+QqjmtFEoQcDIot2V7HRnjC2wwfaUYezmoZjz6nQIwQNyPtWgUaBcLIm
+         7RGtCY+viYXBFO3DYDd9JUQzujf76Ps+NVOz/VtIa+02dwXvBqCI+LJ8W1HftwsRUnRw
+         UpBA==
+X-Forwarded-Encrypted: i=1; AJvYcCXGJdgQVeNEHyiv3DMyoXxxr+S1z3w2UUeFS0DndVW/x9symTVyZpvyUPS3uhL3sFUCfptdBeF6U2O2UBk1V5Ieatkl+2b4X4OzalHS87Jgoy62rLqTRf07oPTp1W1J45etS0Z3f4pyznA=
+X-Gm-Message-State: AOJu0YykMwytUqlL9+CjY4DtN9rAYb8O3SqX0vL5oceokOHrWKRd1Pf4
+	Bc84svrCB7RMYNBK6Y64y4HhfgEZDiOC/YdKvGaFUgiT0SE7o0ck
+X-Google-Smtp-Source: AGHT+IGr572fiibvBQPX2H/P2UU6sDQCN8guL81ZBr4lGrTb8rxtV2x6+RVC46jqxQD7x55AYK4KPA==
+X-Received: by 2002:a05:6870:2d4:b0:261:198f:13cd with SMTP id 586e51a60fabf-267d4ef04e5mr16428624fac.32.1722409516886;
+        Wed, 31 Jul 2024 00:05:16 -0700 (PDT)
+Received: from Riyan.inspiron ([122.176.203.252])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-70ead7120f6sm9447234b3a.50.2024.07.31.00.05.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Jul 2024 09:05:28 -0700 (PDT)
-Message-ID: <2229769f3a9baf58fbeeed93fa4b0373a02055e3.camel@ndufresne.ca>
-Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
- deinterlacer driver
-From: Nicolas Dufresne <nicolas@ndufresne.ca>
-To: Marek Vasut <marex@denx.de>, linux-media@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
- Estevam <festevam@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
- Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
- <kernel@pengutronix.de>, Philipp Zabel <p.zabel@pengutronix.de>, Sascha
- Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Steve
- Longerbeam <slongerbeam@gmail.com>, dri-devel@lists.freedesktop.org,
- imx@lists.linux.dev,  linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org,  linux-staging@lists.linux.dev
-Date: Tue, 30 Jul 2024 12:05:26 -0400
-In-Reply-To: <8aea6cc0-10bf-48b8-add9-eb3f1caa2d66@denx.de>
-References: <20240724002044.112544-1-marex@denx.de>
-	 <20240724002044.112544-2-marex@denx.de>
-	 <5e5fba4fd6c3c0c9df23697bd328367e5fdfa923.camel@ndufresne.ca>
-	 <8aea6cc0-10bf-48b8-add9-eb3f1caa2d66@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.2 (3.52.2-1.fc40) 
+        Wed, 31 Jul 2024 00:05:16 -0700 (PDT)
+From: Riyan Dhiman <riyandhiman14@gmail.com>
+To: gregkh@linuxfoundation.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Riyan Dhiman <riyandhiman14@gmail.com>
+Subject: [PATCH] staging: vme_user: vme.h: alignment of closing parenthesis should match open parenthesis in function declaration
+Date: Wed, 31 Jul 2024 12:35:07 +0530
+Message-Id: <20240731070507.6290-1-riyandhiman14@gmail.com>
+X-Mailer: git-send-email 2.39.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Le lundi 29 juillet 2024 =C3=A0 04:16 +0200, Marek Vasut a =C3=A9crit=C2=A0=
-:
-> On 7/24/24 6:08 PM, Nicolas Dufresne wrote:
-> > Hi Marek,
->=20
-> Hi,
->=20
-> > Le mercredi 24 juillet 2024 =C3=A0 02:19 +0200, Marek Vasut a =C3=A9cri=
-t=C2=A0:
-> > > Introduce dedicated memory-to-memory IPUv3 VDI deinterlacer driver.
-> > > Currently the IPUv3 can operate VDI in DIRECT mode, from sensor to
-> > > memory. This only works for single stream, that is, one input from
-> > > one camera is deinterlaced on the fly with a helper buffer in DRAM
-> > > and the result is written into memory.
-> > >=20
-> > > The i.MX6Q/QP does support up to four analog cameras via two IPUv3
-> > > instances, each containing one VDI deinterlacer block. In order to
-> > > deinterlace all four streams from all four analog cameras live, it
-> > > is necessary to operate VDI in INDIRECT mode, where the interlaced
-> > > streams are written to buffers in memory, and then deinterlaced in
-> > > memory using VDI in INDIRECT memory-to-memory mode.
-> >=20
-> > Just a quick design question. Is it possible to chain the deinterlacer =
-and the
-> > csc-scaler ?
->=20
-> I think you could do that.
->=20
-> > If so, it would be much more efficient if all this could be
-> > combined into the existing m2m driver, since you could save a memory ro=
-untrip
-> > when needing to deinterlace, change the colorspace and possibly scale t=
-oo.
->=20
-> The existing PRP/IC driver is similar to what this driver does, yes, but=
-=20
-> it uses a different DMA path , I believe it is IDMAC->PRP->IC->IDMAC .=
-=20
-> This driver uses IDMAC->VDI->IC->IDMAC . I am not convinced mixing the=
-=20
-> two paths into a single driver would be beneficial, but I am reasonably=
-=20
-> sure it would be very convoluted. Instead, this driver could be extended=
-=20
-> to do deinterlacing and scaling using the IC if that was needed. I think=
-=20
-> that would be the cleaner approach.
+Adhere to Linux kernel coding style.
 
-Not that I only meant to ask if there was a path to combine
-CSC/Scaling/Deinterlacing without a memory rountrip. If a rountrip is neede=
-d
-anyway, I would rather make separate video nodes, and leave it to userspace=
- to
-deal with. Though, if we can avoid it, a combined driver should be highly
-beneficial.
+Reported by checkpatch:
 
-cheers,
-Nicolas
+CHECK: Alignment should match open parenthesis
+
+Signed-off-by: Riyan Dhiman <riyandhiman14@gmail.com>
+---
+ drivers/staging/vme_user/vme.h | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/staging/vme_user/vme.h b/drivers/staging/vme_user/vme.h
+index 26aa40f78a74..7753e736f9fd 100644
+--- a/drivers/staging/vme_user/vme.h
++++ b/drivers/staging/vme_user/vme.h
+@@ -129,8 +129,7 @@ struct vme_driver {
+ };
+ 
+ void *vme_alloc_consistent(struct vme_resource *, size_t, dma_addr_t *);
+-void vme_free_consistent(struct vme_resource *, size_t,  void *,
+-	dma_addr_t);
++void vme_free_consistent(struct vme_resource *, size_t,  void *, dma_addr_t);
+ 
+ size_t vme_get_size(struct vme_resource *);
+ int vme_check_window(struct vme_bridge *bridge, u32 aspace,
+@@ -138,20 +137,20 @@ int vme_check_window(struct vme_bridge *bridge, u32 aspace,
+ 
+ struct vme_resource *vme_slave_request(struct vme_dev *, u32, u32);
+ int vme_slave_set(struct vme_resource *, int, unsigned long long,
+-	unsigned long long, dma_addr_t, u32, u32);
++		  unsigned long long, dma_addr_t, u32, u32);
+ int vme_slave_get(struct vme_resource *, int *, unsigned long long *,
+-	unsigned long long *, dma_addr_t *, u32 *, u32 *);
++		  unsigned long long *, dma_addr_t *, u32 *, u32 *);
+ void vme_slave_free(struct vme_resource *);
+ 
+ struct vme_resource *vme_master_request(struct vme_dev *, u32, u32, u32);
+ int vme_master_set(struct vme_resource *, int, unsigned long long,
+-	unsigned long long, u32, u32, u32);
++		   unsigned long long, u32, u32, u32);
+ int vme_master_get(struct vme_resource *, int *, unsigned long long *,
+-	unsigned long long *, u32 *, u32 *, u32 *);
++		   unsigned long long *, u32 *, u32 *, u32 *);
+ ssize_t vme_master_read(struct vme_resource *, void *, size_t, loff_t);
+ ssize_t vme_master_write(struct vme_resource *, void *, size_t, loff_t);
+ unsigned int vme_master_rmw(struct vme_resource *, unsigned int, unsigned int,
+-	unsigned int, loff_t);
++			    unsigned int, loff_t);
+ int vme_master_mmap(struct vme_resource *resource, struct vm_area_struct *vma);
+ void vme_master_free(struct vme_resource *);
+ 
+@@ -162,13 +161,13 @@ struct vme_dma_attr *vme_dma_pci_attribute(dma_addr_t);
+ struct vme_dma_attr *vme_dma_vme_attribute(unsigned long long, u32, u32, u32);
+ void vme_dma_free_attribute(struct vme_dma_attr *);
+ int vme_dma_list_add(struct vme_dma_list *, struct vme_dma_attr *,
+-	struct vme_dma_attr *, size_t);
++		     struct vme_dma_attr *, size_t);
+ int vme_dma_list_exec(struct vme_dma_list *);
+ int vme_dma_list_free(struct vme_dma_list *);
+ int vme_dma_free(struct vme_resource *);
+ 
+ int vme_irq_request(struct vme_dev *, int, int,
+-	void (*callback)(int, int, void *), void *);
++		    void (*callback)(int, int, void *), void *);
+ void vme_irq_free(struct vme_dev *, int, int);
+ int vme_irq_generate(struct vme_dev *, int, int);
+ 
+-- 
+2.39.2
+

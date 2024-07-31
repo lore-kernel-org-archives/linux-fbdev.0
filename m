@@ -1,37 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C88ED1A76C4;
-	Wed, 31 Jul 2024 07:44:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B959F18B480;
+	Wed, 31 Jul 2024 08:38:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722411893; cv=none; b=ZQbuyUhK7QCYUeU+Iw6U22pzVkOSG/oiVrX49KU5GJD+dOhRehTMx4/Y5GZ4Lx2miVJG8Z104QYAnJGWkCeFq6yU3CI65R9L/rI9O8v5tryfh1jTP82aJ4brmOwcyRtXS9PajT5oFbjuPyC0WXVfnazGboPsMIvXb8k6ewQUFhg=
+	t=1722415102; cv=none; b=D6b6dGXkpouai6Jf7vEbBgJhkujcm2UbRp2p/XnuoTgaFPalBXWTAAh//TxaigSZEmBI6AW65GwJL/o4evbelXfr3ANgrc6hKtvcQMXTkAKPhVyAT00Hq4iICrHILRp+VqjQZGxsWww6NQMehFrPGrJ1QkJNyeKaNTUofIOS09s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722411893; c=relaxed/simple;
-	bh=ShY7Nj4mnNJABphfGU7nTPsI5y6WvrjXgfhgmdlfdAg=;
+	s=arc-20240116; t=1722415102; c=relaxed/simple;
+	bh=PJHNRap1ONRw06JzQHZ+bOu/QyvhIVKClDqpdRjag/k=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jSBOr245YA98y//EHk/7RleZrs1x7ugRBHNzEyXzXYiaQFc3yl+16tdV4q930D8Lrp4ikMzMu0hF/CGEIR/oqCdHSKd50ZvS882ayROjTCXXI3t4EQfNBgh+dp0xP3JP2WxEqmLjQyI2z9PRRuSzHiJjjWvgxxIOsbnEqOyOmdU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ksMDSoIy; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=imrQsZ49FSWoCW37WvwPck/h/9PsAvBwprBBQBp0CTHEj0MgHyMXvPYLb+/+KnNT8TmTF1sSTQ/IR5JXfsWbPXPysBp6iCNsxl3h/5ztKzlSMLLcL0m4SV6bQqAcdo2GZojDlgTOSkrMQnfkbAaxIemnIL6rTXpYoOAB2Yl37e4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=zJokyidU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ksMDSoIy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEF11C116B1;
-	Wed, 31 Jul 2024 07:44:52 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="zJokyidU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B281C116B1;
+	Wed, 31 Jul 2024 08:38:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1722411893;
-	bh=ShY7Nj4mnNJABphfGU7nTPsI5y6WvrjXgfhgmdlfdAg=;
+	s=korg; t=1722415102;
+	bh=PJHNRap1ONRw06JzQHZ+bOu/QyvhIVKClDqpdRjag/k=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ksMDSoIyA4US0w9TtUvGC3IjWc/1rNmQLUy97N8VumsV426KvF8GWKIJHoK10IO64
-	 7bCUSrcUG8nPIBc6f7/49R22jKPniW29jtTa1jPPU39W9PH7wU4Pz/ACyMhYtrzD9U
-	 /pcA4J2X0X3LpEL0NzIInLYZSON9GgpN4isLVtE4=
-Date: Wed, 31 Jul 2024 09:44:50 +0200
+	b=zJokyidUtVT1Ip+sjNrv8uHyUI4ihMnAx4Xt0h33GjiFtU2P9X4WQdK6nzNvq+Zo3
+	 RVn1ZswiuRm2j8KTcJEedLepgaQZsXajV7nYMB2tkg8pxY9UQjgyC2GQQEbra2AEKq
+	 JK3eTWHVuWvXSsMSbl6zulnwADtR8sF9LPLUvAxU=
+Date: Wed, 31 Jul 2024 10:38:18 +0200
 From: Greg KH <gregkh@linuxfoundation.org>
 To: Riyan Dhiman <riyandhiman14@gmail.com>
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] staging: vme_user: vme_bridge.h: Fix mutex without
  comment warning
-Message-ID: <2024073127-babbling-antiquely-22a2@gregkh>
+Message-ID: <2024073122-abnormal-carefully-f53e@gregkh>
 References: <20240731073605.9857-1-riyandhiman14@gmail.com>
+ <2024073127-babbling-antiquely-22a2@gregkh>
+ <CAAjz0Qahd96tQEpbWPXiGQ7Frku3sXpKQ6BfTWzqxcf4ApSYEA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,32 +42,49 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240731073605.9857-1-riyandhiman14@gmail.com>
+In-Reply-To: <CAAjz0Qahd96tQEpbWPXiGQ7Frku3sXpKQ6BfTWzqxcf4ApSYEA@mail.gmail.com>
 
-On Wed, Jul 31, 2024 at 01:06:05PM +0530, Riyan Dhiman wrote:
-> Adhere to Linux kernel coding style
-> 
-> Reported by checkpatch:
-> 
-> CHECK: mutex definition without comment
-> 
-> Signed-off-by: Riyan Dhiman <riyandhiman14@gmail.com>
-> ---
->  drivers/staging/vme_user/vme_bridge.h | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/staging/vme_user/vme_bridge.h b/drivers/staging/vme_user/vme_bridge.h
-> index 9bdc41bb6602..0b1f05944f0d 100644
-> --- a/drivers/staging/vme_user/vme_bridge.h
-> +++ b/drivers/staging/vme_user/vme_bridge.h
-> @@ -28,6 +28,7 @@ struct vme_master_resource {
->  struct vme_slave_resource {
->  	struct list_head list;
->  	struct vme_bridge *parent;
-> +	/* Locking for VME slave resources */
+A: http://en.wikipedia.org/wiki/Top_post
+Q: Were do I find info about this thing called top-posting?
+A: Because it messes up the order in which people normally read text.
+Q: Why is top-posting such a bad thing?
+A: Top-posting.
+Q: What is the most annoying thing in e-mail?
 
-Are you sure about all of these?  Please document them individually and
-put the proof of that in the changelog text.
+A: No.
+Q: Should I include quotations after my reply?
+
+http://daringfireball.net/2007/07/on_top
+
+On Wed, Jul 31, 2024 at 01:34:56PM +0530, Riyan Dhiman wrote:
+> Hello,
+> 
+> Thank you for reviewing my patch. I received your feedback:
+> > Are you sure about all of these?  Please document them individually and
+> > put the proof of that in the changelog text.
+> 
+> I'd like to clarify a few points to ensure I address your concerns
+> correctly:
+> 
+> 1. By "document them individually", do you mean I should submit
+> separate patches for each mutex documentation change?
+
+Yes.
+
+> 2. Regarding the "proof" for the changelog text, could you please elaborate
+> on what kind of proof you 're looking for? Should I include:
+>  - References to the code where these mutexes are used?
+>  - Explanations of the race conditions these mutexes prevent?
+>  - Citations from the driver's design documentation (if available)?
+
+Whatever you feel would be needed to convince everyone that the comment
+is now correct.
+
+> 3. Is there a preferred format or level of detail you'd like to see in the
+> changelog for each documentation change?
+
+What would you want to see if you had to review this type of change to
+be comfortable accepting it?
 
 thanks,
 

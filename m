@@ -1,169 +1,189 @@
-Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazon11010011.outbound.protection.outlook.com [52.101.228.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 864EB56440
-	for <linux-fbdev@vger.kernel.org>; Sat,  3 Aug 2024 04:24:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.41
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1722659043; cv=none; b=ZAwTJgfpqMeuKhggGYd2e/gtZUJIqPLqmRadnfgnbT1CrUIZywJqZ5qrU/FArjmlKN3b3KBvFOHvY++o11F4UtyUqqtURnJAMogCbXgMfuufR7dQ5orok7OQyV56sZ2OTYAp3JGeC0K02IP8HGroxLdEYlHaQsmw4oWNzKfGMKc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1722659043; c=relaxed/simple;
-	bh=Jp2OHDRssPjIQ+nSYXpj4QTUcyhYsJPhqr2EF2nlkHA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eu5xB/xdqi53++0Lz/88qokw2Jw/twIvx6JjBsrcZghTauXCeg6jH48RYnOKQKNTdWRxK5/aaGmb0nyYU5aqQKGXoSm5KwDR8TgAy8vzHLZh3/SUfpofxX0dKcgyWnCwj1pfBwIRyTxSfjS/XZR4ftpOl2Sx2J+dkGxQdREF1Lk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=RsTZMESx; arc=none smtp.client-ip=209.85.161.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F28D3A35;
+	Tue,  6 Aug 2024 04:57:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.228.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1722920283; cv=fail; b=lGf6ZwcihDe/K7/PAlUycXzkdSMAYKScb9idbb2PaBwfFm+STPBq0fNFm8TmZRdfWf21HJReWeSB8zLP6Bpxm3Ip3cTyFuiFrpbCTeofFNmGuVRz2JmXG8kKObaGNMP1Qr2K3R5PeQ4gnT8D8wpE/qHTybWoBb2MMJNe35XcDN0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1722920283; c=relaxed/simple;
+	bh=TbZPUwKt1/PO10PVXORGjTxHsTsdyJA/CYQ3lr+ZzAk=;
+	h=Message-ID:To:From:Subject:Content-Type:Date:MIME-Version; b=TzAa7buB3GenorutNR8IPpaPAYNGwXZUvV4ae4QWsVio1N3byMyXG4r80EVu/6TuNZRn728d0c6vObiczML2UKA7ocKwbdmdwSCk93/EPnqS7i14/8IeyMkP+9wluynnu0yTnuiL1sPHbryYpqNRkNm9bF8shp5Wv6ef3WLgAbk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=cubo4W6k; arc=fail smtp.client-ip=52.101.228.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RsTZMESx"
-Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-5d5aecbe0a9so5317876eaf.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 02 Aug 2024 21:24:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1722659040; x=1723263840; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XheisaESTEudpbi3rO/WWYBhJwYeNAh4Hr324gZmrNU=;
-        b=RsTZMESx5/1aUoDOZcVxfMUW7jVNWAXeAhJvrczjWaCy95wuLtk7GGbK2W28WVTpdj
-         USSEDA+KdTfVplzNHY8OCanLXzr51je1gqus0wskqxKPsY2ZRDrxrFmVPG/nq0XtPp9/
-         CYNtZHrhkM8OjkFVa3zIVbzhcyLCOO2vZNMPjUtQX4GmLhw9+wpLC5e+PHiIloZkTBg5
-         tLqYnahb7EvimxMdNKuQESeeGasPw+tM5uml67JAcp1+D1xJCvFy/9xxQpOVcgv/6ERZ
-         /V8iJqB8TQtO1BCZmPtJYXnYkLEGELFQ6xMC4/VOK5uamnylDEDT0H7eMrf2smnBAZU6
-         v+HQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722659040; x=1723263840;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XheisaESTEudpbi3rO/WWYBhJwYeNAh4Hr324gZmrNU=;
-        b=e4pF23737RWcQh4d6Jzf4muqsTsQXxPGBsclWbk00FYPauXk+iQV1+0CpkzRA5agJY
-         W31s0T6sOA1gZhqT2sQSeAnaPxRtxMQ9eUVx/sYori+q0mR+TfYayMLFzTtZDMBicyv5
-         SGZOKypnMv0YjY0t0oNZC2gfeSp+AbegPdC8ParSD01VuARPhfQ5pIz+001r896rHjds
-         8iT9ckapFOb3/SSzUatsz32I9NaVxAH5lNy9fB13GdV6UOq12L1G/Yct5xvNy/rQ93rt
-         rwe0695QJmBoawX3P2viN4IAGJ6gkxv+PWcZIS096E2aPb8XEF5mOuGoPT12RbfEd4b2
-         Fv5w==
-X-Forwarded-Encrypted: i=1; AJvYcCUHxw3ahGYX9IwB3t9D4xpspY7LjIEQ2XQDX2ch1xINBDVNko0H5UCmFn2Btp4BoekGDfkXdFffRGQvfGnkYfRG++WiedyeGeOxJjA=
-X-Gm-Message-State: AOJu0YwIvGm4T8KgcINMZhS6Rh0kzOALpEt7b3klHUs4Y9/Z6Hj91dAL
-	HtBYnBE0j18kVzJYsAzzd/GF/uv2QAtg6eSwYD73nc3ed3XF8LINpYYi+fIusro=
-X-Google-Smtp-Source: AGHT+IEhe7YsubngD93lp7hk+e4p2ONzcD+teDCo40j5gj0QLHG1gPkMMTeH6J6MEwjI5GGBN+DNRg==
-X-Received: by 2002:a05:6820:221e:b0:5d6:79a:c4d6 with SMTP id 006d021491bc7-5d6636d2bfamr7653033eaf.3.1722659040377;
-        Fri, 02 Aug 2024 21:24:00 -0700 (PDT)
-Received: from localhost ([2603:8080:b800:f700::17c0])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-5d7571789fesm707877eaf.1.2024.08.02.21.23.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Aug 2024 21:23:59 -0700 (PDT)
-Date: Fri, 2 Aug 2024 23:23:57 -0500
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Riyan Dhiman <riyandhiman14@gmail.com>
-Cc: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: vme_user: vme_bridge.h: Document mutex in
- vme_dma_resource structure
-Message-ID: <1e74a5ef-7d15-451e-8cb8-2743ef95089a@suswa.mountain>
-References: <20240803001814.7752-1-riyandhiman14@gmail.com>
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="cubo4W6k"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=pO9gptSOUMwGA9xO9g3BY1EBETpGeNSNhjwXeQuJsHIHcSyPRRslsFVdILZo4dlWrYYfZBt2wRnNphbinp4BlhsFgc7BNa8alJEqZUd/OityImSAvrUTn1Fl7Jj6ZFfmbgDj+bzFKjADH8w0GHjNuGBO99+Om90PYEnH7ARkIFJ7BBJmYSDu4RinxZlnePJJWVoWEk1i2nliuvWyOh+X4ZfJtZKgmZpSBdzsSJvwl5f6ZA5Y+gBfibBSwH3QbFI5GeyAR9x5zCkbZAqvAQQtmHZJ6TLqNa9NR1/gONxg8GttqgF9KpLRs8Ltw+xwZikRkVAhcMRy1jU4ZUJeN4Z+vg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=+8nD/5uyNe2wLHkJARAqr0/7o/rZUI6BDU20ibOgI6E=;
+ b=StJnOMHicbPsFUltpXHWfy3M8gagj4KR68pN0MFyeUgisMt2UUgEpqLTxZlD0WxfVC/E+V05Iqe6ksd2iPTOMGL1cKI74MdY+vKP9VIVlLPIrZh1a06ZYot2pfOn/fAX/iSMAxcOYmAt/cux+P2yD/9zTKMp1gtCnCmX7XbZnaBUrJuSTOJIk2dSSxxpTXIzxad6onsQ8uZV0IK0Z4tn4XUA7EgRs67bCS+8gYdeCNO4upNBl9XGTflumH7ZPhAm5Zcf3fOBBBmyb+6mjpar0ckhGm/JhvmNK1lA5SZZFSpjNCsrEYVUnZAlstTn/78sy1LtKeHcYFDfshiVUKadNA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=+8nD/5uyNe2wLHkJARAqr0/7o/rZUI6BDU20ibOgI6E=;
+ b=cubo4W6kZnovnFmoQgmXg0lHPQirwK8RWu/cBegUJZBaM8EXYvwkDSK+T1JprRtbVA2pOschmR32IVTtyuQBY9bfROCRKfFpMo3jwAT9jz8vO4apdJfsCTT5dYRzN6b6FTk7pGIpwIYIXdvJrFla+hgaiyt9NNUsbqg3n0sKb6c=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11) by TYAPR01MB6380.jpnprd01.prod.outlook.com
+ (2603:1096:400:a1::12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7828.25; Tue, 6 Aug
+ 2024 04:57:57 +0000
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::c568:1028:2fd1:6e11]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::c568:1028:2fd1:6e11%5]) with mapi id 15.20.7828.023; Tue, 6 Aug 2024
+ 04:57:57 +0000
+Message-ID: <87mslqw8mj.wl-kuninori.morimoto.gx@renesas.com>
+To: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Liam Girdwood <lgirdwood@gmail.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Maxime Ripard <mripard@kernel.org>, Michal Simek <michal.simek@amd.com>, Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@google.com>, Takashi Iwai <tiwai@suse.com>, Thomas Zimmermann <tzimmermann@suse.de>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, linux-omap@vger.kernel.org, linux-sound@vger.kernel.org
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Subject: [PATCH 0/9] of: property: add of_graph_get_next_port/port_endpoint()
+Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 6 Aug 2024 04:57:56 +0000
+X-ClientProxiedBy: TYCPR01CA0119.jpnprd01.prod.outlook.com
+ (2603:1096:405:4::35) To TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240803001814.7752-1-riyandhiman14@gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|TYAPR01MB6380:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4ce5ab19-471e-46eb-671a-08dcb5d4568a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|52116014|366016|7416014|376014|1800799024|38350700014|921020;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?bIbzxOMsYRcp2+aneaYO9u3FGNuKTFQ959w32Ex2Qf1bJFqDB5LgqtGp6FAG?=
+ =?us-ascii?Q?KLCFyKx4syM4LtxgqectlOnEc0OSaihP/K3NTxs7MQCmn8jD0TTRNt5V6EoD?=
+ =?us-ascii?Q?mFzlZx9LxM3IXy14lF+51QsR8aGrCIKlWGCWts9CFhWdrdo5uTfiCvWvG5qo?=
+ =?us-ascii?Q?H5muYoAA1z1Zja1KApPb6HFxk8+vumTnYa1kkZx8p104q2y/zIKqfmRTyWu7?=
+ =?us-ascii?Q?bJkPxLRyYsl2CQtMsGVi9kdCjMCollwdlprD3J+ectSyE8nN4PErbLE2qyn/?=
+ =?us-ascii?Q?/0lMaj4PR6dYDjcu9x94MaYAdJS4oLU9brQjwdZJJGiUhYVHTjUc53BDuUCX?=
+ =?us-ascii?Q?lTnXZzgoVHOgmn5K0KtZKoM3+7oZPzWh3Avt9rHXvgRo7cSIUA2fah1T9gBf?=
+ =?us-ascii?Q?femOevbM8z1GeZ1cNdujDEwCpPhftXO8MSHj+hgnIRUCKv3hs4ea26YEpne1?=
+ =?us-ascii?Q?76GkG0gcl06b+F7j3yzqJMpG4/21Kw+g9vO2UwOOrfeihLAaAP5CsmydMNg8?=
+ =?us-ascii?Q?Iya9/ype3ussOFKXZ/nm56He0dMvb+a9MsO0HG4jvFdUFQswyuagpQDU3k/8?=
+ =?us-ascii?Q?G7BaZ0BX+zqO3hNzy0BITFMAamApEv452e6r6PRl2bwq/E48Vw6V/U1XiOLf?=
+ =?us-ascii?Q?SPodbdfRZtJXxITWvhWrTlD7ffZURsiUyRXAiufr5a9r5odzCiTaACxn7u1W?=
+ =?us-ascii?Q?hlakfMH2KwjQtXUMiTq9q5JcZHYSvEUVaPNGaiE5xABn3J6AS5w1RL3ZrhaY?=
+ =?us-ascii?Q?Jf6/P6sJlZHKczbR2kDroytDTigRf2+X/erwXxrdTfrqZMh88ddYoZ9vlARk?=
+ =?us-ascii?Q?fYehnLoX8DZQA8ELvS+l9+arOmntf8qUp2F99Ab5ZZyqTM1kBSJB9lM4bN8t?=
+ =?us-ascii?Q?aTp6ZpcM1uINXgEDKIoWJCzzV+on4RcYlmVEnjXHJn5yPjmWU0DJGc5N/BAz?=
+ =?us-ascii?Q?nJ4HIGMWkdEc1V8i6hA90x5J7fOqV28Z/qWNrsYa89gEVtGj7cTV89KkiM3C?=
+ =?us-ascii?Q?tsi3cj7XNQtIvTJRR8l5UhXiLno/QV9rpcnl4barcE0C+1hnsbM83wLZ2kpI?=
+ =?us-ascii?Q?FP6Qqjg53jUleDPVruHvLukKOPYMTPO//NW7fbXhQWtga+aIQ7jQlUWBhMbP?=
+ =?us-ascii?Q?LUBVHJ+ftFXc36CT/2gWOO6fNyBjODhXiiDW4tuAdXSPuBZe6udVs5xuhowm?=
+ =?us-ascii?Q?b/uv2bTKMzJkPI524ExAUhjR8R28RFj5NTN4oUVI0VeR7rC/gsIERgc5/pOp?=
+ =?us-ascii?Q?ke/KntkQh8zhittYthdjv98TXcIwzgEKS2K5y6AGV1kCwltepM8IlH0zW7Iw?=
+ =?us-ascii?Q?8tQq6UltSPtvjxZWhP3jUP+CtRpYak28tQY52bBBVi9HmXVVXhdeeE6Hj81f?=
+ =?us-ascii?Q?usnSMRFjo5e/7CVoJMPLV7LvbmCV4rF7B1fcL7eKiBPOThRBtRgmzDJZ9Jll?=
+ =?us-ascii?Q?srT/q598lFk=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(366016)(7416014)(376014)(1800799024)(38350700014)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?1V+Ookv4dpwnFFb7anNMiFAzSnw9qMCeE7cA54fmmc0l+dhwmABSxJKmjqZr?=
+ =?us-ascii?Q?SvqgTQizJByxn/oZPmJm0zfRAD9MY2N6SuqnpzZZOCpnQBBt+VVMnO7y5AS0?=
+ =?us-ascii?Q?gKcNUuDTyN5s1loHSstZacSM4+b2TgJKeSX5DxSqLAw0qUgf5t3zktJTujKD?=
+ =?us-ascii?Q?P70kfFjdi+b1YUkfdkoo5lMWXuRn67YxSG/2sDHmzCOQ77K9vwFHcQKzYcQ3?=
+ =?us-ascii?Q?itfJ4s2P7+Aztfx3OMmOk9O9JXoZ56KpliKRFXkKC2EmhtAFVFu0f/T1acOb?=
+ =?us-ascii?Q?lk23ramWJAe2T26csAYypLDtX7OwlA/7FbYF5IBHIoDAMipyO8zlvkrC7NQR?=
+ =?us-ascii?Q?of7M0Vgxd0fbxwkhC5vJqdF4VZau3v8XB5DTBZAlYILapHvGWPNb16atzORZ?=
+ =?us-ascii?Q?oxUAwwQUrf3dQtAyVrv3rAG5s++2T/z7tSTNmGSLYXcftMtnbfD/XnDh00Re?=
+ =?us-ascii?Q?JILKvz1L8siby8NV/i7374u3W2sF8lAd8dYo/RVftKjlL6NmwSZoJdb53zRV?=
+ =?us-ascii?Q?7xDN2OJCwgkscQRfvOt7axoXLsbFHnNuP0eqAK01J+qRproSsrjk6O1rg0ba?=
+ =?us-ascii?Q?zAYu4VAtQgtequXxtrwXhGYjplvaumbp5pU+nCl2uuzNJCQjU/olj2YZIYX0?=
+ =?us-ascii?Q?o0wPqJC68ma06Xsb/c5ez4x7XeOeMaHx+avV0ZGYrJ82X33EFXcMpIeA/Hsa?=
+ =?us-ascii?Q?1sM8VAVX5Ig3CG8WvEFhrpJRKctgKk8akO9AbYAk/z7i/vUBAud5dGeI2PCH?=
+ =?us-ascii?Q?qFthtSBeGViSl5+c+2ZqvH9JrXgrBTsJ4Lm/xmUdwoHaxtenLVMLyK96b7Wk?=
+ =?us-ascii?Q?dlHU4murXpjjrBCOjtAQSuZWX0SeqzdDo98mbq6YftN/wnn549I3XEj4WRin?=
+ =?us-ascii?Q?4f7jgxIDFMrTTLGKFH3x5UYuTv8AW867HYIDxWG8rLlDaqaOe+TT9c7FBvCR?=
+ =?us-ascii?Q?P/bW5IIr6MIdCAeZf18Vur65N6KAt59P0dtHo6e9ad7bi4I3U/f1NiVUjDhj?=
+ =?us-ascii?Q?021Bnx0aWobX+Bwr4Em1S/zrH4j641SOyf7d/tEQqv/oc2nyBg4hotqFtbMH?=
+ =?us-ascii?Q?Cq5sx7iKbtJvDaH2ECa4B1j2UDih5i6ESsGc9nMxAFs2Le+9MVTSqiDOznY/?=
+ =?us-ascii?Q?8D2itOSVHKrK7e7qlxsLMUdXn4/N5UHndBGp5lq2Ae7b9AD0MxDaiRNNXhYb?=
+ =?us-ascii?Q?1xPKTP2IP0d+vOEHIZQu81P7avXk6naNy86A7O4KXSh+6QUbthvGme3YcdfU?=
+ =?us-ascii?Q?IgM0QfHsHt9O087XKBL/HneRwWQx5humRqCiBqnKVtHwnDG23Z2csM04s12n?=
+ =?us-ascii?Q?Gmwd48CtVfyM93zwLsP2Dci51K+r/RMFG1cpfr1yaMCPCVOnwqqYi7xeOQPP?=
+ =?us-ascii?Q?spPYxtCFoO+xoXlj3u8a6Sx99BUWdzXPNDgFL7bpR4O4x2qANrLVk5n64g4P?=
+ =?us-ascii?Q?00v5s3v05Nol1nDvjgUiUfj9jgNgS9waiKONOKl0DEf2mMpXyOIYkJydddyT?=
+ =?us-ascii?Q?u3M4aAkSwhrbWLxryUXsZyoyC/EWMTKOz1+Sq5Hnmn/sEXeypDzcpd/g3E7f?=
+ =?us-ascii?Q?CAMI4bmi8IqgJYmUKoF5hhGyiVzK0S/NO92s4GLnLnTia+UD2P3cTAfqyL3q?=
+ =?us-ascii?Q?nPbEz5L8sc5OuEWhHrruykg=3D?=
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4ce5ab19-471e-46eb-671a-08dcb5d4568a
+X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Aug 2024 04:57:57.0941
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: d6EOrTwJspgcDOnyPuDMlTQe00ai8+0uc7+f/bq7HPTYj4PT8Kgo1DLal6zyrjwo+IxSYc/h1CRJv0uPHX/HOZQ8MaNfbLWenmg8J3/99l4a5dW6BAH/5yKwWneUbN1S
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYAPR01MB6380
 
-On Sat, Aug 03, 2024 at 05:48:14AM +0530, Riyan Dhiman wrote:
-> Adhere to Linux kernel coding style
-> 
-> Reported by checkpatch:
-> 
-> CHECK: mutex definition without comment
-> 
-> Proof for comment:
-> 
-> 1. The mutex is used to protect access to the 'running' list
-> (line 1798 tsi148_dma_list_exec function)
-> 	mutex_lock(&ctrlrl->mtx);
-> 	if (!list_empty(&ctrlr->running)) {
-> 		mutex_unlock(&ctrlr->mtx);
-> 		return -EBUSY;
-> 	}
 
-Why did you chop out the "channel = ctrlr->number;" line?  That code
-looks like this:
+Hi Rob, Saravana
 
-drivers/staging/vme_user/vme_tsi148.c
-  1798          mutex_lock(&ctrlr->mtx);
-  1799  
-  1800          channel = ctrlr->number;
-  1801  
-  1802          if (!list_empty(&ctrlr->running)) {
-  1803                  /*
-  1804                   * XXX We have an active DMA transfer and currently haven't
-  1805                   *     sorted out the mechanism for "pending" DMA transfers.
-  1806                   *     Return busy.
-  1807                   */
-  1808                  /* Need to add to pending here */
-  1809                  mutex_unlock(&ctrlr->mtx);
-  1810                  return -EBUSY;
-  1811          }
-  1812  
-  1813          list_add(&list->list, &ctrlr->running);
+I have been posting to add new port base for loop function
+as below steps.
+
+[o] done
+[*] posting (A)
+[@] this patch set
+
+	[o] tidyup of_graph_get_endpoint_count()
+	[o] replace endpoint func - use endpoint_by_regs()
+	[*] replace endpoint func - use for_each()
+	[@] add new port function
+
+Because posting [*] patches are no update during this few month
+(I'm keeping re-posting), and it and [@] patches are independent,
+I try to post the patch.
+
+Current Of-graph has "endpoint base" for loop, but doesn't have
+"port base" loop. "endpoint base" loop only is not enough.
+This patch-set add new "port base" for loop, and use it.
 
 
-The first line after we take a lock and the last line before we drop
-the lock are hopefully chosen because they need to be protected by the
-lock.
+Kuninori Morimoto (9):
+  of: property: add of_graph_get_next_port()
+  of: property: add of_graph_get_next_port_endpoint()
+  ASoC: test-component: use new of_graph functions
+  ASoC: rcar_snd: use new of_graph functions
+  ASoC: audio-graph-card: use new of_graph functions
+  ASoC: audio-graph-card2: use new of_graph functions
+  gpu: drm: omapdrm: use new of_graph functions
+  fbdev: omapfb: use new of_graph functions
+  media: xilinx-tpg: use new of_graph functions
 
->   This prevents race conditions when multiple threads attempt to start DMA
->   operations simultaneously.
-> 
-> 2. It's also used when removing DMA list from running list:
-> (line 1862 tsi148_dma_list_exec function)
-> 	mutex_lock(&ctrlr->mtx);
-> 	list_del(&list->list);
-> 	mutex_unlock(&ctrlr->mtx);
->   Ensuring thread-safe modification of the controller's state.
-> 
-> Without this mutex, concurrent access to the DMA controller's state could
-> lead to data corruption or inconsistant state.
->
+ drivers/gpu/drm/omapdrm/dss/dpi.c             |   3 +-
+ drivers/gpu/drm/omapdrm/dss/sdi.c             |   3 +-
+ drivers/media/platform/xilinx/xilinx-tpg.c    |   3 +-
+ drivers/of/property.c                         | 108 +++++++++++++++++
+ drivers/video/fbdev/omap2/omapfb/dss/dpi.c    |   3 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss-of.c |  66 -----------
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |   9 +-
+ drivers/video/fbdev/omap2/omapfb/dss/sdi.c    |   3 +-
+ include/linux/of_graph.h                      |  67 +++++++++++
+ include/video/omapfb_dss.h                    |   8 --
+ sound/soc/generic/audio-graph-card.c          |   5 +-
+ sound/soc/generic/audio-graph-card2.c         | 111 ++++++++----------
+ sound/soc/generic/test-component.c            |   2 +-
+ sound/soc/sh/rcar/core.c                      |  12 +-
+ 14 files changed, 244 insertions(+), 159 deletions(-)
 
-It's also used in drivers/staging/vme_user/vme.c
-What you should do is rename the mutex from mtx to XXX_mtx and then
-rename all the places where it is used.  Keep renaming until the driver
-builds.
-
-XXX_mtx is obviously not the correct name.  But "mtx" is vague and
-useless.  There are 3 other locks in this header file which have the
-same name so not only is it useless as a descriptive name, it's also
-useless for searching.
-
-Since you say that it is "protect access to the 'running' list", then
-that means you need to check all the places where the running list is
-accessed and ensure that the lock is held.  Or if it's not, what makes
-that thread safe?
-
-These comments are supposed to help us understand the locking but it
-feels like we have a long way to go before it's fully understood.
-
-> Signed-off-by: Riyan Dhiman <riyandhiman14@gmail.com>
-> ---
->  drivers/staging/vme_user/vme_bridge.h | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/staging/vme_user/vme_bridge.h b/drivers/staging/vme_user/vme_bridge.h
-> index 9bdc41bb6602..bb3750b40eb1 100644
-> --- a/drivers/staging/vme_user/vme_bridge.h
-> +++ b/drivers/staging/vme_user/vme_bridge.h
-> @@ -61,6 +61,7 @@ struct vme_dma_list {
->  struct vme_dma_resource {
->  	struct list_head list;
->  	struct vme_bridge *parent;
-> +	/* Mutex to protect DMA controller resources and ensure thread-safe operations */
-
-"resources" is too vague.  "ensure thread-safe operations" is obvious
-and doesn't need to be said.
-
-regards,
-dan carpenter
+-- 
+2.43.0
 

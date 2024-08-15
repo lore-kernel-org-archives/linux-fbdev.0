@@ -1,112 +1,143 @@
-Received: from mail-lf1-f50.google.com (mail-lf1-f50.google.com [209.85.167.50])
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1D002901
-	for <linux-fbdev@vger.kernel.org>; Wed, 14 Aug 2024 09:31:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC60F179647
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Aug 2024 12:12:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723627866; cv=none; b=oCoWYq8cofcOz3faDJy2tMTi7tvgNYrylMPvLifFByfcDqaXu+GTvbtYwtkju7CnA0M3bp/3angdjmfdOwf+YX3BiEpp0kkNmRgCyLxv5Yq26IYSs3ZHMXW/qjb5rNr3NSEWWLUF7ZchJRd4WDQ5nUzE64Eq4kCCMe44rEO3+EA=
+	t=1723723929; cv=none; b=pXSZqA4kLapikaZDlTqVWXQpzHQgI79L/MxwIlZn38Qo5jAFOTOkG3puGoJ00pJGX9Ap0hJEL4ZgeWD6QVTyBM1uEtaLKFc67XnNheRdljNRXKObT5s1nObICDLjzOo65gnBKbK1zxmJdTvMoC9N/u0eeUnGtY99jtVtesX2qmA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723627866; c=relaxed/simple;
-	bh=WsbPGLgwwh83fgroesz5EICrOmcuHuYiV+iKp6kCNGY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PzJfO6kqDWpl1M7PlaoM4ONrPnxIGguyk2DI5bwkioVVF/rytM3oCv9Ed1me0aO1ef1w+9L4btueMcwo8hs8CIRlhbGadbiEmIKhd3VpBUOEuj69PCrJCZDeqPVWg00b4mHNi7eal4dSRQGO/hLfTe9MrJgrRZNoHsNPUJ5PdYM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=XFNNVm4l; arc=none smtp.client-ip=209.85.167.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1723723929; c=relaxed/simple;
+	bh=cwZh/t6PTsAHn+9WQxZBnLBvMyUdjRRDOwKT+TpDcdY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=VBYV4YjOYajXOa1z91kASOuep4wZjZt1Cwy0oJaOGaguoIghHdx8Cs5qXwTOdOz5VExQYQo2uOKYiNZwuXcgMesfptzoQEhiCt+37XhbdrKQ4dpuceGAV9Q1/o+QaivmxeDRkDgwFCjwpoueH6L6QtWcfq3Zh4EKqQiH+tVbIeI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=2rJq4wM5; arc=none smtp.client-ip=209.85.221.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XFNNVm4l"
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-52fc4388a64so8941617e87.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 14 Aug 2024 02:31:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="2rJq4wM5"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-36d2a601c31so451047f8f.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Aug 2024 05:12:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1723627863; x=1724232663; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Y+KbS6E5jHMJIDLTLixLRMsMiOWTcgBIJLTFtv7w7UE=;
-        b=XFNNVm4lDEd+wKF6p/DzS3b3Iv+1/nqg0v4Hl1SraqkcOln/m0jd009VlFE314cqmZ
-         XK0BXqBY5gPa4yEGnJsK24j6ncIRtmdCZTSFd9+rqw3A+YHlwMFcIkr04GOlobVnbtcn
-         jPp9wexhBmlBel0KO63Cls3uzdyyZPbyfoVnkkafZPXX4xeW3D6HvHF4DEdTydjvVRoW
-         QG6bo01qvb6fobxSD+9W0bIiCvgIvzbp2XCuYo/iBNH1K64rJD7etDe2dE0Hchq5fTrd
-         Ij+qGD2ZEtdK+N8KOO94UN96Y6kI0REvIU0w3QorVJk44QziqlfYe9u8HeyDzAzB/fQN
-         unaA==
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1723723925; x=1724328725; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=KmzCGQhj8OJq5H6Rk1aaVdY9d2NxnBFrZh6OEVj8AIA=;
+        b=2rJq4wM5sM5B8z5GCUyW0ho3HWC+XbhkZZ4DtvA3++cKCcpzz1Y3LMMgUarP2o5IrB
+         uDeX/WTJNMPW9wLA7qL7VG0pEtu7mCvGtdqW7w99xu3wk1ngU+Cyem5wge7KEvreaEE7
+         6N8knl+x5Lfx0r1sXJNovK3n1d7iKk6UuoiNOaRBh5kkzR5goBxUn00Q0J62ElnEcczw
+         cnR7K11cl+sHSrCwT1pXav2XUpgk2LN17UXk7oKeJYSoKlAeq9sgbtqyFLcFJ6tjBrgp
+         NheaRB3S2jxEvZoom+roNn5Dh2orVeynAw4xxX5JI+7jBra197LbaODieeg507VRYGnz
+         lAtg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723627863; x=1724232663;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Y+KbS6E5jHMJIDLTLixLRMsMiOWTcgBIJLTFtv7w7UE=;
-        b=CAkiOZ61VcG5cCbhJUZxqc5MehUePddqebPCHcXaFVEiZojMSYIebhODbKjXFpfmpt
-         MJ572VYW6IWR3Uc33iolAAj15rYMkCfMUY+6Ns4f10/FyP5YbKvpVTWUEnH0DGas9Qcl
-         zn7cf/famuFcJauCagT57b/mtgXd7X3cTonkzXKxR19IeglMbcR38uRshrTtCZmur6M4
-         3emAEMfyWwM9tDB/nOYXakfRW4NYz0JxcER6Hd1xSFNhDkUJ02hZywj8X2i+Xjh0w3Ja
-         w9TJZCTqmc2QS4wNkL20pa+wd0QQWUH/aqYtsH6al3AAJFuDCz2+qa3jXxWFZeig/mZ+
-         5ALw==
-X-Forwarded-Encrypted: i=1; AJvYcCWzXp6MzhwvRB2KSPGrXfnZZNU2x+dBYgdXdA6iN5UqZef65iuRFborR7lQrs8/efYOqB6slpi+YpFuPrHLQCv+0uoPCctO/Y5ZVc0=
-X-Gm-Message-State: AOJu0YyghrZ+8p4cAJWhLz/RmHG15Tfu6kCbBWvXuUZHAbvrmgapUYmv
-	qI2TzmW4FlZg2cqz4y1QnvbO19qkJ2RgmHRhTl8YgbnPw9bivMSpOejPqoffi8E=
-X-Google-Smtp-Source: AGHT+IGLOjNiO2yF+uZM/WShxzq79zjBJ21zqgaSpWhugas9BKUwHG0KuNYWyEZ1yCqqo26VlQTFIg==
-X-Received: by 2002:a05:6512:1249:b0:530:c3e9:5bcf with SMTP id 2adb3069b0e04-532edc04875mr1103977e87.60.1723627862785;
-        Wed, 14 Aug 2024 02:31:02 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-429ded32538sm14023275e9.16.2024.08.14.02.31.01
+        d=1e100.net; s=20230601; t=1723723925; x=1724328725;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=KmzCGQhj8OJq5H6Rk1aaVdY9d2NxnBFrZh6OEVj8AIA=;
+        b=HU+dLi6czYQ7+yCJX3gwtBWimJZtYjtsVGDLFTP/wWWXaxz2q2m9K1aI0F+jqdL9xm
+         vB651ZhA//qyRMSRwFFQt6czcF7h4MpirbpmDYrw9VmGtBSFUooZS2ntXw29qOshj3Rv
+         /mm1PPd5TS7bEB1j0KHrhGeT63n82yXrTo46HDglkSIPH2SMw7fQZ5YQLC1dC7B/wNIH
+         XnSYhXMOXlHQfcsUtixPkWkmOvgGU9J77gHD8YSnO+sM8wBpzevTYIgGHoFzboEJnWtx
+         aQhX4RsHI5jHnlG9Ut0DsHyQo0CGXace7sJgnFitDnLMTPju4VhwtW3XILOSsABJsYvj
+         J8mQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWBzRXa07VitGHcZ6cd9OwKEqrl95eAWiad55ogAJt5BvaDAZ5FakNKVF/HzTVxcXGCdBsZzs3oRGe1wIiqJWmKDs+zmDFf8HFBTVk=
+X-Gm-Message-State: AOJu0YyfD9aUo2XPWIFenySILXSaZaAWxOfD5kdj4pIqxUTIFF2ViekA
+	/Cq1LT5/ioag69+xYBvhS+FOOdvtZs4HF3a53jMLy8Z9wNQFidQAiQxAOsZWcHM=
+X-Google-Smtp-Source: AGHT+IEbGIOFR16Gu1KgKoWgRq+sOlXFPXD2d0oLOy3ZdnJRcNKoYTkm5RRFB1N8wm740uDm1DeA3A==
+X-Received: by 2002:a05:6000:10f:b0:368:d0d:a5d6 with SMTP id ffacd0b85a97d-371777e47edmr3608074f8f.50.1723723924673;
+        Thu, 15 Aug 2024 05:12:04 -0700 (PDT)
+Received: from [127.0.1.1] (frhb82016ds.ikexpress.com. [185.246.87.17])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37189897926sm1365082f8f.87.2024.08.15.05.12.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Aug 2024 02:31:02 -0700 (PDT)
-Date: Wed, 14 Aug 2024 12:30:57 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Riyan Dhiman <riyandhiman14@gmail.com>
-Cc: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: vme_user: vme_bridge.h: Document mutex in
- vme_dma_resource structure
-Message-ID: <545da5b5-fe99-41c8-9cc2-a5861a04ba2b@stanley.mountain>
-References: <20240803001814.7752-1-riyandhiman14@gmail.com>
- <1e74a5ef-7d15-451e-8cb8-2743ef95089a@suswa.mountain>
- <CAAjz0QY9jDUx-URQTtdW3kO2mkfV4dhUsJhB9-k12SEt++Gp8g@mail.gmail.com>
+        Thu, 15 Aug 2024 05:12:04 -0700 (PDT)
+From: Guillaume Stols <gstols@baylibre.com>
+Date: Thu, 15 Aug 2024 12:11:55 +0000
+Subject: [PATCH 1/8] dt-bindings: iio: adc: ad7606: Make corrections on spi
+ conditions
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAAjz0QY9jDUx-URQTtdW3kO2mkfV4dhUsJhB9-k12SEt++Gp8g@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240815-ad7606_add_iio_backend_support-v1-1-cea3e11b1aa4@baylibre.com>
+References: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
+In-Reply-To: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
+To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Lars-Peter Clausen <lars@metafoo.de>, 
+ Michael Hennerich <Michael.Hennerich@analog.com>, 
+ Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Michael Hennerich <michael.hennerich@analog.com>, 
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org, 
+ Guillaume Stols <gstols@baylibre.com>, 
+ 20240705211452.1157967-2-u.kleine-koenig@baylibre.com, 
+ 20240712171821.1470833-2-u.kleine-koenig@baylibre.com, 
+ cover.1721040875.git.u.kleine-koenig@baylibre.com, aardelean@baylibre.com
+X-Mailer: b4 0.14.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1723723923; l=1468;
+ i=gstols@baylibre.com; s=20240417; h=from:subject:message-id;
+ bh=cwZh/t6PTsAHn+9WQxZBnLBvMyUdjRRDOwKT+TpDcdY=;
+ b=yeCoKWpDjHevYEwDjsK5Y8EdnkRjt/hXioQekXkONYv+DWh369A26wYcTT/cqxJ6KW3yqxkhx
+ mnpuXzTpNJ4CWLNMlSg8mhrnwJpOGn1sr0vHvJbQj85Pyqe/Hu/EFEo
+X-Developer-Key: i=gstols@baylibre.com; a=ed25519;
+ pk=XvMm5WHuV67sGYOJZqIYzXndbaJOlNd8Q6li6vnb4Cs=
 
-On Wed, Aug 14, 2024 at 09:11:22AM +0530, Riyan Dhiman wrote:
-> Yes, I agree 'mt' is a vague name and doesn't convey much information.
-> In this patch, I have added only comments to address the checkpatch error.
-> Given your suggestion to change the variable name, I'd like to confirm,
-> Should I create a new patch that includes both the comment and the 'mtx'
-> variable name change?
-> Or should I leave this current patch with comments only and
-> create a separate patch for the variable name changes?
+The SPI conditions are not always required, because there is also a
+parallel interface. The way used to detect that the SPI interface is
+used is to check if the reg value is between 0 and 256.
+There is also a correction on the spi-cpha that is not required when SPI
+interface is selected, while spi-cpol is.
 
-I feel like renaming the spinlock is more useful than adding a comment.  Plus
-you can't really understand the locking without at least doing a temporary
-rename to see what places break.
+Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+---
+ .../devicetree/bindings/iio/adc/adi,ad7606.yaml         | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
-To be honest, we don't merge a lot of "add locking comments" because it's
-probably one of the trickiest checkpatch warnings.  You need to understand
-the locking before you can add a useful comment.
+diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+index 69408cae3db9..c0008d36320f 100644
+--- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+@@ -117,15 +117,26 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - spi-cpha
+   - avcc-supply
+   - vdrive-supply
+   - interrupts
+   - adi,conversion-start-gpios
+ 
+-allOf:
+-  - $ref: /schemas/spi/spi-peripheral-props.yaml#
++# This checks if reg is a chipselect so the device is on an SPI
++# bus, the if-clause will fail if reg is a tuple such as for a
++# platform device.
++if:
++  properties:
++    reg:
++      minimum: 0
++      maximum: 256
++then:
++  allOf:
++    - $ref: /schemas/spi/spi-peripheral-props.yaml#
++    - required:
++        - spi-cpol
+ 
++allOf:
+   - if:
+       properties:
+         compatible:
 
-When you're writing the comment, your target audience is Greg.  Greg is
-obviously a very experienced kernel developer.  He works in USB, stable kernels,
-staging, tty, device models stuff, and a bunch of other things.  But, he doesn't
-know *this* driver in great depth.
-
-When Greg takes a look at this code, it doesn't take him long to make a very
-educated guess what the locking is for.  If the comment has less information
-than Greg can see on his own at a glance then it's just a waste of time.  If
-someone had questions about the locking would they be better off asking you or
-asking Greg?  Until you can answer questions better than Greg then it's not
-much point in it.  Again, Greg doesn't know this driver very deeply because he's
-focused on a million other things so it's not that hard.
-
-Trying to figure out the locking is a good exercise.  It wouldn't surprise me
-if there were some locking bugs in this code and you should try to fix those.
-But it's not super easy either.
-
-regards,
-dan carpenter
+-- 
+2.34.1
 

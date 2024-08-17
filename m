@@ -1,55 +1,115 @@
-Received: from mail.hotelshavens.com (mail.hotelshavens.com [217.156.64.234])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3D771B9B46
-	for <linux-fbdev@vger.kernel.org>; Fri, 16 Aug 2024 13:21:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.156.64.234
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 083AF282F4;
+	Sat, 17 Aug 2024 15:09:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1723814470; cv=none; b=No/SfWR6PFn7kZqWXheLHr4xl5yUd43sXV56Sq5uAXS0bzlyt9I5EODYytYZrBOO3+HspqtQi3/dUNtnqI+PNKrHIZr2WhkHFP/fr9uGDPuJudhNb/xUrgjFI0lsDcroXxOE/gHt5/tqf9wZrVmD0ix26O/xV7DjtOdUHPBrwZ0=
+	t=1723907361; cv=none; b=eusT2npWqe7Dwra5c+UxVB9nJBFZlYROAndYd4lg94WC9tIaTjJKXPPHIEVrERmnVG91bxqTbPqUyJtyID8OIh9bNB+9TxKMmYLBumGMGhHAfa6UUVA/ksCPuJo8OP8a4w09CxgR6pzQTR6OsVIbVCM9QWojIya4D1eAHWG65XI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1723814470; c=relaxed/simple;
-	bh=xosHSxIvNyVoVU9etbtSkcwA5m2W62k5cFb0LRlWoVk=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=cR90MQtZpTIoB9oTmJeOT8gOtVMIg9C2PPgWM65FZrjamv12PJU70va66ylQ8J1EqEUR+39pJTxU+Jf6ptnDeQhvz9vMLKJmW7httcJ15VaxRPEvr64IwPfuRvAVTLsTHzg+cvEXGhq/yR4vdFDZtjh9KIyljGedBrkg4rmZQfg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotelshavens.com; spf=pass smtp.mailfrom=hotelshavens.com; dkim=pass (4096-bit key) header.d=hotelshavens.com header.i=admin@hotelshavens.com header.b=M4jwbu4R; arc=none smtp.client-ip=217.156.64.234
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotelshavens.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotelshavens.com
+	s=arc-20240116; t=1723907361; c=relaxed/simple;
+	bh=vT90vZx0bkS5VbqUkazyS+8auUsDLMrWvv+LTZ+swMI=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=tMLXa7qCDxOO0dP66IiVxDKYenlFGQKKeri4RHvRJMgCF7dORT4FYjtt56nbmHL5ZNi0/nW/c09N2rjvVp7hefnJ4QopGIzOLxoYgx/RQaTF1V7WEKhoaVXYyAa+ZVcuVdh3y1AGRNk98d2de28KSkS4dualrkfWUP9LRuTQilw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HCEtOVZf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=hotelshavens.com header.i=admin@hotelshavens.com header.b="M4jwbu4R"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=dkim; d=hotelshavens.com;
- h=Reply-To:From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:
- Content-Transfer-Encoding; i=admin@hotelshavens.com;
- bh=xosHSxIvNyVoVU9etbtSkcwA5m2W62k5cFb0LRlWoVk=;
- b=M4jwbu4RBUhSaJb68kqDwJisCz6Parh0+lDe+QKzKNN/eoT75RTWOpUD1Kt8HE+Gy827zWQd+92q
-   uGbQBvUtKQm6hZpnKl/PDbGljXbBzcWphJALFQd1PMUigAq9tGh4wtA1svu4QcMPc4Ft2xD1tal2
-   Xo8WjGLHkDUuQF9/gsOAFe88i9y5SrFhoRGC8iipz3SNzu1OGh/RDVsSMCivFiHWfjhw+fkqFadG
-   6BrRpJdHP+RmNugsZVVykZNYjt/kzQDFsUYAReY/s/SKGfwD3OyMAxpLSAWjF2cJbSLSXCKCs8mo
-   rWErp2L3mnvFTkv/aBEUbbCxyMcizfSuFAjdAXuzSUKKdPOssYBzU7WVpBt0grs2QiiDgZ740Rce
-   4OPLq8BfSuOkVXD+Gz6BvK6moJzmM+VEUFasqEVqJ5mQyAdqr/ll0KDpCvJib2FNfQHZIDF6BKOK
-   vU56KVglZbCTL9zvQ4LntySZUY4oSaW8J8a4G2ryJsJ6bSGnKdA0G0Il0TLBFbL2/IRlyGUDrPj4
-   jEA2RKH0jHE86ew1DhAOUP6Rt0NZu2FrK0yQCbmtY/W+CGVHgnTatDoc3Z4MXBsr+6ZUZcESYZ3G
-   ZAhpOXF6oPO7zlN1w0GHQzYgRVB8dLgMcWy+5upkYZEbrO8HBhXXa1/xr6sVLuK7WLM7jKmLNpU=
-Reply-To: boris@undpkh.com
-From: Boris Soroka <admin@hotelshavens.com>
-To: linux-fbdev@vger.kernel.org
-Subject: HI DEAR !
-Date: 16 Aug 2024 15:15:45 +0200
-Message-ID: <20240816134828.ECC26ACAE46171FC@hotelshavens.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HCEtOVZf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD543C116B1;
+	Sat, 17 Aug 2024 15:09:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1723907360;
+	bh=vT90vZx0bkS5VbqUkazyS+8auUsDLMrWvv+LTZ+swMI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=HCEtOVZf2KXGsSlV9M4pTypH+iH6GEjpJYeYRUe8RkXTllV2EYldbabBXg5HyJaSi
+	 ROopU2mRJBPj1UeEV7PRyzucQm8TgHK690r/8pabBaO+5gMi/QS3MhLnDwNXTrIG/N
+	 oIL+s7PWdTMKWd5vD2CBaUU7qZW+QvBlK2KShnHQ3xAhPS9RSr7Jiy3x5BMl+Uir4i
+	 HqayNfGkwVIuZcspDFJQD+JYGxN/+Y1rJgUCO81sVmioYNAk5uzxLUxvw5bc7fmqTA
+	 KguC5pQ8FMQq6MetyLU01zTHyYDHjojyTb2Ytr+HmkYOpC0LpX70M4kob1GsBQMb9p
+	 vC6QZsq9AxqJA==
+Date: Sat, 17 Aug 2024 16:09:10 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Guillaume Stols <gstols@baylibre.com>
+Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <ukleinek@kernel.org>, Lars-Peter
+ Clausen <lars@metafoo.de>, Michael Hennerich
+ <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+ aardelean@baylibre.com
+Subject: Re: [PATCH 2/8] dt-bindings: iio: adc: ad7606: Add iio backend
+ bindings
+Message-ID: <20240817160900.01224c80@jic23-huawei>
+In-Reply-To: <20240815-ad7606_add_iio_backend_support-v1-2-cea3e11b1aa4@baylibre.com>
+References: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
+	<20240815-ad7606_add_iio_backend_support-v1-2-cea3e11b1aa4@baylibre.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Greetings,
+On Thu, 15 Aug 2024 12:11:56 +0000
+Guillaume Stols <gstols@baylibre.com> wrote:
 
-Did you receive my last email message I sent to this Email=20
-address: ( linux-fbdev@vger.kernel.org ) concerning relocating my=20
-investment to your country due to the on going war in my country=20
-Russia.
+> Add the required properties for iio-backend support, as well as an
+> example and the conditions to mutually exclude interruption and
+> conversion trigger with iio-backend.
+> The iio-backend's function is to controls the communication, and thus the
+> interruption pin won't be available anymore.
+> As a consequence, the conversion pin must be controlled externally since
+> we will miss information about when every single conversion cycle (i.e
+> conversion + data transfert) ends, hence a PWM is introduced to trigger
 
-Best Regards,
-Mr.Boris Soroka.
+transfer
+
+> the conversions.
+> 
+> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+> ---
+>  .../devicetree/bindings/iio/adc/adi,ad7606.yaml    | 75 +++++++++++++++++++++-
+>  1 file changed, 72 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> index c0008d36320f..4b324f7e3207 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> @@ -114,13 +114,28 @@ properties:
+>        assumed that the pins are hardwired to VDD.
+>      type: boolean
+>  
+> +  pwms:
+> +    description:
+> +      In case the conversion is triggered by a PWM instead of a GPIO plugged to
+> +      the CONVST pin, the PWM must be referenced.
+> +    minItems: 1
+> +    maxItems: 2
+> +
+> +  pwm-names:
+> +    minItems: 1
+> +    maxItems: 2
+> +
+> +  io-backends:
+> +    description:
+> +      A reference to the iio-backend, which is responsible handling the BUSY
+> +      pin's falling edge and communication.
+> +      An example of backend can be found at
+> +      http://analogdevicesinc.github.io/hdl/library/axi_ad7606x/index.html
+> +
+>  required:
+>    - compatible
+> -  - reg
+
+I think we still want a reg, but only to differentiate multiple instances
+perhaps.
+
+>    - avcc-supply
+>    - vdrive-supply
+
+

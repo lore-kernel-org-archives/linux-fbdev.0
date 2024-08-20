@@ -1,68 +1,66 @@
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1932A18F2F9;
-	Tue, 20 Aug 2024 12:24:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.189
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C689107A0;
+	Tue, 20 Aug 2024 23:09:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724156676; cv=none; b=YfxjPXCFM/um1qOTkpqSYR2/oFLNSu+byeTVzC2bD6ds4ArvF+rbEsfaWW+e/tjyYl3aLSzHz9Bvs6gNZZjCumPA3L+VEzAe8M7GHGKbYl65iVWNMDVfoOIeWGmBCCouYP+9LfZ1XzI9Udbli4tX5vXiCaF3sgCnlB8S4LmHZ5s=
+	t=1724195367; cv=none; b=VzRZsGHAkNOMiDLqwIMRHSy+o0oE6wxi08VOjP8EKgNxXWb8O0edysY4jhu1LS8heBPmoFz8v6miyq8SrIYFw5yLvt2E46urJLyCDG3VQHCcAzppA3h/vCqSFXbYtDbx85cwZXqG97Rz9qtLli/sx38f4Q8IxfSgQMG8yRnZ7So=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724156676; c=relaxed/simple;
-	bh=/gl7sUOyLfOV6tT0Fv5q8hQg44Sbm+6uyWEkL5X266Q=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Z7m5+Kw+PLpo0b01lcP0WUiBt7xvTB4cvBVEnt6egEkVYn30aH/uD9XZce01E4aAROP2NZwFAjqnnKUl/bkY8CPB2LbSseJJPxWRgy/8UmxcnvTmi+vKp/W06OUitR8WbRptb8eu43n1jOpfn3HIiaNEit+LpE8TN6kaylXJ+BQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.189
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.194])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Wp7nc1KrmzQqDM;
-	Tue, 20 Aug 2024 20:19:48 +0800 (CST)
-Received: from dggpemm500020.china.huawei.com (unknown [7.185.36.49])
-	by mail.maildlp.com (Postfix) with ESMTPS id 423F2140133;
-	Tue, 20 Aug 2024 20:24:29 +0800 (CST)
-Received: from huawei.com (10.67.174.77) by dggpemm500020.china.huawei.com
- (7.185.36.49) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Tue, 20 Aug
- 2024 20:24:29 +0800
-From: Liao Chen <liaochen4@huawei.com>
-To: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-CC: <linux-kernel@vger.kernel.org>, <lujianhua000@gmail.com>,
-	<lee@kernel.org>, <daniel.thompson@linaro.org>, <jingoohan1@gmail.com>,
-	<deller@gmx.de>
-Subject: [PATCH -next] backlight: ktz8866: fix module autoloading
-Date: Tue, 20 Aug 2024 12:16:28 +0000
-Message-ID: <20240820121628.42321-1-liaochen4@huawei.com>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1724195367; c=relaxed/simple;
+	bh=Lbysj9KIY04ej/2hs+jHz/a8O+t1h3ua+LPYuOV2ITY=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=hzdi5RgNfCutowFuSuFjBMScXZZ+c/9oKBwkJwZMey3XQ4h2lWbEXe15j2IW3m8Yap2Gm49Tm397GUmx7N1od3EKv9kPp3CyruzbB+fecv1JC91zNEv0mVjp1iOw5G6pz3eN/irjEi0oTKGyi4eUm9rZSMV+vU8YfdvEGBd6sN4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NSQyLNjH; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NSQyLNjH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62708C4AF09;
+	Tue, 20 Aug 2024 23:09:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724195366;
+	bh=Lbysj9KIY04ej/2hs+jHz/a8O+t1h3ua+LPYuOV2ITY=;
+	h=Date:From:To:cc:Subject:In-Reply-To:References:From;
+	b=NSQyLNjH/SWpYV7mSIKlhENVXiYwzu4ehkaC87JRAScFbzqcuMo4PGMXf1B4lC4Ao
+	 cv0fE0Dp1z+t0WhDvqaojIBgeUiYqtEJOSSAhvv8RxzEHDiZEGrQ1fx8DWV+l3QOuU
+	 IRfESkzSfH5UJvgizll7XWU6m4hoNRihL9+oxgwsf0rfDfa9scqgzAxJg4Je76sCCa
+	 BfFq9Hao9XBHJ+f7zURXgXZjWJ3FqPfv7zZOJpnPvkxCRs3rM3/VQ6JIIrmZmIa6Xs
+	 Q9LdMwtiMLo8ofzHHnffkUXfcIShMdamFdSyY1db3NcyylFeg52xMJt4qcjKYZY1U4
+	 pWI8G5/PWHeXg==
+Date: Wed, 21 Aug 2024 01:09:24 +0200 (CEST)
+From: Jiri Kosina <jikos@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, 
+    deller@gmx.de, bonbons@linux-vserver.org, bentiss@kernel.org, 
+    shc_work@mail.ru, s.hauer@pengutronix.de, kernel@pengutronix.de, 
+    shawnguo@kernel.org, festevam@gmail.com, dri-devel@lists.freedesktop.org, 
+    linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: Re: [PATCH 25/28] HID: picoLCD: Replace check_fb in favor of struct
+ fb_info.lcd_dev
+In-Reply-To: <20240820093452.68270-26-tzimmermann@suse.de>
+Message-ID: <nycvar.YFH.7.76.2408210109090.12664@cbobk.fhfr.pm>
+References: <20240820093452.68270-1-tzimmermann@suse.de> <20240820093452.68270-26-tzimmermann@suse.de>
+User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- dggpemm500020.china.huawei.com (7.185.36.49)
+Content-Type: text/plain; charset=US-ASCII
 
-Add MODULE_DEVICE_TABLE(), so modules could be properly autoloaded
-based on the alias from of_device_id table.
+On Tue, 20 Aug 2024, Thomas Zimmermann wrote:
 
-Signed-off-by: Liao Chen <liaochen4@huawei.com>
----
- drivers/video/backlight/ktz8866.c | 1 +
- 1 file changed, 1 insertion(+)
+> Store the lcd device in struct fb_info.lcd_dev. The lcd subsystem can
+> now detect the lcd's fbdev device from this field.
+> 
+> This makes the implementation of check_fb in picolcd_lcdops obsolete.
+> Remove it.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backlight/ktz8866.c
-index 2e508741c0af..351c2b4d63ed 100644
---- a/drivers/video/backlight/ktz8866.c
-+++ b/drivers/video/backlight/ktz8866.c
-@@ -190,6 +190,7 @@ static const struct of_device_id ktz8866_match_table[] = {
- 	},
- 	{},
- };
-+MODULE_DEVICE_TABLE(of, ktz8866_match_table);
- 
- static struct i2c_driver ktz8866_driver = {
- 	.driver = {
+Acked-by: Jiri Kosina <jkosina@suse.com>
+
 -- 
-2.34.1
+Jiri Kosina
+SUSE Labs
 

@@ -1,186 +1,414 @@
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on2049.outbound.protection.outlook.com [40.107.117.49])
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94B7376E0;
-	Fri, 23 Aug 2024 12:30:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.117.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B843B176AC7;
+	Sat, 24 Aug 2024 14:56:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724416243; cv=fail; b=sL1IVGvRnBZQ4f70P4zWs5pYH65zEYYdg2zKGxtIic+aq2Pht9K7jHf6sHP2HTl20JKOi7kOK3B5WODzk5CFE8Ux7/lhFdUCjBJ/xOTEnNBAhqzILoJbuFL6rUIwEBZmn8Ij5SGb9umK6lDt3ZTmAKcgT0ihl2X0SKqWLiNVAhE=
+	t=1724511411; cv=pass; b=S9o44IYecPmCQ1QMvBRV98hDl6ZyS3QdWiyKmLFse3WidSXpV5mnVfCRffcEzlC8fHQc8PuX9YnTn3ZyamyAyEyrRaGcjZ0NbA66k4UsOIg6qZq/2YzxIXTwnV0Eqj/WPb/ROrAHZ8gyF8Fy8WZ2pTDIiVilC8LPbh/R1A22IWU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724416243; c=relaxed/simple;
-	bh=IzXhiwzOuYP4F7YgimgaS60hqtmAqa2o6PzmDpB7V8o=;
-	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=Z0YiC2kS2Sk5QY8rSUJ04sCv8dTeApZzyOqsQyW8mqKNNcIkVhmZRro7zFqwMw5rcqtLj0l8ppIiyHFWF2kPwgEIt40LYwtYdjUTnTQZAsXRNlIpypt/00SvQY1/o3AtOUDqysDG2h3+aaiTM5Ijc8IrxG662L77dSjaXQADqtk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=qUPstVKw; arc=fail smtp.client-ip=40.107.117.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
+	s=arc-20240116; t=1724511411; c=relaxed/simple;
+	bh=5OBtD4pxcRFI3gUXPWBQeI+DWM341tkcp5hCOgqx2gc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Of55Si5G9lxUYQoHxHbZq/zrXKWRBiOJK6aEpjeffZVCLlJK4Tfvov4xg3dEtN6/E2jvrbasByeejOQTLv85Bc0JWH0cInxcsXxFMr1JCGLmWk8VGr/+6piM4dFN4I76vw16cE7bqvYVIOe8jzDeWKEFcXEepzn8mdYhWqecWQQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=cFm5JVq9; arc=pass smtp.client-ip=185.185.170.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="qUPstVKw"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cP+KUOn8cXTj0LnlIrofZoOOH3i+C/9rJT2Bpr2AebBJli1MqtIansZOKmQko6g1W4EfEKf9MEVUKnwDmVE7KcXex7JgSlf9rb9y6M+pQH7keyXtH6+BpmZ3p7WOlfKUqIaxe5Wkw8+qkXwm08UijjSjDx+GNVw4eqYyJgH7KujrodqNoHgdo3haxxVNwVnOLoYPblU1JbtYivSdeVItilrlZu7gxCxFVEnftwN5LVGsFKAirpu79rGi4RefDNaWQSjgHT48+53LbnyX4U02rBvajRaKD7MmNITZHbbXbYMnbKMFWNQS+Kc1vkvIB7dqQyKWovdKyUsQ0pySA0qJ3g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=d7bpAQ7cupdvEUiLMqx9JD8lyHyWFdLB7t/mchCwnAo=;
- b=uZxpqL/Ol5ihUscpfl1CI2w4OsF5qpm/XKqIcO5lninZZEpW+piXoGDGI1/5aRmxu3Zd7gFRNqeiOhpFrAemSMuZc0STL8Y2wj89AUyhxNGDWjtzx/x0wQUt8dAg7qkKXvwxHJ+FwxgRdr3VkAbV1LCJwoAe4zZ72rIwOq0wd597O7x1sfNtLbtm+B9GOEwXme/ksPCRrM/Nsz/VPnXnFIy9flfB4KY8n+3kPM2piicB52cwujGcMLwqox6J7tTGFkPrxyDkYWFki/nkjp/8oyqBbhExB+/xKEbhwC7phvx4DijtKtVAh5a0CKMMcysWJ2wMKHZxFpPRYJX/tMmoBQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=d7bpAQ7cupdvEUiLMqx9JD8lyHyWFdLB7t/mchCwnAo=;
- b=qUPstVKw3Xaz8MvZdr73xOsCToHZczuQqNl1i7zYVYQJC3NavUtTAeW7SkPGeJsD6802Wqk8H3t4NpZH/tDGJUN6PNnIEt9BMcdKAfMjb8pqPe2FoCno268tDnkj6hNz0IrlB+p/Gq49cGOPEjqe1GpFzs6+sye8RDcfj11Zi/YlJGfnL9Sg2vTK42R1DhbNSnnQQ6/g3CjQW+RRO28Z59TEIOXa5IiclVRJPgLZe1nsl2PyUJCwNmJiC5yWnV0wnny7P9KG3us3dY1wuQirL6j0FcHQaBEa0aEkXZm32LNSa78//yU1tqkltHMcPMZpqJrlNcD67FRX37/Dzouhuw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SEZPR06MB6332.apcprd06.prod.outlook.com (2603:1096:101:123::11)
- by TY0PR06MB5529.apcprd06.prod.outlook.com (2603:1096:400:27b::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7897.19; Fri, 23 Aug
- 2024 12:30:38 +0000
-Received: from SEZPR06MB6332.apcprd06.prod.outlook.com
- ([fe80::6b3f:3bee:4364:6919]) by SEZPR06MB6332.apcprd06.prod.outlook.com
- ([fe80::6b3f:3bee:4364:6919%4]) with mapi id 15.20.7875.019; Fri, 23 Aug 2024
- 12:30:37 +0000
-From: ying zuxin <yingzuxin@vivo.com>
-To: Helge Deller <deller@gmx.de>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Cc: opensource.kernel@vivo.com,
-	yang.yang@vivo.com,
-	ying zuxin <yingzuxin@vivo.com>
-Subject: [PATCH] fbdev: mmp: Use devm_clk_get_enabled() helpers
-Date: Fri, 23 Aug 2024 20:29:57 +0800
-Message-Id: <20240823123027.5753-1-yingzuxin@vivo.com>
-X-Mailer: git-send-email 2.25.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SG2PR01CA0172.apcprd01.prod.exchangelabs.com
- (2603:1096:4:28::28) To SEZPR06MB6332.apcprd06.prod.outlook.com
- (2603:1096:101:123::11)
+	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="cFm5JVq9"
+Received: from hillosipuli.retiisi.eu (2a00-1190-d1dd-0-c641-1eff-feae-163c.v6.cust.suomicom.net [IPv6:2a00:1190:d1dd:0:c641:1eff:feae:163c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: sailus)
+	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4Wrg4q3N4Wz49Px6;
+	Sat, 24 Aug 2024 17:56:43 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+	t=1724511405;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aQWIIYVMAeV+tatKf1SJ1SHCmsqByqjTMrj5Nf+q8tg=;
+	b=cFm5JVq9BU3KlZTtVW0khmzt6gmpzdGYZSdblJLQR+6n7ZvMUdNeo6S2CKZx+LFwreQV7h
+	YIp6rvMddTH7uEn4W+ZewViRMFOBjKnUxDSbuGOM6FHxe0h7e1kwmDBBrucHSk+5SUn/nG
+	Ab+kr0I1hD2ONrOmHwxcSwlWIU6OmjtMJTyrCnYVawdwsLKH4jL8h4E85pLLi4Z6msuV5+
+	j96exCxJr/Gg1/L35N5KCGqeBrXoQi6ZKuK6n70MERTH3aDkmlqLekxweiINXgq4QYweEG
+	3FnBHqmLRrr4OPE5sQCYVdKBuxl8JP3kH2mAitRUxpdq1i3WQLc35JGmWqGAQA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+	s=lahtoruutu; t=1724511405;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aQWIIYVMAeV+tatKf1SJ1SHCmsqByqjTMrj5Nf+q8tg=;
+	b=UGJQIyVphF9iU8zRKOL3v1Bw01YgcKzBbNspOSUsIKpDrteAPiXon/z2Cm5HHwcg8siYR1
+	zdDAIjbfWdBIa9V1XiWTEIbcLufK7zJ4esS8pjywpf6Po4ia5aVtDM9cbFgHz2S7V/P7t8
+	rGeOFrvpBGAa3cZX37So88HbN1UHnzmycMWzOOG1iCXVooN/NdxEm8EtkY6h+LuJVmzFzy
+	L4AaodwWPngU3JjDPwnjTE9T5R1XxFVn9zCeuaD0P6RFmLMw9QgqTNU26kNKhnG3gVAs7V
+	nsWmvJ/UW7SHsB/5uBZbOPdxVR3nkZCxF4mw6V/U2aM5gVsJ15BLsLKDahioSw==
+ARC-Authentication-Results: i=1;
+	ORIGINATING;
+	auth=pass smtp.auth=sailus smtp.mailfrom=sakari.ailus@iki.fi
+ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1724511405; a=rsa-sha256;
+	cv=none;
+	b=hOit8nkEpuVt70jDLC02XYO5oyOJKCGoSKrEKBzFh7fSAfysftDRyakSvmnwzcbTns2pT3
+	+mfZ4ke1W/SWuYaZYOV1NhEaX3u4ydwV0OfIkEd987w6a3z38N8mLR31ULwoepimnsr8dz
+	HO/rF79JPvB9INPzJjNZfiXqPBoqte5jfRNdNE64rqr3byGq0XRHVE3I0tIJek45+Zb7Lh
+	VucGMRvs7/1Kx43oAKzswx9ZKAGdXmr46UXjmBv+pGN0RmyJz/Sy9RgQ4nMEz1Eg+J/+df
+	SPb2NC0AzjB6FCYw/X1UqnByhaGXDt2XyGqnA7LgHxTlEcBIqxWhMonoF79wpQ==
+Received: from valkosipuli.retiisi.eu (valkosipuli.localdomain [192.168.4.2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by hillosipuli.retiisi.eu (Postfix) with ESMTPS id 138F0634C93;
+	Sat, 24 Aug 2024 17:56:43 +0300 (EEST)
+Date: Sat, 24 Aug 2024 14:56:42 +0000
+From: Sakari Ailus <sakari.ailus@iki.fi>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+	Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>,
+	Michal Simek <michal.simek@amd.com>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@google.com>,
+	Takashi Iwai <tiwai@suse.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+	linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 1/9] of: property: add of_graph_get_next_port()
+Message-ID: <Zsn0qi8f28zdlzGp@valkosipuli.retiisi.eu>
+References: <875xsa8gws.wl-kuninori.morimoto.gx@renesas.com>
+ <874j7u8gw2.wl-kuninori.morimoto.gx@renesas.com>
+ <20240811170316.GL2270@pendragon.ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB6332:EE_|TY0PR06MB5529:EE_
-X-MS-Office365-Filtering-Correlation-Id: 94be780e-5b6c-4caa-b6b7-08dcc36f6497
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|52116014|376014|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?exNZgJHnelyKQQK+pDBj3PnIVpJyTuCVtRLYTX4TM17S8I87QXfORd4BvTwd?=
- =?us-ascii?Q?bTwQEGZFqvbiMxOBBpQ/4hbS+gpG8+X3aOptzp9dTEcuRE+6jj/gyI+aKyKu?=
- =?us-ascii?Q?DQU0IZ0//hCO0EI+S3qjoh4Go7CqWpAQflNgwE+Z4p063smSPCmTaNBk8tf2?=
- =?us-ascii?Q?ZtMbAIT1M1xBNd4c68e+n4SsANNiJO/JmZs+BeCyNFtWcJ5rL2OTEioo0cY8?=
- =?us-ascii?Q?aCKZK14Gz4Sye2jcOEDg36CfxkdolTxz94+mlZEyBm9i2UBEkYRq8ew3yQSJ?=
- =?us-ascii?Q?YYZ6dO+bQ9TWoqVaNZ0PBSQpfSEmq5glaHZfXXKe6fBALujUK9Cffgf6R74k?=
- =?us-ascii?Q?fLIea/NOWztB0LeB+LrsP/b/2KL357r8bvVU3o3Do176yaPz9UI+rYqANV4j?=
- =?us-ascii?Q?F6uF11pDUht3bugUfUPl7HFcOeFLRpAX2nMOLRryTSHGAkNpr/g1wfqH7blK?=
- =?us-ascii?Q?sy3CpAMF+VY9JNXHm8ufkMxDiTuPT/hNvolCsNLAu3iKbMn/sHfwZV6qnO/s?=
- =?us-ascii?Q?Za/BpXtTQkaXKuyGKsfG0t+RHSelM1RR/Bi7MsGZel2UMtzmDN6LL4FISt6E?=
- =?us-ascii?Q?h0Q6UMgsNejfijy+EyUljJpEMW9wa51Pm/SCMNizS2bXfwac8uznWGM7wwRq?=
- =?us-ascii?Q?UnoH/UenS6F5fqEQSfWL29ked6j5mNwfinTqhEgiJxOBrdkOj/y+/xpuJmQJ?=
- =?us-ascii?Q?GvdHFQwbOEXPd/Ejx80z07DAKhOUb7DZZKt4UbPQfCTSEwXIsbCVE0hAbc5o?=
- =?us-ascii?Q?tZ3kQW3bCaMMlNdTIU9w6A24Qk27MpcIUnH05fkP3o1d+lb70mJr17nWlH6v?=
- =?us-ascii?Q?6xVfdhi+ya9T5aEpjG+sxqQK7TDlltH1yQ5fu9Cc6e3ShxxRWK4TUqc81NdK?=
- =?us-ascii?Q?/h3O07OhVmA7DHNzt/eNtUKz6YmNiaux1c8SBhyA2HOyDTSblspB3LBkUGtd?=
- =?us-ascii?Q?r1oBwPHAayj7BEzprIhoxRCdGoex+bkze7H9P4WzYV8FKdO1vwesk+nneTQY?=
- =?us-ascii?Q?MTZRduiebrtbF/Kw/27gnBzUIrQpRmmtcKyzf7Gkv1DWCuM/ouK6dgXEZ7QD?=
- =?us-ascii?Q?pFTD8rjK8Vqm+ZGJVUIwySZlLixxZgmYlLHe2D3SsIvfQcdih/m5pk9E4ZwR?=
- =?us-ascii?Q?WJV9tzBN2I8hNsB9tYvkhh/IyvliAoG+HOt7EnjVc/EKenuHo+whj2QWPpl3?=
- =?us-ascii?Q?QKbcgJ2xI/6bUFFN424EgBefGoQ3L4Sq/BD1Sd6DKJi+KRoC1ORMV2lqDIro?=
- =?us-ascii?Q?mYOUVGhDtYaXNlEJ/eSHNGZYqzRVvM6zKmxkkf/W1Vh06GiwjiC6Xh/jp7Tc?=
- =?us-ascii?Q?MHP1FEBn3QbkO4EEeGk1xoCnEFksXENcq3UMl+0HMpxZPNnoHDF2Vc/9dhVk?=
- =?us-ascii?Q?2tlh32puH1w4X0tv5GWWbN7HStwvw1F1ptHsMywCcji6YjjEng=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB6332.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(52116014)(376014)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?+gSqx12Wpm+p+ScQLoJf348zO7DacvVe8DcpRULlUbEvFT5pjAM15hS/sajB?=
- =?us-ascii?Q?yl1D6TzrN5+lvot4Nt4f1RsSlhUP7X/PnKjVZ7wAtB5ZPb29TPP3VzJQcXvZ?=
- =?us-ascii?Q?QoQkA5s/t1O5hKf5HQ+e9ix00oiGPRDjgJl11iUDLC0ShkJKuhCE8GPoso8t?=
- =?us-ascii?Q?Fr83HyYNCXDfJyN3kQcCSFB2Holwo0SLZTqmgV26ihoGlPmstLThBaRxn8TP?=
- =?us-ascii?Q?3BaXk7s+jaXWGKtQw9C4SbGAi4DLMbV0ijhx69a/Er/tQ9vEyZIwS6I93pGq?=
- =?us-ascii?Q?+d5mkjDU0k6dNOcO2azAX13UViH5Sl1mQ7KRKmVtd6s+UpplsmPlln1TRGDu?=
- =?us-ascii?Q?+Pt7ePvrENJls6A9rjZF0HAKO7B9JcC9B/54rOUR07PRqC+XArcwqumBobK8?=
- =?us-ascii?Q?f+X3nTuTbbyhc4EwuFsgDAYZjM9g5lluVGGV6gURige/HAXmoonXCtimabcu?=
- =?us-ascii?Q?O7aPtID+yfOqP4thOStXmQ9SKHKyqZ8MAifz9nyLI1eYo+w/HDNn6Xym7CRi?=
- =?us-ascii?Q?4jDJWY4qfTXsyjD5Vp1f8lDJAN3QGSxW0Cpq/MhGa2rFM6mKoFAQCnxyMh2S?=
- =?us-ascii?Q?FtVKsj2iKaSPTcfhhXn2P15se1mt4A4xpUjmDG79G+2PcvJd1BAYBfKbahCy?=
- =?us-ascii?Q?aNZOC3R7lwFVK0mzRtLzmkyTy/k071rImD9bE/i2uKN4fqTsmZbsTeOgcVev?=
- =?us-ascii?Q?Vl8FKNSFRFYlgHaC3FksGZDrFqtsLVYmrAqUy6iWPhAfy2MDRx5/b/2lNkmU?=
- =?us-ascii?Q?hRQCT4qrtZNWEb6UCCG2il+mKjBuUG29OE/J5LfboO2KcU8JVyCgEbC5+P8Z?=
- =?us-ascii?Q?VlTTHnoWw0uv4z8+7CQ/vtuRhL/TcWOTCqBGgYXnrDLc5/z0YArNGR2q+1mj?=
- =?us-ascii?Q?NSKOX0yRrcj2oMayONu3Sm24fUelW81OhDQEGTTwVxoMjbY8duWtSAu+cc9E?=
- =?us-ascii?Q?ArI+bwjeVB96sRtIwVuzvUijO653QNnPDVJMUvx6vKVZNU4fnDfeVYKPGlsg?=
- =?us-ascii?Q?AmtC7y6hbM0l5rlBs78QFVc3jD3ycgMAXRlYi4Uo679a8fRmJd7fLGqAxxEh?=
- =?us-ascii?Q?HvdKIUOxDxbMvDgGN/pc31v8ekMvbLla5crVXoeRxb7CKgACiKcxk5dhX4wu?=
- =?us-ascii?Q?FXIRwcYvz3kLwUVcmkaPdO/qXRyWM0fUYTGRNoneycSGgZJTNE9EcpysHioa?=
- =?us-ascii?Q?RpXmOXhIc2BC6hRdT1eNtYR/44ckJ9BTi7wpITRNlVDT7JjIAnwEZQDDp+sq?=
- =?us-ascii?Q?6NTt/5/+0GlkaLdIKZwzt8nEtDRh05vSshrL4WssphAr8f6NFaRpbI3tCpI4?=
- =?us-ascii?Q?afoEncCS2ybVmKUH3L0Irzj+tUkgm8tHwQgFhx/rndEkeXD1mMVFc1hK8Sb1?=
- =?us-ascii?Q?0ts9NDJfIwRn6JtLQICjGyCjFbxtvWAhYFttjs5sZV4zc4sf/8rBtfHCF7ek?=
- =?us-ascii?Q?4njfjgd0LnbVvtyPMSqA6CCPNfU1/hEodp3o15XHuBP1Ms84FHqJuW96EZ+S?=
- =?us-ascii?Q?iXDYO8HxVWNizCJVLFCGgQFcAS2sP/Y6ltdxHxwCq8gDKgXfPTFaJq6uXC8R?=
- =?us-ascii?Q?AgW0MFH579TeVADAzhn2hdly6+hGRZhlfU1iUT8j?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 94be780e-5b6c-4caa-b6b7-08dcc36f6497
-X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB6332.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Aug 2024 12:30:37.7418
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 787Gb8ihiFYEEAfQjt1RXXBagpc+EEXaYYZJlJ4JjfEGyP8NatedIHJ3VX8974rGYaPaqDU+QnnsSjztqoIKng==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB5529
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240811170316.GL2270@pendragon.ideasonboard.com>
 
-The devm_clk_get_enabled() helpers:
-    - call devm_clk_get()
-    - call clk_prepare_enable() and register what is needed in order to
-     call clk_disable_unprepare() when needed, as a managed resource.
+Hi Laurent, Morimoto-san,
 
-This simplifies the code and avoids the calls to clk_disable_unprepare().
+On Sun, Aug 11, 2024 at 08:03:16PM +0300, Laurent Pinchart wrote:
+> Hi Morimoto-san,
+> 
+> (CC'ing Sakari)
+> 
+> Thank you for the patch.
+> 
+> On Fri, Aug 09, 2024 at 04:22:22AM +0000, Kuninori Morimoto wrote:
+> > We have endpoint base functions
+> > 	- of_graph_get_next_device_endpoint()
+> > 	- of_graph_get_device_endpoint_count()
+> > 	- for_each_of_graph_device_endpoint()
+> > 
+> > Here, for_each_of_graph_device_endpoint() loop finds each endpoints
+> > 
+> > 	ports {
+> > 		port@0 {
+> > (1)			endpoint {...};
+> > 		};
+> > 		port@1 {
+> > (2)			endpoint {...};
+> > 		};
+> > 		...
+> > 	};
+> > 
+> > In above case, it finds endpoint as (1) -> (2) -> ...
+> > 
+> > Basically, user/driver knows which port is used for what, but not in
+> > all cases. For example on flexible/generic driver case, how many ports
+> > are used is not fixed.
+> > 
+> > For example Sound Generic Card driver which is used from many venders
+> > can't know how many ports are used. Because the driver is very
+> > flexible/generic, it is impossible to know how many ports are used,
+> > it depends on each vender SoC and/or its used board.
+> > 
+> > And more, the port can have multi endpoints. For example Generic Sound
+> > Card case, it supports many type of connection between CPU / Codec, and
+> > some of them uses multi endpoint in one port.
+> > Then, Generic Sound Card want to handle each connection via "port"
+> > instead of "endpoint".
+> > But, it is very difficult to handle each "port" via
+> > for_each_of_graph_device_endpoint(). Getting "port" by using
+> > of_get_parent() from "endpoint" doesn't work. see below.
+> > 
+> > 	ports {
+> > 		port@0 {
+> > (1)			endpoint@0 {...};
+> > (2)			endpoint@1 {...};
+> > 		};
+> > 		port@1 {
+> > (3)			endpoint {...};
+> > 		};
+> > 		...
+> > 	};
+> > 
+> > In the same time, same reason, we want to handle "ports" same as "port".
+> > 
+> > 	node {
+> > =>		ports@0 {
+> > 			port@0 {
+> > 				endpoint@0 {...};
+> > 				endpoint@1 {...};
+> > 				...
+> > 			};
+> > 			port@1 {
+> > 				endpoint@0 {...};
+> > 				endpoint@1 {...};
+> > 				...
+> > 			};
+> > 			...
+> > 		};
+> > =>		ports@1 {
+> > 			...
+> > 		};
+> > 	};
+> > 
+> > Add "ports" / "port" base functions.
+> > For above case, we can use
+> > 
+> > 	for_each_of_graph_ports(node, ports) {
+> > 		for_each_of_graph_port(ports, port) {
+> > 			...
+> > 		}
+> > 	}
+> > 
+> > This loop works in case of "node" doesn't have "ports" also.
+> > 
+> > Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> > ---
+> >  drivers/of/property.c    | 88 ++++++++++++++++++++++++++++++++++++++++
+> >  include/linux/of_graph.h | 46 +++++++++++++++++++++
+> >  2 files changed, 134 insertions(+)
+> > 
+> > diff --git a/drivers/of/property.c b/drivers/of/property.c
+> > index 164d77cb9445..e4d5dfe70104 100644
+> > --- a/drivers/of/property.c
+> > +++ b/drivers/of/property.c
+> > @@ -625,6 +625,76 @@ struct device_node *of_graph_get_port_by_id(struct device_node *parent, u32 id)
+> >  }
+> >  EXPORT_SYMBOL(of_graph_get_port_by_id);
+> >  
+> > +/**
+> > + * of_graph_get_next_ports() - get next ports node.
+> > + * @parent: pointer to the parent device node
+> > + * @prev: previous ports node, or NULL to get first
+> > + *
+> > + * If "parent" node doesn't have "ports" node, it returns "parent" node itself as "ports" node.
+> > + *
+> > + * Return: A 'ports' node pointer with refcount incremented. Refcount
+> > + * of the passed @prev node is decremented.
+> > + */
+> > +struct device_node *of_graph_get_next_ports(struct device_node *parent,
+> > +					    struct device_node *prev)
+> > +{
+> > +	if (!parent)
+> > +		return NULL;
+> > +
+> > +	if (!prev) {
+> > +		prev = of_get_child_by_name(parent, "ports");
+> > +
+> > +		/* use parent as its ports of this device if it not exist */
+> > +		if (!prev)
+> > +			prev = of_node_get(parent);
+> > +
+> > +		return prev;
+> > +	}
+> > +
+> > +	do {
+> > +		prev = of_get_next_child(parent, prev);
+> > +		if (!prev)
+> > +			break;
+> > +	} while (!of_node_name_eq(prev, "ports"));
+> > +
+> > +	return prev;
+> > +}
+> > +EXPORT_SYMBOL(of_graph_get_next_ports);
+> 
+> Having multiple "ports" nodes in a device node is not something I've
+> ever seen before. There may be use cases, but how widespread are they ?
+> I would prefer handling this in driver code instead of creating a helper
+> function if the use case is rare.
 
-Signed-off-by: ying zuxin <yingzuxin@vivo.com>
----
- drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+I wonder if this is allowed by the graph schema. Probably not.
 
-diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-index a20a2c408127..03e23173198c 100644
---- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-@@ -512,16 +512,13 @@ static int mmphw_probe(struct platform_device *pdev)
- 	}
- 
- 	/* get clock */
--	ctrl->clk = devm_clk_get(ctrl->dev, mi->clk_name);
-+	ctrl->clk = devm_clk_get_enabled(ctrl->dev, mi->clk_name);
- 	if (IS_ERR(ctrl->clk)) {
- 		ret = PTR_ERR(ctrl->clk);
- 		dev_err_probe(ctrl->dev, ret,
- 			      "unable to get clk %s\n", mi->clk_name);
- 		goto failed;
- 	}
--	ret = clk_prepare_enable(ctrl->clk);
--	if (ret)
--		goto failed;
- 
- 	/* init global regs */
- 	ctrl_set_default(ctrl);
-@@ -556,7 +553,6 @@ static int mmphw_probe(struct platform_device *pdev)
- 		path_deinit(path_plat);
- 	}
- 
--	clk_disable_unprepare(ctrl->clk);
- failed:
- 	dev_err(&pdev->dev, "device init failed\n");
- 
+> 
+> > +
+> > +/**
+> > + * of_graph_get_next_port() - get next port node.
+> > + * @parent: pointer to the parent device node, or parent ports node
+> > + * @prev: previous port node, or NULL to get first
+> > + *
+> > + * Parent device node can be used as @parent whether device node has ports node or not.
+> > + * It will work same as ports@0 node.
+> > + *
+> > + * Return: A 'port' node pointer with refcount incremented. Refcount
+> > + * of the passed @prev node is decremented.
+> > + */
+> > +struct device_node *of_graph_get_next_port(struct device_node *parent,
+> > +					   struct device_node *prev)
+> > +{
+> > +	if (!parent)
+> > +		return NULL;
+> > +
+> > +	if (!prev) {
+> > +		struct device_node *ports __free(device_node) =
+> > +			of_graph_get_next_ports(parent, NULL);
+> 
+> This also makes me quite uncomfortable. Iterating over all ports of a
+> device node that contains multiple "ports" children seems an ill-defined
+> use case.
+> 
+> > +
+> > +		return of_get_child_by_name(ports, "port");
+> > +	}
+> > +
+> > +	do {
+> > +		prev = of_get_next_child(parent, prev);
+> > +		if (!prev)
+> > +			break;
+> > +	} while (!of_node_name_eq(prev, "port"));
+> > +
+> > +	return prev;
+> > +}
+> > +EXPORT_SYMBOL(of_graph_get_next_port);
+> > +
+> >  /**
+> >   * of_graph_get_next_endpoint() - get next endpoint node
+> >   * @parent: pointer to the parent device node
+> > @@ -823,6 +893,24 @@ unsigned int of_graph_get_endpoint_count(const struct device_node *np)
+> >  }
+> >  EXPORT_SYMBOL(of_graph_get_endpoint_count);
+> >  
+> > +/**
+> > + * of_graph_get_port_count() - get the number of port in a device node
+> > + * @np: pointer to the parent device node
+> > + *
+> > + * Return: count of port of this device node
+> > + */
+> > +unsigned int of_graph_get_port_count(struct device_node *np)
+> > +{
+> > +	struct device_node *port = NULL;
+> > +	int num = 0;
+> 
+> As the counter can never be negative, you can make this an unsigned int.
+> 
+> > +
+> > +	for_each_of_graph_port(np, port)
+> > +		num++;
+> > +
+> > +	return num;
+> > +}
+> > +EXPORT_SYMBOL(of_graph_get_port_count);
+> > +
+> >  /**
+> >   * of_graph_get_remote_node() - get remote parent device_node for given port/endpoint
+> >   * @node: pointer to parent device_node containing graph port/endpoint
+> > diff --git a/include/linux/of_graph.h b/include/linux/of_graph.h
+> > index a4bea62bfa29..a6b91577700a 100644
+> > --- a/include/linux/of_graph.h
+> > +++ b/include/linux/of_graph.h
+> > @@ -37,14 +37,41 @@ struct of_endpoint {
+> >  	for (child = of_graph_get_next_endpoint(parent, NULL); child != NULL; \
+> >  	     child = of_graph_get_next_endpoint(parent, child))
+> >  
+> > +/**
+> > + * for_each_of_graph_ports - iterate over every ports in a device node
+> > + * @parent: parent device node containing ports
+> > + * @child: loop variable pointing to the current ports node
+> > + *
+> > + * When breaking out of the loop, of_node_put(child) has to be called manually.
+> > + */
+> > +#define for_each_of_graph_ports(parent, child)				\
+> > +	for (child = of_graph_get_next_ports(parent, NULL); child != NULL; \
+> > +	     child = of_graph_get_next_ports(parent, child))
+> > +
+> > +/**
+> > + * for_each_of_graph_port - iterate over every port in a device or ports node
+> > + * @parent: parent device or ports node containing port
+> > + * @child: loop variable pointing to the current port node
+> > + *
+> > + * When breaking out of the loop, of_node_put(child) has to be called manually.
+> > + */
+> > +#define for_each_of_graph_port(parent, child)			\
+> > +	for (child = of_graph_get_next_port(parent, NULL); child != NULL; \
+> > +	     child = of_graph_get_next_port(parent, child))
+> 
+> I think I've proposed something similar a looooong time ago, and was
+> told that iterating over ports is not something that drivers should do.
+> The situation may have changed since though.
+> 
+> Sakari, any opinion on this ?
+
+It'd be good to understand first what would be the use case for it. There
+is already a function to obtain endpoints within a given port, including an
+fwnode equivalent.
+
+> 
+> > +
+> >  #ifdef CONFIG_OF
+> >  bool of_graph_is_present(const struct device_node *node);
+> >  int of_graph_parse_endpoint(const struct device_node *node,
+> >  				struct of_endpoint *endpoint);
+> >  unsigned int of_graph_get_endpoint_count(const struct device_node *np);
+> > +unsigned int of_graph_get_port_count(struct device_node *np);
+> >  struct device_node *of_graph_get_port_by_id(struct device_node *node, u32 id);
+> >  struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
+> >  					struct device_node *previous);
+> > +struct device_node *of_graph_get_next_ports(struct device_node *parent,
+> > +					    struct device_node *ports);
+> > +struct device_node *of_graph_get_next_port(struct device_node *parent,
+> > +					   struct device_node *port);
+> >  struct device_node *of_graph_get_endpoint_by_regs(
+> >  		const struct device_node *parent, int port_reg, int reg);
+> >  struct device_node *of_graph_get_remote_endpoint(
+> > @@ -73,6 +100,11 @@ static inline unsigned int of_graph_get_endpoint_count(const struct device_node
+> >  	return 0;
+> >  }
+> >  
+> > +static inline unsigned int of_graph_get_port_count(struct device_node *np)
+> > +{
+> > +	return 0;
+> > +}
+> > +
+> >  static inline struct device_node *of_graph_get_port_by_id(
+> >  					struct device_node *node, u32 id)
+> >  {
+> > @@ -86,6 +118,20 @@ static inline struct device_node *of_graph_get_next_endpoint(
+> >  	return NULL;
+> >  }
+> >  
+> > +static inline struct device_node *of_graph_get_next_ports(
+> > +					struct device_node *parent,
+> > +					struct device_node *previous)
+> > +{
+> > +	return NULL;
+> > +}
+> > +
+> > +static inline struct device_node *of_graph_get_next_port(
+> > +					struct device_node *parent,
+> > +					struct device_node *previous)
+> > +{
+> > +	return NULL;
+> > +}
+> > +
+> >  static inline struct device_node *of_graph_get_endpoint_by_regs(
+> >  		const struct device_node *parent, int port_reg, int reg)
+> >  {
+> 
+
 -- 
-2.39.0
+Kind regards,
 
+Sakari Ailus

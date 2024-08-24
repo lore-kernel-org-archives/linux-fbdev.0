@@ -1,414 +1,158 @@
-Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
+Received: from mx2.ucr.edu (mx2.ucr.edu [138.23.62.3])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B843B176AC7;
-	Sat, 24 Aug 2024 14:56:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724511411; cv=pass; b=S9o44IYecPmCQ1QMvBRV98hDl6ZyS3QdWiyKmLFse3WidSXpV5mnVfCRffcEzlC8fHQc8PuX9YnTn3ZyamyAyEyrRaGcjZ0NbA66k4UsOIg6qZq/2YzxIXTwnV0Eqj/WPb/ROrAHZ8gyF8Fy8WZ2pTDIiVilC8LPbh/R1A22IWU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724511411; c=relaxed/simple;
-	bh=5OBtD4pxcRFI3gUXPWBQeI+DWM341tkcp5hCOgqx2gc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Of55Si5G9lxUYQoHxHbZq/zrXKWRBiOJK6aEpjeffZVCLlJK4Tfvov4xg3dEtN6/E2jvrbasByeejOQTLv85Bc0JWH0cInxcsXxFMr1JCGLmWk8VGr/+6piM4dFN4I76vw16cE7bqvYVIOe8jzDeWKEFcXEepzn8mdYhWqecWQQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=cFm5JVq9; arc=pass smtp.client-ip=185.185.170.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BA994A05
+	for <linux-fbdev@vger.kernel.org>; Sat, 24 Aug 2024 22:38:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=138.23.62.3
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1724539099; cv=none; b=JbZVVyvyJxkeUenyyTr5YJq9b1SH5h5N+mLxGHbgigQNLcIJps1YZTS02HvM6EVuVFmbxyq+d7rSOdajS2lsaEWPg7j2c24DkNwc2ai7kI8ozVK7kvBCmfLCXhi+Qf/SZ5Sni31mekCtJ+zF402LHSCa7wX63+zieuaZWgCARow=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1724539099; c=relaxed/simple;
+	bh=aku1BGyPnFkzwCBLHItvSnqqXATipQbCvNjkisu2eTA=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Content-Type; b=N0OSw23SsMbzQWe7i7RhoTW8WHGJZR9wdeHi9vT9E7q+BB3rjnMWzgbJM6wL+X2P9lRoidEsCKXVs1kKoLhoTYZz0UlkZwgwwOqYXtLLsXgUEUhQdUWiZwi1d3sxqd5wVXhicZg/1GM2RvIo6AWHgrga4recTbHaHjctTtBpiEo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=email.ucr.edu; spf=pass smtp.mailfrom=ucr.edu; dkim=pass (2048-bit key) header.d=ucr.edu header.i=@ucr.edu header.b=HLtJZ9V+; dkim=pass (1024-bit key) header.d=ucr.edu header.i=@ucr.edu header.b=Px+3M/0J; arc=none smtp.client-ip=138.23.62.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=email.ucr.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ucr.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="cFm5JVq9"
-Received: from hillosipuli.retiisi.eu (2a00-1190-d1dd-0-c641-1eff-feae-163c.v6.cust.suomicom.net [IPv6:2a00:1190:d1dd:0:c641:1eff:feae:163c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: sailus)
-	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4Wrg4q3N4Wz49Px6;
-	Sat, 24 Aug 2024 17:56:43 +0300 (EEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
-	t=1724511405;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=aQWIIYVMAeV+tatKf1SJ1SHCmsqByqjTMrj5Nf+q8tg=;
-	b=cFm5JVq9BU3KlZTtVW0khmzt6gmpzdGYZSdblJLQR+6n7ZvMUdNeo6S2CKZx+LFwreQV7h
-	YIp6rvMddTH7uEn4W+ZewViRMFOBjKnUxDSbuGOM6FHxe0h7e1kwmDBBrucHSk+5SUn/nG
-	Ab+kr0I1hD2ONrOmHwxcSwlWIU6OmjtMJTyrCnYVawdwsLKH4jL8h4E85pLLi4Z6msuV5+
-	j96exCxJr/Gg1/L35N5KCGqeBrXoQi6ZKuK6n70MERTH3aDkmlqLekxweiINXgq4QYweEG
-	3FnBHqmLRrr4OPE5sQCYVdKBuxl8JP3kH2mAitRUxpdq1i3WQLc35JGmWqGAQA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-	s=lahtoruutu; t=1724511405;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=aQWIIYVMAeV+tatKf1SJ1SHCmsqByqjTMrj5Nf+q8tg=;
-	b=UGJQIyVphF9iU8zRKOL3v1Bw01YgcKzBbNspOSUsIKpDrteAPiXon/z2Cm5HHwcg8siYR1
-	zdDAIjbfWdBIa9V1XiWTEIbcLufK7zJ4esS8pjywpf6Po4ia5aVtDM9cbFgHz2S7V/P7t8
-	rGeOFrvpBGAa3cZX37So88HbN1UHnzmycMWzOOG1iCXVooN/NdxEm8EtkY6h+LuJVmzFzy
-	L4AaodwWPngU3JjDPwnjTE9T5R1XxFVn9zCeuaD0P6RFmLMw9QgqTNU26kNKhnG3gVAs7V
-	nsWmvJ/UW7SHsB/5uBZbOPdxVR3nkZCxF4mw6V/U2aM5gVsJ15BLsLKDahioSw==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=sailus smtp.mailfrom=sakari.ailus@iki.fi
-ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1724511405; a=rsa-sha256;
-	cv=none;
-	b=hOit8nkEpuVt70jDLC02XYO5oyOJKCGoSKrEKBzFh7fSAfysftDRyakSvmnwzcbTns2pT3
-	+mfZ4ke1W/SWuYaZYOV1NhEaX3u4ydwV0OfIkEd987w6a3z38N8mLR31ULwoepimnsr8dz
-	HO/rF79JPvB9INPzJjNZfiXqPBoqte5jfRNdNE64rqr3byGq0XRHVE3I0tIJek45+Zb7Lh
-	VucGMRvs7/1Kx43oAKzswx9ZKAGdXmr46UXjmBv+pGN0RmyJz/Sy9RgQ4nMEz1Eg+J/+df
-	SPb2NC0AzjB6FCYw/X1UqnByhaGXDt2XyGqnA7LgHxTlEcBIqxWhMonoF79wpQ==
-Received: from valkosipuli.retiisi.eu (valkosipuli.localdomain [192.168.4.2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by hillosipuli.retiisi.eu (Postfix) with ESMTPS id 138F0634C93;
-	Sat, 24 Aug 2024 17:56:43 +0300 (EEST)
-Date: Sat, 24 Aug 2024 14:56:42 +0000
-From: Sakari Ailus <sakari.ailus@iki.fi>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
-	Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mark Brown <broonie@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@google.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-	linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 1/9] of: property: add of_graph_get_next_port()
-Message-ID: <Zsn0qi8f28zdlzGp@valkosipuli.retiisi.eu>
-References: <875xsa8gws.wl-kuninori.morimoto.gx@renesas.com>
- <874j7u8gw2.wl-kuninori.morimoto.gx@renesas.com>
- <20240811170316.GL2270@pendragon.ideasonboard.com>
+	dkim=pass (2048-bit key) header.d=ucr.edu header.i=@ucr.edu header.b="HLtJZ9V+";
+	dkim=pass (1024-bit key) header.d=ucr.edu header.i=@ucr.edu header.b="Px+3M/0J"
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
+  t=1724539099; x=1756075099;
+  h=dkim-signature:x-google-dkim-signature:
+   x-forwarded-encrypted:x-gm-message-state:
+   x-google-smtp-source:mime-version:from:date:message-id:
+   subject:to:content-type:x-cse-connectionguid:
+   x-cse-msgguid;
+  bh=aku1BGyPnFkzwCBLHItvSnqqXATipQbCvNjkisu2eTA=;
+  b=HLtJZ9V+Sgn/IuvLp3KYwrw9x1UOojxNewEP0t+rvJE5wgmDRvMfvln/
+   m0apB/t42ErJi7kaatyZXA+pSV6I/zLbM/PRxhaAvMrc4dIFhqIlONxiB
+   Z4o2lOhfVuiUI6I6fheNX/+jg/EA0mkNzfCMEttfW0N4ydIO1wrIKpLtg
+   MNsdiohpwxmqJkBnN4rBbVZJr8gitJzviiVQgmcyBDyk18kF2otQHVqUC
+   mxKl89LhSvvvFYfxNICfxCrO8K+m0jnmWWaxJi4q8aThxilCSRbMxzZM1
+   5Ka5iEGR0gaCrGnW5+muNGgqbozNiVBNueToySOHK0SknyjJZrMnrtJIV
+   A==;
+X-CSE-ConnectionGUID: AwRwe4thTbWjdpz8y6l0fw==
+X-CSE-MsgGUID: 1UeO17N0RoSsVeyqRQXFFw==
+Received: from mail-io1-f71.google.com ([209.85.166.71])
+  by smtp2.ucr.edu with ESMTP/TLS/TLS_AES_256_GCM_SHA384; 24 Aug 2024 15:38:17 -0700
+Received: by mail-io1-f71.google.com with SMTP id ca18e2360f4ac-8223c3509a9so340994039f.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 24 Aug 2024 15:38:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ucr.edu; s=rmail; t=1724539096; x=1725143896; darn=vger.kernel.org;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=XsiAD2fFCNgCPGwb7KVHK4effqndVE8zSBZgK6lYH2s=;
+        b=Px+3M/0J1UVYnkiTmiE6JRGohQf2x34/boElLyByzOzVAYS1cSOlzKnwmCn09PHjPR
+         LwWmcl1r1uh9OpaBOP5icsmaQgoXMPYxKbRHzpJxXmeGJWgPOBBkYqpIrC9I8mI+uhaa
+         bPNb/gAq8cxHmltmAUJ4pbYxTuMnwqWGZ84xM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724539096; x=1725143896;
+        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=XsiAD2fFCNgCPGwb7KVHK4effqndVE8zSBZgK6lYH2s=;
+        b=NxjFa3sb7f718Glk3viRuTC9d/PY2JVMqwQcUDFQuXK4T/mGniyOsudED52WfcbQem
+         aSoZGmVzMIgZgB7Mt6NdMe+LyjXuf1mYZDY6VvOr6DbJ04/5saGlQgdNkQED71eNHY9J
+         Sev0I8hdRizPzOF/HalBeh5arpoOk4MuqnGPCODCu/oiPX1LF4lsqsUuBSSc7L69vwpG
+         Cdd/2CiEcIFtIxLIDSvck+1SITjyLllpCT0z0tqNEuvgi29SQv7/tfSqYAEnhb/fWCC7
+         Js2GlS3wRiS9g5Sa0zsHnyDRN4WgUFxZhW7mxO9mmaT3+hiftXxurf3B7ES13j/pYY9f
+         FBuQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVHHyh/NXrGo9da0YZJptbv6LwJBhgNsWvkochLZDK5cxO6Zscnhg6tjeUFrB36ieXBoPwLhEh7g0oWPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwzN0O/yddtEO8Gr6XLuhdj6gldKylFO8ocwpig3uEU8B4bUGX1
+	lJg/A6cpvGqFtkixnkCZLB/tnGDv37ctLVTM9skoRqkw1jfCM458akJHBTe89cMIHahVrwCebeH
+	VItnehfg3fXS49NBWP/E4rZnMj8a9FNESnvOFPBnoQ0+pgBtWgpp90vnvhNPQDqvKDupoUATxlU
+	Hd6o7b4J9zXzGAUKBKjXHTTNpaJl0BO3M1gBRE
+X-Received: by 2002:a05:6602:2c87:b0:824:d7b5:45e with SMTP id ca18e2360f4ac-82787323b43mr745863439f.3.1724539095703;
+        Sat, 24 Aug 2024 15:38:15 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFGxRcU/vOsaC2nI2v7TINLpWQIGNtj/+p/YES/rNZzZJPEnEirmzlZsGv/ueCxgr72bCGOAQ0rFCWZfuydb2g=
+X-Received: by 2002:a05:6602:2c87:b0:824:d7b5:45e with SMTP id
+ ca18e2360f4ac-82787323b43mr745861939f.3.1724539095334; Sat, 24 Aug 2024
+ 15:38:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240811170316.GL2270@pendragon.ideasonboard.com>
+From: Juefei Pu <juefei.pu@email.ucr.edu>
+Date: Sat, 24 Aug 2024 15:38:03 -0700
+Message-ID: <CANikGpcJF23qVPYMkjFG084kTP8oo4-9Jkp=JFO+SxB3BMJuKQ@mail.gmail.com>
+Subject: BUG: KASAN: vmalloc-out-of-bounds Write in imageblit
+To: daniel@ffwll.ch, deller@gmx.de, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Laurent, Morimoto-san,
+Hello,
+We found the following issue using syzkaller on Linux v6.10.
+In `fast_imageblit`, there is an out-of-bounds memory access when
+executing `*dst++ = colortab[(*src >> 7) & bit_mask];`
 
-On Sun, Aug 11, 2024 at 08:03:16PM +0300, Laurent Pinchart wrote:
-> Hi Morimoto-san,
-> 
-> (CC'ing Sakari)
-> 
-> Thank you for the patch.
-> 
-> On Fri, Aug 09, 2024 at 04:22:22AM +0000, Kuninori Morimoto wrote:
-> > We have endpoint base functions
-> > 	- of_graph_get_next_device_endpoint()
-> > 	- of_graph_get_device_endpoint_count()
-> > 	- for_each_of_graph_device_endpoint()
-> > 
-> > Here, for_each_of_graph_device_endpoint() loop finds each endpoints
-> > 
-> > 	ports {
-> > 		port@0 {
-> > (1)			endpoint {...};
-> > 		};
-> > 		port@1 {
-> > (2)			endpoint {...};
-> > 		};
-> > 		...
-> > 	};
-> > 
-> > In above case, it finds endpoint as (1) -> (2) -> ...
-> > 
-> > Basically, user/driver knows which port is used for what, but not in
-> > all cases. For example on flexible/generic driver case, how many ports
-> > are used is not fixed.
-> > 
-> > For example Sound Generic Card driver which is used from many venders
-> > can't know how many ports are used. Because the driver is very
-> > flexible/generic, it is impossible to know how many ports are used,
-> > it depends on each vender SoC and/or its used board.
-> > 
-> > And more, the port can have multi endpoints. For example Generic Sound
-> > Card case, it supports many type of connection between CPU / Codec, and
-> > some of them uses multi endpoint in one port.
-> > Then, Generic Sound Card want to handle each connection via "port"
-> > instead of "endpoint".
-> > But, it is very difficult to handle each "port" via
-> > for_each_of_graph_device_endpoint(). Getting "port" by using
-> > of_get_parent() from "endpoint" doesn't work. see below.
-> > 
-> > 	ports {
-> > 		port@0 {
-> > (1)			endpoint@0 {...};
-> > (2)			endpoint@1 {...};
-> > 		};
-> > 		port@1 {
-> > (3)			endpoint {...};
-> > 		};
-> > 		...
-> > 	};
-> > 
-> > In the same time, same reason, we want to handle "ports" same as "port".
-> > 
-> > 	node {
-> > =>		ports@0 {
-> > 			port@0 {
-> > 				endpoint@0 {...};
-> > 				endpoint@1 {...};
-> > 				...
-> > 			};
-> > 			port@1 {
-> > 				endpoint@0 {...};
-> > 				endpoint@1 {...};
-> > 				...
-> > 			};
-> > 			...
-> > 		};
-> > =>		ports@1 {
-> > 			...
-> > 		};
-> > 	};
-> > 
-> > Add "ports" / "port" base functions.
-> > For above case, we can use
-> > 
-> > 	for_each_of_graph_ports(node, ports) {
-> > 		for_each_of_graph_port(ports, port) {
-> > 			...
-> > 		}
-> > 	}
-> > 
-> > This loop works in case of "node" doesn't have "ports" also.
-> > 
-> > Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> > ---
-> >  drivers/of/property.c    | 88 ++++++++++++++++++++++++++++++++++++++++
-> >  include/linux/of_graph.h | 46 +++++++++++++++++++++
-> >  2 files changed, 134 insertions(+)
-> > 
-> > diff --git a/drivers/of/property.c b/drivers/of/property.c
-> > index 164d77cb9445..e4d5dfe70104 100644
-> > --- a/drivers/of/property.c
-> > +++ b/drivers/of/property.c
-> > @@ -625,6 +625,76 @@ struct device_node *of_graph_get_port_by_id(struct device_node *parent, u32 id)
-> >  }
-> >  EXPORT_SYMBOL(of_graph_get_port_by_id);
-> >  
-> > +/**
-> > + * of_graph_get_next_ports() - get next ports node.
-> > + * @parent: pointer to the parent device node
-> > + * @prev: previous ports node, or NULL to get first
-> > + *
-> > + * If "parent" node doesn't have "ports" node, it returns "parent" node itself as "ports" node.
-> > + *
-> > + * Return: A 'ports' node pointer with refcount incremented. Refcount
-> > + * of the passed @prev node is decremented.
-> > + */
-> > +struct device_node *of_graph_get_next_ports(struct device_node *parent,
-> > +					    struct device_node *prev)
-> > +{
-> > +	if (!parent)
-> > +		return NULL;
-> > +
-> > +	if (!prev) {
-> > +		prev = of_get_child_by_name(parent, "ports");
-> > +
-> > +		/* use parent as its ports of this device if it not exist */
-> > +		if (!prev)
-> > +			prev = of_node_get(parent);
-> > +
-> > +		return prev;
-> > +	}
-> > +
-> > +	do {
-> > +		prev = of_get_next_child(parent, prev);
-> > +		if (!prev)
-> > +			break;
-> > +	} while (!of_node_name_eq(prev, "ports"));
-> > +
-> > +	return prev;
-> > +}
-> > +EXPORT_SYMBOL(of_graph_get_next_ports);
-> 
-> Having multiple "ports" nodes in a device node is not something I've
-> ever seen before. There may be use cases, but how widespread are they ?
-> I would prefer handling this in driver code instead of creating a helper
-> function if the use case is rare.
+Although Syzbot has found a similar bug
+(https://syzkaller.appspot.com/bug?extid=3d3864c27a5e770e7654), the
+bug we discovered can be triggered on Linux v6.10. Meanwhile, Syzbot
+failed to trigger the crash for 396 days. Thus, it looks like this is
+a new bug.
 
-I wonder if this is allowed by the graph schema. Probably not.
+Unfortunately, the syzkaller failed to generate a reproducer.
+But at least we have the report:
 
-> 
-> > +
-> > +/**
-> > + * of_graph_get_next_port() - get next port node.
-> > + * @parent: pointer to the parent device node, or parent ports node
-> > + * @prev: previous port node, or NULL to get first
-> > + *
-> > + * Parent device node can be used as @parent whether device node has ports node or not.
-> > + * It will work same as ports@0 node.
-> > + *
-> > + * Return: A 'port' node pointer with refcount incremented. Refcount
-> > + * of the passed @prev node is decremented.
-> > + */
-> > +struct device_node *of_graph_get_next_port(struct device_node *parent,
-> > +					   struct device_node *prev)
-> > +{
-> > +	if (!parent)
-> > +		return NULL;
-> > +
-> > +	if (!prev) {
-> > +		struct device_node *ports __free(device_node) =
-> > +			of_graph_get_next_ports(parent, NULL);
-> 
-> This also makes me quite uncomfortable. Iterating over all ports of a
-> device node that contains multiple "ports" children seems an ill-defined
-> use case.
-> 
-> > +
-> > +		return of_get_child_by_name(ports, "port");
-> > +	}
-> > +
-> > +	do {
-> > +		prev = of_get_next_child(parent, prev);
-> > +		if (!prev)
-> > +			break;
-> > +	} while (!of_node_name_eq(prev, "port"));
-> > +
-> > +	return prev;
-> > +}
-> > +EXPORT_SYMBOL(of_graph_get_next_port);
-> > +
-> >  /**
-> >   * of_graph_get_next_endpoint() - get next endpoint node
-> >   * @parent: pointer to the parent device node
-> > @@ -823,6 +893,24 @@ unsigned int of_graph_get_endpoint_count(const struct device_node *np)
-> >  }
-> >  EXPORT_SYMBOL(of_graph_get_endpoint_count);
-> >  
-> > +/**
-> > + * of_graph_get_port_count() - get the number of port in a device node
-> > + * @np: pointer to the parent device node
-> > + *
-> > + * Return: count of port of this device node
-> > + */
-> > +unsigned int of_graph_get_port_count(struct device_node *np)
-> > +{
-> > +	struct device_node *port = NULL;
-> > +	int num = 0;
-> 
-> As the counter can never be negative, you can make this an unsigned int.
-> 
-> > +
-> > +	for_each_of_graph_port(np, port)
-> > +		num++;
-> > +
-> > +	return num;
-> > +}
-> > +EXPORT_SYMBOL(of_graph_get_port_count);
-> > +
-> >  /**
-> >   * of_graph_get_remote_node() - get remote parent device_node for given port/endpoint
-> >   * @node: pointer to parent device_node containing graph port/endpoint
-> > diff --git a/include/linux/of_graph.h b/include/linux/of_graph.h
-> > index a4bea62bfa29..a6b91577700a 100644
-> > --- a/include/linux/of_graph.h
-> > +++ b/include/linux/of_graph.h
-> > @@ -37,14 +37,41 @@ struct of_endpoint {
-> >  	for (child = of_graph_get_next_endpoint(parent, NULL); child != NULL; \
-> >  	     child = of_graph_get_next_endpoint(parent, child))
-> >  
-> > +/**
-> > + * for_each_of_graph_ports - iterate over every ports in a device node
-> > + * @parent: parent device node containing ports
-> > + * @child: loop variable pointing to the current ports node
-> > + *
-> > + * When breaking out of the loop, of_node_put(child) has to be called manually.
-> > + */
-> > +#define for_each_of_graph_ports(parent, child)				\
-> > +	for (child = of_graph_get_next_ports(parent, NULL); child != NULL; \
-> > +	     child = of_graph_get_next_ports(parent, child))
-> > +
-> > +/**
-> > + * for_each_of_graph_port - iterate over every port in a device or ports node
-> > + * @parent: parent device or ports node containing port
-> > + * @child: loop variable pointing to the current port node
-> > + *
-> > + * When breaking out of the loop, of_node_put(child) has to be called manually.
-> > + */
-> > +#define for_each_of_graph_port(parent, child)			\
-> > +	for (child = of_graph_get_next_port(parent, NULL); child != NULL; \
-> > +	     child = of_graph_get_next_port(parent, child))
-> 
-> I think I've proposed something similar a looooong time ago, and was
-> told that iterating over ports is not something that drivers should do.
-> The situation may have changed since though.
-> 
-> Sakari, any opinion on this ?
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit
+drivers/video/fbdev/core/sysimgblt.c:257 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1c22/0x2600
+drivers/video/fbdev/core/sysimgblt.c:326
+Write of size 4 at addr ffffc90002ad9190 by task syz.0.802/17876
 
-It'd be good to understand first what would be the use case for it. There
-is already a function to obtain endpoints within a given port, including an
-fwnode equivalent.
+CPU: 0 PID: 17876 Comm: syz.0.802 Not tainted 6.10.0 #13
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:88 [inline]
+ dump_stack_lvl+0x23d/0x360 lib/dump_stack.c:114
+ print_address_description+0x77/0x360 mm/kasan/report.c:377
+ print_report+0xfd/0x210 mm/kasan/report.c:488
+ kasan_report+0x13f/0x170 mm/kasan/report.c:601
+ fast_imageblit drivers/video/fbdev/core/sysimgblt.c:257 [inline]
+ sys_imageblit+0x1c22/0x2600 drivers/video/fbdev/core/sysimgblt.c:326
+ drm_fbdev_generic_defio_imageblit+0x2a/0xf0
+drivers/gpu/drm/drm_fbdev_generic.c:37
+ bit_putcs+0x18a3/0x1d90
+ fbcon_putcs+0x34f/0x520 drivers/video/fbdev/core/fbcon.c:1288
+ con_putc drivers/tty/vt/vt.c:302 [inline]
+ complement_pos+0x3f4/0xa70 drivers/tty/vt/vt.c:757
+ highlight_pointer drivers/tty/vt/selection.c:63 [inline]
+ clear_selection+0x17/0x70 drivers/tty/vt/selection.c:85
+ hide_cursor+0x80/0x480 drivers/tty/vt/vt.c:844
+ redraw_screen+0x1d7/0xe70 drivers/tty/vt/vt.c:948
+ fbcon_blank+0x61f/0xae0 drivers/video/fbdev/core/fbcon.c:2231
+ do_unblank_screen+0x294/0x760 drivers/tty/vt/vt.c:4563
+ unblank_screen drivers/tty/vt/vt.c:4582 [inline]
+ tioclinux+0x186/0x4c0 drivers/tty/vt/vt.c:3357
+ vt_ioctl+0x9d4/0x2060 drivers/tty/vt/vt_ioctl.c:761
+ tty_ioctl+0x906/0xdb0 drivers/tty/tty_io.c:2803
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:907 [inline]
+ __se_sys_ioctl+0xfe/0x170 fs/ioctl.c:893
+ do_syscall_x64 arch/x86/entry/common.c:52 [inline]
+ do_syscall_64+0x7e/0x150 arch/x86/entry/common.c:83
+ entry_SYSCALL_64_after_hwframe+0x67/0x6f
+RIP: 0033:0x7f77eff809b9
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48
+89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d
+01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f77f0e57038 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00007f77f0145f80 RCX: 00007f77eff809b9
+RDX: 0000000020000580 RSI: 000000000000541c RDI: 0000000000000018
+RBP: 00007f77efff4f70 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 0000000000000000 R14: 00007f77f0145f80 R15: 00007ffd3ddd4628
+ </TASK>
 
-> 
-> > +
-> >  #ifdef CONFIG_OF
-> >  bool of_graph_is_present(const struct device_node *node);
-> >  int of_graph_parse_endpoint(const struct device_node *node,
-> >  				struct of_endpoint *endpoint);
-> >  unsigned int of_graph_get_endpoint_count(const struct device_node *np);
-> > +unsigned int of_graph_get_port_count(struct device_node *np);
-> >  struct device_node *of_graph_get_port_by_id(struct device_node *node, u32 id);
-> >  struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
-> >  					struct device_node *previous);
-> > +struct device_node *of_graph_get_next_ports(struct device_node *parent,
-> > +					    struct device_node *ports);
-> > +struct device_node *of_graph_get_next_port(struct device_node *parent,
-> > +					   struct device_node *port);
-> >  struct device_node *of_graph_get_endpoint_by_regs(
-> >  		const struct device_node *parent, int port_reg, int reg);
-> >  struct device_node *of_graph_get_remote_endpoint(
-> > @@ -73,6 +100,11 @@ static inline unsigned int of_graph_get_endpoint_count(const struct device_node
-> >  	return 0;
-> >  }
-> >  
-> > +static inline unsigned int of_graph_get_port_count(struct device_node *np)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> >  static inline struct device_node *of_graph_get_port_by_id(
-> >  					struct device_node *node, u32 id)
-> >  {
-> > @@ -86,6 +118,20 @@ static inline struct device_node *of_graph_get_next_endpoint(
-> >  	return NULL;
-> >  }
-> >  
-> > +static inline struct device_node *of_graph_get_next_ports(
-> > +					struct device_node *parent,
-> > +					struct device_node *previous)
-> > +{
-> > +	return NULL;
-> > +}
-> > +
-> > +static inline struct device_node *of_graph_get_next_port(
-> > +					struct device_node *parent,
-> > +					struct device_node *previous)
-> > +{
-> > +	return NULL;
-> > +}
-> > +
-> >  static inline struct device_node *of_graph_get_endpoint_by_regs(
-> >  		const struct device_node *parent, int port_reg, int reg)
-> >  {
-> 
-
--- 
-Kind regards,
-
-Sakari Ailus
+Memory state around the buggy address:
+ ffffc90002ad9080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90002ad9100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+>ffffc90002ad9180: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                         ^
+ ffffc90002ad9200: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90002ad9280: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================

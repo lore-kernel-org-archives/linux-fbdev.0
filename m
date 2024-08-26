@@ -1,158 +1,197 @@
-Received: from mx2.ucr.edu (mx2.ucr.edu [138.23.62.3])
+Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazon11010047.outbound.protection.outlook.com [52.101.228.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BA994A05
-	for <linux-fbdev@vger.kernel.org>; Sat, 24 Aug 2024 22:38:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=138.23.62.3
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724539099; cv=none; b=JbZVVyvyJxkeUenyyTr5YJq9b1SH5h5N+mLxGHbgigQNLcIJps1YZTS02HvM6EVuVFmbxyq+d7rSOdajS2lsaEWPg7j2c24DkNwc2ai7kI8ozVK7kvBCmfLCXhi+Qf/SZ5Sni31mekCtJ+zF402LHSCa7wX63+zieuaZWgCARow=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724539099; c=relaxed/simple;
-	bh=aku1BGyPnFkzwCBLHItvSnqqXATipQbCvNjkisu2eTA=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Content-Type; b=N0OSw23SsMbzQWe7i7RhoTW8WHGJZR9wdeHi9vT9E7q+BB3rjnMWzgbJM6wL+X2P9lRoidEsCKXVs1kKoLhoTYZz0UlkZwgwwOqYXtLLsXgUEUhQdUWiZwi1d3sxqd5wVXhicZg/1GM2RvIo6AWHgrga4recTbHaHjctTtBpiEo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=email.ucr.edu; spf=pass smtp.mailfrom=ucr.edu; dkim=pass (2048-bit key) header.d=ucr.edu header.i=@ucr.edu header.b=HLtJZ9V+; dkim=pass (1024-bit key) header.d=ucr.edu header.i=@ucr.edu header.b=Px+3M/0J; arc=none smtp.client-ip=138.23.62.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=email.ucr.edu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ucr.edu
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85D88BA2D;
+	Mon, 26 Aug 2024 02:43:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.228.47
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1724640191; cv=fail; b=ISG8ppUAu3Zp2fNi+Ku7rmZNCyxfH4YD3ip+qvETWICrYtKEAHtPWq8ih2oZisJBVLWfRch/Y5pe7RqU+cgp9noWvXUNEndq5l0uSBe/1/xSixxAqtdIfPeRCHc/LA43oaENfINLHe7gyt4QtZCVQgBWezRcjV/KpdG36j0oGss=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1724640191; c=relaxed/simple;
+	bh=Bxx0ooDDC2a8U28Ap7LsJhOd/wuboCpoipUVltMKKy8=;
+	h=Message-ID:To:From:Subject:Content-Type:Date:MIME-Version; b=dQekIpnVRyR0l478ytgojrWSDMuvKxXYgUEndKAp3gI+7eU5HpnRUhAJO9aGkvXnO4pn9r6qgPp3g49eDJPVt2lJs0V1pl7cyFHJj1mXOrRDT5Pe1RRcjMlZMb+lZ5wkTVg80YaItY+SnLGFejxpFQ07b23Y4UlvIGmGGM+UfYY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=CgnP5OKR; arc=fail smtp.client-ip=52.101.228.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ucr.edu header.i=@ucr.edu header.b="HLtJZ9V+";
-	dkim=pass (1024-bit key) header.d=ucr.edu header.i=@ucr.edu header.b="Px+3M/0J"
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
-  t=1724539099; x=1756075099;
-  h=dkim-signature:x-google-dkim-signature:
-   x-forwarded-encrypted:x-gm-message-state:
-   x-google-smtp-source:mime-version:from:date:message-id:
-   subject:to:content-type:x-cse-connectionguid:
-   x-cse-msgguid;
-  bh=aku1BGyPnFkzwCBLHItvSnqqXATipQbCvNjkisu2eTA=;
-  b=HLtJZ9V+Sgn/IuvLp3KYwrw9x1UOojxNewEP0t+rvJE5wgmDRvMfvln/
-   m0apB/t42ErJi7kaatyZXA+pSV6I/zLbM/PRxhaAvMrc4dIFhqIlONxiB
-   Z4o2lOhfVuiUI6I6fheNX/+jg/EA0mkNzfCMEttfW0N4ydIO1wrIKpLtg
-   MNsdiohpwxmqJkBnN4rBbVZJr8gitJzviiVQgmcyBDyk18kF2otQHVqUC
-   mxKl89LhSvvvFYfxNICfxCrO8K+m0jnmWWaxJi4q8aThxilCSRbMxzZM1
-   5Ka5iEGR0gaCrGnW5+muNGgqbozNiVBNueToySOHK0SknyjJZrMnrtJIV
-   A==;
-X-CSE-ConnectionGUID: AwRwe4thTbWjdpz8y6l0fw==
-X-CSE-MsgGUID: 1UeO17N0RoSsVeyqRQXFFw==
-Received: from mail-io1-f71.google.com ([209.85.166.71])
-  by smtp2.ucr.edu with ESMTP/TLS/TLS_AES_256_GCM_SHA384; 24 Aug 2024 15:38:17 -0700
-Received: by mail-io1-f71.google.com with SMTP id ca18e2360f4ac-8223c3509a9so340994039f.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 24 Aug 2024 15:38:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ucr.edu; s=rmail; t=1724539096; x=1725143896; darn=vger.kernel.org;
-        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=XsiAD2fFCNgCPGwb7KVHK4effqndVE8zSBZgK6lYH2s=;
-        b=Px+3M/0J1UVYnkiTmiE6JRGohQf2x34/boElLyByzOzVAYS1cSOlzKnwmCn09PHjPR
-         LwWmcl1r1uh9OpaBOP5icsmaQgoXMPYxKbRHzpJxXmeGJWgPOBBkYqpIrC9I8mI+uhaa
-         bPNb/gAq8cxHmltmAUJ4pbYxTuMnwqWGZ84xM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724539096; x=1725143896;
-        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=XsiAD2fFCNgCPGwb7KVHK4effqndVE8zSBZgK6lYH2s=;
-        b=NxjFa3sb7f718Glk3viRuTC9d/PY2JVMqwQcUDFQuXK4T/mGniyOsudED52WfcbQem
-         aSoZGmVzMIgZgB7Mt6NdMe+LyjXuf1mYZDY6VvOr6DbJ04/5saGlQgdNkQED71eNHY9J
-         Sev0I8hdRizPzOF/HalBeh5arpoOk4MuqnGPCODCu/oiPX1LF4lsqsUuBSSc7L69vwpG
-         Cdd/2CiEcIFtIxLIDSvck+1SITjyLllpCT0z0tqNEuvgi29SQv7/tfSqYAEnhb/fWCC7
-         Js2GlS3wRiS9g5Sa0zsHnyDRN4WgUFxZhW7mxO9mmaT3+hiftXxurf3B7ES13j/pYY9f
-         FBuQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVHHyh/NXrGo9da0YZJptbv6LwJBhgNsWvkochLZDK5cxO6Zscnhg6tjeUFrB36ieXBoPwLhEh7g0oWPA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwzN0O/yddtEO8Gr6XLuhdj6gldKylFO8ocwpig3uEU8B4bUGX1
-	lJg/A6cpvGqFtkixnkCZLB/tnGDv37ctLVTM9skoRqkw1jfCM458akJHBTe89cMIHahVrwCebeH
-	VItnehfg3fXS49NBWP/E4rZnMj8a9FNESnvOFPBnoQ0+pgBtWgpp90vnvhNPQDqvKDupoUATxlU
-	Hd6o7b4J9zXzGAUKBKjXHTTNpaJl0BO3M1gBRE
-X-Received: by 2002:a05:6602:2c87:b0:824:d7b5:45e with SMTP id ca18e2360f4ac-82787323b43mr745863439f.3.1724539095703;
-        Sat, 24 Aug 2024 15:38:15 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFGxRcU/vOsaC2nI2v7TINLpWQIGNtj/+p/YES/rNZzZJPEnEirmzlZsGv/ueCxgr72bCGOAQ0rFCWZfuydb2g=
-X-Received: by 2002:a05:6602:2c87:b0:824:d7b5:45e with SMTP id
- ca18e2360f4ac-82787323b43mr745861939f.3.1724539095334; Sat, 24 Aug 2024
- 15:38:15 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="CgnP5OKR"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=WLpQIJjabtHwpE2jlKeGsz0ahQecSyvh4dMpIyogUEt+NojRrimzllNKwLlyxC3lriEq5v3HNrod6pahJoxomWeBVQpROse3TeCVzZ+6/+6B4ntawHYtPOMWO1F6gnSasFSjQyM2UxukNh0jXHEQ/blzmg0KGyizy3FYVEVca9eheTIlPylyF3t2y8nhO0zGUeMpLyVbUqfBi+Z3Zt0WjWOGlTyVy6IpzXTYQJ6YTHU03n+Mg+7EUZTcKxUob52r8d001lnm+IAWvVTK6z6juiv1sBI+3dzy65+yu6cimwp7GvtPEJLiDNcDCZTlLU12opczT58NwFKVv6Ynh6XU2g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xQ/ew77jr2hYtKOiRjmmJMQ+IWwgAH7M8AI4tJnqpo8=;
+ b=cGIhoE80vrS7PVdm6gpkBjDXvsbwE4G2LtQr0a6nFt25Ox+pKCS7uzpIfCKXX62vA6qyID2ih7OcY5Gm5izrgkYRnbCTTJi0wLfRx5nGvl9RApQdrpFBuHBsOHiwvR1eKr0MmCTAlDKR5waxTKYHC73KK29ijaEfDcYAuTqaSF3lMI3jIP2ufIorX2bodqmRD73FaJZtKkDE25CzTJ0uscfib3QylfqDmo6j7eBWzdYWgPKOwflxZ8m3Z2dc079twJuPGY/587hLD6Rd7sXyt+hPsJM4L1R9sNxGaWf5vnaDvN4Y7gq3m+FvbcwY+ihq+9ZUlsXeZEiUhMQsSVhyKA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xQ/ew77jr2hYtKOiRjmmJMQ+IWwgAH7M8AI4tJnqpo8=;
+ b=CgnP5OKRKJaiIFRQGctwx2b7B2uD+QRA/LOON7zlEcMmztFjHeRmGvbhsMJTjPK36EHricPyL/rXgbw7aq8XIyljUr2PLuZMcPO+MnXaf6CSmU/8oG0DLELGmKq/ftIoLGBpbBiUstAsrb0FS3UShU/WD4w0fqFP/232rX1V9wc=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11) by TYCPR01MB10616.jpnprd01.prod.outlook.com
+ (2603:1096:400:290::8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7897.24; Mon, 26 Aug
+ 2024 02:43:05 +0000
+Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::c568:1028:2fd1:6e11]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
+ ([fe80::c568:1028:2fd1:6e11%5]) with mapi id 15.20.7875.016; Mon, 26 Aug 2024
+ 02:43:05 +0000
+Message-ID: <87cylwqa12.wl-kuninori.morimoto.gx@renesas.com>
+To: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Liam Girdwood <lgirdwood@gmail.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Maxime Ripard <mripard@kernel.org>, Michal Simek <michal.simek@amd.com>, Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@google.com>, Takashi Iwai <tiwai@suse.com>, Thomas Zimmermann <tzimmermann@suse.de>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, linux-omap@vger.kernel.org, linux-sound@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, Sakari Ailus <sakari.ailus@iki.fi>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Subject: [PATCH v3 0/9] of: property: add of_graph_get_next_port/port_endpoint()
+User-Agent: Wanderlust/2.15.9 Emacs/29.3 Mule/6.0
+Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 26 Aug 2024 02:43:05 +0000
+X-ClientProxiedBy: TYCPR01CA0073.jpnprd01.prod.outlook.com
+ (2603:1096:405:3::13) To TYCPR01MB10914.jpnprd01.prod.outlook.com
+ (2603:1096:400:3a9::11)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Juefei Pu <juefei.pu@email.ucr.edu>
-Date: Sat, 24 Aug 2024 15:38:03 -0700
-Message-ID: <CANikGpcJF23qVPYMkjFG084kTP8oo4-9Jkp=JFO+SxB3BMJuKQ@mail.gmail.com>
-Subject: BUG: KASAN: vmalloc-out-of-bounds Write in imageblit
-To: daniel@ffwll.ch, deller@gmx.de, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|TYCPR01MB10616:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2ae8c3dc-d970-40d7-d8b0-08dcc578d00c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|52116014|7416014|376014|366016|38350700014|921020;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?ehjsbjNnr6mLg45O9pS+hInyw3dB349cFXp3N/owvh9fWEIJuzB/A5L1Yvba?=
+ =?us-ascii?Q?FeNJloTIoC68KIf6ffxpLaT2HjvGa3ZFFdFTXJhS03QbtlBtb/ejxc5WbbL6?=
+ =?us-ascii?Q?1H5lep3AyLVKQirSsf5AiaQgZM4AQIib3/Et/xMajDpz7imNnHlOCA9Yc5P2?=
+ =?us-ascii?Q?VhbMM1mW/SO1SVYqpebTuV0irZOKfPAHCh743harC7nzqgmE1UZVBjbBdiMf?=
+ =?us-ascii?Q?A15yBwB9QbzpcjQi0KS4bl5PeROgRu+GA5ZjThETHJvKwE9fHiaX6RwNb8X+?=
+ =?us-ascii?Q?clDXnBvC+42u9Fi5R59e2Zr589XpWTloUmwEXuqCqXqyOPhWF6hsi/4qGf18?=
+ =?us-ascii?Q?Qvg2LegPHLzsiNsILmlvFUO7g3rx8q9qz91xtxXLwU1rSgCjHcj532bmq5GL?=
+ =?us-ascii?Q?gKZY1YKZ5Q8lSz0VIgbTH1WU0yVgG6rT7/hvzkVwpzVwTHzhZ7fbVp4pElPb?=
+ =?us-ascii?Q?Iyik9Q9mrJd1WT66aqoeTPUlQU1Ar8PwE37AXqsR03WtK5Vfg+VSlCD7pKqX?=
+ =?us-ascii?Q?LmFEgqw+ccVRgyNyANE/g5IHRGurpTBa5/ViTyIfrAPEVJRIlFVn/qLAZBZa?=
+ =?us-ascii?Q?HgGBjmQaMKPR9jHUDyDDkiFPNF9ZzYrt7+d74Rmi5WqpwQOvxIDKNtk9NmxZ?=
+ =?us-ascii?Q?+TNx3HraTiMUsSb0st5+StmYqZaMhFyAb9jTBbS4rYWrDByITGEZ3ToZDs1F?=
+ =?us-ascii?Q?w2hA+9Es9JK6jTSo2akSIEcpetOIDWRTl++TYqk6FGQfs83t712P7bGCflqO?=
+ =?us-ascii?Q?hYAkT3ZFqkBn6jQmzS03mYjR11EmIgibFzjOkUVhO1SrfxNzFvhD36gz6vX/?=
+ =?us-ascii?Q?GthPPGH2Ws7RIgbbbiu+F7PJzLrIQux3C7SDjdBqhk/7IMwKWp0/3XX9H2of?=
+ =?us-ascii?Q?XSvIAQHXrLLuAYf0klJyvfXW+Gv705i0I3y5xflx2LDsyeXhs/gMG84e1ij2?=
+ =?us-ascii?Q?IZbBa6XVjQG5KpkfFgOboKhs6gJCxpuZldOWYqLWbnqghOxj4TCc73ZQv17X?=
+ =?us-ascii?Q?CEq2LXGNLPY8VXY5Vaax+1SlWx4bBx2E1xCzQKFYennnwpVjDe4SjteELk8l?=
+ =?us-ascii?Q?HHVccEx/RR0cmUZuE25EKIFSf4ipC/31drNMcuiGZYcpNn0MXDC4gDSjTf6k?=
+ =?us-ascii?Q?M/jvmk5lXtHI29tsOZFycDArp3pKSWppqAT/24W/HYDyIZeDaOzQsjXKHP0D?=
+ =?us-ascii?Q?HvJ6+NNZPrRdCWPlTcTmtw8HCagh/72TQuUg3CapYm/+S5q9OvsQSi8u0J2M?=
+ =?us-ascii?Q?j/9LtHvkMYkyVRK6Df9ulweGPiKXwz8s1q2eYRB7XQNL8n2hL2U56QT2xKhl?=
+ =?us-ascii?Q?UTOmrhmxdDuvYnMO/HtZsVaeFrZfqgH68jgcenOYyQNpKq7uBgn3Ammr5ffQ?=
+ =?us-ascii?Q?GFe84ht1m+kWEBYFe0wet357SNfpXQ0nUb7LlK79NmN/L1/tzHWi13J3rmOx?=
+ =?us-ascii?Q?rNAf7WfuNRw=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(52116014)(7416014)(376014)(366016)(38350700014)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?NtJp7qRvjcJQki7fIgcGSpe0McRmR/NEyyt84VgSvfb+S5NADEee131+OvPA?=
+ =?us-ascii?Q?oiG57ms/xr7AA7MwI/nQcWopj/vA/47q7+K7kLkoBQvdnnPWCjwO5FyCswsT?=
+ =?us-ascii?Q?Hb5c9MphJQfW+LvQbm2paHOjR2pSWor3bU+/8mYTj2xFtes96KkME0kn2tB+?=
+ =?us-ascii?Q?4Y3TPJUJYBVIiYAOGFKLk98rf+DGfBVllYGQGu3jCrKaGw0xZRdLbQQLMXD4?=
+ =?us-ascii?Q?/6DrzBKOE4bY0nZGJPvX76BvaZrf0BO5Yuc0LYmjraJkXjqsalAWkOqjrDld?=
+ =?us-ascii?Q?eOAvyOYPFt/x7PwlodwQHc+zSDonzJHu+qs+1TIMcfKK9aF+OBKNdELgaGLu?=
+ =?us-ascii?Q?pgX6XnjrC8AVxZqfWedI+OUWHuaU5noPnu8l8jYMPTI4a2FoLfZ8UBUHW07o?=
+ =?us-ascii?Q?ZLl2sA2KdcGtSCW9eO4PRRXEo1i+0UZZl8BlwatkcxlLYCKkdTW5LEhacpmG?=
+ =?us-ascii?Q?CiFFzbOUtsHu4BfQs7Fco3kBxH6vh93noIZdJp29u7EDuUXweBGkJd97Xyhe?=
+ =?us-ascii?Q?Hb1cHhbXTbdXa9zfDfKND2a/J7nSDK6E/omXUO2JaJIO7vpPiiqdOxobSBXs?=
+ =?us-ascii?Q?jdeCZHDIKez2KWuu4+tsUNihvkrbIFmhM1kHKE6DwGP8uKZRXB1Fe9Lqhkoy?=
+ =?us-ascii?Q?pn/2wIDyvACYYXWT7GIPGa5Wf3sq+l+cBzFazL4um1Fr0+CpMPmC+2K6WPv/?=
+ =?us-ascii?Q?3XdvpmKWria8Ky0E/XLIPGedXMUYWTPCWMJugzHaH2SlSHMWImKfB7zFyZKq?=
+ =?us-ascii?Q?gq6XKzXIKu5A+biFLuMA1dIONe2J4nnbnxB1C4IQynnke9BFzzYuzsmUyE4t?=
+ =?us-ascii?Q?gytGCNfHUqvAtlHvZqsOiXgYFxPK9fEPpYNNwHadC3egup2BJZyttgSOBK27?=
+ =?us-ascii?Q?0wZGxvq4HLxHw+/Akd7DRiOp3Was7gvRlLpmHuyqOk66ZHQOZ++R5jmaAjuH?=
+ =?us-ascii?Q?4AxjjQp/j+xZc5pc/I7ozlC0bLbzKtBHwF8q9AtBXqOnhRcyzJloLWzbMJLO?=
+ =?us-ascii?Q?4HegE6FGlnWPYlYQIDhje8wAQsrSdcG0NbPaPYGrQz49G5cxzw93Rb2wT0Si?=
+ =?us-ascii?Q?d3JPmnx+m9QLI1Qpx4cc3NpL1/gCfuyY4P/c3vx0k23a2cKaJVeEhH03Y8wL?=
+ =?us-ascii?Q?2KmzQNJJJ0e9kOy4YtZZW43NwEHq/2q5gjq7qZuza1RvXrbxK64Vpbexkc6l?=
+ =?us-ascii?Q?cERi6jLdnUokPWEZRtNO8UyPEPkrSXhWkhUaK8a/nvoif065qPNhmrXH1W1i?=
+ =?us-ascii?Q?ekAb2t6FSjd0JEjjRpwu0fZ+J/kCeZaPAaSjdHYUYwEMuO5u3TV3haTAAoYQ?=
+ =?us-ascii?Q?uztLe1yWKCqWo3GLTGRUse4q0a2r/SnbHJOBfSKQC9gBkYbjSfMIaOOSz3yB?=
+ =?us-ascii?Q?G4YBWudnllrz6BCGzXKc9Vq22wxgz1eZQ0ro/lR1SAcK3Fh/+BU9TKHkTmIJ?=
+ =?us-ascii?Q?WyEV+qQCDG0R8qofWSJc50fqE/05vMx7JNtAb0APQrsY8d1oLit2tzBZt2b6?=
+ =?us-ascii?Q?NsxXr8FcbG+jWP9PmU9KYpkS9MYcPXc1doNVbB7P1zSP70EEcz1eKRqaZEnx?=
+ =?us-ascii?Q?zwdPgYng9KkNXEOKWVOyCO2/uU3mb1g/ZHlEQY7nz3m3pr36hVi5QuiC5oL5?=
+ =?us-ascii?Q?z0l6tpCGaEcqS+q2YLDa0RA=3D?=
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2ae8c3dc-d970-40d7-d8b0-08dcc578d00c
+X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Aug 2024 02:43:05.7986
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: P9SYfVvRbFdx9ITugHfug+9z9LAONsEfWYL4o5YTKHvVxXNkjGG1G6/0IVYJI6t3kRU7ae5Sx+XM3wQsdQEaeQ4FrIob2wvLznL2OKTwJK0K2xDenbXx7zPAsGoiCVqq
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYCPR01MB10616
 
-Hello,
-We found the following issue using syzkaller on Linux v6.10.
-In `fast_imageblit`, there is an out-of-bounds memory access when
-executing `*dst++ = colortab[(*src >> 7) & bit_mask];`
+Hi Rob, Saravana, Tomi, Laurent, Sakari
 
-Although Syzbot has found a similar bug
-(https://syzkaller.appspot.com/bug?extid=3d3864c27a5e770e7654), the
-bug we discovered can be triggered on Linux v6.10. Meanwhile, Syzbot
-failed to trigger the crash for 396 days. Thus, it looks like this is
-a new bug.
+This is v3 patch-set
 
-Unfortunately, the syzkaller failed to generate a reproducer.
-But at least we have the report:
+I have been posting to add new port base for loop function
+as below steps.
 
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit
-drivers/video/fbdev/core/sysimgblt.c:257 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1c22/0x2600
-drivers/video/fbdev/core/sysimgblt.c:326
-Write of size 4 at addr ffffc90002ad9190 by task syz.0.802/17876
+[o] done
+[@] this patch set
 
-CPU: 0 PID: 17876 Comm: syz.0.802 Not tainted 6.10.0 #13
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0x23d/0x360 lib/dump_stack.c:114
- print_address_description+0x77/0x360 mm/kasan/report.c:377
- print_report+0xfd/0x210 mm/kasan/report.c:488
- kasan_report+0x13f/0x170 mm/kasan/report.c:601
- fast_imageblit drivers/video/fbdev/core/sysimgblt.c:257 [inline]
- sys_imageblit+0x1c22/0x2600 drivers/video/fbdev/core/sysimgblt.c:326
- drm_fbdev_generic_defio_imageblit+0x2a/0xf0
-drivers/gpu/drm/drm_fbdev_generic.c:37
- bit_putcs+0x18a3/0x1d90
- fbcon_putcs+0x34f/0x520 drivers/video/fbdev/core/fbcon.c:1288
- con_putc drivers/tty/vt/vt.c:302 [inline]
- complement_pos+0x3f4/0xa70 drivers/tty/vt/vt.c:757
- highlight_pointer drivers/tty/vt/selection.c:63 [inline]
- clear_selection+0x17/0x70 drivers/tty/vt/selection.c:85
- hide_cursor+0x80/0x480 drivers/tty/vt/vt.c:844
- redraw_screen+0x1d7/0xe70 drivers/tty/vt/vt.c:948
- fbcon_blank+0x61f/0xae0 drivers/video/fbdev/core/fbcon.c:2231
- do_unblank_screen+0x294/0x760 drivers/tty/vt/vt.c:4563
- unblank_screen drivers/tty/vt/vt.c:4582 [inline]
- tioclinux+0x186/0x4c0 drivers/tty/vt/vt.c:3357
- vt_ioctl+0x9d4/0x2060 drivers/tty/vt/vt_ioctl.c:761
- tty_ioctl+0x906/0xdb0 drivers/tty/tty_io.c:2803
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:907 [inline]
- __se_sys_ioctl+0xfe/0x170 fs/ioctl.c:893
- do_syscall_x64 arch/x86/entry/common.c:52 [inline]
- do_syscall_64+0x7e/0x150 arch/x86/entry/common.c:83
- entry_SYSCALL_64_after_hwframe+0x67/0x6f
-RIP: 0033:0x7f77eff809b9
-Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48
-89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d
-01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007f77f0e57038 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 00007f77f0145f80 RCX: 00007f77eff809b9
-RDX: 0000000020000580 RSI: 000000000000541c RDI: 0000000000000018
-RBP: 00007f77efff4f70 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 0000000000000000 R14: 00007f77f0145f80 R15: 00007ffd3ddd4628
- </TASK>
+	[o] tidyup of_graph_get_endpoint_count()
+	[o] replace endpoint func - use endpoint_by_regs()
+	[o] replace endpoint func - use for_each()
+	[@] add new port function
 
-Memory state around the buggy address:
- ffffc90002ad9080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90002ad9100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
->ffffc90002ad9180: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                         ^
- ffffc90002ad9200: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90002ad9280: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
+Current Of-graph has "endpoint base" for loop, but doesn't have
+"port base" loop. "endpoint base" loop only is not enough.
+This patch-set add new "port base" for loop, and use it.
+
+v2 -> v3
+	- return NULL if it it doesn't have ports / port
+	- add visible comment on of_graph_get_next_ports()
+
+v1 -> v2
+	- add each Reviewed-by / Acked-by
+	- tidyup/update Kernel Docs
+	- use prev as parameter
+	- update git-log explanation
+	- remove extra changes
+
+
+Kuninori Morimoto (9):
+  of: property: add of_graph_get_next_port()
+  of: property: add of_graph_get_next_port_endpoint()
+  ASoC: test-component: use new of_graph functions
+  ASoC: rcar_snd: use new of_graph functions
+  ASoC: audio-graph-card: use new of_graph functions
+  ASoC: audio-graph-card2: use new of_graph functions
+  gpu: drm: omapdrm: use new of_graph functions
+  fbdev: omapfb: use new of_graph functions
+  media: xilinx-tpg: use new of_graph functions
+
+ drivers/gpu/drm/omapdrm/dss/dpi.c             |   3 +-
+ drivers/gpu/drm/omapdrm/dss/sdi.c             |   3 +-
+ drivers/media/platform/xilinx/xilinx-tpg.c    |   3 +-
+ drivers/of/property.c                         | 134 ++++++++++++++++++
+ drivers/video/fbdev/omap2/omapfb/dss/dpi.c    |   3 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss-of.c |  66 ---------
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |   9 +-
+ drivers/video/fbdev/omap2/omapfb/dss/sdi.c    |   3 +-
+ include/linux/of_graph.h                      |  66 +++++++++
+ include/video/omapfb_dss.h                    |   8 --
+ sound/soc/generic/audio-graph-card.c          |   5 +-
+ sound/soc/generic/audio-graph-card2.c         | 111 +++++++--------
+ sound/soc/generic/test-component.c            |   4 +-
+ sound/soc/sh/rcar/core.c                      |  12 +-
+ 14 files changed, 270 insertions(+), 160 deletions(-)
+
+-- 
+2.43.0
+

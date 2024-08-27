@@ -1,31 +1,31 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 874621C93AB;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 874031BFE07;
 	Tue, 27 Aug 2024 15:26:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724772364; cv=none; b=iaVJ4h7CVftexQRYAH3ayDk0xbLiFaHRVnTU8l62VgX6ceVNX8F9nFzNgvyrk7E+iV1BR9uIA9PIa+lbzcUOf6nwv8xp/h0nr2/lBK1d6469MKxfZrAEObpq3vHFivYD4yLPQX5kpTWKODDIJKGvfs0AOE5nrFds34BLVJ5u0ZA=
+	t=1724772364; cv=none; b=Ut56XV0XOU5zGV/eqMioD40ZO8Kn4ShutRMaHUd9xfUybAY9ViMGBNbxVlhFflGbt4v3bMe8MApD/fJcY7GGAY2WB97q6gR+5Ah05rAjkHaMjvAA3wxjnuosT7Y81e2kqIbN6SrOHkTnGS6W6xRvKvGH0Eo5cEER5EXzkiXk/NE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1724772364; c=relaxed/simple;
-	bh=2fuwEC3Yp225FwaS701NUfjP1g4xTmgB08/zOpmpsAA=;
+	bh=yU1HRW3itAcyR9oaVPrkFjRYW6YZAfrAKd8xjgvUGtk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FpVvR/F8NS9BvgxhFcETKNItzHcesYIYGSglG3pJQ/bOzzGutsRN+XXIGmFIcElVKZ6l1XlS/M/rAEiWU16KsJz9OVPqYQoGD/xFtBCHY/TPUUOyINwMatbinXMiSO8P1GVuSdxrg4Rc5KItJdTJzHXkasBbAri5RNnluD5Qf/8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=DCqt5RYP; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=fgfspnJmdmmIfadxBvB2097OoGChw21wgO78WZvnrj4cKaT9FTv6lVBC5+VZe1q/KOTbaWr5ICvNOr35ih2pQG/2b3YNb8kwnaLTerNbS0j2hOi/GdZDU2uAqAkud5ddqrobF9TMYWj768awmPjkJljQ/L2ycSo9R89YEgM98cQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=iUY18HRY; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="DCqt5RYP"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="iUY18HRY"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1724772359;
-	bh=2fuwEC3Yp225FwaS701NUfjP1g4xTmgB08/zOpmpsAA=;
+	bh=yU1HRW3itAcyR9oaVPrkFjRYW6YZAfrAKd8xjgvUGtk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=DCqt5RYPBHq4y1tFuB7C/JYlnHW4jqqVrEEB1R/smTUMuyK20U4nSdr/FlzcZzJ8W
-	 LwMRCSA5L2wN0ozoBsQGBx7s/HbX0HnQXv3kOU2+TJwq2Zd09JVyIP2jycTHMSXOnL
-	 kwDWf9a5ogwdQi1LGAsMK7jQ3ZgqyDJzn6CJQYGo=
+	b=iUY18HRYTEem0/qjmhokwz2FVxdlGRX4smmQMntU+vzzcP5p1PhlqfanMz0zdFngm
+	 GRCY/Wq6TDzcPI420yStpLPZGadcmeEjWL9DMMbUbQ02Kq2chKgYQpKEkflbnPr6vJ
+	 PROZx+XDTdMjaaXH6wa5FrXUhpH7AOR5XTGKsK4Q=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 27 Aug 2024 17:25:12 +0200
-Subject: [PATCH 1/5] fbdev/efifb: Use stack memory for screeninfo structs
+Date: Tue, 27 Aug 2024 17:25:14 +0200
+Subject: [PATCH 3/5] fbdev: Introduce devm_register_framebuffer()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -34,7 +34,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240827-efifb-sysfs-v1-1-c9cc3e052180@weissschuh.net>
+Message-Id: <20240827-efifb-sysfs-v1-3-c9cc3e052180@weissschuh.net>
 References: <20240827-efifb-sysfs-v1-0-c9cc3e052180@weissschuh.net>
 In-Reply-To: <20240827-efifb-sysfs-v1-0-c9cc3e052180@weissschuh.net>
 To: Peter Jones <pjones@redhat.com>, Helge Deller <deller@gmx.de>, 
@@ -43,76 +43,71 @@ Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724772358; l=1859;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1724772358; l=2207;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=2fuwEC3Yp225FwaS701NUfjP1g4xTmgB08/zOpmpsAA=;
- b=rOkv5WWJdsYyy7gSwo6ETnm+0fpNWf1gQQInzjmRji2pSdC5vaSVpncDd9Wvim18h/qjuGEaS
- 6mXd0NYbotdCVXwSvlogkuLn3iuwWJeBwPQzO8P3C6CInqlgPfHpFPJ
+ bh=yU1HRW3itAcyR9oaVPrkFjRYW6YZAfrAKd8xjgvUGtk=;
+ b=bu4ONSTKd3WZjVd+jzRq5fuyqvqHuGJ/m8lrieSml0bQiOp9hlbHZIyqEkp+oq6l/xlFSO579
+ jXLouV3SJFODtjYY/3KU23UVYxNlKmhAAU6Sugwp1NnEutR8EKtmroX
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-These variables are only used inside efifb_probe().
-Afterwards they are using memory unnecessarily.
+Introduce a device-managed variant of register_framebuffer() which
+automatically unregisters the framebuffer on device destruction.
+This can simplify the error handling and resource management in drivers.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/video/fbdev/efifb.c | 36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 24 ++++++++++++++++++++++++
+ include/linux/fb.h               |  1 +
+ 2 files changed, 25 insertions(+)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index 8dd82afb3452..8bfe0ccbc67a 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -52,24 +52,6 @@ struct efifb_par {
- 	resource_size_t size;
- };
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 4c4ad0a86a50..d17a2daa2483 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -544,6 +544,30 @@ unregister_framebuffer(struct fb_info *fb_info)
+ }
+ EXPORT_SYMBOL(unregister_framebuffer);
  
--static struct fb_var_screeninfo efifb_defined = {
--	.activate		= FB_ACTIVATE_NOW,
--	.height			= -1,
--	.width			= -1,
--	.right_margin		= 32,
--	.upper_margin		= 16,
--	.lower_margin		= 4,
--	.vsync_len		= 4,
--	.vmode			= FB_VMODE_NONINTERLACED,
--};
--
--static struct fb_fix_screeninfo efifb_fix = {
--	.id			= "EFI VGA",
--	.type			= FB_TYPE_PACKED_PIXELS,
--	.accel			= FB_ACCEL_NONE,
--	.visual			= FB_VISUAL_TRUECOLOR,
--};
--
- static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 			   unsigned blue, unsigned transp,
- 			   struct fb_info *info)
-@@ -357,6 +339,24 @@ static int efifb_probe(struct platform_device *dev)
- 	char *option = NULL;
- 	efi_memory_desc_t md;
- 
-+	struct fb_var_screeninfo efifb_defined = {
-+		.activate		= FB_ACTIVATE_NOW,
-+		.height			= -1,
-+		.width			= -1,
-+		.right_margin		= 32,
-+		.upper_margin		= 16,
-+		.lower_margin		= 4,
-+		.vsync_len		= 4,
-+		.vmode			= FB_VMODE_NONINTERLACED,
-+	};
++static void devm_unregister_framebuffer(void *data)
++{
++	struct fb_info *info = data;
 +
-+	struct fb_fix_screeninfo efifb_fix = {
-+		.id			= "EFI VGA",
-+		.type			= FB_TYPE_PACKED_PIXELS,
-+		.accel			= FB_ACCEL_NONE,
-+		.visual			= FB_VISUAL_TRUECOLOR,
-+	};
++	unregister_framebuffer(info);
++}
 +
- 	/*
- 	 * If we fail probing the device, the kernel might try a different
- 	 * driver. We get a copy of the attached screen_info, so that we can
++/**
++ *	devm_register_framebuffer - resource-managed frame buffer device registration
++ *	@dev: device the framebuffer belongs to
++ *	@fb_info: frame buffer info structure
++ *
++ *	Registers a frame buffer device @fb_info to device @dev.
++ *
++ *	Returns negative errno on error, or zero for success.
++ *
++ */
++int
++devm_register_framebuffer(struct device *dev, struct fb_info *fb_info)
++{
++	return devm_add_action_or_reset(dev, devm_unregister_framebuffer, fb_info);
++}
++EXPORT_SYMBOL(devm_register_framebuffer);
++
+ /**
+  *	fb_set_suspend - low level driver signals suspend
+  *	@info: framebuffer affected
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index db7d97b10964..abf6643ebcaf 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -601,6 +601,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ /* fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern void unregister_framebuffer(struct fb_info *fb_info);
++extern int devm_register_framebuffer(struct device *dev, struct fb_info *fb_info);
+ extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
+ extern void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx,
+ 				u32 height, u32 shift_high, u32 shift_low, u32 mod);
 
 -- 
 2.46.0

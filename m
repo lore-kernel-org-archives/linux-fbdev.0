@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1F1B1B151B;
-	Thu, 29 Aug 2024 14:54:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21F4B1A255C;
+	Thu, 29 Aug 2024 15:41:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724943276; cv=none; b=LkBSU0ALh92+l2yNGdHCfCrIXaCX5xcOZpB99v7NOWSmWtPU7Z/QjQeUF5uNHAly5PoD1JPpdS60PT1wIUIIi3ZoYHunLma9hEF7lRbOCxjsQZNAJ0zGphfWJJIoyQXHa/Scsqyn3rflL5sjg8wJmimzbFxSq2zUiYiE+B9ZZW8=
+	t=1724946065; cv=none; b=Q3a7XvQD7G+jwZdmUDlXdkeByMdMSmlSLg0G7A2V1ZOxxU2qYHwvl7qGY3GB8L47KGgX39pE21SNkRBDCxQM+hZfqfPhxIHFME67FVGEnIUqK7hwv0obEGHhRKPtIOGDA6bcKuOb6xH/ls1r1LCjKpZceMv/0tHnhOy1qSO5DxI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724943276; c=relaxed/simple;
-	bh=94sqycuEg7LZE3IfoAS/UYJHpdhV1CbtJdmFG3iWS1U=;
+	s=arc-20240116; t=1724946065; c=relaxed/simple;
+	bh=/zGGPt8jYtuq/1RE9arY1RA1H+rfW2qjhyrvYnQ62ps=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=II4rYzkPnCx8HXlGMKBBimi7h/9hsjUmIUORsBwuIa+PRgLfiQbDdSofqbuzIor4zHfuHH7Gz0N6aHE3kPEcNpGsuBtl9ygWOEPlVuR7crWeBQhJCm2PtiW0as3IbP+V25hgLAURIC796hY60QxcNpTPNTe2ucP3onJ6IMnhYj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y/hg1oCh; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=rrfKPslHzUoEwUIKVZ4X6064PaFa/UgMpPxgOqEdB9H+5n5nr3hDmZMu4qtpTLLxMXZgSHbePx68pspePszkKaB8o4zNVPlD2Tqx4adAC/a/cvDGn23u5318R4oVB2+yVnbE1kUb0+U7LpgYpzhgCSPazFZlHSnS7I6cNTKCPnU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pb6gtWIT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y/hg1oCh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB876C4CEC3;
-	Thu, 29 Aug 2024 14:54:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pb6gtWIT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 519BEC4CEC1;
+	Thu, 29 Aug 2024 15:41:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724943276;
-	bh=94sqycuEg7LZE3IfoAS/UYJHpdhV1CbtJdmFG3iWS1U=;
+	s=k20201202; t=1724946064;
+	bh=/zGGPt8jYtuq/1RE9arY1RA1H+rfW2qjhyrvYnQ62ps=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Y/hg1oCh+Ij6W4jgfibIcNLBH2y6qwXWngwcUcGr4b3eYryJduYRVobwRt6oxc42R
-	 H6f1zYxHYCrS7niInBO5J0AjCy8ecFWqNseOf/cmogScebBhrEna8OTyktEs8yEjrJ
-	 175Q0V6vAr2G+DQqxPtZGIdZNe+qIREnbKSj8qwgAhz5FNxTFMhz5yEsTHAxdoLS3i
-	 hI3xZDeYhtA/QPLEtmCboawwvUP6HlSbtj5geHqzV/za/0DVs4yDF5mOzTCBINi1xj
-	 x4gwu3HxpENBZpP5e0AkTwn4UUpF/Eb8me1jX0fvP6HHtr585Fv4o2jsG3R7yMmQpr
-	 Zda3hB26yi+pQ==
-Date: Thu, 29 Aug 2024 09:54:34 -0500
+	b=pb6gtWIT0umdrydivzW3q3x+x8RffD3d4f4N9Pxo5JhkzOL8GdkTxGt2RfEsuuGSi
+	 gE3mHFkn/f7T7k6uL9vo3yI2u6IHdmN0Djc2HAjxOkgRhb/8WyNcUIEoyUisdKE1Br
+	 ghCEROt32J4MuG/nNAVHOMqq3lqSY6cFNaK47i8HiZDVeuY57YEG3cLwyCD1P5xOzQ
+	 G+KkCjkmLXNb6kanoNJHrT/6bKRODeYUrHYs+tIdkaIx9Z1/kXB9zOZuQXC20gd4+x
+	 T3IjAROTorQiGQtwEgGY9ag1AaUpM/U1aUQi70qibxS+PnWbwFTyMHZsQvuRrIJvO7
+	 nKj26aueNEWLQ==
+Date: Thu, 29 Aug 2024 10:41:02 -0500
 From: Rob Herring <robh@kernel.org>
 To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
@@ -46,10 +46,10 @@ Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
 	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
 	linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
 	linux-sound@vger.kernel.org, Sakari Ailus <sakari.ailus@iki.fi>
-Subject: Re: [PATCH v4 9/9] media: xilinx-tpg: use new of_graph functions
-Message-ID: <20240829145434.GA465065-robh@kernel.org>
+Subject: Re: [PATCH v4 4/9] ASoC: rcar_snd: use new of_graph functions
+Message-ID: <20240829154102.GB465065-robh@kernel.org>
 References: <87bk1d2pvt.wl-kuninori.morimoto.gx@renesas.com>
- <87y14h1b9f.wl-kuninori.morimoto.gx@renesas.com>
+ <875xrl2pur.wl-kuninori.morimoto.gx@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -58,42 +58,44 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87y14h1b9f.wl-kuninori.morimoto.gx@renesas.com>
+In-Reply-To: <875xrl2pur.wl-kuninori.morimoto.gx@renesas.com>
 
-On Wed, Aug 28, 2024 at 05:12:28AM +0000, Kuninori Morimoto wrote:
+On Wed, Aug 28, 2024 at 05:11:56AM +0000, Kuninori Morimoto wrote:
 > Now we can use new port related functions for port parsing. Use it.
 > 
 > Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> Reviewed-by: Tomi Valkeinen <tomi.valkeinen+renesas@ideasonboard.com>
+> Acked-by: Mark Brown <broonie@kernel.org>
 > ---
->  drivers/media/platform/xilinx/xilinx-tpg.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  sound/soc/sh/rcar/core.c | 21 +++++++--------------
+>  1 file changed, 7 insertions(+), 14 deletions(-)
 > 
-> diff --git a/drivers/media/platform/xilinx/xilinx-tpg.c b/drivers/media/platform/xilinx/xilinx-tpg.c
-> index e05e528ffc6f7..a25f216b2513c 100644
-> --- a/drivers/media/platform/xilinx/xilinx-tpg.c
-> +++ b/drivers/media/platform/xilinx/xilinx-tpg.c
-> @@ -13,6 +13,7 @@
->  #include <linux/gpio/consumer.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> +#include <linux/of_graph.h>
->  #include <linux/platform_device.h>
->  #include <linux/xilinx-v4l2-controls.h>
+> diff --git a/sound/soc/sh/rcar/core.c b/sound/soc/sh/rcar/core.c
+> index 15cb5e7008f9f..281936ece760b 100644
+> --- a/sound/soc/sh/rcar/core.c
+> +++ b/sound/soc/sh/rcar/core.c
+> @@ -1237,7 +1237,7 @@ static int rsnd_dai_of_node(struct rsnd_priv *priv, int *is_graph)
+>  {
+>  	struct device *dev = rsnd_priv_to_dev(priv);
+>  	struct device_node *np = dev->of_node;
+> -	struct device_node *ports, *node;
+> +	struct device_node *node;
+>  	int nr = 0;
+>  	int i = 0;
 >  
-> @@ -744,7 +745,7 @@ static int xtpg_parse_of(struct xtpg_device *xtpg)
->  		}
->  
+> @@ -1277,16 +1277,12 @@ static int rsnd_dai_of_node(struct rsnd_priv *priv, int *is_graph)
+>  	/*
+>  	 * Audio-Graph-Card
+>  	 */
+> -	for_each_child_of_node(np, ports) {
+> -		if (!of_node_name_eq(ports, "ports") &&
+> -		    !of_node_name_eq(ports, "port"))
+> -			continue;
+> -		priv->component_dais[i] = of_graph_get_endpoint_count(ports);
+> +	for_each_of_graph_ports(np, ports) {
+> +		priv->component_dais[i] = of_graph_get_port_count(ports);
 
-This function is looping over port nodes, why don't you make it use 
-for_each_of_graph_port()?
+These are not equivalent. Besides now working with multiple 'ports' 
+nodes, it's possible to have a port node without an endpoint populated 
+for example.
 
->  		if (nports == 0) {
-> -			endpoint = of_get_next_child(port, NULL);
-> +			endpoint = of_graph_get_next_port_endpoint(port, NULL);
->  			if (endpoint)
->  				has_endpoint = true;
->  			of_node_put(endpoint);
-> -- 
-> 2.43.0
-> 
+Rob

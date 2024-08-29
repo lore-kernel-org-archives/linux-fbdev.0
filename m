@@ -1,137 +1,99 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7010015821A;
-	Thu, 29 Aug 2024 07:52:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1F1B1B151B;
+	Thu, 29 Aug 2024 14:54:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1724917948; cv=none; b=WJpysyQvp8GzVzYorB/MytiTL3eU16J30Lrw6A3U+5EiPT+sURRHqjovMJPu1vKz4C4nksWpHa4vnu8DMjZtBsVEUjmcuVupdzXMrs6AE6R9GhNKzlAmisUosRhHxgarDKFpV8aKEE+jNwMoR7BJhNQCb5cxf+FkiKJQ6FObj/c=
+	t=1724943276; cv=none; b=LkBSU0ALh92+l2yNGdHCfCrIXaCX5xcOZpB99v7NOWSmWtPU7Z/QjQeUF5uNHAly5PoD1JPpdS60PT1wIUIIi3ZoYHunLma9hEF7lRbOCxjsQZNAJ0zGphfWJJIoyQXHa/Scsqyn3rflL5sjg8wJmimzbFxSq2zUiYiE+B9ZZW8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1724917948; c=relaxed/simple;
-	bh=uHHrwlh6NO4lynRgJVRj9JGGKp1nBxW91DGb8LwoweY=;
+	s=arc-20240116; t=1724943276; c=relaxed/simple;
+	bh=94sqycuEg7LZE3IfoAS/UYJHpdhV1CbtJdmFG3iWS1U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QCTcqA9LRM+qAq35d+uldhSnHioi12+o7cC35Ua99uKoXZMJk76kk03t3c/gNgdGA+aDxqDLkY5f+jYMKTYDhScR0Zx8dYMIUqxexnpNN5Npf78uXnMwIbKn3s3NHq4FBGKCdvWTOY7/vPmjVS1UfhQlzDcykBtnVCWzpvZ2sKg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=PfplbuS/; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=II4rYzkPnCx8HXlGMKBBimi7h/9hsjUmIUORsBwuIa+PRgLfiQbDdSofqbuzIor4zHfuHH7Gz0N6aHE3kPEcNpGsuBtl9ygWOEPlVuR7crWeBQhJCm2PtiW0as3IbP+V25hgLAURIC796hY60QxcNpTPNTe2ucP3onJ6IMnhYj4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y/hg1oCh; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="PfplbuS/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1724917938;
-	bh=uHHrwlh6NO4lynRgJVRj9JGGKp1nBxW91DGb8LwoweY=;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y/hg1oCh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB876C4CEC3;
+	Thu, 29 Aug 2024 14:54:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724943276;
+	bh=94sqycuEg7LZE3IfoAS/UYJHpdhV1CbtJdmFG3iWS1U=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=PfplbuS/TCLHs5K4HQfGnN+bULazNiEN4fI3JE88060sP7dncLfG0MC5QQwOrsSC4
-	 rny6mvF2RrSyukXrleJG+n7A0igxz0OsmmawYSZ7UujDipNjDT3btT/HDEgGEMnn4i
-	 fF7PIFYSDVrE7FOYmp0ecQbklhrGLjYmng3ImcgM=
-Date: Thu, 29 Aug 2024 09:52:17 +0200
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: Helge Deller <deller@gmx.de>
-Cc: Peter Jones <pjones@redhat.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] fbdev/efifb: Use stack memory for screeninfo structs
-Message-ID: <b50388e8-fa5a-40aa-98f8-2759045cbfaa@t-8ch.de>
-References: <20240827-efifb-sysfs-v1-0-c9cc3e052180@weissschuh.net>
- <20240827-efifb-sysfs-v1-1-c9cc3e052180@weissschuh.net>
- <fef5bc70-3921-4562-b9d4-beccc76440a6@gmx.de>
+	b=Y/hg1oCh+Ij6W4jgfibIcNLBH2y6qwXWngwcUcGr4b3eYryJduYRVobwRt6oxc42R
+	 H6f1zYxHYCrS7niInBO5J0AjCy8ecFWqNseOf/cmogScebBhrEna8OTyktEs8yEjrJ
+	 175Q0V6vAr2G+DQqxPtZGIdZNe+qIREnbKSj8qwgAhz5FNxTFMhz5yEsTHAxdoLS3i
+	 hI3xZDeYhtA/QPLEtmCboawwvUP6HlSbtj5geHqzV/za/0DVs4yDF5mOzTCBINi1xj
+	 x4gwu3HxpENBZpP5e0AkTwn4UUpF/Eb8me1jX0fvP6HHtr585Fv4o2jsG3R7yMmQpr
+	 Zda3hB26yi+pQ==
+Date: Thu, 29 Aug 2024 09:54:34 -0500
+From: Rob Herring <robh@kernel.org>
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+	Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,
+	Saravana Kannan <saravanak@google.com>,
+	Takashi Iwai <tiwai@suse.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+	linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-sound@vger.kernel.org, Sakari Ailus <sakari.ailus@iki.fi>
+Subject: Re: [PATCH v4 9/9] media: xilinx-tpg: use new of_graph functions
+Message-ID: <20240829145434.GA465065-robh@kernel.org>
+References: <87bk1d2pvt.wl-kuninori.morimoto.gx@renesas.com>
+ <87y14h1b9f.wl-kuninori.morimoto.gx@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fef5bc70-3921-4562-b9d4-beccc76440a6@gmx.de>
+In-Reply-To: <87y14h1b9f.wl-kuninori.morimoto.gx@renesas.com>
 
-On 2024-08-28 19:42:51+0000, Helge Deller wrote:
-> On 8/27/24 17:25, Thomas Weißschuh wrote:
-> > These variables are only used inside efifb_probe().
-> > Afterwards they are using memory unnecessarily.
+On Wed, Aug 28, 2024 at 05:12:28AM +0000, Kuninori Morimoto wrote:
+> Now we can use new port related functions for port parsing. Use it.
 > 
-> Did you check if this change really saves some memory?
-
-Nope...
-
-> With your change, the compiler will either create a hidden
-> structure which it uses then, or it generates assembly
-> instructions to fill the struct at runtime.
-> Both options may not actually reduce the memory footprint...
-
-Thanks for the explanation, it makes sense.
-
-On advantage of the on-stack data would be future-proofing.
-Efi efifb_probe() overrides some fields in these structs only in certain
-codepaths then the globally shared data could become inconsistent.
-But that's not the case today.
-
-> Another option might be to mark the static struct __initdata
-> if you expect another card to take over before the memory is
-> freed at runtime. But I'm not sure if it's worth possible
-> implications.
-
-Agreed.
-
-> Helge
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> Reviewed-by: Tomi Valkeinen <tomi.valkeinen+renesas@ideasonboard.com>
+> ---
+>  drivers/media/platform/xilinx/xilinx-tpg.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> > Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-> > ---
-> >   drivers/video/fbdev/efifb.c | 36 ++++++++++++++++++------------------
-> >   1 file changed, 18 insertions(+), 18 deletions(-)
-> > 
-> > diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> > index 8dd82afb3452..8bfe0ccbc67a 100644
-> > --- a/drivers/video/fbdev/efifb.c
-> > +++ b/drivers/video/fbdev/efifb.c
-> > @@ -52,24 +52,6 @@ struct efifb_par {
-> >   	resource_size_t size;
-> >   };
-> > 
-> > -static struct fb_var_screeninfo efifb_defined = {
-> > -	.activate		= FB_ACTIVATE_NOW,
-> > -	.height			= -1,
-> > -	.width			= -1,
-> > -	.right_margin		= 32,
-> > -	.upper_margin		= 16,
-> > -	.lower_margin		= 4,
-> > -	.vsync_len		= 4,
-> > -	.vmode			= FB_VMODE_NONINTERLACED,
-> > -};
-> > -
-> > -static struct fb_fix_screeninfo efifb_fix = {
-> > -	.id			= "EFI VGA",
-> > -	.type			= FB_TYPE_PACKED_PIXELS,
-> > -	.accel			= FB_ACCEL_NONE,
-> > -	.visual			= FB_VISUAL_TRUECOLOR,
-> > -};
-> > -
-> >   static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> >   			   unsigned blue, unsigned transp,
-> >   			   struct fb_info *info)
-> > @@ -357,6 +339,24 @@ static int efifb_probe(struct platform_device *dev)
-> >   	char *option = NULL;
-> >   	efi_memory_desc_t md;
-> > 
-> > +	struct fb_var_screeninfo efifb_defined = {
-> > +		.activate		= FB_ACTIVATE_NOW,
-> > +		.height			= -1,
-> > +		.width			= -1,
-> > +		.right_margin		= 32,
-> > +		.upper_margin		= 16,
-> > +		.lower_margin		= 4,
-> > +		.vsync_len		= 4,
-> > +		.vmode			= FB_VMODE_NONINTERLACED,
-> > +	};
-> > +
-> > +	struct fb_fix_screeninfo efifb_fix = {
-> > +		.id			= "EFI VGA",
-> > +		.type			= FB_TYPE_PACKED_PIXELS,
-> > +		.accel			= FB_ACCEL_NONE,
-> > +		.visual			= FB_VISUAL_TRUECOLOR,
-> > +	};
-> > +
-> >   	/*
-> >   	 * If we fail probing the device, the kernel might try a different
-> >   	 * driver. We get a copy of the attached screen_info, so that we can
-> > 
+> diff --git a/drivers/media/platform/xilinx/xilinx-tpg.c b/drivers/media/platform/xilinx/xilinx-tpg.c
+> index e05e528ffc6f7..a25f216b2513c 100644
+> --- a/drivers/media/platform/xilinx/xilinx-tpg.c
+> +++ b/drivers/media/platform/xilinx/xilinx-tpg.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/gpio/consumer.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> +#include <linux/of_graph.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/xilinx-v4l2-controls.h>
+>  
+> @@ -744,7 +745,7 @@ static int xtpg_parse_of(struct xtpg_device *xtpg)
+>  		}
+>  
+
+This function is looping over port nodes, why don't you make it use 
+for_each_of_graph_port()?
+
+>  		if (nports == 0) {
+> -			endpoint = of_get_next_child(port, NULL);
+> +			endpoint = of_graph_get_next_port_endpoint(port, NULL);
+>  			if (endpoint)
+>  				has_endpoint = true;
+>  			of_node_put(endpoint);
+> -- 
+> 2.43.0
 > 

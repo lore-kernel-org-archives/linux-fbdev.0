@@ -1,149 +1,203 @@
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA99916D332;
-	Fri, 30 Aug 2024 08:25:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3EB216C877;
+	Fri, 30 Aug 2024 08:44:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725006347; cv=none; b=fMuprCTvR2ppPb4LwW0GHy9exk0/wvkNkaeewK1FVmbGmVPMBXfI0Tbj0tTAEjzHweWoQIwXMT2LaX6PIWr4Yx6PX7IHIh8jLW3xcGxMPGIGGSSBcWr6mak2ipDf2riFDNdy9es4WF1p7Xy9urpctOSVhuC4uRmPpr4mgvFLlDE=
+	t=1725007462; cv=none; b=FIUUKq9pPNDY1GZQp0PvRbvBFK0kSeFNvetVVl01VGtyNwdEQfrIbrvmYDb3Zlx6Irpoz0DvhFd7bk4DchTz6hDnvzF7v8cD/Ms7ppM8pTIx3Vh5/wAjT26gS0QHOfZ3ddWVBwBUi+Y8Yhh43ibh0YnMEL28h0t2mae9/anBj5k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725006347; c=relaxed/simple;
-	bh=pNKIxLJE4wGsG4I7ubN5qge1eo8HE1IiZV9n0njwfow=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=B7lgaKvSvPaS3PxpUh5SZmHOj6ttFy0zzW1JOsCxCXDfPom3vpK7FqBpgCr7AIpk6VjGnRDeNv9lSCzybohqyLShOy737zVxZiBgQ5OpcOuXuRUjmaue6dsS0vUHTi+J9TrHNqbDPl+DYSNMPTfXqaKaVixcSKgkH4C8tk8GpKA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=spasswolf@web.de header.b=whEbelLn; arc=none smtp.client-ip=212.227.15.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1725007462; c=relaxed/simple;
+	bh=5l9LT+yQd21wKn8z3Hdv6J3wVHOt//7jH6sgUAebt4Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XXlZK/iCTuLdPEvvK2wqBLLOxp11UmgcEj30pC9uNCa4FoGKztLtSEonEhp9t2WHiI1vZ0cwL9MrgAW0OtjhRYMStw2nxmNnOf65Wma5bOhz7o/3UGWsiw3G8EG0gYeZ6HzeZzdPqaoYusezATTXw5ZNVmA1sc9Vg1o8grdgpn8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=qP8dd8v7; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=spasswolf@web.de header.b="whEbelLn"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1725006337; x=1725611137; i=spasswolf@web.de;
-	bh=rLZNMuyCRmqs3FEvJHEFsz3u3ucAr75iaGC9Dy8BKeY=;
-	h=X-UI-Sender-Class:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-	 References:Content-Type:MIME-Version:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=whEbelLn2hSjnnNyiLpL6mMP+Pfx+JUh+Ua86RAIqke+k0qqMtWExoU0KKq5b487
-	 Lr9Ta9HV61FfvtZjldD9t9M0lNuEZtmplfRDholm6BSPQu9lP/cg+QRUHae2ygfGl
-	 6SeRT4kyVHnSRs98oXEW4z8y7QxiWQYe5sEYzzWAfmfSBZlPaU7LQoH8C2quFKEH1
-	 /udxZ9qd17KKtmgWoAXOz1MDxepSvRQzbrD+hnHoilye36ufj5Cjzi8VyH35+ZH0J
-	 qOftVbHG5lXhXgsBnGnGmqMewvKEM+TXXJ8nswhvHY32IWgtNFtdB4zpdbD+f1Fmo
-	 WnN9tC1H536uQ4K96g==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.0.101] ([84.119.92.193]) by smtp.web.de (mrweb005
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1MkElZ-1sLNqS2vqz-00qZcc; Fri, 30
- Aug 2024 10:25:37 +0200
-Message-ID: <7fec4df2e44ea2b11ac617d1a4ed5cbb49214f7b.camel@web.de>
-Subject: Re: [PATCH 3/5] fbdev: Introduce devm_register_framebuffer()
-From: Bert Karwatzki <spasswolf@web.de>
-To: Thomas =?ISO-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>, Helge Deller
-	 <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>, Peter Jones
-	 <pjones@redhat.com>, spasswolf@web.de
-Date: Fri, 30 Aug 2024 10:25:37 +0200
-In-Reply-To: <8b52669c-4c99-45e2-8b5e-9348e5e00f70@t-8ch.de>
-References: <20240827-efifb-sysfs-v1-0-c9cc3e052180@weissschuh.net>
-	 <20240827-efifb-sysfs-v1-3-c9cc3e052180@weissschuh.net>
-	 <8b52669c-4c99-45e2-8b5e-9348e5e00f70@t-8ch.de>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.53.2-1 
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="qP8dd8v7"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1725007450; x=1725612250; i=deller@gmx.de;
+	bh=aSOFcQ9mNY2G8yraHCG3PXqH/Av6bV+gKpHSyyMmSOw=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=qP8dd8v7bocDxP3C+rBerpfLJhdSR5WrH2o5HBqhaBkdDp7tSuXN7I8GRQn3Z+YY
+	 QXLERWXcfOo+SXLArOU+hQRm9IrMnWRICbk865KqGHx1bKLTINStE9sspgO/A1Zq8
+	 Di7oNcJGlm831GPptJdRbo1PUQbtti2+YR2uDrKRuG1x3uxN/9bXzuWw/UCKx+hWe
+	 KpMHQr+rQnbQW60sIpaQ3ROoHkr5YnVfyQkOu6x3HOJl6fp9RdjK6Bw3M+km6D2tz
+	 61v5ueknJNJA7R5+Y5nlnRFJYhtRW5zDMrXRzGvbuZviRLIjDwXRgoBhLNL0VgzyT
+	 UFf6K5HWGpNwZOLf/w==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.63.126]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MdNcA-1sAcUE0W00-00fslE; Fri, 30
+ Aug 2024 10:44:10 +0200
+Message-ID: <72396a87-bc41-4b15-924b-7bcd6851bed9@gmx.de>
+Date: Fri, 30 Aug 2024 10:44:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/5] fbdev: Introduce devm_register_framebuffer()
+To: Bert Karwatzki <spasswolf@web.de>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?=
+ <linux@weissschuh.net>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
+ Peter Jones <pjones@redhat.com>
+References: <20240827-efifb-sysfs-v1-0-c9cc3e052180@weissschuh.net>
+ <20240827-efifb-sysfs-v1-3-c9cc3e052180@weissschuh.net>
+ <8b52669c-4c99-45e2-8b5e-9348e5e00f70@t-8ch.de>
+ <7fec4df2e44ea2b11ac617d1a4ed5cbb49214f7b.camel@web.de>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <7fec4df2e44ea2b11ac617d1a4ed5cbb49214f7b.camel@web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:+FdI8o/2YrKjm68Lbh/q8MiS51hHZaxjW9Zbi2U4FBolgcbKulo
- LONFJnjTZHwQfC2kKD3MMzfPdlK50LqMksqoWPGQ3LKkuRRN9fHuLljGNOIAK/kX1pBkvK3
- NXEI1REb/ggvBmb3OCFLWdLoS9Bdc3y38EdmCG5RYlbRPY/tdVTfxxkr3MS+iLRkMe+zns5
- FH0LgYlG2BWUjo/b3uNGA==
+X-Provags-ID: V03:K1:hngS1JXrPj/9htsgwIquLsRFYuB5Hf1vJt3rU6gnfiHS/enuoNy
+ +diz/OCKx2Hu2r6QAD/QgQfDzoAhrDIciJBgLIPVR0BGKm7+Ai/HTJ3WXp5jVnaHK9sVB2J
+ u9QZfTzcJFihG/oBVmXCGzTsoJDVd/F1Rn81wUiKdYhl8nC7x1NF8JsJe85VM4MPlSvq7oK
+ 5+Rbr/1J0/GbO/TCzYIXQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:CfBl2Kn8HZs=;9YkQpnR9CawyvMWZMzuLGWuBe1i
- dWwspHZi2hyg5I/AuGkBGWx57cItlhKEn4kkbOgkESzt5PxSsFyHZkIlsOg81QZ5dNur9NBXs
- GWNtf0MJ5mIm51K6e0/8u+6gCeNMOdoe6XL/oWfZTvO1BTDYv9fVzpql92t/np/JmUCiK0cSa
- jxE4vYaE+EbL2apwHWkGVKonGJvHzgD17YOnpZglIehkZAvkRULSHWJ9fu1hdUbuQqx0SC9vb
- RrHN2BVwZrau6MLfPADF1bETfGKmOI53omyyRqEeeNCgW+0cOYLp5ohJ9MstP1NrXCEkNEoL2
- j9Cq/4ApwdkDxU1YlDrhl9Z6wfczB/EzMlxR7DCRTLnT3Kuvelll+HdxJiHr6oVkvhxh0JQ/5
- ewKpyqcAIzUAMjFTd2EegfwcrFUETtc//MElGX52WXGzvS3BNhsdDeGaIyJi62hAX+DdhFP9h
- 2jODfnB+N0ual2+sZghuXBMKy8aOiiyResJGMVhd+ugC//P4Aa7UfxQT41RoxncEoahtwAJ4P
- yQiHzFqud04yk8IaaqTRtOiwyoAxlZgS4rOQgsBUZby6OXzgW+qmEhOP3+qdqt5Ok3AYI9jpE
- fIDMjLBqFMlNXQOT63igWy19DS81/u8D/t8lfhHztjY/m3uCH9nv3o4pS7qj18hMh1EiNtUDE
- kHyFC9t/V1DTwnxjKgGmGtkoPg6Pahy7UWts5FE8kIc9aOluRyzrUz5mKnWSsSyB7s1ZRDzDF
- ZwCUMXxbAU3AXaNUXUZzQrplbmy/AIu3ODwePPOtHvzs1Kisk96GNvM7+LMcg2q8JENDJQgfL
- vFCx4rerxIl3+S2J5O9hKWCw==
+UI-OutboundReport: notjunk:1;M01:P0:98pAO8mO7IY=;88wlBK4YOwUq3AiS/SleQQaZwBO
+ IU4+tmVeP1yAc3WzZqvOx5jk104a34FrWjxLlPdStEjxAr1MchzywH+CcPF9RXZaEnQcw5vxO
+ N0VYozJULHLa1j3/4xPOCHVsYTYJOniS6TPbm4bQIUCJAC82oFnNUx56dv0Syy8lS6x4s42a6
+ +YzHMOg0dADIZaMNk95qBFquwWyRVjKRQ5WwoW7GL+f0yFVjUFEWTtGyFSW7nMOx6wC0BLKbD
+ 4xNWeGOFJJkTrrW1JqXmSes4TRnUVDy6v4DTRzJZZiplQs+Yj//HkvMX039/QNkNgoTa+0VdA
+ /cx8UaCyPpQ7fzFHMFvNhUIS5cW1BAHGrSw6rAHNOAzkC9RW39DMdWUCGOdV6SDIuL1hqYE1d
+ 8PtFvAOEXZ88rPxhRukp/pK8Ol4EdtRj8L1NzcaQ+6d6kfu2f0GefuI595WmQF71rueQ/OiAd
+ 6A7OS0bROTbEs803lWLWYTAOFUr4aN/Cdo7S17kyumRogiCxCZZXaiGSLV5urDTxXuzmSsmCd
+ 7uVR6FeBzYVFGlSaZDAojJ4zIuA9wKhVA0fi0gzbtfRypTGVXYmuWekcFX1jq+xhM8p3sS2i0
+ axqxcqPrMV1gCFh445p9E3VD9gx3umFxS+LfmTKCJCAjBH8+++sDri7mv5w9JMI/A3F+NUAiT
+ XHqOJbbSI3pELFHZ6/YmAXCBQIcBXJ3AyivP7JpiSy78SNHtfzQK8UfJbLb2NtxZFfhvTuXcO
+ r+ZBdqsVcCPTeHRSMqBGAl9fQiW50yDmIIS9L80ETvjRHAreyg9lG/Az+7WOubiifXNgq8Vfa
+ Abph6iIT2ys0UR1WHEi4tQng==
 
-Am Freitag, dem 30.08.2024 um 09:17 +0200 schrieb Thomas Wei=C3=9Fschuh:
-> Hi everybody,
->
-> On 2024-08-27 17:25:14+0000, Thomas Wei=C3=9Fschuh wrote:
-> > Introduce a device-managed variant of register_framebuffer() which
-> > automatically unregisters the framebuffer on device destruction.
-> > This can simplify the error handling and resource management in driver=
+On 8/30/24 10:25, Bert Karwatzki wrote:
+> Am Freitag, dem 30.08.2024 um 09:17 +0200 schrieb Thomas Wei=C3=9Fschuh:
+>> Hi everybody,
+>>
+>> On 2024-08-27 17:25:14+0000, Thomas Wei=C3=9Fschuh wrote:
+>>> Introduce a device-managed variant of register_framebuffer() which
+>>> automatically unregisters the framebuffer on device destruction.
+>>> This can simplify the error handling and resource management in driver=
 s.
->
-> Bert reported that this series broke his framebuffer ([0], [1]).
->
-> [0] https://lore.kernel.org/lkml/20240829224124.2978-1-spasswolf@web.de/
-> [1] https://lore.kernel.org/lkml/20240829230438.3226-1-spasswolf@web.de/
->
-> > Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
-> > ---
-> >  drivers/video/fbdev/core/fbmem.c | 24 ++++++++++++++++++++++++
-> >  include/linux/fb.h               |  1 +
-> >  2 files changed, 25 insertions(+)
-> >
-> > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/co=
+>>
+>> Bert reported that this series broke his framebuffer ([0], [1]).
+>>
+>> [0] https://lore.kernel.org/lkml/20240829224124.2978-1-spasswolf@web.de=
+/
+>> [1] https://lore.kernel.org/lkml/20240829230438.3226-1-spasswolf@web.de=
+/
+>>
+>>> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
+>>> ---
+>>>   drivers/video/fbdev/core/fbmem.c | 24 ++++++++++++++++++++++++
+>>>   include/linux/fb.h               |  1 +
+>>>   2 files changed, 25 insertions(+)
+>>>
+>>> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/co=
 re/fbmem.c
-> > index 4c4ad0a86a50..d17a2daa2483 100644
-> > --- a/drivers/video/fbdev/core/fbmem.c
-> > +++ b/drivers/video/fbdev/core/fbmem.c
-> > @@ -544,6 +544,30 @@ unregister_framebuffer(struct fb_info *fb_info)
->
-> [..]
->
-> > +/**
-> > + *	devm_register_framebuffer - resource-managed frame buffer device r=
+>>> index 4c4ad0a86a50..d17a2daa2483 100644
+>>> --- a/drivers/video/fbdev/core/fbmem.c
+>>> +++ b/drivers/video/fbdev/core/fbmem.c
+>>> @@ -544,6 +544,30 @@ unregister_framebuffer(struct fb_info *fb_info)
+>>
+>> [..]
+>>
+>>> +/**
+>>> + *	devm_register_framebuffer - resource-managed frame buffer device r=
 egistration
-> > + *	@dev: device the framebuffer belongs to
-> > + *	@fb_info: frame buffer info structure
-> > + *
-> > + *	Registers a frame buffer device @fb_info to device @dev.
-> > + *
-> > + *	Returns negative errno on error, or zero for success.
-> > + *
-> > + */
-> > +int
-> > +devm_register_framebuffer(struct device *dev, struct fb_info *fb_info=
+>>> + *	@dev: device the framebuffer belongs to
+>>> + *	@fb_info: frame buffer info structure
+>>> + *
+>>> + *	Registers a frame buffer device @fb_info to device @dev.
+>>> + *
+>>> + *	Returns negative errno on error, or zero for success.
+>>> + *
+>>> + */
+>>> +int
+>>> +devm_register_framebuffer(struct device *dev, struct fb_info *fb_info=
 )
-> > +{
-> > +	return devm_add_action_or_reset(dev, devm_unregister_framebuffer, fb=
+>>> +{
+>>> +	return devm_add_action_or_reset(dev, devm_unregister_framebuffer, fb=
 _info);
-> > +}
-> > +EXPORT_SYMBOL(devm_register_framebuffer);
+>>> +}
+>>> +EXPORT_SYMBOL(devm_register_framebuffer);
+>>
+>> This implementation is wrong, it never actually registers the
+>> framebuffer. It should look like this:
+>>
+>> int
+>> devm_register_framebuffer(struct device *dev, struct fb_info *fb_info)
+>> {
+>> 	int ret;
+>>
+>> 	ret =3D register_framebuffer(fb_info);
+>> 	if (ret)
+>> 		return ret;
+>>
+>> 	return devm_add_action_or_reset(dev, devm_unregister_framebuffer, fb_i=
+nfo);
+>> }
+>> EXPORT_SYMBOL(devm_register_framebuffer);
+>>
+>> Bert, could you test this?
+>> Helge, do you want me to resend the series, minus the original patch 1?
 >
-> This implementation is wrong, it never actually registers the
-> framebuffer. It should look like this:
->
-> int
-> devm_register_framebuffer(struct device *dev, struct fb_info *fb_info)
-> {
-> 	int ret;
->
-> 	ret =3D register_framebuffer(fb_info);
-> 	if (ret)
-> 		return ret;
->
-> 	return devm_add_action_or_reset(dev, devm_unregister_framebuffer, fb_in=
-fo);
-> }
-> EXPORT_SYMBOL(devm_register_framebuffer);
->
-> Bert, could you test this?
-> Helge, do you want me to resend the series, minus the original patch 1?
+> Yes, this works for me. Thanks!
 
-Yes, this works for me. Thanks!
+Good.
 
-Bert Karwatzki
+Thomas, please just resend the fixed patch #3 (this one).
+And maybe you want to document devm_unregister_framebuffer()
+similiar to what you added for devm_register_framebuffer() ?
 
+Helge

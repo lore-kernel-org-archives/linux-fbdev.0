@@ -1,74 +1,165 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67A7A198A2F
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Sep 2024 09:05:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B49821CF2B5
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Sep 2024 10:08:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725440717; cv=none; b=a5Fx/TyaUAKydfnbZNJHOq7mTP/XlGY7ac7XJ6Kg7bb5YVMj7hbnTY/jEEjYM4NHi6yKXuO36UJH2rZtWxCdMzrSpejO0o/M+GlSvmGJIeZRsh5Ig7vlPSutclOhzIqnYZDOwsRtNKlwy+MqYDV5YdNvNUn/y0l+kN81FNodD8U=
+	t=1725444490; cv=none; b=IB/rR6pGNgIa1x4p+IJW5JZN52djGy5QqzI1wV2ZprzpXOMyPmPI1tJ3zUFcjgQEYpU9mCO1v1wdeUxvMvOCaPRG9w1FfwllhQWNcgRHzr0cclSdtQ3Jf3+uCkOkDda3G1uqu2QBrr5ueOhQx9tYkepz1BYB0udH3Q6aeWabzdY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725440717; c=relaxed/simple;
-	bh=9RGuzKvIeYLmaPxh+OH8P69f+WSpAfCh6ohNYrSmNCA=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cuarst0m6yrDjW+Ix67Do3EdPelGgUUHFwtjlmr5QOdhe9uQAI4vGIdtI94aDb327lNsdsqTGTYdxh4C0q0w9q1GTOOwgxAaRW9An+OLRL4U+hEXRM1pCq7LrpLn5LPjBkNyxgSagptYQHm6vgO8vXtFwIpwTZxJqDQfXtOmTjE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1sllwo-0004y2-V0; Wed, 04 Sep 2024 11:05:06 +0200
-Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1sllwo-005Pbe-FT; Wed, 04 Sep 2024 11:05:06 +0200
-Received: from pza by lupine with local (Exim 4.96)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1sllwo-0005fP-1F;
-	Wed, 04 Sep 2024 11:05:06 +0200
-Message-ID: <95efd6b6491069d04b4bfae6616d9a43ba8467a6.camel@pengutronix.de>
-Subject: Re: [PATCH v2 1/2] gpu: ipu-v3: vdic: Simplify ipu_vdi_setup()
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: Marek Vasut <marex@denx.de>, linux-media@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
- Estevam <festevam@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
- Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
- <kernel@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo
- <shawnguo@kernel.org>,  Steve Longerbeam <slongerbeam@gmail.com>,
- dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
- linux-staging@lists.linux.dev
-Date: Wed, 04 Sep 2024 11:05:06 +0200
-In-Reply-To: <20240724002044.112544-1-marex@denx.de>
-References: <20240724002044.112544-1-marex@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	s=arc-20240116; t=1725444490; c=relaxed/simple;
+	bh=zio+a0ruwSHwDzq4IpOiQijKnnS41D2V7N1DIsEFam0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZKZMLyRDtuFEO+iMzjNXaPce87Ym22PJi8yzphNk43LQqJPB6WfXTY6feRN/wlpdstUsa3X8BiIHAcj+Vewzu3JIZ8jMH7Na5d2dsaAaYqqMRDZ0xqdiCz+HuzGKkEPJbIfkNs8WEQTSbiWg4mz0xuO293x/tmoFF7SwG7j4eks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=AiBCvM1F; arc=none smtp.client-ip=209.85.218.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="AiBCvM1F"
+Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-a89c8db505bso446902766b.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Sep 2024 03:08:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1725444486; x=1726049286; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=dR1M+3gWwkz1AwnSNcxXU0EUhSSon/LIBkGrYtHf2ps=;
+        b=AiBCvM1FRYac3EnoC2V8yMOQxd39CpBMTM2EEe9Ol8wpLtSyRfdt+ewsahrA8H3Vji
+         jgZTunExehkTFcQrJWtqO5lYT46ZsWfP1rSn1eAE7D3jtx13wDayI5vGmggTmV13Fvq/
+         zajnAFZFueXuEMYzMEGXECdmpzT2HLDKe9XrzGhG361TmbPMrCGxbJsVT9MBACMlW7yW
+         9HVpSfEKOsma28RLz506Tl9GzFEP9KmTRy91VQlRJWw27GijXUvJ3px0nf/rhpaOtQO3
+         V+f4ovlCqoE/8PgBEy3LTEc58OGCDwBnT2rzGlZgZ083tf9NrcHvpgdm0LCPS3z7wQPO
+         uDQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725444486; x=1726049286;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dR1M+3gWwkz1AwnSNcxXU0EUhSSon/LIBkGrYtHf2ps=;
+        b=wrOXDho0JnhgNuYtxYXnlaMN/bdu9Lm0Ok9RYU3qjAf3UrNwO8sMLWjUy8TXZh39WV
+         YHxjCpmp8bPsXpSk6DJ1PQB192c6wIZo05EmtrNo7Se1YQxuYsJtaa8+BU1uS1238flO
+         j90USb56LrlJIysCmy0P+Fw6dTErZzprBVh8wus54DfB5BV1kEhex7V9MxGoYUi3wOhP
+         qVMOiSx3SWCkowhOfCJOGFaJNStoJaHDhtp5uKyjGM8XXBDFJfFMy4+nwPK7/adV7LDw
+         b6hXGXOhZ8hFKGA0X1g9361r219oCHIKEwnH61+ogq2QcX6RCNwYPt009IXJH/PURAS9
+         csZg==
+X-Forwarded-Encrypted: i=1; AJvYcCUEjmkekjrlrwMnDh9WAsSk8k+6YXXYnDyzXjEPpR4whXDpwVlRgFXeyw3uhpsf1L8zF5dVg2pVSnAZUg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxkpaz6BSSef3ZkGeUmvMHmOWYg+4hW/K7SjUXmk7GnBck4nzsa
+	gd+EK8pbZpu8uCnz3autAYLhv1mCJhpzcikOxjOrpQPvRiFH2h6lgDj4bsyy7E4=
+X-Google-Smtp-Source: AGHT+IHmj/JiGbJvtc5bJERYQCNjeeiYu04Tlb0ms5vEl1yROFVony/cBFRozI3jj6zAJF6Ufv17ow==
+X-Received: by 2002:a17:906:c155:b0:a86:a909:4f67 with SMTP id a640c23a62f3a-a8a32f9f1edmr272904266b.52.1725444485983;
+        Wed, 04 Sep 2024 03:08:05 -0700 (PDT)
+Received: from localhost (p5dc68f76.dip0.t-ipconnect.de. [93.198.143.118])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a89890229b5sm795006166b.51.2024.09.04.03.08.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Sep 2024 03:08:05 -0700 (PDT)
+Date: Wed, 4 Sep 2024 12:08:03 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Guillaume Stols <gstols@baylibre.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, 
+	Michael Hennerich <Michael.Hennerich@analog.com>, Jonathan Cameron <jic23@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, linux-pwm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-doc@vger.kernel.org, aardelean@baylibre.com
+Subject: Re: [PATCH 4/8] pwm: Export pwm_get_state_hw
+Message-ID: <g2x7a4jmlbziciyctf5qgmcpztobvduds6psoaelnludermkjv@6nlxvbws7eo4>
+References: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
+ <20240815-ad7606_add_iio_backend_support-v1-4-cea3e11b1aa4@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="2ufhpggxbgc5feny"
+Content-Disposition: inline
+In-Reply-To: <20240815-ad7606_add_iio_backend_support-v1-4-cea3e11b1aa4@baylibre.com>
 
-On Mi, 2024-07-24 at 02:19 +0200, Marek Vasut wrote:
-> The 'code' parameter only ever selects between YUV 4:2:0 and 4:2:2
-> subsampling, turn it into boolean to select exactly that and update
-> related code accordingly.
->=20
-> Signed-off-by: Marek Vasut <marex@denx.de>
 
-I'd prefer this to be an enum ipu_chroma_subsampling or similar,
-instead of a boolean. Otherwise,
+--2ufhpggxbgc5feny
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+On Thu, Aug 15, 2024 at 12:11:58PM +0000, Guillaume Stols wrote:
+> This function can be used in some other drivers, for instance when we
+> want to retrieve the real frequency vs the one that was asked.
 
-regards
-Philipp
+I'd write:
+
+	For some drivers (here: the upcoming ad7606 adc driver) it's important
+	to know the actually configured PWM state. This is in general different
+	from the state returned by pwm_get_state() (i.e. the last applied state)
+	because most hardware doesn't have nano second granularity. So make
+	pwm_get_state_hw() a public function.
+
+> diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+> index 21fca27bb8a3..82e05ed88310 100644
+> --- a/drivers/pwm/core.c
+> +++ b/drivers/pwm/core.c
+> @@ -651,7 +651,7 @@ int pwm_apply_atomic(struct pwm_device *pwm, const st=
+ruct pwm_state *state)
+>  }
+>  EXPORT_SYMBOL_GPL(pwm_apply_atomic);
+> =20
+> -static int pwm_get_state_hw(struct pwm_device *pwm, struct pwm_state *st=
+ate)
+> +int pwm_get_state_hw(struct pwm_device *pwm, struct pwm_state *state)
+>  {
+>  	struct pwm_chip *chip =3D pwm->chip;
+>  	const struct pwm_ops *ops =3D chip->ops;
+> @@ -685,6 +685,7 @@ static int pwm_get_state_hw(struct pwm_device *pwm, s=
+truct pwm_state *state)
+> =20
+>  	return ret;
+>  }
+> +EXPORT_SYMBOL_GPL(pwm_get_state_hw);
+
+Now that this is a public function, a kernel doc for it would be nice.
+
+>  /**
+>   * pwm_adjust_config() - adjust the current PWM config to the PWM argume=
+nts
+> diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+> index fd100c27f109..d48ea3051e28 100644
+> --- a/include/linux/pwm.h
+> +++ b/include/linux/pwm.h
+> @@ -369,6 +369,7 @@ int pwm_apply_might_sleep(struct pwm_device *pwm, con=
+st struct pwm_state *state)
+>  int pwm_apply_atomic(struct pwm_device *pwm, const struct pwm_state *sta=
+te);
+>  int pwm_adjust_config(struct pwm_device *pwm);
+> =20
+> +int pwm_get_state_hw(struct pwm_device *pwm, struct pwm_state *state);
+
+Nitpick: pwm_get_state_hw() is defined in core.c before
+pwm_adjust_config(). Please keep this order in the header.
+
+>  /**
+>   * pwm_config() - change a PWM device configuration
+>   * @pwm: PWM device
+
+Your patch was PGP signed, but I failed to find your key in the kernel
+key repo and on https://keys.openpgp.org. To make your signature
+actually useful, you might want to fix that.
+
+Best regards
+Uwe
+
+--2ufhpggxbgc5feny
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmbYMYEACgkQj4D7WH0S
+/k4+lAf/ah+hVdNth3Gbh1+IZ9TszwkpZoa2BArFKNaI6fg4kzBnP4jdK/9YoYxK
+8aV7YXMFTNLZ7B8kdZ1pQ3/gYFvHwPWiGGvMsysEnRj0TKOTw7iTSruScJq9qmMC
+WCcJf3TiVd5Jp8JRi9EDaTN5K6pz4a4nF1+8Zf0sPNhubcClQ62RrfUOwgqiYi+O
+/zsKhoQIFDrc9qX0BUwU5gK3FxgIXqNXt437y1O5X0PWAeZhnQXpyW4GbXnofQFt
+wPqjzS3DUigiDXkUWKImXXGXM5f9SERlGvWjVlqomK29NWzzXugauCfyDxVQUa+Q
+pny5/ar13n7yoHt/42iTfwc99oY0/w==
+=e96/
+-----END PGP SIGNATURE-----
+
+--2ufhpggxbgc5feny--

@@ -1,165 +1,167 @@
-Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
+Received: from mail-oo1-f52.google.com (mail-oo1-f52.google.com [209.85.161.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B49821CF2B5
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Sep 2024 10:08:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 515A01E0B6C
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Sep 2024 16:54:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725444490; cv=none; b=IB/rR6pGNgIa1x4p+IJW5JZN52djGy5QqzI1wV2ZprzpXOMyPmPI1tJ3zUFcjgQEYpU9mCO1v1wdeUxvMvOCaPRG9w1FfwllhQWNcgRHzr0cclSdtQ3Jf3+uCkOkDda3G1uqu2QBrr5ueOhQx9tYkepz1BYB0udH3Q6aeWabzdY=
+	t=1725468875; cv=none; b=GStmTNIuGZuWRVAprxwn2HG55PV/6BQsO0anMgFf6tIBqDmJ7Pgys6IO1WS8uLmC6yfyIuBO+BREk659i/mhJqJ79WvVDmKgJNPpCjM9vumBd8Ig6INUkGw/NGbtSWBHgvuvDS0/XLHpg0M8GWNu4IedcdBDoFMSngHuCZuvtFU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725444490; c=relaxed/simple;
-	bh=zio+a0ruwSHwDzq4IpOiQijKnnS41D2V7N1DIsEFam0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZKZMLyRDtuFEO+iMzjNXaPce87Ym22PJi8yzphNk43LQqJPB6WfXTY6feRN/wlpdstUsa3X8BiIHAcj+Vewzu3JIZ8jMH7Na5d2dsaAaYqqMRDZ0xqdiCz+HuzGKkEPJbIfkNs8WEQTSbiWg4mz0xuO293x/tmoFF7SwG7j4eks=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=AiBCvM1F; arc=none smtp.client-ip=209.85.218.51
+	s=arc-20240116; t=1725468875; c=relaxed/simple;
+	bh=rLcxKqQzYFtF8wcHynmigu7WlrFQ0QJuxcjWxrbMvuo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Cu7VVV+gsesF9uSvUOwCqT6UdE9sOYXptcki+gfMIrjEf4KEehXj2bKDpTtscRDwm9aM8yKmsHHIsSjHdCRbSXjWXT0iWezYpb9Guu/LNDC9hUoJqsrf8WsNlMP+qlpNzG0TaDj9+FPlOaFbNbOprXP7Q2y6BTJqK82tl2iNmz0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=dNG31Ixi; arc=none smtp.client-ip=209.85.161.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="AiBCvM1F"
-Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-a89c8db505bso446902766b.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Sep 2024 03:08:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="dNG31Ixi"
+Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-5da686531d3so4469844eaf.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Sep 2024 09:54:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1725444486; x=1726049286; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=dR1M+3gWwkz1AwnSNcxXU0EUhSSon/LIBkGrYtHf2ps=;
-        b=AiBCvM1FRYac3EnoC2V8yMOQxd39CpBMTM2EEe9Ol8wpLtSyRfdt+ewsahrA8H3Vji
-         jgZTunExehkTFcQrJWtqO5lYT46ZsWfP1rSn1eAE7D3jtx13wDayI5vGmggTmV13Fvq/
-         zajnAFZFueXuEMYzMEGXECdmpzT2HLDKe9XrzGhG361TmbPMrCGxbJsVT9MBACMlW7yW
-         9HVpSfEKOsma28RLz506Tl9GzFEP9KmTRy91VQlRJWw27GijXUvJ3px0nf/rhpaOtQO3
-         V+f4ovlCqoE/8PgBEy3LTEc58OGCDwBnT2rzGlZgZ083tf9NrcHvpgdm0LCPS3z7wQPO
-         uDQg==
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1725468872; x=1726073672; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=XGsTtJyHEymxr9zhFpJmgtflhZLOfdi2Xf6Xd7Osyyg=;
+        b=dNG31IxiqXd/f7Eg2C2ORXPWzC3Vz7JxaDM6b561m9LkGl1lWtKslSwzPQGsEKZz68
+         6e/eSB84e1XVH+XhPN/aJE7j9hakV6uiiEP2hGJNwJd4rt4SRIT9gUjyZLyOq/3SrxXd
+         lQ/2zNxk9OFkc1dPZ3zN113PZB0J7JLXEebTtZkptBuHF24Qi3Vyz6rJIG7WawHz0kmx
+         6MYnXdv5cpB65RzIRcju3xVU2qJBwqAnuM4eOV3KZTJtb3W3/pkS4pwddz6VmV9P57DC
+         HDVghU2OVjW1tL8s3GjJXF8eSYyUcsPHXRPkkEW2p1l8IGfx/DOX20y1osWgwJAErtRr
+         heBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725444486; x=1726049286;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dR1M+3gWwkz1AwnSNcxXU0EUhSSon/LIBkGrYtHf2ps=;
-        b=wrOXDho0JnhgNuYtxYXnlaMN/bdu9Lm0Ok9RYU3qjAf3UrNwO8sMLWjUy8TXZh39WV
-         YHxjCpmp8bPsXpSk6DJ1PQB192c6wIZo05EmtrNo7Se1YQxuYsJtaa8+BU1uS1238flO
-         j90USb56LrlJIysCmy0P+Fw6dTErZzprBVh8wus54DfB5BV1kEhex7V9MxGoYUi3wOhP
-         qVMOiSx3SWCkowhOfCJOGFaJNStoJaHDhtp5uKyjGM8XXBDFJfFMy4+nwPK7/adV7LDw
-         b6hXGXOhZ8hFKGA0X1g9361r219oCHIKEwnH61+ogq2QcX6RCNwYPt009IXJH/PURAS9
-         csZg==
-X-Forwarded-Encrypted: i=1; AJvYcCUEjmkekjrlrwMnDh9WAsSk8k+6YXXYnDyzXjEPpR4whXDpwVlRgFXeyw3uhpsf1L8zF5dVg2pVSnAZUg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxkpaz6BSSef3ZkGeUmvMHmOWYg+4hW/K7SjUXmk7GnBck4nzsa
-	gd+EK8pbZpu8uCnz3autAYLhv1mCJhpzcikOxjOrpQPvRiFH2h6lgDj4bsyy7E4=
-X-Google-Smtp-Source: AGHT+IHmj/JiGbJvtc5bJERYQCNjeeiYu04Tlb0ms5vEl1yROFVony/cBFRozI3jj6zAJF6Ufv17ow==
-X-Received: by 2002:a17:906:c155:b0:a86:a909:4f67 with SMTP id a640c23a62f3a-a8a32f9f1edmr272904266b.52.1725444485983;
-        Wed, 04 Sep 2024 03:08:05 -0700 (PDT)
-Received: from localhost (p5dc68f76.dip0.t-ipconnect.de. [93.198.143.118])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a89890229b5sm795006166b.51.2024.09.04.03.08.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Sep 2024 03:08:05 -0700 (PDT)
-Date: Wed, 4 Sep 2024 12:08:03 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, 
-	Michael Hennerich <Michael.Hennerich@analog.com>, Jonathan Cameron <jic23@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, linux-pwm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-doc@vger.kernel.org, aardelean@baylibre.com
-Subject: Re: [PATCH 4/8] pwm: Export pwm_get_state_hw
-Message-ID: <g2x7a4jmlbziciyctf5qgmcpztobvduds6psoaelnludermkjv@6nlxvbws7eo4>
-References: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
- <20240815-ad7606_add_iio_backend_support-v1-4-cea3e11b1aa4@baylibre.com>
+        d=1e100.net; s=20230601; t=1725468872; x=1726073672;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=XGsTtJyHEymxr9zhFpJmgtflhZLOfdi2Xf6Xd7Osyyg=;
+        b=pM0dVBUxOxUDEchWG2v6WnFrYdlRNR0WjD2tHVSDpyM46xiUVhpdQpP6dZFhJFH5Ji
+         jXT3h5HAVHhG+N3Ta0HJZPYJLyNeBF+C9ARuWbjiX9K7J1kd+KfUZGX6VWFr/m/CAJkv
+         4Yj2pqxKYWQjg1L0Gl/LYa8uYbwLpFW+8lRlNhPqTGTysv5OlNhDWwyLSAHsYzP95Tzm
+         CM+e815oXJKH+WiOHb3gXpG/JxekIIGwmqQyDu8bMQmRR+l3CiK3BjMYVIkB/dFVpd2O
+         W8/y9nsirLCC/pHlgtD/7VAv3EKffpWIhUzsdguvXonnLeExmqJWnG6ID9so0YLPDdkg
+         9iDw==
+X-Forwarded-Encrypted: i=1; AJvYcCWNsWE9ZItwBb7VEOTBOQeZHNaZLeJr2TyJ4WTWtIOERAO+8x+I+wWDeoLtCISIBDXPp0LW5+0z85JQ+w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwylFeUJV/ndo8nnDBcOjlzSltnakPxZP8vhklKYdfVWInRVYG2
+	eJaUZcSB4VciaGPX90uQ26DIpQKEBSZ+R3ChtsKtSZtIsHdAWJYBJUfkApKJnt4=
+X-Google-Smtp-Source: AGHT+IF3j8/aXNxe1Iy7hQRDGywiVQBtcHVg3EIE/yrDkqsU7P4AR5T3yNPfD5Pur4i6IPkep+owfg==
+X-Received: by 2002:a4a:ee8a:0:b0:5da:a462:6a30 with SMTP id 006d021491bc7-5dfacddefacmr17589860eaf.1.1725468872380;
+        Wed, 04 Sep 2024 09:54:32 -0700 (PDT)
+Received: from [192.168.0.142] (ip98-183-112-25.ok.ok.cox.net. [98.183.112.25])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-5dfa04bd7basm2439218eaf.24.2024.09.04.09.54.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Sep 2024 09:54:31 -0700 (PDT)
+Message-ID: <b7cae260-19ca-485d-b9c5-4b9209ee4886@baylibre.com>
+Date: Wed, 4 Sep 2024 11:54:30 -0500
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="2ufhpggxbgc5feny"
-Content-Disposition: inline
-In-Reply-To: <20240815-ad7606_add_iio_backend_support-v1-4-cea3e11b1aa4@baylibre.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/8] dt-bindings: iio: adc: ad7606: Add iio backend
+ bindings
+To: Jonathan Cameron <jic23@kernel.org>, Guillaume Stols <gstols@baylibre.com>
+Cc: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org, aardelean@baylibre.com
+References: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
+ <20240815-ad7606_add_iio_backend_support-v1-2-cea3e11b1aa4@baylibre.com>
+ <20240817160900.01224c80@jic23-huawei>
+Content-Language: en-US
+From: David Lechner <dlechner@baylibre.com>
+In-Reply-To: <20240817160900.01224c80@jic23-huawei>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+On 8/17/24 10:09 AM, Jonathan Cameron wrote:
+> On Thu, 15 Aug 2024 12:11:56 +0000
+> Guillaume Stols <gstols@baylibre.com> wrote:
+> 
+>> Add the required properties for iio-backend support, as well as an
+>> example and the conditions to mutually exclude interruption and
+>> conversion trigger with iio-backend.
+>> The iio-backend's function is to controls the communication, and thus the
+>> interruption pin won't be available anymore.
+>> As a consequence, the conversion pin must be controlled externally since
+>> we will miss information about when every single conversion cycle (i.e
+>> conversion + data transfert) ends, hence a PWM is introduced to trigger
+> 
+> transfer
+> 
+>> the conversions.
+>>
+>> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+>> ---
+>>  .../devicetree/bindings/iio/adc/adi,ad7606.yaml    | 75 +++++++++++++++++++++-
+>>  1 file changed, 72 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+>> index c0008d36320f..4b324f7e3207 100644
+>> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+>> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+>> @@ -114,13 +114,28 @@ properties:
+>>        assumed that the pins are hardwired to VDD.
+>>      type: boolean
+>>  
+>> +  pwms:
+>> +    description:
+>> +      In case the conversion is triggered by a PWM instead of a GPIO plugged to
+>> +      the CONVST pin, the PWM must be referenced.
+>> +    minItems: 1
+>> +    maxItems: 2
+>> +
+>> +  pwm-names:
+>> +    minItems: 1
+>> +    maxItems: 2
+>> +
+>> +  io-backends:
+>> +    description:
+>> +      A reference to the iio-backend, which is responsible handling the BUSY
+>> +      pin's falling edge and communication.
+>> +      An example of backend can be found at
+>> +      http://analogdevicesinc.github.io/hdl/library/axi_ad7606x/index.html
+>> +
+>>  required:
+>>    - compatible
+>> -  - reg
+> 
+> I think we still want a reg, but only to differentiate multiple instances
+> perhaps.
+
+In light of the recent discussions on the similar AXI DAC
+support for AD3552R [1], should we consider some of the same
+things here?
+
+Essentially, the AXI ADC IP block in this series is acting as
+a parallel bus provider for the AD7606 chip. This is used both
+for configuring registers on the chip and "offloading" for high
+speed data capture.
+
+So this would mean...
+
+1. We should add a new compatible string to iio/adc/adi,axi-adc.yaml
+   for the specialized version of the AXI ADC IP that is used with
+   AD7606 and similar ADCs.
+2. In the .dts, the AXI ADC node should be the parent of the ADC node
+   since the AXI ADC IP is providing the parallel bus to the ADC.
 
 
---2ufhpggxbgc5feny
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[1]: https://lore.kernel.org/linux-iio/20240903203935.358a1423@jic23-huawei/
 
-On Thu, Aug 15, 2024 at 12:11:58PM +0000, Guillaume Stols wrote:
-> This function can be used in some other drivers, for instance when we
-> want to retrieve the real frequency vs the one that was asked.
+> 
+>>    - avcc-supply
+>>    - vdrive-supply
+> 
+> 
+> 
 
-I'd write:
-
-	For some drivers (here: the upcoming ad7606 adc driver) it's important
-	to know the actually configured PWM state. This is in general different
-	from the state returned by pwm_get_state() (i.e. the last applied state)
-	because most hardware doesn't have nano second granularity. So make
-	pwm_get_state_hw() a public function.
-
-> diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-> index 21fca27bb8a3..82e05ed88310 100644
-> --- a/drivers/pwm/core.c
-> +++ b/drivers/pwm/core.c
-> @@ -651,7 +651,7 @@ int pwm_apply_atomic(struct pwm_device *pwm, const st=
-ruct pwm_state *state)
->  }
->  EXPORT_SYMBOL_GPL(pwm_apply_atomic);
-> =20
-> -static int pwm_get_state_hw(struct pwm_device *pwm, struct pwm_state *st=
-ate)
-> +int pwm_get_state_hw(struct pwm_device *pwm, struct pwm_state *state)
->  {
->  	struct pwm_chip *chip =3D pwm->chip;
->  	const struct pwm_ops *ops =3D chip->ops;
-> @@ -685,6 +685,7 @@ static int pwm_get_state_hw(struct pwm_device *pwm, s=
-truct pwm_state *state)
-> =20
->  	return ret;
->  }
-> +EXPORT_SYMBOL_GPL(pwm_get_state_hw);
-
-Now that this is a public function, a kernel doc for it would be nice.
-
->  /**
->   * pwm_adjust_config() - adjust the current PWM config to the PWM argume=
-nts
-> diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-> index fd100c27f109..d48ea3051e28 100644
-> --- a/include/linux/pwm.h
-> +++ b/include/linux/pwm.h
-> @@ -369,6 +369,7 @@ int pwm_apply_might_sleep(struct pwm_device *pwm, con=
-st struct pwm_state *state)
->  int pwm_apply_atomic(struct pwm_device *pwm, const struct pwm_state *sta=
-te);
->  int pwm_adjust_config(struct pwm_device *pwm);
-> =20
-> +int pwm_get_state_hw(struct pwm_device *pwm, struct pwm_state *state);
-
-Nitpick: pwm_get_state_hw() is defined in core.c before
-pwm_adjust_config(). Please keep this order in the header.
-
->  /**
->   * pwm_config() - change a PWM device configuration
->   * @pwm: PWM device
-
-Your patch was PGP signed, but I failed to find your key in the kernel
-key repo and on https://keys.openpgp.org. To make your signature
-actually useful, you might want to fix that.
-
-Best regards
-Uwe
-
---2ufhpggxbgc5feny
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmbYMYEACgkQj4D7WH0S
-/k4+lAf/ah+hVdNth3Gbh1+IZ9TszwkpZoa2BArFKNaI6fg4kzBnP4jdK/9YoYxK
-8aV7YXMFTNLZ7B8kdZ1pQ3/gYFvHwPWiGGvMsysEnRj0TKOTw7iTSruScJq9qmMC
-WCcJf3TiVd5Jp8JRi9EDaTN5K6pz4a4nF1+8Zf0sPNhubcClQ62RrfUOwgqiYi+O
-/zsKhoQIFDrc9qX0BUwU5gK3FxgIXqNXt437y1O5X0PWAeZhnQXpyW4GbXnofQFt
-wPqjzS3DUigiDXkUWKImXXGXM5f9SERlGvWjVlqomK29NWzzXugauCfyDxVQUa+Q
-pny5/ar13n7yoHt/42iTfwc99oY0/w==
-=e96/
------END PGP SIGNATURE-----
-
---2ufhpggxbgc5feny--

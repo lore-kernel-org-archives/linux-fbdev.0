@@ -1,167 +1,136 @@
-Received: from mail-oo1-f52.google.com (mail-oo1-f52.google.com [209.85.161.52])
+Received: from mail-io1-f69.google.com (mail-io1-f69.google.com [209.85.166.69])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 515A01E0B6C
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Sep 2024 16:54:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4E54802
+	for <linux-fbdev@vger.kernel.org>; Thu,  5 Sep 2024 01:06:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.69
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725468875; cv=none; b=GStmTNIuGZuWRVAprxwn2HG55PV/6BQsO0anMgFf6tIBqDmJ7Pgys6IO1WS8uLmC6yfyIuBO+BREk659i/mhJqJ79WvVDmKgJNPpCjM9vumBd8Ig6INUkGw/NGbtSWBHgvuvDS0/XLHpg0M8GWNu4IedcdBDoFMSngHuCZuvtFU=
+	t=1725498389; cv=none; b=Qsi10M6t2RhoDHNjPUNsW14BTLX3n2OkesRmxMKPGSOja91vgKBMF7mTGzYw1a+BiMLtU1n1kAzuTV6BNAo6cLThJyVMfPqEHAQmygd6OJlwTgobZhzFlEVf8MgRlsavc39dZrirMfYK6jVOsUBlItJOhzTSfI7zpn4IL2n20XE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725468875; c=relaxed/simple;
-	bh=rLcxKqQzYFtF8wcHynmigu7WlrFQ0QJuxcjWxrbMvuo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Cu7VVV+gsesF9uSvUOwCqT6UdE9sOYXptcki+gfMIrjEf4KEehXj2bKDpTtscRDwm9aM8yKmsHHIsSjHdCRbSXjWXT0iWezYpb9Guu/LNDC9hUoJqsrf8WsNlMP+qlpNzG0TaDj9+FPlOaFbNbOprXP7Q2y6BTJqK82tl2iNmz0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=dNG31Ixi; arc=none smtp.client-ip=209.85.161.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="dNG31Ixi"
-Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-5da686531d3so4469844eaf.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Sep 2024 09:54:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1725468872; x=1726073672; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=XGsTtJyHEymxr9zhFpJmgtflhZLOfdi2Xf6Xd7Osyyg=;
-        b=dNG31IxiqXd/f7Eg2C2ORXPWzC3Vz7JxaDM6b561m9LkGl1lWtKslSwzPQGsEKZz68
-         6e/eSB84e1XVH+XhPN/aJE7j9hakV6uiiEP2hGJNwJd4rt4SRIT9gUjyZLyOq/3SrxXd
-         lQ/2zNxk9OFkc1dPZ3zN113PZB0J7JLXEebTtZkptBuHF24Qi3Vyz6rJIG7WawHz0kmx
-         6MYnXdv5cpB65RzIRcju3xVU2qJBwqAnuM4eOV3KZTJtb3W3/pkS4pwddz6VmV9P57DC
-         HDVghU2OVjW1tL8s3GjJXF8eSYyUcsPHXRPkkEW2p1l8IGfx/DOX20y1osWgwJAErtRr
-         heBQ==
+	s=arc-20240116; t=1725498389; c=relaxed/simple;
+	bh=+2N2cz/vZlvK6MElK7BHsETaZta8am9aEmLHNHtUIcI=;
+	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:
+	 Content-Type; b=R3kRYcKzWaLFKFlR0V7OhDokDMrIct6jqZLMVgp8Kglzx0o03BSzrEyqQMlJzqaZf8yF3sBN4nchfiXNOpfE+DXVQn4sIHm9OEKfViTLuOQQ5ZJSYtG7ZEaosmihVbiYtRCjr2DCZkA2onGwmY3/RbES/OlfmzTYyiPY2c3eSAc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.69
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f69.google.com with SMTP id ca18e2360f4ac-82a217cec1fso31124639f.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Sep 2024 18:06:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725468872; x=1726073672;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=1e100.net; s=20230601; t=1725498387; x=1726103187;
+        h=to:from:subject:message-id:in-reply-to:date:mime-version
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=XGsTtJyHEymxr9zhFpJmgtflhZLOfdi2Xf6Xd7Osyyg=;
-        b=pM0dVBUxOxUDEchWG2v6WnFrYdlRNR0WjD2tHVSDpyM46xiUVhpdQpP6dZFhJFH5Ji
-         jXT3h5HAVHhG+N3Ta0HJZPYJLyNeBF+C9ARuWbjiX9K7J1kd+KfUZGX6VWFr/m/CAJkv
-         4Yj2pqxKYWQjg1L0Gl/LYa8uYbwLpFW+8lRlNhPqTGTysv5OlNhDWwyLSAHsYzP95Tzm
-         CM+e815oXJKH+WiOHb3gXpG/JxekIIGwmqQyDu8bMQmRR+l3CiK3BjMYVIkB/dFVpd2O
-         W8/y9nsirLCC/pHlgtD/7VAv3EKffpWIhUzsdguvXonnLeExmqJWnG6ID9so0YLPDdkg
-         9iDw==
-X-Forwarded-Encrypted: i=1; AJvYcCWNsWE9ZItwBb7VEOTBOQeZHNaZLeJr2TyJ4WTWtIOERAO+8x+I+wWDeoLtCISIBDXPp0LW5+0z85JQ+w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwylFeUJV/ndo8nnDBcOjlzSltnakPxZP8vhklKYdfVWInRVYG2
-	eJaUZcSB4VciaGPX90uQ26DIpQKEBSZ+R3ChtsKtSZtIsHdAWJYBJUfkApKJnt4=
-X-Google-Smtp-Source: AGHT+IF3j8/aXNxe1Iy7hQRDGywiVQBtcHVg3EIE/yrDkqsU7P4AR5T3yNPfD5Pur4i6IPkep+owfg==
-X-Received: by 2002:a4a:ee8a:0:b0:5da:a462:6a30 with SMTP id 006d021491bc7-5dfacddefacmr17589860eaf.1.1725468872380;
-        Wed, 04 Sep 2024 09:54:32 -0700 (PDT)
-Received: from [192.168.0.142] (ip98-183-112-25.ok.ok.cox.net. [98.183.112.25])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-5dfa04bd7basm2439218eaf.24.2024.09.04.09.54.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 04 Sep 2024 09:54:31 -0700 (PDT)
-Message-ID: <b7cae260-19ca-485d-b9c5-4b9209ee4886@baylibre.com>
-Date: Wed, 4 Sep 2024 11:54:30 -0500
+        bh=OAYLa3gAJq10imgnxwcHrNfTMkbi9jOvDxj4gkfBOpk=;
+        b=D9QNY3x0XBLHTWE7It3/iBQfT5mmCejIbSf0YIxj3wW6UW7csQYr8psVsflxIth9sy
+         D9LFdzqq1F8+aVopv75erbJpH75DlRAhaSzEagSzDNst9NWFb5M3P97QPZCv9wsHZEtp
+         0RIZzyH9plt4SxABVVbdXBXcejn5kmcaQk2CWEePvUBOKD9EOjcK9bhahArSIYdTVj4H
+         0Aux7EAoiHjkb5vs2nzuYuPZv2DrpBe+nSCpXUyOHeX69fRswKQTdNdLk+ZhQhd+DP+P
+         z38N0ejUyy54xYX6KO3M5h9rQ0TAo+DFVr9U+EvVWheweDR0yDqLvoxBVK+PH1XLiPPX
+         isyg==
+X-Forwarded-Encrypted: i=1; AJvYcCW7gtvHScu0ylVXugzbroxyjlg2wv5qZoPZd2DFGOf1wSJxX8DRvdRYvhdc0H1hZOkVi/f4X2liDdbZ2g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YykCnkYtQT1hX907LTTT1/x5prm9CC/OvLN+KBhNVqC5oPxOcwp
+	flUgfbtANxWBJbITacZZaSaPYwUy1jbbM/pgzVFUcIpeHR1r4p0T7ZJrYMf7abHW1+5sJWcaYoI
+	qrvXy7rju7SwdRTsV8OAbk0Sj1O/Vqw8rVKmtoYpuysrOEYvYUkxIZ1I=
+X-Google-Smtp-Source: AGHT+IE5oGFdAYetB0WLbVlthXsHM+ywys8HRBRBTS9ulokWHG3VpTsY5NmR61O+Zlkrq2VPGQF8Z2WbhGLDZk+MvNpDzvPFqaID
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/8] dt-bindings: iio: adc: ad7606: Add iio backend
- bindings
-To: Jonathan Cameron <jic23@kernel.org>, Guillaume Stols <gstols@baylibre.com>
-Cc: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- Lars-Peter Clausen <lars@metafoo.de>,
- Michael Hennerich <Michael.Hennerich@analog.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
- devicetree@vger.kernel.org, linux-doc@vger.kernel.org, aardelean@baylibre.com
-References: <20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
- <20240815-ad7606_add_iio_backend_support-v1-2-cea3e11b1aa4@baylibre.com>
- <20240817160900.01224c80@jic23-huawei>
-Content-Language: en-US
-From: David Lechner <dlechner@baylibre.com>
-In-Reply-To: <20240817160900.01224c80@jic23-huawei>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Received: by 2002:a05:6638:8720:b0:4b9:6f13:fb1a with SMTP id
+ 8926c6da1cb9f-4d05e73844cmr161634173.4.1725498387122; Wed, 04 Sep 2024
+ 18:06:27 -0700 (PDT)
+Date: Wed, 04 Sep 2024 18:06:27 -0700
+In-Reply-To: <000000000000f4447f06202eca5f@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <0000000000006cde9c062154e6f3@google.com>
+Subject: Re: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in imageblit (4)
+From: syzbot <syzbot+c4b7aa0513823e2ea880@syzkaller.appspotmail.com>
+To: daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On 8/17/24 10:09 AM, Jonathan Cameron wrote:
-> On Thu, 15 Aug 2024 12:11:56 +0000
-> Guillaume Stols <gstols@baylibre.com> wrote:
-> 
->> Add the required properties for iio-backend support, as well as an
->> example and the conditions to mutually exclude interruption and
->> conversion trigger with iio-backend.
->> The iio-backend's function is to controls the communication, and thus the
->> interruption pin won't be available anymore.
->> As a consequence, the conversion pin must be controlled externally since
->> we will miss information about when every single conversion cycle (i.e
->> conversion + data transfert) ends, hence a PWM is introduced to trigger
-> 
-> transfer
-> 
->> the conversions.
->>
->> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
->> ---
->>  .../devicetree/bindings/iio/adc/adi,ad7606.yaml    | 75 +++++++++++++++++++++-
->>  1 file changed, 72 insertions(+), 3 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
->> index c0008d36320f..4b324f7e3207 100644
->> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
->> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
->> @@ -114,13 +114,28 @@ properties:
->>        assumed that the pins are hardwired to VDD.
->>      type: boolean
->>  
->> +  pwms:
->> +    description:
->> +      In case the conversion is triggered by a PWM instead of a GPIO plugged to
->> +      the CONVST pin, the PWM must be referenced.
->> +    minItems: 1
->> +    maxItems: 2
->> +
->> +  pwm-names:
->> +    minItems: 1
->> +    maxItems: 2
->> +
->> +  io-backends:
->> +    description:
->> +      A reference to the iio-backend, which is responsible handling the BUSY
->> +      pin's falling edge and communication.
->> +      An example of backend can be found at
->> +      http://analogdevicesinc.github.io/hdl/library/axi_ad7606x/index.html
->> +
->>  required:
->>    - compatible
->> -  - reg
-> 
-> I think we still want a reg, but only to differentiate multiple instances
-> perhaps.
+syzbot has found a reproducer for the following issue on:
 
-In light of the recent discussions on the similar AXI DAC
-support for AD3552R [1], should we consider some of the same
-things here?
+HEAD commit:    c7fb1692dc01 Merge tag 'for-linus' of git://git.kernel.org..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=11742d63980000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=660f6eb11f9c7dc5
+dashboard link: https://syzkaller.appspot.com/bug?extid=c4b7aa0513823e2ea880
+compiler:       Debian clang version 15.0.6, GNU ld (GNU Binutils for Debian) 2.40
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=11703653980000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=154565b7980000
 
-Essentially, the AXI ADC IP block in this series is acting as
-a parallel bus provider for the AD7606 chip. This is used both
-for configuring registers on the chip and "offloading" for high
-speed data capture.
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/7bc7510fe41f/non_bootable_disk-c7fb1692.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/246da487db6f/vmlinux-c7fb1692.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/f0ea1e4dac0f/bzImage-c7fb1692.xz
 
-So this would mean...
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+c4b7aa0513823e2ea880@syzkaller.appspotmail.com
 
-1. We should add a new compatible string to iio/adc/adi,axi-adc.yaml
-   for the specialized version of the AXI ADC IP that is used with
-   AD7606 and similar ADCs.
-2. In the .dts, the AXI ADC node should be the parent of the ADC node
-   since the AXI ADC IP is providing the parallel bus to the ADC.
+R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000001
+R13: 431bde82d7b634db R14: 0000000000000001 R15: 0000000000000001
+ </TASK>
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit drivers/video/fbdev/core/sysimgblt.c:257 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1ec6/0x2b00 drivers/video/fbdev/core/sysimgblt.c:326
+Write of size 4 at addr ffffc90001c41000 by task syz-executor161/5103
+
+CPU: 0 UID: 0 PID: 5103 Comm: syz-executor161 Not tainted 6.11.0-rc6-syzkaller-00048-gc7fb1692dc01 #0
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2~bpo12+1 04/01/2014
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:93 [inline]
+ dump_stack_lvl+0x241/0x360 lib/dump_stack.c:119
+ print_address_description mm/kasan/report.c:377 [inline]
+ print_report+0x169/0x550 mm/kasan/report.c:488
+ kasan_report+0x143/0x180 mm/kasan/report.c:601
+ fast_imageblit drivers/video/fbdev/core/sysimgblt.c:257 [inline]
+ sys_imageblit+0x1ec6/0x2b00 drivers/video/fbdev/core/sysimgblt.c:326
+ drm_fbdev_shmem_defio_imageblit+0x2e/0x100 drivers/gpu/drm/drm_fbdev_shmem.c:39
+ bit_putcs+0x18ba/0x1db0
+ fbcon_putcs+0x255/0x390 drivers/video/fbdev/core/fbcon.c:1288
+ do_update_region+0x396/0x450 drivers/tty/vt/vt.c:619
+ redraw_screen+0x902/0xe90 drivers/tty/vt/vt.c:971
+ con2fb_init_display drivers/video/fbdev/core/fbcon.c:794 [inline]
+ set_con2fb_map+0xa6c/0x10a0 drivers/video/fbdev/core/fbcon.c:865
+ fbcon_set_con2fb_map_ioctl+0x207/0x320 drivers/video/fbdev/core/fbcon.c:3092
+ do_fb_ioctl+0x38f/0x7b0 drivers/video/fbdev/core/fb_chrdev.c:138
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:907 [inline]
+ __se_sys_ioctl+0xfc/0x170 fs/ioctl.c:893
+ do_syscall_x64 arch/x86/entry/common.c:52 [inline]
+ do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7feb9b353729
+Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 a1 1a 00 00 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffde9b9f968 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00007ffde9b9f980 RCX: 00007feb9b353729
+RDX: 00000000200000c0 RSI: 0000000000004610 RDI: 0000000000000003
+RBP: 0000000000000001 R08: 00007ffde9b9f707 R09: 00000000000000a0
+R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000001
+R13: 431bde82d7b634db R14: 0000000000000001 R15: 0000000000000001
+ </TASK>
+
+The buggy address belongs to the virtual mapping at
+ [ffffc90001941000, ffffc90001c42000) created by:
+ drm_gem_shmem_vmap+0x3ac/0x630 drivers/gpu/drm/drm_gem_shmem_helper.c:343
+
+Memory state around the buggy address:
+ ffffc90001c40f00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffffc90001c40f80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffffc90001c41000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                   ^
+ ffffc90001c41080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90001c41100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
 
 
-[1]: https://lore.kernel.org/linux-iio/20240903203935.358a1423@jic23-huawei/
-
-> 
->>    - avcc-supply
->>    - vdrive-supply
-> 
-> 
-> 
-
+---
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.

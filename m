@@ -1,116 +1,171 @@
-Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+Received: from mail-il1-f198.google.com (mail-il1-f198.google.com [209.85.166.198])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4CCF16A94F
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Sep 2024 08:13:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2813D187871
+	for <linux-fbdev@vger.kernel.org>; Tue, 10 Sep 2024 08:17:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.198
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1725955986; cv=none; b=gQlI/erd0sg/6VsxnIbZO2Dn8vDFWQInodkvGe7PWIXzSAKvY0EkzRcp5gO9umCoECj3i7UkALTJUB7TK8KcvSQzoVpOSgw94Gjl09Men2pZlg07gpbv/x4TXveuUjl8JPh8uhZJcq9tzZk4odMahmmi4GS13g1NDcuLvYwbHk0=
+	t=1725956249; cv=none; b=IdReHSyBuN0To/6hrWMoqeUIsaPYlmwpxVYV5MLkXbw56InalXpYuUf50hw39czkW0TKZ3dAuFl4belW7g+UDsAQjQAUBp1mfnTkVnuP0FXFz8VSsxJ32OGTAOSf3UdylO0zIIiP8VHDO07frzYYIW64Vq+tRc/K1R07Vg/UY48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1725955986; c=relaxed/simple;
-	bh=ApYz6Ufh7wiXgEhi9x8riKL8Lf0uI77QJCC4Ud/fcLU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SSPb0oP3lthsOpxWkHFHlqFKsIuYCYX5Hn/fz1UgnMAiFev2r/OSCkTgiisQTHf+kGAht1B+GFLBFpnLPoVB8AlYBrlArH+AbwkQlKdjwIXY4VbtiVwwq30Snzu8o2C0NmRkFzvH2x2iFpTtnZBpaX7LxVmMqR8hGWEAh5XUY/8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=citrix.com; spf=pass smtp.mailfrom=cloud.com; dkim=pass (1024-bit key) header.d=citrix.com header.i=@citrix.com header.b=POd1+WIB; arc=none smtp.client-ip=209.85.208.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=citrix.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cloud.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=citrix.com header.i=@citrix.com header.b="POd1+WIB"
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-5c3c3b63135so5603972a12.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Sep 2024 01:13:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=citrix.com; s=google; t=1725955983; x=1726560783; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=ZrAkDLaXld3+MjEVbLTf0QH6amL7yZTph2uE3DVa+eA=;
-        b=POd1+WIBRCAlTgtx+gMwrut22EwNO8TJVe/qpNU1h8FONE+AIljlCcMz+T8g+2UsNr
-         /VE3ffvRV4RWUjhX1eljynqJ3dKuh6VjKYMEjCx5bSEp9CqnOvmFkrrpoxnHjd2iYSlx
-         nrsDEfls2qwJEcgU+YVmwoi0n7FEy76kfdYqg=
+	s=arc-20240116; t=1725956249; c=relaxed/simple;
+	bh=6FYgG1IvW/082napJZ+ehi9meAzlGAz93+hEpJ8Pxps=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=NWKirQ90oDlikxau6dLq52GF0bE3ddc7gKD7lcJVXi+Pcotm7qf770sXQOs7FJXoHOCAbAZg1a2g4TxENrXIM7ekSDCz/+UoqPA9FWdAwyT8ff9z8f9HZjqRtBDVMZFQ4vSesmri3ziZ2BBNYiQTovUOvB9MWx0/sK3latm8Vso=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.198
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-il1-f198.google.com with SMTP id e9e14a558f8ab-3a04af50632so96761775ab.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Sep 2024 01:17:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725955983; x=1726560783;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZrAkDLaXld3+MjEVbLTf0QH6amL7yZTph2uE3DVa+eA=;
-        b=affERReb8AxH6KFzO9jk3hysF7cPcRWuDkHBVWv8DiBhomnOPonF3WjeKX1Six4IR3
-         xRcwBCGumOoS5BDGMMEdeRsuLtqhrsFjjGUQlKHRsASC/T7aiZJww/S0G4F6rgmIVNKU
-         xeEYh2TVU7STqPzKgkYtbdzblDhQ+WYRUtwwO7hn7rRC841eAtqvQvdl/8zWVlKHTlCJ
-         71r4JyfbxO8lMbyYRTKwDPg4IXX7tToFavzE2uPfpQE8kAVX0HY17B/cxxEdmM4B4mbI
-         lC6eIlVqupK3+yPwgmOWJ+mx4UfTM9PN7PdtOv4CkgbIBIc1SbiK+II0RQMT5VKvLk+a
-         oK+g==
-X-Forwarded-Encrypted: i=1; AJvYcCXvI7hZmTsZWhhDI8qhL3NfYDD5hP2gvh2y9luE97lNv33XRpXJj9MmXWxoOmoh1e9MV86bWKmFByrjeA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxIR21wiO97E9aMJI9Xz7XpqaQK8jX79/AcJ0mdciJXuwYY0dRT
-	nxp5EjwvALxOHLXpFtboJEyZYm8VyJSSYYOypLmPoPfaG9c7cfLbMjXgVmZhmgE=
-X-Google-Smtp-Source: AGHT+IHiB9BjTCtXbGr3lRX9SELZFUb5HLAig7DxMwgiilncoD8W9NU5mPh05hS+XdfHoA6qWwrRQQ==
-X-Received: by 2002:a17:907:1c23:b0:a8d:4d76:a75e with SMTP id a640c23a62f3a-a8d4d76a983mr600932766b.30.1725955982405;
-        Tue, 10 Sep 2024 01:13:02 -0700 (PDT)
-Received: from localhost ([213.195.124.163])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a8d258354f7sm445482166b.2.2024.09.10.01.13.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Sep 2024 01:13:02 -0700 (PDT)
-Date: Tue, 10 Sep 2024 10:13:01 +0200
-From: Roger Pau =?utf-8?B?TW9ubsOp?= <roger.pau@citrix.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Jason Andryuk <jandryuk@gmail.com>, Helge Deller <deller@gmx.de>,
-	Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
-	xen-devel@lists.xenproject.org,
-	Jason Andryuk <jason.andryuk@amd.com>,
-	Arthur Borsboom <arthurborsboom@gmail.com>, stable@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbdev/xen-fbfront: Assign fb_info->device
-Message-ID: <Zt__jTESjI7P7Vkj@macbook.local>
-References: <20240910020919.5757-1-jandryuk@gmail.com>
- <Zt_zvt3VXwim_DwS@macbook.local>
- <ad9e19af-fabd-4ce0-a9ac-741149f9aab3@suse.de>
+        d=1e100.net; s=20230601; t=1725956247; x=1726561047;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Jew5OkVpcIS81fvOcA+7NjvaPli0TbzCp58akL7QRbY=;
+        b=hl4AgK4X9G+mHpokaMFeAcvLLgXJUJgtj68/iR1weN/rRBTwgHbDMu2REY4Zn9KhZq
+         dXNQL0yJUdotfLHVLrv0e2mx4YD/55ixt6o7QsUkQlTk+u5ETKNG4+c5UkgLnHXrknsY
+         FvcJKpgkRT+iq/5qn5ElpmiGc3P2nxRFkfGkRnaaQSs9vGQ6k1eyX1nHMpQVjMw9/rPc
+         LrJFkqKhxL1aLOH7TcuWm6NmJSs/g5LO5YIyrwZegae1vBgxlHDSFXEUV1n/iJwpcvdH
+         zor0Gkp2Dxki+beQjCnMOmZn6blI6P8T0Xm6m+HUMHtN5W1m52V5yHUWB1QOe9jmzlLs
+         Rl8Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVp8EB1WXYiR+sQuvEECUGFBxzIzhj591fkvHsGPnqkwtyCcyUm6WzufTHgI9IuAEl8/p3O2HTyC2TFtQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyfHfxxSM6Dj8e4QbItZ6kGAoY7sJD/lMyEoX4slYu9nJMC1mKL
+	4ZcCjcPJbR3rOuar/6RVKNFO/lYB3EmQ/iCRmGwOWRu9dZNK+Nak5m3yU90OQFZf/M7LDlFtbpO
+	+smhoCPiUlBNbsjZFsk4rj8cl5qrDV59F2FfpyvMTs545GpWWY+QadyA=
+X-Google-Smtp-Source: AGHT+IFjbu3GEeDpBBANB5vfEjO2gZOSflmR0Gl5BDAHLkygwXw+FWBzQT1qR9Nr5rrwYJTLy2gLlufOB8R8ZlKBq7gczmRzGPGJ
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ad9e19af-fabd-4ce0-a9ac-741149f9aab3@suse.de>
+X-Received: by 2002:a05:6e02:1a4a:b0:39e:68f8:43e5 with SMTP id
+ e9e14a558f8ab-3a04f0731fbmr150648235ab.9.1725956247177; Tue, 10 Sep 2024
+ 01:17:27 -0700 (PDT)
+Date: Tue, 10 Sep 2024 01:17:27 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <00000000000002df770621bf81d9@google.com>
+Subject: [syzbot] [btrfs?] [fbdev?] BUG: unable to handle kernel NULL pointer
+ dereference in fbcon_putcs (3)
+From: syzbot <syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com>
+To: clm@fb.com, daniel@ffwll.ch, deller@gmx.de, 
+	dri-devel@lists.freedesktop.org, dsterba@suse.com, josef@toxicpanda.com, 
+	linux-btrfs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, Sep 10, 2024 at 09:29:30AM +0200, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 10.09.24 um 09:22 schrieb Roger Pau Monné:
-> > On Mon, Sep 09, 2024 at 10:09:16PM -0400, Jason Andryuk wrote:
-> > > From: Jason Andryuk <jason.andryuk@amd.com>
-> > > 
-> > > Probing xen-fbfront faults in video_is_primary_device().  The passed-in
-> > > struct device is NULL since xen-fbfront doesn't assign it and the
-> > > memory is kzalloc()-ed.  Assign fb_info->device to avoid this.
-> > > 
-> > > This was exposed by the conversion of fb_is_primary_device() to
-> > > video_is_primary_device() which dropped a NULL check for struct device.
-> > > 
-> > > Fixes: f178e96de7f0 ("arch: Remove struct fb_info from video helpers")
-> > > Reported-by: Arthur Borsboom <arthurborsboom@gmail.com>
-> > > Closes: https://lore.kernel.org/xen-devel/CALUcmUncX=LkXWeiSiTKsDY-cOe8QksWhFvcCneOKfrKd0ZajA@mail.gmail.com/
-> > > Tested-by: Arthur Borsboom <arthurborsboom@gmail.com>
-> > > CC: stable@vger.kernel.org
-> > > Signed-off-by: Jason Andryuk <jason.andryuk@amd.com>
-> > Reviewed-by: Roger Pau Monné <roger.pau@citrix.com>
-> > 
-> > > ---
-> > > The other option would be to re-instate the NULL check in
-> > > video_is_primary_device()
-> > I do think this is needed, or at least an explanation.  The commit
-> > message in f178e96de7f0 doesn't mention anything about
-> > video_is_primary_device() not allowing being passed a NULL device
-> > (like it was possible with fb_is_primary_device()).
-> > 
-> > Otherwise callers of video_is_primary_device() would need to be
-> > adjusted to check for device != NULL.
-> 
-> The helper expects a non-NULL pointer. We might want to document this.
+Hello,
 
-A BUG_ON(!dev); might be enough documentation that the function
-expected a non-NULL dev IMO.
+syzbot found the following issue on:
 
-Thanks, Roger.
+HEAD commit:    da3ea35007d0 Linux 6.11-rc7
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=15662a8b980000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=61d235cb8d15001c
+dashboard link: https://syzkaller.appspot.com/bug?extid=3d613ae53c031502687a
+compiler:       Debian clang version 15.0.6, GNU ld (GNU Binutils for Debian) 2.40
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12221420580000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1133a797980000
+
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/7bc7510fe41f/non_bootable_disk-da3ea350.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/1ab780d224f6/vmlinux-da3ea350.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/834dde85c1c2/bzImage-da3ea350.xz
+mounted in repro: https://storage.googleapis.com/syzbot-assets/f56cd5277a08/mount_8.gz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
+
+BTRFS info (device loop0): disabling free space tree
+BTRFS info (device loop0): clearing compat-ro feature flag for FREE_SPACE_TREE (0x1)
+BTRFS info (device loop0): clearing compat-ro feature flag for FREE_SPACE_TREE_VALID (0x2)
+BUG: kernel NULL pointer dereference, address: 0000000000000000
+#PF: supervisor instruction fetch in kernel mode
+#PF: error_code(0x0010) - not-present page
+PGD 357e5067 P4D 357e5067 PUD 3c1d6067 PMD 0 
+Oops: Oops: 0010 [#1] PREEMPT SMP KASAN NOPTI
+CPU: 0 UID: 0 PID: 5093 Comm: syz-executor182 Not tainted 6.11.0-rc7-syzkaller #0
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2~bpo12+1 04/01/2014
+RIP: 0010:0x0
+Code: Unable to access opcode bytes at 0xffffffffffffffd6.
+RSP: 0018:ffffc90002c5f6b8 EFLAGS: 00010282
+RAX: 0000000000000000 RBX: ffff88801acc9000 RCX: 0000000000000001
+RDX: ffff888033fd413e RSI: ffff88801f5cb000 RDI: ffff88801acc9000
+RBP: 1ffff110067fa827 R08: 0000000000000000 R09: 000000000000009f
+R10: 0000000000000002 R11: 0000000000000000 R12: ffff88801f5cb000
+R13: dffffc0000000000 R14: 0000000000000000 R15: ffff888033fd413e
+FS:  0000555586260380(0000) GS:ffff88801fe00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffffffffffffffd6 CR3: 00000000409ee000 CR4: 0000000000350ef0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ <TASK>
+ fbcon_putcs+0x255/0x390 drivers/video/fbdev/core/fbcon.c:1288
+ do_update_region+0x396/0x450 drivers/tty/vt/vt.c:619
+ invert_screen+0x401/0xe50 drivers/tty/vt/vt.c:740
+ highlight drivers/tty/vt/selection.c:57 [inline]
+ clear_selection+0x59/0x80 drivers/tty/vt/selection.c:87
+ vc_do_resize+0x6e6/0x17f0 drivers/tty/vt/vt.c:1187
+ vc_resize include/linux/vt_kern.h:49 [inline]
+ fbcon_set_disp+0xac9/0x11d0 drivers/video/fbdev/core/fbcon.c:1389
+ con2fb_init_display drivers/video/fbdev/core/fbcon.c:794 [inline]
+ set_con2fb_map+0xa6c/0x10a0 drivers/video/fbdev/core/fbcon.c:865
+ fbcon_set_con2fb_map_ioctl+0x207/0x320 drivers/video/fbdev/core/fbcon.c:3092
+ do_fb_ioctl+0x38f/0x7b0 drivers/video/fbdev/core/fb_chrdev.c:138
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:907 [inline]
+ __se_sys_ioctl+0xfc/0x170 fs/ioctl.c:893
+ do_syscall_x64 arch/x86/entry/common.c:52 [inline]
+ do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f7cf95f6fa9
+Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 f1 17 00 00 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffdb38b4c58 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 7573617461646f6e RCX: 00007f7cf95f6fa9
+RDX: 00000000200000c0 RSI: 0000000000004610 RDI: 0000000000000003
+RBP: 00007f7cf96705f0 R08: 00005555862614c0 R09: 00005555862614c0
+R10: 00005555862614c0 R11: 0000000000000246 R12: 00007ffdb38b4c80
+R13: 00007ffdb38b4ea8 R14: 431bde82d7b634db R15: 00007f7cf964001d
+ </TASK>
+Modules linked in:
+CR2: 0000000000000000
+---[ end trace 0000000000000000 ]---
+RIP: 0010:0x0
+Code: Unable to access opcode bytes at 0xffffffffffffffd6.
+RSP: 0018:ffffc90002c5f6b8 EFLAGS: 00010282
+RAX: 0000000000000000 RBX: ffff88801acc9000 RCX: 0000000000000001
+RDX: ffff888033fd413e RSI: ffff88801f5cb000 RDI: ffff88801acc9000
+RBP: 1ffff110067fa827 R08: 0000000000000000 R09: 000000000000009f
+R10: 0000000000000002 R11: 0000000000000000 R12: ffff88801f5cb000
+R13: dffffc0000000000 R14: 0000000000000000 R15: ffff888033fd413e
+FS:  0000555586260380(0000) GS:ffff88801fe00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffffffffffffffd6 CR3: 00000000409ee000 CR4: 0000000000350ef0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup

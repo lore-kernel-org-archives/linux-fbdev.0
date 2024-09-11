@@ -1,160 +1,97 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C55D21B3F02;
-	Wed, 11 Sep 2024 17:38:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53FC11B655A;
+	Wed, 11 Sep 2024 18:25:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726076327; cv=none; b=T2DkCk7wFQcwire4d7IYxjTncRbvU8AyFq60XNFek1gYKJTnZofX3mf7ds8grdXxEp95WFG3JE1JediMEYm0b2JYGkOco19zwGSR6M/iOhxDuQKobB0w+76Vk1mPJqDIbGzzoOrKL1trutjLGNzAXAL8l+lXN71BpBo1DwvIVok=
+	t=1726079123; cv=none; b=NKSEOvs4PaP/0C26aa+8Il+ySOlIZm8ApJexgzojlwKSltBN9jrGUX7a5Q7alfL7AlOsv1nBmeTJ2LBnEP6QdKg0YnEWuw6audrSeN4Pra0CG/rHUiEQdrgmL7eA3hjqGO7hF9kukuMAOMVjTaadvVDJWLPGDbHxMfnWpCk71I4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726076327; c=relaxed/simple;
-	bh=g6+wyN8Kv5Lg1kJXHnvJ2PGU1BTcbfK2lJBeOQXoYLs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IQ+sbmEE/fQ060biWj4fbT8cX/iVh8Dp0AnShT1IR9FlqlZEZuTQgwWQVsG3jGTdkaLM2gSPL2gMQWQeZCCQH20+AUe+HxsDNHxhsFLV/5Ycc/tjuHaletftIOhBrkNqQjXiMB6yEp5TBip9lEUTQKpF7YqH0c5S7bKbsdxW9a4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=uOWoJovH; arc=none smtp.client-ip=212.227.15.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1726079123; c=relaxed/simple;
+	bh=ZFbm6RvuGzyg/OXzLGx4dFjmyQYMdMuowComNjj6Bbc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NuyI+Sz/Z7mBnGkHu+k1j3wZfbJQy/sff3Oknh3+gIjuDs613g5rDBM3cb9td8YKlm4uJYmQVpBvWeTZNtXbKZOeM+6lZhJzNwaeWL+BZlJEkF0gKhVcSv0suXjhpXRNQnMOZZrAfF+Wk4IwKVBIKdvHAcfpVQ2ZyUnUdYg5Qek=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=avqJjFg4; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="uOWoJovH"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1726076308; x=1726681108; i=deller@gmx.de;
-	bh=Qhy9k2xtEcQS4WXvB5kAB9HrzDAfqIQg4cyJSLNvgIw=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=uOWoJovHO0PwCl/t6NszViYCwzoizCkBGVaOZepPBzBGz/X74hm8CIRQuc/elyQH
-	 BBpkX1layM/JYbhNatsZgz42x/TnzhUtpV5qfkOlEhPPHys/VkJPmTE6Jm137DYl6
-	 QA+nCA6ExKb4zrCQzvgAcbIwjtwsQr5DiCWmQo9oHcf5Ut0MOsGBbTfi0+c+9yEuA
-	 v++3xmQ82YJecqOjvm6zkh5A6W19lZD7zhz7+vOv80v1KSoDPty01gnVRhLA3hFlw
-	 3ZLGFVLt8sW2oCNEJdgQWpUVVrYezess2l4U43KTdVBLQAJq6NELMhUuIwlhNGhSi
-	 ygDDg/qKXw97wuXTyg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzFr-1sWUo12IOv-00YVXu; Wed, 11
- Sep 2024 19:38:28 +0200
-Message-ID: <7baab3f7-1185-473d-83a7-07ad49a4130a@gmx.de>
-Date: Wed, 11 Sep 2024 19:38:26 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="avqJjFg4"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-42cd74c0d16so532655e9.1;
+        Wed, 11 Sep 2024 11:25:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1726079121; x=1726683921; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=TxR+vNB93ufPg0Y1ZRk8v4VwhhNXPxM1gxuKsa+d6/0=;
+        b=avqJjFg4O4NdBLdgSPIBByggRc6VkPGcarvqwNd+yq2tWrnVbolb/ulrzn+dz1mlJX
+         Jx36PQOFsMXZTQrTIhwHNNGPP4kfWa8CuE03mcuqxku4NN/PIVA4u/ZGNFeetZ3qJrPQ
+         mqar0m0V+eDucVKdgEWVSM2nh4Tpbvapqbv/VxXGLbQS1UHGtM/UOBqIpNESvwzWheXJ
+         icqSMfs4vhs8wDwDpfrKOsyolM/MDemBz06HJ2kjnp5y2x+oqvZVgG9zh3PAk4efNBZX
+         9hgI3Hg9dlDjwzpkRMC1hL+xzXb0HuBEJtyV9QZLNpHVOE0BH2XOKmwVKoWaX5gAsnee
+         m4lQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1726079121; x=1726683921;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=TxR+vNB93ufPg0Y1ZRk8v4VwhhNXPxM1gxuKsa+d6/0=;
+        b=QHfsKnp3e98dSNxAK9vxN5g+HRi3foWk08iqc84aGvplbQst1WY0uTuAHlLc1iYC6l
+         ehmDqJPV8XQKfEWl287idp1w+ZKTbxoqpkF5ognmko4c1YIUtVczqv8lAdzyphjTZ7WH
+         QYvEMZW6Vw+88mjvSh/qXyu5uUeh2aStinHgD4BnVpfVG4ZvwLMaflbPiNW0so19uTVr
+         lyn0ju7FAVRzK4fKLMnb9VYjIBW2QURQCdm6P8wVSPTBuMbRE+eD/uF2agEuySQoy9B4
+         kEEj/TYFqSah98uziNRFL/6q0WtNbpqjQzlmCpwG3IWyWdRRza5exRLjuXcDdsil2ai2
+         k+0w==
+X-Forwarded-Encrypted: i=1; AJvYcCUAc2fgLeU9+IgFdOsDuNweuU9SEusRkFcQtvrEwQnCim40xYCtscGQIegLh1yd6T/TSNt2hQYAKCKjrx8=@vger.kernel.org, AJvYcCVEEBDcaMv+TbkdN9DQ6lm4r/6tu3gh4ep9X1jozZEvtWDLL8imjoney8MfHDo0Q6914C4VC9isSX364sko@vger.kernel.org, AJvYcCVxV3Sl5YIhmLQJlGhARptqKggoKIwaNcNdsNlcaA4dbQ9WkjbsMEXQyVKCvScifZ8I3Gqbi0tMyGfi3bbrVMY=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxZR+Uv8LpJcQhcHZ0d+geGPdM9Kk5ZuBTHKhB6pFTYPDBIACd5
+	CekxAwAyBFXAglQg0tRzDiVXQGFnXmQ5RI+COO6KtqqrESz93bzI
+X-Google-Smtp-Source: AGHT+IG6EBJS+D/O14RGqyVdq3Z1OqN0oOzz6xJGseNGrMXdlv0fn7sOAFcf/NaC2Z7Gh++8z1XETA==
+X-Received: by 2002:a05:600c:45cf:b0:42c:a802:540a with SMTP id 5b1f17b1804b1-42cdb511f33mr3768055e9.7.1726079119903;
+        Wed, 11 Sep 2024 11:25:19 -0700 (PDT)
+Received: from void.void ([141.226.10.46])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42cb099acf6sm146736855e9.9.2024.09.11.11.25.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Sep 2024 11:25:19 -0700 (PDT)
+From: Andrew Kreimer <algonell@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-omap@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org,
+	Andrew Kreimer <algonell@gmail.com>,
+	Matthew Wilcox <willy@infradead.org>
+Subject: [PATCH] video: fbdev: Fix a typo
+Date: Wed, 11 Sep 2024 21:24:37 +0300
+Message-ID: <20240911182503.3600-1-algonell@gmail.com>
+X-Mailer: git-send-email 2.46.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: pxafb: Fix use after free vulnerability in
- pxafb_driver Driver Due to Race Condition
-To: Kaixin Wang <kxwang23@m.fudan.edu.cn>
-Cc: 21210240012@m.fudan.edu.cn, 21302010073@m.fudan.edu.cn,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, kuninori.morimoto.gx@renesas.com,
- laurent.pinchart@ideasonboard.com
-References: <20240911142952.833223-1-kxwang23@m.fudan.edu.cn>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240911142952.833223-1-kxwang23@m.fudan.edu.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:b/076N8l5mKvA6rGlpJwUtQfa7bjpxKRI0K+1CtW0NBLZoABanL
- gzKuY/7W/xm19/aa52igjIyyzatXEWfaeMpH30KFaLJtITdsmSPD1J4E9Aoes7OM2hYN07o
- 5LGbmLbwWspSgZXpbFcxXpGevZu7dvlhAd9UfiOTmNoOT5nR3VPt41fbhaDM2+mHB1eK7L/
- dsLyrOuOAMy26tthdpQ5g==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:9VSz81223XM=;1HqNObzETcvWvPnGGo5oqwhDhPl
- KlnIV0Qt3ivvcYOfLBJ6zV4MlRuWB3PgrqF6ILjzub6FUeGS6DfnO2o1k82xlrCL3Ll4VgJ2h
- lONxSKUQllsLDp6rrXObjZ/Oap+VPKF66FbEcpWG70ir4daC6eLt50J6iUG3LJWVdxQvxgaT2
- Y0Qa3IAJZ7LtskRCPAVRANSNi4xxI0v0ALEcciw2p1RRQfP6hwmg/fgZ85JTETH13r8UkY1Mn
- 465tOtU6EdcCpmZqQCZPpLd1zAlXlmSNsQ1de7Uddv0Q26kHhlJTelN4S8s2FEpynIAGlpB8s
- UJEWLBeLkqS1MV7l+8iLzmJ4ZwcxackPlKcUtAq+chRZPjXOSOa/UdwEWTRyiovfTApTSW9Nd
- zLChc7VLzODj4+mKtDT5fpUw6q/crmu5ySYMN4QxbUsDssYL0hyDXFf30MmHxSmVjRCpQ8Jlt
- p8SoNBVfS1FBHjqlW39m8V3lIxuitQmtM0zFCcCIx7jdDFdj2jDea+GwHSgMNSmdZVf8NK2jc
- l9P4QlyRZ+Cu2VD+aEiyXz+sAMzn/3UTRMMHdqb5A2UcIEZK5rX/hp4pcbQR1ZWJ0FT4LoUoD
- afK2unhM6QHZYbE5KC8LxgO45QplWYtSWtSKNhy2u6VWEhRwYcTejr1ye/WR03uzpSRgYWO5O
- CZcL6er0zF3lV6IO04of8DLyzHEv2pJRZrY59fWeerrm4accZxug/gjest+Tspn+6fIN9ABsa
- +jhbGAETjiH+/ro6Ani2LMi1Du5WTCwP0bbtD0/V4KFvVuTTxuEZF4BLL7VvFBxipQwVs87HR
- NbpPTMVyfXQWpnxw3big5PGw==
+Content-Transfer-Encoding: 8bit
 
-On 9/11/24 16:29, Kaixin Wang wrote:
-> In the pxafb_probe function, it calls the pxafb_init_fbinfo function,
-> after which &fbi->task is associated with pxafb_task. Moreover,
-> within this pxafb_init_fbinfo function, the pxafb_blank function
-> within the &pxafb_ops struct is capable of scheduling work.
->
-> If we remove the module which will call pxafb_remove to make cleanup,
-> it will call unregister_framebuffer function which can call
-> do_unregister_framebuffer to free fbi->fb through
-> put_fb_info(fb_info), while the work mentioned above will be used.
-> The sequence of operations that may lead to a UAF bug is as follows:
->
-> CPU0                                                CPU1
->
->                                     | pxafb_task
-> pxafb_remove                       |
-> unregister_framebuffer(info)       |
-> do_unregister_framebuffer(fb_info) |
-> put_fb_info(fb_info)               |
-> // free fbi->fb                    | set_ctrlr_state(fbi, state)
->                                     | __pxafb_lcd_power(fbi, 0)
->                                     | fbi->lcd_power(on, &fbi->fb.var)
->                                     | //use fbi->fb
->
-> Fix it by ensuring that the work is canceled before proceeding
-> with the cleanup in pxafb_remove.
->
-> Note that only root user can remove the driver at runtime.
->
-> Signed-off-by: Kaixin Wang <kxwang23@m.fudan.edu.cn>
-> ---
->   drivers/video/fbdev/pxafb.c | 1 +
->   1 file changed, 1 insertion(+)
+Fix a typo in comments.
 
-I've added the patch to the fbdev git tree, but changed the title to:
-"fbdev: pxafb: Fix possible use after free in pxafb_task()"
+Reported-by: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Kreimer <algonell@gmail.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks!
-Helge
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
+index 9a7253355f6d..cdb1dedca492 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
+@@ -351,7 +351,7 @@ struct omap_hdmi {
+ 	bool audio_configured;
+ 	struct omap_dss_audio audio_config;
+ 
+-	/* This lock should be taken when booleans bellow are touched. */
++	/* This lock should be taken when booleans below are touched. */
+ 	spinlock_t audio_playing_lock;
+ 	bool audio_playing;
+ 	bool display_enabled;
+-- 
+2.46.0
 

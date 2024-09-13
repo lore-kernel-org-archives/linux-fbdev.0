@@ -1,100 +1,398 @@
-Received: from smtpbgau1.qq.com (smtpbgau1.qq.com [54.206.16.166])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 809FD57CB4;
-	Thu, 12 Sep 2024 16:30:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.16.166
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 182F31D54CC;
+	Fri, 13 Sep 2024 08:14:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726158659; cv=none; b=hg2eKvVEa6ySmVGn8WU3drlKihHtLeU2/lMMk9OVDpeDpapByJMqB+nk4zZi1y9gbLkXLlyE2ZLa3pginynSvU2QCYvwEVo2fLSCFkFR71XCf9FPDdhw+l9F0YnefHjQ76H2L0H9V+k+uK+rhg7SqrVpeXjKHWbDwsI5SSk8UG4=
+	t=1726215253; cv=none; b=p8IWIONbQTW2fqBVzOdc2OEoVGBeKvTS504Qc1BpAWY/Hkiu/N70a3zKu5TqwdkkS4rr2AVFHrqp8f0PcgANhQp8Wag3/8s9XzpI0ZUeQtKd6a9L0TsLTlPEZIosN3wdr5RgcO0Z8MRa+d69BptYWnC4M0n9dvKCi6Ekeb/uSoE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726158659; c=relaxed/simple;
-	bh=pIAvUz7AdR7Cd4/p7TKjjsRTaWtGb38TbvttvobxCt0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=AyrAt/8rR3c0FS2rY2GwPDylR6VbCgeKk8X3P9uHrMNFgL2q6ChQrJTfAP7TFygNvkObntnbFqQ8h10OXDRK1xsYZNmQkI01P73apDoAd6T3sPDrk6hetGqOZN0I5gNE0U/FCEzs4DHj1xCUOg49IuJoLnb1NYWcTKJQFmbe94s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=m.fudan.edu.cn; spf=pass smtp.mailfrom=m.fudan.edu.cn; dkim=fail (1024-bit key) header.d=163.com header.i=@163.com header.b=pRkYPHm0 reason="signature verification failed"; arc=none smtp.client-ip=54.206.16.166
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=m.fudan.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=m.fudan.edu.cn
+	s=arc-20240116; t=1726215253; c=relaxed/simple;
+	bh=eVz5Oq/QKf8lAddR0QlaGyYVcSvIMN+rucM08tf506I=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=jMR8kR9HTtoMi0ydmkKjxlSqY6kRKXeZ9K1nfsLuOyFrkHjQfmdUCuYow3lA+Ga31YnW7NHc7QVK2OvinR1/pmPwmjoVpp8Ai9qyU7mwwQ6FIUTHk684kwHL2a5T0ctv8wIyH+it7FrDqkMS5lqRR/dNhSBQv8NK9WVYrxJKHvQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hpCbTRbn; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=163.com header.i=@163.com header.b="pRkYPHm0"
-X-QQ-mid: bizesmtp87t1726158613tg3c3bqc
-X-QQ-Originating-IP: ivnHupChGXKxz0+qNd23PfVkuiwQxwfKgQiTgP/OwLo=
-Received: from m16.mail.163.com ( [220.197.31.5])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Fri, 13 Sep 2024 00:30:11 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 18047817215908464017
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:Subject:Content-Type:MIME-Version:
-	Message-ID; bh=KN/BuQSTcSNJl+7Nu1E4ko/CumlClB1S2fh3meVE1rE=; b=p
-	RkYPHm0vahx7yzaj6TgqxGr1asPuZK9UauK8HTEMLF1JGki2ouE+sPlPodWw6CXT
-	FcEM9pEx2iOn9YJ5L2mCZkQrJz5azIacB7m5txFuRg1iQh7ctxnnrZOUEroPZPpS
-	8YHWEoQJfe7tGk5WpyOuxiNPkwwvvSuOemxP1/jke4=
-Received: from kxwang23$m.fudan.edu.cn ( [104.238.222.239] ) by
- ajax-webmail-wmsvr-40-136 (Coremail) ; Fri, 13 Sep 2024 00:29:33 +0800
- (CST)
-Date: Fri, 13 Sep 2024 00:29:33 +0800 (CST)
-From: "Kaixin Wang" <kxwang23@m.fudan.edu.cn>
-To: "Helge Deller" <deller@gmx.de>
-Cc: 21210240012@m.fudan.edu.cn, 21302010073@m.fudan.edu.cn, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, kuninori.morimoto.gx@renesas.com, 
-	laurent.pinchart@ideasonboard.com
-Subject: Re: [PATCH] fbdev: pxafb: Fix use after free vulnerability in
- pxafb_driver Driver Due to Race Condition
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version XT5.0.14 build 20240801(9da12a7b)
- Copyright (c) 2002-2024 www.mailtech.cn 163com
-In-Reply-To: <7baab3f7-1185-473d-83a7-07ad49a4130a@gmx.de>
-References: <20240911142952.833223-1-kxwang23@m.fudan.edu.cn>
- <7baab3f7-1185-473d-83a7-07ad49a4130a@gmx.de>
-X-NTES-SC: AL_Qu2ZBP2et00s5SGbYOkXn0kbjug3WcW0u/0k3oJUNps0sSbJxCIce1FGAHTrzv+TMyOvnjaRQClvyeFHTa9cY5isaIJncdeUlrTj9gzSNVvL
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hpCbTRbn"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-3780c8d689aso1292642f8f.0;
+        Fri, 13 Sep 2024 01:14:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1726215249; x=1726820049; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=OUpZYWJHNms3nGNITBFXq/IMDKxt7l067rR2xQ4gtBY=;
+        b=hpCbTRbnhzz46jw9Y46fDWKr/+GBCvPe/d87ed27MJnZir8KgkqyuEMflRik0z5jur
+         nmrH3pi2Nq/GObBXDIt1c74puVW16Gaebqsh6c9w/lb9NZZxfH24b9ye1cL5tCdH2RV6
+         TZZ573IJuU2vRNuxsW1+OjQnG3bpQVjmqIVMMuUo2ivU0zIM5zoiKlFg6rd5uwU9ygF+
+         5HkESfFBp76zXx6L90j2SA3CPb+B9MHe7C7c3O8ud9cv+zNBdSC9l+tRMm5T9erfcMsL
+         K6JIFXDmUHBxZzEfd0v8lKbje671d2njBDtUcubrQbuQuJtyQkcuqg3A2N//3oClMHBC
+         BXbQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1726215249; x=1726820049;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=OUpZYWJHNms3nGNITBFXq/IMDKxt7l067rR2xQ4gtBY=;
+        b=ayQjod3cziKheHHJzvxQW8Xj3RLLGS9heb+9qylAXYbt/9rBXV6/QGabM4PkybpCRd
+         +R9c4z3QxqKboTSn1MKfpHbkZ9R2EfYnO8srhkATKIwD5sHY3O1ZA5B3YbPMy3uPeo56
+         cdpa7CtiMAe+x120GnUGuGFMJ1vT79WOpUTz61edb0em0xXmVRaIVfkhvwR3VQSfY0Ro
+         H+MOCPM7KLeMFcVcvPFCoThIEKlNgo90rj1TSUM5k/6f8Yu7aZ/EkFok9PzFM8HbR1WD
+         3ebZAlB8pwYjJiydMIPgx6HL4BKUtZ/wnfFfkyQIkYQ1siAdYWa7VnEw8nVXzOo5Y6j8
+         TUDQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUCPOodVlfZldhMP4lSHoNX+sg/POQuiQtDmugh5TgoQI9ciIIrIpdeE9ti9/kzwoE9isUMfAEDIvaxiJ4=@vger.kernel.org, AJvYcCUf/7DeKy7nq/2TvpDGapM1xAoqF2YkbBzRAeK0QkbHH1+0wI2qD5NEkFXSgmygn9Ske6DULSzyEa0E@vger.kernel.org, AJvYcCVJk8lqXvXnrF2XmZcnz5YbtWZ38GifSoMqgQOGQQykJ/tJi+LR6vyhonkiGNDkuXiLp8PSwdbfr/5V@vger.kernel.org, AJvYcCWM96+tFEQZHfFFBdgkREzLadZcWipsmCOT9gwnHoEvH2AT+lT1DXkiJNmldokBdPub5VhZNIBkRkoC@vger.kernel.org, AJvYcCXL9tsP0mxO03eyDPs0t3pNp8wKCPspThFRy5uvMCYd0JKi/twG0aqxkqltyDblNVJHkvhaOp6BSqZ+e5jU@vger.kernel.org
+X-Gm-Message-State: AOJu0YwJOUD8o4invB9HU4Av29zQ5XfvI/+hb0wZDAPYs9HJkKuojF7V
+	O2DH219i4D1YbAXn2IkQ2w9ZFuT+Q790KhGV3igsK94zsnQtDvIK
+X-Google-Smtp-Source: AGHT+IH0nsJjNKBUR7RoSFEOwZT35nsdpzzT6hlUcPSM/kdZ1H3tgfife+989nbabMsrd4jW4iSnPA==
+X-Received: by 2002:a5d:5ccd:0:b0:374:c35e:de72 with SMTP id ffacd0b85a97d-378c2cfee06mr2918355f8f.2.1726215248416;
+        Fri, 13 Sep 2024 01:14:08 -0700 (PDT)
+Received: from ?IPv6:2001:a61:341e:1201:c434:b5b1:98a6:efed? ([2001:a61:341e:1201:c434:b5b1:98a6:efed])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42d9b1947e2sm15348145e9.44.2024.09.13.01.14.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 13 Sep 2024 01:14:07 -0700 (PDT)
+Message-ID: <9c90286c366d064aa08dc001df0619b6bc49b427.camel@gmail.com>
+Subject: Re: [PATCH 8/8] iio:adc:ad7606: Add iio-backend support
+From: Nuno =?ISO-8859-1?Q?S=E1?= <noname.nuno@gmail.com>
+To: Guillaume Stols <gstols@baylibre.com>, Uwe
+ =?ISO-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>, Lars-Peter Clausen
+ <lars@metafoo.de>, Michael Hennerich <Michael.Hennerich@analog.com>,
+ Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-doc@vger.kernel.org, 
+	20240705211452.1157967-2-u.kleine-koenig@baylibre.com, 
+	20240712171821.1470833-2-u.kleine-koenig@baylibre.com, 
+	cover.1721040875.git.u.kleine-koenig@baylibre.com, aardelean@baylibre.com
+Date: Fri, 13 Sep 2024 10:14:07 +0200
+In-Reply-To: <31a1dfeb-2d72-44bc-b3ca-36b4115c3010@baylibre.com>
+References: 
+	<20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com>
+	 <20240815-ad7606_add_iio_backend_support-v1-8-cea3e11b1aa4@baylibre.com>
+	 <5dedf51d8ec19b7b3bd0c6cb136048344f1c1007.camel@gmail.com>
+	 <31a1dfeb-2d72-44bc-b3ca-36b4115c3010@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.52.4 (3.52.4-1.fc40) 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <1C2E4AB314A69BCF+750f4f16.c216.191e7118e58.Coremail.kxwang23@m.fudan.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:_____wDnr8juFuNmG1IHAA--.2650W
-X-CM-SenderInfo: zprtkiiuqyikitw6il2tof0z/1tbiwh5Y2GWXw6aYUAADsA
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:m.fudan.edu.cn:qybglogicsvrsz:qybglogicsvrsz4a-0
 
-CgpBdCAyMDI0LTA5LTEyIDAxOjM4OjI2LCAiSGVsZ2UgRGVsbGVyIiA8ZGVsbGVyQGdteC5kZT4g
-d3JvdGU6Cj5PbiA5LzExLzI0IDE2OjI5LCBLYWl4aW4gV2FuZyB3cm90ZToKPj4gSW4gdGhlIHB4
-YWZiX3Byb2JlIGZ1bmN0aW9uLCBpdCBjYWxscyB0aGUgcHhhZmJfaW5pdF9mYmluZm8gZnVuY3Rp
-b24sCj4+IGFmdGVyIHdoaWNoICZmYmktPnRhc2sgaXMgYXNzb2NpYXRlZCB3aXRoIHB4YWZiX3Rh
-c2suIE1vcmVvdmVyLAo+PiB3aXRoaW4gdGhpcyBweGFmYl9pbml0X2ZiaW5mbyBmdW5jdGlvbiwg
-dGhlIHB4YWZiX2JsYW5rIGZ1bmN0aW9uCj4+IHdpdGhpbiB0aGUgJnB4YWZiX29wcyBzdHJ1Y3Qg
-aXMgY2FwYWJsZSBvZiBzY2hlZHVsaW5nIHdvcmsuCj4+Cj4+IElmIHdlIHJlbW92ZSB0aGUgbW9k
-dWxlIHdoaWNoIHdpbGwgY2FsbCBweGFmYl9yZW1vdmUgdG8gbWFrZSBjbGVhbnVwLAo+PiBpdCB3
-aWxsIGNhbGwgdW5yZWdpc3Rlcl9mcmFtZWJ1ZmZlciBmdW5jdGlvbiB3aGljaCBjYW4gY2FsbAo+
-PiBkb191bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyIHRvIGZyZWUgZmJpLT5mYiB0aHJvdWdoCj4+IHB1
-dF9mYl9pbmZvKGZiX2luZm8pLCB3aGlsZSB0aGUgd29yayBtZW50aW9uZWQgYWJvdmUgd2lsbCBi
-ZSB1c2VkLgo+PiBUaGUgc2VxdWVuY2Ugb2Ygb3BlcmF0aW9ucyB0aGF0IG1heSBsZWFkIHRvIGEg
-VUFGIGJ1ZyBpcyBhcyBmb2xsb3dzOgo+Pgo+PiBDUFUwICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgQ1BVMQo+Pgo+PiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICB8IHB4YWZiX3Rhc2sKPj4gcHhhZmJfcmVtb3ZlICAgICAgICAgICAgICAg
-ICAgICAgICB8Cj4+IHVucmVnaXN0ZXJfZnJhbWVidWZmZXIoaW5mbykgICAgICAgfAo+PiBkb191
-bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKGZiX2luZm8pIHwKPj4gcHV0X2ZiX2luZm8oZmJfaW5mbykg
-ICAgICAgICAgICAgICB8Cj4+IC8vIGZyZWUgZmJpLT5mYiAgICAgICAgICAgICAgICAgICAgfCBz
-ZXRfY3RybHJfc3RhdGUoZmJpLCBzdGF0ZSkKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgfCBfX3B4YWZiX2xjZF9wb3dlcihmYmksIDApCj4+ICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHwgZmJpLT5sY2RfcG93ZXIob24sICZmYmktPmZiLnZhcikKPj4g
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAvL3VzZSBmYmktPmZiCj4+Cj4+
-IEZpeCBpdCBieSBlbnN1cmluZyB0aGF0IHRoZSB3b3JrIGlzIGNhbmNlbGVkIGJlZm9yZSBwcm9j
-ZWVkaW5nCj4+IHdpdGggdGhlIGNsZWFudXAgaW4gcHhhZmJfcmVtb3ZlLgo+Pgo+PiBOb3RlIHRo
-YXQgb25seSByb290IHVzZXIgY2FuIHJlbW92ZSB0aGUgZHJpdmVyIGF0IHJ1bnRpbWUuCj4+Cj4+
-IFNpZ25lZC1vZmYtYnk6IEthaXhpbiBXYW5nIDxreHdhbmcyM0BtLmZ1ZGFuLmVkdS5jbj4KPj4g
-LS0tCj4+ICAgZHJpdmVycy92aWRlby9mYmRldi9weGFmYi5jIHwgMSArCj4+ICAgMSBmaWxlIGNo
-YW5nZWQsIDEgaW5zZXJ0aW9uKCspCj4KPkkndmUgYWRkZWQgdGhlIHBhdGNoIHRvIHRoZSBmYmRl
-diBnaXQgdHJlZSwgYnV0IGNoYW5nZWQgdGhlIHRpdGxlIHRvOgo+ImZiZGV2OiBweGFmYjogRml4
-IHBvc3NpYmxlIHVzZSBhZnRlciBmcmVlIGluIHB4YWZiX3Rhc2soKSIKPgo+VGhhbmtzIQo+SGVs
-Z2UKPgo+CgoKVGhhbmtzIGZvciB0aGUgcmV2aWV3ISBJIGFwcHJlY2lhdGUgdGhlIGFkanVzdG1l
-bnQgdG8gdGhlIHBhdGNoIHRpdGxlIHRvIG1ha2UgaXQgbW9yZSBwcmVjaXNlLgoKQmVzdCByZWdh
-cmRzLApLYWl4aW4gV2FuZwo=
+On Thu, 2024-09-12 at 12:13 +0200, Guillaume Stols wrote:
+> On 9/5/24 10:40, Nuno S=C3=A1 wrote:
+> > On Thu, 2024-08-15 at 12:12 +0000, Guillaume Stols wrote:
+> > > - Basic support for iio backend.
+> > > - Supports IIO_CHAN_INFO_SAMP_FREQ R/W.
+> > > - Only hardware mode is available, and that IIO_CHAN_INFO_RAW is not
+> > > =C2=A0=C2=A0 supported if iio-backend mode is selected.
+> > >=20
+> > > A small correction was added to the driver's file name in the Kconfig
+> > > file's description.
+> > >=20
+> > > Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+> > > ---
+> > Hi Guillaume,
+> >=20
+> > Some initial feedback from me...
+> >=20
+> > > =C2=A0=C2=A0drivers/iio/adc/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
+=C2=A0=C2=A0 3 +-
+> > > =C2=A0=C2=A0drivers/iio/adc/ad7606.c=C2=A0=C2=A0=C2=A0=C2=A0 | 103 ++=
++++++++++++++++++++++++++++++++++-------
+> > > -
+> > > =C2=A0=C2=A0drivers/iio/adc/ad7606.h=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 =
+16 +++++++
+> > > =C2=A0=C2=A0drivers/iio/adc/ad7606_par.c |=C2=A0 98 +++++++++++++++++=
+++++++++++++++++++++++-
+> > > =C2=A0=C2=A04 files changed, 200 insertions(+), 20 deletions(-)
+> > >=20
+> > > diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> > > index 88e8ce2e78b3..01248b6df868 100644
+> > > --- a/drivers/iio/adc/Kconfig
+> > > +++ b/drivers/iio/adc/Kconfig
+> > > @@ -227,9 +227,10 @@ config AD7606_IFACE_PARALLEL
+> > > =C2=A0=C2=A0	help
+> > > =C2=A0=C2=A0	=C2=A0 Say yes here to build parallel interface support =
+for Analog
+> > > Devices:
+> > > =C2=A0=C2=A0	=C2=A0 ad7605-4, ad7606, ad7606-6, ad7606-4 analog to di=
+gital converters
+> > > (ADC).
+> > > +	=C2=A0 It also support iio_backended devices for AD7606B.
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0	=C2=A0 To compile this driver as a module, choose M here=
+: the
+> > > -	=C2=A0 module will be called ad7606_parallel.
+> > > +	=C2=A0 module will be called ad7606_par.
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0config AD7606_IFACE_SPI
+> > > =C2=A0=C2=A0	tristate "Analog Devices AD7606 ADC driver with spi inte=
+rface
+> > > support"
+> > > diff --git a/drivers/iio/adc/ad7606.c b/drivers/iio/adc/ad7606.c
+> > > index 99d5ca5c2348..a753d5caa9f8 100644
+> > > --- a/drivers/iio/adc/ad7606.c
+> > > +++ b/drivers/iio/adc/ad7606.c
+> > > @@ -21,6 +21,7 @@
+> > > =C2=A0=C2=A0#include <linux/util_macros.h>
+> > > =C2=A0=C2=A0#include <linux/units.h>
+> > > +
+> > > +	/* backend manages interruptions by itself.*/
+> > missing space before closing the comment (also not sure the comments ad=
+ds much)
+>=20
+>=20
+> thx, will check again
+>=20
+>=20
+> >=20
+> > > +	if (!st->back) {
+> > > +		ret =3D wait_for_completion_timeout(&st->completion,
+> > > +						=C2=A0 msecs_to_jiffies(1000));
+> > > +		if (!ret) {
+> > > +			ret =3D -ETIMEDOUT;
+> > > +			goto error_ret;
+> > > +		}
+> > > =C2=A0=C2=A0	}
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0	ret =3D ad7606_read_samples(st);
+> > > @@ -271,6 +284,12 @@ static int ad7606_read_raw(struct iio_dev *indio=
+_dev,
+> > > =C2=A0=C2=A0	case IIO_CHAN_INFO_OVERSAMPLING_RATIO:
+> > > =C2=A0=C2=A0		*val =3D st->oversampling;
+> > > =C2=A0=C2=A0		return IIO_VAL_INT;
+> > > +	case IIO_CHAN_INFO_SAMP_FREQ:
+> > > +		pwm_get_state_hw(st->cnvst_pwm, &cnvst_pwm_state);
+> > > +		/* If the PWM is swinging, return the real frequency,
+> > > otherwise 0 */
+> > > +		*val =3D ad7606_pwm_is_swinging(st) ?
+> > > +			DIV_ROUND_CLOSEST_ULL(NSEC_PER_SEC,
+> > > cnvst_pwm_state.period) : 0;
+> > > +		return IIO_VAL_INT;
+> > > =C2=A0=C2=A0	}
+> > > =C2=A0=C2=A0	return -EINVAL;
+> > > =C2=A0=C2=A0}
+> > > @@ -360,6 +379,8 @@ static int ad7606_write_raw(struct iio_dev *indio=
+_dev,
+> > > =C2=A0=C2=A0			return ret;
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0		return 0;
+> > > +	case IIO_CHAN_INFO_SAMP_FREQ:
+> > > +		return ad7606_set_sampling_freq(st, val);
+> > > =C2=A0=C2=A0	default:
+> > > =C2=A0=C2=A0		return -EINVAL;
+> > > =C2=A0=C2=A0	}
+> > > @@ -482,7 +503,6 @@ static int ad7606_buffer_postenable(struct iio_de=
+v
+> > > *indio_dev)
+> > > =C2=A0=C2=A0	struct ad7606_state *st =3D iio_priv(indio_dev);
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0	gpiod_set_value(st->gpio_convst, 1);
+> > > -	ad7606_pwm_set_swing(st);
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0	return 0;
+> > > =C2=A0=C2=A0}
+> > > @@ -492,19 +512,53 @@ static int ad7606_buffer_predisable(struct iio_=
+dev
+> > > *indio_dev)
+> > > =C2=A0=C2=A0	struct ad7606_state *st =3D iio_priv(indio_dev);
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0	gpiod_set_value(st->gpio_convst, 0);
+> > > -	ad7606_pwm_set_low(st);
+> > > =C2=A0=20
+> > > =C2=A0=C2=A0	return 0;
+> > > =C2=A0=C2=A0}
+> > > =C2=A0=20
+> > > +static int ad7606_pwm_buffer_postenable(struct iio_dev *indio_dev)
+> > > +{
+> > > +	struct ad7606_state *st =3D iio_priv(indio_dev);
+> > > +
+> > > +	return ad7606_pwm_set_swing(st);
+> > > +}
+> > > +
+> > > +static int ad7606_pwm_buffer_predisable(struct iio_dev *indio_dev)
+> > > +{
+> > > +	struct ad7606_state *st =3D iio_priv(indio_dev);
+> > > +
+> > > +	return ad7606_pwm_set_low(st);
+> > > +}
+> > Maybe I'm missing something but are we removing the gpiod calls?
+>=20
+>=20
+> Well actually the pwm is meant to be used only with backend. Though it=
+=20
+> could be used without it, I dont think it is a very good idea because=20
+> interrupt handling + transmission init takes quite some time, and a new=
+=20
+> rising edge could happen before the current samples are effectively=20
+> transferred. However, since PWM and backend are two separate things, I=
+=20
+> wanted to show an usage for the PWM when introducing it, and one way to=
+=20
+> do it was to use it to emulate a GPIO by setting the duty cycle 100% for=
+=20
+> having a 1 (set_high) and 0% for having a 0 (set_low). Then on this=20
+> patch, since we introduce iio-backend, I removed this 'mock' usage of it.
+>=20
+> But I think that I should separate the removal into an additional patch=
+=20
+> to avoid confusions. Or shall I just remove the mock usage from the PWM=
+=20
+> patch ?
+>=20
+>=20
+
+Yeah, probably better (with a proper commit message explaining the reasonin=
+g)
+
+> > > +
+> > > +static int ad7606_update_scan_mode(struct iio_dev *indio_dev,
+> > > +				=C2=A0=C2=A0 const unsigned long *scan_mask)
+> > > +{
+> > > +	struct ad7606_state *st =3D iio_priv(indio_dev);
+> > > +
+> > > +	/* The update scan mode is only for iio backend compatible drivers.
+> > > +	 * If the specific update_scan_mode is not defined in the bus ops,
+> > > +	 * just do nothing and return 0.
+> > > +	 */
+> > > +	if (st->bops->update_scan_mode)
+> > > +		return st->bops->update_scan_mode(indio_dev, scan_mask);
+> > > +	else
+> > > +		return 0;
+> > Redundant else
+>=20
+>=20
+> ack
+>=20
+> > > -	if (ret)
+> > > -		return ret;
+> > > =C2=A0=20
+> > > +	if (st->bops->iio_backend_config) {
+> > > +		st->bops->iio_backend_config(dev, indio_dev);
+> > > +		indio_dev->setup_ops =3D &ad7606_pwm_buffer_ops;
+> > Ignoring error code
+>=20
+>=20
+> will handle
+>=20
+>=20
+> >=20
+> > > +	} else {
+> > > +		/* Reserve the PWM use only for backend (force gpio_convst
+> > > definition)*/
+> > > +		if (!st->gpio_convst)
+> > > +			return dev_err_probe(dev, -EINVAL,
+> > > +					=C2=A0=C2=A0=C2=A0=C2=A0 "Convst pin must be defined when
+> > > not in backend mode");
+> > > +
+> > > +		init_completion(&st->completion);
+> > > +		ret =3D devm_request_threaded_irq(dev, irq,
+> > > +						NULL,
+> > > +						&ad7606_interrupt,
+> > > +						IRQF_TRIGGER_FALLING |
+> > > IRQF_ONESHOT,
+> > > +						chip_info->name, indio_dev);
+> > > +		if (ret)
+> > > +			return ret;
+> > > +	}
+> > Are we still calling devm_iio_triggered_buffer_setup() in case we have =
+a backend
+> > device?
+>=20
+>=20
+> No, this portion of code is only executed if convst is defined=20
+> (conversion trigger GPIO), which is not the case if there is a backend.
+>=20
+>=20
+> >=20
+> > > =C2=A0=C2=A0	return devm_iio_device_register(dev, indio_dev);
+> > > =C2=A0=C2=A0}
+> > ...
+> >=20
+> > > +#ifdef CONFIG_IIO_BACKEND
+> > Not a fan of this #ifef... It's not that much code so I would just sele=
+ct
+> > IIO_BACKEND for this driver. In fact, I don't think we can separately e=
+nable
+> > IIO_BACKEND in the menuconfig menu?
+>=20
+>=20
+> OK I can do it that way.
+>=20
+> > > +static int ad7606_bi_setup_iio_backend(struct device *dev, struct ii=
+o_dev
+> > > *indio_dev)
+> > > +{
+> > > +		struct ad7606_state *st =3D iio_priv(indio_dev);
+> > > +		unsigned int ret, c;
+> > > +
+> > > +		st->back =3D devm_iio_backend_get(dev, NULL);
+> > > +		if (IS_ERR(st->back))
+> > > +			return PTR_ERR(st->back);
+> > > +
+> > > +		/* If the device is iio_backend powered the PWM is mandatory
+> > > */
+> > > +		if (!st->cnvst_pwm)
+> > > +			return -EINVAL;
+> > > +
+> > > +		ret =3D devm_iio_backend_request_buffer(dev, st->back,
+> > > indio_dev);
+> > > +		if (ret)
+> > > +			return ret;
+> > > +
+> > > +		ret =3D devm_iio_backend_enable(dev, st->back);
+> > > +		if (ret)
+> > > +			return ret;
+> > > +
+> > > +		struct iio_backend_data_fmt data =3D {
+> > > +			.sign_extend =3D true,
+> > > +			.enable =3D true,
+> > > +		};
+> > I would follow typical kernel coding style and have this declared at th=
+e
+> > beginning of the function.
+>=20
+>=20
+> aouch, yes !
+>=20
+>=20
+> > > -
+> > > +#ifdef CONFIG_IIO_BACKEND
+> > > +	struct iio_backend *back;
+> > > +
+> > > +	/*For now, only the AD7606B is backend compatible.*/
+> > > +	if (chip_info->has_backend) {
+> > > +		back =3D devm_iio_backend_get(&pdev->dev, NULL);
+> > > +		if (IS_ERR(back))
+> > > +			return PTR_ERR(back);
+> > > +
+> > > +		return ad7606_probe(&pdev->dev, 0, NULL,
+> > > +				=C2=A0=C2=A0=C2=A0 chip_info,
+> > > +				=C2=A0=C2=A0=C2=A0 &ad7606_bi_bops);
+> > > +	}
+> > > +#endif
+> > Not sure I follow the above? You also get the backend in
+> > ad7606_bi_setup_iio_backend()? So it seems to be that the has_backend f=
+lag is
+> > not really needed?
+>=20
+>=20
+> The first call to devm_iio_backend_get checks if there is a backend=20
+> available, and if so the backend bops (ad7606_bi_bops)are passed to the=
+=20
+> generic probe function.
+>=20
+
+Why not checking for the presence of the DT property? We should only get th=
+e backend
+when ready for that.
+
+- Nuno S=C3=A1
+>=20

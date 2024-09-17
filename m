@@ -1,90 +1,123 @@
-Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 201BD171099;
-	Tue, 17 Sep 2024 14:55:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.200
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA24B188A23;
+	Tue, 17 Sep 2024 15:45:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726584914; cv=none; b=kKgHC5FJvJ+fh+wT2e8MNC2caMt1L+Esvkmpg0mirMdUm1ny5fpnHH9m89vMx1mwep0p8kWraa6dRQV8Y4geuezHqap8OM0OIIxRVkmrQT0YZw45UG7xgvIUfNWH/JOOSPYfXVAWHswiXV0NVeMNENOZh4ZaG30ZcXR3iHZw0nU=
+	t=1726587945; cv=none; b=Sfx8uQR23Yp0THrTRTEMi1WZjQtDU8+5ItA2t4YGHXS3TN8PArpeXJ0xKaBK4HLf3z37XELGfllDD7hmTPZIKORnWK4Nm1VZl5GpuBo4lSIFmaDApHpye9MmtN2c7ki2P8hqR1eRQrUsM++dxK78GJ2DHhlE7zzM5fRWUNNgYpE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726584914; c=relaxed/simple;
-	bh=MrM4KY5V6r6qQxEIXH+YdWmSsKXHfHiyt9kfZ0SpjDo=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mj4ALCP2KPvwUy35bVKmiYoZozLrNpKX6mx2wRk5xmRgVhLZgATJuM4lKQylErQXiusaduCHWCXjZ74nqiooq0bykHwoAxF4pcPsmNDGqAvbxeFatgRg8j1lAJR2572lXysMlsM0tolO6YsRV252d7PlDCciEspg4ltWAv70PPY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=XGnm3fEP; arc=none smtp.client-ip=217.70.183.200
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1726587945; c=relaxed/simple;
+	bh=KWtkj0GL9S0bCz/hrLAjMTZkpobKDEnlNQquUiw4hWY=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=hwTsvHg3XlVLiYPMhJGkEfdRW4n2mY2L6Nau56N2LYATNwNcFvXwPW5kSHNa/Lj+/5xBLTKD0U02YMhRN9Cwe8fxNE5WO9UV+M4aDPdFvWzB/Wtmd8InXOBUAjimGcFp0Wv67Wfse1F7Pog7J5l3Zncy7V+nwMAV3lRa51szGHM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oyoHUmUG; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="XGnm3fEP"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 74DE520002;
-	Tue, 17 Sep 2024 14:54:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1726584902;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=y9y4PhvPPYKJA/AewGxCFBNSuD776TKUVC2KAG8adeQ=;
-	b=XGnm3fEPbAKuxZk692s1diXeawdOArDgn4ol9Jc3J3gM8u3beWr6l6cxp+w4pLt74NPCo3
-	yYnA+Oo1NnLB8OsA1kAltKs56qbbGdbFiMYwtg2GdtGhaXRx1GMScDwgt6NjzNUiwC5sWZ
-	4gzvjAGOLoZ1Hcxnp97oVJacEkGoYgXYf6+dDrfoPCTzs2QXq2P8TEf5fJrfKICbGUlgbW
-	hdVy0bJLVHvXHrsf4HYLiU+OQ3BcXJSzFfkQPdOe6xm9Qr6cXiA6YvPfgLcfDGXtykMtjI
-	NgbZE1joQw+eyac8RKDZb4AT/gOW3VVU7HWPHwttZaiR7oZhoHidQlk2oX0tww==
-Date: Tue, 17 Sep 2024 16:54:53 +0200
-From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
- <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Dragan Cvetic
- <dragan.cvetic@amd.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Neil Armstrong <neil.armstrong@linaro.org>, Derek Kiernan
- <derek.kiernan@amd.com>, Maxime Ripard <mripard@kernel.org>, Robert Foss
- <rfoss@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jingoo
- Han <jingoohan1@gmail.com>, Andrzej Hajda <andrzej.hajda@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
- Jonas Karlman <jonas@kwiboo.se>, linux-kernel@vger.kernel.org, Paul
- Kocialkowski <contact@paulk.fr>, linux-i2c@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Saravana Kannan <saravanak@google.com>,
- Paul Kocialkowski <paul.kocialkowski@bootlin.com>, Daniel Thompson
- <daniel.thompson@linaro.org>, Helge Deller <deller@gmx.de>,
- devicetree@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- =?UTF-8?Q?Herv=C3=A9?= Codina <herve.codina@bootlin.com>, Jernej Skrabec
- <jernej.skrabec@gmail.com>, Lee Jones <lee@kernel.org>, Arnd Bergmann
- <arnd@arndb.de>
-Subject: Re: [PATCH v4 1/8] dt-bindings: connector: add GE SUNH hotplug
- addon connector
-Message-ID: <20240917165453.7aef4fda@booty>
-In-Reply-To: <172656899099.2713363.6775764159513105143.robh@kernel.org>
-References: <20240917-hotplug-drm-bridge-v4-0-bc4dfee61be6@bootlin.com>
-	<20240917-hotplug-drm-bridge-v4-1-bc4dfee61be6@bootlin.com>
-	<172656899099.2713363.6775764159513105143.robh@kernel.org>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oyoHUmUG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3638C4CEC5;
+	Tue, 17 Sep 2024 15:45:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1726587945;
+	bh=KWtkj0GL9S0bCz/hrLAjMTZkpobKDEnlNQquUiw4hWY=;
+	h=Date:From:To:Subject:From;
+	b=oyoHUmUG6QRDskcwLX+4a6Eqfo/Upl5AQkkSjeX1VjqxVTLJL0fQHCOPlog1RQxVf
+	 r0O7kcDy6igsh7DiMv2Cbbdf88Xnv2xaG8wic2albBDExAHsVA20Ao7iSKmvyttN/1
+	 dGI6kwau+KG7F0tWiO75IUSQ7wIvl8QNGB3i2YUgkiQF+omNFhgjTkSBRUhNdIOO+1
+	 HwatWXJF/gKnQC+LDylCrl+4sEsL6Ley9DrJuZWRCNrjV5Yq8kWfOTDg2om8ACtKNr
+	 0syy7bBb0ZAXOoipRCA7yeUSt01LYbpo6hm4mzvlisy1Yn03EDp7lTMUQiPVKDcT+J
+	 8XZ6uOC36ieMg==
+Date: Tue, 17 Sep 2024 17:45:40 +0200
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and cleanups for v6.12-rc1
+Message-ID: <ZumkJA3zfB8AhDsF@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-GND-Sasl: luca.ceresoli@bootlin.com
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Hi,
+Hi Linus,
 
-On Tue, 17 Sep 2024 05:29:51 -0500
-"Rob Herring (Arm)" <robh@kernel.org> wrote:
+please pull some updates and cleanups for the fbdev drivers for kernel 6.12-rc1.
+This patchset includes a crashfix for xen and a possible use-after-free fix in pxafb.
 
-> dtschema/dtc warnings/errors:
-> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/connector/ge,sunh-addon-connector.example.dtb: addon-connector: Unevaluated properties are not allowed ('powergood-gpios' was unexpected)
+Thanks!
+Helge
 
-Ouch, a leftover from v3. Fixed queued for v5.
+----------------------------------------------------------------
+The following changes since commit 8400291e289ee6b2bf9779ff1c83a291501f017b:
 
-Luca
+  Linux 6.11-rc1 (2024-07-28 14:19:55 -0700)
 
--- 
-Luca Ceresoli, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.12-rc1
+
+for you to fetch changes up to de5e89b6654ea0b021a5737e0f55fc6bed625550:
+
+  fbdev: omapfb: Fix typo in comment (2024-09-11 20:53:04 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and updates for 6.12-rc1:
+
+- video: Reduce code when CONFIG_HAS_IOPORT=n
+- xenfb: Fix crash by assigning fb_info->device
+- pxafb: Fix possible use after free in pxafb_task()
+- efifb: Introduce and use new devm_register_framebuffer() function
+- mmpfb: Utilize devm_clk_get_enabled() helpers
+- various typo fixes and code cleanups
+
+----------------------------------------------------------------
+Andrew Kreimer (1):
+      fbdev: omapfb: Fix typo in comment
+
+Chen Ni (3):
+      fbdev: pxa3xx-gcu: Convert comma to semicolon
+      fbdev: imsttfb: convert comma to semicolon
+      fbdev: hyperv_fb: Convert comma to semicolon
+
+Christophe JAILLET (3):
+      fbdev: hpfb: Fix an error handling path in hpfb_dio_probe()
+      fbdev: omapfb: panel-sony-acx565akm: Simplify show_cabc_available_modes()
+      fbdev: omapfb: Use sysfs_emit_at() to simplify code
+
+Jason Andryuk (1):
+      fbdev: xen-fbfront: Assign fb_info->device
+
+Kaixin Wang (1):
+      fbdev: pxafb: Fix possible use after free in pxafb_task()
+
+Niklas Schnelle (1):
+      video: Handle HAS_IOPORT dependencies
+
+Thomas Weiﬂschuh (4):
+      fbdev: Introduce devm_register_framebuffer()
+      fbdev: efifb: Register sysfs groups through driver core
+      fbdev: efifb: Use devm_register_framebuffer()
+      fbdev: efifb: Use driver-private screen_info for sysfs
+
+ying zuxin (1):
+      fbdev: mmp: Use devm_clk_get_enabled() helpers
+
+ drivers/video/fbdev/core/fbmem.c                   | 30 +++++++++++
+ drivers/video/fbdev/efifb.c                        | 27 +++-------
+ drivers/video/fbdev/hpfb.c                         |  1 +
+ drivers/video/fbdev/hyperv_fb.c                    |  2 +-
+ drivers/video/fbdev/imsttfb.c                      |  4 +-
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c              |  6 +--
+ drivers/video/fbdev/omap/omapfb_main.c             | 36 ++++++--------
+ .../omap2/omapfb/displays/panel-sony-acx565akm.c   | 15 +++---
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi.h        |  2 +-
+ drivers/video/fbdev/pxa3xx-gcu.c                   |  4 +-
+ drivers/video/fbdev/pxafb.c                        |  1 +
+ drivers/video/fbdev/xen-fbfront.c                  |  1 +
+ include/linux/fb.h                                 |  1 +
+ include/video/vga.h                                | 58 ++++++++++++++++------
+ 14 files changed, 111 insertions(+), 77 deletions(-)

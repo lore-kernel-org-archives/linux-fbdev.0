@@ -1,141 +1,192 @@
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BA8419E83D
-	for <linux-fbdev@vger.kernel.org>; Thu, 19 Sep 2024 12:43:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7EB179D2;
+	Thu, 19 Sep 2024 23:28:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726749811; cv=none; b=lFmZ3r6Yd8u2mUvf8iftrrqi+qtLRF9HvYrTQIEOvCFQ4uACucGhgbRgA/3WrsYhjq/9YWviD6r7bvnNgw7DdiFzMcbiyTYaJuQ+9M8VWfMW16jT+cuC+rh6TfHisiRyQfIHPXLhJS/rquA1UwakqLEt1feYeFUnyRQkLNiIFxM=
+	t=1726788496; cv=none; b=giKlDZ2SeSdHXYdqqxFXmRwfxHGpGleFfQzCEr4NwwU7gQRbKSvmmK7K9/OmZBjm/XXNUgVe/6km81FMGShSj/NN/aT1mKQG0R0PShf7CqLlBOg4brZxQhcvsrEpRwPtU00hd34eBQMVJuVQMto/XIeuuE1X9ocn7a2gJOcJFOE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726749811; c=relaxed/simple;
-	bh=+r45NApw+tdBKILKIKW+JO3iJ98hV+a2P8LWK7U1/8M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QWsqziYwQufBYeIz9A+gx3Op+Uotellm3wFJhlM1y8yF71wOphA/zqm8+jlRpwDim1DPngygwzimKgedJ6Zsfj2xGsg1cfej9xjKEvC92HAZOS9+/xzH/ftrCJmYjtzFgbyQ2AnfKqH9560OTeqSGIUUF5ewTEavF8fJkEJuCGk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=pGfH/sUu; arc=none smtp.client-ip=209.85.167.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1726788496; c=relaxed/simple;
+	bh=SbYRn+1SOvkifxhYhZLFaO/OR1bLhdC+MwYBznDkotk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FNUmZWNp2B1iw8uDLSN//SlkaVTxhAtZ/y0w3r2WwmZR06MUODifEi8qq8nj1rxDNlg5EuX79s3ivW2oZ3rYaIjKRuJfxr7JDISADV5FE9JGlghgL6zAcYyYXeiFmJ2ui1SMXzk6SZhK0KAuqHnqFz9za9z+P+MTpYdtxkfR4gA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=datHRy11; arc=none smtp.client-ip=46.235.229.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pGfH/sUu"
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-53653682246so902653e87.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 19 Sep 2024 05:43:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1726749808; x=1727354608; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=7Ol6M4YW6MVWejR+WIYDhh5wiJhWpDjSsx72sgUAcK4=;
-        b=pGfH/sUu5D+KAbnayz9E7Qzo2apflSF8L3Ee/gSWzzLIOz6wZdLRdiC1AXt5HpvaM2
-         BAo3eRkuDfVQxG4bDZbtFf3+6lMA0MzshMElTU83Tvoh7ZfTG4WezMccHr3HaOxeUgpw
-         ctE3/QGgGKEMSOb049vhrsBx/Wh6TSAqbUzCcRRncDYiOX/Ef4zv54zTGUdWVSg5ZWLt
-         lZF3aA75cv/KlBq8O5lwX/bywerXKLEkKSi5/bO7FcTuL5GYXy4VYIPYbPBYY3jMgyML
-         PHakqczQyrcUv8S8Cp+7r45vyzePai7jwAkXyREi1cgXQUYsTqust6OHzPuz0iUgqhOv
-         o4Ow==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1726749808; x=1727354608;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7Ol6M4YW6MVWejR+WIYDhh5wiJhWpDjSsx72sgUAcK4=;
-        b=Nmkefe2IiH2hIIFDsKeex5bvA+bTxarNYIVwrEickx+DTta6bsz+uhkCM24xqHzFX/
-         LFl36PjPSlHxt6RzyF2HsTmlM044vcVjhPdurpxjeyjXJ9XGhSRVhkHz0VTLsfZ6PNGK
-         Pmd69xdVozZLRUA5nwF6zaYIbGj0eF+Hn2Ci5ii9LLstL7IBKQUmnec6KEcfHloEBjA0
-         I7SOn2FZi2fzL71XWyJxSdL4ZtIq6uGZiPXtd/+i3JrR+rfqzxK2YqSASg5NwJ83rKhy
-         MQmSsDJXQNAOO3nMjHo7MDAzh1YvPgo7ib0eoNv8oyqeY0hF8EVY8PprUi2rv7Ix3Vg/
-         6WXA==
-X-Forwarded-Encrypted: i=1; AJvYcCU69DtIJvBRSIZjIDwYLT1hIdyCM1jLbv8oZLnTWf6uAbEzxB0+3Hu9bXu/Rugn3HX8gyjSeFHLvz9GcQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxaMdv6r/J6QGFUDAB0k9442FKcI8miCD3Bp1ehhNTRjBmDW0wr
-	z/4BZy2MmgV6gDihIkdSG3EifVvgS87fjz5OkrT9J+q0U5n+fY31hvRWiu9AxMk=
-X-Google-Smtp-Source: AGHT+IFmYmkHZIlfBdyrUfWUWF0Rb5yOfzU8RJXviBKDf8FPfm95Kao56gTHoM4nSmmg/s5Gb0ipWg==
-X-Received: by 2002:a05:6512:a91:b0:52e:74d5:89ae with SMTP id 2adb3069b0e04-53678feb07bmr15159766e87.39.1726749807733;
-        Thu, 19 Sep 2024 05:43:27 -0700 (PDT)
-Received: from aspen.lan ([83.68.141.146])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5c42bb5dd02sm6079646a12.41.2024.09.19.05.43.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Sep 2024 05:43:26 -0700 (PDT)
-Date: Thu, 19 Sep 2024 14:43:23 +0200
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: Luca Ceresoli <luca.ceresoli@bootlin.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Robert Foss <rfoss@kernel.org>,
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
-	Jonas Karlman <jonas@kwiboo.se>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-	Derek Kiernan <derek.kiernan@amd.com>,
-	Dragan Cvetic <dragan.cvetic@amd.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Saravana Kannan <saravanak@google.com>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>, Lee Jones <lee@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Paul Kocialkowski <contact@paulk.fr>,
-	=?iso-8859-1?Q?Herv=E9?= Codina <herve.codina@bootlin.com>,
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="datHRy11"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
+	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
+	:Subject; bh=oTOh19krILulKkG9jqW7QDHJep+Klu2h7yyfBqgsdO0=; b=datHRy11REAvGdl/
+	xYgPhXvIYPJ6d3EhEpDrJ9Itm4VYrebp3qTadgr08IGlJ8SRToFcdon6ZwL471gPFvl8I5qMw2ZOO
+	2p01GJ9rVgLl23BRyWnropm/iBN2L4/hKXyprSqxIdU7IBagD+lNzwp6nOGISkTryoNlGVS+KcCiK
+	PZlMOleYDjabgz8U2eTgNc4rthHg2LaJr3K2nJhdqj/M/RenDd/EUdecTRhJFqK/3bj33DWnde0rr
+	200MD/+34dwHyViCfryVlFQIS/mrRYq80+V4ZeSVghrzbrjOU29yXwQYXVabnTMPZxEJTkpLryBCe
+	/U3Ixwg1BVqxYm0W0A==;
+Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
+	by mx.treblig.org with esmtp (Exim 4.96)
+	(envelope-from <linux@treblig.org>)
+	id 1srQZ5-006U9f-0L;
+	Thu, 19 Sep 2024 23:27:59 +0000
+From: linux@treblig.org
+To: lee@kernel.org,
+	daniel.thompson@linaro.org,
+	jingoohan1@gmail.com,
+	hdegoede@redhat.com
+Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	Paul Kocialkowski <paul.kocialkowski@bootlin.com>
-Subject: Re: [PATCH v4 6/8] backlight: led-backlight: add devlink to supplier
- LEDs
-Message-ID: <20240919124323.GB28725@aspen.lan>
-References: <20240917-hotplug-drm-bridge-v4-0-bc4dfee61be6@bootlin.com>
- <20240917-hotplug-drm-bridge-v4-6-bc4dfee61be6@bootlin.com>
+	linux-kernel@vger.kernel.org,
+	"Dr. David Alan Gilbert" <linux@treblig.org>
+Subject: [PATCH] backlight: Remove notifier
+Date: Fri, 20 Sep 2024 00:27:58 +0100
+Message-ID: <20240919232758.639925-1-linux@treblig.org>
+X-Mailer: git-send-email 2.46.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240917-hotplug-drm-bridge-v4-6-bc4dfee61be6@bootlin.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 17, 2024 at 10:53:10AM +0200, Luca Ceresoli wrote:
-> led-backlight is a consumer of one or multiple LED class devices, but no
-> devlink is created for such supplier-producer relationship. One consequence
-> is that removal ordered is not correctly enforced.
->
-> Issues happen for example with the following sections in a device tree
-> overlay:
->
->     // An LED driver chip
->     pca9632@62 {
->         compatible = "nxp,pca9632";
->         reg = <0x62>;
->
-> 	// ...
->
->         addon_led_pwm: led-pwm@3 {
->             reg = <3>;
->             label = "addon:led:pwm";
->         };
->     };
->
->     backlight-addon {
->         compatible = "led-backlight";
->         leds = <&addon_led_pwm>;
->         brightness-levels = <255>;
->         default-brightness-level = <255>;
->     };
->
-> On removal of the above overlay, the LED driver can be removed before the
-> backlight device, resulting in:
->
->     Unable to handle kernel NULL pointer dereference at virtual address 0000000000000010
->     ...
->     Call trace:
->      led_put+0xe0/0x140
->      devm_led_release+0x6c/0x98
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-This looks like the object became invalid whilst we were holding a reference
-to it. Is that reasonable? Put another way, is using devlink here fixing a
-bug or merely hiding one?
+backlight_register_notifier and backlight_unregister_notifier have
+been unused since
+  commit 6cb634d0dc85 ("ACPI: video: Remove code to unregister acpi_video
+backlight when a native backlight registers")
 
+With those not being called, it means that the backlight_notifier
+list is always empty.
 
-Daniel.
+Remove the functions, the list itself and the enum used in the
+notifications.
+
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+---
+ drivers/video/backlight/backlight.c | 42 -----------------------------
+ include/linux/backlight.h           | 20 --------------
+ 2 files changed, 62 deletions(-)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index a82934694d05..f699e5827ccb 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -65,7 +65,6 @@
+ 
+ static struct list_head backlight_dev_list;
+ static struct mutex backlight_dev_list_mutex;
+-static struct blocking_notifier_head backlight_notifier;
+ 
+ static const char *const backlight_types[] = {
+ 	[BACKLIGHT_RAW] = "raw",
+@@ -467,9 +466,6 @@ struct backlight_device *backlight_device_register(const char *name,
+ 	list_add(&new_bd->entry, &backlight_dev_list);
+ 	mutex_unlock(&backlight_dev_list_mutex);
+ 
+-	blocking_notifier_call_chain(&backlight_notifier,
+-				     BACKLIGHT_REGISTERED, new_bd);
+-
+ 	return new_bd;
+ }
+ EXPORT_SYMBOL(backlight_device_register);
+@@ -539,9 +535,6 @@ void backlight_device_unregister(struct backlight_device *bd)
+ 	mutex_unlock(&pmac_backlight_mutex);
+ #endif
+ 
+-	blocking_notifier_call_chain(&backlight_notifier,
+-				     BACKLIGHT_UNREGISTERED, bd);
+-
+ 	mutex_lock(&bd->ops_lock);
+ 	bd->ops = NULL;
+ 	mutex_unlock(&bd->ops_lock);
+@@ -566,40 +559,6 @@ static int devm_backlight_device_match(struct device *dev, void *res,
+ 	return *r == data;
+ }
+ 
+-/**
+- * backlight_register_notifier - get notified of backlight (un)registration
+- * @nb: notifier block with the notifier to call on backlight (un)registration
+- *
+- * Register a notifier to get notified when backlight devices get registered
+- * or unregistered.
+- *
+- * RETURNS:
+- *
+- * 0 on success, otherwise a negative error code
+- */
+-int backlight_register_notifier(struct notifier_block *nb)
+-{
+-	return blocking_notifier_chain_register(&backlight_notifier, nb);
+-}
+-EXPORT_SYMBOL(backlight_register_notifier);
+-
+-/**
+- * backlight_unregister_notifier - unregister a backlight notifier
+- * @nb: notifier block to unregister
+- *
+- * Register a notifier to get notified when backlight devices get registered
+- * or unregistered.
+- *
+- * RETURNS:
+- *
+- * 0 on success, otherwise a negative error code
+- */
+-int backlight_unregister_notifier(struct notifier_block *nb)
+-{
+-	return blocking_notifier_chain_unregister(&backlight_notifier, nb);
+-}
+-EXPORT_SYMBOL(backlight_unregister_notifier);
+-
+ /**
+  * devm_backlight_device_register - register a new backlight device
+  * @dev: the device to register
+@@ -767,7 +726,6 @@ static int __init backlight_class_init(void)
+ 
+ 	INIT_LIST_HEAD(&backlight_dev_list);
+ 	mutex_init(&backlight_dev_list_mutex);
+-	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index ea9c1bc8148e..f5652e5a9060 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -66,24 +66,6 @@ enum backlight_type {
+ 	BACKLIGHT_TYPE_MAX,
+ };
+ 
+-/**
+- * enum backlight_notification - the type of notification
+- *
+- * The notifications that is used for notification sent to the receiver
+- * that registered notifications using backlight_register_notifier().
+- */
+-enum backlight_notification {
+-	/**
+-	 * @BACKLIGHT_REGISTERED: The backlight device is registered.
+-	 */
+-	BACKLIGHT_REGISTERED,
+-
+-	/**
+-	 * @BACKLIGHT_UNREGISTERED: The backlight revice is unregistered.
+-	 */
+-	BACKLIGHT_UNREGISTERED,
+-};
+-
+ /** enum backlight_scale - the type of scale used for brightness values
+  *
+  * The type of scale used for brightness values.
+@@ -421,8 +403,6 @@ void devm_backlight_device_unregister(struct device *dev,
+ 				      struct backlight_device *bd);
+ void backlight_force_update(struct backlight_device *bd,
+ 			    enum backlight_update_reason reason);
+-int backlight_register_notifier(struct notifier_block *nb);
+-int backlight_unregister_notifier(struct notifier_block *nb);
+ struct backlight_device *backlight_device_get_by_name(const char *name);
+ struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
+ int backlight_device_set_brightness(struct backlight_device *bd,
+-- 
+2.46.1
+

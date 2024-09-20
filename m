@@ -1,107 +1,177 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4015415E8B;
-	Fri, 20 Sep 2024 15:31:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CBD82A8D0
+	for <linux-fbdev@vger.kernel.org>; Fri, 20 Sep 2024 17:33:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726846283; cv=none; b=XesUBVRqWIR/geVMauebnfCiHGcDvXwgbHSDYgUyGFKNVif7OUyrloF7b10M35yBIT/3iWV4d0ROlpAmOfX6QfmxbqnnxP2wbtGmA4UHsn2fIU/adxC/P7cQcU/xKVdWt2YgUk98rL5WB+PlYpylhB54Z71ECZygwkGT4qetYIc=
+	t=1726853610; cv=none; b=WEWDVEcf6xHNsjTx4sCoeLQjF/iW7dnIYYTPLDLPc4oAYsNMZgLXWZ+zITQkmXvDV15lsD2JzIVTRamKosXYQwwzKQvHEyM1qlbs/aQmj1OTThHktcrkIOxqQeFdo+1AkW6cgNCDG7cGSOsV5uU1Ay/oy0SiXS2v2xdGZ++mEdM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726846283; c=relaxed/simple;
-	bh=nb1fw4xOjw3VgH7BlEhgt2tmXoZj3fpRV2Bzr0yC4gA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qWRzBHA6vUc8grk8NOgq3c58pJnhAWGhRKxe/l2w+z7p5wRwBEZKrJ/Oay50N2bxC2zDAAi7dq+XVeyqdjG+dzcel1AKdwHllyH9d8t0gwPeTtC7lIwYjZqZ5aj1TeqZoJ5gFYwJ6rNRop+yylOoDBLyIA1Q7Ul0jbOtP4ma+x8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=CwiO7nqJ; arc=none smtp.client-ip=220.197.31.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1726853610; c=relaxed/simple;
+	bh=1IlR2iZrx1TWLUUVujKhfxFMAELLRAU+i32cLvFkSvg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Q5v5GpcwyYpElJwl+OLxbxuSO/xZbGcBms5xTuo3l8cWiRSMD+m3/K5x7Zsu/Z8q6RtrGy5vFTYxR0p2abZYYaqOfIJ8tan9b1Mg2OkIXumQBtRvq8TnsxMj5xMr8eHRBEZ7dQg1XJoUQrKPziHbqTgsXxQp83ruQKzQsumAZNw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=uLa9Iq+y; arc=none smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="CwiO7nqJ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:Subject:Message-ID:MIME-Version:
-	Content-Type; bh=ik0gK8vRwGiHfDmJUuUxNY6F8LkSlnZadKmBWuY90CI=;
-	b=CwiO7nqJAb74PnXh6/KJFnbmieBdqJQDpsqaOxH7w/V9s1kgCTJoy/vT3qYrd4
-	D5OGz+9sWPwh1vPly0BMmxyi4SPw7hhpAIqUdnxeOZHmHFeoOqB4I9D138l1RWti
-	kipx8r9CiEryuXG2UqoC4irxhsgWKGDw0HdjFcFyrzoZg=
-Received: from localhost (unknown [36.33.37.137])
-	by gzga-smtp-mta-g3-3 (Coremail) with SMTP id _____wAnb+oLle1meaO8EQ--.24619S2;
-	Fri, 20 Sep 2024 23:30:19 +0800 (CST)
-Date: Fri, 20 Sep 2024 23:30:18 +0800
-From: Qianqiang Liu <qianqiang.liu@163.com>
-To: Helge Deller <deller@gmx.de>
-Cc: aniel@ffwll.ch, gregkh@linuxfoundation.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
-	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Subject: Re: [PATCH] fbcon: Fix a NULL pointer dereference issue in
- fbcon_putcs
-Message-ID: <Zu2VCshU3Jx5X7oE@thinkpad.lan>
-References: <20240916011027.303875-1-qianqiang.liu@163.com>
- <a57734e8-ffb9-4af1-be02-eb0c99507048@gmx.de>
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="uLa9Iq+y"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-42cb1e623d1so20716345e9.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 20 Sep 2024 10:33:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1726853606; x=1727458406; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=6UUFhGcTyiJvlWI+WlBNBe2epzsWpe+JtKV2K/AcAmk=;
+        b=uLa9Iq+y2zz500I+S7qTrtoi5u02SKxSkBsp4IJ8Nktj6I15/rQZwDpP+/0PIJeUgC
+         z6XEjjWiDeAz0ySrQu0llV/+2K9eF/yIE+GmnCVX29J2G4cIh+CdyixQz43cohnnBgwO
+         x2RQ+2D6SkZZv9MMi12n3Ue/hwcomRBgu2wwb2eCBzJ5jzf2aoFBAaAWHMvN/mJz0xkN
+         /NWnCYDbFcMfvEfew5e8kQJQyFT1RT799iEb6UGAtN034cORmgCVG9Jk/LfjKDmB4/FF
+         LeWCkSGSd+WU2U1IggZzUkhAiJc0ukKRvjiGz/+uaKGRndQAFEIsppBEQ0nFcW4sb8nQ
+         /cYg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1726853606; x=1727458406;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=6UUFhGcTyiJvlWI+WlBNBe2epzsWpe+JtKV2K/AcAmk=;
+        b=FlfVV4LjYgqKVb03xES16YfZs9O7/udSY6UCldrPxhEFwVaTmf4qcqxAa6ZUpWaFQM
+         uekcoEC4zU/qs4gLCpMutnvpMXj7gg7BHhWxFYCHG2Mek2t0wwFI39eyAHKEopFPnXTo
+         hgESOScIGMEYLfhdDEFmnper8OeO8xkCMe3lW+Xbk6oGX0BLiv9oBdwFJS20d9eYtxgP
+         uvwAqUbj28h1mRChaRRRhNi8U/5p/AiMbQucALjujOJlj0MseMd5u/uNr3ei5XlZgmRw
+         MOHX1YprmBtUIVzQRcM6uNyTLUkT7yU5REMZfLrjro5h54CUoU4m23+P1r73R1IrsetL
+         eKVQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXQ8d5nE8uVZLKOOFtISB1yJPqfo51yIGAIK/8Vs75J+ZjXpTTL7NHrmwo9pEagUSWXhCTMrKYK3tP3EA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwdBGWcbixpKk37OBrXFtHvETaZ2jvmcLVwkOx8LxSj2I44ppfC
+	6Mr+8Tu3TNAUW8E3u6QHOtQjzMqtfjNKV3l0Kr/oIbIjJpkNEavRNNw3OaW3n7niN/I05D2IeHQ
+	b
+X-Google-Smtp-Source: AGHT+IGgCKLlGsFVnLPMMsSCnB8uD2rlgl4JGpdbipw0lqW+P0JA7xndJNxMakwiINiRxxfTey9q+w==
+X-Received: by 2002:a05:600c:1553:b0:42c:b180:d452 with SMTP id 5b1f17b1804b1-42e7ac4b610mr28776055e9.19.1726853605527;
+        Fri, 20 Sep 2024 10:33:25 -0700 (PDT)
+Received: from [127.0.1.1] (frhb82016ds.ikexpress.com. [185.246.87.17])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-378e780e029sm18111177f8f.116.2024.09.20.10.33.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Sep 2024 10:33:25 -0700 (PDT)
+From: Guillaume Stols <gstols@baylibre.com>
+Subject: [PATCH v2 00/10] Add iio backend compatibility for ad7606
+Date: Fri, 20 Sep 2024 17:33:20 +0000
+Message-Id: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a57734e8-ffb9-4af1-be02-eb0c99507048@gmx.de>
-X-CM-TRANSID:_____wAnb+oLle1meaO8EQ--.24619S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrKw1xKw1DWry8Kw4xXw45GFg_yoWfCFcEv3
-	y7CFWYg3y7Xa43A3ZxWanxJFZF9w1UJF1UuryrZrnF9anxGr4UCan5XrWxJr4jgFZIqa10
-	9F4UJFn7KFWF9jkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU0tCzJUUUUU==
-X-CM-SenderInfo: xtld01pldqwhxolxqiywtou0bp/1tbiLwxgambtjEK3EwAAsI
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAOCx7WYC/4WOQW7CMBBFrxLNuka24yQuK+6BUDS2J2XUEgc7R
+ CCUu2PCAbp8f/H+e0KmxJRhXz0h0cKZ41hAf1Xgzzj+kOBQGLTURna6ERi6VrY9htAzx96h/6U
+ x9Pk2TTHNwhupatlg+60NFMmUaOD7dnA8fTjR9VZ+5s8IDjMJHy8XnveVdYS17SyqRinnCYPXg
+ xu0NU5K532DmgoFeLvOnOeYHlv7ojbZlmnVv5mLElIUfU3lRiGag8PHH7tEu5ICp3VdXyRD0Nc
+ bAQAA
+To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Lars-Peter Clausen <lars@metafoo.de>, 
+ Michael Hennerich <Michael.Hennerich@analog.com>, 
+ Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+ Michal Marek <mmarek@suse.com>
+Cc: linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Michael Hennerich <michael.hennerich@analog.com>, 
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org, 
+ aardelean@baylibre.com, dlechner@baylibre.com, 
+ Guillaume Stols <gstols@baylibre.com>, jstephan@baylibre.com
+X-Mailer: b4 0.14.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1726853604; l=4064;
+ i=gstols@baylibre.com; s=20240417; h=from:subject:message-id;
+ bh=1IlR2iZrx1TWLUUVujKhfxFMAELLRAU+i32cLvFkSvg=;
+ b=BkWA5UZ8sbnmCANhIMAVsLd2+kn0lyBQ/wmDqoeiqChuNU9MI4wLyBlKGIVmoeIkIMZWlUAnz
+ HBqJyUAgKfrBimDDhdOZCtUAJeQfvVoU3mTMM+xAWQRyPa8roudXHYd
+X-Developer-Key: i=gstols@baylibre.com; a=ed25519;
+ pk=XvMm5WHuV67sGYOJZqIYzXndbaJOlNd8Q6li6vnb4Cs=
 
-Hi, 
+This series aims to add iio backend support for AD7606X ADCs.
 
-I simplified the C reproducer as follows:
+In a nutshell, iio backend is a paradigm to shift the logic establishing
+the connexion between iio buffers and backend buffers into the backend's
+driver.  This provides a more stable programming interface to the driver
+developers, and give more flexibility in the way the hardware communicates.
 
-#include <stdint.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/fb.h>
-#include <linux/tiocl.h>
-#include <sys/ioctl.h>
+The support will be first added on AD7606B, and on next patches AD7606C16
+and AD7606C18 will be added.  The series have been tested on a Zedboard,
+using the latest HDL available, i.e
+https://github.com/analogdevicesinc/hdl/commit/7d0a4cee1b5fa403f175af513d7eb804c3bd75d0
+and an AD7606B FMCZ EKV.  This HDL handles both the conversion trigger
+(through a PWM), and the end of conversion interruption, and is compatible
+with axi-adc, which is "iio-backendable".
 
-struct param {
-        uint8_t type;
-        struct tiocl_selection ts;
-};
+More information about this HDL design can be found at:
+https://wiki.analog.com/resources/eval/user-guides/ad7606x-fmc/hdl
 
-int main()
-{
-        write(1, "executing program\n", sizeof("executing program\n") - 1);
+The support is thus separated in two parts:
 
-        int fd = open("/dev/fb1", 0, 0);
+- PWM support was first added.  My first intention was to make it available
+  for any version of the driver, but the time required to handle the
+  interruption is not neglectable, and I saw drifts that would eventually
+  cause an overlapping SPI read with a new conversion trigger, whith
+  catastrphic consequences. To mitigate this, CRC check must be
+  implemented, but indeed increasing the samplerate causes more sample to
+  be lost.  Therefore, I decided to only allow PWM for iio-backend
+  powered device as a first intention, leaving open the possibility to
+  add the general compatibility afterwards.
 
-        struct fb_con2fbmap con2fb;
-        con2fb.console = 0x19;
-        con2fb.framebuffer = 0;
-        ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
+- IIO backend support was added: Once the PWM support was ready, the driver
+  can be extended to iio-backend. The iio-backend powered version of the
+  driver is a platform driver, and an exemple devicetree node is available
+  in the bindings.
 
-        int fd1 = open("/dev/tty1", O_RDWR, 0);
+The following features will be added in subsequent patch series:
+ - software mode for iio backend
+ - 18 bits mode (AD7606C18)
+ - single read (IIO_CHAN_READ_RAW)
 
-        struct param param;
-        param.type = 2;
-        param.ts.xs = 0;
-        param.ts.ys = 0;
-        param.ts.xe = 0;
-        param.ts.ye = 0;
-        param.ts.sel_mode = 0;
+Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+---
+Changes in v2:
+- Logical change in dt-bindings, using a flag for the interface instead of
+  infering it from the value of the "reg" property.
+- Removal of get_platform_match_data addition, instead the logic is
+  directly used in the file.
+- Removal of use and export of pwm_get_state_hw, returning the configured
+  frequency instead of the running one.
+- Correction on various typos, whitespaces, bad order of includes.
+- Separation of SPI conditions and PWM disabling for no backend in other
+  commits.
+- Link to v1: https://lore.kernel.org/r/20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com
 
-        ioctl(fd1, TIOCLINUX, &param);
+---
+Guillaume Stols (10):
+      dt-bindings: iio: adc: ad7606: Set the correct polarity
+      dt-bindings: iio: adc: ad7606: Make corrections on spi conditions
+      dt-bindings: iio: adc: ad7606: Add iio backend bindings
+      Documentation: iio: Document ad7606 driver
+      iio: adc: ad7606: Sort includes in alphabetical order
+      iio: adc: ad7606: Add PWM support for conversion trigger
+      iio: adc: ad7606: Add compatibility to fw_nodes
+      iio: adc: ad7606: Fix typo in the driver name
+      iio: adc: ad7606: Add iio-backend support
+      iio: adc: ad7606: Disable PWM usage for non backend version
 
-        con2fb.console = 1;
-        con2fb.framebuffer = 0;
-        ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
+ .../devicetree/bindings/iio/adc/adi,ad7606.yaml    |  97 ++++-
+ Documentation/iio/ad7606.rst                       | 143 +++++++
+ drivers/iio/adc/Kconfig                            |   4 +-
+ drivers/iio/adc/ad7606.c                           | 474 +++++++++++++++------
+ drivers/iio/adc/ad7606.h                           |  51 ++-
+ drivers/iio/adc/ad7606_par.c                       | 126 +++++-
+ drivers/iio/adc/ad7606_spi.c                       |  33 +-
+ 7 files changed, 749 insertions(+), 179 deletions(-)
+---
+base-commit: 8bea3878a1511bceadc2fbf284b00bcc5a2ef28d
+change-id: 20240725-ad7606_add_iio_backend_support-c401305a6924
 
-        return 0;
-}
-
-But I still need time to debug the kernel code..
-
--- 
-Best,
-Qianqiang Liu
+Best regards,
+--
+Guillaume Stols <gstols@baylibre.com>
 

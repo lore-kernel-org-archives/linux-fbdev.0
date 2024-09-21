@@ -1,80 +1,156 @@
-Received: from sendmail.purelymail.com (sendmail.purelymail.com [34.202.193.197])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6434364AE
-	for <linux-fbdev@vger.kernel.org>; Sat, 21 Sep 2024 18:06:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.202.193.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 933E37581A;
+	Sat, 21 Sep 2024 21:55:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726941990; cv=none; b=NUkin8fOau6bKFDk46u0mCSZQg9wNWQEYHDKW2nNb/m8UEh/CqUwvPgeY5bkdJ1WSQc+wgyc6iElp1eUMfTpMXjQG5XWMqDt8BChxAWHeK6EcbP3pHDAKRmF06d5cMYhAX7XdiVTwtYlMfZrhEjsiMXN5YN7LP//X21oBDyUqQI=
+	t=1726955723; cv=none; b=jWFAGXxoDLjde0Fp15eddkSs7LVIQ3xdrB+GSW/GlHjH1rLyKUaGqIzDOMbrtIsl88sDSjE2oy4SW7t9xrTIj6Xwhd7h4LmVhjHm/JfkkfS/rg7Mm9ESEwBqqL2l7Rgu72qs5vlJoqT+b7p4OovlzLmFPQ+AsC57WJSBfaxisyg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726941990; c=relaxed/simple;
-	bh=xV7IefKZSXiYmu7IBZd5OBYJgnAsclhZjkME++M84kU=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=onxhw/m6mBvAUkawtR4tVpmoIb4U9DAaEMoEcClvqhTqXPApY++B5VHt2ejZ8SYFtTOAeCsUiGclOTQbfu/nrmVIRquTgJVFO26R3+jv9R07DYXBlmQEUUW+l9QLV4+qBGNVA/uN1NH2jwKTt9m03XnTh3yQN50sJCdVeDTpEak=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=lkcamp.dev; spf=pass smtp.mailfrom=lkcamp.dev; dkim=pass (2048-bit key) header.d=lkcamp.dev header.i=@lkcamp.dev header.b=AWAmYNxr; dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b=UUoGBLR2; arc=none smtp.client-ip=34.202.193.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=lkcamp.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lkcamp.dev
+	s=arc-20240116; t=1726955723; c=relaxed/simple;
+	bh=7XS9d2bm31MIgbCRQRhtMz2AwzaZBiZvT13Za+UkIoc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=qkywL2ajtHMXbwFJaXEXe7Q8Q1FU4h16hzsIaTkMS18+Zfd5tI0ui6yVPhH8CaBf9fkM8SQ8hJQF/GCVoowx0286oYhiZmuVtUPoBcjeY9cHKfJFQhTghwoyb9vwi5ekMiAl8q03qv09c/E9AY8DWeJZy9o1CH/fL+6l7SPhf90=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MgEdkJIP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lkcamp.dev header.i=@lkcamp.dev header.b="AWAmYNxr";
-	dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b="UUoGBLR2"
-DKIM-Signature: a=rsa-sha256; b=AWAmYNxrd5xKkljEmErX5IK+FIzPTTqeha7MMEL3V7Lru9paS7VbsiReA+VtgqGm5qQo1RSaPNpFByDZlmL7HVhWmN5nV8wNjol8qEdqMxChj0gw7aENIgfpkCMVbTKRApuSzG6Ohq7qUvE3DYLnlm2VvviQWQvAqxSK7/8ysmladI05J4Z/+dSBSIi6cM5Eb6QIkXw/CCKJ2ik1lfvMyNHw5/r8jnz6Y15QGEzX1SE2H7Feltocm1gaUwhzZd9hjiLfMQ0Flj02vGMvJihYBO6iOdVZ5GqNYqRhmnzU1aGviSE9JVZUwOLm0LVBWx6ogMWuIuzfqQw8/4/nYGRmgQ==; s=purelymail3; d=lkcamp.dev; v=1; bh=xV7IefKZSXiYmu7IBZd5OBYJgnAsclhZjkME++M84kU=; h=Received:From:To:Subject:Date;
-DKIM-Signature: a=rsa-sha256; b=UUoGBLR2WFVbwKksfFaAOMj068oXWUk1BLHRU0xHUcCawr4HSS3EdRvEm+91j6LbR80zuszZruLKCs4RlB3apInmxrzY+pq1/kHwq4D0wWCTnxiPVV5WXUG7qZD9/hgc+GPvbaWVa7latUOQmhlm7Lwj27ywGEpIkyGJIvAt1HJG2SG1tawLTFqq0skNf1E3CrdF6136FeTmCyeTpGVdQe6Hn23RMx0Ntrm6TWCYlM3c+6hQzPYDPUELwzbCDMDcsVLGzsWeomvw7GKOcb7j35XKw3RevC014hf4prZrGf5mh1VVlumBANyiPIUPVwVJR49vwMKyIiH2wuPXKnnqGQ==; s=purelymail3; d=purelymail.com; v=1; bh=xV7IefKZSXiYmu7IBZd5OBYJgnAsclhZjkME++M84kU=; h=Feedback-ID:Received:From:To:Subject:Date;
-Feedback-ID: 48547:7130:null:purelymail
-X-Pm-Original-To: linux-fbdev@vger.kernel.org
-Received: by smtp.purelymail.com (Purelymail SMTP) with ESMTPSA id 278810204;
-          (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
-          Sat, 21 Sep 2024 18:06:19 +0000 (UTC)
-From: Fabricio Gasperin <fgasperin@lkcamp.dev>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MgEdkJIP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11575C4CEC2;
+	Sat, 21 Sep 2024 21:55:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1726955723;
+	bh=7XS9d2bm31MIgbCRQRhtMz2AwzaZBiZvT13Za+UkIoc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=MgEdkJIPxrf+IsjksNAka5e894adZO2xiw3E4Oi1ItXgDf6zbhW3e3tugNrm8lgej
+	 zP7W3Q0LLKRDTCi3FL/sC+TGwRQw2VRtgTU8WDiIpEm1CV+8h1PyHgc69Na5a+tfNx
+	 dkHKKNA616KvO+ej3YDMlTFBgGAfnMxmcngiR0Sl3DkpftmZ9hGH4QtPSGlGiidgxo
+	 TyDYpWAHZZ4zdY0dtyWAUmXi9lrmsm4LccmKVoCDrvH6Kr7x2iJB3Z/d358Wpr06PT
+	 X5s3PqvcMn2oiTd0Hzt+F70+it2VI8cgb1y6434AVSo+Xm+T1M2krDsRCrreZzWMES
+	 rPT0kJbNItIlQ==
+Date: Sat, 21 Sep 2024 22:55:16 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Guillaume Stols <gstols@baylibre.com>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	~lkcamp/patches@lists.sr.ht
-Subject: [PATCH] staging: sm750: Fix missing config in Kconfig
-Date: Sat, 21 Sep 2024 15:06:09 -0300
-Message-ID: <20240921180612.57657-2-fgasperin@lkcamp.dev>
-X-Mailer: git-send-email 2.46.1
-In-Reply-To: <20240921180612.57657-1-fgasperin@lkcamp.dev>
-References: <20240921180612.57657-1-fgasperin@lkcamp.dev>
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>, Michal Marek <mmarek@suse.com>,
+	linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+	aardelean@baylibre.com, dlechner@baylibre.com,
+	jstephan@baylibre.com
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: adc: ad7606: Make corrections
+ on spi conditions
+Message-ID: <20240921-playgroup-regally-f26c17be26dc@spud>
+References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
+ <20240920-ad7606_add_iio_backend_support-v2-2-0e78782ae7d0@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="MpOwvn7LyuIJqbDl"
+Content-Disposition: inline
+In-Reply-To: <20240920-ad7606_add_iio_backend_support-v2-2-0e78782ae7d0@baylibre.com>
+
+
+--MpOwvn7LyuIJqbDl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by Purelymail
-Content-Type: text/plain; charset=UTF-8
 
-Fixes the following compilation error:
+On Fri, Sep 20, 2024 at 05:33:22PM +0000, Guillaume Stols wrote:
+> The SPI conditions are not always required, because there is also a
+> parallel interface. The way used to detect that the SPI interface is
+> used is to check if the reg value is between 0 and 256.
 
-ERROR: modpost: "fb_io_read" [drivers/staging/sm750fb/sm750fb.ko] undefined=
-!
-ERROR: modpost: "fb_io_write" [drivers/staging/sm750fb/sm750fb.ko] undefine=
-d!
-ERROR: modpost: "fb_io_mmap" [drivers/staging/sm750fb/sm750fb.ko] undefined=
-!
+And, yaknow, not that the bus you're on is a spi bus? I don't think this
+comment is relevant to the binding, especially given you have a property
+for it.
 
-Signed-off-by: Fabricio Gasperin <fgasperin@lkcamp.dev>
----
- drivers/staging/sm750fb/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+> There is also a correction on the spi-cpha that is not required when SPI
+> interface is selected, while spi-cpol is.
 
-diff --git a/drivers/staging/sm750fb/Kconfig b/drivers/staging/sm750fb/Kcon=
-fig
-index 08bcccdd0f1c..eca1aa43d725 100644
---- a/drivers/staging/sm750fb/Kconfig
-+++ b/drivers/staging/sm750fb/Kconfig
-@@ -3,6 +3,7 @@ config FB_SM750
- =09tristate "Silicon Motion SM750 framebuffer support"
- =09depends on FB && PCI && HAS_IOPORT
- =09select FB_MODE_HELPERS
-+=09select FB_IOMEM_FOPS
- =09select FB_CFB_FILLRECT
- =09select FB_CFB_COPYAREA
- =09select FB_CFB_IMAGEBLIT
---=20
-2.46.1
+I don't see this change in your patch, there's no cpha in the before.
 
+>=20
+> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+> ---
+>  .../devicetree/bindings/iio/adc/adi,ad7606.yaml      | 20 ++++++++++++++=
++++---
+>  1 file changed, 17 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/=
+Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> index 75334a033539..12995ebcddc2 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+> @@ -112,18 +112,32 @@ properties:
+>        assumed that the pins are hardwired to VDD.
+>      type: boolean
+> =20
+> +  parallel-interface:
+> +    description:
+> +      If the parallel interface is used, be it directly or through a bac=
+kend,
+> +      this property must be defined.
+> +    type: boolean
+
+The type you would want here is actually "flag", but I'm not sure why a
+property is needed. If you're using the parallel interface, why would
+you still be on a spi bus? I think I'm a bit confused here as to how
+this interface is supposed to be used.
+
+Thanks,
+Conor.
+
+> +
+>  required:
+>    - compatible
+>    - reg
+> -  - spi-cpol
+>    - avcc-supply
+>    - vdrive-supply
+>    - interrupts
+>    - adi,conversion-start-gpios
+> =20
+> -allOf:
+> -  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +oneOf:
+> +  - required:
+> +      - parallel-interface
+> +  - allOf:
+> +      - properties:
+> +          parallel-interface: false
+> +          spi-cpol: true
+> +      - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +      - required:
+> +          - spi-cpol
+> =20
+> +allOf:
+>    - if:
+>        properties:
+>          compatible:
+>=20
+> --=20
+> 2.34.1
+>=20
+
+--MpOwvn7LyuIJqbDl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZu9AxAAKCRB4tDGHoIJi
+0szEAQD4Iua6jaPHHboIFBdWnkPMYPyE+5xnMxpdufGnjSD69wEA48k/jKGNfYl5
+OXlmWcAd7ECPvIYd92IB0YOa0CDpmgM=
+=bMUj
+-----END PGP SIGNATURE-----
+
+--MpOwvn7LyuIJqbDl--

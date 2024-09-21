@@ -1,230 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBE3A257B;
-	Sat, 21 Sep 2024 22:19:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F36014EC7E;
+	Sat, 21 Sep 2024 23:50:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1726957150; cv=none; b=ofVB5E05CAQFnvGlewBw4hBzEFvFydPLgfWbjvOeueYanQicOevdyDayJPMzmVTkX2vEMIf90CFqGvXr6+l1nd6XEUbizuhsy3kIRhoNN90hpK0QhFlYCTBkcIYTALBvuz/ZO89OgFmfceH9ztia6g+55hIX/socQgocdg+WDSU=
+	t=1726962614; cv=none; b=Rn9rNRXgKW1ZAgrk3wnQghtz6vn3cN4RdhrKwzUIfBge8XIP5WFqGAlV6LkvgpXFdHyyABpkMOSXyr4ga1xoVt7AeuJ2VH25cAQ+9pVDbWecw3S72QkgMCEqiTqtRjWrQRBoLceHCcMcCq5kVMrWphchWxWMXROIuGM1s2YGLXo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1726957150; c=relaxed/simple;
-	bh=kfR14K5vrihyjIzfXPTU8e1xRsbb7EB2RB9CxAyKGns=;
+	s=arc-20240116; t=1726962614; c=relaxed/simple;
+	bh=Tot4drm5qTnCFQzRPkGAWUK9uG5MeaXdN7y1JGa8fEk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uGR7lScVjz2isv/QhoSWV3GNZ0dbrKs2Rg2Cic/IFKjTF2EYbQbWzCbnM53/jqhtO5nhjeFpYb2hKZiVup6nGkl0jieQxgB8hQr1GCUh2Cwf646CbN2ChwlAeOHykl2rqarelBxzJLEnKO+h/VBHIVbTT7tubgZiDNerwDHUCnQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LKtEWDwW; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=K/SmRzyORGk4QdpjPjVRXmKK5BBuLc1lDYsCXCegUJNZCuNj8GrbBL4M1jXug+3PIo0pxPsx1xaCSkCzNvwI8KgiwC3MUsSCtXtEXfLJMJqeQiF8gua32ElfuagoNlgZ1uEztJ/WAvdmH7q/d5HK2fRbgFh+Y2kr99nwN9soBNU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Glmel5/F; arc=none smtp.client-ip=198.175.65.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LKtEWDwW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88A88C4CEC2;
-	Sat, 21 Sep 2024 22:19:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1726957149;
-	bh=kfR14K5vrihyjIzfXPTU8e1xRsbb7EB2RB9CxAyKGns=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LKtEWDwWofb5y/OGX5gOxNGrMyVa8YcbIRHQu6UCj/KmRABpTVAnFHfdEFHEA9Fkf
-	 lyjBml+k7UppNw7slrDXufzcHG1EPQp3u9rhVpAOgqC/6eG4atC+4WKx7SjqbjqNN6
-	 8+PGvpylJ11aa4N44u7wkfDlkAzkaFOFcP2gSg9koZ0D7hBvaR8dyI8bB7rae9G3tW
-	 ++dUzQjreatME31JfJIqy/QdGbzYOC7twHAP5o1cY60yVp7G0jdyg/KOxJqGV5BUDt
-	 gOAo6LJHyX6W9hSlju+mYoF1vbWgIWumSOdP0ANHlqeGx6VxVcDdWpaZAmk6/yepUx
-	 bw10rLBy2IblQ==
-Date: Sat, 21 Sep 2024 23:19:03 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Glmel5/F"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1726962612; x=1758498612;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Tot4drm5qTnCFQzRPkGAWUK9uG5MeaXdN7y1JGa8fEk=;
+  b=Glmel5/FHEqj8umXmdYKGUVrIvJH7rlY3WeILKBsys9wNY/PqJn7JPR2
+   PfnVubtqz8eRkrcXp8jjBLOpiXvRKyDZbZsB6P5Qr/pZdIC3m1+SVMCww
+   QwJzsiwshVqkqyyuPiq2jqT6Pdj7fSDKbHhQiMeXTepRyPnLShzngkF3d
+   z/7aCYSBpN1bTGz4EA6TjVbVnFC1bgK8WAg/BLLrxBd0YIsoFnTMfMtV3
+   ba1JfG+xgCB8WcgiFxSCi2kQNCqmn8/CtpmuP4tm6PKFXWFduIzjsrc0t
+   rVddtsgQw5RajHDKpF//R+4lAufXXM8p2yMJ8GxYlIp/zRl1yHmOnmk4G
+   w==;
+X-CSE-ConnectionGUID: a2Blw5kYRaqjxtYQfP9hzg==
+X-CSE-MsgGUID: KU3Ab3XET6Cl3X7zrCgJcQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11202"; a="43409368"
+X-IronPort-AV: E=Sophos;i="6.10,248,1719903600"; 
+   d="scan'208";a="43409368"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Sep 2024 16:50:12 -0700
+X-CSE-ConnectionGUID: khLwQGLARwq7p964KjTuZA==
+X-CSE-MsgGUID: KS7lRIMcThaWW/rPPsS2NQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,248,1719903600"; 
+   d="scan'208";a="70558343"
+Received: from lkp-server01.sh.intel.com (HELO 53e96f405c61) ([10.239.97.150])
+  by orviesa010.jf.intel.com with ESMTP; 21 Sep 2024 16:50:10 -0700
+Received: from kbuild by 53e96f405c61 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1ss9rb-000Ft0-1l;
+	Sat, 21 Sep 2024 23:50:07 +0000
+Date: Sun, 22 Sep 2024 07:49:54 +0800
+From: kernel test robot <lkp@intel.com>
+To: Fabricio Gasperin <fgasperin@lkcamp.dev>,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>, Michal Marek <mmarek@suse.com>,
-	linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
-	aardelean@baylibre.com, dlechner@baylibre.com,
-	jstephan@baylibre.com
-Subject: Re: [PATCH v2 03/10] dt-bindings: iio: adc: ad7606: Add iio backend
- bindings
-Message-ID: <20240921-charter-grouped-9f77e0a640a0@spud>
-References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
- <20240920-ad7606_add_iio_backend_support-v2-3-0e78782ae7d0@baylibre.com>
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org, ~lkcamp/patches@lists.sr.ht
+Cc: oe-kbuild-all@lists.linux.dev
+Subject: Re: [PATCH] staging: sm750fb: Rename variable
+ sm750_hw_cursor_setData2
+Message-ID: <202409220704.MXWsOMfL-lkp@intel.com>
+References: <20240921152124.11560-1-fgasperin@lkcamp.dev>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="/E6hod+IHxfXaUGB"
-Content-Disposition: inline
-In-Reply-To: <20240920-ad7606_add_iio_backend_support-v2-3-0e78782ae7d0@baylibre.com>
-
-
---/E6hod+IHxfXaUGB
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20240921152124.11560-1-fgasperin@lkcamp.dev>
 
-On Fri, Sep 20, 2024 at 05:33:23PM +0000, Guillaume Stols wrote:
-> Add the required properties for iio-backend support, as well as an
-> example and the conditions to mutually exclude interruption and
-> conversion trigger with iio-backend.
-> The iio-backend's function is to controls the communication, and thus the
-> interruption pin won't be available anymore.
-> As a consequence, the conversion pin must be controlled externally since
-> we will miss information about when every single conversion cycle (i.e
-> conversion + data transfer) ends, hence a PWM is introduced to trigger
-> the conversions.
->=20
-> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
-> ---
->  .../devicetree/bindings/iio/adc/adi,ad7606.yaml    | 76 ++++++++++++++++=
-+++++-
->  1 file changed, 74 insertions(+), 2 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/=
-Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-> index 12995ebcddc2..74a8680904b1 100644
-> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-> @@ -118,13 +118,32 @@ properties:
->        this property must be defined.
->      type: boolean
-> =20
-> +  pwms:
-> +    description:
-> +      In case the conversion is triggered by a PWM instead of a GPIO plu=
-gged to
-> +      the CONVST pin, the PWM must be referenced.
-> +    minItems: 1
-> +    maxItems: 2
+Hi Fabricio,
 
-Please use an items list to describe what each item is, rather than
-doing so in the pwm-names description below.
+kernel test robot noticed the following build warnings:
 
-> +
-> +  pwm-names:
-> +    description:
-> +      The name of each PWM, the first is connected to CONVST, and the se=
-cond is
-> +      connected to CONVST2 if CONVST2 is available and not connected to =
-CONVST1.
-> +    minItems: 1
-> +    maxItems: 2
+[auto build test WARNING on staging/staging-testing]
 
-You need to define what the names actually are, otherwise you have no
-ABI.
+url:    https://github.com/intel-lab-lkp/linux/commits/Fabricio-Gasperin/staging-sm750fb-Rename-variable-sm750_hw_cursor_setData2/20240921-232248
+base:   staging/staging-testing
+patch link:    https://lore.kernel.org/r/20240921152124.11560-1-fgasperin%40lkcamp.dev
+patch subject: [PATCH] staging: sm750fb: Rename variable sm750_hw_cursor_setData2
+config: arm-allyesconfig (https://download.01.org/0day-ci/archive/20240922/202409220704.MXWsOMfL-lkp@intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 14.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240922/202409220704.MXWsOMfL-lkp@intel.com/reproduce)
 
-Cheers,
-Conor.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202409220704.MXWsOMfL-lkp@intel.com/
 
-> +
-> +  io-backends:
-> +    description:
-> +      A reference to the iio-backend, which is responsible handling the =
-BUSY
-> +      pin's falling edge and communication.
-> +      An example of backend can be found at
-> +      http://analogdevicesinc.github.io/hdl/library/axi_ad7606x/index.ht=
-ml
-> +
->  required:
->    - compatible
->    - reg
->    - avcc-supply
->    - vdrive-supply
-> -  - interrupts
-> -  - adi,conversion-start-gpios
-> =20
->  oneOf:
->    - required:
-> @@ -138,6 +157,34 @@ oneOf:
->            - spi-cpol
-> =20
->  allOf:
-> +  - if:
-> +      properties:
-> +        pwms: false
-> +    then:
-> +      required:
-> +        - adi,conversion-start-gpios
-> +
-> +  - if:
-> +      properties:
-> +        adi,conversion-start-gpios: false
-> +    then:
-> +      required:
-> +        - pwms
-> +
-> +  - if:
-> +      properties:
-> +        interrupts: false
-> +    then:
-> +      required:
-> +        - io-backends
-> +
-> +  - if:
-> +      properties:
-> +        io-backends: false
-> +    then:
-> +      required:
-> +        - interrupts
-> +
->    - if:
->        properties:
->          compatible:
-> @@ -179,12 +226,37 @@ allOf:
->          adi,sw-mode: false
->      else:
->        properties:
-> +        pwms:
-> +          maxItems: 1
-> +        pwm-names:
-> +          maxItems: 1
->          adi,conversion-start-gpios:
->            maxItems: 1
-> =20
->  unevaluatedProperties: false
-> =20
->  examples:
-> +  - |
-> +    #include <dt-bindings/gpio/gpio.h>
-> +    / {
-> +        adi_adc {
-> +            compatible =3D "adi,ad7606b";
-> +            parallel-interface;
-> +            pwms =3D <&axi_pwm_gen 0 0>;
-> +
-> +            avcc-supply =3D <&adc_vref>;
-> +            vdrive-supply =3D <&vdd_supply>;
-> +
-> +            reset-gpios =3D <&gpio0 91 GPIO_ACTIVE_HIGH>;
-> +            standby-gpios =3D <&gpio0 90 GPIO_ACTIVE_LOW>;
-> +            adi,range-gpios =3D <&gpio0 89 GPIO_ACTIVE_HIGH>;
-> +            adi,oversampling-ratio-gpios =3D <&gpio0 88 GPIO_ACTIVE_HIGH
-> +                                            &gpio0 87 GPIO_ACTIVE_HIGH
-> +                                            &gpio0 86 GPIO_ACTIVE_HIGH>;
-> +            io-backends =3D <&iio_backend>;
-> +        };
-> +    };
-> +
->    - |
->      #include <dt-bindings/gpio/gpio.h>
->      #include <dt-bindings/interrupt-controller/irq.h>
->=20
-> --=20
-> 2.34.1
->=20
+All warnings (new ones prefixed by >>):
 
---/E6hod+IHxfXaUGB
-Content-Type: application/pgp-signature; name="signature.asc"
+>> drivers/staging/sm750fb/sm750_cursor.c:134:6: warning: no previous prototype for 'sm750_hw_cursor_setdata2' [-Wmissing-prototypes]
+     134 | void sm750_hw_cursor_setdata2(struct lynx_cursor *cursor, u16 rop,
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~
 
------BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZu9GVwAKCRB4tDGHoIJi
-0sp1AP9PpuRy60rPk9JYWnURXlbuDdPob0rbthuXpOdAIPJZewD/bmxcvaFLN3N6
-mVszPN0fIfm39hSecA50i4isHCxlTwA=
-=cklL
------END PGP SIGNATURE-----
+vim +/sm750_hw_cursor_setdata2 +134 drivers/staging/sm750fb/sm750_cursor.c
 
---/E6hod+IHxfXaUGB--
+   133	
+ > 134	void sm750_hw_cursor_setdata2(struct lynx_cursor *cursor, u16 rop,
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

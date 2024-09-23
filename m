@@ -1,221 +1,155 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B005745CB
-	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 21:05:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 897C176F1B
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 21:30:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727125509; cv=none; b=uMzTgwLAPk5Zv98qxEHKUIgXj9ZFJA+gd8BibW6GO7fyNEp2qLb5xIRHVifP3pvB6Wqz+13jFosKrFaYDfRMxf8JwZzQ9z4GkbiV/ngsH02G09UG6H5Jlzh6Ote7DHeol1vG+w5ihHiL/kAFZ70TLrwcif1GWPAg78RGHZ20qD8=
+	t=1727127031; cv=none; b=pQlVAvAmApcLZmK5sL7cYB0D/kb0iFcntTnTe9eOaI7fFGsqOP4sCUlaZdb7XGEQ2CMMGzt6hEcbamha9M6yE0iBAiyfFw5Vifeuqp7NwWGGoThQnuB+1hNihRJciBQDUZ1JukbFS5+MAVTDOr++w7Ca8S/lV3AVOTyPbVMIcVE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727125509; c=relaxed/simple;
-	bh=hTKhXJCG8zpNy9/MT7BID3a+BrSH57RS9ReazYd/2d0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Tizu96neUvEpCz7OqHt9GNibwPRfbPVRa5chHqWT7nRSfxBexslZIP50ZDZkq9b0gg/j5YETxj0l9EAMAGji22nc9Zx3MahmBtL1DhYk3RIC+7KPeyhv2rI0/Xgh+svMR0kgUKUi8Z569X+0FJsPgNl/WG9SSPYy0OQMmy5lsus=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=o6qltcox; arc=none smtp.client-ip=212.227.15.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1727127031; c=relaxed/simple;
+	bh=A84xdA9QX58QSy+RwoV1vQ5HOSPIAuuTfBYmt+LPWmI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MR+AxImf2kvcG9YHGO2Piar/9oNUn+NF4bOoBDdKX95GSalUUiyOw6CLLDdZnSp7xj1JrDQ7EWYAewJxu21D+69gHiQY8S2juHzdZ8bTuFn2jYDCbmRvgv9TVInxAaZS2EnCTL66teW0TLxYdF8zL/DOcczPj70nyleaoW//J/8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HNXvwGkq; arc=none smtp.client-ip=192.198.163.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="o6qltcox"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1727125497; x=1727730297; i=deller@gmx.de;
-	bh=Zg7zejr5d0xWbMlqGLzyB5/eVme1Xvx5JMlwSQnhLvs=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=o6qltcoxYZqGmkz+8KQM9cUk6oyd8ozLrjNSbbPKS9wOg9k9IT0caopl2SRJ3Aoi
-	 Bl1SPyPMqz+AcBGSLdwoAyswkN2lU5w2NVSvBiI/p3y++3opzRjlsr0yDkhfye731
-	 h+Tknd3pam5RLLkO7p5C64Ijn3vQCYm8P+7/HQTEIlziLBcnW0C5lXyN/jJxhx+Nm
-	 fE3LmF+n1dVs/dcjg/84ZNhMPwKYdIgitBmgIfjGP0Fx6hcQ0gSPXKMQss6OEgRQc
-	 nXrlzgqhmNawAP+pSr+DgK4lowS+7m2YLEq3HNVNB26gLvUn+2RgIj5bsAGtP1yzm
-	 xEKseh/k83YBCWDbLQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mel3n-1sKKEe0RL3-00lWBO; Mon, 23
- Sep 2024 23:04:57 +0200
-Message-ID: <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de>
-Date: Mon, 23 Sep 2024 23:04:55 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HNXvwGkq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1727127030; x=1758663030;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=A84xdA9QX58QSy+RwoV1vQ5HOSPIAuuTfBYmt+LPWmI=;
+  b=HNXvwGkqQOGOK6DfY2ReqguxTp0Ecacsgzy13kgJk9xPsV3IOfDqjjb5
+   Q3R5GXoRR5yygPEcP3PYB+OcwnKEoCx4Hff10LviBMroY5a7UMVn2998H
+   pahZduM+K9gjSKkBTz9jgO9bsvqMB5OVar+nmJ+9kWOAUkAg9X4YBiX7x
+   fTzF7LXjvZJUjhFOhknS4+o3D4256exlupj7USN857zXA3OyyTtd/4nBt
+   +29bmB7w0ONTfNcqF8n0Brx6LV6b0wO//hsqz2u29xo4fky/uqRrA5xq5
+   1IT7lnpBTO7m5NxZodIXFYgE2ja1E2Q+JTQlnJTPnJ+M9Lx78VCEFT1zt
+   g==;
+X-CSE-ConnectionGUID: 8ak1vUh5Rru+n0KO41y0XA==
+X-CSE-MsgGUID: RvJYaEjKR/iT6cWhp46BBg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11204"; a="43612531"
+X-IronPort-AV: E=Sophos;i="6.10,252,1719903600"; 
+   d="scan'208";a="43612531"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2024 14:30:29 -0700
+X-CSE-ConnectionGUID: xpdb+d/SSCqalpCu3qAPIw==
+X-CSE-MsgGUID: FT0LYK0fRNG+XqLukVgB3g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,252,1719903600"; 
+   d="scan'208";a="71336622"
+Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
+  by fmviesa008.fm.intel.com with SMTP; 23 Sep 2024 14:30:26 -0700
+Received: by stinkbox (sSMTP sendmail emulation); Tue, 24 Sep 2024 00:30:25 +0300
+Date: Tue, 24 Sep 2024 00:30:25 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Simona Vetter <simona@ffwll.ch>,
+	dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
+ before fb devices appear
+Message-ID: <ZvHd8VV6MO4kfLcL@intel.com>
+References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-2-ville.syrjala@linux.intel.com>
+ <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
- before fb devices appear
-To: Ville Syrjala <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org
-Cc: Simona Vetter <simona@ffwll.ch>, dri-devel@lists.freedesktop.org
-References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-2-ville.syrjala@linux.intel.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240923155749.30846-2-ville.syrjala@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Zue2T6YBJGPRaN0yayvgBlKVOswZGaLJz7Bfnu/It2iHUSrwrwT
- xo/aNRrGnCgZCM+rwy4oAkRnZCnL9R/3DSgWudAKmY5xmIJfwa6/vCovSBXAlTCgOLSVCRZ
- GqcMBp4kjMWK7KzBJ2M03yFx7X0x1spTbiaqp5NAjb9VGOkO0n/dUncKo/WsN/cB0Vp7gBc
- xrl0JDoacDw2Eg4Yv/QeQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:mWupgij6poc=;+49d26/70b6kFAFGvlkcC+w8bVS
- ihfyjdlU+5DhQLaKHfOfe0DWg8dVHIciTX2uCn6WghHHU3H+ZRfRSrPe1quMEkvJEVgvtP2XZ
- Ys2WLActPL8NPLjibJkZ8aSA3i9GwrEWvEgZH4xLjIzZg+zsYQGfL56rn48U7xUP033v9DuCP
- i4XmLbLJpPHhDdia1shs/b7NhfSyQzhNBp4i0LwTsQXTQ6RLuk1XLL0+b6UbZKzFy8aORkDzm
- Wd8e21xAcCG0qiI2wlf64Ts5p22wcHp9DgCR5acCRXyoYROsIgYKVzJgSuF3lv/qABZi1E0ZL
- kkIfDb0RpgRvUomSjyzffx1U88u47OWjHyOJ23A9B4U0tW+QzLmJxVV4s2kKUnnnFjjRkR4mK
- kCs8mRCRApsuFX1kOyUSZ99AmMIP0dpffBoO58vGG4SLe8t2NpCKQagPqo1XOXtl+EMsaOBMb
- xWmVxfQEBC91YlirJI9NfXVgfTd6JabidQkKoUB4nhhrd+QfCjlZg5WzWaBM0xDLDrpbaXgzH
- uzZPhbcs7DE78Qejusg3OhCUHEy8CHA54M+VYm8TxmJMQ1Vwg1vPHebfa2GeTFDLwePkUtQey
- 3hkom9qaUZhF+OvJEMgMbx9owkQmyxNzJxx4dSV+7IrBfnyMV7fZqPUrKukmZC5IGRfiM9yvU
- XL2gCyzfbWurPDNH/6CyWF2Bmu+a+jsnJGOzIOjej5rdT/L5/KC4htxRxQrJeQyTk9fudV8Et
- x4oCmPYsFAiGOb1Z320mwFzcV0693vgmIBemsMMJYgpTrdv4Uc7qqCLLba+iE/R1nHx2Ykt3T
- cU+fah1+uoTVzmqblTC53YMw==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de>
+X-Patchwork-Hint: comment
 
-On 9/23/24 17:57, Ville Syrjala wrote:
-> From: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
->
-> Currently setting cursor_blink attribute to 0 before any fb
-> devices are around does absolutely nothing. When fb devices appear
-> and fbcon becomes active the cursor starts blinking. Fix the problem
-> by recoding the desired state of the attribute even if no fb devices
-> are present at the time.
->
-> Also adjust the show() method such that it shows the current
-> state of the attribute even when no fb devices are in use.
->
-> Note that store_cursor_blink() is still a bit dodgy:
-> - seems to be missing some of the other checks that we do
->    elsewhere when deciding whether the cursor should be
->    blinking or not
-> - when set to 0 when the cursor is currently invisible due
->    to blinking, the cursor will remains invisible. We should
->    either explicitly make it visible here, or wait until the
->    full blink cycle has finished.
->
-> Signed-off-by: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
-> ---
->   drivers/video/fbdev/core/fbcon.c | 34 +++++++-------------------------
->   1 file changed, 7 insertions(+), 27 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index 2e093535884b..8936fa79b9e0 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -3217,26 +3217,7 @@ static ssize_t show_rotate(struct device *device,
->   static ssize_t show_cursor_blink(struct device *device,
->   				 struct device_attribute *attr, char *buf)
->   {
-> -	struct fb_info *info;
-> -	struct fbcon_ops *ops;
-> -	int idx, blink =3D -1;
-> -
-> -	console_lock();
-> -	idx =3D con2fb_map[fg_console];
-> -
-> -	if (idx =3D=3D -1 || fbcon_registered_fb[idx] =3D=3D NULL)
-> -		goto err;
-> -
-> -	info =3D fbcon_registered_fb[idx];
-> -	ops =3D info->fbcon_par;
-> -
-> -	if (!ops)
-> -		goto err;
-> -
-> -	blink =3D delayed_work_pending(&ops->cursor_work);
-> -err:
-> -	console_unlock();
-> -	return sysfs_emit(buf, "%d\n", blink);
-> +	return sysfs_emit(buf, "%d\n", !fbcon_cursor_noblink);
+On Mon, Sep 23, 2024 at 11:04:55PM +0200, Helge Deller wrote:
+> On 9/23/24 17:57, Ville Syrjala wrote:
+> > From: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> >
+> > Currently setting cursor_blink attribute to 0 before any fb
+> > devices are around does absolutely nothing. When fb devices appear
+> > and fbcon becomes active the cursor starts blinking. Fix the problem
+> > by recoding the desired state of the attribute even if no fb devices
+> > are present at the time.
+> >
+> > Also adjust the show() method such that it shows the current
+> > state of the attribute even when no fb devices are in use.
+> >
+> > Note that store_cursor_blink() is still a bit dodgy:
+> > - seems to be missing some of the other checks that we do
+> >    elsewhere when deciding whether the cursor should be
+> >    blinking or not
+> > - when set to 0 when the cursor is currently invisible due
+> >    to blinking, the cursor will remains invisible. We should
+> >    either explicitly make it visible here, or wait until the
+> >    full blink cycle has finished.
+> >
+> > Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> > ---
+> >   drivers/video/fbdev/core/fbcon.c | 34 +++++++-------------------------
+> >   1 file changed, 7 insertions(+), 27 deletions(-)
+> >
+> > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> > index 2e093535884b..8936fa79b9e0 100644
+> > --- a/drivers/video/fbdev/core/fbcon.c
+> > +++ b/drivers/video/fbdev/core/fbcon.c
+> > @@ -3217,26 +3217,7 @@ static ssize_t show_rotate(struct device *device,
+> >   static ssize_t show_cursor_blink(struct device *device,
+> >   				 struct device_attribute *attr, char *buf)
+> >   {
+> > -	struct fb_info *info;
+> > -	struct fbcon_ops *ops;
+> > -	int idx, blink = -1;
+> > -
+> > -	console_lock();
+> > -	idx = con2fb_map[fg_console];
+> > -
+> > -	if (idx == -1 || fbcon_registered_fb[idx] == NULL)
+> > -		goto err;
+> > -
+> > -	info = fbcon_registered_fb[idx];
+> > -	ops = info->fbcon_par;
+> > -
+> > -	if (!ops)
+> > -		goto err;
+> > -
+> > -	blink = delayed_work_pending(&ops->cursor_work);
+> > -err:
+> > -	console_unlock();
+> > -	return sysfs_emit(buf, "%d\n", blink);
+> > +	return sysfs_emit(buf, "%d\n", !fbcon_cursor_noblink);
+> 
+> I might be wrong and mix up things, but I think the previous code allowed
+> to show/set the blink value *per* registered framebuffer console,
+> while now you generally enable/disable blinking for all
+> framebuffer drivers at once?
+> Just thinking of a multiseat setup with different fb drivers
+> attached to different monitors with own mouse/keyboards...?!?
 
-I might be wrong and mix up things, but I think the previous code allowed
-to show/set the blink value *per* registered framebuffer console,
-while now you generally enable/disable blinking for all
-framebuffer drivers at once?
-Just thinking of a multiseat setup with different fb drivers
-attached to different monitors with own mouse/keyboards...?!?
+There is just a single fbcon device in sysfs, so not really.
+It's true that it only ever operated on the fg_console, so
+on a first glane it may look like it might be some kind of
+per-fb thing. But the state was only recorded in the
+fbcon_cursor_noblink singleton, so when another vt becomes
+active it'll look at that an not start the blinker.
+So I think the per-fb aspect was just an illusion.
 
+The whole interface is a bit of a mess. But I don't
+really see why anyone would want to use this on a
+per-fb device basis anyway. Either you want blinking
+stuff and extra power draw, or you don't.
 
->   }
->
->   static ssize_t store_cursor_blink(struct device *device,
-> @@ -3247,9 +3228,13 @@ static ssize_t store_cursor_blink(struct device *=
-device,
->   	int blink, idx;
->   	char **last =3D NULL;
->
-> +	blink =3D simple_strtoul(buf, last, 0);
-> +
->   	console_lock();
->   	idx =3D con2fb_map[fg_console];
->
-> +	fbcon_cursor_noblink =3D !blink;
-> +
->   	if (idx =3D=3D -1 || fbcon_registered_fb[idx] =3D=3D NULL)
->   		goto err;
->
-> @@ -3258,15 +3243,10 @@ static ssize_t store_cursor_blink(struct device =
-*device,
->   	if (!info->fbcon_par)
->   		goto err;
->
-> -	blink =3D simple_strtoul(buf, last, 0);
-> -
-> -	if (blink) {
-> -		fbcon_cursor_noblink =3D 0;
-> +	if (blink)
->   		fbcon_add_cursor_work(info);
-> -	} else {
-> -		fbcon_cursor_noblink =3D 1;
-> +	else
->   		fbcon_del_cursor_work(info);
-> -	}
->
->   err:
->   	console_unlock();
+I think there are ways to turn of blinking via some escape
+sequences or something as well, so those could probably
+be used on a per-console basis. But I like to use this
+sysfs instead because it can't accidentally be re-enabled
+when random programs mess around with ttys.
 
+-- 
+Ville Syrjälä
+Intel

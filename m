@@ -1,174 +1,198 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0C1C19E965
-	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 15:58:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19B0E19F413
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 19:44:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727107095; cv=none; b=UBBnVa231W+wXsPNIomDAUkR92CNISLG1wn969UKzPY8BQsFF69R8zgHfVJFgBWZtk1Yxi2M07Q/2MXb7fToHbn8ly9QlvevLFtiZiUPp7lZAFU00nDkilySoJNpE8pBViKJBBbBbmDuZYONNwV/7UXU1JzmDKtC2/ANvewIVcw=
+	t=1727120664; cv=none; b=hQPVThx7FAIw/i5fk2j0SL4ab4VcNoG+jC3itfzmp4ZStEFK6+WWLbEzCHinHNnK3k7nnKna1hJj2b9LZ8bN+baVkKjhivFfirMa0nmKak5XWhT8z54bgW0Nt6DL1PV57vCs4nO1RfK/WZ/XfiXeKbO3C0OqgtjNYz+mui0DqU0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727107095; c=relaxed/simple;
-	bh=jQhqhShi45bE3F1tqDpD2eTLJXTwjUT+li1G1Ev3zCQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=P5Ol6KwrJ2dPAJsExe+pMzA2yIhqg6oSM5orp8HIMDJeTGCFXGnQ9R6kD9DTlfMAquEuaX1wTWjrotpYTIsMAokxgit1/qY5YOB/2cID3f9v8QLrJwUl5u0qmtfQi016TrN8ChqHbEiu/vI9Z/A/NdwxPG6cjfWiisw939kMdSE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Nj9kgCV1; arc=none smtp.client-ip=192.198.163.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1727120664; c=relaxed/simple;
+	bh=wgm2uFcDIq+AWoMcb+nsjgFLlr6FtAmQTboMn5JZUwM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sLNYTuej3qm0N4CXLSfpFrNdG1W11GgaLYgcvu2vl/CoXEIr56BKxalZHFlcjCQUAH3no9I5+yPF7pUWC4Hr/1PDXoCiUBRMBvSytfYyLk189Ba0RJQVuEBfoJIL4eupJLFE3FnIOBKEu/YLchOlK2yJnZXLj8mmVvsEaDXa6Ls=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=HzthYCsA; arc=none smtp.client-ip=212.227.15.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Nj9kgCV1"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1727107094; x=1758643094;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=jQhqhShi45bE3F1tqDpD2eTLJXTwjUT+li1G1Ev3zCQ=;
-  b=Nj9kgCV10esHZFUEBTcYk6N6mE/TGmClNceGkB7FFEayFB8YJ246zxKd
-   BvjjZVIfB/iFfuLcK7/Yhb704CplbWLvzJK9CmKnNG6yJIqs3FZdG0K7S
-   N8ZaoR9UJVd5oeNlTSr/+omu+RkoIDWGlP8mxrgHqMEWzN49tFjEBjgV0
-   0ZyYtKQB8Dkes74hZRewUqdPHophsFUddOxxUyyMScDTU13j215sufGc2
-   sRId4JHzn/iI9Ew2LrfPhkzJ92u3Tt7wW6l8mGLNwVEcHexSTJawE2kft
-   3s4kOeAsvPLIhyq/P9+g0EWmDZcO7liSMLuMsA1FIGFMNCATuuiQsOq2W
-   Q==;
-X-CSE-ConnectionGUID: gyp10/z8SUycEaqeZx0k5g==
-X-CSE-MsgGUID: XjTPlsy3R6CUIAeeOMb6IQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11204"; a="28957253"
-X-IronPort-AV: E=Sophos;i="6.10,251,1719903600"; 
-   d="scan'208";a="28957253"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2024 08:58:14 -0700
-X-CSE-ConnectionGUID: Xp0mMn6aTJmrS1RKIK2Sfw==
-X-CSE-MsgGUID: iLkUdrEDSV6NVfy+IynrUQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,251,1719903600"; 
-   d="scan'208";a="71250804"
-Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
-  by fmviesa008.fm.intel.com with SMTP; 23 Sep 2024 08:58:11 -0700
-Received: by stinkbox (sSMTP sendmail emulation); Mon, 23 Sep 2024 18:58:10 +0300
-From: Ville Syrjala <ville.syrjala@linux.intel.com>
-To: linux-fbdev@vger.kernel.org
-Cc: Helge Deller <deller@gmx.de>,
-	Simona Vetter <simona@ffwll.ch>,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH 6/6] fbcon: Use 'bool' where appopriate
-Date: Mon, 23 Sep 2024 18:57:49 +0300
-Message-ID: <20240923155749.30846-7-ville.syrjala@linux.intel.com>
-X-Mailer: git-send-email 2.44.2
-In-Reply-To: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
-References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="HzthYCsA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1727120653; x=1727725453; i=deller@gmx.de;
+	bh=X5Nj79J5TT7jLCEldh0sVMpe04Vf6k84rEkhYEtikG0=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=HzthYCsAcjr5N5v2VYa/hOmJf6Tz9anzvjFV5gx3lHMH1qkZr64nhOAiC72LbmIC
+	 VhMhLWmbsA6CEU+eFHqOAlmtgivXodjYM+tN3z5qTwLFqC6iPoL6LKqudSWunFf18
+	 uIPldH3YMHvDnDWvIVjA9H9WZSTPvPmZKMPuj1YDRw4HpUps/6m3if37JJ4w//zHM
+	 W6DGoG98U2jVn3PPL/2LE8YxPxn8TrSbcZfLj5Gb5+6bXu+J0+qje/Xm70CvEcbeK
+	 UF2Gb4LFig1HJJyVw6mkYPzOe84IdSwI+RY44JHi52GAVYuPK9/qdusgC8lFgPG7h
+	 2a2oYF1PTVUAw8yJXQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M6Db0-1sqeBh1yDA-00DYo5; Mon, 23
+ Sep 2024 21:44:13 +0200
+Message-ID: <6aee9b03-af5c-4aff-b4a3-4e7ba84954dc@gmx.de>
+Date: Mon, 23 Sep 2024 21:44:12 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/6] fbcon: Introduce get_{fg,bg}_color()
+To: Ville Syrjala <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org
+Cc: Simona Vetter <simona@ffwll.ch>, dri-devel@lists.freedesktop.org
+References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-6-ville.syrjala@linux.intel.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20240923155749.30846-6-ville.syrjala@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:StLJjMKgWH5jwQwNNC64TDd6fbNtHSb0zgpyt1dshhnLVgOvqkh
+ k9efkLHfMHGxPBKhk6A9HLxiSWJB+afjUKMDqPUnljGg/LgpLOTbs1QQHOkFysFGl1RdrJF
+ fwd0lXm5S9FbqK2Nx1LW3Jij733FvpwM4pdMG4ktwqamqiKiGLsR8qBMb/swsgBKA8LFuWg
+ +R+Ay/rBpNE98nB3aR+lA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:/x8pI6LUJ5o=;6/9WFJr2U+ULcqCTqi3xOD+s7Vp
+ e9LJFLLjQMWBGir/zdouQuvYd7vWIr4kLt2cz212fEamHRyR5qKsPCG1a3WfaclH1ysfEiGDi
+ 9aJyZWMS/jzIq+/EdNZAGkxFkoiMER9XZNkAcwxEiAXku9MfgZGlcVL2e1k0Hrc9Q7jOKdqS1
+ 4vnC9CSMNebNCZ0eNokPY71lYeROD6OMLwMVCKKiTW2XZjEQnJGOiipIaLESRBh9kptBHmJMb
+ cyvdljKyCkyGGE4WTwYKKOUH2O+1TWoflNUKIUxAVT/8mdfzcqKrh+HEqaVwPf/ArHNhg9WN3
+ V/K84ZF4RHLSNxra8jAq5Cj45o4oWW5LdATyzuoDU6Ly5V+XzcRs+mwYbbHCdZLME9SHlHpvL
+ q39a5NudM61c4H/lOYL+eAhX4eO0biQmTDoBt/l/xpeSVLC8JdJ85DJxMWUiDeq7UPv71ZCdy
+ H/GbkYdpnXNu2mDp/ob03p4aYLgKa97gqHJSwC2//m7qmITfS/3t9I5CypejKegaNzGZ737F5
+ vDSXUW1dGZYkISHWf+pIhh0vnR8eMnyaBOno97oCH7RFDn92rEi/u6yBX9PBEdzzClULUZdG8
+ FOTz7juKfERq8wvwSFZbwMtVgvCkxUfE19QndzkfffJfc7BGAJHtOkK2tz8vI0A/p4iESPGF+
+ fizRSCUtkAoTizuTCv4NvOJ52d+T/C8hlIHr/qqM3JFsrOjh5q6Nqz5ZdUU7mz3KxnzzV7jUB
+ 9YFx8Es/5uyRQo4PTwdjF3tFmZny8PdDHLkX/uI/iB2AB0hjzZSxeU9UksHAk3x6/uKeJ9G44
+ ATjm5vse2D7phDXUOHJn40Jw==
 
-From: Ville Syrjälä <ville.syrjala@linux.intel.com>
+On 9/23/24 17:57, Ville Syrjala wrote:
+> From: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
+>
+> Make the code more legible by adding get_{fg,bg}_color()
+> which hide the obscure 'is_fg' parameter of get_color()
+> from the caller.
+>
+> Signed-off-by: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
 
-Use 'bool' type where it makes more sense than 'int'.
+Nice cleanup.
+Acked-by: Helge Deller <deller@gmx.de>
 
-Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
----
- drivers/video/fbdev/core/fbcon.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 17540cdf1edf..03d48e665bba 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -129,9 +129,9 @@ static int logo_shown = FBCON_LOGO_CANSHOW;
- /* console mappings */
- static unsigned int first_fb_vc;
- static unsigned int last_fb_vc = MAX_NR_CONSOLES - 1;
--static int fbcon_is_default = 1;
-+static bool fbcon_is_default = true;
- static int primary_device = -1;
--static int fbcon_has_console_bind;
-+static bool fbcon_has_console_bind;
- 
- #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
- static int map_override;
-@@ -166,7 +166,7 @@ static const struct consw fb_con;
- 
- #define advance_row(p, delta) (unsigned short *)((unsigned long)(p) + (delta) * vc->vc_size_row)
- 
--static int fbcon_cursor_blink;
-+static bool fbcon_cursor_blink;
- 
- #define divides(a, b)	((!(a) || (b)%(a)) ? 0 : 1)
- 
-@@ -281,7 +281,7 @@ static bool fbcon_skip_panic(struct fb_info *info)
- #endif
- }
- 
--static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
-+static inline bool fbcon_is_active(struct vc_data *vc, struct fb_info *info)
- {
- 	struct fbcon_ops *ops = info->fbcon_par;
- 
-@@ -290,7 +290,7 @@ static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
- }
- 
- static int get_color(struct vc_data *vc, struct fb_info *info,
--	      u16 c, int is_fg)
-+		     u16 c, bool is_fg)
- {
- 	int depth = fb_get_color_depth(&info->var, &info->fix);
- 	int color = 0;
-@@ -358,12 +358,12 @@ static int get_color(struct vc_data *vc, struct fb_info *info,
- 
- static int get_fg_color(struct vc_data *vc, struct fb_info *info, u16 c)
- {
--	return get_color(vc, info, c, 1);
-+	return get_color(vc, info, c, true);
- }
- 
- static int get_bg_color(struct vc_data *vc, struct fb_info *info, u16 c)
- {
--	return get_color(vc, info, c, 0);
-+	return get_color(vc, info, c, false);
- }
- 
- static void fb_flashcursor(struct work_struct *work)
-@@ -467,7 +467,7 @@ static int __init fb_console_setup(char *this_opt)
- 				last_fb_vc = simple_strtoul(options, &options, 10) - 1;
- 			if (last_fb_vc < first_fb_vc || last_fb_vc >= MAX_NR_CONSOLES)
- 				last_fb_vc = MAX_NR_CONSOLES - 1;
--			fbcon_is_default = 0;
-+			fbcon_is_default = false;
- 			continue;
- 		}
- 
-@@ -558,7 +558,7 @@ static int do_fbcon_takeover(int show_logo)
- 			con2fb_map[i] = -1;
- 		info_idx = -1;
- 	} else {
--		fbcon_has_console_bind = 1;
-+		fbcon_has_console_bind = true;
- 	}
- 
- 	return err;
-@@ -2802,7 +2802,7 @@ static void fbcon_unbind(void)
- 				fbcon_is_default);
- 
- 	if (!ret)
--		fbcon_has_console_bind = 0;
-+		fbcon_has_console_bind = false;
- }
- #else
- static inline void fbcon_unbind(void) {}
-@@ -3234,8 +3234,9 @@ static ssize_t cursor_blink_store(struct device *device,
- 				  const char *buf, size_t count)
- {
- 	struct fb_info *info;
--	int blink, idx;
- 	char **last = NULL;
-+	bool blink;
-+	int idx;
- 
- 	blink = simple_strtoul(buf, last, 0);
- 
--- 
-2.44.2
+> ---
+>   drivers/video/fbdev/core/fbcon.c | 24 ++++++++++++++++++------
+>   1 file changed, 18 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
+/fbcon.c
+> index 2a78cca3e9de..17540cdf1edf 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -356,6 +356,16 @@ static int get_color(struct vc_data *vc, struct fb_=
+info *info,
+>   	return color;
+>   }
+>
+> +static int get_fg_color(struct vc_data *vc, struct fb_info *info, u16 c=
+)
+> +{
+> +	return get_color(vc, info, c, 1);
+> +}
+> +
+> +static int get_bg_color(struct vc_data *vc, struct fb_info *info, u16 c=
+)
+> +{
+> +	return get_color(vc, info, c, 0);
+> +}
+> +
+>   static void fb_flashcursor(struct work_struct *work)
+>   {
+>   	struct fbcon_ops *ops =3D container_of(work, struct fbcon_ops, cursor=
+_work.work);
+> @@ -387,8 +397,9 @@ static void fb_flashcursor(struct work_struct *work)
+>
+>   	c =3D scr_readw((u16 *) vc->vc_pos);
+>   	enable =3D ops->cursor_flash && !ops->cursor_state.enable;
+> -	ops->cursor(vc, info, enable, get_color(vc, info, c, 1),
+> -		    get_color(vc, info, c, 0));
+> +	ops->cursor(vc, info, enable,
+> +		    get_fg_color(vc, info, c),
+> +		    get_bg_color(vc, info, c));
+>   	console_unlock();
+>
+>   	queue_delayed_work(system_power_efficient_wq, &ops->cursor_work,
+> @@ -1297,8 +1308,8 @@ static void fbcon_putcs(struct vc_data *vc, const =
+u16 *s, unsigned int count,
+>
+>   	if (fbcon_is_active(vc, info))
+>   		ops->putcs(vc, info, s, count, real_y(p, ypos), xpos,
+> -			   get_color(vc, info, scr_readw(s), 1),
+> -			   get_color(vc, info, scr_readw(s), 0));
+> +			   get_fg_color(vc, info, scr_readw(s)),
+> +			   get_bg_color(vc, info, scr_readw(s)));
+>   }
+>
+>   static void fbcon_clear_margins(struct vc_data *vc, int bottom_only)
+> @@ -1331,8 +1342,9 @@ static void fbcon_cursor(struct vc_data *vc, bool =
+enable)
+>   	if (!ops->cursor)
+>   		return;
+>
+> -	ops->cursor(vc, info, enable, get_color(vc, info, c, 1),
+> -		    get_color(vc, info, c, 0));
+> +	ops->cursor(vc, info, enable,
+> +		    get_fg_color(vc, info, c),
+> +		    get_bg_color(vc, info, c));
+>   }
+>
+>   static int scrollback_phys_max =3D 0;
 

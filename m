@@ -1,85 +1,84 @@
-Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04F0D82C60
-	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 12:34:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02DC879F5
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 15:57:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727094874; cv=none; b=FaeeJV9B5g7h3BXj9SXJo1IyhCmpXfW1PEXHVj0htr+cUWTLlczSfhmk7/IhZUkfDbMTjvMPk+S5IoNbg6fQKBv6mLALfn/etIC1fO4fptgu7hdmD5o+GgJYDhEopqRFuJ4oxVnxkIMkB5xzhlfqlV0ESbARRDNIOt0oX11sQn4=
+	t=1727107075; cv=none; b=QxOzXD3VTQSBL4hyUdK3EhcwBR86slhCeItr7EVJOm5PrNOMKPAGgHyciWyhQC4dBdveg7yl8pigffdkh4hb0vBmnoADn87LzEMWEcDdkWsjtl/iohe4DUPeqL10kBnhUUeE8s6UtgsJJeoEni+GyQie6QcKe87ze1uEg62H4/Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727094874; c=relaxed/simple;
-	bh=2XIX5mz0RBmDA5euJxp8y+Wts9scQnp2U7ggIINJNfM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pBsvM5Fl5apipdncKWkR3JWmPxqw3bJ6b6oU0sSm3CqVmgWHC6X8uN5mqTkCi2J7r5JrQQvonZ+iLBt0uO4lYcXRYfw8kD37tPWucZv927r0SxbD8Sd4YlHuof5wwsX/6CEyHEtB8m/FR4CCrqFq428e/qz/S+5wlypzF67YalA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Qrbxk6xI; arc=none smtp.client-ip=209.85.167.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1727107075; c=relaxed/simple;
+	bh=muGHoCCaLZKDvvKk4fGUvlM2RGHvVEFX1RUoVGXV2hQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tmp4qwwp5m/UI86tP0OzfxYFDl/3WnBK+RDfKeg+FQi84evIt6zu6utx54ce0kQsB3YO6HZRi7V022ZsbnKm8Hz2QPHHUOQfRrbHbR+GS5KGVEqfeI80P9FVULNqOxhy8PI63nejppbKTOzWs0yr76feqrQL/qPZozD5v5m8XCY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=hBaoXmHk; arc=none smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Qrbxk6xI"
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5365a9574b6so5853748e87.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 05:34:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1727094871; x=1727699671; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=N49f57cTB1HFzUzgYfoooYdBFUEP0IAy2wA8kB5amCA=;
-        b=Qrbxk6xIlmuXiAb5NeGL8tx3dGug+9UrmYImmGkd3HDu8wWZeyYncJksHxxP5wLUBx
-         gT14Rg6vw/ytfkIhuyGtDTD08mheaf42txP++D5Htqt7MrXjARI28xsjEIsvy99faZJ0
-         gBRevDSoCLaKUbJrVW7xeBBzPkykyAmBkiK+VLEkgwdXMg2yKgjDYPrXUQcCuUrDyvvl
-         6S19c1oXqAq/yxsSPFub/i6XpET4RyZp3oFsowOkHU8CYtE3b1CV3Dlok5FmvIcaGDmT
-         g3FaqlFUcUqX2v+/qjeSts4Ch/fZnOu5xzxE8J6HwGa7FuuIFEiwtpqW61+Ey08MADqq
-         V9Yw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727094871; x=1727699671;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=N49f57cTB1HFzUzgYfoooYdBFUEP0IAy2wA8kB5amCA=;
-        b=VNQGOm849M/AIZzNzqXThlp1ikYTpusf6lVSJP2BpSTIXdvryNNUIrU4z9aZyiFIyF
-         krCfL75LaVTiiDc1N6kBMJbunTbv65W5Td3QxCDA0AJoiXfo2AlHArPhFixNar4sMe3a
-         UN6nfk2c7Cg0/hYgRw5YQgTaVRPw/EkanlJ6Ey2QMbnLNhY3/xW88D7ABLHRfb6ufuID
-         0ngbwVnkcGLNDQEB5rmzX09S4GN2Qbw8rwe/n8XDZ/XU70pq8vufMAiF9eHKsMfLVMvg
-         mm3FPoIejI3UxyPJrr0vS7fo9GuP+hPAj46csMV5fJo0VDNnMo9XylqglgUlixmIAJn4
-         yO6w==
-X-Forwarded-Encrypted: i=1; AJvYcCWsFQPV6CNSwP5D5kLeqzvbVArUYppnX+ELJh+UO0C6HmCjou1uTLb9w7YzoWFHAxkD1PEy0CFoW/3vIg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwB0QOGdjt2WI/MWW3dIDazAVlK9/Lpg4tIeQJyWk9rWbZI+woN
-	DmBm2ONsy8Prs/sqgRCl6Brqoz+2OpYFCDK2KdnptRRl1fM7Ciu5VqWSerlQOt0=
-X-Google-Smtp-Source: AGHT+IF/DFl2Yi5RkcdlR+iT6PwIVo32HuubtE9mc1DgRuA6fscZHZXvy947e5s+d+LPPRSSLjp9eQ==
-X-Received: by 2002:a05:6512:3048:b0:533:4785:82ab with SMTP id 2adb3069b0e04-536ac2d6a6bmr6515979e87.1.1727094871107;
-        Mon, 23 Sep 2024 05:34:31 -0700 (PDT)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53687096914sm3251007e87.170.2024.09.23.05.34.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Sep 2024 05:34:29 -0700 (PDT)
-Date: Mon, 23 Sep 2024 15:34:27 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: Chen Ni <nichen@iscas.ac.cn>
-Cc: deller@gmx.de, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbdev: pxa3xx-gcu: Convert comma to semicolon
-Message-ID: <rsegcr3fhm5hfb5vbe7zlmvmffwmctoxv77kohoonswpqlo45v@qkg4rfeforyc>
-References: <20240902075724.3824567-1-nichen@iscas.ac.cn>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="hBaoXmHk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1727107074; x=1758643074;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=muGHoCCaLZKDvvKk4fGUvlM2RGHvVEFX1RUoVGXV2hQ=;
+  b=hBaoXmHkxojBUkSZqCPy1RX3ZyFm0pAjSZDeYOROPkR8A0Jv7y8kM+tv
+   sGccniop9V8XqQrnuHgOK6FJatLNXBUFIdMgqc4hVkW1fW+8db7mTzVMZ
+   dV9SeEyeYtVtBQRgoanR2KDAri+1KovFhzGr571lxH8Rw1vvI/UCr/a3O
+   dpmN850C/kELP2uuAebFaKbqlZa4bPuyu+T074E9I4ijP2d7YzclwKC4n
+   Vy1AXmdVJy1Lw3Ef7CPeXTWelPa/+LB0CnkBWpfUCM1nrNUUU55WjVBGY
+   yGwCGEgqfppziIqJ9laaw5u7/ZPSjceoxNIKGrH45n5/406kkIfaC6d31
+   w==;
+X-CSE-ConnectionGUID: LZUCze9YTSyda5GPtK9MYg==
+X-CSE-MsgGUID: 29vH6wXcRGy/AHIe6RrNsg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11204"; a="28957212"
+X-IronPort-AV: E=Sophos;i="6.10,251,1719903600"; 
+   d="scan'208";a="28957212"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2024 08:57:53 -0700
+X-CSE-ConnectionGUID: CaVJQAmXReiE3PPyM/F/1Q==
+X-CSE-MsgGUID: rzJgEVMBRcmDm8IMVM0A7g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,251,1719903600"; 
+   d="scan'208";a="71250754"
+Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
+  by fmviesa008.fm.intel.com with SMTP; 23 Sep 2024 08:57:51 -0700
+Received: by stinkbox (sSMTP sendmail emulation); Mon, 23 Sep 2024 18:57:49 +0300
+From: Ville Syrjala <ville.syrjala@linux.intel.com>
+To: linux-fbdev@vger.kernel.org
+Cc: Helge Deller <deller@gmx.de>,
+	Simona Vetter <simona@ffwll.ch>,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH 0/6] fbcon: Fix 'cursor_blink' sysfs attribute
+Date: Mon, 23 Sep 2024 18:57:43 +0300
+Message-ID: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
+X-Mailer: git-send-email 2.44.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240902075724.3824567-1-nichen@iscas.ac.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Mon, Sep 02, 2024 at 03:57:24PM GMT, Chen Ni wrote:
-> Replace a comma between expression statements by a semicolon.
-> 
-> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
-> ---
->  drivers/video/fbdev/pxa3xx-gcu.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
+From: Ville Syrjälä <ville.syrjala@linux.intel.com>
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Make the 'cursor_blink' sysfs attribute actually usable from
+udev rules. I also took the opportinity to some cleanups t
+the code after getting annoyed by it.
+
+Ville Syrjälä (6):
+  fbcon: Make cursor_blink=0 work when configured before fb devices
+    appear
+  fbcon: Add sysfs attributes before registering the device
+  fbcon: fbcon_cursor_noblink -> fbcon_cursor_blink
+  fbcon: fbcon_is_inactive() -> fbcon_is_active()
+  fbcon: Introduce get_{fg,bg}_color()
+  fbcon: Use 'bool' where appopriate
+
+ drivers/video/fbdev/core/fbcon.c | 180 ++++++++++++-------------------
+ 1 file changed, 69 insertions(+), 111 deletions(-)
 
 -- 
-With best wishes
-Dmitry
+2.44.2
+

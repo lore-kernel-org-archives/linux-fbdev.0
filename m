@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19B0E19F413
-	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 19:44:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D667FC0B
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Sep 2024 19:45:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727120664; cv=none; b=hQPVThx7FAIw/i5fk2j0SL4ab4VcNoG+jC3itfzmp4ZStEFK6+WWLbEzCHinHNnK3k7nnKna1hJj2b9LZ8bN+baVkKjhivFfirMa0nmKak5XWhT8z54bgW0Nt6DL1PV57vCs4nO1RfK/WZ/XfiXeKbO3C0OqgtjNYz+mui0DqU0=
+	t=1727120710; cv=none; b=GhRofxJ9pfNRiMyCNdsEibn+u5bJFEE2+spiSAb8rEUkf6c9EeQ+n4/y6r/R/qOZOKGjn2d9uRny/yTCm/f9XhX9or83XvmnmrQgZTLWCzojk3XoLx7w0/sssCDWQ6SRAs+TusbgxlLW7ApUHyQW6jekkjHJkgZNnmDkVUlFY4M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727120664; c=relaxed/simple;
-	bh=wgm2uFcDIq+AWoMcb+nsjgFLlr6FtAmQTboMn5JZUwM=;
+	s=arc-20240116; t=1727120710; c=relaxed/simple;
+	bh=DLOAXgC8xAqXBiv3Ea1zni/faTGyaE72zdI0owguQOs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sLNYTuej3qm0N4CXLSfpFrNdG1W11GgaLYgcvu2vl/CoXEIr56BKxalZHFlcjCQUAH3no9I5+yPF7pUWC4Hr/1PDXoCiUBRMBvSytfYyLk189Ba0RJQVuEBfoJIL4eupJLFE3FnIOBKEu/YLchOlK2yJnZXLj8mmVvsEaDXa6Ls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=HzthYCsA; arc=none smtp.client-ip=212.227.15.18
+	 In-Reply-To:Content-Type; b=dWZd9wA1UJDJCnNdVZaBs7jERIaImuXW+cGlbemIBwS7ap6MRXPNzjzodyDezQ9koCT/ISrwdgACygu/g03uRq0uB7Sm0YSAqs0eqx6BwuJ97arcalK6P+uMMyb0mPCy2DLTvkBJeckBn/h3wVOJ18sreMJZBQqYgsxnhk500i0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=tkN/hx3N; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="HzthYCsA"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="tkN/hx3N"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1727120653; x=1727725453; i=deller@gmx.de;
-	bh=X5Nj79J5TT7jLCEldh0sVMpe04Vf6k84rEkhYEtikG0=;
+	s=s31663417; t=1727120700; x=1727725500; i=deller@gmx.de;
+	bh=DsU93JGlxA0QqymVUBTHJF5pe2jt27csGWQyOojGadU=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=HzthYCsAcjr5N5v2VYa/hOmJf6Tz9anzvjFV5gx3lHMH1qkZr64nhOAiC72LbmIC
-	 VhMhLWmbsA6CEU+eFHqOAlmtgivXodjYM+tN3z5qTwLFqC6iPoL6LKqudSWunFf18
-	 uIPldH3YMHvDnDWvIVjA9H9WZSTPvPmZKMPuj1YDRw4HpUps/6m3if37JJ4w//zHM
-	 W6DGoG98U2jVn3PPL/2LE8YxPxn8TrSbcZfLj5Gb5+6bXu+J0+qje/Xm70CvEcbeK
-	 UF2Gb4LFig1HJJyVw6mkYPzOe84IdSwI+RY44JHi52GAVYuPK9/qdusgC8lFgPG7h
-	 2a2oYF1PTVUAw8yJXQ==
+	b=tkN/hx3NDnT/fhOq5SOjfM3wq4TVrTLpplQGrcvPAhTZN0dUuoDe+03CCJC9AuW2
+	 nrDJqJj7VwwABKTfjauGmB115KdgSOObqcoLbZCWN3aOv+95fru4pDmBZ3FnSBD2h
+	 sFF/fRtcY8uBpu3cPnvZBN+jgiftowsDxHTe8kkjfjSTtSj9nIKkUQnwwnkV+sPwa
+	 6NXtzVl04Atw/HGYnHdvy/Xoea0kpDwuszHOEmDzk/Crm6oNyjfyJ1be9NQyWvlpU
+	 8KcdYCx6awd0j5MuasOYMLgK2ugeugHQDv3IVOWtTg2I8xprzXVlHRO15vqoPsEQM
+	 mayzS9hXRAcQSIMv5A==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M6Db0-1sqeBh1yDA-00DYo5; Mon, 23
- Sep 2024 21:44:13 +0200
-Message-ID: <6aee9b03-af5c-4aff-b4a3-4e7ba84954dc@gmx.de>
-Date: Mon, 23 Sep 2024 21:44:12 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mt75H-1s3kfd2I6T-00zjbd; Mon, 23
+ Sep 2024 21:45:00 +0200
+Message-ID: <d4a85d99-7dc3-454d-bcc2-4f4746a0f474@gmx.de>
+Date: Mon, 23 Sep 2024 21:44:59 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/6] fbcon: Introduce get_{fg,bg}_color()
+Subject: Re: [PATCH 4/6] fbcon: fbcon_is_inactive() -> fbcon_is_active()
 To: Ville Syrjala <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org
 Cc: Simona Vetter <simona@ffwll.ch>, dri-devel@lists.freedesktop.org
 References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-6-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-5-ville.syrjala@linux.intel.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,106 +93,184 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240923155749.30846-6-ville.syrjala@linux.intel.com>
+In-Reply-To: <20240923155749.30846-5-ville.syrjala@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:StLJjMKgWH5jwQwNNC64TDd6fbNtHSb0zgpyt1dshhnLVgOvqkh
- k9efkLHfMHGxPBKhk6A9HLxiSWJB+afjUKMDqPUnljGg/LgpLOTbs1QQHOkFysFGl1RdrJF
- fwd0lXm5S9FbqK2Nx1LW3Jij733FvpwM4pdMG4ktwqamqiKiGLsR8qBMb/swsgBKA8LFuWg
- +R+Ay/rBpNE98nB3aR+lA==
+X-Provags-ID: V03:K1:E6wa4DNo8mtBVVAeomvwsquQvKKAzxcY9KtRcy2jk6MvY4AHBgG
+ 242QzgYNkj0b3NRl9tRqNOLW47fthZ7F1gst9TNZAEqN/ZES8b0pjFA3EB5c1Kp3Ti5qkwm
+ 1YALVD+6yiT45dMz50TGzKvIrcq5ynm4WOQCK+FY4hR4rSssomZxjzUzsFsSGZZOsHwOEGt
+ 8CzcTrwFyatObNqQ2w3YQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:/x8pI6LUJ5o=;6/9WFJr2U+ULcqCTqi3xOD+s7Vp
- e9LJFLLjQMWBGir/zdouQuvYd7vWIr4kLt2cz212fEamHRyR5qKsPCG1a3WfaclH1ysfEiGDi
- 9aJyZWMS/jzIq+/EdNZAGkxFkoiMER9XZNkAcwxEiAXku9MfgZGlcVL2e1k0Hrc9Q7jOKdqS1
- 4vnC9CSMNebNCZ0eNokPY71lYeROD6OMLwMVCKKiTW2XZjEQnJGOiipIaLESRBh9kptBHmJMb
- cyvdljKyCkyGGE4WTwYKKOUH2O+1TWoflNUKIUxAVT/8mdfzcqKrh+HEqaVwPf/ArHNhg9WN3
- V/K84ZF4RHLSNxra8jAq5Cj45o4oWW5LdATyzuoDU6Ly5V+XzcRs+mwYbbHCdZLME9SHlHpvL
- q39a5NudM61c4H/lOYL+eAhX4eO0biQmTDoBt/l/xpeSVLC8JdJ85DJxMWUiDeq7UPv71ZCdy
- H/GbkYdpnXNu2mDp/ob03p4aYLgKa97gqHJSwC2//m7qmITfS/3t9I5CypejKegaNzGZ737F5
- vDSXUW1dGZYkISHWf+pIhh0vnR8eMnyaBOno97oCH7RFDn92rEi/u6yBX9PBEdzzClULUZdG8
- FOTz7juKfERq8wvwSFZbwMtVgvCkxUfE19QndzkfffJfc7BGAJHtOkK2tz8vI0A/p4iESPGF+
- fizRSCUtkAoTizuTCv4NvOJ52d+T/C8hlIHr/qqM3JFsrOjh5q6Nqz5ZdUU7mz3KxnzzV7jUB
- 9YFx8Es/5uyRQo4PTwdjF3tFmZny8PdDHLkX/uI/iB2AB0hjzZSxeU9UksHAk3x6/uKeJ9G44
- ATjm5vse2D7phDXUOHJn40Jw==
+UI-OutboundReport: notjunk:1;M01:P0:3RAm5JZvoP0=;jtC7Qx2rFgqvB86lf0uXN+nTFCr
+ JCdigMuugt/qDiyfDrnRodI5H38yRG6vZAHAqQTBhdRkibsrzkQ+i+fVVFprksDnTPlHWux8m
+ N5TP/pK6XX96bonWn30KWAOosZPFvgp8zaAer5tEucwmyz604w9HdmO89VGn6czwdMDak9sU9
+ 5bx+rHHSSuHqde3XVoJ1+f4d2dnn4sncpYL70BbTsUKn0rlVn2dZwjWl+A+GPdF29OuJynjmj
+ xG5m9GpmIIYHVLWhTWR1arRGlEH+Ntus4BQKZ75Gr1furr4D6VVaCB2laAU2BHGlEFqmKv7Zy
+ yCiRPrdEoLsrs70thll080OBjid1dDNnvfbnDg0scSTTYMMglcpyFC45mH+TdvgXBO9mVsJBL
+ 1QBJS04grC8OdkQn9ZcWYy0UyLyOaQQjVMtAsQDyIMcwFzC3ru9ZuxyKoIpyKqVa5csixbknX
+ oqFIqXgIzuotHM/NXH74pcKSfs08GWBBObnW4yOj3L4dDF7Tr+IjfhyysqqF/bE4+gk1HW1z1
+ BttGPE6WTne1VW33OokcYHevL5Ma8fCp+h886ni3rrPTgglUchJe9ZP19aAVxtczZ73sNS622
+ KI5rcXaUoDo8zC843k8PLuLbIxq3EygGUFccnCbOdty23uyvrsLATGrF9abyMs6yAkB3c8CFO
+ s6e5ICpHO9DSgxYfwxAkr/TeAbnq8QPmYBi5Jk+eKJ2Rdp5Sl11y7Agz1RodqZOsXdrEXWsX7
+ tgNsL9TiC503fv7FeYMZGnc4MGTTodF4q/my1ONWP61RQedkNLFZNAfIZle7qnCJuMgPtVaGm
+ YhwvKxenh9t0N3hasFLtw4VQ==
 
 On 9/23/24 17:57, Ville Syrjala wrote:
 > From: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
 >
-> Make the code more legible by adding get_{fg,bg}_color()
-> which hide the obscure 'is_fg' parameter of get_color()
-> from the caller.
->
-> Signed-off-by: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
+> Invert fbcon_is_inactive() into fbcon_is_active(). Much easier
+> on the poor brain when you don't have to do dobule negations
+> all over the place.
 
-Nice cleanup.
+Agreed.
 Acked-by: Helge Deller <deller@gmx.de>
 
 
+> Signed-off-by: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
 > ---
->   drivers/video/fbdev/core/fbcon.c | 24 ++++++++++++++++++------
->   1 file changed, 18 insertions(+), 6 deletions(-)
+>   drivers/video/fbdev/core/fbcon.c | 30 +++++++++++++++---------------
+>   1 file changed, 15 insertions(+), 15 deletions(-)
 >
 > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
 /fbcon.c
-> index 2a78cca3e9de..17540cdf1edf 100644
+> index eb30aa872371..2a78cca3e9de 100644
 > --- a/drivers/video/fbdev/core/fbcon.c
 > +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -356,6 +356,16 @@ static int get_color(struct vc_data *vc, struct fb_=
-info *info,
->   	return color;
+> @@ -281,12 +281,12 @@ static bool fbcon_skip_panic(struct fb_info *info)
+>   #endif
 >   }
 >
-> +static int get_fg_color(struct vc_data *vc, struct fb_info *info, u16 c=
-)
-> +{
-> +	return get_color(vc, info, c, 1);
-> +}
-> +
-> +static int get_bg_color(struct vc_data *vc, struct fb_info *info, u16 c=
-)
-> +{
-> +	return get_color(vc, info, c, 0);
-> +}
-> +
->   static void fb_flashcursor(struct work_struct *work)
+> -static inline int fbcon_is_inactive(struct vc_data *vc, struct fb_info =
+*info)
+> +static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *i=
+nfo)
 >   {
->   	struct fbcon_ops *ops =3D container_of(work, struct fbcon_ops, cursor=
-_work.work);
-> @@ -387,8 +397,9 @@ static void fb_flashcursor(struct work_struct *work)
+>   	struct fbcon_ops *ops =3D info->fbcon_par;
 >
->   	c =3D scr_readw((u16 *) vc->vc_pos);
->   	enable =3D ops->cursor_flash && !ops->cursor_state.enable;
-> -	ops->cursor(vc, info, enable, get_color(vc, info, c, 1),
-> -		    get_color(vc, info, c, 0));
-> +	ops->cursor(vc, info, enable,
-> +		    get_fg_color(vc, info, c),
-> +		    get_bg_color(vc, info, c));
->   	console_unlock();
->
->   	queue_delayed_work(system_power_efficient_wq, &ops->cursor_work,
-> @@ -1297,8 +1308,8 @@ static void fbcon_putcs(struct vc_data *vc, const =
-u16 *s, unsigned int count,
->
->   	if (fbcon_is_active(vc, info))
->   		ops->putcs(vc, info, s, count, real_y(p, ypos), xpos,
-> -			   get_color(vc, info, scr_readw(s), 1),
-> -			   get_color(vc, info, scr_readw(s), 0));
-> +			   get_fg_color(vc, info, scr_readw(s)),
-> +			   get_bg_color(vc, info, scr_readw(s)));
+> -	return (info->state !=3D FBINFO_STATE_RUNNING ||
+> -		vc->vc_mode !=3D KD_TEXT || ops->graphics || fbcon_skip_panic(info));
+> +	return info->state =3D=3D FBINFO_STATE_RUNNING &&
+> +		vc->vc_mode =3D=3D KD_TEXT && !ops->graphics && !fbcon_skip_panic(inf=
+o);
 >   }
 >
->   static void fbcon_clear_margins(struct vc_data *vc, int bottom_only)
-> @@ -1331,8 +1342,9 @@ static void fbcon_cursor(struct vc_data *vc, bool =
-enable)
->   	if (!ops->cursor)
+>   static int get_color(struct vc_data *vc, struct fb_info *info,
+> @@ -1253,7 +1253,7 @@ static void __fbcon_clear(struct vc_data *vc, unsi=
+gned int sy, unsigned int sx,
+>   	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+>   	u_int y_break;
+>
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
 >   		return;
 >
-> -	ops->cursor(vc, info, enable, get_color(vc, info, c, 1),
-> -		    get_color(vc, info, c, 0));
-> +	ops->cursor(vc, info, enable,
-> +		    get_fg_color(vc, info, c),
-> +		    get_bg_color(vc, info, c));
+>   	if (!height || !width)
+> @@ -1295,7 +1295,7 @@ static void fbcon_putcs(struct vc_data *vc, const =
+u16 *s, unsigned int count,
+>   	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+>   	struct fbcon_ops *ops =3D info->fbcon_par;
+>
+> -	if (!fbcon_is_inactive(vc, info))
+> +	if (fbcon_is_active(vc, info))
+>   		ops->putcs(vc, info, s, count, real_y(p, ypos), xpos,
+>   			   get_color(vc, info, scr_readw(s), 1),
+>   			   get_color(vc, info, scr_readw(s), 0));
+> @@ -1306,7 +1306,7 @@ static void fbcon_clear_margins(struct vc_data *vc=
+, int bottom_only)
+>   	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
+>   	struct fbcon_ops *ops =3D info->fbcon_par;
+>
+> -	if (!fbcon_is_inactive(vc, info))
+> +	if (fbcon_is_active(vc, info))
+>   		ops->clear_margins(vc, info, margin_color, bottom_only);
 >   }
 >
->   static int scrollback_phys_max =3D 0;
+> @@ -1318,7 +1318,7 @@ static void fbcon_cursor(struct vc_data *vc, bool =
+enable)
+>
+>   	ops->cur_blink_jiffies =3D msecs_to_jiffies(vc->vc_cur_blink_ms);
+>
+> -	if (fbcon_is_inactive(vc, info) || vc->vc_deccm !=3D 1)
+> +	if (!fbcon_is_active(vc, info) || vc->vc_deccm !=3D 1)
+>   		return;
+>
+>   	if (vc->vc_cursor_type & CUR_SW)
+> @@ -1724,7 +1724,7 @@ static void fbcon_bmove(struct vc_data *vc, int sy=
+, int sx, int dy, int dx,
+>   	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
+>   	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+>
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return;
+>
+>   	if (!width || !height)
+> @@ -1748,7 +1748,7 @@ static bool fbcon_scroll(struct vc_data *vc, unsig=
+ned int t, unsigned int b,
+>   	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+>   	int scroll_partial =3D info->flags & FBINFO_PARTIAL_PAN_OK;
+>
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return true;
+>
+>   	fbcon_cursor(vc, false);
+> @@ -2132,7 +2132,7 @@ static bool fbcon_switch(struct vc_data *vc)
+>   			fbcon_del_cursor_work(old_info);
+>   	}
+>
+> -	if (fbcon_is_inactive(vc, info) ||
+> +	if (!fbcon_is_active(vc, info) ||
+>   	    ops->blank_state !=3D FB_BLANK_UNBLANK)
+>   		fbcon_del_cursor_work(info);
+>   	else
+> @@ -2172,7 +2172,7 @@ static bool fbcon_switch(struct vc_data *vc)
+>   	scrollback_max =3D 0;
+>   	scrollback_current =3D 0;
+>
+> -	if (!fbcon_is_inactive(vc, info)) {
+> +	if (fbcon_is_active(vc, info)) {
+>   	    ops->var.xoffset =3D ops->var.yoffset =3D p->yscroll =3D 0;
+>   	    ops->update_start(info);
+>   	}
+> @@ -2228,7 +2228,7 @@ static bool fbcon_blank(struct vc_data *vc, enum v=
+esa_blank_mode blank,
+>   		}
+>   	}
+>
+> - 	if (!fbcon_is_inactive(vc, info)) {
+> +	if (fbcon_is_active(vc, info)) {
+>   		if (ops->blank_state !=3D blank) {
+>   			ops->blank_state =3D blank;
+>   			fbcon_cursor(vc, !blank);
+> @@ -2242,7 +2242,7 @@ static bool fbcon_blank(struct vc_data *vc, enum v=
+esa_blank_mode blank,
+>   			update_screen(vc);
+>   	}
+>
+> -	if (mode_switch || fbcon_is_inactive(vc, info) ||
+> +	if (mode_switch || !fbcon_is_active(vc, info) ||
+>   	    ops->blank_state !=3D FB_BLANK_UNBLANK)
+>   		fbcon_del_cursor_work(info);
+>   	else
+> @@ -2572,7 +2572,7 @@ static void fbcon_set_palette(struct vc_data *vc, =
+const unsigned char *table)
+>   	int i, j, k, depth;
+>   	u8 val;
+>
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return;
+>
+>   	if (!con_is_visible(vc))
+> @@ -2672,7 +2672,7 @@ static void fbcon_modechanged(struct fb_info *info=
+)
+>   		scrollback_max =3D 0;
+>   		scrollback_current =3D 0;
+>
+> -		if (!fbcon_is_inactive(vc, info)) {
+> +		if (fbcon_is_active(vc, info)) {
+>   		    ops->var.xoffset =3D ops->var.yoffset =3D p->yscroll =3D 0;
+>   		    ops->update_start(info);
+>   		}
 

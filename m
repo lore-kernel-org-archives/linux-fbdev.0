@@ -1,109 +1,128 @@
-Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com [209.85.208.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1A3FD531
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 15:28:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D76B42065;
+	Tue, 24 Sep 2024 15:43:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.200
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727191733; cv=none; b=I0Yq0+n/PlFCkG/+gXfTVwVple7eMVk+AVT9gnPzYivWbC5Pg1137pVaX23ibPofHlpr8UsZgrBhEuPGJhCIFYkEQiAUcuUchnwdOE5JHM82rk4fHnukvvWIn2vmF9fxUvVwy/5LVslyxNtETrNpJzSv57f5mkwRrTSKepjhh8E=
+	t=1727192589; cv=none; b=VOFAvOTOhNykN7JJzbhaxgdQjmRkkEWE82yhwZ4onRpq6889JomOtS5RcngnT6R9bo5GpFQDeOjSN+zQrWtGuZE+JkFHZgbrVHcss5k1cgXlNg6gHtS+C06WheDbXY59AnsgEA2F59RRLO1Rqum9cJUnjdRb1+EPyLBxHXDLgLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727191733; c=relaxed/simple;
-	bh=74nw8Yvk24lLH6hdT5nJYTantYKEd67J8V9gFMR6xL4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Qp8NpHjd5Vq2jboroSZfqTE5C9T9VXs8M/eOs+QpCGAKYkAWN4cjgArgdaHVU2Yq/d6a9vG00mtXaK+n1Sh8JngUmbkzHIoyv45h7+1Qv50gYF9aEaHfvStyOm79EGThA8T9hj77WDHfzHZUHqer0qin8xMyCRszgtkzF01sv5w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=aX7geoRY; arc=none smtp.client-ip=209.85.208.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1727192589; c=relaxed/simple;
+	bh=L0AK+6KqxUWyxnx4XkHHlCViFEaPbwx1nm1WlvVLcTI=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OeXdFN6AZhrEDBpRgt2qjnzow+EK/oeJz0A1RaZuycrYmXZqt696iYvGj5fBtutgRDF7HFHlJQAvL7gvluKTqBL8j0mvOrCb1R6ab/mtbELJr8jYZ7rQApcGxlfzAk6K39Qz7SNP+0BdrmHWEHD8c/ILqxVsiB+XvZrftK/FK7A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=TBL79evk; arc=none smtp.client-ip=217.70.183.200
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="aX7geoRY"
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-2f75c0b78fbso57427031fa.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 08:28:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1727191730; x=1727796530; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JmlVyryjCtvGHksJcc6V++AP+cdUY7HjAK/zPP6l7tw=;
-        b=aX7geoRY70kLIk1e+rnU+KXfOxNdcxgKd69anSyZbdqL+dQayRLpwUCP+l841WUKUj
-         zP+0LVoz9vCgIrBVzwOqtrZ43Z32Z7POrvqfDt4Onc+mfBnfS90yDfKFyOyPPbu8anKn
-         LC4cwp9UgIOYd748p8rcLkecvlaaT/VQmgva2U3cEbLEyLTUWmC1/mWK3G07UvC4r4LR
-         FPVjtKnt6MWvsPrV/SvjNcJOyAJCIc0xHbFNrJsrETc3QvpPdkpDzN0AH+msWF2sPuBf
-         RKH/h1xeXt4h7z/0mWQ6xjtkjDcefFtzE0HXopfMlUo2dck/4W82LuR28hfX23Q4GHOF
-         dB+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727191730; x=1727796530;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=JmlVyryjCtvGHksJcc6V++AP+cdUY7HjAK/zPP6l7tw=;
-        b=ayMWhj6wSDLCsSFKkoR8IUgDrBFGIsrMLYq8SP634o3QRa2vzqh4yV/cuPe9MR4biN
-         lSpsaxL2UEPupmdXDYwBWDVsgTYvUFK/wmMDLec0GvduR82c8sfGeAUx7z9WSezV9x6k
-         r6MG3xbhA101uH9QkOwlRp6/ZM1BxNKM7cGEMjX1xiINde8z3zN6ayChUXJwd12+Dz+C
-         ceOALzZ/3oQqehMW20T+4evPue0iIBKHpnUmdZOEXY/8zhvGep5JeuwgIIhn1QyDq9is
-         bp7gPsQLxB1dVFBSbgkZjrOyigxfUrYDzarzrHLkCeU7UVdFOVN2WrTICGJwbIFyVu/e
-         Kjvw==
-X-Forwarded-Encrypted: i=1; AJvYcCWyQM88ZzW29Fy8k3aGQYlW5onvx96/YsoPRbwhwgtX0HlMcP31osanYhh37hCThWoAh5NfvZr6pJhjmg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLPrIJ2vgahOF9puz01JWxt96qf/5Dx5Nw+ELqrDhIFUh+936g
-	yngIR0V4KuvYklnFRm7uMId2nUq7t/Q3atSgCB0kOyApUjl0lSPHIuwg/75DCYDXeyul6pHE5Ay
-	/Z1Ewl0vMyQh+5vTl/Os9sJW5GJL5rIFjK9jPOQ==
-X-Google-Smtp-Source: AGHT+IEiOfWTtLmsrDQ4TAouRu2fOFMZSXhyqrITr0PEM2aNFE7efRiKdQGx+uXKj1N+eO0yWScOIk2M4ULt5Z/yxrs=
-X-Received: by 2002:a2e:be9e:0:b0:2f7:cba9:6098 with SMTP id
- 38308e7fff4ca-2f7cba9614dmr90175461fa.19.1727191729752; Tue, 24 Sep 2024
- 08:28:49 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="TBL79evk"
+Received: by mail.gandi.net (Postfix) with ESMTPSA id B69322000B;
+	Tue, 24 Sep 2024 15:42:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1727192579;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=boh+NsTBLdXuPuSw+Ws2TN9M0882PuT2RvMnZj0QorU=;
+	b=TBL79evkW0HtYvanMONTX/MlIHDSJGWoXLbHiyXZevjhMPqRXWtJR3phjiYlpzEv5UXKgx
+	oQHyN1+JHZR4mhoymDhI+OBgSpJPaGkI+eACnKjWPz4GBIpvuRzdy94Gx+KUmQ4x6n7jMh
+	VJa5e0jyMVt3cR89NbHLyZUFiQu8h3DxHIhn++lGpXEYQFv7BQKRdnyjgcUyy1S9mr5b4C
+	0kZ+o9iaRXrM4CjPPp1Nog6QJxpBNSCtA4J2FUd3+8JaJ+Cj7D5Qta/LKRrqhu5ZtxgOa6
+	sI/qsWG+EYW+DeO/jAExNXW0yb+wGGqzbKA75sz46jCCZtKg3Vz4qCixtl7VSw==
+Date: Tue, 24 Sep 2024 17:42:54 +0200
+From: Luca Ceresoli <luca.ceresoli@bootlin.com>
+To: Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona.vetter@ffwll.ch>, Dmitry Baryshkov
+ <dmitry.baryshkov@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Andrzej Hajda
+ <andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Robert Foss <rfoss@kernel.org>, Laurent Pinchart
+ <Laurent.pinchart@ideasonboard.com>, Jonas Karlman <jonas@kwiboo.se>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann
+ <tzimmermann@suse.de>, Derek Kiernan <derek.kiernan@amd.com>, Dragan Cvetic
+ <dragan.cvetic@amd.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Saravana Kannan <saravanak@google.com>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Lee Jones <lee@kernel.org>, Daniel Thompson
+ <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Helge
+ Deller <deller@gmx.de>, Paul Kocialkowski <contact@paulk.fr>, =?UTF-8?Q?H?=
+ =?UTF-8?Q?erv=C3=A9?= Codina <herve.codina@bootlin.com>, Thomas Petazzoni
+ <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-i2c@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Kocialkowski
+ <paul.kocialkowski@bootlin.com>
+Subject: Re: [PATCH v4 4/8] drm/bridge: hotplug-bridge: add driver to
+ support hot-pluggable DSI bridges
+Message-ID: <20240924174254.711c7138@booty>
+In-Reply-To: <20240917-hotplug-drm-bridge-v4-4-bc4dfee61be6@bootlin.com>
+References: <20240917-hotplug-drm-bridge-v4-0-bc4dfee61be6@bootlin.com>
+	<20240917-hotplug-drm-bridge-v4-4-bc4dfee61be6@bootlin.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
- <20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
-In-Reply-To: <20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
-From: David Lechner <dlechner@baylibre.com>
-Date: Tue, 24 Sep 2024 17:28:38 +0200
-Message-ID: <CAMknhBGOn_vhvHJU8g89A2TDmA6yFv9urpZ4A96jOMLdTtR-Bw@mail.gmail.com>
-Subject: Re: [PATCH v2 07/10] iio: adc: ad7606: Add compatibility to fw_nodes
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
-	Lars-Peter Clausen <lars@metafoo.de>, Michael Hennerich <Michael.Hennerich@analog.com>, 
-	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Michal Marek <mmarek@suse.com>, linux-pwm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	linux-iio@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-doc@vger.kernel.org, aardelean@baylibre.com, jstephan@baylibre.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-GND-Sasl: luca.ceresoli@bootlin.com
 
-On Fri, Sep 20, 2024 at 7:33=E2=80=AFPM Guillaume Stols <gstols@baylibre.co=
-m> wrote:
->
-> On the parallel version, the current implementation is only compatible
-> with id tables and won't work with fw_nodes, this commit intends to fix
-> it.
->
-> Also, chip info is moved in the .h file so to be accessible to all the
-> driver files that can set a pointer to the corresponding chip as the
-> driver data.
+Hello Simona, Maxime, Dmitry,
 
-This sounds like two unrelated changes, so maybe we should have two patches=
-?
+On Tue, 17 Sep 2024 10:53:08 +0200
+Luca Ceresoli <luca.ceresoli@bootlin.com> wrote:
 
+> This driver implements the point of a DRM pipeline where a connector allows
+> removal of all the following bridges up to the panel.
 
->  static const struct of_device_id ad7606_of_match[] =3D {
-> -       { .compatible =3D "adi,ad7605-4" },
-> -       { .compatible =3D "adi,ad7606-4" },
-> -       { .compatible =3D "adi,ad7606-6" },
-> -       { .compatible =3D "adi,ad7606-8" },
-> -       { .compatible =3D "adi,ad7606b" },
-> -       { .compatible =3D "adi,ad7616" },
-> +       { .compatible =3D "adi,ad7605-4", &ad7605_4_info },
-> +       { .compatible =3D "adi,ad7606-4", &ad7606_4_info },
-> +       { .compatible =3D "adi,ad7606-6", &ad7606_6_info },
-> +       { .compatible =3D "adi,ad7606-8", &ad7606_8_info },
-> +       { .compatible =3D "adi,ad7606b", &ad7606b_info },
-> +       { .compatible =3D "adi,ad7616", &ad7616_info },
+This is a quick feedback of the discussions about hotpluggable DRM
+bridges I had with Maxime and Dmitry during the Linux Plumbers
+Conference last week, which happened during the discussion I led on
+Wednesday afternoon and even more in the hallway.
 
-Since we have .compatible =3D , we should also have .data =3D for the chip =
-info.
+It was clear that adding refcounting to DRM bridges and handling
+gracefully atomic modeset operations during device removal are
+prerequisites for a hotpluggable bridge in DRM.
+
+DSI host drivers that keep a pointer to their device also need to be
+fixed, but this is well known and was not  discussed.
+
+Simona's proposal of letting removable bridges be owned by the hotplug
+connector was not seen as necessarily needed, especially after adding
+bridge refcounting. Also Maxime mentioned this idea might conflict with
+a use case that had been brought to his attention, involving bridges
+and DP MST. So I'm removing this idea from my roadmap -- it can be
+re-discussed and brought back if needed.
+
+There was no clear outcome about the question of whether the
+hotplug-bridge should still exist as a drm_bridge or rather the DRM
+core and the bridge drivers should be extended to handle everything.
+Dmitry seemed to think no hotplug bridge should exist at all, and all
+bridge drivers should be extended to cope with insertion and removal of
+the follofing bridge. Ripard's opinion was "I don't care". In her
+e-mail sent a few hours ago (in the v2 thread) Simona also appears as
+not having a strong position about this. There will be some time to
+clarify this as I'm addressing the previously mentioned issues.
+
+So by now the roadmap involves the following main steps:
+ 1. add refcounting to DRM bridges (struct drm_bridge)
+ 2. handle gracefully atomic updates during bridge removal
+ 3. avoid DSI host drivers to have dangling pointers to DSI devices
+ 4. finish the hotplug bridge work, moving code to the core and
+    potentially removing the hotplug-bridge itself
+
+If you think any other major item is required to support hot-pluggable
+DRM bridges, don't hesitate to speak out.
+
+Best regards,
+Luca
+
+-- 
+Luca Ceresoli, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

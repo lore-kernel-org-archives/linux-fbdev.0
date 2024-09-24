@@ -1,78 +1,67 @@
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87E43149C54;
-	Tue, 24 Sep 2024 13:12:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9075F1A7ADD
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 14:13:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727183543; cv=none; b=bcMvrn34BnWLewOyUI8jyrhfkBNKeW/xN0Fu2rgljo3JnMp8G3ndJeYaB167fqVt8C4+M0PQtJkTnVrzHyM+fXsd0ZRHL43lviyzSud6rCbA12WrnEUvbQf1JcLZvUaJgwZnqCdLjY8TRuLdheKE358MviIJgAmxvBJ5Nz/bxEg=
+	t=1727187191; cv=none; b=kDU67ajkOspbQwQflyDhIyPcbBbu9HJRI9gpgO0yOpJCvrzJGOdFULxZU73vBqas1D68nXVvU8BGVXJUxSfYlGGZdFVl5c6YfLYQpDJygwrSA4x2Fsalf6ZXbJy9Brop2GXmrRsO9g4TEgCdf9FRyCDuBL2MtHkhCxoK7cGzUPw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727183543; c=relaxed/simple;
-	bh=z1m4TZL5Mm0VylMjkh1Vw2oNwHroAVN/PG8TLGzmKww=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qryLOUuy759yvFwy2iIdjU5uEbJ+T2u93vhWgs5QZjaFhsnhszw2Z+KLlD8RwxtK/NVSe/IKbOjSw/TMRU3/Hw0kFZi3yGGuAea+2HpM9gnbLorwr3PHQcEnqoiXg3rls8gtmfRtasyFdXlj/NQ7n+v/ftfJakEjFeuvwsyW3VE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=vmjSPgmG; arc=none smtp.client-ip=85.214.62.61
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
+	s=arc-20240116; t=1727187191; c=relaxed/simple;
+	bh=Ove6qA9Uz/Pwc/8UDs6UkdWbzk3LrAkv03HZ9MpURmg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=ZWl4vg0AuOQhcKJfKck/vyZKcNQ+kHrr3eyXNlNeKaS8IcoTGFjdHc2gIM8m/sk6dorkBtF7HH7n51RNsvp6W1RZcl3qHyqiRgPGdfhYIua9GC3S+ylpF83OdaZy79U8MLPnQpFytY0I7WAsRuqBZtJm8wvRiuJoeXxQBMxDGDg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f1cCaQfz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="vmjSPgmG"
-Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
-	(No client certificate requested)
-	(Authenticated sender: marex@denx.de)
-	by phobos.denx.de (Postfix) with ESMTPSA id 2A5D488363;
-	Tue, 24 Sep 2024 15:12:13 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-	s=phobos-20191101; t=1727183534;
-	bh=DRU/cZ7ys2vNvnn5GxJewD+OdUTeyoFQ0VsBt7f/Egk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=vmjSPgmGRaFAnOrry+S9EpbnEpf7b+ZOCIPwTv/RFwc8cIt1rTFbuPlgtu7KAdx05
-	 eQXRI+Ln85yYO2bJULn2PIxKSpNDJr1QFK1yqFVVtpVCuBNrJHCu+7TOUtaSQuTokm
-	 zu1XdW9oy+iI5bYVKZZu4rpuChn9MIU/gQvaympYvjoz2JCcOESEEx34O1B8kzGhHk
-	 IH4Otwz12Jk6dhGtMLAWLSNHTWrkB0VbXEcYlLCewTur9TlRkfyZET2N+SP7ikIMy1
-	 ROoliO29kbKLl4naoBX7YHf+NtA2fdqB28lVNQ2t6isLe4cQRH5Wdpklg8FJytwf1y
-	 yhizP3oGT17zQ==
-Message-ID: <546c9dac-39ab-4abe-a495-ab54d6ee925d@denx.de>
-Date: Tue, 24 Sep 2024 12:47:12 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f1cCaQfz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEF6AC4CECD;
+	Tue, 24 Sep 2024 14:13:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727187191;
+	bh=Ove6qA9Uz/Pwc/8UDs6UkdWbzk3LrAkv03HZ9MpURmg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=f1cCaQfzj9yf9Jls9lys+/W835C5/lgW/6mB3B8XUeucAH1QG1QnwuJXqdDXOQAt2
+	 X01T00TkkFpL6HWFwgCCpx9tc0pHMOFMbNGuLm2EJAF73sord2VNArloQ+VexeGxtQ
+	 bjNRuNv/F7YR8O4AlyZ6zb+I+GZsYEYbekDBqyRyvzvdpgS+j2iWxZzh/HD/48fWCI
+	 pNzOAIrknk6a9yh6oudEvRkur8PakTWwMO1Vo2f9iED/mzGPaRUBAhnt5tNk4UTIvW
+	 REOxQXeyu+91/qUCfzlh0HMlWFeRwvFIbh9sNWv3U/m4Id97AprvZgXIxdtb/Z8dis
+	 9O2ep7fy6KLeg==
+From: Maxime Ripard <mripard@kernel.org>
+To: dri-devel@lists.freedesktop.org, 
+ Derek Foreman <derek.foreman@collabora.com>
+Cc: kernel@collabora.com, Jani Nikula <jani.nikula@linux.intel.com>, 
+ Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+In-Reply-To: <20240827163918.48160-1-derek.foreman@collabora.com>
+References: <20240827163918.48160-1-derek.foreman@collabora.com>
+Subject: Re: [PATCH v4] drm/connector: hdmi: Fix writing Dynamic Range
+ Mastering infoframes
+Message-Id: <172718718877.90582.18381097503447839347.b4-ty@kernel.org>
+Date: Tue, 24 Sep 2024 16:13:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] gpu: ipu-v3: vdic: Simplify ipu_vdi_setup()
-To: Philipp Zabel <p.zabel@pengutronix.de>, linux-media@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
- Fabio Estevam <festevam@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
- Steve Longerbeam <slongerbeam@gmail.com>, dri-devel@lists.freedesktop.org,
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-References: <20240724002044.112544-1-marex@denx.de>
- <95efd6b6491069d04b4bfae6616d9a43ba8467a6.camel@pengutronix.de>
-Content-Language: en-US
-From: Marek Vasut <marex@denx.de>
-In-Reply-To: <95efd6b6491069d04b4bfae6616d9a43ba8467a6.camel@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
-X-Virus-Status: Clean
+X-Mailer: b4 0.14.1
 
-On 9/4/24 11:05 AM, Philipp Zabel wrote:
-> On Mi, 2024-07-24 at 02:19 +0200, Marek Vasut wrote:
->> The 'code' parameter only ever selects between YUV 4:2:0 and 4:2:2
->> subsampling, turn it into boolean to select exactly that and update
->> related code accordingly.
->>
->> Signed-off-by: Marek Vasut <marex@denx.de>
+On Tue, 27 Aug 2024 11:39:04 -0500, Derek Foreman wrote:
+> The largest infoframe we create is the DRM (Dynamic Range Mastering)
+> infoframe which is 26 bytes + a 4 byte header, for a total of 30
+> bytes.
 > 
-> I'd prefer this to be an enum ipu_chroma_subsampling or similar,
-> instead of a boolean. Otherwise,
+> With HDMI_MAX_INFOFRAME_SIZE set to 29 bytes, as it is now, we
+> allocate too little space to pack a DRM infoframe in
+> write_device_infoframe(), leading to an ENOSPC return from
+> hdmi_infoframe_pack(), and never calling the connector's
+> write_infoframe() vfunc.
+> 
+> [...]
 
-I'm afraid this introduces unnecessary back and forth conversions 
-between the boolean and either of the two enum ipu_chroma_subsampling 
-values in the code.
+Applied to misc/kernel.git (drm-misc-fixes).
+
+Thanks!
+Maxime
+

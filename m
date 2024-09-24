@@ -1,93 +1,228 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AAB83398E
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 08:30:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E86D01A270
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 11:21:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727166611; cv=none; b=R+qbMc/rAmnegmuMpTTkcmRWR7qZ1pdWBI7Ef3BcFH/HW8ra3gU0t8rn/nNTE/l+DgVGAb/J5/KnoI5I1QBVG5/mhlDzi7BFWDhNR1FOLuedPc+2OBeejfyk7pv5QxFt7AZF9/35PKad7VJFnWWqkfimPwSYhsbMoo3Wg9JVQqA=
+	t=1727176873; cv=none; b=JrsVMgBanzDmvv0XzCPCgvyh0BWmaESUZ7t2Dx+un1PLpeqIe9eLJcsDNa6LyUdjrUJUcpEq+dgroU5eyfxK/5j+wkVviQIa/cOw+6zpVCTLZx+hh7HpLqERRwHznWJN3yr6RJer6oSO/MgDRuHXMNfU48vPafW6G3oj/8XeCfA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727166611; c=relaxed/simple;
-	bh=MW8yLfs1M2Ib46K8xqdSxahCJ8UTa1poRKjP8Gxs74k=;
+	s=arc-20240116; t=1727176873; c=relaxed/simple;
+	bh=x3nzE69kooUvru/SVRffVta3usJvojT0d9lA+v0KX1Y=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KJx9Tuus7tha94YOQwGU6HBfUjDQyroq+o3+93RjxvjGLXWeIv+UNu3YSZkD60A08VmW1Dsy+vXtjdKCczXte+RqfLhvkiNlcB4lipNY4coNz74w4KTUDIYpgbkdpFE8gl1VTUDgrdaI9mVfHLv8GTK4b3DY2Vp+K2Ftc7yTYVk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GKVgJK9M; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=YNBWcms63t2RWuyh+sSDSeSitchn0OpJtVJb25cqbsxwP0CsCpOReqB08c/9uqIpE8Rh9yOzjZmxLpt6XSlVu4lbCsILezGMVbiFWL5MWiOZIOSlvYsK4u6CQoyMV5J4SQv+bLiP42AXpjy0IUqN3dBy6+agaDjfuHdX1750y3c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=QwxpHtL8; arc=none smtp.client-ip=209.85.208.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GKVgJK9M"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1727166610; x=1758702610;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=MW8yLfs1M2Ib46K8xqdSxahCJ8UTa1poRKjP8Gxs74k=;
-  b=GKVgJK9MCogWh3B8/uvqtXSY2QWtwV4/J+/Tzjaf6NOCzJO9CEmV/Tk5
-   ZO7jIyydBkaMQ2lq4JsHqFFfx0xP8MO3AfmQCTRdxyR0cbMVPcm9WkV0d
-   /toos8N9wfr72mDufn+kpHwz53zRvq265GsioRrFIwggSv4Ev0PBqRc0r
-   MqT5I3Z1MxRGtnfcC+J/SlC43vTj65xpCM3SP+okx4IpaU0DqaY0utubt
-   5sow3wAe0WJaTXpN7MbFCgOaXdoo2UrtKTbj7aQHfZ70AWnvUqAK83uTM
-   79HhTQ+rLL/2mECp7Xu601tfgwxNy4iiYBotA5Z6+lzqPL/8NyDTSHxPj
-   Q==;
-X-CSE-ConnectionGUID: orRgh5oCQ92fSiYLsruGYg==
-X-CSE-MsgGUID: NpLK+J4ETSSWyQvbpNH+Tg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11204"; a="26265263"
-X-IronPort-AV: E=Sophos;i="6.10,253,1719903600"; 
-   d="scan'208";a="26265263"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Sep 2024 01:30:09 -0700
-X-CSE-ConnectionGUID: cUSAg6yYSriVgqBsedIoQw==
-X-CSE-MsgGUID: d3EVjTOgSVa70Kg69XtRTw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,253,1719903600"; 
-   d="scan'208";a="71484533"
-Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
-  by fmviesa008.fm.intel.com with SMTP; 24 Sep 2024 01:30:06 -0700
-Received: by stinkbox (sSMTP sendmail emulation); Tue, 24 Sep 2024 11:30:05 +0300
-Date: Tue, 24 Sep 2024 11:30:05 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, Simona Vetter <simona@ffwll.ch>,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
- before fb devices appear
-Message-ID: <ZvJ4jS0ThljULq2v@intel.com>
-References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-2-ville.syrjala@linux.intel.com>
- <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de>
- <ZvHd8VV6MO4kfLcL@intel.com>
- <93c63567-d183-402e-82e0-f64b97b74ba8@gmx.de>
- <a6369def-6076-4a9f-b8d8-ff32385235dc@gmx.de>
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="QwxpHtL8"
+Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-5c3d2f9f896so7518808a12.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 04:21:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1727176870; x=1727781670; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gYQ/IDmT9gcN7gYfq5hChxVJK5hUzJ0xEOoEvIgK6x0=;
+        b=QwxpHtL811lD/byP31JUvE8NX5L8iK5hHodqWMETaHnUvCdUNpagfCnzYUI0YuLmsH
+         sARNiacptXn+oucPXGGyH4Lx1X3SBsne4MDfC+gE/X+9jenkswNqYYloM/c3IQg7wXrn
+         oWnRiDEYbQiiuP9mpmh8IoWqov+wtoi/QGCus=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1727176870; x=1727781670;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=gYQ/IDmT9gcN7gYfq5hChxVJK5hUzJ0xEOoEvIgK6x0=;
+        b=hik2NSNu7E7bIT4VfggQm11m/jB7zpUQ2XmU62CfA+N7VtjTIl2gkcsXm2V0j/jH2l
+         vLOxhwo+q91I+N7AL6opndGOto3CTv9JT3l8CmFs6OqMz2wtxDl4Cdv7LH+CTErs9XYc
+         oNi7O0OqPXH14Bi3OEtLATU1Yztrkvs4zjUTCzLIYN1h+GiVlZP5uBxEO15oJmqmxhei
+         f5r+YIuh7f0jYJQpsjgtAtjLquz0PaC+Az9g40/E7+DUlMY5drt2rADTduVLHre9CeI9
+         7zCbG8thDKC1mMNbCsfT92W8JP5Fbcse0+u0S3HuqHiArKfjiWe6yJWTB3pH5Ijz4mMS
+         9mwA==
+X-Forwarded-Encrypted: i=1; AJvYcCW/Clr2PRn/88w8sOBfStQYtFTLECff+5s/UwbRihuVU8t0zgQAVqUqG3XM/Qp+Kun3C0sz7BHz16TTyA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy1iIyPr5oKTA/UTowV6cgbDtl8ibW0QwDam0fVAOTMRgl+BGfI
+	0MlnQYcQiBRo4hMZDG4/I2PoA/5Cy7gsvwbL8AkGTYf7J7XooXLI7Khw/+sTGlE=
+X-Google-Smtp-Source: AGHT+IG+0CZhC8lhSSWIeyvYwrLQI4O0OQvh1Pjvq9SkGlKqyG/ISsZIxeuv8w2ijkNznz0YfWr6pw==
+X-Received: by 2002:a17:906:794c:b0:a86:7199:af37 with SMTP id a640c23a62f3a-a90d51601d9mr1727612666b.58.1727176869474;
+        Tue, 24 Sep 2024 04:21:09 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:5485:d4b2:c087:b497])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a93930f7b90sm72287366b.175.2024.09.24.04.21.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Sep 2024 04:21:09 -0700 (PDT)
+Date: Tue, 24 Sep 2024 13:21:07 +0200
+From: Simona Vetter <simona.vetter@ffwll.ch>
+To: linux@treblig.org
+Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	hdegoede@redhat.com, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: Remove notifier
+Message-ID: <ZvKgo8RUImafDRPE@phenom.ffwll.local>
+Mail-Followup-To: linux@treblig.org, lee@kernel.org,
+	daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	hdegoede@redhat.com, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20240919232758.639925-1-linux@treblig.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a6369def-6076-4a9f-b8d8-ff32385235dc@gmx.de>
-X-Patchwork-Hint: comment
+In-Reply-To: <20240919232758.639925-1-linux@treblig.org>
+X-Operating-System: Linux phenom 6.10.6-amd64 
 
-On Tue, Sep 24, 2024 at 10:27:02AM +0200, Helge Deller wrote:
-> Ville,
+On Fri, Sep 20, 2024 at 12:27:58AM +0100, linux@treblig.org wrote:
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
 > 
-> On 9/23/24 23:50, Helge Deller wrote:
-> > I've added your patch series to the fbdev for-next git tree
-> > to get some feedback from the autobuilders and testsuites.
-> > I had to manually adjust patch #4 and #6 (after applying your v2
-> > patches), so maybe you send a v3 of your whole series at some point.
+> backlight_register_notifier and backlight_unregister_notifier have
+> been unused since
+>   commit 6cb634d0dc85 ("ACPI: video: Remove code to unregister acpi_video
+> backlight when a native backlight registers")
 > 
-> Your (fixed) patch series was OK. I had to update to latest git head
-> from Linus to get it applied.
+> With those not being called, it means that the backlight_notifier
+> list is always empty.
 > 
-> I applied the series again, including Thomas Zimmermanns R-b tag, so
-> no action needed from your side for now.
+> Remove the functions, the list itself and the enum used in the
+> notifications.
+> 
+> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 
-Cool. Thanks.
+Reviewed-by: Simona Vetter <simona.vetter@ffwll.ch>
+
+I think Lee Jones or Daniel Thompson will pick this up.
+-Sima
+
+> ---
+>  drivers/video/backlight/backlight.c | 42 -----------------------------
+>  include/linux/backlight.h           | 20 --------------
+>  2 files changed, 62 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+> index a82934694d05..f699e5827ccb 100644
+> --- a/drivers/video/backlight/backlight.c
+> +++ b/drivers/video/backlight/backlight.c
+> @@ -65,7 +65,6 @@
+>  
+>  static struct list_head backlight_dev_list;
+>  static struct mutex backlight_dev_list_mutex;
+> -static struct blocking_notifier_head backlight_notifier;
+>  
+>  static const char *const backlight_types[] = {
+>  	[BACKLIGHT_RAW] = "raw",
+> @@ -467,9 +466,6 @@ struct backlight_device *backlight_device_register(const char *name,
+>  	list_add(&new_bd->entry, &backlight_dev_list);
+>  	mutex_unlock(&backlight_dev_list_mutex);
+>  
+> -	blocking_notifier_call_chain(&backlight_notifier,
+> -				     BACKLIGHT_REGISTERED, new_bd);
+> -
+>  	return new_bd;
+>  }
+>  EXPORT_SYMBOL(backlight_device_register);
+> @@ -539,9 +535,6 @@ void backlight_device_unregister(struct backlight_device *bd)
+>  	mutex_unlock(&pmac_backlight_mutex);
+>  #endif
+>  
+> -	blocking_notifier_call_chain(&backlight_notifier,
+> -				     BACKLIGHT_UNREGISTERED, bd);
+> -
+>  	mutex_lock(&bd->ops_lock);
+>  	bd->ops = NULL;
+>  	mutex_unlock(&bd->ops_lock);
+> @@ -566,40 +559,6 @@ static int devm_backlight_device_match(struct device *dev, void *res,
+>  	return *r == data;
+>  }
+>  
+> -/**
+> - * backlight_register_notifier - get notified of backlight (un)registration
+> - * @nb: notifier block with the notifier to call on backlight (un)registration
+> - *
+> - * Register a notifier to get notified when backlight devices get registered
+> - * or unregistered.
+> - *
+> - * RETURNS:
+> - *
+> - * 0 on success, otherwise a negative error code
+> - */
+> -int backlight_register_notifier(struct notifier_block *nb)
+> -{
+> -	return blocking_notifier_chain_register(&backlight_notifier, nb);
+> -}
+> -EXPORT_SYMBOL(backlight_register_notifier);
+> -
+> -/**
+> - * backlight_unregister_notifier - unregister a backlight notifier
+> - * @nb: notifier block to unregister
+> - *
+> - * Register a notifier to get notified when backlight devices get registered
+> - * or unregistered.
+> - *
+> - * RETURNS:
+> - *
+> - * 0 on success, otherwise a negative error code
+> - */
+> -int backlight_unregister_notifier(struct notifier_block *nb)
+> -{
+> -	return blocking_notifier_chain_unregister(&backlight_notifier, nb);
+> -}
+> -EXPORT_SYMBOL(backlight_unregister_notifier);
+> -
+>  /**
+>   * devm_backlight_device_register - register a new backlight device
+>   * @dev: the device to register
+> @@ -767,7 +726,6 @@ static int __init backlight_class_init(void)
+>  
+>  	INIT_LIST_HEAD(&backlight_dev_list);
+>  	mutex_init(&backlight_dev_list_mutex);
+> -	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+> index ea9c1bc8148e..f5652e5a9060 100644
+> --- a/include/linux/backlight.h
+> +++ b/include/linux/backlight.h
+> @@ -66,24 +66,6 @@ enum backlight_type {
+>  	BACKLIGHT_TYPE_MAX,
+>  };
+>  
+> -/**
+> - * enum backlight_notification - the type of notification
+> - *
+> - * The notifications that is used for notification sent to the receiver
+> - * that registered notifications using backlight_register_notifier().
+> - */
+> -enum backlight_notification {
+> -	/**
+> -	 * @BACKLIGHT_REGISTERED: The backlight device is registered.
+> -	 */
+> -	BACKLIGHT_REGISTERED,
+> -
+> -	/**
+> -	 * @BACKLIGHT_UNREGISTERED: The backlight revice is unregistered.
+> -	 */
+> -	BACKLIGHT_UNREGISTERED,
+> -};
+> -
+>  /** enum backlight_scale - the type of scale used for brightness values
+>   *
+>   * The type of scale used for brightness values.
+> @@ -421,8 +403,6 @@ void devm_backlight_device_unregister(struct device *dev,
+>  				      struct backlight_device *bd);
+>  void backlight_force_update(struct backlight_device *bd,
+>  			    enum backlight_update_reason reason);
+> -int backlight_register_notifier(struct notifier_block *nb);
+> -int backlight_unregister_notifier(struct notifier_block *nb);
+>  struct backlight_device *backlight_device_get_by_name(const char *name);
+>  struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
+>  int backlight_device_set_brightness(struct backlight_device *bd,
+> -- 
+> 2.46.1
+> 
 
 -- 
-Ville Syrjälä
-Intel
+Simona Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

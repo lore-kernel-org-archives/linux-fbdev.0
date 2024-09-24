@@ -1,81 +1,40 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78A6A481DD
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:51:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C13161487FE
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 08:27:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727164321; cv=none; b=oT3blalkkEu9YfOydLQhdgbnx42LQ3d8NACq7lgu9xIz7Feq8/CSuOJ0JCBuB04RQaLRPleTpKPxw+wsHIV6Iz6BBdkFZ9V5JHJhzOGYhOAhgpJ/gi52kOVWwns9HqLFF1BWUGAjovXrxF4tHvVgAirEdf4gJdVfypmOHNxCA1o=
+	t=1727166437; cv=none; b=RnSX6BYTZlKEt8+IlDI9LO54pvopZE1vnAEf+A6QdIlHazB9jkwoXGwOZhxi7zbR4Y7SvNv0rwhY9jfYRUk/icpdParkLVDp97rbsJobMUuv7F6bQ3EPh5gu25n8VrFyIj4PH5jeE/epZEqKnFZxISlyrsG2O7aVk/X13dSk3VI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727164321; c=relaxed/simple;
-	bh=uwluixTYf3eg9nob4Rtd7zt+RgXWV9FRVXprXZN1mbk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=a/gmSE/U5gMly3m9sonx0u7m8/qUR7DEcl/IAcO0ck42+tGT07eFV9ci6LNAd271lG9BPw4GmqNNgsP+CpaXZDFf9r+Ja1mHTNFpavtukqefnIwnrJlH6GP2ZduBCVTm7/ovNURycBNMDXZjs0V2GYN7CBD1pAGaYV0yBTPoagg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=2TV9onql; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CET6CxfS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=2TV9onql; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CET6CxfS; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1727166437; c=relaxed/simple;
+	bh=WREGJqGC+hFt0OXhRGhqsxwpXCFO8oIx4yvBC09r5+I=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=WKilVqDEkAyaCQ+AuInINfP2n9U6Aw2bI6KeOyoYAtn1UlYzeznLrcGOSqG4LNXiL21Ad3uLEtprfRmCBrD4UOVi4WDDDBZGpmTwxHHRxJNPWDPtMNFJXjNc77JQBXlUn4F7WccqbZSiVMKReR4pez0065EsAEgBVJm2etXLpV0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=WbIEjLIq; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="2TV9onql";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CET6CxfS";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="2TV9onql";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CET6CxfS"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 8149D1F788;
-	Tue, 24 Sep 2024 07:51:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1727164317; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
-	b=2TV9onqlp/7s3zZ9zQg12O6snKT4R/iovI4DSGgWYkvbIZKzGZVwhE2bV/J4P3yS0hyZ9k
-	7TzN2yctU4qI6A6Yw34nnTBp7eb2UgnRWQ5i+PSZV25/RIoFGML2qGPWGhEPG0trCWM3/0
-	Lfcgn0dKqdaNYltDQhw35ns6TqvA1Do=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1727164317;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
-	b=CET6CxfSzqDxnj/fFyEXE9P5oPOxdZq9rE7tmxJy9pkXvXktMGdz+fXUNE+2KMXje18kau
-	17/t/Je9KKIhgqDw==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=2TV9onql;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=CET6CxfS
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1727164317; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
-	b=2TV9onqlp/7s3zZ9zQg12O6snKT4R/iovI4DSGgWYkvbIZKzGZVwhE2bV/J4P3yS0hyZ9k
-	7TzN2yctU4qI6A6Yw34nnTBp7eb2UgnRWQ5i+PSZV25/RIoFGML2qGPWGhEPG0trCWM3/0
-	Lfcgn0dKqdaNYltDQhw35ns6TqvA1Do=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1727164317;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
-	b=CET6CxfSzqDxnj/fFyEXE9P5oPOxdZq9rE7tmxJy9pkXvXktMGdz+fXUNE+2KMXje18kau
-	17/t/Je9KKIhgqDw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 54E0813AA8;
-	Tue, 24 Sep 2024 07:51:57 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id tsaEE51v8mYUawAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 24 Sep 2024 07:51:57 +0000
-Message-ID: <0a01146e-6116-44aa-88ee-4957d5fbc307@suse.de>
-Date: Tue, 24 Sep 2024 09:51:56 +0200
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="WbIEjLIq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1727166424; x=1727771224; i=deller@gmx.de;
+	bh=WREGJqGC+hFt0OXhRGhqsxwpXCFO8oIx4yvBC09r5+I=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:From:To:
+	 Cc:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=WbIEjLIqPJNzfdBtydNQGuWUiY0FNf1YH4/DBIcU7ZuxDSbkHCV0Irg9Zz8Ti5sT
+	 o7V6z/IJaM31+HawBN8NV+N7QBTM8BcA+G5ol+yZopsAXHOgal6ki3GRl0E6rUg7m
+	 e+y7dKXkRqI+DMvfEKZWGwy/+pwZJOlux9+b2CAswhXGXhP7IOdlkkAeA1rg6Ojug
+	 mO3/vLl64iZ6q3S4XzwRdEIWqHIb3FsN1gUvpKUbWUEBNuYyBBhOMb3SfDpuM+mnC
+	 c8sH7bghpzaK8Sddch/PKmmwA4kHKWnkODMJ8SmoqeJce8/TbDq857//KIUfK+N6E
+	 kN4VRwMpqnLcKMaYLA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MZkpb-1sOucR0BcN-00OzGn; Tue, 24
+ Sep 2024 10:27:04 +0200
+Message-ID: <a6369def-6076-4a9f-b8d8-ff32385235dc@gmx.de>
+Date: Tue, 24 Sep 2024 10:27:02 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,194 +42,95 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 6/6] fbcon: Use 'bool' where appopriate
-To: Ville Syrjala <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org
-Cc: Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>,
- dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
+ before fb devices appear
+From: Helge Deller <deller@gmx.de>
+To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
+Cc: linux-fbdev@vger.kernel.org, Simona Vetter <simona@ffwll.ch>,
+ dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>
 References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-7-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-2-ville.syrjala@linux.intel.com>
+ <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de> <ZvHd8VV6MO4kfLcL@intel.com>
+ <93c63567-d183-402e-82e0-f64b97b74ba8@gmx.de>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240923155749.30846-7-ville.syrjala@linux.intel.com>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <93c63567-d183-402e-82e0-f64b97b74ba8@gmx.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 8149D1F788
-X-Spam-Level: 
-X-Spamd-Result: default: False [-6.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[suse.de:dkim];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	FREEMAIL_CC(0.00)[gmx.de,ffwll.ch,lists.freedesktop.org];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[5];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,suse.de:mid,intel.com:email]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -6.51
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V03:K1:LXuzfG/Lf4dCwT0Wwv+IYbnyN+x3LOCfbUVvNzMwURBOtGqXW6V
+ vxnADtB2rNsPoiL6Yb/SeRx0lv1gJMWZhkWrVWgLXRr16d37fnIkz5OpRpz9qcWAKjk/yk3
+ zCh1bxE9P+whr4um7zO/LyjjpnwcSMc0htY4vvy9RIzWD6/JlGiMRedRtco2REhBj5jAQpu
+ j4iab0dZFuRO0b24iy1zA==
 X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:Hem1cbMrRJc=;PPrplJoXMUg/XG3pohO3gYxG7bP
+ naYtLGNWllSxJpicidOSUXpZUvSfDGtN/Ye9BXH6P0KlyqMPFeEQoEJF5LSBjSsFdDogyw9zV
+ Pp+NgtCLyaM0C4jEz3z+DJjUKAnl0S5/5ik2feoqT7QCuxTmd/Dt2kmeGJ1eE1EgEHKi2jE3G
+ m3JvcxW4kHHluizybkiBV7aozpGT3OBCfRYmn56qbz1iR+46xrhY9POVgmJ8k9+gJ4/jqCzli
+ 61NnG9lil4Hw+UPeGLK8W3KKomBNpsRd6f10b1bThT0rrPGxz3Nu6gIQ5CVJFUhnknIG0PDge
+ Lhn8a/cfLXMIh9UiuVAhuFo7XBaEEae6UKqmr8t4WaV+utzZmXNCzXVnrOLC+JL5NxxAUf2Kw
+ V6klHfApOsJhuCQZRwTozmMB4bBr+jv/Ywcbh9F1VOCVjjeHBei1VnD7JauqeMLcVHnpcae0/
+ Bfbi1YMCitSuI8VhSRyN+kd39pM6tuUTeMDiT4F9RJfPJiTCyFfQpnJdoB4JpZ2Lq+VZcsllg
+ mQ/qyp8meFROY9VbAkc8hqQsuEvInaRon3UT8ew2Ukorlnmx6A6c4WHEmjepsjkuXGjPH54L8
+ lW9WXDTTSZrDohnbe8vhabulfeooFekzZlWe1MVyEG2iRKuOwXHdEBv/w9nUSAEGYg1UiWYsN
+ U2hx6LNtsRoS0+GiYpmTvCjkSSU5pYHoe0XPwBzm8LzsLL9ZdpUyA3dmlca4995vXCY5E58Ir
+ 0EnQU7BD90M5cZzNSZwAVRfIPtVUQ7mp5Xms5A/V6b8Pet1BxJWv2UpA5ZzASLPpppcIR3kR5
+ 86elmPKgh84apCvKXcB87Q1w==
 
+Ville,
 
+On 9/23/24 23:50, Helge Deller wrote:
+> I've added your patch series to the fbdev for-next git tree
+> to get some feedback from the autobuilders and testsuites.
+> I had to manually adjust patch #4 and #6 (after applying your v2
+> patches), so maybe you send a v3 of your whole series at some point.
 
-Am 23.09.24 um 17:57 schrieb Ville Syrjala:
-> From: Ville Syrjälä <ville.syrjala@linux.intel.com>
->
-> Use 'bool' type where it makes more sense than 'int'.
->
-> Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Your (fixed) patch series was OK. I had to update to latest git head
+from Linus to get it applied.
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+I applied the series again, including Thomas Zimmermanns R-b tag, so
+no action needed from your side for now.
 
-> ---
->   drivers/video/fbdev/core/fbcon.c | 23 ++++++++++++-----------
->   1 file changed, 12 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 17540cdf1edf..03d48e665bba 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -129,9 +129,9 @@ static int logo_shown = FBCON_LOGO_CANSHOW;
->   /* console mappings */
->   static unsigned int first_fb_vc;
->   static unsigned int last_fb_vc = MAX_NR_CONSOLES - 1;
-> -static int fbcon_is_default = 1;
-> +static bool fbcon_is_default = true;
->   static int primary_device = -1;
-> -static int fbcon_has_console_bind;
-> +static bool fbcon_has_console_bind;
->   
->   #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
->   static int map_override;
-> @@ -166,7 +166,7 @@ static const struct consw fb_con;
->   
->   #define advance_row(p, delta) (unsigned short *)((unsigned long)(p) + (delta) * vc->vc_size_row)
->   
-> -static int fbcon_cursor_blink;
-> +static bool fbcon_cursor_blink;
->   
->   #define divides(a, b)	((!(a) || (b)%(a)) ? 0 : 1)
->   
-> @@ -281,7 +281,7 @@ static bool fbcon_skip_panic(struct fb_info *info)
->   #endif
->   }
->   
-> -static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
-> +static inline bool fbcon_is_active(struct vc_data *vc, struct fb_info *info)
->   {
->   	struct fbcon_ops *ops = info->fbcon_par;
->   
-> @@ -290,7 +290,7 @@ static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
->   }
->   
->   static int get_color(struct vc_data *vc, struct fb_info *info,
-> -	      u16 c, int is_fg)
-> +		     u16 c, bool is_fg)
->   {
->   	int depth = fb_get_color_depth(&info->var, &info->fix);
->   	int color = 0;
-> @@ -358,12 +358,12 @@ static int get_color(struct vc_data *vc, struct fb_info *info,
->   
->   static int get_fg_color(struct vc_data *vc, struct fb_info *info, u16 c)
->   {
-> -	return get_color(vc, info, c, 1);
-> +	return get_color(vc, info, c, true);
->   }
->   
->   static int get_bg_color(struct vc_data *vc, struct fb_info *info, u16 c)
->   {
-> -	return get_color(vc, info, c, 0);
-> +	return get_color(vc, info, c, false);
->   }
->   
->   static void fb_flashcursor(struct work_struct *work)
-> @@ -467,7 +467,7 @@ static int __init fb_console_setup(char *this_opt)
->   				last_fb_vc = simple_strtoul(options, &options, 10) - 1;
->   			if (last_fb_vc < first_fb_vc || last_fb_vc >= MAX_NR_CONSOLES)
->   				last_fb_vc = MAX_NR_CONSOLES - 1;
-> -			fbcon_is_default = 0;
-> +			fbcon_is_default = false;
->   			continue;
->   		}
->   
-> @@ -558,7 +558,7 @@ static int do_fbcon_takeover(int show_logo)
->   			con2fb_map[i] = -1;
->   		info_idx = -1;
->   	} else {
-> -		fbcon_has_console_bind = 1;
-> +		fbcon_has_console_bind = true;
->   	}
->   
->   	return err;
-> @@ -2802,7 +2802,7 @@ static void fbcon_unbind(void)
->   				fbcon_is_default);
->   
->   	if (!ret)
-> -		fbcon_has_console_bind = 0;
-> +		fbcon_has_console_bind = false;
->   }
->   #else
->   static inline void fbcon_unbind(void) {}
-> @@ -3234,8 +3234,9 @@ static ssize_t cursor_blink_store(struct device *device,
->   				  const char *buf, size_t count)
->   {
->   	struct fb_info *info;
-> -	int blink, idx;
->   	char **last = NULL;
-> +	bool blink;
-> +	int idx;
->   
->   	blink = simple_strtoul(buf, last, 0);
->   
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Thanks!
+Helge

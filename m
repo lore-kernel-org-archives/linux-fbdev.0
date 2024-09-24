@@ -1,81 +1,81 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 955D8145B27
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:35:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 458B01474C9
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:37:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727163314; cv=none; b=QiYxFBlvgdbVllXRBdb3N1+cjYc3HmhF7kcNbvhki1W/7ZPM2XqUuN4yiYU47NdMd4XnM7GO6wU9HUGqSn+YmlMF65/2NHSocbxqaelsEtdLIMBYCgSV8r3joFi10LU/ej8qhgQrbHXzm2T6I4MX+2BjCM59YWbadiecvaBPETI=
+	t=1727163473; cv=none; b=uvH366l905KVkIR+tpn7My0mlnR2k80G2BRUgI2bziFfXdNjrN3IYTUizAjrhntqA8UkAJgHwQaCnb8IZm93HrWqchxrviZraQeWiLQ4tvCf8QnBFc4xnIeCPlnm0vdxb4k9C8lg7NJ3hwa0zCOXKmJ3CQ4EYnmv1VDonjODhEA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727163314; c=relaxed/simple;
-	bh=fRxDB2eXMOEmfAs26T3HllgvYGBTI9TxcEV45Nbqgks=;
+	s=arc-20240116; t=1727163473; c=relaxed/simple;
+	bh=GuxLHyTisAKSkFe/mBXkO3pLomdAmhXdcIbui3zKYkI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ksB8qc4ij1qeHAcIuU1/n3SqNPIBXu7BeM+5PHUuieV9fSLP6eI1hDyNMqe9Qpj3V3oytckXKIDz5xPYxO1IWUwd66TeLnjL0ZhX9/5WJwZ8eCHEMgNKF0YK2XPqWSoMFdQfXyFg3bjkiXgv2MdATa/DQIFfbpO4bYow6BkSWN4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=I+xO0AxP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hBG2tNHa; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vDUpoOW2; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xZF8QoBU; arc=none smtp.client-ip=195.135.223.131
+	 In-Reply-To:Content-Type; b=jbXTpGisY9a9wz3dV7YL8EINe+uoKnHFCt7wsxHQ4eqK6XuhBkSMeYg+JDAY9J4YVuZwYUqH787bsDNNd1EjZLKcBX4iMVlbnBJv6PCdt5d8bEdRgFdiRVIFpE7NlEFmMyMkttYHkab24/jlXJq8TVOmMJCXVK2/3Nru8HWaqWs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=GCCgxqLl; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JT+GuVek; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MJQESQAR; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lHC/8x3c; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="I+xO0AxP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hBG2tNHa";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vDUpoOW2";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xZF8QoBU"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="GCCgxqLl";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JT+GuVek";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MJQESQAR";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lHC/8x3c"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 711A91F789;
-	Tue, 24 Sep 2024 07:35:09 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 4BBAB1F786;
+	Tue, 24 Sep 2024 07:37:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1727163310; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1727163469; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=emSzkVE3ny3S5Bqlvy79XovihPgtpi/FUGWuf+0XqGo=;
-	b=I+xO0AxPhvKHhhOBBQ2v7vFgXurKh0i1Z7IzdwnI174NnDnpai4YifcJS4c0PZ/J4SxRuG
-	s9oTTVV2HH6cqxRLS2l8Jt9A0P2M9xzWAJl5T1IzHDAyVICrWW9vj+ozX1tMkqgwh28ZPA
-	1nVneQClb6qJ8gc52nABQRfH3IaKvgs=
+	bh=pgNRXTc1U1drtadeHCRdrQ0WBtc9hei3MiPxHYsytBM=;
+	b=GCCgxqLln7ydQA8+WEzFtq+PDMewAUFamJXQzjFUyY/c0VHPHHQ7EGLr1nwssnqRBgZ7Q4
+	dpkFdw9EtjvsciGH88ndk79PFKAGMI+3ep79GwD8yx3LaCKfYrqY5KHxvNjfbnHzRCfibv
+	VVSsqJa7PqwJIjlP3P0jZXiAqT+oat8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1727163310;
+	s=susede2_ed25519; t=1727163469;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=emSzkVE3ny3S5Bqlvy79XovihPgtpi/FUGWuf+0XqGo=;
-	b=hBG2tNHa8NI4ZdozcGct4R4tMCERxMSxCoSy7wtcnhH/XEtpqXA8lX4FC2VGkipnZS6vqF
-	AvcQK9wxso7zLPAg==
+	bh=pgNRXTc1U1drtadeHCRdrQ0WBtc9hei3MiPxHYsytBM=;
+	b=JT+GuVekLFSoPcyC1rqUQIZeR+ZnZFui173bD7W357o3Ers8yUntG/AyBOTC4uSBdGR/W+
+	gznHqt4OPD5HGqDA==
 Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=vDUpoOW2;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=xZF8QoBU
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=MJQESQAR;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="lHC/8x3c"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1727163309; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1727163468; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=emSzkVE3ny3S5Bqlvy79XovihPgtpi/FUGWuf+0XqGo=;
-	b=vDUpoOW2WnyYNwB+xxefAIBUI+G+Wl8tEh5BdbBFiJ2TmMbS57LsN+8rkb+WlCUTthsA4d
-	zZDCGj8MrcRGiRkbCRtaru9pqFsdXWF88TxE8IyLHSPulefwWIjoHc7AdY86fJEKuKwuoR
-	KeosPu7sMPjNmthNNJcixkNnhOQbDIg=
+	bh=pgNRXTc1U1drtadeHCRdrQ0WBtc9hei3MiPxHYsytBM=;
+	b=MJQESQARoFjoDD0cR+b0PGvkJVlIKC2WqcDIHqLERcP5cvmgbA35N+nPpDrvL1QDhf7Mfm
+	AOh9q/US31Cbi9ATUmrNWziLk5Oj1tPlOtN+R3IUJPDOYTM+gxPN97+GIHwIpTbj/PokYo
+	8dD+68yaZDCGQ4ocnYjxcuwWeH2okWw=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1727163309;
+	s=susede2_ed25519; t=1727163468;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=emSzkVE3ny3S5Bqlvy79XovihPgtpi/FUGWuf+0XqGo=;
-	b=xZF8QoBUGOpWaEwF6oOflubf/It7Q91rlynTNbKUCxpZ4KpBcFA+u1mea7jLOUo7KOaycj
-	YrRmbSNzEZRgQLAQ==
+	bh=pgNRXTc1U1drtadeHCRdrQ0WBtc9hei3MiPxHYsytBM=;
+	b=lHC/8x3c9JejV2h5qtUdINMvhQ0CstrK8cxdN3EcWrVnKrb6Wg7P9qW4h/BvdTB6/73JgV
+	GqfxWtkiWwWGiWAg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 481B113AA8;
-	Tue, 24 Sep 2024 07:35:09 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1E6F813AA8;
+	Tue, 24 Sep 2024 07:37:48 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id OupWEK1r8mYkZgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 24 Sep 2024 07:35:09 +0000
-Message-ID: <31d28b78-7dc5-4917-998c-ca36a93534f2@suse.de>
-Date: Tue, 24 Sep 2024 09:35:08 +0200
+	id IaYuBkxs8mbWZgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 24 Sep 2024 07:37:48 +0000
+Message-ID: <e22a5407-549e-4bf2-9102-a9efbcec1b4b@suse.de>
+Date: Tue, 24 Sep 2024 09:37:47 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,12 +83,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/6] fbcon: fbcon_cursor_noblink -> fbcon_cursor_blink
+Subject: Re: [PATCH 4/6] fbcon: fbcon_is_inactive() -> fbcon_is_active()
 To: Ville Syrjala <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org
 Cc: Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>,
  dri-devel@lists.freedesktop.org
 References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-4-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-5-ville.syrjala@linux.intel.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -115,12 +115,11 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240923155749.30846-4-ville.syrjala@linux.intel.com>
+In-Reply-To: <20240923155749.30846-5-ville.syrjala@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 711A91F789
-X-Spam-Score: -6.51
-X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 4BBAB1F786
+X-Spam-Level: 
 X-Spamd-Result: default: False [-6.51 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[suse.de:dkim];
@@ -148,70 +147,157 @@ X-Spamd-Result: default: False [-6.51 / 50.00];
 	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
 	RCVD_TLS_ALL(0.00)[];
 	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,intel.com:email,suse.de:dkim,suse.de:mid,suse.de:email]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,intel.com:email]
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Score: -6.51
 X-Spam-Flag: NO
-X-Spam-Level: 
 
 
 
 Am 23.09.24 um 17:57 schrieb Ville Syrjala:
 > From: Ville Syrjälä <ville.syrjala@linux.intel.com>
 >
-> Invert fbcon_cursor_noblink into fbcon_cursor_blink so that:
-> - it matches the sysfs attribute exactly
-> - avoids having to do these NOT operations all over the place
+> Invert fbcon_is_inactive() into fbcon_is_active(). Much easier
+> on the poor brain when you don't have to do dobule negations
+> all over the place.
 >
 > Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
-
-With the inversion of the default fixed:
 
 Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 
 > ---
->   drivers/video/fbdev/core/fbcon.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
+>   drivers/video/fbdev/core/fbcon.c | 30 +++++++++++++++---------------
+>   1 file changed, 15 insertions(+), 15 deletions(-)
 >
 > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index bbe332572ca7..eb30aa872371 100644
+> index eb30aa872371..2a78cca3e9de 100644
 > --- a/drivers/video/fbdev/core/fbcon.c
 > +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -166,7 +166,7 @@ static const struct consw fb_con;
+> @@ -281,12 +281,12 @@ static bool fbcon_skip_panic(struct fb_info *info)
+>   #endif
+>   }
 >   
->   #define advance_row(p, delta) (unsigned short *)((unsigned long)(p) + (delta) * vc->vc_size_row)
->   
-> -static int fbcon_cursor_noblink;
-> +static int fbcon_cursor_blink;
->   
->   #define divides(a, b)	((!(a) || (b)%(a)) ? 0 : 1)
->   
-> @@ -399,7 +399,7 @@ static void fbcon_add_cursor_work(struct fb_info *info)
+> -static inline int fbcon_is_inactive(struct vc_data *vc, struct fb_info *info)
+> +static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
 >   {
 >   	struct fbcon_ops *ops = info->fbcon_par;
 >   
-> -	if (!fbcon_cursor_noblink)
-> +	if (fbcon_cursor_blink)
->   		queue_delayed_work(system_power_efficient_wq, &ops->cursor_work,
->   				   ops->cur_blink_jiffies);
->   }
-> @@ -3214,7 +3214,7 @@ static ssize_t rotate_show(struct device *device,
->   static ssize_t cursor_blink_show(struct device *device,
->   				 struct device_attribute *attr, char *buf)
->   {
-> -	return sysfs_emit(buf, "%d\n", !fbcon_cursor_noblink);
-> +	return sysfs_emit(buf, "%d\n", fbcon_cursor_blink);
+> -	return (info->state != FBINFO_STATE_RUNNING ||
+> -		vc->vc_mode != KD_TEXT || ops->graphics || fbcon_skip_panic(info));
+> +	return info->state == FBINFO_STATE_RUNNING &&
+> +		vc->vc_mode == KD_TEXT && !ops->graphics && !fbcon_skip_panic(info);
 >   }
 >   
->   static ssize_t cursor_blink_store(struct device *device,
-> @@ -3230,7 +3230,7 @@ static ssize_t cursor_blink_store(struct device *device,
->   	console_lock();
->   	idx = con2fb_map[fg_console];
+>   static int get_color(struct vc_data *vc, struct fb_info *info,
+> @@ -1253,7 +1253,7 @@ static void __fbcon_clear(struct vc_data *vc, unsigned int sy, unsigned int sx,
+>   	struct fbcon_display *p = &fb_display[vc->vc_num];
+>   	u_int y_break;
 >   
-> -	fbcon_cursor_noblink = !blink;
-> +	fbcon_cursor_blink = blink;
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return;
 >   
->   	if (idx == -1 || fbcon_registered_fb[idx] == NULL)
->   		goto err;
+>   	if (!height || !width)
+> @@ -1295,7 +1295,7 @@ static void fbcon_putcs(struct vc_data *vc, const u16 *s, unsigned int count,
+>   	struct fbcon_display *p = &fb_display[vc->vc_num];
+>   	struct fbcon_ops *ops = info->fbcon_par;
+>   
+> -	if (!fbcon_is_inactive(vc, info))
+> +	if (fbcon_is_active(vc, info))
+>   		ops->putcs(vc, info, s, count, real_y(p, ypos), xpos,
+>   			   get_color(vc, info, scr_readw(s), 1),
+>   			   get_color(vc, info, scr_readw(s), 0));
+> @@ -1306,7 +1306,7 @@ static void fbcon_clear_margins(struct vc_data *vc, int bottom_only)
+>   	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
+>   	struct fbcon_ops *ops = info->fbcon_par;
+>   
+> -	if (!fbcon_is_inactive(vc, info))
+> +	if (fbcon_is_active(vc, info))
+>   		ops->clear_margins(vc, info, margin_color, bottom_only);
+>   }
+>   
+> @@ -1318,7 +1318,7 @@ static void fbcon_cursor(struct vc_data *vc, bool enable)
+>   
+>   	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+>   
+> -	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+> +	if (!fbcon_is_active(vc, info) || vc->vc_deccm != 1)
+>   		return;
+>   
+>   	if (vc->vc_cursor_type & CUR_SW)
+> @@ -1724,7 +1724,7 @@ static void fbcon_bmove(struct vc_data *vc, int sy, int sx, int dy, int dx,
+>   	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
+>   	struct fbcon_display *p = &fb_display[vc->vc_num];
+>   
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return;
+>   
+>   	if (!width || !height)
+> @@ -1748,7 +1748,7 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
+>   	struct fbcon_display *p = &fb_display[vc->vc_num];
+>   	int scroll_partial = info->flags & FBINFO_PARTIAL_PAN_OK;
+>   
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return true;
+>   
+>   	fbcon_cursor(vc, false);
+> @@ -2132,7 +2132,7 @@ static bool fbcon_switch(struct vc_data *vc)
+>   			fbcon_del_cursor_work(old_info);
+>   	}
+>   
+> -	if (fbcon_is_inactive(vc, info) ||
+> +	if (!fbcon_is_active(vc, info) ||
+>   	    ops->blank_state != FB_BLANK_UNBLANK)
+>   		fbcon_del_cursor_work(info);
+>   	else
+> @@ -2172,7 +2172,7 @@ static bool fbcon_switch(struct vc_data *vc)
+>   	scrollback_max = 0;
+>   	scrollback_current = 0;
+>   
+> -	if (!fbcon_is_inactive(vc, info)) {
+> +	if (fbcon_is_active(vc, info)) {
+>   	    ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
+>   	    ops->update_start(info);
+>   	}
+> @@ -2228,7 +2228,7 @@ static bool fbcon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
+>   		}
+>   	}
+>   
+> - 	if (!fbcon_is_inactive(vc, info)) {
+> +	if (fbcon_is_active(vc, info)) {
+>   		if (ops->blank_state != blank) {
+>   			ops->blank_state = blank;
+>   			fbcon_cursor(vc, !blank);
+> @@ -2242,7 +2242,7 @@ static bool fbcon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
+>   			update_screen(vc);
+>   	}
+>   
+> -	if (mode_switch || fbcon_is_inactive(vc, info) ||
+> +	if (mode_switch || !fbcon_is_active(vc, info) ||
+>   	    ops->blank_state != FB_BLANK_UNBLANK)
+>   		fbcon_del_cursor_work(info);
+>   	else
+> @@ -2572,7 +2572,7 @@ static void fbcon_set_palette(struct vc_data *vc, const unsigned char *table)
+>   	int i, j, k, depth;
+>   	u8 val;
+>   
+> -	if (fbcon_is_inactive(vc, info))
+> +	if (!fbcon_is_active(vc, info))
+>   		return;
+>   
+>   	if (!con_is_visible(vc))
+> @@ -2672,7 +2672,7 @@ static void fbcon_modechanged(struct fb_info *info)
+>   		scrollback_max = 0;
+>   		scrollback_current = 0;
+>   
+> -		if (!fbcon_is_inactive(vc, info)) {
+> +		if (fbcon_is_active(vc, info)) {
+>   		    ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
+>   		    ops->update_start(info);
+>   		}
 
 -- 
 --

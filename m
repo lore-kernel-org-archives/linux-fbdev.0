@@ -1,83 +1,124 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 561DA1ABEBD;
-	Tue, 24 Sep 2024 16:13:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3FFE1AC442;
+	Tue, 24 Sep 2024 16:45:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.214.62.61
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727194410; cv=none; b=YuXq30Mc28zkoHDax63VcibeHva0E/gfUQk9oZyjZDKRL9UCC4FfBLj5D57V+1x8Z8YGcuvIOnppsEObWxiIWJ12QRi8XAQzI8Bk6rcmoMf0UxfcIPD8oU+fBv5n3uT6YdExtT5yCxfTlC5Hjh31TwK6v9ZiPdPNIvJv+e0YVkY=
+	t=1727196326; cv=none; b=gfKUrbjOezhaZZgTJ9n2LQoLUUgdevXE4+wxwRRd6gzlnwoQkVH9HJmID1wBsrpmHGz+H4qNZ2UJYRlYbmht+rCKndSxw1YtEIWb+T4Pm4Shtz3C63Tr3eddIjwbFoOUUTtR/QV3GZURXtJt+tcrRW5dGi9unUyLnpiJ+TE80fM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727194410; c=relaxed/simple;
-	bh=t6AjbKcGVGH4Lyk3hdDpgm5HtA6JgD4/Qz6lHPOv/2M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aRgfGxfuo2tKg/N2EBR5aOmRzA5j2kkNhLtYyMxQvJtHTUKAOe1Gr0URjeyi9okqT3ODaxQcOTRNfIfcjFYxZtlacETzPQ5T4FU+LIWWiZ68vs38vJxk4IT1wOAnHEgXySgQGCR9vqKlGdAefIW16uz3Pd9wWFn8J/zd/IeWxvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=LH/wwFNF; arc=none smtp.client-ip=220.197.31.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1727196326; c=relaxed/simple;
+	bh=InCCWoG3adxGtYBl1KJ1A0wtIntYs6J8nTlU5jG90Yo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KP5vgGWw6BrPwCMXpZ6fp3yHcZJTClijpmIyL1pQUMgtMzL0OLZkKTuxp59bEapfy5ZX4Ahb/JLrRYJUHW0ikvkxkbX9jgBzmG6aPMlC4CZz/00GwWijTLx8wtVWa7XiWQzqcHoVPianYJ+YGqaugFGiyCbaIyP1dGF8cacZZtA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=OsInmcF9; arc=none smtp.client-ip=85.214.62.61
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="LH/wwFNF"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:Subject:Message-ID:MIME-Version:
-	Content-Type; bh=BrH8uwAPz6dm19tTD8qJUI3oNOdqcPltQmXlOJbEMcY=;
-	b=LH/wwFNFtFU31UGknMkYN0PYfJIIIGyhE6xwTbQJiAjs0oksSJ5pzsXd3Sgwdr
-	zYcuBWGSr73C/EAXKc0NxGHeVxtBQJGD78twN4jvSYkMfxNEX+Q7sgCDfA7auhYL
-	PDpDTG6n223mS9RI6d8Vj/aOcZK6xNkTXkr6IvjrWupa8=
-Received: from localhost (unknown [60.168.209.67])
-	by gzga-smtp-mta-g2-4 (Coremail) with SMTP id _____wA3P38S5fJmrprUDA--.36212S2;
-	Wed, 25 Sep 2024 00:13:07 +0800 (CST)
-Date: Wed, 25 Sep 2024 00:13:06 +0800
-From: Qianqiang Liu <qianqiang.liu@163.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Subject: [PATCH v2] fbcon: Fix a NULL pointer dereference issue in fbcon_putcs
-Message-ID: <ZvLlEpIMQnJcJsla@thinkpad>
-References: <20240916011027.303875-1-qianqiang.liu@163.com>
- <a57734e8-ffb9-4af1-be02-eb0c99507048@gmx.de>
+	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="OsInmcF9"
+Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+	(No client certificate requested)
+	(Authenticated sender: marex@denx.de)
+	by phobos.denx.de (Postfix) with ESMTPSA id B6FFB88599;
+	Tue, 24 Sep 2024 18:45:19 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+	s=phobos-20191101; t=1727196320;
+	bh=bWwrE328F7Z+63CI6eWDJIHlvUQra1+8FULnnYG6ROQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=OsInmcF9MnpWRstLF1yZsIScU3ErKXqFbp7byMIsYMHRpRDmP5qw9rVnNVStMkIf2
+	 fKwGGuykws/4A6HnsPiZZQg4oUUm33udBmtt/BuG6bOMI7ajhVr4Bi+4w5NHkSZTsN
+	 oi8VlUC+K12JOtnmdiRmAKHtq91v7TYcmEz+0FZt+BlR4KNK/QnKHGfe2SAn1Om427
+	 AonOHwCV/HACE3csIk3ZRYqgvadLA5sVu+hDQ7Ntq1Mhf7c7mwdD06YyF7cWVFwEu4
+	 6uTTrLXMHR3A8NrD5PB9VgGbf3dLk+q+xtrYzh6I0aGuTQfKMl82Mn0dWH3XIUWL8N
+	 zk5rP6G14Z/eA==
+Message-ID: <0db95012-3ff6-41bf-85c8-ab0cdffdfc74@denx.de>
+Date: Tue, 24 Sep 2024 17:42:14 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a57734e8-ffb9-4af1-be02-eb0c99507048@gmx.de>
-X-CM-TRANSID:_____wA3P38S5fJmrprUDA--.36212S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrtrWkCrWUZr1fAF4kCw4kWFg_yoWDuFg_CF
-	95ZF95X34qkF17KrnYyF13Jr90y34xur1S9a4qyFW3Cry3Ar1rXr4DZw1rWryfGFn7ZF97
-	J3sF9r40v3yfCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUexpnPUUUUU==
-X-CM-SenderInfo: xtld01pldqwhxolxqiywtou0bp/1tbiLwdkamby4gU23AAAs-
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
+ deinterlacer driver
+To: Nicolas Dufresne <nicolas@ndufresne.ca>, linux-media@vger.kernel.org
+Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
+ <deller@gmx.de>, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Philipp Zabel <p.zabel@pengutronix.de>, Sascha Hauer
+ <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Steve Longerbeam <slongerbeam@gmail.com>, dri-devel@lists.freedesktop.org,
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+References: <20240724002044.112544-1-marex@denx.de>
+ <20240724002044.112544-2-marex@denx.de>
+ <5e5fba4fd6c3c0c9df23697bd328367e5fdfa923.camel@ndufresne.ca>
+ <8aea6cc0-10bf-48b8-add9-eb3f1caa2d66@denx.de>
+ <2229769f3a9baf58fbeeed93fa4b0373a02055e3.camel@ndufresne.ca>
+Content-Language: en-US
+From: Marek Vasut <marex@denx.de>
+In-Reply-To: <2229769f3a9baf58fbeeed93fa4b0373a02055e3.camel@ndufresne.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
 
-syzbot has found a NULL pointer dereference bug in fbcon.
+On 7/30/24 6:05 PM, Nicolas Dufresne wrote:
 
-This issue is caused by ops->putcs being a NULL pointer.
-We need to ensure it is initialized properly.
+Hi,
 
-Reported-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=3d613ae53c031502687a
-Tested-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
----
- Changes since v1:
- - Initialize ops->putcs by calling set_blitting_type()
----
- drivers/video/fbdev/core/fbcon.c | 2 ++
- 1 file changed, 2 insertions(+)
+sorry for the abysmal delay.
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 2e093535884b..d9abae2516d8 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -861,6 +861,8 @@ static int set_con2fb_map(int unit, int newidx, int user)
- 			return err;
- 
- 		fbcon_add_cursor_work(info);
-+	} else if (vc) {
-+		set_blitting_type(vc, info);
- 	}
- 
- 	con2fb_map[unit] = newidx;
--- 
-2.34.1
+>>> Le mercredi 24 juillet 2024 à 02:19 +0200, Marek Vasut a écrit :
+>>>> Introduce dedicated memory-to-memory IPUv3 VDI deinterlacer driver.
+>>>> Currently the IPUv3 can operate VDI in DIRECT mode, from sensor to
+>>>> memory. This only works for single stream, that is, one input from
+>>>> one camera is deinterlaced on the fly with a helper buffer in DRAM
+>>>> and the result is written into memory.
+>>>>
+>>>> The i.MX6Q/QP does support up to four analog cameras via two IPUv3
+>>>> instances, each containing one VDI deinterlacer block. In order to
+>>>> deinterlace all four streams from all four analog cameras live, it
+>>>> is necessary to operate VDI in INDIRECT mode, where the interlaced
+>>>> streams are written to buffers in memory, and then deinterlaced in
+>>>> memory using VDI in INDIRECT memory-to-memory mode.
+>>>
+>>> Just a quick design question. Is it possible to chain the deinterlacer and the
+>>> csc-scaler ?
+>>
+>> I think you could do that.
+>>
+>>> If so, it would be much more efficient if all this could be
+>>> combined into the existing m2m driver, since you could save a memory rountrip
+>>> when needing to deinterlace, change the colorspace and possibly scale too.
+>>
+>> The existing PRP/IC driver is similar to what this driver does, yes, but
+>> it uses a different DMA path , I believe it is IDMAC->PRP->IC->IDMAC .
+>> This driver uses IDMAC->VDI->IC->IDMAC . I am not convinced mixing the
+>> two paths into a single driver would be beneficial, but I am reasonably
+>> sure it would be very convoluted. Instead, this driver could be extended
+>> to do deinterlacing and scaling using the IC if that was needed. I think
+>> that would be the cleaner approach.
+> 
+> Not that I only meant to ask if there was a path to combine
+> CSC/Scaling/Deinterlacing without a memory rountrip. If a rountrip is needed
+> anyway, I would rather make separate video nodes, and leave it to userspace to
+> deal with. Though, if we can avoid it, a combined driver should be highly
+> beneficial.
+The VDI mem2mem driver already uses the IC as an output path from the 
+deinterlacer, IC is capable of scaling and it could be configured to do 
+scaling. The IC configuration in the VDI mem2mem driver is some 10 lines 
+of code (select input and output colorspace, and input and output image 
+resolution), the rest of the VDI mem2mem driver is interaction with the 
+VDI itself.
 
+Since the IC configuration (i.e. color space conversion and scaling) is 
+already well factored out, I think mixing the VDI and CSC drivers 
+wouldn't bring any real benefit, it would only make the code more 
+complicated.
+
+[...]

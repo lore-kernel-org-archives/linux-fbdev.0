@@ -1,100 +1,172 @@
-Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com [209.85.167.47])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B1881A727B
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 14:21:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 847371AAE1C
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 14:41:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727187706; cv=none; b=cPaOtLUVhsbu5HptCgrmLc1xbVcGSByum8hre83VIhmJ0P1CrXQvHL7E4uQNcY0JxCqJAVbNjD9gHPchM0EwCFVE4LLnQjzEnGJJC5kGMbyLjqf+d4najYK8y4qiltE4JiVTlDglZaNLadwPnXvKUCbgdaVH+TyBfBypZ234q5U=
+	t=1727188917; cv=none; b=S2cJHM+9xrkQ7VD1lhc45O9nHu7luBb5lYT0TiBEMfIZTlHnC8hR8zdOANxxEgyThmw8y/9uDhd8CnJF0X4pFCzVmdYW/I9ZN8caNM28Mw2yOpI2Tzhgm49HP1oX7bALMJ8MrvJ1Zy3cn82ZzdCCKhmnoaq4RK+af/u/d9shXWA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727187706; c=relaxed/simple;
-	bh=0jE7zZ9Kb07Sa2ZoNKVf4bA2466TM5Ueea7F/IGYDa4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Hu/796nX8HL86Uj76GkE1Alc+1cJNKtV4HVhSO/R+4bO2C8bKIbjBTyN2hQuJd6QQ3gDesVckU6NaR3pp7mbDEZ8G2qelEkuZvMdj4zVHac+pBKBVYLsSLFGK/3mTvxTmyygfVSeULQ/jYAaKSWE1KjmbOtfveAPyiFofvkCp4g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=dI7Zw2tN; arc=none smtp.client-ip=209.85.167.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1727188917; c=relaxed/simple;
+	bh=bYB6sGjl6OVpPbQmVT28nlrtD0q2IZNJFbiVeu2P4QM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IVWJSe6VdHYIDvZdYbWTtqSSQWCD5Bxjc3NWnCCytRPC3aV038v/e07xn4ITQxJ7U0lxQ/qedBYwcSHPP4TR1EZyIWXYRLoAeR7nvtnEDbymsD9O3SSVgXoKyQ0+TA7SXzCpG1dQUBe++w9ASDsqCpE1M+EKO6CjW9L/UTCBDDk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=U7rY0Xzx; arc=none smtp.client-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dI7Zw2tN"
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-535dc4ec181so5556992e87.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:21:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="U7rY0Xzx"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-374bfc395a5so3639514f8f.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:41:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1727187703; x=1727792503; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=APtwNX4goi3YuxtkCvF33AuyhynT4SX43dIq2QZAR1c=;
-        b=dI7Zw2tNFkfdiUzXIWFN+vF2PVKBIWxuC61z466ElJDPQMZoewpslBbL1f8kFGUPHN
-         rzRlauRfp7h85XJVIeNWLIQF1+NjDRCoK6dJJwiSNURbR512Lpmx7x5VgSTZxZzC6Jmm
-         3V3mLENOIrlawviVa71KWEU7YAZ5ws0RaMe8+HIvx9xJbx/p7NuDPYo8/VGDNelqM7Xj
-         /bl19aMmNO3ZWwj/maEbDZZnaWuGszs0ca+uQSHca3PLRqiXnUXAzWd7Amk3h/tW+s1B
-         sHs4ipLZdybTwWGPCj9dloeSPfz1OfhhqkiY6tzZDwl14GZlUh9C4OLm7TFxtT/TrGzJ
-         FNAg==
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1727188913; x=1727793713; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=mZI5U1pschJSs8BzcO25TabRksZf6E5sGIBvFGZUMG4=;
+        b=U7rY0Xzxp5qUIBOHjB/KdjSy3pXBs3ONP+ht5a10bxfEKmXJil3IUiDN2rFkI7/Sn3
+         7qOo7+xJQW+7MAx0V+JN5pxhuIfGpWtJ50Lqi8DZ7MkIBImuuGBJ8xPnIBxctUlcLHUa
+         RCtgPr0ffBa0Lht9k7IEHLhkEiEcWArJYtZ3ksZlo10WtVczlnVb9U6xMtsOCyClpH7L
+         iFBKsbjAcjg3znnby1b913MDatxzoOUqK6BYt/bxI2MOXCccowlIBwLK5zDuHzn3MPMW
+         4ANueQs0HtrxXcz3Ojy2wBdmkVIGdmRpSyDF0YjTupzyYuyFHASj9csHlx5lsPu+QkSk
+         Z5AA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727187703; x=1727792503;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=APtwNX4goi3YuxtkCvF33AuyhynT4SX43dIq2QZAR1c=;
-        b=HhqpMwrXFeLnih8dvlhldpytXuQDR85xKw3z97mSszZhuSrt1puSSqg5/Huv3dUhPB
-         WR7qpJVxRkykd8JPW07/cOWMuc18neeHxUTkCwj+Ola7U3cXGuoehjG7jW2pemJUVTmv
-         Y2ezVG4YwkWyWG/KADeqMhIReaoHgcYlZPqqBmgm/5zt7DbJydFs/YjlVxmLJQ0HFYBx
-         21ofgZccsp5dY53tt/WLX8b9De59IArLW+vJUCQOPpCjfFMFmQnk/2EcjxvDmPI1BU60
-         1KBWeQsCGgm3pgTio7QWaeAyOyQZOgHruGZej0jnGNbAwPuZR6tITgcyRdcFXgaxBq7N
-         +NTw==
-X-Forwarded-Encrypted: i=1; AJvYcCWHru9kULQnUYjos23P8lH94FvVob1VpW2+3hucadE4q5Zt/KgWFz/jHtKwfkIfOElhN9q5gsLTd7RbVg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YytpcCe7xRiQuJ68TytNr4eyphFA+E9NRGcvtuIE6NO2U22VsMI
-	SaALrQ4yuzrKdNzdYHfeLO0WVQZG9D4437RKb/hRpvXNr+7SBzLG6idi114w/WE=
-X-Google-Smtp-Source: AGHT+IGZ7j8dNC9vmJkw2CsVcVLyyFojx36RieimtO9D6Pm1dMVRIcFmkD/e9Y2L8+9PptcHq88tQA==
-X-Received: by 2002:a05:6512:104c:b0:533:46cc:a71e with SMTP id 2adb3069b0e04-536ad3eb9d1mr9233953e87.54.1727187703078;
-        Tue, 24 Sep 2024 07:21:43 -0700 (PDT)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--b8c.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::b8c])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-537a85ee5a1sm244879e87.83.2024.09.24.07.21.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Sep 2024 07:21:41 -0700 (PDT)
-Date: Tue, 24 Sep 2024 17:21:38 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: Maxime Ripard <mripard@kernel.org>
-Cc: dri-devel@lists.freedesktop.org, 
-	Derek Foreman <derek.foreman@collabora.com>, kernel@collabora.com, Jani Nikula <jani.nikula@linux.intel.com>, 
-	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v4] drm/connector: hdmi: Fix writing Dynamic Range
- Mastering infoframes
-Message-ID: <adsevd7dledyzrbe6smq7d7cnqiodinprsj3jul4i4nd4gc2p4@dzyvhhktsrut>
-References: <20240827163918.48160-1-derek.foreman@collabora.com>
- <172718718877.90582.18381097503447839347.b4-ty@kernel.org>
+        d=1e100.net; s=20230601; t=1727188913; x=1727793713;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mZI5U1pschJSs8BzcO25TabRksZf6E5sGIBvFGZUMG4=;
+        b=wrmeoMk69bjn0MeuKZQJGZTH8vVOLr4zXOwbf//B4M5E8Q1sgj9FNiTqiIZOMMrhLA
+         1Vqdvu/o0m/iFKi+gWsIrLmV1eByf+Rzs3lfI8ee+MayOHaVSqSDii1tTupyO0vS2wVz
+         5foshSCD4YQIOk5e/rMmJbh0wMK5vb092qJRR4PARTYmJEVjhnGc4+jKT9SPIE8ZfW+4
+         5ME+XJSh7Kkj6JBKH4eZU7a1H68tIl+b2Qc6Yy+noJ/4POTGYjx/zizvHrhE2i3otiAD
+         HFymENT44+kNzDYT+7CZXnAmRH/CvoDd1T/IMlxsW1wTfuzoJ+2vXhAMc0Aqt244FEay
+         CuZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUK+1V4WK5XqWeFBpCaCGRDFQXHag9n9ThCOX+JKR6kKzeTAusbJKLjLfJtrZVSx1nA/WbxNgoN26IMCw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxqmnXjisQqRFbAc08soOJR0ehsX9BHynwrEkQ9tMQG5mzpo3Ah
+	eGU/gD/t1b9Itqwo35awsNfniZz0KYcstZxWxve68i89b95HJz7hVNPjJGXHvNI=
+X-Google-Smtp-Source: AGHT+IE54V4mWS0E1fGBaRhuYszEux79BQYQMRS6jlkq3ZgzaXmmKTdVDlYlx0Pt83jGSNgZCcuilQ==
+X-Received: by 2002:adf:a193:0:b0:374:cb84:13d3 with SMTP id ffacd0b85a97d-37c7ebab09bmr2110323f8f.12.1727188912452;
+        Tue, 24 Sep 2024 07:41:52 -0700 (PDT)
+Received: from [10.2.5.161] (amontpellier-556-1-151-252.w109-210.abo.wanadoo.fr. [109.210.7.252])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42e90291ebbsm24907615e9.10.2024.09.24.07.41.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 24 Sep 2024 07:41:52 -0700 (PDT)
+Message-ID: <56090167-15a0-4386-89a6-c379d70faae6@baylibre.com>
+Date: Tue, 24 Sep 2024 16:41:50 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <172718718877.90582.18381097503447839347.b4-ty@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: adc: ad7606: Make corrections
+ on spi conditions
+To: Conor Dooley <conor@kernel.org>
+Cc: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>,
+ Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+ aardelean@baylibre.com, dlechner@baylibre.com, jstephan@baylibre.com
+References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
+ <20240920-ad7606_add_iio_backend_support-v2-2-0e78782ae7d0@baylibre.com>
+ <20240921-playgroup-regally-f26c17be26dc@spud>
+Content-Language: en-US
+From: Guillaume Stols <gstols@baylibre.com>
+In-Reply-To: <20240921-playgroup-regally-f26c17be26dc@spud>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 24, 2024 at 04:13:08PM GMT, Maxime Ripard wrote:
-> On Tue, 27 Aug 2024 11:39:04 -0500, Derek Foreman wrote:
-> > The largest infoframe we create is the DRM (Dynamic Range Mastering)
-> > infoframe which is 26 bytes + a 4 byte header, for a total of 30
-> > bytes.
-> > 
-> > With HDMI_MAX_INFOFRAME_SIZE set to 29 bytes, as it is now, we
-> > allocate too little space to pack a DRM infoframe in
-> > write_device_infoframe(), leading to an ENOSPC return from
-> > hdmi_infoframe_pack(), and never calling the connector's
-> > write_infoframe() vfunc.
-> > 
-> > [...]
-> 
-> Applied to misc/kernel.git (drm-misc-fixes).
 
-With an empty line between Fixes and the rest of the tags :-(
+On 9/21/24 23:55, Conor Dooley wrote:
+> On Fri, Sep 20, 2024 at 05:33:22PM +0000, Guillaume Stols wrote:
+>> The SPI conditions are not always required, because there is also a
+>> parallel interface. The way used to detect that the SPI interface is
+>> used is to check if the reg value is between 0 and 256.
+> And, yaknow, not that the bus you're on is a spi bus? I don't think this
+> comment is relevant to the binding, especially given you have a property
+> for it.
 
-> 
-> Thanks!
-> Maxime
-> 
+Apologies, I missed to change the commit message, it will be fixed in 
+the next series.
 
--- 
-With best wishes
-Dmitry
+Since Jonathan did not like very much inferring the interface with the 
+reg's value that I used i the previous verison, I introduced this flag.
+
+However this is only intended to be use in bindings, to determine 
+whether or not spi properties should be added.
+
+In the driver side of things, the bus interface is inferred by the 
+parent's node (SPI driver is an module_spi_driver while parallel driver 
+is module_platform_driver).
+
+>
+>> There is also a correction on the spi-cpha that is not required when SPI
+>> interface is selected, while spi-cpol is.
+> I don't see this change in your patch, there's no cpha in the before.
+>
+Again a problem with the commit message, this belongs now to another commit.
+>> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+>> ---
+>>   .../devicetree/bindings/iio/adc/adi,ad7606.yaml      | 20 +++++++++++++++++---
+>>   1 file changed, 17 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+>> index 75334a033539..12995ebcddc2 100644
+>> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+>> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
+>> @@ -112,18 +112,32 @@ properties:
+>>         assumed that the pins are hardwired to VDD.
+>>       type: boolean
+>>   
+>> +  parallel-interface:
+>> +    description:
+>> +      If the parallel interface is used, be it directly or through a backend,
+>> +      this property must be defined.
+>> +    type: boolean
+> The type you would want here is actually "flag", but I'm not sure why a
+> property is needed. If you're using the parallel interface, why would
+> you still be on a spi bus? I think I'm a bit confused here as to how
+> this interface is supposed to be used.
+>
+> Thanks,
+> Conor.
+>
+>> +
+>>   required:
+>>     - compatible
+>>     - reg
+>> -  - spi-cpol
+>>     - avcc-supply
+>>     - vdrive-supply
+>>     - interrupts
+>>     - adi,conversion-start-gpios
+>>   
+>> -allOf:
+>> -  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+>> +oneOf:
+>> +  - required:
+>> +      - parallel-interface
+>> +  - allOf:
+>> +      - properties:
+>> +          parallel-interface: false
+>> +          spi-cpol: true
+>> +      - $ref: /schemas/spi/spi-peripheral-props.yaml#
+>> +      - required:
+>> +          - spi-cpol
+>>   
+>> +allOf:
+>>     - if:
+>>         properties:
+>>           compatible:
+>>
+>> -- 
+>> 2.34.1
+>>

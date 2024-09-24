@@ -1,136 +1,93 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C13161487FE
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 08:27:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AAB83398E
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 08:30:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727166437; cv=none; b=RnSX6BYTZlKEt8+IlDI9LO54pvopZE1vnAEf+A6QdIlHazB9jkwoXGwOZhxi7zbR4Y7SvNv0rwhY9jfYRUk/icpdParkLVDp97rbsJobMUuv7F6bQ3EPh5gu25n8VrFyIj4PH5jeE/epZEqKnFZxISlyrsG2O7aVk/X13dSk3VI=
+	t=1727166611; cv=none; b=R+qbMc/rAmnegmuMpTTkcmRWR7qZ1pdWBI7Ef3BcFH/HW8ra3gU0t8rn/nNTE/l+DgVGAb/J5/KnoI5I1QBVG5/mhlDzi7BFWDhNR1FOLuedPc+2OBeejfyk7pv5QxFt7AZF9/35PKad7VJFnWWqkfimPwSYhsbMoo3Wg9JVQqA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727166437; c=relaxed/simple;
-	bh=WREGJqGC+hFt0OXhRGhqsxwpXCFO8oIx4yvBC09r5+I=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=WKilVqDEkAyaCQ+AuInINfP2n9U6Aw2bI6KeOyoYAtn1UlYzeznLrcGOSqG4LNXiL21Ad3uLEtprfRmCBrD4UOVi4WDDDBZGpmTwxHHRxJNPWDPtMNFJXjNc77JQBXlUn4F7WccqbZSiVMKReR4pez0065EsAEgBVJm2etXLpV0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=WbIEjLIq; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1727166611; c=relaxed/simple;
+	bh=MW8yLfs1M2Ib46K8xqdSxahCJ8UTa1poRKjP8Gxs74k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KJx9Tuus7tha94YOQwGU6HBfUjDQyroq+o3+93RjxvjGLXWeIv+UNu3YSZkD60A08VmW1Dsy+vXtjdKCczXte+RqfLhvkiNlcB4lipNY4coNz74w4KTUDIYpgbkdpFE8gl1VTUDgrdaI9mVfHLv8GTK4b3DY2Vp+K2Ftc7yTYVk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GKVgJK9M; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="WbIEjLIq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1727166424; x=1727771224; i=deller@gmx.de;
-	bh=WREGJqGC+hFt0OXhRGhqsxwpXCFO8oIx4yvBC09r5+I=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:From:To:
-	 Cc:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=WbIEjLIqPJNzfdBtydNQGuWUiY0FNf1YH4/DBIcU7ZuxDSbkHCV0Irg9Zz8Ti5sT
-	 o7V6z/IJaM31+HawBN8NV+N7QBTM8BcA+G5ol+yZopsAXHOgal6ki3GRl0E6rUg7m
-	 e+y7dKXkRqI+DMvfEKZWGwy/+pwZJOlux9+b2CAswhXGXhP7IOdlkkAeA1rg6Ojug
-	 mO3/vLl64iZ6q3S4XzwRdEIWqHIb3FsN1gUvpKUbWUEBNuYyBBhOMb3SfDpuM+mnC
-	 c8sH7bghpzaK8Sddch/PKmmwA4kHKWnkODMJ8SmoqeJce8/TbDq857//KIUfK+N6E
-	 kN4VRwMpqnLcKMaYLA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MZkpb-1sOucR0BcN-00OzGn; Tue, 24
- Sep 2024 10:27:04 +0200
-Message-ID: <a6369def-6076-4a9f-b8d8-ff32385235dc@gmx.de>
-Date: Tue, 24 Sep 2024 10:27:02 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GKVgJK9M"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1727166610; x=1758702610;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=MW8yLfs1M2Ib46K8xqdSxahCJ8UTa1poRKjP8Gxs74k=;
+  b=GKVgJK9MCogWh3B8/uvqtXSY2QWtwV4/J+/Tzjaf6NOCzJO9CEmV/Tk5
+   ZO7jIyydBkaMQ2lq4JsHqFFfx0xP8MO3AfmQCTRdxyR0cbMVPcm9WkV0d
+   /toos8N9wfr72mDufn+kpHwz53zRvq265GsioRrFIwggSv4Ev0PBqRc0r
+   MqT5I3Z1MxRGtnfcC+J/SlC43vTj65xpCM3SP+okx4IpaU0DqaY0utubt
+   5sow3wAe0WJaTXpN7MbFCgOaXdoo2UrtKTbj7aQHfZ70AWnvUqAK83uTM
+   79HhTQ+rLL/2mECp7Xu601tfgwxNy4iiYBotA5Z6+lzqPL/8NyDTSHxPj
+   Q==;
+X-CSE-ConnectionGUID: orRgh5oCQ92fSiYLsruGYg==
+X-CSE-MsgGUID: NpLK+J4ETSSWyQvbpNH+Tg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11204"; a="26265263"
+X-IronPort-AV: E=Sophos;i="6.10,253,1719903600"; 
+   d="scan'208";a="26265263"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Sep 2024 01:30:09 -0700
+X-CSE-ConnectionGUID: cUSAg6yYSriVgqBsedIoQw==
+X-CSE-MsgGUID: d3EVjTOgSVa70Kg69XtRTw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,253,1719903600"; 
+   d="scan'208";a="71484533"
+Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
+  by fmviesa008.fm.intel.com with SMTP; 24 Sep 2024 01:30:06 -0700
+Received: by stinkbox (sSMTP sendmail emulation); Tue, 24 Sep 2024 11:30:05 +0300
+Date: Tue, 24 Sep 2024 11:30:05 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Simona Vetter <simona@ffwll.ch>,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
+ before fb devices appear
+Message-ID: <ZvJ4jS0ThljULq2v@intel.com>
+References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-2-ville.syrjala@linux.intel.com>
+ <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de>
+ <ZvHd8VV6MO4kfLcL@intel.com>
+ <93c63567-d183-402e-82e0-f64b97b74ba8@gmx.de>
+ <a6369def-6076-4a9f-b8d8-ff32385235dc@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
- before fb devices appear
-From: Helge Deller <deller@gmx.de>
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: linux-fbdev@vger.kernel.org, Simona Vetter <simona@ffwll.ch>,
- dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>
-References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-2-ville.syrjala@linux.intel.com>
- <3e3fac51-ee46-462e-9418-095845b18ccb@gmx.de> <ZvHd8VV6MO4kfLcL@intel.com>
- <93c63567-d183-402e-82e0-f64b97b74ba8@gmx.de>
-Content-Language: en-US
-Autocrypt: addr=deller@gmx.de; keydata=
- xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
- HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
- r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
- CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
- 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
- dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
- Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
- GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
- aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
- 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
- ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
- FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
- uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
- uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
- REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
- qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
- iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
- gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
- Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
- qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
- 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
- dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
- rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
- UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
- eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
- ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
- dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
- lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
- 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
- xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
- wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
- fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
- Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
- l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
- RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
- BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
- Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
- XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
- MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
- FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
- 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
- ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <93c63567-d183-402e-82e0-f64b97b74ba8@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:LXuzfG/Lf4dCwT0Wwv+IYbnyN+x3LOCfbUVvNzMwURBOtGqXW6V
- vxnADtB2rNsPoiL6Yb/SeRx0lv1gJMWZhkWrVWgLXRr16d37fnIkz5OpRpz9qcWAKjk/yk3
- zCh1bxE9P+whr4um7zO/LyjjpnwcSMc0htY4vvy9RIzWD6/JlGiMRedRtco2REhBj5jAQpu
- j4iab0dZFuRO0b24iy1zA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Hem1cbMrRJc=;PPrplJoXMUg/XG3pohO3gYxG7bP
- naYtLGNWllSxJpicidOSUXpZUvSfDGtN/Ye9BXH6P0KlyqMPFeEQoEJF5LSBjSsFdDogyw9zV
- Pp+NgtCLyaM0C4jEz3z+DJjUKAnl0S5/5ik2feoqT7QCuxTmd/Dt2kmeGJ1eE1EgEHKi2jE3G
- m3JvcxW4kHHluizybkiBV7aozpGT3OBCfRYmn56qbz1iR+46xrhY9POVgmJ8k9+gJ4/jqCzli
- 61NnG9lil4Hw+UPeGLK8W3KKomBNpsRd6f10b1bThT0rrPGxz3Nu6gIQ5CVJFUhnknIG0PDge
- Lhn8a/cfLXMIh9UiuVAhuFo7XBaEEae6UKqmr8t4WaV+utzZmXNCzXVnrOLC+JL5NxxAUf2Kw
- V6klHfApOsJhuCQZRwTozmMB4bBr+jv/Ywcbh9F1VOCVjjeHBei1VnD7JauqeMLcVHnpcae0/
- Bfbi1YMCitSuI8VhSRyN+kd39pM6tuUTeMDiT4F9RJfPJiTCyFfQpnJdoB4JpZ2Lq+VZcsllg
- mQ/qyp8meFROY9VbAkc8hqQsuEvInaRon3UT8ew2Ukorlnmx6A6c4WHEmjepsjkuXGjPH54L8
- lW9WXDTTSZrDohnbe8vhabulfeooFekzZlWe1MVyEG2iRKuOwXHdEBv/w9nUSAEGYg1UiWYsN
- U2hx6LNtsRoS0+GiYpmTvCjkSSU5pYHoe0XPwBzm8LzsLL9ZdpUyA3dmlca4995vXCY5E58Ir
- 0EnQU7BD90M5cZzNSZwAVRfIPtVUQ7mp5Xms5A/V6b8Pet1BxJWv2UpA5ZzASLPpppcIR3kR5
- 86elmPKgh84apCvKXcB87Q1w==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a6369def-6076-4a9f-b8d8-ff32385235dc@gmx.de>
+X-Patchwork-Hint: comment
 
-Ville,
+On Tue, Sep 24, 2024 at 10:27:02AM +0200, Helge Deller wrote:
+> Ville,
+> 
+> On 9/23/24 23:50, Helge Deller wrote:
+> > I've added your patch series to the fbdev for-next git tree
+> > to get some feedback from the autobuilders and testsuites.
+> > I had to manually adjust patch #4 and #6 (after applying your v2
+> > patches), so maybe you send a v3 of your whole series at some point.
+> 
+> Your (fixed) patch series was OK. I had to update to latest git head
+> from Linus to get it applied.
+> 
+> I applied the series again, including Thomas Zimmermanns R-b tag, so
+> no action needed from your side for now.
 
-On 9/23/24 23:50, Helge Deller wrote:
-> I've added your patch series to the fbdev for-next git tree
-> to get some feedback from the autobuilders and testsuites.
-> I had to manually adjust patch #4 and #6 (after applying your v2
-> patches), so maybe you send a v3 of your whole series at some point.
+Cool. Thanks.
 
-Your (fixed) patch series was OK. I had to update to latest git head
-from Linus to get it applied.
-
-I applied the series again, including Thomas Zimmermanns R-b tag, so
-no action needed from your side for now.
-
-Thanks!
-Helge
+-- 
+Ville Syrjälä
+Intel

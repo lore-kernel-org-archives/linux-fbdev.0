@@ -1,81 +1,81 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E5FA1487D5
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:42:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78A6A481DD
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Sep 2024 07:51:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727163744; cv=none; b=VrfRn4RebSidXXtOqqUw/IYFMh/0LwY9QJvBrGEa8TjY9ztXTcceqnRyC5ZDF7lk357e6ySyaveK7bNAIcwjcu16Z/sz9KryOhIjApnoE4bOnjO2s+w9mZMjaaj7X56NXrdZvYhppXGrH43D9JunvYfACorzpbFLK627inNcOkk=
+	t=1727164321; cv=none; b=oT3blalkkEu9YfOydLQhdgbnx42LQ3d8NACq7lgu9xIz7Feq8/CSuOJ0JCBuB04RQaLRPleTpKPxw+wsHIV6Iz6BBdkFZ9V5JHJhzOGYhOAhgpJ/gi52kOVWwns9HqLFF1BWUGAjovXrxF4tHvVgAirEdf4gJdVfypmOHNxCA1o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727163744; c=relaxed/simple;
-	bh=e/A4AzDS/BKoFXOp+IxVRM+Zq3laUk9Mm+BCVMbEodk=;
+	s=arc-20240116; t=1727164321; c=relaxed/simple;
+	bh=uwluixTYf3eg9nob4Rtd7zt+RgXWV9FRVXprXZN1mbk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UX2/cBGuqWoALivCVV6VfJ1Q4MFU90nCM2Jbsx1ahn2jsA3u9nimzF64ZAKpS5EsszsOdMXxPw5ApM2rBbLwff1AXnqnBdkPfnevsXlLlyE5DpUf58Jcm7+GtezqrZJAJwEOesdJmU+mfQ6uQqLLF0zRtbTYSwtjtayKfn19sKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=mg8JiQq/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=M9VhJik7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=mg8JiQq/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=M9VhJik7; arc=none smtp.client-ip=195.135.223.131
+	 In-Reply-To:Content-Type; b=a/gmSE/U5gMly3m9sonx0u7m8/qUR7DEcl/IAcO0ck42+tGT07eFV9ci6LNAd271lG9BPw4GmqNNgsP+CpaXZDFf9r+Ja1mHTNFpavtukqefnIwnrJlH6GP2ZduBCVTm7/ovNURycBNMDXZjs0V2GYN7CBD1pAGaYV0yBTPoagg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=2TV9onql; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CET6CxfS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=2TV9onql; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CET6CxfS; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="mg8JiQq/";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="M9VhJik7";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="mg8JiQq/";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="M9VhJik7"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="2TV9onql";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CET6CxfS";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="2TV9onql";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CET6CxfS"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 13E761F786;
-	Tue, 24 Sep 2024 07:42:21 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 8149D1F788;
+	Tue, 24 Sep 2024 07:51:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1727163741; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1727164317; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=T9i8rGBB2bQ7Yxg9mDLUTIM2+Y59fAcOJWWc55qt5gk=;
-	b=mg8JiQq/fVpyc5kFVxlYgeDMGcILteiGx30j3zzLN3EMdUO3dbs3vEAFW3wA7e4oLIH1uX
-	mqNkEjNT2lCiQElds1sAGX8KJQcewtWK1wgi/DuA6sGOq1iwPquoqtj/0KX2fvX4aCAj3O
-	iA806D4Lgtmh66NzXPx+HV/rVlmyoeU=
+	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
+	b=2TV9onqlp/7s3zZ9zQg12O6snKT4R/iovI4DSGgWYkvbIZKzGZVwhE2bV/J4P3yS0hyZ9k
+	7TzN2yctU4qI6A6Yw34nnTBp7eb2UgnRWQ5i+PSZV25/RIoFGML2qGPWGhEPG0trCWM3/0
+	Lfcgn0dKqdaNYltDQhw35ns6TqvA1Do=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1727163741;
+	s=susede2_ed25519; t=1727164317;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=T9i8rGBB2bQ7Yxg9mDLUTIM2+Y59fAcOJWWc55qt5gk=;
-	b=M9VhJik7IR6wMb19UUk5oYIlP4krkxno+SE9hSLUzaTxwSanpZK+peSdepN3531voTVJ5b
-	0HUvRVCu1QFmhBAQ==
+	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
+	b=CET6CxfSzqDxnj/fFyEXE9P5oPOxdZq9rE7tmxJy9pkXvXktMGdz+fXUNE+2KMXje18kau
+	17/t/Je9KKIhgqDw==
 Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="mg8JiQq/";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=M9VhJik7
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=2TV9onql;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=CET6CxfS
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1727163741; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1727164317; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=T9i8rGBB2bQ7Yxg9mDLUTIM2+Y59fAcOJWWc55qt5gk=;
-	b=mg8JiQq/fVpyc5kFVxlYgeDMGcILteiGx30j3zzLN3EMdUO3dbs3vEAFW3wA7e4oLIH1uX
-	mqNkEjNT2lCiQElds1sAGX8KJQcewtWK1wgi/DuA6sGOq1iwPquoqtj/0KX2fvX4aCAj3O
-	iA806D4Lgtmh66NzXPx+HV/rVlmyoeU=
+	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
+	b=2TV9onqlp/7s3zZ9zQg12O6snKT4R/iovI4DSGgWYkvbIZKzGZVwhE2bV/J4P3yS0hyZ9k
+	7TzN2yctU4qI6A6Yw34nnTBp7eb2UgnRWQ5i+PSZV25/RIoFGML2qGPWGhEPG0trCWM3/0
+	Lfcgn0dKqdaNYltDQhw35ns6TqvA1Do=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1727163741;
+	s=susede2_ed25519; t=1727164317;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=T9i8rGBB2bQ7Yxg9mDLUTIM2+Y59fAcOJWWc55qt5gk=;
-	b=M9VhJik7IR6wMb19UUk5oYIlP4krkxno+SE9hSLUzaTxwSanpZK+peSdepN3531voTVJ5b
-	0HUvRVCu1QFmhBAQ==
+	bh=/jGww36jTbwK17QaYYzySBvIGWRRlm7HdFpesRSf6EU=;
+	b=CET6CxfSzqDxnj/fFyEXE9P5oPOxdZq9rE7tmxJy9pkXvXktMGdz+fXUNE+2KMXje18kau
+	17/t/Je9KKIhgqDw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E223313AA8;
-	Tue, 24 Sep 2024 07:42:20 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 54E0813AA8;
+	Tue, 24 Sep 2024 07:51:57 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id jxjzNVxt8mYyaAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 24 Sep 2024 07:42:20 +0000
-Message-ID: <281b9b6b-8a58-420a-be5f-6a1ff7988990@suse.de>
-Date: Tue, 24 Sep 2024 09:42:20 +0200
+	id tsaEE51v8mYUawAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 24 Sep 2024 07:51:57 +0000
+Message-ID: <0a01146e-6116-44aa-88ee-4957d5fbc307@suse.de>
+Date: Tue, 24 Sep 2024 09:51:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,12 +83,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/6] fbcon: Introduce get_{fg,bg}_color()
+Subject: Re: [PATCH 6/6] fbcon: Use 'bool' where appopriate
 To: Ville Syrjala <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org
 Cc: Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>,
  dri-devel@lists.freedesktop.org
 References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-6-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-7-ville.syrjala@linux.intel.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -115,10 +115,10 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20240923155749.30846-6-ville.syrjala@linux.intel.com>
+In-Reply-To: <20240923155749.30846-7-ville.syrjala@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 13E761F786
+X-Rspamd-Queue-Id: 8149D1F788
 X-Spam-Level: 
 X-Spamd-Result: default: False [-6.51 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
@@ -158,74 +158,112 @@ X-Spam-Flag: NO
 Am 23.09.24 um 17:57 schrieb Ville Syrjala:
 > From: Ville Syrjälä <ville.syrjala@linux.intel.com>
 >
-> Make the code more legible by adding get_{fg,bg}_color()
-> which hide the obscure 'is_fg' parameter of get_color()
-> from the caller.
+> Use 'bool' type where it makes more sense than 'int'.
 >
 > Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
 
 Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 
 > ---
->   drivers/video/fbdev/core/fbcon.c | 24 ++++++++++++++++++------
->   1 file changed, 18 insertions(+), 6 deletions(-)
+>   drivers/video/fbdev/core/fbcon.c | 23 ++++++++++++-----------
+>   1 file changed, 12 insertions(+), 11 deletions(-)
 >
 > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 2a78cca3e9de..17540cdf1edf 100644
+> index 17540cdf1edf..03d48e665bba 100644
 > --- a/drivers/video/fbdev/core/fbcon.c
 > +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -356,6 +356,16 @@ static int get_color(struct vc_data *vc, struct fb_info *info,
->   	return color;
+> @@ -129,9 +129,9 @@ static int logo_shown = FBCON_LOGO_CANSHOW;
+>   /* console mappings */
+>   static unsigned int first_fb_vc;
+>   static unsigned int last_fb_vc = MAX_NR_CONSOLES - 1;
+> -static int fbcon_is_default = 1;
+> +static bool fbcon_is_default = true;
+>   static int primary_device = -1;
+> -static int fbcon_has_console_bind;
+> +static bool fbcon_has_console_bind;
+>   
+>   #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+>   static int map_override;
+> @@ -166,7 +166,7 @@ static const struct consw fb_con;
+>   
+>   #define advance_row(p, delta) (unsigned short *)((unsigned long)(p) + (delta) * vc->vc_size_row)
+>   
+> -static int fbcon_cursor_blink;
+> +static bool fbcon_cursor_blink;
+>   
+>   #define divides(a, b)	((!(a) || (b)%(a)) ? 0 : 1)
+>   
+> @@ -281,7 +281,7 @@ static bool fbcon_skip_panic(struct fb_info *info)
+>   #endif
 >   }
 >   
-> +static int get_fg_color(struct vc_data *vc, struct fb_info *info, u16 c)
-> +{
-> +	return get_color(vc, info, c, 1);
-> +}
-> +
-> +static int get_bg_color(struct vc_data *vc, struct fb_info *info, u16 c)
-> +{
-> +	return get_color(vc, info, c, 0);
-> +}
-> +
->   static void fb_flashcursor(struct work_struct *work)
+> -static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
+> +static inline bool fbcon_is_active(struct vc_data *vc, struct fb_info *info)
 >   {
->   	struct fbcon_ops *ops = container_of(work, struct fbcon_ops, cursor_work.work);
-> @@ -387,8 +397,9 @@ static void fb_flashcursor(struct work_struct *work)
+>   	struct fbcon_ops *ops = info->fbcon_par;
 >   
->   	c = scr_readw((u16 *) vc->vc_pos);
->   	enable = ops->cursor_flash && !ops->cursor_state.enable;
-> -	ops->cursor(vc, info, enable, get_color(vc, info, c, 1),
-> -		    get_color(vc, info, c, 0));
-> +	ops->cursor(vc, info, enable,
-> +		    get_fg_color(vc, info, c),
-> +		    get_bg_color(vc, info, c));
->   	console_unlock();
->   
->   	queue_delayed_work(system_power_efficient_wq, &ops->cursor_work,
-> @@ -1297,8 +1308,8 @@ static void fbcon_putcs(struct vc_data *vc, const u16 *s, unsigned int count,
->   
->   	if (fbcon_is_active(vc, info))
->   		ops->putcs(vc, info, s, count, real_y(p, ypos), xpos,
-> -			   get_color(vc, info, scr_readw(s), 1),
-> -			   get_color(vc, info, scr_readw(s), 0));
-> +			   get_fg_color(vc, info, scr_readw(s)),
-> +			   get_bg_color(vc, info, scr_readw(s)));
+> @@ -290,7 +290,7 @@ static inline int fbcon_is_active(struct vc_data *vc, struct fb_info *info)
 >   }
 >   
->   static void fbcon_clear_margins(struct vc_data *vc, int bottom_only)
-> @@ -1331,8 +1342,9 @@ static void fbcon_cursor(struct vc_data *vc, bool enable)
->   	if (!ops->cursor)
->   		return;
+>   static int get_color(struct vc_data *vc, struct fb_info *info,
+> -	      u16 c, int is_fg)
+> +		     u16 c, bool is_fg)
+>   {
+>   	int depth = fb_get_color_depth(&info->var, &info->fix);
+>   	int color = 0;
+> @@ -358,12 +358,12 @@ static int get_color(struct vc_data *vc, struct fb_info *info,
 >   
-> -	ops->cursor(vc, info, enable, get_color(vc, info, c, 1),
-> -		    get_color(vc, info, c, 0));
-> +	ops->cursor(vc, info, enable,
-> +		    get_fg_color(vc, info, c),
-> +		    get_bg_color(vc, info, c));
+>   static int get_fg_color(struct vc_data *vc, struct fb_info *info, u16 c)
+>   {
+> -	return get_color(vc, info, c, 1);
+> +	return get_color(vc, info, c, true);
 >   }
 >   
->   static int scrollback_phys_max = 0;
+>   static int get_bg_color(struct vc_data *vc, struct fb_info *info, u16 c)
+>   {
+> -	return get_color(vc, info, c, 0);
+> +	return get_color(vc, info, c, false);
+>   }
+>   
+>   static void fb_flashcursor(struct work_struct *work)
+> @@ -467,7 +467,7 @@ static int __init fb_console_setup(char *this_opt)
+>   				last_fb_vc = simple_strtoul(options, &options, 10) - 1;
+>   			if (last_fb_vc < first_fb_vc || last_fb_vc >= MAX_NR_CONSOLES)
+>   				last_fb_vc = MAX_NR_CONSOLES - 1;
+> -			fbcon_is_default = 0;
+> +			fbcon_is_default = false;
+>   			continue;
+>   		}
+>   
+> @@ -558,7 +558,7 @@ static int do_fbcon_takeover(int show_logo)
+>   			con2fb_map[i] = -1;
+>   		info_idx = -1;
+>   	} else {
+> -		fbcon_has_console_bind = 1;
+> +		fbcon_has_console_bind = true;
+>   	}
+>   
+>   	return err;
+> @@ -2802,7 +2802,7 @@ static void fbcon_unbind(void)
+>   				fbcon_is_default);
+>   
+>   	if (!ret)
+> -		fbcon_has_console_bind = 0;
+> +		fbcon_has_console_bind = false;
+>   }
+>   #else
+>   static inline void fbcon_unbind(void) {}
+> @@ -3234,8 +3234,9 @@ static ssize_t cursor_blink_store(struct device *device,
+>   				  const char *buf, size_t count)
+>   {
+>   	struct fb_info *info;
+> -	int blink, idx;
+>   	char **last = NULL;
+> +	bool blink;
+> +	int idx;
+>   
+>   	blink = simple_strtoul(buf, last, 0);
+>   
 
 -- 
 --

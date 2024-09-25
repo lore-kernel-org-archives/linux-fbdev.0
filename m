@@ -1,40 +1,69 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AB8AF14A62F;
-	Wed, 25 Sep 2024 05:29:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C84CE158D94
+	for <linux-fbdev@vger.kernel.org>; Wed, 25 Sep 2024 08:10:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727242202; cv=none; b=YitBfq703jsaB3omdE+ZZbt4VAEmsceXWYLq9tFNSgJv5qdLK/9zjSu90HH7GUr7XAVBxaiR1x2J2o7TbuGKznUfIK+7tLZQ0UEXQqkh6PrSB8UycFn5IbD/0kmwFepkiX+MBOSkFVzOz/uDNXLFVUjDiIKmAFf4V2PPPYdL7lc=
+	t=1727251853; cv=none; b=F+sxkYTFPcM2VAaF0QwLilqSm8YpGzaAP8Kb6HeVbL67UmBBnxpdg1gGMPBMiyYl+L3sTY+GQtY2IBei1S06+XW9hOndBnNd6I/yARC+CEDW+4mqpznYOQbxTn9utJEnMGXOFv7hc8Ei/jPayfX/azsKWQNjefzAas6YEVtgKKc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727242202; c=relaxed/simple;
-	bh=jGpqJbVzRpKzy5QsoMynmjUtdDYVRQ+bX/xMcnAWlUw=;
+	s=arc-20240116; t=1727251853; c=relaxed/simple;
+	bh=wUF1o3AkPJBZeRpaPm+2e/bxd2DtFAMDs4G51MfPD6I=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QA8DKZ6bM0SlrdrOwinQ7rXjHVBFo1Q3BKLdyjk79HmVm/yixI6mxRojW2vO5dATe3mjHZnFELIxjd9QY9PkR78+cqRAVCnbDCkiQvjN+w0HTW7Q/HCmVx+g4ZcVlu3NkigAOsTiGgWE5UOMIduYxEAjboSPxkGaWgigDzHIbb0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=WkKDmf+i; arc=none smtp.client-ip=220.197.31.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=loRzeuR9I0WtK3b2W3llmcMUHuv89TC9At6o3dgxM+pyOYZblNeiqw1ZkdVUPpJYHqXkavG5YFAeBxy3DQqpny5kF9PnlFUQYBwXDBG0OYm0xXiUbhSDwEErVZDOJw5UaEyZUdi02D/mVlJ/dDNuOirb7RbADGxFVyOzhs8HRAU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=WYuGLM+V; arc=none smtp.client-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="WkKDmf+i"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:Subject:Message-ID:MIME-Version:
-	Content-Type; bh=aqkoSnEgaj9DVcjWERksyIfsDRhiR+luevjNipHPwIo=;
-	b=WkKDmf+iFDYdvla8K6TRmY4PJxkiiKAgpydWfGjqsQvAclMl9q0/MehBHbG608
-	8NVPjwLY+uwMzyoZgCep4glrcOlK+X94WxQosk9jbvB563JaYLZaAv6zBMb8Drjk
-	dDLRg1pJoNAlchuKGPFMWbmC1XzGsfvk/TubUu9WUKEgs=
-Received: from localhost (unknown [60.168.209.67])
-	by gzsmtp2 (Coremail) with SMTP id sSgvCgAXg_7An_NmfUNVAA--.16028S2;
-	Wed, 25 Sep 2024 13:29:37 +0800 (CST)
-Date: Wed, 25 Sep 2024 13:29:36 +0800
-From: Qianqiang Liu <qianqiang.liu@163.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Subject: [PATCH v3] fbcon: Fix a NULL pointer dereference issue in fbcon_putcs
-Message-ID: <ZvOfwLvWdNHiU4g8@thinkpad>
-References: <20240916011027.303875-1-qianqiang.liu@163.com>
- <a57734e8-ffb9-4af1-be02-eb0c99507048@gmx.de>
- <ZvLlEpIMQnJcJsla@thinkpad>
- <1b1a2d3c-ed4a-4d9b-b87a-8d05f3d6592e@gmx.de>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WYuGLM+V"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-37cc846fbc4so156412f8f.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 25 Sep 2024 01:10:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1727251850; x=1727856650; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=wUF1o3AkPJBZeRpaPm+2e/bxd2DtFAMDs4G51MfPD6I=;
+        b=WYuGLM+VGJWvSPyNOagLMbdlmKCSV4IRITVCa1MxvIKkbZrI4IsGje8RU5VhD0DvCe
+         aMxAc4Uc9Yde2bXkIkmOyFw7CV+IJJax/w+oDR3TvDDyhH8thRoCapDXf32eSY1vIM0g
+         gtdzdx2J85Cxuj6ciSCGHKeBkYLfgCj/5Ou1HWD8i+Gvq+JGP7jCXlJ8h4L6lkjVOjhI
+         SyUU8rt8rgvwWM224hKjkbP7mw/V2km7fmEFcohhq9eGRDmi9lIopoL2YYSSw817Ahv2
+         pTTpAIzhIZuD7jDS7Q9pV0lRAXyQSdlr6wzQwC9E4X+AihzuyL2rFVCLD5tCpcVltBKB
+         H4wA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1727251850; x=1727856650;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wUF1o3AkPJBZeRpaPm+2e/bxd2DtFAMDs4G51MfPD6I=;
+        b=SXbtVBwfVG7v3ipNHEdqclDVA3DQ4rZGTfP1/kVNp3XV9158pFrYquumhzXA9+Ro41
+         IZTSEqycW8kJDI51YbLAeKfL+iMwtiGL6xIZOrwf7mzw4yJIn1lfA8bppGqFprgXqcbM
+         n2QOuTKJR90FfhZYbnEmVJnksMQYM9Xtbm2AiQKOdIExCHUHAqi3Gg4BqlBtTm0ssJhs
+         S7KayMw7CaL8Hd48I41o70L//0eSMauLXs/s7pKxHkgYzE5uD91D+gbdxXc+obZkTRYZ
+         22IBJAgxjP5GyKOYwjxmssXx62X9MC20PPpEEZC6wLU5a2CACi2faTa0+BT1OyNhkGDD
+         fqMw==
+X-Forwarded-Encrypted: i=1; AJvYcCUtjXzDTkONBX/P6H2BSe1ACh58ULq/YamGnPN5np4qGeM2s0KWzpTizuzaxmVT3hOuoatL3YgqeY2FQQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy+OudyEZwQV8YLo0hVQ1Q02qERd12d3JHO8mCBT/QWWhTh0gkP
+	vXHNNEvwBQEW9nrHVZC9XiXCkoesVWaMOPxlMT7RAfrP4zg598TUSZoVzqF0r0B7AnPXFeDYf1s
+	M
+X-Google-Smtp-Source: AGHT+IGn6GRJD8Rwx5J8w8ZJjTWua9r/sU/GDxbO3mmjVPsYbj0GV7sfKvfSRKx47UxiedbotWn/Jw==
+X-Received: by 2002:a5d:4576:0:b0:374:b5fc:d31a with SMTP id ffacd0b85a97d-37cc248beabmr1185242f8f.25.1727251850028;
+        Wed, 25 Sep 2024 01:10:50 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37cbc2c1eb8sm3308269f8f.42.2024.09.25.01.10.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Sep 2024 01:10:49 -0700 (PDT)
+Date: Wed, 25 Sep 2024 11:10:45 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Fabricio Gasperin <fgasperin@lkcamp.dev>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org, ~lkcamp/patches@lists.sr.ht
+Subject: Re: [PATCH] staging: sm750fb: Rename function
+ sm750_hw_cursor_setData2
+Message-ID: <0125af58-3070-4ee4-bf14-f5d0d498aa9f@stanley.mountain>
+References: <20240921180612.57657-1-fgasperin@lkcamp.dev>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,94 +72,10 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1b1a2d3c-ed4a-4d9b-b87a-8d05f3d6592e@gmx.de>
-X-CM-TRANSID:sSgvCgAXg_7An_NmfUNVAA--.16028S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7AF17Jw4xJw1xJryDur1ftFb_yoW8uFykpF
-	W5tFWaqrZ8try3Z34jgr4xZr1rXas8ArWUWayFqa4fZFnFvF18WFyIgryUCrWru3W0kryx
-	KF1jy3y2kas3WaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jEdgAUUUUU=
-X-CM-SenderInfo: xtld01pldqwhxolxqiywtou0bp/1tbiLxtlambzkrb51AAAsn
+In-Reply-To: <20240921180612.57657-1-fgasperin@lkcamp.dev>
 
-syzbot has found a NULL pointer dereference bug in fbcon.
-Here is the simplified C reproducer:
+If nothing is calling the function, then just delete it.
 
-struct param {
-	uint8_t type;
-	struct tiocl_selection ts;
-};
-
-int main()
-{
-	struct fb_con2fbmap con2fb;
-	struct param param;
-
-	int fd = open("/dev/fb1", 0, 0);
-
-	con2fb.console = 0x19;
-	con2fb.framebuffer = 0;
-	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
-
-	param.type = 2;
-	param.ts.xs = 0; param.ts.ys = 0;
-	param.ts.xe = 0; param.ts.ye = 0;
-	param.ts.sel_mode = 0;
-
-	int fd1 = open("/dev/tty1", O_RDWR, 0);
-	ioctl(fd1, TIOCLINUX, &param);
-
-	con2fb.console = 1;
-	con2fb.framebuffer = 0;
-	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
-
-	return 0;
-}
-
-After calling ioctl(fd1, TIOCLINUX, &param), the subsequent ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb)
-causes the kernel to follow a different execution path:
-
- set_con2fb_map
-  -> con2fb_init_display
-   -> fbcon_set_disp
-    -> redraw_screen
-     -> hide_cursor
-      -> clear_selection
-       -> highlight
-        -> invert_screen
-         -> do_update_region
-          -> fbcon_putcs
-           -> ops->putcs
-
-Since ops->putcs is a NULL pointer, this leads to a kernel panic.
-To prevent this, we need to call set_blitting_type() within set_con2fb_map()
-to properly initialize ops->putcs.
-
-Reported-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=3d613ae53c031502687a
-Tested-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
----
- Changes since v2:
- - Document the commit message in more detail
----
- Changes since v1:
- - Initialize ops->putcs by calling set_blitting_type()
----
- drivers/video/fbdev/core/fbcon.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 2e093535884b..d9abae2516d8 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -861,6 +861,8 @@ static int set_con2fb_map(int unit, int newidx, int user)
- 			return err;
- 
- 		fbcon_add_cursor_work(info);
-+	} else if (vc) {
-+		set_blitting_type(vc, info);
- 	}
- 
- 	con2fb_map[unit] = newidx;
--- 
-2.34.1
+regards,
+dan carpenter
 

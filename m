@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23CB01D5ABE;
-	Wed, 25 Sep 2024 19:33:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41E2B38DE4;
+	Wed, 25 Sep 2024 19:35:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727292815; cv=none; b=RV1YGY/UJhuNC/W8EN8tGQ4FMcTlUaUgkJh0Wh7aTaiSe4Lt6U6CX+bb3wHpDsCzMLj5pE8TE6NVRBuAm+lZHNkJD4W2LO+GNZ2zx+AqjKUUSJsJKpwq5qRFi51TFC+ytp+4mv167wJxkd7eMO6ScED5Gngbl2+zv8BQi6DifrA=
+	t=1727292953; cv=none; b=TtyAXJ3wDVWIHxBi7GfD5AUdLTqHenWO/h/YPqY5pwtTuglNkN11dlV2nZRanzwwjva4/3UY/Dsc3IP6WibsBZ5VxhLt3jK0ucjDQhKnpQppaNVXZNEyhqiXWmsAMbKmBgEkY3j9+q0wZzw86IfCZTGmXq92YJa/nbFlwtdvJwg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727292815; c=relaxed/simple;
-	bh=Hx/rlkYU0ZVVReIDGCS57p8OVIwu1U+jY2KjmIVkXlk=;
+	s=arc-20240116; t=1727292953; c=relaxed/simple;
+	bh=W1htSqqTN7odWFnelYUc3taH1Vevq2GYu5/u0ivvThM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KSWz6xQ3fuoEPP333H+dikHZS6nvVQMeystAb5qMoH0JtrEFwD20BmsjfUINahkazfQnc6ysjhTz84gFRinZ4SYpSsQ/qMlf1D/DmrQw5AvOdph/2rN8CIYSowPjAGaev3CTNQZ0Ylu0fsrk71GJ/dnzy/G3WcSKcbpKvdOTOPo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=sPyutr75; arc=none smtp.client-ip=212.227.17.21
+	 In-Reply-To:Content-Type; b=M0Qh6s6Sbh+ikRUGVgCa6GMvB1AZt+VlBUpW8tsz1sL3lqbbv7zs3KeKVeT5kjX9XrAGxZkDvXbMfyW1yhgyYtt6lxJvt3Z+pMHqebqr9Rw7sDZCJdUsyND5GRUCGOrCcBcrF9TJyitEUOotYzsv1aKI0IqqckCCaznowX6fT+M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=d25R1Nl6; arc=none smtp.client-ip=212.227.17.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="sPyutr75"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="d25R1Nl6"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1727292802; x=1727897602; i=deller@gmx.de;
-	bh=nXH904ypmTw/gJKVkpTGZ7KBXsxTPIsGXQBiVA1uwKY=;
+	s=s31663417; t=1727292940; x=1727897740; i=deller@gmx.de;
+	bh=UB8PYpZok1cm1fKMdh4ZJQbRWVWkKAGkJRWWz1kVeZg=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=sPyutr758U0cFCKASc+SjRzfaI+0Gv8mVUqK8k2ynGFrk4dvWGhpE6fH/QlhMSsV
-	 TutqIyDa7/wnSskO7clUXtE4lYSE9coJydngIkXQ3N1X8dr006ToCnhnoqEU/hX2Z
-	 rAZpBXChSbhO2Gpm6S8umUCl3hockGOYpWjiXZjZGfgviiHKK8YmdD4NNCHUzl+AX
-	 fjodbb1rkze/2CSL581fzy/AAQFRi9HiBuBq9davhL7ERqtKppivGGyweTUhnDuTh
-	 jW/QidViI5INm3WRiwpcMx2AhbLT0mHSzmZdeta5IoSTqUXqI7R69UbUSQ4fKgcXY
-	 FrzRDSuqOObKx6cwhA==
+	b=d25R1Nl6uF75x6VL2EaFtfT77epmiA6ICHST9kRIWTzLHpVAsnG6nkQNnr6JX/Ht
+	 9mMj3IIY4BzqvI/NDyD2mF1U2o/o58OwfAcKJMQzjw7oseR4nyuJOlqm/M+1r8+lu
+	 l0siMsbwiGE2mu1cCvOBRPshoDfizILbgHQh4W7Xq58Lu9xsdTvaUzel/G+b9oNjT
+	 j3TJzyrgArTpu2uM+9Q/io56k0OAR7WKQcUdWaB350R34trNJW00Petmlre85PMQk
+	 gqJBv1/k9S7h/gBlU5/gwgX60LUQP/9HTtodGoPNCCswjCnJfTyGT3z6+IcMpzxiY
+	 /w1ZFZzJdGusGBZGpg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MIx3C-1sedXk1i6k-00PZjm; Wed, 25
- Sep 2024 21:33:22 +0200
-Message-ID: <acb94eab-78e1-4e79-8c3f-11eefe525324@gmx.de>
-Date: Wed, 25 Sep 2024 21:33:21 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MUXtY-1sT2jb3dvE-00WlAq; Wed, 25
+ Sep 2024 21:35:39 +0200
+Message-ID: <42d8b0ac-edb4-41be-9b7e-87626889e33b@gmx.de>
+Date: Wed, 25 Sep 2024 21:35:37 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,15 +43,17 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] fbcon: Fix a NULL pointer dereference issue in
- fbcon_putcs
-To: Qianqiang Liu <qianqiang.liu@163.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-References: <20240916011027.303875-1-qianqiang.liu@163.com>
- <a57734e8-ffb9-4af1-be02-eb0c99507048@gmx.de> <ZvLlEpIMQnJcJsla@thinkpad>
- <1b1a2d3c-ed4a-4d9b-b87a-8d05f3d6592e@gmx.de> <ZvOfwLvWdNHiU4g8@thinkpad>
+Subject: Re: [PATCH] fbdev: omapfb: Call of_node_put(ep) only once in
+ omapdss_of_find_source_for_first_ep()
+To: Markus Elfring <Markus.Elfring@web.de>, linux-omap@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+ Dave Airlie <airlied@gmail.com>, Rob Clark <robdclark@gmail.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+References: <f7a08897-94cb-4776-9aee-c6ca9fbfd750@web.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -97,118 +99,71 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <ZvOfwLvWdNHiU4g8@thinkpad>
+In-Reply-To: <f7a08897-94cb-4776-9aee-c6ca9fbfd750@web.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:GhjcJBvIWCuBdISj33TK8C6II0pS/jTEZG/PvjpsJqAy8uOg1zq
- N7FyvHb5NO7vqr+gDBtnpPIBYEh3Sz+pWT1LckU9/Stme2ZWW9xOwYo9xkMRHNqWSGTo/4g
- 7gTmcpbc1L3m6KoDiX8NSDvPFZHNzF7ZcbTgdaSN/D1KghsOgaXMKBa+VuDGy39Mjuobw67
- hKquVbZXwrRq2wviHjYRg==
+X-Provags-ID: V03:K1:nawLftjT8T401jHGx+NfGosxAeVyt8qpLFVIBuIZBQl+gwF2JOo
+ O4pYQuGFx8jA8Po7zSeaS5KCqdUQ3DVK9W23bgX40IRFd37J3zOZ4JhR7DLtiY/NfS8laf4
+ 1GsUv7qVaui4Jt/UtjXrTQI/B2gRb9xtKhH88FX32yFaPWLt0i3+BLrG/H+NUIlLr8HL3e4
+ p+8C+r1Ue1JVAnNARr9Ww==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:K2D4VqVlOr4=;uYJHJmMdmWSu6wAChDv4BFsYkzc
- qIVp/Cq+7eaR4X8yhtVtbvC+XLRvWE00upEURQO3UCyceTc8dItIeqLKMelzRFiZHPcwLLJMT
- J7GeOIm59IgpBvnylos8uSH3siaZ7athVXD1rvVRD3xYa9MXUpMcUf7Ej6QhCpEZsWw/qfaRa
- BcPrXgpnHnFefZCrm8P2N2uHzZIzp1M34kNBtNgfyCW8kA/fN6zxZ44m610e0u9oHZS/dC9LD
- QWI8WHgsZ6uoHTNoKl0w9duL3ms1ZGfwTJgN79YBpq8cJaUo8VJlNrLyzwGjrBAUP+2wM6iSL
- SSIYinzt9MmAcDsEtfJvAzZ+gP9Q1JG4WOKxczk/YgqyMkThj0zv6cb7MWYrngGgn49DoEjqG
- C7VxLovfFIMBxrCEAL6bXxQnShNJQj8Ct3kGJ+0Pk9vqNI4d7DqbQfqe/5coKPQVVKpUVTHRc
- xRQlnFTETvNb32UxAMa7Ui+H0pxVGy4xEtB2fADunI39lClRvyEYjVKSGSlwUDEQqiCLtltDl
- AHv3NhQuF+PNufjhBoO+M7Wtkn13pqE92OUEOfI7mL8o/GhurFdUb1DeKJoMyMks+fQLmWJDd
- 3rq2hH6chqbmOwLu4D+TmqXSg5QMbZ3uYzGXHs5X/NrAv7qktTCt4KDglQquk1HJhtExHy/39
- oQXlaXzPAHRI3TbDDr94YLqMfAo/6xpn9IuVfLjexNSIduvGh3sqJLRvJcD6OEqxUxJyXNfMv
- fhftg8ER/GutqNeUmMzR4IT8c2v0rPaNDlAz0WI8s+gtV4cW4T8mTlfTywEUKBlaEedrKQ5Gs
- /PFR4ZLyLoTYgFhhm3/QO9Qg==
+UI-OutboundReport: notjunk:1;M01:P0:2QQ4RunGkjA=;dp/f057ANWAS2lP+JeMzJGAerOE
+ rv6DkJO46DGV9kC32DfW6+67IOPqY+fBRWv/0pzrsNhxYUPsmfPIT8LcyqZ66orKEAAjpJrH+
+ 4YfGD8Uhp8fXfkRWXtzg0Qj/5F4lR0DKI6FywT73QeALrGVCYCHvhh328kGwafuxyCjbtQwTt
+ 7quaTTYlPHGF0HaE6IUYTt9esveDRN2h1aejonuqqWLaBs4J+GJnY9qG1LxD59pJX7Snuz7dL
+ 907qwmFkKIIV8vKTEPJpf6mQ/ewu0BXZfNu6q1N5BnCWXxbwLDsWvDy4K4lWUWmGmAEhv4Qp4
+ gPfNGJoWKmHrGSvCoq2zFyVJPbxf6ZhPFoALBORHhCG00BxiHvbcAVVr111IeazcYZ7girX4x
+ 0f3nAAD6FlOlw2jSBdB/EK/jNGIV8POaH5CijDdM2YAN3E42219cMdjgF8m3AxKdFKUnqgnt1
+ ulmZI/ntil0/gvPr7oscjFybXImgnUuoa3+AJg55DhDHtWaBLFYoE840zAWNAkrjZT6WpCrOe
+ 4n15FTEQA4+e4ACQ/UBBP7N1DcaRWyw4DCsjZlxoDav4n4PaKxxjV5+wdrfSOdH5UPaEJGL9v
+ xUxymuaTkvW7EVwoND7WoUL39oECgIRLk1DmnGOc/ntMm2+Y1XFvmdEuKtV8U0WS5huE38V4C
+ QPDpajv8D2WKTQcmiTXBfFIlygWWj9U8zhR05U3AyMMOjI93SmCWYvMXAa/NSEShRU6zLK+Zg
+ ZOXdsibFr8dcIIL3bVN3UYGpOulBLdS1jzBjwl3DIikO1N8xijqYdl07aV3V3WIhIO8m26jPp
+ /CENVoRnBiBIQRAWOrs+zW2Q==
 
-On 9/25/24 07:29, Qianqiang Liu wrote:
-> syzbot has found a NULL pointer dereference bug in fbcon.
-> Here is the simplified C reproducer:
+On 9/25/24 21:21, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Wed, 25 Sep 2024 21:12:36 +0200
 >
-> struct param {
-> 	uint8_t type;
-> 	struct tiocl_selection ts;
-> };
+> An of_node_put(ep) call was immediately used after a pointer check
+> for a of_graph_get_remote_port() call in this function implementation.
+> Thus call such a function only once instead directly before the check.
 >
-> int main()
-> {
-> 	struct fb_con2fbmap con2fb;
-> 	struct param param;
+> This issue was transformed by using the Coccinelle software.
 >
-> 	int fd =3D open("/dev/fb1", 0, 0);
->
-> 	con2fb.console =3D 0x19;
-> 	con2fb.framebuffer =3D 0;
-> 	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
->
-> 	param.type =3D 2;
-> 	param.ts.xs =3D 0; param.ts.ys =3D 0;
-> 	param.ts.xe =3D 0; param.ts.ye =3D 0;
-> 	param.ts.sel_mode =3D 0;
->
-> 	int fd1 =3D open("/dev/tty1", O_RDWR, 0);
-> 	ioctl(fd1, TIOCLINUX, &param);
->
-> 	con2fb.console =3D 1;
-> 	con2fb.framebuffer =3D 0;
-> 	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
->
-> 	return 0;
-> }
->
-> After calling ioctl(fd1, TIOCLINUX, &param), the subsequent ioctl(fd, FB=
-IOPUT_CON2FBMAP, &con2fb)
-> causes the kernel to follow a different execution path:
->
->   set_con2fb_map
->    -> con2fb_init_display
->     -> fbcon_set_disp
->      -> redraw_screen
->       -> hide_cursor
->        -> clear_selection
->         -> highlight
->          -> invert_screen
->           -> do_update_region
->            -> fbcon_putcs
->             -> ops->putcs
->
-> Since ops->putcs is a NULL pointer, this leads to a kernel panic.
-> To prevent this, we need to call set_blitting_type() within set_con2fb_m=
-ap()
-> to properly initialize ops->putcs.
->
-> Reported-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-> Closes: https://syzkaller.appspot.com/bug?extid=3D3d613ae53c031502687a
-> Tested-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
-> Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
-> ---
->   Changes since v2:
->   - Document the commit message in more detail
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Queued up in for-next branch of fbdev git tree.
+applied.
 
 Thanks!
 Helge
 
-
 > ---
->   Changes since v1:
->   - Initialize ops->putcs by calling set_blitting_type()
-> ---
->   drivers/video/fbdev/core/fbcon.c | 2 ++
->   1 file changed, 2 insertions(+)
+>   drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 7 ++-----
+>   1 file changed, 2 insertions(+), 5 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index 2e093535884b..d9abae2516d8 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -861,6 +861,8 @@ static int set_con2fb_map(int unit, int newidx, int =
-user)
->   			return err;
+> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c b/drivers/vid=
+eo/fbdev/omap2/omapfb/dss/dss-of.c
+> index 4040e247e026..d5a43b3bf45e 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
+> @@ -129,12 +129,9 @@ omapdss_of_find_source_for_first_ep(struct device_n=
+ode *node)
+>   		return ERR_PTR(-EINVAL);
 >
->   		fbcon_add_cursor_work(info);
-> +	} else if (vc) {
-> +		set_blitting_type(vc, info);
->   	}
+>   	src_port =3D of_graph_get_remote_port(ep);
+> -	if (!src_port) {
+> -		of_node_put(ep);
+> -		return ERR_PTR(-EINVAL);
+> -	}
+> -
+>   	of_node_put(ep);
+> +	if (!src_port)
+> +		return ERR_PTR(-EINVAL);
 >
->   	con2fb_map[unit] =3D newidx;
+>   	src =3D omap_dss_find_output_by_port_node(src_port);
+>
+> --
+> 2.46.1
+>
 

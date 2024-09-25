@@ -1,109 +1,255 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAEAC18C00F;
-	Wed, 25 Sep 2024 12:15:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F7B1186604
+	for <linux-fbdev@vger.kernel.org>; Wed, 25 Sep 2024 15:07:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727266503; cv=none; b=SOSEopX5DcpzylfLhMlQ2yWDBZicNRsUcc/UelI+TkqeW1aKZpLGJbpHoF0+6jx2eollzzNNVpcG/xqlHHQ9SfmI9yPYPVE6UScpYjhWxi9VaMAbB8nPU+nxh/EmzxTFSk1iuBHKuSeK7w9UYe274R4LoMgZGnZyTdRGOpH8mTw=
+	t=1727276863; cv=none; b=crrmUahnJSmyDUCQe1hrCeMaMhwTP76WPBF2YSg3w0DNnP34n/HHFT+9rce+XXu23nWInLUpBkzvbDwtPekzbLLAXEN7e+nOgnnLYm+gjioueUwHjV5ENCQVSu7sZYNtAWsT3dSfBV7EKe3MZoTOwewdYiglrvAdjRpdXPKqH/E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727266503; c=relaxed/simple;
-	bh=2uVuhDZDMUIshitsnapNSlE48Yb+JPuyFmI2qexGfsU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QP1VgyMFS6kVD8PET+PPcutI9BsIBH1GLJ1fKzRaxPB3GUR3v/vMVtXBQjqL16DQKJVsSUSmMrlm6HwmHfxurlT9CE2Z/7zx6btuobsQVj8jYT6GpKORmDgsXemvh5/cTimc+wI4Fc0Pi51t2WAp3lpGaNWBRQoU5AjUQMoFGNs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uhWWsFcN; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uhWWsFcN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13CFDC4CECE;
-	Wed, 25 Sep 2024 12:15:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727266502;
-	bh=2uVuhDZDMUIshitsnapNSlE48Yb+JPuyFmI2qexGfsU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=uhWWsFcN07UFXP4OTAewh7tPPqosRE79kii5OCNSiGmFqTJHCRKuy8MwScIDyIbzh
-	 griEtU3Vbd+s4TFtst66pKtDtadaA8ZH2wveWuDinshUALd6wuYiTtDE7RDFcZlBab
-	 E3B6TQDuUHNh98N31LJ8btDMZCcJpwMiiplhyb3w8UeBQH8++0GL+UOSJV4mWS9KJl
-	 FdMkWSZZSPjINoS7sniAezch2r9BPiRP0sy0LWeXiOy1vic+GMiAbh9VZl/bENDG4Z
-	 U1we6a/Q0ETJDb+giSA32JbIE9DI4N+Tyy8SnPotVrDjl5roIwTUUQJa9cOe+kA3zu
-	 t2Uy/UT63EtOg==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Kaixin Wang <kxwang23@m.fudan.edu.cn>,
-	Helge Deller <deller@gmx.de>,
-	Sasha Levin <sashal@kernel.org>,
-	kuninori.morimoto.gx@renesas.com,
-	laurent.pinchart@ideasonboard.com,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.6 075/139] fbdev: pxafb: Fix possible use after free in pxafb_task()
-Date: Wed, 25 Sep 2024 08:08:15 -0400
-Message-ID: <20240925121137.1307574-75-sashal@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240925121137.1307574-1-sashal@kernel.org>
-References: <20240925121137.1307574-1-sashal@kernel.org>
+	s=arc-20240116; t=1727276863; c=relaxed/simple;
+	bh=8GfBUdOg/QSvr9uhZROpCY6GPCwtP46GQFOUZHOoOrc=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Lm0+zB3yRDzzXVtB25NlzAsk4FIMvIyB8UvuE+IMYGjbvLTxYjTrt6IW+lOo2DgUeBRjjvffsBOjmAKZKO3u6f9lIiR93SvrVvLBZC/sDu29OO9MjPgHaECJJ53iNuztwLHT0eCj8gP0WPkaYiIxc5HEP7lxjbQ4v1z28tlHWAI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1stTbx-0005WS-Gp; Wed, 25 Sep 2024 17:07:25 +0200
+Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1stTbw-001Tgc-Qq; Wed, 25 Sep 2024 17:07:24 +0200
+Received: from pza by lupine with local (Exim 4.96)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1stTbw-000MKv-2P;
+	Wed, 25 Sep 2024 17:07:24 +0200
+Message-ID: <f894eb3fd132a214ddbf2fa3ed405d065e629398.camel@pengutronix.de>
+Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
+ deinterlacer driver
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: Marek Vasut <marex@denx.de>, linux-media@vger.kernel.org
+Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
+ Estevam <festevam@gmail.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
+ Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
+ <kernel@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo
+ <shawnguo@kernel.org>,  Steve Longerbeam <slongerbeam@gmail.com>,
+ dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
+ linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev
+Date: Wed, 25 Sep 2024 17:07:24 +0200
+In-Reply-To: <3e850259-9349-4215-947a-ce192fa95f14@denx.de>
+References: <20240724002044.112544-1-marex@denx.de>
+	 <20240724002044.112544-2-marex@denx.de>
+	 <a66a2eaf30e21ff7c87f140e97ed4639640121ba.camel@pengutronix.de>
+	 <3e850259-9349-4215-947a-ce192fa95f14@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.6.52
-Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: p.zabel@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-From: Kaixin Wang <kxwang23@m.fudan.edu.cn>
+Hi,
 
-[ Upstream commit 4a6921095eb04a900e0000da83d9475eb958e61e ]
+On Di, 2024-09-24 at 17:28 +0200, Marek Vasut wrote:
+> On 9/6/24 11:01 AM, Philipp Zabel wrote:
+[...]
+> > Instead of presenting two devices to userspace, it would be better to
+> > have a single video device that can distribute work to both IPUs.
+>=20
+> Why do you think so ?
 
-In the pxafb_probe function, it calls the pxafb_init_fbinfo function,
-after which &fbi->task is associated with pxafb_task. Moreover,
-within this pxafb_init_fbinfo function, the pxafb_blank function
-within the &pxafb_ops struct is capable of scheduling work.
+The scaler/colorspace converter supports frames larger than the
+1024x1024 hardware by splitting each frame into multiple tiles. It
+currently does so sequentially on a single IC. Speed could be improved
+by distributing the tiles to both ICs. This is not an option anymore if
+there are two video devices that are fixed to one IC each.
 
-If we remove the module which will call pxafb_remove to make cleanup,
-it will call unregister_framebuffer function which can call
-do_unregister_framebuffer to free fbi->fb through
-put_fb_info(fb_info), while the work mentioned above will be used.
-The sequence of operations that may lead to a UAF bug is as follows:
+The same would be possible for the deinterlacer, e.g. to support 720i
+frames split into two tiles each sent to one of the two VDICs.
 
-CPU0                                                CPU1
+> I think it is better to keep the kernel code as simple as possible, i.e.=
+=20
+> provide the device node for each m2m device to userspace and handle the=
+=20
+> m2m device hardware interaction in the kernel driver, but let userspace=
+=20
+> take care of policy like job scheduling, access permissions assignment=
+=20
+> to each device (e.g. if different user accounts should have access to=20
+> different VDICs), or other such topics.
 
-                                   | pxafb_task
-pxafb_remove                       |
-unregister_framebuffer(info)       |
-do_unregister_framebuffer(fb_info) |
-put_fb_info(fb_info)               |
-// free fbi->fb                    | set_ctrlr_state(fbi, state)
-                                   | __pxafb_lcd_power(fbi, 0)
-                                   | fbi->lcd_power(on, &fbi->fb.var)
-                                   | //use fbi->fb
+I both agree and disagree with you at the same time.
 
-Fix it by ensuring that the work is canceled before proceeding
-with the cleanup in pxafb_remove.
+If the programming model were more similar to DRM, I'd agree in a
+heartbeat. If the kernel driver just had to do memory/fence handling
+and command submission (and parameter sanitization, because there is no
+MMU), and there was some userspace API on top, it would make sense to
+me to handle parameter calculation and job scheduling in a hardware
+specific userspace driver that can just open one device for each IPU.
 
-Note that only root user can remove the driver at runtime.
+With the rigid V4L2 model though, where memory handling, parameter
+calculation, and job scheduling of tiles in a single frame all have to
+be hidden behind the V4L2 API, I don't think requiring userspace to
+combine multiple mem2mem video devices to work together on a single
+frame is feasible.
 
-Signed-off-by: Kaixin Wang <kxwang23@m.fudan.edu.cn>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/pxafb.c | 1 +
- 1 file changed, 1 insertion(+)
+Is limiting different users to the different deinterlacer hardware
+units a real usecase? I saw the two ICs, when used as mem2mem devices,
+as interchangeable resources.
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index fa943612c4e2b..3a2427eb29f23 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -2403,6 +2403,7 @@ static void pxafb_remove(struct platform_device *dev)
- 	info = &fbi->fb;
- 
- 	pxafb_overlay_exit(fbi);
-+	cancel_work_sync(&fbi->task);
- 	unregister_framebuffer(info);
- 
- 	pxafb_disable_controller(fbi);
--- 
-2.43.0
+> > To be fair, we never implemented that for the CSC/scaler mem2mem device
+> > either.
+>=20
+> I don't think that is actually a good idea. Instead, it would be better=
+=20
+> to have two scaler nodes in userspace.
 
+See above, that would make it impossible (or rather unreasonably
+complicated) to distribute work on a single frame to both IPUs.
+
+[...]
+> > > +	ipu_cpmem_set_buffer(priv->vdi_out_ch,  0, out_phys);
+> > > +	ipu_cpmem_set_buffer(priv->vdi_in_ch_p, 0, prev_phys + phys_offset)=
+;
+> > > +	ipu_cpmem_set_buffer(priv->vdi_in_ch,   0, curr_phys);
+> > > +	ipu_cpmem_set_buffer(priv->vdi_in_ch_n, 0, curr_phys + phys_offset)=
+;
+> >=20
+> > This always outputs at a frame rate of half the field rate, and only
+> > top fields are ever used as current field, and bottom fields as
+> > previous/next fields, right?
+>=20
+> Yes, currently the driver extracts 1 frame from two consecutive incoming=
+=20
+> fields (previous Bottom, and current Top and Bottom):
+>=20
+> (frame 1 and 3 below is omitted)
+>=20
+>      1  2  3  4
+> ...|T |T |T |T |...
+> ...| B| B| B| B|...
+>       | ||  | ||
+>       '-''  '-''
+>        ||    ||
+>        ||    \/
+>        \/  Frame#4
+>      Frame#2
+>=20
+> As far as I understand it, this is how the current VDI implementation=20
+> behaves too, right ?
+
+Yes, that is a hardware limitation when using the direct CSI->VDIC
+direct path. As far as I understand, for each frame (two fields) the
+CSI only sends the first ("PREV") field directly to the VDIC, which
+therefor can only be run in full motion mode (use the filter to add in
+the missing lines).
+The second ("CUR") field is just ignored. It could be written to RAM
+via IDMAC output channel 13 (IPUV3_CHANNEL_VDI_MEM_RECENT), which can
+not be used by the VDIC in direct mode. So this is not implemented.
+
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/d=
+rivers/staging/media/imx/imx-media-vdic.c#n207
+
+That code is unused. The direct hardware path doesn't use
+IPUV3_CHANNEL_MEM_VDI_PREV/CUR/NEXT, but is has a similar effect, half
+of the incoming fields are dropped. The setup is vdic_setup_direct().
+
+> > I think it would be good to add a mode that doesn't drop the
+> >=20
+> > 	ipu_cpmem_set_buffer(priv->vdi_in_ch_p, 0, prev_phys);
+> > 	ipu_cpmem_set_buffer(priv->vdi_in_ch,   0, prev_phys + phys_offset);
+> > 	ipu_cpmem_set_buffer(priv->vdi_in_ch_n, 0, curr_phys);
+> >=20
+> > output frames, right from the start.
+>=20
+> This would make the VDI act as a frame-rate doubler, which would spend a=
+=20
+> lot more memory bandwidth, which is limited on MX6, so I would also like=
+=20
+> to have a frame-drop mode (i.e. current behavior).
+>
+> Can we make that behavior configurable ? Since this is a mem2mem device,=
+=20
+> we do not really have any notion of input and output frame-rate, so I=20
+> suspect this would need some VIDIOC_* ioctl ?
+
+That would be good. The situation I'd like to avoid is that this device
+becomes available without the full frame-rate mode, userspace then
+assumes this is a 1:1 frame converter device, and then we can't add the
+full frame-rate later without breaking userspace.
+
+> > If we don't start with that supported, I fear userspace will make
+> > assumptions and be surprised when a full rate mode is added later.
+>=20
+> I'm afraid that since the current VDI already does retain input frame=20
+> rate instead of doubling it, the userspace already makes an assumption,=
+=20
+> so that ship has sailed.
+
+No, this is about the deinterlacer mem2mem device, which doesn't exist
+before this series.
+
+The CSI capture path already has configurable framedrops (in the CSI).
+
+> But I think we can make the frame doubling configurable ?
+
+That would be good. Specifically, there must be no guarantee that one
+input frame with two fields only produces one deinterlaced output
+frame, and userspace should somehow be able to understand this.
+
+This would be an argument against Nicolas' suggestion of including this
+in the csc/scaler device, which always must produce one output frame
+per input frame.
+
+[...]
+> > This maps to VDI_C_MOT_SEL_FULL aka VDI_MOT_SEL=3D2, which is documente=
+d
+> > as "full motion, only vertical filter is used". Doesn't this completely
+> > ignore the previous/next fields and only use the output of the di_vfilt
+> > four tap vertical filter block to fill in missing lines from the
+> > surrounding pixels (above and below) of the current field?
+>=20
+> Is there a suitable knob for this or shall I introduce a device specific=
+=20
+> one, like the vdic_ctrl_motion_menu for the current VDIC direct driver ?
+>=20
+> If we introduce such a knob, then it is all the more reason to provide=
+=20
+> one device node per one VDIC hardware instance, since each can be=20
+> configured for different motion settings.
+
+As far as I know, there is no such control yet. I don't think this
+should be per-device, but per-stream (or even per-frame).
+
+> > I think this should at least be configurable, and probably default to
+> > MED_MOTION.
+>=20
+> I think to be compatible with the current VDI behavior and to reduce=20
+> memory bandwidth usage, let's default to the HIGH/full mode. That one=20
+> produces reasonably good results without spending too much memory=20
+> bandwidth which is constrained already on the MX6, and if the user needs=
+=20
+> better image quality, they can configure another mode using the V4L2=20
+> control.
+
+I'd rather not default to the setting that throws away half of the
+input data. Not using frame doubling by default is sensible, but now
+that using all three input fields to calculate the output frame is
+possible, why not make that the default.
+
+regards
+Philipp

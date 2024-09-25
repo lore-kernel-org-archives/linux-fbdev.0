@@ -1,109 +1,120 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CA5D17BB2A;
-	Wed, 25 Sep 2024 11:42:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38A341DCB3D;
+	Wed, 25 Sep 2024 12:03:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727264539; cv=none; b=nVqo2/V4QCICmSWyvsTTH63/tuajgm6QBao8wdZDAhkmKy0qH89STJyYVMfuyrwQCu/TsbJ5YuAnCjB3UwAqnKZ9oF3NcsggJr80M3WgeOWg3yvJNkYy0OF47wCe7YuqR7/aNNR5+U1Imoz7TzJGsauzhMIiSLoNW0Y8JfADP/Q=
+	t=1727265793; cv=none; b=ji16mha8zVxJClkWRJpy9nE7Bc/7OX/pZIqR+5DcKmVmWEH29vzp5cZiVmsFN3rPQhfRI1hT6QV1nRYDoWzM6JZozIRC9DZvk/f3hmT0ooAtQc4alzei7WjQsdj4J+pYZ/uKtrHGclyWiJMdCtueTIq/UAGnHB8zzqeN9GoWOT0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727264539; c=relaxed/simple;
-	bh=jHudm0CECuKh1KiFB3Pzw6IIjb7GizByG8fAtQfyH6U=;
+	s=arc-20240116; t=1727265793; c=relaxed/simple;
+	bh=6Rf5F4xR3of/PuGK6m3em5sCuc3QV6oACndIhzGnyQM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SDx7MXyVwPmV8uycQjEXuE1+cpp2/UPzopMUDiUDMxNoK130GXtjwwrrm7sVStiT6dPWYWUwMeiOrsCWgl5N2wtcs5or2Z4SkS7oVrjjkXQ3QudtzZizHL8fA+U1w/4dl+r0sjQSRWSvbXuSmhsEXUOq1Vf4hDm3E373Rp5BY8E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lFnxtXE2; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=Z9YpbNyyVfAfts7smYV5Pf/CXk29UW2R5VD0WGyU8kmJhGALeumCNpKrfyMaW/RoLHHHuaAt2JfMOwiS8oBQm8rUqSJxlZvJDBmgdgNssV8gMPgZlOwDKJgJOwAg7yQzIrE0CG+Xztiz1hoaS0GlnES1pWXnpyl/bvPQUGXjZlw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NdkIzJAR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lFnxtXE2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44300C4CECD;
-	Wed, 25 Sep 2024 11:42:16 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NdkIzJAR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C2E5C4CECF;
+	Wed, 25 Sep 2024 12:03:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727264537;
-	bh=jHudm0CECuKh1KiFB3Pzw6IIjb7GizByG8fAtQfyH6U=;
+	s=k20201202; t=1727265793;
+	bh=6Rf5F4xR3of/PuGK6m3em5sCuc3QV6oACndIhzGnyQM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lFnxtXE2C3ne3woi2mgIUaRUH9UHGtZqjym4zKxgSEHHZoFip05cWDaiLC3MoiE5e
-	 hbluYByaKBsSjgKvidMk5/i5i8dJnuJGZ2mkT76NoPGW0Tf+vGi4fhOQ6k1FXNNqgt
-	 NxOR258WzFc+XKLiiHvs2E07voR7KDVojdZRD0HQkhcXwXjVz29k6kDMkxAyHnByHo
-	 irnF/n/KCCW847IkayQWFWFMFgJmVzTkwXneoh9PxuXNoxSGrpr4vvWl8NYXdKyPy3
-	 x/Yax5y928VcZhTCTKTlTSBBEJ1DtLOR44fip/LQK0msn86y18XkSFfd6dyQPZ3oao
-	 3vXoMEphavwLw==
+	b=NdkIzJAR2xe/ovRxCjFBUNuMnn5Tq6H7C2D/kpckwB6CoKpLq/6tnjcqnkYwtU/v+
+	 SiKUWTp1DqqI7MeIbFkNQnmfP6c2h66MU1hMi/fzyLcFoj5w5i+i3sZwMRKIOabxK3
+	 ATzzD1FIJfwbG6rPfxgU1RfiJdH9WLEtt0u4zfhjE8k/W3LtpzF+fEgEhmugphY43K
+	 pkTSenp9l9lNLF+JzAjH6I3hrJCy2a4NImBTxfvnKZirdFWgOUDpanQX/gmeebtfq5
+	 UXuRCRynrNEPk0EX0i/sMSuaMfBZ1KzGtdryw/Smw4nELp/4FIaXrXoa7eXI1EumFY
+	 UggjUw51vEPGw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Cc: Kaixin Wang <kxwang23@m.fudan.edu.cn>,
+Cc: =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	laurent.pinchart@ideasonboard.com,
-	kuninori.morimoto.gx@renesas.com,
+	pjones@redhat.com,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.11 115/244] fbdev: pxafb: Fix possible use after free in pxafb_task()
-Date: Wed, 25 Sep 2024 07:25:36 -0400
-Message-ID: <20240925113641.1297102-115-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.10 098/197] fbdev: efifb: Register sysfs groups through driver core
+Date: Wed, 25 Sep 2024 07:51:57 -0400
+Message-ID: <20240925115823.1303019-98-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240925113641.1297102-1-sashal@kernel.org>
-References: <20240925113641.1297102-1-sashal@kernel.org>
+In-Reply-To: <20240925115823.1303019-1-sashal@kernel.org>
+References: <20240925115823.1303019-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.11
+X-stable-base: Linux 6.10.11
 Content-Transfer-Encoding: 8bit
 
-From: Kaixin Wang <kxwang23@m.fudan.edu.cn>
+From: Thomas Weißschuh <linux@weissschuh.net>
 
-[ Upstream commit 4a6921095eb04a900e0000da83d9475eb958e61e ]
+[ Upstream commit 95cdd538e0e5677efbdf8aade04ec098ab98f457 ]
 
-In the pxafb_probe function, it calls the pxafb_init_fbinfo function,
-after which &fbi->task is associated with pxafb_task. Moreover,
-within this pxafb_init_fbinfo function, the pxafb_blank function
-within the &pxafb_ops struct is capable of scheduling work.
+The driver core can register and cleanup sysfs groups already.
+Make use of that functionality to simplify the error handling and
+cleanup.
 
-If we remove the module which will call pxafb_remove to make cleanup,
-it will call unregister_framebuffer function which can call
-do_unregister_framebuffer to free fbi->fb through
-put_fb_info(fb_info), while the work mentioned above will be used.
-The sequence of operations that may lead to a UAF bug is as follows:
+Also avoid a UAF race during unregistering where the sysctl attributes
+were usable after the info struct was freed.
 
-CPU0                                                CPU1
-
-                                   | pxafb_task
-pxafb_remove                       |
-unregister_framebuffer(info)       |
-do_unregister_framebuffer(fb_info) |
-put_fb_info(fb_info)               |
-// free fbi->fb                    | set_ctrlr_state(fbi, state)
-                                   | __pxafb_lcd_power(fbi, 0)
-                                   | fbi->lcd_power(on, &fbi->fb.var)
-                                   | //use fbi->fb
-
-Fix it by ensuring that the work is canceled before proceeding
-with the cleanup in pxafb_remove.
-
-Note that only root user can remove the driver at runtime.
-
-Signed-off-by: Kaixin Wang <kxwang23@m.fudan.edu.cn>
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/pxafb.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/efifb.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index 2ef56fa28aff3..5ce02495cda63 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -2403,6 +2403,7 @@ static void pxafb_remove(struct platform_device *dev)
- 	info = &fbi->fb;
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 8dd82afb3452b..595b8e27bea66 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -561,15 +561,10 @@ static int efifb_probe(struct platform_device *dev)
+ 		break;
+ 	}
  
- 	pxafb_overlay_exit(fbi);
-+	cancel_work_sync(&fbi->task);
+-	err = sysfs_create_groups(&dev->dev.kobj, efifb_groups);
+-	if (err) {
+-		pr_err("efifb: cannot add sysfs attrs\n");
+-		goto err_unmap;
+-	}
+ 	err = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (err < 0) {
+ 		pr_err("efifb: cannot allocate colormap\n");
+-		goto err_groups;
++		goto err_unmap;
+ 	}
+ 
+ 	err = devm_aperture_acquire_for_platform_device(dev, par->base, par->size);
+@@ -587,8 +582,6 @@ static int efifb_probe(struct platform_device *dev)
+ 
+ err_fb_dealloc_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+-err_groups:
+-	sysfs_remove_groups(&dev->dev.kobj, efifb_groups);
+ err_unmap:
+ 	if (mem_flags & (EFI_MEMORY_UC | EFI_MEMORY_WC))
+ 		iounmap(info->screen_base);
+@@ -608,12 +601,12 @@ static void efifb_remove(struct platform_device *pdev)
+ 
+ 	/* efifb_destroy takes care of info cleanup */
  	unregister_framebuffer(info);
+-	sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
+ }
  
- 	pxafb_disable_controller(fbi);
+ static struct platform_driver efifb_driver = {
+ 	.driver = {
+ 		.name = "efi-framebuffer",
++		.dev_groups = efifb_groups,
+ 	},
+ 	.probe = efifb_probe,
+ 	.remove_new = efifb_remove,
 -- 
 2.43.0
 

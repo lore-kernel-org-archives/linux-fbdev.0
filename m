@@ -1,117 +1,120 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB18F15747D
-	for <linux-fbdev@vger.kernel.org>; Wed, 25 Sep 2024 08:40:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A3941B5301;
+	Wed, 25 Sep 2024 11:42:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727253658; cv=none; b=Q9y22/VhZ12M7DSiTVcoCLuWiFREscdKxtyDFx4chswOKPw3uAqKD96Th9RVNi0aUb2IjAH8A5UUTpqadUt5a664VHR19UUjEpeP27NkHUgEJRjmmeJ8dcgYnXepTkvsk2VUwZjl9EvKTMG4TsNucBg/Nx1gmemzhwMD8Msjk3M=
+	t=1727264534; cv=none; b=Fdj1N5mp//jyCfTz9wsIvQakEhxagbhhjhEe805s7JaOTsYNP6TxmW3Wc9+s7kp/DRKE6eJ3aqV774tFE3fb0R2wQQYDcl/rcXwlfe8DDnnnsSfk9h1CV/jlF16T3hYXl4yFrCa0SmxkiOoR51zuKomEp2Fw4EpVEkFcve0Ehyk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727253658; c=relaxed/simple;
-	bh=jzyeuOdmRqFn80/1joF8rMUBJXOJ48ZG0kA33e5fids=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GE1KjvOWLuBPTfOBJEhlfY9jWwPuUovzN1y4Ilc6hSVcb8VOS0Rt/TOKuhgNYDD/dC9RXYktVLuIZOm8Yoanun6TQs8IzXRMatIekKtqyoprP8TtiYP+PX0uqvd5gp9NPFaLdqlcz+Hk6+at+2Z1G9qi52BlELTwRxcNw7R+p5I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=lXZBOhQZ; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1727264534; c=relaxed/simple;
+	bh=6Rf5F4xR3of/PuGK6m3em5sCuc3QV6oACndIhzGnyQM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=szAEUazctI3wXOWDBxB27B/Uv4/30ThHbWfLINJWwI2274M14/tYQXiWyJauSGaHcM2BjWSTzD1hS6d4lXif77ffne2ufcxXZXBEKS9ntThKXvERzexQB90TGc1qhNRn+wd1+fXFAhxcBw14acc1dPPr6IFfsvvDYJ6Udv194bo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=egiD+eaU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="lXZBOhQZ"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-42bb7298bdeso82419255e9.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 25 Sep 2024 01:40:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1727253655; x=1727858455; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=1gWh62e+9y3kqU90XZJ9SkxqBQCkgI99AUyA38n5F+A=;
-        b=lXZBOhQZN+T9yricYMTA2PDuu5+ojKm5mcBblvECYF+zal58qwIhOiUbnMCMYruptJ
-         bVoqXi3u61bQP/ws+AL337hRn22laDcc9nruOB7aBeiZg4D/x6FNmDs/+krCt8B8jsV2
-         OQNU7Ki8FUUDRjwnE5mXlBN4CR5j6CcfGoasC7Qx1m7EA0Tw7EkxVSt3lRGTY82uTswl
-         W0El6VlJWOK/oUaxORJoybhDRM4IJXqgLGtfQqDJSqNaXJa2Uk2DUGyrDh9HGn/TN0pY
-         Z//CCAcjaJi6RJXqtLUDp5YPAdRP11j3Ebmf120SCTKc8xak0QxNAwStBGAzaGj1yOI/
-         KYDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727253655; x=1727858455;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1gWh62e+9y3kqU90XZJ9SkxqBQCkgI99AUyA38n5F+A=;
-        b=t2e0W4jFZDcdEj/6Je11wzpPuhLim7kTk1VkrCC6jl2venD9D//XIzej7ccKnr4ViA
-         Puy/yITD/glp2S9dqvRr2/HG9aYvyp0YzA+j9aWw+sepYfeHix+PSh6709Fbs8VZqos6
-         seaVJuuPC/B7B+2VbJkE5xjQIFQl7coRiP37HyUe9a1u07xCa9KML2VCvevCjjMoOfNF
-         zQ8IKD1dQwi65lmTTWCxFrpMCHqVWGZfGmTtzeONdJc8cpzvBXtpNYiciCpdzDGHJKxY
-         a+xRPx6ba62x0CbbkNpFfcuVK/gB+PanPYFbIPX45yEOC/+py8PerZINMdFs/93Iu5sY
-         3cGw==
-X-Forwarded-Encrypted: i=1; AJvYcCXn63SBfmHaKuwRbbChfxdCQuCmd4rgUZTFHPzFdrKQ0DOSxmsr/59HXhiZPhq36x4dcilL6FA0h///vA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywr/6yzrty2+HFtJflybfQhyn04qpyZ7Cpe+TLGkHxkNgYsBTtk
-	XYK60oqSRiS9nLUzOVD+C5kvnsJpF0x0PfLVc3PslfNXIaxyzIYwpPl96SV1rHg=
-X-Google-Smtp-Source: AGHT+IH+9QVv57tkAFLswE82YK+fkKh996SQzxAWIqrqV2XZmJ2sMvCo6rPEjeuCpgizS1gmWqKNFQ==
-X-Received: by 2002:a05:600c:4451:b0:426:6e9a:7a1e with SMTP id 5b1f17b1804b1-42e96242baemr14438675e9.35.1727253654873;
-        Wed, 25 Sep 2024 01:40:54 -0700 (PDT)
-Received: from [10.2.5.161] (amontpellier-556-1-151-252.w109-210.abo.wanadoo.fr. [109.210.7.252])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42e96a36287sm11223985e9.29.2024.09.25.01.40.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 25 Sep 2024 01:40:54 -0700 (PDT)
-Message-ID: <1ff1aaa7-7478-4b0c-a1ad-c119a11695ba@baylibre.com>
-Date: Wed, 25 Sep 2024 10:40:52 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="egiD+eaU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68E02C4CEC3;
+	Wed, 25 Sep 2024 11:42:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727264534;
+	bh=6Rf5F4xR3of/PuGK6m3em5sCuc3QV6oACndIhzGnyQM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=egiD+eaUrhi0hi5RVUYDLv32mDSrakuBPYinrp+v/Pig4VNWm+xT83yEbkkCD+xaj
+	 8WUHWxSS9VA2yVlSWmCxdLZ4G8zWKFGZX+rLhA5tQ44COOoG3nx6NUjHqSOBx0qGp6
+	 ylGJfbRcTQuPHviDzvGTPR8BdFycn2bZvmiJTsH8IGl/hYekVyWZ7sBjDk0Crsq7+m
+	 TvCmPVc34eYI2Uvv7WgPQRWqAlP+fTi/NlX8OxwGlFB2M08j0YfC8lB54pLwFaDBCB
+	 XZNKn5OQTCSrFD+knHbaGIfZSDxt6pV284LE4Oc7T9i2sTUPVtmlcMCTXwoq5gb+Gl
+	 2Ovp7IL3DaqHA==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	pjones@redhat.com,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.11 114/244] fbdev: efifb: Register sysfs groups through driver core
+Date: Wed, 25 Sep 2024 07:25:35 -0400
+Message-ID: <20240925113641.1297102-114-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240925113641.1297102-1-sashal@kernel.org>
+References: <20240925113641.1297102-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 07/10] iio: adc: ad7606: Add compatibility to fw_nodes
-To: David Lechner <dlechner@baylibre.com>
-Cc: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- Lars-Peter Clausen <lars@metafoo.de>,
- Michael Hennerich <Michael.Hennerich@analog.com>,
- Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
- devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
- aardelean@baylibre.com, jstephan@baylibre.com
-References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
- <20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
- <CAMknhBGOn_vhvHJU8g89A2TDmA6yFv9urpZ4A96jOMLdTtR-Bw@mail.gmail.com>
-Content-Language: en-US
-From: Guillaume Stols <gstols@baylibre.com>
-In-Reply-To: <CAMknhBGOn_vhvHJU8g89A2TDmA6yFv9urpZ4A96jOMLdTtR-Bw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.11
 Content-Transfer-Encoding: 8bit
 
+From: Thomas Weißschuh <linux@weissschuh.net>
 
-On 9/24/24 17:28, David Lechner wrote:
-> On Fri, Sep 20, 2024 at 7:33 PM Guillaume Stols <gstols@baylibre.com> wrote:
->> On the parallel version, the current implementation is only compatible
->> with id tables and won't work with fw_nodes, this commit intends to fix
->> it.
->>
->> Also, chip info is moved in the .h file so to be accessible to all the
->> driver files that can set a pointer to the corresponding chip as the
->> driver data.
-> This sounds like two unrelated changes, so maybe we should have two patches?
-Those changes are closely related to each other, in the sense that we 
-now gather the ad7606_chip_info structure directly from the id or match 
-structure, and not anymore the id which is an index where you can get it 
-as an element. I will update the commit message to highlight it more.
->
->
->>   static const struct of_device_id ad7606_of_match[] = {
->> -       { .compatible = "adi,ad7605-4" },
->> -       { .compatible = "adi,ad7606-4" },
->> -       { .compatible = "adi,ad7606-6" },
->> -       { .compatible = "adi,ad7606-8" },
->> -       { .compatible = "adi,ad7606b" },
->> -       { .compatible = "adi,ad7616" },
->> +       { .compatible = "adi,ad7605-4", &ad7605_4_info },
->> +       { .compatible = "adi,ad7606-4", &ad7606_4_info },
->> +       { .compatible = "adi,ad7606-6", &ad7606_6_info },
->> +       { .compatible = "adi,ad7606-8", &ad7606_8_info },
->> +       { .compatible = "adi,ad7606b", &ad7606b_info },
->> +       { .compatible = "adi,ad7616", &ad7616_info },
-> Since we have .compatible = , we should also have .data = for the chip info.
-ack
+[ Upstream commit 95cdd538e0e5677efbdf8aade04ec098ab98f457 ]
+
+The driver core can register and cleanup sysfs groups already.
+Make use of that functionality to simplify the error handling and
+cleanup.
+
+Also avoid a UAF race during unregistering where the sysctl attributes
+were usable after the info struct was freed.
+
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/efifb.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 8dd82afb3452b..595b8e27bea66 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -561,15 +561,10 @@ static int efifb_probe(struct platform_device *dev)
+ 		break;
+ 	}
+ 
+-	err = sysfs_create_groups(&dev->dev.kobj, efifb_groups);
+-	if (err) {
+-		pr_err("efifb: cannot add sysfs attrs\n");
+-		goto err_unmap;
+-	}
+ 	err = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (err < 0) {
+ 		pr_err("efifb: cannot allocate colormap\n");
+-		goto err_groups;
++		goto err_unmap;
+ 	}
+ 
+ 	err = devm_aperture_acquire_for_platform_device(dev, par->base, par->size);
+@@ -587,8 +582,6 @@ static int efifb_probe(struct platform_device *dev)
+ 
+ err_fb_dealloc_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+-err_groups:
+-	sysfs_remove_groups(&dev->dev.kobj, efifb_groups);
+ err_unmap:
+ 	if (mem_flags & (EFI_MEMORY_UC | EFI_MEMORY_WC))
+ 		iounmap(info->screen_base);
+@@ -608,12 +601,12 @@ static void efifb_remove(struct platform_device *pdev)
+ 
+ 	/* efifb_destroy takes care of info cleanup */
+ 	unregister_framebuffer(info);
+-	sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
+ }
+ 
+ static struct platform_driver efifb_driver = {
+ 	.driver = {
+ 		.name = "efi-framebuffer",
++		.dev_groups = efifb_groups,
+ 	},
+ 	.probe = efifb_probe,
+ 	.remove_new = efifb_remove,
+-- 
+2.43.0
+

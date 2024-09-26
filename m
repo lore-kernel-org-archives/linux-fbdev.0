@@ -1,84 +1,87 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED4C115699E
-	for <linux-fbdev@vger.kernel.org>; Thu, 26 Sep 2024 11:16:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D2ED81798F;
+	Thu, 26 Sep 2024 11:59:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727349417; cv=none; b=mXRqkvmItdJwDU1o5bsKH+Hdoc+WlSc9PvKSIG7tFBazLLMrPZ6DbnkZKKCUzoFXxmAhkrEgRHWpv1cIjC1rD6pnk+rQznCcYvbkDw52NPLJ2YuKnWQoAMmmbHfcpE/owPVIXavbsCH5fMgOXijN/v43Dp7v9W0TXmhwqbbgWu4=
+	t=1727351988; cv=none; b=EGT8RwaYcJEnI4ey86jvwWFJqRm78NLZncnvW8Tl2K5xq4HTY8Xg8uG4AzpT7BKUAirR1UNN1SRPUjUBoTbMiscDEuQO6YyD/PzyVSfZ4TX4jONWu4Ci4f1SilBARrQIBrEa7MU+b834VXjfhO5oGBYfg/AEyKUUiXVKY4rR31s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727349417; c=relaxed/simple;
-	bh=gfAYz1FhSJF0mcztXmglNZGa5Hr4CN8dL+gZRiY39Ww=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=deVuoEav+OHJI6+80LOmBO4TjKhv8LJNeEsALWB+Okto2NnOx5gSdtBYhf4naemflMLWz3w5fvG5m8Ltsz6B85uRaYlVfcd+gnUpDvg5sRzNzS2NRB6ZQ2ZJ/sLSol02D2wkV1Vf0+IzIcrD6tq1Sm3sTeBZiUcHKV6HyScb08Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1stmUI-0006bC-4t; Thu, 26 Sep 2024 13:16:46 +0200
-Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1stmUH-001fje-Eu; Thu, 26 Sep 2024 13:16:45 +0200
-Received: from pza by lupine with local (Exim 4.96)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1stmUH-0005Ig-1D;
-	Thu, 26 Sep 2024 13:16:45 +0200
-Message-ID: <b1c5fb155c77355ef2889b6e054a5c0696481ebd.camel@pengutronix.de>
-Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
- deinterlacer driver
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: Marek Vasut <marex@denx.de>, Nicolas Dufresne <nicolas@ndufresne.ca>, 
-	linux-media@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
- Estevam <festevam@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
- Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
- <kernel@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo
- <shawnguo@kernel.org>,  Steve Longerbeam <slongerbeam@gmail.com>,
- dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
- linux-staging@lists.linux.dev
-Date: Thu, 26 Sep 2024 13:16:45 +0200
-In-Reply-To: <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
-References: <20240724002044.112544-1-marex@denx.de>
-	 <20240724002044.112544-2-marex@denx.de>
-	 <85a5a42667e5867bc45da31baf045d4c9557f5f1.camel@ndufresne.ca>
-	 <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	s=arc-20240116; t=1727351988; c=relaxed/simple;
+	bh=y+nY+Te9CMW3SoF1lkygRmaQ0k3UjH69fBcRe15h5OM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=bz09fnGnjUbZVEW3jRdJoOLG0epkWGA/YUZ92kkGogZsf+Ef9vr0xQRj6lAtHmpzKP/VyqK+Cu9UcKPYcs62Mch0WnB1Ysat2m9sqNk7HKEF9Fb7C/c+m4W3tzBxePfwqr+skfi37Chj4CaPFBU28XiR5Yc00uXYUDjmsjft4nU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=JThb5KHB; arc=none smtp.client-ip=220.197.31.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="JThb5KHB"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=F5vYX
+	8/opjvE5wTUAnPujK6sAT6th5nnz2xNAH+qpyg=; b=JThb5KHBs/mXH7Jj2s7YN
+	8Ko3Rp8ib5v4XzMqqrZM82an+1xVXRI8iasLBGXrV94khdTXPTVLCkvouxvtPvkG
+	D/sOYSDQKvZxxtCvbEMU8DvsQfSo1ISNs34YeATgRordApnZ3AtuLmpDRiCsg9W3
+	qu03wgAISnxHl4aEQ3qmqY=
+Received: from thinkpad.. (unknown [60.168.209.67])
+	by gzga-smtp-mta-g3-5 (Coremail) with SMTP id _____wCnK6aZTPVmuaNDPA--.52970S2;
+	Thu, 26 Sep 2024 19:59:21 +0800 (CST)
+From: Qianqiang Liu <qianqiang.liu@163.com>
+To: deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Qianqiang Liu <qianqiang.liu@163.com>
+Subject: [PATCH] fbcon: break earlier in search_fb_in_map and search_for_mapped_con
+Date: Thu, 26 Sep 2024 19:59:11 +0800
+Message-Id: <20240926115911.620624-1-qianqiang.liu@163.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wCnK6aZTPVmuaNDPA--.52970S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7Gw4xGw4UAr45tryfJF48Crg_yoWfurc_GF
+	1vvF95CayDtFy8Kr1rK3W3A34Yva1jva45WasrtF9Iy342q3yrXr4fZFn5XrWrWa1rZFWq
+	vF1kJrn3Za4rCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUUJ5rDUUUUU==
+X-CM-SenderInfo: xtld01pldqwhxolxqiywtou0bp/1tbiLxxmamb1RZ5vGAAAsA
 
-On Mi, 2024-09-25 at 22:45 +0200, Marek Vasut wrote:
-[...]
-> > The driver is not taking ownership of prev_buf, only curr_buf is guaran=
-teed to
-> > exist until v4l2_m2m_job_finish() is called. Usespace could streamoff, =
-allocate
-> > new buffers, and then an old freed buffer may endup being used.
->=20
-> So, what should I do about this ? Is there some way to ref the buffer to=
-=20
-> keep it around ?
+Break the for loop immediately upon finding the target, making the
+process more efficient.
 
-Have a look how other deinterlacers with temporal filtering do it.
-sunxi/sun8i-di or ti/vpe look like candidates.
+Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
->=20
-> >=20
-regards
-Phlipp
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index d9abae2516d8..e8b4e8c119b5 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -512,8 +512,10 @@ static int search_fb_in_map(int idx)
+ 	int i, retval = 0;
+ 
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+-		if (con2fb_map[i] == idx)
++		if (con2fb_map[i] == idx) {
+ 			retval = 1;
++			break;
++		}
+ 	}
+ 	return retval;
+ }
+@@ -523,8 +525,10 @@ static int search_for_mapped_con(void)
+ 	int i, retval = 0;
+ 
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+-		if (con2fb_map[i] != -1)
++		if (con2fb_map[i] != -1) {
+ 			retval = 1;
++			break;
++		}
+ 	}
+ 	return retval;
+ }
+-- 
+2.34.1
+

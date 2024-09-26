@@ -1,155 +1,245 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 952C317BB30
-	for <linux-fbdev@vger.kernel.org>; Thu, 26 Sep 2024 10:13:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55FAF1AD9C9
+	for <linux-fbdev@vger.kernel.org>; Thu, 26 Sep 2024 11:14:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727345596; cv=none; b=QNYrZl+1yn3MCwTHEMxegQcsFFm3fDhgrlB/DXW0vTgnNJO3/c8QtPcy0AF04VeuNNX+fOFx78XNXZMlwIW7QrBRCP+/PeYhoZpHn9dDW558FstWy8H/MoiB0wlo+3zvzD745D86Df91uSbTL7Wz/hpZd4CtVzaJykjbkK4XeUc=
+	t=1727349291; cv=none; b=bTzLxljZK+0281xgyC66SMxoHRn/WyRvuKUniGRMuoAgCWKrGZJcBbtMoQ4XsfUDH0mkioi5+kQx+6cvKm0dnWgC88CbGC5D2gR+cVGL/9CDcARJr2cFrtOw6J1QgZkau37z8/zMVzZKv05lkWBo1ZboaxYjI9PTOBOkRe2j4bw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727345596; c=relaxed/simple;
-	bh=U5vMP3SHgkwMkIIigZh4sZLGAiRZVnimfo+v5QWnBjQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PA8rtTxomwr02HOtn8zvcdwLwGi6NQCBuFcI2R0X2gFk3VGvVCG3QI/w+gh7OnIKxP0YY34Mboy7C0IIKDLcI0QHsqQDa1vHh6rNioEzM0w9Cw2I/bYxGR89qaVMnStpd0OESdG9ElYBE+PIjXD5H805TxfZTGXklqGk/JZsoSg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=astbiMQM; arc=none smtp.client-ip=212.227.15.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="astbiMQM"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1727345586; x=1727950386; i=deller@gmx.de;
-	bh=NAO3q60prU3UxFVJOuVmRq7T7yWwvmWgwxqsl4a3IiY=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=astbiMQMLlJfyAEdm7MbXokAymRxdNB0dulZKJ1yfZmjhcrp1Rg1mqY8pvbOSkN2
-	 hBlP8j2kwGUppeqCqQZYL/B+nizE9ASeRkdOibff0pWiRpR6lrWS1Y0qe5x7LZiYr
-	 GUCNAZ/mfKpByXcvhzmcbNfCnPxgcWv4WEtu6fCx1B8sYBn9cIqSbhkev9pLu/ROJ
-	 T4tplNYm7wFSa4ANuaxrd/F4xPiOo1W6K82x0JJJoQrEcUwtjpt3g6hKGFkpGTNrB
-	 nvBb4DbI9oV6Lkg2dJMP43gSl54v2L+sYPse/OspiVcxWW4i148kIPdX/J7rXN/TT
-	 24OXG4zoo0IdKK76Nw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTRR0-1sUVw63C5U-00YrCC; Thu, 26
- Sep 2024 12:13:06 +0200
-Message-ID: <34a7d276-ee26-4a8d-b996-87faa5b224c4@gmx.de>
-Date: Thu, 26 Sep 2024 12:13:04 +0200
+	s=arc-20240116; t=1727349291; c=relaxed/simple;
+	bh=OY+RoylwIHKlWFkVL127YO8zyPocJAw/K/+znq1UllA=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=RiilN6iqhJjR2Tyuq95rKWD197PhtlaY4hkBnJFzYRbm9Uv0T6zmxxkI7zZfhV9poh2r9Inp3apqoMDylkhnA6OeTzUm+u1lM9dumS+xnYs42l/fHm0GZX0sgiojg+QnEVGjbt2i8lfMASwoJEBavYy3AWl9b4nBeVyndfvWvGE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1stmRt-00051o-Lh; Thu, 26 Sep 2024 13:14:17 +0200
+Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1stmRs-001fjT-Te; Thu, 26 Sep 2024 13:14:16 +0200
+Received: from pza by lupine with local (Exim 4.96)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1stmRs-0005As-2h;
+	Thu, 26 Sep 2024 13:14:16 +0200
+Message-ID: <c09a325a5166cf31b9a7fd09ed8266a2b19afcd2.camel@pengutronix.de>
+Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
+ deinterlacer driver
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: Marek Vasut <marex@denx.de>, linux-media@vger.kernel.org
+Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
+ Estevam <festevam@gmail.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
+ Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
+ <kernel@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo
+ <shawnguo@kernel.org>,  Steve Longerbeam <slongerbeam@gmail.com>,
+ dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
+ linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev
+Date: Thu, 26 Sep 2024 13:14:16 +0200
+In-Reply-To: <a7b7acff-e710-4c50-97b8-1bce557eadde@denx.de>
+References: <20240724002044.112544-1-marex@denx.de>
+	 <20240724002044.112544-2-marex@denx.de>
+	 <a66a2eaf30e21ff7c87f140e97ed4639640121ba.camel@pengutronix.de>
+	 <3e850259-9349-4215-947a-ce192fa95f14@denx.de>
+	 <f894eb3fd132a214ddbf2fa3ed405d065e629398.camel@pengutronix.de>
+	 <a7b7acff-e710-4c50-97b8-1bce557eadde@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
- before fb devices appear
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-2-ville.syrjala@linux.intel.com>
- <92ed9455-b175-46ef-b0c6-7c79e2b78371@gmx.de> <ZvUwCVNPzp1UGY6h@intel.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <ZvUwCVNPzp1UGY6h@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:88zWRIVm6GH/U9lSAFXeVhyG8AOQdPdb8FOKz7/XzO+YSQ+lzBy
- G8MMX0ZOkirwy8VX+qLc8osZBm8yiC5A9JxZdJ4HCj5GDbVXYCqz6278xo7SFt9F9eNNTyJ
- Fw/rOPgodyaz0LxSUPOjZmEHdyC8+AYhpReWa7p0dY972/inrfovQU2J0P92x9uciSzgCaC
- iQqQH4Gm2YTvWI5pTNW7A==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:pyE3dNdhv+U=;HcdszWpQK3549sYFiVmVhIRSmr5
- xDzpcWqxeQ5OArzwMi+NmWhCTcniCCzbWGC15bS0lzF1t2/QqdSy4Ltrb+lQHtGlap482nCwT
- eOnPmfu3sxz7oRrArUEKAJyFsjrUKtO8g+af/h6do0dhp3VGaGaxOC0BJFe0la7XYDLopprku
- IERhRNqpN5j3uKi5NjoGQMuxvcGTojwL8F5sBotdnpw7F6+TzdTe3KHl/RoCuRiYSE90OfA/Z
- 66s1fABb0XMPe6gPpnUR8hbOchRePRFPDIsBK9+KcRvC3wEfKaLdX8+wOGnf9Fx09jwO2tLdC
- bwzeVi0a4HM9jjgwlA9BM+yZCo18daanny+6T4i1QnyHDMsbp+uLSsHc7OqFz8jB2btVXOagL
- uYaT/1Uzpu1vdhbkKMrXOA5YjWQ1UM4vgI0UNJOLYYbhkF/mZVQiRkHdM/zp1o6oEzyRWYibU
- 2QPXnyyI8MvjQNV2pVwQXaI6/S9sfdbqcWz/+p08kTV2JJ2n0miTu6njWyybd8uAMHYuGrOMQ
- BOy3KdGhrohNyDxkU1ZnOOBL3XocH5vUf0B3Dpq5SipKb7FQfxOnjoFlIPn3h27V0xJyqe/tH
- KoC5Au2s4ZOABF4JzoWoeKRaHp3OGUI0TwXW17PwLH3iqlRz3zAOJiyEDFTJEmL4hUOApv5bm
- UJeSUOndKJT7qO03vrxyzFTWscIRSUfZIXpMFH5ez6a0QY6atzWyZ78AETQIGMHTmcr5e6kkx
- csdzyXx8AgQ5ZgY3c0bJ8Tc+ptR0OldprTOQy/wYRBBcVwUQKuk2pbgtsI0ys2u79jb5eOhb/
- wVvsUahgC852lfvvQU99/QoA==
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: p.zabel@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-On 9/26/24 11:57, Ville Syrj=C3=A4l=C3=A4 wrote:
-> On Thu, Sep 26, 2024 at 08:08:07AM +0200, Helge Deller wrote:
->> Hi Ville,
->>
->> On 9/23/24 17:57, Ville Syrjala wrote:
->>> Currently setting cursor_blink attribute to 0 before any fb
->>> devices are around does absolutely nothing. When fb devices appear
->>> and fbcon becomes active the cursor starts blinking. Fix the problem
->>> by recoding the desired state of the attribute even if no fb devices
->>> are present at the time.
->>>
->>> Also adjust the show() method such that it shows the current
->>> state of the attribute even when no fb devices are in use.
->>>
->>> Note that store_cursor_blink() is still a bit dodgy:
->>> - seems to be missing some of the other checks that we do
->>>     elsewhere when deciding whether the cursor should be
->>>     blinking or not
->>> - when set to 0 when the cursor is currently invisible due
->>>     to blinking, the cursor will remains invisible. We should
->>>     either explicitly make it visible here, or wait until the
->>>     full blink cycle has finished.
->>
->> are you planning to send follow-up patches to address those shortcoming=
-s?
->
-> Nope. I don't really care about those as I never plan to
-> turn the cursor blinking back on after turning it off via
-> udev.
+Hi,
 
-Sad, but OK. I will look into this when I find time.
-I'd hoped to push those patches upstream during this merge window,
-but then I think I have to delay them at least until kernel 6.13.
+On Mi, 2024-09-25 at 22:14 +0200, Marek Vasut wrote:
+> The userspace could distribute the frames between the two devices in an=
+=20
+> alternating manner, can it not ?
+
+This doesn't help with latency, or when converting a single large
+frame.
+
+For the deinterlacer, this can't be done with the motion-aware
+temporally filtering modes. Those need a field from the previous frame.
+
+>=20
+> Would the 1280x360 field be split into two tiles vertically and each=20
+> tile (newly 1280/2 x 360) be enqueued on each VDIC ? I don't think that=
+=20
+> works, because you wouldn't be able to stitch those tiles back together=
+=20
+> nicely after the deinterlacing, would you? I would expect to see some=20
+> sort of an artifact exactly where the two tiles got stitched back=20
+> together, because the VDICs are unaware of each other and how each=20
+> deinterlaced the tile.
+
+I was thinking horizontally, two 640x720 tiles side by side. 1280 is
+larger than the 968 pixel maximum horizontal resolution of the VDIC.
+
+As you say, splitting vertically (which would be required for 1080i)
+should cause artifacts at the seam due to the 4-tap vertical filter.
+
+[...]
+> >=20
+> > With the rigid V4L2 model though, where memory handling, parameter
+> > calculation, and job scheduling of tiles in a single frame all have to
+> > be hidden behind the V4L2 API, I don't think requiring userspace to
+> > combine multiple mem2mem video devices to work together on a single
+> > frame is feasible.
+>=20
+> If your concern is throughput (from what I gathered from the text=20
+> above), userspace could schedule frames on either VDIC in alternating=20
+> manner.
+
+Both throughput and latency.
+
+Yes, alternating to different devices would help with throughput where
+possible, but it's worse for frame pacing, a hassle to implement
+generically in userspace, and it's straight up impossible with temporal
+filtering.
+
+> I think this is much better and actually generic approach than trying to=
+=20
+> combine two independent devices on kernel level and introduce some sort=
+=20
+> of scheduler into kernel driver to distribute jobs between the two=20
+> devices. Generic, because this approach works even if either of the two=
+=20
+> devices is not VDIC. Independent devices, because yes, the MX6Q IPUs are=
+=20
+> two independent blocks, it is only the current design of the IPUv3=20
+> driver that makes them look kind-of like they are one single big device,=
+=20
+> I am not happy about that design, but rewriting the IPUv3 driver is way=
+=20
+> out of scope here. (*)
+
+The IPUs are glued together at the capture and output paths, so yes,
+they are independent blocks, but also work together as a big device.
+
+> > Is limiting different users to the different deinterlacer hardware
+> > units a real usecase? I saw the two ICs, when used as mem2mem devices,
+> > as interchangeable resources.
+>=20
+> I do not have that use case, but I can imagine it could come up.
+> In my case, I schedule different cameras to different VDICs from=20
+> userspace as needed.
+
+Is this just because a single VDIC does not have enough throughput to
+serve all cameras, or is there some reason for a fixed assignment
+between cameras and VDICs?
+
+> > > > To be fair, we never implemented that for the CSC/scaler mem2mem de=
+vice
+> > > > either.
+> > >=20
+> > > I don't think that is actually a good idea. Instead, it would be bett=
+er
+> > > to have two scaler nodes in userspace.
+> >=20
+> > See above, that would make it impossible (or rather unreasonably
+> > complicated) to distribute work on a single frame to both IPUs.
+>=20
+> Is your concern latency instead of throughput ? See my comment in=20
+> paragraph (*) .
+
+Either, depending on the use case.
+
+[...]
+> > > >=20
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tr=
+ee/drivers/staging/media/imx/imx-media-vdic.c#n207
+> >=20
+> > That code is unused. The direct hardware path doesn't use
+> > IPUV3_CHANNEL_MEM_VDI_PREV/CUR/NEXT, but is has a similar effect, half
+> > of the incoming fields are dropped. The setup is vdic_setup_direct().
+>=20
+> All right, let's drop that unused code then, I'll prepare a patch.
 
 Thanks!
-Helge
+
+> But it seems the bottom line is, the VDI direct mode does not act as a=
+=20
+> frame-rate doubler ?
+
+Yes, it can't. In direct mode, VDIC only receives half of the fields.
+
+[...]
+> > >=20
+> Why would adding the (configurable) frame-rate doubling mode break=20
+> userspace if this is not the default ?
+
+I'm not sure it would. Maybe there should be a deinterlacer control to
+choose between full and half field rate output (aka frame doubling and
+1:1 input to output frame rate).
+
+Also, my initial assumption was that currently there is 1:1 input
+frames to output frames. But with temporal filtering enabled there's
+already one input frame (the first one) that doesn't produce any
+output.
+
+> > > > If we don't start with that supported, I fear userspace will make
+> > > > assumptions and be surprised when a full rate mode is added later.
+> > >=20
+> > > I'm afraid that since the current VDI already does retain input frame
+> > > rate instead of doubling it, the userspace already makes an assumptio=
+n,
+> > > so that ship has sailed.
+> >=20
+> > No, this is about the deinterlacer mem2mem device, which doesn't exist
+> > before this series.
+>=20
+> I am not convinced it is OK if the direct VDI path and mem2mem VDI=20
+> behave differently, that would be surprising to me as a user ?
+
+Is this still about the frame rate doubling? Surely supporting it in
+the mem2mem device and not in the capture path is ok. I'm not arguing
+that frame doubling should be enabled by default.
+
+> > The CSI capture path already has configurable framedrops (in the CSI).
+>=20
+> What am I looking for ? git grep doesn't give me any hits ? (**)
+
+That's configured by the set_frame_interval pad op of the CSI subdevice
+- on the IDMAC output pad. See csi_find_best_skip().
+
+> > > But I think we can make the frame doubling configurable ?
+> >=20
+> > That would be good. Specifically, there must be no guarantee that one
+> > input frame with two fields only produces one deinterlaced output
+> > frame, and userspace should somehow be able to understand this.
+>=20
+> See my question (**) , where is this configurable framedrops thing ?
+
+This would have to be done differently, though. Here we don't have
+subdev set_frame_interval configuration, and while VIDIOC_S_PARM /
+v4l2_captureparm were used to configure frame dropping on capture
+devices, that's not really applicable to mem2mem deinterlacers.
+
+> > I'd rather not default to the setting that throws away half of the
+> > input data. Not using frame doubling by default is sensible, but now
+> > that using all three input fields to calculate the output frame is
+> > possible, why not make that the default.
+>
+> To save memory bandwidth on the MX6, that's my main concern.
+
+What userspace are you using to exercise this driver? Maybe we can back
+this concern with a few numbers (or mine with pictures).
+
+regards
+Philipp

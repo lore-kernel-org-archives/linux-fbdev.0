@@ -1,272 +1,94 @@
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.nppct.ru (mail.nppct.ru [195.133.245.4])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EA1D4D8CE
-	for <linux-fbdev@vger.kernel.org>; Fri, 27 Sep 2024 19:33:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5B72172777
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Sep 2024 19:34:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.133.245.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727465601; cv=none; b=H75a/drFFwkzEJIqAB338Wzs4YzViXZJ2xEC0i8qBAJk+PNnrLJxhZTfxmP2m3AjLPm8tvwt6xUjYHC1h7+9Dox1JV/Jn1njRFXy/YkZTrRHKpaphsIeSSikiLidnPCx3WSW4DDeVaH7oNd+lzymn5VqBGHSr1COieYZB2eZjmE=
+	t=1727465678; cv=none; b=WLVVVY79T+acj5x7+XH8ZFs3LZYVUF53WZen68fKoD7SIS+tqwBPqeAKYVRaRthEzK6+ttEHwIAB/9tiBG347MAvkF9VzugL6AYIXgoRZfXakhyg6BAwbnkiJwF0fK0N5JgvxpAZkMg6SFS5EKsyAsSCAgiAL79zNfsO66TwYQo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727465601; c=relaxed/simple;
-	bh=9nBIWT0lzbhUH/iN+bL0j/cZv61u7ADR+T2WUGbt+hs=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=pLT5OOrWIxAwuJvHMYnRLGCNMO+cfl0Kk8cVbc6iEG5rK+x8V4uF57dNDMQ4HAmoNxfo6rPn6lpgqzfxO+2N43eGF20utVl335ooYqzfSp1qQK5D7vpeTJFyrhcKGGWxOHi7iAC1SkgwJkU5Aptla5ELBv6X/nYpqItqbabosZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca; spf=none smtp.mailfrom=ndufresne.ca; dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b=jvzHC3RK; arc=none smtp.client-ip=209.85.222.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ndufresne.ca
+	s=arc-20240116; t=1727465678; c=relaxed/simple;
+	bh=69YOQWzSC2bqH1BrOBpaojGYM3HqDuEomSdv5BxvE4Q=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=uVItg6W+lTXBQHyvDPW3fJVJQyp3pxHRTmrI+ROy12pxmpvDwEFSWkP2qT5/XTfB/YzdP/+rOQ6Y49rhlQuNBZdoRhduQbgMjQkZgikp1NRx28TnoOLOpCLW+gNm0h7Thyjic2Hw2miuxIJh3MwVCzJ0lTszyA1Dskr8vMtxnnA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=nppct.ru; spf=pass smtp.mailfrom=nppct.ru; dkim=pass (1024-bit key) header.d=nppct.ru header.i=@nppct.ru header.b=EXJyxVaa; arc=none smtp.client-ip=195.133.245.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=nppct.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nppct.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b="jvzHC3RK"
-Received: by mail-qk1-f180.google.com with SMTP id af79cd13be357-7a99fd4ea26so200038185a.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Sep 2024 12:33:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ndufresne-ca.20230601.gappssmtp.com; s=20230601; t=1727465599; x=1728070399; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=VKladj2sFJjdiWtfrOuq4uA29WlsH18GzOxyRfbvkm8=;
-        b=jvzHC3RKLdzafqmyOQuJY7E+SIwixCqV29upEvgmsvUbkt5xZ13zexP6BbW5D8wzIb
-         3GYO/0Oh93lBh69NQ8144xOq7p/1rGvGV/XUIyl7tW3+I4toDyUUnQXyzfO1XneaiZBA
-         WFGnZp7tXfK+Cs/SuJbBYE3npHVsBo1KTk0gOUV18UQvZu5mrgjjy3hCZibLusIGEAod
-         NJuPdWcYMqGiLc6jZA2Cxf9ps2y9/6MbP05/oewxoSvuA2y4BjHcYMbIeavx038Kn+LD
-         PMxDH9Mha3dUnBghRc0NfHgDlGXS6iIe+RGohItNaNtvXHkLYRdjrb0uiCexdmHYKQMG
-         MAcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727465599; x=1728070399;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=VKladj2sFJjdiWtfrOuq4uA29WlsH18GzOxyRfbvkm8=;
-        b=lBUn19sd6xKoeXjv7ofKGQc9TGBpVY3DdYyZwJykL0b3HBxV/v370ynPwNleDk9alA
-         Mi6uF9R/AGwczRBUMcIPIjMqqSow2l6hgjQ6FHckis0Niw/mbaDdwZ1uMJ1RbM1Ho7mR
-         WARuvnNKk7DMbw2G+Mo7zeDLyVk0XP7f66Ve3gLPetCekmw1ieTmMDFdOIGwB7Th3L4g
-         0dxzYx5Gw4B/EBN3QJu1byJKMBIc98jiFpJtNV2vJKSOjl3sw73whfeQkiqt1hBkYm5r
-         O57j/UhbZD4ObzZKOpKc7yDNuo5WkN+czu/5FLiM/8SZISar936NHhBZhBuayIUTdcA7
-         lnsg==
-X-Forwarded-Encrypted: i=1; AJvYcCX3upx3LwoqXs7ygig29zjNqLkqVXABh8h/jQOuYJwJd7g7O6xQuQ7s5OZLX7vlOg8dzsmR3vuWwtLg9Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyUEePCASPV5zLUubUSo39rpFxAnH5BDkxKuwwwpmqEvu037tqs
-	aL4lo3QvKSCp35mQKMBGXxekxPD80XcZVYN7Tv4VDg71HvN64wUSrGyvK56bGQw=
-X-Google-Smtp-Source: AGHT+IEhDe5EE9y0RFQCZTtCNmMq10z4RbPVeb2m5iqTjmA1e9FxI+tgYD6oSZc2Z9WqFDJgdWHibA==
-X-Received: by 2002:a05:6214:3bc7:b0:6cb:4e39:1a93 with SMTP id 6a1803df08f44-6cb4e395f0cmr619406d6.38.1727465599241;
-        Fri, 27 Sep 2024 12:33:19 -0700 (PDT)
-Received: from nicolas-tpx395.lan ([2606:6d00:15:862e::580])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6cb3b680045sm11835946d6.104.2024.09.27.12.33.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Sep 2024 12:33:18 -0700 (PDT)
-Message-ID: <386f4e12fd835b18c3f618f2c94cbd426bd6cf28.camel@ndufresne.ca>
-Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
- deinterlacer driver
-From: Nicolas Dufresne <nicolas@ndufresne.ca>
-To: Marek Vasut <marex@denx.de>, linux-media@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
- Estevam <festevam@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
- Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
- <kernel@pengutronix.de>, Philipp Zabel <p.zabel@pengutronix.de>, Sascha
- Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Steve
- Longerbeam <slongerbeam@gmail.com>, dri-devel@lists.freedesktop.org,
- imx@lists.linux.dev,  linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org,  linux-staging@lists.linux.dev
-Date: Fri, 27 Sep 2024 15:33:17 -0400
-In-Reply-To: <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
-References: <20240724002044.112544-1-marex@denx.de>
-	 <20240724002044.112544-2-marex@denx.de>
-	 <85a5a42667e5867bc45da31baf045d4c9557f5f1.camel@ndufresne.ca>
-	 <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-1.fc40) 
+	dkim=pass (1024-bit key) header.d=nppct.ru header.i=@nppct.ru header.b="EXJyxVaa"
+Received: from mail.nppct.ru (localhost [127.0.0.1])
+	by mail.nppct.ru (Postfix) with ESMTP id 80CFA1C0CE7
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Sep 2024 22:34:32 +0300 (MSK)
+Authentication-Results: mail.nppct.ru (amavisd-new); dkim=pass (1024-bit key)
+	reason="pass (just generated, assumed good)" header.d=nppct.ru
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nppct.ru; h=
+	content-transfer-encoding:content-type:content-type:mime-version
+	:x-mailer:message-id:date:date:subject:subject:to:from:from; s=
+	dkim; t=1727465671; x=1728329672; bh=69YOQWzSC2bqH1BrOBpaojGYM3H
+	qDuEomSdv5BxvE4Q=; b=EXJyxVaa8hT+LSevKsqFES6UR3Iul28RR9B58KsWRQe
+	Y8V/+gx60+uPo991G9l+6CO+dofWm498GxEn4AhHqwnSclqlHn0HZ9P09Hj8vJ27
+	LbXxlOvjimTxrNFmDxCzUzcZEVZjaFFfwIoe5RBEFMudFaTDJWaO+9F1t/UnzULo
+	=
+X-Virus-Scanned: Debian amavisd-new at mail.nppct.ru
+Received: from mail.nppct.ru ([127.0.0.1])
+	by mail.nppct.ru (mail.nppct.ru [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id 5A7TeO1yyYvV for <linux-fbdev@vger.kernel.org>;
+	Fri, 27 Sep 2024 22:34:31 +0300 (MSK)
+Received: from localhost.localdomain (mail.dev-ai-melanoma.ru [185.130.227.204])
+	by mail.nppct.ru (Postfix) with ESMTPSA id EA7D81C0604;
+	Fri, 27 Sep 2024 22:34:29 +0300 (MSK)
+From: Andrey Shumilin <shum.sdl@nppct.ru>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Andrey Shumilin <shum.sdl@nppct.ru>,
+	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	lvc-project@linuxtesting.org,
+	khoroshilov@ispras.ru,
+	ykarpov@ispras.ru,
+	vmerzlyakov@ispras.ru,
+	vefanov@ispras.ru
+Subject: [PATCH 2/2] sis_main: Fix strbuf array overflow
+Date: Fri, 27 Sep 2024 22:34:24 +0300
+Message-Id: <20240927193424.3934247-1-shum.sdl@nppct.ru>
+X-Mailer: git-send-email 2.30.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Le mercredi 25 septembre 2024 =C3=A0 22:45 +0200, Marek Vasut a =C3=A9crit=
-=C2=A0:
-> On 9/25/24 7:58 PM, Nicolas Dufresne wrote:
->=20
->=20
+The values of the variables xres and yres are placed in strbuf.
+These variables are obtained from strbuf1.
+The strbuf1 array contains digit characters
+and a space if the array contains non-digit characters.
+Then, when executing sprintf(strbuf, "%ux%ux8", xres, yres);
+more than 16 bytes will be written to strbuf.
+It is suggested to increase the size of the strbuf array to 24.
 
-[...]
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
->=20
-> > > +static irqreturn_t ipu_mem2mem_vdic_nfb4eof_interrupt(int irq, void =
-*dev_id)
-> > > +{
-> > > +	struct ipu_mem2mem_vdic_priv *priv =3D dev_id;
-> > > +
-> > > +	/* That is about all we can do about it, report it. */
-> > > +	dev_warn_ratelimited(priv->dev, "NFB4EOF error interrupt occurred\n=
-");
-> >=20
-> > Not sure this is right. If that means ipu_mem2mem_vdic_eof_interrupt wo=
-n't fire,
-> > then it means streamoff/close after that will hang forever, leaving a z=
-ombie
-> > process behind.
-> >=20
-> > Perhaps mark the buffers as ERROR, and finish the job.
->=20
-> The NFB4EOF interrupt is generated when the VDIC didn't write (all of)=
-=20
-> output frame . I think it stands for "New Frame Before EOF" or some=20
-> such. Basically the currently written frame will be corrupted and the=20
-> next frame(s) are likely going to be OK again.
+Signed-off-by: Andrey Shumilin <shum.sdl@nppct.ru>
+---
+ drivers/video/fbdev/sis/sis_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-So the other IRQ will be triggered ? After this one ? Is so, perhaps take a
-moment to mark the frames as ERROR (which means corrupted).
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index 03c736f6f3d0..e907fde96ff4 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -183,7 +183,7 @@ static void sisfb_search_mode(char *name, bool quiet)
+ {
+ 	unsigned int j = 0, xres = 0, yres = 0, depth = 0, rate = 0;
+ 	int i = 0;
+-	char strbuf[16], strbuf1[20];
++	char strbuf[24], strbuf1[20];
+ 	char *nameptr = name;
+ 
+ 	/* We don't know the hardware specs yet and there is no ivideo */
+-- 
+2.30.2
 
-[...]
-
-> >=20
-> > The driver is not taking ownership of prev_buf, only curr_buf is guaran=
-teed to
-> > exist until v4l2_m2m_job_finish() is called. Usespace could streamoff, =
-allocate
-> > new buffers, and then an old freed buffer may endup being used.
->=20
-> So, what should I do about this ? Is there some way to ref the buffer to=
-=20
-> keep it around ?
->=20
-> > Its also unclear to me how userspace can avoid this ugly warning, how c=
-an you
-> > have curr_buf set the first time ? (I might be missing something you th=
-is one
-> > though).
->=20
-> The warning happens when streaming starts and there is only one input=20
-> frame available for the VDIC, which needs three fields to work=20
-> correctly. So, if there in only one input frame, VDI uses the input=20
-> frame bottom field as PREV field for the prediction, and input frame top=
-=20
-> and bottom fields as CURR and NEXT fields for the prediction, the result=
-=20
-> may be one sub-optimal deinterlaced output frame (the first one). Once=
-=20
-> another input frame gets enqueued, the VDIC uses the previous frame=20
-> bottom field as PREV and the newly enqueued frame top and bottom fields=
-=20
-> as CURR and NEXT and the prediction works correctly from that point on.
-
-Warnings by default are not acceptable.
-
->=20
-> > Perhaps what you want is a custom job_ready() callback, that ensure you=
- have 2
-> > buffers in the OUTPUT queue ? You also need to ajust the CID
-> > MIN_BUFFERS_FOR_OUTPUT accordingly.
->=20
-> I had that before, but gstreamer didn't enqueue the two frames for me,=
-=20
-> so I got back to this variant for maximum compatibility.
-
-Its well known that GStreamer v4l2convert element have no support for
-detinterlacing and need to be improved to support any deinterlace drivers o=
-ut
-there.
-
-Other drivers will simply holds on output buffers until it has enough to pr=
-oduce
-the first valid picture. Holding meaning not marking them done, which keeps=
- then
-in the ACTIVE state, which is being tracked by the core for your.
-
-[...]
-
-> > > +
-> > > +	if (ipu_mem2mem_vdic_format_is_yuv420(f->fmt.pix.pixelformat))
-> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 3 / 2;
-> > > +	else if (ipu_mem2mem_vdic_format_is_yuv422(f->fmt.pix.pixelformat))
-> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 2;
-> > > +	else if (ipu_mem2mem_vdic_format_is_rgb16(f->fmt.pix.pixelformat))
-> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 2;
-> > > +	else if (ipu_mem2mem_vdic_format_is_rgb24(f->fmt.pix.pixelformat))
-> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 3;
-> > > +	else if (ipu_mem2mem_vdic_format_is_rgb32(f->fmt.pix.pixelformat))
-> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 4;
-> > > +	else
-> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width;
-> > > +
-> > > +	f->fmt.pix.sizeimage =3D f->fmt.pix.height * f->fmt.pix.bytesperlin=
-e;
-> >=20
-> > And use v4l2-common ?
->=20
-> I don't really understand, there is nothing in v4l2-common.c that would=
-=20
-> be really useful replacement for this ?
-
-Not sure I get your response, v4l2-common is used in many drivers already, =
-and
-we intent to keep improving it so that all driver uses it in the long term.=
- It
-been created because folks believed they can calculate bytesperline and
-sizeimage, but as the number of format grows, it always endup wrong, causin=
-g the
-HW to overflow and break the system at a larger scale.
-
->=20
-> > > +	return 0;
-> > > +}
-> > > +
-> > > +static int ipu_mem2mem_vdic_s_fmt(struct file *file, void *fh, struc=
-t v4l2_format *f)
-> > > +{
-> > > +	struct ipu_mem2mem_vdic_ctx *ctx =3D fh_to_ctx(fh);
-> > > +	struct ipu_mem2mem_vdic_priv *priv =3D ctx->priv;
-> > > +	struct v4l2_pix_format *fmt, *infmt, *outfmt;
-> > > +	struct vb2_queue *vq;
-> > > +	int ret;
-> > > +
-> > > +	vq =3D v4l2_m2m_get_vq(ctx->fh.m2m_ctx, f->type);
-> > > +	if (vb2_is_busy(vq)) {
-> > > +		dev_err(priv->dev, "%s queue busy\n",  __func__);
-> > > +		return -EBUSY;
-> > > +	}
-> > > +
-> > > +	ret =3D ipu_mem2mem_vdic_try_fmt(file, fh, f);
-> > > +	if (ret < 0)
-> > > +		return ret;
-> > > +
-> > > +	fmt =3D ipu_mem2mem_vdic_get_format(priv, f->type);
-> > > +	*fmt =3D f->fmt.pix;
-> > > +
-> > > +	/* Propagate colorimetry to the capture queue */
-> > > +	infmt =3D ipu_mem2mem_vdic_get_format(priv, V4L2_BUF_TYPE_VIDEO_OUT=
-PUT);
-> > > +	outfmt =3D ipu_mem2mem_vdic_get_format(priv, V4L2_BUF_TYPE_VIDEO_CA=
-PTURE);
-> > > +	outfmt->colorspace =3D infmt->colorspace;
-> > > +	outfmt->ycbcr_enc =3D infmt->ycbcr_enc;
-> > > +	outfmt->xfer_func =3D infmt->xfer_func;
-> > > +	outfmt->quantization =3D infmt->quantization;
-> >=20
-> > So you can do CSC conversion but not colorimetry ? We have
-> > V4L2_PIX_FMT_FLAG_SET_CSC if you can do colorimetry transforms too. I h=
-ave
-> > patches that I'll send for the csc-scaler driver.
->=20
-> See ipu_ic_calc_csc() , that's what does the colorspace conversion in=20
-> this driver (on output from VDI).
-
-int ipu_ic_calc_csc(struct ipu_ic_csc *csc,
-                    enum v4l2_ycbcr_encoding in_enc,
-                    enum v4l2_quantization in_quant,
-                    enum ipu_color_space in_cs,
-                    enum v4l2_ycbcr_encoding out_enc,
-                    enum v4l2_quantization out_quant,
-                    enum ipu_color_space out_cs)
-
-So instead of simply overriding CSC like you do, let userspace set differen=
-t CSC
-in and out, so that IPU can handle the conversion properly with correct col=
-ors.
-That requires to flag these in the fmt_desc structure during enum format, a=
-nd to
-only read acknowledge the CSC if userspace have set V4L2_PIX_FMT_FLAG_SET_C=
-SC,
-in other condition, the information must be ignored (which you don't).
-
-Nicolas

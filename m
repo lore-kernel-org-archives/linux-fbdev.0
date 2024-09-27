@@ -1,163 +1,272 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B89A715AAC1;
-	Thu, 26 Sep 2024 16:26:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EA1D4D8CE
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Sep 2024 19:33:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727367966; cv=none; b=p0QtGmb4UgUcrXa5QqeZGFF720zIMKYvDt5usXKGWyjuBTNFSZdGvLVD61AmPbVBaS51cX8DnwSi/vSDtWjMSJvarSP0LzgztAH+yJUBJu/6e806+vWev48GS+2OFhfcHnO8gdt6a24EJeo2rhLr1nPM1yM0/zpcOvGu9a7HPis=
+	t=1727465601; cv=none; b=H75a/drFFwkzEJIqAB338Wzs4YzViXZJ2xEC0i8qBAJk+PNnrLJxhZTfxmP2m3AjLPm8tvwt6xUjYHC1h7+9Dox1JV/Jn1njRFXy/YkZTrRHKpaphsIeSSikiLidnPCx3WSW4DDeVaH7oNd+lzymn5VqBGHSr1COieYZB2eZjmE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727367966; c=relaxed/simple;
-	bh=68iBfkfLXxtq1wvHdM3ZxfZa95RymsuFlkNB6q40704=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cIkXDARYObo8itaHhy1mgxb9VHg8Z0O0WnzbxBRhzEmwPTTEJXoYFLuyJj/OyWWEMubB+Gk4k7tFnLuNmEpSOyEVKmJW3fDCGl8VR9JSdIJaKAJDMuJuY4rY8tg7AoIgFgP5cnM8C4CdbhGMJlSvxbIR9yn/Aqb0PqBKQtZrDYE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=bTrhtH3H; arc=none smtp.client-ip=212.227.15.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1727465601; c=relaxed/simple;
+	bh=9nBIWT0lzbhUH/iN+bL0j/cZv61u7ADR+T2WUGbt+hs=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=pLT5OOrWIxAwuJvHMYnRLGCNMO+cfl0Kk8cVbc6iEG5rK+x8V4uF57dNDMQ4HAmoNxfo6rPn6lpgqzfxO+2N43eGF20utVl335ooYqzfSp1qQK5D7vpeTJFyrhcKGGWxOHi7iAC1SkgwJkU5Aptla5ELBv6X/nYpqItqbabosZE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca; spf=none smtp.mailfrom=ndufresne.ca; dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b=jvzHC3RK; arc=none smtp.client-ip=209.85.222.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ndufresne.ca
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="bTrhtH3H"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1727367955; x=1727972755; i=deller@gmx.de;
-	bh=rKq1pKpnF4dqOpF6xuiATIVA5ssa2uc4bW84OW8MrwQ=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=bTrhtH3HN+9bB+Oa647UQebWlTKskb/pKeizUkEfBCesX/KNbgvCGgQAuB4bpbc2
-	 ECeToTFSTbfgM7o3Jx46syI1YemJH3FUZ3DWWpLHxFmfjf2/hl/uetg+TW+k9dSC9
-	 wEdVyCa5u/H+zPjfSBVclL0r1/h00LsoCX1WhGcRENbkbKpmtzE33UDfmSKTk6u1D
-	 ZdunhgaEH02s0lZDnVmKaVuRBnoOujvCapniItnb4jzaEQnDRnkTc5GzKA9yLd5hu
-	 0RDPyixJ95nNGRuVpms0ZE4zqmOeEEFQzEVegWrFuLyzr924YRbifFaVFzgHMLQym
-	 zsPepDFhGoyA2fCk2g==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mq2j2-1s7vNZ0KYc-00qCls; Thu, 26
- Sep 2024 18:25:55 +0200
-Message-ID: <5bbe55fe-4b35-43fe-8180-4fcb91c52384@gmx.de>
-Date: Thu, 26 Sep 2024 18:25:54 +0200
+	dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b="jvzHC3RK"
+Received: by mail-qk1-f180.google.com with SMTP id af79cd13be357-7a99fd4ea26so200038185a.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Sep 2024 12:33:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ndufresne-ca.20230601.gappssmtp.com; s=20230601; t=1727465599; x=1728070399; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=VKladj2sFJjdiWtfrOuq4uA29WlsH18GzOxyRfbvkm8=;
+        b=jvzHC3RKLdzafqmyOQuJY7E+SIwixCqV29upEvgmsvUbkt5xZ13zexP6BbW5D8wzIb
+         3GYO/0Oh93lBh69NQ8144xOq7p/1rGvGV/XUIyl7tW3+I4toDyUUnQXyzfO1XneaiZBA
+         WFGnZp7tXfK+Cs/SuJbBYE3npHVsBo1KTk0gOUV18UQvZu5mrgjjy3hCZibLusIGEAod
+         NJuPdWcYMqGiLc6jZA2Cxf9ps2y9/6MbP05/oewxoSvuA2y4BjHcYMbIeavx038Kn+LD
+         PMxDH9Mha3dUnBghRc0NfHgDlGXS6iIe+RGohItNaNtvXHkLYRdjrb0uiCexdmHYKQMG
+         MAcw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1727465599; x=1728070399;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=VKladj2sFJjdiWtfrOuq4uA29WlsH18GzOxyRfbvkm8=;
+        b=lBUn19sd6xKoeXjv7ofKGQc9TGBpVY3DdYyZwJykL0b3HBxV/v370ynPwNleDk9alA
+         Mi6uF9R/AGwczRBUMcIPIjMqqSow2l6hgjQ6FHckis0Niw/mbaDdwZ1uMJ1RbM1Ho7mR
+         WARuvnNKk7DMbw2G+Mo7zeDLyVk0XP7f66Ve3gLPetCekmw1ieTmMDFdOIGwB7Th3L4g
+         0dxzYx5Gw4B/EBN3QJu1byJKMBIc98jiFpJtNV2vJKSOjl3sw73whfeQkiqt1hBkYm5r
+         O57j/UhbZD4ObzZKOpKc7yDNuo5WkN+czu/5FLiM/8SZISar936NHhBZhBuayIUTdcA7
+         lnsg==
+X-Forwarded-Encrypted: i=1; AJvYcCX3upx3LwoqXs7ygig29zjNqLkqVXABh8h/jQOuYJwJd7g7O6xQuQ7s5OZLX7vlOg8dzsmR3vuWwtLg9Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyUEePCASPV5zLUubUSo39rpFxAnH5BDkxKuwwwpmqEvu037tqs
+	aL4lo3QvKSCp35mQKMBGXxekxPD80XcZVYN7Tv4VDg71HvN64wUSrGyvK56bGQw=
+X-Google-Smtp-Source: AGHT+IEhDe5EE9y0RFQCZTtCNmMq10z4RbPVeb2m5iqTjmA1e9FxI+tgYD6oSZc2Z9WqFDJgdWHibA==
+X-Received: by 2002:a05:6214:3bc7:b0:6cb:4e39:1a93 with SMTP id 6a1803df08f44-6cb4e395f0cmr619406d6.38.1727465599241;
+        Fri, 27 Sep 2024 12:33:19 -0700 (PDT)
+Received: from nicolas-tpx395.lan ([2606:6d00:15:862e::580])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6cb3b680045sm11835946d6.104.2024.09.27.12.33.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Sep 2024 12:33:18 -0700 (PDT)
+Message-ID: <386f4e12fd835b18c3f618f2c94cbd426bd6cf28.camel@ndufresne.ca>
+Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
+ deinterlacer driver
+From: Nicolas Dufresne <nicolas@ndufresne.ca>
+To: Marek Vasut <marex@denx.de>, linux-media@vger.kernel.org
+Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
+ Estevam <festevam@gmail.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
+ Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
+ <kernel@pengutronix.de>, Philipp Zabel <p.zabel@pengutronix.de>, Sascha
+ Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Steve
+ Longerbeam <slongerbeam@gmail.com>, dri-devel@lists.freedesktop.org,
+ imx@lists.linux.dev,  linux-arm-kernel@lists.infradead.org,
+ linux-fbdev@vger.kernel.org,  linux-staging@lists.linux.dev
+Date: Fri, 27 Sep 2024 15:33:17 -0400
+In-Reply-To: <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
+References: <20240724002044.112544-1-marex@denx.de>
+	 <20240724002044.112544-2-marex@denx.de>
+	 <85a5a42667e5867bc45da31baf045d4c9557f5f1.camel@ndufresne.ca>
+	 <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.52.4 (3.52.4-1.fc40) 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbcon: break earlier in search_fb_in_map and
- search_for_mapped_con
-To: Qianqiang Liu <qianqiang.liu@163.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20240926115911.620624-1-qianqiang.liu@163.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240926115911.620624-1-qianqiang.liu@163.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:oZNcXTd+EM0GqPtDaNCY8rccPTgM3BaN16d27CZKnJ+pEqCcaVc
- S8Xq+4qpUP17JoiAGDCbCBoofvCsr1lrohe0KPdu7MXKsrHvBi17dqsD/FzMg4TnGneVL0O
- Dz6HclwWd+NjucA36crl2FNik8DOT14LWdqIX5Lp7zeArTcwK3iqW0pz9IbDaREEXBssmOH
- U/xFGLlk8LKsdfobnIHxQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:p3xh4ggUvhM=;ai9MB0zI1f9u+FRwp8A2ZSTlERY
- cBHmWvrTrZwj12PYMw9znOr187/mXXIamDENeNf2IZueuqS3pset9VwPwuU01gbOPKMpF7kJj
- k2xN4RLvgR0MmNfO20UuXpZgI/pb9w594XBQDZWqbhbmYdZoFbS/c7iFTCXdJZ7oMm5zZ5x1o
- DkRIqF5lRF/UNkbCakKntigJFPYhFe7FM+k0oZueqb1JMT9iTyR9gFvwAdYRzyOQ297G3sDcf
- F0XpjVlgMqLv0gI+I2jA6oUL/6WbVlcb40C55dM+QtmbQRWKULCeTO0ZjdH3b40vcvQX0J9Z0
- pdeQve8SC8Ox/Ozlsxhq1P7Hbd97gPjopUfQis5JOURssu7Eq+osavNZzgm814JUrrkKaTsvt
- ozb41ptvPIXflKdSatxBFgCTPNqyHnEuifiV1gbL2TtHPrEG2kVoCmuOJy+WQI+ZOWVsKYHqV
- ZPagRiT6n5sG/jgRcC9L3keVOXTDHUU8oU9uZ0z3tMug3O8nXnqvSumFAdzUdWRoyv8+AAbnp
- bKaf7cgWEp+1J+QIIVvbK1j6uB7kblUySiwd6LxJCrV5WB8ldR96OLgGYWEqs2Fop9SZBfoFC
- DwoaeArnZ6p6GEoFPlQAOShmNtn+v0ZOUH1FUEjKqlLPgY5F19GVBiQhKWme9Td0pHNhZNjot
- EUlVAW/diOFDxHvq9tlOSGfkswWSpMXaMT9Hv3BEHRGLs3OR1hNAzEJ3O3mkI4isCngOHEjXM
- fkpKyqRi4PUhpBuCZwLxguCz7DnPx8qUcgfYnYMLTJtIF4Zir1C+aBue5soIs3qDlrhK4Z+3O
- xluN8lEeLWO0Wu8ipSe2MhsA==
 
-On 9/26/24 13:59, Qianqiang Liu wrote:
-> Break the for loop immediately upon finding the target, making the
-> process more efficient.
->
-> Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
+Le mercredi 25 septembre 2024 =C3=A0 22:45 +0200, Marek Vasut a =C3=A9crit=
+=C2=A0:
+> On 9/25/24 7:58 PM, Nicolas Dufresne wrote:
+>=20
+>=20
 
-applied.
+[...]
 
-Thanks!
-Helge
+>=20
+> > > +static irqreturn_t ipu_mem2mem_vdic_nfb4eof_interrupt(int irq, void =
+*dev_id)
+> > > +{
+> > > +	struct ipu_mem2mem_vdic_priv *priv =3D dev_id;
+> > > +
+> > > +	/* That is about all we can do about it, report it. */
+> > > +	dev_warn_ratelimited(priv->dev, "NFB4EOF error interrupt occurred\n=
+");
+> >=20
+> > Not sure this is right. If that means ipu_mem2mem_vdic_eof_interrupt wo=
+n't fire,
+> > then it means streamoff/close after that will hang forever, leaving a z=
+ombie
+> > process behind.
+> >=20
+> > Perhaps mark the buffers as ERROR, and finish the job.
+>=20
+> The NFB4EOF interrupt is generated when the VDIC didn't write (all of)=
+=20
+> output frame . I think it stands for "New Frame Before EOF" or some=20
+> such. Basically the currently written frame will be corrupted and the=20
+> next frame(s) are likely going to be OK again.
 
-> ---
->   drivers/video/fbdev/core/fbcon.c | 8 ++++++--
->   1 file changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index d9abae2516d8..e8b4e8c119b5 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -512,8 +512,10 @@ static int search_fb_in_map(int idx)
->   	int i, retval =3D 0;
->
->   	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
-> -		if (con2fb_map[i] =3D=3D idx)
-> +		if (con2fb_map[i] =3D=3D idx) {
->   			retval =3D 1;
-> +			break;
-> +		}
->   	}
->   	return retval;
->   }
-> @@ -523,8 +525,10 @@ static int search_for_mapped_con(void)
->   	int i, retval =3D 0;
->
->   	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
-> -		if (con2fb_map[i] !=3D -1)
-> +		if (con2fb_map[i] !=3D -1) {
->   			retval =3D 1;
-> +			break;
-> +		}
->   	}
->   	return retval;
->   }
+So the other IRQ will be triggered ? After this one ? Is so, perhaps take a
+moment to mark the frames as ERROR (which means corrupted).
 
+[...]
+
+> >=20
+> > The driver is not taking ownership of prev_buf, only curr_buf is guaran=
+teed to
+> > exist until v4l2_m2m_job_finish() is called. Usespace could streamoff, =
+allocate
+> > new buffers, and then an old freed buffer may endup being used.
+>=20
+> So, what should I do about this ? Is there some way to ref the buffer to=
+=20
+> keep it around ?
+>=20
+> > Its also unclear to me how userspace can avoid this ugly warning, how c=
+an you
+> > have curr_buf set the first time ? (I might be missing something you th=
+is one
+> > though).
+>=20
+> The warning happens when streaming starts and there is only one input=20
+> frame available for the VDIC, which needs three fields to work=20
+> correctly. So, if there in only one input frame, VDI uses the input=20
+> frame bottom field as PREV field for the prediction, and input frame top=
+=20
+> and bottom fields as CURR and NEXT fields for the prediction, the result=
+=20
+> may be one sub-optimal deinterlaced output frame (the first one). Once=
+=20
+> another input frame gets enqueued, the VDIC uses the previous frame=20
+> bottom field as PREV and the newly enqueued frame top and bottom fields=
+=20
+> as CURR and NEXT and the prediction works correctly from that point on.
+
+Warnings by default are not acceptable.
+
+>=20
+> > Perhaps what you want is a custom job_ready() callback, that ensure you=
+ have 2
+> > buffers in the OUTPUT queue ? You also need to ajust the CID
+> > MIN_BUFFERS_FOR_OUTPUT accordingly.
+>=20
+> I had that before, but gstreamer didn't enqueue the two frames for me,=
+=20
+> so I got back to this variant for maximum compatibility.
+
+Its well known that GStreamer v4l2convert element have no support for
+detinterlacing and need to be improved to support any deinterlace drivers o=
+ut
+there.
+
+Other drivers will simply holds on output buffers until it has enough to pr=
+oduce
+the first valid picture. Holding meaning not marking them done, which keeps=
+ then
+in the ACTIVE state, which is being tracked by the core for your.
+
+[...]
+
+> > > +
+> > > +	if (ipu_mem2mem_vdic_format_is_yuv420(f->fmt.pix.pixelformat))
+> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 3 / 2;
+> > > +	else if (ipu_mem2mem_vdic_format_is_yuv422(f->fmt.pix.pixelformat))
+> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 2;
+> > > +	else if (ipu_mem2mem_vdic_format_is_rgb16(f->fmt.pix.pixelformat))
+> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 2;
+> > > +	else if (ipu_mem2mem_vdic_format_is_rgb24(f->fmt.pix.pixelformat))
+> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 3;
+> > > +	else if (ipu_mem2mem_vdic_format_is_rgb32(f->fmt.pix.pixelformat))
+> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width * 4;
+> > > +	else
+> > > +		f->fmt.pix.bytesperline =3D f->fmt.pix.width;
+> > > +
+> > > +	f->fmt.pix.sizeimage =3D f->fmt.pix.height * f->fmt.pix.bytesperlin=
+e;
+> >=20
+> > And use v4l2-common ?
+>=20
+> I don't really understand, there is nothing in v4l2-common.c that would=
+=20
+> be really useful replacement for this ?
+
+Not sure I get your response, v4l2-common is used in many drivers already, =
+and
+we intent to keep improving it so that all driver uses it in the long term.=
+ It
+been created because folks believed they can calculate bytesperline and
+sizeimage, but as the number of format grows, it always endup wrong, causin=
+g the
+HW to overflow and break the system at a larger scale.
+
+>=20
+> > > +	return 0;
+> > > +}
+> > > +
+> > > +static int ipu_mem2mem_vdic_s_fmt(struct file *file, void *fh, struc=
+t v4l2_format *f)
+> > > +{
+> > > +	struct ipu_mem2mem_vdic_ctx *ctx =3D fh_to_ctx(fh);
+> > > +	struct ipu_mem2mem_vdic_priv *priv =3D ctx->priv;
+> > > +	struct v4l2_pix_format *fmt, *infmt, *outfmt;
+> > > +	struct vb2_queue *vq;
+> > > +	int ret;
+> > > +
+> > > +	vq =3D v4l2_m2m_get_vq(ctx->fh.m2m_ctx, f->type);
+> > > +	if (vb2_is_busy(vq)) {
+> > > +		dev_err(priv->dev, "%s queue busy\n",  __func__);
+> > > +		return -EBUSY;
+> > > +	}
+> > > +
+> > > +	ret =3D ipu_mem2mem_vdic_try_fmt(file, fh, f);
+> > > +	if (ret < 0)
+> > > +		return ret;
+> > > +
+> > > +	fmt =3D ipu_mem2mem_vdic_get_format(priv, f->type);
+> > > +	*fmt =3D f->fmt.pix;
+> > > +
+> > > +	/* Propagate colorimetry to the capture queue */
+> > > +	infmt =3D ipu_mem2mem_vdic_get_format(priv, V4L2_BUF_TYPE_VIDEO_OUT=
+PUT);
+> > > +	outfmt =3D ipu_mem2mem_vdic_get_format(priv, V4L2_BUF_TYPE_VIDEO_CA=
+PTURE);
+> > > +	outfmt->colorspace =3D infmt->colorspace;
+> > > +	outfmt->ycbcr_enc =3D infmt->ycbcr_enc;
+> > > +	outfmt->xfer_func =3D infmt->xfer_func;
+> > > +	outfmt->quantization =3D infmt->quantization;
+> >=20
+> > So you can do CSC conversion but not colorimetry ? We have
+> > V4L2_PIX_FMT_FLAG_SET_CSC if you can do colorimetry transforms too. I h=
+ave
+> > patches that I'll send for the csc-scaler driver.
+>=20
+> See ipu_ic_calc_csc() , that's what does the colorspace conversion in=20
+> this driver (on output from VDI).
+
+int ipu_ic_calc_csc(struct ipu_ic_csc *csc,
+                    enum v4l2_ycbcr_encoding in_enc,
+                    enum v4l2_quantization in_quant,
+                    enum ipu_color_space in_cs,
+                    enum v4l2_ycbcr_encoding out_enc,
+                    enum v4l2_quantization out_quant,
+                    enum ipu_color_space out_cs)
+
+So instead of simply overriding CSC like you do, let userspace set differen=
+t CSC
+in and out, so that IPU can handle the conversion properly with correct col=
+ors.
+That requires to flag these in the fmt_desc structure during enum format, a=
+nd to
+only read acknowledge the CSC if userspace have set V4L2_PIX_FMT_FLAG_SET_C=
+SC,
+in other condition, the information must be ignored (which you don't).
+
+Nicolas

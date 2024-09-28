@@ -1,86 +1,63 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4FF92B9B1;
-	Sat, 28 Sep 2024 11:28:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 588B2174EFA;
+	Sat, 28 Sep 2024 16:45:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727522890; cv=none; b=BQhIeq/4Pwy0MFxJa3OGwRjlp86YocUJTyEmhXNUzMYmmu/hCHj17Szd/TGUGeyVLF2m8QQTOFVoWUc+JhZDbKYokK8FgqmB0VtKFOJxFuZ0a2Azybf+7tEQT0C2D3pYpERX+P77YmszWfH/m3nmEhkiaOOP5iWBWkrIoeY2v0c=
+	t=1727541912; cv=none; b=aL9b4wO9GhrL7tvLILHgTyiJl6MyIVqf3m8kMTVJIHAijX6h/4nkJb+5isffv5ySIyKWu3h7glg3CqXyksd3ke6CHszmayeKtwvBTRVUtThsQyaJoCx+Y597TTQdZRqL8iTCRPktA9L8E4nS99qHGBKDeAWnGBkq2mgfvqkh3/Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727522890; c=relaxed/simple;
-	bh=HnqwsqxX6e/UhhhJRSVaLb04OKzlAy7bdb+ridZLIgY=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=tiq3rXEh8BnH2s1U6Un0zaJf9jOhK5qEIDECms3PlO2CfV+hMDP/EYymAmcYawDmTxYMvu296xwcOC3PRsHqfs7w226Rb4gd2yyV6KX2QTBHOX/LWTpaTCSMDp0My7EtBfYvygwdfaBZFQBwpl/OmKx+s/l0JoSM5kEPPgfXp3E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bevd2xj4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1727541912; c=relaxed/simple;
+	bh=KeVe+PMFx3Hc/WeSruzNM5szsYAxL/6EfsQiRJE5kfA=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=VKsZ2p80j2j+5nZOuKUrbTkRktvKVHj+muqISrxNPEtAx5Q4oE6PnagoY0AU347JTonnzD6PTUhr2l1NuxUPQszdVKauA4M3PHbRGDvtv7/QxNx/bprdfOAvIQG+hqWoXl0Q+KCYqW4XkbBvdd4w2EA1LJX0FrwH1O4OJEaKEyg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZRONPYY2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bevd2xj4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C684AC4CEC3;
-	Sat, 28 Sep 2024 11:28:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZRONPYY2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B944C4CEC7;
+	Sat, 28 Sep 2024 16:45:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727522889;
-	bh=HnqwsqxX6e/UhhhJRSVaLb04OKzlAy7bdb+ridZLIgY=;
-	h=Date:From:To:Subject:From;
-	b=bevd2xj4qrX2BqoZGePTT04a285AgkmV9s1r2vVALj2p6Nm2JzZz96xPcKp3HWGdr
-	 Kp2VQAOm7Z/a6NAEfnlniTDqXJn31saJ/BhzYO/4QOkEmqlTr5Frl7JE0EkO/vx7uX
-	 3TatZmcA+hkQkeV3CEgPYC385sdfLNJToOBWLwILXfiLAusRuiOMxP9L1nHCq+5b1j
-	 xvGMC564zBbsYVokqYSJ1AWyKqj6d6GsORdZOlvjYub45pUMIvsKwfUqMhPb/vmNW4
-	 lxJp3srU3r3Nu7BgFKsm/fl1+JabD+fRN3hM0Gsfqxxy9XTRkr0ISa8pAG1Lkz5maS
-	 6NIkmtKWXyLRA==
-Date: Sat, 28 Sep 2024 13:28:04 +0200
-From: Helge Deller <deller@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] additional fbdev fixes for v6.12-rc1
-Message-ID: <ZvfoRGNbTUOzLL9X@carbonx1>
+	s=k20201202; t=1727541912;
+	bh=KeVe+PMFx3Hc/WeSruzNM5szsYAxL/6EfsQiRJE5kfA=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=ZRONPYY2K3LZxq5N5MzxRudoGl2cmqfU9NM1G2DRpu4XXMHsiA8q7CVdy2l//3H8V
+	 SYAG1lyefSN6Y5RObZTMv08IMGpXray2bzAMWiKe/FhnYs8sGM42Awcpl8Bpf8FOKn
+	 5EbzDT1Q/971XPn/Gk6xMB62JVT1KUxEVIa/RUcSEfQjOAZUyb9yjTWWZSixibXs++
+	 kclzByGRw/QJikiUfY6kCRN8bj33edJvmaWqRnejHXmOCKYlLM6pwTt1dqHlq8KKnD
+	 tchQ03DIdrokFRgWY5lXtQRFXIVarludCA5XWbIXN0/W4Hd+0RaKrwW3SG0C50b8Rq
+	 Pob0p+44Qkwmw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 33EBC3809A80;
+	Sat, 28 Sep 2024 16:45:16 +0000 (UTC)
+Subject: Re: [GIT PULL] additional fbdev fixes for v6.12-rc1
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <ZvfoRGNbTUOzLL9X@carbonx1>
+References: <ZvfoRGNbTUOzLL9X@carbonx1>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <ZvfoRGNbTUOzLL9X@carbonx1>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.12-rc1-2
+X-PR-Tracked-Commit-Id: 9cf14f5a2746c19455ce9cb44341b5527b5e19c3
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: f95c139099f8dad235191caec9e9268ca717beb9
+Message-Id: <172754191479.2302262.4145148096064377606.pr-tracker-bot@kernel.org>
+Date: Sat, 28 Sep 2024 16:45:14 +0000
+To: Helge Deller <deller@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Hi Linus,
+The pull request you sent on Sat, 28 Sep 2024 13:28:04 +0200:
 
-please pull the last few fbdev fixes for this merge window.
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.12-rc1-2
 
-Thanks!
-Helge
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/f95c139099f8dad235191caec9e9268ca717beb9
 
-----------------------------------------------------------------
-The following changes since commit abf2050f51fdca0fd146388f83cddd95a57a008d:
+Thank you!
 
-  Merge tag 'media/v6.12-1' of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-media (2024-09-23 15:27:58 -0700)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.12-rc1-2
-
-for you to fetch changes up to 9cf14f5a2746c19455ce9cb44341b5527b5e19c3:
-
-  fbdev: sisfb: Fix strbuf array overflow (2024-09-28 00:42:11 +0200)
-
-----------------------------------------------------------------
-additional fbdev fixes for 6.12-rc1:
-
-- crash fix in fbcon_putcs
-- avoid a possible string memory overflow in sisfb
-- minor code optimizations in omapfb and fbcon
-
-----------------------------------------------------------------
-Andrey Shumilin (1):
-      fbdev: sisfb: Fix strbuf array overflow
-
-Markus Elfring (1):
-      fbdev: omapfb: Call of_node_put(ep) only once in omapdss_of_find_source_for_first_ep()
-
-Qianqiang Liu (2):
-      fbcon: Fix a NULL pointer dereference issue in fbcon_putcs
-      fbcon: break earlier in search_fb_in_map and search_for_mapped_con
-
- drivers/video/fbdev/core/fbcon.c              | 10 ++++++++--
- drivers/video/fbdev/omap2/omapfb/dss/dss-of.c |  7 ++-----
- drivers/video/fbdev/sis/sis_main.c            |  2 +-
- 3 files changed, 11 insertions(+), 8 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

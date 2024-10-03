@@ -1,63 +1,67 @@
-Received: from mail-ed1-f65.google.com (mail-ed1-f65.google.com [209.85.208.65])
+Received: from mail-pj1-f67.google.com (mail-pj1-f67.google.com [209.85.216.67])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F1882F22
-	for <linux-fbdev@vger.kernel.org>; Wed,  2 Oct 2024 21:45:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.65
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94B0F1AB523;
+	Thu,  3 Oct 2024 16:13:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.67
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727905552; cv=none; b=gkcRRNdej5oYlrXw2dumolPMUeKUjVjmOd5TbUqLxmGiPQVGBifnMstB566gNkjg+reDukSZMmTaLDFwWT9glmDtLXNlSRxVf3MtCsnFuWFeBKIoW4tkrU9qbM2OD5buRwbYuApnzRzcfIvSFYMS2/Klcuw6I47pBuw99NKkuYI=
+	t=1727971992; cv=none; b=Qfrg/l0VR9FTBwFXFbYRWTD0DrHgGOVEnhAOQP3/gkZnTqk4oHSYDZgsqaL6yk1xsadYrrKUqEgZrma1yY/CIJ8fbmbj0RU3vXP3CQ/6xAT+o5JIZ6fc4kwCphrrHuWZxE0Jrq9D5sHAnK4skPWtB2JRQE36VBAPt9mV2eRt78A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727905552; c=relaxed/simple;
-	bh=G7u5uyJiWXxt82J7ILiQXPkWX0vQS4S1XjneoPKvQXk=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Z0wgpzgMLKir0cf1asuRx0sA+Id4PxofGYhPMNfLRi6J4ivlrNXh8c8/MuYnwu7H3MJmqimX5lj+T3w5gZMIC4y1IBHJBAFag+38GL4+Bphl6Hsr/+aFTrwjEkFSJWSIBI7GhakuWYSRVGuolV0KLydDViBMhx8yvmwFzXXxPK0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Yz0AZpmL; arc=none smtp.client-ip=209.85.208.65
+	s=arc-20240116; t=1727971992; c=relaxed/simple;
+	bh=04BCdpvXPzFjT3EJdEScRcro1Poxt5zFjYde50kRkrU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=O+9SNKQ+6br2Q0G4hHRtidb24v+W8f/VM7zFRDl7c4KNb2wHG5Qx13jl/6qkT4/K8vCKSujv65Bx37kwCFYQ12522nUyLLF3Q/cxRVf0uMzWM8u5f5C27xhaDvoYRogrr4PaRvo/iT2vvSoHRFWV+XGDDyWBvOwRXyto5yfvQsM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JQP6qK7Q; arc=none smtp.client-ip=209.85.216.67
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Yz0AZpmL"
-Received: by mail-ed1-f65.google.com with SMTP id 4fb4d7f45d1cf-5c5bca6603aso221189a12.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 02 Oct 2024 14:45:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JQP6qK7Q"
+Received: by mail-pj1-f67.google.com with SMTP id 98e67ed59e1d1-2e0a47fda44so145313a91.1;
+        Thu, 03 Oct 2024 09:13:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1727905549; x=1728510349; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1727971991; x=1728576791; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=TpAVWbf3/lT0CKVerCtL5WEmBdJkY5+gMWEwEveY7JI=;
-        b=Yz0AZpmLRcdqirMBJ5ZZNUkXhpmyW3fgMo+cElsg/IF3dR6reP1pc2EulLKSas+4M4
-         GzHLla7fnzC3UR847XXd/TxrG7p8SlHLMVfTWZF1tTZ9nNL2JhCZFrz/7uL1XLKdTHdK
-         kguTZeVDEJ9hAYhrQvg0ONazON62L/h+s2ZOMdzfnP1DojbxZDQpKejZcbTlAmL8LDVu
-         NegFau6+26ogYk96a3VaydazA1P2o8QHM9uGWNv3uRLs/ZXzhMOvZsia4YMxMNkc/U7r
-         F+yIqI+zrNJNVC84NmVjAJmq87Bru21e2a30U7LqZpWa+N+5WpTrXdi9kbLyJ6BNrlRO
-         VecA==
+        bh=Z3WiMbAhFsbgFsMbymS9SFj9ZdJkNGNlqWJ97chhwH4=;
+        b=JQP6qK7Qy88NpAZuJGTKSqm/evpF5xJ7GxQlrdey3RlfNf9AnYVSJc9I9dkb41urW2
+         kjVT8/SG4LNio9OpdR1tWUeW8mK58SoaGxN/qmN/nhDm2PDI4nPFdFh8iMo+T1QVgB2X
+         mBfejwzXtxd90RPRsKv4fDBce7Cgm3MUSIoiw3Wof0iWVuc7Ow9eiDWQDNesTYcbid/N
+         ua++NB/KfhG9lygmCsCqppu0m5w+K/UdeiJ7/CVSOPUWlcRKOISXaEKzlWaUcVyRPBJ1
+         gO8ejQHFKrwr7Y7Dq+m+DbZ/anGjKsYhejUbO3dpmA0pmpgosjPLlujRLPfTxDrkeG2J
+         YqnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727905549; x=1728510349;
+        d=1e100.net; s=20230601; t=1727971991; x=1728576791;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=TpAVWbf3/lT0CKVerCtL5WEmBdJkY5+gMWEwEveY7JI=;
-        b=QBkOc45WeFs11OVz/s665z59rU2hDUE8S6gqEjYvSSvYoQ1K+KRH/Rq09d2YdOdpr9
-         Gv1EWwv6ASRdXL9CnHhdY1Z9TMtFdAGoGwhB6GJFWT2q/WI3pgpYpSSsNAKbJHNGmQlU
-         Rbv8AlfHK4KE9KLKBhTlf/CHHijcH6O8vB8HS6uE7I/0KScTe9TpqxQefCiX+VxMdYVs
-         QDf4KN9Q7tIKJT+pH/tkPIQOTzAF5HL99tuUzlFye6sUFiCkvBvaDWlLgU9HQrucQocU
-         63Ub7Fkb62zfRVtIW9GxaIibnMI2BfuiAeyZSEooqOlzesPk5cRbRSRzUdew/M10KanE
-         KwPA==
-X-Gm-Message-State: AOJu0YypzNeM/cnHD+HjX8jQoFPEqMW4Y7x4X+3IPdWnf2+pBXUMvGOh
-	qiFhsuKSUU4759rKIMPfpLs0oUKsw6PsJM+bgi96ZZplw799nvaYRwB5WID02HE=
-X-Google-Smtp-Source: AGHT+IEW4do9mEryEFFcJLi2oiNfrekou4nnddOfqmVNu1oFKsPf/Ce6bVcEm9stBqwE+CF+wPk0Iw==
-X-Received: by 2002:a05:6402:2691:b0:5c8:a0b1:b60 with SMTP id 4fb4d7f45d1cf-5c8b18e4467mr3091612a12.4.1727905548536;
-        Wed, 02 Oct 2024 14:45:48 -0700 (PDT)
-Received: from localhost.localdomain ([83.165.96.99])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5c88b189878sm6548101a12.93.2024.10.02.14.45.45
+        bh=Z3WiMbAhFsbgFsMbymS9SFj9ZdJkNGNlqWJ97chhwH4=;
+        b=X2TBrL/pFXW8TFWfVI2g36GnpBA3tTnupkZZb277z2/34Iq29Oh7YVJFi1h11T6MNq
+         6sfXB/wOZds6tBbpZDYXWyyZOPGbtvtfKN6v4Q4pWc4ao5jkCREwlY2B5fv65BM2/emk
+         pC+jkkdZqEnBhNg/vhKdtCkvw+NmmOLv33wwjCFVmqP2CVm69275LXkyfmT6ZnU8lizF
+         x3I7kjjuz8EJjtrMh5H6gMjveq+jGvBvLvN3SHLgDGErqWRLMroZp+h3KVmh9QBbxigl
+         hHPRBZCpXjOgH7Bkuecd1FUxYMKzj09pfDL9o9SY0qfSl4w0BFluN5fZRdMGbknLwElV
+         y+Yw==
+X-Forwarded-Encrypted: i=1; AJvYcCXdJpnP/sormZVA3ayQyOv0FRwn45+5dKUiugmebt5ebGVlKCXZK8lS8mwhjGTar7WKs/f+V4BuzSQtUyYV@vger.kernel.org, AJvYcCXy2MTF8JCvpVpaa2M94AoYGVDIijgaNoSxcvc1IrZ2TMuYcfVrHKljEopLF+rHREXHUyk5pQFgdHuJdQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzTq3zST5F9K3Kg23GhCywdyyqKJ3q6oya2NtUW5Pa3SMJoAAfA
+	6u69sT0s5MzZNPkU5E5x0E5gyjypM0yu4y91fMGAryF6YU+zkKWr
+X-Google-Smtp-Source: AGHT+IECRTHvTd6P+YA/9SXtKlU5SkB5oDthZt0x/R2Qd3F/NleiAE4FG9DI3RlVuzOcBMfQ4d15Fw==
+X-Received: by 2002:a17:90a:d50f:b0:2e0:7adb:6380 with SMTP id 98e67ed59e1d1-2e1849be000mr3540656a91.9.1727971990582;
+        Thu, 03 Oct 2024 09:13:10 -0700 (PDT)
+Received: from user.. ([206.237.119.148])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2e1bff53444sm1836316a91.52.2024.10.03.09.13.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Oct 2024 14:45:46 -0700 (PDT)
-From: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	thomas.zimmermann@suse.de,
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-Subject: [PATCH] Subject: fbdev: sstfb: Make CONFIG_FB_DEVICE optional
-Date: Wed,  2 Oct 2024 23:45:16 +0200
-Message-Id: <20241002214517.206657-1-gonzalo.silvalde@gmail.com>
-X-Mailer: git-send-email 2.39.5
+        Thu, 03 Oct 2024 09:13:10 -0700 (PDT)
+From: clingfei <clf700383@gmail.com>
+To: deller@gmx.de
+Cc: shc_work@mail.ru,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	clf700383@gmail.com
+Subject: [PATCH] fbdev: clps711x-fb: unregister fb when clps711x_fb_probe register failed
+Date: Fri,  4 Oct 2024 00:12:36 +0800
+Message-Id: <20241003161236.3527733-1-clf700383@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -66,66 +70,31 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The sstfb driver currently depends on CONFIG_FB_DEVICE to create sysfs
-entries and access info->dev. This patch wraps the relevant code blocks
-with #ifdef CONFIG_FB_DEVICE, allowing the driver to be built and used
-even if CONFIG_FB_DEVICE is not selected.
+When register_framebuffer failed, it jumps out_fb_dealloc_cmap without
+calling unregister_framebuffer, which may cause potential memory leak.
 
-Tested by building with and without CONFIG_FB_DEVICE, both of which
-compile without issues
-Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
+Signed-off-by: clingfei <clf700383@gmail.com>
 ---
- drivers/video/fbdev/sstfb.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/clps711x-fb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index f8ae54ca0cc3..17f39cc721aa 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -716,6 +716,7 @@ static void sstfb_setvgapass( struct fb_info *info, int enable )
- 	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
- }
+diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
+index 9e3df1df5ac4..69db40a7a361 100644
+--- a/drivers/video/fbdev/clps711x-fb.c
++++ b/drivers/video/fbdev/clps711x-fb.c
+@@ -328,10 +328,11 @@ static int clps711x_fb_probe(struct platform_device *pdev)
  
-+#ifdef CONFIG_FB_DEVICE
- static ssize_t store_vgapass(struct device *device, struct device_attribute *attr,
- 			const char *buf, size_t count)
- {
-@@ -736,10 +737,10 @@ static ssize_t show_vgapass(struct device *device, struct device_attribute *attr
- 	struct sstfb_par *par = info->par;
- 	return sprintf(buf, "%d\n", par->vgapass);
- }
--
- static struct device_attribute device_attrs[] = {
- 	__ATTR(vgapass, S_IRUGO|S_IWUSR, show_vgapass, store_vgapass)
- 	};
-+#endif
+ 	ret = register_framebuffer(info);
+ 	if (ret)
+-		goto out_fb_dealloc_cmap;
++		goto out_fb_unregister;
  
- static int sstfb_ioctl(struct fb_info *info, unsigned int cmd,
- 			unsigned long arg)
-@@ -1435,10 +1436,10 @@ static int sstfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 	}
+ 	return 0;
  
- 	sstfb_clear_screen(info);
--
-+	#ifdef CONFIG_FB_DEVICE
- 	if (device_create_file(info->dev, &device_attrs[0]))
- 		printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
--
-+	#endif
++out_fb_unregister:
+ 	unregister_framebuffer(info);
  
- 	fb_info(info, "%s frame buffer device at 0x%p\n",
- 		fix->id, info->screen_base);
-@@ -1467,8 +1468,9 @@ static void sstfb_remove(struct pci_dev *pdev)
- 
- 	info = pci_get_drvdata(pdev);
- 	par = info->par;
--
-+	#ifdef CONFIG_FB_DEVICE
- 	device_remove_file(info->dev, &device_attrs[0]);
-+	#endif
- 	sst_shutdown(info);
- 	iounmap(info->screen_base);
- 	iounmap(par->mmio_vbase);
+ out_fb_dealloc_cmap:
 -- 
-2.39.5
+2.34.1
 

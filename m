@@ -1,131 +1,71 @@
-Received: from bout3.ijzerbout.nl (bout3.ijzerbout.nl [136.144.140.114])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D4102BA41;
-	Thu,  3 Oct 2024 18:33:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.140.114
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7D63B1862;
+	Fri,  4 Oct 2024 01:43:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1727980421; cv=none; b=HEDiHR1YCrp4ka1omiUO4WxiUnCL8B5//D9XhqN77Hp6UnmsJ8gfJlXtQ+umubnvr9e1aFRq0TA+oRj5qEZ2ogSzifARmHjvMCTR5VUOaTHypsdccLlHcs2VtpRwSyUlZBJD2h42ITDgVWVfXJ/Qt5LkE4lWrqyVnBW1ZpGetz8=
+	t=1728006244; cv=none; b=Di4HYa8axFBapXezOwD4MeCrPijRfLEi6HQUfWUWWchBkHQrF6vql7YnDgPViQyQ77Sy1v4NB8R5VvCRyj3e2BK2ifEuOhHYGJU0cDHT8Oe4ZZynw2fGhOgRMhgvrqzLOYIJYepoHdMKmmariIMuqrGxufOmOvR5LCZa2lnhQbQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1727980421; c=relaxed/simple;
-	bh=jhFYqWg1DPLvJtPrtFOahr4PJQTIzonQwvX+X8Bxz7c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=reQiy2/8Ghp74iznUXOSyzxVCRTIMlzctr81+U62CwyDohANYXm642d3AKfjTp0sBbKo0QVX9dyAvYZT1OSEEEfYADzZsHkWQtrYHisL0j+lpLRZf+oJXzaeoDzKDKus2PZgH6J9DqEvlbOfkTdgm+b1v61qDjdq+x+kd7DY144=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ijzerbout.nl; spf=pass smtp.mailfrom=ijzerbout.nl; dkim=pass (4096-bit key) header.d=ijzerbout.nl header.i=@ijzerbout.nl header.b=afBLU+5v; arc=none smtp.client-ip=136.144.140.114
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ijzerbout.nl
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ijzerbout.nl
+	s=arc-20240116; t=1728006244; c=relaxed/simple;
+	bh=kKiNpO/7wxBRneifIFDF+QBEIUYtc/mXbs5Fl64uxSM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mutH9PL9PeB9vVMAcymAV9Hd9PCNeM8PTaGXzkrlK5VJ1X4D7WlCkidIjIr5mnh89Csd/vWKTkLAUyf9hnXJ/jSRe+9rHM6hbs9z2CrtYOPulN/miqeU80mxdmksJYOo/4CSa47H+t92cvoBCL9sHLHDDdkdoFc0WfNGr5IoC1c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=VMOUPCPJ; arc=none smtp.client-ip=117.135.210.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=ijzerbout.nl header.i=@ijzerbout.nl header.b="afBLU+5v"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ijzerbout.nl; s=key;
-	t=1727980415; bh=jhFYqWg1DPLvJtPrtFOahr4PJQTIzonQwvX+X8Bxz7c=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=afBLU+5vzn7VD6q6cxkR+Q3zJ6tz2KITlrTy/NdrPz4/Vy1UWEAyUYQHTZ+QknUPF
-	 /517c+1KvNZr6yPHR5pg20Z85HcchfXcyVKcOcQWw9iAyXlLbLiUwuAzGuMBCJ+7u5
-	 kqq7xiIC/AKL2Pjy/1cRBEnJTl82aq2WXidK1V+2ZHPLftlGzTuG30wFYns/sZIlzS
-	 rW3ImCf4rzWL7NANraXcK8VjJaqWbxeevAhoomMxjLemlenSEoTCskym7+KwEJGK8W
-	 UG9EItaZukWj9zo0wTS5vKoZJ+q/zOTpKVZ9hKzT/cHnd/P0GxcvZ90bvRdowr2GVb
-	 xYbdav5bU/Da5LtMUALsjOaE8lCMEi3x7uUxby1busanVPzWIjwzHDUcSBc6YwJeTW
-	 wMhkjzhkn4fghyW6dEydFM5/IYOl/V3JmZkxWAfb+BcjG4rgKyihotMkSxtqPnjd6e
-	 0uQtgAi/BKAKFBDmAXGLbmCdPwEV9KtLrNbAMx7ywTqxxjiSMHiERtaSHd/yL3UGF0
-	 2RValQA5KF0K3D0Dz7nKaPAaQpYQWOdQtADr3UtnBgSFyOvzWBwk6TII3SQCAGOUHW
-	 oQu+V1F5wX9PrSjSPTYPv1jx9DI6VAZyWZYCoG8eLAm2w3MXLU9/A46AaWN9r6Vnp4
-	 cvFY1UrJhElljvlJfPxvzU1w=
-Received: from [IPV6:2a10:3781:99:1:1ac0:4dff:fea7:ec3a] (racer.ijzerbout.nl [IPv6:2a10:3781:99:1:1ac0:4dff:fea7:ec3a])
-	by bout3.ijzerbout.nl (Postfix) with ESMTPSA id CBB9F18D1E6;
-	Thu,  3 Oct 2024 20:33:33 +0200 (CEST)
-Message-ID: <07d296ac-765c-4f89-bcaf-098ec29a4b7a@ijzerbout.nl>
-Date: Thu, 3 Oct 2024 20:33:31 +0200
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="VMOUPCPJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:Subject:Date:Message-ID:MIME-Version; bh=Jp8RG
+	qANQrLfCe3AaUb/fHkN8BRM9XGU3Q2eDcKrytc=; b=VMOUPCPJT4QqgQveKESkU
+	H+HtMU85b2QO2l6E0nf7CzrFKrQI+hU3PY6JQ3kjmTOnjIxM34fxVROxsKwPlTy4
+	gZlujiH9Q0NhglfKvLzF9bX5obP0cBJ+Nnym0xDd4d6OxRacvpp1ZkcAbX/RKU2R
+	MaywJ7zu/jEdW21rnVhxWY=
+Received: from fedora.. (unknown [36.5.132.7])
+	by gzsmtp4 (Coremail) with SMTP id sygvCgB3QtRVSP9mnEvTAQ--.26831S2;
+	Fri, 04 Oct 2024 09:43:49 +0800 (CST)
+From: Qianqiang Liu <qianqiang.liu@163.com>
+To: deller@gmx.de
+Cc: tzimmermann@suse.de,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: clps711x-fb: Remove dead code
+Date: Fri,  4 Oct 2024 09:43:48 +0800
+Message-ID: <20241004014349.435006-1-qianqiang.liu@163.com>
+X-Mailer: git-send-email 2.46.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 20/28] fbdev: clps711x-fb: Replace check_fb in favor of
- struct fb_info.lcd_dev
-To: Thomas Zimmermann <tzimmermann@suse.de>, lee@kernel.org,
- daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
- bonbons@linux-vserver.org, jikos@kernel.org, bentiss@kernel.org,
- s.hauer@pengutronix.de, kernel@pengutronix.de, shawnguo@kernel.org,
- festevam@gmail.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-omap@vger.kernel.org
-References: <20240906075439.98476-1-tzimmermann@suse.de>
- <20240906075439.98476-21-tzimmermann@suse.de>
-Content-Language: en-US
-From: Kees Bakker <kees@ijzerbout.nl>
-In-Reply-To: <20240906075439.98476-21-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:sygvCgB3QtRVSP9mnEvTAQ--.26831S2
+X-Coremail-Antispam: 1Uf129KBjvdXoWrur43Zry7XF18AFW8JFWrXwb_yoW3uFbEk3
+	ykurZ7X34qyr1rKr1kGa1DZrW0y39rXrZa9F1DtFZak347uFWrXFyUZr4xW3yUWr48CFn3
+	WF9Ygr4rZryfCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUjCPftUUUUU==
+X-CM-SenderInfo: xtld01pldqwhxolxqiywtou0bp/1tbiYBpuamb-Nh0GawACsj
 
-Op 06-09-2024 om 09:52 schreef Thomas Zimmermann:
-> Store the lcd device in struct fb_info.lcd_dev. The lcd subsystem can
-> now detect the lcd's fbdev device from this field.
->
-> This makes the implementation of check_fb in clps711x_lcd_ops obsolete.
-> Remove it.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
->   drivers/video/fbdev/clps711x-fb.c | 23 ++++++++++-------------
->   1 file changed, 10 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
-> index 6171a98a48fd..4340ea3b9660 100644
-> --- a/drivers/video/fbdev/clps711x-fb.c
-> +++ b/drivers/video/fbdev/clps711x-fb.c
-> @@ -162,13 +162,6 @@ static const struct fb_ops clps711x_fb_ops = {
->   	.fb_blank	= clps711x_fb_blank,
->   };
->   
-> -static int clps711x_lcd_check_fb(struct lcd_device *lcddev, struct fb_info *fi)
-> -{
-> -	struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
-> -
-> -	return (!fi || fi->par == cfb) ? 1 : 0;
-> -}
-> -
->   static int clps711x_lcd_get_power(struct lcd_device *lcddev)
->   {
->   	struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
-> @@ -198,7 +191,6 @@ static int clps711x_lcd_set_power(struct lcd_device *lcddev, int blank)
->   }
->   
->   static const struct lcd_ops clps711x_lcd_ops = {
-> -	.check_fb	= clps711x_lcd_check_fb,
->   	.get_power	= clps711x_lcd_get_power,
->   	.set_power	= clps711x_lcd_set_power,
->   };
-> @@ -325,16 +317,21 @@ static int clps711x_fb_probe(struct platform_device *pdev)
->   	if (ret)
->   		goto out_fb_dealloc_cmap;
->   
-> +	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
-> +				       &clps711x_lcd_ops);
-> +	if (IS_ERR(lcd)) {
-> +		ret = PTR_ERR(lcd);
-> +		goto out_fb_dealloc_cmap;
-> +	}
-> +
-> +	info->lcd_dev = lcd;
-> +
->   	ret = register_framebuffer(info);
->   	if (ret)
->   		goto out_fb_dealloc_cmap;
->   
-> -	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
-> -				       &clps711x_lcd_ops);
-> -	if (!IS_ERR(lcd))
-> -		return 0;
-> +	return 0;
->   
-> -	ret = PTR_ERR(lcd);
->   	unregister_framebuffer(info);
->   
->   out_fb_dealloc_cmap:
-Something is not right here. With the current patch you'll make the 
-unregister_framebuffer(info)
-unreachable, because there is a return 0 in front.
-Please check again.
+The code can never be reached: unregister_framebuffer(info);
+
+Fixes: 36462ac19308 ("fbdev: clps711x-fb: Replace check_fb in favor of struct fb_info.lcd_dev")
+Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
+---
+ drivers/video/fbdev/clps711x-fb.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
+index 9e3df1df5ac4..b57134bc63e7 100644
+--- a/drivers/video/fbdev/clps711x-fb.c
++++ b/drivers/video/fbdev/clps711x-fb.c
+@@ -332,8 +332,6 @@ static int clps711x_fb_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-	unregister_framebuffer(info);
+-
+ out_fb_dealloc_cmap:
+ 	regmap_update_bits(cfb->syscon, SYSCON_OFFSET, SYSCON1_LCDEN, 0);
+ 	fb_dealloc_cmap(&info->cmap);
 -- 
-Kees Bakker
+2.46.2
+

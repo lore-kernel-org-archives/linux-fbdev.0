@@ -1,211 +1,254 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24EAD20FAB3;
-	Fri,  4 Oct 2024 14:25:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FE7F1AA785
+	for <linux-fbdev@vger.kernel.org>; Fri,  4 Oct 2024 15:10:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728051958; cv=none; b=GWrJpfU4vjH3J+YGcpO+L+LsgYxnlnZ5byvLKKRU7mEubMw7e6zhBjmS1nlBJQhXslZs0S00Xy5FKODp2wHLqTSwGPwInB/yLcUXQVQu0mtSBv/jBugeXFXf9EJ7m+iLHHKRQNr403m5OssnBmZemt/U3psg7p6o9eC1vSphQF8=
+	t=1728054628; cv=none; b=Z706JTrE9dkeZ6GtXxrH+3h1EnLoUiCDlhoecsUf+Ye+lonM4dBXKqOf8YoiuD5W4943+hboJf7F3c28bqHxHG9VbhY1qi2NsIzD0H4dXIC1KqwCIaUym2j0odMw+mb6cW9O2q3PCeRKsYZoiPar7deG6PCFCAcBdzsIpcmhLtk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728051958; c=relaxed/simple;
-	bh=VLd66Cbz9muKF7Etf6eUjwWYZzDeImjqSXpDNbBE3Cg=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tKxoOIT/lJKy1tQ7T9LZmBqHWmohd5FQzbZtYLCekdQ8yqfb5H0r9pZR3q28YWxf0SygruPnyV89oCxGjhWsHM8cbCcHleo/Gq7XN9UlwwvOvq7Osij6MeY6AZQTbCKwoATP3WjwmvnAa4zgzTyeJi6osahP5ymc3pwyJp47w60=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.186.31])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4XKrSG1qyFz6HJc8;
-	Fri,  4 Oct 2024 22:25:50 +0800 (CST)
-Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
-	by mail.maildlp.com (Postfix) with ESMTPS id E13691400CA;
-	Fri,  4 Oct 2024 22:25:53 +0800 (CST)
-Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
- (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 4 Oct
- 2024 16:25:53 +0200
-Date: Fri, 4 Oct 2024 15:25:51 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Guillaume Stols <gstols@baylibre.com>
-CC: Jonathan Cameron <jic23@kernel.org>, Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?=
-	<ukleinek@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "Michael
- Hennerich" <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
-	<rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Michal Marek
-	<mmarek@suse.com>, <linux-pwm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
-	<linux-iio@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>, <aardelean@baylibre.com>,
-	<dlechner@baylibre.com>, <jstephan@baylibre.com>
-Subject: Re: [PATCH v2 07/10] iio: adc: ad7606: Add compatibility to
- fw_nodes
-Message-ID: <20241004152551.00000813@Huawei.com>
-In-Reply-To: <57c5d8b1-295a-492f-b17c-b44caf8aeb2d@baylibre.com>
-References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
-	<20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
-	<20240929134412.506998db@jic23-huawei>
-	<57c5d8b1-295a-492f-b17c-b44caf8aeb2d@baylibre.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+	s=arc-20240116; t=1728054628; c=relaxed/simple;
+	bh=DsbWuseV+5Cr5RbOfN8uYeZ29UZNhc9bAL+m0ZBhGl0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LLWKJfxmMw5WW0NtnZLunoRwaoPlamuDqVQY/zM4EZ23+NfOaiABAeKlOmSuh3zbRjEugKJKYHfKUK7xgvJG5KSw9//6ZKVdGqdcZ6bMPf9ab+DOJ+c0OBn7cPS/QR6S57kc/iXsuhzexrmSo+MD4UxH6FVMN/7fdDqE65tN4vw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=QIYX5U97; arc=none smtp.client-ip=209.85.221.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="QIYX5U97"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-37cd8972738so1644169f8f.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 04 Oct 2024 08:10:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1728054623; x=1728659423; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=GbD5QQI9fbRtagD02Hd9rPEf77aWQGn5Irx05NL1xCE=;
+        b=QIYX5U97f5Zt06TQls1TmUgQ78qypZ893F6tw8UMqluR+VAGahNqsKUxSsddpkTRdF
+         SiC28zKG3mXfclseL5vs/QESnJN1BIOSrFcc8Zjlvi1QMdb4mqFdzVW/pDx93WG/WdX9
+         FVt/gN5AnehD2zrZQTHBN1amCSTUjP60uACwTJcVL+885iYaTomjCIecpo+38t9FOvo9
+         /7jyVuphEx+xdNKUcw7BfvuCkidsXKlKozPhnKWawO3YbzSfh31Jb5bbuNnwKkGDbBQ7
+         xyGVL2CVrqygXM9pqtlmb2vsuGEF+L3tDimyKStMIYIQMefbAYI80qD58k6YOCz2kMH1
+         CALQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728054623; x=1728659423;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=GbD5QQI9fbRtagD02Hd9rPEf77aWQGn5Irx05NL1xCE=;
+        b=Idp+L4IxYdEyC60YyJmvDPl0g5iK2B5IUAuNk6SniGYNHDk/zBSPu/pjMO+dwo86nH
+         TZ1SQHdyB45uZSClLXWw4dcxiZynXXoRAw3eQJUvycfCDGCK0C0xcbzFZjt3l5G6JSFi
+         06bTlqRf3Ks6Q2numDbDh9QPVgBT0TFJMdlRZEnjhto8+mtMmTup4hu41/jyU71nmZj1
+         PiN183q77q1ynBOacDQ6YWgbtiEPDd1hnD+cThBLPur1d8eM46qGJhQvWpE+VLjxEcr+
+         bMkGwSKKsO89TNuZubZK7xX8CwnNlhwaULfGc07rtXYgIos3GqSJhuE9ndQgwQE96qtp
+         EySQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXcDBg4yMHd8eTQ8AZ7xU3bnRAni5Lgda7wjKC0C4rywB+CstBUzPtwE4XO+lgXbpskOafojmrSZbWNYQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwMH8cSFGco8cIW3XJwcW8JT0X5APllezhjr1rR8+vjhGmdgLO1
+	+add4QYQawgnCYNyzC77kDTZ9RWHbAUCAVc56f2Nv+GhqQqC+NmmlVxrpPYFSyM=
+X-Google-Smtp-Source: AGHT+IHNkf+LyQDdbKVSXX5yZtwIGL87SsecooipYEPpbuU+08MHwf7aO/KarDzbVlgyUdnAiBWh8A==
+X-Received: by 2002:adf:b181:0:b0:37c:d299:b5f0 with SMTP id ffacd0b85a97d-37d0eb20122mr1730224f8f.59.1728054623038;
+        Fri, 04 Oct 2024 08:10:23 -0700 (PDT)
+Received: from ?IPV6:2a02:8428:e55b:1101:d506:c29c:99b9:6f15? (2a02-8428-e55b-1101-d506-c29c-99b9-6f15.rev.sfr.net. [2a02:8428:e55b:1101:d506:c29c:99b9:6f15])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37d0824504esm3404206f8f.54.2024.10.04.08.10.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 04 Oct 2024 08:10:22 -0700 (PDT)
+Message-ID: <0d2df826-1503-42f7-8f60-1025cc641e2c@baylibre.com>
+Date: Fri, 4 Oct 2024 17:10:21 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
- frapeml500008.china.huawei.com (7.182.85.71)
-
-On Wed, 2 Oct 2024 02:12:28 +0200
-Guillaume Stols <gstols@baylibre.com> wrote:
-
-> On 9/29/24 14:44, Jonathan Cameron wrote:
-> > On Fri, 20 Sep 2024 17:33:27 +0000
-> > Guillaume Stols <gstols@baylibre.com> wrote:
-> > =20
-> >> On the parallel version, the current implementation is only compatible
-> >> with id tables and won't work with fw_nodes, this commit intends to fix
-> >> it.
-> >>
-> >> Also, chip info is moved in the .h file so to be accessible to all the=
- =20
-> > chip info is not moved (I was going to say no to that) but an
-> > extern is used to make it available. So say that rather than moved here.
-> > =20
-> >> driver files that can set a pointer to the corresponding chip as the
-> >> driver data.
-> >>
-> >>  =20
-> >> diff --git a/drivers/iio/adc/ad7606.h b/drivers/iio/adc/ad7606.h
-> >> index c13dda444526..18c87fe9a41a 100644
-> >> --- a/drivers/iio/adc/ad7606.h
-> >> +++ b/drivers/iio/adc/ad7606.h
-> >> @@ -38,8 +38,19 @@
-> >>   	AD760X_CHANNEL(num, BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCAL=
-E),\
-> >>   		0, BIT(IIO_CHAN_INFO_OVERSAMPLING_RATIO))
-> >>  =20
-> >> +enum ad7606_supported_device_ids {
-> >> +	ID_AD7605_4,
-> >> +	ID_AD7606_8,
-> >> +	ID_AD7606_6,
-> >> +	ID_AD7606_4,
-> >> +	ID_AD7606B,
-> >> +	ID_AD7616,
-> >> +};
-> >> +
-> >>   /**
-> >>    * struct ad7606_chip_info - chip specific information
-> >> + * @name		device name
-> >> + * @id			device id =20
-> > ID in chip info normally indicates something bad in the design. In that=
- somewhere
-> > we have code that is ID dependent rather than all such code / data being
-> > found directly in this structure (or callbacks found from here).
-> > Can we avoid it here? =20
->=20
-> Hi Jonathan,
->=20
-> chip_info has to describe the chip hardwarewise, but there are different=
-=20
-> bops depending on the wiring (interface used, and backend/no backend).
-
-Normal solution to this is multiple chip specific structures so they
-become specific to a chip + some wiring option. Then you just
-pick between static const structures.
-
-Does that work here?
-
-You will need them exposed (extern) from your header but that's
-not too bad.
-
-Aim is to pick just one structure that describes all the 'specific'
-stuff for the driver.  That brings all that stuff into one place and
-provides an easy way to extend to new combinations of options for
-other devices.
-
-Jonathan
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 07/10] iio: adc: ad7606: Add compatibility to fw_nodes
+To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Michal Marek <mmarek@suse.com>, linux-pwm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-doc@vger.kernel.org, aardelean@baylibre.com, dlechner@baylibre.com,
+ jstephan@baylibre.com
+References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
+ <20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
+ <20240929134412.506998db@jic23-huawei>
+ <57c5d8b1-295a-492f-b17c-b44caf8aeb2d@baylibre.com>
+ <20241004152551.00000813@Huawei.com>
+Content-Language: en-US
+From: Guillaume Stols <gstols@baylibre.com>
+In-Reply-To: <20241004152551.00000813@Huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
->=20
-> The easiest way I found was to use the ID in a switch/case to=20
-> determinate which bops I should take (well it was only needed in the spi=
-=20
-> version since it is the one supporting almost all the chips while the=20
-> other ones still support only one). For instance, the ad7606B will use=20
-> ad7606_bi_bops if it has a backend and ad7606B_spi_bops for spi version.
->=20
-> If I can't use the ID, the only way I see is creating 3 fields in=20
-> chip_info (spi_ops, par_ops, backend_ops) and to initialize every=20
-> chip_info structure with its associated op(s) for the associated=20
-> interface. This would also lead to declare the different instances of=20
-> ad7606_bus_ops directly in ad7606.h=A0 (I dont like it very much but see=
-=20
-> no other option).
->=20
-> Do you think it's better that way ? Or do you have any other idea ?
->=20
-> Regards,
->=20
-> Guillaume
->=20
-> > =20
-> >>    * @channels:		channel specification
-> >>    * @num_channels:	number of channels
-> >>    * @oversampling_avail	pointer to the array which stores the availab=
-le
-> >> @@ -50,6 +61,8 @@ =20
-> > ...
-> > =20
-> >> diff --git a/drivers/iio/adc/ad7606_par.c b/drivers/iio/adc/ad7606_par=
-.c
-> >> index d651639c45eb..7bac39033955 100644
-> >> --- a/drivers/iio/adc/ad7606_par.c
-> >> +++ b/drivers/iio/adc/ad7606_par.c
-> >> @@ -11,6 +11,7 @@
-> >>   #include <linux/mod_devicetable.h>
-> >>   #include <linux/module.h>
-> >>   #include <linux/platform_device.h>
-> >> +#include <linux/property.h>
-> >>   #include <linux/types.h>
-> >>  =20
-> >>   #include <linux/iio/iio.h>
-> >> @@ -89,12 +90,20 @@ static const struct ad7606_bus_ops ad7606_par8_bop=
-s =3D {
-> >>  =20
-> >>   static int ad7606_par_probe(struct platform_device *pdev)
-> >>   {
-> >> -	const struct platform_device_id *id =3D platform_get_device_id(pdev);
-> >> +	const struct ad7606_chip_info *chip_info;
-> >> +	const struct platform_device_id *id;
-> >>   	struct resource *res;
-> >>   	void __iomem *addr;
-> >>   	resource_size_t remap_size;
-> >>   	int irq;
-> >>  =20
-> >> +	if (dev_fwnode(&pdev->dev)) {
-> >> +		chip_info =3D device_get_match_data(&pdev->dev);
-> >> +	} else {
-> >> +		id =3D platform_get_device_id(pdev);
-> >> +		chip_info =3D (const struct ad7606_chip_info *)id->driver_data;
-> >> +	}
-> >> +
-> >>   	irq =3D platform_get_irq(pdev, 0);
-> >>   	if (irq < 0)
-> >>   		return irq;
-> >> @@ -106,25 +115,25 @@ static int ad7606_par_probe(struct platform_devi=
-ce *pdev)
-> >>   	remap_size =3D resource_size(res);
-> >>  =20
-> >>   	return ad7606_probe(&pdev->dev, irq, addr,
-> >> -			    id->name, id->driver_data, =20
-> > Rewrap to move chip_info up a line perhaps.
-> > =20
-> >> +			    chip_info,
-> >>   			    remap_size > 1 ? &ad7606_par16_bops :
-> >>   			    &ad7606_par8_bops); =20
->=20
+On 10/4/24 16:25, Jonathan Cameron wrote:
+> On Wed, 2 Oct 2024 02:12:28 +0200
+> Guillaume Stols <gstols@baylibre.com> wrote:
+>
+>> On 9/29/24 14:44, Jonathan Cameron wrote:
+>>> On Fri, 20 Sep 2024 17:33:27 +0000
+>>> Guillaume Stols <gstols@baylibre.com> wrote:
+>>>   
+>>>> On the parallel version, the current implementation is only compatible
+>>>> with id tables and won't work with fw_nodes, this commit intends to fix
+>>>> it.
+>>>>
+>>>> Also, chip info is moved in the .h file so to be accessible to all the
+>>> chip info is not moved (I was going to say no to that) but an
+>>> extern is used to make it available. So say that rather than moved here.
+>>>   
+>>>> driver files that can set a pointer to the corresponding chip as the
+>>>> driver data.
+>>>>
+>>>>    
+>>>> diff --git a/drivers/iio/adc/ad7606.h b/drivers/iio/adc/ad7606.h
+>>>> index c13dda444526..18c87fe9a41a 100644
+>>>> --- a/drivers/iio/adc/ad7606.h
+>>>> +++ b/drivers/iio/adc/ad7606.h
+>>>> @@ -38,8 +38,19 @@
+>>>>    	AD760X_CHANNEL(num, BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE),\
+>>>>    		0, BIT(IIO_CHAN_INFO_OVERSAMPLING_RATIO))
+>>>>    
+>>>> +enum ad7606_supported_device_ids {
+>>>> +	ID_AD7605_4,
+>>>> +	ID_AD7606_8,
+>>>> +	ID_AD7606_6,
+>>>> +	ID_AD7606_4,
+>>>> +	ID_AD7606B,
+>>>> +	ID_AD7616,
+>>>> +};
+>>>> +
+>>>>    /**
+>>>>     * struct ad7606_chip_info - chip specific information
+>>>> + * @name		device name
+>>>> + * @id			device id
+>>> ID in chip info normally indicates something bad in the design. In that somewhere
+>>> we have code that is ID dependent rather than all such code / data being
+>>> found directly in this structure (or callbacks found from here).
+>>> Can we avoid it here?
+>> Hi Jonathan,
+>>
+>> chip_info has to describe the chip hardwarewise, but there are different
+>> bops depending on the wiring (interface used, and backend/no backend).
+> Normal solution to this is multiple chip specific structures so they
+> become specific to a chip + some wiring option. Then you just
+> pick between static const structures.
+>
+> Does that work here?
+>
+> You will need them exposed (extern) from your header but that's
+> not too bad.
+>
+> Aim is to pick just one structure that describes all the 'specific'
+> stuff for the driver.  That brings all that stuff into one place and
+> provides an easy way to extend to new combinations of options for
+> other devices.
+>
+> Jonathan
 
+I finally wrote a structure containing the couple chip_info/bops
+
+/**
+  * struct ad7606_bus_info - agregate ad7606_chip_info and ad7606_bus_ops
+  * @chip_info        entry in the table of chips that describes this device
+  * @bops        bus operations (SPI or parallel)
+  */
+struct ad7606_bus_info {
+     const struct ad7606_chip_info    *chip_info;
+     const struct ad7606_bus_ops    *bops;
+};
+
+and declared the following way
+
+const struct ad7606_bus_info ad7606b_bus_info = {
+     .chip_info = &ad7606b_info,
+     .bops = &ad7606b_spi_bops,
+};
+
+const struct ad7606_bus_info ad7606c_16_bus_info = {
+     .chip_info = &ad7606c_16_info,
+     .bops = &ad7606b_spi_bops,
+
+etc...
+
+Will send the series later today, just doing some last checks.
+
+>
+>
+>> The easiest way I found was to use the ID in a switch/case to
+>> determinate which bops I should take (well it was only needed in the spi
+>> version since it is the one supporting almost all the chips while the
+>> other ones still support only one). For instance, the ad7606B will use
+>> ad7606_bi_bops if it has a backend and ad7606B_spi_bops for spi version.
+>>
+>> If I can't use the ID, the only way I see is creating 3 fields in
+>> chip_info (spi_ops, par_ops, backend_ops) and to initialize every
+>> chip_info structure with its associated op(s) for the associated
+>> interface. This would also lead to declare the different instances of
+>> ad7606_bus_ops directly in ad7606.h  (I dont like it very much but see
+>> no other option).
+>>
+>> Do you think it's better that way ? Or do you have any other idea ?
+>>
+>> Regards,
+>>
+>> Guillaume
+>>
+>>>   
+>>>>     * @channels:		channel specification
+>>>>     * @num_channels:	number of channels
+>>>>     * @oversampling_avail	pointer to the array which stores the available
+>>>> @@ -50,6 +61,8 @@
+>>> ...
+>>>   
+>>>> diff --git a/drivers/iio/adc/ad7606_par.c b/drivers/iio/adc/ad7606_par.c
+>>>> index d651639c45eb..7bac39033955 100644
+>>>> --- a/drivers/iio/adc/ad7606_par.c
+>>>> +++ b/drivers/iio/adc/ad7606_par.c
+>>>> @@ -11,6 +11,7 @@
+>>>>    #include <linux/mod_devicetable.h>
+>>>>    #include <linux/module.h>
+>>>>    #include <linux/platform_device.h>
+>>>> +#include <linux/property.h>
+>>>>    #include <linux/types.h>
+>>>>    
+>>>>    #include <linux/iio/iio.h>
+>>>> @@ -89,12 +90,20 @@ static const struct ad7606_bus_ops ad7606_par8_bops = {
+>>>>    
+>>>>    static int ad7606_par_probe(struct platform_device *pdev)
+>>>>    {
+>>>> -	const struct platform_device_id *id = platform_get_device_id(pdev);
+>>>> +	const struct ad7606_chip_info *chip_info;
+>>>> +	const struct platform_device_id *id;
+>>>>    	struct resource *res;
+>>>>    	void __iomem *addr;
+>>>>    	resource_size_t remap_size;
+>>>>    	int irq;
+>>>>    
+>>>> +	if (dev_fwnode(&pdev->dev)) {
+>>>> +		chip_info = device_get_match_data(&pdev->dev);
+>>>> +	} else {
+>>>> +		id = platform_get_device_id(pdev);
+>>>> +		chip_info = (const struct ad7606_chip_info *)id->driver_data;
+>>>> +	}
+>>>> +
+>>>>    	irq = platform_get_irq(pdev, 0);
+>>>>    	if (irq < 0)
+>>>>    		return irq;
+>>>> @@ -106,25 +115,25 @@ static int ad7606_par_probe(struct platform_device *pdev)
+>>>>    	remap_size = resource_size(res);
+>>>>    
+>>>>    	return ad7606_probe(&pdev->dev, irq, addr,
+>>>> -			    id->name, id->driver_data,
+>>> Rewrap to move chip_info up a line perhaps.
+>>>   
+>>>> +			    chip_info,
+>>>>    			    remap_size > 1 ? &ad7606_par16_bops :
+>>>>    			    &ad7606_par8_bops);

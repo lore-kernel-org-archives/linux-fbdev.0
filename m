@@ -1,141 +1,143 @@
-Received: from mail-wr1-f66.google.com (mail-wr1-f66.google.com [209.85.221.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30E6F1C75E0
-	for <linux-fbdev@vger.kernel.org>; Fri,  4 Oct 2024 15:24:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DE0D1EBA06;
+	Fri,  4 Oct 2024 18:21:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728055478; cv=none; b=BQRPRlEXskiyAupxZVNtGF/das6GMFPiZk3ULHhqPHYA6IB01/wBsxeOIAIWbDJQmTAZ6BXnW7mP3MlLTWP86TYhViNvWi6DIIy9f7f5ATrJW1SUAikV6ohZkwWWsLePy2Sg5MBspJcZ1rLHTXLaRLGAOMXdzKB8p/yb07VO0yo=
+	t=1728066063; cv=none; b=pN4KJK5h+wfjZEbte0e0/ldx6uPMtXkoTL4kHeT17KnQWzvZXjYJ71G9pAiNnPggtQKWvfHKqLclwxrJlNP7YmH5U8dWxlOnNrp7O4L73fFijB98IXRWyjHpRCNDi+k7JtUqAVu+PAiQIuuNP8RTYetdwXIMtWx2zKcklSMTHZ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728055478; c=relaxed/simple;
-	bh=T7IRw1AKNUwr5QIrdOkZhvYlhMJLiSS7agj0Ncqc278=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=pl+HqDLHq4Gml9qB9sR9lWVS1THbk64BgwbPAFvmbvQO7ixmz0zZS+zl8NMNvBrTOKU+dBTOLxuGspY/rp9we08+2PJSj/Ovh+4jJJr2QdNXmD1oaR8/peQDNYC00oRtpfM6xvjpIdb6SVXkexoXmuSpZJVVAuzo3cq0NC3IvNI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Kbbb3Izl; arc=none smtp.client-ip=209.85.221.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1728066063; c=relaxed/simple;
+	bh=oEFSlR58nDMd09E94PgA9CUZgL5fRNeq8lC+AEKU7cw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=hls+kalIGeO6L1iUep53DRpT29eYC6atFSz61FeISWgHTiJbpjW516rXysaUHLlDhkx6KKsbRVb9NhukaG4tF+P1KK3OdieNJErRDoVlJwirG3agw1MPvVgrzkdSdkINaqyBwYEPW6P7va61ZbMJMugijRnjFgP9rh9cqEfO+K4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CkL7lC/o; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kbbb3Izl"
-Received: by mail-wr1-f66.google.com with SMTP id ffacd0b85a97d-37ccc597b96so1521870f8f.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Oct 2024 08:24:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1728055474; x=1728660274; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gBEcrk99pLwxmiJHtfJfKgyMHG/gC+Hf5TZACV40Dqc=;
-        b=Kbbb3IzlbhI5YtubfwN3Oqfdwejd3Vyy/U/pY3ckIV8FKsKD2+zlfa8wTmov18m/qP
-         8uR74kV7J11D0jhyK4tHw0g22zc0VK2YcFlCsMbgFBKTurPypkMqsnLF+Jk5fJiSMwKr
-         C+oWluqOg/f0MqcL9shSbW9NUVY+XDfL6JwmaLAxy9X30i9VM6eycsvDJDdee1sminzv
-         1IJrXxYViBsJBpHZcK6Ii3PTrMpBTuqT1zDHS7q9UJ0JfYPAtw4fJPOoiQNiuo33xFXD
-         mgz9szCfoYEBN+LScLCpqbeBar12Yrls+DXKSTIw6MGuakHADel00Vr2lsgS7vGB4pIO
-         /Xpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728055474; x=1728660274;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=gBEcrk99pLwxmiJHtfJfKgyMHG/gC+Hf5TZACV40Dqc=;
-        b=uNVPLc28Gzk/BbmltuAHwaE2IqYoM2dfRWKAQO9LVg8kr/lO9RrMIAJD483BHgEmRd
-         PONisyPsJcj/dfrwF79dlmULOiWehHr5AH2YXHB4ixtJ3rQf6RQ2/QvqG9z0Cz+bBrex
-         7S7dYQltB1IK/Q/9qk2Tj8qb2gqhNohOXr8tuOAr5Cv57+9CHtadIgeWO4WDKCz4c7X4
-         VZRe/lTuTZfdEv7moDelevspzPP41Jzz4LN80HlkUWtm8bdHRlLFs98N/y4U0FH1vXa0
-         ct4Pp5c4229flrukQUkWwoVP0Gx9YANhW8KvTcFwA3B6sS8vqw5i7lrUyWzZxfCWzFIt
-         G63w==
-X-Gm-Message-State: AOJu0YxrAbqbtiWZRvQ7+W5PSeSAUQ9KVvu9szInKwC+OWGlF/8U4w5L
-	id1FtTvvbpfFPzKwxdyHx0zrJBjLFZZCy01M3jOX6di79uDZbZVD9/mOSgcK17c=
-X-Google-Smtp-Source: AGHT+IGNZoBBCwh9bvJvyw0BHHpRZMKCQqvyxWnYs3vbrVfla9eIZqQ6Oj9nLBMCnSg/iAmXYFRlHg==
-X-Received: by 2002:a5d:64e7:0:b0:371:c51a:3b2a with SMTP id ffacd0b85a97d-37d0e6d31edmr3034859f8f.4.1728055474346;
-        Fri, 04 Oct 2024 08:24:34 -0700 (PDT)
-Received: from localhost.localdomain ([83.165.96.99])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37d081f7103sm3466317f8f.1.2024.10.04.08.24.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Oct 2024 08:24:33 -0700 (PDT)
-From: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	thomas.zimmermann@suse.de,
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-Subject: [PATCH v2] fbdev: sstfb: Make CONFIG_FB_DEVICE optional
-Date: Fri,  4 Oct 2024 17:24:29 +0200
-Message-Id: <20241004152429.4329-1-gonzalo.silvalde@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <1db0e2db-97e0-492f-ba89-0a1f49ca4498@suse.de>
-References: <1db0e2db-97e0-492f-ba89-0a1f49ca4498@suse.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CkL7lC/o"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08271C4CECC;
+	Fri,  4 Oct 2024 18:21:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1728066063;
+	bh=oEFSlR58nDMd09E94PgA9CUZgL5fRNeq8lC+AEKU7cw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=CkL7lC/obgZsh/nLqfpHXmC9FvHZlL68FpKQ6RVWNbwrrDswNMmLNKdga7ZbNbuUj
+	 kbljTk6nettja/Hfc/i+046RPVOYQJxhjbp072FcAOahqnkuJxUdG88KeV8fFgk6uU
+	 3bMQvxvy8MEVXNhXoBJtz1ij2AFU38EaGFlgSicEs+GKBSEansih244+iH6QcNcVim
+	 qn0/29N08+LE0i2IGIISX6mWd1jwnYUZj+TzCAOnfIGzRoHr7GJtoOGh4UT68O68H3
+	 4gW4gzsDXUgQi31VrWg2il1shBE4CaKQsogLnwCYbguhxzCnJJNrHniGABedoNKhBy
+	 Jisg+w9/62YLw==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Qianqiang Liu <qianqiang.liu@163.com>,
+	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	daniel@ffwll.ch,
+	jirislaby@kernel.org,
+	gregkh@linuxfoundation.org,
+	geert+renesas@glider.be,
+	samuel.thibault@ens-lyon.org,
+	tzimmermann@suse.de,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.11 74/76] fbcon: Fix a NULL pointer dereference issue in fbcon_putcs
+Date: Fri,  4 Oct 2024 14:17:31 -0400
+Message-ID: <20241004181828.3669209-74-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20241004181828.3669209-1-sashal@kernel.org>
+References: <20241004181828.3669209-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.11.2
 Content-Transfer-Encoding: 8bit
 
-The sstfb driver currently depends on CONFIG_FB_DEVICE to create sysfs
-entries and access info->dev. This patch wraps the relevant code blocks
-with #ifdef CONFIG_FB_DEVICE, allowing the driver to be built and used
-even if CONFIG_FB_DEVICE is not selected.
+From: Qianqiang Liu <qianqiang.liu@163.com>
 
-The sysfs setting only controls the VGA pass-through state and is not
-required for the display to work correctly.
-(See: http://vogonswiki.com/index.php/VGA_passthrough_cable
-for more information.)
+[ Upstream commit 5b97eebcce1b4f3f07a71f635d6aa3af96c236e7 ]
 
-Tested by building with and without CONFIG_FB_DEVICE, both of which
-compiled without issues.
+syzbot has found a NULL pointer dereference bug in fbcon.
+Here is the simplified C reproducer:
 
-Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
+struct param {
+	uint8_t type;
+	struct tiocl_selection ts;
+};
+
+int main()
+{
+	struct fb_con2fbmap con2fb;
+	struct param param;
+
+	int fd = open("/dev/fb1", 0, 0);
+
+	con2fb.console = 0x19;
+	con2fb.framebuffer = 0;
+	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
+
+	param.type = 2;
+	param.ts.xs = 0; param.ts.ys = 0;
+	param.ts.xe = 0; param.ts.ye = 0;
+	param.ts.sel_mode = 0;
+
+	int fd1 = open("/dev/tty1", O_RDWR, 0);
+	ioctl(fd1, TIOCLINUX, &param);
+
+	con2fb.console = 1;
+	con2fb.framebuffer = 0;
+	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
+
+	return 0;
+}
+
+After calling ioctl(fd1, TIOCLINUX, &param), the subsequent ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb)
+causes the kernel to follow a different execution path:
+
+ set_con2fb_map
+  -> con2fb_init_display
+   -> fbcon_set_disp
+    -> redraw_screen
+     -> hide_cursor
+      -> clear_selection
+       -> highlight
+        -> invert_screen
+         -> do_update_region
+          -> fbcon_putcs
+           -> ops->putcs
+
+Since ops->putcs is a NULL pointer, this leads to a kernel panic.
+To prevent this, we need to call set_blitting_type() within set_con2fb_map()
+to properly initialize ops->putcs.
+
+Reported-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=3d613ae53c031502687a
+Tested-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
+Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/sstfb.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index f8ae54ca0cc3..8d2e9d1f8d80 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -716,6 +716,7 @@ static void sstfb_setvgapass( struct fb_info *info, int enable )
- 	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
- }
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 3f7333dca508c..fedd796c9a5cd 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -847,6 +847,8 @@ static int set_con2fb_map(int unit, int newidx, int user)
+ 			return err;
  
-+#ifdef CONFIG_FB_DEVICE
- static ssize_t store_vgapass(struct device *device, struct device_attribute *attr,
- 			const char *buf, size_t count)
- {
-@@ -736,10 +737,10 @@ static ssize_t show_vgapass(struct device *device, struct device_attribute *attr
- 	struct sstfb_par *par = info->par;
- 	return sprintf(buf, "%d\n", par->vgapass);
- }
--
- static struct device_attribute device_attrs[] = {
- 	__ATTR(vgapass, S_IRUGO|S_IWUSR, show_vgapass, store_vgapass)
- 	};
-+#endif
- 
- static int sstfb_ioctl(struct fb_info *info, unsigned int cmd,
- 			unsigned long arg)
-@@ -1435,10 +1436,10 @@ static int sstfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		fbcon_add_cursor_work(info);
++	} else if (vc) {
++		set_blitting_type(vc, info);
  	}
  
- 	sstfb_clear_screen(info);
--
-+#fdef CONFIG_FB_DEVICE
- 	if (device_create_file(info->dev, &device_attrs[0]))
- 		printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
--
-+#endif
- 
- 	fb_info(info, "%s frame buffer device at 0x%p\n",
- 		fix->id, info->screen_base);
-@@ -1467,8 +1468,9 @@ static void sstfb_remove(struct pci_dev *pdev)
- 
- 	info = pci_get_drvdata(pdev);
- 	par = info->par;
--
-+#ifdef CONFIG_FB_DEVICE
- 	device_remove_file(info->dev, &device_attrs[0]);
-+#endif
- 	sst_shutdown(info);
- 	iounmap(info->screen_base);
- 	iounmap(par->mmio_vbase);
+ 	con2fb_map[unit] = newidx;
 -- 
-2.39.5
+2.43.0
 

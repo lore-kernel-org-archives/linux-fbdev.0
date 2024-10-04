@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D6BD1E0485;
-	Fri,  4 Oct 2024 18:30:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8D2F1E0DAD;
+	Fri,  4 Oct 2024 18:31:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728066656; cv=none; b=PnQ7rJ8qjbDyTAs8TDztKAmhsZrJa+H+6t72UWoHz/KbSb5uCfqZsfIfQaPu9AXRjNTaLQukFJZ9220/eZF9F/eeOitar9dzTm+UpH5Qlnpil5HsJBQywYyJmFdaZXbFY6UcAjRVcSj5Y+Xoka7dlk1rksnVMIoi6yRPdA2kVF8=
+	t=1728066702; cv=none; b=Y7M+FuKRiWM0xgFRmXyIyla+sYNUED9sP+gXQwalo76A9BVM3XritCiiYIFwi//Qf+Bu3pub7FKTQa3TADYm8i8mKVFYKqVLLU4xeD3d+zXmaUv1J7Y3Yav03VvXrFiw/7xh6PotXgUV3ESEu3H5QuBas7ZmQymYimUqQM/vn3k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728066656; c=relaxed/simple;
-	bh=SlTiofh6GvA83e6B+/3V1JTA83H07z8RLKI7m6SY/ZE=;
+	s=arc-20240116; t=1728066702; c=relaxed/simple;
+	bh=B8Fx3Q+Xw1jiIfd8zISR/GfjM0Tn9csC0lTW5Rn8nQM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fv2PIE/0Ij1wd6nS1WaDC7DSxBWE1SSSWOvM205Hcw4VUStmkXNl4xOGcMeJZml48LFcA1qj4Mw4v9Dh71jJlJDW3jHLZSz5qbYCzqZMnGM6CRHkgOG5m1Pu5WMpTrCRXZskggJtMB16TEX5i5zpgTYdIGps8LjBacoVSeLFJQU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hx7XDP1o; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=a82hd0LYvhFVMd0nz7scK92AMVJpWOJ7aEPfWXnUezUSbskPWU52rrxVXW+HFvCsZ+yxW++cMrkqiAYzctgW7Um8JBZytA/wgXljaoe5qPTnuJXbh7/lUefprX/He3eurzS3n5j0WnGkg910PsBobssNf21JRdve/zKYKSIIuus=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=i1/Q1TFc; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hx7XDP1o"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9C33C4CECD;
-	Fri,  4 Oct 2024 18:30:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="i1/Q1TFc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DD0FC4CEC6;
+	Fri,  4 Oct 2024 18:31:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728066655;
-	bh=SlTiofh6GvA83e6B+/3V1JTA83H07z8RLKI7m6SY/ZE=;
+	s=k20201202; t=1728066702;
+	bh=B8Fx3Q+Xw1jiIfd8zISR/GfjM0Tn9csC0lTW5Rn8nQM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hx7XDP1osCCF+pPjJ3qetVqpJr2mAm6AQlp71PnvmI3mVKmIRl2XCqW0PYRNVtzqi
-	 /WetJ4K3yLCu3AY8Hl+bEi/SLBCIqAjLBeiC+R2WxKPOP84K3c30Aco2Tiku5jv/9x
-	 q8fd7FeptBM8DfUszwWqEkOSr542gLP9gpiHDaqQYVsDnyM+dteNzgcjFqQ4C98i9U
-	 XcqGLFjS71ARjTjtly9NwUKoZF3SC/TF61vkegafBBHns/Idoe9tuIpfNAeQ8kE27t
-	 s1PZrzdFOTxqhTPhfZPpgOtjgYmTBQ6Od4aUPTLJHQU/FPq3QlvZXbHCZPFVfo7oj3
-	 S4XfsOxvSdsCA==
+	b=i1/Q1TFcveFrmhuEK2IregLyLNmwUFQ4M7EB04OODcW4vfIF0SFWkQnPKIXsyrGFH
+	 w47IsVXSyR2YFHBQJxvYEN/6PAhdH3qDWVPfOBvgnBq3uqHVx/fX2KvgxMmQV3R/Ui
+	 qISI+dhQg7s2HSsUFzyxb0lHu4k26Qec+cbWYojNueqeT0EBCPXAUh6YX0cCmSyBZX
+	 37PVmRyU+E5xYm2GxWocWtpQQec62QdHIzp6MdzYv4UHkJ8wkx9leVuhwfMFX8MZq9
+	 AOHSW8zZcWDmpX9PCf3orxxMG+IWKjEMDirC9MC3togfl6d6cavqa9Abth83oxtTxu
+	 DBDms5NQVLMig==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -33,16 +33,16 @@ Cc: Andrey Shumilin <shum.sdl@nppct.ru>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
 	tzimmermann@suse.de,
-	javierm@redhat.com,
 	fullwaywang@outlook.com,
+	javierm@redhat.com,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.10 26/26] fbdev: sisfb: Fix strbuf array overflow
-Date: Fri,  4 Oct 2024 14:29:52 -0400
-Message-ID: <20241004183005.3675332-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 21/21] fbdev: sisfb: Fix strbuf array overflow
+Date: Fri,  4 Oct 2024 14:30:56 -0400
+Message-ID: <20241004183105.3675901-21-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241004183005.3675332-1-sashal@kernel.org>
-References: <20241004183005.3675332-1-sashal@kernel.org>
+In-Reply-To: <20241004183105.3675901-1-sashal@kernel.org>
+References: <20241004183105.3675901-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -51,7 +51,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.10.226
+X-stable-base: Linux 5.4.284
 Content-Transfer-Encoding: 8bit
 
 From: Andrey Shumilin <shum.sdl@nppct.ru>
@@ -76,7 +76,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index e540cb0c51726..7787fd21932cb 100644
+index 2fdd02e51f5fc..db745dc3cebe2 100644
 --- a/drivers/video/fbdev/sis/sis_main.c
 +++ b/drivers/video/fbdev/sis/sis_main.c
 @@ -183,7 +183,7 @@ static void sisfb_search_mode(char *name, bool quiet)

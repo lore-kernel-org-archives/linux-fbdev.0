@@ -1,193 +1,211 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41DE015748E;
-	Fri,  4 Oct 2024 14:02:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24EAD20FAB3;
+	Fri,  4 Oct 2024 14:25:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728050568; cv=none; b=dJKFGI4usTeSAbGzfo2k2HQ8KGfZeswRFt1DUMGacgbfwNkNUZy4DCCt4N0Ok/6oxJqeITabBnsZ6y4/Cu/xQGWPFgghZd/v0tCcy16/cUCkN4M2RcE2RyNhp+cUjiMwTMAQAHsqI952sQ7Y1iIr7JXmRk+VElv0qXHl++sUqjA=
+	t=1728051958; cv=none; b=GWrJpfU4vjH3J+YGcpO+L+LsgYxnlnZ5byvLKKRU7mEubMw7e6zhBjmS1nlBJQhXslZs0S00Xy5FKODp2wHLqTSwGPwInB/yLcUXQVQu0mtSBv/jBugeXFXf9EJ7m+iLHHKRQNr403m5OssnBmZemt/U3psg7p6o9eC1vSphQF8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728050568; c=relaxed/simple;
-	bh=Foo2ekqWaWWi28wmA/yN6/45dO3dfNCZnOQEmUN4X18=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=N2tCsIxT06Pn+erifcw/+VzDVtE1bw7cVp1LAPEt1tOT54wbGrrqwyM+M+m5ZmJ/0Moi2gle2AcC3dw6OHjmjIWwMuVYNfcrz5YnUG4+BTjudSkoXKI+xkIUNoJbRbLHCsB3E+twIeqv87PAPjyOLsdSjvayirY7yUHHjQs3/OA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zq6kmT7f; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=+7PlV7z3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zq6kmT7f; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=+7PlV7z3; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zq6kmT7f";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+7PlV7z3";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zq6kmT7f";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+7PlV7z3"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 7381821CA8;
-	Fri,  4 Oct 2024 14:02:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1728050562; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gqObr0AigrA7ZpSBRTkZlMkVnj4cssT1fvsbDoNXTBA=;
-	b=zq6kmT7fngtRfjgf9qUkwTesO8WgncvKkraHd2d8ezCwKqSdaxEFtwIKIxNP+Nmv4s6o+1
-	qbJo/d8FsMqk/NshOosnwiNswVOBsRux5Nu135oArTM0eucWh10iF7ptbGgK4Me5qcRkWz
-	trMj+a848KoRwX8ptLOvoD2Vl4kXsoQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1728050562;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gqObr0AigrA7ZpSBRTkZlMkVnj4cssT1fvsbDoNXTBA=;
-	b=+7PlV7z3ZLT73G0jZTspuxXdOAmuf2J5/0vMiX54e6PEESOg69lWqzIccWfLZUbW781hyb
-	B+nN77x3oiYupTCA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=zq6kmT7f;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=+7PlV7z3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1728050562; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gqObr0AigrA7ZpSBRTkZlMkVnj4cssT1fvsbDoNXTBA=;
-	b=zq6kmT7fngtRfjgf9qUkwTesO8WgncvKkraHd2d8ezCwKqSdaxEFtwIKIxNP+Nmv4s6o+1
-	qbJo/d8FsMqk/NshOosnwiNswVOBsRux5Nu135oArTM0eucWh10iF7ptbGgK4Me5qcRkWz
-	trMj+a848KoRwX8ptLOvoD2Vl4kXsoQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1728050562;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gqObr0AigrA7ZpSBRTkZlMkVnj4cssT1fvsbDoNXTBA=;
-	b=+7PlV7z3ZLT73G0jZTspuxXdOAmuf2J5/0vMiX54e6PEESOg69lWqzIccWfLZUbW781hyb
-	B+nN77x3oiYupTCA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4962313A6E;
-	Fri,  4 Oct 2024 14:02:42 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id eC2iEIL1/2ZxYAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 04 Oct 2024 14:02:42 +0000
-Message-ID: <713a42f1-83d0-4d20-96f0-db9815313205@suse.de>
-Date: Fri, 4 Oct 2024 16:02:41 +0200
+	s=arc-20240116; t=1728051958; c=relaxed/simple;
+	bh=VLd66Cbz9muKF7Etf6eUjwWYZzDeImjqSXpDNbBE3Cg=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=tKxoOIT/lJKy1tQ7T9LZmBqHWmohd5FQzbZtYLCekdQ8yqfb5H0r9pZR3q28YWxf0SygruPnyV89oCxGjhWsHM8cbCcHleo/Gq7XN9UlwwvOvq7Osij6MeY6AZQTbCKwoATP3WjwmvnAa4zgzTyeJi6osahP5ymc3pwyJp47w60=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.31])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4XKrSG1qyFz6HJc8;
+	Fri,  4 Oct 2024 22:25:50 +0800 (CST)
+Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
+	by mail.maildlp.com (Postfix) with ESMTPS id E13691400CA;
+	Fri,  4 Oct 2024 22:25:53 +0800 (CST)
+Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
+ (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 4 Oct
+ 2024 16:25:53 +0200
+Date: Fri, 4 Oct 2024 15:25:51 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Guillaume Stols <gstols@baylibre.com>
+CC: Jonathan Cameron <jic23@kernel.org>, Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?=
+	<ukleinek@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "Michael
+ Hennerich" <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
+	<rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Michal Marek
+	<mmarek@suse.com>, <linux-pwm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+	<linux-iio@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-doc@vger.kernel.org>, <aardelean@baylibre.com>,
+	<dlechner@baylibre.com>, <jstephan@baylibre.com>
+Subject: Re: [PATCH v2 07/10] iio: adc: ad7606: Add compatibility to
+ fw_nodes
+Message-ID: <20241004152551.00000813@Huawei.com>
+In-Reply-To: <57c5d8b1-295a-492f-b17c-b44caf8aeb2d@baylibre.com>
+References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
+	<20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
+	<20240929134412.506998db@jic23-huawei>
+	<57c5d8b1-295a-492f-b17c-b44caf8aeb2d@baylibre.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: clps711x-fb: Remove dead code
-To: Qianqiang Liu <qianqiang.liu@163.com>, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20241004014349.435006-1-qianqiang.liu@163.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20241004014349.435006-1-qianqiang.liu@163.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Rspamd-Queue-Id: 7381821CA8
-X-Spam-Score: -4.51
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[163.com,gmx.de];
-	FREEMAIL_ENVRCPT(0.00)[163.com,gmx.de];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	RCVD_TLS_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.de:mid,suse.de:email];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Flag: NO
-X-Spam-Level: 
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ frapeml500008.china.huawei.com (7.182.85.71)
 
-Hi
+On Wed, 2 Oct 2024 02:12:28 +0200
+Guillaume Stols <gstols@baylibre.com> wrote:
 
-Am 04.10.24 um 03:43 schrieb Qianqiang Liu:
-> The code can never be reached: unregister_framebuffer(info);
->
-> Fixes: 36462ac19308 ("fbdev: clps711x-fb: Replace check_fb in favor of struct fb_info.lcd_dev")
-> Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
+> On 9/29/24 14:44, Jonathan Cameron wrote:
+> > On Fri, 20 Sep 2024 17:33:27 +0000
+> > Guillaume Stols <gstols@baylibre.com> wrote:
+> > =20
+> >> On the parallel version, the current implementation is only compatible
+> >> with id tables and won't work with fw_nodes, this commit intends to fix
+> >> it.
+> >>
+> >> Also, chip info is moved in the .h file so to be accessible to all the=
+ =20
+> > chip info is not moved (I was going to say no to that) but an
+> > extern is used to make it available. So say that rather than moved here.
+> > =20
+> >> driver files that can set a pointer to the corresponding chip as the
+> >> driver data.
+> >>
+> >>  =20
+> >> diff --git a/drivers/iio/adc/ad7606.h b/drivers/iio/adc/ad7606.h
+> >> index c13dda444526..18c87fe9a41a 100644
+> >> --- a/drivers/iio/adc/ad7606.h
+> >> +++ b/drivers/iio/adc/ad7606.h
+> >> @@ -38,8 +38,19 @@
+> >>   	AD760X_CHANNEL(num, BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCAL=
+E),\
+> >>   		0, BIT(IIO_CHAN_INFO_OVERSAMPLING_RATIO))
+> >>  =20
+> >> +enum ad7606_supported_device_ids {
+> >> +	ID_AD7605_4,
+> >> +	ID_AD7606_8,
+> >> +	ID_AD7606_6,
+> >> +	ID_AD7606_4,
+> >> +	ID_AD7606B,
+> >> +	ID_AD7616,
+> >> +};
+> >> +
+> >>   /**
+> >>    * struct ad7606_chip_info - chip specific information
+> >> + * @name		device name
+> >> + * @id			device id =20
+> > ID in chip info normally indicates something bad in the design. In that=
+ somewhere
+> > we have code that is ID dependent rather than all such code / data being
+> > found directly in this structure (or callbacks found from here).
+> > Can we avoid it here? =20
+>=20
+> Hi Jonathan,
+>=20
+> chip_info has to describe the chip hardwarewise, but there are different=
+=20
+> bops depending on the wiring (interface used, and backend/no backend).
 
-Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+Normal solution to this is multiple chip specific structures so they
+become specific to a chip + some wiring option. Then you just
+pick between static const structures.
 
-> ---
->   drivers/video/fbdev/clps711x-fb.c | 2 --
->   1 file changed, 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
-> index 9e3df1df5ac4..b57134bc63e7 100644
-> --- a/drivers/video/fbdev/clps711x-fb.c
-> +++ b/drivers/video/fbdev/clps711x-fb.c
-> @@ -332,8 +332,6 @@ static int clps711x_fb_probe(struct platform_device *pdev)
->   
->   	return 0;
->   
-> -	unregister_framebuffer(info);
-> -
+Does that work here?
 
-This used to be code for error rollback, but is now unused. Thanks for 
-fixing the issue.
+You will need them exposed (extern) from your header but that's
+not too bad.
 
-Best regards
-Thomas
+Aim is to pick just one structure that describes all the 'specific'
+stuff for the driver.  That brings all that stuff into one place and
+provides an easy way to extend to new combinations of options for
+other devices.
 
->   out_fb_dealloc_cmap:
->   	regmap_update_bits(cfb->syscon, SYSCON_OFFSET, SYSCON1_LCDEN, 0);
->   	fb_dealloc_cmap(&info->cmap);
+Jonathan
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+
+>=20
+> The easiest way I found was to use the ID in a switch/case to=20
+> determinate which bops I should take (well it was only needed in the spi=
+=20
+> version since it is the one supporting almost all the chips while the=20
+> other ones still support only one). For instance, the ad7606B will use=20
+> ad7606_bi_bops if it has a backend and ad7606B_spi_bops for spi version.
+>=20
+> If I can't use the ID, the only way I see is creating 3 fields in=20
+> chip_info (spi_ops, par_ops, backend_ops) and to initialize every=20
+> chip_info structure with its associated op(s) for the associated=20
+> interface. This would also lead to declare the different instances of=20
+> ad7606_bus_ops directly in ad7606.h=A0 (I dont like it very much but see=
+=20
+> no other option).
+>=20
+> Do you think it's better that way ? Or do you have any other idea ?
+>=20
+> Regards,
+>=20
+> Guillaume
+>=20
+> > =20
+> >>    * @channels:		channel specification
+> >>    * @num_channels:	number of channels
+> >>    * @oversampling_avail	pointer to the array which stores the availab=
+le
+> >> @@ -50,6 +61,8 @@ =20
+> > ...
+> > =20
+> >> diff --git a/drivers/iio/adc/ad7606_par.c b/drivers/iio/adc/ad7606_par=
+.c
+> >> index d651639c45eb..7bac39033955 100644
+> >> --- a/drivers/iio/adc/ad7606_par.c
+> >> +++ b/drivers/iio/adc/ad7606_par.c
+> >> @@ -11,6 +11,7 @@
+> >>   #include <linux/mod_devicetable.h>
+> >>   #include <linux/module.h>
+> >>   #include <linux/platform_device.h>
+> >> +#include <linux/property.h>
+> >>   #include <linux/types.h>
+> >>  =20
+> >>   #include <linux/iio/iio.h>
+> >> @@ -89,12 +90,20 @@ static const struct ad7606_bus_ops ad7606_par8_bop=
+s =3D {
+> >>  =20
+> >>   static int ad7606_par_probe(struct platform_device *pdev)
+> >>   {
+> >> -	const struct platform_device_id *id =3D platform_get_device_id(pdev);
+> >> +	const struct ad7606_chip_info *chip_info;
+> >> +	const struct platform_device_id *id;
+> >>   	struct resource *res;
+> >>   	void __iomem *addr;
+> >>   	resource_size_t remap_size;
+> >>   	int irq;
+> >>  =20
+> >> +	if (dev_fwnode(&pdev->dev)) {
+> >> +		chip_info =3D device_get_match_data(&pdev->dev);
+> >> +	} else {
+> >> +		id =3D platform_get_device_id(pdev);
+> >> +		chip_info =3D (const struct ad7606_chip_info *)id->driver_data;
+> >> +	}
+> >> +
+> >>   	irq =3D platform_get_irq(pdev, 0);
+> >>   	if (irq < 0)
+> >>   		return irq;
+> >> @@ -106,25 +115,25 @@ static int ad7606_par_probe(struct platform_devi=
+ce *pdev)
+> >>   	remap_size =3D resource_size(res);
+> >>  =20
+> >>   	return ad7606_probe(&pdev->dev, irq, addr,
+> >> -			    id->name, id->driver_data, =20
+> > Rewrap to move chip_info up a line perhaps.
+> > =20
+> >> +			    chip_info,
+> >>   			    remap_size > 1 ? &ad7606_par16_bops :
+> >>   			    &ad7606_par8_bops); =20
+>=20
 

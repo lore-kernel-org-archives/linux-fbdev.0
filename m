@@ -1,254 +1,141 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+Received: from mail-wr1-f66.google.com (mail-wr1-f66.google.com [209.85.221.66])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FE7F1AA785
-	for <linux-fbdev@vger.kernel.org>; Fri,  4 Oct 2024 15:10:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30E6F1C75E0
+	for <linux-fbdev@vger.kernel.org>; Fri,  4 Oct 2024 15:24:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728054628; cv=none; b=Z706JTrE9dkeZ6GtXxrH+3h1EnLoUiCDlhoecsUf+Ye+lonM4dBXKqOf8YoiuD5W4943+hboJf7F3c28bqHxHG9VbhY1qi2NsIzD0H4dXIC1KqwCIaUym2j0odMw+mb6cW9O2q3PCeRKsYZoiPar7deG6PCFCAcBdzsIpcmhLtk=
+	t=1728055478; cv=none; b=BQRPRlEXskiyAupxZVNtGF/das6GMFPiZk3ULHhqPHYA6IB01/wBsxeOIAIWbDJQmTAZ6BXnW7mP3MlLTWP86TYhViNvWi6DIIy9f7f5ATrJW1SUAikV6ohZkwWWsLePy2Sg5MBspJcZ1rLHTXLaRLGAOMXdzKB8p/yb07VO0yo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728054628; c=relaxed/simple;
-	bh=DsbWuseV+5Cr5RbOfN8uYeZ29UZNhc9bAL+m0ZBhGl0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LLWKJfxmMw5WW0NtnZLunoRwaoPlamuDqVQY/zM4EZ23+NfOaiABAeKlOmSuh3zbRjEugKJKYHfKUK7xgvJG5KSw9//6ZKVdGqdcZ6bMPf9ab+DOJ+c0OBn7cPS/QR6S57kc/iXsuhzexrmSo+MD4UxH6FVMN/7fdDqE65tN4vw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=QIYX5U97; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1728055478; c=relaxed/simple;
+	bh=T7IRw1AKNUwr5QIrdOkZhvYlhMJLiSS7agj0Ncqc278=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=pl+HqDLHq4Gml9qB9sR9lWVS1THbk64BgwbPAFvmbvQO7ixmz0zZS+zl8NMNvBrTOKU+dBTOLxuGspY/rp9we08+2PJSj/Ovh+4jJJr2QdNXmD1oaR8/peQDNYC00oRtpfM6xvjpIdb6SVXkexoXmuSpZJVVAuzo3cq0NC3IvNI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Kbbb3Izl; arc=none smtp.client-ip=209.85.221.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="QIYX5U97"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-37cd8972738so1644169f8f.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Oct 2024 08:10:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kbbb3Izl"
+Received: by mail-wr1-f66.google.com with SMTP id ffacd0b85a97d-37ccc597b96so1521870f8f.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 04 Oct 2024 08:24:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1728054623; x=1728659423; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=GbD5QQI9fbRtagD02Hd9rPEf77aWQGn5Irx05NL1xCE=;
-        b=QIYX5U97f5Zt06TQls1TmUgQ78qypZ893F6tw8UMqluR+VAGahNqsKUxSsddpkTRdF
-         SiC28zKG3mXfclseL5vs/QESnJN1BIOSrFcc8Zjlvi1QMdb4mqFdzVW/pDx93WG/WdX9
-         FVt/gN5AnehD2zrZQTHBN1amCSTUjP60uACwTJcVL+885iYaTomjCIecpo+38t9FOvo9
-         /7jyVuphEx+xdNKUcw7BfvuCkidsXKlKozPhnKWawO3YbzSfh31Jb5bbuNnwKkGDbBQ7
-         xyGVL2CVrqygXM9pqtlmb2vsuGEF+L3tDimyKStMIYIQMefbAYI80qD58k6YOCz2kMH1
-         CALQ==
+        d=gmail.com; s=20230601; t=1728055474; x=1728660274; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gBEcrk99pLwxmiJHtfJfKgyMHG/gC+Hf5TZACV40Dqc=;
+        b=Kbbb3IzlbhI5YtubfwN3Oqfdwejd3Vyy/U/pY3ckIV8FKsKD2+zlfa8wTmov18m/qP
+         8uR74kV7J11D0jhyK4tHw0g22zc0VK2YcFlCsMbgFBKTurPypkMqsnLF+Jk5fJiSMwKr
+         C+oWluqOg/f0MqcL9shSbW9NUVY+XDfL6JwmaLAxy9X30i9VM6eycsvDJDdee1sminzv
+         1IJrXxYViBsJBpHZcK6Ii3PTrMpBTuqT1zDHS7q9UJ0JfYPAtw4fJPOoiQNiuo33xFXD
+         mgz9szCfoYEBN+LScLCpqbeBar12Yrls+DXKSTIw6MGuakHADel00Vr2lsgS7vGB4pIO
+         /Xpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728054623; x=1728659423;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=GbD5QQI9fbRtagD02Hd9rPEf77aWQGn5Irx05NL1xCE=;
-        b=Idp+L4IxYdEyC60YyJmvDPl0g5iK2B5IUAuNk6SniGYNHDk/zBSPu/pjMO+dwo86nH
-         TZ1SQHdyB45uZSClLXWw4dcxiZynXXoRAw3eQJUvycfCDGCK0C0xcbzFZjt3l5G6JSFi
-         06bTlqRf3Ks6Q2numDbDh9QPVgBT0TFJMdlRZEnjhto8+mtMmTup4hu41/jyU71nmZj1
-         PiN183q77q1ynBOacDQ6YWgbtiEPDd1hnD+cThBLPur1d8eM46qGJhQvWpE+VLjxEcr+
-         bMkGwSKKsO89TNuZubZK7xX8CwnNlhwaULfGc07rtXYgIos3GqSJhuE9ndQgwQE96qtp
-         EySQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXcDBg4yMHd8eTQ8AZ7xU3bnRAni5Lgda7wjKC0C4rywB+CstBUzPtwE4XO+lgXbpskOafojmrSZbWNYQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwMH8cSFGco8cIW3XJwcW8JT0X5APllezhjr1rR8+vjhGmdgLO1
-	+add4QYQawgnCYNyzC77kDTZ9RWHbAUCAVc56f2Nv+GhqQqC+NmmlVxrpPYFSyM=
-X-Google-Smtp-Source: AGHT+IHNkf+LyQDdbKVSXX5yZtwIGL87SsecooipYEPpbuU+08MHwf7aO/KarDzbVlgyUdnAiBWh8A==
-X-Received: by 2002:adf:b181:0:b0:37c:d299:b5f0 with SMTP id ffacd0b85a97d-37d0eb20122mr1730224f8f.59.1728054623038;
-        Fri, 04 Oct 2024 08:10:23 -0700 (PDT)
-Received: from ?IPV6:2a02:8428:e55b:1101:d506:c29c:99b9:6f15? (2a02-8428-e55b-1101-d506-c29c-99b9-6f15.rev.sfr.net. [2a02:8428:e55b:1101:d506:c29c:99b9:6f15])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37d0824504esm3404206f8f.54.2024.10.04.08.10.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Oct 2024 08:10:22 -0700 (PDT)
-Message-ID: <0d2df826-1503-42f7-8f60-1025cc641e2c@baylibre.com>
-Date: Fri, 4 Oct 2024 17:10:21 +0200
+        d=1e100.net; s=20230601; t=1728055474; x=1728660274;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gBEcrk99pLwxmiJHtfJfKgyMHG/gC+Hf5TZACV40Dqc=;
+        b=uNVPLc28Gzk/BbmltuAHwaE2IqYoM2dfRWKAQO9LVg8kr/lO9RrMIAJD483BHgEmRd
+         PONisyPsJcj/dfrwF79dlmULOiWehHr5AH2YXHB4ixtJ3rQf6RQ2/QvqG9z0Cz+bBrex
+         7S7dYQltB1IK/Q/9qk2Tj8qb2gqhNohOXr8tuOAr5Cv57+9CHtadIgeWO4WDKCz4c7X4
+         VZRe/lTuTZfdEv7moDelevspzPP41Jzz4LN80HlkUWtm8bdHRlLFs98N/y4U0FH1vXa0
+         ct4Pp5c4229flrukQUkWwoVP0Gx9YANhW8KvTcFwA3B6sS8vqw5i7lrUyWzZxfCWzFIt
+         G63w==
+X-Gm-Message-State: AOJu0YxrAbqbtiWZRvQ7+W5PSeSAUQ9KVvu9szInKwC+OWGlF/8U4w5L
+	id1FtTvvbpfFPzKwxdyHx0zrJBjLFZZCy01M3jOX6di79uDZbZVD9/mOSgcK17c=
+X-Google-Smtp-Source: AGHT+IGNZoBBCwh9bvJvyw0BHHpRZMKCQqvyxWnYs3vbrVfla9eIZqQ6Oj9nLBMCnSg/iAmXYFRlHg==
+X-Received: by 2002:a5d:64e7:0:b0:371:c51a:3b2a with SMTP id ffacd0b85a97d-37d0e6d31edmr3034859f8f.4.1728055474346;
+        Fri, 04 Oct 2024 08:24:34 -0700 (PDT)
+Received: from localhost.localdomain ([83.165.96.99])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37d081f7103sm3466317f8f.1.2024.10.04.08.24.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Oct 2024 08:24:33 -0700 (PDT)
+From: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org,
+	thomas.zimmermann@suse.de,
+	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
+Subject: [PATCH v2] fbdev: sstfb: Make CONFIG_FB_DEVICE optional
+Date: Fri,  4 Oct 2024 17:24:29 +0200
+Message-Id: <20241004152429.4329-1-gonzalo.silvalde@gmail.com>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <1db0e2db-97e0-492f-ba89-0a1f49ca4498@suse.de>
+References: <1db0e2db-97e0-492f-ba89-0a1f49ca4498@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 07/10] iio: adc: ad7606: Add compatibility to fw_nodes
-To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Cc: Jonathan Cameron <jic23@kernel.org>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- Lars-Peter Clausen <lars@metafoo.de>,
- Michael Hennerich <Michael.Hennerich@analog.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- Michal Marek <mmarek@suse.com>, linux-pwm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
- linux-doc@vger.kernel.org, aardelean@baylibre.com, dlechner@baylibre.com,
- jstephan@baylibre.com
-References: <20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com>
- <20240920-ad7606_add_iio_backend_support-v2-7-0e78782ae7d0@baylibre.com>
- <20240929134412.506998db@jic23-huawei>
- <57c5d8b1-295a-492f-b17c-b44caf8aeb2d@baylibre.com>
- <20241004152551.00000813@Huawei.com>
-Content-Language: en-US
-From: Guillaume Stols <gstols@baylibre.com>
-In-Reply-To: <20241004152551.00000813@Huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+The sstfb driver currently depends on CONFIG_FB_DEVICE to create sysfs
+entries and access info->dev. This patch wraps the relevant code blocks
+with #ifdef CONFIG_FB_DEVICE, allowing the driver to be built and used
+even if CONFIG_FB_DEVICE is not selected.
 
-On 10/4/24 16:25, Jonathan Cameron wrote:
-> On Wed, 2 Oct 2024 02:12:28 +0200
-> Guillaume Stols <gstols@baylibre.com> wrote:
->
->> On 9/29/24 14:44, Jonathan Cameron wrote:
->>> On Fri, 20 Sep 2024 17:33:27 +0000
->>> Guillaume Stols <gstols@baylibre.com> wrote:
->>>   
->>>> On the parallel version, the current implementation is only compatible
->>>> with id tables and won't work with fw_nodes, this commit intends to fix
->>>> it.
->>>>
->>>> Also, chip info is moved in the .h file so to be accessible to all the
->>> chip info is not moved (I was going to say no to that) but an
->>> extern is used to make it available. So say that rather than moved here.
->>>   
->>>> driver files that can set a pointer to the corresponding chip as the
->>>> driver data.
->>>>
->>>>    
->>>> diff --git a/drivers/iio/adc/ad7606.h b/drivers/iio/adc/ad7606.h
->>>> index c13dda444526..18c87fe9a41a 100644
->>>> --- a/drivers/iio/adc/ad7606.h
->>>> +++ b/drivers/iio/adc/ad7606.h
->>>> @@ -38,8 +38,19 @@
->>>>    	AD760X_CHANNEL(num, BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE),\
->>>>    		0, BIT(IIO_CHAN_INFO_OVERSAMPLING_RATIO))
->>>>    
->>>> +enum ad7606_supported_device_ids {
->>>> +	ID_AD7605_4,
->>>> +	ID_AD7606_8,
->>>> +	ID_AD7606_6,
->>>> +	ID_AD7606_4,
->>>> +	ID_AD7606B,
->>>> +	ID_AD7616,
->>>> +};
->>>> +
->>>>    /**
->>>>     * struct ad7606_chip_info - chip specific information
->>>> + * @name		device name
->>>> + * @id			device id
->>> ID in chip info normally indicates something bad in the design. In that somewhere
->>> we have code that is ID dependent rather than all such code / data being
->>> found directly in this structure (or callbacks found from here).
->>> Can we avoid it here?
->> Hi Jonathan,
->>
->> chip_info has to describe the chip hardwarewise, but there are different
->> bops depending on the wiring (interface used, and backend/no backend).
-> Normal solution to this is multiple chip specific structures so they
-> become specific to a chip + some wiring option. Then you just
-> pick between static const structures.
->
-> Does that work here?
->
-> You will need them exposed (extern) from your header but that's
-> not too bad.
->
-> Aim is to pick just one structure that describes all the 'specific'
-> stuff for the driver.  That brings all that stuff into one place and
-> provides an easy way to extend to new combinations of options for
-> other devices.
->
-> Jonathan
+The sysfs setting only controls the VGA pass-through state and is not
+required for the display to work correctly.
+(See: http://vogonswiki.com/index.php/VGA_passthrough_cable
+for more information.)
 
-I finally wrote a structure containing the couple chip_info/bops
+Tested by building with and without CONFIG_FB_DEVICE, both of which
+compiled without issues.
 
-/**
-  * struct ad7606_bus_info - agregate ad7606_chip_info and ad7606_bus_ops
-  * @chip_info        entry in the table of chips that describes this device
-  * @bops        bus operations (SPI or parallel)
-  */
-struct ad7606_bus_info {
-     const struct ad7606_chip_info    *chip_info;
-     const struct ad7606_bus_ops    *bops;
-};
+Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
+---
+ drivers/video/fbdev/sstfb.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-and declared the following way
+diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
+index f8ae54ca0cc3..8d2e9d1f8d80 100644
+--- a/drivers/video/fbdev/sstfb.c
++++ b/drivers/video/fbdev/sstfb.c
+@@ -716,6 +716,7 @@ static void sstfb_setvgapass( struct fb_info *info, int enable )
+ 	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
+ }
+ 
++#ifdef CONFIG_FB_DEVICE
+ static ssize_t store_vgapass(struct device *device, struct device_attribute *attr,
+ 			const char *buf, size_t count)
+ {
+@@ -736,10 +737,10 @@ static ssize_t show_vgapass(struct device *device, struct device_attribute *attr
+ 	struct sstfb_par *par = info->par;
+ 	return sprintf(buf, "%d\n", par->vgapass);
+ }
+-
+ static struct device_attribute device_attrs[] = {
+ 	__ATTR(vgapass, S_IRUGO|S_IWUSR, show_vgapass, store_vgapass)
+ 	};
++#endif
+ 
+ static int sstfb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			unsigned long arg)
+@@ -1435,10 +1436,10 @@ static int sstfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	}
+ 
+ 	sstfb_clear_screen(info);
+-
++#fdef CONFIG_FB_DEVICE
+ 	if (device_create_file(info->dev, &device_attrs[0]))
+ 		printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
+-
++#endif
+ 
+ 	fb_info(info, "%s frame buffer device at 0x%p\n",
+ 		fix->id, info->screen_base);
+@@ -1467,8 +1468,9 @@ static void sstfb_remove(struct pci_dev *pdev)
+ 
+ 	info = pci_get_drvdata(pdev);
+ 	par = info->par;
+-
++#ifdef CONFIG_FB_DEVICE
+ 	device_remove_file(info->dev, &device_attrs[0]);
++#endif
+ 	sst_shutdown(info);
+ 	iounmap(info->screen_base);
+ 	iounmap(par->mmio_vbase);
+-- 
+2.39.5
 
-const struct ad7606_bus_info ad7606b_bus_info = {
-     .chip_info = &ad7606b_info,
-     .bops = &ad7606b_spi_bops,
-};
-
-const struct ad7606_bus_info ad7606c_16_bus_info = {
-     .chip_info = &ad7606c_16_info,
-     .bops = &ad7606b_spi_bops,
-
-etc...
-
-Will send the series later today, just doing some last checks.
-
->
->
->> The easiest way I found was to use the ID in a switch/case to
->> determinate which bops I should take (well it was only needed in the spi
->> version since it is the one supporting almost all the chips while the
->> other ones still support only one). For instance, the ad7606B will use
->> ad7606_bi_bops if it has a backend and ad7606B_spi_bops for spi version.
->>
->> If I can't use the ID, the only way I see is creating 3 fields in
->> chip_info (spi_ops, par_ops, backend_ops) and to initialize every
->> chip_info structure with its associated op(s) for the associated
->> interface. This would also lead to declare the different instances of
->> ad7606_bus_ops directly in ad7606.h  (I dont like it very much but see
->> no other option).
->>
->> Do you think it's better that way ? Or do you have any other idea ?
->>
->> Regards,
->>
->> Guillaume
->>
->>>   
->>>>     * @channels:		channel specification
->>>>     * @num_channels:	number of channels
->>>>     * @oversampling_avail	pointer to the array which stores the available
->>>> @@ -50,6 +61,8 @@
->>> ...
->>>   
->>>> diff --git a/drivers/iio/adc/ad7606_par.c b/drivers/iio/adc/ad7606_par.c
->>>> index d651639c45eb..7bac39033955 100644
->>>> --- a/drivers/iio/adc/ad7606_par.c
->>>> +++ b/drivers/iio/adc/ad7606_par.c
->>>> @@ -11,6 +11,7 @@
->>>>    #include <linux/mod_devicetable.h>
->>>>    #include <linux/module.h>
->>>>    #include <linux/platform_device.h>
->>>> +#include <linux/property.h>
->>>>    #include <linux/types.h>
->>>>    
->>>>    #include <linux/iio/iio.h>
->>>> @@ -89,12 +90,20 @@ static const struct ad7606_bus_ops ad7606_par8_bops = {
->>>>    
->>>>    static int ad7606_par_probe(struct platform_device *pdev)
->>>>    {
->>>> -	const struct platform_device_id *id = platform_get_device_id(pdev);
->>>> +	const struct ad7606_chip_info *chip_info;
->>>> +	const struct platform_device_id *id;
->>>>    	struct resource *res;
->>>>    	void __iomem *addr;
->>>>    	resource_size_t remap_size;
->>>>    	int irq;
->>>>    
->>>> +	if (dev_fwnode(&pdev->dev)) {
->>>> +		chip_info = device_get_match_data(&pdev->dev);
->>>> +	} else {
->>>> +		id = platform_get_device_id(pdev);
->>>> +		chip_info = (const struct ad7606_chip_info *)id->driver_data;
->>>> +	}
->>>> +
->>>>    	irq = platform_get_irq(pdev, 0);
->>>>    	if (irq < 0)
->>>>    		return irq;
->>>> @@ -106,25 +115,25 @@ static int ad7606_par_probe(struct platform_device *pdev)
->>>>    	remap_size = resource_size(res);
->>>>    
->>>>    	return ad7606_probe(&pdev->dev, irq, addr,
->>>> -			    id->name, id->driver_data,
->>> Rewrap to move chip_info up a line perhaps.
->>>   
->>>> +			    chip_info,
->>>>    			    remap_size > 1 ? &ad7606_par16_bops :
->>>>    			    &ad7606_par8_bops);

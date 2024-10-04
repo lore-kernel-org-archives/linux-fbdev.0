@@ -1,80 +1,80 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94B1C130499
-	for <linux-fbdev@vger.kernel.org>; Fri,  4 Oct 2024 09:06:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB0A02139D3;
+	Fri,  4 Oct 2024 14:01:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728032796; cv=none; b=LaBBW0x11cHtnuWLcrLfXYukUiqhWxkPCckJ/wInRBxScYXEC6hHbbBalqbGHkXiqeVWaHBB36HP7gycLIn52qQACSCVRgHPMQOBQlhb9eaqaINOC6r0z0Ylr3SUusf11STp+qSGOF0UM+4bIaZprU/bpIvpWp3Sywjo68rEzvA=
+	t=1728050481; cv=none; b=YTcQnJwjfHjPjqnB9MuJ/eJbgBBEhiMUXtC4npklRYXdNhYz6Wjigdeu0jA5it/26Tp/mvWS0qEaxqk7TQkp5Pqpa3qpjzG6CovRdhm8LLF/0AIpkZcx7eiouR4vb7KVOV8XW7lMQz//83rzMHsXehC4luqbeKr0MA0CdeT0S08=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728032796; c=relaxed/simple;
-	bh=YX2rkWI7MQY9q4HpwgYPztO+wcnIr6zzoErcyet95c4=;
+	s=arc-20240116; t=1728050481; c=relaxed/simple;
+	bh=ZS6nilcF34pV6FfuzEd9IKIxV7kUEXiGfd2StUdbvVw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UolWrGmoqbGXvU/WRucKRzMV4m8KiTu5W1CsZ8axZlId0+yIY1D8ZFxe3V+GByZmPa7Ep++AjXltss0yWmILKTzNmNJT4q0vdB8iVYMCxLNmW92KgPtXSxeMPfM+Kw4iYPtuaZ4AIbeLyA3D/ALvB0EIBYb+/srtAfhEi3iVBUU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=0J11UA3q; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=rmU9CoN/; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=0J11UA3q; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=rmU9CoN/; arc=none smtp.client-ip=195.135.223.130
+	 In-Reply-To:Content-Type; b=cVTsDsur7f8GbGpJZwN6NyOVVYtkVNRVNVttIxS3bBqHhRJj1XWOz8AnsuFxDTB/lMiSY9MRQNf7a5drJo2kSU7xD2e+0ey9lZj7OauDRaT2Uq+YNtaBqWdAeBqeJIFknFqoSUu11Osyl9N1VNoHlc0kzfbywKVEq3PYT0V3H6A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lvL70WT4; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qGarnLZH; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lvL70WT4; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qGarnLZH; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="0J11UA3q";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="rmU9CoN/";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="0J11UA3q";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="rmU9CoN/"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lvL70WT4";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qGarnLZH";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lvL70WT4";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qGarnLZH"
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B614621CFF;
-	Fri,  4 Oct 2024 09:06:32 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B207A1FD87;
+	Fri,  4 Oct 2024 14:01:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1728032792; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1728050471; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=JZgVmvQL2JTQezfe4d08s20s5gOOPF3rmb+sz6n55uw=;
-	b=0J11UA3q2uREgmRWQoJNslgtDrY02BXrbtGSaqs7nuUfwrxx81lXK4UJ5vIHS85XarGYx9
-	EaFzOhYWzl0TXLtc5tj7n6Lboc2JLY7Dv0cFDfsXjXTpB486kGwt5iT03yySau94924v0o
-	VJ3E1WHXXVn+oGrFY4bESrimDT77bAE=
+	bh=BAVzdDHoKpG87ape1y7nr37y+jabIa6mN5zPrI/xA5I=;
+	b=lvL70WT4/t+HuxuFhllHAkVPdfk3H//JJzjizh7qGglM5c0TSgllO9nGlnNPV6seGw4jtZ
+	0tIqGw9toL5THl+/sRAunrDnj/vJOQgVEb/OGVQMpuXzxiLw5y1o6nSR8ypymzEbTbK6Li
+	KfFrT5IyyuPQPnEntCVmHEc9oQEsd1g=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1728032792;
+	s=susede2_ed25519; t=1728050471;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=JZgVmvQL2JTQezfe4d08s20s5gOOPF3rmb+sz6n55uw=;
-	b=rmU9CoN/AFHX0ywR1tDGobJIZZNXKnS5tIboDer7DEWx4mm3oLMJZbKe6Ltq31EtMPsy2P
-	6D/nSGtsBEY/gIBw==
-Authentication-Results: smtp-out1.suse.de;
+	bh=BAVzdDHoKpG87ape1y7nr37y+jabIa6mN5zPrI/xA5I=;
+	b=qGarnLZHumnV2FqSirFAkYNJe3ap6cFGXqrh7EFAPIOWiGalQCUPYN95b1/5xz0I+mVeQi
+	mha3tFiXRAIEWvAA==
+Authentication-Results: smtp-out2.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1728032792; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1728050471; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=JZgVmvQL2JTQezfe4d08s20s5gOOPF3rmb+sz6n55uw=;
-	b=0J11UA3q2uREgmRWQoJNslgtDrY02BXrbtGSaqs7nuUfwrxx81lXK4UJ5vIHS85XarGYx9
-	EaFzOhYWzl0TXLtc5tj7n6Lboc2JLY7Dv0cFDfsXjXTpB486kGwt5iT03yySau94924v0o
-	VJ3E1WHXXVn+oGrFY4bESrimDT77bAE=
+	bh=BAVzdDHoKpG87ape1y7nr37y+jabIa6mN5zPrI/xA5I=;
+	b=lvL70WT4/t+HuxuFhllHAkVPdfk3H//JJzjizh7qGglM5c0TSgllO9nGlnNPV6seGw4jtZ
+	0tIqGw9toL5THl+/sRAunrDnj/vJOQgVEb/OGVQMpuXzxiLw5y1o6nSR8ypymzEbTbK6Li
+	KfFrT5IyyuPQPnEntCVmHEc9oQEsd1g=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1728032792;
+	s=susede2_ed25519; t=1728050471;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=JZgVmvQL2JTQezfe4d08s20s5gOOPF3rmb+sz6n55uw=;
-	b=rmU9CoN/AFHX0ywR1tDGobJIZZNXKnS5tIboDer7DEWx4mm3oLMJZbKe6Ltq31EtMPsy2P
-	6D/nSGtsBEY/gIBw==
+	bh=BAVzdDHoKpG87ape1y7nr37y+jabIa6mN5zPrI/xA5I=;
+	b=qGarnLZHumnV2FqSirFAkYNJe3ap6cFGXqrh7EFAPIOWiGalQCUPYN95b1/5xz0I+mVeQi
+	mha3tFiXRAIEWvAA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D090013A55;
-	Fri,  4 Oct 2024 09:06:31 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4D88613A6E;
+	Fri,  4 Oct 2024 14:01:11 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id V2YAKBew/2bbAwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 04 Oct 2024 09:06:31 +0000
-Message-ID: <1db0e2db-97e0-492f-ba89-0a1f49ca4498@suse.de>
-Date: Fri, 4 Oct 2024 11:06:30 +0200
+	id MTR/ESf1/2b9XwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 04 Oct 2024 14:01:11 +0000
+Message-ID: <9f8bbb04-26b9-42d6-8ffb-5e46352639a9@suse.de>
+Date: Fri, 4 Oct 2024 16:01:10 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,11 +82,18 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] Subject: fbdev: sstfb: Make CONFIG_FB_DEVICE optional
-To: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
- linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, thomas.zimmermann@suse.de
-References: <20241002214517.206657-1-gonzalo.silvalde@gmail.com>
+Subject: Re: [PATCH v2 20/28] fbdev: clps711x-fb: Replace check_fb in favor of
+ struct fb_info.lcd_dev
+To: Kees Bakker <kees@ijzerbout.nl>, lee@kernel.org,
+ daniel.thompson@linaro.org, jingoohan1@gmail.com, deller@gmx.de,
+ bonbons@linux-vserver.org, jikos@kernel.org, bentiss@kernel.org,
+ s.hauer@pengutronix.de, kernel@pengutronix.de, shawnguo@kernel.org,
+ festevam@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-omap@vger.kernel.org
+References: <20240906075439.98476-1-tzimmermann@suse.de>
+ <20240906075439.98476-21-tzimmermann@suse.de>
+ <07d296ac-765c-4f89-bcaf-098ec29a4b7a@ijzerbout.nl>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -113,122 +120,113 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20241002214517.206657-1-gonzalo.silvalde@gmail.com>
+In-Reply-To: <07d296ac-765c-4f89-bcaf-098ec29a4b7a@ijzerbout.nl>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -2.80
-X-Spamd-Result: default: False [-2.80 / 50.00];
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.30
+X-Spamd-Result: default: False [-4.30 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_TO(0.00)[gmail.com,vger.kernel.org];
-	TAGGED_RCPT(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[ijzerbout.nl,kernel.org,linaro.org,gmail.com,gmx.de,linux-vserver.org,pengutronix.de];
+	RCPT_COUNT_TWELVE(0.00)[15];
 	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
+	TO_DN_SOME(0.00)[];
 	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid]
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email]
 X-Spam-Flag: NO
 X-Spam-Level: 
 
-Hi,
+Hi
 
-thanks for your patch.
+Am 03.10.24 um 20:33 schrieb Kees Bakker:
+> Op 06-09-2024 om 09:52 schreef Thomas Zimmermann:
+>> Store the lcd device in struct fb_info.lcd_dev. The lcd subsystem can
+>> now detect the lcd's fbdev device from this field.
+>>
+>> This makes the implementation of check_fb in clps711x_lcd_ops obsolete.
+>> Remove it.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+>> ---
+>>   drivers/video/fbdev/clps711x-fb.c | 23 ++++++++++-------------
+>>   1 file changed, 10 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/drivers/video/fbdev/clps711x-fb.c 
+>> b/drivers/video/fbdev/clps711x-fb.c
+>> index 6171a98a48fd..4340ea3b9660 100644
+>> --- a/drivers/video/fbdev/clps711x-fb.c
+>> +++ b/drivers/video/fbdev/clps711x-fb.c
+>> @@ -162,13 +162,6 @@ static const struct fb_ops clps711x_fb_ops = {
+>>       .fb_blank    = clps711x_fb_blank,
+>>   };
+>>   -static int clps711x_lcd_check_fb(struct lcd_device *lcddev, struct 
+>> fb_info *fi)
+>> -{
+>> -    struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
+>> -
+>> -    return (!fi || fi->par == cfb) ? 1 : 0;
+>> -}
+>> -
+>>   static int clps711x_lcd_get_power(struct lcd_device *lcddev)
+>>   {
+>>       struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
+>> @@ -198,7 +191,6 @@ static int clps711x_lcd_set_power(struct 
+>> lcd_device *lcddev, int blank)
+>>   }
+>>     static const struct lcd_ops clps711x_lcd_ops = {
+>> -    .check_fb    = clps711x_lcd_check_fb,
+>>       .get_power    = clps711x_lcd_get_power,
+>>       .set_power    = clps711x_lcd_set_power,
+>>   };
+>> @@ -325,16 +317,21 @@ static int clps711x_fb_probe(struct 
+>> platform_device *pdev)
+>>       if (ret)
+>>           goto out_fb_dealloc_cmap;
+>>   +    lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
+>> +                       &clps711x_lcd_ops);
+>> +    if (IS_ERR(lcd)) {
+>> +        ret = PTR_ERR(lcd);
+>> +        goto out_fb_dealloc_cmap;
+>> +    }
+>> +
+>> +    info->lcd_dev = lcd;
+>> +
+>>       ret = register_framebuffer(info);
+>>       if (ret)
+>>           goto out_fb_dealloc_cmap;
+>>   -    lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
+>> -                       &clps711x_lcd_ops);
+>> -    if (!IS_ERR(lcd))
+>> -        return 0;
+>> +    return 0;
+>>   -    ret = PTR_ERR(lcd);
+>>       unregister_framebuffer(info);
+>>     out_fb_dealloc_cmap:
+> Something is not right here. With the current patch you'll make the 
+> unregister_framebuffer(info)
+> unreachable, because there is a return 0 in front.
+> Please check again.
 
- > [PATCH] Subject: fbdev: sstfb: Make CONFIG_FB_DEVICE optional
+See 
+https://lore.kernel.org/linux-fbdev/20241004014349.435006-1-qianqiang.liu@163.com/T/#u
 
-'Subject:' should not be part of the subject line. Is that an issue with 
-your mail setup?
-
-Am 02.10.24 um 23:45 schrieb Gonzalo Silvalde Blanco:
-> The sstfb driver currently depends on CONFIG_FB_DEVICE to create sysfs
-> entries and access info->dev. This patch wraps the relevant code blocks
-> with #ifdef CONFIG_FB_DEVICE, allowing the driver to be built and used
-> even if CONFIG_FB_DEVICE is not selected.
-
-You should mention that the sysfs setting only controls VGA pass-through 
-state and is not required for the display to work correctly.
-
-(See http://vogonswiki.com/index.php/VGA_passthrough_cable if you don't 
-know what that means.)
-
->
-> Tested by building with and without CONFIG_FB_DEVICE, both of which
-> compile without issues
-An empty lines goes before the tags.
-> Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-> ---
->   drivers/video/fbdev/sstfb.c | 10 ++++++----
->   1 file changed, 6 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-> index f8ae54ca0cc3..17f39cc721aa 100644
-> --- a/drivers/video/fbdev/sstfb.c
-> +++ b/drivers/video/fbdev/sstfb.c
-> @@ -716,6 +716,7 @@ static void sstfb_setvgapass( struct fb_info *info, int enable )
->   	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
->   }
->   
-> +#ifdef CONFIG_FB_DEVICE
->   static ssize_t store_vgapass(struct device *device, struct device_attribute *attr,
->   			const char *buf, size_t count)
->   {
-> @@ -736,10 +737,10 @@ static ssize_t show_vgapass(struct device *device, struct device_attribute *attr
->   	struct sstfb_par *par = info->par;
->   	return sprintf(buf, "%d\n", par->vgapass);
->   }
-> -
->   static struct device_attribute device_attrs[] = {
->   	__ATTR(vgapass, S_IRUGO|S_IWUSR, show_vgapass, store_vgapass)
->   	};
-> +#endif
->   
->   static int sstfb_ioctl(struct fb_info *info, unsigned int cmd,
->   			unsigned long arg)
-> @@ -1435,10 +1436,10 @@ static int sstfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
->   	}
->   
->   	sstfb_clear_screen(info);
-> -
-> +	#ifdef CONFIG_FB_DEVICE
-No tab indention for #ifdef and #endif. Here and below.
-
-The patch should be good with the suggested changes. Please send an update.
+This line used to be code for error rollback, but is now unnecessary AFAICT.
 
 Best regards
 Thomas
-
-
->   	if (device_create_file(info->dev, &device_attrs[0]))
->   		printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
-> -
-> +	#endif
->   
->   	fb_info(info, "%s frame buffer device at 0x%p\n",
->   		fix->id, info->screen_base);
-> @@ -1467,8 +1468,9 @@ static void sstfb_remove(struct pci_dev *pdev)
->   
->   	info = pci_get_drvdata(pdev);
->   	par = info->par;
-> -
-> +	#ifdef CONFIG_FB_DEVICE
->   	device_remove_file(info->dev, &device_attrs[0]);
-> +	#endif
->   	sst_shutdown(info);
->   	iounmap(info->screen_base);
->   	iounmap(par->mmio_vbase);
 
 -- 
 --

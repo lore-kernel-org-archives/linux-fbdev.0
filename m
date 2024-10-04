@@ -1,48 +1,52 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B81671FF7AA;
-	Fri,  4 Oct 2024 18:24:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FA7220C477;
+	Fri,  4 Oct 2024 18:26:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728066270; cv=none; b=lOBc0lLbHI5aIJMcNQdwAgNx2o1SMxTPmPfbUsxfcQsK/EgLuJWvQ5bm84xHNe4VjSMPiQ4W6K7A850sWxrzHnxWCfvLVwA3Gfb36wrvCAxiBqsfefHsC3jYzPrUP2vopDO4NtwoKr3rSKiNWqAtfa90Ac1BICXw4CF8lefxgBM=
+	t=1728066409; cv=none; b=m9HDH7PXiexekHqDL5SdtMZHwH91BDxJJ5SQkm84S3sB7RtQ+LMkxfYhorn5/mXpsdeQnkvU+F/jw9z0lQvBrYLfmZnU1S/bbc4HVGr6snSo0WX4gnN4Cv6Jcl6J3ErtQp8yZEavMbFqsYVwuVCR+8YdpqHFhQdlemC217ihUYU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728066270; c=relaxed/simple;
-	bh=n2o64wcB9RGbVFbvgQObSO2pzut7VrPHzQR3h9vkoNA=;
+	s=arc-20240116; t=1728066409; c=relaxed/simple;
+	bh=2YxxB5xVkoD6jz96nY3YkZRwTLB9OAWY2sZKh5LB/kc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=N0pWuP9U+V7OKHxFlnz0D3QwMfJeb+sI9HuTfcYQ5sBJJyDGHeHBLVpEgFpBUOPlKCiLZPMxU6+lo/Dfxl9fGA18mGgqp4YBE5h+or4O8tDJMfqOVKsABIH8ftBzCmDpF0WlaLs+CshtdTlCxlVLI0rv31Ec89nUuPL1Y4SIIPw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CV88qISq; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=FGDI0mrqv1EQDDPscKFpZaabNEmAxbE43sVGaI3iIqqWwKcbmds/pgfm2xLDMIzspvpyq0dAjpafqem5W7cPDRgyDFx4i1fitwQPxP5tcq+ZsAqCeQcTc+5H2vW/3sIF0IkNijHXYl6CcrzTYYovpTBOrzLjAL6hUWpS6nJRFS0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DQ+soxjb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CV88qISq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73CB0C4CEC6;
-	Fri,  4 Oct 2024 18:24:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DQ+soxjb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 736C0C4CECC;
+	Fri,  4 Oct 2024 18:26:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728066270;
-	bh=n2o64wcB9RGbVFbvgQObSO2pzut7VrPHzQR3h9vkoNA=;
+	s=k20201202; t=1728066408;
+	bh=2YxxB5xVkoD6jz96nY3YkZRwTLB9OAWY2sZKh5LB/kc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=CV88qISq7Mv960IpA+zQqMpdwpb4UVLRmM7eEpqUGKU/3GCgqO5kGcZ7fn4pZjbob
-	 FHriIDs5mPK3r0zG6OIM7UxmtyaFo8NT4AR+Z/b9I4TzstmEOGf8zxDlt5shaziMnD
-	 6GpF4P1FV630ecY7V6I3tF+CyNfrHt7rlomw3XfnBs4E685qQZyd2ASgV7YKS31PnR
-	 xndHdZC0KXKKgLKSpvGtYguHn+tiiFy7Ww66XJ1tLeep+TerfoV3TyyOYSvu3qDYHk
-	 OTglPoylH9HzcnvPXty7oIvdbBfyahx/4kFwBDUNs4XCW7Eg3sg58uKky79M1Myyrf
-	 GSw1JWZfCviLA==
+	b=DQ+soxjbjOn370g9i88IAwM7BkLFaJacLdqLW4QDdRXQBFys184pqIqkNTS9TqtME
+	 w5M3z620yEsykcjXX18/MnLKKjGGfknbHd2XlLvZWBWftGgNTYRRyxmTkEfXhGVii2
+	 yHORqCKdBbtD8PRaFJm3HlKfBMh/ElqgvlpeCq/YY0fiaiJv69o1PgmVvtfSaGlZf3
+	 qaw/pJtg5hIu/8yk/bEP+sa0WyyYKuN++o48xmKSxJDYFNy2u9aTRwK32pJkMniGo6
+	 +7ZupRO7y2E4iM/dhQ5lY1NCwRYdHThXiVkzwXHrWYwi/KBr8XBcDzLrfJu9yBz6pl
+	 RNbPMJGxtnBPQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Cc: Andrey Shumilin <shum.sdl@nppct.ru>,
+Cc: Qianqiang Liu <qianqiang.liu@163.com>,
+	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
+	daniel@ffwll.ch,
+	jirislaby@kernel.org,
+	gregkh@linuxfoundation.org,
+	geert+renesas@glider.be,
+	samuel.thibault@ens-lyon.org,
 	tzimmermann@suse.de,
-	fullwaywang@outlook.com,
-	javierm@redhat.com,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.10 70/70] fbdev: sisfb: Fix strbuf array overflow
-Date: Fri,  4 Oct 2024 14:21:08 -0400
-Message-ID: <20241004182200.3670903-70-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 56/58] fbcon: Fix a NULL pointer dereference issue in fbcon_putcs
+Date: Fri,  4 Oct 2024 14:24:29 -0400
+Message-ID: <20241004182503.3672477-56-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241004182200.3670903-1-sashal@kernel.org>
-References: <20241004182200.3670903-1-sashal@kernel.org>
+In-Reply-To: <20241004182503.3672477-1-sashal@kernel.org>
+References: <20241004182503.3672477-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -51,43 +55,89 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.10.13
+X-stable-base: Linux 6.6.54
 Content-Transfer-Encoding: 8bit
 
-From: Andrey Shumilin <shum.sdl@nppct.ru>
+From: Qianqiang Liu <qianqiang.liu@163.com>
 
-[ Upstream commit 9cf14f5a2746c19455ce9cb44341b5527b5e19c3 ]
+[ Upstream commit 5b97eebcce1b4f3f07a71f635d6aa3af96c236e7 ]
 
-The values of the variables xres and yres are placed in strbuf.
-These variables are obtained from strbuf1.
-The strbuf1 array contains digit characters
-and a space if the array contains non-digit characters.
-Then, when executing sprintf(strbuf, "%ux%ux8", xres, yres);
-more than 16 bytes will be written to strbuf.
-It is suggested to increase the size of the strbuf array to 24.
+syzbot has found a NULL pointer dereference bug in fbcon.
+Here is the simplified C reproducer:
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
+struct param {
+	uint8_t type;
+	struct tiocl_selection ts;
+};
 
-Signed-off-by: Andrey Shumilin <shum.sdl@nppct.ru>
+int main()
+{
+	struct fb_con2fbmap con2fb;
+	struct param param;
+
+	int fd = open("/dev/fb1", 0, 0);
+
+	con2fb.console = 0x19;
+	con2fb.framebuffer = 0;
+	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
+
+	param.type = 2;
+	param.ts.xs = 0; param.ts.ys = 0;
+	param.ts.xe = 0; param.ts.ye = 0;
+	param.ts.sel_mode = 0;
+
+	int fd1 = open("/dev/tty1", O_RDWR, 0);
+	ioctl(fd1, TIOCLINUX, &param);
+
+	con2fb.console = 1;
+	con2fb.framebuffer = 0;
+	ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb);
+
+	return 0;
+}
+
+After calling ioctl(fd1, TIOCLINUX, &param), the subsequent ioctl(fd, FBIOPUT_CON2FBMAP, &con2fb)
+causes the kernel to follow a different execution path:
+
+ set_con2fb_map
+  -> con2fb_init_display
+   -> fbcon_set_disp
+    -> redraw_screen
+     -> hide_cursor
+      -> clear_selection
+       -> highlight
+        -> invert_screen
+         -> do_update_region
+          -> fbcon_putcs
+           -> ops->putcs
+
+Since ops->putcs is a NULL pointer, this leads to a kernel panic.
+To prevent this, we need to call set_blitting_type() within set_con2fb_map()
+to properly initialize ops->putcs.
+
+Reported-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=3d613ae53c031502687a
+Tested-by: syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com
+Signed-off-by: Qianqiang Liu <qianqiang.liu@163.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/sis/sis_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbcon.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 009bf1d926448..75033e6be15ab 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -183,7 +183,7 @@ static void sisfb_search_mode(char *name, bool quiet)
- {
- 	unsigned int j = 0, xres = 0, yres = 0, depth = 0, rate = 0;
- 	int i = 0;
--	char strbuf[16], strbuf1[20];
-+	char strbuf[24], strbuf1[20];
- 	char *nameptr = name;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 24035b4f2cd70..405d587450ef8 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -847,6 +847,8 @@ static int set_con2fb_map(int unit, int newidx, int user)
+ 			return err;
  
- 	/* We don't know the hardware specs yet and there is no ivideo */
+ 		fbcon_add_cursor_work(info);
++	} else if (vc) {
++		set_blitting_type(vc, info);
+ 	}
+ 
+ 	con2fb_map[unit] = newidx;
 -- 
 2.43.0
 

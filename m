@@ -1,165 +1,95 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6C041D9597
-	for <linux-fbdev@vger.kernel.org>; Fri,  4 Oct 2024 21:49:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 503A2F9FE;
+	Sat,  5 Oct 2024 11:23:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728078543; cv=none; b=IYhInxZ/i2yySmD9VBJ6Vy3cFrSAwK4mZTYE70LmUiVuN9xcs3zd9anb+IOlwk8lE3d9TJBpWwqy4YvXLpxxq7VaH9u5PsoSokql5b+iZgE4ps4YfrnFgfixEt9YUB1tCZHjIbzrEh0wu9abywTm05hRCLr0o+frV2BRItmQb4Q=
+	t=1728127389; cv=none; b=Ih0ZryCkg77cshl6Kd+SdShGiGG6TNhiHZO5n8CWWoCPLcyJv0007poFYfYUQvEDz4T7SSdvIm334JYImdpMCW+i0nZNvyt+cHCsmzYWEzXUnN/O7kgM9D3HTsqW0utiPrPc72wVldK7tl4JrwEtwVFdXu6k3v266BHGl6obBiU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728078543; c=relaxed/simple;
-	bh=KILZmuz9ow44vIq//sP6mcCwlyWKYRWENjjTm5mPzG0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=lX0QWy3cUuRr+VMEz386LcDcpHvR9TafKC6gPHPpU/BVTfcqeet8lL/Ny5lG9Q1VB/4ceAy8b/G6Q0DZMAp3jSNTvt9gCpP2vHB1xaEelXkBljjZuOGkj9Qv9jWG58FuvgA0UhuRS+qnv2g/0ZRwL436bxM4ArmSSTcCpJNOXjU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=pc718Dyw; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1728127389; c=relaxed/simple;
+	bh=y7Aaf1rQuGE513a/NM0g2Gq6NNV+R4sWwXFnKYDcQNc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=WewVCEAtPSVSZXghW7gEIxctw0QEudRR5shGJs6DX/ED5l+X4H2ZsDA8IZmOEDE056T+zwNrv/z3UGZeou7T3nSPOU/rZXTm3Fm6LzcCUihc3cn0JCh+NPIfeXqv2Hbt/YLsw5r/f30iapL6NfWzNCXIP0RLuEidOEUv/kflsjg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Cz1HRMCf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="pc718Dyw"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-42cba8340beso21616105e9.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Oct 2024 14:49:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1728078539; x=1728683339; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=KfbnsxkeeqEEncvUI/2jM+8bMu3HinvuaG19icxbGgs=;
-        b=pc718DywKK1fOPwI+ys7JzBeSZ2dwVwJGEeQoU6Nz+yJqTbyPvKV5R5/k4RI6LyNe1
-         BH6c7lpjgB3W3PXK26OEJyMApqzRzlDuWfMU3GIa56V0xaTzpuj0V0ypI5XeATh7nwvq
-         H2M4CmmjHPiab5jLx8e4yRtOykmvvkia5phhDcbPcOPuOtEpwG7nf6jpczIiGVhoKZE5
-         V93OXr+HeMa8NSyFNXTo7Ff6M3uPLTsNpIIJVqJQRNUAtpmJXHNrCT8+mjxLksGIdewN
-         PAhCq/oKdV89uDrdivgkqayo3FOYR2kh9G0suuq7w9rXX10BYWUX2CYh9piF2v8xKfjA
-         vt7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728078539; x=1728683339;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=KfbnsxkeeqEEncvUI/2jM+8bMu3HinvuaG19icxbGgs=;
-        b=tnPY89m8vhAsQ26bkdHl8wG6x9bfAWqvNq16bZI2Z1mBi1Po8VcHqdXBNU/a14GxUJ
-         X7fFTJwCWZzx5MhrWRj6IOw1etbiw5K1lirze8eEDqSpBq00fs/boqmXS1rWz7GXZarv
-         T9qAkJSO+MJaTr6/c5N7yl7Jz3Oks1W6JJU0Ci1Yv3aA3zzJoj1pq8a4TCkO48toXS9f
-         D8W5lnRvdtebf1mqWd8Gox5veZnVO6d4RL+8CEVZgZPRHEV8+5GldACyhf+rjlmfZuv4
-         wCV70lVoYWw/vf9KJ1rSvZ7ltYUb/BxKiScjMXbdlGEparpFy3gnlwzxhmy6hwtquqCr
-         manw==
-X-Forwarded-Encrypted: i=1; AJvYcCWxb8FUzTfhEea3jtL1VBe7fQwfEAPIIsINdy04gJu1iABg8hfKz6sTYfh5yIWltixTXTIFnifnd4VG6g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyIHK9TO08QIE2dCFDGPXUZhHxEm62UPu2Gq+40E5UXZZnVsQFp
-	36MCwwnXh7qXW6vcQGPuvpXRlEWMPUqF9QXrTeVBBUWEKfZ0uTHlB7juktWKJPk=
-X-Google-Smtp-Source: AGHT+IETPUO4x+K1ayVzkXTAt5fy1m+nf2IbmK885d24N2g/sLQUZx6PDrGLnw75Jn056V+py2IoJA==
-X-Received: by 2002:a5d:4a12:0:b0:374:bf6b:1021 with SMTP id ffacd0b85a97d-37d04a7b139mr5447913f8f.27.1728078538832;
-        Fri, 04 Oct 2024 14:48:58 -0700 (PDT)
-Received: from [127.0.1.1] (frhb82016ds.ikexpress.com. [185.246.87.17])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42f86b4ab63sm24680375e9.40.2024.10.04.14.48.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Oct 2024 14:48:58 -0700 (PDT)
-From: Guillaume Stols <gstols@baylibre.com>
-Date: Fri, 04 Oct 2024 21:48:44 +0000
-Subject: [PATCH v3 10/10] iio: adc: ad7606: Disable PWM usage for non
- backend version
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cz1HRMCf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3CEEAC4CEC2;
+	Sat,  5 Oct 2024 11:23:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1728127388;
+	bh=y7Aaf1rQuGE513a/NM0g2Gq6NNV+R4sWwXFnKYDcQNc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Cz1HRMCfEc/mq3d5pUhgaspoeny3U/5waIHWOicqmTA55sDiC2DcJbnmjG4bjBUN+
+	 08A73unQWs6YyJUVYtLG3bfJPAIzT3o3cuDMHtAJ4tIKUUxjfLP7l+zGt34bBHkQoc
+	 nBpvTo8kgkaNP5Ve6coYyi5Y9QQ6y2kJ0h3BweOqbwUcaGS7EnuLdOmSBlNz+BLEto
+	 NTGN/EfkY+L+7LeRCd5MLz/NA0L79lkE7Xt+xfL3g+FPpcUafK9+GkxkStmZJHxqFX
+	 llvei+E67us7011iU7J1HLjla184pj/FikvtLErZwjGXcbngSFGalFdlTY34SqGZQf
+	 WwG/gXq+z32+Q==
+Date: Sat, 5 Oct 2024 12:22:57 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Guillaume Stols <gstols@baylibre.com>
+Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <ukleinek@kernel.org>, Lars-Peter
+ Clausen <lars@metafoo.de>, Michael Hennerich
+ <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+ aardelean@baylibre.com, dlechner@baylibre.com, Jonathan Cameron
+ <Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH v3 01/10] iio: adc: ad7606: Fix typo in the driver name
+Message-ID: <20241005122257.77c2e582@jic23-huawei>
+In-Reply-To: <20241004-ad7606_add_iio_backend_support-v3-1-38757012ce82@baylibre.com>
+References: <20241004-ad7606_add_iio_backend_support-v3-0-38757012ce82@baylibre.com>
+	<20241004-ad7606_add_iio_backend_support-v3-1-38757012ce82@baylibre.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20241004-ad7606_add_iio_backend_support-v3-10-38757012ce82@baylibre.com>
-References: <20241004-ad7606_add_iio_backend_support-v3-0-38757012ce82@baylibre.com>
-In-Reply-To: <20241004-ad7606_add_iio_backend_support-v3-0-38757012ce82@baylibre.com>
-To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
- Lars-Peter Clausen <lars@metafoo.de>, 
- Michael Hennerich <Michael.Hennerich@analog.com>, 
- Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Michael Hennerich <michael.hennerich@analog.com>, 
- linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-doc@vger.kernel.org, 
- aardelean@baylibre.com, dlechner@baylibre.com, 
- Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
- Guillaume Stols <gstols@baylibre.com>
-X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728078523; l=2322;
- i=gstols@baylibre.com; s=20240417; h=from:subject:message-id;
- bh=KILZmuz9ow44vIq//sP6mcCwlyWKYRWENjjTm5mPzG0=;
- b=V1//BkjB3KmevEEh7iNe+Ik1D5yorX+BR9PwVTNLgBma08CQC6efmz2xTQWL70TtsmmAjdxN8
- zoDQV9i4/KCCNsoS49wGya0TBkhVp3ptAH3YD9OUUo86YOXEL5TeLem
-X-Developer-Key: i=gstols@baylibre.com; a=ed25519;
- pk=XvMm5WHuV67sGYOJZqIYzXndbaJOlNd8Q6li6vnb4Cs=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Since the pwm was introduced before backend, there was a mock use, with
-a GPIO emulation. Now that iio backend is introduced, the mock use can
-be removed.
+On Fri, 04 Oct 2024 21:48:35 +0000
+Guillaume Stols <gstols@baylibre.com> wrote:
 
-Signed-off-by: Guillaume Stols <gstols@baylibre.com>
----
- drivers/iio/adc/ad7606.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+> The parallel driver's name is ad7606_par and not ad7606_parallel.
+> 
+> Fixes: 0046a46a8f93 ("staging/ad7606: Actually build the interface modules")
+> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+I'm going to nibble away at series where I can today because there
+are more patches under revision than I'd like.
+Merging subsets of series where there are simple ones like this makes
+that a little easier to manage.
 
-diff --git a/drivers/iio/adc/ad7606.c b/drivers/iio/adc/ad7606.c
-index d86eb7c3e4f7..7d02aad45242 100644
---- a/drivers/iio/adc/ad7606.c
-+++ b/drivers/iio/adc/ad7606.c
-@@ -473,8 +473,6 @@ static int ad7606_pwm_set_high(struct ad7606_state *st)
- 	cnvst_pwm_state.duty_cycle = cnvst_pwm_state.period;
- 
- 	ret = pwm_apply_might_sleep(st->cnvst_pwm, &cnvst_pwm_state);
--	/* sleep 2 µS to let finish the current pulse */
--	fleep(2)
- 
- 	return ret;
- }
-@@ -492,8 +490,6 @@ static int ad7606_pwm_set_low(struct ad7606_state *st)
- 	cnvst_pwm_state.duty_cycle = 0;
- 
- 	ret = pwm_apply_might_sleep(st->cnvst_pwm, &cnvst_pwm_state);
--	/* sleep 2 µS to let finish the current pulse */
--	fleep(2)
- 
- 	return ret;
- }
-@@ -576,7 +572,6 @@ static irqreturn_t ad7606_trigger_handler(int irq, void *p)
- 	iio_trigger_notify_done(indio_dev->trig);
- 	/* The rising edge of the CONVST signal starts a new conversion. */
- 	gpiod_set_value(st->gpio_convst, 1);
--	ad7606_pwm_set_high(st);
- 
- 	return IRQ_HANDLED;
- }
-@@ -900,7 +895,6 @@ static int ad7606_buffer_postenable(struct iio_dev *indio_dev)
- 	struct ad7606_state *st = iio_priv(indio_dev);
- 
- 	gpiod_set_value(st->gpio_convst, 1);
--	ad7606_pwm_set_high(st);
- 
- 	return 0;
- }
-@@ -910,7 +904,6 @@ static int ad7606_buffer_predisable(struct iio_dev *indio_dev)
- 	struct ad7606_state *st = iio_priv(indio_dev);
- 
- 	gpiod_set_value(st->gpio_convst, 0);
--	ad7606_pwm_set_low(st);
- 
- 	return 0;
- }
-@@ -1204,6 +1197,12 @@ int ad7606_probe(struct device *dev, int irq, void __iomem *base_address,
- 		indio_dev->setup_ops = &ad7606_pwm_buffer_ops;
- 	} else {
- 		init_completion(&st->completion);
-+
-+		/* Reserve the PWM use only for backend (force gpio_convst definition) */
-+		if (!st->gpio_convst)
-+			return dev_err_probe(dev, -EINVAL,
-+					     "No backend, connect convst to a GPIO");
-+
- 		st->trig = devm_iio_trigger_alloc(dev, "%s-dev%d",
- 						  indio_dev->name,
- 						  iio_device_id(indio_dev));
+So applied this one to the togreg branch of iio.git and pushed out as
+testing so 0-day can fail to notice it ;)
 
--- 
-2.34.1
+Thanks,
+
+Jonathan
+
+> ---
+>  drivers/iio/adc/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> index 97ece1a4b7e3..4ab1a3092d88 100644
+> --- a/drivers/iio/adc/Kconfig
+> +++ b/drivers/iio/adc/Kconfig
+> @@ -229,7 +229,7 @@ config AD7606_IFACE_PARALLEL
+>  	  ad7605-4, ad7606, ad7606-6, ad7606-4 analog to digital converters (ADC).
+>  
+>  	  To compile this driver as a module, choose M here: the
+> -	  module will be called ad7606_parallel.
+> +	  module will be called ad7606_par.
+>  
+>  config AD7606_IFACE_SPI
+>  	tristate "Analog Devices AD7606 ADC driver with spi interface support"
+> 
 

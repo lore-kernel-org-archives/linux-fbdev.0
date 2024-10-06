@@ -1,187 +1,103 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E63D4C9D;
-	Sun,  6 Oct 2024 06:23:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB07B41C79;
+	Sun,  6 Oct 2024 07:15:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728195834; cv=none; b=nZ4eRCRjNriMRB3GKDST2g798Qo9uQilKZB5aMCmVBAS8A+sc/24wXF7x4CAhGAe5GS26ifu2F99G3F09QOn12NjRFA6q0k6uSBhGZmkhExv3NB4kD/0qhqb8mYqWChfvat0K5ABGAo5MCIG3OkcuyAxrGatep6yz4P/KnfvTmw=
+	t=1728198959; cv=none; b=e1pSsI0Ft5D6fuLd6ol0GxOlAKrX9iULpD+cVtIoEXTRb707CaA/K54oExrr1OL17SwZz8u3QD8XDbb04+ZWLSyDz5H+fDbei3LL3zLzyD/PkZIPsMcm69nk+GsBwpbVuQUPD3tcMgS2stpOL4WENsezDGr2pS7H8/Wbpr122Oc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728195834; c=relaxed/simple;
-	bh=H/emNg2aVZv4n2YTV6WagRn5Age0z2hVFcUSuk6iDKk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tvi4FSTSLK2+4wcpQu+9BWLdBGhX/IR/AMg9XzWdYQsETPkGZ0xktOCKtHA0Yyz6CqgntHVGIgES9fb8FY0F35eUYD0blG9jIBpOK1G5wMJNQapyyWKDFiqCfnN5LU34aitqGdMXUSEjXlED2q5Uge23EYcSbSCGUrAk14XRQGE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=n8qBoDWu; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1728198959; c=relaxed/simple;
+	bh=GNKMruB10LYBdDUAQMPVmLyssNcYBL25YfXgpnNVVQQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ljwPh32rw/BBJijCTJfRYaawLIi5iVa60Fyj2FSAt1EiHW6SEUqRTGPKtI1mNF2I/KQPEanU3zfM3vXgNLf0uSfr1oGOP34x1evE3MfDo0QbITN8yM9iIvwaZGVh4TFsImOgykDVlGieuDovu6kZ3oTe/SQ15/MYEYXQJlNZwsw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Kva4xTFU; arc=none smtp.client-ip=209.85.216.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="n8qBoDWu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1728195833; x=1759731833;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=H/emNg2aVZv4n2YTV6WagRn5Age0z2hVFcUSuk6iDKk=;
-  b=n8qBoDWubJK+tzTZjyr9TnvUzF3b14EKjJCnhMURusXYgDnby8ETYN1t
-   UjmxnNPqhjhQ41WMG8teopxFo6kCuCZSZ0msfO3X7H1ADBkMK+Yqcqm5s
-   Bdog/7FRcPUwSYbzspkGZi6XzhtJVGWHyyh91nRyS+s8og9N6f0QiYZXV
-   1mkOoH8gquy0ZkhzWuzhYiLy7SdNJdps4iU/eX5mnWdMtdKW2rBnjqFIC
-   oYTAlPw3lVfj8eqJMOe8aWC9T3S1wpuKbHUIVG91/xo645ALF0xD4KzK8
-   KkRAcVumsDUQs9Non+UJQgWPneZJRu7DtJnoJjzXo/ePKQB6NaIxhhx8k
-   Q==;
-X-CSE-ConnectionGUID: bl4LoanqQealht3LruVIqA==
-X-CSE-MsgGUID: aqd3TEuzTgSyiNzfMKBxBA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11216"; a="27254801"
-X-IronPort-AV: E=Sophos;i="6.11,181,1725346800"; 
-   d="scan'208";a="27254801"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2024 23:23:52 -0700
-X-CSE-ConnectionGUID: gkqTNOEbSYqLP/6WzoJMHA==
-X-CSE-MsgGUID: 2L3DpjURSSmUkBiqjKKkbg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,181,1725346800"; 
-   d="scan'208";a="79703327"
-Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by fmviesa004.fm.intel.com with ESMTP; 05 Oct 2024 23:23:48 -0700
-Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1sxKgD-0003em-1y;
-	Sun, 06 Oct 2024 06:23:45 +0000
-Date: Sun, 6 Oct 2024 14:23:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: Guillaume Stols <gstols@baylibre.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>
-Cc: oe-kbuild-all@lists.linux.dev, linux-pwm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-doc@vger.kernel.org, aardelean@baylibre.com,
-	dlechner@baylibre.com, Guillaume Stols <gstols@baylibre.com>
-Subject: Re: [PATCH v3 07/10] iio: adc: ad7606: Add compatibility to fw_nodes
-Message-ID: <202410061420.L3sUSK8b-lkp@intel.com>
-References: <20241004-ad7606_add_iio_backend_support-v3-7-38757012ce82@baylibre.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kva4xTFU"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-2e109539aedso2913329a91.0;
+        Sun, 06 Oct 2024 00:15:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1728198957; x=1728803757; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=EY5p4xlsAqQOcxvqm9u7nE7mDZrPMRJXe9re+U3pcIg=;
+        b=Kva4xTFUTEfeGyKgvDq81Ob5HgyGMAvv6HG1eu6ZThDDu4PMbiXTM5wrt+NqlDAHCP
+         +wOicWiMTYPUExA+4LolFxGQOp88XpU2LzH4kpa5Y+RoYRbY2kG3+ryEMbEjMhrZmPNK
+         M95+MHIOLfusQ/yhg2+9P5Y3BARKBWWww7+n6gj/JX2ZiL4vWxFsHcRxBN3NuSDKVhnH
+         GaH2ml34G/0DvmbXhyolLfMhcJw9DErv2dggi4WWr20l+6nLsnLGFWaEkm3804XwTY50
+         RC3bthBqx44Q+KSpld2BclnACjZugCxCxgtZCWxc4kQFpWZPTow3QOrnv0GKIBCd72iu
+         A6Xg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728198957; x=1728803757;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=EY5p4xlsAqQOcxvqm9u7nE7mDZrPMRJXe9re+U3pcIg=;
+        b=Ak3Qs7A+DVBrxCgFfczXqjmpgRRIWJJbrdt6BkihYi3ty+Ko1ozFhxEvffG+Z5lUFE
+         YPvAsOfmMbD+UEjRSD2pYDBc4O8hzxMSoaLUYJQrjEccezLAfdFn/AtbvIvSEA+yapHe
+         RfPNbZgsmnKkaoyO2yAEi6xO4vmJFz/0SeQBWE1eV0cpAWU++xCc2SPedLt+uyqYXm+r
+         /3va2pc0HbquM9yee043h2mCnOb1/DqSwmppD13/hlR06SVMBdlT2noGsANxHrO7kFJL
+         WCJ6md9nPL1kcsSUTChKidhFKc5Zn6SYcrWqHQv+4N4WUqxPrW09wGwB9my3G9qhwVUE
+         MUZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWuS+76Mxa/pSALU+kcdRRg9Iwcbq8DZ9TwPBc+9aYLduuOpmmyReR88iSqDJC1f6KnrQ8EqlIGJ+dTLOU=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxaX7zgNkzFpftoXQlaCk7e4HH9pZw9z4SFX3CMxQXhoOQUaWIM
+	GfEnhuSHf3Y+N7ztFJPibqKihbMPf5cPPX5vRmkoF7QgoX6pAZpt
+X-Google-Smtp-Source: AGHT+IHfxiCQnGgXw6gWSyy7mb50GfJveRtEjxaOuoIhvi/t6X26Ke+95wPLjiBS3eg+nZBeW/KzDA==
+X-Received: by 2002:a17:90b:b0c:b0:2e0:99bc:6907 with SMTP id 98e67ed59e1d1-2e1e6229e93mr9356389a91.15.1728198956928;
+        Sun, 06 Oct 2024 00:15:56 -0700 (PDT)
+Received: from purva-IdeaPad-Gaming-3-15IHU6.lan ([2409:40c0:230:2966:8a2:4c2e:bb52:a9af])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2e20aeb7db0sm2943600a91.15.2024.10.06.00.15.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 06 Oct 2024 00:15:55 -0700 (PDT)
+From: SurajSonawane2415 <surajsonawane0215@gmail.com>
+To: adaplas@gmail.com,
+	deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	SurajSonawane2415 <surajsonawane0215@gmail.com>
+Subject: [PATCH] video: fix inconsistent indentation warning
+Date: Sun,  6 Oct 2024 12:45:14 +0530
+Message-Id: <20241006071514.5577-1-surajsonawane0215@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241004-ad7606_add_iio_backend_support-v3-7-38757012ce82@baylibre.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Guillaume,
+Fix the indentation to ensure consistent code style and improve
+readability, and to fix this warning:
+drivers/video/fbdev/nvidia/nv_hw.c:1512 NVLoadStateExt() warn:
+inconsistent indenting
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: SurajSonawane2415 <surajsonawane0215@gmail.com>
+---
+ drivers/video/fbdev/nvidia/nv_hw.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-[auto build test WARNING on 35307f34d6fef8f9d41a1e8f4f532e4b0a7ee422]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Guillaume-Stols/iio-adc-ad7606-Fix-typo-in-the-driver-name/20241005-055256
-base:   35307f34d6fef8f9d41a1e8f4f532e4b0a7ee422
-patch link:    https://lore.kernel.org/r/20241004-ad7606_add_iio_backend_support-v3-7-38757012ce82%40baylibre.com
-patch subject: [PATCH v3 07/10] iio: adc: ad7606: Add compatibility to fw_nodes
-config: i386-randconfig-062-20241006 (https://download.01.org/0day-ci/archive/20241006/202410061420.L3sUSK8b-lkp@intel.com/config)
-compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241006/202410061420.L3sUSK8b-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410061420.L3sUSK8b-lkp@intel.com/
-
-sparse warnings: (new ones prefixed by >>)
->> drivers/iio/adc/ad7606_spi.c:324:29: sparse: sparse: symbol 'ad7606_spi_bops' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:328:29: sparse: sparse: symbol 'ad7616_spi_bops' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:337:29: sparse: sparse: symbol 'ad7606b_spi_bops' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:346:29: sparse: sparse: symbol 'ad7606c_18_spi_bops' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:370:30: sparse: sparse: symbol 'ad7606_4_bus_info' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:375:30: sparse: sparse: symbol 'ad7606b_bus_info' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:380:30: sparse: sparse: symbol 'ad7606c_16_bus_info' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:385:30: sparse: sparse: symbol 'ad7606c_18_bus_info' was not declared. Should it be static?
->> drivers/iio/adc/ad7606_spi.c:390:30: sparse: sparse: symbol 'ad7616_bus_info' was not declared. Should it be static?
-
-vim +/ad7606_spi_bops +324 drivers/iio/adc/ad7606_spi.c
-
-   323	
- > 324	const struct ad7606_bus_ops ad7606_spi_bops = {
-   325		.read_block = ad7606_spi_read_block,
-   326	};
-   327	
- > 328	const struct ad7606_bus_ops ad7616_spi_bops = {
-   329		.read_block = ad7606_spi_read_block,
-   330		.reg_read = ad7606_spi_reg_read,
-   331		.reg_write = ad7606_spi_reg_write,
-   332		.write_mask = ad7606_spi_write_mask,
-   333		.rd_wr_cmd = ad7616_spi_rd_wr_cmd,
-   334		.sw_mode_config = ad7616_sw_mode_config,
-   335	};
-   336	
- > 337	const struct ad7606_bus_ops ad7606b_spi_bops = {
-   338		.read_block = ad7606_spi_read_block,
-   339		.reg_read = ad7606_spi_reg_read,
-   340		.reg_write = ad7606_spi_reg_write,
-   341		.write_mask = ad7606_spi_write_mask,
-   342		.rd_wr_cmd = ad7606B_spi_rd_wr_cmd,
-   343		.sw_mode_config = ad7606B_sw_mode_config,
-   344	};
-   345	
- > 346	const struct ad7606_bus_ops ad7606c_18_spi_bops = {
-   347		.read_block = ad7606_spi_read_block18to32,
-   348		.reg_read = ad7606_spi_reg_read,
-   349		.reg_write = ad7606_spi_reg_write,
-   350		.write_mask = ad7606_spi_write_mask,
-   351		.rd_wr_cmd = ad7606B_spi_rd_wr_cmd,
-   352		.sw_mode_config = ad7606c_18_sw_mode_config,
-   353	};
-   354	
-   355	static const struct ad7606_bus_info ad7605_4_bus_info = {
-   356		.chip_info = &ad7605_4_info,
-   357		.bops = &ad7606_spi_bops,
-   358	};
-   359	
-   360	static const struct ad7606_bus_info ad7606_8_bus_info = {
-   361		.chip_info = &ad7606_8_info,
-   362		.bops = &ad7606_spi_bops,
-   363	};
-   364	
-   365	static const struct ad7606_bus_info ad7606_6_bus_info = {
-   366		.chip_info = &ad7606_6_info,
-   367		.bops = &ad7606_spi_bops,
-   368	};
-   369	
- > 370	const struct ad7606_bus_info ad7606_4_bus_info = {
-   371		.chip_info = &ad7606_4_info,
-   372		.bops = &ad7606_spi_bops,
-   373	};
-   374	
- > 375	const struct ad7606_bus_info ad7606b_bus_info = {
-   376		.chip_info = &ad7606b_info,
-   377		.bops = &ad7606b_spi_bops,
-   378	};
-   379	
- > 380	const struct ad7606_bus_info ad7606c_16_bus_info = {
-   381		.chip_info = &ad7606c_16_info,
-   382		.bops = &ad7606b_spi_bops,
-   383	};
-   384	
- > 385	const struct ad7606_bus_info ad7606c_18_bus_info = {
-   386		.chip_info = &ad7606c_18_info,
-   387		.bops = &ad7606c_18_spi_bops,
-   388	};
-   389	
- > 390	const struct ad7606_bus_info ad7616_bus_info = {
-   391		.chip_info = &ad7616_info,
-   392		.bops = &ad7616_spi_bops,
-   393	};
-   394	
-
+diff --git a/drivers/video/fbdev/nvidia/nv_hw.c b/drivers/video/fbdev/nvidia/nv_hw.c
+index 9b0a324bb..75afaa07e 100644
+--- a/drivers/video/fbdev/nvidia/nv_hw.c
++++ b/drivers/video/fbdev/nvidia/nv_hw.c
+@@ -1509,10 +1509,10 @@ void NVLoadStateExt(struct nvidia_par *par, RIVA_HW_STATE * state)
+ 	NV_WR32(par->PFIFO, 0x0495 * 4, 0x00000001);
+ 	NV_WR32(par->PFIFO, 0x0140 * 4, 0x00000001);
+ 
+-    if (!state) {
+-	    par->CurrentState = NULL;
+-	    return;
+-    }
++	if (!state) {
++		par->CurrentState = NULL;
++		return;
++	}
+ 
+ 	if (par->Architecture >= NV_ARCH_10) {
+ 		if (par->twoHeads) {
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+

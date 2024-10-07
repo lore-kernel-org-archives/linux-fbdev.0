@@ -1,61 +1,61 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E8FF1D1F63
-	for <linux-fbdev@vger.kernel.org>; Mon,  7 Oct 2024 12:06:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7824A1D14FA
+	for <linux-fbdev@vger.kernel.org>; Mon,  7 Oct 2024 12:48:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728302812; cv=none; b=ItFVGsy99ucVogrvFg565c52cSEwg+gKR/N4kdoM2/JiHYMBYLng3KHs7mwD+AkauUUK/HZVA8vFfEmmhvQmOTzZfVACjbDLoYY2pFrINzZR1el2tVurYGwrEIeBJOl9MS/Sr7TyesWMpR2IgvnCe5GQb8ocIqQWd1F1ASLlKA8=
+	t=1728305334; cv=none; b=Cr0CT9zzQlSvDEXXrJjtcpIpUs0Kq6NQTVsGUKvgA6RGsAz2cPiwhrBW/g16KqxbAnQwxW5/uLnLbVFUi8HocQ12wKIKMYjAzY2C6Op7PfS/5gegQNeN9akBUfjrTgh08uajNGdc2sJDLUtmZDlmljBI2aM2EXP9F5KOKVnnQfw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728302812; c=relaxed/simple;
-	bh=4nem5neUbIc5QSZ4I5m7/QHNX1+9xrR1i3iA0CCx7ik=;
+	s=arc-20240116; t=1728305334; c=relaxed/simple;
+	bh=ysVTXNU2ucl9SaVTZ5Lr60rELrWrYmvaQrJsrccxSBU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G/dD18xo1hEJV9gARt8nc7xShVk2YlnnyCTY1qb30GHlm+Ag9V+gR9JMbuqi+5TurvsXs4zzPvlrrlvJ/kx5Tzs0EnuxjxL8y+erANhDGNF8Uvn61F4mz65cFcuv9oXY6Mc/Zk6MC82aZFjIc01JD44JYevd2IHBiZFqtO0ES1w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lq2t+k7l; arc=none smtp.client-ip=192.198.163.12
+	 Content-Type:Content-Disposition:In-Reply-To; b=NToxbCrWrGO5SC+wPrZlJQSdZXcIEo9foLvVlBgvcf5aSFPYAjNHui72ccsNF3ZalVfTDBLgyzxe8DdSG8oi59TdHfrzv8XWdNmzzfQogkKnC6VeresEvq21fGhtHNi139Ha9JNYkCoTZ+Ytm4yAKSbzNl6TDC4UFpujHMXFSYw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=isXsbA0I; arc=none smtp.client-ip=198.175.65.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lq2t+k7l"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="isXsbA0I"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1728302811; x=1759838811;
+  t=1728305333; x=1759841333;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=4nem5neUbIc5QSZ4I5m7/QHNX1+9xrR1i3iA0CCx7ik=;
-  b=lq2t+k7l3tlhPaxIwHfJYikUS+HpGLsJUt1lJXupf7Lp96zhfPdR70eR
-   aQ5sSuYoFiCEh1ZCglvCbCXsr27TnTSNAidSR0x8C6cj5MvFKJJ+yoVXP
-   DPeyTmmbVuS6xvbvUz8+VbG+6MthAeaAMwkQwiv8APAaIzFMqCqfzYrYB
-   0wi6qpi2LrzRdDuDtTxR+TLVk+qNwjO8uOT9NSwGK8oLMEzLbF8wFSUCR
-   Tsu6at11U01fJk34fNBAduQJUJzq8MNHFxXHE5XtRI5+0kIx7CIAb3BhW
-   c6i1VDhKjI5lSoDWASn9qZIdttseRXZ2Rc53DtlpnYvw72sIQK9cxZGRV
-   g==;
-X-CSE-ConnectionGUID: xjd3fqe2R52RDfTnLpHRFA==
-X-CSE-MsgGUID: WsQzPdRDSw+MUqYijBrI8A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11217"; a="31333617"
+  bh=ysVTXNU2ucl9SaVTZ5Lr60rELrWrYmvaQrJsrccxSBU=;
+  b=isXsbA0IzSxVPap9R/qWim2jUUs7XgnxCv/tFnzz+jC2cC3VUAkcChsj
+   DcEXUDyXkNkWZsFDZw9kBX+4fPszRkQj4ZTzA4Rtgqm6vgt4oE/n7hv54
+   h8sijA7XZybdYj6XSMMMX2idV2uGJlCDbIVf3V7AYNRKDDJsa0WYzInjf
+   7j09I4NXNI8WHMyN/BAxWb1VdroeEPh0XGVYg9wiT+7XjuOpHED4VYqyT
+   cjnHTq3kZQWPUflmrefDc1Ebas4VR9gywpu3/53pKoB6u/HRJfDRpMDyk
+   nYpBHJqfPzQ5CG1Dh0Z5I6etvvTC9UhGh2joJxv2iQKlkwJkjTI09FE3Q
+   w==;
+X-CSE-ConnectionGUID: yrwyR/+AQriAK3DW/fy0qw==
+X-CSE-MsgGUID: 0I2Lfv3HR6mASY6dMAk5zA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11218"; a="31152291"
 X-IronPort-AV: E=Sophos;i="6.11,184,1725346800"; 
-   d="scan'208";a="31333617"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2024 05:06:50 -0700
-X-CSE-ConnectionGUID: +iOQObMNR2adxQNZSFjS1g==
-X-CSE-MsgGUID: VdTr0s+fQEiOWaCgXeMGhQ==
+   d="scan'208";a="31152291"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2024 05:48:53 -0700
+X-CSE-ConnectionGUID: PCsGns7aSCa0E0+nXwQVvg==
+X-CSE-MsgGUID: OfEO/U3ZRS2nSXhbTggRCw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.11,184,1725346800"; 
-   d="scan'208";a="80433796"
+   d="scan'208";a="80055133"
 Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by orviesa004.jf.intel.com with ESMTP; 07 Oct 2024 05:06:49 -0700
+  by fmviesa004.fm.intel.com with ESMTP; 07 Oct 2024 05:48:50 -0700
 Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1sxmVi-0004xQ-0n;
-	Mon, 07 Oct 2024 12:06:46 +0000
-Date: Mon, 7 Oct 2024 20:06:10 +0800
+	id 1sxnAO-0004zB-0r;
+	Mon, 07 Oct 2024 12:48:48 +0000
+Date: Mon, 7 Oct 2024 20:48:40 +0800
 From: kernel test robot <lkp@intel.com>
 To: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
 	linux-fbdev@vger.kernel.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	dri-devel@lists.freedesktop.org, thomas.zimmermann@suse.de,
+Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	thomas.zimmermann@suse.de,
 	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
 Subject: Re: [PATCH v2] fbdev: sstfb: Make CONFIG_FB_DEVICE optional
-Message-ID: <202410071957.gJryKfOF-lkp@intel.com>
+Message-ID: <202410072022.oRqUf7DT-lkp@intel.com>
 References: <20241004152429.4329-1-gonzalo.silvalde@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -72,7 +72,7 @@ Hi Gonzalo,
 kernel test robot noticed the following build errors:
 
 [auto build test ERROR on drm-misc/drm-misc-next]
-[also build test ERROR on drm-tip/drm-tip linus/master v6.12-rc2 next-20241004]
+[also build test ERROR on linus/master v6.12-rc2 next-20241004]
 [If your patch is applied to the wrong git tree, kindly drop us a note.
 And when submitting patch, we suggest to use '--base' as documented in
 https://git-scm.com/docs/git-format-patch#_base_tree_information]
@@ -81,30 +81,35 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Gonzalo-Silvalde-Blanco/f
 base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
 patch link:    https://lore.kernel.org/r/20241004152429.4329-1-gonzalo.silvalde%40gmail.com
 patch subject: [PATCH v2] fbdev: sstfb: Make CONFIG_FB_DEVICE optional
-config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20241007/202410071957.gJryKfOF-lkp@intel.com/config)
-compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241007/202410071957.gJryKfOF-lkp@intel.com/reproduce)
+config: i386-allyesconfig (https://download.01.org/0day-ci/archive/20241007/202410072022.oRqUf7DT-lkp@intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241007/202410072022.oRqUf7DT-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410071957.gJryKfOF-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410072022.oRqUf7DT-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/video/fbdev/sstfb.c:1439:2: error: invalid preprocessing directive
+   drivers/video/fbdev/sstfb.c: In function 'sstfb_probe':
+>> drivers/video/fbdev/sstfb.c:1439:2: error: invalid preprocessing directive #fdef; did you mean #ifdef?
     1439 | #fdef CONFIG_FB_DEVICE
-         |  ^
->> drivers/video/fbdev/sstfb.c:1442:2: error: #endif without #if
+         |  ^~~~
+         |  ifdef
+   drivers/video/fbdev/sstfb.c:1442:2: error: #endif without #if
     1442 | #endif
-         |  ^
-   2 errors generated.
+         |  ^~~~~
 
 Kconfig warnings: (for reference only)
    WARNING: unmet direct dependencies detected for MODVERSIONS
    Depends on [n]: MODULES [=y] && !COMPILE_TEST [=y]
    Selected by [y]:
-   - RANDSTRUCT_FULL [=y] && (CC_HAS_RANDSTRUCT [=y] || GCC_PLUGINS [=n]) && MODULES [=y]
+   - RANDSTRUCT_FULL [=y] && (CC_HAS_RANDSTRUCT [=n] || GCC_PLUGINS [=y]) && MODULES [=y]
+   WARNING: unmet direct dependencies detected for GET_FREE_REGION
+   Depends on [n]: SPARSEMEM [=n]
+   Selected by [y]:
+   - RESOURCE_KUNIT_TEST [=y] && RUNTIME_TESTING_MENU [=y] && KUNIT [=y]
 
 
 vim +1439 drivers/video/fbdev/sstfb.c
@@ -231,7 +236,7 @@ vim +1439 drivers/video/fbdev/sstfb.c
 > 1439	#fdef CONFIG_FB_DEVICE
   1440		if (device_create_file(info->dev, &device_attrs[0]))
   1441			printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
-> 1442	#endif
+  1442	#endif
   1443	
   1444		fb_info(info, "%s frame buffer device at 0x%p\n",
   1445			fix->id, info->screen_base);

@@ -1,218 +1,196 @@
-Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazon11010056.outbound.protection.outlook.com [52.101.228.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1780487AE;
-	Wed,  9 Oct 2024 01:45:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.228.56
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728438340; cv=fail; b=kSIEQd5jsEUTUJeXTxA9FDY7sKikzD8UtNiotKwEeh2Jtu3pDqnNSeJfK67D06XYEUplnFGhxBYq2FNmSfq7ZYt/ZxbswuU5id6PH1b9hlgRRSwB+UaimteHYeF+pN8hh/6UDwlpwCd8c5xHZ3piIG9rT6/vw4fak06qXsBQzPw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728438340; c=relaxed/simple;
-	bh=qoomHaj85HWQmh2XsGLqObH049qJmODhHW5WHv/MIz8=;
-	h=Message-ID:From:Subject:To:In-Reply-To:References:Content-Type:
-	 Date:MIME-Version; b=phwatNpm8FGWAD/ddVK/JPgjNu405JB1FKa52+Du+v787rUpyIrg8L3d+tDCu0tzJFoQcv9HqMfgf8XmgUZFslAFIR8WalADk1jL0RQbg5+cPUA+AG2k1Iqnd6Q59ulkMp0f5gMi99TG+C9ayAyMtuXyUuY4y7bOdGmimfm739U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=Q+qnhwi7; arc=fail smtp.client-ip=52.101.228.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 759E418D65B
+	for <linux-fbdev@vger.kernel.org>; Wed,  9 Oct 2024 09:19:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1728465587; cv=none; b=o8t+7Q9ZJ1s8oz28j3iPkpEat/O3H+ALxPPLE041w2/xg/CRC7W2I1yoOi9TJ0zfyNle1IwLU31NuhtQ9SPnuzW00j2zOa0EAeDTAOq3i9+laOFe89Dx3FaH6Yty2ha6h4b8mTdZjk1rs8Z9kfbl54+LtvEeGZvmNz2Mk2YXSz8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1728465587; c=relaxed/simple;
+	bh=n9NcSx6B6mq5gEWt7lUtBdnyNqrVS/k0PL3jsKufD5g=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=fcR2nKXUMU/r/H68h2pS4ZKjmEv2eLtPnwcmWP/lvF6igfltgbOUD2Fa0aOByV+6MqjIcR2sp1OdivNEt8tGAc2Ckcp4nwyUKsH4YESPBDjuR0QntsAOCa9Z3CiwXoXNTNkNHKweo2N/9oPz+hmigITwyHO0nlMedcHOfOePzCQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=g/NX4I02; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="Q+qnhwi7"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=jYsGbh0LTTyWYwUDv5zMJamLsNmLL/8SHLMtZ4whuZudz9mFkZl5MN/ouxrts6RN5+pDMyI5FUpXOzN2qX0IvGwrn8MwCx1h7d5xv2oELgR78J698oDDDx0eua/JatznwKXKmASPKmRSorI3QfD9Or1YUyQHBm1xWTNwQJzjD73QCW3r/tO5eTSgu3ZUHaC2FjCWThpOoYxUGgdlNFP6yEe4NZNFlODwG5BegD56aiGgtyM7D1zESayhRBjMkyvuXGSOsPPvD4Qzh7aqEApjtOCmO2Wy27WxRwSnc184qFbO7IfsdLWv6YHJzgV9eNEXoExYLg8SvRhyfE8OUtXu0A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=O5DZhUDvEhSeZg3TAD2iwp2rTNW3Lhl221pa49GOsSY=;
- b=E55FIWAHkLCOv1y0l4aFatS5bee+2JRBzqU9QpqkA58MLDGCXRKNmpXe7sG2XASMKEXnncOVokUV0wepsPfihxUE8IK6cximFzN87wuG7g9YBZ4uVqaBAMlqIL05IvGvaG45cz7/lhgFNVDsqYwMqB8PhNeaASOTIpzOcdyNYUOFrdAAPoTDaPM8WblauP0HDz5Jm582edyb653SJbqIqknOkHTt8TIxdz3ch/yhe/PJlVS2TaGMz5gnPinZcXIzc7jj0PCj1TCv63Oe/OmYbT8wSYIF9+9yjbYWsobfUvGOmOyHStzdnmwfJx9l6kdMLFiI3ydu2k4UWrg3EwpyKw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
- dkim=pass header.d=renesas.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=O5DZhUDvEhSeZg3TAD2iwp2rTNW3Lhl221pa49GOsSY=;
- b=Q+qnhwi7v4ak7isCghyFeZggeGP80tDm2/WyeHW2BStvEHYnnJMBTxBs15FFGPqkIyycSp1gGkL6RDAtqGr6SQldR67T2dmyIZJhlM1NC0KidMxGRZJSyEryf5V+VczSpFKmCSIBj8ODBl8MqfqwUVikZxPhjMJrnGzsI/kttx0=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=renesas.com;
-Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
- (2603:1096:400:3a9::11) by OS3PR01MB8318.jpnprd01.prod.outlook.com
- (2603:1096:604:1a1::12) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8026.23; Wed, 9 Oct
- 2024 01:45:36 +0000
-Received: from TYCPR01MB10914.jpnprd01.prod.outlook.com
- ([fe80::c568:1028:2fd1:6e11]) by TYCPR01MB10914.jpnprd01.prod.outlook.com
- ([fe80::c568:1028:2fd1:6e11%4]) with mapi id 15.20.8026.020; Wed, 9 Oct 2024
- 01:45:36 +0000
-Message-ID: <87jzeirqv3.wl-kuninori.morimoto.gx@renesas.com>
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Subject: [PATCH v7 9/9] media: xilinx-tpg: use new of_graph functions
-User-Agent: Wanderlust/2.15.9 Emacs/29.3 Mule/6.0
-To: Daniel Vetter <daniel@ffwll.ch>,
-	David Airlie <airlied@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mark Brown <broonie@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@google.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	devicetree@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-fbdev@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-omap@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	Sakari Ailus <sakari.ailus@iki.fi>
-In-Reply-To: <87wmiirqwy.wl-kuninori.morimoto.gx@renesas.com>
-References: <87wmiirqwy.wl-kuninori.morimoto.gx@renesas.com>
-Content-Type: text/plain; charset=US-ASCII
-Date: Wed, 9 Oct 2024 01:45:36 +0000
-X-ClientProxiedBy: TYWP286CA0030.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:400:262::20) To TYCPR01MB10914.jpnprd01.prod.outlook.com
- (2603:1096:400:3a9::11)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="g/NX4I02"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-42cb6f3a5bcso88076275e9.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Oct 2024 02:19:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1728465583; x=1729070383; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=jBR7OYZriJhDfvISw9B9LqPMX41wXLMjEmHGfAiqmLI=;
+        b=g/NX4I02L2fPyqNGD/tN6mEzDnMMeD7pE5MlfoNWYJz4qYQobZ8wFJ8QuqHEx8QvB4
+         wyS1BE6KpcFuaajpDKiOGp6m5Eqw02xDjQJOs1KwEittqGLyJ/g+RrEA8C4/65zP6h4j
+         bi2Ca/rDpWy3n9Zq5LvDo+yYcZN2xiKtxRsekW/rUeKWo+o9o2hMLyYOlvrIHo4mwviT
+         IoFpPkEV+/akfHEetrKBKA/v6ZfrBbXzNHcZQ/P0WAgDnKStgHpOZDoyYF3SdsdAu5jc
+         ZSOhXI8FrgZK/7iZTO51S6O2t6XuElwSVU+++Y/V9/lGpBa3tnl0X+pym7NX3uTkIi1g
+         u7yA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728465583; x=1729070383;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=jBR7OYZriJhDfvISw9B9LqPMX41wXLMjEmHGfAiqmLI=;
+        b=Gw2JgnejS8Tt5s4LJsx7E0g7GBpU16UHfgZi75TWg/0H3tIYE/IpX2l8b8rkKEKX1i
+         /SI+V++Ezfeo8DsubQmGwvPpKNq666tf2zEZ0DP3ANeBnoNkN6tHZkcP0e9+DEFZVDRU
+         XD2KM3B5QlVZSIodx67+9OBIubaXME+k4PLJ/bElGujbShlWEGMEb68QMo/HCk0wJHul
+         16EsEsAwhXgBPf7nrxmMrNC0PUg5Z81fwt1NmfM48nd06t4K6ig2/7vBKEQhPuUsLSxz
+         VOWIr9/lV7nv83lJ/1glmH3XPOhLmUaRI2fQlCR3p6gzi5Uuu4ePuJk4La15irdhhCa7
+         DVlQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU16pROiwlULylcoe4aOcnn/fI5cstM/B1YZfCW27ZbFxvfJo62Xf+2/EZX4ZH/3aTWnlPD3J7XM/wN3Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxMKbvFtH9WxbfJcjVOJAhXDO+vC+JJV21K13BuV/miYjXVRzoC
+	bNelAHZhgC9FPvXA4aYZk1/LVdrbeDkZKP7k/OaGwheTf8lRGIGXWRV+71m6kiM=
+X-Google-Smtp-Source: AGHT+IFjXWWvtj0jzmE/w31GHgXvDjDbLGpThHIRDRdfMpzR6HxFmqq2psvrZUA+k9uwR4WGYITAMQ==
+X-Received: by 2002:a05:600c:19ca:b0:42c:bbd5:727b with SMTP id 5b1f17b1804b1-430d70b3d31mr17564835e9.25.1728465582224;
+        Wed, 09 Oct 2024 02:19:42 -0700 (PDT)
+Received: from [127.0.1.1] (frhb82016ds.ikexpress.com. [185.246.87.17])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-430d59b1207sm13892765e9.31.2024.10.09.02.19.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Oct 2024 02:19:41 -0700 (PDT)
+From: Guillaume Stols <gstols@baylibre.com>
+Subject: [PATCH v4 0/8] Add iio backend compatibility for ad7606
+Date: Wed, 09 Oct 2024 09:19:31 +0000
+Message-Id: <20241009-ad7606_add_iio_backend_support-v4-0-6971a8c0f1d5@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TYCPR01MB10914:EE_|OS3PR01MB8318:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4e25d8a3-abf9-433e-5c7b-08dce804127f
-X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
- BCL:0;ARA:13230040|1800799024|52116014|376014|7416014|366016|921020|38350700014;
-X-Microsoft-Antispam-Message-Info:
- =?us-ascii?Q?eaSWeziA9PNumUOjhfSaT95ZPYPlpmNIMxHMZ5kvWrXRhgfaD10nIZJQfdOh?=
- =?us-ascii?Q?gtdjpd2gINETqyUMCvNmvUKlLnSwMEw2YoGZpqjdOsFns+YV3UsgmNIvXXoa?=
- =?us-ascii?Q?QwQC2DftYQaWTyEvgk4RTgOrkfxN9p2WPcHWNlazvDLcA3F0JyHT2LIWoFb7?=
- =?us-ascii?Q?/bUWiR4oZvtn6AUzgb6HM6CTsuC7n66MR0RBwrzgqgfF9O8amDe0wGp8pG+q?=
- =?us-ascii?Q?CWlJWju0qnRiM3KQzVhDaZQuwnGCGLW6KYg7FaOw5+8durQ9tiT34s062iOK?=
- =?us-ascii?Q?XWzQDW2NJVqKbhaoRSg5kqxSS27AvQ/mJRrkxWG/K/MbI9l0nyZ22qKPs1z6?=
- =?us-ascii?Q?g+eryOyyDW4he+HeQUVskIlg7C52DxMbeQ2PYWabjWWl/crvSoFGwU9Zs9P9?=
- =?us-ascii?Q?yFFVjfEVgUgN6VNFbFYXCo9jnp3mQFMoPRghTQlT0mWNFqhbcQwqjXcyp1e2?=
- =?us-ascii?Q?MgJESD9wGe6HKiTH61Krh9L0Q/iDWVCU0ulklEFk0m4V5RwY20JT5n0oIXw2?=
- =?us-ascii?Q?2kdthkUlksPVanZV0InkbGeJ4TKp/t7rTP9kiw4isNuPqDWe2Lroz9YZSQ3P?=
- =?us-ascii?Q?iUKpB/gw0kBpC9wLqye60y/6FS+kMPn3ewx+956N9fHMEYyvM2k3eceQVdiB?=
- =?us-ascii?Q?427Hlo9H9NynWmL2FiPsGTCt8tfPbQEPo/dZa27Cd80nyl5IEcC4B6fzog0c?=
- =?us-ascii?Q?4/tHeevDFEGF6jFozhBX79C25sHq3cqtnD7l0unDvQWHO5XHb/5mi5htMXvl?=
- =?us-ascii?Q?skPPaRY/ChguEktEnolfwFSS/45HzmQk0QHGQtTF3j2FlyL/opSvtTwHHrhl?=
- =?us-ascii?Q?6bXBUvhXZbUZJ/qu6FiF9dIWKLqaZVbnCDNWEzArD8qeovl5SSniID+5rnps?=
- =?us-ascii?Q?J7CLtDh4SQxw/r2gALGkzXVUrpp9+Mlwc0o1XNUl1Aht3brpGLooSQh2Y2Ox?=
- =?us-ascii?Q?sniK+P//8rH2lppf31EXLFl/5FeLhW5qj90BX0HgF17kSxRc1DErfxJTq9/d?=
- =?us-ascii?Q?eLDSwa4fj1JB+xHL/L2479yBpKTwIXX26DAcndilMWoEGyF/sKZEqoBUobZ6?=
- =?us-ascii?Q?/0mFeaZn87UxX2xuRZN/Bs09Xunn1KPX8t8fbNk+N4+A541ermQjuO4b35zV?=
- =?us-ascii?Q?BPEkOyu3qota0DebovKe3aXwcCAJtHV103V78opeLy9Xw+KRuHiZIiE3GY2u?=
- =?us-ascii?Q?gtVj3sIBn1yh1yByGJmQy4Vj1XkEUxS3y7UMFTd8qLXS54BrXvlN+pjAJ2Ir?=
- =?us-ascii?Q?oHayHZfpElYtUPGvT2+yg1Zjr2/HwaD5WtnEhiIwaJn8wERJRI0FF3RTltfH?=
- =?us-ascii?Q?OT61XZXrLsOE0K2unQKrcUqgKgdHEGMmwxwz+tUCc+c5xCpHzR3nRQxz+oUR?=
- =?us-ascii?Q?pV8OjXE=3D?=
-X-Forefront-Antispam-Report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB10914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(52116014)(376014)(7416014)(366016)(921020)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
- =?us-ascii?Q?UPvtImAj8CPhbkBXVyKSsopVKlFUh15oMbBGKuVfB9yDe1yCaiT0tb94OOn2?=
- =?us-ascii?Q?V0SN/3FOKPyx9BTZYcZYj+08h8iNRd94v8p+sZpP0Z33OEw2cfkmmUJ1xvCC?=
- =?us-ascii?Q?dnjnvrIulYyKClDTY5t3RkCuqnEduPHV1vB1IetNmk2Y/1OJlo9lyjwl36/Y?=
- =?us-ascii?Q?6H2LAzlhM5Hlo0BlSshfDjBuOj2mtFTMBiYr7X04HrfZBdLacCr+C9JmBw2+?=
- =?us-ascii?Q?20r/qhgc0JWe++AjUhbt9kMJhuqTmPGBz6uGQMXpPpTo8Ugt/BNlseYN1Hqy?=
- =?us-ascii?Q?n8W/d8BY/0ZdcUUkEujTFT77f/cWykmP57CG91JDgoKuzYdnLsbucmAGJ0G/?=
- =?us-ascii?Q?3Xod3WmzUv/RcYO83cHICg/ruY4OuLlm/9dO0dT/LMj1XBX5Y5HU6xPV5qm0?=
- =?us-ascii?Q?J+ge/QWTN+0XOIf3WLZmYriMhwESXmaO9IqwZxczoM+yECFwQROblWUnYgyI?=
- =?us-ascii?Q?1yFrwINIrU+auflQa02+tyjLyYTgvp9YpqdO3amvoKx6Rg3QavY0hMnAJoaN?=
- =?us-ascii?Q?L2qZGP0vg0Wi+Ut82CNbnGDnwS9dTeIzG3K4vNO+wZGwoE/422ZdGDWsqtme?=
- =?us-ascii?Q?jL5lpTQVl3REEFHtimaJ5jSq1+37mE/czYExtE8gUv37209mMBjpRP6t+L68?=
- =?us-ascii?Q?pBka2mGKX8Cjf92z9xFWtOctQY3vWZM/k6FR69ulOTNfCQHv6rpvKRPhB7A/?=
- =?us-ascii?Q?wx1wQ5XmXa+rmg8CHRQ0SXbqgexP0xOQbr9twGTJixmVtRIABr+GJALkZlVi?=
- =?us-ascii?Q?LAqRL41VO/vrEUO1ANxTa7uaKWXMwA2y4x8wo5apLz77YVtUPTqh+5lROpZI?=
- =?us-ascii?Q?kXCEcISt4VCbxBoEM3y0vm8glJaBblcvkuAaaJmenzrQnAVDoV5SIXEvEwvT?=
- =?us-ascii?Q?6V2gcwBizZzr0xHtCBDu1pzucsyeoId/AEsFJnUyGnMl/Uvm7G6hq0882+Da?=
- =?us-ascii?Q?uXRxYCaQ3PxsEETyxkmHVb1N6rrzcryUlCTq5ZJOD6aYUN9VRXOl6A3M2E+S?=
- =?us-ascii?Q?dpYkaHCZimw8E9Uz5TAnmKXucoB9US4aq/6sfZoGO2TuHeL1q/gKkPocIF+A?=
- =?us-ascii?Q?ND4x//GdQeHqOtofBK5rQH4FNHgqMxT22DCv4bOnbvHIZ0yoGGMvEyDgIls0?=
- =?us-ascii?Q?2cwPndfaRafY0VQ1jK7YNjL4kh3qQstjdJAwdMQgwoDVtTfRvnbZW8+Gjfhc?=
- =?us-ascii?Q?6johX3++SwW7lUbrTz2t8C91uWz2abHpWSmfAJtiEO3V21QS1Rr2S6jpXUuX?=
- =?us-ascii?Q?TlRSHbDkqkWqVT9mYYxvsP8ge5EcJLi6spckFw2UPAJj42Yk1NoyR88tHnAd?=
- =?us-ascii?Q?S6gYFFiSzBgsO2+KVgDekMjWxjusidApO2pyveJXUxh9rbtFbB0qmAWisd/w?=
- =?us-ascii?Q?DdmFvg3o3xSM6hhJ/ztaa62MkDgoo4imUdO9fN14ddfmOsoHT89lxgZRqP2o?=
- =?us-ascii?Q?C3bkKv3p+1z1qODp/6rFU/vozMaNi+Y9afXmA2CAx3wL8Tk5zPALNkPuTtX5?=
- =?us-ascii?Q?k/xc+cFt4allSwkUa5BAu8uvplYm6bRlfUmkEpWm+JDdULZwp+zodITryOaF?=
- =?us-ascii?Q?9iGsk5332itJZ4a8qkWOMBBZbQ4NYDfh+b/kuTdBBja1yoDMsmZLNUgf84tH?=
- =?us-ascii?Q?/I8lWfz+gYQmvJbQRRGmQnM=3D?=
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4e25d8a3-abf9-433e-5c7b-08dce804127f
-X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB10914.jpnprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2024 01:45:36.8460
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ckTcS4r6GM6w8k/2KZoyAmrxJ79awduuxAKdFiKQKXCD95LlNfyh8WKE/MRIadIK4OkVHtiAkMIh6CMcG8EdZ1CyuYU+zS3ueoNf/wLV2jy23IzyRZK+0Ty5v81MCocy
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS3PR01MB8318
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAKNKBmcC/4XO3UrEMBCG4VtZcmxk8tMk3SPvQ6RMkqkbdNuad
+ IvL0ns3dkFBhB5+c/DMe2OFcqLCjocby7SkksahDv1wYOGEwyvxFOtmEqQGKxuO0RowHcbYpTR
+ 2HsMbDbErl2ka88yDBqGgQdNKzSoyZerT5/bg+eW+M31c6p/5fmQeC/Ewns9pPh5a48nYgAg9a
+ AlRC+mCN7YH6320aHrdEihk39YplXnM1619ERu2ZTqxm7kIDjwQKhLCC0T95PH6nnymx5qy6Yv
+ 8FVsJu6KsIpB11kkkG+EfUf2IAkDviqqKytnGgpCBnPwjruv6BQwvFpq/AQAA
+To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Lars-Peter Clausen <lars@metafoo.de>, 
+ Michael Hennerich <Michael.Hennerich@analog.com>, 
+ Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Michael Hennerich <michael.hennerich@analog.com>, 
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org, 
+ aardelean@baylibre.com, dlechner@baylibre.com, jstephan@baylibre.com, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Guillaume Stols <gstols@baylibre.com>
+X-Mailer: b4 0.14.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728465581; l=5077;
+ i=gstols@baylibre.com; s=20240417; h=from:subject:message-id;
+ bh=n9NcSx6B6mq5gEWt7lUtBdnyNqrVS/k0PL3jsKufD5g=;
+ b=8So2hJjBpW+YQoPjEqfgcs8pso2hqjXTv7ye0zuY1s3sg325sPLFleO65eS1Sts/VcXsxp6Ht
+ kxlSt+kMRklAr4uGyI7N+uBvarxBJ1NCGA8QJahVt7UdOiV28+XXM6L
+X-Developer-Key: i=gstols@baylibre.com; a=ed25519;
+ pk=XvMm5WHuV67sGYOJZqIYzXndbaJOlNd8Q6li6vnb4Cs=
 
-Now we can use new port related functions for port parsing. Use it.
+This series aims to add iio backend support for AD7606X ADCs.
 
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Reviewed-by: Tomi Valkeinen <tomi.valkeinen+renesas@ideasonboard.com>
+In a nutshell, iio backend is a paradigm to shift the logic establishing
+the connexion between iio buffers and backend buffers into the backend's
+driver.  This provides a more stable programming interface to the driver
+developers, and give more flexibility in the way the hardware communicates.
+
+The support will be first added on AD7606B, and on next patches AD7606C16
+and AD7606C18 will be added.  The series have been tested on a Zedboard,
+using the latest HDL available, i.e
+https://github.com/analogdevicesinc/hdl/commit/7d0a4cee1b5fa403f175af513d7eb804c3bd75d0
+and an AD7606B FMCZ EKV.  This HDL handles both the conversion trigger
+(through a PWM), and the end of conversion interruption, and is compatible
+with axi-adc, which is "iio-backendable".
+
+More information about this HDL design can be found at:
+https://wiki.analog.com/resources/eval/user-guides/ad7606x-fmc/hdl
+
+The support is thus separated in two parts:
+
+- PWM support was first added.  My first intention was to make it available
+  for any version of the driver, but the time required to handle the
+  interruption is not neglectable, and I saw drifts that would eventually
+  cause an overlapping SPI read with a new conversion trigger, whith
+  catastrphic consequences. To mitigate this, CRC check must be
+  implemented, but indeed increasing the samplerate causes more sample to
+  be lost.  Therefore, I decided to only allow PWM for iio-backend
+  powered device as a first intention, leaving open the possibility to
+  add the general compatibility afterwards.
+
+- IIO backend support was added: Once the PWM support was ready, the driver
+  can be extended to iio-backend. The iio-backend powered version of the
+  driver is a platform driver, and an exemple devicetree node is available
+  in the bindings.
+
+The following features will be added in subsequent patch series:
+ - software mode for iio backend
+ - 18 bits mode (AD7606C18)
+ - single read (IIO_CHAN_READ_RAW)
+
+Signed-off-by: Guillaume Stols <gstols@baylibre.com>
 ---
- drivers/media/platform/xilinx/xilinx-tpg.c | 14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+Changes in v4:
+- Removal of accepted patches.
+- Correction on fsleep (missing semicolon and incorrect spelling !).
+- Correction on buffer initialization that should not be conditionned by
+  the presence or not of a PWM, but by the presence of a backend.
+- Addition of blank lines between blocks.
+- Modification of some declaration to switch variables to static.
+- Link to v3: https://lore.kernel.org/r/20241004-ad7606_add_iio_backend_support-v3-0-38757012ce82@baylibre.com
 
-diff --git a/drivers/media/platform/xilinx/xilinx-tpg.c b/drivers/media/platform/xilinx/xilinx-tpg.c
-index e05e528ffc6f..1d67f576a44f 100644
---- a/drivers/media/platform/xilinx/xilinx-tpg.c
-+++ b/drivers/media/platform/xilinx/xilinx-tpg.c
-@@ -13,6 +13,7 @@
- #include <linux/gpio/consumer.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_graph.h>
- #include <linux/platform_device.h>
- #include <linux/xilinx-v4l2-controls.h>
- 
-@@ -711,22 +712,13 @@ static int xtpg_parse_of(struct xtpg_device *xtpg)
- {
- 	struct device *dev = xtpg->xvip.dev;
- 	struct device_node *node = xtpg->xvip.dev->of_node;
--	struct device_node *ports;
--	struct device_node *port;
- 	unsigned int nports = 0;
- 	bool has_endpoint = false;
- 
--	ports = of_get_child_by_name(node, "ports");
--	if (ports == NULL)
--		ports = node;
--
--	for_each_child_of_node(ports, port) {
-+	for_each_of_graph_port(node, port) {
- 		const struct xvip_video_format *format;
- 		struct device_node *endpoint;
- 
--		if (!of_node_name_eq(port, "port"))
--			continue;
--
- 		format = xvip_of_get_format(port);
- 		if (IS_ERR(format)) {
- 			dev_err(dev, "invalid format in DT");
-@@ -744,7 +736,7 @@ static int xtpg_parse_of(struct xtpg_device *xtpg)
- 		}
- 
- 		if (nports == 0) {
--			endpoint = of_get_next_child(port, NULL);
-+			endpoint = of_graph_get_next_port_endpoint(port, NULL);
- 			if (endpoint)
- 				has_endpoint = true;
- 			of_node_put(endpoint);
--- 
-2.43.0
+Changes in v3:
+- Rebase on top of the series adding ad7606C16 and AD7606C18 support.
+- Addition of pwm-names actual values and improvement in the
+  description.
+- Introduction of .num_adc_channels field in ad7606_chip_info that
+  defines the number of hardware inputs.
+- Introduction of ad7606_bus_info which couples hardware and wiring
+  informations.
+- Addition of a delay in the scan_direct function for the backend.
+- Link to v2: https://lore.kernel.org/r/20240920-ad7606_add_iio_backend_support-v2-0-0e78782ae7d0@baylibre.com
+
+Changes in v2:
+- Logical change in dt-bindings, using a flag for the interface instead of
+  infering it from the value of the "reg" property.
+- Removal of get_platform_match_data addition, instead the logic is
+  directly used in the file.
+- Removal of use and export of pwm_get_state_hw, returning the configured
+  frequency instead of the running one.
+- Correction on various typos, whitespaces, bad order of includes.
+- Separation of SPI conditions and PWM disabling for no backend in other
+  commits.
+- Link to v1: https://lore.kernel.org/r/20240815-ad7606_add_iio_backend_support-v1-0-cea3e11b1aa4@baylibre.com
+
+---
+Guillaume Stols (8):
+      dt-bindings: iio: adc: ad7606: Remove spi-cpha from required
+      dt-bindings: iio: adc: ad7606: Add iio backend bindings
+      Documentation: iio: Document ad7606 driver
+      iio: adc: ad7606: Add PWM support for conversion trigger
+      iio: adc: ad7606: Add compatibility to fw_nodes
+      iio: adc: ad7606: Introduce num_adc_channels
+      iio: adc: ad7606: Add iio-backend support
+      iio: adc: ad7606: Disable PWM usage for non backend version
+
+ .../devicetree/bindings/iio/adc/adi,ad7606.yaml    |  72 ++-
+ Documentation/iio/ad7606.rst                       | 145 ++++++
+ Documentation/iio/index.rst                        |   1 +
+ MAINTAINERS                                        |   1 +
+ drivers/iio/adc/Kconfig                            |   2 +
+ drivers/iio/adc/ad7606.c                           | 575 +++++++++++++++------
+ drivers/iio/adc/ad7606.h                           |  51 +-
+ drivers/iio/adc/ad7606_par.c                       | 123 ++++-
+ drivers/iio/adc/ad7606_spi.c                       |  96 ++--
+ 9 files changed, 839 insertions(+), 227 deletions(-)
+---
+base-commit: 96be67caa0f0420d4128cb67f07bbd7a6f49e03a
+change-id: 20240725-ad7606_add_iio_backend_support-c401305a6924
+
+Best regards,
+--
+Guillaume Stols <gstols@baylibre.com>
 

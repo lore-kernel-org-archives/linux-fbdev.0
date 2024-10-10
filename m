@@ -1,99 +1,121 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83A151E3780;
-	Wed,  9 Oct 2024 15:48:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB77F1BC061;
+	Thu, 10 Oct 2024 09:42:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728488923; cv=none; b=enzViyR6HA+8eTBQF4BGhRODauj2yI2M1UbNePFptVOnF8BGmo+JNVOg2x6BqKCzM56pOqXaNIoiqOCT+sbDRMBF9TKlC3B5QawZX+5+P42nUVp+WkMEl8sFgDVYLoFe63KsZdD2ShCzwmUn1kA+e0e+bnnxqXr0oqkKH5sGivw=
+	t=1728553324; cv=none; b=EMadXTwgb6FvIUG9M3Hy2G3wSfkXxv6JIp9wcIED7P/NZOOQ3FrHSJFKqSKgsggLOehUu/nEQw0M5XmWKn211r7m19lFM50XkV/DhALrZwU+txL5mUrNrb1ejugVWtoUyqLFmvTcBIueVycnM8yCB17j3SG1rbSLIYyMyR7IP6U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728488923; c=relaxed/simple;
-	bh=BvhB3fFal6qIRjoErM+X0ss56drVoTZm5GFWQ3iOHXs=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=rAEg1sXTqshIqZuD/bE5EpBURouujJLyPu7o3hBu2oIiDGlpglgagJ2iemVReBAOcGz6cGIPE0Ep2kahf2ByamRNU3jWMOmbCMVG9zIZo7YrLlZqzHXU849Wao2w5j096X2z9FtDqwfrpreAChrPe54NXvsX1NQLa1Rcdovibp4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C8sfelsA; arc=none smtp.client-ip=209.85.218.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1728553324; c=relaxed/simple;
+	bh=GIEhwdto29dTIdh5H2EYdZNpFROtC3k9we0ptMpXhdo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QNVprvdOfBahhq50qunOvCDF92oJeWNzpbEowRc2KDLV0D+3R90t4fY7NeExG6z4tvBcUNpULTdRy455nsskURpmEu/tFejS7jfNLjLIeffuQs7Qu3szHGjkh0eh3CAgkiu0O5GiW98ivL/6Et0lyQdJ0CUBUfqo5fuv4NAOMGc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=zX9p2aZ6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C8sfelsA"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-a99415adecaso189796766b.0;
-        Wed, 09 Oct 2024 08:48:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1728488920; x=1729093720; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=gpoA7U68G9HQgUGPUrZ+1IXl+YXLZClnFOv3Pi/HKVw=;
-        b=C8sfelsAF+4JMZ8guudARms2CDIU5ITZ4WbfXiUcCEX5qbzENLDHiy9cRd+Yhqof7m
-         qERZGuDLcWxQLoA2P58cK2b7NNwqUpBqmJo34gTWMdKFHmmDTnWZf2coMnyLocWv7r7s
-         cRbpgQEhdDvXzJJSWRxWz2xLerqJK52xDRsV4JQkG9svrh1Smvpq18BNpvwuNnZy+waX
-         MJJMfpx3i/BsJa3u9vFEXUbGFxf97dO/FQMlb8TVyzMN7CrOkTPBrPVEoXPAqnipwoLP
-         s4L9EccR6H3yhA5iI/jERw07LSZOaIuAtNpW0RFom8E1EJcKaXbC2ub7ZNQZS7UtO9+a
-         00mQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728488920; x=1729093720;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=gpoA7U68G9HQgUGPUrZ+1IXl+YXLZClnFOv3Pi/HKVw=;
-        b=AT6V8xS1rzqUPhGEo/Ob0VQ0DrgVpKgNctO7IN01WsIKTKwwePas3kS3UU8ru5XBsG
-         lZ4ie9mISNP4T237ADsyONpgtwwh6v4bu+nDKufYOipSzGsPEBxdlwI7U4qCqZpH+3JP
-         In3MpwPQJg0wrJ8yUeHTqAvYwVhXftX3QEhaPELl+jpQp6GZDBDSzXCESeVAJk5wz5qf
-         fxaK9xfWJti4YT4/R9QeI1ct84yb5kvZZNvuETdvTmJhW1n5o1uY4GzKsrUxyyeHqJ+p
-         SonTYaYZKEQ9K3h/FybG6PomKPx/ov8zzMhkPnPiY1r6IuGaYtC9ln9X5+JW1m/Tiobo
-         mDMw==
-X-Forwarded-Encrypted: i=1; AJvYcCUSeDyqy5nW2IZSnqxxzbQkrfCJsEYUVR/xZOdnqucDtplrUncjXGTBF+SXBClS8iYfWzcdMTszP7m7ew==@vger.kernel.org, AJvYcCXGDtbGZu5e/LsFCiu9Zay4sGGQMXd8wo89BmkeEtK5RItoU+ap1y/MSlNe9zl1kQPuzCPmOvHrnz5Bifk0@vger.kernel.org
-X-Gm-Message-State: AOJu0YxFTXkjPb4juGP1/0ixi5utsUSL3/uuwYLn7ZenHuTbx0IAJxC5
-	2jGySh+JR8jcrY1J7f0EvDv4uVAyY0mxM4JDk8Jk9Nz+NJ85rRL7
-X-Google-Smtp-Source: AGHT+IHWOO9nOZunGvkay9i7X+SSjj74oEgJnI0FqGywprSGNAjDKmfmkGDdTyOfIJpukNiscRSlgA==
-X-Received: by 2002:a17:907:8f16:b0:a99:4e74:52aa with SMTP id a640c23a62f3a-a99a113b8f5mr5893266b.33.1728488919530;
-        Wed, 09 Oct 2024 08:48:39 -0700 (PDT)
-Received: from localhost (craw-09-b2-v4wan-169726-cust2117.vm24.cable.virginm.net. [92.238.24.70])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a993a0b33ffsm623897366b.69.2024.10.09.08.48.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Oct 2024 08:48:38 -0700 (PDT)
-From: Colin Ian King <colin.i.king@gmail.com>
-To: Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org
-Cc: kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH][next] fbdev: clps711x-fb: remove redundant call to unregister_framebuffer
-Date: Wed,  9 Oct 2024 16:48:37 +0100
-Message-Id: <20241009154837.371757-1-colin.i.king@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="zX9p2aZ6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B372C4CEC5;
+	Thu, 10 Oct 2024 09:42:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1728553323;
+	bh=GIEhwdto29dTIdh5H2EYdZNpFROtC3k9we0ptMpXhdo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=zX9p2aZ6jrztUDxeBO52da8z69ZkOWyH9pv6vxWg6T7tWCsGzR0z72bv9P0pmiQIw
+	 wQYWZUvXzov9vBTtqAQcR3bdMZoum4WLSwGjC5STMy7KZsiCr6oH31B3SkXL+x3HOS
+	 AMpytUXLPJUQ+HvEJoX3uYanfLA+F572B+sKu0Oo=
+Date: Thu, 10 Oct 2024 11:41:59 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Vinicius Peixoto <vpeixoto@lkcamp.dev>
+Cc: Fabricio Gasperin <fgasperin@lkcamp.dev>,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org, ~lkcamp/patches@lists.sr.ht
+Subject: Re: [PATCH] staging: sm750: Fix missing config in Kconfig
+Message-ID: <2024101036-footboard-stinger-9c03@gregkh>
+References: <20240921180612.57657-1-fgasperin@lkcamp.dev>
+ <20240921180612.57657-2-fgasperin@lkcamp.dev>
+ <2024100925-lend-aging-2ff3@gregkh>
+ <b8c3c51e-375f-4139-8336-76b6df56e8ea@lkcamp.dev>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b8c3c51e-375f-4139-8336-76b6df56e8ea@lkcamp.dev>
 
-Currently the call to unregister_framebuffer is unreachable code because
-the previous statement returns from the function. The call is redundant
-and can be removed.
+On Wed, Oct 09, 2024 at 10:44:38AM -0300, Vinicius Peixoto wrote:
+> Hi Greg,
+> 
+> On 10/9/24 06:56, Greg Kroah-Hartman wrote:
+> > On Sat, Sep 21, 2024 at 03:06:09PM -0300, Fabricio Gasperin wrote:
+> > > Fixes the following compilation error:
+> > > 
+> > > ERROR: modpost: "fb_io_read" [drivers/staging/sm750fb/sm750fb.ko] undefined!
+> > > ERROR: modpost: "fb_io_write" [drivers/staging/sm750fb/sm750fb.ko] undefined!
+> > > ERROR: modpost: "fb_io_mmap" [drivers/staging/sm750fb/sm750fb.ko] undefined!
+> > > 
+> > > Signed-off-by: Fabricio Gasperin <fgasperin@lkcamp.dev>
+> > > ---
+> > >   drivers/staging/sm750fb/Kconfig | 1 +
+> > >   1 file changed, 1 insertion(+)
+> > > 
+> > > diff --git a/drivers/staging/sm750fb/Kconfig b/drivers/staging/sm750fb/Kconfig
+> > > index 08bcccdd0f1c..eca1aa43d725 100644
+> > > --- a/drivers/staging/sm750fb/Kconfig
+> > > +++ b/drivers/staging/sm750fb/Kconfig
+> > > @@ -3,6 +3,7 @@ config FB_SM750
+> > >   	tristate "Silicon Motion SM750 framebuffer support"
+> > >   	depends on FB && PCI && HAS_IOPORT
+> > >   	select FB_MODE_HELPERS
+> > > +	select FB_IOMEM_FOPS
+> > >   	select FB_CFB_FILLRECT
+> > >   	select FB_CFB_COPYAREA
+> > >   	select FB_CFB_IMAGEBLIT
+> > > -- 
+> > > 2.46.1
+> > > 
+> > > 
+> > 
+> > What is causing this error? What commit created the problem, and why
+> > has no one reported it yet?
+> 
+> This happens because drivers/staging/sm750fb/sm750.c, defines an fb_ops
+> structure:
+> 
+> static const struct fb_ops lynxfb_ops = {
+> 	.owner = THIS_MODULE,
+> 	FB_DEFAULT_IOMEM_OPS,
+> 	...
+> };
+> 
+> FB_DEFAULT_IOMEM_OPS expands to the fb_io_* helpers declared in
+> include/linux/fb.h and defined in drivers/video/fbdev/core/fb_io_fops.c;
+> however, the latter is gated by FB_IOMEM_FOPS, so when compiling a kernel
+> with CONFIG_STAGING=y + CONFIG_FB=m + CONFIG_FB_SM750=m, you get the
+> following error:
+> 
+> ERROR: modpost: "fb_io_read" [drivers/staging/sm750fb/sm750fb.ko] undefined!
+> ERROR: modpost: "fb_io_write" [drivers/staging/sm750fb/sm750fb.ko]
+> undefined!
+> ERROR: modpost: "fb_io_mmap" [drivers/staging/sm750fb/sm750fb.ko] undefined!
+> make[2]: *** [scripts/Makefile.modpost:145: Module.symvers] Error 1
+> 
+> So in order to solve it we select FB_IOMEM_FOPS, much like the other FB_*
+> drivers do in drivers/video/fbdev/Kconfig.
+> 
+> Not entirely sure why this wasn't caught before, but the commit that broke
+> the build for sm750fb is 6b180f66c0dd ("fbdev: Provide I/O-memory helpers as
+> module"), which made the fb_io_* helpers be built as a separate module
+> instead of being bundled in fb.o (which is what sm750fb was relying on). I
+> think Fabricio can add a "Fixes:" tag in v2.
 
-Fixes: 36462ac19308 ("fbdev: clps711x-fb: Replace check_fb in favor of struct fb_info.lcd_dev")
-Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
----
- drivers/video/fbdev/clps711x-fb.c | 2 --
- 1 file changed, 2 deletions(-)
+Ok, thanks for the explaination.  All of this should go into the
+changelog text, and yes, a Fixes: tag is also required.
 
-diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
-index 5e61a349a4ab..c350340fb7b9 100644
---- a/drivers/video/fbdev/clps711x-fb.c
-+++ b/drivers/video/fbdev/clps711x-fb.c
-@@ -332,8 +332,6 @@ static int clps711x_fb_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--	unregister_framebuffer(info);
--
- out_fb_dealloc_cmap:
- 	regmap_update_bits(cfb->syscon, SYSCON_OFFSET, SYSCON1_LCDEN, 0);
- 	fb_dealloc_cmap(&info->cmap);
--- 
-2.39.5
+thanks,
 
+greg k-h

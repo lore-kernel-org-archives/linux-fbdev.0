@@ -1,86 +1,115 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EE67188A08;
-	Thu, 10 Oct 2024 18:04:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 970381D0DE1
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Oct 2024 19:42:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728583456; cv=none; b=tq+ctl9rUdzNB0J1apXMVUDc61p+OiqpmcVmLKHbGbCZJ8vyS+S+lOu97sZLrFp67MpjTv3+jdPyFyVI+ZJbhXZ6fv9c5WyfQmj+azg/DimrTZuf/RV1UGzao0y+zBj/kDfEoiSU7CSUQk9Aq3XKw6D/Wf/toKdTU/WG1C1SGVQ=
+	t=1728675757; cv=none; b=Te3nc/DCVgdaz7P90J+Oapu/5X+Au32iFPOhtM+uzHYRxi8doV4OEfksBsYUZJPRAIU52lk9a577LMQFt3vWQQrGicNRwAJK7NIbEyrdeSTpEVjM2mqOXedQFDkfk0JRUG+1fE4XfQVsnPTrhuAgTi0aX6EjLvXZKpK5C4HCiVc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728583456; c=relaxed/simple;
-	bh=bXzsja91oxEK7A4oh7gQhxbPTPspC3mQheHfMkv4M1w=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=rI+5axm9lr+pp0y64+CJ5xgxc1ST/sKGxHHxKc1gblocSR5Ta44t461yd4X+qvCQaXog+EZLO+sB/PSmXy7gbgkLTFENyL6Dgk/bVRqud8NcxEk5ED3B2VEhJzaJFd72VvOmsQr41QGdF4wK/00yGTlCcdsGcEZngLyUNpXJV5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X6E+4EKk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1728675757; c=relaxed/simple;
+	bh=B7kyYckFT/0DJHm3tDLiNH9WM3QNDHo1rocCSnEz2WI=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=tAmL1R4Bev62o5mXwm5JSFIPXSJOnqfMs4QaCKrnyT8rYZy+DDfMJ8f5shYRsO9J00LUvxQLgokErej0af7q2ysNz1rOMK6RwrU4vtSgOlL7SjVCkCHg3xFTl9GZ8/39lvFvHXm0z71UzO6JaXdEfuIRQjDvTqGYCTVjDb0fPdk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=dxXQKG8H; arc=none smtp.client-ip=209.85.128.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X6E+4EKk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 060D5C4CEC5;
-	Thu, 10 Oct 2024 18:04:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728583455;
-	bh=bXzsja91oxEK7A4oh7gQhxbPTPspC3mQheHfMkv4M1w=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=X6E+4EKkTEMnER0y7X54Q3GxgUBkzewVbE3MXRvQtspaT4h78hayMtoHIGHBci/LL
-	 4KEoRBTA+l0HbHxU41XeTv8irhEHDzDelj4tLjNW5maFYy4WG+bBG114rOW1iOsYvH
-	 7NprZ/c5JHnuq7bu6wh3VHxdCSSQHJouefMj2VGlGZhxkUPtv4JTbdae82UmHndgTX
-	 3n3cL+NDYGzce4oti1RYMtA902XEQf6hX+QBEjNy8bfOkJnKBA82lRTA6Jx5KDIJzE
-	 fU09cG9jEYkBr28dHdwo6H6/nrZ3HY5Tb326w6lm1jB06NsihJLFnhJSS5ZK3a53BC
-	 WaBcVY5O2poTA==
-Date: Thu, 10 Oct 2024 19:04:00 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <ukleinek@kernel.org>, Lars-Peter
- Clausen <lars@metafoo.de>, Michael Hennerich
- <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
- devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
- aardelean@baylibre.com, dlechner@baylibre.com, Jonathan Cameron
- <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH v3 09/10] iio: adc: ad7606: Add iio-backend support
-Message-ID: <20241010190400.34905ab2@jic23-huawei>
-In-Reply-To: <ac765343-7804-4bd5-8057-d67fec2f17b1@baylibre.com>
-References: <20241004-ad7606_add_iio_backend_support-v3-0-38757012ce82@baylibre.com>
-	<20241004-ad7606_add_iio_backend_support-v3-9-38757012ce82@baylibre.com>
-	<20241005125318.0c4a7bc8@jic23-huawei>
-	<ac765343-7804-4bd5-8057-d67fec2f17b1@baylibre.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dxXQKG8H"
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-431195c3538so14796835e9.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Oct 2024 12:42:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1728675754; x=1729280554; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=9H6rXUaUQHjyd2VSgKGDs+alotbQnC2p5Cn69HNYv04=;
+        b=dxXQKG8HU1bwH2NhuFz0fSNyTBshOiaztF4OgaX2/Q00YcMPR1PzeWdw/JS8p9FXhH
+         d0YgEDWluhg6g5YzuKRbyEW+eD4aAyy66GAllToPKCU1CKgJ8eiYjeavghxRXjZGYsM3
+         xPJVsAzUQAW3RT+HRZh3tUCTor9VZ++Y5w77Jw07DMJNjimB1TkZ+DzvXNQNOwJMkbAC
+         3npLKYuQgPU41l9HO2s3/Fe+Q+EzKTOAjtl/NRLRgzBHCDjsLABCnEq/WOIFEDGWkFqp
+         A9FL+A4Vm18YYaSHazL6/su5MovelE7fWctiFGdAk1K7G+rQYmGX4vJW1I1E2k/EkcrP
+         /MAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728675754; x=1729280554;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=9H6rXUaUQHjyd2VSgKGDs+alotbQnC2p5Cn69HNYv04=;
+        b=Gj0neyZCqXIotjxEFcuMJxraj19/i/ogmAKcUwTwc+oHhgkbHXrxe3wMq/054UoTnR
+         cXrEEuVuU9cM/8sjsGaaHTxgEkKjjbjbhMefl0tShMUR4kS89zdS7qnpcSW1jWky3xXO
+         AQERff520SNa62Z0mp6pdykdlClN5U98pyCCkbPSfsslTglzBRegNEBEfey5b1QffVqS
+         a8xx5qBJfyNEbmN/0hmvqlaOMhDhqLKdbvygVqB1XjYt96cvAaXTS2fUz7nljW6AsLwt
+         /J8AU0y8hv3YvX7rQALRrdYfX/8wXcna+CNC/PvtN8Tcrzi9ClVBax2NYS4JbaIvTx10
+         97qA==
+X-Forwarded-Encrypted: i=1; AJvYcCU0Vcb/75DynIBDh+swFbopXgUX3IY4BytD/KM3i8BJ9FUH8kKFzjkegnhnKmikTLQj0g+fE2sfwt3MXw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxwZQnjsi3DEHkU93E5O7J1KCDIY11Jc+giQESxScmbQA4ltLfI
+	tk7aJ3RPOh63oYaVxixxF5m1qdOYyZUfJznrUp8Qwa7TSZTOLtiWk2TJMWpEEPw=
+X-Google-Smtp-Source: AGHT+IFPVVvRgJhwZiV6j4xkCfdUzrR6DGnGMYo8fZws+use+5kUvfYFQjYHJ8OsNnHP8FEbLNe+OA==
+X-Received: by 2002:a5d:4d4a:0:b0:37d:4527:ba1c with SMTP id ffacd0b85a97d-37d5531a0a2mr2327244f8f.49.1728675753903;
+        Fri, 11 Oct 2024 12:42:33 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-37d4b79fa79sm4686059f8f.72.2024.10.11.12.42.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Oct 2024 12:42:33 -0700 (PDT)
+Date: Fri, 11 Oct 2024 22:42:28 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Helge Deller <deller@gmx.de>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	Dan Carpenter <dan.carpenter@linaro.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Sekhar Nori <nsekhar@ti.com>,
+	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] fbdev/da8xx-fb: unlock on error paths in suspend/resume
+Message-ID: <37842441-e372-40e9-b0f5-cf69defc2db5@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
 
+Add a missing console_unlock() in the suspend and resume functions on
+the error paths.
 
-> >> diff --git a/drivers/iio/adc/ad7606.c b/drivers/iio/adc/ad7606.c
-> >> index 3666a58f8a6f..d86eb7c3e4f7 100644
-> >> --- a/drivers/iio/adc/ad7606.c
-> >> +++ b/drivers/iio/adc/ad7606.c
-> >> @@ -21,6 +21,7 @@
-> >> @@ -737,6 +773,10 @@ static int ad7606_write_raw(struct iio_dev *indio_dev,
-> >>   			return ret;
-> >>   
-> >>   		return 0;
-> >> +	case IIO_CHAN_INFO_SAMP_FREQ:
-> >> +		if (val < 0 && val2 != 0)
-> >> +			return -EINVAL;
-> >> +		return ad7606_set_sampling_freq(st, val);  
-> > Currently I think  for the !backend + pwm case this can go out of
-> > range for which that code works (fsleep removed in next patch).
-> > Perhaps delay adding this until after that patch.  
-> 
-> Hi Jonathan,
-> 
-> The sampling frequency can be adjusted only for the backend version, 
-> otherwise (including pwm+interrupt), there is no sysfs access to the 
-> sampling frequency (only available for AD7606_BI_CHANNEL).
-Ah! That makes sense.
-Thanks,
+Fixes: 611097d5daea ("fbdev: da8xx: add support for a regulator")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+---
+ drivers/video/fbdev/da8xx-fb.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-J
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index fad1e13c6332..66ff8456b231 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1610,8 +1610,10 @@ static int fb_suspend(struct device *dev)
+ 	console_lock();
+ 	if (par->lcd_supply) {
+ 		ret = regulator_disable(par->lcd_supply);
+-		if (ret)
++		if (ret) {
++			console_unlock();
+ 			return ret;
++		}
+ 	}
+ 
+ 	fb_set_suspend(info, 1);
+@@ -1636,8 +1638,10 @@ static int fb_resume(struct device *dev)
+ 
+ 		if (par->lcd_supply) {
+ 			ret = regulator_enable(par->lcd_supply);
+-			if (ret)
++			if (ret) {
++				console_unlock();
+ 				return ret;
++			}
+ 		}
+ 	}
+ 
+-- 
+2.45.2
+

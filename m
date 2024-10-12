@@ -1,63 +1,93 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0BED1CFED4;
-	Fri, 11 Oct 2024 23:24:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4991F1F5FA;
+	Sat, 12 Oct 2024 12:48:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728689099; cv=none; b=O4C+0oYEbq1Se/x9Klw0vo9oElw7bJmxEpcx9/ndAvpgTpBmZ8rR++ZLa9oo2r/QgN7t0a6Tq5QQ9eguE0ERL8pJxdqW7Xc1A4f7UJsfo17q7Gwj+R3sUnzhlFlO4WAfilZEdMnm3aHsNDbwF1E6UYVyHz7pR8vsz4EwGdCtwp8=
+	t=1728737326; cv=none; b=US+Nh5BgSMrw5u/qOLOLz5L6rHy6TI2fTMHH29Enbr0MyYN0HmrmKehLwztv0cR60T3ao9OlbnhHKDF8l5uGV3bZacargtIW3SEVyn5SWpnrGLmHg5fE1mCXvgV84T1lL9NAR42RdD6M/fzpPcLmGhROPZGvvGfeQfChZkgYBf4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728689099; c=relaxed/simple;
-	bh=EDvlZqMBPpTZRu6/GWfrIW93H8umTl5FQq5+12AgqkA=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=qexG/3oNNSxQZfkxNGojIZMgX4BkkzQmH563y/4ar9HnaqnDNjWtzSdfrlwa7vBo6WZfYTnJvb6Q5u/Keq0A41EKwuMVXXLHAz8zIUnQinWfcJEctmNw2R58+WrdzvghWU7OXxQf77cRhreC9unG2dFWTx39alGRxwXfrwjGf68=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hu3EaJvN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1728737326; c=relaxed/simple;
+	bh=kEHSPvWvZBqgdTZFy+tP0oWL6gH6iFh2YX2nHzfWWqM=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=j3wd28P88JWXdidHI/aAEfCDObyU0vpx4EsMUUczZfWnh765Ueq1qj6NK9gwD5sd49pTFI1MbIgrC65FNT5aXK/d1r7A/PUG3bQTyHPLLIT38rZqjhbYmBD+y7v3dbDnxuS2HoextnW3uDnsIM+f0fgUASEWLOCIyTGH58iCXYg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q7rOlrTF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hu3EaJvN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D168DC4CEC3;
-	Fri, 11 Oct 2024 23:24:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q7rOlrTF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A749C4CEC6;
+	Sat, 12 Oct 2024 12:48:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728689098;
-	bh=EDvlZqMBPpTZRu6/GWfrIW93H8umTl5FQq5+12AgqkA=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=hu3EaJvNmdNhVAECGdlyy4bptgn3RY0AbH9+cSkAbtq6K1fdW26/r59utjIjApC+6
-	 MjX1ec5UrSOpqHazjdHUcoJhPnzOxG/YOzVe9djmDSkTj0YbazkAmyuFKjMxKbqVTA
-	 1VI5gWMNt0SwDr2pSiTVKNxviePomDijHonSSQc0+iFyhnwcv4FnnaiqOXkmNzV4mZ
-	 VDawtiJ0UT0mWr5RRvGpq+JlDKwKvsgafw3fPmgaoPwAYCyVWS4eMLj2eIKBZ1N+5+
-	 5kpi0lDf9kp2upguDXQhjLLZaAc4j6DEsb5dYEuSXabcODUlXha3nH05pDWiXGQjDT
-	 m8nM5tKYp682A==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id AE07A38363CB;
-	Fri, 11 Oct 2024 23:25:04 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev platform_driver::remove() migration for v6.12-rc3
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <ZwmPlIK9-O-396Sh@carbonx1>
-References: <ZwmPlIK9-O-396Sh@carbonx1>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <ZwmPlIK9-O-396Sh@carbonx1>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.12-rc3
-X-PR-Tracked-Commit-Id: 01ecc142ef7c8c5081a39be81c1d8ab7c10dd7b8
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 9066258d0a533530c2508f784e85c53b44f5d9e4
-Message-Id: <172868910338.3026331.13025842781495565900.pr-tracker-bot@kernel.org>
-Date: Fri, 11 Oct 2024 23:25:03 +0000
-To: Helge Deller <deller@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>
+	s=k20201202; t=1728737325;
+	bh=kEHSPvWvZBqgdTZFy+tP0oWL6gH6iFh2YX2nHzfWWqM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Q7rOlrTFiXnLisjmjCE7GIIup2AbY82CuRDY4hyYlMPLFUSbKgEv1aAf4TNfH4a+9
+	 wOPTir+U+zi9juEBWzdH5N6wMSRLbBJHWCR7LWsdry3ta0vuk+hYgfh0kK69eyI+YG
+	 7FpmkVNM0iBNY/yA2swQGaAYev87YBX6cs6xYQJvQUHqpaH+Si6WiU/iEntw+/+Q6u
+	 1KtR+/NS2GW25tL0vjLBr7VB19p457skL8zJnypB4fJsznhldjzV06KO91+mYSOezg
+	 ZpLIqo9MjvDDr3yBd7YXN7MORvMhc1j8sygpIQqN91TavjFt8keqxR3SlEocElxJlj
+	 MBVo2ypKDoutw==
+Date: Sat, 12 Oct 2024 13:48:33 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Nuno =?UTF-8?B?U8Oh?= <noname.nuno@gmail.com>
+Cc: Guillaume Stols <gstols@baylibre.com>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5p?=
+ =?UTF-8?B?Zw==?= <ukleinek@kernel.org>, Lars-Peter Clausen
+ <lars@metafoo.de>, Michael Hennerich <Michael.Hennerich@analog.com>, Rob
+ Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
+ Dooley <conor+dt@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, linux-pwm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-doc@vger.kernel.org, aardelean@baylibre.com, dlechner@baylibre.com,
+ jstephan@baylibre.com, Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH v4 8/8] iio: adc: ad7606: Disable PWM usage for non
+ backend version
+Message-ID: <20241012134833.31531e18@jic23-huawei>
+In-Reply-To: <bff897a52650dbd499a83d955645cbc2290f80ce.camel@gmail.com>
+References: <20241009-ad7606_add_iio_backend_support-v4-0-6971a8c0f1d5@baylibre.com>
+	<20241009-ad7606_add_iio_backend_support-v4-8-6971a8c0f1d5@baylibre.com>
+	<bff897a52650dbd499a83d955645cbc2290f80ce.camel@gmail.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The pull request you sent on Fri, 11 Oct 2024 22:50:28 +0200:
+On Wed, 09 Oct 2024 16:45:40 +0200
+Nuno S=C3=A1 <noname.nuno@gmail.com> wrote:
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.12-rc3
+> On Wed, 2024-10-09 at 09:19 +0000, Guillaume Stols wrote:
+> > Since the pwm was introduced before backend, there was a mock use, with
+> > a GPIO emulation. Now that iio backend is introduced, the mock use can
+> > be removed.
+> >=20
+> > Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+> > --- =20
+>=20
+> Maybe this was agreed on the previous iterations but I wonder if we shoul=
+dn't just
+> bring PWM support in the same patch as backend support is added...
+>=20
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/9066258d0a533530c2508f784e85c53b44f5d9e4
+I can't remember why we ended up in this position (might have been me
+who asked for it!) but I'm fine with the logical steps we have in the
+series, and it will all merge together. So probably not worth rethinking
+now!
 
-Thank you!
+I took another look and other than the stuff Nuno has raised this series
+looks good to me.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Figures crossed for v5 :)
+
+Jonathan
+
+
+> - Nuno S=C3=A1
+>=20
+>=20
+>=20
+

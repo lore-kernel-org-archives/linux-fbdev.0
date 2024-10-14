@@ -1,220 +1,119 @@
-Received: from smtp.smtpout.orange.fr (smtp-26.smtpout.orange.fr [80.12.242.26])
+Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1E972AF1E;
-	Sun, 13 Oct 2024 11:57:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.26
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12659136353
+	for <linux-fbdev@vger.kernel.org>; Mon, 14 Oct 2024 07:07:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728820652; cv=none; b=YVAJ4Vzkjy2GxRkrDrcqI+To/DgIyIf9h/KxWF2eQEdiw3gXmOMAVm2Vj+CKJPDfaA+Q2vs+RuwBU+mrK2CqLwJd6/VflCAzprHUyQHCyULBxcGdzGgX+GLxy5FrbHd70qqfhbvDiWPukJVHb1m3POYv0c+qmxo/DuMd9E8Gqlc=
+	t=1728889626; cv=none; b=IubIrv5xUVZZiO2WWwXOJ3yKpgrx8hvQISFBcl/u1l0QHj487IL0mVMBYlXlZsK1u8ESQOtlwryOU/a66iw2yO6ZuETyfqhKfxTf9hKLX+DPHrJEoQYCfS6gQNghuGbMmtwfzvMHMMITsPRvAOaqMh2kwPLW1/aQOzKSmHSi7qE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728820652; c=relaxed/simple;
-	bh=RjjpgpDzstpv1aZGOAoVd9qAVce88N9yuC9mocAB2YA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rlO1RWZBYx6MxbDvx7SVQZofFTXPfTlbLkfthUlaH6fRVVH6wpr1NWEuh88cANGNGDM6yJfWIQYki23j715NMCIxq7fO6sdgZfdFlYssinWDYJhCr2saum52nH5vJS2mOYeoly9V+LrPCp7GbubADWOEIyRdXnPSxvWQKrtG5co=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=ceZweWE/; arc=none smtp.client-ip=80.12.242.26
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1728889626; c=relaxed/simple;
+	bh=KWGyRtOe+d5eWEKkR8JItBQOun6IJ0kjNk0vi5LqyGs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Z9gPh3jZ+gN+EV3oSAg4DzZTgzAoMSHIYlQdfsVUEs9xL29XTobjAkBNeSujnh2O9MK8gW6ElKQ+Jv0CgY5zRTvvnvqIpOgir49zmKoDpWfZDMEntVQt9upPamwyy7GjuZlL/ywnxbNxQu4xLPSo5rkO+VmYXwqBBDsZpudRROc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=uyWkLWnQ; arc=none smtp.client-ip=209.85.167.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="ceZweWE/"
-Received: from localhost.localdomain ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id zx57stZS2B0YBzx57s7gGf; Sun, 13 Oct 2024 13:48:18 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1728820098;
-	bh=9Lc6fX0KKpmtZvNPSaPJ34kiPy3v/0X/tDjiDGWF2dY=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=ceZweWE/EuyErM1E+TVSsUx4hOQ85BsRXFCl1lED2WNLp/k/StctaCYT9Ws/QuBUk
-	 64PLvuXLYJlNYzU5ZIHr/m5bD4x9OM9NubRlKKgMoxsX6RnXpgg6eCs8SMU3u4pmbb
-	 uHMpbTNyxnJgUOiznuUNLJTAXawxEIvAak599o/2aYoeHsOnVocd9d/TkLCxB92HiX
-	 5kt/CVISv6hcEl4nbt/mHq4+cpwFsa2T7g2hE09+kRKEhTQI0haOuXbRM+hglltmrQ
-	 k1XWq92lnYYmRKm/iu6oNg+4Xsf5VKWj6qmr47ICTPLbvP/zb2W1QbwpO7HLKVs9R7
-	 pDCizGssFtvJQ==
-X-ME-Helo: localhost.localdomain
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sun, 13 Oct 2024 13:48:18 +0200
-X-ME-IP: 90.11.132.44
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH] fbdev: Constify struct sbus_mmap_map
-Date: Sun, 13 Oct 2024 13:48:01 +0200
-Message-ID: <67883bfad5c2c395438bfcef7a319394caca4155.1728820047.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.47.0
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="uyWkLWnQ"
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-539e63c8678so1408991e87.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Oct 2024 00:07:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1728889622; x=1729494422; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DGAZdY+3mMlegbLBhotjKigA3jsyDM7lCK6IChu1+M4=;
+        b=uyWkLWnQEKH6H2Pclv+rIyxkP7HdI4eWKKYd7DpLqcLbwK9D3xIT3ka+oUPJANuvRH
+         XSsStcHYZsiKnBmhLp1TxbgdVhwIQi3k1w+NbZnOqBg8VjMGJpHxBn9a4E/Q+swKWg5a
+         IZW1eGzC8YHjI2W3egxSayO/sHUl46SPwg2gB+8VjFEap+7+lKoLoN39zE2B5ArHeW+B
+         RivuqZEavjkeHYnOvJBu8zckGeFIQXi/alY4MoggaB3BJ4vg7g9PsCbnMh0gYyoFweE6
+         INfKuBoprd/GsLc2GwD7rODuaOK3d2JLSnfyMbgC0calOj9t64/XVap1ARPR0ZBWbU92
+         7xhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728889622; x=1729494422;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=DGAZdY+3mMlegbLBhotjKigA3jsyDM7lCK6IChu1+M4=;
+        b=s5K72mfQYCgdJwAVWd9AE9BwnYFmVhCu8dOTNtaHqC8xc+p3cRPiwbUZPtktsuoxqb
+         fD7MsSjPOK2tgYv8fppwRlAjGs0ZGUNvUSQWOugxUnFfIoZwpkE6Mw8711qxI/kQlzUI
+         gTMKfjFbd1djuB91MmvxQN8a1esf7L/HnQzkntq7XrsBEiX6jdvY8W9X0SeMV7dHNm17
+         /hEzmvGLH2iNBH5V4EkMZOnmgcZL+suTee6Qv2sq7gvgxVRybf4VCtTGlBZQn1flRKZv
+         wKNrwIzw9/vIjWPiCErn93i2LYxMyXqouN/6X/KXOVuUXrhVgyHs9tQwWLsVmMX/UTkJ
+         Wazw==
+X-Forwarded-Encrypted: i=1; AJvYcCXVfCakl1QbQiTGUOJhGK16By2/oNAgreqd95kak0fdh5Us1A3EJqX6HPIChp5J+eswU4wcnDgQ6JM5Eg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyS3JIBcbGBMVnKN/vGar6IV0Aru7nM1GUARoR7yMUo5YXnIsCx
+	gRHCH8WYKRlggjokBIcBW4Q3kPG+ZIeQR6cxsRGDSojFSurtyIm/k64BsciTi3yZVd4Zh6KoESu
+	6dUBK6kJxj/LNYjTtCwK0MDs72zByGELK44ynWw==
+X-Google-Smtp-Source: AGHT+IFnO48aGUpKmxvFD0o04bcR91QUkt1ZB3Pcb8GYRBZzTTyMcBni5r8seoxZT9HDgGHzFz8b7Seuy1zcTHncsSc=
+X-Received: by 2002:a05:6512:3ba5:b0:539:dca9:19cc with SMTP id
+ 2adb3069b0e04-539e54d77e1mr2760395e87.4.1728889622082; Mon, 14 Oct 2024
+ 00:07:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <37842441-e372-40e9-b0f5-cf69defc2db5@stanley.mountain>
+In-Reply-To: <37842441-e372-40e9-b0f5-cf69defc2db5@stanley.mountain>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 14 Oct 2024 09:06:50 +0200
+Message-ID: <CAMRc=MdFYTtosq53tDFaPSBn11V3P36DOX8xsxRqFhu5iPwUcw@mail.gmail.com>
+Subject: Re: [PATCH] fbdev/da8xx-fb: unlock on error paths in suspend/resume
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: Helge Deller <deller@gmx.de>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Sekhar Nori <nsekhar@ti.com>, 
+	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+	kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-'struct sbus_mmap_map' are not modified in these drivers.
+On Fri, Oct 11, 2024 at 9:42=E2=80=AFPM Dan Carpenter <dan.carpenter@linaro=
+.org> wrote:
+>
+> Add a missing console_unlock() in the suspend and resume functions on
+> the error paths.
+>
+> Fixes: 611097d5daea ("fbdev: da8xx: add support for a regulator")
+> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+> ---
+>  drivers/video/fbdev/da8xx-fb.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-f=
+b.c
+> index fad1e13c6332..66ff8456b231 100644
+> --- a/drivers/video/fbdev/da8xx-fb.c
+> +++ b/drivers/video/fbdev/da8xx-fb.c
+> @@ -1610,8 +1610,10 @@ static int fb_suspend(struct device *dev)
+>         console_lock();
+>         if (par->lcd_supply) {
+>                 ret =3D regulator_disable(par->lcd_supply);
+> -               if (ret)
+> +               if (ret) {
+> +                       console_unlock();
+>                         return ret;
+> +               }
+>         }
+>
+>         fb_set_suspend(info, 1);
+> @@ -1636,8 +1638,10 @@ static int fb_resume(struct device *dev)
+>
+>                 if (par->lcd_supply) {
+>                         ret =3D regulator_enable(par->lcd_supply);
+> -                       if (ret)
+> +                       if (ret) {
+> +                               console_unlock();
+>                                 return ret;
+> +                       }
+>                 }
+>         }
+>
+> --
+> 2.45.2
+>
 
-Constifying this structure moves some data to a read-only section, so
-increases overall security.
-
-Update sbusfb_mmap_helper() accordingly.
-
-On a x86_64, with allmodconfig, as an example:
-Before:
-======
-   text	   data	    bss	    dec	    hex	filename
-   2452	    536	     16	   3004	    bbc	drivers/video/fbdev/bw2.o
-
-After:
-=====
-   text	   data	    bss	    dec	    hex	filename
-   2500	    483	     16	   2999	    bb7	drivers/video/fbdev/bw2.o
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Compile tested only with a cross compiler for sparc.
----
- drivers/video/fbdev/bw2.c     | 2 +-
- drivers/video/fbdev/cg14.c    | 2 +-
- drivers/video/fbdev/cg3.c     | 2 +-
- drivers/video/fbdev/cg6.c     | 2 +-
- drivers/video/fbdev/ffb.c     | 2 +-
- drivers/video/fbdev/leo.c     | 2 +-
- drivers/video/fbdev/p9100.c   | 2 +-
- drivers/video/fbdev/sbuslib.c | 2 +-
- drivers/video/fbdev/sbuslib.h | 2 +-
- drivers/video/fbdev/tcx.c     | 2 +-
- 10 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/video/fbdev/bw2.c b/drivers/video/fbdev/bw2.c
-index 4a64940e0c00..e757462af0a6 100644
---- a/drivers/video/fbdev/bw2.c
-+++ b/drivers/video/fbdev/bw2.c
-@@ -147,7 +147,7 @@ bw2_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map bw2_mmap_map[] = {
-+static const struct sbus_mmap_map bw2_mmap_map[] = {
- 	{
- 		.size = SBUS_MMAP_FBSIZE(1)
- 	},
-diff --git a/drivers/video/fbdev/cg14.c b/drivers/video/fbdev/cg14.c
-index 430e1a7b352b..5389f8f07346 100644
---- a/drivers/video/fbdev/cg14.c
-+++ b/drivers/video/fbdev/cg14.c
-@@ -360,7 +360,7 @@ static void cg14_init_fix(struct fb_info *info, int linebytes,
- 	info->fix.accel = FB_ACCEL_SUN_CG14;
- }
- 
--static struct sbus_mmap_map __cg14_mmap_map[CG14_MMAP_ENTRIES] = {
-+static const struct sbus_mmap_map __cg14_mmap_map[CG14_MMAP_ENTRIES] = {
- 	{
- 		.voff	= CG14_REGS,
- 		.poff	= 0x80000000,
-diff --git a/drivers/video/fbdev/cg3.c b/drivers/video/fbdev/cg3.c
-index e4c53c6632ba..a58a483014e6 100644
---- a/drivers/video/fbdev/cg3.c
-+++ b/drivers/video/fbdev/cg3.c
-@@ -209,7 +209,7 @@ static int cg3_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map cg3_mmap_map[] = {
-+static const struct sbus_mmap_map cg3_mmap_map[] = {
- 	{
- 		.voff	= CG3_MMAP_OFFSET,
- 		.poff	= CG3_RAM_OFFSET,
-diff --git a/drivers/video/fbdev/cg6.c b/drivers/video/fbdev/cg6.c
-index 0b60df51e7bc..56d74468040a 100644
---- a/drivers/video/fbdev/cg6.c
-+++ b/drivers/video/fbdev/cg6.c
-@@ -545,7 +545,7 @@ static int cg6_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map cg6_mmap_map[] = {
-+static const struct sbus_mmap_map cg6_mmap_map[] = {
- 	{
- 		.voff	= CG6_FBC,
- 		.poff	= CG6_FBC_OFFSET,
-diff --git a/drivers/video/fbdev/ffb.c b/drivers/video/fbdev/ffb.c
-index 0b7e7b38c05a..34b6abff9493 100644
---- a/drivers/video/fbdev/ffb.c
-+++ b/drivers/video/fbdev/ffb.c
-@@ -710,7 +710,7 @@ static int ffb_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map ffb_mmap_map[] = {
-+static const struct sbus_mmap_map ffb_mmap_map[] = {
- 	{
- 		.voff	= FFB_SFB8R_VOFF,
- 		.poff	= FFB_SFB8R_POFF,
-diff --git a/drivers/video/fbdev/leo.c b/drivers/video/fbdev/leo.c
-index 271e2e8c6a84..b9fb059df2c7 100644
---- a/drivers/video/fbdev/leo.c
-+++ b/drivers/video/fbdev/leo.c
-@@ -338,7 +338,7 @@ static int leo_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map leo_mmap_map[] = {
-+static const struct sbus_mmap_map leo_mmap_map[] = {
- 	{
- 		.voff	= LEO_SS0_MAP,
- 		.poff	= LEO_OFF_SS0,
-diff --git a/drivers/video/fbdev/p9100.c b/drivers/video/fbdev/p9100.c
-index 124468f0e9ef..0bc0f78fe4b9 100644
---- a/drivers/video/fbdev/p9100.c
-+++ b/drivers/video/fbdev/p9100.c
-@@ -206,7 +206,7 @@ p9100_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map p9100_mmap_map[] = {
-+static const struct sbus_mmap_map p9100_mmap_map[] = {
- 	{ CG3_MMAP_OFFSET,	0,		SBUS_MMAP_FBSIZE(1) },
- 	{ 0,			0,		0		    }
- };
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index 634e3d159452..4c79654bda30 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -38,7 +38,7 @@ static unsigned long sbusfb_mmapsize(long size, unsigned long fbsize)
- 	return fbsize * (-size);
- }
- 
--int sbusfb_mmap_helper(struct sbus_mmap_map *map,
-+int sbusfb_mmap_helper(const struct sbus_mmap_map *map,
- 		       unsigned long physbase,
- 		       unsigned long fbsize,
- 		       unsigned long iospace,
-diff --git a/drivers/video/fbdev/sbuslib.h b/drivers/video/fbdev/sbuslib.h
-index 6466b4cbcd7b..e9af2dc93f94 100644
---- a/drivers/video/fbdev/sbuslib.h
-+++ b/drivers/video/fbdev/sbuslib.h
-@@ -19,7 +19,7 @@ struct sbus_mmap_map {
- 
- extern void sbusfb_fill_var(struct fb_var_screeninfo *var,
- 			    struct device_node *dp, int bpp);
--extern int sbusfb_mmap_helper(struct sbus_mmap_map *map,
-+extern int sbusfb_mmap_helper(const struct sbus_mmap_map *map,
- 			      unsigned long physbase, unsigned long fbsize,
- 			      unsigned long iospace,
- 			      struct vm_area_struct *vma);
-diff --git a/drivers/video/fbdev/tcx.c b/drivers/video/fbdev/tcx.c
-index 6eb8bb2e3501..f9a0085ad72b 100644
---- a/drivers/video/fbdev/tcx.c
-+++ b/drivers/video/fbdev/tcx.c
-@@ -236,7 +236,7 @@ tcx_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
--static struct sbus_mmap_map __tcx_mmap_map[TCX_MMAP_ENTRIES] = {
-+static const struct sbus_mmap_map __tcx_mmap_map[TCX_MMAP_ENTRIES] = {
- 	{
- 		.voff	= TCX_RAM8BIT,
- 		.size	= SBUS_MMAP_FBSIZE(1)
--- 
-2.47.0
-
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>

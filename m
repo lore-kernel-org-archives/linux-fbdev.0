@@ -1,160 +1,135 @@
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED0EB1B21BA
-	for <linux-fbdev@vger.kernel.org>; Tue, 15 Oct 2024 18:13:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BDDD2036F1;
+	Tue, 15 Oct 2024 18:51:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729015991; cv=none; b=O1Prvc0+aHRjzX1y53X9g7Y/E1VMNCKg6s3U2/pkninQ5IvMYCIFGmxHdZlTElAJ1F1enGU9yVAUTRuWwXibxzUai+wepkZdYM0PWAhTCYGSgkA0jyTnKasGd4r7j1bqwVhVEdsBh6Ua5Z2vesQE0LhB9YgkqUiaVp+0a4poEn0=
+	t=1729018297; cv=none; b=uQfTmy5tO+dhnX1zHGdzWG5aLtygMqDX7jIBrYRh7Y+yLrWYVfgJHT/FXY4/+YHxaDiY28l+bG34BPwL2eWeF5rlygCHTFQNKt87lD6QWgw/nUDetxcWtuC8XAMgZSTlTbnfuj3wKDlVA8yCYajtuO9RJS3e6zD5SelGm8ZShCc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729015991; c=relaxed/simple;
-	bh=2AaojpKnjmW9HaHN+cfhOlEiwUr+JwKrOUeuBkUAitY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=kf7YQqISwxszDcvojrwYhPcGCYAvYm4GrIQz7eJTFcVj5hDGqkSBeWX/j8kIsa1EgSXLQQTsIGZg7V7yTD7PeHdTyjpkLsughEdxtfdrv6gQeTgiNNOnU0L2B6hiQfTO7F3aIcRuZuYnhGItRIuTHHI3TnqeBSipSCxv70gdYLs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca; spf=none smtp.mailfrom=ndufresne.ca; dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b=LWYFkJOp; arc=none smtp.client-ip=209.85.161.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ndufresne.ca
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ndufresne.ca
+	s=arc-20240116; t=1729018297; c=relaxed/simple;
+	bh=4RQYhM1GERHWSxPDCyVIe0s/83fAm3MMFNdqMZSuIfk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=kvce9gTQn3+q64X5M3Al0veqAUYLjTOF/7iMrYWCYqact0WDvr+bcyiwFw1Es7VJDtE+aOKCtt20BoQ+dWuTwxcreWaZi9vHNaowyYvMNxB/OPu2yuauALEOhDeQsuLxFmygPC7JThUMqjhmZKcnwzNBdON+8n+CHBhROAdK4sw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=MC+ozjnY; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ndufresne-ca.20230601.gappssmtp.com header.i=@ndufresne-ca.20230601.gappssmtp.com header.b="LWYFkJOp"
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-5e7e1320cabso2058650eaf.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Oct 2024 11:13:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ndufresne-ca.20230601.gappssmtp.com; s=20230601; t=1729015989; x=1729620789; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=5oxml2lN+ntX74kObb20hwl1g01p5AhViL60OxChXmk=;
-        b=LWYFkJOpmhwlBlbY5O6sGcou6sfk6qOrfpnOh3kmbu0dUPEw+XbWusOtljhZ0Pu0uh
-         ardW0gpU5K4IO9J6M7i+GgDjnJl9MoU0Lu2CB1E6AMw05uiq3VM3WxJfYiBudEm8FfQQ
-         TyOcLbK9/p6UhiUfYxFIcBOW2NL7nnhqwLBz6d1ahW1WBYicU91PbIFz41rJixURbWcU
-         BMPYljupmk36Jkgcfz2kspru0U5E7Xw0zft0vhnuDQ9AwcgmrTgkoP01tn5vG67/5qPU
-         /RqCWeYB3/fNucMOB3ZDbFHP4tHhKe6/irTeyLFtnINbhTxXSMKOagERMBV7bV3Xuc1T
-         on4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729015989; x=1729620789;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=5oxml2lN+ntX74kObb20hwl1g01p5AhViL60OxChXmk=;
-        b=rSJyCyAbpTkN1Pz8gdXPJ5knxt9ceE/ht3Wd8I5minddW/AhwIl2+UJO3d+eYRQ+TV
-         ChlbuB71JiBNnlGIWnZjwXvM60vzFsnL/oDZeU7LtZq1SC0LyUcHXfoOFaO7L6PNINCX
-         xT8VLzpp1MRsSROkr4GbObgzfwq++hp101P7Ef6LDRov4ErkwxK8A1Sj2WZ8YrUWYKIu
-         VeCYaaXrX4IZROS4Tx1WgSrze7RJ9g2Bkft+NxHHe0X/5wkF3qk3+Xq3HnWjDNS5a83A
-         xLVP0eguqn8bcCogGCVZ+zVy6MQ1nbeSdHyZqSH3WmXdNTUIHybu6hsgSyef3CxAb+KE
-         mKQw==
-X-Forwarded-Encrypted: i=1; AJvYcCUrBBV6bitXmbS7jJgZ7pFHrf3oN1n/9ft+Q/kd6L/motnUr7T/881x6rOLE57U4L4d8r/pxVu4DwPfLw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwU9NB1KSzsa/TION9CvHN/lP0Hj91iYUAN4ooEAO5n1EpTw3r1
-	dtFjEKr1cLEu+wjs4kO/LJWETMK8Ynr5dkhz2NaqRib3kpCQIdSmaKHl3Wwife0=
-X-Google-Smtp-Source: AGHT+IE/1zf76YUX911aLGIJHXfaOZW556q/vVashhOD3oqJyrmYteHGq4kOCjf4Niews2uJm4FHLQ==
-X-Received: by 2002:a05:6358:248e:b0:1b8:f18:3e6e with SMTP id e5c5f4694b2df-1c340d1aef5mr251119055d.12.1729015988990;
-        Tue, 15 Oct 2024 11:13:08 -0700 (PDT)
-Received: from nicolas-tpx395.lan ([2606:6d00:15:862e::7a9])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6cc22959b42sm9345366d6.76.2024.10.15.11.13.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Oct 2024 11:13:08 -0700 (PDT)
-Message-ID: <5be2dbb2a0a3a7964a064013a5271f585247ec22.camel@ndufresne.ca>
-Subject: Re: [PATCH v2 2/2] media: imx: vdic: Introduce mem2mem VDI
- deinterlacer driver
-From: Nicolas Dufresne <nicolas@ndufresne.ca>
-To: Marek Vasut <marex@denx.de>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	linux-media@vger.kernel.org
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>, Fabio
- Estevam <festevam@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, Mauro Carvalho
- Chehab <mchehab@kernel.org>, Pengutronix Kernel Team
- <kernel@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo
- <shawnguo@kernel.org>,  Steve Longerbeam <slongerbeam@gmail.com>,
- dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
- linux-staging@lists.linux.dev
-Date: Tue, 15 Oct 2024 14:13:06 -0400
-In-Reply-To: <0da39b8f-4cca-438f-9a39-40da7c34c895@denx.de>
-References: <20240724002044.112544-1-marex@denx.de>
-	 <20240724002044.112544-2-marex@denx.de>
-	 <85a5a42667e5867bc45da31baf045d4c9557f5f1.camel@ndufresne.ca>
-	 <6b45e30c-b215-4f7a-91a4-fde05d78f737@denx.de>
-	 <b1c5fb155c77355ef2889b6e054a5c0696481ebd.camel@pengutronix.de>
-	 <0da39b8f-4cca-438f-9a39-40da7c34c895@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-1.fc40) 
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="MC+ozjnY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1729018269; x=1729623069; i=deller@gmx.de;
+	bh=9jaQnEjymFY3oxOxnvMn1q08An0kyg3ycazGUlE2w4Y=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=MC+ozjnYCodS1EJ0Jv4hpnQM7VCHIB5SXkONEUhNHuAOnVlfFVPVIIs7VLPy2PtZ
+	 o9vBYGYylfNDj/5P23G9x7Pu6dolQAsb8h8utLkcwMEHaagBj4JO3uSPxoUiN6xDt
+	 OAGKl09queEsN/xtOniVe9DxH8dtbOLPGKOi+A+oNce44ed8bgTmDW450AVXVEy0O
+	 lgF8ouPYMEZxLpCkg+ItHAnPABawQtjB30yb2RSIYwELsgQ7IymtseNP24ZAz30KS
+	 kuw7SNpseL1dXniyaKJ3y9Sn6CKLHqo5qnkn941bWO/GzjI/Si9vOCDT2vqNb3vst
+	 w1MSBMBmZxSHwmtPSQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N7i8O-1u46wB0nD8-00zMgp; Tue, 15
+ Oct 2024 20:51:09 +0200
+Message-ID: <cc055b74-f424-45a9-a4ae-d8881dd985a0@gmx.de>
+Date: Tue, 15 Oct 2024 20:51:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 8/9] fbdev: omapfb: use new of_graph functions
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ Jaroslav Kysela <perex@perex.cz>, Rob Herring <robh@kernel.org>,
+ devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+ linux-omap@vger.kernel.org
+References: <87wmiirqwy.wl-kuninori.morimoto.gx@renesas.com>
+ <87ldyyrqv7.wl-kuninori.morimoto.gx@renesas.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <87ldyyrqv7.wl-kuninori.morimoto.gx@renesas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:EdVI0VSYeL3LEOEJi+jbSkms2cqQAE1hN0i+/9ZcCXcEGnmNG0n
+ gj0Dp1Xb0FLCEB1Pmha36fyLEIHmAUNJHUnVUOXn/XYf+iwVVsIDWvqJuByBOfLs91Bk1se
+ o7WoInpOefGGHfmvdjloogyUuWi7FcB2xNXLcOOFyyNv1Z5QQzIG9OHBEqHjDEG0N40k5yZ
+ 2gzcyvmMsR2CUL+wYCTfA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:zPouFLlPz0M=;gnMXag3WKBn0uZpYW3G8t8VVrpZ
+ afPUrS5i7P6iHoOeiY3ybTUI1T9MIwvF4UP+R3whEtLqyxOfU/o8tGlZyLpnfWDEz5KONemre
+ IAENelYowMsZgNUbMnEEK0IjNezITScNNToEpsfISMUl3xd0XuNTSzCaODbbE9TKGHesY62NE
+ J6vxs5qX2NQyciPX1SAMJxDJNiy9lk3SjiZY0CE9LL6+IYrkD2V20vF5Inr684DjOTlkS2S40
+ z/XcBtCaIk6krvXzWoNLjAfB2A1qNbX0kQ6oOrj17nAyaLtjbaSMRaFP+LL/cPI8WcREpJP1B
+ QkTPCdBmlRzMhXYls+moSajojWqQCjYk4G1jOkOvkft/QdIxKLwwOUc3KcOkgvu6mpV3TX9PG
+ syqwv4QFGASh0gEJk3i09GnQ+x9Sc4jgYjJ9WaSHjLT+HmE/RgNF9ZBAM1dXi+V187aK9Jbec
+ Pvd/8jAOx26pFr0qbpEA3HNx9FteXYf4s8ngCLSPyq6HqYWhbMHdzSSTmyvXX7Jr59Dmc+jQh
+ JNyEouHIE4zTWJLxZ8kRXw4hwWcgBGdyl40hZchV1i7NcjY8jz90g9jnECs4H/HtlCfc6uNEe
+ MeXUZT2Yn7yLdqp+5/7a6wp0ypiLcPhadiQ6Bv9Ka6C6X7bphQ4gMWIZ7iYsSw4ZOmBE3PaAH
+ F2CF18RMFVSrmRI/8qEfoQKXJ7d5v87K5AiBPaAb+fymm5RxHTInVDHm6Fg1/JdwzD2gBl8qm
+ e67vOz3BEHpTKxuDIdollUZSzQPjCdAJ3hWXPYRhGO9abUozXJRMLToc65DOOIJFw85lh4lIC
+ C0cnFw0CMCHBNbG8fF+Z92OQ==
 
-Le jeudi 03 octobre 2024 =C3=A0 16:57 +0200, Marek Vasut a =C3=A9crit=C2=A0=
-:
-> On 9/26/24 1:16 PM, Philipp Zabel wrote:
-> > On Mi, 2024-09-25 at 22:45 +0200, Marek Vasut wrote:
-> > [...]
-> > > > The driver is not taking ownership of prev_buf, only curr_buf is gu=
-aranteed to
-> > > > exist until v4l2_m2m_job_finish() is called. Usespace could streamo=
-ff, allocate
-> > > > new buffers, and then an old freed buffer may endup being used.
-> > >=20
-> > > So, what should I do about this ? Is there some way to ref the buffer=
- to
-> > > keep it around ?
-> >=20
-> > Have a look how other deinterlacers with temporal filtering do it.
-> > sunxi/sun8i-di or ti/vpe look like candidates.
-> I don't see exactly what those drivers are doing differently to protect=
-=20
-> the prev buffer during deinterlacing . Can you be more specific ?
+On 10/9/24 03:45, Kuninori Morimoto wrote:
+> Now we can use new port related functions for port parsing. Use it.
+>
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-drivers/media/platform/sunxi/sun8i-di/sun8i-di.c:
+Acked-by: Helge Deller <deller@gmx.de>
 
-                src =3D v4l2_m2m_src_buf_remove(ctx->fh.m2m_ctx);
-                if (ctx->prev)
-                        v4l2_m2m_buf_done(ctx->prev, state);
-                ctx->prev =3D src;
+> ---
+>   drivers/video/fbdev/omap2/omapfb/dss/dpi.c    |  3 +-
+>   drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 66 -------------------
+>   drivers/video/fbdev/omap2/omapfb/dss/dss.c    | 20 +++---
+>   drivers/video/fbdev/omap2/omapfb/dss/sdi.c    |  3 +-
+>   include/video/omapfb_dss.h                    |  8 ---
+>   5 files changed, 13 insertions(+), 87 deletions(-)
 
-
-What that does is that whenever a src buffer has been processed and needs t=
-o be
-kept has prev, it is removed from the m2m pending queue
-(v4l2_m2m_src_buf_remove()), but not marked done. At the VB2 level it means=
- that
-buffer will keep its ACTIVE/QUEUED state, meaning is currently under driver
-ownership. I also expect the driver to start producing frame on the second
-device run, but I didn't spend the extra time to check if that is the case =
-for
-sun8i-di driver.
-
-As for GStreamer wrapper, since it does not support deinterlaced, it does n=
-ot
-always allocate this one extra buffer for prev. If the driver implement the
-MIN_BUFFERS_FOR_OUTPUT CID though, it will allocate matching number of extr=
-as.
-Though, this has a side effect at driver level, since start streaming will =
-be
-delayed until 2 buffers has been queued and any way you need to queue 2 buf=
-fers
-before the driver will produces its first buffer.
-
-This comes to the next reason why the wrapper will fail, since for each buf=
-fer
-that is pushed, it synchronously wait for the output. So it systematically =
-stall
-on first frame. As the author of that wrapper, I'm well aware of that, but =
-never
-had a use case where I needed to fix it. I will be happy to accept support =
-for
-that, though in current mainline state, there is no generic way to actually
-know. One way is to thread the transform, but then GstBasetransform class c=
-an't
-be used, its a lot of work and adds complexity.
-
-We can certainly fix gstv4l2transform.c behaviour with adding
-MIN_BUFFERS_FOR_OUTPUT in upstream drivers. That would be easy to handle wi=
-th
-adding a matching buffering delay. These deinterlacers works for Kodi, sinc=
-e the
-userspace code they have is not generic and have internal knowledge of the
-hardware it is running on.
-
-Nicolas

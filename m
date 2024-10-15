@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0A2F1B4F0A;
-	Tue, 15 Oct 2024 08:11:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 132101C8FC6
+	for <linux-fbdev@vger.kernel.org>; Tue, 15 Oct 2024 08:19:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728979883; cv=none; b=AR2QfgteTq1fJj73GQNh58IL4rbq+CcckXklh/2gsYlt2WNmTIS5GoleHNs6AKtC51AwpwXXa1CUnC/7zCr+YjFDws2TpRtX6mAWSpXX7xsjFlCPFgZGu2op9uIXqwqJGQRiesFB9WAQPPo84ZsGIyQQBaL6R5AZe3UaZj3fjKg=
+	t=1728980392; cv=none; b=qU8+nEUzkBz63Ai0u8NVrATGODTXVPv22kqYQID3JaskwkzmxgUHxyIioPh0UFkj9KF5MgazQt4hqxSrbaFmArhdfWPdvTBjVS/nZLkFL0yy7+xnZ69ewnz3uzkil/MbWGKPy/HG7OVJecz8egNQzIY859pkv9bfiETBe7lfU9g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728979883; c=relaxed/simple;
-	bh=mQWMACPtiDci8G7WcpMi/jiFarITfO4k7sfUpetIOeY=;
+	s=arc-20240116; t=1728980392; c=relaxed/simple;
+	bh=RI8WZdiKrJmA/8AJOm9KpPG+yqdQbTs7h0w5WuL4bbc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BwDNP6yJFABk657zsqfvQmktkhydkG3ZX6G6r8wk5HAhA4NsDSGDV69K04+I69HCO8HUaIJkU1V8WK/l9F2Qy6qyGeqT3RMHaljJK2pumUSaJijQm8j7gA0E5ift3/EEus7F6a1QcXwYxlkSd/hTrU0c6Y/dEtIRB+1mbYUuiws=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=kEhLKthX; arc=none smtp.client-ip=212.227.17.21
+	 In-Reply-To:Content-Type; b=FhabcnwVKDf+QIPlzDRO4DJSNUM7u5B6mmtr4z1pnRPPzvXb89QLPJL5cDsGgtpTtxbEU8b3Tyh0it33xnuEpgDqGSGgpfkSUFwI8xwe0gNpXhMFj9CVN0YjtLGI3/5xNv5AYlovQhPkVuGJXeP8+qqW3TGU7pWX+Hz10zy2SLE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=poRcqX5O; arc=none smtp.client-ip=212.227.17.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="kEhLKthX"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="poRcqX5O"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1728979822; x=1729584622; i=deller@gmx.de;
-	bh=mQWMACPtiDci8G7WcpMi/jiFarITfO4k7sfUpetIOeY=;
+	s=s31663417; t=1728980384; x=1729585184; i=deller@gmx.de;
+	bh=jT1kRztLJ7q8FdwZmGoBYoDNMrfKh2s9JjZLlqMIIMo=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=kEhLKthXHetj7wJfQVwcEaoKB9ONI+iIp1bapaxkZrQ6tB21eJ/dFrdvwUtMtcC1
-	 MRnIClo3fGa7GOmTto/F6alBJZZLKxvzOkPKi8ojt2c7DVQRZbpXd9VIgDSup8hZ3
-	 Qi0IFcDubkuwazkgiAlFpZfiF1JmncgXGb53JYi7uywqPcAjXrhNcSfmb+0QMBTYg
-	 +XiMtf4Z0bEGJFQb/rA5OUgHbm9L1N0s8NQ2iAT9NX6G0354MyhZuBfLvDndsyHpm
-	 NoWyN4r7D13REQEl20lx+kBaf8AiRNMS08KifNR6z/79mSEckBxIAvtD0YvqPenoA
-	 bkzDynEtiCZ1599yfw==
+	b=poRcqX5OlxWIpi6m7JJrMqRagKSRlSV2IeDUr59CLxSO0xKxPPuUqyzWzeQPLp0D
+	 SaqXRoxfNBabKNXQNkAkiKVRw9XioDElIUxBdJgNb2Z3T+ctqXuQAml+5EHzt16Lo
+	 6MXHkxiAdrZ+V2wQAB14WDl7xVcTIfXj45Qqb7OyTlkTxUd3vQZSxUdogLVYQFKYg
+	 qX2RLs91SySg7zq/rBSQZXwq6Vfp+2XVUofDwjSOwmZ18flaMFZ2i6YWezzS8ab8R
+	 R0/1CakO01IGrnRPO53FFfr339aC6uKGwLhB2IumtXhJrvYf+V0fotGq3lsU8Q06/
+	 38lSzG5mE9ITfUMipg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M9Fjb-1t3fJ44BT5-0005aP; Tue, 15
- Oct 2024 10:10:22 +0200
-Message-ID: <8b15aa5d-f768-4778-8246-eda704e7c7a2@gmx.de>
-Date: Tue, 15 Oct 2024 10:10:20 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MuUnK-1tr4yY27qU-00wiJR; Tue, 15
+ Oct 2024 10:19:44 +0200
+Message-ID: <ee5363e7-a482-4a81-af05-defabcb2a9eb@gmx.de>
+Date: Tue, 15 Oct 2024 10:19:43 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,17 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: da8xx: remove the driver
-To: Thomas Zimmermann <tzimmermann@suse.de>,
- Bartosz Golaszewski <brgl@bgdev.pl>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>
-Cc: Dan Carpenter <dan.carpenter@linaro.org>,
- Kevin Hilman <khilman@baylibre.com>, David Lechner <david@lechnology.com>,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-References: <20241015065329.12732-1-brgl@bgdev.pl>
- <4cdde7d6-e0ad-44a4-bb8f-1df5cd3b1874@suse.de>
+Subject: Re: [PATCH v3] fbdev: sstfb: Make CONFIG_FB_DEVICE optional and
+ update Kconfig dependency
+To: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+ linux-fbdev@vger.kernel.org, thomas.zimmermann@suse.de
+Cc: dri-devel@lists.freedesktop.org
+References: <20241015080439.5931-1-gonzalo.silvalde@gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -99,53 +94,132 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <4cdde7d6-e0ad-44a4-bb8f-1df5cd3b1874@suse.de>
+In-Reply-To: <20241015080439.5931-1-gonzalo.silvalde@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:DGDxZHuhnqs53RL0iCKK0AY2nwxQt9QhUMglCt2CTckGP+6IxIV
- L+8+juqTUjmo950QNy7J4vn22//2fsKuXBw8IU1xOlVRKYm9EOyYwjrzl3hi5VUm1EuH19N
- QditLxnjjeXpQUAL9+gf1EvyJBJkffGxpMCyu1B60FVWCw290VPHt5Hu7I+dKobymolmtCc
- rgAA+YzHE6dTuVrE1n9sg==
+X-Provags-ID: V03:K1:ieqb5zxAZ+X7y6dFoLlVbH1VbNzwP5V0QyHtjXl1YFu5dLFoLwE
+ jmKPtCGDnhiQTFeTCVT+Gc8as8nKgpRU2PVE0yNYNmgUlkJa1itwxqtEWrIxQj3+MPTYLSC
+ /9TuaPCoYjx0x//ujo+DVz1jsjU0z7/obnd2qw2bCZs71FPJjhHVx8FxfQ8AgFN7T6zqBJd
+ Rse2mJZWnXk78QwxOmT5w==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:/25xlcbN1QU=;P7NDhGTyrT6yTj2fLg5HEeESMBD
- qT8b3LEXXFUNA1icwlxE3++/9d5qRAOzmTE6IVI37MNGSyLwDkPzSDdospbrZ/3IAqUJyqBUB
- nG7vynyqlsKkkuddyRq9VnyICwMmXVmiSTHVazymO0Je5xfRoPqd9TraB2HP15gtZoxyAKE7y
- H0KBGkuOhsToWDXKXTBM/xji6BxCQMmj2itci9w/IKszS/Y7kPodiZ4vS7s55bGqXGbDx1rHA
- izPrJ5aMphKf1zv5DQC3RBt0vNk41/mkwalPvgxI9Gpi90FnCOZHuk6oJGmMJvkRtnsmvgZEu
- wGnQ6JT63AtVDZUSq5YGjg1KMENllcFr7zUtGYqMFCYvQOFri/50asT2p3C70TTB8Y0/3hyYh
- 4nv7H2yGHE1kkhZ4xHs3KZuCmZCkrX+nd0pInUrYU0t7x0Fp61Kpp6WMBa8O+wl08lGifkzBD
- WZOepmmORV/kn2yx6bPjQh8/qMZCRaa3urR6hCZfYFqiNRhMozqwUd11L36GlnYPcfluFkZTV
- 864yaHdHsoz66XqgXvdUkrwnMYiKqsFRyjrv/bmzUst0m21YWz+2cV/BtiLoZMoTDmSlKJW/3
- mYrZ26DqSl4tbkdtG4bLARSXmYVNBh7YH24HycUw7W4U6RNhFipEehYmVQjP5KQFtZU4GMYnG
- lOA0ah8p43n1ZZSAkbYxmmeTc9sn9zJIlE8pNk+9Bez+ZRzP7txjZHI/Ef4CeufgsMdREdBjc
- HNQ1Jb+3SEGEQj/PUIW2FUBM94jUBNp9/5XwoShmMRZh78O7P6bqjeVT8wutyObq/3iblm+lP
- llvDtcP1yTVcpcBeb9nXgPDQ==
+UI-OutboundReport: notjunk:1;M01:P0:X45HQw0Mjd8=;paqRQQH33fiVgnvi8Anc87CpJVj
+ sRn/tpHgcIa44TrqhGWFAfIbwDYv+demV3C1dDTd0uH9FJVr5P3ruo/TH6QJetQxGxKTSLAqO
+ lkP+CJCGWCBgANf7YZcLEMBCwhs51MChgoP5xkUQkpzQRdHpbI5Quy0AL+SYR+W5csXwtD4FF
+ hC+ZBuL7zfVNZFegEckPTIl6kVC4IaLpJIXHGbx5+Dd3+ZxMn3d7lpkk5YJ+YWhRfHLiRvjwc
+ 4RxNcKKwJ71TjzxRqsdgEof8qP/JFTWHoiyQ4WfzlrV7W9w4AmISrZpBMO9kksdK+gXNJ7R6E
+ TzpwyH6ha00EKSjO+snRgcqoDc+EGrFfzblQhC82Xsd/w4/MI3dWUhmk9U21qE2uf5Yj+y3Ik
+ o4yvXeuOUfgb6aST+PIS3jSDpVfudCWI+UXCJ/kZ+jSY09q248EauhOwSC2LWWegFi2vnqf35
+ /EMFeRWNpSNOXiIj8I/foFcAuEGqXXA7M5PNDYSZXIASwUQ0ibGcp8659f0DTBi44V4CuVz5s
+ ucgJucpvydRT+RaqylwroVyTNPPZ2JYjZDDoQVv5BqvB4qx0k8ambC/YoijJYeltbDYqhPJcX
+ NHjfSjqQErOj9Z/dScfWMbGg9wkHox+I3JNVfOXiXNnmmktxFu4EB7oTQfaPcbhmIguTIYzCx
+ nSh9dzcf5KQ5K4m1i/oH7hqwP4ppoGT1zji7YoEnV6qi2u8Pzrc5rh+xg+oZhHO+aWE2MMzQF
+ a2+UvFYLJ8hMmhVC7Q9rFdukfKZZ3ONRj2PuHrvQr/HDOCj2dMrp4426ekYOkWL3MHQVcMc/p
+ 7hdtC9LEDdAtTwcbd4PyGosA==
 
-On 10/15/24 09:16, Thomas Zimmermann wrote:
-> Am 15.10.24 um 08:53 schrieb Bartosz Golaszewski:
->> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->>
->> This driver is no longer used on any platform. It has been replaced by
->> tilcdc on the two DaVinci boards we still support and can be removed.
->>
->> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->
-> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+Hi Ganzalo,
 
-applied.
+Thanks for your updated patch.
+Somehow empty lines sneaked in again, see the last line of your patch.
+Anyway, I manually fixed up your initial patch with the fixes from
+Thomas, so we should be fine now. No need to send a v4...
 
 Thanks!
 Helge
 
-
->> ---
->> =C2=A0 drivers/video/fbdev/Kconfig=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 13 -
->> =C2=A0 drivers/video/fbdev/Makefile=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 1 -
->> =C2=A0 drivers/video/fbdev/da8xx-fb.c | 1665 --------------------------=
-------
->> =C2=A0 include/video/da8xx-fb.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0=C2=A0 94 --
->> =C2=A0 4 files changed, 1773 deletions(-)
->> =C2=A0 delete mode 100644 drivers/video/fbdev/da8xx-fb.c
->> =C2=A0 delete mode 100644 include/video/da8xx-fb.h
+On 10/15/24 10:04, Gonzalo Silvalde Blanco wrote:
+> The sstfb driver currently depends on CONFIG_FB_DEVICE to create sysfs
+> entries and access info->dev. This patch wraps the relevant code blocks
+> with #ifdef CONFIG_FB_DEVICE, allowing the driver to be built and used
+> even if CONFIG_FB_DEVICE is not selected.
+>
+> Additionally, the dependency on CONFIG_FB_DEVICE in the Kconfig file
+> has been removed for the FB_VOODOO1 driver, allowing it to be selected
+> independently of the FB_DEVICE option. This is because the sysfs setting
+> only controls the VGA pass-through state and is not required for the
+> display to function properly.
+>
+> For more information on VGA pass-through, see:
+> http://vogonswiki.com/index.php/VGA_passthrough_cable
+>
+> Tested by building with and without CONFIG_FB_DEVICE enabled, and both
+> configurations compiled successfully without issues.
+>
+> Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
+> ---
+>   drivers/video/fbdev/Kconfig |  1 -
+>   drivers/video/fbdev/sstfb.c | 13 ++++++++-----
+>   2 files changed, 8 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index ea36c6956bf3..44a8fdbab6df 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -1236,7 +1236,6 @@ config FB_3DFX_I2C
+>   config FB_VOODOO1
+>   	tristate "3Dfx Voodoo Graphics (sst1) support"
+>   	depends on FB && PCI
+> -	depends on FB_DEVICE
+>   	select FB_IOMEM_HELPERS
+>   	help
+>   	  Say Y here if you have a 3Dfx Voodoo Graphics (Voodoo1/sst1) or
+> diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
+> index f8ae54ca0cc3..1d6ef97f1a84 100644
+> --- a/drivers/video/fbdev/sstfb.c
+> +++ b/drivers/video/fbdev/sstfb.c
+> @@ -716,6 +716,7 @@ static void sstfb_setvgapass( struct fb_info *info, =
+int enable )
+>   	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
+>   }
+>
+> +#ifdef CONFIG_FB_DEVICE
+>   static ssize_t store_vgapass(struct device *device, struct device_attr=
+ibute *attr,
+>   			const char *buf, size_t count)
+>   {
+> @@ -736,10 +737,10 @@ static ssize_t show_vgapass(struct device *device,=
+ struct device_attribute *attr
+>   	struct sstfb_par *par =3D info->par;
+>   	return sprintf(buf, "%d\n", par->vgapass);
+>   }
+> -
+>   static struct device_attribute device_attrs[] =3D {
+>   	__ATTR(vgapass, S_IRUGO|S_IWUSR, show_vgapass, store_vgapass)
+> -	};
+> +};
+> +#endif
+>
+>   static int sstfb_ioctl(struct fb_info *info, unsigned int cmd,
+>   			unsigned long arg)
+> @@ -1435,10 +1436,10 @@ static int sstfb_probe(struct pci_dev *pdev, con=
+st struct pci_device_id *id)
+>   	}
+>
+>   	sstfb_clear_screen(info);
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	if (device_create_file(info->dev, &device_attrs[0]))
+>   		printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
+> -
+> +#endif
+>
+>   	fb_info(info, "%s frame buffer device at 0x%p\n",
+>   		fix->id, info->screen_base);
+> @@ -1467,8 +1468,9 @@ static void sstfb_remove(struct pci_dev *pdev)
+>
+>   	info =3D pci_get_drvdata(pdev);
+>   	par =3D info->par;
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	device_remove_file(info->dev, &device_attrs[0]);
+> +#endif
+>   	sst_shutdown(info);
+>   	iounmap(info->screen_base);
+>   	iounmap(par->mmio_vbase);
+> @@ -1536,3 +1538,4 @@ MODULE_PARM_DESC(slowpci, "Uses slow PCI settings =
+(0 or 1) (default=3D0)");
+>   module_param(mode_option, charp, 0);
+>   MODULE_PARM_DESC(mode_option, "Initial video mode (default=3D" DEFAULT=
+_VIDEO_MODE ")");
+>
+> +
 

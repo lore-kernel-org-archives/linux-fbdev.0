@@ -1,88 +1,159 @@
-Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com [209.85.128.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 574E1202640;
-	Fri, 18 Oct 2024 16:06:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B05E029CF6;
+	Sat, 19 Oct 2024 00:37:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729267569; cv=none; b=smdPg3cUR6xHJJdu6yRW0c3QFMU0p6kdn5teJ93oc80JHSsYeBX610/g1ZqST7dbH2X/LVZ1blBQqZ4CkZAqK7vCvQEPNo8Dktd81yLaAg8FY2DFIKx3dxLEcBr4jVLRoKZH7hm+f5Sqsx0i2Qo0f8KSIjzOPXoovRTx7iFHHZk=
+	t=1729298243; cv=none; b=Qb11SaxX/l/QytKuqvrgiZpkmqVsnznAPua261ymEWily8dQjQQWoc1V+ZgU62QwALO6wn/c3DIc960OeukJCMYEygj41uwlvVF/JU1YcgA/mKdiF9BtEsPEpwbhgkBIR5qDfrnBptjyDYOjU8MwoILlAQN8NfGFh+v3fZQQpyQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729267569; c=relaxed/simple;
-	bh=77kt/9AU1XQ43TjwFtNw9fpgJrebjcu25+nLpEMYUPE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=qOr6mniUf7DiFCwCFXNjBSQDCF7t/o+LHlBxLP+laJw++39zTwod2IKKIj0FWV6M+3nK2DHt0XzSL8mjURHVhzQGvGdfXJGdjsy/+eKwBLUmzeSKFqGjwAV/b1UVGwQ+WGBvwKeur+fqho8t9al23Ki/mO8/aLm2P5Os9VRmmNY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-6e390d9ad1dso24219267b3.3;
-        Fri, 18 Oct 2024 09:06:07 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729267566; x=1729872366;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=yS2zcJjmH/OYE5G4adj1rUyL7Ifvoy7udN6X13AHaEU=;
-        b=pCvhsjOxp7GnZwhw0G3HKvFczU/V68sC74FgVfX6f7huPkI+cS5wCwsZLlpPRR8hKX
-         iLBjVSw+Ov6+UZ8XcP2EnjENM2RsDaGvENy8X1Ya6N7DQOr7uq0PBB7fY8qspH+pNcpf
-         hRB6Tc15yNDYO6U9Q5vzfFK2Cwu5fySThxpEPqr70Z2wsfytp6CdgKEfNjOnVbomBlTk
-         oZ8ejeXaF66XQCVMzGFGe9M6RezNZC/irQCbHVo+C2klzSxL576hJjSXMnt83C9R9xHP
-         wIn7fG4q+4EONygBybJxZc/pemXS8nXvZb0h1VYQongAZb5vIl2GuEszRz69G3g7RfWI
-         J2iA==
-X-Forwarded-Encrypted: i=1; AJvYcCXxxyBPaDmAf3/iEH6pmVyyXcZcDPkYpHLk6SWRI1mv8hRbFBhQSaKFrAmT0cQhW8j+fs+dEKV+4SJNWQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyLPgQIW60oq6pO37wNZG5N9MwAdh+EsYnXJJyQa0nC4J/A+88U
-	NTMkxCEZgEQEN+UUrdXof29JZyiUJNEANH6Eimo1e/Fg7zoMGsoRoaX3c1dB
-X-Google-Smtp-Source: AGHT+IHGaKFQLEttXlGpH6gjfKKzRe749AB7aRr+N7qgrqB1WtVyORRdg9RUFVMrZhGworjpl0VwAg==
-X-Received: by 2002:a05:690c:4d4a:b0:6dd:d5b7:f35d with SMTP id 00721157ae682-6e5bfc16b86mr35528667b3.30.1729267564264;
-        Fri, 18 Oct 2024 09:06:04 -0700 (PDT)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-6e5c024c36dsm3508037b3.113.2024.10.18.09.06.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 18 Oct 2024 09:06:04 -0700 (PDT)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-6e5cec98cceso5199667b3.2;
-        Fri, 18 Oct 2024 09:06:04 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUoNNecjHsoBSEVhydhUZgBz5TlAsUACrbm2h+RRu8JUAt0lLOilDBXPBl7QahQmHnr3V8mFRzKGqoXUw==@vger.kernel.org
-X-Received: by 2002:a05:690c:ecd:b0:6b3:a6ff:7676 with SMTP id
- 00721157ae682-6e5bf72c0eemr33701737b3.3.1729267563876; Fri, 18 Oct 2024
- 09:06:03 -0700 (PDT)
+	s=arc-20240116; t=1729298243; c=relaxed/simple;
+	bh=PfaYoaaPCu5DWdfaaTW12VQJY6h3MD3ntyNmux/6daA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ciharSbb853aMxwfR/JYpIm01UBK3efcveTcBALA54yNldnDIi1V/hp1vK3O03AJ1F++6mdlSQnekrdLlOMOwZBrXgZKt1EzJpLGB09xOiI/BK1BZRnzo3G9CLEbGr5xEvU3+sbXW+z0FeJHb2lohwfOZ49n000ZNjBGYI13aos=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=gcv56uEv; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="gcv56uEv"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1729298241; x=1760834241;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=PfaYoaaPCu5DWdfaaTW12VQJY6h3MD3ntyNmux/6daA=;
+  b=gcv56uEva/ctlcfisaZHxrXvvu0APnuamyfhAUh3Jfzvx1YxkuMIcm14
+   GB/tP+4qx0qFnlb17rnW+WFVKAmCdG82AOXsayVk4I82LiAm3jH8zWyFC
+   lb5q+0R0NPVgKz868Jh/+b2cOxpQFXL+Ecf8iHYu/3s0gwt3BxvtE85ko
+   8L+J6bg8XVVGDobC4HAT0buGdXfWy5Lzb0wqaMOFH5ftzNtSvMkAbaEyT
+   PF13VZ+qrPi1Qk4oLEibUqoOuCamUfRbIpZ6Ao39MhB0jKZkJnK7JtI2w
+   18Y2v3gz6TnHjuvI6dZ0J4L6KdjMiCgvvvZ9xXvCN1GmFO28Sw7gcDKzp
+   g==;
+X-CSE-ConnectionGUID: P2Y5Ib0YQ0KooHhXYQO8/A==
+X-CSE-MsgGUID: x90PeKqvT3GUstjntTtZ6A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11229"; a="29054681"
+X-IronPort-AV: E=Sophos;i="6.11,214,1725346800"; 
+   d="scan'208";a="29054681"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2024 17:37:18 -0700
+X-CSE-ConnectionGUID: 6YMgxZiVR9emesg1GpNAHA==
+X-CSE-MsgGUID: 7zFAV9PvT6+fQq/pN8dEoA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,214,1725346800"; 
+   d="scan'208";a="109771570"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+  by fmviesa001.fm.intel.com with ESMTP; 18 Oct 2024 17:37:13 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1t1xSw-000OTl-3C;
+	Sat, 19 Oct 2024 00:37:10 +0000
+Date: Sat, 19 Oct 2024 08:36:40 +0800
+From: kernel test robot <lkp@intel.com>
+To: Guillaume Stols <gstols@baylibre.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+	aardelean@baylibre.com, dlechner@baylibre.com,
+	jstephan@baylibre.com, nuno.sa@analog.com,
+	Guillaume Stols <gstols@baylibre.com>
+Subject: Re: [PATCH v5 7/8] iio: adc: ad7606: Add iio-backend support
+Message-ID: <202410190802.CLaySBOq-lkp@intel.com>
+References: <20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1729240989.git.geert+renesas@glider.be>
-In-Reply-To: <cover.1729240989.git.geert+renesas@glider.be>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 18 Oct 2024 18:05:51 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVNcC-qRw5AHNR9F_uJrDBt=rVhg3X_KHDvgxwyxMGCdA@mail.gmail.com>
-Message-ID: <CAMuHMdVNcC-qRw5AHNR9F_uJrDBt=rVhg3X_KHDvgxwyxMGCdA@mail.gmail.com>
-Subject: Re: [PATCH/RFC 0/1] arm64: dts: renesas: white-hawk: Add mini-DP
- output support
-To: Tomi Valkeinen <tomi.valkeinen+renesas@ideasonboard.com>, 
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, 
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-renesas-soc@vger.kernel.org, 
-	Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c@baylibre.com>
 
-On Fri, Oct 18, 2024 at 11:32=E2=80=AFAM Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
->       - fbtest test002 crashes with SEGV in 2560x1440.
+Hi Guillaume,
 
-This is a bug in fbtest: 32-bit arithmetic no longer flies for drawing
-ellipses on very large displays...
+kernel test robot noticed the following build warnings:
 
-Gr{oetje,eeting}s,
+[auto build test WARNING on 465644ac29536d10178b5ca4684d0b84765b9fa4]
 
-                        Geert
+url:    https://github.com/intel-lab-lkp/linux/commits/Guillaume-Stols/dt-bindings-iio-adc-ad7606-Remove-spi-cpha-from-required/20241015-215831
+base:   465644ac29536d10178b5ca4684d0b84765b9fa4
+patch link:    https://lore.kernel.org/r/20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c%40baylibre.com
+patch subject: [PATCH v5 7/8] iio: adc: ad7606: Add iio-backend support
+config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20241019/202410190802.CLaySBOq-lkp@intel.com/config)
+compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241019/202410190802.CLaySBOq-lkp@intel.com/reproduce)
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410190802.CLaySBOq-lkp@intel.com/
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+All warnings (new ones prefixed by >>):
+
+>> drivers/iio/adc/ad7606_par.c:173:22: warning: unused variable 'back' [-Wunused-variable]
+     173 |         struct iio_backend *back;
+         |                             ^~~~
+   1 warning generated.
+
+
+vim +/back +173 drivers/iio/adc/ad7606_par.c
+
+   164	
+   165	static int ad7606_par_probe(struct platform_device *pdev)
+   166	{
+   167		const struct ad7606_chip_info *chip_info;
+   168		const struct platform_device_id *id;
+   169		struct resource *res;
+   170		void __iomem *addr;
+   171		resource_size_t remap_size;
+   172		int irq;
+ > 173		struct iio_backend *back;
+   174	
+   175		/*
+   176		 * If a firmware node is available (ACPI or DT), platform_device_id is null
+   177		 * and we must use get_match_data.
+   178		 */
+   179		if (dev_fwnode(&pdev->dev)) {
+   180			chip_info = device_get_match_data(&pdev->dev);
+   181			if (device_property_present(&pdev->dev, "io-backends"))
+   182				/*
+   183				 * If a backend is available ,call the core probe with backend
+   184				 * bops, otherwise use the former bops.
+   185				 */
+   186				return ad7606_probe(&pdev->dev, 0, NULL,
+   187						    chip_info,
+   188						    &ad7606_bi_bops);
+   189		} else {
+   190			id = platform_get_device_id(pdev);
+   191			chip_info = (const struct ad7606_chip_info *)id->driver_data;
+   192		}
+   193	
+   194		irq = platform_get_irq(pdev, 0);
+   195		if (irq < 0)
+   196			return irq;
+   197	
+   198		addr = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
+   199		if (IS_ERR(addr))
+   200			return PTR_ERR(addr);
+   201	
+   202		remap_size = resource_size(res);
+   203	
+   204		return ad7606_probe(&pdev->dev, irq, addr, chip_info,
+   205				    remap_size > 1 ? &ad7606_par16_bops :
+   206				    &ad7606_par8_bops);
+   207	}
+   208	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

@@ -1,159 +1,95 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B05E029CF6;
-	Sat, 19 Oct 2024 00:37:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D876C623;
+	Sat, 19 Oct 2024 14:50:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729298243; cv=none; b=Qb11SaxX/l/QytKuqvrgiZpkmqVsnznAPua261ymEWily8dQjQQWoc1V+ZgU62QwALO6wn/c3DIc960OeukJCMYEygj41uwlvVF/JU1YcgA/mKdiF9BtEsPEpwbhgkBIR5qDfrnBptjyDYOjU8MwoILlAQN8NfGFh+v3fZQQpyQ=
+	t=1729349426; cv=none; b=S0SvG2suvFwC2ObE2R2CcpKwLOT2FiI868bXbdww9SEux1hjuPFlacbY9FuT5Gsaj4OyEKvAYL2EFqmYI229MnU0CmOn2JFIe0VFsMXMN24vFC8yZBBOARvCTYLqiWs9f2Rs/x57ll8wFjuMQYay71V97UtNfqhOjjogQAsMy58=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729298243; c=relaxed/simple;
-	bh=PfaYoaaPCu5DWdfaaTW12VQJY6h3MD3ntyNmux/6daA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ciharSbb853aMxwfR/JYpIm01UBK3efcveTcBALA54yNldnDIi1V/hp1vK3O03AJ1F++6mdlSQnekrdLlOMOwZBrXgZKt1EzJpLGB09xOiI/BK1BZRnzo3G9CLEbGr5xEvU3+sbXW+z0FeJHb2lohwfOZ49n000ZNjBGYI13aos=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=gcv56uEv; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1729349426; c=relaxed/simple;
+	bh=GazNkts+JzgMhEAJWcSa5fM19KC1ZaNSZ/AO72xlmZY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ayg9c3KGHSmKPC8wYV90E0QlqfKx+actQE4qJ1I7nyJ3F+RmX0PH4c+aIey7a46oHmgzvXaSyaPsfLBFcgQcKvQDTiwScrz7wf2DvH5A5r+YTbRo/3lADKq0LQ86mk1ifV9/IuGJF3vAjyCGTwtofDYazCReQ/OoaDS9JealuQA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q6xRTEFU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="gcv56uEv"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1729298241; x=1760834241;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=PfaYoaaPCu5DWdfaaTW12VQJY6h3MD3ntyNmux/6daA=;
-  b=gcv56uEva/ctlcfisaZHxrXvvu0APnuamyfhAUh3Jfzvx1YxkuMIcm14
-   GB/tP+4qx0qFnlb17rnW+WFVKAmCdG82AOXsayVk4I82LiAm3jH8zWyFC
-   lb5q+0R0NPVgKz868Jh/+b2cOxpQFXL+Ecf8iHYu/3s0gwt3BxvtE85ko
-   8L+J6bg8XVVGDobC4HAT0buGdXfWy5Lzb0wqaMOFH5ftzNtSvMkAbaEyT
-   PF13VZ+qrPi1Qk4oLEibUqoOuCamUfRbIpZ6Ao39MhB0jKZkJnK7JtI2w
-   18Y2v3gz6TnHjuvI6dZ0J4L6KdjMiCgvvvZ9xXvCN1GmFO28Sw7gcDKzp
-   g==;
-X-CSE-ConnectionGUID: P2Y5Ib0YQ0KooHhXYQO8/A==
-X-CSE-MsgGUID: x90PeKqvT3GUstjntTtZ6A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11229"; a="29054681"
-X-IronPort-AV: E=Sophos;i="6.11,214,1725346800"; 
-   d="scan'208";a="29054681"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2024 17:37:18 -0700
-X-CSE-ConnectionGUID: 6YMgxZiVR9emesg1GpNAHA==
-X-CSE-MsgGUID: 7zFAV9PvT6+fQq/pN8dEoA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,214,1725346800"; 
-   d="scan'208";a="109771570"
-Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by fmviesa001.fm.intel.com with ESMTP; 18 Oct 2024 17:37:13 -0700
-Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1t1xSw-000OTl-3C;
-	Sat, 19 Oct 2024 00:37:10 +0000
-Date: Sat, 19 Oct 2024 08:36:40 +0800
-From: kernel test robot <lkp@intel.com>
-To: Guillaume Stols <gstols@baylibre.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
-	aardelean@baylibre.com, dlechner@baylibre.com,
-	jstephan@baylibre.com, nuno.sa@analog.com,
-	Guillaume Stols <gstols@baylibre.com>
-Subject: Re: [PATCH v5 7/8] iio: adc: ad7606: Add iio-backend support
-Message-ID: <202410190802.CLaySBOq-lkp@intel.com>
-References: <20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c@baylibre.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q6xRTEFU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B099C4CEC5;
+	Sat, 19 Oct 2024 14:49:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1729349425;
+	bh=GazNkts+JzgMhEAJWcSa5fM19KC1ZaNSZ/AO72xlmZY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Q6xRTEFUEtdHVCWHVykDfiFSbOR+mFflVM/YaU8g7SoUhcsnCaZqq5JPB/NSSvYh4
+	 8+N6iSvNkXVR68wZcm8lTTCjZtGjzfTu8Ar9+G4Ay2nPGXUcP+whxYHShvjZaIBmV4
+	 tx3bV8QVhExYLdMhbigo5bsBHrMbxYL4cKI+6DRffGUC0AFWk6Kbsxtyl+H1uT3Yf0
+	 Ac2shQhEkOnph3rnYaFZGgAku2e6h7oIoMcIcYX4bY8IZw4EUwQLMe/RhNCLwCmY+5
+	 GI9DFXYGJgaQRSJmvS63Ei7vz2CNahlELhPTtM1BRvXnqBuMdhrDByig5tdCKUm0V+
+	 dHeINcRlXZayA==
+Date: Sat, 19 Oct 2024 15:49:20 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Guillaume Stols <gstols@baylibre.com>
+Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <ukleinek@kernel.org>, Lars-Peter
+ Clausen <lars@metafoo.de>, Michael Hennerich
+ <Michael.Hennerich@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+ aardelean@baylibre.com, dlechner@baylibre.com, jstephan@baylibre.com,
+ nuno.sa@analog.com, Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH v5 4/8] iio: adc: ad7606: Add PWM support for conversion
+ trigger
+Message-ID: <20241019154920.64797b16@jic23-huawei>
+In-Reply-To: <20241015-ad7606_add_iio_backend_support-v5-4-654faf1ae08c@baylibre.com>
+References: <20241015-ad7606_add_iio_backend_support-v5-0-654faf1ae08c@baylibre.com>
+	<20241015-ad7606_add_iio_backend_support-v5-4-654faf1ae08c@baylibre.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c@baylibre.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Guillaume,
+On Tue, 15 Oct 2024 13:56:17 +0000
+Guillaume Stols <gstols@baylibre.com> wrote:
 
-kernel test robot noticed the following build warnings:
+> Until now, the conversion were triggered by setting high the GPIO
+> connected to the convst pin. This commit gives the possibility to
+> connect the convst pin to a PWM.
+> Connecting a PWM allows to have a better control on the samplerate,
+> but it must be handled with care, as it is completely decorrelated of
+> the driver's busy pin handling.
+> Hence it is not recommended to be used "as is" but must be exploited
+> in conjunction with IIO backend, and for now only a mock functionality
+> is enabled, i.e PWM never swings, but is used as a GPIO, i.e duty_cycle
+> == period equals high state, duty_cycle == 0 equals low state.
+> 
+> This mock functionality will be disabled after the IIO backend usecase
+> is introduced.
+> 
+> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+Trivial fix needed so this builds.
 
-[auto build test WARNING on 465644ac29536d10178b5ca4684d0b84765b9fa4]
+>  static int ad7606_read_samples(struct ad7606_state *st)
+>  {
+>  	unsigned int num = st->chip_info->num_channels - 1;
+> @@ -324,7 +393,13 @@ static irqreturn_t ad7606_trigger_handler(int irq, void *p)
+>  error_ret:
+>  	iio_trigger_notify_done(indio_dev->trig);
+>  	/* The rising edge of the CONVST signal starts a new conversion. */
+> -	gpiod_set_value(st->gpio_convst, 1);
+> +	if (st->gpio_convst) {
+> +		gpiod_set_value(st->gpio_convst, 1);
+> +	} else {
+> +		ret = ad7606_pwm_set_high(st)
+Missing ;
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Guillaume-Stols/dt-bindings-iio-adc-ad7606-Remove-spi-cpha-from-required/20241015-215831
-base:   465644ac29536d10178b5ca4684d0b84765b9fa4
-patch link:    https://lore.kernel.org/r/20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c%40baylibre.com
-patch subject: [PATCH v5 7/8] iio: adc: ad7606: Add iio-backend support
-config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20241019/202410190802.CLaySBOq-lkp@intel.com/config)
-compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241019/202410190802.CLaySBOq-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410190802.CLaySBOq-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> drivers/iio/adc/ad7606_par.c:173:22: warning: unused variable 'back' [-Wunused-variable]
-     173 |         struct iio_backend *back;
-         |                             ^~~~
-   1 warning generated.
-
-
-vim +/back +173 drivers/iio/adc/ad7606_par.c
-
-   164	
-   165	static int ad7606_par_probe(struct platform_device *pdev)
-   166	{
-   167		const struct ad7606_chip_info *chip_info;
-   168		const struct platform_device_id *id;
-   169		struct resource *res;
-   170		void __iomem *addr;
-   171		resource_size_t remap_size;
-   172		int irq;
- > 173		struct iio_backend *back;
-   174	
-   175		/*
-   176		 * If a firmware node is available (ACPI or DT), platform_device_id is null
-   177		 * and we must use get_match_data.
-   178		 */
-   179		if (dev_fwnode(&pdev->dev)) {
-   180			chip_info = device_get_match_data(&pdev->dev);
-   181			if (device_property_present(&pdev->dev, "io-backends"))
-   182				/*
-   183				 * If a backend is available ,call the core probe with backend
-   184				 * bops, otherwise use the former bops.
-   185				 */
-   186				return ad7606_probe(&pdev->dev, 0, NULL,
-   187						    chip_info,
-   188						    &ad7606_bi_bops);
-   189		} else {
-   190			id = platform_get_device_id(pdev);
-   191			chip_info = (const struct ad7606_chip_info *)id->driver_data;
-   192		}
-   193	
-   194		irq = platform_get_irq(pdev, 0);
-   195		if (irq < 0)
-   196			return irq;
-   197	
-   198		addr = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
-   199		if (IS_ERR(addr))
-   200			return PTR_ERR(addr);
-   201	
-   202		remap_size = resource_size(res);
-   203	
-   204		return ad7606_probe(&pdev->dev, irq, addr, chip_info,
-   205				    remap_size > 1 ? &ad7606_par16_bops :
-   206				    &ad7606_par8_bops);
-   207	}
-   208	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> +		if (ret < 0)
+> +			dev_err(st->dev, "Could not set PWM to high.");
+> +	}

@@ -1,122 +1,120 @@
-Received: from meesny.iki.fi (meesny.iki.fi [195.140.195.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7CA11E2832;
-	Mon, 21 Oct 2024 09:42:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=195.140.195.201
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729503773; cv=pass; b=nJoUSEo6MzNe8pgxhHozUR3VoMJTwLkvBIXLeP/XR6OWZoREIFUACvweacVMm8/Z24HEmmVkdkYTuGzz0HseADmoPusi/GtKTYQ1Bw2FC8xrMsrTptNQ4vbNZannhWG9Kqx/pPxEGY7UUJAxfDLantNgDiW4mPPerEOqAWfCAGw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729503773; c=relaxed/simple;
-	bh=Dgn4BIMgi2uJUo6HDYEO3rNdBm10LDPvAFVEi4WVIJs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dhjV60mdbu0ZO/bAtMSo8kxUsx4CrTMiMvQdHPoVzm0YvSnxe685nVhS6prbAjs6FEYnVpduRejwMpitydPMCv1Qnszo8ECzbsN1WNHDKudnln/TDJYcDL6WUJB+M9GMOMe+c4eFy7fICJuNhcuCVjw3nzJjI3E/8jXwvdW4V+g=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (1024-bit key) header.d=iki.fi header.i=@iki.fi header.b=TT11sIJs; arc=pass smtp.client-ip=195.140.195.201
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 853511EBFF2
+	for <linux-fbdev@vger.kernel.org>; Mon, 21 Oct 2024 13:10:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1729516255; cv=none; b=rfmTLiIyrWmA/1ZtqfVSk0ZoEI1+YZMiu3JrXHHg1bjF3I9nyHGPMZaJn5bM4+pQSRFF2V0Qe0csJwhU4xo7DAcOx89Vvh/Y3bAk8bnYrGXAxChTUiVi0XRBuShtUOjeErAgc/wWrvmT5AmH6s8GyaWeGUqXkL7GJknSf4svzo8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1729516255; c=relaxed/simple;
+	bh=r+aOMV3MADphoeGOSyYy73k5f0WucUEtLuhrb3GEHIk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nfByR4zzo9Up3YEV3LXFfwn4cTJUX8+6pWjkWK9ho+7iND2kmz3N1lzlARJb9l04hlJAzESeV36P2YLEsdMrvsL5k9EX1ALIM4o8iv0IiPuSemyLsxaUY3hlH8TSBkiQG5bBU3Xseodpp2fUgiXTD1H0Rj2ZMeWjKYjWdgInTLM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=dYyqFYI5; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=iki.fi header.i=@iki.fi header.b="TT11sIJs"
-Received: from hillosipuli.retiisi.eu (2a00-1190-d1dd-0-c641-1eff-feae-163c.v6.cust.suomicom.net [IPv6:2a00:1190:d1dd:0:c641:1eff:feae:163c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: sailus)
-	by meesny.iki.fi (Postfix) with ESMTPSA id 4XX9Mh1c2kzyS6;
-	Mon, 21 Oct 2024 12:42:40 +0300 (EEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=meesny;
-	t=1729503763;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=iItfBry1csHzGqUNbyVvEH2vzYvKChbmjbYESjm867M=;
-	b=TT11sIJskyRx4EEr+KaB1vS9ZH1SrCpLkOsmpLXhV+msJ8nnG/c+KvasmmZkysT/XmnZSF
-	yzI1WuUO2SX3wT0J+rpBDVKiWNTyzy+UbHSQOIEjaKqHupcEcstRyggRrZ89bJ/pCW6MjT
-	E1gF2WbPBegINFg/pG7UZVa227DDmg8=
-ARC-Seal: i=1; s=meesny; d=iki.fi; t=1729503763; a=rsa-sha256; cv=none;
-	b=dAu7+pIdIlghojNCKKb7WLzQDsJuVijf/a7ZiZcBa3UA0XHPe/kht+wAwuGAtiUGqpd4Te
-	LfWGHY+l6PAYM9iVxr/PvQS7IEAJYX2426q2duOLHAS+HnQV5/TLv/P2PjNAInD2SIs2mA
-	VmHE41wmRy6Gy3+u9bU6C4EA22IgZbk=
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=sailus smtp.mailfrom=sakari.ailus@iki.fi
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-	s=meesny; t=1729503763;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=iItfBry1csHzGqUNbyVvEH2vzYvKChbmjbYESjm867M=;
-	b=bVCLNoC2TXGV7eAh0a6ceMJHIaPpJJU1ZaP4jA0ZfxVTtkfzdDdnxcM0fVFHXDiBvvll/R
-	NYiTURklrRn0pW+Wj4zdDxekI5VlHJkikY5JLAyrUcNxC6Kac8dWOivI6OMsfq/uZ4Fr52
-	R79/Djv0r4sJdwZfbt0SWAbsfKTtT4A=
-Received: from valkosipuli.retiisi.eu (valkosipuli.localdomain [192.168.4.2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by hillosipuli.retiisi.eu (Postfix) with ESMTPS id 6DC52634C93;
-	Mon, 21 Oct 2024 12:42:39 +0300 (EEST)
-Date: Mon, 21 Oct 2024 09:42:39 +0000
-From: Sakari Ailus <sakari.ailus@iki.fi>
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@gmail.com>,
-	Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Mark Brown <broonie@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Maxime Ripard <mripard@kernel.org>,
-	Michal Simek <michal.simek@amd.com>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@google.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-	linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH v7 1/9] of: property: add of_graph_get_next_port()
-Message-ID: <ZxYiD5CCzcrwbD1o@valkosipuli.retiisi.eu>
-References: <87wmiirqwy.wl-kuninori.morimoto.gx@renesas.com>
- <87v7y2rqwf.wl-kuninori.morimoto.gx@renesas.com>
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="dYyqFYI5"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-37d49a7207cso3278816f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 21 Oct 2024 06:10:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1729516251; x=1730121051; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Hb5z7oqU7DLw6NgZCfx42d0B4py7r2L+/9jylzSGUKY=;
+        b=dYyqFYI50jrvT3Qy4rxzqHiGt3x0UWM+6G3+nohCNWN4tdf5vTzCMqgLIdBQcFY62y
+         4fyzevIUm+krRIRJ81cs50E/6GP0UZRaHfO33kfY5881DGIWkpFWNtSHkdY4RPa+tmAU
+         twM5G0AZeYB6D5lBNZ1Q9OdbPSZaOQRyjRWnWdwTMx64Z7d63Qwbf3CSf64p2rkr40Kq
+         C8M4VFHOhbuwryGzVpJNCWvln00kAfI3gCGy3GGd8oVWKTv8o93Zi1HGasYs1R/vrGQK
+         2JQdhEFu9UnJpQsRBgDng31MYhFbPTbgXC1qmCyAYYjcmkOauqb6SKPp3KH6+h5hHYVw
+         Mp9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1729516251; x=1730121051;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Hb5z7oqU7DLw6NgZCfx42d0B4py7r2L+/9jylzSGUKY=;
+        b=j3bKKb56evZvYrP9cme6DKUByLE23ENIpSyM8B8l6l7lZlANqdeKMyLRHNBNtrj4Kf
+         mR39QUD3OkWiOpyKgz2DiK7zSDVx8NrZlg23+Qgpm6t7paItULjqYiff2/dOJEhGkVV1
+         sqe1t5bbYNpyuuklXCVqBqzVNna9XCDeVEgkoLAPMu+feqZRbuKY5i92kKiFdKncBxPc
+         qwMrGVUBMnOtOBEpdnb8G787+5FFTD4zdVLMjFffu+nTTaCcdgDoWdVyTUUAclkQ8+dj
+         DmatSvWnwbxK+0nyn6Bpky7eksUbKuUXJygindPZefNaNE0/iBML2ddoxKR3aDy5m2OH
+         IWmA==
+X-Forwarded-Encrypted: i=1; AJvYcCXZnaeOBmXB1driAdy0fhTuFKrdQlWhE4KN5RUz6YDiiS1/HAC5yIn8PxC8dMTZmJj3sjW6IzGHbDBPug==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy5ESpQcP7dRNWzQVBi9CgHvJwD3pqWZn0j+0IpsOgs+T3iYJ3l
+	WEHFolFaxp3K57pnY7RO2n2LD94g7gIEsYLIiqvMq+QeBSr2+XNfJNEaG8m6Ihk=
+X-Google-Smtp-Source: AGHT+IGDnIWfxiOcEveLs2MQlDhwR4gmi9FH0MSQHpKsf+BMqQSLSH8WpoqUGsyHzwGiIA8WXTqaaQ==
+X-Received: by 2002:a5d:674c:0:b0:37d:4c8f:2e1 with SMTP id ffacd0b85a97d-37ea2181ea7mr6445009f8f.22.1729516250368;
+        Mon, 21 Oct 2024 06:10:50 -0700 (PDT)
+Received: from ?IPV6:2a02:8428:e55b:1101:8419:4feb:c28:3b3f? (2a02-8428-e55b-1101-8419-4feb-0c28-3b3f.rev.sfr.net. [2a02:8428:e55b:1101:8419:4feb:c28:3b3f])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4316f5cc5adsm57103685e9.42.2024.10.21.06.10.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 21 Oct 2024 06:10:49 -0700 (PDT)
+Message-ID: <c6aeaec1-35b7-47a1-8ae2-3386e5241ad5@baylibre.com>
+Date: Mon, 21 Oct 2024 15:10:48 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87v7y2rqwf.wl-kuninori.morimoto.gx@renesas.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 0/8] Add iio backend compatibility for ad7606
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+ aardelean@baylibre.com, dlechner@baylibre.com, jstephan@baylibre.com,
+ nuno.sa@analog.com, Jonathan Cameron <Jonathan.Cameron@huawei.com>
+References: <20241015-ad7606_add_iio_backend_support-v5-0-654faf1ae08c@baylibre.com>
+ <20241019155329.500ae439@jic23-huawei>
+Content-Language: en-US
+From: Guillaume Stols <gstols@baylibre.com>
+In-Reply-To: <20241019155329.500ae439@jic23-huawei>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Dead Morimoto-san,
 
-On Wed, Oct 09, 2024 at 01:44:48AM +0000, Kuninori Morimoto wrote:
-> diff --git a/drivers/of/property.c b/drivers/of/property.c
-> index 11b922fde7af..6a5d27dd0c64 100644
-> --- a/drivers/of/property.c
-> +++ b/drivers/of/property.c
-> @@ -630,6 +630,43 @@ struct device_node *of_graph_get_port_by_id(struct device_node *parent, u32 id)
->  }
->  EXPORT_SYMBOL(of_graph_get_port_by_id);
->  
-> +/**
-> + * of_graph_get_next_port() - get next port node.
-> + * @parent: pointer to the parent device node, or parent ports node
-> + * @prev: previous port node, or NULL to get first
-> + *
-> + * Parent device node can be used as @parent whether device node has ports node or not.
+On 10/19/24 16:53, Jonathan Cameron wrote:
+> On Tue, 15 Oct 2024 13:56:13 +0000
+> Guillaume Stols <gstols@baylibre.com> wrote:
+>
+>> This series aims to add iio backend support for AD7606X ADCs.
+>>
+>> In a nutshell, iio backend is a paradigm to shift the logic establishing
+>> the connexion between iio buffers and backend buffers into the backend's
+>> driver.  This provides a more stable programming interface to the driver
+>> developers, and give more flexibility in the way the hardware communicates.
+>>
+>> The support will be first added on AD7606B, and on next patches AD7606C16
+>> and AD7606C18 will be added.  The series have been tested on a Zedboard,
+>> using the latest HDL available, i.e
+>> https://github.com/analogdevicesinc/hdl/commit/7d0a4cee1b5fa403f175af513d7eb804c3bd75d0
+>> and an AD7606B FMCZ EKV.  This HDL handles both the conversion trigger
+>> (through a PWM), and the end of conversion interruption, and is compatible
+>> with axi-adc, which is "iio-backendable".
+>>
+>> More information about this HDL design can be found at:
+>> https://wiki.analog.com/resources/eval/user-guides/ad7606x-fmc/hdl
+>>
+> Applied and pushed out as testing. Please check I didn't mess up the few
+> minor tweaks needed.
 
-This line should be wrapped, no reason to have it longer than 80 chars.
+Hi Jonathan, thank you for the fixes and the merge. Just tested it, 
+didnt notice any bug.
 
-Maybe this could be done while applying?
+FYI Next step is software mode enablement for IIO backend enabled devices.
 
-> + * It will work same as ports@0 node.
-> + *
-> + * Return: A 'port' node pointer with refcount incremented. Refcount
-> + * of the passed @prev node is decremented.
-> + */
+Best regards,
 
--- 
-Kind regards,
+Guillaume
 
-Sakari Ailus

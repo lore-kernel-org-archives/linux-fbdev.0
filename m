@@ -1,268 +1,264 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2042.outbound.protection.outlook.com [40.107.236.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 451551A00D6;
-	Tue, 22 Oct 2024 14:55:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729608918; cv=none; b=PSFNpzVX1nkwoBuwpNgfoY8t+pw6vtzjMPf/mt0XLlCCzMwP5BaePzvh0lGoqY0tCpINu+81SF4KfVe3phw5RgBi7BvvypR0En2T5a4Ka4Aj8BDVyNfiikFFJrHBr1W/821pylIkq+itvBahuYxw6fQSwWsjJXHAM9wkScdWg/o=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729608918; c=relaxed/simple;
-	bh=G4E//QC552McXUlx1742IwkwPw3upSIJHTmh79EWNaM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=b7xejSEJaz8SuHyBSsPsWNehoUw5z9grlHwoKvuScVywn8Papp2oOiu3g96tGlxPM/qDETAuYFR6VjznFjGKvOz97J9euoHGsnLIGk+AxjB3sEF49mjYfBgscGxfPxlfTp5pf6KyllqsHhSYooeL2TBjB/+iuP932kXWbWfDYUQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=1jZIwdqe; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=40KbkGCa; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=1jZIwdqe; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=40KbkGCa; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F20C62E406;
+	Tue, 22 Oct 2024 15:36:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.236.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1729611386; cv=fail; b=arSKsJxChvig3g/4a7/qk2Krnm8uYjFnWITXC3Rc+3rR6wao8CFAHBL097Y7k1EvWmGFfsI1EuIJoQXwdXSHEPkthxpZs3vg8J6yl0VIPDXNJBkfJ4++rD01t9AzTYXW66NE4IyU3ofIaeluP8hMwuO94KmY9SS5g2WCN9/ax+o=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1729611386; c=relaxed/simple;
+	bh=PrfCzRi86OUkkfW/zgoMG5OXoXydVp46oD8IT6yqBec=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=ajVgTcI0kphzSGIO6JOxqH1NxHzJp0aXvwsy+FVqJgR8JD4tjDBMsSqxCGnYEveuf97PzjMErZ4vTIPXlefXzIZDWTYb8Rruh7spCIahA0ruK/7xt6dHZ0zoDEFYlqAFd0LpgtzLp4FcRf0+rbGED1w1RQUIXlGGhdKKQG86hZI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=ksUwNtvu; arc=fail smtp.client-ip=40.107.236.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="1jZIwdqe";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="40KbkGCa";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="1jZIwdqe";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="40KbkGCa"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 5D61721D91;
-	Tue, 22 Oct 2024 14:55:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1729608914; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LPlEaR4UZq1xUMQ4ycxKIr0onZ10MdoIayeHoNHWUdE=;
-	b=1jZIwdqena8Vz1ZONOrl/JED47eApjqq5rWWvVKwVSUeMLrjBBfyAYt2Bjo4fGN3jTztyw
-	jmGNCsOtwYCZbXzCYz7kPnL4yqwwi6FOaGjfx2WEIWVZXVtgliAUlVoh/65me8bd6Bn99n
-	VPJASBvtYLxlHU+JHmbwNRKgrC4Pn9E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1729608914;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LPlEaR4UZq1xUMQ4ycxKIr0onZ10MdoIayeHoNHWUdE=;
-	b=40KbkGCaaZB3PZqF3PZ+o5p1KBKW62Jivr/8UcSbMfXy923iSwmZXj/CXWxYZKOCggSGow
-	dbRDbokN9/lIWJBA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=1jZIwdqe;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=40KbkGCa
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1729608914; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LPlEaR4UZq1xUMQ4ycxKIr0onZ10MdoIayeHoNHWUdE=;
-	b=1jZIwdqena8Vz1ZONOrl/JED47eApjqq5rWWvVKwVSUeMLrjBBfyAYt2Bjo4fGN3jTztyw
-	jmGNCsOtwYCZbXzCYz7kPnL4yqwwi6FOaGjfx2WEIWVZXVtgliAUlVoh/65me8bd6Bn99n
-	VPJASBvtYLxlHU+JHmbwNRKgrC4Pn9E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1729608914;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LPlEaR4UZq1xUMQ4ycxKIr0onZ10MdoIayeHoNHWUdE=;
-	b=40KbkGCaaZB3PZqF3PZ+o5p1KBKW62Jivr/8UcSbMfXy923iSwmZXj/CXWxYZKOCggSGow
-	dbRDbokN9/lIWJBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 274DE13894;
-	Tue, 22 Oct 2024 14:55:14 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id cXxnCNK8F2d5ewAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 22 Oct 2024 14:55:14 +0000
-Message-ID: <279c7b9b-9973-4eab-8321-a3bc23c97550@suse.de>
-Date: Tue, 22 Oct 2024 16:55:13 +0200
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="ksUwNtvu"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=FXAMYiz+SyV1ChdHqXFmQrhZuQiJvSohxcQHcMsKnd0A77iblCbzLt0D3Thfnw8GGkv3aTZkZPveniT8IlEMUAb7L0CUtIz685LqdEVga+h5L/hhyq5ORi7CEKc6oDtaJ0gUpoc+8MqvJx2uN+H88FkEgFgwDl6WDI4By3F9b9O3/4Xdp9DKaIQcFtU5omE+t6z8Ui4VDTetMywTwbi0TlLeYKfpRdLuPdD6KXkY3PkklZh78jXw6LyY0Ck1Bu9xRPqGfvVyHmIb8IpGh1CrTnwg4Nt2+Vp5m4h2f0NiMwaud+Ru8Q0wKNCRXaFxv5ojcdALLHyrfu4JLP5y9ZgDfA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hUjysQuPdZ6wwDfCzitq1Kd/P5NOKSLTFCwgqljWRCQ=;
+ b=RlFBo+5iZt3dhwX5w5/FsDet9TARzrMCSBClBXmbIcytHpPODSZWP2VwCMX4Bzaq06dPcWkR2F+2C6L20k6QQG8f68j+xVL01GelXIJfp2PtzYePRwr9xYicHcnNj8T/crWeZ1sbMfSGifDBi9Daj9iSqlHvbYV7AsXfqHHBsPKAhZEyAwsFqnuhOyMjC45d5FPgOBaCO0qcXWur7qsIziQ7vCtyzxiwFmN+c7F+4ecs4ailJSz3OXPGG1Eowp5IHpRHErhzuqy39c45E+NtqDuRp54m47jwQ+tsDYBJ0VT5EeDYZ8QZUpdFlH5+h3X8LFOwlvFw+InQ6y1MPhi02g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hUjysQuPdZ6wwDfCzitq1Kd/P5NOKSLTFCwgqljWRCQ=;
+ b=ksUwNtvup5PRPjV/K2WTe1LhdSklmgsbnVjtXB4lp5xyzBolhQ/VTk/YgKSaAWJDc7dNjajycaT2vvily+E57xDgUciMJg3cTuudNR6E6z68KyBJrCZ1Lecin3Q3u3qCxIYRidlhj3msv6epx35lWoo26TkOtj1Tg4+xN8nFSc3pu83hHaiL06u5w7Be+G8y0WgV6oVCpUi3UMbsc5JFqBjqNYuIgUfdAL/Qo3c5erae5dCN0CtAkeL+fpRojwNTh11yA6Fph5zGM49fEgCckbNcju1mSsl+sGr2nvI0Yxu3iZ7KRBcKNi3S/13cjtuqAnRatoLB4W3mbVxZHoqH5w==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from SJ2PR12MB8784.namprd12.prod.outlook.com (2603:10b6:a03:4d0::11)
+ by LV2PR12MB5990.namprd12.prod.outlook.com (2603:10b6:408:170::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8069.29; Tue, 22 Oct
+ 2024 15:36:20 +0000
+Received: from SJ2PR12MB8784.namprd12.prod.outlook.com
+ ([fe80::1660:3173:eef6:6cd9]) by SJ2PR12MB8784.namprd12.prod.outlook.com
+ ([fe80::1660:3173:eef6:6cd9%5]) with mapi id 15.20.8093.014; Tue, 22 Oct 2024
+ 15:36:20 +0000
+Message-ID: <8b1059d8-7f28-4f97-9fb6-1d3c66cc3713@nvidia.com>
+Date: Tue, 22 Oct 2024 16:36:14 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 42/43] drm/fbdev-generic: Convert to fbdev-ttm
+To: Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+ airlied@gmail.com, deller@gmx.de, javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+References: <20240312154834.26178-1-tzimmermann@suse.de>
+ <20240312154834.26178-43-tzimmermann@suse.de>
+ <1094c262-9d39-4a7b-bede-dc927cd1f52a@nvidia.com>
+ <279c7b9b-9973-4eab-8321-a3bc23c97550@suse.de>
+From: Jon Hunter <jonathanh@nvidia.com>
+Content-Language: en-US
+In-Reply-To: <279c7b9b-9973-4eab-8321-a3bc23c97550@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: LNXP265CA0039.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:5c::27) To SJ2PR12MB8784.namprd12.prod.outlook.com
+ (2603:10b6:a03:4d0::11)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 42/43] drm/fbdev-generic: Convert to fbdev-ttm
-To: Jon Hunter <jonathanh@nvidia.com>, daniel@ffwll.ch, airlied@gmail.com,
- deller@gmx.de, javierm@redhat.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-References: <20240312154834.26178-1-tzimmermann@suse.de>
- <20240312154834.26178-43-tzimmermann@suse.de>
- <1094c262-9d39-4a7b-bede-dc927cd1f52a@nvidia.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <1094c262-9d39-4a7b-bede-dc927cd1f52a@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 5D61721D91
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[nvidia.com,ffwll.ch,gmail.com,gmx.de,redhat.com];
-	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RCVD_TLS_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,suse.de:mid];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -4.51
-X-Spam-Flag: NO
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ2PR12MB8784:EE_|LV2PR12MB5990:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6b132a78-dd6e-4c2e-9ba7-08dcf2af46b3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?R3libGM5cWh3VkhOekRtdmU1UnovRXhlaFJaWkwrdjl5K1VEZmFtM0M0ZjBT?=
+ =?utf-8?B?MVBXRVdJYjZBK2hqcHMyZ3I4Q09XaW1JZ0hSNmxqZmpsd3Bwd21mOGtod2ty?=
+ =?utf-8?B?QUVzMlRJYUdheHRkWjdGYnBCMmt2UCtjRjI3UWpWZWlwS2Y4SmZZbkxOVEM3?=
+ =?utf-8?B?L3pGZUo5N2dYVUpaSmUweGVMNHR6a2VYblRiN0pyK0xFRFhSMlpTbnNwYXhm?=
+ =?utf-8?B?WWVZdTBvRFJTYjh5ZVBpZmJQNWJSR0FyNksrcFVIbmhPb2duT2xFczFGMUlJ?=
+ =?utf-8?B?MjM0T2liQXBJZ3g5Vmg3Y1M5Mi9aOWdYMHhsTmJIZk9Xb0VKbUg0MFpnQnI5?=
+ =?utf-8?B?aVV6N2VDTThmeFg4aHA4clcrakx3SHRvQ1k4LzBOMWY1c1RkQS92MGl0TzZl?=
+ =?utf-8?B?QWdTM0dTTGkvZmo2am5WZlg0RHA5eFUvaGNNQlNqT3VYVXMzMlJnZTlvTFAx?=
+ =?utf-8?B?L2lVOHZ6aFNyUUc5SEdVZXR5RlR4ZTVRMGxBNmYwaEFmbFpUdjc5NXFaWkls?=
+ =?utf-8?B?TmVBZVhhZVVpOUNhS2daZHEwSGFBbkpyUXlyNnF2aENiT1lwdXlKMVpKR3ZO?=
+ =?utf-8?B?Nnozay9yL3ExYXI2SnhZRDhJOGdHVlNuRGVpRGhLeWxIUHNmVnlPa1oyRWJ3?=
+ =?utf-8?B?eVIrVW5ZSDNTUXI4Nkx0R2I4T1MyU2x1T3IvMW1QVnh2ZVJxbEVvZU9ZMGpG?=
+ =?utf-8?B?ZlNVREcvcTZyMXlaZmtpWHBaTGw1R1ozUjY5NUM0ZENUTGJzWE94cW1GU1N2?=
+ =?utf-8?B?bXlKVTc5ZE5LbHVBRzF5MWdxbEs2akhxaVhVSHhqQmFndm9yMFBTTVJhT0E2?=
+ =?utf-8?B?ZXp5a0FoV2ZDM0RsYU5URE8rSURyTjlyZGI3cnZRVjRhOUNxZVlQYW1tZ0to?=
+ =?utf-8?B?Z2ppZEpGaDVrcmYwK2RIbVJ2OHhDaEtUZ0h0aXRNdUNZcUIyR2ZHZzVxdk1L?=
+ =?utf-8?B?YlRMWTFjSGYrWU9xQ0RqeG1zbFFReEtGZjd1ZXdPcWxmZ2ovUEhZQWpCdXBt?=
+ =?utf-8?B?RjlsMVZMbmV3cytra1g3VndGSW1CcW15cnBIelZJRmhtTDI1YTRreDB3MmNp?=
+ =?utf-8?B?RmZVQXJLOUpoc1dxOVE5c0Y2aFFZN0h4ak8rQ29IckFZVm9CRDJ1ckVGRDVE?=
+ =?utf-8?B?enhYV1VRQVo1QnJkc2Y4bS9RQU9WWDJEWk43azlHeHhYNTA2bGZKUDByQVh6?=
+ =?utf-8?B?SXRkVG83VE1VQWliak9Zd3VQUk5BL1FVV1FjQ0NjenNuMzU1a3IyeXp1bVRj?=
+ =?utf-8?B?TVBlWFVhZEVDaHVFZFRNZXEyK295Z0pnUENMR1Q0aU9RanlZeFpSNXNpbmF2?=
+ =?utf-8?B?aDBJOVRKY0dScG9aY0I1bjBZQ3V5Tkt5U1JCc2d6S2NPOUZIek9iK2RReUV1?=
+ =?utf-8?B?M214NGorZjI2WVpPYncxdW9QbTB0VEhoRnMzODZPaEtpSTJWd3R5TTVmM1cr?=
+ =?utf-8?B?UGdOb0pzdG1GWTVGd1kxZzViY0o2blBuU2MvazBGQllXTkZneXZKKzRmSXND?=
+ =?utf-8?B?ck91TGMvd0pGNml0OENFWTBGS1V5OGhQanEyQXVDSFlRK2tCdmRFYXdKS1dQ?=
+ =?utf-8?B?RjU2Mmp0d0s5cm02RGMyRzA5dWxBdXlETmZqeGo4c01HbThhR0RRc1orUW9Z?=
+ =?utf-8?B?RWVWUTBsRUVmUFM5enptVThWUzdtelFvWFNtSXdndjJld3FpTy9EMklKUkxO?=
+ =?utf-8?B?VDJXa2pmang2Y1VJclRpUjc4cGFiSWhCVnNSNDlTVHlQYWhINS9ZbXhvNVY1?=
+ =?utf-8?Q?ZaB3ck9YsYrql8BCdAgoAaeUiWdACkRV1DMlt17?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR12MB8784.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?OFJXa2xHZUt6OVE2czd1K1QzY1ZRbGc3MWdxWVROV2c3ODVjeVh1V3c1UEdS?=
+ =?utf-8?B?QktVNURrVWx4OE5udjcxNmtpS3dkQnJjSU5PdkMyZmsrVFgyajVCayttV2Va?=
+ =?utf-8?B?WDZJOXAwS3BRTFprUUI4cDA3dUpWMTJKSzloYnNQN3R6UXZVOUptQU9CbzBL?=
+ =?utf-8?B?MVFVVlczdW5tQUl4ODJ3UDBkMmRKNnlVeThLVVFQYldENUtkb0hOWlBqaGE1?=
+ =?utf-8?B?dTJLcjBqcm5GUXBnOHpyRDB6bG9EQi9WWlRtSURGaGFxUXRSY3JEdTljem9X?=
+ =?utf-8?B?T09QM1BVRVNSbndDZVc1N0VySHRDK045aU1Sem9JUW9YQ0M5bzI1eHlQUThJ?=
+ =?utf-8?B?cEZ0OXo5RG45TVg0TDhka29CNDNxUlBuRld1SWtUb0hnVnFpM2RBSlRTdkFm?=
+ =?utf-8?B?d00yRmtCWlNPMnVtTGFxWkRveXlZbzI2akI1RlRLMVovYm1WeVZla2I3NnBX?=
+ =?utf-8?B?VTd3RVhSTkRHcHVManRIWnZPSFBFdGpyUE14NE4wRVBUd25HemxMUndNTVdo?=
+ =?utf-8?B?MWxIUEdWbjlJNU1Tb2c3TzVHMFlvRkYxS2o5WHg4MkxCMEpkOXU0WjJSTTRQ?=
+ =?utf-8?B?R0RnaUFxejcwOXdHQUdBM1JBQ2VWNTZJdXJZVzVSOVExSS9nSGpyMndnWFFE?=
+ =?utf-8?B?S0JjMUczQWdycWQwNUVRWVdWb21idjlPSWFaeHBSbG9oZExxTEMwNCtiMEo3?=
+ =?utf-8?B?cUVVK2hWSkZXbERhS2NzUERKQVN6V1VHNWpqUUFoYk0vYXpuVEQ3aUhBZU9B?=
+ =?utf-8?B?YWl4TUJ5RjZTK0tLMUFIVjlmMDQ5eTBuVmFqaW4yVFRiQ1hGM3BBRzVEbWY3?=
+ =?utf-8?B?aFpIckxWMTRqOHVwdThTN1V6SEJUL1puVWg2ZXpPOGNlZWJUOEJvRHFpR3NP?=
+ =?utf-8?B?NjlCVW5HNWlaSGhXZUZOZitVRXQ3SzdReVl2aGFON0VNaXNRcE4yeWJSenB6?=
+ =?utf-8?B?cG5IbW82YkJqMjl1eGpPWkNpZld0ak9TN2t4dkxhVkdqdWhJdng1NmI1WHpt?=
+ =?utf-8?B?cCtkQVBHWk9LYnpEbWMwa1I5Uy9KZnF6VXdWU2NHNDhqSVVQMVpXclJmblE3?=
+ =?utf-8?B?bms2YzVwQ2tYQ1NCVjZCYkJuSWNDdUUycVIxZUhhcE92a0dwVWFBQ0lwK2My?=
+ =?utf-8?B?NUJlY2N1UWRLczZ6Yko3VGNyRmpPUjRBQllzSk5wQ1IrZjJVeFk5K0dKejJp?=
+ =?utf-8?B?VjA2UC92TkMyTmVqVm9lSGdXd2x1SVVmNXBsN1VqcWpNSE91VEk5bUFzRWpB?=
+ =?utf-8?B?aDh1RDgzZjhDK3E5Y2U1MUxGeHVudXFGTDN4cXFQYjhUNU4zMFFTeEluVGdl?=
+ =?utf-8?B?eHlYR2kzeVZFaUowY3R6Ry9BUGdOOW9yb241NzVPMEgyajJtL2xYWjgrSENn?=
+ =?utf-8?B?WkVVUWVhMWRqTGxnVzV3V1lMdHU4MngveTdnNmc4VHZxUUxFaVhzQ0Q1VFVj?=
+ =?utf-8?B?anJ4bk5yZStBR3o3VVhGc25VQzhvNTlWK3I0N2p5dmtnSFpyaXZkTzF0YjBU?=
+ =?utf-8?B?aUREUS9WN3FyM2NOTHlrdUcwK2VLOWU4SVpNWlpkRkFPckdJZmJnVjVKOTd4?=
+ =?utf-8?B?WEM0M25jTkdRbDNkVlhyUEp6TVFnNTNRRHFNbkhUNHo4Z2g5dE55c090NzZq?=
+ =?utf-8?B?MVZxckJmZTIwOTVTY1ZSZURMMTVpWS9oM3dHbGh1Q1FsK1gveDJ5eDNacVhG?=
+ =?utf-8?B?dmxzZTJ6REJWa1RjQWNXZThPak05RGN2SVZ6VUVhS0FiVTVNRzdpNkZwZ003?=
+ =?utf-8?B?SWpsdDNJZ0dNc3ZKVFp3bXRxWDJtbENzU05sV3JIRndHS0NLTWFSR2RSWEpY?=
+ =?utf-8?B?M3huaFJWWWEzZ0hrYnVUd0MxUkNxNi9HS2txeERGUVlzOEJaWlFBaEVJaUdL?=
+ =?utf-8?B?MHJFS3VkcnRid214Rkdsdk1aMlUxVFRHcGtYS1h6U2Jnb3BkRTJYMk1oNzV5?=
+ =?utf-8?B?b2gzODAwU01mdDljUG80U2UrL2FaS1JXUDk5V1dQN2h0ampySEF3ZlFybkdC?=
+ =?utf-8?B?UmpmcTJva0Z3Z2gxUkxFQWpJbFBNcmp1VFAxM0taZ3N1UjNQMGJ1TEVXSlZj?=
+ =?utf-8?B?L0lxK3hEL29ZRTNCcm1tbVV4dWdYajl2bnZBdUdEdSt6Q3lGN0dZaklySGFT?=
+ =?utf-8?Q?0FaFyqoyCI1XpQEZuZljgJzre?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6b132a78-dd6e-4c2e-9ba7-08dcf2af46b3
+X-MS-Exchange-CrossTenant-AuthSource: SJ2PR12MB8784.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2024 15:36:20.3861
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: HtcLOJ9k9rOUDjNMYCS2Z2ErAd2usTjSydCY7d6vIrIMZtPFlWdP6oUhJXLl/GDIPUHIJETlGNx3Nu+ESHmV/g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5990
 
-Hi
 
-Am 22.10.24 um 15:31 schrieb Jon Hunter:
-> Hi Thomas,
->
-> On 12/03/2024 15:45, Thomas Zimmermann wrote:
->> Only TTM-based drivers use fbdev-generic. Rename it to fbdev-ttm and
->> change the symbol infix from _generic_ to _ttm_. Link the source file
->> into TTM helpers, so that it is only build if TTM-based drivers have
->> been selected. Select DRM_TTM_HELPER for loongson.
+On 22/10/2024 15:55, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 22.10.24 um 15:31 schrieb Jon Hunter:
+>> Hi Thomas,
 >>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> ---
->>   Documentation/gpu/drm-kms-helpers.rst         |  2 +-
->>   drivers/gpu/drm/Makefile                      |  5 +-
->>   drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c       |  6 +-
->>   .../{drm_fbdev_generic.c => drm_fbdev_ttm.c}  | 80 +++++++++----------
->>   .../gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   |  4 +-
->>   drivers/gpu/drm/loongson/Kconfig              |  1 +
->>   drivers/gpu/drm/loongson/lsdc_drv.c           |  4 +-
->>   drivers/gpu/drm/nouveau/nouveau_drm.c         |  6 +-
->>   drivers/gpu/drm/qxl/qxl_drv.c                 |  4 +-
->>   drivers/gpu/drm/tiny/bochs.c                  |  4 +-
->>   drivers/gpu/drm/vboxvideo/vbox_drv.c          |  4 +-
->>   drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |  4 +-
->>   include/drm/drm_fbdev_generic.h               | 15 ----
->>   include/drm/drm_fbdev_ttm.h                   | 15 ++++
->>   14 files changed, 77 insertions(+), 77 deletions(-)
->>   rename drivers/gpu/drm/{drm_fbdev_generic.c => drm_fbdev_ttm.c} (76%)
->>   delete mode 100644 include/drm/drm_fbdev_generic.h
->>   create mode 100644 include/drm/drm_fbdev_ttm.h
->
-> ...
->
+>> On 12/03/2024 15:45, Thomas Zimmermann wrote:
+>>> Only TTM-based drivers use fbdev-generic. Rename it to fbdev-ttm and
+>>> change the symbol infix from _generic_ to _ttm_. Link the source file
+>>> into TTM helpers, so that it is only build if TTM-based drivers have
+>>> been selected. Select DRM_TTM_HELPER for loongson.
+>>>
+>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>> ---
+>>>   Documentation/gpu/drm-kms-helpers.rst         |  2 +-
+>>>   drivers/gpu/drm/Makefile                      |  5 +-
+>>>   drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c       |  6 +-
+>>>   .../{drm_fbdev_generic.c => drm_fbdev_ttm.c}  | 80 +++++++++----------
+>>>   .../gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   |  4 +-
+>>>   drivers/gpu/drm/loongson/Kconfig              |  1 +
+>>>   drivers/gpu/drm/loongson/lsdc_drv.c           |  4 +-
+>>>   drivers/gpu/drm/nouveau/nouveau_drm.c         |  6 +-
+>>>   drivers/gpu/drm/qxl/qxl_drv.c                 |  4 +-
+>>>   drivers/gpu/drm/tiny/bochs.c                  |  4 +-
+>>>   drivers/gpu/drm/vboxvideo/vbox_drv.c          |  4 +-
+>>>   drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |  4 +-
+>>>   include/drm/drm_fbdev_generic.h               | 15 ----
+>>>   include/drm/drm_fbdev_ttm.h                   | 15 ++++
+>>>   14 files changed, 77 insertions(+), 77 deletions(-)
+>>>   rename drivers/gpu/drm/{drm_fbdev_generic.c => drm_fbdev_ttm.c} (76%)
+>>>   delete mode 100644 include/drm/drm_fbdev_generic.h
+>>>   create mode 100644 include/drm/drm_fbdev_ttm.h
+>>
+>> ...
+>>
+>>> diff --git a/include/drm/drm_fbdev_ttm.h b/include/drm/drm_fbdev_ttm.h
+>>> new file mode 100644
+>>> index 0000000000000..9e6c3bdf35376
+>>> --- /dev/null
+>>> +++ b/include/drm/drm_fbdev_ttm.h
+>>> @@ -0,0 +1,15 @@
+>>> +/* SPDX-License-Identifier: MIT */
+>>> +
+>>> +#ifndef DRM_FBDEV_TTM_H
+>>> +#define DRM_FBDEV_TTM_H
+>>> +
+>>> +struct drm_device;
+>>> +
+>>> +#ifdef CONFIG_DRM_FBDEV_EMULATION
+>>> +void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int 
+>>> preferred_bpp);
+>>> +#else
+>>> +static inline void drm_fbdev_ttm_setup(struct drm_device *dev, 
+>>> unsigned int preferred_bpp)
+>>> +{ }
+>>> +#endif
+>>> +
+>>> +#endif
+>>
+>>
+>> I recently noticed that with Linux v6.11 it is possible to enable
+>> CONFIG_DRM_FBDEV_EMULATION without enabling CONFIG_DRM_TTM_HELPER. Now
+>> while this does not currently cause any build issues, I believe that if
+>> the function drm_fbdev_ttm_setup() is ever used somewhere that does not
+>> explicitly select CONFIG_DRM_TTM_HELPER, then you could get a 'ERROR:
+>> modpost: "drm_fbdev_ttm_setup"'.
+>>
+>> So I was thinking that may be this should be ...
+>>
 >> diff --git a/include/drm/drm_fbdev_ttm.h b/include/drm/drm_fbdev_ttm.h
->> new file mode 100644
->> index 0000000000000..9e6c3bdf35376
->> --- /dev/null
+>> index 9e6c3bdf3537..5b6723a37caa 100644
+>> --- a/include/drm/drm_fbdev_ttm.h
 >> +++ b/include/drm/drm_fbdev_ttm.h
->> @@ -0,0 +1,15 @@
->> +/* SPDX-License-Identifier: MIT */
->> +
->> +#ifndef DRM_FBDEV_TTM_H
->> +#define DRM_FBDEV_TTM_H
->> +
->> +struct drm_device;
->> +
->> +#ifdef CONFIG_DRM_FBDEV_EMULATION
->> +void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int 
+>> @@ -5,7 +5,7 @@
+>>
+>>  struct drm_device;
+>>
+>> -#ifdef CONFIG_DRM_FBDEV_EMULATION
+>> +#if defined(CONFIG_DRM_FBDEV_EMULATION) && 
+>> defined(CONFIG_DRM_TTM_HELPER)
+>>  void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int 
 >> preferred_bpp);
->> +#else
->> +static inline void drm_fbdev_ttm_setup(struct drm_device *dev, 
+>>  #else
+>>  static inline void drm_fbdev_ttm_setup(struct drm_device *dev, 
 >> unsigned int preferred_bpp)
->> +{ }
->> +#endif
->> +
->> +#endif
->
->
-> I recently noticed that with Linux v6.11 it is possible to enable
-> CONFIG_DRM_FBDEV_EMULATION without enabling CONFIG_DRM_TTM_HELPER. Now
-> while this does not currently cause any build issues, I believe that if
-> the function drm_fbdev_ttm_setup() is ever used somewhere that does not
-> explicitly select CONFIG_DRM_TTM_HELPER, then you could get a 'ERROR:
-> modpost: "drm_fbdev_ttm_setup"'.
->
-> So I was thinking that may be this should be ...
->
-> diff --git a/include/drm/drm_fbdev_ttm.h b/include/drm/drm_fbdev_ttm.h
-> index 9e6c3bdf3537..5b6723a37caa 100644
-> --- a/include/drm/drm_fbdev_ttm.h
-> +++ b/include/drm/drm_fbdev_ttm.h
-> @@ -5,7 +5,7 @@
->
->  struct drm_device;
->
-> -#ifdef CONFIG_DRM_FBDEV_EMULATION
-> +#if defined(CONFIG_DRM_FBDEV_EMULATION) && 
-> defined(CONFIG_DRM_TTM_HELPER)
->  void drm_fbdev_ttm_setup(struct drm_device *dev, unsigned int 
-> preferred_bpp);
->  #else
->  static inline void drm_fbdev_ttm_setup(struct drm_device *dev, 
-> unsigned int preferred_bpp)
->
->
-> The above function has been removed now in -next, but I believe we could
-> have the same problem with drm_fbdev_ttm_helper_fb_probe()?
+>>
+>>
+>> The above function has been removed now in -next, but I believe we could
+>> have the same problem with drm_fbdev_ttm_helper_fb_probe()?
+> 
+> We'd turn a linker/modpost error into a compiler error. Likely makes no 
+> difference. And AFAICT every driver that selects TTM also selects 
+> TTM_HELPER. Drivers without TTM should not use this header.
 
-We'd turn a linker/modpost error into a compiler error. Likely makes no 
-difference. And AFAICT every driver that selects TTM also selects 
-TTM_HELPER. Drivers without TTM should not use this header.
 
-(DRM_TTM and DRM_TTM_HELPER are separate config options for historical 
-reasons. Maybe one of them could go away.)
+Yes I also noted that all the current drivers select TTM_HELPER and so 
+we don't run into this. However, it still seems a bit odd that we don't 
+expose a proper stub if TTM_HELPER is disabled (especially seeing as 
+there is a stub defined).
 
-Best regards
-Thomas
-
->
-> Cheers
-> Jon
->
+Jon
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+nvpublic

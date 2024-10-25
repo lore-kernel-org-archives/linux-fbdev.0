@@ -1,178 +1,85 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D5AD20C325;
-	Fri, 25 Oct 2024 19:36:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AAB920EA2C
+	for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 20:00:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729884973; cv=none; b=eIGvQvLZV3oMA/X0nQ16hTZtF50YtMuHcXJT5a4xihuhY9LtPuiPQkZTejuw4AMlVZdg3SiM7ZiIuVtLiu+RssLalSI33UgWM0V/TRzbeSS4INsCxMXT4E0dmFJ0Q+mCgvcc+18NkXfVKk3ePlWVRLeNbheccedIKYb1rnacTx4=
+	t=1729886459; cv=none; b=bSBRQKBwqJO1p8lWaO5fqEPHLKdi94ICuml3Z1UQSui6KZ8PNA0IHoHL5mzAv5fON/fU8p/ZEoR0D4/t28Z7zMmLiqySh3+wX1U2kMd3Z+xx8IeLBzudxGzckPmZWLpZlC1257P70XvTAvD5dzWfBNqFJZYXYXs1zBagLo9MAY0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729884973; c=relaxed/simple;
-	bh=CvEd4BjvEcsGDhB00d/C010UbokeoWkjDXb+3VQ5SD0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oJG/hULBqz4J/w609Yp3jn15Xew5VlDwK5riNMewOgdfFThxkdqgEId2z094jcqylxUe30fEiwOriJPbGj8tfmJvOu3dfEskb2Ot3Y2CfAeU/Cn7ZfJQPJhkRBUO/wWqFIA3rBBBswHrG5uKXjOGYBiuSR23KW5kQ0l6JdlKESE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=PV0jINXS; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1729886459; c=relaxed/simple;
+	bh=1AY21VF9QbtDmLyEo0XVNNzYJTjrWXkGsQFcI+D/qBs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ekdKjkwsmr6ZDxNmn9cN6XBadkVQ/NEKWcX4Qc3dz6Sf0kY4ejt/sa8lE7cJE6j5roAWdCcV2yLwzBdEN2qdzgMf/aQaoh8+TflfJ6cJ5kZjjIaW/MoHWujIQSsw0z6Ls5hOhUoRq2R80oj3ZEVAPGsWuEsUQK07b6DzPp3ijxw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=D8lYcCWw; arc=none smtp.client-ip=209.85.208.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="PV0jINXS"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1729884959; x=1730489759; i=deller@gmx.de;
-	bh=CvEd4BjvEcsGDhB00d/C010UbokeoWkjDXb+3VQ5SD0=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=PV0jINXS3eCqz0UPYr52slRhDn5GE4xvhzLRvd6J/oLBDJCUbJygDpjtSzn2cjPJ
-	 rzeVWn+71g8nozgPuOX9UFVNQA6ElP6/JTXG+JdpsWhV2Q5pJsOg1vgfhOMkGhSJL
-	 /AYP3NXyAqKGWHweoNnbQnkDkN319WP60Nb83FR30raiAXQo3PvEdvdjyeA2zkEqb
-	 xK05K2UkxZ9ELhdy1c+FlyB9HraqjpemyHokldIeUvramECxHjDhOvgpPmnsEI2HV
-	 LyKhm5SiSK2jMv3yDbcPwHotP5SLAfLV/4b4M+4O2ELqqc6ZDKERj5Tt36CCw4ER6
-	 HS8gDONi9zTlIspq5g==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MeU4y-1teaKZ1Ok8-00nzYF; Fri, 25
- Oct 2024 21:35:59 +0200
-Message-ID: <e3debf69-0507-41bd-999c-b3de79c809b5@gmx.de>
-Date: Fri, 25 Oct 2024 21:35:57 +0200
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="D8lYcCWw"
+Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-5c9693dc739so3128994a12.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 13:00:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google; t=1729886455; x=1730491255; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=RqgVnPZ+sAFjUIPKthsMDBXPwRC2/usor5uwXmwjBkM=;
+        b=D8lYcCWwhoNANkERzTRHT5ubhgb2Y1/JpTAjmQuxPKkwAUkli1XDTR3+nVJoX2c/IH
+         e/UpIntZbV9YW3OAgEJEuZH7L0VDryCeFEXypzrGVZbpe3NbhHFhvi4aHJ508CjQxj+U
+         wPdPzJE4lxibCtv3hrj06V92IlEPZ0HcQ0GtU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1729886455; x=1730491255;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=RqgVnPZ+sAFjUIPKthsMDBXPwRC2/usor5uwXmwjBkM=;
+        b=fJjLcFIgPVrEnDpAgal7WqpMhFDULdj6W36yUXwVShVer1vjpk9BiPdutGk8StjpCc
+         Wuc8Do33Grb/R8g7FgCfCbBIFrlVnBHS5cG3QP6IUVFEiYkUMT6NTWF3RCRcyfo8m4b0
+         NNMkk3b+ycoF3m8Q51mniKFmvoKjXYmnuq0TosSQf7Zko1RBFA12X7ZTEQ+McC7zrvY1
+         /lKO+4XU9kD6f8IRj0aNDqSMxHpXnfkQBDxwCPWWfdQOeFujvMvFJ84MSsHA+2xOfpXx
+         o2gW33NmWaNYiaquGbiZ+9oenQTQ3gArj1UcsgfPfk+sRWELBmGD7ZwArizo/otsV7EA
+         kHDw==
+X-Forwarded-Encrypted: i=1; AJvYcCUhxcG3HatmjJuPD3Royd61woYhr/4BKNUJwSY1fD57DgvopZfLqzLGjQVE1f6YnmHinqPQusZOhYg4FA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw5kcipmjRhAWTDMiVj1V9KGZ/A92ZUUkUo73QjFSQ3pHibSbNU
+	JG3oV/7R19eHON3woegKtdKkB9RUcnSU5FSM/dfbmUJMPOAthsDCUhB2u/vLiug1gUBVyTV2p4q
+	DpkQ=
+X-Google-Smtp-Source: AGHT+IGGzNchys4fajetDCmDectCakmjn192IVUzuoV+oSXDaMxP0ZBg3tmTJOtcHRCB3mR4UXlaDQ==
+X-Received: by 2002:a17:907:7f1b:b0:a99:61d1:348f with SMTP id a640c23a62f3a-a9de61e8ddfmr20893666b.52.1729886455087;
+        Fri, 25 Oct 2024 13:00:55 -0700 (PDT)
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com. [209.85.218.47])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a9b3a08b29asm101884166b.225.2024.10.25.13.00.54
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 25 Oct 2024 13:00:54 -0700 (PDT)
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a998a5ca499so308274166b.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 13:00:54 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUBWja+zEXyorSk+aO9xdMsliBuwnylzh8be+Bb5nygE3tSNemAt3oQSg6gSuPWF+BqvT31ue7JU4naUw==@vger.kernel.org
+X-Received: by 2002:a17:907:7e86:b0:a99:77f0:51f7 with SMTP id
+ a640c23a62f3a-a9de62ec48amr21019766b.61.1729886453894; Fri, 25 Oct 2024
+ 13:00:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+References: <ZxvBfDuqSC_TEM78@carbonx1> <CAHk-=wjKouRizUF97ZABtCmijjKR+sAOmWA4uiYhhSOwhxCT3w@mail.gmail.com>
+ <e3debf69-0507-41bd-999c-b3de79c809b5@gmx.de>
+In-Reply-To: <e3debf69-0507-41bd-999c-b3de79c809b5@gmx.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 25 Oct 2024 13:00:37 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjhG+UYcrFWc5-XzF73R-ZBLqquXWDoEgZjOTGe2Tkuug@mail.gmail.com>
+Message-ID: <CAHk-=wjhG+UYcrFWc5-XzF73R-ZBLqquXWDoEgZjOTGe2Tkuug@mail.gmail.com>
 Subject: Re: [GIT PULL] fbdev late fixes for v6.12-rc5
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Helge Deller <deller@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <ZxvBfDuqSC_TEM78@carbonx1>
- <CAHk-=wjKouRizUF97ZABtCmijjKR+sAOmWA4uiYhhSOwhxCT3w@mail.gmail.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <CAHk-=wjKouRizUF97ZABtCmijjKR+sAOmWA4uiYhhSOwhxCT3w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:IHXV6sz3cX8PJiWpCG62UsbjB8J+3ctP9JsvXkb4nUoKixJn9/A
- imzFvn6wBnETZvivmIpDS37CTAZvNZX24hqdDpsyzd/zikIrJMKzGCAqh4pfshyckikHKWx
- /kJiFEWWNVKSa23ONc/hxSmWQTTZRbNMMqHZ1tScHzeoJeIOz/Oqap9yg4fSiIVS95Qu0CP
- 3TS5D6OhsvTwNXmIretRQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Eq/JKMByQ5Y=;uzV5lNY7c+ib+PzRvvRRZJUSjky
- 7wdME/vQpxQCLXJQdhGru2aqaSxnO86nd3BCvWQPB0X3cdIFi9nhZjKoDfXKzUXcTmMqDoYTr
- gWxuvq3qCeelHwxEegS9Z40PPqtaugtRFeJL2ShmAP/WqDxc4NVAYsFXh4hlYXO3fGPMFU96T
- FEDNLCqEZ/96zJBlaTOVNuZDR2dawWdUaU0M1CzMpw0YpQQ3C+hxkBBSP/5+cMhkG/dI2ijqZ
- soqxi0CKYx8ELrPZnqBEBkoymcYu1VHi8STF3smabHmf426XAoR2HymYucqWnjj3qbDSvTXGc
- QCbSiRaiiZiXawlK6lIyvoKoXBGkgLIv8/s5mGDpE4X/FC3Wt5frRKoAjJNNaV3FlhSHj4f7s
- ZIJwASFcQvNe2vgOZwTgaVcpYkJnMNb/Af4Vk/SffMq4utxh7vNiftk4q6gw2C2uPw4tWenWx
- qzLZH5OTmWAdZdPmB/uS4Bwq4cQMivQMqNr3DAK9eB+laRzc7pmUAbHrs7fbj3yTdrpr5E7VV
- wwMTzwf8uP+rwd7yC9HJuV8luTG2YHMwaH8/MJar2fZkJ3HE5vpoHIY4hh5+Z8RIZoEigyHmT
- ktffzogGRP/SVItCIfdsxikq/xON9Sr5sfFPyQ5jYWFo/2zdSuB4uEH5IwDIdt7YRLfTDXMWj
- vYJ2n2UZn7QzuPzI0HmlIwVmvzYAvQdgsFYi7DY0siD2B3YYspt8l3Fnz93WiRUeyy4AtRiON
- ISx0t9jeb4bVuYbnqdv6fm67DM/p/WsCsKto8ZK2xxTU2nbSZRJAdMMBV5Bvs4pYJfSOM/ffi
- hbMJKE1XqxiDGfIPB/ng5Qew==
+To: Helge Deller <deller@gmx.de>
+Cc: Helge Deller <deller@kernel.org>, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Linus,
-
-On 10/25/24 20:31, Linus Torvalds wrote:
-> On Fri, 25 Oct 2024 at 09:04, Helge Deller <deller@kernel.org> wrote:
->>
->> It's mostly about build warning fixes with cornercase CONFIG settings
->> and one big patch which removes the now unused da8xx fbdev driver.
+On Fri, 25 Oct 2024 at 12:36, Helge Deller <deller@gmx.de> wrote:
 >
-> So I pulled this, but only later noticed that some of the Kconfig
-> "fixes" are anything but.
->
-> At least commit 447794e44744 ("fbdev: sstfb: Make CONFIG_FB_DEVICE
-> optional") is not fixing anything, and very questionable.
->
-> For no reason at all does it seem to enable 30-year old hardware in a
-> new configuration.
->
-> There were no build issues before, the build issues that existed were
-> *introduced* by broken early versions of this patch.
+> Do you want me to send a revert for this specific patch?
 
-That patch was the one I meant with "fixes [for] cornercase CONFIG setting=
-s".
-But you are right that there aren't any issues fixed by this patch.
+No, it's in now, more churn this time around just makes it worse. I
+just don't want to see these kinds of non-fixes in the future.
 
-> Does anybody even *have* that hardware?
-
-I do have a few of those (Voodoo2). Actually one is built-into one of my p=
-arisc
-machines.
-
-> Why were those pointless changes made?
-
-When I accepted this patch I did not find it useless.
-Maybe there are people who really enables Voodoo driver although
-they prefer DRM. Maybe they don't even know the difference.
-I applied it because I don't want compilation to fail at all
-(which I see I was wrong in).
-
-> Sure, the Voodoo1 was the bomb back in 1996 if you wanted to run
-> hw-accelerated Quake, but in 2024, this change should have had more
-> explanation for why anybody would care about the CONFIG_FB_DEVICE
-> dependency.
-
-Ok.
-
-Btw, you will be astonished if you check the prices of those cards
-on ebay nowadays.
-
-> And in no case should it have been marked as a "fix".
-
-Ok.
-Do you want me to send a revert for this specific patch?
-
-FWIW, just a few hours before I sent the pull request I did complain
-about a similar patch (which I did not apply):
-https://lore.kernel.org/linux-fbdev/7aabca78-dd34-4819-8a63-105d1a4cb4ba@g=
-mx.de/T/#m070c6ba1047d26b856b0d6ac43592fc7b6f95518
-
-Helge
+           Linus

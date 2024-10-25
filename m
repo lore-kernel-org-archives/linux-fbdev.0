@@ -1,272 +1,352 @@
-Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com [209.85.128.67])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15AC0175A6
-	for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 09:25:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.67
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 902C021A4DC
+	for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 15:37:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729848349; cv=none; b=EZh/X8KKMHfJXABXKEc422od4XicOjHF/4crRnHRi992z1kmCboBZRCFZQrwx+U2CWiRIGrCdDLCEKqLLR6da9ZJeGx31yG2GJ5DSHN2IHTR1b+FkEjassEAVr1nPdbNLStXZlOXfBjp6SlBz02P/cI7W+wMPdVIhLeKoP19aTI=
+	t=1729870641; cv=none; b=lzoxd9lrXpq466tAn+0d9V//H/IcJpAwmd6DfibEfWA2i+GWcx//xWxLeqp7UAsm8h++N2YiL3vyXVp63csJ/Fd+i7MHpCmurgqACoaNXJuC5KOV3ESkfj5i3U32+g/uA5xEfphofWU4+uSlEf36xtHBrxuI+sby8Ph42XGdwAA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729848349; c=relaxed/simple;
-	bh=OAH7btgxra0TUWOwc0RXP+QDUQ6z6Sz20f9Bba6lqOc=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=FIjL/+DnIHgvq3AczITw+qBreSyyMY5hVradMcCIXke2IKj2L7//uHKyPwY87equRxkkHMQSggi43+QvIgSbNBrFGfAOlhSSglVVPZCOWpjbNp9/2iE07CVzllbw621xE1NhkUsTF2p6stEjHl3bsUVtVvakrP2iXzWDmF1xFyk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WWR8tpNC; arc=none smtp.client-ip=209.85.128.67
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1729870641; c=relaxed/simple;
+	bh=xht0Ua6yCwhebhjONcQCYpZSI7i6tC0KiKWmD/xJWTA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=DDmyQFV+OnIAdtuiaZ2mOvb7zP9kCj4AUXq1lPwXEqdAFkLRuQ1k7uVRDGNJgtbNfRdvlpgFzsgYD/L29NnKE/17SYHdRQicur2D17GThVy3bBmuw+bvLzgPR00lGBX5C01HwPDhMYUEfo88S2/TcyYbi1aOdfB9UJTPieeIRS0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=WYOZ5etL; arc=none smtp.client-ip=212.227.17.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WWR8tpNC"
-Received: by mail-wm1-f67.google.com with SMTP id 5b1f17b1804b1-4315c1c7392so18696155e9.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 02:25:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1729848345; x=1730453145; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=eydj5w0v0oz6L0j3WA0pwPpofo3U+INxxUSu9UDo48M=;
-        b=WWR8tpNCQjfUEW+4bWadwgMcqP6AZ837LNT165gCPLeryCR2Ktr519q4J4Mrx2nR4v
-         mgcJRc6CzyMk1PBBWB1ez3jWLLwE/p1LmUwFt2btbRy5xzvIn8XFqJrZyKr4d+n0zfb6
-         7BPc3ROQbwM7bvkw7WQMwu9lcMS2eEwsJ3X9H68mfIG40gzao65puGHKfpRMfTgZupJ6
-         /oYYnZhLaK/1zWvc5LKTFU5TnGyEyXLOwafdnyYoiWoj6avF7W7jq2eSQdcGQ/MZaxmD
-         lwn1+f5fZTHOCpxa4CkB3T8uubQpT45UM2VZmGy6KbLHelQso2q9ZKL31wNeM7r9iQb2
-         6LSg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729848345; x=1730453145;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=eydj5w0v0oz6L0j3WA0pwPpofo3U+INxxUSu9UDo48M=;
-        b=vbvM4MMuxtam2+smLfEuAdDsShs9veI4z7Hj3DgFY4yhQIBM6RWLjfrjDqr0g3+tJO
-         9I6U6N0S1ZyLBmlnPj9LI86GZtwsBmKvkLmCqiIFvkerhFDkrXXOFY2gZjWRFM5XPsH8
-         54Zp+nrsQv0YETRMojuPvfHEhNGYtlcT9eceBtq14FYCbcsPQ/pys82nHp1NZc5pCi0m
-         bD0Rt4fXMvaF6GPcsogCcZLsfVhQkuuchwQmjhPDd7y7GzuwTGm9+EfwK/J3AOmDjxPA
-         KBe1jwCf1VVujUGYNmEOVnyqRBolBvqWCdBgc8zDTr916DougspDFmJb7LLuSQZnnF32
-         Sn6A==
-X-Gm-Message-State: AOJu0YwthepVdmjvbMEUrMC9XYyhXOveifmF3Xg3vSEY0eMMnKSrSsCK
-	idV2KLoqWVoFI38wxUE8Y/mVjM55PTWy1GIInYZMYBhlw3KiA+8eMECa6IgZl9Y=
-X-Google-Smtp-Source: AGHT+IHPZDbhm7xG1S8CG8Z9F8arXS9pTprIhLS887UnFxrR/4XEgJQ6SARsW1ttQYnFfDLZ1aBizg==
-X-Received: by 2002:a05:600c:1e22:b0:430:5846:7582 with SMTP id 5b1f17b1804b1-431841ee1b9mr76346145e9.7.1729848345071;
-        Fri, 25 Oct 2024 02:25:45 -0700 (PDT)
-Received: from localhost.localdomain ([83.165.96.99])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4319360833asm12242175e9.39.2024.10.25.02.25.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Oct 2024 02:25:43 -0700 (PDT)
-From: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	thomas.zimmermann@suse.de,
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-Subject: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
-Date: Fri, 25 Oct 2024 11:25:38 +0200
-Message-Id: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="WYOZ5etL"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1729870632; x=1730475432; i=deller@gmx.de;
+	bh=tfz21zBTSYK2SGA19H24Fq97Jc0IzqDxiqTEvPxDmTU=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=WYOZ5etLFotvxvYqrPvQVdoZ2l/M9YZ2eN0tRxmkZv1Q6GkyVfhR29Nr+RgxYltV
+	 3J/7RftIHE8g9ti+mycv2twOiFWXrAaNl+OS2hPYJcP6HWUnLfaawZElHGyQ03vl+
+	 S2WbbXbvdPaU/5m04kmsWCGY0wys8dafSVEUk8b0KcRU3rRVxap7zZ75u/nKrB6Mp
+	 MfVWOFn0lXwuEbNA88vIyUkEu5uNJvo5BM4xQmaDG0cY/hvIEGVDwnz6+ql2QP/7v
+	 HCy2OGB2CbG/01wwQgP6yD/9qBWSGBkeBBLW9Vm3hCX0dS6VYyKzGIZRGRXu7OeSE
+	 6XJcrBBQE7hrt9poSQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.63.79]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MJmKX-1tJXk12wcz-00TG3L; Fri, 25
+ Oct 2024 17:37:12 +0200
+Message-ID: <7aabca78-dd34-4819-8a63-105d1a4cb4ba@gmx.de>
+Date: Fri, 25 Oct 2024 17:37:11 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
+To: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+ linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+ dri-devel@lists.freedesktop.org
+References: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:+A5B99gPV27mSVaXlvyLd4grgRGz23q5DwhdJsFxMTXQQk7dmc8
+ nzIZuUNB00t+XKkWYgJOaSuBMEGxQdUTgQAfheZt5hGHv+IZNVPzde1CKag424BGmpiICac
+ Qqix3HDGDGCVvLrk1xpmArYCCey9Rhupe+JXHwzBAaZQfXUlrpYmqz0sXQo5ct8YPUMagwi
+ isn7wqXPyDo4ISIpGPXng==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:vyyPoIybhtA=;KOzMrmLxLUIc5JECVgqkMN+gnMm
+ BjMC15FssmEls0AdI0GT3lRNJbAU3gIVUPjfs3fq1FFRk44fUCx6UyIw45SYQ2hBYRsNVrUaa
+ 3gYZ2n1r4coP80U8q5PUGNC25jtbE5h8plroB4BlMEjW+hBsQDl2gAfoO827blXrtoncaxY8r
+ frP90JErnZ2Kia7gbdKofQLQUjWZf85RcRwy8okEn+1ceO0pI4Q/Gl+4ueuOkDgGNzOqqfSh4
+ irVGPcg0BS4sLoQ3tCL5hs4BdMGU8BqQ9I/ja4HpUvQLK+19hJGsxEgEKqYYZY9l/S3XBpfDN
+ rTqeIAlEyMutIlqBBorpHSpWqssLbbehjJDbKyoAbKcf1YfrgNh5ioH6iJO2qEri4DLX+7u+c
+ WyCYAmEBjhQjU/27J51JsKOw268f+ciqpite5OVJb/gAJCpeu+KCfEe6hfHgCU/btnQtovuVn
+ SRtVT6ZXZ5Drvoze+/TH0g9VhhTxKja/Ht0f14MUJDTKxY2Y6o20PWtGM21v5NZ6GcKZN8XWN
+ B7hqheOczZrSnymInyhzD8CLE03qSDvgIQRPDbcZKH6fahVqJgCnY0tqb9DsqS42UDqXqQ+Qr
+ Jy6DGfpyj6Xa+GWrMEMvbSmfolAJwMjwZg81I+foy8oZK9H1PrVt98omJLE4lfE2FlAW6efBq
+ pVrHEoa1b6yF9EN+fI7hE+9SzDC6Gqpaj7P9L1LmdpPhC7TPOtxOcw0kEHX7UewrzGyLZLk1S
+ Jf3dIZZPBcMHrDfevsT7ZwH0uGtKHikGY1UaKXJFIPFL/Z7a62umpwyEoI4L4w9ctuust0BlE
+ CORx9HVCuIRfFkGaWpwliOfw==
 
-The fb_udl driver currently depends on CONFIG_FB_DEVICE to create sysfs
-entries and access framebuffer device information. This patch wraps the
-relevant code blocks with #ifdef CONFIG_FB_DEVICE, allowing the driver to
-be built and used even if CONFIG_FB_DEVICE is not selected.
+On 10/25/24 11:25, Gonzalo Silvalde Blanco wrote:
+> The fb_udl driver currently depends on CONFIG_FB_DEVICE to create sysfs
+> entries and access framebuffer device information. This patch wraps the
+> relevant code blocks with #ifdef CONFIG_FB_DEVICE, allowing the driver t=
+o
+> be built and used even if CONFIG_FB_DEVICE is not selected.
+>
+> The sysfs setting only controls access to certain framebuffer attributes
+> and is not required for the basic display functionality to work correctl=
+y.
+> (For information on DisplayLink devices and their Linux support, see:
+> https://wiki.archlinux.org/title/DisplayLink).
+>
+> Tested by building with and without CONFIG_FB_DEVICE, both of which
+> compiled and ran without issues.
 
-The sysfs setting only controls access to certain framebuffer attributes
-and is not required for the basic display functionality to work correctly.
-(For information on DisplayLink devices and their Linux support, see:
-https://wiki.archlinux.org/title/DisplayLink).
+Gonzalo, I don't like this patch very much.
 
-Tested by building with and without CONFIG_FB_DEVICE, both of which
-compiled and ran without issues.
+It adds lots of #ifdefs around functions like dev_dbg().
+Instead of ifdefs, aren't there other possibilities, e.g.
+using fb_dbg() if appropriate?
+Or using any other generic dbg() info or simply dropping the line?
 
-Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
----
- drivers/video/fbdev/Kconfig |  1 -
- drivers/video/fbdev/udlfb.c | 41 ++++++++++++++++++++++---------------
- 2 files changed, 24 insertions(+), 18 deletions(-)
+But more important:
+This is a fbdev driver and currently depends on CONFIG_FB_DEVICE.
+If I'm right, the only reason to disable CONFIG_FB_DEVICE is if
+you want fbdev output at bootup, but otherwise just want to use DRM.
+But then, doesn't there exist a native DRM driver for this graphics
+card which can be used instead?
+If so, I suggest to not change this fbdev driver at all.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ea36c6956bf3..9bf6cf74b9cb 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1588,7 +1588,6 @@ config FB_SMSCUFX
- config FB_UDL
- 	tristate "Displaylink USB Framebuffer support"
- 	depends on FB && USB
--	depends on FB_DEVICE
- 	select FB_MODE_HELPERS
- 	select FB_SYSMEM_HELPERS_DEFERRED
- 	help
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 71ac9e36f67c..de4800f09dc7 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -341,10 +341,10 @@ static int dlfb_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 		return -EINVAL;
- 
- 	pos = (unsigned long)info->fix.smem_start + offset;
--
-+#ifdef CONFIG_FB_DEVICE
- 	dev_dbg(info->dev, "mmap() framebuffer addr:%lu size:%lu\n",
- 		pos, size);
--
-+#endif
- 	while (size > 0) {
- 		page = vmalloc_to_pfn((void *)pos);
- 		if (remap_pfn_range(vma, start, page, PAGE_SIZE, PAGE_SHARED))
-@@ -929,10 +929,10 @@ static int dlfb_ops_open(struct fb_info *info, int user)
- 		info->fbdefio = fbdefio;
- 		fb_deferred_io_init(info);
- 	}
--
-+#ifdef CONFIG_FB_DEVICE
- 	dev_dbg(info->dev, "open, user=%d fb_info=%p count=%d\n",
- 		user, info, dlfb->fb_count);
--
-+#endif
- 	return 0;
- }
- 
-@@ -982,9 +982,9 @@ static int dlfb_ops_release(struct fb_info *info, int user)
- 		kfree(info->fbdefio);
- 		info->fbdefio = NULL;
- 	}
--
-+#ifdef CONFIG_FB_DEVICE
- 	dev_dbg(info->dev, "release, user=%d count=%d\n", user, dlfb->fb_count);
--
-+#endif
- 	return 0;
- }
- 
-@@ -1095,10 +1095,10 @@ static int dlfb_ops_blank(int blank_mode, struct fb_info *info)
- 	struct dlfb_data *dlfb = info->par;
- 	char *bufptr;
- 	struct urb *urb;
--
-+#ifdef CONFIG_FB_DEVICE
- 	dev_dbg(info->dev, "blank, mode %d --> %d\n",
- 		dlfb->blank_mode, blank_mode);
--
-+#endif
- 	if ((dlfb->blank_mode == FB_BLANK_POWERDOWN) &&
- 	    (blank_mode != FB_BLANK_POWERDOWN)) {
- 
-@@ -1190,7 +1190,9 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dlfb, struct fb_info *info
- 		 */
- 		new_fb = vmalloc(new_len);
- 		if (!new_fb) {
-+#ifdef CONFIG_FB_DEVICE
- 			dev_err(info->dev, "Virtual framebuffer alloc failed\n");
-+#endif
- 			return -ENOMEM;
- 		}
- 		memset(new_fb, 0xff, new_len);
-@@ -1213,9 +1215,11 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dlfb, struct fb_info *info
- 		 */
- 		if (shadow)
- 			new_back = vzalloc(new_len);
-+#ifdef CONFIG_FB_DEVICE
- 		if (!new_back)
- 			dev_info(info->dev,
- 				 "No shadow/backing buffer allocated\n");
-+#endif
- 		else {
- 			dlfb_deferred_vfree(dlfb, dlfb->backing_buffer);
- 			dlfb->backing_buffer = new_back;
-@@ -1247,14 +1251,14 @@ static int dlfb_setup_modes(struct dlfb_data *dlfb,
- 	struct device *dev = info->device;
- 	struct fb_videomode *mode;
- 	const struct fb_videomode *default_vmode = NULL;
--
-+#ifdef CONFIG_FB_DEVICE
- 	if (info->dev) {
- 		/* only use mutex if info has been registered */
- 		mutex_lock(&info->lock);
- 		/* parent device is used otherwise */
- 		dev = info->dev;
- 	}
--
-+#endif
- 	edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
- 	if (!edid) {
- 		result = -ENOMEM;
-@@ -1375,10 +1379,10 @@ static int dlfb_setup_modes(struct dlfb_data *dlfb,
- error:
- 	if (edid && (dlfb->edid != edid))
- 		kfree(edid);
--
-+#ifdef CONFIG_FB_DEVICE
- 	if (info->dev)
- 		mutex_unlock(&info->lock);
--
-+#endif
- 	return result;
- }
- 
-@@ -1597,8 +1601,10 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dlfb,
- static int dlfb_usb_probe(struct usb_interface *intf,
- 			  const struct usb_device_id *id)
- {
-+#ifdef CONFIG_FB_DEVICE
- 	int i;
- 	const struct device_attribute *attr;
-+#endif
- 	struct dlfb_data *dlfb;
- 	struct fb_info *info;
- 	int retval;
-@@ -1701,7 +1707,7 @@ static int dlfb_usb_probe(struct usb_interface *intf,
- 			retval);
- 		goto error;
- 	}
--
-+#ifdef CONFIG_FB_DEVICE
- 	for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++) {
- 		attr = &fb_device_attrs[i];
- 		retval = device_create_file(info->dev, attr);
-@@ -1710,17 +1716,16 @@ static int dlfb_usb_probe(struct usb_interface *intf,
- 				 "failed to create '%s' attribute: %d\n",
- 				 attr->attr.name, retval);
- 	}
--
- 	retval = device_create_bin_file(info->dev, &edid_attr);
- 	if (retval)
- 		dev_warn(info->device, "failed to create '%s' attribute: %d\n",
- 			 edid_attr.attr.name, retval);
--
- 	dev_info(info->device,
- 		 "%s is DisplayLink USB device (%dx%d, %dK framebuffer memory)\n",
- 		 dev_name(info->dev), info->var.xres, info->var.yres,
- 		 ((dlfb->backing_buffer) ?
- 		 info->fix.smem_len * 2 : info->fix.smem_len) >> 10);
-+#endif
- 	return 0;
- 
- error:
-@@ -1737,8 +1742,9 @@ static void dlfb_usb_disconnect(struct usb_interface *intf)
- {
- 	struct dlfb_data *dlfb;
- 	struct fb_info *info;
-+#ifdef CONFIG_FB_DEVICE
- 	int i;
--
-+#endif
- 	dlfb = usb_get_intfdata(intf);
- 	info = dlfb->info;
- 
-@@ -1754,10 +1760,11 @@ static void dlfb_usb_disconnect(struct usb_interface *intf)
- 	dlfb_free_urb_list(dlfb);
- 
- 	/* remove udlfb's sysfs interfaces */
-+#ifdef CONFIG_FB_DEVICE
- 	for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++)
- 		device_remove_file(info->dev, &fb_device_attrs[i]);
- 	device_remove_bin_file(info->dev, &edid_attr);
--
-+#endif
- 	unregister_framebuffer(info);
- }
- 
--- 
-2.39.5
+Helge
+
+> Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>> ---
+>   drivers/video/fbdev/Kconfig |  1 -
+>   drivers/video/fbdev/udlfb.c | 41 ++++++++++++++++++++++---------------
+>   2 files changed, 24 insertions(+), 18 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index ea36c6956bf3..9bf6cf74b9cb 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -1588,7 +1588,6 @@ config FB_SMSCUFX
+>   config FB_UDL
+>   	tristate "Displaylink USB Framebuffer support"
+>   	depends on FB && USB
+> -	depends on FB_DEVICE
+>   	select FB_MODE_HELPERS
+>   	select FB_SYSMEM_HELPERS_DEFERRED
+>   	help
+> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+> index 71ac9e36f67c..de4800f09dc7 100644
+> --- a/drivers/video/fbdev/udlfb.c
+> +++ b/drivers/video/fbdev/udlfb.c
+> @@ -341,10 +341,10 @@ static int dlfb_ops_mmap(struct fb_info *info, str=
+uct vm_area_struct *vma)
+>   		return -EINVAL;
+>
+>   	pos =3D (unsigned long)info->fix.smem_start + offset;
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	dev_dbg(info->dev, "mmap() framebuffer addr:%lu size:%lu\n",
+>   		pos, size);
+> -
+> +#endif
+>   	while (size > 0) {
+>   		page =3D vmalloc_to_pfn((void *)pos);
+>   		if (remap_pfn_range(vma, start, page, PAGE_SIZE, PAGE_SHARED))
+> @@ -929,10 +929,10 @@ static int dlfb_ops_open(struct fb_info *info, int=
+ user)
+>   		info->fbdefio =3D fbdefio;
+>   		fb_deferred_io_init(info);
+>   	}
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	dev_dbg(info->dev, "open, user=3D%d fb_info=3D%p count=3D%d\n",
+>   		user, info, dlfb->fb_count);
+> -
+> +#endif
+>   	return 0;
+>   }
+>
+> @@ -982,9 +982,9 @@ static int dlfb_ops_release(struct fb_info *info, in=
+t user)
+>   		kfree(info->fbdefio);
+>   		info->fbdefio =3D NULL;
+>   	}
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	dev_dbg(info->dev, "release, user=3D%d count=3D%d\n", user, dlfb->fb_=
+count);
+> -
+> +#endif
+>   	return 0;
+>   }
+>
+> @@ -1095,10 +1095,10 @@ static int dlfb_ops_blank(int blank_mode, struct=
+ fb_info *info)
+>   	struct dlfb_data *dlfb =3D info->par;
+>   	char *bufptr;
+>   	struct urb *urb;
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	dev_dbg(info->dev, "blank, mode %d --> %d\n",
+>   		dlfb->blank_mode, blank_mode);
+> -
+> +#endif
+>   	if ((dlfb->blank_mode =3D=3D FB_BLANK_POWERDOWN) &&
+>   	    (blank_mode !=3D FB_BLANK_POWERDOWN)) {
+>
+> @@ -1190,7 +1190,9 @@ static int dlfb_realloc_framebuffer(struct dlfb_da=
+ta *dlfb, struct fb_info *info
+>   		 */
+>   		new_fb =3D vmalloc(new_len);
+>   		if (!new_fb) {
+> +#ifdef CONFIG_FB_DEVICE
+>   			dev_err(info->dev, "Virtual framebuffer alloc failed\n");
+> +#endif
+>   			return -ENOMEM;
+>   		}
+>   		memset(new_fb, 0xff, new_len);
+> @@ -1213,9 +1215,11 @@ static int dlfb_realloc_framebuffer(struct dlfb_d=
+ata *dlfb, struct fb_info *info
+>   		 */
+>   		if (shadow)
+>   			new_back =3D vzalloc(new_len);
+> +#ifdef CONFIG_FB_DEVICE
+>   		if (!new_back)
+>   			dev_info(info->dev,
+>   				 "No shadow/backing buffer allocated\n");
+> +#endif
+>   		else {
+>   			dlfb_deferred_vfree(dlfb, dlfb->backing_buffer);
+>   			dlfb->backing_buffer =3D new_back;
+> @@ -1247,14 +1251,14 @@ static int dlfb_setup_modes(struct dlfb_data *dl=
+fb,
+>   	struct device *dev =3D info->device;
+>   	struct fb_videomode *mode;
+>   	const struct fb_videomode *default_vmode =3D NULL;
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	if (info->dev) {
+>   		/* only use mutex if info has been registered */
+>   		mutex_lock(&info->lock);
+>   		/* parent device is used otherwise */
+>   		dev =3D info->dev;
+>   	}
+> -
+> +#endif
+>   	edid =3D kmalloc(EDID_LENGTH, GFP_KERNEL);
+>   	if (!edid) {
+>   		result =3D -ENOMEM;
+> @@ -1375,10 +1379,10 @@ static int dlfb_setup_modes(struct dlfb_data *dl=
+fb,
+>   error:
+>   	if (edid && (dlfb->edid !=3D edid))
+>   		kfree(edid);
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	if (info->dev)
+>   		mutex_unlock(&info->lock);
+> -
+> +#endif
+>   	return result;
+>   }
+>
+> @@ -1597,8 +1601,10 @@ static int dlfb_parse_vendor_descriptor(struct dl=
+fb_data *dlfb,
+>   static int dlfb_usb_probe(struct usb_interface *intf,
+>   			  const struct usb_device_id *id)
+>   {
+> +#ifdef CONFIG_FB_DEVICE
+>   	int i;
+>   	const struct device_attribute *attr;
+> +#endif
+>   	struct dlfb_data *dlfb;
+>   	struct fb_info *info;
+>   	int retval;
+> @@ -1701,7 +1707,7 @@ static int dlfb_usb_probe(struct usb_interface *in=
+tf,
+>   			retval);
+>   		goto error;
+>   	}
+> -
+> +#ifdef CONFIG_FB_DEVICE
+>   	for (i =3D 0; i < ARRAY_SIZE(fb_device_attrs); i++) {
+>   		attr =3D &fb_device_attrs[i];
+>   		retval =3D device_create_file(info->dev, attr);
+> @@ -1710,17 +1716,16 @@ static int dlfb_usb_probe(struct usb_interface *=
+intf,
+>   				 "failed to create '%s' attribute: %d\n",
+>   				 attr->attr.name, retval);
+>   	}
+> -
+>   	retval =3D device_create_bin_file(info->dev, &edid_attr);
+>   	if (retval)
+>   		dev_warn(info->device, "failed to create '%s' attribute: %d\n",
+>   			 edid_attr.attr.name, retval);
+> -
+>   	dev_info(info->device,
+>   		 "%s is DisplayLink USB device (%dx%d, %dK framebuffer memory)\n",
+>   		 dev_name(info->dev), info->var.xres, info->var.yres,
+>   		 ((dlfb->backing_buffer) ?
+>   		 info->fix.smem_len * 2 : info->fix.smem_len) >> 10);
+> +#endif
+>   	return 0;
+>
+>   error:
+> @@ -1737,8 +1742,9 @@ static void dlfb_usb_disconnect(struct usb_interfa=
+ce *intf)
+>   {
+>   	struct dlfb_data *dlfb;
+>   	struct fb_info *info;
+> +#ifdef CONFIG_FB_DEVICE
+>   	int i;
+> -
+> +#endif
+>   	dlfb =3D usb_get_intfdata(intf);
+>   	info =3D dlfb->info;
+>
+> @@ -1754,10 +1760,11 @@ static void dlfb_usb_disconnect(struct usb_inter=
+face *intf)
+>   	dlfb_free_urb_list(dlfb);
+>
+>   	/* remove udlfb's sysfs interfaces */
+> +#ifdef CONFIG_FB_DEVICE
+>   	for (i =3D 0; i < ARRAY_SIZE(fb_device_attrs); i++)
+>   		device_remove_file(info->dev, &fb_device_attrs[i]);
+>   	device_remove_bin_file(info->dev, &edid_attr);
+> -
+> +#endif
+>   	unregister_framebuffer(info);
+>   }
+>
 

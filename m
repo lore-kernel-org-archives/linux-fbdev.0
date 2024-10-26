@@ -1,85 +1,75 @@
-Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AAB920EA2C
-	for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 20:00:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 556341DFD8
+	for <linux-fbdev@vger.kernel.org>; Sat, 26 Oct 2024 03:57:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.35
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729886459; cv=none; b=bSBRQKBwqJO1p8lWaO5fqEPHLKdi94ICuml3Z1UQSui6KZ8PNA0IHoHL5mzAv5fON/fU8p/ZEoR0D4/t28Z7zMmLiqySh3+wX1U2kMd3Z+xx8IeLBzudxGzckPmZWLpZlC1257P70XvTAvD5dzWfBNqFJZYXYXs1zBagLo9MAY0=
+	t=1729915029; cv=none; b=UA6A8rw2LgI4vdaX9QoboYCfQcMw7jMlShGUsWJjfVGSNbM9Gh41f45cScJUnVvM2HU+CJ9I8z6rMKlbGExb8TPMqkxACqaPtg1WqsNrfBy1C2COgIY5g5d9Pn4iZaN+W52OrXEBOQ7Eh4NioypCqX2Z0Cto11zDgd9sI6hiat8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729886459; c=relaxed/simple;
-	bh=1AY21VF9QbtDmLyEo0XVNNzYJTjrWXkGsQFcI+D/qBs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ekdKjkwsmr6ZDxNmn9cN6XBadkVQ/NEKWcX4Qc3dz6Sf0kY4ejt/sa8lE7cJE6j5roAWdCcV2yLwzBdEN2qdzgMf/aQaoh8+TflfJ6cJ5kZjjIaW/MoHWujIQSsw0z6Ls5hOhUoRq2R80oj3ZEVAPGsWuEsUQK07b6DzPp3ijxw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=D8lYcCWw; arc=none smtp.client-ip=209.85.208.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="D8lYcCWw"
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-5c9693dc739so3128994a12.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 13:00:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1729886455; x=1730491255; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=RqgVnPZ+sAFjUIPKthsMDBXPwRC2/usor5uwXmwjBkM=;
-        b=D8lYcCWwhoNANkERzTRHT5ubhgb2Y1/JpTAjmQuxPKkwAUkli1XDTR3+nVJoX2c/IH
-         e/UpIntZbV9YW3OAgEJEuZH7L0VDryCeFEXypzrGVZbpe3NbhHFhvi4aHJ508CjQxj+U
-         wPdPzJE4lxibCtv3hrj06V92IlEPZ0HcQ0GtU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729886455; x=1730491255;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=RqgVnPZ+sAFjUIPKthsMDBXPwRC2/usor5uwXmwjBkM=;
-        b=fJjLcFIgPVrEnDpAgal7WqpMhFDULdj6W36yUXwVShVer1vjpk9BiPdutGk8StjpCc
-         Wuc8Do33Grb/R8g7FgCfCbBIFrlVnBHS5cG3QP6IUVFEiYkUMT6NTWF3RCRcyfo8m4b0
-         NNMkk3b+ycoF3m8Q51mniKFmvoKjXYmnuq0TosSQf7Zko1RBFA12X7ZTEQ+McC7zrvY1
-         /lKO+4XU9kD6f8IRj0aNDqSMxHpXnfkQBDxwCPWWfdQOeFujvMvFJ84MSsHA+2xOfpXx
-         o2gW33NmWaNYiaquGbiZ+9oenQTQ3gArj1UcsgfPfk+sRWELBmGD7ZwArizo/otsV7EA
-         kHDw==
-X-Forwarded-Encrypted: i=1; AJvYcCUhxcG3HatmjJuPD3Royd61woYhr/4BKNUJwSY1fD57DgvopZfLqzLGjQVE1f6YnmHinqPQusZOhYg4FA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw5kcipmjRhAWTDMiVj1V9KGZ/A92ZUUkUo73QjFSQ3pHibSbNU
-	JG3oV/7R19eHON3woegKtdKkB9RUcnSU5FSM/dfbmUJMPOAthsDCUhB2u/vLiug1gUBVyTV2p4q
-	DpkQ=
-X-Google-Smtp-Source: AGHT+IGGzNchys4fajetDCmDectCakmjn192IVUzuoV+oSXDaMxP0ZBg3tmTJOtcHRCB3mR4UXlaDQ==
-X-Received: by 2002:a17:907:7f1b:b0:a99:61d1:348f with SMTP id a640c23a62f3a-a9de61e8ddfmr20893666b.52.1729886455087;
-        Fri, 25 Oct 2024 13:00:55 -0700 (PDT)
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com. [209.85.218.47])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a9b3a08b29asm101884166b.225.2024.10.25.13.00.54
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 25 Oct 2024 13:00:54 -0700 (PDT)
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a998a5ca499so308274166b.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Oct 2024 13:00:54 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUBWja+zEXyorSk+aO9xdMsliBuwnylzh8be+Bb5nygE3tSNemAt3oQSg6gSuPWF+BqvT31ue7JU4naUw==@vger.kernel.org
-X-Received: by 2002:a17:907:7e86:b0:a99:77f0:51f7 with SMTP id
- a640c23a62f3a-a9de62ec48amr21019766b.61.1729886453894; Fri, 25 Oct 2024
- 13:00:53 -0700 (PDT)
+	s=arc-20240116; t=1729915029; c=relaxed/simple;
+	bh=qUXxUiMPJIWH2qB1pB2cJOcCS51IEKQw1inijSPa0PE=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HH9bK70JZtRsP8Yq8iDz+t+opHoPWgGhWGWv6905LCo7FHb4ZFNH/7KAZ5+cxp5hCMeLNSWfNmXMkny895o+veV41tvCGnADaCgDptnIN1aDis3gBhzZlSD0ACpC1NAeJuRlMsa2Fe+eO/c1IdwrjEAdrAdH8OHz+jmigazc7Tc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.35
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.163.17])
+	by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4Xb5Qq0Y9jz1SD8X;
+	Sat, 26 Oct 2024 11:55:31 +0800 (CST)
+Received: from dggpemf100006.china.huawei.com (unknown [7.185.36.228])
+	by mail.maildlp.com (Postfix) with ESMTPS id 501631A0188;
+	Sat, 26 Oct 2024 11:56:58 +0800 (CST)
+Received: from thunder-town.china.huawei.com (10.174.178.55) by
+ dggpemf100006.china.huawei.com (7.185.36.228) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Sat, 26 Oct 2024 11:56:57 +0800
+From: Zhen Lei <thunder.leizhen@huawei.com>
+To: Helge Deller <deller@gmx.de>, <linux-fbdev@vger.kernel.org>,
+	<dri-devel@lists.freedesktop.org>
+CC: Zhen Lei <thunder.leizhen@huawei.com>
+Subject: [PATCH] video: sh7760fb: Fix a possible memory leak in sh7760fb_alloc_mem()
+Date: Sat, 26 Oct 2024 11:56:34 +0800
+Message-ID: <20241026035634.467-1-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.37.3.windows.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <ZxvBfDuqSC_TEM78@carbonx1> <CAHk-=wjKouRizUF97ZABtCmijjKR+sAOmWA4uiYhhSOwhxCT3w@mail.gmail.com>
- <e3debf69-0507-41bd-999c-b3de79c809b5@gmx.de>
-In-Reply-To: <e3debf69-0507-41bd-999c-b3de79c809b5@gmx.de>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 25 Oct 2024 13:00:37 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wjhG+UYcrFWc5-XzF73R-ZBLqquXWDoEgZjOTGe2Tkuug@mail.gmail.com>
-Message-ID: <CAHk-=wjhG+UYcrFWc5-XzF73R-ZBLqquXWDoEgZjOTGe2Tkuug@mail.gmail.com>
-Subject: Re: [GIT PULL] fbdev late fixes for v6.12-rc5
-To: Helge Deller <deller@gmx.de>
-Cc: Helge Deller <deller@kernel.org>, linux-kernel@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ dggpemf100006.china.huawei.com (7.185.36.228)
 
-On Fri, 25 Oct 2024 at 12:36, Helge Deller <deller@gmx.de> wrote:
->
-> Do you want me to send a revert for this specific patch?
+When information such as info->screen_base is not ready, calling
+sh7760fb_free_mem() does not release memory correctly. Call
+dma_free_coherent() instead.
 
-No, it's in now, more churn this time around just makes it worse. I
-just don't want to see these kinds of non-fixes in the future.
+Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+---
+ drivers/video/fbdev/sh7760fb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-           Linus
+diff --git a/drivers/video/fbdev/sh7760fb.c b/drivers/video/fbdev/sh7760fb.c
+index 3d2a27fefc874a7..130adef2e468697 100644
+--- a/drivers/video/fbdev/sh7760fb.c
++++ b/drivers/video/fbdev/sh7760fb.c
+@@ -409,12 +409,11 @@ static int sh7760fb_alloc_mem(struct fb_info *info)
+ 		vram = PAGE_SIZE;
+ 
+ 	fbmem = dma_alloc_coherent(info->device, vram, &par->fbdma, GFP_KERNEL);
+-
+ 	if (!fbmem)
+ 		return -ENOMEM;
+ 
+ 	if ((par->fbdma & SH7760FB_DMA_MASK) != SH7760FB_DMA_MASK) {
+-		sh7760fb_free_mem(info);
++		dma_free_coherent(info->device, vram, fbmem, par->fbdma);
+ 		dev_err(info->device, "kernel gave me memory at 0x%08lx, which is"
+ 			"unusable for the LCDC\n", (unsigned long)par->fbdma);
+ 		return -ENOMEM;
+-- 
+2.34.1
+

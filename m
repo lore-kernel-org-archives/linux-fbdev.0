@@ -1,36 +1,45 @@
-Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 556341DFD8
-	for <linux-fbdev@vger.kernel.org>; Sat, 26 Oct 2024 03:57:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.35
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22C05101C8;
+	Sat, 26 Oct 2024 22:01:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729915029; cv=none; b=UA6A8rw2LgI4vdaX9QoboYCfQcMw7jMlShGUsWJjfVGSNbM9Gh41f45cScJUnVvM2HU+CJ9I8z6rMKlbGExb8TPMqkxACqaPtg1WqsNrfBy1C2COgIY5g5d9Pn4iZaN+W52OrXEBOQ7Eh4NioypCqX2Z0Cto11zDgd9sI6hiat8=
+	t=1729980100; cv=none; b=dMvyzRHRzaKIZAarle6NtrVJifbEWIrok1SARYrD+KDn52VOo82QWmyvynUcM4ssgkKrErZc0Zsnc/l5i44nVIiyqDr1ARQlJBITZzDyEAgEHiwH3JjwQ70hCEJzzleSTjmCEp02tW7E/2WOPMxjwv7fLcS4EURg8S2RN5zAfG0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729915029; c=relaxed/simple;
-	bh=qUXxUiMPJIWH2qB1pB2cJOcCS51IEKQw1inijSPa0PE=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HH9bK70JZtRsP8Yq8iDz+t+opHoPWgGhWGWv6905LCo7FHb4ZFNH/7KAZ5+cxp5hCMeLNSWfNmXMkny895o+veV41tvCGnADaCgDptnIN1aDis3gBhzZlSD0ACpC1NAeJuRlMsa2Fe+eO/c1IdwrjEAdrAdH8OHz+jmigazc7Tc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.35
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.17])
-	by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4Xb5Qq0Y9jz1SD8X;
-	Sat, 26 Oct 2024 11:55:31 +0800 (CST)
-Received: from dggpemf100006.china.huawei.com (unknown [7.185.36.228])
-	by mail.maildlp.com (Postfix) with ESMTPS id 501631A0188;
-	Sat, 26 Oct 2024 11:56:58 +0800 (CST)
-Received: from thunder-town.china.huawei.com (10.174.178.55) by
- dggpemf100006.china.huawei.com (7.185.36.228) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Sat, 26 Oct 2024 11:56:57 +0800
-From: Zhen Lei <thunder.leizhen@huawei.com>
-To: Helge Deller <deller@gmx.de>, <linux-fbdev@vger.kernel.org>,
-	<dri-devel@lists.freedesktop.org>
-CC: Zhen Lei <thunder.leizhen@huawei.com>
-Subject: [PATCH] video: sh7760fb: Fix a possible memory leak in sh7760fb_alloc_mem()
-Date: Sat, 26 Oct 2024 11:56:34 +0800
-Message-ID: <20241026035634.467-1-thunder.leizhen@huawei.com>
-X-Mailer: git-send-email 2.37.3.windows.1
+	s=arc-20240116; t=1729980100; c=relaxed/simple;
+	bh=8fJQz/BTb7TRwut177m4y48AxV7cHhFaHMeQ+gl+11s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m8OZXXLY4GWsYfQpEneX+X/zNmf3kcN+8uZwtqWKz7dP8pujlYa1DSew5qlhoDIyMf8oanIYDMk/1qMQCeg4RyYG4eXfFl7GjNOEO4vXT0wl4F2iL0ubblaQx5tNvZeN/x0+yFc2glQ9sfXDMtGymh5a7yhNG/1WpvKR8Lk8v4k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=NDQeZixg; arc=none smtp.client-ip=46.235.229.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="NDQeZixg"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
+	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
+	:Subject; bh=qhyyxt3+fwlP6e+aCR51ac6iwRI01AJeU0CzuMQ+1V8=; b=NDQeZixgWW/MNKeP
+	JOK07FjY++WDNsSZcBbAjcMBeO8tihqOmUKK/lwiKy/ZS+OK9uUO8dFYvjvhkNLbFW5e5XLT01+XX
+	kGaA6ZC8I/24mdRKvX/w8Jylrsk5YLQKRatTb9IFSALwOo/dG4+N4ZthpHGsA7FOndSRss4DdgZc+
+	q4cqpDUKxrFcU/Ndw4kxUXLMXohu3Hq/BZI3ujxKwO/ggudZPvfUSQImCqkRraCZM7to8dUG/Gcm5
+	jnqz9eYcUSxc0CAkXO4W/MsiKw0FRNRdxeQPq4p3vTbmpSO8ahVvUs+9e8pEH9h1p7dG3BUOqYcav
+	1FI/6zthyEsOYjNokg==;
+Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
+	by mx.treblig.org with esmtp (Exim 4.96)
+	(envelope-from <linux@treblig.org>)
+	id 1t4oqk-00Djna-2u;
+	Sat, 26 Oct 2024 22:01:34 +0000
+From: linux@treblig.org
+To: deller@gmx.de,
+	u.kleine-koenig@baylibre.com,
+	linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	"Dr. David Alan Gilbert" <linux@treblig.org>
+Subject: [PATCH] fbdev: omapfb: Remove some deadcode
+Date: Sat, 26 Oct 2024 23:01:33 +0100
+Message-ID: <20241026220133.93956-1-linux@treblig.org>
+X-Mailer: git-send-email 2.47.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -38,38 +47,88 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- dggpemf100006.china.huawei.com (7.185.36.228)
 
-When information such as info->screen_base is not ready, calling
-sh7760fb_free_mem() does not release memory correctly. Call
-dma_free_coherent() instead.
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
-Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+commit f76ee892a99e ("omapfb: copy omapdss & displays for omapfb")
+took a copy of the omapdrm code into omapfb, however at that point
+a couple of functions were already unused at that point.
+
+Remove dispc_mgr_get_clock_div() and dispc_enable_fifomerge() from
+the omapfb copy.
+
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/video/fbdev/sh7760fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 27 --------------------
+ drivers/video/fbdev/omap2/omapfb/dss/dss.h   |  3 ---
+ 2 files changed, 30 deletions(-)
 
-diff --git a/drivers/video/fbdev/sh7760fb.c b/drivers/video/fbdev/sh7760fb.c
-index 3d2a27fefc874a7..130adef2e468697 100644
---- a/drivers/video/fbdev/sh7760fb.c
-+++ b/drivers/video/fbdev/sh7760fb.c
-@@ -409,12 +409,11 @@ static int sh7760fb_alloc_mem(struct fb_info *info)
- 		vram = PAGE_SIZE;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index 5832485ab998..c3329c8b4c16 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -1230,17 +1230,6 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
+ 		dispc_write_reg(DISPC_OVL_PRELOAD(plane), min(high, 0xfffu));
+ }
  
- 	fbmem = dma_alloc_coherent(info->device, vram, &par->fbdma, GFP_KERNEL);
+-void dispc_enable_fifomerge(bool enable)
+-{
+-	if (!dss_has_feature(FEAT_FIFO_MERGE)) {
+-		WARN_ON(enable);
+-		return;
+-	}
 -
- 	if (!fbmem)
- 		return -ENOMEM;
+-	DSSDBG("FIFO merge %s\n", enable ? "enabled" : "disabled");
+-	REG_FLD_MOD(DISPC_CONFIG, enable ? 1 : 0, 14, 14);
+-}
+-
+ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge,
+ 		bool manual_update)
+@@ -3656,22 +3645,6 @@ void dispc_mgr_set_clock_div(enum omap_channel channel,
+ 	dispc_mgr_set_lcd_divisor(channel, cinfo->lck_div, cinfo->pck_div);
+ }
  
- 	if ((par->fbdma & SH7760FB_DMA_MASK) != SH7760FB_DMA_MASK) {
--		sh7760fb_free_mem(info);
-+		dma_free_coherent(info->device, vram, fbmem, par->fbdma);
- 		dev_err(info->device, "kernel gave me memory at 0x%08lx, which is"
- 			"unusable for the LCDC\n", (unsigned long)par->fbdma);
- 		return -ENOMEM;
+-int dispc_mgr_get_clock_div(enum omap_channel channel,
+-		struct dispc_clock_info *cinfo)
+-{
+-	unsigned long fck;
+-
+-	fck = dispc_fclk_rate();
+-
+-	cinfo->lck_div = REG_GET(DISPC_DIVISORo(channel), 23, 16);
+-	cinfo->pck_div = REG_GET(DISPC_DIVISORo(channel), 7, 0);
+-
+-	cinfo->lck = fck / cinfo->lck_div;
+-	cinfo->pck = cinfo->lck / cinfo->pck_div;
+-
+-	return 0;
+-}
+-
+ u32 dispc_read_irqstatus(void)
+ {
+ 	return dispc_read_reg(DISPC_IRQSTATUS);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.h b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
+index 21cfcbf74a6d..a33a43f26829 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
+@@ -366,7 +366,6 @@ void dispc_disable_sidle(void);
+ 
+ void dispc_lcd_enable_signal(bool enable);
+ void dispc_pck_free_enable(bool enable);
+-void dispc_enable_fifomerge(bool enable);
+ void dispc_enable_gamma_table(bool enable);
+ 
+ typedef bool (*dispc_div_calc_func)(int lckd, int pckd, unsigned long lck,
+@@ -388,8 +387,6 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 
+ void dispc_mgr_set_clock_div(enum omap_channel channel,
+ 		const struct dispc_clock_info *cinfo);
+-int dispc_mgr_get_clock_div(enum omap_channel channel,
+-		struct dispc_clock_info *cinfo);
+ void dispc_set_tv_pclk(unsigned long pclk);
+ 
+ u32 dispc_read_irqstatus(void);
 -- 
-2.34.1
+2.47.0
 

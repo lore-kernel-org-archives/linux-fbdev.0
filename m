@@ -1,62 +1,61 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com [209.85.128.67])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 868AF2AF05
-	for <linux-fbdev@vger.kernel.org>; Sun, 27 Oct 2024 16:28:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F2927DA9E
+	for <linux-fbdev@vger.kernel.org>; Mon, 28 Oct 2024 00:59:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.67
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730046505; cv=none; b=siwU+viC8nkQyMySGGSVr+EqZEfxufFN21sWS5XWcAuLXtuVlmAeDq55iQNnQOqkNhrn5+Tp8+M3kI4HpWMSXKtzI49wNXNg/GreZY3VwdTWPaIb7Pk7eqHwHePjDPtwdLpYJycahfpf60GK9OV/XaC/Nb3r1vyu7+NrpOi07iU=
+	t=1730077197; cv=none; b=KXI3LqT+V974WHwWgeX3Xr44Hmb0aMGrVak05IKvqkMml5NqODcFHdzpvoAhxmVsUM4cGQWLK7D5uPPXo9lAH6I2L7CRoTM7pAV0b5LRs9fXq+6iwSO94HtOqu7IGdxg4I2EO9MWHp2eGvpvZIopHginYwMXLMgdM3veHXz6NDA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730046505; c=relaxed/simple;
-	bh=0aXubYe1FaQcPNmFvMSSBox/SiArxW12jDOhwAJzfAs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pP1lUzAtD/lN9Mt1Jfqa1c2PrJDaPywtM+5uuKJLfnxOQ2GjUK61sSQVwHYTouCpaVlqoT3cLFUPnNsIoW/obIVOR/2K8xyE0WtJjP25QB2pLqvc7LqGXq9AOPAP5WcLe9eVqKwFegxaXf09MEsD2gK2pZLaGR4OWT85EZXX40o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=C1b53uqp; arc=none smtp.client-ip=192.198.163.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1730077197; c=relaxed/simple;
+	bh=Hd5GLAXp3ye3/4TWLWX6baeNpv4+Vy8H+HoPL8mosOI=;
+	h=From:Message-ID:To:Subject:Date:MIME-Version:Content-Type; b=NS9EdIdcqbDrHB5AENNfRaTOPlcd1K/dLjKAJNjS+rnwnjNRunIMEWjS3yZFPb3oTjYbbDRhiilcEX1Ul6WJZARPJFTouuvZdkTJ4q9mZd7qlZQ5ledBwlY53qRnqD1RzgXAOx+V8YlslspGmsPagGceyuVwZDtHxVHNrZ42V6A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d4TtHb+1; arc=none smtp.client-ip=209.85.128.67
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="C1b53uqp"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1730046504; x=1761582504;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=0aXubYe1FaQcPNmFvMSSBox/SiArxW12jDOhwAJzfAs=;
-  b=C1b53uqpNrn6Losah96zK4PWjg2UJv/j2UjG54Xs2FIk9JasiAoDAZX8
-   ABFX3hhSSRWBf2OdWKbCJY5kYlt8wYp//jru8vPmbrPPd55Lxa7FuRBLa
-   ekwycYwz/1kU3Vy5gTpFQYqaLULEKM4E3HLG0Q9igHl4IssN3F2llv05N
-   idAGvw4tk9JagTU1c/6iT6eub4mkd7TvPQUtWocwjDVHa7uZcCuuh9gMx
-   x5IIC5EY5ZewCmcNncdPnevnMC0NdItVvwfX0YdPEJ81MyV2ele12YCwM
-   20MZHiEXEQtXmeL77xFPeCCkYAkdpxINf+zF/bkeBAfbVlqEXTZrmsK4+
-   A==;
-X-CSE-ConnectionGUID: CIoqNmMzTkuT3S6bcYnCTw==
-X-CSE-MsgGUID: uMYFoM6NR7i9sEf53oKtCw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11238"; a="40272147"
-X-IronPort-AV: E=Sophos;i="6.11,237,1725346800"; 
-   d="scan'208";a="40272147"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2024 09:28:18 -0700
-X-CSE-ConnectionGUID: DMeHiUY6T3uuJrfiO+OCNw==
-X-CSE-MsgGUID: hnu4janpSDmEEbxsVAn8bA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,237,1725346800"; 
-   d="scan'208";a="112221800"
-Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by orviesa002.jf.intel.com with ESMTP; 27 Oct 2024 09:28:16 -0700
-Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1t567h-000ape-20;
-	Sun, 27 Oct 2024 16:28:13 +0000
-Date: Mon, 28 Oct 2024 00:27:34 +0800
-From: kernel test robot <lkp@intel.com>
-To: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
-	linux-fbdev@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
-	thomas.zimmermann@suse.de,
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-Subject: Re: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
-Message-ID: <202410280002.AXteAJwc-lkp@intel.com>
-References: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d4TtHb+1"
+Received: by mail-wm1-f67.google.com with SMTP id 5b1f17b1804b1-431695fa98bso37327425e9.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 27 Oct 2024 17:59:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1730077194; x=1730681994; darn=vger.kernel.org;
+        h=mime-version:date:subject:to:reply-to:message-id:from:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Hd5GLAXp3ye3/4TWLWX6baeNpv4+Vy8H+HoPL8mosOI=;
+        b=d4TtHb+1ixxzNRTz2PZfsDZ/EDRawn20gYQa5My6X1xiEwaOFcGrrcBvq7qW72PImq
+         fsShvA3gVia3IF0k9DIds/7nWLAa/PVsjjoTRVXucigr1vToN9LiTdNX3Zcbp4gisqCR
+         dvuFkLkZY5lIWdiVq5ipSEZZb/KJG1/WGj6mlsBYHVhwr0GvaNJOmVFfXxcrpx/vzgxv
+         b8sl6k32pGfgonrosDOtF0sDvge6vmZsEywNAMoBa74pKedVHYXdHYHV4kxs/87sVYeZ
+         MwlW+HAugmuaKQ9QHTXxXslTy9qcytaffcPT6xuZYI34tl+sZmvOZnnU8h7PybVryiGt
+         Ofhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1730077194; x=1730681994;
+        h=mime-version:date:subject:to:reply-to:message-id:from
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Hd5GLAXp3ye3/4TWLWX6baeNpv4+Vy8H+HoPL8mosOI=;
+        b=K2V0bUx2cQc7y8QJikA1KY1T0dUMcuxdus6OjpVBrl0GP3MwmOTLsinZ76H775uaLp
+         oywURFs8Zisj0hKuKWUnaepOfSb3eS/FaP/t4Iopj9OYov9NmBYp+wK23h/lf49UDPGE
+         nCtCySNLsSsSCJuC7/U3TaeowI2rQ2BS7aUN2eA2o1XgybIFBJ/tzBbudmh8tdU/4Z7r
+         B5bjjvsuLejOQtnOgMv0CaIOkNdrG9D4tl3E1+MacUfm8S0k5nj97+RGSRRjtf4fhZ8X
+         8CPZsTHtTUpgCHEYZxDeAxfmEvbNFJgThPiKZBqN8U7G7wX3Ce95xhnSEhYMffgCdCzz
+         7NPQ==
+X-Gm-Message-State: AOJu0Yzcb1YABMvwUPklVvcAutPODsNTpXydQ53iS3IAnzNLxWlKz3JF
+	IYq4XxP+soACVmqaLzFGhHWCVig0F4PKCtfcDsM6cooUsUe/k8dggipUE3vZ
+X-Google-Smtp-Source: AGHT+IGHhwL6s6MTZ42Stw51C5lpkfoQvEgV8I39Eus+EnUE7maLSsr/V4hw1+ly0dOZb7k+gmSaSg==
+X-Received: by 2002:a05:6000:e88:b0:37d:4f1b:359 with SMTP id ffacd0b85a97d-38061220a5emr5560837f8f.53.1730077193614;
+        Sun, 27 Oct 2024 17:59:53 -0700 (PDT)
+Received: from [87.120.84.56] ([87.120.84.56])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5cbb625810bsm2706532a12.14.2024.10.27.17.59.51
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 27 Oct 2024 17:59:52 -0700 (PDT)
+From: Kelly Hall <ronaldwilliams4r@gmail.com>
+X-Google-Original-From: Kelly Hall <info@gmail.com>
+Message-ID: <4207adfb4c2f9546551d89aba6b938b50b6a7cad4ec0e75bb269b6801e11a8d1@mx.google.com>
+Reply-To: khallpb@outlook.com
+To: linux-fbdev@vger.kernel.org
+Subject: Free Piano
+Date: Sun, 27 Oct 2024 17:59:46 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -64,62 +63,10 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
 
-Hi Gonzalo,
+Hello Dear,
 
-kernel test robot noticed the following build warnings:
+I am giving away my late husband's Yamaha Piano to any instrument lover. Kindly let me know if you are interested or have someone who will be interested in the instrument.
 
-[auto build test WARNING on drm-misc/drm-misc-next]
-[also build test WARNING on drm-tip/drm-tip linus/master v6.12-rc4 next-20241025]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Gonzalo-Silvalde-Blanco/fbdev-udl-Make-CONFIG_FB_DEVICE-optional/20241025-172653
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20241025092538.38339-1-gonzalo.silvalde%40gmail.com
-patch subject: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
-config: i386-randconfig-r121-20241027 (https://download.01.org/0day-ci/archive/20241028/202410280002.AXteAJwc-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241028/202410280002.AXteAJwc-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410280002.AXteAJwc-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> drivers/video/fbdev/udlfb.c:1493:38: warning: 'fb_device_attrs' defined but not used [-Wunused-const-variable=]
-    1493 | static const struct device_attribute fb_device_attrs[] = {
-         |                                      ^~~~~~~~~~~~~~~
->> drivers/video/fbdev/udlfb.c:1485:35: warning: 'edid_attr' defined but not used [-Wunused-const-variable=]
-    1485 | static const struct bin_attribute edid_attr = {
-         |                                   ^~~~~~~~~
-
-
-vim +/fb_device_attrs +1493 drivers/video/fbdev/udlfb.c
-
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1484  
-598b2eedfc3fbe drivers/video/fbdev/udlfb.c   Bhumika Goyal      2017-08-18 @1485  static const struct bin_attribute edid_attr = {
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1486  	.attr.name = "edid",
-8ef8cc4fca4a92 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-09-05  1487  	.attr.mode = 0666,
-b9f03a3cd06c6f drivers/video/udlfb.c         Paul Mundt         2011-01-06  1488  	.size = EDID_LENGTH,
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1489  	.read = edid_show,
-8ef8cc4fca4a92 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-09-05  1490  	.write = edid_store
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1491  };
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1492  
-fa738a5c4b2a6b drivers/video/fbdev/udlfb.c   Ladislav Michl     2018-01-16 @1493  static const struct device_attribute fb_device_attrs[] = {
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1494  	__ATTR_RO(metrics_bytes_rendered),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1495  	__ATTR_RO(metrics_bytes_identical),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1496  	__ATTR_RO(metrics_bytes_sent),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1497  	__ATTR_RO(metrics_cpu_kcycles_used),
-926c11151e3b82 drivers/staging/udlfb/udlfb.c Greg Kroah-Hartman 2010-11-18  1498  	__ATTR(metrics_reset, S_IWUSR, NULL, metrics_reset_store),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1499  };
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1500  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Thank you,
+K.Hall

@@ -1,72 +1,419 @@
-Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com [209.85.128.67])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F2927DA9E
-	for <linux-fbdev@vger.kernel.org>; Mon, 28 Oct 2024 00:59:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.67
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2713317CA1B
+	for <linux-fbdev@vger.kernel.org>; Mon, 28 Oct 2024 08:41:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730077197; cv=none; b=KXI3LqT+V974WHwWgeX3Xr44Hmb0aMGrVak05IKvqkMml5NqODcFHdzpvoAhxmVsUM4cGQWLK7D5uPPXo9lAH6I2L7CRoTM7pAV0b5LRs9fXq+6iwSO94HtOqu7IGdxg4I2EO9MWHp2eGvpvZIopHginYwMXLMgdM3veHXz6NDA=
+	t=1730104907; cv=none; b=IivVO931s4puF77p1cjte6ndjgL9xcXigcDxE416uEZez9bqftcWM1Grv/EO5yp+vIQ+gswTcK98zPMDFFXxjnr4c/+k8xha+Y7EY59BOe2pW1ROi4UofpwCQfE/pFzEOKcngLPcf5LFTBK0RUNIt+GoKvhI65bdhFQZXUIOBhg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730077197; c=relaxed/simple;
-	bh=Hd5GLAXp3ye3/4TWLWX6baeNpv4+Vy8H+HoPL8mosOI=;
-	h=From:Message-ID:To:Subject:Date:MIME-Version:Content-Type; b=NS9EdIdcqbDrHB5AENNfRaTOPlcd1K/dLjKAJNjS+rnwnjNRunIMEWjS3yZFPb3oTjYbbDRhiilcEX1Ul6WJZARPJFTouuvZdkTJ4q9mZd7qlZQ5ledBwlY53qRnqD1RzgXAOx+V8YlslspGmsPagGceyuVwZDtHxVHNrZ42V6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d4TtHb+1; arc=none smtp.client-ip=209.85.128.67
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1730104907; c=relaxed/simple;
+	bh=Rh0hbENNw+IjFlnvMgIt0eNUSHjYj+Kon1YsG9w62tc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=lykTaLfPsoRGH7r4esVAJQUeCRa1PkhBV5y03kTQCGsLrKL/EmPxkrI2jtwmUWsp+Q3vWWIyhSjyvsEefYSQie0gKzLnBKsO4Z5p+OmLucGezKdNy3KSdV8TXubsAH9925IsdKTq8gnBinj4JsHh4uZFdBAowatCo8z2SIGeWF4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TvrHSu8t; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ybbSQBAX; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TvrHSu8t; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ybbSQBAX; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d4TtHb+1"
-Received: by mail-wm1-f67.google.com with SMTP id 5b1f17b1804b1-431695fa98bso37327425e9.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 27 Oct 2024 17:59:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1730077194; x=1730681994; darn=vger.kernel.org;
-        h=mime-version:date:subject:to:reply-to:message-id:from:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Hd5GLAXp3ye3/4TWLWX6baeNpv4+Vy8H+HoPL8mosOI=;
-        b=d4TtHb+1ixxzNRTz2PZfsDZ/EDRawn20gYQa5My6X1xiEwaOFcGrrcBvq7qW72PImq
-         fsShvA3gVia3IF0k9DIds/7nWLAa/PVsjjoTRVXucigr1vToN9LiTdNX3Zcbp4gisqCR
-         dvuFkLkZY5lIWdiVq5ipSEZZb/KJG1/WGj6mlsBYHVhwr0GvaNJOmVFfXxcrpx/vzgxv
-         b8sl6k32pGfgonrosDOtF0sDvge6vmZsEywNAMoBa74pKedVHYXdHYHV4kxs/87sVYeZ
-         MwlW+HAugmuaKQ9QHTXxXslTy9qcytaffcPT6xuZYI34tl+sZmvOZnnU8h7PybVryiGt
-         Ofhw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730077194; x=1730681994;
-        h=mime-version:date:subject:to:reply-to:message-id:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Hd5GLAXp3ye3/4TWLWX6baeNpv4+Vy8H+HoPL8mosOI=;
-        b=K2V0bUx2cQc7y8QJikA1KY1T0dUMcuxdus6OjpVBrl0GP3MwmOTLsinZ76H775uaLp
-         oywURFs8Zisj0hKuKWUnaepOfSb3eS/FaP/t4Iopj9OYov9NmBYp+wK23h/lf49UDPGE
-         nCtCySNLsSsSCJuC7/U3TaeowI2rQ2BS7aUN2eA2o1XgybIFBJ/tzBbudmh8tdU/4Z7r
-         B5bjjvsuLejOQtnOgMv0CaIOkNdrG9D4tl3E1+MacUfm8S0k5nj97+RGSRRjtf4fhZ8X
-         8CPZsTHtTUpgCHEYZxDeAxfmEvbNFJgThPiKZBqN8U7G7wX3Ce95xhnSEhYMffgCdCzz
-         7NPQ==
-X-Gm-Message-State: AOJu0Yzcb1YABMvwUPklVvcAutPODsNTpXydQ53iS3IAnzNLxWlKz3JF
-	IYq4XxP+soACVmqaLzFGhHWCVig0F4PKCtfcDsM6cooUsUe/k8dggipUE3vZ
-X-Google-Smtp-Source: AGHT+IGHhwL6s6MTZ42Stw51C5lpkfoQvEgV8I39Eus+EnUE7maLSsr/V4hw1+ly0dOZb7k+gmSaSg==
-X-Received: by 2002:a05:6000:e88:b0:37d:4f1b:359 with SMTP id ffacd0b85a97d-38061220a5emr5560837f8f.53.1730077193614;
-        Sun, 27 Oct 2024 17:59:53 -0700 (PDT)
-Received: from [87.120.84.56] ([87.120.84.56])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5cbb625810bsm2706532a12.14.2024.10.27.17.59.51
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 27 Oct 2024 17:59:52 -0700 (PDT)
-From: Kelly Hall <ronaldwilliams4r@gmail.com>
-X-Google-Original-From: Kelly Hall <info@gmail.com>
-Message-ID: <4207adfb4c2f9546551d89aba6b938b50b6a7cad4ec0e75bb269b6801e11a8d1@mx.google.com>
-Reply-To: khallpb@outlook.com
-To: linux-fbdev@vger.kernel.org
-Subject: Free Piano
-Date: Sun, 27 Oct 2024 17:59:46 -0700
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TvrHSu8t";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ybbSQBAX";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TvrHSu8t";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ybbSQBAX"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 3E7C221A13;
+	Mon, 28 Oct 2024 08:41:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1730104902; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yr53c/MFjdSKRr/Jfx2Bg6Mbb0SvpvoT07TaDQjMKxo=;
+	b=TvrHSu8tk1XkVQShmhOLiT7LO8+MYAS16On8fY5A9vvAUl5vojnpeja0upOXpBOvjZBpHN
+	bGM8oidB8NwEgYRjf9d0NyTOwjtRJ+xiicCL/ZKzs2Mut8aaOKfHxnFEPjQnAnh2ursLV1
+	s0EKQN3BA51lcDb1P4S6IwI+RX0cEM8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1730104902;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yr53c/MFjdSKRr/Jfx2Bg6Mbb0SvpvoT07TaDQjMKxo=;
+	b=ybbSQBAX7kRcXEpyHnUnk6XC0ynJgxRwk9L01sYLrlbZ1hd785S3RDi5yn+ujtUa6ymrf6
+	X3pg+CY+lTM4ztCA==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1730104902; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yr53c/MFjdSKRr/Jfx2Bg6Mbb0SvpvoT07TaDQjMKxo=;
+	b=TvrHSu8tk1XkVQShmhOLiT7LO8+MYAS16On8fY5A9vvAUl5vojnpeja0upOXpBOvjZBpHN
+	bGM8oidB8NwEgYRjf9d0NyTOwjtRJ+xiicCL/ZKzs2Mut8aaOKfHxnFEPjQnAnh2ursLV1
+	s0EKQN3BA51lcDb1P4S6IwI+RX0cEM8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1730104902;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yr53c/MFjdSKRr/Jfx2Bg6Mbb0SvpvoT07TaDQjMKxo=;
+	b=ybbSQBAX7kRcXEpyHnUnk6XC0ynJgxRwk9L01sYLrlbZ1hd785S3RDi5yn+ujtUa6ymrf6
+	X3pg+CY+lTM4ztCA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1DE1B136DC;
+	Mon, 28 Oct 2024 08:41:42 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 4fb4BUZOH2d/FwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 28 Oct 2024 08:41:42 +0000
+Message-ID: <7e33bfa5-1444-4152-b240-946a51e12b26@suse.de>
+Date: Mon, 28 Oct 2024 09:41:41 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
+To: Helge Deller <deller@gmx.de>,
+ Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+ <7aabca78-dd34-4819-8a63-105d1a4cb4ba@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <7aabca78-dd34-4819-8a63-105d1a4cb4ba@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -2.80
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[gmx.de,gmail.com,vger.kernel.org,lists.freedesktop.org];
+	TAGGED_RCPT(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid]
+X-Spam-Flag: NO
+X-Spam-Level: 
 
-Hello Dear,
+Hi Helge
 
-I am giving away my late husband's Yamaha Piano to any instrument lover. Kindly let me know if you are interested or have someone who will be interested in the instrument.
+Am 25.10.24 um 17:37 schrieb Helge Deller:
+> On 10/25/24 11:25, Gonzalo Silvalde Blanco wrote:
+>> The fb_udl driver currently depends on CONFIG_FB_DEVICE to create sysfs
+>> entries and access framebuffer device information. This patch wraps the
+>> relevant code blocks with #ifdef CONFIG_FB_DEVICE, allowing the 
+>> driver to
+>> be built and used even if CONFIG_FB_DEVICE is not selected.
+>>
+>> The sysfs setting only controls access to certain framebuffer attributes
+>> and is not required for the basic display functionality to work 
+>> correctly.
+>> (For information on DisplayLink devices and their Linux support, see:
+>> https://wiki.archlinux.org/title/DisplayLink).
+>>
+>> Tested by building with and without CONFIG_FB_DEVICE, both of which
+>> compiled and ran without issues.
+>
+> Gonzalo, I don't like this patch very much.
+>
+> It adds lots of #ifdefs around functions like dev_dbg().
+> Instead of ifdefs, aren't there other possibilities, e.g.
+> using fb_dbg() if appropriate?
+> Or using any other generic dbg() info or simply dropping the line?
 
-Thank you,
-K.Hall
+I talked Gonzalo into sending this patch. I think dev_dbg() calls should 
+be replaced with fb_dbg(), same for _info() and _err(). That's probably 
+worth doing anyway.
+
+>
+> But more important:
+> This is a fbdev driver and currently depends on CONFIG_FB_DEVICE.
+> If I'm right, the only reason to disable CONFIG_FB_DEVICE is if
+> you want fbdev output at bootup, but otherwise just want to use DRM.
+
+It's unrelated to booting. CONFIG_FB_DEVICE enables/disables userspace 
+interfaces (/dev/fb*, /sys/graphics/fb*). Even without, there's still 
+fbcon that runs on top of the fbdev driver.
+
+> But then, doesn't there exist a native DRM driver for this graphics
+> card which can be used instead?
+> If so, I suggest to not change this fbdev driver at all.
+
+Or can we talk about removing udlfb entirely? I tried before, but there 
+was one person still using it. [1] He had concerns about udl's (the DRM 
+driver) stability. I think DRM's udl has matured enough and is in better 
+shape than udlfb. Maybe we can try again.
+
+[1] 
+https://lore.kernel.org/dri-devel/20201130125200.10416-1-tzimmermann@suse.de/
+
+Best regards
+Thomas
+
+>
+> Helge
+>
+>> Signed-off-by: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>> ---
+>>   drivers/video/fbdev/Kconfig |  1 -
+>>   drivers/video/fbdev/udlfb.c | 41 ++++++++++++++++++++++---------------
+>>   2 files changed, 24 insertions(+), 18 deletions(-)
+>>
+>> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>> index ea36c6956bf3..9bf6cf74b9cb 100644
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -1588,7 +1588,6 @@ config FB_SMSCUFX
+>>   config FB_UDL
+>>       tristate "Displaylink USB Framebuffer support"
+>>       depends on FB && USB
+>> -    depends on FB_DEVICE
+>>       select FB_MODE_HELPERS
+>>       select FB_SYSMEM_HELPERS_DEFERRED
+>>       help
+>> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+>> index 71ac9e36f67c..de4800f09dc7 100644
+>> --- a/drivers/video/fbdev/udlfb.c
+>> +++ b/drivers/video/fbdev/udlfb.c
+>> @@ -341,10 +341,10 @@ static int dlfb_ops_mmap(struct fb_info *info, 
+>> struct vm_area_struct *vma)
+>>           return -EINVAL;
+>>
+>>       pos = (unsigned long)info->fix.smem_start + offset;
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       dev_dbg(info->dev, "mmap() framebuffer addr:%lu size:%lu\n",
+>>           pos, size);
+>> -
+>> +#endif
+>>       while (size > 0) {
+>>           page = vmalloc_to_pfn((void *)pos);
+>>           if (remap_pfn_range(vma, start, page, PAGE_SIZE, PAGE_SHARED))
+>> @@ -929,10 +929,10 @@ static int dlfb_ops_open(struct fb_info *info, 
+>> int user)
+>>           info->fbdefio = fbdefio;
+>>           fb_deferred_io_init(info);
+>>       }
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       dev_dbg(info->dev, "open, user=%d fb_info=%p count=%d\n",
+>>           user, info, dlfb->fb_count);
+>> -
+>> +#endif
+>>       return 0;
+>>   }
+>>
+>> @@ -982,9 +982,9 @@ static int dlfb_ops_release(struct fb_info *info, 
+>> int user)
+>>           kfree(info->fbdefio);
+>>           info->fbdefio = NULL;
+>>       }
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       dev_dbg(info->dev, "release, user=%d count=%d\n", user, 
+>> dlfb->fb_count);
+>> -
+>> +#endif
+>>       return 0;
+>>   }
+>>
+>> @@ -1095,10 +1095,10 @@ static int dlfb_ops_blank(int blank_mode, 
+>> struct fb_info *info)
+>>       struct dlfb_data *dlfb = info->par;
+>>       char *bufptr;
+>>       struct urb *urb;
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       dev_dbg(info->dev, "blank, mode %d --> %d\n",
+>>           dlfb->blank_mode, blank_mode);
+>> -
+>> +#endif
+>>       if ((dlfb->blank_mode == FB_BLANK_POWERDOWN) &&
+>>           (blank_mode != FB_BLANK_POWERDOWN)) {
+>>
+>> @@ -1190,7 +1190,9 @@ static int dlfb_realloc_framebuffer(struct 
+>> dlfb_data *dlfb, struct fb_info *info
+>>            */
+>>           new_fb = vmalloc(new_len);
+>>           if (!new_fb) {
+>> +#ifdef CONFIG_FB_DEVICE
+>>               dev_err(info->dev, "Virtual framebuffer alloc failed\n");
+>> +#endif
+>>               return -ENOMEM;
+>>           }
+>>           memset(new_fb, 0xff, new_len);
+>> @@ -1213,9 +1215,11 @@ static int dlfb_realloc_framebuffer(struct 
+>> dlfb_data *dlfb, struct fb_info *info
+>>            */
+>>           if (shadow)
+>>               new_back = vzalloc(new_len);
+>> +#ifdef CONFIG_FB_DEVICE
+>>           if (!new_back)
+>>               dev_info(info->dev,
+>>                    "No shadow/backing buffer allocated\n");
+>> +#endif
+>>           else {
+>>               dlfb_deferred_vfree(dlfb, dlfb->backing_buffer);
+>>               dlfb->backing_buffer = new_back;
+>> @@ -1247,14 +1251,14 @@ static int dlfb_setup_modes(struct dlfb_data 
+>> *dlfb,
+>>       struct device *dev = info->device;
+>>       struct fb_videomode *mode;
+>>       const struct fb_videomode *default_vmode = NULL;
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       if (info->dev) {
+>>           /* only use mutex if info has been registered */
+>>           mutex_lock(&info->lock);
+>>           /* parent device is used otherwise */
+>>           dev = info->dev;
+>>       }
+>> -
+>> +#endif
+>>       edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
+>>       if (!edid) {
+>>           result = -ENOMEM;
+>> @@ -1375,10 +1379,10 @@ static int dlfb_setup_modes(struct dlfb_data 
+>> *dlfb,
+>>   error:
+>>       if (edid && (dlfb->edid != edid))
+>>           kfree(edid);
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       if (info->dev)
+>>           mutex_unlock(&info->lock);
+>> -
+>> +#endif
+>>       return result;
+>>   }
+>>
+>> @@ -1597,8 +1601,10 @@ static int dlfb_parse_vendor_descriptor(struct 
+>> dlfb_data *dlfb,
+>>   static int dlfb_usb_probe(struct usb_interface *intf,
+>>                 const struct usb_device_id *id)
+>>   {
+>> +#ifdef CONFIG_FB_DEVICE
+>>       int i;
+>>       const struct device_attribute *attr;
+>> +#endif
+>>       struct dlfb_data *dlfb;
+>>       struct fb_info *info;
+>>       int retval;
+>> @@ -1701,7 +1707,7 @@ static int dlfb_usb_probe(struct usb_interface 
+>> *intf,
+>>               retval);
+>>           goto error;
+>>       }
+>> -
+>> +#ifdef CONFIG_FB_DEVICE
+>>       for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++) {
+>>           attr = &fb_device_attrs[i];
+>>           retval = device_create_file(info->dev, attr);
+>> @@ -1710,17 +1716,16 @@ static int dlfb_usb_probe(struct 
+>> usb_interface *intf,
+>>                    "failed to create '%s' attribute: %d\n",
+>>                    attr->attr.name, retval);
+>>       }
+>> -
+>>       retval = device_create_bin_file(info->dev, &edid_attr);
+>>       if (retval)
+>>           dev_warn(info->device, "failed to create '%s' attribute: 
+>> %d\n",
+>>                edid_attr.attr.name, retval);
+>> -
+>>       dev_info(info->device,
+>>            "%s is DisplayLink USB device (%dx%d, %dK framebuffer 
+>> memory)\n",
+>>            dev_name(info->dev), info->var.xres, info->var.yres,
+>>            ((dlfb->backing_buffer) ?
+>>            info->fix.smem_len * 2 : info->fix.smem_len) >> 10);
+>> +#endif
+>>       return 0;
+>>
+>>   error:
+>> @@ -1737,8 +1742,9 @@ static void dlfb_usb_disconnect(struct 
+>> usb_interface *intf)
+>>   {
+>>       struct dlfb_data *dlfb;
+>>       struct fb_info *info;
+>> +#ifdef CONFIG_FB_DEVICE
+>>       int i;
+>> -
+>> +#endif
+>>       dlfb = usb_get_intfdata(intf);
+>>       info = dlfb->info;
+>>
+>> @@ -1754,10 +1760,11 @@ static void dlfb_usb_disconnect(struct 
+>> usb_interface *intf)
+>>       dlfb_free_urb_list(dlfb);
+>>
+>>       /* remove udlfb's sysfs interfaces */
+>> +#ifdef CONFIG_FB_DEVICE
+>>       for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++)
+>>           device_remove_file(info->dev, &fb_device_attrs[i]);
+>>       device_remove_bin_file(info->dev, &edid_attr);
+>> -
+>> +#endif
+>>       unregister_framebuffer(info);
+>>   }
+>>
+>
+>
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

@@ -1,140 +1,199 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8DD31DFDBC
-	for <linux-fbdev@vger.kernel.org>; Mon, 28 Oct 2024 20:32:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 123613207
+	for <linux-fbdev@vger.kernel.org>; Tue, 29 Oct 2024 20:42:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730147568; cv=none; b=lwbpYsKVRjIQwgi4mEo66PedUmh9LZTDJCQ0uofOLQSZkJ7Bhe/WmTEeygWiANTAk2b9IcJF7I2WokZjsXAFHIEMSvvLXgAW8w269CSDKthUdVFhXrbAPcfT0rJR9AJDaHtRfPOA2l5pM+TsnjJixLzv1ZbL5754evmZie+sDhk=
+	t=1730234576; cv=none; b=BrVV8Jc/8PNbhImZ7FJ+QKrF86FxDKNTu3BxHVxga755BgMB0MwP823PmE0VvgakW9+FW/UUo5l/aOK9hSX9w+rCRLSdaD4K0E0AoQb7ocaX3p4/MsZJsj8JXW6SU7n/J0hitLMTBfAa9KfoubsFe6j/sgRAColyploCkvNlfXk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730147568; c=relaxed/simple;
-	bh=GXke4S11OGUxM+oXTk5LOHFA3kzYd2kP62er2e1iwlQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=On/YW2X4LAVIZbSPUKp5N1Wb2awogaz85wUSkB37EilvIqm7oEZSeGQEBnmz7kU9/yTIGZf0M22knoaS5AF2HDMN2HKLckjaXB3OdxxE3LnY3g7Lw3PnECeY4byajtv/utyrsO9xmqeSeG4wYfhGgAMyFprXfHliHXY/xZ3RGlM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=hIzvF78S; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1730234576; c=relaxed/simple;
+	bh=0D1Eu4CEWDg4ut3MzYYiF/4jTU/35JQUDIzPSI8vn/4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=pflCh/XN1tgVREaLhEa/Sr5PYzGfQdf1rl+6HSs7HC414Tfk51lKfoaWHbnQlY1lZj/+asw2r/eXm6DSGp5pG50lTI/FGDffERrwwFN2YAd1c2ZERgNy6FGiFycom70pT/4WMn29dMa56/MYP6lmvq3/7K3AhFyITIaA/iZjkYY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=N0etzfqq; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="hIzvF78S"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1730147566; x=1761683566;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=GXke4S11OGUxM+oXTk5LOHFA3kzYd2kP62er2e1iwlQ=;
-  b=hIzvF78SElDXVYqNZlOhXCaM33ATiRpnGqF6oOM5Nr8tyZEq+SpWO4I8
-   d3jK8rZDZ+NGakPAUSLeic8B+KuQshTGremNA23Mt5TkKvEeHnblZQ3BM
-   In59lB2QitSWXi3CDIwAYy2dV7M8UkuuZh+xPlch4KvA5DuBQRiK/GjwP
-   qtgG3EvdQWrxWOC9NmHdZX+drXynzFw5Ez0jdY4cudPuz9LI3C49gCIsH
-   Pz87JX9ZU4bJxCOhB4bJ7JgiuN+nXD+9M+IpmZchS5+rdDWIefyVNWHa+
-   EFs0WdpTCK7pLOdU2KE8Sc98cDE/cgG5uMogsEcZkDJjJ+SVyc04dkdk9
-   A==;
-X-CSE-ConnectionGUID: 4oKCaOovRxikWetDKiNTKQ==
-X-CSE-MsgGUID: PzZ1tuydRkOOal66YjGQ8w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11239"; a="41126941"
-X-IronPort-AV: E=Sophos;i="6.11,240,1725346800"; 
-   d="scan'208";a="41126941"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2024 13:32:25 -0700
-X-CSE-ConnectionGUID: mq1v9KTKR4O+iffjbSkq9A==
-X-CSE-MsgGUID: 8efRSY0JSr+enrf6CYiT8A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,240,1725346800"; 
-   d="scan'208";a="82148253"
-Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 28 Oct 2024 13:32:23 -0700
-Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1t5WPU-000cqq-1O;
-	Mon, 28 Oct 2024 20:32:20 +0000
-Date: Tue, 29 Oct 2024 04:31:52 +0800
-From: kernel test robot <lkp@intel.com>
-To: Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
-	linux-fbdev@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
-	thomas.zimmermann@suse.de,
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>
-Subject: Re: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
-Message-ID: <202410290452.XKXQkwp1-lkp@intel.com>
-References: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="N0etzfqq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1730234566; x=1730839366; i=deller@gmx.de;
+	bh=0D1Eu4CEWDg4ut3MzYYiF/4jTU/35JQUDIzPSI8vn/4=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=N0etzfqqTfWhXC5tuvxLHXfmg21CpWoiFYyOo4satGV8g2Qm5HT/i6LI8f3CxuCx
+	 tIg4z9HM1RnnOLqeGl9NI14Dsgr4OjxSVsGv7jbHJN/K0nVgs3ry+gp9omWAJnFrE
+	 t2Qc2hAoeey6eVJVxDhdxU9UY5cs4bzq6bCaY8Mf92SKE8DYO5EJaQZo2tyXlG7Mg
+	 mVjGCb0RfuCFcSD3+lPS4MxmYJbc1aIfxnAifHYaarSKG8jIMAAa3zZ4tFztldL+k
+	 aw+P5IOLeDONXs6PSMa+9Bv5tBmmcxY8JZoUZ6gMRWlxDefzUCNks4438DdY9lbqR
+	 J8qZa+8iQ4Kph3lSFQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.63.235]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MFsUp-1t572v2TvD-003yiP; Tue, 29
+ Oct 2024 21:42:46 +0100
+Message-ID: <5b4bfeaf-d9b4-4196-b1e8-ef58b1b6607e@gmx.de>
+Date: Tue, 29 Oct 2024 21:42:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20241025092538.38339-1-gonzalo.silvalde@gmail.com>
+ <7aabca78-dd34-4819-8a63-105d1a4cb4ba@gmx.de>
+ <7e33bfa5-1444-4152-b240-946a51e12b26@suse.de>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
+ HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
+ r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
+ CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
+ 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
+ dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
+ Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
+ GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
+ aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
+ 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
+ ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
+ FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
+ uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
+ uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
+ REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
+ qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
+ iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
+ gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
+ Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
+ qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
+ 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
+ dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
+ rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
+ UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
+ eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
+ ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
+ dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
+ lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
+ 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
+ xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
+ wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
+ fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
+ Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
+ l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
+ RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
+ BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
+ Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
+ XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
+ MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
+ FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
+ 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
+ ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
+In-Reply-To: <7e33bfa5-1444-4152-b240-946a51e12b26@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:TfYxtZKStYsidpMp4qCoQvknJWSrk3oV54S/ubC7IlaPZfpIJKM
+ 8yGvT2IjwMbxfiZTIa4X3GiY0fvHYvtoyfMMl1N/uYnbdCEq56oKUGIBEWr+tXpOAVWOAV1
+ Vsx7aWU+2BE3OZdKwR2kgjPdwxSSuHeyqsHsSYhUIsQxZSHnbY3ZKBmHpRz77CqFK3RzauT
+ NfodDibuF4SdksFykr5Tg==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:Fv2GBLJKLac=;kBW6yFb12UOOUyo2rrDc3rqMTVs
+ 3qaapEFM8jOVyxzxMmZe4Vcrn4WUQ1ycJUaSjI8GiZAG/+lHf+828j8LTSkbXwfNVC3EVaLyX
+ 2rQXSATLuKW6dvcSqrVlbEYzYPQ5Otf7wAESIFCoCoV1J+ZsEhpXY9tGdoixbPHEQbUGnWuEV
+ Qp5d1pO2hQG6Vn4RDml0/96Ys5CRYgzhgQJvPJkc/6MOYIQN0eu9Xb3zQAdy9mu/NL/he8a4V
+ eYBUR583KDl5gii2k90pFyKNJMvH/W1BUkaFhH6vGviZLnaItaBIseCwk3Q3egMe+drlc4iNO
+ +yq6H+WsFHyCHaRqIVsay00SMbWuusrikEl8XkDq6YDQXr5vI7YiddHcm7P/Mc2tB022qPfWX
+ ROz8EqIv0kgw6qlPavNKfZkjDGH26udg4z10yfZKXIesMO1AOOLTXGQpkkP2gp28jKzhcpQXd
+ VrrEz5vJJzd5/AVkB6/sCJ8JIJdfFSQw6y8tlAuc2dtUUEhEWGwlzIIEse5QQFqBitNGFzGlO
+ WPn6n+221nnyNIpqabH/IYInG/sE1R5DKNdsB5Bv49ka6RPpNS9wcoxgi3uwjnEu8mu19zRX+
+ PQSWRcPsLJpQaLZGIvWUmHRU4TJMCaOrIAaN+zbJGxDW/w0kBL8CobszjpPMO76L+c3YSsABg
+ Gi+CVPn72SR6Whux4ca1p6XBZrh4YA+xZz7rVBZGLLDyXM1bA2KzEbt7Wht4WiRcOqqvtV8ng
+ PjCOOg1/CVQJrl4Z/8g12dCIo7tbJI/v9GHQuoVXgfTy6s+qTRVsvKXxyx9SPAoX9xS0NnuTI
+ bZjTigx7HCsNGCLmupL0kuAg==
 
-Hi Gonzalo,
+Hi Thomas,
 
-kernel test robot noticed the following build warnings:
+On 10/28/24 09:41, Thomas Zimmermann wrote:
+> Am 25.10.24 um 17:37 schrieb Helge Deller:
+>> On 10/25/24 11:25, Gonzalo Silvalde Blanco wrote:
+>>> The fb_udl driver currently depends on CONFIG_FB_DEVICE to create sysf=
+s
+>>> entries and access framebuffer device information. This patch wraps th=
+e
+>>> relevant code blocks with #ifdef CONFIG_FB_DEVICE, allowing the driver=
+ to
+>>> be built and used even if CONFIG_FB_DEVICE is not selected.
+>>>
+>>> The sysfs setting only controls access to certain framebuffer attribut=
+es
+>>> and is not required for the basic display functionality to work correc=
+tly.
+>>> (For information on DisplayLink devices and their Linux support, see:
+>>> https://wiki.archlinux.org/title/DisplayLink).
+>>>
+>>> Tested by building with and without CONFIG_FB_DEVICE, both of which
+>>> compiled and ran without issues.
+>>
+>> Gonzalo, I don't like this patch very much.
+>>
+>> It adds lots of #ifdefs around functions like dev_dbg().
+>> Instead of ifdefs, aren't there other possibilities, e.g.
+>> using fb_dbg() if appropriate?
+>> Or using any other generic dbg() info or simply dropping the line?
+>
+> I talked Gonzalo into sending this patch. I think dev_dbg() calls
+> should be replaced with fb_dbg(), same for _info() and _err(). That's
+> probably worth doing anyway.
 
-[auto build test WARNING on drm-misc/drm-misc-next]
-[also build test WARNING on drm-tip/drm-tip linus/master v6.12-rc5 next-20241028]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Yes, but I doubt every of those calls can be replaced...
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Gonzalo-Silvalde-Blanco/fbdev-udl-Make-CONFIG_FB_DEVICE-optional/20241025-172653
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20241025092538.38339-1-gonzalo.silvalde%40gmail.com
-patch subject: [PATCH] fbdev: udl: Make CONFIG_FB_DEVICE optional
-config: riscv-randconfig-r073-20241029 (https://download.01.org/0day-ci/archive/20241029/202410290452.XKXQkwp1-lkp@intel.com/config)
-compiler: clang version 20.0.0git (https://github.com/llvm/llvm-project 5886454669c3c9026f7f27eab13509dd0241f2d6)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241029/202410290452.XKXQkwp1-lkp@intel.com/reproduce)
+>> But more important:
+>> This is a fbdev driver and currently depends on CONFIG_FB_DEVICE.
+>> If I'm right, the only reason to disable CONFIG_FB_DEVICE is if
+>> you want fbdev output at bootup, but otherwise just want to use DRM.
+>
+> It's unrelated to booting. CONFIG_FB_DEVICE enables/disables
+> userspace interfaces (/dev/fb*, /sys/graphics/fb*). Even without,
+> there's still fbcon that runs on top of the fbdev driver.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410290452.XKXQkwp1-lkp@intel.com/
+Sure, I meant that if people enable a fdev driver, they most likely
+want /dev/fb as well ..... unless they want to use mostly DRM drivers.
 
-All warnings (new ones prefixed by >>):
+>> But then, doesn't there exist a native DRM driver for this graphics
+>> card which can be used instead?
+>> If so, I suggest to not change this fbdev driver at all.
+>
+> Or can we talk about removing udlfb entirely? I tried before, but
+> there was one person still using it. [1] He had concerns about udl's
+> (the DRM driver) stability. I think DRM's udl has matured enough and
+> is in better shape than udlfb. Maybe we can try again.> [1] https://lore=
+.kernel.org/dri-devel/20201130125200.10416-1-tzimmermann@suse.de/
 
-   In file included from drivers/video/fbdev/udlfb.c:19:
-   In file included from include/linux/usb.h:16:
-   In file included from include/linux/interrupt.h:22:
-   In file included from arch/riscv/include/asm/sections.h:9:
-   In file included from include/linux/mm.h:2213:
-   include/linux/vmstat.h:518:36: warning: arithmetic between different enumeration types ('enum node_stat_item' and 'enum lru_list') [-Wenum-enum-conversion]
-     518 |         return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
-         |                               ~~~~~~~~~~~ ^ ~~~
->> drivers/video/fbdev/udlfb.c:1485:35: warning: unused variable 'edid_attr' [-Wunused-const-variable]
-    1485 | static const struct bin_attribute edid_attr = {
-         |                                   ^~~~~~~~~
->> drivers/video/fbdev/udlfb.c:1493:38: warning: unused variable 'fb_device_attrs' [-Wunused-const-variable]
-    1493 | static const struct device_attribute fb_device_attrs[] = {
-         |                                      ^~~~~~~~~~~~~~~
-   3 warnings generated.
+The stability was one of the issues, but IMHO the *main* issue he mentions=
+ is this:
 
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for GET_FREE_REGION
-   Depends on [n]: SPARSEMEM [=n]
-   Selected by [m]:
-   - RESOURCE_KUNIT_TEST [=m] && RUNTIME_TESTING_MENU [=y] && KUNIT [=m]
+The framebuffer driver is faster, it keeps back buffer and updates only
+data that differ between the front and back buffer. The DRM driver doesn't
+have such optimization, it will update everything in a given rectangle -
+this increases USB traffic and makes video playback more jerky.
 
+That's exactly the main concern I'm regularily bringing up and which
+IMHO is the main reason we still have many fbdev drivers.
+You added support for some of those graphics cards with native DRM
+drivers, but all of them are unaccelerated. This hurts a lot on old
+machines and as such specific cards are ugly slowly with DRM.
+A good example for this is the kvm drm graphics driver which is sluggish
+and slow when using KVM.
 
-vim +/edid_attr +1485 drivers/video/fbdev/udlfb.c
+I'm happy to get rid of the fbdev drivers, but for that DRM really needs
+to allow some sort of native fillrect, copyarea and imageblt operations so
+that we can get performance back on the old cards when implementing them
+as DRM driver.
 
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1484  
-598b2eedfc3fbe drivers/video/fbdev/udlfb.c   Bhumika Goyal      2017-08-18 @1485  static const struct bin_attribute edid_attr = {
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1486  	.attr.name = "edid",
-8ef8cc4fca4a92 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-09-05  1487  	.attr.mode = 0666,
-b9f03a3cd06c6f drivers/video/udlfb.c         Paul Mundt         2011-01-06  1488  	.size = EDID_LENGTH,
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1489  	.read = edid_show,
-8ef8cc4fca4a92 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-09-05  1490  	.write = edid_store
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1491  };
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1492  
-fa738a5c4b2a6b drivers/video/fbdev/udlfb.c   Ladislav Michl     2018-01-16 @1493  static const struct device_attribute fb_device_attrs[] = {
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1494  	__ATTR_RO(metrics_bytes_rendered),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1495  	__ATTR_RO(metrics_bytes_identical),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1496  	__ATTR_RO(metrics_bytes_sent),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1497  	__ATTR_RO(metrics_cpu_kcycles_used),
-926c11151e3b82 drivers/staging/udlfb/udlfb.c Greg Kroah-Hartman 2010-11-18  1498  	__ATTR(metrics_reset, S_IWUSR, NULL, metrics_reset_store),
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1499  };
-7d9485e2c53caa drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  1500  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Helge

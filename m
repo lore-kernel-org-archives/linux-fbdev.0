@@ -1,75 +1,96 @@
-Received: from mail-40133.protonmail.ch (mail-40133.protonmail.ch [185.70.40.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A5D8216E19
-	for <linux-fbdev@vger.kernel.org>; Thu,  7 Nov 2024 17:31:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.40.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7D362101BC;
+	Thu,  7 Nov 2024 18:39:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731000673; cv=none; b=raArwNomjUA1VTjT0Rp4ZJDU2nCJIoAAQLfN0SQ6RDXoF5E/ekKRWToq95EXb/fOc+vnCq4UM6gItgxR4ZPbkFdg1Rv6CbkPsotaW0BylQrIzzOQkW01fnYbM7Yo5oS/CjBPK1LGQCQSKo/jkNXD4ZZaOkcixOe6Y9mmB+jRhDM=
+	t=1731004760; cv=none; b=QcSsvb3cre1HbOON5hXEpWYYo6gvzxpke1BCDC/sLibn+/EzSwHtVUHCNwJnhNYBHAP0oIzdVHKCUd0RAFl9zgNgjg1Kxeh76df6/Z582khWX7OPk8PkDg6xbg4y4TjL35UdGFJ3UT9aNy4t7hdYmeITmZ0LGTDIo5qURYmEs4c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731000673; c=relaxed/simple;
-	bh=Q7qmklJAg39I2fpUM2q0jas6DuUYKzHr1XIy3Rj1NxI=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GzHa0Ujgaoh4Yo+NBBW4U3Chz2d3KLRq+wcxHaSn7r9dioA17UMYIR3B9I8X7guprEO8DwpaspggZ30XMORJN5LqR+IH4PyrsgnlnnN0M/mW4w2ueGjhxvISiiIzJAvRORDA1izMDtti70vu2S4JXkL/rhsZIoWqSOilm91MREI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=KB8taOvK; arc=none smtp.client-ip=185.70.40.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
+	s=arc-20240116; t=1731004760; c=relaxed/simple;
+	bh=hCkkdu73hQGPvGzbLfLCeST5jOjzoBQGbV91cnCWD0U=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=CTaRnzFZq5q+3JS1F8vbOXuky00QXVIcPS9f3fcPkE7TzQevX8hrUFQbUK7+pWId8K9slXdFUSU98pEw1OV3UMpA4A5PL3Ybx87/hTgViMgHPY+o4o7mTgRReDFke/zpBhwU2auSmUyO1OMUappwGA0QbdiEN/gzsS9ygQ/TMzg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tNAG+MJt; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="KB8taOvK"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-	s=protonmail3; t=1731000670; x=1731259870;
-	bh=Q7qmklJAg39I2fpUM2q0jas6DuUYKzHr1XIy3Rj1NxI=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector:List-Unsubscribe:List-Unsubscribe-Post;
-	b=KB8taOvKQECYV8IH/DX2mi+PaxgMalZ1S01xCwe6kHSXvtAxjN1r5xxqOTWk5Ddvl
-	 ti246+Vz8hKidYg5We81HKIYoTBfNRGpPYiqIww1mrkieyHuxQgua9CZoelvLnJkoD
-	 hHqaZxVKqPzaSO3zpvn/8dk7Jp5JwnMF5SLqgZdorelNhEWIviYue5+dWbFi7YvcF/
-	 drJBpkrn06ABVyaSILn49vE4FEihgNyG6rvAY4AoD994/h9vT5Hfot6q0BVbz/Ea3s
-	 QLWrhizXpqhrfX+DDnVU1s28U3GKq+NrK8mamdSClbgiT6JSlqm0jD+8OQyQbQhzV4
-	 2i1BZp8OPvyFQ==
-Date: Thu, 07 Nov 2024 17:31:07 +0000
-To: jic23@kernel.org, lars@metafoo.de, gregkh@linuxfoundation.org, parthiban.veerasooran@microchip.com, christian.gromm@microchip.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com
-From: =?utf-8?Q?Dominik_Karol_Pi=C4=85tkowski?= <dominik.karol.piatkowski@protonmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org, =?utf-8?Q?Dominik_Karol_Pi=C4=85tkowski?= <dominik.karol.piatkowski@protonmail.com>
-Subject: [PATCH 4/4] staging: most: Remove TODO contact information
-Message-ID: <20241107172908.95530-5-dominik.karol.piatkowski@protonmail.com>
-In-Reply-To: <20241107172908.95530-1-dominik.karol.piatkowski@protonmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tNAG+MJt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35012C4CECC;
+	Thu,  7 Nov 2024 18:39:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731004758;
+	bh=hCkkdu73hQGPvGzbLfLCeST5jOjzoBQGbV91cnCWD0U=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=tNAG+MJtqHQORwp12W5tqpy9AAV068tUC/40ZMwFjqFKc50LIauzpv1OtqbuA3LQv
+	 jWUDMxma1PnUoWCF/mGwLDjr4W8tJqEdnWSaLhjaQbebBOPs7/bakm3BtSrFag/KGz
+	 wHr/0wKFTOSQNSU1SfeECNKsQw94TVXcMmR1q/6qpX6kWwd1K1hPsskytoBoaxMUrB
+	 WJ8snLcan8XDZOZsv8qeY2A9/CQl253SqDTnvIryx79ceR3wAirhjHfQryPnmkege4
+	 xIcOCgY875h/5nyPpAnBQ4+6CBjU+4sUpUPIM6mEZa7SWnTawONAMlak7Lom8rUjki
+	 vxF1qhLvwONyQ==
+Date: Thu, 7 Nov 2024 18:39:08 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Dominik Karol =?UTF-8?B?UGnEhXRrb3dza2k=?=
+ <dominik.karol.piatkowski@protonmail.com>
+Cc: lars@metafoo.de, gregkh@linuxfoundation.org,
+ parthiban.veerasooran@microchip.com, christian.gromm@microchip.com,
+ sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+ linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org, Michael
+ Hennerich <Michael.Hennerich@analog.com>
+Subject: Re: [PATCH 1/4] staging: iio: Remove TODO file
+Message-ID: <20241107183908.248ed108@jic23-huawei>
+In-Reply-To: <20241107172908.95530-2-dominik.karol.piatkowski@protonmail.com>
 References: <20241107172908.95530-1-dominik.karol.piatkowski@protonmail.com>
-Feedback-ID: 117888567:user:proton
-X-Pm-Message-ID: 04ab167b3a5d4f134f23f67a7c28045d62bffbb3
+	<20241107172908.95530-2-dominik.karol.piatkowski@protonmail.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-Remove contact information from TODO file, as it is redundant and can
-get stale easily.
+On Thu, 07 Nov 2024 17:30:51 +0000
+Dominik Karol Pi=C4=85tkowski <dominik.karol.piatkowski@protonmail.com> wro=
+te:
 
-Signed-off-by: Dominik Karol Pi=C4=85tkowski <dominik.karol.piatkowski@prot=
-onmail.com>
----
- drivers/staging/most/TODO | 7 -------
- 1 file changed, 7 deletions(-)
+> Remove TODO file, as it only contains contact information.
+>=20
+> Signed-off-by: Dominik Karol Pi=C4=85tkowski <dominik.karol.piatkowski@pr=
+otonmail.com>
+> ---
+>  drivers/staging/iio/TODO | 5 -----
+>  1 file changed, 5 deletions(-)
+>  delete mode 100644 drivers/staging/iio/TODO
+>=20
+> diff --git a/drivers/staging/iio/TODO b/drivers/staging/iio/TODO
+> deleted file mode 100644
+> index 0fa6a5500bdb..000000000000
+> --- a/drivers/staging/iio/TODO
+> +++ /dev/null
+> @@ -1,5 +0,0 @@
+> -2020-02-25
+> -
+> -
+> -Contact: Jonathan Cameron <jic23@kernel.org>.
+> -Mailing list: linux-iio@vger.kernel.org
 
-diff --git a/drivers/staging/most/TODO b/drivers/staging/most/TODO
-index 4fa11a9d2cf7..a6448a05ed46 100644
---- a/drivers/staging/most/TODO
-+++ b/drivers/staging/most/TODO
-@@ -1,8 +1 @@
- * Get through code review with Greg Kroah-Hartman
--
--Contact:
--To:
--Christian Gromm <christian.gromm@microchip.com>
--Cc:
--Michael Fabry <Michael.Fabry@microchip.com>
--Christian Gromm <chris@engineersdelight.de>
---=20
-2.34.1
+kernel.org entries tend not to get stale very quickly.
 
+Indeed redundant.  I'll assume Greg will pick this up if he is
+happy with it.
+
+Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+Hmm. We should probably write a meaningful todo for the left over
+IIO drivers in staging beyond 'fix the driver, mostly ABI issues'
+but doing so involves going half the way to actually fixing them.
+
+Every now and then I moot just deleting them all and instead
+poke Analog to remind them these exist.
+
+Michael, consider this another poke :)
+
+Jonathan
 

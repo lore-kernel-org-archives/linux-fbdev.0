@@ -1,43 +1,43 @@
 Received: from mail-40133.protonmail.ch (mail-40133.protonmail.ch [185.70.40.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 835F5216DE8;
-	Thu,  7 Nov 2024 17:31:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A5D8216E19
+	for <linux-fbdev@vger.kernel.org>; Thu,  7 Nov 2024 17:31:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.40.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731000672; cv=none; b=muKC8TSm9LYqUKqQqVtubYD2CtN+ABzxBrfA6JkXaWlbenM9nP70utY8uzXq5lPjxe4EsudkZVwVvX8jxHu2IidCspDqKHpNeMR81lq8QmrupWY+iIm5gzptLiESZAt24boZEFDe87h/YBlpUAgInQS2PKOy6PqvhoLYC7LpoYU=
+	t=1731000673; cv=none; b=raArwNomjUA1VTjT0Rp4ZJDU2nCJIoAAQLfN0SQ6RDXoF5E/ekKRWToq95EXb/fOc+vnCq4UM6gItgxR4ZPbkFdg1Rv6CbkPsotaW0BylQrIzzOQkW01fnYbM7Yo5oS/CjBPK1LGQCQSKo/jkNXD4ZZaOkcixOe6Y9mmB+jRhDM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731000672; c=relaxed/simple;
-	bh=rGm9TKtC9pG+PyfsDAV3zcBspMfEKdxxpnQ3BUIFJpM=;
+	s=arc-20240116; t=1731000673; c=relaxed/simple;
+	bh=Q7qmklJAg39I2fpUM2q0jas6DuUYKzHr1XIy3Rj1NxI=;
 	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZEUADfciX/URARypJecR9G8cvvnFoT9/1bXkZgWRFDWKW+cJo9KaM3MFEhgjaEHhOCHaMTCDOEVE6YCNbJhOmgGo2VsDqLr1Cp54mHBM+/dLvhbkKAo2we14CWmt/xeapDFWSg3kBRa5Cyimya2zStvV+PPKeZgWdFRAXXG71mA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=xC+ZdwHF; arc=none smtp.client-ip=185.70.40.133
+	 MIME-Version:Content-Type; b=GzHa0Ujgaoh4Yo+NBBW4U3Chz2d3KLRq+wcxHaSn7r9dioA17UMYIR3B9I8X7guprEO8DwpaspggZ30XMORJN5LqR+IH4PyrsgnlnnN0M/mW4w2ueGjhxvISiiIzJAvRORDA1izMDtti70vu2S4JXkL/rhsZIoWqSOilm91MREI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=KB8taOvK; arc=none smtp.client-ip=185.70.40.133
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="xC+ZdwHF"
+	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="KB8taOvK"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-	s=protonmail3; t=1731000668; x=1731259868;
-	bh=vDwUmJ+V8Rw4gV6rJzkYvpJL3+x5/BhgO2ef5/F5Ci8=;
+	s=protonmail3; t=1731000670; x=1731259870;
+	bh=Q7qmklJAg39I2fpUM2q0jas6DuUYKzHr1XIy3Rj1NxI=;
 	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
 	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
 	 Message-ID:BIMI-Selector:List-Unsubscribe:List-Unsubscribe-Post;
-	b=xC+ZdwHFdtnThaiVEOXMZGW5CIV2YMyv4gwjukPpwEXJihn25gi/0XRaVIO2+vPUb
-	 yZymRULuH9YYqbZoIWajgZVK9GBQsMPDwmhmsz8myP4xr9a6UsO4txZyHt2qZizFR0
-	 rjdgMzB0Do2P4tPc7+3JhAKnvhcIws/S9qFr71uDgkellkzMdxIoXB+HXxmj77fZwO
-	 1rdKdnkQqwboA6a8JsoGj3PDEHwHpMLgOeAxbG9TSlGF4UauEd/U72U5ftsv08Le/B
-	 NyWsj/j22DLwiImw8VllxbzHNkoznfRiELWOa3/4t7lIL0wshKkW2cIZkMAnu296T9
-	 0orqCHMvuIBjw==
-Date: Thu, 07 Nov 2024 17:31:03 +0000
+	b=KB8taOvKQECYV8IH/DX2mi+PaxgMalZ1S01xCwe6kHSXvtAxjN1r5xxqOTWk5Ddvl
+	 ti246+Vz8hKidYg5We81HKIYoTBfNRGpPYiqIww1mrkieyHuxQgua9CZoelvLnJkoD
+	 hHqaZxVKqPzaSO3zpvn/8dk7Jp5JwnMF5SLqgZdorelNhEWIviYue5+dWbFi7YvcF/
+	 drJBpkrn06ABVyaSILn49vE4FEihgNyG6rvAY4AoD994/h9vT5Hfot6q0BVbz/Ea3s
+	 QLWrhizXpqhrfX+DDnVU1s28U3GKq+NrK8mamdSClbgiT6JSlqm0jD+8OQyQbQhzV4
+	 2i1BZp8OPvyFQ==
+Date: Thu, 07 Nov 2024 17:31:07 +0000
 To: jic23@kernel.org, lars@metafoo.de, gregkh@linuxfoundation.org, parthiban.veerasooran@microchip.com, christian.gromm@microchip.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com
 From: =?utf-8?Q?Dominik_Karol_Pi=C4=85tkowski?= <dominik.karol.piatkowski@protonmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org, =?utf-8?Q?Dominik_Karol_Pi=C4=85tkowski?= <dominik.karol.piatkowski@protonmail.com>
-Subject: [PATCH 3/4] staging: rtl8723bs: Remove TODO contact information
-Message-ID: <20241107172908.95530-4-dominik.karol.piatkowski@protonmail.com>
+Subject: [PATCH 4/4] staging: most: Remove TODO contact information
+Message-ID: <20241107172908.95530-5-dominik.karol.piatkowski@protonmail.com>
 In-Reply-To: <20241107172908.95530-1-dominik.karol.piatkowski@protonmail.com>
 References: <20241107172908.95530-1-dominik.karol.piatkowski@protonmail.com>
 Feedback-ID: 117888567:user:proton
-X-Pm-Message-ID: eaa5207692cc5047455d3f2c6df96d7f2dccde6c
+X-Pm-Message-ID: 04ab167b3a5d4f134f23f67a7c28045d62bffbb3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -53,23 +53,22 @@ get stale easily.
 Signed-off-by: Dominik Karol Pi=C4=85tkowski <dominik.karol.piatkowski@prot=
 onmail.com>
 ---
- drivers/staging/rtl8723bs/TODO | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/staging/most/TODO | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/staging/rtl8723bs/TODO b/drivers/staging/rtl8723bs/TOD=
-O
-index 4c413f9d3df0..050dcd0bffab 100644
---- a/drivers/staging/rtl8723bs/TODO
-+++ b/drivers/staging/rtl8723bs/TODO
-@@ -6,6 +6,3 @@ TODO:
-   of them will require refactoring
- - merge Realtek's bugfixes and new features into the driver
- - switch to use MAC80211
+diff --git a/drivers/staging/most/TODO b/drivers/staging/most/TODO
+index 4fa11a9d2cf7..a6448a05ed46 100644
+--- a/drivers/staging/most/TODO
++++ b/drivers/staging/most/TODO
+@@ -1,8 +1 @@
+ * Get through code review with Greg Kroah-Hartman
 -
--Please send any patches to Greg Kroah-Hartman <gregkh@linuxfoundation.org>=
-,
--Hans de Goede <hdegoede@redhat.com> and Larry Finger <Larry.Finger@lwfinge=
-r.net>.
+-Contact:
+-To:
+-Christian Gromm <christian.gromm@microchip.com>
+-Cc:
+-Michael Fabry <Michael.Fabry@microchip.com>
+-Christian Gromm <chris@engineersdelight.de>
 --=20
 2.34.1
 

@@ -1,212 +1,89 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65AF919DF61;
-	Mon, 11 Nov 2024 13:22:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFC4719E7E2;
+	Mon, 11 Nov 2024 13:42:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731331337; cv=none; b=fgGwrPMcyq7e5ujLpsb01F2+Tyk6yzMiLtJGKZnV+7dAI1cNNadx47qX3APHALlCnkhFnIYGf/CZMserbkaH/46A6mtt3hcj6n0/vNGZSsDjdMPtBzJayZmSN2XQ+gZLfIkObEaY5QWC5InpcwQ64h4rS/r/WcbrbKpkAiaqlco=
+	t=1731332551; cv=none; b=F+mQg8pVWRy/veYI0xdyYLrYOmsqZR8g4Lf1lK/atJI4T8U/RNNqELjgPytjSaQzb8qxeCcwdk3lBnKNoUkdUxlwzzX/vH1DCa37nPwX7SFWHF8wNiAcuuav6KUOugAtCCfQAgmw8t91UnOY/xA4HXn4C+PZZSkmGjsRTYZliQo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731331337; c=relaxed/simple;
-	bh=k6cKkce3ms0d6yA2QTVALSgrxPnR+Aggth2Cprl7rUo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cEuEy0jljzDhESIgYJ7dCO/NiKQ0jjsCbgAAg0Xfz43/P8foMteL9FziYdYlGBPFemcv3nPtKcp7KJiue54NVD4I7nRYwp6UuiUanYD+vX31bgI9AfF7Ldf1UqHvK0kpWHle0QAI9B5CiBOYBTqIq2ZbCceMdrRrzqI5DQ78adg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QWTs67rn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5D+F0Hbg; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QWTs67rn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5D+F0Hbg; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1731332551; c=relaxed/simple;
+	bh=TOVU60syZuDHp0JNrqJ7EWmh83zOgByqn90mAhZeuHI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VQzhPGxew/q7/ZG0VqERPjF7ckYfGas4bLYoFOlM7T31qRrmRQYHMmhDHE58YSXi+jvGiKtUZWjmpVtliGoRTWU5OTfFdPoyGhqZYYGulqQE6xITy8G4Q1SRpn9tiuHoYr5B+aO2KEdDiq03cK/Sa1D5zFYj/m+okf/WyJSU2rE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EM9XClah; arc=none smtp.client-ip=209.85.128.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QWTs67rn";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5D+F0Hbg";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QWTs67rn";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5D+F0Hbg"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 8047C1F38E;
-	Mon, 11 Nov 2024 13:22:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1731331333; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ocKgn5B0DQMYE4A7pbFqcWfEQbriCAiTW18OimNY0uA=;
-	b=QWTs67rn59qHWYZmB/y98/zI45cOFrxdO6wpjY8i+fSgjWFO5UoEVCEzutaW4li41wMfAz
-	WAF0M6sY9a2xK+NMXiDoPfnJU8Xr7+kRN6uCnB/brsk7+o5GBb8abcXTddJMKyTTw+i14x
-	2BRL9k21dVGxD9Xl9cGF44Yb8V5porI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1731331333;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ocKgn5B0DQMYE4A7pbFqcWfEQbriCAiTW18OimNY0uA=;
-	b=5D+F0HbgJjBs7INHsXkLNgHB/XKq/5siWAV8IP13QYptxTlHIwxTZeNV42zbNY7z1RPsSc
-	40b1D/AW/nZUDPCA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=QWTs67rn;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=5D+F0Hbg
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1731331333; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ocKgn5B0DQMYE4A7pbFqcWfEQbriCAiTW18OimNY0uA=;
-	b=QWTs67rn59qHWYZmB/y98/zI45cOFrxdO6wpjY8i+fSgjWFO5UoEVCEzutaW4li41wMfAz
-	WAF0M6sY9a2xK+NMXiDoPfnJU8Xr7+kRN6uCnB/brsk7+o5GBb8abcXTddJMKyTTw+i14x
-	2BRL9k21dVGxD9Xl9cGF44Yb8V5porI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1731331333;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ocKgn5B0DQMYE4A7pbFqcWfEQbriCAiTW18OimNY0uA=;
-	b=5D+F0HbgJjBs7INHsXkLNgHB/XKq/5siWAV8IP13QYptxTlHIwxTZeNV42zbNY7z1RPsSc
-	40b1D/AW/nZUDPCA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 48CDD137FB;
-	Mon, 11 Nov 2024 13:22:13 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id BN1nEAUFMmfqUQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 11 Nov 2024 13:22:13 +0000
-Message-ID: <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
-Date: Mon, 11 Nov 2024 14:22:12 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EM9XClah"
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-6e2e41bd08bso44513377b3.2;
+        Mon, 11 Nov 2024 05:42:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1731332549; x=1731937349; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=TOVU60syZuDHp0JNrqJ7EWmh83zOgByqn90mAhZeuHI=;
+        b=EM9XClahG9M7HynfRiOHXqO/43s9zD70OyZtNggrwf1jzem0zXYpLV+pVue0eA2qN7
+         QH1HpXikR+7vpjaXm67+hzAIWxWnU2QphtoB13tXSmZzV4YD2rVjHGWRNbqrvjLRTeCR
+         bfSrjfeoubFDjWn7QH1TZ6G0x/qRdbVAIBzSgF+fh55dV0B0XX45OfhNQUFzVjnNNWOF
+         AI+tBasuPNFnrm8GRp0dzi8DAehWVp56hVB8Vrv0eX+W8enhh2VUyfNGQCcNxK7g9zeI
+         rKaaqe9l2BE1kDzNbQunIFv6Bps945tDkTOinKiMzMKQB4iM2ycLl+Bhh6ezYpYPqdJC
+         PwXQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1731332549; x=1731937349;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=TOVU60syZuDHp0JNrqJ7EWmh83zOgByqn90mAhZeuHI=;
+        b=QG3qFiccNFjUQsnTBi0H5YiAU4sMMyRPQMR3dy6FC7jWnL1bpNUiPGl7wwaCq9XIYn
+         pbyeP+btXd0YvkckEDvVC6Y7HnDtq7vU9stTBAmUMQ6quhQkarHTiBzoe8UOdN8aTk4v
+         XlHQn5RYPd+clOvUKtFRQrKjWiCH1xO9DzODh9dAEGYeGtl4KwKiF+dw36Tg43VWHpSq
+         5dY76SYv6g4qqTJzWadHr05fCRxUh4a+IszJ9YDfNC8UcUA3W+47NSM7AZN8uXxJGu1z
+         Bk+kx7w3rMLEzp4mRQ/vEj7JEystNyGGk+is1mopc22ct5CpKmpH+J7bEaNPI/L6sAmP
+         pI1Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVaJ5u4aUyDoTD7eY0CGQqQ1qcDoDlmd8N+rE0W/7pX7xw+RNklSNVngVYYR1e5AU2Zl+LHpKZth8emzA==@vger.kernel.org, AJvYcCW/NG2/RDmPX+RVT1sPaoYs55KfFo8PW5ssb4iQ6QdryF+aB1ClSKiufKvaOuyMZM80xKXzZOc4mV8ExHIW@vger.kernel.org
+X-Gm-Message-State: AOJu0YxaZYaW/zqzWPfgw58bPKyI8uweXlMIPMPG2OhlklUGD3txEbbC
+	4RsG3R6mwZKdpbFJDefNanymB9cyCIvLMoiKg4f3fvr67f2RjGkgpQufJMrY+AMNb/sZJDOwxmx
+	RMBHubl5NFSDV5iI3kVp8WmQzHfk=
+X-Google-Smtp-Source: AGHT+IEvkAyFNa0HaZCEuLW8IXvn4B7Ev3wlVuFC2U6An17+S2XLaxjQuC63dbErNk+gcYBt8OjC0lWJedOAoiUZG6A=
+X-Received: by 2002:a05:690c:c96:b0:6ea:4b85:7a13 with SMTP id
+ 00721157ae682-6eaddd861d2mr115856877b3.3.1731332548770; Mon, 11 Nov 2024
+ 05:42:28 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+References: <20220621104617.8817-1-tzimmermann@suse.de> <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
+ <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info> <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
+In-Reply-To: <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
+From: =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
+Date: Mon, 11 Nov 2024 13:42:16 +0000
+Message-ID: <CAEXMXLQEJPVPyqLpH6C7R6iqhhKBpdNS9QeESbEdcmxB70goSA@mail.gmail.com>
 Subject: Re: drm/fbdev-dma: regression
-To: Thorsten Leemhuis <regressions@leemhuis.info>,
- =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
-Cc: Linux kernel regressions list <regressions@lists.linux.dev>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- Linux Framebuffer <linux-fbdev@vger.kernel.org>
-References: <20220621104617.8817-1-tzimmermann@suse.de>
- <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
- <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 8047C1F38E
-X-Spam-Score: -4.51
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[leemhuis.info,gmail.com];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RCPT_COUNT_FIVE(0.00)[6];
-	RCVD_TLS_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Flag: NO
-X-Spam-Level: 
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>, 
+	Linux kernel regressions list <regressions@lists.linux.dev>, dri-devel@lists.freedesktop.org, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Linux Framebuffer <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi
-
-
-Am 11.11.24 um 12:51 schrieb Thorsten Leemhuis:
-> [CCing a few more lists]
+On Mon, Nov 11, 2024 at 1:22=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
+> The patch in question changes the whole memory management of the
+> affected code. It's also noteworthy that most of it has been reworked
+> for the upcoming v6.12. Maybe this already fixed the problem. Kernel
+> v6.11-rc7 added commit 5a498d4d06d6 ("drm/fbdev-dma: Only install
+> deferred I/O if necessary"), which possibly fixes the problem as well.
 >
-> On 21.10.24 15:03, Nuno Gonçalves wrote:
->> Since 5ab91447aa13b8b98bc11f5326f33500b0ee2c48 and still happening in
->> master, I often get a kernel crash, either a "Unable to handle kernel
->> NULL pointer dereference at virtual address" or "Unable to handle
->> kernel paging request at virtual address".
->>
->> This happens in ARM64 with ili9225 and display size 220, 176. It also
->> happens in another board with a different tinydrm driver and size 320,
->> 240.
->>
->> I've reported in 2022 a bug (that you fixed, thanks!), where it was
->> related to screen size causing non alignment of scanlines and pages.
->> I've not investigated further this time as I was not doing any driver
->> development, but let me know if I can do any further testing.
-> Thx for the report. I might be missing something, but from here it looks
-> like nothing happened. So allow me to ask:
->
-> What's the status? Did anyone look into this? Is this sill happening?
+> But there's no explicit fix for this problem and I have not seen any
+> other related reports. Any further information is welcome.
 
-I briefly looked into this bug report some time ago.
+Issue was present since 5ab91447aa13b8b98bc11f5326f33500b0ee2c48 and
+tested until 6.12-rc3.
+Is there any suggestion on how to dig down?
 
-The patch in question changes the whole memory management of the 
-affected code. It's also noteworthy that most of it has been reworked 
-for the upcoming v6.12. Maybe this already fixed the problem. Kernel 
-v6.11-rc7 added commit 5a498d4d06d6 ("drm/fbdev-dma: Only install 
-deferred I/O if necessary"), which possibly fixes the problem as well.
-
-But there's no explicit fix for this problem and I have not seen any 
-other related reports. Any further information is welcome.
-
-Best regards
-Thomas
-
->
-> Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
-> --
-> Everything you wanna know about Linux kernel regression tracking:
-> https://linux-regtracking.leemhuis.info/about/#tldr
-> If I did something stupid, please tell me, as explained on that page.
->
-> #regzbot poke
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Thanks

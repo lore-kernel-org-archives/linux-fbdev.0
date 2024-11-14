@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CF7AF9E4;
-	Thu, 14 Nov 2024 14:35:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 506F76F06D;
+	Thu, 14 Nov 2024 14:43:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731594922; cv=none; b=jZB8IO4zg2hSI/VcFAE9+IFkuGyX5fRh8vMUaxrCuqVLTy6365KorD3XIrjlPNDRzVA/gl7YETLIrlJDj7n5KiSH3GPU/FA+ecC3BnadAgY9wP3G+6AUjhJRNPm6EZAd5D61DOZ9m1e26fFAhCxXrftWjLI0+ZKGcdU4Y02XS7M=
+	t=1731595406; cv=none; b=YPEfeRk6UjlmpjQBSHLhxyfn5IbJmBg1P6lHIQZ2zEjNz11/w14f4Uh9h6xLj2b9GZx8/q0RW1vycU1CReYY/dlLABS8Mysx0+MR2S0kXSFA63fs7NHS+4+J1h9NQPTqkC41JM9yQhuer+r3k6AE+STfCIExUtqKB8c2wZEhvgs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731594922; c=relaxed/simple;
-	bh=DFpKUxNIg/0Q8AQl3GpB3e57cbY/U4sm5jilcZax0FY=;
+	s=arc-20240116; t=1731595406; c=relaxed/simple;
+	bh=ly6/94JqLzwnFcXXt17RF2Fe9Q74GBvP07psUUKnSyw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nuHLwKxJ7ADqEG+a1Su8PkaUDFLPazBtJpNU18+vzyon5O4HNCj0xccixNx1tsqmxXP4Tk5+5h53W5NfXlPOm30URi4CIQdPKgOc26oEtBBvc6VaawjpMBPWmcMfXQM4ptR7U77Vq9Dbw8w/PEVHl2UNVyrs5qCb3QprGPX2Dm4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=E+qBOLrG; arc=none smtp.client-ip=212.227.15.19
+	 In-Reply-To:Content-Type; b=N+PXr3ivUeKvLUehtvc7AqFZhsHHhvIcdiqQ64iwn/1ehQ27K6z7CBTQyc0/rHw4LTHIsXioCySNbqWLquamUimGgUUIuY/rX6MhQrvsIujezKhLOgYpBBqUxs4wBEXJK/ThFDeL9Qj2YnTSjzoxR3CMFtvSdbdNIh2ZfOMbISQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Xd/zibOs; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="E+qBOLrG"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Xd/zibOs"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1731594915; x=1732199715; i=deller@gmx.de;
-	bh=7cL1d418pCLkOQWiNQwzOKQe/skb+LIVS7TMgzPtaDQ=;
+	s=s31663417; t=1731595399; x=1732200199; i=deller@gmx.de;
+	bh=j0/U7fGx4AWdUOvyzN9wyAywgOtJ4EATV3Q/uND2mRc=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=E+qBOLrGAS6u1sUEZqTMCosHqbdJXMwTVuuZS7YTRAshuAzxGNZiKgAFBXlEJW2A
-	 8gwo17gdxuq/d0dHVZU+hchMdZMQxaL+9NkadmZ3VAFpEfqhtB6nKbYdiw71GfT3R
-	 nehKe4HZ8WEcpc8eom7eHR68SBarvdrSAIz85dsnS/rU0LvuZ7tDLawp5bLyUBykj
-	 BGEDQIFeV92A5ixRIf402r70v1PbREjqTf1QghGfL9Ve8WoGeHLGfNBpbelrq12Gw
-	 /98fhqiNqWoQVAbdWKGKzWtjaqLZ1SGK64OuuUczjZg64e/XH1wClFGJQLHJmLnil
-	 /naHNhdgE92PczkYXg==
+	b=Xd/zibOsVehU3bk7RrgE2XOHCTWXZVWno3uyGE2h8//yhDb2oo0URsAM5pBx+TRp
+	 anjfnuA0c6LDrz/aE355IBXoK5kbV8yp6Y8R4R5pfXyoYr7PJliSby4hriPvgG3Qk
+	 dCRTFtrezHO0O/Jo4b6dLErk8UNDO9TMJaCO2woOQOPs6HmWg8GzwaKBZnA0BRs6h
+	 Am7fAzx4WuBDRZKKHvWUzmdtZjEueknhmtIYGf4nrvXU1q2IpjHqT1QYAhdwjiAoa
+	 ZGA8fkRGfYtxTL/pNgZgWVRxrmFdDwupCoQN4TlOOgw3kMPCWdIF+6EuhIVnWsVYJ
+	 7UjRwlF5feQ6y0BMcQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MeU0k-1tjplG3M5E-00pKcW; Thu, 14
- Nov 2024 15:35:14 +0100
-Message-ID: <00edb739-458e-4ed0-a76c-4c6ceb4cbc3e@gmx.de>
-Date: Thu, 14 Nov 2024 15:35:13 +0100
+Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N8XPn-1tpjCY2QZV-00rk05; Thu, 14
+ Nov 2024 15:43:19 +0100
+Message-ID: <7de29a8c-3325-4654-8afd-81f3f9a8d113@gmx.de>
+Date: Thu, 14 Nov 2024 15:43:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: omapfb: Remove some deadcode
-To: linux@treblig.org, u.kleine-koenig@baylibre.com,
- linux-omap@vger.kernel.org
+Subject: Re: [PATCH] video: fbdev: metronomefb: Fix buffer overflow in
+ load_waveform()
+To: Suraj Sonawane <surajsonawane0215@gmail.com>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-kernel@vger.kernel.org
-References: <20241026220133.93956-1-linux@treblig.org>
+References: <20241112202825.17322-1-surajsonawane0215@gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,47 +94,85 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20241026220133.93956-1-linux@treblig.org>
+In-Reply-To: <20241112202825.17322-1-surajsonawane0215@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:pEWBPUavsm7cxfKaowBGPWSvRP1x9pkmKjPqUW2Bf1916up1DWy
- cwBOOut9ZLa/poGj9F4J3FseU5DECw0WtI7dJwWrshJkUbFroGUDE9ya6Z5Q/3/OHiN1Asx
- 2+jvUIhW45QiXRt5lwQfiYv9Htej3vJDoay4lJK5MinPWDoelGynVNwt8VdR6LMtQomNgxn
- 9lgE5TknsZiEQYMDaxSlA==
+X-Provags-ID: V03:K1:CpZZ7+sY9weMlAcS8bdOnALQCqtP2C4cCsagR8BOKv7FDMGr/nQ
+ 5DN0aKfdL4vHxwHxJ3OjnT14mut6WwaYb7PRILAWXXT2hbmh39wRPZ2x6UE4Am19vxAUqmy
+ lsuTefmM1pTqLybg/yRomfMf+OKmUGWaqmU7eD520uX92EOHuGRR0DQRhuIz0rer1Hol62I
+ zJSDDtxpqcXWzkT+QgB0g==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:cGRXIVaS8Vc=;9av0evoZdcdWSn5Ee3L4RxQbIZz
- l+6uYoZX4xhBb/5z73HYO1J7ypc8rV7Dq52Y/pIzKIxmJx/2sntzg3PO7kXyLxl18/JWg8hOz
- JSgo0APgJyIEvwHVfob1OXpXBWR8V1CEqFHvGE7NaoZ8sA72ap9uYsvHFeR7n66Jz8PyW76Sf
- TaaJOcfmGSi/LqwkmcGtpmZgzgc0f4f7ZlOlcWszvlz/34c0hZ/Tl7AWY8ZavDTLLhwOze8wG
- j6WsrSNA0bZhlt+xGqf9PuPTBumRC3mA++zvR8JbMglQePOkAISjZGriyNH4JJmdBnpbygt6q
- wuRlkTwP0kGIwDUuLsKeFPyx95H24TuXYjThp4xoh5ltQUIgOlV10BWwCuuaGCh1eAUz6NAR4
- L780PCz8vww4yUe4wTwZz3fuHoTiHwqniwcr9OIo7osqkkBs54ivNabXOhTx/DUnMdAdR6LSP
- aX7Z8+E2yw89shXuuR+Iqdzg++Ks1eJU6dX2+fMoI0g2iATwT6aDTBUe84uXDvRSHoxYI3uAu
- 4u4tpumvk2pzea/QGcjBU8JvGR1CG/JMBH/pZm9ZaW1E+l1QCkgG7RrT/nASiccyqRBQ59zTO
- /NNofE1K+/WLDkO88cm14CxzQL2cK/jX1gpp1dRPrhXXjdfeFQwlo0sCZa4rTwhfz2mbQqSG8
- eb6gmnAA+aBtL6VBCG5H/WH0a1Rqa8LJrLReP6pJ78r6MTfjXg6ATzcrdtspcVTpp2BNHnIz1
- CyclAsMIR61dXpsQWd9M1NOcfPgP3ot0Ym7W4PWUwleb81UaLtRn34KEbI349bqT7kfnuF6Jv
- d+pUzMcQI0n+VlftZnALjeYFou+YGg2D776jn84O1cpnTkndL/929PhqcWh/QsHG5+BRkk7xi
- R+RpTLRIMjWnWtyfLGqBlTXaRqsjoaeuECh5K9vToMvbiyTKSrFax9x3D
+UI-OutboundReport: notjunk:1;M01:P0:HQYJcQp67OY=;XXbklpG+i27GgexmUgLdyfRZaLJ
+ 0t3uUcglFkLXYrPQ/8fVJSwwKfcwFvxMdsyTjl2Plf6wzs9AbPzHS3bMAd29VL+GwA6CG2gXp
+ hq8aL7AQTHYJ2PfdB5tHffwRDiFamwLiGL5ZeN0U2nivCDgMQCUqEOD6QKPZApnPoAkXpddyc
+ O5o3F/IcAlvWgX3l53KF6lm3rV8y07aqsQDTLKlKx+Blt8O1v9mMU2QqajE/jOd56jXfXoLFa
+ hAaoYf55ZSSgPehU742DGq46W/OfTWekZ9ODipkLGMHy+w22erPqwUfwvIIBpJWF+SKukVyJk
+ kynn8AvAywWx9PXfDU3PQGZ/6+3fmAVBcbJXmVP8DLPHmOXHUs+WM0jglHxBi/DHUUdjlB1Qf
+ XrFF4vZfxUJ1WRjEk4DSYAhZPMLeAxjW5NYKxCVP4NZBK2su9PzG6ButyibyQL4VwDRnngNmi
+ PTD4QiOM3SJ/5LQy5LI3aY1H9Iix7z8EdKGXuIaObze/EeAwjfy5HC1ckzNwtPo2X9JImMiWT
+ ZhnKZRfRxHKJnA1uxaAEvi7dAhu5D1gG5bKCjYWc1OJWyrhdIc38gaCLAkG4wbrUt7N4tlV2C
+ G5e7X1iChMNpOjSlGJo6iYrU9hHQi4bAYxQn9CZQZ7sfFnk2+K1e/ZnmRhEZcmhwaItAG6jkC
+ 2yQLdsvHacWa42tRuPNFaTDOyjROSKKITNL0MSoKb6D5ZygMasDCtGbgoR717oOPye2uvgVVq
+ MwrOI8CyLaTQH0nORE9y9RBWUzcIufzn/tUNwClNyXJVOolrxQIQ0wtuLu+671yO6nQBbQzg3
+ PsKPFlg5NhFaEHZGJ7b3+/HeXFo25g8iA7fAjlMbbiJpRrNe5u7wU/TbVjzXF9BH3iQ2fS2Ft
+ tDJGaC7vl2kzfEmaaz6V7CNwVZHoKpNvB/w8E18e31Oh+/yyW/gZlkL/I
 
-On 10/27/24 00:01, linux@treblig.org wrote:
-> From: "Dr. David Alan Gilbert" <linux@treblig.org>
+On 11/12/24 21:28, Suraj Sonawane wrote:
+> Fix an error detected by the Smatch tool:
 >
-> commit f76ee892a99e ("omapfb: copy omapdss & displays for omapfb")
-> took a copy of the omapdrm code into omapfb, however at that point
-> a couple of functions were already unused at that point.
+> drivers/video/fbdev/metronomefb.c:220 load_waveform() error:
+> buffer overflow 'wfm_hdr->stuff2a' 2 <=3D 4
+> drivers/video/fbdev/metronomefb.c:220 load_waveform() error:
+> buffer overflow 'wfm_hdr->stuff2a' 2 <=3D 4
 >
-> Remove dispc_mgr_get_clock_div() and dispc_enable_fifomerge() from
-> the omapfb copy.
+> The access to wfm_hdr->stuff2a in the loop can lead to a buffer
+> overflow if stuff2a is not large enough. To fix this, a check was
+> added to ensure that stuff2a has sufficient space before accessing
+> it. This prevents the overflow and improves the safety of the code.
 >
-> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+> Signed-off-by: Suraj Sonawane <surajsonawane0215@gmail.com>
 > ---
->   drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 27 --------------------
->   drivers/video/fbdev/omap2/omapfb/dss/dss.h   |  3 ---
->   2 files changed, 30 deletions(-)
+>   drivers/video/fbdev/metronomefb.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/metronomefb.c b/drivers/video/fbdev/met=
+ronomefb.c
+> index 6f0942c6e..9da55cef2 100644
+> --- a/drivers/video/fbdev/metronomefb.c
+> +++ b/drivers/video/fbdev/metronomefb.c
+> @@ -210,6 +210,12 @@ static int load_waveform(u8 *mem, size_t size, int =
+m, int t,
+>   	}
+>   	wfm_hdr->mc +=3D 1;
+>   	wfm_hdr->trc +=3D 1;
+> +
+> +	if (sizeof(wfm_hdr->stuff2a) < 5) {
+> +		dev_err(dev, "Error: insufficient space in stuff2a\n");
+> +		return -EINVAL;
+> +	}
+> +
+>   	for (i =3D 0; i < 5; i++) {
+>   		if (*(wfm_hdr->stuff2a + i) !=3D 0) {
+>   			dev_err(dev, "Error: unexpected value in padding\n");
 
-applied.
+That patch is completely wrong.
+There is
+/* the waveform structure that is coming from userspace firmware */
+struct waveform_hdr {
+         ....
+         u8 stuff2a[2];
+         u8 stuff2b[3];
 
-Thanks!
+So, I *believe* the for-next loop wants to walk acrosss stuff2a and stuff2=
+b,
+which have 5 entries together. So, basically the original code isn't nice
+but still correct.
+Your "sizeof()" check will always be false and is the wrong patch.
+
+If at all, I think the stuff2a and stuff 2b arrays should be joined.
+Something like
+         u8 stuff2[5]; /* this is actually 2-entry stuff2a and 3-entry stu=
+ff2b */
+But again, I don't know much about this driver.
+
 Helge
-

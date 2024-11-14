@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A58E31C6BE
-	for <linux-fbdev@vger.kernel.org>; Thu, 14 Nov 2024 14:28:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CF7AF9E4;
+	Thu, 14 Nov 2024 14:35:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1731594530; cv=none; b=FJ4dGb7I9469DYhRt8/tf7x46BzGtv7nqgcpi/8JMZVFds4SLIlp/1OsqzMLyQncJJJ4MiDG4HNnpH1222wYb24GB2A9q4qoVGGmN5b2AxSRVMlbfnJN+qV5/hfRXfHP0jKfQ6X2mIxYAPdcgpOH4auwcaE/f+GfScyEfgNPPM8=
+	t=1731594922; cv=none; b=jZB8IO4zg2hSI/VcFAE9+IFkuGyX5fRh8vMUaxrCuqVLTy6365KorD3XIrjlPNDRzVA/gl7YETLIrlJDj7n5KiSH3GPU/FA+ecC3BnadAgY9wP3G+6AUjhJRNPm6EZAd5D61DOZ9m1e26fFAhCxXrftWjLI0+ZKGcdU4Y02XS7M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1731594530; c=relaxed/simple;
-	bh=jyXT/ZX7yZyYZAaDMoPALr5vPruq2k0cPAPwqn2O/DI=;
+	s=arc-20240116; t=1731594922; c=relaxed/simple;
+	bh=DFpKUxNIg/0Q8AQl3GpB3e57cbY/U4sm5jilcZax0FY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZAX6ARQgPw2Yd5lroWmLQysKzqQsgHH1UN8ygGXK63E5z93n+YZ1jjHjgPd2DBhAJ3dRRCra1QmIt5RgShLwE7HXju8Loc9Ulpug5QIrpfz/7cMh2LGLOo8Vrmt5w1MlA2eD6mYpD36Y72ViuVtwdq1/dstpM29Zr5rwlL492BI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=XEKUfkmi; arc=none smtp.client-ip=212.227.15.19
+	 In-Reply-To:Content-Type; b=nuHLwKxJ7ADqEG+a1Su8PkaUDFLPazBtJpNU18+vzyon5O4HNCj0xccixNx1tsqmxXP4Tk5+5h53W5NfXlPOm30URi4CIQdPKgOc26oEtBBvc6VaawjpMBPWmcMfXQM4ptR7U77Vq9Dbw8w/PEVHl2UNVyrs5qCb3QprGPX2Dm4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=E+qBOLrG; arc=none smtp.client-ip=212.227.15.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="XEKUfkmi"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="E+qBOLrG"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1731594511; x=1732199311; i=deller@gmx.de;
-	bh=Bu7HzVxvf+qhq7carB/JfhIXKFB7FS8YnkynWm3iatM=;
+	s=s31663417; t=1731594915; x=1732199715; i=deller@gmx.de;
+	bh=7cL1d418pCLkOQWiNQwzOKQe/skb+LIVS7TMgzPtaDQ=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=XEKUfkmiui1tlGQMOciJB+maKwAcwF04+I4hJtk/hOF+ZDyS1kDEPEYxnCMOZNdn
-	 gjFvno1FEBSr6DoDVrNB1WPcXxPK68C34TwhVVzBs8spvNPi1iJzwdC6042O7LSg1
-	 DmcYhzWx2++LTfl+t+pETVJ+OlOH6wWROYNR9a+rSfLosrO8/E4I/kniflqVTcANq
-	 nnheEA+F5S+7gFghOMwl2sHnJC/5l6kHcB3W5XNwbGMxQ5fDbRU6lIx3YRvOlGPMk
-	 //aQn7AoxuRYn0UaHv+81TxQWemDc79Gva6Tpx23Wjbb0EVgTeXKtSfiDSqGwdLCc
-	 4zCo5cV54Ob5KEdRfQ==
+	b=E+qBOLrGAS6u1sUEZqTMCosHqbdJXMwTVuuZS7YTRAshuAzxGNZiKgAFBXlEJW2A
+	 8gwo17gdxuq/d0dHVZU+hchMdZMQxaL+9NkadmZ3VAFpEfqhtB6nKbYdiw71GfT3R
+	 nehKe4HZ8WEcpc8eom7eHR68SBarvdrSAIz85dsnS/rU0LvuZ7tDLawp5bLyUBykj
+	 BGEDQIFeV92A5ixRIf402r70v1PbREjqTf1QghGfL9Ve8WoGeHLGfNBpbelrq12Gw
+	 /98fhqiNqWoQVAbdWKGKzWtjaqLZ1SGK64OuuUczjZg64e/XH1wClFGJQLHJmLnil
+	 /naHNhdgE92PczkYXg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MoO6M-1tZyMx0lfE-00c0Zz; Thu, 14
- Nov 2024 15:28:31 +0100
-Message-ID: <c731e887-17f6-4c8e-84ef-19e299cfe4fb@gmx.de>
-Date: Thu, 14 Nov 2024 15:28:29 +0100
+Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MeU0k-1tjplG3M5E-00pKcW; Thu, 14
+ Nov 2024 15:35:14 +0100
+Message-ID: <00edb739-458e-4ed0-a76c-4c6ceb4cbc3e@gmx.de>
+Date: Thu, 14 Nov 2024 15:35:13 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,13 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video: sh7760fb: Fix a possible memory leak in
- sh7760fb_alloc_mem()
-To: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
- Zhen Lei <thunder.leizhen@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20241026035634.467-1-thunder.leizhen@huawei.com>
- <ehzle6x534lfgxbcfisgpy3mmvggqlbh4zbrx2kl5sb2c3hnmn@biaxdd5cjcb4>
+Subject: Re: [PATCH] fbdev: omapfb: Remove some deadcode
+To: linux@treblig.org, u.kleine-koenig@baylibre.com,
+ linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20241026220133.93956-1-linux@treblig.org>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -95,45 +94,46 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <ehzle6x534lfgxbcfisgpy3mmvggqlbh4zbrx2kl5sb2c3hnmn@biaxdd5cjcb4>
+In-Reply-To: <20241026220133.93956-1-linux@treblig.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ExHF39QlDqKJ+SeOC3n964+8HRVwai+Qpfy4HhtGB8OMsxPzQ8r
- MJ21DIWWehLnbAHFe1k/Tm6G+zB9HG5uN7WzAAtgQK9UhMVxSGV+3OeBYKpXa6kGzeFB2K/
- s+kwbYTQs48jtctKLC+ZFXNgI7hfPKLr5WKd+6KJXwISDuh4iy0Z+Lqfn8rroCJ0gYy+22A
- XKDN+m8qWntQBRAgpOOWg==
+X-Provags-ID: V03:K1:pEWBPUavsm7cxfKaowBGPWSvRP1x9pkmKjPqUW2Bf1916up1DWy
+ cwBOOut9ZLa/poGj9F4J3FseU5DECw0WtI7dJwWrshJkUbFroGUDE9ya6Z5Q/3/OHiN1Asx
+ 2+jvUIhW45QiXRt5lwQfiYv9Htej3vJDoay4lJK5MinPWDoelGynVNwt8VdR6LMtQomNgxn
+ 9lgE5TknsZiEQYMDaxSlA==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:QbLQE5nPvws=;qvwhS6q/tEd9P8N7YuJ9Lngxkg3
- JbfZlsI5gTKzO9gI4hDO5yZjOaeQKOoN3OTaWIm3ShVjAick+GvmJmVWhsuq3V4GmoqJxVLpl
- lOxU2xausdZpONXuCMDG7TUczKSekmJpMa7/y5M+FvX6GDXMgZBifJLJIqYz8ICjFCtH+05Sh
- UrTW+lz/2+3QAxb1EFxH9vRxXPVGsqQZXk9ElfL1WdJVMwBbscFB5/tkv1mvLt5SzTSobvtN6
- x8irj9B6jaB65uI79UYq/UnDfKel/Rh4Pu2tc4mhud0VuKjZ0DodRUM/37KnqDM41fRa2ejoH
- DjdXJRFvJV7wHKFMF1uDYMCh94ext8nymn+jGUuzL4MriVoQad2rb0Edh07YQUNcaM62+K63y
- E/zSa2W5BdwNa2FDGNgwiP5navur2/JCpZxmM3B4r6alMUu1B0wPAw7B7PNQ3YAQWaf/mjNSn
- FTtG6Uh7OHbNjj9YuWa9H70qZnvRF2eSvT/PpGcymxDURgsu+AfB0JHnqqFZCsVevXJ5k1sMM
- oexbxUE9JQctfxlDR51IiDY3zCVgXp/hQIRIpjivJ9pHe1OH95KqztqHE7J0pvSPYZBj303YR
- JOdiZas93f73LcELohH84gOKwz9u24yPo3h0ZHviH3sCGha+rTNzZ8gj729/EeNLvv/o0b3qj
- jUhIeitZ+i3eWL4HkxmyaMrixM1bOpB+VQE5EwWLWTgQpCRu3gSyeIQPZBZ0BrN67+WCQlfqd
- O9qdxLoBoJioKuQ8aGScme83P4T8IVFz03MrOPsqwBb6j3vvfig6YeJulTcGtdtn5KxOt1jj3
- nW62Elexs1hv8AYc/KRF1k0hvqDyfhUN6SvGev+TBaAwLKQaulzz3ArPGVOejvWJGpnORgSmK
- b2yO1qDM4YcwOP5YFVs7lneG95kBgpPjQMaBPtfdMXqqymPyv4owwSAXC
+UI-OutboundReport: notjunk:1;M01:P0:cGRXIVaS8Vc=;9av0evoZdcdWSn5Ee3L4RxQbIZz
+ l+6uYoZX4xhBb/5z73HYO1J7ypc8rV7Dq52Y/pIzKIxmJx/2sntzg3PO7kXyLxl18/JWg8hOz
+ JSgo0APgJyIEvwHVfob1OXpXBWR8V1CEqFHvGE7NaoZ8sA72ap9uYsvHFeR7n66Jz8PyW76Sf
+ TaaJOcfmGSi/LqwkmcGtpmZgzgc0f4f7ZlOlcWszvlz/34c0hZ/Tl7AWY8ZavDTLLhwOze8wG
+ j6WsrSNA0bZhlt+xGqf9PuPTBumRC3mA++zvR8JbMglQePOkAISjZGriyNH4JJmdBnpbygt6q
+ wuRlkTwP0kGIwDUuLsKeFPyx95H24TuXYjThp4xoh5ltQUIgOlV10BWwCuuaGCh1eAUz6NAR4
+ L780PCz8vww4yUe4wTwZz3fuHoTiHwqniwcr9OIo7osqkkBs54ivNabXOhTx/DUnMdAdR6LSP
+ aX7Z8+E2yw89shXuuR+Iqdzg++Ks1eJU6dX2+fMoI0g2iATwT6aDTBUe84uXDvRSHoxYI3uAu
+ 4u4tpumvk2pzea/QGcjBU8JvGR1CG/JMBH/pZm9ZaW1E+l1QCkgG7RrT/nASiccyqRBQ59zTO
+ /NNofE1K+/WLDkO88cm14CxzQL2cK/jX1gpp1dRPrhXXjdfeFQwlo0sCZa4rTwhfz2mbQqSG8
+ eb6gmnAA+aBtL6VBCG5H/WH0a1Rqa8LJrLReP6pJ78r6MTfjXg6ATzcrdtspcVTpp2BNHnIz1
+ CyclAsMIR61dXpsQWd9M1NOcfPgP3ot0Ym7W4PWUwleb81UaLtRn34KEbI349bqT7kfnuF6Jv
+ d+pUzMcQI0n+VlftZnALjeYFou+YGg2D776jn84O1cpnTkndL/929PhqcWh/QsHG5+BRkk7xi
+ R+RpTLRIMjWnWtyfLGqBlTXaRqsjoaeuECh5K9vToMvbiyTKSrFax9x3D
 
-On 10/28/24 11:41, Dmitry Baryshkov wrote:
-> On Sat, Oct 26, 2024 at 11:56:34AM +0800, Zhen Lei wrote:
->> When information such as info->screen_base is not ready, calling
->> sh7760fb_free_mem() does not release memory correctly. Call
->> dma_free_coherent() instead.
->>
->> Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer d=
-river")
->> Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
->> ---
->>   drivers/video/fbdev/sh7760fb.c | 3 +--
->>   1 file changed, 1 insertion(+), 2 deletions(-)
+On 10/27/24 00:01, linux@treblig.org wrote:
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
 >
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> commit f76ee892a99e ("omapfb: copy omapdss & displays for omapfb")
+> took a copy of the omapdrm code into omapfb, however at that point
+> a couple of functions were already unused at that point.
+>
+> Remove dispc_mgr_get_clock_div() and dispc_enable_fifomerge() from
+> the omapfb copy.
+>
+> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+> ---
+>   drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 27 --------------------
+>   drivers/video/fbdev/omap2/omapfb/dss/dss.h   |  3 ---
+>   2 files changed, 30 deletions(-)
 
-applied to fbdev git tree.
+applied.
 
 Thanks!
 Helge

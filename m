@@ -1,108 +1,85 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from fgw21-7.mail.saunalahti.fi (fgw21-7.mail.saunalahti.fi [62.142.5.82])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF35D7E792;
-	Fri, 22 Nov 2024 16:39:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA2BEEADC
+	for <linux-fbdev@vger.kernel.org>; Sat, 23 Nov 2024 20:11:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.142.5.82
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732293574; cv=none; b=DC3rE9Dw5BuwWUJCGfjIr9SZu63RlfxrsPAIlZ/2zB0TRTfUNPK69t0+joTyntWbhp13FWAB0ZUCkeZg5HaKclxwi/TJYMxsrUpFicLeX0x6pFf7OjBvpQ2xs7+F1cevbrci+/DIquyRBSaiU4I2SPqMKB/ngf0KHLBtbm0TgpQ=
+	t=1732392673; cv=none; b=e4iEitHcq1Mf78eywwoliXma0lu7gG4LO5kHgFQMQJXoI1gOb+n2eqWjlyWGJq2t6B+5ERAsJi0O3TnUfbIPS9fH4tLB3YN00dHVYUNdi4ilXRi8auKogbnXqYO++3tNIoSxW1WFcBlKjqv1OPLqOQx17Tnl2OpUSsSqCD+hK8M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732293574; c=relaxed/simple;
-	bh=bVfmMZd++g9VWmMX2EizjlOyv67G/BQQFuNfEa0NLiE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lxyLvIDBWwGNTVVCmjotk45B6BevuNnRiYotr1SS3e8nMclnJYsqx0kqmKrBeHFWViuXHrdvGEiwhGPr6nTXfpMCuJ6sCil1u5SRUXAqvCu2jrM94S+9GZwWcTP//iKBmDMVe2+hp28PeZ4TFPFyG//EML41bzaaV0NK66KrFFs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JXlH+ds6; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JXlH+ds6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1623C4CECE;
-	Fri, 22 Nov 2024 16:39:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1732293573;
-	bh=bVfmMZd++g9VWmMX2EizjlOyv67G/BQQFuNfEa0NLiE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JXlH+ds6Bu4vcaxouVy9GHIJMQYhksn+5FEcsZbKwO1qG5QNztSK6Ejo6PzyTPdbl
-	 xPzR6GS/0CyoCC+O6m9Iq0iQl/W+6OHNKSUaxTMFB4aGA6OzTukQDHqlflA0NXysPe
-	 PAQI/8kjW+/XtNdbjEipZhEbBzuK3JoBGhZnOU3C+jWNHonND/cgmJunlqLeXnsaxT
-	 U7+onLtWXO9aMMcX3wJkkj+AmPt5zYAO3b3b0SW9M4rvHHlBs+DsBCC8erIs3gTlTJ
-	 oPI0TPO6JtfDzyFKtoMtWVESP9iQRt5PMh4J+3eHluJnyXJqyLhyAHHNQdwpwUWKWb
-	 na+zzTSqnxuKA==
-Date: Fri, 22 Nov 2024 17:39:30 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
-To: Guillaume Stols <gstols@baylibre.com>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, 
-	Michael Hennerich <Michael.Hennerich@analog.com>, Jonathan Cameron <jic23@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, linux-pwm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-doc@vger.kernel.org, aardelean@baylibre.com, 
-	dlechner@baylibre.com, jstephan@baylibre.com, nuno.sa@analog.com, 
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH v5 7/8] iio: adc: ad7606: Add iio-backend support
-Message-ID: <gmv5tncy7xwgbc64na7ib42hdthojsfrusauk4hez5zmc6hh2k@4jfk74vt2gcb>
-References: <20241015-ad7606_add_iio_backend_support-v5-0-654faf1ae08c@baylibre.com>
- <20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c@baylibre.com>
+	s=arc-20240116; t=1732392673; c=relaxed/simple;
+	bh=GfY5OOJjYtKwKCT9nVoNfjEhMuP5Dx8oEGJHh7s+ZtQ=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NVTVCHVT3CWDJHHZ+1dMDiwNDbssYZR5hjgFQdkr7SnOktnSQeHWVB/+nxyfdbmF4jjv94QJy24i/aoBiKBsB5HVeli7GcOQKqBQOxPnpNAv7cSKk+V9nkBJGC/i024CPoE7Eol5gzh1omLn0/v6uxY7sDheS5m5YqOHDMT+l6o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com; spf=fail smtp.mailfrom=gmail.com; arc=none smtp.client-ip=62.142.5.82
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=gmail.com
+Received: from localhost (88-113-25-143.elisa-laajakaista.fi [88.113.25.143])
+	by fgw21.mail.saunalahti.fi (Halon) with ESMTP
+	id 10a0d7d4-a9d7-11ef-8881-005056bdd08f;
+	Sat, 23 Nov 2024 22:11:04 +0200 (EET)
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Sat, 23 Nov 2024 22:11:03 +0200
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+	deller@gmx.de, bonbons@linux-vserver.org, jikos@kernel.org,
+	bentiss@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
+	shawnguo@kernel.org, festevam@gmail.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-omap@vger.kernel.org
+Subject: Re: [PATCH v2 20/28] fbdev: clps711x-fb: Replace check_fb in favor
+ of struct fb_info.lcd_dev
+Message-ID: <Z0I211pFIHS_ajoX@surfacebook.localdomain>
+References: <20240906075439.98476-1-tzimmermann@suse.de>
+ <20240906075439.98476-21-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="g6qhxoz5xykc4ajk"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241015-ad7606_add_iio_backend_support-v5-7-654faf1ae08c@baylibre.com>
+In-Reply-To: <20240906075439.98476-21-tzimmermann@suse.de>
+
+Fri, Sep 06, 2024 at 09:52:34AM +0200, Thomas Zimmermann kirjoitti:
+> Store the lcd device in struct fb_info.lcd_dev. The lcd subsystem can
+> now detect the lcd's fbdev device from this field.
+> 
+> This makes the implementation of check_fb in clps711x_lcd_ops obsolete.
+> Remove it.
+
+...
+
+> +	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
+> +				       &clps711x_lcd_ops);
+> +	if (IS_ERR(lcd)) {
+> +		ret = PTR_ERR(lcd);
+> +		goto out_fb_dealloc_cmap;
+> +	}
+> +
+> +	info->lcd_dev = lcd;
+> +
+>  	ret = register_framebuffer(info);
+>  	if (ret)
+>  		goto out_fb_dealloc_cmap;
+>  
+> -	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
+> -				       &clps711x_lcd_ops);
+> -	if (!IS_ERR(lcd))
+> -		return 0;
+> +	return 0;
+>  
+> -	ret = PTR_ERR(lcd);
+>  	unregister_framebuffer(info);
+
+Haven't you got a dead code warning here?
+
+>  
+>  out_fb_dealloc_cmap:
+
+-- 
+With Best Regards,
+Andy Shevchenko
 
 
---g6qhxoz5xykc4ajk
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v5 7/8] iio: adc: ad7606: Add iio-backend support
-MIME-Version: 1.0
-
-On Tue, Oct 15, 2024 at 01:56:20PM +0000, Guillaume Stols wrote:
-> @@ -640,6 +665,14 @@ static int ad7606_read_raw(struct iio_dev *indio_dev,
->  	case IIO_CHAN_INFO_OVERSAMPLING_RATIO:
->  		*val =3D st->oversampling;
->  		return IIO_VAL_INT;
-> +	case IIO_CHAN_INFO_SAMP_FREQ:
-> +		/*
-> +		 * TODO: return the real frequency intead of the requested one once
-> +		 * pwm_get_state_hw comes upstream.
-> +		 */
-> +		pwm_get_state(st->cnvst_pwm, &cnvst_pwm_state);
-> +		*val =3D DIV_ROUND_CLOSEST_ULL(NSEC_PER_SEC, cnvst_pwm_state.period);
-> +		return IIO_VAL_INT;
->  	}
->  	return -EINVAL;
->  }
-
-Being late to the party as the patch is already applied:
-
-ad7606_set_sampling_freq() uses DIV_ROUND_UP_ULL to determine the period
-=66rom freq. So I guess you should a down-rounding div here to calculate
-freq from period.
-
-Having said that, pwm_get_state_hw() is in mainline and will be included
-in v6.13-rc1.
-
-Best regards
-Uwe
-
---g6qhxoz5xykc4ajk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmdAs78ACgkQj4D7WH0S
-/k5jlAgAirnhx9PpmZaNqFxVmISvdk94dasdcSLa7jDqkiXnNJ0oxpyUVc8lm0N6
-NNMqQZbz66q+mmza4KXN1Oz+TPgQqZApnnp58F6ECUpurA6vgB4anXwBqiN0v8PZ
-/zklo+JiCsfLuu3fkM9raKXBxRQh4xJm7PM7WTK15vzsfJCeMANwixBroV6qYtij
-qj2TqzB1yhXmvt7jk4Wk6saLFPB03OHxEbY1QFFOorBXvx6vatRfTaRKTRf2HT9i
-FAjJsluo4KiVaHYhHJwNebI0BiVzIeYKGcda4qTKoDabKW9Xu6Ikt/v2nOcAvuC9
-z5qCVuQ/q08owpk8L41RdCHFLS5W1g==
-=Cj6w
------END PGP SIGNATURE-----
-
---g6qhxoz5xykc4ajk--

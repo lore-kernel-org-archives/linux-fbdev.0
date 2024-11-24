@@ -1,37 +1,38 @@
-Received: from fgw21-7.mail.saunalahti.fi (fgw21-7.mail.saunalahti.fi [62.142.5.82])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA2BEEADC
-	for <linux-fbdev@vger.kernel.org>; Sat, 23 Nov 2024 20:11:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.142.5.82
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A13471311AC;
+	Sun, 24 Nov 2024 17:38:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732392673; cv=none; b=e4iEitHcq1Mf78eywwoliXma0lu7gG4LO5kHgFQMQJXoI1gOb+n2eqWjlyWGJq2t6B+5ERAsJi0O3TnUfbIPS9fH4tLB3YN00dHVYUNdi4ilXRi8auKogbnXqYO++3tNIoSxW1WFcBlKjqv1OPLqOQx17Tnl2OpUSsSqCD+hK8M=
+	t=1732469911; cv=none; b=GrjyiULl88x1JUbddh619HFVJW6QK6yxA6AYwliduXt5rzotbbfCGIhyFJFSCz7kAoIpu7vnpR49YwdE0VvbIYX8oL8bc+XAe7aHJ0X/p65HTI5r4+9zH0B6fYE4R/yJiYE++TvBxs6Hq6IqpwOKOeSUXSO0RFhAcpOBoVO8cy4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732392673; c=relaxed/simple;
-	bh=GfY5OOJjYtKwKCT9nVoNfjEhMuP5Dx8oEGJHh7s+ZtQ=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NVTVCHVT3CWDJHHZ+1dMDiwNDbssYZR5hjgFQdkr7SnOktnSQeHWVB/+nxyfdbmF4jjv94QJy24i/aoBiKBsB5HVeli7GcOQKqBQOxPnpNAv7cSKk+V9nkBJGC/i024CPoE7Eol5gzh1omLn0/v6uxY7sDheS5m5YqOHDMT+l6o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com; spf=fail smtp.mailfrom=gmail.com; arc=none smtp.client-ip=62.142.5.82
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=gmail.com
-Received: from localhost (88-113-25-143.elisa-laajakaista.fi [88.113.25.143])
-	by fgw21.mail.saunalahti.fi (Halon) with ESMTP
-	id 10a0d7d4-a9d7-11ef-8881-005056bdd08f;
-	Sat, 23 Nov 2024 22:11:04 +0200 (EET)
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sat, 23 Nov 2024 22:11:03 +0200
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
-	deller@gmx.de, bonbons@linux-vserver.org, jikos@kernel.org,
-	bentiss@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	shawnguo@kernel.org, festevam@gmail.com,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-omap@vger.kernel.org
-Subject: Re: [PATCH v2 20/28] fbdev: clps711x-fb: Replace check_fb in favor
- of struct fb_info.lcd_dev
-Message-ID: <Z0I211pFIHS_ajoX@surfacebook.localdomain>
-References: <20240906075439.98476-1-tzimmermann@suse.de>
- <20240906075439.98476-21-tzimmermann@suse.de>
+	s=arc-20240116; t=1732469911; c=relaxed/simple;
+	bh=HxTYlh3ZiQ6RZupeK62kAyRgWiWDGmzBXEGGc5CWI4k=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=owl71o7vfIy4Gno4BN4byHRTe01P1ed9PGYAmGMtqubhTJ39ZsGwAzjGSdQX7XsWay0oLebLUY2zOEhYrnpf3ZXSLZ9FKy2wDnwKwAM6c9eNmYLjPvD8G+rOulxsNB8chmAtBhqVyZ6LZqjtiYQ/M+Cb4e8hGU7qU38b3RLlh0s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iuLcgPE6; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iuLcgPE6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D09E2C4CED8;
+	Sun, 24 Nov 2024 17:38:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1732469911;
+	bh=HxTYlh3ZiQ6RZupeK62kAyRgWiWDGmzBXEGGc5CWI4k=;
+	h=Date:From:To:Subject:From;
+	b=iuLcgPE6ckXSU0xRVeNsTB6l2H0Gv2iF1wq7juLYDbQEW3sy7bx5LG+izQkra0srH
+	 CI7K9HNj6TiRYUY7h+y7V3nBEZAMdroJhR8oqEzE+fpTI8QdTsvN43Wc9Z8L+JJUfm
+	 sR5HtDb0a5Mlh/QUww5BwAs4dXY4ZMVI10tXMa45lEoisHrOa+pWhyxDcsIQ6CNmpx
+	 cqUrMKeeQvDWUp8TFoVLZd+Cxkc9DsQhgMH5U/qrsDIlObFkpwFU417I3Wrn7Sc4VH
+	 UMqFTtZoSDnjah7E4bwMRs4dX1qqA5a1PRCbklbKDcnQp45wykrBi+ilTGMnLytiEv
+	 qceZq+Qcg4F4w==
+Date: Sun, 24 Nov 2024 18:38:26 +0100
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and cleanups for v6.13-rc1
+Message-ID: <Z0NkkihDqEwi3k9Y@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,46 +41,43 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240906075439.98476-21-tzimmermann@suse.de>
 
-Fri, Sep 06, 2024 at 09:52:34AM +0200, Thomas Zimmermann kirjoitti:
-> Store the lcd device in struct fb_info.lcd_dev. The lcd subsystem can
-> now detect the lcd's fbdev device from this field.
-> 
-> This makes the implementation of check_fb in clps711x_lcd_ops obsolete.
-> Remove it.
+Hi Linus,
 
-...
+please pull two patches for fbdev for this merge window:
+One removes a memory leak in an error path, the other drops unused code.
 
-> +	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
-> +				       &clps711x_lcd_ops);
-> +	if (IS_ERR(lcd)) {
-> +		ret = PTR_ERR(lcd);
-> +		goto out_fb_dealloc_cmap;
-> +	}
-> +
-> +	info->lcd_dev = lcd;
-> +
->  	ret = register_framebuffer(info);
->  	if (ret)
->  		goto out_fb_dealloc_cmap;
->  
-> -	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
-> -				       &clps711x_lcd_ops);
-> -	if (!IS_ERR(lcd))
-> -		return 0;
-> +	return 0;
->  
-> -	ret = PTR_ERR(lcd);
->  	unregister_framebuffer(info);
+Thanks,
+Helge
 
-Haven't you got a dead code warning here?
+----------------------------------------------------------------
+The following changes since commit 2d5404caa8c7bb5c4e0435f94b28834ae5456623:
 
->  
->  out_fb_dealloc_cmap:
+  Linux 6.12-rc7 (2024-11-10 14:19:35 -0800)
 
--- 
-With Best Regards,
-Andy Shevchenko
+are available in the Git repository at:
 
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.13-rc1
 
+for you to fetch changes up to 8d7493133bfd89322349be3daaf39a256e4354ac:
+
+  fbdev: omapfb: Remove some deadcode (2024-11-14 15:30:36 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and updates for 6.13-rc1:
+
+- omapfb: Remove unused code (Dr. David Alan Gilbert)
+- sh7760fb: Fix memory leak in error path of sh7760fb_alloc_mem()
+  (Zhen Lei)
+
+----------------------------------------------------------------
+Dr. David Alan Gilbert (1):
+      fbdev: omapfb: Remove some deadcode
+
+Zhen Lei (1):
+      fbdev: sh7760fb: Fix a possible memory leak in sh7760fb_alloc_mem()
+
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 27 ---------------------------
+ drivers/video/fbdev/omap2/omapfb/dss/dss.h   |  3 ---
+ drivers/video/fbdev/sh7760fb.c               |  3 +--
+ 3 files changed, 1 insertion(+), 32 deletions(-)

@@ -1,122 +1,84 @@
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
+Received: from mail-il1-f173.google.com (mail-il1-f173.google.com [209.85.166.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E4A8153BFC;
-	Sat,  7 Dec 2024 13:05:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7DDB14B96E;
+	Sat,  7 Dec 2024 22:36:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733576705; cv=none; b=joPqQA/RJqyU+YrEmJKUTfK9erAsfnBHV9el3iGIpIoSkR/5HL3oMOwiDRdsYyRypV6Mwy5jVvzY74mYKzr/ZRv8yVVcChWHxOR/MLWZtBg6FHtfnQJ5+bC28S5Qm8sJmgOg39YoXt2FNVvEakaNfSQ7hScQyBR1AP9LRzUSy8E=
+	t=1733610986; cv=none; b=nEND6YBAs6oGqCdduyS5xeKwg5DaYnAl3CMaSePnKe13bxDLcZnnlgX/Q44UqfDrco9gyEE4wOqzv/BALxE0p0/sMWNzVj0YOVMIJQX4l3k4dSPDbtMo7qM/J5U8Isq52krdl5QTvVBkkZiZESv+PqFFMbeTaAHRVhnqeC63ba0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733576705; c=relaxed/simple;
-	bh=V1gxC+7pFmhwcsVRYLSmWj0bXwQS8MKVVfihUEUE05E=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LtPhNxhM/nK+0AeO+0MPJuFmVtQ6runG/5WwESL0gPO1BY52Zd/Lqh17kx1Be5Yy+S2KNgvDFNJcKlaIA9blvIKDuM16raEFfWObewyKBIXqBvc+/8klza3RgrQvKOzVEfoQ9WShw/UaDUIwOvne7JmPbTlW9tFj8GVfYRTfoOk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=L6la+J2W; arc=none smtp.client-ip=209.85.214.169
+	s=arc-20240116; t=1733610986; c=relaxed/simple;
+	bh=urI7US1zAMf6eOuwKNpt419Njn9MCMtobiUqyPiJ5WQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=N3s4hUNWSZBAvkSA+XCRiwFRPj/XEjpPqeKEjiNKtMGyEfibbVi0+XxkSTFFVuHwQEbwB4kdg4AwC5stSq0z9J4wmF8ZR+NFF9YVSNq5Dko+0EkdJbcF8h0spBnmLdQLx3RKHA9z6HPCk6BjqyHwqcEPwn5Z19AqYrQ++ke5f1w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AsYNoyC7; arc=none smtp.client-ip=209.85.166.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L6la+J2W"
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-215b45a40d8so25116565ad.1;
-        Sat, 07 Dec 2024 05:05:03 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AsYNoyC7"
+Received: by mail-il1-f173.google.com with SMTP id e9e14a558f8ab-3a7dd54af4bso14706055ab.2;
+        Sat, 07 Dec 2024 14:36:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1733576703; x=1734181503; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TFVSrkNiEMMJAigz7OiMiNZjcf3pYxRxO/MhDZIhBgc=;
-        b=L6la+J2W4S9j0Zx0YaouSsTbvOUO6/4QDmiRfRgH0/q5V2rjSByJUCtqwSeP01pikZ
-         loxvR1bTyvdCIu2SSr1HRaU+p2uw1owMnbxFWE7wB+6xANkUS+KqomGStSShwVZHpMH6
-         vWvAdHJ36t21ttIWM7ieG21tIU34Myt3zFCBtyG+ihHZDRA/2Q35Yl29DVwUNwx9thn3
-         rzErGRLmLZjcqNyZhb5FDFRp+j26IHDoPVus1ZHyaxYtIf1gOpoyPtMKAGgE49IverDF
-         L9HZeRoX/Pf2MhxbHlmzTqXMmTAjxiSAe6316JSwIoUPndz7PWZJAagYK2Jg+IzqmV1K
-         9rbQ==
+        d=gmail.com; s=20230601; t=1733610984; x=1734215784; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=urI7US1zAMf6eOuwKNpt419Njn9MCMtobiUqyPiJ5WQ=;
+        b=AsYNoyC7y04ut0Sf8vJSS+FrsfZGcMKAOEyGVKwo4rDaDj2TD1q4R33BvNNtoaDYYi
+         Y1lhCih3AU92y+Amq9eSgDdwSPITW5OmI3LjYutyH+Iungc5KEXe4p0beHyVggVuMe44
+         Wt76pCobw58ciBtDDKuqQktiaI4imFBmlXbgz6M/Ua9os7+3ZeTGsi/l4h8gTbZD0qzF
+         lSyzjnmkIdzQoSyKlykOhlDpEcYeLBAu/K+jdEW0SBkXY8mWq+zQ1GgE+PnIWX9cg5y+
+         vva/5HctCXXrZ/nY/6UhFlBtfX+hXhW9qh5Diivc+GJpqDEhOcANFwBkdgnCYmFl0cLq
+         d7xg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733576703; x=1734181503;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1733610984; x=1734215784;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=TFVSrkNiEMMJAigz7OiMiNZjcf3pYxRxO/MhDZIhBgc=;
-        b=AxNFyJ4/tfiC1q5W7Izgw/pPJ2ikt4bgdXVlfofaQgJ8NpzS58ENvoXkXUt5zariaJ
-         SGNhYF+cR50B0DPSZkK4fJH81xU8ZcktRyE25VTWPMkxb4hKXuUVLTR4dyS/CY4aWCs2
-         vOFAZiGzgMJfvtwexYaollEhQ6pA9YoBUZmtSt07KuNHaYCmAFwId+ATGW0XQixhJto3
-         bnE2k/7PFpmizmuOX/G3Rixg2zRwn4E4Laom0WgDHzFgjLv9hpbpRn1koUSlxgFlxH3W
-         9QR/Flkde3fs31TXecbKtH3XOsO8eEOfZZH3IuP37jW5u++o3iuTpG67/rRF9VDi9dgn
-         fg/w==
-X-Forwarded-Encrypted: i=1; AJvYcCUcLplGEN3rdbpwj6ClK68ukkidGUHHRSQGJoAvqNjp2AVR46NNXPxu0dhlgc3EgYoYC4lHOimcf4CF@vger.kernel.org, AJvYcCWewyS7bAMaFg1iNTc089SudDHEyffIMM3oTPmMJAW48gFDe0QOGq2irBRNNIQ3rQEn34UY7wiFOe5AaQ==@vger.kernel.org, AJvYcCXG8ACxwv0cRqshHMHyZK0VELCIHAdSltnrzTFPvtDPRgOdXeEmryLmCRQZ5ob21PB4uPWg1FDP8JIGgj5O@vger.kernel.org, AJvYcCXGoK11NnC8QG1BkQwUoY9WGeMiv069GiAqd/bAEbOcHVmbdyll/C1X0lBRoh8kCeiZg+Sbdo43tocoBvE=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxdN6MXGiNqmZ0ouJl9HNQMTHFOPpsFtPF6okAfomakyrNbb/7/
-	LopmS99bMIKwddPuujdh11mz8317Vyau3O39hTbEK15cG7mPUYv5
-X-Gm-Gg: ASbGnctYFLTGZNYTBb9fLOZfcWU+sIcrluqkZEqn5provGQhZWXFjg44EXdMPcd6sr1
-	GwzmYUNJpYQbU7MA3e1LED/WJOnxYBAFMuh8a+rHeqUf3kwN6RndEHRyc0OvEhWfKVw5d2/Ygkn
-	NUUEW91LctXCRrN6qMD+VT6cAew27gjzNFTS/tg14aE0DQTnP7DG+/Ay0vC34uGg860OE2deoFS
-	jGUFve/l0zJAbZ2uBXwGMUMCDtZlWb0sld6hsMS3szLV3w3Y2szEJthj8H8A38gYg==
-X-Google-Smtp-Source: AGHT+IH0D/Yd8zXEABvPSshTZ5GdofWvmFimE7bz/L0Dg8+hzOe7KfKe6Ge/tMmMUKD8ETbyZzILpQ==
-X-Received: by 2002:a17:902:e80b:b0:215:97c5:52b0 with SMTP id d9443c01a7336-21614dac17dmr93533435ad.38.1733576703350;
-        Sat, 07 Dec 2024 05:05:03 -0800 (PST)
-Received: from localhost.localdomain ([59.188.211.160])
-        by smtp.googlemail.com with ESMTPSA id d9443c01a7336-21628c59730sm12779715ad.105.2024.12.07.05.04.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 Dec 2024 05:05:03 -0800 (PST)
-From: Nick Chan <towinchenmi@gmail.com>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	Hector Martin <marcan@marcan.st>,
-	Sven Peter <sven@svenpeter.dev>,
-	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-	Nick Chan <towinchenmi@gmail.com>,
-	dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 3/3] MAINTAINERS: Add entries for Apple DWI backlight controller
-Date: Sat,  7 Dec 2024 21:03:16 +0800
-Message-ID: <20241207130433.30351-4-towinchenmi@gmail.com>
-X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20241207130433.30351-1-towinchenmi@gmail.com>
-References: <20241207130433.30351-1-towinchenmi@gmail.com>
+        bh=urI7US1zAMf6eOuwKNpt419Njn9MCMtobiUqyPiJ5WQ=;
+        b=ApDPTvPzIn2iSDj6qyeeZF3zqGGAmgCsUnLGyiruF5HinCzsyow/gdeAJ7oUCTPcal
+         EIRt4lHAxEU94e5j8Hj/S6FwkTo8FR+7UzGQBRMUY0s/1qgz41gYKwdet0C3Qk9DwwTX
+         CqDUy3RRlk297uvUYwIVV/+/TKkZgOhRj1t/43OyNYyXr5vGY2rf9W6LRv5pp7WRjUJ2
+         yVbtSd6qRKLTtoKLwAe0zF6m9oxECkfhmxI7en/Cpq/1sVKN+XoMGEj1CY84eV5Vud/8
+         0aqH46FlvSTmfwJQbDGYmczvawv0LJCALgigocVlLvm5lItlAM13HxCVfpTSJinxTFkQ
+         GntQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUVuhj1aQVvMT08hsPbDXN/IjbwIY8MX4UXFHa1PwTjdPZznnTkvbwIWL0c4C2BbJG6inqGf8MutLjDwA==@vger.kernel.org, AJvYcCVeROoOEExJmsPmVF1kHwo/GZi9EHXnn7FWQwmKqXIVVIsgA7pBugKxkyuSSmt6k0SsMlEz6mg7dnE22Qif@vger.kernel.org
+X-Gm-Message-State: AOJu0YyI+X9bfJgmCm5xQ7g+GQOQMnBHclwNE1T5sa1Gx3Pcf0TkeT/U
+	tchSvG8tstSpGQYOXli0c2zZrXXSWETnWq9dmthj1f4S1oj045ddnkFqnH8Bp5K+lGgwNasYmeE
+	asajwKrYgPhy0igIh/cjYoeLtxqgq2DCKWP1jHN1/
+X-Gm-Gg: ASbGncsDIMEX+4KGMDYhUA2VsknyheLxjfU7vvZdP+dYCUV8bhmf2+T3kssV/kAQToD
+	jxqwlzgBs6EUN9QFtsdo7lix+SB0=
+X-Google-Smtp-Source: AGHT+IGxzU83LUpVfJxMuU8ObhncHI3dIWYNbBVPEPvjuESw/sHk10gB7/kPZJqaK7jk0SPcqqX5+a98M+3fxcKvZ44=
+X-Received: by 2002:a92:c563:0:b0:3a7:6792:60f with SMTP id
+ e9e14a558f8ab-3a811c799a7mr92656935ab.4.1733610983875; Sat, 07 Dec 2024
+ 14:36:23 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220621104617.8817-1-tzimmermann@suse.de> <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
+ <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info> <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
+ <CAEXMXLQEJPVPyqLpH6C7R6iqhhKBpdNS9QeESbEdcmxB70goSA@mail.gmail.com>
+ <da4288a6-96cc-4095-bd73-d66b68e9ed01@suse.de> <CAEXMXLQw1yqUGbWcrKZdOuGvA4eZMG0utiyQ2PVRvTeuFedGbA@mail.gmail.com>
+ <9c902ac0-a94d-4465-98ff-840132e482b1@suse.de>
+In-Reply-To: <9c902ac0-a94d-4465-98ff-840132e482b1@suse.de>
+From: =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
+Date: Sat, 7 Dec 2024 23:36:13 +0100
+Message-ID: <CAEXMXLSLau0sEy8WSZ3=ofK97xP8aPcDQEnT=JFkkt7K=Rzivw@mail.gmail.com>
+Subject: Re: drm/fbdev-dma: regression
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>, 
+	Linux kernel regressions list <regressions@lists.linux.dev>, dri-devel@lists.freedesktop.org, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Linux Framebuffer <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add MAINTAINERS entries for the driver.
+On Mon, Dec 2, 2024 at 12:18=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
+> Thanks for testing. Attached is another patch. It attempts to restore
+> the fbdev handling as before the regression. Please give it a try.
 
-Signed-off-by: Nick Chan <towinchenmi@gmail.com>
----
- MAINTAINERS | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1e930c7a58b1..36de76bc6fd4 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2204,6 +2204,7 @@ F:	Documentation/devicetree/bindings/pci/apple,pcie.yaml
- F:	Documentation/devicetree/bindings/pinctrl/apple,pinctrl.yaml
- F:	Documentation/devicetree/bindings/power/apple*
- F:	Documentation/devicetree/bindings/pwm/apple,s5l-fpwm.yaml
-+F:	Documentation/devicetree/bindings/video/backlight/apple,dwi-bl.yaml
- F:	Documentation/devicetree/bindings/watchdog/apple,wdt.yaml
- F:	arch/arm64/boot/dts/apple/
- F:	drivers/bluetooth/hci_bcm4377.c
-@@ -2221,6 +2222,7 @@ F:	drivers/nvmem/apple-efuses.c
- F:	drivers/pinctrl/pinctrl-apple-gpio.c
- F:	drivers/pwm/pwm-apple.c
- F:	drivers/soc/apple/*
-+F:	drivers/video/backlight/dwi_bl.c
- F:	drivers/watchdog/apple_wdt.c
- F:	include/dt-bindings/interrupt-controller/apple-aic.h
- F:	include/dt-bindings/pinctrl/apple.h
--- 
-2.47.1
-
+This one fixes it for me. Thanks

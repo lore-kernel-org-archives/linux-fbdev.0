@@ -1,63 +1,81 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CAD7221D8E;
-	Mon,  9 Dec 2024 11:07:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 284981A23AC;
+	Mon,  9 Dec 2024 13:43:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733742463; cv=none; b=isg3oQPOfxR4KF8mkdpPS3pbcnXFzB06RMrOy6GTtplkwY0CfnAEd6jmwzPQm7ELpu9wLHmxZHRBfBZcAYrqIEjRs7MpMeD7yUuYWw3wavLQ0B8iwImofehLTQWX2ateQ718tYvr/HeFcezEkjUs7p+ntSqJQWABHQjlbY7rP9Y=
+	t=1733751798; cv=none; b=XKPJwmAk4TL3bvd3OiD74W86UPhXc1NZUq3OjBBuYVFgPzDEarQtQExLh5AI9P66oUVHQjdgeUwlQXCfpCO/77WJt8XianRBATMtzFLOtAy9faBoet7QOryxseAZLHC1BalzzMEpAiPO3RUfBzGQeSQPMTXL1D6H66eUv7oLZJc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733742463; c=relaxed/simple;
-	bh=YJ9JUQ5bSEMgGsZqbZA+J2STml+1V04qdkGaF/nnd20=;
+	s=arc-20240116; t=1733751798; c=relaxed/simple;
+	bh=FjlMcLVOkwvJGS1dA7zQDolkS7fK1VeBJjE48EGXPf4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hBjwBoTsDUaABC9OWQLxHkb9JoBIYMKZ0SUf8vYa1NJLkB6JrF4Nl8+/iX7pHlEHPGmJYDkeS0a+mnJkBCR0hdLUJS9wvcBGNWSNdWM7wAky0U7zE6eBYFEzDWR/vuez+wiDyOS5PWGQy4IlSUjtKA6wTHpvhnaoPUkqeomPuig=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TKm6K7vZ; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=T/vGc5Uw8n7NuyoveCdtBuPSB8tjAAht4gU0jQUlCfbSYdBsv/F2FMghrky9rdaqpKZys+pxJ0zHb6WYFTL57w7TK/1nPqMRzJZzUoWJcuuPBBiTZE6groat1CSW+CC9sPbgVc8D62UCCS22s53NGhJYAMLevbdO+dYdly7do3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ZWSrEw5B; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=uuBoGu83; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ZWSrEw5B; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=uuBoGu83; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TKm6K7vZ"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2163b0c09afso10975235ad.0;
-        Mon, 09 Dec 2024 03:07:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1733742461; x=1734347261; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=YJ9JUQ5bSEMgGsZqbZA+J2STml+1V04qdkGaF/nnd20=;
-        b=TKm6K7vZe6L005HfUAyb/sNtDIDRwORDdEUj6xWxu2PY5JbnoTmfRkwEOZQ8J63w4t
-         EOt1rZwJLyB/rg3oNdKpo8raCFgeVndrB6Ln+qPPaHer0a5NFQ44gUoieL8lVExVrlcy
-         0cm3JXd2wnR24S4lDAjw4Jw/IMmbYTPZLOhQIWo1rz7SNDFmFWjB/FWbX0kFny8m9kqG
-         BCbuttCSpo2wD/OtbllgU31sWdjtSG236Duzk/78WUqfiLBuZAznNWkpfbc6G6yTgKve
-         oZcqK969RtjCl1T2VtfzFfUU3mcV1wbUOvvO9HkfUG9nfwtZBuC+1/fUwQesefIa5bgj
-         KQpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733742461; x=1734347261;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YJ9JUQ5bSEMgGsZqbZA+J2STml+1V04qdkGaF/nnd20=;
-        b=O4JTPUnNvZTDht/hcDnWJCdMo5YR/ERU/NhbbglFhwKJZo/nY/qtv5gzEFAkpmwGYy
-         sHitmbW/d+UXOEsghUsTwC3wqTeWT0T6AAFWIq8hKeiRWU8gcIPRi+j4jidFDAP5MqKW
-         RhzkD7NAeyHyqYUVOfMRzAgXcL8Qyji8u4AaBPLU5USH0ur/rwkO7/4+xZHflE/XITfn
-         PcPaEnwlU/03n/JPQOGbBG5r7X831+xg6EYDPnT/kBfAYuwBix/4pcopso/qXD9AUmJ4
-         64jVJsjvMgEnEtMwEcAwlkAioPSXMHM3FByywVYGdihbdCIrwlmKDestlxMVsC//PJdT
-         d1Yg==
-X-Forwarded-Encrypted: i=1; AJvYcCVKLAIcwFoRIyjzE5FI8Q1wFKwMwxqCYjcC4n2If9TjnZ8g34nl/j0fajKXqSbpDPu8mgTrKqPrWFCScg==@vger.kernel.org, AJvYcCW+ZQuDPLl5i3fWZd10+odnTHv7AYl0ZGVQkzxbl2wYwlKLzWPfwoerj4Hz9ScpNwd8tUF+mobgcd++xFXJ@vger.kernel.org, AJvYcCW+pBt9+pQzlqqWkZJgl0HfGL5HCboYnq671s2WF0Uu3X7LW7URn+QolVwnnAMbWunTrBQObZ7IXKzE@vger.kernel.org, AJvYcCWy0dv3wUSnWWmttgs38ceXIjWWiuihDPLYNzgyT+aTfjbU6W8bBmyFoKevkbB4uO1Xwwafv59+XQxSUK8=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxyBOpRvca86oDVgQnVbkWYb27vPWdQJjDlq2kZeLsPSD5H+zPd
-	MGExuoYuz0ocNdlPK9euGKikuaEazjRL3XHZzurIoJWNTaqVf6Hr
-X-Gm-Gg: ASbGnct8hPCSYRQh/1zCHi6y3MN/Im1JMR7aSUV2ZR8Y9uU7U3SBfoZVI5QCL1uYzwq
-	7mzfDJ7t/ZD3zYBDqFyzvXu67reGtnsQa3blZIpaziAVE3x31gLE+RplZ9q3ZNlYO5/xKOTtGjY
-	lqsjpr2OJJflv4arMIqUO0dIFsixHjlw9TGTwRGSPLf4pySBc7NwcZaKlAjs376Dn5XynUkyZ27
-	UIisKOtFyteAGdfl4g95dVtI3DtgurKyz5raT3ozfTQAq0akGnJLNLFnA==
-X-Google-Smtp-Source: AGHT+IHE+t2Du1WqC/+jnVLPWSG0jQUPMDd8/py9w7+kgKS309UwwhMmDAhAU/gz6Yfj4oBXSzHyqA==
-X-Received: by 2002:a17:902:f607:b0:216:4883:fb43 with SMTP id d9443c01a7336-216488401a3mr47732355ad.32.1733742460654;
-        Mon, 09 Dec 2024 03:07:40 -0800 (PST)
-Received: from [192.168.0.122] ([59.188.211.160])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-215f8f3188fsm70017745ad.265.2024.12.09.03.07.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 09 Dec 2024 03:07:40 -0800 (PST)
-Message-ID: <494a944e-4088-463a-abbb-c0a8cf4455ec@gmail.com>
-Date: Mon, 9 Dec 2024 19:07:35 +0800
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ZWSrEw5B";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="uuBoGu83";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ZWSrEw5B";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="uuBoGu83"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 485691F45B;
+	Mon,  9 Dec 2024 13:43:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1733751795; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UNSDTGcfdwKtSsMNDCxvNvguijub6F6CQsFlt7CsUi4=;
+	b=ZWSrEw5Be/BMJESU8aXhy83SN5Ivy95ksWEJs1tW26Cfp3pZNZq6UvHwJXMwT6QbWq4ww+
+	JfqHSv2ORTaQAf0J2lP7g3IryXidX3P16WN6vs2wUIqI5y/Ff8KKCLQtaGwOBGoj5DTxkK
+	+/Ww8nXLmM46gRUZ7hAvjKMLM0ccZDA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1733751795;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UNSDTGcfdwKtSsMNDCxvNvguijub6F6CQsFlt7CsUi4=;
+	b=uuBoGu83uE0k9Tj4oPlOrm4n8oK7Vw8J5n5hwHALWZHvD2zwRXPsYeUawuaQN2mk3gSYtG
+	c6BDi4fC2nfBwyBw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=ZWSrEw5B;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=uuBoGu83
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1733751795; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UNSDTGcfdwKtSsMNDCxvNvguijub6F6CQsFlt7CsUi4=;
+	b=ZWSrEw5Be/BMJESU8aXhy83SN5Ivy95ksWEJs1tW26Cfp3pZNZq6UvHwJXMwT6QbWq4ww+
+	JfqHSv2ORTaQAf0J2lP7g3IryXidX3P16WN6vs2wUIqI5y/Ff8KKCLQtaGwOBGoj5DTxkK
+	+/Ww8nXLmM46gRUZ7hAvjKMLM0ccZDA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1733751795;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=UNSDTGcfdwKtSsMNDCxvNvguijub6F6CQsFlt7CsUi4=;
+	b=uuBoGu83uE0k9Tj4oPlOrm4n8oK7Vw8J5n5hwHALWZHvD2zwRXPsYeUawuaQN2mk3gSYtG
+	c6BDi4fC2nfBwyBw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1B722138D2;
+	Mon,  9 Dec 2024 13:43:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id snlvBfPzVmcAcAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 09 Dec 2024 13:43:15 +0000
+Message-ID: <900b873f-6eba-4dba-b155-dc5f7594becf@suse.de>
+Date: Mon, 9 Dec 2024 14:43:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -65,35 +83,104 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] dt-bindings: leds: backlight: apple,dwi-bl: Add
- bindings for Apple DWI backlight
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
- Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>,
- Alyssa Rosenzweig <alyssa@rosenzweig.io>, dri-devel@lists.freedesktop.org,
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org
-References: <20241207130433.30351-1-towinchenmi@gmail.com>
- <20241207130433.30351-2-towinchenmi@gmail.com>
- <iwapssdmronnbtmlmynuarzmkd2oh3ssrmzvlobxx4ixrgwgcl@dnonaahib6jw>
-Content-Language: en-MW
-From: Nick Chan <towinchenmi@gmail.com>
-In-Reply-To: <iwapssdmronnbtmlmynuarzmkd2oh3ssrmzvlobxx4ixrgwgcl@dnonaahib6jw>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: drm/fbdev-dma: regression
+To: =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>,
+ Linux kernel regressions list <regressions@lists.linux.dev>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ Linux Framebuffer <linux-fbdev@vger.kernel.org>
+References: <20220621104617.8817-1-tzimmermann@suse.de>
+ <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
+ <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info>
+ <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
+ <CAEXMXLQEJPVPyqLpH6C7R6iqhhKBpdNS9QeESbEdcmxB70goSA@mail.gmail.com>
+ <da4288a6-96cc-4095-bd73-d66b68e9ed01@suse.de>
+ <CAEXMXLQw1yqUGbWcrKZdOuGvA4eZMG0utiyQ2PVRvTeuFedGbA@mail.gmail.com>
+ <9c902ac0-a94d-4465-98ff-840132e482b1@suse.de>
+ <CAEXMXLSLau0sEy8WSZ3=ofK97xP8aPcDQEnT=JFkkt7K=Rzivw@mail.gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <CAEXMXLSLau0sEy8WSZ3=ofK97xP8aPcDQEnT=JFkkt7K=Rzivw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: 485691F45B
+X-Spam-Score: -4.51
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_TO(0.00)[gmail.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	RCPT_COUNT_FIVE(0.00)[6];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Flag: NO
+X-Spam-Level: 
+
+Hi
 
 
+Am 07.12.24 um 23:36 schrieb Nuno Gonçalves:
+> On Mon, Dec 2, 2024 at 12:18 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>> Thanks for testing. Attached is another patch. It attempts to restore
+>> the fbdev handling as before the regression. Please give it a try.
+> This one fixes it for me. Thanks
 
-On 9/12/2024 17:16, Krzysztof Kozlowski wrote:
-> On Sat, Dec 07, 2024 at 09:03:14PM +0800, Nick Chan wrote:
->> Add the device tree bindings for backlight controllers attached via Apple
->> DWI 2-wire interface.
-[...]
+Thanks you so much for testing. I'll prepare a real patch. Can I add 
+your Reported-by and Tested-by tags?
 
-Ack all the changes, will be in v4.
+Best regards
+Thomas
 
-Nick Chan
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

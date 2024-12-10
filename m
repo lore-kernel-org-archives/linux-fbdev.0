@@ -1,41 +1,40 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1A621DC9B9;
-	Tue, 10 Dec 2024 23:37:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEC281EE7BE;
+	Tue, 10 Dec 2024 23:53:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733873850; cv=none; b=FeTnv2WsWQwdGQmoF4LPGbc8xGERjL3rg+JEe+ZZBo8JlS2fTrOOhFkMsBX7HYKUdyGCejTYcbzEzb7aqNBcaVclDMqZtbtmwzpKxy5DgYCM6IGZQG1VezWrRbCoyWqJ34kZt0msrnTdXjpSaHkMV+Ru+mwoGELM8xj5Yc8K78k=
+	t=1733874840; cv=none; b=ocJy6mLWrMVDi3G70il7JNH1OFWHt2J5JG8rvG9YBd7Iw/hEmpb4bMj/prRZ5r0CWQ4csYNMXUMWz+VpgHhRBrkKI8g1tP/ZPyagTHRtVJ6XIhqafc4tIlIDyPADpHxS3c61AShjXOkfr7e/Z09y/0rJMTMUJDe/L1uIiUam6rg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733873850; c=relaxed/simple;
-	bh=4x76lr1uKp4dzIQCuND/FkrveBcE5jD6f/7njWUTaiA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uRC33MRrcsCX1axktXX6Gr/8N9WtCX2N4dXqLuYKf3KwloDp0J+JjLH+00ea8bj8S913WLEUyKXJjMLX/7EnGGAVUfhDppPQPY1ZGk8OHDmwQohC/yxKyFdh9UChSVdTdFeOvpVZuGh/k2Ev3EY5PZfrURM2XuJ53TKgsOjjyUQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=PTzikpyL; arc=none smtp.client-ip=212.227.15.19
+	s=arc-20240116; t=1733874840; c=relaxed/simple;
+	bh=ILSxb84/UcfAHV693mcuQqW/3WgByYQrLGoCK6dUU+U=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=XQQ3C7Q3QtANweiGeVpQAvsAJOqmti7TykY9QHEM8Svpz/36zl3/YGPbF0iR04KaFZhbAmTiquSlSQZDKHjxbfD58fXNhCtDR41xYUXtPJurfLYvn4/a1MjprUYInoLRMDbmGiKWa2d4Suwt+7lkyHnqyYnGqVklH3NsXxfXu8A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Cwmr+Ecm; arc=none smtp.client-ip=212.227.15.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="PTzikpyL"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Cwmr+Ecm"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1733873837; x=1734478637; i=deller@gmx.de;
-	bh=4x76lr1uKp4dzIQCuND/FkrveBcE5jD6f/7njWUTaiA=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=PTzikpyLPaZnbdsMEFBjH8uV2JPnEeJDGJyY/DT4lQUtne4WuYiKNc3QM0Am/Ulv
-	 zWnQwpY7uhEqgGgqXSRAPnCrDeXzlJ4u4ZOEq2jp5iGnvl2H8k+76C58s31RoSBwm
-	 wJQfsx15Ea5rCN1tSEDNy0GjIawlGR3IR3zUJD4DwESfyowr/qPluu5pBKJHqWC9R
-	 qA6bPb3YJ20KNlyjjnxPAs38hWbeoQ0IxQv9SOsPOwu695+rpRjRRmKnyYFddjAC1
-	 VQ76G+AP5/fMgGUToYLTED3IoED0NkmHsAZQhkP8JDufzPevNuezCKwFLq2BSaXMy
-	 kCtRr/WtaD1KvNfNeA==
+	s=s31663417; t=1733874827; x=1734479627; i=deller@gmx.de;
+	bh=0EtnPcDYFUhiPkZvmv6OGFJVn7a1rYxmS/x9tbTqyK0=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:From:To:
+	 Cc:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=Cwmr+Ecm0gzinBy+Hr4+jNBoXfuGF++Fe/lHCUCoshC5R2Ok5mNcfLVOKfZUT+1g
+	 lzjsAm3tPSzzLSEghJu6ceRy+X9jd1wDlbQdPSYUHEqB3I9W77ZzNFOXcCNfLHAuM
+	 J2X7RpY27FmE7TT/nmlDgrnxIqYSfSBr29u212XDEZKZ2SXSlojtCStNv/uR0XMOe
+	 P7hmeCdSYozgzDXg66ogpUWXKuBs/CzSRlcB0N74I/eO1Ol49t9MLl7qqegXc+RoC
+	 U8AA27SXBnhP4H520NcwRsD6yU9qixaWFaofvnY5q4DPOyTvelGUk1zZEcc4Kayiy
+	 Dy4eUy2r329xqHqNMA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.172] ([109.250.63.155]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1McY8d-1ttPCy1m7Z-00qmUT; Wed, 11
- Dec 2024 00:37:17 +0100
-Message-ID: <6b543ccd-23dd-474d-9828-1eb0ecec9c5d@gmx.de>
-Date: Wed, 11 Dec 2024 00:37:15 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M4b1o-1tMoCz0oTu-00ERF1; Wed, 11
+ Dec 2024 00:53:47 +0100
+Message-ID: <b06308ee-93bf-40e8-bc58-a49ecdfbdeeb@gmx.de>
+Date: Wed, 11 Dec 2024 00:53:46 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,6 +44,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/3] fbdev: Fix recursive dependencies wrt
  BACKLIGHT_CLASS_DEVICE
+From: Helge Deller <deller@gmx.de>
 To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
  arnd@arndb.de, simona@ffwll.ch, airlied@gmail.com
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
@@ -54,8 +54,8 @@ References: <20241210142329.660801-1-tzimmermann@suse.de>
  <b5136312-e18c-46cb-9a01-3efc61d6fd9a@gmx.de>
  <de810def-84ac-4d55-b625-536b5781a20f@gmx.de>
  <e7d5fba5-7ecd-4ed3-be7a-56bf82030e67@suse.de>
+ <6b543ccd-23dd-474d-9828-1eb0ecec9c5d@gmx.de>
 Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
  HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
@@ -99,93 +99,116 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <e7d5fba5-7ecd-4ed3-be7a-56bf82030e67@suse.de>
+In-Reply-To: <6b543ccd-23dd-474d-9828-1eb0ecec9c5d@gmx.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:g1Z0RuN2yHK9zdK3CN22uyAaY3zXwn4gKn0FK6xqV6R+ixLc/i4
- kGhsVpxhwsBiadg84ryrKGNgsw+JtXoUIZmSBpKG69w/Xl0xfLXHvdA2QiwbwN98aoBZ5jg
- DQjsB9+lzwim64goruIinUYjq8BD6XrE5EBKC/uf6pYsWowsO1WVSylEWq5fngYJWsOYVlc
- AOuYYYlHPERuMQGL/CT4g==
+X-Provags-ID: V03:K1:YLPx9oTICaMtiTUEkyQ12CqomCHjPoRN585IruFAIxFmttsc7vU
+ QfnaTmbSnhRZJ061TDLWOfkF/pMTGyk0tctidxiDn35bDqBOJcmqPjHrtfS251+xVeofnee
+ pQio7jBY2pMp4gUTZx/5zZBN/RCGOo4iUuEG86WUVPQbIgPBbSzw2VdmWHg3P2CIzthYMFw
+ Ctzg0rh/AxajBPH2EhTAg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:uOT4zfxMQx4=;Y5YXIvusAJQFJrJ5QPRo2Jwh6XG
- 6yjOS1SciFA70GU+JZ2pfh6SZmXHnmw+91ltyyOHy1CxJCKuL7nZQD22mBTJL+lOWedFPtbH+
- anJix+09CTXTdqJAu+bQvGzbn1LU2QnEaKYMQuQ16pEV4EMKUL5+z9J2T6QEdBRdh/U781UGT
- RC9K4LyafPOlmb3jjVi0+QR60MoqaMGcGLagzfXUVloHoeryg91ub+t+Ae00zwgf3YpATkXXA
- QO7OcUfKiYajXpJPBITNzTGKapIndrulL0xY1KADzrvIVgfNyYd2EVxEXr/OGH+Wox9m1k+Il
- YXDlnZr5KUGkSzi/Lxeqdcw4xlxJPG03VpQxTtIHkF7DcOSoU1FAHRluhwIC2ybSdXH0dxkEh
- Xygnht9RxSgSqVjdvMugpsCqOR8VVjkpHsD4FhvLSBCK3tn8IS+o2gTQUYTIAbqD3yn8Hd3Iw
- LUxJBA5y379R6DkqUv1LogN52F5XeldnpayFdlEMWrk48auo1FiIRB3YILJinuM8Eho/hU6nr
- +X0nJXagWLttovIfhArdoDD/5Gz5dathgz5RhIHg1kjvdcivRK1rXYi9GwltNZeU9FdRBD7n+
- Ou1eP9deriLDLfY1lg92OZm040vp1/PQhzwyHubRzZo0YLdr+BPeq7qJvN9sZwDaXZX19ARxG
- YKAD/goDKkjr5JTXzCspy2WbqO2mcELqU4Ove0BFOfwAws4qtfa8APddUuI0GjTAs4dXjShfj
- VKVBqDq0o60IOOJth400dnDZITSASYIptrr3215HW5XoSA2YfhVPO9UyLmK+uVIhEHjYZHtG7
- cdyja5XooBx+/DrvSTwXnv33BWE+rjwjHpdolzm+RAzUBt39CE4Hk4kJlP0Lz+VAyfbkQUJk7
- +4vBWE9LKox1dI8eR2Hhfqzk+xLSCueWcBbw5QJ/R3Gry3sHUEQZRjM24TcpgnfnW0TWjkInB
- WhpmpTQuJ+Z3HnbPz/ahMPzEVsqTDL9q0f4Pcdkl5lXsBBZqxhy+SzSL4kj/0Ez/zTo7osgmP
- YTTs+cqgIYr/Q5SKlVtiaW8AjsfSz1V1yBAnoXX4ys/OA/B2JfhVyroWG+ESgKDLTVFgKLwXT
- Osz2TIFsrQ6GhSC31I3gjGiSJUjuQz
+UI-OutboundReport: notjunk:1;M01:P0:SMBVFmaoxfU=;1KBk0evqzy0ps5rxcP/6MpAZFKP
+ ivqvTXdbpNmRpkP9Kc/biJrhHLfBsSHaF7Hde8qywKf/Dbjbj7XSSjtxGceDWvF+6HeTTGX2w
+ +8GTxHlCrduE4vXfBDAV6xVu7uExpoT7tGncAaxTocv8BEnp8FvucIGSJqYhEG/Hejo7ewqFy
+ agosMpor2rMzb2Fvkm1cLNXAFXbLDk4genDvO7QfZPp4FjnR4eaMS0uY+mMPE4iFYYHVmfMaM
+ qY/ysb2toPSZmnh95fZAmX03S8bJWCbX7GmatdH4Of89hXgs0LUz5nxLV3Z0+0m6AiEDJD62B
+ MPBMw8Fu5JvjN/56GYXo7lf8WxRZ1Uu+NOC3gQdHYTfoAX3DLkGt3KI/87Ptk4FVL2fYO5hq2
+ 7QJ8lhQmY338z1OHYlfmRwWsQk0hm/y5gwzYehCmN9y0K/8sax5/ctW+4W7z/bJpwGhiDjxjk
+ jpoZVvfHVOYu2EEBmPNh7AUpodyzfbXW2rgDOnL0YYuF9rh5TNZvHJD6XTaFOTI45qfXvY8r7
+ fesRJAz6ZV5dZ4ZC6qi7uV5AK5OL0eQ5o1oJmkeOjkABCARIiAraqOCrd8Ld+OymtJUWCheyP
+ sQtDTWjvK7Xv7K+7ommIiUNIZrpgfiGdmoIIgq8gUt2VtuPrnDXJ/fPT6mzfOflAug471q7GM
+ Je7P0wdcbYKaCjIo3Ci4sd5hDTKkTfGTn+vuYCROphIqNjDvW90otdtXNiSZ4Nm0e3OGt60+z
+ hAEA/h5StTCuNC3RTBRf9FMl+R+AqEJlGwmDt+Qfa5mZ1jdDt1mYOnx1yyH7dVEPCFZCstfvq
+ TlKBFz6/Lay5NwV0PdF5oFmU0RysNwh+VOJHTrSKRgOKpt6R76r4OrrdxMZJSHoyxp/UqB//5
+ kaBXgkxZdmmBQTtP4jEEHG/xJkkU168nTabuTDA3MW5GvloqqGy/6FzIusIGEkXpRYWVVQCx1
+ YbA1e5gV2lleCXwmUK1pnKpR3EnTqCAzWxLdnxOQyMBIsv7OGYZny+6seO51wO3SVVSr3FnCm
+ B271tgjQBCFulZ6gLF0Ud3qscnE2btz88UfqXQzxyAyzb69MRqwNRz8HfpxRmt/bBDhznHV3v
+ U2/Z+lNViH0+H+n3Z5tRlWi+X3tVQu
 
-On 12/10/24 16:41, Thomas Zimmermann wrote:
-> Hi
->
->
-> Am 10.12.24 um 15:34 schrieb Helge Deller:
->> On 12/10/24 15:29, Helge Deller wrote:
->>> On 12/10/24 15:09, Thomas Zimmermann wrote:
->>>> diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kc=
-onfig
->>>> index 77ab44362f16..577e91ff7bf6 100644
->>>> --- a/drivers/staging/fbtft/Kconfig
->>>> +++ b/drivers/staging/fbtft/Kconfig
->>>> @@ -3,6 +3,7 @@ menuconfig FB_TFT
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tristate "Support for small TFT LCD di=
-splay modules"
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB && SPI
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_DEVICE
->>>> +=C2=A0=C2=A0=C2=A0 depends on BACKLIGHT_DEVICE_CLASS
->>>
->>> Typo. Should be BACKLIGHT_CLASS_DEVICE...
->
-> Ah, thanks. I'll better check the rest of the series for similar mistake=
-s.
->
+On 12/11/24 00:37, Helge Deller wrote:
+> On 12/10/24 16:41, Thomas Zimmermann wrote:
+>> Hi
 >>
->> Beside the typo:
->> In this case, doesn't it make sense to "select BACKLIGHT_DEVICE_CLASS" =
-instead?
+>>
+>> Am 10.12.24 um 15:34 schrieb Helge Deller:
+>>> On 12/10/24 15:29, Helge Deller wrote:
+>>>> On 12/10/24 15:09, Thomas Zimmermann wrote:
+>>>>> diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/K=
+config
+>>>>> index 77ab44362f16..577e91ff7bf6 100644
+>>>>> --- a/drivers/staging/fbtft/Kconfig
+>>>>> +++ b/drivers/staging/fbtft/Kconfig
+>>>>> @@ -3,6 +3,7 @@ menuconfig FB_TFT
+>>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tristate "Support for small TFT LCD d=
+isplay modules"
+>>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB && SPI
+>>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_DEVICE
+>>>>> +=C2=A0=C2=A0=C2=A0 depends on BACKLIGHT_DEVICE_CLASS
+>>>>
+>>>> Typo. Should be BACKLIGHT_CLASS_DEVICE...
+>>
+>> Ah, thanks. I'll better check the rest of the series for similar mistak=
+es.
+>>
+>>>
+>>> Beside the typo:
+>>> In this case, doesn't it make sense to "select BACKLIGHT_DEVICE_CLASS"=
+ instead?
+>>
+>> That causes the dependency error mentioned in the commit message. This =
+time it's just for fbtft instead of shmobilefb.
+>>
+>>> If people want the fbtft, backlight support should be enabled too.
+>>
+>> As a user-visible option, it should not be auto-selected
+>> unnecessarily.
 >
-> That causes the dependency error mentioned in the commit message. This t=
-ime it's just for fbtft instead of shmobilefb.
+> Right, it should not be auto-selected.
+> Unless if fbtft really needs it enabled to function.
+> IMHO all fb/drm drivers have higher priority than some low-level
+> background backlight controller code.
 >
->> If people want the fbtft, backlight support should be enabled too.
+>> The DRM panel drivers already depend on the backlight
+>> instead of selecting it. It's the correct approach.
 >
-> As a user-visible option, it should not be auto-selected
-> unnecessarily.
+> Sounds wrong IMHO.
+>
+>> As I mentioned
+>> in the cover letter, the few remaining driver that select it should
+>> probably be updated.
+>
+> That dependency sounds weird, but maybe I simply misunderstand your logi=
+c...?
+>
+> As a Linux end user I usually know which graphic cards are in my machine
+> and which ones I want to enable.
+> But as a normal user I think I shouldn't be expected to know
+> that I first need to enable the "backlight class device"
+> so that I'm then able to afterwards enable the fbtft (or any other drm/f=
+b driver).
+>
+> Am I wrong?
 
-Right, it should not be auto-selected.
-Unless if fbtft really needs it enabled to function.
-IMHO all fb/drm drivers have higher priority than some low-level
-background backlight controller code.
+Looking closer on this...
+You propose:
 
-> The DRM panel drivers already depend on the backlight
-> instead of selecting it. It's the correct approach.
+=2D-- a/drivers/staging/fbtft/Kconfig
++++ b/drivers/staging/fbtft/Kconfig
+@@ -3,6 +3,7 @@ menuconfig FB_TFT
+  	tristate "Support for small TFT LCD display modules"
+  	depends on FB && SPI
+  	depends on FB_DEVICE
++	depends on BACKLIGHT_DEVICE_CLASS
+  	depends on GPIOLIB || COMPILE_TEST
+  	select FB_BACKLIGHT
 
-Sounds wrong IMHO.
+So, it will depend on BACKLIGHT_DEVICE_CLASS.
+But there is "select FB_BACKLIGHT" as well, which is:
+config FB_BACKLIGHT
+         tristate
+         depends on FB
+         select BACKLIGHT_CLASS_DEVICE
 
-> As I mentioned
-> in the cover letter, the few remaining driver that select it should
-> probably be updated.
-
-That dependency sounds weird, but maybe I simply misunderstand your logic.=
-..?
-
-As a Linux end user I usually know which graphic cards are in my machine
-and which ones I want to enable.
-But as a normal user I think I shouldn't be expected to know
-that I first need to enable the "backlight class device"
-so that I'm then able to afterwards enable the fbtft (or any other drm/fb =
-driver).
-
-Am I wrong?
+So, you end up with selecting and depending on BACKLIGHT_CLASS_DEVICE ?
 
 Helge

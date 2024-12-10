@@ -1,335 +1,62 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4836278F4E
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Dec 2024 14:23:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EF281AAA38;
+	Tue, 10 Dec 2024 14:25:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733840621; cv=none; b=m8agYzMs0PFOCk7eKOM7uEC8ohoLjap5Tc0EPeMHa6KUjl92ZGYTi24GSYz0Flpubzszhtanyot9cWOBqRKqnODsHKF6aUcg3J7FjvlDZVMne18Tyd7Y+E1OW1dCw/5yjy111ltMODU679m88Fm7CWpqtiFHblAR0TiCp0YbobI=
+	t=1733840719; cv=none; b=d5/ZmfVVBgIqT74sCLs64y8PVm7h4PSd8Yq0DYw52OxWGSmjdY2LXFOydRFNoZis6YlNDrLN2x83889K4DUHQHzylY17L07cpZqw2juDnvOwfSC/g4zJJmDSXZK9kg9+KB+kjJaaG8RQBPwc88tpwRW9Am67fOHWHvoTLuy125E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733840621; c=relaxed/simple;
-	bh=/w6y0CvQRJI3prUjQyekNkdrAnsLhXEMOU6Jo3c08oM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AIpZFxh7mAK1Qp6P5MPXU5bkgBQL4zOsDu+28D3PfvW3U1dNvvrLfkalRtPBCn6ylxy9Q/Tp6WT7fYqp3rcFJK1GYruu+7ipU1Uv8e9vTUuKmVqK6Nzmz8F7BjsRz1vfi3f/VU4s+NzbrTawEo2F5HF7JA7pFsVl/cD7t4HjzAs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=rBXdD+bV; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=+dfBV1a3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tXS6FWhf; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CpJJR89O; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1733840719; c=relaxed/simple;
+	bh=XvACE+bdqQyWiqXaX0FQMqrV41fU2XwxHSNf6quzRNM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=qGYBVB7uuJ1OIfs+VS4Ef8uaN9EVVsp113nuiF7PG+/nqO0JhzU5Pr2eSbQO1eEt8EkDlRd5KRhATVnSPbiHSDGNUOs844BafJsQI8lFmrr93veZoscomoBdRrczaXt7ZRQjS7XSB8wfTJak53gq9i/DI10RXGEEHz5aBIP5tFg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ohxgPAk5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="rBXdD+bV";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+dfBV1a3";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tXS6FWhf";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CpJJR89O"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 5088E21125;
-	Tue, 10 Dec 2024 14:23:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1733840616; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9oHn4Px8sCE9GuGbm+YClAdpyeEgZgPk1FU7mXaP2Fw=;
-	b=rBXdD+bVeilSF5QsrEQ7+vzGTOf2YlE2cztJxx+jLJUl1C1ec4vBZURallo2zKE1TXwAFp
-	yRcbALNl+eAT88vEW/RRLqO0tTRUaSn9Gelvt/MLM9JlTzixOBDuzTSpdT36rMEZrs18s3
-	BAbOPfoDNieBMNKmZf6lruinF5B+v/4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1733840616;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9oHn4Px8sCE9GuGbm+YClAdpyeEgZgPk1FU7mXaP2Fw=;
-	b=+dfBV1a33TPLCt0IDC0sRGxiqMbTxQUvovRoiqh2/Pim2h9gl0zrKuirwWf2bR9bR8zU+8
-	X8S7ZBJaDvZLj7AQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=tXS6FWhf;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=CpJJR89O
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1733840615; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9oHn4Px8sCE9GuGbm+YClAdpyeEgZgPk1FU7mXaP2Fw=;
-	b=tXS6FWhfXNf3BNSzYLO/DJYQ7I/rDm1prgq2nkhWOe7/IDKCwj99qRaNvHsFbWS25Y8onj
-	PNvFIqyEbvHZgfpJeSrdQ04g9cNBXKv2rIlEG2ymWFkTkYYgMWabVhQJjWJr1RW/fgSY9W
-	SpjT4y5MgxosrD9N1L4ReWBKwImf0Ts=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1733840615;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9oHn4Px8sCE9GuGbm+YClAdpyeEgZgPk1FU7mXaP2Fw=;
-	b=CpJJR89OnZ5xqskwiCN8EnVBumtl+09ZBRtcBCN2f4ZYoo4fZg2czUqE1ZcRFn1PxEOd04
-	W/4VVSMegrlgIxCg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0716513A3D;
-	Tue, 10 Dec 2024 14:23:35 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id GPZ9AOdOWGfREwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 10 Dec 2024 14:23:35 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: javierm@redhat.com,
-	arnd@arndb.de,
-	deller@gmx.de,
-	simona@ffwll.ch,
-	airlied@gmail.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 1/3] fbdev: Fix recursive dependencies wrt BACKLIGHT_CLASS_DEVICE
-Date: Tue, 10 Dec 2024 15:09:54 +0100
-Message-ID: <20241210142329.660801-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20241210142329.660801-1-tzimmermann@suse.de>
-References: <20241210142329.660801-1-tzimmermann@suse.de>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ohxgPAk5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70476C4CEDE;
+	Tue, 10 Dec 2024 14:25:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1733840718;
+	bh=XvACE+bdqQyWiqXaX0FQMqrV41fU2XwxHSNf6quzRNM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ohxgPAk5I/GLaIskYIwE6w1VuTM7PUnEFC3rvpKTg05SBwffEWgZhZsu9Z2n6QWOS
+	 lVcW1CavMeGNdG/X6t0wJiL02K7xz6BJjuEwicsEUZUzfPoIDVG7RKnusXs5vE2T+S
+	 1ZplfdjGTrRrjvPebjVdW4SNdDp/onKaRwh1gAR4=
+Date: Tue, 10 Dec 2024 15:24:43 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Antonio Riccio <linux@ariccio.me>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: Remove unnecessary parentheses
+Message-ID: <2024121021-blurred-dotted-c78d@gregkh>
+References: <Z1hNxNkVSt11ncXs@stream-circuit>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 5088E21125
-X-Spam-Level: 
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[redhat.com,arndb.de,gmx.de,ffwll.ch,gmail.com];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim,suse.de:mid];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	R_RATELIMIT(0.00)[to_ip_from(RLtfyjk8sg4x43ngtem9djprcp)];
-	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -3.01
-X-Spam-Flag: NO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Z1hNxNkVSt11ncXs@stream-circuit>
 
-Do not select BACKLIGHT_CLASS_DEVICE from FB_BACKLIGHT. The latter
-only controls backlight support within fbdev core code and data
-structures.
+On Tue, Dec 10, 2024 at 02:18:48PM +0000, Antonio Riccio wrote:
+> Adhere to Linux kernel coding style.
+> 
+> Reported by checkpatch:
+> 
+> CHECK: Unnecessary parentheses around 'devcode != 0x0000'
+> CHECK: Unnecessary parentheses around 'devcode != 0x9320'
+> 
+> Signed-off-by: Antonio Riccio <linux@ariccio.me>
+> ---
+>  drivers/staging/fbtft/fb_ili9320.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Make fbdev drivers depend on BACKLIGHT_CLASS_DEVICE and let users
-select it explicitly. Fixes warnings about recursive dependencies,
-such as
+Checkpatch is wrong here, sorry.  Please see the archives for the
+details as to why I don't take changes like this.
 
-error: recursive dependency detected!
-	symbol BACKLIGHT_CLASS_DEVICE is selected by FB_BACKLIGHT
-	symbol FB_BACKLIGHT is selected by FB_SH_MOBILE_LCDC
-	symbol FB_SH_MOBILE_LCDC depends on FB_DEVICE
-	symbol FB_DEVICE depends on FB_CORE
-	symbol FB_CORE is selected by DRM_GEM_DMA_HELPER
-	symbol DRM_GEM_DMA_HELPER is selected by DRM_PANEL_ILITEK_ILI9341
-	symbol DRM_PANEL_ILITEK_ILI9341 depends on BACKLIGHT_CLASS_DEVICE
+sorry,
 
-BACKLIGHT_CLASS_DEVICE is user-selectable, so making drivers adapt to
-it is the correct approach in any case. For most drivers, backlight
-support is also configurable separately.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/auxdisplay/Kconfig       |  2 +-
- drivers/macintosh/Kconfig        |  1 +
- drivers/staging/fbtft/Kconfig    |  1 +
- drivers/video/fbdev/Kconfig      | 18 +++++++++++++-----
- drivers/video/fbdev/core/Kconfig |  3 +--
- 5 files changed, 17 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/auxdisplay/Kconfig b/drivers/auxdisplay/Kconfig
-index 21545ffba065..8934e6ad5772 100644
---- a/drivers/auxdisplay/Kconfig
-+++ b/drivers/auxdisplay/Kconfig
-@@ -489,7 +489,7 @@ config IMG_ASCII_LCD
- 
- config HT16K33
- 	tristate "Holtek Ht16K33 LED controller with keyscan"
--	depends on FB && I2C && INPUT
-+	depends on FB && I2C && INPUT && BACKLIGHT_CLASS_DEVICE
- 	select FB_SYSMEM_HELPERS
- 	select INPUT_MATRIXKMAP
- 	select FB_BACKLIGHT
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index fb38f684444f..bf3824032d61 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -120,6 +120,7 @@ config PMAC_MEDIABAY
- config PMAC_BACKLIGHT
- 	bool "Backlight control for LCD screens"
- 	depends on PPC_PMAC && ADB_PMU && FB = y && (BROKEN || !PPC64)
-+	depends on BACKLIGHT_CLASS_DEVICE
- 	select FB_BACKLIGHT
- 	help
- 	  Say Y here to enable Macintosh specific extensions of the generic
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index 77ab44362f16..577e91ff7bf6 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -3,6 +3,7 @@ menuconfig FB_TFT
- 	tristate "Support for small TFT LCD display modules"
- 	depends on FB && SPI
- 	depends on FB_DEVICE
-+	depends on BACKLIGHT_DEVICE_CLASS
- 	depends on GPIOLIB || COMPILE_TEST
- 	select FB_BACKLIGHT
- 	select FB_SYSMEM_HELPERS_DEFERRED
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index de035071fedb..7f2f08748a27 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -649,6 +649,7 @@ config FB_S1D13XXX
- config FB_ATMEL
- 	tristate "AT91 LCD Controller support"
- 	depends on FB && OF && HAVE_CLK && HAS_IOMEM
-+	depends on BACKLIGHT_CLASS_DEVICE
- 	depends on HAVE_FB_ATMEL || COMPILE_TEST
- 	select FB_BACKLIGHT
- 	select FB_IOMEM_HELPERS
-@@ -660,7 +661,6 @@ config FB_ATMEL
- config FB_NVIDIA
- 	tristate "nVidia Framebuffer Support"
- 	depends on FB && PCI
--	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -700,6 +700,8 @@ config FB_NVIDIA_DEBUG
- config FB_NVIDIA_BACKLIGHT
- 	bool "Support for backlight control"
- 	depends on FB_NVIDIA
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	select FB_BACKLIGHT
- 	default y
- 	help
- 	  Say Y here if you want to control the backlight of your display.
-@@ -707,7 +709,6 @@ config FB_NVIDIA_BACKLIGHT
- config FB_RIVA
- 	tristate "nVidia Riva support"
- 	depends on FB && PCI
--	select FB_BACKLIGHT if FB_RIVA_BACKLIGHT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -747,6 +748,8 @@ config FB_RIVA_DEBUG
- config FB_RIVA_BACKLIGHT
- 	bool "Support for backlight control"
- 	depends on FB_RIVA
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	select FB_BACKLIGHT
- 	default y
- 	help
- 	  Say Y here if you want to control the backlight of your display.
-@@ -934,7 +937,6 @@ config FB_MATROX_MAVEN
- config FB_RADEON
- 	tristate "ATI Radeon display support"
- 	depends on FB && PCI
--	select FB_BACKLIGHT if FB_RADEON_BACKLIGHT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -960,6 +962,8 @@ config FB_RADEON_I2C
- config FB_RADEON_BACKLIGHT
- 	bool "Support for backlight control"
- 	depends on FB_RADEON
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	select FB_BACKLIGHT
- 	default y
- 	help
- 	  Say Y here if you want to control the backlight of your display.
-@@ -975,7 +979,6 @@ config FB_RADEON_DEBUG
- config FB_ATY128
- 	tristate "ATI Rage128 display support"
- 	depends on FB && PCI
--	select FB_BACKLIGHT if FB_ATY128_BACKLIGHT
- 	select FB_IOMEM_HELPERS
- 	select FB_MACMODES if PPC_PMAC
- 	help
-@@ -989,6 +992,8 @@ config FB_ATY128
- config FB_ATY128_BACKLIGHT
- 	bool "Support for backlight control"
- 	depends on FB_ATY128
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	select FB_BACKLIGHT
- 	default y
- 	help
- 	  Say Y here if you want to control the backlight of your display.
-@@ -999,7 +1004,6 @@ config FB_ATY
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--	select FB_BACKLIGHT if FB_ATY_BACKLIGHT
- 	select FB_IOMEM_FOPS
- 	select FB_MACMODES if PPC
- 	select FB_ATY_CT if SPARC64 && PCI
-@@ -1040,6 +1044,8 @@ config FB_ATY_GX
- config FB_ATY_BACKLIGHT
- 	bool "Support for backlight control"
- 	depends on FB_ATY
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	select FB_BACKLIGHT
- 	default y
- 	help
- 	  Say Y here if you want to control the backlight of your display.
-@@ -1528,6 +1534,7 @@ config FB_SH_MOBILE_LCDC
- 	depends on FB && HAVE_CLK && HAS_IOMEM
- 	depends on SUPERH || COMPILE_TEST
- 	depends on FB_DEVICE
-+	depends on BACKLIGHT_CLASS_DEVICE
- 	select FB_BACKLIGHT
- 	select FB_DEFERRED_IO
- 	select FB_DMAMEM_HELPERS
-@@ -1793,6 +1800,7 @@ config FB_SSD1307
- 	tristate "Solomon SSD1307 framebuffer support"
- 	depends on FB && I2C
- 	depends on GPIOLIB || COMPILE_TEST
-+	depends on BACKLIGHT_CLASS_DEVICE
- 	select FB_BACKLIGHT
- 	select FB_SYSMEM_HELPERS_DEFERRED
- 	help
-diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
-index 0ab8848ba2f1..d554d8c543d4 100644
---- a/drivers/video/fbdev/core/Kconfig
-+++ b/drivers/video/fbdev/core/Kconfig
-@@ -183,9 +183,8 @@ config FB_SYSMEM_HELPERS_DEFERRED
- 	select FB_SYSMEM_HELPERS
- 
- config FB_BACKLIGHT
--	tristate
-+	bool
- 	depends on FB
--	select BACKLIGHT_CLASS_DEVICE
- 
- config FB_MODE_HELPERS
- 	bool "Enable Video Mode Handling Helpers"
--- 
-2.47.1
-
+greg k-h

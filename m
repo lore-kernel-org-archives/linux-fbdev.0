@@ -1,80 +1,41 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E90DD205513
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Dec 2024 15:42:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1A621DC9B9;
+	Tue, 10 Dec 2024 23:37:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733845373; cv=none; b=ReGf130UuzhupSGF/yMXzBwgih22FHn0pXi3iCHDtNF4HLzYrEtwgqHQUfLZz6S9iWPz9yalojNtKRPtUArU3Ih0QHT/yWmeKXtwHkM+zU8BpAZfa4NpUmni7RQtHGv9N7bPs1vAg/IHzil9cMKf5oDSv5NeJSQ3otGN0DsGW6I=
+	t=1733873850; cv=none; b=FeTnv2WsWQwdGQmoF4LPGbc8xGERjL3rg+JEe+ZZBo8JlS2fTrOOhFkMsBX7HYKUdyGCejTYcbzEzb7aqNBcaVclDMqZtbtmwzpKxy5DgYCM6IGZQG1VezWrRbCoyWqJ34kZt0msrnTdXjpSaHkMV+Ru+mwoGELM8xj5Yc8K78k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733845373; c=relaxed/simple;
-	bh=VZD+akS7uBSJcOIbl/ygTJkpHF48bMAgDMvmS0X/3ls=;
+	s=arc-20240116; t=1733873850; c=relaxed/simple;
+	bh=4x76lr1uKp4dzIQCuND/FkrveBcE5jD6f/7njWUTaiA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZiCzqSMpU7Uh3qTUdmgs11VSZagk3eKGBYyGmgb3xB06Nki+qBoNg64i8eXtueXf46+dQHbPBbeoUbI2DTb62dOKNVBtemFo4UOExMrDhSbmzAEgXC+oDtELsCQKbWy6lA7NRbLwsSaJiEr7O0ujkmkHM/8abrX8ZvtC74giHbg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=KVtiJ7hG; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=dowVL3fY; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ZibNBPCW; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=YexXGOs0; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=uRC33MRrcsCX1axktXX6Gr/8N9WtCX2N4dXqLuYKf3KwloDp0J+JjLH+00ea8bj8S913WLEUyKXJjMLX/7EnGGAVUfhDppPQPY1ZGk8OHDmwQohC/yxKyFdh9UChSVdTdFeOvpVZuGh/k2Ev3EY5PZfrURM2XuJ53TKgsOjjyUQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=PTzikpyL; arc=none smtp.client-ip=212.227.15.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="KVtiJ7hG";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="dowVL3fY";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ZibNBPCW";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="YexXGOs0"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id E54111F390;
-	Tue, 10 Dec 2024 15:42:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1733845370; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=9glmd4oYc5v1M9AibNUTOXtbQP0sX2MWRHrygkBRQ1M=;
-	b=KVtiJ7hGpyd4aE9Tmd6guIjuPeZyKG2MvuLjEjC9BEv/RyngQn4WffmSdbCOCZkCOLKHym
-	VJ2zK1mgr4va3etA2wbq4p8QCazZejLZ9K/e/OWTw9eKvBdQPeDGQcQZuYCfmc1M4aIR9S
-	aN6quRqh8n69xYAyAk0ggFFauuLnB40=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1733845370;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=9glmd4oYc5v1M9AibNUTOXtbQP0sX2MWRHrygkBRQ1M=;
-	b=dowVL3fYi7nk0Y2gZBB30jA82c4zuo2n3x0eaB4vzvDqb2ZTWJxcha06Kk6KK9QLv/109J
-	XIU53XEx/xIzFFDA==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1733845368; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=9glmd4oYc5v1M9AibNUTOXtbQP0sX2MWRHrygkBRQ1M=;
-	b=ZibNBPCWGMVjSXoW6JFyQKt7xnRK4tNBgiwPqAvW0qeBonNj/SUUWrQfcIiNj53M/EVe9U
-	TP9U+OgEj9OBHmfZ3AmgkRJbdZuPl/oa+UvZiKzE2nSfagD8n25HANtDtw7oe6n39jg0Yv
-	juqsaeUmXz+QoQykvaJ6NJlZQzYPgLQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1733845368;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=9glmd4oYc5v1M9AibNUTOXtbQP0sX2MWRHrygkBRQ1M=;
-	b=YexXGOs0Zgu2+Vafshv6IwmDjdrNWZYASNticOqNOHndzEL6nLOyMAze3sBvLR/eRwBQzD
-	OkSQWn8AKUdS8SCA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A744B138D2;
-	Tue, 10 Dec 2024 15:42:48 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id wByYJ3hhWGcOLQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 10 Dec 2024 15:42:48 +0000
-Message-ID: <37740461-709f-47a0-ba00-161015605f21@suse.de>
-Date: Tue, 10 Dec 2024 16:42:48 +0100
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="PTzikpyL"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1733873837; x=1734478637; i=deller@gmx.de;
+	bh=4x76lr1uKp4dzIQCuND/FkrveBcE5jD6f/7njWUTaiA=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=PTzikpyLPaZnbdsMEFBjH8uV2JPnEeJDGJyY/DT4lQUtne4WuYiKNc3QM0Am/Ulv
+	 zWnQwpY7uhEqgGgqXSRAPnCrDeXzlJ4u4ZOEq2jp5iGnvl2H8k+76C58s31RoSBwm
+	 wJQfsx15Ea5rCN1tSEDNy0GjIawlGR3IR3zUJD4DwESfyowr/qPluu5pBKJHqWC9R
+	 qA6bPb3YJ20KNlyjjnxPAs38hWbeoQ0IxQv9SOsPOwu695+rpRjRRmKnyYFddjAC1
+	 VQ76G+AP5/fMgGUToYLTED3IoED0NkmHsAZQhkP8JDufzPevNuezCKwFLq2BSaXMy
+	 kCtRr/WtaD1KvNfNeA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.172] ([109.250.63.155]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1McY8d-1ttPCy1m7Z-00qmUT; Wed, 11
+ Dec 2024 00:37:17 +0100
+Message-ID: <6b543ccd-23dd-474d-9828-1eb0ecec9c5d@gmx.de>
+Date: Wed, 11 Dec 2024 00:37:15 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -84,155 +45,147 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/3] fbdev: Fix recursive dependencies wrt
  BACKLIGHT_CLASS_DEVICE
-To: Arnd Bergmann <arnd@arndb.de>,
- Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
- Simona Vetter <simona@ffwll.ch>, Dave Airlie <airlied@gmail.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+ arnd@arndb.de, simona@ffwll.ch, airlied@gmail.com
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
  linux-staging@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
 References: <20241210142329.660801-1-tzimmermann@suse.de>
  <20241210142329.660801-2-tzimmermann@suse.de>
- <ba44a87e-1587-42ee-9da4-ae96e4a26c1c@app.fastmail.com>
+ <b5136312-e18c-46cb-9a01-3efc61d6fd9a@gmx.de>
+ <de810def-84ac-4d55-b625-536b5781a20f@gmx.de>
+ <e7d5fba5-7ecd-4ed3-be7a-56bf82030e67@suse.de>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <ba44a87e-1587-42ee-9da4-ae96e4a26c1c@app.fastmail.com>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
+ HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
+ r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
+ CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
+ 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
+ dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
+ Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
+ GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
+ aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
+ 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
+ ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
+ FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
+ uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
+ uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
+ REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
+ qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
+ iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
+ gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
+ Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
+ qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
+ 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
+ dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
+ rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
+ UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
+ eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
+ ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
+ dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
+ lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
+ 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
+ xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
+ wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
+ fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
+ Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
+ l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
+ RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
+ BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
+ Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
+ XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
+ MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
+ FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
+ 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
+ ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
+In-Reply-To: <e7d5fba5-7ecd-4ed3-be7a-56bf82030e67@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -8.30
-X-Spamd-Result: default: False [-8.30 / 50.00];
-	REPLY(-4.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	FREEMAIL_TO(0.00)[arndb.de,redhat.com,gmx.de,ffwll.ch,gmail.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo]
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:g1Z0RuN2yHK9zdK3CN22uyAaY3zXwn4gKn0FK6xqV6R+ixLc/i4
+ kGhsVpxhwsBiadg84ryrKGNgsw+JtXoUIZmSBpKG69w/Xl0xfLXHvdA2QiwbwN98aoBZ5jg
+ DQjsB9+lzwim64goruIinUYjq8BD6XrE5EBKC/uf6pYsWowsO1WVSylEWq5fngYJWsOYVlc
+ AOuYYYlHPERuMQGL/CT4g==
 X-Spam-Flag: NO
-X-Spam-Level: 
+UI-OutboundReport: notjunk:1;M01:P0:uOT4zfxMQx4=;Y5YXIvusAJQFJrJ5QPRo2Jwh6XG
+ 6yjOS1SciFA70GU+JZ2pfh6SZmXHnmw+91ltyyOHy1CxJCKuL7nZQD22mBTJL+lOWedFPtbH+
+ anJix+09CTXTdqJAu+bQvGzbn1LU2QnEaKYMQuQ16pEV4EMKUL5+z9J2T6QEdBRdh/U781UGT
+ RC9K4LyafPOlmb3jjVi0+QR60MoqaMGcGLagzfXUVloHoeryg91ub+t+Ae00zwgf3YpATkXXA
+ QO7OcUfKiYajXpJPBITNzTGKapIndrulL0xY1KADzrvIVgfNyYd2EVxEXr/OGH+Wox9m1k+Il
+ YXDlnZr5KUGkSzi/Lxeqdcw4xlxJPG03VpQxTtIHkF7DcOSoU1FAHRluhwIC2ybSdXH0dxkEh
+ Xygnht9RxSgSqVjdvMugpsCqOR8VVjkpHsD4FhvLSBCK3tn8IS+o2gTQUYTIAbqD3yn8Hd3Iw
+ LUxJBA5y379R6DkqUv1LogN52F5XeldnpayFdlEMWrk48auo1FiIRB3YILJinuM8Eho/hU6nr
+ +X0nJXagWLttovIfhArdoDD/5Gz5dathgz5RhIHg1kjvdcivRK1rXYi9GwltNZeU9FdRBD7n+
+ Ou1eP9deriLDLfY1lg92OZm040vp1/PQhzwyHubRzZo0YLdr+BPeq7qJvN9sZwDaXZX19ARxG
+ YKAD/goDKkjr5JTXzCspy2WbqO2mcELqU4Ove0BFOfwAws4qtfa8APddUuI0GjTAs4dXjShfj
+ VKVBqDq0o60IOOJth400dnDZITSASYIptrr3215HW5XoSA2YfhVPO9UyLmK+uVIhEHjYZHtG7
+ cdyja5XooBx+/DrvSTwXnv33BWE+rjwjHpdolzm+RAzUBt39CE4Hk4kJlP0Lz+VAyfbkQUJk7
+ +4vBWE9LKox1dI8eR2Hhfqzk+xLSCueWcBbw5QJ/R3Gry3sHUEQZRjM24TcpgnfnW0TWjkInB
+ WhpmpTQuJ+Z3HnbPz/ahMPzEVsqTDL9q0f4Pcdkl5lXsBBZqxhy+SzSL4kj/0Ez/zTo7osgmP
+ YTTs+cqgIYr/Q5SKlVtiaW8AjsfSz1V1yBAnoXX4ys/OA/B2JfhVyroWG+ESgKDLTVFgKLwXT
+ Osz2TIFsrQ6GhSC31I3gjGiSJUjuQz
 
-Hi
-
-
-Am 10.12.24 um 15:30 schrieb Arnd Bergmann:
-> On Tue, Dec 10, 2024, at 15:09, Thomas Zimmermann wrote:
->> Do not select BACKLIGHT_CLASS_DEVICE from FB_BACKLIGHT. The latter
->> only controls backlight support within fbdev core code and data
->> structures.
+On 12/10/24 16:41, Thomas Zimmermann wrote:
+> Hi
+>
+>
+> Am 10.12.24 um 15:34 schrieb Helge Deller:
+>> On 12/10/24 15:29, Helge Deller wrote:
+>>> On 12/10/24 15:09, Thomas Zimmermann wrote:
+>>>> diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kc=
+onfig
+>>>> index 77ab44362f16..577e91ff7bf6 100644
+>>>> --- a/drivers/staging/fbtft/Kconfig
+>>>> +++ b/drivers/staging/fbtft/Kconfig
+>>>> @@ -3,6 +3,7 @@ menuconfig FB_TFT
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tristate "Support for small TFT LCD di=
+splay modules"
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB && SPI
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_DEVICE
+>>>> +=C2=A0=C2=A0=C2=A0 depends on BACKLIGHT_DEVICE_CLASS
+>>>
+>>> Typo. Should be BACKLIGHT_CLASS_DEVICE...
+>
+> Ah, thanks. I'll better check the rest of the series for similar mistake=
+s.
+>
 >>
->> Make fbdev drivers depend on BACKLIGHT_CLASS_DEVICE and let users
->> select it explicitly. Fixes warnings about recursive dependencies,
->> such as
->>
->> error: recursive dependency detected!
->> 	symbol BACKLIGHT_CLASS_DEVICE is selected by FB_BACKLIGHT
->> 	symbol FB_BACKLIGHT is selected by FB_SH_MOBILE_LCDC
->> 	symbol FB_SH_MOBILE_LCDC depends on FB_DEVICE
->> 	symbol FB_DEVICE depends on FB_CORE
->> 	symbol FB_CORE is selected by DRM_GEM_DMA_HELPER
->> 	symbol DRM_GEM_DMA_HELPER is selected by DRM_PANEL_ILITEK_ILI9341
->> 	symbol DRM_PANEL_ILITEK_ILI9341 depends on BACKLIGHT_CLASS_DEVICE
->>
->> BACKLIGHT_CLASS_DEVICE is user-selectable, so making drivers adapt to
->> it is the correct approach in any case. For most drivers, backlight
->> support is also configurable separately.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Thanks for revisiting this!
+>> Beside the typo:
+>> In this case, doesn't it make sense to "select BACKLIGHT_DEVICE_CLASS" =
+instead?
 >
-> My patch that failed to work correctly happened to work on my
-> randconfig tree because I still have an old variant of this
-> change, see
+> That causes the dependency error mentioned in the commit message. This t=
+ime it's just for fbtft instead of shmobilefb.
 >
-> https://lore.kernel.org/linux-fbdev/20200417155553.675905-8-arnd@arndb.de/
+>> If people want the fbtft, backlight support should be enabled too.
 >
-> This is almost the same as your version, except for the
-> optional fbdev Kconfig bits
-> PERS
->> @@ -660,7 +661,6 @@ config FB_ATMEL
->>   config FB_NVIDIA
->>   	tristate "nVidia Framebuffer Support"
->>   	depends on FB && PCI
->> -	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
->>   	select FB_CFB_FILLRECT
->>   	select FB_CFB_COPYAREA
->>   	select FB_CFB_IMAGEBLIT
->> @@ -700,6 +700,8 @@ config FB_NVIDIA_DEBUG
->>   config FB_NVIDIA_BACKLIGHT
->>   	bool "Support for backlight control"
->>   	depends on FB_NVIDIA
->> +	depends on BACKLIGHT_CLASS_DEVICE
->> +	select FB_BACKLIGHT
->>   	default y
->>   	help
->>   	  Say Y here if you want to control the backlight of your display.
-> For instance here I used
->
-> @@ -702,6 +703,7 @@ config FB_NVIDIA_DEBUG
->   config FB_NVIDIA_BACKLIGHT
->          bool "Support for backlight control"
->          depends on FB_NVIDIA
-> +       depends on BACKLIGHT_CLASS_DEVICE=y || BACKLIGHT_CLASS_DEVICE=FB_NVIDIA
->          default y
->          help
->            Say Y here if you want to control the backlight of your display.
->
-> while your patch causes a link failure with
->
-> CONFIG_FB_NVIDIA=y
-> CONFIG_FB_NVIDIA_BACKLIGHT=y
-> CONFIG_BACKLIGHT_CLASS_DEVICE=m
+> As a user-visible option, it should not be auto-selected
+> unnecessarily.
 
-Ah, right. I'll update the series to use your approach.
+Right, it should not be auto-selected.
+Unless if fbtft really needs it enabled to function.
+IMHO all fb/drm drivers have higher priority than some low-level
+background backlight controller code.
 
-Best regards
-Thomas
+> The DRM panel drivers already depend on the backlight
+> instead of selecting it. It's the correct approach.
 
->
->         Arnd
+Sounds wrong IMHO.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+> As I mentioned
+> in the cover letter, the few remaining driver that select it should
+> probably be updated.
 
+That dependency sounds weird, but maybe I simply misunderstand your logic.=
+..?
+
+As a Linux end user I usually know which graphic cards are in my machine
+and which ones I want to enable.
+But as a normal user I think I shouldn't be expected to know
+that I first need to enable the "backlight class device"
+so that I'm then able to afterwards enable the fbtft (or any other drm/fb =
+driver).
+
+Am I wrong?
+
+Helge

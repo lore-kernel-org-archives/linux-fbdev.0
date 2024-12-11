@@ -1,39 +1,80 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B98CB1C5F03
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Dec 2024 08:01:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B43E2210C4;
+	Wed, 11 Dec 2024 09:07:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733904072; cv=none; b=L/DCTvkUc8P7o3LiywBSQp4wQ0AVZ+fwJ2f4uCzhNgfvTduJaofSMs6A4g2L4iwMaghP9U4AgvXJWF2ksDLPBaItYRe3blQyHH7gKC5beLwyaSNQHiYBXJFsq476yahazzWhSnRzIqfgSjrvkpNTLeCKKZU6lj90NHJhrRITa2k=
+	t=1733908072; cv=none; b=gQALbPQxstAm1brrYCLsrQXPQKy7kHBtBOh3KPm/51X1DiljB+rM4Id7SiypTsUhZYkGefaUP+IimrXl71HgeoYj+wnbAfeo14lMAjQ0qgNekY0kRm8sYMP5m2dlZUz911aU2yQ31zK7THolTKQJ4WA2Ebp3WrTuurWDRTPHqt4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733904072; c=relaxed/simple;
-	bh=0vRIXiBcCKNQvSXS9ocTW33BeE6y07+9M5ovs/D8lMU=;
+	s=arc-20240116; t=1733908072; c=relaxed/simple;
+	bh=/yRXuhIE+wBEzqfudlIh5o4W3BYgZp8+NDDFoEXARV0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hLLTwC9SeHGzXyGEAzdarnBexeSi+gKZcX4YW1QarTCO98OwNla86/HTgSAgoOlYRN60i05ZAj9YnZ7VXqmPRM3oj6ld7Dh0jzXiawBUsT+5iA6GEPog3yfBGF7bE+UAwkxU1+JZBPUOFKVt+7bmYOBF7+di0EDhB04pnnipEP4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
+	 In-Reply-To:Content-Type; b=MH4uk3sU6nX2c26YF4+S2PLoPV3Rud7xMgHgba1h2g0CGOc8HVovRMDzVMGscwuB7XfjovelOt9gheWiFChfkJRHJOb+hrNDOdPjcMIco8sqhrknadKG71InMb/X/Cp4gY+fi6aMW/iGK32akhGao4O9syvxHhBtgb7gk32cUpA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=W8vEOrY7; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Qsud7Ur8; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=DN3zqBLC; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lTGPhwPg; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="W8vEOrY7";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Qsud7Ur8";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="DN3zqBLC";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lTGPhwPg"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id DE0952115D;
-	Wed, 11 Dec 2024 08:01:07 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D70F321166;
+	Wed, 11 Dec 2024 09:07:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1733908068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ArjswcgyTs3vHQw1IH1FmG9gs8Mm/bjllyph4msdEMs=;
+	b=W8vEOrY7TclxgHgCgmqhUQzrraQS6sU3yanXECUA/5v1we9xAYYUOsHJLUV7NBQgBMNUgf
+	kIT/8QFkHg4cBqkRlgx+hLRUDw9emeqsa4QJje0+WHYfPVbM7rykuz49s7MIzqcTEsoGF9
+	kjEQDU/iIdv4e9dsBES5XbIQ3RUul28=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1733908068;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ArjswcgyTs3vHQw1IH1FmG9gs8Mm/bjllyph4msdEMs=;
+	b=Qsud7Ur8YjtBu3Rzv+g3uaoN89jT+ybjSgN7AF2C47J8REE9Z5EdsEE9kdZga15F0fGM2s
+	MS+D9C45+q/n4rAw==
 Authentication-Results: smtp-out1.suse.de;
 	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1733908067; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ArjswcgyTs3vHQw1IH1FmG9gs8Mm/bjllyph4msdEMs=;
+	b=DN3zqBLCZ2NWRXR0DzF/mgrfTQF8WUwVJ9bUJgCHmNakBIggxy/KqKdqIjLjPPoaOHzl5l
+	7sRYP8BRsp5iXFKYkMV8KYs09sRnl2ehougI38RLjRcjyqC3WZ63vQibHHMfPIURjsy20f
+	lBxW8ZxUZ9XS3Y1UCnSJc0gsbpXSLDo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1733908067;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ArjswcgyTs3vHQw1IH1FmG9gs8Mm/bjllyph4msdEMs=;
+	b=lTGPhwPgVKWYLu9Whp8tsbHdb7/tUGTRMYpVZY6DI9ZWTpDOWcWLNJwE28XfKWFrCxHlAA
+	Y17VR2fx8vaJTyCw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 926DC13983;
-	Wed, 11 Dec 2024 08:01:07 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A573213983;
+	Wed, 11 Dec 2024 09:07:47 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id zT5tIsNGWWePLwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 11 Dec 2024 08:01:07 +0000
-Message-ID: <16c09ca8-aa73-4fc2-b693-0bfcc8dcac6d@suse.de>
-Date: Wed, 11 Dec 2024 09:01:07 +0100
+	id h2sJJ2NWWWdxQwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 11 Dec 2024 09:07:47 +0000
+Message-ID: <844f1fa4-6f47-4386-878f-739d2819605e@suse.de>
+Date: Wed, 11 Dec 2024 10:07:47 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,18 +82,23 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] fbdev: Fix recursive dependencies wrt
- BACKLIGHT_CLASS_DEVICE
-To: Helge Deller <deller@gmx.de>, javierm@redhat.com, arnd@arndb.de,
- simona@ffwll.ch, airlied@gmail.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
-References: <20241210142329.660801-1-tzimmermann@suse.de>
- <20241210142329.660801-2-tzimmermann@suse.de>
- <b5136312-e18c-46cb-9a01-3efc61d6fd9a@gmx.de>
- <de810def-84ac-4d55-b625-536b5781a20f@gmx.de>
- <e7d5fba5-7ecd-4ed3-be7a-56bf82030e67@suse.de>
- <6b543ccd-23dd-474d-9828-1eb0ecec9c5d@gmx.de>
+Subject: Re: drm/fbdev-dma: regression
+To: =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>,
+ Linux kernel regressions list <regressions@lists.linux.dev>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ Linux Framebuffer <linux-fbdev@vger.kernel.org>
+References: <20220621104617.8817-1-tzimmermann@suse.de>
+ <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
+ <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info>
+ <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
+ <CAEXMXLQEJPVPyqLpH6C7R6iqhhKBpdNS9QeESbEdcmxB70goSA@mail.gmail.com>
+ <da4288a6-96cc-4095-bd73-d66b68e9ed01@suse.de>
+ <CAEXMXLQw1yqUGbWcrKZdOuGvA4eZMG0utiyQ2PVRvTeuFedGbA@mail.gmail.com>
+ <9c902ac0-a94d-4465-98ff-840132e482b1@suse.de>
+ <CAEXMXLSLau0sEy8WSZ3=ofK97xP8aPcDQEnT=JFkkt7K=Rzivw@mail.gmail.com>
+ <900b873f-6eba-4dba-b155-dc5f7594becf@suse.de>
+ <CAEXMXLTT5m0Po_wz0ywRHFetV6e080AJwy8f99Zb9R_afzafRw@mail.gmail.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -79,117 +125,53 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <6b543ccd-23dd-474d-9828-1eb0ecec9c5d@gmx.de>
+In-Reply-To: <CAEXMXLTT5m0Po_wz0ywRHFetV6e080AJwy8f99Zb9R_afzafRw@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
 X-Spam-Level: 
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Spam-Score: -4.00
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[gmail.com];
+	TO_DN_SOME(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid]
+X-Spam-Score: -4.30
 X-Spam-Flag: NO
-X-Rspamd-Queue-Id: DE0952115D
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 
 Hi
 
 
-Am 11.12.24 um 00:37 schrieb Helge Deller:
-> On 12/10/24 16:41, Thomas Zimmermann wrote:
->> Hi
->>
->>
->> Am 10.12.24 um 15:34 schrieb Helge Deller:
->>> On 12/10/24 15:29, Helge Deller wrote:
->>>> On 12/10/24 15:09, Thomas Zimmermann wrote:
->>>>> diff --git a/drivers/staging/fbtft/Kconfig 
->>>>> b/drivers/staging/fbtft/Kconfig
->>>>> index 77ab44362f16..577e91ff7bf6 100644
->>>>> --- a/drivers/staging/fbtft/Kconfig
->>>>> +++ b/drivers/staging/fbtft/Kconfig
->>>>> @@ -3,6 +3,7 @@ menuconfig FB_TFT
->>>>>       tristate "Support for small TFT LCD display modules"
->>>>>       depends on FB && SPI
->>>>>       depends on FB_DEVICE
->>>>> +    depends on BACKLIGHT_DEVICE_CLASS
->>>>
->>>> Typo. Should be BACKLIGHT_CLASS_DEVICE...
->>
->> Ah, thanks. I'll better check the rest of the series for similar 
->> mistakes.
->>
->>>
->>> Beside the typo:
->>> In this case, doesn't it make sense to "select 
->>> BACKLIGHT_DEVICE_CLASS" instead?
->>
->> That causes the dependency error mentioned in the commit message. 
->> This time it's just for fbtft instead of shmobilefb.
->>
->>> If people want the fbtft, backlight support should be enabled too.
->>
->> As a user-visible option, it should not be auto-selected
->> unnecessarily.
->
-> Right, it should not be auto-selected.
-> Unless if fbtft really needs it enabled to function.
-> IMHO all fb/drm drivers have higher priority than some low-level
-> background backlight controller code.
+Am 09.12.24 um 14:56 schrieb Nuno Gonçalves:
+> On Mon, Dec 9, 2024 at 1:43 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>> Thanks you so much for testing. I'll prepare a real patch. Can I add
+>> your Reported-by and Tested-by tags?
+> Reported-by: Nuno Gonçalves <nunojpg@gmail.com>
+> Tested-by: Nuno Gonçalves <nunojpg@gmail.com>
 
-By that logic, we'd list always list all drivers and each driver would 
-auso-select the subsystems it requires. So each fbdev driver would 
-select CONFIG_FB.
-
-That's not how it works, of course. Instead, each subsystem is 
-user-selected and Kconfig offers the drivers that have their 
-dependencies met. The documentation for Kconfig clearly states that 
-select should be used carefully. [1]
-
-[1] 
-https://elixir.bootlin.com/linux/v6.12.4/source/Documentation/kbuild/kconfig-language.rst#L137
-
->
->> The DRM panel drivers already depend on the backlight
->> instead of selecting it. It's the correct approach.
->
-> Sounds wrong IMHO.
-
-Generally, it's the right approach. I guess what could be done is to 
-make backlight support optional in the driver code, and use the imply 
-attribute [2] instead of depends. So the driver would indicate a 
-preference for backlight support, but still work without. That could 
-also be done for the fbdev drivers, of course.
-
-[2] 
-https://elixir.bootlin.com/linux/v6.12.4/source/Documentation/kbuild/kconfig-language.rst#L163
+Thanks a lot. I've sent out the patch for review. Apologies if this took 
+a bit longer than expected.
 
 Best regards
 Thomas
 
 >
->> As I mentioned
->> in the cover letter, the few remaining driver that select it should
->> probably be updated.
->
-> That dependency sounds weird, but maybe I simply misunderstand your 
-> logic...?
->
-> As a Linux end user I usually know which graphic cards are in my machine
-> and which ones I want to enable.
-> But as a normal user I think I shouldn't be expected to know
-> that I first need to enable the "backlight class device"
-> so that I'm then able to afterwards enable the fbtft (or any other 
-> drm/fb driver).
->
-> Am I wrong?
->
-> Helge
+> Thanks,
+> Nuno
 
 -- 
 --

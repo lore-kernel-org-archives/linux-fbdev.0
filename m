@@ -1,67 +1,275 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E98C41FECD6;
-	Thu, 12 Dec 2024 08:13:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC588210198
+	for <linux-fbdev@vger.kernel.org>; Thu, 12 Dec 2024 10:06:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733991211; cv=none; b=pZh5Pl6xc3bAcSHF+n72za6sOIsgJtl1AlGXCtEu/cNQNRk5tGV/GiE1R4+oxIpl3Z4yK31/+avBbKaV5KlDx+UwV45tZhMSrvevcWWinSxVOIMLq4gzCV8Fg0/0dDhcbuo0//9zPkG/bqyGvDkTREypdUlGW4uWzlaokXP7Qok=
+	t=1733998011; cv=none; b=WTm5DH7TpZFTcz5mQAo6JTCRVfhLgavaK7JQ+Cqg8BWlZ46352BTYKnO8m3aumF/byZAsVD3KicuK0K4CsOV9ov1E8JEdbxHNfeVvEEKuXg2WpXhQWIGsOsl8BrYSHxULV/R//Q47CgxB4WJQscg00b6SzVPMsdFlzpXs4oolVo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733991211; c=relaxed/simple;
-	bh=yFRZ+IH3VruDCKluh2Mfy3YvjHuvC7u/oBOqXdHG/UQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=c0EZ0B2z+G374Ruu9F8LDjESLLDnyYBTC8GYoo0fSX1DuUcH9PWR8rCCwnwSeQ2bx+D4u8qr4nWv1TrUU4WdtqAIe50s3wR6qnmVVpnhXwtmjKnvNEwpOp6nEATdlL6+Bap6BsZ7PNshx9eSsPToK+4sbFkBkFBJBzB4QoM30k0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X403YC3n; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X403YC3n"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0DBBC4CECE;
-	Thu, 12 Dec 2024 08:13:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733991210;
-	bh=yFRZ+IH3VruDCKluh2Mfy3YvjHuvC7u/oBOqXdHG/UQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=X403YC3nzX85sUU0gMsuEEhNCgIEXOUpGQE5pbSXbWlnTW9NCHbM8Q3f9cGjpt+hA
-	 6Y0s/H8FcFTkbkCLs3YHflvhtK8mzxgctedejqkte9rAG9l195yutRCvrB07H/1szj
-	 MzwgVw8v+V34GvVlDRYINKQRhxlICRxQ/LPaCE19SlwBah4IFu/Dvp3ceFu4tVsTYk
-	 IsyjI5WujSg7PLnlEPJVoZDu33oE6xjyVdqhXbFdKzpb8PS4LZmhktymYDJPtgF/3a
-	 DFSFEWTPpsPCAH2wrAFpSFXRgFSjQeTuVIUunj7PaQ4qY1R/9VNZPoRkx0yWHb67Fc
-	 X86sGlmel0fiA==
-Date: Thu, 12 Dec 2024 09:13:27 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Nick Chan <towinchenmi@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
-	Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>, 
-	Alyssa Rosenzweig <alyssa@rosenzweig.io>, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v4 1/3] dt-bindings: leds: backlight: apple,dwi-bl: Add
- Apple DWI backlight
-Message-ID: <6fazyksxkcbhugivwgozuyjdig37vnshbwtdmzjcbrqywgszvd@sm27uhqgsma4>
-References: <20241211113512.19009-1-towinchenmi@gmail.com>
- <20241211113512.19009-2-towinchenmi@gmail.com>
+	s=arc-20240116; t=1733998011; c=relaxed/simple;
+	bh=7xzo1S9PwOjTV2m5nhv8B5v1DZirEFWcmetI+BEtabY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=lIZPMFKXnlZEQ7bNpzkq/xDGiZpVRm4xIVUYNBCFEYaSpBmMyRQM6oCMA+xsry6ywmdltzEgugt1bmIWc2/17z34kplanVhyjvxSqC3xcEEjXOI68VYW8Zq1n5RGC+OZUlYJhhfCGRmnsLFBbVKPBpQ7Xh6YPNRsrsn4E9ZB9Po=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 3C3501F46E;
+	Thu, 12 Dec 2024 10:06:48 +0000 (UTC)
+Authentication-Results: smtp-out2.suse.de;
+	none
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id EF34C13A3D;
+	Thu, 12 Dec 2024 10:06:47 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id qN02Obe1WmeaGwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 12 Dec 2024 10:06:47 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	arnd@arndb.de,
+	deller@gmx.de,
+	simona@ffwll.ch,
+	airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 1/3] fbdev: Fix recursive dependencies wrt BACKLIGHT_CLASS_DEVICE
+Date: Thu, 12 Dec 2024 11:04:43 +0100
+Message-ID: <20241212100636.45875-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241212100636.45875-1-tzimmermann@suse.de>
+References: <20241212100636.45875-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20241211113512.19009-2-towinchenmi@gmail.com>
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Spam-Score: -4.00
+X-Spam-Flag: NO
+X-Rspamd-Queue-Id: 3C3501F46E
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 
-On Wed, Dec 11, 2024 at 07:34:37PM +0800, Nick Chan wrote:
-> Add backlight controllers attached via Apple DWI 2-wire interface.
-> 
-> Signed-off-by: Nick Chan <towinchenmi@gmail.com>
-> ---
->  .../bindings/leds/backlight/apple,dwi-bl.yaml | 57 +++++++++++++++++++
->  1 file changed, 57 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/apple,dwi-bl.yaml
+Do not select BACKLIGHT_CLASS_DEVICE from FB_BACKLIGHT. The latter
+only controls backlight support within fbdev core code and data
+structures.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Make fbdev drivers depend on BACKLIGHT_CLASS_DEVICE and let users
+select it explicitly. Fixes warnings about recursive dependencies,
+such as
 
-Best regards,
-Krzysztof
+error: recursive dependency detected!
+	symbol BACKLIGHT_CLASS_DEVICE is selected by FB_BACKLIGHT
+	symbol FB_BACKLIGHT is selected by FB_SH_MOBILE_LCDC
+	symbol FB_SH_MOBILE_LCDC depends on FB_DEVICE
+	symbol FB_DEVICE depends on FB_CORE
+	symbol FB_CORE is selected by DRM_GEM_DMA_HELPER
+	symbol DRM_GEM_DMA_HELPER is selected by DRM_PANEL_ILITEK_ILI9341
+	symbol DRM_PANEL_ILITEK_ILI9341 depends on BACKLIGHT_CLASS_DEVICE
+
+BACKLIGHT_CLASS_DEVICE is user-selectable, so making drivers adapt to
+it is the correct approach in any case. For most drivers, backlight
+support is also configurable separately.
+
+v2:
+- s/BACKLIGHT_DEVICE_CLASS/BACKLIGHT_CLASS_DEVICE (Helge)
+- Fix fbdev driver-dependency corner case (Arnd)
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/auxdisplay/Kconfig       |  2 +-
+ drivers/macintosh/Kconfig        |  1 +
+ drivers/staging/fbtft/Kconfig    |  1 +
+ drivers/video/fbdev/Kconfig      | 18 +++++++++++++-----
+ drivers/video/fbdev/core/Kconfig |  3 +--
+ 5 files changed, 17 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/auxdisplay/Kconfig b/drivers/auxdisplay/Kconfig
+index 21545ffba065..8934e6ad5772 100644
+--- a/drivers/auxdisplay/Kconfig
++++ b/drivers/auxdisplay/Kconfig
+@@ -489,7 +489,7 @@ config IMG_ASCII_LCD
+ 
+ config HT16K33
+ 	tristate "Holtek Ht16K33 LED controller with keyscan"
+-	depends on FB && I2C && INPUT
++	depends on FB && I2C && INPUT && BACKLIGHT_CLASS_DEVICE
+ 	select FB_SYSMEM_HELPERS
+ 	select INPUT_MATRIXKMAP
+ 	select FB_BACKLIGHT
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index fb38f684444f..bf3824032d61 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -120,6 +120,7 @@ config PMAC_MEDIABAY
+ config PMAC_BACKLIGHT
+ 	bool "Backlight control for LCD screens"
+ 	depends on PPC_PMAC && ADB_PMU && FB = y && (BROKEN || !PPC64)
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_BACKLIGHT
+ 	help
+ 	  Say Y here to enable Macintosh specific extensions of the generic
+diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
+index 77ab44362f16..dcf6a70455cc 100644
+--- a/drivers/staging/fbtft/Kconfig
++++ b/drivers/staging/fbtft/Kconfig
+@@ -3,6 +3,7 @@ menuconfig FB_TFT
+ 	tristate "Support for small TFT LCD display modules"
+ 	depends on FB && SPI
+ 	depends on FB_DEVICE
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	depends on GPIOLIB || COMPILE_TEST
+ 	select FB_BACKLIGHT
+ 	select FB_SYSMEM_HELPERS_DEFERRED
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index de035071fedb..55c6686f091e 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -649,6 +649,7 @@ config FB_S1D13XXX
+ config FB_ATMEL
+ 	tristate "AT91 LCD Controller support"
+ 	depends on FB && OF && HAVE_CLK && HAS_IOMEM
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	depends on HAVE_FB_ATMEL || COMPILE_TEST
+ 	select FB_BACKLIGHT
+ 	select FB_IOMEM_HELPERS
+@@ -660,7 +661,6 @@ config FB_ATMEL
+ config FB_NVIDIA
+ 	tristate "nVidia Framebuffer Support"
+ 	depends on FB && PCI
+-	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -700,6 +700,8 @@ config FB_NVIDIA_DEBUG
+ config FB_NVIDIA_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_NVIDIA
++	depends on BACKLIGHT_CLASS_DEVICE=y || BACKLIGHT_CLASS_DEVICE=FB_NVIDIA
++	select FB_BACKLIGHT
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -707,7 +709,6 @@ config FB_NVIDIA_BACKLIGHT
+ config FB_RIVA
+ 	tristate "nVidia Riva support"
+ 	depends on FB && PCI
+-	select FB_BACKLIGHT if FB_RIVA_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -747,6 +748,8 @@ config FB_RIVA_DEBUG
+ config FB_RIVA_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_RIVA
++	depends on BACKLIGHT_CLASS_DEVICE=y || BACKLIGHT_CLASS_DEVICE=FB_RIVA
++	select FB_BACKLIGHT
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -934,7 +937,6 @@ config FB_MATROX_MAVEN
+ config FB_RADEON
+ 	tristate "ATI Radeon display support"
+ 	depends on FB && PCI
+-	select FB_BACKLIGHT if FB_RADEON_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -960,6 +962,8 @@ config FB_RADEON_I2C
+ config FB_RADEON_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_RADEON
++	depends on BACKLIGHT_CLASS_DEVICE=y || BACKLIGHT_CLASS_DEVICE=FB_RADEON
++	select FB_BACKLIGHT
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -975,7 +979,6 @@ config FB_RADEON_DEBUG
+ config FB_ATY128
+ 	tristate "ATI Rage128 display support"
+ 	depends on FB && PCI
+-	select FB_BACKLIGHT if FB_ATY128_BACKLIGHT
+ 	select FB_IOMEM_HELPERS
+ 	select FB_MACMODES if PPC_PMAC
+ 	help
+@@ -989,6 +992,8 @@ config FB_ATY128
+ config FB_ATY128_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_ATY128
++	depends on BACKLIGHT_CLASS_DEVICE=y || BACKLIGHT_CLASS_DEVICE=FB_ATY128
++	select FB_BACKLIGHT
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -999,7 +1004,6 @@ config FB_ATY
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_BACKLIGHT if FB_ATY_BACKLIGHT
+ 	select FB_IOMEM_FOPS
+ 	select FB_MACMODES if PPC
+ 	select FB_ATY_CT if SPARC64 && PCI
+@@ -1040,6 +1044,8 @@ config FB_ATY_GX
+ config FB_ATY_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_ATY
++	depends on BACKLIGHT_CLASS_DEVICE=y || BACKLIGHT_CLASS_DEVICE=FB_ATY
++	select FB_BACKLIGHT
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -1528,6 +1534,7 @@ config FB_SH_MOBILE_LCDC
+ 	depends on FB && HAVE_CLK && HAS_IOMEM
+ 	depends on SUPERH || COMPILE_TEST
+ 	depends on FB_DEVICE
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_BACKLIGHT
+ 	select FB_DEFERRED_IO
+ 	select FB_DMAMEM_HELPERS
+@@ -1793,6 +1800,7 @@ config FB_SSD1307
+ 	tristate "Solomon SSD1307 framebuffer support"
+ 	depends on FB && I2C
+ 	depends on GPIOLIB || COMPILE_TEST
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_BACKLIGHT
+ 	select FB_SYSMEM_HELPERS_DEFERRED
+ 	help
+diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+index 0ab8848ba2f1..d554d8c543d4 100644
+--- a/drivers/video/fbdev/core/Kconfig
++++ b/drivers/video/fbdev/core/Kconfig
+@@ -183,9 +183,8 @@ config FB_SYSMEM_HELPERS_DEFERRED
+ 	select FB_SYSMEM_HELPERS
+ 
+ config FB_BACKLIGHT
+-	tristate
++	bool
+ 	depends on FB
+-	select BACKLIGHT_CLASS_DEVICE
+ 
+ config FB_MODE_HELPERS
+ 	bool "Enable Video Mode Handling Helpers"
+-- 
+2.47.1
 

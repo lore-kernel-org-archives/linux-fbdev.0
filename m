@@ -1,204 +1,158 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [217.70.183.198])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 287D91B6D18
-	for <linux-fbdev@vger.kernel.org>; Fri, 13 Dec 2024 10:24:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7292187325;
+	Fri, 13 Dec 2024 11:28:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.198
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734085465; cv=none; b=mzq/u+HvFjmTgsY9kv+6HO9TjUJWNUPbdYa/ZPUYOQDjrqkwjN9JoiKVxyeXLXqfjVqDkBAABOHWlWVcX9Oux1afu+dRd9Tsx916faMRobJfHTE5lJITudz6ez/h5Wf5RYGBD12+YiP+kwDe2TMBuIq+4cHxM5l5WXblveObk9c=
+	t=1734089316; cv=none; b=Ec+S4jCISU1Ovn0UuE9DOCCXSwK1G98tlq4AlzGEIpLFYIkCGEMj4uAvNN2CK+twGkWYTanqHjlrE4zNlOVcLJTRdDseekJcdZZ8T0ap4E3WQ6x7ugupSq4zMVe8+gOAYpbWtELk7ozfmiT+R8LMHbu7DoBs1+mVpf2Fa4J92L4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734085465; c=relaxed/simple;
-	bh=Aw6JHmCl1VWLKX2/sE4YgAqjtp7IoTiRAOMRCD0BNl4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ji+9RYs1s+EJX5PwZEHQtZGYSXYtq83SCtWu61PompA49/7yhys5aYe/UlFuptGLHByDOx9Xj4qR/cieYUIHtGclFjComNvcQ+HDhAiou0d8D1lPSar2ArxG+KXmM93j58iyWrDrCwPdMMUMFdsE5h9LrHPqAM9LUDkTvAmxfrI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QB3BAAvl; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=j6UBVK3e; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tPrPshOR; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=F35EiPjf; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1734089316; c=relaxed/simple;
+	bh=jbyZf0Tgv/RU1fdlBR7iKCTSnMRGD5EA5b3AgB6Qb2I=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=aqsCBRo0LRgEIm65XLlLixLxKzQEFrACMe7A5By2hp5S8j2Nb2eir89KxOUyb01p4ReZ3uuvogqtGuTn05XXnMD1fVyUNuldZ9GI4J+ieF1nOCQEzGpbhbQCPcPne5DRUwgJCqe0KJICdFt7sFDydXTdcuT/9olrCsA1viyD6DE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=RDUSqa2f; arc=none smtp.client-ip=217.70.183.198
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QB3BAAvl";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="j6UBVK3e";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tPrPshOR";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="F35EiPjf"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 4AE222115C;
-	Fri, 13 Dec 2024 10:24:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1734085462; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="RDUSqa2f"
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 10CE5C0006;
+	Fri, 13 Dec 2024 11:28:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1734089311;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wj3FQ4EHvuZ3Loo4qRwR0MhYvA8lZqwuoXZj5chSjlA=;
-	b=QB3BAAvlMjSbem64YecmVjJGmws8bfOvUTD+KKvi7kRCMKvWOApY0uIfCet5lxrNDfoDUF
-	kYKima0XfjJ//cp6X9aPRpiv/cXNNNy+DfGwJ7aRzfdpnBl+Q98kMFgLY0/8dCj8FH7Eso
-	yySpVrlwNrq43Uq6G/B7E43pyz64j4Y=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1734085462;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wj3FQ4EHvuZ3Loo4qRwR0MhYvA8lZqwuoXZj5chSjlA=;
-	b=j6UBVK3eUBa8uR6nex3nUMjcfXl1CQPkSFrZPH8x2W8kQHDeRo1nrlthyHhnPsC73eZWWs
-	xJe2M8NkIDdXsJAA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=tPrPshOR;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=F35EiPjf
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1734085461; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wj3FQ4EHvuZ3Loo4qRwR0MhYvA8lZqwuoXZj5chSjlA=;
-	b=tPrPshOR8OGskNXqtHG5zsWfTFtAWkW2VMrNqELtJBW6l/2NFdcLs1OxedCw7R6xiZ51m7
-	h9tq3+U4I4rCuekR9CMWLRcbws6ajAhE5g6ncB3sCzZigANSiWhCZINWRagT/etWKBQbFJ
-	69sP2Jse0IoReokkrtrtOL0MchDeYg8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1734085461;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wj3FQ4EHvuZ3Loo4qRwR0MhYvA8lZqwuoXZj5chSjlA=;
-	b=F35EiPjf6rljhpNclFMv1DDqnxhLuSBOgjJzXGatSr0F1Y6LNmfwdq48C8L2640wlOpX+G
-	v8fzZgkVV3eOKTCQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B8DF813939;
-	Fri, 13 Dec 2024 10:24:20 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id +v76KVQLXGdsSAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 13 Dec 2024 10:24:20 +0000
-Message-ID: <eea7e1f0-cdcf-49ca-b50b-cac9bb320f4e@suse.de>
-Date: Fri, 13 Dec 2024 11:24:20 +0100
+	 in-reply-to:in-reply-to:references:references;
+	bh=n5fFG4vE+vkwACpIop1Zpb8KlDP1HSG6Jo6PWR1GFGM=;
+	b=RDUSqa2ff8PZtcbs78wVV5g6G6GweSxEeW37gg/ZzBhEtIEAH1xQAiQbBrxVCFDHQ3SS3t
+	auF2eEcz/EtZGAMdYeeSYNEgDrXJAQroWXbFHOPnY1VrSCiyXbUhcIWiIFGlRKTs0qPGeY
+	9W9MUdHzEFiXwMRf+MBSogMMDPrSbpXw3VsrHIqd3HCNFcd5JJLrfzL90ImhuSCQbBP90S
+	R+pNLq58KKjFQUOm16EjlrsQu32tVuMoJZvqb6qeDCkVecBiFhWmr+NERpKXwOTquXho9l
+	BbFcTYVSYse9QBTygwZHtipwZ2348CwcqvfyGJZhhEII6culDLHEPFBqW1/Ckw==
+Date: Fri, 13 Dec 2024 12:28:26 +0100
+From: Luca Ceresoli <luca.ceresoli@bootlin.com>
+To: "Sverdlin, Alexander" <alexander.sverdlin@siemens.com>
+Cc: "rafael@kernel.org" <rafael@kernel.org>, "jingoohan1@gmail.com"
+ <jingoohan1@gmail.com>, "robh@kernel.org" <robh@kernel.org>,
+ "rfoss@kernel.org" <rfoss@kernel.org>, "Laurent.pinchart@ideasonboard.com"
+ <Laurent.pinchart@ideasonboard.com>, "mripard@kernel.org"
+ <mripard@kernel.org>, "tzimmermann@suse.de" <tzimmermann@suse.de>,
+ "daniel@ffwll.ch" <daniel@ffwll.ch>, "conor+dt@kernel.org"
+ <conor+dt@kernel.org>, "maarten.lankhorst@linux.intel.com"
+ <maarten.lankhorst@linux.intel.com>, "andrzej.hajda@intel.com"
+ <andrzej.hajda@intel.com>, "daniel.thompson@linaro.org"
+ <daniel.thompson@linaro.org>, "wsa+renesas@sang-engineering.com"
+ <wsa+renesas@sang-engineering.com>, "lee@kernel.org" <lee@kernel.org>,
+ "krzk+dt@kernel.org" <krzk+dt@kernel.org>, "arnd@arndb.de" <arnd@arndb.de>,
+ "jonas@kwiboo.se" <jonas@kwiboo.se>, "saravanak@google.com"
+ <saravanak@google.com>, "airlied@gmail.com" <airlied@gmail.com>,
+ "dragan.cvetic@amd.com" <dragan.cvetic@amd.com>,
+ "neil.armstrong@linaro.org" <neil.armstrong@linaro.org>,
+ "derek.kiernan@amd.com" <derek.kiernan@amd.com>, "deller@gmx.de"
+ <deller@gmx.de>, "jernej.skrabec@gmail.com" <jernej.skrabec@gmail.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ "thomas.petazzoni@bootlin.com" <thomas.petazzoni@bootlin.com>,
+ "contact@paulk.fr" <contact@paulk.fr>, "herve.codina@bootlin.com"
+ <herve.codina@bootlin.com>, "dri-devel@lists.freedesktop.org"
+ <dri-devel@lists.freedesktop.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "paul.kocialkowski@bootlin.com"
+ <paul.kocialkowski@bootlin.com>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>
+Subject: Re: [PATCH v4 5/8] i2c: i2c-core-of: follow i2c-parent phandle to
+ probe devices from added nodes
+Message-ID: <20241213122826.1c01a284@booty>
+In-Reply-To: <ad1b0f8a662d748580bef83b6f7d8d24d80bd46c.camel@siemens.com>
+References: <20240917-hotplug-drm-bridge-v4-0-bc4dfee61be6@bootlin.com>
+	<20240917-hotplug-drm-bridge-v4-5-bc4dfee61be6@bootlin.com>
+	<ad1b0f8a662d748580bef83b6f7d8d24d80bd46c.camel@siemens.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] fbdev: Fix recursive dependencies wrt
- BACKLIGHT_CLASS_DEVICE
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, javierm@redhat.com,
- arnd@arndb.de, deller@gmx.de, simona@ffwll.ch, airlied@gmail.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
-References: <20241212100636.45875-1-tzimmermann@suse.de>
- <20241212100636.45875-2-tzimmermann@suse.de>
- <8403f989-c1de-48c9-ab48-83c1abb9e6f2@csgroup.eu>
- <5484d576-d63e-4166-85ea-0b508b0cb865@suse.de>
- <1248a2b6-71b0-4909-917f-a5605415a816@csgroup.eu>
- <690acce6-3e57-4731-9949-f8bb06d9cb58@suse.de>
- <941b3560-6572-476b-9e9f-c0a6df3e9ff4@csgroup.eu>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <941b3560-6572-476b-9e9f-c0a6df3e9ff4@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 4AE222115C
-X-Spam-Score: -4.51
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FREEMAIL_TO(0.00)[csgroup.eu,redhat.com,arndb.de,gmx.de,ffwll.ch,gmail.com];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Flag: NO
-X-Spam-Level: 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-GND-Sasl: luca.ceresoli@bootlin.com
 
-Hi
+Hello Alexander,
 
+On Thu, 12 Dec 2024 19:12:02 +0000
+"Sverdlin, Alexander" <alexander.sverdlin@siemens.com> wrote:
 
-Am 13.12.24 um 11:15 schrieb Christophe Leroy:
->
->
-> Le 13/12/2024 à 09:41, Thomas Zimmermann a écrit :
->> Hi
->>
->>
->> Am 13.12.24 um 09:33 schrieb Christophe Leroy:
->>>
->>>>
->>>> The attached patch selects backlight support in the defconfigs that 
->>>> also have PMAC_BACKLIGHT=y. Can you please apply it on top of the 
->>>> patchset and report on the results?
->>>>
->>>
->>> That works for the defconfig but it is still possible to change 
->>> CONFIG_BACKLIGHT_CLASS_DEVICE manually.
->>>
->>> If it is necessary for PMAC_BACKLIGHT then it shouldn't be possible 
->>> to deselect it.
->>
->> Here's another patch that make it depend on BACKLIGHT_CLASS_DEVICE=y. 
->> Can you please try this as well?
->
-> That looks good, no build failure anymore with BACKLIGHT_CLASS_DEVICE=m
+> Hi Luca!
+> 
+> On Tue, 2024-09-17 at 10:53 +0200, Luca Ceresoli wrote:
+> > When device tree nodes are added, the I2C core tries to probe client
+> > devices based on the classic DT structure:
+> > 
+> >   i2c@abcd0000 {
+> >       some-client@42 { compatible = "xyz,blah"; ... };
+> >   };
+> > 
+> > However for hotplug connectors described via device tree overlays there is
+> > additional level of indirection, which is needed to decouple the overlay
+> > and the base tree:
+> > 
+> >   --- base device tree ---
+> > 
+> >   i2c1: i2c@abcd0000 { compatible = "xyz,i2c-ctrl"; ... };
+> >   i2c5: i2c@cafe0000 { compatible = "xyz,i2c-ctrl"; ... };
+> > 
+> >   connector {
+> >       i2c-ctrl {
+> >           i2c-parent = <&i2c1>;
+> >           #address-cells = <1>;
+> >           #size-cells = <0>;
+> >       };
+> > 
+> >       i2c-sensors {
+> >           i2c-parent = <&i2c5>;
+> >           #address-cells = <1>;
+> >           #size-cells = <0>;
+> >       };
+> >   };
+> > 
+> >   --- device tree overlay ---
+> > 
+> >   ...
+> >   // This node will overlay on the i2c-ctrl node of the base tree  
+> 
+> Why don't you overlay it right over &i2c1?
+> It should have worked since commit ea7513bbc041
+> ("i2c/of: Add OF_RECONFIG notifier handler").
+> Doesn't it work for your use-case?
 
-Great, I'll add this change to the next iteration.
+One reason is decoupling the base board and addon. A different base
+board may wire the same connector pins to 'i2c4' instead of 'i2c1'. We
+want a single overlay to describe the addon, independently of the base
+board, so it has to mention only connector pins, not base board
+hardware.
 
-Best regards
-Thomas
+Another reason is that using phandles to labels in the base tree in the
+overlay (such as &i2c1) would need properties added by the __symbols__
+node, and overlays adding properties to nodes in the live tree are not
+welcome. This is both for a conceptual reason (adding an overlay ==
+adding hardware and not _changing_ hardware, so adding nodes should be
+enough) and an implementation one (properties added to nodes in the
+live tree become deadprops and thus leak memory.
+
+This topic was discussed at the latest Linux Plumbers Conference last
+September. Slides and video of the discussion are available here:
+https://lpc.events/event/18/contributions/1696/
+
+More info are in the cover letter. Discussion leading to this
+implementation started after v2:
+https://lore.kernel.org/all/20240510163625.GA336987-robh@kernel.org/
+
+Luca
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Luca Ceresoli, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

@@ -1,40 +1,40 @@
 Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33D321514CE
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E754E13C9D9
 	for <linux-fbdev@vger.kernel.org>; Sun, 15 Dec 2024 10:53:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734260029; cv=none; b=nFNpmTZai3/zPi04908yndD1h65g09qohjYNsTfTAleImYx38p7BBe3cMZd5xxHJ8bfsEGRcKGBUsbBCliQD7aiskcvlzYhxx8n3KM2trroGxKirCX5R+SnzKKHXCBbk0cEsS8epQS6iO0X5gb9qeEH9OZjYrcTSQHY3NzUM+zs=
+	t=1734260030; cv=none; b=HXh4UfMG3aOVUhTIhAe/4M6yj9M1iCmjSRAKsj/ecAmwiiMMzyYx5294FezzaYVsOXQEIh/HAZfi9u4kxa1yCE+knWuDp8NmcYVj37QrNsPjZ0cjbwUuHTVypuPR5nu3gvwNLdZEsLdkSd7ALoHCCmHRVa94Ldabg84I3Kc4gy0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734260029; c=relaxed/simple;
-	bh=B6rfUtml/IU5+gicbUixfbGqsfOS3EevXNf+RGshW+s=;
+	s=arc-20240116; t=1734260030; c=relaxed/simple;
+	bh=q5OADPiwPmkPJafYpfCEBKSAdjM3jUcJrAwHrVYTmzk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=nun5iDju1uCZXULHf33CU1vYPonDzCEGWRP0ryyYRmqzb4NRCRJykbKtWv1ss0zYzRWdWNjoRIy0OvgReCGfv0cZIrB6HqnMAYucU8/4sBXxVPchYZRED8boIcBzWTJpGZDKtM1fULUTGViLP3r2bUsz7gfxmL9zW1k35+eypq8=
+	 MIME-Version; b=mM5JiFXWkgdpOIAZoETaZtXuPAnVDt7EkOop6QTGCBzHZqRX81GlzEhbXq3GE32Kb9C61O0qBe+C1dIjSuF1lPQhFH9YXb5msZVmRYVyEaCDQr3FoXfuiiK2FaGqgOSm0rxcd5aJf4UlhCRpGm4JdvgmZXzV7+kDPj04WYOZmBs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4YB08d2dzLz4wwdK
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4YB08d2thBz4wwr1
 	for <linux-fbdev@vger.kernel.org>; Sun, 15 Dec 2024 11:45:21 +0100 (CET)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:8e92:9273:64e7:a1e1])
-	by xavier.telenet-ops.be with cmsmtp
-	id oylD2D00T4qjdAp01ylDEn; Sun, 15 Dec 2024 11:45:13 +0100
+	by baptiste.telenet-ops.be with cmsmtp
+	id oylD2D00W4qjdAp01ylDMK; Sun, 15 Dec 2024 11:45:13 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1tMm7a-001Kjs-8e;
+	id 1tMm7a-001Kji-7N;
 	Sun, 15 Dec 2024 11:45:13 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1tMm7d-000nmE-N9;
+	id 1tMm7d-000nm6-M1;
 	Sun, 15 Dec 2024 11:45:13 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-fbdev@vger.kernel.org
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH fbtest 14/17] Make variables that are never negative unsigned
-Date: Sun, 15 Dec 2024 11:45:05 +0100
-Message-Id: <20241215104508.191237-15-geert@linux-m68k.org>
+Subject: [PATCH fbtest 12/17] drawops: Fix crash when drawing large ellipses
+Date: Sun, 15 Dec 2024 11:45:03 +0100
+Message-Id: <20241215104508.191237-13-geert@linux-m68k.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241215104508.191237-1-geert@linux-m68k.org>
 References: <20241215104508.191237-1-geert@linux-m68k.org>
@@ -46,154 +46,193 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
+"test002" crashes when run with a display resolution of e.g. 2560x1440
+pixels, due to 32-bit overflow in the ellipse drawing routine.
+
+Fix this by creating a copy that uses 64-bit arithmetic.  Use a
+heuristic to pick either the 32-bit or the 64-bit version, to avoid the
+overhead of the 64-bit version on small systems with small displays.
+Replace (unsigned) int by u32/s32 in the 32-bit version for clarity.
+
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- console.c       | 2 +-
- fb.c            | 2 +-
- pixmap.c        | 6 +++---
- tests/test004.c | 2 +-
- tests/test006.c | 2 +-
- tests/test007.c | 2 +-
- tests/test009.c | 2 +-
- tests/test010.c | 2 +-
- visual.c        | 2 +-
- 9 files changed, 11 insertions(+), 11 deletions(-)
+ drawops/generic.c | 127 +++++++++++++++++++++++++++++++++++++++++-----
+ include/types.h   |   3 ++
+ 2 files changed, 116 insertions(+), 14 deletions(-)
 
-diff --git a/console.c b/console.c
-index 0ed858e25f52c9d5..adcc78cd1d725f37 100644
---- a/console.c
-+++ b/console.c
-@@ -118,7 +118,7 @@ static void con_store_char(unsigned char c)
+diff --git a/drawops/generic.c b/drawops/generic.c
+index 5fd971b59bc698fe..c4cfad3223773a23 100644
+--- a/drawops/generic.c
++++ b/drawops/generic.c
+@@ -305,8 +305,98 @@ static void fill_ellipse_points(u32 cx, u32 cy, u32 x, u32 y, pixel_t pixel)
+     }
+ }
+ 
+-static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
+-		       draw_func_t draw_inner, draw_func_t draw_outer)
++static void do_ellipse_32(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
++			  draw_func_t draw_inner, draw_func_t draw_outer)
++{
++    u32 a2 = a*a;
++    u32 b2 = b*b;
++
++    if (a <= b) {
++	u32 x1 = 0;
++	u32 y1 = b;
++	s32 S = a2*(1-2*b)+2*b2;
++	s32 T = b2-2*a2*(2*b-1);
++	u32 dT1 = 4*b2;
++	u32 dS1 = dT1+2*b2;
++	s32 dS2 = -4*a2*(b-1);
++	s32 dT2 = dS2+2*a2;
++
++	while (1) {
++	    if (S < 0) {
++		if (draw_inner)
++		    draw_inner(x, y, x1, y1, pixel);
++		S += dS1;
++		T += dT1;
++		dS1 += 4*b2;
++		dT1 += 4*b2;
++		x1++;
++	    } else if (T < 0) {
++		draw_outer(x, y, x1, y1, pixel);
++		if (y1 == 0)
++		    break;
++		S += dS1+dS2;
++		T += dT1+dT2;
++		dS1 += 4*b2;
++		dT1 += 4*b2;
++		dS2 += 4*a2;
++		dT2 += 4*a2;
++		x1++;
++		y1--;
++	    } else {
++		draw_outer(x, y, x1, y1, pixel);
++		if (y1 == 0)
++		    break;
++		S += dS2;
++		T += dT2;
++		dS2 += 4*a2;
++		dT2 += 4*a2;
++		y1--;
++	    }
++	}
++    } else {
++	u32 x1 = a;
++	u32 y1 = 0;
++	s32 S = b2*(1-2*a)+2*a2;
++	s32 T = a2-2*b2*(2*a-1);
++	u32 dT1 = 4*a2;
++	u32 dS1 = dT1+2*a2;
++	s32 dS2 = -4*b2*(a-1);
++	s32 dT2 = dS2+2*b2;
++
++	draw_outer(x, y, x1, y1, pixel);
++	do {
++	    if (S < 0) {
++		S += dS1;
++		T += dT1;
++		dS1 += 4*a2;
++		dT1 += 4*a2;
++		y1++;
++		draw_outer(x, y, x1, y1, pixel);
++	    } else if (T < 0) {
++		S += dS1+dS2;
++		T += dT1+dT2;
++		dS1 += 4*a2;
++		dT1 += 4*a2;
++		dS2 += 4*b2;
++		dT2 += 4*b2;
++		x1--;
++		y1++;
++		draw_outer(x, y, x1, y1, pixel);
++	    } else {
++		S += dS2;
++		T += dT2;
++		dS2 += 4*b2;
++		dT2 += 4*b2;
++		x1--;
++		if (draw_inner)
++		    draw_inner(x, y, x1, y1, pixel);
++	    }
++	} while (x1 > 0);
++    }
++}
++
++static void do_ellipse_64(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
++			  draw_func_t draw_inner, draw_func_t draw_outer)
  {
-     const unsigned char *src;
-     unsigned char *dst;
--    int y;
-+    unsigned int y;
+     u32 a2 = a*a;
+     u32 b2 = b*b;
+@@ -314,12 +404,12 @@ static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
+     if (a <= b) {
+ 	u32 x1 = 0;
+ 	u32 y1 = b;
+-	int S = a2*(1-2*b)+2*b2;
+-	int T = b2-2*a2*(2*b-1);
+-	unsigned int dT1 = 4*b2;
+-	unsigned int dS1 = dT1+2*b2;
+-	int dS2 = -4*a2*(b-1);
+-	int dT2 = dS2+2*a2;
++	s64 S = a2*(1-2LL*b)+2LL*b2;
++	s64 T = b2-2LL*a2*(2LL*b-1);
++	u64 dT1 = 4*b2;
++	u64 dS1 = dT1+2*b2;
++	s64 dS2 = -4LL*a2*(b-1);
++	s64 dT2 = dS2+2*a2;
  
-     if (bitmap_width+con_font->width > bitmap_max_width)
- 	con_flush();
-diff --git a/fb.c b/fb.c
-index ab351d15c82e09d9..4bc6d785e3e9070a 100644
---- a/fb.c
-+++ b/fb.c
-@@ -533,7 +533,7 @@ void fb_cleanup(void)
+ 	while (1) {
+ 	    if (S < 0) {
+@@ -356,12 +446,12 @@ static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
+     } else {
+ 	u32 x1 = a;
+ 	u32 y1 = 0;
+-	int S = b2*(1-2*a)+2*a2;
+-	int T = a2-2*b2*(2*a-1);
+-	unsigned int dT1 = 4*a2;
+-	unsigned int dS1 = dT1+2*a2;
+-	int dS2 = -4*b2*(a-1);
+-	int dT2 = dS2+2*b2;
++	s64 S = b2*(1-2LL*a)+2LL*a2;
++	s64 T = a2-2LL*b2*(2LL*a-1);
++	u64 dT1 = 4*a2;
++	u64 dS1 = dT1+2*a2;
++	s64 dS2 = -4LL*b2*(a-1);
++	s64 dT2 = dS2+2*b2;
  
- static void fb_dump_cmap(void)
+ 	draw_outer(x, y, x1, y1, pixel);
+ 	do {
+@@ -395,6 +485,15 @@ static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
+     }
+ }
+ 
++static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
++		       draw_func_t draw_inner, draw_func_t draw_outer)
++{
++    if ((a + 576) * (b + 576) < 1440000)
++	do_ellipse_32(x, y, a, b, pixel, draw_inner, draw_outer);
++    else
++	do_ellipse_64(x, y, a, b, pixel, draw_inner, draw_outer);
++}
++
+ void generic_draw_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel)
  {
--    int i;
-+    unsigned int i;
+     if (a == b)
+diff --git a/include/types.h b/include/types.h
+index 9112ba6855b61eaa..0e3c76521469912f 100644
+--- a/include/types.h
++++ b/include/types.h
+@@ -21,6 +21,9 @@ typedef unsigned short u16;
+ typedef unsigned int u32;
+ typedef unsigned long long u64;
  
-     Debug("Colormap start = %d len = %d\n", fb_cmap.start, fb_cmap.len);
-     for (i = 0; i < fb_cmap.len; i++)
-diff --git a/pixmap.c b/pixmap.c
-index 8cd21a62ff5235a8..a7c11909f2d5255d 100644
---- a/pixmap.c
-+++ b/pixmap.c
-@@ -71,7 +71,7 @@ static void image_bw_to_pixmap(const struct image *image, pixel_t *pixmap)
-     pixel_t black, white;
-     const unsigned char *src;
-     pixel_t *dst;
--    int i, j, k;
-+    unsigned int i, j, k;
- 
-     black = match_color(&clut_mono[0]);
-     white = match_color(&clut_mono[1]);
-@@ -101,7 +101,7 @@ static void image_lut256_to_pixmap(const struct image *image, pixel_t *pixmap)
-     rgba_t color;
-     const unsigned char *src;
-     pixel_t *dst;
--    int i;
-+    unsigned int i;
- 
-     color.a = 65535;
-     if (image->type == IMAGE_GREY256) {
-@@ -135,7 +135,7 @@ static void image_rgb888_to_pixmap(const struct image *image, pixel_t *pixmap)
-     const unsigned char *src;
-     pixel_t *dst;
-     rgba_t color;
--    int i;
-+    unsigned int i;
- 
-     src = image->data;
-     dst = pixmap;
-diff --git a/tests/test004.c b/tests/test004.c
-index 9b1e79ef9077219d..308c1ee60899e5a9 100644
---- a/tests/test004.c
-+++ b/tests/test004.c
-@@ -27,7 +27,7 @@ static enum test_res test004_func(void)
- {
-     const struct image *image;
-     pixel_t *pixmap;
--    int x, y, width, height, i;
-+    unsigned int x, y, width, height, i;
- 
-     image = &penguin;
-     pixmap = create_pixmap(image);
-diff --git a/tests/test006.c b/tests/test006.c
-index 20ba90963ea10797..c3b6722fafbeaf3c 100644
---- a/tests/test006.c
-+++ b/tests/test006.c
-@@ -23,7 +23,7 @@
- 
- static enum test_res test006_func(void)
- {
--    int i, j;
-+    unsigned int i, j;
-     pixel_t pixels[2];
-     u32 x0, x1, y0, y1;
- 
-diff --git a/tests/test007.c b/tests/test007.c
-index d6e7864c5b36d2bb..8fd1613c8b23cfb2 100644
---- a/tests/test007.c
-+++ b/tests/test007.c
-@@ -51,7 +51,7 @@ static void increase_level(int *component)
- 
- static enum test_res test007_func(void)
- {
--    int i;
-+    unsigned int i;
- 
-     fill_rect(0, 0, fb_var.xres, fb_var.yres, black_pixel);
-     for (i = 0; i < red_len; i++)
-diff --git a/tests/test009.c b/tests/test009.c
-index 4f36950737c811df..a62724ff547c04ea 100644
---- a/tests/test009.c
-+++ b/tests/test009.c
-@@ -27,7 +27,7 @@ static enum test_res test009_func(void)
- {
-     const struct image *image;
-     pixel_t *pixmap;
--    int x, y, width, height;
-+    unsigned int x, y, width, height;
- 
-     image = &penguin;
-     pixmap = create_pixmap(image);
-diff --git a/tests/test010.c b/tests/test010.c
-index 6ed97e8e51bfb77e..5b26b773e873eeec 100644
---- a/tests/test010.c
-+++ b/tests/test010.c
-@@ -24,7 +24,7 @@
- 
- static enum test_res test010_func(void)
- {
--    int i, j;
-+    unsigned int i, j;
- 
-     con_init(&FONT);
-     con_puts("Hello, world!\n");
-diff --git a/visual.c b/visual.c
-index e8782950df62178a..c5dbed3095d85e54 100644
---- a/visual.c
-+++ b/visual.c
-@@ -91,7 +91,7 @@ static u32 reverse32(u32 x)
- pixel_t *create_component_table(u32 size, u32 offset, int msb_right, u32 bpp)
- {
-     pixel_t *table, pixel;
--    int i;
-+    unsigned int i;
- 
-     if (!size)
- 	return NULL;
++typedef int s32;
++typedef long long s64;
++
+ #if defined(__LP64__) || defined(__alpha__) || defined(__ia64__) || \
+     defined(__mips64__) || defined(__powerpc64__) || defined(__s390x__) || \
+     defined(__sparc64__) || defined(__x86_64__) || defined(__hppa64__)
 -- 
 2.34.1
 

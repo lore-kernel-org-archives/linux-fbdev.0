@@ -1,238 +1,103 @@
-Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E754E13C9D9
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Dec 2024 10:53:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.132.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB7162030A;
+	Sun, 15 Dec 2024 14:55:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734260030; cv=none; b=HXh4UfMG3aOVUhTIhAe/4M6yj9M1iCmjSRAKsj/ecAmwiiMMzyYx5294FezzaYVsOXQEIh/HAZfi9u4kxa1yCE+knWuDp8NmcYVj37QrNsPjZ0cjbwUuHTVypuPR5nu3gvwNLdZEsLdkSd7ALoHCCmHRVa94Ldabg84I3Kc4gy0=
+	t=1734274524; cv=none; b=qM9IU3oiFgsJ0lHetcn8dyD5eaiKIxS4eAX5c5xy4Xa+DexF8e9u0zdn76dojquSNiJAMS6vdm9egP+aIPwjoCZyH2iy6ypqLUX7L9Rv7FPt2tupBfZ31TFtb98H9dAU4FwNKOXQA0g0oUcO1mN2fuVc7o/WiFWjK1AI4zhYIbY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734260030; c=relaxed/simple;
-	bh=q5OADPiwPmkPJafYpfCEBKSAdjM3jUcJrAwHrVYTmzk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=mM5JiFXWkgdpOIAZoETaZtXuPAnVDt7EkOop6QTGCBzHZqRX81GlzEhbXq3GE32Kb9C61O0qBe+C1dIjSuF1lPQhFH9YXb5msZVmRYVyEaCDQr3FoXfuiiK2FaGqgOSm0rxcd5aJf4UlhCRpGm4JdvgmZXzV7+kDPj04WYOZmBs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.132.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
-	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4YB08d2thBz4wwr1
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Dec 2024 11:45:21 +0100 (CET)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:8e92:9273:64e7:a1e1])
-	by baptiste.telenet-ops.be with cmsmtp
-	id oylD2D00W4qjdAp01ylDMK; Sun, 15 Dec 2024 11:45:13 +0100
-Received: from rox.of.borg ([192.168.97.57])
-	by ramsan.of.borg with esmtp (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1tMm7a-001Kji-7N;
-	Sun, 15 Dec 2024 11:45:13 +0100
-Received: from geert by rox.of.borg with local (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1tMm7d-000nm6-M1;
-	Sun, 15 Dec 2024 11:45:13 +0100
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-fbdev@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH fbtest 12/17] drawops: Fix crash when drawing large ellipses
-Date: Sun, 15 Dec 2024 11:45:03 +0100
-Message-Id: <20241215104508.191237-13-geert@linux-m68k.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20241215104508.191237-1-geert@linux-m68k.org>
-References: <20241215104508.191237-1-geert@linux-m68k.org>
+	s=arc-20240116; t=1734274524; c=relaxed/simple;
+	bh=3xEK3Ew0UcjU13RC8Ahx24g141JMcVwvDiJkVvI7dDs=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Rb3WB1sIYLxeOYA/Jo7krZivM8cGYdgj4B9m/Kfl6U0Hyo2eKdhsWqfCdJHZ/IJ+L7wBjBpaF2j4ZKnsZj2fwysiXVVftuCswGtGQBz85RIhC5v4ynriuXM5bel2jOZs1rjxkRBm3nDVE4Ds0Ewd0G5EKE6IMtLOcVrlV96Ki+I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=FzB742mu; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="FzB742mu"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1734274520;
+	bh=3xEK3Ew0UcjU13RC8Ahx24g141JMcVwvDiJkVvI7dDs=;
+	h=From:Date:Subject:To:Cc:From;
+	b=FzB742mum+23K1hGje4QQ3N9tWEwlX6ynw+WpT3U3zPNNe73XNqgY5c20FDZuv4bf
+	 dbSLz+hRT4QsEaASSKGa+YedyP9shnB7oKjtx4PN4QUJm69HQ2UmTLxT3kVJJwqcXi
+	 ilB0WJ4cnQWimS+MhGx+O7yJLj6nokzPZd6R2BS0=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 15 Dec 2024 15:55:17 +0100
+Subject: [PATCH] fbdev/udlfb: Use const 'struct bin_attribute' callback
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20241215-sysfs-const-bin_attr-udlfb-v1-1-40e87ed71d1f@weissschuh.net>
+X-B4-Tracking: v=1; b=H4sIANTtXmcC/x3MQQqDMBAAwK/Inl0wsRrsV0QkJhu7UGLJRmkR/
+ 97gcS5zglBiEnhWJyQ6WHiLBaquwL1sXAnZF4Nu9ENp1aH8JAi6LUrGheNsc064+3dY0Axm8CY
+ 0vnU9lOCTKPD3zsfpuv75GvhEbAAAAA==
+X-Change-ID: 20241215-sysfs-const-bin_attr-udlfb-7979d7f0d3c6
+To: Bernie Thompson <bernie@plugable.com>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734274518; l=1791;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=3xEK3Ew0UcjU13RC8Ahx24g141JMcVwvDiJkVvI7dDs=;
+ b=OFEzKBtvvZVB9v7+uzooOqyzatRSEGsUvJckrfTOe6OjpYLkZ9OxURvAH6NDn39sP7Vgta1xk
+ Gl6VtB9HKewBDEPVuGtPg9kcUt6+PLVXb2mwWfqUbIhBbWSjhZxyQds
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-"test002" crashes when run with a display resolution of e.g. 2560x1440
-pixels, due to 32-bit overflow in the ellipse drawing routine.
+The sysfs core now provides callback variants that explicitly take a
+const pointer. Make use of it to match the attribute definition.
 
-Fix this by creating a copy that uses 64-bit arithmetic.  Use a
-heuristic to pick either the 32-bit or the 64-bit version, to avoid the
-overhead of the 64-bit version on small systems with small displays.
-Replace (unsigned) int by u32/s32 in the 32-bit version for clarity.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drawops/generic.c | 127 +++++++++++++++++++++++++++++++++++++++++-----
- include/types.h   |   3 ++
- 2 files changed, 116 insertions(+), 14 deletions(-)
+ drivers/video/fbdev/udlfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drawops/generic.c b/drawops/generic.c
-index 5fd971b59bc698fe..c4cfad3223773a23 100644
---- a/drawops/generic.c
-+++ b/drawops/generic.c
-@@ -305,8 +305,98 @@ static void fill_ellipse_points(u32 cx, u32 cy, u32 x, u32 y, pixel_t pixel)
-     }
- }
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 71ac9e36f67c68aa7a54dce32323047a2a9a48bf..acadf0eb450c3d76c05fcb9cc7e7c3f6dd8f31ef 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1416,7 +1416,7 @@ static ssize_t metrics_cpu_kcycles_used_show(struct device *fbdev,
  
--static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
--		       draw_func_t draw_inner, draw_func_t draw_outer)
-+static void do_ellipse_32(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
-+			  draw_func_t draw_inner, draw_func_t draw_outer)
-+{
-+    u32 a2 = a*a;
-+    u32 b2 = b*b;
-+
-+    if (a <= b) {
-+	u32 x1 = 0;
-+	u32 y1 = b;
-+	s32 S = a2*(1-2*b)+2*b2;
-+	s32 T = b2-2*a2*(2*b-1);
-+	u32 dT1 = 4*b2;
-+	u32 dS1 = dT1+2*b2;
-+	s32 dS2 = -4*a2*(b-1);
-+	s32 dT2 = dS2+2*a2;
-+
-+	while (1) {
-+	    if (S < 0) {
-+		if (draw_inner)
-+		    draw_inner(x, y, x1, y1, pixel);
-+		S += dS1;
-+		T += dT1;
-+		dS1 += 4*b2;
-+		dT1 += 4*b2;
-+		x1++;
-+	    } else if (T < 0) {
-+		draw_outer(x, y, x1, y1, pixel);
-+		if (y1 == 0)
-+		    break;
-+		S += dS1+dS2;
-+		T += dT1+dT2;
-+		dS1 += 4*b2;
-+		dT1 += 4*b2;
-+		dS2 += 4*a2;
-+		dT2 += 4*a2;
-+		x1++;
-+		y1--;
-+	    } else {
-+		draw_outer(x, y, x1, y1, pixel);
-+		if (y1 == 0)
-+		    break;
-+		S += dS2;
-+		T += dT2;
-+		dS2 += 4*a2;
-+		dT2 += 4*a2;
-+		y1--;
-+	    }
-+	}
-+    } else {
-+	u32 x1 = a;
-+	u32 y1 = 0;
-+	s32 S = b2*(1-2*a)+2*a2;
-+	s32 T = a2-2*b2*(2*a-1);
-+	u32 dT1 = 4*a2;
-+	u32 dS1 = dT1+2*a2;
-+	s32 dS2 = -4*b2*(a-1);
-+	s32 dT2 = dS2+2*b2;
-+
-+	draw_outer(x, y, x1, y1, pixel);
-+	do {
-+	    if (S < 0) {
-+		S += dS1;
-+		T += dT1;
-+		dS1 += 4*a2;
-+		dT1 += 4*a2;
-+		y1++;
-+		draw_outer(x, y, x1, y1, pixel);
-+	    } else if (T < 0) {
-+		S += dS1+dS2;
-+		T += dT1+dT2;
-+		dS1 += 4*a2;
-+		dT1 += 4*a2;
-+		dS2 += 4*b2;
-+		dT2 += 4*b2;
-+		x1--;
-+		y1++;
-+		draw_outer(x, y, x1, y1, pixel);
-+	    } else {
-+		S += dS2;
-+		T += dT2;
-+		dS2 += 4*b2;
-+		dT2 += 4*b2;
-+		x1--;
-+		if (draw_inner)
-+		    draw_inner(x, y, x1, y1, pixel);
-+	    }
-+	} while (x1 > 0);
-+    }
-+}
-+
-+static void do_ellipse_64(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
-+			  draw_func_t draw_inner, draw_func_t draw_outer)
- {
-     u32 a2 = a*a;
-     u32 b2 = b*b;
-@@ -314,12 +404,12 @@ static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
-     if (a <= b) {
- 	u32 x1 = 0;
- 	u32 y1 = b;
--	int S = a2*(1-2*b)+2*b2;
--	int T = b2-2*a2*(2*b-1);
--	unsigned int dT1 = 4*b2;
--	unsigned int dS1 = dT1+2*b2;
--	int dS2 = -4*a2*(b-1);
--	int dT2 = dS2+2*a2;
-+	s64 S = a2*(1-2LL*b)+2LL*b2;
-+	s64 T = b2-2LL*a2*(2LL*b-1);
-+	u64 dT1 = 4*b2;
-+	u64 dS1 = dT1+2*b2;
-+	s64 dS2 = -4LL*a2*(b-1);
-+	s64 dT2 = dS2+2*a2;
+ static ssize_t edid_show(
+ 			struct file *filp,
+-			struct kobject *kobj, struct bin_attribute *a,
++			struct kobject *kobj, const struct bin_attribute *a,
+ 			 char *buf, loff_t off, size_t count) {
+ 	struct device *fbdev = kobj_to_dev(kobj);
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+@@ -1438,7 +1438,7 @@ static ssize_t edid_show(
  
- 	while (1) {
- 	    if (S < 0) {
-@@ -356,12 +446,12 @@ static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
-     } else {
- 	u32 x1 = a;
- 	u32 y1 = 0;
--	int S = b2*(1-2*a)+2*a2;
--	int T = a2-2*b2*(2*a-1);
--	unsigned int dT1 = 4*a2;
--	unsigned int dS1 = dT1+2*a2;
--	int dS2 = -4*b2*(a-1);
--	int dT2 = dS2+2*b2;
-+	s64 S = b2*(1-2LL*a)+2LL*a2;
-+	s64 T = a2-2LL*b2*(2LL*a-1);
-+	u64 dT1 = 4*a2;
-+	u64 dS1 = dT1+2*a2;
-+	s64 dS2 = -4LL*b2*(a-1);
-+	s64 dT2 = dS2+2*b2;
+ static ssize_t edid_store(
+ 			struct file *filp,
+-			struct kobject *kobj, struct bin_attribute *a,
++			struct kobject *kobj, const struct bin_attribute *a,
+ 			char *src, loff_t src_off, size_t src_size) {
+ 	struct device *fbdev = kobj_to_dev(kobj);
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+@@ -1482,8 +1482,8 @@ static const struct bin_attribute edid_attr = {
+ 	.attr.name = "edid",
+ 	.attr.mode = 0666,
+ 	.size = EDID_LENGTH,
+-	.read = edid_show,
+-	.write = edid_store
++	.read_new = edid_show,
++	.write_new = edid_store
+ };
  
- 	draw_outer(x, y, x1, y1, pixel);
- 	do {
-@@ -395,6 +485,15 @@ static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
-     }
- }
- 
-+static void do_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel,
-+		       draw_func_t draw_inner, draw_func_t draw_outer)
-+{
-+    if ((a + 576) * (b + 576) < 1440000)
-+	do_ellipse_32(x, y, a, b, pixel, draw_inner, draw_outer);
-+    else
-+	do_ellipse_64(x, y, a, b, pixel, draw_inner, draw_outer);
-+}
-+
- void generic_draw_ellipse(u32 x, u32 y, u32 a, u32 b, pixel_t pixel)
- {
-     if (a == b)
-diff --git a/include/types.h b/include/types.h
-index 9112ba6855b61eaa..0e3c76521469912f 100644
---- a/include/types.h
-+++ b/include/types.h
-@@ -21,6 +21,9 @@ typedef unsigned short u16;
- typedef unsigned int u32;
- typedef unsigned long long u64;
- 
-+typedef int s32;
-+typedef long long s64;
-+
- #if defined(__LP64__) || defined(__alpha__) || defined(__ia64__) || \
-     defined(__mips64__) || defined(__powerpc64__) || defined(__s390x__) || \
-     defined(__sparc64__) || defined(__x86_64__) || defined(__hppa64__)
+ static const struct device_attribute fb_device_attrs[] = {
+
+---
+base-commit: 2d8308bf5b67dff50262d8a9260a50113b3628c6
+change-id: 20241215-sysfs-const-bin_attr-udlfb-7979d7f0d3c6
+
+Best regards,
 -- 
-2.34.1
+Thomas Weißschuh <linux@weissschuh.net>
 

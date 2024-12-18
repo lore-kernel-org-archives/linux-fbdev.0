@@ -1,42 +1,43 @@
 Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 989491E480;
-	Tue, 17 Dec 2024 01:39:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD5FA926;
+	Wed, 18 Dec 2024 01:59:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734399546; cv=none; b=oPOYKO954nNvGISFMmsOEH4VQE4bL8mPs0nO+NgGRJJnModKTxaC+6MmrM3zmpjzDly8u4V04LFEiMVnPEZSmEtnYxMbBG0zoh5xK0Il4WtwWFlRkzoIWVPbrfGBu35CVpwE58lifdrf2tpNP/ZKBlFvyIhpAb0Lm+U7N1LEE70=
+	t=1734487185; cv=none; b=GbbwzXrmqXAADNcW8C70yrFTWmonK8CBruzOYWDeuYJEsHjp8HqonHfe8Xl9oXPfL3b+MXWc2lVcI2289puilL254YObCu82Ixoku+W9ttwMX4WA8/i4kur3EbUzKpj5weI2r8+TY4vsqROC4AKBU+7g/sUkz3MLGz0pC45n11M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734399546; c=relaxed/simple;
-	bh=/JQxTLrSk+bn9KCS4BhHq1XaHn24Um+rn7bVloKUnXo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LAtnGRYpwl4Hjhcxx1+Nctm4y9D83A0wbYVKaa4eZBnPq7rao2uw35J13FI7pCNJ39ZqGpEv90Erf3voceCQKczTbaJicdUI6R6ktQAHv8lI0Fa5o63XSkiSsaFZAK9ViLmJS+1pBhQDQdsV0bEE9DuVVLey54gmR54Ec8ZJ5lk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=Tthv0tKF; arc=none smtp.client-ip=46.235.229.95
+	s=arc-20240116; t=1734487185; c=relaxed/simple;
+	bh=W03IX5VLQM98hWwX84tt3jf1J2lDmn9SD7vJN0A9U+4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=t6nSKxV0YsQT15+sWYUmmzisNASm++QlKoLxjztFv2Sl3182QHT7NwchPWpWR+u4P2/irjX6Riy++JBwFuwQSMXXhhzcJZu7DP/TYQAoUzdMybim0s0kdK9K/iAUsBM+VkeATU8eEglbG03kliDX2XxZ5BE/25FCCZO2m2oLHPI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=g/C4WVSU; arc=none smtp.client-ip=46.235.229.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="Tthv0tKF"
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="g/C4WVSU"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
 	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
-	:Subject; bh=vvJ4qNUEi44vMx2Ffy89gG0D5fOc9H17NxvnqOiuKjQ=; b=Tthv0tKFt2LU2XGk
-	vA2H11+SwzVqEq/3jrRSHr+BMxewubJ7/w/7x6d/+6/DV+kXFCFGWJgKxblzpx4RHxd7As41234o9
-	2Cz9jzWdYav8T1JQXRVZ+eEGfllIY3XBq4fqlyniFHe7UN0De7w5Fchc4zhioWbYYDCXya77xoQKF
-	H532etx1TcRcE/8k84kzdo1qTJLLDYo2vFd2UARsFogTKQib/QIxQMy6KJIynL5i2fPvSGOJCnFET
-	aYjsxSQSvEH9PvJS9/sPwf3H4ag3wkSEs//EZJ74g5uVF7r4ngUdC/Oz9cWva6gVZ9DvO/+qGKVBK
-	eiNyJFaC9vVdsTwVNQ==;
+	:Subject; bh=fvWjV+WoCvCiUYH1QrxuKTN+iR1HO0UZuMqDsRyqOqw=; b=g/C4WVSUvDeIq7GW
+	w7cysvSH60gmvv+5KYRAzatIkkHzvqaUF5zREVdCB84OlYw1lKSRBlIaWK74DSotn8/0kCNNuP8cc
+	GThBcrYgZRf8v7BDHEQ0NiHYazHtDjqTtn4ckwqCc8rW34NzVXuJuL/hckWDLmKE9soDygakcGscP
+	3sFdWp6B5g80DqhhJTMkxPCWdT6X41tKUj0zmrWJ+4DAZ2YJJkaSdTYqXsyRnnQvlwpbdobC+NN0F
+	lwLsKEYqvW92lW5yNsAPE8HqsGiJybz1WS68rSa69eLjcEDAymgeubZGFe7/nRYalpRdEE2O5YQdh
+	sv7IHIj4ctn/Zyi8og==;
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
 	by mx.treblig.org with esmtp (Exim 4.96)
 	(envelope-from <linux@treblig.org>)
-	id 1tNMY8-005lOw-14;
-	Tue, 17 Dec 2024 01:39:00 +0000
+	id 1tNjLe-0060Ro-17;
+	Wed, 18 Dec 2024 01:59:38 +0000
 From: linux@treblig.org
 To: deller@gmx.de,
-	linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
+	linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	"Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: [PATCH] video: hdmi: Remove unused hdmi_infoframe_check
-Date: Tue, 17 Dec 2024 01:38:59 +0000
-Message-ID: <20241217013859.2132527-1-linux@treblig.org>
+Subject: [PATCH] fbdev: omapfb: Remove unused hdmi5_core_handle_irqs
+Date: Wed, 18 Dec 2024 01:59:37 +0000
+Message-ID: <20241218015937.278817-1-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -48,72 +49,57 @@ Content-Transfer-Encoding: 8bit
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-hdmi_infoframe_check() has been unused since it was added in
-commit c5e69ab35c0d ("video/hdmi: Constify infoframe passed to the pack
-functions")
+hdmi5_core_handle_irqs() has been unused since
+commit f5bab2229190 ("OMAPDSS: HDMI: Add OMAP5 HDMI support")
 
 Remove it.
 
-Note that the individual check functions for each type are
-actually used, so they're staying.
-
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/video/hdmi.c | 28 ----------------------------
- include/linux/hdmi.h |  1 -
- 2 files changed, 29 deletions(-)
+ .../video/fbdev/omap2/omapfb/dss/hdmi5_core.c   | 17 -----------------
+ .../video/fbdev/omap2/omapfb/dss/hdmi5_core.h   |  1 -
+ 2 files changed, 18 deletions(-)
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index ba301f3f4951..45b42f14a750 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -894,34 +894,6 @@ hdmi_vendor_any_infoframe_pack(union hdmi_vendor_any_infoframe *frame,
- 	return hdmi_vendor_any_infoframe_pack_only(frame, buffer, size);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+index b33f62c5cb22..bb7fe54dd019 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+@@ -567,23 +567,6 @@ static void hdmi_core_enable_interrupts(struct hdmi_core_data *core)
+ 	REG_FLD_MOD(core->base, HDMI_CORE_IH_MUTE, 0x0, 1, 0);
  }
  
--/**
-- * hdmi_infoframe_check() - check a HDMI infoframe
-- * @frame: HDMI infoframe
-- *
-- * Validates that the infoframe is consistent and updates derived fields
-- * (eg. length) based on other fields.
-- *
-- * Returns 0 on success or a negative error code on failure.
-- */
--int
--hdmi_infoframe_check(union hdmi_infoframe *frame)
+-int hdmi5_core_handle_irqs(struct hdmi_core_data *core)
 -{
--	switch (frame->any.type) {
--	case HDMI_INFOFRAME_TYPE_AVI:
--		return hdmi_avi_infoframe_check(&frame->avi);
--	case HDMI_INFOFRAME_TYPE_SPD:
--		return hdmi_spd_infoframe_check(&frame->spd);
--	case HDMI_INFOFRAME_TYPE_AUDIO:
--		return hdmi_audio_infoframe_check(&frame->audio);
--	case HDMI_INFOFRAME_TYPE_VENDOR:
--		return hdmi_vendor_any_infoframe_check(&frame->vendor);
--	default:
--		WARN(1, "Bad infoframe type %d\n", frame->any.type);
--		return -EINVAL;
--	}
--}
--EXPORT_SYMBOL(hdmi_infoframe_check);
+-	void __iomem *base = core->base;
 -
- /**
-  * hdmi_infoframe_pack_only() - write a HDMI infoframe to binary buffer
-  * @frame: HDMI infoframe
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index 455f855bc084..96bda41d9148 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -445,7 +445,6 @@ ssize_t hdmi_infoframe_pack(union hdmi_infoframe *frame, void *buffer,
- 			    size_t size);
- ssize_t hdmi_infoframe_pack_only(const union hdmi_infoframe *frame,
- 				 void *buffer, size_t size);
--int hdmi_infoframe_check(union hdmi_infoframe *frame);
- int hdmi_infoframe_unpack(union hdmi_infoframe *frame,
- 			  const void *buffer, size_t size);
- void hdmi_infoframe_log(const char *level, struct device *dev,
+-	REG_FLD_MOD(base, HDMI_CORE_IH_FC_STAT0, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_FC_STAT1, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_FC_STAT2, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_AS_STAT0, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_PHY_STAT0, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_I2CM_STAT0, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_CEC_STAT0, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_VP_STAT0, 0xff, 7, 0);
+-	REG_FLD_MOD(base, HDMI_CORE_IH_I2CMPHY_STAT0, 0xff, 7, 0);
+-
+-	return 0;
+-}
+-
+ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		struct hdmi_config *cfg)
+ {
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h
+index 192c9b6e2f7b..493857374a15 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h
+@@ -283,7 +283,6 @@ struct csc_table {
+ 
+ int hdmi5_read_edid(struct hdmi_core_data *core, u8 *edid, int len);
+ void hdmi5_core_dump(struct hdmi_core_data *core, struct seq_file *s);
+-int hdmi5_core_handle_irqs(struct hdmi_core_data *core);
+ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 			struct hdmi_config *cfg);
+ int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
 -- 
 2.47.1
 

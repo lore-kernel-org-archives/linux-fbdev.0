@@ -1,105 +1,110 @@
-Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com [209.85.221.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD5FA926;
-	Wed, 18 Dec 2024 01:59:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E165D4690
+	for <linux-fbdev@vger.kernel.org>; Wed, 18 Dec 2024 16:29:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734487185; cv=none; b=GbbwzXrmqXAADNcW8C70yrFTWmonK8CBruzOYWDeuYJEsHjp8HqonHfe8Xl9oXPfL3b+MXWc2lVcI2289puilL254YObCu82Ixoku+W9ttwMX4WA8/i4kur3EbUzKpj5weI2r8+TY4vsqROC4AKBU+7g/sUkz3MLGz0pC45n11M=
+	t=1734539370; cv=none; b=l9HKXXw0Ht/Yb+ULT9oS1cNXLDAKYHGOIw6A4Xbk/wMzBgOqY3ID57LqYatZZaPPpNzdC3sm+fNfRwuYkSNc6z0HyFXukBmtrVp+baZI9S53Zey371G1OypGJWhfPSOFHF8AlE7ij0D8jwyyxJrydLMTGGK3AtjnnnK4n9oR2As=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734487185; c=relaxed/simple;
-	bh=W03IX5VLQM98hWwX84tt3jf1J2lDmn9SD7vJN0A9U+4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=t6nSKxV0YsQT15+sWYUmmzisNASm++QlKoLxjztFv2Sl3182QHT7NwchPWpWR+u4P2/irjX6Riy++JBwFuwQSMXXhhzcJZu7DP/TYQAoUzdMybim0s0kdK9K/iAUsBM+VkeATU8eEglbG03kliDX2XxZ5BE/25FCCZO2m2oLHPI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=g/C4WVSU; arc=none smtp.client-ip=46.235.229.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="g/C4WVSU"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
-	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
-	:Subject; bh=fvWjV+WoCvCiUYH1QrxuKTN+iR1HO0UZuMqDsRyqOqw=; b=g/C4WVSUvDeIq7GW
-	w7cysvSH60gmvv+5KYRAzatIkkHzvqaUF5zREVdCB84OlYw1lKSRBlIaWK74DSotn8/0kCNNuP8cc
-	GThBcrYgZRf8v7BDHEQ0NiHYazHtDjqTtn4ckwqCc8rW34NzVXuJuL/hckWDLmKE9soDygakcGscP
-	3sFdWp6B5g80DqhhJTMkxPCWdT6X41tKUj0zmrWJ+4DAZ2YJJkaSdTYqXsyRnnQvlwpbdobC+NN0F
-	lwLsKEYqvW92lW5yNsAPE8HqsGiJybz1WS68rSa69eLjcEDAymgeubZGFe7/nRYalpRdEE2O5YQdh
-	sv7IHIj4ctn/Zyi8og==;
-Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
-	by mx.treblig.org with esmtp (Exim 4.96)
-	(envelope-from <linux@treblig.org>)
-	id 1tNjLe-0060Ro-17;
-	Wed, 18 Dec 2024 01:59:38 +0000
-From: linux@treblig.org
-To: deller@gmx.de,
-	linux-omap@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	"Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: [PATCH] fbdev: omapfb: Remove unused hdmi5_core_handle_irqs
-Date: Wed, 18 Dec 2024 01:59:37 +0000
-Message-ID: <20241218015937.278817-1-linux@treblig.org>
-X-Mailer: git-send-email 2.47.1
+	s=arc-20240116; t=1734539370; c=relaxed/simple;
+	bh=GRVKvI0VO1mEdRggTJX/G1W6qVyd1PipxzoM61D6JV4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=isV76SVQzhkAkdkZW0uXURpHTDlu4yLmoQD1IY2q3SEmvgu4+uKR2gcURgf6HW9SaxYMXWCRoH/+8pBhv1Q80vjxROptSWjw/zMjbicKtt4/KEAXLb/D83b28SKJ3+6lQKCRvOlLWPvAK7movXJLIf08E979uGCOv2OHUZQqV/0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f180.google.com with SMTP id 71dfb90a1353d-5161d5b8650so1770946e0c.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 Dec 2024 08:29:27 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734539366; x=1735144166;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=M66pQlw9tP9OabgR/qYGFv0FIiYcQ4QCkSJprMxGMSs=;
+        b=ES+3jJZ/IdXIyhCo8Fy2f7wLlVrVY+iHGp54+2fR2EARLYNcNbOKNKVuzIPribIavH
+         QiEO654e42EetCqYzEfhsqNi5BTQ1LXsyRZUW291cR/3ET6DpzA4BlIgouvjNBb0D/32
+         VbS8kGySkcR1YcCg5T0CMZWRICD3zsQRfV6Rg27P2WdRKTELh5mxXwbSf8aSJnM0MliI
+         hGhJbrT7J7I5ur3Mw26hpOCPe6KucvxXKHW3ocH7FPPonmrluhOZkLWibSoc3bC09K8r
+         uyV+NSniqhZ/RMb5U95N+zUFTxojsMzuZPGTMAXuNBxJCqD5t5cIkBobR+f0UnO5VhyI
+         z6oA==
+X-Gm-Message-State: AOJu0YygVr0r/Q+KmooiKo8qF6c1PSOxnsXCf/cjJEiP+f80XDmKVqCQ
+	SSMvvsSYXvkwmaFoIC0g88ny4cqcMWL/hmxlOhUN6+576jwaNfDGH1Fkpo7w
+X-Gm-Gg: ASbGncsW+h/onGxwlATJI1v2Pmmmtze7GXBKGkaMierERhZZF+8o48W5ZNHTDQ7QfbH
+	/WaLRJrGjm3LZePJysXGw74+topIVWUBYcHnUkA2XUg2xOl9f5g4TsQ/qwlL4Tw2DH5+1IdwLjX
+	YEx/KTR9zpg3GxPmseIGv/p4n/nAmw5P3fA6oRJ42/3TlFQl6OU5eQSsjASwLTJojLHOXwLP0eb
+	m+9o+QGNZSLdDrp7U0n453cQxGhLKcw7eis0A4aMPMYY6Ef6PdnbF1VTQdbEdz15GFn2H02wwwf
+	iQ9Ne9YhxmfWfrooY70=
+X-Google-Smtp-Source: AGHT+IHWw6FGVbbcgbMVVt12gqvdkgcHBiWR4pf1tvAJYerx43zvMzDtvDhPAnoZWj28kSEBLFqQQw==
+X-Received: by 2002:a05:6122:168d:b0:515:4fab:28c6 with SMTP id 71dfb90a1353d-51b64760c31mr49718e0c.4.1734539366379;
+        Wed, 18 Dec 2024 08:29:26 -0800 (PST)
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com. [209.85.217.46])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-519e35e046dsm1149229e0c.12.2024.12.18.08.29.26
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 18 Dec 2024 08:29:26 -0800 (PST)
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-4afdf096fc5so1569819137.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 Dec 2024 08:29:26 -0800 (PST)
+X-Received: by 2002:a05:6102:418e:b0:4b1:1b24:7241 with SMTP id
+ ada2fe7eead31-4b2ae7824f7mr3369224137.15.1734539365981; Wed, 18 Dec 2024
+ 08:29:25 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20241215104508.191237-1-geert@linux-m68k.org> <20241215104508.191237-13-geert@linux-m68k.org>
+ <5b7c10f9-730f-4aa9-95b8-37ac1f0f332c@gmx.de>
+In-Reply-To: <5b7c10f9-730f-4aa9-95b8-37ac1f0f332c@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 18 Dec 2024 17:29:14 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWDrD+=fH82EHqAW9EHDzTy1aGP54d_TQ6u5k_0Q1mOYw@mail.gmail.com>
+Message-ID: <CAMuHMdWDrD+=fH82EHqAW9EHDzTy1aGP54d_TQ6u5k_0Q1mOYw@mail.gmail.com>
+Subject: Re: [PATCH fbtest 12/17] drawops: Fix crash when drawing large ellipses
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
+Hi Helge,
 
-hdmi5_core_handle_irqs() has been unused since
-commit f5bab2229190 ("OMAPDSS: HDMI: Add OMAP5 HDMI support")
+On Sun, Dec 15, 2024 at 4:08=E2=80=AFPM Helge Deller <deller@gmx.de> wrote:
+> On 12/15/24 11:45, Geert Uytterhoeven wrote:
+> > "test002" crashes when run with a display resolution of e.g. 2560x1440
+> > pixels, due to 32-bit overflow in the ellipse drawing routine.
+> >
+> > Fix this by creating a copy that uses 64-bit arithmetic.  Use a
+> > heuristic to pick either the 32-bit or the 64-bit version, to avoid the
+> > overhead of the 64-bit version on small systems with small displays.
+>
+> I see you always build the 32- and 64-bit versions, so when you mean
+> overhead you mean runtime overhead, not compiled binary size overhead.
 
-Remove it.
+Exactly.
 
-Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
----
- .../video/fbdev/omap2/omapfb/dss/hdmi5_core.c   | 17 -----------------
- .../video/fbdev/omap2/omapfb/dss/hdmi5_core.h   |  1 -
- 2 files changed, 18 deletions(-)
+> So, just wondering:
+> Did you maybe measured how much slower the 64-bit version is on slow 32-b=
+it systems?
+> I'm fine with your decision to build both, but I'm wondering if it's real=
+ly necessary
+> to keep two versions for a "test tool"?
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-index b33f62c5cb22..bb7fe54dd019 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-@@ -567,23 +567,6 @@ static void hdmi_core_enable_interrupts(struct hdmi_core_data *core)
- 	REG_FLD_MOD(core->base, HDMI_CORE_IH_MUTE, 0x0, 1, 0);
- }
- 
--int hdmi5_core_handle_irqs(struct hdmi_core_data *core)
--{
--	void __iomem *base = core->base;
--
--	REG_FLD_MOD(base, HDMI_CORE_IH_FC_STAT0, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_FC_STAT1, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_FC_STAT2, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_AS_STAT0, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_PHY_STAT0, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_I2CM_STAT0, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_CEC_STAT0, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_VP_STAT0, 0xff, 7, 0);
--	REG_FLD_MOD(base, HDMI_CORE_IH_I2CMPHY_STAT0, 0xff, 7, 0);
--
--	return 0;
--}
--
- void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		struct hdmi_config *cfg)
- {
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h
-index 192c9b6e2f7b..493857374a15 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.h
-@@ -283,7 +283,6 @@ struct csc_table {
- 
- int hdmi5_read_edid(struct hdmi_core_data *core, u8 *edid, int len);
- void hdmi5_core_dump(struct hdmi_core_data *core, struct seq_file *s);
--int hdmi5_core_handle_irqs(struct hdmi_core_data *core);
- void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 			struct hdmi_config *cfg);
- int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
--- 
-2.47.1
+On ARM Cortex-A9, draw_ellipse(400, 240, 300, 239, ...) with a
+dummy (empty) set_pixel() method using the 64-bit version takes 44%
+longer than the 32-bit version, so I think it is worthwhile to have
+both versions.
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

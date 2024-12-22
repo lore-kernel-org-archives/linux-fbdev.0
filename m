@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 148121FA8EB
-	for <linux-fbdev@vger.kernel.org>; Wed, 18 Dec 2024 18:00:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CF45224FA;
+	Sun, 22 Dec 2024 06:05:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734544831; cv=none; b=RAIO2pevjPzZ2AJv5i8pX+7QBa8ZfgBNNcvYPpB9YjT9KVz92TpDkdr0Ykl2UrxzzG2OoPsb+bL2Qan9PWGtkzvpfbN2dLCZIJpMV4nIQgIFIL/iBUSs7uZ8drwZF23wczVJ4aW6I2sJy6+6qL+D4tBj0NBF+xdWNIw6ujec9Uc=
+	t=1734847541; cv=none; b=A2XNh2cuz/8Uz7eINqT/MaxuItVls82lTm49iuJz8MQ1TMZ8Xbb02w5xbEKsh2nI/7t/GtKD3RlGBhPKbYU3USlxozJmMr3QFjI62qapTTGoYJiquMqyp7FDjZ9+zYVDvfColyzWa9wcLc3Rd7WcorEGr/fwedKoDUCveBXQf+M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734544831; c=relaxed/simple;
-	bh=IaLRoLQLJhth5pxscdMphStQ08AR6JeJgzKL2JYyCB0=;
+	s=arc-20240116; t=1734847541; c=relaxed/simple;
+	bh=THPMEBXw7zty65ODlS2uBO+WT8uFQuPsjCtdAHkG+wA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rnq6KTRvCOkH6N3aR5SH9xd3ejG2gx9Df/8Qk4vnbjXCWn7ICz1qrr8cPmIxwrKpoW1yj9Dhj6+VAsJ9BlWukXFgbiUjWOvh8pY2/m+5dQs1KZ5+4HoxocgeWYZGDHnGCJApvRsVlS17DpD5eMWnyaTJot2a9/GIWTt36hscRlM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=pQPss/k9; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=bRlXiB/HLpJBxU7XTrQJs211bAF66bZbh/hKr8o8K8696dwDZZ0iVhd13+FSwXX7jElKwkSDeHMXsxkFWFySk+HdzObeULXIkrlyJitUnwqbZPP8AR39HGab9YQ8TLV5BUHAz9zzQColOfeJ9fz7sbktahUZYhNyLDNaqAxoAPA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=HukecmDh; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="pQPss/k9"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="HukecmDh"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1734544826; x=1735149626; i=deller@gmx.de;
-	bh=kPr8STdiskvMzqKVuaxI4omue/RtsVJp65iyQR0x4mQ=;
+	s=s31663417; t=1734847532; x=1735452332; i=deller@gmx.de;
+	bh=tclHqGZakrwWWC3BNqRNF0lu/5w/slKu1fIr1igTWmM=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=pQPss/k9lMBxnG1ugJlnYuQb1D2OMu39jLMntiPNokpUCtVr/p1oj3XVGYTQTTge
-	 kg06QLYifWlQijyOXzQgGvj473OS9pBjacplZ/iACQqnf8LpyEdxZpUZHnao9WnML
-	 rFbUpxzf2HFxcB9XTTI09yN4Z0NJ70tJhODC1DJwImBLPvA81bKNRbVqkQzeSzbxL
-	 8uX17V55tGEkVXYb5FW3M1oP2jlW2TwGaH+nci0fe+StcqzXGi+922cKcVmC49Tz0
-	 iH9TwmOiBK3xpKCix3Jv9OSvFG1smWtgv6y8bjt20o/SrbhlDMQq80gezOC0GgPI1
-	 TKbc9YI9HvJ6w9lmyw==
+	b=HukecmDhbSadmUfoHCrtDv57I5d1csaNwm6fCAMy7w9Krl0BH/tBJQdpAiquQ91d
+	 pubeJUkQNQcOtlvygwimbR5lnhnqQB4vtAyV/svkbSD/EeuG/uceR1PPd2N7pVqk0
+	 PD56bmK32lwhd7dVlhwZAtmSPhhC2qVluxrVHgVfIIturxjVhgrIeEhK0NOUivaai
+	 l8sffv8xj796AeLJqw2OrPoudRD9pAfH/gwEKpwWq8BcwtC09K3mEfy6lA3R7ruQc
+	 /ok7wvIT362H+Vz/9g2MMP2PgqHtsNMiUNB8Cb7xDVBLbYdvIddpkqirffo0Be22o
+	 9+9RIXap4psoFR/beg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.172] ([109.250.63.155]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M2O6Y-1tQiAR3etq-0035CW; Wed, 18
- Dec 2024 19:00:25 +0100
-Message-ID: <22ee40e4-4c68-4931-9216-88ef3e532630@gmx.de>
-Date: Wed, 18 Dec 2024 19:00:25 +0100
+Received: from [192.168.20.172] ([109.250.63.155]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTiU3-1szgwr2HDJ-00UK4s; Sun, 22
+ Dec 2024 07:05:32 +0100
+Message-ID: <c731fffa-c209-4f12-b129-9ddab853a8b9@gmx.de>
+Date: Sun, 22 Dec 2024 07:05:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,14 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH fbtest 12/17] drawops: Fix crash when drawing large
- ellipses
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org
-References: <20241215104508.191237-1-geert@linux-m68k.org>
- <20241215104508.191237-13-geert@linux-m68k.org>
- <5b7c10f9-730f-4aa9-95b8-37ac1f0f332c@gmx.de>
- <CAMuHMdWDrD+=fH82EHqAW9EHDzTy1aGP54d_TQ6u5k_0Q1mOYw@mail.gmail.com>
+Subject: Re: [PATCH] fbdev/radeon: Use const 'struct bin_attribute' callbacks
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20241215-sysfs-const-bin_attr-radeonfb-v1-1-577bcffa1100@weissschuh.net>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -96,64 +94,42 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <CAMuHMdWDrD+=fH82EHqAW9EHDzTy1aGP54d_TQ6u5k_0Q1mOYw@mail.gmail.com>
+In-Reply-To: <20241215-sysfs-const-bin_attr-radeonfb-v1-1-577bcffa1100@weissschuh.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:oh/nt97J0RhPE4cCEI24yUgDJfK7OuGb9qt4Emhsij7PpS49QVI
- GK7OMoc8M439sJGCO5tgKpoLJiEx4F4t/fQnECUeQskZzj59dS6AbW7ElxTHv1iujRjjBhO
- WoaR5aOzrq/SHFw6a16RQ5ae4k5FbPuvdi8YDQ34hsa8AUCUzFWquu+0fWlzmk+2UZFRuPV
- 8jQ7cmtcGZMaQ1/6t692Q==
+X-Provags-ID: V03:K1:7lNv9x967yupb5iYp99fxC58Jd6ZOqGMvm265MsQctIjm/Kqpw3
+ scHe0rhM/KvuyBCVVUExOuHsPhAZs79RmDh960Pw+vGuByC4OgvY88TnGHHxuZSagiowAXh
+ jayvD4T/bWdHigK0Nqj+0W7XniJX+T5eytnOB5wrJbddRqhHkVJ0kEWMqLEdN6tbNeHzeri
+ qIddd+ENNBj7Xnm/Gm1Jw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:kGhDMhZM3Ag=;BvvAebrO0LSCBUXbIXnkZH45QLn
- e57AgdC4iag6xEb40V9vSf9O4IKXmcTkcRzYI6ehAYSzLJR56LDniKySEjjlL5w7sXc3hWNlg
- wbUhi9cT3D8AlsokCPg2r9TNxiOSiu66lkRe3o2zvzj/wAPxRnGK+1T8d5cWdmFk3Y4uePlN5
- jHDanxTvYrJu8FMezUKDarXwV6y8TSiRX9+iOfVGLeAQfkEjAvp7yZS4Yy5zBlqVc80ekSwEL
- Ss58/20Dvn612pjZGMTDb0a+mTrVp3ndXuIXTD5mXRonG5mT9r/s/L1LkhfmuVCXdZGluX959
- 3eH8udcrLZUMHuCnct4RAZZ9BBSazNRNqF4wQ/jo6QrZnR6pBeNzeUS/GGt8zmWYRMQRmCY/X
- GGNkw62jdGeAPCAHKo6fyQR2NOD4d34/iXrKXqHR+LWi0kUJCnhMkoAc20mR0vkr1MDKv7HkJ
- QRvk29P8P+1wdyEq1dbdOnI7ReZhxKo9lzkIYQwn1A0JJhdIwq5dxrgZF/5AGWQldmblIPT6x
- RbI13iejuX1rNPxPBSJwyG95D4bwqj1sraZ79hq0Q1OrwBEFtARrqU7ZpDGN/Ch7lhu2yFosN
- bNBYMQYJuXTzCtmBll/3b/3c7TjCT8G6Zcqx6MxsQ1Yncr0gZ8hho9g50KjIEFbNBXH80iV0f
- a88bz8PLRVb+Rlydn2O2FIxSchfVGzIT+4/klFPhBXGjrk/af9hxgfcUmHJ+A26croc4VRvkU
- td3tOU5U+DfGaIffXTULPPSnabvCN9VHmjTcD80g8DC7hshr1wsbtwSF4jC+6CUmfHJI4mGFh
- iObbpe/OJdmp6p9IFR14OKHOIaE9dT06qg6QWHdPadf8exfe/G5rStpj5f5NQB7o9j3vOelXi
- jmcs2CPRQyCV8sKYJVFl6wiyqIs6V8Nq8C6NHk77LBEgyRo2ApCa6qTakr9eB+jyFn4gZvbrp
- 12DXaOE/2d/wwdjyMDx7tl+c9anVyUrjdKIvaWph1PI4R+bCiAyN9U05lZZTs5T9DaV1ex8IC
- MKTrJ0x57X5/GLkqL6D9EFg/W3BqM+YJ/y2UITzmCRk3CMnbygcZ5ErTjAORc2O5ZbYSiolwl
- k+ycDhq+JEkoofPoWZ0pNPj8uqU1Sg
+UI-OutboundReport: notjunk:1;M01:P0:f7E8WZqLdUs=;kbhDw0axOpUJywTyR6mgPX0ACsn
+ xFvT9mzvErxMsFS7dhQLTCMceIdNWuhl0ZrzGhrt7NQCbEZvHs9MeHLRXOcEwUZPfGdSqjtna
+ FieEb6o+dGls0dRiaF6ywiZEwrdiK6yBEukqZ45S0UMyzXUo2GoIWOF9GdBBbNVF5yKmz0aAX
+ H6zxm9zyzyNd5Ew2n1B21AK7kWIkv8cCubc7hGK2fIS77XCIAVZgvtDeiS/uxiOSdPl2WbRQB
+ DHLvbYxGr1dHgaX9ms/WsumtmALYycLyiB/f5Ya8ffjzMxhtGAm+qTzTC6f9AXCrYDrD5zzPr
+ PZaP6b2LzjSCkS6PdYUXWFq9ZQ2a/xV9rv6ug/dWhCSGFXoZVuAQGYj5um98OXYXHbT7q+pH6
+ 7K6WqZhJ0wofOx4rLvDv0SQ63GNfFL/LMwT/fz7wXkhB5iJVLYc4XsonrpjkX8JlkRiL77R6y
+ DUOuY3lS1aCw4HTbPSaZf8I+WkZiLxgPYM53dWYXZwFbUa9wsBb4soOEj8aOfZgxh7dodEIhj
+ n9T4SdilrsYRbJlk3BxS4NueOIvPJKlJKBPrMqv8uNue5LWDB9NU6CNU+qGY+qPuAHrqFiij+
+ V8cSDbXw+s2ukEcPnxZsgqnZOCdlwlWQ99HqEyHfBCKIT2Q/GbsoP1P7ZniubAbIHD73Op01m
+ 5F7mJeXhizoxzrVEDO3esKOwsS+IfYtUiVE4Z9uQcZ8Otap9/zMSn6sWddXj7afHlFbdQNcP4
+ i5RYzQLPn0ebLqLA7nAjXuKQnrgwECZvCP5msb6uuJW2bkn2ls+8B6W15ZmVyY/EYPGOQ9LnF
+ yg2Q2Ed3AyFbzHNxJ77GRSRvjcE+SfEBeXmWz7jm87Ii+gVbQr2TAIBtS5Ui5iDjqEcNqfqxK
+ YIs5yWBWvJeMked+TsgK+jmqUmGXaSYugSkAd5Qp8cL8+ROhAaS6gIx9SpUH8hJEmt7ZjB/74
+ wR/AUwHXAl+BW8mSNx8ey1xmVbNmDkZiWk/qLQtXuOHOSHdcsudIfSHGb+UjpDr1DeztPW9JP
+ jLaZbxSHP6o1ykCmajezc1WuxsB5aBgLf7otLLo6rrWDDZGx98SpaiQuX+jOe5xrLvJVnpTHu
+ KsgBG0sQPmjOaI4KEgT+pS8sIgtzMI
 
-On 12/18/24 17:29, Geert Uytterhoeven wrote:
-> Hi Helge,
+On 12/15/24 15:58, Thomas Wei=C3=9Fschuh wrote:
+> The sysfs core now provides callback variants that explicitly take a
+> const pointer. Make use of it to match the attribute definitions.
 >
-> On Sun, Dec 15, 2024 at 4:08=E2=80=AFPM Helge Deller <deller@gmx.de> wro=
-te:
->> On 12/15/24 11:45, Geert Uytterhoeven wrote:
->>> "test002" crashes when run with a display resolution of e.g. 2560x1440
->>> pixels, due to 32-bit overflow in the ellipse drawing routine.
->>>
->>> Fix this by creating a copy that uses 64-bit arithmetic.  Use a
->>> heuristic to pick either the 32-bit or the 64-bit version, to avoid th=
-e
->>> overhead of the 64-bit version on small systems with small displays.
->>
->> I see you always build the 32- and 64-bit versions, so when you mean
->> overhead you mean runtime overhead, not compiled binary size overhead.
->
-> Exactly.
->
->> So, just wondering:
->> Did you maybe measured how much slower the 64-bit version is on slow 32=
--bit systems?
->> I'm fine with your decision to build both, but I'm wondering if it's re=
-ally necessary
->> to keep two versions for a "test tool"?
->
-> On ARM Cortex-A9, draw_ellipse(400, 240, 300, 239, ...) with a
-> dummy (empty) set_pixel() method using the 64-bit version takes 44%
-> longer than the 32-bit version, so I think it is worthwhile to have
-> both versions.
+> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
+> ---
+>   drivers/video/fbdev/aty/radeon_base.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
 
-Oh, I didn't expect that much.
-I agree it's worthwhile to have both versions.
+applied.
 
+Thanks!
 Helge

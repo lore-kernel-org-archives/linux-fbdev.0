@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3ACEA224FA;
-	Sun, 22 Dec 2024 06:06:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 222C5149E00;
+	Sun, 22 Dec 2024 06:07:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734847603; cv=none; b=OE+Lm8cmHNj9EVH6RzfV1vqGETKrLlyPEvKZcbSlYe3YidfGps0NPOJNlxPfan5uFXlNYuYN4utIeajIBeCkB01JA5NHgXN3qQMu8G5IWxBoNcCQOnhGKI/wGVAyFeCU5UR1jcc1cdEaJjKr+gBqdnmpKDEj5YREwcWP63Hv3TE=
+	t=1734847667; cv=none; b=ThvK8QDjf0yS278b6a0uPPPKW3lf2vb+9j1YRPouWl1IeeGOUUiuE+Wn+Edfc8P4dH/JSY4berhMm3FbQyFvtWek9QSouKljssdtfaefSBX2J1ViqMkexWpzZhtc9Bekw604O9h4ynIQEP2qr0hl/gkEbrfHV/P32rvV27NpJUw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734847603; c=relaxed/simple;
-	bh=ltx/TDR3VY0cMA7dDIc3Q9/MCs4FnRXei4oVDqTAbgA=;
+	s=arc-20240116; t=1734847667; c=relaxed/simple;
+	bh=vpCMwTEgXlJPC+jWq2nPICl43M6vapl6nv126j60/VU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UkLV8GmDoafG/DVJPHBqlHDuoesV00mQJmvvnhDEVTn0g8qZsKjW0sI8I28mlSWKCAshj6CbNbIyBxyoh7Cju4whM6RCHwAbnSZeo6zpEE/3sM+VZLGR0BwYiUJ88xC/35m2miU7zSe4K1wUjw9Zv926EY3J8HLNieq49Gyx17w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=RpONCtIv; arc=none smtp.client-ip=212.227.15.18
+	 In-Reply-To:Content-Type; b=rRC11A7uszIoPg2RnQTdHoxw+V2sgozqsgPrAaNbl0N8kggLYiqv4TWlVin2psZcZO99/XzDOrcEX1FmdjHx1Ak2rUVEujs8oyNYroOrrXw3H1z2w8S9S0voEGYoAzb0M/t/RQM0CFUwBE15uvqkYyIzZCMrBcb0gMu5A5RQvks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=kInoV0i8; arc=none smtp.client-ip=212.227.15.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="RpONCtIv"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="kInoV0i8"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1734847595; x=1735452395; i=deller@gmx.de;
-	bh=XtmpZVE4yUecp21o7ynL5TR6Kc9uvktwQXnTqBTHxRA=;
+	s=s31663417; t=1734847660; x=1735452460; i=deller@gmx.de;
+	bh=CGJ3JKoy7U5P5XrwETlirEe0q+TEVp2dvIUIrvkoxp0=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=RpONCtIvmTpIfMHu7o9qHK+kyxtAiscZ2FT6PGr8f68kfj3y+ehEfV3faL7wthGd
-	 wFZAhnMQ4qEJ6KDoGpbs6Uz4Er13wGqjhG8OYtZ91P6CNQhXWrI7I17ok5utVsQhu
-	 pqwxJKhklrJv5n/5DJHL7DvnRYnuIJhmklIe2qfeH2UPXc9x2LiCrVrpS6bC5UFQj
-	 HZTCgQhlfhltFgV63h+5yVquTxIHgmK1uKbF2genNZSA9OuebuxOhnWs1RDWdDcI8
-	 6Jc3jbopleeZxABVVZn+4Ic+cO18VT4tLEtzXIeKKLeCf9bRizSbjtMsSHSfbCXp/
-	 YHGfZhh4WpjD4it5Pw==
+	b=kInoV0i8vMOsIUdj5rSnkRopjQR+7q7hotHNmYysxFV2NlOHW/scArvmWhw3IQID
+	 5z6wWnk4OXojs0dYZ6iHNz+Lexfpq2g7dxAjnn7qf6JU+0SYqWqq80kRMxWmQtq56
+	 NUnS11d1Hh3Mpmd2Cs7wAyL/aQXSGiiYZp1RhufsQ/zYtlqaoZWjHZETJKCFUMRbs
+	 XLkh7w85xL0PH1uWUDCVKuOd6S9guQ17I6H1EUdyJmJEMk6j3+PwmxTTVHjVTcwmT
+	 674hol7rXgMCZMbnPHY6p0sLk467jafyFMkLZoZo7bo8kqfUUKFIC5WKSdQphJ03j
+	 xYS5w0NJNnx+JxbMjQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.172] ([109.250.63.155]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MpDNl-1tu9TQ3Ukx-00prVF; Sun, 22
- Dec 2024 07:06:35 +0100
-Message-ID: <1b1fd689-e111-4109-b7a9-21747fc1bdb8@gmx.de>
-Date: Sun, 22 Dec 2024 07:06:35 +0100
+Received: from [192.168.20.172] ([109.250.63.155]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MQ5vW-1tC87w1MjQ-00RAhJ; Sun, 22
+ Dec 2024 07:07:40 +0100
+Message-ID: <c016ff53-423f-4635-b225-c6f3b2837ded@gmx.de>
+Date: Sun, 22 Dec 2024 07:07:39 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,10 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/udlfb: Use const 'struct bin_attribute' callback
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
- Bernie Thompson <bernie@plugable.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20241215-sysfs-const-bin_attr-udlfb-v1-1-40e87ed71d1f@weissschuh.net>
+Subject: Re: [PATCH] video: hdmi: Remove unused hdmi_infoframe_check
+To: linux@treblig.org, linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20241217013859.2132527-1-linux@treblig.org>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,43 +92,51 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20241215-sysfs-const-bin_attr-udlfb-v1-1-40e87ed71d1f@weissschuh.net>
+In-Reply-To: <20241217013859.2132527-1-linux@treblig.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:OFx3d7nGb5ClVE9xS8/7+Tf5XCIyN8KKkGyqnkvKTmRS6+wVok5
- J45BihEGH6ONJZMBzHrDnYRkRIUwSrPKIeHy6lmceQxe+fesa6XyUrxk9HHR28uLqG9av92
- e2kIYQmoSxsjYB2wxzpgbK6aPtdUVoin710I9YhdSjL1TaRV6hmWlStNNiJxKkbe7xrdGgJ
- RNPkf7tkv5wNJctXEwtnQ==
+X-Provags-ID: V03:K1:rlpphXSBXP2Qw4FDgUiL7J76MTzhFGcLeVVGHhzlZTIzfg9tqVd
+ GzAG6c1JASbAY0ewgwYaFykrO3pGKWMXEOy+/659cx7NcDxHg90tAkOP0LZCnqDAbk77Jag
+ xEKYVnlXLkk/4K7qVID6PO0oBvHK4zmTwJM1Yi3p0pmQ5Jd6RSEjoyMgdxSquFeuk4da4iQ
+ /dCX6UPqEJoskJ9p8Er4w==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:3vtUtjgtZoQ=;lEi+qHtyP8EQbB3MtXAtzKZD8eH
- 92IqiJHp6cS2tRs9lPkeUN9BITasnQWoiu/QqK3TfyoyPzrZPicKZAarB+FyP4EhEiGn/ejIN
- kREqlZ3Mj7cJJxw0SUFpyN9NzgG/rJMF4d0XP0mcIqt2q2x0zVkOE/ZMajZfC+zmkPK6WWyoA
- beQRfJSlQWkthIxAky61kJ7mRadnuvrwkIVCB8KMOr5bkR0bRmdlWw2Rx6tCujbR5lNjhRHMJ
- vKxYFF28NS7MMW58EkG3JZopskx4WtlYRPFK0ro/cxf2RNEir2Mn4dsOUhKXnWkliujXdW+W8
- S34lbNV3PjAaw2XEsKizGTrOA5oWLC7wqXreKcsAsZXMaYvLk4S+sbu2qMIQ/Tjd3x2VPjw5F
- 8qt6nPPO4JcM5ZzsRIZpkhpbcPauXlmMWFDq/sA1rTvK6up5KoOEPQhUjCVY2+5N7NwInadrE
- sBQVMfOnE9AC7uWFWWoAZt/ME/YmPGkFsZnjDaHNaZLelOEulRB77m7SJG2+R8DqR5Cjud86c
- TSFI70t0wFr+kd0nldSYJw0AsK7wQ3DL5c28Yyc2oEM7ve2q8DPlgjsWA70nY99kYIqopSI08
- EyAk26upPDDF+QBeHBrTQNkR28e6xtq9elwGGJfbxnxV6P8QTIK0R6ou/8DN0j8lnzVq32qOJ
- Lkz63MrZw8ehje7qafYYpQPdX28ZeLL4Vzt3ieZArshn9HKfb6CF/MMos/QFosDdUBBycyPDK
- 8hClskiC2pjgiW5P0sadl/qAXtMQJTv0/+qPjijsBq00Mkf1RoxZ/NeSCt+29Nb8YLfy9lO1t
- HyBp0ETm9euhbryEazVS/VHvG6bJezIUGmZiL+/NQVHGYYbqhY+EIm1l0V100fVCDVEwhDh0f
- u4QnLOZv00Md9er7UWvVor6+dCnzsnYLm2PkMpV0CbsJBkbGO81tdtCf6XWVFQoVCSl3g8SVD
- sm4iRDsWoiKmHJbdXWaGryAzxolR48X9MQhsC+Hx5LQPbq4wiMoeXg9pvd2KAy4mDKCAp9tbj
- isA0aBcnqqhWyqNAxNviPHDNi5YIDTZokDLbKyP+OS72qTvebcgUBLC4enuY0CAN4NgN9tRH0
- 4DUgO8MqH2dAC3TLoT9MvJeVMoiFze
+UI-OutboundReport: notjunk:1;M01:P0:qQHQYN0vDrQ=;M1arzcvqFeHArGsFQOi+tZZmFC+
+ aTihnXwYeTwXybh4LkQ61bR+hI96lnLu7k0ZEnsd46cy9J3j3MT8CcyKf0uQMcrECDNHwNp6t
+ NUxln/yWiL4VOXQyvrWcmlrD2+AqV/U7m55GqvI35SO7r8apB+cle+GkU+4Z4Co+dGrF+bK2k
+ rknRuonEjNYlJ3r6D/S9Vc+Z12u2nK1dceVIRJfd8cXJWxZ/iO91073MUV4tp3shVqYb/tEQ4
+ qeoBdDLAaCNH8fHXwca9unNs4EeUqjZHb/UM6xshEAv7nw/QEWpEQNkPLJDxxA0pqpKlfWrHn
+ De0qzjjmG8DpzjXfr6XRBCwJv4D+5KC4xo789BVTGnJPHrYkX0wIRcKOVfMiGGI87unyw+UNY
+ wxTshISgvhXYFDUxnlgOrHQUe8UkeoKbKMCzXQ85EdhycHd15fRAkQBRFrsPlsmye1hdBtFu8
+ KnX2cJ0hXEb8dG2OsSKr1gjgIgdqOWiV4KBFaUkf8mIEYU65eCwcc4YetJBZx/S79b1km0jhr
+ c8z/oVp/0VGNscQt0tvlASD+8qFNYLcdBKuWRA4+PYhdGbRWEvUk2sjKqksU3l+/jxZ9G3YkQ
+ Q2lkcdtkiZjH8zLQcxq4nxYhJTQSvzh1Gh9w+McseybIUXirxXsngCw7TuwI/9lhcTNHLcIsG
+ sUDO9iA2dHNrxMNe629+1JwBFc20ycsxKgwcAUoYI/2IuWreBnZeXP08Sq6EzBkQpuaM0bY85
+ w0HWoR9xFftLzjpcODJukIKtwvEziivSe+u79acsFGNwp+EOyfK648HJodZHy61m0ekMh1QFb
+ EvtEuBv/8RBk9G6ZH5a5JtltnrJw9ed2IGX4IPVgpwUE6cSvEx4gnO//AJrfy9qUFXlByYRlc
+ McsvwvxehGuJlHy0XnJ1HnYcu99iHWfoRHrvvJHf5oIa2ENtLJy6mgBVJuyqoTOalr/WUg+2g
+ C7dq3jK3Suc7whkv0IqTOgoY5i2ZQMv45a5dTLY3l3B6ELEpakc7M8cIU3tVEvp7v5MSiJlGu
+ ScGWCpvddQJYq2TIsWROhI5xeJCmy49pDzGxO9JpEgOClx3sOGnIZDDUK+GhobKWw+AC9EYeP
+ biQjExh9+BcNikmXEcW5+zfVFzFQeh
 
-On 12/15/24 15:55, Thomas Wei=C3=9Fschuh wrote:
-> The sysfs core now provides callback variants that explicitly take a
-> const pointer. Make use of it to match the attribute definition.
+On 12/17/24 02:38, linux@treblig.org wrote:
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
 >
-> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
+> hdmi_infoframe_check() has been unused since it was added in
+> commit c5e69ab35c0d ("video/hdmi: Constify infoframe passed to the pack
+> functions")
+>
+> Remove it.
+>
+> Note that the individual check functions for each type are
+> actually used, so they're staying.
+>
+> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 > ---
->   drivers/video/fbdev/udlfb.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
+>   drivers/video/hdmi.c | 28 ----------------------------
+>   include/linux/hdmi.h |  1 -
+>   2 files changed, 29 deletions(-)
 
 applied.
 
 Thanks!
 Helge
-

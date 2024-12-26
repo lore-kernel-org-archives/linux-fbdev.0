@@ -1,34 +1,34 @@
 Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0EB314A4C7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0E7114A0BC;
 	Thu, 26 Dec 2024 02:28:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735180098; cv=none; b=FJ+IESA7tUbEOt17xa/0/4G99LE2SMtJJ8cqtrdwUMmxvILEnREng34g4/cmwGRbYQZgRNeiZyXCUvatUvpBKYGz3icuWAlNKlEEdZZDbgufPsdLES8tu/9GS30hs+c+R/G5PBhhBpDHmLi3JlBaeoe0la69GXy0fLq5kA9ZKug=
+	t=1735180098; cv=none; b=N0xQrxJ/uT46qoTjl8h8RL/tjs28UksM/FbZwipUB84o21r+iOqzuCEfYXGViY3LmpF9uHvX/Xrr1DYB3Zu7VXOv+P8WAkC68SKzpkbqRMleE/CfJ12TX+yQKQI5J+iJfpUcRAQUXbSldWFn6LU35Csok+ZkXSqO4l1AjYkVXOY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1735180098; c=relaxed/simple;
-	bh=1Jbfs9bJyGvvrV6qI/wAd1AAr3XZs3qJWHWPh6rqB+A=;
+	bh=cACDnPioAgBuHuOikatqK1RNjbYawNrFuz90HUF5fXQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=tFIw2q9JA5dfUpcB7w/J0Zpm/b+rPrp9VJUCPHYLP/Txz5IMaE4dgQmxRm4WXlBRwraGoV2YTgNPtL6G0mDP1qgiT/VoTZnSbNjUHYy6mh33khL5HSkYqKUCDdoRemY0NsFmNAQJCA5h6jdQgNacymzsH16VOGenL+PpKoUxmC4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=flqOZRkB; arc=none smtp.client-ip=46.235.229.95
+	 MIME-Version; b=NWABgdMmjyCogxBtN51BiXkQIFuOIpTTMjM5IvzBDC5FMtDtxCo4qwJ4V5I26lJ/hJPymuxH9AKaS0Kr9s5zxD4kbDFLWwK5pmQP3LDRwAB7q0URkwREsiFEX9jDFsLfWgiQFT7r55TPooFZ/2LMMqT0YLdJVKZI1iKHDyvPU1o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=Eevo40RW; arc=none smtp.client-ip=46.235.229.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="flqOZRkB"
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="Eevo40RW"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
 	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
-	:Subject; bh=ekg/UKB4/lYLmQ4zoU6HE87Q7T/RgQ0dvlW6KUtiFAI=; b=flqOZRkBUSff6t+9
-	UdbssLKyddIkHRcpOP97NpnFf0RkaSChotpTWNoMLX+xfhYxdPIwf9f8/YTTiJdfu/5ZK6cL2G20T
-	ZJVB2WyBtTg0oE33aFkbdIIMio6KoDaE5flbb/xpuwOPRIeHh49GuumSIZ6kc1cZoQtchWkoyZyVg
-	MJBnFVZupalsVOruJa1GbrSiXeTCzO6tW5xfelnRrJ7AColuv7MgECsgooz3XTgXU5DtckG5jm1MR
-	vcF8bIaTDScAhKzmuA6DNDqMkoVUc6sw0Ab/bq/sR2/IX5tIwC9pQiheey2P3YavkWdQn6WClP8kO
-	0SFl9m1wsXZQE1Kvhw==;
+	:Subject; bh=8oqYD/B3UMlO69nH16a4qOpq5t9+uPPTLogH0zzGwks=; b=Eevo40RWUifZuus8
+	s48V+jvzoplAN44z3+2xITvRxcWrZODQotuSNCN8wjQZybqro18vPFkZgTbEAYY235W6LwC57qM0D
+	dpOdCBNN7PDJKRu9/yia/r984fVZljCpIJLXNEbIa71EQfRv66ll2UPeFeYN6r0XcLzuJBuEFjcAA
+	Orxi5NXo7PFbANyaAqxZDDIkL70ou2H+gmTU/LBgBb6NSDiUE61Mf4r4ZqSijCM3VZLWZAHJngA5B
+	8p/Lx6Sm+y23DjoDBG5Lqwcc08wY5/4H6y/CDracxO4tbiTPnV4PXOIv2htKKk8EMyo0q2EH1hoj3
+	XQQRX5RXR+LOz2Lmog==;
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
 	by mx.treblig.org with esmtp (Exim 4.96)
 	(envelope-from <linux@treblig.org>)
-	id 1tQdbS-007F0L-2E;
-	Thu, 26 Dec 2024 02:27:58 +0000
+	id 1tQdbO-007F0L-17;
+	Thu, 26 Dec 2024 02:27:54 +0000
 From: linux@treblig.org
 To: p.zabel@pengutronix.de,
 	airlied@gmail.com,
@@ -44,9 +44,9 @@ Cc: dri-devel@lists.freedesktop.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	"Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: [PATCH 7/7] gpu: ipu-v3 ipu-cpmem: Remove unused functions
-Date: Thu, 26 Dec 2024 02:27:52 +0000
-Message-ID: <20241226022752.219399-8-linux@treblig.org>
+Subject: [PATCH 1/7] gpu: ipu-v3: ipu-ic: Remove unused ipu_ic_task_graphics_init
+Date: Thu, 26 Dec 2024 02:27:46 +0000
+Message-ID: <20241226022752.219399-2-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241226022752.219399-1-linux@treblig.org>
 References: <20241226022752.219399-1-linux@treblig.org>
@@ -60,84 +60,117 @@ Content-Transfer-Encoding: 8bit
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-ipu_cpmem_set_yuv_interleaved() was added in 2012 by
-commit 0125f21b2baf ("staging: drm/imx: Add
-ipu_cpmem_set_yuv_interleaved()")
-but has remained unused.
+ipu_ic_task_graphics_init() was added in 2014 by
+commit 1aa8ea0d2bd5 ("gpu: ipu-v3: Add Image Converter unit")
+but has been unused.
 
-ipu_cpmem_get_burstsize() was added in 2016 by
-commit 03085911d7bb ("gpu: ipu-cpmem: Add ipu_cpmem_get_burstsize()")
-but has remained unused.
-
-Remove them.
+Remove it.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/gpu/ipu-v3/ipu-cpmem.c | 23 -----------------------
- include/video/imx-ipu-v3.h     |  2 --
- 2 files changed, 25 deletions(-)
+ drivers/gpu/ipu-v3/ipu-ic.c | 73 -------------------------------------
+ include/video/imx-ipu-v3.h  |  4 --
+ 2 files changed, 77 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
-index 82b244cb313e..07866b1369c6 100644
---- a/drivers/gpu/ipu-v3/ipu-cpmem.c
-+++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
-@@ -337,12 +337,6 @@ void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id)
+diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
+index 846461bac70d..acd76ecc5221 100644
+--- a/drivers/gpu/ipu-v3/ipu-ic.c
++++ b/drivers/gpu/ipu-v3/ipu-ic.c
+@@ -321,79 +321,6 @@ void ipu_ic_task_disable(struct ipu_ic *ic)
  }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_axi_id);
+ EXPORT_SYMBOL_GPL(ipu_ic_task_disable);
  
--int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch)
+-int ipu_ic_task_graphics_init(struct ipu_ic *ic,
+-			      const struct ipu_ic_colorspace *g_in_cs,
+-			      bool galpha_en, u32 galpha,
+-			      bool colorkey_en, u32 colorkey)
 -{
--	return ipu_ch_param_read_field(ch, IPU_FIELD_NPB) + 1;
--}
--EXPORT_SYMBOL_GPL(ipu_cpmem_get_burstsize);
+-	struct ipu_ic_priv *priv = ic->priv;
+-	struct ipu_ic_csc csc2;
+-	unsigned long flags;
+-	u32 reg, ic_conf;
+-	int ret = 0;
 -
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize)
- {
- 	ipu_ch_param_write_field(ch, IPU_FIELD_NPB, burstsize - 1);
-@@ -452,23 +446,6 @@ int ipu_cpmem_set_format_passthrough(struct ipuv3_channel *ch, int width)
- }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_format_passthrough);
- 
--void ipu_cpmem_set_yuv_interleaved(struct ipuv3_channel *ch, u32 pixel_format)
--{
--	switch (pixel_format) {
--	case V4L2_PIX_FMT_UYVY:
--		ipu_ch_param_write_field(ch, IPU_FIELD_BPP, 3); /* bits/pixel */
--		ipu_ch_param_write_field(ch, IPU_FIELD_PFS, 0xA);/* pix fmt */
--		ipu_ch_param_write_field(ch, IPU_FIELD_NPB, 31);/* burst size */
--		break;
--	case V4L2_PIX_FMT_YUYV:
--		ipu_ch_param_write_field(ch, IPU_FIELD_BPP, 3); /* bits/pixel */
--		ipu_ch_param_write_field(ch, IPU_FIELD_PFS, 0x8);/* pix fmt */
--		ipu_ch_param_write_field(ch, IPU_FIELD_NPB, 31);/* burst size */
--		break;
+-	if (ic->task == IC_TASK_ENCODER)
+-		return -EINVAL;
+-
+-	spin_lock_irqsave(&priv->lock, flags);
+-
+-	ic_conf = ipu_ic_read(ic, IC_CONF);
+-
+-	if (!(ic_conf & ic->bit->ic_conf_csc1_en)) {
+-		struct ipu_ic_csc csc1;
+-
+-		ret = ipu_ic_calc_csc(&csc1,
+-				      V4L2_YCBCR_ENC_601,
+-				      V4L2_QUANTIZATION_FULL_RANGE,
+-				      IPUV3_COLORSPACE_RGB,
+-				      V4L2_YCBCR_ENC_601,
+-				      V4L2_QUANTIZATION_FULL_RANGE,
+-				      IPUV3_COLORSPACE_RGB);
+-		if (ret)
+-			goto unlock;
+-
+-		/* need transparent CSC1 conversion */
+-		ret = init_csc(ic, &csc1, 0);
+-		if (ret)
+-			goto unlock;
 -	}
--}
--EXPORT_SYMBOL_GPL(ipu_cpmem_set_yuv_interleaved);
 -
- void ipu_cpmem_set_yuv_planar_full(struct ipuv3_channel *ch,
- 				   unsigned int uv_stride,
- 				   unsigned int u_offset, unsigned int v_offset)
+-	ic->g_in_cs = *g_in_cs;
+-	csc2.in_cs = ic->g_in_cs;
+-	csc2.out_cs = ic->out_cs;
+-
+-	ret = __ipu_ic_calc_csc(&csc2);
+-	if (ret)
+-		goto unlock;
+-
+-	ret = init_csc(ic, &csc2, 1);
+-	if (ret)
+-		goto unlock;
+-
+-	if (galpha_en) {
+-		ic_conf |= IC_CONF_IC_GLB_LOC_A;
+-		reg = ipu_ic_read(ic, IC_CMBP_1);
+-		reg &= ~(0xff << ic->bit->ic_cmb_galpha_bit);
+-		reg |= (galpha << ic->bit->ic_cmb_galpha_bit);
+-		ipu_ic_write(ic, reg, IC_CMBP_1);
+-	} else
+-		ic_conf &= ~IC_CONF_IC_GLB_LOC_A;
+-
+-	if (colorkey_en) {
+-		ic_conf |= IC_CONF_KEY_COLOR_EN;
+-		ipu_ic_write(ic, colorkey, IC_CMBP_2);
+-	} else
+-		ic_conf &= ~IC_CONF_KEY_COLOR_EN;
+-
+-	ipu_ic_write(ic, ic_conf, IC_CONF);
+-
+-	ic->graphics = true;
+-unlock:
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(ipu_ic_task_graphics_init);
+-
+ int ipu_ic_task_init_rsc(struct ipu_ic *ic,
+ 			 const struct ipu_ic_csc *csc,
+ 			 int in_width, int in_height,
 diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 29e142e95ba3..c89574b6f527 100644
+index c422a403c099..0bb1d714cbf5 100644
 --- a/include/video/imx-ipu-v3.h
 +++ b/include/video/imx-ipu-v3.h
-@@ -262,7 +262,6 @@ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
- void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
- 			       u32 pixelformat);
- void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
--int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
- void ipu_cpmem_set_block_mode(struct ipuv3_channel *ch);
- void ipu_cpmem_set_rotation(struct ipuv3_channel *ch,
-@@ -270,7 +269,6 @@ void ipu_cpmem_set_rotation(struct ipuv3_channel *ch,
- int ipu_cpmem_set_format_rgb(struct ipuv3_channel *ch,
- 			     const struct ipu_rgb *rgb);
- int ipu_cpmem_set_format_passthrough(struct ipuv3_channel *ch, int width);
--void ipu_cpmem_set_yuv_interleaved(struct ipuv3_channel *ch, u32 pixel_format);
- void ipu_cpmem_set_yuv_planar_full(struct ipuv3_channel *ch,
- 				   unsigned int uv_stride,
- 				   unsigned int u_offset,
+@@ -445,10 +445,6 @@ int ipu_ic_task_init_rsc(struct ipu_ic *ic,
+ 			 int in_width, int in_height,
+ 			 int out_width, int out_height,
+ 			 u32 rsc);
+-int ipu_ic_task_graphics_init(struct ipu_ic *ic,
+-			      const struct ipu_ic_colorspace *g_in_cs,
+-			      bool galpha_en, u32 galpha,
+-			      bool colorkey_en, u32 colorkey);
+ void ipu_ic_task_enable(struct ipu_ic *ic);
+ void ipu_ic_task_disable(struct ipu_ic *ic);
+ int ipu_ic_task_idma_init(struct ipu_ic *ic, struct ipuv3_channel *channel,
 -- 
 2.47.1
 

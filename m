@@ -1,101 +1,133 @@
-Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com [209.85.160.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 057341DDC3A
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Dec 2024 13:07:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C839F224D6;
+	Thu, 26 Dec 2024 02:28:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735045670; cv=none; b=Eu1PQ+RLTxNCdK5zo8yVctcVdkONSM9QItezkDBb8UdTOdrU3PXytdzfxFUN5UneaEnvSs5LnUdpIIXk1tg5xBNigNkEbqWFsyYQql913KLO2dPz+6jND4+HrKcSGfJH5y++UpMgeOXfS7fDfsGRmIyukNDXQpq/DeskoFTyFmo=
+	t=1735180095; cv=none; b=M83MD+N8IlRNPZff5ojAn3vCXIi3dn+zqXWbtFFY7mo3do8L9RXRNpLt5rtogqxZzwP/pGRfGhCet5HQ2HqcdeZkEQVFRVyZNlO2yF0Uj1SYwywktVDugS4YGR4znPGiahjVHI6KtvDsZx0/V77eFoWqVnADV//pb7Wz0QBlxbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735045670; c=relaxed/simple;
-	bh=YweF9VemGcXsKj8sWdWnmLKmPuCyyQEk8qlDLYGMdtU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Content-Type; b=QZ00v/PjxCf9WJVfdQLrGlH6yY/UHp4LDDz5RIv0u69nc9gXIEEEs9MGL88GrZLaeyAMsYX0vW0ovx2BI3OlPukJHvDeHPamYrGQUc1ULMFjovl612usw7hrNZ4SSsbNh9w6TkWXKNlUE0csjMngr+qVtqLRr4cvln3qXF77NBY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.160.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-qt1-f175.google.com with SMTP id d75a77b69052e-467918c360aso57757901cf.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Dec 2024 05:07:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735045666; x=1735650466;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BK2vF5xE22xTyQQ2fXMJ8o7UExSmC2aCsctst9o0X+0=;
-        b=e6Z2TP3Vo+Jywqg2vz01lMavY5iGoAl/WQfPWHDypFBFVjjytBTwkGVdlzLNe9uies
-         ZV4hjLVGuMtySEZH1xG1JOpC8UT2glezy9Wim3iYHt/O1bJS+4eE5/u4EaeMvxg89KQw
-         6KNrLimy3eSYSK50IU7spF1HZB26TFskuTGYIcf2/632hfxW0DsQJpBoHABDdsa7Uonm
-         NCzbJ+8oKWewEV/OQmfttEinpO5xd6xutcsC4cYClwsds5H7XmFwBV0Nfu7JVkIwd+Un
-         zWv3ZvHeeV5AD9Gxl/hJ4nrtgEimYTXfK8bWig0VgnF+WXNHGg5ZcTXicc/RQX6Q6TfP
-         I+HQ==
-X-Gm-Message-State: AOJu0YzwkXlg4ZiTd+BNvRTQmyL89GkDOXAWOJo+lYCpTjdLKYhAneVG
-	B6UKzBmzN4E0P1598PT3A/9m/2SsoKDkHqEPXMGR4NCCXVMUb3HLSSiSu+MS
-X-Gm-Gg: ASbGncttgZ4FoMXxLv1tCzBBBd+AMlhLyJm0I2Gxdx0Q8LuwEXqpHL4vscUiYoZ/vEO
-	cvF4rYu/0wyeP/2pycun0bmSPFHb9ugzlRYbHjIj6mdaTVExc1glAcjFMpqskfPtQBVsF/Buyab
-	BgPMhVRESztiyHgLZVrOZoJHAJCEyfMAj77TV9N6QnCafZJbRTEmhCWoA3UQuuQMXjWyKZ1SU4X
-	Fb19XocpdjLiOhX3ik3PNStrisw3aG0pjCNNepA2Nj4ZPDXgohPaNsVjX4aB6j18TjYlSNyYlk0
-	+q66jXAfIgwj4n1gg3vfWcE=
-X-Google-Smtp-Source: AGHT+IGSiCaRcvFMZqpxF7lKt2qXCsYaUdTKxMDxz4+p7U2dMmVF0lflmOJLHZwDlqiSdiDujo0+0A==
-X-Received: by 2002:a05:622a:5c6:b0:467:68a3:4c44 with SMTP id d75a77b69052e-46a4a972791mr313840021cf.39.1735045666515;
-        Tue, 24 Dec 2024 05:07:46 -0800 (PST)
-Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com. [209.85.222.178])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-46a3eb19684sm53156031cf.58.2024.12.24.05.07.46
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Dec 2024 05:07:46 -0800 (PST)
-Received: by mail-qk1-f178.google.com with SMTP id af79cd13be357-7b6f0afda3fso528832185a.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Dec 2024 05:07:46 -0800 (PST)
-X-Received: by 2002:a05:620a:2901:b0:7b6:dd9c:fabe with SMTP id
- af79cd13be357-7b9ba74f084mr2895023085a.19.1735045665995; Tue, 24 Dec 2024
- 05:07:45 -0800 (PST)
+	s=arc-20240116; t=1735180095; c=relaxed/simple;
+	bh=s8vsmexdAj8weGGXnWI8MKQtCAx1Xc87uKtf1m0I/W0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=kuAW9v4RlXWgnt4tBhHTv2LjM7YKdB/Ut8/ChrlZu9SH20HWrJb7f7iXZrdkwkLC9JbMV6eH+Jn2+fjo4KwIWgE0pfaG2XRffiVD4HVHVOm4GawH9oArB5XjMQhv3d6u/NmVbHM/eQ+Z+pDtxpuLM14y3MceIzBFBjDE+TGH2I0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=WYfQSZgV; arc=none smtp.client-ip=46.235.229.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="WYfQSZgV"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
+	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
+	:Subject; bh=m4Osx6Hdy9KSW372q7wGp80UoBpNogxBOIxeaPz8X+M=; b=WYfQSZgV7n/+3+Pd
+	KmWCyewhwvPkrUihSLAvKQe6lvM5B+2jwmuShNU77PeeE0hgZSF3OeHuJ54E0apajjhoLnm7eiYHa
+	FkY9DIDWmnbx4OlniJqZzQl5xFAxI4G4cNiSq5duToEDjjuSJxlyKiBc2KDIpZkxb+SofwKJR29hl
+	E0l6PLzOvuyHHvCnEJZFphJ3LKWgA250kg//KiIvnZkRu/uTdNUazkWjDR8vJZM4p8AkWgLZtxo/o
+	Ue5eJeslQo3MHPwoXsQ6lSqq0QOIsJUBBangZzu+Yk/Q4EOgjg/9Q1lDLkuPhN2vFe9K1DsKb3Xzk
+	ISzCMPjbVwpE/PO5BQ==;
+Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
+	by mx.treblig.org with esmtp (Exim 4.96)
+	(envelope-from <linux@treblig.org>)
+	id 1tQdbP-007F0L-0G;
+	Thu, 26 Dec 2024 02:27:55 +0000
+From: linux@treblig.org
+To: p.zabel@pengutronix.de,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	deller@gmx.de,
+	shawnguo@kernel.org,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	festevam@gmail.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	"Dr. David Alan Gilbert" <linux@treblig.org>
+Subject: [PATCH 2/7] gpu: ipu-v3: Remove unused ipu_rot_mode_to_degrees
+Date: Thu, 26 Dec 2024 02:27:47 +0000
+Message-ID: <20241226022752.219399-3-linux@treblig.org>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241226022752.219399-1-linux@treblig.org>
+References: <20241226022752.219399-1-linux@treblig.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241215104508.191237-1-geert@linux-m68k.org>
-In-Reply-To: <20241215104508.191237-1-geert@linux-m68k.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 24 Dec 2024 14:07:34 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVoExpWK_AfQdq3_O19rp0cBFybMfV-eFy22rm65_gJfg@mail.gmail.com>
-Message-ID: <CAMuHMdVoExpWK_AfQdq3_O19rp0cBFybMfV-eFy22rm65_gJfg@mail.gmail.com>
-Subject: Re: [PATCH fbtest 00/17] Export feature and large ellipses support
-To: linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sun, Dec 15, 2024 at 11:45=E2=80=AFAM Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Recently, I ran into a segmentation fault when running test002 ("Draw a
-> grid and some ellipses") on a system with a display resolution of
-> 2560x1440.  This turned out to be due to a 32-bit overflow in the
-> ellipse drawing routines.
->
-> This patch series:
->   - Adds support for operating on a virtual buffer in RAM instead of on
->     a real frame buffer device, and exporting the result as a PPM image,
->     which is useful for e.g. testing drawing algorithms on screen sizes
->     not supported by your hardware,
->   - Fixes the drawing of ellipses on large displays,
->   - Contains some small fixe and improvements.
->
-> I intend to apply these to
-> https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git/.
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-Pushed, with the Cortex-A9 performance figure added to the
-description for [PATCH fbtest 12/17].
+ipu_rot_mode_to_degrees() was added in 2014 by
+commit f835f386a119 ("gpu: ipu-v3: Add rotation mode conversion utilities")
+but has remained unused.
 
-Gr{oetje,eeting}s,
+Remove it.
 
-                        Geert
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+---
+ drivers/gpu/ipu-v3/ipu-common.c | 32 --------------------------------
+ include/video/imx-ipu-v3.h      |  2 --
+ 2 files changed, 34 deletions(-)
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
+index 947323f4a234..a8570e1bdf28 100644
+--- a/drivers/gpu/ipu-v3/ipu-common.c
++++ b/drivers/gpu/ipu-v3/ipu-common.c
+@@ -165,38 +165,6 @@ int ipu_degrees_to_rot_mode(enum ipu_rotate_mode *mode, int degrees,
+ }
+ EXPORT_SYMBOL_GPL(ipu_degrees_to_rot_mode);
+ 
+-int ipu_rot_mode_to_degrees(int *degrees, enum ipu_rotate_mode mode,
+-			    bool hflip, bool vflip)
+-{
+-	u32 r90, vf, hf;
+-
+-	r90 = ((u32)mode >> 2) & 0x1;
+-	hf = ((u32)mode >> 1) & 0x1;
+-	vf = ((u32)mode >> 0) & 0x1;
+-	hf ^= (u32)hflip;
+-	vf ^= (u32)vflip;
+-
+-	switch ((enum ipu_rotate_mode)((r90 << 2) | (hf << 1) | vf)) {
+-	case IPU_ROTATE_NONE:
+-		*degrees = 0;
+-		break;
+-	case IPU_ROTATE_90_RIGHT:
+-		*degrees = 90;
+-		break;
+-	case IPU_ROTATE_180:
+-		*degrees = 180;
+-		break;
+-	case IPU_ROTATE_90_LEFT:
+-		*degrees = 270;
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(ipu_rot_mode_to_degrees);
+-
+ struct ipuv3_channel *ipu_idmac_get(struct ipu_soc *ipu, unsigned num)
+ {
+ 	struct ipuv3_channel *channel;
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 0bb1d714cbf5..8870f65c9a8b 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -484,8 +484,6 @@ enum ipu_color_space ipu_drm_fourcc_to_colorspace(u32 drm_fourcc);
+ enum ipu_color_space ipu_pixelformat_to_colorspace(u32 pixelformat);
+ int ipu_degrees_to_rot_mode(enum ipu_rotate_mode *mode, int degrees,
+ 			    bool hflip, bool vflip);
+-int ipu_rot_mode_to_degrees(int *degrees, enum ipu_rotate_mode mode,
+-			    bool hflip, bool vflip);
+ 
+ struct ipu_client_platformdata {
+ 	int csi;
+-- 
+2.47.1
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

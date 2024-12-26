@@ -1,34 +1,34 @@
 Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C83F3145B0B;
-	Thu, 26 Dec 2024 02:28:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 357C014831E;
+	Thu, 26 Dec 2024 02:28:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735180096; cv=none; b=WL/6xelRvLMVklt+5NOi7lJlvtDRrUd5TyZY/RFHAO4gC5HDozA3TVPbG2shZPzlmNYsvS+xnqiUJlfsRCuUVkpTay6wFoiAxETPnJ7wpQEBwarVlow+W3XkKN5tjqDRAYsLstxcTI/X/LZaEmXXtasEW50a6+sIaOKa72tluF4=
+	t=1735180096; cv=none; b=a2XG7mG/KlJI9wV1VFxBM+wViFMxXFVqGcYTHkFLMCjD85lUxJMo/XKVbkBnjKnp6gyw7NJVdRVggITFrvBHpBw5roTyvXg9JLbfu96IOHwkvnPXDXSgDxJToNgQEDGijlc28R+dysZFgYs81FNMsETeTuioo9rCQiGbsCd7kyE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1735180096; c=relaxed/simple;
-	bh=8oORSKlqei3CTS83CU5HtbGtZAfHq5LpF1CcFkwiYE0=;
+	bh=DA7+p+sqvcV1bfMtqx/OfgF8iCr7PIRu+xxz92YnSnQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=FPBX5hr6Y5KtOLfH/82WR/gsYEWr2PGERPTccwOI+UYQptuGCSuUFSwFRSLYCWsOIKC17K4CAD4oUv96XTW3310gFwAT7JXnuGUBK8G7sTD3W66ojeS/zG7wdXAg7KOft4F2snDP4pbO2lEdt8zV5qBT7GjKoCodaMU/V8ocgiU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=Hbo+h+Qc; arc=none smtp.client-ip=46.235.229.95
+	 MIME-Version; b=OZLBIK7YE71DTU/zlct85KtfYSZB+yJJU2wvDIkzcH4EAbDFJEl9f51KeUWGutoXV6Ty4XcreKLrTmgkAYNiNGjfNXNxrjPQey6o/zijYSfXaZbBUQ1PgPkNqEurnQziHpXpaJMo7fKilJgmhQNZRcPva2rbACftlwrqk8Ozqf8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=LiDIn/Nx; arc=none smtp.client-ip=46.235.229.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="Hbo+h+Qc"
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="LiDIn/Nx"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
 	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
-	:Subject; bh=0Ys/6PWadFMMf0CT+9doN3qX4Fu8/PHNQBlHP0QonJA=; b=Hbo+h+Qc0gFhN1uU
-	cZP9vtV4n77mGEgq0ULpbgkp2GX2pwmOezeKICNdTVBJuZY4YP8I5kvcnrfYVWW8FVaQ4A8QM2b8f
-	Ia1ktdvHqRvY4289h4MVl2fgToBWNrbk1obRuO4/7wFgKylJjid04Mdjq9ugjLjhHH6dPDoNGPhsy
-	FqYPOgdRPir/ydaTQi6p6i1nAs2xBg/JLqo7Csa19G6x3H49KkzVCCSsZoU/UueKECoKFsBzTYBWR
-	f8oNAHV+2lQFWaqLaoBNyn5C2K0n3LI/ULy/BY9KO0dyO6PqRaG8rxFdUeHTLsmT0YSyPWbf95vNG
-	5BahjFGcmuqsFUPl9w==;
+	:Subject; bh=CzQEqU7rwgr2tl1CtQgZLGQjEt1ez91boRU3k7xCN7k=; b=LiDIn/NxWLtO7Q1N
+	AP05iZOzRbOvvHj0+PU0/joMAXcz6XV2kGJhzN5cuZnI7yd/Vo08qRsCVlX48aQ+xLKRruUvHoUkY
+	XioEYVojBRoaq5B5BOQZkC4oswDi05cYLBQpaGzowwkYYlWwA2wUHZC61UO+7pf3aFVd8+VD9qZRO
+	AoCJZcg7lN5DJT16Lr50F91aA0uEqOko5yYCZG72UPW+JKLtiSNVTJrhpOwnLpTkXcId83uqMb6Wx
+	G57hg3Ag22hhQFJgXjirAw2CpL/am7pvlCI6cQK2KviH9j58xAPy1iRci3e6C4nEVDK8EIWJL3Fwi
+	yeDqO78mh6OypQQImQ==;
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
 	by mx.treblig.org with esmtp (Exim 4.96)
 	(envelope-from <linux@treblig.org>)
-	id 1tQdbQ-007F0L-1Z;
-	Thu, 26 Dec 2024 02:27:56 +0000
+	id 1tQdbR-007F0L-2p;
+	Thu, 26 Dec 2024 02:27:57 +0000
 From: linux@treblig.org
 To: p.zabel@pengutronix.de,
 	airlied@gmail.com,
@@ -44,9 +44,9 @@ Cc: dri-devel@lists.freedesktop.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	"Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: [PATCH 4/7] gpu: ipu-v3: Remove unused ipu_image_convert_* functions
-Date: Thu, 26 Dec 2024 02:27:49 +0000
-Message-ID: <20241226022752.219399-5-linux@treblig.org>
+Subject: [PATCH 6/7] gpu: ipu-v3: ipu-csi: Remove unused functions
+Date: Thu, 26 Dec 2024 02:27:51 +0000
+Message-ID: <20241226022752.219399-7-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241226022752.219399-1-linux@treblig.org>
 References: <20241226022752.219399-1-linux@treblig.org>
@@ -60,139 +60,174 @@ Content-Transfer-Encoding: 8bit
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-ipu_image_convert_enum_format() and ipu_image_convert_sync() were both
-added in 2016 by
-commit cd98e85a6b78 ("gpu: ipu-v3: Add queued image conversion support")
-
+ipu_csi_get_window(), ipu_csi_is_interlaced() and
+ipu_csi_set_test_generator() were added in 2014 by
+commit 2ffd48f2e7ae ("gpu: ipu-v3: Add Camera Sensor Interface unit")
 but have remained unused.
 
 Remove them.
 
-ipu_image_convert_sync() was the last user of
-image_convert_sync_complete().
+ipu_csi_set_testgen_mclk() is now unused.
 
 Remove it.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/gpu/ipu-v3/ipu-image-convert.c | 48 --------------------------
- include/video/imx-ipu-image-convert.h  | 32 -----------------
- 2 files changed, 80 deletions(-)
+ drivers/gpu/ipu-v3/ipu-csi.c | 108 -----------------------------------
+ include/video/imx-ipu-v3.h   |   5 --
+ 2 files changed, 113 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-image-convert.c b/drivers/gpu/ipu-v3/ipu-image-convert.c
-index 841316582ea9..3c33b4defab5 100644
---- a/drivers/gpu/ipu-v3/ipu-image-convert.c
-+++ b/drivers/gpu/ipu-v3/ipu-image-convert.c
-@@ -355,20 +355,6 @@ static void dump_format(struct ipu_image_convert_ctx *ctx,
- 		(ic_image->fmt->fourcc >> 24) & 0xff);
+diff --git a/drivers/gpu/ipu-v3/ipu-csi.c b/drivers/gpu/ipu-v3/ipu-csi.c
+index 778bc26d3ba5..d576b7d28437 100644
+--- a/drivers/gpu/ipu-v3/ipu-csi.c
++++ b/drivers/gpu/ipu-v3/ipu-csi.c
+@@ -185,32 +185,6 @@ static inline void ipu_csi_write(struct ipu_csi *csi, u32 value,
+ 	writel(value, csi->base + offset);
  }
  
--int ipu_image_convert_enum_format(int index, u32 *fourcc)
+-/*
+- * Set mclk division ratio for generating test mode mclk. Only used
+- * for test generator.
+- */
+-static int ipu_csi_set_testgen_mclk(struct ipu_csi *csi, u32 pixel_clk,
+-					u32 ipu_clk)
 -{
--	const struct ipu_image_pixfmt *fmt;
+-	u32 temp;
+-	int div_ratio;
 -
--	if (index >= (int)ARRAY_SIZE(image_convert_formats))
+-	div_ratio = (ipu_clk / pixel_clk) - 1;
+-
+-	if (div_ratio > 0xFF || div_ratio < 0) {
+-		dev_err(csi->ipu->dev,
+-			"value of pixel_clk extends normal range\n");
 -		return -EINVAL;
+-	}
 -
--	/* Format found */
--	fmt = &image_convert_formats[index];
--	*fourcc = fmt->fourcc;
+-	temp = ipu_csi_read(csi, CSI_SENS_CONF);
+-	temp &= ~CSI_SENS_CONF_DIVRATIO_MASK;
+-	ipu_csi_write(csi, temp | (div_ratio << CSI_SENS_CONF_DIVRATIO_SHIFT),
+-			  CSI_SENS_CONF);
+-
 -	return 0;
 -}
--EXPORT_SYMBOL_GPL(ipu_image_convert_enum_format);
 -
- static void free_dma_buf(struct ipu_image_convert_priv *priv,
- 			 struct ipu_image_convert_dma_buf *buf)
- {
-@@ -2437,40 +2423,6 @@ ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+ /*
+  * Find the CSI data format and data width for the given V4L2 media
+  * bus pixel format code.
+@@ -538,56 +512,6 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
  }
- EXPORT_SYMBOL_GPL(ipu_image_convert);
+ EXPORT_SYMBOL_GPL(ipu_csi_init_interface);
  
--/* "Canned" synchronous single image conversion */
--static void image_convert_sync_complete(struct ipu_image_convert_run *run,
--					void *data)
+-bool ipu_csi_is_interlaced(struct ipu_csi *csi)
 -{
--	struct completion *comp = data;
+-	unsigned long flags;
+-	u32 sensor_protocol;
 -
--	complete(comp);
+-	spin_lock_irqsave(&csi->lock, flags);
+-	sensor_protocol =
+-		(ipu_csi_read(csi, CSI_SENS_CONF) &
+-		 CSI_SENS_CONF_SENS_PRTCL_MASK) >>
+-		CSI_SENS_CONF_SENS_PRTCL_SHIFT;
+-	spin_unlock_irqrestore(&csi->lock, flags);
+-
+-	switch (sensor_protocol) {
+-	case IPU_CSI_CLK_MODE_GATED_CLK:
+-	case IPU_CSI_CLK_MODE_NONGATED_CLK:
+-	case IPU_CSI_CLK_MODE_CCIR656_PROGRESSIVE:
+-	case IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_DDR:
+-	case IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_SDR:
+-		return false;
+-	case IPU_CSI_CLK_MODE_CCIR656_INTERLACED:
+-	case IPU_CSI_CLK_MODE_CCIR1120_INTERLACED_DDR:
+-	case IPU_CSI_CLK_MODE_CCIR1120_INTERLACED_SDR:
+-		return true;
+-	default:
+-		dev_err(csi->ipu->dev,
+-			"CSI %d sensor protocol unsupported\n", csi->id);
+-		return false;
+-	}
 -}
+-EXPORT_SYMBOL_GPL(ipu_csi_is_interlaced);
 -
--int ipu_image_convert_sync(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
--			   struct ipu_image *in, struct ipu_image *out,
--			   enum ipu_rotate_mode rot_mode)
+-void ipu_csi_get_window(struct ipu_csi *csi, struct v4l2_rect *w)
 -{
--	struct ipu_image_convert_run *run;
--	struct completion comp;
--	int ret;
+-	unsigned long flags;
+-	u32 reg;
 -
--	init_completion(&comp);
+-	spin_lock_irqsave(&csi->lock, flags);
 -
--	run = ipu_image_convert(ipu, ic_task, in, out, rot_mode,
--				image_convert_sync_complete, &comp);
--	if (IS_ERR(run))
--		return PTR_ERR(run);
+-	reg = ipu_csi_read(csi, CSI_ACT_FRM_SIZE);
+-	w->width = (reg & 0xFFFF) + 1;
+-	w->height = (reg >> 16 & 0xFFFF) + 1;
 -
--	ret = wait_for_completion_timeout(&comp, msecs_to_jiffies(10000));
--	ret = (ret == 0) ? -ETIMEDOUT : 0;
+-	reg = ipu_csi_read(csi, CSI_OUT_FRM_CTRL);
+-	w->left = (reg & CSI_HSC_MASK) >> CSI_HSC_SHIFT;
+-	w->top = (reg & CSI_VSC_MASK) >> CSI_VSC_SHIFT;
 -
--	ipu_image_convert_unprepare(run->ctx);
--	kfree(run);
--
--	return ret;
+-	spin_unlock_irqrestore(&csi->lock, flags);
 -}
--EXPORT_SYMBOL_GPL(ipu_image_convert_sync);
+-EXPORT_SYMBOL_GPL(ipu_csi_get_window);
 -
- int ipu_image_convert_init(struct ipu_soc *ipu, struct device *dev)
+ void ipu_csi_set_window(struct ipu_csi *csi, struct v4l2_rect *w)
  {
- 	struct ipu_image_convert_priv *priv;
-diff --git a/include/video/imx-ipu-image-convert.h b/include/video/imx-ipu-image-convert.h
-index 3c71b8b94b33..003b3927ede5 100644
---- a/include/video/imx-ipu-image-convert.h
-+++ b/include/video/imx-ipu-image-convert.h
-@@ -40,19 +40,6 @@ struct ipu_image_convert_run {
- typedef void (*ipu_image_convert_cb_t)(struct ipu_image_convert_run *run,
- 				       void *ctx);
+ 	unsigned long flags;
+@@ -624,38 +548,6 @@ void ipu_csi_set_downsize(struct ipu_csi *csi, bool horiz, bool vert)
+ }
+ EXPORT_SYMBOL_GPL(ipu_csi_set_downsize);
  
--/**
-- * ipu_image_convert_enum_format() - enumerate the image converter's
-- *	supported input and output pixel formats.
-- *
-- * @index:	pixel format index
-- * @fourcc:	v4l2 fourcc for this index
-- *
-- * Returns 0 with a valid index and fills in v4l2 fourcc, -EINVAL otherwise.
-- *
-- * In V4L2, drivers can call ipu_image_enum_format() in .enum_fmt.
-- */
--int ipu_image_convert_enum_format(int index, u32 *fourcc);
+-void ipu_csi_set_test_generator(struct ipu_csi *csi, bool active,
+-				u32 r_value, u32 g_value, u32 b_value,
+-				u32 pix_clk)
+-{
+-	unsigned long flags;
+-	u32 ipu_clk = clk_get_rate(csi->clk_ipu);
+-	u32 temp;
 -
- /**
-  * ipu_image_convert_adjust() - adjust input/output images to IPU restrictions.
-  *
-@@ -176,23 +163,4 @@ ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
- 		  ipu_image_convert_cb_t complete,
- 		  void *complete_context);
- 
--/**
-- * ipu_image_convert_sync() - synchronous single image conversion request
-- *
-- * @ipu:	the IPU handle to use for the conversion
-- * @ic_task:	the IC task to use for the conversion
-- * @in:		input image format
-- * @out:	output image format
-- * @rot_mode:	rotation mode
-- *
-- * Carry out a single image conversion. Returns when the conversion
-- * completes. The input/output formats and rotation mode must already
-- * meet IPU retrictions. The created context is automatically unprepared
-- * and the run freed on return.
-- */
--int ipu_image_convert_sync(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
--			   struct ipu_image *in, struct ipu_image *out,
--			   enum ipu_rotate_mode rot_mode);
+-	spin_lock_irqsave(&csi->lock, flags);
 -
+-	temp = ipu_csi_read(csi, CSI_TST_CTRL);
 -
- #endif /* __IMX_IPU_IMAGE_CONVERT_H__ */
+-	if (!active) {
+-		temp &= ~CSI_TEST_GEN_MODE_EN;
+-		ipu_csi_write(csi, temp, CSI_TST_CTRL);
+-	} else {
+-		/* Set sensb_mclk div_ratio */
+-		ipu_csi_set_testgen_mclk(csi, pix_clk, ipu_clk);
+-
+-		temp &= ~(CSI_TEST_GEN_R_MASK | CSI_TEST_GEN_G_MASK |
+-			  CSI_TEST_GEN_B_MASK);
+-		temp |= CSI_TEST_GEN_MODE_EN;
+-		temp |= (r_value << CSI_TEST_GEN_R_SHIFT) |
+-			(g_value << CSI_TEST_GEN_G_SHIFT) |
+-			(b_value << CSI_TEST_GEN_B_SHIFT);
+-		ipu_csi_write(csi, temp, CSI_TST_CTRL);
+-	}
+-
+-	spin_unlock_irqrestore(&csi->lock, flags);
+-}
+-EXPORT_SYMBOL_GPL(ipu_csi_set_test_generator);
+-
+ int ipu_csi_set_mipi_datatype(struct ipu_csi *csi, u32 vc,
+ 			      struct v4l2_mbus_framefmt *mbus_fmt)
+ {
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index c9ed4b6a408b..29e142e95ba3 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -361,13 +361,8 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 			   const struct v4l2_mbus_config *mbus_cfg,
+ 			   const struct v4l2_mbus_framefmt *infmt,
+ 			   const struct v4l2_mbus_framefmt *outfmt);
+-bool ipu_csi_is_interlaced(struct ipu_csi *csi);
+-void ipu_csi_get_window(struct ipu_csi *csi, struct v4l2_rect *w);
+ void ipu_csi_set_window(struct ipu_csi *csi, struct v4l2_rect *w);
+ void ipu_csi_set_downsize(struct ipu_csi *csi, bool horiz, bool vert);
+-void ipu_csi_set_test_generator(struct ipu_csi *csi, bool active,
+-				u32 r_value, u32 g_value, u32 b_value,
+-				u32 pix_clk);
+ int ipu_csi_set_mipi_datatype(struct ipu_csi *csi, u32 vc,
+ 			      struct v4l2_mbus_framefmt *mbus_fmt);
+ int ipu_csi_set_skip_smfc(struct ipu_csi *csi, u32 skip,
 -- 
 2.47.1
 

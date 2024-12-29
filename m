@@ -1,101 +1,142 @@
-Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BBB5BA53
-	for <linux-fbdev@vger.kernel.org>; Sun, 29 Dec 2024 04:50:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 297AE4D8A3;
+	Sun, 29 Dec 2024 11:14:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735447853; cv=none; b=V3soxdbLAdKAon+PlyG12GQfeADQFv0UfUEwa4cavZaF0tGW2HjeVtZa5C0jfSwcRURIZXodpM0T5127C+4DelF3R7DXySrLafT67IDUi+9aMug+SXvX7YGa8/xGmHrCuJOYGyaV/CkCR2C+moVCBa1j9jXIdpVYqn2qXeHIHGQ=
+	t=1735470847; cv=none; b=VfH9P7MNOqmaLsMGWGFI210u+R+Cyka2g4c+cqmQocrh6UJECEKxCgL6lIFEVVI/nJ5iWIeCf+DWdAF8xmFOWxR6bSe5EMQu88Yz87P7nxubq39afsFR/cJscxH3UwuzSsnJRGp1nuMBhud7fZLoRkAl3KCuPOeDG9cn2DHq29U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735447853; c=relaxed/simple;
-	bh=A9Utw4Ievs8DrIF+31k4OffyyIv1G+bxB759Ajy1L5E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AIH5xI/dZ66g842h05Eoh0GFQ8ksyAAExZ9l6iEt9bKj8LTaVg4wpIdTLS5Lzn2xasBsMrXMeh7nLXhTh2Z7bGoaE2xGUAly8r+/AIxCSr+FSGwdBaYz3hl5eMYEuXmka7jWfwoVFZwDniTqDbdBzMabKrETK5w7I251TBRkC8g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=fVr63XfE; arc=none smtp.client-ip=209.85.208.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1735470847; c=relaxed/simple;
+	bh=WimL86Ee7sTDRb3waoeawAMTramntwTiB7N8weugKA4=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=aOwnfj7RWftGqUyI2VZoIaAHVRNSAh5tz644lHl4bNWZzWiqCvF9TayClRGfTilP46N7eXYGy6jiRrmIcsXh0DfEoB5UYm1xFujo6bY3DZpcEFoN0/YMAcSjseNZEU31iU0vxoHL3u6F0AQLgvkFcgyN+JJCx1LS9dv7wQUYHY8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=U0U2IDAS; arc=none smtp.client-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fVr63XfE"
-Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-3003943288bso96623021fa.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Dec 2024 20:50:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U0U2IDAS"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-21619108a6bso98680285ad.3;
+        Sun, 29 Dec 2024 03:14:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1735447850; x=1736052650; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/vkoVwSLPI1coIX/JA0W8yclcKQGo59oXgI/Yfces/4=;
-        b=fVr63XfETAbwrTb4QgW9oeJezpuV6eR/El2vKIAKiXzyyyAKQ8s5pMBmnOehmdl0Ot
-         i9AA0y7B7uAd8/RM2nCT38SzGjxRl6WnlFNomztrFqaDZ7Z1KtUaNKxzpEFU3F234eDH
-         5p2pjWO6DmmN+QUEbYJ8l+leniRXRWGCo6FDn5w8q6T44DFYFCEmP96B089qKUtGyhtJ
-         FTzTnwjrjye6OWTX3P9lxKCsCHiUBvUOa9NeDJpQaOS9oJMg3lDKifv+eYtAjyCRUNjq
-         S00l8cZwS/DbKouAthCppclmTrX9ZrLMHRdbXy031795EZCQDrrSz89n0SHSdN2rCkrb
-         Dv5g==
+        d=gmail.com; s=20230601; t=1735470845; x=1736075645; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=TQ2IkiBTPwiZJOx3g0L64WXeGUqnnVHn4KyvGu674w8=;
+        b=U0U2IDASr7KCnKWjeXLa4+LL24ZB+45aHO6lKXFXyxX5qSg1NkaZbKIFBsNqjEqRsw
+         OjIdoCq+jOmQzq/fWs5ZhBjU8fmTq6RmcpLdUHNzX0Vbj+EUn3hl9v1kFEhrjh9X6jhc
+         VfENE0TUR4+KKh6uJvkf5s2j+KSPyanUzrtpUJI1Y/9Oj9kRLot7EET+rl0kjOYygMAX
+         DwY599PMKDEM1qrSILQjrlEB+N6fUWpUDKtUzz9h0WS31gzSL+gT6FYXynTn9tiAD/RL
+         d9qn30XZoX1hbgyUY0h33Zw60MHEUTow79cUyXWUgEFLmaKlwpQDFqlvHznqR1GZCnqG
+         0Qeg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735447850; x=1736052650;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/vkoVwSLPI1coIX/JA0W8yclcKQGo59oXgI/Yfces/4=;
-        b=lbSmSp0cF9pRKGjFugypKKQSnq09pe1vGfvFasjCzmfH265Ats4F8nfQ1jPHt8hPFZ
-         X4BZ3LBv98Mkf90r8EM1bwBE4C3yQpiw4U4/DfFLv1+S2EP7d4s+6UO5xZIMRvLduis5
-         fqe+G85vR5pC06uclcWB7iS8BAj4kbszR4o5MTaH5twjhM/c5wz7/tx2L/uQR6q1SGbT
-         v0LbgGaX1r9GVn8BBUmKCPM0ChtYxGXLFzfxFI2G2GX4++1G0ReuqPguUWDeyIxT50cj
-         Q9wg2UISfih0FqlyaggKMZesi+qM4Vi/CRbqvAaUy1eHBU1dOPnWPaadee5yrqtIzoj8
-         1Qqg==
-X-Forwarded-Encrypted: i=1; AJvYcCWcWoc/r3mLNnFewzxRJhND+7iu83JU21i+hV+PYT1w+CkmIEtDuTO3kc3bXzqFOHX0zwsZ951sLCqDbg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz6CFXzmS+ucecZkwk1cppdl+QkXci63ifKA8xI3xAGFHkU1vLs
-	9yNaS0ybDmVjnXyzqNFZBKnjYMU1xrW9VINjaPv4GWXri1XgpHSGgHOLksVapwE=
-X-Gm-Gg: ASbGnctCYK2h1TkwYhGzhuuT/d6lE9/7CWyRtIJozbeTNasgwiuC32pKOq/G9mJaVex
-	68KnQtkIxIulXssQLb54PNA4jEzDTT16LuxsMWVzeB67E0CtQvazciycls9MdLW3+q7fMzs8Z5G
-	3v2HpBH0Wq03gcduGdtHN6c1xq2I+AOEk3GOpDP2f2s1vkNkhZX8oHR021BajduYIM9cSSqFO1d
-	8r2On5MXa6kjnmYAZtddfp4lDIrEkde3JZ8yiTDj7SMP+QPhzbtunqoR+OCgSkq1oz49V3PZCEJ
-	O8TejxA71e8HnrDxiAEBWSCKozCVE3va1sTg
-X-Google-Smtp-Source: AGHT+IEsNXGZt2QOXuXj9OJSqWCxJoh9IxQNwSFDjV5JTFWQrndLXIX8JMTwPgrw564c1ha9VHBhRw==
-X-Received: by 2002:a05:6512:1114:b0:540:2567:469b with SMTP id 2adb3069b0e04-54229533e5amr11323899e87.16.1735447850491;
-        Sat, 28 Dec 2024 20:50:50 -0800 (PST)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--b8c.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::b8c])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-542236024c7sm2833143e87.110.2024.12.28.20.50.48
+        d=1e100.net; s=20230601; t=1735470845; x=1736075645;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=TQ2IkiBTPwiZJOx3g0L64WXeGUqnnVHn4KyvGu674w8=;
+        b=dL6l3EB5L8Qo1h8QBVJqlFukaHicAs08ZR6XDTYkLLszSfdRK9UHY7gZURbij37F1x
+         PJRwZBTgqGnd/ALbye0HZvO9YhcmUsFxjknVDvy1gxuJYw40W881fdKYSBoX1R8x6BuO
+         UAxE2wnDaruJ/CMeEwjYkY5j5fxkd59NXhPNxbu+dDtWYpPjxEA2cJYPLt8nUBzCloDa
+         bTr0U5S9SlrNl4Y6JUqYvIS77SAqrkH5UX2pzSgUsREkf/Zmif3fSwmIydqCes1qDpJF
+         Bq9AogBJ5rILCaUC7hsUdpn4IfS1YImpFlDREnMQwhTi/xZtVyoLDE7ybM0pMIc/4bXz
+         jbgg==
+X-Forwarded-Encrypted: i=1; AJvYcCU0GHcLVUt1jwd109Ce84GrmcNrnH/EDAFmf+aW4pOfB1a0ESFcS5yceO84/6ZQLea/6mM+i3ABuVhp@vger.kernel.org, AJvYcCU1nijXfpl3+Y1vidb5ca2t3s+T6bza1e8I4o8L0K8fByzRBdta9wLtI5SHALL1auOyMUMO24pHjvSd2w==@vger.kernel.org, AJvYcCWrAu3uXNf9vkU63QMvmIYFrF2B/muacmpe6W8T9Dgz7KnP9LfPCibfOnaPxNN2neHvdkoenvw7XlPgMJzH@vger.kernel.org, AJvYcCXwgqbCIlXVq6GeuQ6/0RzQ+8pyElAWWjIHcPYrFWoNV+wToVER4Cm0jpGFvrwi7pUlsrpZw3X5TXuMck4=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzHwQfYE9Kr0gQmTmt4rLN1/DBAEWUyBGJ228gWhYOyEWXnm6GM
+	lX2k/1Rs3MyL7qtH7k9Ll0zH71zVUZsPleMkSxXX8fjDRbZBWYqV
+X-Gm-Gg: ASbGncvEvpIlHYohVFE73z4RT3WzilRdMj3xGelpb1pVsRUomLJfLkjYj39Q0qdiot5
+	tA3/DSD1Jyz4RCVEehWjOjgD53w231OEJ6y/iKxRQduKSvfbExe2IOf5m6+0ngFOSNs3uRKr/Uq
+	KOWLd6Qj/70ME9cytQjrnCyuL2XzT6OyqfQgQ/x5lSZMRK8dJEOX2ZXCXoYPDJDw+R98k2em1YU
+	rNe7h5e0liQ2pmdw0y3DG7s6YvSC50dJNUQGdUy4obL8eI2p5NlzMIoZQ==
+X-Google-Smtp-Source: AGHT+IFC1QZJfqXlyjwwxcIAnkfum3t6MQ+L3yuYAABJDnspWgtVfFsqagRUXkgAgDc1Jy7GWtwr8g==
+X-Received: by 2002:a17:902:d48f:b0:212:4aec:f646 with SMTP id d9443c01a7336-219e6ec1340mr390222995ad.33.1735470845437;
+        Sun, 29 Dec 2024 03:14:05 -0800 (PST)
+Received: from nick-mbp.. ([59.188.211.160])
+        by smtp.googlemail.com with ESMTPSA id d9443c01a7336-219dca02544sm161655895ad.255.2024.12.29.03.14.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Dec 2024 20:50:49 -0800 (PST)
-Date: Sun, 29 Dec 2024 06:50:47 +0200
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: linux@treblig.org
-Cc: p.zabel@pengutronix.de, airlied@gmail.com, simona@ffwll.ch, 
-	deller@gmx.de, shawnguo@kernel.org, s.hauer@pengutronix.de, 
-	kernel@pengutronix.de, festevam@gmail.com, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] gpu: ipu-v3: Remove unused functions
-Message-ID: <gugwtvw6qqknstlscr4hxfrvcgfa4gfwwgxdosr24mf7huk433@oh7axkbesrjs>
-References: <20241226022752.219399-1-linux@treblig.org>
+        Sun, 29 Dec 2024 03:14:05 -0800 (PST)
+From: Nick Chan <towinchenmi@gmail.com>
+To: Hector Martin <marcan@marcan.st>,
+	Sven Peter <sven@svenpeter.dev>,
+	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+	Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Pavel Machek <pavel@ucw.cz>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Helge Deller <deller@gmx.de>,
+	Nick Chan <towinchenmi@gmail.com>,
+	asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v4 RESEND 0/3] Apple DWI backlight driver
+Date: Sun, 29 Dec 2024 19:11:16 +0800
+Message-ID: <20241229111322.4139-1-towinchenmi@gmail.com>
+X-Mailer: git-send-email 2.47.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241226022752.219399-1-linux@treblig.org>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Dec 26, 2024 at 02:27:45AM +0000, linux@treblig.org wrote:
-> From: "Dr. David Alan Gilbert" <linux@treblig.org>
-> 
-> Hi,
->   This set removes a bunch of functions in ipu-v3 that
-> have been unused for a long time (since 2012-2017).
-> 
->   No changes to functions are made, just full deletions.
-> 
->   Build tested only.
-> 
-> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-> 
+Apple SoCs come with a 2-wire interface named DWI. On some iPhones, iPads
+and iPod touches the backlight controller is connected via this interface.
+This series adds a backlight driver for backlight controllers connected
+this way.
+
+Changes since v3:
+- $ref to common.yaml in bindings
+- (and then additionalProperties is changed to unevaluatedProperties)
+- Use hex everywhere in bindings example
+- Use sizeof(*dwi_bl) instead of the type of the struct when doing
+devm_kzalloc()
+- Use devm_platform_get_and_ioremap_resource() in driver
+- Fix sorting in drivers/video/backlight/Makefile
+- In drivers/video/backlight/Kconfig, move config to right after
+BACKLIGHT_APPLE
+- Explain this driver being completely different from apple_bl
+
+v3: https://lore.kernel.org/asahi/20241209075908.140014-1-towinchenmi@gmail.com/T
+
+Changes since v2:
+- Add missing includes in driver
+- Fix file path in MAINTAINERS
+
+v2: https://lore.kernel.org/asahi/20241207130433.30351-1-towinchenmi@gmail.com/T
+
+Changes since v1:
+- Fixed dt-bindings $id.
+- Make power-domains an optional property in dt-bindings.
+- Added missing error checking after devm_ioremap_resource() in
+dwi_bl_probe().
+
+v1: https://lore.kernel.org/asahi/20241206172735.4310-1-towinchenmi@gmail.com/T
+
+Nick Chan
+---
+
+Nick Chan (3):
+  dt-bindings: leds: backlight: apple,dwi-bl: Add Apple DWI backlight
+  backlight: dwi_bl: Add Apple DWI backlight driver
+  MAINTAINERS: Add entries for Apple DWI backlight controller
+
+ .../bindings/leds/backlight/apple,dwi-bl.yaml |  57 ++++++++
+ MAINTAINERS                                   |   2 +
+ drivers/video/backlight/Kconfig               |  12 ++
+ drivers/video/backlight/Makefile              |   1 +
+ drivers/video/backlight/dwi_bl.c              | 122 ++++++++++++++++++
+ 5 files changed, 194 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/apple,dwi-bl.yaml
+ create mode 100644 drivers/video/backlight/dwi_bl.c
 
 
-For the series:
-
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-
+base-commit: 4bbf9020becbfd8fc2c3da790855b7042fad455b
 -- 
-With best wishes
-Dmitry
+2.47.1
+

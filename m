@@ -1,70 +1,69 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19F981B4255
-	for <linux-fbdev@vger.kernel.org>; Thu,  2 Jan 2025 21:32:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E55581B4120
+	for <linux-fbdev@vger.kernel.org>; Thu,  2 Jan 2025 21:35:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735853534; cv=none; b=T6rJ5CWGOwE9ju882PKlUE+ZaQ4HzPw+TPIsgM86UGr11UPXjc0ok6ieQu8QJ+z9w1WrYVzrhfciGjJo65zlstL3sj7Jg0I5QDCPJW15n0VqF0GOq/2YWl6Tu8Hrr32HQiihiVvsWEL0DFKcLBwW3xOS66bpmXGoVrajcK4qqzU=
+	t=1735853726; cv=none; b=iYsobz5WE4W27sYytETpi1jiWF4EwYXcbk72xCyN6LzJgvBk3a4nW9GykvY50EXgs2+5M93wVlknzQF1yzAKxxAC2UoN8TUVm/HYBb3yoCrw2AoDcwCjxmvlG3WOkyFYoLUFCo4Kac2613LNwY0TRd5jEPyLGl2BMqfC16m7K6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735853534; c=relaxed/simple;
-	bh=Wtxk84fUxHeb9OopHDTm5hClINIiEiJ8Jkjyo0bNZEc=;
+	s=arc-20240116; t=1735853726; c=relaxed/simple;
+	bh=E6DaV3IZrDPnnadN8Xljm9wVHk82uqq751+Xy8e6S+A=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bIvp9EdKjlGS/alInAYYnG6A01XpDTLnJAve9vRtpIUjXXi1UFsA7cyt+sIsEZWHPtCyTNFNFrXomhx5s/yqmlOVFF2wwDMarVlrNJkTdGJ8VGAZTt35yQ5xpX8Mcg3GCI1GO3ElZojtkFdH6HuOQQbtgRS0S6uPMHk6YueY9bw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=EGN1QV3Y; arc=none smtp.client-ip=209.85.167.52
+	 To:Cc:Content-Type; b=nE2WHQ3CopM+jTgHFkouBceDdWQvM60n0sNMHpGcYfB+RPlU9ejZBuwwbo4Iyqf80kC8avEKy17vodU4d83l5eZtpnFE6VZbVE88/1fYIl0P0ior6qxCbv8tT+BQhThNsyYh67qn1z6Ayob5NP8cl9hxmUXDLBvEANmjW1reL5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=pvdu+8pg; arc=none smtp.client-ip=209.85.167.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EGN1QV3Y"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-540218726d5so12485137e87.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 02 Jan 2025 13:32:12 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pvdu+8pg"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5401e6efffcso14239848e87.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 02 Jan 2025 13:35:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1735853531; x=1736458331; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1735853723; x=1736458523; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wjY1FusYh1YryKHAN4zvFm2UZSdXvuV/zDLKxw4TcA8=;
-        b=EGN1QV3YYDljyw1O14pYN3vIpmQE9XgnQDFXy2vj3ZuaYrhO5qdOJUCZQR0/Cy5sL2
-         k+nKDglR2vfWJt5kd8gDjzr4zlSyB66Tzc+uLem8vlSw40OMJ4YqyGHoLv3RKh5Zg6/Q
-         0U/eEH7PpO49saSyqFOEHAsXLB5qUTXhWBl4LkV+0gmsiTMxCr+tQ1nlZKXto+kqRCI4
-         Gei5oW7zGm08+/nrbvm8jIRV+MoAFmmfq3oAc5pp1IsmescVEiD0+oeRGV0U/UbCwpat
-         ShAenP2j9PFTewYwCURtnz8hu6IuCZq36qTvybOkvHkRiFg69ciPHh3j3QePp+7tGA1X
-         bPKw==
+        bh=E6DaV3IZrDPnnadN8Xljm9wVHk82uqq751+Xy8e6S+A=;
+        b=pvdu+8pgrCTDJR29qPaUYh9Vssr6FB+tQgsQARBjAVPb8bpmO9VCwkVZayqd5gx8Wd
+         tzlNWrEBi8QjwDLKTsQ2yGROp4mkGVDEvvh6nf+IeCDtkPV7Jb0kHzg7ckC7Q8OiIj8C
+         /SSYwmSvsxDz/09Sr2gXuk5Y7NtNF/hJmc6Jt9mZIFdsUv7+efnQZcmpZse4WVZ+oEUz
+         4a8UE/xohDsQami1PHSSYhuqWEFn2W0oZ9KnWl0zpxq6vyv6dsrA4jQb3WBQoIjmqyXQ
+         2qypvhjhB5N8OqTTdSFUBO8OluGoS1uWXMtiYs8x3/Wxwtu45FRBfhk9jOk3Zhu1X3LU
+         nUOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735853531; x=1736458331;
+        d=1e100.net; s=20230601; t=1735853723; x=1736458523;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=wjY1FusYh1YryKHAN4zvFm2UZSdXvuV/zDLKxw4TcA8=;
-        b=PGvL6l+vxYOSEnShqesqkdASkt+uWmgzcJYC372xz7eSW63M8c6nItGeaIvwjz2RPY
-         cxRiyzzloBSDV1Bm98QqETG1elrRaZx6Cfea/7N4YMaJ8GwBe3Ql6kn5RKladoqSPiEI
-         xTjprR8MFfWj/m4AA2L96iPd2f9Mat+aJ36/n9ljxhIgDT2hA53PbK2baFEnrqDFoFWz
-         ZjSv2kcx1UAHmRJkKrOwC5ENx94UyZpPwM5ITEv+a16LptomjJY87PAL3zJtkZjq7RGo
-         V5sbOGs3l+QOF0yVl7Zyejwo01c1vTRhw2ixQwbXzT7CM4D0H0oVxk2QOv61MX/vKn2z
-         bhhg==
-X-Forwarded-Encrypted: i=1; AJvYcCUzLV+OYtH9qiFY87lBxX80zfZyh7oOlMDaUGatxmV/yOUgposLjCJ8OJW0XmvYWkLUsoWYpcKKvV0h1Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwBMB5mODTFO0a0OpQatpBWBu4vfRfvBLK4NWjJcWfbGveJ0OJx
-	3Oi8VUiajaYJl3uc7fED+/3J7100V0Vmnm3JX/M/2m8t6KD9nOnGmwgSvICu82TuLO3NqFwlRym
-	2NawBQGUEZGMCRyG5vvaSWahIzGe2oppuLXpUcA==
-X-Gm-Gg: ASbGncs6fBKLYBswRxMAc5TEbZ8P2CnRiNIYw9lUgM0rXhbcPqJteIZMWwkKQKrbmzv
-	o/+NnadO8W87TgofFU5EkwRf67hfHaIFw4NND
-X-Google-Smtp-Source: AGHT+IFlli5v1Leswr5mSGgujdwQIN4FjO+4y/Gz8GAuOwdSl6akwXzEIS6HSR/IZ1Qe161dv3tbI4KcYzqniYCjvoA=
-X-Received: by 2002:a05:6512:1283:b0:540:1b2d:8ef3 with SMTP id
- 2adb3069b0e04-5422956bf40mr12610797e87.52.1735853531271; Thu, 02 Jan 2025
- 13:32:11 -0800 (PST)
+        bh=E6DaV3IZrDPnnadN8Xljm9wVHk82uqq751+Xy8e6S+A=;
+        b=jGGSSUYkfrp+4BZ5HCXi0/crD6Xgs4q3Q6L7fgLeC+UPTzIXcmeFXGupOA4LkY/HK8
+         TxaakZuUyT/TJs7R9q498HSCOn5Z7lSfDPOdYSnTaPlaT0TmfYji7OaUubQnxXEyip8j
+         bU7QIk97g/6B4GIVsqvMD5urgNhosERQXiMkjzm8SCe1DpF0bMjVb4D3tXENtpoiQF+S
+         jIwmiBDmnYK0Wa4JZMB5JzgOggzwyFjoTSyf3qNlAC3yQtLIBHMpY23406yMgstpwkPm
+         04XJcWaZUKUakQQiEG9vjCQu0uEmdZFSjnA64zF9D0jvA8BJ6lbFk4l1DoL3T+PLQSLk
+         7fnw==
+X-Forwarded-Encrypted: i=1; AJvYcCWgUsywcM/3jveOmmmuC+/+Qz0j29BI15r5eN4Hc2U+Q6NpfKPJNzIBeJ049tDY2dLjt+IUuI40/oukng==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz7840sfPwR8mciMkzeH+wq32MhkhxRhwRI5M6aetJmuZkzEwZJ
+	oOHT8NbbSLrts6UXv5zWETT5OC8U1qaeLOwEGhHbvs3srcEk2O0hW91FlXvdkrFExOdaC5eD89x
+	r0Xz3QNWSHRwgRzKv/5DIUaLjj80B1psJcK+M4g==
+X-Gm-Gg: ASbGncsWXV7TymEVbf2fkTdxaJbQrNapuwIion4eP2ALyEWGGwIEvG6ahBqjKTh6VDp
+	PrOblFoKF7yB8YKRfSB7v4G0P2dhFmq8VOA/H
+X-Google-Smtp-Source: AGHT+IHZBCUatPqs5AYE38EjJJ6UAil93weLZMgcG2CM6a2nGWmNRRPY8uLI/U/VPFasxFGFMEpVYDt9L0/zq2Ij0wU=
+X-Received: by 2002:ac2:4c47:0:b0:542:22a0:9b35 with SMTP id
+ 2adb3069b0e04-5422959cf96mr14072029e87.53.1735853723102; Thu, 02 Jan 2025
+ 13:35:23 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250102181953.1020878-1-aaro.koskinen@iki.fi> <20250102181953.1020878-3-aaro.koskinen@iki.fi>
-In-Reply-To: <20250102181953.1020878-3-aaro.koskinen@iki.fi>
+References: <20250102181953.1020878-1-aaro.koskinen@iki.fi>
+In-Reply-To: <20250102181953.1020878-1-aaro.koskinen@iki.fi>
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 2 Jan 2025 22:32:00 +0100
-Message-ID: <CACRpkdbfuQuTQ028=hZgRhOPiw5AbPLyoZTbRCbvNDQ-e8UajQ@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Input: ads7846 - fix up the pendown GPIO setup on
- Nokia 770
+Date: Thu, 2 Jan 2025 22:35:11 +0100
+Message-ID: <CACRpkdYGqcV=CWu38D=U97aWKWAEeU236AEFu-hM_WkS4t9wnw@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Input/omap1: fix touchscreen functionality on Nokia 770
 To: Aaro Koskinen <aaro.koskinen@iki.fi>
 Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Helge Deller <deller@gmx.de>, 
 	Janusz Krzysztofik <jmkrzyszt@gmail.com>, Tony Lindgren <tony@atomide.com>, linux-fbdev@vger.kernel.org, 
@@ -76,19 +75,17 @@ Content-Transfer-Encoding: quoted-printable
 On Thu, Jan 2, 2025 at 7:20=E2=80=AFPM Aaro Koskinen <aaro.koskinen@iki.fi>=
  wrote:
 
-> The GPIO is set up as an IRQ, so request it as non-exclusive. Otherwise t=
-he
-> probe fails on Nokia 770 with:
->
->     ads7846 spi2.0: failed to request pendown GPIO
->     ads7846: probe of spi2.0 failed with error -16
->
-> Also the polarity is wrong. Fix it.
->
-> Fixes: 767d83361aaa ("Input: ads7846 - Convert to use software nodes")
-> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+> This series restores the ads7846 touchscreen functionality on Nokia 770
+> (and maybe on some other older boards using half-duplex SPI). While the
+> performance might not be optimal, it's again possible to control the devi=
+ce
+> using the screen, for testing/development purposes at least.
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+I'm pretty impressed that you're able to keep the device running!
+
+I actually have one of these devices. Is there some documentation
+somewhere of how to e.g. mount a serial port and get it flashed
+with the latest stuff needed to boot a mainline kernel?
 
 Yours,
 Linus Walleij

@@ -1,82 +1,49 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EAC819D8A7;
-	Tue,  7 Jan 2025 09:59:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40B2619AD48;
+	Tue,  7 Jan 2025 23:53:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736243969; cv=none; b=X7E46Kw4CXjkM1kE9chrlckeTFEkENdjQEDNLDD4Gx59XXbisFQS1nYssfpoC5nW3T7f94mKWh+lHqhM0RCFFMk/usz5LRLxMkcG8yw5PVg7kCSL0e5Z1PxWCGOqCZ9vPaBCMP2ZRes5VF17BKWUKwzGXQg6sI2UHRpH57yy72A=
+	t=1736294001; cv=none; b=MJwA09q1Tagm+fXJx1QVJHALBgFxHCRbz0G6uT7HWsMPmo0XFXWDBrDBbGE3t6zi+5YCIjorg0EFIgVrONg51nl7XoR5uQIwgmiHf/jckTXUqUCM4pFbTLew9mZzmsBOUd/zVjQTrjEGUvdmF3wFB4kxb5DQzcsKrwmxuq1KVpY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736243969; c=relaxed/simple;
-	bh=K3yiQu3UMMTCUSqXQIEGgdTippoNqGWKJg7o3Jg8YGg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ScjXFIZ0GmwH8IDTUTwBBpLwxthdYq6I6LPy6NUP6oR4GlISilDfjX9nRMoT7koTo+x7c1RPa+MmhLFveCRGK1zH5uEiigFHVI0XmfdCCKrXSouvUudxZzyRDjachfk9tdLr3lQWVe4uxg6AnBJHNyU5WQ4klMha+knmUsft5s0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=rBFhj2FV; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=UHFcH4L4; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=rBFhj2FV; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=UHFcH4L4; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1736294001; c=relaxed/simple;
+	bh=RApKzr4uhkLoYg8X2Hl7QnpCHOmEeDth7c9X8vBvK+s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=qjYloG3EBKeWe6dSB0Eap2G2wfwSvRdm6NyaJHMY0nv5Q938XZm5yQvLEAl4w45rPsS1eS7djcOWe25MyDOEH8/DzoSbo+0OpJRCzeNTD2APZ2BD2dBILpel+AP3QJEMOvjQYVhLeYUqQgul2uuzNLOlN2VoU3K4FvTjVzNVyJw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=FVEQh6DK; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="rBFhj2FV";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="UHFcH4L4";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="rBFhj2FV";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="UHFcH4L4"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 73494210FB;
-	Tue,  7 Jan 2025 09:59:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1736243964; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=PwNdwPJJXI1eGcccxHp4G4DSMu/Ufq1Spn6zfqh2oDY=;
-	b=rBFhj2FVeUMZcZynCcl983MNvGk/2bImm+aI2E07VKrXum9sypkwij0KMzcbRnQY2z3ynM
-	qulPkINgVUycwAOm6oK3pkiqmOjM418I93Ga0+0Zfh5okVQftLdIe/sPwOJkqRTcY65CyQ
-	01WeTVNXWTxxRdcF7X6BJmFcnuKgjH0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1736243964;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=PwNdwPJJXI1eGcccxHp4G4DSMu/Ufq1Spn6zfqh2oDY=;
-	b=UHFcH4L4ud8kmXmhTh2iWTfk8QVAA1/ypOZh3e6oikk8tLojor7qTmkYXINKI2b0VKr1f3
-	4yb4qo98jKl6WDCw==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1736243964; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=PwNdwPJJXI1eGcccxHp4G4DSMu/Ufq1Spn6zfqh2oDY=;
-	b=rBFhj2FVeUMZcZynCcl983MNvGk/2bImm+aI2E07VKrXum9sypkwij0KMzcbRnQY2z3ynM
-	qulPkINgVUycwAOm6oK3pkiqmOjM418I93Ga0+0Zfh5okVQftLdIe/sPwOJkqRTcY65CyQ
-	01WeTVNXWTxxRdcF7X6BJmFcnuKgjH0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1736243964;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=PwNdwPJJXI1eGcccxHp4G4DSMu/Ufq1Spn6zfqh2oDY=;
-	b=UHFcH4L4ud8kmXmhTh2iWTfk8QVAA1/ypOZh3e6oikk8tLojor7qTmkYXINKI2b0VKr1f3
-	4yb4qo98jKl6WDCw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2E85F13A6A;
-	Tue,  7 Jan 2025 09:59:24 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id ZXy1Cfz6fGfIWwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 07 Jan 2025 09:59:24 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: geert@linux-m68k.org
-Cc: linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="FVEQh6DK"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=zPpjL/4ixNVqrRxYgtV8l3W7ne2I3km7/b5GHbiSXo8=; b=FVEQh6DKB/gK7QYBasjCMo3d1n
+	LFtp7HGesNbG6c8Ggwsk+oR5kt2UeMLDs+FUfXlTFffc7DOvhXtWG5vdbRF7vOQAKA/v0dPjwr7Df
+	WdH3HXMClYvjPHLu77hQtHyYu2phabiZyxz+pQjMbWvMqLK51k80eJ/bxBGgClB8BzBmgGV8EgDen
+	GBwl/A7hxshrK2EmLLABXEJ4jJ2Mwdg3l0YiGaFIdRnJsvYW2h1cH8k6HvY9v6wdhCy8o+uCNFjP1
+	HvEQwJk+voSBVOBZRgiVePjfidOh+0VBLLrG658+iqCa+CYJ28Z8u1ymzN81ohGNsxrzxL3oCnASK
+	A9asTvUA==;
+Received: from [50.53.2.24] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
+	id 1tVJNr-00000006ar8-3kng;
+	Tue, 07 Jan 2025 23:53:15 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
 	kernel test robot <lkp@intel.com>,
+	David Rheinsberg <david@readahead.eu>,
+	Hans de Goede <hdegoede@redhat.com>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Peter Jones <pjones@redhat.com>,
+	Simona Vetter <simona@ffwll.ch>,
 	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>,
-	stable@vger.kernel.org
-Subject: [PATCH] m68k: Fix VGA I/O defines
-Date: Tue,  7 Jan 2025 10:58:56 +0100
-Message-ID: <20250107095912.130530-1-tzimmermann@suse.de>
+	Ard Biesheuvel <ardb@kernel.org>,
+	linux-efi@vger.kernel.org
+Subject: [PATCH] efi: sysfb_efi: fix W=1 warnings when EFI is not set
+Date: Tue,  7 Jan 2025 15:53:09 -0800
+Message-ID: <20250107235312.236247-1-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.47.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -84,105 +51,55 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Score: -2.80
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_CC(0.00)[lists.linux-m68k.org,vger.kernel.org,suse.de,intel.com,lists.freedesktop.org,gmx.de];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	RCVD_TLS_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Spam-Flag: NO
-X-Spam-Level: 
 
-Including m86k's <asm/raw_io.h> in vga.h on nommu platforms results
-in conflicting defines with io_no.h for various I/O macros from the
-__raw_read and __raw_write families. An example error is
+A build with W=1 fails because there are code and data that are not
+needed or used when CONFIG_EFI is not set. Move the "#ifdef CONFIG_EFI"
+block to earlier in the source file so that the unused code/data are
+not built.
 
-   In file included from arch/m68k/include/asm/vga.h:12,
-                 from include/video/vga.h:22,
-                 from include/linux/vgaarb.h:34,
-		 from drivers/video/aperture.c:12:
->> arch/m68k/include/asm/raw_io.h:39: warning: "__raw_readb" redefined
-      39 | #define __raw_readb in_8
-	 |
-   In file included from arch/m68k/include/asm/io.h:6,
-		    from include/linux/io.h:13,
-		    from include/linux/irq.h:20,
-		    from include/asm-generic/hardirq.h:17,
-		    from ./arch/m68k/include/generated/asm/hardirq.h:1,
-		    from include/linux/hardirq.h:11,
-		    from include/linux/interrupt.h:11,
-                    from include/linux/trace_recursion.h:5,
-		    from include/linux/ftrace.h:10,
-		    from include/linux/kprobes.h:28,
-		    from include/linux/kgdb.h:19,
-		    from include/linux/fb.h:6,
-		    from drivers/video/aperture.c:5:
-   arch/m68k/include/asm/io_no.h:16: note: this is the location of the previous definition
-      16 | #define __raw_readb(addr) \
-	 |
+drivers/firmware/efi/sysfb_efi.c:345:39: warning: ‘efifb_fwnode_ops’ defined but not used [-Wunused-const-variable=]
+  345 | static const struct fwnode_operations efifb_fwnode_ops = {
+      |                                       ^~~~~~~~~~~~~~~~
+drivers/firmware/efi/sysfb_efi.c:238:35: warning: ‘efifb_dmi_swap_width_height’ defined but not used [-Wunused-const-variable=]
+  238 | static const struct dmi_system_id efifb_dmi_swap_width_height[] __initconst = {
+      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/firmware/efi/sysfb_efi.c:188:35: warning: ‘efifb_dmi_system_table’ defined but not used [-Wunused-const-variable=]
+  188 | static const struct dmi_system_id efifb_dmi_system_table[] __initconst = {
+      |                                   ^~~~~~~~~~~~~~~~~~~~~~
 
-Include <asm/io.h>, which avoid raw_io.h on nommu platforms. Also change
-the defined values of some of the read/write symbols in vga.h to
-__raw_read/__raw_write as the raw_in/raw_out symbols are not generally
-available.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 15d27b15de96 ("efi: sysfb_efi: fix build when EFI is not set")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202501071629.DNEswlm8-lkp@intel.com/
-Fixes: 5c3f968712ce ("m68k/video: Create <asm/vga.h>")
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Closes: https://lore.kernel.org/oe-kbuild-all/202501071933.20nlmJJt-lkp@intel.com/
+Cc: David Rheinsberg <david@readahead.eu>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Peter Jones <pjones@redhat.com>
+Cc: Simona Vetter <simona@ffwll.ch>
 Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>
-Cc: <stable@vger.kernel.org> # v3.5+
+Cc: Ard Biesheuvel <ardb@kernel.org>
+Cc: linux-efi@vger.kernel.org
 ---
- arch/m68k/include/asm/vga.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/firmware/efi/sysfb_efi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/m68k/include/asm/vga.h b/arch/m68k/include/asm/vga.h
-index 4742e6bc3ab8..cdd414fa8710 100644
---- a/arch/m68k/include/asm/vga.h
-+++ b/arch/m68k/include/asm/vga.h
-@@ -9,7 +9,7 @@
-  */
- #ifndef CONFIG_PCI
+--- linux-next-20250106.orig/drivers/firmware/efi/sysfb_efi.c
++++ linux-next-20250106/drivers/firmware/efi/sysfb_efi.c
+@@ -91,6 +91,7 @@ void efifb_setup_from_dmi(struct screen_
+ 		_ret_;						\
+ 	})
  
--#include <asm/raw_io.h>
-+#include <asm/io.h>
- #include <asm/kmap.h>
++#ifdef CONFIG_EFI
+ static int __init efifb_set_system(const struct dmi_system_id *id)
+ {
+ 	struct efifb_dmi_info *info = id->driver_data;
+@@ -346,7 +347,6 @@ static const struct fwnode_operations ef
+ 	.add_links = efifb_add_links,
+ };
  
- /*
-@@ -29,9 +29,9 @@
- #define inw_p(port)		0
- #define outb_p(port, val)	do { } while (0)
- #define outw(port, val)		do { } while (0)
--#define readb			raw_inb
--#define writeb			raw_outb
--#define writew			raw_outw
-+#define readb			__raw_readb
-+#define writeb			__raw_writeb
-+#define writew			__raw_writew
+-#ifdef CONFIG_EFI
+ static struct fwnode_handle efifb_fwnode;
  
- #endif /* CONFIG_PCI */
- #endif /* _ASM_M68K_VGA_H */
--- 
-2.47.1
-
+ __init void sysfb_apply_efi_quirks(void)

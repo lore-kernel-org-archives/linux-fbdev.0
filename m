@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61F5122611;
-	Wed,  8 Jan 2025 23:30:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D95B4204096;
+	Wed,  8 Jan 2025 23:40:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736379033; cv=none; b=ceiBFhFq1WuYcP/PwrsUCWTofsnTH9WxvpF5mayjKqoGps67xaGaT9v0hpQB3pGUYhTbshc0qrcRJQ4D20N/0xiMRt7LSrtwDD8JPOg3kPx03IiSMSIH6GqgktLVM1evcq9UtMhBlmpThg2lKAjutHLFxLoHQM8MpU9fYPH/qW4=
+	t=1736379659; cv=none; b=RHiAspysvwfaOjnL8a2yy8axWstbJRF2k49bzJqqfIEofYDRLT2dq+S4WnNOwq8AlAbpHVvBrTFGzsK7xQdrDvg49i0zJNV9LRM4k1pVpc45WhZVnAeOXa3pv+96MKB4oll2mWsf49nIPpQqptiUOBkPDhH+l3juC17t04iYuZk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736379033; c=relaxed/simple;
-	bh=Y8XrRWHeT4gjfJWwOIqN4ERHN1znGHVBZgBx4/uQ54c=;
+	s=arc-20240116; t=1736379659; c=relaxed/simple;
+	bh=TYnWxGwB7nqono7r3DakQbYaISqvAz1eEt3JuW8hm/A=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rCdaqCKce+Fs4bISt4mMHUWOdZh761fobiZiOm//ebqD+cX4JzujNFwP25cVvgXSJ0u/R+2E1bwybl8y/SpdfwikAY9GlIKn9w6PA0IuLT8Bqsdi3a70SRRWYjdt0cLCzk8KctcMnI5ZqyyKxD72MCruxpKvKwHPB+YnivnPv1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=ZgcAoISw; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=kdjpTfOhxLl/ElOnxQ9w1Es+nf1PHNriVo9K2khlT57bvXYB1h7clF9XPnlokUVa5Oxze12xH2m1mS0Q7fMaTZrwZbQNnPsRIGuGPqO94YwAkyWusuKhHwKvaWESmKTicgAb43G6X38Vl9CNwZKeDSk+oA33r63OoQjsJ05gSCI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=fQSV+bdD; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="ZgcAoISw"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="fQSV+bdD"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1736379015; x=1736983815; i=deller@gmx.de;
-	bh=Y8XrRWHeT4gjfJWwOIqN4ERHN1znGHVBZgBx4/uQ54c=;
+	s=s31663417; t=1736379641; x=1736984441; i=deller@gmx.de;
+	bh=0cHjUL8zGlsJFwUhzPi0uaR0Fl2umgMbcNyeig/NH5I=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=ZgcAoISwCEzF/fCUCv5ACwg4dMhujdVPNdUBx80cKJw7AsNAgwqJRAjjQ8EbtyB8
-	 cDkAY5pAMfyKBbUfDk9BOkHf3YTIjNnxgc7lAEoO2lyCWHkjVeX57wMazAcjYppuo
-	 TEDZJM8BEE+XEqajoCgbtt2fc46aff9XZ7Xg9tLFmnGX0B0Eh3v5D8FvcSPD2gIyH
-	 qlNnMWWKBFzoy7Baf+5kShNe6nqylhuLcQQLpwBGA20KgbzU6w6iPBHJABaiFBObm
-	 tHZM0e+AF0yjeSNgaaQhVlsB1Me0wN4FBSMPiCKevbuijDVFpZMaoxTuH1HQQbI6r
-	 bp3jHwwkv1xFyrfX0Q==
+	b=fQSV+bdDY6EKiRWy32MdWzFbhbmPP7gZdriNRT+32DMhvLdNu9rleoLlR2BHkRca
+	 NxqdUNwd2wZqccLPNa/qPBMoaMwgnhSy7sjMcLeKQeblfIdEyPdcu/wlYseVtMCex
+	 5mdsYpS+r1UJyiAjnBzAPUzmc2dI60h0Re+O38BPIWHwTDphBzulFosMu7DDCjZmT
+	 sz5IOp05qdBLjkEpWqTEUkzICivlPuNtVKkWUp9hszV0CtY+QpM7/Xq4wOa32sEoL
+	 84MqIrTFv4s45TxXcM057+wqAfYyQ95Fzf1FubBwIv8lJW3Wz3IoK50FPQkehVC5Y
+	 GUXyzJX7tCqBRtG/AQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.172] ([83.135.220.169]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N4Qwg-1td3oW43b4-010eIU; Thu, 09
- Jan 2025 00:30:15 +0100
-Message-ID: <6af29f19-2e8d-4bc8-a9be-f3a0e229c7ff@gmx.de>
-Date: Thu, 9 Jan 2025 00:30:13 +0100
+Received: from [192.168.20.172] ([83.135.220.169]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MS3mt-1t2LSs2vdb-00PDUh; Thu, 09
+ Jan 2025 00:40:41 +0100
+Message-ID: <c264ce16-fc55-4332-98d4-234860c318e2@gmx.de>
+Date: Thu, 9 Jan 2025 00:40:43 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: efifb: Change the return value type to void
-To: oushixiong1025@163.com, Peter Jones <pjones@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Shixiong Ou <oushixiong@kylinos.cn>
-References: <20250103032633.98807-1-oushixiong1025@163.com>
+Subject: Re: [PATCH 1/3] fbdev: omap: use threaded IRQ for LCD DMA
+To: Linus Walleij <linus.walleij@linaro.org>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Janusz Krzysztofik <jmkrzyszt@gmail.com>, Tony Lindgren <tony@atomide.com>,
+ linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250102181953.1020878-1-aaro.koskinen@iki.fi>
+ <20250102181953.1020878-2-aaro.koskinen@iki.fi>
+ <CACRpkdZP_KnRRUO2J9a6jWCCBs8wzX=ct8rRW4jnFATJ2hZh5Q@mail.gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,40 +98,98 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250103032633.98807-1-oushixiong1025@163.com>
+In-Reply-To: <CACRpkdZP_KnRRUO2J9a6jWCCBs8wzX=ct8rRW4jnFATJ2hZh5Q@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9KSBuPZedUe1x3s/ybDNUzrvuSgRdsHT6ioSwhVhIPZIelYH908
- qgwXI6c7DJ78CH9Q69x7OJVlUmf5GfTlDik5uA2DAj3f/rhOIBieQEEn6YK3eEmP1thMO2M
- /VBNoCIN4yYVXQxccZRuK+bT5Mp672fNWBaDWfwfoZn+5ziro9GMmqUQAuYH1m+/0FI+3Gv
- NyfHdkm86S0aC7akY5YRA==
+X-Provags-ID: V03:K1:mS9hyuT9SDaf3PKlYoJXazxVdjBRlyFAvqCYRTrrNIk+mkT10uV
+ qxf9Zg6JyNOiTv81BpBETBd9p60GwFLxSU+BiFQU1O26YYVUdl4dqmzTuf8NoiZ2idb+MUD
+ 9uawP2U8eom4PtltIQ8GSpzeOFzjqgr5/LJTAfJ/TVTHMlR/uHguW09ikyFIQw6mgb5gO50
+ dnFvTC99ohGoMy+593KIQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:PufQYzmlCkU=;bY/7fy605GO5du2qG6D/eyVnrBx
- UREkb2Z6E6gbs9uYz7RgAEg1IUIC1TrTPJfW83i6L2phBcrjAROZLpjAIOeTbQjJVHjZ8n3wS
- Mp98+YUGCMuB7fG42CGPFvs4IOwsINd+cZGLxU7clQ28BS2v/f6/YwUi3XCImW9OTB7xapoAG
- 4uj7H4mMZ9vz1FU47NTP+QHrcaaCBlo1S16ephthTYsK9FY6L+gPnv2f/LZqCxLQzL6vVZcwg
- 64mnJ78GMCwCQ2rs3chkDUGOjuhgRA88sD7zL+Gb6bSN0m+NVy7sVgVTexjGsOJzE2uQJj6Wu
- rLDh7dKyI1cW+E5jzp0dZpcpWMZqXcbeRtVl93RBHmS+YcGRyDy4Pq95c/3M+OvOgCBLj1plG
- j/5XnPARI42xB1d1MVp5uqV/fKLQXvpDuw+o5q6Dmubctmk7i2g0DxP5asSHUon1tlpGPECfG
- GLpV/dnO0D7i+EPaJQybvjVRrS7dRi/vKIz1Nk10mSVNkONuo4paYrwQxnf+xhsN00t52Bx2F
- thxkzJ9NwFWOqGqw2Jf/9+3PQLQygOn5Z53jpdje2T/9a736NUcFEWau85Xc8rNrGOWYAOAFP
- g4wir3FxaPxQGoAai0xhAnI7DyEOZ5+ipH9QBntK+CJsTqFY0juZzxLMFo/BCTy2o0Oq8PYc/
- 0sz/Tdv/XVXx6WeihE9mtypSx/1phDAGe7H4zNBeLUlDOtS4pQJXpE/qaWSXXX1lTqJSd88nQ
- zogKh38M7OSEH0U0lGv4sTEl39MNdYzMPCT3D3I+737MU/r645SC+6sb8ovtNbJlqnAgrHY+S
- f2MgMnVQbNHBka74HT9xhWuQ8ACQfxwiupR54clJ67EmXK6Uq3R/yf+txI/MWYGPXDERRYxQY
- MwigDukux25ePMbJI4B5AT7+N7yPRnmZ6BQ+ohxkyoSDK3v4AWNA2EsPcNH0ADTswd65iEddu
- NEKUJHoOXiz5LD+eB2vIRsW/WuHYRjZGV3hoCZr7+KQ1VhY2QDaF2pyGFPPqj13iKpbI9sq60
- HM2LD41QffTAfPIfdfgv01EsZG5u1CWdAIi1KKMqdn6D7DmgshI8p/jThQOU5se6eFmffiTFO
- PeGaZvbJ3efFwt75lndsRruoEisF0A
+UI-OutboundReport: notjunk:1;M01:P0:d1lLBXmoLqE=;SAXOK8JSdDliyAqMQe4ICAw1+KW
+ yrlAwtmqA18o172qjURyw/rEqhm8Z4LFOIip9/W9Uh2G3HS6zeECpMitb53WCgUODKtRrfBX5
+ MOsMV1B6FcMmCriQWJXQ1NvTsYOPFLt7KixS+4glct1aYtJvLlS2gd/968J9+9GyJdP3RwbKf
+ s8yyvxEJ00nUYZFoBht0kcpb5V4a8NuHRJy1d9xt0hV/4nOgFKXBOFfYaEiLPWWbGW42Wx1qq
+ PCESKxnUx5zUcfFGtnS0PW+Y4P26nWWM7BSIloEwX9wNVsgosJ/KCyAP7pRILhl7GzMJ6yte3
+ xQI84/bis07dZC9oTBs+hIaF8zQOgFP7QuVqmK6r/xU1JJKuSh3dvWCDic+lfCD0MprqdV0V/
+ 2VTI8FfbVwOz4X0h5YAb38K2uWhUmZbSgMHPreBWaVBLRqnQ9Ml70y9ZfpcfCy7jW+qw8ytOM
+ JcLGVBsn6b2Hw3FDsiPYUJ2waamSC+b0JiUPK2ZlZQfzsxVLbmRoRmgFdqexYGz4eZCVKx3o9
+ /JbORnmvkTuNg1eoRv59mNEBuEtqasSl1PILaIyt0BUPbwutx+ljN3uPIEUpwai/fTynipgJt
+ FaB4eZ40lKAC/9N3KwWncijiltXn4IvGH1c95atKFMpWjHcLh+AGGCP34erbRI1HboZyjY/lc
+ 3sj43tcAyhhBrI09Td0nJ7CWsYwHrSzOsGiAcmAGSIYAmaXw5+Ke6kEVQEnaxetSCsmjR2w+W
+ S2k7AdFS4RAryWcHw+6ctXgwD3a6ahotoa1YdQqHfIgioBRat1+ZlNkOU1cIlsiZ6rTfAZOME
+ yinXxdvM8puN1mkZNU0w7gZdrZwN6ste2FnkCtn3j0r/Aib5nXAomUoksNW93IQLvfOBE6f6f
+ 4ZFGpO5xTv1JJKMJrqnXPGFkyxMcNvfnKJmD+kUfdpPpniiF/WX3cGpavCsD8TwoTj8o0okhl
+ Hn+t6/UBLqTb3quikFJF+OTsNjYgGgewdWhbh1cXsKqE/yyJ5n0PeEpH3unyo7mXWWSn33pgS
+ qXEvjbFrSdJpybOsfvkFqkogOjFjVlIbXAVtjk6eXLbHHHIDJPc1ZM+9Lu8Ri3v+lK81S3GLk
+ 2AMxrJT4nDw8VxgQJGkMAQMKc4DMvN
 
-On 1/3/25 04:26, oushixiong1025@163.com wrote:
-> From: Shixiong Ou <oushixiong@kylinos.cn>
+On 1/2/25 22:31, Linus Walleij wrote:
+> On Thu, Jan 2, 2025 at 7:20=E2=80=AFPM Aaro Koskinen <aaro.koskinen@iki.=
+fi> wrote:
 >
-> efifb_setup() doesn't need to return a value.
+>> When using touchscreen and framebuffer, Nokia 770 crashes easily with:
+>>
+>>      BUG: scheduling while atomic: irq/144-ads7846/82/0x00010000
+>>      Modules linked in: usb_f_ecm g_ether usb_f_rndis u_ether libcompos=
+ite configfs omap_udc ohci_omap ohci_hcd
+>>      CPU: 0 UID: 0 PID: 82 Comm: irq/144-ads7846 Not tainted 6.12.7-770=
+ #2
+>>      Hardware name: Nokia 770
+>>      Call trace:
+>>       unwind_backtrace from show_stack+0x10/0x14
+>>       show_stack from dump_stack_lvl+0x54/0x5c
+>>       dump_stack_lvl from __schedule_bug+0x50/0x70
+>>       __schedule_bug from __schedule+0x4d4/0x5bc
+>>       __schedule from schedule+0x34/0xa0
+>>       schedule from schedule_preempt_disabled+0xc/0x10
+>>       schedule_preempt_disabled from __mutex_lock.constprop.0+0x218/0x3=
+b4
+>>       __mutex_lock.constprop.0 from clk_prepare_lock+0x38/0xe4
+>>       clk_prepare_lock from clk_set_rate+0x18/0x154
+>>       clk_set_rate from sossi_read_data+0x4c/0x168
+>>       sossi_read_data from hwa742_read_reg+0x5c/0x8c
+>>       hwa742_read_reg from send_frame_handler+0xfc/0x300
+>>       send_frame_handler from process_pending_requests+0x74/0xd0
+>>       process_pending_requests from lcd_dma_irq_handler+0x50/0x74
+>>       lcd_dma_irq_handler from __handle_irq_event_percpu+0x44/0x130
+>>       __handle_irq_event_percpu from handle_irq_event+0x28/0x68
+>>       handle_irq_event from handle_level_irq+0x9c/0x170
+>>       handle_level_irq from generic_handle_domain_irq+0x2c/0x3c
+>>       generic_handle_domain_irq from omap1_handle_irq+0x40/0x8c
+>>       omap1_handle_irq from generic_handle_arch_irq+0x28/0x3c
+>>       generic_handle_arch_irq from call_with_stack+0x1c/0x24
+>>       call_with_stack from __irq_svc+0x94/0xa8
+>>      Exception stack(0xc5255da0 to 0xc5255de8)
+>>      5da0: 00000001 c22fc620 00000000 00000000 c08384a8 c106fc00 000000=
+00 c240c248
+>>      5dc0: c113a600 c3f6ec30 00000001 00000000 c22fc620 c5255df0 c22fc6=
+20 c0279a94
+>>      5de0: 60000013 ffffffff
+>>       __irq_svc from clk_prepare_lock+0x4c/0xe4
+>>       clk_prepare_lock from clk_get_rate+0x10/0x74
+>>       clk_get_rate from uwire_setup_transfer+0x40/0x180
+>>       uwire_setup_transfer from spi_bitbang_transfer_one+0x2c/0x9c
+>>       spi_bitbang_transfer_one from spi_transfer_one_message+0x2d0/0x66=
+4
+>>       spi_transfer_one_message from __spi_pump_transfer_message+0x29c/0=
+x498
+>>       __spi_pump_transfer_message from __spi_sync+0x1f8/0x2e8
+>>       __spi_sync from spi_sync+0x24/0x40
+>>       spi_sync from ads7846_halfd_read_state+0x5c/0x1c0
+>>       ads7846_halfd_read_state from ads7846_irq+0x58/0x348
+>>       ads7846_irq from irq_thread_fn+0x1c/0x78
+>>       irq_thread_fn from irq_thread+0x120/0x228
+>>       irq_thread from kthread+0xc8/0xe8
+>>       kthread from ret_from_fork+0x14/0x28
+>>
+>> As a quick fix, switch to a threaded IRQ which provides a stable system=
+.
+>>
+>> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
 >
-> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-applied.
+applied to linux-fbdev git tree.
 
-Thanks!
 Helge

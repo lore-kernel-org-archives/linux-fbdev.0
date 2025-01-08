@@ -1,107 +1,104 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B34F1CD0C;
-	Wed,  8 Jan 2025 16:38:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83F39200B85;
+	Wed,  8 Jan 2025 16:39:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736354318; cv=none; b=OhkR0suyA9KtYnoMgKkxgDl4SGk5R034EHtxZgxFfC241a8A6LXEa8Yr2SRWw9V5yTpKvG3jQKSFNrbwnWwdfs84+FgLF4Vdm9Iev1Jg/0KYpTk/++v/JLKVE0wiO1BL8Fis1KKb1eVuqf3igS/77wZ0sav52/sxtz9Vop4QpCU=
+	t=1736354344; cv=none; b=QHcVjW8eHGN8/EB5I81EYgyAqzdCMr6PUWwHSdmaeRaUcn5AtQ1IdqI9se8rRoMDJ1Z/XzcErAuu90x2E+xcekYB8/KslXNkrXGTLMSDOvuquSt7AqbJZ41HAjN/vetT057p7mq4lIDVCQJoc8Nwf+Si7dao61HXKz92HFnv0BE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736354318; c=relaxed/simple;
-	bh=54Ho3S2MpWfjsZSMjSbs5E77+mT4xdMcLLvC5IojQBE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QMxhgWAxpoMW5+9Pkeb0E2gXGUTDKe72OmNN014yl31tMWxxAHWZWbMsiQi/icyIntHOSEuXJTk7Ks+LxGhVe7pnkaJFLSEMhPop8DCi8ak0SBx+h12IfVqtY5GVxeSgolOvCQpk0Cu9V73uD3aIwLzhSaaTNPUJHgu10Zy5/io=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NmF6qMZ7; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1736354344; c=relaxed/simple;
+	bh=vvK2QaG8x2a1pjUX4YhHmydPMNy+reP4rYIBJGCb1EI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=s+2sKEsEDzpS0Gql7f3J5d3FxaoTvmiB3V84V8q4nAFmpLFdKGuzpUfis71waPt8dl7guu3Mxxczdk9zNvMYckXfstDsOaoEgdhUFUM7eh6sgyf1jiyKvzvZFYXX7D0w52F0YGt4kqJ9YotmbioeTtwNxjg8ELUJ53JhdCPygFk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=b7cNyG9G; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NmF6qMZ7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1376C4CEDD;
-	Wed,  8 Jan 2025 16:38:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736354317;
-	bh=54Ho3S2MpWfjsZSMjSbs5E77+mT4xdMcLLvC5IojQBE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=NmF6qMZ77jRi7x9FIq8X+HPpnmTKFT7fEEbsDCFbHwNWxav+KOqRjiZg5WYJBDmII
-	 7fxEj4XXovKTA31EfeVF1fZm6cQ1V49zuHP9t8Klx6sWnyZ//nPCa+ggNACb6OVt1R
-	 //IwsYptQ1Tm6jagcP4QVQh1mkiXyKf2YDJzNhSpbPK4Gl+73SL9jHvmfKaX5llKIN
-	 Ek95oIhwyb7D0y5iIwJn9eY9QYYEjlkM+jPlyCC4cJ10dubL69+kD2V5DuHQOGxxiH
-	 FU6B8llMHdpnULPJK5skEh+gaJPD58MkyyWyzVGOJJVi4evY4LyoOtN9jfUm7P8gqj
-	 XYbSmKwsi/FFQ==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-54252789365so10809717e87.0;
-        Wed, 08 Jan 2025 08:38:37 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUkabE07RLqEKzox6XNEGkbKh58g7ZwZDK5Y5q5ByavbQ5McjT6p3SWl10rbPFUa25fjZL8ofLDoiqOIdU6@vger.kernel.org, AJvYcCUkhe73dF/Yqvnm9I2jO53msxfkskxYFZn4Lg0WyW7Ez1OCPwKWdQbCutcoRhWI4zNAZEah0PXVvFo=@vger.kernel.org, AJvYcCVttZnKPcliyuHFN2tRGrlQyweNsCIoaWAEFkSiVfVw/3+Khb6VU+tRjl0sUaMiW9Yadd5Oy2IHf2t4RWY=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzFEUuoNMFft3w1sfeKwKUZnVfOvY2ODgwLgaZudBPoVNO0D3+3
-	zm3Lc+G3b59icfRWwc6TY5btHKCwAqB1OLMN0cMSoGobF1w4qVJS9ARJmrleeaZ8JNVkWUGpEdt
-	KAQzqPNT6REqqa0TVh11iJswepYw=
-X-Google-Smtp-Source: AGHT+IHvmWZmxBUBQ/VGk1egiaD/PcQzkygpHoXXsanCSWzCic1Vwbkuh2BOhVv/e/xkTPrKAPUWxkIZ6FkGzXr2PEI=
-X-Received: by 2002:a05:6512:ea0:b0:540:2a92:7da9 with SMTP id
- 2adb3069b0e04-542845bf642mr935644e87.21.1736354316205; Wed, 08 Jan 2025
- 08:38:36 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="b7cNyG9G"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=FbU9VMY2knnyygoOkEqJ57aJta1BgUBzkTdgylqElUQ=; b=b7cNyG9G2ZGLQcMZWf3aJRITuA
+	+WgZHkVzsXkPS/qfBTZ42vxQnWdnmgHoNk0qU+C5ZnVDPghuQQZ+uJWTVlpGxKmStMkZ8FxuqqGpX
+	ywCma1pUtFTR/T+K9zYH1Vw2dlIUmTkVW1TUkNr5sDZfD7CqmVndqZ+Na2z+zWbB8h4We+xm9Q74c
+	USGgpEaENMqGUMiVv3b6vwzIEEquwl97/0p2FXAzUaZNyPUjV2BFTFZvNrwzH4h9e4XZ9RCYzDt2U
+	u5BIp3aDXX9O/DcUygBM7eSBOdJ5+v3knySEsAwN/XLGw3Litm1aupjduo4dsC3w2kRbnj12bmXfu
+	6+7Vx33A==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tVZ57-000000021bJ-3u87;
+	Wed, 08 Jan 2025 16:38:58 +0000
+Date: Wed, 8 Jan 2025 16:38:57 +0000
+From: Matthew Wilcox <willy@infradead.org>
+To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>,
+	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, David Hildenbrand <david@redhat.com>
+Subject: Re: [RFC PATCH 1/3] mm: refactor rmap_walk_file() to separate out
+ traversal logic
+Message-ID: <Z36qIbm82vMLW7w_@casper.infradead.org>
+References: <cover.1736352361.git.lorenzo.stoakes@oracle.com>
+ <0c53589f34a6195938eeb58c3a88594fa30cc90a.1736352361.git.lorenzo.stoakes@oracle.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250107235312.236247-1-rdunlap@infradead.org> <87zfk1iuk9.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87zfk1iuk9.fsf@minerva.mail-host-address-is-not-set>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Wed, 8 Jan 2025 17:38:25 +0100
-X-Gmail-Original-Message-ID: <CAMj1kXEzGnx8WivWuY5WqKqMxk3rYw1aR9-Gc80D=kWDyW3SZA@mail.gmail.com>
-X-Gm-Features: AbW1kvbwcw_bWNjbkwek1dRsNPOBu4U_AR1-dw9pVD_hU0-oZZUOxO-y4lxAWi0
-Message-ID: <CAMj1kXEzGnx8WivWuY5WqKqMxk3rYw1aR9-Gc80D=kWDyW3SZA@mail.gmail.com>
-Subject: Re: [PATCH] efi: sysfb_efi: fix W=1 warnings when EFI is not set
-To: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, 
-	kernel test robot <lkp@intel.com>, David Rheinsberg <david@readahead.eu>, Hans de Goede <hdegoede@redhat.com>, 
-	Peter Jones <pjones@redhat.com>, Simona Vetter <simona@ffwll.ch>, linux-fbdev@vger.kernel.org, 
-	linux-efi@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0c53589f34a6195938eeb58c3a88594fa30cc90a.1736352361.git.lorenzo.stoakes@oracle.com>
 
-On Wed, 8 Jan 2025 at 09:22, Javier Martinez Canillas
-<javierm@redhat.com> wrote:
->
-> Randy Dunlap <rdunlap@infradead.org> writes:
->
-> Hello Randy,
->
-> > A build with W=3D1 fails because there are code and data that are not
-> > needed or used when CONFIG_EFI is not set. Move the "#ifdef CONFIG_EFI"
-> > block to earlier in the source file so that the unused code/data are
-> > not built.
-> >
-> > drivers/firmware/efi/sysfb_efi.c:345:39: warning: =E2=80=98efifb_fwnode=
-_ops=E2=80=99 defined but not used [-Wunused-const-variable=3D]
-> >   345 | static const struct fwnode_operations efifb_fwnode_ops =3D {
-> >       |                                       ^~~~~~~~~~~~~~~~
-> > drivers/firmware/efi/sysfb_efi.c:238:35: warning: =E2=80=98efifb_dmi_sw=
-ap_width_height=E2=80=99 defined but not used [-Wunused-const-variable=3D]
-> >   238 | static const struct dmi_system_id efifb_dmi_swap_width_height[]=
- __initconst =3D {
-> >       |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > drivers/firmware/efi/sysfb_efi.c:188:35: warning: =E2=80=98efifb_dmi_sy=
-stem_table=E2=80=99 defined but not used [-Wunused-const-variable=3D]
-> >   188 | static const struct dmi_system_id efifb_dmi_system_table[] __in=
-itconst =3D {
-> >       |                                   ^~~~~~~~~~~~~~~~~~~~~~
-> >
-> > Fixes: 15d27b15de96 ("efi: sysfb_efi: fix build when EFI is not set")
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> > Reported-by: kernel test robot <lkp@intel.com>
-> > Closes: https://lore.kernel.org/oe-kbuild-all/202501071933.20nlmJJt-lkp=
-@intel.com/
-> > Cc: David Rheinsberg <david@readahead.eu>
-> > Cc: Hans de Goede <hdegoede@redhat.com>
-> > Cc: Javier Martinez Canillas <javierm@redhat.com>
-> > Cc: Peter Jones <pjones@redhat.com>
-> > Cc: Simona Vetter <simona@ffwll.ch>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: Ard Biesheuvel <ardb@kernel.org>
-> > Cc: linux-efi@vger.kernel.org
-> > ---
-> >  drivers/firmware/efi/sysfb_efi.c |    2 +-
->
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
->
+On Wed, Jan 08, 2025 at 04:18:40PM +0000, Lorenzo Stoakes wrote:
+> +/*
+> + * rmap_walk_file - do something to file page using the object-based rmap method
+> + * @folio: the folio to be handled
+> + * @rwc: control variable according to each walk type
+> + * @locked: caller holds relevant rmap lock
+> + *
+> + * Find all the mappings of a folio using the mapping pointer and the vma chains
+> + * contained in the address_space struct it points to.
+> + */
+> +static void rmap_walk_file(struct folio *folio,
+> +		struct rmap_walk_control *rwc, bool locked)
+> +{
+> +	struct address_space *mapping = folio_mapping(folio);
 
-Thanks all. I'll queue this up.
+I'm unconvinced this shouldn't be just folio->mapping.  On the face of
+it, we're saying that we're walking a file, and file folios just want
+to use folio->mapping.  But let's dig a little deeper.
+
+The folio passed in is locked, so it can't be changed during this call.
+In folio_mapping(), folio_test_slab() is guaranteed untrue.
+folio_test_swapcache() doesn't seem likely to be true either; unless
+it's shmem, it can't be in the swapcache, and if it's shmem and in the
+swap cache, it can't be mapped to userspace (they're swizzled back from
+the swapcache to the pagecache before being mapped).  And then the
+check for PAGE_MAPPING_FLAGS is guaranteed to be untrue (we know it's
+not anon/ksm/movable).  So I think this should just be folio->mapping.
+
+> +	/*
+> +	 * The page lock not only makes sure that page->mapping cannot
+> +	 * suddenly be NULLified by truncation, it makes sure that the
+> +	 * structure at mapping cannot be freed and reused yet,
+> +	 * so we can safely take mapping->i_mmap_rwsem.
+> +	 */
+
+I know you only moved this comment, but please fix it to refer to
+folios, not pages.
+
+> +	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
+> +
+> +	if (!mapping)
+> +		return;
+
+Maybe make this a WARN_ON_ONCE?
+
+> +	__rmap_walk_file(folio, mapping, folio_pgoff(folio),
+> +			 folio_nr_pages(folio), rwc, locked);
+
+folio_pgoff() can go too.  Just use folio->index.
+

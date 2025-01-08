@@ -1,309 +1,173 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com [209.85.222.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 257D520102E;
-	Wed,  8 Jan 2025 16:19:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736353169; cv=fail; b=f95sCthukYd/3ys8MPjXc8o4CY9dV6b/1LW1/0YRHbZShCemYU0CA9Xu+QLNyQBC8PTx47sIf172hoTWcrNjUxj6tDVsrKixP6tth2dKaFnimb30lU3JzjhQwWaBQ4XZ6oKvCfNHGb8AQJuOXXliWtMDVTCNVH9/7mvvhLmao2U=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736353169; c=relaxed/simple;
-	bh=+jD960DDgL45r03Ew1pgKDgqdFef0h/DFFLurNOoTC8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=OViYF3ng04+cLN21vzcJ3YIIxW2Du/Y7T+f8lHQa0xdZ4dgnH9Koz06xsNoY+EE0JRXcOOdHolXqLBG0R7UemOihwX9Jhmnrj5qub731lGRGdiSthQZEfeshwnagAqHx8eozLEXcAqXy5G8rnifHMcwyl3LlFjHFDEM2Hkl9tb8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=PSdiB9Zc; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=UrTsPANr; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="PSdiB9Zc";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="UrTsPANr"
-Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 508FMj3r026596;
-	Wed, 8 Jan 2025 16:19:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2023-11-20; bh=TZu/uuSjUZ8ICVP4x5tQiNhJPu19wiRwvpNOeMnqToY=; b=
-	PSdiB9ZcxXpIlzQHzQKGgkf7Fvz15jlhXcND1JXFswx6n5m/3vipieRX8apUaqex
-	tjqQA3uuJK7gdullAxpKb0+HjQ270jrbkjfz6HyibnRHrjVuBn0h0eRz08nrDWZS
-	OuKCZ/9xKVglLPO2q+EMaTuNxtbv4rR2LcW9cdW5rm9OBhJ+yI0VDN5ZW2f2kXeo
-	ZN1bfr6KrwjykJOfZLHxG56IBywQBS7oOGoMrwLq8sest9DSRi0/3qblqeT4W1XD
-	OurggX4kMYSUYTke9uXmAVJqtC970e+NYJd/lKmCRI70Hr/t5yW3CqH4ZJ20pH3g
-	cxIM+3TThVqaqXm44sXlrg==
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 43xuwb76xq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 08 Jan 2025 16:19:14 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 508FOTvw011977;
-	Wed, 8 Jan 2025 16:19:13 GMT
-Received: from nam12-dm6-obe.outbound.protection.outlook.com (mail-dm6nam12lp2168.outbound.protection.outlook.com [104.47.59.168])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 43xue9sh65-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 08 Jan 2025 16:19:13 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=filFXLRxUw9cuDhR0XNsfFu0rkVDW809OS2OC3EAzOHi0T/9pg81x65UfOkDoxgiSJHzlTL+fi7CAn5+osaA8rkFib7thqRKY/+71bnDPNNBkRO+S/EGcgcnJdP3r3cW+KUaxIjXCKHW7SzUZU4Co45Y0OS4zOY5FbrctBRigWmp0F2LidmIxnEPwrr89dcsN/NmjeVcnedaIQ/1SrpEBBVp5iIJ3LtSbwNyw4ZoiFW4crgy+168UVmXYHBjJ0zAzCtZzEGVe5TPHpPl4cGAbscnbnFTVREgCtbW226ouFLLeEy26AzKvtvAYPjhPi2k13rlZOu9OfeJ1IHK5exKFw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TZu/uuSjUZ8ICVP4x5tQiNhJPu19wiRwvpNOeMnqToY=;
- b=aWq8PgBwHj2GRkMc7nscYcyZKwkhZFLYe7laZxIR2L1FUhU6KT/l3cpWl1Clok0mvfT80LFxABuzmnpthmnv2CsXYOoVBtoPvCQiOC/095Nvp2NiakviqATAENj/4fO8EdwWNwqVGXKqax7AYQBlHau6kgnCg/UlAHBVk1nn9An+dDfgLg7EG/r8MNX5tdrNBZ2MhuQbDI/AtRVBrJDrpMsQArZAEx4Na/irXvCVZbOgjGUhnn+n/93CKzdjr/U/LkxTZ6/Azbzjc66IL5FVV4tPDuFv7oMkccYaVDBw4V+BzolHUyMzuOmUkXdoAEK3PN9wEs65/n0L+RWF+7G5yg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TZu/uuSjUZ8ICVP4x5tQiNhJPu19wiRwvpNOeMnqToY=;
- b=UrTsPANrgUMEYVTbY81uE2hqF7Jym1YfQglVSdY7lg5kUyqjfdPbwxyLSfWIh+lRPnhWMTS82gggVxwEHFY9F56Z0+ElzBcYF7YCS04WE8AVMWS3adz5Gs2nfGd+C2o4SwYSFsBqCxkTUnLcRXMJIDxRJpT+Tx3kl3nNFQsCktU=
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com (2603:10b6:a03:14f::25)
- by SA6PR10MB8134.namprd10.prod.outlook.com (2603:10b6:806:443::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8314.17; Wed, 8 Jan
- 2025 16:19:07 +0000
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9]) by BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9%4]) with mapi id 15.20.8335.010; Wed, 8 Jan 2025
- 16:19:07 +0000
-From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
-        David Hildenbrand <david@redhat.com>
-Subject: [RFC PATCH 3/3] fb_defio: do not use deprecated page->mapping, index fields
-Date: Wed,  8 Jan 2025 16:18:42 +0000
-Message-ID: <1e452b5b65f15a9a5d0c2ed3f5f812fdd1367603.1736352361.git.lorenzo.stoakes@oracle.com>
-X-Mailer: git-send-email 2.47.1
-In-Reply-To: <cover.1736352361.git.lorenzo.stoakes@oracle.com>
-References: <cover.1736352361.git.lorenzo.stoakes@oracle.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: LO4P265CA0055.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:2af::11) To BYAPR10MB3366.namprd10.prod.outlook.com
- (2603:10b6:a03:14f::25)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0052915350B;
+	Wed,  8 Jan 2025 16:23:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.43
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1736353438; cv=none; b=mtiwYPHZKDJenJaGeFQMGIsUj61cZHniYoe4HNN9BBJpmZAblcKW4SK1mpNtcxPTlwHkaHnANywYbUOStwa3toRk0wPwcSEWTCN/H1/pF3TIHHALqopJXIa1GerPpTFuFqgPZMpFgHLFtc2mRhk+RTtcl3jlzNaUWoscJZw/H+Y=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1736353438; c=relaxed/simple;
+	bh=6CJG+MljdJ4odyTsRX1HY7g1SI8IaFyVX5WxqVxooCM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DUGe//0HuTMBFdY4mV7pWsUqGxHUOEt9DiBuulOAkkzOkg5vhNlaPQsbkcL7sEalv+dO2l2yzaYad1rj7DXFrPLAemy61OxQgh72V/scdFFSYV+aZjGn5IG/SeRXTLmBU7S8PC0fhXUD7OG24hOu292tEdqaJjcbLlFX05yVO5s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f43.google.com with SMTP id a1e0cc1a2514c-85bafa89d73so2709907241.2;
+        Wed, 08 Jan 2025 08:23:55 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736353434; x=1736958234;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=CWaN/8ptyC2cYFUazZR9DiU44cT/Ebl32OM7k/AY7UI=;
+        b=YAp2KUn60xUP5ZAzMOQKeRQkNS8YG3Lwistz+yvab4MWvICoHlVYc1amGDiye22jxc
+         KLYGbDLCR6p+QzvQZC1dScR1oHk2vhxu1IF2BC3XpLMwB2vDUaRfepcAZtTO6UXM/Xy9
+         pID2uPxyVAuFxlE3LPSc+3T5inofPmKU4wLp0GQeb6JCtCv4RrA35bjy+7eBuG71kBud
+         YuvLJkpfTkdcSY18f0EMFKOgM57w4glKXwfOYXTirMDWsvWlHf7qYqqI3609RFe4hb3q
+         lyMSStCM62D8APJ0jixxQEbvp+mFAIYlJN5n+cRZeAtK7CzG1R9NoeOkPROqtbBw9lOu
+         Bmmw==
+X-Forwarded-Encrypted: i=1; AJvYcCUlOlqI8oIVJ8T82MgYbEanolx5LBIfIzHImNOARtCKdqm9fCHGNG60gDUpQLwVzlv6wgh2Lr0jid/5bw==@vger.kernel.org, AJvYcCWSJKxIe/5PPQG4hXidVVukR5/W0nh+Tt2PjxjUN3TRg2ia1EKP/Ogoqf0p3kjlfXH9V/T1tdWI8SwpMt1e@vger.kernel.org, AJvYcCX6DzM+4cQetaXJRPQpPGBEmeCKHLHAqE6vpUpji1zdLd2bAQPb8UZLFhWz8JbejMreqp2NQVME@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw9B2yeusvlSqgugCpqi23z27a4vY81N7rkGiLuWU/vUS1Ysn9F
+	inzuzo+yVw40ZN9w6US+11Qt48qnG1QkTPGLAh6gyxBPYc787oWiDEc79aL0
+X-Gm-Gg: ASbGnctFHdpviGwF1M8kVxbH85fYc3Sa8zHMJsSMcZpcdAvSvJLjd9rnOjKoFzeWfCt
+	KAWn/CQBq2lAwHRHY+7sGYkvPkB69z8p9qzZgPx0GVg2Hs1c7j4EdrJao/y10Y9Z4AJ4BuL2Zw2
+	KaE8Alelop5C0a/bkTrYphzilt3nGyo78Ti7Bs+/m8TFyj8mlEsaN7TGXhQfWJ3OYD6WiZzOcN5
+	snpB7K6QaI6qATEiub5pfKh8lPCM6QropVo0xWspzRaliMj3PcdGBunKMF7LA0N1cpbgWUkTUzF
+	a6EE3jc7vBq5svoWx94=
+X-Google-Smtp-Source: AGHT+IEy48mJ4pMCjbpKOgZWV7I89kka6CYye04//JHMwhB0svU5BEFnzu9iNCwuTJEF6j9kWroDFg==
+X-Received: by 2002:a05:6122:2a04:b0:518:778b:70a1 with SMTP id 71dfb90a1353d-51c6c50f8e0mr2018297e0c.7.1736353434101;
+        Wed, 08 Jan 2025 08:23:54 -0800 (PST)
+Received: from mail-vs1-f48.google.com (mail-vs1-f48.google.com. [209.85.217.48])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-51b68cd97bcsm5025471e0c.33.2025.01.08.08.23.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 08 Jan 2025 08:23:53 -0800 (PST)
+Received: by mail-vs1-f48.google.com with SMTP id ada2fe7eead31-4afdd15db60so3576137.1;
+        Wed, 08 Jan 2025 08:23:53 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUkqA98eGIN4PW0aljbe7O4u3pbxCJQCV023YyaL/iTlmP0XMtuXllUrqhHjgDRCeKmlCap9O52@vger.kernel.org, AJvYcCV9M8etpoCWl6xaD1XgSDEcHnABeBDsUhUe47BcVliDbuXC3+dZw9ldcLV35MROlY8BIwDSGiBkZrekUA==@vger.kernel.org, AJvYcCXd4iYthQRTsrTOjPpRypIhjzugzkUNvjYN2JKjv/OtVv4KeEgMChAfMDgh4Yf9Q6txaSiVCg6UMPOL2tiY@vger.kernel.org
+X-Received: by 2002:a05:6102:26d4:b0:4b2:5d63:ff72 with SMTP id
+ ada2fe7eead31-4b3d0fc1ca8mr2837377137.13.1736353432987; Wed, 08 Jan 2025
+ 08:23:52 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR10MB3366:EE_|SA6PR10MB8134:EE_
-X-MS-Office365-Filtering-Correlation-Id: b9814441-dd7c-47cb-d632-08dd30002cb1
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014|7416014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?r6M51isgq8+SSsiJciCfzEWBK+d61yjMUO0frPzjbB5aRjrumlBVUOUKa+CE?=
- =?us-ascii?Q?TEsBiYaBOJDLiqz+qzQgDesb9LtH5rC9r73ftsF4dwIqn4GsqXXSe+HvQv6H?=
- =?us-ascii?Q?+ycLWulBptNgUvi5F2Eri/mrssQiuLI8oSghkWmHKdhGUfQjuJ6MAt9kMRZP?=
- =?us-ascii?Q?l2P7GWu1NwuHZzPknUBJQVtgBlg8QnXmWQ2q0U2TU5J0iLi+poDuTD4DBYzI?=
- =?us-ascii?Q?AC/6j2IYY40j0BegRPJ6XtFDnD8rSZwwh11e76wo/GHBqIFZMOLQh1Vd1uwJ?=
- =?us-ascii?Q?pzFFVVDnKlsAkrGxP/VAO8ZYj2xcK0gbApis//COWJXBXDAwo5k6HHKXs2EQ?=
- =?us-ascii?Q?V5baPinkU3QBV9t6cN7ylxIeK7TCsNz5Q3I8nqgBnE5OxkHOBeDCButTQCih?=
- =?us-ascii?Q?RiEDQRrwGE67+TYWiqHfEi1JtotpizVT0hhQDQcQ56Yslaw4RPQ9/G8es895?=
- =?us-ascii?Q?DFczh8rd0dlzki8KRJxQLGupUAxqn9IxJmzgXtvapXRyTSjThBW3dIQ19b1x?=
- =?us-ascii?Q?YzwvqGA7F4nCB97argbdEgqVWck2BLkCVc2YLcUMBQQtOqJJyY9Nwyju+w9s?=
- =?us-ascii?Q?mvCpuZ3NoVJ/m2PX2Y1qoXp5z2PYYrSjLt1BaOXdJiH7waIK15Wqdim54woZ?=
- =?us-ascii?Q?J9nEsmWoztb5DGJJRCJNAjTp59yrCAtoKCJ5d8HqaKKhL4QC2op4wQ2PApoL?=
- =?us-ascii?Q?XwOzFH+gzPMRMvQp+PNqXCWS3gKXmbWG87kr0wPBfE7o33C8ruCN9k10O5vu?=
- =?us-ascii?Q?sK5h8KKGhT4kZT4zH4G+zYIZHHdSToHGWjTymO8iSq2DnsKHjBLvSzCbNGXm?=
- =?us-ascii?Q?UL1qkx9G+CtvvI3atEUqcxxEe/Jzb54rThjZgNqlPWu6TiGhlVv2FOeK+rTo?=
- =?us-ascii?Q?+v7ySXaft2JUBkXO+e0dwRPd3AA4vscmquKkNywowfPplMfRy39PxUgMEYMW?=
- =?us-ascii?Q?7Oq3Qvjp1jCCqdnc4aj0WtfuGhXjx1P4ikpnp4RpE77r283V+dKs7ANyGVMI?=
- =?us-ascii?Q?cV0EprE91jENpXwrQE67QCwaxZN07DszcwHInfknTH3XMPMrN4vrp/BmaPTK?=
- =?us-ascii?Q?QnC7MpPVkX/O2MUPhTppCfQGBLN0tIXWVF2edfyVauSb4lZ6SD0SWlufYpZz?=
- =?us-ascii?Q?ITKTIjZNsV2z8+IhcK/xnhWztGP1MahP1gaxbG7Z+WEdKdnJ5H6hjq5plo+t?=
- =?us-ascii?Q?efMryT4cDEnBYLZGdQrdKCzVPuOCDECjdd7EToUzp6JFqXpKCDIUKXtt67Bk?=
- =?us-ascii?Q?gX9YvqJkp8fRaKJqUXN2+Fg03MY/3kvk7zg4p1zAwjvGD4ahNgXbhe/ErRAc?=
- =?us-ascii?Q?iiinv7Gp3hMOvzcxuCpeSK0LeSVuGEwQOm5RkCZb2ghU60z0oZD8XgCMB16P?=
- =?us-ascii?Q?680j6UU8ArLoV8rCLx0Rm8QHST57?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR10MB3366.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?bh7iueFRoytr/2fEmzAead2h4aOrKZQuOlD8QoOh2SgNE5uuJjNTRxspAzPu?=
- =?us-ascii?Q?42TCLAC1YqctH+77gU2Xasm5IbJ0lpt59iBlon8asQfrhgJGILR+xjDI5ZBA?=
- =?us-ascii?Q?rS8AZIRZ+sGWl7En26jE30tpUvMyWpT39I24nug4I/com4ZeC9mI9XYf6wDc?=
- =?us-ascii?Q?QwgXcExwE+PLp51etO5DtlgG4Ocsz137YAT7Ys8PQZte67JSAEmD7gvScYlV?=
- =?us-ascii?Q?bCnPPzmoQ1sILXKsa2b5qAOZlbT09i/+K5Yyy9dRr1ehMWzwbD+okvqtvD3e?=
- =?us-ascii?Q?USqtNFZpYSCrhM50Onq8yWGGebhUCe9Up1c53tK6hPScdrjr+UnI+lih8JMO?=
- =?us-ascii?Q?4Ce/aaDn+NYLNlWeIdZNk/s5Q/2VI8xMhqf5B/OHon/FW/TcfKFbBDMFSnYm?=
- =?us-ascii?Q?F9uulrNfltoPuQradedylNGkDkkXhaktrMg+E4VfRO3gxuS12jg+zKRB1wAj?=
- =?us-ascii?Q?sYpfwLuw0hv9iqX+1x34ho1OytNIUVUhDVCLrTWOiLyfXOPCvpzichCbvAse?=
- =?us-ascii?Q?6n9Nq5C/e8LbGc6p5kPWa6salAGHjgMopODqI8akC1XaLvlfBBMZLwgTTXN0?=
- =?us-ascii?Q?tpevMxkuI8By64ZkktGo5JKvpGoqwIOnTxWI/Gts3xW70dU/np70MfyTyKBg?=
- =?us-ascii?Q?vDmYJ5RR6nYDGQUuhCKKjkgBncKeGjItq/3GReMEvzoW3r5LrD6RxuHHzloJ?=
- =?us-ascii?Q?8VGVAkQeQEwl7xjS/5/GKuadaVVigN1/3DHmMEf39mhae6Zksz7p/vzkmNUN?=
- =?us-ascii?Q?S906bEhAzh4wPEsC0l76sw8qYAffT6B6xTmhZRCjOJPyEffJwRz76TiVFnvW?=
- =?us-ascii?Q?Vfdkj93gzUQCpM4Z2EhK4x8AnJXqqnX+2KxF+e5GEG2qxRxyYSGvGKCJAzOP?=
- =?us-ascii?Q?M9BrLkEIBPkJVql+Eh9/BUywmiL1YDsF5GLrZ4gEqva9/+llnhjEFrZwwD5Y?=
- =?us-ascii?Q?I64xnRssbjw9h59PDAAF0lL5p8FcFAPGmlcTiedEkO8OFLcfzkJZ7OrdeVEc?=
- =?us-ascii?Q?h4MxTTitOfj6tu7NRrsZ89QJ8zNz2S3uCP23MHJCC4kdeQOVaJOjrOCBDfAx?=
- =?us-ascii?Q?8CaNLi5bLTsE5Npcvm2lLiLmVRgnHC3QgtW+umM7kYaeFzx97fqjfCvn2Xmo?=
- =?us-ascii?Q?CZtXeF61008ZBI43UeHOyz43Kv/ubBYDHXlboKOXp1PDAgwQAOwnB0a6Dr1z?=
- =?us-ascii?Q?hx+iCLP1Kxt+ByLKpjJvjzOCzIYC6qF6QuxBlQDx/X60E1YwCXr4zZU/lf4W?=
- =?us-ascii?Q?kzTEY3trNlDiI/l0J2GfQDgwFdzAUB3LNfqLOCOof4tRsq3EJlWMS28U9xJ2?=
- =?us-ascii?Q?CXFDAKoOsXrMzpmOKuIbR38NMzqTxBZ62pO1ElThfirrHz+Qsia0h5LTI/cQ?=
- =?us-ascii?Q?VCQyXHgr7fJHbeNSQ1CvVhSqLbr5SX4PahoRbBWnTYcCDbgAJFRKPdxzyB01?=
- =?us-ascii?Q?5dY1lr6mRsS0pT6zfuAQxr/6bJhwAhTlTnfjYMi+YGagyG2jh1oNPY7tch/4?=
- =?us-ascii?Q?FLcPuw8iL0HbuLy0aXqZP+ms/ia7QExEm3TOtDFAgnlVVunbsdJ0BSHjUKgc?=
- =?us-ascii?Q?CVt/G+ooUjR6QRExj+GuTqUNeZfsWa59n65V3sQz6D1M1jnbMJnF4v/OBn+0?=
- =?us-ascii?Q?ZQ=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	FwaBRbP3iYacfQIeGBssGkTIpy4BcYpybhJMscNh1xuj3pex/JmgzDA3mJn4qdlJEh9mgPGV1OTNAVqhQNXtDBauajplq3xrv/eI6a8piuCLP0zuNSL7Ftr6iLtVBqsqmahVpm0dMdQiNfoVINrd8CHbrGia6MZPx5MuGdUHaSjzJtZGy8gbi7oMKy0TuQ9hkhC5gRmuJJNhRw9LyyLQQpHxV7RjlxUF64DpC9Pj2ZPU4ZR4qjVM0NSm22jcJnbpvqbieizYTQ5IAmiIvW11MxLH0Ca1sygFN5UNiL4Ow716mV688eKCOZqqr3dSrkyO5Cc/OtbWEl7J5KNzBbHvbjehg+SQakZJnfdP9B2Napx0F5S8Fii5L4KdIDUOajDqLsSwyGFVCpf7twFCzv6/k5GEJ6ujSHFqG3HJveVOcv5/tFBcyu8jjAdaphfcismWRTHeo1nrE9AOyP+xn0sIE/9/AXMH1G1OV8x9vfVl/jnpRgXuM1z5YXWLkwNlTTlhGyOX5Mcv84qTmIaIt0IFTRpuPnpgWUeBMVCzFWGaCDf6DumB9zAJ+nhZHM4dZDGvfCxM8axkhOWQNC2VFMoo0hjdkK0ks+md3miFcAJkNF0=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b9814441-dd7c-47cb-d632-08dd30002cb1
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB3366.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Jan 2025 16:19:07.7273
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: HmDADrbMWwNeL1cgWrmKQTF83EgMQzX11yVmy6h1G66yGbeY4Sof6n9P1fQld3JHATAW1DHmstywIFP5kKNAB3NAYskz+TSvHFFyGToJjdI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA6PR10MB8134
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-08_04,2025-01-08_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 malwarescore=0
- adultscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0 spamscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2411120000 definitions=main-2501080135
-X-Proofpoint-GUID: 8pu8T_vnCHIWtyj-NsAbCUIFtiogF7hE
-X-Proofpoint-ORIG-GUID: 8pu8T_vnCHIWtyj-NsAbCUIFtiogF7hE
+References: <20250107095912.130530-1-tzimmermann@suse.de>
+In-Reply-To: <20250107095912.130530-1-tzimmermann@suse.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 8 Jan 2025 17:23:41 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXKNq2PAef0tF_AJv7zgmXQpPgYs5Rwokjo=1M+2n2EBQ@mail.gmail.com>
+X-Gm-Features: AbW1kvZp0cV5Of05CmFxR0NTT0IyghMVuM7nBAA7tF5qwUX0JfhnOOwbtasx9h8
+Message-ID: <CAMuHMdXKNq2PAef0tF_AJv7zgmXQpPgYs5Rwokjo=1M+2n2EBQ@mail.gmail.com>
+Subject: Re: [PATCH] m68k: Fix VGA I/O defines
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org, 
+	kernel test robot <lkp@intel.com>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-With the introduction of rmap_wrprotect_file_page() there is no need to use
-folio_mkclean() in order to write-protect mappings of frame buffer pages,
-and therefore no need to inappropriately set kernel-allocated page->index,
-mapping fields to permit this operation.
+Hi Thomas,
 
-Instead, store the pointer to the page cache object for the mapped driver
-in the fb_deferred_io object, and use the already stored page offset from
-the pageref object to look up mappings in order to write-protect them.
+On Tue, Jan 7, 2025 at 10:59=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
+> Including m86k's <asm/raw_io.h> in vga.h on nommu platforms results
+> in conflicting defines with io_no.h for various I/O macros from the
+> __raw_read and __raw_write families. An example error is
+>
+>    In file included from arch/m68k/include/asm/vga.h:12,
+>                  from include/video/vga.h:22,
+>                  from include/linux/vgaarb.h:34,
+>                  from drivers/video/aperture.c:12:
+> >> arch/m68k/include/asm/raw_io.h:39: warning: "__raw_readb" redefined
+>       39 | #define __raw_readb in_8
+>          |
+>    In file included from arch/m68k/include/asm/io.h:6,
+>                     from include/linux/io.h:13,
+>                     from include/linux/irq.h:20,
+>                     from include/asm-generic/hardirq.h:17,
+>                     from ./arch/m68k/include/generated/asm/hardirq.h:1,
+>                     from include/linux/hardirq.h:11,
+>                     from include/linux/interrupt.h:11,
+>                     from include/linux/trace_recursion.h:5,
+>                     from include/linux/ftrace.h:10,
+>                     from include/linux/kprobes.h:28,
+>                     from include/linux/kgdb.h:19,
+>                     from include/linux/fb.h:6,
+>                     from drivers/video/aperture.c:5:
+>    arch/m68k/include/asm/io_no.h:16: note: this is the location of the pr=
+evious definition
+>       16 | #define __raw_readb(addr) \
+>          |
+>
+> Include <asm/io.h>, which avoid raw_io.h on nommu platforms. Also change
+> the defined values of some of the read/write symbols in vga.h to
+> __raw_read/__raw_write as the raw_in/raw_out symbols are not generally
+> available.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202501071629.DNEswlm8-lkp@i=
+ntel.com/
+> Fixes: 5c3f968712ce ("m68k/video: Create <asm/vga.h>")
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: <stable@vger.kernel.org> # v3.5+
 
-This is justified, as for the page objects to store a mapping pointer at
-the point of assignment of pages, they must all reference the same
-underlying address_space object. Since the life time of the pagerefs is
-also the lifetime of the fb_deferred_io object, storing the pointer here
-makes snese.
+Thanks for your patch!
 
-This eliminates the need for all of the logic around setting and
-maintaining page->index,mapping which we remove.
+> --- a/arch/m68k/include/asm/vga.h
+> +++ b/arch/m68k/include/asm/vga.h
+> @@ -9,7 +9,7 @@
+>   */
+>  #ifndef CONFIG_PCI
+>
+> -#include <asm/raw_io.h>
+> +#include <asm/io.h>
 
-This eliminates the use of folio_mkclean() entirely but otherwise should
-have no functional change.
+It definitely makes sense to include <asm/io.h> instead of
+<asm/raw_io.h> in this file.
 
-Signed-off-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
----
- drivers/video/fbdev/core/fb_defio.c | 34 ++++++++++-------------------
- include/linux/fb.h                  |  1 +
- 2 files changed, 12 insertions(+), 23 deletions(-)
+>  #include <asm/kmap.h>
+>
+>  /*
+> @@ -29,9 +29,9 @@
+>  #define inw_p(port)            0
+>  #define outb_p(port, val)      do { } while (0)
+>  #define outw(port, val)                do { } while (0)
+> -#define readb                  raw_inb
+> -#define writeb                 raw_outb
+> -#define writew                 raw_outw
+> +#define readb                  __raw_readb
+> +#define writeb                 __raw_writeb
+> +#define writew                 __raw_writew
 
-diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index 65363df8e81b..186ff902da5f 100644
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -69,14 +69,6 @@ static struct fb_deferred_io_pageref *fb_deferred_io_pageref_lookup(struct fb_in
- 	return pageref;
- }
- 
--static void fb_deferred_io_pageref_clear(struct fb_deferred_io_pageref *pageref)
--{
--	struct page *page = pageref->page;
--
--	if (page)
--		page->mapping = NULL;
--}
--
- static struct fb_deferred_io_pageref *fb_deferred_io_pageref_get(struct fb_info *info,
- 								 unsigned long offset,
- 								 struct page *page)
-@@ -140,13 +132,10 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
- 	if (!page)
- 		return VM_FAULT_SIGBUS;
- 
--	if (vmf->vma->vm_file)
--		page->mapping = vmf->vma->vm_file->f_mapping;
--	else
-+	if (!vmf->vma->vm_file)
- 		printk(KERN_ERR "no mapping available\n");
- 
--	BUG_ON(!page->mapping);
--	page->index = vmf->pgoff; /* for folio_mkclean() */
-+	BUG_ON(!info->fbdefio->mapping);
- 
- 	vmf->page = page;
- 	return 0;
-@@ -194,9 +183,9 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
- 
- 	/*
- 	 * We want the page to remain locked from ->page_mkwrite until
--	 * the PTE is marked dirty to avoid folio_mkclean() being called
--	 * before the PTE is updated, which would leave the page ignored
--	 * by defio.
-+	 * the PTE is marked dirty to avoid rmap_wrprotect_file_page()
-+	 * being called before the PTE is updated, which would leave
-+	 * the page ignored by defio.
- 	 * Do this by locking the page here and informing the caller
- 	 * about it with VM_FAULT_LOCKED.
- 	 */
-@@ -280,7 +269,10 @@ static void fb_deferred_io_work(struct work_struct *work)
- 		struct folio *folio = page_folio(pageref->page);
- 
- 		folio_lock(folio);
--		folio_mkclean(folio);
-+		rmap_wrprotect_file_page(fbdefio->mapping,
-+					 pageref->offset >> PAGE_SHIFT,
-+					 compound_nr(pageref->page),
-+					 page_to_pfn(pageref->page));
- 		folio_unlock(folio);
- 	}
- 
-@@ -337,6 +329,7 @@ void fb_deferred_io_open(struct fb_info *info,
- {
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
- 
-+	fbdefio->mapping = file->f_mapping;
- 	file->f_mapping->a_ops = &fb_deferred_io_aops;
- 	fbdefio->open_count++;
- }
-@@ -344,13 +337,7 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
- 
- static void fb_deferred_io_lastclose(struct fb_info *info)
- {
--	unsigned long i;
--
- 	flush_delayed_work(&info->deferred_work);
--
--	/* clear out the mapping that we setup */
--	for (i = 0; i < info->npagerefs; ++i)
--		fb_deferred_io_pageref_clear(&info->pagerefs[i]);
- }
- 
- void fb_deferred_io_release(struct fb_info *info)
-@@ -370,5 +357,6 @@ void fb_deferred_io_cleanup(struct fb_info *info)
- 
- 	kvfree(info->pagerefs);
- 	mutex_destroy(&fbdefio->lock);
-+	fbdefio->mapping = NULL;
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 5ba187e08cf7..cd653862ab99 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -225,6 +225,7 @@ struct fb_deferred_io {
- 	int open_count; /* number of opened files; protected by fb_info lock */
- 	struct mutex lock; /* mutex that protects the pageref list */
- 	struct list_head pagereflist; /* list of pagerefs for touched pages */
-+	struct address_space *mapping; /* page cache object for fb device */
- 	/* callback */
- 	struct page *(*get_page)(struct fb_info *info, unsigned long offset);
- 	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
--- 
-2.47.1
+OK
 
+>
+>  #endif /* CONFIG_PCI */
+>  #endif /* _ASM_M68K_VGA_H */
+
+I gave it a try on various configs, and inspected the impact
+(none, except for killing the warnings), so
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+i.e. will queue in the m68k tree for v6.14.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

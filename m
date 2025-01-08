@@ -1,35 +1,35 @@
 Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83F39200B85;
-	Wed,  8 Jan 2025 16:39:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40A95200BBE;
+	Wed,  8 Jan 2025 17:25:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736354344; cv=none; b=QHcVjW8eHGN8/EB5I81EYgyAqzdCMr6PUWwHSdmaeRaUcn5AtQ1IdqI9se8rRoMDJ1Z/XzcErAuu90x2E+xcekYB8/KslXNkrXGTLMSDOvuquSt7AqbJZ41HAjN/vetT057p7mq4lIDVCQJoc8Nwf+Si7dao61HXKz92HFnv0BE=
+	t=1736357108; cv=none; b=T2l/qXF3Fpm/cA2N5Hmxkcrt7Cpofk4XVZ+TFoKrDsOawyEE6MndlYr4/FNO5aK/J5vUkMhzYbXxbI6VohGUWf4zZhVMPz0ueAwdWWT+tGhcHDgBJb4r4AgQRxD4MrzF8dj3eUPmFplXO6V6hPt4XPLx2X/rsIeQ2PQjfl3BxLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736354344; c=relaxed/simple;
-	bh=vvK2QaG8x2a1pjUX4YhHmydPMNy+reP4rYIBJGCb1EI=;
+	s=arc-20240116; t=1736357108; c=relaxed/simple;
+	bh=DldbNAtePHmlsvAWzdjWhtXQOJmvH7c/HTBmqfBM9S0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=s+2sKEsEDzpS0Gql7f3J5d3FxaoTvmiB3V84V8q4nAFmpLFdKGuzpUfis71waPt8dl7guu3Mxxczdk9zNvMYckXfstDsOaoEgdhUFUM7eh6sgyf1jiyKvzvZFYXX7D0w52F0YGt4kqJ9YotmbioeTtwNxjg8ELUJ53JhdCPygFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=b7cNyG9G; arc=none smtp.client-ip=90.155.50.34
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZaxYmirHwZcI+Wvit5GMz8YTOn7Aia39EzIrxOR2K1dIM8cLWGMySLg6UyKd9GWecEEgwEuPtLQCCDQXC4JSHDAQbO5zmEtU/EGmf+1WLQrRcCDrEFeKmPAADXdRlGYHQWHCo4k4CtcJUkvXAEizyWhWdZpUXcEA8eRwqPgSems=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=DPeZlbq2; arc=none smtp.client-ip=90.155.50.34
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="b7cNyG9G"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="DPeZlbq2"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=FbU9VMY2knnyygoOkEqJ57aJta1BgUBzkTdgylqElUQ=; b=b7cNyG9G2ZGLQcMZWf3aJRITuA
-	+WgZHkVzsXkPS/qfBTZ42vxQnWdnmgHoNk0qU+C5ZnVDPghuQQZ+uJWTVlpGxKmStMkZ8FxuqqGpX
-	ywCma1pUtFTR/T+K9zYH1Vw2dlIUmTkVW1TUkNr5sDZfD7CqmVndqZ+Na2z+zWbB8h4We+xm9Q74c
-	USGgpEaENMqGUMiVv3b6vwzIEEquwl97/0p2FXAzUaZNyPUjV2BFTFZvNrwzH4h9e4XZ9RCYzDt2U
-	u5BIp3aDXX9O/DcUygBM7eSBOdJ5+v3knySEsAwN/XLGw3Litm1aupjduo4dsC3w2kRbnj12bmXfu
-	6+7Vx33A==;
+	bh=f+VrhCVA0I2IukdomGe2XOJrgKQEjDIDWoIRbh28hMQ=; b=DPeZlbq2fcSMzeFGGMmizeZU+5
+	CH9miax6p7gZPvrEvaZ5/y+rkTfOZObHy6a3N6jX0UeqWQhG8SB0ucrnXAikteceS2Vb09Ob44pDD
+	/0y1qQkx0vnBcRu/iJocMGvdMa6toIcdz+pkbxCM393o2Rbe3T+v/nKGyCrvBKgQbAlp5Nd1qyV4D
+	R3iiJDlkpOc1KRDj+K3Hs5XZOgzGxhzwNp6HaC0Wf5tcUJ6bl91aLfOjvQuHDZzdnOyV8q2Do+nbH
+	z5KaHsddfG1YGZLC724DamnGEHPjJrSTWXxdKRFrT3xTOzU+1AEPie2u9z3pX4/DWly18nmpkolgU
+	XC7+EAHQ==;
 Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
-	id 1tVZ57-000000021bJ-3u87;
-	Wed, 08 Jan 2025 16:38:58 +0000
-Date: Wed, 8 Jan 2025 16:38:57 +0000
+	id 1tVZnh-00000002DWW-3y85;
+	Wed, 08 Jan 2025 17:25:02 +0000
+Date: Wed, 8 Jan 2025 17:25:01 +0000
 From: Matthew Wilcox <willy@infradead.org>
 To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -37,11 +37,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org, David Hildenbrand <david@redhat.com>
-Subject: Re: [RFC PATCH 1/3] mm: refactor rmap_walk_file() to separate out
- traversal logic
-Message-ID: <Z36qIbm82vMLW7w_@casper.infradead.org>
+Subject: Re: [RFC PATCH 2/3] mm: provide rmap_wrprotect_file_page() function
+Message-ID: <Z3607T2A-pukkuQj@casper.infradead.org>
 References: <cover.1736352361.git.lorenzo.stoakes@oracle.com>
- <0c53589f34a6195938eeb58c3a88594fa30cc90a.1736352361.git.lorenzo.stoakes@oracle.com>
+ <701a67692d5bf9c8424cdbda103c988bbb278e38.1736352361.git.lorenzo.stoakes@oracle.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -50,55 +49,60 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0c53589f34a6195938eeb58c3a88594fa30cc90a.1736352361.git.lorenzo.stoakes@oracle.com>
+In-Reply-To: <701a67692d5bf9c8424cdbda103c988bbb278e38.1736352361.git.lorenzo.stoakes@oracle.com>
 
-On Wed, Jan 08, 2025 at 04:18:40PM +0000, Lorenzo Stoakes wrote:
-> +/*
-> + * rmap_walk_file - do something to file page using the object-based rmap method
-> + * @folio: the folio to be handled
-> + * @rwc: control variable according to each walk type
-> + * @locked: caller holds relevant rmap lock
+On Wed, Jan 08, 2025 at 04:18:41PM +0000, Lorenzo Stoakes wrote:
+> +++ b/include/linux/rmap.h
+> @@ -754,6 +754,26 @@ unsigned long page_address_in_vma(const struct folio *folio,
+>   */
+>  int folio_mkclean(struct folio *);
+>  
+> +/**
+
+The kerneldoc comment should be with the implementation, not the
+prototype.
+
+> + * rmap_wrprotect_file_page() - Traverses the reverse mapping, finding all VMAs
+> + * which contain a shared mapping of the single page at PFN @pfn in @mapping at
+> + * offset @pgoff and write-protecting the mappings.
+
+After the '-' should come a _short_ description ... maybe "Write protect
+all mappings of this page".
+
+> + * The PFN mapped does not have to be a folio, but rather can be a kernel
+> + * allocation that is mapped into userland. We therefore do not require that the
+> + * PFN maps to a folio with a valid mapping or index field, rather these are
+> + * specified in @mapping and @pgoff.
 > + *
-> + * Find all the mappings of a folio using the mapping pointer and the vma chains
-> + * contained in the address_space struct it points to.
-> + */
-> +static void rmap_walk_file(struct folio *folio,
-> +		struct rmap_walk_control *rwc, bool locked)
+> + * @mapping:	The mapping whose reverse mapping should be traversed.
+> + * @pgoff:	The page offset at which @pfn is mapped within @mapping.
+> + * @nr_pages:	The number of physically contiguous base pages spanned.
+> + * @pfn:	The PFN of the memory mapped in @mapping at @pgoff.
+
+The description of the params comes between the short and full
+description of the function.
+
+> + * Return the number of write-protected PTEs, or an error.
+
+colon after Return: so it becomes a section.
+
+> +int rmap_wrprotect_file_page(struct address_space *mapping, pgoff_t pgoff,
+> +		unsigned long nr_pages, unsigned long pfn)
 > +{
-> +	struct address_space *mapping = folio_mapping(folio);
-
-I'm unconvinced this shouldn't be just folio->mapping.  On the face of
-it, we're saying that we're walking a file, and file folios just want
-to use folio->mapping.  But let's dig a little deeper.
-
-The folio passed in is locked, so it can't be changed during this call.
-In folio_mapping(), folio_test_slab() is guaranteed untrue.
-folio_test_swapcache() doesn't seem likely to be true either; unless
-it's shmem, it can't be in the swapcache, and if it's shmem and in the
-swap cache, it can't be mapped to userspace (they're swizzled back from
-the swapcache to the pagecache before being mapped).  And then the
-check for PAGE_MAPPING_FLAGS is guaranteed to be untrue (we know it's
-not anon/ksm/movable).  So I think this should just be folio->mapping.
-
-> +	/*
-> +	 * The page lock not only makes sure that page->mapping cannot
-> +	 * suddenly be NULLified by truncation, it makes sure that the
-> +	 * structure at mapping cannot be freed and reused yet,
-> +	 * so we can safely take mapping->i_mmap_rwsem.
-> +	 */
-
-I know you only moved this comment, but please fix it to refer to
-folios, not pages.
-
-> +	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
+> +	struct wrprotect_file_state state = {
+> +		.cleaned = 0,
+> +		.pgoff = pgoff,
+> +		.pfn = pfn,
+> +		.nr_pages = nr_pages,
+> +	};
+> +	struct rmap_walk_control rwc = {
+> +		.arg = (void *)&state,
+> +		.rmap_one = rmap_wrprotect_file_one,
+> +		.invalid_vma = invalid_mkclean_vma,
+> +	};
 > +
 > +	if (!mapping)
-> +		return;
+> +		return 0;
 
-Maybe make this a WARN_ON_ONCE?
-
-> +	__rmap_walk_file(folio, mapping, folio_pgoff(folio),
-> +			 folio_nr_pages(folio), rwc, locked);
-
-folio_pgoff() can go too.  Just use folio->index.
+Should it be valid to pass in NULL?
 

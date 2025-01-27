@@ -1,135 +1,179 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2A1919F104;
-	Sun, 26 Jan 2025 16:46:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E12441FF61A;
+	Mon, 27 Jan 2025 13:25:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737909983; cv=none; b=kjk4sg6L92WhVK+AyHtPU0jGRKdOyJdLo2R6X0KGOWo5BQqmlI2+4d6qX9Veu/fgCug8RQcAFDVfrawCXNOwfMbkFyxhSotlbVZzZzShOCg18lLuZiIFvI+18KA/aIjYNZYxIIEzUg3WWzV7AEEdySueKcSxBQogGrKe17v/G8o=
+	t=1737984306; cv=none; b=C7VCmny2Zw8WYMTV395qm5dqt93Fshvm1P8EMaKjNWDKuJ/YkMkVl0CTain197RTV8NxldL/osdo47mmBZ20ttwml9EZTZoDx0QeQAiaYJxZYSiYbzeBFoSY1nbKUfvFacfC4nOTrEib7+oTzsdEwacBLb28OCG+XiT23Q0ntvw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737909983; c=relaxed/simple;
-	bh=MEe2oo2YjYf2lKVsyVv7MzPAyJxoyZAgPw92+aRPQfc=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Dz/g/EjTKjB4ER/W/2PmIUUJWtuECW4zHCakTWGPSeUmb3SM1U0NfC/Mmp0YTIFVDxf8a0o+IDXgvjwWZ2TNKIOvijVl6ln5viRVGVfYndlHAK04lPCiavlBv5SpusFuTmwKcXfuqTyqYpyMcl24p3FGuJ28hPUukOMpWFxXMIY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DkW8gUVF; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1737984306; c=relaxed/simple;
+	bh=RjFj+btLOrA1I0c/0XDEPot6dd9rNyckywxmgkJzq3o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XLKzBX2pP1LbNzUdAEl8j/7XToJkkeOiKK75wCjUFL0eyFq4SUPChPpEC/35AL7atpCR66p/gJQVl+NXv9tbDyCi8VgWHowHgpeqtAAzWlqom7iYtLZ1KbyBOqXDuFb5j0lng+zp2Qzxy+ltxgvWEAytAarO7qT08rTEQpIRfCA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nG6lKH0Y; arc=none smtp.client-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DkW8gUVF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 263D0C4CEE2;
-	Sun, 26 Jan 2025 16:46:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1737909983;
-	bh=MEe2oo2YjYf2lKVsyVv7MzPAyJxoyZAgPw92+aRPQfc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DkW8gUVFafTu/MC0pAg4/0QvAfrgelXtr4Tg4n0z4Nm0Iew9BDcCbR++dXrVh3Eoy
-	 DHc9YhuOx5eDCv4tIb5t4nX9v2ta1fbH/TOJbDuatoZ2RJkeLPlB2NVF7GQcCd/rpm
-	 GLCnrIX81f9Gys3++HKqe52G0xP9+C7HAIeBROtS6xex2sKdaOZG94YTXG70ntm0m8
-	 wv0oqVKvYI6clR75exlJcXyYx7rj5N3+910c0D217Y525I46uXqq6OhGZ/GQRgXN3L
-	 bOST7DNAmlYDdXlb8Ql7CCvw0Hg91XC+pN5oxr9zKO8MLq1AM9/8pY7SaKL7U623hq
-	 H2gXkxaErXpHQ==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Helge Deller <deller@gmx.de>,
-	Sasha Levin <sashal@kernel.org>,
-	linux-fbdev@vger.kernel.org,
-	linux-omap@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 2/2] fbdev: omap: use threaded IRQ for LCD DMA
-Date: Sun, 26 Jan 2025 11:46:18 -0500
-Message-Id: <20250126164618.964225-2-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250126164618.964225-1-sashal@kernel.org>
-References: <20250126164618.964225-1-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nG6lKH0Y"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1737984305; x=1769520305;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=RjFj+btLOrA1I0c/0XDEPot6dd9rNyckywxmgkJzq3o=;
+  b=nG6lKH0Y6Qa6tMvJdxRpn7DUrmOH229C9bgo2MlfN2H2TRGoDETkyv4u
+   jdDBxSvNUH595PVG9e814kqshrKI6gbb6D0ikaZdjbllhSu6psLxHNH1D
+   UJW4f0Jjp78b/NimPdlVqDu+9bHcpHe9OzQNlRFnD3/a4okfgojKwtmgq
+   3B/cnFX+ClldxKF6qrWsBbLygzu9RuixGCskJr51Jw2nEk7j13pvbp//y
+   mhN+hpqLGH8FdJN/FlAdGKTblui4ToJa8TdxC8rHjQScC3PyCqBf6dh47
+   6vj2D35HDwzronQbTiOO1itDl3P/H9UdDZgNvJ6mhIbXi8G0fh7N24dgM
+   Q==;
+X-CSE-ConnectionGUID: wOBonQ5OT6eVa/l/6G0GyA==
+X-CSE-MsgGUID: +2cHkDxWSK+8xn2ZZ8i/Sg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11328"; a="38581718"
+X-IronPort-AV: E=Sophos;i="6.13,238,1732608000"; 
+   d="scan'208";a="38581718"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2025 05:25:04 -0800
+X-CSE-ConnectionGUID: /DcP1E4IThWTnhYAw4ETUA==
+X-CSE-MsgGUID: aA80HNd5RkaTxalFrdlymw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,238,1732608000"; 
+   d="scan'208";a="108546672"
+Received: from smile.fi.intel.com ([10.237.72.58])
+  by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2025 05:25:03 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.98)
+	(envelope-from <andriy.shevchenko@intel.com>)
+	id 1tcP6l-00000005jpm-3fIe;
+	Mon, 27 Jan 2025 15:24:55 +0200
+Date: Mon, 27 Jan 2025 15:24:55 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Damien Le Moal <dlemoal@kernel.org>, Jiri Kosina <jikos@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Corey Minyard <minyard@acm.org>, Peter Huewe <peterhuewe@gmx.de>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Tero Kristo <kristo@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	Ian Abbott <abbotti@mev.co.uk>,
+	H Hartley Sweeten <hsweeten@visionengravers.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Len Brown <lenb@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	John Allen <john.allen@amd.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Vinod Koul <vkoul@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Moritz Fischer <mdf@kernel.org>, Liviu Dudau <liviu.dudau@arm.com>,
+	Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Michael Hennerich <michael.hennerich@analog.com>,
+	Peter Rosin <peda@axentia.se>, Lars-Peter Clausen <lars@metafoo.de>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Markuss Broks <markuss.broks@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Lee Jones <lee@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+	Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+	Iyappan Subramanian <iyappan@os.amperecomputing.com>,
+	Yisen Zhuang <yisen.zhuang@huawei.com>,
+	Stanislaw Gruszka <stf_xl@wp.pl>, Kalle Valo <kvalo@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Tony Lindgren <tony@atomide.com>, Mark Brown <broonie@kernel.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Xiang Chen <chenxiang66@hisilicon.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Vaibhav Hiremath <hvaibhav.linux@gmail.com>,
+	Alex Elder <elder@kernel.org>, Jiri Slaby <jirislaby@kernel.org>,
+	Jacky Huang <ychuang3@nuvoton.com>, Helge Deller <deller@gmx.de>,
+	Christoph Hellwig <hch@lst.de>, Robin Murphy <robin.murphy@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kees Cook <keescook@chromium.org>,
+	Trond Myklebust <trond.myklebust@hammerspace.com>,
+	Anna Schumaker <anna@kernel.org>,
+	Masahiro Yamada <masahiroy@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-ide@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+	linux-integrity@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
+	linux-efi@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-input@vger.kernel.org, linux-i2c@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
+	linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+	linux-leds@vger.kernel.org, linux-wireless@vger.kernel.org,
+	linux-rtc@vger.kernel.org, linux-scsi@vger.kernel.org,
+	linux-spi@vger.kernel.org, linux-amlogic@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org, greybus-dev@lists.linaro.org,
+	linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	iommu@lists.linux.dev, linux-trace-kernel@vger.kernel.org,
+	kasan-dev@googlegroups.com, linux-hardening@vger.kernel.org,
+	linux-nfs@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	alsa-devel@alsa-project.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH 00/34] address all -Wunused-const warnings
+Message-ID: <Z5eJJ199QwL0HVJT@smile.fi.intel.com>
+References: <20240403080702.3509288-1-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.127
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240403080702.3509288-1-arnd@kernel.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
+On Wed, Apr 03, 2024 at 10:06:18AM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> Compilers traditionally warn for unused 'static' variables, but not
+> if they are constant. The reason here is a custom for C++ programmers
+> to define named constants as 'static const' variables in header files
+> instead of using macros or enums.
+> 
+> In W=1 builds, we get warnings only static const variables in C
+> files, but not in headers, which is a good compromise, but this still
+> produces warning output in at least 30 files. These warnings are
+> almost all harmless, but also trivial to fix, and there is no
+> good reason to warn only about the non-const variables being unused.
+> 
+> I've gone through all the files that I found using randconfig and
+> allmodconfig builds and created patches to avoid these warnings,
+> with the goal of retaining a clean build once the option is enabled
+> by default.
+> 
+> Unfortunately, there is one fairly large patch ("drivers: remove
+> incorrect of_match_ptr/ACPI_PTR annotations") that touches
+> 34 individual drivers that all need the same one-line change.
+> If necessary, I can split it up by driver or by subsystem,
+> but at least for reviewing I would keep it as one piece for
+> the moment.
+> 
+> Please merge the individual patches through subsystem trees.
+> I expect that some of these will have to go through multiple
+> revisions before they are picked up, so anything that gets
+> applied early saves me from resending.
 
-[ Upstream commit e4b6b665df815b4841e71b72f06446884e8aad40 ]
+Arnd, can you refresh this one? It seems some misses still...
+I have got 3+ 0-day reports against one of the mux drivers.
 
-When using touchscreen and framebuffer, Nokia 770 crashes easily with:
+https://lore.kernel.org/all/?q=adg792a.c
 
-    BUG: scheduling while atomic: irq/144-ads7846/82/0x00010000
-    Modules linked in: usb_f_ecm g_ether usb_f_rndis u_ether libcomposite configfs omap_udc ohci_omap ohci_hcd
-    CPU: 0 UID: 0 PID: 82 Comm: irq/144-ads7846 Not tainted 6.12.7-770 #2
-    Hardware name: Nokia 770
-    Call trace:
-     unwind_backtrace from show_stack+0x10/0x14
-     show_stack from dump_stack_lvl+0x54/0x5c
-     dump_stack_lvl from __schedule_bug+0x50/0x70
-     __schedule_bug from __schedule+0x4d4/0x5bc
-     __schedule from schedule+0x34/0xa0
-     schedule from schedule_preempt_disabled+0xc/0x10
-     schedule_preempt_disabled from __mutex_lock.constprop.0+0x218/0x3b4
-     __mutex_lock.constprop.0 from clk_prepare_lock+0x38/0xe4
-     clk_prepare_lock from clk_set_rate+0x18/0x154
-     clk_set_rate from sossi_read_data+0x4c/0x168
-     sossi_read_data from hwa742_read_reg+0x5c/0x8c
-     hwa742_read_reg from send_frame_handler+0xfc/0x300
-     send_frame_handler from process_pending_requests+0x74/0xd0
-     process_pending_requests from lcd_dma_irq_handler+0x50/0x74
-     lcd_dma_irq_handler from __handle_irq_event_percpu+0x44/0x130
-     __handle_irq_event_percpu from handle_irq_event+0x28/0x68
-     handle_irq_event from handle_level_irq+0x9c/0x170
-     handle_level_irq from generic_handle_domain_irq+0x2c/0x3c
-     generic_handle_domain_irq from omap1_handle_irq+0x40/0x8c
-     omap1_handle_irq from generic_handle_arch_irq+0x28/0x3c
-     generic_handle_arch_irq from call_with_stack+0x1c/0x24
-     call_with_stack from __irq_svc+0x94/0xa8
-    Exception stack(0xc5255da0 to 0xc5255de8)
-    5da0: 00000001 c22fc620 00000000 00000000 c08384a8 c106fc00 00000000 c240c248
-    5dc0: c113a600 c3f6ec30 00000001 00000000 c22fc620 c5255df0 c22fc620 c0279a94
-    5de0: 60000013 ffffffff
-     __irq_svc from clk_prepare_lock+0x4c/0xe4
-     clk_prepare_lock from clk_get_rate+0x10/0x74
-     clk_get_rate from uwire_setup_transfer+0x40/0x180
-     uwire_setup_transfer from spi_bitbang_transfer_one+0x2c/0x9c
-     spi_bitbang_transfer_one from spi_transfer_one_message+0x2d0/0x664
-     spi_transfer_one_message from __spi_pump_transfer_message+0x29c/0x498
-     __spi_pump_transfer_message from __spi_sync+0x1f8/0x2e8
-     __spi_sync from spi_sync+0x24/0x40
-     spi_sync from ads7846_halfd_read_state+0x5c/0x1c0
-     ads7846_halfd_read_state from ads7846_irq+0x58/0x348
-     ads7846_irq from irq_thread_fn+0x1c/0x78
-     irq_thread_fn from irq_thread+0x120/0x228
-     irq_thread from kthread+0xc8/0xe8
-     kthread from ret_from_fork+0x14/0x28
-
-As a quick fix, switch to a threaded IRQ which provides a stable system.
-
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/omap/lcd_dma.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap/lcd_dma.c b/drivers/video/fbdev/omap/lcd_dma.c
-index f85817635a8c2..0da23c57e4757 100644
---- a/drivers/video/fbdev/omap/lcd_dma.c
-+++ b/drivers/video/fbdev/omap/lcd_dma.c
-@@ -432,8 +432,8 @@ static int __init omap_init_lcd_dma(void)
- 
- 	spin_lock_init(&lcd_dma.lock);
- 
--	r = request_irq(INT_DMA_LCD, lcd_dma_irq_handler, 0,
--			"LCD DMA", NULL);
-+	r = request_threaded_irq(INT_DMA_LCD, NULL, lcd_dma_irq_handler,
-+				 IRQF_ONESHOT, "LCD DMA", NULL);
- 	if (r != 0)
- 		pr_err("unable to request IRQ for LCD DMA (error %d)\n", r);
- 
 -- 
-2.39.5
+With Best Regards,
+Andy Shevchenko
+
 

@@ -1,76 +1,113 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A823313957E;
-	Wed, 29 Jan 2025 16:46:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42ED01E9B15;
+	Thu, 30 Jan 2025 14:52:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738169185; cv=none; b=TB9Spg5PUkgxkbjnJl80Ok/wQEH4ORPhBaPcehxAVKImy5m7Ym+qYwsUlYq7A3sEfbShY4UVLERZClHFxUKOfAoNBwGhtEMJjVS8cfLeAHJC8CA3BZ0qGiVdSLom/EEL6rTN6Zr2J/5rPofL6JIpZ277iPhCeWhKtqXHInOMUyw=
+	t=1738248763; cv=none; b=b4AqaKS4NYac9vqa3hvTbcMtgfgYwkgdql2K1i9I70sZmCRRQFtHek6cSKip9Rg5iGgPES2s1IBnR5Zsrzc2kIrNLctUKKynfpcpDeEcp7WqaoYCyvdwMUqqxxKyIFxnDKSvWsRWfKJHm7q/qR6Od3JkRZw7MXVXJJIPavPa8VM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738169185; c=relaxed/simple;
-	bh=+7dE6xxM1MDrrSw+p+oGO9/K2fEH2oBNr9zQLgO5+9k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E9YEZDvVS8rsxKGqEnWu/8OVHV6iXqPVxfrLJQZMzCRy9+8P+L/BzTUXl9KXvF8ZpJmYPcxyaDX07e5O/clf+WpJW4GtPpxSeMjJ40ymOs+VR2qwYZlShZjd0a7nKtBT4wxKivtAqExapf2ECGy6asHrw4WwO6T0wgwgEbqYbkE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H//wKLLR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1738248763; c=relaxed/simple;
+	bh=oGsezih6O7xTVJH1uCh1eNlLQHW4Ik3zdN//KAMpveo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=P22gUAjAkvjpdyjkPtj4sQSFqbUjY9hj0PhobHs9PyBncGTPlr7ld6Oms+uBM0rWOBjX2S1Cs4hbRjv0oK/FTsFFTdtgF7T7G8Cd0mbKpbpG1t83wQ+Ttk8zLLx56gRUbFdsq+8qNMKYzZgz/En5PyIVhVT1ZnHYUANtOIuXvA0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XLLyOTEz; arc=none smtp.client-ip=209.85.216.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H//wKLLR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BB87C4CED3;
-	Wed, 29 Jan 2025 16:46:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1738169185;
-	bh=+7dE6xxM1MDrrSw+p+oGO9/K2fEH2oBNr9zQLgO5+9k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=H//wKLLR39baaQLqUDBlA3B079tJFKWNOSQdXhYOqvPR7gCwJXn+1af+DPjgG8XJP
-	 aQXB2MTDSWJ2Gz8xN8vb9n2c/cX/f1lBjvYAn6ydN5gMXN8M5Mm0HSESRmAcEJCrSC
-	 8iuV/Hp2ZyZmiNJ0Y0GuuQ4MCCTntklZXD1cEpqj59rxQX8MX801w28J1oZip0qVku
-	 Nb4esqEPw6/5pZ8ZspAOcWkhb81ruezQKLQhVYhoPrduwlqtJicM/9i+nJZCgIHtkb
-	 sCicGAsTWxXYz7tB71fRAnRrPQ+qJA2S6Hg/IipfzbITIudjpBgITtxPgwDLG5OctD
-	 6ls+ZmzpJzE9Q==
-Date: Wed, 29 Jan 2025 10:46:24 -0600
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Angelo Dureghello <adureghello@baylibre.com>
-Cc: Guillaume Stols <gstols@baylibre.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Alexandru Ardelean <aardelean@baylibre.com>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	David Lechner <dlechner@baylibre.com>, linux-iio@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Michael Hennerich <michael.hennerich@analog.com>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH v3 02/10] dt-bindings: iio: dac: adi-axi-adc: add ad7606
- variant
-Message-ID: <173816918368.2213890.7415978291666353573.robh@kernel.org>
-References: <20250129-wip-bl-ad7606_add_backend_sw_mode-v3-0-c3aec77c0ab7@baylibre.com>
- <20250129-wip-bl-ad7606_add_backend_sw_mode-v3-2-c3aec77c0ab7@baylibre.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XLLyOTEz"
+Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-2ee8e8e29f6so1226686a91.0;
+        Thu, 30 Jan 2025 06:52:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1738248761; x=1738853561; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4t9+wR1gvYOJNHr9NeSWQRreAbXgDWXpWfnKGB8fneU=;
+        b=XLLyOTEzm74p88LjQjZZaVqcGqAMSAlZsWIyt9wIse0w0/hFPno2azMwm+rDH5w+7I
+         TuRSHakJTMGgImXXCrCH5ja5KAsgRHEX1byLDjiSlFllblqPeVhZCQQ32KNHphpUCFGk
+         tfe0nTFw2ejYYOXWRVi+pcJEqFCZaUN6yH4LsOxSS//gQ3xdJ3hPzTxzZGvGXCkWLQIT
+         R4ogkzHoUtYlHDboVVNS47htorukBlhN4dVJU9XUoLyuQiVMBM2dPkDEZXoNWIoTTKvI
+         JOwDYvR7+rHx4Hwe/KDp9zZQ7jQXu80OEl87KFEFkWJ9LvVVqjc1l1uQhugbM78TI5m6
+         qD3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738248761; x=1738853561;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4t9+wR1gvYOJNHr9NeSWQRreAbXgDWXpWfnKGB8fneU=;
+        b=rp99JMdSwQl3fFIx3IOR9Jh2W9tWSLiLTuBLkocklewBsaSy7QRVvgEd8i+7RAOQWT
+         LJzPYUwdIih6eK48Nc+4Vt99Pzf17a1L+MBw8rJpjG/s1HUVwFE0+9VQrRH1GXPSyusZ
+         +Vi6Ylkffc4mmSuCrASsWVVyKtXG5H1YkNpS3WE8PRVWwvzQbU4Rs2HkUOq/4y/OqUDQ
+         hsZig8S6ogXHTn58tzbIiCMwk4cEgkt58IpcEcwYM2RuCqE3/7WbUOGHuNW3Xz3iXgyj
+         l/D4X9hx1cs8I9qZ7j7UQTrW+V2zXHy2L8seoYbtGyLKgBFkv4D9coPt8laf/vID+nA3
+         zN8w==
+X-Forwarded-Encrypted: i=1; AJvYcCUE8jtzVhz5XffZWiclgBla+A+uQQi4W2ni0Cms94BcbZZbi+RM0spHG5KseW26aiRt7Ha40Yal@vger.kernel.org, AJvYcCUGzIg8Jka4/L1yiMGHu0C6FtRqCICuCEEStjrxlzzvgBGruv/x3MoD1JGgZdj7RumgyCs/Sa/Skv2oSi0z@vger.kernel.org, AJvYcCVYMz197WWSgZ0z+4FSdZ7Qx7Kv6iI4yXlg7OLiH07UzWlbwpEIwxLPGR6vk+eLS+8XJ+L7FBt9g8F8/g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YytMGi6RH/lrhQiRRnG6sfHQbMWhEYnMoImEcIqenowzY/Bt8g0
+	VOX4GVHs/aVuaZedJv4Je58Hh+/m2q/K1vpPbQv885Wg4qd2OIlc
+X-Gm-Gg: ASbGncs8TaWdycOCQJMV0MbYHFWa2lWCLndJWw1m/sW+FXyxZlTpxVBZQqrtUISRTaX
+	MDk/p0Te2nHQkTCjj+66gVT6o+/cemnG/yXFSVaNmyWNS/83J5CClAiMx4R5Ux8cwnj2CRhgrxG
+	z+XZpS4NZnsnRnRiDODM1PuAXCeRmblT6mc6Lq6oVPAWRXRT3h6FpQsy3/MOsO941yAdG7HZq1j
+	BBZ8H53EHXULVDuY6erl4es2fugr8nNXIkUYgLXJB/8MwPj+hpg7ZdYwnJO693BUa6Rmh2w4EPE
+	m1PC2Z9g3vgvfzxNdYg=
+X-Google-Smtp-Source: AGHT+IEUPs2Yt54Zvf4yqMZHMSJBVT6xqh1XSxZ6X6vGrPA3Otstapo5wNP2YkMrudnP0oxno+CS4A==
+X-Received: by 2002:a05:6a00:180b:b0:72f:9f9e:5bc8 with SMTP id d2e1a72fcca58-72fd0c74655mr10807479b3a.22.1738248760800;
+        Thu, 30 Jan 2025 06:52:40 -0800 (PST)
+Received: from ubuntuxuelab.. ([58.246.183.50])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72fe6a1a94csm1550257b3a.173.2025.01.30.06.52.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jan 2025 06:52:40 -0800 (PST)
+From: Haoyu Li <lihaoyu499@gmail.com>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>
+Cc: Helge Deller <deller@gmx.de>,
+	Rob Herring <robh@kernel.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	chenyuan0y@gmail.com,
+	zichenxie0106@gmail.com,
+	Haoyu Li <lihaoyu499@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] drivers: video: backlight: Fix NULL Pointer Dereference in backlight_device_register()
+Date: Thu, 30 Jan 2025 22:52:28 +0800
+Message-Id: <20250130145228.96679-1-lihaoyu499@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250129-wip-bl-ad7606_add_backend_sw_mode-v3-2-c3aec77c0ab7@baylibre.com>
+Content-Transfer-Encoding: 8bit
 
+In the function "wled_probe", the "wled->name" is dynamically allocated
+(wled_probe -> wled_configure -> devm_kasprintf), which is possible
+to be null.
 
-On Wed, 29 Jan 2025 12:03:03 +0100, Angelo Dureghello wrote:
-> From: Guillaume Stols <gstols@baylibre.com>
-> 
-> A new compatible is added to reflect the specialized version of the HDL.
-> We use the parallel interface to write the ADC's registers, and
-> accessing this interface requires to use ADI_AXI_REG_CONFIG_RD,
-> ADI_AXI_REG_CONFIG_WR and ADI_AXI_REG_CONFIG_CTRL in a custom fashion.
-> 
-> Signed-off-by: Guillaume Stols <gstols@baylibre.com>
-> Co-developed-by: Angelo Dureghello <adureghello@baylibre.com>
-> Signed-off-by: Angelo Dureghello <adureghello@baylibre.com>
-> ---
->  .../devicetree/bindings/iio/adc/adi,axi-adc.yaml   | 70 +++++++++++++++++++++-
->  1 file changed, 69 insertions(+), 1 deletion(-)
-> 
+In the call trace: wled_probe -> devm_backlight_device_register
+-> backlight_device_register, this "name" variable is directly
+dereferenced without checking. We add a null-check statement.
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
+Signed-off-by: Haoyu Li <lihaoyu499@gmail.com>
+Cc: stable@vger.kernel.org
+---
+ drivers/video/backlight/backlight.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index f699e5827ccb..b21670bd86de 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -414,6 +414,8 @@ struct backlight_device *backlight_device_register(const char *name,
+ 	struct backlight_device *new_bd;
+ 	int rc;
+ 
++	if (!name)
++		return ERR_PTR(-EINVAL);
+ 	pr_debug("backlight_device_register: name=%s\n", name);
+ 
+ 	new_bd = kzalloc(sizeof(struct backlight_device), GFP_KERNEL);
+-- 
+2.34.1
 

@@ -1,334 +1,214 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Received: from c64.rulez.org (c64.rulez.org [79.139.58.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41CB718FDCE;
-	Thu, 30 Jan 2025 18:50:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738263022; cv=fail; b=rAz4wyFc2w/G8/eON06ZZinOlZOqdG6w4kw3O5bMKiS3ZiZcLz+Nsy4Z4CFHLbmBNaW+LkDa+0NowcjJ/dsI88BaRQU3LCbT+tZj/5Jvs9E6Cw9oPFn3r4YAKrYRbfvPig7JSSKCPmL+81xaSoUOvqqxp8qa+MPETQvD1I9Oq8o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738263022; c=relaxed/simple;
-	bh=pK21DDTROfoKnW4yha8ONhYYf7JjjKvCq8DBBMk8uTM=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=ii5WHSQyY18N5JUK83EwkcKX+FYb8fj1HP2sVnW9EcSCFFMsx8k6tXoJUwIUe7Opj9u3IlSCXXvlVUyBz9YSV1+38fnj81E/yMXCcr7fJGTS9NzT71BIBY2FGRkxHEoTdmI739/3fKif0x8GKGBxum6NiznlhAJ+u/BK82HGpCM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=Q1Vodtig; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=ZlttZSdN; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Q1Vodtig";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="ZlttZSdN"
-Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50UH6iDX005785;
-	Thu, 30 Jan 2025 18:50:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2023-11-20; bh=gZOdrc5u2WAdPlM5+gBXXPAmZf4hZaYnZRgxGgNG8jg=; b=
-	Q1VodtigXF1g9I9TJ1ozqhtqrEisC2XxfGrSXXLvkW77ZT0DkALr34fSZx2H1tnn
-	E6xxfmrTPcL9UOX4O3K8BZnQ5zhqGzWXxBVp82qnCR7Lxlsc1t9VO4b1ZCroJBvq
-	b//Jfr9ThYCe2sz9qlmkgtgDYiKXvD3gO4HLdc2PEraEYYj+g3O6WGCXDP3HdXdX
-	A1TN8OsQdShxnNNCIFCks7cy2BMono9QEqfJw/+aiTmTvzcKRv28IHo99uaiqkzS
-	F//m7hdc37wOINRGjCS1ZZGw9MJ3al897C//grIpuEwP97BC8UD40ESHbPMQH5WG
-	JefoRHcieBPC5Sd+295kuQ==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44gdher9wk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Jan 2025 18:50:00 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 50UHD6qu028276;
-	Thu, 30 Jan 2025 18:49:59 GMT
-Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2049.outbound.protection.outlook.com [104.47.66.49])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 44g0vbfmdh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Jan 2025 18:49:59 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Tjk7j+rnA4SqKacBiMHDvVJtzBleOmiErcOU5Fa8R1fbYvmnf6e9HSCndsVOGbC6o7l5uUimPYOcSresSqjzccLAMywDdzy0NM+RIWxcF4HwUTT8M2A8eFyfxg52MKOHnpw0eP77MGE3+ZHySUJ6tJpAtnxPIcvLghyZ39sKttsHdEsMGJ5MlGK2azkRIrX2inh9X9C9InfdyPqnhGo35BB7SnVDfQQhPn83XclvL+SyNApMKYDWiV8xJko3I05ohugruh3O34P3JI/WHRFvY51zTtgmjffiR+MUfblvu9xmPXF3dhGSDCOCEw5IhGdGgw1JqJTx5Joi25xP8CPqkw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gZOdrc5u2WAdPlM5+gBXXPAmZf4hZaYnZRgxGgNG8jg=;
- b=QNESvhsBHI0bq8uag8bYLzRyWeaazFRoY5n8oY8jLD/Ok6Xu69W2giVj3aWcZfdfiXrAh5cQ7JZIeC1WgoL6SNQa0gpPo190Eyz2QzUSpCSvjiAksEg5H3quHZvsqod2XV3/ElNGwSBa140fiBGPvrdEKLPRq3/jr8kOqVpO0KfdGwVAgVDIXzHE8YHr13HlhL0AT8qfuZEXAQA97RktdwDTiQ2zpiDat9uUw3yiaEXF+F8vP0+Auo1dbrqmtRAE/IE/CG6XnPoUU3rGzf4owviGXHVW2UXMFWsE20u99nbci785q4/tmE9BUWVKM+337x8kiz81ncQLtqUePLwBDA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gZOdrc5u2WAdPlM5+gBXXPAmZf4hZaYnZRgxGgNG8jg=;
- b=ZlttZSdNoW9Yn4LMc/kO3zvzhplXTyFxs4rocTly58jP9nuN4iulB4+qMUMZ3QFjnzWwRpRAT8BLmr3ZYuXko4hLBlwqeCDbtOkD8ntLJe2AZUIHKhyIWeqHYc0E+dPSkPoznxvzHKGoDcWo8X4//bDRKliGLqPtd/o8JiI+HgU=
-Received: from BLAPR10MB5217.namprd10.prod.outlook.com (2603:10b6:208:327::10)
- by LV3PR10MB7721.namprd10.prod.outlook.com (2603:10b6:408:1b7::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.18; Thu, 30 Jan
- 2025 18:49:56 +0000
-Received: from BLAPR10MB5217.namprd10.prod.outlook.com
- ([fe80::68fa:11c9:9f82:f7be]) by BLAPR10MB5217.namprd10.prod.outlook.com
- ([fe80::68fa:11c9:9f82:f7be%7]) with mapi id 15.20.8398.018; Thu, 30 Jan 2025
- 18:49:56 +0000
-From: Thomas Tai <thomas.tai@oracle.com>
-To: "mhkelley58@gmail.com" <mhkelley58@gmail.com>,
-        "haiyangz@microsoft.com"
-	<haiyangz@microsoft.com>,
-        "wei.liu@kernel.org" <wei.liu@kernel.org>,
-        "decui@microsoft.com" <decui@microsoft.com>,
-        "drawat.floss@gmail.com"
-	<drawat.floss@gmail.com>,
-        "javierm@redhat.com" <javierm@redhat.com>,
-        Helge
- Deller <deller@gmx.de>, "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "airlied@gmail.com" <airlied@gmail.com>,
-        "tzimmermann@suse.de"
-	<tzimmermann@suse.de>
-CC: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
-Subject: RE: hyper_bf soft lockup on Azure Gen2 VM when taking kdump or
- executing kexec
-Thread-Topic: hyper_bf soft lockup on Azure Gen2 VM when taking kdump or
- executing kexec
-Thread-Index: AdtzQ0vu6eNj8snBS+OSvfShEIJEjQABFnwA
-Date: Thu, 30 Jan 2025 18:49:56 +0000
-Message-ID:
- <BLAPR10MB521780F7C93DC013E2E031BDFDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
-References:
- <BLAPR10MB521793485093FDB448F7B2E5FDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
-In-Reply-To:
- <BLAPR10MB521793485093FDB448F7B2E5FDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BLAPR10MB5217:EE_|LV3PR10MB7721:EE_
-x-ms-office365-filtering-correlation-id: 1788b4c4-d3d1-4cdb-a8ba-08dd415ee417
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|7416014|376014|1800799024|38070700018|7053199007|921020;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?sRKSQPpR/wwbda5QoEKP2w2Rp/+D2EaaXZD46TFLT4iwCOvRD++rXi1PfoM0?=
- =?us-ascii?Q?VGaYMQt01FDvQJTFwqAj3tEsW1h7bjwzMVKeuGsrKxc0iqnOTOoDz+LqEMqP?=
- =?us-ascii?Q?a5JHBM1cKRqUyTDYChnSIqmmJTQL2kI93WiNsAKHPpsEK6lW9j4T1tdB9o6j?=
- =?us-ascii?Q?H/vFrhtA7XuT/eXa2qJsrYABwM+qOz/iAXw9s9Vasbw8Iel5zoY6t7orW1Wh?=
- =?us-ascii?Q?WLVA9Ynt1k86j+52Mdo3JetOmTkMG+42dcp31gTIowTa/I9Ry0EgIr7WTjpC?=
- =?us-ascii?Q?cZX2uly9tKlWD+5i5cGIHr9GQqpbkScYgVxj8FzR0TKYQ0kUdMva/2npp7lv?=
- =?us-ascii?Q?V3F0WOoAjLGDzcZiKiVg2aFyIW3bbxlXZGV7amzL1ME5O5Nd+pbUqC861rEG?=
- =?us-ascii?Q?dJYp3LtBOPjdk0VA0aeFeU2hO4GWmvqnkRhpODpXCaCZOz6LbYiu9u2LsnML?=
- =?us-ascii?Q?hRNL0Irk0nqRRHsptg1OkYBqVP+rMm+xwG7w3NI4C2LK2IRe50mlh9AirKQ6?=
- =?us-ascii?Q?VoGJ/coEqvJalXZs9cei1IIXCLadVroesSBxBaIEYoWrhToHv514PXxqxPBM?=
- =?us-ascii?Q?HI/QhiRlgsxwmEz42UtRKmHGQ0rzGs973yOsZPlhDAvA8zlNDduzw1HDAun9?=
- =?us-ascii?Q?HP385lQAOKAUzi3M5jv+ZRMa9xFxEE/Y0OucRG08Acr6KGg/6vtK35CS+OQf?=
- =?us-ascii?Q?fun/Oy8uZvJvTED2uh8RTTvOefMfMPN4wVPvhkg/zNWcg/mHVwI6FF7nF0Nl?=
- =?us-ascii?Q?p/nUXBDJLtbPQO7cFOnfBcTa4zYFqKdqqymknxlnBV7bypm4GZjj6YWnag9b?=
- =?us-ascii?Q?rPRg3Y3WEZ14NBOLuIiq7TGVeCq9fqNpEFUZj1QUTqdoJ6rlyXlArTnsDKfX?=
- =?us-ascii?Q?hHzNgodh8mjpgKh207FzkaSJ0+g6OA7kY99+upRMWok3/i5VyHFZ05RuGW8C?=
- =?us-ascii?Q?iO72eiBeOavadLPdfMdzxH63J7t+fhOY4k4as12Mnzt35mXtfkQ7LrXftYIh?=
- =?us-ascii?Q?NrTdyEJZ+yLgieJjWDtKBQhvteRLN9++KTKoYbrkBai+zgmhLbsaI1InsWQS?=
- =?us-ascii?Q?n6AN1YTWVrhJ+TJCUh4gf6ZwjXeWIjHMJUC6hVyuQxzL0PzdpNyoaulkKel6?=
- =?us-ascii?Q?u76dMwaD8EP4BEvFB/U4O4bbVbHAE3Iv7KlErMBWYLzE2lCTHLm4LZH9olNd?=
- =?us-ascii?Q?grTr80/CItSnYd/or0hkHCLchn6oLSxLf2GYGbKfoGSTRceo+pqwHJnbFugP?=
- =?us-ascii?Q?SHTxodBC9j3juHG1+i8ujpYCeqqE/YCMzjS1O8u7AZUckKWfSEIZJ8md1Bvd?=
- =?us-ascii?Q?X0LYM64ZMwNlZduKPAlr8ZmMnp08M4GRtAXU0OurIKLkaNM+beTm3O3JHIh0?=
- =?us-ascii?Q?35SxESjgDMStrGGc6lPlz8u35IgTXGgipBvw/dTu+LHyBXO2vD2TVaVdVp3v?=
- =?us-ascii?Q?PMRnpIPqC3UAY7ik15DJcMtObOcGyRgzi14YbDWz7mgC61rewBdo9Q=3D=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BLAPR10MB5217.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(38070700018)(7053199007)(921020);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?tDJj7rMNcWjvljiIaPV4z6bqYEgcXAtsKwBbfRJD8fw6bmQygJELeNrykPBb?=
- =?us-ascii?Q?VZv5YaO1dp4GK0YPdcok1533bQkpNIcsiTpzSqHuUMThziLLMag8jNGfzvAL?=
- =?us-ascii?Q?WQCPpfz8bam2P9U/4TAFatntC5FMC8ni+sD74PX9Qi2IjEF8jdlCXkmKoz2n?=
- =?us-ascii?Q?JQzXZ/qVAvnbmvyNjdjPd+VgZq0jY07GFut76E6ccg2GEUxeGMcdxne7kglZ?=
- =?us-ascii?Q?Z1R3NJbyQyc7u1yYB50MHrS415DO1WX7lvEmOWRlpvCuLcG6mtA3z5JWGP80?=
- =?us-ascii?Q?bTCBTchleIvh9RU+babFIRmaet2Lp739wOWYV5Ygptpo1azs7W7O7/z/kgrL?=
- =?us-ascii?Q?1tHWfpDbyqjBFf4z77ygUd3NFFxVKpqVl1UCceYJhJLyKK8LNuarRMsaG3Uy?=
- =?us-ascii?Q?nxse0kGd+P2IGtAm5hKjW+cAzTPQzg6WJjMYNrOabPRqntHgYgHCjaYBM8Jq?=
- =?us-ascii?Q?gbaU9zbo7KqaeIcAd+rNq4pBMY0fI/8toBJ+OXpeFuCY8y/buDF9hDow0C3O?=
- =?us-ascii?Q?CmBet6OtnLkx9rSHxjQn2GXslvwmVSKxWUMdEpGJX5DVlNtrQ7UC0k0QSnho?=
- =?us-ascii?Q?sUwxG1heqNP6+/pct0iN507IRc6R2lPoBT1DhwWRfKGzkBx/J7YLttQU9+La?=
- =?us-ascii?Q?7bj+WSO7h0u8goGI4Fv09es1VW3iu7fid8vasP1IQsvN3LQqYIDQ2EbaRCMA?=
- =?us-ascii?Q?/JITUtN/rASEulN0boi6UfxKB8GGqRs69QISnFktSGM5mJxopXUbULgS+5FW?=
- =?us-ascii?Q?iUKs6k9akzNhICF6+MJ1yd1PeKAf3OlNxrXSKP7lM4h13KZ2Xp54G9vymHur?=
- =?us-ascii?Q?u7Y0FYKxTLFRmamWxSmLOiOkFhqvkqkr1JupeA3f6q6Nvm5iocTD+rEDjkH1?=
- =?us-ascii?Q?tFr5MG7JkANihQeucW6E67JSr+DLiyavwEJDpH73dprmIwY88eqzroWCKIK0?=
- =?us-ascii?Q?jSU29xoYHKkURfaa2LQ9M2e7iQ3x2j8WC1gQYRnjbL5OXgUTdtwyNM2z8F5t?=
- =?us-ascii?Q?va6DGDgXODFU8oq7iiNuniMaXI/FKX1RKOlG4rZ8r9T0f7Cg4wQAbMtYUmgR?=
- =?us-ascii?Q?Jx68HoGT5C4NbOPevMjsnWxu1Owdvfgz2PRvzTAurBpf64oFXyIM8QMvd9Xc?=
- =?us-ascii?Q?PUt8a7LcY00P/PhiYpKihbzMc7Qwbw196Mf2R3ReXs8xmtjlYIOmEuxrk7me?=
- =?us-ascii?Q?nsq9WxS4VCIwdfmJBaUrdzckjToBmhGL5hR5yGajbQNf/sbgCME2m/+Gjflr?=
- =?us-ascii?Q?P+WIU3ZrfkDE4uDriMVfkXiFOGk3I6aVf+5kL5IV4cYjebz957ANN+0hS8Gv?=
- =?us-ascii?Q?MiPmneN5x3TGu66vJuUGnPak4SUHFgX120W7HUkpZfR5NNNEOtoaPHdyMdPS?=
- =?us-ascii?Q?JNvG8WlEjQc4+sLGXtFiyoiEg0t0skQvqS5mLkVABgwjWIA9hxpMFvFSYH2z?=
- =?us-ascii?Q?w44x6nAbaff3mMo+QVRx9m4AsnQU7CupZ8w/pjRYHb9PtDYTYUetRaxGOyOT?=
- =?us-ascii?Q?aDiM1T1bbsEQfzJrv/E9ge6GH2gg22UoX65tjhleqjbcGd4X3Ur2VtaFmCNC?=
- =?us-ascii?Q?bh0GQsMmo8lig/VE4U8E5OMwhePDO9NnwrQaD9Es?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71C381946C8
+	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jan 2025 19:06:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.139.58.36
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1738263980; cv=none; b=ZBwEeOnxyidYHojB5piXYgLQ3l/s314LThd4WthpmwMrBxft3YDhFQomlPerVhhutGMTh3aycRIQ5BPth49bkMphHwgpFC0EIB2SGHojY8bbYvAIs48eSwrITXDCxzI0p/CQa1ctfGabLIOZrG+SQlTnd/DHLBxw89yZkmQ6gp0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1738263980; c=relaxed/simple;
+	bh=e1orZ5Aek2xKjOjAENO3gZz7vY7P6IkfGu6YX9CuNpI=;
+	h=Message-ID:Date:MIME-Version:To:References:From:Subject:
+	 In-Reply-To:Content-Type; b=qvz3Z0N3DbkUyB0FyGak5Zu+jr+c1kFeqhu/KgCeSBSbE/BJvIPPVIrYXX4vN6dw7NWYZkvSO8BlBVarYMF4/W+FI+8D38mRf0gfn0I0EbayVjkQ/PophoJlv5FdMKNkvx2Detf+5PS7fkpF3rtBSl5IhHQNUkA4/kk886xpXUs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org; spf=pass smtp.mailfrom=c64.rulez.org; arc=none smtp.client-ip=79.139.58.36
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=c64.rulez.org
+Received: from [192.168.0.122] (unknown [89.134.11.179])
+	by c64.rulez.org (Postfix) with ESMTPSA id 1E67A100F6
+	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jan 2025 19:58:55 +0100 (CET)
+Message-ID: <573bc0d9-b19a-5433-cd6f-6949cb70b9eb@c64.rulez.org>
+Date: Thu, 30 Jan 2025 19:58:54 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	MUjupM0hZQ1hiRVMtT2WtxNI0hu3yerGmuQEQpgH3Nuhqae64s4iXnBkh7rE9LuBJq+fE5dQ3wzDoYnlXzmuvgtHtfv64Vegk6YXUvprjH4U53d9O2CDJsozou3S1EQvrLm0AfjFbyqy2cQOJHJJwsMpBzayCNTSPDXbTAFjbz5iXBFrtn3gkCG1PePrMK3Q5BroJ2KEUMwOwCd9/chFZy35L0EnmkGUVNmv9O+6cVgrionE+Z2uKCqtkdaKwrZtaTCjDCNLMJhLvOHkhnN6Gde5+lWJOOglgAimE+ZoY5vM3ram/FXlLQTL7ZbXnYyMybkXBtkQXFSLZqXpIVqfGlc948/l1fZb5MkT7pW7udVdxYMnKGRd6lW04Q3NkK0r1kapV00AxlQNWTnN/yYfeBAv/IcO3PceBVEWj2li0Nx/FsLpzv3zSxCfzdXEHLiyBgx+om7G/dLfFlk+tgdsxwkt9dd3iEBdo3iZn07BS4x3v5XpXtgdKm+O/1CD+0FG9FnO+IKqpWmQfOmLZU9g0GIBLOPQKwkzPh3M2dn8hZU057W59C2UOfIISMLeeKqgtECzkfItWbc/9HUPDcXobjrGKN1r5z7OYDoF+HyVZ7I=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BLAPR10MB5217.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1788b4c4-d3d1-4cdb-a8ba-08dd415ee417
-X-MS-Exchange-CrossTenant-originalarrivaltime: 30 Jan 2025 18:49:56.5838
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: p21t/MESTFtIXbQDA8TwWIAWpwcfhG6xwQHKINa3EExUTFwR3XlY08LCuyAGGfLh3362vaVUhehnGYKhLeKn8Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR10MB7721
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-30_08,2025-01-30_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 mlxlogscore=999 spamscore=0
- phishscore=0 bulkscore=0 malwarescore=0 adultscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2411120000
- definitions=main-2501300143
-X-Proofpoint-ORIG-GUID: 4NfFgJyjPKhWk4iHBfcLSmL1OsCtGS1S
-X-Proofpoint-GUID: 4NfFgJyjPKhWk4iHBfcLSmL1OsCtGS1S
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.13.0
+Content-Language: en-GB
+To: linux-fbdev@vger.kernel.org
+References: <cover.1736809898.git.lorenzo.stoakes@oracle.com>
+ <936a79ef-3328-490c-8a98-e1f99232cef3@lucifer.local>
+From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
+Subject: Re: [RFC PATCH v2 0/3] expose mapping wrprotect, fix fb_defio use
+In-Reply-To: <936a79ef-3328-490c-8a98-e1f99232cef3@lucifer.local>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------nVU9OmgYBNOGfKq3nswQa5Ze"
 
-> -----Original Message-----
-> From: Thomas Tai <thomas.tai@oracle.com>
-> Sent: Thursday, January 30, 2025 1:37 PM
-> To: mhkelley58@gmail.com; haiyangz@microsoft.com; wei.liu@kernel.org;
-> decui@microsoft.com; drawat.floss@gmail.com; javierm@redhat.com; Helge
-> Deller <deller@gmx.de>; daniel@ffwll.ch; airlied@gmail.com;
-> tzimmermann@suse.de
-> Cc: dri-devel@lists.freedesktop.org; linux-fbdev@vger.kernel.org; linux-
-> kernel@vger.kernel.org; linux-hyperv@vger.kernel.org; Thomas Tai
-> <thomas.tai@oracle.com>
-> Subject: hyper_bf soft lockup on Azure Gen2 VM when taking kdump or
-> executing kexec
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------nVU9OmgYBNOGfKq3nswQa5Ze
+Content-Type: multipart/mixed; boundary="------------0S0qxsHBW0T0ZZpSCCUk14Me";
+ protected-headers="v1"
+From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
+To: linux-fbdev@vger.kernel.org
+Message-ID: <573bc0d9-b19a-5433-cd6f-6949cb70b9eb@c64.rulez.org>
+Subject: Re: [RFC PATCH v2 0/3] expose mapping wrprotect, fix fb_defio use
+References: <cover.1736809898.git.lorenzo.stoakes@oracle.com>
+ <936a79ef-3328-490c-8a98-e1f99232cef3@lucifer.local>
+In-Reply-To: <936a79ef-3328-490c-8a98-e1f99232cef3@lucifer.local>
 
-Sorry for the typo in the subject title. It should have been 'hyperv_fb sof=
-t lockup on Azure Gen2 VM when taking kdump or executing kexec'
+--------------0S0qxsHBW0T0ZZpSCCUk14Me
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Thomas
 
->=20
-> Hi Michael,
->=20
-> We see an issue with the mainline kernel on the Azure Gen 2 VM when
-> trying to induce a kernel panic with sysrq commands. The VM would hang
-> with soft lockup. A similar issue happens when executing kexec on the VM.
-> This issue is seen only with Gen2 VMs(with UEFI boot). Gen1 VMs with bios
-> boot are fine.
->=20
-> git bisect identifies the issue is cased by the commit 20ee2ae8c5899
-> ("fbdev/hyperv_fb: Fix logic error for Gen2 VMs in hvfb_getmem()" ).
-> However, reverting the commit would cause the frame buffer not to work
-> on the Gen2 VM.
->=20
-> Do you have any hints on what caused this issue?
->=20
-> To reproduce the issue with kdump:
-> - Install mainline kernel on an Azure Gen 2 VM and trigger a kdump
-> - echo 1 > /proc/sys/kernel/sysrq
-> - echo c > /proc/sysrq-trigger
->=20
-> To reproduce the issue with executing kexec:
-> - Install mainline kernel on Azure Gen 2 VM and use kexec
-> - sudo kexec -l /boot/vmlinuz --initrd=3D/boot/initramfs.img --command-
-> line=3D"$( cat /proc/cmdline )"
-> - sudo kexec -e
->=20
-> Thank you,
-> Thomas
->=20
-> --- soft lockup log---
-> [    1.690032] efifb: probing for efifb
-> [    1.693989] efifb: framebuffer at 0x40000000, using 3072k, total 3072k
-> [    1.700996] efifb: mode is 1024x768x32, linelength=3D4096, pages=3D1
-> [    1.706999] efifb: scrolling: redraw
-> [    1.710981] efifb: Truecolor: size=3D8:8:8:8, shift=3D24:16:8:0
-> [    1.716806] Console: switching to colour frame buffer device 128x48
-> [   29.176649] watchdog: BUG: soft lockup - CPU#0 stuck for 26s!
-> [swapper/0:1]
-> [   29.176655] Modules linked in:
-> [   29.176658] CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted 6.13.0+ #=
-1
-> [   29.176661] Hardware name: Microsoft Corporation Virtual
-> Machine/Virtual Machine, BIOS Hyper-V UEFI Release v4.1 03/08/2024
-> [   29.176663] RIP: 0010:fast_imageblit.isra.0+0x2de/0x460
-> [   29.176669] Code: 07 49 21 f1 41 83 e1 01 46 8b 4c 8c 40 44 89 09 41 8=
-9 d1
-> 4c 8d 79 08 41 c0 e9 06 49 21 f1 41 83 e1 03 46 8b 4c 8c 40 45 89 0e <41>=
- 89
-> d1 4c 8d 71 0c 41 c0 e9 05 49 21 f1 41 83 e1 07 46 8b 4c 8c
-> [   29.176671] RSP: 0018:ffffc900000437a8 EFLAGS: 00010246
-> [   29.176673] RAX: 0000000000000400 RBX: 0000000000000005 RCX:
-> ffffc900006bb140
-> [   29.176674] RDX: 0000000000000000 RSI: 0000000000000001 RDI:
-> ffff888012146600
-> [   29.176675] RBP: 0000000000000080 R08: ffffc900006bb000 R09:
-> 0000000000000000
-> [   29.176676] R10: 0000000000000001 R11: ffff888012146580 R12:
-> 0000000000001000
-> [   29.176677] R13: ffff88801214658a R14: ffffc900006bb144 R15:
-> ffffc900006bb148
-> [   29.176678] FS:  0000000000000000(0000) GS:ffff888026a00000(0000)
-> knlGS:0000000000000000
-> [   29.176680] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [   29.176681] CR2: 00007f8bc160c238 CR3: 000000002ac38002 CR4:
-> 00000000003706b0
-> [   29.176683] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-> 0000000000000000
-> [   29.176684] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:
-> 0000000000000400
-> [   29.176685] Call Trace:
-> [   29.176687]  <IRQ>
-> [   29.176690]  ? watchdog_timer_fn+0x220/0x2a0
-> [   29.176695]  ? __pfx_watchdog_timer_fn+0x10/0x10
-> [   29.176697]  ? __hrtimer_run_queues+0x112/0x2b0
-> [   29.176702]  ? hrtimer_interrupt+0x108/0x270
-> [   29.176704]  ? sched_clock_cpu+0x60/0x1a0
-> [   29.176708]  ? __sysvec_hyperv_stimer0+0x32/0x60
-> [   29.176712]  ? sysvec_hyperv_stimer0+0x70/0x90
-> [   29.176715]  </IRQ>
-> [   29.176716]  <TASK>
-> [   29.176716]  ? asm_sysvec_hyperv_stimer0+0x1a/0x20
-> [   29.176722]  ? fast_imageblit.isra.0+0x2de/0x460
-> [   29.176724]  cfb_imageblit+0x433/0x470
-> [   29.176726]  bit_putcs+0x291/0x570
-> [   29.176731]  ? __pfx_bit_putcs+0x10/0x10
-> [   29.176733]  fbcon_putcs+0x139/0x1a0
-> [   29.176735]  do_update_region+0xf1/0x110
-> [   29.176740]  redraw_screen+0x22f/0x290
-> [   29.176743]  do_bind_con_driver.isra.0+0x2ab/0x3d0
-> [   29.176745]  do_take_over_console+0x3a/0x50
-> [   29.176747]  do_fbcon_takeover+0x5c/0xe0
-> [   29.176749]  fbcon_fb_registered+0x4f/0x70
-> [   29.176751]  do_register_framebuffer+0x1bc/0x2a0
-> [   29.176755]  devm_register_framebuffer+0x28/0x90
-> [   29.176757]  efifb_probe+0x544/0x720
-> [   29.176760]  platform_probe+0x43/0xb0
-> [   29.176763]  really_probe+0xd9/0x390
-> [   29.176767]  ? __pfx___device_attach_driver+0x10/0x10
-> [   29.176769]  __driver_probe_device+0x78/0x160
-> [   29.176771]  driver_probe_device+0x1e/0xa0
-> [   29.176773]  __device_attach_driver+0x99/0x130
-> [   29.176775]  bus_for_each_drv+0x98/0xf0
-> [   29.176777]  __device_attach+0xbc/0x1f0
-> [   29.176779]  bus_probe_device+0x8d/0xb0
-> [   29.176781]  device_add+0x4f1/0x6e0
-> [   29.176785]  platform_device_add+0xfa/0x260
-> [   29.176787]  sysfb_init+0x109/0x120
-> [   29.176791]  ? __pfx_sysfb_init+0x10/0x10
-> [   29.176793]  do_one_initcall+0x5b/0x330
-> [   29.176796]  do_initcalls+0xac/0x130
-> [   29.176800]  kernel_init_freeable+0x134/0x1e0
-> [   29.176802]  ? __pfx_kernel_init+0x10/0x10
-> [   29.176806]  kernel_init+0x1a/0x1d0
-> [   29.176808]  ret_from_fork+0x34/0x50
-> [   29.176813]  ? __pfx_kernel_init+0x10/0x10
-> [   29.176815]  ret_from_fork_asm+0x1a/0x30
-> [   29.176819]  </TASK>
-> [  432.306986] fb0: EFI VGA frame buffer device
+Hello Lorenzo!
+
+I tried the patches below yesterday with the latest mm tree from git at t=
+he
+time. I have some work in progress code which uses defio, and hardware wh=
+ich
+needs that for shuffling bytes around to get the right picture.
+
+There was no obvious difference in operation, it looked the same with and=
+
+without the patches. I've skipped the card's memory initialization so it =
+
+contained garbage while the system memory behind was clean. That garbage
+remained and was only cleaned or overwritten where the system memory was
+updated by the application. Fbcon wasn't assigned and the app mapped the
+memory of course. Left it running at configured to HZ/50 for a while with=
+
+1/3 of the screen updated at ~50 FPS by the test app, nothing interesting=
+
+happened. Same tearing both ways.
+
+I can't comment on performance as the CPU is moving the bytes in the defi=
+o
+callback and that code is too heavy at the moment to notice a difference.=
+
+Test was performed on a dual core x86-64 (E3400).
+
+So defio seems to still work after these changes for me.
+
+Tested-by: Zsolt Kajtar <soci@c64.rulez.org>
+
+> On Mon, Jan 13, 2025 at 11:15:45PM +0000, Lorenzo Stoakes wrote:
+>> Right now the only means by which we can write-protect a range using t=
+he
+>> reverse mapping is via folio_mkclean().
+>>
+>> However this is not always the appropriate means of doing so, specific=
+ally
+>> in the case of the framebuffer deferred I/O logic (fb_defio enabled by=
+
+>> CONFIG_FB_DEFERRED_IO). There, kernel pages are mapped read-only and
+>> write-protect faults used to batch up I/O operations.
+>>
+>> Each time the deferred work is done, folio_mkclean() is used to mark t=
+he
+>> framebuffer page as having had I/O performed on it. However doing so
+>> requires the kernel page (perhaps allocated via vmalloc()) to have its=
+
+>> page->mapping, index fields set so the rmap can find everything that m=
+aps
+>> it in order to write-protect.
+>>
+>> This is problematic as firstly, these fields should not be set for
+>> kernel-allocated memory, and secondly these are not folios (it's not u=
+ser
+>> memory) and page->index, mapping fields are now deprecated and soon to=
+ be
+>> removed.
+>>
+>> The implementers cannot be blamed for having used this however, as the=
+re is
+>> simply no other way of performing this operation correctly.
+>>
+>> This series fixes this - we provide the mapping_wrprotect_page() funct=
+ion
+>> to allow the reverse mapping to be used to look up mappings from the p=
+age
+>> cache object (i.e. its address_space pointer) at a specific offset.
+>>
+>> The fb_defio logic already stores this offset, and can simply be expan=
+ded
+>> to keep track of the page cache object, so the change then becomes
+>> straight-forward.
+>>
+>> This series should have no functional change.
+>>
+>> *** REVIEWERS NOTES: ***
+>>
+>> I do not have any hardware that uses fb_defio, so I'm asking for help =
+with
+>> testing this series from those who do :) I have tested the mm side of =
+this,
+>> and done a quick compile smoke test of the fb_defio side but this _ver=
+y
+>> much_ requires testing on actual hardware to ensure everything behaves=
+ as
+>> expected.
+>>
+>> This is based on Andrew's tree [0] in the mm-unstable branch - I was
+>> thinking it'd be best to go through the mm tree (with fb_defio maintai=
+ner
+>> approval, of course!) as it relies upon the mm changes to work correct=
+ly.
+>>
+>> [0]: https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git/
+>>
+>> RFC v2:
+>> * Updated Jaya Kumar's email on cc - the MAINTAINERS section is appare=
+ntly incorrect.
+>> * Corrected rmap_walk_file() comment to refer to folios as per Matthew=
+=2E
+>> * Reference folio->mapping rather than folio_mapping(folio) in rmap_wa=
+lk_file()
+>>   as per Matthew.
+>> * Reference folio->index rather than folio_pgoff(folio) in rmap_walk_f=
+ile() as
+>>   per Matthew.
+>> * Renamed rmap_wrprotect_file_page() to mapping_wrprotect_page() as pe=
+r Matthew.
+>> * Fixed kerneldoc and moved to implementation as per Matthew.
+>> * Updated mapping_wrprotect_page() to take a struct page pointer as pe=
+r David.
+>> * Removed folio lock when invoking mapping_wrprotect_page() in
+>>   fb_deferred_io_work() as per Matthew.
+>> * Removed compound_nr() in fb_deferred_io_work() as per Matthew.
+>>
+>> RFC v1:
+>> https://lore.kernel.org/all/1e452b5b65f15a9a5d0c2ed3f5f812fdd1367603.1=
+736352361.git.lorenzo.stoakes@oracle.com/
+>>
+>> Lorenzo Stoakes (3):
+>>   mm: refactor rmap_walk_file() to separate out traversal logic
+>>   mm: provide mapping_wrprotect_page() function
+>>   fb_defio: do not use deprecated page->mapping, index fields
+>>
+>>  drivers/video/fbdev/core/fb_defio.c |  38 ++-----
+>>  include/linux/fb.h                  |   1 +
+>>  include/linux/rmap.h                |   3 +
+>>  mm/rmap.c                           | 152 +++++++++++++++++++++++----=
+-
+>>  4 files changed, 141 insertions(+), 53 deletions(-)
+>>
+>> --
+>> 2.48.0
+
+--=20
+						    -soci-
+
+--------------0S0qxsHBW0T0ZZpSCCUk14Me--
+
+--------------nVU9OmgYBNOGfKq3nswQa5Ze
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEE8WlaH4v4aHNT2Bn0WOeEu4KftGsFAmeby+4FAwAAAAAACgkQWOeEu4KftGsw
+Cgf/epz4AcATmcz3ijb2k6mLnoCHfqoWXB2SBvOFAEYZtZC36iEC0gxNcKuKzNFCoo0zlz+cnk+2
+zRPLRz8Y+/YHOfceTpdkGnba7rJ2dPI909uonD38rBaz5JVONVSbuhTYU4j9hjreTs+wgr/vc9e0
+tSL6538biOqADNAhVIh44CZr026wVe4dkUQaTyOHNTAWg6rvSZusuTWtcIHuBIBfzdwV3/mUFPf4
+g6NSe3ejhapVbYoUnGkqaBeU1JLW4NTWBH9unM7ICy1l+7/kBJcn9ZDLnTlzYYJ6HOHJ8M1VhATi
+XevJYWEURSNIKQqTu9f0AIKRttQJhoawdHub7dbOqQ==
+=Wc13
+-----END PGP SIGNATURE-----
+
+--------------nVU9OmgYBNOGfKq3nswQa5Ze--

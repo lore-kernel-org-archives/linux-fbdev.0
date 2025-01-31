@@ -1,267 +1,135 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f78.google.com (mail-io1-f78.google.com [209.85.166.78])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1CA91E00B6;
-	Fri, 31 Jan 2025 17:04:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738343064; cv=fail; b=lo9b9WV8kUnO1OqVExviC8f7SO2SJc94vgyoE2Fo30w5sJdVKhTyVHb9cLCGBLLW5rN268m1uKuOh/FM9YkBC1FktG+rDSgfDXILqxcWUmNiPIOSUew6CXft327nc92dW+uwlnpIx/1owHU3raQmZwRWYFrAaisLRyOtS7BYIr4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738343064; c=relaxed/simple;
-	bh=XK0B1xBezOZm2qtN++hovTGCKpIq2yUNhPWJjuTpad8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=JLgTTyT2H1JDSriKV4MTNLPaxBAF+XhBfXr49q6A3o8e2XjkJcdkA0HyAq79lCEZtoqZVIxA5L/3dyylLSDFOMEJhTdVVqpuQ55Vw+uFmVYRcqZdeYtiWVRVtFPE9yJtE16dg5dmu3yvkqhpe7CLjWEHZG1OeBIT5sEqi6BnkOM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=U1yB7kLk; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=I4HQRC04; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="U1yB7kLk";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="I4HQRC04"
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50VGuxYG024554;
-	Fri, 31 Jan 2025 17:03:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2023-11-20; bh=qAOD86tnHi193L+dBl
-	29I6iQ5hwv5WofSUZYpoE+GKA=; b=U1yB7kLkiQv7T7zdkPYqdv+vpy43n3gIYS
-	3F0NgpL3zHR6lBk2b8XsdII54VM+CMwH9RsUmF+fVnDiWZ3JfIFji2XA8hieCbfT
-	vnoV3uqfyn9CyGWUr5vW7RlYKb6U3VhON8/nn7FGbpanjrrGUk4Qedlv9uU7/upT
-	e3Zc2VsCkexhRbZ5J4rD3qWttPEwA4rf2TJuunHc9l6zhGqp1w+Al+P90Yct+Che
-	UINRbznf8t6AdQqlldqNEfFsPpxR83ggfPMwEhHf6UWn3xaGxr3goKN+lT/7DCE5
-	qUpDtLa+lYAEb6SvIuaJnnuOsHH/KiPznOqmnm/biG/7ZUcoJ0TQ==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44h2g100j3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 31 Jan 2025 17:03:34 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 50VGjtWr016719;
-	Fri, 31 Jan 2025 17:03:33 GMT
-Received: from nam12-dm6-obe.outbound.protection.outlook.com (mail-dm6nam12lp2168.outbound.protection.outlook.com [104.47.59.168])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 44ggvkht4g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 31 Jan 2025 17:03:33 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=YJThGRgfZW2Wxe+0L8OoKQ5Z7KlZqQ4rFkCcqBysHuQsuPwrYaINtd+IEF0n5Wx/9hhAUp2CHOIVxdq5oD+oDweNkaeI9WpzXaRPhouZrBvepQZlKV1BkAbpc8yOvIaPC/ruQn6QzM/7HbmnvpC6DMyGHw5BjuRxOAX/JUXynY0xb5xIAPZzYzFU7NHjBj3LJTjjXxReveCULJPcHQH58kKiD/j/ux+QGDT+pLrCwA1Ly43wHafCsjbZct4FjeGvzW2mYxS+HtekpkZf1XyOTRZynFPIZYlic6uH6YRmbGDIfE1SdE2iNnpzoQMul0l5/VlsQcl6HGFEFC9FMoAkdw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qAOD86tnHi193L+dBl29I6iQ5hwv5WofSUZYpoE+GKA=;
- b=O31hu7ngFx+rhjZ65T14fft95PaE6HHXddjzUFIw5VdiJd7NxUOdnM5szW8Yz+SUZonQRlBUdTQJabdETOuwpLiesRPUukXXvzpzYBybPyiLhkgpXUc1CAki6NDgxUsZ1uLus6sniBW+95VM4f5plEHDM1OApBMB1dSbb7VT8WyjJxKWdRpKBt5H3cZTpg6qZOKOqgyAGl+lR17DtWTap5AevpPod7tpC4E6od3OUA5thUYpylmeTmlXbeMBAvJn6loUL8EFeAduLERl2wzcx6DOvyiMfbSB08moKl7LpVd0Myf6Pr2jrWfPDWEW8LhNJWmd7qFmMpmeuN+7xw72Pg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qAOD86tnHi193L+dBl29I6iQ5hwv5WofSUZYpoE+GKA=;
- b=I4HQRC04qykRtstvlTbwEglCzRTYVlbnVxVJQMkgWTqsW052O8NeguPzETu+oEvg5PiaxFqdarZlzBQb1wmzitvw83V27tH1Vz83gJEHy8gPhTh6YEfil0ALlOPf4VkfdraZYAmfZVW73zOCSOEnmqnVgRAJp7FU1kyA6/PnUTo=
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com (2603:10b6:a03:14f::25)
- by IA0PR10MB6890.namprd10.prod.outlook.com (2603:10b6:208:432::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.17; Fri, 31 Jan
- 2025 17:03:29 +0000
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9]) by BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9%6]) with mapi id 15.20.8398.020; Fri, 31 Jan 2025
- 17:03:29 +0000
-Date: Fri, 31 Jan 2025 17:03:25 +0000
-From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
-        David Hildenbrand <david@redhat.com>,
-        Kajtar Zsolt <soci@c64.rulez.org>
-Subject: Re: [RFC PATCH v2 0/3] expose mapping wrprotect, fix fb_defio use
-Message-ID: <091e47e4-1d8b-4b9c-8e1c-2f748c3bff8a@lucifer.local>
-References: <cover.1736809898.git.lorenzo.stoakes@oracle.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1736809898.git.lorenzo.stoakes@oracle.com>
-X-ClientProxiedBy: LO2P123CA0101.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:139::16) To BYAPR10MB3366.namprd10.prod.outlook.com
- (2603:10b6:a03:14f::25)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9861AA935
+	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jan 2025 17:38:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.78
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1738345106; cv=none; b=KmARkWEt6Lh+ZQXMoSIqsltPI2/9NoiFsFBPuXEfYM5m2kFWdwz1g0yKA8GNFMDAKMy3Z/o5CgDs221guSJeNmrh9BBCzXOj/+5dAHj0zU8/Gxao9c1/Z/BLdcRNfNDBKJsVDOVhQS9ccjvlvetZWOVCOmwLWr3AqWIUdzRAfOs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1738345106; c=relaxed/simple;
+	bh=NEH0MRkJ45+7UAL0BEcHu0hHjjirnpLTQ9K5aqFEZps=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=laCVYf7mOIVjDt7227eEfZNaBhA92+nb1p3YZk6h6wjQ48kS4yr+v/TcaLdboNa/VvEs+7MVGVMpgTLv9bDZz//SgNhKcBuk1U1UBs1+Ewapb8vdlRgQWRAw5/YD94IRgTC+zcr0WMJX65fGSGQ4uS9bc4eqkhAjDit3d6cJdCI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.78
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f78.google.com with SMTP id ca18e2360f4ac-8521d7980beso146315539f.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jan 2025 09:38:24 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738345103; x=1738949903;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=bQN8Hl8aILe6f0kGxWFgZSDOzoDHnNcZ9k8ywzy2mdI=;
+        b=iSUriFJhuUNsI1y+Jc7Qh7qPDRTC1ojBHB0qraCeephSO9/EzIbsTO/JJ/M0e3RnJ2
+         tapKwhUsbGeGfUfyUs+XII4eahwHRNbUSz4Bh7K55BaeQNFFSnBYBYT8fuQn09/0cG5Q
+         hPHpKKD0kTti5rRcLJ/M4gKZ02G36+mn+eQK4jaJDsDjow0NMQ24YSturGHUzIG7Fi+2
+         5S381ZIe/eDix5j6eA6KQGnCq0M0IvaKoP3OmLWgxzrpWg7qDEEVcWq7uOugnrLKcqi8
+         +tP/mvLXD6RMLURKOlioJwaTyDvhd1gGvIPdbqipvrFazWVBIaRsdS+jjZa/bmNSdGD3
+         3AQQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUNH7cylkkL3woU8xIrAhzljKuCE1bS4J2KMLalEKFmJMED6m+B06Uhe4CoiRSMjwL6e2OD/NetYeQZNg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxO08RCqQz+DvQykWRYFTp4IgwypeAOt7OmPIr8hmlHDkG1ll9f
+	bY7EVmZQiMGHReug+Oikakclxd9wImZ4Wo9bR/ie4OmAyqgpMUDwMBpKkQiagHqyufTS3Gi0IE3
+	XfWk5bSpGTjciXhEOhzxSJfdmKTipSVvbRxXnCKDNsnRblqDxVkn4DV0=
+X-Google-Smtp-Source: AGHT+IEhvAB+5AypiuaRHXww+07iCdlXgyqBAjMlVpHIFanzTHdtNW2wrrrT9beQ5Ni2o8rnUy9dey6j/27k1MXvVj8tdT4Icn8v
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR10MB3366:EE_|IA0PR10MB6890:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6e0da286-452d-457d-c756-08dd42192f3e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|366016|7416014|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?XhInTVqOLT/Zj58qeUnqpD1wtpnrUDF/R93cT/GcjgCbQ0hweUum50d/cUT2?=
- =?us-ascii?Q?sT2xGEId+JNvzznoUpxgnUovxQyQvLnH2GgMr1OTJFwL/jxU65RRMzf+nVRd?=
- =?us-ascii?Q?AtugsMxp05RrK++UouyXfHXYxSgMwyvzydxuSckc+jQQsw14PjkZaR+USRme?=
- =?us-ascii?Q?qMPcIHUb5M9IbRxUZrZoX8c6ft7LHKc4RTHkqGSXOUoaYxGk+naV7nMi56j3?=
- =?us-ascii?Q?eKoSRvJY/aPHi2WMVPf9KGZ+JaaXM4oLA/sidHDUrg2pTjrbPt0NA9Zep9Ya?=
- =?us-ascii?Q?8JPOiWmK3W7Aqh2bINFVr4xDUMAIXQq+9rQX3RakrZosIdeS87YA7kPv84jd?=
- =?us-ascii?Q?1+vQN6qodLX8FUMQUSnpebl9rz4R7L46QOigvcR0jEE5HQp+hf6CjfH5MFy5?=
- =?us-ascii?Q?ytWJghvah9NqopMyYTow2Y/cBp7fYP9jxhEo1sTWdoKUFIvBS8WAe5crNRoG?=
- =?us-ascii?Q?IfAa/04uCyejKnI/tVQge1JJTdKuCH10CL+6Kx2u5BnFDdOBrjtBLyWYLqZa?=
- =?us-ascii?Q?1uFmr3nPMTdrYqwllVjHrmScf984KpjISq6b5txoeB9YmbANN/jfNEqaTMhC?=
- =?us-ascii?Q?A8Q/of4GGW+gyHbrMF7U/euNZ89wVpkew2A9BQhxQeexaDtLpyHnjx7J5Z4H?=
- =?us-ascii?Q?9fEPhPRU90NGplNs39eQM3InAjgi7Fm97mNuL4/D+7c2XwXabuodA7v9HmYA?=
- =?us-ascii?Q?QPBUGMIQKkYxH2t/hJP7cJYc5njnILUR+6mVI7WOe+YFvO86bsIpyW37qyCf?=
- =?us-ascii?Q?tl+893pvJFvD5FOIio6K9ZMWBoaYe8Vgz746JjSpjVtOJkmXCRM97yakDqdK?=
- =?us-ascii?Q?Ct/1dmrQY/nTk+WVzbJ9D+kyuAaOWll8sAA6uEMlBztDmFqGGWspV5LI9VdK?=
- =?us-ascii?Q?026Vz/YUP1jxIq3v4DeI3Ip2UqG/Z3HYbVGf+9bC3hdRYqJaCssSMsTLIRom?=
- =?us-ascii?Q?zKfvRlhRJj7Hbq4jk1nOLu4JBPyUKPXBlHeU59AzeTESaRGHn9KmVGZR775k?=
- =?us-ascii?Q?89nupJMGzJEQ2pM9zI2YYKclhHzx25ty3a7tqYxfU9vOpQLDAoGrQjAcs+oa?=
- =?us-ascii?Q?piprFYFAAy8XPG/iihqz9O3Lip98dJUUoAjVumLiIjN4mO4+W5mCd6i/FVvZ?=
- =?us-ascii?Q?nP09DNyc4Y3xc0VafPOW9eXCJTz9rvgvwB2auSw6Mq+1VqPckju0PuHeiITw?=
- =?us-ascii?Q?SI6vwOrbcBMBlDI5+4lTzxrDDse6f8ArfS4g3lhWzEnLGwQ4eJ4gPBtkOeiK?=
- =?us-ascii?Q?NM/x+KUSntPHEjan08IbWItTaBNJm7ndR35ApFoqHwW0Zx+EP5TydD9TtzMQ?=
- =?us-ascii?Q?To1Ka6goGORcdROv6Uzs4UA3WJ3ohSIxRAhtRXt9tydg0N/nSnGXM4ZrBeDo?=
- =?us-ascii?Q?y+KNgw/buiQxe6zfMewHJss0y70IhaYGWL2wQsJemd9wVaTbfw=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR10MB3366.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(7416014)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?+CLeOn85e9pMyrhFhjlUDibMczlaPC32IGAiMeurDpvvKiGub4bTZtS6PtBd?=
- =?us-ascii?Q?74mjQKhYCjcE9/stRhMpkbWZE6GnR4pz3O1uYg6afIXzkWtrWXvqDe8WlnrE?=
- =?us-ascii?Q?jO85LiMcKPWo8RA1CY/WaiM1iG3V8jub23CSeyND0CAJ2e0fb4pSptNmNHzk?=
- =?us-ascii?Q?JkPZptj10K2aXpXn885srheRjFqwCl/CmgtSgbMgj3whKWAjZYMoynAskoIp?=
- =?us-ascii?Q?gL3qjEcE+vxiXQJFMKiUBqbfB9LJTfHzB3Q+62INgK35oViSZzX4768MmUe3?=
- =?us-ascii?Q?8Zetvr3zwVPGsr0ISMB5URsStpyc52zD1J9W7xQG/s2JOGqdU+rm6jC+S6/X?=
- =?us-ascii?Q?EPouGG7BqnZGTCwPE4bz1+WhKKoJPKW/6P3mh1QZJNbCvxfj6/yL7XYJFe7/?=
- =?us-ascii?Q?xwE+crEArBwGcJiN/qgajq3RtnmbAkv8GXFpqi/2hR1LU0wZetv71nsjZoCl?=
- =?us-ascii?Q?OX+jcJQnMFdM9XnNirBLqStAGvn6son+LzwGQntCZNdVnGXrc/7LPkCgL2Di?=
- =?us-ascii?Q?vD4q4TrBsMnXp05UOYg63BZ7gAtRVwaWJyKOPInn1lUyY/jb9mo2fSMqNd4W?=
- =?us-ascii?Q?txUeUYK6BWz1s7Dg83ZacsbmH+tKhSjs3/897MnYmarRhMDPhCh2EbVM2aUO?=
- =?us-ascii?Q?DfqCPLLJ4+MB2AWcEtfZgQa1Ekh7+/8pq3ydwNEeMTlMzuEUE5IARvEXShIO?=
- =?us-ascii?Q?Vy13oy2+5J7HsFcWNlNNjgbVSsGEb1tA9DYuyPwfycTUk5EPLZ+kcP/wBedJ?=
- =?us-ascii?Q?cqlGEO/c1PPHZJUUOhKm9oLDdGcc1fJqBVaLuRobLThER4Rxv27sFuTJwOOE?=
- =?us-ascii?Q?u1luwWBTs9d3t9vH9z6eaMW7yqY6bK3xFiRANBjd+IIDKlDFqz+pw1JkexAy?=
- =?us-ascii?Q?qYZHva0TQIG+DgskHMFD5SshL2MmSb0q6PlOn7Q9kw7Kqa/HeouxQ8jw3e4+?=
- =?us-ascii?Q?zXjY1pLujHDuaxxUdoYmAR/HayCmTBj0fJTKs+xc3MDppgGYfHq4gCVw8juG?=
- =?us-ascii?Q?Xg+yIYpVaKDpMDM0xPTYeDAQC4AdX42RPbAAA6WfNOoWtZH2dZ+P4HCKGJKK?=
- =?us-ascii?Q?DSXCwNcfIihDp1FrHGqGC2xsOqOjOIAE6CPt40ous+R5Yz5qYUnpFTvOgB19?=
- =?us-ascii?Q?YPh5C1X/LR7hoPmythfwq28/e2d/hovVK40TcBNYzY7F5N/QJhd37mpJmGe4?=
- =?us-ascii?Q?77hO+i1TAXeTj4GN9FDLwljl3mpOEhtHFP2++Mn71s/s9nO4UXvH3ACa0Dw2?=
- =?us-ascii?Q?niC6BaEqlJEdhJUzdqX86M5ps7GVCC5LMP8AugsTp9dFNld3dJ8f2AkMMwOg?=
- =?us-ascii?Q?YTnQuULXszZ6UKMtpN7NyBE4esTx2DS6FXzP48XKeLjepCnpQi2EleFB4wEQ?=
- =?us-ascii?Q?8GG9QpIC6BT8NT56Jj0l4m1I4hoxUFiPOTqzDfr2dGWp0g1yPr+mggPaTk14?=
- =?us-ascii?Q?Y4ShnA14DoONJ5HtWrcDcuQFXrmEj7Kh73LkvIR/dQnDGBmtiFMEmnVua65Q?=
- =?us-ascii?Q?3VXnQHVL1nR8KczQ23eGK2gNir4CatRODR/qk48y9wgfeil+n+LGzsaS3aSw?=
- =?us-ascii?Q?fcFvY8Bwkb0So9XmqZdOJUoabhEQWB7JyNfaFlK7JEWllWDkbfhEYMb2LYGK?=
- =?us-ascii?Q?Jg=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	n0DYRP1liorIJ6iCo8XoFL3vEvmTeZ0viL7DPeiBPryrtlaQdba+R5k9YSkfdQCoQHMWBZZfJ/9JRkfJyVk92XTrBDl6dYxL2MuUxGsc5+tiqf1Nj5UNfEA8nyYn6nEsfPlP2kQa5Gd6FZ2E0Zs8KT8K0EC2U4H9P131vRZbUymzFb+sq9gxswx/LkYfZkJ0ZVpiKFHTerowxw+Z31+6v6Qk5sPB3Juz9rlmKzZAookNQzGmvybz5R4d6aBz4pKetABvu9XQa37WodTXLhmbKf1V8VujP/yiq9HZtbtWNt8x4vTWHVYBChrr9MlbsQpGBdT2lMfRijWjlI47Cu6BpFSwYsL9Y2WWz/RVeBZc8OtsqQB2hKwI1mZHUU5plr+JuYBWPjgUFbzd3swNmCYotF50LYcisJZlz09jyalM0+dPFPnTcUzIp180+f56VbTCspsKlZh82yJqHXDov3wLQ45IXZWq5lW4eh/Cnm4BgvlkaYmiOrBJHqxJ9z2sxvPePW5n6X20H4Wi2XXWK5S2V6neosbOWsy3TlHizctj7YyIvjDg+XuSj9PktGtTxTiqRrKIjvauKgRvUTok7kUoSiAC+AjanAHuNjpL9wWQN8E=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6e0da286-452d-457d-c756-08dd42192f3e
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB3366.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2025 17:03:29.7053
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: uqSKVCFhpfTcz8FkeFBpIv/8ZVjTZNCPbvxxaaG8/WC2MtIxvUur2OQs1TPNa4Fm2jqGuGC8bmAmq9p1IfwaEZggQr0+k0reFlpd8Id9hqc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6890
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-31_06,2025-01-31_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 phishscore=0 spamscore=0
- suspectscore=0 mlxscore=0 bulkscore=0 malwarescore=0 mlxlogscore=999
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2501170000
- definitions=main-2501310130
-X-Proofpoint-ORIG-GUID: Tdg-GItNqRNTzjZh6lsPyf_3ZB98oJSh
-X-Proofpoint-GUID: Tdg-GItNqRNTzjZh6lsPyf_3ZB98oJSh
+X-Received: by 2002:a05:6e02:3b83:b0:3ce:80b8:7328 with SMTP id
+ e9e14a558f8ab-3cffe3ffb5cmr114132665ab.3.1738345103719; Fri, 31 Jan 2025
+ 09:38:23 -0800 (PST)
+Date: Fri, 31 Jan 2025 09:38:23 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <679d0a8f.050a0220.163cdc.000c.GAE@google.com>
+Subject: [syzbot] [fbdev?] UBSAN: array-index-out-of-bounds in fbcon_info_from_console
+From: syzbot <syzbot+a7d4444e7b6e743572f7@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-+cc Kajtar, who has kindly smoke tested this series on real hardware and
-confirmed things are working ostensibly the same as before.
+Hello,
 
-On this basis I will be un-RFC'ing this and, if Kajtar can reply to
-confirm, will add a Tested-by tag to patch 3/3.
+syzbot found the following issue on:
 
-Again to emphasise - there is some urgency here - as struct page fields
-that defio relies upon prior to this series are being removed
-non-optionally.
+HEAD commit:    9c5968db9e62 Merge tag 'mm-stable-2025-01-26-14-59' of git..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=15045118580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=e0b04511e541daf8
+dashboard link: https://syzkaller.appspot.com/bug?extid=a7d4444e7b6e743572f7
+compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
 
-Thanks, Lorenzo
+Unfortunately, I don't have any reproducer for this issue yet.
+
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/28361a445db1/disk-9c5968db.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/3341d04d577f/vmlinux-9c5968db.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/e5b54cd0e552/bzImage-9c5968db.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+a7d4444e7b6e743572f7@syzkaller.appspotmail.com
+
+netlink: zone id is out of range
+netlink: zone id is out of range
+netlink: zone id is out of range
+netlink: zone id is out of range
+netlink: zone id is out of range
+------------[ cut here ]------------
+UBSAN: array-index-out-of-bounds in drivers/video/fbdev/core/fbcon.c:122:28
+index -1 is out of range for type 'fb_info *[32]'
+CPU: 1 UID: 0 PID: 8491 Comm: syz.4.565 Not tainted 6.13.0-syzkaller-08265-g9c5968db9e62 #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 12/27/2024
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x16c/0x1f0 lib/dump_stack.c:120
+ ubsan_epilogue lib/ubsan.c:231 [inline]
+ __ubsan_handle_out_of_bounds+0x110/0x150 lib/ubsan.c:429
+ fbcon_info_from_console+0x192/0x1a0 drivers/video/fbdev/core/fbcon.c:122
+ fbcon_new_modelist+0xbf/0x2d0 drivers/video/fbdev/core/fbcon.c:3048
+ fb_new_modelist+0x328/0x440 drivers/video/fbdev/core/fbmem.c:673
+ store_modes+0x1c9/0x3e0 drivers/video/fbdev/core/fbsysfs.c:113
+ dev_attr_store+0x55/0x80 drivers/base/core.c:2439
+ sysfs_kf_write+0x117/0x170 fs/sysfs/file.c:139
+ kernfs_fop_write_iter+0x33d/0x500 fs/kernfs/file.c:334
+ new_sync_write fs/read_write.c:586 [inline]
+ vfs_write+0x5ae/0x1150 fs/read_write.c:679
+ ksys_write+0x12b/0x250 fs/read_write.c:731
+ do_syscall_x64 arch/x86/entry/common.c:52 [inline]
+ do_syscall_64+0xcd/0x250 arch/x86/entry/common.c:83
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7fe6d0f8cd29
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007fe6d1daa038 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007fe6d11a5fa0 RCX: 00007fe6d0f8cd29
+RDX: 000000000000a3d9 RSI: 0000000020000400 RDI: 0000000000000009
+RBP: 00007fe6d100e2a0 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 0000000000000000 R14: 00007fe6d11a5fa0 R15: 00007ffe594083d8
+ </TASK>
+---[ end trace ]---
 
 
-On Mon, Jan 13, 2025 at 11:15:45PM +0000, Lorenzo Stoakes wrote:
-> Right now the only means by which we can write-protect a range using the
-> reverse mapping is via folio_mkclean().
->
-> However this is not always the appropriate means of doing so, specifically
-> in the case of the framebuffer deferred I/O logic (fb_defio enabled by
-> CONFIG_FB_DEFERRED_IO). There, kernel pages are mapped read-only and
-> write-protect faults used to batch up I/O operations.
->
-> Each time the deferred work is done, folio_mkclean() is used to mark the
-> framebuffer page as having had I/O performed on it. However doing so
-> requires the kernel page (perhaps allocated via vmalloc()) to have its
-> page->mapping, index fields set so the rmap can find everything that maps
-> it in order to write-protect.
->
-> This is problematic as firstly, these fields should not be set for
-> kernel-allocated memory, and secondly these are not folios (it's not user
-> memory) and page->index, mapping fields are now deprecated and soon to be
-> removed.
->
-> The implementers cannot be blamed for having used this however, as there is
-> simply no other way of performing this operation correctly.
->
-> This series fixes this - we provide the mapping_wrprotect_page() function
-> to allow the reverse mapping to be used to look up mappings from the page
-> cache object (i.e. its address_space pointer) at a specific offset.
->
-> The fb_defio logic already stores this offset, and can simply be expanded
-> to keep track of the page cache object, so the change then becomes
-> straight-forward.
->
-> This series should have no functional change.
->
-> *** REVIEWERS NOTES: ***
->
-> I do not have any hardware that uses fb_defio, so I'm asking for help with
-> testing this series from those who do :) I have tested the mm side of this,
-> and done a quick compile smoke test of the fb_defio side but this _very
-> much_ requires testing on actual hardware to ensure everything behaves as
-> expected.
->
-> This is based on Andrew's tree [0] in the mm-unstable branch - I was
-> thinking it'd be best to go through the mm tree (with fb_defio maintainer
-> approval, of course!) as it relies upon the mm changes to work correctly.
->
-> [0]: https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git/
->
-> RFC v2:
-> * Updated Jaya Kumar's email on cc - the MAINTAINERS section is apparently incorrect.
-> * Corrected rmap_walk_file() comment to refer to folios as per Matthew.
-> * Reference folio->mapping rather than folio_mapping(folio) in rmap_walk_file()
->   as per Matthew.
-> * Reference folio->index rather than folio_pgoff(folio) in rmap_walk_file() as
->   per Matthew.
-> * Renamed rmap_wrprotect_file_page() to mapping_wrprotect_page() as per Matthew.
-> * Fixed kerneldoc and moved to implementation as per Matthew.
-> * Updated mapping_wrprotect_page() to take a struct page pointer as per David.
-> * Removed folio lock when invoking mapping_wrprotect_page() in
->   fb_deferred_io_work() as per Matthew.
-> * Removed compound_nr() in fb_deferred_io_work() as per Matthew.
->
-> RFC v1:
-> https://lore.kernel.org/all/1e452b5b65f15a9a5d0c2ed3f5f812fdd1367603.1736352361.git.lorenzo.stoakes@oracle.com/
->
-> Lorenzo Stoakes (3):
->   mm: refactor rmap_walk_file() to separate out traversal logic
->   mm: provide mapping_wrprotect_page() function
->   fb_defio: do not use deprecated page->mapping, index fields
->
->  drivers/video/fbdev/core/fb_defio.c |  38 ++-----
->  include/linux/fb.h                  |   1 +
->  include/linux/rmap.h                |   3 +
->  mm/rmap.c                           | 152 +++++++++++++++++++++++-----
->  4 files changed, 141 insertions(+), 53 deletions(-)
->
-> --
-> 2.48.0
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup

@@ -1,24 +1,24 @@
 Received: from c64.rulez.org (c64.rulez.org [79.139.58.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27FE51DFDE
-	for <linux-fbdev@vger.kernel.org>; Sun,  2 Feb 2025 12:42:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2AA61DFDE
+	for <linux-fbdev@vger.kernel.org>; Sun,  2 Feb 2025 12:42:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.139.58.36
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738500139; cv=none; b=V4Fmz8beS2TnO89f8fnR1c95tk1T+wU2R4BOs7E6QJj3FE10E+ay72Z+KTBwObwWwx69LCIWbeWb/fFMnGOC+Bp3Sa0DFtsLVbsZzZy9swvVxEDwle8rVMC5Jl19Mi4/zkNe8I927/twykDR2vbfJeIx4Cn3udO32MR9nQz7elQ=
+	t=1738500184; cv=none; b=p3gLs/QVwSqZSO2efJci6ajiUq020Qr3U08zGWZ06djE9LuKGeF/VIxhLYE2HfVJ108v7XBLolNan/+sX8LDDC3+O5TgDaeHQgqvJEHAdqbfngLP5G7X6RHrDPMOMV3oLHC/SfKLVN1De594bgTVn4oqyM4bzzCCZySMYZnAMZA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738500139; c=relaxed/simple;
-	bh=1k3RRIM8BQwrGtTbiEjL3qJ6NqhZZzK40wzxIRhiYhA=;
+	s=arc-20240116; t=1738500184; c=relaxed/simple;
+	bh=G4qx893KhBVwJjFvGwXqIrwItvWFwjEEBMfuXI4lbWY=;
 	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
-	 In-Reply-To:Content-Type; b=AIlJ0YkPnj4ilkmqvPBUdxvtrPoyrxzOoJxAlCDHY6q6BlAZDa1SDL1c8WIsh4SGOEhMD5ZVlLPdIR0a71+ZqgQ1WL0J/fAQuVAH3KPS5ld4xJMLoo1ayIWvOE4lxnhehncFbZKT19lgZUFn2I4U2GTw7BRNZs5P+PbJMW1YEjk=
+	 In-Reply-To:Content-Type; b=RYJS4fXvJ8AlomMwcW8DQAAZCzgi2K/pXOZtweS10KTUXwqe1ag7NubrNCSeWp3KCp5NDABnR4RXsRajm5IbFqEVQt3N+gbJ7uZwPpoWIzPBujoiIiwVvh8e9mNkA/SIE+5z/rYpqLIT+Twkuo+zRyLEvpzPzxLD0QD3F48O3P8=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org; spf=pass smtp.mailfrom=c64.rulez.org; arc=none smtp.client-ip=79.139.58.36
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=c64.rulez.org
 Received: from [192.168.0.59] (unknown [89.134.12.53])
-	by c64.rulez.org (Postfix) with ESMTPSA id 5B244100F6
-	for <linux-fbdev@vger.kernel.org>; Sun,  2 Feb 2025 13:42:15 +0100 (CET)
-Message-ID: <50c335f3-d3c9-3f1d-dd3b-e78818425662@c64.rulez.org>
-Date: Sun, 2 Feb 2025 13:42:15 +0100
+	by c64.rulez.org (Postfix) with ESMTPSA id 88810100F6
+	for <linux-fbdev@vger.kernel.org>; Sun,  2 Feb 2025 13:42:57 +0100 (CET)
+Message-ID: <ff1f4d9f-a6eb-8ff8-d965-268722b43780@c64.rulez.org>
+Date: Sun, 2 Feb 2025 13:42:57 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -27,73 +27,52 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.13.0
-Subject: [RFC PATCH 03/12] Deduplicate cfb/sys drawing fbops
+Subject: [RFC PATCH 04/12] Deduplicate cfb/sys drawing fbops
 Content-Language: en-GB
 From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
 To: linux-fbdev@vger.kernel.org
 References: <f921492d-6c53-ce68-16b6-dc9c21f2b738@c64.rulez.org>
  <0e2eba19-bc83-fd23-c9ff-59299a738bcf@c64.rulez.org>
  <a3c00956-ee69-df58-9e1e-aca48a8a6367@c64.rulez.org>
-In-Reply-To: <a3c00956-ee69-df58-9e1e-aca48a8a6367@c64.rulez.org>
+ <50c335f3-d3c9-3f1d-dd3b-e78818425662@c64.rulez.org>
+In-Reply-To: <50c335f3-d3c9-3f1d-dd3b-e78818425662@c64.rulez.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="------------aMq4fqpU00oWR2ZfBXF3N8tF"
+ boundary="------------qwGb1PNrkYDqSU0Nqk84O0bb"
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------aMq4fqpU00oWR2ZfBXF3N8tF
-Content-Type: multipart/mixed; boundary="------------03C6M8w1oWCu52vTbuZxaveW";
+--------------qwGb1PNrkYDqSU0Nqk84O0bb
+Content-Type: multipart/mixed; boundary="------------waTK0ttuFkaLQq9gULPM0tQy";
  protected-headers="v1"
 From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
 To: linux-fbdev@vger.kernel.org
-Message-ID: <50c335f3-d3c9-3f1d-dd3b-e78818425662@c64.rulez.org>
-Subject: [RFC PATCH 03/12] Deduplicate cfb/sys drawing fbops
+Message-ID: <ff1f4d9f-a6eb-8ff8-d965-268722b43780@c64.rulez.org>
+Subject: [RFC PATCH 04/12] Deduplicate cfb/sys drawing fbops
 References: <f921492d-6c53-ce68-16b6-dc9c21f2b738@c64.rulez.org>
  <0e2eba19-bc83-fd23-c9ff-59299a738bcf@c64.rulez.org>
  <a3c00956-ee69-df58-9e1e-aca48a8a6367@c64.rulez.org>
-In-Reply-To: <a3c00956-ee69-df58-9e1e-aca48a8a6367@c64.rulez.org>
+ <50c335f3-d3c9-3f1d-dd3b-e78818425662@c64.rulez.org>
+In-Reply-To: <50c335f3-d3c9-3f1d-dd3b-e78818425662@c64.rulez.org>
 
---------------03C6M8w1oWCu52vTbuZxaveW
+--------------waTK0ttuFkaLQq9gULPM0tQy
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-fbdev: core: Use generic copyarea for as cfb_copyarea
+fbdev: core: Use generic copyarea for as sys_copyarea
 
 Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
 ---
- drivers/video/fbdev/core/cfbcopyarea.c | 425 +------------------------
- 1 file changed, 10 insertions(+), 415 deletions(-)
+ drivers/video/fbdev/core/syscopyarea.c | 356 +------------------------
+ 1 file changed, 8 insertions(+), 348 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev=
-/core/cfbcopyarea.c
-index a271f57d9..a32859b6d 100644
---- a/drivers/video/fbdev/core/cfbcopyarea.c
-+++ b/drivers/video/fbdev/core/cfbcopyarea.c
-@@ -7,430 +7,25 @@
-  *  License.  See the file COPYING in the main directory of this archive=
- for
-  *  more details.
+diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev=
+/core/syscopyarea.c
+index 75e7001e8..f720301e2 100644
+--- a/drivers/video/fbdev/core/syscopyarea.c
++++ b/drivers/video/fbdev/core/syscopyarea.c
+@@ -13,357 +13,17 @@
   *
-- * NOTES:
-- *
-- *  This is for cfb packed pixels. Iplan and such are incorporated in th=
-e
-- *  drivers that need them.
-- *
-- *  FIXME
-- *
-- *  Also need to add code to deal with cards endians that are different =
-than
-- *  the native cpu endians. I also need to deal with MSB position in the=
- word.
-- *
-- *  The two functions or copying forward and backward could be split up =
-like
-- *  the ones for filling, i.e. in aligned and unaligned versions. This w=
-ould
-- *  help moving some redundant computations and branches out of the loop=
-, too.
   */
-=20
  #include <linux/module.h>
 -#include <linux/kernel.h>
 -#include <linux/string.h>
@@ -102,180 +81,143 @@ ould
 -#include <asm/io.h>
 -#include "fb_draw.h"
 =20
- #if BITS_PER_LONG =3D=3D 32
--#  define FB_WRITEL fb_writel
--#  define FB_READL  fb_readl
-+#  define FB_WRITEL       fb_writel
-+#  define FB_READL        fb_readl
- #else
--#  define FB_WRITEL fb_writeq
--#  define FB_READL  fb_readq
-+#  define FB_WRITEL       fb_writeq
-+#  define FB_READL        fb_readq
- #endif
--
 -    /*
 -     *  Generic bitwise copy algorithm
 -     */
 -
 -static void
--bitcpy(struct fb_info *p, unsigned long __iomem *dst, unsigned dst_idx,
--		const unsigned long __iomem *src, unsigned src_idx, int bits,
--		unsigned n, u32 bswapmask)
+-bitcpy(struct fb_info *p, unsigned long *dst, unsigned dst_idx,
+-	const unsigned long *src, unsigned src_idx, int bits, unsigned n)
 -{
 -	unsigned long first, last;
 -	int const shift =3D dst_idx-src_idx;
+-	int left, right;
 -
--#if 0
--	/*
--	 * If you suspect bug in this function, compare it with this simple
--	 * memmove implementation.
--	 */
--	memmove((char *)dst + ((dst_idx & (bits - 1))) / 8,
--		(char *)src + ((src_idx & (bits - 1))) / 8, n / 8);
--	return;
--#endif
--
--	first =3D fb_shifted_pixels_mask_long(p, dst_idx, bswapmask);
--	last =3D ~fb_shifted_pixels_mask_long(p, (dst_idx+n) % bits, bswapmask)=
-;
+-	first =3D FB_SHIFT_HIGH(p, ~0UL, dst_idx);
+-	last =3D ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
 -
 -	if (!shift) {
--		// Same alignment for source and dest
--
+-		/* Same alignment for source and dest */
 -		if (dst_idx+n <=3D bits) {
--			// Single word
+-			/* Single word */
 -			if (last)
 -				first &=3D last;
--			FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
+-			*dst =3D comp(*src, *dst, first);
 -		} else {
--			// Multiple destination words
--
--			// Leading bits
--			if (first !=3D ~0UL) {
--				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
+-			/* Multiple destination words */
+-			/* Leading bits */
+- 			if (first !=3D ~0UL) {
+-				*dst =3D comp(*src, *dst, first);
 -				dst++;
 -				src++;
 -				n -=3D bits - dst_idx;
 -			}
 -
--			// Main chunk
+-			/* Main chunk */
 -			n /=3D bits;
 -			while (n >=3D 8) {
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
--				FB_WRITEL(FB_READL(src++), dst++);
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
+-				*dst++ =3D *src++;
 -				n -=3D 8;
 -			}
 -			while (n--)
--				FB_WRITEL(FB_READL(src++), dst++);
+-				*dst++ =3D *src++;
 -
--			// Trailing bits
+-			/* Trailing bits */
 -			if (last)
--				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
+-				*dst =3D comp(*src, *dst, last);
 -		}
 -	} else {
--		/* Different alignment for source and dest */
 -		unsigned long d0, d1;
 -		int m;
 -
--		int const left =3D shift & (bits - 1);
--		int const right =3D -shift & (bits - 1);
+-		/* Different alignment for source and dest */
+-		right =3D shift & (bits - 1);
+-		left =3D -shift & (bits - 1);
 -
 -		if (dst_idx+n <=3D bits) {
--			// Single destination word
+-			/* Single destination word */
 -			if (last)
 -				first &=3D last;
--			d0 =3D FB_READL(src);
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
 -			if (shift > 0) {
--				// Single source word
--				d0 <<=3D left;
+-				/* Single source word */
+-				*dst =3D comp(*src << left, *dst, first);
 -			} else if (src_idx+n <=3D bits) {
--				// Single source word
--				d0 >>=3D right;
+-				/* Single source word */
+-				*dst =3D comp(*src >> right, *dst, first);
 -			} else {
--				// 2 source words
--				d1 =3D FB_READL(src + 1);
--				d1 =3D fb_rev_pixels_in_long(d1, bswapmask);
--				d0 =3D d0 >> right | d1 << left;
+-				/* 2 source words */
+-				d0 =3D *src++;
+-				d1 =3D *src;
+-				*dst =3D comp(d0 >> right | d1 << left, *dst,
+-					    first);
 -			}
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
 -		} else {
--			// Multiple destination words
--			/** We must always remember the last value read, because in case
--			SRC and DST overlap bitwise (e.g. when moving just one pixel in
--			1bpp), we always collect one full long for DST and that might
--			overlap with the current long from SRC. We store this value in
--			'd0'. */
--			d0 =3D FB_READL(src++);
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--			// Leading bits
+-			/* Multiple destination words */
+-			/** We must always remember the last value read,
+-			    because in case SRC and DST overlap bitwise (e.g.
+-			    when moving just one pixel in 1bpp), we always
+-			    collect one full long for DST and that might
+-			    overlap with the current long from SRC. We store
+-			    this value in 'd0'. */
+-			d0 =3D *src++;
+-			/* Leading bits */
 -			if (shift > 0) {
--				// Single source word
--				d1 =3D d0;
--				d0 <<=3D left;
+-				/* Single source word */
+-				*dst =3D comp(d0 << left, *dst, first);
+-				dst++;
 -				n -=3D bits - dst_idx;
 -			} else {
--				// 2 source words
--				d1 =3D FB_READL(src++);
--				d1 =3D fb_rev_pixels_in_long(d1, bswapmask);
--
--				d0 =3D d0 >> right | d1 << left;
+-				/* 2 source words */
+-				d1 =3D *src++;
+-				*dst =3D comp(d0 >> right | d1 << left, *dst,
+-					    first);
+-				d0 =3D d1;
+-				dst++;
 -				n -=3D bits - dst_idx;
 -			}
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
--			d0 =3D d1;
--			dst++;
 -
--			// Main chunk
+-			/* Main chunk */
 -			m =3D n % bits;
 -			n /=3D bits;
--			while ((n >=3D 4) && !bswapmask) {
--				d1 =3D FB_READL(src++);
--				FB_WRITEL(d0 >> right | d1 << left, dst++);
+-			while (n >=3D 4) {
+-				d1 =3D *src++;
+-				*dst++ =3D d0 >> right | d1 << left;
 -				d0 =3D d1;
--				d1 =3D FB_READL(src++);
--				FB_WRITEL(d0 >> right | d1 << left, dst++);
+-				d1 =3D *src++;
+-				*dst++ =3D d0 >> right | d1 << left;
 -				d0 =3D d1;
--				d1 =3D FB_READL(src++);
--				FB_WRITEL(d0 >> right | d1 << left, dst++);
+-				d1 =3D *src++;
+-				*dst++ =3D d0 >> right | d1 << left;
 -				d0 =3D d1;
--				d1 =3D FB_READL(src++);
--				FB_WRITEL(d0 >> right | d1 << left, dst++);
+-				d1 =3D *src++;
+-				*dst++ =3D d0 >> right | d1 << left;
 -				d0 =3D d1;
 -				n -=3D 4;
 -			}
 -			while (n--) {
--				d1 =3D FB_READL(src++);
--				d1 =3D fb_rev_pixels_in_long(d1, bswapmask);
--				d0 =3D d0 >> right | d1 << left;
--				d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--				FB_WRITEL(d0, dst++);
+-				d1 =3D *src++;
+-				*dst++ =3D d0 >> right | d1 << left;
 -				d0 =3D d1;
 -			}
 -
--			// Trailing bits
+-			/* Trailing bits */
 -			if (m) {
 -				if (m <=3D bits - right) {
--					// Single source word
+-					/* Single source word */
 -					d0 >>=3D right;
 -				} else {
--					// 2 source words
--					d1 =3D FB_READL(src);
--					d1 =3D fb_rev_pixels_in_long(d1,
--								bswapmask);
+-					/* 2 source words */
+- 					d1 =3D *src;
 -					d0 =3D d0 >> right | d1 << left;
 -				}
--				d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--				FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
+-				*dst =3D comp(d0, *dst, last);
 -			}
 -		}
 -	}
@@ -286,23 +228,12 @@ ould
 -     */
 -
 -static void
--bitcpy_rev(struct fb_info *p, unsigned long __iomem *dst, unsigned dst_i=
-dx,
--		const unsigned long __iomem *src, unsigned src_idx, int bits,
--		unsigned n, u32 bswapmask)
+-bitcpy_rev(struct fb_info *p, unsigned long *dst, unsigned dst_idx,
+-	   const unsigned long *src, unsigned src_idx, unsigned bits,
+-	   unsigned n)
 -{
 -	unsigned long first, last;
 -	int shift;
--
--#if 0
--	/*
--	 * If you suspect bug in this function, compare it with this simple
--	 * memmove implementation.
--	 */
--	memmove((char *)dst + ((dst_idx & (bits - 1))) / 8,
--		(char *)src + ((src_idx & (bits - 1))) / 8, n / 8);
--	return;
--#endif
 -
 -	dst +=3D (dst_idx + n - 1) / bits;
 -	src +=3D (src_idx + n - 1) / bits;
@@ -311,169 +242,152 @@ dx,
 -
 -	shift =3D dst_idx-src_idx;
 -
--	first =3D ~fb_shifted_pixels_mask_long(p, (dst_idx + 1) % bits, bswapma=
-sk);
--	last =3D fb_shifted_pixels_mask_long(p, (bits + dst_idx + 1 - n) % bits=
-, bswapmask);
+-	first =3D ~FB_SHIFT_HIGH(p, ~0UL, (dst_idx + 1) % bits);
+-	last =3D FB_SHIFT_HIGH(p, ~0UL, (bits + dst_idx + 1 - n) % bits);
 -
 -	if (!shift) {
--		// Same alignment for source and dest
--
+-		/* Same alignment for source and dest */
 -		if ((unsigned long)dst_idx+1 >=3D n) {
--			// Single word
+-			/* Single word */
 -			if (first)
 -				last &=3D first;
--			FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
+-			*dst =3D comp(*src, *dst, last);
 -		} else {
--			// Multiple destination words
+-			/* Multiple destination words */
 -
--			// Leading bits
+-			/* Leading bits */
 -			if (first) {
--				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
+-				*dst =3D comp(*src, *dst, first);
 -				dst--;
 -				src--;
 -				n -=3D dst_idx+1;
 -			}
 -
--			// Main chunk
+-			/* Main chunk */
 -			n /=3D bits;
 -			while (n >=3D 8) {
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
--				FB_WRITEL(FB_READL(src--), dst--);
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
+-				*dst-- =3D *src--;
 -				n -=3D 8;
 -			}
 -			while (n--)
--				FB_WRITEL(FB_READL(src--), dst--);
--
--			// Trailing bits
+-				*dst-- =3D *src--;
+-			/* Trailing bits */
 -			if (last !=3D -1UL)
--				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
+-				*dst =3D comp(*src, *dst, last);
 -		}
 -	} else {
--		// Different alignment for source and dest
--		unsigned long d0, d1;
--		int m;
+-		/* Different alignment for source and dest */
 -
 -		int const left =3D shift & (bits-1);
 -		int const right =3D -shift & (bits-1);
 -
 -		if ((unsigned long)dst_idx+1 >=3D n) {
--			// Single destination word
+-			/* Single destination word */
 -			if (first)
 -				last &=3D first;
--			d0 =3D FB_READL(src);
 -			if (shift < 0) {
--				// Single source word
--				d0 >>=3D right;
+-				/* Single source word */
+-				*dst =3D comp(*src >> right, *dst, last);
 -			} else if (1+(unsigned long)src_idx >=3D n) {
--				// Single source word
--				d0 <<=3D left;
+-				/* Single source word */
+-				*dst =3D comp(*src << left, *dst, last);
 -			} else {
--				// 2 source words
--				d1 =3D FB_READL(src - 1);
--				d1 =3D fb_rev_pixels_in_long(d1, bswapmask);
--				d0 =3D d0 << left | d1 >> right;
+-				/* 2 source words */
+-				*dst =3D comp(*src << left | *(src-1) >> right,
+-					    *dst, last);
 -			}
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--			FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
 -		} else {
--			// Multiple destination words
--			/** We must always remember the last value read, because in case
--			SRC and DST overlap bitwise (e.g. when moving just one pixel in
--			1bpp), we always collect one full long for DST and that might
--			overlap with the current long from SRC. We store this value in
--			'd0'. */
+-			/* Multiple destination words */
+-			/** We must always remember the last value read,
+-			    because in case SRC and DST overlap bitwise (e.g.
+-			    when moving just one pixel in 1bpp), we always
+-			    collect one full long for DST and that might
+-			    overlap with the current long from SRC. We store
+-			    this value in 'd0'. */
+-			unsigned long d0, d1;
+-			int m;
 -
--			d0 =3D FB_READL(src--);
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--			// Leading bits
+-			d0 =3D *src--;
+-			/* Leading bits */
 -			if (shift < 0) {
--				// Single source word
+-				/* Single source word */
 -				d1 =3D d0;
 -				d0 >>=3D right;
 -			} else {
--				// 2 source words
--				d1 =3D FB_READL(src--);
--				d1 =3D fb_rev_pixels_in_long(d1, bswapmask);
+-				/* 2 source words */
+-				d1 =3D *src--;
 -				d0 =3D d0 << left | d1 >> right;
 -			}
--			d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
 -			if (!first)
--				FB_WRITEL(d0, dst);
+-				*dst =3D d0;
 -			else
--				FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
+-				*dst =3D comp(d0, *dst, first);
 -			d0 =3D d1;
 -			dst--;
 -			n -=3D dst_idx+1;
 -
--			// Main chunk
+-			/* Main chunk */
 -			m =3D n % bits;
 -			n /=3D bits;
--			while ((n >=3D 4) && !bswapmask) {
--				d1 =3D FB_READL(src--);
--				FB_WRITEL(d0 << left | d1 >> right, dst--);
+-			while (n >=3D 4) {
+-				d1 =3D *src--;
+-				*dst-- =3D d0 << left | d1 >> right;
 -				d0 =3D d1;
--				d1 =3D FB_READL(src--);
--				FB_WRITEL(d0 << left | d1 >> right, dst--);
+-				d1 =3D *src--;
+-				*dst-- =3D d0 << left | d1 >> right;
 -				d0 =3D d1;
--				d1 =3D FB_READL(src--);
--				FB_WRITEL(d0 << left | d1 >> right, dst--);
+-				d1 =3D *src--;
+-				*dst-- =3D d0 << left | d1 >> right;
 -				d0 =3D d1;
--				d1 =3D FB_READL(src--);
--				FB_WRITEL(d0 << left | d1 >> right, dst--);
+-				d1 =3D *src--;
+-				*dst-- =3D d0 << left | d1 >> right;
 -				d0 =3D d1;
 -				n -=3D 4;
 -			}
 -			while (n--) {
--				d1 =3D FB_READL(src--);
--				d1 =3D fb_rev_pixels_in_long(d1, bswapmask);
--				d0 =3D d0 << left | d1 >> right;
--				d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--				FB_WRITEL(d0, dst--);
+-				d1 =3D *src--;
+-				*dst-- =3D d0 << left | d1 >> right;
 -				d0 =3D d1;
 -			}
 -
--			// Trailing bits
+-			/* Trailing bits */
 -			if (m) {
 -				if (m <=3D bits - left) {
--					// Single source word
+-					/* Single source word */
 -					d0 <<=3D left;
 -				} else {
--					// 2 source words
--					d1 =3D FB_READL(src);
--					d1 =3D fb_rev_pixels_in_long(d1,
--								bswapmask);
+-					/* 2 source words */
+-					d1 =3D *src;
 -					d0 =3D d0 << left | d1 >> right;
 -				}
--				d0 =3D fb_rev_pixels_in_long(d0, bswapmask);
--				FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
+-				*dst =3D comp(d0, *dst, last);
 -			}
 -		}
 -	}
 -}
 -
--void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+-void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
 -{
 -	u32 dx =3D area->dx, dy =3D area->dy, sx =3D area->sx, sy =3D area->sy;=
 
 -	u32 height =3D area->height, width =3D area->width;
 -	unsigned int const bits_per_line =3D p->fix.line_length * 8u;
--	unsigned long __iomem *base =3D NULL;
+-	unsigned long *base =3D NULL;
 -	int bits =3D BITS_PER_LONG, bytes =3D bits >> 3;
 -	unsigned dst_idx =3D 0, src_idx =3D 0, rev_copy =3D 0;
--	u32 bswapmask =3D fb_compute_bswapmask(p);
 -
 -	if (p->state !=3D FBINFO_STATE_RUNNING)
 -		return;
 -
--	if (p->flags & FBINFO_VIRTFB)
--		fb_warn_once(p, "Framebuffer is not in I/O address space.");
+-	if (!(p->flags & FBINFO_VIRTFB))
+-		fb_warn_once(p, "Framebuffer is not in virtual address space.");
 -
 -	/* if the beginning of the target area might overlap with the end of
 -	the source area, be have to copy the area reverse. */
@@ -483,13 +397,12 @@ sk);
 -		rev_copy =3D 1;
 -	}
 -
--	// split the base of the framebuffer into a long-aligned address and th=
-e
--	// index of the first bit
--	base =3D (unsigned long __iomem *)((unsigned long)p->screen_base & ~(by=
-tes-1));
+-	/* split the base of the framebuffer into a long-aligned address and
+-	   the index of the first bit */
+-	base =3D (unsigned long *)((unsigned long)p->screen_base & ~(bytes-1));=
+
 -	dst_idx =3D src_idx =3D 8*((unsigned long)p->screen_base & (bytes-1));
--	// add offset of source and target area
+-	/* add offset of source and target area */
 -	dst_idx +=3D dy*bits_per_line + dx*p->var.bits_per_pixel;
 -	src_idx +=3D sy*bits_per_line + sx*p->var.bits_per_pixel;
 -
@@ -502,48 +415,50 @@ tes-1));
 -			src_idx -=3D bits_per_line;
 -			bitcpy_rev(p, base + (dst_idx / bits), dst_idx % bits,
 -				base + (src_idx / bits), src_idx % bits, bits,
--				width*p->var.bits_per_pixel, bswapmask);
+-				width*p->var.bits_per_pixel);
 -		}
 -	} else {
 -		while (height--) {
 -			bitcpy(p, base + (dst_idx / bits), dst_idx % bits,
 -				base + (src_idx / bits), src_idx % bits, bits,
--				width*p->var.bits_per_pixel, bswapmask);
+-				width*p->var.bits_per_pixel);
 -			dst_idx +=3D bits_per_line;
 -			src_idx +=3D bits_per_line;
 -		}
 -	}
 -}
++#define FB_READL(a)       (*a)
++#define FB_WRITEL(a,b)    do { *(b) =3D (a); } while (false)
 +#define FB_MEM            /* nothing */
-+#define FB_COPYAREA       cfb_copyarea
-+#define FB_SPACE          0
-+#define FB_SPACE_NAME     "I/O"
-+#define FB_SCREEN_BASE(a) ((a)->screen_base)
++#define FB_COPYAREA       sys_copyarea
++#define FB_SPACE          FBINFO_VIRTFB
++#define FB_SPACE_NAME     "virtual"
++#define FB_SCREEN_BASE(a) ((a)->screen_buffer)
 +#include "fb_copyarea.h"
 =20
- EXPORT_SYMBOL(cfb_copyarea);
+ EXPORT_SYMBOL(sys_copyarea);
 =20
 --=20
 2.30.2
 
 
 
---------------03C6M8w1oWCu52vTbuZxaveW--
+--------------waTK0ttuFkaLQq9gULPM0tQy--
 
---------------aMq4fqpU00oWR2ZfBXF3N8tF
+--------------qwGb1PNrkYDqSU0Nqk84O0bb
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsB5BAABCAAjFiEE8WlaH4v4aHNT2Bn0WOeEu4KftGsFAmefaCcFAwAAAAAACgkQWOeEu4KftGsc
-VggAqbXLc+hKtRDmSa/wKK9zH+bfbkHBIWeuLK2O2FZOSi7eLjs2mKuCwCa2aAM1heIwBVoDmeM4
-6PpjfIb7OjWkjEQDtnsIjUJQssKNuohEQTZ2hf1umbX3UMCTUrnbUicQnPsdqlb9Ad7T1CfAZ2ld
-HsXUSCP5HwPoKlZMMABF3SCWi4vzqxu1tuz9VOy2QG3lUaHnncPAbI3c3WSX4C3PJ+KC8VKIAox7
-PPEYohtG6bp92HeRRkI5tTit8JoLcHtI1jIZcBjdWcTqqNmzP+mtKLEVvUNkwnNIGVzZHONzTIv7
-c7uUcnrcUTEupYnnH0/j3nmMe3gxze8pVK20ZGbNhQ==
-=iWqb
+wsB5BAABCAAjFiEE8WlaH4v4aHNT2Bn0WOeEu4KftGsFAmefaFEFAwAAAAAACgkQWOeEu4KftGu1
+6Qf+N0fLsIsLXhH5DgLk8SoEXd92aNuAynSnJ41arPRbCkihvBNB2krtLJZwqoCNBmkfTlamDbtZ
+A+y7+KjT6xrKIjSiWxHBjscrQAy73akz5IBSE2zScgv8kcDDBPdcjzLHUOCJajkvslro/0QQeZh3
+3NrNDtxxFEc+oI635KkoG7JzvfuZs4gUploB+SonG3L2RujVSMqowxtJKXLvtIA+w7aK4rjUkfEz
+OzTzqJ96hxLtWe96WeftqXQHIHvvX5bcWeCm8G1rLuOPPLwPDU+1bUeuBxXPk4vuNqCtkWy+XWqh
+h96fcafqSp4gon9WpiQW6wH2yUFD/tV+BGWpPZPgNA==
+=tzg2
 -----END PGP SIGNATURE-----
 
---------------aMq4fqpU00oWR2ZfBXF3N8tF--
+--------------qwGb1PNrkYDqSU0Nqk84O0bb--

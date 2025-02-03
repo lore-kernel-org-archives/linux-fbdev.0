@@ -1,366 +1,218 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FBF52B9BB;
-	Mon,  3 Feb 2025 16:30:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.177.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738600239; cv=fail; b=VUioJi0zGxxjMV1fut/GbX2qTgSk/oreDv4dBdY6TP4kHPBM/zo5dG7VvLFx83wAt8e+2xUwsPn5V3yVIMbSdDqleOVlBg+p6R37yGZ8KapjmePHSdSA6S4LpjO3uIsGTB7RbgvKuP2GdkZ8xPJCL4RML1CT8InwUzMRJUpos6Q=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738600239; c=relaxed/simple;
-	bh=33f0fRCyo1aM7iNGHupwcNy8t4/vHcXMjvi6R47CUXw=;
-	h=Date:From:To:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=D/I/LokxB72sEY4IqNDRvUtPVCU7oJwy1bO7KUFrZpbNkkaeWWVuWpZuXprJtPnyE4Wgj+l2aTijo/NAkeZjwjkqiMh90j15qgQMallWs2fL2ZfkaJ5+XUY3QBaxSLJUK8L6Gm46okT0bfW2ZP/NmnWtUxW8538PMC6aQtSmaFM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=ZjdsGT7L; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=iLUbgoQT; arc=fail smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFA001D9A5F
+	for <linux-fbdev@vger.kernel.org>; Mon,  3 Feb 2025 19:41:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1738611673; cv=none; b=lZ11I6KEuFZlGt+KDXdPBCp1tD2b/WySRdgmvwcV7oSsj9a7sPjh21hrBFGz7AtdHCXKZTZuY848cS7AKOI7vE112aJydgYILM56lzxmC9BGHvsbDVfjWJvBLBQMk6ELm8H/ZD2S5OD51z6xJla6SI/7pu5/YqEoNJUbdlgqWJk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1738611673; c=relaxed/simple;
+	bh=olpUquEM09IiULoJY3nXb1dKlQ3ETQKBSEKowpVe9bM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=s0xqsiS6WIPN8PsHgYtGlFfAQBNsO8TrSPuWmqkqhJ2kKVNx7kg0O5NC4tJIeeofX/63teh4DCO8GC9sGbwkpZfBykXxWNTUlVgkkdagkNcGGTbJXnPjvzVKE7QHwtnd2XhJmI/MAaHt67w8pY/ouImxjpWBPc7vdWViomBi2QA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=C3hSAzJd; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ZjdsGT7L";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="iLUbgoQT"
-Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 513ECA6m031626;
-	Mon, 3 Feb 2025 16:30:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=
-	content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2023-11-20; bh=lr2cg0So7Aa6IY7vA9
-	XRpYnd8q7SKI5q38FG8h4JnFs=; b=ZjdsGT7LTZ4VRfRJOI9NywB2SJ6huBYAI4
-	5k1sgKSsfLwWc/PeA5JXdFCe/uU1zob9RFSXlZOwi3cuhUFHkUIQYBhPNOa8lX8i
-	tB8d5A040d/wwA0YMqOyswzgfAINS4yJIyNjVzfJ8hiTptUkt8UbA01WGyrg29n5
-	caTzCDxY7F+PGdY0o47JTxyniG/phy9d6DfJXiJyx6DI5lkPnblSuaIqHIaO1j5/
-	sqIgcwQPNe+mnU7VnKGOEQ21igSA/Ql3URIXpoY0vACJt/tzqJLZyZ5mbfsVlQtg
-	6MhL64na7jRGKh2Z2o0Eyzscf/JqiR4XKymSjIfvXcMoxz0pBzYA==
-Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44hfy830fd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 03 Feb 2025 16:30:10 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 513FmWFX038900;
-	Mon, 3 Feb 2025 16:30:09 GMT
-Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2042.outbound.protection.outlook.com [104.47.66.42])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 44j8e6kfbd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 03 Feb 2025 16:30:09 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aQ7NX0xwhsOS+BRD7RM93eaPMcyjlv+MDLr/8rpjh4ZnwwBm4lzwFgtGoo6bkBk45+l20ezFGJzig7ldBwfU4mbA1CcpLfd+YjNgiQxoCg1v0oNN0e9fJjkaaMjwqzWspsFN6RiqyLO7bAJArD0kw+lghbJUm1KEt157ug0eOKyh61rwRUVGj3WkfGtyJGo/U5LUVbAUEY0x6MW4DX4iQ/qhiSVk+IFh7vrwxVkmwCvvHCvdM7FwJwVrq+2voIWTMxkd3ex+SEsJvL/CjwxO2DCpRedVEVlWv2/O1Akk4XQh5xrPEKd33IUTFbXOBwm1Gfp4UvJUjKlKkuXolV2plA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lr2cg0So7Aa6IY7vA9XRpYnd8q7SKI5q38FG8h4JnFs=;
- b=yA2s77en6tqzqP6nRyICyYbv9QjeSwBg+GTMLRrtQy6GyWoPyfQJSrQ4GL0wX1XS5qD4kJ4CtVlFtRlyepbuCMWPDk25DfrALRhVvnAQpsjW3WPeNE68vWTHfseTbnJuFI/5AqzRQu3xlY14ViwQ286Qt+pc9sW0S+VZdjbMCoTmSyqQL3xsNR4bC5NnECrDg2kyefztunmL7DB1bnBsfBNaPNNu/h2AMqfeRUlQdfCuPRJejre8Ew8Gv1pCIus44wOLejXM04jgyP7296MUxRIMzsL3hdDdH+xCsJ0ptW5ZFB4Iq2u4ujrm0vu/OYNLtO08dQS4/1gT/cQTtvO+Vw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lr2cg0So7Aa6IY7vA9XRpYnd8q7SKI5q38FG8h4JnFs=;
- b=iLUbgoQTM13rPFiSyo/ooNo2QyEFo2d7STln8bqrDBCDfnPzD0M7ZDsGC5Z8NthDXsyeEzVrAKgQr4gbPA+aEJEPo4/lMJduAp3nZM6YhG+kGBtnDyl9fpUIKLBzo0HxFzm/fpIVLPzwUuzJg7urN8aV/yaBRNrRzk/TnkNtfmg=
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com (2603:10b6:a03:14f::25)
- by DS7PR10MB4959.namprd10.prod.outlook.com (2603:10b6:5:3a0::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.24; Mon, 3 Feb
- 2025 16:30:07 +0000
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9]) by BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9%4]) with mapi id 15.20.8398.025; Mon, 3 Feb 2025
- 16:30:07 +0000
-Date: Mon, 3 Feb 2025 16:30:04 +0000
-From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-        Jaya Kumar <jayakumar.lkml@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
-        David Hildenbrand <david@redhat.com>,
-        Kajtar Zsolt <soci@c64.rulez.org>, Maira Canal <mcanal@igalia.com>
-Subject: Re: [PATCH 2/3] mm: provide mapping_wrprotect_page() function
-Message-ID: <655f318b-d883-4ddd-9301-53a05ab06bc0@lucifer.local>
-References: <cover.1738347308.git.lorenzo.stoakes@oracle.com>
- <c802c17cdba59e3455f3d7db07659d5da0ed6dc1.1738347308.git.lorenzo.stoakes@oracle.com>
- <Z6DljlvHpjdFof42@phenom.ffwll.local>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Z6DljlvHpjdFof42@phenom.ffwll.local>
-X-ClientProxiedBy: LO2P265CA0492.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:13a::17) To BYAPR10MB3366.namprd10.prod.outlook.com
- (2603:10b6:a03:14f::25)
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="C3hSAzJd"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1738611664; x=1739216464; i=deller@gmx.de;
+	bh=D+e6/UKakYk9gJj4pSwyWRCem/OkH3uCWnrW/Htp1Hw=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=C3hSAzJdElz8uZ3z07iVfGXxgVWWfb0G0M0MdxXC2BGfNCnmGjx707zyHp0FGOi1
+	 95Y4RTtYGeH+9zE+X9CDhVqOjemRWhGxMjGBysP7Wysy6/aM5exvK03YGtpizs71n
+	 QGM6sP8OzxXKRecPVPTdXjpIvEKb4CFRXmRkjud871/6FhN2nmdFCXd4tjiGDLBic
+	 mNbX9RrtD7D1wCJV3XBbjZktU0h1vFCFEJJwymef2oEqgQtKGh0iTuAJw/d6/9ASB
+	 WyJ7nSpeOoTtMSH6Wr7g7xUWChRlbq8fuqmmyf3hT3XJV7yRAp0GodAbM2KHw0sRV
+	 K4vb6yZtf0wIUOwIGQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.172] ([109.250.63.6]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MJmKh-1tycR71Wv3-00TMp0; Mon, 03
+ Feb 2025 20:41:04 +0100
+Message-ID: <1236a374-4863-4a4b-a244-2cb8e52a0526@gmx.de>
+Date: Mon, 3 Feb 2025 20:41:03 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR10MB3366:EE_|DS7PR10MB4959:EE_
-X-MS-Office365-Filtering-Correlation-Id: 56127ba9-f391-44a0-32c4-08dd44700511
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|921020;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?MOmR5D1E67A/r2gAC0MVMXGsoMNpQP+4T20PwlhFF62ZFaVXeImcbp1CyyPF?=
- =?us-ascii?Q?+LmO2j4PLZXnyI/xxVF3yVVCls/w0nJ9kQYLDgVLcQVvG6UQc6M1MJflUtYU?=
- =?us-ascii?Q?rc9BLYFz5OxOr9AM1Ytok1z98FEA/Lt1D/D6jUw+rFVacO0wkPYHxDRWYiKS?=
- =?us-ascii?Q?kSdz7zpvHsYfbEm58sc4TIr9hofDDTqMe7u66LEhTD+ruZRwxguppokDsqg9?=
- =?us-ascii?Q?d/HkhidctR+W4NMtTgyjAyzw8asFvB7M4a2hE7Lti73xzhWwtFDBrVFe20x4?=
- =?us-ascii?Q?lJUvr08u9rrPi6ma2jaI6UB+IZDCScueZpHptgVGpBQ/A1R9QMtht30Wa9jP?=
- =?us-ascii?Q?X+nQ9pw0X2ydRj8qHG1gcZZROHDb9+UxvbDMXLWs6ZcuqnLSwg00n2dAsmc3?=
- =?us-ascii?Q?FXsJCBMAzNRmxMm2SN0kaXIQGIH/YP0aM59Yjh7NVKYoRG/6fqMJcDn+eCt5?=
- =?us-ascii?Q?i13HcN4SDQpPMscYNu58C96YYB98zV3uWmBFEUIqr48YoyBiPPcfcJCTnm+e?=
- =?us-ascii?Q?XIIPdIMHK1U3/jipa8tdnv9wwudUCVfc/1uWJlm5Wpv2RaT7p//MiwRcRs/8?=
- =?us-ascii?Q?smAYdfUnsSVr5x0ZUPsiZnT6U6XW+ICDoVrxnQeseDDFG4RzSc7dzyt2Q5fl?=
- =?us-ascii?Q?rpo8v5pJCbnuSEQ5/FAViw7AHUyCwlMc0XgNNiF9QxQ9NZ9gUUMB1rEadg4I?=
- =?us-ascii?Q?0DbaN3zrc1K34aNLuGk3qvmw+LCnKbytrSPXpOKe55PUdA21y2WuPTO0Dbxu?=
- =?us-ascii?Q?xlgnfbMYrfMorR5a2NYrkXVWbN56dw2Zvg2o73viwDNC9nvFY3xj/HYYW80D?=
- =?us-ascii?Q?XoZfX4uW2JtMnz6BqFPNzrkgXyV9iqHhDtxCfbmGr0heB42ry7NkLSE+gF8E?=
- =?us-ascii?Q?whF3ZzCipW1q6f8GAkGe14AqpARzIZUBVxQeEHVa/eYl7Xhspxbkk6ueG4vJ?=
- =?us-ascii?Q?lC33d7a1mHivNM+isZLrp5U85bjXtAam1nciJR16ChPwP+D7QyefY4cbIbAT?=
- =?us-ascii?Q?vtlbL0c5skXOFXbws0tk5hfY8WiqQWoslSLe67G3qbhOZuAJ8yP/GPy2mDcA?=
- =?us-ascii?Q?GAr9hPtuCV36eQu/slaKAqxpR+QQzYzIoAFpqWjJGIpK0gukqq4jnMcciqA6?=
- =?us-ascii?Q?O50jrRz/+ooXrRP8aTMivk/jYyUwNcA96LPDAwM5cMHnIjPQNWA45xdwPszN?=
- =?us-ascii?Q?BeqsB18dLU1In9A8AFXHRy2gVF2vWGAJK/02xi4ldUaBMQS1RLyulsBfWDA2?=
- =?us-ascii?Q?MQgzq735PK+g9TMGun1QSoKDOEkD8FJD5i0IzQr9qEYh1KQ7t0bnzuo8oHBZ?=
- =?us-ascii?Q?Sncb5r+18q06K+ZO3ebvkDr1XTHb/gaUutV6DuADS0yn9IDP8kKotuJJIxm2?=
- =?us-ascii?Q?C6+XPhlrsYBhSk0fqWi1ISaICcS0?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR10MB3366.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?p2sYz37rtWv+RYEi+K3o39Yu6ul8c0M5n1kdpKpCxl3eq8Z9mBs2NmFFqOkB?=
- =?us-ascii?Q?DZpj7i83AZ+7tY0xdye5dMYkagHyHV8HpTMu29uFqD7GoygEtbxtvCd2S/CF?=
- =?us-ascii?Q?d18BeewKKMBcX9FjWMbdJKIHMmqSGaRsneJlwyRAVpMe0MXuJIFAL4LF4HGx?=
- =?us-ascii?Q?kReEymYKdK0I+uOP5iQ6qFKPH4GEGWhMip4sXTuNaFxHqZG62xtq1sK6jxDm?=
- =?us-ascii?Q?CN0YK7hY+Yjo2byJguRXhOubRNoQhWGAMsRlX3Auk6p3pasD3fVYH0dcDapf?=
- =?us-ascii?Q?R4xpSE/fSNFKvmmzJyjcnayfWEAAuDieJds8GW/bh8EsgsBrSr7SAe635X1V?=
- =?us-ascii?Q?KnsGNsso3PS8q8no8eDl9GHgGpjp0IwNnQ3V7yDaT2nivFfpM5rOUvdqolI2?=
- =?us-ascii?Q?bJ4xeGpJFCKFM9RCtTRKOGDnQ6iUKKHgJn8/fLu2Eo4YbbdY0fXN4B0uatmP?=
- =?us-ascii?Q?o34HVZgDOSWmmI/OPyyYBy62h1lEF6bB2TiN1i796ZfmLQRlF9DM+eNT3mvv?=
- =?us-ascii?Q?XeiDnBSMt4RaQ54KoLzXFlj5KQo7P/x1PSCdXYOth7S+Ynk7+IsHtp/R8KrB?=
- =?us-ascii?Q?vLVNBdpTRVHySpnxKuKF7+mq0s7ivefFoIyRA/MO0QR1lNHmYF/5nGIJqph0?=
- =?us-ascii?Q?lafnUvXnODJsTKmk4PkwWVww/bJktqNRandMmD6L/mO+5G2ABXYDyxvZfip+?=
- =?us-ascii?Q?gb5hqNncecuMaJQSOQ7wilTUZdelItiBfZK+5q185FAjkML0r+Ps/GB6NHXT?=
- =?us-ascii?Q?l4WWy26FikAtyUPkM/y9PAlpCS8Lp1RipR45msj+pPq64gdS5BoXBne78T1D?=
- =?us-ascii?Q?7WQStv7m+MZHJezWPM5DGPL8hCFdfeDN4YwDqOu93c5rwQVthBfy4edOQAYt?=
- =?us-ascii?Q?vdaEe5t8nURLo/jZgVKt1TWvjRSmIoNPFjBB1B6buWhWfW1AMs+UWSfB8bGh?=
- =?us-ascii?Q?AW9yvTfgbso3Tc/4HSGd4kfjfSUPng2ryJisFK0JnJVfzeq42uht4Nt4ZrNf?=
- =?us-ascii?Q?cCchn9a66Xv+i72Wah/0grx+pybPyi85md0vR0ZBc3JRNgywfT2G7+EisWeL?=
- =?us-ascii?Q?PGmvDZ1UpDZt0FNQCxtk3x4n9BLZ4EzpjK3LdsFGhwx1yefEx3csz76OyiY6?=
- =?us-ascii?Q?icLio8iD7pB7ZRX1gQjuWeKWBVoCUnrQNKhM+SqeC0/+iecd0H8IBQA3c7Jc?=
- =?us-ascii?Q?S+MqKewQXJ2axh31GQOLJL3myjiFfyYjUFUw+FADiqqADmaGXWkZ67U2Fpmm?=
- =?us-ascii?Q?yZWbFvH939rK6CN5jBcuuQY1u8I+dPEsXKmFTTHAEgAkCLEVq0znBQ6uuGFQ?=
- =?us-ascii?Q?c6fF2VyPViiXy7uIwmNGRNQkr809TUPh29aOL0yJ0nVIn6xWQSvkdyZCyl4B?=
- =?us-ascii?Q?FfuDIvVr74PG/rHoYQKLK5PDts2ISRRZhdz2+NBBP/3Gl6L1cRU1vXC2b25+?=
- =?us-ascii?Q?hQaOrYMPX4WI4J7JatuIT+M8SOVzMnkf24dgYF8kUFe67YyorOSwBtJ0aGjp?=
- =?us-ascii?Q?ZlIPcSrm5frbfgmHRSZnWgkJxHzLkWyxmTMaJuuJ7zj7EGSBoemTjHt+b9p5?=
- =?us-ascii?Q?8UCGDLasRBBqb05F3FUG48LJxMP9BUWTGOpwUCH/D+tj3ewWNEgiLi5Z32iS?=
- =?us-ascii?Q?+Q=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	+hn7zuKVbMlcHgMs4CpZhCyNgfCiAj2RqWUV0/d6BYFEbdwENBWVbKVzz/Vod/LWeFGnkklkwKTa9wI40bznkuixlPkm0Po9FDEhyvfs2TXo0tWfmoudMdRDQiBazkrfScPqMrh9XpHO2i5XEcZ2NgzSq7UWiTh8silQ9TXiyVWMfDYRIkesbi7oDITkqnwKGsWCQU0UC52dHskTBOF0HOo2RMn0Bog6X1kMQIDF0MzHzG04dxiMfOqzr3O+uwV+dcfdqG0kUYUmi9kOxMrLQwo5fmv+Qy8yzqRrJjMU+wcGd6QP+THr3KNnBvYH1P1tJ2hlVDxCsRsKfdY0v6uGNTgL7h1Z5Zmq7u9CPetMDz5vo1RQ9jZyXEx/f/dYVEoiypTD55GYMTBtU7Gk6IiQd7FD6+EIisx5wDy1awjW3fxwuE7seFDcfsQZHIhqxxhiaXrinDzlzakCR0NumaLa83//hBTtCRJUk6baO2pw0q9FCGiB5aqfGJsS/rAM1+UKzPZDMtdfijWcGLiZqmlx5IyOqSbIMdnYAliaU8OomhzUdskwqz4LDnkO0oLNWQgbmeWe3Kt0kTbjcB/VFUa0K/K2vI5A6uXC3zxOBkr9Y0A=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 56127ba9-f391-44a0-32c4-08dd44700511
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB3366.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Feb 2025 16:30:07.0487
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AvFilQRa/eZbd7zLMNl4xtqhBvSic6gISzJz6ZWfLCaZbOirttHWcnw01j1CwuYZxTIS2Tve76S00Jv+YJAew2eGoxzGcxUEG9xZ04Jlnbs=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR10MB4959
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-03_07,2025-01-31_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 mlxlogscore=999
- phishscore=0 adultscore=0 malwarescore=0 bulkscore=0 suspectscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2501170000 definitions=main-2502030120
-X-Proofpoint-GUID: Fj1AuSeKTD2snM7znMsg2qu5sBgc_iav
-X-Proofpoint-ORIG-GUID: Fj1AuSeKTD2snM7znMsg2qu5sBgc_iav
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: core: tileblit: Implement missing margin clearing
+ for tileblit
+To: Soci/Singular <soci@singularcrew.hu>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <c8cc27ea-05a8-14b7-0047-4f1fa6d73f93@singularcrew.hu>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <c8cc27ea-05a8-14b7-0047-4f1fa6d73f93@singularcrew.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:5XO4+3fFbxFWVUhj07dZ1H9l0igJqXpQyVe7xjksP1mNETWdUg9
+ ulSYaG3LAJRgb/gpTCedd+6vC4v9HjIKXWpBc7mLaTXs0sgTBOsfp1XHXontrgcAXHBdMEn
+ WfUcov1JcJaf/9q3EUpUHKfDDAQZfbZs9djyb3aeoplLB5eAWXYt4aElR9obH9FVRODFZ4t
+ OG+1NZEJNjo6OCeV54wtA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:fdcWLwp+hno=;8eP4/KsljLeuMmCCE/GRxUvKgJP
+ PRu2pNCzC0HaHBCnnilDsMVGZ9ucBD1ueqVDEBeNe+7z7SgobGPqobj3PMjrYmbsj8OfmLogj
+ ymj4e6zHkCu7lMPE2SJgiPPtK/By5jQ/Y3Vlijk+heZqGIbPNlFP6JisnNHMlJA8JuLLFf9SR
+ mvBUHil6oBiNM2AN61i1HJbqUJE7P/vnzi6BfTj55aW9BaNB9bzBeUsdq4O705i2uOGen14/w
+ 2MNduBA+uKv6BcdDRMjDxeryk2p0/Ye8bslqb36iR5CmRumNTOGoiuNKeKHdoYjtoZAgJLPaR
+ HcKVKJ9idFPe94qQ6IrxG+RM2gL8pY3kU5h/q65nRK79QlxzKw3YbSGllcC6xMoGLH5l1UV+v
+ ViEap0iQZ+UJhPELGNRitdB0Aw1Mb/NPiuD5aShJeryCrzHV1Lfy2w5sYPkgP6boXerhwqJjV
+ xF3OnJr/qgirN/7blyNW7TbOTeQ8adbOM5ROJoixEYeBlOHv2fUD+wrxaS+iHGGK5ZYgQrriL
+ egJWdL5EiQnBhTvTGhJ9/NVNMlwyJjkF339u0rFeQ9zVa4w1TUeRCTM+W2urbEx/PKrgUOycs
+ TbDRTPH8yw/ejGuDBL0itEndgfgTJvyT7dmCHZmSS6kakVm7ZMnZvzjib0sL4/YgudOGbIMwR
+ ZmHEGmvyRNk5kKaiIYJNvNVxBH9YlQmcKgqtcdjhPeFNqra3WDjXcumQHdaZbQfw8eDj/D9EB
+ a3lJelMUlQKpJILCPweF+PSe+nd3f1WzsgMf35woXnLIo5jX0fU+PFi672qYjDqx517QaXY06
+ mIU93JETrPr4FItJ5biEzDzI+3JDTV0JOYB0K2vrXS/GyQNZrUVquJ2EIEgbeGj+AM3oZy94x
+ caAvdYMbWFp2meDyO2kZ0iVJwuPpaJkJMZ4R9PwVbMFR++ZLkOZmM50jUtE6bDLZhStdbNZBH
+ EcptIaorrtd7tbQqY8dBtuP+zTqgOiROW0Kg7jBN9oNHytfDFdUL1MK0mVpHwjDavC7FM69Zh
+ SF2Qi3Ui2EGlJbt6+SMiCk9qY7dMpJaBYtp+mhmpnbtG0bR+jV0CdQnNx2Q+TBlm0ZGVggUK4
+ tUMWZp1u8zdt5Bx3pbItuk/jp1M7oV+3BtbgsKjX64S1nU4yVfTfPmQizbWDLI2m9FGo+M4F6
+ SqB5hyBdUQkwEemJH/Up7KY0NZYrojpeRNkD+e7N6BretBES0UA/AkV9Qk7FOi0cyQpvnNTcH
+ eSSRlv43NriYYAr6t4+k+Q1ivPkxI5aBy10LvZi1dGi3z+LY7c1jVeHjoEYABiatZkFId2A7q
+ Rh29BUltj4liHMI4lVpz1ODPOv1bxb0VlzwJEKUpXXbkcA=
 
-On Mon, Feb 03, 2025 at 04:49:34PM +0100, Simona Vetter wrote:
-> On Fri, Jan 31, 2025 at 06:28:57PM +0000, Lorenzo Stoakes wrote:
-> > in the fb_defio video driver, page dirty state is used to determine when
-> > frame buffer pages have been changed, allowing for batched, deferred I/O to
-> > be performed for efficiency.
-> >
-> > This implementation had only one means of doing so effectively - the use of
-> > the folio_mkclean() function.
-> >
-> > However, this use of the function is inappropriate, as the fb_defio
-> > implementation allocates kernel memory to back the framebuffer, and then is
-> > forced to specified page->index, mapping fields in order to permit the
-> > folio_mkclean() rmap traversal to proceed correctly.
-> >
-> > It is not correct to specify these fields on kernel-allocated memory, and
-> > moreover since these are not folios, page->index, mapping are deprecated
-> > fields, soon to be removed.
-> >
-> > We therefore need to provide a means by which we can correctly traverse the
-> > reverse mapping and write-protect mappings for a page backing an
-> > address_space page cache object at a given offset.
-> >
-> > This patch provides this - mapping_wrprotect_page() allows for this
-> > operation to be performed for a specified address_space, offset and page,
-> > without requiring a folio nor, of course, an inappropriate use of
-> > page->index, mapping.
-> >
-> > With this provided, we can subequently adjust the fb_defio implementation
-> > to make use of this function and avoid incorrect invocation of
-> > folio_mkclean() and more importantly, incorrect manipulation of
-> > page->index, mapping fields.
-> >
-> > Signed-off-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> > ---
-> >  include/linux/rmap.h |  3 ++
-> >  mm/rmap.c            | 73 ++++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 76 insertions(+)
-> >
-> > diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-> > index 683a04088f3f..0bf5f64884df 100644
-> > --- a/include/linux/rmap.h
-> > +++ b/include/linux/rmap.h
-> > @@ -739,6 +739,9 @@ unsigned long page_address_in_vma(const struct folio *folio,
-> >   */
-> >  int folio_mkclean(struct folio *);
-> >
-> > +int mapping_wrprotect_page(struct address_space *mapping, pgoff_t pgoff,
-> > +		unsigned long nr_pages, struct page *page);
-> > +
-> >  int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
-> >  		      struct vm_area_struct *vma);
-> >
-> > diff --git a/mm/rmap.c b/mm/rmap.c
-> > index a2ff20c2eccd..bb5a42d95c48 100644
-> > --- a/mm/rmap.c
-> > +++ b/mm/rmap.c
-> > @@ -1127,6 +1127,79 @@ int folio_mkclean(struct folio *folio)
-> >  }
-> >  EXPORT_SYMBOL_GPL(folio_mkclean);
-> >
-> > +struct wrprotect_file_state {
-> > +	int cleaned;
-> > +	pgoff_t pgoff;
-> > +	unsigned long pfn;
-> > +	unsigned long nr_pages;
-> > +};
-> > +
-> > +static bool mapping_wrprotect_page_one(struct folio *folio,
-> > +		struct vm_area_struct *vma, unsigned long address, void *arg)
-> > +{
-> > +	struct wrprotect_file_state *state = (struct wrprotect_file_state *)arg;
-> > +	struct page_vma_mapped_walk pvmw = {
-> > +		.pfn		= state->pfn,
-> > +		.nr_pages	= state->nr_pages,
-> > +		.pgoff		= state->pgoff,
-> > +		.vma		= vma,
-> > +		.address	= address,
-> > +		.flags		= PVMW_SYNC,
-> > +	};
-> > +
-> > +	state->cleaned += page_vma_mkclean_one(&pvmw);
-> > +
-> > +	return true;
-> > +}
-> > +
-> > +static void __rmap_walk_file(struct folio *folio, struct address_space *mapping,
-> > +			     pgoff_t pgoff_start, unsigned long nr_pages,
-> > +			     struct rmap_walk_control *rwc, bool locked);
-> > +
-> > +/**
-> > + * mapping_wrprotect_page() - Write protect all mappings of this page.
-> > + *
-> > + * @mapping:	The mapping whose reverse mapping should be traversed.
-> > + * @pgoff:	The page offset at which @page is mapped within @mapping.
-> > + * @nr_pages:	The number of physically contiguous base pages spanned.
-> > + * @page:	The page mapped in @mapping at @pgoff.
-> > + *
-> > + * Traverses the reverse mapping, finding all VMAs which contain a shared
-> > + * mapping of the single @page in @mapping at offset @pgoff and write-protecting
-> > + * the mappings.
-> > + *
-> > + * The page does not have to be a folio, but rather can be a kernel allocation
-> > + * that is mapped into userland. We therefore do not require that the page maps
-> > + * to a folio with a valid mapping or index field, rather these are specified in
-> > + * @mapping and @pgoff.
-> > + *
-> > + * Return: the number of write-protected PTEs, or an error.
-> > + */
-> > +int mapping_wrprotect_page(struct address_space *mapping, pgoff_t pgoff,
-> > +		unsigned long nr_pages, struct page *page)
-> > +{
-> > +	struct wrprotect_file_state state = {
-> > +		.cleaned = 0,
-> > +		.pgoff = pgoff,
-> > +		.pfn = page_to_pfn(page),
+On 2/1/25 09:18, Soci/Singular wrote:
+> I was wondering why there's garbage at the bottom of the screen when
+> tile blitting is used with an odd mode like 1080, 600 or 200. Sure there=
+'s
+> only space for half a tile but the same area is clean when the buffer
+> is bitmap.
 >
-> Could we go one step further and entirely drop the struct page? Similar to
-> unmap_mapping_range for VM_SPECIAL mappings, except it only updates the
-> write protection. The reason is that ideally we'd like fbdev defio to
-> entirely get rid of any struct page usage, because with some dma_alloc()
-> memory regions there's simply no struct page for them (it's a carveout).
-> See e.g.  Sa498d4d06d6 ("drm/fbdev-dma: Only install deferred I/O if
-> necessary") for some of the pain this has caused.
+> Then later I found that it's supposed to be cleaned but that's not
+> implemented. So I took what's in bitblit and adapted it for tileblit.
 >
-> So entirely struct page less way to write protect a pfn would be best. And
-> it doesn't look like you need the page here at all?
-
-In the original version [1] we did indeed take a PFN, so this shouldn't be
-a problem to change.
-
-Since we make it possible here to explicitly reference the address_space
-object mapping the range, and from that can find all the VMAs that map the
-page range [pgoff, pgoff + nr_pages), I don't think we do need to think
-about a struct page here at all.
-
-The defio code does seem to have some questionable assumptions in place, or
-at least ones I couldn't explain away re: attempting to folio-lock (the
-non-folios...), so there'd need to be changes on that side, which I suggest
-would probably be best for a follow-up series given this one's urgency.
-
-But I'm more than happy to make this interface work with that by doing
-another revision where we export PFN only, I think something like:
-
-int mapping_wrprotect_range(struct address_space *mapping, pgoff_t pgoff,
-		unsigned long pfn, unsigned long nr_pages);
-
-Should work?
-
-[1]:https://lore.kernel.org/all/cover.1736352361.git.lorenzo.stoakes@oracle.com/
-
+> This implementation was tested for both the horizontal and vertical case=
+,
+> and now does the same as what's done for bitmap buffers.
 >
-> Cheers, Sima
+> If anyone is interested to reproduce the problem then I could bet that'd
+> be on a S3 or Ark. Just set up a mode with an odd line count and make
+> sure that the virtual size covers the complete tile at the bottom. E.g.
+> for 600 lines that's 608 virtual lines for a 16 tall tile. Then the
+> bottom area should be cleaned.
+>
+> For the right side it's more difficult as there the drivers won't let an
+> odd size happen, unless the code is modified. But once it reports back a
+> few pixel columns short then fbcon won't use the last column. With the
+> patch that column is now clean.
+>
+> Btw. the virtual size should be rounded up by the driver for both axes
+> (not only the horizontal) so that it's dividable by the tile size.
+> That's a driver bug but correcting it is not in scope for this patch.
+>
+> Implement missing margin clearing for tileblit
+>
+> Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
 
-Thanks!
+applied to fbdev git tree.
 
+Helge
+
+> ---
+>   drivers/video/fbdev/core/tileblit.c | 37 ++++++++++++++++++++++++++++-
+>   1 file changed, 36 insertions(+), 1 deletion(-)
 >
+> diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/c=
+ore/tileblit.c
+> index eff7ec4da..98e528d38 100644
+> --- a/drivers/video/fbdev/core/tileblit.c
+> +++ b/drivers/video/fbdev/core/tileblit.c
+> @@ -76,7 +76,42 @@ static void tile_putcs(struct vc_data *vc, struct fb_=
+info *info,
+>   static void tile_clear_margins(struct vc_data *vc, struct fb_info *inf=
+o,
+>   			       int color, int bottom_only)
+>   {
+> -	return;
+> +	unsigned int cw =3D vc->vc_font.width;
+> +	unsigned int ch =3D vc->vc_font.height;
+> +	unsigned int rw =3D info->var.xres - (vc->vc_cols*cw);
+> +	unsigned int bh =3D info->var.yres - (vc->vc_rows*ch);
+> +	unsigned int rs =3D info->var.xres - rw;
+> +	unsigned int bs =3D info->var.yres - bh;
+> +	unsigned int vwt =3D info->var.xres_virtual / cw;
+> +	unsigned int vht =3D info->var.yres_virtual / ch;
+> +	struct fb_tilerect rect;
+> +
+> +	rect.index =3D vc->vc_video_erase_char &
+> +		((vc->vc_hi_font_mask) ? 0x1ff : 0xff);
+> +	rect.fg =3D color;
+> +	rect.bg =3D color;
+> +
+> +	if ((int) rw > 0 && !bottom_only) {
+> +		rect.sx =3D (info->var.xoffset + rs + cw - 1) / cw;
+> +		rect.sy =3D 0;
+> +		rect.width =3D (rw + cw - 1) / cw;
+> +		rect.height =3D vht;
+> +		if (rect.width + rect.sx > vwt)
+> +			rect.width =3D vwt - rect.sx;
+> +		if (rect.sx < vwt)
+> +			info->tileops->fb_tilefill(info, &rect);
+> +	}
+> +
+> +	if ((int) bh > 0) {
+> +		rect.sx =3D info->var.xoffset / cw;
+> +		rect.sy =3D (info->var.yoffset + bs) / ch;
+> +		rect.width =3D rs / cw;
+> +		rect.height =3D (bh + ch - 1) / ch;
+> +		if (rect.height + rect.sy > vht)
+> +			rect.height =3D vht - rect.sy;
+> +		if (rect.sy < vht)
+> +			info->tileops->fb_tilefill(info, &rect);
+> +	}
+>   }
 >
-> > +		.nr_pages = nr_pages,
-> > +	};
-> > +	struct rmap_walk_control rwc = {
-> > +		.arg = (void *)&state,
-> > +		.rmap_one = mapping_wrprotect_page_one,
-> > +		.invalid_vma = invalid_mkclean_vma,
-> > +	};
-> > +
-> > +	if (!mapping)
-> > +		return 0;
-> > +
-> > +	__rmap_walk_file(/* folio = */NULL, mapping, pgoff, nr_pages, &rwc,
-> > +			 /* locked = */false);
-> > +
-> > +	return state.cleaned;
-> > +}
-> > +EXPORT_SYMBOL_GPL(mapping_wrprotect_page);
-> > +
-> >  /**
-> >   * pfn_mkclean_range - Cleans the PTEs (including PMDs) mapped with range of
-> >   *                     [@pfn, @pfn + @nr_pages) at the specific offset (@pgoff)
-> > --
-> > 2.48.1
-> >
->
-> --
-> Simona Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
+>   static void tile_cursor(struct vc_data *vc, struct fb_info *info, bool=
+ enable,
+

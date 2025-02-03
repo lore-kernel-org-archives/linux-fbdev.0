@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94B9618EAB
-	for <linux-fbdev@vger.kernel.org>; Mon,  3 Feb 2025 19:42:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67EF02C859
+	for <linux-fbdev@vger.kernel.org>; Mon,  3 Feb 2025 19:59:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738611771; cv=none; b=HgTRwxGjC35QxkICYottK7Ui+JIhFHPWnzlGWvS4V0N5DGPztuRBCbWaVKOJS/jss1qLL6MRPNj6ByI1Z9vL9bwRMa4g0U9ze8Xg2f151a/0B8bppDkZAaexyKmUmZ5OheaxcrCFNC2rfaIEhPf/OVAUklElpxXP63dcj1NIwYk=
+	t=1738612790; cv=none; b=Rq6P9OnQSZ1ZM+XptWkvFfq2MftkK3gYHmZls4TxRuYVGydpDdXhNi++tQXWvsEs7Y5BK2KyYzksCIe2HrPR+r1SxEGeGSPWUtLAUw+B55vpbvgxBPArbH9TUeEfNRC5ZUK8xk6Nmmmxwi9iYZEBsza+5F9VPjbZj5FMALE5rGg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738611771; c=relaxed/simple;
-	bh=RgwnHtYNDimT3WUcwcbF/6BJzqRWh2Ybg9fVs+KTs8M=;
+	s=arc-20240116; t=1738612790; c=relaxed/simple;
+	bh=tcsZQsQioQ90LDS0eUK72aMMU9oqx6Kg7SDS457UZ6M=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=YvWp1yRMFFB68d01lYXQG0q5CIVwZ5kDm3HkmLr9mJWsDTuJ7PpFlVj+jrtM9cyT0y3uFUrSAY/R8gMAqzc64jN7PSA34m/p41hel/gt9HaOXOAPkz0B4mkEL4ucHhbnpOVU2EzEgFUhPRxPUyldi2iclnEFzIEeiQHSxxVWZIc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=UshMmWwy; arc=none smtp.client-ip=212.227.15.15
+	 In-Reply-To:Content-Type; b=WRQTAMiY8DeyZLfZ7yxHbaIAi1hcBpHlnysX/b/WSpF5YAdXlLbC94hOWr8vx++TSGD5O0OEhgWpRRoMqfFcJMUBCqGDuq6nNzP1Wj5PvolJ/YVm9k9oK5C16NmFL8tAcmGeSIZg0bViFfQQUrUCK6bhrUmMaBSxSaiWVmbaw58=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=AuGx21Xv; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="UshMmWwy"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="AuGx21Xv"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1738611764; x=1739216564; i=deller@gmx.de;
-	bh=X0mdUjaJ3AVyB/edvw4KTRrcP5HXMb6Gr1iKCbCozVA=;
+	s=s31663417; t=1738612781; x=1739217581; i=deller@gmx.de;
+	bh=x5+QUIWf9gsXt13yqf/QezU/dBtDClkkB+5cC5RYzCY=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=UshMmWwyqNrD3KQI72cLg7xvsM8ty2UlB3O4VtHSR16f3asJDoBELkWfuopxIpyr
-	 xQRkKMJZrF8PNwLUhQLoyx+XMQJV6ySiTLHfS8KVgcWnqwnT5/rLLWF2+NRbYy7tC
-	 uMWSjrzIYlp5uBVykYydRgs1o+hcKNvGDaLGtNe6B3HQWct1/nCDbRzd+e6ljyd/7
-	 E++1K4ga1swEV80eBwx9yrf8BTDHFYhzRr44jfRrxkHHzdq2pv/B/MdCoTPR6BaMt
-	 fVHPHo6C7+c4jwj6KIfBrufL/XSBJ29SITo0xOPfjcumepRZqLfI6BM4CYK9KpyGl
-	 8Nfmz2xUPAW0hlKAiA==
+	b=AuGx21Xv2ZCGJ/OgvutbOFVA/iOu8POlRj7DtNjUGQts0z2zAflDxMrZHAg9mvYW
+	 TMm3uBKZVmoF5f4I6fNDbWu2L3DKt8M+RRPhM/zpsmstnDwZJHtvaKI/Y4BSFiUNB
+	 Z+U9f1Bck2pK6CjFHdFJP9VEuFqB+IAv0Y0xlEVdeDgrTEF8u8TNVZVj1T6dZ6X5C
+	 BFAhF6ncW3twKFn1lkDxX2xgNX5fhtxA4Hy8eEaZ9gkPgEDXcJzXqyf/2u4L106wq
+	 CgEL7FJrlPtxEW7tRHWPK3XsZv6WgsvBbZBYZ6c58F0EXxFwNtNw4PIpWc53TtYZ5
+	 XoY1FkUVkX2itUVjLA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.172] ([109.250.63.6]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MDQeK-1tXv3l3hR8-001TBZ; Mon, 03
- Feb 2025 20:42:43 +0100
-Message-ID: <a7275081-1e55-4905-9743-c7215c3174c8@gmx.de>
-Date: Mon, 3 Feb 2025 20:42:41 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MWRVh-1tumKk2Hoh-00OSrv; Mon, 03
+ Feb 2025 20:59:41 +0100
+Message-ID: <ba5b7b47-1082-4949-8bf2-9bc5239af35b@gmx.de>
+Date: Mon, 3 Feb 2025 20:59:38 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,10 +43,10 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] Use correct erase colour for clearing in fbcon
+Subject: Re: [RFC PATCH 00/12] Deduplicate cfb/sys drawing fbops
 To: =?UTF-8?Q?Kajt=C3=A1r_Zsolt?= <soci@c64.rulez.org>,
  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <0abefa4d-be0c-4e2b-1c8d-e3e448151389@c64.rulez.org>
+References: <f921492d-6c53-ce68-16b6-dc9c21f2b738@c64.rulez.org>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -92,299 +92,179 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <0abefa4d-be0c-4e2b-1c8d-e3e448151389@c64.rulez.org>
+In-Reply-To: <f921492d-6c53-ce68-16b6-dc9c21f2b738@c64.rulez.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:/J7ihNUaIESm/iW/PneBv/mqfIbu+MH45D+Wbx7W+Rp5+oYBobi
- Cvbf7JqKkrau8AS05mIQreEuTVlqUnGETJudEkC5OvSmhux2CeNKXoGgUFUTktl9lhLdtwk
- mqXfiOpmBGfbZI6qTzznIKPdXqO5LoevH63bZ4RyKQKQeiJkZhYZxEwD34HpZDxfW/e/pue
- N6mjSZMG0uRLDb16GyezQ==
+X-Provags-ID: V03:K1:ZIX0f/M9gih3rYsaT3egHu5kyFrFLIng7EOUxF+zY+WVEYVik9M
+ W64kqxQ4DZ6E9+Q+PavmMpQD4M4YXZOYxrB6r4PeSmhYivkyAUuIkepjYb3ggjva9XuoUBB
+ E1Dc2wHG/7lm9Sss5L0KxY5Z3aEt4pS9L/EDDvV5wpm1eYyqNhrFAAd3+Gpnh7eOY/NwZA2
+ yUWuc+lK9z0Omw2ccRjpQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:leNwyMaJb3w=;dyjWJUrWMwaSV4nuPdxiafAN4uC
- 9rQym6BL/H6uguewFDkswo02zK7Z7aepteT/Wo/liwlHmDPUX3gnjIaHi0u/Di0NSdMuO3eX7
- rQYuqhme9NK03AwvHkUZfwnZ2LBTvK0Q+pbtooVn+rFXqPgP2izjtwvHCRY1wdWIsnmlcGru0
- NwjHb4tLe6OVSuOrdGS7nDgPOt0kDCYPx3n7OpzQeREffDWy/pEz7+yyNji1edQFopM6r18rM
- RrWW+QQsBP+keLS8ICB6FzBK0kVdB229qDNX2YQcYWXIYCzS0oVdfFl/UZZauErgYE4TkODR/
- GiidiOldyjcDiLbWrPTJhbv/FvshBRoMOu/WvFZxAVke07s9GSWKGY3ilUR4keBW+kn98alZ8
- mf5CAXK0RJkjp5ppzxYhyKoiDARn7oSXGqnEaA3bmIgQpCi3riPgptx7VkDEkfRSGqCCUeBXp
- SfZLKR4IN1jMNwxMIohUmEuyLJO5uYW1dXNP4TUiSReID4lmTXX9+raHE1f92nFWSdRoJgjdC
- 7cSuhMwMljsUFPb8hPPIvqAiUKDH8KS3EtaCLNsWsOUPUsNA37WoAfWiVhqEmwu5SDiQbY9Xh
- DWj2FrgIIAHT3IaoyNor5Rlapz8e5G6VE5IyC5AohKsliU75KFckF+W/p1dA0oqyskGbEGqec
- ZfYyZepC65vcj/QlcOoIQNPpa6QLKfQzbJQIeuOlzOhpPzBBSFukOql8SS/Nc5utJkCQ+sEqR
- czh58b6u5zuT+NsF1+zn3veHrOrrJm0g8oDLRKevxW5/xWLxi88Q1QW01OMmqEorIphtR2tPD
- BPltP/9b+vRVeaESU/hZT6B0U6rTqdWSQQBk9sXwT78wZJWd+qbguuRVkfr/uC2Oi+UfKW9dd
- ExgpAABg/RIvvhzRfQ0DzCIcrihBvu+K3ydDbulLltJJ1J2iqFrCQ9bXYLjTetzXUjWlkEEdP
- Hg3dqByTRfdKzCq95zDZ89EC19ZAyL9HndQe/7e0/idOZZKrnBeoaawsvJEtR2atQleLFwFDc
- PYbBq2n75qoXvGwB4LbNOxWtP/yEHQcM1PBzjLMFysW1fTgMI6rLlwmXZv2MRcOsw1z60tIOF
- FdvdbGSoNpxEJt+/6vvz3F3YQRgiEuI1wRkAswS9CBwODZk4bAECll+G2kAnoWcXHR8LKnvuc
- 3DeI14UiHuRnhFQHmmh2pm3mene4RhgaPfgdrj/L8Rk4zr83WGBj1nsOpO0MVtq+HnreDlzoZ
- LhXzpK7boXov4oDmS27i3hB8COY3mUMWrAUmJeB+yJAfS9wuXU+rJkNt24WNj8b/HOklWCZ33
- 6Alk1L5kfBQxa4mQXpFCOsXnuRc4m8tvevBgm2QCDzr0yM=
+UI-OutboundReport: notjunk:1;M01:P0:YSaVPfZlBO0=;LHTyEHP/sj2Awa8qroZkoUtHHa1
+ lzzI8GwqI4IaDK0BxgIE72wgFUOvMZaBGQHbm8obDVs9i0i/74ZSvzOK528Lm0SxIQnNNY0pl
+ eFdEZIiy8wm4Kki06wksBZO4+uYE/8Xbh5HMZsf7XsXFXeoCr+6Wm41kRlBR0QS+Uw08vblY5
+ hPvHlaV7ELWQf52r2Tk1NjgCDSCmQm68ybwFMrpjUqONEq9rAnV0xDBTlJyO06rMRTrkxWKJZ
+ nKlQSRl3uUG8E3LBKVS8S3NW/K8Qda9tg0b9Ar6SHEhlPNR5x0quyNm0YehoT4rRLR+HG7vXy
+ 5/X6qjKOCzmZnq9uKlS2OFsg/f63FxygHcVg2TF4XoOUebUwbtHWZ7kXStpsrCq3LVW9SJden
+ vxo1hghkmYZ6wlQKF50SEl4bIMe7V1G9dZCYkK0usFMlkRqhtS5Fc6onWedZ2j9nRSYrAjC2o
+ L5qIKdqY3eJOKf8rzSMie7A0EcT12p1aEnnhGTqphkuLKtPfsNABaani7XdJCjAiimb7kIRYL
+ fhH1ouopsXs/RR0Gmh249j8/n8dbhJSWP24KA23N7JK0tj1hW7Hvoork95pH9s0ut7QHgO2Xy
+ mt/PUpejgdNLp9lx3xxPa1BETZdI8qlb3EOune1dbRaNeTuhxtFBT26taz8eg2aw5XOGj7T3+
+ 3EQSpa6mM/do3z0MZOYFBZkQ5iQ4yovqVLXmThqiGnE0PcjbFf7wGdM2FF/2hr1/5am30Aq23
+ Yt1CyUVZOsUHEVgRHJEOMA4kUcUupEecPbGAY/cMpTou1/He4ZMiglXd04ZictTttXXVrqjt3
+ Iwyt4z+QHQtTdfiMW4keiVEytjM8F2/fpniD20NNZ5Md98tKjDfO8r2B6Nj63MXt6N+jQHJmW
+ hDSGdIl6xe/mq7FJCPR0A0HOwJX3FJKVI4qtaThMVdHJm1v009jsF6YD7VTz+5+e5xuUrL00R
+ eLwUs4H8HV/jU9w19HRsMU47e00iV8CLtzhvYGinNlXydfyxJsGhiRrrrrF2Kp3XTJEU0747A
+ L8PaoJvFtBdPETRKIGeCTGTAmneRjeSnadI401sMJnSCb8u5zi3YMv5LGfvOGTMs7moZ2LX9M
+ +mP0Tz+ZuAW50i56NgbGO+wxb2LGJ0G+BFWQhUlrS8PZCkHWuF7JpF/a3R/yAEBheNS1bKqah
+ yPZZrkPXzO7sMdnGvCOjwTQNrRGsJtSti9q/eSvU7UJrsxE14YXEYpp0BJq2CKwaPr6mXwR3t
+ XaLb8wakS1kqdggQBcmoC4rgMA/KOPuyiX9A7NqOZnwFbvQ54M8WNhKf8LIiR1Xte2qRC2Wfa
+ MavVgXEFO6Uww6BgUXHfyC4Yv/dmj07wO8HNsNd3VnWySrhOF6tOxeFHY6lYd4Q7UUTpj7Yet
+ z2cCrtRfhG9FrbZQ==
 
-On 2/2/25 21:33, Kajt=C3=A1r Zsolt wrote:
-> The erase colour calculation for fbcon clearing should use get_color ins=
-tead
-> of attr_col_ec, like everything else. The latter is similar but is not c=
-orrect.
-> For example it's missing the depth dependent remapping and doesn't care =
-about
-> blanking.
->
-> The problem can be reproduced by setting up the background colour to gre=
-y
-> (vt.color=3D0x70) and having an fbcon console set to 2bpp (4 shades of g=
-ray).
-> Now the background attribute should be 1 (dark gray) on the console.
->
-> If the screen is scrolled when pressing enter in a shell prompt at the b=
-ottom
-> line then the new line is cleared using colour 7 instead of 1. That's no=
-t
-> something fillrect likes (at 2bbp it expect 0-3) so the result is intere=
-sting.
->
-> This patch switches to get_color with vc_video_erase_char to determine t=
-he
-> erase colour from attr_col_ec. That makes the latter function redundant =
-as
-> no other users were left.
->
-> Use correct erase colour for clearing in fbcon
->
-> Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
+CC'ed: driv-devel
 
+On 2/2/25 13:39, Kajt=C3=A1r Zsolt wrote:
+> A series on de-duplicating the common cfb and sys drawing routines will
+> follow.
+>
+> Some background:
+>
+> It happens that I need to use both cfb and sys drawing routines.
 
-applied for further testing to fbdev git tree.
+For which driver do you need this?
+
+> At low resolution where the aperture is large enough the framebuffer
+> memory is directly mapped. As usual the cfb routines are used.
+>
+> In the high resolution scenario defio is used to make banking
+> transparent, there the sys drawing routines are used.
+>
+> There are packed pixels, of course in the wrong order. So that needs
+> CFB_REV_PIXELS_IN_BYTE, fine. Or almost.
+>
+> While the sys routines are based on cfb for some reason the former lacks
+> pixel order reversing support. The result is that at low resolution the
+> console is fine, but it's unreadable at high resolution due to the wrong
+> pixel ordering.
+>
+> First I added the pixel reversal support to sys, console looks fine.
+> Still I might have made mistakes when doing so, that might need
+> further testing just to be sure. Hacked fillrect to run in userspace,
+> wasn't easy and now I have to come up with edge cases...
+>
+> Had another look at the cfb routines and sys is basically a straight
+> copy. Minus the pixel reversing, FB_READ/WRITE macro inlining by hand,
+> comment style updates and a few changes here and there for I/O vs.
+> system memory. The memory access differences could have been easily
+> covered with a few small macros, strange.
+>
+> Cfb has a working pixel reversal as far as I know. Now all it needs is a
+> few changes for the memory access differences and then I have the sys
+> routines with pixel reversal. And can also be reasonably confident that
+> it actually does what it needs to in special drawing scenarios.
+>
+> So the patches below take a copy of the cfb routines as header files,
+> and add macros for the access, text and other differences. The comment
+> style changes were taken from sys so that it's less different when
+> compared. Then the cfb and sys files were cut down to just an include
+> of the common code in the header plus a few defines for the macros used
+> in the headers.
+>
+> I was thinking what to do with copyright/credits now. On the new headers
+> it's clear as it's basically cfb, but the new cfb and sys suffered
+> significant changes and not much remained. I kept the original authors
+> but it might be questionable on sys, it just an includes cfb code now.
+>
+> I know at the moment there are no users for the pixel reversal function
+> in sys and could have sent such changes later when truly required.
+>
+> However there are some maintainability benefits as it removes lots of
+> duplicate code which might be worth to have meanwhile. The pixel
+> reversal gets optimized out when not in use so I don't worry about that
+> much.
+>
+> Zsolt Kajtar (12):
+>    fbdev: core: Copy cfbcopyarea to fb_copyarea
+>    fbdev: core: Make fb_copyarea generic
+>    fbdev: core: Use generic copyarea for as cfb_copyarea
+>    fbdev: core: Use generic copyarea for as sys_copyarea
+>    fbdev: core: Copy cfbfillrect to fb_fillrect
+>    fbdev: core: Make fb_fillrect generic
+>    fbdev: core: Use generic fillrect for as cfb_fillrect
+>    fbdev: core: Use generic fillrect for as sys_fillrect
+>    fbdev: core: Copy cfbimgblt to fb_imageblit
+>    fbdev: core: Make fb_imageblit generic
+>    fbdev: core: Use generic imageblit for as cfb_imageblit
+>    fbdev: core: Use generic imageblit for as sys_imageblit
+>
+>   drivers/video/fbdev/core/cfbcopyarea.c  | 425 +-----------------------
+>   drivers/video/fbdev/core/cfbfillrect.c  | 362 +-------------------
+>   drivers/video/fbdev/core/cfbimgblt.c    | 356 +-------------------
+>   drivers/video/fbdev/core/fb_copyarea.h  | 421 +++++++++++++++++++++++
+>   drivers/video/fbdev/core/fb_fillrect.h  | 359 ++++++++++++++++++++
+>   drivers/video/fbdev/core/fb_imageblit.h | 356 ++++++++++++++++++++
+>   drivers/video/fbdev/core/syscopyarea.c  | 356 +-------------------
+>   drivers/video/fbdev/core/sysfillrect.c  | 314 +----------------
+>   drivers/video/fbdev/core/sysimgblt.c    | 324 +-----------------
+>   9 files changed, 1190 insertions(+), 2083 deletions(-)
+>   create mode 100644 drivers/video/fbdev/core/fb_copyarea.h
+>   create mode 100644 drivers/video/fbdev/core/fb_fillrect.h
+>   create mode 100644 drivers/video/fbdev/core/fb_imageblit.h
+
+Some notes regarding your patches:
+- please add dri-devel@lists.freedesktop.org mailing list
+- it seems you sent your patches manually.
+   Using b4 on your Message-ID gives:
+b4 am f921492d-6c53-ce68-16b6-dc9c21f2b738@c64.rulez.org
+Grabbing thread from lore.kernel.org/all/f921492d-6c53-ce68-16b6-dc9c21f2b=
+738@c64.rulez.org/t.mbox.gz
+Analyzing 13 messages in the thread
+Analyzing 0 code-review messages
+Checking attestation on all messages, may take a moment...
+=2D--
+   [PATCH RFC 1/12] Deduplicate cfb/sys drawing fbops
+   ERROR: missing [2/12]!
+   [PATCH RFC 3/12] Deduplicate cfb/sys drawing fbops
+   [PATCH RFC 4/12] Deduplicate cfb/sys drawing fbops
+   [PATCH RFC 5/12] Deduplicate cfb/sys drawing fbops
+   [PATCH RFC 6/12] fbdev: core: Make fb_fillrect generic
+   [PATCH RFC 7/12] fbdev: core: Use generic fillrect for as, cfb_fillrect
+   [PATCH RFC 8/12] fbdev: core: Use generic fillrect for as, sys_fillrect
+   [PATCH RFC 9/12] fbdev: core: Copy cfbimgblt to fb_imageblit
+   [PATCH RFC 10/12] fbdev: core: Make fb_imageblit generic
+   [PATCH RFC 11/12] fbdev: core: Use generic imageblit for as, cfb_imageb=
+lit
+   [PATCH RFC 12/12] fbdev: core: Use generic imageblit for as, sys_imageb=
+lit
+Total patches: 11
+WARNING: Thread incomplete!
+=2D--
+- patch #2 is missing, and patches 1-5 have the same subject.
+- When applying there are warnings:
+git am ./20250202_soci_deduplicate_cfb_sys_drawing_fbops.mbx
+Applying: Deduplicate cfb/sys drawing fbops
+.git/rebase-apply/patch:451: new blank line at EOF.
++
+warning: 1 line adds whitespace errors.
+Applying: Deduplicate cfb/sys drawing fbops
+Applying: Deduplicate cfb/sys drawing fbops
+Applying: Deduplicate cfb/sys drawing fbops
+Applying: fbdev: core: Make fb_fillrect generic
+Applying: fbdev: core: Use generic fillrect for as, cfb_fillrect
+Applying: fbdev: core: Use generic fillrect for as, sys_fillrect
+Applying: fbdev: core: Copy cfbimgblt to fb_imageblit
+.git/rebase-apply/patch:199: space before tab in indent.
+                 if (shift) {
+.git/rebase-apply/patch:380: new blank line at EOF.
++
+warning: 2 lines add whitespace errors.
+Applying: fbdev: core: Make fb_imageblit generic
+Applying: fbdev: core: Use generic imageblit for as, cfb_imageblit
+Applying: fbdev: core: Use generic imageblit for as, sys_imageblit
+
+I suggest you make yourself familiar with "git-publish" (https://github.co=
+m/stefanha/git-publish).
+It's a great tool which helps a lot for sending patches.
 
 Helge
-
-> ---
->   drivers/video/fbdev/core/bitblit.c   |  5 ++--
->   drivers/video/fbdev/core/fbcon.c     | 10 +++++---
->   drivers/video/fbdev/core/fbcon.h     | 38 +---------------------------
->   drivers/video/fbdev/core/fbcon_ccw.c |  5 ++--
->   drivers/video/fbdev/core/fbcon_cw.c  |  5 ++--
->   drivers/video/fbdev/core/fbcon_ud.c  |  5 ++--
->   drivers/video/fbdev/core/tileblit.c  |  8 +++---
->   7 files changed, 18 insertions(+), 58 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/co=
-re/bitblit.c
-> index 3ff1b2a86..f9475c14f 100644
-> --- a/drivers/video/fbdev/core/bitblit.c
-> +++ b/drivers/video/fbdev/core/bitblit.c
-> @@ -59,12 +59,11 @@ static void bit_bmove(struct vc_data *vc, struct fb_=
-info *info, int sy,
->   }
->
->   static void bit_clear(struct vc_data *vc, struct fb_info *info, int sy=
-,
-> -		      int sx, int height, int width)
-> +		      int sx, int height, int width, int fg, int bg)
->   {
-> -	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
->   	struct fb_fillrect region;
->
-> -	region.color =3D attr_bgcol_ec(bgshift, vc, info);
-> +	region.color =3D bg;
->   	region.dx =3D sx * vc->vc_font.width;
->   	region.dy =3D sy * vc->vc_font.height;
->   	region.width =3D width * vc->vc_font.width;
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index e8b4e8c11..07d127110 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -1258,7 +1258,7 @@ static void __fbcon_clear(struct vc_data *vc, unsi=
-gned int sy, unsigned int sx,
->   {
->   	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
->   	struct fbcon_ops *ops =3D info->fbcon_par;
-> -
-> +	int fg, bg;
->   	struct fbcon_display *p =3D &fb_display[vc->vc_num];
->   	u_int y_break;
->
-> @@ -1279,16 +1279,18 @@ static void __fbcon_clear(struct vc_data *vc, un=
-signed int sy, unsigned int sx,
->   		fbcon_clear_margins(vc, 0);
->   	}
->
-> +	fg =3D get_color(vc, info, vc->vc_video_erase_char, 1);
-> +	bg =3D get_color(vc, info, vc->vc_video_erase_char, 0);
->   	/* Split blits that cross physical y_wrap boundary */
->
->   	y_break =3D p->vrows - p->yscroll;
->   	if (sy < y_break && sy + height - 1 >=3D y_break) {
->   		u_int b =3D y_break - sy;
-> -		ops->clear(vc, info, real_y(p, sy), sx, b, width);
-> +		ops->clear(vc, info, real_y(p, sy), sx, b, width, fg, bg);
->   		ops->clear(vc, info, real_y(p, sy + b), sx, height - b,
-> -				 width);
-> +				 width, fg, bg);
->   	} else
-> -		ops->clear(vc, info, real_y(p, sy), sx, height, width);
-> +		ops->clear(vc, info, real_y(p, sy), sx, height, width, fg, bg);
->   }
->
->   static void fbcon_clear(struct vc_data *vc, unsigned int sy, unsigned =
-int sx,
-> diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core=
-/fbcon.h
-> index df70ea5ec..4d97e6d8a 100644
-> --- a/drivers/video/fbdev/core/fbcon.h
-> +++ b/drivers/video/fbdev/core/fbcon.h
-> @@ -55,7 +55,7 @@ struct fbcon_ops {
->   	void (*bmove)(struct vc_data *vc, struct fb_info *info, int sy,
->   		      int sx, int dy, int dx, int height, int width);
->   	void (*clear)(struct vc_data *vc, struct fb_info *info, int sy,
-> -		      int sx, int height, int width);
-> +		      int sx, int height, int width, int fb, int bg);
->   	void (*putcs)(struct vc_data *vc, struct fb_info *info,
->   		      const unsigned short *s, int count, int yy, int xx,
->   		      int fg, int bg);
-> @@ -116,42 +116,6 @@ static inline int mono_col(const struct fb_info *in=
-fo)
->   	return (~(0xfff << max_len)) & 0xff;
->   }
->
-> -static inline int attr_col_ec(int shift, struct vc_data *vc,
-> -			      struct fb_info *info, int is_fg)
-> -{
-> -	int is_mono01;
-> -	int col;
-> -	int fg;
-> -	int bg;
-> -
-> -	if (!vc)
-> -		return 0;
-> -
-> -	if (vc->vc_can_do_color)
-> -		return is_fg ? attr_fgcol(shift,vc->vc_video_erase_char)
-> -			: attr_bgcol(shift,vc->vc_video_erase_char);
-> -
-> -	if (!info)
-> -		return 0;
-> -
-> -	col =3D mono_col(info);
-> -	is_mono01 =3D info->fix.visual =3D=3D FB_VISUAL_MONO01;
-> -
-> -	if (attr_reverse(vc->vc_video_erase_char)) {
-> -		fg =3D is_mono01 ? col : 0;
-> -		bg =3D is_mono01 ? 0 : col;
-> -	}
-> -	else {
-> -		fg =3D is_mono01 ? 0 : col;
-> -		bg =3D is_mono01 ? col : 0;
-> -	}
-> -
-> -	return is_fg ? fg : bg;
-> -}
-> -
-> -#define attr_bgcol_ec(bgshift, vc, info) attr_col_ec(bgshift, vc, info,=
- 0)
-> -#define attr_fgcol_ec(fgshift, vc, info) attr_col_ec(fgshift, vc, info,=
- 1)
-> -
->       /*
->        *  Scroll Method
->        */
-> diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/=
-core/fbcon_ccw.c
-> index f9b794ff7..89ef4ba7e 100644
-> --- a/drivers/video/fbdev/core/fbcon_ccw.c
-> +++ b/drivers/video/fbdev/core/fbcon_ccw.c
-> @@ -78,14 +78,13 @@ static void ccw_bmove(struct vc_data *vc, struct fb_=
-info *info, int sy,
->   }
->
->   static void ccw_clear(struct vc_data *vc, struct fb_info *info, int sy=
-,
-> -		     int sx, int height, int width)
-> +		     int sx, int height, int width, int fg, int bg)
->   {
->   	struct fbcon_ops *ops =3D info->fbcon_par;
->   	struct fb_fillrect region;
-> -	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
->   	u32 vyres =3D GETVYRES(ops->p, info);
->
-> -	region.color =3D attr_bgcol_ec(bgshift,vc,info);
-> +	region.color =3D bg;
->   	region.dx =3D sy * vc->vc_font.height;
->   	region.dy =3D vyres - ((sx + width) * vc->vc_font.width);
->   	region.height =3D width * vc->vc_font.width;
-> diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/c=
-ore/fbcon_cw.c
-> index 903f6fc17..b9dac7940 100644
-> --- a/drivers/video/fbdev/core/fbcon_cw.c
-> +++ b/drivers/video/fbdev/core/fbcon_cw.c
-> @@ -63,14 +63,13 @@ static void cw_bmove(struct vc_data *vc, struct fb_i=
-nfo *info, int sy,
->   }
->
->   static void cw_clear(struct vc_data *vc, struct fb_info *info, int sy,
-> -		     int sx, int height, int width)
-> +		     int sx, int height, int width, int fg, int bg)
->   {
->   	struct fbcon_ops *ops =3D info->fbcon_par;
->   	struct fb_fillrect region;
-> -	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
->   	u32 vxres =3D GETVXRES(ops->p, info);
->
-> -	region.color =3D attr_bgcol_ec(bgshift,vc,info);
-> +	region.color =3D bg;
->   	region.dx =3D vxres - ((sy + height) * vc->vc_font.height);
->   	region.dy =3D sx *  vc->vc_font.width;
->   	region.height =3D width * vc->vc_font.width;
-> diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/c=
-ore/fbcon_ud.c
-> index 594331936..0af7913a2 100644
-> --- a/drivers/video/fbdev/core/fbcon_ud.c
-> +++ b/drivers/video/fbdev/core/fbcon_ud.c
-> @@ -64,15 +64,14 @@ static void ud_bmove(struct vc_data *vc, struct fb_i=
-nfo *info, int sy,
->   }
->
->   static void ud_clear(struct vc_data *vc, struct fb_info *info, int sy,
-> -		     int sx, int height, int width)
-> +		     int sx, int height, int width, int fg, int bg)
->   {
->   	struct fbcon_ops *ops =3D info->fbcon_par;
->   	struct fb_fillrect region;
-> -	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
->   	u32 vyres =3D GETVYRES(ops->p, info);
->   	u32 vxres =3D GETVXRES(ops->p, info);
->
-> -	region.color =3D attr_bgcol_ec(bgshift,vc,info);
-> +	region.color =3D bg;
->   	region.dy =3D vyres - ((sy + height) * vc->vc_font.height);
->   	region.dx =3D vxres - ((sx + width) *  vc->vc_font.width);
->   	region.width =3D width * vc->vc_font.width;
-> diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/c=
-ore/tileblit.c
-> index eff7ec4da..45b0828fa 100644
-> --- a/drivers/video/fbdev/core/tileblit.c
-> +++ b/drivers/video/fbdev/core/tileblit.c
-> @@ -32,16 +32,14 @@ static void tile_bmove(struct vc_data *vc, struct fb=
-_info *info, int sy,
->   }
->
->   static void tile_clear(struct vc_data *vc, struct fb_info *info, int s=
-y,
-> -		       int sx, int height, int width)
-> +		       int sx, int height, int width, int fg, int bg)
->   {
->   	struct fb_tilerect rect;
-> -	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
-> -	int fgshift =3D (vc->vc_hi_font_mask) ? 9 : 8;
->
->   	rect.index =3D vc->vc_video_erase_char &
->   		((vc->vc_hi_font_mask) ? 0x1ff : 0xff);
-> -	rect.fg =3D attr_fgcol_ec(fgshift, vc, info);
-> -	rect.bg =3D attr_bgcol_ec(bgshift, vc, info);
-> +	rect.fg =3D fg;
-> +	rect.bg =3D bg;
->   	rect.sx =3D sx;
->   	rect.sy =3D sy;
->   	rect.width =3D width;
-

@@ -1,332 +1,225 @@
-Received: from c64.rulez.org (c64.rulez.org [79.139.58.36])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC1431D63C0
-	for <linux-fbdev@vger.kernel.org>; Sun,  2 Feb 2025 20:33:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.139.58.36
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A5E718651;
+	Mon,  3 Feb 2025 10:25:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738528434; cv=none; b=KL0U4OmTiCodr1k5EYnJ9T+7MCpBrutl9xIrzo4zAfPqUvJBa6ze5f8B+TaeNiqno6DK6QARbBT736R1Nyy2AgHQ10DhiOB7F7CzOxAdgUWsCI1zHUBA1zydh7K6Q+iW1MHvZDUQcE65Pte6KNPhT+uyu4r9K/KuZivZ6oya13M=
+	t=1738578303; cv=none; b=KigzYxx1SR7lNqlkjcYV5Dotbw+FJrHaRSlYn5ajzBmk5w9m0rurjZe5iquIwp/h8aH8QaqGivgeNDtTKu8x9X27yjL3Ru1VULQGhtEIhGCHJIJ7sOmG5yGT4Wh36b9j6X1b7ywM2x73HBaRrNDL+aVOnmgeBURu9Lr/2LCg7HQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738528434; c=relaxed/simple;
-	bh=3xkGnCA+2W4MwrMR7tEIbmk15Iva2nvIfdOtXcPOFEQ=;
-	h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type; b=tKiC6lA1KM2k2LXyWK/2KAW1Rbcsl0zyh0yG43fxZy5wR4KxJQQUnOeTErLWPWH9+4YwUgW20ddYUOp5O7N3ZjvztuwgZ7feOpyE4N6Vvz1csAhKPhMBZcTRZ5S9pDVgvhMqTqvkfIBhpzOCRdfBwIboKVJC4UXXmDzYUrPcRlA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org; spf=pass smtp.mailfrom=c64.rulez.org; arc=none smtp.client-ip=79.139.58.36
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=c64.rulez.org
-Received: from [192.168.0.59] (unknown [89.134.12.53])
-	by c64.rulez.org (Postfix) with ESMTPSA id 224BF100F6
-	for <linux-fbdev@vger.kernel.org>; Sun,  2 Feb 2025 21:33:47 +0100 (CET)
-Message-ID: <0abefa4d-be0c-4e2b-1c8d-e3e448151389@c64.rulez.org>
-Date: Sun, 2 Feb 2025 21:33:46 +0100
+	s=arc-20240116; t=1738578303; c=relaxed/simple;
+	bh=6G8EdSmU4bLKTXjVm2lq5dYHOrU2c4+c+tTpGPdeayM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Dg+aQ2oDziKsmItETgp8+/gUtK+iqbV5/n+FnEUHl1O4Qj7nBMW4Hz6o5u++bKz/pq9Rsz6/W2RKjkEhbr5WYULKiJ9MmMM6IKipd0suKSu3YNnNNrUjtYjh1qXhr9u56pWr1BANblY//jUIIQydzlmHdIUrYdw8zE/a+vQ+qHo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=kVml5rMz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=51YV7zQJ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=N33Tb0gP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=wEhrPT/8; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="kVml5rMz";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="51YV7zQJ";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="N33Tb0gP";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="wEhrPT/8"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id ACCC021162;
+	Mon,  3 Feb 2025 10:24:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1738578295; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=B28xHbzd2hSvBb41dA9gCOLpTarCHR/BaSSB5aXAzmE=;
+	b=kVml5rMzwj6Mwq9nkEEWgZMd70SwGi4dGGX2F1clbb1ObPWby+eEBTKskLNoWPpm5Db2xs
+	8J0HuBIEPKMtTHh1eifC2GU2bVWgGd/JXZSpOph4lLn0hSEx/NZC8aT4dqOokWu5BWfbnX
+	9HokWVvzjJDMkolC84B7+8D5y8bExkc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1738578295;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=B28xHbzd2hSvBb41dA9gCOLpTarCHR/BaSSB5aXAzmE=;
+	b=51YV7zQJ9lvtzsnAC6WL9iurrxUXkpIVdxn83XCCXL0dxy06DdRml3YsvjQ9Cr3VfY7dZW
+	TX2kb068i7xywrBw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=N33Tb0gP;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="wEhrPT/8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1738578291; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=B28xHbzd2hSvBb41dA9gCOLpTarCHR/BaSSB5aXAzmE=;
+	b=N33Tb0gP0bU8paofonS6m9YOkE0SPwjgxH1Oovu7uQPdR6nN4Ei/eQHVj1/kpaXQRI9i+S
+	tbP078ZmOz5p4w8rjBf/fiEA+ZBftKovD1jK+LiNcuJXFsGB1bylBdKrg8aGL855VaMsww
+	oPOH3wI0CUUgAUGi8xC02Wme5gEBTGw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1738578291;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=B28xHbzd2hSvBb41dA9gCOLpTarCHR/BaSSB5aXAzmE=;
+	b=wEhrPT/8SahloHtQvQQe+m1cdpJzkUxSdeYNUl1EFQMx2kfrapHMllBpSP8Q6cvG732ZTZ
+	/3RHYh4X3fS75uDA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 529AA13795;
+	Mon,  3 Feb 2025 10:24:51 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id IMHVEnOZoGfpcgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 03 Feb 2025 10:24:51 +0000
+Message-ID: <b284f594-2b28-4c1b-b00e-2fe7e9036b2f@suse.de>
+Date: Mon, 3 Feb 2025 11:24:50 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.0
-Content-Language: en-GB
-To: linux-fbdev@vger.kernel.org
-From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
-Subject: [PATCH] Use correct erase colour for clearing in fbcon
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------alzpjBkbfUD5Q4uwr6R8Ijas"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v2 0/3] expose mapping wrprotect, fix fb_defio use
+To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
+ David Hildenbrand <david@redhat.com>
+References: <cover.1736809898.git.lorenzo.stoakes@oracle.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <cover.1736809898.git.lorenzo.stoakes@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Queue-Id: ACCC021162
+X-Spam-Score: -3.01
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	URIBL_BLOCKED(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:dkim];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_CC(0.00)[gmail.com,ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org,kvack.org,infradead.org,redhat.com];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[11];
+	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Flag: NO
+X-Spam-Level: 
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------alzpjBkbfUD5Q4uwr6R8Ijas
-Content-Type: multipart/mixed; boundary="------------eP0WBqVytWQYTk9GNM9ZauRI";
- protected-headers="v1"
-From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
-To: linux-fbdev@vger.kernel.org
-Message-ID: <0abefa4d-be0c-4e2b-1c8d-e3e448151389@c64.rulez.org>
-Subject: [PATCH] Use correct erase colour for clearing in fbcon
-
---------------eP0WBqVytWQYTk9GNM9ZauRI
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-The erase colour calculation for fbcon clearing should use get_color inst=
-ead
-of attr_col_ec, like everything else. The latter is similar but is not co=
-rrect.
-For example it's missing the depth dependent remapping and doesn't care a=
-bout
-blanking.
-
-The problem can be reproduced by setting up the background colour to grey=
-
-(vt.color=3D0x70) and having an fbcon console set to 2bpp (4 shades of gr=
-ay).
-Now the background attribute should be 1 (dark gray) on the console.
-
-If the screen is scrolled when pressing enter in a shell prompt at the bo=
-ttom
-line then the new line is cleared using colour 7 instead of 1. That's not=
-
-something fillrect likes (at 2bbp it expect 0-3) so the result is interes=
-ting.
-
-This patch switches to get_color with vc_video_erase_char to determine th=
-e
-erase colour from attr_col_ec. That makes the latter function redundant a=
-s
-no other users were left.
-
-Use correct erase colour for clearing in fbcon
-
-Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
----
- drivers/video/fbdev/core/bitblit.c   |  5 ++--
- drivers/video/fbdev/core/fbcon.c     | 10 +++++---
- drivers/video/fbdev/core/fbcon.h     | 38 +---------------------------
- drivers/video/fbdev/core/fbcon_ccw.c |  5 ++--
- drivers/video/fbdev/core/fbcon_cw.c  |  5 ++--
- drivers/video/fbdev/core/fbcon_ud.c  |  5 ++--
- drivers/video/fbdev/core/tileblit.c  |  8 +++---
- 7 files changed, 18 insertions(+), 58 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/cor=
-e/bitblit.c
-index 3ff1b2a86..f9475c14f 100644
---- a/drivers/video/fbdev/core/bitblit.c
-+++ b/drivers/video/fbdev/core/bitblit.c
-@@ -59,12 +59,11 @@ static void bit_bmove(struct vc_data *vc, struct fb_i=
-nfo *info, int sy,
- }
-=20
- static void bit_clear(struct vc_data *vc, struct fb_info *info, int sy,
--		      int sx, int height, int width)
-+		      int sx, int height, int width, int fg, int bg)
- {
--	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
- 	struct fb_fillrect region;
-=20
--	region.color =3D attr_bgcol_ec(bgshift, vc, info);
-+	region.color =3D bg;
- 	region.dx =3D sx * vc->vc_font.width;
- 	region.dy =3D sy * vc->vc_font.height;
- 	region.width =3D width * vc->vc_font.width;
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/=
-fbcon.c
-index e8b4e8c11..07d127110 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1258,7 +1258,7 @@ static void __fbcon_clear(struct vc_data *vc, unsig=
-ned int sy, unsigned int sx,
- {
- 	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
- 	struct fbcon_ops *ops =3D info->fbcon_par;
--
-+	int fg, bg;
- 	struct fbcon_display *p =3D &fb_display[vc->vc_num];
- 	u_int y_break;
-=20
-@@ -1279,16 +1279,18 @@ static void __fbcon_clear(struct vc_data *vc, uns=
-igned int sy, unsigned int sx,
- 		fbcon_clear_margins(vc, 0);
- 	}
-=20
-+	fg =3D get_color(vc, info, vc->vc_video_erase_char, 1);
-+	bg =3D get_color(vc, info, vc->vc_video_erase_char, 0);
- 	/* Split blits that cross physical y_wrap boundary */
-=20
- 	y_break =3D p->vrows - p->yscroll;
- 	if (sy < y_break && sy + height - 1 >=3D y_break) {
- 		u_int b =3D y_break - sy;
--		ops->clear(vc, info, real_y(p, sy), sx, b, width);
-+		ops->clear(vc, info, real_y(p, sy), sx, b, width, fg, bg);
- 		ops->clear(vc, info, real_y(p, sy + b), sx, height - b,
--				 width);
-+				 width, fg, bg);
- 	} else
--		ops->clear(vc, info, real_y(p, sy), sx, height, width);
-+		ops->clear(vc, info, real_y(p, sy), sx, height, width, fg, bg);
- }
-=20
- static void fbcon_clear(struct vc_data *vc, unsigned int sy, unsigned in=
-t sx,
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/=
-fbcon.h
-index df70ea5ec..4d97e6d8a 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -55,7 +55,7 @@ struct fbcon_ops {
- 	void (*bmove)(struct vc_data *vc, struct fb_info *info, int sy,
- 		      int sx, int dy, int dx, int height, int width);
- 	void (*clear)(struct vc_data *vc, struct fb_info *info, int sy,
--		      int sx, int height, int width);
-+		      int sx, int height, int width, int fb, int bg);
- 	void (*putcs)(struct vc_data *vc, struct fb_info *info,
- 		      const unsigned short *s, int count, int yy, int xx,
- 		      int fg, int bg);
-@@ -116,42 +116,6 @@ static inline int mono_col(const struct fb_info *inf=
-o)
- 	return (~(0xfff << max_len)) & 0xff;
- }
-=20
--static inline int attr_col_ec(int shift, struct vc_data *vc,
--			      struct fb_info *info, int is_fg)
--{
--	int is_mono01;
--	int col;
--	int fg;
--	int bg;
--
--	if (!vc)
--		return 0;
--
--	if (vc->vc_can_do_color)
--		return is_fg ? attr_fgcol(shift,vc->vc_video_erase_char)
--			: attr_bgcol(shift,vc->vc_video_erase_char);
--
--	if (!info)
--		return 0;
--
--	col =3D mono_col(info);
--	is_mono01 =3D info->fix.visual =3D=3D FB_VISUAL_MONO01;
--
--	if (attr_reverse(vc->vc_video_erase_char)) {
--		fg =3D is_mono01 ? col : 0;
--		bg =3D is_mono01 ? 0 : col;
--	}
--	else {
--		fg =3D is_mono01 ? 0 : col;
--		bg =3D is_mono01 ? col : 0;
--	}
--
--	return is_fg ? fg : bg;
--}
--
--#define attr_bgcol_ec(bgshift, vc, info) attr_col_ec(bgshift, vc, info, =
-0)
--#define attr_fgcol_ec(fgshift, vc, info) attr_col_ec(fgshift, vc, info, =
-1)
--
-     /*
-      *  Scroll Method
-      */
-diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/c=
-ore/fbcon_ccw.c
-index f9b794ff7..89ef4ba7e 100644
---- a/drivers/video/fbdev/core/fbcon_ccw.c
-+++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -78,14 +78,13 @@ static void ccw_bmove(struct vc_data *vc, struct fb_i=
-nfo *info, int sy,
- }
-=20
- static void ccw_clear(struct vc_data *vc, struct fb_info *info, int sy,
--		     int sx, int height, int width)
-+		     int sx, int height, int width, int fg, int bg)
- {
- 	struct fbcon_ops *ops =3D info->fbcon_par;
- 	struct fb_fillrect region;
--	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
- 	u32 vyres =3D GETVYRES(ops->p, info);
-=20
--	region.color =3D attr_bgcol_ec(bgshift,vc,info);
-+	region.color =3D bg;
- 	region.dx =3D sy * vc->vc_font.height;
- 	region.dy =3D vyres - ((sx + width) * vc->vc_font.width);
- 	region.height =3D width * vc->vc_font.width;
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/co=
-re/fbcon_cw.c
-index 903f6fc17..b9dac7940 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -63,14 +63,13 @@ static void cw_bmove(struct vc_data *vc, struct fb_in=
-fo *info, int sy,
- }
-=20
- static void cw_clear(struct vc_data *vc, struct fb_info *info, int sy,
--		     int sx, int height, int width)
-+		     int sx, int height, int width, int fg, int bg)
- {
- 	struct fbcon_ops *ops =3D info->fbcon_par;
- 	struct fb_fillrect region;
--	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
- 	u32 vxres =3D GETVXRES(ops->p, info);
-=20
--	region.color =3D attr_bgcol_ec(bgshift,vc,info);
-+	region.color =3D bg;
- 	region.dx =3D vxres - ((sy + height) * vc->vc_font.height);
- 	region.dy =3D sx *  vc->vc_font.width;
- 	region.height =3D width * vc->vc_font.width;
-diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/co=
-re/fbcon_ud.c
-index 594331936..0af7913a2 100644
---- a/drivers/video/fbdev/core/fbcon_ud.c
-+++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -64,15 +64,14 @@ static void ud_bmove(struct vc_data *vc, struct fb_in=
-fo *info, int sy,
- }
-=20
- static void ud_clear(struct vc_data *vc, struct fb_info *info, int sy,
--		     int sx, int height, int width)
-+		     int sx, int height, int width, int fg, int bg)
- {
- 	struct fbcon_ops *ops =3D info->fbcon_par;
- 	struct fb_fillrect region;
--	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
- 	u32 vyres =3D GETVYRES(ops->p, info);
- 	u32 vxres =3D GETVXRES(ops->p, info);
-=20
--	region.color =3D attr_bgcol_ec(bgshift,vc,info);
-+	region.color =3D bg;
- 	region.dy =3D vyres - ((sy + height) * vc->vc_font.height);
- 	region.dx =3D vxres - ((sx + width) *  vc->vc_font.width);
- 	region.width =3D width * vc->vc_font.width;
-diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/co=
-re/tileblit.c
-index eff7ec4da..45b0828fa 100644
---- a/drivers/video/fbdev/core/tileblit.c
-+++ b/drivers/video/fbdev/core/tileblit.c
-@@ -32,16 +32,14 @@ static void tile_bmove(struct vc_data *vc, struct fb_=
-info *info, int sy,
- }
-=20
- static void tile_clear(struct vc_data *vc, struct fb_info *info, int sy,=
-
--		       int sx, int height, int width)
-+		       int sx, int height, int width, int fg, int bg)
- {
- 	struct fb_tilerect rect;
--	int bgshift =3D (vc->vc_hi_font_mask) ? 13 : 12;
--	int fgshift =3D (vc->vc_hi_font_mask) ? 9 : 8;
-=20
- 	rect.index =3D vc->vc_video_erase_char &
- 		((vc->vc_hi_font_mask) ? 0x1ff : 0xff);
--	rect.fg =3D attr_fgcol_ec(fgshift, vc, info);
--	rect.bg =3D attr_bgcol_ec(bgshift, vc, info);
-+	rect.fg =3D fg;
-+	rect.bg =3D bg;
- 	rect.sx =3D sx;
- 	rect.sy =3D sy;
- 	rect.width =3D width;
---=20
-2.30.2
+Hi
 
 
---=20
-						    -soci-
+Am 14.01.25 um 00:15 schrieb Lorenzo Stoakes:
+[...]
+>
+> *** REVIEWERS NOTES: ***
+>
+> I do not have any hardware that uses fb_defio, so I'm asking for help with
+> testing this series from those who do :) I have tested the mm side of this,
+> and done a quick compile smoke test of the fb_defio side but this _very
+> much_ requires testing on actual hardware to ensure everything behaves as
+> expected.
 
---------------eP0WBqVytWQYTk9GNM9ZauRI--
+With a recent Linux distro, you likely boot up graphics with simpledrm, 
+which uses fb_defio as part of its console emulation. To test, boot the 
+kernel with the 'nomodeset' parameter and write to /dev/fb0.
 
---------------alzpjBkbfUD5Q4uwr6R8Ijas
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Best regards
+Thomas
 
------BEGIN PGP SIGNATURE-----
+>
+> This is based on Andrew's tree [0] in the mm-unstable branch - I was
+> thinking it'd be best to go through the mm tree (with fb_defio maintainer
+> approval, of course!) as it relies upon the mm changes to work correctly.
+>
+> [0]: https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git/
+>
+> RFC v2:
+> * Updated Jaya Kumar's email on cc - the MAINTAINERS section is apparently incorrect.
+> * Corrected rmap_walk_file() comment to refer to folios as per Matthew.
+> * Reference folio->mapping rather than folio_mapping(folio) in rmap_walk_file()
+>    as per Matthew.
+> * Reference folio->index rather than folio_pgoff(folio) in rmap_walk_file() as
+>    per Matthew.
+> * Renamed rmap_wrprotect_file_page() to mapping_wrprotect_page() as per Matthew.
+> * Fixed kerneldoc and moved to implementation as per Matthew.
+> * Updated mapping_wrprotect_page() to take a struct page pointer as per David.
+> * Removed folio lock when invoking mapping_wrprotect_page() in
+>    fb_deferred_io_work() as per Matthew.
+> * Removed compound_nr() in fb_deferred_io_work() as per Matthew.
+>
+> RFC v1:
+> https://lore.kernel.org/all/1e452b5b65f15a9a5d0c2ed3f5f812fdd1367603.1736352361.git.lorenzo.stoakes@oracle.com/
+>
+> Lorenzo Stoakes (3):
+>    mm: refactor rmap_walk_file() to separate out traversal logic
+>    mm: provide mapping_wrprotect_page() function
+>    fb_defio: do not use deprecated page->mapping, index fields
+>
+>   drivers/video/fbdev/core/fb_defio.c |  38 ++-----
+>   include/linux/fb.h                  |   1 +
+>   include/linux/rmap.h                |   3 +
+>   mm/rmap.c                           | 152 +++++++++++++++++++++++-----
+>   4 files changed, 141 insertions(+), 53 deletions(-)
+>
+> --
+> 2.48.0
 
-wsB5BAABCAAjFiEE8WlaH4v4aHNT2Bn0WOeEu4KftGsFAmef1qoFAwAAAAAACgkQWOeEu4KftGuP
-9Af+L5YmtdDybRfgDE7u3K/YzNtRtX7BmUNbWJYO2Kagci9AmAGf1P4nxkVljkKEciRSc+YrFsVU
-sl4pAv0CHDNYURexV9sgIR4kJtTldX8T+AUzioR3+A6eVkWb+W8iSZ0l/lVa1uxCiPIwezuyF2ZU
-fvMmtnElmMYXtlL7Xqli444uei/L+7a6cHucYY+9wrmuaiKfDdMToGB0QmDNmhNPhYdhvRKLNiY/
-eI8Uycuvkn1oBukhhrlzAWt45ROW6WfW5uKj8QcMtKD8xjIU7tT6MP9A6eOR3OmKQVnYjZzQJ/7z
-n9d418QENLWTp9QIeNdl9iUy5mJWAje+Ods9PzIVEQ==
-=uc7U
------END PGP SIGNATURE-----
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 
---------------alzpjBkbfUD5Q4uwr6R8Ijas--

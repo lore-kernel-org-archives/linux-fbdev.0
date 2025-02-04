@@ -1,82 +1,197 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3D0B8632C;
-	Tue,  4 Feb 2025 05:36:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52DD870820;
+	Tue,  4 Feb 2025 08:16:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738647408; cv=none; b=RbOKDjqpX8MCkqJaPXIian8gYPdAhlxf/v/Fa87h/1OBkao6IC2w7E0GAzgvhlkH2rI7OFGlVXhaC5/2epjNvm0mhAKI8Y+t6mhfMg+OFdD3bu9BVpmfgrQATKXbDq3g16aj/Tp6gufvYQuUlACiIfL3FTGAbM7qYtT/rY9rO54=
+	t=1738656973; cv=none; b=HqzeZxj9FO9yJK49+DHpMbIbICsKfqlgn+4ErOEoImpjsl1tcScQOBTqref2JUfWWckNg2yyjSe31NBMXFDJb+mGZ/w4gX6xUKMSAdcqp+3tBDzwC2mgT82rWvhm6N9YeHer6yjYnaFiwEt+yy73Ww0WqsLGOVElaZ8RjroOwis=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738647408; c=relaxed/simple;
-	bh=lsO9hrR/gFtCjhrxYLTAwuHqmreL/QpwD9+YEc97dAs=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XCRkmxfa7NMClWVeB9UwKX8Dt2DfnSqrJOaxKTSAeZCV3ueBniHNNVqOcyVjY2tag/SZieRAiDUsfxEGp8vPssFOQMC0RHilt9rRRJH8NgOHIiwKloSf+O1phxiz0qBQuK41gtFMbUl0xUkQ7LdAsIUyiBCgeKkXxDTRYw3QPk8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=AQUCW5op; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
+	s=arc-20240116; t=1738656973; c=relaxed/simple;
+	bh=FAzbSwMfAtFcjrh3dqgrm+irDmg9XIEV28cs2tiSJ3Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=SeoPC0apvUXB6GTtBIqnXLrUOzvoWj17W2F9VnGG1D86DVBkjZqRw2kznzYAa8DCbO/jmPmkkbVkozvDs83BKuj2Zh+hl+nsoPC8k1/0K0/ggwQp6LUh/qObFN5pVOJT1shIIqyYHt3R0jK4RCVp6z2LQxaup0G+pj9YCm4QmP0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=pYetfeQq; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=oGVWwNFi; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=pYetfeQq; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=oGVWwNFi; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="AQUCW5op"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-	:References:Message-ID:Subject:To:From:Date:Sender:Reply-To:Cc:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=cTohvSTvwj+ZiQenntSx8kX9G9dSHidT+DOg/qXt65k=; b=AQUCW5opXz0A3Kwr5+UxwcoShn
-	+se4y7BgGVNMd5vk3a+LJjeglSR+HU6tqMfWBQM6G+0j/Ol7NzbDBguQhzHCqBrz+DujUhGY9jJwC
-	S2+Ky1IGkbsle1xPtswC823NAtxDxsQwAZfqYJUlPXo8gm+N5E+qDLG79Je6VvfjyA0bKTjCAmP/k
-	XqemcU+TeAuRZNGehwNon9n315HM0Mvvhm6l7jtVWwbSwMhkoQQOpsUM5l/mq9fJJEojYlLCzgy7+
-	sBBjeG+D6LDPUehEiBJxsM6SdKZay9N20kCXh+WlIQWvrxaUju1vEnBmmWbzQzuCZjFlvr/kttbOH
-	RwUhjWnQ==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
-	id 1tfBc2-0000000HIAy-0zIU;
-	Tue, 04 Feb 2025 05:36:42 +0000
-Date: Mon, 3 Feb 2025 21:36:42 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jaya Kumar <jayakumar.lkml@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	Matthew Wilcox <willy@infradead.org>,
-	David Hildenbrand <david@redhat.com>,
-	Kajtar Zsolt <soci@c64.rulez.org>, Maira Canal <mcanal@igalia.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 2/3] mm: provide mapping_wrprotect_page() function
-Message-ID: <Z6Gnat93skcoFZqn@infradead.org>
-References: <cover.1738347308.git.lorenzo.stoakes@oracle.com>
- <c802c17cdba59e3455f3d7db07659d5da0ed6dc1.1738347308.git.lorenzo.stoakes@oracle.com>
- <Z6DljlvHpjdFof42@phenom.ffwll.local>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="pYetfeQq";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="oGVWwNFi";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="pYetfeQq";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="oGVWwNFi"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 53FF0210FA;
+	Tue,  4 Feb 2025 08:16:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1738656969; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=8ZkulmqIop4CNSTrofnSmlIpBgxoMbhTny076YqK1Js=;
+	b=pYetfeQqIw1bYtj/wwzUBc157TngUhDDP9/PTUb9iX0XmYtmwsjRd7csK3tZc+RGHRL7dn
+	LGDHtOLXAnFU3tTYvm+e19KiN6FUet0QCvznvBOuiuBG4FHhRxxO4oyRLR38C+TjSCMpZp
+	nkM3+gJ0aPTyEaHttp1+KpvGwYNbNgQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1738656969;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=8ZkulmqIop4CNSTrofnSmlIpBgxoMbhTny076YqK1Js=;
+	b=oGVWwNFiqb97XsgPQWv8kCB+4ZUr366jrZ4CeTxkwcj704bAftaCXvmo+lzR4WEe6tkBTJ
+	JvBTegIWPGDMQ5BQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1738656969; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=8ZkulmqIop4CNSTrofnSmlIpBgxoMbhTny076YqK1Js=;
+	b=pYetfeQqIw1bYtj/wwzUBc157TngUhDDP9/PTUb9iX0XmYtmwsjRd7csK3tZc+RGHRL7dn
+	LGDHtOLXAnFU3tTYvm+e19KiN6FUet0QCvznvBOuiuBG4FHhRxxO4oyRLR38C+TjSCMpZp
+	nkM3+gJ0aPTyEaHttp1+KpvGwYNbNgQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1738656969;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=8ZkulmqIop4CNSTrofnSmlIpBgxoMbhTny076YqK1Js=;
+	b=oGVWwNFiqb97XsgPQWv8kCB+4ZUr366jrZ4CeTxkwcj704bAftaCXvmo+lzR4WEe6tkBTJ
+	JvBTegIWPGDMQ5BQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 94B4F1393E;
+	Tue,  4 Feb 2025 08:16:08 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id hqYOI8jMoWepZwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 04 Feb 2025 08:16:08 +0000
+Message-ID: <b2b88242-e00c-4c6b-a6be-8d0dbb905569@suse.de>
+Date: Tue, 4 Feb 2025 09:16:08 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Z6DljlvHpjdFof42@phenom.ffwll.local>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/3] mm: provide mapping_wrprotect_page() function
+To: Christoph Hellwig <hch@infradead.org>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jaya Kumar <jayakumar.lkml@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
+ David Hildenbrand <david@redhat.com>, Kajtar Zsolt <soci@c64.rulez.org>,
+ Maira Canal <mcanal@igalia.com>
+References: <cover.1738347308.git.lorenzo.stoakes@oracle.com>
+ <c802c17cdba59e3455f3d7db07659d5da0ed6dc1.1738347308.git.lorenzo.stoakes@oracle.com>
+ <Z6DljlvHpjdFof42@phenom.ffwll.local> <Z6Gnat93skcoFZqn@infradead.org>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <Z6Gnat93skcoFZqn@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -2.80
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[infradead.org,oracle.com,linux-foundation.org,gmail.com,ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org,kvack.org,redhat.com,c64.rulez.org,igalia.com];
+	TAGGED_RCPT(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid]
+X-Spam-Flag: NO
+X-Spam-Level: 
 
-Hi Simona,
+Hi
 
 
-On Mon, Feb 03, 2025 at 04:49:34PM +0100, Simona Vetter wrote:
-> 
-> Could we go one step further and entirely drop the struct page? Similar to
-> unmap_mapping_range for VM_SPECIAL mappings, except it only updates the
-> write protection. The reason is that ideally we'd like fbdev defio to
-> entirely get rid of any struct page usage, because with some dma_alloc()
-> memory regions there's simply no struct page for them (it's a carveout).
+Am 04.02.25 um 06:36 schrieb Christoph Hellwig:
+> Hi Simona,
+>
+>
+> On Mon, Feb 03, 2025 at 04:49:34PM +0100, Simona Vetter wrote:
+>> Could we go one step further and entirely drop the struct page? Similar to
+>> unmap_mapping_range for VM_SPECIAL mappings, except it only updates the
+>> write protection. The reason is that ideally we'd like fbdev defio to
+>> entirely get rid of any struct page usage, because with some dma_alloc()
+>> memory regions there's simply no struct page for them (it's a carveout).
+> Umm, for dma_alloc* where * is not _pages you never can get a page or
+> PFN form them.  They are block boxes and drivers must not attempt to
+> translated them into either a page or PFN or things will go wrong.
+> Only the kernel virtual address and dma_address may be used.
+>
+>> See e.g.  Sa498d4d06d6 ("drm/fbdev-dma: Only install deferred I/O if
+>> necessary") for some of the pain this has caused.
+> The commit hash is corrupted, I guess this is 5a498d4d06d6 as the
+> subject line matches.  And that commit (just like the code it is trying
+> to fix) is completely broken as it violates the above.
 
-Umm, for dma_alloc* where * is not _pages you never can get a page or
-PFN form them.  They are block boxes and drivers must not attempt to
-translated them into either a page or PFN or things will go wrong.
-Only the kernel virtual address and dma_address may be used.
+As the author of these commits, I have no doubt that the code would 
+break on some systems. It works in practice for the current use cases 
+though. Is it possible to create something that tracks framebuffer 
+writes without requiring pages?
 
-> See e.g.  Sa498d4d06d6 ("drm/fbdev-dma: Only install deferred I/O if
-> necessary") for some of the pain this has caused.
+Best regards
+Thomas
 
-The commit hash is corrupted, I guess this is 5a498d4d06d6 as the
-subject line matches.  And that commit (just like the code it is trying
-to fix) is completely broken as it violates the above.
+>
+>
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

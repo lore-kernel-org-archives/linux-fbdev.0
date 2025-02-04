@@ -1,333 +1,299 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A28E3206F37;
-	Tue,  4 Feb 2025 08:57:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9AC820A5DC
+	for <linux-fbdev@vger.kernel.org>; Tue,  4 Feb 2025 10:19:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738659480; cv=none; b=o03QzZQHx8xP2y+NLaADaGxfxtB2g7hzTAfK1ieq/56cgvO5iofRXXOVh1X9uIjglWyCajQxHWtGt5/EZXrdk9TIJQEOPPF1t++yYG22IV4mecrx4Vmsjb2KcT7oXm7wC/UT09g0DeencZ0uONBp0xgYibCA1e2Nm0G48FRUb60=
+	t=1738664382; cv=none; b=ud66Y68VPn+znnbpI942+fJYHghdzKzb77s+7T7NtFm3vfxfxxLqPFDwbmDxhx6EKpeOQYge1akZF+aK5CStRHRWM84coYa7l8AgLjtvd5xhZKUSX8JqthDP0i+dB/LRu2SLncloCKeK6hTfiDj79H7xaSokC3CFrHihTdPFyOE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738659480; c=relaxed/simple;
-	bh=WmNrNpj+Bj06rH/pwHSM1a4lhx3h8jJhfqWsOyah+vo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ygj5wRHQXHtxMk3WqSYdPbcaXHFjdpFZtXP2GotzGr1uRLabVsy3TG9XBnT9RZGuten/+pJ9bcWPwUoLsTMIR6fupUICW7HCayQRSxctmGDZTbIA3UEa2S2rf3Xvx3tFI21o2/XAyxXCi7pdyBKFSKqQBNXsE9LRAHdWyW6uDsA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=RuEFR7Qz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=S6DneFJs; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=iNdoeILj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ad40dIOv; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1738664382; c=relaxed/simple;
+	bh=kLCeiml1fltmVi2Q5hzDLvANaBNKxpl2f1e67rzIRYM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cCaP7oxHKmmii9Ey94UZgO2Nm09rXbr7wCqMo1S30gokhC5JMTGkcqjBnQ3xMdeYu8CDheXvbRD/BrMVhA6ZuNko4h0r6EfMlnzDhlMnTM3eU+LU/pVm97um345obyfX66C33dwRkJcKucJC9hMwysRqU2mfHrKI6enKB+uT5qY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=a9sDV4ue; arc=none smtp.client-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="RuEFR7Qz";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="S6DneFJs";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="iNdoeILj";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ad40dIOv"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id E48081F38C;
-	Tue,  4 Feb 2025 08:57:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1738659471; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=0VvDvHhxmgNjkDWcgKUwYl0xE3yJzcwZtJvOY1zwhc0=;
-	b=RuEFR7Qzn+NPsXHIH5qCplwT5yEzLUrUTdBXjSKMZKTqIgpwVkWty1RgRON8XCpfa+cdrV
-	E8HTApER0XvacRDm8kyr1Kn5+xsBQrQbaGoG6xFgW8lCDqQ1N4mtAfrb23gnZd3gYaeykt
-	6AcUAyDgws7LxaNDkEh3gos8wXKQJOY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1738659471;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=0VvDvHhxmgNjkDWcgKUwYl0xE3yJzcwZtJvOY1zwhc0=;
-	b=S6DneFJsfXNG7HP0F/vMovqnglSiOcpheUQ+Lu1stnP3Iumm+3XT3qT0JoaB+hPu3j2qD5
-	PUGJJfrYuIUfQWAA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=iNdoeILj;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ad40dIOv
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1738659470; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=0VvDvHhxmgNjkDWcgKUwYl0xE3yJzcwZtJvOY1zwhc0=;
-	b=iNdoeILjNA1+W+EOOBiuGmlrDKWnRljGyTBF29aRfmHKXlNDeH7HYqEez+sdTfTDdAFjHG
-	uif4qxekqT2YYY1UsPqrFLnV7Id+WE5A//+7qVuenVxRa9a+77RBN4OgqYN6k+YtNoU6yi
-	iASs3n2EALQ742/Bpl5DByznwFRKhXM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1738659470;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=0VvDvHhxmgNjkDWcgKUwYl0xE3yJzcwZtJvOY1zwhc0=;
-	b=ad40dIOvPVJSEJZj3JXuUWB1HRz/BySiaTqsadPlvkc0C9DeTC5dgV3N0ynKC/uHurE6vX
-	49xS9jeGdRJOZuDg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 858DA13795;
-	Tue,  4 Feb 2025 08:57:50 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 3HRUH47WoWeEdQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 04 Feb 2025 08:57:50 +0000
-Message-ID: <e5d60108-8591-4d24-b618-d6f989f949cd@suse.de>
-Date: Tue, 4 Feb 2025 09:57:50 +0100
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="a9sDV4ue"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-436ce2ab251so36998405e9.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Feb 2025 02:19:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1738664379; x=1739269179; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ls4rUpX9KWpzDW4b2Z40ClskRs4xRfQGCjUvTHygnvU=;
+        b=a9sDV4uenDevwHp/knk+W17qZdzdgH/4GpOBKxPuG5gp8AMzkFLPVXfeCPlW7QuBhk
+         /QYGLEA3iYTxEYzgBskBJbEeyYAm5M50hB2ZRa9LQN1IlrK476z1TlIRasJYZ84u4KwH
+         CWgYG+hYcYHgVFELiqhFIx/FG2dPm0IRNxAkw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738664379; x=1739269179;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ls4rUpX9KWpzDW4b2Z40ClskRs4xRfQGCjUvTHygnvU=;
+        b=ts+Rnmdb+byzTEqYFnt1O8+7BYll4YNxHh5rDqOHtARbpPf+3ryjiuLPosmsI62npV
+         KZLjBgXwpyiXwh62ERFL/rLiD9zjKHx49EFTWaME6+kdlm+t5iOZ7AzpmAfVbvqc/wVm
+         39OaCySpIIvoR6Yxt0KGrDjAEVRojGcg/JrJmg/VsP56ow93dHl1aBVCl5pLz03FdzSe
+         8+v00XLPBXWynko8Msn4rScVvGi9Hf7s5xxrrRp/ZiiUm8WN0gdVIdsyOCx/bt3ORjF8
+         nkAqG9ma3iTFhkO9A8hDICufcvamgsxSJ9+C2m9Vxn4mG5rSsKzHPcN+VmN+P5tGsQVi
+         Bk5g==
+X-Forwarded-Encrypted: i=1; AJvYcCU3culNp7/5Uy/0UoPCboXPYtPvBYLFOfkI56XSL19BB+9ud/7qW5p7k4WWut/HcCOwXg7uMTaeie8Quw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwZkRHsFxjrcv75IUgWOMpeX/gr0G0/mxPQ1e7E0laScqvnwFxO
+	4o87omMhI5YnDuc9D5pdUqhjY8Mc9Utzo4O8c7s6WoT7XFDKido0aX5cpRi0yOo=
+X-Gm-Gg: ASbGncvYabpMQ5NKhf/uaCAxAe8H4ho5bp6DtkSoSpRRWbW6uKbXrDwjXUJfNeMkOxi
+	IVZPK+Z8ezlQ2QAbfSMqWWsix8AeeTuoOrdLzkC/HGdVa98TsLzLAzModmA1kTiN2Y814lQ1a+s
+	zDqLuvWIpmIzLCBscqeUmywmEDwoxE4VAVUHRw1uPeB0y9tBpfLZbfEaPrIoTcknZcPEO90jgG5
+	irg19k48typWyvNQe0EIfWdyELt13fAXf5UvVSRcr7trY0T/AOFYguG2vSBj7xMv2ZGAPhsjJve
+	v9IJujJn85+/W0JnoSn8ELUKdEY=
+X-Google-Smtp-Source: AGHT+IGfnTZuu7x6vWbYmuRmysx88ve6RVrYfx4SVhj9Cnq16Qs0v8RQpAhNnfDl/p101BKPt5R/Qw==
+X-Received: by 2002:a05:600c:6d5a:b0:436:e8b4:3cde with SMTP id 5b1f17b1804b1-438e01febf7mr214271695e9.14.1738664378625;
+        Tue, 04 Feb 2025 02:19:38 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:5485:d4b2:c087:b497])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-438e245f492sm183438775e9.38.2025.02.04.02.19.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Feb 2025 02:19:38 -0800 (PST)
+Date: Tue, 4 Feb 2025 11:19:35 +0100
+From: Simona Vetter <simona.vetter@ffwll.ch>
+To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Jaya Kumar <jayakumar.lkml@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	Matthew Wilcox <willy@infradead.org>,
+	David Hildenbrand <david@redhat.com>,
+	Kajtar Zsolt <soci@c64.rulez.org>, Maira Canal <mcanal@igalia.com>
+Subject: Re: [PATCH 2/3] mm: provide mapping_wrprotect_page() function
+Message-ID: <Z6Hptwe_Ugo9Qwl8@phenom.ffwll.local>
+Mail-Followup-To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jaya Kumar <jayakumar.lkml@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	Matthew Wilcox <willy@infradead.org>,
+	David Hildenbrand <david@redhat.com>,
+	Kajtar Zsolt <soci@c64.rulez.org>, Maira Canal <mcanal@igalia.com>
+References: <cover.1738347308.git.lorenzo.stoakes@oracle.com>
+ <c802c17cdba59e3455f3d7db07659d5da0ed6dc1.1738347308.git.lorenzo.stoakes@oracle.com>
+ <Z6DljlvHpjdFof42@phenom.ffwll.local>
+ <655f318b-d883-4ddd-9301-53a05ab06bc0@lucifer.local>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] fb_defio: do not use deprecated page->mapping, index
- fields
-To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Jaya Kumar <jayakumar.lkml@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
- David Hildenbrand <david@redhat.com>, Kajtar Zsolt <soci@c64.rulez.org>,
- Maira Canal <mcanal@igalia.com>
-References: <cover.1738347308.git.lorenzo.stoakes@oracle.com>
- <3542c5bb74d2487cf45d1d02ee5e73a05c4d279a.1738347308.git.lorenzo.stoakes@oracle.com>
- <d800c5a5-b751-4f74-aee4-8dda1536dd85@suse.de>
- <168bdcc6-1035-4072-855b-afcfa2bf7e5d@lucifer.local>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <168bdcc6-1035-4072-855b-afcfa2bf7e5d@lucifer.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Rspamd-Queue-Id: E48081F38C
-X-Spam-Score: -3.01
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[13];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	FREEMAIL_CC(0.00)[linux-foundation.org,gmail.com,ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org,kvack.org,infradead.org,redhat.com,c64.rulez.org,igalia.com];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Flag: NO
-X-Spam-Level: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <655f318b-d883-4ddd-9301-53a05ab06bc0@lucifer.local>
+X-Operating-System: Linux phenom 6.12.11-amd64 
 
-Hi
+On Mon, Feb 03, 2025 at 04:30:04PM +0000, Lorenzo Stoakes wrote:
+> On Mon, Feb 03, 2025 at 04:49:34PM +0100, Simona Vetter wrote:
+> > On Fri, Jan 31, 2025 at 06:28:57PM +0000, Lorenzo Stoakes wrote:
+> > > in the fb_defio video driver, page dirty state is used to determine when
+> > > frame buffer pages have been changed, allowing for batched, deferred I/O to
+> > > be performed for efficiency.
+> > >
+> > > This implementation had only one means of doing so effectively - the use of
+> > > the folio_mkclean() function.
+> > >
+> > > However, this use of the function is inappropriate, as the fb_defio
+> > > implementation allocates kernel memory to back the framebuffer, and then is
+> > > forced to specified page->index, mapping fields in order to permit the
+> > > folio_mkclean() rmap traversal to proceed correctly.
+> > >
+> > > It is not correct to specify these fields on kernel-allocated memory, and
+> > > moreover since these are not folios, page->index, mapping are deprecated
+> > > fields, soon to be removed.
+> > >
+> > > We therefore need to provide a means by which we can correctly traverse the
+> > > reverse mapping and write-protect mappings for a page backing an
+> > > address_space page cache object at a given offset.
+> > >
+> > > This patch provides this - mapping_wrprotect_page() allows for this
+> > > operation to be performed for a specified address_space, offset and page,
+> > > without requiring a folio nor, of course, an inappropriate use of
+> > > page->index, mapping.
+> > >
+> > > With this provided, we can subequently adjust the fb_defio implementation
+> > > to make use of this function and avoid incorrect invocation of
+> > > folio_mkclean() and more importantly, incorrect manipulation of
+> > > page->index, mapping fields.
+> > >
+> > > Signed-off-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+> > > ---
+> > >  include/linux/rmap.h |  3 ++
+> > >  mm/rmap.c            | 73 ++++++++++++++++++++++++++++++++++++++++++++
+> > >  2 files changed, 76 insertions(+)
+> > >
+> > > diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+> > > index 683a04088f3f..0bf5f64884df 100644
+> > > --- a/include/linux/rmap.h
+> > > +++ b/include/linux/rmap.h
+> > > @@ -739,6 +739,9 @@ unsigned long page_address_in_vma(const struct folio *folio,
+> > >   */
+> > >  int folio_mkclean(struct folio *);
+> > >
+> > > +int mapping_wrprotect_page(struct address_space *mapping, pgoff_t pgoff,
+> > > +		unsigned long nr_pages, struct page *page);
+> > > +
+> > >  int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
+> > >  		      struct vm_area_struct *vma);
+> > >
+> > > diff --git a/mm/rmap.c b/mm/rmap.c
+> > > index a2ff20c2eccd..bb5a42d95c48 100644
+> > > --- a/mm/rmap.c
+> > > +++ b/mm/rmap.c
+> > > @@ -1127,6 +1127,79 @@ int folio_mkclean(struct folio *folio)
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(folio_mkclean);
+> > >
+> > > +struct wrprotect_file_state {
+> > > +	int cleaned;
+> > > +	pgoff_t pgoff;
+> > > +	unsigned long pfn;
+> > > +	unsigned long nr_pages;
+> > > +};
+> > > +
+> > > +static bool mapping_wrprotect_page_one(struct folio *folio,
+> > > +		struct vm_area_struct *vma, unsigned long address, void *arg)
+> > > +{
+> > > +	struct wrprotect_file_state *state = (struct wrprotect_file_state *)arg;
+> > > +	struct page_vma_mapped_walk pvmw = {
+> > > +		.pfn		= state->pfn,
+> > > +		.nr_pages	= state->nr_pages,
+> > > +		.pgoff		= state->pgoff,
+> > > +		.vma		= vma,
+> > > +		.address	= address,
+> > > +		.flags		= PVMW_SYNC,
+> > > +	};
+> > > +
+> > > +	state->cleaned += page_vma_mkclean_one(&pvmw);
+> > > +
+> > > +	return true;
+> > > +}
+> > > +
+> > > +static void __rmap_walk_file(struct folio *folio, struct address_space *mapping,
+> > > +			     pgoff_t pgoff_start, unsigned long nr_pages,
+> > > +			     struct rmap_walk_control *rwc, bool locked);
+> > > +
+> > > +/**
+> > > + * mapping_wrprotect_page() - Write protect all mappings of this page.
+> > > + *
+> > > + * @mapping:	The mapping whose reverse mapping should be traversed.
+> > > + * @pgoff:	The page offset at which @page is mapped within @mapping.
+> > > + * @nr_pages:	The number of physically contiguous base pages spanned.
+> > > + * @page:	The page mapped in @mapping at @pgoff.
+> > > + *
+> > > + * Traverses the reverse mapping, finding all VMAs which contain a shared
+> > > + * mapping of the single @page in @mapping at offset @pgoff and write-protecting
+> > > + * the mappings.
+> > > + *
+> > > + * The page does not have to be a folio, but rather can be a kernel allocation
+> > > + * that is mapped into userland. We therefore do not require that the page maps
+> > > + * to a folio with a valid mapping or index field, rather these are specified in
+> > > + * @mapping and @pgoff.
+> > > + *
+> > > + * Return: the number of write-protected PTEs, or an error.
+> > > + */
+> > > +int mapping_wrprotect_page(struct address_space *mapping, pgoff_t pgoff,
+> > > +		unsigned long nr_pages, struct page *page)
+> > > +{
+> > > +	struct wrprotect_file_state state = {
+> > > +		.cleaned = 0,
+> > > +		.pgoff = pgoff,
+> > > +		.pfn = page_to_pfn(page),
+> >
+> > Could we go one step further and entirely drop the struct page? Similar to
+> > unmap_mapping_range for VM_SPECIAL mappings, except it only updates the
+> > write protection. The reason is that ideally we'd like fbdev defio to
+> > entirely get rid of any struct page usage, because with some dma_alloc()
+> > memory regions there's simply no struct page for them (it's a carveout).
+> > See e.g.  Sa498d4d06d6 ("drm/fbdev-dma: Only install deferred I/O if
+> > necessary") for some of the pain this has caused.
+> >
+> > So entirely struct page less way to write protect a pfn would be best. And
+> > it doesn't look like you need the page here at all?
+> 
+> In the original version [1] we did indeed take a PFN, so this shouldn't be
+> a problem to change.
+> 
+> Since we make it possible here to explicitly reference the address_space
+> object mapping the range, and from that can find all the VMAs that map the
+> page range [pgoff, pgoff + nr_pages), I don't think we do need to think
+> about a struct page here at all.
+> 
+> The defio code does seem to have some questionable assumptions in place, or
+> at least ones I couldn't explain away re: attempting to folio-lock (the
+> non-folios...), so there'd need to be changes on that side, which I suggest
+> would probably be best for a follow-up series given this one's urgency.
+
+Yeah there's a bunch more things we need to do to get there. It was the
+lack of a pfn-based core mm function that stopped us from doing that thus
+far, plus also fbdev defio being very low priority. But it would
+definitely avoid a bunch of corner cases and duplication in fbdev
+emulation code in drivers/gpu/drm.
+
+> But I'm more than happy to make this interface work with that by doing
+> another revision where we export PFN only, I think something like:
+> 
+> int mapping_wrprotect_range(struct address_space *mapping, pgoff_t pgoff,
+> 		unsigned long pfn, unsigned long nr_pages);
+> 
+> Should work?
+> 
+> [1]:https://lore.kernel.org/all/cover.1736352361.git.lorenzo.stoakes@oracle.com/
 
 
-Am 04.02.25 um 09:37 schrieb Lorenzo Stoakes:
-> On Tue, Feb 04, 2025 at 09:21:55AM +0100, Thomas Zimmermann wrote:
->> Hi
->>
->>
->> Am 31.01.25 um 19:28 schrieb Lorenzo Stoakes:
->>> With the introduction of mapping_wrprotect_page() there is no need to use
->>> folio_mkclean() in order to write-protect mappings of frame buffer pages,
->>> and therefore no need to inappropriately set kernel-allocated page->index,
->>> mapping fields to permit this operation.
->>>
->>> Instead, store the pointer to the page cache object for the mapped driver
->>> in the fb_deferred_io object, and use the already stored page offset from
->>> the pageref object to look up mappings in order to write-protect them.
->>>
->>> This is justified, as for the page objects to store a mapping pointer at
->>> the point of assignment of pages, they must all reference the same
->>> underlying address_space object. Since the life time of the pagerefs is
->>> also the lifetime of the fb_deferred_io object, storing the pointer here
->>> makes snese.
->>>
->>> This eliminates the need for all of the logic around setting and
->>> maintaining page->index,mapping which we remove.
->>>
->>> This eliminates the use of folio_mkclean() entirely but otherwise should
->>> have no functional change.
->>>
->>> Signed-off-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
->>> Tested-by: Kajtar Zsolt <soci@c64.rulez.org>
->>> ---
->>>    drivers/video/fbdev/core/fb_defio.c | 38 +++++++++--------------------
->>>    include/linux/fb.h                  |  1 +
->>>    2 files changed, 12 insertions(+), 27 deletions(-)
->>>
->>> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
->>> index 65363df8e81b..b9bab27a8c0f 100644
->>> --- a/drivers/video/fbdev/core/fb_defio.c
->>> +++ b/drivers/video/fbdev/core/fb_defio.c
->>> @@ -69,14 +69,6 @@ static struct fb_deferred_io_pageref *fb_deferred_io_pageref_lookup(struct fb_in
->>>    	return pageref;
->>>    }
->>> -static void fb_deferred_io_pageref_clear(struct fb_deferred_io_pageref *pageref)
->>> -{
->>> -	struct page *page = pageref->page;
->>> -
->>> -	if (page)
->>> -		page->mapping = NULL;
->>> -}
->>> -
->>>    static struct fb_deferred_io_pageref *fb_deferred_io_pageref_get(struct fb_info *info,
->>>    								 unsigned long offset,
->>>    								 struct page *page)
->>> @@ -140,13 +132,10 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
->>>    	if (!page)
->>>    		return VM_FAULT_SIGBUS;
->>> -	if (vmf->vma->vm_file)
->>> -		page->mapping = vmf->vma->vm_file->f_mapping;
->>> -	else
->>> +	if (!vmf->vma->vm_file)
->>>    		printk(KERN_ERR "no mapping available\n");
->> fb_err() here.
-> Ack, will fix on respin.
->
->>> -	BUG_ON(!page->mapping);
->>> -	page->index = vmf->pgoff; /* for folio_mkclean() */
->>> +	BUG_ON(!info->fbdefio->mapping);
->>>    	vmf->page = page;
->>>    	return 0;
->>> @@ -194,9 +183,9 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
->>>    	/*
->>>    	 * We want the page to remain locked from ->page_mkwrite until
->>> -	 * the PTE is marked dirty to avoid folio_mkclean() being called
->>> -	 * before the PTE is updated, which would leave the page ignored
->>> -	 * by defio.
->>> +	 * the PTE is marked dirty to avoid mapping_wrprotect_page()
->>> +	 * being called before the PTE is updated, which would leave
->>> +	 * the page ignored by defio.
->>>    	 * Do this by locking the page here and informing the caller
->>>    	 * about it with VM_FAULT_LOCKED.
->>>    	 */
->>> @@ -274,14 +263,13 @@ static void fb_deferred_io_work(struct work_struct *work)
->>>    	struct fb_deferred_io_pageref *pageref, *next;
->>>    	struct fb_deferred_io *fbdefio = info->fbdefio;
->>> -	/* here we mkclean the pages, then do all deferred IO */
->>> +	/* here we wrprotect the page's mappings, then do all deferred IO. */
->>>    	mutex_lock(&fbdefio->lock);
->>>    	list_for_each_entry(pageref, &fbdefio->pagereflist, list) {
->>> -		struct folio *folio = page_folio(pageref->page);
->>> +		struct page *page = pageref->page;
->>> +		pgoff_t pgoff = pageref->offset >> PAGE_SHIFT;
->>> -		folio_lock(folio);
->>> -		folio_mkclean(folio);
->>> -		folio_unlock(folio);
->>> +		mapping_wrprotect_page(fbdefio->mapping, pgoff, 1, page);
->>>    	}
->>>    	/* driver's callback with pagereflist */
->>> @@ -337,6 +325,7 @@ void fb_deferred_io_open(struct fb_info *info,
->>>    {
->>>    	struct fb_deferred_io *fbdefio = info->fbdefio;
->>> +	fbdefio->mapping = file->f_mapping;
->> Does this still work if more than one program opens the file?
-> Yes, the mapping (address_space) pointer will remain the same across the
-> board. The way defio is implemented absolutely relies on this assumption.
+Yup that looks like the thing we'll need to wean defio of all that
+questionable folio/page wrangling. But like you say, should be easy to
+add/update when we get there.
 
-Great. With the fb_err() fixed, you can add
+Thanks, Sima
 
-Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-to the patch.
-
-Best regards
-Thomas
-
->
->> Best regard
->> Thomas
->>
->>>    	file->f_mapping->a_ops = &fb_deferred_io_aops;
->>>    	fbdefio->open_count++;
->>>    }
->>> @@ -344,13 +333,7 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
->>>    static void fb_deferred_io_lastclose(struct fb_info *info)
->>>    {
->>> -	unsigned long i;
->>> -
->>>    	flush_delayed_work(&info->deferred_work);
->>> -
->>> -	/* clear out the mapping that we setup */
->>> -	for (i = 0; i < info->npagerefs; ++i)
->>> -		fb_deferred_io_pageref_clear(&info->pagerefs[i]);
->>>    }
->>>    void fb_deferred_io_release(struct fb_info *info)
->>> @@ -370,5 +353,6 @@ void fb_deferred_io_cleanup(struct fb_info *info)
->>>    	kvfree(info->pagerefs);
->>>    	mutex_destroy(&fbdefio->lock);
->>> +	fbdefio->mapping = NULL;
->>>    }
->>>    EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
->>> diff --git a/include/linux/fb.h b/include/linux/fb.h
->>> index 5ba187e08cf7..cd653862ab99 100644
->>> --- a/include/linux/fb.h
->>> +++ b/include/linux/fb.h
->>> @@ -225,6 +225,7 @@ struct fb_deferred_io {
->>>    	int open_count; /* number of opened files; protected by fb_info lock */
->>>    	struct mutex lock; /* mutex that protects the pageref list */
->>>    	struct list_head pagereflist; /* list of pagerefs for touched pages */
->>> +	struct address_space *mapping; /* page cache object for fb device */
->>>    	/* callback */
->>>    	struct page *(*get_page)(struct fb_info *info, unsigned long offset);
->>>    	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
->> --
->> --
->> Thomas Zimmermann
->> Graphics Driver Developer
->> SUSE Software Solutions Germany GmbH
->> Frankenstrasse 146, 90461 Nuernberg, Germany
->> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
->> HRB 36809 (AG Nuernberg)
->>
+> 
+> >
+> > Cheers, Sima
+> 
+> Thanks!
+> 
+> >
+> >
+> > > +		.nr_pages = nr_pages,
+> > > +	};
+> > > +	struct rmap_walk_control rwc = {
+> > > +		.arg = (void *)&state,
+> > > +		.rmap_one = mapping_wrprotect_page_one,
+> > > +		.invalid_vma = invalid_mkclean_vma,
+> > > +	};
+> > > +
+> > > +	if (!mapping)
+> > > +		return 0;
+> > > +
+> > > +	__rmap_walk_file(/* folio = */NULL, mapping, pgoff, nr_pages, &rwc,
+> > > +			 /* locked = */false);
+> > > +
+> > > +	return state.cleaned;
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(mapping_wrprotect_page);
+> > > +
+> > >  /**
+> > >   * pfn_mkclean_range - Cleans the PTEs (including PMDs) mapped with range of
+> > >   *                     [@pfn, @pfn + @nr_pages) at the specific offset (@pgoff)
+> > > --
+> > > 2.48.1
+> > >
+> >
+> > --
+> > Simona Vetter
+> > Software Engineer, Intel Corporation
+> > http://blog.ffwll.ch
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Simona Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

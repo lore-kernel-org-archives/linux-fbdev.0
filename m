@@ -1,144 +1,87 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from c64.rulez.org (c64.rulez.org [79.139.58.36])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D286F233153;
-	Thu,  6 Feb 2025 15:40:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3A251A9B29
+	for <linux-fbdev@vger.kernel.org>; Thu,  6 Feb 2025 19:44:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.139.58.36
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738856452; cv=none; b=TwlAdylVHvmoxAaN3gbxGYh+Hoew63WoT7nQIyv8XzbryRXHO6h3AJeQdDXKdyAS00Ph3Ahw38EXGZ0lQLJlVyiHKHWulZHycHOeCCi1mDZtS8bnpPyubmO3o9zTSa7tIx611csKwTd2mFOcA2QYWSgrZg3Xo/I3HZkRTtmiaGM=
+	t=1738871108; cv=none; b=GNeMci2XboNMn5mvUxpJQtmsIY6O4qNGouJZQoBCajG+DIsQW/uf05/MGeaj060K+7/U9XNR2SHZZGyv+rFv5N2FP9WTKNoqYzRfS1/3i5muWLt12aKryDoFkhO086TQM7UZEPRkycwCiVPKjNqxuaDQBYQsi3JvGNVqL+D32LQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738856452; c=relaxed/simple;
-	bh=lz7I91W2cfM3234Y7dwhDeYlhnpEVRpwP8ihLa2kFNY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=pgySMXx1PCRUUQ7ZIiGHE8A41CIG1LarFFwKw63udDq+LP2H6iaP1H48a9FAIe2PcXO3oh5iXQ45XsLAizDwrNCsAC78wwpxoqSsENUZaRVPWdaVKKbIFn2KPJaYp2Fpf4kgwkXVRj5gmNjd9SNs0OLYtEpKUJd+U00g9Q7wMTU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 57A261F453;
-	Thu,  6 Feb 2025 15:40:47 +0000 (UTC)
-Authentication-Results: smtp-out2.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 108F913AC0;
-	Thu,  6 Feb 2025 15:40:47 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id kLW3Av/XpGf4PAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 06 Feb 2025 15:40:47 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: pavel@ucw.cz,
-	lee@kernel.org,
-	danielt@kernel.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de,
-	simona@ffwll.ch
-Cc: linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 11/13] leds: backlight trigger: Move blank-state handling into helper
-Date: Thu,  6 Feb 2025 16:30:30 +0100
-Message-ID: <20250206154033.697495-12-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250206154033.697495-1-tzimmermann@suse.de>
-References: <20250206154033.697495-1-tzimmermann@suse.de>
+	s=arc-20240116; t=1738871108; c=relaxed/simple;
+	bh=PiXGlOYyOQzswKDpDjNBc2ui4OdFr6Loif1NFbEzD1Y=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type; b=rBuY05JRwcKxPmv2DxkvQuaHH1MlWKcIY1VulefglauaQbNIlRa+CYUxJBcMQjF5bjk3rVen47K0KBktEDZWriUsHSa8sZlMdh0Y9/Qr/1TsScRYaBVwcBbMHaus2D9XDj8pP+UYgcBhrUySWxTwuoplDmKTqKeuGitlfo6LJmw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org; spf=pass smtp.mailfrom=c64.rulez.org; arc=none smtp.client-ip=79.139.58.36
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=c64.rulez.org
+Received: by c64.rulez.org (Postfix, from userid 1000)
+	id 4C64C100FA; Thu,  6 Feb 2025 20:44:50 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by c64.rulez.org (Postfix) with ESMTP id 4900B100F6;
+	Thu,  6 Feb 2025 20:44:50 +0100 (CET)
+Date: Thu, 6 Feb 2025 20:44:50 +0100 (CET)
+From: Zsolt Kajtar <soci@c64.rulez.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH 00/13] Deduplicate cfb/sys drawing fbops
+Message-ID: <dfcaa8c6-a8bd-257b-832a-1a36ff87e4f@c64.rulez.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[];
-	ASN(0.00)[asn:25478, ipnet:::/0, country:RU]
-X-Spam-Flag: NO
-X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: 57A261F453
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Level: 
+Content-Type: text/plain; format=flowed; charset=US-ASCII
 
-Move the handling of blank-state updates into a separate helper,
-so that is can be called without the fbdev event. No functional
-changes.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/leds/trigger/ledtrig-backlight.c | 33 ++++++++++++++----------
- 1 file changed, 19 insertions(+), 14 deletions(-)
+In 68648ed1f58d98b8e8d994022e5e25331fbfe42a the drawing routines were
+duplicated to have separate I/O and system memory versions.
 
-diff --git a/drivers/leds/trigger/ledtrig-backlight.c b/drivers/leds/trigger/ledtrig-backlight.c
-index c1c1aa60cf07..f9317f93483b 100644
---- a/drivers/leds/trigger/ledtrig-backlight.c
-+++ b/drivers/leds/trigger/ledtrig-backlight.c
-@@ -30,34 +30,39 @@ struct bl_trig_notifier {
- static struct list_head ledtrig_backlight_list;
- static struct mutex ledtrig_backlight_list_mutex;
- 
-+static void ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
-+{
-+	struct led_classdev *led = n->led;
-+	int new_status = !on ? BLANK : UNBLANK;
-+
-+	if (new_status == n->old_status)
-+		return;
-+
-+	if ((n->old_status == UNBLANK) ^ n->invert) {
-+		n->brightness = led->brightness;
-+		led_set_brightness_nosleep(led, LED_OFF);
-+	} else {
-+		led_set_brightness_nosleep(led, n->brightness);
-+	}
-+
-+	n->old_status = new_status;
-+}
-+
- static int fb_notifier_callback(struct notifier_block *p,
- 				unsigned long event, void *data)
- {
- 	struct bl_trig_notifier *n = container_of(p,
- 					struct bl_trig_notifier, notifier);
--	struct led_classdev *led = n->led;
- 	struct fb_event *fb_event = data;
- 	int *blank;
--	int new_status;
- 
- 	/* If we aren't interested in this event, skip it immediately ... */
- 	if (event != FB_EVENT_BLANK)
- 		return 0;
- 
- 	blank = fb_event->data;
--	new_status = *blank ? BLANK : UNBLANK;
- 
--	if (new_status == n->old_status)
--		return 0;
--
--	if ((n->old_status == UNBLANK) ^ n->invert) {
--		n->brightness = led->brightness;
--		led_set_brightness_nosleep(led, LED_OFF);
--	} else {
--		led_set_brightness_nosleep(led, n->brightness);
--	}
--
--	n->old_status = new_status;
-+	ledtrig_backlight_blank(n, !blank[0]);
- 
- 	return 0;
- }
+Later the pixel reversing in 779121e9f17525769c04a00475fd85600c8c04eb
+was only added to the I/O version and not to system.
+
+That's unfortunate as reversing is not something only applicable for
+I/O memory and I happen to need both I/O and system version now.
+
+One option is to bring the system version up to date, but from the
+maintenance perspective it's better to not have two versions in the
+first place.
+
+The drawing routines (based on the cfb version) were moved to header
+files. These are now included in both cfb and sys modules. The memory
+access and other minor differences were handled with a few macros.
+
+The last patch adds a separate config option for the system version.
+
+Zsolt Kajtar (13):
+   fbdev: core: Copy cfbcopyarea to fb_copyarea
+   fbdev: core: Make fb_copyarea generic
+   fbdev: core: Use generic copyarea for as cfb_copyarea
+   fbdev: core: Use generic copyarea for as sys_copyarea
+   fbdev: core: Copy cfbfillrect to fb_fillrect
+   fbdev: core: Make fb_fillrect generic
+   fbdev: core: Use generic fillrect for as cfb_fillrect
+   fbdev: core: Use generic fillrect for as sys_fillrect
+   fbdev: core: Copy cfbimgblt to fb_imageblit
+   fbdev: core: Make fb_imageblit generic
+   fbdev: core: Use generic imageblit for as cfb_imageblit
+   fbdev: core: Use generic imageblit for as sys_imageblit
+   fbdev: core: Split CFB and SYS pixel reversing configuration
+
+  drivers/video/fbdev/core/Kconfig        |  10 +-
+  drivers/video/fbdev/core/cfbcopyarea.c  | 427 +-----------------------
+  drivers/video/fbdev/core/cfbfillrect.c  | 363 +-------------------
+  drivers/video/fbdev/core/cfbimgblt.c    | 358 +-------------------
+  drivers/video/fbdev/core/fb_copyarea.h  | 421 +++++++++++++++++++++++
+  drivers/video/fbdev/core/fb_draw.h      |   6 +-
+  drivers/video/fbdev/core/fb_fillrect.h  | 359 ++++++++++++++++++++
+  drivers/video/fbdev/core/fb_imageblit.h | 356 ++++++++++++++++++++
+  drivers/video/fbdev/core/syscopyarea.c  | 358 +-------------------
+  drivers/video/fbdev/core/sysfillrect.c  | 315 +----------------
+  drivers/video/fbdev/core/sysimgblt.c    | 326 +-----------------
+  11 files changed, 1208 insertions(+), 2091 deletions(-)
+  create mode 100644 drivers/video/fbdev/core/fb_copyarea.h
+  create mode 100644 drivers/video/fbdev/core/fb_fillrect.h
+  create mode 100644 drivers/video/fbdev/core/fb_imageblit.h
+
 -- 
-2.48.1
+2.30.2
 

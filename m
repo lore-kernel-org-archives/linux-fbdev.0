@@ -1,127 +1,84 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f199.google.com (mail-il1-f199.google.com [209.85.166.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9485F376;
-	Wed,  5 Feb 2025 15:00:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E65D225A5F
+	for <linux-fbdev@vger.kernel.org>; Thu,  6 Feb 2025 09:15:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738767640; cv=none; b=PFxug31mVWtI8RoE2b1EwRj+1p+LI8recql8TixJqoPNKDHHWmkEcHYJxplgZ2fFoV5gs5XLZCK6Qyt8eYEw2Jfq9EuuYqOqZu1mYXJWbaIuZ3QxzlrHqZuF87Oe6xgBLNkXPcVx5kai/pCsC5pyL8NiOb/ZcCjiYmbEHKKyz4g=
+	t=1738833321; cv=none; b=XVRtL6iQ9xHRswEWEFV9bb3voeo4hsLggevJ+8pZxwToXmuLpX2Mpqd5fcuYEOTT68e+Ng5VXEFpa7xWxWXLSAMvUwH/VOS7U3S2jYxKwexb/y/tyce2f9B1tbKXM/HigGIIbCMpsdlvdebEKoa8VO7xm5c5xzAWs9VV7BDSn9Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738767640; c=relaxed/simple;
-	bh=SSxV7Twdz4JEXudo3L1T7WHvOJsEzhKZmXm3KNFOwjA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OW4tXpnTVd1kFPuzoAyTGfSiRrPB8DljvuR4Ci9FIrE9bt9kb00MERxFHAwkGg7ur38WyJ7XgREFKDUA+Mzb/TB38GvUso72O8J6r1nm1kjOMRoZplJGsQK9iW6/oDOMywjGxtuG4UrpLoI3k+1npmDBEpqbMhuMqQFbBPNIMHI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=DwvmshoX; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="DwvmshoX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBCDAC4CED1;
-	Wed,  5 Feb 2025 15:00:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1738767640;
-	bh=SSxV7Twdz4JEXudo3L1T7WHvOJsEzhKZmXm3KNFOwjA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DwvmshoX1NeWKSyAXdMAcRLhoT3piakurE5gYnNuUgHxS5aHmtWEUwrEoPtK+R8kn
-	 Dkcqk3OiN/UhkGONLzacgkL3YxGVEAtkE2GSxH9P7KzN1rNOK8YVpP5fXzPEGtDtzm
-	 Lptotf5OscH9+20PUhvHOQmj0YaGst5dct3VDyCU=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Randy Dunlap <rdunlap@infradead.org>,
-	kernel test robot <lkp@intel.com>,
-	David Rheinsberg <david@readahead.eu>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Peter Jones <pjones@redhat.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	linux-fbdev@vger.kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>,
-	linux-efi@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.13 432/623] efi: sysfb_efi: fix W=1 warnings when EFI is not set
-Date: Wed,  5 Feb 2025 14:42:54 +0100
-Message-ID: <20250205134512.748971645@linuxfoundation.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250205134456.221272033@linuxfoundation.org>
-References: <20250205134456.221272033@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	s=arc-20240116; t=1738833321; c=relaxed/simple;
+	bh=5hFr9r0+xVw070raBzXtRqNzSe0omxbKrZ3Wlaemwj8=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=kvBDfMCFka1einorwQXqY4f+7iJ3+yJEGLG1Pwdj4poiEmbNoLUr92BF81QfwuhAnJ1oxLHp08ZJOksXJWrpMAdWPzIxHOf2txDvHra37MLTX6sESDHCcugM81ZwRlyMKlzoG57l0XVghd9QGz77aUaGWnGK6AMBwkvXcnLAlC4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-il1-f199.google.com with SMTP id e9e14a558f8ab-3d05999a1a4so4571895ab.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 06 Feb 2025 01:15:20 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738833319; x=1739438119;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=xYOBYj7aJAB6p76ECKhTSVve+8W7ayGSimHBE//XKLw=;
+        b=Lclf1o5geaJSZVCSp9gxGMbJwLJYSipglaiIK4oC/OsoFHgmPVXINvVSPlApsTuVvr
+         6Lzm2LVZSFl5foHDvrUmamcgE7B2nFd8pjOAA45RSH1UaIzK+u5TP8LCz92s5vRWoFjD
+         aK5yrg1x9cAD8hIK71zOHAjlydXyL0uPz2SHUjSZV3V/7BDZlzgWUfe9WKPYa6v9P7MK
+         C+aGFyH9R6rzQhgdg0drsUF4kXb+WBkCk/JMjwBTMwPkFtjxIjmO4Mk/vZ8v2FMfTMqj
+         H9zgLcvBPxSAY57EZfg+9MZc6YEd1par2a5hXBKM5Xhtn36xiCfj1i+VLVeZFCNjJQrB
+         TiGg==
+X-Forwarded-Encrypted: i=1; AJvYcCVyz4Vy91orW6OeWjqtSbqJZH9KHOwDcj6MEONIUHmq9aK1yqdTjgdA4F9CM5rjAUtUxFGr6ESRdldP2A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxAdCU4sfoCPGkX+anPJKfJpZ7CzsSJ+RjYvm4QElmzXpUE2sB8
+	fd9E2oEQfAZ7hfnp61pBIj0EDJxwfY2aYArBxvvdZnA712eFxiNYbNG1hpTmfhmFDljLNwhq2kb
+	5MXI4+oWc/J/z3YZa0mZXeRxn9u83bzqWASAtcuczrOh8QUaTyEMZRvo=
+X-Google-Smtp-Source: AGHT+IEAqn2vw/fSFk8xV6QOIyrYA4RUnDiruBcJFhNgf8a+1jZtTCFOWtpHjqNyI8XXA1cwYd00rCgCnpFDGVPthTAimqgwbmqr
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6e02:1d88:b0:3cf:bc71:94ef with SMTP id
+ e9e14a558f8ab-3d04f901a64mr49860765ab.17.1738833319407; Thu, 06 Feb 2025
+ 01:15:19 -0800 (PST)
+Date: Thu, 06 Feb 2025 01:15:19 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <67a47da7.050a0220.19061f.05fa.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (Feb 2025)
+From: syzbot <syzbot+list52071043e7dbf4b67ce6@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-6.13-stable review patch.  If anyone has any objections, please let me know.
+Hello fbdev maintainers/developers,
 
-------------------
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-From: Randy Dunlap <rdunlap@infradead.org>
+During the period, 1 new issues were detected and 0 were fixed.
+In total, 6 issues are still open and 25 have already been fixed.
 
-[ Upstream commit 19fdc68aa7b90b1d3d600e873a3e050a39e7663d ]
+Some of the still happening issues:
 
-A build with W=1 fails because there are code and data that are not
-needed or used when CONFIG_EFI is not set. Move the "#ifdef CONFIG_EFI"
-block to earlier in the source file so that the unused code/data are
-not built.
+Ref Crashes Repro Title
+<1> 527     Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (4)
+                  https://syzkaller.appspot.com/bug?extid=c4b7aa0513823e2ea880
+<2> 6       No    BUG: unable to handle kernel paging request in bitfill_aligned (4)
+                  https://syzkaller.appspot.com/bug?extid=66bde8e1e4161d4b2cca
+<3> 3       No    UBSAN: array-index-out-of-bounds in fbcon_info_from_console
+                  https://syzkaller.appspot.com/bug?extid=a7d4444e7b6e743572f7
 
-drivers/firmware/efi/sysfb_efi.c:345:39: warning: ‘efifb_fwnode_ops’ defined but not used [-Wunused-const-variable=]
-  345 | static const struct fwnode_operations efifb_fwnode_ops = {
-      |                                       ^~~~~~~~~~~~~~~~
-drivers/firmware/efi/sysfb_efi.c:238:35: warning: ‘efifb_dmi_swap_width_height’ defined but not used [-Wunused-const-variable=]
-  238 | static const struct dmi_system_id efifb_dmi_swap_width_height[] __initconst = {
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/firmware/efi/sysfb_efi.c:188:35: warning: ‘efifb_dmi_system_table’ defined but not used [-Wunused-const-variable=]
-  188 | static const struct dmi_system_id efifb_dmi_system_table[] __initconst = {
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~
-
-Fixes: 15d27b15de96 ("efi: sysfb_efi: fix build when EFI is not set")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202501071933.20nlmJJt-lkp@intel.com/
-Cc: David Rheinsberg <david@readahead.eu>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Peter Jones <pjones@redhat.com>
-Cc: Simona Vetter <simona@ffwll.ch>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Ard Biesheuvel <ardb@kernel.org>
-Cc: linux-efi@vger.kernel.org
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/firmware/efi/sysfb_efi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/firmware/efi/sysfb_efi.c b/drivers/firmware/efi/sysfb_efi.c
-index cc807ed35aedf..1e509595ac034 100644
---- a/drivers/firmware/efi/sysfb_efi.c
-+++ b/drivers/firmware/efi/sysfb_efi.c
-@@ -91,6 +91,7 @@ void efifb_setup_from_dmi(struct screen_info *si, const char *opt)
- 		_ret_;						\
- 	})
- 
-+#ifdef CONFIG_EFI
- static int __init efifb_set_system(const struct dmi_system_id *id)
- {
- 	struct efifb_dmi_info *info = id->driver_data;
-@@ -346,7 +347,6 @@ static const struct fwnode_operations efifb_fwnode_ops = {
- 	.add_links = efifb_add_links,
- };
- 
--#ifdef CONFIG_EFI
- static struct fwnode_handle efifb_fwnode;
- 
- __init void sysfb_apply_efi_quirks(void)
--- 
-2.39.5
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
 
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
 
-
+You may send multiple commands in a single email message.

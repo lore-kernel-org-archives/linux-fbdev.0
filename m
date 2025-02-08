@@ -1,41 +1,37 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id F2D491B392B;
-	Sat,  8 Feb 2025 09:30:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.5
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 70C3F23C8D4;
+	Sat,  8 Feb 2025 10:24:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739007008; cv=none; b=KeffPab7Nu1romUzKU2PcRRKGa1tyOdraGAaZA9iE2j8T9JPfu5G//ezqTJfVjA7wgq80BSzCktfFsdTHwDbV+QbhuWsEE0Q08vFv2+BDMwjcAAabBlwyoPWHJ57qIDrYOGEEZmkOeg6I8QNPZHuVyuhFr4Gtp6eNXN4UhSPOcU=
+	t=1739010265; cv=none; b=StE3amoNdbXmvLrU2VnqPuZvx7eDPcxvEf40p0SmGk0EiN6ItPd/SeIUsy+alg7N6oXDcQcpTrIk6LqTZXhi5c+ae5x0QsijjDp0uwTd96MiRUS+kR8H9RDIy46fpK75nd6ElQPns/u40lr5KsTn+YjU1ZBzJZKuu2Xc2JXYTQU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739007008; c=relaxed/simple;
-	bh=dWo/bfeju/FyepwzWaZBtQ69y0AhMrz/V6IqsmlS4ZU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=TO4zMI5OEcqMBJJcrKlpQFOa1zLuiSnDaSxNQ0nS6J2C6MTrF0aBwbzAz+/3Scxx5eovEZKgvMMUOf6aBxUWnS2PQb19dPb0Vmuqtj/9CDnfM/smgdL72n5/j0E4fG7vpiMPEBaXKDkZTnPoa63VmeuXNpmQcqRqY67AjNbeGKs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ed6A45wM; arc=none smtp.client-ip=117.135.210.5
+	s=arc-20240116; t=1739010265; c=relaxed/simple;
+	bh=VGRG8R7N/hrZKx/aSr+NKCfcjmclVvhtZ352HaXqP/A=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=FWjhrCck52lsyBLOXnP6MEK0Ma5lyUXsmIUz5HYeAlCtRJnexREi/V5k9rVtob4sMhR6iwarCFIGbH7SiJhhzioDk/YYYFrHvePGA+AsHRckz2yepjwODL4Sye/oRPzZIdZd3tYAcOc3mPk7haaVxOKLL2SAq86uOPkfHDkyu7I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ZoMhS++v; arc=none smtp.client-ip=220.197.31.4
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ed6A45wM"
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ZoMhS++v"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=bYMGG
-	j4F/JZvudIDaRtW1ZtWpqeyPToJB8Uq/ovG1Fk=; b=ed6A45wMvBi8XX+8dtWC3
-	2SbnX19nikA5ExWLPV/aZbZtwAh4o+JyW2FApF/mzmcQT4cbBLCIKJsr3NsnIuqW
-	yI2V/Vd/iuTxW2chXiDyQllQM7v37+Z6WGcHY7NfboUIbGD78ERbPvrHtTBKf+LM
-	Y2nie+60wy87W+pNbLOFvQ=
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=FJHFR
+	zNnEifHYNKmIB7Y5o2gTuLBBAspQuUOtDbOveo=; b=ZoMhS++vRlud5Xteoz1Jr
+	E6b/AdX87wumrtvySKDrXZX6lBwR9cgiKFsOAcKFn+nhZfURWx7KSLp+fUgoobZn
+	w9eOGbgBopWt1YWDyK+THd7upBIYiIlbTNsLsrOxCA9XZ0tSMH1lTV3Uvq9maSV6
+	kjs4Fkj7YH+fHjs5QxACFQ=
 Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id _____wB35gTwI6dnE0MiKg--.12901S2;
-	Sat, 08 Feb 2025 17:29:21 +0800 (CST)
+	by gzsmtp4 (Coremail) with SMTP id PygvCgB3tQ_EMKdnfA5VBw--.59282S2;
+	Sat, 08 Feb 2025 18:24:06 +0800 (CST)
 From: oushixiong1025@163.com
-To: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	Lee Jones <lee@kernel.org>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	Arnd Bergmann <arnd@arndb.de>,
+To: Timur Tabi <timur@kernel.org>
+Cc: Helge Deller <deller@gmx.de>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: [PATCH v2] fbdev: lcdcfb: add missing device_remove_file()
-Date: Sat,  8 Feb 2025 17:29:18 +0800
-Message-Id: <20250208092918.251733-1-oushixiong1025@163.com>
+Subject: [PATCH] fbdev: fsl-diu-fb: add missing device_remove_file()
+Date: Sat,  8 Feb 2025 18:23:59 +0800
+Message-Id: <20250208102359.279333-1-oushixiong1025@163.com>
 X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -44,75 +40,44 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wB35gTwI6dnE0MiKg--.12901S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7WFy8WFWDWF4Dtw1fWr13XFb_yoW8Zry5pF
-	4UGas0grWrZrnrWr4fAF4UuF45u3s7tas3Zr1xJ345u3s3ArsYg343Ja93XrWfJa93GF1a
-	vrWrt345uF4UuaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UQVy3UUUUU=
-X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbBYwXtD2enFw6wdwAAsa
+X-CM-TRANSID:PygvCgB3tQ_EMKdnfA5VBw--.59282S2
+X-Coremail-Antispam: 1Uf129KBjvdXoWrZFWDGFWxWw47GrWkCFWruFg_yoWDGFc_uF
+	15ZrWvgr1UGr1vgr1kKF4SyryrKF1qgay3XFs2gFyrt3s7u3yYg3yUZr4jgrZrWw4IkF90
+	yw1DWrZxZF1rCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU1nqXJUUUUU==
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXQTtD2enL0MPhwAAsf
 
 From: Shixiong Ou <oushixiong@kylinos.cn>
 
-1. The device_remove_file() need to be called when driver is removing.
-2. The device_remove_file() need to be called if the call to
-   device_create_file() fails.
+Call device_remove_file() when driver remove.
 
 Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
 ---
-v1->v2:
-	add missing 'return error'.
-	call device_remove_file() in sh_mobile_lcdc_overlay_fb_unregister().
+ drivers/video/fbdev/fsl-diu-fb.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 4715dcb59811..c52661d5491a 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1504,10 +1504,14 @@ static void
- sh_mobile_lcdc_overlay_fb_unregister(struct sh_mobile_lcdc_overlay *ovl)
- {
- 	struct fb_info *info = ovl->info;
-+	unsigned int i;
- 
- 	if (info == NULL || info->dev == NULL)
- 		return;
- 
-+	for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i)
-+		device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
-+
- 	unregister_framebuffer(ovl->info);
- }
- 
-@@ -1516,7 +1520,7 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
- {
- 	struct sh_mobile_lcdc_priv *lcdc = ovl->channel->lcdc;
- 	struct fb_info *info = ovl->info;
--	unsigned int i;
-+	unsigned int i, error = 0;
- 	int ret;
- 
- 	if (info == NULL)
-@@ -1531,9 +1535,15 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
- 		 info->var.yres, info->var.bits_per_pixel);
- 
- 	for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i) {
--		ret = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
--		if (ret < 0)
--			return ret;
-+		error = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
-+		if (error)
-+			break;
-+	}
-+
-+	if (error) {
-+		while (--i >= 0)
-+			device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
-+		return error;
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index 5ac8201c3533..8c91af9a9156 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1807,6 +1807,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "could not create sysfs file %s\n",
+ 			data->dev_attr.attr.name);
++		goto error;
  	}
  
- 	return 0;
+ 	dev_set_drvdata(&pdev->dev, data);
+@@ -1827,6 +1828,9 @@ static void fsl_diu_remove(struct platform_device *pdev)
+ 	int i;
+ 
+ 	data = dev_get_drvdata(&pdev->dev);
++
++	device_remove_file(&pdev->dev, &data->dev_attr);
++
+ 	disable_lcdc(&data->fsl_diu_info[0]);
+ 
+ 	free_irq(data->irq, data->diu_reg);
 -- 
 2.17.1
 

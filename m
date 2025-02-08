@@ -1,88 +1,113 @@
-Received: from server-598995.kolorio.com (server-598995.kolorio.com [162.241.152.247])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 790351547C9
-	for <linux-fbdev@vger.kernel.org>; Sat,  8 Feb 2025 04:43:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.241.152.247
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.4])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0B4A01A9B52;
+	Sat,  8 Feb 2025 09:06:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738989792; cv=none; b=EjDdiNh+24tmCp9afr5BUc/DXAK2oRFA61DZWlDh5OeHOuGWb92SOi4UYDPLRztfQQCLyiRRiWec4LlHq9PRuPahfWAZuqyhhF2KXq0eORzP2qc6JBqJEEPK0ZBBngphFA/twKxUJaXFBTOYqXfATkE7+g78rW/8aBSo8QD10Bo=
+	t=1739005594; cv=none; b=UBaRJmK0YEZ7aWosZcIRHh24q27qPXVhB+oYOw8mW2Hbj3lpqUspnG0dDsNHpJFX87Z3KnZPufv7XTLI/cF8UMjbp3XqQ/oKr7/BDmW2nobL+x4FFeqe2WXBLBJUbxXwZTWtReusFEcsKAiZsusyOQcWz9lI5zt3OM06GL1VPlA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738989792; c=relaxed/simple;
-	bh=gl4+7vNxgV9+JzZtw7EthQ6aGDgi0WVn3wQV/lnKiyo=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=uHG4u4EiziDt/NymNLee44DAQQtuRrzOHTGVbZ6uji1jEH9TOL5AVKI4MocvYRN1cmbBIjqpccFPZ7J1CtwW7Hz32b3yDN82bQendzDAizECyAHyisBTKru9YVwxMxSav3Wp591BwSS2jOEqXmgwi4OfClglvO6QhtdWew7E5cc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=truemaisha.co.tz; spf=pass smtp.mailfrom=truemaisha.co.tz; dkim=pass (2048-bit key) header.d=truemaisha.co.tz header.i=@truemaisha.co.tz header.b=pti6qRvw; arc=none smtp.client-ip=162.241.152.247
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=truemaisha.co.tz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=truemaisha.co.tz
+	s=arc-20240116; t=1739005594; c=relaxed/simple;
+	bh=vmC1up6C5LBprRwt2/fRt1z4BJSE4GhLNdei7aTu3xI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ToSbPBSQm8IsVfBTLXUK+bjuQZot/d87mBXULySHeBoNo693tbud2Uhjjw4SRJY+aVpnwWMlwRmqO1RCqINGMdYOrEO5/YHVyrg2T4/f6E3owAjY6W5BY5WB3sKQZ8s+xo2Q40/4h41F1NSJuBs/UXpYKiQ2lW/UTO01oEh+SiU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=VZ2u7bTO; arc=none smtp.client-ip=117.135.210.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=truemaisha.co.tz header.i=@truemaisha.co.tz header.b="pti6qRvw"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=truemaisha.co.tz; s=default; h=Content-Transfer-Encoding:Content-Type:
-	MIME-Version:Message-ID:Date:Subject:To:From:Reply-To:Sender:Cc:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=gl4+7vNxgV9+JzZtw7EthQ6aGDgi0WVn3wQV/lnKiyo=; b=pti6qRvwjTs3+p1LA0YOQN2Nl1
-	HQTjjwnBQ5JpgNiBQF/YurN06tnl1JR9Xrn1/VEddodIMxVrKNqa3jI5OMiwTm+P4CJ8Gt6tVgA1D
-	mgkaRGKIi/dOufem3SpmMnPN7hu4kwLyq5P3NZU2XFiAvNKEpMcT87z8cuvhAq7XnATZ66GtUD1L3
-	Nz91/GvU8dEV1nUJ91uLGvsMkx5i1KR4XKeHxnbN8xwJYuvCZez7kY+8mD9zAW8cydLe11p/t6JtP
-	pP7pYwnP71GIVqhc3XKuLM+3Iy1lnEvpEvmhMKODfXETFI4XPyNZjNQyvGJqb6ETV6rfV2QdRwmhB
-	JYAijOEw==;
-Received: from [74.208.124.33] (port=51315 helo=truemaisha.co.tz)
-	by server-598995.kolorio.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96.2)
-	(envelope-from <chrispinerick@truemaisha.co.tz>)
-	id 1tgcgN-0004qQ-2J
-	for linux-fbdev@vger.kernel.org;
-	Fri, 07 Feb 2025 22:43:09 -0600
-Reply-To: dsong@aa4financialservice.com
-From: David Song <chrispinerick@truemaisha.co.tz>
-To: linux-fbdev@vger.kernel.org
-Subject: Re: The business loan- 
-Date: 08 Feb 2025 04:43:09 +0000
-Message-ID: <20250208015433.97A42B118D87A98C@truemaisha.co.tz>
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="VZ2u7bTO"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=Yr/Kz
+	e1arVLKPu4HbhTCdQQlaXiSMZKNM8RjZqVS5is=; b=VZ2u7bTO/IcFA2C+g3bm0
+	tnf/GLAwRJLQhnvvjV1j+6c6RzLZVDYF0xIREPAOBLivAQKdkUaFmVhWs+fauf+m
+	tXuKTv//KGpTKJUVUWQjNatrSKFhby/UhEGhu+acmP5BaFmWl+OOL5b9f7ypXJwN
+	898ZCZN5B/8YGfbKwZKxjY=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id _____wBHRQA2HqdnvFYeKg--.11819S2;
+	Sat, 08 Feb 2025 17:04:55 +0800 (CST)
+From: oushixiong1025@163.com
+To: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+	Lee Jones <lee@kernel.org>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Shixiong Ou <oushixiong@kylinos.cn>
+Subject: [PATCH] fbdev: lcdcfb: add missing device_remove_file()
+Date: Sat,  8 Feb 2025 17:04:51 +0800
+Message-Id: <20250208090451.240292-1-oushixiong1025@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server-598995.kolorio.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - truemaisha.co.tz
-X-Get-Message-Sender-Via: server-598995.kolorio.com: authenticated_id: chrispinerick@truemaisha.co.tz
-X-Authenticated-Sender: server-598995.kolorio.com: chrispinerick@truemaisha.co.tz
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wBHRQA2HqdnvFYeKg--.11819S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7WFy8WFWDWFy3XFykXw18Xwb_yoW8Cr17pF
+	4UGas0grWrZrnrGr4fAF4UuF45u348tas3Zr1xt345u3s3ArsYg345Ga93Z3yxJa93GF1a
+	vrW0y345GF1UWaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UP3kNUUUUU=
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXR3sD2elkFTX4gABsR
 
-Hello,
+From: Shixiong Ou <oushixiong@kylinos.cn>
 
-My name is David Song, at AA4 FS, we are a consultancy and
-brokerage Firm specializing in Growth Financial Loan and joint
-partnership venture. We specialize in investments in all Private
-and public sectors in a broad range of areas within our Financial
-Investment Services.
+1. The device_remove_file() need to be called when driver is removing.
+2. The device_remove_file() need to be called if the call to
+   device_create_file() fails.
 
- We are experts in financial and operational management, due
-diligence and capital planning in all markets and industries. Our
-Investors wish to invest in any viable Project presented by your
-Management after reviews on your Business Project Presentation
-Plan.
+Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
+---
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
- We look forward to your Swift response. We also offer commission
-to consultants and brokers for any partnership referrals.
-
- Regards,
-David Song
-Senior Broker
-
-AA4 Financial Services
-13 Wonersh Way, Cheam,
-Sutton, Surrey, SM2 7LX
-Email: dsong@aa4financialservice.com
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index 4715dcb59811..b56ab1df7369 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1516,7 +1516,7 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
+ {
+ 	struct sh_mobile_lcdc_priv *lcdc = ovl->channel->lcdc;
+ 	struct fb_info *info = ovl->info;
+-	unsigned int i;
++	unsigned int i, error = 0;
+ 	int ret;
+ 
+ 	if (info == NULL)
+@@ -1531,9 +1531,14 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
+ 		 info->var.yres, info->var.bits_per_pixel);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i) {
+-		ret = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
+-		if (ret < 0)
+-			return ret;
++		error = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
++		if (error)
++			break;
++	}
++
++	if (error) {
++		while (--i >= 0)
++			device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
+ 	}
+ 
+ 	return 0;
+@@ -1543,10 +1548,14 @@ static void
+ sh_mobile_lcdc_overlay_fb_cleanup(struct sh_mobile_lcdc_overlay *ovl)
+ {
+ 	struct fb_info *info = ovl->info;
++	unsigned int i;
+ 
+ 	if (info == NULL || info->device == NULL)
+ 		return;
+ 
++	for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i)
++		device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
++
+ 	framebuffer_release(info);
+ }
+ 
+-- 
+2.25.1
 

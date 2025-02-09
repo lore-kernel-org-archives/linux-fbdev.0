@@ -1,231 +1,162 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D128B4C9F;
-	Sun,  9 Feb 2025 06:36:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.177.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739083006; cv=fail; b=on5Kq2hQtgNKg8UAuJaraxL9mjY4vFWo6Ku7DOIx2XnG+FNogjb3Dznkw9k7iANo4l4X+1YxCLDaB2F+EFXF/3tn4VQK7XFMxQUyI2TpcRt+5I36LzK2RGqe4tVML9tmQKs7b83s8QvFqKoYTD5FQvYi3orxGMLU5K/49qUrmB0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739083006; c=relaxed/simple;
-	bh=DqiPtuodEoCk7pNNsgm6dp96bqBlMuWZJfMMRULi3Ak=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=jw4Fp8WVmNee+5fv0gj3lB/za8ZoiT3eyi8hq0CtJ2bH0caveyk2H1zU3akmVyUaPDF47/tfiUe2sxEhhDjkI+ydV3+iuG/gsRrPcGPBhrZDw50MKlSCZ7MdQngusDdaDZtgfLS+Rwxltc6H1MIf5PLEZ0i78a3yvy4TQCh/bSc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=dk+2VGG6; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=p0bwrv0H; arc=fail smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="dk+2VGG6";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="p0bwrv0H"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5193MlYu020744;
-	Sun, 9 Feb 2025 06:36:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2023-11-20; bh=+lvZZuaT+Oy7Chacdy
-	/Uv5rPNYu2lPojMKKqhYXdW4I=; b=dk+2VGG6EnntO3L29dxtL7m2Qv3slreH7e
-	o3EZjq76OJI5NdRAhoHqTjRPMfntVLemaMrEgzTGJHIbqOwrHrJx14ESTmCqT+OE
-	/5bpDD3u44P8lGHTCL3zWo/OUec+ZU6np6K9gTWs/X50j4LtLYbMnpdEMsKtmH6P
-	imdxSYCOlskBXgsm8n8A1NClUqQLxf9AYERdjJMz23GAaUl5tgnl5hCGjpSnXD3M
-	8BwH5F7DRt+QEQw7uQSOqyeltEZJX2tUFRLI+ZiKziX6p7Lj2TgaarpuVMj3Z+FH
-	X43117iVK7MvA87KLcSe3E90C28UwwtOlAs79JKRpb/dN8h3wKAw==
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44p0tn12bg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 09 Feb 2025 06:36:10 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 51935bG1038659;
-	Sun, 9 Feb 2025 06:36:09 GMT
-Received: from nam12-bn8-obe.outbound.protection.outlook.com (mail-bn8nam12lp2177.outbound.protection.outlook.com [104.47.55.177])
-	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 44p62vrp72-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 09 Feb 2025 06:36:09 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=RjXXUJEFGl5x/WZT9N8gRt3Ky5PAcpfgATORNwk789Ei4TdqsDAJRk+HRvIauOVvUCa3ZECalpude5QJ18vQ9rVPdHk8hs9Y4/g90ywW/HCKHikoVQDJjmUHb7In3algpj/DjFk5c+utRYPbYJyKZQbi0XNNM0R1skDFSmul2zXOJNdsSluse/OD+haM4YCuCmiYlgzq27arclPTggBrSs5E7kun79rfRFTQofjf6LVkaO43iVyadH8Bz5IqcYqD5Mmo28nVDM+KNolF3sLJrcmG3WhtyTYnc83EKRp/rbPuBqEsNp6orbg5fKnk1NEmjegftGBEOWlDLk2eOijTxg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+lvZZuaT+Oy7Chacdy/Uv5rPNYu2lPojMKKqhYXdW4I=;
- b=PtrTOEEMljkmZpQ2NVSdgvo9+ZAAk5y1r/4hmXUE+5/P2o1k9KEoi++UgZdYSVJh1f6bJPWyvSMicclpYUk+aFX3HKRHwtVijqMYvIqU5euTuLc7zHqilYIlogUMLExA/b9t46HuZdZHqeE/c4mo1ZOzjxWqHjjcPcBJMZCdUr6HnOKh29cDiZxciCSZIXmmZAHc6lWg4ESbiUjN0mGV2lNIl46+pwma83C0bMomTi7ifr2WFIpmpE+pfolhSNRjdGpzGWpRz+SsMKoL0NlWU8Xg92QCnTGyg7aRFiit7SLTmXQsSH1uSF7Yg7k+YX3usCcfRzbO2D2XHojeqpRZ7g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+lvZZuaT+Oy7Chacdy/Uv5rPNYu2lPojMKKqhYXdW4I=;
- b=p0bwrv0HkaL+xIxTmsEtdVdzhEa+Y9qXVnj7BY5r/u1Bap84+E1C2/Zk/wIlHyYENQBPpWz5b2OWdhYOYsT0u0YZUMXLos+RG0Ae/KZ78nZvZ6u236J2gP9hH5kJ+URQfZb2klvx01UZ2j8HdJaHjDzzQv1sceAJCzSumBxT1yg=
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com (2603:10b6:a03:14f::25)
- by SJ0PR10MB5741.namprd10.prod.outlook.com (2603:10b6:a03:3ec::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.25; Sun, 9 Feb
- 2025 06:36:05 +0000
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9]) by BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9%4]) with mapi id 15.20.8398.025; Sun, 9 Feb 2025
- 06:36:05 +0000
-Date: Sun, 9 Feb 2025 06:36:02 +0000
-From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>,
-        David Hildenbrand <david@redhat.com>,
-        Kajtar Zsolt <soci@c64.rulez.org>, Maira Canal <mcanal@igalia.com>,
-        Simona Vetter <simona.vetter@ffwll.ch>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH v3 3/3] fb_defio: do not use deprecated page->mapping,
- index fields
-Message-ID: <d4018405-2762-4385-a816-e54cc23839ac@lucifer.local>
-References: <cover.1739029358.git.lorenzo.stoakes@oracle.com>
- <81171ab16c14e3df28f6de9d14982cee528d8519.1739029358.git.lorenzo.stoakes@oracle.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81171ab16c14e3df28f6de9d14982cee528d8519.1739029358.git.lorenzo.stoakes@oracle.com>
-X-ClientProxiedBy: LO2P265CA0181.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:a::25) To BYAPR10MB3366.namprd10.prod.outlook.com
- (2603:10b6:a03:14f::25)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB9E315CD52;
+	Sun,  9 Feb 2025 11:22:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1739100169; cv=none; b=oEIqix8vgM3/wgWva9LsBduA7BCym5X5BXFD3VrZ1gv1NJpNbinYT0zXlGR6Is9fAfa4PgvgLJAZiflKX5121mhkjDPn8v+smW+jws8hwTkigiR75u7X6Go8hBrqe2HwDSav3odGBOeHUilIW5y3w2n7IKDS9Za+kutGr4qNtfI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1739100169; c=relaxed/simple;
+	bh=fSpAlkuvzafpBDecQQKDZzLy+MX6Hjz7TRvpdMGaUmQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=csWELi4k7kAtjVDQOTPy8L0f0141O3GcFS3ffKT9ozTyKrhOUqWTUk5h1zLn04DQz5RwuKuhxx89yWMUKoPU5CGUIAuNVveUGpnBfmCafke7ikk3BLTw9+5QdpJk3MDE39DJ6B/saJfkudW80AZf04xKEXlXB4SCw060Q1dxye4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gompa.dev; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.218.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gompa.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-ab7863f9be4so346404366b.0;
+        Sun, 09 Feb 2025 03:22:47 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739100165; x=1739704965;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=czsr8ut4E1IjeGJZsPHODj7dteAs5/QBRXMGMfAcAZA=;
+        b=I2SXLqbOzyC5aMhr6I7rBYcKaNyxcubopTza3dXAq8Rsm+GHGjlIZ5lGI81mc7ygxQ
+         AGUCIUeEoc1gOr5hRGKx3R2YTT0hnb3oj7J8vc4QwF6yWkZmHCgUuJRbxr+bt8OIGHhI
+         VTWzWgsc9fuX4uI7ja6/A6HQk4ZN/gjhI6/7JiwGPttAzcTCG38ouo3tRPX6QH9mPsFY
+         9BQXMOVLPVpLEtvN+0tlYo7/pW5e8bimTjNHxMAosfUF6Ix9zID0kp6uxPOEz8j+eDH6
+         qE2BtK0PSwJqh+qKED15SlYJ34DVVvZiNVphrX60Q+WXQXihYLGtXzMS93/O7K0YuX8u
+         MMpw==
+X-Forwarded-Encrypted: i=1; AJvYcCVcrKont0uPw9Coet6QdtkvlXXeBRVfcWSEoLHYacRRpoC2G+IuS7bdcr0XmXTv0xeKsMxYTb8oXO9/cQ==@vger.kernel.org, AJvYcCVvXBrstJyLktRjZ27jQEHR9/kS3XuNPx1rYt4uNCHJPIiri8Wcz05a3zIngUbtZAJieRnGByyIV3jZ/bA=@vger.kernel.org, AJvYcCWf/5f8A5Ok5vdDxcttnjj3fuSYEISu1N60QXGKKSVrc+3nR8dvQT98gOPvpUvmCCRl/bBZb4iEiBl+@vger.kernel.org, AJvYcCXsspjJ5/5pPstiH7dnorAky/mmT8zhAYnr5EjU1s9cIzSX5qaKYIz7LBwrmxyrRt64H43wEpao8z9jJTp6@vger.kernel.org
+X-Gm-Message-State: AOJu0YyKRp8s7KYq05bsieZtkfkMOLs8Nbkeg0muOaAs/1MtZHb7g51r
+	WUXn3o+yOwi0iwFS+xSdX3k34L8Jg2Y4JzaTzoPsPKHIlGrrZS00pyXJ0CVA4cw=
+X-Gm-Gg: ASbGncs+ElrwNITOaL/npWaV0lINiw73uGUrxFATJO7Z43yFQ9tTUZNmKCdsT/5skcj
+	bLbkLyMDbzvvOCXSUKK7Q59G7FsU6/fOQv7aIJn6G6JkGpdo/34WIggWzfG2QX790SgpFdirdqU
+	Krm38Qwtb3cBujpDcGzJuBbedLmLWfIY5MK6Nqvhbw4gwqOb80e1mcQ7a9OHDmA+zlxHju2UY9+
+	lB2tOq6OMKLBPgeLSUmkwzdGCz2gEWVyYXeiPZKlzeaKqSZLmZXcnrEN0WkJFh3/Ex06LtkIxmx
+	/DTcLE1dfcDK89MGB00AxLLdrsRBs8RHYQuBMPF6f/VsrQ==
+X-Google-Smtp-Source: AGHT+IEdB9R3spqx2SEWAobW9gJu4+fmb8vmoxtEhl6cFp/SdUHzvuAKiRTyBIEas4/dGdeZr2DQSQ==
+X-Received: by 2002:a17:907:c285:b0:ab6:32d2:16d4 with SMTP id a640c23a62f3a-ab789c35448mr1039216266b.56.1739100165260;
+        Sun, 09 Feb 2025 03:22:45 -0800 (PST)
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com. [209.85.208.44])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ab7bf5b8e6asm17110166b.16.2025.02.09.03.22.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 09 Feb 2025 03:22:44 -0800 (PST)
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-5dcea56d6e2so6297700a12.1;
+        Sun, 09 Feb 2025 03:22:44 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCU+BLfvHk74Jrx3i9CQ98+QUiZqPwnFgA/Dnzd+q41L/CxIRWoF+9pvqD8H/2kyWmN5wdFBZjHmRg2b9oHb@vger.kernel.org, AJvYcCUluvYc+q7qkuRndVXSZhJftfRh6lsurrjda7VVTVeki7WoI38riilHoIUn6fqiBkCfT+aDsUaTzbJWjA==@vger.kernel.org, AJvYcCXS42RSVTeYbFdwFyiAxrRNtqKjKdUgF+S6r3YC9mqDiYBhLADKO3SW6Fr+JCdy7UZapRgLGGiOkf2iF70=@vger.kernel.org, AJvYcCXeFiIqhWXMAQf8dLvVIVQKEo7cDfbnCgyd0ik0+LaFckzC1xgcBDlVSBH5ewHVUyiQuBO20TQkcNmF@vger.kernel.org
+X-Received: by 2002:a05:6402:5252:b0:5db:f423:19b9 with SMTP id
+ 4fb4d7f45d1cf-5de450236admr7763979a12.16.1739100164505; Sun, 09 Feb 2025
+ 03:22:44 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR10MB3366:EE_|SJ0PR10MB5741:EE_
-X-MS-Office365-Filtering-Correlation-Id: 698fc7c4-3985-4ba9-cb3c-08dd48d40780
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|366016|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?nJBR+9ZSNPbz7pVahdYFgQQGJg0z3c8VrQ3FhF1RNv4iLbBs//ntB9CptJJr?=
- =?us-ascii?Q?WlSGHcIOzUOm+bF8Wfsx6qWUrGPwVyofveKLlnY/yR7LPaSp6NJclak8KkLL?=
- =?us-ascii?Q?NfO64MXqBVF8Uef01CgIGgxVJ1hq+Kk9BQfymtySZAZxbcdUItQfsqbBvplo?=
- =?us-ascii?Q?yGBN4V4eDg/YkbGhTgo7bqdyh6FjQNEHXFqnnTusY4DazkJqVMVJmYDfdS58?=
- =?us-ascii?Q?5mwU/nKL65g7+ycfi9n9HRSHCeIvB43ILVxoVXsdXgWHV8jV4VWXrsm96apg?=
- =?us-ascii?Q?MpWzowLDjLf/jcc39GpYZaq5ij7xpNo/Vhx3ej9cADXx/eGFuT+qh+8KSVtp?=
- =?us-ascii?Q?aZvwAwChWM0ZQAWRTFSOEyFF4gTPdZlCewHXPIRUpL9iyxSRseJ4sd2uqnfm?=
- =?us-ascii?Q?muky+YOVj1muGv0ZbIf2HFH5dLq8B1Kx5/jWbavxbhpY9E+soTuBBg2rjNoI?=
- =?us-ascii?Q?gALr3wQeOalgFriHbYelhBIeDSn0nwHhacGrO4GzdusTl4r9cwXv3Nf/g/0n?=
- =?us-ascii?Q?GwIUKoXEnFwGQTx8edlArLyj0RFOvo5w+RbHEG0Rrf87h0IboCYHtddyqehy?=
- =?us-ascii?Q?51c34bWosPzf0WbJKhakPet8P0bIjmwoZ/L+UFIm6PsO86WjtvHEPYVNpVSh?=
- =?us-ascii?Q?ofNTwfitKVCeoZZiSm+2GU/bRUEKs5jhZ17EvB8iwM6ljHkbO5kI+ONec7MA?=
- =?us-ascii?Q?fjLqupTFh6YCcVkOMwAtPVemjFrLkHFT00X9urGBOuVj6MXGIlvkU1NVwgCo?=
- =?us-ascii?Q?H8odNcgWyx3r/qnHnIe04McyLDTL6uVAoj+gYBjLdAFcGPFzXBwQag9zPOys?=
- =?us-ascii?Q?dVcIwkurlpS3wjaPSxgQBgt3jJqJdgwVq+aUgz61fNMwAnE31AlslNl5vi3k?=
- =?us-ascii?Q?/lR5Bw0oTcIh7sobEmREbDBdnBrWCXxP05bKgOn40OK+pV04ayzk/ENk3nEV?=
- =?us-ascii?Q?D6hXlazstjJFyipYmIxKE+lt+i3G8TVld3WGHfEj4g3slqyJQOqoe8rD9Vjz?=
- =?us-ascii?Q?j9NtUKs8kSHSEvZDpisUrZ9TFSqQdwGAJf1RQqyWP0mvjznn6Xwu0IpvidJe?=
- =?us-ascii?Q?2PAIZgnQHzTaYG+X3tHH4MmEWAIRfYKEZ2kbgPs+1gkE9CzPifnkug84cqb8?=
- =?us-ascii?Q?A1UjzMXNMkbsAKd+NZG7mvSqKH18mH7YR0TBoIQEaT9MZehtvqjh316OX80Y?=
- =?us-ascii?Q?KmW8HXKF+DB3QsipuYmzd05ucD3h76LAwCAx9y6PDpOUHqXBZyW6YcZLHQZQ?=
- =?us-ascii?Q?c07zhiODjjyZGfbi7LEWqj9POEAp4tyKskgtJsEibfFwzbSh7I1OX03Hes1u?=
- =?us-ascii?Q?TA69z68oN7z0TuikKMt/w5e6s5l5FDGI21jXq2lDQF+UmTzc2xUh9QC5ulAF?=
- =?us-ascii?Q?73QziIGo+O+beYFGoh0e2WfuytIu?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR10MB3366.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?DIB4OTq8aDXSvDphOazqY3zwxJsF3K5Ue8M4oQk2/zHpjEXewXxix2vB6SoR?=
- =?us-ascii?Q?svXnDdk8CNVHGjtJCX+s6eP1fSo6/5utOK2SD6AKIo0+jmvNDbl1HS1pBMUM?=
- =?us-ascii?Q?kHPcoaRGft5ZAgk7w0BNu+CnpKqBgqzVahDxW7eKj+X6vqTD3ufZdnd7YjBZ?=
- =?us-ascii?Q?usDzaIo8UODFQI5jQso9CQr5JJJUz9KPqV19VgoasesSMsewnP+JMqyxqqNI?=
- =?us-ascii?Q?ZYxlnfrScYZ5iJnswhdrFzjfj+hM7aSmNY6inXDXID/vLuM9Wk4CV7QbYK5K?=
- =?us-ascii?Q?gdiV9g/O+XJp07qzdXmAIfTiFSdUcUXkPqyHsc8WGkIYvy+GYDgBwMQmvE+h?=
- =?us-ascii?Q?gCtUEV9BcTt7OYs4cGggae3L2sNbBFTWJC4h2zj/e6Wo7G6GYNu9Z7mouBc5?=
- =?us-ascii?Q?wE+gqLv3WHzxt7lFDc+JRQQyDM06c+9VIs1poeOkxYZQPzDE2caVeFW3YbFi?=
- =?us-ascii?Q?Nfe8mMSQofrMjTvhTDft+F5lKLSMupVhiljHlsRWC+GaI+JTseEnFe0oNWj1?=
- =?us-ascii?Q?J5BDbb9QPXnRIWvaAo6IAMV3c/5tIvVa7KqKsNzyhiEBp3f2I7wUuFJpjmpn?=
- =?us-ascii?Q?/V/yeCYE7yGu8AKAjFDDSqQgJdfYJB4I8aJTQN2XtdHgjFg2WnKlLbyIKf2/?=
- =?us-ascii?Q?63mK9wq46Hn59CGPvuVIbjbbVv9sPo8fjm0hQGYqkGeEHoeH16Ue7T+s0KmY?=
- =?us-ascii?Q?Vz9mZaIdEPyIFOhFjX9AbgscJJcLIHrf8MzJD3VIEbwwzjCL5svSHkOr7bTp?=
- =?us-ascii?Q?Us3QMXxdaK3FI2xLWYg0SA7WDzJPzpPgMglgl4xx1PqzpZ4RHBsdEZY/ArsI?=
- =?us-ascii?Q?y8NoxMEKrQWhhgmW0uXQQ06ihiieCSNe3lNXb9fsT/cTvfIH9ctF/2jOnSe5?=
- =?us-ascii?Q?aocYp4SOeBHobvLKlNV0BxkbC1A8QaEvJdzsz8oDhVQARMddsgPrBrqTw/IZ?=
- =?us-ascii?Q?3eu2McuxmZclBJ/bSRw4Mu5N5b3DeeDy3jSTZlRVqToBoZHs048ATEs2akyk?=
- =?us-ascii?Q?yRqBeGLMoaEFxQHKAoDiDBHEV5EN/X2UqSsvE6xHH+arbmVKbTduuZaPJV5Q?=
- =?us-ascii?Q?OADQu8bA/kd1tZtOo7XvxJRDE3ywVzI/+BADQmehAzkD73KBM81FKqijt2L1?=
- =?us-ascii?Q?omE+8VrpWdEtTWiPuid/tn6mi4nJm3arhamVF4TR1VSGHnI2F1hyq+cBHn9K?=
- =?us-ascii?Q?mA+NyL5otpMAZMwpkw3ro+DEALsDS5ZqMMwmx03NMrw4EKyfh/xafQRuVG9B?=
- =?us-ascii?Q?inqP11UvA8SGtN5Y2br6UXTq/EiHnDL1jofaHlLBQI5QBnt0uBQssVoMXrtK?=
- =?us-ascii?Q?ELN++oWZnok8WHu2vwacHY7vnGe7nSts7o+zbcTMwW/I74WNRgLggBEVItEB?=
- =?us-ascii?Q?Zamn9kvobKP6alEqlDfMVpzucEuyR+4LQ2RvB4GTrpw473NBYQVsrr2jgebJ?=
- =?us-ascii?Q?fF5ABcL5ppgMfokFJZ5zIFU/uFq1zqJRTDbcIQ5FNHOin0CiwYfu975VHe7c?=
- =?us-ascii?Q?Itu7gRAXJgI43jL8MQEfqlOqrk4LtuN89NnlN595VJEcfSWU9kwA5/Eaeyiu?=
- =?us-ascii?Q?iXnOZEkXgFikvztw7jYQFjRT9AJMiI69Ruko3ZdoFS6goc2M3+mu6UKMjiJv?=
- =?us-ascii?Q?+g=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	rp8R91AAWcrIXCAH5t1Ed8n6XbuPxk4AQfkaW4D2g88VnTXyJRQYzwDzX58jnDJ4/gvtP4YAXCi4OpK8KGjIqO3iT/hNt7hA7fxfW5qqMoPJrI9c9GNY1u2Ph9bz/LnrSvMzWQRJ4fa7fiZ67byu6PCXqqNcx16B4Hh6eBEU4c+OMegTYKUW7JpnKq92338PgK+1IJJpYmW4xvLsF2owRtgnploEwqGYp/uePSDD8kTDpZkgfpk8ItOubiIopZ2M/+KqC0u9EcQfmmsw0RpJJnmEwrRK9dYbYWhqX89WrNGHo8oyW0agoZtu8GZaRsD2kxIe+GtZY4ZXZ/ZGnja9xCdaFWDGYfQQdTL9+7FGcwDgH8PjM9iEsd8WkjgbIvaP5M/HCJgSoRyo/BX2IbHPsJEY1nPuYN2iaKKUbzdvU18kEJsta5VtwP0BOtPovCAgHM1We+BjpQiJWSEMCCJS6aLSWtx/iSGHJ6ilk1xwGHkucejGOfT7NLs2zwYFJ1CenA5UBlBMmLg8ApDV8Uimhw2YJAOpf/LJ9YJAACAn3LOA758TLWd0xAKPm6VrDJ6bBvwC1womblb3nRODJjITD4+BWSjPmpwu/BoTSLyVIl4=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 698fc7c4-3985-4ba9-cb3c-08dd48d40780
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB3366.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Feb 2025 06:36:05.4023
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: anq5YaxJdFhyxD5aEYMVBVM+xDAOCwMyAL/nUHNkDEDpv+8GMzsoiaSfWps6kbCJxMAZvqmhWukEVrAfzAoqvHoXy78tS64phTErPflyfcI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR10MB5741
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-09_02,2025-02-07_03,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 bulkscore=0
- phishscore=0 spamscore=0 adultscore=0 suspectscore=0 malwarescore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2501170000 definitions=main-2502090056
-X-Proofpoint-GUID: PLHVsN8lo-mPom2BuaEl4gM1l5o5vk0-
-X-Proofpoint-ORIG-GUID: PLHVsN8lo-mPom2BuaEl4gM1l5o5vk0-
+References: <20250203115156.28174-1-towinchenmi@gmail.com>
+In-Reply-To: <20250203115156.28174-1-towinchenmi@gmail.com>
+From: Neal Gompa <neal@gompa.dev>
+Date: Sun, 9 Feb 2025 06:22:08 -0500
+X-Gmail-Original-Message-ID: <CAEg-Je8cB==_+fNi0hc-mPqkEd-w82tWay_2Wu76hV10LV4X2g@mail.gmail.com>
+X-Gm-Features: AWEUYZks2Pe6z_gT4XPe5iRvZlGve_lJKCtY1woYJMW8gNu9Xz8tZDlJPRfovXQ
+Message-ID: <CAEg-Je8cB==_+fNi0hc-mPqkEd-w82tWay_2Wu76hV10LV4X2g@mail.gmail.com>
+Subject: Re: [PATCH v5 RESEND 0/3] Apple DWI backlight driver
+To: Nick Chan <towinchenmi@gmail.com>
+Cc: Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>, 
+	Alyssa Rosenzweig <alyssa@rosenzweig.io>, Lee Jones <lee@kernel.org>, 
+	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Helge Deller <deller@gmx.de>, asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, Janne Grunau <j@jannau.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Andrew - apologies for this, I managed to miss some unusued variable warnings in
-this nommu workaround, once you take the v3 could you apply this trivial
-fix-patch on top to resolve that?
+On Mon, Feb 3, 2025 at 6:52=E2=80=AFAM Nick Chan <towinchenmi@gmail.com> wr=
+ote:
+>
+> Apple SoCs come with a 2-wire interface named DWI. On some iPhones, iPads
+> and iPod touches the backlight controller is connected via this interface=
+.
+> This series adds a backlight driver for backlight controllers connected
+> this way.
+>
+> Changes since v4:
+> - Change type to BACKLIGHT_PLATFORM since the driver does not directly
+> interface with the backlight controller. The actual backlight controller
+> can be directly controlled via i2c and is not the same on all hardware
+> that supports the dwi interface.
+> - Rename file to apple_dwi_bl.c to better match config option.
+> - Rename driver to apple-dwi-bl to better match config option
+> - Indicate that the backlight scales linearly
+>
+> v4: https://lore.kernel.org/asahi/20241211113512.19009-1-towinchenmi@gmai=
+l.com/T
+>
+> Changes since v3:
+> - $ref to common.yaml in bindings
+> - (and then additionalProperties is changed to unevaluatedProperties)
+> - Use hex everywhere in bindings example
+> - Use sizeof(*dwi_bl) instead of the type of the struct when doing
+> devm_kzalloc()
+> - Use devm_platform_get_and_ioremap_resource() in driver
+> - Fix sorting in drivers/video/backlight/Makefile
+> - In drivers/video/backlight/Kconfig, move config to right after
+> BACKLIGHT_APPLE
+> - Explain this driver being completely different from apple_bl
+>
+> v3: https://lore.kernel.org/asahi/20241209075908.140014-1-towinchenmi@gma=
+il.com/T
+>
+> Changes since v2:
+> - Add missing includes in driver
+> - Fix file path in MAINTAINERS
+>
+> v2: https://lore.kernel.org/asahi/20241207130433.30351-1-towinchenmi@gmai=
+l.com/T
+>
+> Changes since v1:
+> - Fixed dt-bindings $id.
+> - Make power-domains an optional property in dt-bindings.
+> - Added missing error checking after devm_ioremap_resource() in
+> dwi_bl_probe().
+>
+> v1: https://lore.kernel.org/asahi/20241206172735.4310-1-towinchenmi@gmail=
+.com/T
+>
+> Nick Chan
+>
+> ---
+> Nick Chan (3):
+>   dt-bindings: leds: backlight: apple,dwi-bl: Add Apple DWI backlight
+>   backlight: apple_dwi_bl: Add Apple DWI backlight driver
+>   MAINTAINERS: Add entries for Apple DWI backlight controller
+>
+>  .../bindings/leds/backlight/apple,dwi-bl.yaml |  57 ++++++++
+>  MAINTAINERS                                   |   2 +
+>  drivers/video/backlight/Kconfig               |  12 ++
+>  drivers/video/backlight/Makefile              |   1 +
+>  drivers/video/backlight/apple_dwi_bl.c        | 123 ++++++++++++++++++
+>  5 files changed, 195 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/appl=
+e,dwi-bl.yaml
+>  create mode 100644 drivers/video/backlight/apple_dwi_bl.c
+>
+>
+> base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
+> --
+> 2.48.1
+>
+>
 
-I tested this locally to confirm it resolves the problem. Thanks!
+This series looks good to me.
 
-----8<----
-From f428a950a5a932c0e4404a89f2a34b0683728016 Mon Sep 17 00:00:00 2001
-From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Date: Sun, 9 Feb 2025 06:29:25 +0000
-Subject: [PATCH] mm: fixup unused variable warnings
+Reviewed-by: Neal Gompa <neal@gompa.dev>
 
-Unfortunately fb_defio being enabled by nommu devices seems enormously
-ingrained in the kernel to the point that it's not feasible to address that
-in this series, so we use an ifdef to workaround.
 
-However this workaround unfortunately missed some unused variables -
-correct this.
-
-This has been tested locally with W=1 and confirmed to resolve the issue.
-
-Signed-off-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
----
- drivers/video/fbdev/core/fb_defio.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index acf7bc7ac45f..4fc93f253e06 100644
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -265,15 +265,15 @@ static void fb_deferred_io_work(struct work_struct *work)
-
- 	/* here we wrprotect the page's mappings, then do all deferred IO. */
- 	mutex_lock(&fbdefio->lock);
-+#ifdef CONFIG_MMU
- 	list_for_each_entry(pageref, &fbdefio->pagereflist, list) {
- 		struct page *page = pageref->page;
- 		pgoff_t pgoff = pageref->offset >> PAGE_SHIFT;
-
--#ifdef CONFIG_MMU
- 		mapping_wrprotect_range(fbdefio->mapping, pgoff,
- 					page_to_pfn(page), 1);
--#endif
- 	}
-+#endif
-
- 	/* driver's callback with pagereflist */
- 	fbdefio->deferred_io(info, &fbdefio->pagereflist);
---
-2.48.1
+--=20
+=E7=9C=9F=E5=AE=9F=E3=81=AF=E3=81=84=E3=81=A4=E3=82=82=E4=B8=80=E3=81=A4=EF=
+=BC=81/ Always, there's only one truth!

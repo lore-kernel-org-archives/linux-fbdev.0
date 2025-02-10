@@ -1,311 +1,157 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EE7020485F;
-	Mon, 10 Feb 2025 15:08:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739200110; cv=fail; b=T7E8lXj2jh6JnqGxagwgcBGH0hjO4XMbQsoDbI9ok/3mhFsSk0/4OmQVEvUSH2kSxDu+JWjSl/JA90nUF2JcVMPv5pzaCu5XBHZeaEmDiZpkZ+mI0kIIjlAznQqGYEd4Z+8wUNvAHcJrv50R//YYj4eu1kbvlLU2ae/xTWiw0C4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739200110; c=relaxed/simple;
-	bh=7gBwuTq/z0iQ1lA0SiT+14ylDlCDTx39utVkGPga864=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=hgvJHbt6bZFJOGRSyUWmp098dCMDemC6Fe7AQZkuda6qMu/u7UWOZHJQmt/aOoUetpjgcgaON/UMdeURfDCHlhN49Ri3WFVYOJ43+Ai66/3oeUE5JLBNazFzq18a7dL4MoPUQAk55yhah3rtZQ/EOAOUjA8i+pQkTAeKGNxQTdc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=nDUijihn; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=rXCBFfK3; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CEAE24F5A0
+	for <linux-fbdev@vger.kernel.org>; Mon, 10 Feb 2025 16:12:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1739203969; cv=none; b=R2lpzCwD1wHlZBle3wzJCcpE5Rls6dKaZiDatgP4cHGKTWHGepgPzo0024Q/sBjVKIC6i3AcLk9RDVUyK53b/jWCBTIfHIvpuWpzu6f1RzViNceRx/4+y43nQyC/ftS7vCaNaDMmcjgm9JgzdmKuq0ZPOsvo03A6vFiY/sxJQ/s=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1739203969; c=relaxed/simple;
+	bh=uF8K59uhfTnsnHYF0QgQ3k7irpxn8tRe22ZZGYaVdYA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=uKUivkryBsCyXV4HqVubbfcc+37CB0YSuU5Kw5HytRIWgVEbLMl9Ilh87eD2wy672sq3TujwpkRLgEQMUrGbdhOK3ZKb7oRRJ7XIxnCNaj0CfzGUB8TnxIMts+p0EQELuK8+UF7fyBujIg9S5/WsT8T3BMBU45fogLBOsUhdp8o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=zTXxdqoV; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="nDUijihn";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="rXCBFfK3"
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51A7tbVl026392;
-	Mon, 10 Feb 2025 15:08:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2023-11-20; bh=7gBwuTq/z0iQ1lA0SiT+14ylDlCDTx39utVkGPga864=; b=
-	nDUijihnGUV12mgbtQ4IVXx5M8E5HnWRy8mDXhh44nDmxYwzY3bhOslBsLq06SmF
-	zgcNVg6sMaf0dmNV1OUXTDS0I3uQVqvuWVSoSnYrbtaR1QHoPZahlCFm8C5RDpVe
-	XVjl8w6ZWKoeLdcxe8uBvGbq0ZCnhtPjHpd1OZxmf8Qwg39E6ku+UkxjmPtCYXjJ
-	5JrBM54On0TTO84bi0D7nJo8rYhuhvq6qpCYmBq+bcebXhFe9r+/rrZBD36DTBg7
-	ZI4mH547r8c0SYBF6hqPyol4OTDur7MLtO8d/6YKHsFX6lYcV7+fDPF8B9LRM+is
-	4BP68OxMpvBGpSbaInn4Dw==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44p0t433rx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Feb 2025 15:08:13 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 51AEg56T009739;
-	Mon, 10 Feb 2025 15:08:12 GMT
-Received: from nam10-mw2-obe.outbound.protection.outlook.com (mail-mw2nam10lp2048.outbound.protection.outlook.com [104.47.55.48])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 44nwqdrvp0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Feb 2025 15:08:12 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=vZHy5jcYp/aiOZoMVid6O+hZZhPxglb5LuGwrHmN9GXvENw+ErWani0pAVOFPawnKBpPEGDwrEs46kBqO7zwFA9o7KsH1rWKiiofHxnHVblo/THupDDo5GVZWObMnRUhlCwfdC/pKy8LH2GBMkoo0GVJxh6yRSgeVdQCAYNYJohvT6Xd8EqAf4Iet5WdC9zH8BQ95f8lZX3foL+VFtT4K78dk/IAxTc0/ZrQJLIxAejJayHS4f2ienRy1js7g6QoqJGv76zTVk7Ow6g4f5wryww0NoqH0JeuTXyeJeoXBn6U5H8bPuy3QurY0SR+/wJndVrpBtU9AWm18QJtMwhEKQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7gBwuTq/z0iQ1lA0SiT+14ylDlCDTx39utVkGPga864=;
- b=snoQAFKTh73na8uMsduDUZVzbIvPEc+1ilyrG6wCFUzj8jhGRawBiX4fN4CVa+rt2Xk98UiGX3b6NGzmbXeShJuxrqIn+82Aygxk+1zg26yFn/rZ4awQS/16hKBWIz0sXp0UWqGIO17f/qnRLfW083Tf6yO0HbX3gcywITElqv4Wd36UXayjORSdGibVQm+VKJAjSf+3JjiZx8wqYCz2UgZ3L6TXDUl0iw3K3Sa+7qbrUGz5SY3CU/EzdRUrQml3kBSEURoPS+ba32Ro6XPbcE7seIvKPVC9X0rRoO51V+JhXTqtBFUOcMvJFfA/++HbmM0pcl5Y/8mOZYAeuyZb7g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="zTXxdqoV"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-38dd0dc2226so2383254f8f.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 10 Feb 2025 08:12:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7gBwuTq/z0iQ1lA0SiT+14ylDlCDTx39utVkGPga864=;
- b=rXCBFfK3LcNSj8ti0liQWGWcW/V4KbRWvr3J8RPPv/JMSekgXTouCeaPKJz1Roxx9TS3amPrTuQm9kGUIoo/CSGf6lmRTKwAK0YDOVgNCORwnDpmIXhgqNlaE9GZrZ//kxl3y34WYFqnqhbtjjJo7T6ksdR77NYAB4MvfjvOTEs=
-Received: from BLAPR10MB5217.namprd10.prod.outlook.com (2603:10b6:208:327::10)
- by DM6PR10MB4348.namprd10.prod.outlook.com (2603:10b6:5:21e::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8422.16; Mon, 10 Feb
- 2025 15:08:08 +0000
-Received: from BLAPR10MB5217.namprd10.prod.outlook.com
- ([fe80::68fa:11c9:9f82:f7be]) by BLAPR10MB5217.namprd10.prod.outlook.com
- ([fe80::68fa:11c9:9f82:f7be%4]) with mapi id 15.20.8422.015; Mon, 10 Feb 2025
- 15:08:08 +0000
-Message-ID: <edf0e21a-db9f-42a8-ae0f-76a9d93713fb@oracle.com>
-Date: Mon, 10 Feb 2025 10:08:06 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: hyper_bf soft lockup on Azure Gen2 VM when taking kdump or
- executing kexec
-To: Michael Kelley <mhklinux@outlook.com>,
-        "mhkelley58@gmail.com" <mhkelley58@gmail.com>,
-        "haiyangz@microsoft.com" <haiyangz@microsoft.com>,
-        "wei.liu@kernel.org" <wei.liu@kernel.org>,
-        "decui@microsoft.com" <decui@microsoft.com>,
-        "drawat.floss@gmail.com" <drawat.floss@gmail.com>,
-        "javierm@redhat.com" <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>, "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "airlied@gmail.com"
- <airlied@gmail.com>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>
-Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
-References: <BLAPR10MB521793485093FDB448F7B2E5FDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
- <BLAPR10MB521780F7C93DC013E2E031BDFDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
- <SN6PR02MB415732CABA59155898531226D4E92@SN6PR02MB4157.namprd02.prod.outlook.com>
- <BLAPR10MB521743AC3C146116D8F6BCACFDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
- <SN6PR02MB415777C53A930259A54E213ED4F52@SN6PR02MB4157.namprd02.prod.outlook.com>
- <SN6PR02MB41578AC54B7C0B7386B8ED00D4F62@SN6PR02MB4157.namprd02.prod.outlook.com>
- <SN6PR02MB41572155B6D139C499814EB7D4F12@SN6PR02MB4157.namprd02.prod.outlook.com>
-Content-Language: en-US
-From: thomas.tai@oracle.com
-In-Reply-To: <SN6PR02MB41572155B6D139C499814EB7D4F12@SN6PR02MB4157.namprd02.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BL0PR0102CA0032.prod.exchangelabs.com
- (2603:10b6:207:18::45) To BLAPR10MB5217.namprd10.prod.outlook.com
- (2603:10b6:208:327::10)
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1739203964; x=1739808764; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Bui6a+u8nCr5hYL5RmyZzGBCPswahyVTcFp15Z0jabc=;
+        b=zTXxdqoVVOAp3MQhd5hS0lOThnAbaUsykLQlH4H1dszqE3qmMQrkPQrxvEk/428PsN
+         By7nfhnOMnwHcuv/RgMPgyqQTwVFtUvvFj8nEBEBqOUGKkWWdAK7mwqAm9Et2t/JYizU
+         tczZzp3NVhoDGW8NxztOHhHZq4C5JryFeJTrMe0aP/trXkAOXjcr9Tdj6vsPVPJh/YNA
+         o+/NfwI1SO07on/DUfxwaQYNY+hiKQ5Qw6AOExv3Jq9bh+5PpX/9NhvypGQYHoiRr68M
+         jt0saPN51/GygNobxld9S1M6Ek5EKYfiK5/AQo5WYBpO+DqnxZEhF1PjVcsZejl6KUJ1
+         U2zA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739203964; x=1739808764;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Bui6a+u8nCr5hYL5RmyZzGBCPswahyVTcFp15Z0jabc=;
+        b=A0TBRDFv2hNhxVTULwlCnaBgCLWQPcEgq4m9uYjXoJHl8VKhepuWEzjT/MR5UWvTCO
+         APQSLsVFM9a7WdTQ8zO+TkQu8ctlcVFb8m2/CKIz1kuoB1uXczF1OImm4gJqMPnwVQPJ
+         VScohim4GDNY/V2E7qx3/cLjeT8nHH9GLJ9NsNh5Sc+tvUFV4olWKqANLwfPWLbAuBtY
+         hM7vVVijnZAM05shFp+tAG5rCI1cWn86QYLDQCtYqaX2vJ5kqlKl5fxNDM4YDGSwqFKG
+         aDxNYX89wG74JX7QfTLn0ofGvUe2k4I8DqGXWC0jIDknclmystXeZw/+IQShqXQbFp/u
+         DTtA==
+X-Forwarded-Encrypted: i=1; AJvYcCU+LIWLQtCxw796hi+y2K/cDsfOSMtyXAn/rjDjBlH1w4jNc2T+5+zDUB2egkmaSWazmY3NCWZR3szb0Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxyInABSXk2I/FCaZ0tWSxYhgvFPSGxr1DkRK1DzZ3AiwaWiztM
+	IjfzMTZb417bOI+ZyREhMmzeaX5ZoxvpaD6WcBYpb8NuJG7BrR99FRFPBsCVFag=
+X-Gm-Gg: ASbGncudpa3qMisRbpiRHs9ueQbWjt+BVAIDdoTQ+suErGWx97Ek+ST3bGktPsz69W1
+	9/SJeS+dFmsrpTYelTEToinqtwBoiJ6u41FbfZ9NS8d7imhPmZAKC0zEvfevpB7ifAUqJlEtZpX
+	bekUaYvFnn9gNH/Ru/PYkWYsX+9TjAuKYssB7C7//3vB0dG3slv+0bF8eJDpZctMLLUOQN+NVWc
+	4tkDyr5TEP5xnFiLHsyA8vPNN1+IxI0iiF+rS1W2YuB8sRh49HCKZ6oFtp8ZLDGVlfBg5NP9wUQ
+	i0gYITvKbFSCittiHWM9DeZLRpzGJljCm52OCkT3bahg9qxwJeEvrNSzhEkIoIQ=
+X-Google-Smtp-Source: AGHT+IHUCCXzWViw53v2z70NsQLCy9biU20BiEN5hSZXLoMpP9jMFah5HdHZWC2wYRaW+ixAC4KYsQ==
+X-Received: by 2002:a05:6000:1a8f:b0:38d:e39e:ed14 with SMTP id ffacd0b85a97d-38de39ef19amr1133646f8f.25.1739203964485;
+        Mon, 10 Feb 2025 08:12:44 -0800 (PST)
+Received: from [127.0.1.1] (host-87-8-15-130.retail.telecomitalia.it. [87.8.15.130])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4391dc9ffcdsm146637945e9.15.2025.02.10.08.12.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Feb 2025 08:12:44 -0800 (PST)
+From: Angelo Dureghello <adureghello@baylibre.com>
+X-Google-Original-From: Angelo Dureghello <adureghello@baylibre.org>
+Subject: [PATCH v4 0/9] add support for Software mode on AD7606's iio
+ backend driver
+Date: Mon, 10 Feb 2025 17:10:50 +0100
+Message-Id: <20250210-wip-bl-ad7606_add_backend_sw_mode-v4-0-160df18b1da7@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BLAPR10MB5217:EE_|DM6PR10MB4348:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9ce2bc3c-1bc9-4365-39bf-08dd49e4ba7a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|366016|1800799024|921020;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?RWg2cTVqUTIyNXFUb3h0Y0t2bTloY3J0UDhSMHpNcXZmM2Foc2tsVGFueW4r?=
- =?utf-8?B?bEpGVVMwOGVqNGZoZkIvYXNjbXA1eVJ5UWhVRng1Y1hzdlgyTStpcFRlMnFE?=
- =?utf-8?B?T0JoWSt5Y296TUhlYXBqK01CMmVOaWE5djhUTHlHaDRhQjlhWEpzMDN0V2lx?=
- =?utf-8?B?Z1g4REQveHcyTlhUdHJ2c2FPM0JmYTJSVHFmRGV2UnZxL2xETHdKcjhldUxD?=
- =?utf-8?B?RExqWWVzMnh4K0FxaGFJQXIrNldDeFUyVHlxUExWL0VDUisxOGVmc2ZFdjFD?=
- =?utf-8?B?WE02VlBnLzVlTSs4YnQ2WXBBRndlekh5cHpKZTI4aytabVIvb0Q5ODhJdVd1?=
- =?utf-8?B?RGh2aTdIeGdxREd5M09iUHdlZGhEQzNQTy91V0NtNThVT3ZiOUxaRnlvTzNp?=
- =?utf-8?B?WVVaZ01BNEY1Sk05RkJ5M2ZHS3lJc29iV3drUVZBVGlrWmRQUWJLOUZGNzVl?=
- =?utf-8?B?bGtpNnh3OURRZzEwYnRqR3hpc1RzckM4NllVSDBFNmEvUTNaMVYzYmhDRXhl?=
- =?utf-8?B?K1k2YWQzQ1l2RTd6anNhTVkvWnNHNU1EM0xJNXNvQ1JrT2tWK3JiQTBRQ3Jt?=
- =?utf-8?B?bi9iSHlkUTRRU3o4OXJiOEQxd1dHWjdtMllSR0UwWXdCajM0TWRhRW1IeVQy?=
- =?utf-8?B?SjAyeVNqRGo2eTc4UjNNdFlYeWUxMko5ai9jYzZiVmFxa0lSZ2liY1B0SVhn?=
- =?utf-8?B?eS9yVklnUWRvZnNBeFE3eHZCN0dxcEI5YzJSYkJnQmlVR3F5ckdtbEhZQytQ?=
- =?utf-8?B?MG05dDYzMXdYUVJuSWlzUmw0U2xiTE1KT2ZaNitzMFluKzVCU0h5MjJub3FT?=
- =?utf-8?B?cVh4ckM5OUpUYzBEbDVNdmZDbnhqTFVYdW5YVlJxMXkwRy9GSjVkTFd5MEVK?=
- =?utf-8?B?SkdPVlcwWmFUMk5ZdFdwQUtkVzVxSEgzNDd4WG40V1hvaHA1bkQzRDA1b08x?=
- =?utf-8?B?RFVDQnlWT2NsRU82ZnpXTDAxSUtsbzh5aWhPaDJaajBGdFdQbFR3dUkzcGk0?=
- =?utf-8?B?bVNCbUZzTDEvSm15OWV2dTN3cTNsQ3dYMCtJQ1pnbC9nTkxNMFFoU0pXYVhX?=
- =?utf-8?B?RlF1MEJjdk1Da2tlOUNkcGJwZXVDcTVBNEFJYzRLUkkwQk5XQ3JLdHFKYVRY?=
- =?utf-8?B?bFlYd1B1N3FCQ05ZMklaemFPcDQwQ1lRYXdJRU1LTUl2YVVNUUdra0xna1k1?=
- =?utf-8?B?NVpYN3BNV2ZlOHM1T0prcVJ4RFNYQlkxZjBvWDg1dGJNTTlVOGNQYUJVYXNj?=
- =?utf-8?B?L1M5YW9maU1NUGhnUEVOR2ttUmRLcjRmOGc2dzZYVlNIeTkzMUZlT0pKTVlz?=
- =?utf-8?B?MTYwKzFDTE40eHlmRHY3U3pZaWl0aERBWTU0SlVvbU80MVFkWGk1R2hLdmM0?=
- =?utf-8?B?aTdOeXAvVSsybmFDUVVjbC9TVjVOdzNSQUJ2YmNvekNqaWZCUWZPamhFZ1dO?=
- =?utf-8?B?NzhlbG5JYjNNb0NnSFdCS1M4MHRLU0FaNE9WM0dTbEZoWVN1M3IxSVlGN3A3?=
- =?utf-8?B?d1pEa0F6N2NjWVQ2TlJCS2FxVU9YUVZodm90QWFNSUh5SVpUbzhsdGppM29j?=
- =?utf-8?B?My9rWHdsT3J6SCsvS1BDbCtCYnpiRmtwUkpQYU9paURFMWVOS2I3SXpIYUs0?=
- =?utf-8?B?Zi9OZk55eGRQN3hRV2Y4WjY1L0ZuTkhiMFZuU21ZM1RuNXlLdkpYNFJOQXlO?=
- =?utf-8?B?K1Y1VENGcEFUR0hiUUIrQ3RocGZlWnM5d2tmNlRjRmNjam5jNnJkRFg4UEtu?=
- =?utf-8?B?V3ptV0F5UmpnMU5uZ2JuQVpDZ3dQckFBZEdoUjdlOEVRTmM2bVRnRkh2eHNZ?=
- =?utf-8?B?bnBhNHJzZnFTSjNST3Q4bmd4SXpPVUUwM21GTlNTaHpsODFxTkdTenp2ei94?=
- =?utf-8?B?ak5hNUFReXFvZmpvKzZxZDF4Nm85dHZJY2ZpaXBXNEVGelVxSUxpaXpwMVdB?=
- =?utf-8?Q?rGO2xYMIREE=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BLAPR10MB5217.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?b2djUXBYTWVNYmFOWG1xSmRBZUU1cWhlS2hFTXpjZkJFTjFZZUZGVzlsb01T?=
- =?utf-8?B?OGRlMDdsQkRoUTRyT3ozenNaZ2pDZ1BET2tTQmFIajRoYjlMZzdic0VRajJI?=
- =?utf-8?B?UVhyZkUyNXUxMWdLbXhFSXI2TlkzVHpGZkloY05OT1p0N092L3VZVVQyMTZO?=
- =?utf-8?B?blFBdS9PN0d3WEhraEpXR1F3bjU1N0N2OHFXWDlzMXp3ZnNFWldka0p2eFgx?=
- =?utf-8?B?ZlF6WTcvR0xJeGNZRzF3bGtLdFZpZ1lwUHNLRTlWdlRXU0RkUzVWS3JCV2gz?=
- =?utf-8?B?UEQ5cU0yNWtYL09wWmREUTNmTGZma2QrbkJTUHIrSVdFSnBCQ011dk90akRT?=
- =?utf-8?B?ZFRiRERESzBzRlVBSXpGQ0dHcCs3TzR6a1NBVmNkL3RQdHcycFBwQVp1L2RS?=
- =?utf-8?B?WCsxN1FvQTFhdE1CSVppZUttaVplZWZ1dnVIMm96akQwWWdSL250czNmL3Zn?=
- =?utf-8?B?MTlUVGRjVHlkMzcxbzBRY29qVEZHWjg5S0t2a0wyREZjMlFrcDk4QTNPRnpx?=
- =?utf-8?B?OHRYM0RLYXkxUUQwTmhyV2hKOWNKazZLTVB1UEtjSnFWencxSmZUNU9Fc0ww?=
- =?utf-8?B?SjA4RXRudTZnTnE2TUFTM2RXNmpvRzdZOXZlNXBTSVZwa24xWHFLYjl3ZFh2?=
- =?utf-8?B?YXp2Tjk3bzR3VTVFdjk4aDJRNHlZZFZGRUxoU3hWWWVNVzZYcnd0UlhDMHNy?=
- =?utf-8?B?UGNncXc2WmhEdWJrUUFNbGNqMDFXSkZIYnU2UHFWWXpJWXBlakRrSTJQMS9O?=
- =?utf-8?B?VFJYVFFIQk83K0kyVEVpRnN5MEIyZkc2VG9nRmlJUHVQMzVNUUFudElIRDRV?=
- =?utf-8?B?SzVoWHRQOVFyQ0hYR1UxRTcxbTdxM08yYndTZ050dE5jSGdKbzg1OGJ6ZUM1?=
- =?utf-8?B?cWpwR1FoNEx4Y0NmQjVGSllGRElNcHEwelZDSWpQTmxsMkluL29va2M4N1Vv?=
- =?utf-8?B?SXhEZ3Q2UjRWNjdCdE1vQVZHTENTcVNsSDllK3R1a1c0cXNRS1F2UjA1UjBW?=
- =?utf-8?B?MFF6eXU3bmI1ZzJsSmhCcGwxeEVTZzVmZGcvNTl0NEl6Y3F5cDlzYXp2cU1t?=
- =?utf-8?B?SEhwZVpvWjNvZEovK09SRFpjZk1QZ2tFZ0VGZnpMamE2UlZhWDY3UkJ3czVp?=
- =?utf-8?B?cHJJaDAwWWY4SW03Zk5WYkV0L2pBaXVBMEF0WW5QS2lZVUNJUnZOUzQraGE2?=
- =?utf-8?B?WkFlcDF4S25lKys3YzE1SXRtYjFFM2JsM29sRmprSUNyM1EvblZObXZMM21V?=
- =?utf-8?B?b0RnVmpFZDhJYVI2aU93cldFWVpJc1RkNHFPL2tXanBKZ2srbUx0amNPcTk5?=
- =?utf-8?B?MDVoZVo4UmhpTGRZUThtWHdqbmdGbWpLTFNzWVhhL2w2OFRXVXc4djZCWWlT?=
- =?utf-8?B?eWxtNWpJR2hlNjBBOWkwRUlUa0V1dXE4RFozbzR2dUVpMFNwUUFmdHl0dXo5?=
- =?utf-8?B?VVpiUkFaN3JoUEE4cWdtekRZZzdXQ0VvcUNvc0NHNjJLYnpNdXRwNE9PbkxV?=
- =?utf-8?B?Vk1HQnJlK2FZMFFsa3FrcWhMR2doTlovKzlHZTdVRzFRYTQ2QVpBNFZSR2Vi?=
- =?utf-8?B?TE10bFd2RURydmpFb1c2K1JuZDJoNEh5K2kvN3hjNldFdDJDeGoxUXlIMDlT?=
- =?utf-8?B?dTBCL21TdE5DdTFTd2JNSW41ZTh4S0drRkttNjdHaThEZlZJQ3RDb2JPUkp5?=
- =?utf-8?B?U3VoWXQxTkdDWk55Y1pqWDZYb3FtSytueXpjYXBxTVJsVStDZ3VrR3kzbDQz?=
- =?utf-8?B?QmJ5cHVXUXRlZHpmNkNsU2NmNzd3RWFscFMvVERlc0UwVElSeTZCM01ZZzMr?=
- =?utf-8?B?R3lNTHFZVkxXTW9rQjFRUDB0RU4xWG1ma0dEWUZXRjBYYmRPYlJmOXJnTFF5?=
- =?utf-8?B?VVpxY2o3L1pnQU8vQ1lydUxGaGZucGc5NHM2OXoxcGdoQW1pbGRJUVd1UmFq?=
- =?utf-8?B?c3BId0pzSWRHTjNrbFJ0OUFLREJvTVBCRTlDcDFCTVNrclJzK3liSTRkNkE0?=
- =?utf-8?B?a0RmZ0hyVGR3SFBpcldMUjhTekJualowMUM3TkorRWxtWnRhejVvQ2l1SXI1?=
- =?utf-8?B?RUp5MU1xdGMyem1Hb3ZFNUtSODgreHNhS3diSVZVbW5UbGw4enlneXNpUHJT?=
- =?utf-8?Q?MO8j7JN0RXPewCdU3rEmWVbL7?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	+7LyYJRoSpaigvkBLM0jGqm2hL38zu7DvoYv+D1SxhZLyZKOqPg30FRt3/7pFT9q5npPb7KnCSpay4V2rY1CA/d4q1P+AdlOaxwNAZ3alJGfBgq2D+AINlqBysDxJg4E88Jzhs0yVu7JWP+mVJr/UAX3ZFCTe86sMzFYDLRHX39jWYBvCJmjqWd1y6T3x9r+9QJvpLnwmAOi3mSSh6pyBwZQuAy17gaX7fv+qRq6lg8OrtuvJVmg9oR39brOiVfA3I90bfBEZauBNr54l5SUrKYkeIDXumGns9HgrH67r267SCII8K+QN8KEYBqrtEmtpIJm3i9VtzGPBT/Eu1XnYFbHXzYxULoAgBzVCM8UiOgwyTH+54kPdoHgv8cX9Bv/S64KeuSiwd+cPgx2HEWUmcJ7ZCIlhbs745euN+5aTNswnszqKdqnx4xsZM2/Y3vwEMGksbRinOAH16vuLJMsQdliDjXj3wcLG9EETKGEwSq3NvjZHxjHnjPlPVdwlYoznVoMSEFuqm8PhirC1yjkAXcuj97PHsLyGj6++akhxaC4g/jPT3zKXkL4tbWRM4p3ah77ibkJRmr9F6dnid+EOH+zmZBU/DylCEndr6lnuuE=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9ce2bc3c-1bc9-4365-39bf-08dd49e4ba7a
-X-MS-Exchange-CrossTenant-AuthSource: BLAPR10MB5217.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Feb 2025 15:08:08.7480
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AuPXQ63mdAqgg3kSn9ik+0OQC937LN7x6qhHeROFoGEpJU2OA3uY0Xq1huFjH2+noHNcpO9d7dzxiVcRGx7ICA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR10MB4348
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-10_08,2025-02-10_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 spamscore=0
- suspectscore=0 malwarescore=0 adultscore=0 bulkscore=0 mlxscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2501170000 definitions=main-2502100125
-X-Proofpoint-ORIG-GUID: RaGMHbpa-_cgv20zdrR3j_ZRuJgAJNCX
-X-Proofpoint-GUID: RaGMHbpa-_cgv20zdrR3j_ZRuJgAJNCX
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAolqmcC/5WNQQ7CIBAAv9JwFoNgIXryH6YhC2ztxrY0YFqbp
+ n8X/YHHmcPMxjImwsyu1cYSzpQpjgXOh4r5DsYHcgqFmRSyFid54QtN3PUcgtFCWwjBOvBPHIP
+ Nix1iQB6ClFALrVWrWOlMCVt6/x73pnBH+RXT+lvO6mv/qc+KC+4VoDfGC3Dm5mDtySU8+jiwZ
+ t/3D7gZvSzVAAAA
+To: Michael Hennerich <michael.hennerich@analog.com>, 
+ Lars-Peter Clausen <lars@metafoo.de>, Jonathan Cameron <jic23@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Alexandru Ardelean <aardelean@baylibre.com>, 
+ David Lechner <dlechner@baylibre.com>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Guillaume Stols <gstols@baylibre.com>, 
+ Angelo Dureghello <adureghello@baylibre.com>
+X-Mailer: b4 0.14.1
 
-<snip>
+The previous series added iio_backend mode, but the configuration for this
+mode was only possible through GPIOs (Hardware mode). Here, we add support
+for configuring the chip using its registers (Software mode).
 
->> Then the question is why the efifb driver doesn't work in the kdump
->> kernel. Actually, it *does* work in many cases. I built the 6.13.0 kernel
->> on the Oracle Linux 9.4 system, and transferred the kernel image binary
->> and module binaries to an Ubuntu 20.04 VM in Azure. In that VM, the
->> efifb driver is loaded as part of the kdump kernel, and it doesn't cause
->> any problems. But there's an interesting difference. In the Oracle Linux
->> 9.4 VM, the efifb driver finds the framebuffer at 0x40000000, while on
->> the Ubuntu 20.04 VM, it finds the framebuffer at 0x40900000. This
->> difference is due to differences in how the screen_info variable gets
->> setup in the two VMs.
->>
->> When the normal kernel starts in a freshly booted VM, Hyper-V provides
->> the EFI framebuffer at 0x40000000, and it works. But after the Hyper-V
->> FB driver or Hyper-V DRM driver has initialized, Linux has picked a
->> different MMIO address range and told Hyper-V to use the new
->> address range (which often starts at 0x40900000). A kexec does *not*
->> reset Hyper-V's transition to the new range, so when the efifb driver
->> tries to use the framebuffer at 0x40000000, the accesses trap to
->> Hyper-V and probably fail or timeout (I'm not sure of the details). After
->> the guest does some number of these bad references, Hyper-V considers
->> itself to be under attack from an ill-behaving guest, and throttles the
->> guest so that it doesn't run for a few seconds. The throttling repeats,
->> and results in extremely slow running in the kdump kernel.
->>
->> Somehow in the Ubuntu 20.04 VM, the location of the frame buffer
->> as stored in screen_info.lfb_base gets updated to be 0x40900000. I
->> haven't fully debugged how that happens. But with that update, the
->> efifb driver is using the updated framebuffer address and it works. On
->> the Oracle Linux 9.4 system, that update doesn't appear to happen,
->> and the problem occurs.
->>
->> This in an interim update on the problem. I'm still investigating how
->> screen_info.lfb_base is set in the kdump kernel, and why it is different
->> in the Ubuntu 20.04 VM vs. in the Oracle Linux 9.4 VM. Once that is
->> well understood, we can contemplate how to fix the problem. Undoing
->> the revert that is commit 2bebc3cd4870 doesn't seem like the solution
->> since the original code there was reported to cause many other issues.
->> The solution focus will likely be on how to ensure the kdump kernel gets
->> the correct framebuffer address so the efifb driver works, since the
->> framebuffer address changing is a quirk of Hyper-V behavior.
->>
->> If anyone else has insight into what's going on here, please chime in.
->> What I've learned so far is still somewhat tentative.
->>
-> Here's what is happening. On Ubuntu 20.04, the kdump image is
-> loaded into crash memory using the kexec command. Ubuntu 20.04
-> has kexec from the kexec-tools package version 2.0.18-1ubuntu1.1,
-> and per the kexec man page, it defaults to using the older kexec_load()
-> system call. When using kexec_load(), the contents to be loaded into
-> crash memory is constructed in user space by the kexec command.
-> The kexec command gets the "screen_info" settings, including the
-> physical address of the frame buffer, via the FBIOGET_FSCREENINFO
-> ioctl against /dev/fb0. The Hyper-V FB or DRM driver registers itself
-> with the fbdev subsystem so that it is /dev/fb0, and the ioctl returns
-> the updated framebuffer address. So the efifb driver loads and runs
-> correctly.
->
-> On Oracle Linux 9.4, the kdump image is also loaded with the
-> kexec command, but from kexec-tools package version
-> kexec-tools-2.0.28-1.0.10.el9_5.x86_64, which is slightly later than
-> the version on Ubuntu 20.04. This newer kexec defaults to using the
-> newer kexec_file_load() system call. This system call gets the
-> framebuffer address from the screen_info variable in the kernel, which
-> has not been updated to reflect the new framebuffer address. Hence
-> in the kdump kernel, the efifb driver uses the old framebuffer address,
-> and hence the problem.
->
-> To further complicate matters, the kexec on Oracle Linux 9.4 seems to
-> have a bug when the -c option forces the use of kexec_load() instead
-> of kexec_file_load(). As an experiment, I modified the kdumpctl shell
-> script to add the "-c" option to kexec, but in that case the value "0x0"
-> is passed as the framebuffer address, which is wrong. Furthermore,
-> the " screen_info.orig_video_isVGA" value (which I mentioned earlier
-> in connection with commit 2bebc3cd4870) is also set to 0, so the
-> kdump kernel no longer thinks it has an EFI framebuffer. Hence the
-> efifb driver isn't loaded, and the kdump works, though for the wrong
-> reasons. If kexec 2.0.18 from Ubuntu is copied onto the Oracle Linux 9.4
-> VM, then kdump works as expected, with the efifb driver being loaded
-> and using the correct framebuffer address. So something is going wrong
-> with kexec 2.0.28 in how it sets up the screen_info when the -c option
-> is used. I'll leave the debugging of the kexec bug to someone else.
-Hi Michael,
+The bus access is based on Angelo's ad3552 implementation, that is we have
+a particular compatible for the backend (here axi-adc) version supporting
+the ad7606's register writing, and the ad7606 is defined as a child node
+of the backend in the devicetree. Small changes are added to make the code
+a bit more straightforward to understand, and more compact.
 
-Do you think we need to handle Azure Gen2 VM differently in the kexec?
+Signed-off-by: Guillaume Stols <gstols@baylibre.com>
+Co-developed-by: Angelo Dureghello <adureghello@baylibre.com>
+Signed-off-by: Angelo Dureghello <adureghello@baylibre.com>
+---
+Changes in v4:
+- some spaces / tabs fixes,
+- fix child nodes creation as done for dac,
+- change usleep_range into flseep,
+- use just a u32 as a value in bus access functions,
+- protect bus access from concurrent access,
+- Link to v3: https://lore.kernel.org/r/20250129-wip-bl-ad7606_add_backend_sw_mode-v3-0-c3aec77c0ab7@baylibre.com
 
-Or should we change the kexec_file_load() system call to
+Changes in v3:
+- add some fixes found while testing,
+- general commit meessages fixes,
+- codying style fixes,
+- dt-bindings: add some properties as requirted,
+- use iio_device_claim_direct_mode (and release),
+- rename bus read/write functions with "bus" as done for ad3552r.
 
-retrieve the correct framebuffer address?
+Changes in v2:
+- Improved descriptions.
+- dt-bindings: improved descriptions, added exemple and additional
+  property for the custom IP.
+- Reworked some macro commits to avoid changing order and associated
+  diff artifacts.
+- Various cleanups and formatting fixes.
+- Link to v1: https://lore.kernel.org/r/20241121-ad7606_add_iio_backend_software_mode-v1-0-8a693a5e3fa9@baylibre.com
 
+---
+Angelo Dureghello (3):
+      iio: adc: adi-axi-adc: add struct axi_adc_info
+      iio: adc: adi-axi-adc: add platform children support
+      iio: adc: ad7606: protect register access
 
-Thank you,
-Thomas
-> I'm still thinking about alternatives to fix this mess. Please chime
-> in if you have suggestions.
->
-> Michael
+Guillaume Stols (6):
+      dt-bindings: iio: dac: adi-axi-adc: add ad7606 variant
+      iio: adc: ad7606: move the software mode configuration
+      iio: adc: ad7606: move software functions into common file
+      iio: adc: adi-axi-adc: add support for AD7606 register writing
+      iio: adc: ad7606: change channel macros parameters
+      iio: adc: ad7606: add support for writing registers when using backend
+
+ .../devicetree/bindings/iio/adc/adi,axi-adc.yaml   |  70 +++++++-
+ drivers/iio/adc/ad7606.c                           | 159 +++++++++++++++++--
+ drivers/iio/adc/ad7606.h                           | 103 ++++++++----
+ drivers/iio/adc/ad7606_bus_iface.h                 |  16 ++
+ drivers/iio/adc/ad7606_par.c                       |  52 +++++-
+ drivers/iio/adc/ad7606_spi.c                       | 137 +---------------
+ drivers/iio/adc/adi-axi-adc.c                      | 176 +++++++++++++++++++--
+ 7 files changed, 516 insertions(+), 197 deletions(-)
+---
+base-commit: 4692f10bec7459a0baa95bdfa66a4ea740ec9e0a
+change-id: 20250129-wip-bl-ad7606_add_backend_sw_mode-dd22a50663f3
+
+Best regards,
+-- 
+Angelo Dureghello <adureghello@baylibre.com>
+

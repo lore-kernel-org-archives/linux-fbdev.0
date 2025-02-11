@@ -1,112 +1,241 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC8641F236B
-	for <linux-fbdev@vger.kernel.org>; Tue, 11 Feb 2025 10:20:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBF23230D0E;
+	Tue, 11 Feb 2025 13:57:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739269231; cv=none; b=o7cQIa/20/qpbX3LNcPrxozVykUCBGDepWcAcZ10fhWo4qm6UK/UAlFgMLrZcaxBwAQbAdojHzxhhJHTiIf55z8JqtGfLv1UDyyRQR3M4IajecZkstqf35u2rCCQb3tgQEXrI5jKq/vMZGGkcHztyXNfFP0Q8a0KcFTv0WPGJ88=
+	t=1739282278; cv=none; b=AmK3BhVdOG8wyrcGIoSmFhmEO5xnhcSwXVkFNSNyCJCegvyVbxTD8XSC2XFi0PNx7w54vMZxdZB3m/KXSveYSGyr592vc8gJT3MTuMCFQswNz8JN8JDjGkv/p1mFzwz1gSAE7TQwfQVvUhNqgJhqewkEg05q261CzEqAciW8q44=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739269231; c=relaxed/simple;
-	bh=QHfZqMJZ1yfRice3bDVmQNePWNNfSPPYnsH4pN7YZKI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=F//VfeSEBs4bZ7sI2642iRCWwoAHo9IASqG+KvU98ZwR72bLJD0ICY63fvSEC3i/a051mhoCp0V3oZTrexJwPe6FgIQhEw9RXUhecZFkiyxzsMOhagUQoB4yjYrohFuFtnUiLeRaZcppSJf7JxHe5OjMD8elpRQy3Nhk6MTJEFM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c62b5sBk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1739282278; c=relaxed/simple;
+	bh=HZ09yS0PIUlRsPml50FYmrdXyBewi0V5GzgjWRwc0Bw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Pyqb0sZyKJlKb6kH06XPWVWWxAaJ9LCKzTRB+RC8rRL/PoUxP1kDXZUJd3S8dPjFk96boPpWcwzohI0Avd4F12pLiDZ97HHztVvRpMuNYxc3HzeaS+Y20hgkGVTOMQPtPyxqSxaEcPy6Wih1yZFDBrD86g+yKp490WXTjAM+P7Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uCe2nhBx; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c62b5sBk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3F9EC4CEDD;
-	Tue, 11 Feb 2025 10:20:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uCe2nhBx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87794C4CEE5;
+	Tue, 11 Feb 2025 13:57:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739269231;
-	bh=QHfZqMJZ1yfRice3bDVmQNePWNNfSPPYnsH4pN7YZKI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=c62b5sBkHUoP8ABpLUeUYnlQdwhyrmtdRJEre5UOus36u6FNcn0F40aKUj5ci1vAR
-	 D8EMeqY+pqyI6N/6DCH/OenSdAydf1Gk1BEvMxRnaJJ3753vAnh22sb86CArRdXGO2
-	 NTNiBUPM8lkid1cxCwLJbxBv76lPvAuRk/GDde3tsUhlNPrZS4ErRRnRV0Kk+pvG3z
-	 78UCFIG3/jb4WWfkdyaB1PvxMZc7m8FOKaJsse2VpoVISUUDG3DnsEHdbdaeQk2X4I
-	 jQv+57jILkus4xto9j8c7xuufVpYNlD9ZqG4qbe4hJI4rVbOd3VHfzGbPi8RIR0gn9
-	 d4FB/oX3NmztQ==
+	s=k20201202; t=1739282277;
+	bh=HZ09yS0PIUlRsPml50FYmrdXyBewi0V5GzgjWRwc0Bw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=uCe2nhBx42RfMkyM6nuhDpR8TKBO5W1B0keIG1XnsvjmG4rgREhN/y2ULPTj2w5Pa
+	 vJV+UDOyxXWyDbgqmVreZpT5I9ZRVSUmq2DDQ6+r1yvwFeK1kx0wwC04jgk7BjKaac
+	 xx7qpRIU9j1eqm0Vlv3WAz27dYaGwxxQ84sllV0ZwtFBedAV45meH7LhJBpvtCx96e
+	 FagrYJMSOCVDt7u2gKOqwroo2FI//3zsCG+j3K+3ioeXE+9M0wBqrubr4EetWoQOYj
+	 sz7+6Auoyl0TohRZvxLHPMA6oz3MKkgTK5CrIu0heZXuVGRVxpwGHO54s0oruMEpQo
+	 o2YbXc5TrfRWQ==
+Date: Tue, 11 Feb 2025 13:57:52 +0000
 From: Lee Jones <lee@kernel.org>
-To: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, 
- michael.hennerich@analog.com, support.opensource@diasemi.com, 
- Thomas Zimmermann <tzimmermann@suse.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-In-Reply-To: <20250131140103.278158-1-tzimmermann@suse.de>
-References: <20250131140103.278158-1-tzimmermann@suse.de>
-Subject: Re: [PATCH 00/16] backlight: Do not include <linux/fb.h> in
- drivers
-Message-Id: <173926922945.2064331.4417872874243504252.b4-ty@kernel.org>
-Date: Tue, 11 Feb 2025 10:20:29 +0000
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: pavel@ucw.cz, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	simona@ffwll.ch, linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 12/13] leds: backlight trigger: Replace fb events with a
+ dedicated function call
+Message-ID: <20250211135752.GT1868108@google.com>
+References: <20250206154033.697495-1-tzimmermann@suse.de>
+ <20250206154033.697495-13-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.13.0
+In-Reply-To: <20250206154033.697495-13-tzimmermann@suse.de>
 
-On Fri, 31 Jan 2025 14:58:31 +0100, Thomas Zimmermann wrote:
-> A number of backlight drivers include <linux/fb.h>. None of them
-> requires anything from the header file, so remove the include
-> statements.
+On Thu, 06 Feb 2025, Thomas Zimmermann wrote:
+
+> Remove support for fb events from the led backlight trigger. Provide the
+> helper ledtrig_backlight_blank() instead. Call it from fbdev to inform
+> the trigger of changes to a display's blank state.
 > 
-> Thomas Zimmermann (16):
->   backlight: 88pm860x_bl: Do not include <linux/fb.h>
->   backlight: adp5520_bl: Do not include <linux/fb.h>
->   backlight: adp8860_bl: Do not include <linux/fb.h>
->   backlight: adp8870_bl: Do not include <linux/fb.h>
->   backlight: as3711_bl: Do not include <linux/fb.h>
->   backlight: bd6107_bl: Do not include <linux/fb.h>
->   backlight: da903x_bl: Do not include <linux/fb.h>
->   backlight: da9052_bl: Do not include <linux/fb.h>
->   backlight: ep93xx_bl: Do not include <linux/fb.h>
->   backlight: hp680_bl: Do not include <linux/fb.h>
->   backlight: locomolcd: Do not include <linux/fb.h>
->   backlight: lv5207lp: Do not include <linux/fb.h>
->   backlight: max8925_bl: Do not include <linux/fb.h>
->   backlight: tps65217_bl: Do not include <linux/fb.h>
->   backlight: vgg2432a4: Do not include <linux/fb.h>
->   backlight: wm831x_bl: Do not include <linux/fb.h>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/leds/trigger/ledtrig-backlight.c | 31 +++++-------------------
+>  drivers/video/fbdev/core/fbmem.c         | 21 +++++++++-------
+>  include/linux/leds.h                     |  6 +++++
+>  3 files changed, 24 insertions(+), 34 deletions(-)
 > 
-> [...]
+> diff --git a/drivers/leds/trigger/ledtrig-backlight.c b/drivers/leds/trigger/ledtrig-backlight.c
+> index f9317f93483b..e3ae4adc29e3 100644
+> --- a/drivers/leds/trigger/ledtrig-backlight.c
+> +++ b/drivers/leds/trigger/ledtrig-backlight.c
+> @@ -10,7 +10,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/slab.h>
+>  #include <linux/init.h>
+> -#include <linux/fb.h>
+>  #include <linux/leds.h>
+>  #include "../leds.h"
+>  
+> @@ -21,7 +20,6 @@ struct bl_trig_notifier {
+>  	struct led_classdev *led;
+>  	int brightness;
+>  	int old_status;
+> -	struct notifier_block notifier;
+>  	unsigned invert;
+>  
+>  	struct list_head entry;
+> @@ -30,7 +28,7 @@ struct bl_trig_notifier {
+>  static struct list_head ledtrig_backlight_list;
+>  static struct mutex ledtrig_backlight_list_mutex;
+>  
+> -static void ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
+> +static void __ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
 
-Applied, thanks!
+I'm confused.  Didn't you just introduce this?
 
-[01/16] backlight: 88pm860x_bl: Do not include <linux/fb.h>
-        commit: 9df4477179f1af4ff7adbacfa243819b57134b9c
-[02/16] backlight: adp5520_bl: Do not include <linux/fb.h>
-        commit: 769562042211e7a194e3dfde9436b42a3734e279
-[03/16] backlight: adp8860_bl: Do not include <linux/fb.h>
-        commit: a84877d7cc5b38dbbaad94ea7f8a784f8b12dbc8
-[04/16] backlight: adp8870_bl: Do not include <linux/fb.h>
-        commit: 1eeab5c83aa3c14790167c4d2b8786b257651bac
-[05/16] backlight: as3711_bl: Do not include <linux/fb.h>
-        commit: 9800ca9c96bc039a5e19391c446d1d69b211756a
-[06/16] backlight: bd6107_bl: Do not include <linux/fb.h>
-        commit: b6c775af0d2f1cf9376261180ce13e997dba583b
-[07/16] backlight: da903x_bl: Do not include <linux/fb.h>
-        commit: 68d112e043a4e9a5078eebc9302d5510d458681e
-[08/16] backlight: da9052_bl: Do not include <linux/fb.h>
-        commit: d670a4da1c60ab1004b79204c09b221eba8af93b
-[09/16] backlight: ep93xx_bl: Do not include <linux/fb.h>
-        commit: fcb0283338d760d37cd2701f6cd2bba0f5e78eb2
-[10/16] backlight: hp680_bl: Do not include <linux/fb.h>
-        commit: df14455987587fb5373eb216511e0f3ab24c5480
-[11/16] backlight: locomolcd: Do not include <linux/fb.h>
-        commit: 5f02729fadee6dedb638cdb8244f9447c8ad4ef9
-[12/16] backlight: lv5207lp: Do not include <linux/fb.h>
-        commit: 8c71b34c636cabb4101098cc6bb619ded9b0905f
-[13/16] backlight: max8925_bl: Do not include <linux/fb.h>
-        commit: aa021f33d2cb5061a2a02e1a3c8faea3a3d2f844
-[14/16] backlight: tps65217_bl: Do not include <linux/fb.h>
-        commit: d520ae4707fd6dafcb55649460059f67f54fc743
-[15/16] backlight: vgg2432a4: Do not include <linux/fb.h>
-        commit: d023cc09d9dbd5c6a4a81e0e3866c3b976d70891
-[16/16] backlight: wm831x_bl: Do not include <linux/fb.h>
-        commit: 373dacfeb55e1ac73dccd91b83437183ca0fbd43
+>  {
+>  	struct led_classdev *led = n->led;
+>  	int new_status = !on ? BLANK : UNBLANK;
+> @@ -48,23 +46,14 @@ static void ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
+>  	n->old_status = new_status;
+>  }
+>  
+> -static int fb_notifier_callback(struct notifier_block *p,
+> -				unsigned long event, void *data)
+> +void ledtrig_backlight_blank(bool on)
+>  {
+> -	struct bl_trig_notifier *n = container_of(p,
+> -					struct bl_trig_notifier, notifier);
+> -	struct fb_event *fb_event = data;
+> -	int *blank;
+> -
+> -	/* If we aren't interested in this event, skip it immediately ... */
+> -	if (event != FB_EVENT_BLANK)
+> -		return 0;
+> -
+> -	blank = fb_event->data;
+> +	struct bl_trig_notifier *n;
+>  
+> -	ledtrig_backlight_blank(n, !blank[0]);
+> +	guard(mutex)(&ledtrig_backlight_list_mutex);
+>  
+> -	return 0;
+> +	list_for_each_entry(n, &ledtrig_backlight_list, entry)
+> +		__ledtrig_backlight_blank(n, on);
+>  }
+>  
+>  static ssize_t bl_trig_invert_show(struct device *dev,
+> @@ -110,8 +99,6 @@ ATTRIBUTE_GROUPS(bl_trig);
+>  
+>  static int bl_trig_activate(struct led_classdev *led)
+>  {
+> -	int ret;
+> -
+>  	struct bl_trig_notifier *n;
+>  
+>  	n = kzalloc(sizeof(struct bl_trig_notifier), GFP_KERNEL);
+> @@ -122,11 +109,6 @@ static int bl_trig_activate(struct led_classdev *led)
+>  	n->led = led;
+>  	n->brightness = led->brightness;
+>  	n->old_status = UNBLANK;
+> -	n->notifier.notifier_call = fb_notifier_callback;
+> -
+> -	ret = fb_register_client(&n->notifier);
+> -	if (ret)
+> -		dev_err(led->dev, "unable to register backlight trigger\n");
+>  
+>  	mutex_lock(&ledtrig_backlight_list_mutex);
+>  	list_add(&n->entry, &ledtrig_backlight_list);
+> @@ -143,7 +125,6 @@ static void bl_trig_deactivate(struct led_classdev *led)
+>  	list_del(&n->entry);
+>  	mutex_unlock(&ledtrig_backlight_list_mutex);
+>  
+> -	fb_unregister_client(&n->notifier);
+>  	kfree(n);
+>  }
+>  
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index fb7ca143a996..92c3fe2a7aff 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/fb.h>
+>  #include <linux/fbcon.h>
+>  #include <linux/lcd.h>
+> +#include <linux/leds.h>
+>  
+>  #include <video/nomodeset.h>
+>  
+> @@ -373,11 +374,19 @@ static void fb_lcd_notify_blank(struct fb_info *info)
+>  #endif
+>  }
+>  
+> +static void fb_ledtrig_backlight_notify_blank(struct fb_info *info)
+> +{
+> +#if IS_REACHABLE(CONFIG_LEDS_TRIGGER_BACKLIGHT)
 
---
-Lee Jones [李琼斯]
+#iferry is generally discouraged in C files.
 
+Does is_defined() work for you?
+/
+> +	if (info->blank == FB_BLANK_UNBLANK)
+> +		ledtrig_backlight_blank(true);
+
+If !CONFIG_LEDS_TRIGGER_BACKLIGHT(), then ledtrig_backlight_blank() is a
+noop anyway, right?  So why encompass it in the #if at all?
+
+> +	else
+> +		ledtrig_backlight_blank(false);
+> +#endif
+> +}
+> +
+>  int fb_blank(struct fb_info *info, int blank)
+>  {
+>  	int old_blank = info->blank;
+> -	struct fb_event event;
+> -	int data[2];
+>  	int ret;
+>  
+>  	if (!info->fbops->fb_blank)
+> @@ -386,11 +395,6 @@ int fb_blank(struct fb_info *info, int blank)
+>  	if (blank > FB_BLANK_POWERDOWN)
+>  		blank = FB_BLANK_POWERDOWN;
+>  
+> -	data[0] = blank;
+> -	data[1] = old_blank;
+> -	event.info = info;
+> -	event.data = data;
+> -
+>  	info->blank = blank;
+>  
+>  	ret = info->fbops->fb_blank(blank, info);
+> @@ -399,8 +403,7 @@ int fb_blank(struct fb_info *info, int blank)
+>  
+>  	fb_bl_notify_blank(info, old_blank);
+>  	fb_lcd_notify_blank(info);
+> -
+> -	fb_notifier_call_chain(FB_EVENT_BLANK, &event);
+> +	fb_ledtrig_backlight_notify_blank(info);
+>  
+>  	return 0;
+>  
+> diff --git a/include/linux/leds.h b/include/linux/leds.h
+> index 98f9719c924c..8c7c41888f7d 100644
+> --- a/include/linux/leds.h
+> +++ b/include/linux/leds.h
+> @@ -640,6 +640,12 @@ static inline void ledtrig_flash_ctrl(bool on) {}
+>  static inline void ledtrig_torch_ctrl(bool on) {}
+>  #endif
+>  
+> +#if IS_ENABLED(CONFIG_LEDS_TRIGGER_BACKLIGHT)
+> +void ledtrig_backlight_blank(bool on);
+> +#else
+> +static inline void ledtrig_backlight_blank(bool on) {}
+> +#endif
+> +
+>  /*
+>   * Generic LED platform data for describing LED names and default triggers.
+>   */
+> -- 
+> 2.48.1
+> 
+
+-- 
+/fb_ledtrig_backlight_notify_blankLee Jones [李琼斯]

@@ -1,274 +1,288 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from SJ2PR03CU002.outbound.protection.outlook.com (mail-westusazolkn19013015.outbound.protection.outlook.com [52.103.2.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB3E926460F
-	for <linux-fbdev@vger.kernel.org>; Mon, 10 Feb 2025 23:56:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739231796; cv=none; b=RdovqiSjb4aB3kE7d57UOWRE40uGXOm4U8YIunOWa9UgvJk0oQ5fjYQqMAV/eaMJhgP4YLfjXFGjgKQJUuMsb03yD3d88OvKYsKVaFAKqmxpIjstJOvEZHGcYRr2FJWmoGMvlbJtvPOBCKB8tkfRlCGODZDaedFsp3dtOx+CE2g=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739231796; c=relaxed/simple;
-	bh=D4hzEZ90I1yTKCrbrFTPLTeJGB3TmoI5HZKosC2O5A8=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=NuZzAZBVqDOlTPSi9jihiigUv62vNqKYdFdoxuuLWx3c0NvKY7w2GSzswyby8JdO99GIEvWvoEjlhdivxkFnY2/B0RArOL/lPHKvhqoM6XS1UhPyeRmNw/TbPxsHh1o2zs+LZRXuQTCby2X4ZVbEPY725MY+rEtXfvtThV5yyHI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=EQWmB1VL; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECB303214;
+	Tue, 11 Feb 2025 03:51:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.2.15
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1739245913; cv=fail; b=YgR43lX+FHJFIyoZ0lJTxd+4ryjHGP858eLsm1EtZzgovd56Pgf/GbanHkjIlmzhO3hqISuUSaQ8BMu69kntJnbiKKpRWZuUzFKebojg4CVBFuG7ojpY9KQRF2a92oJ78q1NcTps0FqU203rWvKMkE1JVmRi3trCxBpVNWug9Y0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1739245913; c=relaxed/simple;
+	bh=UChejNeYndF+5d4KLxWectGovmgGTMrwJVp0hBTj58I=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=QuaorKE++B4mae52NMxSDxWwHbyFixzDIaoseWMhlQhYY8exj6zF4rNIoJnfCWVbzBG/xRkNjzHNLBLFuVGIg6jRh1XhW6c644xRMHlcL4pvLs70sE9GgH8WTHfPw4GWUrwbhDBHXNzO8cdN0BlmkvM6wVIADi9nfloRPzXYEMw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=OC49bVOH; arc=fail smtp.client-ip=52.103.2.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="EQWmB1VL"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1739231793;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=00zVrDfVjXaItDva0W2RZwy2B+2RKPwCMMc/ltLdmxE=;
-	b=EQWmB1VLrdi5VqSmbp2wwPQ9wRbmJc2CyaTC273BFcja/TEqKlwCjBcLlXChhYyvznhnAd
-	fEDlNfFiOU7/y30X5Wj6ck7RIJoBD0tqqKzff3d5JUe5E6Xy4h7vt6sEV2Dwo0kvyjlLkV
-	yCFNasrIdRg+HWmlA6nzI3XJZJSbYQI=
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
- [209.85.219.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-372-oEBfN24qMxm6Xw8qKiMCSw-1; Mon, 10 Feb 2025 18:56:32 -0500
-X-MC-Unique: oEBfN24qMxm6Xw8qKiMCSw-1
-X-Mimecast-MFC-AGG-ID: oEBfN24qMxm6Xw8qKiMCSw
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-6e4434d78e5so117999786d6.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Feb 2025 15:56:32 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739231792; x=1739836592;
-        h=content-transfer-encoding:mime-version:user-agent:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=00zVrDfVjXaItDva0W2RZwy2B+2RKPwCMMc/ltLdmxE=;
-        b=EGjOBlde7zw+BEQ2UOXadCm43t5QwIyiwjjeDdppIBIMuIIbwiPsxkRKwjvH5+TZcn
-         gYrPnuauE/pmdOdmcsw+6gymceXjl97jqH2KTtS0VwelQBHStVuZtf3YAO4NQJx2mmDZ
-         hMOTmi5X05/VWvAA4iqvEWPQNHTztzwhsWdcGHDOSGkIlICyRwIT7LR1hNPjUMvEbAGD
-         VtqMXXDiOaPpjYi+o8nqwWKI74qSVuWZixpEaCyti3pU8XmmDyrGFSFEdzNTMKIrros3
-         zcDxYLDKjKxQ7mPpK2A5w6fQUFYUFbkywqmllvoYJTJfqivzfPWbnEUeG2hMpcYYma1k
-         F+rA==
-X-Forwarded-Encrypted: i=1; AJvYcCXA4mg4nPgsu6JSbcXBCqBnOHf8IWmLg6g0JJSnVnzRsRucGSgSqV2Tjbo3Quo3YucTQOmWH75XrvLXFQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxNBUnOTDyo8iIrj03LFm2stfHG7XZZB0ZCKE+GBM8auY7sejdK
-	6tOilt1sjdZT2we6I8jMcHgVckX17aZkl4kk1E2IQqq9v5F4blsIBwAZEl+qa9ZT8fqwGUx59FH
-	E3hOBIRSxaSYDuwYDH/sVxV2nwRVNly8FX4LMdN/smcEsx4nis3W92Tx8wTmQ
-X-Gm-Gg: ASbGncuANqZQpNnN2QojSrLQDkYNeuMJPKTESo6SfdjvojaAddrp8XC31Qq1/FEJcIA
-	TUoTMy1wOcG2fuP8RVCk8DQyhe5APju9liAT35gjMHGu+jBnNRCnB+wYEXvoyrJawGqdVluXFEW
-	25C9xPNu8xChXpLklVwJWlmCH/knOCMYiJpVk8e5xyRQz9DTk9zPLt2AxnRJWwtTZd34W7slh6o
-	qIgne43jilhTP8nadxuQPoXQexBHF7ZVqbPKs+w33B/WmUWx905M/lhnGPbuJRiIdXTl5tW+p8N
-	JJ0C
-X-Received: by 2002:a05:6214:4108:b0:6e4:2f4c:f2d2 with SMTP id 6a1803df08f44-6e4456d9da8mr232522016d6.31.1739231792045;
-        Mon, 10 Feb 2025 15:56:32 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFmUoRcB8F2i3rLS9u2hkgfZbI19/TiD5QZMRyg7oxpwPHi67YZY6q7qMfmv5QJMuG4tXI+/g==
-X-Received: by 2002:a05:6214:4108:b0:6e4:2f4c:f2d2 with SMTP id 6a1803df08f44-6e4456d9da8mr232521766d6.31.1739231791656;
-        Mon, 10 Feb 2025 15:56:31 -0800 (PST)
-Received: from starship ([2607:fea8:fc01:8d8d:6adb:55ff:feaa:b156])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6e43ba36d5csm53280906d6.26.2025.02.10.15.56.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Feb 2025 15:56:31 -0800 (PST)
-Message-ID: <3c06cc1bb206f1ff9925dc4c7cf5a23f3f6c3505.camel@redhat.com>
-Subject: Re: hyper_bf soft lockup on Azure Gen2 VM when taking kdump or
- executing kexec
-From: Maxim Levitsky <mlevitsk@redhat.com>
-To: Michael Kelley <mhklinux@outlook.com>, "thomas.tai@oracle.com"
-	 <thomas.tai@oracle.com>, "mhkelley58@gmail.com" <mhkelley58@gmail.com>, 
-	"haiyangz@microsoft.com"
-	 <haiyangz@microsoft.com>, "wei.liu@kernel.org" <wei.liu@kernel.org>, 
-	"decui@microsoft.com"
-	 <decui@microsoft.com>, "drawat.floss@gmail.com" <drawat.floss@gmail.com>, 
-	"javierm@redhat.com"
-	 <javierm@redhat.com>, Helge Deller <deller@gmx.de>, "daniel@ffwll.ch"
-	 <daniel@ffwll.ch>, "airlied@gmail.com" <airlied@gmail.com>, 
-	"tzimmermann@suse.de"
-	 <tzimmermann@suse.de>
-Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, 
-	"linux-fbdev@vger.kernel.org"
-	 <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	 <linux-kernel@vger.kernel.org>, "linux-hyperv@vger.kernel.org"
-	 <linux-hyperv@vger.kernel.org>
-Date: Mon, 10 Feb 2025 18:56:30 -0500
-In-Reply-To: <SN6PR02MB41574DC1576DC20772D9CB05D4F22@SN6PR02MB4157.namprd02.prod.outlook.com>
-References:
-	  <BLAPR10MB521793485093FDB448F7B2E5FDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
-	 <BLAPR10MB521780F7C93DC013E2E031BDFDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
-	 <SN6PR02MB415732CABA59155898531226D4E92@SN6PR02MB4157.namprd02.prod.outlook.com>
-	 <BLAPR10MB521743AC3C146116D8F6BCACFDE92@BLAPR10MB5217.namprd10.prod.outlook.com>
-	 <SN6PR02MB415777C53A930259A54E213ED4F52@SN6PR02MB4157.namprd02.prod.outlook.com>
-	 <SN6PR02MB41578AC54B7C0B7386B8ED00D4F62@SN6PR02MB4157.namprd02.prod.outlook.com>
-	 <SN6PR02MB41572155B6D139C499814EB7D4F12@SN6PR02MB4157.namprd02.prod.outlook.com>
-	 <edf0e21a-db9f-42a8-ae0f-76a9d93713fb@oracle.com>
-	 <SN6PR02MB41574DC1576DC20772D9CB05D4F22@SN6PR02MB4157.namprd02.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.5 (3.36.5-2.fc32) 
+	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="OC49bVOH"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ayL7w2ZGibHlFB4uordNaosnLS4xkJ13PuqGm4auaIqbr23eAS1apKSv85LYEQMQYkbLK7m8gLA+P1ZCsKnWO+OBnFhk1T4W1EJDyC0YpjHhV4KttyJYDprOIY0zFptYSL/m84isQ3npQsM2GgW8c/9gz9WMs9GRgH0gwctURRu4IgoGpermK4sLy8U/h7rX8K8ReBqpc2k3Qlgxoc0uQ+P8FiwSfGyHw35bDghms/SuJPx2mBTQYVajxV5vdaoz/TmRRdFkZaOtrEH5/57/bDmxdVGCGjDUfB2tOQAXhPmogqg+nKdoSU3BsyhCxSVvlu2mTSwhD8iDtm6QN9S3rA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=UXYDth+0qXF77iVv/VdiJI9mcgUuWg04ycwgnYzioSE=;
+ b=cRunaQ94Fl+zzvzjFIOLiIig5D5c8b6/mr1nUUwTPMQEo4QefhZZdADEn/cM5CdVdl3V02nddPSGGBiBkpim5WKdDfG/gqOFKNBqzxg0wxEfANw461OV8oUnC+XCVltbds3Qyd0RtdxRHPLvEU4aNCm+OWyYVI3AqB1wzgGx7C9DSRDbiBg7U4mLyImQRVa7AxAMMPk6bw5QgR50bXZCcbwABApo5Pq20PMiv+rFwmLyn5+oljDtGTuNGdVL7aiYSN1Y2kmxj6X2OubsSSdsAqq6ko8v7xdl+xjFmzqgKmxxsIO+O8k9K3v+CKeyAitLLOaL2SxWpcxLNGOVdUX4Mw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=UXYDth+0qXF77iVv/VdiJI9mcgUuWg04ycwgnYzioSE=;
+ b=OC49bVOHrF6t6LSCv/+QpISeKbpr+882KigE9yr4HlZxc4sCBovRIhkWl4yLQ5rcMiulHYXxCRKz1mZBAMFD+AyB+HDtQbl6hgLSy/gXR5lTK4Y8hJy6iQIPhxsi3PrZ3asdpfrDoZ/tGk6zCBna++C21ehyM145ztO5ZpNXK8mcI6cQlwH5Vhz8PjWau+e87y1ZJwsGu+l6+twnf2ETM8kqZx8B3epix46XIpLy0z2ZdYM3ygTXNGGwGdJiL22FwysgmoRPIir2821bCoAlu8wLhbJxcpQT+w9tQkCSf3PbxqfZk0CuFYzsyxbwhv4cQTyURxU7fngn9GsKA9+QgQ==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by CO6PR02MB8817.namprd02.prod.outlook.com (2603:10b6:303:141::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8422.19; Tue, 11 Feb
+ 2025 03:51:48 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::cedd:1e64:8f61:b9df%4]) with mapi id 15.20.8422.010; Tue, 11 Feb 2025
+ 03:51:48 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
+CC: "haiyangz@microsoft.com" <haiyangz@microsoft.com>, "wei.liu@kernel.org"
+	<wei.liu@kernel.org>, "decui@microsoft.com" <decui@microsoft.com>,
+	"deller@gmx.de" <deller@gmx.de>, "weh@microsoft.com" <weh@microsoft.com>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
+Subject: RE: [PATCH 1/1] fbdev: hyperv_fb: iounmap() the correct memory when
+ removing a device
+Thread-Topic: [PATCH 1/1] fbdev: hyperv_fb: iounmap() the correct memory when
+ removing a device
+Thread-Index: AQHbe03JMSfrBLANP0SDwaGKm7HxS7NAe2OAgAAbBUCAAAt0gIAAH9WAgAC3EPA=
+Date: Tue, 11 Feb 2025 03:51:48 +0000
+Message-ID:
+ <SN6PR02MB4157CA4DAF488D05EE0EBA34D4FD2@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20250209235252.2987-1-mhklinux@outlook.com>
+ <20250210124043.GA17819@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+ <SN6PR02MB4157B0F36D7B99A5BF01471CD4F22@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <20250210145825.GA12377@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+ <20250210165221.GA3465@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+In-Reply-To:
+ <20250210165221.GA3465@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|CO6PR02MB8817:EE_
+x-ms-office365-filtering-correlation-id: 6b8c2735-db32-4c53-c17a-08dd4a4f6966
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|461199028|8062599003|15080799006|19110799003|8060799006|102099032|3412199025|440099028|12091999003|41001999003;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?IKy2Uuo35iFEgUtQbdzsR443nkvAUfCu+4y0v987JfUP4rUUCskohlZiYt5b?=
+ =?us-ascii?Q?H5qdYdXid0fDbmY3fz1eRuoZFBn9j7GBQS8LJywerR3G5Gw3TwbYaOm3zfhP?=
+ =?us-ascii?Q?DkBB0861EGYzPi7k6m0XIVwIYssA0s0535OFmkrvzePdWqaLsW//Iypyvd/g?=
+ =?us-ascii?Q?lx7D42uhYrP7qTRh63zasHIYqw8fl8MRl84k4W0syfXnUdosesAKxWgEJWMd?=
+ =?us-ascii?Q?dBa0jL/WwjbvzRw4NyExYl+I/pZNN/UPp1lyvGBm/JAqb67xOR3Vs0Y+mC0G?=
+ =?us-ascii?Q?QeK4nKOAen1UNo+xCGkQdXlXMs4Cm2EqBkdvUfTQcP0O1D+YxrAkSSJHRiHx?=
+ =?us-ascii?Q?xVWap1Pc1q5yCi55qdbFqC/9Mun6YHV0m1KKA48fucFrNAK93oNK08T7OYwW?=
+ =?us-ascii?Q?rw7nQX+A6r9KYxMRdoAAtcvYGNPel8inaqNVYbX3hWw2ONz3i32aD5fcE2tH?=
+ =?us-ascii?Q?1sFhhVrDuhQiSM/IrNdqga21C/wHitXMcJIU8y7DdBtbo87ieeIDIn0n2+Hx?=
+ =?us-ascii?Q?n8S5iDj8MS30VSlvlYhjayBwZSi3EgK1Noar9jnpppXtWrm3FIzVQZtBWQT+?=
+ =?us-ascii?Q?wowe2LfxKrVuOu+ix+ojz20Oprs4TIPe4qeu3VYXTwFqrkU8TKlRyjiur8/p?=
+ =?us-ascii?Q?y1wN2Iqo7Q4/61ee1Teucp+P4D1s0pBBADpJsBtth2DUVcbF8TdiWVK9nKc7?=
+ =?us-ascii?Q?anCVp3aOEJ2YaMONV0h75GwY/5LOgCJQ3AO1/T4P1MbAnHAxElly8q2mAK+0?=
+ =?us-ascii?Q?kVBj9KuI6fsffjCKunQcQBO78r2QIY9kCGV6RyP3QyUSIfdPkcK7EcHjSMdZ?=
+ =?us-ascii?Q?3QqF4ayA9E2HCI2dPpJ+9yZCedZCxi3sreDJxMl5UBqMFtqFiRRe7VAzRzEf?=
+ =?us-ascii?Q?vJ5/OWATaH7AzYC2iZzuM9VuFB9+EdBOjDkIT1kfpSuRntaJNNonQsP4SA0A?=
+ =?us-ascii?Q?jjuaD9rRYFZtSZdjZ8pUOgSmaB21zVbYVlASrbNg4x2hlz6I2mo5TM6PWBrC?=
+ =?us-ascii?Q?Dd5CmuxTQMrN187YzukDC6dGiLsalkBIIHgyWzVaUz6o0M46snDXfJylgx5e?=
+ =?us-ascii?Q?Xy9qRgtaH8jHY2UNxHfjeg6Q+RS6nBZwInslRgjfLJ1aHaqteK8=3D?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?7sk8LnzGTl4m8E6ffIPjeyZ/y5nFHxIbmvNcF0T4OMcg1VvNiBmPL91xviXy?=
+ =?us-ascii?Q?uikV3XPqbQFtXI4munlLMipkMbvmmdv8qTonMVa7zmpUXzTPWajspraVcM00?=
+ =?us-ascii?Q?06apKVQ5187YP+MR4SAU+zZuBf3EaWme+G6tRmTJ1xe19d9mZaRPBREP11fT?=
+ =?us-ascii?Q?jhUWKTYkIu9rlm+qzI94SESD7L42mo4zdMYk4eMO/4VJfylA5GQB+ortXAsR?=
+ =?us-ascii?Q?ABnZaGraK+35MUvYxOQlHWvRvOCjyPMhJE/Ok3Wk5TxdO4TIqqoppvnklYKM?=
+ =?us-ascii?Q?dDHeWEdP/fc0Gp37NDpI/OVXWUjgRKJ6qlpEPTkMURzjLGjUIePoYWImCNX7?=
+ =?us-ascii?Q?Bt1+LyRMtAafikx42nYW6/tKljXmVGBk1vVr/66vieA1FJlC/RLBXyHxrXAJ?=
+ =?us-ascii?Q?CKsgF04r9/N6AsuQb6FoNCH4jgHnLzKkZDCQmqV6dXFXRZwWtbXEqNdF0fbz?=
+ =?us-ascii?Q?Ld1WgcaDKtG8Yqo3c8JhVs8hGm/rzA3Kdfsy1jXnO74QLBXubA/DXttry+MN?=
+ =?us-ascii?Q?MvHfz+lskSNmXAXmKRZMs+A/AYt0SMY8703E7KW/MH77sBEcMdyDGmM0C6Q3?=
+ =?us-ascii?Q?S+EZ7jN6bvLdqpMvzieMuu4MaJ5IH7DkxICDMhmtGR6XlJteVt192Dbsog+D?=
+ =?us-ascii?Q?DrRoLKvy623WGXPdalaryEA4Imrn4LGbjc3gN/HwPm+qyJXOjTTgdUHfDl6B?=
+ =?us-ascii?Q?QclX10Dn4RlE8rCKwIpGQdzkMN3QUY+ONNqYuKgKVitcaddClahhYwa+/sp5?=
+ =?us-ascii?Q?8DlzhP/bEcQi6n5qXYN41vrmhcDmHdEnRQpE6YmND0x+zOUI4qSPejlZa3pb?=
+ =?us-ascii?Q?EjW3HQWqfxzRYz3jETEnPU2mCGos6Nh832+k9AdS0DYYOAD59hEJLwKKUJ1R?=
+ =?us-ascii?Q?QGcIwS66t6DQ3G8FN9hOrffhlnDi7NAQ6T9Hz3+xPMV00kK4hl0qG0+iZjBV?=
+ =?us-ascii?Q?oFGq6efC1DA0CCGgWvpHT+vzJOPoaeCTtrngWOyW+V0AuAPB5OaTiZ+IlJYD?=
+ =?us-ascii?Q?gFqOa9tq2apKhIma82wAQGi6o4lDQ56YVZhq8dUqJXA39M7u5ez1sLaHqoJ0?=
+ =?us-ascii?Q?0RuPx3wXrBu5cdFlJmmS6DJyTrYdl6por+3wkMTg6N9shzNYnrzp3V6+MfaH?=
+ =?us-ascii?Q?xHESN4Z+KdJPhIgDpTZiVA9LHiTsyQDHwt2Z/lANrJcNPJvwkxM58gRmUNn4?=
+ =?us-ascii?Q?QIUsPnMA8uE351PeYAStmbP7Az7RswsiwYeUsR+KT8x7IgrtTExXVwkCQg4?=
+ =?us-ascii?Q?=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6b8c2735-db32-4c53-c17a-08dd4a4f6966
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Feb 2025 03:51:48.7382
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO6PR02MB8817
 
-On Mon, 2025-02-10 at 21:35 +0000, Michael Kelley wrote:
-> From: thomas.tai@oracle.com <thomas.tai@oracle.com> Sent: Monday, February 10, 2025 7:08 AM
-> > <snip>
-> > 
-> > > > Then the question is why the efifb driver doesn't work in the kdump
-> > > > kernel. Actually, it *does* work in many cases. I built the 6.13.0 kernel
-> > > > on the Oracle Linux 9.4 system, and transferred the kernel image binary
-> > > > and module binaries to an Ubuntu 20.04 VM in Azure. In that VM, the
-> > > > efifb driver is loaded as part of the kdump kernel, and it doesn't cause
-> > > > any problems. But there's an interesting difference. In the Oracle Linux
-> > > > 9.4 VM, the efifb driver finds the framebuffer at 0x40000000, while on
-> > > > the Ubuntu 20.04 VM, it finds the framebuffer at 0x40900000. This
-> > > > difference is due to differences in how the screen_info variable gets
-> > > > setup in the two VMs.
-> > > > 
-> > > > When the normal kernel starts in a freshly booted VM, Hyper-V provides
-> > > > the EFI framebuffer at 0x40000000, and it works. But after the Hyper-V
-> > > > FB driver or Hyper-V DRM driver has initialized, Linux has picked a
-> > > > different MMIO address range and told Hyper-V to use the new
-> > > > address range (which often starts at 0x40900000). A kexec does *not*
-> > > > reset Hyper-V's transition to the new range, so when the efifb driver
-> > > > tries to use the framebuffer at 0x40000000, the accesses trap to
-> > > > Hyper-V and probably fail or timeout (I'm not sure of the details). After
-> > > > the guest does some number of these bad references, Hyper-V considers
-> > > > itself to be under attack from an ill-behaving guest, and throttles the
-> > > > guest so that it doesn't run for a few seconds. The throttling repeats,
-> > > > and results in extremely slow running in the kdump kernel.
-> > > > 
-> > > > Somehow in the Ubuntu 20.04 VM, the location of the frame buffer
-> > > > as stored in screen_info.lfb_base gets updated to be 0x40900000. I
-> > > > haven't fully debugged how that happens. But with that update, the
-> > > > efifb driver is using the updated framebuffer address and it works. On
-> > > > the Oracle Linux 9.4 system, that update doesn't appear to happen,
-> > > > and the problem occurs.
-> > > > 
-> > > > This in an interim update on the problem. I'm still investigating how
-> > > > screen_info.lfb_base is set in the kdump kernel, and why it is different
-> > > > in the Ubuntu 20.04 VM vs. in the Oracle Linux 9.4 VM. Once that is
-> > > > well understood, we can contemplate how to fix the problem. Undoing
-> > > > the revert that is commit 2bebc3cd4870 doesn't seem like the solution
-> > > > since the original code there was reported to cause many other issues.
-> > > > The solution focus will likely be on how to ensure the kdump kernel gets
-> > > > the correct framebuffer address so the efifb driver works, since the
-> > > > framebuffer address changing is a quirk of Hyper-V behavior.
-> > > > 
-> > > > If anyone else has insight into what's going on here, please chime in.
-> > > > What I've learned so far is still somewhat tentative.
-> > > > 
-> > > Here's what is happening. On Ubuntu 20.04, the kdump image is
-> > > loaded into crash memory using the kexec command. Ubuntu 20.04
-> > > has kexec from the kexec-tools package version 2.0.18-1ubuntu1.1,
-> > > and per the kexec man page, it defaults to using the older kexec_load()
-> > > system call. When using kexec_load(), the contents to be loaded into
-> > > crash memory is constructed in user space by the kexec command.
-> > > The kexec command gets the "screen_info" settings, including the
-> > > physical address of the frame buffer, via the FBIOGET_FSCREENINFO
-> > > ioctl against /dev/fb0. The Hyper-V FB or DRM driver registers itself
-> > > with the fbdev subsystem so that it is /dev/fb0, and the ioctl returns
-> > > the updated framebuffer address. So the efifb driver loads and runs
-> > > correctly.
-> > > 
-> > > On Oracle Linux 9.4, the kdump image is also loaded with the
-> > > kexec command, but from kexec-tools package version
-> > > kexec-tools-2.0.28-1.0.10.el9_5.x86_64, which is slightly later than
-> > > the version on Ubuntu 20.04. This newer kexec defaults to using the
-> > > newer kexec_file_load() system call. This system call gets the
-> > > framebuffer address from the screen_info variable in the kernel, which
-> > > has not been updated to reflect the new framebuffer address. Hence
-> > > in the kdump kernel, the efifb driver uses the old framebuffer address,
-> > > and hence the problem.
-> > > 
-> > > To further complicate matters, the kexec on Oracle Linux 9.4 seems to
-> > > have a bug when the -c option forces the use of kexec_load() instead
-> > > of kexec_file_load(). As an experiment, I modified the kdumpctl shell
-> > > script to add the "-c" option to kexec, but in that case the value "0x0"
-> > > is passed as the framebuffer address, which is wrong. Furthermore,
-> > > the " screen_info.orig_video_isVGA" value (which I mentioned earlier
-> > > in connection with commit 2bebc3cd4870) is also set to 0, so the
-> > > kdump kernel no longer thinks it has an EFI framebuffer. Hence the
-> > > efifb driver isn't loaded, and the kdump works, though for the wrong
-> > > reasons. If kexec 2.0.18 from Ubuntu is copied onto the Oracle Linux 9.4
-> > > VM, then kdump works as expected, with the efifb driver being loaded
-> > > and using the correct framebuffer address. So something is going wrong
-> > > with kexec 2.0.28 in how it sets up the screen_info when the -c option
-> > > is used. I'll leave the debugging of the kexec bug to someone else.
-> > 
-> > Hi Michael,
-> > 
-> > Do you think we need to handle Azure Gen2 VM differently in the kexec?
-> > 
-> > Or should we change the kexec_file_load() system call to retrieve the correct
-> > framebuffer address?
-> 
-> I'm thinking there may be a fix in the Hyper-V FB and Hyper-V DRM drivers.
-> Commit c25a19afb81c may also be a cause of the problem -- see precursor
-> commit 3cb73bc3fa2a, which describes exactly the problem. I still need to
-> do some testing, but without that commit, kdump won't detect that it has
-> an EFI framebuffer, won't load the efifb driver, and so won't encounter the
-> problem. But we probably need to get Thomas Zimmerman to weigh in on
-> the implications of reverting c25a19afb81c.
-> 
-> There's one additional variation of the problem. Assume the Hyper-V FB
-> driver is loaded (for example) during boot and moves the framebuffer. Then
-> system runs kexec as part of arming kdump during the boot sequence.
-> The most recent location of the framebuffer (and whether it is an EFI framebuffer)
-> gets picked at the time kexec runs, and is stored in the crash kernel memory area.
-> But what if the framebuffer later moves, perhaps because the Hyper-V FB driver
-> is unbound? The crash kernel memory area doesn’t get updated and kdump
-> could still have the wrong framebuffer address. This anomaly argues for the
-> commit 3cb73bc3fa2a approach of just ensuring that the efifb driver doesn't
-> load. Of course that approach means that the kdump kernel *must* contain
-> either the Hyper-V FB or Hyper-V DRM driver in order to work on a system
-> with only a framebuffer for text output. The efifb driver won't work. But
-> perhaps that's OK.
-> 
-> Changing kexec (or the invoking script) to special case Hyper-V Gen 2 VMs and
-> always use kexec_load() instead of kexec_file_load() sounds like a big hack
-> to me.  And with that approach, you give up the ability to enforce loading only
-> properly signed kdump images. This is something kexec_file_load() provides
-> that kexec_load() doesn't, and is one of the main reasons that kexec_file_load()
-> was added.
-> 
-> Whether the kexec_file_load() system call could be enhanced to get the
-> frame buffer information from the /dev/fb0 device, I'm not sure. That might
-> be a reasonable approach, though it still has the problem that the framebuffer
-> address could change *after* kexec_file_load() runs.
-> 
-> Anyway, that's a dump of my current thoughts. I haven't reached a final
-> conclusion or recommendation yet. Comments from others on the
-> thread are welcome.
-
-Hi!
-
-Asking because I also had to do some digging in this area:
-
-Do you think that the kernel can *ask* the hypervisor where the framebuffer is instead
-of relying on bios, the bootloader and/or kexec to somehow provide this information?
-
-If hyperv doesn't provide this API, how hard it would be in your opinion to provide it?
-
-I am asking because, I also had to debug a RHEL downstream issue where a slightly botched backport
-ensured that the first stage of the compressed uefi boot image, stopped passing the 'screen_info'
-to the second stage (the kernel itself), and as a result of this, the second stage stopped
-loading simplefb, and as a result of *this*, the PCI driver started to try to use the framebuffer
-range for its own use which failed and resulted in a cryptic error.
-
-If the kernel was to just issue some form of a hypercall to ask the hypervisor where the framebuffer currently is,
-we could avoid a whole class of bugs similar to this.
-What do you think?
-
-Best regards,
-	Maxim Levitsky
-
-
-> 
-> Michael
-> 
-> > Thank you,
-> > Thomas
-> > 
-> > > I'm still thinking about alternatives to fix this mess. Please chime
-> > > in if you have suggestions.
-> > > 
+From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Monday, Febr=
+uary 10, 2025 8:52 AM
+>=20
+> On Mon, Feb 10, 2025 at 06:58:25AM -0800, Saurabh Singh Sengar wrote:
+> > On Mon, Feb 10, 2025 at 02:28:35PM +0000, Michael Kelley wrote:
+> > > From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Monday=
+, February 10, 2025 4:41 AM
+> > > >
+> > > > On Sun, Feb 09, 2025 at 03:52:52PM -0800, mhkelley58@gmail.com wrot=
+e:
+> > > > > From: Michael Kelley <mhklinux@outlook.com>
+> > > > >
+> > > > > When a Hyper-V framebuffer device is removed, or the driver is un=
+bound
+> > > > > from a device, any allocated and/or mapped memory must be release=
+d. In
+> > > > > particular, MMIO address space that was mapped to the framebuffer=
+ must
+> > > > > be unmapped. Current code unmaps the wrong address, resulting in =
+an
+> > > > > error like:
+> > > > >
+> > > > > [ 4093.980597] iounmap: bad address 00000000c936c05c
+> > > > >
+> > > > > followed by a stack dump.
+> > > > >
+> > > > > Commit d21987d709e8 ("video: hyperv: hyperv_fb: Support deferred =
+IO for
+> > > > > Hyper-V frame buffer driver") changed the kind of address stored =
+in
+> > > > > info->screen_base, and the iounmap() call in hvfb_putmem() was no=
+t
+> > > > > updated accordingly.
+> > > > >
+> > > > > Fix this by updating hvfb_putmem() to unmap the correct address.
+> > > > >
+> > > > > Fixes: d21987d709e8 ("video: hyperv: hyperv_fb: Support deferred =
+IO for Hyper-V frame buffer driver")
+> > > > > Signed-off-by: Michael Kelley <mhklinux@outlook.com>
+> > > > > ---
+> > > > >  drivers/video/fbdev/hyperv_fb.c | 2 +-
+> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > >
+> > > > > diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbde=
+v/hyperv_fb.c
+> > > > > index 7fdb5edd7e2e..363e4ccfcdb7 100644
+> > > > > --- a/drivers/video/fbdev/hyperv_fb.c
+> > > > > +++ b/drivers/video/fbdev/hyperv_fb.c
+> > > > > @@ -1080,7 +1080,7 @@ static void hvfb_putmem(struct hv_device *h=
+dev, struct fb_info *info)
+> > > > >
+> > > > >  	if (par->need_docopy) {
+> > > > >  		vfree(par->dio_vp);
+> > > > > -		iounmap(info->screen_base);
+> > > > > +		iounmap(par->mmio_vp);
+> > > > >  		vmbus_free_mmio(par->mem->start, screen_fb_size);
+> > > > >  	} else {
+> > > > >  		hvfb_release_phymem(hdev, info->fix.smem_start,
+> > > > > --
+> > > > > 2.25.1
+> > > > >
+> > > >
+> > > > Thanks for fixing this:
+> > > > Reviewed-by: Saurabh Sengar <ssengar@linux.microsoft.com>
+> > > >
+> > > >
+> > > > While we are at it, I want to mention that I also observed below WA=
+RN
+> > > > while removing the hyperv_fb, but that needs a separate fix.
+> > > >
+> > > >
+> > > > [   44.111220] WARNING: CPU: 35 PID: 1882 at drivers/video/fbdev/co=
+re/fb_info.c:70 framebuffer_release+0x2c/0x40
+> > > > < snip >
+> > > > [   44.111289] Call Trace:
+> > > > [   44.111290]  <TASK>
+> > > > [   44.111291]  ? show_regs+0x6c/0x80
+> > > > [   44.111295]  ? __warn+0x8d/0x150
+> > > > [   44.111298]  ? framebuffer_release+0x2c/0x40
+> > > > [   44.111300]  ? report_bug+0x182/0x1b0
+> > > > [   44.111303]  ? handle_bug+0x6e/0xb0
+> > > > [   44.111306]  ? exc_invalid_op+0x18/0x80
+> > > > [   44.111308]  ? asm_exc_invalid_op+0x1b/0x20
+> > > > [   44.111311]  ? framebuffer_release+0x2c/0x40
+> > > > [   44.111313]  ? hvfb_remove+0x86/0xa0 [hyperv_fb]
+> > > > [   44.111315]  vmbus_remove+0x24/0x40 [hv_vmbus]
+> > > > [   44.111323]  device_remove+0x40/0x80
+> > > > [   44.111325]  device_release_driver_internal+0x20b/0x270
+> > > > [   44.111327]  ? bus_find_device+0xb3/0xf0
+> > > >
+> > >
+> > > Thanks for pointing this out. Interestingly, I'm not seeing this WARN
+> > > in my experiments. What base kernel are you testing with? Are you
+> > > testing on a local VM or in Azure? What exactly are you doing
+> > > to create the problem? I've been doing unbind of the driver,
+> > > but maybe you are doing something different.
+> > >
+> > > FWIW, there is yet another issue where after doing two unbind/bind
+> > > cycles of the hyperv_fb driver, there's an error about freeing a
+> > > non-existent resource. I know what that problem is, and it's in
+> > > vmbus_drv.c. I'll be submitting a patch for that as soon as I figure =
+out
+> > > a clean fix.
+> > >
 > > > Michael
+> >
+> > This is on local Hyper-V. Kernel: 6.14.0-rc1-next-20250205+
+> > I run below command to reproduce the above error:
+> > echo "5620e0c7-8062-4dce-aeb7-520c7ef76171" >/sys/bus/vmbus/devices/562=
+0e0c7-8062-4dce-aeb-520c7ef76171/driver/unbind
+> >
+> > When hvfb_remove is called I can see the refcount for framebuffer is 2 =
+when ,
+> > I expect it to be 1. After unregistering this framebuffer there is stil=
+l 1 refcount
+> > remains, which is the reason for this WARN at the time of framebuffer_r=
+elease.
+> >
+> > I wonder who is registering/using this extra framebuffer. Its not hyper=
+v_drm or
+> > hyperv_fb IIUC.
+> >
+> > - Saurabh
+>=20
+> Here are more details about this WARN:
+>=20
+> Xorg opens `/dev/fb0`, which increases the framebuffer's reference
+> count, as mentioned above.  As a result, when unbinding the driver,
+> this WARN is expected, indicating that the framebuffer is still in use.
+>=20
+> I am open to suggestion what could be the correct behavior in this case.
+> There acan be two possible options:
+>=20
+>  1. Check the framebuffer reference count and prevent the driver from
+>     unbinding/removal.
+> OR
+>=20
+>  2. Allow the driver to unbind while issuing this WARN. (Current scenario=
+)
 
+OK, that makes sense. I haven't looked at or thought about this issue any
+further today, and don't have an opinion yet. Give me a day or two -- I hav=
+e
+one more patch to post related to the FB and DRM driver problems.
+
+Michael
+
+>=20
+> - Saurabh
 

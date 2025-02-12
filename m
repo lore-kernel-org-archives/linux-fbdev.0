@@ -1,548 +1,210 @@
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66B47204C07;
-	Wed, 12 Feb 2025 07:59:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E2FB26AEC;
+	Wed, 12 Feb 2025 08:00:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739347162; cv=none; b=icFfq1Z25bBxb4fHoN+Qi8MwKTDiCJno+HKYT61dQBrV5tfta7jR9Yri+7xymWGMxye5fOHFkaJbi3pav6rd7NJ8242t8Vl8GUU+sUwyqlT7c09JstSrLm9OOt6gHrCT5878u4GWealkhfdfcObbr3QnfOWWMB+nrRwOHGnTlaY=
+	t=1739347251; cv=none; b=XTPH67ZxJT6hdGdDgYBMKfJjaNOl3NvZqkAXnqh/70LCWCbHw0iFBvZCzEwvMHzwnnZVn1U3ZIgRw4UaSoQZFFpej+5rCYPzlry7FkQe/WkGennwujn+RklmDDKKKQ4KmjzXQNdxFV5NOcd231OtBjDvXKCSLKBKGge2MXjyB7Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739347162; c=relaxed/simple;
-	bh=g147+pNHCblvdLkB3gSmClxMR2wA7snJ1XhYu/42Wnk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V7lNogt7Cb5F6w7orQLy3of5m3EFOPecpyP7tmQWpjVWE1eq0/cKNdimKs+PPa/mSnLZu8G8mupB5Dz4d+fw2HPwmrDM1uPUlbtbvUduvXKT76Fv/0Jps5ioLWnaCRcZA4XLbIckrxQVr7bbZbbe/Cod//Y0X4NM8rhjdBTQvbQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DIcoEaWU; arc=none smtp.client-ip=209.85.167.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1739347251; c=relaxed/simple;
+	bh=bixpMBuwKYzDyx9clsv4wYgY1daUXWR3gPgy0UrCtas=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=UEtyKahmuAoSyp0xuCMXlnlU9ZlAM1RnAmZSGvs/IiRiILghqCrZrn9xQ40vBiOJIr8WixCxpqDJY8UdSlc74ynOE3hGWJ2nDnDgPlyix0YpZf8KKr+rW1QZCEaffwCvRmaVoUAEUPo9j5UtfPGsYlLFhkPFPi0zflMiikaJ1MI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Z0jRsKH0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=j/fgVu9b; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Z0jRsKH0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=j/fgVu9b; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DIcoEaWU"
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5450408455dso4619526e87.0;
-        Tue, 11 Feb 2025 23:59:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739347158; x=1739951958; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7nw1AK0MrowiHGVQ4sl0yVhUzbIvFUDWN6wQBGIzcdc=;
-        b=DIcoEaWU48hMdS67tE0QkPt1SRuQFNrWHVmolkqfDf4qc43pRLk2KM6qgVqmsHHG3G
-         NpOuqPyvLJ0DQsGtETPZPPnEOygzTtnJfTBt5vpnmXvXa7HMjjIZeAJQ4ghFv12x1iXK
-         qWV2zsMOBRuR8x8d0W9ky5SM6Hu9XR4Lie76mhhiJ++AWQ+nsCEd6UwyddIw2kZtDfWo
-         hcHvGTUiHp43RRPjqMjIWgRg3yCuMscWuNrhiLOywoCddwpenoN4NLGo8FbYX9vZhZp1
-         EpeQ6VQIvQ5kd0mgZ3RaKKHgK49v8rIOSGhfxgC8lbmXtSJ8CWhz8lxfzOt3FklyIyFs
-         0V4g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739347158; x=1739951958;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7nw1AK0MrowiHGVQ4sl0yVhUzbIvFUDWN6wQBGIzcdc=;
-        b=krTizioaKFD/hihZVH8T3xpn2i6T8jcsUCdiN5Z4he5Jcaqd4qOJ5QDoo/Mnp7OedZ
-         bGIwTBNs6eV6IsuiEJTz+pXWST3MQHnsC52QJ2txRHqezgz+T0rJcvcKIYFGU2fUXfET
-         TwxLEin7VHdzuVqXTrUkteasTZjwKQQ3wg3XnlypxZ0SNZVnVhI1ypudhXzNWwG0vgiy
-         yowPaXwgfI5ImPZhxJUMSmFCYOwf49CwXMOCiJLz9GDNWBehJiifa81ilmh64YR7tUx5
-         aIBIXaY9yIxRLbHx6ZWUwXh9+dCrUK6H6CvjB6UVmYL6RV4J/cZ0ua/fry2bfOGVJOOG
-         KDZw==
-X-Forwarded-Encrypted: i=1; AJvYcCULs2xps0Op+Rq/zZqMMo8YjiUZE8NAwpP3CGJNtYZ2+1+itYEgASOP9GM1S6ALvKgJZTbrDy0hx4My@vger.kernel.org, AJvYcCUr6i3FpK2fdCL1UFxBiXBZgX3AJRsM8A9fJakhokWSoOFSDsCrXzor6QudwKcyjBRKU7sDz2IMlV9sMA==@vger.kernel.org, AJvYcCVV7rzDDwPA0mIb1JEmvzwLDLr4ho7WcPhInz6rmBsRsCRfavbojc47pjPcHFoq/sKLx6wj7BthCD6SPg==@vger.kernel.org, AJvYcCWiQTtqtom96uxYJA6/ol1CFiGOMClhkLueTY/rWNafJhu3xuwcyV2McOlByiitmL4k856rD1X74P4nSutQ@vger.kernel.org
-X-Gm-Message-State: AOJu0YxM290D5fTwNibs37LvYgoNb6si99xi/tQgMm+4jZm6InCZUG/3
-	vscO9nLJ+7ILdWvJATbjPUdQYaFJ1erTLBwivFH5MH2Z1BrFlXdg
-X-Gm-Gg: ASbGncucKossA0wOY6lPV0rJTNH04YBxSQ99+fGR0PCQ4MDssUSFbexA4U6ktumuuk5
-	zld67KMlf8pWMLDR9H00gbVipMum9GpDii/0iUleH6ZtM4ifmFfAhxYmK/Vun/7W6tmUVz9cNBi
-	bltexFoqDx6OCx8waYHaVE3HoLNCMuzbfNvWdshO6InxCb9KG0osMfVcn+V0QxvrB2JJ3DdTqVX
-	zkREmKAw5u399vNiZnXka3U6z612Ph26AoOz9PnxuHp39qP1YpVXi0pnj9YdZwfSoi6qfFCC49t
-	d7mF86k=
-X-Google-Smtp-Source: AGHT+IE+G1N55eGrWmECjyblYtooPWCOLDqnOhvaRLbHU2CRlzATbmbECnCgtrhZAPbtQBO6UNR21g==
-X-Received: by 2002:a05:6512:b22:b0:544:f93:6909 with SMTP id 2adb3069b0e04-54518122cd4mr623415e87.30.1739347158114;
-        Tue, 11 Feb 2025 23:59:18 -0800 (PST)
-Received: from xeon.. ([188.163.112.51])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5441053eacfsm1797880e87.38.2025.02.11.23.59.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Feb 2025 23:59:17 -0800 (PST)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Lee Jones <lee@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Pavel Machek <pavel@ucw.cz>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	Svyatoslav Ryhel <clamor95@gmail.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Cc: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH v1 2/2] mfd: lm3533: convert to use OF
-Date: Wed, 12 Feb 2025 09:58:42 +0200
-Message-ID: <20250212075845.11338-3-clamor95@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250212075845.11338-1-clamor95@gmail.com>
-References: <20250212075845.11338-1-clamor95@gmail.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Z0jRsKH0";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="j/fgVu9b";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Z0jRsKH0";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="j/fgVu9b"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 5E4951F387;
+	Wed, 12 Feb 2025 08:00:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1739347247; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ABLupZVwpHeRErONSJ8n8zXCa8toCkM1y7FD+5WvAAk=;
+	b=Z0jRsKH0WdvF5yu0al3xcdsIDTZllvMQ2uo2XArMlEJQuSpQJS71uZE8YgPyagV0da8V9V
+	RwohJ+CMrF9swbKqYDkM1L0gv/udaDDtsge70AQpDx2qCejAJdLE+gOQtoBtS5cdhDHDYx
+	qGLQOPn8lLSU5/YvoVkeW9tz3y6nIPk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1739347247;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ABLupZVwpHeRErONSJ8n8zXCa8toCkM1y7FD+5WvAAk=;
+	b=j/fgVu9bYHYKw9/N+/UmOr6sUdO+LtMu9vpW8WTtcY++KEqrATgCTDNPUVKvJFolVvCuin
+	+v0Gi7mUZ+PWk/Aw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Z0jRsKH0;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="j/fgVu9b"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1739347247; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ABLupZVwpHeRErONSJ8n8zXCa8toCkM1y7FD+5WvAAk=;
+	b=Z0jRsKH0WdvF5yu0al3xcdsIDTZllvMQ2uo2XArMlEJQuSpQJS71uZE8YgPyagV0da8V9V
+	RwohJ+CMrF9swbKqYDkM1L0gv/udaDDtsge70AQpDx2qCejAJdLE+gOQtoBtS5cdhDHDYx
+	qGLQOPn8lLSU5/YvoVkeW9tz3y6nIPk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1739347247;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ABLupZVwpHeRErONSJ8n8zXCa8toCkM1y7FD+5WvAAk=;
+	b=j/fgVu9bYHYKw9/N+/UmOr6sUdO+LtMu9vpW8WTtcY++KEqrATgCTDNPUVKvJFolVvCuin
+	+v0Gi7mUZ+PWk/Aw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2B5B513AEF;
+	Wed, 12 Feb 2025 08:00:47 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id jX9FCS9VrGeDJQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 12 Feb 2025 08:00:47 +0000
+Message-ID: <8ec292d5-86b8-4670-8990-91deb627ee0b@suse.de>
+Date: Wed, 12 Feb 2025 09:00:46 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] staging: sm750fb: fix checkpatch warning architecture
+ specific defines should be avoided
+To: Michael Anckaert <michael.anckaert@gmail.com>,
+ Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ Teddy Wang <teddy.wang@siliconmotion.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER"
+ <linux-fbdev@vger.kernel.org>,
+ "open list:STAGING SUBSYSTEM" <linux-staging@lists.linux.dev>,
+ open list <linux-kernel@vger.kernel.org>
+References: <Z6xREbLLtexX4_uh@michael-devbox>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <Z6xREbLLtexX4_uh@michael-devbox>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Queue-Id: 5E4951F387
+X-Spam-Score: -3.01
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_TO(0.00)[gmail.com,siliconmotion.com,linuxfoundation.org,vger.kernel.org,lists.linux.dev];
+	TAGGED_RCPT(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	TO_DN_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Flag: NO
+X-Spam-Level: 
 
-Add ability to fill pdata from device tree. Common stuff is
-filled from core driver and then pdata is filled per-device
-since all cells are optional.
+Hi
 
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
----
- drivers/iio/light/lm3533-als.c      | 58 ++++++++++++++++++++-
- drivers/leds/leds-lm3533.c          | 69 +++++++++++++++++++++++--
- drivers/mfd/lm3533-core.c           | 79 ++++++++++++++++++++++++-----
- drivers/video/backlight/lm3533_bl.c | 72 ++++++++++++++++++++++++--
- include/linux/mfd/lm3533.h          |  1 +
- 5 files changed, 256 insertions(+), 23 deletions(-)
+Am 12.02.25 um 08:43 schrieb Michael Anckaert:
+> Replace architecture-specific defines with CONFIG_X86 checks to improve
+> portability and adhere to kernel coding standards.
+>
+> Fixes checkpatch warning:
+> - CHECK: architecture specific defines should be avoided.
+>
+> Changes made:
+> - Using CONFIG_X86 instead of i386 and x86.
+>
+> Signed-off-by: Michael Anckaert <michael.anckaert@gmail.com>
+> ---
+>   drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+> index 02860d3ec365..67a2f60440ca 100644
+> --- a/drivers/staging/sm750fb/ddk750_chip.c
+> +++ b/drivers/staging/sm750fb/ddk750_chip.c
+> @@ -229,7 +229,7 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
+>   		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
+>   		poke32(VGA_CONFIGURATION, reg);
+>   	} else {
+> -#if defined(__i386__) || defined(__x86_64__)
+> +#ifdef CONFIG_X86
+>   		/* set graphic mode via IO method */
+>   		outb_p(0x88, 0x3d4);
+>   		outb_p(0x06, 0x3d5);
 
-diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-als.c
-index 99f0b903018c..21fc5f215c80 100644
---- a/drivers/iio/light/lm3533-als.c
-+++ b/drivers/iio/light/lm3533-als.c
-@@ -16,7 +16,9 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/mfd/core.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
-+#include <linux/property.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
- 
-@@ -826,6 +828,50 @@ static const struct iio_info lm3533_als_info = {
- 	.read_raw	= &lm3533_als_read_raw,
- };
- 
-+static void lm3533_parse_als(struct platform_device *pdev,
-+			     struct lm3533_als_platform_data *pdata)
-+{
-+	struct device *dev = &pdev->dev;
-+	int val, ret;
-+
-+	/* 1 - 127 (ignored in PWM-mode) */
-+	ret = device_property_read_u32(dev, "resistor-value", &val);
-+	if (ret)
-+		val = 1;
-+	pdata->r_select = val;
-+
-+	pdata->pwm_mode = device_property_read_bool(dev, "pwm-mode");
-+}
-+
-+static int lm3533_pass_of_node(struct platform_device *pdev,
-+			       struct lm3533_als_platform_data *pdata)
-+{
-+	struct device *parent_dev = pdev->dev.parent;
-+	struct device *dev = &pdev->dev;
-+	struct fwnode_handle *node;
-+	const char *label;
-+	int val, ret;
-+
-+	device_for_each_child_node(parent_dev, node) {
-+		fwnode_property_read_string(node, "compatible", &label);
-+
-+		if (!strcmp(label, pdev->name)) {
-+			ret = fwnode_property_read_u32(node, "reg", &val);
-+			if (ret) {
-+				dev_err(dev, "reg property is missing: ret %d\n", ret);
-+				return ret;
-+			}
-+
-+			if (val == pdev->id) {
-+				dev->fwnode = node;
-+				dev->of_node = to_of_node(node);
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int lm3533_als_probe(struct platform_device *pdev)
- {
- 	const struct lm3533_als_platform_data *pdata;
-@@ -840,8 +886,16 @@ static int lm3533_als_probe(struct platform_device *pdev)
- 
- 	pdata = dev_get_platdata(&pdev->dev);
- 	if (!pdata) {
--		dev_err(&pdev->dev, "no platform data\n");
--		return -EINVAL;
-+		pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+
-+		ret = lm3533_pass_of_node(pdev, pdata);
-+		if (ret)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed to get als device node\n");
-+
-+		lm3533_parse_als(pdev, pdata);
- 	}
- 
- 	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*als));
-diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
-index 45795f2a1042..587bc27b17c3 100644
---- a/drivers/leds/leds-lm3533.c
-+++ b/drivers/leds/leds-lm3533.c
-@@ -11,7 +11,9 @@
- #include <linux/leds.h>
- #include <linux/mfd/core.h>
- #include <linux/mutex.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
-+#include <linux/property.h>
- #include <linux/slab.h>
- 
- #include <linux/mfd/lm3533.h>
-@@ -644,6 +646,59 @@ static int lm3533_led_setup(struct lm3533_led *led,
- 	return lm3533_ctrlbank_set_pwm(&led->cb, pdata->pwm);
- }
- 
-+static void lm3533_parse_led(struct platform_device *pdev,
-+			     struct lm3533_led_platform_data *pdata)
-+{
-+	struct device *dev = &pdev->dev;
-+	int val, ret;
-+
-+	ret = device_property_read_string(dev, "default-trigger",
-+					  &pdata->default_trigger);
-+	if (ret)
-+		pdata->default_trigger = "none";
-+
-+	/* 5000 - 29800 uA (800 uA step) */
-+	ret = device_property_read_u32(dev, "max-current-microamp", &val);
-+	if (ret)
-+		val = 5000;
-+	pdata->max_current = val;
-+
-+	/* 0 - 0x3f */
-+	ret = device_property_read_u32(dev, "pwm", &val);
-+	if (ret)
-+		val = 0;
-+	pdata->pwm = val;
-+}
-+
-+static int lm3533_pass_of_node(struct platform_device *pdev,
-+			       struct lm3533_led_platform_data *pdata)
-+{
-+	struct device *parent_dev = pdev->dev.parent;
-+	struct device *dev = &pdev->dev;
-+	struct fwnode_handle *node;
-+	const char *label;
-+	int val, ret;
-+
-+	device_for_each_child_node(parent_dev, node) {
-+		fwnode_property_read_string(node, "compatible", &label);
-+
-+		if (!strcmp(label, pdev->name)) {
-+			ret = fwnode_property_read_u32(node, "reg", &val);
-+			if (ret) {
-+				dev_info(dev, "reg property is missing: ret %d\n", ret);
-+				return ret;
-+			}
-+
-+			if (val == pdev->id) {
-+				dev->fwnode = node;
-+				dev->of_node = to_of_node(node);
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int lm3533_led_probe(struct platform_device *pdev)
- {
- 	struct lm3533 *lm3533;
-@@ -659,8 +714,16 @@ static int lm3533_led_probe(struct platform_device *pdev)
- 
- 	pdata = dev_get_platdata(&pdev->dev);
- 	if (!pdata) {
--		dev_err(&pdev->dev, "no platform data\n");
--		return -EINVAL;
-+		pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+
-+		ret = lm3533_pass_of_node(pdev, pdata);
-+		if (ret)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed to get led device node\n");
-+
-+		lm3533_parse_led(pdev, pdata);
- 	}
- 
- 	if (pdev->id < 0 || pdev->id >= LM3533_LVCTRLBANK_COUNT) {
-@@ -673,7 +736,7 @@ static int lm3533_led_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	led->lm3533 = lm3533;
--	led->cdev.name = pdata->name;
-+	led->cdev.name = dev_name(&pdev->dev);
- 	led->cdev.default_trigger = pdata->default_trigger;
- 	led->cdev.brightness_set_blocking = lm3533_led_set;
- 	led->cdev.brightness_get = lm3533_led_get;
-diff --git a/drivers/mfd/lm3533-core.c b/drivers/mfd/lm3533-core.c
-index 0a2409d00b2e..cab60c25e3c7 100644
---- a/drivers/mfd/lm3533-core.c
-+++ b/drivers/mfd/lm3533-core.c
-@@ -381,11 +381,16 @@ static int lm3533_device_als_init(struct lm3533 *lm3533)
- 	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
- 	int ret;
- 
--	if (!pdata->als)
-+	if (!pdata->num_als)
- 		return 0;
- 
--	lm3533_als_devs[0].platform_data = pdata->als;
--	lm3533_als_devs[0].pdata_size = sizeof(*pdata->als);
-+	if (pdata->num_als > ARRAY_SIZE(lm3533_als_devs))
-+		pdata->num_als = ARRAY_SIZE(lm3533_als_devs);
-+
-+	if (pdata->als) {
-+		lm3533_als_devs[0].platform_data = pdata->als;
-+		lm3533_als_devs[0].pdata_size = sizeof(*pdata->als);
-+	}
- 
- 	ret = mfd_add_devices(lm3533->dev, 0, lm3533_als_devs, 1, NULL,
- 			      0, NULL);
-@@ -405,15 +410,17 @@ static int lm3533_device_bl_init(struct lm3533 *lm3533)
- 	int i;
- 	int ret;
- 
--	if (!pdata->backlights || pdata->num_backlights == 0)
-+	if (!pdata->num_backlights)
- 		return 0;
- 
- 	if (pdata->num_backlights > ARRAY_SIZE(lm3533_bl_devs))
- 		pdata->num_backlights = ARRAY_SIZE(lm3533_bl_devs);
- 
--	for (i = 0; i < pdata->num_backlights; ++i) {
--		lm3533_bl_devs[i].platform_data = &pdata->backlights[i];
--		lm3533_bl_devs[i].pdata_size = sizeof(pdata->backlights[i]);
-+	if (pdata->backlights) {
-+		for (i = 0; i < pdata->num_backlights; ++i) {
-+			lm3533_bl_devs[i].platform_data = &pdata->backlights[i];
-+			lm3533_bl_devs[i].pdata_size = sizeof(pdata->backlights[i]);
-+		}
- 	}
- 
- 	ret = mfd_add_devices(lm3533->dev, 0, lm3533_bl_devs,
-@@ -434,15 +441,17 @@ static int lm3533_device_led_init(struct lm3533 *lm3533)
- 	int i;
- 	int ret;
- 
--	if (!pdata->leds || pdata->num_leds == 0)
-+	if (!pdata->num_leds)
- 		return 0;
- 
- 	if (pdata->num_leds > ARRAY_SIZE(lm3533_led_devs))
- 		pdata->num_leds = ARRAY_SIZE(lm3533_led_devs);
- 
--	for (i = 0; i < pdata->num_leds; ++i) {
--		lm3533_led_devs[i].platform_data = &pdata->leds[i];
--		lm3533_led_devs[i].pdata_size = sizeof(pdata->leds[i]);
-+	if (pdata->leds) {
-+		for (i = 0; i < pdata->num_leds; ++i) {
-+			lm3533_led_devs[i].platform_data = &pdata->leds[i];
-+			lm3533_led_devs[i].pdata_size = sizeof(pdata->leds[i]);
-+		}
- 	}
- 
- 	ret = mfd_add_devices(lm3533->dev, 0, lm3533_led_devs,
-@@ -469,6 +478,26 @@ static int lm3533_device_setup(struct lm3533 *lm3533,
- 	return lm3533_set_boost_ovp(lm3533, pdata->boost_ovp);
- }
- 
-+static void lm3533_parse_nodes(struct lm3533 *lm3533,
-+			       struct lm3533_platform_data *pdata)
-+{
-+	struct fwnode_handle *node;
-+	const char *label;
-+
-+	device_for_each_child_node(lm3533->dev, node) {
-+		fwnode_property_read_string(node, "compatible", &label);
-+
-+		if (!strcmp(label, lm3533_bl_devs[pdata->num_backlights].name))
-+			pdata->num_backlights++;
-+
-+		if (!strcmp(label, lm3533_led_devs[pdata->num_leds].name))
-+			pdata->num_leds++;
-+
-+		if (!strcmp(label, lm3533_als_devs[pdata->num_als].name))
-+			pdata->num_als++;
-+	}
-+}
-+
- static int lm3533_device_init(struct lm3533 *lm3533)
- {
- 	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
-@@ -477,8 +506,25 @@ static int lm3533_device_init(struct lm3533 *lm3533)
- 	dev_dbg(lm3533->dev, "%s\n", __func__);
- 
- 	if (!pdata) {
--		dev_err(lm3533->dev, "no platform data\n");
--		return -EINVAL;
-+		pdata = devm_kzalloc(lm3533->dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+
-+		ret = device_property_read_u32(lm3533->dev,
-+					       "ti,boost-ovp",
-+					       &pdata->boost_ovp);
-+		if (ret)
-+			pdata->boost_ovp = LM3533_BOOST_OVP_16V;
-+
-+		ret = device_property_read_u32(lm3533->dev,
-+					       "ti,boost-freq",
-+					       &pdata->boost_freq);
-+		if (ret)
-+			pdata->boost_freq = LM3533_BOOST_FREQ_500KHZ;
-+
-+		lm3533_parse_nodes(lm3533, pdata);
-+
-+		lm3533->dev->platform_data = pdata;
- 	}
- 
- 	lm3533->hwen = devm_gpiod_get(lm3533->dev, NULL, GPIOD_OUT_LOW);
-@@ -603,6 +649,12 @@ static void lm3533_i2c_remove(struct i2c_client *i2c)
- 	lm3533_device_exit(lm3533);
- }
- 
-+static const struct of_device_id lm3533_match_table[] = {
-+	{ .compatible = "ti,lm3533" },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, lm3533_match_table);
-+
- static const struct i2c_device_id lm3533_i2c_ids[] = {
- 	{ "lm3533" },
- 	{ }
-@@ -612,6 +664,7 @@ MODULE_DEVICE_TABLE(i2c, lm3533_i2c_ids);
- static struct i2c_driver lm3533_i2c_driver = {
- 	.driver = {
- 		   .name = "lm3533",
-+		   .of_match_table = lm3533_match_table,
- 	},
- 	.id_table	= lm3533_i2c_ids,
- 	.probe		= lm3533_i2c_probe,
-diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-index babfd3ceec86..bc568916f1b1 100644
---- a/drivers/video/backlight/lm3533_bl.c
-+++ b/drivers/video/backlight/lm3533_bl.c
-@@ -258,6 +258,60 @@ static int lm3533_bl_setup(struct lm3533_bl *bl,
- 	return lm3533_ctrlbank_set_pwm(&bl->cb, pdata->pwm);
- }
- 
-+static void lm3533_parse_backlight(struct platform_device *pdev,
-+				   struct lm3533_bl_platform_data *pdata)
-+{
-+	struct device *dev = &pdev->dev;
-+	int val, ret;
-+
-+	/* 5000 - 29800 uA (800 uA step) */
-+	ret = device_property_read_u32(dev, "max-current-microamp", &val);
-+	if (ret)
-+		val = 5000;
-+	pdata->max_current = val;
-+
-+	/* 0 - 255 */
-+	ret = device_property_read_u32(dev, "default-brightness", &val);
-+	if (ret)
-+		val = LM3533_BL_MAX_BRIGHTNESS;
-+	pdata->default_brightness = val;
-+
-+	/* 0 - 0x3f */
-+	ret = device_property_read_u32(dev, "pwm", &val);
-+	if (ret)
-+		val = 0;
-+	pdata->pwm = val;
-+}
-+
-+static int lm3533_pass_of_node(struct platform_device *pdev,
-+			       struct lm3533_bl_platform_data *pdata)
-+{
-+	struct device *parent_dev = pdev->dev.parent;
-+	struct device *dev = &pdev->dev;
-+	struct fwnode_handle *node;
-+	const char *label;
-+	int val, ret;
-+
-+	device_for_each_child_node(parent_dev, node) {
-+		fwnode_property_read_string(node, "compatible", &label);
-+
-+		if (!strcmp(label, pdev->name)) {
-+			ret = fwnode_property_read_u32(node, "reg", &val);
-+			if (ret) {
-+				dev_info(dev, "reg property is missing: ret %d\n", ret);
-+				return ret;
-+			}
-+
-+			if (val == pdev->id) {
-+				dev->fwnode = node;
-+				dev->of_node = to_of_node(node);
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int lm3533_bl_probe(struct platform_device *pdev)
- {
- 	struct lm3533 *lm3533;
-@@ -275,8 +329,16 @@ static int lm3533_bl_probe(struct platform_device *pdev)
- 
- 	pdata = dev_get_platdata(&pdev->dev);
- 	if (!pdata) {
--		dev_err(&pdev->dev, "no platform data\n");
--		return -EINVAL;
-+		pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+
-+		ret = lm3533_pass_of_node(pdev, pdata);
-+		if (ret)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed to get backlight device node\n");
-+
-+		lm3533_parse_backlight(pdev, pdata);
- 	}
- 
- 	if (pdev->id < 0 || pdev->id >= LM3533_HVCTRLBANK_COUNT) {
-@@ -299,9 +361,9 @@ static int lm3533_bl_probe(struct platform_device *pdev)
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = LM3533_BL_MAX_BRIGHTNESS;
- 	props.brightness = pdata->default_brightness;
--	bd = devm_backlight_device_register(&pdev->dev, pdata->name,
--					pdev->dev.parent, bl, &lm3533_bl_ops,
--					&props);
-+	bd = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
-+					    pdev->dev.parent, bl,
-+					    &lm3533_bl_ops, &props);
- 	if (IS_ERR(bd)) {
- 		dev_err(&pdev->dev, "failed to register backlight device\n");
- 		return PTR_ERR(bd);
-diff --git a/include/linux/mfd/lm3533.h b/include/linux/mfd/lm3533.h
-index 69059a7a2ce5..e22fd2093a95 100644
---- a/include/linux/mfd/lm3533.h
-+++ b/include/linux/mfd/lm3533.h
-@@ -74,6 +74,7 @@ struct lm3533_platform_data {
- 	enum lm3533_boost_freq boost_freq;
- 
- 	struct lm3533_als_platform_data *als;
-+	int num_als;
- 
- 	struct lm3533_bl_platform_data *backlights;
- 	int num_backlights;
+Maybe move the '} else {' into the ifdef to avoid the possibly empty 
+else branch. I also wonder why this is only being done on x86. There are 
+other systems with VGA.
+
+In any case
+
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+
+Best regards
+Thomas
+
+
 -- 
-2.43.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

@@ -1,42 +1,72 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD0A11CBEAA;
-	Wed, 12 Feb 2025 02:27:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68624204682;
+	Wed, 12 Feb 2025 07:43:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739327250; cv=none; b=Do7h77DPlZnJ5SaYyykSZ94+WQccCz45T+SH9sL5vAozkcHm9n/lUgFsH+LuyjvK6XeimLfLHzZtEbphdDl3n09AirTeekdr//0EkPATV7Vd5Pg8jo/ypD/G42cRFCdHIzAH11zqdWmh3zdlqeBdr6Erb+VhEww3p46E2eQ1jao=
+	t=1739346198; cv=none; b=HQWBr6eYn3aj2npXoOsJNI+me8KObosUytqKuxMx6WGoA2LXg7seI0wk2pvZcgQ/fcq8s7tXQNMDQldYbNB8zn42RFNr/7SW5eAHobA2gCFG3lnF2qhUgZgNY2CN3CREToDqaASP+reL62fzNfqfAQtz+dxtrE+AVtfsYbzndcg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739327250; c=relaxed/simple;
-	bh=ZYzY4+l+dFRYzltNbW6pH6aQvA9KFT1LHvoYLNAw0oQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E/SdkC3A6AFva20TmxcT5SPEAbPdKcTplfUN+BdICvvx9j67eSXhd8hy6LKlvNFpu89YZJnuUFWdpKi3RUAXC6sSEeB2u//bYeAPLxonvV8hIJiQgwYvJgwkFTNCbsfAIgio+iPd63xrCoW36WDbpyeq5K689me/zxAYQOS+XFU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AgN9z1y/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1739346198; c=relaxed/simple;
+	bh=uYeXJyn5UeUw6qcDYRDrfV4PFQBbTfNbcG3JQxPQTfc=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=VM0PshiYb5VNAv9yhYI9ORCfV3X3V/TF42v8pNSzMcR8zNFoKq+0rxi0jCkBex68aZq35xGrbNXVgC9D48VuQwGXkHVOGOFfCO4adXGduPmw0W2OOLSUZUofqtC/RmmhNa0E1glabfeIrHqh7FJvK9mABLDijw+hgbogsI9+CDg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=L4IPSicf; arc=none smtp.client-ip=209.85.128.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AgN9z1y/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 335CBC4CEDD;
-	Wed, 12 Feb 2025 02:27:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739327249;
-	bh=ZYzY4+l+dFRYzltNbW6pH6aQvA9KFT1LHvoYLNAw0oQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AgN9z1y/SGiCZfh4jONXnZe7Z3FTeK+evpamez7ckDebJkMxbSk6RtQEAHifX7y+t
-	 TYFG/MSCvMj9hM1QSBuMMcNivVAv2+SoNklsUbU7RnUjW/IKx8PcppLe+uq3OwIYQU
-	 AaSbXGe6qdG4u5NkzU9iATBqIRGx0AWMSnY4QYCAFvgWdMQ+uOpXfxOOWq9Cn9Qx5l
-	 58ZAdicfJ8mHP9XeQ7QTC0WhB7bheyIOoPYAJROSQQNGmqT6B99rM/phRsM943C3nk
-	 BkPudRTFvQx3eLJHokmwbC8L5D5kvnaPy5VIDAtJd5OOAx1K8+tlSjIBh8uET4lIBl
-	 hUvo3w0qKI4dg==
-Date: Wed, 12 Feb 2025 02:27:27 +0000
-From: Wei Liu <wei.liu@kernel.org>
-To: mhklinux@outlook.com
-Cc: haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
-	deller@gmx.de, weh@microsoft.com, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-hyperv@vger.kernel.org
-Subject: Re: [PATCH 1/1] fbdev: hyperv_fb: iounmap() the correct memory when
- removing a device
-Message-ID: <Z6wHDw8BssJyQHiM@liuwe-devbox-debian-v2>
-References: <20250209235252.2987-1-mhklinux@outlook.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L4IPSicf"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-43944c51e41so31537785e9.0;
+        Tue, 11 Feb 2025 23:43:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739346195; x=1739950995; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=faKuoffM1gAZWq51vkqkknQzyRKywd6R7upna9jS1Us=;
+        b=L4IPSicfRpclfoUch/v+ScJ5YMy7MzfNQ7WWHhArZRMXHvffmWfPQmacbBiHYyIxFQ
+         I+6/FNxANkt+pjydcyVGItxJ+sBfpUh7VrLP27bw8X9jCpyEylglVaJAhLpua3LaQ65P
+         FB/W6MpVCdkZ4OTb7CQHw2Bekp0bSVkhpklz9MEom0Xmuz7Ptb9pJsNXUOV538tgSCTM
+         CF8/O9eQbbDnaFQklAj1+pSUi1YQHd4N+9/T0hanSXBnUvCxg49naiCyLEPrxPSB9I/6
+         Hns7nf3dc49Vlqh5BEVlHJV0eXNDnke8Ad4to9ty/F/be+ifnGXWbId2lL7t4kvLIF/2
+         LRWg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739346195; x=1739950995;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=faKuoffM1gAZWq51vkqkknQzyRKywd6R7upna9jS1Us=;
+        b=QeVKR91NzroWotR+IxTCJsgesNfYSY/pCp4rzu4W+jCHQaV17BH0U8Ejfc4sQYVsgE
+         HeUSgX4ZSNNyrJ6N2x2nhs3he1aoZ+JSQIPjc6S7Z7NV432PcRBRJ6lSImcwZ7W/OOIr
+         pAWZhmOrnCelM0LXznetQIlK2nEH078AEvXbh8JcECUpxcIfi/Q9OxcinOQtPWatmBsb
+         BQ+HGKFm4FN/vbQ8/CVu1RFBsNCwLCHCtxS03atYj2A8sae3359QU0XlMy0sp2uJkTE7
+         HuMNWA3qcfLe05c9ZqoG+ZIXFJZeTnNCv7DNGb9q5lKmU2sDK19B/rdBQ59tkcpQ+Nlj
+         lWPQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW0olTflW3u6B3XVg89SiW+nNyroTQNjUB4Hxn0JvUn/ZmA4SYDdBshgPRb9EEQ6C0MXvfw0D/5cavMIw==@vger.kernel.org, AJvYcCWJzMht2hwMF/x5u1amxgRGxBRD9lQexUFccFQXGtbxLnnpQdKA7ZGBVZUUvko7SA9SJhEMayLytI53qP2D@vger.kernel.org
+X-Gm-Message-State: AOJu0YzIC1CUU/hNRwZEBivVdLPawFWIwrXgnkqGPgSUJoOP395zusp6
+	U6546C6+k3u4fPR1b76DykHKAcYj6BTLKunTj1DlUtAHcIy4TpP9hdzUzPf9fp4=
+X-Gm-Gg: ASbGncvZkCkygdLOdB1Snl+gyWIXJ/j7DcRdiyzh5ZzCwp0XQUdMjpKWdTS3kh2zviE
+	RCHQW3xP98oyHlpFd1LRxgtht3Cb8+ECKHpo4cgqHyI9WTcX3jEPglCcvOSX+bJgVmb6CwkohTQ
+	hXRRt+u85sufInGc8hmlYW53tF9WpWIYw9tdG/P3Ieo1qlBMk9hCBNNYFa49EFTJ66YcxW0A/8h
+	c2JAfrNMhQ7pEzbim/f4lzSAJmNcDWot8bqDVicEhJLsi4a+pSobQ0jwGSCf6o7tnp7HiqYHkBG
+	N18h2ortBVn43P/Djc5uf9TUgFHv6RAIFf98YeUDS8/kphir3zPLn2iOs7X9U4Ip0tjMull9LCm
+	ZZnFc0GN8
+X-Google-Smtp-Source: AGHT+IFLnB8Ymq1rlUTsAloZXjXNuyEHGglxk1LiY+nVnHMEX5ZdXYat3hHkscmmVysqmC10clk5kQ==
+X-Received: by 2002:a05:600c:510c:b0:439:45ce:15c0 with SMTP id 5b1f17b1804b1-439581bed06mr15039995e9.25.1739346194504;
+        Tue, 11 Feb 2025 23:43:14 -0800 (PST)
+Received: from michael-devbox (ec2-52-59-234-77.eu-central-1.compute.amazonaws.com. [52.59.234.77])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4395a06d22csm11458725e9.22.2025.02.11.23.43.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Feb 2025 23:43:14 -0800 (PST)
+Date: Wed, 12 Feb 2025 07:43:13 +0000
+From: Michael Anckaert <michael.anckaert@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
+	"open list:STAGING SUBSYSTEM" <linux-staging@lists.linux.dev>,
+	open list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: sm750fb: fix checkpatch warning architecture
+ specific defines should be avoided
+Message-ID: <Z6xREbLLtexX4_uh@michael-devbox>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,29 +75,34 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250209235252.2987-1-mhklinux@outlook.com>
 
-On Sun, Feb 09, 2025 at 03:52:52PM -0800, mhkelley58@gmail.com wrote:
-> From: Michael Kelley <mhklinux@outlook.com>
-> 
-> When a Hyper-V framebuffer device is removed, or the driver is unbound
-> from a device, any allocated and/or mapped memory must be released. In
-> particular, MMIO address space that was mapped to the framebuffer must
-> be unmapped. Current code unmaps the wrong address, resulting in an
-> error like:
-> 
-> [ 4093.980597] iounmap: bad address 00000000c936c05c
-> 
-> followed by a stack dump.
-> 
-> Commit d21987d709e8 ("video: hyperv: hyperv_fb: Support deferred IO for
-> Hyper-V frame buffer driver") changed the kind of address stored in
-> info->screen_base, and the iounmap() call in hvfb_putmem() was not
-> updated accordingly.
-> 
-> Fix this by updating hvfb_putmem() to unmap the correct address.
-> 
-> Fixes: d21987d709e8 ("video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver")
-> Signed-off-by: Michael Kelley <mhklinux@outlook.com>
+Replace architecture-specific defines with CONFIG_X86 checks to improve
+portability and adhere to kernel coding standards.
 
-Applied to hyperv-fixes. Thanks.
+Fixes checkpatch warning:
+- CHECK: architecture specific defines should be avoided.
+
+Changes made:
+- Using CONFIG_X86 instead of i386 and x86.
+
+Signed-off-by: Michael Anckaert <michael.anckaert@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 02860d3ec365..67a2f60440ca 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -229,7 +229,7 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
+ 		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
+ 		poke32(VGA_CONFIGURATION, reg);
+ 	} else {
+-#if defined(__i386__) || defined(__x86_64__)
++#ifdef CONFIG_X86
+ 		/* set graphic mode via IO method */
+ 		outb_p(0x88, 0x3d4);
+ 		outb_p(0x06, 0x3d5);
+-- 
+2.39.5
+

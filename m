@@ -1,108 +1,110 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com [209.85.167.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68624204682;
-	Wed, 12 Feb 2025 07:43:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D2301CB31D;
+	Wed, 12 Feb 2025 07:59:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739346198; cv=none; b=HQWBr6eYn3aj2npXoOsJNI+me8KObosUytqKuxMx6WGoA2LXg7seI0wk2pvZcgQ/fcq8s7tXQNMDQldYbNB8zn42RFNr/7SW5eAHobA2gCFG3lnF2qhUgZgNY2CN3CREToDqaASP+reL62fzNfqfAQtz+dxtrE+AVtfsYbzndcg=
+	t=1739347159; cv=none; b=FiI3KmMY6Xovkg5ILuTiao0VULUQkeQQ2CzsFZPiUYEZnFGmI9afSlBerDjCcCpH/VhbzafNRsO/lQ5yuGO/2SdlwgDyx7dE7VNCLuZQej3Vq3Di3RMeBSv60eqc8O7hdb9Jymhaq+M2gQ8AZs1gBqzkZA7RXaDHCPQN0uDHL34=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739346198; c=relaxed/simple;
-	bh=uYeXJyn5UeUw6qcDYRDrfV4PFQBbTfNbcG3JQxPQTfc=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=VM0PshiYb5VNAv9yhYI9ORCfV3X3V/TF42v8pNSzMcR8zNFoKq+0rxi0jCkBex68aZq35xGrbNXVgC9D48VuQwGXkHVOGOFfCO4adXGduPmw0W2OOLSUZUofqtC/RmmhNa0E1glabfeIrHqh7FJvK9mABLDijw+hgbogsI9+CDg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=L4IPSicf; arc=none smtp.client-ip=209.85.128.43
+	s=arc-20240116; t=1739347159; c=relaxed/simple;
+	bh=kmE+a+rMZPk6SbwcvZuve+G9NeqY3nYlWpAAYw29Ihg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=c4Jn3XPbbnr4ZyaGXVXJy7PDBJqd1aEaMoHb5OqYZbIBXwCtYZPaK10YtZdg9RTiLnGu/W9jKy1PjwiISCw1HoXqPsNCLkQQKSWplJSjyTfFSOORlFpXL3FO1u59spHmExpUEgS1r6LApRT5eYMTFZ25tjRG+CW2dps3hiroKAg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BVnX3oGT; arc=none smtp.client-ip=209.85.167.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L4IPSicf"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-43944c51e41so31537785e9.0;
-        Tue, 11 Feb 2025 23:43:16 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BVnX3oGT"
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-543d8badc30so6738136e87.0;
+        Tue, 11 Feb 2025 23:59:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739346195; x=1739950995; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=faKuoffM1gAZWq51vkqkknQzyRKywd6R7upna9jS1Us=;
-        b=L4IPSicfRpclfoUch/v+ScJ5YMy7MzfNQ7WWHhArZRMXHvffmWfPQmacbBiHYyIxFQ
-         I+6/FNxANkt+pjydcyVGItxJ+sBfpUh7VrLP27bw8X9jCpyEylglVaJAhLpua3LaQ65P
-         FB/W6MpVCdkZ4OTb7CQHw2Bekp0bSVkhpklz9MEom0Xmuz7Ptb9pJsNXUOV538tgSCTM
-         CF8/O9eQbbDnaFQklAj1+pSUi1YQHd4N+9/T0hanSXBnUvCxg49naiCyLEPrxPSB9I/6
-         Hns7nf3dc49Vlqh5BEVlHJV0eXNDnke8Ad4to9ty/F/be+ifnGXWbId2lL7t4kvLIF/2
-         LRWg==
+        d=gmail.com; s=20230601; t=1739347155; x=1739951955; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Wv0GhJL/R4in4Vn8Ofx8yxqMCUurvzPMIRxBdypJOK8=;
+        b=BVnX3oGTG9Dt3kRSWCmHHE4Y+bNi+XHkmr23kJJppxYRT08fpTvXBeLvblOm8lba3U
+         6pAcgXyb1lWd8FtxsbiA23Z3WgxtfoTLUEp/OhAUiMReb6Xl0oOJYNTow0SSlCNZn74u
+         4yqXxbAnmrkkYBcM8nDq7AmP8csQodNysSGupQq89nfg1MNQWUAozSFllSyd7KodQWvc
+         HrOGc7AMBXRi1w/D6j0kX24h9Hz9dLz/91RhwUiZTqOYRMbUDIJVyMuNpDG9XKIjCzA8
+         Kt5SOfyrgbbE/MN3ZCVDFjy5MBwY2XbXI8Z3j8Wz1hu1QjvWhewIT7eSnOorakxyXjgT
+         vQnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739346195; x=1739950995;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=faKuoffM1gAZWq51vkqkknQzyRKywd6R7upna9jS1Us=;
-        b=QeVKR91NzroWotR+IxTCJsgesNfYSY/pCp4rzu4W+jCHQaV17BH0U8Ejfc4sQYVsgE
-         HeUSgX4ZSNNyrJ6N2x2nhs3he1aoZ+JSQIPjc6S7Z7NV432PcRBRJ6lSImcwZ7W/OOIr
-         pAWZhmOrnCelM0LXznetQIlK2nEH078AEvXbh8JcECUpxcIfi/Q9OxcinOQtPWatmBsb
-         BQ+HGKFm4FN/vbQ8/CVu1RFBsNCwLCHCtxS03atYj2A8sae3359QU0XlMy0sp2uJkTE7
-         HuMNWA3qcfLe05c9ZqoG+ZIXFJZeTnNCv7DNGb9q5lKmU2sDK19B/rdBQ59tkcpQ+Nlj
-         lWPQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW0olTflW3u6B3XVg89SiW+nNyroTQNjUB4Hxn0JvUn/ZmA4SYDdBshgPRb9EEQ6C0MXvfw0D/5cavMIw==@vger.kernel.org, AJvYcCWJzMht2hwMF/x5u1amxgRGxBRD9lQexUFccFQXGtbxLnnpQdKA7ZGBVZUUvko7SA9SJhEMayLytI53qP2D@vger.kernel.org
-X-Gm-Message-State: AOJu0YzIC1CUU/hNRwZEBivVdLPawFWIwrXgnkqGPgSUJoOP395zusp6
-	U6546C6+k3u4fPR1b76DykHKAcYj6BTLKunTj1DlUtAHcIy4TpP9hdzUzPf9fp4=
-X-Gm-Gg: ASbGncvZkCkygdLOdB1Snl+gyWIXJ/j7DcRdiyzh5ZzCwp0XQUdMjpKWdTS3kh2zviE
-	RCHQW3xP98oyHlpFd1LRxgtht3Cb8+ECKHpo4cgqHyI9WTcX3jEPglCcvOSX+bJgVmb6CwkohTQ
-	hXRRt+u85sufInGc8hmlYW53tF9WpWIYw9tdG/P3Ieo1qlBMk9hCBNNYFa49EFTJ66YcxW0A/8h
-	c2JAfrNMhQ7pEzbim/f4lzSAJmNcDWot8bqDVicEhJLsi4a+pSobQ0jwGSCf6o7tnp7HiqYHkBG
-	N18h2ortBVn43P/Djc5uf9TUgFHv6RAIFf98YeUDS8/kphir3zPLn2iOs7X9U4Ip0tjMull9LCm
-	ZZnFc0GN8
-X-Google-Smtp-Source: AGHT+IFLnB8Ymq1rlUTsAloZXjXNuyEHGglxk1LiY+nVnHMEX5ZdXYat3hHkscmmVysqmC10clk5kQ==
-X-Received: by 2002:a05:600c:510c:b0:439:45ce:15c0 with SMTP id 5b1f17b1804b1-439581bed06mr15039995e9.25.1739346194504;
-        Tue, 11 Feb 2025 23:43:14 -0800 (PST)
-Received: from michael-devbox (ec2-52-59-234-77.eu-central-1.compute.amazonaws.com. [52.59.234.77])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4395a06d22csm11458725e9.22.2025.02.11.23.43.13
+        d=1e100.net; s=20230601; t=1739347155; x=1739951955;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Wv0GhJL/R4in4Vn8Ofx8yxqMCUurvzPMIRxBdypJOK8=;
+        b=dVvJK2Gy3UrC/DHjJwRSpbBCGxi56zN01ikoLbEHyxFqswY2FU7wzgR0Gb1+lTBmto
+         jW9MwhPiGY02nWEZNabECBdJqfdrZK8uL1G7+eKra45BYz2RQi6HjOMZcHSdIEU+2iYr
+         gH/jLQFVPN0WvCPRyRDIjv8KLbiNUAPD800dKoytef+JhixAr8xHHsgx3+4JJuVbjbQH
+         WA0Vd2dG7jb1RUaWijbqiRUz4tyLlP9l2YBIOsK7RmdzSGtZmqiq/K0hDMy8Tl2OigZ5
+         r6sKGOQRIweQivLoZWrEPZ1YOUxttB9Ai0/mNYEx8oFHSsKdMJZ5f0ghS12a/SYQndXP
+         qpgA==
+X-Forwarded-Encrypted: i=1; AJvYcCV9mDsPNqGBPnxpkc8BJRS4P6g+2mWRdzp/3mJMKvv0bHT+iFOOjLPl+cb13GBDZgDVVvcBaiczGN3/wtjH@vger.kernel.org, AJvYcCVkPqqE3Urm4vYv1BezDWLwyRkiJVUPZRyDmwcpf0AQ6ALWbIIybTryz3P59c1YMaZ5/dTEyfs/lSxi@vger.kernel.org, AJvYcCWih34JtKQQVf7WgLPymU+wKFaNFQ6JoQOIzevN5p5znpCjtDcuMr3QmbJBZvliwxgDq7iKbjIscsz6KQ==@vger.kernel.org, AJvYcCX6OlofPf1Qz1dBv8Sza3OMHSo6Me9BlBg65yg49dg5lR0UNUylzPwMluEwVEt5fIFfeHdOjiOpplW5jw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxJ1YsbZdo4q38uMWuscu5GuWdFSLOiUks2QW+Cz2OzfaIi/b4n
+	4aXesuLSw2kyADYj4X1isDgJLOKGPN2qc+IBLOGUYHmM7hfJnN8C
+X-Gm-Gg: ASbGnctufAmANVE2aOFW1FFZdw9iWxObNL77gY7dR47N/l0yIXTJZlnecWQ8vwTuwig
+	i9d3iDObzntsVq4B1ll1nVIocIDaUaGUCZu8xw/yRftBYa3/8y9aAKoXydPAli2ixrwt66iCkSJ
+	BSNCaM7ssGpQvgBdU+M2/u7Sro7Cl1OihKX5QPf0+Fn/2SewwubUUUgzC7sKlIEfbLCXSDymvSa
+	crLWvwLaUhl8Ra5JZxjG2faRscOjVPJy1zVrNjIHPMaZfyBzZpYHSKI3MpWTO9oS/R/JJpiKROx
+	BxJZhbE=
+X-Google-Smtp-Source: AGHT+IEWCPu+93+2rHmlSJUSCShTSZW5NXY2rvx6S35bgz3OSkiN9RIMowHcRkWsDjFpbQ96aMGwjw==
+X-Received: by 2002:a05:6512:2251:b0:545:169b:9b51 with SMTP id 2adb3069b0e04-54518123291mr684139e87.24.1739347154984;
+        Tue, 11 Feb 2025 23:59:14 -0800 (PST)
+Received: from xeon.. ([188.163.112.51])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5441053eacfsm1797880e87.38.2025.02.11.23.59.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Feb 2025 23:43:14 -0800 (PST)
-Date: Wed, 12 Feb 2025 07:43:13 +0000
-From: Michael Anckaert <michael.anckaert@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
-	"open list:STAGING SUBSYSTEM" <linux-staging@lists.linux.dev>,
-	open list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] staging: sm750fb: fix checkpatch warning architecture
- specific defines should be avoided
-Message-ID: <Z6xREbLLtexX4_uh@michael-devbox>
+        Tue, 11 Feb 2025 23:59:14 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Pavel Machek <pavel@ucw.cz>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Svyatoslav Ryhel <clamor95@gmail.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v1 0/2] mfd: lm3533: convert to use OF
+Date: Wed, 12 Feb 2025 09:58:40 +0200
+Message-ID: <20250212075845.11338-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Replace architecture-specific defines with CONFIG_X86 checks to improve
-portability and adhere to kernel coding standards.
+Add schema and add support for lm3533 mfd to use device
+tree bindings.
 
-Fixes checkpatch warning:
-- CHECK: architecture specific defines should be avoided.
+Svyatoslav Ryhel (2):
+  dt-bindings: mfd: Document TI LM3533 MFD
+  mfd: lm3533: convert to use OF
 
-Changes made:
-- Using CONFIG_X86 instead of i386 and x86.
+ .../devicetree/bindings/mfd/ti,lm3533.yaml    | 221 ++++++++++++++++++
+ drivers/iio/light/lm3533-als.c                |  58 ++++-
+ drivers/leds/leds-lm3533.c                    |  69 +++++-
+ drivers/mfd/lm3533-core.c                     |  79 +++++--
+ drivers/video/backlight/lm3533_bl.c           |  72 +++++-
+ include/dt-bindings/mfd/lm3533.h              |  19 ++
+ include/linux/mfd/lm3533.h                    |   1 +
+ 7 files changed, 496 insertions(+), 23 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
+ create mode 100644 include/dt-bindings/mfd/lm3533.h
 
-Signed-off-by: Michael Anckaert <michael.anckaert@gmail.com>
----
- drivers/staging/sm750fb/ddk750_chip.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 02860d3ec365..67a2f60440ca 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -229,7 +229,7 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
- 		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
- 		poke32(VGA_CONFIGURATION, reg);
- 	} else {
--#if defined(__i386__) || defined(__x86_64__)
-+#ifdef CONFIG_X86
- 		/* set graphic mode via IO method */
- 		outb_p(0x88, 0x3d4);
- 		outb_p(0x06, 0x3d5);
 -- 
-2.39.5
+2.43.0
 

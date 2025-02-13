@@ -1,136 +1,109 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F91B14B95A;
-	Thu, 13 Feb 2025 14:38:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0AF0281349
+	for <linux-fbdev@vger.kernel.org>; Thu, 13 Feb 2025 14:42:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739457535; cv=none; b=cvzug2skn9DwDlMle/MHHnMR4b6LvCT0FuOuePmm+aBc4k/2xU0MdEcM+mWjCydbqplngzvEZAN5cC9ixFkIB7OMRmXr82V46ACavGMSouubfKuvvJftoSKdFdNyf1+x3hDGrBXbR4kEpwM3kEbDi+sFt04Ae2+QjheafTLI+3Q=
+	t=1739457747; cv=none; b=MUOvfcg1FYLWyaIqB9ubxI9rurc4wjduOsWlveUONSoqihs224Ea70XMlARITdxnuTcr3VXQUDJm3OFIifKjIiPNvt8JkzpCxO66Hr398zxGOs5l9i+P07x6iNE2v8OgCvMQpCCKaZs39VGvd4GIDMtRG/fdP3SROdoCvcg4dXo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739457535; c=relaxed/simple;
-	bh=WY/i989U0hs/MJB1fntLsREdJlrSX0W6s5TjWclDq1Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qc95p6PdXjKNQ7umAKaK4lVH2czbjTCDJAbW9/aAwcMg1T746ITvKXSv35QR9DI0W9C8NakZBhIl4YS5ibyQp1kiLuPoemBmWYT1luHJRVRggx0idfe5/ea9QHyghc9AX/L75oUOQgPkxzzy7NnwYN9YAl7W2OLywkAuIU4uvLQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Ap6WYbK/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1739457747; c=relaxed/simple;
+	bh=er1o0eyyYo2P9RGTb3I/Gv5RkqmtO3GI17fKDgB+d10=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cLh8CaH0r70DqTMSgnBEH/3WMMp3cus8Z+IKEH0EjuLzqubO5WZJjNJG+YMohAYWtUIlGxAEb/hlRCoOlY883cAwuj394WbSz2MOYWali674aODw9bWKQaKhI4RxrdGMIEaQEWEepzDgYi4Xen4NYBpR4PvEb6GO1Hb0Yb/U8x0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=oEihJ8Vx; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Ap6WYbK/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 01CAAC4CED1;
-	Thu, 13 Feb 2025 14:38:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1739457535;
-	bh=WY/i989U0hs/MJB1fntLsREdJlrSX0W6s5TjWclDq1Y=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Ap6WYbK/TGk6P8RFED3owRPtshnbdMqmZH4KUeLwsh/tv5h/6L0yk753aJNyHsMyN
-	 51AoF+yRzr42pRMOoMjZpA9VPcKt9M1J+sPEixOhTRIprr28sEtnIDx24LcIE/WTo9
-	 ZJd8T0TyzgRQzTbGW1FCJJGstfJ9W4RpC9AqiOmo=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	kernel test robot <lkp@intel.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>
-Subject: [PATCH 6.12 140/422] m68k: vga: Fix I/O defines
-Date: Thu, 13 Feb 2025 15:24:49 +0100
-Message-ID: <20250213142441.949277766@linuxfoundation.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250213142436.408121546@linuxfoundation.org>
-References: <20250213142436.408121546@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="oEihJ8Vx"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1739457746; x=1770993746;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=er1o0eyyYo2P9RGTb3I/Gv5RkqmtO3GI17fKDgB+d10=;
+  b=oEihJ8VxKIc+lWgXl9N2NezNCRuvQEI/n8fxFlGyY6PV0bDcFatruaDu
+   +UGJKElA4j8Tvvy0FwDhnJltdAD8vGCiGkxt+D/U07k4PHCicq6LqsbbY
+   VNynIv3D7abip38az+137qAVMekUpk7K601sKAd1/TLniMSzHLGoM1/A5
+   KETjDG46OYdAj+um74RcRITxr2h0t5DjVZVHZgUL2xvr2fo5cwsHXIBhH
+   N+VxroECSnZ7pYO+zLtCuJIN1wA/oS4Wybqxlj9eAV/6nzEXx+6zUz30K
+   SroekOmX35O65cjzTv45vJvemPiT55VFOo2jWo10SJxo0hmxkyHUzKGwd
+   w==;
+X-CSE-ConnectionGUID: B/mPj8/6S4ebKxJbDQCVig==
+X-CSE-MsgGUID: 9Xg0ds0aSsiB9QONvg8V/Q==
+X-IronPort-AV: E=McAfee;i="6700,10204,11344"; a="40423240"
+X-IronPort-AV: E=Sophos;i="6.13,282,1732608000"; 
+   d="scan'208";a="40423240"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Feb 2025 06:42:25 -0800
+X-CSE-ConnectionGUID: BujpYyyvTcC3zLfRCGS0kw==
+X-CSE-MsgGUID: 3AO13tUqT5WfVIzwdNn1vg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,282,1732608000"; 
+   d="scan'208";a="113346818"
+Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
+  by fmviesa008.fm.intel.com with SMTP; 13 Feb 2025 06:42:23 -0800
+Received: by stinkbox (sSMTP sendmail emulation); Thu, 13 Feb 2025 16:42:22 +0200
+Date: Thu, 13 Feb 2025 16:42:22 +0200
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
+ before fb devices appear
+Message-ID: <Z64EzooZqdfLg0pM@intel.com>
+References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
+ <20240923155749.30846-2-ville.syrjala@linux.intel.com>
+ <92ed9455-b175-46ef-b0c6-7c79e2b78371@gmx.de>
+ <ZvUwCVNPzp1UGY6h@intel.com>
+ <34a7d276-ee26-4a8d-b996-87faa5b224c4@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <34a7d276-ee26-4a8d-b996-87faa5b224c4@gmx.de>
+X-Patchwork-Hint: comment
 
-6.12-stable review patch.  If anyone has any objections, please let me know.
+On Thu, Sep 26, 2024 at 12:13:04PM +0200, Helge Deller wrote:
+> On 9/26/24 11:57, Ville Syrjälä wrote:
+> > On Thu, Sep 26, 2024 at 08:08:07AM +0200, Helge Deller wrote:
+> >> Hi Ville,
+> >>
+> >> On 9/23/24 17:57, Ville Syrjala wrote:
+> >>> Currently setting cursor_blink attribute to 0 before any fb
+> >>> devices are around does absolutely nothing. When fb devices appear
+> >>> and fbcon becomes active the cursor starts blinking. Fix the problem
+> >>> by recoding the desired state of the attribute even if no fb devices
+> >>> are present at the time.
+> >>>
+> >>> Also adjust the show() method such that it shows the current
+> >>> state of the attribute even when no fb devices are in use.
+> >>>
+> >>> Note that store_cursor_blink() is still a bit dodgy:
+> >>> - seems to be missing some of the other checks that we do
+> >>>     elsewhere when deciding whether the cursor should be
+> >>>     blinking or not
+> >>> - when set to 0 when the cursor is currently invisible due
+> >>>     to blinking, the cursor will remains invisible. We should
+> >>>     either explicitly make it visible here, or wait until the
+> >>>     full blink cycle has finished.
+> >>
+> >> are you planning to send follow-up patches to address those shortcomings?
+> >
+> > Nope. I don't really care about those as I never plan to
+> > turn the cursor blinking back on after turning it off via
+> > udev.
+> 
+> Sad, but OK. I will look into this when I find time.
+> I'd hoped to push those patches upstream during this merge window,
+> but then I think I have to delay them at least until kernel 6.13.
 
-------------------
+What happened to these? Not seeing them anywhere...
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
-
-commit 53036937a101b5faeaf98e7438555fa854a1a844 upstream.
-
-Including m68k's <asm/raw_io.h> in vga.h on nommu platforms results
-in conflicting defines with io_no.h for various I/O macros from the
-__raw_read and __raw_write families. An example error is
-
-   In file included from arch/m68k/include/asm/vga.h:12,
-                 from include/video/vga.h:22,
-                 from include/linux/vgaarb.h:34,
-		 from drivers/video/aperture.c:12:
->> arch/m68k/include/asm/raw_io.h:39: warning: "__raw_readb" redefined
-      39 | #define __raw_readb in_8
-	 |
-   In file included from arch/m68k/include/asm/io.h:6,
-		    from include/linux/io.h:13,
-		    from include/linux/irq.h:20,
-		    from include/asm-generic/hardirq.h:17,
-		    from ./arch/m68k/include/generated/asm/hardirq.h:1,
-		    from include/linux/hardirq.h:11,
-		    from include/linux/interrupt.h:11,
-                    from include/linux/trace_recursion.h:5,
-		    from include/linux/ftrace.h:10,
-		    from include/linux/kprobes.h:28,
-		    from include/linux/kgdb.h:19,
-		    from include/linux/fb.h:6,
-		    from drivers/video/aperture.c:5:
-   arch/m68k/include/asm/io_no.h:16: note: this is the location of the previous definition
-      16 | #define __raw_readb(addr) \
-	 |
-
-Include <asm/io.h>, which avoids raw_io.h on nommu platforms.
-Also change the defined values of some of the read/write symbols in
-vga.h to __raw_read/__raw_write as the raw_in/raw_out symbols are not
-generally available.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202501071629.DNEswlm8-lkp@intel.com/
-Fixes: 5c3f968712ce ("m68k/video: Create <asm/vga.h>")
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org # v3.5+
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Link: https://lore.kernel.org/20250107095912.130530-1-tzimmermann@suse.de
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- arch/m68k/include/asm/vga.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- a/arch/m68k/include/asm/vga.h
-+++ b/arch/m68k/include/asm/vga.h
-@@ -9,7 +9,7 @@
-  */
- #ifndef CONFIG_PCI
- 
--#include <asm/raw_io.h>
-+#include <asm/io.h>
- #include <asm/kmap.h>
- 
- /*
-@@ -29,9 +29,9 @@
- #define inw_p(port)		0
- #define outb_p(port, val)	do { } while (0)
- #define outw(port, val)		do { } while (0)
--#define readb			raw_inb
--#define writeb			raw_outb
--#define writew			raw_outw
-+#define readb			__raw_readb
-+#define writeb			__raw_writeb
-+#define writew			__raw_writew
- 
- #endif /* CONFIG_PCI */
- #endif /* _ASM_M68K_VGA_H */
-
-
+-- 
+Ville Syrjälä
+Intel

@@ -1,292 +1,381 @@
-Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azolkn19010023.outbound.protection.outlook.com [52.103.12.23])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 373372046A0;
-	Thu, 13 Feb 2025 03:43:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.12.23
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739418193; cv=fail; b=oxD2LzGhxiYK6F5/qxdkCH9+kqKIQ1Dc2OD+VJpTZyC4Vv5iDjyuwlUN2nqrPU944mLx80jK0omLGJZq3Iy8KcKIDRJaOODzb40OOcOs3djKPVzohvpdy1cUyuBwvTk3SISa4321zUI0IWjB8GvIL3C27YKnL5bmdqqc/VblXbs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739418193; c=relaxed/simple;
-	bh=a1BJOolYbswpqOMiAxpYpd/0xWHw6vv4fJkvOZSDwT8=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=YS8YJty68g5JNeH6R692Al1/ZAdZbaXMAgyCQIhHKgHSyhWDRBjbET+kIvQJbI0txdUPnge0mnT8fbecDVrStZt/xHjhrlEnbaSTue1AXqeY9ys3v6ky4Y82PoJvV0z1gFOsvKHcC6EqGulgP8ewl7m4cwbYHHjN4jdOOdF50Ko=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=J9w6IyQw; arc=fail smtp.client-ip=52.103.12.23
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83116207641;
+	Thu, 13 Feb 2025 06:27:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1739428078; cv=none; b=AsXbdA9fcignhyhhMIkVSD/J1Oly9SgG0lYLNTkP+mEwZFhgRaBQtH5DYzXQxa6plWOodpryHRdQuNVcTo2/NBIQ5lCvbAxKDmM/luKgBs3SntOI7CO7Ah0aZuM/4UEyu/vZM7O65y22NAXIODbKqjUooEEroxzDZxhawiAWwAY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1739428078; c=relaxed/simple;
+	bh=/ITHLgy9JYrnb84+uFgHUA5tidkL9hWALUk8ObVqab8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ImxK5oAunCbG8tjNFB9FKPJA9z+FXC0HadAi32iUcPey/S+p9yVT0ddm9dXemFD0VMVpf/d0+wfzf59fJsalHlXsECy1Tg6YurUmSqU4kFg+CZNWzzDzXam9NrAk0YPSefv3C+WuTlQ6g2b5/fy+/Et9YSFncQagAZggv2GqgW4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d4B6blvA; arc=none smtp.client-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="J9w6IyQw"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=XrglksH9MBdag7pvHbn0pqSkRz2ZLHVlMk1V4Xbj5K4YQ5xZl3PGKzLCUZLfygXaw4uO6WamUjlKZTPu5Pm8PCsVaVLPKhu8BNesdrq7QHRJWaClpYOuOmfxM6Cya/KoZb+hoat72OWAV9ME7BI+3I/GPrczJFJQgX3adCs7C2OguaZMk3hKiz2GHSgk6iKvJAISpR8OLIKiyZv8D9mBDjyjcty3seTdYglimy2zVMCEoYlH9GGQ1YmXY76o8bNLd+3mX9+kuOEimdTLnvUT3Bt/ZG68EE5Rxj3X2doi0awf3KiunBk/HpT0he8bfBqVKG5vzfTvI5PQRHBY+9r2mQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hEJ3iglVUpZCAsVZjuWhUbxA5KpIl62eWU5XXNJe2s8=;
- b=AUhmjT0NJAPkR0fATqn4/7I36SVorNMYsIp/hFdX3dyDHTHysWiPeQdv+W7duAJsV3WCg5BHs8sCHpFw4sPg30kz6ia1GmblE/oZKPOFZgyArmpF40FrsaA+Se8wo56yHzEZquqDAFGFnecTCSWOMQ9DdstaONvRAnYRGc+sfChrHpjHa6QpQosbzQ+BXUIdHaVo2AyoJUqioTiLffOoTg8OKdR7j60u+TvChVeUGPlkUsMlVWX4F0nuuvgxee33hwWP7VdyGXvYqYfT5pMlVFgdhJ2AUY8l6ufWxB3RRp0eIKWdyrTmKYOYd09cYjwkGge0HFxBVREccXClf1z7Mw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hEJ3iglVUpZCAsVZjuWhUbxA5KpIl62eWU5XXNJe2s8=;
- b=J9w6IyQwq2wmwbG17cP37zOA3O1SM2dJufEvgs/xb6WfUzHqRPgSdO+1L8v4Alrjo8mvY8VWXXhr5sh6DgP6zLcOaLMz8RXfwVf4hCvfUToVuwyKL+4bHqvoZzpk4Dwu7vRWmk4mPdzwMuacJBBdbwJ1kAACUZ5PsPHQEmU+acsnjDONj2Zq9l/1huwTdZWWk5k8VVNpXhjYXXNK+wc+pxKpttxDjgHlF+I6C+7ei8uHzG9kchHlNtilaU5qh57F0Tm3i2PLrRfMfaYs3+agx8Tz7xOwdxBmGS9iBRkDe7gOWa9E5BFfMpQC28ogay7xth4haPwcWAE7c74ct1gW9A==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by BY5PR02MB6929.namprd02.prod.outlook.com (2603:10b6:a03:230::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8445.13; Thu, 13 Feb
- 2025 03:43:07 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%4]) with mapi id 15.20.8422.010; Thu, 13 Feb 2025
- 03:43:07 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
-CC: "haiyangz@microsoft.com" <haiyangz@microsoft.com>, "wei.liu@kernel.org"
-	<wei.liu@kernel.org>, "decui@microsoft.com" <decui@microsoft.com>,
-	"deller@gmx.de" <deller@gmx.de>, "weh@microsoft.com" <weh@microsoft.com>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
-Subject: RE: [PATCH 1/1] fbdev: hyperv_fb: iounmap() the correct memory when
- removing a device
-Thread-Topic: [PATCH 1/1] fbdev: hyperv_fb: iounmap() the correct memory when
- removing a device
-Thread-Index:
- AQHbe03JMSfrBLANP0SDwaGKm7HxS7NAe2OAgAAbBUCAAAt0gIAAH9WAgAOyT7CAAB4KAIAACFCQ
-Date: Thu, 13 Feb 2025 03:43:07 +0000
-Message-ID:
- <SN6PR02MB4157A86150A5F7055F30E43BD4FF2@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <20250209235252.2987-1-mhklinux@outlook.com>
- <20250210124043.GA17819@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
- <SN6PR02MB4157B0F36D7B99A5BF01471CD4F22@SN6PR02MB4157.namprd02.prod.outlook.com>
- <20250210145825.GA12377@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
- <20250210165221.GA3465@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
- <SN6PR02MB4157C1DF0A0101EEF4CA79E2D4FF2@SN6PR02MB4157.namprd02.prod.outlook.com>
- <20250213030650.GA24166@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
-In-Reply-To:
- <20250213030650.GA24166@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|BY5PR02MB6929:EE_
-x-ms-office365-filtering-correlation-id: 8b9f4a98-bf1c-4171-da39-08dd4be08769
-x-microsoft-antispam:
- BCL:0;ARA:14566002|15080799006|19110799003|8060799006|8062599003|461199028|102099032|3412199025|440099028|12091999003;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?j7Fd70XX5o3jiX1039b+I/rmY7D8z/xP4ZT2/eLgDZAjin66bmjc6SLvKw5k?=
- =?us-ascii?Q?fNcwXIA4UNeNraL8YQgNRqFpuIpi4/I+b6uJTvGLKXeJ3a69Mcep1QEyOUyZ?=
- =?us-ascii?Q?cIkazj/5Y6tUWhgJpjn3q1m2J1hG7Ibkq+uWHXue16vBtNwYBHvXFea487kw?=
- =?us-ascii?Q?URuLlqypGFbldovSG79/6sF1AA2NBGj5cFxl/z4yv5T59+FXF3a5SL08PZOT?=
- =?us-ascii?Q?IR3coEYrpzo0xthhSU2uasF13LFaWCm89g/o36Y+byZL6r3owWf2+Ji3Wz34?=
- =?us-ascii?Q?yYhIRIsscN7yPGkX0Vew9WcJ+B/3gbTtFCdIW7OrchTWH+m4LPMTX0uk3KyE?=
- =?us-ascii?Q?xnOTjRZbX6C04ejwQZYNMBJqVvsq1zyKO8Ufo1JHDzxI76/44L6SiaZRo2sn?=
- =?us-ascii?Q?q5tdwW0SCzS512QM58x/8AXQ+lkF8S/xM1i0HzLSQLmOulY6VxK0UpV8aeV+?=
- =?us-ascii?Q?b9YfCOt4f/ZUyctRnyvz+QbnOIvJkAjrrUTPDmdimXTmlzj1czHbwRnKNVx2?=
- =?us-ascii?Q?NBYXDB8oOvn/bClbL7gCoVa7aqTr2voTgmUZHvsfyspOsuZXlupIorlM3svS?=
- =?us-ascii?Q?a+ro47u3UutjyYtdc44xMUrFbo6x+Hl5vPEhXKAwt+JWlQbEsgVhsSBfhyqJ?=
- =?us-ascii?Q?3KfHmKC62VODLLCEv7cqZE/tiNieGqYrDQHLO/Xfw9cP2n90GWPHShJ3l0+y?=
- =?us-ascii?Q?S4xUBZJNq8bGMfAKBIs8I927JDhDFLbSruvlJVyLXXuabIuErA8Z1hGy5d7S?=
- =?us-ascii?Q?kK59fQkc8GPLEVyP9wIDyvhvOjQ6xDy5DAUuLZHrF910mL095utveXiIAlc2?=
- =?us-ascii?Q?eXgcj69iRkl4NGvzXlREGaCbdUrpoVTn79oeKpDH93/TApjnGU1CG32kdD/C?=
- =?us-ascii?Q?LE84g1Q2OTgOma+JMGVV52JDcYOZcmX/dNaAl8PbdwsuiYrZXJ974NkKhZHE?=
- =?us-ascii?Q?aSckI6/Zhfj3ceXSI47NKfZ/mc1plg8Lmu4l5xRfOFH5Sb1jm8n/j3skK8Yl?=
- =?us-ascii?Q?jj/giAsAbv6mOOo/meaK2+bDkoeWLxBD4QeYP4L+fDuioUq069C3m5pM4XqA?=
- =?us-ascii?Q?t5AO5gwpsp3zuIZvtZr+m6EWYxn2UQ=3D=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?LCpzpC/Uri0VWjuyjcv3HH2EB/ws2exuOOATgdDjwG5p9Vu1UAt2V2mbeCrp?=
- =?us-ascii?Q?9J0EpVSRJJwldMD/DeaXIrZylpwRAdaRwoYMZBb2eggyh8yvVc2Y1I9e8Lxg?=
- =?us-ascii?Q?5hz6PA0say1YPtu4X3t68LcKSCJuHeYdwz4KE0rdxw/LgqUp6XwIbaTkXekk?=
- =?us-ascii?Q?hreAVyNCf1NY6j/+bKaVnVsTMR3/gBpyCZGbPL26Shn9O1wt6WQLMuUg42Cm?=
- =?us-ascii?Q?C4hYzIQyrtU0JPYK45507NL1weXPBbWuUgb+s88/peMffTfArd70xB4dwgii?=
- =?us-ascii?Q?erjY3EfhdmGWjlOPhJzLy7Smk0Ypop+kJxxStnYv5mVuklH9PXSAYUNQ/D71?=
- =?us-ascii?Q?d0y6s1I6hMkujehMQ7qwM7o+nPirhudn/P355gskWkbe8i+jLyCeIQebtJdx?=
- =?us-ascii?Q?hltEXqZq/zV9W2Eli2qaH7FOvzpo4kanmsA2tivEVAR8siKyp97HKMV1TeRU?=
- =?us-ascii?Q?9+Mghf4/FHVP25gnwFy8LUZByq12OWiVhol+rmXpWx1lyiFV7m8tWuTXqgbM?=
- =?us-ascii?Q?wqbvsRu1KcmZvCeZYVOE+TXBWr+eYKCjXKNYPugVUo7v0Fu+Gttl9T+V+NM9?=
- =?us-ascii?Q?ccqkUEn3ARJQN8TFagcvEheim4SAmGaZPxgLKEaXHjybh0jQAEewF1Ym5JDp?=
- =?us-ascii?Q?Ets3cUWXtSaXcOyVFy69DYmdY1FxxkEmk0vLI7q6nX6AxuISg/9yHjcoJzy3?=
- =?us-ascii?Q?6wy/ZvcctzW61d0gI/p1NbN/t3lNayfxRgYr3t8wpOhMDBkz6827hiW3u9ls?=
- =?us-ascii?Q?XaIlWf7eANc1HtesnU7s9Rs4EMRZ4gboXedBb8y8RK6w9x5VkdTtW9cPuJ/7?=
- =?us-ascii?Q?ftrILJ/LHchJa1NSzYa4n9TjFxLlvTAMG5Fz2cIOauReAlAQHVDtpLuju7v5?=
- =?us-ascii?Q?hMgJWCZHma9NH/Hk/ulaPdRCU3sGeSEwWr8gsZTfsVLnH92MsaFwSwrjTZDq?=
- =?us-ascii?Q?5TvXZay2D4ze2JnQK8IgcWgsPQrd47CUmsM1WX5FEYGEi/KGK/Vs1i8E/MuG?=
- =?us-ascii?Q?L77Lw7rPCZIjOJJyKngIO8XHwLLgLzzMxHIEKb9WgK1c8PwBOlICc7wv0VKF?=
- =?us-ascii?Q?fMtU7o5OC6q16jqkFEYbxx+44fEwA+jtVWADzMhQ3NL60/GCIm8YFPOAtfSx?=
- =?us-ascii?Q?Jw5HJdruXZs/NXIPwafuLW39HmntvSrtgjORiVbFUyhyw2Ug5afatsnLyU27?=
- =?us-ascii?Q?Rk7Gtbb80pUzFNygkM4NjCjmNaN5y/o5tsitCx4j+4miP8Nms5G/9vpql2o?=
- =?us-ascii?Q?=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d4B6blvA"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-38f22fe889aso278960f8f.3;
+        Wed, 12 Feb 2025 22:27:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739428075; x=1740032875; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wOzwMl8VwHYfyLhIMZVPabSmX4hCvOI4+kS23hOataA=;
+        b=d4B6blvAcgBEkF8PskjpLe7uR5BSu4Xd/uGftz8wkaYn8rtsNEQLXUl55cETS3F9RR
+         AIW6X0MIh1NF5KP2hfkGfBqpgUFtLJkWfYjXG12heAK+F1nbgck4DHWULhyxEJNYZ4kK
+         RDbyf6f2tmhmA4cBiXmVT95v3BtNC7c7m/b0TKxYsAFZKBKKVku5O3EvHY42gkJsdWW6
+         p4Ia7RiqUB1zHEaPFI0U+UwYL5ZgpHTukESnnmA3jIBJ+Bucvv3wNkw+NAzMdn0Sg8Ly
+         va2yMGoCL0BNRqsnM9hzVojeAqsMXxpKcToUt0syGsK0e8BIKMEVHZAoxLhbAcu0OOTO
+         SPqA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739428075; x=1740032875;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wOzwMl8VwHYfyLhIMZVPabSmX4hCvOI4+kS23hOataA=;
+        b=eowXEO/GgFNSfM2ib19BlSyJy/D+hm3VDeVofhThSi4a7SqZkqp6jGdjXTQsLVR4lD
+         pb98XzeTAdx16wAkhPbhEdUsJzGyzLS2ZehL5DW4HTeCBTt/pXs5iSAnvDeI3pLJ+DY8
+         tYVqduywwTiNLkHAlk/8qHff/agTfdo/CVSfy9Km9oH0j9jYCzSAX43eVjnOF47TlVVz
+         LXoqcBaiMc8EgLQpxXec6alLNDAQ0ImelcnsEHlddtt9RfrwpuPAbhqVywPF2uXRuLiC
+         DdlSvtorT9HT0QTP7ZH1pNuEN4WQcuZ0bn/zWWNu0g84As7rySn/KT8RFiQCKViUQUKn
+         Ng1w==
+X-Forwarded-Encrypted: i=1; AJvYcCV5NGZGXGmV5hxbM7Ui82gGH9udXBFjhLcXKqvFYE3A4wdZ7u3sJabqrnBQG3kocflpQ1Aa3g6lA5yVvKbl@vger.kernel.org, AJvYcCVzjFn1yijuYw2nU4SuF0CmYvQ8jbprXZLUtfdO3nz/dhYXRn/NrKUGLPsuoPdl1RFvi/MpCO1kBK3PWw==@vger.kernel.org, AJvYcCWhklCF3Bb6LveHmdCE0D+IhDIBheT83NSeTgw/2woWP8lAPkvVmPJoiKRO0v3f1YLkS4Hj3WdzgomM@vger.kernel.org, AJvYcCWyVJ8XkTMhaemhDk590NBQ5hL7/LXRWr+0mtE3L7EE+Yl7hhkkZ+/tUB7aiXNtM+vjxRmqBY6YpYom/ro=@vger.kernel.org, AJvYcCX9EmEuOJJP4kHRwADFM71yCbW4S4JdFGRJgoeMQu/5x85tML+FV8Dq24QjP6MFiT5IK00+6yokELMa@vger.kernel.org
+X-Gm-Message-State: AOJu0YwXlYxBn06kxFUKHqQent6I9TF84V4XiT3bSHJICLs4BnZbbnCl
+	GUxWVTUOch10uu2/slZrwHzcgxma0ySJPdWHp/aJKPbGiZCLSy3uO5S/jtJyvqnGsp7zwY7dlr5
+	O7OvQA6pksg9QojszMbuOJSICqco=
+X-Gm-Gg: ASbGncsdLCuZEgfVEBFWwqBVbfkGL4UP0tgRKZKwNfePJ/xLOgaUP5uBn9Y93w0xsO5
+	bIbPNlRnvEGsu5Ez8jA858o8T1vO564F9b3e9W+M41EvGe/EjyW+guRgdKmQNaeVe86GDst3m8A
+	==
+X-Google-Smtp-Source: AGHT+IGd3aSb6EVJT9y79hOBqqnlYiGX2mzwTicjMhOTwe0xN57IDbNmeue9tZ+J44tqG/5xONzLJq2CfewOMFhktjk=
+X-Received: by 2002:a5d:588a:0:b0:38f:2073:14a7 with SMTP id
+ ffacd0b85a97d-38f24526be2mr2020172f8f.47.1739428074400; Wed, 12 Feb 2025
+ 22:27:54 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8b9f4a98-bf1c-4171-da39-08dd4be08769
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Feb 2025 03:43:07.2827
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR02MB6929
+References: <20250212075845.11338-1-clamor95@gmail.com> <20250212075845.11338-2-clamor95@gmail.com>
+ <20250212-reprint-underfed-fd723ebf3df3@spud>
+In-Reply-To: <20250212-reprint-underfed-fd723ebf3df3@spud>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Thu, 13 Feb 2025 08:27:43 +0200
+X-Gm-Features: AWEUYZmuyAB8gQ5te2zUGxj5B78TV5g_h5KsY5EeG0lXC_QDun0uHJ9JminpPgQ
+Message-ID: <CAPVz0n0-ywJfoXBwQ5H8z7831kHFxbCMfsibanSRNGMoghAkGg@mail.gmail.com>
+Subject: Re: [PATCH v1 1/2] dt-bindings: mfd: Document TI LM3533 MFD
+To: Conor Dooley <conor@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, 
+	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Wednesday, F=
-ebruary 12, 2025 7:07 PM
->=20
-> On Thu, Feb 13, 2025 at 01:35:22AM +0000, Michael Kelley wrote:
-> > From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Monday, =
-February 10, 2025 8:52 AM
-> > >
-> > [snip]
-> > > > > >
-> > > > > > While we are at it, I want to mention that I also observed belo=
-w WARN
-> > > > > > while removing the hyperv_fb, but that needs a separate fix.
-> > > > > >
-> > > > > >
-> > > > > > [   44.111220] WARNING: CPU: 35 PID: 1882 at drivers/video/fbde=
-v/core/fb_info.c:70 framebuffer_release+0x2c/0x40
-> > > > > > < snip >
-> > > > > > [   44.111289] Call Trace:
-> > > > > > [   44.111290]  <TASK>
-> > > > > > [   44.111291]  ? show_regs+0x6c/0x80
-> > > > > > [   44.111295]  ? __warn+0x8d/0x150
-> > > > > > [   44.111298]  ? framebuffer_release+0x2c/0x40
-> > > > > > [   44.111300]  ? report_bug+0x182/0x1b0
-> > > > > > [   44.111303]  ? handle_bug+0x6e/0xb0
-> > > > > > [   44.111306]  ? exc_invalid_op+0x18/0x80
-> > > > > > [   44.111308]  ? asm_exc_invalid_op+0x1b/0x20
-> > > > > > [   44.111311]  ? framebuffer_release+0x2c/0x40
-> > > > > > [   44.111313]  ? hvfb_remove+0x86/0xa0 [hyperv_fb]
-> > > > > > [   44.111315]  vmbus_remove+0x24/0x40 [hv_vmbus]
-> > > > > > [   44.111323]  device_remove+0x40/0x80
-> > > > > > [   44.111325]  device_release_driver_internal+0x20b/0x270
-> > > > > > [   44.111327]  ? bus_find_device+0xb3/0xf0
-> > > > > >
-> > > > >
-> > > > > Thanks for pointing this out. Interestingly, I'm not seeing this =
-WARN
-> > > > > in my experiments. What base kernel are you testing with? Are you
-> > > > > testing on a local VM or in Azure? What exactly are you doing
-> > > > > to create the problem? I've been doing unbind of the driver,
-> > > > > but maybe you are doing something different.
-> > > > >
-> > > > > FWIW, there is yet another issue where after doing two unbind/bin=
-d
-> > > > > cycles of the hyperv_fb driver, there's an error about freeing a
-> > > > > non-existent resource. I know what that problem is, and it's in
-> > > > > vmbus_drv.c. I'll be submitting a patch for that as soon as I fig=
-ure out
-> > > > > a clean fix.
-> > > > >
-> > > > > Michael
-> > > >
-> > > > This is on local Hyper-V. Kernel: 6.14.0-rc1-next-20250205+
-> > > > I run below command to reproduce the above error:
-> > > > echo "5620e0c7-8062-4dce-aeb7-520c7ef76171" >
-> > > /sys/bus/vmbus/devices/5620e0c7-8062-4dce-aeb7-520c7ef76171/driver/un=
-bind
-> > > >
-> > > > When hvfb_remove is called I can see the refcount for framebuffer i=
-s 2 when ,
-> > > > I expect it to be 1. After unregistering this framebuffer there is =
-still 1 refcount
-> > > > remains, which is the reason for this WARN at the time of framebuff=
-er_release.
-> > > >
-> > > > I wonder who is registering/using this extra framebuffer. Its not h=
-yperv_drm or
-> > > > hyperv_fb IIUC.
-> > > >
-> > > > - Saurabh
-> > >
-> > > Here are more details about this WARN:
-> > >
-> > > Xorg opens `/dev/fb0`, which increases the framebuffer's reference
-> > > count, as mentioned above.  As a result, when unbinding the driver,
-> > > this WARN is expected, indicating that the framebuffer is still in us=
-e.
-> > >
-> > > I am open to suggestion what could be the correct behavior in this ca=
-se.
-> > > There acan be two possible options:
-> > >
-> > >  1. Check the framebuffer reference count and prevent the driver from
-> > >     unbinding/removal.
-> > > OR
-> > >
-> > >  2. Allow the driver to unbind while issuing this WARN. (Current scen=
-ario)
-> > >
+=D1=81=D1=80, 12 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 21:49 Cono=
+r Dooley <conor@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> On Wed, Feb 12, 2025 at 09:58:41AM +0200, Svyatoslav Ryhel wrote:
+> > Add bindings for the LM3533 - a complete power source for
+> > backlight, keypad, and indicator LEDs in smartphone handsets.
+> > The high-voltage inductive boost converter provides the
+> > power for two series LED strings display backlight and keypad
+> > functions.
 > >
-> > >From looking at things and doing an experiment, I think there's a 3rd
-> > option, which gets rid of the of the WARN while still allowing the unbi=
-nd.
+> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > ---
+> >  .../devicetree/bindings/mfd/ti,lm3533.yaml    | 221 ++++++++++++++++++
+> >  include/dt-bindings/mfd/lm3533.h              |  19 ++
+> >  2 files changed, 240 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mfd/ti,lm3533.yam=
+l
+> >  create mode 100644 include/dt-bindings/mfd/lm3533.h
 > >
-> > The experiment is to boot Linux in a Gen2 Hyper-V guest with both the
-> > Hyper-V FB and Hyper-V DRM modules removed. In this case, the
-> > generic EFI framebuffer driver (efifb) should get used. With this drive=
-r,
-> > a program can open /dev/fb0, and while it is open, unbind the efifb
-> > driver (which is in /sys/bus/platform/drivers/efi-framebuffer).
-> > Interestingly, there's no WARN generated. But when the hyperv_fb
-> > driver is loaded and used, the WARN *is* generated, as you observed.
-> >
-> > So I looked at the code for efifb.  It does the framebuffer_release()
-> > call in a function that hyperv_fb doesn't have. Based on the comments
-> > in efifb.c, we need a similar function to handle the call to
-> > framebuffer_release().  And the efifb driver also does the iounmap()
-> > in that same function, which makes we wonder if the hyperv_fb
-> > driver should do similarly. It will need a little more analysis to
-> > figure that out.
-> >
-> > You found the bug.  Do you want to work on fixing the hyperv_fb
-> > driver? And maybe the Hyper-V DRM driver needs the same fix.
-> > I haven't looked. Alternatively, if you are busy, I can work on the fix=
+> > diff --git a/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml b/Doc=
+umentation/devicetree/bindings/mfd/ti,lm3533.yaml
+> > new file mode 100644
+> > index 000000000000..d0307e5894f8
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
+> > @@ -0,0 +1,221 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/mfd/ti,lm3533.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: TI LM3533 Complete Lighting Power Solution
+> > +
+> > +description: |
+> > +  The LM3533 is a complete power source for backlight,
+> > +  keypad, and indicator LEDs in smartphone handsets. The
+> > +  high-voltage inductive boost converter provides the
+> > +  power for two series LED strings display backlight and
+> > +  keypad functions.
+> > +  https://www.ti.com/product/LM3533
+> > +
+> > +maintainers:
+> > +  - Johan Hovold <jhovold@gmail.com>
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: ti,lm3533
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  '#address-cells':
+> > +    const: 1
+> > +
+> > +  '#size-cells':
+> > +    const: 0
+> > +
+> > +  enable-gpios:
+> > +    description: GPIO to use to enable/disable the backlight (HWEN pin=
+).
+> > +    maxItems: 1
+> > +
+> > +  ti,boost-ovp:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description:
+> > +      Boost OVP select (16V, 24V, 32V, 40V)
+> > +    enum: [ 0, 1, 2, 3 ]
+> > +    default: 0
+> > +
+> > +  ti,boost-freq:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description:
+> > +      Boost frequency select (500KHz or 1MHz)
+> > +    enum: [ 0, 1 ]
+> > +    default: 0
+>
+> Properties like these should be in units, so some standard voltage-based
+> one for the boost and in hertz for the second. See property-units.yaml
+> in dt-schema.
+>
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - '#address-cells'
+> > +  - '#size-cells'
+> > +  - enable-gpios
+> > +
+> > +patternProperties:
+> > +  "^backlight@[01]$":
+> > +    type: object
+> > +    description:
+> > +      Properties for a backlight device.
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        const: lm3533-backlight
+>
+> Missing vendor prefix
+>
+> > +
+> > +      reg:
+> > +        description: |
+> > +          The control bank that is used to program the two current sin=
+ks. The
+> > +          LM3533 has two control banks (A and B) and are represented a=
+s 0 or 1
+> > +          in this property. The two current sinks can be controlled
+> > +          independently with both banks, or bank A can be configured t=
+o control
+> > +          both sinks with the led-sources property.
+> > +        minimum: 0
+> > +        maximum: 1
+> > +
+> > +      max-current-microamp:
+> > +        description:
+> > +          Maximum current in =C2=B5A with a 800 =C2=B5A step.
+> > +        enum: [ 5000, 5800, 6600, 7400, 8200, 9000, 9800,
+> > +                10600, 11400, 12200, 13000, 13800, 14600,
+> > +                15400, 16200, 17000, 17800, 18600, 19400,
+> > +                20200, 21000, 21800, 22600, 23400, 24200,
+> > +                25000, 25800, 26600, 27400, 28200, 29000,
+> > +                29800 ]
+> > +        default: 5000
+> > +
+> > +      default-brightness:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > +        description:
+> > +          Default brightness level on boot.
+> > +        minimum: 0
+> > +        maximum: 255
+> > +        default: 255
+> > +
+> > +      pwm:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > +        description:
+> > +          Default pwm level on boot.
+> > +        minimum: 0
+> > +        maximum: 63
+> > +        default: 0
+>
+> Why is default-brightness /and/ a default for pwm needed? If the pwm
+> drives the backlight, wouldn't you only need one of these two?
+>
+> If it stays, I think it needs a rename to be more clear about what it is
+> doing. "pwm" is very close to "pwms", the property used for phandles to
+> pwm providers but the use is rather different.
+>
+> backlight/common.yaml has standard properties that you could be using,
+> so I'd expect to see a ref here, rather than redefining your own
+> version.
+>
+> > +
+> > +    required:
+> > +      - compatible
+> > +      - reg
+> > +
+> > +    additionalProperties: false
+> > +
+> > +  "^led@[0-3]$":
+> > +    type: object
+> > +    description:
+> > +      Properties for a led device.
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        const: lm3533-leds
+>
+> Ditto here re: compatible.
+>
+> > +
+> > +      reg:
+> > +        description:
+> > +          4 led banks
+> > +        minimum: 0
+> > +        maximum: 3
+> > +
+> > +      max-current-microamp:
+> > +        description:
+> > +          Maximum current in =C2=B5A with a 800 =C2=B5A step.
+> > +        enum: [ 5000, 5800, 6600, 7400, 8200, 9000, 9800,
+> > +                10600, 11400, 12200, 13000, 13800, 14600,
+> > +                15400, 16200, 17000, 17800, 18600, 19400,
+> > +                20200, 21000, 21800, 22600, 23400, 24200,
+> > +                25000, 25800, 26600, 27400, 28200, 29000,
+> > +                29800 ]
+> > +        default: 5000
+> > +
+> > +      default-trigger:
+> > +        $ref: /schemas/types.yaml#/definitions/string
+> > +        description: |
+> > +          This parameter, if present, is a string defining
+> > +          the trigger assigned to the LED. Check linux,default-trigger=
 .
-> > Let me know your preference.
-> >
-> > Michael
->=20
-> Thanks for your analysis, its a good to know about fbib driver is not hav=
-ing
-> this issue. We can take it as a reference.
->=20
-> At the first look I see efib driver is having a fb_ops.fb_destroy functio=
-n
-> which gets called after put_fb_info (responsible for decrementing the
-> ref count).=20
+> > +
+> > +      pwm:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > +        description:
+> > +          Default pwm level on boot.
+> > +        minimum: 0
+> > +        maximum: 63
+> > +        default: 0
+>
+> Same applies here, leds/common.yaml has some of these already.
+>
+> > +
+> > +    required:
+> > +      - compatible
+> > +      - reg
+> > +
+> > +    additionalProperties: false
+> > +
+> > +  "^light-sensor@[0]$":
+>
+> Not a pattern if it can only have 1 outcome.
+>
+> > +    type: object
+> > +    description:
+> > +      Properties for an illumination sensor.
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        const: lm3533-als
+> > +
+> > +      reg:
+> > +        const: 0
+> > +
+> > +      resistor-value:
+> > +        $ref: /schemas/types.yaml#/definitions/uint32
+> > +        description: |
+> > +          PWM resistor value a linear step in currents
+> > +          of 10 =C2=B5A per code based upon 2V/R_ALS.
+> > +        minimum: 1
+> > +        maximum: 127
+> > +        default: 1
+> > +
+>
+> I'd expect a resistor to be measured in ohms of some sort,
+> hard to tell what the increments actually are here, they don't appear to
+> be a real unit. Are they register values?
+>
+> This and all other custom properties need to have a vendor prefix on
+> them btw.
+>
+> > +      pwm-mode:
+> > +        type: boolean
+> > +        description: Mode in which ALS is running
+>
+> Are there multiple pwm modes? Or is this trying to say that, if set, the
+> sensor is in pwm mode? Hard to tell from the description here, sorry.
+>
+> Cheers,
+> Conor.
+>
 
-Yes, that's exactly what I was thinking.  If some user space program has
-/dev/fb0 open, the driver can be unbound and the unbind will succeed.
-The user space program will get an error the next time it tries to referenc=
-e
-the open device file descriptor. Presumably the user space program will
-close /dev/fb0 at that point, or just terminate with an error, in which cas=
-e
-Linux will close /dev/fb0 as the user space process terminates. In either
-case, fb_info sticks around until that happens and causes the refcount to
-be decremented to 1, and then the destroy function is called to do
-the final cleanup and free the memory for the fb_info structure.
+Acknowledged, thank you.
 
-At least that's what I think happens based on the comments in the
-efifb driver. :-) But I have not spent time checking all the details.
-
-> Also it uses devm_register_framebuffer which handles the registration
-> and unregister of framebuffer more gracefully.
->=20
-> I will work on this.
->=20
-
-Sounds good.  It's in your court.
-
-Michael
+>
+> > +
+> > +    required:
+> > +      - compatible
+> > +      - reg
+> > +
+> > +    additionalProperties: false
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/gpio/gpio.h>
+> > +    #include <dt-bindings/mfd/lm3533.h>
+> > +
+> > +    i2c {
+> > +        #address-cells =3D <1>;
+> > +        #size-cells =3D <0>;
+> > +
+> > +        led-controller@36 {
+> > +            compatible =3D "ti,lm3533";
+> > +            reg =3D <0x36>;
+> > +
+> > +            enable-gpios =3D <&gpio 110 GPIO_ACTIVE_HIGH>;
+> > +
+> > +            ti,boost-ovp =3D <LM3533_BOOST_OVP_24V>;
+> > +            ti,boost-freq =3D <LM3533_BOOST_FREQ_500KHZ>;
+> > +
+> > +            #address-cells =3D <1>;
+> > +            #size-cells =3D <0>;
+> > +
+> > +            backlight@0 {
+> > +                compatible =3D "lm3533-backlight";
+> > +                reg =3D <0>;
+> > +
+> > +                max-current-microamp =3D <23400>;
+> > +                default-brightness =3D <113>;
+> > +                pwm =3D <0x00>;
+> > +            };
+> > +        };
+> > +    };
+>

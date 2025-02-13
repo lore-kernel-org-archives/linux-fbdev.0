@@ -1,381 +1,223 @@
-Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83116207641;
-	Thu, 13 Feb 2025 06:27:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 619EE28136D;
+	Thu, 13 Feb 2025 14:23:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739428078; cv=none; b=AsXbdA9fcignhyhhMIkVSD/J1Oly9SgG0lYLNTkP+mEwZFhgRaBQtH5DYzXQxa6plWOodpryHRdQuNVcTo2/NBIQ5lCvbAxKDmM/luKgBs3SntOI7CO7Ah0aZuM/4UEyu/vZM7O65y22NAXIODbKqjUooEEroxzDZxhawiAWwAY=
+	t=1739456589; cv=none; b=db8MWeViSWwi+SHZAXzoABB+rj7WS6egRwMl+11AZIgoGWkRCJotJWgwbMOUGGlJlnRQdDwuHUGv0Q2ZLe1+haBtgIpa2G16gGyrj65TOqAgJKTmq5SG46GM4L/lzGu7nZ3EvhlAoR2BFlg/W1TE5doluaAVqbesCgWsEfh8yP8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739428078; c=relaxed/simple;
-	bh=/ITHLgy9JYrnb84+uFgHUA5tidkL9hWALUk8ObVqab8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ImxK5oAunCbG8tjNFB9FKPJA9z+FXC0HadAi32iUcPey/S+p9yVT0ddm9dXemFD0VMVpf/d0+wfzf59fJsalHlXsECy1Tg6YurUmSqU4kFg+CZNWzzDzXam9NrAk0YPSefv3C+WuTlQ6g2b5/fy+/Et9YSFncQagAZggv2GqgW4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d4B6blvA; arc=none smtp.client-ip=209.85.221.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1739456589; c=relaxed/simple;
+	bh=xkWcMo614NnRIZQvT7Gp8RJXRRQY/5523KLZusx5xyQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AXmg4V8fKmOSI7KJWJxucN4x0yIzzN273eAYPSM+jYsf63hpnAxmBmsAIEvcq0jmGpOicNQDTtBEXdgUHHfayPeyOh0oiTY7aWyr3htOiII5APza0giVJJgTbX2x+QF9WDdGZlP+VNzzLlQbAAngyK64sE3U15PZINMjXoh74qo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=F+1tJBUb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=k5rxu4iG; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=F+1tJBUb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=k5rxu4iG; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d4B6blvA"
-Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-38f22fe889aso278960f8f.3;
-        Wed, 12 Feb 2025 22:27:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739428075; x=1740032875; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wOzwMl8VwHYfyLhIMZVPabSmX4hCvOI4+kS23hOataA=;
-        b=d4B6blvAcgBEkF8PskjpLe7uR5BSu4Xd/uGftz8wkaYn8rtsNEQLXUl55cETS3F9RR
-         AIW6X0MIh1NF5KP2hfkGfBqpgUFtLJkWfYjXG12heAK+F1nbgck4DHWULhyxEJNYZ4kK
-         RDbyf6f2tmhmA4cBiXmVT95v3BtNC7c7m/b0TKxYsAFZKBKKVku5O3EvHY42gkJsdWW6
-         p4Ia7RiqUB1zHEaPFI0U+UwYL5ZgpHTukESnnmA3jIBJ+Bucvv3wNkw+NAzMdn0Sg8Ly
-         va2yMGoCL0BNRqsnM9hzVojeAqsMXxpKcToUt0syGsK0e8BIKMEVHZAoxLhbAcu0OOTO
-         SPqA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739428075; x=1740032875;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wOzwMl8VwHYfyLhIMZVPabSmX4hCvOI4+kS23hOataA=;
-        b=eowXEO/GgFNSfM2ib19BlSyJy/D+hm3VDeVofhThSi4a7SqZkqp6jGdjXTQsLVR4lD
-         pb98XzeTAdx16wAkhPbhEdUsJzGyzLS2ZehL5DW4HTeCBTt/pXs5iSAnvDeI3pLJ+DY8
-         tYVqduywwTiNLkHAlk/8qHff/agTfdo/CVSfy9Km9oH0j9jYCzSAX43eVjnOF47TlVVz
-         LXoqcBaiMc8EgLQpxXec6alLNDAQ0ImelcnsEHlddtt9RfrwpuPAbhqVywPF2uXRuLiC
-         DdlSvtorT9HT0QTP7ZH1pNuEN4WQcuZ0bn/zWWNu0g84As7rySn/KT8RFiQCKViUQUKn
-         Ng1w==
-X-Forwarded-Encrypted: i=1; AJvYcCV5NGZGXGmV5hxbM7Ui82gGH9udXBFjhLcXKqvFYE3A4wdZ7u3sJabqrnBQG3kocflpQ1Aa3g6lA5yVvKbl@vger.kernel.org, AJvYcCVzjFn1yijuYw2nU4SuF0CmYvQ8jbprXZLUtfdO3nz/dhYXRn/NrKUGLPsuoPdl1RFvi/MpCO1kBK3PWw==@vger.kernel.org, AJvYcCWhklCF3Bb6LveHmdCE0D+IhDIBheT83NSeTgw/2woWP8lAPkvVmPJoiKRO0v3f1YLkS4Hj3WdzgomM@vger.kernel.org, AJvYcCWyVJ8XkTMhaemhDk590NBQ5hL7/LXRWr+0mtE3L7EE+Yl7hhkkZ+/tUB7aiXNtM+vjxRmqBY6YpYom/ro=@vger.kernel.org, AJvYcCX9EmEuOJJP4kHRwADFM71yCbW4S4JdFGRJgoeMQu/5x85tML+FV8Dq24QjP6MFiT5IK00+6yokELMa@vger.kernel.org
-X-Gm-Message-State: AOJu0YwXlYxBn06kxFUKHqQent6I9TF84V4XiT3bSHJICLs4BnZbbnCl
-	GUxWVTUOch10uu2/slZrwHzcgxma0ySJPdWHp/aJKPbGiZCLSy3uO5S/jtJyvqnGsp7zwY7dlr5
-	O7OvQA6pksg9QojszMbuOJSICqco=
-X-Gm-Gg: ASbGncsdLCuZEgfVEBFWwqBVbfkGL4UP0tgRKZKwNfePJ/xLOgaUP5uBn9Y93w0xsO5
-	bIbPNlRnvEGsu5Ez8jA858o8T1vO564F9b3e9W+M41EvGe/EjyW+guRgdKmQNaeVe86GDst3m8A
-	==
-X-Google-Smtp-Source: AGHT+IGd3aSb6EVJT9y79hOBqqnlYiGX2mzwTicjMhOTwe0xN57IDbNmeue9tZ+J44tqG/5xONzLJq2CfewOMFhktjk=
-X-Received: by 2002:a5d:588a:0:b0:38f:2073:14a7 with SMTP id
- ffacd0b85a97d-38f24526be2mr2020172f8f.47.1739428074400; Wed, 12 Feb 2025
- 22:27:54 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="F+1tJBUb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="k5rxu4iG";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="F+1tJBUb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="k5rxu4iG"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 841A71F8B9;
+	Thu, 13 Feb 2025 14:23:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1739456584; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SV430ZVHech1r7WVWnh4RfJYZ1tXwOkt3eGoUhCqUuI=;
+	b=F+1tJBUbymoaGfF+1AcuFBKTN4LBaEXIcvpfU58Mtj79Ge/RwgfJP981VHYYCL65uTk3Kn
+	RG0YfKSCtVekCaLphHsR93GvorMHP8sbeD0ipn3AD4UaEsDmboCvH3WhZZz0rNgf0fyj0y
+	/yUgQswXNfppw7enJWTzF9pJeovLXlE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1739456584;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SV430ZVHech1r7WVWnh4RfJYZ1tXwOkt3eGoUhCqUuI=;
+	b=k5rxu4iGE1i70H63xfm6PgEDg5z/2pPWR0noXZH057N8ntR3Wg3eqbeIX33EWPMHSS3rfS
+	Fa9iVCr5JRQUy+CQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1739456584; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SV430ZVHech1r7WVWnh4RfJYZ1tXwOkt3eGoUhCqUuI=;
+	b=F+1tJBUbymoaGfF+1AcuFBKTN4LBaEXIcvpfU58Mtj79Ge/RwgfJP981VHYYCL65uTk3Kn
+	RG0YfKSCtVekCaLphHsR93GvorMHP8sbeD0ipn3AD4UaEsDmboCvH3WhZZz0rNgf0fyj0y
+	/yUgQswXNfppw7enJWTzF9pJeovLXlE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1739456584;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SV430ZVHech1r7WVWnh4RfJYZ1tXwOkt3eGoUhCqUuI=;
+	b=k5rxu4iGE1i70H63xfm6PgEDg5z/2pPWR0noXZH057N8ntR3Wg3eqbeIX33EWPMHSS3rfS
+	Fa9iVCr5JRQUy+CQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 44D3A137DB;
+	Thu, 13 Feb 2025 14:23:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 853GDkgArmdBZgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 13 Feb 2025 14:23:04 +0000
+Message-ID: <dec54fa6-a8ad-45e6-bdfd-7e9183646a5a@suse.de>
+Date: Thu, 13 Feb 2025 15:23:03 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250212075845.11338-1-clamor95@gmail.com> <20250212075845.11338-2-clamor95@gmail.com>
- <20250212-reprint-underfed-fd723ebf3df3@spud>
-In-Reply-To: <20250212-reprint-underfed-fd723ebf3df3@spud>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 13 Feb 2025 08:27:43 +0200
-X-Gm-Features: AWEUYZmuyAB8gQ5te2zUGxj5B78TV5g_h5KsY5EeG0lXC_QDun0uHJ9JminpPgQ
-Message-ID: <CAPVz0n0-ywJfoXBwQ5H8z7831kHFxbCMfsibanSRNGMoghAkGg@mail.gmail.com>
-Subject: Re: [PATCH v1 1/2] dt-bindings: mfd: Document TI LM3533 MFD
-To: Conor Dooley <conor@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, 
-	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 10/13] leds: backlight trigger: Maintain global list of
+ led backlight triggers
+To: Lee Jones <lee@kernel.org>
+Cc: pavel@ucw.cz, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+ simona@ffwll.ch, linux-leds@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20250206154033.697495-1-tzimmermann@suse.de>
+ <20250206154033.697495-11-tzimmermann@suse.de>
+ <20250211140046.GU1868108@google.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20250211140046.GU1868108@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	MIME_TRACE(0.00)[0:+];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[ucw.cz,kernel.org,gmail.com,gmx.de,ffwll.ch,vger.kernel.org,lists.freedesktop.org];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid]
+X-Spam-Score: -4.30
+X-Spam-Flag: NO
 
-=D1=81=D1=80, 12 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 21:49 Cono=
-r Dooley <conor@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Wed, Feb 12, 2025 at 09:58:41AM +0200, Svyatoslav Ryhel wrote:
-> > Add bindings for the LM3533 - a complete power source for
-> > backlight, keypad, and indicator LEDs in smartphone handsets.
-> > The high-voltage inductive boost converter provides the
-> > power for two series LED strings display backlight and keypad
-> > functions.
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > ---
-> >  .../devicetree/bindings/mfd/ti,lm3533.yaml    | 221 ++++++++++++++++++
-> >  include/dt-bindings/mfd/lm3533.h              |  19 ++
-> >  2 files changed, 240 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/ti,lm3533.yam=
-l
-> >  create mode 100644 include/dt-bindings/mfd/lm3533.h
-> >
-> > diff --git a/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml b/Doc=
-umentation/devicetree/bindings/mfd/ti,lm3533.yaml
-> > new file mode 100644
-> > index 000000000000..d0307e5894f8
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
-> > @@ -0,0 +1,221 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/mfd/ti,lm3533.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: TI LM3533 Complete Lighting Power Solution
-> > +
-> > +description: |
-> > +  The LM3533 is a complete power source for backlight,
-> > +  keypad, and indicator LEDs in smartphone handsets. The
-> > +  high-voltage inductive boost converter provides the
-> > +  power for two series LED strings display backlight and
-> > +  keypad functions.
-> > +  https://www.ti.com/product/LM3533
-> > +
-> > +maintainers:
-> > +  - Johan Hovold <jhovold@gmail.com>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: ti,lm3533
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  '#address-cells':
-> > +    const: 1
-> > +
-> > +  '#size-cells':
-> > +    const: 0
-> > +
-> > +  enable-gpios:
-> > +    description: GPIO to use to enable/disable the backlight (HWEN pin=
-).
-> > +    maxItems: 1
-> > +
-> > +  ti,boost-ovp:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description:
-> > +      Boost OVP select (16V, 24V, 32V, 40V)
-> > +    enum: [ 0, 1, 2, 3 ]
-> > +    default: 0
-> > +
-> > +  ti,boost-freq:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description:
-> > +      Boost frequency select (500KHz or 1MHz)
-> > +    enum: [ 0, 1 ]
-> > +    default: 0
->
-> Properties like these should be in units, so some standard voltage-based
-> one for the boost and in hertz for the second. See property-units.yaml
-> in dt-schema.
->
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - '#address-cells'
-> > +  - '#size-cells'
-> > +  - enable-gpios
-> > +
-> > +patternProperties:
-> > +  "^backlight@[01]$":
-> > +    type: object
-> > +    description:
-> > +      Properties for a backlight device.
-> > +
-> > +    properties:
-> > +      compatible:
-> > +        const: lm3533-backlight
->
-> Missing vendor prefix
->
-> > +
-> > +      reg:
-> > +        description: |
-> > +          The control bank that is used to program the two current sin=
-ks. The
-> > +          LM3533 has two control banks (A and B) and are represented a=
-s 0 or 1
-> > +          in this property. The two current sinks can be controlled
-> > +          independently with both banks, or bank A can be configured t=
-o control
-> > +          both sinks with the led-sources property.
-> > +        minimum: 0
-> > +        maximum: 1
-> > +
-> > +      max-current-microamp:
-> > +        description:
-> > +          Maximum current in =C2=B5A with a 800 =C2=B5A step.
-> > +        enum: [ 5000, 5800, 6600, 7400, 8200, 9000, 9800,
-> > +                10600, 11400, 12200, 13000, 13800, 14600,
-> > +                15400, 16200, 17000, 17800, 18600, 19400,
-> > +                20200, 21000, 21800, 22600, 23400, 24200,
-> > +                25000, 25800, 26600, 27400, 28200, 29000,
-> > +                29800 ]
-> > +        default: 5000
-> > +
-> > +      default-brightness:
-> > +        $ref: /schemas/types.yaml#/definitions/uint32
-> > +        description:
-> > +          Default brightness level on boot.
-> > +        minimum: 0
-> > +        maximum: 255
-> > +        default: 255
-> > +
-> > +      pwm:
-> > +        $ref: /schemas/types.yaml#/definitions/uint32
-> > +        description:
-> > +          Default pwm level on boot.
-> > +        minimum: 0
-> > +        maximum: 63
-> > +        default: 0
->
-> Why is default-brightness /and/ a default for pwm needed? If the pwm
-> drives the backlight, wouldn't you only need one of these two?
->
-> If it stays, I think it needs a rename to be more clear about what it is
-> doing. "pwm" is very close to "pwms", the property used for phandles to
-> pwm providers but the use is rather different.
->
-> backlight/common.yaml has standard properties that you could be using,
-> so I'd expect to see a ref here, rather than redefining your own
-> version.
->
-> > +
-> > +    required:
-> > +      - compatible
-> > +      - reg
-> > +
-> > +    additionalProperties: false
-> > +
-> > +  "^led@[0-3]$":
-> > +    type: object
-> > +    description:
-> > +      Properties for a led device.
-> > +
-> > +    properties:
-> > +      compatible:
-> > +        const: lm3533-leds
->
-> Ditto here re: compatible.
->
-> > +
-> > +      reg:
-> > +        description:
-> > +          4 led banks
-> > +        minimum: 0
-> > +        maximum: 3
-> > +
-> > +      max-current-microamp:
-> > +        description:
-> > +          Maximum current in =C2=B5A with a 800 =C2=B5A step.
-> > +        enum: [ 5000, 5800, 6600, 7400, 8200, 9000, 9800,
-> > +                10600, 11400, 12200, 13000, 13800, 14600,
-> > +                15400, 16200, 17000, 17800, 18600, 19400,
-> > +                20200, 21000, 21800, 22600, 23400, 24200,
-> > +                25000, 25800, 26600, 27400, 28200, 29000,
-> > +                29800 ]
-> > +        default: 5000
-> > +
-> > +      default-trigger:
-> > +        $ref: /schemas/types.yaml#/definitions/string
-> > +        description: |
-> > +          This parameter, if present, is a string defining
-> > +          the trigger assigned to the LED. Check linux,default-trigger=
-.
-> > +
-> > +      pwm:
-> > +        $ref: /schemas/types.yaml#/definitions/uint32
-> > +        description:
-> > +          Default pwm level on boot.
-> > +        minimum: 0
-> > +        maximum: 63
-> > +        default: 0
->
-> Same applies here, leds/common.yaml has some of these already.
->
-> > +
-> > +    required:
-> > +      - compatible
-> > +      - reg
-> > +
-> > +    additionalProperties: false
-> > +
-> > +  "^light-sensor@[0]$":
->
-> Not a pattern if it can only have 1 outcome.
->
-> > +    type: object
-> > +    description:
-> > +      Properties for an illumination sensor.
-> > +
-> > +    properties:
-> > +      compatible:
-> > +        const: lm3533-als
-> > +
-> > +      reg:
-> > +        const: 0
-> > +
-> > +      resistor-value:
-> > +        $ref: /schemas/types.yaml#/definitions/uint32
-> > +        description: |
-> > +          PWM resistor value a linear step in currents
-> > +          of 10 =C2=B5A per code based upon 2V/R_ALS.
-> > +        minimum: 1
-> > +        maximum: 127
-> > +        default: 1
-> > +
->
-> I'd expect a resistor to be measured in ohms of some sort,
-> hard to tell what the increments actually are here, they don't appear to
-> be a real unit. Are they register values?
->
-> This and all other custom properties need to have a vendor prefix on
-> them btw.
->
-> > +      pwm-mode:
-> > +        type: boolean
-> > +        description: Mode in which ALS is running
->
-> Are there multiple pwm modes? Or is this trying to say that, if set, the
-> sensor is in pwm mode? Hard to tell from the description here, sorry.
->
-> Cheers,
-> Conor.
->
+Hi
 
-Acknowledged, thank you.
+Am 11.02.25 um 15:00 schrieb Lee Jones:
+> On Thu, 06 Feb 2025, Thomas Zimmermann wrote:
+>
+>> Maintain a list of led backlight triggers. This will replace the
+>> fbdev notifiers that all backlight triggers currently subscribe to.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   drivers/leds/trigger/ledtrig-backlight.c | 13 +++++++++++++
+>>   1 file changed, 13 insertions(+)
+>>
+>> diff --git a/drivers/leds/trigger/ledtrig-backlight.c b/drivers/leds/trigger/ledtrig-backlight.c
+>> index 487577d22cfc..c1c1aa60cf07 100644
+>> --- a/drivers/leds/trigger/ledtrig-backlight.c
+>> +++ b/drivers/leds/trigger/ledtrig-backlight.c
+>> @@ -23,8 +23,13 @@ struct bl_trig_notifier {
+>>   	int old_status;
+>>   	struct notifier_block notifier;
+>>   	unsigned invert;
+>> +
+>> +	struct list_head entry;
+> You don't appear to be doing anything with the list here.
+>
+> It would be better if you introduced the list when it's first utilised.
+
+That's patch 12. I'll merge them.
+
+Best regards
+Thomas
 
 >
-> > +
-> > +    required:
-> > +      - compatible
-> > +      - reg
-> > +
-> > +    additionalProperties: false
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/gpio/gpio.h>
-> > +    #include <dt-bindings/mfd/lm3533.h>
-> > +
-> > +    i2c {
-> > +        #address-cells =3D <1>;
-> > +        #size-cells =3D <0>;
-> > +
-> > +        led-controller@36 {
-> > +            compatible =3D "ti,lm3533";
-> > +            reg =3D <0x36>;
-> > +
-> > +            enable-gpios =3D <&gpio 110 GPIO_ACTIVE_HIGH>;
-> > +
-> > +            ti,boost-ovp =3D <LM3533_BOOST_OVP_24V>;
-> > +            ti,boost-freq =3D <LM3533_BOOST_FREQ_500KHZ>;
-> > +
-> > +            #address-cells =3D <1>;
-> > +            #size-cells =3D <0>;
-> > +
-> > +            backlight@0 {
-> > +                compatible =3D "lm3533-backlight";
-> > +                reg =3D <0>;
-> > +
-> > +                max-current-microamp =3D <23400>;
-> > +                default-brightness =3D <113>;
-> > +                pwm =3D <0x00>;
-> > +            };
-> > +        };
-> > +    };
->
+>>   };
+>>   
+>> +static struct list_head ledtrig_backlight_list;
+>> +static struct mutex ledtrig_backlight_list_mutex;
+>> +
+>>   static int fb_notifier_callback(struct notifier_block *p,
+>>   				unsigned long event, void *data)
+>>   {
+>> @@ -118,6 +123,10 @@ static int bl_trig_activate(struct led_classdev *led)
+>>   	if (ret)
+>>   		dev_err(led->dev, "unable to register backlight trigger\n");
+>>   
+>> +	mutex_lock(&ledtrig_backlight_list_mutex);
+>> +	list_add(&n->entry, &ledtrig_backlight_list);
+>> +	mutex_unlock(&ledtrig_backlight_list_mutex);
+>> +
+>>   	return 0;
+>>   }
+>>   
+>> @@ -125,6 +134,10 @@ static void bl_trig_deactivate(struct led_classdev *led)
+>>   {
+>>   	struct bl_trig_notifier *n = led_get_trigger_data(led);
+>>   
+>> +	mutex_lock(&ledtrig_backlight_list_mutex);
+>> +	list_del(&n->entry);
+>> +	mutex_unlock(&ledtrig_backlight_list_mutex);
+>> +
+>>   	fb_unregister_client(&n->notifier);
+>>   	kfree(n);
+>>   }
+>> -- 
+>> 2.48.1
+>>
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

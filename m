@@ -1,49 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9A2320766C;
-	Thu, 13 Feb 2025 20:51:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BDC9266B73;
+	Thu, 13 Feb 2025 21:07:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739479879; cv=none; b=TxEeD1CNzS5Q3vOL8gjNwjn0+wHRHQETfW43DJ0+OBw5yFilxD1qdWHHP3HHgWflqs9R/GSI4j0e1rtZYL8Tg4/vq7zqwkW9OSfP/5rTzl/toSzIrOsCjslomai4kF2pyqDKfMtW6/uaG3pnjFoxAp7EwWBPJrfu8njFLHl8xEw=
+	t=1739480858; cv=none; b=NFjJOjA2NQOk620kiTBoYhh6xGySKQEUJSH/XhW7df9yx6hhqAMjjlKJLBpEvqUQxdYY6NQBULBQQ3n7PINSbxmvQSzBWekhZMnlEVhSuj6MTTxfATEXwcp+6mZeNkgj8AzC2nnXQimMMhOKnea9mylupbJIZEYkcakh6HVEvVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739479879; c=relaxed/simple;
-	bh=512cv4Hj1Kz9k8u6r5KTAHRKubmEdQ2373KIf+8y/nQ=;
+	s=arc-20240116; t=1739480858; c=relaxed/simple;
+	bh=TafgeYLB37luVrkS85uWHNNuJq8xdW6/RJc0El72wMo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Zi/tShUgRT+F4gfD8pV+Uqrh6niTcM17Q9cfPUOAvyB+fWWgLF7QCAYUUIkkcBKFOfxMMGN9g527R3OZU1SoLFdK/tDISUIR3a7i+09ZzuAs0dOU+2tqQQYRVq97HoxzE39VQt+4fQzQvYoAzD5gxGqXkTLryZC+PLcW67C1FCs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rOQzpPjr; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=o7PgkO0lKFV0vqyc0MAGIWaoqqq4s9XhpDDviDLHaoToXHDxOwXRzW8s0Hc4nN+jB6cOSTnNS+zsvMHshlAdOaDXskscXZ3RwkIOv3wAJosiY+z45wWv1SPqFP8HR7V4NzLLusp9yq+vYJFCDNnckJzzIB6OYdF2LP0bRHeLVhc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YJy2LAQb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rOQzpPjr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BED96C4CED1;
-	Thu, 13 Feb 2025 20:51:15 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YJy2LAQb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70487C4CED1;
+	Thu, 13 Feb 2025 21:07:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739479879;
-	bh=512cv4Hj1Kz9k8u6r5KTAHRKubmEdQ2373KIf+8y/nQ=;
+	s=k20201202; t=1739480857;
+	bh=TafgeYLB37luVrkS85uWHNNuJq8xdW6/RJc0El72wMo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rOQzpPjrf+SK50+lfxnvf1j6ydyFhRq+h3/1SS37zqLNdyguRVlBObbP1/wRV0at/
-	 +cca9LNWhv8GMr4NpXlWyHwjN2EsM3Zze84WS+MnVfh5DDswhAOygzmSDUKi4RNEMw
-	 W9XTcRCyXaqAiS0YlOjJ93ByT9I6kNGLTbYgKNCFtL2uFjH6E3cpzuaQHLZrq5Fh43
-	 meI4vmlfv8CvQzjCMKOzSD9/HcXIvAWoRS+Zs0aZLI5YIsWmaBcg8f/mx+LgeXocUJ
-	 GwMtsdYdGuWko8E5Vr4XkKGEcj8pddoYRhOHKbgd6vfPEcY5H+KykSlOKqAoh7HEqH
-	 nTNI4vN7xs7jQ==
-Date: Thu, 13 Feb 2025 20:51:13 +0000
+	b=YJy2LAQbyodyu4wy4pWNS45Qz6mC4wZlLuVDkX94l3VbK8m3WsLD+ng4WmkaSSKBm
+	 hJvS5qvDYTbN/RUdfEMgvr99IWFALh6UvqD7PtM2199k9Wn6HVID4iVT8HdPKCNi+2
+	 PbVddaPCoS21/BjPrM2761cr6WFCiblmgok0i4TOB0WpkxVvytG0LkuMOH+RZ6prQz
+	 SgJpJ1hvoqWcHG+ojLILZTgoZGHvSmkbRP2hDl2vwHBsMLC7CscdQW6y3ekmWSkdWp
+	 I5fGf1HDEhnhTHTmFoDss1XGkTtmKBnhju4sPjvV1DoKGTOt2AlaOwRJW++QnKcDn9
+	 guhXz42cDwq8g==
+Date: Thu, 13 Feb 2025 21:07:33 +0000
 From: Daniel Thompson <danielt@kernel.org>
-To: Nick Chan <towinchenmi@gmail.com>
-Cc: Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>,
-	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@ucw.cz>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v5 RESEND 2/3] backlight: apple_dwi_bl: Add Apple DWI
- backlight driver
-Message-ID: <Z65bQeITMp1mpHp8@aspen.lan>
-References: <20250203115156.28174-1-towinchenmi@gmail.com>
- <20250203115156.28174-3-towinchenmi@gmail.com>
+To: Jani Nikula <jani.nikula@linux.intel.com>
+Cc: Haoyu Li <lihaoyu499@gmail.com>, Lee Jones <lee@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Rob Herring <robh@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	chenyuan0y@gmail.com, zichenxie0106@gmail.com,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] drivers: video: backlight: Fix NULL Pointer Dereference
+ in backlight_device_register()
+Message-ID: <Z65fFRKgqk-33HXI@aspen.lan>
+References: <20250130145228.96679-1-lihaoyu499@gmail.com>
+ <87ldun6u5o.fsf@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -52,44 +48,26 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250203115156.28174-3-towinchenmi@gmail.com>
+In-Reply-To: <87ldun6u5o.fsf@intel.com>
 
-On Mon, Feb 03, 2025 at 07:50:33PM +0800, Nick Chan wrote:
-> Add driver for backlight controllers attached via Apple DWI 2-wire
-> interface, which is found on some Apple iPhones, iPads and iPod touches
-> with a LCD display.
+On Mon, Feb 03, 2025 at 03:21:23PM +0200, Jani Nikula wrote:
+> On Thu, 30 Jan 2025, Haoyu Li <lihaoyu499@gmail.com> wrote:
+> > In the function "wled_probe", the "wled->name" is dynamically allocated
+> > (wled_probe -> wled_configure -> devm_kasprintf), which is possible
+> > to be null.
+> >
+> > In the call trace: wled_probe -> devm_backlight_device_register
+> > -> backlight_device_register, this "name" variable is directly
+> > dereferenced without checking. We add a null-check statement.
+> >
+> > Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
+> > Signed-off-by: Haoyu Li <lihaoyu499@gmail.com>
+> > Cc: stable@vger.kernel.org
 >
-> Although there is an existing apple_bl driver, it is for backlight
-> controllers on Intel Macs attached via PCI, which is completely different
-> from the Samsung-derived DWI block.
->
-> Signed-off-by: Nick Chan <towinchenmi@gmail.com>
-> ---
->  drivers/video/backlight/Kconfig        |  12 +++
->  drivers/video/backlight/Makefile       |   1 +
->  drivers/video/backlight/apple_dwi_bl.c | 123 +++++++++++++++++++++++++
->  3 files changed, 136 insertions(+)
->  create mode 100644 drivers/video/backlight/apple_dwi_bl.c
->
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 3614a5d29c71..c6168727900a 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -290,6 +290,18 @@ config BACKLIGHT_APPLE
->  	  If you have an Intel-based Apple say Y to enable a driver for its
->  	  backlight.
->
-> +config BACKLIGHT_APPLE_DWI
-> +	tristate "Apple DWI 2-Wire Interface Backlight Driver"
-> +	depends on ARCH_APPLE || COMPILE_TEST
-> +	default y
+> IMO whoever allocates should be responsible for checking NULL instead of
+> passing NULL around and expecting everyone check their input for NULL.
 
-Sorry to pick this up late and on a resend but... I can't come up with
-any justification for "default y" in this driver.
-
-Other than that this is a really tidy driver so with that changed please
-add:
-Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+Agreed. This should be fixed in at callsites.
 
 
 Daniel.

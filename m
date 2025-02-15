@@ -1,182 +1,139 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 824A623A9
-	for <linux-fbdev@vger.kernel.org>; Fri, 14 Feb 2025 18:18:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id C9491802;
+	Sat, 15 Feb 2025 09:20:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739557091; cv=none; b=UFH22jvmEF21utkBGbWoSpdYZh/yFQvB9x04QI2MofCgdTMBgOvFNfsZJnbyXBeYCv5YJe/YSqCUf0yCPNjqAniJBZHKdhzuW/Q4xRMVo+vZsPHaUqV5NVmrciwew4LnLkZJFzMZwqcGTYiyoXjSfyH3FCvldgZHt/4JOAsWIgE=
+	t=1739611247; cv=none; b=oJ0ZQvonXZ9hua19ofyGqjBD5e+BYKlyJCrSpBVyKa09mqaad/rBJRgfPQJGdUVn0qUsqd6aNEmDdfy5WXqpyPoBYXwqEuiKv6jJhQvYtx9C58JDfj/QWC7Oa2diu1je2p/J/bF8Lv3gKYmKZdeudLqhI7sgJs4O+GEq+n1uEfk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739557091; c=relaxed/simple;
-	bh=o9k3FXeGLGzEjZRlv7vsOvxMPipEqPwsHSE+1gdRScw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UoLHjE0PbtD9W1umrnh2xCAg5Im4T/h1gZKyhKIBzv21whokPGq+XW87KJKHNp6Th51ypxesDGC9tmhCqnZK2l2QLhrbPvsUMdo9MxBgScBVE79noJ+ir569Ah7W8rzF0X5t+9M1IVIZhbA0GI3hhrdV7m58rSbCEURXZrBXysg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=ZNaaWneq; arc=none smtp.client-ip=212.227.15.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1739611247; c=relaxed/simple;
+	bh=PBYNrOLXNU7rMQSZX5XVZ6b210WBqxWqqIhqXNHKUVM=;
+	h=From:To:Cc:Subject:Date:Message-Id; b=LyVObRT4uFsAhFuVOTggkkOVMGN8Gr0OMOb/imR+cD/jWG/9+8ExvPemKmVSk73B8WvSsuIw+6djAtvicSCcYAonyJ4Kk4+UVkVyIkgOLq6RSS9NDSi4HCdrlWfcrBmZUr6gt1rqbjrMDnBZh0pq/s4i00i7A8ZHKOQekc4SHp8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=TqMD57lj; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="ZNaaWneq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1739557078; x=1740161878; i=deller@gmx.de;
-	bh=YQ0pNsXGxoBBiD3cpRwz1HATWWEmWXXdcqf0ksPmgOQ=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=ZNaaWneqYmLp984FJVGcnvplaOshMRV1I/RsjPyl+WFsl161H172XRGIj5VsWCbh
-	 QuSI2LPY5deTiEmxVeVXjqMXLxFda87yfMhTspu9CYkVxkG1jR5wRHPfF+bOF3PYi
-	 8QvFP4A9U21lavr4hJeRBz3dix/j0ewbX9JjXjkzDwft/vPjHo9o8Omp8/9cwHefV
-	 KXGCqPVQdtGHYpTMA0WwSMOkBU5f9Ir0A0DQHX/zgwtMrieqZxaaDK62JQNosygX8
-	 E/vqx43vuUFNeOmEe3TVeNqjJSjhSGHxQi/j59gK6xT2THgnvYk2X7xXkbjtxcYF7
-	 OEvBNKV5bIXyF7wXXQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.178.77] ([134.255.192.195]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M6llE-1tjZHs0dtm-0039rz; Fri, 14
- Feb 2025 19:17:58 +0100
-Message-ID: <b2a79cd7-ac07-4d92-b249-191d8519403c@gmx.de>
-Date: Fri, 14 Feb 2025 20:17:48 +0100
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="TqMD57lj"
+Received: from linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net (linux.microsoft.com [13.77.154.182])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 36D332107AA1;
+	Sat, 15 Feb 2025 01:20:45 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 36D332107AA1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1739611245;
+	bh=X4BZo2FoCtZKftMiZVna+dhZsaZWDkhj/UsiastHJkE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=TqMD57ljKGise/ffyryS+Wk18XxesOCMs3BLBm2eoryGDbIlhiMHAjm823Oy9Pl3V
+	 pDLzx9NSIT/EHyBJcpPXwTXIYbjyGR35vH94cuyIOxErfFl0ZuWFvJYE8UOOEECzg9
+	 GBcQXoMzWjSaRie5AGtJoS6cmR+OP88+cPEJOIF4=
+From: Saurabh Sengar <ssengar@linux.microsoft.com>
+To: kys@microsoft.com,
+	haiyangz@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	deller@gmx.de,
+	akpm@linux-foundation.org,
+	linux-hyperv@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Cc: ssengar@microsoft.com,
+	mhklinux@outlook.com
+Subject: [PATCH] fbdev: hyperv_fb: Allow graceful removal of framebuffer
+Date: Sat, 15 Feb 2025 01:20:40 -0800
+Message-Id: <1739611240-9512-1-git-send-email-ssengar@linux.microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/6] fbcon: Make cursor_blink=0 work when configured
- before fb devices appear
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20240923155749.30846-1-ville.syrjala@linux.intel.com>
- <20240923155749.30846-2-ville.syrjala@linux.intel.com>
- <92ed9455-b175-46ef-b0c6-7c79e2b78371@gmx.de> <ZvUwCVNPzp1UGY6h@intel.com>
- <34a7d276-ee26-4a8d-b996-87faa5b224c4@gmx.de> <Z64EzooZqdfLg0pM@intel.com>
- <f075b0f7-3d01-4eb7-b772-825de7a1e001@gmx.de> <Z6-ASitAVCBD4QP-@intel.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <Z6-ASitAVCBD4QP-@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ZatDGrZJ+55iLU0qmunqJJMkSX+PD4Dd2x5JqjgVFRKAt8Lj1DL
- 2MbFFh/+V2BLEeiZaoBxnOLh6f8Nhy+oHscA74OAs8cAM4eo4h8pyrOKIPbdVVplhvE+SSr
- +cfFSPb+WCMGGMwZYW1lCJsjTXZCdGt7Tu5ZWlT9iEnziocYO8MGE8AFuWcTOPj0Yt1P3e1
- iNHxRN2xgHZhO/bptY21w==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Z4SMIobfb+g=;m/xjsCLkcMK0G4ptDocIQIwnWU9
- eqcpF//d0F9R6OFKWuMkJoxnXwHQANGaDpvKb+qz3Z3XXl39iR1Wf25j7dGJKz3b1eD3Tnkje
- q9jP98tgnCO6siIOVzy8l7RysnOrdihm0nY25gIpnx0aOMYftb3dTA1xAbjnv+sKxkqk8+Cjq
- BqtXSMS5DH6oJ07sQuj+hgaK3A65YK78EgQMORuRLLuwpWmOi7P5vAA+w3TIG5YpYApN9DF4W
- Sp5oqnVa/KQi66NSSOVVlfqhOKa2SDQYkNeY/KmkgX9qwM3TyyT6EBgfbKyqrfrAP563svsqN
- RNxH3JozBna5vtaiMWmLjEgvuIVCbELGapJPXmzClsDrZlqy7ofhiOKtrSVnd7V7uhSV13lQm
- 69T6gCpK0gbLtIH9VlH4K6wJLk4FPs7UovfhKt3Acy9FLbb/SokvoUWqzPXj+IitFInNnntS3
- FqFi4HQ4YcJSZ++uRYnydtWCA7+Q0YET+M/DqTQpdPIJh68vlxJjS1K64Gem1gk0eQ1QlgeDO
- fyToDp52Ize2Yuyv779+ZFM/YdWbtG0VAnHNpQ9QFed0G3JKs5qYgBhpc32Me4ES6+rgGJ5Cn
- oPMw21VSL0rauS2pymA1p2GwQ2IYjgceAuRdLx+c5PUVDczs3k2Dl92WKN1gh2iiw368DlXkq
- Z9DVsjTgQhNNx/NJpdFwsm3rRu3yGgCzzn8CjQ/eH0cU3sBfPFRf+NkhujpZDDqN4z1BQ/YkF
- tgPswJ6dLggKLMf+mM6kGviUltg1LE8yIa2cu/O5HqIdoJLo82VegVAhqVLEQbnVvEbunECub
- dc2eOUbDqB59qZ1Mazjy0duxTf75x1LbIrYamQzcU4nlBiNL1AN3xMDl4R6lXE45KSTGiV3Ns
- eFyNDU/TVvxzh2MCbI6ZUzrnjcm6acuaOgbjBsrIqq0hO1MSp2MYkSuVF9Rr1iKJXXaruy05W
- W5WQsDS42MSwrfPC4Iff0IVpVp0GWMDGzFEJwuzAcULNLPgAkPaWZO1bqKzKNqsbP1t7PdqHa
- BNcWpcJ6s7c+E1fd9e2cMnFM5yqWowMpLih6DbIxOom2EceMEMgZpXQ6ukXzNnNZzyKA3Cdep
- zMVf5O0+/hchoq+7XYo6yJNbQHmsdYVwaHJZlRfmZ/HWFGRcG0htw/VnmpFe/uRx0Pn4MLPjD
- FbSRboyzzuxowsWxSEFPSMuef441Q4AIspcjs6eEBVrw57I0JOZlpW5P6joN5voxlEaC5/Tz/
- HnCO+3cOuQWuKTPtTzfDpHSrhTHrHZMZeb6UwOY0QwLxmG6Yb6WKBU+kqPkv/1WKXz7MGallW
- XAc++VhUDcuS9QNWbMnmoHekd9aycVejcP5JTzna9g1QqygTlvSbs7GlQjWmtmSxrIARC1cqP
- oNvfNhA9QsqL62iB6laspM79Y7ZxLzek2QG6kB5g7FA5nehfWmQbsuL+nf
 
-On 2/14/25 18:41, Ville Syrj=C3=A4l=C3=A4 wrote:
-> On Thu, Feb 13, 2025 at 11:47:42PM +0100, Helge Deller wrote:
->> On 2/13/25 15:42, Ville Syrj=C3=A4l=C3=A4 wrote:
->>> On Thu, Sep 26, 2024 at 12:13:04PM +0200, Helge Deller wrote:
->>>> On 9/26/24 11:57, Ville Syrj=C3=A4l=C3=A4 wrote:
->>>>> On Thu, Sep 26, 2024 at 08:08:07AM +0200, Helge Deller wrote:
->>>>>> Hi Ville,
->>>>>>
->>>>>> On 9/23/24 17:57, Ville Syrjala wrote:
->>>>>>> Currently setting cursor_blink attribute to 0 before any fb
->>>>>>> devices are around does absolutely nothing. When fb devices appear
->>>>>>> and fbcon becomes active the cursor starts blinking. Fix the probl=
-em
->>>>>>> by recoding the desired state of the attribute even if no fb devic=
-es
->>>>>>> are present at the time.
->>>>>>>
->>>>>>> Also adjust the show() method such that it shows the current
->>>>>>> state of the attribute even when no fb devices are in use.
->>>>>>>
->>>>>>> Note that store_cursor_blink() is still a bit dodgy:
->>>>>>> - seems to be missing some of the other checks that we do
->>>>>>>       elsewhere when deciding whether the cursor should be
->>>>>>>       blinking or not
->>>>>>> - when set to 0 when the cursor is currently invisible due
->>>>>>>       to blinking, the cursor will remains invisible. We should
->>>>>>>       either explicitly make it visible here, or wait until the
->>>>>>>       full blink cycle has finished.
->>>>>>
->>>>>> are you planning to send follow-up patches to address those shortco=
-mings?
->>>>>
->>>>> Nope. I don't really care about those as I never plan to
->>>>> turn the cursor blinking back on after turning it off via
->>>>> udev.
->>>>
->>>> Sad, but OK. I will look into this when I find time.
->>>> I'd hoped to push those patches upstream during this merge window,
->>>> but then I think I have to delay them at least until kernel 6.13.
->>>
->>> What happened to these? Not seeing them anywhere...
->>
->> The issues above are not fixed yet, so they are still parked in my for-=
-next-next tree:
->> https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/=
-log/?h=3Dfor-next-next
->
-> Those issues are already present in the current code, so
-> I'm sure what's the point of holding this up due to them.
+When a Hyper-V framebuffer device is unbind, hyperv_fb driver tries to
+release the framebuffer forcefully. If this framebuffer is in use it
+produce the following WARN and hence this framebuffer is never released.
 
-Let's try to fix it while we touch it.
+[   44.111220] WARNING: CPU: 35 PID: 1882 at drivers/video/fbdev/core/fb_info.c:70 framebuffer_release+0x2c/0x40
+< snip >
+[   44.111289] Call Trace:
+[   44.111290]  <TASK>
+[   44.111291]  ? show_regs+0x6c/0x80
+[   44.111295]  ? __warn+0x8d/0x150
+[   44.111298]  ? framebuffer_release+0x2c/0x40
+[   44.111300]  ? report_bug+0x182/0x1b0
+[   44.111303]  ? handle_bug+0x6e/0xb0
+[   44.111306]  ? exc_invalid_op+0x18/0x80
+[   44.111308]  ? asm_exc_invalid_op+0x1b/0x20
+[   44.111311]  ? framebuffer_release+0x2c/0x40
+[   44.111313]  ? hvfb_remove+0x86/0xa0 [hyperv_fb]
+[   44.111315]  vmbus_remove+0x24/0x40 [hv_vmbus]
+[   44.111323]  device_remove+0x40/0x80
+[   44.111325]  device_release_driver_internal+0x20b/0x270
+[   44.111327]  ? bus_find_device+0xb3/0xf0
 
-Helge
+Fix this by moving the release of framebuffer to fb_ops.fb_destroy function
+so that framebuffer framework handles it gracefully
+
+While we fix this, also replace manual registrations/unregistration of
+framebuffer with devm_register_framebuffer.
+
+Fixes: 68a2d20b79b1 ("drivers/video: add Hyper-V Synthetic Video Frame Buffer Driver")
+Signed-off-by: Saurabh Sengar <ssengar@linux.microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 363e4ccfcdb7..83b1ab4da984 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -862,6 +862,16 @@ static void hvfb_ops_damage_area(struct fb_info *info, u32 x, u32 y, u32 width,
+ 		hvfb_ondemand_refresh_throttle(par, x, y, width, height);
+ }
+ 
++/*
++ * fb_ops.fb_destroy is called by the last put_fb_info() call at the end
++ * of unregister_framebuffer() or fb_release(). Do any cleanup related to
++ * framebuffer here.
++ */
++static void hvfb_destroy(struct fb_info *info)
++{
++	framebuffer_release(info);
++}
++
+ /*
+  * TODO: GEN1 codepaths allocate from system or DMA-able memory. Fix the
+  *       driver to use the _SYSMEM_ or _DMAMEM_ helpers in these cases.
+@@ -877,6 +887,7 @@ static const struct fb_ops hvfb_ops = {
+ 	.fb_set_par = hvfb_set_par,
+ 	.fb_setcolreg = hvfb_setcolreg,
+ 	.fb_blank = hvfb_blank,
++	.fb_destroy	= hvfb_destroy,
+ };
+ 
+ /* Get options from kernel paramenter "video=" */
+@@ -1172,7 +1183,7 @@ static int hvfb_probe(struct hv_device *hdev,
+ 	if (ret)
+ 		goto error;
+ 
+-	ret = register_framebuffer(info);
++	ret = devm_register_framebuffer(&hdev->device, info);
+ 	if (ret) {
+ 		pr_err("Unable to register framebuffer\n");
+ 		goto error;
+@@ -1220,14 +1231,11 @@ static void hvfb_remove(struct hv_device *hdev)
+ 
+ 	fb_deferred_io_cleanup(info);
+ 
+-	unregister_framebuffer(info);
+ 	cancel_delayed_work_sync(&par->dwork);
+ 
+ 	vmbus_close(hdev->channel);
+-	hv_set_drvdata(hdev, NULL);
+ 
+ 	hvfb_putmem(hdev, info);
+-	framebuffer_release(info);
+ }
+ 
+ static int hvfb_suspend(struct hv_device *hdev)
+-- 
+2.43.0
+

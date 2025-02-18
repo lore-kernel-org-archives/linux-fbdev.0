@@ -1,60 +1,62 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E18D17A314;
-	Tue, 18 Feb 2025 18:43:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F25B62356C3;
+	Tue, 18 Feb 2025 18:45:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739904235; cv=none; b=mwTLfxXe1xMEXpiYGiKzit/qXaJ7Rb2pJQ+QQBQRGGioX7eIK37kQULg5sOj4MO40WJXsviyIb6udV6ASLOVKz86gRQ1sWmg1LLJbaOfwwzPTKv0/6wth7x0c9NUeAK7j01ArNaemBNPIWI8gwzXNmscPJPwawsbdqemZqOSyXs=
+	t=1739904354; cv=none; b=ufWLgRXW9IKI0eptMFxJlTb0HZrnP18ExJl/pe1aEvY9jUhM+UxwqbmTlPm/DPLRex8xkFT7JYPcsA/SoP2xkD/AsrJU02+7c5qDddi4B0s01tAuhudkRPBjLa28h4Et5cqDB2+vkr0huwkHUbpJb5SmhKLwm9A8OPXhdyiht3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739904235; c=relaxed/simple;
-	bh=hvZcOaRWTZt7I/ohEbGV1TNNQ8QnQUTy8eIf0ctTcf0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uuX7oVk4CjzH1P2NEVUrJtQcCmk490iqxtIwrm0N1fn9g99lRC7I25RUUWXW2MUJHVfCrYmRtrLuvf36l9wehNEzeafySsX26pEM61Mfet+68YtOMXRNIPultABB3rTwAUO7xFPao4QwfGb7J+cAeKTyT7OfhoWfb/q1CHokfWc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RfkNPjcr; arc=none smtp.client-ip=209.85.214.177
+	s=arc-20240116; t=1739904354; c=relaxed/simple;
+	bh=3ug5I39Iw8x6Y6jc39rUJTXPU+71BExIWBhPGgNeFEw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Ljx9RaLloviXT/ZQ6lW6xnBxvtCAwZjy8sWQIB1x5L0C4ll84OyzXZK0TO7y1760U5gUzcV4R6ODpJwIk6mjRm75Q4IZ4nz8HHx+5YYzaPxwFUnr436FWY+sSvDb9yqhMEP0MgKcMrumJTRI7yePslirkMD5IgdqumUG9cGkMRM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=N/pS2HeA; arc=none smtp.client-ip=209.85.214.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RfkNPjcr"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-21c2f1b610dso149320245ad.0;
-        Tue, 18 Feb 2025 10:43:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N/pS2HeA"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2211cd4463cso53245675ad.2;
+        Tue, 18 Feb 2025 10:45:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739904231; x=1740509031; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=SArq1RurjwhDWZzXQ/vuJZPCcvt8Vb3Tsr8PPtyd9XA=;
-        b=RfkNPjcrGQZq3AZTWl4u6rWNoi7/Vy+3X4cHHbDXBnOG0FwQtO44Qk7puY3KYqcWpD
-         EhL3v3hwuX2mDhfqI1RjL/B1zUonB67Zmn79s75FTVlqJYWCeOo4WSZDsnUUAEMD+BRY
-         GxKqYbxBntZWQy7nfDd0SadiYiIByqQvD/oGN2GKel0ACsPkelGW4n9cL9AgbzYKNPke
-         tmgmTAqXM5OgBffh5nxCOPCujmVJDen3U3tbB4Wh3icisVZAYSRaTuuFy3IONg2l7Fcn
-         4KewVFIFHvBhHxb8zuZ1yaW5OmciHZbsLKjYHbQjFIP/zb7/+c2bWT3lHPzgTx71cvOQ
-         C/PA==
+        d=gmail.com; s=20230601; t=1739904350; x=1740509150; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=t6BRDxVGpWSFTwDe61xOfIgbPPO/rM0g8mV2Mr7/4Xk=;
+        b=N/pS2HeAtli+N4/VYJDb+2dPfvBylKPAkjkeQmphWuN0zqTGxwf3L6DeQ4RqnzDi8+
+         Qq2SNoOuzuGPuDvU+eyneuU9GdhU/lYki6cVrRVRAWRX+6OaFngYvSteUcAxJMe51Kcs
+         3hqWdXLE0qgdC2xM/EbHOq9qa2oVLHot38jK4VztOq/NyNPLmz5+LD56zZrad4pBzsly
+         dwJnGjbTT7dBZ20gK8OR0V0tF7mEAk4gChKpZ5UtFhBjjcF5guCF0Nfc6u2CbEqlJDQr
+         D38Lt05JsYMOylSZkGVdK9Lvu67ur3i0vAUiYKlyyYpm6fnRJ7B7rD2u6LLM/qwHxi4g
+         GC+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739904231; x=1740509031;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=SArq1RurjwhDWZzXQ/vuJZPCcvt8Vb3Tsr8PPtyd9XA=;
-        b=MmkLKuc5yf1FJKGjYzJ8lzai1qH4RfzD51Tmfjrv3YAwhYQNjfUty2madASgqf77X5
-         E9goPy80x1iy8ynGV/E36B7csOI326l/aPFgFCnQWNXcRcObfpFTrWoaMnuM8C64VfKb
-         9O71CAX+mHmUIWxoLbyfNK3yAVwWAM45224tYzZcTsRAEAXbC8Fk+x61i1tuspRSqwM/
-         YYd+K7CVBWh5QRscwPGKZtrU0JA1tyCIK2jcPdnf72N7sh7SiosuMzLTXzw8MrBJ8ALh
-         6J9c9/LkHw8LGSbSDQDldSll/71P/W1vsJkeUScqsyhSMK+EEliW4l4F6jTp00KqEm9f
-         Vn9Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVNBVwDm9JtCES4R49rm5SsA/nK+6YH1tYzbDn0LBJkSC1Nnw36/sfuQoQ1NDkEypLrWc2vKM1YubByFUnX@vger.kernel.org, AJvYcCVWH6772fCucw6CLLlbMZwg4VQIehf+EpFiHAm20PgL33YVQhKRo51n4bq+wajZkUacaqV+6KgTESS8Pg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw4+DjwpB1wfJLULOcJYjQJIc8tBuHX/PqR33EmAzjFUBK2X8mh
-	c5L+XzTYzGNqsiIZgBzBZvjlproyqimaHR/ksvUJBKK9bllMJOPG
-X-Gm-Gg: ASbGncsMYZMfQLxmQhlGZ0Gr3lRYFQ6FfPYf3PtQtCNb3seiUIePAO8/p3OMJtDcP80
-	v9xtQrYIp0FKbUxUa41y+5hLRaFTMvE5ioiWrJvS7MLoUyKGN1BUdPRzaunWOHLgiLOEC9RTBOy
-	Y4lFqmpbq9XWJLX/7ZWBuRnefxapNmndp6QkBQpTwV4WBaLKc+dwFqSeiedDOX2Npumfd1mU1FF
-	HCz2CUqe/BnAwMSfnh2Smx+nATBxpf8W0GFlkEfbs/m1Dj3ze/N9Hc6muVB5uA5F/EIz+J8UOg1
-	vRc4tYUGgLo2HCgTJI+Vg/h+HDu17PAL
-X-Google-Smtp-Source: AGHT+IFq50N+Qtk4EaE5J44iYXpZVRp390AhADutuSxFBh2wYwfZ5I0i889pR5fToKOrZGPBUe4EQQ==
-X-Received: by 2002:a17:902:f543:b0:21f:542e:dd0a with SMTP id d9443c01a7336-221040a99d9mr213463445ad.41.1739904231077;
-        Tue, 18 Feb 2025 10:43:51 -0800 (PST)
+        d=1e100.net; s=20230601; t=1739904350; x=1740509150;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=t6BRDxVGpWSFTwDe61xOfIgbPPO/rM0g8mV2Mr7/4Xk=;
+        b=mWkNsERzA/k4rPB5e50sw2MBa9WbDpCXbpVaGusROKCCieQ+uAU37E2NmsxlgpLqaj
+         a3yFPbs8BbzKXhOK7jMcJbVN9uvWqLWXIn0L+fFutgC9CuSbrxJUaNq2+JRtPq76+8Bi
+         KnZlpqGLXaaM607TVLt4XLkWdiEJCF9ks3ECcETmcaPwfDZAR6s/z69A2yKbqRM0A6WU
+         DKuBQWh4qmugPnjkEt9hFj3uExfBgeeoBc83xdVtbF5VVfZuxaJw6hpyw5HGIR5J6PEs
+         rQrWzntPP4GXVqScm8p4Xg6zGn47g7aq0ZbgIJkqGAzaVe4soVNPr3wiAHm2vOV6HETp
+         usOQ==
+X-Forwarded-Encrypted: i=1; AJvYcCV4mLe0gi1wqrMCBLhOsbAI6WyFE8ZwaU72PPMXibZpalzdPXbH3BhpfdPYfW/rLu8a5UFefDmTH+Fb8frY@vger.kernel.org, AJvYcCWTZjqAR5I/UTg7oSXSaeQ8p1dOpAVdEpeMPgllkO8XmmV00nXc/zyPNl0FR057aAl04MYWWdtVSoiR4Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz2LszDZb573l08uqjIr/eOiyeNo76rYKZqFyR+DTSh6Za5BfiJ
+	6mtf0OqnfNMt2wMNskl2pnxW6+vu9+ZB/Nn/2k7wAfaCyNZ4+nRB
+X-Gm-Gg: ASbGnct073sOvPEWw5XwgeVz8f0WcQhO5hd1vIlPfI6FSVNyprYQt3zzzAKcKHCnkLG
+	NMDOf2s47p1bW0LHag27w3C76oHQgyLfr0Z2UanheDoDilIIZ0tqMV1vLTb3iQ0ExNdaFfx2xkH
+	1Mdh1lmdLRfeysOSqn/NFvwPKKo/BVV6vaBxz3KFMIhtyB0n1oIi7dRqTM/JsZxk6s1EP3JeV9U
+	SRLPctVijmfh3G/lDSgnPCZ/gsm+L9RgCYzTUaynGVFGbqNI6V2r4qCSwXqvcQdGNgR3hRG4ikA
+	m57a+6iB4hSFotIZR+5f3hKSdoQIXrBy
+X-Google-Smtp-Source: AGHT+IEoYhiZJOLB7Ro75I4D3eHRrbuS/DcM3nAWfOsRHjtntxDWl2Ud4kst4qqDqF+5RW15Ou+5Ww==
+X-Received: by 2002:a17:902:e550:b0:215:8ca3:3bac with SMTP id d9443c01a7336-22104034f53mr219665455ad.16.1739904349839;
+        Tue, 18 Feb 2025 10:45:49 -0800 (PST)
 Received: from localhost.localdomain ([36.255.84.58])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-220d545d474sm91231615ad.116.2025.02.18.10.43.48
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-220d545d474sm91231615ad.116.2025.02.18.10.45.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Feb 2025 10:43:50 -0800 (PST)
+        Tue, 18 Feb 2025 10:45:49 -0800 (PST)
 From: Madhur Kumar <madhurkumar004@gmail.com>
 To: sudipm.mukherjee@gmail.com,
 	teddy.wang@siliconmotion.com
@@ -63,10 +65,12 @@ Cc: gregkh@linuxfoundation.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Madhur Kumar <madhurkumar004@gmail.com>
-Subject: [PATCH] staging: sm750fb: Fix CamelCase and remove volatile warnings
-Date: Wed, 19 Feb 2025 00:13:42 +0530
-Message-ID: <20250218184343.20585-1-madhurkumar004@gmail.com>
+Subject: [PATCH] staging: sm750fb: Fix CamelCase issues across multiple files
+Date: Wed, 19 Feb 2025 00:13:43 +0530
+Message-ID: <20250218184343.20585-2-madhurkumar004@gmail.com>
 X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250218184343.20585-1-madhurkumar004@gmail.com>
+References: <20250218184343.20585-1-madhurkumar004@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -75,39 +79,21 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Fixed multiple coding style issues in sm750fb:
-- Replaced CamelCase variable names with snake_case.
-- Removed incorrect use of volatile in memory-mapped IO.
-
 Signed-off-by: Madhur Kumar <madhurkumar004@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c   |   2 +-
  drivers/staging/sm750fb/ddk750_dvi.c    |  16 ++--
  drivers/staging/sm750fb/ddk750_power.h  |   9 +-
  drivers/staging/sm750fb/ddk750_sii164.c | 120 ++++++++++++------------
  drivers/staging/sm750fb/ddk750_sii164.h |  36 +++----
- drivers/staging/sm750fb/sm750.c         | 108 ++++++++++-----------
- drivers/staging/sm750fb/sm750.h         |  56 +++++------
+ drivers/staging/sm750fb/sm750.c         | 106 +++++++++++----------
+ drivers/staging/sm750fb/sm750.h         |  54 +++++------
  drivers/staging/sm750fb/sm750_accel.c   | 120 ++++++++++++------------
  drivers/staging/sm750fb/sm750_accel.h   |  16 ++--
  drivers/staging/sm750fb/sm750_cursor.c  |  14 +--
  drivers/staging/sm750fb/sm750_cursor.h  |  12 +--
  drivers/staging/sm750fb/sm750_hw.c      |  60 ++++++------
- 12 files changed, 286 insertions(+), 283 deletions(-)
+ 11 files changed, 283 insertions(+), 280 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 02860d3ec365..67a2f60440ca 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -229,7 +229,7 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
- 		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
- 		poke32(VGA_CONFIGURATION, reg);
- 	} else {
--#if defined(__i386__) || defined(__x86_64__)
-+#ifdef CONFIG_X86
- 		/* set graphic mode via IO method */
- 		outb_p(0x88, 0x3d4);
- 		outb_p(0x06, 0x3d5);
 diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
 index 8b81e8642f9e..6fef1ab484c1 100644
 --- a/drivers/staging/sm750fb/ddk750_dvi.c
@@ -499,18 +485,9 @@ index 71a7c1cb42c4..737b0e4869ff 100644
  /*
   * below register definition is used for
 diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 04c1b32a22c5..2cce27effc46 100644
+index 04c1b32a22c5..cab879ab58bd 100644
 --- a/drivers/staging/sm750fb/sm750.c
 +++ b/drivers/staging/sm750fb/sm750.c
-@@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel;
- static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview;
 @@ -120,14 +120,14 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
  
  	sm750_hw_cursor_disable(cursor);
@@ -843,7 +820,7 @@ index 04c1b32a22c5..2cce27effc46 100644
  }
  
 diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index aff69661c8e6..8eab90f0f33b 100644
+index aff69661c8e6..097d6558b7fc 100644
 --- a/drivers/staging/sm750fb/sm750.h
 +++ b/drivers/staging/sm750fb/sm750.h
 @@ -14,8 +14,8 @@
@@ -876,10 +853,10 @@ index aff69661c8e6..8eab90f0f33b 100644
  struct lynx_accel {
  	/* base virtual address of DPR registers */
 -	volatile unsigned char __iomem *dprBase;
-+	unsigned char __iomem *dpr_base;
++	volatile unsigned char __iomem *dpr_base;
  	/* base virtual address of de data port */
 -	volatile unsigned char __iomem *dpPortBase;
-+	unsigned char __iomem *dp_port_base;
++	volatile unsigned char __iomem *dp_port_base;
  
  	/* function pointers */
  	void (*de_init)(struct lynx_accel *accel);
@@ -908,15 +885,6 @@ index aff69661c8e6..8eab90f0f33b 100644
  };
  
  struct lynx_cursor {
-@@ -128,7 +128,7 @@ struct lynx_cursor {
- 	char __iomem *vstart;
- 	int offset;
- 	/* mmio addr of hw cursor */
--	volatile char __iomem *mmio;
-+	char __iomem *mmio;
- };
- 
- struct lynxfb_crtc {
 @@ -170,7 +170,7 @@ struct lynxfb_output {
  	 */
  	void *priv;

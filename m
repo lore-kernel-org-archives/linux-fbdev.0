@@ -1,102 +1,90 @@
-Received: from mail-pl1-f170.google.com (mail-pl1-f170.google.com [209.85.214.170])
+Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF2E71E520A;
-	Tue, 18 Feb 2025 18:59:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEB6D1E5206
+	for <linux-fbdev@vger.kernel.org>; Tue, 18 Feb 2025 19:08:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739905161; cv=none; b=PsmMedkklooCVXNuvodFyJGy7h5ZrcdCaC0fQfSYO2ZmnPF1rmVA2vAbbPXa5M9LM21KKQIz6TEoYXE2JqoCwsxM1u+h/x59o400f7BFNb9PVQ8e4XnQoht7s7EcPZUGBO3W2YzYVkqompUcrAAXMbpCGNnMwfyR5cee3C+KR0I=
+	t=1739905694; cv=none; b=Bl+0WKc472i2gB1QFfZqtCNiFd3eksVLCO+H8xJ6/ng2slsXNcuwZkzU0wGkTLUHwfswmhu1sjnuMmyh8d8uFDLRMb0uXqKPjL/gZbPru1lPgY3diMZJoqK5abHa4au1QIt4tFomVhnL2n1HZhjl1ThAXSXsi0eMSUDvkkJE2bs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739905161; c=relaxed/simple;
-	bh=Aeag+chLYaQL7zp5R9dHdYB2etdftGzOtxe+UyXNsug=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=slbfx5WADiRFHc7351CGGXG3+Bz/U7RThCRarVobhBRpdNDTWlGE6HQBXggMdkJfSjxHAQm2P4b7LzgrO7hjB5za+lT5atGHVEztW2Ol27KMzOa/ybPF6anXD8Ci8PRhwFzp519Zp8VuEDF8xxWJPBTQ3tzs+sUQG0bZDG18/MQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=R9LtLX9L; arc=none smtp.client-ip=209.85.214.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1739905694; c=relaxed/simple;
+	bh=qYAZTiqzP1po9iMBaj0lHNXjlSX1F1TWryWziMbjTVc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=O4o3zcYmNwNDR0YWjPtDU+nq2c5S1dtKN3n1Lj0LD20PPpwlrb62pMONSBqW0TLHp3EUYL0kngihRZEgFn6tvblxrBvKHpbdKD5eq1cummdjBrMLsY/XCCloEoRebudhade3QSQOyR/9gpKgGGGtvJzC0Q1KHzwzHA5PggjifQM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=g7tRfZmX; arc=none smtp.client-ip=209.85.218.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="R9LtLX9L"
-Received: by mail-pl1-f170.google.com with SMTP id d9443c01a7336-220e6028214so101546845ad.0;
-        Tue, 18 Feb 2025 10:59:19 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="g7tRfZmX"
+Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-abb94e3b49bso446105866b.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Feb 2025 11:08:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739905159; x=1740509959; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yfIQ73UMIa0oDIpRWuwUrmGQYfAsXCHaqQxm4bBOgQE=;
-        b=R9LtLX9Lw7baV4BbxFhJOi7oCe0YPwLciLiuGIAGnamFLGI0P/FUt87PE40NoI3SYY
-         qXcEI/iJy2rNOQR26w1t08COWIBCHmirH0+ySFy1p3oHeXjuNMpsy40z58eb06jlaYFp
-         VtcNKpNM3uGWgINRDaDZsxhKfhJZynnUU95tND/pjx3RKFn7IUCztkMkREoILOPMbgr1
-         WoJuf6aqGbwcZC01J41d1JIuNqQyuuO54aJ7xO2I0E9RZ9/C5xDV1t2V23r+JKO6ySWy
-         rUJarp4lMlUs+MhCdLrZNBm1Vhtyr08FKSxbRNXVTvbTC1L8TPSwqf61kCk+VcRrABUB
-         lVgA==
+        d=linaro.org; s=google; t=1739905690; x=1740510490; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=rNsBxEX1Tk64WX5P1Q2cqgd6NAXQLvCCopiRfOs8H1Q=;
+        b=g7tRfZmXQU2D748U1SumVD+ZYfFUS7ND4alUtIn0tttFxBQWv/V19rgYggvLEi59q2
+         DLpUKTXOgLyqy7HQ8g3azS2xdRBjijJgp5euwZQqdq/uHvgZ4wLCMaV4y7z0aWoinny6
+         6muwik33Js2WiPjA2wrRdgFy3GzqSkCVoLcVd3mZyQ1t2kLWE3dS2ALGrql/i2xVPxTS
+         g328WK9r3Ejd6qzIiIF+KhwWUDr5ly6LEGgGxU0OSsfKMH1p1cOp8D8VwOn+rjwYSzzG
+         mKayVRuxSGq0POnDrwft3mjIDpZmA/HBHR/0anM7a2Egdn98AmUQ75oWAutoIPqYTyud
+         aLVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739905159; x=1740509959;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=yfIQ73UMIa0oDIpRWuwUrmGQYfAsXCHaqQxm4bBOgQE=;
-        b=Sm9wgYXYYvpT85Y14hdCAGvnGXo+oXndfNz7EnCeIXcpSm5LWeZnzXFKHQXUO7cxhm
-         CUbvayAYYnR9ky1Wvcu684Jv0fLNW63NgDcsYAAbbyn7cQxKZENnh0ITa5Y/NM8toIcO
-         +PWGUHQJ5TxqFG99m4KQ6V6/t1ZeBzAn0WnTqVf/MeRKswSzuk2eIuTdcXCdEfXZ9wU1
-         F+iajlkFq0w08akI9gUvSd56aMZ56SnqrR8TeFyRMKBhYMMwoIc+SbsfQlzAtLac7gVF
-         WF7hIAr42T/cnyjoXbrOT1pkoxk4sjbeT+cZRqGOCNv1BMlRthIzzjg/egCqtAryPptQ
-         CgYw==
-X-Forwarded-Encrypted: i=1; AJvYcCV2TlSp+8r+wMP4xuu25EdhG1EwckaZxmh+AuIuEzkBUSZlEGiISTSrLysVPOf8v93qlj9Y0mqSWhJ6xMmm@vger.kernel.org, AJvYcCVHzF4uIObSYTEgC2Kw+1o7GApTkCMaCFPM56KYWmECYeGsAbYt/yx0wtIW68Qv5SVJyv78hUUhIVqFuA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yye3s6sl//+9IQeH3fv4k0qi+JSSN6t5ZbOtoYdnxIJi4Na/E3W
-	xtXs9BMTe2/fccbwLgkXipSWQy7QHc6U+hglvsidvjkx8zKcSDv3
-X-Gm-Gg: ASbGncvv3zuXp/pAK41EtJgS8pEMM+D3fpfygTOvbeKvWqZZRRgsUCKaXXGYdJoNfKI
-	hsdLMz6Jfm+l1nLjDRBUFvebBk7ZqL2F/JD7kZjyy9pEy+hQwvs8a5iBAQ0EbD1/2tYLj2W3Ziu
-	RDNP3enLAXK1NG8EAPka9zGgwaU8wEc0RRCqw32rpgr94W/yOgjXBfb9nljSlg99aGtdk7Apa61
-	5fsWHSYsPfetTx6TGVwkMGGa8SohPGkqe/ERfBu0/dzFG999ubfuZPTST939XR+78FOb94R9mfD
-	5YU7fH3jETURl7aBxvA6HFDmWx8/Sw5V
-X-Google-Smtp-Source: AGHT+IFpJc379LGLQcwcKfsxcizKtjfZmOQV3MxzuAoCjiOHXBb7g0F1ZbafhajE2fdvG53aUZ2jsw==
-X-Received: by 2002:a05:6a21:6e47:b0:1e0:d1c3:97d1 with SMTP id adf61e73a8af0-1ee8cc03463mr30274362637.29.1739905159059;
-        Tue, 18 Feb 2025 10:59:19 -0800 (PST)
-Received: from localhost.localdomain ([36.255.84.60])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-73276f20c30sm4903499b3a.21.2025.02.18.10.59.16
+        d=1e100.net; s=20230601; t=1739905690; x=1740510490;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rNsBxEX1Tk64WX5P1Q2cqgd6NAXQLvCCopiRfOs8H1Q=;
+        b=nL7y/66phRyP+NlhUM8oaDylLoo5nXHX+GmqC3pj7kThGsHRRqWhtRWPZVH0Z/CRLk
+         xt2o7UZUYQrTJ1OKwTALgMFCvJInB8rqPLNDbxL7K3dMoGZg0YL7/p6il746jGDt9daq
+         DTmUwkFkic0nf8aX7PWBF2jXiNzaZLHh8JJoHeLasvmCeoHpMiaF/TAJ+dFJNQMo3dT1
+         H00B29nM3w0XL94ZXzcS4xbXivQesvQ8uOz2hjDCYOpvrOKVyOJ4ngegvQL6nnd0dbyU
+         O4Q6KTCDEsWuJZwdwKtHFp/MU1qMV7fBHQh1vBvMQi218yCAQj+22FUG7SPB/1Jz18vA
+         Hknw==
+X-Forwarded-Encrypted: i=1; AJvYcCXMJhjtgk381wsBXkMi05jhkjQ/N14NmM1Zg4/JJCSL7ql+jL9gGJ3Sz9w4l0mxi604ir5r8Kk3aK413Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzHfOwRk2bcUAC+xG4/lzw9abs+zqMZz0dWPUlTkQPge0yg/fJu
+	B72cvCj/+RdDmhdcVqd101VOAhZkVyHkVgXNCSFs6KrIWzlpp3n9bW5CjGz9pcs=
+X-Gm-Gg: ASbGncv62uKBhGU5MAZxZHv1c61R20/geZBiYahcKmTDlPbHPtUxmlAlxEUPMcMnM+n
+	xZmM5O7eJRSs7jKzbAiwuLUuO4PKQqx9si5MJlATta/Z/RK6fZqFLHs3/XWVT0ljcE9ZU62Cku/
+	OWh3h+v7tNPl5k4krFkJDdj9jDS4cerEs247jtT+AYjcN5TmBVgxSYZVjj6GJUkhENcjFsdwAjm
+	1ksiQiJO126Sm97DuIrcf3pOdpo8VSeJ6jE1Uue9S9W6got+fB78ei5GWhDLPP524ym4m+zt4K5
+	T0scovA9nsHjNh1S3Oe8
+X-Google-Smtp-Source: AGHT+IFlziriHnAKD1HuHccq2KQBzmgCVFxrmvHg/JF2Df2oa6sJkUNmECTIl18g14D0PF+iOjDlAQ==
+X-Received: by 2002:a17:906:26d3:b0:abb:b1a4:b0fe with SMTP id a640c23a62f3a-abbb1a529b3mr486697566b.1.1739905690148;
+        Tue, 18 Feb 2025 11:08:10 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-abbb0fb63ecsm244309466b.115.2025.02.18.11.08.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Feb 2025 10:59:18 -0800 (PST)
-From: Madhur Kumar <madhurkumar004@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Cc: gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Madhur Kumar <madhurkumar004@gmail.com>
-Subject: [PATCH 2/2] staging: sm750fb: Make g_fbmode truly constant
-Date: Wed, 19 Feb 2025 00:27:49 +0530
-Message-ID: <20250218185749.22144-4-madhurkumar004@gmail.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250218185749.22144-3-madhurkumar004@gmail.com>
-References: <20250218185749.22144-3-madhurkumar004@gmail.com>
+        Tue, 18 Feb 2025 11:08:09 -0800 (PST)
+Date: Tue, 18 Feb 2025 22:08:05 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Madhur Kumar <madhurkumar004@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: Fix CamelCase issues across multiple
+ files
+Message-ID: <6259457a-3a44-4b02-bc83-19eb1fc05e49@stanley.mountain>
+References: <20250218184343.20585-1-madhurkumar004@gmail.com>
+ <20250218184343.20585-2-madhurkumar004@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250218184343.20585-2-madhurkumar004@gmail.com>
 
-Signed-off-by: Madhur Kumar <madhurkumar004@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, Feb 19, 2025 at 12:13:43AM +0530, Madhur Kumar wrote:
+> Signed-off-by: Madhur Kumar <madhurkumar004@gmail.com>
+> ---
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index cab879ab58bd..2cce27effc46 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel;
- static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview;
--- 
-2.48.1
+Quite a few issues...  Take your time.  There is no rush.
+
+https://staticthinking.wordpress.com/2022/07/27/how-to-send-a-v2-patch/
+
+regards,
+dan carpenter
 

@@ -1,180 +1,120 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f177.google.com (mail-lj1-f177.google.com [209.85.208.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 744D9194A67;
-	Sun, 16 Feb 2025 14:40:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 987272686B4;
+	Tue, 18 Feb 2025 13:27:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739716845; cv=none; b=sCyBDO8GjAEg+WMho5rF7sfLS4J1RP8nT1TtRzOHc9qidBh1XUZw+TjbaA4RAF7vjunpEflWRR9erOXu/VTRH5McW7dConQGbksftb0FJ1bHdDf4lLZYCMFBSU1tFw1JpEVpODhjj9+gBU4YIX2Gd8VmLqeETkIDerA/+idcM48=
+	t=1739885245; cv=none; b=PfBuWuM0a8eSvsymXyTRXEpMYbwYL7Vr99mT6fJQ7q2TPdDoOTm6mDRSHUDbyO6guNsK2mW/P9XFAImsUj6uEJ4Jg2LvXXNVJdF3upRYmfgPZ0cthsB951IzSAe4nQjTDT9NSmw0USt1rP/VxBq1tcpXpSqu7yhKNKmfOCD3QfQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739716845; c=relaxed/simple;
-	bh=x3aFXyhGS+U6X3HUjZO8xlvr8jPhcUkEQ3Hk37j9GNc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qW7qshatFgjCyAbmXsLrOSSGBce5MxATN7z57moOvJ+doANdWlTqFJMY5G9coQhndf34XWKZYM6UyknNPHCqye7TXqK223gI9xCGRgnGnYgREQebsCaZ3Jv6GRyiaizEZVOFf25gfd3lgdrpHriqGPK/HSlI2CXZdZQkq+4S8js=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FmLrW4fj; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1739885245; c=relaxed/simple;
+	bh=qfsXYrLmA4AiXHDUztY+1D+cHIvOYpHPfEtByfYz8DY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=A068KcT6RgRi/x92czOhUK61QCUrxjp/UyvWG70TAhQl03EPLiSZP0b9I9LGCjKeDpEndxsC1dp2wpa8eFTZknnV4x2ZpPW9n+GYpsSSk7KSPDD1nsvzmQZpw5jXSCmWBwVdGzoN1e/4brxpnjXylagzOGHkT1I5Z9Zgq+5GDL8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eEr9545+; arc=none smtp.client-ip=209.85.208.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FmLrW4fj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B1413C4CEDD;
-	Sun, 16 Feb 2025 14:40:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739716844;
-	bh=x3aFXyhGS+U6X3HUjZO8xlvr8jPhcUkEQ3Hk37j9GNc=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=FmLrW4fjCmyZFZr1YzTzhQQn46h4frr/4RKLRlUYWYOEjHvSwmJUlZp2CgHJ8YZ+8
-	 8oTMm3l/zAHH4nQ0+vsGOlZdjgR7lgUpAAsyJVuysP1iLBY+Srk3/9megO+4YW3l0v
-	 kuL5kqYjYjBjeLH1jrR+K43/suqFQ3FxcF80vF7d/4tztaMOntanyuqSQFSk5fU6x4
-	 qkuBgqLAKcsD5y/VD1dBENmjbMaJasuWPY9rQiuxdceU0/1f0YjlYVdBdtuDA0lSCo
-	 Zxbh5G9/BWuQeRtCfEaoZFVLFDSemCavP8Pt1VA51S1JVv66krp/SZ5EtXq5ORG/jF
-	 VvgqcSInyKysA==
-Date: Sun, 16 Feb 2025 14:40:33 +0000
-From: Jonathan Cameron <jic23@kernel.org>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
- Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, Daniel
- Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge
- Deller <deller@gmx.de>, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=
- <u.kleine-koenig@baylibre.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-leds@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v1 2/2] mfd: lm3533: convert to use OF
-Message-ID: <20250216144033.47852a60@jic23-huawei>
-In-Reply-To: <20250212075845.11338-3-clamor95@gmail.com>
-References: <20250212075845.11338-1-clamor95@gmail.com>
-	<20250212075845.11338-3-clamor95@gmail.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.48; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eEr9545+"
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-30613802a6bso56652731fa.1;
+        Tue, 18 Feb 2025 05:27:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739885242; x=1740490042; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=QaGZVVe+zRtQUgtJWBlyfhJRB0u+b0GzBi9QAf51pU4=;
+        b=eEr9545+WIYcG58VPJqaW8+YJdY4isqJpQ2Nw+FZqIpf4Ea0ELaf68zwksi03CV3XP
+         Q44umu0ozABwvDx1gMg4bdo++4yzgc8Qk4AS37g1k0QLhb8jn447umSfqZt93GVu3kyW
+         xypyKXpJYv7J/GY598ijkyzeAdmdHHoTGbMU/yw20zLNCmNbbJGAHLp4Jucn1+knuIdB
+         p+DlW/y7JCybxwVwyW9wMsDsCc+l1FQClo8vx7daxGZ02N+arJlNPVetwnMu4xqeDBTc
+         e2JJt8QKo/N1q+HC2ThD52aNmQulGZlL9kNFT/EYHrmtpdosylFbNb+bKDqNeoIiZDr+
+         vFNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739885242; x=1740490042;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QaGZVVe+zRtQUgtJWBlyfhJRB0u+b0GzBi9QAf51pU4=;
+        b=XC006gcp6M7tSpgkatbvo1Pj8Dlq9Ac7bQblPph/AkYySF+I9cBi7ocKdG3T08jE9Q
+         u+fuFQBbJcp7GM6KwCj1N3ig45Wrveq219ABEWJlsVDuTXPUMtvQgCdt3vnm7roayrgQ
+         Th/seP1mYfPnnXmcfnQ7xPlyHKA3+YjyAB3+bzXZzpHR906WQ4YlmbuiVle2zylzpzM4
+         94lndLkmMsQK9u8ooVXyW5skhP1IVLNcs2XAQ56X7zm7pKnMMiVTsCt+bw0e9mXqmhr6
+         1UiD8BYufUTaGXef/ZqzLjDscGT9SFERqWloYVah3gmbPkKnh9hc8044T4/N4YpCCdqq
+         KO2w==
+X-Forwarded-Encrypted: i=1; AJvYcCVBwcnoSpcLMubw6e4h+E/X7FQNwMJJDtzB+HNruxvVa1dxsDOJIuVqFFTQwipLKhSwWH5MvfIUtLSqSg==@vger.kernel.org, AJvYcCVNoItb2Yv5dPnlFN+zUpxF+rNEJK29dD8HBoAR5NpqFLpfIB94u2t5PSBNlV6aYFa8v9uBQwwbf6iw@vger.kernel.org, AJvYcCWF+MeEWmlOVWE6HI8fUu9+xquygu1jU6S8xCgaYgKCsfmXiJh7Ar4pOcPQia7Ak6lNgz3HtnUmxE7/k4bC@vger.kernel.org, AJvYcCX1peET7DUc7teYih5DhLttRJWmeKGVnSzSvNpu3CmPXpMWyJQ+N+jhlr+JLDNgA/dttDqhBtshJkmuwQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzdcjDGkUAGd35QRAsbO7SwIcKpaioL4ovkGmA9IySyJx6wajRW
+	ALvVqt3u8mQWQwLWYXay8QGE8UBEueX0jINlBxIFWOTbTbu9NSxVmidrwg==
+X-Gm-Gg: ASbGncth9dB4UK8eieS5i6NIOAnt0KWy4TtdF5JVnAXs4mqOuXCAGiF160mG6KsJ9oY
+	23dFkfqSUuRPJmK4KS2aMwkuSIV5ZGtI+Mr2mLwhEHToVMGO9uPCaDJ+W9AXRLJ1zHEA9M4usvW
+	TFDICqeeBuj+I++CL/ITEQl/y22iaLf84bqpZCOXt42ZbqIFsWSipcJb2Uf9ymmUgNaxhVMauSQ
+	2oB0HEPACyOHUdhuOdSsjNYv6Yop3XBm4K/YUSHNVS+DtcuEd0o8oy3pXwPn8V70q1pY8AJd84E
+	ZHmcZDY=
+X-Google-Smtp-Source: AGHT+IFAsjt/u/YX+5ECDH9HYJb3vXVacCon8EEMKyGHasErL4EtjMCNuy102qVBSFHqh8hGHlzVYA==
+X-Received: by 2002:a2e:8093:0:b0:308:f39c:96b3 with SMTP id 38308e7fff4ca-30927ad5236mr38589591fa.30.1739885241379;
+        Tue, 18 Feb 2025 05:27:21 -0800 (PST)
+Received: from xeon.. ([188.163.112.51])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-30917da0e64sm18300851fa.88.2025.02.18.05.27.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Feb 2025 05:27:20 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Pavel Machek <pavel@ucw.cz>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Svyatoslav Ryhel <clamor95@gmail.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v2 0/2] mfd: lm3533: convert to use OF
+Date: Tue, 18 Feb 2025 15:26:58 +0200
+Message-ID: <20250218132702.114669-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Wed, 12 Feb 2025 09:58:42 +0200
-Svyatoslav Ryhel <clamor95@gmail.com> wrote:
+Add schema and add support for lm3533 mfd to use device
+tree bindings.
 
-> Add ability to fill pdata from device tree. Common stuff is
-> filled from core driver and then pdata is filled per-device
-> since all cells are optional.
-> 
-> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+---
+Changes on switching from v1 to v2:
+- added unit seffix where it is suitable
+- added vendor prefixes where it is suitable
+- light sensor mover out of pattern properties
+- added references to common schemas
+- added detailed descriptions of properties
+- removed platform data use
+- devices bind and configure themself entirely
+  using device tree
+---
 
-Focusing on just the IIO bit. (backlog of review is a bit high
-for me this weekend!)
+Svyatoslav Ryhel (2):
+  dt-bindings: mfd: Document TI LM3533 MFD
+  mfd: lm3533: convert to use OF
 
-> ---
->  drivers/iio/light/lm3533-als.c      | 58 ++++++++++++++++++++-
->  drivers/leds/leds-lm3533.c          | 69 +++++++++++++++++++++++--
->  drivers/mfd/lm3533-core.c           | 79 ++++++++++++++++++++++++-----
->  drivers/video/backlight/lm3533_bl.c | 72 ++++++++++++++++++++++++--
->  include/linux/mfd/lm3533.h          |  1 +
->  5 files changed, 256 insertions(+), 23 deletions(-)
-> 
-> diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-als.c
-> index 99f0b903018c..21fc5f215c80 100644
-> --- a/drivers/iio/light/lm3533-als.c
-> +++ b/drivers/iio/light/lm3533-als.c
-> @@ -16,7 +16,9 @@
->  #include <linux/module.h>
->  #include <linux/mutex.h>
->  #include <linux/mfd/core.h>
-> +#include <linux/of.h>
->  #include <linux/platform_device.h>
-> +#include <linux/property.h>
->  #include <linux/slab.h>
->  #include <linux/uaccess.h>
->  
-> @@ -826,6 +828,50 @@ static const struct iio_info lm3533_als_info = {
->  	.read_raw	= &lm3533_als_read_raw,
->  };
->  
-> +static void lm3533_parse_als(struct platform_device *pdev,
-> +			     struct lm3533_als_platform_data *pdata)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	int val, ret;
-> +
-> +	/* 1 - 127 (ignored in PWM-mode) */
-> +	ret = device_property_read_u32(dev, "resistor-value", &val);
-> +	if (ret)
-> +		val = 1;
-For defaults that apply on any error, the pattern
+ .../devicetree/bindings/mfd/ti,lm3533.yaml    | 231 ++++++++++++++++++
+ drivers/iio/light/lm3533-als.c                |  40 ++-
+ drivers/leds/leds-lm3533.c                    |  45 ++--
+ drivers/mfd/lm3533-core.c                     | 199 ++++++---------
+ drivers/video/backlight/lm3533_bl.c           |  68 ++++--
+ include/linux/mfd/lm3533.h                    |  35 +--
+ 6 files changed, 417 insertions(+), 201 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
 
-	val = 1;
-	device_property_read_u32(dev, "resistor-value", &val);
-is cleaner.
-
-What are the units? If it's a resistor then they should be ohms
-or similar and that should be part of the naming.
-
-You should be taking whatever the value is in ohms and mapping
-it to appropriate r_select in this function.
-
-> +	pdata->r_select = val;
-> +
-> +	pdata->pwm_mode = device_property_read_bool(dev, "pwm-mode");
-> +}
-> +
-> +static int lm3533_pass_of_node(struct platform_device *pdev,
-> +			       struct lm3533_als_platform_data *pdata)
-> +{
-> +	struct device *parent_dev = pdev->dev.parent;
-> +	struct device *dev = &pdev->dev;
-> +	struct fwnode_handle *node;
-> +	const char *label;
-> +	int val, ret;
-> +
-> +	device_for_each_child_node(parent_dev, node) {
-
-This devices should have direct access to the correct child node.
-Otherwise something odd is going on...
-
-> +		fwnode_property_read_string(node, "compatible", &label);
-> +
-> +		if (!strcmp(label, pdev->name)) {
-> +			ret = fwnode_property_read_u32(node, "reg", &val);
-> +			if (ret) {
-> +				dev_err(dev, "reg property is missing: ret %d\n", ret);
-
-use return dev_err_probe() for these.
-
-> +				return ret;
-> +			}
-> +
-> +			if (val == pdev->id) {
-> +				dev->fwnode = node;
-> +				dev->of_node = to_of_node(node);
-> +			}
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static int lm3533_als_probe(struct platform_device *pdev)
->  {
->  	const struct lm3533_als_platform_data *pdata;
-> @@ -840,8 +886,16 @@ static int lm3533_als_probe(struct platform_device *pdev)
->  
->  	pdata = dev_get_platdata(&pdev->dev);
->  	if (!pdata) {
-> -		dev_err(&pdev->dev, "no platform data\n");
-> -		return -EINVAL;
-> +		pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-> +		if (!pdata)
-> +			return -ENOMEM;
-> +
-> +		ret = lm3533_pass_of_node(pdev, pdata);
-> +		if (ret)
-> +			return dev_err_probe(&pdev->dev, ret,
-> +					     "failed to get als device node\n");
-> +
-> +		lm3533_parse_als(pdev, pdata);
->  	}
->  
->  	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*als));
+-- 
+2.43.0
 

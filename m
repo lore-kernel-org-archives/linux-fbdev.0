@@ -1,47 +1,82 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2747188CCA;
-	Wed, 19 Feb 2025 09:21:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99E961DF755;
+	Wed, 19 Feb 2025 12:30:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739956907; cv=none; b=ZUZ6W3WBOVzPN+9fVKQ2+nm2XALVpvHXm/DmPmBzYIbg4LPrNuLDgAICJ1mUZ7aMNcL2BrWlGjh83CR8LyTgnnZfK6p8u0eeZuaUHNjJDWrgtDmFSikHfHHSsInIGX6yEAYp2KjQLblL1mYbDPW3I/VOfrx9qOytXsAkbvhOjWE=
+	t=1739968241; cv=none; b=Q3nnQSOaWAjkAPSqxptJ0PoJ3FplnqD3jqlJLtCV4163bmrSnHrgUctsI56uciucWhTPL42w/X+eIyx/4w7eq39JIWtxIq49WAKuFGWMiCU04Qnd+QLQPQy2pIAFryaf2T7ycq4peULFCV7RhYcErGiI8gMlN/Cwp9csfr9iBgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739956907; c=relaxed/simple;
-	bh=QTLkuGPu1ZYMsoxSHuW/XzrlLoXx2YNCxXpC8DB5AIQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=olXf9gbNti2MTMguNXcjrOJ3srNpDlQX+Nu5VC3Nh7QTTbCgWLREtKwJJAWMZ4FFtjRGU83Pn8bpsILxDsnGdDc1vUp4bYVMAOZtyYDHhGNv2BwHDo8ctNl1datjeMiS16alRhZr1MfWYfVXVIJ3oGXLt+A+S7rDQAQdOPnF+Cw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=IXVrRFdH; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1739968241; c=relaxed/simple;
+	bh=ztDgWvwz+CZSZ7CQPPdu/7HdN7wQIMweiboHpzxoiWg=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=pYKdcsEON/poA/odFq6vyXaWwXpnBkmpFOCy8EWR6+/fy4+wZOfvDMPldZ85EciofMQee0gUIEJNkqlhIKe4pEHAlo9V7ZvcuDrzEw5dvbkzVnOWYO+eCd8aNGU6l2dKBdSrenwzCEgSdWeF4xXtjvfVp9FQa9cFSIiz5oIYav8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DsR6S0xH; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="IXVrRFdH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 286E9C4CED1;
-	Wed, 19 Feb 2025 09:21:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1739956907;
-	bh=QTLkuGPu1ZYMsoxSHuW/XzrlLoXx2YNCxXpC8DB5AIQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IXVrRFdH8/oNofZMtTuYX+1+5Ko7pCeyf77kHSZnXcqjvqHNCQQzrHTkDo0ADsA6c
-	 BPgOTrmOlXDzCcZX2OqVBBGTUOmKq6qXGrqeJ43tAdkW+VUren7N0JEF98PPMbaoZ4
-	 gQqtFPw4Pf0aFVlLL9s5zAdR59V++VpAlvE+9V0U=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	kernel test robot <lkp@intel.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-fbdev@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DsR6S0xH"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-219f8263ae0so122286035ad.0;
+        Wed, 19 Feb 2025 04:30:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739968239; x=1740573039; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jYxtuN+FHDHDJ1UtgUUZtfJNaXcnoTaEgSZ1XZNBNzw=;
+        b=DsR6S0xHbZWBjb8wktPU8nH7WqaUXZ19KrTg7W4CRcg4RboFTvCS5c06gZCAbFuXMm
+         YcX2A7xLCFR5Wp3jtYT11jNHC27AsYTwUEJhTBdydOD+CZfsMh4OBy55uqwAhd1vH7Kl
+         TOZOxntNg6tjtFG5OjkGiwLKgvECLF+qmy6inZXHFu8NZacYLhHUjzM2Ki/Zht/389Us
+         b1T+yCaEiFJ5wS3WMPlTHQvKKaXD+OOuwUskuoEPSqUeqcmgq5TlCAdUudaYavLD8QH3
+         h2KJzi8lbJ3xzARdn6ESykTN3Lhvbd4y2ARZYOD933+0cg51C0BEOQ/oaI1nTRhEQSMn
+         8sVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739968239; x=1740573039;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=jYxtuN+FHDHDJ1UtgUUZtfJNaXcnoTaEgSZ1XZNBNzw=;
+        b=u50EU4mCOQlue4eGCTR/wcaEwOkqWTpDU/Tr1M33hbia6qVdwtQbgRVst0EkOoGRQv
+         CAjJpwvGCc9+Gl+zU6gk4TNXrYgJdv/4md084PKMrLOvvi0jwUoA5FcaaEoAPETLvMqw
+         sF9dz+CPx9O1JwK8kJDYCurQ86miYawxm9ctfXPouMiwRpNB2ggze8gZFohmctfZdf1O
+         HCfUkFj5X9wLhtt2/mpVIp/+Vq/juLs46xK1y8sHWpU8I4psfD358NbLAYu+TJeTwaje
+         4Uz/8p5WXiU9V46EdxAHq80ndDU3hNt2sJsWRI220tOTLIuKSf5crOpxoZS2R1/K2yM3
+         5CUw==
+X-Forwarded-Encrypted: i=1; AJvYcCW1pFT2oMB0OzhGXn9RqBS9Rz3E6/s+etext39Tq6f8M+NuSBlSn8EjO5JkCzmVbbFayPrUJAwU@vger.kernel.org, AJvYcCWVVrIcVeg72VsqI5llBggeON9hzsFCT7JH6FGWdtQEJ9qcwXZ8yrGadJ7kt0vIlCmWx7Kbl3BjrbjFog==@vger.kernel.org, AJvYcCXPvyI/cPVtAwpjIdxfbCv550uxyyZwUfuES4NrIRLZZTAjoOcMfrBpp0VN5aJ2mAI7JZvhtqqcXDxy827A@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz3v/2dP+3makg8Rb1LwUbwcLmnmVcacAXHUbqrQea1Cz8oG4SF
+	friO1iHSuWQ3KfddQ6cS0oQhWOJjh5SwgjmZV8xqTpeM2N4sOTPs
+X-Gm-Gg: ASbGnctPRP4QJhNt3flrJwXu6HuSYfL9FnNEfpB8fV8TL6lkvkI12LlB2IvQxVbdMZm
+	1wTio2ULRUngBPeoMth8itRmnYh5URkBxkhS3cnLrAzrSnRwCVsnOZDmw2+Ttcz0QU1hl7iE4S1
+	pjYrTGE/a8g8CBwBusjCQkeLqMYGsqdNOsYw3rWa9Kqn9EtoLQwkavWUyc6r905qA0abas3sJB7
+	M8oG7RmScRA5xocOrt27GDyTr+QBxCkosCIKSAr5IyU//wlD3+Ei5UQbrtEqVCPF4USVKn9pCxd
+	WQkempKZQqaZ8XopMrk=
+X-Google-Smtp-Source: AGHT+IFHs043Az3sOgkW8oNKMParbw6enY+JvxfeqIdEzf8wa0Ef/I2EUsS+62XtazqXNwwof3B8Rw==
+X-Received: by 2002:a05:6a00:180f:b0:730:98ac:ad79 with SMTP id d2e1a72fcca58-732617d97b8mr27800074b3a.12.1739968238240;
+        Wed, 19 Feb 2025 04:30:38 -0800 (PST)
+Received: from ubuntuxuelab.. ([58.246.183.50])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7327e17440esm5575536b3a.76.2025.02.19.04.30.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Feb 2025 04:30:37 -0800 (PST)
+From: Haoyu Li <lihaoyu499@gmail.com>
+To: danielt@kernel.org
+Cc: chenyuan0y@gmail.com,
+	deller@gmx.de,
 	dri-devel@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>
-Subject: [PATCH 6.1 341/578] m68k: vga: Fix I/O defines
-Date: Wed, 19 Feb 2025 09:25:45 +0100
-Message-ID: <20250219082706.429348823@linuxfoundation.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250219082652.891560343@linuxfoundation.org>
-References: <20250219082652.891560343@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	jani.nikula@linux.intel.com,
+	jingoohan1@gmail.com,
+	lee@kernel.org,
+	lihaoyu499@gmail.com,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	robh@kernel.org,
+	stable@vger.kernel.org,
+	zichenxie0106@gmail.com
+Subject: [PATCH] drivers: video: backlight: Fix NULL Pointer Dereference in backlight_device_register()
+Date: Wed, 19 Feb 2025 20:29:50 +0800
+Message-Id: <20250219122950.7416-1-lihaoyu499@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <Z65fFRKgqk-33HXI@aspen.lan>
+References: <Z65fFRKgqk-33HXI@aspen.lan>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -50,87 +85,44 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.1-stable review patch.  If anyone has any objections, please let me know.
+As per Jani and Daniel's feedback, I have updated the patch so that
+the `wled->name` null check now occurs in the `wled_configure`
+function, right after the `devm_kasprintf` callsite. This should
+resolve the issue.
+The updated patch is as follows:
 
-------------------
+In the function "wled_probe", the "wled->name" is dynamically allocated
+(wled_probe -> wled_configure -> devm_kasprintf), and it is possible
+for it to be NULL.
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+To avoid dereferencing a NULL pointer (wled_probe ->
+devm_backlight_device_register -> backlight_device_register),
+we add a null-check after the allocation rather than in
+backlight_device_register.
 
-commit 53036937a101b5faeaf98e7438555fa854a1a844 upstream.
-
-Including m68k's <asm/raw_io.h> in vga.h on nommu platforms results
-in conflicting defines with io_no.h for various I/O macros from the
-__raw_read and __raw_write families. An example error is
-
-   In file included from arch/m68k/include/asm/vga.h:12,
-                 from include/video/vga.h:22,
-                 from include/linux/vgaarb.h:34,
-		 from drivers/video/aperture.c:12:
->> arch/m68k/include/asm/raw_io.h:39: warning: "__raw_readb" redefined
-      39 | #define __raw_readb in_8
-	 |
-   In file included from arch/m68k/include/asm/io.h:6,
-		    from include/linux/io.h:13,
-		    from include/linux/irq.h:20,
-		    from include/asm-generic/hardirq.h:17,
-		    from ./arch/m68k/include/generated/asm/hardirq.h:1,
-		    from include/linux/hardirq.h:11,
-		    from include/linux/interrupt.h:11,
-                    from include/linux/trace_recursion.h:5,
-		    from include/linux/ftrace.h:10,
-		    from include/linux/kprobes.h:28,
-		    from include/linux/kgdb.h:19,
-		    from include/linux/fb.h:6,
-		    from drivers/video/aperture.c:5:
-   arch/m68k/include/asm/io_no.h:16: note: this is the location of the previous definition
-      16 | #define __raw_readb(addr) \
-	 |
-
-Include <asm/io.h>, which avoids raw_io.h on nommu platforms.
-Also change the defined values of some of the read/write symbols in
-vga.h to __raw_read/__raw_write as the raw_in/raw_out symbols are not
-generally available.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202501071629.DNEswlm8-lkp@intel.com/
-Fixes: 5c3f968712ce ("m68k/video: Create <asm/vga.h>")
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org # v3.5+
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Link: https://lore.kernel.org/20250107095912.130530-1-tzimmermann@suse.de
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
+Signed-off-by: Haoyu Li <lihaoyu499@gmail.com>
+Cc: stable@vger.kernel.org
 ---
- arch/m68k/include/asm/vga.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/backlight/qcom-wled.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/arch/m68k/include/asm/vga.h
-+++ b/arch/m68k/include/asm/vga.h
-@@ -9,7 +9,7 @@
-  */
- #ifndef CONFIG_PCI
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 9afe701b2a1b..3dacfef821ca 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1409,6 +1409,11 @@ static int wled_configure(struct wled *wled)
+ 	if (rc)
+ 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
  
--#include <asm/raw_io.h>
-+#include <asm/io.h>
- #include <asm/kmap.h>
- 
- /*
-@@ -29,9 +29,9 @@
- #define inw_p(port)		0
- #define outb_p(port, val)	do { } while (0)
- #define outw(port, val)		do { } while (0)
--#define readb			raw_inb
--#define writeb			raw_outb
--#define writew			raw_outw
-+#define readb			__raw_readb
-+#define writeb			__raw_writeb
-+#define writew			__raw_writew
- 
- #endif /* CONFIG_PCI */
- #endif /* _ASM_M68K_VGA_H */
-
++	if (!wled->name) {
++		dev_err(wled->dev, "Fail to initialize wled name\n");
++		return -EINVAL;
++	}
++
+ 	switch (wled->version) {
+ 	case 3:
+ 		u32_opts = wled3_opts;
+-- 
+2.34.1
 

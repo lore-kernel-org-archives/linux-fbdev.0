@@ -1,129 +1,147 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1069B1FCCE7;
-	Wed, 19 Feb 2025 15:56:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05A891B415B;
+	Wed, 19 Feb 2025 17:39:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739980580; cv=none; b=XUylcvMQTHPtLp+1+rc8+LciWJ0sGXKX3XJv6XV3F8vwu7dPK9P+lfkWFDmfo70TAn2g1cwzrHhVyJna+hH4CTKdty6V653DCrqifTu2v9O9c+qp4rCuAGh0OAYe5bC3FXtwX/HSx+1pypWz5aVd1CUCkVyCClsrDI9D5Y9LPdk=
+	t=1739986785; cv=none; b=Y2+x5JmDvRoUywTX6jds0VUd4FF3SANhgu3ZJ4uoDy3D9PetWmUTikn+nKnDI7IHRNvyRMTHBMn36/lg7CajNZVphC5HVwI2ufh4XHVWR/vdOsxRT+R0NMxsoLQVwiFKAtbck6mVlJ96tfExPMF9TJSSBdn2hMkpyf9S81UF61U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739980580; c=relaxed/simple;
-	bh=uV3soKwL+HCNAvSymtrWOzDP+EtcGO1BQkAUCm5Wg+g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k8ihoQis5BMrsJSyR+VJ3NK9gH6MxP5xEBTlb5uanFZeKgw6YNb2iELwKlkWVP3iqJQ6aI4GdjdIVn6v4ontKtPuFNhv7X4xQMsswwgcxB9c3c9efBMLpL6Z6JUYYPItloEct+/cC3UHafqbbiEEgaN3vEN2uP3an3ulq2oVOYc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lwlqJK1L; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1739986785; c=relaxed/simple;
+	bh=4It1PU+B7XFgMdBjKT9ybzSCLozjQhDNh/RBMIG7cEc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Kh3rPvylTEbJ05WfLf43T3Hy4msBJPCKTAfTl/9sMz5EI4sGhcJr8oORnp8s0w/CvmKBGE6sth5UwvJjK58IxC2voqi23tY/pCaqqkmdHEbPzHAGIhrlJjLqElxKpc0eC+NXYgf2HSO9YME4GVoDl7CAIxz21XcV3BbKUyKhCBk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KRfbf6be; arc=none smtp.client-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lwlqJK1L"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1739980579; x=1771516579;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=uV3soKwL+HCNAvSymtrWOzDP+EtcGO1BQkAUCm5Wg+g=;
-  b=lwlqJK1LXTvxJ+EWudFro8aZPJMqcJPUT58kxjNEZ30GML6GSKnX9EAB
-   liAhzqJS5SDhtwvZcQMnOjFibzq++KcRAtqG30zoRL9mbRMYhlJVvLHWE
-   bu52UwMhnVY4w8glg6dMCLs/Ax2z3KE1P99rj0e51sfsjJvOcRvsRVnC5
-   0lfWofu3WTokGPBr9X39mAVp1xImbe3esC5xatTO7alkn7svGQ/jSqCQ5
-   pxUA0mChaMFS3bJs+yC9z2N5B0T1ehQeC0MuLGKtuS7gybUcwMbHaj3CP
-   nsD2xaEGaf+xVJPa2Q/lB0yICi0LRhMeUC1XMs4a4P2ex5jUPk5IiRJc5
-   w==;
-X-CSE-ConnectionGUID: p18e5709S3i1yRm3An+ukg==
-X-CSE-MsgGUID: c4WqoUpRTjW1gzzBzpm1ng==
-X-IronPort-AV: E=McAfee;i="6700,10204,11350"; a="44641211"
-X-IronPort-AV: E=Sophos;i="6.13,299,1732608000"; 
-   d="scan'208";a="44641211"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Feb 2025 07:56:15 -0800
-X-CSE-ConnectionGUID: 9tQ7e4C6QyWDwrfSehe6Ew==
-X-CSE-MsgGUID: pjGdWZJjSauXppPQLfgMhw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,299,1732608000"; 
-   d="scan'208";a="145612236"
-Received: from smile.fi.intel.com ([10.237.72.58])
-  by orviesa002.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Feb 2025 07:23:30 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.98)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1tkluw-0000000D3ix-2SQZ;
-	Wed, 19 Feb 2025 17:23:18 +0200
-Date: Wed, 19 Feb 2025 17:23:18 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] mfd: lm3533: convert to use OF
-Message-ID: <Z7X3ZvQbSe75U-AR@smile.fi.intel.com>
-References: <20250218132702.114669-1-clamor95@gmail.com>
- <20250218132702.114669-3-clamor95@gmail.com>
- <Z7XqKcOUt5niXzpv@smile.fi.intel.com>
- <CAPVz0n1_WQyOHhtEVAh53uhEUhZvqqZSEJh6XALtSrVfkMSLYw@mail.gmail.com>
- <Z7XzgfHcjyK_UZKv@smile.fi.intel.com>
- <CAPVz0n2WwAOb1UU7J7aDTdhXXCaAZkCpYjW_nc_CBRgkGWdEOw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KRfbf6be"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-38f378498c9so46975f8f.1;
+        Wed, 19 Feb 2025 09:39:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739986782; x=1740591582; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=k8wYliwl6UOtHCOysjfqNPSlzww+g9jxkMxRAdHQVyY=;
+        b=KRfbf6besRefOmK5asTAPiQCBr8k6oyh86ge1SIOIQ3TUZCKWJRhbqvaC8vzS6bxMj
+         GO+saxFmFdgHZAWNeIT7tFZd3ygXpd3KMvXSWYjyWr0W+HNdhZhS4BZ43bk9gVcVv5KE
+         ZxpjdOhDaTEc1FBMLczsoBrg4DrbHI3MiK0OMVBfMtakSrpBRPN+MtRpruh0DGPhoWZL
+         7vZd6uAP7CabyMvbGHzDqt6yHDIIjv59ETWch+3FRG4gxzaRrH4DnglZo1tmcrXsRTW3
+         XvnNjCWrdY0MHan0mxtAOwuDraLoDmcZdhG0q8ccQRiu8YhgRT0QNIVKZc8UZP5sfbW8
+         Axng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739986782; x=1740591582;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=k8wYliwl6UOtHCOysjfqNPSlzww+g9jxkMxRAdHQVyY=;
+        b=A2yhDYMgC2mv7uwXbr3FnT3qHEVvaIOe42oZBehvcdSWvutYpN80ghsPNy/OnuxOKU
+         xBlc8b+kZQairC6G5vM0S5E8e1W9yS0C1peV93kJ8J2V9N934tcf8Sy3a4S3LhiVDU0G
+         hb83bepIKJdCWW7qNZDuagaMPQzSisxFsLUiNl4sGlaocjcRxKCQ4nqzQ1eUZtXA693x
+         3/A1whKlHLxfkljI6hWXl1/0QRsTxqXbSoDFRurY7LrielCDf2IsjZwwmZOdFhfn32Gx
+         /UCeixc4Rsr+OcowTavqWYXa9OAg+oLLrtsRXia4mIWvpaStuIKGpq6ZcAVkvD0ur8KZ
+         0yrQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVzvVcn9RllD6x7G5BpG/b3se6C+Y0Xioiy5AbB/furio6+FSnA5h5opon8GCwYJoqOtmtPP/iOD0O5lbpj@vger.kernel.org, AJvYcCWJdd4JaVExH4PkDz/bi/vrxT4BMovmJ9Gi98pUlvScHhzuSEnZ/bqFokwAhpTGxpNgd8w3SX0l6hUv@vger.kernel.org, AJvYcCWTQL3FPICR1eSNuV/Q/5W5qeHDucexjtz9bZeSph+n0LTH/6yus0RzCAp+adwamlyM+/TGJWTgGAjDUcs=@vger.kernel.org, AJvYcCWfSfjTzSUGJ59dR1cgGnQMgv/GUPNudxWTjewqMYIlTptIpLePbQsC90IQmPhnoj6q0FYOsSYchh8lQg==@vger.kernel.org, AJvYcCXGrtWR+C6fJ6Tn7BgoDi7/kZIZKjsA8xc1IOsMJFtHU2b0VVEgRaCeoCUGibjPivZqoNGqzw6qfkxW@vger.kernel.org
+X-Gm-Message-State: AOJu0YxBPLo98pnyiUXTTMRcLD6o5KqWLrnNHVMhwczdSC23jtfLhyG9
+	Ofykl9tj4UzYdeYd9LTGV33UnI4r+HrU5qXueAfq3p9PywK/zA58hxah5+vna1c1BXu82KX5vXs
+	arEqbMYAmKPOnJNMyME8MLYdMEPc=
+X-Gm-Gg: ASbGncvW67Ix4sQq7P+BUvdm3sPQ/gTVc475mLRs4QsQR01GW907a/WMT75YeO2jDoA
+	zonpY6j2jnXAmgf6TQrBHym0OYS518bpuGIHR/2qhK1MqZc14IL3wOpl5k8ikTXt7f8gfk9LX8g
+	==
+X-Google-Smtp-Source: AGHT+IEyS3n7gqj0ex4KbPOptDtwVLwjsOmfhhv3WWfLv9zPiV55DmsbGLPpAuqV+3ItRvWlkBKbfteXPmxuNkeSagE=
+X-Received: by 2002:a05:6000:2c1:b0:38f:474f:f3f3 with SMTP id
+ ffacd0b85a97d-38f474ff5bdmr13969667f8f.13.1739986781750; Wed, 19 Feb 2025
+ 09:39:41 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPVz0n2WwAOb1UU7J7aDTdhXXCaAZkCpYjW_nc_CBRgkGWdEOw@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20250218132702.114669-1-clamor95@gmail.com> <20250218132702.114669-3-clamor95@gmail.com>
+ <Z7XqKcOUt5niXzpv@smile.fi.intel.com> <CAPVz0n1_WQyOHhtEVAh53uhEUhZvqqZSEJh6XALtSrVfkMSLYw@mail.gmail.com>
+ <Z7XzgfHcjyK_UZKv@smile.fi.intel.com> <CAPVz0n2WwAOb1UU7J7aDTdhXXCaAZkCpYjW_nc_CBRgkGWdEOw@mail.gmail.com>
+ <Z7X3ZvQbSe75U-AR@smile.fi.intel.com>
+In-Reply-To: <Z7X3ZvQbSe75U-AR@smile.fi.intel.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Wed, 19 Feb 2025 19:39:29 +0200
+X-Gm-Features: AWEUYZlErtPnGBIjsmHfQD2f3-JQKBhMt1WzPgDf8uSaX-tKvCIgiy9477XzETE
+Message-ID: <CAPVz0n19D1mS_prvMo-HD3m7U9+iknm49JSj5ydNUHoqjK7gZw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] mfd: lm3533: convert to use OF
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, 
+	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 19, 2025 at 05:13:15PM +0200, Svyatoslav Ryhel wrote:
-> ср, 19 лют. 2025 р. о 17:07 Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> пише:
-> > On Wed, Feb 19, 2025 at 04:36:38PM +0200, Svyatoslav Ryhel wrote:
-> > > ср, 19 лют. 2025 р. о 16:27 Andy Shevchenko
-> > > <andriy.shevchenko@linux.intel.com> пише:
-
-...
-
-> > > MFD part is removed since MFD cells binding is unconditional, while
-> > > the device supports any amount of children grater then one. For
-> > > example, my  device uses only backlight at bank A, while all other
-> > > subdevices are not present and used. This patch switches to dynamic
-> > > bind of children.
-> >
-> > MFD does the same. Please, take your time and get familiar with how MFD works.
-> 
-> It does not. I have tried. If mfd cell binding is missing, driver will
-> complain and fail.
-
-I really don't know what exactly is going on here, you can check it later, but
-I'm 100% sure that MFD works for only driver that are present. What you are
-describing is how component framework is designed.
-
-To proove my words you can check drivers/mfd/intel_soc_pmic_*.c and find listed
-cells that never had a driver in the Linux kernel. They are just placeholders.
-
-...
-
-> > --
-> > With Best Regards,
-> > Andy Shevchenko
-
-Please, when answering, remove unrelated context from the replies.
-
-...
-
-> Let this driver rot for now, I might return to it. At some point
-
-Up to you. But thanks for trying!
-
--- 
-With Best Regards,
+=D1=81=D1=80, 19 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 17:56 Andy=
+ Shevchenko
+<andriy.shevchenko@linux.intel.com> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> On Wed, Feb 19, 2025 at 05:13:15PM +0200, Svyatoslav Ryhel wrote:
+> > =D1=81=D1=80, 19 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 17:07 =
 Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> =D0=BF=D0=B8=D1=88=D0=B5:
+> > > On Wed, Feb 19, 2025 at 04:36:38PM +0200, Svyatoslav Ryhel wrote:
+> > > > =D1=81=D1=80, 19 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 16=
+:27 Andy Shevchenko
+> > > > <andriy.shevchenko@linux.intel.com> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> ...
+>
+> > > > MFD part is removed since MFD cells binding is unconditional, while
+> > > > the device supports any amount of children grater then one. For
+> > > > example, my  device uses only backlight at bank A, while all other
+> > > > subdevices are not present and used. This patch switches to dynamic
+> > > > bind of children.
+> > >
+> > > MFD does the same. Please, take your time and get familiar with how M=
+FD works.
+> >
+> > It does not. I have tried. If mfd cell binding is missing, driver will
+> > complain and fail.
+>
+> I really don't know what exactly is going on here, you can check it later=
+, but
+> I'm 100% sure that MFD works for only driver that are present. What you a=
+re
+> describing is how component framework is designed.
+>
+> To proove my words you can check drivers/mfd/intel_soc_pmic_*.c and find =
+listed
+> cells that never had a driver in the Linux kernel. They are just placehol=
+ders.
+>
 
+This example is not valid since those drivers do not use device tree.
 
+> ...
+>
+> > > --
+> > > With Best Regards,
+> > > Andy Shevchenko
+>
+> Please, when answering, remove unrelated context from the replies.
+>
+> ...
+>
+> > Let this driver rot for now, I might return to it. At some point
+>
+> Up to you. But thanks for trying!
+>
+
+Thank you for suggestions. Once I complete more urgent tasks, I might
+do some tinkering with this driver.
+
+> --
+> With Best Regards,
+> Andy Shevchenko
+>
+>

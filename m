@@ -1,136 +1,77 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5DE922AE95;
-	Wed, 19 Feb 2025 06:49:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3C0C21C3C00;
+	Wed, 19 Feb 2025 07:41:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739947750; cv=none; b=MGK0aDIL0UhekH1R7+/siWWeC49Ywz+071NpgzjjavridJt5D3bTSlLGpp9TrPd4Eed+8a7xcOUiwcqVQ2vfH6Kfw6+Fwpj6+fq/mGECNbBXfepBH6/woeVcddwV1HAsezTlA0sDLlN7uEShVbaOPneICNVbe988kXcVfvnPQ2M=
+	t=1739950905; cv=none; b=oRwU0pIjcjsl9+i+I5yWkKeijjRFlI0mnqK3AnIOUUpeVyM1Xb247F2mNDyayQ2+60IAZySxmpnBOwhpgHt1kQ3GsRQhndAqZGU9qN3f7H0nBDJ1qjn8j/N9nuKrvGK5a9NE/u+w8dwoazxwLTRlLM96+8JP/ia0xE7mzoFSBSo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739947750; c=relaxed/simple;
-	bh=mOQo+dRWL+KFhurI1PmD2LMYcJGzia9PwCw8wlNIS80=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=gBM1N5hE0PdS1d3XO8iNXRkjuvQcFLisrdNocpylqG7P+hUBGy7ZyyVklzmCAHPL0ZKn9whdEKZ72eMO3CKgcYjFTrvuPtktKt9ccF/54LhkzoHVJExkodDt20Bazh2RbsVBvAvtBUPU3snxjsvV7MQOetu0PbGCe7F6Tm/jLYg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=A2f8rQ7h; arc=none smtp.client-ip=220.197.31.5
+	s=arc-20240116; t=1739950905; c=relaxed/simple;
+	bh=kpxkBPCKlGNnhVjQVf+dePC+MVJfA5gCHGVc1xxZzzc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lgZYRYdKSVt6GvhKbOlrLaj0lFNQ+GR9JUec9VPNPdOD8dzUxmi7OFI2/eRyg9WdL04Tkh4D00EZN3MnV+8RwHhsUBU/fJSIf6txm0TOhcqcKJc33JoDvyftMlCGkAJvAVxFeZNKNAI66AfKcF6vKNc9hKaWnI1a6MaLhnYQGVU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=UCOvT3/Y; arc=none smtp.client-ip=220.197.31.3
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="A2f8rQ7h"
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="UCOvT3/Y"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=U1net
-	4T7Q6cu0QEL0E/9T25UtKWWEpm4SRfno/kdROI=; b=A2f8rQ7h+lFehOjJPbVZR
-	MY64dVxtPHCzKnRrHhYiwDk7gNSNUsGA6ThjL8PTNzJ28AtpbLsthuB/E4AFWCF7
-	fth/MVD+hC0cfvcbCutupu2X6V2YT7HwehZnxhyAGJgM2F0sQYgr/dKQVumACaSt
-	OeYp/NY5r5B94jiOz2zQic=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wDnz8qqfrVnPwaGNA--.2549S2;
-	Wed, 19 Feb 2025 14:48:11 +0800 (CST)
-From: oushixiong1025@163.com
-To: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	Lee Jones <lee@kernel.org>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: [PATCH v3] fbdev: lcdcfb: add missing device_remove_file()
-Date: Wed, 19 Feb 2025 14:48:08 +0800
-Message-Id: <20250219064808.170517-1-oushixiong1025@163.com>
-X-Mailer: git-send-email 2.25.1
+	s=s110527; h=Message-ID:Date:MIME-Version:Subject:From:
+	Content-Type; bh=7MpbM+6fg3KAR60DstuyWUUcvrlrvQHDRX+TIlD+t/0=;
+	b=UCOvT3/YJxIJ/U0B3iewDL6gKAru25jZTp4Du1ehaY8k1imzPXDTh3ByTiAM6v
+	cWL5LLLxpXBiL57bw8cS84lqZ5XtNgadDlEcBw7qnDcez9CQaw6Nu8fuzoLm/ULH
+	egALyum2WypNKmIa/bRuTm+/3pypLFd2LoujAS0cmQNa4=
+Received: from [10.42.20.80] (unknown [])
+	by gzsmtp4 (Coremail) with SMTP id PygvCgBXM9XoirVnAf0OAQ--.45861S2;
+	Wed, 19 Feb 2025 15:40:25 +0800 (CST)
+Message-ID: <437a0a0e-f61d-45bf-b859-d527381a9763@163.com>
+Date: Wed, 19 Feb 2025 15:40:24 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v2] fbdev: lcdcfb: add missing device_remove_file()
+To: Arnd Bergmann <arnd@arndb.de>, Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+ Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+ Lee Jones <lee@kernel.org>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?=
+ <u.kleine-koenig@baylibre.com>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ oushixiong <oushixiong@kylinos.cn>
+References: <20250208092918.251733-1-oushixiong1025@163.com>
+ <4f2ae439-1bdc-4593-9151-e15981509344@app.fastmail.com>
+Content-Language: en-US
+From: Shixiong Ou <oushixiong1025@163.com>
+In-Reply-To: <4f2ae439-1bdc-4593-9151-e15981509344@app.fastmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wDnz8qqfrVnPwaGNA--.2549S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7WFy8WFWDWw13Cr4xAF1rXrb_yoW5JrWxpF
-	4UGas0grZ5Zrn7ur43AF4Uua15urykta4DZr1xJw15C3s3Arn5W343J397JF17JFZ3GF1a
-	vrW0y343GF47uaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UPgAcUUUUU=
-X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbBYwj4D2e1fEcuXwAAsE
+X-CM-TRANSID:PygvCgBXM9XoirVnAf0OAQ--.45861S2
+X-Coremail-Antispam: 1Uf129KBjvdXoWrAr1UAFWktrWDZF1UJr4xWFg_yoWxXFg_ua
+	10vF93uw1UXr1kXa47GFsrtFyDKw1qv398JF4rJF1rXas7tasFvrW29rZFvr1UKF4kCr1a
+	qrWYqrW2kr1I9jkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7xR_Ksj7UUUUU==
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXQz4D2e1iPoyfgAAsK
 
-From: Shixiong Ou <oushixiong@kylinos.cn>
 
-1. The device_remove_file() need to be called when driver is removing.
-2. The device_remove_file() need to be called if the call to
-   device_create_file() fails.
+在 2025/2/19 14:47, Arnd Bergmann 写道:
+> On Sat, Feb 8, 2025, at 10:29, oushixiong1025@163.com wrote:
+>> From: Shixiong Ou <oushixiong@kylinos.cn>
+>>
+>> 1. The device_remove_file() need to be called when driver is removing.
+>> 2. The device_remove_file() need to be called if the call to
+>>     device_create_file() fails.
+> This should probably use device_add_group() instead of
+> individual files to simplify both creation and removal.
+> It would also avoid the bug you introduced that gcc warns
+> about.
+>
+>        Arnd
 
-Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
----
-v1->v2:
-        add missing 'return error'.
-        call device_remove_file() in sh_mobile_lcdc_overlay_fb_unregister().
-v2->v3:
-	change the type of 'i' to int.
-	add overlay_sysfs_attrs_enabled flag.
+Thank you for your suggestion. I will incorporate your advice and resend a patch.
 
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 25 +++++++++++++++++++++----
- 1 file changed, 21 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 4715dcb59811..eaf782133542 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -200,6 +200,8 @@ struct sh_mobile_lcdc_overlay {
- 	unsigned int pitch;
- 	int pos_x;
- 	int pos_y;
-+
-+	bool overlay_sysfs_attrs_enabled;
- };
- 
- struct sh_mobile_lcdc_priv {
-@@ -1504,10 +1506,16 @@ static void
- sh_mobile_lcdc_overlay_fb_unregister(struct sh_mobile_lcdc_overlay *ovl)
- {
- 	struct fb_info *info = ovl->info;
-+	unsigned int i;
- 
- 	if (info == NULL || info->dev == NULL)
- 		return;
- 
-+	if (ovl->overlay_sysfs_attrs_enabled) {
-+		for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i)
-+			device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
-+		ovl->overlay_sysfs_attrs_enabled =  false;
-+	}
- 	unregister_framebuffer(ovl->info);
- }
- 
-@@ -1516,7 +1524,7 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
- {
- 	struct sh_mobile_lcdc_priv *lcdc = ovl->channel->lcdc;
- 	struct fb_info *info = ovl->info;
--	unsigned int i;
-+	int i, error = 0;
- 	int ret;
- 
- 	if (info == NULL)
-@@ -1530,10 +1538,19 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
- 		 dev_name(lcdc->dev), ovl->index, info->var.xres,
- 		 info->var.yres, info->var.bits_per_pixel);
- 
-+	ovl->overlay_sysfs_attrs_enabled = true;
-+
- 	for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i) {
--		ret = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
--		if (ret < 0)
--			return ret;
-+		error = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
-+		if (error)
-+			break;
-+	}
-+
-+	if (error) {
-+		while (--i >= 0)
-+			device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
-+		ovl->overlay_sysfs_attrs_enabled = false;
-+		return error;
- 	}
- 
- 	return 0;
--- 
-2.25.1
+Thanks and Regards,
+Shixiong Ou.
 

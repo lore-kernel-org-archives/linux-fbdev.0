@@ -1,141 +1,112 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from fout-a6-smtp.messagingengine.com (fout-a6-smtp.messagingengine.com [103.168.172.149])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D7E31B4245;
-	Wed, 19 Feb 2025 05:25:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADF5D1B87F8;
+	Wed, 19 Feb 2025 06:47:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.149
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739942755; cv=none; b=NYTxGY9k80YkVPUp+Ah6HDK3pI2iiHVVIndjFmHT7O7M0ovs4GaGeEk/80EShUss4Y7WW78RvV0Z7yR7M1Fj6ul9AVEbKubFCC0wEKpu20Gl8yRyOR3hVM03BBT+tnQr2eO02nhdWq/ucd8CTlB7Qro350M/KsvlHsVXYfE+3MU=
+	t=1739947663; cv=none; b=sZmpBdkPl2meWOOpoXe365WRcvgcf1EAlpGcrHyauPN3cncb1W4745gDGpzh5UCWdF+QcoEsMQenYsDk7um0Aef2YBSDqvAU+LFugoK16wT9n8C33zYkbGPyE30ZhvRPVIX5aUGmYB98fznpBberI8EoLN1pBjAE5Nm6OauU0sE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739942755; c=relaxed/simple;
-	bh=S8Bo1mBNhsHitvYqtIs6rp8B5fdMlpBSYkGUIFzfbm4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=joJTdnbLtuUzlk8q/5gn1wWpNAhcG0T0PIZ6cAFxVVrJer1zdJHMQWVRpEXeRpLWPptEK7IElQK+PHFTGorIzoc/9ZO0vxJP6bvDn46UXic8fTO6fYcGK7X0WLQwBA+8HHSynuklEyKjhfjotPLkYqPQBaMnjoOSQqLemcFIe5k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bpUqxIhC; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1739947663; c=relaxed/simple;
+	bh=lLC828cf4EMsaJ1JTfrov2AKE1L5G0zPb43ehUPW7Yc=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=QjhpJ4D98qNmxAlJMNF8Lk5I/r6flL5GOP+afd3pA55T8fxjyrXVZ6nyPWw7vZ1FJpCY6OPB+CEwTqssEnrF+ioSzHXjD87oFp6fQ+SuHQPhOWZXVPZxZ9koyAEo1TNzQKI2pf+sIESBMG4etEonKLR63cRJjiS8GPfWjzsI/Ko=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=OFXPhAWh; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=S8cN9Grw; arc=none smtp.client-ip=103.168.172.149
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bpUqxIhC"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1739942754; x=1771478754;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=S8Bo1mBNhsHitvYqtIs6rp8B5fdMlpBSYkGUIFzfbm4=;
-  b=bpUqxIhCAB4UMAKaD730EzXR0FhlEPtnTfOJU2KmTfzx9gEDi/lTOWnZ
-   xiXtgCxqOhl0jOVXRhTsBT/CUn1JuUY7rmuWtKJv86C7zwFgUC8XWQIJB
-   9mf+Ek0g6w39c6a45Mrf6pNuEoDFYjm3IboFTN4aaSOnflb0qAIlkVErY
-   QD5UUC5mNmkcGnIsR3ZPin+1SjalfuXgHG64TJEwapvHtxehRjAZplRey
-   D4iPu/ydKLyMKBuC8qeS3Q/YuNnVzHZKLcSPpERXCwWmemSfwVbSWkRGq
-   pqlo6Vt1FbQBWzcqAScrti1UW6yMi6fuhEpQBQQb3Dum1vM0uIwsInW0c
-   g==;
-X-CSE-ConnectionGUID: y59jn+AoQOGSgJw3nHhwxQ==
-X-CSE-MsgGUID: 2E32wKYoRsSQ0ZpVsBcRrw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11348"; a="40530056"
-X-IronPort-AV: E=Sophos;i="6.13,298,1732608000"; 
-   d="scan'208";a="40530056"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Feb 2025 21:25:53 -0800
-X-CSE-ConnectionGUID: 7coZRVwtRnuLC2mtXb/sSg==
-X-CSE-MsgGUID: eT5/0cxQQpum+SAVrkC6+w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,298,1732608000"; 
-   d="scan'208";a="114462839"
-Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
-  by fmviesa006.fm.intel.com with ESMTP; 18 Feb 2025 21:25:50 -0800
-Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1tkcaT-0001Gt-0i;
-	Wed, 19 Feb 2025 05:25:36 +0000
-Date: Wed, 19 Feb 2025 13:25:04 +0800
-From: kernel test robot <lkp@intel.com>
-To: oushixiong1025@163.com, Helge Deller <deller@gmx.de>
-Cc: oe-kbuild-all@lists.linux.dev, Thomas Zimmermann <tzimmermann@suse.de>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-	Lee Jones <lee@kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: Re: [PATCH v2] fbdev: lcdcfb: add missing device_remove_file()
-Message-ID: <202502191200.AVwVc1DY-lkp@intel.com>
-References: <20250208092918.251733-1-oushixiong1025@163.com>
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="OFXPhAWh";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="S8cN9Grw"
+Received: from phl-compute-11.internal (phl-compute-11.phl.internal [10.202.2.51])
+	by mailfout.phl.internal (Postfix) with ESMTP id 7C4401380861;
+	Wed, 19 Feb 2025 01:47:39 -0500 (EST)
+Received: from phl-imap-11 ([10.202.2.101])
+  by phl-compute-11.internal (MEProxy); Wed, 19 Feb 2025 01:47:39 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1739947659;
+	 x=1740034059; bh=J36qZr4XlQJHghLHCEZehAHjZbscRnNTmQ9ugnTYxVo=; b=
+	OFXPhAWhRehitF6GSNzJuzWZoC9i+FkscVRs9xpeC0DjoI8ljDc2hB0HEdM+sfIh
+	xjXTMyLSXAPttxAu/Rbg5OlNq8KVnSBtRGj34virrlToENk9Yt1AI03oSr17GP/p
+	ItE6NA8QtriiHRFspzmdgWlOGL/BRcW6eNKuHkiJJW2W3E0NiyJ8AZQy5PT8VHlB
+	Af4zuEKF3lKXgZZaN6m9nqivj5Xr4a1+vYIW0Recnh1I3/DOeRNO2lgxoWV9HhIk
+	t1P3kyL3oDDjUtJ5nxIO8tsRHpeYkJoURtKdmsZEr0VOboByMV7L/p2WoQqnysDO
+	Qj7WjF+3yA/plTuYqxfqcA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1739947659; x=
+	1740034059; bh=J36qZr4XlQJHghLHCEZehAHjZbscRnNTmQ9ugnTYxVo=; b=S
+	8cN9GrwjiCFlRI4BSr7oLDPMvEOAMFRL0/lhW26MFviJ9W0LX7rWlZ/MAVbrX7+o
+	KXLCRFf4hnvRyU8JAj0OxmjeNzCBBXwxM03tCwNU+LKIbyDzWmVjxTBnvYC9Vyis
+	E7SZdc8aRTWjzh04UvyxKf43YSMFB0vFzFx3GxLb++rgsj3aHfAAp69SizicXllz
+	MC+Sj4xdIFf3DHnM3yUeLdR4Dna61+S13fjv9Gujzgbo9eqip08uBCbpDvXiAvj5
+	PXZYLjB378W4dT5AbvEGsuZwIMLa6t/hr0IQ9fVY3NWrHP7WaESxoTg5t1MWxUdG
+	d7yGQn9MDZkquAXmzpbzw==
+X-ME-Sender: <xms:iX61ZyPZshRIVa-De3lhnUd8ev5oTNVqwRG8IBT7N6jjeIJ4Jab8Lg>
+    <xme:iX61Zw8Cdk3v-pSafSh2TKhqROR0trG-RdXSjc_guD8jBzw_VnfLFoVmlypyK2JmP
+    75ncgaeToNeM3E8LWg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdeifeehhecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
+    uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
+    hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredt
+    tdenucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusg
+    druggvqeenucggtffrrghtthgvrhhnpefhtdfhvddtfeehudekteeggffghfejgeegteef
+    gffgvedugeduveelvdekhfdvieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmh
+    epmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphhtthhopedu
+    tddpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepohhushhhihigihhonhhguddtvd
+    ehseduieefrdgtohhmpdhrtghpthhtohepuhdrkhhlvghinhgvqdhkohgvnhhighessggr
+    hihlihgsrhgvrdgtohhmpdhrtghpthhtohepuggvlhhlvghrsehgmhigrdguvgdprhgtph
+    htthhopehlrghurhgvnhhtrdhpihhntghhrghrthdorhgvnhgvshgrshesihguvggrshho
+    nhgsohgrrhgurdgtohhmpdhrtghpthhtoheplhgvvgeskhgvrhhnvghlrdhorhhgpdhrtg
+    hpthhtohepohhushhhihigihhonhhgsehkhihlihhnohhsrdgtnhdprhgtphhtthhopegu
+    rhhiqdguvghvvghlsehlihhsthhsrdhfrhgvvgguvghskhhtohhprdhorhhgpdhrtghpth
+    htohepthiiihhmmhgvrhhmrghnnhesshhushgvrdguvgdprhgtphhtthhopehlihhnuhig
+    qdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-ME-Proxy: <xmx:iX61Z5SyTODmXICOp_WXU3NSDFy1s_FTtNbLc1gOCPdibSHLmS1lww>
+    <xmx:iX61ZyttbKacXZ9qlo-Pw5b8KuvM-yTc0w3qHB8Pw_eSJaraQFybbw>
+    <xmx:iX61Z6fhJnCSyXSQ6ZuOoUJdm596mkMwKo225NV-CHVuxl3TSNuOvw>
+    <xmx:iX61Z226JAg3E-s_OB-Nr0DNGmrggT029C1mUx7bTU02ok-QVsAbhA>
+    <xmx:i361Z64u886KwNja_d7rD4JlceV124kFry1zhn9OT4MmYloJ7kdd4R1O>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 9AACC2220072; Wed, 19 Feb 2025 01:47:37 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Date: Wed, 19 Feb 2025 07:47:06 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: oushixiong <oushixiong1025@163.com>, "Helge Deller" <deller@gmx.de>
+Cc: "Thomas Zimmermann" <tzimmermann@suse.de>,
+ "Laurent Pinchart" <laurent.pinchart+renesas@ideasonboard.com>,
+ "Lee Jones" <lee@kernel.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, oushixiong <oushixiong@kylinos.cn>
+Message-Id: <4f2ae439-1bdc-4593-9151-e15981509344@app.fastmail.com>
 In-Reply-To: <20250208092918.251733-1-oushixiong1025@163.com>
+References: <20250208092918.251733-1-oushixiong1025@163.com>
+Subject: Re: [PATCH v2] fbdev: lcdcfb: add missing device_remove_file()
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Hi,
+On Sat, Feb 8, 2025, at 10:29, oushixiong1025@163.com wrote:
+> From: Shixiong Ou <oushixiong@kylinos.cn>
+>
+> 1. The device_remove_file() need to be called when driver is removing.
+> 2. The device_remove_file() need to be called if the call to
+>    device_create_file() fails.
 
-kernel test robot noticed the following build warnings:
+This should probably use device_add_group() instead of
+individual files to simplify both creation and removal.
+It would also avoid the bug you introduced that gcc warns
+about.
 
-[auto build test WARNING on lee-leds/for-leds-next]
-[also build test WARNING on linus/master v6.14-rc3 next-20250218]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/oushixiong1025-163-com/fbdev-lcdcfb-add-missing-device_remove_file/20250208-173203
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/leds.git for-leds-next
-patch link:    https://lore.kernel.org/r/20250208092918.251733-1-oushixiong1025%40163.com
-patch subject: [PATCH v2] fbdev: lcdcfb: add missing device_remove_file()
-config: nios2-randconfig-r072-20250219 (https://download.01.org/0day-ci/archive/20250219/202502191200.AVwVc1DY-lkp@intel.com/config)
-compiler: nios2-linux-gcc (GCC) 14.2.0
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202502191200.AVwVc1DY-lkp@intel.com/
-
-smatch warnings:
-drivers/video/fbdev/sh_mobile_lcdcfb.c:1544 sh_mobile_lcdc_overlay_fb_register() warn: always true condition '(--i >= 0) => (0-u32max >= 0)'
-drivers/video/fbdev/sh_mobile_lcdcfb.c:1544 sh_mobile_lcdc_overlay_fb_register() warn: always true condition '(--i >= 0) => (0-u32max >= 0)'
-drivers/video/fbdev/sh_mobile_lcdcfb.c:2652 sh_mobile_lcdc_probe() warn: 'irq' from request_irq() not released on lines: 2652.
-drivers/video/fbdev/sh_mobile_lcdcfb.c:2652 sh_mobile_lcdc_probe() warn: 'priv->base' from ioremap() not released on lines: 2652.
-
-vim +1544 drivers/video/fbdev/sh_mobile_lcdcfb.c
-
-  1517	
-  1518	static int
-  1519	sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
-  1520	{
-  1521		struct sh_mobile_lcdc_priv *lcdc = ovl->channel->lcdc;
-  1522		struct fb_info *info = ovl->info;
-  1523		unsigned int i, error = 0;
-  1524		int ret;
-  1525	
-  1526		if (info == NULL)
-  1527			return 0;
-  1528	
-  1529		ret = register_framebuffer(info);
-  1530		if (ret < 0)
-  1531			return ret;
-  1532	
-  1533		dev_info(lcdc->dev, "registered %s/overlay %u as %dx%d %dbpp.\n",
-  1534			 dev_name(lcdc->dev), ovl->index, info->var.xres,
-  1535			 info->var.yres, info->var.bits_per_pixel);
-  1536	
-  1537		for (i = 0; i < ARRAY_SIZE(overlay_sysfs_attrs); ++i) {
-  1538			error = device_create_file(info->dev, &overlay_sysfs_attrs[i]);
-  1539			if (error)
-  1540				break;
-  1541		}
-  1542	
-  1543		if (error) {
-> 1544			while (--i >= 0)
-  1545				device_remove_file(info->dev, &overlay_sysfs_attrs[i]);
-  1546			return error;
-  1547		}
-  1548	
-  1549		return 0;
-  1550	}
-  1551	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+      Arnd

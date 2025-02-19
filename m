@@ -1,128 +1,205 @@
-Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99E961DF755;
-	Wed, 19 Feb 2025 12:30:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E55D1EFFAF;
+	Wed, 19 Feb 2025 14:27:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739968241; cv=none; b=Q3nnQSOaWAjkAPSqxptJ0PoJ3FplnqD3jqlJLtCV4163bmrSnHrgUctsI56uciucWhTPL42w/X+eIyx/4w7eq39JIWtxIq49WAKuFGWMiCU04Qnd+QLQPQy2pIAFryaf2T7ycq4peULFCV7RhYcErGiI8gMlN/Cwp9csfr9iBgI=
+	t=1739975233; cv=none; b=lNchhz6GlACihDVAkLhJ6OxScdPOjKDSoVGl4kwGwxU0FTBU8MSgz5wkTXLAcuNht5VDcLZstNQV8V3cso2wV+zQd0Ot1z7Ye3oyyywvlItZSIgmk7YVR7mf4eMFhApgJ62u2gIfyLYeTnKNXbGE4bUAbmq4DydOUHjQG9yulT0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739968241; c=relaxed/simple;
-	bh=ztDgWvwz+CZSZ7CQPPdu/7HdN7wQIMweiboHpzxoiWg=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=pYKdcsEON/poA/odFq6vyXaWwXpnBkmpFOCy8EWR6+/fy4+wZOfvDMPldZ85EciofMQee0gUIEJNkqlhIKe4pEHAlo9V7ZvcuDrzEw5dvbkzVnOWYO+eCd8aNGU6l2dKBdSrenwzCEgSdWeF4xXtjvfVp9FQa9cFSIiz5oIYav8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DsR6S0xH; arc=none smtp.client-ip=209.85.214.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1739975233; c=relaxed/simple;
+	bh=vhmxI/qpUsmrpjWohWJgs/TMHfwXta/ulC9P6VHKIyA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kiQt0lUALPHcKQkTSCGmrcMoi3a8C7SeszpQFY7CobZVytj82YYR/WYXIm1H/lmsfFRgvPet+Vrhd67+Prmebcgjo86/6JMaXSiQc13QovkQHuq4j2SZ4Ap7yqfrGHPhr1riAUjO7gHftqmiccXNegfVkHTLDj6tuk7UaB8K2Lo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=PXgnPNuI; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DsR6S0xH"
-Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-219f8263ae0so122286035ad.0;
-        Wed, 19 Feb 2025 04:30:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739968239; x=1740573039; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=jYxtuN+FHDHDJ1UtgUUZtfJNaXcnoTaEgSZ1XZNBNzw=;
-        b=DsR6S0xHbZWBjb8wktPU8nH7WqaUXZ19KrTg7W4CRcg4RboFTvCS5c06gZCAbFuXMm
-         YcX2A7xLCFR5Wp3jtYT11jNHC27AsYTwUEJhTBdydOD+CZfsMh4OBy55uqwAhd1vH7Kl
-         TOZOxntNg6tjtFG5OjkGiwLKgvECLF+qmy6inZXHFu8NZacYLhHUjzM2Ki/Zht/389Us
-         b1T+yCaEiFJ5wS3WMPlTHQvKKaXD+OOuwUskuoEPSqUeqcmgq5TlCAdUudaYavLD8QH3
-         h2KJzi8lbJ3xzARdn6ESykTN3Lhvbd4y2ARZYOD933+0cg51C0BEOQ/oaI1nTRhEQSMn
-         8sVQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739968239; x=1740573039;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=jYxtuN+FHDHDJ1UtgUUZtfJNaXcnoTaEgSZ1XZNBNzw=;
-        b=u50EU4mCOQlue4eGCTR/wcaEwOkqWTpDU/Tr1M33hbia6qVdwtQbgRVst0EkOoGRQv
-         CAjJpwvGCc9+Gl+zU6gk4TNXrYgJdv/4md084PKMrLOvvi0jwUoA5FcaaEoAPETLvMqw
-         sF9dz+CPx9O1JwK8kJDYCurQ86miYawxm9ctfXPouMiwRpNB2ggze8gZFohmctfZdf1O
-         HCfUkFj5X9wLhtt2/mpVIp/+Vq/juLs46xK1y8sHWpU8I4psfD358NbLAYu+TJeTwaje
-         4Uz/8p5WXiU9V46EdxAHq80ndDU3hNt2sJsWRI220tOTLIuKSf5crOpxoZS2R1/K2yM3
-         5CUw==
-X-Forwarded-Encrypted: i=1; AJvYcCW1pFT2oMB0OzhGXn9RqBS9Rz3E6/s+etext39Tq6f8M+NuSBlSn8EjO5JkCzmVbbFayPrUJAwU@vger.kernel.org, AJvYcCWVVrIcVeg72VsqI5llBggeON9hzsFCT7JH6FGWdtQEJ9qcwXZ8yrGadJ7kt0vIlCmWx7Kbl3BjrbjFog==@vger.kernel.org, AJvYcCXPvyI/cPVtAwpjIdxfbCv550uxyyZwUfuES4NrIRLZZTAjoOcMfrBpp0VN5aJ2mAI7JZvhtqqcXDxy827A@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz3v/2dP+3makg8Rb1LwUbwcLmnmVcacAXHUbqrQea1Cz8oG4SF
-	friO1iHSuWQ3KfddQ6cS0oQhWOJjh5SwgjmZV8xqTpeM2N4sOTPs
-X-Gm-Gg: ASbGnctPRP4QJhNt3flrJwXu6HuSYfL9FnNEfpB8fV8TL6lkvkI12LlB2IvQxVbdMZm
-	1wTio2ULRUngBPeoMth8itRmnYh5URkBxkhS3cnLrAzrSnRwCVsnOZDmw2+Ttcz0QU1hl7iE4S1
-	pjYrTGE/a8g8CBwBusjCQkeLqMYGsqdNOsYw3rWa9Kqn9EtoLQwkavWUyc6r905qA0abas3sJB7
-	M8oG7RmScRA5xocOrt27GDyTr+QBxCkosCIKSAr5IyU//wlD3+Ei5UQbrtEqVCPF4USVKn9pCxd
-	WQkempKZQqaZ8XopMrk=
-X-Google-Smtp-Source: AGHT+IFHs043Az3sOgkW8oNKMParbw6enY+JvxfeqIdEzf8wa0Ef/I2EUsS+62XtazqXNwwof3B8Rw==
-X-Received: by 2002:a05:6a00:180f:b0:730:98ac:ad79 with SMTP id d2e1a72fcca58-732617d97b8mr27800074b3a.12.1739968238240;
-        Wed, 19 Feb 2025 04:30:38 -0800 (PST)
-Received: from ubuntuxuelab.. ([58.246.183.50])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7327e17440esm5575536b3a.76.2025.02.19.04.30.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Feb 2025 04:30:37 -0800 (PST)
-From: Haoyu Li <lihaoyu499@gmail.com>
-To: danielt@kernel.org
-Cc: chenyuan0y@gmail.com,
-	deller@gmx.de,
-	dri-devel@lists.freedesktop.org,
-	jani.nikula@linux.intel.com,
-	jingoohan1@gmail.com,
-	lee@kernel.org,
-	lihaoyu499@gmail.com,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	robh@kernel.org,
-	stable@vger.kernel.org,
-	zichenxie0106@gmail.com
-Subject: [PATCH] drivers: video: backlight: Fix NULL Pointer Dereference in backlight_device_register()
-Date: Wed, 19 Feb 2025 20:29:50 +0800
-Message-Id: <20250219122950.7416-1-lihaoyu499@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <Z65fFRKgqk-33HXI@aspen.lan>
-References: <Z65fFRKgqk-33HXI@aspen.lan>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="PXgnPNuI"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1739975232; x=1771511232;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=vhmxI/qpUsmrpjWohWJgs/TMHfwXta/ulC9P6VHKIyA=;
+  b=PXgnPNuI3Zt8enFDOO6lW3DIwE+Ma37qC2yKch4wE6kvULdyS0RU38HF
+   YW2crhXxV6VvZsKmY9wMydPGG/kuBnr9js9KeNg76anZgzzY4RAMmqIf0
+   w1SHboauqv7Lv9W5eKYF8qXdgqP80uqSIN5Kdp1zZEwm5hDUdvDW0ZCph
+   +fHyozL78MzHM4iFSXZ3DWUFuWOCK6SRNzyNIgauALUfeYYYGxzV2gGBH
+   ypLxWNQ1yM4ykRSqcDjDE6aM8/KwQ9KfVjIs0L9ohmPxAexI5bc2/iZUt
+   E9gSyw2u8MVEN3itNEb+HSYpL77EteB+qgXWIZ2d9WJgITPKpl4g7EnOP
+   A==;
+X-CSE-ConnectionGUID: IXdy6efWSZGse9Jad5BS8w==
+X-CSE-MsgGUID: HCwKoiUcTHqXMHScFXiJ/A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11350"; a="66067582"
+X-IronPort-AV: E=Sophos;i="6.13,299,1732608000"; 
+   d="scan'208";a="66067582"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Feb 2025 06:26:56 -0800
+X-CSE-ConnectionGUID: 5fTf7ojeRZiQzvfXC1fUTQ==
+X-CSE-MsgGUID: zkUoBl+eRPGI1IYoJeFrYA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="145620194"
+Received: from smile.fi.intel.com ([10.237.72.58])
+  by fmviesa001.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Feb 2025 06:26:52 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.98)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1tkl2H-0000000D2xx-20EC;
+	Wed, 19 Feb 2025 16:26:49 +0200
+Date: Wed, 19 Feb 2025 16:26:49 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] mfd: lm3533: convert to use OF
+Message-ID: <Z7XqKcOUt5niXzpv@smile.fi.intel.com>
+References: <20250218132702.114669-1-clamor95@gmail.com>
+ <20250218132702.114669-3-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250218132702.114669-3-clamor95@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 
-As per Jani and Daniel's feedback, I have updated the patch so that
-the `wled->name` null check now occurs in the `wled_configure`
-function, right after the `devm_kasprintf` callsite. This should
-resolve the issue.
-The updated patch is as follows:
+On Tue, Feb 18, 2025 at 03:27:00PM +0200, Svyatoslav Ryhel wrote:
+> Remove platform data and fully relay on OF and device tree
+> parsing and binding devices.
 
-In the function "wled_probe", the "wled->name" is dynamically allocated
-(wled_probe -> wled_configure -> devm_kasprintf), and it is possible
-for it to be NULL.
+Thanks for following the advice, but the problem with this change as it does
+too much at once. It should be split to a few simpler ones.
+On top of that, this removes MFD participation from the driver but leaves it
+under MFD realm. Moreover, looking briefly at the code it looks like it open
+codes the parts of MFD. The latter needs a very goo justification which commit
+message is missing.
 
-To avoid dereferencing a NULL pointer (wled_probe ->
-devm_backlight_device_register -> backlight_device_register),
-we add a null-check after the allocation rather than in
-backlight_device_register.
+...
 
-Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
-Signed-off-by: Haoyu Li <lihaoyu499@gmail.com>
-Cc: stable@vger.kernel.org
----
- drivers/video/backlight/qcom-wled.c | 5 +++++
- 1 file changed, 5 insertions(+)
+> +static const struct of_device_id lm3533_als_match_table[] = {
+> +	{ .compatible = "ti,lm3533-als" },
+> +	{ },
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 9afe701b2a1b..3dacfef821ca 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -1409,6 +1409,11 @@ static int wled_configure(struct wled *wled)
- 	if (rc)
- 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
- 
-+	if (!wled->name) {
-+		dev_err(wled->dev, "Fail to initialize wled name\n");
-+		return -EINVAL;
-+	}
-+
- 	switch (wled->version) {
- 	case 3:
- 		u32_opts = wled3_opts;
+No comma for the terminator entry. I think I already pointed that out earlier.
+
+> +};
+
+...
+
+> +	device_property_read_string(&pdev->dev, "linux,default-trigger",
+> +				    &led->cdev.default_trigger);
+
+One prerequisite patch you probably want is an introduction of
+
+	struct device *dev = &pdev->dev;
+
+in the respective ->probe() implementations. This, in particular, makes the
+above lines shorter and fit one line.
+
+...
+
+> +static const struct of_device_id lm3533_led_match_table[] = {
+> +	{ .compatible = "ti,lm3533-leds" },
+> +	{ },
+
+As per above.
+
+> +};
+
+...
+
+> +		if (!strcmp(comatible, "ti,lm3533-als"))
+> +			lm3533->have_als = 1;
+
+If you end up having this, it's not the best what we can do. OF ID tables have
+a driver_data field exactly for the cases like this.
+
+...
+
+> +		if (!strcmp(comatible, "ti,lm3533-backlight"))
+> +			lm3533->have_backlights = 1;
+
+Ditto.
+
+...
+
+> +		if (!strcmp(comatible, "ti,lm3533-leds"))
+> +			lm3533->have_leds = 1;
+
+Ditto.
+
+...
+
+> +		ret = lm3533_update(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF,
+> +				    1 << (2 * id + 1), 1 << (2 * id + 1));
+
+BIT() and better to use a temporary variable for this calculation.
+
+> +		if (ret)
+> +			return ret;
+
+...
+
+> +		ret = lm3533_update(bl->lm3533, LM3533_REG_OUTPUT_CONF1,
+> +				    id | id << 1, BIT(0) | BIT(1));
+
+		mask = GENMASK();
+		..., id ? mask : 0, mask);
+
+> +		if (ret)
+> +			return ret;
+> +	}
+
+...
+
+> +	bd = devm_backlight_device_register(&pdev->dev, pdev->name, pdev->dev.parent,
+> +					    bl, &lm3533_bl_ops, &props);
+
+
+With the advice from above:
+
+	bd = devm_backlight_device_register(dev, pdev->name, dev->parent, bl, &lm3533_bl_ops,
+					    &props);
+
+
+>  	if (IS_ERR(bd)) {
+>  		dev_err(&pdev->dev, "failed to register backlight device\n");
+>  		return PTR_ERR(bd);
+
+Consider another prerequisite patch (which should come before the firstly
+proposed one):
+
+	struct device *dev = &pdev->dev; // yes, this can go in this change
+	...
+
+	if (IS_ERR(bd))
+		return dev_err_probe(dev, PTR_ERR(bd), "failed to register backlight device\n");
+
+...
+
+> +static const struct of_device_id lm3533_bl_match_table[] = {
+> +	{ .compatible = "ti,lm3533-backlight" },
+> +	{ },
+
+As per above.
+
+> +};
+
 -- 
-2.34.1
+With Best Regards,
+Andy Shevchenko
+
 

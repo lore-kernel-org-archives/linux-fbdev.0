@@ -1,160 +1,188 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 93C541F1301;
-	Thu, 20 Feb 2025 10:00:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.3
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 369051F584F;
+	Thu, 20 Feb 2025 15:00:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740045615; cv=none; b=SImkzICS26/IWQzOUp3GaQBnrgrYTRAHOZGsmKBhJen40P3BPNNDGc6vdVQBi5HhJRkduEJWfTjda1dNk4HeOXODAdstEktoPqBW7Mivbpc+bOUa+PIkv9onuS6hctxtwWCEfMtGxzRW3TyzrJrwy3jzQ9jmq1nhLV3QibJjH9c=
+	t=1740063621; cv=none; b=qcQlwdj2W3d7x3BMikJ29ns+Lt4fRHmkCe6HnvboL4scwyNM3FikInY+6xD/uTBYbG+fO9A6qvipxdHTnc7BSIWbzWDeuPV1gJtEkeED5lTHygXiAaIS/T9jQsWl/7JMIyyqaYPt8nlUUY78K55cKaiytbQ1/dUabZdksR2+A8A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740045615; c=relaxed/simple;
-	bh=Jh8ska2JiUu6hoEeigD6Clig/7y9WNDWseWg53zbtMc=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=XqgAVhH6b3bl94y5WJy0SsP8Hy0ojLX0hKqRYUNRL9K1mbFZDiyVBK4Ja1dqN21r6VdqVQwvlMz6c+GWiAZzIoI16OSQqzRu6vDXf8yg15P5g7kirVsGZ/pm6uxQmyZKKsdl4xKf+59Vb/QD3QoifBFcJA+fsye+d5+SdV30tzg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=BV1BLeNm; arc=none smtp.client-ip=220.197.31.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1740063621; c=relaxed/simple;
+	bh=4bckTq02vaYkp80bkNFN6Mdl+bCKGs+xiMduy7+da4Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=PUKdxmMg9GDKgFMkMcYHHI6mF9VJOWu62XCPu3jGOkI9cUyav8r2z0sVbWxKKliDTfQfYz14reBc0NtqluFc1PfiuFprV91q/tO6lGXFQ99JrUTg93yCCtp567XRbrsI0it4e/uMWHX0+edePsBhg2tByNXOlrXZZpWSUcYB1FU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jhwuq73G; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="BV1BLeNm"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=2RoNr
-	SjHOSnrbQWPVmn0LiRyjXkWM0htcxpHKmfkuqc=; b=BV1BLeNmH6YzL7rRbUtjE
-	R542RFTSXbvkLXpOaNF4F3seYCVa+3SjrpKeZiZYcKGpEPsqiLKakUrKeOmcaGAO
-	ZBzNLLjCNuUN63pG/vPcXOs8ouwGE3ou2uy7VImVeNI39cwS4rCCdln6rMDEWCoK
-	quh8NXRgJ73gCAZ5LATcw0=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-3 (Coremail) with SMTP id _____wDn77ML_bZnugebMw--.5396S2;
-	Thu, 20 Feb 2025 17:59:40 +0800 (CST)
-From: oushixiong1025@163.com
-To: Simona Vetter <simona@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	oushixiong <oushixiong@kylinos.cn>
-Subject: [PATCH] fbdev: Register sysfs groups through device_add_group
-Date: Thu, 20 Feb 2025 17:59:35 +0800
-Message-Id: <20250220095935.270797-1-oushixiong1025@163.com>
-X-Mailer: git-send-email 2.25.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jhwuq73G"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE99CC4CEDD;
+	Thu, 20 Feb 2025 15:00:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1740063620;
+	bh=4bckTq02vaYkp80bkNFN6Mdl+bCKGs+xiMduy7+da4Q=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Jhwuq73GiLIkP8rLFDZ5sCdKaip/pnIr9jbsMzBNwAs+ue9U8dPoCj2Q5KHnqqEA+
+	 BNrRsPfS5NuNTMIuhQ82f9lgYHb1B/fJ2HCE99s5nkqFkHch3VnlINwJGlusQ4W93O
+	 sKLKUUB1XZzYTpD7tf5CQUK8Q1+JPlQNhinQFi1sF8trYC/7QkO8gaW4sVsANDz/KX
+	 rQYFuw55EW9GIZxmjxzvdBh8VYX5DtfoLQ+8BaWgO5uKFKF/9aK1fitTO0Uh5t2IJd
+	 qIUE5J87X/5KIXUUzE4/KzugfK8YRYmvzZYEbsJBR+E6ozfJJQ5luh9gDAdRLFgGlG
+	 yQ0ZkagfPiy7w==
+Date: Thu, 20 Feb 2025 15:00:16 +0000
+From: Lee Jones <lee@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: pavel@ucw.cz, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	simona@ffwll.ch, linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 12/13] leds: backlight trigger: Replace fb events with a
+ dedicated function call
+Message-ID: <20250220150016.GC778229@google.com>
+References: <20250206154033.697495-1-tzimmermann@suse.de>
+ <20250206154033.697495-13-tzimmermann@suse.de>
+ <20250211135752.GT1868108@google.com>
+ <f4652dbd-7544-4a6d-98d0-f4b64d60a435@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wDn77ML_bZnugebMw--.5396S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxJF43urWUKryfJF15Jw47Jwb_yoWrWw43pr
-	n3JFyFgry5WF1UGFs3uwsrX39xWw4rury5Jr9xt3yxGF43GFZrW34xAFy5A3yrGr97Jr1S
-	qFsrXw18JFZF9aUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jOZ2-UUUUU=
-X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXRb5D2e28fjYegAAsH
+In-Reply-To: <f4652dbd-7544-4a6d-98d0-f4b64d60a435@suse.de>
 
-From: oushixiong <oushixiong@kylinos.cn>
+On Thu, 13 Feb 2025, Thomas Zimmermann wrote:
 
-Use device_add_group() to simplify creation.
+> Hi
+> 
+> Am 11.02.25 um 14:57 schrieb Lee Jones:
+> > On Thu, 06 Feb 2025, Thomas Zimmermann wrote:
+> > 
+> > > Remove support for fb events from the led backlight trigger. Provide the
+> > > helper ledtrig_backlight_blank() instead. Call it from fbdev to inform
+> > > the trigger of changes to a display's blank state.
+> > > 
+> > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> > > ---
+> > >   drivers/leds/trigger/ledtrig-backlight.c | 31 +++++-------------------
+> > >   drivers/video/fbdev/core/fbmem.c         | 21 +++++++++-------
+> > >   include/linux/leds.h                     |  6 +++++
+> > >   3 files changed, 24 insertions(+), 34 deletions(-)
+> > > 
+> > > diff --git a/drivers/leds/trigger/ledtrig-backlight.c b/drivers/leds/trigger/ledtrig-backlight.c
+> > > index f9317f93483b..e3ae4adc29e3 100644
+> > > --- a/drivers/leds/trigger/ledtrig-backlight.c
+> > > +++ b/drivers/leds/trigger/ledtrig-backlight.c
+> > > @@ -10,7 +10,6 @@
+> > >   #include <linux/kernel.h>
+> > >   #include <linux/slab.h>
+> > >   #include <linux/init.h>
+> > > -#include <linux/fb.h>
+> > >   #include <linux/leds.h>
+> > >   #include "../leds.h"
+> > > @@ -21,7 +20,6 @@ struct bl_trig_notifier {
+> > >   	struct led_classdev *led;
+> > >   	int brightness;
+> > >   	int old_status;
+> > > -	struct notifier_block notifier;
+> > >   	unsigned invert;
+> > >   	struct list_head entry;
+> > > @@ -30,7 +28,7 @@ struct bl_trig_notifier {
+> > >   static struct list_head ledtrig_backlight_list;
+> > >   static struct mutex ledtrig_backlight_list_mutex;
+> > > -static void ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
+> > > +static void __ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
+> > I'm confused.  Didn't you just introduce this?
+> 
+> It's being renamed here; probably something to avoid.
+> 
+> 
+> > 
+> > >   {
+> > >   	struct led_classdev *led = n->led;
+> > >   	int new_status = !on ? BLANK : UNBLANK;
+> > > @@ -48,23 +46,14 @@ static void ledtrig_backlight_blank(struct bl_trig_notifier *n, bool on)
+> > >   	n->old_status = new_status;
+> > >   }
+> > > -static int fb_notifier_callback(struct notifier_block *p,
+> > > -				unsigned long event, void *data)
+> > > +void ledtrig_backlight_blank(bool on)
+> > >   {
+> > > -	struct bl_trig_notifier *n = container_of(p,
+> > > -					struct bl_trig_notifier, notifier);
+> > > -	struct fb_event *fb_event = data;
+> > > -	int *blank;
+> > > -
+> > > -	/* If we aren't interested in this event, skip it immediately ... */
+> > > -	if (event != FB_EVENT_BLANK)
+> > > -		return 0;
+> > > -
+> > > -	blank = fb_event->data;
+> > > +	struct bl_trig_notifier *n;
+> > > -	ledtrig_backlight_blank(n, !blank[0]);
+> > > +	guard(mutex)(&ledtrig_backlight_list_mutex);
+> > > -	return 0;
+> > > +	list_for_each_entry(n, &ledtrig_backlight_list, entry)
+> > > +		__ledtrig_backlight_blank(n, on);
+> > >   }
+> > >   static ssize_t bl_trig_invert_show(struct device *dev,
+> > > @@ -110,8 +99,6 @@ ATTRIBUTE_GROUPS(bl_trig);
+> > >   static int bl_trig_activate(struct led_classdev *led)
+> > >   {
+> > > -	int ret;
+> > > -
+> > >   	struct bl_trig_notifier *n;
+> > >   	n = kzalloc(sizeof(struct bl_trig_notifier), GFP_KERNEL);
+> > > @@ -122,11 +109,6 @@ static int bl_trig_activate(struct led_classdev *led)
+> > >   	n->led = led;
+> > >   	n->brightness = led->brightness;
+> > >   	n->old_status = UNBLANK;
+> > > -	n->notifier.notifier_call = fb_notifier_callback;
+> > > -
+> > > -	ret = fb_register_client(&n->notifier);
+> > > -	if (ret)
+> > > -		dev_err(led->dev, "unable to register backlight trigger\n");
+> > >   	mutex_lock(&ledtrig_backlight_list_mutex);
+> > >   	list_add(&n->entry, &ledtrig_backlight_list);
+> > > @@ -143,7 +125,6 @@ static void bl_trig_deactivate(struct led_classdev *led)
+> > >   	list_del(&n->entry);
+> > >   	mutex_unlock(&ledtrig_backlight_list_mutex);
+> > > -	fb_unregister_client(&n->notifier);
+> > >   	kfree(n);
+> > >   }
+> > > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> > > index fb7ca143a996..92c3fe2a7aff 100644
+> > > --- a/drivers/video/fbdev/core/fbmem.c
+> > > +++ b/drivers/video/fbdev/core/fbmem.c
+> > > @@ -16,6 +16,7 @@
+> > >   #include <linux/fb.h>
+> > >   #include <linux/fbcon.h>
+> > >   #include <linux/lcd.h>
+> > > +#include <linux/leds.h>
+> > >   #include <video/nomodeset.h>
+> > > @@ -373,11 +374,19 @@ static void fb_lcd_notify_blank(struct fb_info *info)
+> > >   #endif
+> > >   }
+> > > +static void fb_ledtrig_backlight_notify_blank(struct fb_info *info)
+> > > +{
+> > > +#if IS_REACHABLE(CONFIG_LEDS_TRIGGER_BACKLIGHT)
+> > #iferry is generally discouraged in C files.
+> > 
+> > Does is_defined() work for you?
+> 
+> I don't think so. This ifdef covers the case that fbdev is built in, but led
+> is a module (i.e., fbdev=y && led=m).
+> 
+> > /
+> > > +	if (info->blank == FB_BLANK_UNBLANK)
+> > > +		ledtrig_backlight_blank(true);
+> > If !CONFIG_LEDS_TRIGGER_BACKLIGHT(), then ledtrig_backlight_blank() is a
+> > noop anyway, right?  So why encompass it in the #if at all?
+> 
+> Because of (fbdev=y && led=m) again. ledtrig_backlight_blank() would be
+> defined then, but not linkable from fbdev. Preferably, I'd rather leave out
+> the ifdef in the led header file.
 
-Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
----
- drivers/video/fbdev/core/fbsysfs.c | 69 +++++++++++++++++-------------
- 1 file changed, 39 insertions(+), 30 deletions(-)
+#ifdefs are not generally welcome in C-files.  Please rework it.
 
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 1b3c9958ef5c..06d75c767579 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -416,55 +416,64 @@ static ssize_t show_bl_curve(struct device *device,
- /* When cmap is added back in it should be a binary attribute
-  * not a text one. Consideration should also be given to converting
-  * fbdev to use configfs instead of sysfs */
--static struct device_attribute device_attrs[] = {
--	__ATTR(bits_per_pixel, S_IRUGO|S_IWUSR, show_bpp, store_bpp),
--	__ATTR(blank, S_IRUGO|S_IWUSR, show_blank, store_blank),
--	__ATTR(console, S_IRUGO|S_IWUSR, show_console, store_console),
--	__ATTR(cursor, S_IRUGO|S_IWUSR, show_cursor, store_cursor),
--	__ATTR(mode, S_IRUGO|S_IWUSR, show_mode, store_mode),
--	__ATTR(modes, S_IRUGO|S_IWUSR, show_modes, store_modes),
--	__ATTR(pan, S_IRUGO|S_IWUSR, show_pan, store_pan),
--	__ATTR(virtual_size, S_IRUGO|S_IWUSR, show_virtual, store_virtual),
--	__ATTR(name, S_IRUGO, show_name, NULL),
--	__ATTR(stride, S_IRUGO, show_stride, NULL),
--	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
--	__ATTR(state, S_IRUGO|S_IWUSR, show_fbstate, store_fbstate),
-+static DEVICE_ATTR(bits_per_pixel, 0644, show_bpp, store_bpp);
-+static DEVICE_ATTR(blank, 0644, show_blank, store_blank);
-+static DEVICE_ATTR(console, 0644, show_console, store_console);
-+static DEVICE_ATTR(cursor, 0644, show_cursor, store_cursor);
-+static DEVICE_ATTR(mode, 0644, show_mode, store_mode);
-+static DEVICE_ATTR(modes, 0644, show_modes, store_modes);
-+static DEVICE_ATTR(pan, 0644, show_pan, store_pan);
-+static DEVICE_ATTR(virtual_size, 0644, show_virtual, store_virtual);
-+static DEVICE_ATTR(name, 0444, show_name, NULL);
-+static DEVICE_ATTR(stride, 0444, show_stride, NULL);
-+static DEVICE_ATTR(rotate, 0644, show_rotate, store_rotate);
-+static DEVICE_ATTR(state, 0644, show_fbstate, store_fbstate);
- #if IS_ENABLED(CONFIG_FB_BACKLIGHT)
--	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
-+static DEVICE_ATTR(bl_curve, 0644, show_bl_curve, store_bl_curve);
- #endif
-+
-+static struct attribute *fb_device_attrs[] = {
-+	&dev_attr_bits_per_pixel.attr,
-+	&dev_attr_blank.attr,
-+	&dev_attr_console.attr,
-+	&dev_attr_cursor.attr,
-+	&dev_attr_mode.attr,
-+	&dev_attr_modes.attr,
-+	&dev_attr_pan.attr,
-+	&dev_attr_virtual_size.attr,
-+	&dev_attr_name.attr,
-+	&dev_attr_stride.attr,
-+	&dev_attr_rotate.attr,
-+	&dev_attr_state.attr,
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
-+	&dev_attr_bl_curve.attr,
-+#endif
-+	NULL,
-+};
-+
-+static const struct attribute_group fb_device_attr_group = {
-+	.attrs          = fb_device_attrs,
- };
- 
- static int fb_init_device(struct fb_info *fb_info)
- {
--	int i, error = 0;
-+	int ret;
- 
- 	dev_set_drvdata(fb_info->dev, fb_info);
- 
- 	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
- 
--	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
--		error = device_create_file(fb_info->dev, &device_attrs[i]);
--
--		if (error)
--			break;
--	}
--
--	if (error) {
--		while (--i >= 0)
--			device_remove_file(fb_info->dev, &device_attrs[i]);
-+	ret = device_add_group(fb_info->dev, &fb_device_attr_group);
-+	if (ret)
- 		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
--	}
- 
- 	return 0;
- }
- 
- static void fb_cleanup_device(struct fb_info *fb_info)
- {
--	unsigned int i;
--
- 	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
--		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
--			device_remove_file(fb_info->dev, &device_attrs[i]);
-+		device_remove_group(fb_info->dev, &fb_device_attr_group);
- 
- 		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
- 	}
 -- 
-2.17.1
-
+Lee Jones [李琼斯]

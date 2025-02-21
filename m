@@ -1,77 +1,128 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CB901D54CF;
-	Thu, 20 Feb 2025 15:14:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF9C5214A8A;
+	Fri, 21 Feb 2025 16:53:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740064486; cv=none; b=akuxeEawN3YJ3QkOu58g53eZnTEl3OWvmPqQK5aSCLE8czbEP9/QSkFKzniEU5FjeWLbMR/qpV5o4iAIXiV51Xc8nS25Iw0JGbyZbCv4h1XdFDFsMsqfYzZ4pgUVjJHagzPQu8sb7+Rz4fb/v93X9ZyN6AK/E70O9XFfoAv+uhI=
+	t=1740156823; cv=none; b=Yw00BtAdCWtdaif9eR4lYXACdAQNYYHveDFYtgBtei7vGml6Ej2Io3eoVl5K7pnhsjWCbTL64JNBrJfkicQ8yW3Y954DGmPnOSafO8Yho4WATwDArzQVFwEsGGK8Bi/7n1dS3jUtNmukKjZc8yC87t+WBnkznnWrjx33vbXETYw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740064486; c=relaxed/simple;
-	bh=Jr4RZS/lLGSYYUJMf0yeHvt9Tqeg9FKGi1tgzkVvkgg=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=mkYciYDAwhWtzhLDvv6JJF+L5Q0B2tm+aewrW2x9w4QNCl7mexMxmEtKNelkH+3wdqmO8hCw2XMU6AcEcexgHYI/3ky9DMfAQI3kpIbYRXtFwm5F/FmxHPlzlJIWhpEOm+nmjxcH0sbRzM3/kSuouac/xuFVOA4ek182dtTD1FM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RJndwkrS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1740156823; c=relaxed/simple;
+	bh=2rRlTeGBa/v+F/AVLqrsIcSSJAryM6w5Ldgl/1cCG8Y=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=nnk41xQJyqV8UZBmuOF3yduWM1dxTwhwAv4vCfl75LnNr4lXe8Zv0JypZerYthQLWm2Utjidwf4UClVTPiV+aMzlsYEmweoSAuMgBS42M187P23TCsQVSw/4v/uoZpS94t2nFcY0xU7Zam8Yxvv6I/xIT0QgvTtWNoqJ3C6e4dE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=AK67MSOY; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RJndwkrS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79472C4CED1;
-	Thu, 20 Feb 2025 15:14:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740064485;
-	bh=Jr4RZS/lLGSYYUJMf0yeHvt9Tqeg9FKGi1tgzkVvkgg=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=RJndwkrSKfX2mzgsQQfynKTyajKX/j2plUbo3YFVKpm6aUFT7VYdMyzN9qc34fllF
-	 7usoiCpSQRkDI2NbiDYsqOd0eh2mNUMaYXUCtamP42vvZ/ry+f90XctS7/3vs3KeNA
-	 1kSzKEL8di2BgD4lgYWeTWUvZ0EnXfU3XDtITFQDIGjVPovtntDywBA1ISKrizZWsR
-	 Q2kbp3LTNV7fOllQy2ZsHa2M4pXotics8y1Yoe0nOTBTXSBTEE/SqXNQehkXkPnvVk
-	 7cexNoowoVyRuleDw/cDnHkffNBKU8p8KVbqGcl/gXCxGx8DVB+ZWi2uJxWiE86JmD
-	 PFUoUjgDiOmeQ==
-From: Lee Jones <lee@kernel.org>
-To: Janne Grunau <j@jannau.net>, Sven Peter <sven@svenpeter.dev>, 
- Alyssa Rosenzweig <alyssa@rosenzweig.io>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
- Pavel Machek <pavel@ucw.cz>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
- asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, Nick Chan <towinchenmi@gmail.com>
-In-Reply-To: <20250214040306.16312-1-towinchenmi@gmail.com>
-References: <20250214040306.16312-1-towinchenmi@gmail.com>
-Subject: Re: [PATCH v6 0/3] Apple DWI backlight driver
-Message-Id: <174006448223.804925.7595809321241346941.b4-ty@kernel.org>
-Date: Thu, 20 Feb 2025 15:14:42 +0000
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="AK67MSOY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740156822; x=1771692822;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=2rRlTeGBa/v+F/AVLqrsIcSSJAryM6w5Ldgl/1cCG8Y=;
+  b=AK67MSOYnSTrAH3kl+qSRcTBU0C1bHDyMGgWT+VJsDfkiRJg4YuptuAd
+   JfvbB4iDXiX0NwPfrhxTSDgIZ0qlAps/Z1bI4MG8D2XtT0Au1dePTYvV6
+   BL7VEcAqmbJyAhWLt8FcFO7Jp8oC4A3cuzyCW/Q/ZcFBAW8hzXInSrvls
+   c7xSxldXDpLQgP1GlouYm2W7VgWBWaMKo7Rb/I9zgPNUljgRdQ1HMpe39
+   otHgWhQ1Xd7iWA6AJLDjMtnZMvJa6TjahlAdTR8wVg6agR/Gpz6ZJFv69
+   WHZXdnor02rngGHzK1Q8az4U558JCz+5dz2Hzj9ndZrvzH72qUeU59nQR
+   A==;
+X-CSE-ConnectionGUID: CXGBvQJTTcudbmCc4Ppo+g==
+X-CSE-MsgGUID: qDERyGZOTJmY15xIPuGQ/A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="41186796"
+X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; 
+   d="scan'208";a="41186796"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Feb 2025 08:53:41 -0800
+X-CSE-ConnectionGUID: etn1Crk0T8mejC6g/A9O+g==
+X-CSE-MsgGUID: bHwbSUa4R7qC9s8Tvw6bSQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="119540590"
+Received: from jraag-z790m-itx-wifi.iind.intel.com ([10.190.239.23])
+  by fmviesa003.fm.intel.com with ESMTP; 21 Feb 2025 08:53:36 -0800
+From: Raag Jadav <raag.jadav@intel.com>
+To: perex@perex.cz,
+	tiwai@suse.com,
+	broonie@kernel.org,
+	lgirdwood@gmail.com,
+	deller@gmx.de,
+	andriy.shevchenko@linux.intel.com,
+	sre@kernel.org,
+	sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hverkuil-cisco@xs4all.nl,
+	jdmason@kudzu.us,
+	fancer.lancer@gmail.com
+Cc: linux-sound@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	ntb@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Raag Jadav <raag.jadav@intel.com>
+Subject: [PATCH v1 00/13] Convert to use devm_kmemdup_array()
+Date: Fri, 21 Feb 2025 22:23:20 +0530
+Message-Id: <20250221165333.2780888-1-raag.jadav@intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.15-dev-510f9
 
-On Fri, 14 Feb 2025 12:02:11 +0800, Nick Chan wrote:
-> Apple SoCs come with a 2-wire interface named DWI. On some iPhones, iPads
-> and iPod touches the backlight controller is connected via this interface.
-> This series adds a backlight driver for backlight controllers connected
-> this way.
-> 
-> Changes since v5:
-> - Remove default y from drivers/video/backlight/Kconfig
-> 
-> [...]
+This series is the second wave of patches to add users of newly introduced
+devm_kmemdup_array() helper. Original series on [1].
 
-Applied, thanks!
+This depends on changes available on immutable tag[2]. Feel free to pick
+your subsystem patches with it, or share your preferred way to route them.
 
-[1/3] dt-bindings: leds: backlight: apple,dwi-bl: Add Apple DWI backlight
-      commit: 0508d17506fffb6d38df4c2dc737fb4f343a0840
-[2/3] backlight: apple_dwi_bl: Add Apple DWI backlight driver
-      commit: ea45d216dd4e5b389af984f8c9effa1312e3cd74
-[3/3] MAINTAINERS: Add entries for Apple DWI backlight controller
-      commit: d1ebaf003a065d5d337b8fa3d69f9b90d7bb759d
+[1] https://lore.kernel.org/r/20250212062513.2254767-1-raag.jadav@intel.com
+[2] https://lore.kernel.org/r/Z7cqCaME4LxTTBn6@black.fi.intel.com
 
---
-Lee Jones [李琼斯]
+Raag Jadav (13):
+  ASoC: Intel: avs: use devm_kmemdup_array()
+  ASoC: hdac_hdmi: use devm_kmemdup_array()
+  ASoC: tlv320dac33: use devm_kmemdup_array()
+  ASoC: uda1380: use devm_kmemdup_array()
+  ASoC: meson: axg-tdm-interface: use devm_kmemdup_array()
+  ASoC: uniphier: use devm_kmemdup_array()
+  fbdev: pxafb: use devm_kmemdup_array()
+  power: supply: sc27xx: use devm_kmemdup_array()
+  regulator: devres: use devm_kmemdup_array()
+  regulator: cros-ec: use devm_kmemdup_array()
+  media: atmel-isi: use devm_kmemdup_array()
+  media: stm32-dcmi: use devm_kmemdup_array()
+  ntb: idt: use devm_kmemdup_array()
+
+ drivers/media/platform/atmel/atmel-isi.c     |  8 ++------
+ drivers/media/platform/st/stm32/stm32-dcmi.c |  8 ++------
+ drivers/ntb/hw/idt/ntb_hw_idt.c              | 11 +++-------
+ drivers/power/supply/sc27xx_fuel_gauge.c     |  5 ++---
+ drivers/regulator/cros-ec-regulator.c        |  4 ++--
+ drivers/regulator/devres.c                   |  5 ++---
+ drivers/video/fbdev/pxafb.c                  | 21 ++++++++------------
+ sound/soc/codecs/hdac_hdmi.c                 |  3 +--
+ sound/soc/codecs/tlv320dac33.c               |  6 ++----
+ sound/soc/codecs/uda1380.c                   |  6 ++----
+ sound/soc/intel/avs/boards/da7219.c          |  3 ++-
+ sound/soc/intel/avs/boards/es8336.c          |  3 ++-
+ sound/soc/intel/avs/boards/nau8825.c         |  3 ++-
+ sound/soc/intel/avs/boards/rt274.c           |  3 ++-
+ sound/soc/intel/avs/boards/rt286.c           |  3 ++-
+ sound/soc/intel/avs/boards/rt298.c           |  3 ++-
+ sound/soc/intel/avs/boards/rt5663.c          |  3 ++-
+ sound/soc/intel/avs/boards/rt5682.c          |  3 ++-
+ sound/soc/meson/axg-tdm-interface.c          |  9 ++-------
+ sound/soc/uniphier/aio-cpu.c                 |  8 ++------
+ 20 files changed, 46 insertions(+), 72 deletions(-)
+
+
+base-commit: b16e9f8547a328b19af59afc213ce323124d11e9
+-- 
+2.34.1
 

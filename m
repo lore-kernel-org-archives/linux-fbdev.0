@@ -1,111 +1,77 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6674124BD11;
-	Fri, 21 Feb 2025 17:05:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A594C2500AA;
+	Fri, 21 Feb 2025 17:31:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740157516; cv=none; b=BCtkPYvWS2MZcQCbGEks15jz6GqBmfCGnwpuSR4VI9PHlG5kVo6tffIeagmfyYFRp2XgbDfYVNwTn8HvLNYHROkTdEZfbVAfU8YfvKy1GOuOjGLGt2stsprTaqyRA2n7Kp7uAit7d5I6FZPwYn0Tzfzg6V/SkwXbv73UM+X1woQ=
+	t=1740159101; cv=none; b=mAvJI8WAPE6wXXmj+DiMp9Ba3wpqZdHuHTp+x+GH4DfUuV8t3edWjDIuDV3LhhYZ9weylKEbXRPJSHBX+ChRhBRfJWxhjj3nDIGkOr0DPSqN0MoCLTrekC505bJD1cRERZ1Qb/KsMYTA+ypF6l36Iacqv8SkVmWQeTrbr9W6gn4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740157516; c=relaxed/simple;
-	bh=WbW3SAWLQJrmCpMzqPGX5MMUKli4PXDnNDOyEBLp3X0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bfLYm4+bdaexAvWrUIaqQXIVMBje2LpmTeVHKBxO3Fhsjw2t0F50IDd1PBH0biP0vQVM9TTKf3udUtPTEpAKZliXt5/rf5M0NQauzwSj3qezkQrAinCHjKcfln1HFAU5B8nnxlX9hrNSmfEJfc2xWubueAC0HkuJx9xCtr8teXo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Rmi5w32T; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1740159101; c=relaxed/simple;
+	bh=8/rF8J69+3gOYWulVtfv+etD5x/gFP+fkCXTyZNERUM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=caFT7Pz5a5zsymcVYt7JGVMjkdtU2Bvz5pS8ayI+D3ojgsoZfQ9J366PqJkZZnmXpTWpVHkb3s92qp2e81ANRJ2Xid3BMv2phqqqtPK/5t84Q0fVM8msowsJuM3HwuTKv0iCxPuiLVCvzKaij2HqwtaKFR8t9jTUT1FIDkuZHog=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=mfwduxJQ; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Rmi5w32T"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1740157515; x=1771693515;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=WbW3SAWLQJrmCpMzqPGX5MMUKli4PXDnNDOyEBLp3X0=;
-  b=Rmi5w32TT19WlOwhpmqR8vkhu9+CYyFc8BzfG4vdBriCconLKnc/AgdG
-   VgRT4ItwNIzQgOjBGTPf9GdPIIBOayC8MdNc5Xty4dm54VJQ5b03IXgI0
-   08N32gJ8KfG65p4+aSrl97F+LRr9e86hpJt/rtnvEm3KSGf0+qmYPSllj
-   LXFavFkV7Tt1IGScRWeS27GFUn/IMbZN41kAFFjAkrBl0IX7n+m2DNTHD
-   Xfj5Xtq1nCnNw62/CSTDCs1v946atiEpP3b35ZJEyBCOhAOTSVcPWPJn6
-   DKNLf7O6/pCU57Kl1KMHX30LW6eDl/tZsLWxeKI41Bap01VAY8PDPLlba
-   w==;
-X-CSE-ConnectionGUID: QRZs2qsfQyqr4Gb2I15gEg==
-X-CSE-MsgGUID: OKsH8ZkbRb+7Gitf4c382g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11352"; a="40902463"
-X-IronPort-AV: E=Sophos;i="6.13,305,1732608000"; 
-   d="scan'208";a="40902463"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Feb 2025 09:05:14 -0800
-X-CSE-ConnectionGUID: PYJDpfRXRe2YAt1iGJHvGA==
-X-CSE-MsgGUID: Yr500fwjSwuOm2NHrTIwOg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,305,1732608000"; 
-   d="scan'208";a="115374665"
-Received: from inaky-mobl1.amr.corp.intel.com (HELO [10.125.110.189]) ([10.125.110.189])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Feb 2025 09:05:13 -0800
-Message-ID: <43c873e1-737a-4119-abb7-49cc51acd6a0@intel.com>
-Date: Fri, 21 Feb 2025 10:05:09 -0700
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mfwduxJQ"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=Y3q5SEZ22PIlzGuL/p51TBUcu7BuCGZLgTAPxKOn4WE=; b=mfwduxJQZv1iIbvGuFxS8NULnT
+	WF/z8ONiiCdtuqi90QA5YkhyfYqGA+fhoJ1lHxGZkEretuIMA2HKggJF4cm8Xh0QK+Rn6CCwefAbz
+	iCpL3spMKUFPtI1oTRdrar+x+WmshCut9jlUML8gwB0MVlOxJDmXG6mSCw4img7n+cDAC5wNlmVsK
+	gSsgllRwaeVl5Efs1L52KxZ5StRZcjdQyKFvOy4Ril7jrqCGPm4wIkRnOQy30okc+XwiOL9gu7BBO
+	cWkjau1NnIXmByPCpbr61A/9o9LVdQvEoaXTQpX9NIj1CItTGG66q+L/b0W06y1nPiXrm5/Cx+ap1
+	zriGYDvA==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tlWs9-0000000EYtb-37Jg;
+	Fri, 21 Feb 2025 17:31:33 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
+	Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+Subject: [PATCH] fbtft: Remove access to page->index
+Date: Fri, 21 Feb 2025 17:31:29 +0000
+Message-ID: <20250221173131.3470667-1-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 13/13] ntb: idt: use devm_kmemdup_array()
-To: Raag Jadav <raag.jadav@intel.com>, perex@perex.cz, tiwai@suse.com,
- broonie@kernel.org, lgirdwood@gmail.com, deller@gmx.de,
- andriy.shevchenko@linux.intel.com, sre@kernel.org,
- sakari.ailus@linux.intel.com, mchehab@kernel.org, hverkuil-cisco@xs4all.nl,
- jdmason@kudzu.us, fancer.lancer@gmail.com
-Cc: linux-sound@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-media@vger.kernel.org, ntb@lists.linux.dev,
- linux-kernel@vger.kernel.org
-References: <20250221165333.2780888-1-raag.jadav@intel.com>
- <20250221165333.2780888-14-raag.jadav@intel.com>
-Content-Language: en-US
-From: Dave Jiang <dave.jiang@intel.com>
-In-Reply-To: <20250221165333.2780888-14-raag.jadav@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+There is no need to print out page->index as part of the debug message.
 
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ drivers/staging/fbtft/fbtft-core.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-On 2/21/25 9:53 AM, Raag Jadav wrote:
-> Convert to use devm_kmemdup_array() which is more robust.
-> 
-> Signed-off-by: Raag Jadav <raag.jadav@intel.com>
-
-I think this patch [1] from earlier today makes this change unnecessary now.
-
-[1]: https://lore.kernel.org/ntb/20250221085748.2298463-1-arnd@kernel.org/
-
-> ---
->  drivers/ntb/hw/idt/ntb_hw_idt.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/ntb/hw/idt/ntb_hw_idt.c b/drivers/ntb/hw/idt/ntb_hw_idt.c
-> index 544d8a4d2af5..dbfc53d0ef0c 100644
-> --- a/drivers/ntb/hw/idt/ntb_hw_idt.c
-> +++ b/drivers/ntb/hw/idt/ntb_hw_idt.c
-> @@ -1103,16 +1103,11 @@ static struct idt_mw_cfg *idt_scan_mws(struct idt_ntb_dev *ndev, int port,
->  		}
->  	}
->  
-> -	/* Allocate memory for memory window descriptors */
-> -	ret_mws = devm_kcalloc(&ndev->ntb.pdev->dev, *mw_cnt, sizeof(*ret_mws),
-> -			       GFP_KERNEL);
-> -	if (!ret_mws)
-> -		return ERR_PTR(-ENOMEM);
-> -
->  	/* Copy the info of detected memory windows */
-> -	memcpy(ret_mws, mws, (*mw_cnt)*sizeof(*ret_mws));
-> +	ret_mws = devm_kmemdup_array(&ndev->ntb.pdev->dev, mws, *mw_cnt,
-> +				     sizeof(mws[0]), GFP_KERNEL);
->  
-> -	return ret_mws;
-> +	return ret_mws ?: ERR_PTR(-ENOMEM);
->  }
->  
->  /*
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 4cfa494243b9..da9c64152a60 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -337,9 +337,7 @@ static void fbtft_deferred_io(struct fb_info *info, struct list_head *pagereflis
+ 	list_for_each_entry(pageref, pagereflist, list) {
+ 		y_low = pageref->offset / info->fix.line_length;
+ 		y_high = (pageref->offset + PAGE_SIZE - 1) / info->fix.line_length;
+-		dev_dbg(info->device,
+-			"page->index=%lu y_low=%d y_high=%d\n",
+-			pageref->page->index, y_low, y_high);
++		dev_dbg(info->device, "y_low=%d y_high=%d\n", y_low, y_high);
+ 		if (y_high > info->var.yres - 1)
+ 			y_high = info->var.yres - 1;
+ 		if (y_low < dirty_lines_start)
+-- 
+2.47.2
 

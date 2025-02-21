@@ -1,327 +1,240 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 590DC1D7E2F;
-	Fri, 21 Feb 2025 20:38:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32BB5253F19;
+	Fri, 21 Feb 2025 21:42:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740170286; cv=none; b=SzP2Bl26et8at73ZrIsE6zBkIBCGMI5SyeXYOIZ95s/fP1TkQkOV+61BnH7EoxvxW9ajzCenl7f7yB+R5TtlSrXEJyFcB/OQ/Sq9IZkktaXrmGRaN1Ltq9SP8R6rPhVqDUd9SGj4V5xG2fvA8EyTxzctBArKou9/tuKXJtzaZVA=
+	t=1740174123; cv=none; b=lbIjJZavKa008lD8/FN9rtXbhOaEYlTCpkxx6VdcONtHTXW9IJrv9MBaujlYXHAekyLp92Zk0Gy2SNC6+7fcFar0v8in9o1nkiTfIbX7WPisDJVq2EtW6GpddOfhKp9uN70q6X1HWA+yRTavT+wnR/pOOdF2TcT2tDArWcAkSNg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740170286; c=relaxed/simple;
-	bh=cZReEKvxGMFAzn2nYLfiWitsoEwnGLiU1ItJsk7GJrQ=;
+	s=arc-20240116; t=1740174123; c=relaxed/simple;
+	bh=avCJqIijOjgsHV7YPXX6EtjKmvRXJlgAmaqzcTzfWS8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WWyBjQGucfA3LQgLjIU4D5Hs+HEcb6nFbAjz2zOZpzUnX7rgUfy3WZZS+w1xSQak5gK1U4Vm4E5jqIlB5A5DwEOJDu1F8blKFBxFVg+fa8DUuGlXs4Hn8xbPFRJFIM5MnIAqLdYdweUIYBKHPW4ttiR9/ulDM0hwR5RtZEzTQI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ndfbt+48; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=PxLFFfO3pRq+ePiq4kbYjOZE/S4CH1U6Q4DwAGUuLfdX7zzCpZI4mzsXdvKMR+Y0vPop/rJUS6qY5bXz4EoFITLC/HELClKg+fy7q5wzSkwnd38sqG5FOWtvNSVBbUglRhQXDCOyG0AsdjDeXQsXy+MHdL17d+kaGn5bw4POLAg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DXLSATl6; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ndfbt+48"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94787C4CED6;
-	Fri, 21 Feb 2025 20:38:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740170285;
-	bh=cZReEKvxGMFAzn2nYLfiWitsoEwnGLiU1ItJsk7GJrQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Ndfbt+48L4RUb3WT78YqKEkPhF3BzDwk9jaSj6fPv91ryKts6+cOTdoQgapK2WP0j
-	 8s0traSuhiLn53SJu6fL4ilpCUF8Nz8CUmU7BVBo3Lzk2eprS+ah0xVQ0T4mCzTETe
-	 PhZMvy0gKeAA+mEoGpLNH7rx9uIsPMvC+mbfSwfYgV9/iwh1SkPucuS6HDUdCS3yON
-	 KN1vTiTDcNH95IeouzRup2F9LQMCJBifFZbg8Sj5HqAAQtsJLYTPB7PCUVoQMlRVtt
-	 HCJSPaFTSjpuD1bJaYsRx7EpyZpgQDd0itSh2KMcV9LeQWf73Z8sGW6Ge6+oVhEGze
-	 henAZXi/4khyA==
-Date: Fri, 21 Feb 2025 14:38:03 -0600
-From: Rob Herring <robh@kernel.org>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] dt-bindings: mfd: Document TI LM3533 MFD
-Message-ID: <20250221203803.GA24813-robh@kernel.org>
-References: <20250218132702.114669-1-clamor95@gmail.com>
- <20250218132702.114669-2-clamor95@gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DXLSATl6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740174121; x=1771710121;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=avCJqIijOjgsHV7YPXX6EtjKmvRXJlgAmaqzcTzfWS8=;
+  b=DXLSATl6XZMW4ynTM9E1uP3M13pVD4x4Z6wqHc7+6x2aEbeZu8BVbb6J
+   F4/mbfe3RqZ8LKd+Sm4JLOWjGlxnx/FJQNkGrD7e97o/lDKTUu/d5a+E+
+   KhZMnfoEySaU79BOayMsagQSJWmrZVQodVGboc2ZFvOGli+zK+MRwLyhH
+   OKbyGsdSf3KCeiWlyxV8TVt+RjmBFmVNmOtUYSTmQK+rmwgXYHFyNDtLP
+   8XTDvdSDZn/HnDYpfINFq+dB/++Vg4TlorKk8zvgYWTbZlXZxID11vSDl
+   8dx9MIjY5eoJyLTI6SggzTXU0SBhYmkLz9vzEgv0DqFfp0LKu0WrbzBr8
+   Q==;
+X-CSE-ConnectionGUID: shSmEkvIRVS6jxGGZA7I1g==
+X-CSE-MsgGUID: 8abZw4POQ6CRlmwALeNRlA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11352"; a="66372183"
+X-IronPort-AV: E=Sophos;i="6.13,305,1732608000"; 
+   d="scan'208";a="66372183"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Feb 2025 13:42:00 -0800
+X-CSE-ConnectionGUID: e7lXd041ReaY2tiVJrh6RA==
+X-CSE-MsgGUID: v3GSrf7rSZWvNvtZxfuKBw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,305,1732608000"; 
+   d="scan'208";a="120111398"
+Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
+  by fmviesa005.fm.intel.com with ESMTP; 21 Feb 2025 13:41:54 -0800
+Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1tlamB-00062p-1G;
+	Fri, 21 Feb 2025 21:41:51 +0000
+Date: Sat, 22 Feb 2025 05:41:24 +0800
+From: kernel test robot <lkp@intel.com>
+To: Raag Jadav <raag.jadav@intel.com>, perex@perex.cz, tiwai@suse.com,
+	broonie@kernel.org, lgirdwood@gmail.com, deller@gmx.de,
+	andriy.shevchenko@linux.intel.com, sre@kernel.org,
+	sakari.ailus@linux.intel.com, mchehab@kernel.org,
+	hverkuil-cisco@xs4all.nl, jdmason@kudzu.us, fancer.lancer@gmail.com
+Cc: oe-kbuild-all@lists.linux.dev, linux-sound@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-media@vger.kernel.org, ntb@lists.linux.dev,
+	linux-kernel@vger.kernel.org, Raag Jadav <raag.jadav@intel.com>
+Subject: Re: [PATCH v1 07/13] fbdev: pxafb: use devm_kmemdup_array()
+Message-ID: <202502220449.DvJuMgsL-lkp@intel.com>
+References: <20250221165333.2780888-8-raag.jadav@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250218132702.114669-2-clamor95@gmail.com>
+In-Reply-To: <20250221165333.2780888-8-raag.jadav@intel.com>
 
-On Tue, Feb 18, 2025 at 03:26:59PM +0200, Svyatoslav Ryhel wrote:
-> Add bindings for the LM3533 - a complete power source for
-> backlight, keypad, and indicator LEDs in smartphone handsets.
-> The high-voltage inductive boost converter provides the
-> power for two series LED strings display backlight and keypad
-> functions.
-> 
-> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> ---
->  .../devicetree/bindings/mfd/ti,lm3533.yaml    | 231 ++++++++++++++++++
->  1 file changed, 231 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml b/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
-> new file mode 100644
-> index 000000000000..83542f0c7bf7
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
-> @@ -0,0 +1,231 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mfd/ti,lm3533.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: TI LM3533 Complete Lighting Power Solution
-> +
-> +description: |
+Hi Raag,
 
-Use '>' rather than '|' if only formatting is paragraphs.
+kernel test robot noticed the following build warnings:
 
-> +  The LM3533 is a complete power source for backlight,
-> +  keypad, and indicator LEDs in smartphone handsets. The
-> +  high-voltage inductive boost converter provides the
-> +  power for two series LED strings display backlight and
-> +  keypad functions.
+[auto build test WARNING on b16e9f8547a328b19af59afc213ce323124d11e9]
 
-Wrap lines at 80
+url:    https://github.com/intel-lab-lkp/linux/commits/Raag-Jadav/ASoC-Intel-avs-use-devm_kmemdup_array/20250222-010322
+base:   b16e9f8547a328b19af59afc213ce323124d11e9
+patch link:    https://lore.kernel.org/r/20250221165333.2780888-8-raag.jadav%40intel.com
+patch subject: [PATCH v1 07/13] fbdev: pxafb: use devm_kmemdup_array()
+config: arm-randconfig-004-20250222 (https://download.01.org/0day-ci/archive/20250222/202502220449.DvJuMgsL-lkp@intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 14.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250222/202502220449.DvJuMgsL-lkp@intel.com/reproduce)
 
-blank line here
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202502220449.DvJuMgsL-lkp@intel.com/
 
-> +  https://www.ti.com/product/LM3533
-> +
-> +maintainers:
-> +  - Svyatoslav Ryhel <clamor95@gmail.com>
-> +
-> +properties:
-> +  compatible:
-> +    const: ti,lm3533
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  '#address-cells':
-> +    const: 1
-> +
-> +  '#size-cells':
-> +    const: 0
-> +
-> +  enable-gpios:
-> +    description: GPIO to use to enable/disable the backlight (HWEN pin).
-> +    maxItems: 1
-> +
-> +  ti,boost-ovp-microvolt:
-> +    description:
-> +      Boost OVP select (16V, 24V, 32V, 40V)
-> +    enum: [ 16000000, 24000000, 32000000, 40000000 ]
-> +    default: 16000000
-> +
-> +  ti,boost-freq-hz:
-> +    description:
-> +      Boost frequency select (500KHz or 1MHz)
-> +    enum: [ 500000, 1000000 ]
-> +    default: 500000
-> +
-> +  light-sensor@0:
-> +    type: object
-> +    description:
-> +      Properties for an illumination sensor.
-> +
-> +    properties:
-> +      compatible:
-> +        const: ti,lm3533-als
-> +
-> +      reg:
-> +        const: 0
-> +
-> +      ti,resistor-value-ohm:
-> +        $ref: /schemas/types.yaml#/definitions/uint32
-> +        description: |
+All warnings (new ones prefixed by >>):
 
-Don't need '|'. Elsewhere too.
+   drivers/video/fbdev/pxafb.c: In function 'pxafb_probe':
+>> drivers/video/fbdev/pxafb.c:2236:13: warning: unused variable 'i' [-Wunused-variable]
+    2236 |         int i, irq, ret;
+         |             ^
 
-> +          Internal configuration resister value when ALS is in Analog Sensor
-> +          mode and PWM mode is disabled.
-> +        minimum: 1575
-> +        maximum: 200000
-> +
-> +      ti,pwm-mode:
-> +        type: boolean
-> +        description: |
-> +          Switch for mode in which ALS is running. If this propertly is
-> +          set then ALS is running in PWM mode, internal resistor value is
-> +          set to high-impedance (0) and resistor-value-ohm propertly is
-> +          ignored.
-> +
-> +    required:
-> +      - compatible
-> +      - reg
-> +
-> +    additionalProperties: false
 
-Move this above 'properties'.
+vim +/i +2236 drivers/video/fbdev/pxafb.c
 
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - '#address-cells'
-> +  - '#size-cells'
-> +  - enable-gpios
-> +
-> +patternProperties:
-> +  "^backlight@[01]$":
-> +    type: object
-> +    description:
-> +      Properties for a backlight device.
-> +
-> +    $ref: /schemas/leds/backlight/common.yaml#
-> +
-> +    properties:
-> +      compatible:
-> +        const: ti,lm3533-backlight
-> +
-> +      reg:
-> +        description: |
-> +          The control bank that is used to program the two current sinks. The
-> +          LM3533 has two control banks (A and B) and are represented as 0 or 1
-> +          in this property. The two current sinks can be controlled
-> +          independently with both banks, or bank A can be configured to control
-> +          both sinks with the led-sources property.
-> +        minimum: 0
-> +        maximum: 1
-> +
-> +      default-brightness: true
-> +
-> +      ti,max-current-microamp:
-> +        description:
-> +          Maximum current in µA with a 800 µA step.
-> +        enum: [ 5000, 5800, 6600, 7400, 8200, 9000, 9800,
-> +                10600, 11400, 12200, 13000, 13800, 14600,
-> +                15400, 16200, 17000, 17800, 18600, 19400,
-> +                20200, 21000, 21800, 22600, 23400, 24200,
-> +                25000, 25800, 26600, 27400, 28200, 29000,
-> +                29800 ]
-> +        default: 5000
-> +
-> +      ti,pwm-config-mask:
-> +        $ref: /schemas/types.yaml#/definitions/uint32
-> +        description: |
-> +          Control Bank PWM Configuration Register mask that allows to configure
-> +          PWM input in Zones 0-4
-> +          BIT(0) - PWM Input is enabled
-> +          BIT(1) - PWM Input is enabled in Zone 0
-> +          BIT(2) - PWM Input is enabled in Zone 1
-> +          BIT(3) - PWM Input is enabled in Zone 2
-> +          BIT(4) - PWM Input is enabled in Zone 3
-> +          BIT(5) - PWM Input is enabled in Zone 4
-> +
-> +      ti,linear-mapping-mode:
-> +        description: |
-> +          Enable linear mapping mode. If disabled, then it will use exponential
-> +          mapping mode in which the ramp up/down appears to have a more uniform
-> +          transition to the human eye.
-> +        type: boolean
-> +
-> +      ti,hardware-controlled:
-> +        description: |
-> +          Each backlight has its own voltage Control Bank (A and B) and there are
-> +          two HVLED sinks which by default are linked to respective Bank. Setting
-> +          this property will link both sinks to a Control Bank of backlight where
-> +          property is defined.
-> +        type: boolean
-> +
-> +    required:
-> +      - compatible
-> +      - reg
-> +
-> +    additionalProperties: false
-> +
-> +  "^led@[0-3]$":
-> +    type: object
-> +    description:
-> +      Properties for a led device.
-> +
-> +    $ref: /schemas/leds/common.yaml#
-> +
-> +    properties:
-> +      compatible:
-> +        const: ti,lm3533-leds
-> +
-> +      reg:
-> +        description:
-> +          4 led banks
-> +        minimum: 0
-> +        maximum: 3
-> +
-> +      linux,default-trigger: true
-> +
-> +      ti,max-current-microamp:
-> +        description:
-> +          Maximum current in µA with a 800 µA step.
-> +        enum: [ 5000, 5800, 6600, 7400, 8200, 9000, 9800,
-> +                10600, 11400, 12200, 13000, 13800, 14600,
-> +                15400, 16200, 17000, 17800, 18600, 19400,
-> +                20200, 21000, 21800, 22600, 23400, 24200,
-> +                25000, 25800, 26600, 27400, 28200, 29000,
-> +                29800 ]
-> +        default: 5000
-> +
-> +      ti,pwm-config-mask:
-> +        $ref: /schemas/types.yaml#/definitions/uint32
-> +        description:
-> +          Same descryption and function as for backlight.
-> +
-> +    required:
-> +      - compatible
-> +      - reg
-> +
-> +    additionalProperties: false
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/gpio/gpio.h>
-> +
-> +    i2c {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +
-> +        led-controller@36 {
-> +            compatible = "ti,lm3533";
-> +            reg = <0x36>;
-> +
-> +            enable-gpios = <&gpio 110 GPIO_ACTIVE_HIGH>;
-> +
-> +            ti,boost-ovp-microvolt = <24000000>;
-> +            ti,boost-freq-hz = <500000>;
-> +
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +
-> +            backlight@0 {
-> +                compatible = "ti,lm3533-backlight";
-> +                reg = <0>;
-> +
-> +                ti,max-current-microamp = <23400>;
-> +                default-brightness = <113>;
-> +                ti,hardware-controlled;
-> +            };
+420a488278e86a drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2231  
+48c68c4f1b5424 drivers/video/pxafb.c       Greg Kroah-Hartman 2012-12-21  2232  static int pxafb_probe(struct platform_device *dev)
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2233  {
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2234  	struct pxafb_info *fbi;
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2235  	struct pxafb_mach_info *inf, *pdata;
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12 @2236  	int i, irq, ret;
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2237  
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2238  	dev_dbg(&dev->dev, "pxafb_probe\n");
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2239  
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2240  	ret = -ENOMEM;
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2241  	pdata = dev_get_platdata(&dev->dev);
+ed63c72a467651 drivers/video/fbdev/pxafb.c Raag Jadav         2025-02-21  2242  	if (pdata) {
+ed63c72a467651 drivers/video/fbdev/pxafb.c Raag Jadav         2025-02-21  2243  		inf = devm_kmemdup(&dev->dev, pdata, sizeof(*pdata), GFP_KERNEL);
+6f6abd360603af drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-19  2244  		if (!inf)
+6f6abd360603af drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-19  2245  			goto failed;
+420a488278e86a drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2246  
+ed63c72a467651 drivers/video/fbdev/pxafb.c Raag Jadav         2025-02-21  2247  		inf->modes = devm_kmemdup_array(&dev->dev, pdata->modes, pdata->num_modes,
+ed63c72a467651 drivers/video/fbdev/pxafb.c Raag Jadav         2025-02-21  2248  						sizeof(*pdata->modes), GFP_KERNEL);
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2249  		if (!inf->modes)
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2250  			goto failed;
+b23e868d35d572 drivers/video/fbdev/pxafb.c Wang Qing          2022-03-29  2251  	} else {
+b23e868d35d572 drivers/video/fbdev/pxafb.c Wang Qing          2022-03-29  2252  		inf = of_pxafb_of_mach_info(&dev->dev);
+420a488278e86a drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2253  		if (IS_ERR_OR_NULL(inf))
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2254  			goto failed;
+ed63c72a467651 drivers/video/fbdev/pxafb.c Raag Jadav         2025-02-21  2255  	}
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2256  
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2257  	ret = pxafb_parse_options(&dev->dev, g_options, inf);
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2258  	if (ret < 0)
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2259  		goto failed;
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2260  
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2261  	pxafb_check_options(&dev->dev, inf);
+4f3e2664622d23 drivers/video/pxafb.c       Eric Miao          2008-08-16  2262  
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2263  	dev_dbg(&dev->dev, "got a %dx%dx%d LCD\n",
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2264  			inf->modes->xres,
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2265  			inf->modes->yres,
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2266  			inf->modes->bpp);
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2267  	if (inf->modes->xres == 0 ||
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2268  	    inf->modes->yres == 0 ||
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2269  	    inf->modes->bpp == 0) {
+3ae5eaec1d2d9c drivers/video/pxafb.c       Russell King       2005-11-09  2270  		dev_err(&dev->dev, "Invalid resolution or bit depth\n");
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2271  		ret = -EINVAL;
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2272  		goto failed;
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2273  	}
+a5718a14a1d91b drivers/video/pxafb.c       Eric Miao          2008-11-11  2274  
+f3621a60b20d67 drivers/video/fbdev/pxafb.c Robert Jarzmik     2015-12-12  2275  	fbi = pxafb_init_fbinfo(&dev->dev, inf);
+a2f2058e3d295f drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2276  	if (IS_ERR(fbi)) {
+3ae5eaec1d2d9c drivers/video/pxafb.c       Russell King       2005-11-09  2277  		dev_err(&dev->dev, "Failed to initialize framebuffer device\n");
+a2f2058e3d295f drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2278  		ret = PTR_ERR(fbi);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2279  		goto failed;
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2280  	}
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2281  
+52a7a1cec88acd drivers/video/pxafb.c       Daniel Mack        2009-09-10  2282  	if (cpu_is_pxa3xx() && inf->acceleration_enabled)
+52a7a1cec88acd drivers/video/pxafb.c       Daniel Mack        2009-09-10  2283  		fbi->fb.fix.accel = FB_ACCEL_PXA3XX;
+52a7a1cec88acd drivers/video/pxafb.c       Daniel Mack        2009-09-10  2284  
+a5718a14a1d91b drivers/video/pxafb.c       Eric Miao          2008-11-11  2285  	fbi->backlight_power = inf->pxafb_backlight_power;
+a5718a14a1d91b drivers/video/pxafb.c       Eric Miao          2008-11-11  2286  	fbi->lcd_power = inf->pxafb_lcd_power;
+a5718a14a1d91b drivers/video/pxafb.c       Eric Miao          2008-11-11  2287  
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2288  	fbi->lcd_supply = devm_regulator_get_optional(&dev->dev, "lcd");
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2289  	if (IS_ERR(fbi->lcd_supply)) {
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2290  		if (PTR_ERR(fbi->lcd_supply) == -EPROBE_DEFER)
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2291  			return -EPROBE_DEFER;
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2292  
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2293  		fbi->lcd_supply = NULL;
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2294  	}
+31e1391af210fd drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2295  
+7610bca71ea85d drivers/video/fbdev/pxafb.c Markus Elfring     2019-09-19  2296  	fbi->mmio_base = devm_platform_ioremap_resource(dev, 0);
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2297  	if (IS_ERR(fbi->mmio_base)) {
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2298  		dev_err(&dev->dev, "failed to get I/O memory\n");
+f35b1d6c21b414 drivers/video/fbdev/pxafb.c Tiezhu Yang        2020-05-25  2299  		ret = PTR_ERR(fbi->mmio_base);
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2300  		goto failed;
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2301  	}
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2302  
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2303  	fbi->dma_buff_size = PAGE_ALIGN(sizeof(struct pxafb_dma_buff));
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2304  	fbi->dma_buff = dma_alloc_coherent(fbi->dev, fbi->dma_buff_size,
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2305  				&fbi->dma_buff_phys, GFP_KERNEL);
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2306  	if (fbi->dma_buff == NULL) {
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2307  		dev_err(&dev->dev, "failed to allocate memory for DMA\n");
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2308  		ret = -ENOMEM;
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2309  		goto failed;
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2310  	}
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2311  
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2312  	ret = pxafb_init_video_memory(fbi);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2313  	if (ret) {
+3ae5eaec1d2d9c drivers/video/pxafb.c       Russell King       2005-11-09  2314  		dev_err(&dev->dev, "Failed to allocate video RAM: %d\n", ret);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2315  		ret = -ENOMEM;
+77e196752bdd76 drivers/video/pxafb.c       Eric Miao          2008-12-16  2316  		goto failed_free_dma;
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2317  	}
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2318  
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2319  	irq = platform_get_irq(dev, 0);
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2320  	if (irq < 0) {
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2321  		ret = -ENODEV;
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2322  		goto failed_free_mem;
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2323  	}
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2324  
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2325  	ret = devm_request_irq(&dev->dev, irq, pxafb_handle_irq, 0, "LCD", fbi);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2326  	if (ret) {
+3ae5eaec1d2d9c drivers/video/pxafb.c       Russell King       2005-11-09  2327  		dev_err(&dev->dev, "request_irq failed: %d\n", ret);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2328  		ret = -EBUSY;
+ce4fb7b892a6d6 drivers/video/pxafb.c       eric miao          2008-04-30  2329  		goto failed_free_mem;
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2330  	}
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2331  
+3c42a449107bf7 drivers/video/pxafb.c       Eric Miao          2008-04-30  2332  	ret = pxafb_smart_init(fbi);
+3c42a449107bf7 drivers/video/pxafb.c       Eric Miao          2008-04-30  2333  	if (ret) {
+3c42a449107bf7 drivers/video/pxafb.c       Eric Miao          2008-04-30  2334  		dev_err(&dev->dev, "failed to initialize smartpanel\n");
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2335  		goto failed_free_mem;
+3c42a449107bf7 drivers/video/pxafb.c       Eric Miao          2008-04-30  2336  	}
+07df1c4fea1474 drivers/video/pxafb.c       Eric Miao          2008-12-04  2337  
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2338  	/*
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2339  	 * This makes sure that our colour bitfield
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2340  	 * descriptors are correctly initialised.
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2341  	 */
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2342  	ret = pxafb_check_var(&fbi->fb.var, &fbi->fb);
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2343  	if (ret) {
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2344  		dev_err(&dev->dev, "failed to get suitable mode\n");
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2345  		goto failed_free_mem;
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2346  	}
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2347  
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2348  	ret = pxafb_set_par(&fbi->fb);
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2349  	if (ret) {
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2350  		dev_err(&dev->dev, "Failed to set parameters\n");
+c8f96304ec8b49 drivers/video/fbdev/pxafb.c Daniel Mack        2018-07-24  2351  		goto failed_free_mem;
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2352  	}
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2353  
+3ae5eaec1d2d9c drivers/video/pxafb.c       Russell King       2005-11-09  2354  	platform_set_drvdata(dev, fbi);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2355  
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2356  	ret = register_framebuffer(&fbi->fb);
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2357  	if (ret < 0) {
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2358  		dev_err(&dev->dev,
+b0086efba5ad49 drivers/video/pxafb.c       eric miao          2008-04-30  2359  			"Failed to register framebuffer device: %d\n", ret);
+ee98476bbc565f drivers/video/pxafb.c       Jaya Kumar         2008-06-22  2360  		goto failed_free_cmap;
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2361  	}
+^1da177e4c3f41 drivers/video/pxafb.c       Linus Torvalds     2005-04-16  2362  
+198fc108ee4c2c drivers/video/pxafb.c       Eric Miao          2008-12-23  2363  	pxafb_overlay_init(fbi);
+198fc108ee4c2c drivers/video/pxafb.c       Eric Miao          2008-12-23  2364  
 
-Please make the example complete.
-
-> +        };
-> +    };
-> +...
-> -- 
-> 2.43.0
-> 
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

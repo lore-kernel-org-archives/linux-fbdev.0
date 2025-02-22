@@ -1,104 +1,181 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E13070830;
-	Sat, 22 Feb 2025 14:39:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 99048143895;
+	Sat, 22 Feb 2025 17:27:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740235186; cv=none; b=NiQzEKjJsZGyfcLvdO5VSTUEtf2q0WUKGGpzzDItolj4VjpgvNLeGDLlU/qbKTcsg086qdUrxm0Y23cuLC9xxZVYL9hbodjucl3llxcj5HPcGxL48v9pciNIuSCthN1KA0SxmI3eK8YxTrDeXmPWbDqn+mmhyLEJjvfIALBtI1Q=
+	t=1740245237; cv=none; b=P4VmYWrn32X9vQw+dL4ntuvOtlV/PHuer3YKAY5HRIsBvMUsYs7xnNNqUU/WODuPe9uplyqIg9sXW8l0hHXiy3H91W+h+IeoXPLhcgym7y/SeCIrU98fNcech9k5K9uD0u36MGokGabjO5xncZukvNVZTNlKl0YxE57Z5GjMznQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740235186; c=relaxed/simple;
-	bh=PBmt0sYMIFhvFdLPyTV+3bLT9pVncOJVnlGTV+VP3VU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CXB32e+OVN95yX0FsvvG0O7WqhtZ8xvi+sirkKOgbr1oDXCqJpE3i5/nFthvJ9vkG9HkyEYoy3WXTLesSmuGTy1gn5KnRf5kZ+VFmag0aBSk+wdIdDVwrCXXa3rICKroc/NuRe+QQe3+1ZqLjTrcB2/Iiyx9nir/qkAHr89RDek=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jPs7DcuS; arc=none smtp.client-ip=209.85.221.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1740245237; c=relaxed/simple;
+	bh=v8Rn8TMSUEc69xZwoTiQJB5VZcQX2AU+VQlc9iwPgRY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LHSAKoK/5q0JoDBjVeInAlUjV3/aKULf20yjJWQyAC1+23rpgHGY69lznQnFqsNgO2RTLXS8D+48J3P6S94J2Q6xefGLteo0GXSqpU7Gb6H+EE3wsPFFC6VOhDUAagelHQfm7w1tkzDe/ch0pcs2+bC2/56DwHvfYcy7JuaWdd0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=gbpTAgpl; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jPs7DcuS"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-38f1e8efef5so1783986f8f.1;
-        Sat, 22 Feb 2025 06:39:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1740235183; x=1740839983; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PBmt0sYMIFhvFdLPyTV+3bLT9pVncOJVnlGTV+VP3VU=;
-        b=jPs7DcuSlf/zyV13+3l+tDrD1mUi4714T6WYrpFWy5qi1HEyMz3Gpy4I3GNgnwOsC3
-         2WYZKbQeWhpONX0DBxtSl5cda5gVmM1XI3pxw7vze21fOnt2HGVB7OhRLB8G+BtrrBKP
-         qaoyoB8/YK5MpLin0xv+hanF2DV2ureCd0gZuIvULaqLn1FK0Tqv78f8Dd3czrRZoKTs
-         r/z2JHsF9jwgYbvji9e9y5BI8g2Ec607w0+4xOfbOMQ0RJWz0j09dSpZUDWRaDjRP1nS
-         pGAhcaAEsH+DpeXJQzIdz5zx7ufut88jLJJEBQ3akuS5XJUQKT+abL3OiC1dUMSqogPr
-         rZ3w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740235183; x=1740839983;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PBmt0sYMIFhvFdLPyTV+3bLT9pVncOJVnlGTV+VP3VU=;
-        b=TqhiT86QwRreIMGn5CHGgJOHhPn+hLCxBYtpTp3Z2CoM0FuutPXLmxKCbhVBg8ZCvQ
-         5yhIvafBxIwOue0gttFZBRJ7HpnyLHg2UdLjt7tqGUynoGiARzUOneSeG/578rVSiabe
-         pt41+AX8OQpTHh9I/oMkp44wvYHuvJD2fLOP65obtJsJ0cVvNkP7v1YVM2S9NGnC/XlC
-         oP6hkvYc9sHLkKSVCes6l6vlqFfyQMmhz1QkPHuMaxJClvDlBjubYkQlExYs5IuRhZL+
-         oJ/dL44iT/K9R0lgUsq+3UF97Mcai7J8zaKv3+zMtpcGTxKtYbj+Ax0BEERbCzQ7bNfk
-         uRhw==
-X-Forwarded-Encrypted: i=1; AJvYcCUFc5omtoT/9JPp/4UMkX1hoOnkDIgLgWgaCfoFM3PPBtk+TcrIjzN8wQGm2VmrGb7n0RHfK3r9EMuy@vger.kernel.org, AJvYcCUfQe5J15+QWta0prHiNbESpPM3jIT/+u4NHanxFC98tPphhIOQD47JYOZC10W1jk4SW80r7jExazUoQtwi@vger.kernel.org, AJvYcCUlHsuSbq3cTv4VsrH15f1RFZX8du0WtTBgFcIwnjAYhFiHFJHFtuC9byismw3tvUQsiCWTAdg5D+GgMGY=@vger.kernel.org, AJvYcCUthXgKPR1sfiyHYJ6dbTzKw1bumJpD7UjdIUh7JWUKkVFBZC03rrLwJwJcMVyw0WdKkqwBy4p22zwv@vger.kernel.org, AJvYcCXcE0xY2QhRjW8QHUvnYrawMNuwF/XXNhb8/FFQP+OEZB8w5X+uYe1MtmwS/cg4nBe2m2JDSvYfNIrmwg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyKSWAMNnWy56H3fkgWC8xgXza3scTqpNn7HpaQhsmax/J4A8Ep
-	AV+xM7Bu6SMygHDX+SrY6XaHgxvLWy2fFNYMG+guoIjtyS6hE08/N+cRqRRbDtwAWghJ7bRJBLk
-	o278aVtkYgGrwWtkPlHUtJfSJaO4=
-X-Gm-Gg: ASbGncuYsxSumrKZy5OdfniJDZqj6lUgWYquzJqEIjjr2HhhQb30ArY5gryMzR6I9oI
-	IzNf0gfd/rESvyZrH/NgZ3OVN/HQl23sH54LzCM1LHb70f5iKTZ/kgqz6FYOYgArowoFsC3J9RF
-	l7JY+7ZfNZ
-X-Google-Smtp-Source: AGHT+IHhfsh8L7SoEfSEAPt4i71ayj8NVEs5Jlp8DnbYgaOEu/0ofJ6OfKwdPbxf6QtaA24Nr5hPTMqg2KwgIHxy5SI=
-X-Received: by 2002:a5d:6d03:0:b0:38f:32ac:7e70 with SMTP id
- ffacd0b85a97d-38f6f0c13dcmr5144501f8f.49.1740235183190; Sat, 22 Feb 2025
- 06:39:43 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="gbpTAgpl"
+Received: by linux.microsoft.com (Postfix, from userid 1127)
+	id 1C48E205918F; Sat, 22 Feb 2025 09:27:15 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1C48E205918F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1740245235;
+	bh=n+fyGzv1lAnZcM4eqUWtPQLqz5c36fi+KNP0fB+Xn1s=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gbpTAgplvskw1984CnV9jLD9Y2NKhBU2lDiNZA1ca+cnKAYIRELXkMw5xePC2/y4Q
+	 9lnDqr3uVwSQc/GS8tikncFnRvd3gev832HvjHU5eNkazYqprYTjREc75R4GO5aKtC
+	 0aMgiunNm8kNw9QTkGEdnAaUmkPuRWIx+I65bGi4=
+Date: Sat, 22 Feb 2025 09:27:15 -0800
+From: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
+To: Michael Kelley <mhklinux@outlook.com>
+Cc: "kys@microsoft.com" <kys@microsoft.com>,
+	"haiyangz@microsoft.com" <haiyangz@microsoft.com>,
+	"wei.liu@kernel.org" <wei.liu@kernel.org>,
+	"decui@microsoft.com" <decui@microsoft.com>,
+	"deller@gmx.de" <deller@gmx.de>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"ssengar@microsoft.com" <ssengar@microsoft.com>
+Subject: Re: [PATCH] fbdev: hyperv_fb: Allow graceful removal of framebuffer
+Message-ID: <20250222172715.GA28061@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+References: <1739611240-9512-1-git-send-email-ssengar@linux.microsoft.com>
+ <SN6PR02MB4157813782C1D9E6D1225582D4C52@SN6PR02MB4157.namprd02.prod.outlook.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250218132702.114669-1-clamor95@gmail.com> <20250218132702.114669-2-clamor95@gmail.com>
- <20250222142910.4e6b706d@jic23-huawei>
-In-Reply-To: <20250222142910.4e6b706d@jic23-huawei>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Sat, 22 Feb 2025 16:39:31 +0200
-X-Gm-Features: AWEUYZnZiYzFm0aljnXobt-fG7MOBn3hu3PRi2D5FDNHFhs1inR24Sh-v5qul0w
-Message-ID: <CAPVz0n0up=vkVzryYLauNCM2=hnz-o_ECm+ooXC8y=C2q+T_WQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] dt-bindings: mfd: Document TI LM3533 MFD
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <SN6PR02MB4157813782C1D9E6D1225582D4C52@SN6PR02MB4157.namprd02.prod.outlook.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 
-=D1=81=D0=B1, 22 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 16:29 Jona=
-than Cameron <jic23@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Tue, 18 Feb 2025 15:26:59 +0200
-> Svyatoslav Ryhel <clamor95@gmail.com> wrote:
->
-> > Add bindings for the LM3533 - a complete power source for
-> > backlight, keypad, and indicator LEDs in smartphone handsets.
-> > The high-voltage inductive boost converter provides the
-> > power for two series LED strings display backlight and keypad
-> > functions.
->
-> Wrap patch descriptions to 75 chars as describe in submitting-patches.rst
+On Wed, Feb 19, 2025 at 05:22:36AM +0000, Michael Kelley wrote:
+> From: Saurabh Sengar <ssengar@linux.microsoft.com> Sent: Saturday, February 15, 2025 1:21 AM
+> > 
+> > When a Hyper-V framebuffer device is unbind, hyperv_fb driver tries to
+> > release the framebuffer forcefully. If this framebuffer is in use it
+> > produce the following WARN and hence this framebuffer is never released.
+> > 
+> > [   44.111220] WARNING: CPU: 35 PID: 1882 at drivers/video/fbdev/core/fb_info.c:70 framebuffer_release+0x2c/0x40
+> > < snip >
+> > [   44.111289] Call Trace:
+> > [   44.111290]  <TASK>
+> > [   44.111291]  ? show_regs+0x6c/0x80
+> > [   44.111295]  ? __warn+0x8d/0x150
+> > [   44.111298]  ? framebuffer_release+0x2c/0x40
+> > [   44.111300]  ? report_bug+0x182/0x1b0
+> > [   44.111303]  ? handle_bug+0x6e/0xb0
+> > [   44.111306]  ? exc_invalid_op+0x18/0x80
+> > [   44.111308]  ? asm_exc_invalid_op+0x1b/0x20
+> > [   44.111311]  ? framebuffer_release+0x2c/0x40
+> > [   44.111313]  ? hvfb_remove+0x86/0xa0 [hyperv_fb]
+> > [   44.111315]  vmbus_remove+0x24/0x40 [hv_vmbus]
+> > [   44.111323]  device_remove+0x40/0x80
+> > [   44.111325]  device_release_driver_internal+0x20b/0x270
+> > [   44.111327]  ? bus_find_device+0xb3/0xf0
+> > 
+> > Fix this by moving the release of framebuffer to fb_ops.fb_destroy function
+> > so that framebuffer framework handles it gracefully
+> 
+> These changes look good for solving the specific problem where
+> the reference count WARN is produced. But there is another
+> problem of the same type that happens when doing unbind
+> of a hyperv_fb device that is in use (i.e., /dev/fb0 is open and
+> mmap'ed by some user space program).
+> 
+> For this additional problem, there are three sub-cases,
+> depending on what memory gets mmap'ed into user space.
+> Two of the three sub-cases have a problem.
+> 
+> 1) When Hyper-V FB uses deferred I/O, the vmalloc dio memory
+> is what get mapped into user space. When hyperv_fb is unbound,
+> the vmalloc dio memory is freed. But the memory doesn't actually
+> get freed if it is still mmap'ed into user space. The deferred I/O
+> mechanism is stopped, but user space can keep writing to the
+> memory even though the pixels don't get copied to the actual
+> framebuffer any longer.  When the user space program terminates
+> (or unmaps the memory), the memory will be freed. So this case
+> is OK, though perhaps a bit dubious.
+> 
+> 2) When Hyper-V FB is in a Gen 1 VM, and the frame buffer size
+> is <= 4 MiB, a normal kernel allocation is used for the
+> memory that is mmap'ed to user space. If this memory
+> is freed when hyperv_fb is unbound, bad things happen
+> because the memory is still being written to via the user space
+> mmap. There are multiple "BUG: Bad page state in process
+> bash  pfn:106c65" errors followed by stack traces.
+> 
+> 3) Similarly in a Gen 1 VM, if the frame buffer size is > 4 MiB,
+> CMA memory is allocated (assuming it is available). This CMA
+> memory gets mapped into user space. When hyperv_fb is
+> unbound, that memory is freed. But CMA complains that the
+> ref count on the pages is not zero. Here's the dmesg output:
+> 
+> [  191.629780] ------------[ cut here ]------------
+> [  191.629784] 200 pages are still in use!
+> [  191.629789] WARNING: CPU: 3 PID: 1115 at mm/page_alloc.c:6757 free_contig_range+0x15e/0x170
+> 
+> Stack trace is: 
+> 
+> [  191.629847]  ? __warn+0x97/0x160
+> [  191.629849]  ? free_contig_range+0x15e/0x170
+> [  191.629849]  ? report_bug+0x1bb/0x1d0
+> [  191.629851]  ? console_unlock+0xdd/0x1e0
+> [  191.629854]  ? handle_bug+0x60/0xa0
+> [  191.629857]  ? exc_invalid_op+0x1d/0x80
+> [  191.629859]  ? asm_exc_invalid_op+0x1f/0x30
+> [  191.629862]  ? free_contig_range+0x15e/0x170
+> [  191.629862]  ? free_contig_range+0x15e/0x170
+> [  191.629863]  cma_release+0xc6/0x150
+> [  191.629865]  dma_free_contiguous+0x34/0x70
+> [  191.629868]  dma_direct_free+0xd3/0x130
+> [  191.629869]  dma_free_attrs+0x6b/0x130
+> [  191.629872]  hvfb_putmem.isra.0+0x99/0xd0 [hyperv_fb]
+> [  191.629874]  hvfb_remove+0x75/0x80 [hyperv_fb]
+> [  191.629876]  vmbus_remove+0x28/0x40 [hv_vmbus]
+> [  191.629883]  device_remove+0x43/0x70
+> [  191.629886]  device_release_driver_internal+0xbd/0x140
+> [  191.629888]  device_driver_detach+0x18/0x20
+> [  191.629890]  unbind_store+0x8f/0xa0
+> [  191.629891]  drv_attr_store+0x25/0x40
+> [  191.629892]  sysfs_kf_write+0x3f/0x50
+> [  191.629894]  kernfs_fop_write_iter+0x142/0x1d0
+> [  191.629896]  vfs_write+0x31b/0x450
+> [  191.629898]  ksys_write+0x6e/0xe0
+> [  191.629899]  __x64_sys_write+0x1e/0x30
+> [  191.629900]  x64_sys_call+0x16bf/0x2150
+> [  191.629903]  do_syscall_64+0x4e/0x110
+> [  191.629904]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+> 
+> For all three cases, I think the memory freeing and iounmap() operations
+> can be moved to the new hvfb_destroy() function so that the memory
+> is cleaned up only when there aren't any users. While these additional
+> changes could be done as a separate patch, it seems to me like they are all
+> part of the same underlying issue as the reference count problem, and
+> could be combined into this patch.
+> 
+> Michael 
 >
 
-Alright, though why then checkpatch script has max line length 100 chars?
+Thanks for your review.  
 
-https://github.com/torvalds/linux/commit/bdc48fa11e46f867ea4d75fa59ee87a7f4=
-8be144
+I had considered moving the entire `hvfb_putmem()` function to `destroy`,
+but I was hesitant for two reasons:  
 
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+  1. I wasn’t aware of any scenario where this would be useful. However,
+     your explanation has convinced me that it is necessary.  
+  2. `hvfb_release_phymem()` relies on the `hdev` pointer, which requires
+     multiple `container_of` operations to derive it from the `info` pointer.
+     I was unsure if the complexity was justified, but it seems worthwhile now.  
+
+I will move `hvfb_putmem()` to the `destroy` function in V2, and I hope this
+will address all the cases you mentioned.
+
+- Saurabh
+
+<snip>

@@ -1,94 +1,102 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9E541F1506;
-	Sat, 22 Feb 2025 17:27:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20FA41422DD;
+	Sat, 22 Feb 2025 19:33:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740245249; cv=none; b=SmUgj9SThSG6rTDDj4OpCqJgHXhF3qufkYU4XDyLAW5cr4vCghf8ORYYP/bzd+fU4rplVQ+0kxLcYBqOtqlsLJfXOvYagjDege4Wdsuvp3zfc0ARs+oScCN72hJONG1WyixiQ+7f403XIGwQwjtH5VeF938K9glvDq20ocWl5Co=
+	t=1740252792; cv=none; b=OH2U94m4a/+W8YK5GNwFCVHshSvjXXS/Wblu6klbDLOaniUrjMJisa4REbl9HNUg/CxmZhg+Ip/deATWBoCmRSRxgnG/7uKFO/M8ku5JsmvfnysTCfDQYfvRWb64hgHd3U9Q6me1PRB5mRmjlbcsSLRRoJdRihAgbiHOsVBOvnc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740245249; c=relaxed/simple;
-	bh=CL61gAUqhb0sQMX+rTET5exH4siStwJSEMSACoiFGKo=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=O99vNH2YpNeN5i3dDXGpQ0mC8i07nQMHfCznwaavMRsJkiIFE/fUHFmiqvujZWIb0blSUYfaHicxr6rRlcs9Ho9xpNJnxaWWUtJjxH/ZQQG7nV6+MSrTJZUSO2xXnRZbscVrjYDHmNyhSFS2w+UFcWP6C61zIQLEDfLVDMqGjk4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZYhhby/4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1740252792; c=relaxed/simple;
+	bh=OfmZMEvJIkp5Fj0oy2tReM70wDR8EHOpSUyCFLG25yI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=e6K7VsCYaYWTemNpiDH35W2La6o37cbBEQuM6J3J0xinEENpaGhuh/QXjSvxQFcg+ouBtuXe+PAV75kiUgk1J7SA6EpQdIYlwr7DuNGpj4vyXgwKnz+kEdZLloeNHJC0gejy1j/9fnAjeivtR3jDtd78R1rrHAqQO/akOL8kSQQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ax7Xgo4p; arc=none smtp.client-ip=209.85.214.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZYhhby/4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08A99C4CED1;
-	Sat, 22 Feb 2025 17:27:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740245249;
-	bh=CL61gAUqhb0sQMX+rTET5exH4siStwJSEMSACoiFGKo=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=ZYhhby/4+5agcCxUg89X9BuGaSUpK2vX48Zi2ELbrOmDCXhqRz09VtRY7G2+DiDBC
-	 Nc9lbo+FGDeBIfbYuE4iQKcOtg1B5iZ9uvMNDs4sdnzT+W43hfNxDfbJpIqcofEVqQ
-	 b3gi6tutBAyvMNwU9ZPH6ffIrDXE8DcmqqI9H0FwBJOH7FIOCbcfTfB9WCEl30Tcq3
-	 AANt0zcPRNgdWbJ8jFXyNxGHUohg4UNbEPUSeVZliARRtCNLa/+VkRfKGqHT9LFSfK
-	 72Oqf1cPmMpqz8lMLmD236A5/2ixgYB68+DB3PY++FgwOlHsTP3R50yITxKlOJqW3b
-	 VW71TkE0WbNaA==
-Date: Sat, 22 Feb 2025 17:27:17 +0000
-From: Jonathan Cameron <jic23@kernel.org>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
- Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, Daniel
- Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge
- Deller <deller@gmx.de>, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=
- <u.kleine-koenig@baylibre.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-leds@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] dt-bindings: mfd: Document TI LM3533 MFD
-Message-ID: <20250222172717.72b665fd@jic23-huawei>
-In-Reply-To: <CAPVz0n0up=vkVzryYLauNCM2=hnz-o_ECm+ooXC8y=C2q+T_WQ@mail.gmail.com>
-References: <20250218132702.114669-1-clamor95@gmail.com>
-	<20250218132702.114669-2-clamor95@gmail.com>
-	<20250222142910.4e6b706d@jic23-huawei>
-	<CAPVz0n0up=vkVzryYLauNCM2=hnz-o_ECm+ooXC8y=C2q+T_WQ@mail.gmail.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.48; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ax7Xgo4p"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-220f4dd756eso63682945ad.3;
+        Sat, 22 Feb 2025 11:33:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740252790; x=1740857590; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=oG1Y4xUVBy90l/AWrqKDSxBw1CTC/BkXHI7h/Zxom7o=;
+        b=ax7Xgo4pw3V9T14qH4ua7+3WaQ6ZOouVprOfaBYE8+sterxggNdPFSI2rdz45iOkT8
+         L4EdhxpseabN1TzBa5bXQfaoz6aW0k/BdURfd4g9wxWLQ/juEzjfkNNxGfDp0SdVWwG5
+         t3u4B5p5QL1dHNQJ9+8Wcfte4s6cPpaI/LcU+DVPpxJVQ48XFTNO/z5leizxEMBlTZqp
+         hqqgI7npgPoBZ96MWpTr6yUE673dVvGJTMkfWKlA17d672uelc539petQZ3ZrIwBfvpM
+         4JyJqOPAciNm/F7qOqbVGemlhcR1fiufEhxnrGAXSuwEjTc9mqTq9poE6iGTAaiAb6qo
+         +uFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740252790; x=1740857590;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=oG1Y4xUVBy90l/AWrqKDSxBw1CTC/BkXHI7h/Zxom7o=;
+        b=Hv9h1dRQg0wF2TE4bj314g5qYEpKrcV72Y7orRh1alJg3C/RJULQDQrNEcg4J0H8x5
+         6I3xWA7zivARlFEtVztNAZQXURzR/iPmGDcfCSG1W0VvXzNyiWLDjEsB6YvqBmikOoBv
+         L1KgvK0yWfqroLZ8d0rRZcc2kJuXNIV6uwlRpdBx/yNFZn/101MrfxCFrO9L8SUdDYFi
+         riQkHv8vk4GtEIuf++EAz7xXSURjYPWfJiu8SqPOagFk0alMmQJUdNEHvLFJBp0hobIv
+         fldG9uo/Z6MnvYVWguizMCAvX04SqRA/aTaGbYz0bJmYhk1XgT17/q0t2Uja9WuJk6Vj
+         spjA==
+X-Forwarded-Encrypted: i=1; AJvYcCW4mcNL8nnWXuGzvJlD/TJ/gDO06Y5jtQ+rXIrniye91Ex/i0CRyHum8HPeu5hE2ztucCuykrXDcjRn5c71@vger.kernel.org, AJvYcCWqBA9tyJY1I7F8rDQe2T8P+BtD/EDpl8og0m/ppwAdZI2XOB5U2C6oE7IRJdkwvmgo557RSPRtyPvZmw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz1MQcoi/yeM1IW/F2Lk8RIyYlAU2tnPRZoMfx4WEk7YpJwaC2N
+	Y64d45k3q6PPCT3nTYDvjclu5FQIjnbU4hPvt9AISobhukuu/XJb
+X-Gm-Gg: ASbGncsQNYR5IOZABTVr5ZmcVp+FitIDkpa96GK+A5DPfe2h4w3+51M0FROBlOvCNTe
+	pSGr/qccu7l8xh9CreyG0e9dcKxwD/w+fDaUp/v3YRzL/hMi0fTIVpKBuU3psBQYSWpZ2EffzR5
+	ZUDEzOKUD1nRB5PtvAWFs4/sQGSkFNYbbuD8t8dV6ScyPgl6lXd15cCkix/6XNPzI9C2K0kq7ED
+	x2+3c8SE3j0zsnFU7MPdy1EES2Y4LZXdaBgTTqtTLfRHiPYNfuTtrTvNscoVttB/pNga5wW1bku
+	0Uy0NFq8rVeop7ZDCpXTsfE1lPFYo74xr0+JhCBLEoU=
+X-Google-Smtp-Source: AGHT+IGds9hYYhM7lhNXaP5V5VGPOZOdlf0A/D+v1WqyQMFkqW1PLY9zki3n+7oIDnzn3VBbkXHGRA==
+X-Received: by 2002:a17:902:cec1:b0:21f:55e:ed71 with SMTP id d9443c01a7336-2219ff31895mr143259245ad.5.1740252790272;
+        Sat, 22 Feb 2025 11:33:10 -0800 (PST)
+Received: from localhost.localdomain ([36.255.84.61])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-220d536375fsm154131165ad.53.2025.02.22.11.33.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 22 Feb 2025 11:33:09 -0800 (PST)
+From: Madhur Kumar <madhurkumar004@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com
+Cc: gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Madhur Kumar <madhurkumar004@gmail.com>
+Subject: [PATCH] staging: sm750fb: Replace architecture-specific defines with CONFIG_X86
+Date: Sun, 23 Feb 2025 01:02:42 +0530
+Message-ID: <20250222193242.14302-1-madhurkumar004@gmail.com>
+X-Mailer: git-send-email 2.48.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sat, 22 Feb 2025 16:39:31 +0200
-Svyatoslav Ryhel <clamor95@gmail.com> wrote:
+Replace the use of __i386__ and __x86_64__ with CONFIG_X86 to adhere to
+kernel coding guideline, make the code more portable and integrates
+better with the Kconfig system.
 
-> =D1=81=D0=B1, 22 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 16:29 Jo=
-nathan Cameron <jic23@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> >
-> > On Tue, 18 Feb 2025 15:26:59 +0200
-> > Svyatoslav Ryhel <clamor95@gmail.com> wrote:
-> > =20
-> > > Add bindings for the LM3533 - a complete power source for
-> > > backlight, keypad, and indicator LEDs in smartphone handsets.
-> > > The high-voltage inductive boost converter provides the
-> > > power for two series LED strings display backlight and keypad
-> > > functions. =20
-> >
-> > Wrap patch descriptions to 75 chars as describe in submitting-patches.r=
-st
-> > =20
->=20
-> Alright, though why then checkpatch script has max line length 100 chars?
->=20
-> https://github.com/torvalds/linux/commit/bdc48fa11e46f867ea4d75fa59ee87a7=
-f48be144
+Signed-off-by: Madhur Kumar <madhurkumar004@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Because that script is intended to catch when things are very wrong not
-slightly so.  It provides guidance that you should look at and consider
-whether to respond to.  Checking for short wrap is trickier to do as
-perhaps the formatting is intended in some cases.
-
-
-Jonathan
-
->=20
-> > >
-> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com> =20
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 02860d3ec..67a2f6044 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -229,7 +229,7 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
+ 		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
+ 		poke32(VGA_CONFIGURATION, reg);
+ 	} else {
+-#if defined(__i386__) || defined(__x86_64__)
++#ifdef CONFIG_X86
+ 		/* set graphic mode via IO method */
+ 		outb_p(0x88, 0x3d4);
+ 		outb_p(0x06, 0x3d5);
+-- 
+2.48.1
 

@@ -1,158 +1,86 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BDD2724169C;
-	Mon, 24 Feb 2025 13:29:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 267CF157A48;
+	Mon, 24 Feb 2025 13:46:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740403788; cv=none; b=ZgB6UvIdjDoA+1obOOyKPCPCO2+dPm3h6kuLhY6O/D5SmjX26Y8/ozemtwIQZWjNtCPKRolPxsq5gsKSpGTTbvBn0pnTnp/5e9TZ50P6gusT76PTQYXHbnuSSl9EhmN9ypzlE1ovezlyEvvgrcyRlBtvZ6y+smMWC/DAgaJ9fZY=
+	t=1740404796; cv=none; b=YGPrXffdydsHOiCZ/Fta9EDzA+ZZc5pqhoz39GLysr0/TrsubmXvyYF6jklCoukROWziKIH3UYpaCX1wyeYy19M1i4L5qWJAmWirzhsAlojuTsZRytrFW1Ph6PtsqCsDPgC6yUJ/P9bn8yisr09cQPg8gWBQ1l+cr2TNj8BfuwA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740403788; c=relaxed/simple;
-	bh=vXEFc8vCTxFU53LlB8L6wrOQ9QWoqVL3htuV4RYrMKQ=;
+	s=arc-20240116; t=1740404796; c=relaxed/simple;
+	bh=GhSf3n9clDXFTWmYTdpg1IkSzgVc80lXwe20AXbLTcQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NGZEXs/R65IM9R4NRPd1NRzXGkYAHtNgdDXrX/ZC/6bPjp7iCQekbpGktiGQejiyqGQ1J3A7fW5+X0fE38Jbu89YQsEq+MrNSZma/IVRa8LSaUl/22sN9TsnvUZQcXNu/S7Ib+i+GNKgiNy+Rh2MYQudLDRWiZRr9arkWVs0px4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=CnrlGXKl; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=KUpQgbRQfyga8HeSSN36TfTZB0iAIK9XansTxxdE4e8I+9yIhkJiVnU9fYBAPffyjDeLgf51bA5cTtgocf0L3eqTphfX1ECsojAMymdrlKrssK7eB6YqbdKNVp468cePWbCXH9c4lwl8mimNTp658ShfjBybbAcoUI4/isp6ems=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TxSzvoWC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="CnrlGXKl"
-Received: by linux.microsoft.com (Postfix, from userid 1127)
-	id 3EAB6203CDDA; Mon, 24 Feb 2025 05:29:46 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3EAB6203CDDA
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1740403786;
-	bh=i01zIab6305TaFlNKn7K/1S71vqUHIZ2SMtS+KnZW5U=;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TxSzvoWC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 146F4C4CED6;
+	Mon, 24 Feb 2025 13:46:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1740404795;
+	bh=GhSf3n9clDXFTWmYTdpg1IkSzgVc80lXwe20AXbLTcQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CnrlGXKlOaWiyi66FhJ6/N36v5KvcV6ldKV+IQevrGpmO7UGJnZ8rJ7Cd/BQuYkw0
-	 lLWRMnUwFeM4OuGuimbaznlHZ4tZQmlbIr5R/GlWCw8txh7UxhvKliD0zif9TV17AM
-	 FEUNe9MgWI+y11r/xtxLv/fIOAOcmwsztrr4Z7ew=
-Date: Mon, 24 Feb 2025 05:29:46 -0800
-From: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
-To: Michael Kelley <mhklinux@outlook.com>
-Cc: "kys@microsoft.com" <kys@microsoft.com>,
-	"haiyangz@microsoft.com" <haiyangz@microsoft.com>,
-	"wei.liu@kernel.org" <wei.liu@kernel.org>,
-	"decui@microsoft.com" <decui@microsoft.com>,
-	"deller@gmx.de" <deller@gmx.de>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"ssengar@microsoft.com" <ssengar@microsoft.com>
-Subject: Re: [PATCH] fbdev: hyperv_fb: Allow graceful removal of framebuffer
-Message-ID: <20250224132946.GA7039@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
-References: <1739611240-9512-1-git-send-email-ssengar@linux.microsoft.com>
- <SN6PR02MB4157813782C1D9E6D1225582D4C52@SN6PR02MB4157.namprd02.prod.outlook.com>
- <20250222172715.GA28061@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
- <SN6PR02MB4157F6CF7CACF45C398933C4D4C62@SN6PR02MB4157.namprd02.prod.outlook.com>
- <20250223140933.GA16428@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
- <SN6PR02MB41571ED5CEA6B91A7F35AC3FD4C02@SN6PR02MB4157.namprd02.prod.outlook.com>
+	b=TxSzvoWCrxdpqOdBn2NA1QWKabhD124xoFC1Yl0TIz2RbPgligt/ZxNjw6E1FkuSR
+	 wMH2iqforUVtdO/Ot6cE8hQsMstuyGoN6RpcTphA20ppw1zxFHGV4LLuCLSsrGIuyC
+	 smwT9aEOR1+tRpRhvrAwkQa3w5rOJSpUS/6a/Ffz0kZjXOOuZa4MZ+rwWYGvT8+QiD
+	 Cg1wHJAW0gwIpcmcqBXNw27cTPAOywyQzSzgAp7U4/0cMSlYxRan87WRPxTIDE6FE7
+	 3McHVaLEC+6Y1V1aQ7/QHa884TJuMJHKQfAZQUa+y7sm6NOgzSkSiKELz/afBuTb4K
+	 874hbazc2erhA==
+Date: Mon, 24 Feb 2025 13:46:29 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Raag Jadav <raag.jadav@intel.com>
+Cc: perex@perex.cz, tiwai@suse.com, lgirdwood@gmail.com, deller@gmx.de,
+	andriy.shevchenko@linux.intel.com, sre@kernel.org,
+	sakari.ailus@linux.intel.com, mchehab@kernel.org,
+	hverkuil-cisco@xs4all.nl, jdmason@kudzu.us, fancer.lancer@gmail.com,
+	linux-sound@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
+	ntb@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 00/13] Convert to use devm_kmemdup_array()
+Message-ID: <31f8302b-96be-41f1-9e58-c9f8cb2a9524@sirena.org.uk>
+References: <20250221165333.2780888-1-raag.jadav@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="55NteQvh/2EFKMVB"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <SN6PR02MB41571ED5CEA6B91A7F35AC3FD4C02@SN6PR02MB4157.namprd02.prod.outlook.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-
-On Mon, Feb 24, 2025 at 12:38:22AM +0000, Michael Kelley wrote:
-> From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Sunday, February 23, 2025 6:10 AM
-> > 
-> > On Sat, Feb 22, 2025 at 08:16:53PM +0000, Michael Kelley wrote:
-> > > From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Saturday, February 22, 2025 9:27 AM
-> > > >
-> 
-> [anip]
-> 
-> > > >
-> > > > I had considered moving the entire `hvfb_putmem()` function to `destroy`,
-> > > > but I was hesitant for two reasons:
-> > > >
-> > > >   1. I wasn’t aware of any scenario where this would be useful. However,
-> > > >      your explanation has convinced me that it is necessary.
-> > > >   2. `hvfb_release_phymem()` relies on the `hdev` pointer, which requires
-> > > >      multiple `container_of` operations to derive it from the `info` pointer.
-> > > >      I was unsure if the complexity was justified, but it seems worthwhile now.
-> > > >
-> > > > I will move `hvfb_putmem()` to the `destroy` function in V2, and I hope this
-> > > > will address all the cases you mentioned.
-> > > >
-> > >
-> > > Yes, that's what I expect needs to happen, though I haven't looked at the
-> > > details of making sure all the needed data structures are still around. Like
-> > > you, I just had this sense that hvfb_putmem() might need to be moved as
-> > > well, so I tried to produce a failure scenario to prove it, which turned out
-> > > to be easy.
-> > >
-> > > Michael
-> > 
-> > I will add this in V2 as well. But I have found an another issue which is
-> > not very frequent.
-> > 
-> > 
-> > [  176.562153] ------------[ cut here ]------------
-> > [  176.562159] fb0: fb_WARN_ON_ONCE(pageref->page != page)
-> > [  176.562176] WARNING: CPU: 50 PID: 1522 at drivers/video/fbdev/core/fb_defio.c:67
-> > fb_deferred_io_mkwrite+0x215/0x280
-> > 
-> > <snip>
-> > 
-> > [  176.562258] Call Trace:
-> > [  176.562260]  <TASK>
-> > [  176.562263]  ? show_regs+0x6c/0x80
-> > [  176.562269]  ? __warn+0x8d/0x150
-> > [  176.562273]  ? fb_deferred_io_mkwrite+0x215/0x280
-> > [  176.562275]  ? report_bug+0x182/0x1b0
-> > [  176.562280]  ? handle_bug+0x133/0x1a0
-> > [  176.562283]  ? exc_invalid_op+0x18/0x80
-> > [  176.562284]  ? asm_exc_invalid_op+0x1b/0x20
-> > [  176.562289]  ? fb_deferred_io_mkwrite+0x215/0x280
-> > [  176.562291]  ? fb_deferred_io_mkwrite+0x215/0x280
-> > [  176.562293]  do_page_mkwrite+0x4d/0xb0
-> > [  176.562296]  do_wp_page+0xe8/0xd50
-> > [  176.562300]  ? ___pte_offset_map+0x1c/0x1b0
-> > [  176.562304]  __handle_mm_fault+0xbe1/0x10e0
-> > [  176.562307]  handle_mm_fault+0x17f/0x2e0
-> > [  176.562309]  do_user_addr_fault+0x2d1/0x8d0
-> > [  176.562314]  exc_page_fault+0x85/0x1e0
-> > [  176.562318]  asm_exc_page_fault+0x27/0x30
-> > 
-> > Looks this is because driver is unbind still Xorg is trying to write
-> > to memory which is causing some page faults. I have confirmed PID 1522
-> > is of Xorg. I think this is because we need to cancel the framebuffer
-> > deferred work after flushing it.
-> 
-> Does this new issue occur even after moving hvfb_putmem()
-> into the destroy() function?
-
-Unfortunately yes :( 
-
->                             I'm hoping it doesn't. I've
-> looked at the fb_deferred_io code, and can't quite figure out
-> how that deferred I/O work is supposed to get cancelled. Or
-> maybe it's just not supposed to get started again after the flush.
-> 
-
-I want to understand why cancel_delayed_work_sync was introduce in
-hvfb_suspend and not the flush. Following commit introduced it.
-
-382a462217572 ('video: hyperv_fb: Fix hibernation for the deferred IO feature')
-
-But I agree this need more analysis.
-
-> If the new issue still happens, that seems like more of a flaw
-> in the fb deferred I/O mechanism not shutting itself down
-> properly.
-> 
-
-As the repro rate is quite low, this will take some effort to get this
-fixed. Shall we take this in a separate patch later ?
+In-Reply-To: <20250221165333.2780888-1-raag.jadav@intel.com>
+X-Cookie: Phone call for chucky-pooh.
 
 
-> Michael
->
+--55NteQvh/2EFKMVB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-<snip> 
+On Fri, Feb 21, 2025 at 10:23:20PM +0530, Raag Jadav wrote:
+> This series is the second wave of patches to add users of newly introduced
+> devm_kmemdup_array() helper. Original series on [1].
+>=20
+> This depends on changes available on immutable tag[2]. Feel free to pick
+> your subsystem patches with it, or share your preferred way to route them.
+
+Please don't combine patches for multiple subsystems into a single patch
+series, it just makes everything more complex to deal with - it creates
+cross tree issues that wouldn't otherwise exist.
+
+--55NteQvh/2EFKMVB
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAme8eDQACgkQJNaLcl1U
+h9DFYQf+POnj8ermDn0Tw9XG/X8r7XNhLSk5wb0yK1OyIN1hYGZUP2qcnBFxH+ms
+dGEvY44PF4R2Imam49wf7QGqhfidWrrVDp7+U9HxGI70TLYVtCRNV06ZmWvUiKkZ
+KGiGaiY1hmADDRc4Xz78QPBDRpOp12Admq5fFAxMrtRaeW64E4QzWX8AoHUWW8LQ
+53Q+JH0Y4zO4JW8wXAGQnFgvF2HJ1z0at63H+XJK56p/pE+qO+Dy9Cg51nimGKA8
+Wa+MXvcB7/lsdwMx/bDk/SU+bM287BI4q//RWXwK6Tlzs4DUoe2cmZuzuZC+u4aj
+E1alazYzvMrO1nm1Tl8FT6F9s7+wQQ==
+=XiDk
+-----END PGP SIGNATURE-----
+
+--55NteQvh/2EFKMVB--

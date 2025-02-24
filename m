@@ -1,86 +1,158 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 249571DDE9;
-	Mon, 24 Feb 2025 12:39:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id BDD2724169C;
+	Mon, 24 Feb 2025 13:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740400758; cv=none; b=b2HBVERB/xrS2e+sd7Y2dVTNHe71CY9t9BD04tGepin5tUUXDWqeYWmUZcVCSZSwbh+PH2lYE39AWTA8ZjIV80qxe1yvQXryxdHEwlHZHjxNBaeckPgrJ8bPouDAS6ybHbtZMelDd5nkhzxjH8hnhqIawySLSYcrz9J69Cn8SUk=
+	t=1740403788; cv=none; b=ZgB6UvIdjDoA+1obOOyKPCPCO2+dPm3h6kuLhY6O/D5SmjX26Y8/ozemtwIQZWjNtCPKRolPxsq5gsKSpGTTbvBn0pnTnp/5e9TZ50P6gusT76PTQYXHbnuSSl9EhmN9ypzlE1ovezlyEvvgrcyRlBtvZ6y+smMWC/DAgaJ9fZY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740400758; c=relaxed/simple;
-	bh=I4zwzRfgVjDsqL3gEcvnfx+MpbnW+WUPLHL5AHyvtfs=;
+	s=arc-20240116; t=1740403788; c=relaxed/simple;
+	bh=vXEFc8vCTxFU53LlB8L6wrOQ9QWoqVL3htuV4RYrMKQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=o+ck0SEvXsQnet4VV/hqn1ubG0e/9TjPJUthNhbtwtHKWjOc/66s7+Z3FsP0+LyrZINYEChVg7qLHSPJlKcZOZsVOlMvvj0hk1XPlPsdxRhODiGigAuvbQ8y57yhjVwTyI8qP5PYAX8yEWax4IrYQufQmY+WkZaNZemw0ekCCWc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bGbUDI3j; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=NGZEXs/R65IM9R4NRPd1NRzXGkYAHtNgdDXrX/ZC/6bPjp7iCQekbpGktiGQejiyqGQ1J3A7fW5+X0fE38Jbu89YQsEq+MrNSZma/IVRa8LSaUl/22sN9TsnvUZQcXNu/S7Ib+i+GNKgiNy+Rh2MYQudLDRWiZRr9arkWVs0px4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=CnrlGXKl; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bGbUDI3j"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1740400757; x=1771936757;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=I4zwzRfgVjDsqL3gEcvnfx+MpbnW+WUPLHL5AHyvtfs=;
-  b=bGbUDI3jU+8G0lMyD1MaN7WzggW3cGswR8plSEdS/kZ8yF9QiO1ZnmB7
-   iyyT2ga7XWIV3kEWS/Vkb0lUMmkyJhFIb2JrhRd5byH+otMfq5qWjZgXG
-   nb5lVB9Jz04qFA+0az7KgybuKoAQJEl+QbFxcz0SFpFhbAtfltyOOWTap
-   J/wQQ+IGnkHly0fgkmXjstjI/xdXO99yE4SNcerwDwnBn/ToCJ9LE/HzN
-   REzR33rcpPF71omBNrUSbrcTjzLoi9MGsv9S4E2En44+HIUd2Y0ZCjEwH
-   +fPZkeJZY3PPOOd6vyMK8yZucKxqrhrCy8p1i6fdW9T1Kw0gn5o8hHELx
-   w==;
-X-CSE-ConnectionGUID: xr1416diTaKv3HKJZr8+XA==
-X-CSE-MsgGUID: E/dN3DWHQ/O9NQ+c8Fs2eQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11355"; a="44804206"
-X-IronPort-AV: E=Sophos;i="6.13,309,1732608000"; 
-   d="scan'208";a="44804206"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Feb 2025 04:39:16 -0800
-X-CSE-ConnectionGUID: TOwLHXo3SgmVXIMwNmb0vQ==
-X-CSE-MsgGUID: z2UkMDxrQkWgeU8zvFf0YQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
-   d="scan'208";a="121321317"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Feb 2025 04:39:10 -0800
-Date: Mon, 24 Feb 2025 14:39:07 +0200
-From: Raag Jadav <raag.jadav@intel.com>
-To: perex@perex.cz, tiwai@suse.com, broonie@kernel.org, lgirdwood@gmail.com,
-	deller@gmx.de, andriy.shevchenko@linux.intel.com, sre@kernel.org,
-	sakari.ailus@linux.intel.com, mchehab@kernel.org,
-	hverkuil-cisco@xs4all.nl, jdmason@kudzu.us, fancer.lancer@gmail.com
-Cc: linux-sound@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
-	ntb@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 00/13] Convert to use devm_kmemdup_array()
-Message-ID: <Z7xoa9FbuvIaTJFt@black.fi.intel.com>
-References: <20250221165333.2780888-1-raag.jadav@intel.com>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="CnrlGXKl"
+Received: by linux.microsoft.com (Postfix, from userid 1127)
+	id 3EAB6203CDDA; Mon, 24 Feb 2025 05:29:46 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3EAB6203CDDA
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1740403786;
+	bh=i01zIab6305TaFlNKn7K/1S71vqUHIZ2SMtS+KnZW5U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=CnrlGXKlOaWiyi66FhJ6/N36v5KvcV6ldKV+IQevrGpmO7UGJnZ8rJ7Cd/BQuYkw0
+	 lLWRMnUwFeM4OuGuimbaznlHZ4tZQmlbIr5R/GlWCw8txh7UxhvKliD0zif9TV17AM
+	 FEUNe9MgWI+y11r/xtxLv/fIOAOcmwsztrr4Z7ew=
+Date: Mon, 24 Feb 2025 05:29:46 -0800
+From: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
+To: Michael Kelley <mhklinux@outlook.com>
+Cc: "kys@microsoft.com" <kys@microsoft.com>,
+	"haiyangz@microsoft.com" <haiyangz@microsoft.com>,
+	"wei.liu@kernel.org" <wei.liu@kernel.org>,
+	"decui@microsoft.com" <decui@microsoft.com>,
+	"deller@gmx.de" <deller@gmx.de>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"ssengar@microsoft.com" <ssengar@microsoft.com>
+Subject: Re: [PATCH] fbdev: hyperv_fb: Allow graceful removal of framebuffer
+Message-ID: <20250224132946.GA7039@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+References: <1739611240-9512-1-git-send-email-ssengar@linux.microsoft.com>
+ <SN6PR02MB4157813782C1D9E6D1225582D4C52@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <20250222172715.GA28061@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+ <SN6PR02MB4157F6CF7CACF45C398933C4D4C62@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <20250223140933.GA16428@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+ <SN6PR02MB41571ED5CEA6B91A7F35AC3FD4C02@SN6PR02MB4157.namprd02.prod.outlook.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20250221165333.2780888-1-raag.jadav@intel.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <SN6PR02MB41571ED5CEA6B91A7F35AC3FD4C02@SN6PR02MB4157.namprd02.prod.outlook.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 
-On Fri, Feb 21, 2025 at 10:23:20PM +0530, Raag Jadav wrote:
-> This series is the second wave of patches to add users of newly introduced
-> devm_kmemdup_array() helper. Original series on [1].
+On Mon, Feb 24, 2025 at 12:38:22AM +0000, Michael Kelley wrote:
+> From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Sunday, February 23, 2025 6:10 AM
+> > 
+> > On Sat, Feb 22, 2025 at 08:16:53PM +0000, Michael Kelley wrote:
+> > > From: Saurabh Singh Sengar <ssengar@linux.microsoft.com> Sent: Saturday, February 22, 2025 9:27 AM
+> > > >
 > 
-> This depends on changes available on immutable tag[2]. Feel free to pick
-> your subsystem patches with it, or share your preferred way to route them.
+> [anip]
 > 
-> [1] https://lore.kernel.org/r/20250212062513.2254767-1-raag.jadav@intel.com
-> [2] https://lore.kernel.org/r/Z7cqCaME4LxTTBn6@black.fi.intel.com
+> > > >
+> > > > I had considered moving the entire `hvfb_putmem()` function to `destroy`,
+> > > > but I was hesitant for two reasons:
+> > > >
+> > > >   1. I wasn’t aware of any scenario where this would be useful. However,
+> > > >      your explanation has convinced me that it is necessary.
+> > > >   2. `hvfb_release_phymem()` relies on the `hdev` pointer, which requires
+> > > >      multiple `container_of` operations to derive it from the `info` pointer.
+> > > >      I was unsure if the complexity was justified, but it seems worthwhile now.
+> > > >
+> > > > I will move `hvfb_putmem()` to the `destroy` function in V2, and I hope this
+> > > > will address all the cases you mentioned.
+> > > >
+> > >
+> > > Yes, that's what I expect needs to happen, though I haven't looked at the
+> > > details of making sure all the needed data structures are still around. Like
+> > > you, I just had this sense that hvfb_putmem() might need to be moved as
+> > > well, so I tried to produce a failure scenario to prove it, which turned out
+> > > to be easy.
+> > >
+> > > Michael
+> > 
+> > I will add this in V2 as well. But I have found an another issue which is
+> > not very frequent.
+> > 
+> > 
+> > [  176.562153] ------------[ cut here ]------------
+> > [  176.562159] fb0: fb_WARN_ON_ONCE(pageref->page != page)
+> > [  176.562176] WARNING: CPU: 50 PID: 1522 at drivers/video/fbdev/core/fb_defio.c:67
+> > fb_deferred_io_mkwrite+0x215/0x280
+> > 
+> > <snip>
+> > 
+> > [  176.562258] Call Trace:
+> > [  176.562260]  <TASK>
+> > [  176.562263]  ? show_regs+0x6c/0x80
+> > [  176.562269]  ? __warn+0x8d/0x150
+> > [  176.562273]  ? fb_deferred_io_mkwrite+0x215/0x280
+> > [  176.562275]  ? report_bug+0x182/0x1b0
+> > [  176.562280]  ? handle_bug+0x133/0x1a0
+> > [  176.562283]  ? exc_invalid_op+0x18/0x80
+> > [  176.562284]  ? asm_exc_invalid_op+0x1b/0x20
+> > [  176.562289]  ? fb_deferred_io_mkwrite+0x215/0x280
+> > [  176.562291]  ? fb_deferred_io_mkwrite+0x215/0x280
+> > [  176.562293]  do_page_mkwrite+0x4d/0xb0
+> > [  176.562296]  do_wp_page+0xe8/0xd50
+> > [  176.562300]  ? ___pte_offset_map+0x1c/0x1b0
+> > [  176.562304]  __handle_mm_fault+0xbe1/0x10e0
+> > [  176.562307]  handle_mm_fault+0x17f/0x2e0
+> > [  176.562309]  do_user_addr_fault+0x2d1/0x8d0
+> > [  176.562314]  exc_page_fault+0x85/0x1e0
+> > [  176.562318]  asm_exc_page_fault+0x27/0x30
+> > 
+> > Looks this is because driver is unbind still Xorg is trying to write
+> > to memory which is causing some page faults. I have confirmed PID 1522
+> > is of Xorg. I think this is because we need to cancel the framebuffer
+> > deferred work after flushing it.
+> 
+> Does this new issue occur even after moving hvfb_putmem()
+> into the destroy() function?
 
-Update: Anyone wishing to pull from this series, please use the updated
-tag[3]. I'll wait for a few days for review comments and send out a v2
-with fbdev fix.
+Unfortunately yes :( 
 
-[3] https://lore.kernel.org/r/Z7xGpz3Q4Zj6YHx7@black.fi.intel.com
+>                             I'm hoping it doesn't. I've
+> looked at the fb_deferred_io code, and can't quite figure out
+> how that deferred I/O work is supposed to get cancelled. Or
+> maybe it's just not supposed to get started again after the flush.
+> 
 
-Apologies for the inconvenience.
+I want to understand why cancel_delayed_work_sync was introduce in
+hvfb_suspend and not the flush. Following commit introduced it.
 
-Raag
+382a462217572 ('video: hyperv_fb: Fix hibernation for the deferred IO feature')
+
+But I agree this need more analysis.
+
+> If the new issue still happens, that seems like more of a flaw
+> in the fb deferred I/O mechanism not shutting itself down
+> properly.
+> 
+
+As the repro rate is quite low, this will take some effort to get this
+fixed. Shall we take this in a separate patch later ?
+
+
+> Michael
+>
+
+<snip> 

@@ -1,119 +1,126 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F2F713E40F;
-	Mon, 24 Feb 2025 11:41:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC69D2441A3;
+	Mon, 24 Feb 2025 11:48:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740397276; cv=none; b=ZLKUnk7B3T7fSxl61NrEQPQHQSenuGOCorYAZJApgTpgbM7Zu3yriJ2klp/lPUB5Isrm5Q+O7PkBjIYLe+2zrvpDjvq79LrDOYFcpU2Q5Eu5pA2ZMINQj0jom6Ymy4jqt57yI579c6Y9/tC9CHZexc6LlJ5kLwrfHtmRGACVZv4=
+	t=1740397718; cv=none; b=kmcGonrA25y4trWLC0jyQ5no6JcGDVREencsrfF0Zk2RBxYlFjAH4xNYM5CTDkizEbcF/vedDkh7Ilsss+q2PUV5frrCOFjZp/QazrwjW/pGs7wvzT7vBuU2WzrVV6PqW8DTKosK5m29/gFyABfmx5SHmyC/Uoe5Be/HecvXEFI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740397276; c=relaxed/simple;
-	bh=585yBmWTLfUiF2tCoZqBlv/iebLuolZUUVpK5OX179c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nhmquu1NhRl6flhEMvi3xFsiwrWD6uwXtGUumi+WnsapSDvA0400N0rcKeGyX3AisaFYtTJN+55pb2ceSRZs0I4VwQAZ7/w64lrli09UmpcuRoG6o46F/LaGCroZyCv00cH0xOM72776112TIQ83UVJrQrrrZaL9A3Bc9tHho/M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LaoXzVOq; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1740397718; c=relaxed/simple;
+	bh=7P6j3dztD40MRGc9WjjurcBvL9MdLNZfq9tKy3OQzIs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bfAvDQChvTZ7eV1bUwXH0TPYo8AP3uuvUcYA4+AMNuEdmaefTlI/PAxjxTTFObKPtrkd2FQpQxDIgMB3Kcg14SQcb46VNytYUPXfvGau0t9TBY5TX2GJ+NPbcVZmo6YAujkqjsrfhesOptVLGjoTZKcSrOncYD63lHIeYAyzRt8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hL85U7/n; arc=none smtp.client-ip=209.85.167.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LaoXzVOq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1740397274; x=1771933274;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=585yBmWTLfUiF2tCoZqBlv/iebLuolZUUVpK5OX179c=;
-  b=LaoXzVOqMFT1Sixr226uuiOmFJZ+bPJ2aKNQ6BCzEd30QkbBAqfRNsew
-   DWvXELAAvsOc0It8mwOMn/NspnAzsbnCEYLklL7xYsk7fHJgQGKKP/rYR
-   KzuQxnm4DbmhyvrxXU/S/ZinnWxSxbuZnfjRmHDv9RgzFL3afsOAfzl9z
-   aJ7Q/81DIc9ByAwCJrnz9UjxOmuufRUAivU8pMla4tXwOPnSBCP0L/G7+
-   qmqfiPKh2b+CvVtDIVQW820yO2ivgoEnvH3S5xhLeXAIsvFMKRWUL41Pv
-   yfsSDUwe5gw+GkkMW1wmPkYNoPDgx5VKYrc9y/qQ/FBYJ21ru7lSoT2S+
-   Q==;
-X-CSE-ConnectionGUID: Je5eVPCpSQ2I8wmq9nBDgg==
-X-CSE-MsgGUID: +b95ah6vRrGx+7e1lww2HQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11354"; a="63616705"
-X-IronPort-AV: E=Sophos;i="6.13,309,1732608000"; 
-   d="scan'208";a="63616705"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Feb 2025 03:41:13 -0800
-X-CSE-ConnectionGUID: FaoyXpzRS8exTUEKIk9PwQ==
-X-CSE-MsgGUID: F4XAk5u0RMiaOhmoMCbv8Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,309,1732608000"; 
-   d="scan'208";a="116054034"
-Received: from smile.fi.intel.com ([10.237.72.58])
-  by fmviesa007.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Feb 2025 03:41:09 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.98)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1tmWpe-0000000EgM4-1czv;
-	Mon, 24 Feb 2025 13:41:06 +0200
-Date: Mon, 24 Feb 2025 13:41:05 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Raag Jadav <raag.jadav@intel.com>
-Cc: kernel test robot <lkp@intel.com>, perex@perex.cz, tiwai@suse.com,
-	broonie@kernel.org, lgirdwood@gmail.com, deller@gmx.de,
-	sre@kernel.org, sakari.ailus@linux.intel.com, mchehab@kernel.org,
-	hverkuil-cisco@xs4all.nl, jdmason@kudzu.us, fancer.lancer@gmail.com,
-	oe-kbuild-all@lists.linux.dev, linux-sound@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-media@vger.kernel.org, ntb@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 07/13] fbdev: pxafb: use devm_kmemdup_array()
-Message-ID: <Z7xa0cGZvGxsGCrI@smile.fi.intel.com>
-References: <20250221165333.2780888-8-raag.jadav@intel.com>
- <202502220449.DvJuMgsL-lkp@intel.com>
- <Z7xQ2y-7U5-OhzhB@smile.fi.intel.com>
- <Z7xW2AIz6vUo6mu-@black.fi.intel.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hL85U7/n"
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-543d8badc30so5049380e87.0;
+        Mon, 24 Feb 2025 03:48:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740397715; x=1741002515; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=atnb8vT8PjjHld1I8ZHaKAb/081GPPRide+V3/o4HbQ=;
+        b=hL85U7/nIrta1upV3dqWjJQNfjHymn6F/XUTcLgq1UVj4NIucwzndi0aGODjdcAzsk
+         eN5I/fBAD+0vcvDqsToJr5qToMEI5DDXXQIUII8RSNUe0AIBUy6iIf30x6w/e7gUCo4f
+         1kDZ/Prm9NFy+dKFrg2TObXVJnr5RtGZstg7XlHE0Wg0IQYHZGZyn0N7BvrECCfyaxxl
+         IZr8ERewfb66yoArbsd6JUF7D/MEKCTSKafm5jM1NEgp1Zd4E+RXoMMKxjqVwYXBaeVE
+         SjO5hxStWd+ZJJ0c2dKVeZYcRB7HbuWQkSSwmUEXl1o9FlcyjbBlpkDcubOk96RWdH/T
+         fHtw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740397715; x=1741002515;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=atnb8vT8PjjHld1I8ZHaKAb/081GPPRide+V3/o4HbQ=;
+        b=UH/Z9vg8xzyUMfvpFDMompOUaGBE+Oq7h1M2HC6IryP/XKJOKVgtt1Dn3JVNvQP1JR
+         3U3QU+xhU56n4W8eKBCGbqioqtt7cBlpGH+4f7KbxxJqVUXhIzZPl7mE+Fi8FZGUzuJM
+         blW+4zwVn63gUHiPwu+ZPPEHkl3+2SPrtSnttxR+kyOHwVPVHYXIAPwojlCxhc3mbwvr
+         nioiH9x2fdlW7Cy+voxQrm85cJgd6cbR8aocgGA+TGmKqw/erLu2KYju4VikSLzE1xKC
+         5aRh2VQMTZH4mZPzAuCLoXR18EbyA4k96kRkQtRFIR9eXbdcVz6nIJulaSiJkBO/NZDW
+         Yp0Q==
+X-Forwarded-Encrypted: i=1; AJvYcCUGhPxwk+mkmzqg3fgkT9OV9rjORQInjfZ0g6GGhBa/2nvW+Cl7IlEpeIM1HCaOXdFVk+MlsCQ/RyVb@vger.kernel.org, AJvYcCWDjew+COLaBe9CM70v1ow2V9IOEernRZFrB17afNSeYoJP0X/rffkJaAO1qwb0alCWhKTBve+e6nF3uQ==@vger.kernel.org, AJvYcCWe68KzgRYjtQbKrxOyFJUpNzv1989KSCK7Ydwo/ldeFkV0CDDUD+xvUOZgQle1YIPF2Zs/pG29+nkOVrqB@vger.kernel.org, AJvYcCXXzi7gv3BBmgJPSjAVcK2e7L/yY7vaLiJHUrBeoHQPOk38LymY0lE3MF3kxwRR53yjjcH0M/BB12aZ0A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxYpTRYCjP3+W4a+9XFpaLtVCDy9nBHOH7NZbKjD33Wr+jHysbh
+	fmP1ihRy9BPP1JMwThLbVoj0kn1KBwFwx5PURwVTrO19ixCGJPDa
+X-Gm-Gg: ASbGncsknbCXxi0Uu0vCqU7SbGDOwLMZYEnwNN1JXF/yYQbLFdjTNxrLzfMIrYCLVvY
+	rOkxbDlWQsMLzXG8FKm9FOtLzyOPifMjZsSgPyKTxOmDnjkMFiNW1xDQUxMavdWJnTuQcrAcl8y
+	7K2fQScFSSmddXf8no6/xZA6SGRx1O3BeHVVUxhLsQQpqC83hjorR3T/DeK+ydbaSH+tLtiVgX6
+	WlJdgrJcilR49FYtCtGejhAvjhUEXV+flEnkCMwreJQoMkpoXjRLAIu40PGke9YYgGn4n/IJD2N
+	efLKA62jqBRexmwi
+X-Google-Smtp-Source: AGHT+IGtaNoSRQNpqZE6mcTQCEU9FuEKP+HpNqYhMZ4Fh8GwXbsRAlQ2tLnm7O+tpwCdNz943QPcdg==
+X-Received: by 2002:a05:6512:e86:b0:545:60b:f38d with SMTP id 2adb3069b0e04-54838ee3406mr4784026e87.8.1740397714664;
+        Mon, 24 Feb 2025 03:48:34 -0800 (PST)
+Received: from xeon.. ([188.163.112.51])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-54526338bf9sm3167862e87.85.2025.02.24.03.48.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Feb 2025 03:48:34 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Pavel Machek <pavel@ucw.cz>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Svyatoslav Ryhel <clamor95@gmail.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v3 0/2] mfd: lm3533: convert to use OF
+Date: Mon, 24 Feb 2025 13:48:12 +0200
+Message-ID: <20250224114815.146053-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Z7xW2AIz6vUo6mu-@black.fi.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
 
-On Mon, Feb 24, 2025 at 01:24:08PM +0200, Raag Jadav wrote:
-> On Mon, Feb 24, 2025 at 12:58:35PM +0200, Andy Shevchenko wrote:
-> > On Sat, Feb 22, 2025 at 05:41:24AM +0800, kernel test robot wrote:
-> > > Hi Raag,
-> > > 
-> > > kernel test robot noticed the following build warnings:
-> > > 
-> > > [auto build test WARNING on b16e9f8547a328b19af59afc213ce323124d11e9]
-> > > 
-> > > url:    https://github.com/intel-lab-lkp/linux/commits/Raag-Jadav/ASoC-Intel-avs-use-devm_kmemdup_array/20250222-010322
-> > > base:   b16e9f8547a328b19af59afc213ce323124d11e9
-> > > patch link:    https://lore.kernel.org/r/20250221165333.2780888-8-raag.jadav%40intel.com
-> > > patch subject: [PATCH v1 07/13] fbdev: pxafb: use devm_kmemdup_array()
-> > > config: arm-randconfig-004-20250222 (https://download.01.org/0day-ci/archive/20250222/202502220449.DvJuMgsL-lkp@intel.com/config)
-> > > compiler: arm-linux-gnueabi-gcc (GCC) 14.2.0
-> > > reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250222/202502220449.DvJuMgsL-lkp@intel.com/reproduce)
-> > > 
-> > > If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> > > the same patch/commit), kindly add following tags
-> > > | Reported-by: kernel test robot <lkp@intel.com>
-> > > | Closes: https://lore.kernel.org/oe-kbuild-all/202502220449.DvJuMgsL-lkp@intel.com/
-> > > 
-> > > All warnings (new ones prefixed by >>):
-> > > 
-> > >    drivers/video/fbdev/pxafb.c: In function 'pxafb_probe':
-> > > >> drivers/video/fbdev/pxafb.c:2236:13: warning: unused variable 'i' [-Wunused-variable]
-> > >     2236 |         int i, irq, ret;
-> > >          |             ^
-> > 
-> > Ragg, please, fix this, and issue a v2 with the link to fixed PR:
-> > https://lore.kernel.org/r/Z7xGpz3Q4Zj6YHx7@black.fi.intel.com.
-> 
-> Sure, but perhaps wait a few days for review comments.
+Add schema and add support for lm3533 mfd to use device tree bindings.
 
-Then perhaps answering to the cover letter that the maintainers who want to
-apply should use the updated PR?
+---
+Changes on switching from v2 to v3:
+- wrapped lines in schema and commit messages arround 80 chars
+- removed |
+- switched to MFD binding style
+- completed binding example
+- restored MFD
+
+Changes on switching from v1 to v2:
+- added unit seffix where it is suitable
+- added vendor prefixes where it is suitable
+- light sensor mover out of pattern properties
+- added references to common schemas
+- added detailed descriptions of properties
+- removed platform data use
+- devices bind and configure themself entirely
+  using device tree
+---
+
+Svyatoslav Ryhel (2):
+  dt-bindings: mfd: Document TI LM3533 MFD
+  mfd: lm3533: convert to use OF
+
+ .../devicetree/bindings/mfd/ti,lm3533.yaml    | 231 ++++++++++++++++++
+ drivers/iio/light/lm3533-als.c                |  40 ++-
+ drivers/leds/leds-lm3533.c                    |  46 ++--
+ drivers/mfd/lm3533-core.c                     | 159 ++++--------
+ drivers/video/backlight/lm3533_bl.c           |  71 ++++--
+ include/linux/mfd/lm3533.h                    |  35 +--
+ 6 files changed, 395 insertions(+), 187 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ti,lm3533.yaml
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 

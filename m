@@ -1,221 +1,137 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fhigh-b1-smtp.messagingengine.com (fhigh-b1-smtp.messagingengine.com [202.12.124.152])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F5851E1E0C
-	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 07:54:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E996A1E1DFB;
+	Wed, 26 Feb 2025 07:55:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740556471; cv=none; b=RJGNAC4rrD9ZZse6N4r3LG4gk6OsfObJ10lOj3owusvWuLHmKfamXu+QR+KtW94075/IjQvX+u1IHyOHxVigcVgow/vUyV6eUqnpVip35JJq9zSDbYE9Fkuf4VXaqIxUdsguQ/Fdt0qDsemG8ayfxQVMEcnNLWQUYv9FeD9Arjw=
+	t=1740556539; cv=none; b=WGXLGqezjupnk9Ag5+ORVl2fsh7PDqmG8Miq7SuQhDJZxcY74+v4NXLQdr8VHfGQN5PFjyoQmzwjxBjIWQayPAlSbafj5VadAZgUR8Ex6eKGPzGr+8n0vUeddCil4dewRSJK820qDR1bFlanjWsS2MbeOssyL9wRbZQXr0Q+XrY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740556471; c=relaxed/simple;
-	bh=lzrzkFqtYn2XPfyVD+uYwO2Z2Ocwc3IK+Hs3ALah9Fw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PAs1okmM+HM97CU+07XDftyhF7jtK+XwWPYYNzWYQXa1Y14SF6aoZisc/7DZQaZhsAquKA+u7Jidj+kHgV6iztQmH3w8IO4Y/wqNfcTdc+Qx1E4Ups0bladp35djbhaYTo+TwVCyxKgCvEAmBY7K6COT7+xdR2uBboCiIfe5PWM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yGKdeAVa; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qnFaOadQ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yGKdeAVa; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=qnFaOadQ; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1740556539; c=relaxed/simple;
+	bh=m+xrRvgwuYLrN4JztV5V76ixaE7nsY1/hfFoToWmS1w=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=Nmuv9ViKr1Gto1lKZHGtbYTWA1cHxndFZ7pvrcMIF94mQDlzkUNe6uuiMqc2kLh7vuRc30xzwj8h6svwd8rVmxYFVsy2DKDvimV3VTx9VQtQISVL1vYVhtbM07R3ZTWihA5yhX1H1M6ChFLvnf2KJGWf6VF5No9safrJvLLk6vI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=O/tkTSbO; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=Qpxup3rq; arc=none smtp.client-ip=202.12.124.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yGKdeAVa";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qnFaOadQ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yGKdeAVa";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="qnFaOadQ"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 9C34B1F387;
-	Wed, 26 Feb 2025 07:54:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1740556467; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=5VYTfqhAjaSaoouv3YNmgRttChRZ90xHDXAk/bW06pk=;
-	b=yGKdeAVaVVKm46qEuA2yXDoMzbVKl/C5A5EEjmM9UnCNcsoUyL7+jrY89uhsyApt+TTP0L
-	VSiHV7xzttNSbMrWPZyt1r93wuilYNtuKWrsRD1FzJl86tZIOzCDQfhrgO/pbYcES+JF6c
-	NJvtGtQjUwzNbITNjKSfCxaW7XyRTxs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1740556467;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=5VYTfqhAjaSaoouv3YNmgRttChRZ90xHDXAk/bW06pk=;
-	b=qnFaOadQX+Wpon5T3/5CH4vQ7MEAAtEMzcSFqAp9sdHw1poIlSxqZBqZTcUDc9DhzKHt4A
-	SJ2wmKs0JD4hzjCg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=yGKdeAVa;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=qnFaOadQ
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1740556467; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=5VYTfqhAjaSaoouv3YNmgRttChRZ90xHDXAk/bW06pk=;
-	b=yGKdeAVaVVKm46qEuA2yXDoMzbVKl/C5A5EEjmM9UnCNcsoUyL7+jrY89uhsyApt+TTP0L
-	VSiHV7xzttNSbMrWPZyt1r93wuilYNtuKWrsRD1FzJl86tZIOzCDQfhrgO/pbYcES+JF6c
-	NJvtGtQjUwzNbITNjKSfCxaW7XyRTxs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1740556467;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=5VYTfqhAjaSaoouv3YNmgRttChRZ90xHDXAk/bW06pk=;
-	b=qnFaOadQX+Wpon5T3/5CH4vQ7MEAAtEMzcSFqAp9sdHw1poIlSxqZBqZTcUDc9DhzKHt4A
-	SJ2wmKs0JD4hzjCg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6016013A53;
-	Wed, 26 Feb 2025 07:54:27 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 7pv8FbPIvmcjOwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 07:54:27 +0000
-Message-ID: <4d1a50b5-aa41-4e8e-829a-5c404e2110ca@suse.de>
-Date: Wed, 26 Feb 2025 08:54:27 +0100
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="O/tkTSbO";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Qpxup3rq"
+Received: from phl-compute-11.internal (phl-compute-11.phl.internal [10.202.2.51])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id CF6542540195;
+	Wed, 26 Feb 2025 02:55:35 -0500 (EST)
+Received: from phl-imap-11 ([10.202.2.101])
+  by phl-compute-11.internal (MEProxy); Wed, 26 Feb 2025 02:55:36 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1740556535;
+	 x=1740642935; bh=0lfVMDjZo5CB8ddhotjizAXW5wzmIW+8vVGHFlSkNxI=; b=
+	O/tkTSbOvJV94Iaf6WoPjb4B9fGynObugRnGl0gk773eFW7URrcxdHxm9btKC7nu
+	XKHsEXsSqu6oxzkrOyYBG4ZidF/hxSoMi5v2AwYQSEPvXTkI2XtCXj7W6+WiUHxN
+	q6lalbT2k5r0tZRiZ1q5Cd6UM6lLLVBSMo+O0uK9Ohvb6NXc7FaE6QY6G/TAhqR4
+	1ON31VDxMsDwzfbDyvhc473GfigyWaIK3XkwZAAagUHSGQ1gXxyugbWvdRXMcvEO
+	BNldS+9H1PPEJsLhybgJZ/AZJ1lEWv6BBGrm9OouWIn0gMAdueVq73RfeJgzVC7f
+	dxYREDp/4nAWdIVvi8kK3g==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1740556535; x=
+	1740642935; bh=0lfVMDjZo5CB8ddhotjizAXW5wzmIW+8vVGHFlSkNxI=; b=Q
+	pxup3rqqWswG31LJz6phFx5YfQya2XhCculULTr3Vw1mJZI/IgaHzEv4WS1N23m4
+	R1W4YGYkg8qIzhdAKkrZxCpLMd16gxh41DeTknNK9d6Oft6v5zbDjHe+n/JBPoX5
+	QffjUSDZoUE0dNe5uJ64cLaUR4jlCoftwjseYd+FOMjbLerLrjvE+Vtx//PS/ReH
+	zuZcqY8aN5K8tTnBRa5kVBiTecUbFpUwRD+649xFe0FAFXiAtDFJXbFbzT6QbbnO
+	yqpOFa7LwBIDhv87QzlmcAMPfRmfNdWUMPQbY4UmiEPtE33edAvHoqa/OWjVwJ+6
+	L5gQxNGCramAsOLNdDWSA==
+X-ME-Sender: <xms:98i-Z5gp7UUrLdqU8dwrQX3Z2o3uGAYSYhruiGvNtgpc1OW39ryehA>
+    <xme:98i-Z-Bhb0nCCncAtPOwR-R9aQMMVOWE-wGzSs99gGHE1esXrBHlwlpmLcj2sfV_g
+    wP9VDlTOxnPog1PlPk>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekgedtfecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
+    uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
+    hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredt
+    tdenucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusg
+    druggvqeenucggtffrrghtthgvrhhnpefhtdfhvddtfeehudekteeggffghfejgeegteef
+    gffgvedugeduveelvdekhfdvieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmh
+    epmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphhtthhopeej
+    pdhmohguvgepshhmthhpohhuthdprhgtphhtthhopeguvghllhgvrhesghhmgidruggvpd
+    hrtghpthhtoheprghrnhgusehkvghrnhgvlhdrohhrghdprhgtphhtthhopehgrhgvghhk
+    hheslhhinhhugihfohhunhgurghtihhonhdrohhrghdprhgtphhtthhopegurhhiqdguvg
+    hvvghlsehlihhsthhsrdhfrhgvvgguvghskhhtohhprdhorhhgpdhrtghpthhtohepthii
+    ihhmmhgvrhhmrghnnhesshhushgvrdguvgdprhgtphhtthhopehlihhnuhigqdhfsgguvg
+    hvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhn
+    vghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-ME-Proxy: <xmx:98i-Z5FEPMgvJmA8Kh9Pc9mZjD2JMgOwNwChq2VaHhUZ_AlqT14Ttg>
+    <xmx:98i-Z-Tj0p_rWAd9G8OsoBIii3ZmSFGy6xgLUI_5X7J7G9byZ7lU_A>
+    <xmx:98i-Z2yk_Y9gdeJmWud_qNcV0K64B40UJ_6MhYVZWpbrDVoliIXmwA>
+    <xmx:98i-Z06mLu0UM5St6S9XU5ZWOLF7fv7JjZY5ncoZ9EYcZagm2HIo3w>
+    <xmx:98i-Z9kk2B_X7E519FNYh5mtDir_cDTr5xUw_srlvnh1X03_63eW3xVy>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 409FB2220072; Wed, 26 Feb 2025 02:55:35 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] dummycon: fix default rows/cols
-To: Arnd Bergmann <arnd@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
- Javier Martinez Canillas <javierm@redhat.com>
-Cc: kernel test robot <lkp@intel.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Date: Wed, 26 Feb 2025 08:55:14 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Thomas Zimmermann" <tzimmermann@suse.de>,
+ "Arnd Bergmann" <arnd@kernel.org>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Helge Deller" <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+Message-Id: <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
+In-Reply-To: <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
 References: <20250225164436.56654-1-arnd@kernel.org>
- <20250225164436.56654-2-arnd@kernel.org>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20250225164436.56654-2-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
+Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Spam-Level: 
-X-Spamd-Result: default: False [0.29 / 50.00];
-	RSPAMD_URIBL(4.50)[arndb.de:email];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	BAD_REP_POLICIES(0.10)[];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	R_DKIM_ALLOW(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FREEMAIL_TO(0.00)[kernel.org,linuxfoundation.org,gmx.de,arndb.de,redhat.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[arndb.de:email,suse.de:email,suse.de:dkim,suse.de:mid]
-X-Spam-Score: 0.29
-X-Spamd-Bar: /
-X-Rspamd-Queue-Id: 9C34B1F387
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
 
-
-
-Am 25.02.25 um 17:44 schrieb Arnd Bergmann:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Wed, Feb 26, 2025, at 08:48, Thomas Zimmermann wrote:
+> Am 25.02.25 um 17:44 schrieb Arnd Bergmann:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> Dummycon is used as a fallback conswitchp for vgacon and fbcon
+>> in the VT code, and there are no references to it if all three
+>> are disabled, so just leave it out of the kernel image for
+>> configurations without those.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> ---
+>>   drivers/video/console/Kconfig | 3 +--
+>>   1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+>> index bc31db6ef7d2..1c4263c164ce 100644
+>> --- a/drivers/video/console/Kconfig
+>> +++ b/drivers/video/console/Kconfig
+>> @@ -47,8 +47,7 @@ config SGI_NEWPORT_CONSOLE
+>>   	  card of your Indy.  Most people say Y here.
+>>   
+>>   config DUMMY_CONSOLE
+>> -	bool
+>> -	default y
+>> +	def_bool VT || VGA_CONSOLE || FRAMEBUFFER_CONSOLE
 >
-> dummycon fails to build on ARM/footbridge when the VGA console is
-> disabled, since I got the dependencies slightly wrong in a previous
-> patch:
+> What about MDA_CONSOLE and STI_CONSOLE. Don't they require this as fallback?
 >
-> drivers/video/console/dummycon.c: In function 'dummycon_init':
-> drivers/video/console/dummycon.c:27:25: error: 'CONFIG_DUMMY_CONSOLE_COLUMNS' undeclared (first use in this function); did you mean 'CONFIG_DUMMY_CONSOLE'?
->     27 | #define DUMMY_COLUMNS   CONFIG_DUMMY_CONSOLE_COLUMNS
-> drivers/video/console/dummycon.c:28:25: error: 'CONFIG_DUMMY_CONSOLE_ROWS' undeclared (first use in this function); did you mean 'CONFIG_DUMMY_CONSOLE'?
->     28 | #define DUMMY_ROWS      CONFIG_DUMMY_CONSOLE_ROWS
->
-> This only showed up after many thousand randconfig builds on Arm, and
-> doesn't matter in practice, but should still be fixed. Address it by
-> using the default row/columns on footbridge after all in that corner
-> case.
->
-> Fixes: 4293b0925149 ("dummycon: limit Arm console size hack to footbridge")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202409151512.LML1slol-lkp@intel.com/
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+MDA_CONSOLE clearly does not, because that is only the second
+console when VGA_CONSOLE is the main one.
 
-> ---
->   drivers/video/console/Kconfig | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index 1c4263c164ce..ea4863919eb9 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -51,7 +51,7 @@ config DUMMY_CONSOLE
->   
->   config DUMMY_CONSOLE_COLUMNS
->   	int "Initial number of console screen columns"
-> -	depends on DUMMY_CONSOLE && !ARCH_FOOTBRIDGE
-> +	depends on DUMMY_CONSOLE && !(ARCH_FOOTBRIDGE && VGA_CONSOLE)
->   	default 160 if PARISC
->   	default 80
->   	help
-> @@ -61,7 +61,7 @@ config DUMMY_CONSOLE_COLUMNS
->   
->   config DUMMY_CONSOLE_ROWS
->   	int "Initial number of console screen rows"
-> -	depends on DUMMY_CONSOLE && !ARCH_FOOTBRIDGE
-> +	depends on DUMMY_CONSOLE && !(ARCH_FOOTBRIDGE && VGA_CONSOLE)
->   	default 64 if PARISC
->   	default 30 if ARM
->   	default 25
+For sti_console, I don't see how it would do use it: when CONFIG_VT
+is enabled, the line above turns on DUMMY_CONSOLE, but without
+CONFIG_VT there seems to be no reference to it after
+58a5c67aadde ("parisc/sticon: Always register sticon console
+driver"). I also see that CONFIG_STI_CONSOLE is a 'bool' symbol,
+so there is no dynamic loading/unloading of the driver.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+    Arnd

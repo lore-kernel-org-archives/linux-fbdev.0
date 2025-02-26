@@ -1,127 +1,136 @@
-Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DF44215F65;
-	Wed, 26 Feb 2025 11:47:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.154
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 447B22153D5
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 12:05:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740570451; cv=none; b=dWTWzAnXtv2aIIxmzW3+V5ZwIBCchUBkmMxkhS+5w12i8gn7nIKWEVLDgz1ylL5Gr6+YFuHl1tczPI4otTXxwYHfnLwe2L2lNeGx1R/w4dvM3GjDvwKacV+1fWAGyHqBdPUx0eVjysqDmPFBOo1o+8MnZFDRlE0qYNlwFhaBhkI=
+	t=1740571533; cv=none; b=VNn7s0vp/EgRaVmWBGzxYOtPKj6rABxwWAn4nw3DXq81bIJV0Um9HcixvaqWWgRqx/SiVKI+OAKjAz1p4mTcluxGLt4q7ov0dvpyNfi4CXbQVZS++uVdDhHQgTDe4vKs4r3a/sPPIRvra1inh0Y2uq8s7eq0+xjHAx8FJAY6ZMc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740570451; c=relaxed/simple;
-	bh=GNROyfSwLsU0OnrSPd4OOnWuNRATtj48jePoEv0RPik=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=TwAvh70Aav/6fJ8jtRqZvkLqotm1I016gMBNENFsMYSeLkVsoep40rMJxHok9aGH9PYdegqBBvC0erO4A1/xjkpYnuWNZKDaVGFnTDT0+4Y3QnTOspkOThvbNoW98gX3yb/O4XeDFqeIdyJnI+hXDCQYPYjArJ+CGJTFVa36bls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=K5dLnZ+I; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=b3rFsbLM; arc=none smtp.client-ip=202.12.124.154
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
+	s=arc-20240116; t=1740571533; c=relaxed/simple;
+	bh=fP0sGdp3jpwxy/Pb8vlYK55k1s7gQsE0DIkSN6h8f5g=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=O3Qj1pTTTs+boNPKaYhfQ9x5fV1msHS9AppBMuI1Y+2q2bS6Xsj4MgWJZPhSZsOSuJNH1jksWsqVfqUXV4EQTKMxlAZAyCRzNcPbTGc7yDrHhcL9PFXfEEG5LhNpEINJoqDuWegroYtgCCs2snfyx5kVqpbWYqahzd1bEN6oWSc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=A/Arcw3C; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="K5dLnZ+I";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="b3rFsbLM"
-Received: from phl-compute-11.internal (phl-compute-11.phl.internal [10.202.2.51])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 4C3C225401B8;
-	Wed, 26 Feb 2025 06:47:27 -0500 (EST)
-Received: from phl-imap-11 ([10.202.2.101])
-  by phl-compute-11.internal (MEProxy); Wed, 26 Feb 2025 06:47:27 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1740570447;
-	 x=1740656847; bh=srA0vSiRaX96bO7gWAZFdEu/4TLsEeD2V/wdQUaSQxQ=; b=
-	K5dLnZ+IEvOA4/EeEZFacetVjPs/sdbfQ9nMyi6y+2jlG8gB0UCZBNudMqiOwk21
-	VLkFin5zplcLTwOCwv3zMK7AYAdl0FTWjWl7WjxoJFDBnPVMOYsSvUJqSaEpHMSI
-	TdMNp2iMDeSttMrUVbgj8cBRLXuSmuCwtTAIn1Lqvd94R6k8o0KYTrGohXUldphT
-	+pY6CL/v1klhU96/KIUrl6YntD9u/FeyBp2PbC0iDoU+adrI1lzGm4ldfVFgdf8V
-	wv65M8dUEFxifrAxNJ77b0yxHnxTSuFNql9/5rCmiU/BZqdBeU3JQfSjCx4V5e0G
-	ftBQ5d/HzyZgkE48TtUxuw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1740570447; x=
-	1740656847; bh=srA0vSiRaX96bO7gWAZFdEu/4TLsEeD2V/wdQUaSQxQ=; b=b
-	3rFsbLMobRqNDSJF8SjvoG8Kucn6IjqOjT4yCQfpZkMBcnMCSRFYfuHfFEVQQtAg
-	WdZv4dNfurKnlqastIL8h7s2j1lO+PNQzoCdSbuOZ/IwKa9ad/d9I3NVnkoYHFJT
-	bFCH4SArUOM9F/c9fyndinVws5+Z4ct0p6oIzmlB9hWsvDidM33eaVERL91jhVjp
-	qADplyULD1YP9TEUFEPxVv/JPPtPX6C/0Hsk9KHo31HKjTe5WtmuHsL21t2hVqHu
-	+ECbqPy6mi+lMqswcoHujtVizKnLQWZBQnMSDJZHLoxD5E2NtUPlQSJFWGungpEF
-	9XGV910f2sueMNM0LfpgQ==
-X-ME-Sender: <xms:Tv--Z_diHp5ZDRErRnqmS8ZPTTCezM_3rgE7AVddKtn-DuaNDBkDCw>
-    <xme:Tv--Z1MphFXytyiu7QgFfDu2nEn88_gsIz_sjHvdAPGZjY0HNcLObb1hRQsEwbmpw
-    u-3NTzdUuLsebhpXOE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekgeehtdcutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
-    uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
-    hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredt
-    tdenucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusg
-    druggvqeenucggtffrrghtthgvrhhnpefhtdfhvddtfeehudekteeggffghfejgeegteef
-    gffgvedugeduveelvdekhfdvieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmh
-    epmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphhtthhopeej
-    pdhmohguvgepshhmthhpohhuthdprhgtphhtthhopeguvghllhgvrhesghhmgidruggvpd
-    hrtghpthhtoheprghrnhgusehkvghrnhgvlhdrohhrghdprhgtphhtthhopehgrhgvghhk
-    hheslhhinhhugihfohhunhgurghtihhonhdrohhrghdprhgtphhtthhopegurhhiqdguvg
-    hvvghlsehlihhsthhsrdhfrhgvvgguvghskhhtohhprdhorhhgpdhrtghpthhtohepthii
-    ihhmmhgvrhhmrghnnhesshhushgvrdguvgdprhgtphhtthhopehlihhnuhigqdhfsgguvg
-    hvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhn
-    vghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
-X-ME-Proxy: <xmx:Tv--Z4iCSjAUyvHYNJf_AG3sE_ua61qG6NfnGFOiyktvBK3_IRMNxQ>
-    <xmx:Tv--Zw8wQwtaohN4eqXaSl-7aGOjmxGKmCkBjCDSzCiQbM1hU71dEg>
-    <xmx:Tv--Z7u04LRvb5kBTsNhcfklAEHiAI9rK6b3N5rrYCGjNnwe_hmluQ>
-    <xmx:Tv--Z_GRVy1a40pOCrtq_ao7UwyvfCgGSK5AqqZ27__1LsxM_r9ugA>
-    <xmx:T_--Z_hz1oXOkYT7AeuVlKWwR_HmHayHpHeWbHHKwfw0qUc_tH4kb6ns>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id AA9B42220072; Wed, 26 Feb 2025 06:47:26 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="A/Arcw3C"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1740571531;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ZONKr8gjSUHK5a82Fy5e7G5ZxvpLwOBguDakYGue1KI=;
+	b=A/Arcw3CKGtHdUGEQcRIIrB/LkSI+QARDZFhzWrojTYJ17NsiYSsGreD9IYSqOzZL8PZQA
+	Qezj67UG9MOISmyTYfnm5TqlrJfNSDXsWC3qzm4gH8Kd77csAXIQ9mFTvkycI6/Zr9QyoU
+	joPv3TBaLt9wj4ygW4tzAPb8p9/wtP4=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-261-vAFd4VvuO_6JMZhTunvtmA-1; Wed, 26 Feb 2025 07:05:29 -0500
+X-MC-Unique: vAFd4VvuO_6JMZhTunvtmA-1
+X-Mimecast-MFC-AGG-ID: vAFd4VvuO_6JMZhTunvtmA_1740571529
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4394c747c72so28665935e9.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 04:05:29 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740571528; x=1741176328;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZONKr8gjSUHK5a82Fy5e7G5ZxvpLwOBguDakYGue1KI=;
+        b=NAjeAsBw3rJ7TemgGNEYDsLKRM1kfjUJI8Aal9hxNyAvNLsIG+7vnPxcCktEodPGs/
+         iEkSEgMiu4u4E0tVQMYVyOKBG4q48otbc08R/CFuMrsIvWhkPi/pvgMxHi4V3gI7HdNm
+         F6HrMisFkEtj39pzVOC7cJxFMBnbFA7ZMLi516+6Ra5Z4OSUDzgqfA4Qw0fJEARj4OLO
+         fl+Ig/cONlQBGgXix9L9r4keA1GVc3KIDWhra/ujVyHcj7LVNS4k04ke4bcTX/e2wcpB
+         5++FGG0twKnl9Apkc2gDsXdNAZx5Cl6bbxaPNXXp3EwP5+aMseS0jgeTGO6YZk/7PjvU
+         ON/w==
+X-Gm-Message-State: AOJu0YwcPHq2+622b8wCAcKYIMiaScwKPZ7oxFWgKfpG7lJI3SSX+mAk
+	DQG7n9DF3r7ToZXi+bhuwXZylmB1VNfbIyumPf9vQpxQwZRY6N4EaDMfDJYfpMPoXqETcZ3RhSm
+	OWl+BG7k/GYJ+8XYXgisPBfozKf2q8yvNjyW4xicaOdNOe4E5VY9xrdZdH/DLcKdDBBdD
+X-Gm-Gg: ASbGncuC/l5mVvUjpv1O7Jd+2Mk3lW9KspBvthgO+s/GV7KCwE3sqKSpfZ2DfUb8Ma0
+	NXyMKQLMPdzkZ3bs9VAOuwIyua/XLsHToQJ87Ig0UavykczpDRaG2w22ivWyJ6N5JLd6dW2a/YZ
+	7AkKiyfa447N3N2W6j1A/TIskFqzZVNjXcJ4DV2AsMgA2Q3562yKt4KUPADvZIFu2vlSfdyUeZD
+	x++OKCqPtgL+PmVX6I80UhOLEM5IfEd/O1YJc3gbvmcnMbaqbqheQU46C0CpyzLNxPcBkAJ3V3K
+	P9TiFnPpgnY0Q9Wo4quoDZPDDJPUEdCuZWs/XE0JZ2a2tfZvXQU6p725eQ7PQMMvncP0LVtVrQ=
+	=
+X-Received: by 2002:a05:600c:458e:b0:439:91dd:cfa3 with SMTP id 5b1f17b1804b1-439ae221d72mr172909785e9.29.1740571528148;
+        Wed, 26 Feb 2025 04:05:28 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IFnrm0qM7DRHfCVZy3zVClFVQEZc0d79QmfHyW/xrSQhIhkvownRWDY6I4pd1YTGG105oIX1w==
+X-Received: by 2002:a05:600c:458e:b0:439:91dd:cfa3 with SMTP id 5b1f17b1804b1-439ae221d72mr172909435e9.29.1740571527760;
+        Wed, 26 Feb 2025 04:05:27 -0800 (PST)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43aba5871f4sm19373245e9.39.2025.02.26.04.05.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 26 Feb 2025 04:05:26 -0800 (PST)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Arnd Bergmann <arnd@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
+In-Reply-To: <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
+References: <20250225164436.56654-1-arnd@kernel.org>
+ <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
+ <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
+ <29ecc7c4-2887-4989-a1d3-aa76b44c0387@suse.de>
+ <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
+Date: Wed, 26 Feb 2025 13:05:23 +0100
+Message-ID: <87mse8zzb0.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Wed, 26 Feb 2025 12:46:56 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Thomas Zimmermann" <tzimmermann@suse.de>,
- "Arnd Bergmann" <arnd@kernel.org>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Helge Deller" <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-Message-Id: <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
-In-Reply-To: <29ecc7c4-2887-4989-a1d3-aa76b44c0387@suse.de>
-References: <20250225164436.56654-1-arnd@kernel.org>
- <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
- <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
- <29ecc7c4-2887-4989-a1d3-aa76b44c0387@suse.de>
-Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 26, 2025, at 09:16, Thomas Zimmermann wrote:
-> Am 26.02.25 um 08:55 schrieb Arnd Bergmann:
-> Here's another general question. vgacon and fbcon only seem usable with 
-> CONFIG_VT=y. Wouldn't it make sense to have them depend on CONFIG_VT=y? 
-> dummycon could then be implemented as part of the vt code, maybe even 
-> become a vt-internal thing. The console code is complex, so I'm probably 
-> missing something here?
+"Arnd Bergmann" <arnd@arndb.de> writes:
 
-I think in theory one may have a system use fbcon purely to get the
-boot logo, but not actually support VT.  I had also assumed there might
-be a way to use fbcon as the console (i.e. printk) but not register
-the tty, but it looks like the console code still requires vt.
+Hello Arnd,
 
-After I looked at the vt and conswitchp code some more, I wonder
-if we could go the other way and instead of integrating it more
-make the conswitchp logic optional: most of the complexity here
-deals with switching between text console and fbcon dynamically,
-but having any text console support is getting very rare (vga
-on alpha/mips/x86-32, newport on mips-ip22, sti on parisc).
+> On Wed, Feb 26, 2025, at 09:16, Thomas Zimmermann wrote:
+>> Am 26.02.25 um 08:55 schrieb Arnd Bergmann:
+>> Here's another general question. vgacon and fbcon only seem usable with 
+>> CONFIG_VT=y. Wouldn't it make sense to have them depend on CONFIG_VT=y? 
+>> dummycon could then be implemented as part of the vt code, maybe even 
+>> become a vt-internal thing. The console code is complex, so I'm probably 
+>> missing something here?
+>
+> I think in theory one may have a system use fbcon purely to get the
+> boot logo, but not actually support VT.  I had also assumed there might
+> be a way to use fbcon as the console (i.e. printk) but not register
+> the tty, but it looks like the console code still requires vt.
+>
+> After I looked at the vt and conswitchp code some more, I wonder
+> if we could go the other way and instead of integrating it more
+> make the conswitchp logic optional: most of the complexity here
+> deals with switching between text console and fbcon dynamically,
+> but having any text console support is getting very rare (vga
+> on alpha/mips/x86-32, newport on mips-ip22, sti on parisc).
+>
+> If we do this, the conswitchp code could be merged with dummycon
 
-If we do this, the conswitchp code could be merged with dummycon
-in drivers/video/console, with the simpler alternative just
-calling into fbcon functions. I'm not sure if we can already drop
-vgacon from normal x86-64 distro configs, i.e. if there are cases
-that are not already covered by any of efi-earlycon, efifb,
-vga16fb, vesafb/uvesafb or a PCI DRM driver.
+This sounds like a much better approach indeed.
 
-    Arnd
+> in drivers/video/console, with the simpler alternative just
+> calling into fbcon functions. I'm not sure if we can already drop
+> vgacon from normal x86-64 distro configs, i.e. if there are cases
+> that are not already covered by any of efi-earlycon, efifb,
+> vga16fb, vesafb/uvesafb or a PCI DRM driver.
+>
+
+I believe vgacon is still useful for x86 with legacy BIOS, because
+vesafb (and simpledrm) only works if the user defines a mode using
+the vga= kernel cmdline parameter.
+
+>     Arnd
+>
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

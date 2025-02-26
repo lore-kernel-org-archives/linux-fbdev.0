@@ -1,81 +1,80 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F010C258CFF
-	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 08:08:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7A41258CEC
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 08:16:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740557336; cv=none; b=rM02bRX5xq8mrrpiU5EOddicthEyLd8Vcn2TmakKvYzUzZ1GNpp2Ui0QSR82P49bSTJv/zZb52TbWDlNDcBj+hMepczd0SIBzlAYC7a0Zfp/ZHuy+A9AcvSMoseBD3DTyiC7TXOHtze+hUo+kK1g7MbkIm1z2p8KDuzTwzJWTCo=
+	t=1740557790; cv=none; b=XDjVtRmRhniO090PU7w6b1+j0ab3zRM4VqmktuupgcBkSOW/FsGnN6Mo14wtN4Q7ELJ046fTWN7jdvuvBgMGHYbbjkd6RYvYj1xBsRVsQHNHCQIs1K/QnnHBOxcS6FDEUG8jocVt/dPx+liUjivSTExRNgI/rWObn4pa+SWYcBI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740557336; c=relaxed/simple;
-	bh=OEo5HEFOh73EFDlZH1hOetdDxPQFrwvqRlBIQw3OlCU=;
+	s=arc-20240116; t=1740557790; c=relaxed/simple;
+	bh=2mJHfZjX/NuOOI6Oign7RL88RscaQrviLcTo22oeRh8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oK4k2HS5sMGH6vbQbmpukK+cUjWxi+FR1DqI50bWbvmf1ipt3cKgq7GzlEEbyx3rJQcT75YL38L+paMoi0GE+dVtQewFHBUfM+iwi/EM24BwkPvBMm2QxpSZf31e1TlMP4wLeJm28AsLGadtpby1/u/UIkWFBSzNvrzaku022jg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=iKk8yCtS; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mSZKK7LV; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=iKk8yCtS; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mSZKK7LV; arc=none smtp.client-ip=195.135.223.130
+	 In-Reply-To:Content-Type; b=FUBWpHzy2GQAZrCiFtp1Y1LQPQlUIxCLZZNKOc97iDITsglwdQsP/0+vafrVywiXqkfWczd7JyS3KqLyfo1GzNJ9sLj0iD/aO2qiJfGLJbWbnQ3NnXD3qH80eRkAe6jq8tXN6b2WTl9FgFUXsYnJ+Z9n/wEGKRTajm8OQrUk/Mw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=LDTLr8IA; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=loDyTY05; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=LDTLr8IA; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=loDyTY05; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="iKk8yCtS";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mSZKK7LV";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="iKk8yCtS";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mSZKK7LV"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="LDTLr8IA";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="loDyTY05";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="LDTLr8IA";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="loDyTY05"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 16CAC21192;
-	Wed, 26 Feb 2025 08:08:51 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 1D38C1F387;
+	Wed, 26 Feb 2025 08:16:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1740557331; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1740557787; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=PbZP9a76kFF7v/5fgh8JyxkHa3nu4MM5DkC25sBFUEw=;
-	b=iKk8yCtSvi+W43VW3jZwHJCfrBO3nFqO1nyRAg9WOGrtfQ99aNSDnqAyF1EuUYq73pJ0m0
-	7cpDxjT0C4fgp0I3ZFIUtm81Yhw8oR7T3SZmlFUATHUhA0IN5cD94Qc9CHfPRdb1X+l47p
-	jCRst/MdPF5COdGOpogNPilTCw4to0M=
+	bh=ZudkjdRVQNPg848x41RYi8LijSsi8vBmiAuiAX8utgc=;
+	b=LDTLr8IA+argGZIDJevpVmw+I2jbjO8uxicQUX9Zxf1UZYu/KjfKfc5sIgcHzfHfEcQotZ
+	tga8Wyi1YjR/Y4hlCqOOxOIEHAz460iwl/3ITxcVXTXDvynq5WoLYi7nMx7bZFchywI4Cq
+	JLjE+1NjFoR5iSoBs2h9nitQFoc68v4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1740557331;
+	s=susede2_ed25519; t=1740557787;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=PbZP9a76kFF7v/5fgh8JyxkHa3nu4MM5DkC25sBFUEw=;
-	b=mSZKK7LV8gPe5qgFMdbMSl+qFS/2Xmg4JJdEEu4T8GUDxOgdsl847tENLpFf8LoUWx+hmP
-	pbGLhxqo1wyxzFAA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=iKk8yCtS;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=mSZKK7LV
+	bh=ZudkjdRVQNPg848x41RYi8LijSsi8vBmiAuiAX8utgc=;
+	b=loDyTY05jK63KsFbF/VdpdoZup6lnBJiQes8DhqYb4Pc0Ob38XWn1a21CDRw0Z0/afgeDt
+	2ga5x2tyCwhiHBBg==
+Authentication-Results: smtp-out2.suse.de;
+	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1740557331; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1740557787; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=PbZP9a76kFF7v/5fgh8JyxkHa3nu4MM5DkC25sBFUEw=;
-	b=iKk8yCtSvi+W43VW3jZwHJCfrBO3nFqO1nyRAg9WOGrtfQ99aNSDnqAyF1EuUYq73pJ0m0
-	7cpDxjT0C4fgp0I3ZFIUtm81Yhw8oR7T3SZmlFUATHUhA0IN5cD94Qc9CHfPRdb1X+l47p
-	jCRst/MdPF5COdGOpogNPilTCw4to0M=
+	bh=ZudkjdRVQNPg848x41RYi8LijSsi8vBmiAuiAX8utgc=;
+	b=LDTLr8IA+argGZIDJevpVmw+I2jbjO8uxicQUX9Zxf1UZYu/KjfKfc5sIgcHzfHfEcQotZ
+	tga8Wyi1YjR/Y4hlCqOOxOIEHAz460iwl/3ITxcVXTXDvynq5WoLYi7nMx7bZFchywI4Cq
+	JLjE+1NjFoR5iSoBs2h9nitQFoc68v4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1740557331;
+	s=susede2_ed25519; t=1740557787;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=PbZP9a76kFF7v/5fgh8JyxkHa3nu4MM5DkC25sBFUEw=;
-	b=mSZKK7LV8gPe5qgFMdbMSl+qFS/2Xmg4JJdEEu4T8GUDxOgdsl847tENLpFf8LoUWx+hmP
-	pbGLhxqo1wyxzFAA==
+	bh=ZudkjdRVQNPg848x41RYi8LijSsi8vBmiAuiAX8utgc=;
+	b=loDyTY05jK63KsFbF/VdpdoZup6lnBJiQes8DhqYb4Pc0Ob38XWn1a21CDRw0Z0/afgeDt
+	2ga5x2tyCwhiHBBg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id AD6F913A53;
-	Wed, 26 Feb 2025 08:08:50 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D30BF1377F;
+	Wed, 26 Feb 2025 08:16:26 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id jIF7KBLMvmfmPwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 08:08:50 +0000
-Message-ID: <69a78c98-d843-4e94-8559-7d435a56a442@suse.de>
-Date: Wed, 26 Feb 2025 09:08:50 +0100
+	id W60NMtrNvmd9QgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 08:16:26 +0000
+Message-ID: <29ecc7c4-2887-4989-a1d3-aa76b44c0387@suse.de>
+Date: Wed, 26 Feb 2025 09:16:26 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,15 +82,14 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] mdacon: rework dependency list
-To: Arnd Bergmann <arnd@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Roland Kletzing <devzero@web.de>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
+To: Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
 References: <20250225164436.56654-1-arnd@kernel.org>
- <20250225164436.56654-3-arnd@kernel.org>
+ <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
+ <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -118,88 +116,88 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20250225164436.56654-3-arnd@kernel.org>
+In-Reply-To: <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spamd-Result: default: False [0.29 / 50.00];
+X-Spam-Level: 
+X-Spamd-Result: default: False [0.20 / 50.00];
 	RSPAMD_URIBL(4.50)[arndb.de:email];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	BAD_REP_POLICIES(0.10)[];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[kernel.org,linuxfoundation.org,gmx.de,web.de,linux-foundation.org];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de,web.de];
-	ARC_NA(0.00)[];
+	FREEMAIL_TO(0.00)[arndb.de,kernel.org,linuxfoundation.org,gmx.de];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
 	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_SEVEN(0.00)[9];
+	ARC_NA(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
 	FUZZY_BLOCKED(0.00)[rspamd.com];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCVD_TLS_ALL(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email,arndb.de:email];
-	R_DKIM_ALLOW(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DKIM_TRACE(0.00)[suse.de:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,arndb.de:email]
+X-Spam-Score: 0.20
 X-Spam-Flag: NO
-X-Spamd-Bar: /
-X-Rspamd-Queue-Id: 16CAC21192
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Score: 0.29
-X-Spam-Level: 
 
+Hi
 
+Am 26.02.25 um 08:55 schrieb Arnd Bergmann:
+> On Wed, Feb 26, 2025, at 08:48, Thomas Zimmermann wrote:
+>> Am 25.02.25 um 17:44 schrieb Arnd Bergmann:
+>>> From: Arnd Bergmann <arnd@arndb.de>
+>>>
+>>> Dummycon is used as a fallback conswitchp for vgacon and fbcon
+>>> in the VT code, and there are no references to it if all three
+>>> are disabled, so just leave it out of the kernel image for
+>>> configurations without those.
+>>>
+>>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>>> ---
+>>>    drivers/video/console/Kconfig | 3 +--
+>>>    1 file changed, 1 insertion(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+>>> index bc31db6ef7d2..1c4263c164ce 100644
+>>> --- a/drivers/video/console/Kconfig
+>>> +++ b/drivers/video/console/Kconfig
+>>> @@ -47,8 +47,7 @@ config SGI_NEWPORT_CONSOLE
+>>>    	  card of your Indy.  Most people say Y here.
+>>>    
+>>>    config DUMMY_CONSOLE
+>>> -	bool
+>>> -	default y
+>>> +	def_bool VT || VGA_CONSOLE || FRAMEBUFFER_CONSOLE
+>> What about MDA_CONSOLE and STI_CONSOLE. Don't they require this as fallback?
+>>
+> MDA_CONSOLE clearly does not, because that is only the second
+> console when VGA_CONSOLE is the main one.
+>
+> For sti_console, I don't see how it would do use it: when CONFIG_VT
+> is enabled, the line above turns on DUMMY_CONSOLE, but without
+> CONFIG_VT there seems to be no reference to it after
+> 58a5c67aadde ("parisc/sticon: Always register sticon console
+> driver"). I also see that CONFIG_STI_CONSOLE is a 'bool' symbol,
+> so there is no dynamic loading/unloading of the driver.
 
-Am 25.02.25 um 17:44 schrieb Arnd Bergmann:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> mdacon has roughly the same dependencies as vgacon but expresses them
-> as a negative list instead of a positive list, with the only practical
-> difference being PowerPC/CHRP, which uses vga16fb instead of vgacon.
->
-> The CONFIG_MDA_CONSOLE description advises to only turn it on when vgacon
-> is also used because MDA/Hercules-only systems should be using vgacon
-> instead, so just change the list to enforce that directly for simplicity.
->
-> The probing was broken from 2002 to 2008, this improves on the fix
-> that was added then: If vgacon is a loadable module, then mdacon
-> cannot be built-in now, and the list of systems that support vgacon
-> is carried over.
->
-> Fixes: 0b9cf3aa6b1e ("mdacon messing up default vc's - set default to vc13-16 again")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Thanks.
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Here's another general question. vgacon and fbcon only seem usable with 
+CONFIG_VT=y. Wouldn't it make sense to have them depend on CONFIG_VT=y? 
+dummycon could then be implemented as part of the vt code, maybe even 
+become a vt-internal thing. The console code is complex, so I'm probably 
+missing something here?
 
-> ---
-> I have no idea when the last time was that someone actually tried using
-> dualhead vgacon/mdacon with two ISA cards, or if it still works. We may
-> be better off removing the driver altogether, but I don't see anything
-> immediately wrong it with it.
-> ---
->   drivers/video/console/Kconfig | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+Best regards
+Thomas
+
 >
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index ea4863919eb9..12f54480f57f 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -24,7 +24,7 @@ config VGA_CONSOLE
->   	  Say Y.
->   
->   config MDA_CONSOLE
-> -	depends on !M68K && !PARISC && ISA
-> +	depends on VGA_CONSOLE && ISA
->   	tristate "MDA text console (dual-headed)"
->   	help
->   	  Say Y here if you have an old MDA or monochrome Hercules graphics
+>      Arnd
 
 -- 
 --

@@ -1,171 +1,124 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f42.google.com (mail-io1-f42.google.com [209.85.166.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F84222171C;
-	Wed, 26 Feb 2025 16:35:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB76A25E800;
+	Wed, 26 Feb 2025 22:57:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740587732; cv=none; b=Ju9LYZWIrz0S8e7qlZWAnkDnbBsJ/GiNoR0FD0/QUaUWON8DSmRekitxK8oMYP5X+U8RkqR3TxXAGhzpqRYcEU/gULtNwJYTDbzARJmYO3rrI8jnfgR2S/pmF38CAHyZK2Sc9fdD1p5wPPp6xlyjsBdms2zULL/fYR1KS9/W3og=
+	t=1740610673; cv=none; b=UYw97pcJG5jE5Lrkre9z/xCPsMA/9Vk/SfdfylNdBqTSDNTArtnZrSknXo3iTNbN24LYTm6fPuzHFq1ZA043qA2jVDduBWm49NdyhP/mRGbs/SicjypSl1JWF0tBqPJf1eahcCP3jsEbwbgENKpiZjfDtrkUY6WdHKqZfPb4e+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740587732; c=relaxed/simple;
-	bh=CfELmcuuTUtn3CjKLp2WGHXWdBNuxke3UnkZgwiY1mQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y9l6HCI4zB6L9OjjJ3YGfC80Ye5jfzag8BEAK4quPGTTXkX8iXRFaGRV/ONa49nIB9qPjwGcqeQy79u0rQFxiuPeAF4+G7B87w/xWr/wXxeQiEHcufIjAMbhhvgYOJLrg4U+u5wVRDe7+dYnauePos8elFEgUAwiNpsQdG4AP9E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=GXGPsD2r; arc=none smtp.client-ip=212.227.17.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1740610673; c=relaxed/simple;
+	bh=uAoX5elrHn2Yn0oC9ZZpKM2JWaqoMJBoXRL/yNmjZwc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eVVUE6H47JSyLt3PFylaHM4o6qpYBIwiECUCcg3QoCBbZ+rpmLz9dHYEPGzJ1kvCmX8ROoWyp74QH/1sWGfKDD8lL4TM9vwhGMdf6fvvofauOlpzg4R24u7eySbj0q6Zq5yDlOaA5PvlUlZohqHIYEIw5VkXQzfn5Lh24xhvgqk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=S707ERwo; arc=none smtp.client-ip=209.85.166.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="GXGPsD2r"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1740587711; x=1741192511; i=deller@gmx.de;
-	bh=fuuE49JHLgQEu5mMmTcwf6ZCS4XM300JbrdHN5kwniE=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=GXGPsD2rhqFBfns3lY1nOHvMreYkcZw7NuRFlb+99qm24P1yW5Hr0HEAjq2Im2rZ
-	 wBo0fkRznbrn7NBi8hDKWKnrDf7TUj/eWDNwP4Cfl+EqRSCauE1He8GkQ1y5u4Tke
-	 2zaTXe0nq+NbK5tlfvh9lKUSa4YUE3T3FyrvHRNBBPQvSExPMKdhLM6fjKrJss3CJ
-	 BS/a1KNZcCr53l3Z8M1KspxFetWJYmgJCyhX9VU3LzikEIaqtXqqPpjJBniIFFaJr
-	 7ImR50kb5hQe3i9NrTypkdZ6bUI7rwDWlo6AJlsNZm6BWKHiKJxpiURjInJgiDGqU
-	 HdhV+2nOO8rZSs+wcQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MsYux-1tSmPt46v5-00rIsU; Wed, 26
- Feb 2025 17:35:11 +0100
-Message-ID: <963bba53-2200-4899-b1fd-2cc650990d87@gmx.de>
-Date: Wed, 26 Feb 2025 17:35:09 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S707ERwo"
+Received: by mail-io1-f42.google.com with SMTP id ca18e2360f4ac-855bd88ee2cso10734339f.0;
+        Wed, 26 Feb 2025 14:57:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740610671; x=1741215471; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uAoX5elrHn2Yn0oC9ZZpKM2JWaqoMJBoXRL/yNmjZwc=;
+        b=S707ERwoJYZvw6xjSdYDMmOiGV3qwyuWFb4eZnUZzsuNlMx3bRz4vIedESbaeool8D
+         CuF7m/Sqw6Ld7gQCrJkhcv90OWL3aYksTHV9wCyCb9twXtcEqIsLOn9w4m8yvOtky6PX
+         9v+f+7zDo4NT2rFJcFMB5VzbA3vs8LyT4cnedHB637rMW6RR2GRi615edabPKlLs1fVN
+         cJm+lkp11qHwwDeQC2acRuivWwqu0Q8oXty33HsWTa/aQJMx3KdJF5srAh6qTNE4TFUU
+         HvSQCsxae68Am8g/kyTf0DBCy//clDsYiuSj+k9ZhLzVs6CzPgk+XmHbMVmOelNIkj17
+         FfIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740610671; x=1741215471;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uAoX5elrHn2Yn0oC9ZZpKM2JWaqoMJBoXRL/yNmjZwc=;
+        b=bifP8zKCEfgWYGZqHZSGUO7DkinUl9pGIda33V1U83NTk5F/P74Lh4oWYBrvnWOlJu
+         7fU89875tP7GDeswQiXTVUey6ZkyhfBOnqxMZ+9dTSmb1gAqENtAbhr+9XE1U+TBXMCy
+         q2FbUzI3OVzTmODJaD0JprmntsUA4305cACXJCQu6aLBRpBJCtjFFeK0zqSdPbPYb9Qq
+         rpKpI/Ud17pwZFB3pSr7IfVjZIKeqNHAgm/3Yedgf4x72/Gd2KuqppxfjbQiMkGrUaUy
+         LWxkrFkaydsBK+Hu3ht1TWyWHOlhvhEKAbN8NtxHOlPYp4DORBtxUYm4fu7aeBMdyZTO
+         85Aw==
+X-Forwarded-Encrypted: i=1; AJvYcCWdyWTajS703MfkRRiVBIiSJqZyqZReVKWjoYg2WIG/LaPa5+mR9eZyhS6Nw/EcurqDt1McmG2ICj19UA==@vger.kernel.org, AJvYcCXzpdmpIYrzx2JlMOeVLC6+5Mpwwn4PgAmoBHBrlf77UPpy1JFGtnPEhtwcJkNa0ZMiNfldkCUWyNlyoLJF@vger.kernel.org
+X-Gm-Message-State: AOJu0YxM0p7CuSL9eul4OzpGBi387dg9eAuMAQqFgKL4hKaFKvL3r5w5
+	YwMFfwmyQr1G90fATEHg5dPyt0scVItIGNGS7G4ceoeHalevvQOQVCC25VobVSjo5KNl1eltm9H
+	Volhko81JHXrlt7Gov9QypRRp6B4=
+X-Gm-Gg: ASbGncuUdbsusr1425BWOJns3Vll40fgZOCg37mYJ3nKU7HzXhfFXQ9BStbZwd+rOow
+	tMbiH5ejM6mOtg8IDNSSZhdNiu01nkgZTyCWhV+iG/52gdnIvUUSe7CAyPpUzmjf05Apgdy+bje
+	vYmr0=
+X-Google-Smtp-Source: AGHT+IHhI54PJwJM0GoUBX9sVGIWPBRJiNQNO3wmQx9px7UP2uJJd3uGpfx7FMUkqB+zLq674BG+POFOOqZVQZ+UqK4=
+X-Received: by 2002:a05:6602:2cc9:b0:858:7057:2203 with SMTP id
+ ca18e2360f4ac-858705722fcmr185814339f.4.1740610670754; Wed, 26 Feb 2025
+ 14:57:50 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
-To: Arnd Bergmann <arnd@arndb.de>, Thomas Zimmermann <tzimmermann@suse.de>,
- Arnd Bergmann <arnd@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20250225164436.56654-1-arnd@kernel.org>
- <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
- <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
- <29ecc7c4-2887-4989-a1d3-aa76b44c0387@suse.de>
- <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
- HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
- r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
- CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
- 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
- dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
- Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
- GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
- aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
- 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
- ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
- FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
- uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
- uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
- REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
- qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
- iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
- gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
- Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
- qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
- 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
- dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
- rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
- UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
- eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
- ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
- dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
- lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
- 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
- xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
- wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
- fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
- Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
- l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
- RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
- BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
- Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
- XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
- MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
- FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
- 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
- ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <20220621104617.8817-1-tzimmermann@suse.de> <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
+ <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info> <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
+ <CAEXMXLQEJPVPyqLpH6C7R6iqhhKBpdNS9QeESbEdcmxB70goSA@mail.gmail.com>
+ <da4288a6-96cc-4095-bd73-d66b68e9ed01@suse.de> <CAEXMXLQw1yqUGbWcrKZdOuGvA4eZMG0utiyQ2PVRvTeuFedGbA@mail.gmail.com>
+ <9c902ac0-a94d-4465-98ff-840132e482b1@suse.de> <CAEXMXLSLau0sEy8WSZ3=ofK97xP8aPcDQEnT=JFkkt7K=Rzivw@mail.gmail.com>
+ <900b873f-6eba-4dba-b155-dc5f7594becf@suse.de> <CAEXMXLTT5m0Po_wz0ywRHFetV6e080AJwy8f99Zb9R_afzafRw@mail.gmail.com>
+ <844f1fa4-6f47-4386-878f-739d2819605e@suse.de>
+In-Reply-To: <844f1fa4-6f47-4386-878f-739d2819605e@suse.de>
+From: =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
+Date: Wed, 26 Feb 2025 22:57:38 +0000
+X-Gm-Features: AQ5f1Jpobisr-w9TMwMuIrlUF7jBzuaRQR1sUN7eX0a5b9SfNPQBMIHwVGEKmfc
+Message-ID: <CAEXMXLQyOY=dXcYoSc9=LVVWb1BjXLd3_Lo3LRNor_STT+H+WQ@mail.gmail.com>
+Subject: Re: drm/fbdev-dma: regression
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>, 
+	Linux kernel regressions list <regressions@lists.linux.dev>, dri-devel@lists.freedesktop.org, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Linux Framebuffer <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:WlwvLQn6df8JcLdlvcWq7rno/4sg4CpGNOv4Y382KCAq3uQQ55a
- xC88qCSAj92I4gZnmiVVc7MWtUNIxkGivdkN5HijJ4ZWECoh7JY7xGLUsrz4V6jUAPQ2OHd
- m9KY7Y3cL3rhoCNz+JgYRGR2wu2mSQuGjUxYN01xCmN/xqSRT1Acm+kJtqkNjpSFlzLoz7u
- x2VdWNSMJYjZWPtVw419g==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:KrTJI3/m7BQ=;cC3w3XecgT8H0f8Xku0kj2e6Km4
- i1f6zfqL+TE9PbOEzRQY/j+FG9G3/j1kl5REfAh6pXOeGFz011yhd892xGaB1pmlaG+UeCBBK
- 2B7RFNSZF3rUKHHRlunOxfdLnEcuRO8FQ4wQFUZfY6SMJrt0/ayDBNHaZ5iRFgv2XXRd1ZZ+w
- fq51H0e3vpd+6jdil25dWn5l33KB45DX8AlyN726YCeXstDP4ReLgACmXZmGDTIVwszWU9S1F
- TshsoIkUnj6c+heuAqrFwlc04kmmKnpIL1X5vN0kLHX686Ae4DI4wQcTWZ9qR8tZhoIF522Xv
- Xa9dzIs3Bidn/la/W6oR68kGdUDgSltWCWDFqbUj/LDX/9NQvu6P+WfuyCeuzZ3vVgoz2JHwI
- QZqbXSBLzAucaIpWKeBCqdHjMMc0jZ5Ocm/yOrKkAcDwRRheSFcBbIgIRaUr3CYF9tl4sc4gI
- Gsc0gO08EdL+aoAgJ/iExCXqice3D1zWzKXUFUf2YqXLRSJ+b107ssq+SOgdrUvn5YBonFP5N
- IACK+dv7b6HAF5BekpsSDRGjA/7spgsjwGOBd9Y3cC3NteBVOMI6ncGKzYXuV3O7F5U8Jst/C
- T/zB+IpKtQeotSdikrxp3cFb4vKAL3KmJp5dSiy7vC/g+h7QjuAkfSjW8jPl6AzexnWRi2uOv
- lsyqb98Ue3FJZFpLSSdoDH51G151KaFXCoh/hpgw0f5OWWtwKmWDLHwUXgPEgY5pnb8pNSKy8
- RmU7aemYfObL+24gOBmBO8lT9vVSWxdIKc/tgxBweqpF3YesdT7jJtj8fBl9h81AkTRXLQCz7
- l2nL8M6tCVorRRsgIhWLNkMDeVJsWuwJsGBvijGNZBnimPuVQo9+3g4z56iITn54x21XwZ6Rt
- prsW/HWKwP3s1/Ni8UYVg5avkee2RFb4LLEZt8TE5c9um+yEWynl9vsfAm9/saVMzzqVhqfLM
- eCzQPYnQj35j+bKvvIbDQXzxFJWydVHxTWJXHHdUR/JU21r3fKUvsijDySxo6xw/JHffX+Ol6
- K/TFdTIX2i5N1wxfwmzAb4zOgDA86Co/1xfo2MM2kCNSo0Or7XdxfaexK7m0NE+HNa7Zd1jau
- 2KC+qnQPetiCKDORIj2CTUujxipZLbfyWqYDb8uuX3Aa7TGI5d6j+aBJj051Ia5zLZWzsL4KS
- YH0qlJEdpeFQ0M3j6tOTQTIONvVBM8/4JzVy+yuPeBWhULnAogQ3qUAzWJ+QaA0AN1NO1aud/
- jAbXvfaeNdpLBn88QPW0vWGdvNT4Pp3izYGc2MuNbkAvyxwPSQ4R4CivFBNdmD5NGYzRBB2QC
- j8RaM3VeeeaOdeeVjzKQAxltXz3/oqYXIRzl2pjBWLofolDuUrjhfEOJ66GJSYTua6jIzbpQu
- btE7/HMSUyFavYTjzH/o264jF9ir6rShVDNKl9HkpYaqtqL8CNIdpgYkuC
 
-On 2/26/25 12:46, Arnd Bergmann wrote:
-> On Wed, Feb 26, 2025, at 09:16, Thomas Zimmermann wrote:
->> Am 26.02.25 um 08:55 schrieb Arnd Bergmann:
->> Here's another general question. vgacon and fbcon only seem usable with
->> CONFIG_VT=3Dy. Wouldn't it make sense to have them depend on CONFIG_VT=
-=3Dy?
->> dummycon could then be implemented as part of the vt code, maybe even
->> become a vt-internal thing. The console code is complex, so I'm probabl=
-y
->> missing something here?
+Dear Thomas,
+
+Could you check if the patch got lost in review?
+
+I can confirm that mainline is still broken since this 2024/May regression.
+
+Thanks,
+Nuno
+
+On Wed, Dec 11, 2024 at 9:07=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse=
+.de> wrote:
 >
-> I think in theory one may have a system use fbcon purely to get the
-> boot logo, but not actually support VT.  I had also assumed there might
-> be a way to use fbcon as the console (i.e. printk) but not register
-> the tty, but it looks like the console code still requires vt.
+> Hi
 >
-> After I looked at the vt and conswitchp code some more, I wonder
-> if we could go the other way and instead of integrating it more
-> make the conswitchp logic optional: most of the complexity here
-> deals with switching between text console and fbcon dynamically,
-> but having any text console support is getting very rare (vga
-> on alpha/mips/x86-32, newport on mips-ip22, sti on parisc).
-
-Yes, it's rare. But on parisc, if no supported fbdev or drm
-graphic card is found, it needs to stays on sticon (which always works).
-Otherwise - if a card was found - the kernel switches dynamically to fbcon=
-.
-
-> If we do this, the conswitchp code could be merged with dummycon
-> in drivers/video/console, with the simpler alternative just
-> calling into fbcon functions.
-
-As mentioned above, that should be optional then.
-
-> I'm not sure if we can already drop
-> vgacon from normal x86-64 distro configs, i.e. if there are cases
-> that are not already covered by any of efi-earlycon, efifb,
-> vga16fb, vesafb/uvesafb or a PCI DRM driver.
-
-Helge
+>
+> Am 09.12.24 um 14:56 schrieb Nuno Gon=C3=A7alves:
+> > On Mon, Dec 9, 2024 at 1:43=E2=80=AFPM Thomas Zimmermann <tzimmermann@s=
+use.de> wrote:
+> >> Thanks you so much for testing. I'll prepare a real patch. Can I add
+> >> your Reported-by and Tested-by tags?
+> > Reported-by: Nuno Gon=C3=A7alves <nunojpg@gmail.com>
+> > Tested-by: Nuno Gon=C3=A7alves <nunojpg@gmail.com>
+>
+> Thanks a lot. I've sent out the patch for review. Apologies if this took
+> a bit longer than expected.
+>
+> Best regards
+> Thomas
+>
+> >
+> > Thanks,
+> > Nuno
+>
+> --
+> --
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Frankenstrasse 146, 90461 Nuernberg, Germany
+> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+> HRB 36809 (AG Nuernberg)
+>

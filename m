@@ -1,176 +1,190 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8D884253F05;
-	Wed, 26 Feb 2025 03:58:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FC6410F2
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 07:48:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740542335; cv=none; b=CtQsyCBGXGM1r9h1bc7Lhz/xau8PWXZnfTZT/dZNcAnfY5rB9j+gkP5fLPklP/6GJCntX7cd7CZGFdUc1MHG7rMOlMZg6/nZ0hIqC7sLdcoayc4FSrnA8mrOJ08VcHjn5KtwIneTzhaeMsuKWuNxvmvZsBYwtXrWiLjpe/mGhwY=
+	t=1740556098; cv=none; b=MA2Q3Afr7MvHMTmZ0Sk7sXSxvZYeh6+BDPgX4W4mYay/kcW+AWmUD0M0MPsW+lFMZUzn6L1iS/Ok+z/HBbbKgWtZBDy4HYMwSXIvbTwfHKARr6dESx5PzknDOQEa/C75Q+qExuvAllZn79PSdquYjgCj+m1IgMHPvE4F4tkG01w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740542335; c=relaxed/simple;
-	bh=IOgnrycr1WyDhdThwz2plkVF4tNNBF3gbfroVg94MOM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EGyf/X/UJ4/+f8BSKfb/x9kJpJ1t7aoJbS0aDSUbRqyeAm4cl9RXzkQGyAettJK3XrlCdIEtLeng3OdYYT3JGxE9pBtSwAhULK8ecOLyavYrMgmtJ357AG0Wrcwsd6+ORQRWSUG8kQg1Adc93+VBSAEIG5T6VVOQE2UHVWH5GPw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=h8E64SGI; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+	s=arc-20240116; t=1740556098; c=relaxed/simple;
+	bh=ORQ/MWKZIVHZNPycW8K2CopfAf5d3bKuxLJzswEaJ5M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Sc9qhAeRYurHS694M2tIvLpCxWuJkavJDukh34DfxJlWuevniYqtzOiMQOVh065t7j8NNs62hK63LU8qHGJsNFINmgLugPrIzl0USMLZcKEFy0quVEqA2f2nEr85+A6JdYibWPOW4tMUWM71HgDJd2jOl9RlGxcqsL2ejLIvPbk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=LYhxfECj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8Cqk/sEs; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=LYhxfECj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8Cqk/sEs; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="h8E64SGI"
-Received: by linux.microsoft.com (Postfix, from userid 1127)
-	id 1B46E20460A8; Tue, 25 Feb 2025 19:58:53 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1B46E20460A8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1740542333;
-	bh=yNYyjztGjtuVPk6nvoez8iotd+cHNDaVQ/pzCQ1fHfk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=h8E64SGIHyZ7T5uwofjtEDo4Iq1vLHvis+riAuwYNAxQKG9QyytbxNa6cgmrHeHhf
-	 GulGYp9LNgQARRep3PiPJt0yIl8BLlCZOEM5LFisdSaEQXMbML6JXdKDCrp3WBJSFM
-	 lKPV2Z9QliBXrIKjHLjNmpbbE6t+l8G3qZXPqGUI=
-Date: Tue, 25 Feb 2025 19:58:53 -0800
-From: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
-To: Michael Kelley <mhklinux@outlook.com>
-Cc: "kys@microsoft.com" <kys@microsoft.com>,
-	"haiyangz@microsoft.com" <haiyangz@microsoft.com>,
-	"wei.liu@kernel.org" <wei.liu@kernel.org>,
-	"decui@microsoft.com" <decui@microsoft.com>,
-	"deller@gmx.de" <deller@gmx.de>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"ssengar@microsoft.com" <ssengar@microsoft.com>
-Subject: Re: [PATCH v2] fbdev: hyperv_fb: Allow graceful removal of
- framebuffer
-Message-ID: <20250226035853.GA19981@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
-References: <1740473808-9754-1-git-send-email-ssengar@linux.microsoft.com>
- <SN6PR02MB41574CD095A292D20AD6C84ED4C32@SN6PR02MB4157.namprd02.prod.outlook.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="LYhxfECj";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8Cqk/sEs";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="LYhxfECj";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8Cqk/sEs"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id CE0BC1F387;
+	Wed, 26 Feb 2025 07:48:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1740556094; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=/AXi7oYE/B19NFclfQfBHmsOffTkJ+UU8LrR/Gr1eww=;
+	b=LYhxfECjdPqZzgEPVTUL/6MtencREBbcGFR88mO88ljAB6l/2X6Fe2yyXl8UAdQbC+2sMJ
+	u9Mwcq78EjLe4ITfSpsOo20XD9wYt7fcScnkRd/l8Ha8csIEOr3VYCXUwuhfjnv2mrjKeI
+	6kChoaqp+K2qvuSU2ZTIcUZOvlrjhr8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1740556094;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=/AXi7oYE/B19NFclfQfBHmsOffTkJ+UU8LrR/Gr1eww=;
+	b=8Cqk/sEs8JIIYgK4SVTypbTraxTqFH61HSTeAJ/HapWAnXTrPa1/dWyT7cJgtIphJjUCUH
+	pBHyi/w0yuLh9RAA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1740556094; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=/AXi7oYE/B19NFclfQfBHmsOffTkJ+UU8LrR/Gr1eww=;
+	b=LYhxfECjdPqZzgEPVTUL/6MtencREBbcGFR88mO88ljAB6l/2X6Fe2yyXl8UAdQbC+2sMJ
+	u9Mwcq78EjLe4ITfSpsOo20XD9wYt7fcScnkRd/l8Ha8csIEOr3VYCXUwuhfjnv2mrjKeI
+	6kChoaqp+K2qvuSU2ZTIcUZOvlrjhr8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1740556094;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=/AXi7oYE/B19NFclfQfBHmsOffTkJ+UU8LrR/Gr1eww=;
+	b=8Cqk/sEs8JIIYgK4SVTypbTraxTqFH61HSTeAJ/HapWAnXTrPa1/dWyT7cJgtIphJjUCUH
+	pBHyi/w0yuLh9RAA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9A36213A53;
+	Wed, 26 Feb 2025 07:48:14 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 2KBYJD7HvmcdOQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 07:48:14 +0000
+Message-ID: <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
+Date: Wed, 26 Feb 2025 08:48:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <SN6PR02MB41574CD095A292D20AD6C84ED4C32@SN6PR02MB4157.namprd02.prod.outlook.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
+To: Arnd Bergmann <arnd@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20250225164436.56654-1-arnd@kernel.org>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20250225164436.56654-1-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [0.20 / 50.00];
+	RSPAMD_URIBL(4.50)[arndb.de:email];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.978];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[kernel.org,linuxfoundation.org,gmx.de];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[arndb.de:email]
+X-Spam-Score: 0.20
+X-Spam-Flag: NO
 
-On Tue, Feb 25, 2025 at 04:46:12PM +0000, Michael Kelley wrote:
-> From: Saurabh Sengar <ssengar@linux.microsoft.com>
-> > 
-> > When a Hyper-V framebuffer device is unbind, hyperv_fb driver tries to
-> > release the framebuffer forcefully. If this framebuffer is in use it
-> > produce the following WARN and hence this framebuffer is never released.
-> > 
-> > [   44.111220] WARNING: CPU: 35 PID: 1882 at drivers/video/fbdev/core/fb_info.c:70
-> > framebuffer_release+0x2c/0x40
-> > < snip >
-> > [   44.111289] Call Trace:
-> > [   44.111290]  <TASK>
-> > [   44.111291]  ? show_regs+0x6c/0x80
-> > [   44.111295]  ? __warn+0x8d/0x150
-> > [   44.111298]  ? framebuffer_release+0x2c/0x40
-> > [   44.111300]  ? report_bug+0x182/0x1b0
-> > [   44.111303]  ? handle_bug+0x6e/0xb0
-> > [   44.111306]  ? exc_invalid_op+0x18/0x80
-> > [   44.111308]  ? asm_exc_invalid_op+0x1b/0x20
-> > [   44.111311]  ? framebuffer_release+0x2c/0x40
-> > [   44.111313]  ? hvfb_remove+0x86/0xa0 [hyperv_fb]
-> > [   44.111315]  vmbus_remove+0x24/0x40 [hv_vmbus]
-> > [   44.111323]  device_remove+0x40/0x80
-> > [   44.111325]  device_release_driver_internal+0x20b/0x270
-> > [   44.111327]  ? bus_find_device+0xb3/0xf0
-> > 
-> > Fix this by moving the release of framebuffer and assosiated memory
-> > to fb_ops.fb_destroy function, so that framebuffer framework handles
-> > it gracefully.
-> > 
-> > While we fix this, also replace manual registrations/unregistration of
-> > framebuffer with devm_register_framebuffer.
-> > 
-> > Fixes: 68a2d20b79b1 ("drivers/video: add Hyper-V Synthetic Video Frame Buffer
-> > Driver")
-> > Signed-off-by: Saurabh Sengar <ssengar@linux.microsoft.com>
-> > ---
-> > V2 : Move hvfb_putmem into destroy()
-> > 
-> >  drivers/video/fbdev/hyperv_fb.c | 28 ++++++++++++++++++++++------
-> >  1 file changed, 22 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-> > index 363e4ccfcdb7..89ee49f1c3dc 100644
-> > --- a/drivers/video/fbdev/hyperv_fb.c
-> > +++ b/drivers/video/fbdev/hyperv_fb.c
-> > @@ -282,6 +282,8 @@ static uint screen_depth;
-> >  static uint screen_fb_size;
-> >  static uint dio_fb_size; /* FB size for deferred IO */
-> > 
-> > +static void hvfb_putmem(struct hv_device *hdev, struct fb_info *info);
-> > +
-> >  /* Send message to Hyper-V host */
-> >  static inline int synthvid_send(struct hv_device *hdev,
-> >  				struct synthvid_msg *msg)
-> > @@ -862,6 +864,24 @@ static void hvfb_ops_damage_area(struct fb_info *info, u32 x,
-> > u32 y, u32 width,
-> >  		hvfb_ondemand_refresh_throttle(par, x, y, width, height);
-> >  }
-> > 
-> > +/*
-> > + * fb_ops.fb_destroy is called by the last put_fb_info() call at the end
-> > + * of unregister_framebuffer() or fb_release(). Do any cleanup related to
-> > + * framebuffer here.
-> > + */
-> > +static void hvfb_destroy(struct fb_info *info)
-> > +{
-> > +	struct hv_device *hdev;
-> > +	struct device *dev;
-> > +	void *driver_data = (void *)info;
-> > +
-> > +	dev = container_of(driver_data, struct device, driver_data);
-> 
-> I don't think the above is right. The struct fb_info was allocated
-> with kzalloc() in framebuffer_alloc(). You would use container_of()
-> if fb_info was embedded in a struct device, but that's not the case
-> here. The driver_data field within the struct device is a pointer to the
-> fb_info, but that doesn't help find the struct device.
+Hi Arnd
 
-Thanks for catching this. I should have been more careful.
-
-> 
-> What does help is that info->device (not to be confused with info->dev,
-> which is a different struct device) points to the struct device that
-> you need here. That "device" field is set in framebuffer_alloc().
-> So that's an easy fix.
-
-Right, thanks.
-
-> 
-> > +	hdev = container_of(dev, struct hv_device, device);
-> > +
-> > +	hvfb_putmem(hdev, info);
-> 
-> Another observation: The interface to hvfb_putmem() is more
-> complicated than it needs to be. The hdev argument could be
-> dropped because it is used only to get the device pointer,
-> which is already stored in info->device. hvfb_release_phymem()
-> would also need to be updated to take a struct device instead of
-> struct hv_device. But if you made those changes, then the
-> container_of() to get the hdev wouldn't be needed either.
-
-Make sense.
-
-> 
-> A similar simplification could be applied to hvfb_getmem().
-> 
-> Maybe do two patches -- the first to simplify the interfaces,
-> and the second to do this patch but with reduced
-> complexity because of the simpler interfaces.
-
-Agree, let me do it in V3.
-
-- Saurabh
-
-> 
-> Michael  
+Am 25.02.25 um 17:44 schrieb Arnd Bergmann:
+> From: Arnd Bergmann <arnd@arndb.de>
 >
+> Dummycon is used as a fallback conswitchp for vgacon and fbcon
+> in the VT code, and there are no references to it if all three
+> are disabled, so just leave it out of the kernel image for
+> configurations without those.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>   drivers/video/console/Kconfig | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+> index bc31db6ef7d2..1c4263c164ce 100644
+> --- a/drivers/video/console/Kconfig
+> +++ b/drivers/video/console/Kconfig
+> @@ -47,8 +47,7 @@ config SGI_NEWPORT_CONSOLE
+>   	  card of your Indy.  Most people say Y here.
+>   
+>   config DUMMY_CONSOLE
+> -	bool
+> -	default y
+> +	def_bool VT || VGA_CONSOLE || FRAMEBUFFER_CONSOLE
 
-<snip> 
+What about MDA_CONSOLE and STI_CONSOLE. Don't they require this as fallback?
+
+Best regards
+Thomas
+
+>   
+>   config DUMMY_CONSOLE_COLUMNS
+>   	int "Initial number of console screen columns"
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

@@ -1,16 +1,16 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B6B41E1E18
-	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 09:38:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92878226D08
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Feb 2025 09:38:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740562700; cv=none; b=pzgOvsAq3vZqtP1ULqy/G/rcnl3BbdJd1Dg4CkrPqwtvHSn+shkS+6GY/i4h9s3ElYV7L677olfsSS8R3entuUxQTvxMkSuy1uXoWJORATnwlwDhNZGPyRKBFBurydB96F4j7pVnougiEPZ7no55PUI7+U1H5Cvp2/PbmFR6HhM=
+	t=1740562707; cv=none; b=orrU0RhHBluWxI7tt05oaKn0qHCsz1pd2H0pV2BUHqGAtG/j0JU5Ob4pxVWjgcuf0TtogJjWal8W+ICXpgO3xomAMdZ26BgTkv0BstHR7ncpS2EVZzy/3LV6rQkd+Sro+pXbX9/SED3ya2FYLocgc7bZ9hSLtaidpmu/5wCe4n4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740562700; c=relaxed/simple;
-	bh=QljiSUtK8abn9whBbmA9UmhLSOhLC1dTcUiCTuzlOZI=;
+	s=arc-20240116; t=1740562707; c=relaxed/simple;
+	bh=rhW/P84AgHPcK09qLqNurXUTmdBqqZeK9KdFDD5WNU0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JdS4adm0Gr3TUcortYX9tVkyU45IAmlRUQThCLDlpImMns1kLGny/QpZ6zkmbmabk4dNZNsl3HI0vL1FYrXKdc5vPd8lGt3+OnZEeleEqkYXmLKC+6QkvbhfCEua3zGzGpgsG6EA3ozctgCdiVcyDjMJBeLy05lw4+5PXeAdr0k=
+	 MIME-Version; b=QmMRAPLaiN/PerZHnIQsrY67s+aowsoE940fuTLx+vYn4NWDJIlPBRzk9YGll/Vg7OKS1pCB7feFdqWDiwRZWidreCCkCwfao+z0P58YK4KimHTHr66M4h7QikDF6JZVzzcLZ7fR1In3CFEeuO2DmXvlRLu0FCAzS3+LWywHVNY=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
@@ -18,20 +18,20 @@ Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id ABF3D1F747;
-	Wed, 26 Feb 2025 09:37:46 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 5167B1F74C;
+	Wed, 26 Feb 2025 09:37:47 +0000 (UTC)
 Authentication-Results: smtp-out2.suse.de;
 	none
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 645FC13A82;
-	Wed, 26 Feb 2025 09:37:46 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0A0E713A82;
+	Wed, 26 Feb 2025 09:37:47 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id OLI1F+rgvmezXQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 09:37:46 +0000
+	id YE0pAevgvmezXQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 09:37:47 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: lee@kernel.org,
 	pavel@ucw.cz,
@@ -43,9 +43,9 @@ Cc: linux-leds@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 05/11] backlight: Move blank-state handling into helper
-Date: Wed, 26 Feb 2025 10:31:54 +0100
-Message-ID: <20250226093456.147402-6-tzimmermann@suse.de>
+Subject: [PATCH v2 07/11] backlight: lcd: Move event handling into helpers
+Date: Wed, 26 Feb 2025 10:31:56 +0100
+Message-ID: <20250226093456.147402-8-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250226093456.147402-1-tzimmermann@suse.de>
 References: <20250226093456.147402-1-tzimmermann@suse.de>
@@ -59,100 +59,93 @@ Content-Transfer-Encoding: 8bit
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
+X-Spam-Level: 
 X-Spamd-Result: default: False [-4.00 / 50.00];
 	REPLY(-4.00)[]
-X-Spam-Flag: NO
 X-Spam-Score: -4.00
-X-Rspamd-Queue-Id: ABF3D1F747
+X-Spam-Flag: NO
+X-Rspamd-Queue-Id: 5167B1F74C
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
 X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Level: 
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 
-Move the handling of blank-state updates into a separate helper,
-so that is can be called without the fbdev event. No functional
-changes.
-
-As a minor improvement over the original code, the update replaces
-manual locking with a guard.
+Move the handling of display updates to separate helper functions.
+There is code for handling fbdev blank events and fbdev mode changes.
+The code currently runs from fbdev event notifiers, which will be
+replaced.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/backlight/backlight.c | 46 +++++++++++++++++------------
- 1 file changed, 27 insertions(+), 19 deletions(-)
+ drivers/video/backlight/lcd.c | 38 ++++++++++++++++++++++++++---------
+ 1 file changed, 28 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bb01f57c4683..1c43f579396f 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -80,6 +80,30 @@ static const char *const backlight_scale_types[] = {
+diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+index 3267acf8dc5b..f57ff8bcc2fa 100644
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -18,6 +18,32 @@
+ #include <linux/fb.h>
+ #include <linux/slab.h>
  
- #if defined(CONFIG_FB_CORE) || (defined(CONFIG_FB_CORE_MODULE) && \
- 				defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
-+static void backlight_notify_blank(struct backlight_device *bd,
-+				   struct device *display_dev,
-+				   bool fb_on, bool prev_fb_on)
++static void lcd_notify_blank(struct lcd_device *ld, struct device *display_dev,
++			     int power)
 +{
-+	guard(mutex)(&bd->ops_lock);
++	guard(mutex)(&ld->ops_lock);
 +
-+	if (!bd->ops)
++	if (!ld->ops || !ld->ops->set_power)
 +		return;
-+	if (bd->ops->controls_device && !bd->ops->controls_device(bd, display_dev))
++	if (ld->ops->controls_device && !ld->ops->controls_device(ld, display_dev))
 +		return;
 +
-+	if (fb_on && (!prev_fb_on || !bd->use_count)) {
-+		if (!bd->use_count++) {
-+			bd->props.state &= ~BL_CORE_FBBLANK;
-+			backlight_update_status(bd);
-+		}
-+	} else if (!fb_on && prev_fb_on && bd->use_count) {
-+		if (!(--bd->use_count)) {
-+			bd->props.state |= BL_CORE_FBBLANK;
-+			backlight_update_status(bd);
-+		}
-+	}
++	ld->ops->set_power(ld, power);
 +}
 +
- /*
-  * fb_notifier_callback
-  *
-@@ -107,31 +131,15 @@ static int fb_notifier_callback(struct notifier_block *self,
++static void lcd_notify_mode_change(struct lcd_device *ld, struct device *display_dev,
++				   unsigned int width, unsigned int height)
++{
++	guard(mutex)(&ld->ops_lock);
++
++	if (!ld->ops || !ld->ops->set_mode)
++		return;
++	if (ld->ops->controls_device && !ld->ops->controls_device(ld, display_dev))
++		return;
++
++	ld->ops->set_mode(ld, width, height);
++}
++
+ #if defined(CONFIG_FB) || (defined(CONFIG_FB_MODULE) && \
+ 			   defined(CONFIG_LCD_CLASS_DEVICE_MODULE))
+ static int to_lcd_power(int fb_blank)
+@@ -50,25 +76,17 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	struct fb_info *info = evdata->info;
+ 	struct lcd_device *fb_lcd = fb_lcd_device(info);
+ 
+-	guard(mutex)(&ld->ops_lock);
+-
+-	if (!ld->ops)
+-		return 0;
+-	if (ld->ops->controls_device && !ld->ops->controls_device(ld, info->device))
+-		return 0;
+ 	if (fb_lcd && fb_lcd != ld)
  		return 0;
  
- 	bd = container_of(self, struct backlight_device, fb_notif);
--	mutex_lock(&bd->ops_lock);
+ 	if (event == FB_EVENT_BLANK) {
+ 		int power = to_lcd_power(*(int *)evdata->data);
  
--	if (!bd->ops)
--		goto out;
--	if (bd->ops->controls_device && !bd->ops->controls_device(bd, info->device))
--		goto out;
- 	if (fb_bd && fb_bd != bd)
--		goto out;
-+		return 0;
+-		if (ld->ops->set_power)
+-			ld->ops->set_power(ld, power);
++		lcd_notify_blank(ld, info->device, power);
+ 	} else {
+ 		const struct fb_videomode *videomode = evdata->data;
  
- 	fb_on = fb_blank[0] == FB_BLANK_UNBLANK;
- 	prev_fb_on = fb_blank[1] == FB_BLANK_UNBLANK;
+-		if (ld->ops->set_mode)
+-			ld->ops->set_mode(ld, videomode->xres, videomode->yres);
++		lcd_notify_mode_change(ld, info->device, videomode->xres, videomode->yres);
+ 	}
  
--	if (fb_on && (!prev_fb_on || !bd->use_count)) {
--		if (!bd->use_count++) {
--			bd->props.state &= ~BL_CORE_FBBLANK;
--			backlight_update_status(bd);
--		}
--	} else if (!fb_on && prev_fb_on && bd->use_count) {
--		if (!(--bd->use_count)) {
--			bd->props.state |= BL_CORE_FBBLANK;
--			backlight_update_status(bd);
--		}
--	}
--out:
--	mutex_unlock(&bd->ops_lock);
-+	backlight_notify_blank(bd, info->device, fb_on, prev_fb_on);
-+
  	return 0;
- }
- 
 -- 
 2.48.1
 

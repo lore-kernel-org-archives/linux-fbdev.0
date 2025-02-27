@@ -1,80 +1,80 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42D2F225A29
-	for <linux-fbdev@vger.kernel.org>; Thu, 27 Feb 2025 09:01:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F224A226D06
+	for <linux-fbdev@vger.kernel.org>; Thu, 27 Feb 2025 09:25:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740646901; cv=none; b=q6bwTQuPlbEkU46nMC8LJmj+lrgCCHgH0juHgQYUiTyRo3gOwSu+ozJo+ilIVPc+CZBDsT/yz7BYICX0VQ/+hmtQw95oLOasxf7lu1kKZRwkagH5DvB3ERrZxEAOU7pt6hGCKuyd7PdOa0Qqf11eASAQh6cbd/HVWMg0Ccj1wqw=
+	t=1740648336; cv=none; b=B/uWOHB6TVBW8Xe+gh3FPBMeWqlDrxL7R2o3IeebrjVpvsjC68Cy01sKR0udDw5tIWRRHGbNtFYd2RJDN7l4XYga99XDJ3JvJzn3zafXiXyNGZ+0gStfxz3FLhese340LYGp6QLJVXguE5OvAALfblmZCpU2s6ikeyLqT3S/bfA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740646901; c=relaxed/simple;
-	bh=2UHmA5NmbtGuZWzqU3YCusQHf6qU4KNq9ycwbPXIzYI=;
+	s=arc-20240116; t=1740648336; c=relaxed/simple;
+	bh=BBKBgVRMWqRs5VaSUwZ2nSGGWtx6OJ0g5RpLBq2rPDM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=E7r2XeNy8s98jkeVF1Im51XnMG0UnCyzqyp4xAp/Zxt7CVO2sKu1/jWZqyC+UZmBVpP67+VOJluVo9Ou+/+J7djIjrpEiJtZpo5bj+k/sFNNKw3EmCrCiWku1J/oJQKiF/PrRoyVI3+b9bzV7aXhHZ+mXf236D6B03pA+WoXL4Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=bc+JZOuz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MNWT+R7E; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jfL7SxB6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=K7vjKmly; arc=none smtp.client-ip=195.135.223.131
+	 In-Reply-To:Content-Type; b=k+25x6+kXc5o5vIyIHAB8zp65AoJQ/k4G6i/yJbo/NyPJB882XCj3xqrKiyHDjKesI83C9hju7kCfHjllaHHHorTznzxAjwSuup7yH+1lWqMaW73qTzNbRHu58Jdw1/21GWk21hmjZCuzJwioQCbA15ike0Fe6Ip6H31XKRgQLo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ly6losrb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JgzQTyGf; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ly6losrb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JgzQTyGf; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="bc+JZOuz";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MNWT+R7E";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jfL7SxB6";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="K7vjKmly"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ly6losrb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JgzQTyGf";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ly6losrb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JgzQTyGf"
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 3D1D11F38A;
-	Thu, 27 Feb 2025 09:01:36 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 2D1171F38A;
+	Thu, 27 Feb 2025 09:25:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1740646897; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1740648333; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=U0jnjOlTwNM/eDNzI+261ff3PbKfT8p5rqqRp8agbl8=;
-	b=bc+JZOuz2nlAjeivEm4wZjvsykbU+CBWp2pNRj4+aLtO2afdsZVUFWVj/7cK8iyGg4FiSy
-	8i0Gn/j/8TKGgxK9qVQBTOiwoeu8iXYI7pGcJ/t0WdflqoDvbcIdUBYawQifdpzqTaNZCN
-	QteAiSGzp2ID7h5R821cOgHkPIH7uRE=
+	bh=84jGCzOfenk39n3fQ2tGw741WbwinSTOHOE7D5W59+0=;
+	b=ly6losrbrIxeVYzL4cQBa9lQoYYLJNDmOdi/fKo9+bCVM1hw+dJ9CZOmMHGLsT/nxUAPIh
+	xSv4neyawmJstf+M2YQuGnr2cPTA7u783axf1610FzmljIhwoZobWcwBNo/gLkzCXLYs/Y
+	2orK899DYf2puPnd7FmgktiqFZMhc6I=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1740646897;
+	s=susede2_ed25519; t=1740648333;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=U0jnjOlTwNM/eDNzI+261ff3PbKfT8p5rqqRp8agbl8=;
-	b=MNWT+R7EV2022VyFbYq1czP9EYqh8ybfk+y+HsS5OSlvFjl5OP4fhbjxJiK4XUE9JTL7JU
-	6y7XT+CdVa21c9Cg==
+	bh=84jGCzOfenk39n3fQ2tGw741WbwinSTOHOE7D5W59+0=;
+	b=JgzQTyGfkphco0WrGtXyX8Ub+v65qPaTxMtmX4GTH9Zay7YAt+UzW7AP1P90ZxIJd4rgoz
+	ztOnLjeHOir/9pDA==
 Authentication-Results: smtp-out2.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1740646896; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1740648333; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=U0jnjOlTwNM/eDNzI+261ff3PbKfT8p5rqqRp8agbl8=;
-	b=jfL7SxB6hGbWoberPj/X6pwfLIMvdBHggdyl1fFC3S39q3LjiDKAXp7AwLp4yG6UT3GCFb
-	N2+Lj+Yyt5MNauCr5mCJNqerieU9TwpCwfEQSkYNEdPd1CjaOtrpV6m4K8FTS5n7NBXZuN
-	DBZItNcosqYQ/1mh9yKDjkYW3zYICIM=
+	bh=84jGCzOfenk39n3fQ2tGw741WbwinSTOHOE7D5W59+0=;
+	b=ly6losrbrIxeVYzL4cQBa9lQoYYLJNDmOdi/fKo9+bCVM1hw+dJ9CZOmMHGLsT/nxUAPIh
+	xSv4neyawmJstf+M2YQuGnr2cPTA7u783axf1610FzmljIhwoZobWcwBNo/gLkzCXLYs/Y
+	2orK899DYf2puPnd7FmgktiqFZMhc6I=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1740646896;
+	s=susede2_ed25519; t=1740648333;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=U0jnjOlTwNM/eDNzI+261ff3PbKfT8p5rqqRp8agbl8=;
-	b=K7vjKmly4VGwM7RSe36byfn+r+QN0vxYwzO5bIyKcIZAMqCnI8QvjVfJUXxO1oG/kutcbX
-	2LELLhqYemzaKFBw==
+	bh=84jGCzOfenk39n3fQ2tGw741WbwinSTOHOE7D5W59+0=;
+	b=JgzQTyGfkphco0WrGtXyX8Ub+v65qPaTxMtmX4GTH9Zay7YAt+UzW7AP1P90ZxIJd4rgoz
+	ztOnLjeHOir/9pDA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0F50A13888;
-	Thu, 27 Feb 2025 09:01:36 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E948813888;
+	Thu, 27 Feb 2025 09:25:32 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id llZ0AvApwGccCwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 27 Feb 2025 09:01:36 +0000
-Message-ID: <5d13fad0-c5d2-4816-b71a-fceeb03589c3@suse.de>
-Date: Thu, 27 Feb 2025 10:01:35 +0100
+	id F0ysNowvwGcbEwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 27 Feb 2025 09:25:32 +0000
+Message-ID: <fb4c9b76-82dd-4227-9ee5-d7b52438bd0e@suse.de>
+Date: Thu, 27 Feb 2025 10:25:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,25 +82,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: drm/fbdev-dma: regression
-To: =?UTF-8?Q?Nuno_Gon=C3=A7alves?= <nunojpg@gmail.com>
-Cc: Thorsten Leemhuis <regressions@leemhuis.info>,
- Linux kernel regressions list <regressions@lists.linux.dev>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- Linux Framebuffer <linux-fbdev@vger.kernel.org>
-References: <20220621104617.8817-1-tzimmermann@suse.de>
- <CAEXMXLR55DziAMbv_+2hmLeH-jP96pmit6nhs6siB22cpQFr9w@mail.gmail.com>
- <d2562174-eebe-4462-9a9a-03936b3bcf89@leemhuis.info>
- <b4d28b98-a85c-4095-9c1b-8ebdfa13861c@suse.de>
- <CAEXMXLQEJPVPyqLpH6C7R6iqhhKBpdNS9QeESbEdcmxB70goSA@mail.gmail.com>
- <da4288a6-96cc-4095-bd73-d66b68e9ed01@suse.de>
- <CAEXMXLQw1yqUGbWcrKZdOuGvA4eZMG0utiyQ2PVRvTeuFedGbA@mail.gmail.com>
- <9c902ac0-a94d-4465-98ff-840132e482b1@suse.de>
- <CAEXMXLSLau0sEy8WSZ3=ofK97xP8aPcDQEnT=JFkkt7K=Rzivw@mail.gmail.com>
- <900b873f-6eba-4dba-b155-dc5f7594becf@suse.de>
- <CAEXMXLTT5m0Po_wz0ywRHFetV6e080AJwy8f99Zb9R_afzafRw@mail.gmail.com>
- <844f1fa4-6f47-4386-878f-739d2819605e@suse.de>
- <CAEXMXLQyOY=dXcYoSc9=LVVWb1BjXLd3_Lo3LRNor_STT+H+WQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
+To: Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20250225164436.56654-1-arnd@kernel.org>
+ <4d047af3-fd30-4fa4-aa3d-c0359856d750@suse.de>
+ <a2c0e681-2cdf-4dc9-82fc-be35f54ff795@app.fastmail.com>
+ <29ecc7c4-2887-4989-a1d3-aa76b44c0387@suse.de>
+ <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -127,81 +118,74 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <CAEXMXLQyOY=dXcYoSc9=LVVWb1BjXLd3_Lo3LRNor_STT+H+WQ@mail.gmail.com>
+In-Reply-To: <79d35e3b-9a0d-41a5-ab07-797bfa1e19cb@app.fastmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.26
-X-Spamd-Result: default: False [-4.26 / 50.00];
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.30
+X-Spamd-Result: default: False [-4.30 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.16)[-0.819];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
 	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[arndb.de,kernel.org,linuxfoundation.org,gmx.de];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[gmail.com];
-	TO_DN_SOME(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
+	TO_DN_SOME(0.00)[];
 	RCVD_TLS_ALL(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
 	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email]
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid]
 X-Spam-Flag: NO
 X-Spam-Level: 
 
 Hi
 
-Am 26.02.25 um 23:57 schrieb Nuno Gonçalves:
-> Dear Thomas,
+Am 26.02.25 um 12:46 schrieb Arnd Bergmann:
+> On Wed, Feb 26, 2025, at 09:16, Thomas Zimmermann wrote:
+>> Am 26.02.25 um 08:55 schrieb Arnd Bergmann:
+>> Here's another general question. vgacon and fbcon only seem usable with
+>> CONFIG_VT=y. Wouldn't it make sense to have them depend on CONFIG_VT=y?
+>> dummycon could then be implemented as part of the vt code, maybe even
+>> become a vt-internal thing. The console code is complex, so I'm probably
+>> missing something here?
+> I think in theory one may have a system use fbcon purely to get the
+> boot logo, but not actually support VT.  I had also assumed there might
+> be a way to use fbcon as the console (i.e. printk) but not register
+> the tty, but it looks like the console code still requires vt.
 >
-> Could you check if the patch got lost in review?
+> After I looked at the vt and conswitchp code some more, I wonder
+> if we could go the other way and instead of integrating it more
+> make the conswitchp logic optional: most of the complexity here
+> deals with switching between text console and fbcon dynamically,
+> but having any text console support is getting very rare (vga
+> on alpha/mips/x86-32, newport on mips-ip22, sti on parisc).
 >
-> I can confirm that mainline is still broken since this 2024/May regression.
+> If we do this, the conswitchp code could be merged with dummycon
+> in drivers/video/console, with the simpler alternative just
+> calling into fbcon functions. I'm not sure if we can already drop
+> vgacon from normal x86-64 distro configs, i.e. if there are cases
+> that are not already covered by any of efi-earlycon, efifb,
+> vga16fb, vesafb/uvesafb or a PCI DRM driver.
 
-You're right. The patch got reviewed and then I forgot to merge it. It's 
-now on its way into the upstream kernel. Thanks for the note. Apologies 
-for the delay.
+Thanks for the lengthy answer. I don't want to add work to your todo 
+list. For vgacon, I wouldn't remove it yet, as there still exisits 
+x86_64 systems with plain VGA support.
 
 Best regards
 Thomas
 
+
 >
-> Thanks,
-> Nuno
+>      Arnd
 >
-> On Wed, Dec 11, 2024 at 9:07 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
->> Hi
->>
->>
->> Am 09.12.24 um 14:56 schrieb Nuno Gonçalves:
->>> On Mon, Dec 9, 2024 at 1:43 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
->>>> Thanks you so much for testing. I'll prepare a real patch. Can I add
->>>> your Reported-by and Tested-by tags?
->>> Reported-by: Nuno Gonçalves <nunojpg@gmail.com>
->>> Tested-by: Nuno Gonçalves <nunojpg@gmail.com>
->> Thanks a lot. I've sent out the patch for review. Apologies if this took
->> a bit longer than expected.
->>
->> Best regards
->> Thomas
->>
->>> Thanks,
->>> Nuno
->> --
->> --
->> Thomas Zimmermann
->> Graphics Driver Developer
->> SUSE Software Solutions Germany GmbH
->> Frankenstrasse 146, 90461 Nuernberg, Germany
->> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
->> HRB 36809 (AG Nuernberg)
->>
 
 -- 
 --

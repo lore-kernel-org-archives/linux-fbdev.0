@@ -1,94 +1,109 @@
-Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AD1925DD1D;
-	Fri, 28 Feb 2025 15:42:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D2E5274264;
+	Fri, 28 Feb 2025 16:24:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740757345; cv=none; b=dpI8nON0MDmpTDjSVMSPGo8HLh8b6btb5s58pKlXI5FA3ajAsYPDtQm+cwD1WyojIRKwLVwjPc9fdMkBCQSIobnFf7mXj+DuCucGaMzPKZmWUqzlU4Qf+CBhtbSiOYuS1EeJhvtHr5jjW6wnDWl/cSzL4fn4qy5YFLSL3/11GzM=
+	t=1740759847; cv=none; b=mzkCjgITk5TtSbI1mKZvPfDsM0u4G90PPMZZ33Z15bvraghtk74TbX1KLKbm55zECwsfOMlnxu+BjFrcDeggugUkQ3BjxqQIP5tzHDih6tX+b6d6uacTnnnLDVAtdg/r2XPMJaRlV3TO8Q9XbtOcj/qDRdNN+ifzUyzoFKiq8RA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740757345; c=relaxed/simple;
-	bh=HpX8jK3ZmcUD3IyJx4wNfma93JabP/1U6yUFggcLjdU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NF96Vccu3X2SK3mNMUYrRN9VtzOobTmpIZdfqA5GTHh+83g1NCSwJU8Vt8T5CANNYxDE+GzdmbBVMOf/QFQVAovLVGQZCLuCCZoUctC4TEgN7DoleuVHf7ibznVIrqD8xq5JkfxuxTIhh2SGuvglUOf0aT0S7Sr2L3Fe1ZZx1/w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=JLtXwvZY; arc=none smtp.client-ip=46.235.229.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
+	s=arc-20240116; t=1740759847; c=relaxed/simple;
+	bh=vw7uvbl/KnjEf50NZ9ggW2ca9g1yuG4sjfLATHQRM0I=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=H7Uk/jfll1FffFFsU3iM9VH/BMVUw4nk6oG0kZmQflMuFW8MzRiP9WG5y68GKieu2emoNaz+DpyxKg/oXeFRUHDvZUKfDknS820NaksfX4i4KtVEery/kL9GGYoezz7JEEVd6zwMBe5m3aX2jYlmvHrdRaVAKsTsNoni6ST5GlY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=G7A9axOa; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="JLtXwvZY"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
-	; s=bytemarkmx; h=Content-Type:MIME-Version:Message-ID:Subject:From:Date:From
-	:Subject; bh=QzjgdiXNQn2lVM94vvC1YOjh1DnAuEwZM6OUPbLdXjw=; b=JLtXwvZY9rod+vN/
-	6zix4+Vc9e0yIA9MhNtdoGNIHovyFlBBn8P4lF9sMuFQ9qVwfCWkNPBpfz15TMrGpY6Vo7/Cezb9L
-	ox2oOdEjwzmJTvgPqUezZT6aN9i0pYPsJmEEFp4PsBXl+nudrh8B+fvMxDR792jSBLMOdHLiTFF3L
-	DihJk7VwIfSzKhdRAWh8/+U4jT2ywSaj1DsNVTUnNAJ8LCPNJpA8KZc5yXU2vdavYnbbyV1d8G+Cy
-	PzWqlc7Qn7IrthdfZqlZbNpXS6rc2FdK6Rjsjr+N/jzMAtGZD91OfXNTsRUED08EwU7q90hbm5zT4
-	UxVAQ7K8X2/euUVlxA==;
-Received: from dg by mx.treblig.org with local (Exim 4.96)
-	(envelope-from <dg@treblig.org>)
-	id 1to2VD-001g24-2A;
-	Fri, 28 Feb 2025 15:42:15 +0000
-Date: Fri, 28 Feb 2025 15:42:15 +0000
-From: "Dr. David Alan Gilbert" <dave@treblig.org>
-To: tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch
-Cc: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, p.zabel@pengutronix.de,
-	deller@gmx.de, shawnguo@kernel.org, s.hauer@pengutronix.de,
-	kernel@pengutronix.de, festevam@gmail.com,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] gpu: ipu-v3: Remove unused functions
-Message-ID: <Z8HZV3RuIeTtcd3a@gallifrey>
-References: <20241226022752.219399-1-linux@treblig.org>
- <gugwtvw6qqknstlscr4hxfrvcgfa4gfwwgxdosr24mf7huk433@oh7axkbesrjs>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G7A9axOa"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2211cd4463cso47442765ad.2;
+        Fri, 28 Feb 2025 08:24:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740759845; x=1741364645; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UZpdt6SfKLnffkI9zi8NmCtVZiMpf5sWSLXSEwyV0aY=;
+        b=G7A9axOaYwHF6k071yEniZyuO/5tp+ZF7v51xFrmqGCJrzQSPEIaRm7PcIU6gz9iSl
+         BJ2YOs6kOWW1NiKoXjLuufNiKIi/O/+r69Rb2wlUwbHTrZCUCXU+8yF5J0EyeTgX6CUS
+         v+B7x5q6EsPF6qtJaRnFrlQukjJplinLuXJ3L2SDNiozP6EjnbOdRitEWR5LPXGmS/O+
+         poxvx+1Y3mTBR5685Rh1OFe/UI6vBLty7355Txw3jEzseWduAhvU4ws8Udv0UwmZqUhj
+         Zz7D7c+xYVktWmsisnwA+2b7p5a5AKL7BupF1Q9PxJfblk/YPFC31w1Blt+USqsYFyz2
+         nWcQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740759845; x=1741364645;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=UZpdt6SfKLnffkI9zi8NmCtVZiMpf5sWSLXSEwyV0aY=;
+        b=KBwEZPRbLV6wgz3e2A0cdylFyLC1rE0n0Kcxp4RO+PuWeLj5Sp65lni89SI5FKVDGa
+         Xk1t/MFZU1tj6bDvIbI7qWiHQNh5HiCQ/VLHpNiVXl8emLhQm3UJ8F2y1qVfXImkVqRx
+         4Cgys++mjm2rs9myqoEh0lC37t2MkZvIIvGdmTHWg7u34QoscHureq4LyvXwOtF9Th7L
+         jgjHnccaiB8eQa/FpsVitgl0t5zs+uYnmVFfU/5TUvlAvQ8Z4wW9wRLu86erZQ8aH5X5
+         sfeqbTv7+0+Tzf4SgfHycpTrby9kCL5lWQ1Ahw6Bdrr0DDcHWW86YAii3SDCBdFdCCx7
+         QLtg==
+X-Forwarded-Encrypted: i=1; AJvYcCUAqBOKBSRwAhTTkbngyDY/WHXhQrPwSxeQ1EyaIaFuwJf7GOiGlmqdK+BmCXL6X/PrtdbwoPl2pVcR6lM=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxWSh3n0RoY+p2VKmq7IpZa7KwN4bgomLf8OcgOvrXPy65PBClX
+	aWGZP0U3IywrhcAOvSuCLzBjNodDAOYs9KHq0M/aJ1FpRjFws2T2hmJd4gEA
+X-Gm-Gg: ASbGnctvIl2vGbLOtf8kxn9WInuW9O8oqYuh/jXQQLI7K0pHnfAW3NGUS8Xoce73jB2
+	edmtr0IAx5tHpGymHsMnVcSWmtfCZL4NjYZid9XZjkRrtgdz/DiXdDgQpjyiBSefaCpl7cjpY5h
+	PLbUm8+Kh5A/Aux1ATq9/nLe0bYnadtDLNKq/eg/b/43HltxCzKqvmxx9g6RXOO85aRynefd6wo
+	j3KFfO8brwu8SaFNeA926Fa8t664x2V+DzyBMloA7vNoaFbyo2qdbbvBozZe4ygmMN1Ub3LygDz
+	zrkWADMfkbX6VJbe239Ss5mNVuF8V/6O
+X-Google-Smtp-Source: AGHT+IHrtOlJgkuMI5Re9PzG8aqsWYDH3G9O4iLan31cBeWX+IS4/S5MnY7luo+6Iswn9cjuJoEaTg==
+X-Received: by 2002:a17:903:98f:b0:215:9894:5679 with SMTP id d9443c01a7336-22368ac4102mr65842995ad.0.1740759845165;
+        Fri, 28 Feb 2025 08:24:05 -0800 (PST)
+Received: from Grommit.. ([2804:7f0:3f4:eda3:51e0:e6f3:28de:c05a])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-734a0024d1fsm4084725b3a.103.2025.02.28.08.24.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Feb 2025 08:24:04 -0800 (PST)
+From: Gabriel Lima Luz <lima.gabriel.luz@gmail.com>
+To: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	~lkcamp/patches@lists.sr.ht
+Subject: [PATCH] staging: sm750fb: Fix CamelCase variable naming
+Date: Fri, 28 Feb 2025 13:23:54 -0300
+Message-ID: <20250228162359.14029-1-lima.gabriel.luz@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <gugwtvw6qqknstlscr4hxfrvcgfa4gfwwgxdosr24mf7huk433@oh7axkbesrjs>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/6.1.0-21-amd64 (x86_64)
-X-Uptime: 15:40:47 up 296 days,  2:54,  1 user,  load average: 0.01, 0.02,
- 0.00
-User-Agent: Mutt/2.2.12 (2023-09-09)
+Content-Transfer-Encoding: 8bit
 
-Hi All,
+Adhere to Linux kernel coding style.
 
-* Dmitry Baryshkov (dmitry.baryshkov@linaro.org) wrote:
-> On Thu, Dec 26, 2024 at 02:27:45AM +0000, linux@treblig.org wrote:
-> > From: "Dr. David Alan Gilbert" <linux@treblig.org>
-> > 
-> > Hi,
-> >   This set removes a bunch of functions in ipu-v3 that
-> > have been unused for a long time (since 2012-2017).
-> > 
-> >   No changes to functions are made, just full deletions.
-> > 
-> >   Build tested only.
-> > 
-> > Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-> > 
-> 
-> 
-> For the series:
-> 
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reported by checkpatch:
 
-Could this be picked up for drm please?
+CHECK: Avoid CamelCase
 
-Thanks,
+Signed-off-by: Gabriel Lima Luz <lima.gabriel.luz@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_power.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Dave
-
-> -- 
-> With best wishes
-> Dmitry
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 63c9e8b6ffb3..33e852fe6949 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -3,10 +3,10 @@
+ #define DDK750_POWER_H__
+ 
+ enum dpms {
+-	crtDPMS_ON = 0x0,
+-	crtDPMS_STANDBY = 0x1,
+-	crtDPMS_SUSPEND = 0x2,
+-	crtDPMS_OFF = 0x3,
++	crt_DPMS_ON = 0x0,
++	crt_DPMS_STANDBY = 0x1,
++	crt_DPMS_SUSPEND = 0x2,
++	crt_DPMS_OFF = 0x3,
+ };
+ 
+ #define set_DAC(off) {							\
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
-\        dave @ treblig.org |                               | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+2.43.0
+

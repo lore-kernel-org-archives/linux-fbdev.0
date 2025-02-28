@@ -1,241 +1,128 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6231B1A9B5B
-	for <linux-fbdev@vger.kernel.org>; Thu, 27 Feb 2025 16:50:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D8F0748F;
+	Fri, 28 Feb 2025 07:10:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740675046; cv=none; b=nKdLY2eUdd0GgWdHJz2otSJd/ZDd4t445t15u5KlXYbTOjFgozmjJpL60FzPgXF3mc7ks/H4K2rOq1hLe/u1EsoBI9Ade+4yiOjqHQ4NI1bRD0GZq5jkUuGYxN1gtAL9adDtOl9dgIgBVKFyGoJtjq3OxCsGgqzCHDyEXAO9R98=
+	t=1740726621; cv=none; b=fFxaKYdYoamyQAkVNh8FxA3V6b/9trAAywwcrfBP7ozHsHo7VmwV6ceGVL/NAyWrTmYtIp+Y969lxGINw0Q+okAyt92GSW2gbG5m7db0UM/tlTfP9zYD+hmpuMoG57Bh97qkIUwJNhGQoZpqojblGuu84ZX1UkspSPKzjYTNqlk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740675046; c=relaxed/simple;
-	bh=12rVFyRRUPsF65d5vORiEKQQhPic/Db68beF7rEDFhU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ng1TVGyfXG8rY3W1gDl/NABZadnaaC5fZAM/TNCoaBGmZZu1UZw/Iz+KLgHvlWVghSiN04P65xUG2TOJY6SEHrrEm6Lk88fYUPk1Hm2aT+ZdwPXU/5zOfdC4mb1c6R6uMLOvVAurz9inEhwWtBKf1H60EP/r9T00TcExtiGF838=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=o0X+vPNM; arc=none smtp.client-ip=209.85.218.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1740726621; c=relaxed/simple;
+	bh=DCd0I/cVPewufc8cgvPCOtcy/0V6+cNp1IwfSlZ1nyU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=g/kUI8lDkDVPJAgpz4Xx2eup94epg7ztGdVkCNbX2/GsCwXXcERZp87fbGVqkVh2yxqGv+2yceV69tPLOkus9RTsojh0PSLuGNm/rk/ia6Pn0CUyFZLxpbb7UpRJ+kwvT1tOCfXzBvdmmL3GNgNCQU+8GSYYJvVGge6/YpfamXY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=U9ZjY+9K; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="o0X+vPNM"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-abb86beea8cso212685666b.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 27 Feb 2025 08:50:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1740675042; x=1741279842; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=U9B6UFKW6QmOND+nqqfJHYUB8wm1gr52tPG9pQzTZMI=;
-        b=o0X+vPNM2eXFsR37rv83TIJFeqE8A9IflWWefDNfxZL8jK7+vRaZi/rOvHsbym7JMD
-         F6y7q82ui4bCT2FuDNj9DXp7HIrvwXH+u3Rxu5vgbR5jzdjcdDbwET1PZPIZP/TMjDQ6
-         vcaqkBMVc/Q4I10ryvXaU+eZ1YdpMrcBAdOd4lTsr/ZigHb14tbPzNTyzPba2IFjlAqS
-         n4ReHnGFAIG7UkKaYLxTVPqQwq09shARfO3rgt0oZ4P2+C95KtmTJpMCECmu3liElAdV
-         urbMhc9oAReLr5qz+uLYyF1ShfQ7+q4YDdgjuOJdpIV4/uy+KX5BHpdCq4FzLi2ywdWS
-         uRyQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740675042; x=1741279842;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=U9B6UFKW6QmOND+nqqfJHYUB8wm1gr52tPG9pQzTZMI=;
-        b=XtPlbMZR6gESt/m5C9SUC649khRs0zZ0wRnuIkSpnVnmfKuHraK9wYogHYonSQKmv8
-         IOw+AgEm1ibxJYno2y25odiTnCgD/GcO6sXSA/gEdP3CtQAHYjP1kRMo1yojjqprjxso
-         8NsyL6SA1Nmme2q3rzU+8PZ8PXaPlIqRifXtSMLDHbYOUH5IH6ZaJ2z4XGJY24G+MO7D
-         cCTILIa7dXou5ecp1rAFNG3ckhp6guPp9d3ArCnVTSwRSozKoaQbTmXZ4k2919KGDZYz
-         Yb2gKsIuG+uQTk3Vqen+NxZUKgBiq0Cqki80K2eIk4xoco24LxbzcQ/dqWIR/2Xnh76I
-         Wvzg==
-X-Forwarded-Encrypted: i=1; AJvYcCVENHhq68HfELG8pzFSQTZyB2YFRw2D2i8jRAeR/o9/vQZCZs/oCKRB4u3Th8s68jQxbSQEjqxDY+q7Pg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx2DN+MjYSG7SGymjwcRTj7x8fklQuwMh8LF+pOqtwNBv2Lam/m
-	ZWtw773FarfaVQgrJcFU1TPtgfkIsc4REcq08AgpqrIJko61OTW8jsdXuhAn4r8=
-X-Gm-Gg: ASbGncs8CGPoRmys8PIrCmPGAx1RMx9QWGZcp+G+ZkzfZyVbdP/FoPPkv9RWpHGrei2
-	3/JHNDzfADsUNASqajYUCV+BU8fLAdClQ67YAt9SCK5l+H2lRIp5+Q5n87smxS11DHxu+2HGFlQ
-	LS1P/KatdaLCH/1onDbStErV1iuVsYunYsfdrHRlm3hIAkvItWTjptux4QXLKQJoCIGNbJkWAav
-	aWp4Ajj8wecaO17sUcPhK+uVxBTXUgYvD+6X7l4Z/hJWtLi++iDZfKl8qfyXTKgys4d8xN3tgGT
-	kPU85T8aib3lxs+rhMPZaRg=
-X-Google-Smtp-Source: AGHT+IGfoZwgSLt/LlIZbdRYkcSEc5pTARTCn2VKVHoHQpdHvHilVJZaKDcCop6xnuShR5HL0iFVCQ==
-X-Received: by 2002:a17:907:7f0a:b0:abb:aef3:6052 with SMTP id a640c23a62f3a-abf26838238mr11726366b.55.1740675041559;
-        Thu, 27 Feb 2025 08:50:41 -0800 (PST)
-Received: from linaro.org ([62.231.96.41])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-abf0c0ba408sm149482266b.37.2025.02.27.08.50.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Feb 2025 08:50:39 -0800 (PST)
-Date: Thu, 27 Feb 2025 18:50:38 +0200
-From: Abel Vesa <abel.vesa@linaro.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Johan Hovold <johan@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] backlight: pwm_bl: Read back PWM period from provider
-Message-ID: <Z8CX3vr1xuaKT38m@linaro.org>
-References: <20250226-pwm-bl-read-back-period-from-hw-v1-1-ccd1df656b23@linaro.org>
- <xltamao27utfrsax2pc6mh5tthanmrqszz4k7gyw3knqkm24xp@4tydmhfh6g4j>
- <Z8BjiRjLin8jTE8j@linaro.org>
- <rplq65h5k7kfu7anwhuh3w6lmwtm47lzeruofon4ilsxkhogjl@6k7nmeotjidd>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="U9ZjY+9K"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740726620; x=1772262620;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=DCd0I/cVPewufc8cgvPCOtcy/0V6+cNp1IwfSlZ1nyU=;
+  b=U9ZjY+9KB6hG6XCCqb+gaxBKslepulWfWvW4egHLA9KQ4MVV9bDegi4k
+   lbxBa2Hs+4WTSh504nOIWQ93Jsr+1LSVLAvpzY1Oy0wVh1vySa0fNKnQF
+   ekEG5ZPh1rFiSklhQogPJgiiCud29ZZ3C9n66D1Ky/cwtjkTpb3WRkLt+
+   yacTAfliFanlP+vkqczd3GD+zYChhwZuXLB0+hoW06p1aoAhfJRJzcclb
+   7Yt8AhGjoKqJOrfmdjP35vO4Qjuoh9NEV88wEWhB2xmZ/J2huXF34cchY
+   FtQBmVvrDPSli4Hh7R1MnkyvQslnMCtFSEoTFLaQ1QzZj7ukkhNfCBwn2
+   A==;
+X-CSE-ConnectionGUID: kXBVsSAfQ1mk9CDGUrXVkQ==
+X-CSE-MsgGUID: NcbAfDmtSYudxpdGlkYsTQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11358"; a="41675328"
+X-IronPort-AV: E=Sophos;i="6.13,321,1732608000"; 
+   d="scan'208";a="41675328"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Feb 2025 23:10:19 -0800
+X-CSE-ConnectionGUID: Qpy+oCb3SKqgmF9RCcACRQ==
+X-CSE-MsgGUID: 6ou7cYgKT46WlAsCotsgRQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="117780392"
+Received: from jraag-z790m-itx-wifi.iind.intel.com ([10.190.239.23])
+  by orviesa007.jf.intel.com with ESMTP; 27 Feb 2025 23:10:16 -0800
+From: Raag Jadav <raag.jadav@intel.com>
+To: deller@gmx.de,
+	tzimmermann@suse.de,
+	andriy.shevchenko@linux.intel.com
+Cc: linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Raag Jadav <raag.jadav@intel.com>
+Subject: [PATCH v2] fbdev: pxafb: use devm_kmemdup*()
+Date: Fri, 28 Feb 2025 12:40:09 +0530
+Message-Id: <20250228071009.150971-1-raag.jadav@intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <rplq65h5k7kfu7anwhuh3w6lmwtm47lzeruofon4ilsxkhogjl@6k7nmeotjidd>
 
-On 25-02-27 16:51:15, Uwe Kleine-König wrote:
-> Hello Abel,
-> 
-> On Thu, Feb 27, 2025 at 03:07:21PM +0200, Abel Vesa wrote:
-> > On 25-02-26 17:34:50, Uwe Kleine-König wrote:
-> > > On Wed, Feb 26, 2025 at 05:31:08PM +0200, Abel Vesa wrote:
-> > > > The current implementation assumes that the PWM provider will be able to
-> > > > meet the requested period, but that is not always the case. Some PWM
-> > > > providers have limited HW configuration capabilities and can only
-> > > > provide a period that is somewhat close to the requested one. This
-> > > > simply means that the duty cycle requested might either be above the
-> > > > PWM's maximum value or the 100% duty cycle is never reached.
-> > > 
-> > > If you request a state with 100% relative duty cycle you should get 100%
-> > > unless the hardware cannot do that. Which PWM hardware are you using?
-> > > Which requests are you actually doing that don't match your expectation?
-> > 
-> > The PWM hardware is Qualcomm PMK8550 PMIC. The way the duty cycle is
-> > controlled is described in the following comment found in lpg_calc_freq
-> > of the leds-qcom-lpg driver:
-> > 
-> > /*
-> >  * The PWM period is determined by:
-> >  *
-> >  *          resolution * pre_div * 2^M
-> >  * period = --------------------------
-> >  *                   refclk
-> >  *
-> >  * Resolution = 2^9 bits for PWM or
-> >  *              2^{8, 9, 10, 11, 12, 13, 14, 15} bits for high resolution PWM
-> >  * pre_div = {1, 3, 5, 6} and
-> >  * M = [0..7].
-> >  *
-> >  * This allows for periods between 27uS and 384s for PWM channels and periods between
-> >  * 3uS and 24576s for high resolution PWMs.
-> >  * The PWM framework wants a period of equal or lower length than requested,
-> >  * reject anything below minimum period.
-> >  */
-> > 
-> > So if we request a period of 5MHz, that will not ever be reached no matter what config
-> > is used. Instead, the 4.26 MHz is selected as closest possible.
-> 
-> The trace in the other mail thread suggest that you asked for a period
-> of 5 ms, not 5 MHz. And that results in a period of 4.26 ms.
+Convert to use devm_kmemdup() and devm_kmemdup_array() which are
+more robust.
 
-OK. So unit is ms. Got it.
+Signed-off-by: Raag Jadav <raag.jadav@intel.com>
+---
 
-> 
-> > Now, the pwm_bl is not aware of this limitation and will request duty cycle values that
-> > go above 4.26MHz.
-> 
-> It requests .period = 5 ms + .duty_cycle = 5 ms. This is fine, and
-> according to the trace this results in both values becoming 4.26 ms in
-> real life. Seems fine to me.
+This depends on changes available on immutable tag[1].
+[1] https://lore.kernel.org/r/Z7xGpz3Q4Zj6YHx7@black.fi.intel.com
 
-Right, but as I keep trying to explain is that, the consumer keeps
-asking for duty cycles that go over the 4.26ms, which is the period that
-the provider decided it can do instead of 5ms.
+v2: Split patch series per subsystem
 
-> 
-> > > > This could be easily fixed if the pwm_apply*() API family would allow
-> > > > overriding the period within the PWM state that's used for providing the
-> > > > duty cycle. But that is currently not the case.
-> > > 
-> > > I don't understand what you mean here.
-> > 
-> > What I was trying to say is that the PWM generic framework currently doesn't
-> > allow overriding the PWM state's period with one provided by the consumer,
-> > when calling pwm_apply_might_sleep().
-> 
-> Either I still don't understand what you want, or that is impossible or
-> useless. If you target .period = 5 ms and the hardware can only do 4.26
-> ms, why would you want to override period to 5 ms?
+ drivers/video/fbdev/pxafb.c | 23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
 
-Meaning the consumer should become aware of the period the provider can
-do before asking for a duty cycle. 
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 4aa84853e31a..ee6da5084242 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2233,32 +2233,27 @@ static int pxafb_probe(struct platform_device *dev)
+ {
+ 	struct pxafb_info *fbi;
+ 	struct pxafb_mach_info *inf, *pdata;
+-	int i, irq, ret;
++	int irq, ret;
+ 
+ 	dev_dbg(&dev->dev, "pxafb_probe\n");
+ 
+ 	ret = -ENOMEM;
+ 	pdata = dev_get_platdata(&dev->dev);
+-	inf = devm_kmalloc(&dev->dev, sizeof(*inf), GFP_KERNEL);
+-	if (!inf)
+-		goto failed;
+-
+ 	if (pdata) {
+-		*inf = *pdata;
+-		inf->modes =
+-			devm_kmalloc_array(&dev->dev, pdata->num_modes,
+-					   sizeof(inf->modes[0]), GFP_KERNEL);
++		inf = devm_kmemdup(&dev->dev, pdata, sizeof(*pdata), GFP_KERNEL);
++		if (!inf)
++			goto failed;
++
++		inf->modes = devm_kmemdup_array(&dev->dev, pdata->modes, pdata->num_modes,
++						sizeof(*pdata->modes), GFP_KERNEL);
+ 		if (!inf->modes)
+ 			goto failed;
+-		for (i = 0; i < inf->num_modes; i++)
+-			inf->modes[i] = pdata->modes[i];
+ 	} else {
+ 		inf = of_pxafb_of_mach_info(&dev->dev);
++		if (IS_ERR_OR_NULL(inf))
++			goto failed;
+ 	}
+ 
+-	if (IS_ERR_OR_NULL(inf))
+-		goto failed;
+-
+ 	ret = pxafb_parse_options(&dev->dev, g_options, inf);
+ 	if (ret < 0)
+ 		goto failed;
 
-If you look at the other mail thread, the trace there shows the
-following sequence for every new backlight update request:
-
-1. pwm_apply with consumer's period (5ms)
-2. pwm_get reads the provider's period (4.25ms) 
-   - which is what the provider is able to do instead of 5ms
-3. pwm_apply (due to debug) which uses the state from 2.
-4. pwm_get reads back exactly as 2.
-
-So we can ignore 3 and 4 for now as they are there due to debug,
-but the step 1 still requests a value over the 4.26ms (5ms),
-which in the provider will translate to a pwm value higher than allowed
-by the selected configuration.
-
-> 
-> > Also, the pwm_get_state_hw() doesn't cache the state either.
-> 
-> *shrug*.
-> 
-> > This results in always having to call pwm_get_state_hw() before calling
-> > pwm_apply_might_sleep().
-> 
-> I cannot follow this conclusion. At least one of us two didn't
-> understand some detail yet.
-> 
-> > On top of that, pwm_get_state_hw() doesn't default to the cached value if the
-> > provider doesn't implement the ->get_state() op.
-> 
-> If it did that, the consumer wouldn't know if the request was
-> implemented exactly or if there is no way to read back the actual
-> configuration.
-> 
-> > Please correct me if I'm wrong about these.
-> > 
-> > > 
-> > > > So easiest fix here is to read back the period from the PWM provider via
-> > > > the provider's ->get_state() op, if implemented, which should provide the
-> > > > best matched period. Do this on probe after the first ->pwm_apply() op has
-> > > > been done, which will allow the provider to determine the best match
-> > > > period based on available configuration knobs. From there on, the
-> > > > backlight will use the best matched period, since the driver's internal
-> > > > PWM state is now synced up with the one from provider.
-> > > > [...]
-> > > > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> > > > index 237d3d3f3bb1a6d713c5f6ec3198af772bf1268c..71a3e9cd8844095e85c01b194d7466978f1ca78e 100644
-> > > > --- a/drivers/video/backlight/pwm_bl.c
-> > > > +++ b/drivers/video/backlight/pwm_bl.c
-> > > > @@ -525,6 +525,17 @@ static int pwm_backlight_probe(struct platform_device *pdev)
-> > > >  		goto err_alloc;
-> > > >  	}
-> > > >  
-> > > > +	/*
-> > > > +	 * The actual period might differ from the requested one due to HW
-> > > > +	 * limitations, so sync up the period with one determined by the
-> > > > +	 * provider driver.
-> > > > +	 */
-> > > > +	ret = pwm_get_state_hw(pb->pwm, &pb->pwm->state);
-> > > 
-> > > As a consumer you're not supposed to write to &pb->pwm->state. That's a
-> > > layer violation. Please call pwm_get_state_hw() with a struct pwm_state
-> > > that you own and save the relevant parts in your driver data.
-> > 
-> > Yep, that is indeed wrong. Maybe making the pwm opaque might be a good idea as well.
-> > 
-> > [1] Calling pwm_get_state_hw() would be wrong if the provider doesn't implement the ->get_state(),
-> > as I mentioned above.
-> > 
-> > But are you suggesting we replace all calls to pwm_get_state() with
-> > pwm_get_state_hw() in pwm_bl?
-> 
-> No, I still didn't understand the problem you want to fix here. So I'm
-> not suggesting anything yet.
->  
-> Best regards
-> Uwe
-
+base-commit: b8c38ccb2ca52b9a38cfeb9f89abab5d6e713221
+-- 
+2.34.1
 

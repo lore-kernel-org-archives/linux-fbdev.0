@@ -1,73 +1,73 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EA4E1F0E44
-	for <linux-fbdev@vger.kernel.org>; Mon,  3 Mar 2025 10:14:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46AFE1F419F
+	for <linux-fbdev@vger.kernel.org>; Mon,  3 Mar 2025 10:30:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740996897; cv=none; b=ffXyCUwEEK3yszNvDXv9Iv3hzkBXTDn03l+D3ivln6NcIIkLNxRKWKpuKkKDk7kyaVrZIjy91I5u41g1w6OCRJip1xmPc3K1ZqnPipzGKzFwGecQVhU9UkbJ8IK7paC67DFUGBjo/Ih1/F4pgIVsdeBDGD6LdnQVgn5A+/SPTUA=
+	t=1740997853; cv=none; b=H9qP4IJd+mdxsFe5CztMDMuVjmMfq3qn2pOLu6IHGgsboUNp5QtSuOzwccdlsMn5LhoBd0jsCBEA0BGQKqL6bho0L49ctVFbolaVc42aZobJ29wq0hkHhjqLa0RgG6VOLv184OiJjisvgjkfZY74X3xWYDFUbuwbbNSeMNSado4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740996897; c=relaxed/simple;
-	bh=+nGCzjyR8rgspLDbLXmX9G17MFRKxZXjvbJk+rBSpA0=;
+	s=arc-20240116; t=1740997853; c=relaxed/simple;
+	bh=YOKNIjJrYk3beqqvelnnK1DyZo8zD6Bu7MA1IsL+RaA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CnJzllppwxky8mnmHGs7lIwYtpVGSQc0eC3H/XvQDUTgaFPo/jE0MNy/EvZ0kkJkPpipO1Njq3TQZ9wXt4fvH4QFxtiBf/UihTAPAHH/vduOD8Lo7NFsXb9IY/k52PK3pKF+93BPjl+FDOy4ojvvg56gtBGUfmvWOwbHsRtITVA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=eUtUsixN; arc=none smtp.client-ip=209.85.218.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Tga37USjRw91/zvCeciNhDyR90/lo+5EJhkhGD775ON78gFKl+Le4I3uZSsoWMzrhKqVn5a3AmZa70KyAAHdjXeF1USe9LD5wfvpNUX9OtLRZdFGPuK5sE38CjfKoygZCKMfekm0S/roMd5Z2kvLv7bEqioYbkM2f4+NQ7i1bL4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=gbOreJ2B; arc=none smtp.client-ip=209.85.128.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eUtUsixN"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-aaf900cc7fbso758348666b.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 03 Mar 2025 02:14:54 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="gbOreJ2B"
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-43690d4605dso26727765e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 03 Mar 2025 02:30:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1740996893; x=1741601693; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1740997848; x=1741602648; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ilhtkExKi2tY4D8JNLGZRRECs+rUrn5LWH8Gtc8O4iU=;
-        b=eUtUsixNjggmH22ZinByqDiVJL0VhQN71Os/HnbtTG/9Yf8mYSgYovs+L7tXhxDfVj
-         NgWg9hQftwVBsM3+OKVwJ0LmjyGrmBgxbe8qTR17V3SNhBCic5C2S0EjnjAud9tBYjf4
-         qVOnoevbDp5ij7pyDO+spcJV5hhf7axxuCoJqgxH5Cn38LN028t1ZJI6Ud+uMfRauvP9
-         5/vfHZvHfOjZeI1LJQT+4oTPdm0Q+6W8cjFR8wcP/X2qUdwVLVlAxugfN+gMzwJYspWk
-         k5RAuw1pN6d7UCVrbHVZCQ51BchQyEjdAQlnwHgoN8M7Ucy6YKDbZwBJToCc+0i6GBWS
-         Niwg==
+        bh=bVbo8Bp188ctbON8ZulP+OSFSxe/rMczkjpmYA+ieRQ=;
+        b=gbOreJ2BuqR5/h11au9IMo/Io15opOnW+V1yhNtHlFUPDO5WjJhOSGXVBTKrQOE6tG
+         eBv6O/PF1+HvocI0A2gKShZaloVODZ7SXP4iYus+5OLQmh+F+40AiQFlTz7cS90kcMWU
+         RUop0bNrKayKXWqrjz5i+K09laZtbc/V9A17lWUOE9Z2aTkbCRAsF9dM9Z9s2SQ7jwJx
+         TLf2oOZttBiWzGMx4adyz3ZrBUnomZSHecYGMFgVqA6DSYuZlAQSz5KRAuT1ha0O6Zdv
+         FtNXf/A+shjFLP4dBSQukM2ZLt9phfQ6Kmrzg+fI49PHLSvxFrPtqAJQdM4PmtGvW+AN
+         09rQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740996893; x=1741601693;
+        d=1e100.net; s=20230601; t=1740997848; x=1741602648;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ilhtkExKi2tY4D8JNLGZRRECs+rUrn5LWH8Gtc8O4iU=;
-        b=ohc23GGkeFN/W9qjY+o8u+IS3pFbjvj55RY11OmUQK9hDDNp0cNk0SGGW6Xm1S8WSK
-         o9qpUVsR4KuGCwAi5OJUbRkIpR497euNfjwTcWd9RAMnPuzhNG5pE2VTLD7w+4r4EHwp
-         lon8pklBXh6z7KtQMe2L5LtG8a6+ZUcxMMKtPMTyn9CPz03GMCVg4JrW2V3k2OrzH/0c
-         cBmRptms2WbQdOkYMA3PkcYIet38MGPKEHv4fsKQ3LslNbECR3aJZUQlJTUdPTepyFr7
-         OtDppndJ++LcKB/oN1qyYTTjYZKWYZKv8Jn775X62y+P+gIoYi/m5URXcXGDr81B8GGu
-         3b4g==
-X-Forwarded-Encrypted: i=1; AJvYcCWlbUqwZbGI0pTVmPwmrQ2MYiiBVqFIlf5Y4LornCCxw3eSWK1AThqNTMoOEs8wB56eSm6gU3yhCY8a3Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw5SdYLo/3KUjeUMZDFqJcIV7F48txp9rKzTexG5LTQZLWeK92z
-	C90z8RLHmc/YJ0GfsBy979sOsPCQwIil6CV+xkoBBXpmZ8Zz0sxei+igh/YhTyY=
-X-Gm-Gg: ASbGnct8lyaiy0vCi/AgE8vXfkv/Ul3KlDtvJD71r4i/fcMthAGp+irUEttZSiD7E9H
-	kTGfH0EJRjOPrRjst5GdUlYmaek8tP0hTeIk4Wqms6sEr81gHrmlxUHv5crVplbw/OcOZKpKmnl
-	mrLS9H5ejkbplo+6N4Cm1w3p9oA06ayQwuczzAdfXDcQw1wR9gmeYtleVxs+rzDJj9RvXwhUL45
-	deuiPmKvhCCA7kfxu2KqhePfd19s/ACy1/Tq9O/VCIJP23Mf3jBH7SOQbUjUHDdq5flU9aivAlf
-	aQZshiuA0FPJ1KGBEWxjdrQEy3RLhRM6eZiHJ01QpZpZQYVmNw==
-X-Google-Smtp-Source: AGHT+IFW5wW8s+H3cYQVcYMHCSk5m4LiYMR29KDD3mNnUTMxiFYWqtZIptENOVNp/zPSrPbHfZFy4w==
-X-Received: by 2002:a17:907:7207:b0:abf:769a:d3b7 with SMTP id a640c23a62f3a-abf769ad59cmr416122766b.57.1740996892823;
-        Mon, 03 Mar 2025 02:14:52 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-ac1e3ef2f9dsm40040166b.45.2025.03.03.02.14.51
+        bh=bVbo8Bp188ctbON8ZulP+OSFSxe/rMczkjpmYA+ieRQ=;
+        b=JmwMy46peqkYv4tudhzYpKBDdWIBvR1soYtd1kuWJrHcXm+UlEAI9SVeIoJvu/yzAa
+         Y0OAvIK23mUoqGav0cB2/oX7K+5r3ypiAYKt4rxq2U0wiD29mwHbzaq6AOhj6iy+6126
+         Dq29BgWVxtZZyJ+MWt7m5ZUH8uDZzktagp+Z2+I/v/DNVKiCy0dobnQ7GVtnSLhMy12i
+         5hhIpsTD8K0EDAtZSStK76QeYr0dtxPJktDKtkfGajlrKgh2cQv6sREG/oizxl18sHxL
+         /ekN6bJRzdfwhUH+KvmtaXflah4d8MkZ5uUpIJKD7aIotK8BpcW5ue5yq0cF4LcBnyPv
+         8g2w==
+X-Forwarded-Encrypted: i=1; AJvYcCXhZVCbprZd5/aTtLfWzE61dgWi7+r4LOUoREaUQQVIOywMVr3sKSgwF5Gz5MPAVGc7JDaRjqhY4ut97A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx8ZQOEeJPN00RyCZtyAwRz9/rDCuMoQoyE3Dp7MqyAInEBzNkw
+	nDTT5yUXN5J6aOMOUWuAShykliyezWmgZ93f88FzPXTyMgZJqb73Dm5L5TjilQY=
+X-Gm-Gg: ASbGncvUJUoX+Y3qztHOHHHUdve8R+Z+/pthzTNq+Pw7fn1Y4paes7jL3srfdaRFOOP
+	Z3ncCL8WZT2bk+PvXYolV2sw25siljJKhvRpwEJHr8Zmlvm0SOsy5G1J1QLoqnjOGdCg78ZPJT1
+	7WuGxmUJwX96bGH5pzSjMBZh1/iCa4v6SUEqJ5AFc+8O+326XhP5OrJ1sJr4WFrBuWgb5+McBIB
+	ioB+o6ZrGbVt/VhlDGGa1RGJ8tLykYyY5QDxjt4edk28e+0wSewLvgYJ+WovZ/QL2HtLC3xJ5Ff
+	DO9wzpAgKC65p4PPvc/SA2qUALlSIGE+g8L/jH6b99ZvnOrFxyoHUw7o794snqJZfshpld2tRXV
+	O31f1WQha9/lY4ACBHh31HMmU0A==
+X-Google-Smtp-Source: AGHT+IH9VAhW9tJPNhTeqngSyn+en5grFHwVORQOd7xIovLbkp/2JtR0igU6P17pWqd3YNtGaZA2uw==
+X-Received: by 2002:a05:600c:3513:b0:439:9f42:c137 with SMTP id 5b1f17b1804b1-43ba66e218emr116219575e9.11.1740997848443;
+        Mon, 03 Mar 2025 02:30:48 -0800 (PST)
+Received: from localhost (amontpellier-556-1-148-206.w109-210.abo.wanadoo.fr. [109.210.4.206])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43b737043aasm153133835e9.14.2025.03.03.02.30.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Mar 2025 02:14:52 -0800 (PST)
-Date: Mon, 3 Mar 2025 13:14:49 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>
-Cc: Markus Elfring <Markus.Elfring@web.de>, kernel-janitors@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	Antonino Daplas <adaplas@pol.net>, Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Yihao Han <hanyihao@vivo.com>, cocci@inria.fr,
+        Mon, 03 Mar 2025 02:30:47 -0800 (PST)
+Date: Mon, 3 Mar 2025 11:30:46 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: Markus Elfring <Markus.Elfring@web.de>, 
+	kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	Antonino Daplas <adaplas@pol.net>, Helge Deller <deller@gmx.de>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Yihao Han <hanyihao@vivo.com>, cocci@inria.fr, 
 	LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH RESEND] video: au1100fb: Move a variable assignment
  behind a null pointer check in au1100fb_setmode()
-Message-ID: <15b7c1ee-4541-4732-8189-79397ae45b68@stanley.mountain>
+Message-ID: <hwk2nf62owdo3olxrwt5tu7nwfpjkrr3yawizfpb3xn6ydeekx@xwz7nh5ece2c>
 References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
  <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
  <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
@@ -80,78 +80,86 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="w37fhouumevfpx4n"
 Content-Disposition: inline
 In-Reply-To: <eebf8c0c-7a6a-405f-aaab-2a8a8c2bd91f@stanley.mountain>
 
+
+--w37fhouumevfpx4n
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH RESEND] video: au1100fb: Move a variable assignment
+ behind a null pointer check in au1100fb_setmode()
+MIME-Version: 1.0
+
 On Mon, Mar 03, 2025 at 01:08:29PM +0300, Dan Carpenter wrote:
+> On Mon, Mar 03, 2025 at 10:19:06AM +0100, Uwe Kleine-K=C3=B6nig wrote:
+> > Hello,
+> >=20
+> > On Sun, Mar 02, 2025 at 07:02:12PM +0100, Markus Elfring wrote:
+> > > From: Markus Elfring <elfring@users.sourceforge.net>
+> > > Date: Thu, 13 Apr 2023 21:35:36 +0200
+> > >=20
+> > > The address of a data structure member was determined before
+> > > a corresponding null pointer check in the implementation of
+> > > the function =E2=80=9Cau1100fb_setmode=E2=80=9D.
+> > >=20
+> > > Thus avoid the risk for undefined behaviour by moving the assignment
+> > > for the variable =E2=80=9Cinfo=E2=80=9D behind the null pointer check.
+> > >=20
+> > > This issue was detected by using the Coccinelle software.
+> > >=20
+> > > Fixes: 3b495f2bb749 ("Au1100 FB driver uplift for 2.6.")
+> > > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> >=20
+> > Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
+> >=20
+> > Should also get
+> >=20
+> > Cc: stable@vger.kernel.org
+> >=20
+> > to ensure this is backported to stable.
+>=20
+> It's not a bugfix, it's a cleanup.  That's not a dereference, it's
+> just pointer math.  It shouldn't have a Fixes tag.
+>=20
 > Real bugs where we dereference a pointer and then check for NULL don't
 > last long in the kernel.  Most of the stuff Markus is sending is false
 > positives like this.
 
-Maybe I was too optimistic.  Here are the Smatch warnings from the
-Friday's linux-next.
+I thought a compiler translating the code
 
-Common false positives are that the pointer can sometimes be NULL but
-there are other ways to determine without checking explicitly.  For
-example, maybe the caller passes a flag which means it's non-NULL.
+	struct fb_info *info =3D &fbdev->info;
 
-regards,
-dan carpenter
+	if (!fbdev)
+		return -EINVAL;
 
-arch/arm64/kvm/../../../virt/kvm/kvm_main.c:1639 kvm_prepare_memory_region() warn: variable dereferenced before check 'new' (see line 1622)
-arch/x86/kernel/fpu/xstate.c:1567 fpstate_realloc() warn: variable dereferenced before check 'curfps' (see line 1546)
-arch/x86/kvm/../../../virt/kvm/kvm_main.c:1639 kvm_prepare_memory_region() warn: variable dereferenced before check 'new' (see line 1622)
-drivers/base/dd.c:696 really_probe() warn: variable dereferenced before check 'dev->bus' (see line 640)
-drivers/base/dd.c:720 really_probe() warn: variable dereferenced before check 'dev->bus' (see line 640)
-drivers/block/drbd/drbd_worker.c:588 make_resync_request() warn: variable dereferenced before check 'peer_device' (see line 587)
-drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.c:12341 parse_edid_displayid_vrr() warn: variable dereferenced before check 'edid_ext' (see line 12337)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn21/rn_clk_mgr.c:775 rn_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 743)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn301/vg_clk_mgr.c:734 vg_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 720)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn314/dcn314_clk_mgr.c:899 dcn314_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 838)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn315/dcn315_clk_mgr.c:715 dcn315_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 654)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn316/dcn316_clk_mgr.c:655 dcn316_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 634)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn31/dcn31_clk_mgr.c:789 dcn31_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 728)
-drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn35/dcn35_clk_mgr.c:1380 dcn35_clk_mgr_construct() warn: variable dereferenced before check 'ctx->dc_bios->integrated_info' (see line 1307)
-drivers/gpu/drm/i915/gem/i915_gem_shmem.c:174 shmem_sg_alloc_table() warn: variable dereferenced before check 'sg' (see line 163)
-drivers/gpu/drm/i915/gt/gen6_ppgtt.c:274 gen6_ppgtt_cleanup() warn: variable dereferenced before check 'ppgtt->base.pd' (see line 271)
-drivers/gpu/drm/i915/gt/intel_execlists_submission.c:3649 rcu_virtual_context_destroy() warn: variable dereferenced before check 've->base.sched_engine' (see line 3623)
-drivers/gpu/drm/nouveau/nouveau_dp.c:494 nouveau_dp_irq() warn: variable dereferenced before check 'outp' (see line 489)
-drivers/hid/hid-debug.c:3727 hid_debug_events_read() warn: variable dereferenced before check 'list->hdev' (see line 3713)
-drivers/net/ethernet/amd/pcnet32.c:1923 pcnet32_probe1() warn: variable dereferenced before check 'pdev' (see line 1843)
-drivers/net/ethernet/apm/xgene/xgene_enet_main.c:267 xgene_enet_tx_completion() warn: variable dereferenced before check 'skb' (see line 243)
-drivers/net/ethernet/natsemi/ns83820.c:884 rx_irq() warn: variable dereferenced before check 'skb' (see line 883)
-drivers/net/ethernet/pensando/ionic/ionic_txrx.c:205 ionic_rx_build_skb() warn: variable dereferenced before check 'buf_info->page' (see line 188)
-drivers/net/wireless/intel/iwlwifi/dvm/mac80211.c:1236 iwl_setup_interface() warn: variable dereferenced before check 'priv->lib->bt_params' (see line 1229)
-drivers/net/wireless/intel/iwlwifi/dvm/main.c:1114 iwl_init_drv() warn: variable dereferenced before check 'priv->lib->bt_params' (see line 1109)
-drivers/net/wireless/mediatek/mt76/mt76_connac_mac.c:307 mt76_connac2_mac_tx_rate_val() warn: variable dereferenced before check 'conf' (see line 300)
-drivers/net/wireless/mediatek/mt76/mt7925/mac.c:851 mt7925_tx_check_aggr() warn: variable dereferenced before check 'sta' (see line 847)
-drivers/nvme/host/ioctl.c:173 nvme_map_user_request() warn: variable dereferenced before check 'bio' (see line 162)
-drivers/platform/mellanox/mlxreg-lc.c:903 mlxreg_lc_probe() warn: variable dereferenced before check 'data->notifier' (see line 828)
-drivers/scsi/aacraid/commsup.c:2344 aac_command_thread() warn: variable dereferenced before check 'dev->queues' (see line 2332)
-drivers/scsi/aic7xxx/aic79xx_osm.c:1837 ahd_done() warn: variable dereferenced before check 'cmd' (see line 1793)
-drivers/scsi/csiostor/csio_mb.c:932 csio_fcoe_vnp_alloc_init_mb() warn: variable dereferenced before check 'vnport_wwnn' (see line 929)
-drivers/scsi/ips.c:2560 ips_next() warn: variable dereferenced before check 'scb->scsi_cmd' (see line 2554)
-drivers/scsi/ips.c:2568 ips_next() warn: variable dereferenced before check 'scb->scsi_cmd' (see line 2554)
-drivers/scsi/ips.c:2593 ips_next() warn: variable dereferenced before check 'scb->scsi_cmd' (see line 2554)
-drivers/scsi/libsas/sas_scsi_host.c:119 sas_scsi_task_done() warn: variable dereferenced before check 'sc' (see line 110)
-drivers/scsi/lpfc/lpfc_bsg.c:1332 lpfc_bsg_hba_get_event() warn: variable dereferenced before check 'evt_dat' (see line 1299)
-drivers/slimbus/qcom-ngd-ctrl.c:884 qcom_slim_ngd_xfer_msg() warn: variable dereferenced before check 'txn->msg' (see line 808)
-drivers/spi/spi-offload.c:186 spi_offload_trigger_get() warn: variable dereferenced before check 'trigger->ops' (see line 176)
-drivers/staging/media/atomisp/pci/isp/kernels/output/output_1.0/ia_css_output.host.c:58 ia_css_output_config() warn: variable dereferenced before check 'from->info' (see line 53)
-drivers/usb/gadget/udc/tegra-xudc.c:2681 tegra_xudc_handle_transfer_completion() warn: variable dereferenced before check 'ep->desc' (see line 2679)
-drivers/usb/musb/musb_core.c:964 musb_handle_intr_disconnect() warn: variable dereferenced before check 'musb->hcd' (see line 963)
-fs/bcachefs/journal.c:1187 __bch2_set_nr_journal_buckets() warn: variable dereferenced before check 'c' (see line 1184)
-fs/efs/inode.c:299 efs_map_block() warn: variable dereferenced before check 'bh' (see line 292)
-fs/efs/inode.c:304 efs_map_block() warn: variable dereferenced before check 'bh' (see line 292)
-fs/efs/inode.c:309 efs_map_block() warn: variable dereferenced before check 'bh' (see line 292)
-fs/nfs/write.c:808 nfs_inode_remove_request() warn: variable dereferenced before check 'folio' (see line 805)
-fs/ocfs2/dlm/dlmrecovery.c:1590 dlm_mig_lockres_worker() warn: variable dereferenced before check 'res' (see line 1563)
-fs/ocfs2/move_extents.c:322 ocfs2_defrag_extent() warn: variable dereferenced before check 'context->data_ac' (see line 279)
-fs/ocfs2/namei.c:1455 ocfs2_rename() warn: variable dereferenced before check 'newfe_bh' (see line 1452)
-fs/ocfs2/namei.c:1637 ocfs2_rename() warn: variable dereferenced before check 'old_dir_bh' (see line 1618)
-fs/smb/client/file.c:3085 cifs_oplock_break() warn: variable dereferenced before check 'inode' (see line 3056)
-lib/reed_solomon/decode_rs.c:315 decode_rs16() warn: variable dereferenced before check 'par' (see line 81)
-net/core/failover.c:85 failover_slave_register() warn: variable dereferenced before check 'fops' (see line 66)
-net/mpls/mpls_iptunnel.c:156 mpls_xmit() warn: variable dereferenced before check 'out_dev' (see line 56)
+is free (and expected) to just drop the if block. I wasn't aware that
+this only applies when the pointer is actually dereferenced. Testing
+that with arm-linux-gnueabihf-gcc 14.2.0 seems to confirm what you're
+saying.
 
+Thanks for letting me know. With that learned I agree that the Fixes tag
+should be dropped (and Cc: stable not added).
+
+Best regards
+Uwe
+
+--w37fhouumevfpx4n
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmfFhNMACgkQj4D7WH0S
+/k5nPwgAstc+P1JFVJcAu2QOmJtpmMvfsusSqi09w0aEnPTXJ7eWgHQj2HCmKJ2A
+tpsfvf8kA5JHjm0dDyhnnr8MT+SSDNDnXQX6Ql4rFwC61a+xBBYE+68xUYe5XyHF
+98yWGWsnGV5liC6rrj5PcRpur1bml3Wj3UEbsTiGyaTNzOAbQyw8ygwvkHH60sIe
+XtvnKO/KgD8nSdHP8GE8uPv//BbKJmM4n/Tnvm9t4W9IeVnwC9RedLmElvgbOimt
+YVRPNPNG/KDOW0VIfUv1zmx/xXpnbqUhQmls/wYjc7ZF85CYgjm7eFm3xKhfquTC
+sEGbyzVTmAU0THTQ7X7Odz9uKL8q0A==
+=j/U6
+-----END PGP SIGNATURE-----
+
+--w37fhouumevfpx4n--

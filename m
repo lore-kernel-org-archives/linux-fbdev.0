@@ -1,132 +1,138 @@
-Received: from mout.web.de (mout.web.de [212.227.15.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A635EEB3;
-	Sun,  2 Mar 2025 18:02:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71A1F2E630
+	for <linux-fbdev@vger.kernel.org>; Mon,  3 Mar 2025 09:19:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740938548; cv=none; b=LiKcPPJ/tc5WXQNWlaKgq4KheI5Ht+O7niPptjntClGgNiiksC3kEN8cG+R2jBCnvQ8tAnjbKt6A4/zJcdVKMeqj12k89x1UPLPtwK0B4QsY4AIVyLbHP/DayHk2PJ3rbd0t9Pe9lngn9GQ9FVGaFsYrgdYGMO5ETZtHQHBk1/Y=
+	t=1740993554; cv=none; b=jjrkIQT0ppptkD38tmx2Y7imG9Ly9YTQ9xlF2aoPJrwDgPXX5fLunicqZcZhfP3wkNtR5LpbuboUyNFsQou9cuRwcSmcSL7W538RaFF5IAZsxFKxJIVin05+hH68/9lJY8RzCqj5QZJQljDmErk5x6jaVzA/X/I2y1jutdEB710=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740938548; c=relaxed/simple;
-	bh=w7pInXUMxeRCoZ2OjuoISbCmQ/FrSGspyqheYwWQPaI=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=OxJMI5CAzrzVcRwjxoyKv43RznUxdRNmpmvEbfvh6DTZPatiMiOyOuJiQ6GPfEK8MP5eMrnGs8GEbhjLsdKE/3cCsB8+AIrug+46CaD0hVALhucMww5ACFxe5wdBYG1FHqHhh7OJqCj6s7CxM+l7UOS5ezpYy9Q0VyNI/ymRdLU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=h2up08QI; arc=none smtp.client-ip=212.227.15.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1740993554; c=relaxed/simple;
+	bh=gcNOncFZdUs+yNeq8pr7D0R7rzSHI/mcL2lr8MRssiE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LYKXA8Y65cBkXW6dHjVBAjmgQeENI9TPIzp7fgPBuyV5EO/NoDWb8UGMaxCeA3+XS3WxL9DMf9z37pheNazRBoOyRaQ2Y9rxWbbsTmkc4ggIITBy2NPDa70kT1SCWUlFSxxLrNWj83IW7pqDHR716mdlvmWrQfV1MAWJpj1nnQ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=BHgGP/K4; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="h2up08QI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1740938533; x=1741543333; i=markus.elfring@web.de;
-	bh=MP3CYzbV4SLNXkeRjkm2gxZvCS4zGhZS71CY4NKnxwI=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:From:To:
-	 Cc:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=h2up08QIJuNb1Kkw0qGRSRFBUPboD0Ub7SIZPSxUI2KWX2+iPnmaCE2XPGO89HtS
-	 cNuf2uGnSN+bjQ4yNLYFFjnzWMdk2XOuFPHvkghRARAh89YHYqRkMMX6UmJDMlTAi
-	 2ZTmR6jBvPYRAs1BmaByCeWOWrs8ug20ZpgsZBq25LwgjVlG4Up2tLkcJ1OPEzcbY
-	 5U+cdisLvQpkif79YywhvTbI7g6eg03dWQRJ/44cjQrgsAqcbEMHuA3YeX7TIYEQ9
-	 2dz/sLBQP+XZWbHAaVUF+VdHQ89pzq2xcocye2X3c6a9/VPVmBq+WqQqNK8SzxHFj
-	 OzxskVb+FjK1sQBudw==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.30]) by smtp.web.de (mrweb006
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1My6lX-1t4EN01Q23-013zow; Sun, 02
- Mar 2025 19:02:13 +0100
-Message-ID: <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
-Date: Sun, 2 Mar 2025 19:02:12 +0100
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="BHgGP/K4"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-3910e101d0fso289953f8f.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 03 Mar 2025 01:19:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1740993549; x=1741598349; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=gcNOncFZdUs+yNeq8pr7D0R7rzSHI/mcL2lr8MRssiE=;
+        b=BHgGP/K4nfJ/+0PZMEd7uq47PGl6fzMKFzRRPA/1V9tDi0suGuZEDNjahH74gfunp5
+         ryMjFzwtwl89eNIXUsxnJUIQGK97jDbunaNAJP4Wx/XBPSgctO3vubEsDpXZhDbZbrzH
+         XO+vmbI5liCz9gtRGr3OL9MMbZSN+tpuLzsTCUgB/98pzw1ruE9uVN26fYvzGrmPFNEA
+         G+jc5IGla6jQgJWi/5hmXvVZy0USDaggJo14+1hn2wgX2JHjpj7PnTfRnpNgp29muADJ
+         K0Z2kOB5ulLsn/Cj9J5/iSAhMXh9iXyWD7wAh646kqvfVYqq5EbviFU1rHtHo8GWETcQ
+         gWtA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740993549; x=1741598349;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gcNOncFZdUs+yNeq8pr7D0R7rzSHI/mcL2lr8MRssiE=;
+        b=mV8UyV7m+J60j8Tu5pWJD0geLCpMDjqtd1pkJJAzyG6bQ+y+4YPF/deuDoLxtxj/HP
+         6h1ZQv8xd5dyGuDbZDn3Q+m+rgujdK0slTE8Tz2dMhykHUdWbqPtbNKliDusxmSnQw1e
+         84BpSCsQ9V8Fu9w9TFaOnIzeOAEc5aUqNNHvSbXTpGlrdMM8WhYUhEWN18aCmIwwVdJS
+         H1BW0yrNWtnmrLgWTTiSiDbCCrTbM+1Ai3InLFhb/6OG81ISSyef37pC+c7WPuuNK/fk
+         nfFx0dxxTRCyRZ2fWSY7kYUGkdTCeelr/6IbQjPNt779vtuanzeXVZrLqlhUzbG63biI
+         ZR0Q==
+X-Forwarded-Encrypted: i=1; AJvYcCUk3ZX1X0LSgUpLZ8e/vyGwGw4dGjDxZ+SCjR7O2RoBIQaSipLjiW7zkF7roUvSwTI8uPlQ82KLx4lixg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyIHjm1hLrVJ3AcDi/tzlZbWIfs3CMng3lrykM+FEwQuBhJo8DQ
+	lFw/zVFlAyCtIjXKdlaYsS5OkNvily1pF21gHUsMfI3UpLvwJOrznh2+3A/V1gE=
+X-Gm-Gg: ASbGncshvR4KM11TvppS2dqGMN4Vhm5/fdRgf39SQXsb2kjEwuSJ4p8QuNBCI7Vw3FG
+	IO9okiQMMekVOvNNaidHY38c/1BkgifR6nYFrNbd07u/k0UbtxZSvLHP9Hwc2814/LVp7wtXWHf
+	RkepRISq5e32BK3+K2ewa829vPKlnFmlldwJD0WAkLAeJwV1mPbVcncyyXZJ/+c1FiCkWNiEvPb
+	tKRw7z7z7DnXHOY+fJjIb8EPr5NB0/8W/xi72voOluZAx5CWKv3dzXa0XF+YUI8dm7zqvg99Y6w
+	CB3meu+dd83WoLIRpurz5RngBz6b+L0uhpsmKlPh6knWROviPVHXTnvSYu4cKUjPsFu05lkuSdC
+	YVBB0r0IjTAQp8v2hxr/F/b/GYg==
+X-Google-Smtp-Source: AGHT+IEgqURih64QQq878LAlpoiWUHZ5SF6g+OaiNjsjRHNfpFnMktBq587o0TTR3FHczDy3N5hAQQ==
+X-Received: by 2002:a5d:47c3:0:b0:38d:b610:190b with SMTP id ffacd0b85a97d-390eca377a4mr9441525f8f.46.1740993549456;
+        Mon, 03 Mar 2025 01:19:09 -0800 (PST)
+Received: from localhost (amontpellier-556-1-148-206.w109-210.abo.wanadoo.fr. [109.210.4.206])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-390e47a6a87sm14038348f8f.32.2025.03.03.01.19.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Mar 2025 01:19:08 -0800 (PST)
+Date: Mon, 3 Mar 2025 10:19:06 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Markus Elfring <Markus.Elfring@web.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, Antonino Daplas <adaplas@pol.net>, Helge Deller <deller@gmx.de>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Yihao Han <hanyihao@vivo.com>, cocci@inria.fr, 
+	LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RESEND] video: au1100fb: Move a variable assignment
+ behind a null pointer check in au1100fb_setmode()
+Message-ID: <ugymllbkcsg22ffgyofvkquh5afbvoyv2nna5udmy3xfhv2rjz@jhgghzldzm4u>
+References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
+ <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
+ <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
+ <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: [PATCH RESEND] video: au1100fb: Move a variable assignment behind a
- null pointer check in au1100fb_setmode()
-From: Markus Elfring <Markus.Elfring@web.de>
-To: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Antonino Daplas <adaplas@pol.net>,
- Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
- Yihao Han <hanyihao@vivo.com>
-Cc: cocci@inria.fr, LKML <linux-kernel@vger.kernel.org>
-References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
- <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
- <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
-Content-Language: en-GB
-In-Reply-To: <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="b5ssf4zg6xgpebyg"
+Content-Disposition: inline
+In-Reply-To: <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
+
+
+--b5ssf4zg6xgpebyg
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:TA4NVn2grx0TTOq+nzTZct2Bwfp8ZWwFKVUFcX47RfI2TKfL2rK
- /lq1ef8WZ7BXECt83hHAzIbRJxKqvX5etXT8NFjr+BzmG/sxrpz4YLDxfiGW8MYfepISiwY
- 4M5F+UHew6eP9V0utctkTURC9D5iH86InNPUrfABaTSVVi8pQtZ/7UDkI/1VmSPRGflRPQU
- rpm7Y05RQfml7v0//HEZw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:y5CMX5amRq4=;e0gSeyKW42FBSDp3F0Aw8wCZz4N
- 55ufKUCo6pZS2keF9nDhZ+jUZ+pqAp40YFIZErcE0e+atIPcI0Te6s30bBbEI91vyNx4F4Bj3
- VPAIw/jHkoay0ILKWb4dLBknnTKTpXfqiOZF2YMx0jKwQwDqSKzfAwitck02QqY8T6vMKO+VJ
- 7yYr7YAvjo2OSbBA+J9aeVPQn3nUvJf3YVG09HNZNlxZNolpXhIf5BE+Vak2/SBByLcG/mOb6
- 6CILsxh6aabiQgkoOe12nPl4rhVXI1Rul69L6QmN3JPpiWFrajplnWj+vS12sxW4nvWXYZzce
- 523/EskMWbDW4AeLXtAzzwgUQgEbx+hFhUFzp8SmWIcCyr5Tonx19TMfE4EiEIY1YrCxRVRS6
- fQq+ODh2blFdmLWb00CyBTDKSqQMd61KK7ofE4wPL4DBD/jybpz+xl9qzX2WL0AOnW53PgCwk
- VQ1XDYyQZyWUKBM3d9ya5spuC4ELmiBIi1R/4qb4Nmxga4McMUzjpFUSrFXFUaUf96WKI3ygQ
- W9iG954K4FJ3k1OK0h5Lwx0Gk+kXV4hQIf9MeSRVnZhDfosQHWB+j7YKs0qPrVW+Ir0rhRRtK
- Vxhe9UJYww6r9fCX+LFi003/vl0w8PExDQYQEZphr5WZvYGXZsjf+nMSvsx9btuFdiSX+6yV8
- FQ7dzunwy58CYH04Mlu8iurU8Tz+1BHA3Xrk21vTGrktMpU14VjvXfJFMb76tWoNlro+6WjQ/
- quRP7zLMVU3aYr1kuU3qpwYY6WszJfkTBu0/K5M0Lf62tDknOfZSRheJD+gHgLvgtm88ZoAiF
- nYYZmf9ri99DUoJkAw8Rhls2YbP6PyE0dbWBgLIPHjVdpS5+/Rb8gmNI6PWpfkK7p8+jp+UOk
- imu2w+q/HIKAabBP2zsQYtXpWgeXtETovhmvt8uMbKES4bl/2NDWQSehMOHcZiq9wvguy+G+9
- D37LxYoQvg4X2nyz1VaiPsTbRuZuuL0CIAc0cO03bAMn4wkoPuJxQJOEdyf/7uJSorfoAUljw
- VE3g2/i4oCDAriLG24lr8nxunrFM5oXLoHk6ZVV16uIt1uKv7rq2x/E/zGvRv8VPOzreh6lkl
- tNWaZFuoWj9tjdxdgXO1FPHSTCGzX329w0ld5I9tehjWAVyxmfpoJLncoxL8kCLPYUSi8S38y
- rw4DdFHBMr+Q3ZgDfz6DP5ai30q+Fm0yuHsG08McZbRhiWaN9LEOC83SxcqKpsTpBoLPIHR/G
- hoCqDmhuRcD4055QzEzE3Tmcr8jR9DlUBUGJkDjW4Xx8F0LrlxxiOSdT3fD7gLhuGE2JVOh8l
- OQA/eWXC36Ycyjt83NR4zJ1uAPC09scM4j3nR7nx85WzKLi5jHv+GpdFN656SNHc03DBWNxZz
- 6eXM0S8PA7R4UCbVB+kOTW4bEfQYQYH6EQh7d8xfMalhYu99GFiZ6W3SJFcq3h/t9sGOBk7N7
- ncJpTUg==
+Subject: Re: [PATCH RESEND] video: au1100fb: Move a variable assignment
+ behind a null pointer check in au1100fb_setmode()
+MIME-Version: 1.0
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 13 Apr 2023 21:35:36 +0200
+Hello,
 
-The address of a data structure member was determined before
-a corresponding null pointer check in the implementation of
-the function =E2=80=9Cau1100fb_setmode=E2=80=9D.
+On Sun, Mar 02, 2025 at 07:02:12PM +0100, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 13 Apr 2023 21:35:36 +0200
+>=20
+> The address of a data structure member was determined before
+> a corresponding null pointer check in the implementation of
+> the function =E2=80=9Cau1100fb_setmode=E2=80=9D.
+>=20
+> Thus avoid the risk for undefined behaviour by moving the assignment
+> for the variable =E2=80=9Cinfo=E2=80=9D behind the null pointer check.
+>=20
+> This issue was detected by using the Coccinelle software.
+>=20
+> Fixes: 3b495f2bb749 ("Au1100 FB driver uplift for 2.6.")
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Thus avoid the risk for undefined behaviour by moving the assignment
-for the variable =E2=80=9Cinfo=E2=80=9D behind the null pointer check.
+Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
 
-This issue was detected by using the Coccinelle software.
+Should also get
 
-Fixes: 3b495f2bb749 ("Au1100 FB driver uplift for 2.6.")
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- drivers/video/fbdev/au1100fb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Cc: stable@vger.kernel.org
 
-diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb=
-.c
-index cb317398e71a..fcb47b350bc9 100644
-=2D-- a/drivers/video/fbdev/au1100fb.c
-+++ b/drivers/video/fbdev/au1100fb.c
-@@ -137,13 +137,15 @@ static int au1100fb_fb_blank(int blank_mode, struct =
-fb_info *fbi)
- 	 */
- int au1100fb_setmode(struct au1100fb_device *fbdev)
- {
--	struct fb_info *info =3D &fbdev->info;
-+	struct fb_info *info;
- 	u32 words;
- 	int index;
+to ensure this is backported to stable.
 
- 	if (!fbdev)
- 		return -EINVAL;
+Best regards
+Uwe
 
-+	info =3D &fbdev->info;
-+
- 	/* Update var-dependent FB info */
- 	if (panel_is_active(fbdev->panel) || panel_is_color(fbdev->panel)) {
- 		if (info->var.bits_per_pixel <=3D 8) {
-=2D-
-2.40.0
+--b5ssf4zg6xgpebyg
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmfFdAgACgkQj4D7WH0S
+/k6Ubwf+PAWfTbo0e8l6pPMYDWTrIlWDVs6P8JwsxmPeNHmuw2L+6JmiXLUt4r8K
+BVOnwleXuUC4G/EKeAKqCwELLweDzt6QsmUWLUCsc6MWiQ1O3QDCv13Fty9auThY
+kk47fq5PjnBwjmIVoMGXAgkBlbRg7kL3mHisr4Znw6RGM/T4kW4GGSSRKBNUDTy3
+3zTnFrB5Yu6Kzu4JeU34zrCMxKAvQQoBWC61PkTfjcagCj/XrRG86KI818e+6ZPr
+P65IgsUOVTGAFKASeg4ZDgvdvaMnvoOH2w4RENMNeHuYWCe4wJaW/bn5brGZq1eP
+MJFndsnaHk7DCh94RiyWcyZ7veHiLQ==
+=VPpv
+-----END PGP SIGNATURE-----
+
+--b5ssf4zg6xgpebyg--

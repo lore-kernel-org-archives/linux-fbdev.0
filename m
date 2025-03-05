@@ -1,101 +1,104 @@
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [217.72.192.78])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE43E1EEA5D
-	for <linux-fbdev@vger.kernel.org>; Wed,  5 Mar 2025 07:39:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 581B0205E0B;
+	Wed,  5 Mar 2025 12:14:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.78
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741160363; cv=none; b=PZ07gRtSz0zNFWINzHM6mKOPLZAZpfRWGwZ2+R1jI+sIKRYKsOA9ARB/iPb4jGrCCNJBdsO82MqB4jrvOs/iUitgbLpW825ngNsTss+dXJzert4CzuxDK5U1NfLaVsni7SoilP8nw8o9UBsEkGNCxGiVVNBDb2gq+dpPaJlJofU=
+	t=1741176887; cv=none; b=M9FEw4At/zCA9AqAOqu07laFOxO2uI1rZB22A1SpfnH5t9r+Ra+1BWP9+Tb/CQVfr0aPyijnvor6oNa1QP2uUkV6TGrW61JuckL9OU5m317enGsgTEqVIMD7EfWZKW1y6I+FvlbrxPUDci8r6gcMCMP3bwv3fkAGRk4Vvz13wcI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741160363; c=relaxed/simple;
-	bh=+tiHM7oCl1ZmVCBaxgQhOmhvaOc1vK377JCwouYKzDQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hGzZS/NupzJv+anXObBElC07HiXZjz0s42s4ROnslwuNLjJUPDmiy5jYnlERZ5pV59WkXth7H6HIc1scgPv8k9d6hdPASQX6oOCjPSqDEo8UJKX0itUDi683vovlBcKBoqIoeGyNXgaUTtJVbtgcARL6iY5FGMtLTy1njfzWdTs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch; spf=none smtp.mailfrom=ffwll.ch; dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b=B9R1PsD9; arc=none smtp.client-ip=209.85.128.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ffwll.ch
+	s=arc-20240116; t=1741176887; c=relaxed/simple;
+	bh=vN9RsOM9w1Ta2OcodrGTCSnu8bj52DWvF1ogcLjUyJM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hGVNaOfctYLKBoDlwL1t1QxSnHCEECRbpV3Hm2BuXPxQBwEz0v9uBmU/cFlzss1don7Tm3ShQn458aawBfQBOnscn4WSgh20kMhoMGQXL4tv47ccoIN08ooJBMa64guAiZOH1junaDoQEc4NO/AT8bMlpF3DlQ3I36s3urGLnno=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=qVwJPx/y; arc=none smtp.client-ip=217.72.192.78
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="B9R1PsD9"
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-439ac3216dcso43699935e9.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Mar 2025 23:39:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1741160360; x=1741765160; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=+XuA+TgzxO0cDd+59g+qU1yGMkksNmClDdcwOzwAMqE=;
-        b=B9R1PsD9Ci0srzXtD+VDDTHSq+EzvIDXOWLLQ+Kn4i6UQXflFj5gum108zC2Umu/YW
-         xfHFoHlIu2DX+kSKIEZrew+WP/PPpz9SGQhdvPP43o+kukO29/ZLZItt/EzoflvKRLfh
-         QEMu83tDDlZUN1wrruvVL0kLekzHHoHFg1zAo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741160360; x=1741765160;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+XuA+TgzxO0cDd+59g+qU1yGMkksNmClDdcwOzwAMqE=;
-        b=uz4hNh86mmeCiO7FhRrHTKP5nauDJoNTM4I/eDAZ8mb2eIL0CbA6hXRDTsLyE3XuQQ
-         5Mj9I3PjIsvdnYevqkl+P+mZjOr3b+N01bo7Z06JXPT0o+JW3qyzivpjaUhBjlwnXf3m
-         /u0BTFcQDVF39fGYh59DmAU3XCSEU1caxtw1ExT3MpqwQrsycBEIOI4JWMBI0Di1dQj0
-         n+tOW8F1r1ON5Csd6I7LdfGBqhM2Q8lnGKrL6QXF1hwdLSjcFb1BcnUmE9I5wyTktNHj
-         KqbucmnPIjXm3bMW/5lqs090xYElJdoiKiBkRK9Lv5toaCUuWXvQjE5z401Tmzc66db+
-         /3pQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXoKHcaAL0R8okYwvIfWyOfrMWcQ23/+E4UwKxYxtWoALAyzbP1Mdb+dyxs6GMN27Xuldnf3XnI1CchZw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyS4P1mFhnsfPAVETa7sT38ttIUxytdh4DRFX+E9c27woNurvGD
-	I/0kZaWPt06kJxgzLdWwl3P2jyGQaN2d7MjXls1IxstAIDDQBMNbZcP8mc+5eBQ=
-X-Gm-Gg: ASbGncvlwsHJZByt6O6wYldHPX85hR2n+VYhejycs0eV9y5mbW9TLN+sqGubp2r2qWR
-	t9ss9kQ6E5y8XixkRCk3cGZtMr2ryoiS+kh4KUSY18X/VdGvNDrG6+4F2vpNLOgynCAK5tcc2xN
-	llxnoTbgOA3hT6wXp1WwwJziYA9A1mpid7QhZ0jBrz91e1Zb2kqOGsryGu/xgXOxfPSwnQMcuRg
-	8vXCPEEScduaNnW50v8hWCRQyq9SRoRDf6YrFhU8xwn53mg9K5K9uB6uGdkqq0xHr1zIEBiELy6
-	Xma/OhEesu97cuuOo+kw4hBKygzBngsCc30tQYNaYQqn4XmEUf3sUTIs
-X-Google-Smtp-Source: AGHT+IHNDniz1S5hPDkK5ssZDMLDexZifLYl1krGvetjlRdBrr6MVPUh3DFLsQ8NIkK7+0HJSn4e8Q==
-X-Received: by 2002:a05:600c:6b10:b0:43b:d531:ca94 with SMTP id 5b1f17b1804b1-43bd531cc69mr5061085e9.3.1741160359980;
-        Tue, 04 Mar 2025 23:39:19 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:5485:d4b2:c087:b497])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43bd426ca07sm9175785e9.2.2025.03.04.23.39.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Mar 2025 23:39:19 -0800 (PST)
-Date: Wed, 5 Mar 2025 08:39:17 +0100
-From: Simona Vetter <simona.vetter@ffwll.ch>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
-	Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH] fbtft: Remove access to page->index
-Message-ID: <Z8f_pcnaC5iJMz-Z@phenom.ffwll.local>
-References: <20250221173131.3470667-1-willy@infradead.org>
- <27cc53b9-0db7-451c-9136-5fdcf42145f7@lucifer.local>
- <Z8coiv3rn8loOltq@casper.infradead.org>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="qVwJPx/y"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1741176875; x=1741781675; i=markus.elfring@web.de;
+	bh=vN9RsOM9w1Ta2OcodrGTCSnu8bj52DWvF1ogcLjUyJM=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=qVwJPx/y4WCQsTW5x9jGetYyVflxE8dsDy1VFIlVZCLlNM2xXX/BSXqg/LwMt3Cy
+	 nxwR0GtcxRhljx5e/DmXH4ErVg5D4LzqfbYp4dVQGlqdaG49x2hQH0IIgzkpEKPbN
+	 0ucGZqbExRMcMxdvEdoFCSrB4Z+MvthP0C+WVk0QS3xAwqqS6RbpA9BuPDagJhpvo
+	 srIKnZV3HX1XsFqpMEJwZRWLC+1HpDxPbgF8HUXbia4ISXOZ55shnxUSqYJVxATZK
+	 5jwoCDVvOO3lJSiQsPx5r/ab1WOIIRvjqFvW/sP3v88rgWnNsYYjBLEOa+yqc7U7R
+	 njq4LhSB6ZMWWcobdA==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.29] ([94.31.70.10]) by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MNOQy-1tauUT2X3i-00Q3r9; Wed, 05
+ Mar 2025 13:14:35 +0100
+Message-ID: <9d042e6a-6d93-4ae4-8373-28b9dec21867@web.de>
+Date: Wed, 5 Mar 2025 13:14:34 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Z8coiv3rn8loOltq@casper.infradead.org>
-X-Operating-System: Linux phenom 6.12.11-amd64 
+User-Agent: Mozilla Thunderbird
+Subject: Re: video: au1100fb: Move a variable assignment behind a null pointer
+ check in au1100fb_setmode()
+To: Dan Carpenter <dan.carpenter@linaro.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: Antonino Daplas <adaplas@pol.net>, Helge Deller <deller@gmx.de>,
+ Thomas Zimmermann <tzimmermann@suse.de>, Yihao Han <hanyihao@vivo.com>,
+ cocci@inria.fr, LKML <linux-kernel@vger.kernel.org>
+References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
+ <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
+ <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
+ <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
+ <ugymllbkcsg22ffgyofvkquh5afbvoyv2nna5udmy3xfhv2rjz@jhgghzldzm4u>
+ <eebf8c0c-7a6a-405f-aaab-2a8a8c2bd91f@stanley.mountain>
+ <hwk2nf62owdo3olxrwt5tu7nwfpjkrr3yawizfpb3xn6ydeekx@xwz7nh5ece2c>
+ <47c37d1a-5740-4f48-ac0f-635d8b6f51b2@stanley.mountain>
+Content-Language: en-GB
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <47c37d1a-5740-4f48-ac0f-635d8b6f51b2@stanley.mountain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:xz927XuN+dy2MzwEWFmWxNyf3scK2QK3WwvGUP6+iFc0rGUk62+
+ 4cBG06YgVkrsQSP7oz2GxkjorzrbEe/+yD99qrKbbrN6r4/IGiNzM2c5QFhdv+Ly1HpAoFV
+ o8rtyc4teA7X4Je6sy9ECjv9ObROXAcJv55ghu0oB33hD2tbtVundyy1MzNHWooMwFEFZu5
+ CmnGqxkaNfAKVHRpzUZuw==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:Oy7sG1MKKpI=;JNu2zC9KnC1wTlorr60/eeRODji
+ Twvn6Tjrl4ER+r2013vtqMYFWVlvLZXzO0mFQHQfyjI9f6lVP6Gkb0dLwr61wUah9a+fRo6KF
+ CQH9f+WuwktSsLCezC9KSIWt74cIqVMecpXzmTKQwf/HAspIHRV67TvuuE8jN0uZbKAeej/+z
+ k4vozN3jP6fBUz+KgntPvDueV642U0/djQnAPKVUxRPWpMHdK+iS4L72u9HelQbvCxPZGduYS
+ DMiJm+a4CIayWj6kwQEhCWadgxOZdll4RinYa27znlaEcYEZhNvl8oOC1V5Q517Jw/bKLphRd
+ +iT9jjowUhXdNe1gpaW9LU7bqar9wue49Ds9Sw5OKluJ/tYI9SaYKU81NHmY3gTNw9Hii6wyM
+ uHWLZezEF7LLauwnwW2fiDGMbOZVs7AWkXI3eKgEzUmjPQiMFoFGMAxrJ8LgonMePMEFcvimL
+ BMD1Lr5JU76qouQy+9tvXN0+36/YUfuV64mBzT/9eSXhTyovsnKWwkLKZ7pLlVM8xO7W7eWMP
+ SZAe5k1CjHH1KvCkOa0aq+P3inEo8GOAYh6Z6KbdKIL5UAu+CIMV7Qt/cjMhfYY0rvttdZtn8
+ yeTlgCEntMkGug43gsgV88lWouf3iUhKA+wZssgGAqT5yiVhkgtslUVpE7PtNRTnXuRv0g0rM
+ 9UH6blSj67Wgh20slE8jaiZ4ozl3VWHwsEZTWyk3c8W+8gFvHwEmjdNMgVFcTPUtPuz3tu057
+ +5tw+5H9JRqiXJeakXtbLCJz3opmeQUVgrMz+z+rsnf3jcHsob+HvlJaED1oQJWmRIHPrtldJ
+ fQpHfNld4/1kM768BP6JxshhNTUuzTyH26YvOsq3JACnjh18PIJ3hgJokME8yKdO0uy0ydRDZ
+ iedtvaJbEHRvGO0k/ga/jzyvKYLF3VOi8U1jhdFHNW47e6v7MCZriGhwXBDKYDs2q7diyist2
+ DaP2oQT7wTnUjfbVM6sS4dLuwe5c85UEGEIfAUkaqb5OeDfiaKN/jjtvEsDqUSdSdm2i67jrZ
+ emCa0gwpvqExfAQCAGwzEcI/vKhxwRHKW9wITHzXDovhJ1afLYCrKJL/gY/F0qwXpUeL06uCp
+ jBRSfztoSNVtpM/ZxewybtJ+BJLELgDrcoVKEUc6s0Gh+sG2kOQVGIGrJpBhvS7i71OkoSwmm
+ w2Mj2QTs7Y0r+eeSgAG3z5gU0ADZ4FK1GtsYOfYPsq+l0JbdSGB3V7YX46ohLp/iZ/Wmc5yjC
+ ioOqMs9hXgm54NBaTOhHJLsdfQv47MIeeggCLQhAksjnD+cdktcyyuxsihlgQojf5WVDA8t8p
+ 9y3ySv28w/BgaIcb3Lk9AjaaOS2WfPOPncDshEqdi8aGl0mkGlMEZPOQt89zDDKoem1d8pPmw
+ hha8NFd33dxZva4qDJ89SwxdbrRz7LCZ4GNmUvBeVUoCbjzMLtw2VdQRPcstdxL6r7GtUoSLr
+ t4QRoLg==
 
-On Tue, Mar 04, 2025 at 04:21:30PM +0000, Matthew Wilcox wrote:
-> On Fri, Feb 21, 2025 at 05:53:16PM +0000, Lorenzo Stoakes wrote:
-> > On Fri, Feb 21, 2025 at 05:31:29PM +0000, Matthew Wilcox (Oracle) wrote:
-> > > There is no need to print out page->index as part of the debug message.
-> > >
-> > > Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
-> > 
-> > LGTM from my side,
-> > 
-> > Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> 
-> This patch is not yet in linux-next; can I expect it to go in soon?
+> Anyway, none of that applies here, because this is just pointer math.
+Which data processing do you expect to be generally supported at the discu=
+ssed
+source code place (according to the rules of the programming language =E2=
+=80=9CC=E2=80=9D)?
+https://en.cppreference.com/w/c/language/behavior
 
-Being both staging and fbdev it's double orphaned, I stuffed it into
-drm-misc-next now, thanks for the ping&patch.
--Sima
--- 
-Simona Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Regards,
+Markus

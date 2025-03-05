@@ -1,275 +1,167 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DAC4C2ED;
-	Wed,  5 Mar 2025 14:18:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 984FD1AB531;
+	Wed,  5 Mar 2025 17:08:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741184333; cv=none; b=GXV+QOEVwX8rAyWrxcDjmNdo8BPwpTBlrqpj7qm5TVMcb7+WiVbgxXdRHYsMWZe6FuVWb8zzpa8WTUxoKZi4gfoEXy2PvQzZfCCHIVOhUmxFXt3otwZtFPdehY1FAKGIUyRTLfqvrF4CBsWaywHygtLu5yBeozwa3SKdMgsSoFo=
+	t=1741194498; cv=none; b=UFt/3NvK/1qJq36S/galWnqiH8uKwB4Xwk6ubx4rTPTcIhD8c2TXaV0jvfMI43jjOLgyg9rrhzgn1vcJUsukEXxOyu6qY79Hv8Yp5FZP+Ow1UDzWmlL5XEwv16cVn1R60JBuwVOf0loB90ZUmwpyv0W79/FbC0Are0nBRv3oAh4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741184333; c=relaxed/simple;
-	bh=0J92A5LvTsuUoj8S58HAT5l2cuzaDjiqZLtyLWAyTe0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mvVwLFkUNpn17rSq4rzUcU04dmHKY2qRdExeGp14w6yjlpmku4NzyiUpLfkiUadn+ZhTbv4JgnzQ6ChCQOCrPbkgAv8Qici7RrYSTyOmUp2zrpxBs8NvocTpW4vbW61K0mVKzYf37W3v0ba1p1BX05hwKIJNFAbjQwtdpedwtBw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Sh50veTd; arc=none smtp.client-ip=209.85.128.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1741194498; c=relaxed/simple;
+	bh=HqVm3gpnbOTavUq6YuIgtLcvVRLsxQpX257b2yUTtHc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=I3h11AhhcsKTJ9tGkaGGPae40LSux6Ykmd25KIKi2mMNI0+l9J6XVukhsH0GMF2xBEv9qSzH/HfYvv85pWUF0hwKcSWln31t/olXoJjOVp1erDYGz0N4459SEf0oHzXktWTWdS25Ek5UBBmZ1GeYD+WPj0lx3DMvyrdBtX3x4+o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=VLZt800F; arc=none smtp.client-ip=212.227.15.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Sh50veTd"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4394a823036so63108755e9.0;
-        Wed, 05 Mar 2025 06:18:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1741184329; x=1741789129; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uVxEKUGPmST9SVCsY1zuL15uHcxYusVnASOLADTY7W0=;
-        b=Sh50veTdbwVEH50375/nXG0ZvMUQ0RzWIyTpp7RJcQheZrRSSHpMBVUftGVS86BHZT
-         eAyPpTziUz+n/ETFwLSKIGK5ntzXrko8MTBg41/qH7B5Gpyst6zX22eWcPbJyM+35/T3
-         ZjD5Xfl2XHYrVROikgHHuanhtZ5VArWIOH9B/HbXLt1tI4MJoC4xdVahpL8OWkQOL1bd
-         kMn1miWeMRWYMsEiZezJFlUcdaWaxJmgVOwnS6BpTg9gJvSog6tVfayLeudeUpF9bPPP
-         5tjRls60oh/+Qr094UrKiabnDTeyQDfI3+ELWSU8+zM9nEYPmqGnBPjYEWf77l+u2OpJ
-         e8gw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741184329; x=1741789129;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=uVxEKUGPmST9SVCsY1zuL15uHcxYusVnASOLADTY7W0=;
-        b=doGm99E360x3SvhumYMdFX9JyjPM3qCt2laADpTXL9hn9Mwku3nS4MB2PAKtcOm1/5
-         N6Ying4ZHfNK0SCVrnGNHTdIeFRRKY/bXYNjjQNyOkq7cjXGWqfzWqOtDTo9DbDc3wsp
-         kLE8DyzKjTdDtxvD8rs23e0Oow/YAUstKhqYXdqQMOUgvs7dD/Wvx5xxfW3ZsqTeQXXp
-         EIcy0SxOvWfVHWcAQTQt8YqXUVWPxVDFABusAVl3WPdChb21OuJ/JAe5+iPRO1JZedF+
-         ZxTJ0ZvrlmbMGVJEotRTU0F9k3RRYeN9Kz/n0r9ZG7837cWuvoEN5ATZYAqZj0kMsEEj
-         gFUw==
-X-Forwarded-Encrypted: i=1; AJvYcCUbtm5lnTVnsAAf1WzMm27GD9sx/Eh7vxLjQQatL1I7pd9bsdrJAHLALVnGiKfsyJZMo6VtFhpWH0SF+qE=@vger.kernel.org, AJvYcCVe4+Kxj1vESgkhoJA7vZ6y77l8mR27iR/Jy/FBZ9KMHjepwXwmpP8/t5tWGWx7cp9bLfXdU1/9mWjw7gbF@vger.kernel.org, AJvYcCWQnQtT3WkO2HZxEXirCE8eA4vh0ldcSH/74HuY+E4oyUUSD0qke7kX+SzzBQz/5BmRl7nr2vMAHH3S@vger.kernel.org, AJvYcCWRM2vOUkbJqe+HevfMYqLlqvaldxTSCcku7TXlg0CbhLNCd/YOSGmDq+NB5mt8S6st3q0EG+CtcQzl@vger.kernel.org, AJvYcCX5gEjJgEwK18u+iKmPiyxud4BjNEgvKtxb1iXg7ATBPzH6e6OA1kvYqUY1MpF4D5o7XgBfc1Xpz/nN9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yys+tHfcUM+RTFV173dwROAz/z+ccelLUSAedGYM8g3Y7L834wJ
-	bLyH+mQvWwG/vNZBZLrCXI26A37Mz4Tt+kq+Mc9ubQ+BD0Scw/xG1J+lA3wgX+lYUwWLXtcPAi0
-	ivFpRzu6/n4Z8SPjXwptLf+8uuqw=
-X-Gm-Gg: ASbGncsrhrgp5fdMcgB2GiBt+1yQkwTwodzEYVvFJB+2fGyaMocERjo71Pxxr9dG0WO
-	bMIXa9rGfV7KjVdfjjTWuCtWh5j5PkiKE7b91Y84QTDAe43HxD1H4Q6HOkrzePYo8gTZJa7qtY1
-	Ox6hFH3/6LVRWpu9ucm5CjAW9rNnI=
-X-Google-Smtp-Source: AGHT+IGtt5kKKBiJjBbm2DU1GbYl+vKb+nT4lkgnAmQUxI2KsqJnS5S/wjYJqyjYIYU15T1CQievr7HPF4XKPY8Qlu8=
-X-Received: by 2002:a5d:5986:0:b0:38d:d664:67d8 with SMTP id
- ffacd0b85a97d-3911f7200cbmr2836278f8f.11.1741184329266; Wed, 05 Mar 2025
- 06:18:49 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="VLZt800F"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1741194465; x=1741799265; i=deller@gmx.de;
+	bh=qSFgqG5zZ8uB7/EdqFI+tBOKNwncrau+EHb9ROl1Elw=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=VLZt800FdvjEs4Wqu2oAd1ndh0gQt+LYR1bd9ct4ymHbjq5inIR0VsniqcXzEiFU
+	 4CzNxJ71unLvywDgSbhWNd/jYc60J8jbdoA10YFT4krLPsAWkzPwxS849M5eNgCCu
+	 o3d1AxHq1n5dypUshP5255PeVKSoMAT5izhHY/Ta2rGeboC80ughh0Yen88yWrcCs
+	 EFgh9Ft3Swj1dQX016nJtahLCO2NREWlek7aXz0nDFABzebkmo68N2/MXV3VkXUog
+	 igBg84iiQRpQ7lKDYEu7RIwiWBQ1aa9bS8zTSK9w7GQr/4j7i6spp5XD25UaLnrMZ
+	 /ImaYIOcsoChvOAbzg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MEV3I-1u1U8R0Cni-008r0T; Wed, 05
+ Mar 2025 18:07:45 +0100
+Message-ID: <81a620bb-205f-45f7-9036-e8e44a8e7be9@gmx.de>
+Date: Wed, 5 Mar 2025 18:07:41 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250224114815.146053-1-clamor95@gmail.com> <20250224114815.146053-3-clamor95@gmail.com>
- <20250228085927.GM824852@google.com> <CAPVz0n0jaR=UM7WbBs3zM-cZzuaPVWBjf4Q7i82hvxtXg2oCzQ@mail.gmail.com>
- <20250305134455.2843f603@jic23-huawei>
-In-Reply-To: <20250305134455.2843f603@jic23-huawei>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Wed, 5 Mar 2025 16:18:38 +0200
-X-Gm-Features: AQ5f1JpXA6J5TL49b1DAVq6n5wnuuTukD3GyYGoSYEpxJIiUmzK9BkiZvUPOFTs
-Message-ID: <CAPVz0n3Qt00my1ejoyEgxTRi-mQszHybwhPq70eO=94oxMfECQ@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] mfd: lm3533: convert to use OF
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: video: au1100fb: Move a variable assignment behind a null pointer
+ check in au1100fb_setmode()
+To: Markus Elfring <Markus.Elfring@web.de>,
+ Dan Carpenter <dan.carpenter@linaro.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: Antonino Daplas <adaplas@pol.net>, Thomas Zimmermann
+ <tzimmermann@suse.de>, Yihao Han <hanyihao@vivo.com>, cocci@inria.fr,
+ LKML <linux-kernel@vger.kernel.org>
+References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
+ <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
+ <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
+ <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
+ <ugymllbkcsg22ffgyofvkquh5afbvoyv2nna5udmy3xfhv2rjz@jhgghzldzm4u>
+ <eebf8c0c-7a6a-405f-aaab-2a8a8c2bd91f@stanley.mountain>
+ <hwk2nf62owdo3olxrwt5tu7nwfpjkrr3yawizfpb3xn6ydeekx@xwz7nh5ece2c>
+ <47c37d1a-5740-4f48-ac0f-635d8b6f51b2@stanley.mountain>
+ <9d042e6a-6d93-4ae4-8373-28b9dec21867@web.de>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <9d042e6a-6d93-4ae4-8373-28b9dec21867@web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:WFCzdqPmtr/uOmd6GBJqupGfFplz0KM/ko2XNaecD3XCxy8tVLM
+ H5nDyRb4i4/pCvIoqvQDEIHQdzIgGt1tlvK4W2MRNAtkH00Y965x+n7rWASwu3HfGDQk4EZ
+ 3h8VLzErjad8IVoyLgvMW9CIB/wfMGorhp7qopi9tv4q9IqZRBFDuIKA5WJxRO/zaAwxO7o
+ lv7M8NeXLDx14Qs5Kp5TA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:ZTjjDObThpw=;QUkTbV5tHNceAYaWzt1VoI4+tl7
+ XGq6xbDKyijcXMXQdr4OxVGxAqp0z59T86Z87Ecs/LkY0f0cHtQUGkXSF/MJtQM5HeS2TUC6z
+ ahJMY1fqhLwCIuLeFQl5/orQTlf+JY0dwnkaWiPhSCl7YJXpV35v65WEF1teGcRBvL2M9yLZg
+ dAl1OtW2aGwcEL7FT2vR3aGUg+leKA3qOlu1ySvdDGoJvf44RK7QYep91ERHKfQeuZjdvLERC
+ GbCQpTh26i8xBvJqo41+h1G7aSROIhzOhVg2vLTeNguaBLXgR+uy6suuklrfb6hJPkRJz0E9d
+ +9vg63qLUS8KCk/v0aLJkPH80iokVr9tp4eFkJBBI4MZK/1p00dvAD1x6BNRBiQzXF1Ia3HiT
+ s+Dk44aOSyuMop6tEAqtvt1XvqU/R9+kgngbDi39qW3ej6+BMOMykTs+etmcJy5gI9SD2gRXG
+ 6Bx1HRPNVdK2csjAY4obtXGr+SFsvpjzidO+9IDAjKIdi2AFFjgjw1ks7QoZl77fjhVb5/sjf
+ UzpX8ziakIzDbOjb5ywv2Kj4Gj4LWL5N/ef8s/bSnZRVhM8FXdhmk5wwyarRBwUOJRF3wzqXt
+ xhhfaFYCdvoMz3UKhvMyJ7pPMUNs4DfGStou4qbFTM4Eq2EcYpxNN3nZiKkuAPuXsRDTozvXo
+ Wk+x87X9UnNM8Q/510HmrZ8HajJvwQzKAah/r4NkUhNniTEJenXZl9Aj7NP7UttP29x0QRVB7
+ pKWwsWrb7tKqypP1P+0SznW5hujv0k2sbQziUN3xXLTswbgmFyLeH4sWHJGrfBc4LfRo1G7oT
+ VxEIqjOitgmHVHL07LwKbdYqlQDMYLcGQddu9q/sEzkhvgegRvHv75RPCR6fIRsGHDfVfTbec
+ Q9pD7GEBv4gS4sP4CperWATqvofFcVNdJeJFaSIiiA7aBpc32IbXqBzbvICCRkI5MsAq78ZeV
+ +202OzXmjLeEu1Jb4nijmtOSKkfKmcvUDLRHAp4Bxh3AyAXOu60AwmL0Wj70bKY7LFpSVrVZH
+ qYCsMP9m8JdhaRx2ecdjYR6ChUPxp2NvO6VbZ2ykIqr4LJ79w0PgejItZJGi3PNsqrwk6TQtc
+ uFVnrz6BnqKyR80/A9crQjgcKEbycz8aASxsiFVXj3npPDHf7G5XIp+q2AgaEHdEhJ3z0UYTY
+ W2IiA5YHpDS6ewVU9bMHOQaVp8+aWDIBE+cUogyktjDrIQTHUwSLjVi6pBrbAUIDRT15wZ5Ar
+ C0RR/l8w1L7Ke3foW58ZPtOT0HFqAVcUm8cBsMuPwW808pdFCAbcHdc03qjfrlV6l/2tDMIay
+ 3uLmVYVQGX1mopLPhbtBAC3FGzwbKw7P2R44DcnXvQbBUdkbnqj7naobetDhHwdn4cXmIekTp
+ 5UsbywibX3IzkNtFcIOuBATyn87vhA04agxuRzK6v60TKjbZFC7bpHHTxF
 
-=D1=81=D1=80, 5 =D0=B1=D0=B5=D1=80. 2025=E2=80=AF=D1=80. =D0=BE 15:45 Jonat=
-han Cameron <jic23@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Fri, 28 Feb 2025 11:30:51 +0200
-> Svyatoslav Ryhel <clamor95@gmail.com> wrote:
->
-> > =D0=BF=D1=82, 28 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 10:59 =
-Lee Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> > >
-> > > On Mon, 24 Feb 2025, Svyatoslav Ryhel wrote:
-> > >
-> > > > Remove platform data and fully relay on OF and device tree
-> > > > parsing and binding devices.
-> > > >
-> > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > ---
-> > > >  drivers/iio/light/lm3533-als.c      |  40 ++++---
-> > > >  drivers/leds/leds-lm3533.c          |  46 +++++---
-> > > >  drivers/mfd/lm3533-core.c           | 159 ++++++++----------------=
-----
-> > > >  drivers/video/backlight/lm3533_bl.c |  71 ++++++++++---
-> > > >  include/linux/mfd/lm3533.h          |  35 +-----
-> > > >  5 files changed, 164 insertions(+), 187 deletions(-)
-> > > >
+On 3/5/25 13:14, Markus Elfring wrote:
+>> Anyway, none of that applies here, because this is just pointer math.
+> Which data processing do you expect to be generally supported at the dis=
+cussed
+> source code place (according to the rules of the programming language =
+=E2=80=9CC=E2=80=9D)?
+> https://en.cppreference.com/w/c/language/behavior
+
+There is nothing to discuss.
+Dan is correct.
+
+We have:
+struct au1100fb_device {
+         struct fb_info info;
 ...
-> > > >       /* ALS input is always high impedance in PWM-mode. */
-> > > > -     if (!pdata->pwm_mode) {
-> > > > -             ret =3D lm3533_als_set_resistor(als, pdata->r_select)=
-;
-> > > > +     if (!als->pwm_mode) {
-> > > > +             ret =3D lm3533_als_set_resistor(als, als->r_select);
-> > >
-> > > You're already passing 'als'.
-> > >
-> > > Just teach lm3533_als_set_resistor that 'r_select' is now contained.
-> > >
-> >
-> > This is not scope of this patchset. I was already accused in too much
-> > changes which make it unreadable. This patchset is dedicated to
-> > swapping platform data to use of the device tree. NOT improving
-> > functions, NOT rewriting arbitrary mechanics. If you feed a need for
-> > this change, then propose a followup. I need from this driver only one
-> > thing, that it could work with device tree. But it seems that it is
-> > better that it just rots in the garbage bin until removed cause no one
-> > cared.
->
-> This is not an unreasonable request as you added r_select to als.
-> Perhaps it belongs in a separate follow up patch.
 
-I have just moved values used in pdata to private structs of each
-driver. Without changing names or purpose.
+so:
 
-> However
-> it is worth remembering the motivation here is that you want get
-> this code upstream, the maintainers don't have that motivation.
+struct fb_info *info =3D &fbdev->info;
+gets translated by the compiler to a trivial pointer math:
+info =3D <value of fbdev> + 0     # 0 is there offset of "info" in the str=
+uct.
 
-This driver is already upstream and it is useless and incompatible
-with majority of supported devices. Maintainers should encourage those
-who try to help and instead we have what? A total discouragement. Well
-defined path into nowhere.
+No crash or anything can or will happen here.
 
->
-> Greg KH has given various talks on the different motivations in the
-> past. It maybe worth a watch.
->
->
-> >
-> > > >               if (ret)
-> > > >                       return ret;
-> > > >       }
-> > > > @@ -828,22 +833,16 @@ static const struct iio_info lm3533_als_info =
-=3D {
-> > > >
-> > > >  static int lm3533_als_probe(struct platform_device *pdev)
-> > > >  {
-> > > > -     const struct lm3533_als_platform_data *pdata;
-> > > >       struct lm3533 *lm3533;
-> > > >       struct lm3533_als *als;
-> > > >       struct iio_dev *indio_dev;
-> > > > +     u32 val;
-> > >
-> > > Value of what, potatoes?
-> > >
-> >
-> > Oranges.
->
-> A well named variable would avoid need for any discussion of
-> what it is the value of.
->
+Markus, maybe you missed the "&" in front of "&fbdev->info" ?
 
-This is temporary placeholder used to get values from the tree and
-then pass it driver struct.
-
-> >
-> > > >       int ret;
-> > > >
-> > > >       lm3533 =3D dev_get_drvdata(pdev->dev.parent);
-> > > >       if (!lm3533)
-> > > >               return -EINVAL;
-> > > >
-> > > > -     pdata =3D dev_get_platdata(&pdev->dev);
-> > > > -     if (!pdata) {
-> > > > -             dev_err(&pdev->dev, "no platform data\n");
-> > > > -             return -EINVAL;
-> > > > -     }
-> > > > -
-> > > >       indio_dev =3D devm_iio_device_alloc(&pdev->dev, sizeof(*als))=
-;
-> > > >       if (!indio_dev)
-> > > >               return -ENOMEM;
-> > > > @@ -864,13 +863,21 @@ static int lm3533_als_probe(struct platform_d=
-evice *pdev)
-> > > >
-> > > >       platform_set_drvdata(pdev, indio_dev);
-> > > >
-> > > > +     val =3D 200 * KILO; /* 200kOhm */
-> > >
-> > > Better to #define magic numbers; DEFAULT_{DESCRIPTION}_OHMS
-> > >
-> >
-> > Why? that is not needed.
-> If this variable had a more useful name there would be no need for
-> the comment either.
->
->         val_resitor_ohms =3D 200 * KILLO;
->
-> or similar.
->
-
-So I have to add a "reasonably" named variable for each property I
-want to get from device tree? Why? It seems to be a bit of overkill,
-no? Maybe I am not aware, have variables stopped being reusable?
-
-> >
-> > > > +     device_property_read_u32(&pdev->dev, "ti,resistor-value-ohm",=
- &val);
-> > > > +
-> > > > +     /* Convert resitance into R_ALS value with 2v / 10uA * R */
-> > >
-> > > Because ...
-> > >
-> >
-> > BACAUSE the device DOES NOT understand human readable values, only 0s
-> > and 1s, hence mOhms must be converted into value lm3533 chip can
-> > understand.
-> A comment that gave the motivation would be much more useful than
-> repeating the maths.
->
-> /* Convert resistance to equivalent register value */
->
-
-ok, this is reasonable.
-
-> >
-> > > > +     als->r_select =3D DIV_ROUND_UP(2 * MICRO, 10 * val);
-> > > > +
-> > > > +     als->pwm_mode =3D device_property_read_bool(&pdev->dev, "ti,p=
-wm-mode");
-> > > > +
-> > > >       if (als->irq) {
-> > > >               ret =3D lm3533_als_setup_irq(als, indio_dev);
-> > > >               if (ret)
-> > > >                       return ret;
-> > > >       }
-> > > >
-> > > > -     ret =3D lm3533_als_setup(als, pdata);
-> > > > +     ret =3D lm3533_als_setup(als);
-> > > >       if (ret)
-> > > >               goto err_free_irq;
-> > > >
-> > > > @@ -907,9 +914,16 @@ static void lm3533_als_remove(struct platform_=
-device *pdev)
-> > > >               free_irq(als->irq, indio_dev);
-> > > >  }
-> > > >
-> > > > +static const struct of_device_id lm3533_als_match_table[] =3D {
-> > > > +     { .compatible =3D "ti,lm3533-als" },
-> > > > +     { }
-> > > > +};
-> > > > +MODULE_DEVICE_TABLE(of, lm3533_als_match_table);
-> > > > +
-> > > >  static struct platform_driver lm3533_als_driver =3D {
-> > > >       .driver =3D {
-> > > >               .name   =3D "lm3533-als",
-> > > > +             .of_match_table =3D lm3533_als_match_table,
-> > > >       },
-> > > >       .probe          =3D lm3533_als_probe,
-> > > >       .remove         =3D lm3533_als_remove,
->
-> Anyhow, I'm short on time so only looking at the IIO related part.
->
-> Jonathan
+Helge

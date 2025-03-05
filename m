@@ -1,108 +1,75 @@
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DE371A260;
-	Wed,  5 Mar 2025 17:29:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EB771C6FFE;
+	Wed,  5 Mar 2025 17:49:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741195765; cv=none; b=l1brQO7FNC4Z/5zSoJr2xRQ5wDGleDTWLZAxMIAxRibkbWm7PRdAZT7xsYzU5fAgMEEF+PmYX3pGFIVbXJoOpW/1Nh71LdRsKrybuaFK5hhDyScQTxMjcgy7WUXrBqyNJIVLKqm3SB7Z7Ta5fUIO6DvmkVJw5hsmbkBpXw0Jr34=
+	t=1741196996; cv=none; b=AE0qJomMClWQxG5TS1sipQcui7hEt7bbAiY4kprWPvgncZ9dN6lv7SxExL8rsHQJFdc3WFq7F50XzGXXRYxfZvvZNtD7RQvKWU2MY7ilGFdeAIGSDGEuBhS173bUDlf7BY+4SwCNnLOWvz2shxXwWvw64M6PtLovtTpXH74HGGQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741195765; c=relaxed/simple;
-	bh=xtiQKLe0sh2b/5K2i8jzCLuSRfvmaqQV+l/0T1lc8Vc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=n1y/wcwVKbUXAX89oofWJPRpsfWdykRh5L1Ve1fMIeomGR2hHWysT7OsaUr5vYNhDoxosy7F6kkiOb1wh8MSODt6AhjLeS84nkuc8uCJCCTch65O0BTVaPrDiPMZeF7u69bu6Ny5EB3/GHTBvJ84C8Td8wVf+lF54bifkLmrXUY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=cvyNvSK7; arc=none smtp.client-ip=212.227.17.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1741196996; c=relaxed/simple;
+	bh=69xZ7A8/E0lWdoqkf+tuuEaLuZ2WxiW8WXs0lKR/Ju0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SLmnUFSoEIK5tznpqLJjulFVQldvabHI8oXpeW7JzDOCtMM/Q21/keqzIjDlmhf/lHJUKemcaUbhymrr/Oh5INpbVBiK+FbyxA41iWp5ce3Vf7TvenUD5If8VlgZS5lkcO6sZueJqxjU9Z28vmewiEYZeNNjtc221gt8ltWT0h0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=kUFw1NTY; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="cvyNvSK7"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1741195738; x=1741800538; i=markus.elfring@web.de;
-	bh=xtiQKLe0sh2b/5K2i8jzCLuSRfvmaqQV+l/0T1lc8Vc=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=cvyNvSK7JhyaAmdAq1JK1chrv4QprDbNH6hoqgkxFk1feZ5vTk43BevHf+2nHg9K
-	 P4A513oALEtWPNcM3qu0e+nvbllCfGkM7nebEo11in/gQk5yLIn+NVp5qqkHJtEd3
-	 hk9ioe+QSojqxyncq4aHYOYrl3EaoDE4jfcicoQfL0pdV3YgRDf4c55XFOOBMS5aV
-	 lyISBbosBh22FBqi1F6rcie9MbLYF3PvEaZ92+SsyuHRLQjKkx0CCFE4AqyFPfsJA
-	 EdU8wM87Mpsr6zG/0BTbnPAJ3zjjCkoewSbCk8EZjOxz1mLDRuKQweZgtro9kpZwR
-	 Lc+/PXeAze2DjqKTwA==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.10]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1M91Po-1tvx5b3WNS-00H6a9; Wed, 05
- Mar 2025 18:28:57 +0100
-Message-ID: <e9372f7e-cefb-4f8a-9dbd-b26baceb0d3a@web.de>
-Date: Wed, 5 Mar 2025 18:28:56 +0100
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kUFw1NTY"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=0/5pFhUYG/qRloabUrp96KV5uy7jgbm8O+Ry5t7s1T4=; b=kUFw1NTYDgyfSoerNNJcA28H77
+	grP2L7d7Wrw1ojFFqBXLiSTQztpgEGCN73eXG9Mv7FeE1/KuX91SNZ6HP+0o5PYIWmYobJoaWQHQI
+	Q0x9flzcKbcM9cRbQCeDkZjGfqPZhUaHjeW5ZrW9eSV9/LxSBxHxODhYwHuiLphLY8EwyZPpWjpp8
+	VVcAo/l4OnLUDaBNnNoq/VuGVeXZjFiD/otvKzg6BhnwOCSE9JH9eo8j0goYZ33fyWPiX1fPsDF08
+	bDLjh7CvS1qfOTfctPjD8WYYvKC9NI/9JwlIz4ZROPAu7/Da0iX5aivcMoqkmnDLJ6P9gh7nY5Sgk
+	InbAHd1w==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tpssM-00000005yAg-1QZ7;
+	Wed, 05 Mar 2025 17:49:46 +0000
+Date: Wed, 5 Mar 2025 17:49:46 +0000
+From: Matthew Wilcox <willy@infradead.org>
+To: Simona Vetter <simona.vetter@ffwll.ch>
+Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
+	Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev
+Subject: Re: [PATCH] fbtft: Remove access to page->index
+Message-ID: <Z8iOuvGKrWa4kEz_@casper.infradead.org>
+References: <20250221173131.3470667-1-willy@infradead.org>
+ <27cc53b9-0db7-451c-9136-5fdcf42145f7@lucifer.local>
+ <Z8coiv3rn8loOltq@casper.infradead.org>
+ <Z8f_pcnaC5iJMz-Z@phenom.ffwll.local>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: video: au1100fb: Move a variable assignment behind a null pointer
- check in au1100fb_setmode()
-To: Helge Deller <deller@gmx.de>, Dan Carpenter <dan.carpenter@linaro.org>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
- kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Cc: Antonino Daplas <adaplas@pol.net>, Thomas Zimmermann
- <tzimmermann@suse.de>, Yihao Han <hanyihao@vivo.com>, cocci@inria.fr,
- LKML <linux-kernel@vger.kernel.org>
-References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
- <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
- <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
- <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
- <ugymllbkcsg22ffgyofvkquh5afbvoyv2nna5udmy3xfhv2rjz@jhgghzldzm4u>
- <eebf8c0c-7a6a-405f-aaab-2a8a8c2bd91f@stanley.mountain>
- <hwk2nf62owdo3olxrwt5tu7nwfpjkrr3yawizfpb3xn6ydeekx@xwz7nh5ece2c>
- <47c37d1a-5740-4f48-ac0f-635d8b6f51b2@stanley.mountain>
- <9d042e6a-6d93-4ae4-8373-28b9dec21867@web.de>
- <81a620bb-205f-45f7-9036-e8e44a8e7be9@gmx.de>
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <81a620bb-205f-45f7-9036-e8e44a8e7be9@gmx.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:yWGWNO6K9aUNn3g3Qc5ZNkQf3WSZXFZx/7sAlXKN2G2OkmRvkTM
- OOorb9nBJRzzmErR9eJErw6GmksCApLqzMDcyKGuL3v4Qalgpp5Oo9wJ3hULjiXC7J/bBVT
- BDd3SQO+O0DWCKxnpPQhgtzzOvZVrnHen1F1NTITC3WjdS1jKPIEEhHglUQ5+uuk2CmrSEC
- oWIV86XuELAY2ecrMErmQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:UByq28hN30c=;zVhcrG6+Sh75YoWB+H09FcqgW8Z
- bgunNY71oawVGm5ys86Bfzfb67540oJ+u7DAgmYRadi+0yDuVnhsBjFqkBXS9yWJESCsOSZfU
- 4xgJJrykXQYALn4/eCVlRvVAoYzpKDR0SGzMpZFWdB+hFqSpAO7yrjX3O3Y9qUHmGkMPJZCOn
- cTFIhVVjD21fVeX2V2oZ4NbofQkCoa9OX0/KtqN1O7Bj90dOdP7Rhs5955TPCw57vqxdIZINT
- EDxDN7hucnIllSj4HktdwGfvRVzgciVCR/nnoUSB7OeeYt+Qqe9MZEKv8OLs48GVCT2yVXeX2
- +DoXgPQDJlQfvSnXLcULgMhRhpAMRdbT9rw9T49pS3OdLxxzTi5FbYpan4orQAAObc/4Gam+G
- Ck/fSxbbd8JBEAdpATuUUwJr1RRXLv37TQl/9bqMJH+wLx/IauUHcfAQ3ziqYcnSki2F9ziyL
- Q1E4abj3MTZihySUQ4yPtvuNhnQBWWW44B2EiygAOmZaWQIPka5WebAJ7Sjy1T3mrYWjHeFPo
- 8CskaPVmU4QL8uazhS0gNgFAcRT0Vi6yjHr5fN7AIktIoGoMgfNaorFcZOUoHWrM8LCsIQBB/
- jfi0OhDkRJMzOo382MpJHfpGv4sF0IDGdXlzlizhUcyT6MISK2mVuDtW2rORZJpYDz8a6Rckl
- +4exgw40+U+PoIQn+Z9XSUokVxe6OlUiROGCTAGJbdpTjWIbLXHDDXg5dvfAUkXlVq9Fv+nVP
- 0mSbtQtRFOKIB0qiFYM4bOtxQTqYN3tuPVXu9deUZoo7K5vCP/FWPIPvPxzkLJQNxq3utAaXY
- wy9PW371DMmOIsHCUHKsDtdOGfw2H1lDvs6PB6l8fYLhBVU4dDlPGLgh59oEHyhkFBwPXuW5w
- 3DonwIC2P/zQ4cG6tm7VZtlFzxdZ+ye5k9UO0VUYwjYPiNCx8WNRPPjfmSKXhKWFgi3p6N7g5
- IqJNj/mDysSDG7RMaM39tVrMPrcwWZ8z6oGHThg3E5KmK82dUi5vxGn6jZUhz3yu4Fc8XXkof
- x6ZwtZzdVSYWDdsBr/SyXlQ8i+cfKJ6LiyG1jn8hNyWoneUdnXcqWbXMWRD0/s/IIUFN4feVO
- I+Bf45nMJvdMnn/o7rH1XpipM/SL74qzSqCXvBmn8Us6B8Ldb+aijiIzoTFfCBXAwLGwzMSp9
- Zt2uJqzqSrKjv17g8ph2Ngy58lhUGkeMwNdZg+ECbRjvBmqa4iqqoy/GVwljXXF9MS3G9asd1
- 55uKhfWqWAIurDzhp96ZZq6/p8+TCaWltkV6C1rkxi2OY29xF/DgPnppVH43MTVtZQy3LFpVK
- 5sEG80yWxY2f9zBsaV4bzd2XXY4aGsbDjy4kz00PAAtDOJcQQCeAgHB79klC6ohFF0vUFZueU
- 6sovH08njwKsHLeJNlo49Z1ac79ph2nit6SBuAOrxGbke7PLx+ynScb3jmLZWWyWKcHw1i9ni
- heWvOeA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Z8f_pcnaC5iJMz-Z@phenom.ffwll.local>
 
-> No crash or anything can or will happen here.
->
-> Markus, maybe you missed the "&" in front of "&fbdev->info" ?
-Would you get into the mood to adjust development views
-if you would take any feedback and further background information
-(by David Svoboda for example) better into account?
-https://wiki.sei.cmu.edu/confluence/display/c/EXP34-C.+Do+not+dereference+=
-null+pointers?focusedCommentId=3D405504139#comment-405504139
+On Wed, Mar 05, 2025 at 08:39:17AM +0100, Simona Vetter wrote:
+> On Tue, Mar 04, 2025 at 04:21:30PM +0000, Matthew Wilcox wrote:
+> > On Fri, Feb 21, 2025 at 05:53:16PM +0000, Lorenzo Stoakes wrote:
+> > > On Fri, Feb 21, 2025 at 05:31:29PM +0000, Matthew Wilcox (Oracle) wrote:
+> > > > There is no need to print out page->index as part of the debug message.
+> > > >
+> > > > Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+> > > 
+> > > LGTM from my side,
+> > > 
+> > > Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+> > 
+> > This patch is not yet in linux-next; can I expect it to go in soon?
+> 
+> Being both staging and fbdev it's double orphaned, I stuffed it into
+> drm-misc-next now, thanks for the ping&patch.
 
-Regards,
-Markus
+Thanks!

@@ -1,104 +1,268 @@
-Received: from mout.web.de (mout.web.de [217.72.192.78])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 581B0205E0B;
-	Wed,  5 Mar 2025 12:14:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.78
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86F4F248898;
+	Wed,  5 Mar 2025 13:45:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741176887; cv=none; b=M9FEw4At/zCA9AqAOqu07laFOxO2uI1rZB22A1SpfnH5t9r+Ra+1BWP9+Tb/CQVfr0aPyijnvor6oNa1QP2uUkV6TGrW61JuckL9OU5m317enGsgTEqVIMD7EfWZKW1y6I+FvlbrxPUDci8r6gcMCMP3bwv3fkAGRk4Vvz13wcI=
+	t=1741182312; cv=none; b=l8zwGfuUrgA3uAbVq2w0JujbC7+b8XIr4+9UqWB40Mdb/Ytm7PmxiTrKtiLMEPm7tfhO/rKGB5UBzS3KCx9Z/JPg8ikB88/s/RNXyADlRIe4phXs7SAbGaN5VwC0fpKFuerRLD6h5bsJwQaJhU2GrqVY2YHMIri5mJzi8EfjpL4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741176887; c=relaxed/simple;
-	bh=vN9RsOM9w1Ta2OcodrGTCSnu8bj52DWvF1ogcLjUyJM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hGVNaOfctYLKBoDlwL1t1QxSnHCEECRbpV3Hm2BuXPxQBwEz0v9uBmU/cFlzss1don7Tm3ShQn458aawBfQBOnscn4WSgh20kMhoMGQXL4tv47ccoIN08ooJBMa64guAiZOH1junaDoQEc4NO/AT8bMlpF3DlQ3I36s3urGLnno=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=qVwJPx/y; arc=none smtp.client-ip=217.72.192.78
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1741182312; c=relaxed/simple;
+	bh=NtUoC0VQyUdE370wsFKvWqUjQFFfXTqScOu1x2M24Uc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Ll5jLvRsZPc6vEZe5l4/HcwjywUrtEMDcsabA/xVGUf0QWHQL6im85w0q+KCPMXKorBAm4no7El+eCF9w8xWiGL29qOk57ldZy7aNnwVaXCuwWwqUx4vHCdHPs1VMoPCwo4HxNMOJXUl4Vi7+/Qjw7gSVInu7eKfxIIKq5lI2kA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b2N9zCYQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="qVwJPx/y"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1741176875; x=1741781675; i=markus.elfring@web.de;
-	bh=vN9RsOM9w1Ta2OcodrGTCSnu8bj52DWvF1ogcLjUyJM=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=qVwJPx/y4WCQsTW5x9jGetYyVflxE8dsDy1VFIlVZCLlNM2xXX/BSXqg/LwMt3Cy
-	 nxwR0GtcxRhljx5e/DmXH4ErVg5D4LzqfbYp4dVQGlqdaG49x2hQH0IIgzkpEKPbN
-	 0ucGZqbExRMcMxdvEdoFCSrB4Z+MvthP0C+WVk0QS3xAwqqS6RbpA9BuPDagJhpvo
-	 srIKnZV3HX1XsFqpMEJwZRWLC+1HpDxPbgF8HUXbia4ISXOZ55shnxUSqYJVxATZK
-	 5jwoCDVvOO3lJSiQsPx5r/ab1WOIIRvjqFvW/sP3v88rgWnNsYYjBLEOa+yqc7U7R
-	 njq4LhSB6ZMWWcobdA==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.10]) by smtp.web.de (mrweb105
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MNOQy-1tauUT2X3i-00Q3r9; Wed, 05
- Mar 2025 13:14:35 +0100
-Message-ID: <9d042e6a-6d93-4ae4-8373-28b9dec21867@web.de>
-Date: Wed, 5 Mar 2025 13:14:34 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b2N9zCYQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80314C4CEEA;
+	Wed,  5 Mar 2025 13:45:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741182311;
+	bh=NtUoC0VQyUdE370wsFKvWqUjQFFfXTqScOu1x2M24Uc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=b2N9zCYQiyKajWKuPAN7A9e2NlmNSFw1jku5bIiRlE51oWAQR8XOLEJpKvIemJ9KY
+	 0ngWi+lb83jrmf6KLujUcnf4ZNhzStSBXsp7MpXJDRpTXEzYJwzrq94B8UIEKjDWmv
+	 d5hqUlARJ0qQ2CN3rQoe1SSP34o2XeC1w5Ln5VAMsbExuivTSHTT6mBoqvH5VpT6Wk
+	 J+jqeZwzxADD25eKACQB2spsApEe0QAdzWaAd6+tGzlz3X94/MvZeWDwnt59GAx2aA
+	 Ep3H6mWIzYhMeATj/JYBfmQEicHfEUuIohkSZQ5da0nFREPv/B4VNah4ioTDHb4vZw
+	 kB8oK6lYGsIMA==
+Date: Wed, 5 Mar 2025 13:44:55 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>, Daniel
+ Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge
+ Deller <deller@gmx.de>, Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=
+ <u.kleine-koenig@baylibre.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-leds@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 2/2] mfd: lm3533: convert to use OF
+Message-ID: <20250305134455.2843f603@jic23-huawei>
+In-Reply-To: <CAPVz0n0jaR=UM7WbBs3zM-cZzuaPVWBjf4Q7i82hvxtXg2oCzQ@mail.gmail.com>
+References: <20250224114815.146053-1-clamor95@gmail.com>
+	<20250224114815.146053-3-clamor95@gmail.com>
+	<20250228085927.GM824852@google.com>
+	<CAPVz0n0jaR=UM7WbBs3zM-cZzuaPVWBjf4Q7i82hvxtXg2oCzQ@mail.gmail.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.48; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: video: au1100fb: Move a variable assignment behind a null pointer
- check in au1100fb_setmode()
-To: Dan Carpenter <dan.carpenter@linaro.org>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
- kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Cc: Antonino Daplas <adaplas@pol.net>, Helge Deller <deller@gmx.de>,
- Thomas Zimmermann <tzimmermann@suse.de>, Yihao Han <hanyihao@vivo.com>,
- cocci@inria.fr, LKML <linux-kernel@vger.kernel.org>
-References: <40c60719-4bfe-b1a4-ead7-724b84637f55@web.de>
- <1a11455f-ab57-dce0-1677-6beb8492a257@web.de>
- <86551e6f-d529-1ff6-6ce6-b9669d10e6cb@web.de>
- <3f1e7aaa-501a-44f1-8122-28e9efa0a33c@web.de>
- <ugymllbkcsg22ffgyofvkquh5afbvoyv2nna5udmy3xfhv2rjz@jhgghzldzm4u>
- <eebf8c0c-7a6a-405f-aaab-2a8a8c2bd91f@stanley.mountain>
- <hwk2nf62owdo3olxrwt5tu7nwfpjkrr3yawizfpb3xn6ydeekx@xwz7nh5ece2c>
- <47c37d1a-5740-4f48-ac0f-635d8b6f51b2@stanley.mountain>
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <47c37d1a-5740-4f48-ac0f-635d8b6f51b2@stanley.mountain>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:xz927XuN+dy2MzwEWFmWxNyf3scK2QK3WwvGUP6+iFc0rGUk62+
- 4cBG06YgVkrsQSP7oz2GxkjorzrbEe/+yD99qrKbbrN6r4/IGiNzM2c5QFhdv+Ly1HpAoFV
- o8rtyc4teA7X4Je6sy9ECjv9ObROXAcJv55ghu0oB33hD2tbtVundyy1MzNHWooMwFEFZu5
- CmnGqxkaNfAKVHRpzUZuw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Oy7sG1MKKpI=;JNu2zC9KnC1wTlorr60/eeRODji
- Twvn6Tjrl4ER+r2013vtqMYFWVlvLZXzO0mFQHQfyjI9f6lVP6Gkb0dLwr61wUah9a+fRo6KF
- CQH9f+WuwktSsLCezC9KSIWt74cIqVMecpXzmTKQwf/HAspIHRV67TvuuE8jN0uZbKAeej/+z
- k4vozN3jP6fBUz+KgntPvDueV642U0/djQnAPKVUxRPWpMHdK+iS4L72u9HelQbvCxPZGduYS
- DMiJm+a4CIayWj6kwQEhCWadgxOZdll4RinYa27znlaEcYEZhNvl8oOC1V5Q517Jw/bKLphRd
- +iT9jjowUhXdNe1gpaW9LU7bqar9wue49Ds9Sw5OKluJ/tYI9SaYKU81NHmY3gTNw9Hii6wyM
- uHWLZezEF7LLauwnwW2fiDGMbOZVs7AWkXI3eKgEzUmjPQiMFoFGMAxrJ8LgonMePMEFcvimL
- BMD1Lr5JU76qouQy+9tvXN0+36/YUfuV64mBzT/9eSXhTyovsnKWwkLKZ7pLlVM8xO7W7eWMP
- SZAe5k1CjHH1KvCkOa0aq+P3inEo8GOAYh6Z6KbdKIL5UAu+CIMV7Qt/cjMhfYY0rvttdZtn8
- yeTlgCEntMkGug43gsgV88lWouf3iUhKA+wZssgGAqT5yiVhkgtslUVpE7PtNRTnXuRv0g0rM
- 9UH6blSj67Wgh20slE8jaiZ4ozl3VWHwsEZTWyk3c8W+8gFvHwEmjdNMgVFcTPUtPuz3tu057
- +5tw+5H9JRqiXJeakXtbLCJz3opmeQUVgrMz+z+rsnf3jcHsob+HvlJaED1oQJWmRIHPrtldJ
- fQpHfNld4/1kM768BP6JxshhNTUuzTyH26YvOsq3JACnjh18PIJ3hgJokME8yKdO0uy0ydRDZ
- iedtvaJbEHRvGO0k/ga/jzyvKYLF3VOi8U1jhdFHNW47e6v7MCZriGhwXBDKYDs2q7diyist2
- DaP2oQT7wTnUjfbVM6sS4dLuwe5c85UEGEIfAUkaqb5OeDfiaKN/jjtvEsDqUSdSdm2i67jrZ
- emCa0gwpvqExfAQCAGwzEcI/vKhxwRHKW9wITHzXDovhJ1afLYCrKJL/gY/F0qwXpUeL06uCp
- jBRSfztoSNVtpM/ZxewybtJ+BJLELgDrcoVKEUc6s0Gh+sG2kOQVGIGrJpBhvS7i71OkoSwmm
- w2Mj2QTs7Y0r+eeSgAG3z5gU0ADZ4FK1GtsYOfYPsq+l0JbdSGB3V7YX46ohLp/iZ/Wmc5yjC
- ioOqMs9hXgm54NBaTOhHJLsdfQv47MIeeggCLQhAksjnD+cdktcyyuxsihlgQojf5WVDA8t8p
- 9y3ySv28w/BgaIcb3Lk9AjaaOS2WfPOPncDshEqdi8aGl0mkGlMEZPOQt89zDDKoem1d8pPmw
- hha8NFd33dxZva4qDJ89SwxdbrRz7LCZ4GNmUvBeVUoCbjzMLtw2VdQRPcstdxL6r7GtUoSLr
- t4QRoLg==
 
-> Anyway, none of that applies here, because this is just pointer math.
-Which data processing do you expect to be generally supported at the discu=
-ssed
-source code place (according to the rules of the programming language =E2=
-=80=9CC=E2=80=9D)?
-https://en.cppreference.com/w/c/language/behavior
+On Fri, 28 Feb 2025 11:30:51 +0200
+Svyatoslav Ryhel <clamor95@gmail.com> wrote:
 
-Regards,
-Markus
+> =D0=BF=D1=82, 28 =D0=BB=D1=8E=D1=82. 2025=E2=80=AF=D1=80. =D0=BE 10:59 Le=
+e Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+> >
+> > On Mon, 24 Feb 2025, Svyatoslav Ryhel wrote:
+> > =20
+> > > Remove platform data and fully relay on OF and device tree
+> > > parsing and binding devices.
+> > >
+> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > ---
+> > >  drivers/iio/light/lm3533-als.c      |  40 ++++---
+> > >  drivers/leds/leds-lm3533.c          |  46 +++++---
+> > >  drivers/mfd/lm3533-core.c           | 159 ++++++++------------------=
+--
+> > >  drivers/video/backlight/lm3533_bl.c |  71 ++++++++++---
+> > >  include/linux/mfd/lm3533.h          |  35 +-----
+> > >  5 files changed, 164 insertions(+), 187 deletions(-)
+> > >
+> > > diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm353=
+3-als.c
+> > > index 99f0b903018c..cb52965e93c6 100644
+> > > --- a/drivers/iio/light/lm3533-als.c
+> > > +++ b/drivers/iio/light/lm3533-als.c
+> > > @@ -16,9 +16,12 @@
+> > >  #include <linux/module.h>
+> > >  #include <linux/mutex.h>
+> > >  #include <linux/mfd/core.h>
+> > > +#include <linux/mod_devicetable.h>
+> > >  #include <linux/platform_device.h>
+> > > +#include <linux/property.h>
+> > >  #include <linux/slab.h>
+> > >  #include <linux/uaccess.h>
+> > > +#include <linux/units.h>
+> > >
+> > >  #include <linux/mfd/lm3533.h>
+> > >
+> > > @@ -56,6 +59,9 @@ struct lm3533_als {
+> > >
+> > >       atomic_t zone;
+> > >       struct mutex thresh_mutex;
+> > > +
+> > > +     unsigned pwm_mode:1;            /* PWM input mode (default anal=
+og) */
+> > > +     u8 r_select;                    /* 1 - 127 (ignored in PWM-mode=
+) */
+> > >  };
+> > >
+> > >
+> > > @@ -753,18 +759,17 @@ static int lm3533_als_set_resistor(struct lm353=
+3_als *als, u8 val)
+> > >       return 0;
+> > >  }
+> > >
+> > > -static int lm3533_als_setup(struct lm3533_als *als,
+> > > -                         const struct lm3533_als_platform_data *pdat=
+a)
+> > > +static int lm3533_als_setup(struct lm3533_als *als)
+> > >  {
+> > >       int ret;
+> > >
+> > > -     ret =3D lm3533_als_set_input_mode(als, pdata->pwm_mode);
+> > > +     ret =3D lm3533_als_set_input_mode(als, als->pwm_mode);
+> > >       if (ret)
+> > >               return ret;
+> > >
+> > >       /* ALS input is always high impedance in PWM-mode. */
+> > > -     if (!pdata->pwm_mode) {
+> > > -             ret =3D lm3533_als_set_resistor(als, pdata->r_select);
+> > > +     if (!als->pwm_mode) {
+> > > +             ret =3D lm3533_als_set_resistor(als, als->r_select); =20
+> >
+> > You're already passing 'als'.
+> >
+> > Just teach lm3533_als_set_resistor that 'r_select' is now contained.
+> > =20
+>=20
+> This is not scope of this patchset. I was already accused in too much
+> changes which make it unreadable. This patchset is dedicated to
+> swapping platform data to use of the device tree. NOT improving
+> functions, NOT rewriting arbitrary mechanics. If you feed a need for
+> this change, then propose a followup. I need from this driver only one
+> thing, that it could work with device tree. But it seems that it is
+> better that it just rots in the garbage bin until removed cause no one
+> cared.
+
+This is not an unreasonable request as you added r_select to als.
+Perhaps it belongs in a separate follow up patch.  However
+it is worth remembering the motivation here is that you want get
+this code upstream, the maintainers don't have that motivation.
+
+Greg KH has given various talks on the different motivations in the
+past. It maybe worth a watch.
+
+
+>=20
+> > >               if (ret)
+> > >                       return ret;
+> > >       }
+> > > @@ -828,22 +833,16 @@ static const struct iio_info lm3533_als_info =
+=3D {
+> > >
+> > >  static int lm3533_als_probe(struct platform_device *pdev)
+> > >  {
+> > > -     const struct lm3533_als_platform_data *pdata;
+> > >       struct lm3533 *lm3533;
+> > >       struct lm3533_als *als;
+> > >       struct iio_dev *indio_dev;
+> > > +     u32 val; =20
+> >
+> > Value of what, potatoes?
+> > =20
+>=20
+> Oranges.
+
+A well named variable would avoid need for any discussion of
+what it is the value of.
+
+>=20
+> > >       int ret;
+> > >
+> > >       lm3533 =3D dev_get_drvdata(pdev->dev.parent);
+> > >       if (!lm3533)
+> > >               return -EINVAL;
+> > >
+> > > -     pdata =3D dev_get_platdata(&pdev->dev);
+> > > -     if (!pdata) {
+> > > -             dev_err(&pdev->dev, "no platform data\n");
+> > > -             return -EINVAL;
+> > > -     }
+> > > -
+> > >       indio_dev =3D devm_iio_device_alloc(&pdev->dev, sizeof(*als));
+> > >       if (!indio_dev)
+> > >               return -ENOMEM;
+> > > @@ -864,13 +863,21 @@ static int lm3533_als_probe(struct platform_dev=
+ice *pdev)
+> > >
+> > >       platform_set_drvdata(pdev, indio_dev);
+> > >
+> > > +     val =3D 200 * KILO; /* 200kOhm */ =20
+> >
+> > Better to #define magic numbers; DEFAULT_{DESCRIPTION}_OHMS
+> > =20
+>=20
+> Why? that is not needed.
+If this variable had a more useful name there would be no need for
+the comment either.
+
+	val_resitor_ohms =3D 200 * KILLO;
+
+or similar.
+
+>=20
+> > > +     device_property_read_u32(&pdev->dev, "ti,resistor-value-ohm", &=
+val);
+> > > +
+> > > +     /* Convert resitance into R_ALS value with 2v / 10uA * R */ =20
+> >
+> > Because ...
+> > =20
+>=20
+> BACAUSE the device DOES NOT understand human readable values, only 0s
+> and 1s, hence mOhms must be converted into value lm3533 chip can
+> understand.
+A comment that gave the motivation would be much more useful than
+repeating the maths.
+
+/* Convert resistance to equivalent register value */
+
+>=20
+> > > +     als->r_select =3D DIV_ROUND_UP(2 * MICRO, 10 * val);
+> > > +
+> > > +     als->pwm_mode =3D device_property_read_bool(&pdev->dev, "ti,pwm=
+-mode");
+> > > +
+> > >       if (als->irq) {
+> > >               ret =3D lm3533_als_setup_irq(als, indio_dev);
+> > >               if (ret)
+> > >                       return ret;
+> > >       }
+> > >
+> > > -     ret =3D lm3533_als_setup(als, pdata);
+> > > +     ret =3D lm3533_als_setup(als);
+> > >       if (ret)
+> > >               goto err_free_irq;
+> > >
+> > > @@ -907,9 +914,16 @@ static void lm3533_als_remove(struct platform_de=
+vice *pdev)
+> > >               free_irq(als->irq, indio_dev);
+> > >  }
+> > >
+> > > +static const struct of_device_id lm3533_als_match_table[] =3D {
+> > > +     { .compatible =3D "ti,lm3533-als" },
+> > > +     { }
+> > > +};
+> > > +MODULE_DEVICE_TABLE(of, lm3533_als_match_table);
+> > > +
+> > >  static struct platform_driver lm3533_als_driver =3D {
+> > >       .driver =3D {
+> > >               .name   =3D "lm3533-als",
+> > > +             .of_match_table =3D lm3533_als_match_table,
+> > >       },
+> > >       .probe          =3D lm3533_als_probe,
+> > >       .remove         =3D lm3533_als_remove,
+
+Anyhow, I'm short on time so only looking at the IIO related part.
+
+Jonathan

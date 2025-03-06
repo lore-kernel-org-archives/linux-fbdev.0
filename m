@@ -1,161 +1,131 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12E95151990
-	for <linux-fbdev@vger.kernel.org>; Thu,  6 Mar 2025 14:13:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2482DDA8;
+	Thu,  6 Mar 2025 19:40:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741270436; cv=none; b=RliPOyvANko8zBhiEyztl/t3tUX/strTwG2ar2ogNxYBB1FXtIpHnFFyvGszPlqFkAuRYoeaYSf9Y6q9e9GUwZgmB5hros1Z//B7bz9zvsff36HPLeABt3iDU61A3CS/lXnH8zIfR4S+M+zwPAV+v2J2CKMe9JwWBQuGQ5nVWis=
+	t=1741290012; cv=none; b=tY59qxdE5ZnYni5yUHI9VHMlJExq7+T94AbB1xfcu8UQVeEQKr3NJTl4F1w7Td57R0sJkDkJ1zE/FlKQUb1XwQ5QMWId+w8H3pragInVT2sH9fKRviSdW9XEgwd2ba36VW3Zlwrl7Q7j+M1S9ZaXGeOAbDnc9nF3495FzQOHLHA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741270436; c=relaxed/simple;
-	bh=hx5qLstW9eaIlR1dAiXVN7XHQKPxW+dePHn+hWcGO4A=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gF9o+jqsd0/MuJt0f1C/xVbcM3hETkt3P/n2aSLRGiCL6E6E0EAfSOduj4fqw2IPX1iVV4zBgh9BuHNDhJZgaBTUh6226Wp9FfsTp0S7zse80sPisIAJC9ommJ5HcVg0+ytrPJQfksrN7a5Vv9lABicGTNyRCfM7YjjayFhBOVs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=t6S+Vr5z; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8u8uV1CI; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=t6S+Vr5z; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8u8uV1CI; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1741290012; c=relaxed/simple;
+	bh=CFtDuLIpuU03+nhtMAtX9r4UPxfCF/bDqSWeFl/X5vQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=c9He2uyBHZxAoTPeHxSV3PtOJyWXBMYNfoN2KmJDcRCYbT6VKltOcrCZH1VMgRP98fNnz+d2BEJlBM0PRB6XaTl7XEwtOEwwMhhElNOIvu40aHSPSO8VfIq9LAEldvL+9Y1rovJnW8bJilSzZHh9qIpcIx3OzI/s4UumY8xrVT4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DOfGrryq; arc=none smtp.client-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="t6S+Vr5z";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8u8uV1CI";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="t6S+Vr5z";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8u8uV1CI"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 08A751F787;
-	Thu,  6 Mar 2025 14:13:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1741270393; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rvYKe1PL53tncL1HepXzz3Nd1y4xvbOTBwyiq7uTibs=;
-	b=t6S+Vr5z0BpM/E4uLJH1GnyOt+aJht59BNsrst5mml9qyxXsbJBoz1M2mR32Ain4qi5li2
-	rxts3c+Y795pnQavn/+mzrQHRQhTZGIFpapUal62hSqtUvs+Uy7RoXCQQlvI9RPyFoIneY
-	UjNmWMz2Lz0DQ+OhOyN6mHiX0Fj3FSk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1741270393;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rvYKe1PL53tncL1HepXzz3Nd1y4xvbOTBwyiq7uTibs=;
-	b=8u8uV1CISrI44m4NCJsivv+YiK4PIElkFFl6FkJWGCYASX2/7mSJp3S5FudBJorvPQr1sa
-	mIGbRb5zMyobZsBg==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1741270393; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rvYKe1PL53tncL1HepXzz3Nd1y4xvbOTBwyiq7uTibs=;
-	b=t6S+Vr5z0BpM/E4uLJH1GnyOt+aJht59BNsrst5mml9qyxXsbJBoz1M2mR32Ain4qi5li2
-	rxts3c+Y795pnQavn/+mzrQHRQhTZGIFpapUal62hSqtUvs+Uy7RoXCQQlvI9RPyFoIneY
-	UjNmWMz2Lz0DQ+OhOyN6mHiX0Fj3FSk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1741270393;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rvYKe1PL53tncL1HepXzz3Nd1y4xvbOTBwyiq7uTibs=;
-	b=8u8uV1CISrI44m4NCJsivv+YiK4PIElkFFl6FkJWGCYASX2/7mSJp3S5FudBJorvPQr1sa
-	mIGbRb5zMyobZsBg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B314D13A91;
-	Thu,  6 Mar 2025 14:13:12 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id GOtoKnityWeveQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 06 Mar 2025 14:13:12 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: lee@kernel.org,
-	pavel@ucw.cz,
-	danielt@kernel.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de,
-	simona@ffwll.ch
-Cc: linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 11/11] fbdev: Remove constants of unused events
-Date: Thu,  6 Mar 2025 15:05:53 +0100
-Message-ID: <20250306140947.580324-12-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250306140947.580324-1-tzimmermann@suse.de>
-References: <20250306140947.580324-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DOfGrryq"
+Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-223f4c06e9fso21134605ad.1;
+        Thu, 06 Mar 2025 11:40:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1741290010; x=1741894810; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=ewCB/nm+A9ngd0jnoOxdtVcsF/YbNlLGD5eMN+wHgAQ=;
+        b=DOfGrryqhsvUzUrcX9Tmg22AtyKvTGuTxsIyAzNx9dY0y5J/VB8L51QCmEXwbK5OkC
+         A0X/KI6DR8R+g4EEXdDSUjLwpzKw4Pr5DufQ/rR/RNewHCx7qCZCORm+BrQ1kzOM5ubS
+         KrR58S4xqPiwZEIVresT6x96KHzte43t1QhWwJXz2mCIq9W7207r0oETY7J47qJjbyaP
+         sWz8J66cfaX66lesjcMOr398QRIZuzuiB31akNLJvQDhc2vNWkC2+wQ8tv5RHLhtmPHj
+         1SPGKjwh30EmBO8W0N3cURWcS1bhLTftpmcZdej/xhKQR5NJANNJxA1hQDWio8HcDTg7
+         nFHQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1741290010; x=1741894810;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ewCB/nm+A9ngd0jnoOxdtVcsF/YbNlLGD5eMN+wHgAQ=;
+        b=eoKxulrFb+nkMiyigFM6GR3TuBynozEVdzqlrmC5ZuutM2wzIFf8LaeO4ZIXMw3C61
+         97QvNctC2qMiCf4G3CYBXTRuvdEIOgwioETSdD9acU/KnXsdluxUHRbCflDuLpXiHTZF
+         vYz39mzm2b8EZDTwx9GOZjUUCqk2hs+SLVqIRhv4J77232T+HNueKsEhLLJv68wYIjs8
+         tKy9frN6mQFOrLPcPOX7CHdvxbmCFA4LhQHnOeGA66U7J20iKiA4VkyaJfARuF8uVrrv
+         7abntL3oI9HwxTnRI0tjJAtWcRFhGbS04uGtHtC6L7BLrEQOZIxgDCbq+nxzBfU9J2na
+         Oqvg==
+X-Forwarded-Encrypted: i=1; AJvYcCXb8kKuOjO4QNkeqLL8Y5k8xzEOZJN2v9AO7AsN3bERNnBetjwng1MGs2uyPcd83eHmc/Ue3qK7zJBsgy4=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxoI/dPivPqLbJUBiauZeNgPygyHAkzGUbaf7YLkt9eFtW8Bzqt
+	OFOzwDPtQX5N8tqSXY3BqGWfCFl02+Z3QAsuOpaRO93rBSF/NWzB
+X-Gm-Gg: ASbGncs2BBnSJreHonI2r3+A2m1XwwEuhSScQOHq0vtkzPWYVqIToDP0m7IqyLvuAqN
+	3A5lEZw+zSlQLi69006S1Sx8p/61jTJ0qBvD3ZHN6C2N88DmGhJ2WIs4jTPFWrmOePuA4l6xkdz
+	vkVWsShR9Q494Fm0KAKhPa7Aov4Qhe8b1TsoM56o/8lyhiT9tQqlUs1ndz0FwLAukPgA9Td4fkk
+	ZI7KZcRXTRj4BeKzF2cHPPZYd2vGHtOe6QDiG+0bsmLVzP1ZF+hpTX9beJPVHS/cU559mNHkR5B
+	M+2ZShpT05to153ZMbViTLPaybGlMInrZceekQy7/BRF3oTBqAtBq7AIkpQFqMxngf8/v+rdeuA
+	H4GmznR5dPyyjbLu18bA=
+X-Google-Smtp-Source: AGHT+IEQMyjX97Nt8KzVYICwQGtL7t0fOwHtki0gYYS+FzmLNhfE7q4pmhk2ZkcLJLMumQ0lloKrXQ==
+X-Received: by 2002:a17:903:292:b0:215:58be:334e with SMTP id d9443c01a7336-22426fd8525mr13145525ad.10.1741290009936;
+        Thu, 06 Mar 2025 11:40:09 -0800 (PST)
+Received: from ?IPv6:2804:7f0:3f4:754:40b4:b78f:5cfc:8620? ([2804:7f0:3f4:754:40b4:b78f:5cfc:8620])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22410aa448dsm16304945ad.210.2025.03.06.11.40.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Mar 2025 11:40:09 -0800 (PST)
+Message-ID: <635f849e14854b0db1f53a0d0bf329c3070e5859.camel@gmail.com>
+Subject: Re: [PATCH] staging: sm750fb: Fix CamelCase variable naming
+From: Gabriel Lima Luz <lima.gabriel.luz@gmail.com>
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
+ linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+  Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>,  ~lkcamp/patches@lists.sr.ht
+Date: Thu, 06 Mar 2025 16:40:05 -0300
+In-Reply-To: <ba45d980-c6b1-482a-8bfd-457a92d3e24b@stanley.mountain>
+References: <20250228162359.14029-1-lima.gabriel.luz@gmail.com>
+	 <ba45d980-c6b1-482a-8bfd-457a92d3e24b@stanley.mountain>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.52.3-0ubuntu1 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spamd-Result: default: False [-6.80 / 50.00];
-	REPLY(-4.00)[];
-	BAYES_HAM(-3.00)[99.99%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid,imap1.dmz-prg2.suse.org:helo];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FROM_EQ_ENVFROM(0.00)[];
-	FREEMAIL_TO(0.00)[kernel.org,ucw.cz,gmail.com,gmx.de,ffwll.ch];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	R_RATELIMIT(0.00)[to_ip_from(RLqirfcw6gnbcr9a9yhi49fhi6)];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
-X-Spam-Score: -6.80
-X-Spam-Flag: NO
 
-The constants FB_EVENT_MODE_CHANGE and FB_EVENT_BLANK are unused.
-Remove them from the header file.
+Em sex, 2025-02-28 =C3=A0s 20:40 +0300, Dan Carpenter escreveu:
+> On Fri, Feb 28, 2025 at 01:23:54PM -0300, Gabriel Lima Luz wrote:
+> > Adhere to Linux kernel coding style.
+> >=20
+> > Reported by checkpatch:
+> >=20
+> > CHECK: Avoid CamelCase
+> >=20
+> > Signed-off-by: Gabriel Lima Luz <lima.gabriel.luz@gmail.com>
+> > ---
+> > =C2=A0drivers/staging/sm750fb/ddk750_power.h | 8 ++++----
+> > =C2=A01 file changed, 4 insertions(+), 4 deletions(-)
+> >=20
+> > diff --git a/drivers/staging/sm750fb/ddk750_power.h
+> > b/drivers/staging/sm750fb/ddk750_power.h
+> > index 63c9e8b6ffb3..33e852fe6949 100644
+> > --- a/drivers/staging/sm750fb/ddk750_power.h
+> > +++ b/drivers/staging/sm750fb/ddk750_power.h
+> > @@ -3,10 +3,10 @@
+> > =C2=A0#define DDK750_POWER_H__
+> > =C2=A0
+> > =C2=A0enum dpms {
+> > -	crtDPMS_ON =3D 0x0,
+> > -	crtDPMS_STANDBY =3D 0x1,
+> > -	crtDPMS_SUSPEND =3D 0x2,
+> > -	crtDPMS_OFF =3D 0x3,
+> > +	crt_DPMS_ON =3D 0x0,
+> > +	crt_DPMS_STANDBY =3D 0x1,
+> > +	crt_DPMS_SUSPEND =3D 0x2,
+> > +	crt_DPMS_OFF =3D 0x3,
+> > =C2=A0};
+> > =C2=A0
+>=20
+> It seems these are not used.=C2=A0 Just delete them.
+>=20
+> regards,
+> dan carpenter
+>=20
+The dpms enum is used in the definition of the=20
+ddk750_set_dpms function in ddk750_power.h file and
+this function is called in ddk750_display.c on line 158.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- include/linux/fb.h | 6 ------
- 1 file changed, 6 deletions(-)
+If I were to delete it, what changes should I make to=20
+the function mentioned above ?=20
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index d45bd220cb8f..2497321e30bb 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -129,18 +129,12 @@ struct fb_cursor_user {
-  * Register/unregister for framebuffer events
-  */
- 
--/*	The resolution of the passed in fb_info about to change */
--#define FB_EVENT_MODE_CHANGE		0x01
--
- #ifdef CONFIG_GUMSTIX_AM200EPD
- /* only used by mach-pxa/am200epd.c */
- #define FB_EVENT_FB_REGISTERED          0x05
- #define FB_EVENT_FB_UNREGISTERED        0x06
- #endif
- 
--/*      A display blank is requested       */
--#define FB_EVENT_BLANK                  0x09
--
- struct fb_event {
- 	struct fb_info *info;
- 	void *data;
--- 
-2.48.1
+this is my first contribution, thanks for all the help.
 
+best regards,
+Gabriel Lima

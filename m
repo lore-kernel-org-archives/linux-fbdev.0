@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85B67328B6;
-	Sun,  9 Mar 2025 02:58:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B1D1450EE
+	for <linux-fbdev@vger.kernel.org>; Sun,  9 Mar 2025 03:13:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741489142; cv=none; b=H2sIovLieeWc/B8y45hCtOyHkDB6Iq1le2Ide8th6s3iKxEnGrz7f94MPuFaC/H8sQdALzf8SgZebfPWfNGqAWe7+70kSc/QMXNqCY0+5J7Z6XsirbMeG14tsIyFfTioszCherbv0AT6oE0NnlnbRc18iSAsx9VshUGLzg6xEzY=
+	t=1741490014; cv=none; b=o1Kc8MKZJ4v6qq5mow+DN840avdXPjmwh5aidQwvNSsTSBljgrJ8exeOl60yyIfZD8bOZeCm9+7t2ImctPXfUmkvS9BoHlKjj0jDb1SiwEnPwmRP7oxPYKQaScs9HavsJwvJ76lrS/MjF+F4nPJw7V+vBgidJI6BOuZuKmRO4Rc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741489142; c=relaxed/simple;
-	bh=/YqmdkIusG/eMi12DlFGEFauLN+qccwZw8Ds229EQB0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Xuqzgzf+EVLLr7zET+h/WNZh3FL9yxQ0A95EhgDfAUrXl2Z1KX32xEAsmzb5PIllTiTgrRypKi7EwkKRmbHcj+lRKkqa/ijXg42TSRnLuadQiBGn56q9A1U0obH2eohNSCh1oAsWke6FUu1yY3oSRwip3JpouEPmAe6W0IOGJK0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=ZjSPWoGV; arc=none smtp.client-ip=212.227.15.18
+	s=arc-20240116; t=1741490014; c=relaxed/simple;
+	bh=83lel1obJcqVN/OWzN+GSABFrT9ea6f3Oc5Hya6xuE4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=spzcNgPKgjBlNCbpMoYObcy6Ysfyp6uXWlM9i3sr9FB8FYlHpj41qCbwdJ4xBoAWFKdMBlya62g2S9XOsR2yvCgUu4mrSCNd5QaJXzVYG0rMx3+iNCgBdSaUBvTAAiN1frRs/hbibmHYyNtYQ3RSkZhzpqL85MMnDA6aImOEYD0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=tmgvnZyI; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="ZjSPWoGV"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="tmgvnZyI"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1741489120; x=1742093920; i=deller@gmx.de;
-	bh=nJBkMsS0v7qRX5aa5e+44c/E2mxBpR2Z9drP3iujy58=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	s=s31663417; t=1741490009; x=1742094809; i=deller@gmx.de;
+	bh=rjmhWO7YshVYaO3VTwGppDp8Y0zEzlqETCqjOyQNrF4=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=ZjSPWoGVfnFecFQnqiRuoZk3ARKST6TKeOCRDllcrSLVge83Sip/idtcxaUYLfoX
-	 ubGiycKBLcVe4iS6TgCfkVgj4u3tp4kA31vTH//E5K8+gW1bCQrS3J/Yuman0PdhP
-	 TL80WbR3DdwnrjpFr3lBoFPT8i4H8OQTiQzZS/bw9H61dtSZ0VMCLvdhIY8UnG2Xg
-	 tOGxc1rbFX1OZBlwS1UouXJmZClnNuSFRWmFJ+Kgq4JlTDV3RRHrbNccIrZ/RmZnW
-	 IVNB11xgG94MAgWFbVHEHuSyd/0DPjJ56EMDFVWH7T6P9e9brzAGAZgk9Qoyvwb3R
-	 SRUbVS/imUwEHV/q+Q==
+	b=tmgvnZyIj/4mZ3y0fjUcoIUsjxyQpNhL66biHSDXtv4Top+FoFR2eCQAlDjOls1q
+	 WpePaTFhiPVQ2x9bX1FSsE7aPp0GW5HRhiweMcMFCN4y0fB3MP3WXYcpj2kGnxIIS
+	 Y6GKuUA5QAG8nJhvGqoZmj++PUt6nNO+QLNxOkxkvuPtNolGBo8Sh/nU/15zE0xAW
+	 33VDySFWv+l605Q0WQtp42LeIAxNyaeppRYOaLwJ3fkIlWEnngzCVmaGL8HkmgWdK
+	 CcUjum2hzsgtzxnthfkBginBDCUJzlPkEDk0+eBMbZG3zE1/poqqtqPvvu3STCH0j
+	 3dE5wOoQ1Rm8HLr9QA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M3lc9-1trNim3l9n-00GPup; Sun, 09
- Mar 2025 03:58:39 +0100
-Message-ID: <24668c7d-6333-423e-bd48-28af1431b263@gmx.de>
-Date: Sun, 9 Mar 2025 03:58:38 +0100
+Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMofW-1tYTl70iIu-00PvtZ; Sun, 09
+ Mar 2025 04:13:29 +0100
+Message-ID: <a9e66174-c4c3-4b33-935d-5867110c6682@gmx.de>
+Date: Sun, 9 Mar 2025 04:13:28 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,14 +43,10 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/1] fbdev: hyperv_fb: Fix hang in kdump kernel when on
- Hyper-V Gen 2 VMs
-To: mhklinux@outlook.com, haiyangz@microsoft.com, wei.liu@kernel.org,
- decui@microsoft.com, javierm@redhat.com, thomas.tai@oracle.com
-Cc: tzimmermann@suse.de, kasong@redhat.com, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-hyperv@vger.kernel.org
-References: <20250218230130.3207-1-mhklinux@outlook.com>
+Subject: Re: [PATCH 0/1] Refactoring of framebuffer drawing routines
+To: Zsolt Kajtar <soci@c64.rulez.org>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <20250224205908.26336-1-soci@c64.rulez.org>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -96,130 +92,84 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250218230130.3207-1-mhklinux@outlook.com>
+In-Reply-To: <20250224205908.26336-1-soci@c64.rulez.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:mjL3hSxydgxv7auKb+SF1HiGYsIAUsuqH4aH6FyBTYujmpsQrlr
- mVRi1TjTwptv0fzG3qplQmey45gO+xpH2l7vdBQdCxuQq36Uh0Zb7hczbnMI00hkvC8P71L
- zAEGWlfYgYFxMVAnxECokdx4vBaao1qvoqPk3Ogw8/FpOEIViSc19mK8T/FLXiFIdCZNjLO
- utPCl0/kTBxN+Y3JygsXQ==
+X-Provags-ID: V03:K1:k+3+S1BiAgfuthiqOqcTejLNUHX18FJmWzghmafNv+l6FYfxHXW
+ w948dnCV7QlZpeTD75wCtszQ+/MHcD1d+JRTOQ2cvr9ucH21uIQ91Ygt4dpCQHKZoDJoNEA
+ 0GITvlyC9VkKVx/Y/bUBhWAvrHpm1gcQVQGN7yTHgWQz1Fi/68pVYyw3o292Afw967J7OgG
+ pebzb0y+De0J+8Nfs2Mag==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:SVlwpZIM65s=;hImY14q1ReQCkPBo9c3HVJW24Vi
- bySCSPP22C2nUvsMCaajKmS7Ixn8lCf1z9NhNY57sh5h57LWGdkOTAre915uDf8vkJTImdJps
- RziLMSvb6H9Ed1xeh0kniBLhqd9V4iNUbOf44e5vRBACzEnEZKXx/RyQjsFjDl2sB3fhnOsOg
- 8p4sem9b8tesVNGN7QR756mHdCXHyiG4+RKEAinPvCR5payYzLvXsVzmLNwtqLx1yQIUaGP6X
- 8OHtelwCBxnzSfrmzjLLkbRbY6mpeiAu5x/P3WM8QCyyfUcGxXU3ous33EdXt2vNUf5abJon1
- qCFnxw1k56rLVn2gvD11kSa7mPaQgxIq+kLZ8uFhzYijzixoI2cM9lqK5XuyxT+ZDyCrTjMhV
- Ms5j/ELgFb4W1lOxb2U1Rvx1I+n3tjQHEZ6FECK/aug59YYkVkYtS4w+UaBBioeIP/tJm/R9t
- ZxZKECUD1nY8ap2T0vnzq5eIoM8Bbnesmc9FnuwTdp3nrivyxd8+wNo6QRQvguCFBUtrEvYYG
- bgN+K9XWkxJsms1O2e8rbsLz42Qz/i9xadErW3Jja0Okycywb6ZlvIaZ8qe4oiyKV51vUS3NE
- ii0nfdTumZKx5PKJV4vIe3bbxsNyi6hLgLnktHd2fU4dT84tgTiKMsW1DAaXhxPTyDgp7l4ct
- JeeYpqzTV666IFgsa1Xi6I9kjaXdNQLcisTo8wqS6HxxGfOLdvxBvQhDdn5rfvOvN6rdGZNYn
- AD0VtqctXP3g0bGkvGAv8MALw4fpmBTb7hLjj09cqGID48Mtgo7FfQNDSa8gyF71BmGwmmjO5
- ywEKx4kBxP4fDz7ojBFjztWMwZE9QzHq9xuDNM/Ut/ve21+VZ3GphoOg8OK55qG0Khkqj176V
- Xh3CRwq9C5jPy2qFF7e37FFYnxOvojtiNua+CWsk2SXBfVZjl29Y7SR+hkPeYOimeGySa4YHk
- oPsGuseex5JPD1mZpAFNUFuAgUTNj38Gh9ZEQVUk++n0DFTQxzfMIgznKcCV7gskjlV/XFJMA
- xYfFXBuakM5ExaHtfI2HBXzXsnFpf3IV9HFB7aN+Yh7XVRJfmkH9sEeLhpewVSPj6bkzmvvg6
- iMnB0O2r2RpAErPWwCOoht4dZ25wVoYhlNK4VXlrerpGTk/tuNFFNIDHGUZ/Qzv+J90RkiFG9
- sw0EYyxp7PKwwXxzwPnC5dg0BDnA576PygDymsHoch/IHNeRY9U7aNj1DxCP8WFhkc+MIwA+l
- pSZYl1Dx/aDBVHKRkqTgHe/k6T6T0I00ukvxGrNSkClDyRguhhwUtogKh2HYGDsyqWcwcSxSk
- kvETH+12UG5nZcavO9srgVygPbj7tI46tNi8TTXBVGSBJnuoieYMOuvsZG+m8SLY+KxCQBgJZ
- A046kIBgGH147jaPBx8F35NqIgc/m49ZsYKB4nNhW8TzAMT0kt3PAGgcpibUepBWYRx0dVcxO
- fyK9rIw==
+UI-OutboundReport: notjunk:1;M01:P0:9CSL6djg2Ho=;nXHRfoMCfEpYLH93SVRyvYnepO0
+ +QR+mgQqMhO57Sx7jGdiqUphtph8QtAdCPoNOCT+w2WViqlVkDO7zy/Rf6oJi1lsDvQBN8so6
+ iNfP7UBuOuER0hK3BkPiLaL+JmJjJ934bE67S+UtAV65JwjLhmh74vbSolpP4sy+ViZnsURnm
+ KyX+fBrjbTTPKQLgV81OmW3na/yGsmE5i7cswV7HzT4Tl0ZHQOF/WXmB1ft9HMk4BMlj4JOAs
+ zsNcZ0QxBKqRtyKKLbV1YqjZpNHbacVZc3xewvNJmKzV3mBuUrpycC2Ap9M1tDmOHZkebZswq
+ taMme3qVlKLRShGzYmHVCVvTUSmkCv416d9RWIInx6kFFEO8vLUtAO1Uzj1agXJKzLg9g460p
+ qrYx8ofGdlCy8m1a7e8IRoJvtJsgVEgqnzMayMyNQYb9d1koNtFGnWn6TG1fc94TY4+wSsGgQ
+ F5ScT4wQEhxz2cGas1DWfajzoVc+wuhpNvOsitZJeZSwGpbYH3N3fpJPQrEz9SFB13lKsAiVC
+ 3XlcJLcv1qxUfTV1RCJBu12Hf7xgyV07Gh+1GDDGzF26yyziCglUkiXlOkr10u5l210FhdVB1
+ dD542rmb2/qbGhnsjoM7ZYgA13EPIUQkZi7aKh7/gbcMZ9ZtSn4JdD9nDNPK9FO1I8ppAjZfn
+ 6cRuCjZ7JyXGKIAjiz7S6k3CBI0HJSdImxkXLW0zIOmFh2UVbg0c0M9ROqo9bZVCsc5O9zYKJ
+ C5cMvJ2OSzHQ0rscfnPHoQtAaidVkm1kE7OfGcUP9LG6D+pWy4aTWN77g7KpxxFpoOyoWQpC0
+ PtBQOPRuox0Bwla3ogMMDGtyjEzaD0AmKHVMkbi6ndjPlv1YO+NIiBfUY1SqvpHRydtvqgtZu
+ FXA02XbZRyJrOcLN79wOOZ+yD48+ly3HwOEqNywz7UkMoQSQApTpoH5aHmoEZ5/s2cRaxYD6h
+ H+r9P+c0/zcpEcpvDPyRYiS/dWfBO3g9gUKv8yq53fYZnxX1JBj5UFp717Rp7puqiPIH0DvgZ
+ nEDZ6N4q2JA5MEv4kNnVSGsd378BAcjxV18fJ8PxuALLxkTOsTtJai1v3+oGJkAvTdqBLtowJ
+ soMHhbEn4Z2lMcRoB5vQHQwZqN2+jtSGQkx9NwhSQmH4SCR4pTziHQ8fSEIL8+Es9/y7ViSau
+ R5A3LY2ge9b9K1hNb2Y9+Yr+KjoKOlzCmMdTpojbI16YOOOF6Ktm0PLyD5mQW5nab8+iBJUwq
+ HRHfNFNCSksQlW4FlUuUKafWzribjsdBo1YIcz3q1QFe1EsHse7lUgX3HeF2MM1Zijuj74fTh
+ XZ8Mcqr9T5/lXLeJqPy3no4hP6jFVboh57reGUpedxJxBcp2tLyRv3KUNBBhFQYU2bNC9NLXE
+ Pz96oB+U/BAYLy55JBWgH3urLnOhj4ncDlhxO3T3eXMk7OQkh8ilG7XM5oDSdw3n3AAiJJeSg
+ 1/8xCmg==
 
-On 2/19/25 00:01, mhkelley58@gmail.com wrote:
-> From: Michael Kelley <mhklinux@outlook.com>
+On 2/24/25 21:59, Zsolt Kajtar wrote:
+> Proper refactoring of the framebuffer drawing routines. This time it's
+> not only the merging of duplicated code. It isn't half finished either
+> so the various combinations of foreign endianness, pixel reversing, bits
+> per pixel, cpu word sizes and byte order should work.
 >
-> Gen 2 Hyper-V VMs boot via EFI and have a standard EFI framebuffer
-> device. When the kdump kernel runs in such a VM, loading the efifb
-> driver may hang because of accessing the framebuffer at the wrong
-> memory address.
+> Added myself to look after this code. Based on the time spent on proving
+> it I don't expect a busy inbox. Famous last words.
 >
-> The scenario occurs when the hyperv_fb driver in the original kernel
-> moves the framebuffer to a different MMIO address because of conflicts
-> with an already-running efifb or simplefb driver. The hyperv_fb driver
-> then informs Hyper-V of the change, which is allowed by the Hyper-V FB
-> VMBus device protocol. However, when the kexec command loads the kdump
-> kernel into crash memory via the kexec_file_load() system call, the
-> system call doesn't know the framebuffer has moved, and it sets up the
-> kdump screen_info using the original framebuffer address. The transition
-> to the kdump kernel does not go through the Hyper-V host, so Hyper-V
-> does not reset the framebuffer address like it would do on a reboot.
-> When efifb tries to run, it accesses a non-existent framebuffer
-> address, which traps to the Hyper-V host. After many such accesses,
-> the Hyper-V host thinks the guest is being malicious, and throttles
-> the guest to the point that it runs very slowly or appears to have hung.
->
-> When the kdump kernel is loaded into crash memory via the kexec_load()
-> system call, the problem does not occur. In this case, the kexec command
-> builds the screen_info table itself in user space from data returned
-> by the FBIOGET_FSCREENINFO ioctl against /dev/fb0, which gives it the
-> new framebuffer location.
->
-> This problem was originally reported in 2020 [1], resulting in commit
-> 3cb73bc3fa2a ("hyperv_fb: Update screen_info after removing old
-> framebuffer"). This commit solved the problem by setting orig_video_isVG=
-A
-> to 0, so the kdump kernel was unaware of the EFI framebuffer. The efifb
-> driver did not try to load, and no hang occurred. But in 2024, commit
-> c25a19afb81c ("fbdev/hyperv_fb: Do not clear global screen_info")
-> effectively reverted 3cb73bc3fa2a. Commit c25a19afb81c has no reference
-> to 3cb73bc3fa2a, so perhaps it was done without knowing the implications
-> that were reported with 3cb73bc3fa2a. In any case, as of commit
-> c25a19afb81c, the original problem came back again.
->
-> Interestingly, the hyperv_drm driver does not have this problem because
-> it never moves the framebuffer. The difference is that the hyperv_drm
-> driver removes any conflicting framebuffers *before* allocating an MMIO
-> address, while the hyperv_fb drivers removes conflicting framebuffers
-> *after* allocating an MMIO address. With the "after" ordering, hyperv_fb
-> may encounter a conflict and move the framebuffer to a different MMIO
-> address. But the conflict is essentially bogus because it is removed
-> a few lines of code later.
->
-> Rather than fix the problem with the approach from 2020 in commit
-> 3cb73bc3fa2a, instead slightly reorder the steps in hyperv_fb so
-> conflicting framebuffers are removed before allocating an MMIO address.
-> Then the default framebuffer MMIO address should always be available, an=
-d
-> there's never any confusion about which framebuffer address the kdump
-> kernel should use -- it's always the original address provided by
-> the Hyper-V host. This approach is already used by the hyperv_drm
-> driver, and is consistent with the usage guidelines at the head of
-> the module with the function aperture_remove_conflicting_devices().
->
-> This approach also solves a related minor problem when kexec_load()
-> is used to load the kdump kernel. With current code, unbinding and
-> rebinding the hyperv_fb driver could result in the framebuffer moving
-> back to the default framebuffer address, because on the rebind there
-> are no conflicts. If such a move is done after the kdump kernel is
-> loaded with the new framebuffer address, at kdump time it could again
-> have the wrong address.
->
-> This problem and fix are described in terms of the kdump kernel, but
-> it can also occur with any kernel started via kexec.
->
-> See extensive discussion of the problem and solution at [2].
->
-> [1] https://lore.kernel.org/linux-hyperv/20201014092429.1415040-1-kasong=
-@redhat.com/
-> [2] https://lore.kernel.org/linux-hyperv/BLAPR10MB521793485093FDB448F7B2=
-E5FDE92@BLAPR10MB5217.namprd10.prod.outlook.com/
->
-> Reported-by: Thomas Tai <thomas.tai@oracle.com>
-> Fixes: c25a19afb81c ("fbdev/hyperv_fb: Do not clear global screen_info")
-> Signed-off-by: Michael Kelley <mhklinux@outlook.com>
-> ---
-> The "Fixes" tag uses commit c25a19afb81c because that's where the proble=
-m
-> was re-exposed, and how far back a stable backport is needed. But I've
-> taken a completely different, and hopefully better, approach in the
-> solution that isn't related to the code changes in c25a19afb81c.
->
->   drivers/video/fbdev/hyperv_fb.c | 20 +++++++++++++-------
->   1 file changed, 13 insertions(+), 7 deletions(-)
+> Zsolt Kajtar (1):
+>    Refactoring of framebuffer drawing routines
 
-applied to fbdev tree.
+I'd like to give this patch a chance to live in for-next for a few days, a=
+lthough
+I don't like such a big rewrite as one patch. But in this case it's probab=
+ly necessary
+to make an exception.
 
-Thanks!
+Important: please add a proper commit message to your patch!
+Explain why you do that, and what advantages it gives.
+Describe what should be different. Is something maybe faster or slower?
+
+Then, the patch did not applied for me and git mentioned that the patch
+was corrupt. Not sure yet, if the problem is on my side...
+
 Helge
+
+
+>   MAINTAINERS                             |  16 +
+>   drivers/video/fbdev/core/Kconfig        |  10 +-
+>   drivers/video/fbdev/core/cfbcopyarea.c  | 428 +-------------------
+>   drivers/video/fbdev/core/cfbfillrect.c  | 362 +----------------
+>   drivers/video/fbdev/core/cfbimgblt.c    | 357 +----------------
+>   drivers/video/fbdev/core/cfbmem.h       |  43 ++
+>   drivers/video/fbdev/core/fb_copyarea.h  | 405 +++++++++++++++++++
+>   drivers/video/fbdev/core/fb_draw.h      | 274 ++++++-------
+>   drivers/video/fbdev/core/fb_fillrect.h  | 280 ++++++++++++++
+>   drivers/video/fbdev/core/fb_imageblit.h | 495 ++++++++++++++++++++++++
+>   drivers/video/fbdev/core/syscopyarea.c  | 369 +-----------------
+>   drivers/video/fbdev/core/sysfillrect.c  | 324 +---------------
+>   drivers/video/fbdev/core/sysimgblt.c    | 333 +---------------
+>   drivers/video/fbdev/core/sysmem.h       |  39 ++
+>   14 files changed, 1480 insertions(+), 2255 deletions(-)
+>   create mode 100644 drivers/video/fbdev/core/cfbmem.h
+>   create mode 100644 drivers/video/fbdev/core/fb_copyarea.h
+>   create mode 100644 drivers/video/fbdev/core/fb_fillrect.h
+>   create mode 100644 drivers/video/fbdev/core/fb_imageblit.h
+>   create mode 100644 drivers/video/fbdev/core/sysmem.h
+>
+

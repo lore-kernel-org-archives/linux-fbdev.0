@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C61B12576;
-	Sun,  9 Mar 2025 01:46:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EFE54C70;
+	Sun,  9 Mar 2025 02:00:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741484789; cv=none; b=F46JKZ2V2sKVvG+Hu7or+SBagN2uJPTjMussyawqNmoY0ETOm7hxxYmV0/xdOCJiC1ZVetrLded/R8VIfur72JFqf2U3xR/jpPb4yFAdUYaBdKeS82hGuNMGSAJMOB0RkXquuMb5rFOSj/MScBYUXp5ZfFiGyJgDyFZfh4SOKg4=
+	t=1741485646; cv=none; b=K6enw6mUwGFsbRX+h8EUHbAwBkwWaJjLvOg0bcCh1ojF0hSHbFXX0asyaiylmN7a7Pdqoc1Zq0VzCZNSer125x//79S7G6fsWJszDbzxXUEmuhxTx5HBBs3n/WqBDWoWkLbMYaTbyBsya39jeP5pPP3iiLTU9xhFKqn84i1cUNI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741484789; c=relaxed/simple;
-	bh=aouRbGl0zSLELc20htXPyiyjCbX/yEA98X/jslNS13E=;
+	s=arc-20240116; t=1741485646; c=relaxed/simple;
+	bh=wQRSa9oEBYAoh8caaqUmYqfpDL03N8sOx/3f3+v8l9k=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Uoec08SZYe0bIDilXSl33yIE+C99oIeBHPd1lfVa6x1JP11L8QZ+RsEQViip1sZppwmY9jlltSuyg3EwZ8lyP04pW3z70D+a78UCAOYoJFsFDCID6gAuHcf9d1PoShA74GBPLfn7tNsodCMiKorBzttbflYkm897mY23MnEP3Zc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=dRhEpMvz; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=lPgfWhQpNbEEg74keUa9y7AjVYSwCDz04NHfMDaxRglX2FdpL/eoXPV7mmV2+KhuXU4WDVJw07nomTs9kjqQIKcCzZKNOJQmu4JzQj7zs67Qbfn5d94zpELyOVvDfWKhGTR+5AXtAu3o5D03C9y0sOoV3cEHtW/dj4gtPr2cpZ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=tgsqWNBv; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="dRhEpMvz"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="tgsqWNBv"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1741484773; x=1742089573; i=deller@gmx.de;
-	bh=BI+qFGKtyIKj2XHGpJ0zmu5JOmyf8lpR4zpYb1MG7yg=;
+	s=s31663417; t=1741485638; x=1742090438; i=deller@gmx.de;
+	bh=Nv7q73JewaaMP/j8eSwUqHgxHRPYRCgSF5TBSrI+cXI=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=dRhEpMvzlsvN8EUdWNfoQ8UEpjcOZnJvJHNHTL+6nmH5Ihly02u5rC9A+3Y1JoVU
-	 ko5vSQGkS8lUIld84nj2iG9Mo0wkTMGfRIJ9793c3KPYDzB/IKnUi5D1M/HAolFUJ
-	 B/ipQAA6Ev83f2LHAiD+p+6xN/FO1CRmj2L5FwEfv/FTget9PdGWy7GGqkIqZRy45
-	 mHZuCoj2NgvEinERKiOK39fjr4+jgnMOkHdiswLhix8ddI9IM+6bBTEwwZtSNfgyv
-	 AMyTt8CG2dEWjDoyaDzhLMAVWqOlRxXEMerS0LvjYaUqeDLEPmN97xGB0vAw4n8ua
-	 mX19BOk+rUuwIU3v4Q==
+	b=tgsqWNBvR8iNMbjK9gIf1isiv+mJxQJs5c1XHjdWQglQMIXiqsmax/ljie12AiN+
+	 rtXXZMbtrKCRCdm+nd736M0UzCYbYTpCAXXOn3yXGgcR6uNSkE92fiEwuM6mzuoW8
+	 YLrHfDk5LYr0p1uRE3jhCWDdQJlWBlHI3u03gFdZ/I/w3lFl06nLEU2j5oFzU1vjG
+	 O+f0i1RCUAIbn4ayytQCFRdkfhuK1WkBVluMeKCiivifTiKqSCNb2IZ3YYFvh0Mhr
+	 9y7Y5gmIYB4GPNnR493ri9vAgIYrDvmo5R5Fxx5/IsgAIU/OY4NHheyrCZDujrZM+
+	 MXjXZRGB8nTXekFaNw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mt79F-1syAm40Tkn-00rplv; Sun, 09
- Mar 2025 02:46:13 +0100
-Message-ID: <9fb4e2f9-fa28-4dc2-b4db-6f7594ddc5ae@gmx.de>
-Date: Sun, 9 Mar 2025 02:46:11 +0100
+Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M7K3Y-1tsBMv3jpc-00CI6G; Sun, 09
+ Mar 2025 03:00:38 +0100
+Message-ID: <e88f483c-1439-40f2-8945-dfa4de373153@gmx.de>
+Date: Sun, 9 Mar 2025 03:00:35 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,15 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
-To: Arnd Bergmann <arnd@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20250225164436.56654-1-arnd@kernel.org>
+Subject: Re: [PATCH] fbdev: lcdcfb: Register sysfs groups through driver core
+To: oushixiong1025@163.com
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+ Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+ Lee Jones <lee@kernel.org>, =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?=
+ <u.kleine-koenig@baylibre.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Shixiong Ou <oushixiong@kylinos.cn>
+References: <20250219084427.244985-1-oushixiong1025@163.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,51 +97,60 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250225164436.56654-1-arnd@kernel.org>
+In-Reply-To: <20250219084427.244985-1-oushixiong1025@163.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9dglOuAzJm0drNeh5CbFS+IxFTXpgGKs+ST9+pGvu4P8N5rSbIK
- ShIYORdShc1eOUg0QXHYFbvKLdcjfuwCP08TkHNSAK03dobC5314tPzVfk5zvaJaEO6G16P
- yIgqGDwy9M+6A/On2rsMayV5Vl4oMr4CRUjE3Z2qWkJ6NOJWAfkz/blCjDuP3xJKddI7Lnk
- vzLrN/ofLVXyjVQErO6cQ==
+X-Provags-ID: V03:K1:2g9LTpSp5bLNqSSewIt9NQ7qAMuxvFHZweNuCCcp31D1/7qhW4N
+ xRNKvDYSy4XhDGwy3F2o4JdEBD5yjuTUV+nr3Kms4VMU/nW5j1NnN16jg3WeXh0/j8etTgv
+ P9cVPR8AbI+qpxr8+3Jk4ckbvic3+4TXLUz+PN5AypoJHpTABlCpDIxdnlz/7qOboLSJj8H
+ L0P4c1pi9s9dCB/tmqqAA==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Ez3AJunTXxk=;dELhG1u3d+RMqaGdFvO2I+oDRI0
- vM9s3SEzGwd7rTgH5EWZaWWoHZpJiv0HbbKbtKj4DoYHm1kX4atZZizFT26+0YFHfJLLVt8pN
- HIiTdu7LGQ0vrsmO0TITl7ZUUWsnpbSPPYUMqSNTr2AEgspO1fiQVRUxJqGziOqsHGS4EZB5j
- kB0h/CsSOo8nWs2KgX0fUkA8Aj4r/UhPZPth4F2sgqR8cxFO6PqGH1bddcMxWWjFFSxsfzSWt
- /cGqMHEkhGWOeKhexbBqsNZTTWJXLDnzgixci7SIU2rjHbWaeVjtMyBcma7wEbZeh7gX8yFzf
- Dzm+6XJjHmrzUcOwoREkXIFJ0GThIAJJ9wsmC9FrGjyouc8TuKYPy9MmEDLB8njuAZLnYkx49
- WkoaMyjincR6N2CwNcMhWxlvZM/HY/JiCskJm03onmDSXfMEIeStJcptDcP8hmUmqiRET4jhK
- QrVwWBSioEUQp/4mR6UQozcVDG6b9zgaPOcIa2Ag9t0RKgGcfAlYHXKLj5ngSwOrGCHU54ARq
- 6b8L4eriFWJibpMVWq8VcR6i+7S2BlNycScKng6A8mDZiZNxRrEutq+Ikt3/bR84AVLwR8vTi
- e/e/ktWXgc253JaH1NkLbYWRELBp2lRFNHM7i+wHEWRntu2jemq/mZdF9DUEwSXgsrEQ+Rrjf
- E5EG+nYME06vj8Hv/I6BTIWy4eb54qk++vVLXYyMatZq/Sau9icr6Eu6E0MFXUkvu3KsKCh18
- 5dtuXIaG1RI1C+6v8SpTaoM+BQ0OCAPviDfmlx/YNhlvhRjQVLT40093b0AOwmnUbHiH/pmm7
- IRYWCWlOjNVipxsQ+EYmSMFAojJePNIfDkyW9JFnAT4devi0+gf2YJ8JQ3slbn2DmobokWQ4H
- 7QNIObPuRrF4E75mMIcVCTwfWTSRXmLA6K7imtFSq4ZN4AOtOmGW875/KKviBSg4fhBjCHDnt
- Xt9CeYaepO4wugTbI2U5CM+yYhU3Os6Qzndtj7svpeVLwIWAWDgdMcj/QUXRkXOBgbZ5mq1nE
- PX6J+8YYhSspEC2Xz3BKy3IPDE2zAZjSgvml4pAvGFqu+ypzjxB5hW8sm4OEriTk/1bag5+KY
- x4yFfcbBKClgqxOrMVWBrEAopDPalt3hdT5risVv4RGpC4QGuEHbcE2Fs/q7S28CX1a5k0OkN
- 2l/3Mp4ZAW054HQpAoI4AE4bp09aH+yTmsC1rHRHDnQgF0gRfj+6KOtkYGo6TC+qhyTPvaAX/
- VfNpvIOJSddjPWjwVFgXgvNhammGMkw1HXq4VYY3aRKXoOZh/TFMiL2nO9wR/VTNCWix/GAGU
- 15VR7biuSohCLvaPkhSg8hqGQ6kKp9s7OGvnkZJ/DGQHUQC+pt6GNA2sP0w7kWtIP8x2KBgNK
- CV2PIjNxXphDq+X4RvtUwUfD+sfLD88hfIS2tiXcbH8N9nesqzw8IhRZdD
+UI-OutboundReport: notjunk:1;M01:P0:aBWmrqUcUKc=;KbW3XNSUl3sl4yfSDDLejpzHFBZ
+ PYGrQQSrAuUJWsj/r4EnKhx56Vi7HRxnZcFijJNdpSdMeUxvsOVN3cJNieod8Mo4zB4xOsZKk
+ uuvLDH99mQbuC8XJ28v6KBDvGxmZET8vWhLLBevZU7Kbs5RT22ZOlOYcIs+cBYM4HPIeW7gI9
+ 13guhXFbnejOoOPiCIfo7FO0mRHbZs6u8nOGnnCtXoh1j0SCd6eXhkvIRLszBKBYoJR3cqDsy
+ 7cEVXdYw4B+eSSEhAr0C7Y4d86K1xn9v6T7AtP9YxMTjP2mVli7CvDtUYMnrpCRAA0FSPu2r5
+ HEAsUV8cROsRyvrSAhsOxlAVbqUDvBxTjuruBwlKxQruU0bKbXXjnLNzmSqZjSX3Vkk4XKlzd
+ OOayXAOGK59xL9vjYsfUJHYqIkeEY5UKpygR7TlA1JYQH5nvWRUtRGKbB6fBhsOa5IRay5gjn
+ ogXgDMViFcgAXM5NfaGntbGL6tWPhTGmqA5Gc/NJ53AOCgS2ONZJ5vN4sO5oya5Q7ToU+/Ew6
+ FcGbBBdpw//b8XxS983D4mvYwX2OhqLn3iGSCaEFctuTvesX0c/cQ6p4WQQ3vB5xu+KxlbTrN
+ uPZOrqsCyWlfOFjt/VQPf62lwne5wFycDJS9I/XpMGDk9lSEjOEWmD4Dr6gLWTsGcq0MteB1o
+ DLzlatY1lqRz1LF/4hCcMNI8bAHUFStYDbbwFjdt5vi8a4tK46bgqEtgLaQa/TZhOrv9b+kKS
+ h+DQJjqJLuqz3Dc16r9ZX0jc4TlNkj0v0PFKQ104dAcsMAvCU2TRBQoXTuQfXNvvypd9VvVpf
+ J+GjD9Y3UXXLO6UBlD0i7nbSHUOu9r58Zu2MVa+vHwcYN8Q5pSl2OnQyr1aO73OjVgETIWl9Y
+ 3UH0aW1sRwHAzdnIX0b4xuEFmDRDcurolJEQ6fuZLIHsjw+23E8pez7+XcaTyGN8TUYcfA/5H
+ 4u6esnL0ciV39Ptkg6rlvuE9XWZuVRsJuy6ZcltFDXjsrk8p9afNopdL8EDzop68yVpM1K97J
+ AI/OTM1yc9C0r4JcgtGO6hg99jPL2ItxauDUP1NpEfaauXGQUaytE7k6FmCJxID9IuAentaZC
+ PaGqApv6HLQlHMwxNxKurntN3KYk3fY+WPvfpKj1SVU80FS9hX2zW9mu2JvGMX+Bs35XBG9Iq
+ GjSR4Cg2HLgsM9lnvnMG9p+aDdyJaXFdr9iV8bfU5vBpicqIB1WkavrqR9PeDsUX4AfxTG9Nv
+ taHhdkuoWJw/lkRCqD9mPwxbs8T+S4w7pHHLnYBDKa7wIf26y14mDcQU80UNMzfdSlB8V2Vcs
+ UmP1oG7ta0Dc7eeAH5Bno49hJq/ogHnXGciP1lO1zKSQBgfvGZtz2r8/JAw8GYHiwPko19Heo
+ FZCax0uC81ilHFRk93jJgg7JlUJ2VhQNmQR03zfzKLwYOvPZETMS5lDMpD
 
-On 2/25/25 17:44, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On 2/19/25 09:44, oushixiong1025@163.com wrote:
+> From: Shixiong Ou <oushixiong@kylinos.cn>
 >
-> Dummycon is used as a fallback conswitchp for vgacon and fbcon
-> in the VT code, and there are no references to it if all three
-> are disabled, so just leave it out of the kernel image for
-> configurations without those.
+> [WHY]
+>     1. The driver forgot to call device_remove_file()
+>     in sh_mobile_lcdc_overlay_fb_unregister(), and there was
+>     no error handling when calling device_create_file() failed.
 >
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>     2. This should probably use device_add_group() instead of
+>     individual files to simplify both creation and removal. [Arnd]
+>
+>     3. The driver core can register and cleanup sysfs groups already.
+>     as commit 95cdd538e0e5 ("fbdev: efifb: Register sysfs groups
+>     through driver core").
+>
+> [HOW]
+>     Register sysfs groups through driver core.
+>
+> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
 > ---
->   drivers/video/console/Kconfig | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
+>   drivers/video/fbdev/sh_mobile_lcdcfb.c | 29 ++++++++++++--------------
+>   1 file changed, 13 insertions(+), 16 deletions(-)
 
-
-whole series applied to fbdev git tree.
+applied.
 
 Thanks!
 Helge

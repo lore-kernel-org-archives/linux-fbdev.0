@@ -1,88 +1,144 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FD9414B96E;
-	Sat,  8 Mar 2025 21:38:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C61B12576;
+	Sun,  9 Mar 2025 01:46:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741469929; cv=none; b=ZCAnrByhb0y00qSxHgJsmFJiUgca//CU73neVMH4YJ37lqXTkTnngdFMwkwI2x4IkLhXctiUT5St72LYnas6KLUEKQUC2uZ4Hh5vs1Z9AIMZcG4e9Mzty4rwRmPZja58GUEPenzJzPAnHPa6PZTdm/jRklZBdS72cqK2+tU3O8M=
+	t=1741484789; cv=none; b=F46JKZ2V2sKVvG+Hu7or+SBagN2uJPTjMussyawqNmoY0ETOm7hxxYmV0/xdOCJiC1ZVetrLded/R8VIfur72JFqf2U3xR/jpPb4yFAdUYaBdKeS82hGuNMGSAJMOB0RkXquuMb5rFOSj/MScBYUXp5ZfFiGyJgDyFZfh4SOKg4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741469929; c=relaxed/simple;
-	bh=nOy8jfsgTc7dDHaNQlc5vSqZxzYWe15zPz8u70mWr2k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kEG/Tx1/ifO6iFE8ZWGg5fe3XtlK57ryPwsSrWE8a0c8hFTFmwdPYs7KsAx/pWT2MJCHHN6N/CeNMqkBE1KXBIwRdH+cZFXqQPJYLslPxRPUDqeYrpFNb1SXfrOKYmgWvs96VtU6Cgbzq+CGuIuICE81zxn0sZ1TJSnON47WauU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Iwbqye7d; arc=none smtp.client-ip=198.175.65.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1741484789; c=relaxed/simple;
+	bh=aouRbGl0zSLELc20htXPyiyjCbX/yEA98X/jslNS13E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Uoec08SZYe0bIDilXSl33yIE+C99oIeBHPd1lfVa6x1JP11L8QZ+RsEQViip1sZppwmY9jlltSuyg3EwZ8lyP04pW3z70D+a78UCAOYoJFsFDCID6gAuHcf9d1PoShA74GBPLfn7tNsodCMiKorBzttbflYkm897mY23MnEP3Zc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=dRhEpMvz; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Iwbqye7d"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1741469928; x=1773005928;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=nOy8jfsgTc7dDHaNQlc5vSqZxzYWe15zPz8u70mWr2k=;
-  b=Iwbqye7dLuHGNjc/FbfIuNgHxeYh/QuOkYN9znUEz37mXoCjMK3eOvL7
-   EkD2aODaghqvcCIZv0mk644jEVq8qVv/Hc41uuq+0y2h8BWjYEuPBBSP5
-   mLUr4aqB3P0YVfKkbz+u6s//55xS2n1jm2scZ0H6Gs2ZB3q5pFKe4qpEb
-   544nimOxjmTWRMtmVIhRerQBlHRWJCw9PLfuDqTQ2N+QC+nRXdAaniQ00
-   BI6r6GfjdoekILEi3zPNiLSzCRRy/tr2+XhmQsqDkxWUR+pRRxEcdjKGk
-   LLPCditpidAcDHD7cF0ovVcf6HrVBiLYxfg+xbOHAWVycLOkmZypErpa5
-   A==;
-X-CSE-ConnectionGUID: Iy64PalxRZGiojrGfSXszA==
-X-CSE-MsgGUID: qxh4M+PbRL2pBSU28SvbLw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11367"; a="53881114"
-X-IronPort-AV: E=Sophos;i="6.14,233,1736841600"; 
-   d="scan'208";a="53881114"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2025 13:38:47 -0800
-X-CSE-ConnectionGUID: Bb8ZtCuyRQ+WFV/KW89QxA==
-X-CSE-MsgGUID: Gvd8YX6zRpaKFsfwIt8/VA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,233,1736841600"; 
-   d="scan'208";a="124716483"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2025 13:38:45 -0800
-Date: Sat, 8 Mar 2025 23:38:42 +0200
-From: Raag Jadav <raag.jadav@intel.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	tzimmermann@suse.de, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fbdev: pxafb: use devm_kmemdup*()
-Message-ID: <Z8y44sYYCzM51YZe@black.fi.intel.com>
-References: <20250228071009.150971-1-raag.jadav@intel.com>
- <Z8Gt8fg07Y-bFPGT@smile.fi.intel.com>
- <Z8ywEzFvWxb59LqK@black.fi.intel.com>
- <6c211340-037b-440d-b5ec-b4a5e2bd4ef9@gmx.de>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="dRhEpMvz"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1741484773; x=1742089573; i=deller@gmx.de;
+	bh=BI+qFGKtyIKj2XHGpJ0zmu5JOmyf8lpR4zpYb1MG7yg=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=dRhEpMvzlsvN8EUdWNfoQ8UEpjcOZnJvJHNHTL+6nmH5Ihly02u5rC9A+3Y1JoVU
+	 ko5vSQGkS8lUIld84nj2iG9Mo0wkTMGfRIJ9793c3KPYDzB/IKnUi5D1M/HAolFUJ
+	 B/ipQAA6Ev83f2LHAiD+p+6xN/FO1CRmj2L5FwEfv/FTget9PdGWy7GGqkIqZRy45
+	 mHZuCoj2NgvEinERKiOK39fjr4+jgnMOkHdiswLhix8ddI9IM+6bBTEwwZtSNfgyv
+	 AMyTt8CG2dEWjDoyaDzhLMAVWqOlRxXEMerS0LvjYaUqeDLEPmN97xGB0vAw4n8ua
+	 mX19BOk+rUuwIU3v4Q==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mt79F-1syAm40Tkn-00rplv; Sun, 09
+ Mar 2025 02:46:13 +0100
+Message-ID: <9fb4e2f9-fa28-4dc2-b4db-6f7594ddc5ae@gmx.de>
+Date: Sun, 9 Mar 2025 02:46:11 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6c211340-037b-440d-b5ec-b4a5e2bd4ef9@gmx.de>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] dummycon: only build module if there are users
+To: Arnd Bergmann <arnd@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20250225164436.56654-1-arnd@kernel.org>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20250225164436.56654-1-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:9dglOuAzJm0drNeh5CbFS+IxFTXpgGKs+ST9+pGvu4P8N5rSbIK
+ ShIYORdShc1eOUg0QXHYFbvKLdcjfuwCP08TkHNSAK03dobC5314tPzVfk5zvaJaEO6G16P
+ yIgqGDwy9M+6A/On2rsMayV5Vl4oMr4CRUjE3Z2qWkJ6NOJWAfkz/blCjDuP3xJKddI7Lnk
+ vzLrN/ofLVXyjVQErO6cQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:Ez3AJunTXxk=;dELhG1u3d+RMqaGdFvO2I+oDRI0
+ vM9s3SEzGwd7rTgH5EWZaWWoHZpJiv0HbbKbtKj4DoYHm1kX4atZZizFT26+0YFHfJLLVt8pN
+ HIiTdu7LGQ0vrsmO0TITl7ZUUWsnpbSPPYUMqSNTr2AEgspO1fiQVRUxJqGziOqsHGS4EZB5j
+ kB0h/CsSOo8nWs2KgX0fUkA8Aj4r/UhPZPth4F2sgqR8cxFO6PqGH1bddcMxWWjFFSxsfzSWt
+ /cGqMHEkhGWOeKhexbBqsNZTTWJXLDnzgixci7SIU2rjHbWaeVjtMyBcma7wEbZeh7gX8yFzf
+ Dzm+6XJjHmrzUcOwoREkXIFJ0GThIAJJ9wsmC9FrGjyouc8TuKYPy9MmEDLB8njuAZLnYkx49
+ WkoaMyjincR6N2CwNcMhWxlvZM/HY/JiCskJm03onmDSXfMEIeStJcptDcP8hmUmqiRET4jhK
+ QrVwWBSioEUQp/4mR6UQozcVDG6b9zgaPOcIa2Ag9t0RKgGcfAlYHXKLj5ngSwOrGCHU54ARq
+ 6b8L4eriFWJibpMVWq8VcR6i+7S2BlNycScKng6A8mDZiZNxRrEutq+Ikt3/bR84AVLwR8vTi
+ e/e/ktWXgc253JaH1NkLbYWRELBp2lRFNHM7i+wHEWRntu2jemq/mZdF9DUEwSXgsrEQ+Rrjf
+ E5EG+nYME06vj8Hv/I6BTIWy4eb54qk++vVLXYyMatZq/Sau9icr6Eu6E0MFXUkvu3KsKCh18
+ 5dtuXIaG1RI1C+6v8SpTaoM+BQ0OCAPviDfmlx/YNhlvhRjQVLT40093b0AOwmnUbHiH/pmm7
+ IRYWCWlOjNVipxsQ+EYmSMFAojJePNIfDkyW9JFnAT4devi0+gf2YJ8JQ3slbn2DmobokWQ4H
+ 7QNIObPuRrF4E75mMIcVCTwfWTSRXmLA6K7imtFSq4ZN4AOtOmGW875/KKviBSg4fhBjCHDnt
+ Xt9CeYaepO4wugTbI2U5CM+yYhU3Os6Qzndtj7svpeVLwIWAWDgdMcj/QUXRkXOBgbZ5mq1nE
+ PX6J+8YYhSspEC2Xz3BKy3IPDE2zAZjSgvml4pAvGFqu+ypzjxB5hW8sm4OEriTk/1bag5+KY
+ x4yFfcbBKClgqxOrMVWBrEAopDPalt3hdT5risVv4RGpC4QGuEHbcE2Fs/q7S28CX1a5k0OkN
+ 2l/3Mp4ZAW054HQpAoI4AE4bp09aH+yTmsC1rHRHDnQgF0gRfj+6KOtkYGo6TC+qhyTPvaAX/
+ VfNpvIOJSddjPWjwVFgXgvNhammGMkw1HXq4VYY3aRKXoOZh/TFMiL2nO9wR/VTNCWix/GAGU
+ 15VR7biuSohCLvaPkhSg8hqGQ6kKp9s7OGvnkZJ/DGQHUQC+pt6GNA2sP0w7kWtIP8x2KBgNK
+ CV2PIjNxXphDq+X4RvtUwUfD+sfLD88hfIS2tiXcbH8N9nesqzw8IhRZdD
 
-On Sat, Mar 08, 2025 at 10:12:16PM +0100, Helge Deller wrote:
-> On 3/8/25 22:01, Raag Jadav wrote:
-> > On Fri, Feb 28, 2025 at 02:37:05PM +0200, Andy Shevchenko wrote:
-> > > On Fri, Feb 28, 2025 at 12:40:09PM +0530, Raag Jadav wrote:
-> > > > Convert to use devm_kmemdup() and devm_kmemdup_array() which are
-> > > > more robust.
-> > > 
-> > > FWIW,
-> > > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > 
-> > Thank you.
-> > 
-> > Anything I can do to move this forward?
-> 
-> Applied to fbdev git tree.
+On 2/25/25 17:44, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> Dummycon is used as a fallback conswitchp for vgacon and fbcon
+> in the VT code, and there are no references to it if all three
+> are disabled, so just leave it out of the kernel image for
+> configurations without those.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>   drivers/video/console/Kconfig | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
 
-Thank you.
 
-FYI: This depends on the immutable tag (mentioned with changelog).
+whole series applied to fbdev git tree.
 
-Raag
+Thanks!
+Helge

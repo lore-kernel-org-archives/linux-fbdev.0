@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1191A1A3BD7;
-	Sun,  9 Mar 2025 19:42:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9626F1E5200
+	for <linux-fbdev@vger.kernel.org>; Sun,  9 Mar 2025 20:14:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741549379; cv=none; b=iG+M+LbQa+ZmNTqKFSh7FAKTx58yjqFnXjKB2BsbVqszMc5G4ZKX+jTFhWi5k9foehSc3Ubtntsq257UXH5okU7IUwsEAvnt/51MP40PeQ1ybOBc+C8PDv4fOr5SVIyVNe5FnKsmYhrvB9+L9RrAqn1VPXOuO02GKk8k6SHV3Wg=
+	t=1741551243; cv=none; b=OTHgcUmxK26K3hwus3pw0J1p3b8c/kEOnhPSRSY7r37Ea1VRpMdCwRDOwHu+N0olnsnUHfY8fQSIfkkPdeUgfoKjYWvWPp6pc5FfnyKKF2G0xG3n/yjk5FcsezY8afa0DmHm59I955cSlPBbKa7RKb3D/kM+C42ZHPLR9850YVQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741549379; c=relaxed/simple;
-	bh=gq0mcMpdRvpKQFab/eqaOrf7Nvs1FIIz46vi04XhkDk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=j2hJ0tOUNtl0R4XnaJJ3aVyi0/nt2eT/iQV52fO6MeSja/flDFw7QfhKO028jc2TMFlEmkY5EfA+RY5OAUmdUmRwptpDKJI4n1DNnBRUZTX7HCYD+riaiHB5e2gkiFzmNfUmzY7rgm5dj1kykafJgByc4KWMTsmCPq2TG4n76iY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=mKgPp9dG; arc=none smtp.client-ip=212.227.17.21
+	s=arc-20240116; t=1741551243; c=relaxed/simple;
+	bh=7G+cZ5B2Z/LTjSyvEPQXzAReiWcuQBJUzkPvTbVqrwQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=sDyeasqnsRBdGqp2dqTwHzZFC/qFrUsKju9B493hjKGB5svgQ+rw6Ahs3YQDeUzrOJwYU6+SO4uvXrZYwGigYYbUW0oJN03QUDv12GO/My63E1ZzVmwlOxMP2IW1hXZCazjp9oIXgm8jV9l+9/QpZtvD9p/0U51vvR7R6paVzpM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=fSGconwL; arc=none smtp.client-ip=212.227.17.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="mKgPp9dG"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="fSGconwL"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1741549369; x=1742154169; i=deller@gmx.de;
-	bh=UXfwqVzh+kdj7oJHScsByow/u5h/HWf/HAGnPCLphFA=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	s=s31663417; t=1741551234; x=1742156034; i=deller@gmx.de;
+	bh=eFtFN1K0yN/ZgcvJ+6iSKv3QX8JTYag1dKLCaSPLzD8=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=mKgPp9dG6o+AJZwafbyHJko/eb1JBUdOORDnr+vSEaNEqE3dAGm7j9UHUAZ2QMcJ
-	 9eiSKKxacIT/qvKXDioGVxis3yvdNSE9cznDBlf3rfdD0p+FO5waYbjXwNDfx8krD
-	 JdIg93ISTh580tLzOsh4lYlOXzYOFA6CVV2kK2/WB2h5UmnHgq8FuOzLftgC3xvGw
-	 7WP7IvR1zN3JyQM4nHHIpaSJipLGSIn2Pq4aKMX42FzgEVEoUww1di3B2sbVGrU62
-	 mWRICciiLXaewFcaFrrcrpJdCOHvITh5WTpuyHk6KZoeds8fpuYl93skHadhoc+uf
-	 pq0ovPH2OnszM1166Q==
+	b=fSGconwLMMqUJInJQq1ZhWasF4FOP3W3vJy8sgfUAGJXeNtJkT2zcw/Bv1NGWUBH
+	 QVAzGjMPvrACT/BFB2gJXEyKAeas3AY0wIjq6b3LyOHe4fx5RPLcViS/kvWOfYem5
+	 R3SEYkEqX39IssM5RuzdcvHjrZVv+3E3AEdFjGGDPnrMFXgW7JZWU5flj73zhiQZk
+	 KZwGuqCiFqpgl6iSslSfGYoGz+bpBJ2pLUSm4Fla15uBJ6KFRVV8n4oziJ17SnaUF
+	 /YkboSN0chZ2cAklnu3OQzFHJTLA4pUAF7uohsytwQtppFmLd5SPyUzC3zfmDDTyI
+	 XgmYMPs3xMphhczw7g==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M26vB-1tosVM1SyP-000pZq; Sun, 09
- Mar 2025 20:42:49 +0100
-Message-ID: <0a15e04f-bd6d-4c2b-a8e1-708880fa433c@gmx.de>
-Date: Sun, 9 Mar 2025 20:42:46 +0100
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Msq24-1syAyw2jXc-00raBf; Sun, 09
+ Mar 2025 21:13:54 +0100
+Message-ID: <de634978-ed7d-4fe7-9390-cb9b3f30e8d7@gmx.de>
+Date: Sun, 9 Mar 2025 21:13:51 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,10 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: fsl-diu-fb: add missing device_remove_file()
-To: Shixiong Ou <oushixiong1025@163.com>, Timur Tabi <timur@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Shixiong Ou <oushixiong@kylinos.cn>
-References: <20250309081607.27784-1-oushixiong1025@163.com>
+Subject: Re: [PATCH 0/1] Refactoring of framebuffer drawing routines
+To: Zsolt Kajtar <soci@c64.rulez.org>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>
+References: <20250224205908.26336-1-soci@c64.rulez.org>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,91 +92,70 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250309081607.27784-1-oushixiong1025@163.com>
+In-Reply-To: <20250224205908.26336-1-soci@c64.rulez.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:D7fGuBp8cJ0wUshZgQSWt3vgrCfTuK0biq/pBNWOOGrfpZm/G3n
- RrcTFpInKIQPaCExlvV1tWXTUblBMoSymbEtAR+5jSDqYKMIAMwwuNrDQQ410P55wJcBITo
- /3CK2UA6/gtWDrAccfYR2nBpcssbJWBdQB/t9PyXqIul7OGs6AXWUoYGbTtWk9wHe2/3jNy
- na6P+oU/rkJL191ZrAj3g==
+X-Provags-ID: V03:K1:cs8hLpkDeadqwXT/pjcJiAZLpNbFujVZFwQlNM8ZGBPezU8mmkI
+ VoBCrp/GeVzyvS/a8TFm8IODezENJAE9YLdn5oNF6Uw9iC5Yas6Bx5QwHZYUP36vzOL2ln0
+ 5eM/1xh5wkNz9ffO3OejuWmj9bfnmaUxQ6K89m9uZjq2UFHKPySgbejeUKt83gM27Z+B0/M
+ 7OTTnVB23OTLgd5oVIERQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:ccEv3COVVx4=;f+7gJ6DQA02p/CKE1MxM2wvtsGC
- zhptwHZ169f7ub6f1Rl6SHfpin/CSw/LrekG4NKCz4l93iu7mAB1tXjqh8Oms/7zQOsU9aeD0
- a/Q9T/K5PXZjY4WV65JrpxeqSkF/DpccjvtjP1l7mONw4/bIsesyhmRPy4PjUlT8/g5z66tSu
- WouJlddlde7wfk9umDkdO3sYyp/uZk/R8OxpbZxpiOJlKPSE1uymGpXf3bs3RmaAV//SXbxme
- eqy4OAwILAloOZO7QqpeG3/Hp0gArKz+Lm5ssjj5dBZWPJODM+v33GIOs4hdjfnr9gY6blDQv
- J2ceGcEqgYUj++KK8Xh+nJCF/GrKFeyTalf5MY6x7dnGuOpTMXKLdydFu8pGX87fbuTTim9MW
- CGFFIzwGKctEExMLFtPnnVUlNGUXK1ZaCM7m01qwZ+8CTtu6HRjNbrDib5uomWnXaXekHeiXO
- NBebKAMDaNTXWw4Op/sP6FmiRGLaXLiaHQOkkEvMR1l8uHfYc9k/r0Mk+Ods+TF6tooblGURh
- KlTqN9lS6eVwW+tlqE6V5sOehVhAXFRx/kiGeXvqqNEjyYW3f65dJ9Ls9gJ3FgCM7tk5ZrrSu
- kLD+INx1xLm/rsLwJVvOtvBL0/AKGE2zGXcxuFcwCFc2EBuTuj5U5ZvlBH3pML/CRA57GK3vb
- 7qogNHal5rnyIzG/Jj6K7Psq+xO9en6qrf6CtH2LPdUr+uKIvz3h7wcGIddYXwkr3CcZWRtHg
- Z9brWYehqaVXSq+oj1MWbELHm7Gh1YM59Rz8tT3thwkwyAfW/b+/o+YdNefvG6VTmkPWJ23Ow
- wMKAHjmIFKspYtd4QjbhY3TRTvyNrZqDVOBV/dY2HKAcckNHni7z5R3wDAzthjSPkzig1gJ6R
- e33bPqnog6j9ZG7Dc6ogLlkB+R9/X8CGuNw2a7ZZfyHhpKWUqm2SiJ+ljOReAcKlSIOV/cLi6
- 0JXsuLso5gWQaxNi+lPQekrJc+flRiHHv3VpOeo6zc6Gp1uP3biBRurI2AjkjvOusxjlZa+w+
- pSbUnJXDG5JMNQ3VUwUKixxN3mT6bBTnJpwwUycuzeP66YoL5J9vp2ZDXIrvjcxHxbmVjdiK/
- yEVfUJvtJqML+Lms/Zatfro3fWLDTgDhhurgQO1p7a7jeVbKlr/hQ1Lis3LJ2vAJDg7wc3kU6
- k+N5UW1UdOF3jeimULti12zXWKhfO14BJVrQ+GioPFlW6U1kgWbeJsczIX3B2AQi2k5buJX5z
- +9V2sV9JZPU7CbQGdIAgBVem0FWkCmfoOMzVDuvlyglB3bFXbTfaILko/D57PGtxp4zqq0jXD
- /N31PijMtPXNbpWS41yX5hKhq1Q6xuJv4Jn+larPqv5Ic2EyHWcBSKIFMlIGTNgNY5Bj/UnWN
- 0NCd76k6lhCzQ260gAYaHdBbyeFyRtTtT38rMdiNBr/WJK+d9pUgLSlv36
+UI-OutboundReport: notjunk:1;M01:P0:Q/ngmVJJ574=;soe08s+Ab+NFakcDuvXF98R/zsw
+ bmleYw1rg9UhilTCOdCBCaWCJBZE0/zfhNy64TlwCVJ06rgkVPsJmbDDWD0jc6KUOI5JwpI2S
+ xVY84vHZI9xI0XpKpllYKbEc+Ysi/JajmAEdKweuOUFhekHE5p6s4jYybQWvQOhKDXQSxg/U2
+ fLzhnhIaLJ7GMY7xmWsJQFkUh8YDHvJ3uDjkaC09tX6Mv+a7NFVkHhBZxyW5vJr6qE0/MDeC5
+ 9tlJcu0Q+qG52XbEM9U2MqetIuW/Mu8QfjevIRwGp7VBbUxy9dNBYzTPdnh4NsQDB6FxcUDcR
+ iypYk3bYF7tcoLQz3Da4DBoKAW1BXk5058BybxdjEss0I7Y7YSEqzqb37uV44ZiN14bt0K9Lj
+ l0FLeKyRKEysb7BZAR3aB1MMmUUkmMLSGhoLiraTYaxSBppG4phKhKxQf8wG81Rkrw+I4wwC6
+ H6qz42afkFrsi99Hu9S5o8VIf0keU9tqQ1mDVtlGscncBWHLfiS/w0sGucHXVNdUpCqD3GMKj
+ H1H2UgrzJOaEhbg5ppkIl6YeVxdIqUwICqKUyRZyc9iRunjJ1aRqugLVRJaVPwy5b5KkUgtwV
+ sRwOqWi7Yn1FzpffBe45C5US9Z+Y3B6r0Vp5TarWhk2jaUiCbB84pDVWoKMGqOMpYa4TjsJOn
+ qZucFguMqcH2JeXQzHh1i6s3keZ6Pjxq4vFnct+s5P/zt78N7swB4B3uAUoUlrLh/22C2p2Wx
+ PkVosz+fb7/EYO8gx4T+cZkvtUP4f572bmx02+GcqDJELk5ejlkiqnnWaMY9Ji0AkHV/5BRl+
+ FZxQxlxv0YG/Ym0Se8atG/xKqY/Flr7GSRBmdCHiVFyzEQvSpyg9EWI4tFLCz+9oCfUOvjiw2
+ b/csHEySbyEPBZhSYv0enzoQZqbjQ3ZGJAfVyKU4KnNGY1+SuG2CLablHYj/pY56SLgPTHTha
+ aJwJARY59sI6DheGB195DUntm7pBnNaBCzzYiEZq03AP/GT7qrFvmhfthgTAOyEZw7Vx6PCx6
+ wNPtmB7c8v+Rc02grXIcN6cVrTHh87UsWmvsnk0DpRaShV3B9OjVDutMlygIaHJOu+VNHY1NF
+ wJl+b4PxHGmQBUg1mjbpG09bnWVLSYxUYamc02G3DcKsjGatyxf21u40mBuUi5WovTPMhohT2
+ Ek5AkTyFvwCc/5BcLrMORPNpIMJ66ugessipwqICjCzvYyoamxF40D/DyUjjPXS7wGZCl02iU
+ BzveCbeyBafAOFBi7gRdKTi/VpHqfI1vngHwKwi0MoUOubHAHTXPb+KUGL2Nj7LT2aUANUvjV
+ 7jbLD8h7DK6zv4x4SppZAWPJtAPp2Dwsdak9fLCMfm8Yl2lSv7Nl5fa6AditdIlo9F/M2icQn
+ ABGJadxOrlHmpjJqHtOBVnJIMSZXT61hltUigyi8zvgTvHcJj/UjArz6Gu
 
-On 3/9/25 09:16, Shixiong Ou wrote:
-> From: Shixiong Ou <oushixiong@kylinos.cn>
+On 2/24/25 21:59, Zsolt Kajtar wrote:
+> Proper refactoring of the framebuffer drawing routines. This time it's
+> not only the merging of duplicated code. It isn't half finished either
+> so the various combinations of foreign endianness, pixel reversing, bits
+> per pixel, cpu word sizes and byte order should work.
 >
-> Call device_remove_file() when driver remove.
+> Added myself to look after this code. Based on the time spent on proving
+> it I don't expect a busy inbox. Famous last words.
 >
-> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
-> ---
-> v1->v2:
-> 	add has_sysfs_attrs flag.
+> Zsolt Kajtar (1):
+>    Refactoring of framebuffer drawing routines
 >
->   drivers/video/fbdev/fsl-diu-fb.c | 6 ++++++
->   1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-=
-diu-fb.c
-> index 5ac8201c3533..57f7fe6a4c76 100644
-> --- a/drivers/video/fbdev/fsl-diu-fb.c
-> +++ b/drivers/video/fbdev/fsl-diu-fb.c
-> @@ -384,6 +384,7 @@ struct fsl_diu_data {
->   	__le16 next_cursor[MAX_CURS * MAX_CURS] __aligned(32);
->   	uint8_t edid_data[EDID_LENGTH];
->   	bool has_edid;
-> +	bool has_dev_attr;
->   } __aligned(32);
->
->   /* Determine the DMA address of a member of the fsl_diu_data structure=
- */
-> @@ -1809,6 +1810,7 @@ static int fsl_diu_probe(struct platform_device *p=
-dev)
->   			data->dev_attr.attr.name);
->   	}
->
-> +	data->has_dev_attr =3D true;
->   	dev_set_drvdata(&pdev->dev, data);
->   	return 0;
->
-> @@ -1827,6 +1829,10 @@ static void fsl_diu_remove(struct platform_device=
- *pdev)
->   	int i;
->
->   	data =3D dev_get_drvdata(&pdev->dev);
-> +
-> +	if (data->has_dev_attr)
+>   MAINTAINERS                             |  16 +
+>   drivers/video/fbdev/core/Kconfig        |  10 +-
+>   drivers/video/fbdev/core/cfbcopyarea.c  | 428 +-------------------
+>   drivers/video/fbdev/core/cfbfillrect.c  | 362 +----------------
+>   drivers/video/fbdev/core/cfbimgblt.c    | 357 +----------------
+>   drivers/video/fbdev/core/cfbmem.h       |  43 ++
+>   drivers/video/fbdev/core/fb_copyarea.h  | 405 +++++++++++++++++++
+>   drivers/video/fbdev/core/fb_draw.h      | 274 ++++++-------
+>   drivers/video/fbdev/core/fb_fillrect.h  | 280 ++++++++++++++
+>   drivers/video/fbdev/core/fb_imageblit.h | 495 ++++++++++++++++++++++++
+>   drivers/video/fbdev/core/syscopyarea.c  | 369 +-----------------
+>   drivers/video/fbdev/core/sysfillrect.c  | 324 +---------------
+>   drivers/video/fbdev/core/sysimgblt.c    | 333 +---------------
+>   drivers/video/fbdev/core/sysmem.h       |  39 ++
+>   14 files changed, 1480 insertions(+), 2255 deletions(-)
+>   create mode 100644 drivers/video/fbdev/core/cfbmem.h
+>   create mode 100644 drivers/video/fbdev/core/fb_copyarea.h
+>   create mode 100644 drivers/video/fbdev/core/fb_fillrect.h
+>   create mode 100644 drivers/video/fbdev/core/fb_imageblit.h
+>   create mode 100644 drivers/video/fbdev/core/sysmem.h
 
-Looking at other drivers (e.g. drivers/net/can/usb/esd_usb.c) it seems
-that device_remove_file() is ok even if it's not fully initialized...
-
-I think you can drop those extra checks.
+I've applied that series to the fbdev git tree so that it gets some testin=
+g...
 
 Helge
-
-
-> +		device_remove_file(&pdev->dev, &data->dev_attr);
-> +
->   	disable_lcdc(&data->fsl_diu_info[0]);
->
->   	free_irq(data->irq, data->diu_reg);
-

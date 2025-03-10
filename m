@@ -1,52 +1,29 @@
-Received: from smtpbgsg1.qq.com (smtpbgsg1.qq.com [54.254.200.92])
+Received: from c64.rulez.org (c64.rulez.org [79.139.58.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E34C181E;
-	Mon, 10 Mar 2025 04:57:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.254.200.92
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3C8384E1C
+	for <linux-fbdev@vger.kernel.org>; Mon, 10 Mar 2025 07:03:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.139.58.36
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741582680; cv=none; b=d1akjnxwz6k9aZc+jrumCtPhCos3cGu/8q+jtApPXRAFIcL7qHRJHc50P1BlOA4cx8ep6wx1+OqB5xTShddMc4fhhTKcxoqkb/SQ/aNS5kD83BU+P0QJ5ECZaPvkuFTRE1li14Qfipv70dm9wz+UnLVDjTTDYuqjBLTHNv0KmiU=
+	t=1741590238; cv=none; b=W8ziXXiTqJ1A7Eb5xBd7bm6eKbsBNj2f2cgSu/K/wXKFvXj6UsJgu5C4Y/jSIazj9mAUsgLwr4m1cfKiXuyMkCLvmw1H+ER/srr9jZc0RNvJpXi/lbMRTTQJ1aL83S1tLeYcAHj6/Mr3u4+aa++kK4E96NERoPV5+zmXo+jY/OQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741582680; c=relaxed/simple;
-	bh=UXTg8HxhyDLnMUVUUzXdia6CGqTXBbweOT0vrR3/CQM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=h+RuxgFB93IoWVoUFE1WPjaA5DNJpPpNFlid9y90LAp+K1RsXhzojFJP7RSvdP0LJWAPKE/I4WFr6uFV/ZX5iLwa16dDj2iEJheraLsmWSk+YNfb2zBz9ExKaRidoUZCD4azfzJsJNu/wXyJdHxkEYl6Ofd1KdU8ZFXAPJSHeec=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=CohLkN3d; arc=none smtp.client-ip=54.254.200.92
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="CohLkN3d"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1741582612;
-	bh=1Ejw7dnHXGbcgwStfAw/3eaY/dgh+jPF9zfi0J6jwa8=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=CohLkN3d3I9fXk7WPJD62ofuUZDLzfGlHnjH7/DNaRO7XrKjwKXjAcPHDXbj2i3II
-	 ZqANN22qs3nMOxhJvHSHfCg3r0GH05hqhB4YWEZ9LBjci9NvfJM44ytRR42IVVc/Ey
-	 U+eTe+SQar5jFFA1nX1sERPjs2SUXwXUxPajcFWM=
-X-QQ-mid: bizesmtpip3t1741582601tyaexxw
-X-QQ-Originating-IP: S+iHdvzEOaySNSWMHE4rAW5Kl94eu9GLfHJ4prLBux8=
-Received: from localhost.localdomain ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 10 Mar 2025 12:56:39 +0800 (CST)
-X-QQ-SSF: 0002000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 7054169263967918300
-From: WangYuli <wangyuli@uniontech.com>
-To: lee@kernel.org,
-	danielt@kernel.org,
-	jingoohan1@gmail.com,
-	deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	zhanjun@uniontech.com,
-	niecheng1@uniontech.com,
-	guanwentao@uniontech.com,
-	chenlinxuan@uniontech.com,
-	WangYuli <wangyuli@uniontech.com>
-Subject: [PATCH] backlight: tdo24m: Eliminate redundant whitespace
-Date: Mon, 10 Mar 2025 12:56:36 +0800
-Message-ID: <8FC39A4DC2529591+20250310045636.14329-1-wangyuli@uniontech.com>
-X-Mailer: git-send-email 2.47.2
+	s=arc-20240116; t=1741590238; c=relaxed/simple;
+	bh=H9OtY5ZvbpAx0TbVjLRrNbkxq0eaYqUvevAmCvgMzzk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PguCpRmE+vNsR62DrgT0B2Fv0ZdPA6tf0oLbLk5Rr0vaFZU5bgEXvp9SBvS/5Ozph7nNL78+P8guFxUKi1FNprZO82bhuI4vAMPpS/KQZ7wLz/ABDHdXif0j6IH7Pn/J28H4a4TYxyVvCZO8zdPC9VbeSH+BbsKGSHBwQiZOlc4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org; spf=pass smtp.mailfrom=c64.rulez.org; arc=none smtp.client-ip=79.139.58.36
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=c64.rulez.org
+Received: by c64.rulez.org (Postfix, from userid 1000)
+	id 242EC100CF; Mon, 10 Mar 2025 08:03:51 +0100 (CET)
+From: Zsolt Kajtar <soci@c64.rulez.org>
+To: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Cc: deller@gmx.de,
+	Zsolt Kajtar <soci@c64.rulez.org>
+Subject: [PATCH] Remove fb_draw.h includes
+Date: Mon, 10 Mar 2025 07:57:45 +0100
+Message-Id: <20250310065745.17623-1-soci@c64.rulez.org>
+X-Mailer: git-send-email 2.30.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -54,48 +31,97 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtpip:uniontech.com:qybglogicsvrgz:qybglogicsvrgz8a-1
-X-QQ-XMAILINFO: MsxCBMBvQQ1NtRdpMOwG3VxtA96L7hcYpK5OYkx2NK9U6euiViTVgh3z
-	R28mKwLnY4VkvlJDnSmJZTqRXrUTm+pG9HikFvG7ED8S2Y9m1gaFgYJe8uTmXQBWOE2tDag
-	J70/96jrAFHLe0iOkQa4Uzuc4jksy1om9KMv0eZCYlNfqua+iDfTxgCYJ4mYcJrLtEqNWD0
-	TzbSM9XgoqFDI5y6ahzDF5uNTGnZ8LmrLfEyrHLYv0jklCLiNqMsOOHVzqpDBuBrIruGtYM
-	EKUtJPDpUMAXVlU5YOPcEeYkxG9VgMjh6K8l7N98woxrcj97N6vWh0vrR0MXwpRFSu74PeR
-	lFKeCchDwJ7Vk+BaznWFuYDxV9xdSt6VpB5cRnSt2V173gUMfoIUtHhVHzkbA3kwC24P8sB
-	Bc5Z9Tg3k8A2OnfZ/Lc1DLRqNl+bbAgVIjpS5pe4ZWQjiWw1Ce/ZuUIeXUp3RVjQRPFGc0e
-	nVLscg0IZ5WG2LA8ZMIRwVJYZuYctaWmwHesXzydkHzlypLZuQYRCxz9v7PAhxzDquUYD4A
-	BaqHC5FcmZZJ939mWWxCQGpUdm7daib11ByC8Uk8DVhSC0rF1Ied3xg5bUbEGT2tdmgIpXX
-	Z+d0Y/pa6OYV9TYIslSOGub3MrGSPvY7rFcUNsbJfp+5io7CGDl06SceonanpJhidULISwf
-	7BdVoNyefsTgSAUTrw+wJM0rfYBPQgpGVU0MPFb+WW+YehD3KAicSFWZeOoMnLwmu7m9KN/
-	HERvSVolEMsRI+6zDyZwJLQrzZNmS6u880dVl8Tkl5958hILnwY6Gumis2ItWebkp60GK9X
-	ZASkCkFwM7/gbTh5n1RinPbJshNDd4NfVOmVPoNPhhu2Xq6KEbpzlvH3Jz56LzGONOgaqOd
-	lS+G2Bjj1YgxuEOBCeYs3hUT20Pl2UKKMIGbE3HpJSVEHqOmkrTTe9SFDuQ4iltfiXdrw4O
-	bVo20UzLLt6k18XDWFwQytbIVozfRKNZr5ImOlcWSZUlMRGsUXKqtdTHizedwNkuuusBPlE
-	m0WyfFXfjdcMdIGSPj
-X-QQ-XMRINFO: Mp0Kj//9VHAxr69bL5MkOOs=
-X-QQ-RECHKSPAM: 0
 
-The description for CONFIG_LCD_TDO24M has redundant whitespace.
-Trim it to keep the code tidy.
+This is related to the fbcon packed pixel drawing refactoring. There I
+missed that fb_draw.h was included from two unexpected places. That
+shouldn't be like that. This patch removes the dependency.
 
-Signed-off-by: WangYuli <wangyuli@uniontech.com>
+Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
 ---
- drivers/video/backlight/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/aty/mach64_cursor.c |  7 +++++-
+ drivers/video/fbdev/wmt_ge_rops.c       | 30 +++++++++++++++++++++++--
+ 2 files changed, 34 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 3614a5d29c71..f2d7c4fe3ba5 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -70,7 +70,7 @@ config LCD_ILI9320
- 	  then say y to include a power driver for it.
+diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
+index 971355c2c..e826cb7dd 100644
+--- a/drivers/video/fbdev/aty/mach64_cursor.c
++++ b/drivers/video/fbdev/aty/mach64_cursor.c
+@@ -6,7 +6,6 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/string.h>
+-#include "../core/fb_draw.h"
  
- config LCD_TDO24M
--	tristate "Toppoly TDO24M  and TDO35S LCD Panels support"
-+	tristate "Toppoly TDO24M and TDO35S LCD Panels support"
- 	depends on SPI_MASTER
- 	help
- 	  If you have a Toppoly TDO24M/TDO35S series LCD panel, say y here to
+ #include <asm/io.h>
+ 
+@@ -57,6 +56,12 @@
+  * definitation and CUR_VERT_POSN must be saturated to zero.
+  */
+ 
++/* compose pixels based on mask */
++static inline unsigned long comp(unsigned long set, unsigned long unset, unsigned long mask)
++{
++	return ((set ^ unset) & mask) ^ unset;
++}
++
+     /*
+      *  Hardware Cursor support.
+      */
+diff --git a/drivers/video/fbdev/wmt_ge_rops.c b/drivers/video/fbdev/wmt_ge_rops.c
+index 69106299a..92fbb3f3a 100644
+--- a/drivers/video/fbdev/wmt_ge_rops.c
++++ b/drivers/video/fbdev/wmt_ge_rops.c
+@@ -12,7 +12,6 @@
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+ 
+-#include "core/fb_draw.h"
+ #include "wmt_ge_rops.h"
+ 
+ #define GE_COMMAND_OFF		0x00
+@@ -41,6 +40,33 @@
+ 
+ static void __iomem *regbase;
+ 
++/* from the spec it seems more like depth than bits per pixel */
++static inline unsigned long pixel_to_pat(u32 depth, u32 pixel, struct fb_info *p)
++{
++	switch (depth) {
++	case 1:
++		return ~0ul*pixel;
++	case 2:
++		return ~0ul/3*pixel;
++	case 4:
++		return ~0ul/15*pixel;
++	case 8:
++		return ~0ul/255*pixel;
++	case 12:
++	case 15:
++	case 16:
++		return ~0ul/0xffff*pixel;
++	case 18:
++	case 24:
++		return 0x1000001ul*pixel;
++	case 32:
++		return pixel;
++	default:
++		fb_warn_once(p, "%s: unsupported pixelformat %d\n", __func__, depth);
++		return 0;
++	}
++}
++
+ void wmt_ge_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ {
+ 	unsigned long fg, pat;
+@@ -54,7 +80,7 @@ void wmt_ge_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ 	else
+ 		fg = rect->color;
+ 
+-	pat = pixel_to_pat(p->var.bits_per_pixel, fg);
++	pat = pixel_to_pat(p->var.bits_per_pixel, fg, p);
+ 
+ 	if (p->fbops->fb_sync)
+ 		p->fbops->fb_sync(p);
 -- 
-2.47.2
+2.30.2
 

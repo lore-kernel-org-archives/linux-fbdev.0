@@ -1,134 +1,449 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [217.70.183.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2E512236F4
-	for <linux-fbdev@vger.kernel.org>; Mon, 10 Mar 2025 09:04:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F73F22C336;
+	Mon, 10 Mar 2025 14:35:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741597450; cv=none; b=iDqxv7krnjVB7xN5rRohgwJBkX6jTdK5b3n8Uwy5GlJfuwDdXvwdkckO52cdtoSG/B3DODztiwVh/dCpA0YX9K/15YjrHUGA3png2GbbTmvDSSTLt61/AMPZgoa/XjiPVcAGbGTGQt5CmyCkQLwnUknTYzcXAx+W+cUEClvSlQM=
+	t=1741617331; cv=none; b=ov+TRnkalLJcp9LgYOuqX15OOtQnse8nvkeSMPUOXKRayS9k+YQENOH9wtd+NxgcktrMV1ohipjPK9J+nhhxZZXBxatas5udEV9C63JabR7noHdfzebZpRmAMSvyFX9i35C+Ee6xiBvEYxmZwRg/7TsM2rc3I0BNvbx3rOz0904=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741597450; c=relaxed/simple;
-	bh=Czvxju356HZYENQ2J0gEnKBzcp6Ln4JBJC3bEl8uWKQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=P8GLKjBHfUrkHkGOnlZI1zjiA0arpSnJYSFTanfc+m5M30V13zI4Q4ab86dMCBp3wRww2T2L6iPHhfoDiI5TAjC2y7iBtuV5sDmtlcuvBz/aNNaxhlqoJjaHvPpc/ertWqALPHIqyQdtgNCwajtZolmtI8nWSczDe19hErgr5NA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=OHUvfT+F; arc=none smtp.client-ip=212.227.15.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1741617331; c=relaxed/simple;
+	bh=scTgTI97LOmlYfEX/xtjOk2MiTl0YxM/ai+wSTZVgW4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=N50O/nWLpQjqXgM3hgwC3Nlfg2ToaYrymNBcTlJpiwMB6Dyw4/2ZGzkcioRwk9unAgQwUOQy5NaNyzFKLJegga/vx0ymtGMpWsT3dMwmgOyQlI1mW25Bq3WAJdQxeCQi26GlYkSJLzy7/2MLLJCabrX2pxw0QgOAXn9sjLgfDPk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=UO0eVHy9; arc=none smtp.client-ip=217.70.183.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="OHUvfT+F"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1741597430; x=1742202230; i=deller@gmx.de;
-	bh=Czvxju356HZYENQ2J0gEnKBzcp6Ln4JBJC3bEl8uWKQ=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=OHUvfT+F9MQ/ZVc+8lhIcKDCM8s54HfLQaJYotjpEuwyqVzW6JNJMDQFG4izBs9F
-	 tgwm+LvwEwjQcebkkLoyZGXQ4NbH7LG4fWbY2ric1dFMmW4lyn/ywdLm6xr5vzUL0
-	 a0luBRFM3+CVPGhVziW7dq1QvPNDbo3x46hekApDN/rpdoJzyb2PGP8H/Ec1C+G2f
-	 oxrELgUo+MBlJMZmWhd/JfaDNiyoBXEVly6xhyze0ehdUwysbYYTBnzqEuwaS889q
-	 e7a47AjVnZS9n/EMFo8ctD8fHM+uXROw7dF59JkH33VEvFkmZTreybkFk4fXUp9yD
-	 Vm329t15wF3KjeH2uw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N3KPg-1t8uXc0VUY-00y24l; Mon, 10
- Mar 2025 10:03:50 +0100
-Message-ID: <2f3f0c95-232f-4d87-8e40-cc76f00ab8d6@gmx.de>
-Date: Mon, 10 Mar 2025 10:03:48 +0100
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="UO0eVHy9"
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 015692047E;
+	Mon, 10 Mar 2025 14:35:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1741617325;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=JXZxLypH3NpWH5t4QzSGNdDStiV5GmuC1zGbaaCJlcs=;
+	b=UO0eVHy9OVWknTQs4y+zyzl+bVoU3CxbMoyKvk4/vaxix7cjZF0e5foQEHOhEFdbhbdR9M
+	Lq3xZgWrf5KMDMqWJi0zUAUoycAILzp4tu4DQ5UNo3Jj/AKmXOeQECjJS0NnG5wgGISuXX
+	4/+GBxU8N/O4G19567EoWWCtdAg6DNCKn1fB1o2TRVoTcLV+KtZ+tQBEX17EXof5uchQE4
+	gswVhZwTxlICjPsPNy7ycgzia7zd19JfjkvHJknt/XXA4Jgu5FdsEZXaZ/4S0H6XgOtdQR
+	9huo/Fxn6B1i66KiWmqAjMUsDApLebhuN3CiJwaSakB1YjYxN9QL2qUH2+pEcw==
+Date: Mon, 10 Mar 2025 15:35:23 +0100
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: linux@treblig.org
+Cc: arnd@arndb.de, lee@kernel.org, dmitry.torokhov@gmail.com,
+	sre@kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
+	danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	linus.walleij@linaro.org, brgl@bgdev.pl, tsbogend@alpha.franken.de,
+	linux-mips@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] rtc: pcf50633: Remove
+Message-ID: <202503101435233d80842a@mail.local>
+References: <20250309193612.251929-1-linux@treblig.org>
+ <20250309193612.251929-4-linux@treblig.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] Remove fb_draw.h includes
-To: Zsolt Kajtar <soci@c64.rulez.org>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <20250310065745.17623-1-soci@c64.rulez.org>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20250310065745.17623-1-soci@c64.rulez.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:5nVRnc9/cCw7HPL/VmKO+Q9tLVGXHJbnBKY0YZYyvrVgmFyiS2O
- THsCpAL2TgKvHev2Yhh2J3smojf5b+59pr5UzcfMMYXqKAnDVvSU1wE1KvL5RwLy4D6Jw6A
- n76mOufP2dbYm95AMF0RjB/Klj92ccH7j3GSDri/lMPfWkfagidTugp+tuDoyGEh7vHNMLE
- bT7vuqthi18A5pQN03aQw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:TTy0/QMs+IQ=;baXGKCDVdNea+DtVjaUjspnLtMj
- 3ox/2kfL5XVHIXLvY7T9DkeBv3nzWA+WC63WepD7gLQa6Yj1xvVXNF/N2DmM9Ah2ezFq5e65/
- 5j1ueznQw6D6iTtgVxh2VFr9n/VL7zP4gdAdtdP5xUfgPnCTXIB9QjW5FRUMOGPFRtqydJTQa
- YH8L2I3eMUMm2pFu/azpqOFCgq9bAdNqKnJMWzPzScVcWsaAOcG74AgKUoa+AQxXZ1r2wDgNK
- 7Fd73ndIUQrx0JwdpfoYkC00H5FnddSeDxV2fp6r01kPo3Fkj3YMEgAjEvWMSzrvY6ZxeBirj
- e7tBd2KmTNIiCmT7IHjMn125zIB5ArIrFYU2wCVf1tcdiE12Hw5fhkbDIzb3RcjLrYofbLUiN
- gv7cnhx5yZyO6bWV4Hg6S1oOcVVPQ463jgKqah8T/GsCmU9mG8MCfdxU8+oTd2DJAxoSnYMM/
- vvuZLmVaQg7ihYpiBrKvDuFPeTO9MIECbb+0aU3ILSpUc9jHf2SyidfMdm5BPvGviRMRXxRdx
- 7FPKEDatWzE4Fp1jfk5S4L/NG7maT5b8bxCYN72v6KvWeIULXg3v0YN2wiCv4bj9RILBxAMAa
- CiuR9sE42MBdothklq4JK8SimdB8WJFlOr8msnATECy9ZiR5x3Bm1h62rFvKgE9+0aiq34NpO
- +xgnetucNC85crthe/7WRRGfUQjg30aGXKmJdIprARZm85ogiDcplMPWf+U3xejW9TbqD6RtO
- CGK9hGojVGsfSXEJlE1jukJwgY/YPfu8V5H7P96CQVR70joLT/rqrZMtf6O8kpWGF9bqQzSvm
- xg1fvZq3SslU0/cDrkfNwZpGv1TKYFCR7/QbFcc4+O1kvZxYFn31N3YvAtuLOcOpslFHPJ9f9
- WzzGOM+WJoxi2sqAAZ58fW+epVwIe7ywsfigi9+4al9j/CeQJg/PlWREEspvjchW6XOTit7oM
- DvkjmMFuSeEsv3r7sAcnGRlC57D4gh4nDBdwSWrcLoBBrOTQUVv0Qfr/khT+U7qWUvdWHivii
- 9gGxSpgQi81mngPM4THCiNQ4coIb1QQPJAKK33Jxmy0Ayc9MIgSf3KEQxG/PX0dAS0YgsiGqe
- YboI4pgq3aF796E5vgjDihwaphl6B6kRsGzkaz79cdH7f2eTtHBGZgfNroSsk977xAMMayLSE
- tCiBexdCQlFk+L40/KCR363YA+SVi96Cj89wJaooO/z6pzuztdRni1ZRNvhBgpauXRygvI5EC
- GmODBVIdyx0+l4LRaDu53YeGVkon3zf3U0ICCCg1z6uYvx1h4fdbeuk4d6azR/vz2ZdrO23PN
- MDSJ7eLPlyJjTL8xruEpNu+++zm6w66S7Tp1wJOzi87dfo3oBHw1ZHd3sAwqRXG2U4npFrqXS
- s5kM7PMv+I1nYb4lA1DkZ4kGg2vleUgWfB3+fkb7zYOYux4c7AlREo95F4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250309193612.251929-4-linux@treblig.org>
+X-GND-State: clean
+X-GND-Score: 0
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdduudelieduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecunecujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtvdenucfhrhhomheptehlvgigrghnughrvgcuuegvlhhlohhnihcuoegrlhgvgigrnhgurhgvrdgsvghllhhonhhisegsohhothhlihhnrdgtohhmqeenucggtffrrghtthgvrhhnpeeijeefhfffkeejueehveeuveejvdelveejteduffehuedtffdufeejudffuedvtdenucffohhmrghinhepkhgvrhhnvghlrdhorhhgpdgsohhothhlihhnrdgtohhmnecukfhppedvrgdtudemtggsudegmeehheeimeejrgdttdemrggutdefmeegfheltgemfeefjehfmehffeefugenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvrgdtudemtggsudegmeehheeimeejrgdttdemrggutdefmeegfheltgemfeefjehfmehffeefugdphhgvlhhopehlohgtrghlhhhoshhtpdhmrghilhhfrhhomheprghlvgigrghnughrvgdrsggvlhhlohhnihessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepvddupdhrtghpthhtoheplhhinhhugiesthhrvggslhhighdrohhrghdprhgtphhtthhopegrrhhnugesrghrnhgusgdruggvpdhrtghpthhtoheplhgvvgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepu
+ ghmihhtrhihrdhtohhrohhkhhhovhesghhmrghilhdrtghomhdprhgtphhtthhopehsrhgvsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlghhirhgufihoohgusehgmhgrihhlrdgtohhmpdhrtghpthhtohepsghrohhonhhivgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghltheskhgvrhhnvghlrdhorhhg
+X-GND-Sasl: alexandre.belloni@bootlin.com
 
-On 3/10/25 07:57, Zsolt Kajtar wrote:
-> This is related to the fbcon packed pixel drawing refactoring. There I
-> missed that fb_draw.h was included from two unexpected places. That
-> shouldn't be like that. This patch removes the dependency.
->
-> Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
+Hello,
 
-splitted up into 2 patches and applied.
+On 09/03/2025 19:36:06+0000, linux@treblig.org wrote:
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
+> 
+> The pcf50633 was used as part of the OpenMoko devices but
+> the support for its main chip was recently removed in:
+> commit 61b7f8920b17 ("ARM: s3c: remove all s3c24xx support")
+> 
+> See https://lore.kernel.org/all/Z8z236h4B5A6Ki3D@gallifrey/
+> 
+> Remove it.
+> 
+> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+> ---
+>  drivers/mfd/pcf50633-core.c       |   2 -
+>  drivers/rtc/Kconfig               |   7 -
+>  drivers/rtc/Makefile              |   1 -
+>  drivers/rtc/rtc-pcf50633.c        | 284 ------------------------------
+>  include/linux/mfd/pcf50633/core.h |   1 -
+>  5 files changed, 295 deletions(-)
+>  delete mode 100644 drivers/rtc/rtc-pcf50633.c
 
-Helge
+If you would separate by subsystem, this would be easier to apply. I
+don't think the mfd changes are necessary from a bisection point of
+view.
+
+> 
+> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+> index 08aa68ef2fbc..d991a77f6dd2 100644
+> --- a/drivers/mfd/pcf50633-core.c
+> +++ b/drivers/mfd/pcf50633-core.c
+> @@ -208,7 +208,6 @@ static int pcf50633_probe(struct i2c_client *client)
+>  
+>  	/* Create sub devices */
+>  	pcf50633_client_dev_register(pcf, "pcf50633-input", &pcf->input_pdev);
+> -	pcf50633_client_dev_register(pcf, "pcf50633-rtc", &pcf->rtc_pdev);
+>  	pcf50633_client_dev_register(pcf, "pcf50633-mbc", &pcf->mbc_pdev);
+>  
+>  
+> @@ -259,7 +258,6 @@ static void pcf50633_remove(struct i2c_client *client)
+>  	pcf50633_irq_free(pcf);
+>  
+>  	platform_device_unregister(pcf->input_pdev);
+> -	platform_device_unregister(pcf->rtc_pdev);
+>  	platform_device_unregister(pcf->mbc_pdev);
+>  
+>  	for (i = 0; i < PCF50633_NUM_REGULATORS; i++)
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 0bbbf778ecfa..838bdc138ffe 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -1321,13 +1321,6 @@ config RTC_DRV_SPEAR
+>  	 If you say Y here you will get support for the RTC found on
+>  	 spear
+>  
+> -config RTC_DRV_PCF50633
+> -	depends on MFD_PCF50633
+> -	tristate "NXP PCF50633 RTC"
+> -	help
+> -	  If you say yes here you get support for the RTC subsystem of the
+> -	  NXP PCF50633 used in embedded systems.
+> -
+>  config RTC_DRV_AB8500
+>  	tristate "ST-Ericsson AB8500 RTC"
+>  	depends on AB8500_CORE
+> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+> index 489b4ab07068..31473b3276d9 100644
+> --- a/drivers/rtc/Makefile
+> +++ b/drivers/rtc/Makefile
+> @@ -126,7 +126,6 @@ obj-$(CONFIG_RTC_DRV_PALMAS)	+= rtc-palmas.o
+>  obj-$(CONFIG_RTC_DRV_PCAP)	+= rtc-pcap.o
+>  obj-$(CONFIG_RTC_DRV_PCF2123)	+= rtc-pcf2123.o
+>  obj-$(CONFIG_RTC_DRV_PCF2127)	+= rtc-pcf2127.o
+> -obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
+>  obj-$(CONFIG_RTC_DRV_PCF85063)	+= rtc-pcf85063.o
+>  obj-$(CONFIG_RTC_DRV_PCF8523)	+= rtc-pcf8523.o
+>  obj-$(CONFIG_RTC_DRV_PCF85363)	+= rtc-pcf85363.o
+> diff --git a/drivers/rtc/rtc-pcf50633.c b/drivers/rtc/rtc-pcf50633.c
+> deleted file mode 100644
+> index c019c4d91c7d..000000000000
+> --- a/drivers/rtc/rtc-pcf50633.c
+> +++ /dev/null
+> @@ -1,284 +0,0 @@
+> -// SPDX-License-Identifier: GPL-2.0-or-later
+> -/* NXP PCF50633 RTC Driver
+> - *
+> - * (C) 2006-2008 by Openmoko, Inc.
+> - * Author: Balaji Rao <balajirrao@openmoko.org>
+> - * All rights reserved.
+> - *
+> - * Broken down from monstrous PCF50633 driver mainly by
+> - * Harald Welte, Andy Green and Werner Almesberger
+> - */
+> -
+> -#include <linux/kernel.h>
+> -#include <linux/module.h>
+> -#include <linux/init.h>
+> -#include <linux/device.h>
+> -#include <linux/slab.h>
+> -#include <linux/platform_device.h>
+> -#include <linux/rtc.h>
+> -#include <linux/bcd.h>
+> -#include <linux/err.h>
+> -
+> -#include <linux/mfd/pcf50633/core.h>
+> -
+> -#define PCF50633_REG_RTCSC	0x59 /* Second */
+> -#define PCF50633_REG_RTCMN	0x5a /* Minute */
+> -#define PCF50633_REG_RTCHR	0x5b /* Hour */
+> -#define PCF50633_REG_RTCWD	0x5c /* Weekday */
+> -#define PCF50633_REG_RTCDT	0x5d /* Day */
+> -#define PCF50633_REG_RTCMT	0x5e /* Month */
+> -#define PCF50633_REG_RTCYR	0x5f /* Year */
+> -#define PCF50633_REG_RTCSCA	0x60 /* Alarm Second */
+> -#define PCF50633_REG_RTCMNA	0x61 /* Alarm Minute */
+> -#define PCF50633_REG_RTCHRA	0x62 /* Alarm Hour */
+> -#define PCF50633_REG_RTCWDA	0x63 /* Alarm Weekday */
+> -#define PCF50633_REG_RTCDTA	0x64 /* Alarm Day */
+> -#define PCF50633_REG_RTCMTA	0x65 /* Alarm Month */
+> -#define PCF50633_REG_RTCYRA	0x66 /* Alarm Year */
+> -
+> -enum pcf50633_time_indexes {
+> -	PCF50633_TI_SEC,
+> -	PCF50633_TI_MIN,
+> -	PCF50633_TI_HOUR,
+> -	PCF50633_TI_WKDAY,
+> -	PCF50633_TI_DAY,
+> -	PCF50633_TI_MONTH,
+> -	PCF50633_TI_YEAR,
+> -	PCF50633_TI_EXTENT /* always last */
+> -};
+> -
+> -struct pcf50633_time {
+> -	u_int8_t time[PCF50633_TI_EXTENT];
+> -};
+> -
+> -struct pcf50633_rtc {
+> -	int alarm_enabled;
+> -	int alarm_pending;
+> -
+> -	struct pcf50633 *pcf;
+> -	struct rtc_device *rtc_dev;
+> -};
+> -
+> -static void pcf2rtc_time(struct rtc_time *rtc, struct pcf50633_time *pcf)
+> -{
+> -	rtc->tm_sec = bcd2bin(pcf->time[PCF50633_TI_SEC]);
+> -	rtc->tm_min = bcd2bin(pcf->time[PCF50633_TI_MIN]);
+> -	rtc->tm_hour = bcd2bin(pcf->time[PCF50633_TI_HOUR]);
+> -	rtc->tm_wday = bcd2bin(pcf->time[PCF50633_TI_WKDAY]);
+> -	rtc->tm_mday = bcd2bin(pcf->time[PCF50633_TI_DAY]);
+> -	rtc->tm_mon = bcd2bin(pcf->time[PCF50633_TI_MONTH]) - 1;
+> -	rtc->tm_year = bcd2bin(pcf->time[PCF50633_TI_YEAR]) + 100;
+> -}
+> -
+> -static void rtc2pcf_time(struct pcf50633_time *pcf, struct rtc_time *rtc)
+> -{
+> -	pcf->time[PCF50633_TI_SEC] = bin2bcd(rtc->tm_sec);
+> -	pcf->time[PCF50633_TI_MIN] = bin2bcd(rtc->tm_min);
+> -	pcf->time[PCF50633_TI_HOUR] = bin2bcd(rtc->tm_hour);
+> -	pcf->time[PCF50633_TI_WKDAY] = bin2bcd(rtc->tm_wday);
+> -	pcf->time[PCF50633_TI_DAY] = bin2bcd(rtc->tm_mday);
+> -	pcf->time[PCF50633_TI_MONTH] = bin2bcd(rtc->tm_mon + 1);
+> -	pcf->time[PCF50633_TI_YEAR] = bin2bcd(rtc->tm_year % 100);
+> -}
+> -
+> -static int
+> -pcf50633_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
+> -{
+> -	struct pcf50633_rtc *rtc = dev_get_drvdata(dev);
+> -	int err;
+> -
+> -	if (enabled)
+> -		err = pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
+> -	else
+> -		err = pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
+> -
+> -	if (err < 0)
+> -		return err;
+> -
+> -	rtc->alarm_enabled = enabled;
+> -
+> -	return 0;
+> -}
+> -
+> -static int pcf50633_rtc_read_time(struct device *dev, struct rtc_time *tm)
+> -{
+> -	struct pcf50633_rtc *rtc;
+> -	struct pcf50633_time pcf_tm;
+> -	int ret;
+> -
+> -	rtc = dev_get_drvdata(dev);
+> -
+> -	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSC,
+> -					    PCF50633_TI_EXTENT,
+> -					    &pcf_tm.time[0]);
+> -	if (ret != PCF50633_TI_EXTENT) {
+> -		dev_err(dev, "Failed to read time\n");
+> -		return -EIO;
+> -	}
+> -
+> -	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
+> -		pcf_tm.time[PCF50633_TI_DAY],
+> -		pcf_tm.time[PCF50633_TI_MONTH],
+> -		pcf_tm.time[PCF50633_TI_YEAR],
+> -		pcf_tm.time[PCF50633_TI_HOUR],
+> -		pcf_tm.time[PCF50633_TI_MIN],
+> -		pcf_tm.time[PCF50633_TI_SEC]);
+> -
+> -	pcf2rtc_time(tm, &pcf_tm);
+> -
+> -	dev_dbg(dev, "RTC_TIME: %ptRr\n", tm);
+> -
+> -	return 0;
+> -}
+> -
+> -static int pcf50633_rtc_set_time(struct device *dev, struct rtc_time *tm)
+> -{
+> -	struct pcf50633_rtc *rtc;
+> -	struct pcf50633_time pcf_tm;
+> -	int alarm_masked, ret = 0;
+> -
+> -	rtc = dev_get_drvdata(dev);
+> -
+> -	dev_dbg(dev, "RTC_TIME: %ptRr\n", tm);
+> -
+> -	rtc2pcf_time(&pcf_tm, tm);
+> -
+> -	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
+> -		pcf_tm.time[PCF50633_TI_DAY],
+> -		pcf_tm.time[PCF50633_TI_MONTH],
+> -		pcf_tm.time[PCF50633_TI_YEAR],
+> -		pcf_tm.time[PCF50633_TI_HOUR],
+> -		pcf_tm.time[PCF50633_TI_MIN],
+> -		pcf_tm.time[PCF50633_TI_SEC]);
+> -
+> -
+> -	alarm_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_ALARM);
+> -
+> -	if (!alarm_masked)
+> -		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
+> -
+> -	/* Returns 0 on success */
+> -	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSC,
+> -					     PCF50633_TI_EXTENT,
+> -					     &pcf_tm.time[0]);
+> -
+> -	if (!alarm_masked)
+> -		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
+> -
+> -	return ret;
+> -}
+> -
+> -static int pcf50633_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+> -{
+> -	struct pcf50633_rtc *rtc;
+> -	struct pcf50633_time pcf_tm;
+> -	int ret = 0;
+> -
+> -	rtc = dev_get_drvdata(dev);
+> -
+> -	alrm->enabled = rtc->alarm_enabled;
+> -	alrm->pending = rtc->alarm_pending;
+> -
+> -	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSCA,
+> -				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
+> -	if (ret != PCF50633_TI_EXTENT) {
+> -		dev_err(dev, "Failed to read time\n");
+> -		return -EIO;
+> -	}
+> -
+> -	pcf2rtc_time(&alrm->time, &pcf_tm);
+> -
+> -	return rtc_valid_tm(&alrm->time);
+> -}
+> -
+> -static int pcf50633_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+> -{
+> -	struct pcf50633_rtc *rtc;
+> -	struct pcf50633_time pcf_tm;
+> -	int alarm_masked, ret = 0;
+> -
+> -	rtc = dev_get_drvdata(dev);
+> -
+> -	rtc2pcf_time(&pcf_tm, &alrm->time);
+> -
+> -	/* do like mktime does and ignore tm_wday */
+> -	pcf_tm.time[PCF50633_TI_WKDAY] = 7;
+> -
+> -	alarm_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_ALARM);
+> -
+> -	/* disable alarm interrupt */
+> -	if (!alarm_masked)
+> -		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
+> -
+> -	/* Returns 0 on success */
+> -	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSCA,
+> -				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
+> -	if (!alrm->enabled)
+> -		rtc->alarm_pending = 0;
+> -
+> -	if (!alarm_masked || alrm->enabled)
+> -		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
+> -	rtc->alarm_enabled = alrm->enabled;
+> -
+> -	return ret;
+> -}
+> -
+> -static const struct rtc_class_ops pcf50633_rtc_ops = {
+> -	.read_time		= pcf50633_rtc_read_time,
+> -	.set_time		= pcf50633_rtc_set_time,
+> -	.read_alarm		= pcf50633_rtc_read_alarm,
+> -	.set_alarm		= pcf50633_rtc_set_alarm,
+> -	.alarm_irq_enable	= pcf50633_rtc_alarm_irq_enable,
+> -};
+> -
+> -static void pcf50633_rtc_irq(int irq, void *data)
+> -{
+> -	struct pcf50633_rtc *rtc = data;
+> -
+> -	rtc_update_irq(rtc->rtc_dev, 1, RTC_AF | RTC_IRQF);
+> -	rtc->alarm_pending = 1;
+> -}
+> -
+> -static int pcf50633_rtc_probe(struct platform_device *pdev)
+> -{
+> -	struct pcf50633_rtc *rtc;
+> -
+> -	rtc = devm_kzalloc(&pdev->dev, sizeof(*rtc), GFP_KERNEL);
+> -	if (!rtc)
+> -		return -ENOMEM;
+> -
+> -	rtc->pcf = dev_to_pcf50633(pdev->dev.parent);
+> -	platform_set_drvdata(pdev, rtc);
+> -	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "pcf50633-rtc",
+> -				&pcf50633_rtc_ops, THIS_MODULE);
+> -
+> -	if (IS_ERR(rtc->rtc_dev))
+> -		return PTR_ERR(rtc->rtc_dev);
+> -
+> -	pcf50633_register_irq(rtc->pcf, PCF50633_IRQ_ALARM,
+> -					pcf50633_rtc_irq, rtc);
+> -	return 0;
+> -}
+> -
+> -static void pcf50633_rtc_remove(struct platform_device *pdev)
+> -{
+> -	struct pcf50633_rtc *rtc;
+> -
+> -	rtc = platform_get_drvdata(pdev);
+> -	pcf50633_free_irq(rtc->pcf, PCF50633_IRQ_ALARM);
+> -}
+> -
+> -static struct platform_driver pcf50633_rtc_driver = {
+> -	.driver = {
+> -		.name = "pcf50633-rtc",
+> -	},
+> -	.probe = pcf50633_rtc_probe,
+> -	.remove = pcf50633_rtc_remove,
+> -};
+> -
+> -module_platform_driver(pcf50633_rtc_driver);
+> -
+> -MODULE_DESCRIPTION("PCF50633 RTC driver");
+> -MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
+> -MODULE_LICENSE("GPL");
+> -
+> diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
+> index 42e0412fa98f..f5ab3e64c230 100644
+> --- a/include/linux/mfd/pcf50633/core.h
+> +++ b/include/linux/mfd/pcf50633/core.h
+> @@ -146,7 +146,6 @@ struct pcf50633 {
+>  
+>  	int onkey1s_held;
+>  
+> -	struct platform_device *rtc_pdev;
+>  	struct platform_device *mbc_pdev;
+>  	struct platform_device *input_pdev;
+>  	struct platform_device *regulator_pdev[PCF50633_NUM_REGULATORS];
+> -- 
+> 2.48.1
+> 
+
+-- 
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

@@ -1,164 +1,119 @@
-Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4A5141C63;
-	Tue, 11 Mar 2025 01:51:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6BFA1146593;
+	Tue, 11 Mar 2025 07:48:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741657913; cv=none; b=NpBb7OI9Qnpi97K0WzF9vDC5RRvc+pvcL4V7MuPcc/9eRFEYdEhz9acekFkri1Jzl4F1PJU/oahfUNtkZKsCXoUwODtwlv4C69zoVE9T7388n+ZMMXAth7GdP0vIQ8mc6CT65lWaXDe41IGISSL3/6Zr/Z4AOIxmKx5ahieYiw0=
+	t=1741679343; cv=none; b=sgWNdZYUvc2fBO8y9rdU3TT6SIgL3nT0pZ3Y7U35uLTYZuY8gePTLXYLch1MD09qd2hKzPcVHY0WE4kEdkk8aEKxZIMY4764p9gAm8JRq+6PDFv0HYcIVAm2gXW5UsJLhh8BHD2FjeIp1l9Vq5/B25eHiojuoF0eqA+2uvvskxI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741657913; c=relaxed/simple;
-	bh=SAWgCmReWDwFueE8sGcj3Dn15fV1Xg6gOw21ijuZnDc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q4BuS+vweaGBxtUcvJchUy+2OAbAkw5DCc1H8zbKfvtIKVgDgbAlD1TXpOId/KX+WmfP64Ke82oPKC3ItwwPmGf2T4jkfgFo3urL+9ri6eHy7XzwrvgmqnXF6OdsuSJyZLHFyk2u3qOJnQnLWzxcVSEtaRj/4iLlxIIZUP99X6U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=IC9ctY59; arc=none smtp.client-ip=46.235.229.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
+	s=arc-20240116; t=1741679343; c=relaxed/simple;
+	bh=JCbxBs+VOmiAGwdeR4RRqZHugLmWuoNIMewCuu/buPU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VhB2kXmzEuxe6iTE8nWMkyfbElKIKxT1iPprszIZYNSr/xXRhaRWAOIWCMiWylErxzWkT8uJKVg+2f6hFmYqUx9fq1Auud/cEkNabjOGn+dg8sY++5T3MRLMjH41zrQXysYUCJ/XZ6NXLUxno6CXHCdTsvLyEWXI71doB1i3qwk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=Aial+nO3; arc=none smtp.client-ip=117.135.210.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="IC9ctY59"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
-	; s=bytemarkmx; h=Content-Type:MIME-Version:Message-ID:Subject:From:Date:From
-	:Subject; bh=NEqOnfxZNcmn2LgGL93widqC+Pfk+3b4HnWZx6HPkdc=; b=IC9ctY59MNwsJGB1
-	KDkOokDnCYzLkR3h5NpmzxozIj5BKDBTqM96Wer4SeAhbatSczejsYG6i+1vGetPFwa8xjBzF+4Bt
-	62L6X2IVb8slnv+G+A/7qHfT4N4tc80LTlX3wUKUL3FFuml8KB7T5hcKyFtM4IqFhAlopufIvKKqo
-	q66HvHxhpFlTmjXafP4Lrp/8ZR7HZxxZb5sEcMmBkTMByOPx+kfBHkOwRsrxI1gpU3kjnNrn0jvqK
-	4a2BqUUTED9Zci3ymteJ6+qwwoDhwkWZByQcDIVN08SGGbZqrCC5L9iu0zjpUScPgHrAEprAbpr1k
-	5FeKwFYf/hI/vUl98w==;
-Received: from dg by mx.treblig.org with local (Exim 4.96)
-	(envelope-from <dg@treblig.org>)
-	id 1tromY-0042vt-0p;
-	Tue, 11 Mar 2025 01:51:46 +0000
-Date: Tue, 11 Mar 2025 01:51:46 +0000
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: arnd@arndb.de, lee@kernel.org, dmitry.torokhov@gmail.com,
-	sre@kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
-	alexandre.belloni@bootlin.com, danielt@kernel.org,
-	jingoohan1@gmail.com, deller@gmx.de, linus.walleij@linaro.org,
-	brgl@bgdev.pl, tsbogend@alpha.franken.de
-Cc: linux-mips@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9] Remove pcf50633
-Message-ID: <Z8-XMr3fVKpol6c0@gallifrey>
-References: <20250309193612.251929-1-linux@treblig.org>
- <Z883nYWpaOF2OZbs@gallifrey>
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="Aial+nO3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Message-ID:Date:MIME-Version:Subject:From:
+	Content-Type; bh=T+nEAcVgdWXpw1h1GUtHc8qOgTf3PIgbErKLx/i6IKI=;
+	b=Aial+nO323EJNbsJZq3UX2wEEH2MPHjU79y58wkfS2c1BmC62a/CcjteRosKBd
+	UrI63uczYTXOkRdKTjJ9h++rBCvb/70A3MCW3Awp2sxy5wihUGcKmKwg7HxDFuLt
+	cqHscGd4Rc8uuXGlkNYlxgJ4D40nmdjAtVFh4xsX6iMLU=
+Received: from [10.42.20.80] (unknown [])
+	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wDXf4rJ6s9nMn6xRw--.33271S2;
+	Tue, 11 Mar 2025 15:48:26 +0800 (CST)
+Message-ID: <503d5b4c-4fc8-a971-0745-617f49022fe8@163.com>
+Date: Tue, 11 Mar 2025 15:48:25 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <Z883nYWpaOF2OZbs@gallifrey>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/6.1.0-21-amd64 (x86_64)
-X-Uptime: 01:51:14 up 306 days, 13:05,  1 user,  load average: 0.05, 0.03,
- 0.00
-User-Agent: Mutt/2.2.12 (2023-09-09)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH v2] fbdev: fsl-diu-fb: add missing device_remove_file()
+Content-Language: en-US
+To: Helge Deller <deller@gmx.de>, Timur Tabi <timur@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Shixiong Ou <oushixiong@kylinos.cn>
+References: <20250309081607.27784-1-oushixiong1025@163.com>
+ <0a15e04f-bd6d-4c2b-a8e1-708880fa433c@gmx.de>
+From: Shixiong Ou <oushixiong1025@163.com>
+In-Reply-To: <0a15e04f-bd6d-4c2b-a8e1-708880fa433c@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wDXf4rJ6s9nMn6xRw--.33271S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7KF48CFyxKF1rGFWxXw1rXrb_yoW8CryrpF
+	WxXay5KrWDtr1UGwnFgw4xu3WYqw4Iy34xZryIkay3Wr909FyDXas5GF18Ca9YvrWkC3Wa
+	va4UtryY9F9rWF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zR6BTOUUUUU=
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbBYwEND2fP5d9gcgAAsg
 
-* Dr. David Alan Gilbert (linux@treblig.org) wrote:
-> * linux@treblig.org (linux@treblig.org) wrote:
-> > From: "Dr. David Alan Gilbert" <linux@treblig.org>
-> > 
-> > The pcf50633 was used as part of the OpenMoko devices but
-> > the support for its main chip was recently removed in:
-> > commit 61b7f8920b17 ("ARM: s3c: remove all s3c24xx support")
-> > 
-> > See https://lore.kernel.org/all/Z8z236h4B5A6Ki3D@gallifrey/
-> > 
-> > Remove it.
-> > 
-> > I've split this up based on the subcomponents to make the size
-> > of each patch sensible.
-> > 
-> 
-> Both Alexandre and Mark would prefer the mfd changes to be
-> more separate from the subsystem changes, so I'll cook a v2
-> shortly.
+Yeah, you are right, but I believe it would be better to retain the checks.
+Anyway, I have submitted the V3 patch which has dropped the checks.
 
-v2 thread starting with message
-  20250311014959.743322-1-linux@treblig.org
-just posted.
 
-Thanks!
+Thanks and Regards,
+Shixiong Ou.
 
-Dave
+在 2025/3/10 03:42, Helge Deller 写道:
+> On 3/9/25 09:16, Shixiong Ou wrote:
+>> From: Shixiong Ou <oushixiong@kylinos.cn>
+>>
+>> Call device_remove_file() when driver remove.
+>>
+>> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
+>> ---
+>> v1->v2:
+>>     add has_sysfs_attrs flag.
+>>
+>>   drivers/video/fbdev/fsl-diu-fb.c | 6 ++++++
+>>   1 file changed, 6 insertions(+)
+>>
+>> diff --git a/drivers/video/fbdev/fsl-diu-fb.c 
+>> b/drivers/video/fbdev/fsl-diu-fb.c
+>> index 5ac8201c3533..57f7fe6a4c76 100644
+>> --- a/drivers/video/fbdev/fsl-diu-fb.c
+>> +++ b/drivers/video/fbdev/fsl-diu-fb.c
+>> @@ -384,6 +384,7 @@ struct fsl_diu_data {
+>>       __le16 next_cursor[MAX_CURS * MAX_CURS] __aligned(32);
+>>       uint8_t edid_data[EDID_LENGTH];
+>>       bool has_edid;
+>> +    bool has_dev_attr;
+>>   } __aligned(32);
+>>
+>>   /* Determine the DMA address of a member of the fsl_diu_data 
+>> structure */
+>> @@ -1809,6 +1810,7 @@ static int fsl_diu_probe(struct platform_device 
+>> *pdev)
+>>               data->dev_attr.attr.name);
+>>       }
+>>
+>> +    data->has_dev_attr = true;
+>>       dev_set_drvdata(&pdev->dev, data);
+>>       return 0;
+>>
+>> @@ -1827,6 +1829,10 @@ static void fsl_diu_remove(struct 
+>> platform_device *pdev)
+>>       int i;
+>>
+>>       data = dev_get_drvdata(&pdev->dev);
+>> +
+>> +    if (data->has_dev_attr)
+>
+> Looking at other drivers (e.g. drivers/net/can/usb/esd_usb.c) it seems
+> that device_remove_file() is ok even if it's not fully initialized...
+>
+> I think you can drop those extra checks.
+>
+> Helge
+>
+>
+>> + device_remove_file(&pdev->dev, &data->dev_attr);
+>> +
+>>       disable_lcdc(&data->fsl_diu_info[0]);
+>>
+>>       free_irq(data->irq, data->diu_reg);
 
-> Dave
-> 
-> > 
-> > Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-> > 
-> > 
-> > Dr. David Alan Gilbert (9):
-> >   mfd: pcf50633-adc:  Remove
-> >   backlight: pcf50633-backlight: Remove
-> >   rtc: pcf50633: Remove
-> >   mfd: pcF50633-gpio: Remove
-> >   Input: pcf50633-input - Remove
-> >   regulator: pcf50633-regulator: Remove
-> >   power: supply: pcf50633: Remove charger
-> >   mfd: pcf50633: Remove irq code
-> >   mfd: pcf50633: Remove remains
-> > 
-> >  arch/mips/configs/ip27_defconfig             |   3 -
-> >  drivers/input/misc/Kconfig                   |   7 -
-> >  drivers/input/misc/Makefile                  |   1 -
-> >  drivers/input/misc/pcf50633-input.c          | 113 -----
-> >  drivers/mfd/Kconfig                          |  24 -
-> >  drivers/mfd/Makefile                         |   4 -
-> >  drivers/mfd/pcf50633-adc.c                   | 255 ----------
-> >  drivers/mfd/pcf50633-core.c                  | 304 ------------
-> >  drivers/mfd/pcf50633-gpio.c                  |  92 ----
-> >  drivers/mfd/pcf50633-irq.c                   | 312 -------------
-> >  drivers/power/supply/Kconfig                 |   6 -
-> >  drivers/power/supply/Makefile                |   1 -
-> >  drivers/power/supply/pcf50633-charger.c      | 466 -------------------
-> >  drivers/regulator/Kconfig                    |   7 -
-> >  drivers/regulator/Makefile                   |   1 -
-> >  drivers/regulator/pcf50633-regulator.c       | 124 -----
-> >  drivers/rtc/Kconfig                          |   7 -
-> >  drivers/rtc/Makefile                         |   1 -
-> >  drivers/rtc/rtc-pcf50633.c                   | 284 -----------
-> >  drivers/video/backlight/Kconfig              |   7 -
-> >  drivers/video/backlight/Makefile             |   1 -
-> >  drivers/video/backlight/pcf50633-backlight.c | 154 ------
-> >  include/linux/mfd/pcf50633/adc.h             |  69 ---
-> >  include/linux/mfd/pcf50633/backlight.h       |  42 --
-> >  include/linux/mfd/pcf50633/core.h            | 232 ---------
-> >  include/linux/mfd/pcf50633/gpio.h            |  48 --
-> >  include/linux/mfd/pcf50633/mbc.h             | 130 ------
-> >  include/linux/mfd/pcf50633/pmic.h            |  68 ---
-> >  28 files changed, 2763 deletions(-)
-> >  delete mode 100644 drivers/input/misc/pcf50633-input.c
-> >  delete mode 100644 drivers/mfd/pcf50633-adc.c
-> >  delete mode 100644 drivers/mfd/pcf50633-core.c
-> >  delete mode 100644 drivers/mfd/pcf50633-gpio.c
-> >  delete mode 100644 drivers/mfd/pcf50633-irq.c
-> >  delete mode 100644 drivers/power/supply/pcf50633-charger.c
-> >  delete mode 100644 drivers/regulator/pcf50633-regulator.c
-> >  delete mode 100644 drivers/rtc/rtc-pcf50633.c
-> >  delete mode 100644 drivers/video/backlight/pcf50633-backlight.c
-> >  delete mode 100644 include/linux/mfd/pcf50633/adc.h
-> >  delete mode 100644 include/linux/mfd/pcf50633/backlight.h
-> >  delete mode 100644 include/linux/mfd/pcf50633/core.h
-> >  delete mode 100644 include/linux/mfd/pcf50633/gpio.h
-> >  delete mode 100644 include/linux/mfd/pcf50633/mbc.h
-> >  delete mode 100644 include/linux/mfd/pcf50633/pmic.h
-> > 
-> > -- 
-> > 2.48.1
-> > 
-> -- 
->  -----Open up your eyes, open up your mind, open up your code -------   
-> / Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
-> \        dave @ treblig.org |                               | In Hex /
->  \ _________________________|_____ http://www.treblig.org   |_______/
-> 
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
-\        dave @ treblig.org |                               | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/

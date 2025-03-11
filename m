@@ -1,136 +1,92 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A293925DD06;
-	Tue, 11 Mar 2025 15:26:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FCA1217719;
+	Tue, 11 Mar 2025 20:12:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741706788; cv=none; b=SYmMviJYsipWuSGXUgO3JvCkDsi65eSNfNbzhMoTCVpLY3AVUacEyE2lNZEUKX7GVQfFRnW5Brlgq+zfGGaG5H93TedbOc46lqorTkDCnOzVeprCibFWIkkgWvoR6qUvfH0bI5TYfrM8C92AEuvLbe2dIu6kUgZwQQ3h98NiQQs=
+	t=1741723941; cv=none; b=D74qqKGSPeV+zc5ZG6v3S2Z7k/5XAIjLPHpwepn1GLPqvVTTJHWa4gZqUnUtWjwNs7RJWyr7jeGlcq4QucG6LCnv4Sn9iMTSVSY4GN6XHwfnYwF8C5w9rDpQyDskluXU2i0yGs3ZJRtGhEAIYdEXnVD2dE85fSaFIGuNtHhzhDo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741706788; c=relaxed/simple;
-	bh=Jyzfswtbd02+H1SwTO3SSgnzdRQxYiZaNhQsjF2XmFE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=aUh2YiPDEzdKf8IWz6QM7Ubq1XyjNKWzG8JqXTGf4x422mklge1W3sxoafnK3mskw4v0d/s51BkOWKtiv5mwKDmXLuZMDUWUs+6uOilp4vDvfgbXd77uaXhsgH9necd0Hq1ZMVjhHTNPz1/YtwMuGcoWha1kbnp+TKOid9roQEM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=QAjbL/I/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1741723941; c=relaxed/simple;
+	bh=3+OnOIdluvq4El08WnHUY5Y/kcwnOu3x4aGLqAkuCrs=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=mJi6Ph36P4CRqkih9JaByc5rcMhPy+ZXiNQJTNA1bO0aRcMPj6Pqn/Tm96p5pq0eqj9js6ovGDw+p7HYRoHeOtK7IrtcDn9ic2+UCCXs0omxwKNCd3gIDRMJjPLguQg2wr2nz0amzxq0s9G+7lSCVEaIYpObqB+o/dmZGT0tBAw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gjZifLhP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="QAjbL/I/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AAB6C4CEE9;
-	Tue, 11 Mar 2025 15:26:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1741706788;
-	bh=Jyzfswtbd02+H1SwTO3SSgnzdRQxYiZaNhQsjF2XmFE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QAjbL/I/vxRRdLGb5A0S/jIQ+/+yik2NXVyFeZND/IIvS0H2xVdDxf25vbqrnbPvu
-	 WlG5vf++zsKBFpAHusknq8DhYDRyznU0uRTVHb/q9/JDfnlVEwomrEwCw+Eo7ClzC9
-	 4jIJeAADnWrRHAwBJlbXY/REK0XDTU3zMcuzHTDo=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	kernel test robot <lkp@intel.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>
-Subject: [PATCH 5.10 167/462] m68k: vga: Fix I/O defines
-Date: Tue, 11 Mar 2025 15:57:13 +0100
-Message-ID: <20250311145804.950923052@linuxfoundation.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250311145758.343076290@linuxfoundation.org>
-References: <20250311145758.343076290@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gjZifLhP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D47A7C4CEE9;
+	Tue, 11 Mar 2025 20:12:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741723941;
+	bh=3+OnOIdluvq4El08WnHUY5Y/kcwnOu3x4aGLqAkuCrs=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=gjZifLhPPGXcer1ZAWIyK1S2tH/lt04SIftXSYzZKGfP4lXtZMsmn0Eayh4HpB96b
+	 9/WqmOe6ugZVmY0LQ5SSZW9kBXMR2lxu5SNeNjoFIMide30s/REq6ZNBAcdJlrVORp
+	 he21oJCRdGMpi/X6dYz0x6Og1QgILShA9Vtz4Zfqdtms9SIwKr6HEFsbEAuMctd6Sf
+	 BS0G/1eyAkCusG9Gt/HbcO5zM24U61hX4ZUeBvWsFP2u4HRO5jy6CgLN+tuJGbunvQ
+	 dvSLNH9QnttCUnXihzQwUAmxtSH/2kN0drCOaMIev3rf7vlKgSyJqUbc/XYZSod+Vo
+	 HijI7bZDk9tuQ==
+From: Mark Brown <broonie@kernel.org>
+To: arnd@arndb.de, lee@kernel.org, dmitry.torokhov@gmail.com, 
+ sre@kernel.org, lgirdwood@gmail.com, alexandre.belloni@bootlin.com, 
+ danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de, 
+ linus.walleij@linaro.org, brgl@bgdev.pl, tsbogend@alpha.franken.de, 
+ linux@treblig.org
+Cc: linux-mips@vger.kernel.org, linux-input@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20250309193612.251929-1-linux@treblig.org>
+References: <20250309193612.251929-1-linux@treblig.org>
+Subject: Re: (subset) [PATCH 0/9] Remove pcf50633
+Message-Id: <174172393659.371198.1480937233663952854.b4-ty@kernel.org>
+Date: Tue, 11 Mar 2025 20:12:16 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-1b0d6
 
-5.10-stable review patch.  If anyone has any objections, please let me know.
+On Sun, 09 Mar 2025 19:36:03 +0000, linux@treblig.org wrote:
+> The pcf50633 was used as part of the OpenMoko devices but
+> the support for its main chip was recently removed in:
+> commit 61b7f8920b17 ("ARM: s3c: remove all s3c24xx support")
+> 
+> See https://lore.kernel.org/all/Z8z236h4B5A6Ki3D@gallifrey/
+> 
+> Remove it.
+> 
+> [...]
 
-------------------
+Applied to
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
 
-commit 53036937a101b5faeaf98e7438555fa854a1a844 upstream.
+Thanks!
 
-Including m68k's <asm/raw_io.h> in vga.h on nommu platforms results
-in conflicting defines with io_no.h for various I/O macros from the
-__raw_read and __raw_write families. An example error is
+[6/9] regulator: pcf50633-regulator: Remove
+      commit: 248bc01138b11ff3af38c3b4a39cb8db7aae6eb6
 
-   In file included from arch/m68k/include/asm/vga.h:12,
-                 from include/video/vga.h:22,
-                 from include/linux/vgaarb.h:34,
-		 from drivers/video/aperture.c:12:
->> arch/m68k/include/asm/raw_io.h:39: warning: "__raw_readb" redefined
-      39 | #define __raw_readb in_8
-	 |
-   In file included from arch/m68k/include/asm/io.h:6,
-		    from include/linux/io.h:13,
-		    from include/linux/irq.h:20,
-		    from include/asm-generic/hardirq.h:17,
-		    from ./arch/m68k/include/generated/asm/hardirq.h:1,
-		    from include/linux/hardirq.h:11,
-		    from include/linux/interrupt.h:11,
-                    from include/linux/trace_recursion.h:5,
-		    from include/linux/ftrace.h:10,
-		    from include/linux/kprobes.h:28,
-		    from include/linux/kgdb.h:19,
-		    from include/linux/fb.h:6,
-		    from drivers/video/aperture.c:5:
-   arch/m68k/include/asm/io_no.h:16: note: this is the location of the previous definition
-      16 | #define __raw_readb(addr) \
-	 |
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Include <asm/io.h>, which avoids raw_io.h on nommu platforms.
-Also change the defined values of some of the read/write symbols in
-vga.h to __raw_read/__raw_write as the raw_in/raw_out symbols are not
-generally available.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202501071629.DNEswlm8-lkp@intel.com/
-Fixes: 5c3f968712ce ("m68k/video: Create <asm/vga.h>")
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org # v3.5+
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Link: https://lore.kernel.org/20250107095912.130530-1-tzimmermann@suse.de
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- arch/m68k/include/asm/vga.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
---- a/arch/m68k/include/asm/vga.h
-+++ b/arch/m68k/include/asm/vga.h
-@@ -9,7 +9,7 @@
-  */
- #ifndef CONFIG_PCI
- 
--#include <asm/raw_io.h>
-+#include <asm/io.h>
- #include <asm/kmap.h>
- 
- /*
-@@ -29,9 +29,9 @@
- #define inw_p(port)		0
- #define outb_p(port, val)	do { } while (0)
- #define outw(port, val)		do { } while (0)
--#define readb			raw_inb
--#define writeb			raw_outb
--#define writew			raw_outw
-+#define readb			__raw_readb
-+#define writeb			__raw_writeb
-+#define writew			__raw_writew
- 
- #endif /* CONFIG_PCI */
- #endif /* _ASM_M68K_VGA_H */
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
+Thanks,
+Mark
 

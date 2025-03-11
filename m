@@ -1,213 +1,136 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE7751917F4;
-	Tue, 11 Mar 2025 13:40:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 824D625EF81;
+	Tue, 11 Mar 2025 15:08:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741700455; cv=none; b=FbATwkyBlH01sJKsMBsFyelmwZ+J83U9PdbgmbRnn8lsuhjMByaNySW1m0+esV8u0dNTTff4yMgWuplXqP6RpUGo3M7tmy39kk+S8sYcfVBF5yrhIGa+sJJ0LKy4kWt9/TiQYN2jYr6YLaMw90Ba0zxGLs/X8hWyrly+CbE7zSc=
+	t=1741705737; cv=none; b=lwYZv7rl123AGAHLzuM32x1u0wHpq5RuFyFP4yd9yC/awgoM5vUwMba4p7J0A1qulT3T61TWknWlrid+G7NxCVV9IYoi9jaipO4+ciVZH86xNmDDWc3s0/KIq2wbK3M4NMdkgGo+YonAXXawoi+R0jjqVdyc0zMXIBtEjM8wxzE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741700455; c=relaxed/simple;
-	bh=Gf0R7gditoYzuwPdbW2qqyMvm9Ccy9LeE68JuPxBAD0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E/47Mv/Y9jwWtFZRcjbzY7cI3Ur4QWLh6Ko6Unxr7ghRIpeepAjlL3UmzIlf8bR6hkex73IbSLd9Oc5aMGGVGHawQC5rom/ml98PJo64+6QeJpkJat3QORwSDoQ/CLGxSqkgtdMtt9zr9AaGcYdXU54Jfwj5wobvnEGv2ZcTnyU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NQmvbkQ+; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1741705737; c=relaxed/simple;
+	bh=XXiKbN0SCyvZ+V8HJz+MqaGnZ48jTbLvmqcZHBemcZA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=o5l68kHEYnPEV5vsIg10x9Kqqq3ZRx+pk2YrDDiQF/JE/apRih+0xpJtyVY8VBV1/RyAW8ZVkJISONKyzKrusuxk15Cu8AqaZH3poT7GsuVYiiQo937Cx0mOvUAkCM4/WTyG6GAXAg5N6g8s+VGj+BK9XberXwMCRtVk5vU3+l0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ytAEfZTp; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NQmvbkQ+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A681C4CEE9;
-	Tue, 11 Mar 2025 13:40:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1741700454;
-	bh=Gf0R7gditoYzuwPdbW2qqyMvm9Ccy9LeE68JuPxBAD0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NQmvbkQ+bgaQDX3OpuW57y4xyHeLysL04t7l+qbl2gQwaq+6lFkGniI2kgXzNfDGr
-	 6XxC+R1it1TlfnrxXjxdC3JsN8NLxU+BoOf9Wz/tJfUV6QQjZzwYER2KUAhzP08sK6
-	 rFGmsQB2TJl3RO7eR6hNfNWh+gl5rNJDJMPUM1Jsa2nwZ05Cjw954c7Aqazl8WxhA1
-	 aQGqZNl5BuXlrrJV/g5rOZCux0HvpgX4hPYkDIhaLA04KJqNqevslxdzSqmeW4WUuk
-	 dFAQlMyXvPMhIl4a0DPXGAyw/oeP2lZcAWoP4ckSogqhn3YxKQdudaTiavuPj8Dj1q
-	 fh5X6tdu43v+A==
-Date: Tue, 11 Mar 2025 13:40:48 +0000
-From: Lee Jones <lee@kernel.org>
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Svyatoslav Ryhel <clamor95@gmail.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] mfd: lm3533: convert to use OF
-Message-ID: <20250311134048.GI8350@google.com>
-References: <20250224114815.146053-1-clamor95@gmail.com>
- <20250224114815.146053-3-clamor95@gmail.com>
- <20250228085927.GM824852@google.com>
- <CAPVz0n0jaR=UM7WbBs3zM-cZzuaPVWBjf4Q7i82hvxtXg2oCzQ@mail.gmail.com>
- <20250305134455.2843f603@jic23-huawei>
- <CAPVz0n3Qt00my1ejoyEgxTRi-mQszHybwhPq70eO=94oxMfECQ@mail.gmail.com>
- <20250308171932.2a5f0a9b@jic23-huawei>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ytAEfZTp"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A51CC4CEEA;
+	Tue, 11 Mar 2025 15:08:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1741705737;
+	bh=XXiKbN0SCyvZ+V8HJz+MqaGnZ48jTbLvmqcZHBemcZA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=ytAEfZTpa/kY3X5j/1fZ1UZHFVksNO7COolopqPKmATPRVUC61KyFnvC0mhpDVosZ
+	 aQQluiG1CTKMdtObek7awYNoq5bxYOeZge9EPAgP+Btept0iuRLjbWT2ArJoewmqXh
+	 zU0iQye2hJbZkxFA1GL5PKQdm4hIFV0g2YKrLeG8=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	kernel test robot <lkp@intel.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Helge Deller <deller@gmx.de>
+Subject: [PATCH 5.4 120/328] m68k: vga: Fix I/O defines
+Date: Tue, 11 Mar 2025 15:58:10 +0100
+Message-ID: <20250311145719.664756521@linuxfoundation.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250311145714.865727435@linuxfoundation.org>
+References: <20250311145714.865727435@linuxfoundation.org>
+User-Agent: quilt/0.68
+X-stable: review
+X-Patchwork-Hint: ignore
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250308171932.2a5f0a9b@jic23-huawei>
 
-On Sat, 08 Mar 2025, Jonathan Cameron wrote:
+5.4-stable review patch.  If anyone has any objections, please let me know.
 
-> On Wed, 5 Mar 2025 16:18:38 +0200
-> Svyatoslav Ryhel <clamor95@gmail.com> wrote:
-> 
-> > ср, 5 бер. 2025 р. о 15:45 Jonathan Cameron <jic23@kernel.org> пише:
-> > >
-> > > On Fri, 28 Feb 2025 11:30:51 +0200
-> > > Svyatoslav Ryhel <clamor95@gmail.com> wrote:
-> > >  
-> > > > пт, 28 лют. 2025 р. о 10:59 Lee Jones <lee@kernel.org> пише:  
-> > > > >
-> > > > > On Mon, 24 Feb 2025, Svyatoslav Ryhel wrote:
-> > > > >  
-> > > > > > Remove platform data and fully relay on OF and device tree
-> > > > > > parsing and binding devices.
-> > > > > >
-> > > > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > > > ---
-> > > > > >  drivers/iio/light/lm3533-als.c      |  40 ++++---
-> > > > > >  drivers/leds/leds-lm3533.c          |  46 +++++---
-> > > > > >  drivers/mfd/lm3533-core.c           | 159 ++++++++--------------------
-> > > > > >  drivers/video/backlight/lm3533_bl.c |  71 ++++++++++---
-> > > > > >  include/linux/mfd/lm3533.h          |  35 +-----
-> > > > > >  5 files changed, 164 insertions(+), 187 deletions(-)
-> > > > > >  
-> > ...
-> > > > > >       /* ALS input is always high impedance in PWM-mode. */
-> > > > > > -     if (!pdata->pwm_mode) {
-> > > > > > -             ret = lm3533_als_set_resistor(als, pdata->r_select);
-> > > > > > +     if (!als->pwm_mode) {
-> > > > > > +             ret = lm3533_als_set_resistor(als, als->r_select);  
-> > > > >
-> > > > > You're already passing 'als'.
-> > > > >
-> > > > > Just teach lm3533_als_set_resistor that 'r_select' is now contained.
-> > > > >  
-> > > >
-> > > > This is not scope of this patchset. I was already accused in too much
-> > > > changes which make it unreadable. This patchset is dedicated to
-> > > > swapping platform data to use of the device tree. NOT improving
-> > > > functions, NOT rewriting arbitrary mechanics. If you feed a need for
-> > > > this change, then propose a followup. I need from this driver only one
-> > > > thing, that it could work with device tree. But it seems that it is
-> > > > better that it just rots in the garbage bin until removed cause no one
-> > > > cared.  
-> > >
-> > > This is not an unreasonable request as you added r_select to als.
-> > > Perhaps it belongs in a separate follow up patch.  
-> > 
-> > I have just moved values used in pdata to private structs of each
-> > driver. Without changing names or purpose.
-> > 
-> > > However
-> > > it is worth remembering the motivation here is that you want get
-> > > this code upstream, the maintainers don't have that motivation.  
-> > 
-> > This driver is already upstream and it is useless and incompatible
-> > with majority of supported devices. Maintainers should encourage those
-> > who try to help and instead we have what? A total discouragement. Well
-> > defined path into nowhere.
-> 
-> That is not how I read the situation. A simple request was made to
-> result in more maintainable code as a direct result of that
-> improvement being enabled by code changes you were making.
-> I'm sorry to hear that discouraged you.
-> 
-> > 
-> > >
-> > > Greg KH has given various talks on the different motivations in the
-> > > past. It maybe worth a watch.
-> > >
-> > >  
-> > > >  
-> > > > > >               if (ret)
-> > > > > >                       return ret;
-> > > > > >       }
-> > > > > > @@ -828,22 +833,16 @@ static const struct iio_info lm3533_als_info = {
-> > > > > >
-> > > > > >  static int lm3533_als_probe(struct platform_device *pdev)
-> > > > > >  {
-> > > > > > -     const struct lm3533_als_platform_data *pdata;
-> > > > > >       struct lm3533 *lm3533;
-> > > > > >       struct lm3533_als *als;
-> > > > > >       struct iio_dev *indio_dev;
-> > > > > > +     u32 val;  
-> > > > >
-> > > > > Value of what, potatoes?
-> > > > >  
-> > > >
-> > > > Oranges.  
-> > >
-> > > A well named variable would avoid need for any discussion of
-> > > what it is the value of.
-> > >  
-> > 
-> > This is temporary placeholder used to get values from the tree and
-> > then pass it driver struct.
-> 
-> Better if it is a temporary placeholder with a meaningful name.
-> 
-> > 
-> > > >  
-> > > > > >       int ret;
-> > > > > >
-> > > > > >       lm3533 = dev_get_drvdata(pdev->dev.parent);
-> > > > > >       if (!lm3533)
-> > > > > >               return -EINVAL;
-> > > > > >
-> > > > > > -     pdata = dev_get_platdata(&pdev->dev);
-> > > > > > -     if (!pdata) {
-> > > > > > -             dev_err(&pdev->dev, "no platform data\n");
-> > > > > > -             return -EINVAL;
-> > > > > > -     }
-> > > > > > -
-> > > > > >       indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*als));
-> > > > > >       if (!indio_dev)
-> > > > > >               return -ENOMEM;
-> > > > > > @@ -864,13 +863,21 @@ static int lm3533_als_probe(struct platform_device *pdev)
-> > > > > >
-> > > > > >       platform_set_drvdata(pdev, indio_dev);
-> > > > > >
-> > > > > > +     val = 200 * KILO; /* 200kOhm */  
-> > > > >
-> > > > > Better to #define magic numbers; DEFAULT_{DESCRIPTION}_OHMS
-> > > > >  
-> > > >
-> > > > Why? that is not needed.  
-> > > If this variable had a more useful name there would be no need for
-> > > the comment either.
-> > >
-> > >         val_resitor_ohms = 200 * KILLO;
-> > >
-> > > or similar.
-> > >  
-> > 
-> > So I have to add a "reasonably" named variable for each property I
-> > want to get from device tree? Why? It seems to be a bit of overkill,
-> > no? Maybe I am not aware, have variables stopped being reusable?
-> 
-> Lets go with yes if you want a definitive answer. In reality it's
-> a question of how many are needed.  If 10-100s sure reuse is fine,
-> if just a few sensible naming can remove the need for comments
-> and improve readability.
-> 
-> Jonathan
+------------------
 
-You clearly have more patience for this than I do!  =;-)
+From: Thomas Zimmermann <tzimmermann@suse.de>
 
--- 
-Lee Jones [李琼斯]
+commit 53036937a101b5faeaf98e7438555fa854a1a844 upstream.
+
+Including m68k's <asm/raw_io.h> in vga.h on nommu platforms results
+in conflicting defines with io_no.h for various I/O macros from the
+__raw_read and __raw_write families. An example error is
+
+   In file included from arch/m68k/include/asm/vga.h:12,
+                 from include/video/vga.h:22,
+                 from include/linux/vgaarb.h:34,
+		 from drivers/video/aperture.c:12:
+>> arch/m68k/include/asm/raw_io.h:39: warning: "__raw_readb" redefined
+      39 | #define __raw_readb in_8
+	 |
+   In file included from arch/m68k/include/asm/io.h:6,
+		    from include/linux/io.h:13,
+		    from include/linux/irq.h:20,
+		    from include/asm-generic/hardirq.h:17,
+		    from ./arch/m68k/include/generated/asm/hardirq.h:1,
+		    from include/linux/hardirq.h:11,
+		    from include/linux/interrupt.h:11,
+                    from include/linux/trace_recursion.h:5,
+		    from include/linux/ftrace.h:10,
+		    from include/linux/kprobes.h:28,
+		    from include/linux/kgdb.h:19,
+		    from include/linux/fb.h:6,
+		    from drivers/video/aperture.c:5:
+   arch/m68k/include/asm/io_no.h:16: note: this is the location of the previous definition
+      16 | #define __raw_readb(addr) \
+	 |
+
+Include <asm/io.h>, which avoids raw_io.h on nommu platforms.
+Also change the defined values of some of the read/write symbols in
+vga.h to __raw_read/__raw_write as the raw_in/raw_out symbols are not
+generally available.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202501071629.DNEswlm8-lkp@intel.com/
+Fixes: 5c3f968712ce ("m68k/video: Create <asm/vga.h>")
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: stable@vger.kernel.org # v3.5+
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Link: https://lore.kernel.org/20250107095912.130530-1-tzimmermann@suse.de
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/m68k/include/asm/vga.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/arch/m68k/include/asm/vga.h
++++ b/arch/m68k/include/asm/vga.h
+@@ -9,7 +9,7 @@
+  */
+ #ifndef CONFIG_PCI
+ 
+-#include <asm/raw_io.h>
++#include <asm/io.h>
+ #include <asm/kmap.h>
+ 
+ /*
+@@ -29,9 +29,9 @@
+ #define inw_p(port)		0
+ #define outb_p(port, val)	do { } while (0)
+ #define outw(port, val)		do { } while (0)
+-#define readb			raw_inb
+-#define writeb			raw_outb
+-#define writew			raw_outw
++#define readb			__raw_readb
++#define writeb			__raw_writeb
++#define writew			__raw_writew
+ 
+ #endif /* CONFIG_PCI */
+ #endif /* _ASM_M68K_VGA_H */
+
+

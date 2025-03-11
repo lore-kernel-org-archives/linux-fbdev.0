@@ -1,89 +1,213 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 337B9254851;
-	Tue, 11 Mar 2025 11:29:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE7751917F4;
+	Tue, 11 Mar 2025 13:40:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741692585; cv=none; b=Sa7Z1WcRZTgQqTBPQVVJHQrIUK0YNC4Jo1i/i0/MB4eJQ+Nqenz+jIeExmZRZLBsGyl4wp+Lv06Yk20Iqktl5Mtp2yIggbLmyRD1GcL8+6NTjHZBNiViVwQDpVaQrR5ZOguWujTnElbStk3OoNy/5/+0mgTW6BXJ7XtQN7PhdiM=
+	t=1741700455; cv=none; b=FbATwkyBlH01sJKsMBsFyelmwZ+J83U9PdbgmbRnn8lsuhjMByaNySW1m0+esV8u0dNTTff4yMgWuplXqP6RpUGo3M7tmy39kk+S8sYcfVBF5yrhIGa+sJJ0LKy4kWt9/TiQYN2jYr6YLaMw90Ba0zxGLs/X8hWyrly+CbE7zSc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741692585; c=relaxed/simple;
-	bh=Tu/4a3eRN8s8yAnyoNfjovhhGoXRq9gQ3orbX3fSyfA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=j02Yov+t2gEPkC+6ow7l2FIyr4NjxNcmxLIJYJHMHvpyFq/3H0xe3et2ID24BgDsKhUY1Ic3qg5l/MnpiNefGGDIIeBbMsY6fUhyW9ieyrjWJOt+T/pgxgi5IQlgVrWZpZMu20OU1VNSt1cj3zrmepQDNNLBHXP8W4jo5+9JRVE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=oeO82pSr; arc=none smtp.client-ip=117.135.210.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1741700455; c=relaxed/simple;
+	bh=Gf0R7gditoYzuwPdbW2qqyMvm9Ccy9LeE68JuPxBAD0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=E/47Mv/Y9jwWtFZRcjbzY7cI3Ur4QWLh6Ko6Unxr7ghRIpeepAjlL3UmzIlf8bR6hkex73IbSLd9Oc5aMGGVGHawQC5rom/ml98PJo64+6QeJpkJat3QORwSDoQ/CLGxSqkgtdMtt9zr9AaGcYdXU54Jfwj5wobvnEGv2ZcTnyU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NQmvbkQ+; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="oeO82pSr"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=SM9Ub
-	Ll72nXfMLjNLt6sWlifM6ckJcGNSdk6TeIigO4=; b=oeO82pSr0V+mkKe+cTj6F
-	MtKUCbiTBEjXEhQ8WTR78xGJ2VyPl/i8KE96XN1VKpHEW/zeB3nNHa5BNbwZiejs
-	dQkzRtzoWY5DumqMnCHJlGk/QYyJHXFiFmHfuENJ1b87RVICPqoBgY77Accxm50K
-	RrYLHXluzk4EKo4TiTDgoM=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wCH0Ct6HtBna0J3Rw--.58446S3;
-	Tue, 11 Mar 2025 19:29:04 +0800 (CST)
-From: oushixiong1025@163.com
-To: Simona Vetter <simona@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Zsolt Kajtar <soci@c64.rulez.org>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: [PATCH 2/2] fbcon: Change return value type to void
-Date: Tue, 11 Mar 2025 19:28:56 +0800
-Message-Id: <20250311112856.1020095-2-oushixiong1025@163.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20250311112856.1020095-1-oushixiong1025@163.com>
-References: <20250311112856.1020095-1-oushixiong1025@163.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NQmvbkQ+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A681C4CEE9;
+	Tue, 11 Mar 2025 13:40:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741700454;
+	bh=Gf0R7gditoYzuwPdbW2qqyMvm9Ccy9LeE68JuPxBAD0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=NQmvbkQ+bgaQDX3OpuW57y4xyHeLysL04t7l+qbl2gQwaq+6lFkGniI2kgXzNfDGr
+	 6XxC+R1it1TlfnrxXjxdC3JsN8NLxU+BoOf9Wz/tJfUV6QQjZzwYER2KUAhzP08sK6
+	 rFGmsQB2TJl3RO7eR6hNfNWh+gl5rNJDJMPUM1Jsa2nwZ05Cjw954c7Aqazl8WxhA1
+	 aQGqZNl5BuXlrrJV/g5rOZCux0HvpgX4hPYkDIhaLA04KJqNqevslxdzSqmeW4WUuk
+	 dFAQlMyXvPMhIl4a0DPXGAyw/oeP2lZcAWoP4ckSogqhn3YxKQdudaTiavuPj8Dj1q
+	 fh5X6tdu43v+A==
+Date: Tue, 11 Mar 2025 13:40:48 +0000
+From: Lee Jones <lee@kernel.org>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Svyatoslav Ryhel <clamor95@gmail.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>, Pavel Machek <pavel@ucw.cz>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 2/2] mfd: lm3533: convert to use OF
+Message-ID: <20250311134048.GI8350@google.com>
+References: <20250224114815.146053-1-clamor95@gmail.com>
+ <20250224114815.146053-3-clamor95@gmail.com>
+ <20250228085927.GM824852@google.com>
+ <CAPVz0n0jaR=UM7WbBs3zM-cZzuaPVWBjf4Q7i82hvxtXg2oCzQ@mail.gmail.com>
+ <20250305134455.2843f603@jic23-huawei>
+ <CAPVz0n3Qt00my1ejoyEgxTRi-mQszHybwhPq70eO=94oxMfECQ@mail.gmail.com>
+ <20250308171932.2a5f0a9b@jic23-huawei>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wCH0Ct6HtBna0J3Rw--.58446S3
-X-Coremail-Antispam: 1Uf129KBjvdXoWrZFWDurykCw4kAFyDAFyfXrb_yoWftrc_Cw
-	1DZr95XrykKry0kwnag3W3u3yYqa12qa1rGr1DtF95Ja47tryFqr4DZr1qqrWqgF18ArZ0
-	q3Zrtr4Ivw1rCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU0xOz7UUUUU==
-X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXBgND2fQGIlhsAABsw
+In-Reply-To: <20250308171932.2a5f0a9b@jic23-huawei>
 
-From: Shixiong Ou <oushixiong@kylinos.cn>
+On Sat, 08 Mar 2025, Jonathan Cameron wrote:
 
-fbcon_init_device() doesn't need to return a value.
+> On Wed, 5 Mar 2025 16:18:38 +0200
+> Svyatoslav Ryhel <clamor95@gmail.com> wrote:
+> 
+> > ср, 5 бер. 2025 р. о 15:45 Jonathan Cameron <jic23@kernel.org> пише:
+> > >
+> > > On Fri, 28 Feb 2025 11:30:51 +0200
+> > > Svyatoslav Ryhel <clamor95@gmail.com> wrote:
+> > >  
+> > > > пт, 28 лют. 2025 р. о 10:59 Lee Jones <lee@kernel.org> пише:  
+> > > > >
+> > > > > On Mon, 24 Feb 2025, Svyatoslav Ryhel wrote:
+> > > > >  
+> > > > > > Remove platform data and fully relay on OF and device tree
+> > > > > > parsing and binding devices.
+> > > > > >
+> > > > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > > > > ---
+> > > > > >  drivers/iio/light/lm3533-als.c      |  40 ++++---
+> > > > > >  drivers/leds/leds-lm3533.c          |  46 +++++---
+> > > > > >  drivers/mfd/lm3533-core.c           | 159 ++++++++--------------------
+> > > > > >  drivers/video/backlight/lm3533_bl.c |  71 ++++++++++---
+> > > > > >  include/linux/mfd/lm3533.h          |  35 +-----
+> > > > > >  5 files changed, 164 insertions(+), 187 deletions(-)
+> > > > > >  
+> > ...
+> > > > > >       /* ALS input is always high impedance in PWM-mode. */
+> > > > > > -     if (!pdata->pwm_mode) {
+> > > > > > -             ret = lm3533_als_set_resistor(als, pdata->r_select);
+> > > > > > +     if (!als->pwm_mode) {
+> > > > > > +             ret = lm3533_als_set_resistor(als, als->r_select);  
+> > > > >
+> > > > > You're already passing 'als'.
+> > > > >
+> > > > > Just teach lm3533_als_set_resistor that 'r_select' is now contained.
+> > > > >  
+> > > >
+> > > > This is not scope of this patchset. I was already accused in too much
+> > > > changes which make it unreadable. This patchset is dedicated to
+> > > > swapping platform data to use of the device tree. NOT improving
+> > > > functions, NOT rewriting arbitrary mechanics. If you feed a need for
+> > > > this change, then propose a followup. I need from this driver only one
+> > > > thing, that it could work with device tree. But it seems that it is
+> > > > better that it just rots in the garbage bin until removed cause no one
+> > > > cared.  
+> > >
+> > > This is not an unreasonable request as you added r_select to als.
+> > > Perhaps it belongs in a separate follow up patch.  
+> > 
+> > I have just moved values used in pdata to private structs of each
+> > driver. Without changing names or purpose.
+> > 
+> > > However
+> > > it is worth remembering the motivation here is that you want get
+> > > this code upstream, the maintainers don't have that motivation.  
+> > 
+> > This driver is already upstream and it is useless and incompatible
+> > with majority of supported devices. Maintainers should encourage those
+> > who try to help and instead we have what? A total discouragement. Well
+> > defined path into nowhere.
+> 
+> That is not how I read the situation. A simple request was made to
+> result in more maintainable code as a direct result of that
+> improvement being enabled by code changes you were making.
+> I'm sorry to hear that discouraged you.
+> 
+> > 
+> > >
+> > > Greg KH has given various talks on the different motivations in the
+> > > past. It maybe worth a watch.
+> > >
+> > >  
+> > > >  
+> > > > > >               if (ret)
+> > > > > >                       return ret;
+> > > > > >       }
+> > > > > > @@ -828,22 +833,16 @@ static const struct iio_info lm3533_als_info = {
+> > > > > >
+> > > > > >  static int lm3533_als_probe(struct platform_device *pdev)
+> > > > > >  {
+> > > > > > -     const struct lm3533_als_platform_data *pdata;
+> > > > > >       struct lm3533 *lm3533;
+> > > > > >       struct lm3533_als *als;
+> > > > > >       struct iio_dev *indio_dev;
+> > > > > > +     u32 val;  
+> > > > >
+> > > > > Value of what, potatoes?
+> > > > >  
+> > > >
+> > > > Oranges.  
+> > >
+> > > A well named variable would avoid need for any discussion of
+> > > what it is the value of.
+> > >  
+> > 
+> > This is temporary placeholder used to get values from the tree and
+> > then pass it driver struct.
+> 
+> Better if it is a temporary placeholder with a meaningful name.
+> 
+> > 
+> > > >  
+> > > > > >       int ret;
+> > > > > >
+> > > > > >       lm3533 = dev_get_drvdata(pdev->dev.parent);
+> > > > > >       if (!lm3533)
+> > > > > >               return -EINVAL;
+> > > > > >
+> > > > > > -     pdata = dev_get_platdata(&pdev->dev);
+> > > > > > -     if (!pdata) {
+> > > > > > -             dev_err(&pdev->dev, "no platform data\n");
+> > > > > > -             return -EINVAL;
+> > > > > > -     }
+> > > > > > -
+> > > > > >       indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*als));
+> > > > > >       if (!indio_dev)
+> > > > > >               return -ENOMEM;
+> > > > > > @@ -864,13 +863,21 @@ static int lm3533_als_probe(struct platform_device *pdev)
+> > > > > >
+> > > > > >       platform_set_drvdata(pdev, indio_dev);
+> > > > > >
+> > > > > > +     val = 200 * KILO; /* 200kOhm */  
+> > > > >
+> > > > > Better to #define magic numbers; DEFAULT_{DESCRIPTION}_OHMS
+> > > > >  
+> > > >
+> > > > Why? that is not needed.  
+> > > If this variable had a more useful name there would be no need for
+> > > the comment either.
+> > >
+> > >         val_resitor_ohms = 200 * KILLO;
+> > >
+> > > or similar.
+> > >  
+> > 
+> > So I have to add a "reasonably" named variable for each property I
+> > want to get from device tree? Why? It seems to be a bit of overkill,
+> > no? Maybe I am not aware, have variables stopped being reusable?
+> 
+> Lets go with yes if you want a definitive answer. In reality it's
+> a question of how many are needed.  If 10-100s sure reuse is fine,
+> if just a few sensible naming can remove the need for comments
+> and improve readability.
+> 
+> Jonathan
 
-Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
----
- drivers/video/fbdev/core/fbcon.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+You clearly have more patience for this than I do!  =;-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 51c3e8a5a092..c1692b68f69e 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -3296,7 +3296,7 @@ static const struct attribute_group fbcon_device_attr_group = {
- 	.attrs		= fbcon_device_attrs,
- };
- 
--static int fbcon_init_device(void)
-+static void fbcon_init_device(void)
- {
- 	int ret;
- 
-@@ -3305,8 +3305,6 @@ static int fbcon_init_device(void)
- 	ret = device_add_group(fbcon_device, &fbcon_device_attr_group);
- 	if (ret)
- 		fbcon_has_sysfs = 0;
--
--	return 0;
- }
- 
- #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
 -- 
-2.25.1
-
+Lee Jones [李琼斯]

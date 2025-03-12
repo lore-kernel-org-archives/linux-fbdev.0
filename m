@@ -1,118 +1,178 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6741723BCFC;
-	Wed, 12 Mar 2025 10:21:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 30D2A1BD01F;
+	Wed, 12 Mar 2025 15:45:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741774897; cv=none; b=NFz8jICsgL0LmgoF5S/LPccKlSuj0uNxR1GIwdMv/K+aVUeFFPHgBwNvFrb7r7uDlGkecNHTd45Iv7955cn9secKYIJceTeUQTQXSPMP4q2YCHr3xGaj69i+9eLbjHfdnurxesi4DLU+Wl/MaYZrNRzbC1dV7WrJfiiNt25FRYE=
+	t=1741794349; cv=none; b=EAmVzNgTb++U6okrUFupwCob8j4bcWbDmM8KI0/7gl7vtEzPvrDpVtQBns8Fctt2EqHA/kaWZn1hAGJqlI5+Fg9PmB6JOCi7RH/oXoLCo2gTBiWdFCQzQ9jGOFpWDIEv65BrgT3+F6M0Y4pIhjjgcF3bU9dHyC9etAiWaX2G39s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741774897; c=relaxed/simple;
-	bh=41QWwJfAFHDyzTTvXUw28+dvX6bb0jw45B0uM9j0CvY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mjBf0Db9XbCSoEIWgYz4oZSezLvDWLRFsidfsCgy7ekZcgcdowAP9nXseVml5dmEy9JQmoAdnb3LzaIVgZshjBIpb/xl4hKi2YttRZRPExriD67fyq4V056cMyDKVvYOedU809k8k5/kHGAg1XsxA/dZDIxDWvcY0J+e/kg3tFM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aJ0SkTcu; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1741794349; c=relaxed/simple;
+	bh=YiJ9DmUVX1IbQ4Ir7wZBBuDQ6fawKeW6P6FZIvMQ9eI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=cm8t/cR9yrVcyir9407zuH5JqKMNTpXUM2Kd/JeM2C681VA3vsoylonWs6qN/UlPgsR9oD/mymqBKoAfCccjIu3lcYA9DBG7TapjbIehw+ZsiONK1ZT+V8v43lnfS9+OuvfnNVYvBRkstsMvacUyDbEpjnveAO42gOtxBNJTi/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=QXjklLQa; arc=none smtp.client-ip=220.197.31.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aJ0SkTcu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1741774894; x=1773310894;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=41QWwJfAFHDyzTTvXUw28+dvX6bb0jw45B0uM9j0CvY=;
-  b=aJ0SkTcu4SiwLvSXwGyXgUBkygC9cuWlDY+n3JIdhvnFYsLbBAU5OGSb
-   /g84wcQFPl5o9KlZ50S/tqq638C59k35vr3f3c7pjGzWTBg3mBaKe4yH+
-   t8eGFTiDLYXo33fIlcGBWbEEILxoSqnEp8sI8+lQh/x9CDlGq1KLXB97j
-   dSduoMRJKHLaj73C7EZF9AYKQ7R0jCHAl43SL8t/wjY+hnkGpKLYvXlEQ
-   vZbkO10S4DvnO3YoiQBaB+SSod4hhZ7iufuEAg4Dl9AMkMO1qstFAxh/1
-   XWzqtAgJwILYG7slhxEsHHTt2vxZZXNQb3H2m0wuHaH4vhfcdnd0eDga3
-   w==;
-X-CSE-ConnectionGUID: 5ADEMC3CQBuyc+K0VfgdVw==
-X-CSE-MsgGUID: grHeGf8ORnyKYG0TMB9zTw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11370"; a="65306440"
-X-IronPort-AV: E=Sophos;i="6.14,241,1736841600"; 
-   d="scan'208";a="65306440"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2025 03:21:34 -0700
-X-CSE-ConnectionGUID: B/5+MFx7QrW63VAKxIyfyg==
-X-CSE-MsgGUID: g4KEu2WDSN6abvwq00/fpQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,241,1736841600"; 
-   d="scan'208";a="125643020"
-Received: from lkp-server02.sh.intel.com (HELO a4747d147074) ([10.239.97.151])
-  by orviesa004.jf.intel.com with ESMTP; 12 Mar 2025 03:21:31 -0700
-Received: from kbuild by a4747d147074 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1tsJDM-0008O0-2h;
-	Wed, 12 Mar 2025 10:21:28 +0000
-Date: Wed, 12 Mar 2025 18:20:49 +0800
-From: kernel test robot <lkp@intel.com>
-To: oushixiong1025@163.com, Simona Vetter <simona@ffwll.ch>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="QXjklLQa"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:Subject:Date:Message-ID:MIME-Version; bh=S1WUJ
+	ADaCqY8wLRXgp+FLvNcgEj2zeHMScWZEdvC9P0=; b=QXjklLQaon2otUi05D3g9
+	UZJoaL1qCUYXyYsRZiLaNebwNmExI6cVarmNCUy6Hj9YmyMw3+N9HZgAK9u7R/JH
+	LNhNLZlCLAWm2bdFsNGxhwUBBqf0V6WAEkzkb7wVVG7QEwsUGkYseiBrfPmgv0F9
+	PwiVJPFfi9MrxtWUvPJcx4=
+Received: from DESKTOP-DMSSUQ5.localdomain (unknown [])
+	by gzsmtp1 (Coremail) with SMTP id PCgvCgBnGxwErNFnmqUoAw--.31028S2;
+	Wed, 12 Mar 2025 23:45:10 +0800 (CST)
+From: Shixiong Ou <oushixiong1025@163.com>
+To: Simona Vetter <simona@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>,
+	Jocelyn Falempe <jfalempe@redhat.com>,
 	Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Zsolt Kajtar <soci@c64.rulez.org>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
 	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: Re: [PATCH 1/2] fbcon: Register sysfs groups through device_add_group
-Message-ID: <202503121852.0x6J0c7a-lkp@intel.com>
-References: <20250311112856.1020095-1-oushixiong1025@163.com>
+Subject: [PATCH v2 1/2] fbcon: Register sysfs groups through device_add_group
+Date: Wed, 12 Mar 2025 23:45:06 +0800
+Message-ID: <20250312154507.10881-1-oushixiong1025@163.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250311112856.1020095-1-oushixiong1025@163.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:PCgvCgBnGxwErNFnmqUoAw--.31028S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxCFy7uF4fJFykZrWfXF1UWrg_yoW5Kw18pr
+	4DJa4YgFW5G3ZrWw43Zw4DZ3sxWwn2k34fJws5Kw1fKF97A39Iqa48JFyjya4rtas7GF1r
+	Ja4Dtry8AFWxWr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jjtC7UUUUU=
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbBYxoOD2fRnCz55AAAsj
 
-Hi,
+From: Shixiong Ou <oushixiong@kylinos.cn>
 
-kernel test robot noticed the following build errors:
+Use device_add_group() to simplify creation and removal.
 
-[auto build test ERROR on linus/master]
-[also build test ERROR on v6.14-rc6 next-20250311]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
+---
+v1->v2:
+	fix build error.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/oushixiong1025-163-com/fbcon-Change-return-value-type-to-void/20250311-193230
-base:   linus/master
-patch link:    https://lore.kernel.org/r/20250311112856.1020095-1-oushixiong1025%40163.com
-patch subject: [PATCH 1/2] fbcon: Register sysfs groups through device_add_group
-config: sparc-randconfig-001-20250312 (https://download.01.org/0day-ci/archive/20250312/202503121852.0x6J0c7a-lkp@intel.com/config)
-compiler: sparc64-linux-gcc (GCC) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250312/202503121852.0x6J0c7a-lkp@intel.com/reproduce)
+ drivers/video/fbdev/core/fbcon.c | 49 ++++++++++++++------------------
+ 1 file changed, 22 insertions(+), 27 deletions(-)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202503121852.0x6J0c7a-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/video/fbdev/core/fbcon.c: In function 'fbcon_deinit_device':
->> drivers/video/fbdev/core/fbcon.c:3390:37: error: 'fb_info' undeclared (first use in this function)
-    3390 |                 device_remove_group(fb_info->dev, &fbcon_device_attr_group);
-         |                                     ^~~~~~~
-   drivers/video/fbdev/core/fbcon.c:3390:37: note: each undeclared identifier is reported only once for each function it appears in
-
-
-vim +/fb_info +3390 drivers/video/fbdev/core/fbcon.c
-
-  3388	
-  3389		if (fbcon_has_sysfs) {
-> 3390			device_remove_group(fb_info->dev, &fbcon_device_attr_group);
-  3391	
-  3392			fbcon_has_sysfs = 0;
-  3393		}
-  3394	}
-  3395	
-
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index e8b4e8c119b5..9ee5f8492249 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -3157,7 +3157,7 @@ static const struct consw fb_con = {
+ 	.con_debug_leave	= fbcon_debug_leave,
+ };
+ 
+-static ssize_t store_rotate(struct device *device,
++static ssize_t rotate_store(struct device *device,
+ 			    struct device_attribute *attr, const char *buf,
+ 			    size_t count)
+ {
+@@ -3179,7 +3179,7 @@ static ssize_t store_rotate(struct device *device,
+ 	return count;
+ }
+ 
+-static ssize_t store_rotate_all(struct device *device,
++static ssize_t rotate_all_store(struct device *device,
+ 				struct device_attribute *attr,const char *buf,
+ 				size_t count)
+ {
+@@ -3201,7 +3201,7 @@ static ssize_t store_rotate_all(struct device *device,
+ 	return count;
+ }
+ 
+-static ssize_t show_rotate(struct device *device,
++static ssize_t rotate_show(struct device *device,
+ 			   struct device_attribute *attr,char *buf)
+ {
+ 	struct fb_info *info;
+@@ -3220,7 +3220,7 @@ static ssize_t show_rotate(struct device *device,
+ 	return sysfs_emit(buf, "%d\n", rotate);
+ }
+ 
+-static ssize_t show_cursor_blink(struct device *device,
++static ssize_t cursor_blink_show(struct device *device,
+ 				 struct device_attribute *attr, char *buf)
+ {
+ 	struct fb_info *info;
+@@ -3245,7 +3245,7 @@ static ssize_t show_cursor_blink(struct device *device,
+ 	return sysfs_emit(buf, "%d\n", blink);
+ }
+ 
+-static ssize_t store_cursor_blink(struct device *device,
++static ssize_t cursor_blink_store(struct device *device,
+ 				  struct device_attribute *attr,
+ 				  const char *buf, size_t count)
+ {
+@@ -3279,32 +3279,30 @@ static ssize_t store_cursor_blink(struct device *device,
+ 	return count;
+ }
+ 
+-static struct device_attribute device_attrs[] = {
+-	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
+-	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
+-	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
+-	       store_cursor_blink),
++static DEVICE_ATTR_RW(rotate);
++static DEVICE_ATTR_WO(rotate_all);
++static DEVICE_ATTR_RW(cursor_blink);
++
++static struct attribute *fbcon_device_attrs[] = {
++	&dev_attr_rotate.attr,
++	&dev_attr_rotate_all.attr,
++	&dev_attr_cursor_blink.attr,
++	NULL,
++};
++
++static const struct attribute_group fbcon_device_attr_group = {
++	.attrs		= fbcon_device_attrs,
+ };
+ 
+ static int fbcon_init_device(void)
+ {
+-	int i, error = 0;
++	int ret;
+ 
+ 	fbcon_has_sysfs = 1;
+ 
+-	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
+-		error = device_create_file(fbcon_device, &device_attrs[i]);
+-
+-		if (error)
+-			break;
+-	}
+-
+-	if (error) {
+-		while (--i >= 0)
+-			device_remove_file(fbcon_device, &device_attrs[i]);
+-
++	ret = device_add_group(fbcon_device, &fbcon_device_attr_group);
++	if (ret)
+ 		fbcon_has_sysfs = 0;
+-	}
+ 
+ 	return 0;
+ }
+@@ -3387,11 +3385,8 @@ void __init fb_console_init(void)
+ 
+ static void __exit fbcon_deinit_device(void)
+ {
+-	int i;
+-
+ 	if (fbcon_has_sysfs) {
+-		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
+-			device_remove_file(fbcon_device, &device_attrs[i]);
++		device_remove_group(fbcon_device, &fbcon_device_attr_group);
+ 
+ 		fbcon_has_sysfs = 0;
+ 	}
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+

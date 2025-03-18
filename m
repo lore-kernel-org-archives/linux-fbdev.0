@@ -1,77 +1,92 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEEEB1ACEB7;
-	Tue, 18 Mar 2025 09:41:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 685C01DF723;
+	Tue, 18 Mar 2025 10:06:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742290864; cv=none; b=mu/4l3J1pewrKcc+P0v6WAl14vLO3Y8gGlaKqfm44ke1ok+7VbKcp2k9uCtcp9TUXmJ6QUMLAB3bHrjyJ0iiNIF+X1bYtISx6WJmS8ScLjP2sh3+yS4jhocEcvtlv9roTDyQ12K+6kt0TPyrWBjMuPGKYcQP8X+XLRxbiTneUHc=
+	t=1742292361; cv=none; b=a8+RIcID6E5VKDfxY6r0TVqQzcjEMRg7f3+Y//Yhvm+/CBJ+VbYHM+TbKY7AD6L2iw2meQQEXUOf+/Uj/7zaZrSqP1vOeLDXvbClyIArzBY90kmMB0iLapl42uaBWIxGK75cm0HPpwdorEmD+z2cEBRSPn1/kImHxDPu4dwq5sc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742290864; c=relaxed/simple;
-	bh=TSc5W2q6U2pCETrZtYcwbVySG6HvhFvMTOtr1i1RvG8=;
+	s=arc-20240116; t=1742292361; c=relaxed/simple;
+	bh=T3bHKUxclsfhdannYbovFZH5KGdJa2QdzkUB8e9znU4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A20eLn7inOaibQpQ5vJq4wp33dRwez9REx/TPpSb0J7+wu4ZPyhX2MOEVOx4AyzjZMJDP2lYMR/2k/WWt0rtTVs+Gq5qkowzyt1j9GUABUb9l92pRuuwpy7XzOZ63Fi/DgIeScCOQ0pqVq4hx8CRW0DPcVOd7o8Nttj/8s0fV1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cTzqeLHQ; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=J6UpBrABlJhZzhGlKy/j4kcDiDk24ncc8Roc3jBRpUrxA4KDEQUEsWx9k+ylUIRL8xjYbNVJcb1W+xrad7ynhpBDG5X5473M9vIgBsMysZFAkhN4/qs8TPFe9ZOFAQgHnKeHKc36L5hpyEw8ylosKLT3/ilAmCgGww51kTBbg9A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dzMzJb4S; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cTzqeLHQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A03B7C4CEDD;
-	Tue, 18 Mar 2025 09:41:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dzMzJb4S"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B009C4CEDD;
+	Tue, 18 Mar 2025 10:05:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742290863;
-	bh=TSc5W2q6U2pCETrZtYcwbVySG6HvhFvMTOtr1i1RvG8=;
+	s=k20201202; t=1742292360;
+	bh=T3bHKUxclsfhdannYbovFZH5KGdJa2QdzkUB8e9znU4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=cTzqeLHQyr05coLOSUhhzopp77QKqrqw1LJ6Vgr4/UbU3TSEKwOGYDbomUbrtmANr
-	 FQuQTnLQ6q0eQ7Vg2ahqmvFAC0IOvAZDEqVSQ9sYktHGOA/+/jbOM/swDyJ1K+VQ/D
-	 6uroiAglI7QL5Hwr6KEj0dZyg91Wmfu1D+YBFYTNEKsK+ITQPUUs+vJ089/qIB3pBw
-	 Y8faoQwRSqn52e7oIURqnXbe1pREuxojNe1ZEfZ2HsLaHLrwn4ZluVx9c8dF+Po+M0
-	 mLXf6oW4/mUSkJOvMfrufE3s7FnlSflw9anSqqZJLb5bh/Wh9JJ+WjUVzmxGcN2xXR
-	 lFBkAjTG9SO3g==
-Date: Tue, 18 Mar 2025 09:40:59 +0000
+	b=dzMzJb4SYQBTXA1fP2qUbk6QZQeKBJecnbTtbEdkkJb3kAPSrIUnZlr5P8QdGY68+
+	 zbhh7By8hO7XZM+Qf+LLtKDkPYlunvY9wQWTcY6KqzpGxC4NFEZIy28CIXp2JoJ3Yv
+	 oh0r06rr3oLVN8PySEjo0EQKzeLzGy2TBt8fyfgnDGmlIMNzT2ZJFjZP8DMqf/+1Oh
+	 4CgbfwaGqLK2GJQ9umvakEflJlCFwKOREQY82ItlK32kqNQ2/Ip2XJe62Td0Yzaxgi
+	 n/D77+0zWy7pfruNohI7eS7xl95QNEg0B7N8Qe/JReADC78vc1XfAOZ8GTri71RE+C
+	 tHIRuBxNdtwvg==
+Date: Tue, 18 Mar 2025 10:05:55 +0000
 From: Daniel Thompson <danielt@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: lee@kernel.org, pavel@ucw.cz, jingoohan1@gmail.com, deller@gmx.de,
-	simona@ffwll.ch, linux-leds@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 08/11] backlight: lcd: Replace fb events with a
- dedicated function call
-Message-ID: <Z9k_qy-Kh3-v5tKg@aspen.lan>
-References: <20250306140947.580324-1-tzimmermann@suse.de>
- <20250306140947.580324-9-tzimmermann@suse.de>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	Abel Vesa <abel.vesa@linaro.org>, Lee Jones <lee@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Johan Hovold <johan@kernel.org>, linux-pwm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] backlight: pwm_bl: Read back PWM period from provider
+Message-ID: <Z9lFg98srzYivGoI@aspen.lan>
+References: <20250226-pwm-bl-read-back-period-from-hw-v1-1-ccd1df656b23@linaro.org>
+ <xltamao27utfrsax2pc6mh5tthanmrqszz4k7gyw3knqkm24xp@4tydmhfh6g4j>
+ <cmjyaveolhjtfhqbjpc6ghh7g2f5jmeyavoms5lqup6dyidngl@ljvxgoyw57md>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20250306140947.580324-9-tzimmermann@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cmjyaveolhjtfhqbjpc6ghh7g2f5jmeyavoms5lqup6dyidngl@ljvxgoyw57md>
 
-On Thu, Mar 06, 2025 at 03:05:50PM +0100, Thomas Zimmermann wrote:
-> Remove support for fb events from the lcd subsystem. Provide the
-> helper lcd_notify_blank_all() instead. In fbdev, call
-> lcd_notify_blank_all() to inform the lcd subsystem of changes
-> to a display's blank state.
+On Thu, Feb 27, 2025 at 04:06:47AM +0100, Sebastian Reichel wrote:
+> Hi,
 >
-> Fbdev maintains a list of all installed notifiers. Instead of fbdev
-> notifiers, maintain an internal list of lcd devices.
-
-I don't love the LCD devices list, however I can see the list of notifiers
-had the same semantic effect (only less explicit) so I can live with
-it ;-).
-
-> v3:
-> - export lcd_notify_mode_change_all() (kernel test robot)
-> v2:
-> - maintain global list of lcd devices
-> - avoid IS_REACHABLE() in source file
-> - use lock guards
-> - initialize lcd list and list mutex
+> On Wed, Feb 26, 2025 at 05:34:50PM +0100, Uwe Kleine-König wrote:
+> > On Wed, Feb 26, 2025 at 05:31:08PM +0200, Abel Vesa wrote:
+> > > The current implementation assumes that the PWM provider will be able to
+> > > meet the requested period, but that is not always the case. Some PWM
+> > > providers have limited HW configuration capabilities and can only
+> > > provide a period that is somewhat close to the requested one. This
+> > > simply means that the duty cycle requested might either be above the
+> > > PWM's maximum value or the 100% duty cycle is never reached.
+> >
+> > If you request a state with 100% relative duty cycle you should get 100%
+> > unless the hardware cannot do that. Which PWM hardware are you using?
+> > Which requests are you actually doing that don't match your expectation?
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> drivers/leds/rgb/leds-qcom-lpg.c (which probably should at least get
+> a MAINTAINERS entry to have you CC'd considering all the PWM bits in
+> it). See the following discussion (I point you to my message in the
+> middle of a thread, which has a summary and probably is a good
+> starting point):
+>
+> https://lore.kernel.org/all/vc7irlp7nuy5yvkxwb5m7wy7j7jzgpg73zmajbmq2zjcd67pd2@cz2dcracta6w/
 
-Happy with these changes, but have the same EXPORT_SYMBOL_GPL()
-questions I did with the backlight code.
+I had a quick glance at this thread.
+
+It sounded to me like the PWM driver was scaling the requested period
+to match h/ware capability but then neglected to scale the requested
+duty cycle accordingly. That means the qcomm PWM driver programming a
+fractional value into the hardware that was not being anywhere close
+to duty_cycle / period.
+
+So the recommendation was to fix the PWM driver rather than have
+pwm_bl.c work around it?
 
 
 Daniel.

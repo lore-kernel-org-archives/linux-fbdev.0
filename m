@@ -1,191 +1,205 @@
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azolkn19010004.outbound.protection.outlook.com [52.103.10.4])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0807EEBD;
-	Tue, 18 Mar 2025 02:05:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.10.4
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742263515; cv=fail; b=eBWn+cT/HD5YOU5DyDNH4HHKqPpp3QxxVWQ56u+Bn7abnFjOsYr7Op1HOaFPdlpRWz/LGcb2nB2gQcJBHY0r4RrHXU0qgvDGfs610kU9NC7IFGRXMdqOiXbq17Ly9Hexix6RDxQVu1dWYkLcx9WiPfcFrhuSSQwzk8OQRxTbInY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742263515; c=relaxed/simple;
-	bh=vRLyz650EZTCRafO9Z6AP3heDr491czCdxzaCHCix/w=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=GUXiTh5QrkkYhjdXdiVteU5XchyTrdQzIXNgwUa25aFI9llUt2jdu8XtO6VgC29Y3R2NvLJ8uFytBbABSh4D9LmuFn2AXo84hFLEKTNJAlRXNF5l2vGMA6fSwQR5k68qQlexeHr5cXnqrCxNHwQFB9oT3wetR9Nttd3T7hbpv/8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=p5/+PcWY; arc=fail smtp.client-ip=52.103.10.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D1541A8F84;
+	Tue, 18 Mar 2025 08:16:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1742285771; cv=none; b=b1jr1TlIWok+ojKal2aelof6iRGx2MncKi2RKhN9C9d6UhPW12bzBtWnrPARx1coqyJDdl8NYXLAD8Uvg3GOSuV3dkz8Yxuc2SRno3PcXdF9SXMKETpgGjoMTSgYsv20T1UFjXrrbARdy62b5TeEgE4uJoBqIIa+R5zc7MCOmbg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1742285771; c=relaxed/simple;
+	bh=o9PpqIARMYKNl9rl5Eql67tC06Ez0ljyIXFqaTyXSpg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dfnn1emZuxqgP4arWSGMRpq5M3MHIQplLEkT6mW7iBXBBP6vQEUO1auk1GQ2MjcVgAMQ7Jv9z4dPk1fvEaSl6DSEysodW7Nqi24wGZlfOx98/6LJpwR3SG3JvC+iiEoj6zrdkNpuGW24epgok2mpjN+Vsf5u6yrLhRAcxuCdNEk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=lLIlbkEJ; arc=none smtp.client-ip=212.227.15.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="p5/+PcWY"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=qWIgyYvVJEAOQRCHgGZX2nBbY349UgBIiMRCUdEpdP2PcpuAI9HhcfRvlcaaO+SeV6Q6dzsbdGkeRsMO3NuMoMW0GlUTi06LP8xQZYWiTw1mdbB3FFq2xkVGa0zHIrGivFZC72sTPHmaBBNY6D2wOYPMz5LmtiKhTgp/1yE6MdSLOOceLoBK/stGuRCed5ytCSbyGbTlJ/5486Qfu8pzhN9yFBPz5xBW6vCbHFdUUB7FKiYxoxhhaYsy1+6DwRFNrGgB4zSWvHi6HZyCu6vDHrBFsyTmNDWKwOytj9mrOMXMMkEWHRVtYqyavIYEOzjXUWVeyCDLcdtJ7X09Vhrclw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RnhypWCDiz9KdfJ7YC42u6Th1gaMb/mB18o+ITAmjpE=;
- b=EW3rhduh+2utbfDqlR398SphCw+0V6D+K6hOoR7hLaKhFjN9/ZiPV8Vkeqa02igDo0HhSIwIX3e6Mz8AdLww4h+i2us9lfEChCB7a28O6uv/HbERFIjspoqwPzYBhP5CAI7/BAJxozfrfpiFMQla4gCHoRITt7Puc4xuCrBhUwQ7+g090gASMPmR0Kq+UCjfa/WIpTyAqJiihHVe8JsExjNwTFM6ZYMpzclJpCqm/Y1DvuPTJqS/zKBGJAd/jfYhUzz14JxnpKmUA6mmt80xmv81Nw4vpHEsKmYS3X5aYxDUsnXTT/rUpEXgC/mZvtChCFt3zCNpEsR66VqwF6yPXQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RnhypWCDiz9KdfJ7YC42u6Th1gaMb/mB18o+ITAmjpE=;
- b=p5/+PcWY7tR1R4NprI8mSGQOm1/oOY45NHUyBZ81/GdidRG6svD2HWofrbg5P/yw2pdYoiYkDmyn76O4IJ+hBmh5aDIwPg6fIojwMQrp8JL4LZ9Q/7cdoYdz4cTVrtCZhNun0lov7tiMyPL+DfZf5i/q6xrVnJwsFUb5c319Yzg4/0+Heg7rQXll1tkH2v18N9U5cBtQMom4sW9GuC4kwSN5zzcJG1SzYRGN54p3Qk1MAZ/CAGAWhT4Nhh+UtCL7HGUrLgfYdhqbMoLj8Ekku+O9RZ/I4ljEZXVoHF9qiZLvmyhfSKyXQzYrjRtWhsw5nR4LUqQiypk+rstgifAMgA==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by PH7PR02MB10158.namprd02.prod.outlook.com (2603:10b6:510:2ef::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.33; Tue, 18 Mar
- 2025 02:05:11 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%3]) with mapi id 15.20.8534.031; Tue, 18 Mar 2025
- 02:05:11 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
-Subject: fbdev deferred I/O broken in some scenarios
-Thread-Topic: fbdev deferred I/O broken in some scenarios
-Thread-Index: AduXqaeNbacCNH8yTNyrrucfCfcIpQ==
-Date: Tue, 18 Mar 2025 02:05:11 +0000
-Message-ID:
- <SN6PR02MB4157227300E59ACB3B0DABD0D4DE2@SN6PR02MB4157.namprd02.prod.outlook.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|PH7PR02MB10158:EE_
-x-ms-office365-filtering-correlation-id: 874b5a01-52c3-4d83-3d68-08dd65c150ec
-x-microsoft-antispam:
- BCL:0;ARA:14566002|15080799006|461199028|8062599003|19110799003|8060799006|56899033|102099032|3412199025|440099028|12091999003;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?q4YXVgpMeQan2rj7ouqNi+bOvXykylaxjWHJUS6Y9ICMkT2nFD0Cpa2FHOQ0?=
- =?us-ascii?Q?wrTvacjTq1OOtMLAgZNQwdzvSH38plEbXeu99G6y/qPfB4qfcThomVGJcH6M?=
- =?us-ascii?Q?cjxGad4R+NGVDeoc4HXboeVZ79QmMRGrdJUBwwaDtm66+PUHGDMd+6ex5wpM?=
- =?us-ascii?Q?xUMuBZ7JuDppo4CqL5n+Tyzv08SpdH/qc/KZoswFQ47lfg6lnjRXLWL4lmks?=
- =?us-ascii?Q?Rp5hk+r+zfa26+7FAbWlw2GqEaxMlaYuG1uWZSM+8yYdIL9QRJOjyswqBwcQ?=
- =?us-ascii?Q?mI7Kj07OlBzQ7rLOZDtX7CS7+igYIBMY7UVyQ7Wwr1GjFtAf34xFFA3kLbfW?=
- =?us-ascii?Q?1C3pegz8agXd1vveJVzHB5vuCto2hIXXhpdFPwi3vVWn5j8g+sqrSWSlMrbg?=
- =?us-ascii?Q?1mSdbpbZ0cLr27y8egXRjL6fr1Xp8lx/XEGJ/v7ixNPe74bfC1lilHYnRoGe?=
- =?us-ascii?Q?Dyv0QT2CAFxCISP5faFLWLOyHb2PMBvXec9y/Ge5TTjh2nptMkLdj/Zch2xm?=
- =?us-ascii?Q?xjXZCg6IjeZCZ0lljux+cks9TZQRBX5qpY+ILrfgO3hI0/ygULS53qU7g7fE?=
- =?us-ascii?Q?8/8FMjilQVpfUwDCogq+E0tZQl91nESpRTLOXyR26qVUImaLrBKjI+CPijbq?=
- =?us-ascii?Q?Fh3MAF/ZXsjHmVAd9AOIa50d//ZdS6j1yb9hw6caZ/72A5pDeFnXiNCM10cO?=
- =?us-ascii?Q?SbwM3OXdVJOsaojI/hIKMrMtni0WB+Ays4/FCPpR6SdsvJhLwjc6VGrXYXVp?=
- =?us-ascii?Q?QIRXgp0chUSdt/vjDSrAdxi2SRawdO+3AI/AIOIc4V0dawRCtJHLkg3/0188?=
- =?us-ascii?Q?RslDZOBGAeH8AV1GLbNoBpN3Agjo51JkDa0Y7JuGY3G+J1Jtq5zlmkeN6nyO?=
- =?us-ascii?Q?ZBWmzB4iV1HBAY996HbQrAaZnlz8piwHM6CwysgW3WnGBgq8ZacHb2xKxKaj?=
- =?us-ascii?Q?dRLozHrsz0D4Ws2C0zJ2LyKO9MElnPoZkSTqdKeF3NxwglbJk+5hspkLKfOz?=
- =?us-ascii?Q?Jc7jwACRhH25AqOEOh1a51MQ9W5mxpB4QNuStnlS0GSil1MP/T70zw4iqdM5?=
- =?us-ascii?Q?JpuFusrDpmWXiEaFfVTIdzoH+3gRTJqLW0tdyV8JtI3gen40sg/3/a+1pnRS?=
- =?us-ascii?Q?FKfsXSsBQeL7?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?jGX9kZmhw6nnV5irUfnR8iqiHIePZ+98AeLSbCrriEZmMQtykUN8mp2pVOhx?=
- =?us-ascii?Q?WqNmhv+N7p3yEi9CIkidJrDQ0Lrcm1/mlvNhz3oos86hhz5fxBC9UgFQgklf?=
- =?us-ascii?Q?g2xOEkNKrKj2UTXrIrRn3T5X0cGhx/aljx4zi6xdWpibF0FjU4o1eEQFNf2U?=
- =?us-ascii?Q?J7X5Za12y55DOr9b7dh7dj8tc6SdgiN1YHKyUOoAS6LjUafDJZdgMjYcqext?=
- =?us-ascii?Q?j/fUalM9gZCDPRup1r+S9IK1RcEfJY/BDHIwnFuBEv24LKfY8uvyjWJS2V9o?=
- =?us-ascii?Q?5NQWzI7J86nbvuOEy0Zysy5hbt+jvRU6V9KcP82jE5n43zrDqbqhXklajjKl?=
- =?us-ascii?Q?1phZ3EvUOGK2GQCGc+ObT6MC+E7suZU4/ik3a795xjxNijl+45IGmioMob1w?=
- =?us-ascii?Q?LfiLFedXGu8SPaU1JIq4GKRIDsT5UyXOpPTs2NwXami52HFXFDlaZ4dcksIo?=
- =?us-ascii?Q?JcLOe6WUXI4NUygduTsf0ZyQtqQnWO41/zxrJ1MV6t53wYb3arledk93G4aB?=
- =?us-ascii?Q?Smoim/4pnv0qo5t2DLtHGvpVs2ZW7iyNiMOOZe3icYtkM+HZpLMr8nGYBVir?=
- =?us-ascii?Q?UDFAexpYF1IwE3TH43X/Y5xRTMKobXUBQx3R4ZTSMmbFHv2eoppB6ipyCiau?=
- =?us-ascii?Q?sxD6izFUT9mflOusvWXnYSLio07FimKkhzkF1N7DTImXys/szr7AyZuuwziP?=
- =?us-ascii?Q?bdLrjXBnM/63nXuxRJuUm4HifDXwK7/5sFpih9+EOwl8GPhdcaQsXB26noWW?=
- =?us-ascii?Q?8YG0Roxq9kc502BrNxqetbobcfTJTIv/G9c4qC3a5X9W1KxGsAaEdpXMOucv?=
- =?us-ascii?Q?/kv62abp0Ik5aiczxWCKkb3cwMxHC1KVlodalQd8+emTodKR7J31fC68hNDa?=
- =?us-ascii?Q?tWHa5oDjh/WVK7N1lKTRWobJJxV9c80SWttDVjUvU6qaYfZQGSKr5l9vkWSl?=
- =?us-ascii?Q?PBtdmX8F2giPsQG0r8B/YhZqG9frIHQM8l/B8hiZNEEC+BKGHe9s8ai/pklm?=
- =?us-ascii?Q?RMbNzZP9iaBnXdO5ObCyygEZu+ndPUg2mMl06e735sfAFildvmb3Ugso5rHZ?=
- =?us-ascii?Q?UjHOXAvVX/P3GJqYPMFelprq3D5P8R653eMvLeocVPs4zHaDE2vwOPTnEjEQ?=
- =?us-ascii?Q?DOP9IL9F1o7u7S2Xe/PfQcQBdsh4JFGHp1685IJ7CEzwPJHagMdVWli/e68O?=
- =?us-ascii?Q?5VPkALcjm6oYrAu6cCkPFb3yJFcfIllVfIMI828uPDD2j363yGJoSbZMA/4?=
- =?us-ascii?Q?=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="lLIlbkEJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1742285760; x=1742890560; i=deller@gmx.de;
+	bh=QRL1pbeWlCSuACH899FGlA+wi8PGFaSt0lGRJNOjIYs=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=lLIlbkEJxCrW4xrzMxziAFD2f0MQFrBmH9fT0ekDqS1eMy3ytRa/w2UEQ076ubLv
+	 NMGJfEwwa1mdnktcPUNpqxo6dLwPC/Ov+wjJJZxunwDhvVSQ67umet/HYpgaI7GzQ
+	 OXWnjjLslJgbfOxygNiULZH9+Y3mUU2cIP2+LC9Jn1bSLx3bRFuiOSzeDexbEpy06
+	 A+u9YMwJTurZRabR9BWx4VbuzZm35111Pz2QJ52ICQcteGrsJlx7XyzASllggNpLd
+	 ibL6JCgINpZrIC3FFjTjXnWOmBvX27vs3OfScmz0UNhgnrKg/dBDNTvZG0ExVFe/f
+	 /FPdbvIbUNMTuvmp3Q==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.173] ([109.250.63.121]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MCbEf-1u3UPL2gtv-00H6Hl; Tue, 18
+ Mar 2025 09:16:00 +0100
+Message-ID: <303572c2-4839-4dae-a249-9967fcc9cf03@gmx.de>
+Date: Tue, 18 Mar 2025 09:16:00 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 874b5a01-52c3-4d83-3d68-08dd65c150ec
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Mar 2025 02:05:11.6687
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR02MB10158
+User-Agent: Mozilla Thunderbird
+Subject: Re: fbdev deferred I/O broken in some scenarios
+To: Michael Kelley <mhklinux@outlook.com>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
+References: <SN6PR02MB4157227300E59ACB3B0DABD0D4DE2@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <SN6PR02MB4157227300E59ACB3B0DABD0D4DE2@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:h6IbDFzE9ZC39f8QGGyS33kteNG8TDJeo/g33UNpQUX7+Obx+YZ
+ xmcT8aykRHC4zuorTdGKVkf7eJz9g9VwGJexJA1t/SNUFX2EHtLDxFpa5149pmeq0EgiEAg
+ XfPsxigXErEWhHQYvVo+3Cpew8BTEYiKHkh8D9nBfa1B/O+6vxy9U5D5S0yluVzYdrLaiLZ
+ N6/0ZLzbNTqa2aDue+BQA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:LckJYOJ+0bU=;8djNMexVcPxrSbksl/9o12xzadH
+ rHAtx48xAZUGOmv71WLisQgOluv48sxusH8MzHLYh+856OqLf42SMQwr2eB6s2JfzGG6KgWPS
+ YS+tYDdUkMuI7ya7q9WYGvQklniRNLbb0RNsh9udclZ1Spxl08AyVJnfQ7XP++iWSDiPJouYm
+ 2A9KekW0CUjHJksSqTKhIOXMDtLLQk2ZSCKj/bW7V9ZRn5TLLqMouz15nuuAAo3AEsir96LEe
+ iHNXKVxJ8nJxWSHnrgUwPPAOD5yp2xLul6G0rxCzUu8xgy0K3xS/Phsdv5qxIrcSROu10FmlW
+ GI3ync9CXEknnmw+OyU82BkPGLlQMk3Ei8jMXFkpdx7PrmmOuOnMIR+Ml2+wlV4C4ejN4NEfY
+ kqg4VpydYJ7rWqWitFZPn3uhkpH1zmX2OGNrBM2xmblDT1ZVAkYKS8zJJPGlFQN7MA6WA38Wx
+ PGrrOgdDGt13hFPzRqevotMLKrqMZpYFt3wQBOXt9yXZCH1p6VEWkcA6yp1YMMlbNlkq5D5t+
+ 9D/nO83qASq6H1x+DsIUnFx+g8KYLmDPWMNssKY9rBisD9HBfqNsfzVCtsBrkfdrgJQr92SG7
+ prqzUEXM+oAIY7evw7RAHGBWjIxDYD/BiVTgx0o+8uePOz2mhcabWNK47rUkM86Z7vFrXUas8
+ Fgo1D2EY/nEMVKjbS9f7WSPT8VXdRppw7NrsI6jVc+01J5igA0BhjxVpXRwR3qQ63C4LLhr9v
+ SsQ9XfW9N66+4OEnIUSJGPPE7Rk7FIfko/FSycADtApyh8RmdVJMbTdfZAdneSTSKiC2UpxbC
+ 92kDD9U/d+kwG5aJmsWqC7GgTNjEUspR9IBQ35UISAEoXDs5b9OTt56Gs12LcwflHHtu4z3uo
+ krKC5GmdJPWUTkK4Xxbe4HXvRz8mZCJ3ZFs5dGjBw4x3glcG8fhCZRpKnk9g1JOqSUIpkT6pD
+ IjtOCMyVoxmcxiTkhu1OsblY4SxY+OJjRF2nIKoQ3TcQH4M56j/xqmy1BrFWNqqTn0bqb+ma6
+ CFRk6Iqm966hZdKV14KBMTPiW7YvPY1dzRqTfQlO8FhMhJ6WNRUjNyck+5WdMnDcEE8p+Hzo0
+ Oh48ceBr6si8nFCAS3NpY46UGDuDLDqXFIZ046dcSVHgesfhHNyy0FudeiaSGi/yCNNGrWyQC
+ ePnOGu3dyV4aGgO+5DSyutanTHRU1D1c0H7riwnuM2MRdXlapd/nKnqlsjMiymz3ULAYcjFr2
+ 5pPQheu/4nbh1ajdtyiQ40Rt1TioqKnqF6BFxZ+mMmKAjYDSviVAZdQkgyvjMIN7T1Z/GS7cV
+ uXazjkEIyYY2+/9rZtH1/0UvwouS5oq94UUhGLFSBgvf/ESIJ1eS9V3c3A2JgCE07ejd+vtJ/
+ 1269BTm3LwfxGwTFOAfNrJSNXzQgx0JfR0DfvWm4UpGWv3EwfU5j6XXp0EgGLFOlSoTgq+h/t
+ eZ6BqaqbPxeqMWr5sl0thvuknOa8=
 
-I've been trying to get mmap() working with the hyperv_fb.c fbdev driver, w=
-hich
-is for Linux guests running on Microsoft's Hyper-V hypervisor. The hyperv_f=
-b driver
-uses fbdev deferred I/O for performance reasons. But it looks to me like fb=
+Hi Michael,
+
+On 3/18/25 03:05, Michael Kelley wrote:
+> I've been trying to get mmap() working with the hyperv_fb.c fbdev driver=
+, which
+> is for Linux guests running on Microsoft's Hyper-V hypervisor. The hyper=
+v_fb driver
+> uses fbdev deferred I/O for performance reasons. But it looks to me like=
+ fbdev
+> deferred I/O is fundamentally broken when the underlying framebuffer mem=
+ory
+> is allocated from kernel memory (alloc_pages or dma_alloc_coherent).
+>
+> The hyperv_fb.c driver may allocate the framebuffer memory in several wa=
+ys,
+> depending on the size of the framebuffer specified by the Hyper-V host a=
+nd the VM
+> "Generation".  For a Generation 2 VM, the framebuffer memory is allocate=
+d by the
+> Hyper-V host and is assigned to guest MMIO space. The hyperv_fb driver d=
+oes a
+> vmalloc() allocation for deferred I/O to work against. This combination =
+handles mmap()
+> of /dev/fb<n> correctly and the performance benefits of deferred I/O are=
+ substantial.
+>
+> But for a Generation 1 VM, the hyperv_fb driver allocates the framebuffe=
+r memory in
+> contiguous guest physical memory using alloc_pages() or dma_alloc_cohere=
+nt(), and
+> informs the Hyper-V host of the location. In this case, mmap() with defe=
+rred I/O does
+> not work. The mmap() succeeds, and user space updates to the mmap'ed mem=
+ory are
+> correctly reflected to the framebuffer. But when the user space program =
+does munmap()
+> or terminates, the Linux kernel free lists become scrambled and the kern=
+el eventually
+> panics. The problem is that when munmap() is done, the PTEs in the VMA a=
+re cleaned
+> up, and the corresponding struct page refcounts are decremented. If the =
+refcount goes
+> to zero (which it typically will), the page is immediately freed. In thi=
+s way, some or all
+> of the framebuffer memory gets erroneously freed. From what I see, the V=
+MA should
+> be marked VM_PFNMAP when allocated memory kernel is being used as the
+> framebuffer with deferred I/O, but that's not happening. The handling of=
+ deferred I/O
+> page faults would also need updating to make this work.
+>
+> The fbdev deferred I/O support was originally added to the hyperv_fb dri=
+ver in the
+> 5.6 kernel, and based on my recent experiments, it has never worked corr=
+ectly when
+> the framebuffer is allocated from kernel memory. fbdev deferred I/O supp=
+ort for using
+> kernel memory as the framebuffer was originally added in commit 37b48379=
+59cb9
+> back in 2008 in Linux 2.6.29. But I don't see how it ever worked properl=
+y, unless
+> changes in generic memory management somehow broke it in the intervening=
+ years.
+>
+> I think I know how to fix all this. But before working on a patch, I wan=
+ted to check
+> with the fbdev community to see if this might be a known issue and wheth=
+er there
+> is any additional insight someone might offer. Thanks for any comments o=
+r help.
+
+I haven't heard of any major deferred-i/o issues since I've jumped into fb=
 dev
-deferred I/O is fundamentally broken when the underlying framebuffer memory
-is allocated from kernel memory (alloc_pages or dma_alloc_coherent).
+maintenance. But you might be right, as I haven't looked much into it yet =
+and
+there are just a few drivers using it.
 
-The hyperv_fb.c driver may allocate the framebuffer memory in several ways,
-depending on the size of the framebuffer specified by the Hyper-V host and =
-the VM
-"Generation".  For a Generation 2 VM, the framebuffer memory is allocated b=
-y the
-Hyper-V host and is assigned to guest MMIO space. The hyperv_fb driver does=
- a
-vmalloc() allocation for deferred I/O to work against. This combination han=
-dles mmap()
-of /dev/fb<n> correctly and the performance benefits of deferred I/O are su=
-bstantial.
-
-But for a Generation 1 VM, the hyperv_fb driver allocates the framebuffer m=
-emory in
-contiguous guest physical memory using alloc_pages() or dma_alloc_coherent(=
-), and
-informs the Hyper-V host of the location. In this case, mmap() with deferre=
-d I/O does
-not work. The mmap() succeeds, and user space updates to the mmap'ed memory=
- are
-correctly reflected to the framebuffer. But when the user space program doe=
-s munmap()
-or terminates, the Linux kernel free lists become scrambled and the kernel =
-eventually
-panics. The problem is that when munmap() is done, the PTEs in the VMA are =
-cleaned
-up, and the corresponding struct page refcounts are decremented. If the ref=
-count goes
-to zero (which it typically will), the page is immediately freed. In this w=
-ay, some or all
-of the framebuffer memory gets erroneously freed. From what I see, the VMA =
-should
-be marked VM_PFNMAP when allocated memory kernel is being used as the
-framebuffer with deferred I/O, but that's not happening. The handling of de=
-ferred I/O
-page faults would also need updating to make this work.
-
-The fbdev deferred I/O support was originally added to the hyperv_fb driver=
- in the
-5.6 kernel, and based on my recent experiments, it has never worked correct=
-ly when
-the framebuffer is allocated from kernel memory. fbdev deferred I/O support=
- for using
-kernel memory as the framebuffer was originally added in commit 37b4837959c=
-b9
-back in 2008 in Linux 2.6.29. But I don't see how it ever worked properly, =
-unless
-changes in generic memory management somehow broke it in the intervening ye=
-ars.
-
-I think I know how to fix all this. But before working on a patch, I wanted=
- to check
-with the fbdev community to see if this might be a known issue and whether =
-there
-is any additional insight someone might offer. Thanks for any comments or h=
-elp.
-
-Michael Kelley
+Helge

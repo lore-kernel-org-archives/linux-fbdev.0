@@ -1,231 +1,157 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-vk1-f176.google.com (mail-vk1-f176.google.com [209.85.221.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86FBA1E2611
-	for <linux-fbdev@vger.kernel.org>; Thu, 20 Mar 2025 07:45:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AFEE7482;
+	Thu, 20 Mar 2025 10:46:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742456729; cv=none; b=eCIJ/f6x4ZXIcsXieLckxKBvNQecRAw8Mih0eI8z/e7hveBNSvNimGPDPDo+5jrXZEQ8hE+WgJWzk2Pz03Ryr0Un2b/B7gKYKk17ETWDz1nWsEzhPTPMa9clFxf5Twe1ZctAE2FtUPsZWK1TVqKePx057RicYuZgviz9ZxVJy2c=
+	t=1742467594; cv=none; b=CgQ56aeTwW2SuCb04bUOpRHWdAAKulVSNi/l/TJ4aDUxVJ/IoAZCQIspmDOH9ltiKm1IXIO7n8LAOccY/8Aoo8IakCvkm8qi9yYqeh59Xk1lVEp1EXdnAlPNLR8AYjaboDaKJYXfziGP5RHd6ArpzMr3g1PRez+4mUTCQxfnvjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742456729; c=relaxed/simple;
-	bh=0e6NEfG/qpxKMn42AQkTAVlrM9MZlAIVbusb360JCWc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UWRS6I0IaTJmtGJraOOUFTYmNygBt/OeRxLjbnULWfhjZb4LlZ0jFl6JQmAHN5CfKB76GaBrwqR8Mh5YwNQ37Hg8fdgJ0VqYUrFEXKjTQdtfls+AKFkbjYMhVDWdBqaboYVTm9w4wi+WXVRXRu3Sp7ZzjcKa7Cleotv2Gno314o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=PqlDziOh; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=v1Tp57FW; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=PqlDziOh; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=v1Tp57FW; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="PqlDziOh";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="v1Tp57FW";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="PqlDziOh";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="v1Tp57FW"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8456C22017;
-	Thu, 20 Mar 2025 07:45:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1742456725; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gA2/H1BeCo6ljHC6Z1zZsBCsoR53L6XI0RJHQvvt4hA=;
-	b=PqlDziOh1FVdzLQJx0UGbSNQlba7R9S3X7sxYRrN7SrswkoYX6e1DR3MdVQoBp2v8kBNyS
-	EblEK7Zotueg7SFwQP5HKMI/zjwGQmfEERF9wjUAYkYs5GttlPo4mK9clD3JwxNSIwOPqC
-	IjVIeEF2+RHtiqZcSRezNRkOqEbd2C4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1742456725;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gA2/H1BeCo6ljHC6Z1zZsBCsoR53L6XI0RJHQvvt4hA=;
-	b=v1Tp57FW+X+8pMM3yfCFBPQgIcWXoewHmKk84pb0/EcqJj7cON2QWntpbp8EKIWhTMqoWm
-	0ShvfqN1XovrrzAQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=PqlDziOh;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=v1Tp57FW
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1742456725; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gA2/H1BeCo6ljHC6Z1zZsBCsoR53L6XI0RJHQvvt4hA=;
-	b=PqlDziOh1FVdzLQJx0UGbSNQlba7R9S3X7sxYRrN7SrswkoYX6e1DR3MdVQoBp2v8kBNyS
-	EblEK7Zotueg7SFwQP5HKMI/zjwGQmfEERF9wjUAYkYs5GttlPo4mK9clD3JwxNSIwOPqC
-	IjVIeEF2+RHtiqZcSRezNRkOqEbd2C4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1742456725;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=gA2/H1BeCo6ljHC6Z1zZsBCsoR53L6XI0RJHQvvt4hA=;
-	b=v1Tp57FW+X+8pMM3yfCFBPQgIcWXoewHmKk84pb0/EcqJj7cON2QWntpbp8EKIWhTMqoWm
-	0ShvfqN1XovrrzAQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6288913757;
-	Thu, 20 Mar 2025 07:45:25 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id x0KZFpXH22cOVAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 20 Mar 2025 07:45:25 +0000
-Message-ID: <a815031b-262d-4f74-b23a-1f9e59aa4c80@suse.de>
-Date: Thu, 20 Mar 2025 08:45:25 +0100
+	s=arc-20240116; t=1742467594; c=relaxed/simple;
+	bh=qo3bx4y1OgFeBHPu7HD6Z1utr2SwL7M4yO/d4FkV4V8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mpEnFbSAQNpYCJA4g3dNcCDyeMvW8ZxiTDXsVMCmaoLuHq4ndSXpLOPziKNIryL0ps4VB18ipaiIo2sXswLqEmyafMbmBFricWZ1sppjWzwkgvGniJnoIZcGS7No4yAgSwC4NXpsYZ5fCy1IawnmcC8YW1Alxk7kPQAPIVEKs9I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f176.google.com with SMTP id 71dfb90a1353d-523de5611a3so287938e0c.1;
+        Thu, 20 Mar 2025 03:46:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1742467591; x=1743072391;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BcUl7AglmAhanLKGRDwml74U0DwMqoxNAsyIj9YcrII=;
+        b=f3W5c9kXHuEzeG3uRSWbPSBeCmEtNA43NOQDtjeIeIp/zSP1PfzTG5BX3djPdLNa15
+         rm3kBcsD2mrNUfAo6Z6lhM5HKdf7LdyqJyzhx/2tmIXVbper6SJE9kBCCf4H4D/GFjy+
+         OO3Jwi3WQT/Cmh4NONOEUK5cbp9NHoTh7m3c2cVpRJpKIaandQjr4fhnxp8G/uSYqLNB
+         pFg3siOEHdokESCMHjjw/pRymPkt2e2dNKm3DtJOjsG+YBBQkLCmWPXxut+WRgrr2+Yp
+         8tO5E9t8yAzUhO6BDDvcSK286m6vhY1GPwCFq5LPff3/L372uXtnjKfErEJagYXMXXq5
+         9DWA==
+X-Forwarded-Encrypted: i=1; AJvYcCVDbUyRt9DZ4P0vR7Cw/rOVG9scUQnrop1aNZwAQ898/jb8md8pcAVWwkb70tgWjyy1ZxnUWLbPvRh5ovpo@vger.kernel.org, AJvYcCWCHiUFBSKD7VGLQLo8sc1AHTqgWk1CH56DB656/O1GZ/lvepPmqNL2Crq+ZBE2AsKhXRlFiW/E7t1Q0NXZ@vger.kernel.org, AJvYcCWsp8AAfJ2BFMFUJYp29O0eT2Ixrcx/yck5xvLN0UWW/CYLosRfA2c9GiM4c+IcuN5IeBqeB8TVX8EYQw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzoE2xSVwhlK/dlWeLcxrv39nEcLdg5g7xedbGGsmJcEnY2K4b6
+	AalLGOopkKVKD2jQ52c9b6vRC4uruwtm5bSFsEZnQCGOiZ2L5qmO7G2wIpC7
+X-Gm-Gg: ASbGnctDjMUpz9nF5S2jHCSRfTv5saki21kNJ0ZzGMQ+7GUu98bZEup+FyCzBIRww5t
+	yNHA6O7dlbc9HR1JzALq3BPEGhP/fpmTI75ykgoY6rA7/1R72Pu7SNYmLb6PUf8ea7sVScnQRt7
+	b7b8Ovs9cV4cDF63t76+HL6zhUlOyf5Yj/pZsD3zhEOHKiD46fg93wxb4lFXm8tmFQzOpk0EDy+
+	H51+ZVJYf91A4VvvrtJsJ/RCK0n4k7oRxCA48uOYY9M8RFzd8qIqMIAdezLkmN73rOsp7xD3Rev
+	gqgM+NONEbhCWK15FMmHqPXnnWMi5S6gVqrdMAiutG/H3qKaQ/1sSBJA+dJUsYlu6DhDqX8OZE1
+	QnuLWtx4=
+X-Google-Smtp-Source: AGHT+IHTEbg99abufsBEGzV6hCoID1T6Ynpb+0RFpqlvO3I+qTNl1JXWBwKqJAdUJKM0FgFbhCRUEw==
+X-Received: by 2002:a05:6122:4312:b0:520:420a:a07a with SMTP id 71dfb90a1353d-5258926a30dmr4476426e0c.8.1742467590832;
+        Thu, 20 Mar 2025 03:46:30 -0700 (PDT)
+Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com. [209.85.222.48])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5243a715293sm2841004e0c.43.2025.03.20.03.46.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 20 Mar 2025 03:46:30 -0700 (PDT)
+Received: by mail-ua1-f48.google.com with SMTP id a1e0cc1a2514c-86b9d1f729eso240013241.3;
+        Thu, 20 Mar 2025 03:46:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCU/rzzCTPaVK4yqttMSii+GnP+V2o0Zs2Fb08EtB5OdNK1E9IzT+Z1ztdrsBCdov/FlNmJEIQOW5t4lhh20@vger.kernel.org, AJvYcCUxlg8v+N3rieYeygyS/rJCunOUmxU5Jt3p+QvObwZ1kg/x3Jb9wExmT+VyLARy6mxQ0B8vx96y3Z0U0Q==@vger.kernel.org, AJvYcCVfG8/BAD1fc279IlxDyzeN8xxaIfDLkKOsQmcjgk4wyJGXgDPMN+lY+H+MlItFHZIRr0Pu/ztE7qFmFeAM@vger.kernel.org
+X-Received: by 2002:a05:6102:3e89:b0:4bb:e511:15a3 with SMTP id
+ ada2fe7eead31-4c4ec64ca04mr5179605137.8.1742467590396; Thu, 20 Mar 2025
+ 03:46:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: fbdev deferred I/O broken in some scenarios
-To: Michael Kelley <mhklinux@outlook.com>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
 References: <SN6PR02MB4157227300E59ACB3B0DABD0D4DE2@SN6PR02MB4157.namprd02.prod.outlook.com>
- <a4fa1dbb-4989-4fc2-acbc-055f786e9b48@suse.de>
- <BN7PR02MB4148864DDB065271B79FD3E4D4D92@BN7PR02MB4148.namprd02.prod.outlook.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <BN7PR02MB4148864DDB065271B79FD3E4D4D92@BN7PR02MB4148.namprd02.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Rspamd-Queue-Id: 8456C22017
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[outlook.com,vger.kernel.org];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[outlook.com];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCPT_COUNT_THREE(0.00)[4];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim,suse.de:mid]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -4.51
-X-Spam-Flag: NO
+ <303572c2-4839-4dae-a249-9967fcc9cf03@gmx.de> <BN7PR02MB4148157E5307E306FD9D093ED4D92@BN7PR02MB4148.namprd02.prod.outlook.com>
+In-Reply-To: <BN7PR02MB4148157E5307E306FD9D093ED4D92@BN7PR02MB4148.namprd02.prod.outlook.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 20 Mar 2025 11:46:18 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVvuPr454jcVExGpHX_94_=y0GfVPJu1YLO1-H0OkBTdQ@mail.gmail.com>
+X-Gm-Features: AQ5f1JqSJaAlYE2RSivsmsHWzNr0rgT1XY8eXSxtnUbzAmsz9cOYCVmAaJLksWc
+Message-ID: <CAMuHMdVvuPr454jcVExGpHX_94_=y0GfVPJu1YLO1-H0OkBTdQ@mail.gmail.com>
+Subject: Re: fbdev deferred I/O broken in some scenarios
+To: Michael Kelley <mhklinux@outlook.com>
+Cc: Helge Deller <deller@gmx.de>, 
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi
+Hi Michael,
 
-Am 19.03.25 um 21:38 schrieb Michael Kelley:
-> From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Tuesday, March 18, 2025 1:26 AM
->> Am 18.03.25 um 03:05 schrieb Michael Kelley:
->>> I've been trying to get mmap() working with the hyperv_fb.c fbdev driver, which
->>> is for Linux guests running on Microsoft's Hyper-V hypervisor. The hyperv_fb driver
->>> uses fbdev deferred I/O for performance reasons. But it looks to me like fbdev
->>> deferred I/O is fundamentally broken when the underlying framebuffer memory
->>> is allocated from kernel memory (alloc_pages or dma_alloc_coherent).
->>>
->>> The hyperv_fb.c driver may allocate the framebuffer memory in several ways,
->>> depending on the size of the framebuffer specified by the Hyper-V host and the VM
->>> "Generation".  For a Generation 2 VM, the framebuffer memory is allocated by the
->>> Hyper-V host and is assigned to guest MMIO space. The hyperv_fb driver does a
->>> vmalloc() allocation for deferred I/O to work against. This combination handles mmap()
->>> of /dev/fb<n> correctly and the performance benefits of deferred I/O are substantial.
->>>
->>> But for a Generation 1 VM, the hyperv_fb driver allocates the framebuffer memory in
->>> contiguous guest physical memory using alloc_pages() or dma_alloc_coherent(), and
->>> informs the Hyper-V host of the location. In this case, mmap() with deferred I/O does
->>> not work. The mmap() succeeds, and user space updates to the mmap'ed memory are
->>> correctly reflected to the framebuffer. But when the user space program does munmap()
->>> or terminates, the Linux kernel free lists become scrambled and the kernel eventually
->>> panics. The problem is that when munmap() is done, the PTEs in the VMA are cleaned
->>> up, and the corresponding struct page refcounts are decremented. If the refcount goes
->>> to zero (which it typically will), the page is immediately freed. In this way, some or all
->>> of the framebuffer memory gets erroneously freed. From what I see, the VMA should
->>> be marked VM_PFNMAP when allocated memory kernel is being used as the
->>> framebuffer with deferred I/O, but that's not happening. The handling of deferred I/O
->>> page faults would also need updating to make this work.
->> I cannot help much with HyperV, but there's a get_page callback in
->> struct fb_deferred_io. [1] It'll allow you to provide a custom page on
->> each page fault. We use it in DRM to mmap SHMEM-backed pages. [2] Maybe
->> this helps with hyperv_fb as well.
->>
-> Thanks for your input. See also my reply to Helge.
+On Wed, 19 Mar 2025 at 21:29, Michael Kelley <mhklinux@outlook.com> wrote:
+> From: Helge Deller <deller@gmx.de> Sent: Tuesday, March 18, 2025 1:16 AM
+> > On 3/18/25 03:05, Michael Kelley wrote:
+> > > I've been trying to get mmap() working with the hyperv_fb.c fbdev driver, which
+> > > is for Linux guests running on Microsoft's Hyper-V hypervisor. The hyperv_fb driver
+> > > uses fbdev deferred I/O for performance reasons. But it looks to me like fbdev
+> > > deferred I/O is fundamentally broken when the underlying framebuffer memory
+> > > is allocated from kernel memory (alloc_pages or dma_alloc_coherent).
+> > >
+> > > The hyperv_fb.c driver may allocate the framebuffer memory in several ways,
+> > > depending on the size of the framebuffer specified by the Hyper-V host and the VM
+> > > "Generation".  For a Generation 2 VM, the framebuffer memory is allocated by the
+> > > Hyper-V host and is assigned to guest MMIO space. The hyperv_fb driver does a
+> > > vmalloc() allocation for deferred I/O to work against. This combination handles mmap()
+> > > of /dev/fb<n> correctly and the performance benefits of deferred I/O are substantial.
+> > >
+> > > But for a Generation 1 VM, the hyperv_fb driver allocates the framebuffer memory in
+> > > contiguous guest physical memory using alloc_pages() or dma_alloc_coherent(), and
+> > > informs the Hyper-V host of the location. In this case, mmap() with deferred I/O does
+> > > not work. The mmap() succeeds, and user space updates to the mmap'ed memory are
+> > > correctly reflected to the framebuffer. But when the user space program does munmap()
+> > > or terminates, the Linux kernel free lists become scrambled and the kernel eventually
+> > > panics. The problem is that when munmap() is done, the PTEs in the VMA are cleaned
+> > > up, and the corresponding struct page refcounts are decremented. If the refcount goes
+> > > to zero (which it typically will), the page is immediately freed. In this way, some or all
+> > > of the framebuffer memory gets erroneously freed. From what I see, the VMA should
+> > > be marked VM_PFNMAP when allocated memory kernel is being used as the
+> > > framebuffer with deferred I/O, but that's not happening. The handling of deferred I/O
+> > > page faults would also need updating to make this work.
+
+I assume this is triggered by running any fbdev userspace that uses
+mmap(), e.g. fbtest?
+
+> > > The fbdev deferred I/O support was originally added to the hyperv_fb driver in the
+> > > 5.6 kernel, and based on my recent experiments, it has never worked correctly when
+> > > the framebuffer is allocated from kernel memory. fbdev deferred I/O support for using
+> > > kernel memory as the framebuffer was originally added in commit 37b4837959cb9
+> > > back in 2008 in Linux 2.6.29. But I don't see how it ever worked properly, unless
+> > > changes in generic memory management somehow broke it in the intervening years.
+> > >
+> > > I think I know how to fix all this. But before working on a patch, I wanted to check
+> > > with the fbdev community to see if this might be a known issue and whether there
+> > > is any additional insight someone might offer. Thanks for any comments or help.
+> >
+> > I haven't heard of any major deferred-i/o issues since I've jumped into fbdev
+> > maintenance. But you might be right, as I haven't looked much into it yet and
+> > there are just a few drivers using it.
 >
-> Unfortunately, using a custom get_page() callback doesn't help. In the problematic
-> case, the standard deferred I/O get_page() function works correctly for getting the
-> struct page.  My current thinking is that the problem is in fb_deferred_io_mmap()
-> where the vma needs to have the VM_PFNMAP flag set when the framebuffer
-> memory is a direct kernel allocation and not through vmalloc(). And there may be
-> some implications on the mkwrite function as well, but I'll need to sort that out
-> once I start coding.
+> Thanks for the input. In the fbdev directory, there are 9 drivers using deferred I/O.
+> Of those, 6 use vmalloc() to allocate the framebuffer, and that path works just fine.
+> The other 3 use alloc_pages(), dma_alloc_coherent(), or __get_free_pages(), all of
+> which manifest the underlying problem when munmap()'ed.  Those 3 drivers are:
 >
-> For the DRM code using SHMEM-backed pages, do you know where the shared
-> memory comes from? Is that ultimately a kernel vmalloc() allocation?
+> * hyperv_fb.c, which I'm working with
+> * sh_mobile_lcdcfb.c
+> * ssd1307fb.c
 
-I think it's something special, as the regular vmalloc'ed-pages would be 
-handled by fb_defio automatically. In DRM we sometimes also use a 
-separate vmalloc'ed shadow buffer that serves as the fbdev framebuffer. 
-We then sync internally with the physical framebuffer memory. See [1] 
-for the related code. Udlfb does the as well IIRC.
+Nowadays sh_mobile_lcdcfb is used only on various SuperH boards
+(I have no hardware to test).
 
-Best regards
-Thomas
+sh_mobile_lcdcfb was used on ARM-based SH/R-Mobile SoCs until DT
+support was added to the DRM driver for the corresponding hardware.
+The platform using it was migrated to DRM in commit 138588e9fa237f97
+("ARM: dts: renesas: r8a7740: Add LCDC nodes") in v6.8). At the time
+of the conversion, fbtest worked fine with sh_mobile_lcdcfb.
 
-[1] 
-https://elixir.bootlin.com/linux/v6.13.7/source/drivers/gpu/drm/drm_fbdev_ttm.c#L201
+Deferred I/O is also used in DRM drivers for displays that are connected
+using I2C or SPI.  Last time I tried the st7735r driver, it worked fine
+with fbtest.  That was also on arm32, though.
 
->
-> Michael
->
+Gr{oetje,eeting}s,
 
--- 
+                        Geert
+
+
 --
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -1,238 +1,290 @@
-Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazolkn19010000.outbound.protection.outlook.com [52.103.11.0])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E52CA15A8;
-	Thu, 20 Mar 2025 20:15:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.11.0
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742501754; cv=fail; b=R/iNsWloZbuh17exy8sY1XT/XJsAyaR177YkTb2+A14vb2fQj8H5LhTzz+JmHP0cnly2CI6lWXvSqi9eTgigg4OT9PvfihVhrNjE3HXhde+1qio3j8lESldvM16WxbCQhDF4Hg62TRHRDKhxUf072thNP75TS4eWM+8HMPvCeI0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742501754; c=relaxed/simple;
-	bh=edquAxTTBGscFUJKaESOO7nR7wytSveIfdQSIIjoFS8=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=YLBv3Q4XKo+Mo2Rt6DT3dpJeHFszqrJ+U+JS3ORc577PM8aC55H7LlJEMdBC0XsvWNQqpL8HLVvwZ6wyK4qjDcirxClvF7bdN8PErMYHUYDO/jvdED/15Mzas/0D/4zSYtKdx8VlJfLlt33/Ks8y3smIpG4VhVnyAonH4ODRrTE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=vGVDncdA; arc=fail smtp.client-ip=52.103.11.0
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2D161EEA3E
+	for <linux-fbdev@vger.kernel.org>; Fri, 21 Mar 2025 08:13:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1742544793; cv=none; b=qCLTt9dZjkEwdrJxUTnUfpkJ03/k8yxM4h9zxdfUU9Gkgow5Lh29n6qS/5xOarZLKQrykXAsstz21FbaobNXxSiYI5mszrc7b7Ra/h8vG05WKWoO2Ry+U9ZnBDILWQdVyw2ODMEc4iSp3VIM0fNZN9T7l5+2CgqczAvO1QK84us=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1742544793; c=relaxed/simple;
+	bh=ycfDUt9kf6KT8Xz5/xXWAZUYbEbNI3rilIn4ZECK4xY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UvpkwDGiwoi482TYpgc0eBtLpwxXSuj2x/VErHdbERXxTFwjsiSpMN7SEm0vT/Q07HOVi74imqsPemgKE3KmXGaIFvCOorc4MQHw66Lx1fJyrEEc3xrJxsFJuux9hOyiqCFZ5bqrrkrQlAONcbPCxOfbnSnFtAJUhCNIn4lAdJA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Hv1tDtBQ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=FtPldCG7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Hv1tDtBQ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=FtPldCG7; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="vGVDncdA"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=MaEqZ7gw7aLOweEyuOFH6buhqZTfIn0J4CUkA9dtMxnOSgZAySuledoQlCaGJHPJfT623DgG0c9jF6A59V9kDvo/kEKBeFPHm85HBsjMoNSZ7ZgaPMTUwMIcVRmyG9DdYF8OdNz8lZbGiZw/w/HBR3L0VyLKu8aPuP/gCBatebc0qjDspuGoAMQM2YBu6Ohf3TidtlENcrQbgsPH92d59zprqBQAs4CNYVRxkvmht2wn5KC//9uix0CB0ZOqOaoqugQCOFUXzW5FMzM2abVlAI3cx2XcFX8f2CUsAqtcVkjZwSko9K5bGXbUvOJOsmlix3jln21mwbtbUiUSSue6sw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=edquAxTTBGscFUJKaESOO7nR7wytSveIfdQSIIjoFS8=;
- b=mv6cuWVPyPI824uZxQ87Er30G+fM3ozBwCitOJ/N67Kstp7n75oUy5B4E0+ScTf5/IhtN+oIjHT1P8CnVeKrnf6/SUjL+LCBtsc9NOlg9soFZjw/meVtvIgAgckRG+74bpdylUt+ybpllCzySC0bowtD/7Whj2ICOUGRbzHyYOLRzKy3EHzJB6tD3Kh7h2j08HUJHviswU0dCrS8aRT9cRPydvltYHrQ++sBf9KknRhwehQe0Czu+xduRHSh2rw3AbwcWArbobpKYeA5HfnggPyKGEywctFOBhQ9//TfOuXm8OjQ695aZ+r7OJQ3dny/5zBmrhkr06ivKEyG0sV14w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=edquAxTTBGscFUJKaESOO7nR7wytSveIfdQSIIjoFS8=;
- b=vGVDncdAAyCAYuEhd7KOnKlkRIAEsq6p8pE6OohYBw/oftvmlVBLVYPuk0FH2ANySrmSSs2S/wQ4SBW/cCvuofp7qpwjh5h6G4966sPApsbykNsLUNRyX9ggLb0FraFNCCkHl1+5pm5fhb6TohpXWplLXpq3CEh9FfXGF01RCA7ErF5Ndp77Hzuc6eYoY78cNUomjB0tgTM9KNyTqMh4hmo8mKlBA6try791QIdhnBNtbJ9tuMExTqTbLfLY/dOpGWEg2Qz8VgBFkXaj1BWCE63+JNehbtVXRQZiGhCU866hZORSSX2Tcvuy9Zp3YN8mqYQw46Hz+vEK9J1swOC5/A==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by CH2PR02MB6615.namprd02.prod.outlook.com (2603:10b6:610:7b::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.36; Thu, 20 Mar
- 2025 20:15:50 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%3]) with mapi id 15.20.8534.034; Thu, 20 Mar 2025
- 20:15:50 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Helge Deller <deller@gmx.de>, "linux-fbdev@vger.kernel.org"
-	<linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linux-hyperv@vger.kernel.org"
-	<linux-hyperv@vger.kernel.org>
-Subject: RE: fbdev deferred I/O broken in some scenarios
-Thread-Topic: fbdev deferred I/O broken in some scenarios
-Thread-Index: AduXqaeNbacCNH8yTNyrrucfCfcIpQANFPoAAEthzCAAHnMyAAATmEBA
-Date: Thu, 20 Mar 2025 20:15:50 +0000
-Message-ID:
- <SN6PR02MB415740F004283A40C3C41490D4D82@SN6PR02MB4157.namprd02.prod.outlook.com>
-References:
- <SN6PR02MB4157227300E59ACB3B0DABD0D4DE2@SN6PR02MB4157.namprd02.prod.outlook.com>
- <303572c2-4839-4dae-a249-9967fcc9cf03@gmx.de>
- <BN7PR02MB4148157E5307E306FD9D093ED4D92@BN7PR02MB4148.namprd02.prod.outlook.com>
- <CAMuHMdVvuPr454jcVExGpHX_94_=y0GfVPJu1YLO1-H0OkBTdQ@mail.gmail.com>
-In-Reply-To:
- <CAMuHMdVvuPr454jcVExGpHX_94_=y0GfVPJu1YLO1-H0OkBTdQ@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|CH2PR02MB6615:EE_
-x-ms-office365-filtering-correlation-id: 655ef1ef-92ce-4890-9a04-08dd67ec0219
-x-microsoft-antispam:
- BCL:0;ARA:14566002|8060799006|461199028|8062599003|19110799003|15080799006|3412199025|440099028|12091999003|102099032|56899033;
-x-microsoft-antispam-message-info:
- =?utf-8?B?dmZQOTUzSlh1N043OXR0NHdzMm1jTzZmSUVaV2sySGd2Qnc2V2hNQittMTc0?=
- =?utf-8?B?M3NWeWhRY0V5N2EwcUtpSWVvSXhVSkZvMVZHcEt5NGw3bkFnR05TdVBwNEVJ?=
- =?utf-8?B?MVN6NHVyQ1I4aEl2MzlGTy9UYytkaFhYcFYvS1VlM3NzbC93dGNYbHlEWFgz?=
- =?utf-8?B?VjFWb1JTSGVyRmRORjN1cmtLeTFCMi9kV3BtNC9EdGFkbm9rZ1dQMlkwQVNO?=
- =?utf-8?B?L0dWcFM4cDVTNE1qVjBYeWFrWXFBd29FL3BFQ1FzQUlvOGNGeXFhV3FyT1JM?=
- =?utf-8?B?MG52akRQN3VkK1luYllTSjFSSFUyOFJxeEN3NVZ0bkY5RXNCZitOTjRyaExO?=
- =?utf-8?B?QWx4ZE8rWmNSaWNrMnBBOWZkK3U4WEtsK3NkMkNsMkdaTy9rcVF4TjJJeDV4?=
- =?utf-8?B?d2Q4VTI4eXFJOE40aU1yWnZMbUFuM1JDbGsxNXVYSm1oZzZVRTRhOHdYKytU?=
- =?utf-8?B?YXVhWVljMWVVVG5FaG5xV0tpSGRXQUtYNVRYaE1mSFVuUnRmd3o1L1pCNGxF?=
- =?utf-8?B?VDZCd2dML2huanRCcTRtaFFSbkhMOGk2M0IyUmtoRHZaVzFISjIxeS9pcTkr?=
- =?utf-8?B?VVB6YjZONUtWbzcvYmprZG9EcjZYSFhmRE96TFNkeXBBTlJ6V3RVZ09tUmV5?=
- =?utf-8?B?L1lpcEpKOUUvMnQzL2NkdEhCK0taL1Fpa0pnK09vMmZWaXo0SjR6Z29sUDZF?=
- =?utf-8?B?cXFkK1oxSTNDNlp1amdPRWxReU43SWNkWWpwb0x3UDNUZytFVzFYdHpQRENu?=
- =?utf-8?B?WGVnd05jTW9HUndSZ29LV3dPSURrVENSb1VmOTBQWkEvcDF6dUcvVTM3OFpU?=
- =?utf-8?B?cDZaZUQwQmtwVjVvRFRzdGJzUzJLV2hHb2FEUCtndEFJdUxxYVhmekFwd001?=
- =?utf-8?B?Zk1TMVZDMlZCK0twQmFmemxzMVkrVTMwWW8rYWFJc2k5SzA0cjUrZ3FLVm5h?=
- =?utf-8?B?MnBQK1JWT2pCYU5tcnFzMk5TbGxPeWExQ1JqSThQM1AybXdxSENaS0xPdjAv?=
- =?utf-8?B?bCtScDhIcXUwdGZVSnowNnpOdUw3aC9UY2RKNDN2d0dMUGlsUEdZNHFwNnly?=
- =?utf-8?B?MXB6U055bE9kVkZrMHJXdDc4TnE2WFVEWGhzb3FhY0d2b0JocnovMnVDTVNo?=
- =?utf-8?B?SHVZMFNmWmoxRVpnaTFCdjFjcllrVDdCbGNJcm1Qd2ZXTk8zOU1VelZXTS82?=
- =?utf-8?B?VmlJZDhkUWlPOHBSQnZGa2NjelJEL1lKMVBsTEhZRVVCVHMxWlIwSEx3Yndi?=
- =?utf-8?B?OXB6UXJNS2s5Qm9HQnY1MWhPL3BpbC92TW8zVnhDVGl2aUxHSEJ4OUVGZnRI?=
- =?utf-8?B?ZWVvaTVKU0srN1luTmpsREE0UjJSY2lGVG5aUUhxR0hPOHV4MUdXU01zeFZ4?=
- =?utf-8?B?ZlVZekZ5UEFLcWVoZ3ZyaDQxTlZnY1BiUFlzY0YzS2Rzb2QwcGpEbE52T1dq?=
- =?utf-8?B?Nm9hdnJQY05rL0Z3Y0xHR0lzclZEMER5azA1cGNiMmdpUGwrVEhwUkd3UG84?=
- =?utf-8?Q?fYLi2oHUurolP/UsNez3zKK5cgH?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?ck95TmVWYVNpdFhkQXBpZ21IaWhpUks2Sy8yaTNVWjRYb0o4Z3E5UkE1M2lr?=
- =?utf-8?B?ZW5yUGtMa3Y1dW0ybUNoNkFCMlFvTXU0NlNOd0lXaHV4NUg3MGRMdXdPZWMx?=
- =?utf-8?B?Zk9oMElUSHdDekZYU2pPVUc5RHI3MlpLSWpva25QMFJqQVQ5RXFuaEdmdHFV?=
- =?utf-8?B?QXkwUVZ5ZE14aXU2MHAwYVdZcGdTaVF5UUlnMHpPZ3RsaEhHYzc5SENDbStz?=
- =?utf-8?B?Y3A0RVd3R2VJWXZhekltcWNFQW1iM3ZGTWVGTnhBZ2QyZjZ5SXhreFpRV1Q5?=
- =?utf-8?B?OHZaMWFMZ0prVU16Z3dnRWVyUkFuR1ZvSDFUaXJZbDhxZFF2dHVZb1F4YmRK?=
- =?utf-8?B?SmFXcG1oOTh2NW1EWVZRYjBncVpsWWZ5WmRvTzJXbXB4MkM4UXpJZVV0YU8y?=
- =?utf-8?B?UTFlb0ZKUGd6T1dDWllpWCtVUER2TjVoM1VQLzNGSW45bVNKbUFuYzdRY2NR?=
- =?utf-8?B?dGpMS1JKODVkYWpPd3Q5VDZ6WElJd3ZxelhMaTJLR0M1M1ZNS2R1OURWY3J3?=
- =?utf-8?B?RVYvSTRzMmYxcU0raHRVOUdYVUxvZURNbFBkRWZYWTk1V2FKN0FWRGc3aVJo?=
- =?utf-8?B?MmJVaG5Gd2xOTkJJZHh0MG1zc1RBV1RlczNiTUpZazYrZk1yV1FiUGtHakMw?=
- =?utf-8?B?Z2xXM2xYeDRwNTB3ZDN3Zkpwb3FWdG9Vdmx2NUFpbWFGbEFvcGlPWDc4R3FP?=
- =?utf-8?B?aVdtV2VlTm54TXpaZTF1Wm9QRHhTanR3QjhEMmVlaU1KSFdrbXFtaWRING0v?=
- =?utf-8?B?MFBYWWZWK05BRlhSS1hIclUza1FjSW1iU0oyb3ZieXl0VEhJR3RScWZxOWYz?=
- =?utf-8?B?RTlBeEl6VHkrK3N6bk9zejRnank5Vzk1by9TcnU1QkUwd3BVT2RscE9Ca0VS?=
- =?utf-8?B?NXV1cjZGZ25VdVc1YWZVcHpCYW9XaDkzZDAwTWZXNnQvR2VjOUFKZGU2TVNY?=
- =?utf-8?B?SVJJQjdISFI3anJTS1NXLytvVVpMd1VGeHlwbkhTK1RUaGNnNjNMdTVGbGtX?=
- =?utf-8?B?bXd5RU5jVzJrN2o3WDdGSGxuQWh2Nnh4bUF4OVpJRUh4NmN6ZkFzdFc2enRT?=
- =?utf-8?B?RXJMYkp2cUlNUzJSUWpyVHpKK1RpbmNvL05GZEtxNlNkcEhnbks5UERrcGJn?=
- =?utf-8?B?Y1dlc3duL01aeEVoRmhhRG8weUF2K2hLS2ltNEgycHJVbXJrZzZJRXpLK1Ri?=
- =?utf-8?B?bGwyU0E2VWtJOCt4ZG1OanJtamJQNnZMeGhJZDZ4Y25tUjVBWWM2MkNDaXpP?=
- =?utf-8?B?c1liSnl5VzBJUG1qdTFTcXpIZDUwRlhXazd3NUxxak1VWHE2aE9XdDdSRTBU?=
- =?utf-8?B?U05CNlR5NFROcS9HeGU0RnRyQUVKa25HRTUwMUJFNXhUdzZ1MEdPMnpTVWxW?=
- =?utf-8?B?SDBGQUZmZUl5Vmh0dFhLaUpHWUxpMGhwa3k3aHlVTlJ3aVZGTzd4VU9vSWFP?=
- =?utf-8?B?RWZHT1JRZDFnZllPYmhteE1HalZjR21aK3psNG45RWovanpUcll2c3MyQnRE?=
- =?utf-8?B?VGJUOFZkdENDM1NDQ0FseTJma2ZPek9wMnljbDVZNzNYdU5VdU02N2dXMFd4?=
- =?utf-8?B?bDFwN2NWSUNTbytjZ3RHZmpHRXhCMkg4MnhwNWs2Y1Jzb2U1R0hwZTk5Nkt1?=
- =?utf-8?Q?aBJrpJJLBX7lv8fPjZoLslg1i1svACxtLlPT797roxgk=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Hv1tDtBQ";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="FtPldCG7";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Hv1tDtBQ";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="FtPldCG7"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id C92D521D09;
+	Fri, 21 Mar 2025 08:13:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1742544789; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=9lKHsMLQuHW+59wM6VO9frsl+9XDBKKKHZu3m5/3Fw8=;
+	b=Hv1tDtBQ2zTVemGWxinHXN3PGJ5d1H3xGVRLWATfApiPd5NGhNRLaP8vbcK0X4qF6Z5NFY
+	9konii/VJtanV52YHQRU8SM1d8FhppULrsL9FMXZcTm+ZTBOkU7b9nrSZliiC4Y/gLYh5Z
+	vjxyJxhiSourZUYm7XvYO52WIMJx8eA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1742544789;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=9lKHsMLQuHW+59wM6VO9frsl+9XDBKKKHZu3m5/3Fw8=;
+	b=FtPldCG7Lm5S8e5iddJH3y7eQ+VaMhHG/86RqJRiBQF+VRslHb+1Ap0jzG+/wMz6eGjUut
+	9RTr5V39KQow31Dw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Hv1tDtBQ;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=FtPldCG7
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1742544789; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=9lKHsMLQuHW+59wM6VO9frsl+9XDBKKKHZu3m5/3Fw8=;
+	b=Hv1tDtBQ2zTVemGWxinHXN3PGJ5d1H3xGVRLWATfApiPd5NGhNRLaP8vbcK0X4qF6Z5NFY
+	9konii/VJtanV52YHQRU8SM1d8FhppULrsL9FMXZcTm+ZTBOkU7b9nrSZliiC4Y/gLYh5Z
+	vjxyJxhiSourZUYm7XvYO52WIMJx8eA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1742544789;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=9lKHsMLQuHW+59wM6VO9frsl+9XDBKKKHZu3m5/3Fw8=;
+	b=FtPldCG7Lm5S8e5iddJH3y7eQ+VaMhHG/86RqJRiBQF+VRslHb+1Ap0jzG+/wMz6eGjUut
+	9RTr5V39KQow31Dw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8D44E13A2C;
+	Fri, 21 Mar 2025 08:13:09 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 4aUvIZUf3WekfwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 21 Mar 2025 08:13:09 +0000
+Message-ID: <cca37e5d-408a-414c-a05d-cee31ba3e1ff@suse.de>
+Date: Fri, 21 Mar 2025 09:13:09 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 655ef1ef-92ce-4890-9a04-08dd67ec0219
-X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Mar 2025 20:15:50.1604
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR02MB6615
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 06/11] backlight: Replace fb events with a dedicated
+ function call
+To: Daniel Thompson <danielt@kernel.org>
+Cc: lee@kernel.org, pavel@ucw.cz, jingoohan1@gmail.com, deller@gmx.de,
+ simona@ffwll.ch, linux-leds@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20250306140947.580324-1-tzimmermann@suse.de>
+ <20250306140947.580324-7-tzimmermann@suse.de> <Z9k7nAXNGDaQMnMO@aspen.lan>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <Z9k7nAXNGDaQMnMO@aspen.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Queue-Id: C92D521D09
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,ucw.cz,gmail.com,gmx.de,ffwll.ch,vger.kernel.org,lists.freedesktop.org];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Score: -4.51
+X-Spam-Flag: NO
 
-RnJvbTogR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4gU2VudDogVGh1
-cnNkYXksIE1hcmNoIDIwLCAyMDI1IDM6NDYgQU0NCj4gDQo+IEhpIE1pY2hhZWwsDQo+IA0KPiBP
-biBXZWQsIDE5IE1hciAyMDI1IGF0IDIxOjI5LCBNaWNoYWVsIEtlbGxleSA8bWhrbGludXhAb3V0
-bG9vay5jb20+IHdyb3RlOg0KPiA+IEZyb206IEhlbGdlIERlbGxlciA8ZGVsbGVyQGdteC5kZT4g
-U2VudDogVHVlc2RheSwgTWFyY2ggMTgsIDIwMjUgMToxNiBBTQ0KPiA+ID4gT24gMy8xOC8yNSAw
-MzowNSwgTWljaGFlbCBLZWxsZXkgd3JvdGU6DQo+ID4gPiA+IEkndmUgYmVlbiB0cnlpbmcgdG8g
-Z2V0IG1tYXAoKSB3b3JraW5nIHdpdGggdGhlIGh5cGVydl9mYi5jIGZiZGV2IGRyaXZlciwgd2hp
-Y2gNCj4gPiA+ID4gaXMgZm9yIExpbnV4IGd1ZXN0cyBydW5uaW5nIG9uIE1pY3Jvc29mdCdzIEh5
-cGVyLVYgaHlwZXJ2aXNvci4gVGhlIGh5cGVydl9mYiBkcml2ZXINCj4gPiA+ID4gdXNlcyBmYmRl
-diBkZWZlcnJlZCBJL08gZm9yIHBlcmZvcm1hbmNlIHJlYXNvbnMuIEJ1dCBpdCBsb29rcyB0byBt
-ZSBsaWtlIGZiZGV2DQo+ID4gPiA+IGRlZmVycmVkIEkvTyBpcyBmdW5kYW1lbnRhbGx5IGJyb2tl
-biB3aGVuIHRoZSB1bmRlcmx5aW5nIGZyYW1lYnVmZmVyIG1lbW9yeQ0KPiA+ID4gPiBpcyBhbGxv
-Y2F0ZWQgZnJvbSBrZXJuZWwgbWVtb3J5IChhbGxvY19wYWdlcyBvciBkbWFfYWxsb2NfY29oZXJl
-bnQpLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGUgaHlwZXJ2X2ZiLmMgZHJpdmVyIG1heSBhbGxvY2F0
-ZSB0aGUgZnJhbWVidWZmZXIgbWVtb3J5IGluIHNldmVyYWwgd2F5cywNCj4gPiA+ID4gZGVwZW5k
-aW5nIG9uIHRoZSBzaXplIG9mIHRoZSBmcmFtZWJ1ZmZlciBzcGVjaWZpZWQgYnkgdGhlIEh5cGVy
-LVYgaG9zdCBhbmQgdGhlIFZNDQo+ID4gPiA+ICJHZW5lcmF0aW9uIi4gIEZvciBhIEdlbmVyYXRp
-b24gMiBWTSwgdGhlIGZyYW1lYnVmZmVyIG1lbW9yeSBpcyBhbGxvY2F0ZWQgYnkgdGhlDQo+ID4g
-PiA+IEh5cGVyLVYgaG9zdCBhbmQgaXMgYXNzaWduZWQgdG8gZ3Vlc3QgTU1JTyBzcGFjZS4gVGhl
-IGh5cGVydl9mYiBkcml2ZXIgZG9lcyBhDQo+ID4gPiA+IHZtYWxsb2MoKSBhbGxvY2F0aW9uIGZv
-ciBkZWZlcnJlZCBJL08gdG8gd29yayBhZ2FpbnN0LiBUaGlzIGNvbWJpbmF0aW9uIGhhbmRsZXMg
-bW1hcCgpDQo+ID4gPiA+IG9mIC9kZXYvZmI8bj4gY29ycmVjdGx5IGFuZCB0aGUgcGVyZm9ybWFu
-Y2UgYmVuZWZpdHMgb2YgZGVmZXJyZWQgSS9PIGFyZSBzdWJzdGFudGlhbC4NCj4gPiA+ID4NCj4g
-PiA+ID4gQnV0IGZvciBhIEdlbmVyYXRpb24gMSBWTSwgdGhlIGh5cGVydl9mYiBkcml2ZXIgYWxs
-b2NhdGVzIHRoZSBmcmFtZWJ1ZmZlciBtZW1vcnkgaW4NCj4gPiA+ID4gY29udGlndW91cyBndWVz
-dCBwaHlzaWNhbCBtZW1vcnkgdXNpbmcgYWxsb2NfcGFnZXMoKSBvciBkbWFfYWxsb2NfY29oZXJl
-bnQoKSwgYW5kDQo+ID4gPiA+IGluZm9ybXMgdGhlIEh5cGVyLVYgaG9zdCBvZiB0aGUgbG9jYXRp
-b24uIEluIHRoaXMgY2FzZSwgbW1hcCgpIHdpdGggZGVmZXJyZWQgSS9PIGRvZXMNCj4gPiA+ID4g
-bm90IHdvcmsuIFRoZSBtbWFwKCkgc3VjY2VlZHMsIGFuZCB1c2VyIHNwYWNlIHVwZGF0ZXMgdG8g
-dGhlIG1tYXAnZWQgbWVtb3J5IGFyZQ0KPiA+ID4gPiBjb3JyZWN0bHkgcmVmbGVjdGVkIHRvIHRo
-ZSBmcmFtZWJ1ZmZlci4gQnV0IHdoZW4gdGhlIHVzZXIgc3BhY2UgcHJvZ3JhbSBkb2VzIG11bm1h
-cCgpDQo+ID4gPiA+IG9yIHRlcm1pbmF0ZXMsIHRoZSBMaW51eCBrZXJuZWwgZnJlZSBsaXN0cyBi
-ZWNvbWUgc2NyYW1ibGVkIGFuZCB0aGUga2VybmVsIGV2ZW50dWFsbHkNCj4gPiA+ID4gcGFuaWNz
-LiBUaGUgcHJvYmxlbSBpcyB0aGF0IHdoZW4gbXVubWFwKCkgaXMgZG9uZSwgdGhlIFBURXMgaW4g
-dGhlIFZNQSBhcmUgY2xlYW5lZA0KPiA+ID4gPiB1cCwgYW5kIHRoZSBjb3JyZXNwb25kaW5nIHN0
-cnVjdCBwYWdlIHJlZmNvdW50cyBhcmUgZGVjcmVtZW50ZWQuIElmIHRoZSByZWZjb3VudCBnb2Vz
-DQo+ID4gPiA+IHRvIHplcm8gKHdoaWNoIGl0IHR5cGljYWxseSB3aWxsKSwgdGhlIHBhZ2UgaXMg
-aW1tZWRpYXRlbHkgZnJlZWQuIEluIHRoaXMgd2F5LCBzb21lIG9yIGFsbA0KPiA+ID4gPiBvZiB0
-aGUgZnJhbWVidWZmZXIgbWVtb3J5IGdldHMgZXJyb25lb3VzbHkgZnJlZWQuIEZyb20gd2hhdCBJ
-IHNlZSwgdGhlIFZNQSBzaG91bGQNCj4gPiA+ID4gYmUgbWFya2VkIFZNX1BGTk1BUCB3aGVuIGFs
-bG9jYXRlZCBtZW1vcnkga2VybmVsIGlzIGJlaW5nIHVzZWQgYXMgdGhlDQo+ID4gPiA+IGZyYW1l
-YnVmZmVyIHdpdGggZGVmZXJyZWQgSS9PLCBidXQgdGhhdCdzIG5vdCBoYXBwZW5pbmcuIFRoZSBo
-YW5kbGluZyBvZiBkZWZlcnJlZCBJL08NCj4gPiA+ID4gcGFnZSBmYXVsdHMgd291bGQgYWxzbyBu
-ZWVkIHVwZGF0aW5nIHRvIG1ha2UgdGhpcyB3b3JrLg0KPiANCj4gSSBhc3N1bWUgdGhpcyBpcyB0
-cmlnZ2VyZWQgYnkgcnVubmluZyBhbnkgZmJkZXYgdXNlcnNwYWNlIHRoYXQgdXNlcw0KPiBtbWFw
-KCksIGUuZy4gZmJ0ZXN0Pw0KDQpZZXMuICBJIGhhdmUgbXkgb3duIGxpdHRsZSBwcm9ncmFtLCBi
-dXQgaXQgaXMgc2ltaWxhciB0byB3aGF0IEkgc2VlIGZidGVzdCBkb2VzLg0KDQo+IA0KPiA+ID4g
-PiBUaGUgZmJkZXYgZGVmZXJyZWQgSS9PIHN1cHBvcnQgd2FzIG9yaWdpbmFsbHkgYWRkZWQgdG8g
-dGhlIGh5cGVydl9mYiBkcml2ZXIgaW4gdGhlDQo+ID4gPiA+IDUuNiBrZXJuZWwsIGFuZCBiYXNl
-ZCBvbiBteSByZWNlbnQgZXhwZXJpbWVudHMsIGl0IGhhcyBuZXZlciB3b3JrZWQgY29ycmVjdGx5
-IHdoZW4NCj4gPiA+ID4gdGhlIGZyYW1lYnVmZmVyIGlzIGFsbG9jYXRlZCBmcm9tIGtlcm5lbCBt
-ZW1vcnkuIGZiZGV2IGRlZmVycmVkIEkvTyBzdXBwb3J0IGZvciB1c2luZw0KPiA+ID4gPiBrZXJu
-ZWwgbWVtb3J5IGFzIHRoZSBmcmFtZWJ1ZmZlciB3YXMgb3JpZ2luYWxseSBhZGRlZCBpbiBjb21t
-aXQgMzdiNDgzNzk1OWNiOQ0KPiA+ID4gPiBiYWNrIGluIDIwMDggaW4gTGludXggMi42LjI5LiBC
-dXQgSSBkb24ndCBzZWUgaG93IGl0IGV2ZXIgd29ya2VkIHByb3Blcmx5LCB1bmxlc3MNCj4gPiA+
-ID4gY2hhbmdlcyBpbiBnZW5lcmljIG1lbW9yeSBtYW5hZ2VtZW50IHNvbWVob3cgYnJva2UgaXQg
-aW4gdGhlIGludGVydmVuaW5nIHllYXJzLg0KPiA+ID4gPg0KPiA+ID4gPiBJIHRoaW5rIEkga25v
-dyBob3cgdG8gZml4IGFsbCB0aGlzLiBCdXQgYmVmb3JlIHdvcmtpbmcgb24gYSBwYXRjaCwgSSB3
-YW50ZWQgdG8gY2hlY2sNCj4gPiA+ID4gd2l0aCB0aGUgZmJkZXYgY29tbXVuaXR5IHRvIHNlZSBp
-ZiB0aGlzIG1pZ2h0IGJlIGEga25vd24gaXNzdWUgYW5kIHdoZXRoZXIgdGhlcmUNCj4gPiA+ID4g
-aXMgYW55IGFkZGl0aW9uYWwgaW5zaWdodCBzb21lb25lIG1pZ2h0IG9mZmVyLiBUaGFua3MgZm9y
-IGFueSBjb21tZW50cyBvciBoZWxwLg0KPiA+ID4NCj4gPiA+IEkgaGF2ZW4ndCBoZWFyZCBvZiBh
-bnkgbWFqb3IgZGVmZXJyZWQtaS9vIGlzc3VlcyBzaW5jZSBJJ3ZlIGp1bXBlZCBpbnRvIGZiZGV2
-DQo+ID4gPiBtYWludGVuYW5jZS4gQnV0IHlvdSBtaWdodCBiZSByaWdodCwgYXMgSSBoYXZlbid0
-IGxvb2tlZCBtdWNoIGludG8gaXQgeWV0IGFuZA0KPiA+ID4gdGhlcmUgYXJlIGp1c3QgYSBmZXcg
-ZHJpdmVycyB1c2luZyBpdC4NCj4gPg0KPiA+IFRoYW5rcyBmb3IgdGhlIGlucHV0LiBJbiB0aGUg
-ZmJkZXYgZGlyZWN0b3J5LCB0aGVyZSBhcmUgOSBkcml2ZXJzIHVzaW5nIGRlZmVycmVkIEkvTy4N
-Cj4gPiBPZiB0aG9zZSwgNiB1c2Ugdm1hbGxvYygpIHRvIGFsbG9jYXRlIHRoZSBmcmFtZWJ1ZmZl
-ciwgYW5kIHRoYXQgcGF0aCB3b3JrcyBqdXN0IGZpbmUuDQo+ID4gVGhlIG90aGVyIDMgdXNlIGFs
-bG9jX3BhZ2VzKCksIGRtYV9hbGxvY19jb2hlcmVudCgpLCBvciBfX2dldF9mcmVlX3BhZ2VzKCks
-IGFsbCBvZg0KPiA+IHdoaWNoIG1hbmlmZXN0IHRoZSB1bmRlcmx5aW5nIHByb2JsZW0gd2hlbiBt
-dW5tYXAoKSdlZC4gIFRob3NlIDMgZHJpdmVycyBhcmU6DQo+ID4NCj4gPiAqIGh5cGVydl9mYi5j
-LCB3aGljaCBJJ20gd29ya2luZyB3aXRoDQo+ID4gKiBzaF9tb2JpbGVfbGNkY2ZiLmMNCj4gPiAq
-IHNzZDEzMDdmYi5jDQo+IA0KPiBOb3dhZGF5cyBzaF9tb2JpbGVfbGNkY2ZiIGlzIHVzZWQgb25s
-eSBvbiB2YXJpb3VzIFN1cGVySCBib2FyZHMNCj4gKEkgaGF2ZSBubyBoYXJkd2FyZSB0byB0ZXN0
-KS4NCj4gDQo+IHNoX21vYmlsZV9sY2RjZmIgd2FzIHVzZWQgb24gQVJNLWJhc2VkIFNIL1ItTW9i
-aWxlIFNvQ3MgdW50aWwgRFQNCj4gc3VwcG9ydCB3YXMgYWRkZWQgdG8gdGhlIERSTSBkcml2ZXIg
-Zm9yIHRoZSBjb3JyZXNwb25kaW5nIGhhcmR3YXJlLg0KPiBUaGUgcGxhdGZvcm0gdXNpbmcgaXQg
-d2FzIG1pZ3JhdGVkIHRvIERSTSBpbiBjb21taXQgMTM4NTg4ZTlmYTIzN2Y5Nw0KPiAoIkFSTTog
-ZHRzOiByZW5lc2FzOiByOGE3NzQwOiBBZGQgTENEQyBub2RlcyIpIGluIHY2LjgpLiBBdCB0aGUg
-dGltZQ0KPiBvZiB0aGUgY29udmVyc2lvbiwgZmJ0ZXN0IHdvcmtlZCBmaW5lIHdpdGggc2hfbW9i
-aWxlX2xjZGNmYi4NCg0KT0ssIGdvb2QgdG8ga25vdy4gc2hfbW9iaWxlX2xjZGNmYiBnZXRzIGl0
-cyBmcmFtZWJ1ZmZlciB1c2luZw0KZG1hX2FsbG9jX2NvaGVyZW50KCkuIERvIHlvdSByZWNhbGwg
-aG93IGJpZyB0aGUgZnJhbWVidWZmZXIgd2FzPw0KSWYgb3ZlciA0IE1pQiwgZG1hX2FsbG9jX2Nv
-aGVyZW50KCkgd291bGQgaGF2ZSBhbGxvY2F0ZWQgZnJvbSBDTUEsDQphbmQgdGhhdCB3b3JrcyBP
-Sy4NCg0KPiANCj4gRGVmZXJyZWQgSS9PIGlzIGFsc28gdXNlZCBpbiBEUk0gZHJpdmVycyBmb3Ig
-ZGlzcGxheXMgdGhhdCBhcmUgY29ubmVjdGVkDQo+IHVzaW5nIEkyQyBvciBTUEkuICBMYXN0IHRp
-bWUgSSB0cmllZCB0aGUgc3Q3NzM1ciBkcml2ZXIsIGl0IHdvcmtlZCBmaW5lDQo+IHdpdGggZmJ0
-ZXN0LiAgVGhhdCB3YXMgYWxzbyBvbiBhcm0zMiwgdGhvdWdoLg0KDQpUaGUgc3Q3NzM1ciBkcml2
-ZXIgYXBwZWFycyB0byB1c2UgZmJ0ZnQtY29yZS5jLCBhbmQgdGhhdCBkb2VzIGEgdm1hbGxvYygp
-DQpmb3IgdGhlIHNjcmVlbiBidWZmZXIsIHNvIGl0IHdvbid0IGhhdmUgdGhlIHByb2JsZW0gSSdt
-IHNlZWluZy4NCg0KVGhhbmtzIGZvciB0aGUgaGVscCAuLi4uDQoNCk1pY2hhZWwNCg==
+Hi
+
+Am 18.03.25 um 10:23 schrieb Daniel Thompson:
+> On Thu, Mar 06, 2025 at 03:05:48PM +0100, Thomas Zimmermann wrote:
+>> Remove support for fb events from backlight subsystem. Provide the
+>> helper backlight_notify_blank_all() instead. Also export the existing
+>> helper backlight_notify_blank() to update a single backlight device.
+>>
+>> In fbdev, call either helper to inform the backlight subsystem of
+>> changes to a display's blank state. If the framebuffer device has a
+>> specific backlight, only update this one; otherwise update all.
+>>
+>> v3:
+>> - declare empty fb_bl_notify_blank() as static inline (kernel test robot)
+> Looks like there are still configs where we get build failure.
+>
+>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Other than the build issues, generally this looks great. Just a couple
+> of small issues below.
+>
+>
+>> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+>> index 1c43f579396f..9dc93c5e480b 100644
+>> --- a/drivers/video/backlight/backlight.c
+>> +++ b/drivers/video/backlight/backlight.c
+>> @@ -78,11 +77,8 @@ static const char *const backlight_scale_types[] = {
+>>   	[BACKLIGHT_SCALE_NON_LINEAR]	= "non-linear",
+>>   };
+>>
+>> -#if defined(CONFIG_FB_CORE) || (defined(CONFIG_FB_CORE_MODULE) && \
+>> -				defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
+>> -static void backlight_notify_blank(struct backlight_device *bd,
+>> -				   struct device *display_dev,
+>> -				   bool fb_on, bool prev_fb_on)
+>> +void backlight_notify_blank(struct backlight_device *bd, struct device *display_dev,
+>> +			    bool fb_on, bool prev_fb_on)
+>>   {
+>>   	guard(mutex)(&bd->ops_lock);
+>>
+>> @@ -103,68 +99,18 @@ static void backlight_notify_blank(struct backlight_device *bd,
+>>   		}
+>>   	}
+>>   }
+>> +EXPORT_SYMBOL(backlight_notify_blank);
+> Should this be EXPORT_SYMBOL_GPL()?
+
+The other symbols in this source file are exported with EXPORT_SYMBOL().
+
+Best regards
+Thomas
+
+>
+>
+>> -/*
+>> - * fb_notifier_callback
+>> - *
+>> - * This callback gets called when something important happens inside a
+>> - * framebuffer driver. The backlight core only cares about FB_BLANK_UNBLANK
+>> - * which is reported to the driver using backlight_update_status()
+>> - * as a state change.
+>> - *
+>> - * There may be several fbdev's connected to the backlight device,
+>> - * in which case they are kept track of. A state change is only reported
+>> - * if there is a change in backlight for the specified fbdev.
+>> - */
+>> -static int fb_notifier_callback(struct notifier_block *self,
+>> -				unsigned long event, void *data)
+>> +void backlight_notify_blank_all(struct device *display_dev, bool fb_on, bool prev_fb_on)
+>>   {
+>>   	struct backlight_device *bd;
+>> -	struct fb_event *evdata = data;
+>> -	struct fb_info *info = evdata->info;
+>> -	const int *fb_blank = evdata->data;
+>> -	struct backlight_device *fb_bd = fb_bl_device(info);
+>> -	bool fb_on, prev_fb_on;
+>> -
+>> -	/* If we aren't interested in this event, skip it immediately ... */
+>> -	if (event != FB_EVENT_BLANK)
+>> -		return 0;
+>> -
+>> -	bd = container_of(self, struct backlight_device, fb_notif);
+>> -
+>> -	if (fb_bd && fb_bd != bd)
+>> -		return 0;
+>> -
+>> -	fb_on = fb_blank[0] == FB_BLANK_UNBLANK;
+>> -	prev_fb_on = fb_blank[1] == FB_BLANK_UNBLANK;
+>> -
+>> -	backlight_notify_blank(bd, info->device, fb_on, prev_fb_on);
+>> -
+>> -	return 0;
+>> -}
+>> -
+>> -static int backlight_register_fb(struct backlight_device *bd)
+>> -{
+>> -	memset(&bd->fb_notif, 0, sizeof(bd->fb_notif));
+>> -	bd->fb_notif.notifier_call = fb_notifier_callback;
+>>
+>> -	return fb_register_client(&bd->fb_notif);
+>> -}
+>> +	guard(mutex)(&backlight_dev_list_mutex);
+>>
+>> -static void backlight_unregister_fb(struct backlight_device *bd)
+>> -{
+>> -	fb_unregister_client(&bd->fb_notif);
+>> -}
+>> -#else
+>> -static inline int backlight_register_fb(struct backlight_device *bd)
+>> -{
+>> -	return 0;
+>> +	list_for_each_entry(bd, &backlight_dev_list, entry)
+>> +		backlight_notify_blank(bd, display_dev, fb_on, prev_fb_on);
+>>   }
+>> -
+>> -static inline void backlight_unregister_fb(struct backlight_device *bd)
+>> -{
+>> -}
+>> -#endif /* CONFIG_FB_CORE */
+>> +EXPORT_SYMBOL(backlight_notify_blank_all);
+> Same here.
+>
+>
+> Daniel.
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

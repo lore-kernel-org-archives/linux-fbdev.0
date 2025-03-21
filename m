@@ -1,78 +1,78 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AED261F1319
-	for <linux-fbdev@vger.kernel.org>; Fri, 21 Mar 2025 09:58:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F004B1E990B
+	for <linux-fbdev@vger.kernel.org>; Fri, 21 Mar 2025 09:58:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742551123; cv=none; b=EkpHpCGznQdz4AfSihLkga8/L0Fa0C2xcen6v6aDBR4dk/6qPZw7eumsWzWyBi9vrYPBxEKclexjDLJfdPLUF0LAauItMDgBTF63E0zmeojsbbQKNUBwrbDahUBfA9ffx+siLreQ0obow2abOZUoY36VObgOPLySawd8kRYeZPc=
+	t=1742551123; cv=none; b=U64zlhDR6yILPr7kXojcBPloyrYeJzAT6rX4TnVGboSdGgWWxLmr07Z0vdkWkpomLyHVqSsCKzKXI7txIzdtX7sS4Qrg+SVrEVDUzVUUEMVPjNm7S86R9eUU2ZV0b9kk3oSc+2pxL7lYL56UBpzjnE5sOXLTI9SLFyXxrqh0FsE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1742551123; c=relaxed/simple;
-	bh=NXCOVk2LShx9uBLrBse3o++QRvOS1oTctDx4Mc/8xVU=;
+	bh=LWsHuo9YhcGaLDzDDY4KOUYFrUg8if9pJdHAhIi3Tg8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jsSpo2rpdUEtfrH7WPR/j/zLtNXKPklyhooXQquQS4DPiJoCsphixXETTMgQsVJDJTsl4TTNSnrDcxAxgOt6uYIBIeO9mpq6taoNawE5o9z2Ddx5yS3gzr8uN6+SYS7/Zm3ylEIDLApJnQj18NIMIUyHD26799K2UzLlOYKUlw8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WGUSIAAr; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2SwPSc91; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WGUSIAAr; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2SwPSc91; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=P2eoiLZmP3rDCTYB9Ib2t8/9W5gkmDhxnpi1FVffVEsj643lgBVZzl3wAHr6XQ/7KTkkPQKVPin01pZ7UF8PnmOwQ1AGpWKB5oOKhX3lc+ps1hB9xeaPd6tYQr4Z5R+PgJ6A8GMAdYhOCNLJRIfSmNedYRai0VdIVb8ZSLQut6I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=q9hq/Ula; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=b0XKTELn; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=q9hq/Ula; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=b0XKTELn; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WGUSIAAr";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2SwPSc91";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WGUSIAAr";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2SwPSc91"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="q9hq/Ula";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="b0XKTELn";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="q9hq/Ula";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="b0XKTELn"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 1BC13219C5;
-	Fri, 21 Mar 2025 09:58:34 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 6D4E01FB8B;
+	Fri, 21 Mar 2025 09:58:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1742551114; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1742551113; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=IxhBAN538S1RT3uFsmPSfZA6BAUxIA/He31PWK2A/pU=;
-	b=WGUSIAArjKpHeh7zXUOx1QxABfQEfUJSUH86yGnUOIhJdGVcubw0lcsw/A9Q73aUFh6p9c
-	kxHhh7Caxrjb5Wnb8HXylim7UadbDXfTiqxddNdDnelxo3SyQYGR3BjfyO4ElWdIV0ixrf
-	Jj4I+wM9cHd6Jh++YqgJZd+5rxOzRQ0=
+	bh=m0Nw+DNuWp6n52zfnJutFhK2ABOR7cTiF07LzpOs8pc=;
+	b=q9hq/UlameP+bWyKGVd315phc9s02KbLlY8ehbCviRPf5poyjgQo1wYsEPZZcO10muB8WV
+	v22E1ZJG50lNzr2cyAhvwCslOdfm+M0Gd+tsHr78h+XE2HvDNTKLUaoJu7Ckq3OhpAw6+k
+	nKjZmvdlFereN8slvgcR/vkt5yVwqcM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1742551114;
+	s=susede2_ed25519; t=1742551113;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=IxhBAN538S1RT3uFsmPSfZA6BAUxIA/He31PWK2A/pU=;
-	b=2SwPSc91vS5rxY9UYQstzZxEqOimCg+uoM5lihT4guui8F/GNbDItJAoqEl0l1fZRrbJr5
-	IoJaXhtTJmYA9KBw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=WGUSIAAr;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=2SwPSc91
+	bh=m0Nw+DNuWp6n52zfnJutFhK2ABOR7cTiF07LzpOs8pc=;
+	b=b0XKTELnq4qqn/UMbvQS6dfefgSMERgUjx9D1jfsHkYHUh/t2+TivFGMsygG+0YSliNrwu
+	YOChS2ihhq6otgDg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="q9hq/Ula";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=b0XKTELn
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1742551114; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1742551113; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=IxhBAN538S1RT3uFsmPSfZA6BAUxIA/He31PWK2A/pU=;
-	b=WGUSIAArjKpHeh7zXUOx1QxABfQEfUJSUH86yGnUOIhJdGVcubw0lcsw/A9Q73aUFh6p9c
-	kxHhh7Caxrjb5Wnb8HXylim7UadbDXfTiqxddNdDnelxo3SyQYGR3BjfyO4ElWdIV0ixrf
-	Jj4I+wM9cHd6Jh++YqgJZd+5rxOzRQ0=
+	bh=m0Nw+DNuWp6n52zfnJutFhK2ABOR7cTiF07LzpOs8pc=;
+	b=q9hq/UlameP+bWyKGVd315phc9s02KbLlY8ehbCviRPf5poyjgQo1wYsEPZZcO10muB8WV
+	v22E1ZJG50lNzr2cyAhvwCslOdfm+M0Gd+tsHr78h+XE2HvDNTKLUaoJu7Ckq3OhpAw6+k
+	nKjZmvdlFereN8slvgcR/vkt5yVwqcM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1742551114;
+	s=susede2_ed25519; t=1742551113;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=IxhBAN538S1RT3uFsmPSfZA6BAUxIA/He31PWK2A/pU=;
-	b=2SwPSc91vS5rxY9UYQstzZxEqOimCg+uoM5lihT4guui8F/GNbDItJAoqEl0l1fZRrbJr5
-	IoJaXhtTJmYA9KBw==
+	bh=m0Nw+DNuWp6n52zfnJutFhK2ABOR7cTiF07LzpOs8pc=;
+	b=b0XKTELnq4qqn/UMbvQS6dfefgSMERgUjx9D1jfsHkYHUh/t2+TivFGMsygG+0YSliNrwu
+	YOChS2ihhq6otgDg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C4EE813A68;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 22A3E13A68;
 	Fri, 21 Mar 2025 09:58:33 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id iB/eLkk43Wd9JAAAD6G6ig
+	id aK8sB0k43Wd9JAAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Fri, 21 Mar 2025 09:58:33 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: lee@kernel.org,
@@ -86,9 +86,9 @@ Cc: linux-leds@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
 	Thomas Zimmermann <tzimmermann@suse.de>,
 	Simona Vetter <simona.vetter@ffwll.ch>
-Subject: [PATCH v4 03/11] fbdev: Send old blank state in FB_EVENT_BLANK
-Date: Fri, 21 Mar 2025 10:53:56 +0100
-Message-ID: <20250321095517.313713-4-tzimmermann@suse.de>
+Subject: [PATCH v4 01/11] fbdev: Rework fb_blank()
+Date: Fri, 21 Mar 2025 10:53:54 +0100
+Message-ID: <20250321095517.313713-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250321095517.313713-1-tzimmermann@suse.de>
 References: <20250321095517.313713-1-tzimmermann@suse.de>
@@ -99,7 +99,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 1BC13219C5
+X-Rspamd-Queue-Id: 6D4E01FB8B
 X-Spam-Level: 
 X-Spamd-Result: default: False [-3.01 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
@@ -135,45 +135,55 @@ X-Rspamd-Action: no action
 X-Spam-Score: -3.01
 X-Spam-Flag: NO
 
-The event FB_EVENT_BLANK sends the new blank state in the event's
-data field. Also send the old state. It's an additional field in the
-data array; existing receivers won't notice the difference.
-
-The backlight subsystem currently tracks blank state per display per
-backlight. That is not optimal as it ties backlight code to fbdev. A
-subsystem should not track internal state of another subsystem. With
-both, new and old, blank state in FB_EVENT_BLANK, the backlight code
-will not require its own state tracker any longer.
+Reimplement fb_blank() to return early on errors. No functional
+changes. Prepares the helper for tracking the blanking state in
+struct fb_info.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Simona Vetter <simona.vetter@ffwll.ch>
 ---
- drivers/video/fbdev/core/fbmem.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbmem.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 5d1529d300b7..9650b641d8e8 100644
+index 3c568cff2913..39e2b81473ad 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -343,6 +343,7 @@ int fb_blank(struct fb_info *info, int blank)
- {
- 	int old_blank = info->blank;
- 	struct fb_event event;
-+	int data[2];
- 	int ret;
+@@ -339,11 +339,13 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ }
+ EXPORT_SYMBOL(fb_set_var);
  
- 	if (!info->fbops->fb_blank)
-@@ -351,8 +352,10 @@ int fb_blank(struct fb_info *info, int blank)
+-int
+-fb_blank(struct fb_info *info, int blank)
++int fb_blank(struct fb_info *info, int blank)
+ {
+ 	struct fb_event event;
+-	int ret = -EINVAL;
++	int ret;
++
++	if (!info->fbops->fb_blank)
++		return -EINVAL;
+ 
  	if (blank > FB_BLANK_POWERDOWN)
  		blank = FB_BLANK_POWERDOWN;
- 
-+	data[0] = blank;
-+	data[1] = old_blank;
+@@ -351,13 +353,13 @@ fb_blank(struct fb_info *info, int blank)
  	event.info = info;
--	event.data = &blank;
-+	event.data = data;
+ 	event.data = &blank;
  
- 	info->blank = blank;
+-	if (info->fbops->fb_blank)
+-		ret = info->fbops->fb_blank(blank, info);
++	ret = info->fbops->fb_blank(blank, info);
++	if (ret)
++		return ret;
+ 
+-	if (!ret)
+-		fb_notifier_call_chain(FB_EVENT_BLANK, &event);
++	fb_notifier_call_chain(FB_EVENT_BLANK, &event);
+ 
+-	return ret;
++	return 0;
+ }
+ EXPORT_SYMBOL(fb_blank);
  
 -- 
 2.48.1

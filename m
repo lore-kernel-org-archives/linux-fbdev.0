@@ -1,128 +1,166 @@
-Received: from fallback23.i.mail.ru (fallback23.i.mail.ru [79.137.243.77])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C02952E3399;
-	Sun, 23 Mar 2025 19:08:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.137.243.77
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33DEA1C700D;
+	Sun, 23 Mar 2025 22:46:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742756895; cv=none; b=onVNN7fkmMVcJO97zrUWYxLdts35hBmtM9w4mWAaLfIV6BMlMKDwDkIV5MTInYOKLfVt3fa+uqkEq9RVTwyj8/H01AzNsT/l8PdKYZgUgJfyEhYPl8n0ZYTPC1cGeR+z+cHPMB2lZZHTu0jydzIvjFsOBmvjuqQveFM3ajSNvOQ=
+	t=1742769995; cv=none; b=K6YdZvMOVHLrqgKghSA1DxzKwnqKuGKHj3Sdywq1h1GDvz0Tm7crp7IQ9UQnYlZzG3PebvpUbIQwC2wusOcMGIA9BNKM6+2J+QLEJ4Izb9BQStkKkLL+iGnq9rOyXx7WfPQeSj2XWm5OvI5LG3SoDFygr0e8TgGUy+tke+clBXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742756895; c=relaxed/simple;
-	bh=HNheHeIrLKWnPq4AZI8bPbYW3FhAVpc9Cm4HAKsKqo4=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=diNca09oah1iwi/ifPz/Px2+R1Ke5xxgHyPiY1W4Qdc/Gr7AZ3YnJ1QegSdU4h1ZiWTgN0DgXQayRhIQ25hqVh4RgON7e29fBsTriNKlcQzdePFcYuwiXISJ+HIc+taExO8+sHr2Th3rlMXk+oVVTxmjFcRSXnl5Gjd3D2NZILo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mail.ru; spf=pass smtp.mailfrom=mail.ru; dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b=y6SJ7eh3; dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b=cBBAekPA; dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b=omDm0SJd; arc=none smtp.client-ip=79.137.243.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mail.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ru
+	s=arc-20240116; t=1742769995; c=relaxed/simple;
+	bh=ccm0vWMDBLowOtsgeC0Np4Dq+ieIsmlaDmtQ0vxCKuc=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=BdAESbjPhxY82I+m4t+7dedxKtnTxx7L92fBPc3s2pFP+kadw7t2syjna3jItCVONE72jjYpd/+q9uQB4P8mFqAwqM1cXuSLOG46bDzgowQPmgSJQU+ehINdtyC8T3X3bjWepMQOS0WQ70Z51VsOqWDpk3m/XMQc2RYIWJJXD3M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UQ7YXgpa; arc=none smtp.client-ip=209.85.216.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b="y6SJ7eh3";
-	dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b="cBBAekPA";
-	dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b="omDm0SJd"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru; s=mail4;
-	h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:To:From:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc; bh=enRdOwzdzHPi6bszjCuT/F6jj3XrHxNc9XrgbnkSZRo=;
-	t=1742756891;x=1742846891; 
-	b=y6SJ7eh3JJS5Ug2efGTyPwtJBF57oBsdwNEMK04ru3sPAA3Q45MjwRnteYe2wNiFGMNkqiEjtAaTdoUF692fhTSBMRUv+F1TzUGwj+viL+H880+Dl6x5CvG24n+hTRiUTkoFRYXlcCd0XgW7oNgLCEB/eRvHzPa7wZw686ppTmCxHHWXzm0O0CgIFAhDMcl1FGz5lkjJmwYLQd/QUvnU0c+vu+9JFfswFVZywOfz1Evp9gGiZUV7v3f8SZCHPzJhOghIwtf7odgDx2gby0uusghE0NlxsW6H6Ylk5LIwBzADxq+CbzvrpryqwXwBGkHn1tdWjhrybpn2gZCLs52XCA==;
-Received: from [10.113.177.82] (port=57044 helo=send262.i.mail.ru)
-	by fallback23.i.mail.ru with esmtp (envelope-from <listdansp@mail.ru>)
-	id 1twQWC-00EpDt-Td; Sun, 23 Mar 2025 21:57:57 +0300
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru;
-	s=mail4; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:
-	To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive:X-Cloud-Ids;
-	bh=enRdOwzdzHPi6bszjCuT/F6jj3XrHxNc9XrgbnkSZRo=; t=1742756276; x=1742846276; 
-	b=cBBAekPAQAygyrxNWyIC+Vccby4A/15WW4je8APE/nwsIS5IlYSTgkuTfk0UI7+DFEGvMYGUJ0Y
-	HJ5wqSHTJ8UTjJWZ09cBnpl6XAXcFLvKqLqr0z9aQ7OTFhHRhP19cJgZBUFPoikrFn8zWyLtP0xFj
-	2B9WdpV4W8e5X+N/fvjDHYylPO67I12/KbpzK91+KtyeAKON9XcNxhyLNA0AWQsLzMDr4VQhFyuon
-	zk/gxypkRlNT0U19mQbPnLlQT43+fPODAOPn/s6yCKhtcHOu8BffTJfsCiUQGpSq9XyxSjd3sdYm2
-	C85233SwOg8ulgR2UhAG5gcB2h5ezYpu1uMg==;
-Received: from [10.113.185.249] (port=54634 helo=send126.i.mail.ru)
-	by exim-fallback-6464776d59-k9sng with esmtp (envelope-from <listdansp@mail.ru>)
-	id 1twQW4-00000000QOj-1U6J; Sun, 23 Mar 2025 21:57:48 +0300
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru;
-	s=mail4; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:
-	To:From:From:Sender:Reply-To:To:Cc:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive:
-	X-Cloud-Ids:Disposition-Notification-To;
-	bh=enRdOwzdzHPi6bszjCuT/F6jj3XrHxNc9XrgbnkSZRo=; t=1742756268; x=1742846268; 
-	b=omDm0SJdFEEXj6Y+CXyKyf4Aw0MaLjZqLYmSpZiv4rcws8DvrXvwlOLE5Z9pjlqCZf0AjqSAjAA
-	U+4oQ2rb510WN7ukZ95cdE/Z8JXNG7s+1fU8k107wLwMaD6vcy+nR/tsnbfMVM1C5ihH8TdSRiC4e
-	KGDqamL2pyXxUPtgLjD23iE1VEm6p6DhO7l1u+i5Tm1G1XIw6XFz6H6PkWQNaPJwgcMFs5GF9bUm8
-	E7BnzoDBu8fyS0xO8tQjNgYd09d7TwlkA8s5UcvHwQ+E9U6p0IjE14lnZFpQeY94zE+zFKEUW6ZEe
-	q8weodXJmsJm3VZmhALYaYPDAaWguWqzcvBg==;
-Received: by exim-smtp-75f69ddc6c-x6wgr with esmtpa (envelope-from <listdansp@mail.ru>)
-	id 1twQVu-00000000Hoy-466x; Sun, 23 Mar 2025 21:57:39 +0300
-From: Danila Chernetsov <listdansp@mail.ru>
-To: Helge Deller <deller@gmx.de>
-Cc: Danila Chernetsov <listdansp@mail.ru>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	lvc-project@linuxtesting.org
-Subject: [PATCH] video: fbdev: kyro: Add some geometry checks.
-Date: Sun, 23 Mar 2025 18:57:37 +0000
-Message-Id: <20250323185737.602339-1-listdansp@mail.ru>
-X-Mailer: git-send-email 2.25.1
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UQ7YXgpa"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-301493f45aeso6185083a91.1;
+        Sun, 23 Mar 2025 15:46:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1742769993; x=1743374793; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=YQbIxlTNY+cHu7R6IhUq3rHgE0kIfvcWVGQIcjca71s=;
+        b=UQ7YXgpaYT9n1lL03AxvgXfhroDuAURrFhEXoInGbKOPXkIOrdAeeanTQxql7zi3sD
+         SwDyDHOJc1whgQ+h8Vx/YXRMpFuEKxaTflEAkf4Ju7lNqKIC3GIHhAsF+NoR8ROQ2qVy
+         jU9ecTb4TNpvdsIkQrq7uTIf6GLvK12msPFvlHfx/UPQ4IVjynJj2noPyYNdLCGNnomw
+         C/FnwtROFMMCThIBSZihDOLYOlHp8CiP0RdF/v4XR6iTzGZCCV2R+6pZthBGCaP97eAj
+         Us3gghz/JhAv/WkKfsJXnzDQ6RAvAN2rqZmBUSRnG85BPeb2pWMVSjuPBIaABcj/xRim
+         89Ww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1742769993; x=1743374793;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :sender:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=YQbIxlTNY+cHu7R6IhUq3rHgE0kIfvcWVGQIcjca71s=;
+        b=POeVrGfzCHK5eeu9PymXE4lI09A4agu7HwEEHrC/DhXe7wNFnRNz8TiK2SKcg7w1e1
+         A1wuWLxyx6xg1v3DE2g/aKcANTiucBBfU7HzMwpKH14nddteCpMSoOtXmp3zaK5fN800
+         5aLhbn5/zyJDIm8vmvxerlLjnyY3s5XVyzFY/9QA2fRIf3WT9t3H4gZTWTRJ4MWdSLoB
+         YNywpEhjPNXUfPcL1I+MUVuSdPz3o3akk7unsKwjtIsvLhSzcOxMB264pr898i5vv3Dz
+         zTMyifSv5cpPzK7lIhQPHvbqf5D5UNwMrvcdFI9utWo05I8PYeVZaGheCYJAd1T7QTh1
+         MdIQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVtBi6SVTt0/pldYRqrBKCX4tP/Mf2TA0pbKbcK2IA/n3Tb2WIwQC5AqonilsR+VqFNoSS4V44hCsPYNw==@vger.kernel.org, AJvYcCW2d1ucnEbX4ig9hVUBy7hzgPqBdkL/XKYCGbFnObf9htgd4+TqBWpshxCFeGDy5gSuVlK774Ba91Jv3wup@vger.kernel.org
+X-Gm-Message-State: AOJu0YxsKPdYkxx/BAJAzgQ+ky1AfViMdxXTOECyg4hmBgVT63Pk5jg7
+	eGVbj52opfmVisZE4iEk2/y0iJj+JjSq7Eb3MR6eKFYpfqu83JEQ
+X-Gm-Gg: ASbGncu4OVdf9c5oo6aQnLSZgWw/AYtBv0ITv1HgQ05bZkZjsae1XTsH7oWcKzcLhfO
+	YfwsKyqx71yq1QaQOMkYLD6m2woLMlBXa4Qg8f1VZnBl4rIiUF6hK2uoambmarls0fdtr1nqjgX
+	qSXEh4y/jMkYVd6i1rNNEEl9+qcUyiUruzI+Dgzos3kr07/YbBimDjbx2M0Jb4Ad8WoRaaNZCFm
+	dtQ2TfrVqUX3IMtYGwNd1OgmueZlQ/acdKmfF77qlmxtucFXneU85BjJTmAFXvfelYdbPuIYBar
+	ZT1pcUFir9EiIsLZg/wz+0aFD1h1wWSR5QsC/VALROOw9fFMZQfpIhqpKb+m3uaR29GMq8s4oat
+	ZJkVxrVI8+oT9qZvWPec=
+X-Google-Smtp-Source: AGHT+IEzb/FSn36rD8g3bjC3CLhUP4bXdLZq4w66P1jvHqoP8f7Ex/B/4Qt/Da6+yywl+F0R0SDUjw==
+X-Received: by 2002:a17:90b:4c52:b0:2ff:6a5f:9b39 with SMTP id 98e67ed59e1d1-3030fea76f8mr16980734a91.18.1742769993320;
+        Sun, 23 Mar 2025 15:46:33 -0700 (PDT)
+Received: from fedora (c-66-235-14-182.sea.wa.customer.broadstripe.net. [66.235.14.182])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3030f5d4e46sm6589100a91.14.2025.03.23.15.46.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 23 Mar 2025 15:46:32 -0700 (PDT)
+Sender: Justin Cromer <justin.cromer@gmail.com>
+Date: Sun, 23 Mar 2025 15:46:27 -0700
+From: Justin Cromer <justincromer@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: sm750fb: fix casing style on getDeviceID
+Message-ID: <Z-CPQ7dGuTBZ3sWv@fedora>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailru-Src: smtp
-X-7564579A: 646B95376F6C166E
-X-77F55803: 4F1203BC0FB41BD92A53477891B58793825B79BECD38E02E42497B1FF40D587C182A05F538085040EE765B1EEA68409B3DE06ABAFEAF67058A6E3CF6E5E01F8BFAA9F3B359509F8249B610CA6D60D10F
-X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE7A34C649281B21B01EA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F7900637AC83A81C8FD4AD23D82A6BABE6F325AC2E85FA5F3EDFCBAA7353EFBB553375664A2B0A4393176EAA77B2F40198CB27ACFB60C9A2166D956648CCE9848DA6250B8EEF46B7454FC60B9742502CCDD46D0D0CABCCA60F52D7EBF6B57BC7E64490618DEB871D839B73339E8FC8737B5C2249E232F00D8D26902CA471835C12D1D9774AD6D5ED66289B52BA9C0B312567BB23117882F446042972877693876707352033AC447995A7AD1828451B159A507268D2E47CDBA5A96583BA9C0B312567BB2376E601842F6C81A19E625A9149C048EEB28585415E75ADA9F41620B44FB51B7DD8FC6C240DEA76429C9F4D5AE37F343AA9539A8B242431040A6AB1C7CE11FEE362B3BD3CC35DA5886136E347CC761E07C4224003CC836476E2F48590F00D11D6E2021AF6380DFAD1A18204E546F3947CB11811A4A51E3B096D1867E19FE1407959CC434672EE6371089D37D7C0E48F6C8AA50765F790063717E6A56809D3D6D1EFF80C71ABB335746BA297DBC24807EABDAD6C7F3747799A
-X-C1DE0DAB: 0D63561A33F958A587F46D27172A86695002B1117B3ED696844EB587DD887C694A0A47EBA01A636A823CB91A9FED034534781492E4B8EEAD003C2D46C52F18F2C79554A2A72441328621D336A7BC284946AD531847A6065AED8438A78DFE0A9EBDAD6C7F3747799A
-X-C8649E89: 1C3962B70DF3F0ADE00A9FD3E00BEEDF77DD89D51EBB7742D3581295AF09D3DF87807E0823442EA2ED31085941D9CD0AF7F820E7B07EA4CFD2EF63304466465627E35D2A99788FAFFA12A352F931B06FE8DB7F381BFF43A9486D6DC23143AA0ED556C2DAAA19247F5EB0CB9BADE52277B6F8643E9C2F164303EDA1124073BDCA77C8E16086367389913E6812662D5F2AF72BBD4AC8FF0C4E5649C4772AD793FE964550E41902C4E4
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu53w8ahmwBjZKM/YPHZyZHvz5uv+WouB9+ObcCpyrx6l7KImUglyhkEat/+ysWwi0gdhEs0JGjl6ggRWTy1haxBpVdbIX1nthFXMZebaIdHP2ghjoIc/363UZI6Kf1ptIMVYrk7BQKFwEtzKseUyeDnhbAJ4K9bnQ3Bg==
-X-Mailru-Sender: F244DC1430FACE5461D0E33575193BA22C7BE48A118D0749B951B70A5BD4BD8E0259DC99F647BA51DE369B216F14D11CC53BD13D3F6EEB2F3DDE9B364B0DF289C95E31D8FCF52BE1594FB4C9F0DBF4120D4ABDE8C577C2ED
-X-Mras: Ok
-X-Mailru-Src: fallback
-X-7564579A: B8F34718100C35BD
-X-77F55803: 6242723A09DB00B4C75C13076030B6608AF98B5E2C9340ABBE3F2237FD3B192B049FFFDB7839CE9E8EB000FA6B60A7A9F84AF7FD74D637056122DCE773384725D6A2981A42E890C504465C7D8E5080F1
-X-7FA49CB5: 0D63561A33F958A5D0F3E1543A8E0B075002B1117B3ED696717A7032D552910775CAC6BD4D76D0B202ED4CEA229C1FA827C277FBC8AE2E8B54F520D093A0DF28
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu53w8ahmwBjZKM/YPHZyZHvz5uv+WouB9+OYcBso8Zm+oliTz8oZwnDrFsY77LZRcHyw5ht0smWrfSeTW5FiI8avd9v29gUBslpEZ9wIMwqVP4jLQVQ+dVm7x9BpDHadBV9RMjI809PraZwShGFTa9ahxLo40IvX34dQ==
-X-Mras: Ok
-X-7564579A: 646B95376F6C166E
-X-77F55803: 6242723A09DB00B4C75C13076030B6608AF98B5E2C9340AB21EEB097175FBED5049FFFDB7839CE9E8EB000FA6B60A7A91BAD004C7C054933AF2A59B70FE12558B3E78FEF2776E810
-X-7FA49CB5: 0D63561A33F958A5F476775C5CA609668EFB79B1D6074E63BB372755940BCE1ECACD7DF95DA8FC8BD5E8D9A59859A8B6A096F61ED9298604
-X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu53w8ahmwBjZKM/YPHZyZHvz5uv+WouB9+OYcBso8Zm+oliTz8oZwnDrFsY77LZRcHyw5ht0smWrfSeTW5FiI8avd9v29gUBslpEZ9wIMwqVP4jLQVQ+dVm7x9BpDHadBV9RMjI809PraZwShGFTa9ahw4BIdV5NVlDw==
-X-Mailru-MI: 20000000000000800
-X-Mras: Ok
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The check protects against division by 0, integer wraparound,
-and overflow Start/End window settings.
+Fixes camel casing for getDeviceID function. This includes an update to
+the internal function variable 'deviceID' as it's relevant, needs updating,
+and is clearly scoped to the small function.
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
-
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Signed-off-by: Danila Chernetsov <listdansp@mail.ru>
+Signed-off-by: Justin Cromer <justincromer@gmail.com>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 7 +++++++
- 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 08ee8baa79f8..1d5246313d9a 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -378,6 +378,13 @@ static int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight
- 	    (x < 2 && ulWidth + 2 == 0))
- 		return -EINVAL;
+First patch for me, so I chose a checkpatch.pl issue to get comfortable
+with the workflow. Any and all nits welcome. 
+
+Verified my change by recompiling and loading the module in question.
+Additionaly, checkpatch.pl reports two fewer errors.
+
+ drivers/staging/sm750fb/ddk750_dvi.c    |  2 +-
+ drivers/staging/sm750fb/ddk750_sii164.c | 12 ++++++------
+ drivers/staging/sm750fb/ddk750_sii164.h |  2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
+index 8b81e8642f9e..3fb14eff2de1 100644
+--- a/drivers/staging/sm750fb/ddk750_dvi.c
++++ b/drivers/staging/sm750fb/ddk750_dvi.c
+@@ -16,7 +16,7 @@ static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
+ 	{
+ 		.init = sii164_init_chip,
+ 		.get_vendor_id = sii164_get_vendor_id,
+-		.get_device_id = sii164GetDeviceID,
++		.get_device_id = sii164_get_device_id,
+ #ifdef SII164_FULL_FUNCTIONS
+ 		.reset_chip = sii164ResetChip,
+ 		.get_chip_string = sii164GetChipString,
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index 2532b60245ac..d50c71824321 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -48,22 +48,22 @@ unsigned short sii164_get_vendor_id(void)
+ }
  
-+	/* The check protects against division by 0, integer wraparound,
-+	 * and overflow Start/End window settings.
-+	 */
-+	if (x + ulWidth - 1 <= x || y + ulHeight - 1 <= y ||
-+	    x + ulWidth - 1 > 65535 || y + ulHeight - 1 > 65535)
-+		return -EINVAL;
-+
- 	/* Stop Ramdac Output */
- 	DisableRamdacOutput(deviceInfo.pSTGReg);
+ /*
+- *  sii164GetDeviceID
++ *  sii164_get_device_id
+  *      This function gets the device ID of the DVI controller chip.
+  *
+  *  Output:
+  *      Device ID
+  */
+-unsigned short sii164GetDeviceID(void)
++unsigned short sii164_get_device_id(void)
+ {
+-	unsigned short deviceID;
++	unsigned short device_id;
  
+-	deviceID = ((unsigned short)i2cReadReg(SII164_I2C_ADDRESS,
++	device_id = ((unsigned short)i2cReadReg(SII164_I2C_ADDRESS,
+ 					       SII164_DEVICE_ID_HIGH) << 8) |
+ 		   (unsigned short)i2cReadReg(SII164_I2C_ADDRESS,
+ 					      SII164_DEVICE_ID_LOW);
+ 
+-	return deviceID;
++	return device_id;
+ }
+ 
+ /*
+@@ -141,7 +141,7 @@ long sii164_init_chip(unsigned char edge_select,
+ 
+ 	/* Check if SII164 Chip exists */
+ 	if ((sii164_get_vendor_id() == SII164_VENDOR_ID) &&
+-	    (sii164GetDeviceID() == SII164_DEVICE_ID)) {
++	    (sii164_get_device_id() == SII164_DEVICE_ID)) {
+ 		/*
+ 		 *  Initialize SII164 controller chip.
+ 		 */
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
+index 71a7c1cb42c4..a76091f6622b 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.h
++++ b/drivers/staging/sm750fb/ddk750_sii164.h
+@@ -28,7 +28,7 @@ long sii164_init_chip(unsigned char edgeSelect,
+ 		      unsigned char pllFilterValue);
+ 
+ unsigned short sii164_get_vendor_id(void);
+-unsigned short sii164GetDeviceID(void);
++unsigned short sii164_get_device_id(void);
+ 
+ #ifdef SII164_FULL_FUNCTIONS
+ void sii164ResetChip(void);
 -- 
-2.25.1
+2.49.0
 

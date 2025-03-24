@@ -1,166 +1,192 @@
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33DEA1C700D;
-	Sun, 23 Mar 2025 22:46:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38FDF19ADBA
+	for <linux-fbdev@vger.kernel.org>; Mon, 24 Mar 2025 07:43:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742769995; cv=none; b=K6YdZvMOVHLrqgKghSA1DxzKwnqKuGKHj3Sdywq1h1GDvz0Tm7crp7IQ9UQnYlZzG3PebvpUbIQwC2wusOcMGIA9BNKM6+2J+QLEJ4Izb9BQStkKkLL+iGnq9rOyXx7WfPQeSj2XWm5OvI5LG3SoDFygr0e8TgGUy+tke+clBXQ=
+	t=1742802212; cv=none; b=IaT6Nn70lf1D68xlTfjAbC3lhk+mP6L8besuU/vYpaS3khXa8j9wD5+uTP1/0pNxRB7I0ujJYdrNwErHsUltQkdC11F4AQUeMcgN6QkAGcMtGUjEotBamihRyQdxBgc8t1PuslM6mBt9v/tS3bbwjYE/HDVPErTruN9x7U6DoNM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742769995; c=relaxed/simple;
-	bh=ccm0vWMDBLowOtsgeC0Np4Dq+ieIsmlaDmtQ0vxCKuc=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=BdAESbjPhxY82I+m4t+7dedxKtnTxx7L92fBPc3s2pFP+kadw7t2syjna3jItCVONE72jjYpd/+q9uQB4P8mFqAwqM1cXuSLOG46bDzgowQPmgSJQU+ehINdtyC8T3X3bjWepMQOS0WQ70Z51VsOqWDpk3m/XMQc2RYIWJJXD3M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UQ7YXgpa; arc=none smtp.client-ip=209.85.216.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1742802212; c=relaxed/simple;
+	bh=t8i0fa++xDLd9kgqazvyoLCUxjTODpjuGyydR9sKdqo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=p6cyjlZdH/V8uFv8hKMt30+XFMOy5yOElIWcl4Fs4jO202WNx5uS0ojNj3FginfqX+k4lvRMyNy7Abc8TBQKuu8AidvZDnaTq6+8glFhZVaBU1rv0bx3ny3ug85bj4evajF7DlzZDTPtckW8F/83LOWwGjIgD/oP6EK70tXuXvc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TTVhwUAx; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=i4mSqylD; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TTVhwUAx; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=i4mSqylD; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UQ7YXgpa"
-Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-301493f45aeso6185083a91.1;
-        Sun, 23 Mar 2025 15:46:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1742769993; x=1743374793; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=YQbIxlTNY+cHu7R6IhUq3rHgE0kIfvcWVGQIcjca71s=;
-        b=UQ7YXgpaYT9n1lL03AxvgXfhroDuAURrFhEXoInGbKOPXkIOrdAeeanTQxql7zi3sD
-         SwDyDHOJc1whgQ+h8Vx/YXRMpFuEKxaTflEAkf4Ju7lNqKIC3GIHhAsF+NoR8ROQ2qVy
-         jU9ecTb4TNpvdsIkQrq7uTIf6GLvK12msPFvlHfx/UPQ4IVjynJj2noPyYNdLCGNnomw
-         C/FnwtROFMMCThIBSZihDOLYOlHp8CiP0RdF/v4XR6iTzGZCCV2R+6pZthBGCaP97eAj
-         Us3gghz/JhAv/WkKfsJXnzDQ6RAvAN2rqZmBUSRnG85BPeb2pWMVSjuPBIaABcj/xRim
-         89Ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742769993; x=1743374793;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :sender:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=YQbIxlTNY+cHu7R6IhUq3rHgE0kIfvcWVGQIcjca71s=;
-        b=POeVrGfzCHK5eeu9PymXE4lI09A4agu7HwEEHrC/DhXe7wNFnRNz8TiK2SKcg7w1e1
-         A1wuWLxyx6xg1v3DE2g/aKcANTiucBBfU7HzMwpKH14nddteCpMSoOtXmp3zaK5fN800
-         5aLhbn5/zyJDIm8vmvxerlLjnyY3s5XVyzFY/9QA2fRIf3WT9t3H4gZTWTRJ4MWdSLoB
-         YNywpEhjPNXUfPcL1I+MUVuSdPz3o3akk7unsKwjtIsvLhSzcOxMB264pr898i5vv3Dz
-         zTMyifSv5cpPzK7lIhQPHvbqf5D5UNwMrvcdFI9utWo05I8PYeVZaGheCYJAd1T7QTh1
-         MdIQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVtBi6SVTt0/pldYRqrBKCX4tP/Mf2TA0pbKbcK2IA/n3Tb2WIwQC5AqonilsR+VqFNoSS4V44hCsPYNw==@vger.kernel.org, AJvYcCW2d1ucnEbX4ig9hVUBy7hzgPqBdkL/XKYCGbFnObf9htgd4+TqBWpshxCFeGDy5gSuVlK774Ba91Jv3wup@vger.kernel.org
-X-Gm-Message-State: AOJu0YxsKPdYkxx/BAJAzgQ+ky1AfViMdxXTOECyg4hmBgVT63Pk5jg7
-	eGVbj52opfmVisZE4iEk2/y0iJj+JjSq7Eb3MR6eKFYpfqu83JEQ
-X-Gm-Gg: ASbGncu4OVdf9c5oo6aQnLSZgWw/AYtBv0ITv1HgQ05bZkZjsae1XTsH7oWcKzcLhfO
-	YfwsKyqx71yq1QaQOMkYLD6m2woLMlBXa4Qg8f1VZnBl4rIiUF6hK2uoambmarls0fdtr1nqjgX
-	qSXEh4y/jMkYVd6i1rNNEEl9+qcUyiUruzI+Dgzos3kr07/YbBimDjbx2M0Jb4Ad8WoRaaNZCFm
-	dtQ2TfrVqUX3IMtYGwNd1OgmueZlQ/acdKmfF77qlmxtucFXneU85BjJTmAFXvfelYdbPuIYBar
-	ZT1pcUFir9EiIsLZg/wz+0aFD1h1wWSR5QsC/VALROOw9fFMZQfpIhqpKb+m3uaR29GMq8s4oat
-	ZJkVxrVI8+oT9qZvWPec=
-X-Google-Smtp-Source: AGHT+IEzb/FSn36rD8g3bjC3CLhUP4bXdLZq4w66P1jvHqoP8f7Ex/B/4Qt/Da6+yywl+F0R0SDUjw==
-X-Received: by 2002:a17:90b:4c52:b0:2ff:6a5f:9b39 with SMTP id 98e67ed59e1d1-3030fea76f8mr16980734a91.18.1742769993320;
-        Sun, 23 Mar 2025 15:46:33 -0700 (PDT)
-Received: from fedora (c-66-235-14-182.sea.wa.customer.broadstripe.net. [66.235.14.182])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3030f5d4e46sm6589100a91.14.2025.03.23.15.46.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 23 Mar 2025 15:46:32 -0700 (PDT)
-Sender: Justin Cromer <justin.cromer@gmail.com>
-Date: Sun, 23 Mar 2025 15:46:27 -0700
-From: Justin Cromer <justincromer@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: sm750fb: fix casing style on getDeviceID
-Message-ID: <Z-CPQ7dGuTBZ3sWv@fedora>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TTVhwUAx";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="i4mSqylD";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TTVhwUAx";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="i4mSqylD"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 192591F788;
+	Mon, 24 Mar 2025 07:43:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1742802207; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=3cHSh3OJgCCHL2Lc/c+zsJTlX+2v7fbJA4aX368ZXks=;
+	b=TTVhwUAxzeki8CTvpVI4qCBzZc+bYF51vwxQD6JpFM1hT/5T5WAcwDrkJeW6xDZ1nWFBA1
+	ZiqsWNWoec6QBqUL6EA8QssC+lfs0NSkkAxUH59NleQUSPni+1KkM79Gwi3/yfRQ2kFtm3
+	q19RexMyKluK2WYv7sSo8IpNXeQ8js4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1742802207;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=3cHSh3OJgCCHL2Lc/c+zsJTlX+2v7fbJA4aX368ZXks=;
+	b=i4mSqylDRpIrf1Ei1usgJXamOr+H/ebYUddKSnqlxLyxxCJVFoOgEXWPwf5VDWRcHJVUeQ
+	hHjJahBtk3kekjDg==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1742802207; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=3cHSh3OJgCCHL2Lc/c+zsJTlX+2v7fbJA4aX368ZXks=;
+	b=TTVhwUAxzeki8CTvpVI4qCBzZc+bYF51vwxQD6JpFM1hT/5T5WAcwDrkJeW6xDZ1nWFBA1
+	ZiqsWNWoec6QBqUL6EA8QssC+lfs0NSkkAxUH59NleQUSPni+1KkM79Gwi3/yfRQ2kFtm3
+	q19RexMyKluK2WYv7sSo8IpNXeQ8js4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1742802207;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=3cHSh3OJgCCHL2Lc/c+zsJTlX+2v7fbJA4aX368ZXks=;
+	b=i4mSqylDRpIrf1Ei1usgJXamOr+H/ebYUddKSnqlxLyxxCJVFoOgEXWPwf5VDWRcHJVUeQ
+	hHjJahBtk3kekjDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id BB31213874;
+	Mon, 24 Mar 2025 07:43:26 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id vs1jLB4N4WdOPwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 24 Mar 2025 07:43:26 +0000
+Message-ID: <fd216fbf-ff4b-4d33-a8be-b1b7fe525a35@suse.de>
+Date: Mon, 24 Mar 2025 08:43:26 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 08/11] backlight: lcd: Replace fb events with a
+ dedicated function call
+To: Daniel Thompson <danielt@kernel.org>
+Cc: lee@kernel.org, pavel@ucw.cz, jingoohan1@gmail.com, deller@gmx.de,
+ simona@ffwll.ch, linux-leds@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ Simona Vetter <simona.vetter@ffwll.ch>
+References: <20250321095517.313713-1-tzimmermann@suse.de>
+ <20250321095517.313713-9-tzimmermann@suse.de> <Z91NHP65X9GFIYOe@aspen.lan>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <Z91NHP65X9GFIYOe@aspen.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	MIME_TRACE(0.00)[0:+];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,ucw.cz,gmail.com,gmx.de,ffwll.ch,vger.kernel.org,lists.freedesktop.org];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid]
+X-Spam-Score: -4.30
+X-Spam-Flag: NO
 
-Fixes camel casing for getDeviceID function. This includes an update to
-the internal function variable 'deviceID' as it's relevant, needs updating,
-and is clearly scoped to the small function.
+Hi
 
-Signed-off-by: Justin Cromer <justincromer@gmail.com>
----
+Am 21.03.25 um 12:27 schrieb Daniel Thompson:
+> On Fri, Mar 21, 2025 at 10:54:01AM +0100, Thomas Zimmermann wrote:
+>> Remove support for fb events from the lcd subsystem. Provide the
+>> helper lcd_notify_blank_all() instead. In fbdev, call
+>> lcd_notify_blank_all() to inform the lcd subsystem of changes
+>> to a display's blank state.
+>>
+>> Fbdev maintains a list of all installed notifiers. Instead of fbdev
+>> notifiers, maintain an internal list of lcd devices.
+>>
+>> v3:
+>> - export lcd_notify_mode_change_all() (kernel test robot)
+>> v2:
+>> - maintain global list of lcd devices
+>> - avoid IS_REACHABLE() in source file
+>> - use lock guards
+>> - initialize lcd list and list mutex
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Acked-by: Simona Vetter <simona.vetter@ffwll.ch>
+> Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 
-First patch for me, so I chose a checkpatch.pl issue to get comfortable
-with the workflow. Any and all nits welcome. 
+Thanks for reviewing.  There are reviews of all patches. If nothing else 
+comes in, feel free to merge it via the backlight tree.  I can also take 
+the series into dri-devel.
 
-Verified my change by recompiling and loading the module in question.
-Additionaly, checkpatch.pl reports two fewer errors.
+Best regards
+Thomas
 
- drivers/staging/sm750fb/ddk750_dvi.c    |  2 +-
- drivers/staging/sm750fb/ddk750_sii164.c | 12 ++++++------
- drivers/staging/sm750fb/ddk750_sii164.h |  2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+>
+>
+> Daniel.
+>
 
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index 8b81e8642f9e..3fb14eff2de1 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -16,7 +16,7 @@ static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
- 	{
- 		.init = sii164_init_chip,
- 		.get_vendor_id = sii164_get_vendor_id,
--		.get_device_id = sii164GetDeviceID,
-+		.get_device_id = sii164_get_device_id,
- #ifdef SII164_FULL_FUNCTIONS
- 		.reset_chip = sii164ResetChip,
- 		.get_chip_string = sii164GetChipString,
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 2532b60245ac..d50c71824321 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -48,22 +48,22 @@ unsigned short sii164_get_vendor_id(void)
- }
- 
- /*
-- *  sii164GetDeviceID
-+ *  sii164_get_device_id
-  *      This function gets the device ID of the DVI controller chip.
-  *
-  *  Output:
-  *      Device ID
-  */
--unsigned short sii164GetDeviceID(void)
-+unsigned short sii164_get_device_id(void)
- {
--	unsigned short deviceID;
-+	unsigned short device_id;
- 
--	deviceID = ((unsigned short)i2cReadReg(SII164_I2C_ADDRESS,
-+	device_id = ((unsigned short)i2cReadReg(SII164_I2C_ADDRESS,
- 					       SII164_DEVICE_ID_HIGH) << 8) |
- 		   (unsigned short)i2cReadReg(SII164_I2C_ADDRESS,
- 					      SII164_DEVICE_ID_LOW);
- 
--	return deviceID;
-+	return device_id;
- }
- 
- /*
-@@ -141,7 +141,7 @@ long sii164_init_chip(unsigned char edge_select,
- 
- 	/* Check if SII164 Chip exists */
- 	if ((sii164_get_vendor_id() == SII164_VENDOR_ID) &&
--	    (sii164GetDeviceID() == SII164_DEVICE_ID)) {
-+	    (sii164_get_device_id() == SII164_DEVICE_ID)) {
- 		/*
- 		 *  Initialize SII164 controller chip.
- 		 */
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index 71a7c1cb42c4..a76091f6622b 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -28,7 +28,7 @@ long sii164_init_chip(unsigned char edgeSelect,
- 		      unsigned char pllFilterValue);
- 
- unsigned short sii164_get_vendor_id(void);
--unsigned short sii164GetDeviceID(void);
-+unsigned short sii164_get_device_id(void);
- 
- #ifdef SII164_FULL_FUNCTIONS
- void sii164ResetChip(void);
 -- 
-2.49.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

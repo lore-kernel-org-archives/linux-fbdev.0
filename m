@@ -1,109 +1,157 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9190C20CCF2;
-	Thu, 27 Mar 2025 10:14:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B971CAB3;
+	Thu, 27 Mar 2025 18:03:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743070474; cv=none; b=nnBOQNXKaBzaOtZbUagAHzPK5VuWOJNuDTnlg3YJ/bA2pJ6gFfzbBo1pkM6M8rBbQC3XzJHmTk0SIphnZdGMUGcE4gYRluv/CGCP6gCnhakQRUC8ifEbgmYHHOwIUAMaepBp10T3ya2WKyFvfKEtnpgS6KUV3wLTmPStFb651wg=
+	t=1743098623; cv=none; b=VaM8Wp55mF+gU1L8xp4Aw5H7KMT8KD6m0vxGB7LCWttZ3bwCYsqxZb/P8cqYGOQUV9HRe7dlRdfzvPp1oBr9HS2rpk2arvFCaf1dbhJlHwAreTfOPKNmQRYztwXXbYE1MsfgHX2bvjS+lDjDTP2S+59vaFvtOMbJpPgDS9eaFFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743070474; c=relaxed/simple;
-	bh=giySu6xIZjlmmNFPqaCfRdb3ApliqH0pfCPum+wMMX0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=k6BfCx7/q/g64JgYKyRCV6SOZ3IfNmg0FPt+L5lrQvyTQz48lSKYpUoRjQYM4JEgtNZN3sE0sRth8RfmEARvrZMXmyxM3iB6TlNQ+8HT10MqJU1Jnosi/ZfU6d4Ol8WKAkDJn+MK5A7KR7z70TytPlP0CCesCpeqjS4PcBh1WXU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EcizOs1J; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1743098623; c=relaxed/simple;
+	bh=9VZOAXx/d9thBrRCm1kFaimEoDhr6dDMpDpBp/UEu+E=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=m+g5gmsrdTLGYH1rj0JZGi0KzxKa/MlXpXYpDN1WMhhI/u8b+04dyttt1q0WhBTr/02GzZd4eGFXx2pjUcigHwTpWImygqMgzzilIWyWEgtXJvZsTRliNNqygXm8dtDWWN+L7ULqr/hfRNJioy9FH6a6lR5pgI1V+MZh5X8yjDo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Cj00G1Og; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EcizOs1J"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1743070472; x=1774606472;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=giySu6xIZjlmmNFPqaCfRdb3ApliqH0pfCPum+wMMX0=;
-  b=EcizOs1J1/dYWhEzA0lbazBkh97uc324l1f+sXkKGANvPQsWSR9jLEXk
-   fudZ6FSqVJdXfLaEqbtB84BrRk/PdmGnrgMwg48ykD6YeDCzW+08ATwjB
-   gkKzqYBEvZdsbX3ONykApp2mr08oxh5g2NHbRrnQghf8SjJsDcwohBrja
-   OFlX4H3L4OCkROXYxa8HzxmGuFy1onbdmIBK1gqfhxA9ZoJivN6LGP8sd
-   6zmkBy+isV/SSB+JdTfHIQhd8VZt6UEO5e1mp1L3aA+rWRnD/t56gyMsY
-   /g/5HWLIEnUMlWv3XTtCb5IcIyo01S7kgpy6vJD6behWTAPiKbGctIRnr
-   g==;
-X-CSE-ConnectionGUID: jKbCipX/S7KX6XDby/Vvvw==
-X-CSE-MsgGUID: 1s2k79+YQTOoSno87JMtSg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11385"; a="69755452"
-X-IronPort-AV: E=Sophos;i="6.14,280,1736841600"; 
-   d="scan'208";a="69755452"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Mar 2025 03:14:32 -0700
-X-CSE-ConnectionGUID: BviyDncsTJKOyQmh/7vWTQ==
-X-CSE-MsgGUID: EWJfyvPNTu27FiuKthCc2Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,280,1736841600"; 
-   d="scan'208";a="130189060"
-Received: from ncintean-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.246.17])
-  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Mar 2025 03:14:29 -0700
-From: Jani Nikula <jani.nikula@intel.com>
-To: Denis Arefev <arefev@swemel.ru>, Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- lvc-project@linuxtesting.org
-Subject: Re: [PATCH 1/1] fbdev: atyfb: Fix buffer overflow
-In-Reply-To: <20250327100126.12585-2-arefev@swemel.ru>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20250327100126.12585-1-arefev@swemel.ru>
- <20250327100126.12585-2-arefev@swemel.ru>
-Date: Thu, 27 Mar 2025 12:14:26 +0200
-Message-ID: <87pli26arh.fsf@intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cj00G1Og"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71BE0C4CEDD;
+	Thu, 27 Mar 2025 18:03:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1743098622;
+	bh=9VZOAXx/d9thBrRCm1kFaimEoDhr6dDMpDpBp/UEu+E=;
+	h=Date:From:To:Subject:From;
+	b=Cj00G1OgoTLTdXxflb9ciyXt14vo+6lN9My/syU8OBAC0Hq0MUQAKTJ2DnJxk8RGz
+	 Pa//UMVmqYffc8gkv0lXy28dAlB8tdxJOc322rvc1Z4K35HIqVMUwjLnZBsfCYqnTV
+	 GHbbcUFKDb7qREOd4ZkV2zyiumHRw2f6/YnQxNLKI/biyVSWwU/GgqVXS9kial3HGq
+	 F5pV7++9BBDEhW/GYyBsSOk/guVXmwUAzqlWxEBs6DA4gC+5niOOc2cxV+6CK0TXkR
+	 YP8gWYzkQdEl98OKpoAqOAAHNFs2aHfga6Q2m5kQBRSBW0vt0l9sO6LNlckDIRKstM
+	 bmRG/1pVVb2tg==
+Date: Thu, 27 Mar 2025 19:03:38 +0100
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev updates for v6.15-rc1
+Message-ID: <Z-WS-lDPPmxnbG3W@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Thu, 27 Mar 2025, Denis Arefev <arefev@swemel.ru> wrote:
-> The value LCD_MISC_CNTL is used in the 'aty_st_lcd()' function to
-> calculate an index for accessing an array element of size 9.
-> This may cause a buffer overflow.
+Hi Linus,
 
-The fix is to fix it, not silently brush it under the carpet.
+please pull some updates regarding fbdev for 6.15-rc1:
 
-BR,
-Jani.
+The fbcon packed pixel drawing routines have been refactored to bring the
+implementations for system and I/O memory in sync.  The other patches add some
+parameter checks, static attribute groups for sysfs entries and console fixes.
 
->
-> Found by Linux Verification Center (linuxtesting.org) with SVACE.
->
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Signed-off-by: Denis Arefev <arefev@swemel.ru>
-> ---
->  drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-> index 210fd3ac18a4..93eb5eb6042b 100644
-> --- a/drivers/video/fbdev/aty/atyfb_base.c
-> +++ b/drivers/video/fbdev/aty/atyfb_base.c
-> @@ -149,6 +149,8 @@ static const u32 lt_lcd_regs[] = {
->  void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
->  {
->  	if (M64_HAS(LT_LCD_REGS)) {
-> +		if ((u32)index >= ARRAY_SIZE(lt_lcd_regs))
-> +			return;
->  		aty_st_le32(lt_lcd_regs[index], val, par);
->  	} else {
->  		unsigned long temp;
-> @@ -164,6 +166,8 @@ void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
->  u32 aty_ld_lcd(int index, const struct atyfb_par *par)
->  {
->  	if (M64_HAS(LT_LCD_REGS)) {
-> +		if ((u32)index >= ARRAY_SIZE(lt_lcd_regs))
-> +			return 0;
->  		return aty_ld_le32(lt_lcd_regs[index], par);
->  	} else {
->  		unsigned long temp;
+Thanks,
+Helge
 
--- 
-Jani Nikula, Intel
+----------------------------------------------------------------
+The following changes since commit f6e0150b2003fb2b9265028a618aa1732b3edc8f:
+
+  Merge tag 'mtd/for-6.15' of git://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux (2025-03-26 10:28:36 -0700)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.15-rc1
+
+for you to fetch changes up to 86d16cd12efa547ed43d16ba7a782c1251c80ea8:
+
+  fbdev: fsl-diu-fb: add missing device_remove_file() (2025-03-26 22:39:21 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and updates for 6.15-rc1:
+
+This includes a major refactoring of the fbcon packed pixel drawing routines,
+contributed by Zsolt Kajtar.  The original version duplicated more or less the
+same algorithms for both system and i/o memory.  The new implementation is more
+robust, both implementations are now feature complete (e.g. pixel order
+reversing now supported by both), behaves the same way as it uses the identical
+code for both variants and adds support for foreign endian framebuffers.
+
+The other fixes and cleanups are:
+- dummycon: only build module if there are users and fix rows/cols (Arnd Bergmann)
+- mdacon: rework dependency list (Arnd Bergmann)
+- lcdcfb, fsl-diu-fb, fbcon: Fix registering and removing of sysfs (Shixiong Ou)
+- sm501fb: Add some geometry checks (Danila Chernetsov)
+- omapfb: Remove unused code, add value checks (Leonid Arapov)
+- au1100fb: Clean up variable assignment (Markus Elfring)
+- pxafb: use devm_kmemdup*()  (Raag Jadav)
+
+----------------------------------------------------------------
+Arnd Bergmann (3):
+      dummycon: only build module if there are users
+      dummycon: fix default rows/cols
+      mdacon: rework dependency list
+
+Danila Chernetsov (1):
+      fbdev: sm501fb: Add some geometry checks.
+
+Leonid Arapov (2):
+      fbdev: omapfb: Remove writeback deadcode
+      fbdev: omapfb: Add 'plane' value check
+
+Markus Elfring (1):
+      fbdev: au1100fb: Move a variable assignment behind a null pointer check
+
+Raag Jadav (1):
+      fbdev: pxafb: use devm_kmemdup*()
+
+Shixiong Ou (4):
+      fbdev: lcdcfb: Register sysfs groups through driver core
+      fbdev: Register sysfs groups through device_add_group
+      fbcon: Use static attribute groups for sysfs entries
+      fbdev: fsl-diu-fb: add missing device_remove_file()
+
+Zsolt Kajtar (6):
+      fbdev: core: tileblit: Implement missing margin clearing for tileblit
+      fbcon: Use correct erase colour for clearing in fbcon
+      fbdev: mach64_cursor: Remove fb_draw.h includes
+      fbdev: wmt_ge_rops: Remove fb_draw.h includes
+      fbdev: Refactoring the fbcon packed pixel drawing routines
+      MAINTAINERS: Add contact info for fbdev packed pixel drawing
+
+ MAINTAINERS                                  |  16 +
+ drivers/video/console/Kconfig                |   9 +-
+ drivers/video/fbdev/aty/mach64_cursor.c      |   7 +-
+ drivers/video/fbdev/au1100fb.c               |   4 +-
+ drivers/video/fbdev/core/Kconfig             |  10 +-
+ drivers/video/fbdev/core/bitblit.c           |   5 +-
+ drivers/video/fbdev/core/cfbcopyarea.c       | 428 +----------------------
+ drivers/video/fbdev/core/cfbfillrect.c       | 362 +-------------------
+ drivers/video/fbdev/core/cfbimgblt.c         | 357 +------------------
+ drivers/video/fbdev/core/cfbmem.h            |  43 +++
+ drivers/video/fbdev/core/fb_copyarea.h       | 405 ++++++++++++++++++++++
+ drivers/video/fbdev/core/fb_draw.h           | 274 +++++++--------
+ drivers/video/fbdev/core/fb_fillrect.h       | 280 +++++++++++++++
+ drivers/video/fbdev/core/fb_imageblit.h      | 495 +++++++++++++++++++++++++++
+ drivers/video/fbdev/core/fbcon.c             |  79 ++---
+ drivers/video/fbdev/core/fbcon.h             |  38 +-
+ drivers/video/fbdev/core/fbcon_ccw.c         |   5 +-
+ drivers/video/fbdev/core/fbcon_cw.c          |   5 +-
+ drivers/video/fbdev/core/fbcon_ud.c          |   5 +-
+ drivers/video/fbdev/core/fbsysfs.c           |  69 ++--
+ drivers/video/fbdev/core/syscopyarea.c       | 369 +-------------------
+ drivers/video/fbdev/core/sysfillrect.c       | 324 +-----------------
+ drivers/video/fbdev/core/sysimgblt.c         | 333 +-----------------
+ drivers/video/fbdev/core/sysmem.h            |  39 +++
+ drivers/video/fbdev/core/tileblit.c          |  45 ++-
+ drivers/video/fbdev/fsl-diu-fb.c             |   1 +
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c |  15 +-
+ drivers/video/fbdev/pxafb.c                  |  23 +-
+ drivers/video/fbdev/sh_mobile_lcdcfb.c       |  29 +-
+ drivers/video/fbdev/sm501fb.c                |   7 +
+ drivers/video/fbdev/wmt_ge_rops.c            |  30 +-
+ 31 files changed, 1670 insertions(+), 2441 deletions(-)
+ create mode 100644 drivers/video/fbdev/core/cfbmem.h
+ create mode 100644 drivers/video/fbdev/core/fb_copyarea.h
+ create mode 100644 drivers/video/fbdev/core/fb_fillrect.h
+ create mode 100644 drivers/video/fbdev/core/fb_imageblit.h
+ create mode 100644 drivers/video/fbdev/core/sysmem.h

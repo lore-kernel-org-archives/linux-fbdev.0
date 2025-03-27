@@ -1,132 +1,86 @@
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com [209.85.221.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.swemel.ru (mx.swemel.ru [95.143.211.150])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93C7825F96B;
-	Mon, 24 Mar 2025 14:00:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A9D820DD64;
+	Thu, 27 Mar 2025 10:01:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.143.211.150
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742824808; cv=none; b=VPY771aoliSEzeglmSuv5e7WyGIpH8UBVhz+myoFZm5C6gvHMkTKogqb3+7inFvrLQM2seEVwV33XM0HkbGgRjEPl90h9lnhgntZkrcrkCT1+K17n8iPcvaRC5Ikzrzxj7Mn95LVJV23w0jHK8Wh7zxXPAawoIk14XBSZ+zeJMg=
+	t=1743069695; cv=none; b=MD+hrF6CD+DXxu062a/OzcQ+LolUzyUlBrhm6wNoSSaCph/L/B4T7XzHUKIvS2Q5Uho+SrP/S2cE5PzkkGEUmPfvJ6Xm3Km40JO1Kg/3VNoRU6LyliCXGhlBfhmQEwoP7a0+6L0rueEYq6Hi4I2RA2l2MmNRBi9yfcAEllo3BhU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742824808; c=relaxed/simple;
-	bh=yQYvw5ZtI6vmtZW/ypQ1OLR0sQhFNGSyU4vXFqj4EEY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SADAWKs2PkLLA7TGjWqyi4B8pX5TEZOT3XHM0zcccsj/DulPwVMPgcmEzR6pgqcmVAxwTJHa3Aa7KHX/LrrkihH3iYo87FxVO7U0C/aJiMtFqrZMRj32ZMJlsOGboY1ayDyZSrw8lV+WHGIxeZ3mNDZUBnXyNMDPXLI/9ObUXTA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-523f1b31cf8so1766921e0c.0;
-        Mon, 24 Mar 2025 07:00:06 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742824805; x=1743429605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=OXcFAhOso9RJxk+9NCcLf8mohkPRGIOlOMnED2EzPlQ=;
-        b=YsOSswr4Vc/NClTmSisddFaK/V49vk8f5eqESYzr26KaRVqEPM2eox2wIoKHwZd9H/
-         +DeCjd1KBIsXvSrwSlWhNQfORO+NSZRUCbC3Gg9+wqbRpLHvCNRG1orNXCUQ1YRuycrL
-         rFDGyj7cOzEpp+8z1bZNtQyXS6MB0MeIEvYWzAAvVi+xAujsybWgB6bYrUOzA8Dddbe3
-         uDrxw9dGkrcC7+VlfLbwMdnMXNEaHWNVrl1Zx1qEmHslU0uXyKyHuxQ0geFAe6vxqKb8
-         4ftoyU+Vt4x1Q+70jgmnQgeUtMJQHJYkYkv7WUPAJvSkjzb0w37Y4vkjG2rMDRfJ7jb6
-         FkpQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVN7H9Y5pE9FUjNmJeRbDd0i2+3J7Sv5VQGvatIXxBiOy09lwU6N5bS1P/ynVwwVWlV3ADvWVoE4q1oTVDC@vger.kernel.org, AJvYcCVgD9kzFSm6gnVq8V/IW8u1Tg4gN9tbXtmNQ8PuW9dw6zLez3AgRB+AsScoAlrjy/6I51/9x7YAenZxZ0jW@vger.kernel.org, AJvYcCVnkVcrOGTKp0fWOyxFF/KGRDi9umtrE1hm4toxpc4+/1jrh45rhqsdSmM962Ny4BSrf4EX8jhYile14g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLicvzkpkxtmKw3hyBGJRS5/5unUUwkDGJN96NCtZtppgY9VK1
-	zjzsJEf0H+Sz/cICwf3LSyyigxEy0d/yGVppf5fh4ZM7E1vXaeT7YDKh3NYR
-X-Gm-Gg: ASbGncvHHxs0bO1VAYF+DalTeNKcBZTXoWvgIqcbSQKopU9wnvkwfOwHYjAMJzuGBh6
-	Cc7PCutmn9jXoAGA58i0tVdyBFpKnCCLcJmubsLxOL084K7LvZzssys9HByDallnBDHOWSNEFha
-	whdqkD6qSpl7iQKhPwSct97In3Na211WliKscqWe0oM25Oa65werwLZCwfHegRSzIFq39Qlq9vc
-	Z4HPoGWcRSTGhda9tBVUgve+sw7ywcRL2vFFwhYGzDN3ZDjPhPsDewgsxCydmte9p3rxouhPTLC
-	7+Oo41ZslePOml15i0vn5aQPq7LyWAv9oqLuFkk486w/cvJXbJH/E+Teg+oXLebbDWGVqWrNpho
-	r2+RmOB4=
-X-Google-Smtp-Source: AGHT+IHOoB2H977qNNnQu1ak2WVPQheKXmXHNKqLPLtz4Jk7YFdEYMfocdsm7ASPAgvdqjcaol0/CQ==
-X-Received: by 2002:a05:6102:808c:b0:4c3:64bc:7d16 with SMTP id ada2fe7eead31-4c50d612de4mr9012975137.16.1742824804838;
-        Mon, 24 Mar 2025 07:00:04 -0700 (PDT)
-Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-86f9f3c2cf4sm1533786241.19.2025.03.24.07.00.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Mar 2025 07:00:04 -0700 (PDT)
-Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-86dddba7e0eso1804761241.1;
-        Mon, 24 Mar 2025 07:00:04 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWGMberwwNK27l2sgiaOVirVu9VL147WeQ6F4dUFVOikJNy2iyRn4M5nyvRwr288u0VZa7zaODuWqF2SA==@vger.kernel.org, AJvYcCWxK/UfAfuSNaq2YVO6y34nq2dMHI324v80mA+GsbxusGNjAOiAsflPlKTC/23LX/GJaklkX2s7veTZLPnB@vger.kernel.org, AJvYcCX01C7AwXDVfzVm0RL2stqN5oBx6e5fLkgELKStM95zQXetpFrgLDv60NXvUZIBw/veJU+a0HfWufzSsDM+@vger.kernel.org
-X-Received: by 2002:a05:6102:3c83:b0:4c1:94c1:1c34 with SMTP id
- ada2fe7eead31-4c50d61330cmr8666737137.20.1742824803903; Mon, 24 Mar 2025
- 07:00:03 -0700 (PDT)
+	s=arc-20240116; t=1743069695; c=relaxed/simple;
+	bh=pgI8gXBei/XNkeEYc0bn3IgQ90Gj7blDgaIoeHja1Tc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=VwOnSh2qBjHF/V2KhvbbiKHvf3iCoGxkpCWHUgwuGubqktYF2e1P41XB3QGNZIydfL2/JiFbXDlztMsu6AxK3zyag3wYMR00vHX0BG68CsVvfCgH5plX3XbklJu/R59vh1g+1A6EZYrM4pS5JOvJ9ot58EXTNrSwBpcQZjoJPNA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru; spf=pass smtp.mailfrom=swemel.ru; dkim=pass (1024-bit key) header.d=swemel.ru header.i=@swemel.ru header.b=mGszbYpj; arc=none smtp.client-ip=95.143.211.150
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=swemel.ru
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=swemel.ru header.i=@swemel.ru header.b="mGszbYpj"
+From: Denis Arefev <arefev@swemel.ru>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=swemel.ru; s=mail;
+	t=1743069687;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BHLOBT3idkFgvXNfDI3YEo7317l4Nl2O9zMCAnRi99A=;
+	b=mGszbYpj2K9Vh0CF1hIrPcsW7W/IVtKUzYXFFwYUsJh+5+FeSpElBHENDfuzKXhql1p9+A
+	hD2QEep9xllE9+UnTztpT+2/QCBj8Hbi/Hx/3CpAOmbmjLnaKhCcQFNmhbZQ6P/7o4lz5W
+	WWtbdUcnEN5joJ6396r7valD+k+PbMA=
+To: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Jani Nikula <jani.nikula@intel.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	lvc-project@linuxtesting.org
+Subject: [PATCH 1/1] fbdev: atyfb: Fix buffer overflow
+Date: Thu, 27 Mar 2025 13:01:24 +0300
+Message-ID: <20250327100126.12585-2-arefev@swemel.ru>
+In-Reply-To: <20250327100126.12585-1-arefev@swemel.ru>
+References: <20250327100126.12585-1-arefev@swemel.ru>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <SN6PR02MB4157227300E59ACB3B0DABD0D4DE2@SN6PR02MB4157.namprd02.prod.outlook.com>
- <303572c2-4839-4dae-a249-9967fcc9cf03@gmx.de> <BN7PR02MB4148157E5307E306FD9D093ED4D92@BN7PR02MB4148.namprd02.prod.outlook.com>
- <CAMuHMdVvuPr454jcVExGpHX_94_=y0GfVPJu1YLO1-H0OkBTdQ@mail.gmail.com> <SN6PR02MB415740F004283A40C3C41490D4D82@SN6PR02MB4157.namprd02.prod.outlook.com>
-In-Reply-To: <SN6PR02MB415740F004283A40C3C41490D4D82@SN6PR02MB4157.namprd02.prod.outlook.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 24 Mar 2025 14:59:52 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVHpzQ8UcnJ_zxMnc7uDJPU-cybqo76ZUabqNBPcrY3nw@mail.gmail.com>
-X-Gm-Features: AQ5f1Jq5DoU61pl8s2Du4_m9CBACy9bVyIMaQz_LNeBbMufFKQ0jhZ45DiLgpjE
-Message-ID: <CAMuHMdVHpzQ8UcnJ_zxMnc7uDJPU-cybqo76ZUabqNBPcrY3nw@mail.gmail.com>
-Subject: Re: fbdev deferred I/O broken in some scenarios
-To: Michael Kelley <mhklinux@outlook.com>
-Cc: Helge Deller <deller@gmx.de>, 
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Michael,
+The value LCD_MISC_CNTL is used in the 'aty_st_lcd()' function to
+calculate an index for accessing an array element of size 9.
+This may cause a buffer overflow.
 
-On Thu, 20 Mar 2025 at 21:15, Michael Kelley <mhklinux@outlook.com> wrote:
-> From: Geert Uytterhoeven <geert@linux-m68k.org> Sent: Thursday, March 20, 2025 3:46 AM
-> > On Wed, 19 Mar 2025 at 21:29, Michael Kelley <mhklinux@outlook.com> wrote:
-> > > From: Helge Deller <deller@gmx.de> Sent: Tuesday, March 18, 2025 1:16 AM
-> > > > On 3/18/25 03:05, Michael Kelley wrote:
-> > > > > The fbdev deferred I/O support was originally added to the hyperv_fb driver in the
-> > > > > 5.6 kernel, and based on my recent experiments, it has never worked correctly when
-> > > > > the framebuffer is allocated from kernel memory. fbdev deferred I/O support for using
-> > > > > kernel memory as the framebuffer was originally added in commit 37b4837959cb9
-> > > > > back in 2008 in Linux 2.6.29. But I don't see how it ever worked properly, unless
-> > > > > changes in generic memory management somehow broke it in the intervening years.
-> > > > >
-> > > > > I think I know how to fix all this. But before working on a patch, I wanted to check
-> > > > > with the fbdev community to see if this might be a known issue and whether there
-> > > > > is any additional insight someone might offer. Thanks for any comments or help.
-> > > >
-> > > > I haven't heard of any major deferred-i/o issues since I've jumped into fbdev
-> > > > maintenance. But you might be right, as I haven't looked much into it yet and
-> > > > there are just a few drivers using it.
-> > >
-> > > Thanks for the input. In the fbdev directory, there are 9 drivers using deferred I/O.
-> > > Of those, 6 use vmalloc() to allocate the framebuffer, and that path works just fine.
-> > > The other 3 use alloc_pages(), dma_alloc_coherent(), or __get_free_pages(), all of
-> > > which manifest the underlying problem when munmap()'ed.  Those 3 drivers are:
-> > >
-> > > * hyperv_fb.c, which I'm working with
-> > > * sh_mobile_lcdcfb.c
-> > > * ssd1307fb.c
-> >
-> > Nowadays sh_mobile_lcdcfb is used only on various SuperH boards
-> > (I have no hardware to test).
-> >
-> > sh_mobile_lcdcfb was used on ARM-based SH/R-Mobile SoCs until DT
-> > support was added to the DRM driver for the corresponding hardware.
-> > The platform using it was migrated to DRM in commit 138588e9fa237f97
-> > ("ARM: dts: renesas: r8a7740: Add LCDC nodes") in v6.8). At the time
-> > of the conversion, fbtest worked fine with sh_mobile_lcdcfb.
->
-> OK, good to know. sh_mobile_lcdcfb gets its framebuffer using
-> dma_alloc_coherent(). Do you recall how big the framebuffer was?
-> If over 4 MiB, dma_alloc_coherent() would have allocated from CMA,
-> and that works OK.
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-1536000 bytes (800x480 (960 virtual), 16bpp), i.e. less than 4 MiB.
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Denis Arefev <arefev@swemel.ru>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 210fd3ac18a4..93eb5eb6042b 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -149,6 +149,8 @@ static const u32 lt_lcd_regs[] = {
+ void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+ {
+ 	if (M64_HAS(LT_LCD_REGS)) {
++		if ((u32)index >= ARRAY_SIZE(lt_lcd_regs))
++			return;
+ 		aty_st_le32(lt_lcd_regs[index], val, par);
+ 	} else {
+ 		unsigned long temp;
+@@ -164,6 +166,8 @@ void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+ u32 aty_ld_lcd(int index, const struct atyfb_par *par)
+ {
+ 	if (M64_HAS(LT_LCD_REGS)) {
++		if ((u32)index >= ARRAY_SIZE(lt_lcd_regs))
++			return 0;
+ 		return aty_ld_le32(lt_lcd_regs[index], par);
+ 	} else {
+ 		unsigned long temp;
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.43.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

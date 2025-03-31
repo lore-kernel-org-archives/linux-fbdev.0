@@ -1,106 +1,136 @@
-Received: from mout.web.de (mout.web.de [217.72.192.78])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1E083234;
-	Mon, 31 Mar 2025 16:48:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.78
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D24DD215777;
+	Mon, 31 Mar 2025 19:55:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743439720; cv=none; b=lJXJSr3iFT/6JGUVOzoy/L3y61ILgEDnZA+9ink77JRTsrcoIL4ToZSsE8run8iTdarBKClefa8HEQJowURMhZb1KlQin6bFqnEH3cVTZHi+hFuA/NnieqeNV/ExZ5OHGR0w3wRxQzf3loGl8QbcJBE12sIhTCZKpev76zIEgI4=
+	t=1743450922; cv=none; b=qEO9QYqo5ORAQdZh0CSmEFg/2O7rg/Cr9LocZ+NA4VatHPULNwcqSCFxmj0xP11im73b0XCTZFiBHd4QQ0tKBylqOX5kKbfCFi6kP+qpxLxlfolURuxkO9uPxeWXIxVAFTxZ7y+UIpX+6hK0Y8LqnfJWfPxQCUWghjgrfTvG5C0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743439720; c=relaxed/simple;
-	bh=BEoJklBXV1vZM5bd1fsHmqld4olk3qTu+UwIVHhloYg=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=AgoJ3yLsgFvro6CA18PUzxUM54QpcwxZNDCnbhfQ649nMN7VBnTemSfu07xZD2UyUy9MHXHgO8nrGluRwrBuZT59kk2UQtFylaHjyBF7GtZKdZMV455p5hScXnBnlCnlL+uXOFLFUth7kKP76LLYWm+Ke47H2eiNYv/wS7eiuIA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=O9NZqgw5; arc=none smtp.client-ip=217.72.192.78
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1743450922; c=relaxed/simple;
+	bh=c7NzQUgJyQ6dXCaMlYVpOtWEnGAmsfB/UgZKrFbmZjA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jQzuyN07jYVHIdIi4n8J+cTsJnGQSnyQ2/31d2UThG2byLbGrNm37Ol7mnl1J5ZVV9nVRYG1ly9GVAv9Gqyz7C749HFSXqs5F9vhQip0DM3kjwfTz6mxbzYi3jiEJyY/MiyPRvgiyzdje9R39mDNoYrNzLHNBm3wyR8PMGXMH98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ib0+ztnS; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="O9NZqgw5"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1743439715; x=1744044515; i=markus.elfring@web.de;
-	bh=l3A6fQIul5oJ7bHGs/rref7U3MM7aEcG6y1nK2fWykA=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=O9NZqgw5yW9GeUqgjwQlMS9oxelL12j90TxTCo5mnaoYIjBMJeMuDgHQ0sfWd0u0
-	 Y+97FrOdVeupna5JIfhAZERtZPrWcoKWbtcjGPq6EZ8Grp65ZXiSnn1FkvP2V6BjL
-	 aoBr3pOfNRzdnWqAl784BKScmEvecRWk+tEkeRtaUSmtxiMMPW2Ap0Qo1qsqMPSGq
-	 D1Fg6d8A26b/4xHFp6ZEmERy1j5NGb6CxI/kkYM3Y+rL9p+qo1Wt9UwxWp6NU1xrg
-	 0kHs6ChcsBeQ8zSRFeSnApFiujwEMyjNiEO01NNRC7YLd7aJ4RkJfi4GObXckJu1p
-	 EWLg19OotDCInxLf6Q==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.37]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MMpCg-1tiipj1JnY-00J5yj; Mon, 31
- Mar 2025 18:48:35 +0200
-Message-ID: <17c07117-36a6-4fab-aca8-a4cd3a67f2b0@web.de>
-Date: Mon, 31 Mar 2025 18:48:34 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ib0+ztnS"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1743450920; x=1774986920;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=c7NzQUgJyQ6dXCaMlYVpOtWEnGAmsfB/UgZKrFbmZjA=;
+  b=Ib0+ztnS4SoahTnCw+qO4vWH9ZqKK1aWK7Uhvt9iHl7vmC/0kJ2q+DfU
+   TBUC5hkxzacDTE8rzHKO34d9t4CazsXV0079Go+S9bL8qSpvbXWZUZEBx
+   ePmUUL8wOCh1/3u5u2uGHdCTABGWHrACoA6YYnIBwfQSIZgF0Cao0gZXR
+   dmrb0ebxH5B9mExfu5hh/FSRgCfrM12EliX1vJ4WfJEP5bO9FNXPXi/fF
+   sprZhhrPVeInEL+RODSsL06vaq5ruQcrsTEg6G5Py4OuIYdcgVr7f8xWE
+   fxzb1JPJ4NEC3hoEGeu5RVnxt58E4eXq68QON47ngogoXnj467c92QfYe
+   g==;
+X-CSE-ConnectionGUID: HXkT0Ir2Srm0xVYkvtiUBg==
+X-CSE-MsgGUID: NaqEa/hDTV2ylLx07crV0w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11390"; a="55411194"
+X-IronPort-AV: E=Sophos;i="6.14,291,1736841600"; 
+   d="scan'208";a="55411194"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2025 12:55:18 -0700
+X-CSE-ConnectionGUID: pkWiiMerQnuqaQO/d85r/w==
+X-CSE-MsgGUID: ccVwXtgEQT2n4V/ycGhXXg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.14,291,1736841600"; 
+   d="scan'208";a="131397506"
+Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.74])
+  by orviesa005.jf.intel.com with SMTP; 31 Mar 2025 12:55:14 -0700
+Received: by stinkbox (sSMTP sendmail emulation); Mon, 31 Mar 2025 22:55:13 +0300
+Date: Mon, 31 Mar 2025 22:55:13 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: Denis Arefev <arefev@swemel.ru>, Helge Deller <deller@gmx.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org
+Subject: Re: [PATCH 1/1] fbdev: atyfb: Fix buffer overflow
+Message-ID: <Z-rzIfUMmOq1UZY1@intel.com>
+References: <20250327100126.12585-1-arefev@swemel.ru>
+ <20250327100126.12585-2-arefev@swemel.ru>
+ <87pli26arh.fsf@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Henry Martin <bsdhenrymartin@gmail.com>, linux-fbdev@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: LKML <linux-kernel@vger.kernel.org>, Daniel Thompson
- <danielt@kernel.org>, Helge Deller <deller@gmx.de>,
- Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>
-References: <20250331141654.12624-1-bsdhenrymartin@gmail.com>
-Subject: Re: [PATCH v2] backlight: pm8941: Add NULL check in wled_configure()
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20250331141654.12624-1-bsdhenrymartin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:AUWM+maq9tcBe/mWR8Zs3MqF4GCROi9IeCzUazeKrnvu7/KZwiS
- B7w/0xy7fGgnHZeTmSR0izEvnTM87cKipZJH1hDCYYlETKm0L4XWgBc/6qvJVUULDd8Xevj
- jJNnE3mywQWpSHiB9dpdbKf+qjZPsdiAWri59QhikoWKKB8jDdwBunLWS8Z/c7jqFzjVFyP
- UGAkHZbALjniQ97VQk3+A==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:SRCcPfgiUNY=;B3BVqxG5bQIJ3u5mi+9dPYWODkM
- 442p39lLFzdEzjToNBAEbeoEOWnAbebT2S3tFK1QOSu5NHIEbBVqPPvFdJhdcmSzUo88rpMge
- Yg0nW4D1PeupO2BLVI9RJ6KL9eBpd4HvAKA7L9x4hWnChyxkWVNDh49VUm4TTVcv4ueeqXWdb
- mMWFsEt8YM5VXDY+PF+A+O9oD0E5GJv6T5/iNcP0iPr3cnq984uZzeP44SMlgtk1ArMMmI2ts
- vyCRAGPidFpsemML6+y0M+PUpL/lM4YaIZxJ4EiIkaF9B2KCCm55k2aUP5XHPsRX/NmlcMqZ0
- dXgJ9NOvLklTQQW3LdHinnQYYrSZu0nB7HIqvjDE4XtGSKJJo4x7/qsAp4NoL0hEExPqDcIhS
- wZFgh4yZ26lDl48FJ6kIV8olc/tVCcerkiIP/KrPfW+vIScTgcVxGlyFgRhSIooHfOn3f8eFJ
- QFQwFZXf/o17L8cNoePthvOE2+rPOLR0dOeO9VGpZE1fQUn8Q13TDd0ofPphYSXppI5wu/UuU
- m+3Dc/wOKwo8/qY6LQnqfHaFdqg6nmnLfoBGAcGY64QC/qfwCeusZM9VTDUwqryYgUyTW9sO8
- U5ElzEROkAW5H2syZYg2jbHlMeH0jmEGZNCh7MNmwnqLNdmAADgzjXdoh4Zw/GU6S0C1bCzOy
- 0PBmU1/Of2cMm8pSM2JamnWRi+nKJh1oowmSmpzEmM71lKuBXxRbqoJ+O8Wf2Plq65TIVS4sW
- ioKIAc4tJ4dEK2IiO//QIMkQiYj78e1sTF9p9/54MnMaQVZwGcukt2/rvbnb00ypPuP74wR1C
- 8md3fBM2w1Xv9XrFIIaR3pR5Ci9EZ7xymJAYUO9VFZXnXtpJT5BJikLlKas1pSHRELS5e9+d9
- mN8BB1+T244GT0jt2VfcM+vrc6nLGgnhq/I+e2zm3SW52jf5m/Cm0XuVwxqi3l0TX2H8Karj/
- pE6iTtOC607bjcRMgktoSW4YVWacHT3sKG1ylRWPSMIDIwVRviBdRmvIIp9tSVJIE95tYO7vd
- WZGFA2wATnIb9FZ4NwpxQoJc4NKta1hZcXfSywm2psBEAXXMzHHwCpAzzsaTsQ0CEkmCd6cTp
- JA32EdpeGR4MqtNIzr8LmgUjQj0adW0978zf8H7DC2io5zvPXIZkNOcMxuJq0M3LFbGF6jPlZ
- EF0H4z0YjA15hfM+V5JdBs/HjceUaJ3q70IRgohYYo8ip9uXwRkhm2FDA4kiPJtoP+RVY4K9p
- XbND0ATjLLzNH/T3rZengQyIXGVe+lfXpv1YJplXwo9uO5O4x2zRPE8AwPGD6XaUBhceeR6YG
- dmOghn6ZqQXjmSckDFdoRxVJN0TQCi/YPUxXi7XgZb1dZlKhdCTpn/DXT0PG/kbII+t33mIrJ
- cGllZ2Mi2bv7Y8seAHnOOTSam5+bQeV2oZ16QVfFUu/9rqqHcvOwoLeDwR6wyH1bXkg5sjJ9u
- YbarsZly/fYC9XWexUJu06i0yzPWjRfit0h2Pqvd/Sv2nPLY6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87pli26arh.fsf@intel.com>
+X-Patchwork-Hint: comment
 
-> devm_kasprintf() return NULL if memory allocation fails. Currently,
+On Thu, Mar 27, 2025 at 12:14:26PM +0200, Jani Nikula wrote:
+> On Thu, 27 Mar 2025, Denis Arefev <arefev@swemel.ru> wrote:
+> > The value LCD_MISC_CNTL is used in the 'aty_st_lcd()' function to
+> > calculate an index for accessing an array element of size 9.
+> > This may cause a buffer overflow.
+> 
+> The fix is to fix it, not silently brush it under the carpet.
 
-                 call?                               failed?
+There's actually nothing to fix. The backlight code is only
+used on Rage Mobility which has real indexed LCD registers.
 
+Older chips do supposedly have backlight control as well,
+but implemented differently. I was mildly curious about
+this stuff, so I I poked at my Rage LT Pro a bit to see
+if I could get backlight control working on it, but the
+only things I was able to achieve were either backlight
+completely off, or blinking horribly. So looks like at least
+on this machine (Dell Insipiron 7000) the backlight is
+implemented in a way that can't be controller via the
+normal registers. The machine does have brightness keys that
+do work (though the difference between the min and max is
+barely noticeable) but they don't result in any changes in
+the relevant registers.
 
-> wled_configure() does not check for this case, leading to a possible NUL=
-L
-> pointer dereference.
+> 
+> BR,
+> Jani.
+> 
+> >
+> > Found by Linux Verification Center (linuxtesting.org) with SVACE.
+> >
+> > Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> > Signed-off-by: Denis Arefev <arefev@swemel.ru>
+> > ---
+> >  drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
+> >  1 file changed, 4 insertions(+)
+> >
+> > diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+> > index 210fd3ac18a4..93eb5eb6042b 100644
+> > --- a/drivers/video/fbdev/aty/atyfb_base.c
+> > +++ b/drivers/video/fbdev/aty/atyfb_base.c
+> > @@ -149,6 +149,8 @@ static const u32 lt_lcd_regs[] = {
+> >  void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+> >  {
+> >  	if (M64_HAS(LT_LCD_REGS)) {
+> > +		if ((u32)index >= ARRAY_SIZE(lt_lcd_regs))
+> > +			return;
+> >  		aty_st_le32(lt_lcd_regs[index], val, par);
+> >  	} else {
+> >  		unsigned long temp;
+> > @@ -164,6 +166,8 @@ void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+> >  u32 aty_ld_lcd(int index, const struct atyfb_par *par)
+> >  {
+> >  	if (M64_HAS(LT_LCD_REGS)) {
+> > +		if ((u32)index >= ARRAY_SIZE(lt_lcd_regs))
+> > +			return 0;
+> >  		return aty_ld_le32(lt_lcd_regs[index], par);
+> >  	} else {
+> >  		unsigned long temp;
+> 
+> -- 
+> Jani Nikula, Intel
 
-You may omit the word =E2=80=9Cpossible=E2=80=9D in such a change descript=
-ion.
-(Would questionable data processing happen in other function implementatio=
-ns?)
-
-
-> Add NULL check after devm_kasprintf() to prevent this issue.
-
-Do you complete the error/exception handling also with the statement =E2=
-=80=9Creturn -ENOMEM;=E2=80=9D?
-
-Regards,
-Markus
+-- 
+Ville Syrjälä
+Intel

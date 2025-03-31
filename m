@@ -1,123 +1,115 @@
-Received: from mout.web.de (mout.web.de [212.227.17.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f194.google.com (mail-pl1-f194.google.com [209.85.214.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 108583FFD;
-	Mon, 31 Mar 2025 11:51:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E81C17A2E2;
+	Mon, 31 Mar 2025 14:17:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743421868; cv=none; b=V+/tdAjdenoYN5DfuELcUrdsUdI4MVKxlDfuq1UgON2pFCk6ZaACSUIOU4bru9H/Wdk3RIRWrG6nfEWpbb1TSopPv0tIDxLT4SPKAvBimQUPPVwMCze0M58dYWC8pJjEhDJIuZxztbWqrEjYXsoSwC01GFqyEHF9GynlDlH0wxU=
+	t=1743430625; cv=none; b=D50jM5BvdQ4secVFLjhtV8wuq7h44N7iT0/3xiwsowGVs/fqKUsBOnazVZyMAUcKsn5YgILljmA0lSPVep7BrftuiK6sXTudS8I9byz70EDOeLLlM7Fo7x/uc+XplxYaE0+UeVLznYQ0DTqj5hxCFMXxflwM6q0ocEYNT3gu6jo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743421868; c=relaxed/simple;
-	bh=08Ig/ejtnrWAAxY/gsnODYpQJfHXrmhC4T01cYFxZIQ=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=hLg12djjox22QSkwuN0WaXaaoTtTsvCdQ/XoVeIIHwoIPN/eQGxqQCgKtunVH1VptzVi5YMJnbnkzUxPZssKqZvqqth0r2uWPKx0RXh/qleWNChAvGX0ATWlc7dvhbVe2LxFsKJPDgrMzk6kXwfU4pmG/lYJw4UaJLMW7nej67U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=U2/7PLMN; arc=none smtp.client-ip=212.227.17.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1743430625; c=relaxed/simple;
+	bh=yw4rSSLAQJvHq9WL54GSuYubWtedDjVEaeHmxZ4RiUA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=e3vXRoD2v6DfhM7dqAcXNjb8hc9OUAl+AlhDaFxQSKUh1Xkr+a7NEOAmbDmnZH3f3mQDs4p/cdFOoITf12cUvzt1+DYZHJCPduLv0RJKa8QgkFw08OD4n8wH8vm5Rttw1z2EQykbv6euZGr7Z5e44vYhGZ77TXPm0GrpKNTAyaw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eYTAX+BL; arc=none smtp.client-ip=209.85.214.194
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="U2/7PLMN"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1743421837; x=1744026637; i=markus.elfring@web.de;
-	bh=TVPznMmgvtOTQGHG9dQFnDWblNXq5SWHs7cRlxqIIBU=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=U2/7PLMNWMiVZLnqu+F2Sf/pnzUEuI7Geuuw0K9YAlHpoyQRIqyqo5ZC4k5DFYOX
-	 nM3Y8O0VwdZ5dtX05bDLYZK2CBu2VwFcub6Eph7hlvBft/Y7gbNzcsW5BmOrNMfk8
-	 zrVxX6bLoUxdCni83DiC9mK6v/6lrAdGG5ucfkc83lyJ3V2UvzX1y3hsNHr78Q8W0
-	 we0kLgj1v/V07SyzigLAXj2cvR+c8vesal0C8Db60xgtXR5in4ThQ4JTqWKzBW9cY
-	 a97Dn+C55XjxsTQE0uHKhtT2gE5iCWd9uGExq3pU3dv3j4OvFuhdw1iP9Jse8UATq
-	 WnQrbw+CZt37Pxsd3w==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.37]) by smtp.web.de (mrweb105
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1Ma0Pm-1teRhJ1r6q-00LO3i; Mon, 31
- Mar 2025 13:50:37 +0200
-Message-ID: <1ec61529-09f2-44d8-9324-b94da82158c4@web.de>
-Date: Mon, 31 Mar 2025 13:50:35 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eYTAX+BL"
+Received: by mail-pl1-f194.google.com with SMTP id d9443c01a7336-227cf12df27so63768205ad.0;
+        Mon, 31 Mar 2025 07:17:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1743430623; x=1744035423; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=pO1QeCUyXKGemqh/0PucODb/KuSbMsL5qkNhu7BZk4k=;
+        b=eYTAX+BLdjCRq+brFTCz6i5qpAvOUffM4ilYZcZM6+jSm0odjIuOOG3T3QpC2ty+kw
+         40yse6mlcLDWExMOSCz+xsGePaMeNBnbfPqe8M3RmamCh3ayKk96kkmlfcSY1BWLnsns
+         g8HdP/TRZf5S+wycA1cZLW97FVyEfBhjLJz3GyQGLapYWbQMuAaisMllBJ3OnoRLCa/3
+         KjzjTRLl/fef7Eh4inUK2F7Mvb3fKllkAkAFX8bdq0XYeFPVJWcYKB4CMSrbSYd8qnYL
+         KqOvxuJhB1TjLl0czf3rcXPHmHdlDMxpBFfFj8/BMAGeaayJO3qHBNIUseN1pcLs9qY1
+         KUlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1743430623; x=1744035423;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=pO1QeCUyXKGemqh/0PucODb/KuSbMsL5qkNhu7BZk4k=;
+        b=u9bT9o2+cO6MNKCzvd3DrIPfryzXKuSHsESAEBr/lV/I9hQ2HJqC0DPn7cDlgOkRsv
+         uOIQcOTTH1ye2PSmDOjyblO3RtYH+Q9loEkroE3fjMzoZyI/ksLaL88/IYwqdLq5bfzS
+         ddgRV5hfXmLhCzIy7hkAa3FwWPCSZyIv5xvNZmosPPPJ8+79G2uCjOA3juArSLpXF/Ql
+         pPmlOWj9dw8RuNoama4lOYmWLIMhefxXYw4BeE8ou7nO+BokaTtEQktN5JJ2mOz48m27
+         Dffo+xCIuZCVAdiGGoHhGbEQddhEtevBFiP73MYpGUsGq1RYhcQ+duz9aYXyQ9X493ml
+         5pCA==
+X-Forwarded-Encrypted: i=1; AJvYcCVKjA0TJbbvimhir/HISEqm8dgeBoIO1B1gQ3moUj3ETQSfzw+4ygTsbDRJf1gH8RAJSJUM+zI0qWDdXA==@vger.kernel.org, AJvYcCWHpN0AxnFx/hWv3jr345BsscDP4oYp0G77KLs24Hu70Qkj80gbGCzsDMgZnliaNlw+XxpmIh2+a+a+zsdz@vger.kernel.org
+X-Gm-Message-State: AOJu0YzsVZoUm5XFVZabd7WQ87CmqYcrTA4MAOG5/XNRl6Y0r5CdmP6R
+	j5bOpzYdM8PdVmkkYl/oLmS5WsVp/TIiAu88bze54uJ+z87+0ZDq
+X-Gm-Gg: ASbGncsVl6Cq8Y8J+mB9sJBSnd8SG4XNxeTVLIxscBAJGTJE0hdYZ3rsZ4IUdwwO+lj
+	E4+vq4JS5B5uuXOI73aM4emrQ90eyznkOEb1cCbfWWttL+x+MzBcCxsh0xsfjOifb7hJxZaYdAd
+	iEN4u56+U9avjI5tRPAYljJGnAfvzifu0lZSK6ep9n3sJCectmYtm7KUb8k3HnaSCPvlt5SeDIP
+	bAzrXnIZtGVHnylzNWhZ5uuQooUMtSWix2HXITFdbGu7Lg4Mk8qMy/KgFwPFv0zg4sE6ImxSQ/J
+	isBF4Gz9xc+JsUWaSwUFR8WLOhjiDbokirtmEXKyZzU0G+B/44rdWkXvbXZN2v0wejGjolE=
+X-Google-Smtp-Source: AGHT+IHiS3NQ9inGx04Z/RImRKqM2ZGoOKLOipMryfa1UnPAFRetOHxg2LrRkj+KBOMUbzqf7YBA6g==
+X-Received: by 2002:a17:902:ef07:b0:215:44fe:163d with SMTP id d9443c01a7336-2292eefd198mr163250605ad.17.1743430623282;
+        Mon, 31 Mar 2025 07:17:03 -0700 (PDT)
+Received: from henry.localdomain ([111.202.148.167])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2291eee5011sm69916735ad.103.2025.03.31.07.16.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Mar 2025 07:17:02 -0700 (PDT)
+From: Henry Martin <bsdhenrymartin@gmail.com>
+To: lee@kernel.org,
+	danielt@kernel.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: linux-arm-msm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Henry Martin <bsdhenrymartin@gmail.com>
+Subject: [PATCH v2] backlight: pm8941: Add NULL check in wled_configure()
+Date: Mon, 31 Mar 2025 22:16:54 +0800
+Message-Id: <20250331141654.12624-1-bsdhenrymartin@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Henry Martin <bsdhenrymartin@gmail.com>, linux-fbdev@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: LKML <linux-kernel@vger.kernel.org>, Daniel Thompson
- <danielt@kernel.org>, Daniel Thompson <daniel@riscstar.com>,
- Helge Deller <deller@gmx.de>, Jingoo Han <jingoohan1@gmail.com>,
- Lee Jones <lee@kernel.org>
-References: <20250331091245.6668-1-bsdhenrymartin@gmail.com>
-Subject: Re: [PATCH] backlight: qcom-wled: Add NULL check in the
- wled_configure
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20250331091245.6668-1-bsdhenrymartin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:7SsMn2wJgXRiuoievwieoWQ0ugNrKUFxHLUISgQYGEL/GdYBhn2
- K7mDW8JkYzDHDMR4tahn4hOeh3vuMGcWYhK5N15fPjf8jk9jHVjXHNbwO6lzen945JMJhUi
- Xt7Wz1zwYCzSQthYpiEfOro20w6QF36Z6i9RPc68m9mRNF8nLhokA2ye0A/bNmf+IPBnKZV
- BsSCJ4DfntREhAwDNyRzw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:TX2hSyP+jTg=;di9CvYZZ/LcOKQJzTwOxYTaVrj7
- H5cwQX0UaVtv0z0YCQwTciZbUxOF8z/ej01KbQFdZ42CU45JdS3yq8NOVi9BJsu8qLda6kwVT
- +AW5eC3GtUqB8THB4qA3XADVz0GPs/+tB/NX4W9GNee4nPodH3CNGQRqDPKdp05clgRQPTR0d
- FXME1sWL8Muzo1+kiuTYr+sqhfOuWOsVj7ZWGRO6P7eqsj/CKQFNJ6t9PLq0OJSsr+9jXls0Z
- csAJsxEqM67AnuPKe5mJ6Jjq2NA72Ta8vKnxe2hFUCFpLwUZbtEGMaZTNekxOAexCheHEbtRw
- KWLnQysIXesHiP6A7yGFV38aDUmtXAlrabGTUWGkWBKJEBvQj4lfRITsR3rZTds5XdCuG6MtV
- VcrFUZKakY5gPTv85sn/x3HhXIbp/EVlx9xvfiCW4kNd7UzPF1D4oGRCjBh5VcfdOq4Le3XJT
- XnJrxeyMy7Ro76msigt27AOS+wEbSdIDpR3r/NuUbJjzE8J2KapfN8+pQyA+lj+WS/Z+Hck15
- nYx8Wmdr3LJGCfe07gnpFqVPtGzqIVkAEmmRsNA5Fpjg2rHuqfhji1NJUmti9VQb94igPWmW+
- nWis8EGwkSsdhPSUKw9a6LlC09vYdTx9ddejYB9xydDnWMOZWGQfBfGrSZTTOKJdAUs+49GFY
- 0j8WdS1MZMJ1rJ8sOs43W4ytdF3CHAIb/zb5Kj6/uirOl3Igwt+5tKTPLih4hNjBdWblALz4B
- cIh0X6vvwDMaaKQVWFq+VWYWy1CLupDI9Wr2PIE8KU3OHN0aoOvpcBj0W0fIMmMWnlfs/cDhj
- 0D6a7IEVNRH8AewjgDxDw7R14h5DyV6Ur96c7DvP0yuLUf3FSvE/1ULtDg7adlxnHlTEjqFD4
- O0AVxzTpu8X5huFeCwNPo1DJG5CTrawWaj3RpXwx20AgvkMXULrIQFqZs2Ro+Q8ME7e3fDPfQ
- B5N9ZtDwpC5l+E/J+485YQmJdSlxJ+rkNoKXqePhQC3dpl6LpS2XG6mWiwcjNE6dYQdwwGuSu
- MaLvadAuU7KJOVdkmwOT4lpTOmgjbPHJngWf/r4hiorGY3qZ4oRFeJK7Kw/5H7oSV+WLxjfkz
- yCoH0i7HsB4xBYVeh8Vumz/aiBUYP5zNkbwOKTaq/v737QBzBTzzvUITXpDtOBrx79z+e+ELC
- q0DZX2rvV/7HnshQv6RrJy84ljqY8Y1CgQ8BCJWiifgODchmda7YkvoMzCzyIAy2OGbaZfjEK
- SAp/cAlnok2pf2Q02AGk4irOFClvLqCP+BJV9ZcolqG5lQXFahLFtBiTxEPIoe8RxVNUlhBKG
- vrjwleLbEVLhRWWuv1MC74uycJK7Jb9M4V6W/nA57Y5AmjK1y9asEhgPf14tZnEQKm0fNwOHs
- AIxXSDloN7lR0CaNgYuatQ9ZcCBBkfcUCUeVX03pN4x/oIU1weR3zebgnDc0PkwvxCTIbXOeb
- eS07o3LzjXH8Y3HHfqy5sO/1nrY1RB/ou7dNBcWz6HzS/UVwZuJR7ZOjvsc4MZI3nRvVDMg==
+Content-Transfer-Encoding: 8bit
 
-> When devm_kasprintf() fails, it returns a NULL pointer. However, this re=
-turn value is not properly checked in the function wled_configure.
->
-> A NULL check should be added after the devm_kasprintf call to prevent po=
-tential NULL pointer dereference error.
+devm_kasprintf() return NULL if memory allocation fails. Currently,
+wled_configure() does not check for this case, leading to a possible NULL
+pointer dereference.
 
-* Please adhere to word wrapping preferences around 75 characters per text=
- line.
+Add NULL check after devm_kasprintf() to prevent this issue.
 
-* How do you think about to choose the imperative mood for an improved cha=
-nge description?
-  https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/t=
-ree/Documentation/process/submitting-patches.rst?h=3Dv6.14#n94
+Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
+Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+---
+V1 -> V2: Fix commit message to use imperative mood and wrap lines to 75
+characters.
 
+ drivers/video/backlight/qcom-wled.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-=E2=80=A6
-> +++ b/drivers/video/backlight/qcom-wled.c
-> @@ -1406,8 +1406,14 @@ static int wled_configure(struct wled *wled)
->  	wled->ctrl_addr =3D be32_to_cpu(*prop_addr);
->
->  	rc =3D of_property_read_string(dev->of_node, "label", &wled->name);
-> -	if (rc)
-> +	if (rc) {
->  		wled->name =3D devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node)=
-;
-> +		if (!wled->name) {
-> +			dev_err(dev, "Failed to allocate memory for wled name\n");
-> +			return -ENOMEM;
-> +		}
-> +	}
-=E2=80=A6
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 9afe701b2a1b..a63bb42c8f8b 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1406,9 +1406,11 @@ static int wled_configure(struct wled *wled)
+ 	wled->ctrl_addr = be32_to_cpu(*prop_addr);
+ 
+ 	rc = of_property_read_string(dev->of_node, "label", &wled->name);
+-	if (rc)
++	if (rc) {
+ 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
+-
++		if (!wled->name)
++			return -ENOMEM;
++	}
+ 	switch (wled->version) {
+ 	case 3:
+ 		u32_opts = wled3_opts;
+-- 
+2.34.1
 
-An extra error messages for a failed memory allocation may occasionally be=
- omitted.
-
-Regards,
-Markus

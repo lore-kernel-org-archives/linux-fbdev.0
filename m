@@ -1,64 +1,64 @@
-Received: from mail-pl1-f194.google.com (mail-pl1-f194.google.com [209.85.214.194])
+Received: from mail-pj1-f67.google.com (mail-pj1-f67.google.com [209.85.216.67])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 460FA1E0DEB;
-	Tue,  1 Apr 2025 06:53:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DD7C1EB1A1;
+	Tue,  1 Apr 2025 08:30:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.67
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743490408; cv=none; b=PQ/+0Y+FtCZYwrjQE1Ln42eKOmKbp9ZiZv+XdATDNdlyVVWUaVO1yZinTDRwmL6az2gfyutxW5LPVQ9pyNwPfeYwaIiQ/pcga0yEUDMhWX35iKD+Vxu5Tynd5FO+ETjwvxYgPfmRjfv/Bb6hBSn5t7L8xyiudlaHrTh7n5p206I=
+	t=1743496223; cv=none; b=TBT1zlgbya9lIfaauq/eSNiBkRbB9w15TWjUpuyGu/JSr19y4lUc+Clr10UzkJ5D67Tx3OjZn+zRHAXeO3/RzGWbEQhqjieyw2hye3Uz6bbuWnhYbGUhvBZM5mCCD0VbGbLMlpJBwQcuKuiysACSqZAIkgAIjvUNmZQinDCHpxc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743490408; c=relaxed/simple;
-	bh=juV0t4V1e//0+gj1OVfhRcLHZvcbuEC/YXrhy/U7qi8=;
+	s=arc-20240116; t=1743496223; c=relaxed/simple;
+	bh=mgWZDcrAngsGOnaDIRNc1m62eYmIE4BhxGoNnv+YqYE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ZSJn7pHl9w5rbDa/HipxSWEP0MJ0nDlE3HLxx79HY8UzdTXB6Sl4ZexoFfT4xxQYBWjW1fkdudgqY08DT4eHtcdXoTxhkjVQLVEczpqhg1X2B+T+6wmpdgu4M8f1HcqbY4uwqeLDuI/3kyqu7Vr1pXMx1LMiyH8ZrbB1omRDzSs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ijlsr9mC; arc=none smtp.client-ip=209.85.214.194
+	 MIME-Version; b=OiDXf4oXlL5wmitbuuARANQfJhv9XyDbDfjOi5eZBQDh/4fMjDqKjzlKOHXSlTpFx6otIimmgrAMyJnmUxrZkYhUhl7QLpCJKGUYYm/M/w6kCmCTWrg7craORZW+jVbxwGyK+Ic6Cg++TgoCdHBWjnq/rdyDH0kPAAU0vNbZnLU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RS827a8y; arc=none smtp.client-ip=209.85.216.67
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ijlsr9mC"
-Received: by mail-pl1-f194.google.com with SMTP id d9443c01a7336-2240b4de12bso77945505ad.2;
-        Mon, 31 Mar 2025 23:53:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RS827a8y"
+Received: by mail-pj1-f67.google.com with SMTP id 98e67ed59e1d1-3014cb646ecso6664084a91.1;
+        Tue, 01 Apr 2025 01:30:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743490406; x=1744095206; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1743496221; x=1744101021; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=juV0t4V1e//0+gj1OVfhRcLHZvcbuEC/YXrhy/U7qi8=;
-        b=Ijlsr9mCx6Beib9aBhpcgo3+Q36kb/L1N0fnH7fwLXi5NDAMVI/A8xjbJmGZgN8ceJ
-         r9Y7WKvuKk32Dh5QU3dBRtHqWQGIeOWfKCgfbRV2VU7eOtjIhW3bTEKryMC4OaerhbpA
-         tCax5VY8DfUR+/OX0CVGyw0jGL86RiRfWtpm7ifhhfbg9OzrIN38CFdXamciH3GZQn8C
-         CZkeSfdQGeU35oapgf+eOczxgqaYdIFVvv3Rf7XQd6aae1/fJU+HeJJKbjPUUaw4XhC7
-         MzB8w232yY1hj3d9MY1eswc/MJkT2DgV2ZPzEOyCdZsZ1zpX1sDMNLZ4KlR+SCNHIQkS
-         BFdQ==
+        bh=PjoRRxErQAE65f2vVZqYUjTQAES/NXv5oq8jYX02KT4=;
+        b=RS827a8yqnNraDE/BXqnO00GIjxJNi+2ZQyWyuDBCNCvA9GMdntJ+vRxTD0b3te+MV
+         SSXBbcMItGaZ6xbLYrryMMtf6KOqVvDDE9Z8BBKmMDVyJ8ab+oAq8c3DYvZBIm68BNzH
+         qfwar/RFRIFQLY9ScEwt7gu7TimtTHO3QmEaWUY9iEIZHaZJyHzHzb5/10BrNKBYpNBN
+         igZJhL2rbbDKBiTVNVVeVau7HV34nCxF8zOYIXr9hIsLEOGIv5Dr9VP8x4esSdiT3fi0
+         t1STwVz//gt8MoQycYF/3kOjBVyHDucO0/B4tVfTlvrO/UzYHxo8QrKzzYUSZZY2sUBe
+         60yQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743490406; x=1744095206;
+        d=1e100.net; s=20230601; t=1743496221; x=1744101021;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=juV0t4V1e//0+gj1OVfhRcLHZvcbuEC/YXrhy/U7qi8=;
-        b=jAKbUxkZ8IRevI1Gh7cpg0Z+nXDArmmlBF3I02UzGwI4LejmLlrTsj5Mv81g3rPkXI
-         tQfjJfFmUrdUXEXkNfGI5r1m7uUxP5rKqDicsORw9m4oQ742WjUAquhOpIo8wueSk0WV
-         PEalBMhriEPx8qKMit1YfMGAuJmSuN7MReIimBitQjHc4B3e30rb3LsjMY3it5qBf2NH
-         m0dmikZAWTGKO041mjpR1zelVl1+HZYJnu9CkJwlL6419/AIDUwClqyZCnHsGwu9bzfi
-         NJvY1XONxBqdrcODCGNVWZISRWxIRN5Tw7nN640suNIh7hInP+e1pPHPODj7L3pPNivd
-         S6bA==
-X-Forwarded-Encrypted: i=1; AJvYcCVhzXYgOynar3c6bJvOHpXM/hFR2IQpV2C7N4up4Ca3lYX7t6lTp0j3qLJ+3QGzS5Ynn/WDrfpuMnZ5+Wo=@vger.kernel.org, AJvYcCVsW5HhuN11e4gr47SE18VTiqQAt40tBoIRFw/gnTURyXWCXRvLuFEa/9l75AdG7848UBHWHjhVMnsxzo7S@vger.kernel.org, AJvYcCVupU3BRKEBDh/Tvc8z9rttcksLQhaPb4d5iSRPKgQZxYqsg8qI3QLaP941aVRDn/AOSW/ggMcZptwxj8rg@vger.kernel.org
-X-Gm-Message-State: AOJu0YwliIbRqDWl+CNmyCa3F1fphfvmQyQFwbK3xqXv+hCRCmoeYonj
-	LPfmQHoR/Xx6av+W/RzxYB0F0M+KTHdTFJyyENw0kFUXTtgmy27s
-X-Gm-Gg: ASbGncsZHahf7k55LYJngFXGqe3zVBCC4Io53pltCAn9Tg0y9JYtEbQhFS3aGENwEuX
-	otXWIbFqOgftOCZ+CzICyubtvUqEnyUcBJevhQJJsoxlqfSKJt65WLMsCkWuWgKJhvGlNaXTcca
-	CVERGNNI8gnceQbv+z2if/SFxwzAw75MbgIVmvtk7hXwVh7qoIhbLdzOS5mqEn01p3ednPKahCu
-	Zlths8FqB/RFKHXNWAaQTkVGpOtfonalpjTVm6hTRlJUJSnYjv/qoCYaKcr2zDwwJRl2QOnVOUd
-	BaG99s33/q3k1bNul6nNeLWHLF/qy59ibgHSMmUW4iyUPHhGF4a00ivVX0clrTi2ZhOUQZk=
-X-Google-Smtp-Source: AGHT+IE8v+2soOjMZ/HxnufMSQX2TKoU0l9zv9vDPm095V1YC/l3ajgioV+dGEqKKpy3wthovX6FNg==
-X-Received: by 2002:a17:902:da91:b0:224:191d:8a79 with SMTP id d9443c01a7336-2292f973a1fmr160582675ad.27.1743490406432;
-        Mon, 31 Mar 2025 23:53:26 -0700 (PDT)
+        bh=PjoRRxErQAE65f2vVZqYUjTQAES/NXv5oq8jYX02KT4=;
+        b=uzjTUycoceWQT15C2IIbbGAsNzXS/QH5vFb/H1iXywj3JWXq8TLivRBr1/jWuN/8h7
+         eXXQ1q2Zk+hr3EeYD+ZkJLOiwnvjQgfnKWscoRYg89PCevWYKgmomno+3F8hJXSBYvCF
+         Nw6fXcA4r0CvYXUd5vx2u2U+EQ94NfhoqSMd7Mh/gMDARt/q+QxSdC0oy0RXlJOS75ag
+         Xw2qeKbgGXo0IjSDM/RPx1KNxwMBk8lD/dHuEpwXUS+c9Z/BC3AHhqeJ03mME2Rdy+ub
+         jDM5g1HdR9Ir4A+8Aw1TLdAoi6aG0CnC7Rh05fb5qp1Zgpy8GZl2V1hU3fq94GdCBVyk
+         5sVg==
+X-Forwarded-Encrypted: i=1; AJvYcCUXdhG6u0sPqaS5+0HqmHlav2Pa21gJjeQhY7h7qkwdF7iiIfnJv9t0l+fj8y7MalvqzVvEetWhAJeRbFQp@vger.kernel.org, AJvYcCWpvuHKqTmgEhdBXv9PFGj6czeQS/DJ/+YphZRDz0aBBuUcBkD9HRuPikEZpXaoarkap5RsReS4tSYUIA0=@vger.kernel.org, AJvYcCXXep09nVrE/l7keeLfEc8wsqJ/iFMwf2Arhaty/l45KQxuF1DAH+7jLQ4DHx0gToX6zsFqRD5hgnYiryRa@vger.kernel.org
+X-Gm-Message-State: AOJu0YxDk2ASOerLyb6nErPPyfvfuPmwdalPlXYazPOUV85VOWbqkhFw
+	r3KVzWgu/3vCzcnJLTIJOuAWq41BRdlLAcZeldU6Zft46xidKGAI
+X-Gm-Gg: ASbGncs3euc9hCGXiD+ftkLuJ8HfaNG2yYmj2gA6pDavO8Jl3/qQ/77tG91mWqAvDqd
+	biHJaVp/hsjGUDnnbSveVqwHw75iIAh36zSrPa0DwqHGCODcTJxp/MlG5x+9i87CoJpJWzoYGha
+	ME9iLjCDa1wvorNXNbVhwz91INPj+RJhnYzMU/0CzskuSXBfy6crXpgInku8Spms69pdqpBkiVz
+	XiTO5cpuVHqfvC/rIct+elQ3j+wYiJdfugQJB8wNpUD9RBmyabgiOhDN6JIEPsNSIL3MDJIy+ef
+	V301lgQsrCWX3M/1gMONx7YC4Q+7mNT9VrWTddw1su14f2x0Wvcy/9iaoT3hmsEMJXFBKwg=
+X-Google-Smtp-Source: AGHT+IFWAAHV082oTdqQGEjBX414lW/d/FJAUbsjDbzy53pI1JmjcwR0u4fqgwsDs6QJqtqU53fJMg==
+X-Received: by 2002:a17:90b:384d:b0:2f9:9ddd:689b with SMTP id 98e67ed59e1d1-3053214bfd5mr14011201a91.22.1743496220800;
+        Tue, 01 Apr 2025 01:30:20 -0700 (PDT)
 Received: from henry.localdomain ([111.202.148.167])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2291f1cf882sm80743815ad.123.2025.03.31.23.53.23
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30562c6d29dsm505191a91.2.2025.04.01.01.30.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Mar 2025 23:53:25 -0700 (PDT)
+        Tue, 01 Apr 2025 01:30:20 -0700 (PDT)
 From: Henry Martin <bsdhenrymartin@gmail.com>
-To: markus@kernel.org
+To: Markus.Elfring@web.de
 Cc: lee@kernel.org,
 	danielt@kernel.org,
 	jingoohan1@gmail.com,
@@ -66,10 +66,12 @@ Cc: lee@kernel.org,
 	linux-arm-msm@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	linux-kernel@vger.kernel.org,
+	Henry Martin <bsdhenrymartin@gmail.com>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 Subject: [PATCH v3] backlight: pm8941: Add NULL check in wled_configure()
-Date: Tue,  1 Apr 2025 14:53:20 +0800
-Message-Id: <20250401065320.20000-1-bsdhenrymartin@gmail.com>
+Date: Tue,  1 Apr 2025 16:29:50 +0800
+Message-Id: <20250401082950.21698-1-bsdhenrymartin@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <d5f2aa49-27e2-4cc1-91be-4e195ed5249e@web.de>
 References: <d5f2aa49-27e2-4cc1-91be-4e195ed5249e@web.de>
@@ -81,8 +83,43 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Thanks for your review. No further improvements needed for this implementation
-- it already handles all error cases appropriately.
+The function wled_configure() uses devm_kasprintf() without checking for
+allocation failures, which could lead to NULL pointer dereferences.
 
-Best regards,
-Henry
+Add proper error handling when devm_kasprintf() fails by:
+- Returning -ENOMEM immediately
+- Ensuring no resources are left allocated (none need cleanup in this case)
+
+Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
+Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+---
+V2 -> V3: Fix commit message and verify proper error handling with
+resource cleanup.
+V1 -> V2: Fix commit message to use imperative mood and wrap lines to 75
+characters.
+
+ drivers/video/backlight/qcom-wled.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 9afe701b2a1b..a63bb42c8f8b 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1406,9 +1406,11 @@ static int wled_configure(struct wled *wled)
+ 	wled->ctrl_addr = be32_to_cpu(*prop_addr);
+ 
+ 	rc = of_property_read_string(dev->of_node, "label", &wled->name);
+-	if (rc)
++	if (rc) {
+ 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
+-
++		if (!wled->name)
++			return -ENOMEM;
++	}
+ 	switch (wled->version) {
+ 	case 3:
+ 		u32_opts = wled3_opts;
+-- 
+2.34.1
+

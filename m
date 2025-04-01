@@ -1,80 +1,46 @@
-Received: from mail-pj1-f67.google.com (mail-pj1-f67.google.com [209.85.216.67])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.swemel.ru (mx.swemel.ru [95.143.211.150])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DD7C1EB1A1;
-	Tue,  1 Apr 2025 08:30:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.67
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 889AD1A83E4;
+	Tue,  1 Apr 2025 08:40:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.143.211.150
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743496223; cv=none; b=TBT1zlgbya9lIfaauq/eSNiBkRbB9w15TWjUpuyGu/JSr19y4lUc+Clr10UzkJ5D67Tx3OjZn+zRHAXeO3/RzGWbEQhqjieyw2hye3Uz6bbuWnhYbGUhvBZM5mCCD0VbGbLMlpJBwQcuKuiysACSqZAIkgAIjvUNmZQinDCHpxc=
+	t=1743496819; cv=none; b=GoKV/35+gk1zPXhDXQsipXSBRlIlbGlKz6epI3OmiJXTfq2OnYdhPaS3vDKducqy00Tc4YjdTQWKyNOBHQm5ooAmUcv/uBLZWsyq2n07dS86E8SNSn4vICjc6qFWH0BsvxsNF6g6z2HqmwW/KFK9lAb+FfwYE+P+Wm57fcE6KDY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743496223; c=relaxed/simple;
-	bh=mgWZDcrAngsGOnaDIRNc1m62eYmIE4BhxGoNnv+YqYE=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=OiDXf4oXlL5wmitbuuARANQfJhv9XyDbDfjOi5eZBQDh/4fMjDqKjzlKOHXSlTpFx6otIimmgrAMyJnmUxrZkYhUhl7QLpCJKGUYYm/M/w6kCmCTWrg7craORZW+jVbxwGyK+Ic6Cg++TgoCdHBWjnq/rdyDH0kPAAU0vNbZnLU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RS827a8y; arc=none smtp.client-ip=209.85.216.67
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1743496819; c=relaxed/simple;
+	bh=oSXQoDk5rnHxTGq0QwglgYgL8weJwwWigb4+0jYl/Cg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=b15sJC7B08pkHG6MECVb11vc+Q6jG/8ne04jkYN1u+07LUiKcOk4AtEnKeyUS1JHu0P5n1r6gLnxEofOWHgtZfnCxXxhODAm4SxL4Ldw7KVYWAoLRCgDvqP+8HcUA3c1ZDcmD4Zx+pObHVEKSJLWFKY9ZDJgWmJMY0cO0gHFTUw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru; spf=pass smtp.mailfrom=swemel.ru; dkim=pass (1024-bit key) header.d=swemel.ru header.i=@swemel.ru header.b=SjWDIs9N; arc=none smtp.client-ip=95.143.211.150
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=swemel.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RS827a8y"
-Received: by mail-pj1-f67.google.com with SMTP id 98e67ed59e1d1-3014cb646ecso6664084a91.1;
-        Tue, 01 Apr 2025 01:30:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743496221; x=1744101021; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PjoRRxErQAE65f2vVZqYUjTQAES/NXv5oq8jYX02KT4=;
-        b=RS827a8yqnNraDE/BXqnO00GIjxJNi+2ZQyWyuDBCNCvA9GMdntJ+vRxTD0b3te+MV
-         SSXBbcMItGaZ6xbLYrryMMtf6KOqVvDDE9Z8BBKmMDVyJ8ab+oAq8c3DYvZBIm68BNzH
-         qfwar/RFRIFQLY9ScEwt7gu7TimtTHO3QmEaWUY9iEIZHaZJyHzHzb5/10BrNKBYpNBN
-         igZJhL2rbbDKBiTVNVVeVau7HV34nCxF8zOYIXr9hIsLEOGIv5Dr9VP8x4esSdiT3fi0
-         t1STwVz//gt8MoQycYF/3kOjBVyHDucO0/B4tVfTlvrO/UzYHxo8QrKzzYUSZZY2sUBe
-         60yQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743496221; x=1744101021;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PjoRRxErQAE65f2vVZqYUjTQAES/NXv5oq8jYX02KT4=;
-        b=uzjTUycoceWQT15C2IIbbGAsNzXS/QH5vFb/H1iXywj3JWXq8TLivRBr1/jWuN/8h7
-         eXXQ1q2Zk+hr3EeYD+ZkJLOiwnvjQgfnKWscoRYg89PCevWYKgmomno+3F8hJXSBYvCF
-         Nw6fXcA4r0CvYXUd5vx2u2U+EQ94NfhoqSMd7Mh/gMDARt/q+QxSdC0oy0RXlJOS75ag
-         Xw2qeKbgGXo0IjSDM/RPx1KNxwMBk8lD/dHuEpwXUS+c9Z/BC3AHhqeJ03mME2Rdy+ub
-         jDM5g1HdR9Ir4A+8Aw1TLdAoi6aG0CnC7Rh05fb5qp1Zgpy8GZl2V1hU3fq94GdCBVyk
-         5sVg==
-X-Forwarded-Encrypted: i=1; AJvYcCUXdhG6u0sPqaS5+0HqmHlav2Pa21gJjeQhY7h7qkwdF7iiIfnJv9t0l+fj8y7MalvqzVvEetWhAJeRbFQp@vger.kernel.org, AJvYcCWpvuHKqTmgEhdBXv9PFGj6czeQS/DJ/+YphZRDz0aBBuUcBkD9HRuPikEZpXaoarkap5RsReS4tSYUIA0=@vger.kernel.org, AJvYcCXXep09nVrE/l7keeLfEc8wsqJ/iFMwf2Arhaty/l45KQxuF1DAH+7jLQ4DHx0gToX6zsFqRD5hgnYiryRa@vger.kernel.org
-X-Gm-Message-State: AOJu0YxDk2ASOerLyb6nErPPyfvfuPmwdalPlXYazPOUV85VOWbqkhFw
-	r3KVzWgu/3vCzcnJLTIJOuAWq41BRdlLAcZeldU6Zft46xidKGAI
-X-Gm-Gg: ASbGncs3euc9hCGXiD+ftkLuJ8HfaNG2yYmj2gA6pDavO8Jl3/qQ/77tG91mWqAvDqd
-	biHJaVp/hsjGUDnnbSveVqwHw75iIAh36zSrPa0DwqHGCODcTJxp/MlG5x+9i87CoJpJWzoYGha
-	ME9iLjCDa1wvorNXNbVhwz91INPj+RJhnYzMU/0CzskuSXBfy6crXpgInku8Spms69pdqpBkiVz
-	XiTO5cpuVHqfvC/rIct+elQ3j+wYiJdfugQJB8wNpUD9RBmyabgiOhDN6JIEPsNSIL3MDJIy+ef
-	V301lgQsrCWX3M/1gMONx7YC4Q+7mNT9VrWTddw1su14f2x0Wvcy/9iaoT3hmsEMJXFBKwg=
-X-Google-Smtp-Source: AGHT+IFWAAHV082oTdqQGEjBX414lW/d/FJAUbsjDbzy53pI1JmjcwR0u4fqgwsDs6QJqtqU53fJMg==
-X-Received: by 2002:a17:90b:384d:b0:2f9:9ddd:689b with SMTP id 98e67ed59e1d1-3053214bfd5mr14011201a91.22.1743496220800;
-        Tue, 01 Apr 2025 01:30:20 -0700 (PDT)
-Received: from henry.localdomain ([111.202.148.167])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30562c6d29dsm505191a91.2.2025.04.01.01.30.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Apr 2025 01:30:20 -0700 (PDT)
-From: Henry Martin <bsdhenrymartin@gmail.com>
-To: Markus.Elfring@web.de
-Cc: lee@kernel.org,
-	danielt@kernel.org,
-	jingoohan1@gmail.com,
+	dkim=pass (1024-bit key) header.d=swemel.ru header.i=@swemel.ru header.b="SjWDIs9N"
+From: Denis Arefev <arefev@swemel.ru>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=swemel.ru; s=mail;
+	t=1743496810;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=70J3qbqUkhpGfcXlW2ynPrpc/c8CjZPQmWcMnQ7zHgc=;
+	b=SjWDIs9N+nxAtJw5mMhsl6F0LJ9DBEVxQ2zXCX+TwQTUnNH9sq/DvmXxBW7d5kM7GEvUg5
+	o2D9ah2UfPkm/pCmqQqemJvyoe/lsKVnvn7ve5c2SNs0lyFf18apuYNN5WXz6YBo8UnkBE
+	qq/f5dV/d9MU9ILlm9SFmd3GHRWqu4E=
+To: ville.syrjala@linux.intel.com
+Cc: arefev@swemel.ru,
 	deller@gmx.de,
-	linux-arm-msm@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
+	jani.nikula@intel.com,
 	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Henry Martin <bsdhenrymartin@gmail.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Subject: [PATCH v3] backlight: pm8941: Add NULL check in wled_configure()
-Date: Tue,  1 Apr 2025 16:29:50 +0800
-Message-Id: <20250401082950.21698-1-bsdhenrymartin@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <d5f2aa49-27e2-4cc1-91be-4e195ed5249e@web.de>
-References: <d5f2aa49-27e2-4cc1-91be-4e195ed5249e@web.de>
+	lvc-project@linuxtesting.org,
+	tzimmermann@suse.de
+Subject: Re: [PATCH 1/1] fbdev: atyfb: Fix buffer overflow
+Date: Tue,  1 Apr 2025 11:40:10 +0300
+Message-ID: <20250401084010.5886-1-arefev@swemel.ru>
+In-Reply-To: <Z-rzIfUMmOq1UZY1@intel.com>
+References: <Z-rzIfUMmOq1UZY1@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,43 +49,11 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The function wled_configure() uses devm_kasprintf() without checking for
-allocation failures, which could lead to NULL pointer dereferences.
+Hi Ville. Hi Jani.
+Thank you for your answers.
 
-Add proper error handling when devm_kasprintf() fails by:
-- Returning -ENOMEM immediately
-- Ensuring no resources are left allocated (none need cleanup in this case)
+One small question. 
+This chip (3D RAGE LT (Mach64 LG)) is very old it is 25 or 
+maybe 30 years old, why is it not removed from the core?
 
-Fixes: f86b77583d88 ("backlight: pm8941: Convert to using %pOFn instead of device_node.name")
-Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
----
-V2 -> V3: Fix commit message and verify proper error handling with
-resource cleanup.
-V1 -> V2: Fix commit message to use imperative mood and wrap lines to 75
-characters.
-
- drivers/video/backlight/qcom-wled.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 9afe701b2a1b..a63bb42c8f8b 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -1406,9 +1406,11 @@ static int wled_configure(struct wled *wled)
- 	wled->ctrl_addr = be32_to_cpu(*prop_addr);
- 
- 	rc = of_property_read_string(dev->of_node, "label", &wled->name);
--	if (rc)
-+	if (rc) {
- 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
--
-+		if (!wled->name)
-+			return -ENOMEM;
-+	}
- 	switch (wled->version) {
- 	case 3:
- 		u32_opts = wled3_opts;
--- 
-2.34.1
-
+Regards Denis.

@@ -1,66 +1,110 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF5361EBA0D;
-	Thu,  3 Apr 2025 14:18:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFFD11DBB13;
+	Thu,  3 Apr 2025 19:15:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743689895; cv=none; b=otHiKaL8wCer7jnHe6MgjS+HcSWhe6QIFAMZHZca3qXjHlTqSRjaCHv34xitv4GE4XDQPRxyfPqNSJpf6HwdQwqQi9+7P+21EEPdOATo5f+Il60xx9aXMtyA+2dF+HgXHmi+t4XMMilgy5/kEkryQEREpLaocqfFXjVVyO0/4z8=
+	t=1743707707; cv=none; b=X6k4m1k4H5smHb5y58tILp+qkHW3eu+KelqHAF7OruUQIFMF95w1beYXwFY4q8nNp8pO7L1eW80AuLdPSNBGUfPz0ABF24vptIrD6HgxVSe78z7m6JbclKU8A8uqHhmb6CY/qAbspgvKsUl8vrTBhSwEnulQIttOSzR8D/Zilpw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743689895; c=relaxed/simple;
-	bh=Uy8VhtkwGnjgWhisPk852iAoDVSZJ1v9w+B0YXSVHg8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KyAg55GpeEfKkupd0ocFKO7e7QMyA4HkeZQ84a94IJjLEBBQMMdQdy5niE6XFJnWT+H9SqQiJ+4y4yzVmBgLTT9PUyLfbkHJw50TYdSQmx9+6lUf9gXXCiDdfPNFM0AktLWz98nkWvE9bjhIV0V4RgkODbCqKU20cj6ypH2rjkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Ic/2PwvK; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1743707707; c=relaxed/simple;
+	bh=u0zW9PD+fB/FpI5XciLwh5vH0OQS0J9qDGBpyQcD3Gc=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=cBnWc0YKIvn0HADmKchFa2wAzgbwbC/FWgsjcOQa0McFvsHKhElq2DQg6hUi6SL7sAgUrcOMJTDQQngfrfS6o82uApt0SrId/Yj0Gw/80pOPQRRj2F37iIZ/wEiutD6GrSefNG8NHPXQJSNsWjPwc/jRrVZvX+YNpcVkHBdj5QY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=W29lUZ9v; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Ic/2PwvK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0047C4CEE3;
-	Thu,  3 Apr 2025 14:18:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1743689895;
-	bh=Uy8VhtkwGnjgWhisPk852iAoDVSZJ1v9w+B0YXSVHg8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Ic/2PwvKwZFBLZja5vywSaemxyPGR/b+oYLjuRsfqN39ZyKJefDbR667Nji/IT4jM
-	 j9XP1oaaivoqbkWl3yHJxmzM2xMR4UCMVBaz12MecRunGf1UKNlisFVQOllNV4Lnbz
-	 LGnoWu5JiVQ9QBsdYcrq+rDtsnjJ2y9OopdAe8lw=
-Date: Thu, 3 Apr 2025 15:16:47 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Richard Akintola <princerichard17a@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org, julia.lawall@inria.fr
-Subject: Re: [PATCH] staging: sm750fb: modify function name to kernel code
- style
-Message-ID: <2025040301-tightness-giveaway-a568@gregkh>
-References: <67ea5813.5d0a0220.293276.775e@mx.google.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="W29lUZ9v"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2044AC4CEE8;
+	Thu,  3 Apr 2025 19:15:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1743707706;
+	bh=u0zW9PD+fB/FpI5XciLwh5vH0OQS0J9qDGBpyQcD3Gc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=W29lUZ9vspFTNgE8U120ZofUZdwOJksceoQp5IRZzqmL4ETPjvC93j7Zc3WO8SkGb
+	 fpqyMJ5EXqtxzc7QD/OmFYyHKYOFQj7Rfo+uWO46uEiwHJ1eIEzPcn1s7hXTduhVMM
+	 6lStYzRPCVTqluDOfmBI7DWsFjd802n1El7gUoW6mkQ0jZ0XD+PUiTTn/uJPDb1Lew
+	 G8MpzLMmiWEn7a9nFQJwac9gFMwx75PsXMCOvLf5mM8EYCoASP0Bb1+D8RqCfvzxNa
+	 ND1cjcDoi1yy1yL+h6dJJXuvKLbbRGHnegwLLHJKIsHc/Y5YG7GsGIDzfLFMoGUVBp
+	 jpnTyANYeEBXQ==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Leonid Arapov <arapovl839@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	krzysztof.kozlowski@linaro.org,
+	u.kleine-koenig@baylibre.com,
+	tzimmermann@suse.de,
+	linux@treblig.org,
+	linux-omap@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.14 39/44] fbdev: omapfb: Add 'plane' value check
+Date: Thu,  3 Apr 2025 15:13:08 -0400
+Message-Id: <20250403191313.2679091-39-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250403191313.2679091-1-sashal@kernel.org>
+References: <20250403191313.2679091-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <67ea5813.5d0a0220.293276.775e@mx.google.com>
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.14
+Content-Transfer-Encoding: 8bit
 
-On Mon, Mar 31, 2025 at 09:53:36AM +0100, Richard Akintola wrote:
-> Change camelCase function name sii164ResetChip to sii164_reset_chip
-> as reported by checkpatch.pl
-> 
-> CHECK: Avoid camelCase: <sii164ResetChip>
-> 
-> Signed-off-by: Richard Akintola <princerichard17a@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_dvi.c    | 2 +-
->  drivers/staging/sm750fb/ddk750_sii164.c | 4 ++--
->  drivers/staging/sm750fb/ddk750_sii164.h | 2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
+From: Leonid Arapov <arapovl839@gmail.com>
 
-You sent 2 different patches with different subject lines, yet they
-almost did the same thing?  Which one should I take or review?  Please
-send a new one, as a version 3, and properly document what changed
-between this one and the last 2 submissions.
+[ Upstream commit 3e411827f31db7f938a30a3c7a7599839401ec30 ]
 
-thanks,
+Function dispc_ovl_setup is not intended to work with the value OMAP_DSS_WB
+of the enum parameter plane.
 
-greg k-h
+The value of this parameter is initialized in dss_init_overlays and in the
+current state of the code it cannot take this value so it's not a real
+problem.
+
+For the purposes of defensive coding it wouldn't be superfluous to check
+the parameter value, because some functions down the call stack process
+this value correctly and some not.
+
+For example, in dispc_ovl_setup_global_alpha it may lead to buffer
+overflow.
+
+Add check for this value.
+
+Found by Linux Verification Center (linuxtesting.org) with SVACE static
+analysis tool.
+
+Signed-off-by: Leonid Arapov <arapovl839@gmail.com>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index ccb96a5be07e4..139476f9d9189 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -2738,9 +2738,13 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		bool mem_to_mem)
+ {
+ 	int r;
+-	enum omap_overlay_caps caps = dss_feat_get_overlay_caps(plane);
++	enum omap_overlay_caps caps;
+ 	enum omap_channel channel;
+ 
++	if (plane == OMAP_DSS_WB)
++		return -EINVAL;
++
++	caps = dss_feat_get_overlay_caps(plane);
+ 	channel = dispc_ovl_get_channel_out(plane);
+ 
+ 	DSSDBG("dispc_ovl_setup %d, pa %pad, pa_uv %pad, sw %d, %d,%d, %dx%d ->"
+-- 
+2.39.5
+

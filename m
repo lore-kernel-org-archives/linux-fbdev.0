@@ -1,62 +1,62 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 144781F12F2;
-	Sat,  5 Apr 2025 13:03:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7E111F3D49;
+	Sat,  5 Apr 2025 13:03:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743858234; cv=none; b=qYgNZKdwZIUbA1CsRum4kaMuomqL2zGQLm2NXH2zNK6E8yfLba2M4byP9hjvMI8vfwtjLd04UbvPlhnw6x/C8RrM0tmwwwYCEBHAmU8ze4ClHOawKqwPZGWMRWuJfQ2dXxukVjYUQh2CWfYGErU0KbHcYXsMUZ339pnG3TsYV04=
+	t=1743858239; cv=none; b=qUXIP2fazrZTFymLrEsPKAQwUd+afSMNLDWEazon5uAzwEc3ejvtGW/6cpcZsDvWXQVTS0/exuFM2NS7S2h7MnY68+NpzLg5RBWy+A7efaqE4NHnLDaOqx2775N/znnOyBqUePJ/r0OCzxRs8buC8MNyC3H7YrdgFb3q0pdLyLc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743858234; c=relaxed/simple;
-	bh=vQj84IzAyMbsqXmdqTC73l509pCAn1/REbFySFYyqoE=;
+	s=arc-20240116; t=1743858239; c=relaxed/simple;
+	bh=+7dT3tL82Twj4medpCe66/0q0Wl1ZErhjrtaxQu867M=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=S5LSK7aT6jSyZQmePcXo9cPJPHp2b7zoyFQOYBoxoMkDhD0Sx/LTPYrAJ4/fJIgwJKFF3qVpGvHT7z+C1f8p0Bl5ArOMP7qCu7Oz430XENSS+9nvxwGAioXlflXxNp36mGiNviNNRgMnkhWo8Wig1Q/JhCmR3EL8XBtb/pNxc9U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Hv25UaNM; arc=none smtp.client-ip=209.85.221.45
+	 MIME-Version; b=i54lLmspTadSAUGd6dJsindT7rNSWrqHsehumSW/madS/ebdLikjG3FzfghEw26KhrPZ6hjNKKxGVixG6LohirVzE6t7jwpIY9fqXilyvki3FRSceBc8h7EaZXn3oPXJgtuAjLOtilePX0F2k7LqmRImBeLYGZOK3paIwCmkUuw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EDQvDF+g; arc=none smtp.client-ip=209.85.128.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Hv25UaNM"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-3913d129c1aso2019401f8f.0;
-        Sat, 05 Apr 2025 06:03:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EDQvDF+g"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-43cf06eabdaso26268545e9.2;
+        Sat, 05 Apr 2025 06:03:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743858231; x=1744463031; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1743858236; x=1744463036; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=zir1NDA8An9XMiM9quRa114yNTaeYbAjAw+vpjLNbb0=;
-        b=Hv25UaNMPijp0CWVOSDPsJ2E+Hcc9i6nkdq3ACI+GcmV3VW7RHofEjzuoKQpaqjDxr
-         7UL5OZxf15pDNxHEVlrSGrKMg3bu89dgaH5hK1xJDA87rOcbEk+ZhtEhb0t1XMHnE2Z/
-         rfW1a+c6oc0Hm0kS2G9yY+kJZrbZGWBdiufmlQ+5i0rzr45mV1HXVX1qNZieYF8umt0t
-         YLOxxIGSugfxzP01HoX/HIOU2p4sN2iR08sq/w8R0mSzwVwlGJ/MEXR3E90VVUvxt80h
-         QOhbu9/glcK3yJ8PHf78oPwy6KKk/P//b6v7cN1yFXPSqNt6Xay4vEnvEg+R7nC/Z+nA
-         FTDw==
+        bh=p4QDk5t1ncy92IlUqUOHalwkPhSsIRI8ajRfXHeyssg=;
+        b=EDQvDF+gSf4nL8i6Ke2AjQgC7wAEMONxo844oSZCVsaVna2vBc2lxstNuMfuHvyXhd
+         NpvzQPxXQw5OlE8ZJoczlcMROxp8/3qnfquXRRdjsF+2Nrlc1rcutL6bFPnrZqihCaaL
+         WTuFh7TTD+iUpRxZXNB7dCgj+wILF2muxHMzPp+RkplCHTQKuITu6NqnwrZtJ7pgKuEL
+         V6OxHD1wewWnrQJoY7OoCblFAeoDeTMEP+3pk4GOXDA8aCn/3flmZ2krf6OdL3jsZCdl
+         /AJMcLmN/E+kkc6kb77zZIYUMqYhWoNQ/Sr9Th5rQbPv6FEq1OYIu20LFlWj9tyo2F8D
+         nKBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743858231; x=1744463031;
+        d=1e100.net; s=20230601; t=1743858236; x=1744463036;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=zir1NDA8An9XMiM9quRa114yNTaeYbAjAw+vpjLNbb0=;
-        b=UQTUgSe9xlXj8SKjo0joYu/fOZ7MgXSUAqATYDzHOYXY6S3q5a9jN7tqjVWy36Eyr2
-         MK3rtyXiq8M+x6IIAZ+DbdWcHOWrwZhwimrdOUkVpn8q2K3GNVLrtt7CeHatgCymNTWj
-         Phyw5O7QO3KNOXwNqflGTPEMIeR6Sqr7EaKFkmP2QuwpsSQSsXNEjDW6Tn3BxCSasgTx
-         pHACAzLRWy86DE9n8uWUrQpyMPI9XjDNO8eRCUQFi4qtQ7MQcH7mKtkaZN2GPlbFSZMU
-         G7BHeE/ZQq21GG3MyHNMvcBuvcWGo1vqlH7j6XSUESOuygp0QnoUZDaj98TpWOt/c16o
-         ckpA==
-X-Forwarded-Encrypted: i=1; AJvYcCV9MH/Zp3U5Xw36DM410WMgZn4bqiEP8Z+ORf3A9Vp2ioGnZ//7kJvC9mblm+PkWui48WWlbtWLqSMOQQ==@vger.kernel.org, AJvYcCXxMZyRPkDr7w5vt74GU8QYIDqcX8RGHakwA6Ia99Z4Nmu4KurYylETpo89LsCZr31bufUKHunnR7fryJM/@vger.kernel.org
-X-Gm-Message-State: AOJu0YxwK9o7epdh2Qkjl1BTkOU5wZJLPW/Mm16aOLQPQYC1W7ova+8y
-	xCcUKijFWo2+uKKOth+zezreUZ3hdcaZQ7RsivSl2Aqffr1FSKQk
-X-Gm-Gg: ASbGncsG80pLcsvwpPbeLI81N2mraV+4dqiG23f4IlPmyNSP7H5Dyl0NFblb6ylyy6Z
-	rESHFfHkdRXjbhW5YfwRDkwHFFuNQnwA2O25NFaMOg5tZETlY5yuNK1qKP/cAeCL4EianQLzobo
-	eX0diQitkZNEdYfLngPm1CNOcfjjFzrLx/qUVCq5kzm3HdN+HNvDDIXUffpEV+vrQxknC3/VSoQ
-	qQ2W7cDSDbCXroVLDuCB9CyLcpJlSwcoPk/BdZVBSggrhS+cLQZIa/mqWkiKecZ4jfzKt/HhlPP
-	6WhyNku5cy57dB+fn7JFxiXCcA==
-X-Google-Smtp-Source: AGHT+IFM1faHsYRlRseTZrJNYEdeiohp0q3i/meYKhvosYgotdtEcCLj36yq4TgoJ/KS/8BgC8CL/Q==
-X-Received: by 2002:a05:6000:2411:b0:390:e535:8750 with SMTP id ffacd0b85a97d-39cb35aec3dmr5109957f8f.9.1743858231312;
-        Sat, 05 Apr 2025 06:03:51 -0700 (PDT)
+        bh=p4QDk5t1ncy92IlUqUOHalwkPhSsIRI8ajRfXHeyssg=;
+        b=vz6KJZW59xqwvH7T2KIRFj9paKajqNVVKQtM6gppABz6HRkzXxHzdKttykErsp/xj8
+         +KBB4pdSqQ3jxuUuaxVxRyofZCkY8DEszJHO4qrsADka1YpuA4udIudfgTY93SUTlutq
+         rwHfJVhfqWRuiKYyUhrWMjHkX42mWIliptl6diY+fBZ4ieBYSQXsRTMK+ilBc4SL5kqf
+         6+zoK5nNBxQfQFcQpP2vloSVrSWliVSxRv4DFpWyZHhQeIXrUEfT6GII5+4I8EvvRNBL
+         pcbt6TCjD7Z5k7Chd99SLqymF06AoLkyvw9nRccVDAQJePcrOzhejCzWWC8DhMe98GDC
+         wQ1w==
+X-Forwarded-Encrypted: i=1; AJvYcCV1vgWeTPNUb4x9+IjK3q4ibqMSHfHzLMSjEVrltmS9BItZZ3uySpIBL2zKyoFwKB8jXmGRX5xgyPdX9lIb@vger.kernel.org, AJvYcCVYSPz1x4ftP6hdAUpO0ysZnGzkvDZx3d5IwR3DMn2Q/8lPdfwHhcINbUCys1gQn86+5tDhfPqKFQBb4w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxh1dE6ziuuZkHxg0MZKyVH8wtYqwy0CdivU3aCGD8l/XwSJpU9
+	AGXTJv4vZzgHsMbhOv8hpjcn8L2iCkqU6LF1AGrCWGsXmm3pYxbL
+X-Gm-Gg: ASbGncuMplEPjKbIkbgJyA6n4dmO9SfmN9i36DF+fOe4C9QGNZGmfWbXarBjHRR5mv7
+	1vw1ZgDWhs5vq0XnuNGKxnR4SJqK/BUqoG0W5cyN2XHkd9mkzNP51qFBilxkKMq6JeV8pJlzqgr
+	8LPOi2W8E0fmiprQSvhAlPzqDUPE8u2hw3oOYOLvO15JTRu4CrucVy43Gi6vmfJpU3L/FVZIYEl
+	uNQJzzWLaln50SCRqQMHtMW8WPkwjLSFFgx8TwoqF/jhW83fkGiecc4slDTP30ObcR9KMFAmfnf
+	BmbGTcu2Qb5yElvW7NaSIzRT4w==
+X-Google-Smtp-Source: AGHT+IFZSIThJAHBaljJXxy3PJ/DYBCGCmV6gC6qirDfrgNj2dih7G6GpjFk0tQXaIzgS1BwdpPKWg==
+X-Received: by 2002:a05:6000:2908:b0:39c:1257:cc25 with SMTP id ffacd0b85a97d-39cba98bbc7mr5544209f8f.56.1743858236019;
+        Sat, 05 Apr 2025 06:03:56 -0700 (PDT)
 Received: from parrot ([105.112.71.96])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-39c30096923sm6955182f8f.17.2025.04.05.06.03.50
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-39c30226f2bsm6912512f8f.96.2025.04.05.06.03.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 05 Apr 2025 06:03:51 -0700 (PDT)
+        Sat, 05 Apr 2025 06:03:55 -0700 (PDT)
 From: Richard Akintola <princerichard17a@gmail.com>
 To: outreachy@lists.linux.dev
 Cc: sudipm.mukherjee@gmail.com,
@@ -66,9 +66,9 @@ Cc: sudipm.mukherjee@gmail.com,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Richard Akintola <princerichard17a@gmail.com>
-Subject: [PATCH 3/8] staging: sm750fb: change sii164SetPower to snake_case
-Date: Sat,  5 Apr 2025 14:00:54 +0100
-Message-Id: <90f9842254eb83c2dc19abcf5072aab9549026a9.1743857160.git.princerichard17a@gmail.com>
+Subject: [PATCH 4/8] staging: sm750fb: change sii164GetChipString to snake_case
+Date: Sat,  5 Apr 2025 14:00:55 +0100
+Message-Id: <08eb6104c7b82aea32796163421a7e795d3d8964.1743857160.git.princerichard17a@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1743857160.git.princerichard17a@gmail.com>
 References: <cover.1743857160.git.princerichard17a@gmail.com>
@@ -80,75 +80,64 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Change camelCase function name sii164SetPower to sii164_set_power
+Change camelCase function name sii164GetChipString to sii164_get_chip_string
 to conform to kernel code styles as reported by checkpatch.pl
 
-CHECK: Avoid camelCase: <sii164SetPower>
+CHECK: Avoid camelCase: <sii164GetChipString>
 
 Signed-off-by: Richard Akintola <princerichard17a@gmail.com>
 ---
  drivers/staging/sm750fb/ddk750_dvi.c    | 2 +-
- drivers/staging/sm750fb/ddk750_sii164.c | 8 ++++----
+ drivers/staging/sm750fb/ddk750_sii164.c | 4 ++--
  drivers/staging/sm750fb/ddk750_sii164.h | 2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index 6dee95e60a6e..bb7538682b7d 100644
+index bb7538682b7d..c12df1f9fb00 100644
 --- a/drivers/staging/sm750fb/ddk750_dvi.c
 +++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -20,7 +20,7 @@ static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
+@@ -19,7 +19,7 @@ static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
+ 		.get_device_id = sii164_get_device_id,
  #ifdef SII164_FULL_FUNCTIONS
  		.reset_chip = sii164_reset_chip,
- 		.get_chip_string = sii164GetChipString,
--		.set_power = sii164SetPower,
-+		.set_power = sii164_set_power,
+-		.get_chip_string = sii164GetChipString,
++		.get_chip_string = sii164_get_chip_string,
+ 		.set_power = sii164_set_power,
  		.enable_hot_plug_detection = sii164EnableHotPlugDetection,
  		.is_connected = sii164IsConnected,
- 		.check_interrupt = sii164CheckInterrupt,
 diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 284c32f7e9b4..b96f9369fab4 100644
+index b96f9369fab4..d0b80b86a4d7 100644
 --- a/drivers/staging/sm750fb/ddk750_sii164.c
 +++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -256,8 +256,8 @@ long sii164_init_chip(unsigned char edge_select,
- void sii164_reset_chip(void)
- {
- 	/* Power down */
--	sii164SetPower(0);
--	sii164SetPower(1);
-+	sii164_set_power(0);
-+	sii164_set_power(1);
+@@ -261,13 +261,13 @@ void sii164_reset_chip(void)
  }
  
  /*
-@@ -273,13 +273,13 @@ char *sii164GetChipString(void)
- }
- 
- /*
-- *  sii164SetPower
-+ *  sii164_set_power
-  *      This function sets the power configuration of the DVI Controller Chip.
+- * sii164GetChipString
++ * sii164_get_chip_string
+  *      This function returns a char string name of the current DVI Controller
+  *      chip.
   *
-  *  Input:
-  *      powerUp - Flag to set the power down or up
+  *      It's convenient for application need to display the chip name.
   */
--void sii164SetPower(unsigned char powerUp)
-+void sii164_set_power(unsigned char powerUp)
+-char *sii164GetChipString(void)
++char *sii164_get_chip_string(void)
  {
- 	unsigned char config;
- 
+ 	return gDviCtrlChipName;
+ }
 diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index 7a71f94a1e9b..45a90489c95c 100644
+index 45a90489c95c..c15cd6a5d53b 100644
 --- a/drivers/staging/sm750fb/ddk750_sii164.h
 +++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -33,7 +33,7 @@ unsigned short sii164_get_device_id(void);
+@@ -32,7 +32,7 @@ unsigned short sii164_get_device_id(void);
+ 
  #ifdef SII164_FULL_FUNCTIONS
  void sii164_reset_chip(void);
- char *sii164GetChipString(void);
--void sii164SetPower(unsigned char powerUp);
-+void sii164_set_power(unsigned char powerUp);
+-char *sii164GetChipString(void);
++char *sii164_get_chip_string(void);
+ void sii164_set_power(unsigned char powerUp);
  void sii164EnableHotPlugDetection(unsigned char enableHotPlug);
  unsigned char sii164IsConnected(void);
- unsigned char sii164CheckInterrupt(void);
 -- 
 2.39.5
 

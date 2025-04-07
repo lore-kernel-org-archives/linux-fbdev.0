@@ -1,58 +1,58 @@
-Received: from mail-vk1-f170.google.com (mail-vk1-f170.google.com [209.85.221.170])
+Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 467F73A1BA;
-	Sat,  5 Apr 2025 14:23:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD709221DBC;
+	Mon,  7 Apr 2025 05:57:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743863022; cv=none; b=q4qkUh6hlLHFM0SIz9U6MuvdctQNYwgCyTDN4dZs1tZ33GnUOB4srcB644mZZQJYo0vgwo/dfQb1IoLAD9bgC4+ACgKyvcoKn5u3BYgAc6qAGCjb0H4N+nsRxTQxptWb2p8x0+PYhwwJeWemppXnyP5LWM7jEV3MLf2uL3r05H8=
+	t=1744005473; cv=none; b=ROl8L9yz5BQ+LFTdyFe+ks6xA96V0Sz4YpsVw4joFLgS8z9oePiWLBJUf+OME0jihvhViMzgY4Cb5YshkOI3KFuMwDI/OouxlApmB21Sv1KndhXGWlByWPBjoCRZPExNvZlVBTjDWe/yzir+qjVyl0HjptywnK1qBskVfqEd+iI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743863022; c=relaxed/simple;
-	bh=Fb6nWConfM+SUWjQ8BRZyfSFDinOwn/Nox294oZsV6o=;
+	s=arc-20240116; t=1744005473; c=relaxed/simple;
+	bh=Ie29+/UawBgvaIHMCeBJQcdJFBfOAaXTEIGtJaSIBvc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GUtFt2BAVTPpkXltQanr3jfpXMMRhAgPB/H0I+B+s6LGI9UpolVETP0K9cAYUutbaBPwcg1wnoa4q3K93T+xzoqg4YUqPgc3TgnNkOQvPRPm0C69+K0xZmGGo/5wb09W60usddvEO9F7+qAizBLyU2mzTgWxeyh6ro5QQHYJ/5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EEB06SwF; arc=none smtp.client-ip=209.85.221.170
+	 To:Cc:Content-Type; b=Y4V2nPiajpr2W5n8qxQamwxiDuTHthUac7V0QQUjwQfZnSRRxiJghUomMEojHy96CS/5WfdFMltRnYLkuiF2WY3shRenjfQYPrRul2rGT3gN8Sr7TZiReNydmTuLnHNKhUzAsSLifyywnmhCc98TnER4SpqR+g5rNalVKvwqlTQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kyw3hI/f; arc=none smtp.client-ip=209.85.208.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EEB06SwF"
-Received: by mail-vk1-f170.google.com with SMTP id 71dfb90a1353d-524125f6cadso2872783e0c.2;
-        Sat, 05 Apr 2025 07:23:40 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kyw3hI/f"
+Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-5e6167d0536so7013381a12.1;
+        Sun, 06 Apr 2025 22:57:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743863020; x=1744467820; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1744005470; x=1744610270; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=/p/4bsPFAwsntA6dFF/zQ5mVNq7asuGZ7eLM61oyzaQ=;
-        b=EEB06SwFvC2qZsjfhre88djhOx7u5SKOF5IVP5BhNfcsIYWX/cnfHVlYTC518gp00H
-         e9CQIzGYAX2UNgX1h64ndusD3scEBfQadA1+lqMNmSXefW22mDakOHiKgqZR4I4NfLzx
-         DdLMalSN4srZZDxgQAi4uYzeuSSwzbyGmJClweTgnCo7zeWcxc1pRrM8bbmmuwFi1zSN
-         7GmiGwxtIyxvHZWxRrKIKNQyxGSAkFBRME7n7fNr1EmXvCeMdmHN0TLXkexfvR2DlYBY
-         /0RKPMYq/FABl6oCa4OF+7oYAp9XxruDcYB6Iul+jmO5FPgbUrmFK6g6AVlBRYNkWY6r
-         N/Iw==
+        bh=MU/QERwA590a39V1uHdiHYOh0ZGLgU5IxEfn8b8/6iQ=;
+        b=kyw3hI/fhynrk6h4a8f0ywsbxxC+gD6yTyh7LCHpzx9RdBDirM06tRwJoJ3aHb+EUw
+         eMBcBKXxn2J5ILM9P2hbkCg4pz6LhDGgDNlf2E4mLAGftmWRfgtn756BRVO4vcFowr5/
+         bH4347mg5T/1O86fy0nI6gKXI6uIISrq+1w1CR6a44gPxKyeB8wdyULKhyNSj4wd3kT3
+         aRCynbDPHKkhreNEmukoZTUhUtZANwVcTHhzcsOCkIgkrkPuEzJrxFjw0jCw/ivNci4e
+         +psR7ySdSevZrbX5P7aT6dOAWufQHUqjtdXUJqeIhgTwwwBecXIg4i8RlKq4J/lJm//p
+         87Fg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743863020; x=1744467820;
+        d=1e100.net; s=20230601; t=1744005470; x=1744610270;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=/p/4bsPFAwsntA6dFF/zQ5mVNq7asuGZ7eLM61oyzaQ=;
-        b=q7l7aUbRyBu0x+lMoL+944qJiah/TCLOUkAbj44G/A5uus0anKArLcInBv2h5yIrRc
-         39fV7977TocUhktd2FPxAht+QaMr8sp04M0THe70DnxaINv3o9BsYgocPHQdD4F8aNK7
-         8H+7vUlvtJfrXNpg9bMNsJk9m+wvADo/TB82cq5MwWOzh0SdrvcZ3ka7bl8gq6caJ/Fa
-         XGcdP3Hbikw+EV7AKwyM1WWVTXF0+3u3eP3JcJKTNXWWh2SIxgfXcmhFbZr9g113m2t/
-         MONOI2r34DiFdaq+30BNmNq/DPqUao2o1rg4zHE42k6VHRxxnMFMIyhN31xSEnM7V/05
-         DxTg==
-X-Forwarded-Encrypted: i=1; AJvYcCUVX9C2fC1SZgE3KZkIfF9JRClff54jYENU76Ot2dUNJYPnihEbHVw0KhmkyzbJPl+tE/o86GIRW/XGLQ==@vger.kernel.org, AJvYcCXbt/lvpzRLR+Ijj9I7CaKRac0t7kJmSIfhIFC/trejeTBCGTbEDg5KCuheUjSBe7hJz8h8OHgNjwpXlxeJ@vger.kernel.org
-X-Gm-Message-State: AOJu0YwoDDrCqCFws0QiQq5T/sLCqS3xfXbaw0YLDsO97C8xYr6Kftr2
-	FLUzmgZTUZGTTDqntNNQRILSyO1iBTj89/xVAI0uy69L14Waefciiyk+Ho6R1QvEorxtntophk5
-	5YlI/nu2/9qtV6W2kyqvkn9K0t7I=
-X-Gm-Gg: ASbGnctom2VfLYBVHD3lfXowQ44oaq+QlzG/AJTp7Px67RTS4cnyNKiSp49wFg82vC8
-	lN5rf1vN17cIwJruS0tMNCf8yu2AR9j5JuIef8qCIkrf8pqBEOZHYXsV9T/1/MUwukULYKv2GO7
-	014GI3AnQzKvIGZRUjfUDBmOXUyyGl
-X-Google-Smtp-Source: AGHT+IHFtRTL3RqrMIPJ8vf/tHEaDt1ARljHgx7WlPToBdwqJ724tsN+pZxlRaKfRKWlCe/z7fwyCcOgbtVY3pZp2Rk=
-X-Received: by 2002:a05:6122:168f:b0:520:5185:1c71 with SMTP id
- 71dfb90a1353d-52765d2d188mr4284391e0c.7.1743863020171; Sat, 05 Apr 2025
- 07:23:40 -0700 (PDT)
+        bh=MU/QERwA590a39V1uHdiHYOh0ZGLgU5IxEfn8b8/6iQ=;
+        b=IdLWJWHJFJD5kK1kena+vwOe7l6UxVqj8pw09cI8lwnfKw5AIvKJJ1erY6GSoFSLHa
+         YdVV4p8VxzlOB7E5BybK10BOzV8Shss/K/hipaCExJMWpGFEVdTke/s1NZCaZnOC7z/1
+         ZI3DcU2QMbbWgmfJZ2aSbsTgbYp3rNbV2OXGLX/Gme8PQkNECBRfHsI3X5Lt9Dja5v45
+         BEN0Rh1aaevecLO7+dUxcbe1+CrRroweYo0yQIqc+QRFJ3edoTlvGaKMnIhZG7VlpSjJ
+         STz0FIYlQUlW6S6LrsKN1qFoucAq6wZ5l1+NjIzeYxg7PCUxzybC9eJWpoDI98a7Tf/+
+         9Mmw==
+X-Forwarded-Encrypted: i=1; AJvYcCUivsBqLULATEF1ih65IsqE8wQtDrndfSFxeu88Giy+WkQQ94gN1sFfukXC8/jrbVeXjfAaYjRtdKWB8A==@vger.kernel.org, AJvYcCVEJRJNbk+xEWV6cTDUK4dOKZf00qYkkZnMIpYqcv3XnGqRjvb4EWe2GCE7heh6lZfsarYfCbBIogpRUpLD@vger.kernel.org
+X-Gm-Message-State: AOJu0YzF3V7ukKZP3vUzilu+jwVqYzl9iO8eA85hm531vESlR2TOPsOh
+	a7vsFnZyTkDPLaa9ff9VhAD+KeXsvfhzd/Sh5rfg9/NWkVJW4YeJL8o8sOQGP7FSJXXm/95Qf/R
+	SXhKsqkP33ds6CYBfXD8JQTWlQbpAq9Cqay4=
+X-Gm-Gg: ASbGncvpp8j487W3pwnHrP7bZ0istiYk6VQL9XZQy0QFBwQJlB7/T6GPXlv5fsH/lKd
+	FacoU/A4daM+LfG2Vb7Z2gzZuKLSNWpJ8AEPR9IbByuvhY6Jc1P1AKQAIyNy0JCfVmTu/0DHJPi
+	a6dv+75GjoSny4/1FWW0opyLHv
+X-Google-Smtp-Source: AGHT+IELgjumJ/OH5wAvOqKNaKOIG+lfT/mrVgVJopPjWdFEehfMhOmWOSaLwOOa6/yim7LXwbc+NuGDmPdQpe8Z8O0=
+X-Received: by 2002:a05:6402:34cd:b0:5e7:c773:ae35 with SMTP id
+ 4fb4d7f45d1cf-5f0b3b6089dmr9515458a12.5.1744005469968; Sun, 06 Apr 2025
+ 22:57:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -63,12 +63,12 @@ References: <cover.1743857160.git.princerichard17a@gmail.com>
  <2025040538-breeze-espionage-dc6e@gregkh> <CAMyr_bL4Qo_eeVSHhy-_z9_PwcQAvD6N4jfqBb+rtN-Lj+YdmA@mail.gmail.com>
  <CADYq+fY-twT=NruAmfb6EpmYJLM971aTu-CUi-We_Fd6JSP47Q@mail.gmail.com>
 In-Reply-To: <CADYq+fY-twT=NruAmfb6EpmYJLM971aTu-CUi-We_Fd6JSP47Q@mail.gmail.com>
-From: Samuel Abraham <abrahamadekunle50@gmail.com>
-Date: Sat, 5 Apr 2025 15:23:30 +0100
-X-Gm-Features: ATxdqUE8ROfu-fqiRiJp-D_rItN8bhudjw6IQvFtkopPWSBx-EbHPIFhi5qw-FY
-Message-ID: <CADYq+faiOqMVsi6KDiR2GkYrU4FCqv7j0fo3fw_R=72=UL2oPQ@mail.gmail.com>
+From: Richard Akintola <princerichard17a@gmail.com>
+Date: Mon, 7 Apr 2025 06:57:38 +0100
+X-Gm-Features: ATxdqUEK1yuNgL11LsgZ-ALo34s7H0IFI4v_BYAnXp1SFIlzhqYSGlc_Kvkyfjs
+Message-ID: <CAMyr_bLkvFBTpYehG4fs-tqVE18YBf53okddU2=i7+Rr-zbCsw@mail.gmail.com>
 Subject: Re: [PATCH 0/8] staging: sm750fb: change function naming style
-To: Richard Akintola <princerichard17a@gmail.com>
+To: Samuel Abraham <abrahamadekunle50@gmail.com>
 Cc: Greg KH <gregkh@linuxfoundation.org>, outreachy@lists.linux.dev, 
 	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, 
 	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
@@ -78,57 +78,21 @@ Content-Transfer-Encoding: quoted-printable
 
 On Sat, Apr 5, 2025 at 3:16=E2=80=AFPM Samuel Abraham
 <abrahamadekunle50@gmail.com> wrote:
->
-> On Sat, Apr 5, 2025 at 3:07=E2=80=AFPM Richard Akintola
-> <princerichard17a@gmail.com> wrote:
-> >
-> > On Sat, Apr 5, 2025 at 2:37=E2=80=AFPM Greg KH <gregkh@linuxfoundation.=
-org> wrote:
-> >
-> > > - This looks like a new version of a previously submitted patch, but =
-you
-> > >   did not list below the --- line any changes from the previous versi=
-on.
-> >
-> > Please, how do I resolve this issue?
-> >
-> > Richard Akintola
->
-> Hello Richard
->
-> THis is the main message from the bot
->
+
 > This looks like a new version of a previously submitted patch, but you
 >   did not list below the --- line any changes from the previous version.
 >   Please read the section entitled "The canonical patch format" in the
 >   kernel file, Documentation/process/submitting-patches.rst for what
 >   needs to be done here to properly describe this.
->
-> It basically means that if you made a change to a patch, you will have
-> a new version.
-> You will have to indicate the patch version and also what changed
->
-> So lets say you have a first Patch then after review, or you edited
-> the commit message
-> or made a change in the code or something,
-> you will now have a new patch which you will call v2.
->
-> you will use git format-patch -o /tmp/ --subject-prefix=3D"PATCH v2" <com=
-mit-ID>
->
-> then when you want to send with mutt, immediately after the signed-off
-> by line there are three dashes (---),
-> You will then write what changes under these three dashes in the format
->
-> signedoff-by: Richard
-> ---
-> Changes in v1:
->    - This is what changed in v1.
->
-> I hope this helps
->
-Also, you can go to the "Submitting a Patchset" section down the page
-of the firstPatch
-documentation for more information on versioning patchsets.
 
-Adekunle
+
+Hi Samuel,
+
+I sent the patches individually before, but I was instructed to send a
+patch series.
+
+Given that I didn't change any code, should I still add version number
+and sending
+patch series as the difference?
+
+Richard Akintola

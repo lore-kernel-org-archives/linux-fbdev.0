@@ -1,63 +1,63 @@
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 380CC20A5D2
-	for <linux-fbdev@vger.kernel.org>; Mon,  7 Apr 2025 16:19:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D0AF20967F
+	for <linux-fbdev@vger.kernel.org>; Mon,  7 Apr 2025 16:27:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744042743; cv=none; b=H2kUE+eSwY1+G02lz2cq0s8gkwbtEuP6JZP/e0w5tKWF4NW0zbkQIC+YHDHaiDeoR9qld1r5hEEwz4g0nOP1BIXnpNdtMxibrNVqh5zBN+VkM6H7beKEDUlr0nteHvvDTaNmbWhQIpG8cp5r2f3tq2WkO74f0Y+AJ+5c65Oq4qc=
+	t=1744043271; cv=none; b=iksNlVeqQ456jFqYst5ZmYv5XTR/M2/ZH0hnKelpx6RgeX/IztITgyq0t1i2M0M6Y2x/vysH7RqxCNQNtNpoo/QhrO07kpm/nGH5fmWPCdAZUHZg9vVONn4qKhZDGxrkG74m92uHp33uznC4D2nKF/iMeoVtalG//rrawLryEhk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744042743; c=relaxed/simple;
-	bh=oQfeLGLwN0ia9mkF/LrZhoiRwa+hmOwNqpU0xO/chsM=;
+	s=arc-20240116; t=1744043271; c=relaxed/simple;
+	bh=ixu4OFoJwzg1v+1wl51xk03lO5q8ieoco/QoCpn/be4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gm2I89YzArJPMCYvNI2+fGd2c3gSOS2kWmE7lqQNdPLQrlVIiSYBpnOSfvvhk8dj5ac07k7M5Xq9UeyEf8nfxrTeyZNhfkIj3Yn5qnFdPqkIuNxQQrFKUd+XDaphJQ7nRtzNFgny0PZoO/mJvI7ucRQMfDsB4343VpbEenFYXBQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=hgBbv+tn; arc=none smtp.client-ip=209.85.221.54
+	 Content-Type:Content-Disposition:In-Reply-To; b=cIQ0DvNnYYEKEcmn95ms8ist/F/xB3cK4lbHw9Ej3HTioSqXFUIXuvQ7QpUQsejPvtX8KOIjh6QL5D+csMn6x5wohH9qwdYYXfLGx8w//4INp649xeuH/0w6W/NNQvS01qfzFPyoUinN7keBHSusFUwfnBcMUORDXLEpBY6Hh1Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=CJjPujMh; arc=none smtp.client-ip=209.85.221.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="hgBbv+tn"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-39c1ee0fd43so3886895f8f.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 07 Apr 2025 09:19:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="CJjPujMh"
+Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-39bf44be22fso3102000f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 07 Apr 2025 09:27:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1744042739; x=1744647539; darn=vger.kernel.org;
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1744043267; x=1744648067; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=FlvRbUOqYjIG9Hb+k1k+g6fdWn9FeWH5VnocqRc/bEs=;
-        b=hgBbv+tnGW2Hf+TMWrtQEODiGSglq6jGf9+7Y1Gycp6G4O7jzt6JO/fF7WJ5+dHBJE
-         YfOpDUxFiIqHxEhHdxmp6x8F4ESdRjp0bQqBSCmvM5MeKUybnM1lr95MmMhVrFqZALWE
-         gwsjKtsG7zE9TgORbAprhJXQoUv+ILeE9f6A5SdJkkwdZjaPCGf5wR6inFvdLYuDAx6w
-         1o19DFH92b3dXNTz08eWIweW4F/w+NcelHOzdkncik5fxzhF3k0f0MWLDiksEoj0z04H
-         +yiAp8xANdFRLQOLN4k1zqZOJcRrypNgHw3TK8s7tSvOwNUEZR/I6lPXtRCVG/S2bHJR
-         k3ZQ==
+        bh=Gmt4HX/iSNiSTqkD3t3ALwtpmvWnuIuBQoVi+iO2Lmc=;
+        b=CJjPujMhKpR8Ka2qInFujzInJVSRNAgpGLfDvBTxTRZtTXaVur3Y4xK68UyceaFHh7
+         7pPcqYdXqsa3XhfsWV0/OCq8L0m2LkA13N9k2HWQ9jFAGeXSB3ShLkhRFB6HOSZxDa1N
+         N3vu0K0ProzdEcBTfluMRCpfE2vYHJqpcrTdHD+QqbFa/H9bVk3kuPHNgRg7wysgFu/4
+         y6vYEbehUyBMWDRBATOJszi25NbagcmcvmZvcbey2LB0VhWms1V8dCnMC8FWLkLR3ngM
+         5UoAxTaM4V7MkSez7t41faMXV+SGO2jr+azrbjVPwet8CIgtQIsDNWfklXQ3PNVnnltN
+         aSkw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744042739; x=1744647539;
+        d=1e100.net; s=20230601; t=1744043267; x=1744648067;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=FlvRbUOqYjIG9Hb+k1k+g6fdWn9FeWH5VnocqRc/bEs=;
-        b=iEEV+vi8srECJONcaBdVDOlMPxo/e6/RgmaXgROlnoPNaWMT4ACGshgys/xjFS50UT
-         FlM1ra8IUNgQNvxPMmKcyYUgvbvDxukhujiOKbCo7+FQ7ZjLwwyLvuPll28Y7boQJv5m
-         3O5ZL4OFOneqrKzfoG8O4YSS+IhYoROdHl4RYJcT1i9qNTrUH9EBvdVnkEuS0Ov6RcsO
-         2B6ghlAZrLkLRTguZyLElPzrVTH4WDiSmc9IUEOrbaG1aQFmxO+4KhIvYyqBDn/JdTWz
-         qq1TfYlOoyLbQJU8yCwBMW8nEoeVK1zIVaDgFA9ZQXIRCFo7XNyPyoeI/neYwyPT3fTs
-         qVlA==
-X-Forwarded-Encrypted: i=1; AJvYcCW5U8KhJYUw+Q3LbcKCoqGeuwiih+p1DTsGzefIhS4Py8dFQD62dsnGjDU5A3tOBHLehKCN30UIO+dtcw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx3/EmXNhq5szcAfeuoXT7Uj5t8MQ3FsQEWaZdpLbuEtHmHVulv
-	Esc3NpUmcCKpsSqCkyYOss5THqcPK73M5BGb4lV9nLAublFT+/8UbKGrb3WQGo4=
-X-Gm-Gg: ASbGncud5of9kdmcksgJtWoNuxDrcdPH8arv63sjPsrm7hdyB06oMYNErsGR2/wpku3
-	MTjVjv8FNqYnRS96lfnJYwwbtaCzAJHRZaS7viRsOjvZ8mS06rpePNVMRccrYFJMQmW83lizSIv
-	YuwVvfUBfBndkNglq2kXLWmooNpSi6A/Vqkxo8y6uExNO1QobtyLnA9KEP8UJ+7w2kSRe0ULeT1
-	26gdNgIhvdux9dMqQH4TjzM2hEFKeBh6FRzrO+wYMI6OckGF4cWMbYZvxv1p7Vp5lj4GT5O0rz2
-	6KgoONN9KkL4JNEGy7BnaHYD9TRgCZlxUAorLpGxeubSD5vUAkben+j6LTqYc+nHrIPLLq0gmIv
-	74ZBpNuDJEP5yqPoWV6Jl156IDyM3N0Ze3AHo7g==
-X-Google-Smtp-Source: AGHT+IGAiFgCHKC4NxdMI0XYxiblAlo6teR2sZ4ryX4FXGKNTm7nHjhUAQ7KJxNf9HDeA8CDyhXndw==
-X-Received: by 2002:a05:6000:2285:b0:391:3049:d58d with SMTP id ffacd0b85a97d-39cadc85ab6mr11452084f8f.0.1744042739225;
-        Mon, 07 Apr 2025 09:18:59 -0700 (PDT)
+        bh=Gmt4HX/iSNiSTqkD3t3ALwtpmvWnuIuBQoVi+iO2Lmc=;
+        b=ggQSelOWMW2Pen0dlqKZSM7RHOoWxv1f6Jf7AYvT7aMh4Yy2ZsYh42T8lLCIqyFJJZ
+         wb+0SoMRv/4cESH37P5iRRQ59zLnQvMa2l0kjrapE5CnIQ6d6kbWfr08LVq4Sbd3xVXl
+         bco0tD3yIjDKp+4vg08jCrv13xU8EhlrR+TFXgV0RsJ+FZolWNR2n3FqQAon8Fzvi7gC
+         +yS8erJS1rZc+fmq1kmvaBIhbpmihNNuz0cyUlkTRC2Bfvdj6GUQIUKByR0Y2ip7sjo2
+         7NMwmheVrlGvHLtNrpl8kqROVCzftL5LhBdUhT14DwSUXr3zK5YnPR32XoUFjjEDyL8/
+         XugA==
+X-Forwarded-Encrypted: i=1; AJvYcCVL35i+Djc+RStT0nmQIBqv1MTdHzgScN4QuUo5WCpK7asoBtRWJy9zWh3MIfqJPlxhjz8Al3Hf7Hpq1A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywpykq/avl+42MQMNhEMEl0uf7bg2KSgCVmCAWGUu3gLxia9V+L
+	SWxhcCYG+hxKcMIRZRbqlYeBAqmY/yj/HfNgc4LTREc08+vG93H0YRCCsXBrfmA=
+X-Gm-Gg: ASbGncukLp+9S/0gNpCRWgVMJ4t6pw6WOqXQPEzbrsvNTMMvzS5QzTxiao8kelq13Ti
+	ugdiBeDF+dXzD3zCT5vqE1i8mIvAuP6rPWPyfiyM8dehtMRD7f0+ylelsONcDZYtF4O7XjTJFkD
+	bWTBcnpv2684cndi4QkyB7XBUkUFOWLT8JzXZivIXQULj7MO5IOa5G0Ej2vmOeUttteV7ntGEwE
+	Xzu9J96kik4s4KDJVrvd1OPUuQwpbFZR9BTOYkt5Ym6nTk2ZAYXCRRxqO3TrcEO1Y3HDjnrQtyt
+	eldO01Xlqm/ti2TnXecaHG93NzeDDPzq0qviVHeUH7LnAoj1yomn97XqXCFrmZQv2qxqcyxuamS
+	hFrAlMx/w0H+9FPXR1WccarPoKDU=
+X-Google-Smtp-Source: AGHT+IG8J3er1iyXQBPMxITzMvfz9EFr3jDi7ygtRVXk9vTgIkpVU04qGBBpxMY6//a+NXkI/WoaMA==
+X-Received: by 2002:a05:6000:1786:b0:39c:1f02:449f with SMTP id ffacd0b85a97d-39d6fc00d2dmr6036975f8f.2.1744043267049;
+        Mon, 07 Apr 2025 09:27:47 -0700 (PDT)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-39c30226da7sm12857720f8f.98.2025.04.07.09.18.58
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43ec34a92desm134263455e9.14.2025.04.07.09.27.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Apr 2025 09:18:58 -0700 (PDT)
-Date: Mon, 7 Apr 2025 17:18:56 +0100
+        Mon, 07 Apr 2025 09:27:46 -0700 (PDT)
+Date: Mon, 7 Apr 2025 17:27:44 +0100
 From: Daniel Thompson <daniel@riscstar.com>
 To: Pengyu Luo <mitltlatltl@gmail.com>
 Cc: Jianhua Lu <lujianhua000@gmail.com>, Lee Jones <lee@kernel.org>,
@@ -69,11 +69,10 @@ Cc: Jianhua Lu <lujianhua000@gmail.com>, Lee Jones <lee@kernel.org>,
 	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
 	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 4/4] backlight: ktz8866: add definitions to make it more
- readable
-Message-ID: <Z_P68OP1c8XcbXle@aspen.lan>
+Subject: Re: [PATCH 2/4] backlight: ktz8866: add slave handler
+Message-ID: <Z_P9AEGq2sBYShgv@aspen.lan>
 References: <20250407095119.588920-1-mitltlatltl@gmail.com>
- <20250407095119.588920-5-mitltlatltl@gmail.com>
+ <20250407095119.588920-3-mitltlatltl@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,42 +81,24 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250407095119.588920-5-mitltlatltl@gmail.com>
+In-Reply-To: <20250407095119.588920-3-mitltlatltl@gmail.com>
 
-On Mon, Apr 07, 2025 at 05:51:19PM +0800, Pengyu Luo wrote:
-> LSB, MSB and their handling are slightly confused, so improve it.
->
-> Signed-off-by: Pengyu Luo <mitltlatltl@gmail.com>
-> ---
->  drivers/video/backlight/ktz8866.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backlight/ktz8866.c
-> index b67ca136d..5364ecfc0 100644
-> --- a/drivers/video/backlight/ktz8866.c
-> +++ b/drivers/video/backlight/ktz8866.c
-> @@ -24,7 +24,9 @@
->  #define DEVICE_ID 0x01
->  #define BL_CFG1 0x02
->  #define BL_CFG2 0x03
-> +/* least significant byte */
->  #define BL_BRT_LSB 0x04
-> +/* most significant byte */
+On Mon, Apr 07, 2025 at 05:51:17PM +0800, Pengyu Luo wrote:
+> Kinetic ktz8866, found in many android devices, nowadays, some oem use
+> dual ktz8866 to support a larger panel and  higher brightness, original
+> driver would only handle half backlight region on these devices,
+> registering it twice is unreasonable, so adding the slave handler to
+> support it.
 
-I'm not convinced these comments are necessary.
+Is there anything unique about KTZ8866 that allows it to be used like
+this? I think it would be better to add support for secondary backlight
+controllers into the backlight framework, rather than having to
+implement driver specific hacks for every backlight controller that
+appears in a primary/secondary configuration.
 
-
->  #define BL_BRT_MSB 0x05
->  #define BL_EN 0x08
->  #define LCD_BIAS_CFG1 0x09
-> @@ -47,6 +49,8 @@
->  #define PWM_HYST 0x5
->
->  #define CURRENT_SINKS_MASK GENMASK(5, 0)
-> +#define LOWER_BYTE GENMASK(2, 0)
-
-I like using masks and FIELD_GET() but this is not a byte. These are
-the least significant bits.
+Also, the kernel seeks to avoid adding new instances of master/slave
+terminology. See the coding style doc for suggested alternatives:
+https://www.kernel.org/doc/html/latest/process/coding-style.html#naming
 
 
 Daniel.

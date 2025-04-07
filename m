@@ -1,96 +1,144 @@
-Received: from pv50p00im-ztdg10021801.me.com (pv50p00im-ztdg10021801.me.com [17.58.6.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EC08823DE
-	for <linux-fbdev@vger.kernel.org>; Mon,  7 Apr 2025 11:55:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=17.58.6.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C715F209F46
+	for <linux-fbdev@vger.kernel.org>; Mon,  7 Apr 2025 16:13:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744026941; cv=none; b=MR95xXvHcGNXfr0iI+xfO9A5xZSMnn4Qb3nOsjkYxJXkKgnBpj8kyDP33W7ifXUPJIZanBorBFCDzASH32xtIeNfTSNzEOHtIdLBb8gy3AOVaa862cBPw/qozFiQNwSJDUQ8zJm7I+kiGgaJ0W7GYQ4YwpLMFJ+vgtuLbUTtKb8=
+	t=1744042432; cv=none; b=p0RUx4HCUhY787dDytQwUVmBbDqwSbKRFEnVtNKmNwi6hXDzeHja5Pftur0jm5CvkAYdo+E1ezfLIkstpfysPjZ/WZ/D135qIUMWdGJHPX6OOg7iwEWpe2znT61t0z9m24qVE1m9JdYzha+XhyIZFlhfWqDj4gdLjj4lafvls50=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744026941; c=relaxed/simple;
-	bh=Q7w6rQMWzrrI56q78w0SYb/BTNujEKUgrLF8isK6A8w=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=J4sCJ6CQdqwDFF8L3372Tvw/io4OyNZNWVKSa4zb5RwAJKHGFWRdyYLF8MBo7UtK4n0U46h26JuJwjM72v79vVMu9GZ/bD1VynGtiVtoS8F37sVwsPeGFZTDaM7ChttjySgpvqE0W1kb8ZMkElZIUMcvPtjUnQE1s2T15amkhWE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=anymPyWj; arc=none smtp.client-ip=17.58.6.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
+	s=arc-20240116; t=1744042432; c=relaxed/simple;
+	bh=momMVb5vlwB7w7QBIrh4FuJxBMr+DXof5tHLvIxbILc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ud/YKZfEZfJmnbXZnwSQtaBSHTYS0WHsORguFee2MNcfYEq5aI17VNIvN8b9p8CEHMW4WRBEGKbc1w6c+btX+uNvEce7NAOYC0Gv6hDoWmgF7Hsp16mx7k8sInrWXA1P69+zHtulAOqRj8/XMMN5mPIkKLDrdPAxXIWH+stwd9w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=VUkcGvdZ; arc=none smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="anymPyWj"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com;
-	s=1a1hai; bh=Z75kDtTMKquraVShLM7bPPJB66WvUMJ0QtUbJjFQFJk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:x-icloud-hme;
-	b=anymPyWjrQHKXWLbTzp5qhjeZc2WbjdqfQgYHsxP3SmB7oAoFj7RauAT55mdnYQR7
-	 w0unR/JlTIpMBC24xy0XXDAAPFtIRMu4uOkRsFL2SSnkPk/jNH13/dFZOR7PFQLA2m
-	 gliT4Ukkmd1dcAdSSsULfYzSbkG5wwiM4tbVlL3l+p1Lm9cc5T81eOZ34VZt2n3o3A
-	 pyYLv8NXk+wuPEC4xAuNO41DDZMu0Xr6FNV5F9yTxFdlIOH+m76ivGFDzCR2gEsUsJ
-	 HU6ZBYzzLE5DfD7Bg6STnOASObUNAJnw1x5ULuZgWAg2/0rId3A2aE221RvNTpLWZi
-	 Lf16WFvaI+aiw==
-Received: from [192.168.1.26] (pv50p00im-dlb-asmtp-mailmevip.me.com [17.56.9.10])
-	by pv50p00im-ztdg10021801.me.com (Postfix) with ESMTPSA id A20402010176;
-	Mon,  7 Apr 2025 11:55:34 +0000 (UTC)
-From: Zijun Hu <zijun_hu@icloud.com>
-Date: Mon, 07 Apr 2025 19:55:20 +0800
-Subject: [PATCH] fbdev/nvidiafb: Correct const string length in
- nvidiafb_setup()
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="VUkcGvdZ"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-43cfe63c592so44101005e9.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 07 Apr 2025 09:13:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1744042428; x=1744647228; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=hAlufBsPlnjuTWbgusP8CYnzhAGj3Mnwll46JdWGBbE=;
+        b=VUkcGvdZWUbu9OzL8xb/T9nIPABJp+EpwUB25HeDeqsIYBWHw/KxG+9HzB6zJ25efA
+         IEVWesGAkZXnsKnEEQm5RrjsBBy/tM0vuvAVzxUKgGOfI/2MnZRk9eU1buIVmNaD/vyl
+         7ohlvYtihiG99nc1Pjalgx9Cg3PhduK3ocW9+yDw355ftfxGvBo3YocEdBwq8pF8+NYx
+         lMdNCYIYwmRxY1Ub0vqMljGY5ITbfI0syUZ0bCM41CmNbN56FnpgJML2mZso6zE4ctdw
+         GGWGXp/DxpbSRR2/MomVoMl/GluMdqLScFL5xdZU1NcCHhUkH0KM61p8FLLG8T+nyt1b
+         kttQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744042428; x=1744647228;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hAlufBsPlnjuTWbgusP8CYnzhAGj3Mnwll46JdWGBbE=;
+        b=AUnHfWG7U4rAp1wEEEY6s8ajG2sSuo3pCPtzsleIePVRgmswcT/16THKSraOYWprY+
+         wZIDWEL3QAmB1E/y0PAugvH4ju9O6v6KxuPjfWzhvxMsoUbNAaHUzNelyGuSE//2iY67
+         1HI+WhrgvcHEO5Xzp6HcmvnH8/QtJq1jx6OyD0eh7aKVxite40c6vrdJbeTBgq7VOafO
+         fBNC0M8Z3obfE9CjDfkDwchdwm+d6fyyPbd5wJzgoVD0JI8YwbRrANziJOoOshXXksyt
+         /0SESpWOqEPfYQvCYvQidKX5zf80A2BTLTFKUJzlWStYUxPiDf6dON8Gr4dN3CUNYhO1
+         Q2KA==
+X-Forwarded-Encrypted: i=1; AJvYcCW/r7a1FLmzLA11JT7ljUdQQYHnBDlKTLZm12YXOM6tW3VWbB1eLmD9hKZ3eFcslra7cYDc56zdEhvK4w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz1IDqCZH2XAG/fn0j0rWiTtgjBNrTLIfBKghsALCDSe2qScl0+
+	/gOu3DWZwohWaC0T3SkjTw4+zbRA+pC12TgEQPI9yNthtNWFBa/MQOiPxz3LhxY=
+X-Gm-Gg: ASbGncupMxt8uI+NeDxt0hi74DM0hwRv0L5gzsgihnNi6cQHY2L48uxAG5T9V0jU8jl
+	nROUqgFwz4s1ZrvBQqsxpbcl5aDxVN2LcNlobNCGYZI1drrjH0UrenmC1E+wJRI26460aic9xQF
+	kzmyuYepSZCR5QwZYMC0qmEixm5JJIKmfdhbygX1KJWBcUdNGIOfibtHl13dmD1rskgkFZOVrKT
+	CcBmYXqUH3mi18Q/VLign8cpci6RXp8LdzF5RIO/DwEATqyVU5uuPXOcxkm/NXlJNr3MDAsJxok
+	yB14YrUX3R23DQKeHIO7Q6kKRbo6RSZxW6tg1ohQ1lerv1EgA3QEHa/X/DCU2QKzrp+GPkBjEEj
+	IL2hndOoZHDpeFZYTjV/0x+lCq5s=
+X-Google-Smtp-Source: AGHT+IF9E+Yu68SivmKTZ/2oBu6XpMDyufJhLClsxWUTbSHDLDqi5DwsmXJhaL8CEGG/v/moBPNDvw==
+X-Received: by 2002:a05:600c:1d28:b0:43c:fad6:fa5a with SMTP id 5b1f17b1804b1-43ed0d9ce1dmr107471025e9.24.1744042427942;
+        Mon, 07 Apr 2025 09:13:47 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43ec1630ddesm137924675e9.5.2025.04.07.09.13.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Apr 2025 09:13:46 -0700 (PDT)
+Date: Mon, 7 Apr 2025 17:13:44 +0100
+From: Daniel Thompson <daniel@riscstar.com>
+To: Pengyu Luo <mitltlatltl@gmail.com>
+Cc: Jianhua Lu <lujianhua000@gmail.com>, Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 3/4] backlight: ktz8866: improve current sinks setting
+Message-ID: <Z_P5uLrGiQWez0jv@aspen.lan>
+References: <20250407095119.588920-1-mitltlatltl@gmail.com>
+ <20250407095119.588920-4-mitltlatltl@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250407-fix_nvidia-v1-1-843f8d031c7d@quicinc.com>
-X-B4-Tracking: v=1; b=H4sIACe982cC/x2MQQqAIBAAvyJ7TjAp1L4SEYtutRcLBQnEvycdh
- 2GmQqbElGERFRIVznzHDuMgwF8YT5IcOoNWelaTMvLgd4+FA6NEF4z2zqJVFnrwJOr2n61bax/
- BNxyRXAAAAA==
-X-Change-ID: 20250407-fix_nvidia-a9d72c98a808
-To: Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: Zijun Hu <zijun_hu@icloud.com>, linux-fbdev@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
- Zijun Hu <quic_zijuhu@quicinc.com>
-X-Mailer: b4 0.14.2
-X-Proofpoint-ORIG-GUID: hR7R5pRJtDpg_X92yc7fAbAx09XflHRV
-X-Proofpoint-GUID: hR7R5pRJtDpg_X92yc7fAbAx09XflHRV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-04-07_03,2025-04-03_03,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 clxscore=1011
- malwarescore=0 spamscore=0 mlxlogscore=857 adultscore=0 suspectscore=0
- mlxscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2308100000 definitions=main-2504070085
-X-Apple-Remote-Links: v=1;h=KCk=;charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250407095119.588920-4-mitltlatltl@gmail.com>
 
-From: Zijun Hu <quic_zijuhu@quicinc.com>
+On Mon, Apr 07, 2025 at 05:51:18PM +0800, Pengyu Luo wrote:
+> I polled all registers when the module was loading, found that
+> current sinks have already been configured. Bootloader would set
+> when booting. So checking it before setting the all channels.
 
-The actual length of const string "noaccel" is 7, but the strncmp()
-branch in nvidiafb_setup() wrongly hard codes it as 6.
+Can you rephrase this so the problem and solution are more clearly
+expressed. Perhaps template Ingo suggests here would be good:
+https://www.spinics.net/lists/kernel/msg1633438.html
 
-Fix by using actual length 7 as argument of the strncmp().
 
-Signed-off-by: Zijun Hu <quic_zijuhu@quicinc.com>
----
- drivers/video/fbdev/nvidia/nvidia.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Signed-off-by: Pengyu Luo <mitltlatltl@gmail.com>
+> ---
+>  drivers/video/backlight/ktz8866.c | 23 +++++++++++++++++++----
+>  1 file changed, 19 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backlight/ktz8866.c
+> index 017ad80dd..b67ca136d 100644
+> --- a/drivers/video/backlight/ktz8866.c
+> +++ b/drivers/video/backlight/ktz8866.c
+> @@ -46,6 +46,8 @@
+>  #define LCD_BIAS_EN 0x9F
+>  #define PWM_HYST 0x5
+>
+> +#define CURRENT_SINKS_MASK GENMASK(5, 0)
+> +
 
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index 8900f181f1952acd2acc16a6ab49a5a42ec056ac..cfaf9454014d8161bedc3598fb68855e04ea9408 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -1484,7 +1484,7 @@ static int nvidiafb_setup(char *options)
- 			flatpanel = 1;
- 		} else if (!strncmp(this_opt, "hwcur", 5)) {
- 			hwcur = 1;
--		} else if (!strncmp(this_opt, "noaccel", 6)) {
-+		} else if (!strncmp(this_opt, "noaccel", 7)) {
- 			noaccel = 1;
- 		} else if (!strncmp(this_opt, "noscale", 7)) {
- 			noscale = 1;
+Call this BL_EN_CURRENT_SINKS_MASK and keep it next to the register it
+applies to.
 
----
-base-commit: 0af2f6be1b4281385b618cb86ad946eded089ac8
-change-id: 20250407-fix_nvidia-a9d72c98a808
 
-Best regards,
--- 
-Zijun Hu <quic_zijuhu@quicinc.com>
+>  struct ktz8866_slave {
+>  	struct i2c_client *client;
+>  	struct regmap *regmap;
+> @@ -112,11 +120,18 @@ static void ktz8866_init(struct ktz8866 *ktz)
+>  {
+>  	unsigned int val = 0;
+>
+> -	if (!of_property_read_u32(ktz->client->dev.of_node, "current-num-sinks", &val))
+> +	if (!of_property_read_u32(ktz->client->dev.of_node, "current-num-sinks", &val)) {
+>  		ktz8866_write(ktz, BL_EN, BIT(val) - 1);
+> -	else
+> -		/* Enable all 6 current sinks if the number of current sinks isn't specified. */
+> -		ktz8866_write(ktz, BL_EN, BIT(6) - 1);
+> +	} else {
+> +		/*
+> +		 * Enable all 6 current sinks if the number of current
+> +		 * sinks isn't specified and the bootloader didn't set
+> +		 * the value.
+> +		 */
+> +		ktz8866_read(ktz, BL_EN, &val);
+> +		if (!(val && CURRENT_SINKS_MASK))
 
+This is the wrong form of AND.
+
+> +			ktz8866_write(ktz, BL_EN, CURRENT_SINKS_MASK);
+> +	}
+
+
+Daniel.

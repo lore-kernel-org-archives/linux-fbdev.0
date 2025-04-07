@@ -1,207 +1,96 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from pv50p00im-ztdg10021801.me.com (pv50p00im-ztdg10021801.me.com [17.58.6.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68997158545;
-	Mon,  7 Apr 2025 10:00:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EC08823DE
+	for <linux-fbdev@vger.kernel.org>; Mon,  7 Apr 2025 11:55:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=17.58.6.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744020033; cv=none; b=a+ta/ez9JBiu3KY+ZnJMUb3i3BUCHl8vL7e7LDlpGC+TxMT9VXHi0gjtflgOT83psGv1XFBsqmHtGHkFBmPB2DUSU4Kg5NviEgiRaRfWhIGd5tFlw9/MvU0pRhLfutvpHpMUG/t57O0oOPZYMUaS274fuJiYJdbp1rclzEzzvKQ=
+	t=1744026941; cv=none; b=MR95xXvHcGNXfr0iI+xfO9A5xZSMnn4Qb3nOsjkYxJXkKgnBpj8kyDP33W7ifXUPJIZanBorBFCDzASH32xtIeNfTSNzEOHtIdLBb8gy3AOVaa862cBPw/qozFiQNwSJDUQ8zJm7I+kiGgaJ0W7GYQ4YwpLMFJ+vgtuLbUTtKb8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744020033; c=relaxed/simple;
-	bh=/azf35r5cQXte1FxB3g5fAuyGOdAl0zghe2ozQC+Kn4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UXIrFe1flJvbmIntOeHmuF3UjohmPRoeVB9MAw6KYjnnA5d9fBQqNCUse8Kh8MHAdpj4y282UmDoWVWk0f0fjNWLsPPfB+nSARgI7tjU2ErlqVWP1JXkCnj7aKLTcmf7GVJyfsRiJ8KOIFXLgakFIdlGJsgjV5j/OJfiBqdiycY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CYRbyaGj; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1744026941; c=relaxed/simple;
+	bh=Q7w6rQMWzrrI56q78w0SYb/BTNujEKUgrLF8isK6A8w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=J4sCJ6CQdqwDFF8L3372Tvw/io4OyNZNWVKSa4zb5RwAJKHGFWRdyYLF8MBo7UtK4n0U46h26JuJwjM72v79vVMu9GZ/bD1VynGtiVtoS8F37sVwsPeGFZTDaM7ChttjySgpvqE0W1kb8ZMkElZIUMcvPtjUnQE1s2T15amkhWE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=anymPyWj; arc=none smtp.client-ip=17.58.6.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CYRbyaGj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33094C4CEDD;
-	Mon,  7 Apr 2025 10:00:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744020031;
-	bh=/azf35r5cQXte1FxB3g5fAuyGOdAl0zghe2ozQC+Kn4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=CYRbyaGjCTlWAvE77/0u6V30sPCuB80WsYDLaqroMlIWmBOOkVPhGBebGZOSu4Lyd
-	 mdIVGa2j/eDkSq3GVN6zToGrvyshTlJ+t9UgFJbIkHLKXhOwPQMfQt0YQua+/VJSAA
-	 HUPOr74ed64AFZdCuolGgZaSBvUXCtJikQTYzPbYDXjNeqGm8pUtlh0bHktlucp4Gc
-	 skViajnJwU3h9WkHKEnnykPzrmwcIik44eJ1jbjV7tCAZm4Jzzm7M5I21kA2fZLKvH
-	 L2tUuo1WOxx05GV6kOd57IVsQqCrAlmVhI98b29o/HmO26BgzFgbcEDF2VUezjgu7+
-	 J+HEUyvxFJucQ==
-Message-ID: <eb23737f-5b6c-47fd-8b39-637e059bd5f1@kernel.org>
-Date: Mon, 7 Apr 2025 12:00:26 +0200
+	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="anymPyWj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com;
+	s=1a1hai; bh=Z75kDtTMKquraVShLM7bPPJB66WvUMJ0QtUbJjFQFJk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:x-icloud-hme;
+	b=anymPyWjrQHKXWLbTzp5qhjeZc2WbjdqfQgYHsxP3SmB7oAoFj7RauAT55mdnYQR7
+	 w0unR/JlTIpMBC24xy0XXDAAPFtIRMu4uOkRsFL2SSnkPk/jNH13/dFZOR7PFQLA2m
+	 gliT4Ukkmd1dcAdSSsULfYzSbkG5wwiM4tbVlL3l+p1Lm9cc5T81eOZ34VZt2n3o3A
+	 pyYLv8NXk+wuPEC4xAuNO41DDZMu0Xr6FNV5F9yTxFdlIOH+m76ivGFDzCR2gEsUsJ
+	 HU6ZBYzzLE5DfD7Bg6STnOASObUNAJnw1x5ULuZgWAg2/0rId3A2aE221RvNTpLWZi
+	 Lf16WFvaI+aiw==
+Received: from [192.168.1.26] (pv50p00im-dlb-asmtp-mailmevip.me.com [17.56.9.10])
+	by pv50p00im-ztdg10021801.me.com (Postfix) with ESMTPSA id A20402010176;
+	Mon,  7 Apr 2025 11:55:34 +0000 (UTC)
+From: Zijun Hu <zijun_hu@icloud.com>
+Date: Mon, 07 Apr 2025 19:55:20 +0800
+Subject: [PATCH] fbdev/nvidiafb: Correct const string length in
+ nvidiafb_setup()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/4] backlight: ktz8866: add slave handler
-To: Pengyu Luo <mitltlatltl@gmail.com>, Jianhua Lu <lujianhua000@gmail.com>,
- Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org
-References: <20250407095119.588920-1-mitltlatltl@gmail.com>
- <20250407095119.588920-3-mitltlatltl@gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20250407095119.588920-3-mitltlatltl@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20250407-fix_nvidia-v1-1-843f8d031c7d@quicinc.com>
+X-B4-Tracking: v=1; b=H4sIACe982cC/x2MQQqAIBAAvyJ7TjAp1L4SEYtutRcLBQnEvycdh
+ 2GmQqbElGERFRIVznzHDuMgwF8YT5IcOoNWelaTMvLgd4+FA6NEF4z2zqJVFnrwJOr2n61bax/
+ BNxyRXAAAAA==
+X-Change-ID: 20250407-fix_nvidia-a9d72c98a808
+To: Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: Zijun Hu <zijun_hu@icloud.com>, linux-fbdev@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+ Zijun Hu <quic_zijuhu@quicinc.com>
+X-Mailer: b4 0.14.2
+X-Proofpoint-ORIG-GUID: hR7R5pRJtDpg_X92yc7fAbAx09XflHRV
+X-Proofpoint-GUID: hR7R5pRJtDpg_X92yc7fAbAx09XflHRV
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-04-07_03,2025-04-03_03,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 clxscore=1011
+ malwarescore=0 spamscore=0 mlxlogscore=857 adultscore=0 suspectscore=0
+ mlxscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2308100000 definitions=main-2504070085
+X-Apple-Remote-Links: v=1;h=KCk=;charset=UTF-8
 
-On 07/04/2025 11:51, Pengyu Luo wrote:
-> Kinetic ktz8866, found in many android devices, nowadays, some oem use
-> dual ktz8866 to support a larger panel and  higher brightness, original
-> driver would only handle half backlight region on these devices,
-> registering it twice is unreasonable, so adding the slave handler to
-> support it.
-> 
-> Note that, none of the devices supported by upstream require this, the
-> devices using this is porting.
-> 
-> Signed-off-by: Pengyu Luo <mitltlatltl@gmail.com>
-> ---
->  drivers/video/backlight/ktz8866.c | 68 +++++++++++++++++++++++++++----
->  1 file changed, 59 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backlight/ktz8866.c
-> index 351c2b4d6..017ad80dd 100644
-> --- a/drivers/video/backlight/ktz8866.c
-> +++ b/drivers/video/backlight/ktz8866.c
-> @@ -3,6 +3,9 @@
->   * Backlight driver for the Kinetic KTZ8866
->   *
->   * Copyright (C) 2022, 2023 Jianhua Lu <lujianhua000@gmail.com>
-> + *
-> + * Apr 2025 - Pengyu Luo <mitltlatltl@gmail.com>
-> + *	Added handling for dual KTZ8866(master and slave)
->   */
->  
->  #include <linux/backlight.h>
-> @@ -43,11 +46,17 @@
->  #define LCD_BIAS_EN 0x9F
->  #define PWM_HYST 0x5
->  
-> +struct ktz8866_slave {
-> +	struct i2c_client *client;
-> +	struct regmap *regmap;
-> +};
-> +
->  struct ktz8866 {
->  	struct i2c_client *client;
->  	struct regmap *regmap;
-> -	bool led_on;
->  	struct gpio_desc *enable_gpio;
-> +	struct ktz8866_slave *slave;
-> +	bool led_on;
->  };
->  
->  static const struct regmap_config ktz8866_regmap_config = {
-> @@ -56,16 +65,22 @@ static const struct regmap_config ktz8866_regmap_config = {
->  	.max_register = REG_MAX,
->  };
->  
-> -static int ktz8866_write(struct ktz8866 *ktz, unsigned int reg,
-> -			 unsigned int val)
-> +static void ktz8866_write(struct ktz8866 *ktz, unsigned int reg,
-> +			  unsigned int val)
->  {
-> -	return regmap_write(ktz->regmap, reg, val);
-> +	regmap_write(ktz->regmap, reg, val);
-> +
-> +	if (ktz->slave)
-> +		regmap_write(ktz->slave->regmap, reg, val);
->  }
->  
-> -static int ktz8866_update_bits(struct ktz8866 *ktz, unsigned int reg,
-> -			       unsigned int mask, unsigned int val)
-> +static void ktz8866_update_bits(struct ktz8866 *ktz, unsigned int reg,
-> +				unsigned int mask, unsigned int val)
->  {
-> -	return regmap_update_bits(ktz->regmap, reg, mask, val);
-> +	regmap_update_bits(ktz->regmap, reg, mask, val);
-> +
-> +	if (ktz->slave)
-> +		regmap_update_bits(ktz->slave->regmap, reg, mask, val);
->  }
->  
->  static int ktz8866_backlight_update_status(struct backlight_device *backlight_dev)
-> @@ -124,10 +139,41 @@ static void ktz8866_init(struct ktz8866 *ktz)
->  		ktz8866_write(ktz, LCD_BIAS_CFG1, LCD_BIAS_EN);
->  }
->  
-> +static int ktz8866_slave_register(struct ktz8866 *ktz)
-> +{
-> +	struct device *dev = &ktz->client->dev;
-> +	struct ktz8866_slave *slave;
-> +	struct i2c_client *client;
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "kinetic,ktz8866-slave");
-> +	if (!np)
-> +		return 0;
-> +
-> +	client = of_find_i2c_device_by_node(np);
+From: Zijun Hu <quic_zijuhu@quicinc.com>
 
+The actual length of const string "noaccel" is 7, but the strncmp()
+branch in nvidiafb_setup() wrongly hard codes it as 6.
 
-I wrote on IRC - phandle to express the relationship between hardware -
-and I do not see it implemented.
+Fix by using actual length 7 as argument of the strncmp().
 
-If you have devices depending on each other, you need to express it -
-for links, for resource dependencies etc. phandle is for that usually.
-Or OF graph. Or parent-child relationship.
+Signed-off-by: Zijun Hu <quic_zijuhu@quicinc.com>
+---
+ drivers/video/fbdev/nvidia/nvidia.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-You did not provide any description of the hardware in the binding, so I
-really do not have any idea what is this setup thus how to represent it.
-Use hardware terms, diagrams etc to explain the hardware in the bindings
-commit. What are the addresses? Are there any shared resources? What
-buses are devices sitting on, etc.
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index 8900f181f1952acd2acc16a6ab49a5a42ec056ac..cfaf9454014d8161bedc3598fb68855e04ea9408 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -1484,7 +1484,7 @@ static int nvidiafb_setup(char *options)
+ 			flatpanel = 1;
+ 		} else if (!strncmp(this_opt, "hwcur", 5)) {
+ 			hwcur = 1;
+-		} else if (!strncmp(this_opt, "noaccel", 6)) {
++		} else if (!strncmp(this_opt, "noaccel", 7)) {
+ 			noaccel = 1;
+ 		} else if (!strncmp(this_opt, "noscale", 7)) {
+ 			noscale = 1;
+
+---
+base-commit: 0af2f6be1b4281385b618cb86ad946eded089ac8
+change-id: 20250407-fix_nvidia-a9d72c98a808
 
 Best regards,
-Krzysztof
+-- 
+Zijun Hu <quic_zijuhu@quicinc.com>
+

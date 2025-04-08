@@ -1,147 +1,127 @@
-Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FA39268694;
-	Tue,  8 Apr 2025 11:03:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4932A256D;
+	Tue,  8 Apr 2025 18:36:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744110195; cv=none; b=EygH71VmRELXEpRC9dJ/lwtOFPGvvi/C6Pm6ocQl40DnyAX2tD2D/1d/Aot1DmsMoUyH5Svq1K1oJ05DlThLDyY4EViXjgz1YS39pSIwMSrrFZco4ri3wFMLKNVYy0f8DDHQXNtFZxMs1zlQgXR62qWbujq4Wvq0/PQtcziZMpQ=
+	t=1744137420; cv=none; b=eRapqC1kymjwminaC0AdzveWeKPRyqKIhjl0wMhd6I8T/xOCqqJH50wKUYOyR19kf2kkOVfNeMnSjS6u0L6G1D2G7QhY7SUq55nxWyfG8qDdTmDzLXQm0hDvlLpFi2bMFtrJJSXytG9GCgOE0jYG6mHUk5FxF42SDZ0t5AghINo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744110195; c=relaxed/simple;
-	bh=BiijfwOxAtjf4oaJQt7JBfi9sANawaCZgX+NcFS9SlU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GxxLkffJqFoBG3h6BN56RoZqCyNNecNeDUPUh3GFHibi6daVz6GYS3BLxDGZXoXMZ0a5/yYHqhUxEzNWsgm8Pbfi/hM57dHizbnYf616C/PK2GaW4wyIxhJ+NYIddiwDJpuuwQh3S/WJ5BTZbhMB2QjMtUrbav1/1uR2EUmAxCg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=W3Gh/uFc; arc=none smtp.client-ip=209.85.208.46
+	s=arc-20240116; t=1744137420; c=relaxed/simple;
+	bh=5k8hs6+JkPpkUdWzR/s42XOTU/MqiCalasShbvGEV1A=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=RDmXOuBsGeGEjk8P5IZLKnmrXEtV96V5OGXIFmowczDd/fdfcflZPswhL7Ew1+ALtCPzXA9g/XWQldB7qXjO7gQusWlX+x7gXb0Rr8oFVXD/8F0PvA6Bm6U4ooP8p3l5cDGj4P2Fn2c33m2V+TxK2RVIcgDUDaodWGSociE5JzI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fgWWiGFq; arc=none smtp.client-ip=209.85.210.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W3Gh/uFc"
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-5e5e63162a0so8634416a12.3;
-        Tue, 08 Apr 2025 04:03:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fgWWiGFq"
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-736c062b1f5so5021455b3a.0;
+        Tue, 08 Apr 2025 11:36:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1744110192; x=1744714992; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/00t6mg8lw/s9Ks8yQUEiUItwkteRs0MSMX6xy9kyuA=;
-        b=W3Gh/uFcFpgvVlDRv8KntCoT0y2fkd1XZA8ykmXRMErxH9Mr3hdjG+3lhBB8opJzzw
-         SfcJFQQqXObOTmBHnur/wAveYcSlIg9Qk8ZJ08UOHK6ixeiqwpjqxoBNhybGpqFUemIs
-         TuJl/l+4NQm/dVz943D1x3vsZ8T04KRK4JegLjOpZh+NbhDerWqIRVfagOo3ObkZczcj
-         xpkO1HgGiqMnJ3GjNxhF762TJ5vuybeEi7mDgSBxsewX2O7tX7h0FEKOpj2d5XW1r8WH
-         dUjwqvx7kj+Hi4yYox/NC8RGyjvlQ204CimnFR13SgOz7M9fCZeN6yMa9suKEddO4+ym
-         gnXQ==
+        d=gmail.com; s=20230601; t=1744137418; x=1744742218; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:reply-to:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bEeigtXbuhczioF+6lFvsC87+fhHQtlYev57eI/FUBg=;
+        b=fgWWiGFq+jArqL9ySGeHW0PDeuKXjB2aiytICVWiHiwLJnwqtfjDcD5sWDSKVdOeF8
+         nyKIMsz4IZyZx2nwZBv7p0j31xL64cyS2tkB7LcdW3UX8IWkp2iMzWhYl4uCpSCZMHW/
+         Vcl+KfjKd5OTFSPrEwDWK0utD1so8XLOzL+fp9yyyIK6YdLfQhHoE+UbCPT2FzueISif
+         qHUNVC05H09u467QVxPkttw4PqhByshO3sVmkird7YrwFz6CsxpeZnhOV0o9AMUUsKa1
+         aPbKTI8dXgWxjbjXCtLTeI7xRDdI2dUpIx95LLeyvNTbh6LVSaSVqK5hV/vZE62J/TQZ
+         +pJA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744110192; x=1744714992;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/00t6mg8lw/s9Ks8yQUEiUItwkteRs0MSMX6xy9kyuA=;
-        b=c+YrJKE2C7kuX8GkLONCdr91spt6fQtJxwtuO4uB78Dh7UmSosa57E5WV1alL9svb+
-         27+qnfOsrgQUzk7vkLlq4BD0SGEwpzTRjWItk4qVkwv90/D0inc8aG23CtQGL3oBWDi7
-         fiI2EQbkBSZGwT9AdzPj1A68KOGP4xY/c7RmSzWmAUiOhootKdyi1IY5F9ixl56VZ/sc
-         ywqXwgMBk8qkNClPCe4JYDBovNehxNzvcYrg6M9ufFZ8e4fudF2xFRR1e0ycFum1Oq2G
-         5+yBpU0nR0UhK/p+NtDbFIKwKcZtCxmUQBNVz/246f/tuXuUTrKHbRNHmkoIO+NYBU0a
-         FPPg==
-X-Forwarded-Encrypted: i=1; AJvYcCW3VMYW/bBgUoy26n+Tqb5DRMu39USFInZ1xh3JC8DxCtKQcRpwpmB9fRnqDDSZkrZxXmD1rExNEhEaug==@vger.kernel.org, AJvYcCWHSyIUidSGhn/AvqnUlCwb6XTsvPptvl3/P3K42ctEJtYS9Mu9OlEctUW/M1tIezZFpXbVm9qpC3fuuBVO@vger.kernel.org
-X-Gm-Message-State: AOJu0YzmzA6S5aks0kJJh9FH9OHxM8i6FLS+rKyqYGcMlVWGCW0phjcc
-	EvJuJ2ey3A+oYc/KKJWdFkqQmtUpwQQaWOHF8dXjYyF64dz54WzkaPKHXBqD1oeO/st6pdLguh+
-	CIeErpn3Rq2UfKPv0A5GN+1fBn1KFgfSVgfg=
-X-Gm-Gg: ASbGnctQ92paVRk64+oEkibFdir7wm1GPhDq9lkVGo6uNFh+5MHesQpZ3FNyTVYSB0r
-	1jtgGe6dQugoY7zLN6RESW5spE70DrRB2fx5M4Kmk2oqm54DHERTOBMO7vnJHPEzzkWLj/XHqMg
-	hD/W+pIC3pvTArWQnHEr6LijG96+EacxXoL9kT7g==
-X-Google-Smtp-Source: AGHT+IE/TipTw9wWWEYZAgWegMiEBEde2oa+sSYBenoR0MFphvXErC+5XgStffEBQsCm/1nD1TKQBdOyTJl6ckwjXMQ=
-X-Received: by 2002:a05:6402:d09:b0:5e4:9726:7779 with SMTP id
- 4fb4d7f45d1cf-5f0b3b6255amr13150494a12.2.1744110192194; Tue, 08 Apr 2025
- 04:03:12 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1744137418; x=1744742218;
+        h=content-transfer-encoding:mime-version:reply-to:message-id:date
+         :subject:cc:to:from:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bEeigtXbuhczioF+6lFvsC87+fhHQtlYev57eI/FUBg=;
+        b=nhNW3MZJkQfRNcTDGRNPRcDUGnncGwVxb8RNYRsFaoOpnirmYUJuKlObbcXjZVq/LJ
+         +CiBXgWcuCsgIPD94knmFsiwDbJh8BAocHJ91LulsAajGsJ95/3jfGmAVqazM1HqrbvT
+         MdVB9JNljW1Dnuq5vBABXONL6HFOR6AgOu7MaGui3FGZK5F4LObWgGanVnxRLkJ4Z+qn
+         AoqgXXUWdCCuu+po/A5XK58v22/WZeODY7jFsc8ucabHy054nY8yvot+oHlwNouHMgbl
+         LCx4WwBT9I1Ewu+cL82Ul8bqZaSwxPzhrURcwZx5CTeDotxblA6wSLup3qo1mEbghNLm
+         0Csg==
+X-Forwarded-Encrypted: i=1; AJvYcCVTTkVQWIcXS3WYUkey6nJ3jLvd5NVh09qgv67eOLcfsinXAyTVvIrmsYTaeBXrv46QC3w1Ng1poPyV2ZP5@vger.kernel.org, AJvYcCW75bhLc4E0jU9OYGBOKpTEQqam0GV+DXnPdEtRd5k4NqqZzDYTNUMK4cdV7S9RkF+W7jYXd1evKeV7eA==@vger.kernel.org, AJvYcCXssFLQUA6QKhi69pntIRs9DhuafJC3zIdGJUYlgFdBCQhBC6RXQWApfiwNV1yTPkqH8xO3FmQb0EpBGb8g@vger.kernel.org
+X-Gm-Message-State: AOJu0YwCgv9fTS5M5FKHD2ei45wD5YCUx9La5ZQh1ap6sZ4DaYgXZlh5
+	0EYIXPymdApUvpMHeXiArSNIucNqxqs55g0NCVBmYEUb1TIBXgGi
+X-Gm-Gg: ASbGncv4JyVAxPfiPI6dghcgHcRw6iRGLSspvL6Hg4jC5ysUqXKgL/7k0cfBGYZjsKT
+	Qg9BOjQiYZYBN/nd9LwaswhRoCtUlAdRgelJzhDqwGNpoiN2EtweF4MmNnnSqgnuj6eRxm9X+80
+	EAX8AbL8OjPz70GWUhTxDxZ0gujzVIxwhanP4lyZWPiXs5sLCMu7c9Hf50NfCWXPkM5eO4ip7uz
+	pD+1pKWOKBnahdTqIyQSQZbIpQrMa6YSTiNpl4ClRDM4DRV5esUeg5O66TjQQCYp9Hc55Vo8ru4
+	CP9bXsK2u0foz10LcssMLfdukYO2kCBOk36ZM3othWse4DBZCqXl3OGS7zmUusepAEoHM7ak/i8
+	0hUmn4KxpqKfhyjAoWgAj/m5TNmm6c7d/Cw==
+X-Google-Smtp-Source: AGHT+IE3PGvOtJxss8WsloRc6dNnfNCVIij/xjc7LUujufO1C+pBYPdR2U2LJqkutAnOAYB1T4ZWLA==
+X-Received: by 2002:a05:6a00:1152:b0:736:ab21:6f37 with SMTP id d2e1a72fcca58-73bae30912bmr152031b3a.0.1744137418368;
+        Tue, 08 Apr 2025 11:36:58 -0700 (PDT)
+Received: from localhost.localdomain (c-67-160-120-253.hsd1.wa.comcast.net. [67.160.120.253])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-739d97d32b2sm10960469b3a.5.2025.04.08.11.36.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Apr 2025 11:36:58 -0700 (PDT)
+From: mhkelley58@gmail.com
+X-Google-Original-From: mhklinux@outlook.com
+To: jayalk@intworks.biz,
+	simona@ffwll.ch,
+	deller@gmx.de,
+	haiyangz@microsoft.com,
+	kys@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	akpm@linux-foundation.org
+Cc: weh@microsoft.com,
+	tzimmermann@suse.de,
+	hch@lst.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-hyperv@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: [PATCH 0/3] fbdev: Add deferred I/O support for contiguous kernel memory framebuffers
+Date: Tue,  8 Apr 2025 11:36:43 -0700
+Message-Id: <20250408183646.1410-1-mhklinux@outlook.com>
+X-Mailer: git-send-email 2.25.1
+Reply-To: mhklinux@outlook.com
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1743857160.git.princerichard17a@gmail.com>
- <2025040538-breeze-espionage-dc6e@gregkh> <CAMyr_bL4Qo_eeVSHhy-_z9_PwcQAvD6N4jfqBb+rtN-Lj+YdmA@mail.gmail.com>
- <CADYq+fY-twT=NruAmfb6EpmYJLM971aTu-CUi-We_Fd6JSP47Q@mail.gmail.com>
- <CAMyr_bLkvFBTpYehG4fs-tqVE18YBf53okddU2=i7+Rr-zbCsw@mail.gmail.com>
- <2025040711-refutable-monetary-f0c4@gregkh> <CAMyr_bKgveKkpRdOWw+VfZDWridLirHp4VoeG_F-wwgSY5jpgQ@mail.gmail.com>
- <2025040840-domain-boasting-81ec@gregkh>
-In-Reply-To: <2025040840-domain-boasting-81ec@gregkh>
-From: Richard Akintola <princerichard17a@gmail.com>
-Date: Tue, 8 Apr 2025 12:03:01 +0100
-X-Gm-Features: ATxdqUF4gjnGhN8bVu9BMwjWfNpNmxpcYUvHkM9x18Tm4IWpbKt1sumwvhHSY_E
-Message-ID: <CAMyr_bKpXh99=LLpvunwRO91c2u3TMqiO2a1npcjohxRs57Cqg@mail.gmail.com>
-Subject: Re: [PATCH 0/8] staging: sm750fb: change function naming style
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Samuel Abraham <abrahamadekunle50@gmail.com>, outreachy@lists.linux.dev, 
-	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 8, 2025 at 11:48=E2=80=AFAM Greg KH <gregkh@linuxfoundation.org=
-> wrote:
->
-> On Tue, Apr 08, 2025 at 11:38:28AM +0100, Richard Akintola wrote:
-> > On Mon, Apr 7, 2025 at 7:01=E2=80=AFAM Greg KH <gregkh@linuxfoundation.=
-org> wrote:
-> > >
-> > > On Mon, Apr 07, 2025 at 06:57:38AM +0100, Richard Akintola wrote:
-> > > > On Sat, Apr 5, 2025 at 3:16=E2=80=AFPM Samuel Abraham
-> > > > <abrahamadekunle50@gmail.com> wrote:
-> > > >
-> > > > > This looks like a new version of a previously submitted patch, bu=
-t you
-> > > > >   did not list below the --- line any changes from the previous v=
-ersion.
-> > > > >   Please read the section entitled "The canonical patch format" i=
-n the
-> > > > >   kernel file, Documentation/process/submitting-patches.rst for w=
-hat
-> > > > >   needs to be done here to properly describe this.
-> > > >
-> > > >
-> > > > Hi Samuel,
-> > > >
-> > > > I sent the patches individually before, but I was instructed to sen=
-d a
-> > > > patch series.
-> > > >
-> > > > Given that I didn't change any code, should I still add version num=
-ber
-> > > > and sending
-> > > > patch series as the difference?
-> > >
-> > > Yes.
-> > >
-> > > Think about it from our side, what would you want to see if you had t=
-o
-> > > review hundreds of different patches a day?
-> > >
-> > > thanks,
-> > >
-> > > greg k-h
-> >
-> > Hi Greg,
-> >
-> > I have sent the new version, please do have a look at it.
->
-> Again, please realize that some of us get hundreds, if not thousands, of
-> changes a day to review.  A normal delay is about 1-2 weeks to get to a
-> review of a change.  Ideally it would be faster, but there are only so
-> many hours in a day.
->
-> To help make this faster, please help out in reviewing other changes
-> submitted by other developers, that will cause your changes to bubble
-> up.
->
-> thanks,
->
-> greg k-h
+From: Michael Kelley <mhklinux@outlook.com>
 
-I really do understand the situation and to be candid, I am in no hurry
-but won't mind helping out in the review, perhaps a help with Review 101?
+Current deferred I/O code works only for framebuffer memory that is
+allocated with vmalloc(). The code assumes that the underlying page
+refcount can be used by the mm subsystem to manage each framebuffer
+page's lifecycle, which is consistent with vmalloc'ed memory, but not
+with contiguous kernel memory from alloc_pages() or similar. When used
+with contiguous kernel memory, current deferred I/O code eventually
+causes the memory free lists to be scrambled, and a kernel panic ensues.
+The problem is seen with the hyperv_fb driver when mmap'ing the
+framebuffer into user space, as that driver uses alloc_pages() for the
+framebuffer in some configurations. This patch set fixes the problem
+by supporting contiguous kernel memory framebuffers with deferred I/O.
 
-thanks,
+Patch 1 exports a 'mm' subsystem function needed by Patch 2.
 
-Richard Akintola
+Patch 2 is the changes to the fbdev deferred I/O code. More details
+are in the commit message of Patch 2.
+
+Patch 3 updates the hyperv_fb driver to use the new functionality
+from Patch 2.
+
+Michael Kelley (3):
+  mm: Export vmf_insert_mixed_mkwrite()
+  fbdev/deferred-io: Support contiguous kernel memory framebuffers
+  fbdev: hyperv_fb: Fix mmap of framebuffers allocated using
+    alloc_pages()
+
+ drivers/video/fbdev/core/fb_defio.c | 126 +++++++++++++++++++++++-----
+ drivers/video/fbdev/hyperv_fb.c     |   1 +
+ include/linux/fb.h                  |   1 +
+ mm/memory.c                         |   1 +
+ 4 files changed, 109 insertions(+), 20 deletions(-)
+
+-- 
+2.25.1
+

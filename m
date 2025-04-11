@@ -1,203 +1,101 @@
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azolkn19010013.outbound.protection.outlook.com [52.103.10.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E3C2192D66;
-	Fri, 11 Apr 2025 03:40:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.10.13
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744342831; cv=fail; b=sXgUxj92MFPKasbtQfxswaVAFuEG8URqQYXVgAd8d6vL7mljge9pzoOODeIbeA0OTYsOtufIW2p3+c6/Y5/g6YsJ2KWXbljIIX/8KBMptDgia6jKveQZkWZU3F5arxS+7Hl9/eZNWPe6HrI4ZoxPFktYBvsm8JPlVvuG7j2rhVc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744342831; c=relaxed/simple;
-	bh=u7hTRtfKtLQ3imWXQ7OiV7+2rr/ZvnuUl6sHoMvrV00=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=ht/efbXjKshyqwxBppOUvxDgYqNbG8oztczmLDSIpFQMDLcmedC1ID0HphnBW6pYtOd8fKpvjP1JASAK1edK3n2McOhHEfSQ7xLMJUTOkmnaW1mSBLdngaYDahzd5p6gH791MT9744qgrFCnsovptZ9o4tWoToflGsh0YJ0ihA4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=mqX7EutZ; arc=fail smtp.client-ip=52.103.10.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 388B3230BC1;
+	Fri, 11 Apr 2025 17:22:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1744392144; cv=none; b=CnydrLxy/uX6+iiuPQgVw16uo4nwJki7y5GBS+JoiLjMOSBCu8k+ZuMkn6RHWceFtYy7R5o6rkEp/tl7y2/8ZdHf66ZwrCmr3wEvjfH1Px6NXBkDR01JIB+FeVHvE0a/6s1nDkmXbTLBTJpZS7S/xNJjxNmjF8G6yfX1jiv/AjM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1744392144; c=relaxed/simple;
+	bh=OwUuupjd6ppxMTNlxFAWEzXqt/lV2dBlXne2MEl+yEE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=KdaJAJEwcfi1E+Ct/l5do9f5MHnJUBPv32Q79WkWgYmZePrBbSCahLOxeA+X5D/fq9O1WTI5ZkQlXZ9fO+HxMS7l4vu7BtLf05yLp0ZbYh5hBss+DiJmH1YY3/lF0NzrT02ivU8DTI434XlwDxxO9GqgZDYSKCnsduJPE7eyzjs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Hp4lgkTF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="mqX7EutZ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BnE4pdJb9Xev4Fs+O+x2oKVLliGjAcSs2Df1UTmhXLN/bPeo2AtaMmOATZdjHwOFRJfi/E4ZB42QfLJPzlPXG1tafNdkJ5VCTN8iMvXRP7BGCr/6OgMbZJgrLNLvoNK5lJqu0BkepoRqAza0Kq5wgu2rvWCSiIV4xJLoDUSLsPmjIelTjr7FGudhNv2tdUVpDdNbGr2ppFlZJJzcJfi0x4fg5Mxxpm4VeA39GHwUEtBRG5JBt/lm9vgaJQ/3JHSwXYlXcDSBzjTFCrPNN/U+pHpjTTBqMNqZ/WoM0ARoZWio+EfU0Xl/tHnE033PrlzyEfIqv8LZFvVgbRx3jIrjeA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tt/5zcr6eFBurcL4qIjfjkOaoO/zG8lmS5Ba9TVKDas=;
- b=EVrQLpSASPIOMpnBBp4xHVaQzAgeB0PxV9On8vXIgYZt1GPNq2zs9FSB/rLevTeZ8Z14duvR5ocTa9g29dwW1xsYhlly1KQ+PQPEw14NodGypDyEsDYwBj7fGpkePDC88aehmYrMHbpFWcnptHeDkBa7/3KMb2IiI+MaZIzLWqrEluNczpDk2pt3HllAy0/y3pyanTFQuz8uCir4C28XPjbYrTWQXnyFupEwET+U+N3a0rdZlNuPzE6nYGyPjLpsbK92Avso38LI1YrJ+ZfsAktenMZ30YpAn2nOq8BL2eqdzzFyKpYC3ia0IkHxJ3NrFwGO48R/3SDEKQwkDkr1zA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tt/5zcr6eFBurcL4qIjfjkOaoO/zG8lmS5Ba9TVKDas=;
- b=mqX7EutZ9uJE7GyrYso5Q3DLzfWHeKws/Zi6YlPFw5LnMPGiK3rQGBcWCIHZgdOUsgVxTOFeKRfpHctvf0Xq+brnkW0YjtJZdIqDzvUosa7kpxZTPaz/f6zsW+kE4WcTbswV0DkGmEt4bp5BORH9WSwn+MlaKzwuvlbNTfyqpKJvYz3heTy3uEh/ut3NkVdxkOU8QmvM/ptnOFIKUbEnIapQO4Gj7sn1NE1FdT1iOqviJU+4y9nTiowki+WJnMVp3VOUcQEPM6s0+bSyB8VN/dsN94nnPzYwmagqneVrMR9wsSL6uUcoPvRmhqRj9rDA9XN9YsI6uJFdm9wli2WcJQ==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by BN0PR02MB8079.namprd02.prod.outlook.com (2603:10b6:408:16d::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8632.23; Fri, 11 Apr
- 2025 03:40:26 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%5]) with mapi id 15.20.8632.021; Fri, 11 Apr 2025
- 03:40:25 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Christoph Hellwig <hch@lst.de>
-CC: "jayalk@intworks.biz" <jayalk@intworks.biz>, "simona@ffwll.ch"
-	<simona@ffwll.ch>, "deller@gmx.de" <deller@gmx.de>, "haiyangz@microsoft.com"
-	<haiyangz@microsoft.com>, "kys@microsoft.com" <kys@microsoft.com>,
-	"wei.liu@kernel.org" <wei.liu@kernel.org>, "decui@microsoft.com"
-	<decui@microsoft.com>, "akpm@linux-foundation.org"
-	<akpm@linux-foundation.org>, "weh@microsoft.com" <weh@microsoft.com>,
-	"tzimmermann@suse.de" <tzimmermann@suse.de>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: RE: [PATCH 1/3] mm: Export vmf_insert_mixed_mkwrite()
-Thread-Topic: [PATCH 1/3] mm: Export vmf_insert_mixed_mkwrite()
-Thread-Index: AQHbqLVG4gQYXeGx+0WuiyyYTOsIQrObKMgAgAAqdVCAATOPAIAA4O6Q
-Date: Fri, 11 Apr 2025 03:40:25 +0000
-Message-ID:
- <SN6PR02MB4157209BE242E68F85908126D4B62@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <20250408183646.1410-1-mhklinux@outlook.com>
- <20250408183646.1410-2-mhklinux@outlook.com> <20250409104942.GA5572@lst.de>
- <BN7PR02MB4148597D0495C631F6E3F8C0D4B42@BN7PR02MB4148.namprd02.prod.outlook.com>
- <20250410074228.GA680@lst.de>
-In-Reply-To: <20250410074228.GA680@lst.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|BN0PR02MB8079:EE_
-x-ms-office365-filtering-correlation-id: 70de240b-8495-4145-4b05-08dd78aa98a0
-x-microsoft-antispam:
- BCL:0;ARA:14566002|15080799006|8062599003|19110799003|8060799006|461199028|440099028|3412199025|102099032|41001999003|30101999003;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?piMvZp3x3efauoofOwy1gquUfUpqqK6A6ziF8deoj/w/UKGSCZVRTNYKpvn6?=
- =?us-ascii?Q?6ix3GDahi9WdX9TzwCKXwPHHHxwBraEvuE1Iro8+qgixIYs/4lGXyKmjUouN?=
- =?us-ascii?Q?CzUQwbE1pBp9H1gTGjdV2hveevzrcAOOFDctcnNtt1aFDp50KWKM1Ikr/O3q?=
- =?us-ascii?Q?H/EWvsATMdAlQIgw2RFqyw5nhDfwT1ncNKEI30L78bqwFfIGv6X/mVfcBDBY?=
- =?us-ascii?Q?n0enHruBACcKnFLmT0sYMj4gfxI32+lKcW8MS4L2Hc/lQSxwtqNYB7IPkyzf?=
- =?us-ascii?Q?JrmAs/g+R39Vt2N172A6ExvOHaWtF4oISTEQXt9XuyyMwWsOCByFw9JWmEav?=
- =?us-ascii?Q?rzWlJfUATakfnZg+NGAX62ftMEQFyUvTvtIe1hDWBgD/KF7Z8cysdLyK5kal?=
- =?us-ascii?Q?xi84pjzw5977e/T4M7/7ifK13+ojAK8MQefZbNIDzMHI/32jJp/F5mf3PLts?=
- =?us-ascii?Q?eh5HfR5IErM83T/EokyLTtY8qTv/0Suky1a2gMuc2kFqP0fQHhAQewmypkQo?=
- =?us-ascii?Q?VPbA4dWIsdowBvvjg7eskw5SkgESS95hz85xmarsOkIojyTL0KYgq7n6WKLV?=
- =?us-ascii?Q?qKqshhgQApzu96KpLfBwk08G8HZGhkdPVCUXuugQbD0vwq0xNTpP2DBi4eZc?=
- =?us-ascii?Q?IrqknXwm8kFD0SGrhuWr6+EFzzj1c2vSoCiOnh6nuoD7LV7t2Hy/H0bZZMdg?=
- =?us-ascii?Q?TxKlO/GjUB26FqVHPjVwELdrqTaKhb6jR0E9PcWbN+XCVdH9DGt4xgFYx8Om?=
- =?us-ascii?Q?N7nAftAKHjycpmew4zjyZYApqeT5n8DWF52gztzrODt+YOQpkPZEW+CVLOy3?=
- =?us-ascii?Q?O08W2bCYgGCS+HykVgNPw4XLhNMNsv4wM/Csy7VxWf5FyFpuLvtoznOdI8mI?=
- =?us-ascii?Q?18rUiZMxhSdQ73AtF+i2I4YcqSuhnzdy74WwkNZC1uN+j8eSKdHLiA85BRg8?=
- =?us-ascii?Q?xPwglqCfWG/pFoG+QjarXFjpaIzCx9vV5Ov32NvMUJQhset5/42/jnYmXK5H?=
- =?us-ascii?Q?Nz6pHIejs9IdfbeUWTKyRXVMNjANWLTnXIbQUnaVPqfIbufp0QiDTjf/WK4+?=
- =?us-ascii?Q?TkbNDFefjmo71AeRI5Ma+Bbb1M1Wy1qqomFsF5K/ngtVYD42ga/tjuDdehgz?=
- =?us-ascii?Q?4S0mdgWoby44zeaI5HHhUvFChzYdB+pcqg=3D=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?KQYojQIz0Q0tsFZdI7kc7+aZoNbDEJ0ZClWbZ5VZf+FX5q7yz20va6rxt4vh?=
- =?us-ascii?Q?J8g+w711MQXVmiaV+P6Hqkh2pI5fQRiGr5p8Lu+TXGmVwkPlsypo6gFpWmuE?=
- =?us-ascii?Q?ZZ+VGWHmrcD5AG++VcypmrxLR+oMIvfmrzpQZv0K1J8BltXNm8uRVGYsrTqR?=
- =?us-ascii?Q?fCqrfBc0zReaMLTrxBFuUX9MKLdAlkO6ODk8IMBq+kGAofEb48xf3ru7VPM5?=
- =?us-ascii?Q?NfkJ9QMkyZzwIIewkS4R5LvfBk81NF09Nz1VGMsBnzhHXyF7rClZwsACQAqm?=
- =?us-ascii?Q?qGiIPuoeV+8cMdk8RtVucJ10R9EyVhTe94QiZjE33LMUyd1kRzQRCVDgib7A?=
- =?us-ascii?Q?PBOi405Z7z4NxPgeKLpNEQhOvQNqCU6aiSz1otQQLQBkKQHuYi+08n/jnXX4?=
- =?us-ascii?Q?Zsb37zGZex3g3Tf/yqB+3UBOhdmZrG+U+2vCb3FEKGowxw57aXkC/9Vppt6d?=
- =?us-ascii?Q?DdJb+f4IFm4Y581h0xgWNXRVBcTKl6QQrROb/LGVZRduB+ZSvzrm2ZsGA7aR?=
- =?us-ascii?Q?ISSCg9tWU2wis1hzoHbNhpilsV83ljr+/fWVDTjVlJf7ZdmPJyOZS9GM+m1B?=
- =?us-ascii?Q?EAbNtAFGnq2nFRhijfnmK1n4k/zW4b81iIuxPTxMIaSo1ODWE9j792xDemT4?=
- =?us-ascii?Q?XvRlgKcIouaxyfYalVtXDRWPb14YJTw4hEilhqXF9MvaQYrXmF+c+ke6FDc/?=
- =?us-ascii?Q?tqdhJdeE1SpKYBRN/6E0teOUxfJKjCA58nboLZ8kVsQtEgFR2ETAR/rifVqP?=
- =?us-ascii?Q?xW80wSt/BYWU0GnI6dRLYRav6i5jxFIXRNTBTfPVo/os2saGlNet772CXRmL?=
- =?us-ascii?Q?EaZZ816Uesnkkeyzs2VidFSRKC5/NXYHOALN3N+fStOexc0ET5YYGdkrzmiE?=
- =?us-ascii?Q?G0Zo+ESefUJMAh4luoDu3SPz2te6EdNQ/0VCEue3MI7mouOAGy4SbLOibLig?=
- =?us-ascii?Q?MfqVlVa/ZF9YeShdR+tvUyBw8D7vsWyIvTQpSILycsEPiu102pcJWudsEoZt?=
- =?us-ascii?Q?LtLF4uTgcOF0WGZPMOEvYlFRnjTR9khdU/CFf+fTH24O+s3dFtIfFV054ubx?=
- =?us-ascii?Q?yCchZSwjt7t20Rkk0rdXbDG25hiIgoZVNJFvIk3STmB+bak4eJPg/NM54Ykh?=
- =?us-ascii?Q?UiGTHgEo7DCtaNPB4fffs7Wu+TNfdRLXERK99onVnigLdJSn8YcE6q37lBGE?=
- =?us-ascii?Q?4RSBByUwg/IT8sGT+2GsSyfOjqn+WGLCCXPSH1ASsZjqBiiwZekJW2QOVBo?=
- =?us-ascii?Q?=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hp4lgkTF"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 99D5EC4CEE2;
+	Fri, 11 Apr 2025 17:22:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1744392143;
+	bh=OwUuupjd6ppxMTNlxFAWEzXqt/lV2dBlXne2MEl+yEE=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=Hp4lgkTF4orD504lFUgF/nynv3WBTyAhENsarLQSp0Omh2Ghzk5kBeoZ9mV5V7piU
+	 WnUBipeBgrCc6pfi7GE6xLPtY+qwwz+oaKNtj0PMVfd3QVL3GPkk/tQ7bNOG6uc1Ll
+	 CgJTWq8G3sZ7vHh/sls/6jFbduRV9KQkPIULzcH6CRO2hE94vAQvIfHUcQYtZts8+i
+	 1nLCN6IALVeTkiyyHrzTSgqYUFGE96/JeFsCyIx9ehW/CiPpN/XCUsbrQsbh8IbfKe
+	 IXnr5H/1qE8IGgD7tKugBmz2AKzCORCuj3YRA7Y9TkMcngveF50PMQ32FIHDEMFUNk
+	 l5imcS9X+TK6Q==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 871FDC369AB;
+	Fri, 11 Apr 2025 17:22:23 +0000 (UTC)
+From: =?utf-8?q?Duje_Mihanovi=C4=87_via_B4_Relay?= <devnull+duje.mihanovic.skole.hr@kernel.org>
+Date: Fri, 11 Apr 2025 19:22:18 +0200
+Subject: [PATCH] backlight: ktd2801: depend on GPIOLIB
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 70de240b-8495-4145-4b05-08dd78aa98a0
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Apr 2025 03:40:25.6298
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN0PR02MB8079
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20250411-ktd-fix-v1-1-e7425d273268@skole.hr>
+X-B4-Tracking: v=1; b=H4sIAMlP+WcC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI1MDE0ND3eySFN20zApd80TTVNMUCzNT8yQLJaDqgqJUoDDYpOjY2loAP6Y
+ vb1kAAAA=
+X-Change-ID: 20250411-ktd-fix-7a5e5d8657b8
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1157;
+ i=duje.mihanovic@skole.hr; s=20240706; h=from:subject:message-id;
+ bh=3jhAi95ad/Pq/CAnIxFn10PecnGB9M4btMKtmLNxZjw=;
+ b=owGbwMvMwCW21nBykGv/WmbG02pJDOk//c+9yV+Rt06Ib7nb1FUL2uax6eh29s5ckHS1ROldc
+ ZP1dX/1jlIWBjEuBlkxRZbc/47XeD+LbN2evcwAZg4rE8gQBi5OAZiIkRPDfyfbZyuP37/vcWSO
+ wPaCJP0fes1NbZ1X7lg5pszwaHz1aRojwzyjo1mC7DNEEjUZxOTzqz6XF7yPvGd6MVHQsPFbbI4
+ pDwA=
+X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
+ fpr=6DFF41D60DF314B5B76BA630AD319352458FAD03
+X-Endpoint-Received: by B4 Relay for duje.mihanovic@skole.hr/20240706 with
+ auth_id=191
+X-Original-From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Reply-To: duje.mihanovic@skole.hr
 
-From: Christoph Hellwig <hch@lst.de> Sent: Thursday, April 10, 2025 12:42 A=
-M
->=20
-> On Wed, Apr 09, 2025 at 02:10:26PM +0000, Michael Kelley wrote:
-> > Hmmm. What's the reference to "as told last time"? I don't think I've h=
-ad
-> > this conversation before.
->=20
-> Hmm, there was a conversation about deferred I/O, and I remember the
-> drm folks even defending their abuse of vmalloc_to_page on dma coherent
-> memory against the documentation in the most silly way.  Maybe that was
-> a different discussion of the same thing.
+From: Duje Mihanović <duje.mihanovic@skole.hr>
 
-Yes, must have been a different discussion.
+The ExpressWire library used by the driver depends on GPIOLIB, and by
+extension the driver does as well. This is not reflected in the driver's
+Kconfig entry, potentially causing Kconfig warnings. Fix this by adding
+the dependency.
 
-Turns out the hyperv_fb driver in a different configuration *is* using
-dma_alloc_coherent() to get framebuffer memory, which is then managed
-by deferred I/O. dma_alloc_coherent() is used as a wrapper around
-cma_alloc() but only when the framebuffer size is > 4 MiB. The deferred
-I/O code doesn't do vmalloc_to_page() since the CPU address from
-dma_alloc_coherent() isn't a vmalloc addr.
+Link: https://lore.kernel.org/all/5cf231e1-0bba-4595-9441-46acc5255512@infradead.org
+Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
+---
+ drivers/video/backlight/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-That combo works OK, so wasn't something to be fixed in this patch set.
-I'll see about a separate patch to just use cma_alloc() directly for that
-case, though cma_alloc() and cma_release() would need to be EXPORTed.
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index d9374d208ceebbf8b3c27976e9cb4d725939b942..37341474beb9982f7099711e5e2506081061df46 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -185,6 +185,7 @@ config BACKLIGHT_KTD253
+ 
+ config BACKLIGHT_KTD2801
+ 	tristate "Backlight Driver for Kinetic KTD2801"
++	depends on GPIOLIB || COMPILE_TEST
+ 	select LEDS_EXPRESSWIRE
+ 	help
+ 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
 
->=20
-> >
-> > For the hyperv_fb driver, the memory in question is allocated with a di=
-rect call
-> > to alloc_pages(), not via dma_alloc_coherent(). There's no DMA in this =
-scenario.
-> > The memory is shared with the Hyper-V host and designated as the memory
-> > for the virtual framebuffer device. It is then mapped into user space u=
-sing the
-> > mmap() system call against /dev/fb0. User space writes to the memory ar=
-e
-> > eventually (and I omit the details) picked up by the Hyper-V host and d=
-isplayed.
->=20
-> Oh, great.
->=20
-> > Is your point that memory dma_alloc_coherent() memory must be treated a=
-s
-> > a black box, and can't be deconstructed into individual pages? If so, t=
-hat makes
-> > sense to me.
->=20
-> Yes.
+---
+base-commit: 01c6df60d5d4ae00cd5c1648818744838bba7763
+change-id: 20250411-ktd-fix-7a5e5d8657b8
 
-I'll add some comments to the fbdev deferred I/O code saying not to use it
-with a framebuffer allocated with dma_alloc_coherent().
+Best regards,
+-- 
+Duje Mihanović <duje.mihanovic@skole.hr>
 
-Thanks,
-
-Michael
-
->=20
-> > But must the same treatment be applied to memory from
-> > alloc_pages()? This is where I need some education.
->=20
-> No, that's just fine.
 

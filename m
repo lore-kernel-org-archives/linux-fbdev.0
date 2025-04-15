@@ -1,101 +1,95 @@
-Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B01F723E35D;
-	Fri, 11 Apr 2025 21:07:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06FC02DFA41;
+	Tue, 15 Apr 2025 17:27:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744405658; cv=none; b=S/R2Udv7JSXXDiLiJ/p0vQWW3dAsMbs//y5TtEe2ETYlhDMfrpuGZT1hZOaGv+D+zWzTZ2puXGi1T4IfEGxUGB+zIEytGgYewXbjy28TRMon7CT06RCDsW6y23Iy+FDR+Ahdx4Hdo0JgU+6w4R4Ksoi/eq2xeThl1XsjUXgasao=
+	t=1744738030; cv=none; b=KTUNwS3NEgtBBBXfXP5z8RPcJPV8teE4PaWDH6r9M163wAWq2/eWDQuYYspE/Cr2VjDRsj+vSG5jjKKXdHXOMc+6POMSEDwuwgTUZ1/zkrzBwqeUyFVSWF3VJSVbQLIBX+B9JZiTO7SQZ+d+ddnomTXaxw7fCpL91+mfdV42pIU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744405658; c=relaxed/simple;
-	bh=j4W2OtgdLyFsgT7QtcMnu8DHrgkb4TesSKvi5TVw0SE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=m3rJlpTF08dR9+zYBOEXNNuDOlUsc3v3pXRZHH3ADysxZKiu3ZalQDrCLIIkAJvRA3Vn8s7mb8ojWADro82WNbz8e9G4u3NbIh9PK3xNZY2K4zTrjhYju1HC9GDEW3xTLzpeTvfK4K2H66GO0XcpQ2Djn/eClOW16434bGH/nPo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=oYxRtJfA; arc=none smtp.client-ip=90.155.92.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1744738030; c=relaxed/simple;
+	bh=6XeNlOlstSEOvXo8EXHHR0/S7hM3KEkYdwSBdSs518A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=V6Ie+8AE1O7jxoiqUce85WRISYIXoDzK7g6U/Zqe6r+BmFVDC/759ijMVghxpTTCMnyLrG5YwGjvgxco+FpqipNQzLLVE0tYrLrW56XdNgnCtRGSPqUdKh1awr3P574DqHVD5QBXrBs8vWK1zxSAJcKtLeBcFD31oh+5hlJJXQg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jrCuffwJ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oYxRtJfA"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=5ao/hAEK1tVECI3MffyX4CyT/zLaj3fsGpJIOrxlYbs=; b=oYxRtJfA8n7+wbug1XMpDb8jVb
-	TAyW2sBXKhvwwhtvIXy9Xa/2mzgAFAL/Dh45l08V3+A/RH0zgv8juv+Pxeh6l+yFOLh5MXKizXYrw
-	xjUdGn+vyp5Nao20+31I8V7IOBugD1sjk4qj6Ib303/jYS9p4QZuWkmPptsL+Bqgo1vY2xSUYVX2G
-	C0uSMpJ4tbxI3OZFsX+PcnXzlZl5WRZ4jZbQblHoyQDPXP6j2cTdKE5i557zB6JqqQLdrRkp643oe
-	9gnXFKsyo/RIqGbkV25z64iIM+B0NWfTljJajYzeUBrmjnYxhf0cGA7Mxx4TVD6xjRESgeexg53+8
-	4jyyabWw==;
-Received: from [50.39.124.201] (helo=[192.168.254.17])
-	by desiato.infradead.org with esmtpsa (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1u3Lau-000000095I7-2VSU;
-	Fri, 11 Apr 2025 21:07:26 +0000
-Message-ID: <dcc36d2f-8dad-47f9-b7c4-4e1f558545ff@infradead.org>
-Date: Fri, 11 Apr 2025 14:07:20 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jrCuffwJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F4A6C4CEE9;
+	Tue, 15 Apr 2025 17:27:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1744738029;
+	bh=6XeNlOlstSEOvXo8EXHHR0/S7hM3KEkYdwSBdSs518A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jrCuffwJ5VOaNT2JyDtNIp2H41cBzWsyHZs8gQrKUr8R1Qvk9nP84I+cX00JMwv1B
+	 xTnwUYGN738eXTGddu96j7p0cbrHEjc7BocO8USYlkSwbIubencyBwKA3/GAKRMc8r
+	 xXv3eGUudononhdBSZoekiVZZzfhZzgw7r9PYp6E/gryXbpU/+AKSkxA6HL3mDBnK1
+	 BWHIJRfrIASQBOdwAShczWQVSACVuboOfmAQHqfF6KX6Cvk5mYDH4uOe7FM3trlQoO
+	 8QiK4El/1xypAZ1hhsoxoW1yLSuydluvQbs+YmOSfaOUnkXMb13oH2zRm7QqslTIbm
+	 f72BfbsYUwX1Q==
+Date: Tue, 15 Apr 2025 18:27:04 +0100
+From: Lee Jones <lee@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: pavel@ucw.cz, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	simona@ffwll.ch, linux-leds@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [GIT PULL] Immutable branch between Backlight, fbdev and LEDs for
+ the v6.16 merge window
+Message-ID: <20250415172704.GD372032@google.com>
+References: <20250321095517.313713-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] backlight: ktd2801: depend on GPIOLIB
-To: duje.mihanovic@skole.hr, Lee Jones <lee@kernel.org>,
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20250411-ktd-fix-v1-1-e7425d273268@skole.hr>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20250411-ktd-fix-v1-1-e7425d273268@skole.hr>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20250321095517.313713-1-tzimmermann@suse.de>
 
+Enjoy!
 
+The following changes since commit 0af2f6be1b4281385b618cb86ad946eded089ac8:
 
-On 4/11/25 10:22 AM, Duje Mihanović via B4 Relay wrote:
-> From: Duje Mihanović <duje.mihanovic@skole.hr>
-> 
-> The ExpressWire library used by the driver depends on GPIOLIB, and by
-> extension the driver does as well. This is not reflected in the driver's
-> Kconfig entry, potentially causing Kconfig warnings. Fix this by adding
-> the dependency.
-> 
-> Link: https://lore.kernel.org/all/5cf231e1-0bba-4595-9441-46acc5255512@infradead.org
+  Linux 6.15-rc1 (2025-04-06 13:11:33 -0700)
 
-s/Link:/Closes:/
+are available in the Git repository at:
 
-> Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>o
+  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git tags/ib-backlight-leds-fbdev-v6.16
 
-Reported-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
+for you to fetch changes up to d32a0b567a8a8b6e677d35c4f8eb8bd32b7029a0:
 
-Thanks.
+  fbdev: Remove constants of unused events (2025-04-10 10:39:14 +0100)
 
-> ---
->  drivers/video/backlight/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index d9374d208ceebbf8b3c27976e9cb4d725939b942..37341474beb9982f7099711e5e2506081061df46 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -185,6 +185,7 @@ config BACKLIGHT_KTD253
->  
->  config BACKLIGHT_KTD2801
->  	tristate "Backlight Driver for Kinetic KTD2801"
-> +	depends on GPIOLIB || COMPILE_TEST
->  	select LEDS_EXPRESSWIRE
->  	help
->  	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
-> 
-> ---
-> base-commit: 01c6df60d5d4ae00cd5c1648818744838bba7763
-> change-id: 20250411-ktd-fix-7a5e5d8657b8
-> 
-> Best regards,
+----------------------------------------------------------------
+Immutable branch between Backlight, fbdev and LEDs for the v6.16 merge window
+
+----------------------------------------------------------------
+Thomas Zimmermann (11):
+      fbdev: Rework fb_blank()
+      fbdev: Track display blanking state
+      fbdev: Send old blank state in FB_EVENT_BLANK
+      backlight: Implement fbdev tracking with blank state from event
+      backlight: Move blank-state handling into helper
+      backlight: Replace fb events with a dedicated function call
+      backlight: lcd: Move event handling into helpers
+      backlight: lcd: Replace fb events with a dedicated function call
+      leds: backlight trigger: Move blank-state handling into helper
+      leds: backlight trigger: Replace fb events with a dedicated function call
+      fbdev: Remove constants of unused events
+
+ drivers/leds/trigger/ledtrig-backlight.c |  48 +++++++-------
+ drivers/video/backlight/backlight.c      |  93 ++++++--------------------
+ drivers/video/backlight/lcd.c            | 108 ++++++++++++-------------------
+ drivers/video/fbdev/core/fb_backlight.c  |  12 ++++
+ drivers/video/fbdev/core/fb_info.c       |   1 +
+ drivers/video/fbdev/core/fbmem.c         |  82 +++++++++++++++++++----
+ drivers/video/fbdev/core/fbsysfs.c       |   8 +--
+ include/linux/backlight.h                |  32 ++++-----
+ include/linux/fb.h                       |  12 ++--
+ include/linux/lcd.h                      |  21 +++++-
+ include/linux/leds.h                     |   6 ++
+ 11 files changed, 215 insertions(+), 208 deletions(-)
 
 -- 
-~Randy
+Lee Jones [李琼斯]

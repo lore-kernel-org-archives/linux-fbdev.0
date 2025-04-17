@@ -1,60 +1,60 @@
-Received: from sonic311-24.consmr.mail.gq1.yahoo.com (sonic311-24.consmr.mail.gq1.yahoo.com [98.137.65.205])
+Received: from sonic313-20.consmr.mail.gq1.yahoo.com (sonic313-20.consmr.mail.gq1.yahoo.com [98.137.65.83])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 180521FF610
-	for <linux-fbdev@vger.kernel.org>; Thu, 17 Apr 2025 19:13:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=98.137.65.205
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60EA01FBCB5
+	for <linux-fbdev@vger.kernel.org>; Thu, 17 Apr 2025 19:13:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=98.137.65.83
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744917231; cv=none; b=TRgo+IwPvHk9uDBbal74+FU35GRy8tJyBi2byH3+FIFTALrPsaNSMhOxkCwxVUaSj6G76HQfNER4oc0a8neEAkvHSnmbypXMsVylUB2BDvhrbHsd2D9gMjWLFBReqAYMB5hGUHmywpWbWF/ExKqg7zsp4K0ru2DfcVlyboi02es=
+	t=1744917237; cv=none; b=o/1/mhkt1ERNqcWYmnvz4kRKInO4SY+c9YtoeFKKSgsDt/lNZBMIq4hKJQ40DWtJG5dVIuIuwZnnDmwrrUsJFITYMN5O/XO692CxenC5WEVi+o8BprdjPnyFSXS7MbXncPiOcEceYfaQ3hLPgUTckQAlhMwy5bDDwpGV3mUjZhw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744917231; c=relaxed/simple;
-	bh=L6SdPOd2Ssp0R8bFUEdZpFt0iTf0baqjd0GM0QfWXWo=;
+	s=arc-20240116; t=1744917237; c=relaxed/simple;
+	bh=/WmMoTVrFRB6+6R5Oe3Wl2NgoVgmsIGBYLiyD1xZIgQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LHjsBr1qBT0rwP1ote5Lwb37DKWCoHo6G5ujTGO4YI8tC438tqC3+lHsQnWAblwsDITdlcRZEkuha/7CjPlzQ5u1eX+GpBxhuAN7wbeTb+8hOAFLL5dg2w4ivD67sqdCRxXdb8HkTzg5onMTU7LgKtHO40BXCiQlrTiMyPpy0Rw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=aol.com; spf=pass smtp.mailfrom=aol.com; dkim=pass (2048-bit key) header.d=aol.com header.i=@aol.com header.b=kwmybk/D; arc=none smtp.client-ip=98.137.65.205
+	 MIME-Version; b=DcIvEIZcAuNdMiVGQcoRErZoMudaC7muJHOls0xXYLxdVZllMKH2rgN51FtBUPbtigfR/O0uu0iiKK8RDEoSsh39qNxuSzqkHYS56FZmgh0O6AqSHLySiRpGAjiRCkawUZvKxMk0SBmeU+2P8iiUMuwOm+jXqhp/1I1lGlp1DB4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=aol.com; spf=pass smtp.mailfrom=aol.com; dkim=pass (2048-bit key) header.d=aol.com header.i=@aol.com header.b=t9q23F0i; arc=none smtp.client-ip=98.137.65.83
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=aol.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aol.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aol.com header.i=@aol.com header.b="kwmybk/D"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aol.com; s=a2048; t=1744917229; bh=RxCvByeLEbOiitcXU2m12OSRo5AUDmJRbM2o07h4ujc=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=kwmybk/De27dzuUJx95P/uRt7Qk37Kbc1tGoe+T6poy1isGUu/j6rMMON/pWy7fprse8USUCZxZAOSeYi0XCuubALQo72icZPr/ZAYHz/u0Ax4Gq9wpFCl2hKkobX1TnXJSosxDXZGhqxXo5xiUGZCCbfDDCMwPKcf3imBA8YVu6Ibm30ZhPqkTxkv8qd/2JAqUA20atiQSZ/QH02WTAEG+4dusZ2edW1C8drISfiqhAmP3dGgMiewShuOcJ8hDeu97U5R1YtodJj722t3yikepW2LVJuuVu8d6OO9fcnkD4iq9InVTng/ZeAdLFPDJfbLn+xbMTcTGD6OmQRV1Eig==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1744917229; bh=5FWo8cQc/hB9NfLmJn54LX1h79NfN3s9oqpfAOm3Klm=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=XNgZEzJG6gRyBfUeJsZGrmUmAGYYHsLPfdka+yKcXLrc5yJS1XhkM0c7lB0MpD0u8Bkfcq0ABttyDlDhLoIsa1nlLXGPUeo7YYmPlZjjtu98edHdplFrAz6wS+KKR5+bs/xAACHFFH/Y3K3/6PdBR3z2JKWgrZ7hZwMfF9/b5/KfUmTuau4hY3dJW0yyjxgzsDS9tUBAjqTLsItEdoSgOjywhhgsMwFw2lZGTooXzH4k7Z4ZK820E4PC6uWlH9svA+22ac8Y5XGNrPksjBlERzqdUTNWu6b8+I0Z/CLxQP//J0DY+IlBjl/uM0bMMD7nmSfQcgYZ5hK5i4KvSmY0hw==
-X-YMail-OSG: Bsn1QboVM1k.CXjKOD9a40GJDxZ_pa6I7oUPAOlqB1eczFCm6dI2ne.YbUPEwfC
- PRITJHlXTzxlrI_.YLzdN.VbbR7AdXuFLxvuox1CYYTNuBxZ1kQgGK_ezo878SYScLqQTtBLD_Ky
- 2IIIAtYjOSSUA5X2AQleqDZT8LxZMF0dElT99yxqfdB8PJGNY6WyLzsB0EuJu_mffCntSj8mEUiJ
- RgY3Op7cJ190pH1nU2DgehYD3kFs0atW4yesNEfjZzOv_opKHYXrv8RChCQ5AcdpQg4UVFFHlYwe
- EAjzwNOHCT5WVFu9Fgjsw.AVzrrABZz3OfnNpJX3qitwwCr18yvI_grLVoXzIVoWpBXN40DbR8qB
- 9vKaPP8ke8jQXz6ALwaO5nUeBEYz8wYF3hoawdoLvBKoduH7nJc2w5u3oK_j1Lbtumk.i99Wb9Md
- 4ANIdz04YvzBk8XYtvCaOXUlStM9qmOKaWU.ctEGtAdrkfZ79mlS4iCUQwVxdCCltfKseHONQoVt
- JK4npKFVRCyo0jaX6skI4HviOVGix.x0H3OB_mfdk1sOHvuDhWGXF9FYMiyz.pv4NeyBo3KOHz9O
- 8kxTtEooN3tHFEB5aJzFRfYb6ZaF37rVfRhWkTEZXjOvX0G.I_C2fIOTnxtdviGNUkfVAx9gDc6s
- Tw1U_kI7NoX.cQ4umZG44ZNSx_QR8omn2EJ2UV27v4s.O1_MNwo9d_GngUxwIF2Eyx9fDXMK87sZ
- Zy6fSttMcB.mZYOu.w.qMT6kVZ1.2PbGGtCNK2iyAa0Va9WMyVJbJiYzMVMUwAgAS6w7hPLR41R3
- i4D7FzE25Tr_Cv0lzWerQpnL1.3vOpzV2rB1RpyU.C0wetvai.XT2jzafqGueUZm1PgbbTNjT1DB
- _vEzZ6P.mJedEDyiBqDRo5_SlZXc01.9SE3Yy7d9Rf8g._TF39FJn.4gyYjpbPyvnox9xwouxcvF
- 1Cr4wNB0k74hNU9Dr646b4yFrm0rYdIoQI6bd8.v9bnWLu62ANPljaC3TS2thyZmLlLZs_c60g3L
- ImrP3uB.5d_AfvVrMn5AixMQQL2K8PDUtTgZsxpONYVorBzhMytFnud.bAGNojr_OYU_g7b7NXJM
- VyZuLlqsfoT5j4Ml4Jmn9ooVswjgofAPJ0j_Dal_06DU2arnh55Vif7rXVEj20TxX2cEeu93Wt1O
- aGJRQGXlF4uplvUx4pgsDx1Z2MqpVND3TODFZAogPc9WYc3LQgDez7R7tI1cCmSUgsXWK3hN3fr0
- P73M8PxvsB2TR7.xZKJIkGNTLkbb17Eq0_oAYzUMGD_wPFgZkMiX0Hru4U8YWwGeDehPKWqdmtLB
- Kvtyy6272zyGXLkANWjYUGUrEJeU0R8QneSa8KFMqrdTRwhzd4z9cWiClLzuMR.uv9ACQZHCuVUx
- MQF7PbF_TyqJixNcnjLHhBenGAoaTu9dJvopYV_JFXJEQzkJvmiSAonjE9obgl7Fxeb1Snhq2AW1
- AC3Aq2GdS0E8EX9D15Xm4ZxK4pSaNmUYSe2ktwvF77YtgxgJzLm9HpZBpDnjqpFDLa0UosoZIT_o
- tVIof9cX4i4xCdC0rrKnQPOkNKucBFyrcmuCXb0iaUD2Y_zk7DPo8m8Z5IehrwQukyWheG5mZi04
- R7jYIDWQanr3N5l9PX8vLVAD8mM8Hy60_niC4i.iCFyS5ZKzTsmE435yps9rxuWJzKQo0IdmwoLb
- Vt96yjmpy0KhlQIFmonk3KDbF20n9gEn6ZCCsFhKK7paBXkfzbq43q85CKWYloSLX3sEo7fuURpn
- Ae.VlLb9iIpAGTC231hc7Ftm.zRDMVqqzWLonCCaCJ8lJI2a3NlpiXztbGu9.BBST39qH7LtXoEN
- eFYKEHlrI.v.H3Tv50ZbsI9aiXCC3Ah9kMCcJ5vAhUuzD36atV7YuYulG_Z0X7jODxduoDz7xfUS
- F6FnPB0VpYMFXVi8neAoc55dI903DvOVsjpSTvZj1Bx07EdS3WkYk.VsFDWbe_C6lQpxtv.M._tK
- HxIfxtUFLfhIqL4L.ksPSrbV06hn59ObWMQezzvs8Zgjz6lvIslhqN1dcw3Y4XKeBKhqXIi8odyF
- 2ni1ufGuvg_v1ZnFJWUuEHIowo0RzdZMu_bcZzfGhL_ziC9yhaVOTjMyMMKUELK9Iv5rgP5wGucC
- Rwa5CnFiuyJtK39Li4aB013WSH6xNi.7uakZ3lWGsCuvupQHC5D7IPof8x52wW2v3KJJlmr4oK.8
- 3egxJ2xnSnWlwiFKV6G2o2AUXpKuJLzJgehrgD6MJnBCUUVtHz2JaYyzaUWL.5jhZM591FRHyTBc
- VLo4BRquFQsYxJ2EF
+	dkim=pass (2048-bit key) header.d=aol.com header.i=@aol.com header.b="t9q23F0i"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aol.com; s=a2048; t=1744917234; bh=e/w/qJ5XSLcAyq79hoDAqncaFzqKvQQg2KNF90A93+E=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=t9q23F0iQoFTC9GdYXhwFMkOgT4JmU7bTKQTfq+1h9i4peyC01mXjzzPve8eue5kHhiVUc49B42ztTKN7PMyVes2y09l8cuFeKEsSTfVLULB5KCWhXIniKTGuac4+1z0qOpQrJ2RIVwoov6lHoQO1vgwpaZq5VA/JoT8A4JithwNJOx3G9NtXWBIkxLEyO2w7a17VjNi/91HCDuUOLGmk5EFcIZKF7FkggDyJctqHtRYAt3U/yjazse7z8MkdeCKvaZhCT7QGs2EJetpR30JFqBAuzytTHy4SIBknsQcc9CQmgz0SgdxxdJvmTcpPAIDA5DIDlDsKLJnWYvGTkocqA==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1744917234; bh=wa5R4/uVf2rdiD2sVDYmfpp5T6SK1qPmbkh2WpYwN+w=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=D9vgtcBSUQaRYKajD8uGNZQXHvGKBv9PpjQ/JI1dfutSgDFczvK/O1Nn08KZKyUbVqy7PWdRRIKJXrDx2Wavz0i2h1ZYvRLM8oShx+jfwVM7Ck2Bg9yhqPRhgvK2w3PCdJJUIfgUpFU7Af7V/rg08piZ/FXdo1b4JY7owK0P4KlEir1ktyJhaUlPjbyYjsqhld8eLf3PkblyWJWgoceNvc/V12+gM9NpdryAiW31A0lE9ojY+6xRaqy5u6z6FeFHvip48XaWizGc5LI/qc0F0EOqRsCyVM1Nra4OIZ4tletVVcf0YJqcZKH5ximqXI5Wbqd0FnhWgerjFHXr+ETIIg==
+X-YMail-OSG: Urj5CDkVM1kIixSGwa8AMkniYP.TEnSAK9AfBdM__HLoM5Ru6kFlInaJqgBYs78
+ fp52hAegmVG_e3VhzlO1Ooe71Zlw5Wdkfxe8S10WPoRxITzdUwo83P_Ew7LTXwxrUbhjvynMnDl8
+ C43Y0YAKg1G5JxjXe7h7upQYLiJkpjwScTaDCzmbKUa9bVjBRW0o0TUP2t4YtlSwEuHwQBQj7KlO
+ K2EIPWWPH1oSVoAe3HQ.rikxsm03MFfXLbI6A2i85o4g0DMEn1Lb40Ir7bUD0IIkjFTMbN40J0j3
+ nT3KQzwnIuLRzFy5zSRAdsn9VAE_xG91KUBwZkOT3roKVHAIghooGa0O8YF9w0o49mMzy8f1TEsm
+ gomtIU0BP_LsEIKwxmHPYq2mYMx_LJ7.1hpd1F2TTmtTVRiNdPTrXsnkUqky6Ua.rBSwgrqcQUY0
+ Dqxap8UYy7oijSsW8sDlFkASGyG4y_qx1vsbJb8P5q0SLx0IjI4CmTn4QkWqUGdAAR016fQWx5YH
+ rupWnBINHHFN28zNT5o7bhSSfcSUMUmWKXMkngCYRv_qbnBXj6.Lb89mufp44uM4VZsIaA6swBWH
+ s7WMg4ZqtxxQuhzqZKWQM2Po60eeaojf6MDt9e2tQU1aZUQ8UdLYmbbrfIXNV7DfyoNnhpa6Q4DJ
+ YBvswUjk2MVMt5yd2KUhQhS8NZDu6VK63QWiWP5MNg1pdgjiPRdFWMj.f7ju6YjJgJ0S_pt0BcDt
+ PWN89yGlY6rv1kUBpnIiHPeJZiI1pkCtD2HnfUZsp3wDajTyo9pDP1I.b_IodUrSUAAp921m0Zwl
+ GLHjRalqMeGhWrTFUWc004pL0T.boOcxVrzPZDKXWU1fo0rZ.13ca.s1m.7YZr8p84vRJw9p4v3N
+ 8Y8gMrcbW_AQJZVwQKmt60Ydr1eGkBJdwNqIbD5UrfHAmBpp2xQykXaZwMgoSAyOMGjec0SWYJGy
+ mZoYmAUHMRQmAguQ5XH8VpD7eB21DtJDP9TnoDT.xViiYEgf5agmhPXjps1yXEAX6mRBg7GT2yg0
+ PGBKzrTCsC7bjyNsqa10tw41qz1iPu0rWBNSiBnOhZXRAbSbPwDYvhnKW4AHpilGdDyDB9XrUr60
+ ufOBlwCGNZdYubHp5vymw0lU8LHA261kMcCO5e3AOOnxBYXr_XxJTXVB4RbwTRii8FlOA7EzU0Ki
+ pB7iJht3rH_U6vqbcx5vHnxIkWLvbxS303ZnXVHcuLFpyADD8mErRPDFU9QovLTGgyiA7OwrDq4H
+ na2LFb9T8veLwcfYKIO1E9LctGBZ.USDShOgQWuG.Lkqz9u6kD0kHseAIsyQCJ54JOV78uE_ZlmW
+ _Yo9LSysWvl4Tm9BackNoqWEJWopQlew5L6RtTrgpoXh9ZhvTmrI9QR2sytAAkYbLvgrWtX8Cwnm
+ xSeMfb9rhrEGLu6nvAOrkt9z7vkitftgV8Ddo5EJR3vNTBGs0Ii.sd2Z6uY1i4S3nSY9oU2a1L79
+ QWZ371rPHTWu4WKsWHmnZP.E5BcKgC4vDm.xxRkKnqhjPR.ue3n4p9XfTscc7WHWiTcsHoKLMWxs
+ nOT1biN.4nfeuJ5FOcDxaYUezN0xPpZT9GcYAYvpjhhJg4auqKVMoWf.TOTNzMxYbaOX5q8jNdf4
+ SKQJ5qVmbuENIFYcBixWcASGWG68cfpiuVvYk.vyMhk4jLTgr1L8k4yBnULuhccSsmYiVx5j4Sum
+ ObwoZHaQb6KsRVdJQz3u5BWvDqdw_D7.jyiAsxyxviPp6i8iWlL06CPUtdb7WuddgPtKSt.EXXwd
+ x5F8yKLWmahYim6zDHfnK8P3a2yW1iBHGzAslQL9zvKFl0FMPHURCj1pFLbP5bwZUZr2IMaTGtzW
+ 8PV5iHfaPJTAJYxtDMzkF9oIOm43pUzTJ_57g1rDmhvgNgvj.oZrf.J7kPmo3FIbU2t8lX289YsZ
+ velqRgvQehkvXy8OJtvwp1l0PiQAz15FY.zS2Uk5_X2Lbk8yocPNMtyhXfHoHwuBp7XmI78L4OGP
+ MDCxjyTr4HgG_Ksed9zqy6pW3iwzG12R85zHSvIQPbhASto0fr3gFKY9E.vVoANR6itRJdDr1gx0
+ jmBOg0o_BwJ6KefuPygzDNzEdsLeNOr38WMfUwc7naa01zKXezMeyVqntP.k3naMOlHM6KNpLPPJ
+ 8xI8VGtq.7VdBAHRRGe3Y04JeK1DnX6vQLEPbWKLG_7AvQkzvFLy212Z2W0lHgYzjRD7nnVdmrka
+ JpYi0F48Ai0ab0Os.CbDE8SHRbG6BmR7XzbjbNtmQXDGdUDbhQlkfTn_8EDrHVV38KdgFMdWLJQ-
+ -
 X-Sonic-MF: <rubenru09@aol.com>
-X-Sonic-ID: 70cf2c66-89ab-47da-9f45-34579a8c2829
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic311.consmr.mail.gq1.yahoo.com with HTTP; Thu, 17 Apr 2025 19:13:49 +0000
+X-Sonic-ID: 8a009afe-3727-4a85-8238-bf230a1f9330
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic313.consmr.mail.gq1.yahoo.com with HTTP; Thu, 17 Apr 2025 19:13:54 +0000
 Received: by hermes--production-ir2-858bd4ff7b-9r9sx (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 6040ee699aaf3d3f072b53831b62751d;
-          Thu, 17 Apr 2025 19:03:38 +0000 (UTC)
+          Thu, 17 Apr 2025 19:03:40 +0000 (UTC)
 From: Ruben Wauters <rubenru09@aol.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
@@ -64,9 +64,9 @@ Cc: Ruben Wauters <rubenru09@aol.com>,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 6/8] staging: sm750fb: rename sii164SelectHotPlugDetectionMode
-Date: Thu, 17 Apr 2025 20:02:54 +0100
-Message-ID: <20250417190302.13811-7-rubenru09@aol.com>
+Subject: [PATCH 7/8] staging: sm750fb: rename detectReg to detect_reg
+Date: Thu, 17 Apr 2025 20:02:55 +0100
+Message-ID: <20250417190302.13811-8-rubenru09@aol.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20250417190302.13811-1-rubenru09@aol.com>
 References: <20250417190302.13811-1-rubenru09@aol.com>
@@ -78,54 +78,102 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Renames sii164SelectHotPlugDetectionMode to
-sii164_select_hot_plug_detection_mode, and the param
-hotPlugMode to hot_plug_mode.
+Renames detectReg to detect_reg in a few functions
 
-This fixes checkpatch.pl's camel case check.
+Fixes checkpatch.pl's camel case check
 
 Signed-off-by: Ruben Wauters <rubenru09@aol.com>
 ---
- drivers/staging/sm750fb/ddk750_sii164.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/staging/sm750fb/ddk750_sii164.c | 38 ++++++++++++-------------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index e2da110fab81..2ca72bfc67f2 100644
+index 2ca72bfc67f2..769cbe768c49 100644
 --- a/drivers/staging/sm750fb/ddk750_sii164.c
 +++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -283,17 +283,17 @@ void sii164_set_power(unsigned char power)
- }
- 
- /*
-- *  sii164SelectHotPlugDetectionMode
-+ *  sii164_select_hot_plug_detection_mode
-  *      This function selects the mode of the hot plug detection.
-  */
+@@ -289,28 +289,28 @@ void sii164_set_power(unsigned char power)
  static
--void sii164SelectHotPlugDetectionMode(enum sii164_hot_plug_mode hotPlugMode)
-+void sii164_select_hot_plug_detection_mode(enum sii164_hot_plug_mode hot_plug_mode)
+ void sii164_select_hot_plug_detection_mode(enum sii164_hot_plug_mode hot_plug_mode)
  {
- 	unsigned char detectReg;
+-	unsigned char detectReg;
++	unsigned char detect_reg;
  
- 	detectReg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT) &
- 		    ~SII164_DETECT_MONITOR_SENSE_OUTPUT_FLAG;
--	switch (hotPlugMode) {
-+	switch (hot_plug_mode) {
+-	detectReg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT) &
+-		    ~SII164_DETECT_MONITOR_SENSE_OUTPUT_FLAG;
++	detect_reg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT) &
++		     ~SII164_DETECT_MONITOR_SENSE_OUTPUT_FLAG;
+ 	switch (hot_plug_mode) {
  	case SII164_HOTPLUG_DISABLE:
- 		detectReg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_HIGH;
+-		detectReg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_HIGH;
++		detect_reg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_HIGH;
  		break;
-@@ -329,9 +329,9 @@ void sii164_enable_hot_plug_detection(unsigned char enable_hot_plug)
- 	 * on each individual chip design.
- 	 */
- 	if (enable_hot_plug != 0)
--		sii164SelectHotPlugDetectionMode(SII164_HOTPLUG_USE_MDI);
-+		sii164_select_hot_plug_detection_mode(SII164_HOTPLUG_USE_MDI);
- 	else
--		sii164SelectHotPlugDetectionMode(SII164_HOTPLUG_DISABLE);
-+		sii164_select_hot_plug_detection_mode(SII164_HOTPLUG_DISABLE);
+ 	case SII164_HOTPLUG_USE_MDI:
+-		detectReg &= ~SII164_DETECT_INTERRUPT_MASK;
+-		detectReg |= SII164_DETECT_INTERRUPT_BY_HTPLG_PIN;
+-		detectReg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_MDI;
++		detect_reg &= ~SII164_DETECT_INTERRUPT_MASK;
++		detect_reg |= SII164_DETECT_INTERRUPT_BY_HTPLG_PIN;
++		detect_reg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_MDI;
+ 		break;
+ 	case SII164_HOTPLUG_USE_RSEN:
+-		detectReg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_RSEN;
++		detect_reg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_RSEN;
+ 		break;
+ 	case SII164_HOTPLUG_USE_HTPLG:
+-		detectReg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_HTPLG;
++		detect_reg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_HTPLG;
+ 		break;
+ 	}
+ 
+-	sm750_hw_i2c_write_reg(SII164_I2C_ADDRESS, SII164_DETECT, detectReg);
++	sm750_hw_i2c_write_reg(SII164_I2C_ADDRESS, SII164_DETECT, detect_reg);
  }
  
  /*
+@@ -321,9 +321,9 @@ void sii164_select_hot_plug_detection_mode(enum sii164_hot_plug_mode hot_plug_mo
+  */
+ void sii164_enable_hot_plug_detection(unsigned char enable_hot_plug)
+ {
+-	unsigned char detectReg;
++	unsigned char detect_reg;
+ 
+-	detectReg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT);
++	detect_reg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT);
+ 
+ 	/* Depending on each DVI controller, need to enable the hot plug based
+ 	 * on each individual chip design.
+@@ -364,11 +364,11 @@ unsigned char sii164_is_connected(void)
+  */
+ unsigned char sii164_check_interrupt(void)
+ {
+-	unsigned char detectReg;
++	unsigned char detect_reg;
+ 
+-	detectReg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT) &
+-		    SII164_DETECT_MONITOR_STATE_MASK;
+-	if (detectReg == SII164_DETECT_MONITOR_STATE_CHANGE)
++	detect_reg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT) &
++		     SII164_DETECT_MONITOR_STATE_MASK;
++	if (detect_reg == SII164_DETECT_MONITOR_STATE_CHANGE)
+ 		return 1;
+ 	else
+ 		return 0;
+@@ -380,12 +380,12 @@ unsigned char sii164_check_interrupt(void)
+  */
+ void sii164_clear_interrupt(void)
+ {
+-	unsigned char detectReg;
++	unsigned char detect_reg;
+ 
+ 	/* Clear the MDI interrupt */
+-	detectReg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT);
++	detect_reg = sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS, SII164_DETECT);
+ 	sm750_hw_i2c_write_reg(SII164_I2C_ADDRESS, SII164_DETECT,
+-			       detectReg | SII164_DETECT_MONITOR_STATE_CLEAR);
++			       detect_reg | SII164_DETECT_MONITOR_STATE_CLEAR);
+ }
+ 
+ #endif
 -- 
 2.45.2
 

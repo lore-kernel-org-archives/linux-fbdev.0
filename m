@@ -1,109 +1,83 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C472B1A3178;
-	Fri, 18 Apr 2025 08:43:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F541204C26;
+	Fri, 18 Apr 2025 10:34:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744965805; cv=none; b=FbX2uj0KSzDBsWGsgXkcF5wStfyr0t3p0oPkM6jGGfE1XPQnQNVjc5OS4Ig8vltN/uYHN27eBkKqXhwidml0qk4QlRVARiarzr1p/wOrieHY+GYdByXPahdmHPO4/pKKPK4e1u/+z7wzX38sttuXPNXA8AI5WtnuPMu7tZOpeCE=
+	t=1744972443; cv=none; b=B3sgyo8nxlhLirdqsHPbVV9gY1W40hwXy7F4TADJa5TxyfUZis7JUfeezTzLDpQmJSEYlG/ssFbqFI8ORSx18mrRnoJBWc1apCM57KV3GIza6pmoE8C3Sdiuwzm4iHSzCsEtWrwysLlwYgZhzqyvayzFvtQjGuIwTJNNlFt7SYo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744965805; c=relaxed/simple;
-	bh=lmorddFDclvs7FCXPtABeuLvxJT51WRtU07RGNBL0bE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=rlMvjM4xwglN4OsRTxEJD3vdIj/QG9KN/ts8tgG2raYD113lk3aNed4OooFt83YL1s3Bln9QILQ5KeNC/8sDvHZPLdpOq4zdk65CAfAfAG2H9wubj3muEyXYs/yZPxtHZjVK0BaNMZGLfohdaDH1ouI67WL6wHtqMttYyQy+kfw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nOf/wvse; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1744972443; c=relaxed/simple;
+	bh=vw8bJB61CiRtKIfQ9TiC017QXdCK0sfEXWxyk/l1gUU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FfMSC43d9HggXNeVXBmQuslCulkAxqIx4YHAaitiG40fHxgTGArMsU0M6tLx9YtCkZsv+WGU7s+xxTxdH++g7IRMw+TvfE03/nuf0mOnK8cD1m7hkfev0Gz3vc4QLVbZZzu0KoxVR2KPRQxi8H0oePXwvgHcyB0xaPmRgiAPCLI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=h1cjH1dj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nOf/wvse"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 371CAC4CEE2;
-	Fri, 18 Apr 2025 08:43:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744965805;
-	bh=lmorddFDclvs7FCXPtABeuLvxJT51WRtU07RGNBL0bE=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=nOf/wvse+bmFozGioOWKP21tl7DRKepWw6PCaF1qQKe/+xv/z6YSRSNllixlAsOIq
-	 +w2lqk8savQ4Nq0xyiqEjEPuIsXCjeTtggebh4N4aPfxR3wV85fEkcd2LGdNsTWM3z
-	 ZNL5apMZ8V9PPkNiBClAmmN3HGXukpej4z8dvan0SRHaeMiiYVqqNV0GLdw4JoTep6
-	 pNkeo4j+05K64mYBeOrfKeiqorDhJyadXLXF+E4syr2xJpvM64eNXh8BY5P3ZFnjuD
-	 bS9QpT9vzB1ltBk40lPc93FN8g3S3fqVRqSxw9C24QGbSPYJ9NrmNjIBleFhMEdPGU
-	 fZxxtd8m+2p7Q==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26E45C369AB;
-	Fri, 18 Apr 2025 08:43:25 +0000 (UTC)
-From: =?utf-8?q?Duje_Mihanovi=C4=87_via_B4_Relay?= <devnull+duje.mihanovic.skole.hr@kernel.org>
-Date: Fri, 18 Apr 2025 10:43:22 +0200
-Subject: [PATCH v2] backlight: ktd2801: depend on GPIOLIB
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="h1cjH1dj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2246FC4CEE2;
+	Fri, 18 Apr 2025 10:34:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1744972442;
+	bh=vw8bJB61CiRtKIfQ9TiC017QXdCK0sfEXWxyk/l1gUU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=h1cjH1dj6ASU6TKCPMEOg9kqVr3SZrvVLCOAIFiht6pcIgGxyh11L8KGJz6sUsRtj
+	 ZlHXlJXZR4VpqtQQxaNBjnQ+wnsOAM8+hPsLbAeZhbp75Z60KEhtxxjH/RT9FPQuJc
+	 4goe7xrnsURfpbQq4UUZNh/pm4Ag7dVhvmPVppTs=
+Date: Fri, 18 Apr 2025 12:33:59 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Ruben Wauters <rubenru09@aol.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/8] staging: sm250fb: remove USE_HW_I2C check
+Message-ID: <2025041836-debug-unstopped-9a88@gregkh>
+References: <20250417190302.13811-1-rubenru09@aol.com>
+ <20250417190302.13811-2-rubenru09@aol.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250418-ktd-fix-v2-1-cf3d19bafc9e@skole.hr>
-X-B4-Tracking: v=1; b=H4sIAKkQAmgC/2WMQQrCMBAAv1L27EqzNk3w5D+kh2pWs1SakpSgl
- Pzd2KvHGYbZIHEUTnBuNoicJUmYK9Chgbsf5yejuMpALem2Uwqn1eFD3mhGzdrZXpubhVovkav
- eT9ehspe0hvjZx1n97P8jK1TIpiPtyJyot5c0hRcffYShlPIFEY6HN50AAAA=
-X-Change-ID: 20250411-ktd-fix-7a5e5d8657b8
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, 
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1451;
- i=duje.mihanovic@skole.hr; s=20240706; h=from:subject:message-id;
- bh=NvkEKW66oVkFED6cl1L9OEBr+ZdxEWUqxuIzm2YmzSg=;
- b=owGbwMvMwCW21nBykGv/WmbG02pJDBlMAmvM9CdPb+m7JZzJc36l/CX7loglnypbg2edbVi5o
- 1iaJ+xTRykLgxgXg6yYIkvuf8drvJ9Ftm7PXmYAM4eVCWQIAxenAExkUhEjw5fgD3Hzz0zc8MLo
- gWtc3Zd6Zra5ec9b9pWYbhY+WLi5ZTvDX4kC5SNTFrFKbpFLqiif6btkr6KWmuOhaRyi+akfKnp
- usQAA
-X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
- fpr=6DFF41D60DF314B5B76BA630AD319352458FAD03
-X-Endpoint-Received: by B4 Relay for duje.mihanovic@skole.hr/20240706 with
- auth_id=191
-X-Original-From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
-Reply-To: duje.mihanovic@skole.hr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250417190302.13811-2-rubenru09@aol.com>
 
-From: Duje Mihanović <duje.mihanovic@skole.hr>
+On Thu, Apr 17, 2025 at 08:02:49PM +0100, Ruben Wauters wrote:
+> Removes the USE_HW_I2C check and function defines in
+> ddk750_sii164.c.
+> 
+> The software equivalents were never used due to
+> USE_HW_I2C being defined just before the ifdef, meaning
+> the hardware versions were always used.
+> 
+> The define names were also triggering checkpatch.pl's
+> camel case check.
+> 
+> Signed-off-by: Ruben Wauters <rubenru09@aol.com>
+> 
+> ---
+> 
+> I am somewhat unsure whether this is the way to go or
+> the correct way would be to add an option/opportunity for
+> the software version to be used. Currently the hardware
+> version is always used, but I am unsure if there ever even
+> would be a case where you would want to use the software
+> version over the hardware version.
 
-The ExpressWire library used by the driver depends on GPIOLIB, and by
-extension the driver does as well. This is not reflected in the driver's
-Kconfig entry, potentially causing Kconfig warnings. Fix this by adding
-the dependency.
+Then the code can be added back, not an issue.
 
-Closes: https://lore.kernel.org/all/5cf231e1-0bba-4595-9441-46acc5255512@infradead.org
-Reported-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
----
-Changes in v2:
-- s/Link/Closes
-- Pull Randy's tags
-- Link to v1: https://lore.kernel.org/r/20250411-ktd-fix-v1-1-e7425d273268@skole.hr
----
- drivers/video/backlight/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+But you forgot this same check in
+drivers/staging/sm750fb/ddk750_hwi2c.c, right?
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index d9374d208ceebbf8b3c27976e9cb4d725939b942..37341474beb9982f7099711e5e2506081061df46 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -185,6 +185,7 @@ config BACKLIGHT_KTD253
- 
- config BACKLIGHT_KTD2801
- 	tristate "Backlight Driver for Kinetic KTD2801"
-+	depends on GPIOLIB || COMPILE_TEST
- 	select LEDS_EXPRESSWIRE
- 	help
- 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
+Also, what about removing the sm750_sw_i2c_write_reg() and other
+functions that are now never referenced?  Can you add that to this patch
+series?  A single series that just removes the use of USE_HW_I2C and the
+now unneeded functions would be best, as it's not really a "coding
+style" fix, but rather a code cleanup thing, right?
 
----
-base-commit: 01c6df60d5d4ae00cd5c1648818744838bba7763
-change-id: 20250411-ktd-fix-7a5e5d8657b8
+thanks,
 
-Best regards,
--- 
-Duje Mihanović <duje.mihanovic@skole.hr>
-
-
+greg k-h

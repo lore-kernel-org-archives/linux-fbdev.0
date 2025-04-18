@@ -1,29 +1,29 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0285E20A5CA;
-	Fri, 18 Apr 2025 10:36:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E78220A5CA;
+	Fri, 18 Apr 2025 10:37:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744972575; cv=none; b=PmT5299qW+zbwkXJwPoHE567VT2yxjGxIELZhdshyRaGplbGhfV5ztSQF9LSYTE6G19CBEFtKh0raNDzyxRINMEjHRyqPIziWVWxzA/efGIZpfmE0EQNueeF6pGVigQE5MMFHItgBRGg2wHlaDPf+8MNY4xdJIsGUg4Bq82CaPg=
+	t=1744972661; cv=none; b=k1airkDrjmwOT+dHoKjDTH2flkqJtApBIxglu2+fB/hxTtmLifgR252arkKZuVYwm4IoZmElXseJ/XE+0XzlsZAvqH/8dB5zm9Z2gTY7tqhkGEG5po8X0by8X9HXD8aj1mIqqobQUKiVc5nUrjU6lHT1fAw6qKdAMkvO90+e0Wo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744972575; c=relaxed/simple;
-	bh=2R57HIa3pKKmVn238y6fiprLjvsbLHI2IoVb8TShHi0=;
+	s=arc-20240116; t=1744972661; c=relaxed/simple;
+	bh=PEygGuptRCotvRMQ4g1F0jJVtfSkKPD3sgeUlmSiLuU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TDGgCROdX9I80wwFo3lL1Tg6WkphNob7npFRa4UcbosOr0N13PaNVYQlzhCXiHVz4jBbJ3klA8sw+dko3Vfu9GoccXJw1mF+fpO5qP73WbMY1mmstplAh9c2/xlAmBoVxoDSL0RkVlR6VPBPfgoEh/5d8TrrmDT+mDX4qiZRBJg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=aOiGTERv; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=J0VnyZ3JhSaoMzS2wIZyz5tHeBhNhLcA79QLT3ZdXuCiRBTN2H0UcVYsXYLrenguv9LS8OxiEW+eUCSU5rFN3lQIRvgz0ObRbwsdpRl5TthDFz68h1G60XdtyjIAlYfBjItGYJOjJTHrIfskS5R+CxsW1PO6hmBWnq99rlGLxfc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=YsPOYs2g; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="aOiGTERv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1234DC4CEE2;
-	Fri, 18 Apr 2025 10:36:13 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="YsPOYs2g"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 809C1C4CEE2;
+	Fri, 18 Apr 2025 10:37:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1744972574;
-	bh=2R57HIa3pKKmVn238y6fiprLjvsbLHI2IoVb8TShHi0=;
+	s=korg; t=1744972660;
+	bh=PEygGuptRCotvRMQ4g1F0jJVtfSkKPD3sgeUlmSiLuU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aOiGTERv/tMVpKYltUQB/s3v6XwGiNuOb0ijvF/xIuV7qsbWimLnZVfrz4/njIlkr
-	 Xh82UMwhhZb0H8tjIFXdV5QswbFhS7MjunNS5OKo5QscYCMwHKDGa6nMitKi/6CMDR
-	 tNL8+6k1BVlsORnEHEkMyzhL/LG/DuG7id++PoZ4=
-Date: Fri, 18 Apr 2025 12:36:11 +0200
+	b=YsPOYs2gc+CenTqOjw71GymcQbePo0NF2xQ7TUIkOdvbO3UJ505WcRZvcm+6oxC6V
+	 zFzFHgxuA+eRHIRM6fSRml3b94X6z63Mvyj2tpM32rmN2lGP7p3UCNXWSmR7gq/5Cw
+	 itB/JRuFIGWEaF1lp/smJg6DS/HH0GPdFqybtCIc=
+Date: Fri, 18 Apr 2025 12:37:37 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: Ruben Wauters <rubenru09@aol.com>
 Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
@@ -31,10 +31,10 @@ Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>,
 	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] staging: sm750fb: rename gDviCtrlChipName
-Message-ID: <2025041803-clutter-harmonica-7047@gregkh>
+Subject: Re: [PATCH 3/8] staging: sm750fb: rename vendorID to vendor_id
+Message-ID: <2025041819-kimono-wife-1f30@gregkh>
 References: <20250417190302.13811-1-rubenru09@aol.com>
- <20250417190302.13811-3-rubenru09@aol.com>
+ <20250417190302.13811-4-rubenru09@aol.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,35 +43,40 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250417190302.13811-3-rubenru09@aol.com>
+In-Reply-To: <20250417190302.13811-4-rubenru09@aol.com>
 
-On Thu, Apr 17, 2025 at 08:02:50PM +0100, Ruben Wauters wrote:
-> Renames gDviCtrlChipName to dvi_controller_chip_name
-> This fixes checkpatch.pl's camel case check.
+On Thu, Apr 17, 2025 at 08:02:51PM +0100, Ruben Wauters wrote:
+> Fixes camel case check reported by checkpatch.pl
 > 
 > Signed-off-by: Ruben Wauters <rubenru09@aol.com>
-> 
 > ---
-> 
-> I changed the name to dvi_controller_chip_name as I
-> believe it is somewhat more descriptive than
-> g_dvi_ctrl_chip_name. If the second one is wanted instead
-> please let me know and I will change it
-> ---
->  drivers/staging/sm750fb/ddk750_sii164.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/staging/sm750fb/ddk750_sii164.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 > 
 > diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-> index dd7811b18bf6..d4309e0d807f 100644
+> index d4309e0d807f..9f660a9be5d6 100644
 > --- a/drivers/staging/sm750fb/ddk750_sii164.c
 > +++ b/drivers/staging/sm750fb/ddk750_sii164.c
-> @@ -14,7 +14,7 @@
+> @@ -26,14 +26,14 @@ static char *dvi_controller_chip_name = "Silicon Image SiI 164";
+>   */
+>  unsigned short sii164_get_vendor_id(void)
+>  {
+> -	unsigned short vendorID;
+> +	unsigned short vendor_id;
 >  
->  #ifdef SII164_FULL_FUNCTIONS
+> -	vendorID = ((unsigned short)sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS,
+> +	vendor_id = ((unsigned short)sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS,
+>  							  SII164_VENDOR_ID_HIGH) << 8) |
+> -		   (unsigned short)sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS,
+> -							 SII164_VENDOR_ID_LOW);
+> +		    (unsigned short)sm750_hw_i2c_read_reg(SII164_I2C_ADDRESS,
+> +							  SII164_VENDOR_ID_LOW);
+>  
+> -	return vendorID;
+> +	return vendor_id;
 
-This is never defined, so instead of papering over variable names that
-are crazy, why not just remove all of the code in the blocks for this
-define entirely?
+Why is the temporary variable needed at all?  Why not just return the
+value directly?
 
 thanks,
 

@@ -1,120 +1,126 @@
-Received: from mx.denx.de (mx.denx.de [89.58.32.78])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E53613C9B3;
-	Fri, 18 Apr 2025 17:07:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.32.78
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8502E215795;
+	Fri, 18 Apr 2025 18:16:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744996040; cv=none; b=Wixn5F6SMFI8GVAAJQmonMUekZTMAN3xDAqa1ePuYKNdEyaTjBDBuXRfzkwZT0cGoL+f+dmKhKpy/LvJ62f/JbMdoEGhXEnSAKe6BPuDTg22rdVGxVclClwKYhdvxtYT725FTFRlW2YkU2ygxQeTT/Qj0TW1tmG6l9n/wXEON5M=
+	t=1745000217; cv=none; b=YeVtndBYyj7AXL38reh5O1cxDXKlGca1JrlSA5u74l8xLRHXl3N7YwLHjfIT64AJPUwWAoSuWqdL6dX4pVwrul4mdyxELNvnvP6AHhMxLEB/vsVw85NK7WrPQsPv+N3BuTEfTJPQbh6tv7RXcef6RZQOnxb3TyCY7O6KeLhv8Fc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744996040; c=relaxed/simple;
-	bh=nFFn7I+g/tnnYz6luw61kYvkvMc5y4MmqUN2RfOy298=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jPfpRsdP+vl2W6GH7Pxr4KFVLRPaWAd6OV/igI4MjS4rNz1eOQeocLV1oBbX2WalsbpQTlBMfbnkD3b3p0lI8GxwjUw5zdjOWeX5t2blZy8k1vsHuXCyYByov4GfpWEmjjvzJm4BtAYMPOfvALk2tUleVlUyW0HMON20RI+njgs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de; spf=pass smtp.mailfrom=denx.de; dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b=D/5dyZLX; arc=none smtp.client-ip=89.58.32.78
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=denx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=denx.de
+	s=arc-20240116; t=1745000217; c=relaxed/simple;
+	bh=UAlPrAxnp/DLqF+0rLeMaenQeG5p6cS3srtCNlyxhGY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TkAwD30cHHApYcoGjTMfJmWsw1kkU43Ik2gi2e15lOtpcKrIwGCzUBucSWmo8fkj1uPv8o+l60UZ1EklZAK/VNYqdtSBZa8zMAZIqs22JH0v8e7ott+0pI8qfnkR93YW7KvxNfY8Fxa2JyPnNs6VhBaS3Iii1queCr0IcXIT2Sg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iWKsCClJ; arc=none smtp.client-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=denx.de header.i=@denx.de header.b="D/5dyZLX"
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 69D3610273DBF;
-	Fri, 18 Apr 2025 19:07:13 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de; s=mx-20241105;
-	t=1744996036; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=CY3ybeEvZswn7mTzJEo870uU1YtFroIwRrSUBzp5+v0=;
-	b=D/5dyZLXHPrXzHpWT4ABFOWkh6sluYURfX7f2u8rkqFUrONd5tplGzJ+DMlLx+3LbBctVT
-	BHu5lKRc+CEFJ345J9lnXrregcz5YxGZlqh1p2FyVhyCKSDPV3HsWUlqzn3xNf7YFAhbxo
-	YEhu8w2fVyeazJmWW+F/GK+AKA/BhPGNYj/A9rIE/K8LcCAHS1qxD4zDmdTDs3uzU6iOFW
-	8/YPNQD93G1kSUzwmSkl0UWJX7mnDS5PQDGot/iqnjYO1dDmRC31Rg/Jz2P0YM+XUTySgZ
-	FJyhU0C8ql8OHN4VsI3KE4oT4bZlZySOCUbaom+Ult6gxc4N8z4P90ozoUF2Vg==
-Date: Fri, 18 Apr 2025 19:07:10 +0200
-From: Pavel Machek <pavel@denx.de>
-To: Sasha Levin <sashal@kernel.org>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-	Leonid Arapov <arapovl839@gmail.com>, Helge Deller <deller@gmx.de>,
-	krzysztof.kozlowski@linaro.org, u.kleine-koenig@baylibre.com,
-	linux@treblig.org, linux-omap@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH AUTOSEL 5.10 8/8] fbdev: omapfb: Add 'plane' value check
-Message-ID: <aAKGvh0fdMZPT9Jd@duo.ucw.cz>
-References: <20250403192031.2682315-1-sashal@kernel.org>
- <20250403192031.2682315-8-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iWKsCClJ"
+Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-73972a54919so1868039b3a.3;
+        Fri, 18 Apr 2025 11:16:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1745000216; x=1745605016; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RtR9yi+Z296JQYsaYU+wI+paZc4GBr03eUA9SnJEG0s=;
+        b=iWKsCClJyP+kHRGa1OWFPEIZcMXw0udk+eUXArIjIh2kzPCSJFLW/5ZaPbS5E5pVlE
+         1a8Smp8IcL2CTHqtdW9d6qCLYHkpVIfQ1OOUGi13kfxFLi/2pwS0drLFZNqh8jsIM6x3
+         9D0wY6qxkK3ZmqPx/lJPbuljbpu3LUSKQwQ3sBmD01P0AbkAwWgAoNn+0x0KSSevEzud
+         Exb/KheIocIwzdGVHrqmVAbAddC8bgHp0RfK0sxad/ZykYtxnKxBrlohh8AutRvZ568i
+         VPuE8cTaizyXsNgwsUTUO356ERZwi9QFfo1KTd8PSckTEftEKvWfrLQSoBBgFuZHQ+Gv
+         5xhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1745000216; x=1745605016;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=RtR9yi+Z296JQYsaYU+wI+paZc4GBr03eUA9SnJEG0s=;
+        b=Gd6dZ6pypa3DCErUj+9TH3N/MpnxN6rDmPIDihSrq19rc2Oj17NRxlsOEzkyUIhlQd
+         vld5meKkOkdPzTzatp2YRjbFiq8Jkg+Gs88aHHiS/IKm/JNoZo4PtabZwPzDfoGBCWEM
+         3w3I/jQk79vSHmSLWRF/WNckv5Cx6ashyrVP5jz2t4BBqFydnwjXn7XqhWkPXzjGlC0q
+         R0tN0YqmIpLWrgADSlOkPf3ee8MAlIXwgHZKCzTZDTNkKHQWNpdSlpOd83Qm0PH7vknx
+         Zn9l7m/1dgvgwo8mY+idHVjvwTT4h3EZ8zivVwUk2ASMkFAeeDMbuNzM6eJUMl+sfIXJ
+         Rs4A==
+X-Forwarded-Encrypted: i=1; AJvYcCU5atMSF5a5zaqn1jq83bPjgDoZ9a6t38HHTBP5MADkit8tu/dfwO3cbvSlGwlmadXndUXEs4yHsapGu2IC@vger.kernel.org, AJvYcCVVLJ8f9tUCeOk749Q32G4QSySdD8mNqGaJFL0URGpz2X233JzT4tsgtNPiIHAYCFOSk/0O8zfYSJHrpW8=@vger.kernel.org, AJvYcCWIGcz0hbzU3/clPuyFe7wRs15nBX2YYQfhiGpvUGAWDa3AL4BvaTn9czk5K8JMkM1rmHA2tDJ9W1xb/w==@vger.kernel.org, AJvYcCX0WnWx76FmwY3ZGYlyqO+yk0bXO3RoPrH9fBvseT6ksf8DdX3MeqgFLVhcz+HSeliiip2J9STJSa7e@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx9GQjVwyMLDJ5EEowVyOLUzgLeZfGwEGRxuYM1z4nz9fFFVCCP
+	VWMW/qTU7//kD4XUzCcGxre/uG7QucB3Ii1mPO2xO2HxDGBQkpZc
+X-Gm-Gg: ASbGnctsEFAtryZefhFdf6NHtwrdTFOtvQvusRCy70gZuQBvW1mvPPzadsWqVv55SPB
+	/u3N5lH4wultka1jg416noskrVGNCKvdYzhLZKk0ld4aDArcW7xEgov/D3Ep6IM5pKKUKzLAaTC
+	iMXlVop33TGxwWJ/1OgmwI/Kzc/pgPkRqT+N0fVvkKHhKtAejmGyxzAaJK7U0UbWns/dc/L2rtY
+	exlwfiSjmg9oMLQvSSnNnzD9un3kqlcz7WBJAd7qmNofxeRKHs06b2HYfNQFs5z36KmMdduttSs
+	YzxQbVEQHbstMY46PYIBAkHmXg9i8/Q1IsKOA4c=
+X-Google-Smtp-Source: AGHT+IEgYyHoFNXqS+ng4zUSLjzFVHFHhp6c/GtXYk71PYeQLEijwI6Tlhvtyx+SG+0mbA7k2GDG+A==
+X-Received: by 2002:a17:90b:5884:b0:2fe:a545:4c84 with SMTP id 98e67ed59e1d1-3087bcc72c1mr4640664a91.34.1745000215613;
+        Fri, 18 Apr 2025 11:16:55 -0700 (PDT)
+Received: from nuvole.. ([144.202.86.13])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3087df25d80sm1560674a91.25.2025.04.18.11.16.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 18 Apr 2025 11:16:55 -0700 (PDT)
+From: Pengyu Luo <mitltlatltl@gmail.com>
+To: krzk@kernel.org
+Cc: conor+dt@kernel.org,
+	danielt@kernel.org,
+	deller@gmx.de,
+	devicetree@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	jingoohan1@gmail.com,
+	krzk+dt@kernel.org,
+	lee@kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	lujianhua000@gmail.com,
+	mitltlatltl@gmail.com,
+	pavel@kernel.org,
+	robh@kernel.org
+Subject: Re: [PATCH 2/4] backlight: ktz8866: add slave handler
+Date: Sat, 19 Apr 2025 02:14:41 +0800
+Message-ID: <20250418181442.207436-1-mitltlatltl@gmail.com>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <eb23737f-5b6c-47fd-8b39-637e059bd5f1@kernel.org>
+References: <eb23737f-5b6c-47fd-8b39-637e059bd5f1@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZBo/N4CwvGP6QfRI"
-Content-Disposition: inline
-In-Reply-To: <20250403192031.2682315-8-sashal@kernel.org>
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+On Mon, Apr 7, 2025 at 6:00 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On 07/04/2025 11:51, Pengyu Luo wrote:
+> > Kinetic ktz8866, found in many android devices, nowadays, some oem use
+> > dual ktz8866 to support a larger panel and  higher brightness, original
+> > driver would only handle half backlight region on these devices,
+> > registering it twice is unreasonable, so adding the slave handler to
+> > support it.
 
---ZBo/N4CwvGP6QfRI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[...]
 
-Hi!
+> 
+> I wrote on IRC - phandle to express the relationship between hardware -
+> and I do not see it implemented.
+> 
+> If you have devices depending on each other, you need to express it -
+> for links, for resource dependencies etc. phandle is for that usually.
+> Or OF graph. Or parent-child relationship.
+> 
 
-> Function dispc_ovl_setup is not intended to work with the value OMAP_DSS_=
-WB
-> of the enum parameter plane.
->=20
-> The value of this parameter is initialized in dss_init_overlays and in the
-> current state of the code it cannot take this value so it's not a real
-> problem.
->=20
-> For the purposes of defensive coding it wouldn't be superfluous to check
-> the parameter value, because some functions down the call stack process
-> this value correctly and some not.
->=20
-> For example, in dispc_ovl_setup_global_alpha it may lead to buffer
-> overflow.
->=20
-> Add check for this value.
->=20
-> Found by Linux Verification Center (linuxtesting.org) with SVACE static
-> analysis tool.
+I got you now, as a non-native speaker, I often misunderstood the first
+time, you expected that accessing node phandle in relationship or graph
+way, I did only access node phandle regardless of relationship or graph
+description, I only implied it in compatible string, but there would be
+a better way.
 
-As changelog explains, this is robustness, not really a bug fix. We
-should not need it in -stable. (Or maybe rules file should be updated,
-because noone seems to be following this rule).
+> You did not provide any description of the hardware in the binding, so I
+> really do not have any idea what is this setup thus how to represent it.
+> Use hardware terms, diagrams etc to explain the hardware in the bindings
+> commit. What are the addresses? Are there any shared resources? What
+> buses are devices sitting on, etc.
 
-Best regards,
-								Pavel
-							=09
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-> @@ -2751,9 +2751,13 @@ int dispc_ovl_setup(enum omap_plane plane, const s=
-truct omap_overlay_info *oi,
->  		bool mem_to_mem)
->  {
->  	int r;
-> -	enum omap_overlay_caps caps =3D dss_feat_get_overlay_caps(plane);
-> +	enum omap_overlay_caps caps;
->  	enum omap_channel channel;
-> =20
-> +	if (plane =3D=3D OMAP_DSS_WB)
-> +		return -EINVAL;
-> +
-> +	caps =3D dss_feat_get_overlay_caps(plane);
->  	channel =3D dispc_ovl_get_channel_out(plane);
-> =20
->  	DSSDBG("dispc_ovl_setup %d, pa %pad, pa_uv %pad, sw %d, %d,%d, %dx%d ->"
+Agree.
 
---=20
-DENX Software Engineering GmbH,        Managing Director: Erika Unter
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-
---ZBo/N4CwvGP6QfRI
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iF0EABECAB0WIQRPfPO7r0eAhk010v0w5/Bqldv68gUCaAKGvgAKCRAw5/Bqldv6
-8k5AAKCQX8B0UtiYfqSSUIgj9Cciyl+X/ACgtg4ARUVHHH5jlNdHfPqoc3tE+/Y=
-=SFK+
------END PGP SIGNATURE-----
-
---ZBo/N4CwvGP6QfRI--
+Best wishes,
+Pengyu

@@ -1,131 +1,116 @@
-Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+Received: from mail-pg1-f194.google.com (mail-pg1-f194.google.com [209.85.215.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BAA613B2A4;
-	Fri, 18 Apr 2025 18:21:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6849F191F7F;
+	Wed, 23 Apr 2025 04:04:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745000501; cv=none; b=PqA3CWfnUjhUxRuM63/dBrXSLqL/B3kJMVrdhyTm34pzz9JGVmiW38SVuWYJqVzH1lcoKIQEYw1FJjfPuRjRExLO4EjTx5YpcZtJMsFrkScMxeWPeV2j037aDZYi1VCYYiQv/BlkTLtIKUvLDmN8EHj/JjOz5QFsMv2s+cDuXsY=
+	t=1745381080; cv=none; b=hJfNA9uYchQBkTiLzqR103fTh+u8Bp8QNYA6e0R8rFeEcsffrcxgJdpvcbiaQnKVb0IYIYHAZKP4A7RtqGi5ZOzJ9+nEksNO/LfDaS5n5Oq6Vw2NqJaYC1tjTdTaKa/hCDEwyLkAP/DBGQoTb3Q7k5p8akY7uheuuB6F3fd+H9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745000501; c=relaxed/simple;
-	bh=SLwvrl0gbz7th4Q1VFcfpLjOLB8MNndL48XA8sfo608=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mPe8NGGcL2TRSMF5OUerk6Ye+mpqgn4l6PjdSEPms4e4TgwD5P5vOCq/0JpwzUU+U51KMbt0Y/jf7mGjxV+feVPRA/6IAyVzMTh79yXSIOCdU43eee6AbBEzY/uGabbFkMykrcVGRxSBthCZCpkadSmvRlIThYav6JpJHqI+jvg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OLfbLKrm; arc=none smtp.client-ip=209.85.210.179
+	s=arc-20240116; t=1745381080; c=relaxed/simple;
+	bh=QLYcfn/WeBs9woCLnGnDrcxCf0Rs5lnjMgdmyrn4CQY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=QGQGsfZRGNiEW5GYVZLgu91+taTdosAjKzOEy0AFYhqwTukWvhmWtQM6J5NodrxKtQ5W3UMrLATUAfvOUXsKvC75fmc20bfxOQ5JBdDCnc3V7UIekoZVc0cb9hqY3UAqsp0JfX6i7xyQeDYfPdSbjHoHwpnDuJ+aEIenG6uW4j8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=h4B0G1ew; arc=none smtp.client-ip=209.85.215.194
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OLfbLKrm"
-Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-736ad42dfd6so1853046b3a.3;
-        Fri, 18 Apr 2025 11:21:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h4B0G1ew"
+Received: by mail-pg1-f194.google.com with SMTP id 41be03b00d2f7-af9a6958a08so659987a12.1;
+        Tue, 22 Apr 2025 21:04:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1745000499; x=1745605299; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8kS9LLNgYY9RzFfrzH68SeW5jhMvExMO5jq7yXv/Swg=;
-        b=OLfbLKrm4dqnCjSkkrpqFXnrFftrPptn3tW0dws+N/erRbdjPRLDGdGNwr7C620lFU
-         tkUVAekBm69m1qNKWlUSdshEVxi1e0oMButiBzV065seJQnReXmq0bOXNfkg/n8IKgrl
-         tN4F12V8GMe/bxsbHUOd184bm1H8PDmSx5+gSCH1I1OJOGuLsiNNGJaWIQcbErJKzoX/
-         TxBPNWq3iazEfpJyKpkAZoyi7OzIzGKp2S/OZ1vAru9RVDXEu0rqKMKW5awSBbmKv+PL
-         ivDiN4TGczfgG2aMJQoJsnPLXE2BDjH5mGrybFY6ZOP7T5yBNVhmfMhHgYqMLo+tGyeq
-         SRBQ==
+        d=gmail.com; s=20230601; t=1745381078; x=1745985878; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=JaNc0pkR0bONw547U5Qqvy297DCGp0lAzMaANoLdgt0=;
+        b=h4B0G1ewjWGM4aIMIQX2NfSdDa4SIBvCPpMghHzw/8CbZRQjGQBea06cvJ7tUlDe2R
+         +S0Pcu37N2xyQetjWkC31+pDbvCOFIM6ubIpr8cjZF0+FiXgeLJ0As/YGjc+Rv/mjCje
+         h1wY0xj0nojcOl6bBbYPsfzRyzAJh7Z5xGE3BcABspJAAENNRFAwVXLU5AI2Q5EJGzMU
+         LWKOGSa5ErWJP4P0vf9lVu7FW+mIpBVE/yHvqEsEW0wzwjRlNfcCIwORSngWuvAjFvTK
+         TcnVRwldI9UvjusHFEmhaXPljiWlLl06SOPspmcsVCtJr0LFe2/ApjR3tFBS6imr3jZg
+         qf0g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745000499; x=1745605299;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8kS9LLNgYY9RzFfrzH68SeW5jhMvExMO5jq7yXv/Swg=;
-        b=s02/0Qv8fvnnrKMl4Zg2fQoThfV3AlWRG2kzY4Ozjw0qg0ZEqD+ytkbLf9akmM3tdp
-         sLs+zeI8SWhK25Z0YplPlb5gPRYJbl0X+M4BGJlXOSrujbECn07dbaZUJbxaU92+MyV5
-         1FPohPktQuYp/vbL3G2VZVse4DJ2a7J+Y7HrLeZM6SSgcBzWrkCcqvNzZCWaRYd5aL9r
-         y0vL9e24U2txo9uApOkI1UINQe2XO0SYxdnJrORHiE/zeZXv0y6bXXMz6Jv6xAoiJRtj
-         ezyR/foCRF8fJKAoc1GE4ibNzJd8Vw4N7Kw5hpkBufMJvI3UlFt84txyFWao/MmPcMAG
-         6OEw==
-X-Forwarded-Encrypted: i=1; AJvYcCUrqpHsO6sC7bdRYbDd3ihinTRskl6+pgyITi+7n85DoFefNtHTTp7uxRjI6eXtLv29fG93x6XzhHvzkh0=@vger.kernel.org, AJvYcCVIZfGjst3zGQR2O7DF0WY2VmRxGDtFm4ezBUKSSvMslOsYUu4cbZFUBEhvAkruikNLI53o0ZnAQI3LYLTK@vger.kernel.org, AJvYcCVgoYLHLrXCJG8HnxoIx5KrkTrfDRe9BIzHeeQ0UO5Qae5jtjn36cgNWiGIdht9CLR/+WydMsERcIFc@vger.kernel.org, AJvYcCX3bIKyAGB9+0fbOx3X+Y93dmqKWqKQNYlMkpqXolyb71Lu0hC/8V9hNH3vUPi7Y8kuR6jTzo6H22iD9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw+J+kvKS6PiYJSF++vsbRV1R38t35cvJjgBcMZ+Y2vEiLzKmDI
-	VQBX0COGKEvn6gAqXg5g7p6iBfI9l1glk5hWF5voB0B04VAZN95D
-X-Gm-Gg: ASbGncv5TlO5ShurZs1LvYVhOXy+Za4hKQO9XB0khg12Mf3616LygdZULFpIYJApIkX
-	63rKomndO3ud/70oNPPup++rcTdOXbGDHhTziAajlZrOZXGM7SuJVviDqnhjLVQ55DHVnl5lwKR
-	iSUcTViXGP8TFUdVu2Jd1ahpCzjHHcMmWTWLbCZ4qRLLHyGRNEg4ZMalvmCoPhaJ4oixebB8epP
-	aIhBxoGDDVLNT07yPk62Ll3iQlew5VytdztVlXItW0X/Dx1TfNCAskryHcwfgLHf8YkzY2a2PJ+
-	xrrRlPV1CCvnWRB1EKVn+jHqQwcFqO7BhlLhTz8=
-X-Google-Smtp-Source: AGHT+IFRC9j6wJeAYD2mwF+2keu5K1ZF/SaRY/zWPxP4EBLUKFqAOPsnj41Veel0R8nXbo7wP6uWWw==
-X-Received: by 2002:a05:6a20:158f:b0:1f0:e706:1370 with SMTP id adf61e73a8af0-203cbd59cb0mr6805648637.35.1745000499288;
-        Fri, 18 Apr 2025 11:21:39 -0700 (PDT)
-Received: from nuvole.. ([144.202.86.13])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b0db13a3e63sm1684024a12.29.2025.04.18.11.21.31
+        d=1e100.net; s=20230601; t=1745381078; x=1745985878;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=JaNc0pkR0bONw547U5Qqvy297DCGp0lAzMaANoLdgt0=;
+        b=PK1LKSqh6EMHvcWj3pXJt/0+n/Yi3r5RoVxMfRZzfCbJOXuExAlWeWedeWiYPdw4zE
+         Cdf2/tI4BhZXVmDN7+Q0IBZoMNlyCQ0eZ9Pyu5ylNYWIZFHiaAtQMyea0n8Gku1SIsyJ
+         Hu3tcEFzwJoffO0Z7JxKkdvgCmFratzB4BWjI5LRwX5EXUBHr3FRr1MYhfAMutWAUrNb
+         42QDvBpnBow96EFiqmAPy/zQhVQDSDtWjbqLci7Ifrpkvf0p1NP153/4riFlMxoH+IwW
+         gsVhZI96ODP82+H5O4/dX8cpG3gPKZ7uFzyBuaQHVuGfjc5tUVM2pRUCypnFEi6SVVJg
+         cPzg==
+X-Forwarded-Encrypted: i=1; AJvYcCUxDTYc9J3rHyCeP1K6nSk9qlNpL7JmMKnUVgaNPQrQKd+oL8f4+ItZRjH+9QTSHhMZjIEWGR+O4vkevA==@vger.kernel.org, AJvYcCVaRC1s20S6pfGU3ii/ZOXd0Mu/Eh5TqXoP6cKonlkG0/Oe2jd56x6GG4p3jpFbcCJVu7Tk0gn1cbu4O+uU@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw/+7tBOj3XzHmLU4xgSBBwC2gBqIunUGT+RR373o4LHUEhc/+B
+	ukMg89xToP8zuegIAoAxa9ulUaqRf6j7DJKIaSdBpnGjplz7RynZoCX7UHgiw8g=
+X-Gm-Gg: ASbGncvvRvXhg4F10/+142Iu2/6scbDClrFz1OnQKHu0TY9sKfu8c7KPHXB0KuFSiSP
+	DBptfnx2Hy10I4ay5kLNkBsV382iayhwpCc5hgDYTtzQY5CtjPYviSUEV4hLfOwXegZxHJC3r8X
+	QDF/stw92w0JpvsRK++SVn716uxrEMcLO2Fr8gsd8VYDwzp7rVUBbQaWgejZnh6L093z93S6ljO
+	uVuEECLI1KM0CziJQ3PYMetdsJE/nSBnbJxkJgrYFpfO5no1x3mAW8gcAxKw2l04XkwtiX8i+lT
+	dJUjn3nuIRQIO+zLpA8R3j7AOZzRvfEA31/000HJHUOyrRNqziUN3axbVMgWrSji+tc5iluYLuX
+	kxwZr91cMWA5PIN4ojprYNWer7avpbXtHK7mhYYtptJFoomqIRADwY6V1kY/uOjVJcA==
+X-Google-Smtp-Source: AGHT+IG+cMoMirYyItPads7DUv0VZo+s/pmJuZ7P26NAWUahDz4I33xxAF22GJJJXZCUJqkkMjo7ew==
+X-Received: by 2002:a05:6a00:3a10:b0:730:8c9d:5842 with SMTP id d2e1a72fcca58-73e11762d53mr881535b3a.5.1745381078569;
+        Tue, 22 Apr 2025 21:04:38 -0700 (PDT)
+Received: from kerneldev.localdomain (162-225-124-171.lightspeed.sntcca.sbcglobal.net. [162.225.124.171])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-73dbfaeb5c1sm9475900b3a.165.2025.04.22.21.04.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Apr 2025 11:21:38 -0700 (PDT)
-From: Pengyu Luo <mitltlatltl@gmail.com>
-To: daniel@riscstar.com
-Cc: conor+dt@kernel.org,
-	danielt@kernel.org,
-	deller@gmx.de,
-	devicetree@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	jingoohan1@gmail.com,
-	krzk+dt@kernel.org,
-	lee@kernel.org,
+        Tue, 22 Apr 2025 21:04:38 -0700 (PDT)
+From: Eric Florin <ericflorin.kernel@gmail.com>
+To: teddy.wang@siliconmotion.com
+Cc: sudipm.mukherjee@gmail.com,
+	gregkh@linuxfoundation.org,
 	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	linux-leds@vger.kernel.org,
-	lujianhua000@gmail.com,
-	mitltlatltl@gmail.com,
-	pavel@kernel.org,
-	robh@kernel.org
-Subject: Re: [PATCH 2/4] backlight: ktz8866: add slave handler
-Date: Sat, 19 Apr 2025 02:19:09 +0800
-Message-ID: <20250418181927.208018-1-mitltlatltl@gmail.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <Z_P9AEGq2sBYShgv@aspen.lan>
-References: <Z_P9AEGq2sBYShgv@aspen.lan>
+	Eric Florin <ericflorin.kernel@gmail.com>
+Subject: [PATCH] staging: sm750fb: change `enum dpms` to snake_case
+Date: Tue, 22 Apr 2025 21:03:45 -0700
+Message-Id: <20250423040345.11323-1-ericflorin.kernel@gmail.com>
+X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 8, 2025 at 12:27 AM Daniel Thompson <daniel@riscstar.com> wrote:
-> On Mon, Apr 07, 2025 at 05:51:17PM +0800, Pengyu Luo wrote:
-> > Kinetic ktz8866, found in many android devices, nowadays, some oem use
-> > dual ktz8866 to support a larger panel and  higher brightness, original
-> > driver would only handle half backlight region on these devices,
-> > registering it twice is unreasonable, so adding the slave handler to
-> > support it.
-> 
-> Is there anything unique about KTZ8866 that allows it to be used like
-> this? I think it would be better to add support for secondary backlight
-> controllers into the backlight framework, rather than having to
-> implement driver specific hacks for every backlight controller that
-> appears in a primary/secondary configuration.
-> 
+Change the entries in `enum dpms` to snake_case in order to conform to
+kernel code styles as reported by checkpatch.pl
 
-According to my understanding, if I add the new api to backlight framework,
-with a minimal modification, then I either do A or do B(I doubt it is my
-fixed mindset)
+CHECK: Avoid CamelCase: <crtDPMS_ON>
 
-A:
-Tied two devices, registering the primary and the secondary device during
-one probe, to do that, I access another KTZ8866 when probing. Those hack
-is still here, that doesn't seem to help.
+CHECK: Avoid CamelCase: <crtDPMS_STANDBY>
 
-B:
-Uncoupled, probing separately, the later one is registered as the
-secondary one. Brightness control is a little uncoupled, there are two
-sysfs, I doubt if userspace programs will write brightness to two
-devices. Then we need synchronization, write primary => write primary
-and write secondary, viceversa.
+CHECK: Avoid CamelCase: <crtDPMS_SUSPEND>
 
-> Also, the kernel seeks to avoid adding new instances of master/slave
-> terminology. See the coding style doc for suggested alternatives:
-> https://www.kernel.org/doc/html/latest/process/coding-style.html#naming
-> 
+CHECK: Avoid CamelCase: <crtDPMS_OFF>
 
-Agree.
+Signed-off-by: Eric Florin <ericflorin.kernel@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_power.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Best wishes,
-Pengyu
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 63c9e8b6ffb3..5cbb11986bb8 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -3,10 +3,10 @@
+ #define DDK750_POWER_H__
+ 
+ enum dpms {
+-	crtDPMS_ON = 0x0,
+-	crtDPMS_STANDBY = 0x1,
+-	crtDPMS_SUSPEND = 0x2,
+-	crtDPMS_OFF = 0x3,
++	CRT_DPMS_ON = 0x0,
++	CRT_DPMS_STANDBY = 0x1,
++	CRT_DPMS_SUSPEND = 0x2,
++	CRT_DPMS_OFF = 0x3,
+ };
+ 
+ #define set_DAC(off) {							\
+-- 
+2.39.5
+

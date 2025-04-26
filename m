@@ -1,77 +1,93 @@
-Received: from outbound.pv.icloud.com (p-west1-cluster5-host2-snip4-1.eps.apple.com [57.103.66.182])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79AEC23FC5F
-	for <linux-fbdev@vger.kernel.org>; Fri, 25 Apr 2025 11:21:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.66.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76F704414;
+	Sat, 26 Apr 2025 06:23:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745580085; cv=none; b=r48f+tftFx1kC6YJQcf5bZNVMU9gyfx693jVIw+KQ1+6YdHRnID04YOJtXRXKmK1/gXHbLSpMlVRGb7FBPMt6m4g/ef3pcIo1yZeHnSB+krFs9zNYvK9LLVPZlg66pgaScKfguUw78+B1rVvUX4V1qf7Mcbb28FZuXyKOBuF3/0=
+	t=1745648590; cv=none; b=S4cq9WL9SgRSzDmU4Nne6TwQ+0JNjPUVYLobAp/0CEcpvXfEEP8f8f/5vnpNUjXCaCHtkhbkcIRLIowtIPJxs0Whw71zNuBoKZ8F2S4mnmAsQe2rHnC9+pc0bicDWY0ztAlXVY1vgW6S/5CgSmu5Hse/XDeZTxG6oVOJth9AM80=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745580085; c=relaxed/simple;
-	bh=14AoEbRStqztA4Ljceq3MLOlXVn2knuUhP5ZsZEpVuk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=f5kwfUris+08RZYa+qiMCzbFGbA9/TcTkwoFBQMJ+QeCUFnu82WrUkT1QisLlBvBr9xvqZysOt72/AJ5XadsuVt5yo6FLF12906HsV3XzTsLH7N1xhTU8SFfAZFE6fYA279Ewr7SzV4fGW7V6z9HG48oBuihKXNgfvdbii4Mkmo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=Lh35U0+a; arc=none smtp.client-ip=57.103.66.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
+	s=arc-20240116; t=1745648590; c=relaxed/simple;
+	bh=27+zMyxeObnY+2ZctN5Kd1JdUG7p8OUHfohFohgaffs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UQVIutxqLq16pdfWL0VUtGCHR/YRxjQZlVC/2EQJgXTcb2xQuvZ0xmaW+2tu3S2UOwVIMQQBJ7aE+Sw51xDm50cu+MqRbLcCDi2zZL8fAmlF9nPfnI2TAX8ZoVAgwWjvywZfnun/DL06Sv84sQwI7ukU89smsPD03eH6dfq7kxM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aHo9/Fab; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="Lh35U0+a"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com;
-	s=1a1hai; bh=WTzGg3KDeNWnZ7BGsdPuQxd44aiGvH+K5sJokIuJ8r0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type:x-icloud-hme;
-	b=Lh35U0+amnwHTl0AEcvp49zrAHy2hWbRluciOb8G3Os84LDhiwrOPSN62n+PMPFBW
-	 awgj7U6jlLWheCfluhxAoXOg010cm5QFDTwehVYoD9rdh7Vaw1vmAlRSkqkUmTehUC
-	 0Wj0uaww+b/yZmSj94q/eMWeC9cSi/p1aPG6CWhHoD/J9EJ+y25mA0nd23KgTrCtQy
-	 6WMUkLvvAdXRpi2rWn3hbuFfcvE+UdIjeb2sLTe3F2l/wu6fKcf41kw1Ay8LoafiE9
-	 5u9uVnE6pR6Izh/MUUbbTRDr3D1nd02o/VBGMcxp21vTGZ1udEBEQNUYDLVomNi8/P
-	 uIcGCg7umDP1w==
-Received: from [192.168.1.26] (pv-asmtp-me-k8s.p00.prod.me.com [17.56.9.36])
-	by outbound.pv.icloud.com (Postfix) with ESMTPSA id 2D70818000A5;
-	Fri, 25 Apr 2025 11:21:19 +0000 (UTC)
-Message-ID: <6621335c-b099-43f3-8c4e-eff7dfec57ac@icloud.com>
-Date: Fri, 25 Apr 2025 19:21:16 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aHo9/Fab"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 455B5C4CEE2;
+	Sat, 26 Apr 2025 06:23:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1745648590;
+	bh=27+zMyxeObnY+2ZctN5Kd1JdUG7p8OUHfohFohgaffs=;
+	h=From:To:Cc:Subject:Date:From;
+	b=aHo9/FabE7ZQa+vos7KsSZ4IJeQlktU6shV39qpD4mWsp2zFVhGZs6e02/MoMZtSB
+	 jH3fwcdHt9avgFrD0P9elk2pPCYbhJdzeaEmIEYpHBnL21CNLVxOkwfTDimBSJKj3F
+	 kFXpHC7K6HfNgKtrbkcPZ6cP8MH+S/5/xMfvJlB/4i2u/cY11YIdxsYszcP1uE7Ep7
+	 +sPhzEVBw1U3+A7FRptQLwD2zx7Z/jkVlT//0lPYwJvgQln4EUELfSATEp2yKrOD7S
+	 yS22uIeTcf02PyK2V1rnfWuHLFQ4yjv/J8PV7wNzPzr95PzN/TrugIv+nCr5lc5FH2
+	 ASxErqEnFUjHA==
+From: Kees Cook <kees@kernel.org>
+To: Helge Deller <deller@gmx.de>
+Cc: Kees Cook <kees@kernel.org>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Zheyu Ma <zheyuma97@gmail.com>,
+	Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH] video: fbdev: arkfb: Cast ics5342_init() allocation type
+Date: Fri, 25 Apr 2025 23:23:06 -0700
+Message-Id: <20250426062305.work.819-kees@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/nvidiafb: Correct const string length in
- nvidiafb_setup()
-To: Jani Nikula <jani.nikula@linux.intel.com>,
- Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Zijun Hu <quic_zijuhu@quicinc.com>
-References: <20250407-fix_nvidia-v1-1-843f8d031c7d@quicinc.com>
- <87o6wky613.fsf@intel.com>
-Content-Language: en-US
-From: Zijun Hu <zijun_hu@icloud.com>
-In-Reply-To: <87o6wky613.fsf@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: Fs3s1X-d5AZMGskkSyGQsTMDJro4jJx1
-X-Proofpoint-ORIG-GUID: Fs3s1X-d5AZMGskkSyGQsTMDJro4jJx1
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-04-25_03,2025-04-24_02,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 clxscore=1011
- bulkscore=0 suspectscore=0 spamscore=0 mlxlogscore=708 phishscore=0
- adultscore=0 mlxscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.22.0-2503100000 definitions=main-2504250082
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1621; i=kees@kernel.org; h=from:subject:message-id; bh=27+zMyxeObnY+2ZctN5Kd1JdUG7p8OUHfohFohgaffs=; b=owGbwMvMwCVmps19z/KJym7G02pJDBk81ac+X1l5T0tgY5HOHT/tEy84W2w//dh8pP/bOpule SF5y/av7ihlYRDjYpAVU2QJsnOPc/F42x7uPlcRZg4rE8gQBi5OAZiIfDYjwz6/cN0C0apLb6pZ YvsP2eewrMh87lYp8vPjNr81aWorMhkZNvU6MrntOe/1YgJ7WvbOUAeX9K1zPI2/8z3TLD4x41c LDwA=
+X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 
-On 2025/4/25 16:55, Jani Nikula wrote:
->>  		} else if (!strncmp(this_opt, "noscale", 7)) {
->>  			noscale = 1;
-> A further cleanup could be to replace all of the strncmp's with
-> str_has_prefix(this_opt, "...") to avoid this class of errors
-> altogether. It also returns the length of the prefix on match, and that
-> can be used to drop more magic numbers.
+In preparation for making the kmalloc family of allocators type aware,
+we need to make sure that the returned type from the allocation matches
+the type of the variable being assigned. (Before, the allocator would
+always return "void *", which can be implicitly cast to any pointer type.)
 
-very agree with your point. may use strstarts().
+The assigned type is "struct dac_info *" but the returned type will be
+"struct ics5342_info *", which has a larger allocation size. This is
+by design, as struct ics5342_info contains struct dac_info as its first
+member. Cast the allocation type to match the assignment.
 
-there are many strncmp() usages with long const string and hardcoded
-string length. some usages are wrong.
+Signed-off-by: Kees Cook <kees@kernel.org>
+---
+Cc: Helge Deller <deller@gmx.de>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Zheyu Ma <zheyuma97@gmail.com>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <dri-devel@lists.freedesktop.org>
+---
+ drivers/video/fbdev/arkfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index 082501feceb9..7d131e3d159a 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -431,7 +431,7 @@ static struct dac_ops ics5342_ops = {
+ 
+ static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_regs_t dwr, void *data)
+ {
+-	struct dac_info *info = kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
++	struct dac_info *info = (struct dac_info *)kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+ 
+ 	if (! info)
+ 		return NULL;
+-- 
+2.34.1
 

@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F6D722615;
-	Sat, 26 Apr 2025 11:33:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACE9C4A18
+	for <linux-fbdev@vger.kernel.org>; Sun, 27 Apr 2025 15:34:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745667202; cv=none; b=F+5RJNoptaBnPbUahIObsVJirvxhD/ncapZ2eC6ym8vBv1zlf+w9uVhRzdg0/f1KU8MRxJ2rzYZal75ohu3+PwDcI9JBKdagWuedap2Ewb730Juu1/4Rtpg5m/t/DEthnmTbIdOky26hqbL/fLpLuJ6wullqssWmeSi8pOIdWIQ=
+	t=1745768102; cv=none; b=ryNMKJ3KRXZJXNcsya+kBITyro9DLJcioiuOhtYAebnTzQgMdYYOWf8nDE9sb2m7Oa3IteZER65nhZN83lehXeTRQXPWH8caQcaXjYmmtw20ecxYpielpC3XbqsXUYZTVMKE4gTKg4lKyFW0hdz3ZzdG8wuvcc/ah6ag4HtnAKM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745667202; c=relaxed/simple;
-	bh=5YrhEPD7/gooPK/qmbQQu3HmTfBXyYSI1UtxLSuRW/o=;
+	s=arc-20240116; t=1745768102; c=relaxed/simple;
+	bh=y3+Qa9p87SYULlPxd0eMpx2wC+SuoI0FPubfYsSTO6I=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DmH2OCaSa2q8TIkCivErKTZjFCOgablZwD3DyXRu5btYIp7Awho3BCySZt8ubhHzn74/w/H958QzGX/7tyfwkB96w5JQgFIDlxbHvvMeb+764+diuImnleS98bQufetoDZOUBWoNG+Pvm/H44BA9NRLQgqaLCi+nvbvEmTO8tRI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=U4ebAV2P; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=AqnGiyyOJu/lbIZrd59SCzMEXiaMkIrUnf6/nINx46LwRq3XEd7iZalzYKUKCk1hu0KWtCkbIp5QaiGrJHMUj3JxO/3NZaU9Z1NAKYx3zDj7pBsQ+cfZ5JaENooql87VLcH8NdY1Kzeb9jX3AKTtVn2n5SE9DDmSniNWH7VRpIQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=SFFYeKSf; arc=none smtp.client-ip=212.227.17.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="U4ebAV2P"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="SFFYeKSf"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1745667166; x=1746271966; i=deller@gmx.de;
-	bh=saU175Joz9QcsGyRzAZUu/ki5+/5BGbUfFRQ/c8MoYc=;
+	s=s31663417; t=1745768092; x=1746372892; i=deller@gmx.de;
+	bh=gNbaoxMjFYtSKZPcgvvh6KuT8yz7sRsoQzC3v5c4nd0=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=U4ebAV2PYsU191wNSuhz+9bbGTcrxXOY2pimwAdAHhfzqz9l2T48e2imw6uGfnU2
-	 PhXZUeWKEfLU8Lh04a9ziS9P3sg0AkAxDgmy+08YaQl2oSUjPhhw3yKxr5R1ODEXV
-	 60mn7ylURFJrpx08g3DLRHu7C+wuDAxJvpw+6cj7miVkVZIT8kdtQbSU0/Z3vGh67
-	 VKJ/OCq3DbQn6ElyHJZZ6RRKWprXqJxMNEv+h3shhco0S5z+GmuIpK3aVRMa9Pjpi
-	 Lz5IgYFH2waH1S0QiPezTM6hRWB73FZAgn/BMonBjzlXa9kqorsznHbIdFC/VZxRg
-	 tucqgVLHgO8GdLezsw==
+	b=SFFYeKSfG+25ldYjFnfTu08k6uSDEzbzh703vM4/GexndQj3k9hO89tIqiAozlaN
+	 XICwxpuBeLzHlyoHWUiIVkPKPauA1k6B6Wj+fEMxHPHfNwY18wjW6IOszuPHIW6PF
+	 IXjyOyIndBrQr9mLil4LvEpYkhTRrYOZ9elOpt0J62oCIIJp0Qrkv86a95temafyT
+	 OA29YLkjq7MJMK0+A+IvWog0SWQY30SeDZYCEs8eE+xDr6VMJxgUtWpge0xdI1t5U
+	 iTaoxUmQrTkMGUuoNzrBnP7pmYf/O4ssXUnYVDNpbWrqNPMehyDcqy3uGjAh4eF53
+	 2Wh8xMEwzc0dVLs6wQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.173] ([109.250.63.181]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MORAU-1uRqNP3n2s-00MG3L; Sat, 26
- Apr 2025 13:32:45 +0200
-Message-ID: <b982d4f1-6ed8-490b-8d47-6dc5231913e7@gmx.de>
-Date: Sat, 26 Apr 2025 13:32:44 +0200
+Received: from [192.168.20.173] ([109.250.63.181]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M5wLT-1uAzpY3NSF-003rIQ; Sun, 27
+ Apr 2025 17:34:51 +0200
+Message-ID: <bd358b87-8bca-4c45-9ee2-43d8d106969f@gmx.de>
+Date: Sun, 27 Apr 2025 17:34:47 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,15 +43,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video: fbdev: arkfb: Cast ics5342_init() allocation type
-To: Kees Cook <kees@kernel.org>
-Cc: Javier Martinez Canillas <javierm@redhat.com>,
- Thomas Zimmermann <tzimmermann@suse.de>, Zheyu Ma <zheyuma97@gmail.com>,
- Samuel Thibault <samuel.thibault@ens-lyon.org>,
- Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-References: <20250426062305.work.819-kees@kernel.org>
+Subject: Re: [PATCH RFC 1/1] vgacon: Add check for vc_origin address range in
+ vgacon_scroll()
+To: GONG Ruiqi <gongruiqi1@huawei.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, linux-fbdev@vger.kernel.org
+Cc: security@kernel.org, Kees Cook <kees@kernel.org>,
+ Yi Yang <yiyang13@huawei.com>, Lu Jialin <lujialin4@huawei.com>,
+ Xiu Jianfeng <xiujianfeng@huawei.com>
+References: <20250427025303.888320-1-gongruiqi1@huawei.com>
+ <20250427025303.888320-2-gongruiqi1@huawei.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -97,125 +98,249 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250426062305.work.819-kees@kernel.org>
+In-Reply-To: <20250427025303.888320-2-gongruiqi1@huawei.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:1S3zvciCiuaF2ZFFgka1cN5KYqrJSnPPfOQwlKCQhBbZYHbYNyA
- HQzYCk+2Z0HF3crIPsdsQFp62B3UdL3ieefJUsprM1biJpkEzOjC+qFxGf2ZjyNz4ybl4c3
- xd4ZT/7gHzgc4Rro/W0XEBC9hpuYElU7gptkFJj8zhJuxwOSmuXfmT59MqlhlRimMiQheWM
- 899Wil/xfYzcI7Dxg4HlA==
+X-Provags-ID: V03:K1:wvS/saP8zAXALcsNixiOcMVP4WZZjAKe8ba859aeUm0B6B9VZrt
+ 0KMdioO+J8J8zs6CpiAemKRZYKHOH6Hecdna4jc0EOJw7AYKyxbI4nFsEdNuYMe2WSgimel
+ o9nnrmcIYVWHB9xgM6VwkTU7FFFiLhSSb0zcxkIoCanPA85b8jFGJa2iQ0tdSw8mBtW7LqW
+ NbA4TodFpHghTLTehSiEQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:XEiqCWyyu34=;qlN/rJFu9tX5OmBgSmJrPCwuNFK
- 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
- w==
+UI-OutboundReport: notjunk:1;M01:P0:G1LyeMecriU=;Eu21SemYsJbN+JhuBseYIJo/OGB
+ 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
 
-On 4/26/25 08:23, Kees Cook wrote:
-> In preparation for making the kmalloc family of allocators type aware,
-> we need to make sure that the returned type from the allocation matches
-> the type of the variable being assigned. (Before, the allocator would
-> always return "void *", which can be implicitly cast to any pointer type=
-.)
+On 4/27/25 04:53, GONG Ruiqi wrote:
+> Our in-house Syzkaller reported the following BUG (twice), which we
+> believed was the same issue with [1]:
 >=20
-> The assigned type is "struct dac_info *" but the returned type will be
-> "struct ics5342_info *", which has a larger allocation size. This is
-> by design, as struct ics5342_info contains struct dac_info as its first
-> member. Cast the allocation type to match the assignment.
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> BUG: KASAN: slab-out-of-bounds in vcs_scr_readw+0xc2/0xd0 drivers/tty/vt=
+/vt.c:4740
+> Read of size 2 at addr ffff88800f5bef60 by task syz.7.2620/12393
+> ...
+> Call Trace:
+>   <TASK>
+>   __dump_stack lib/dump_stack.c:88 [inline]
+>   dump_stack_lvl+0x72/0xa0 lib/dump_stack.c:106
+>   print_address_description.constprop.0+0x6b/0x3d0 mm/kasan/report.c:364
+>   print_report+0xba/0x280 mm/kasan/report.c:475
+>   kasan_report+0xa9/0xe0 mm/kasan/report.c:588
+>   vcs_scr_readw+0xc2/0xd0 drivers/tty/vt/vt.c:4740
+>   vcs_write_buf_noattr drivers/tty/vt/vc_screen.c:493 [inline]
+>   vcs_write+0x586/0x840 drivers/tty/vt/vc_screen.c:690
+>   vfs_write+0x219/0x960 fs/read_write.c:584
+>   ksys_write+0x12e/0x260 fs/read_write.c:639
+>   do_syscall_x64 arch/x86/entry/common.c:51 [inline]
+>   do_syscall_64+0x59/0x110 arch/x86/entry/common.c:81
+>   entry_SYSCALL_64_after_hwframe+0x78/0xe2
+>   ...
+>   </TASK>
 >=20
-> Signed-off-by: Kees Cook <kees@kernel.org>
-
-Thanks Kees!
-I applied your patch, but wouldn't this untested patch be cleaner and fulf=
-ill the
-same purpose to match a kzalloc return type?
-
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index 7d131e3d159a..a57c8a992e11 100644
-=2D-- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -431,7 +431,8 @@ static struct dac_ops ics5342_ops =3D {
- =20
-  static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_reg=
-s_t dwr, void *data)
-  {
--       struct dac_info *info =3D (struct dac_info *)kzalloc(sizeof(struct=
- ics5342_info), GFP_KERNEL);
-+       struct ics5342_info *ics_info =3D kzalloc(sizeof(struct ics5342_in=
-fo), GFP_KERNEL);
-+       struct dac_info *info =3D &ics_info->dac;
- =20
-         if (! info)
-
-
-Helge
-
-  ---
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Zheyu Ma <zheyuma97@gmail.com>
-> Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-> Cc: <linux-fbdev@vger.kernel.org>
-> Cc: <dri-devel@lists.freedesktop.org>
+> Allocated by task 5614:
+>   kasan_save_stack+0x20/0x40 mm/kasan/common.c:45
+>   kasan_set_track+0x25/0x30 mm/kasan/common.c:52
+>   ____kasan_kmalloc mm/kasan/common.c:374 [inline]
+>   __kasan_kmalloc+0x8f/0xa0 mm/kasan/common.c:383
+>   kasan_kmalloc include/linux/kasan.h:201 [inline]
+>   __do_kmalloc_node mm/slab_common.c:1007 [inline]
+>   __kmalloc+0x62/0x140 mm/slab_common.c:1020
+>   kmalloc include/linux/slab.h:604 [inline]
+>   kzalloc include/linux/slab.h:721 [inline]
+>   vc_do_resize+0x235/0xf40 drivers/tty/vt/vt.c:1193
+>   vgacon_adjust_height+0x2d4/0x350 drivers/video/console/vgacon.c:1007
+>   vgacon_font_set+0x1f7/0x240 drivers/video/console/vgacon.c:1031
+>   con_font_set drivers/tty/vt/vt.c:4628 [inline]
+>   con_font_op+0x4da/0xa20 drivers/tty/vt/vt.c:4675
+>   vt_k_ioctl+0xa10/0xb30 drivers/tty/vt/vt_ioctl.c:474
+>   vt_ioctl+0x14c/0x1870 drivers/tty/vt/vt_ioctl.c:752
+>   tty_ioctl+0x655/0x1510 drivers/tty/tty_io.c:2779
+>   vfs_ioctl fs/ioctl.c:51 [inline]
+>   __do_sys_ioctl fs/ioctl.c:871 [inline]
+>   __se_sys_ioctl+0x12d/0x190 fs/ioctl.c:857
+>   do_syscall_x64 arch/x86/entry/common.c:51 [inline]
+>   do_syscall_64+0x59/0x110 arch/x86/entry/common.c:81
+>   entry_SYSCALL_64_after_hwframe+0x78/0xe2
+>=20
+> Last potentially related work creation:
+>   kasan_save_stack+0x20/0x40 mm/kasan/common.c:45
+>   __kasan_record_aux_stack+0x94/0xa0 mm/kasan/generic.c:492
+>   __call_rcu_common.constprop.0+0xc3/0xa10 kernel/rcu/tree.c:2713
+>   netlink_release+0x620/0xc20 net/netlink/af_netlink.c:802
+>   __sock_release+0xb5/0x270 net/socket.c:663
+>   sock_close+0x1e/0x30 net/socket.c:1425
+>   __fput+0x408/0xab0 fs/file_table.c:384
+>   __fput_sync+0x4c/0x60 fs/file_table.c:465
+>   __do_sys_close fs/open.c:1580 [inline]
+>   __se_sys_close+0x68/0xd0 fs/open.c:1565
+>   do_syscall_x64 arch/x86/entry/common.c:51 [inline]
+>   do_syscall_64+0x59/0x110 arch/x86/entry/common.c:81
+>   entry_SYSCALL_64_after_hwframe+0x78/0xe2
+>=20
+> Second to last potentially related work creation:
+>   kasan_save_stack+0x20/0x40 mm/kasan/common.c:45
+>   __kasan_record_aux_stack+0x94/0xa0 mm/kasan/generic.c:492
+>   __call_rcu_common.constprop.0+0xc3/0xa10 kernel/rcu/tree.c:2713
+>   netlink_release+0x620/0xc20 net/netlink/af_netlink.c:802
+>   __sock_release+0xb5/0x270 net/socket.c:663
+>   sock_close+0x1e/0x30 net/socket.c:1425
+>   __fput+0x408/0xab0 fs/file_table.c:384
+>   task_work_run+0x154/0x240 kernel/task_work.c:239
+>   exit_task_work include/linux/task_work.h:45 [inline]
+>   do_exit+0x8e5/0x1320 kernel/exit.c:874
+>   do_group_exit+0xcd/0x280 kernel/exit.c:1023
+>   get_signal+0x1675/0x1850 kernel/signal.c:2905
+>   arch_do_signal_or_restart+0x80/0x3b0 arch/x86/kernel/signal.c:310
+>   exit_to_user_mode_loop kernel/entry/common.c:111 [inline]
+>   exit_to_user_mode_prepare include/linux/entry-common.h:328 [inline]
+>   __syscall_exit_to_user_mode_work kernel/entry/common.c:207 [inline]
+>   syscall_exit_to_user_mode+0x1b3/0x1e0 kernel/entry/common.c:218
+>   do_syscall_64+0x66/0x110 arch/x86/entry/common.c:87
+>   entry_SYSCALL_64_after_hwframe+0x78/0xe2
+>=20
+> The buggy address belongs to the object at ffff88800f5be000
+>   which belongs to the cache kmalloc-2k of size 2048
+> The buggy address is located 2656 bytes to the right of
+>   allocated 1280-byte region [ffff88800f5be000, ffff88800f5be500)
+>=20
+> ...
+>=20
+> Memory state around the buggy address:
+>   ffff88800f5bee00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+>   ffff88800f5bee80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+>> ffff88800f5bef00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+>                                                         ^
+>   ffff88800f5bef80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+>   ffff88800f5bf000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> By analyzing the vmcore, we found that vc->vc_origin was somehow placed
+> one line prior to vc->vc_screenbuf when vc was in KD_TEXT mode, and
+> further writings to /dev/vcs caused out-of-bounds reads (and writes
+> right after) in vcs_write_buf_noattr().
+>=20
+> Our further experiments show that in most cases, vc->vc_origin equals to
+> vga_vram_base when the console is in KD_TEXT mode, and it's around
+> vc->vc_screenbuf for the KD_GRAPHICS mode. But via triggerring a
+> TIOCL_SETVESABLANK ioctl beforehand, we can make vc->vc_origin be around
+> vc->vc_screenbuf while the console is in KD_TEXT mode, and then by
+> writing the special 'ESC M' control sequence to the tty certain times
+> (depends on the value of `vc->state.y - vc->vc_top`), we can eventually
+> move vc->vc_origin prior to vc->vc_screenbuf. Here's the PoC, tested on
+> QEMU:
+>=20
+> ```
+> int main() {
+> 	const int RI_NUM =3D 10; // should be greater than `vc->state.y - vc->v=
+c_top`
+> 	int tty_fd, vcs_fd;
+> 	const char *tty_path =3D "/dev/tty0";
+> 	const char *vcs_path =3D "/dev/vcs";
+> 	const char escape_seq[] =3D "\x1bM";  // ESC + M
+> 	const char trigger_seq[] =3D "Let's trigger an OOB write.";
+> 	struct vt_sizes vt_size =3D { 70, 2 };
+> 	int blank =3D TIOCL_BLANKSCREEN;
+>=20
+> 	tty_fd =3D open(tty_path, O_RDWR);
+>=20
+> 	char vesa_mode[] =3D { TIOCL_SETVESABLANK, 1 };
+> 	ioctl(tty_fd, TIOCLINUX, vesa_mode);
+>=20
+> 	ioctl(tty_fd, TIOCLINUX, &blank);
+> 	ioctl(tty_fd, VT_RESIZE, &vt_size);
+>=20
+> 	for (int i =3D 0; i < RI_NUM; ++i)
+> 		write(tty_fd, escape_seq, sizeof(escape_seq) - 1);
+>=20
+> 	vcs_fd =3D open(vcs_path, O_RDWR);
+> 	write(vcs_fd, trigger_seq, sizeof(trigger_seq));
+>=20
+> 	close(vcs_fd);
+> 	close(tty_fd);
+> 	return 0;
+> }
+> ```
+>=20
+> To solve this problem, add an address range validation check in
+> vgacon_scroll(), ensuring vc->vc_origin never precedes vc_screenbuf.
+>=20
+> Reported-by: syzbot+9c09fda97a1a65ea859b@syzkaller.appspotmail.com
+> Closes: https://syzkaller.appspot.com/bug?extid=3D9c09fda97a1a65ea859b [=
+1]
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Cc: stable@vger.kernel.org
+> Co-developed-by: Yi Yang <yiyang13@huawei.com>
+> Signed-off-by: Yi Yang <yiyang13@huawei.com>
+> Signed-off-by: GONG Ruiqi <gongruiqi1@huawei.com>
 > ---
->   drivers/video/fbdev/arkfb.c | 2 +-
+>   drivers/video/console/vgacon.c | 2 +-
 >   1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-> index 082501feceb9..7d131e3d159a 100644
-> --- a/drivers/video/fbdev/arkfb.c
-> +++ b/drivers/video/fbdev/arkfb.c
-> @@ -431,7 +431,7 @@ static struct dac_ops ics5342_ops =3D {
->  =20
->   static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_r=
-egs_t dwr, void *data)
->   {
-> -	struct dac_info *info =3D kzalloc(sizeof(struct ics5342_info), GFP_KER=
-NEL);
-> +	struct dac_info *info =3D (struct dac_info *)kzalloc(sizeof(struct ics=
-5342_info), GFP_KERNEL);
->  =20
->   	if (! info)
->   		return NULL;
+> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgac=
+on.c
+> index 37bd18730fe0..f9cdbf8c53e3 100644
+> --- a/drivers/video/console/vgacon.c
+> +++ b/drivers/video/console/vgacon.c
+> @@ -1168,7 +1168,7 @@ static bool vgacon_scroll(struct vc_data *c, unsig=
+ned int t, unsigned int b,
+>   				     c->vc_screenbuf_size - delta);
+>   			c->vc_origin =3D vga_vram_end - c->vc_screenbuf_size;
+>   			vga_rolled_over =3D 0;
+> -		} else
+> +		} else if (oldo - delta >=3D (unsigned long)c->vc_screenbuf)
+>   			c->vc_origin -=3D delta;
+>   		c->vc_scr_end =3D c->vc_origin + c->vc_screenbuf_size;
+>   		scr_memsetw((u16 *) (c->vc_origin), c->vc_video_erase_char,
 
+
+The patch is not wrong, but I'm not yet sure if it hides another issue.
+I've applied it to the fbdev tree for now (unless Greg wants to handle it)=
+.
+
+Thanks!
+Helge

@@ -1,236 +1,136 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com [209.85.222.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 349B44A35
-	for <linux-fbdev@vger.kernel.org>; Sun, 27 Apr 2025 15:40:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50CF719AD5C;
+	Mon, 28 Apr 2025 06:36:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745768442; cv=none; b=Ht1XWLSbXSBG1YGTC/0Z/YYMLfLUSO6NMlTLBS+VIdELyYtvez8FWNsqK8U0gsbevSY4BfGBvsYaLJ6f9NGIeuDjhHNxWTK4FazH2oGsrXT7zLFqa9J354AEbixtEKr//R48v+lG27h/0gAaVFVyc5wwNalzahNF8E3rw8sv0h8=
+	t=1745822220; cv=none; b=Cpm5s+a/2zNu9RXPcdOWI9V3lNvvwY7BiESbwgIw3AZt1+B01iGohP+H0WubXufHRtklcKtchCB5YUGIAb+erhOaEy9zRG3dWkgbcFgyVfGBpwWIwVQVCoo0XzXAuvT1HmZ/T9X6ahiPVwxOcZNfy6DAtkH4GDz3Lo+4CS/gNYE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745768442; c=relaxed/simple;
-	bh=prLMbK5tGVqhcb3iWAF1N0Qly3RN7/6xvKoW/6EqV6s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BBggdv1fYgMO3Gjy1QH9B7IZl8Fg8YZXUMi9WInxTVppSCEDTLjVPYKgF0f47V6J3GRo79QPOkRC5PoCs5ERF2KPeduIUMoBijWa6U1H0u7Z/cUgxyhRjX9SaTw3E7Et1R2HYg6MGRzgdw4VAM0GW+nGdIwe8kjdCTpV+eAIgTQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=b+OUY1FW; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="b+OUY1FW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66569C4CEE3;
-	Sun, 27 Apr 2025 15:40:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1745768441;
-	bh=prLMbK5tGVqhcb3iWAF1N0Qly3RN7/6xvKoW/6EqV6s=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=b+OUY1FWakVoAbC+qgPTtbBnR8EjJJcDI0j03Q6frCJjAa1kUDBhGBq0JNVxpZyk1
-	 zZR0qsHd+5ipl1dqK8WvC0ez61qrX2BIAIDDP+glNyuyzmCvo6Ce8LgbRLbgGjALut
-	 s2ziQ0xIB8/ilyotNx/eIjmjCWbsbmYMRTsYAtoQ=
-Date: Sun, 27 Apr 2025 17:40:39 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Helge Deller <deller@gmx.de>
-Cc: GONG Ruiqi <gongruiqi1@huawei.com>, Jiri Slaby <jirislaby@kernel.org>,
-	linux-fbdev@vger.kernel.org, security@kernel.org,
-	Kees Cook <kees@kernel.org>, Yi Yang <yiyang13@huawei.com>,
-	Lu Jialin <lujialin4@huawei.com>,
-	Xiu Jianfeng <xiujianfeng@huawei.com>
-Subject: Re: [PATCH RFC 1/1] vgacon: Add check for vc_origin address range in
- vgacon_scroll()
-Message-ID: <2025042758-dislocate-rebuild-bab2@gregkh>
-References: <20250427025303.888320-1-gongruiqi1@huawei.com>
- <20250427025303.888320-2-gongruiqi1@huawei.com>
- <bd358b87-8bca-4c45-9ee2-43d8d106969f@gmx.de>
+	s=arc-20240116; t=1745822220; c=relaxed/simple;
+	bh=Am3ATgqCXM7Z1F6TVuGcXo9TdrT/FcOarhjRMiPCh3g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gUXCXEvcMf0tA7AltVVfjI5cdcOd72BuMVTYEDO8nOKR5TTKnjVx7uPEfdrI8+zseec+frQ2XFECV92WpuNoX3aL+R51aK4tY09ix4ocv44hEZh2uRg8wrRqjTASslbr/Wp9lRXtJe0PRpwe/of1T0J23cyWSSMoXyr7BlkXMBg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-86fab198f8eso1744651241.1;
+        Sun, 27 Apr 2025 23:36:55 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1745822213; x=1746427013;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4HxYx13nksu5xy2CnHaN8inhIAqufNq0pgtm+B7CBB0=;
+        b=toGcj6SMoqNISv51bLdmL5FzIFUuIhNx4htUeYUUpk9ietwH62Yly77/aiHzCCNnDC
+         8FYuKRXG2kPKhyrXXZ9uK469B4KwIvAXYy6mSGu4bTwEFQ2G7A2MKGgqLfvVhGIyllTA
+         i7h1AscXv40PJEzeRE6sNAYLjI7+bpM1oMHUR7MSJkuaZM64daESpnDmIFQV39UZGfGZ
+         E4ge2/WiwUQuVkgmD7CNvq0QPrPYM++eN6nIg2rueL1v9J/9GlKOLD2dV9zzk+NlOK2y
+         2ioZki1QwW6cSFBAuGManQ1P4g5qmj1hl3K2ngZ/z5rVkpNc2+UOowpXYADzLPREKYd0
+         chuw==
+X-Forwarded-Encrypted: i=1; AJvYcCV84LG14XLYXfmGzvPpxA6j20p1kNjSxBts7rs+JsfHlorWcO21cdFMjBYWcIf0NHPkvrRGczeMk4JCYFy8@vger.kernel.org, AJvYcCXsFp3bLRsmrJfAXk2koMbceq5HHUq0KRZSGTtTotlshQinleWxhUzRfJKfelC5lmDQ2Cwwk71w5LGbrw==@vger.kernel.org, AJvYcCXyu0ta7+ZAh1rdMVZZeDh4xUcbB23jK4bfGBfL3afD7HAdjqlT3T4Qu41XLphm53B9Ci5JKzdzx+NuqS+etqgv@vger.kernel.org
+X-Gm-Message-State: AOJu0YyBM0/6TVfrPbdB8EUKbZXL1pZvDEk8znUZWnOGoeaZWN5Qr1Kh
+	qzKN+iUPSvEKp2e2FR8affuQ5YexPEST2FvyS5LL6eguVy3iDPhCawtdz0Fa
+X-Gm-Gg: ASbGnctTqvcNPREmo7rQbIwD9lxKI5XubIXbeufhNsrBjexz8vcXjlTM/BTmwcLbNR1
+	oO4yKAZGb6zwi2C9+JJYVhh82x1Zuf8aVOoWZREjHzCtVTZBOe0Vyh+LrEwON6LPYWU5Bylzldy
+	6TQMclpsEQLZbHqo2CryxLE8Pq5ySJCUhyghsqGw5mPkyywaJTOkzuqp31mE/LJiIup+Lazh1ct
+	uz+Vq72anxcPBeDCvAoacArwCbtquh6fTncyONrd1cfIQ7H6dLXDmKb6CgNldX73kLqb+E4D7zN
+	Brei/1XhDG5NnBaJVEdywVqqc8ch4xAJujKkgNhpGl2SmCRIVquoCNYFlzDcrOWUnXe+X9TfKp2
+	Dmdg=
+X-Google-Smtp-Source: AGHT+IEPTqWYz3bezSuvlBSjtra/w8wLuQXmDuFE8sHZ2XmylGgU1c3DARkidytYE/KTDopn4TLc8Q==
+X-Received: by 2002:a05:6102:15ab:b0:4c4:fdb9:2ea with SMTP id ada2fe7eead31-4d640698094mr5235709137.7.1745822213301;
+        Sun, 27 Apr 2025 23:36:53 -0700 (PDT)
+Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com. [209.85.222.44])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-4d3d5662e5dsm1756433137.18.2025.04.27.23.36.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 27 Apr 2025 23:36:52 -0700 (PDT)
+Received: by mail-ua1-f44.google.com with SMTP id a1e0cc1a2514c-86fab198f8eso1744645241.1;
+        Sun, 27 Apr 2025 23:36:52 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUgl8XbjL7+wtgktsxTSj8Em/3o62Z8ioj7meeZKbIIkyXEhrR2mxLwZBk57FNX1riXfrc9TiCoA6b/9Q==@vger.kernel.org, AJvYcCW6PaKSbYhPAhl+bNXZlp+tDIdOILARxjUTC8Y8FzkbVTM8nnaUj2d1A8nm1REipRpz3isgsNFvQ2uieFAE@vger.kernel.org, AJvYcCWdG/6wtAXmi+s0fI5+yKt5vJplncF77BQabwLa3rYtcjAJOT2NtQutoN6q0aercSuQz+3/5s6IEo3I0jiUgRdz@vger.kernel.org
+X-Received: by 2002:a05:6102:32d4:b0:4c4:e414:b4eb with SMTP id
+ ada2fe7eead31-4d640d802fcmr4616539137.12.1745822212499; Sun, 27 Apr 2025
+ 23:36:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd358b87-8bca-4c45-9ee2-43d8d106969f@gmx.de>
+References: <20250426062305.work.819-kees@kernel.org> <b982d4f1-6ed8-490b-8d47-6dc5231913e7@gmx.de>
+In-Reply-To: <b982d4f1-6ed8-490b-8d47-6dc5231913e7@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 28 Apr 2025 08:36:40 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVY1_gEqULGD0BzdTd05OAkodhk+RXKRAy-T-0+RJt7yQ@mail.gmail.com>
+X-Gm-Features: ATxdqUETGiqKKLP9sekTsuKQhnr5eXZt4XYi72gcVaTSzgLI84_ILYIl_9rFvl8
+Message-ID: <CAMuHMdVY1_gEqULGD0BzdTd05OAkodhk+RXKRAy-T-0+RJt7yQ@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: arkfb: Cast ics5342_init() allocation type
+To: Kees Cook <kees@kernel.org>
+Cc: Javier Martinez Canillas <javierm@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	Zheyu Ma <zheyuma97@gmail.com>, Samuel Thibault <samuel.thibault@ens-lyon.org>, 
+	Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+	linux-hardening@vger.kernel.org, Helge Deller <deller@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
 
-On Sun, Apr 27, 2025 at 05:34:47PM +0200, Helge Deller wrote:
-> On 4/27/25 04:53, GONG Ruiqi wrote:
-> > Our in-house Syzkaller reported the following BUG (twice), which we
-> > believed was the same issue with [1]:
-> > 
-> > ==================================================================
-> > BUG: KASAN: slab-out-of-bounds in vcs_scr_readw+0xc2/0xd0 drivers/tty/vt/vt.c:4740
-> > Read of size 2 at addr ffff88800f5bef60 by task syz.7.2620/12393
-> > ...
-> > Call Trace:
-> >   <TASK>
-> >   __dump_stack lib/dump_stack.c:88 [inline]
-> >   dump_stack_lvl+0x72/0xa0 lib/dump_stack.c:106
-> >   print_address_description.constprop.0+0x6b/0x3d0 mm/kasan/report.c:364
-> >   print_report+0xba/0x280 mm/kasan/report.c:475
-> >   kasan_report+0xa9/0xe0 mm/kasan/report.c:588
-> >   vcs_scr_readw+0xc2/0xd0 drivers/tty/vt/vt.c:4740
-> >   vcs_write_buf_noattr drivers/tty/vt/vc_screen.c:493 [inline]
-> >   vcs_write+0x586/0x840 drivers/tty/vt/vc_screen.c:690
-> >   vfs_write+0x219/0x960 fs/read_write.c:584
-> >   ksys_write+0x12e/0x260 fs/read_write.c:639
-> >   do_syscall_x64 arch/x86/entry/common.c:51 [inline]
-> >   do_syscall_64+0x59/0x110 arch/x86/entry/common.c:81
-> >   entry_SYSCALL_64_after_hwframe+0x78/0xe2
-> >   ...
-> >   </TASK>
-> > 
-> > Allocated by task 5614:
-> >   kasan_save_stack+0x20/0x40 mm/kasan/common.c:45
-> >   kasan_set_track+0x25/0x30 mm/kasan/common.c:52
-> >   ____kasan_kmalloc mm/kasan/common.c:374 [inline]
-> >   __kasan_kmalloc+0x8f/0xa0 mm/kasan/common.c:383
-> >   kasan_kmalloc include/linux/kasan.h:201 [inline]
-> >   __do_kmalloc_node mm/slab_common.c:1007 [inline]
-> >   __kmalloc+0x62/0x140 mm/slab_common.c:1020
-> >   kmalloc include/linux/slab.h:604 [inline]
-> >   kzalloc include/linux/slab.h:721 [inline]
-> >   vc_do_resize+0x235/0xf40 drivers/tty/vt/vt.c:1193
-> >   vgacon_adjust_height+0x2d4/0x350 drivers/video/console/vgacon.c:1007
-> >   vgacon_font_set+0x1f7/0x240 drivers/video/console/vgacon.c:1031
-> >   con_font_set drivers/tty/vt/vt.c:4628 [inline]
-> >   con_font_op+0x4da/0xa20 drivers/tty/vt/vt.c:4675
-> >   vt_k_ioctl+0xa10/0xb30 drivers/tty/vt/vt_ioctl.c:474
-> >   vt_ioctl+0x14c/0x1870 drivers/tty/vt/vt_ioctl.c:752
-> >   tty_ioctl+0x655/0x1510 drivers/tty/tty_io.c:2779
-> >   vfs_ioctl fs/ioctl.c:51 [inline]
-> >   __do_sys_ioctl fs/ioctl.c:871 [inline]
-> >   __se_sys_ioctl+0x12d/0x190 fs/ioctl.c:857
-> >   do_syscall_x64 arch/x86/entry/common.c:51 [inline]
-> >   do_syscall_64+0x59/0x110 arch/x86/entry/common.c:81
-> >   entry_SYSCALL_64_after_hwframe+0x78/0xe2
-> > 
-> > Last potentially related work creation:
-> >   kasan_save_stack+0x20/0x40 mm/kasan/common.c:45
-> >   __kasan_record_aux_stack+0x94/0xa0 mm/kasan/generic.c:492
-> >   __call_rcu_common.constprop.0+0xc3/0xa10 kernel/rcu/tree.c:2713
-> >   netlink_release+0x620/0xc20 net/netlink/af_netlink.c:802
-> >   __sock_release+0xb5/0x270 net/socket.c:663
-> >   sock_close+0x1e/0x30 net/socket.c:1425
-> >   __fput+0x408/0xab0 fs/file_table.c:384
-> >   __fput_sync+0x4c/0x60 fs/file_table.c:465
-> >   __do_sys_close fs/open.c:1580 [inline]
-> >   __se_sys_close+0x68/0xd0 fs/open.c:1565
-> >   do_syscall_x64 arch/x86/entry/common.c:51 [inline]
-> >   do_syscall_64+0x59/0x110 arch/x86/entry/common.c:81
-> >   entry_SYSCALL_64_after_hwframe+0x78/0xe2
-> > 
-> > Second to last potentially related work creation:
-> >   kasan_save_stack+0x20/0x40 mm/kasan/common.c:45
-> >   __kasan_record_aux_stack+0x94/0xa0 mm/kasan/generic.c:492
-> >   __call_rcu_common.constprop.0+0xc3/0xa10 kernel/rcu/tree.c:2713
-> >   netlink_release+0x620/0xc20 net/netlink/af_netlink.c:802
-> >   __sock_release+0xb5/0x270 net/socket.c:663
-> >   sock_close+0x1e/0x30 net/socket.c:1425
-> >   __fput+0x408/0xab0 fs/file_table.c:384
-> >   task_work_run+0x154/0x240 kernel/task_work.c:239
-> >   exit_task_work include/linux/task_work.h:45 [inline]
-> >   do_exit+0x8e5/0x1320 kernel/exit.c:874
-> >   do_group_exit+0xcd/0x280 kernel/exit.c:1023
-> >   get_signal+0x1675/0x1850 kernel/signal.c:2905
-> >   arch_do_signal_or_restart+0x80/0x3b0 arch/x86/kernel/signal.c:310
-> >   exit_to_user_mode_loop kernel/entry/common.c:111 [inline]
-> >   exit_to_user_mode_prepare include/linux/entry-common.h:328 [inline]
-> >   __syscall_exit_to_user_mode_work kernel/entry/common.c:207 [inline]
-> >   syscall_exit_to_user_mode+0x1b3/0x1e0 kernel/entry/common.c:218
-> >   do_syscall_64+0x66/0x110 arch/x86/entry/common.c:87
-> >   entry_SYSCALL_64_after_hwframe+0x78/0xe2
-> > 
-> > The buggy address belongs to the object at ffff88800f5be000
-> >   which belongs to the cache kmalloc-2k of size 2048
-> > The buggy address is located 2656 bytes to the right of
-> >   allocated 1280-byte region [ffff88800f5be000, ffff88800f5be500)
-> > 
-> > ...
-> > 
-> > Memory state around the buggy address:
-> >   ffff88800f5bee00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-> >   ffff88800f5bee80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-> > > ffff88800f5bef00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-> >                                                         ^
-> >   ffff88800f5bef80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-> >   ffff88800f5bf000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> > ==================================================================
-> > 
-> > By analyzing the vmcore, we found that vc->vc_origin was somehow placed
-> > one line prior to vc->vc_screenbuf when vc was in KD_TEXT mode, and
-> > further writings to /dev/vcs caused out-of-bounds reads (and writes
-> > right after) in vcs_write_buf_noattr().
-> > 
-> > Our further experiments show that in most cases, vc->vc_origin equals to
-> > vga_vram_base when the console is in KD_TEXT mode, and it's around
-> > vc->vc_screenbuf for the KD_GRAPHICS mode. But via triggerring a
-> > TIOCL_SETVESABLANK ioctl beforehand, we can make vc->vc_origin be around
-> > vc->vc_screenbuf while the console is in KD_TEXT mode, and then by
-> > writing the special 'ESC M' control sequence to the tty certain times
-> > (depends on the value of `vc->state.y - vc->vc_top`), we can eventually
-> > move vc->vc_origin prior to vc->vc_screenbuf. Here's the PoC, tested on
-> > QEMU:
-> > 
-> > ```
-> > int main() {
-> > 	const int RI_NUM = 10; // should be greater than `vc->state.y - vc->vc_top`
-> > 	int tty_fd, vcs_fd;
-> > 	const char *tty_path = "/dev/tty0";
-> > 	const char *vcs_path = "/dev/vcs";
-> > 	const char escape_seq[] = "\x1bM";  // ESC + M
-> > 	const char trigger_seq[] = "Let's trigger an OOB write.";
-> > 	struct vt_sizes vt_size = { 70, 2 };
-> > 	int blank = TIOCL_BLANKSCREEN;
-> > 
-> > 	tty_fd = open(tty_path, O_RDWR);
-> > 
-> > 	char vesa_mode[] = { TIOCL_SETVESABLANK, 1 };
-> > 	ioctl(tty_fd, TIOCLINUX, vesa_mode);
-> > 
-> > 	ioctl(tty_fd, TIOCLINUX, &blank);
-> > 	ioctl(tty_fd, VT_RESIZE, &vt_size);
-> > 
-> > 	for (int i = 0; i < RI_NUM; ++i)
-> > 		write(tty_fd, escape_seq, sizeof(escape_seq) - 1);
-> > 
-> > 	vcs_fd = open(vcs_path, O_RDWR);
-> > 	write(vcs_fd, trigger_seq, sizeof(trigger_seq));
-> > 
-> > 	close(vcs_fd);
-> > 	close(tty_fd);
-> > 	return 0;
-> > }
-> > ```
-> > 
-> > To solve this problem, add an address range validation check in
-> > vgacon_scroll(), ensuring vc->vc_origin never precedes vc_screenbuf.
-> > 
-> > Reported-by: syzbot+9c09fda97a1a65ea859b@syzkaller.appspotmail.com
-> > Closes: https://syzkaller.appspot.com/bug?extid=9c09fda97a1a65ea859b [1]
-> > Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> > Cc: stable@vger.kernel.org
-> > Co-developed-by: Yi Yang <yiyang13@huawei.com>
-> > Signed-off-by: Yi Yang <yiyang13@huawei.com>
-> > Signed-off-by: GONG Ruiqi <gongruiqi1@huawei.com>
-> > ---
-> >   drivers/video/console/vgacon.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> > index 37bd18730fe0..f9cdbf8c53e3 100644
-> > --- a/drivers/video/console/vgacon.c
-> > +++ b/drivers/video/console/vgacon.c
-> > @@ -1168,7 +1168,7 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
-> >   				     c->vc_screenbuf_size - delta);
-> >   			c->vc_origin = vga_vram_end - c->vc_screenbuf_size;
-> >   			vga_rolled_over = 0;
-> > -		} else
-> > +		} else if (oldo - delta >= (unsigned long)c->vc_screenbuf)
-> >   			c->vc_origin -= delta;
-> >   		c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
-> >   		scr_memsetw((u16 *) (c->vc_origin), c->vc_video_erase_char,
-> 
-> 
-> The patch is not wrong, but I'm not yet sure if it hides another issue.
-> I've applied it to the fbdev tree for now (unless Greg wants to handle it).
+Hi Kees,
 
-Nope, you can handle it, thanks!
+On Sat, 26 Apr 2025 at 13:33, Helge Deller <deller@gmx.de> wrote:
+> On 4/26/25 08:23, Kees Cook wrote:
+> > In preparation for making the kmalloc family of allocators type aware,
+> > we need to make sure that the returned type from the allocation matches
+> > the type of the variable being assigned. (Before, the allocator would
+> > always return "void *", which can be implicitly cast to any pointer type.)
+> >
+> > The assigned type is "struct dac_info *" but the returned type will be
+> > "struct ics5342_info *", which has a larger allocation size. This is
+> > by design, as struct ics5342_info contains struct dac_info as its first
+> > member. Cast the allocation type to match the assignment.
+> >
+> > Signed-off-by: Kees Cook <kees@kernel.org>
 
-thanks,
+Thanks for your patch, which is now commit 8d2f0f5bbac87b9d ("fbdev:
+arkfb: Cast ics5342_init() allocation type") in fbdev/for-next.
 
-greg k-h
+> I applied your patch, but wouldn't this untested patch be cleaner and fulfill the
+> same purpose to match a kzalloc return type?
+>
+> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+> index 7d131e3d159a..a57c8a992e11 100644
+> --- a/drivers/video/fbdev/arkfb.c
+> +++ b/drivers/video/fbdev/arkfb.c
+> @@ -431,7 +431,8 @@ static struct dac_ops ics5342_ops = {
+>
+>   static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_regs_t dwr, void *data)
+>   {
+> -       struct dac_info *info = (struct dac_info *)kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+> +       struct ics5342_info *ics_info = kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+
+sizeof(*ics_info)?
+
+> +       struct dac_info *info = &ics_info->dac;
+
+Exactly my thought when I noticed this commit.  Adding casts makes
+it harder to notice any future discrepancies.
+
+> > --- a/drivers/video/fbdev/arkfb.c
+> > +++ b/drivers/video/fbdev/arkfb.c
+> > @@ -431,7 +431,7 @@ static struct dac_ops ics5342_ops = {
+> >
+> >   static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_regs_t dwr, void *data)
+> >   {
+> > -     struct dac_info *info = kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+> > +     struct dac_info *info = (struct dac_info *)kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+> >
+> >       if (! info)
+> >               return NULL;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

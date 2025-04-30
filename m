@@ -1,124 +1,139 @@
-Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com [209.85.214.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F1571E7C23;
-	Wed, 30 Apr 2025 05:57:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AADB325B1EB;
+	Wed, 30 Apr 2025 12:25:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745992630; cv=none; b=QESBNUriKtTNLWWyXhJjXb+K3D5b2OnkXvVerrqgV9S2XuVPPLaLfKBkliwxQ2bViOOObv2gWO6LHUIX+f54Mfigmi5tqDkrAmqy2cTeE0PnTc7AG5GpbN1QFZPFwzlkRU7rgkOCQxAY516AsNURlLoyQsReCWn3n66Uh5W+Nbs=
+	t=1746015903; cv=none; b=OxwlZxI44ofdLgv32Z72FnRE6fciLw5EPyLbbnH85WLwN9OveUkuH1PWyyIPdaPn8XEDoAMLqetwYxpNs1A7pzudGMfXGfQsTg7ISSVABtzivqSgJC2UxPOS+pNfSbuauBPdiV9EqjPaj8k40RjnKZPeROaZ3edtFvTk90hjNqU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745992630; c=relaxed/simple;
-	bh=OPcdA7WzHL8qbupr9CeaRRLP0cf3U+p7fWUcEB+ist8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=N7p22M9gf2TeDkGLC5iQ3Jwb9iW5Q2tewDgOpz4f9JV5q3fZFh3LZ/2gys4g3GaecVGBGaLSXzvy6v52miWL6XpTXXnRAYZGBwKbacJ8+AZRhre+IQFf55FXBV3eckLZk8JKNzAHpBvcUBTTOUoCy0z9rcZcWSGA7iK5rTmM1Yc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fxpdCETO; arc=none smtp.client-ip=209.85.214.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1746015903; c=relaxed/simple;
+	bh=zYcXsPEfolrkTF/EjgW5Q6PjxiTC+RAO6eFXhCXjLJ8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kGj6tXnC7+nWZvl33gEIytnJplfkpqOLd0uJhw20Vz6U0uI9Mg5yjpEbfUO2I0Fl1NKWK2jMr/2BbL2vCNikwvAMd9KbeiPy61oNZ2lOryCyWOKSQQvTy7l02cfNiXm9M2LFRrUIygFegXo8lfB1jy1GeIxYzJ0trdAx6f/AeDA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hEYXF3HH; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fxpdCETO"
-Received: by mail-pl1-f195.google.com with SMTP id d9443c01a7336-227c7e4d5feso13116475ad.2;
-        Tue, 29 Apr 2025 22:57:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1745992628; x=1746597428; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kkxFjjdv6suYqQJlXMyq90HjSEeRgcZf4756/6SBQro=;
-        b=fxpdCETO1z/BMhmCti/OaeYINgtvbU8bNMlyZn+Fz5R2SNd9T3acst3enoxTe4FazE
-         Iu09H4I551sbHTbf9TJf24gLJ0gfmcP7I0ytFxHtnPpObHmi3uUvyg2hgQ/hAbZPKjGN
-         WkkjM7eqMh8a244vjHdUWaRODsWRqUiCcQOiOM1NnKB1l0i4ylilCxDbRpiTKDrCBKCc
-         DC+mN00bMwuVDm3opRFO7XPiR/fBNH10WtRamFMONswGjnWqrdVmfIzgLrZx7SdAe05U
-         XDp8TMt0rbk4xQ2JnCKq/rVK8cs7cVZaW5tW+CgWq2sBe/PWwh8B0nzQ1DcjgRR7C8Ly
-         HfHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745992628; x=1746597428;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kkxFjjdv6suYqQJlXMyq90HjSEeRgcZf4756/6SBQro=;
-        b=UytfI+3GhW6QzxAXO8LeNbXrRv3xbcmqyGTE7LgedBtYaWh2s06868FvVMilYjBbno
-         Vss1lwUd7yBRoG87n/g5xjsIc/bDIB0x2iUtsl/t0Rd6EDg+S+88Ygc4tm/Dek7ey9Q/
-         9fIOzL6oxHcWCuVZ1VRX2HtHKenE3aDY6eA5jtLt2R2y1PWE2CqkE7aqCyRCOJA2Lq1U
-         bL00/5tclUIaI0T/nzZpIGBH1IAyHSlCJ/hLTQvUiG0Z0CXJmEjsRxW3u71aKvRxaZpU
-         OsCA9tuicNn96rT8tmVwDpmTCZuXh7Ra7DKqoHPrtpYmEs281//Gfam9mnFKeHxzXlBT
-         paGA==
-X-Forwarded-Encrypted: i=1; AJvYcCVU+hiSsx2cnY9GSoHA2afZ0vjTXbiqUr7h9lwk9jx7XSBt2BTjn/Wq1XDHNOWYYMjKxIWIHDA6TM7ZSY6u@vger.kernel.org, AJvYcCXP4LWzOZJNE21hgQo7Ey09MGeCsknEBSKviT4/7hiwVsHouGMA99gfP+m1Mq5XxqIdbVjcrZKdbbJorg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwbbzFbNSDS5SK9tdb2FTSt/6f03uqSezULaJWc+ZLKhYHIveOF
-	pY7An4e2F7GRAsJwvYW/woLJTHlflxOBq6T+B8QAYGB0M6H5n6WX
-X-Gm-Gg: ASbGncsMXka81e4k4Y0RKdRaPulLJBKPGcwSRvIKfcbWTGfJlOqN/XOZctzTu8yBqzJ
-	HQFTnj9hVNxjNmlkVTEsqOINCOTedI4nUjI9oIuiSAoU5Wli9y9XKuMB2eixAtfpUQneTt67Omg
-	sQgMWpM+FKJRbBMAqXxOoPaMrYzQlreqheUfebpOeUDh643uGoM/RiV7t3Y9+CgRXCbMdA4Rxjk
-	JOu4bSs2To7e4zt8dbbUmDgESo/EQ+5Qk3NNXqk3ke7Rt9R7C9mN+clecqFstmtlDR7Rhfo5NdN
-	u+vA3qzPpAr3pnmqwd7kTql/XE91SgmPsn1kyuk8QTdNSdtOLgviY80LxAWv27SHLMbDp1IK4kB
-	eUJfLJkyBFPrMekB2cp+p6xJCJFNoizX22oPmMgAQJv0czaemrijxJ6g=
-X-Google-Smtp-Source: AGHT+IHBJYloTgN8pwH+ee69VUknLa8QX3gHDwSiGfv0vAc8H9ceexmkgnOwBPKpCv3nT5A+ZkD2wQ==
-X-Received: by 2002:a17:903:fb0:b0:223:28a8:610b with SMTP id d9443c01a7336-22df358f8f4mr11530585ad.14.1745992628441;
-        Tue, 29 Apr 2025 22:57:08 -0700 (PDT)
-Received: from kerneldev.localdomain (162-225-124-171.lightspeed.sntcca.sbcglobal.net. [162.225.124.171])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22db5221a82sm113383895ad.257.2025.04.29.22.57.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Apr 2025 22:57:08 -0700 (PDT)
-From: Eric Florin <ericflorin.kernel@gmail.com>
-To: teddy.wang@siliconmotion.com
-Cc: sudipm.mukherjee@gmail.com,
-	gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Eric Florin <ericflorin.kernel@gmail.com>
-Subject: [PATCH 5/5] staging: sm750fb: rename sm750_hw_cursor_setData2
-Date: Tue, 29 Apr 2025 22:55:39 -0700
-Message-Id: <af5080150498adf635be36e332a7ce7121692f93.1745982772.git.ericflorin.kernel@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <cover.1745982772.git.ericflorin.kernel@gmail.com>
-References: <cover.1745982772.git.ericflorin.kernel@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hEYXF3HH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F518C4CEE9;
+	Wed, 30 Apr 2025 12:25:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746015903;
+	bh=zYcXsPEfolrkTF/EjgW5Q6PjxiTC+RAO6eFXhCXjLJ8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hEYXF3HHx4Jjp5gmOoqEvysofVXezNK88qkWvDIFPH6iGtr78U+uwk3PDqTWsMvqV
+	 HJ4wWYgoc0umg94St/LeVHjIvwcvAbkLpi36JkeCwJyrt0qysgNaTRyzZ9T5qt+qT2
+	 UAQngA49z+Y1a6FqojpCVKVODIQaYLCzKC0MQa0UEPYmm+0Rkvivk1iriyyyRIFnsM
+	 l74kdRZc5ZCMyR7/ousHEQyGImR5tlZPkS574e7wRWMe2YPoNBix81j0YeZ1SxZXk4
+	 l9jp2LgdM3ZVLMhh9hehViB3OHHX9wGbuavDA+AIzUQbWFJRtajCTgWusWThcMo2ET
+	 Ck+qcj7MPpgeQ==
+Date: Wed, 30 Apr 2025 14:25:00 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
+To: Daniel Thompson <danielt@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Abel Vesa <abel.vesa@linaro.org>, 
+	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Johan Hovold <johan@kernel.org>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] backlight: pwm_bl: Read back PWM period from provider
+Message-ID: <eexaex3ped44yszqaiedh23hjsivddmpjtij2pjciayt2z2o3l@bd4jlol6nvuq>
+References: <20250226-pwm-bl-read-back-period-from-hw-v1-1-ccd1df656b23@linaro.org>
+ <xltamao27utfrsax2pc6mh5tthanmrqszz4k7gyw3knqkm24xp@4tydmhfh6g4j>
+ <cmjyaveolhjtfhqbjpc6ghh7g2f5jmeyavoms5lqup6dyidngl@ljvxgoyw57md>
+ <Z9lFg98srzYivGoI@aspen.lan>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="354souy6or7rgjzd"
+Content-Disposition: inline
+In-Reply-To: <Z9lFg98srzYivGoI@aspen.lan>
 
-Rename sm750_hw_cursor_setData2 to sm750_hw_cursor_set_data2 to conform
-with kernel style guidelines as reported by checkpatch.pl
 
-CHECK: Avoid CamelCase: <sm750_hw_cursor_setData2>
+--354souy6or7rgjzd
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH RFC] backlight: pwm_bl: Read back PWM period from provider
+MIME-Version: 1.0
 
-Signed-off-by: Eric Florin <ericflorin.kernel@gmail.com>
----
- drivers/staging/sm750fb/sm750_cursor.c | 4 ++--
- drivers/staging/sm750fb/sm750_cursor.h | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Hello Daniel,
 
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 3aa26ef00011..7ede144905c9 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -131,8 +131,8 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 	}
- }
- 
--void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
--			      const u8 *pcol, const u8 *pmsk)
-+void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
-+			       const u8 *pcol, const u8 *pmsk)
- {
- 	int i, j, count, pitch, offset;
- 	u8 color, mask;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-index cbb896a35160..88fa02f6377a 100644
---- a/drivers/staging/sm750fb/sm750_cursor.h
-+++ b/drivers/staging/sm750fb/sm750_cursor.h
-@@ -10,6 +10,6 @@ void sm750_hw_cursor_set_pos(struct lynx_cursor *cursor, int x, int y);
- void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg);
- void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 			      const u8 *data, const u8 *mask);
--void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
--			      const u8 *data, const u8 *mask);
-+void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
-+			       const u8 *data, const u8 *mask);
- #endif
--- 
-2.39.5
+On Tue, Mar 18, 2025 at 10:05:55AM +0000, Daniel Thompson wrote:
+> On Thu, Feb 27, 2025 at 04:06:47AM +0100, Sebastian Reichel wrote:
+> > On Wed, Feb 26, 2025 at 05:34:50PM +0100, Uwe Kleine-K=F6nig wrote:
+> > > On Wed, Feb 26, 2025 at 05:31:08PM +0200, Abel Vesa wrote:
+> > > > The current implementation assumes that the PWM provider will be ab=
+le to
+> > > > meet the requested period, but that is not always the case. Some PWM
+> > > > providers have limited HW configuration capabilities and can only
+> > > > provide a period that is somewhat close to the requested one. This
+> > > > simply means that the duty cycle requested might either be above the
+> > > > PWM's maximum value or the 100% duty cycle is never reached.
+> > >
+> > > If you request a state with 100% relative duty cycle you should get 1=
+00%
+> > > unless the hardware cannot do that. Which PWM hardware are you using?
+> > > Which requests are you actually doing that don't match your expectati=
+on?
+> >
+> > drivers/leds/rgb/leds-qcom-lpg.c (which probably should at least get
+> > a MAINTAINERS entry to have you CC'd considering all the PWM bits in
+> > it). See the following discussion (I point you to my message in the
+> > middle of a thread, which has a summary and probably is a good
+> > starting point):
+> >
+> > https://lore.kernel.org/all/vc7irlp7nuy5yvkxwb5m7wy7j7jzgpg73zmajbmq2zj=
+cd67pd2@cz2dcracta6w/
+>=20
+> I had a quick glance at this thread.
+>=20
+> It sounded to me like the PWM driver was scaling the requested period
+> to match h/ware capability but then neglected to scale the requested
+> duty cycle accordingly.
 
+Well, I'd not call the period adaption "scaling", it just gets fitted to
+the hardware capabilities. The same happens for duty_cycle, it's just
+that the absolute duty_cycle value is reduced to the next value that is
+possible to implement. Obviously that modifies the ratio between
+duty_cycle and period (requested vs. implemented), but you cannot
+prevent that anyhow and it makes handling easier for the lowlevel driver
+with less corner cases. And whatever policy is chosen to be the right
+one, it becomes ridiculous in the corner cases, so picking the simplest
+to implement is the sane option in my eyes.
+
+> That means the qcomm PWM driver programming a
+> fractional value into the hardware that was not being anywhere close
+> to duty_cycle / period.
+>=20
+> So the recommendation was to fix the PWM driver rather than have
+> pwm_bl.c work around it?
+
+No, the lowlevel driver is fine.
+
+With the new-style driver callbacks it becomes possible to query the
+hardware capabilities enough to implement a helper that determines the
+actually implementable waveform that is best for your use-case, whatever
+"best" means here.
+
+Best regards
+Uwe
+
+--354souy6or7rgjzd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmgSFpkACgkQj4D7WH0S
+/k5w4wgArhgbgew7qw0lAMKfRIaQrUs3HhB6o4qTL/cx0/JHMbYlixpsFiFJohJv
+ThcgFesVLDRe5gbSnkc2yopRKeyq5uyFPdZOJmmmteBRL4LDB+ZSc2QlnVV/QoBA
+O3BQxlH+wpiq00lEo4riwa4qraK87cZgBtkyf+w6GfNDhfCv8qNlDkqoXs66b83Y
+iAvGmxYEFn1Rj9U9EDbPLpc5BqVVunxkoYi7h51FrUnw3p1LtbGSgSJhPIeZTdT8
+MSzV9xQj8Kht9JW2LMuVbwduJpexoRjnx9kImFxw7NqBc6Nv5MRcKRkZJsrLVrO6
+9OSpwGNx0aWGrwQX4V8Abfkm1D3tbQ==
+=Laha
+-----END PGP SIGNATURE-----
+
+--354souy6or7rgjzd--

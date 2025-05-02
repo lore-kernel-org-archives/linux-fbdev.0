@@ -1,211 +1,126 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25CD025B1F6;
-	Wed, 30 Apr 2025 12:33:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A881211C;
+	Fri,  2 May 2025 04:05:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746016425; cv=none; b=qB7VkN5LUYbgSNgUpa2B3g+hMhB8xAvhw+kWrt99xCaJtmNSHZh9I/S6UXdt1u1lJjM8pt0ddXvIsTA2wph/LG2IMRv+dNLLxrYLnh20qGZx5dlY+xhsIaXCJTXfsEC1AzqazbQMb797Tkd2JdpTbVVa1hgGjYDsr5hhiPK3cbo=
+	t=1746158736; cv=none; b=OcnDUO61wR3WB1AolLPmpJbdRbkW2a9wq7+tCCyUofsi2BrKBKa3Y4eT0W6RKmcEwzajxiuj6trQBKdJ0BG/yzwF+MtDXLPhNAIHfizEdeEllNhmho8Vzm0GTzWNr8jBgHAb/0VpZZHd+1CLeCiAxa+r2JWYY31jqoJJO2yo3ds=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746016425; c=relaxed/simple;
-	bh=CYlvTWDWhOgSaAty4rTheIQ+iS6Dm1BlS+jESU4cLTU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qds+/qvAlWOTPMs7OeiPcBoYN4AIHKLHXGCxhMkbeHhbrG8XLh1VBYZz6WsltYN10c5yqXczVz2CDMZhZOHga6KmlKgGnJ+mx1Opqv8q4rgxceH9tT8s2EWhdR1apjKSegPXbWkSLWiPwBcjKrH5dKhdsp3tQb89azEYK4D4Zmo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ej07RYaB; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746158736; c=relaxed/simple;
+	bh=TL3f3BW2tAyt74rHrlzhrwreyDMYGP3h4muuCeK4s9M=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=JnG4/bnJi2bXRYKVJJImDLa8ninkpcLlI7SouOe42Y+g+Y9HQsgAW6+YJLj3musQlvv5GNiy3Rb0CWNbLr5wWKKwY6JFxK14VJY2AryDmnkcCJDKH594zV2jbqEDD1c2e3M4IfUrD/BBzDXpxXghn5icPigapZ5wJkrP6p42fAo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bMyDlUiV; arc=none smtp.client-ip=209.85.214.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ej07RYaB"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7211AC4CEE9;
-	Wed, 30 Apr 2025 12:33:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746016425;
-	bh=CYlvTWDWhOgSaAty4rTheIQ+iS6Dm1BlS+jESU4cLTU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ej07RYaBPnSgRT4rQciY+84QnmXBjw42Y5B0ot7gAr3j0265bSs7jsb0/K9jEA+Q8
-	 A+grj75Arf2GoSPQ31LJbADZ6G+2ouaByOPimfTO1nbD7pZ8NWGwTjKHOJimt8zS4N
-	 re3NeH0bbnXwMec0v+qoH++nVMF/ahAxoompySeNZ4dJlx6gyGmMV2aKQbHBvw9fCL
-	 pgODU3EdT6ATfPw74/vER8DcUASxAajBD74UXwS+bRDupd+dMesOhu+o4ueY8N9f2z
-	 /6tIgQZGY5KnyQYXvrqtFG/I68WrziuagzjyxDG4clYoCMaeyA9JsCQsZ/Sc2KpJjx
-	 yMujGNnKAGxuw==
-Date: Wed, 30 Apr 2025 14:33:42 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
-To: Abel Vesa <abel.vesa@linaro.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Johan Hovold <johan@kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-pwm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] backlight: pwm_bl: Read back PWM period from provider
-Message-ID: <5urcec625u3jva5kyf7bztehqijfhztmo4op25joqyt7gl6kjt@5tn2fbot3fri>
-References: <20250226-pwm-bl-read-back-period-from-hw-v1-1-ccd1df656b23@linaro.org>
- <xltamao27utfrsax2pc6mh5tthanmrqszz4k7gyw3knqkm24xp@4tydmhfh6g4j>
- <Z8BjiRjLin8jTE8j@linaro.org>
- <rplq65h5k7kfu7anwhuh3w6lmwtm47lzeruofon4ilsxkhogjl@6k7nmeotjidd>
- <Z8CX3vr1xuaKT38m@linaro.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bMyDlUiV"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-22c33ac23edso18897395ad.0;
+        Thu, 01 May 2025 21:05:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1746158734; x=1746763534; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:reply-to:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=dSub1wuh8nlEkm+pKUMg5wgv6Gx8ymFTnPqus5nWjls=;
+        b=bMyDlUiV4rmO8HYRRQIewfeHukRR4oHohPjqAcQw9nEOPCqc46kQ5onbA5hgwDlNXL
+         YvXiSuAznY34iMdWWrLKOO8Agx3LRcFI1um70yrJcufa+MzY66gxFF4zmROvA+MBHJ2q
+         Ko0KcoNB+PcOcF1Uk8xSx8GGg70UZDcFzaDwrPKIPeMahpSe3K5+pnWaRlNla1GEp8LF
+         vxutwd5sK0FbnG3My596w/cIN9zNqLBpZbHPPn4TC89BThqXxq1RdizySiiHOnn0jh/T
+         DRwQ/ajxTe1hH6k99iioJGTQa3VizJKXvODyasmDo39vi/LiaEa4Bh09EIhl+z7f+fEC
+         /0mA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746158734; x=1746763534;
+        h=content-transfer-encoding:mime-version:reply-to:message-id:date
+         :subject:cc:to:from:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dSub1wuh8nlEkm+pKUMg5wgv6Gx8ymFTnPqus5nWjls=;
+        b=BgCGkvSy6NUSe69edhHr1uVkJEjL3M5XvgTonXG1KjaVAu5WsY8g7MsnCv0oYBT2ek
+         YRdqnj6eURONhVIqsbwj3nuh3xSypm9b0rm1GKYTW5de60DEAEMFMaoBAulSekzBGLL7
+         5Xp+fwdmdkAzKKPSoChr+xwT0bMDPMJt/vCM0Q5zl6zeEhfw7ISpm83lp+2NdlNvmgbi
+         ZFewIZ8KaEe3Adao7Swexmoh+L91/JPrw9J2WSKfQ++ftMoUu2w4N6cwv4t76haKPlMB
+         CvXa+LMgZaSZUxLwoMM1he/V1HLeuuKxLuB2E9+1YNlyBuf8SQtrOoJ/34XAY2KXpw5C
+         Ptpg==
+X-Forwarded-Encrypted: i=1; AJvYcCUI9pnomrJGYKaz4SqHTtKH0qUA1FUKZqEKZknq6yYhs739XnPphpIJtkUo3TG4jbIt/MAzwp3RgMwVmIkr@vger.kernel.org, AJvYcCVy0lQTVXOxYO6mC+RbQWGpK4r6XhjNcgPLrzOSXa7LnP0lEaftigsI9j+XKE4t6+yforoBXoQy2o0K5g==@vger.kernel.org, AJvYcCWgxqPxlJZpS+rTC1lvBmaoT275H2BEqvaPL3BIjd+3kYzxp54azqKUV/ePH2nB9hkRXRbh7O5+O1gphULi@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLq3UZc0f43kaz4D9SJFH3TJvIm+Pe2NOEq5nHCHolwpY1ZJ6M
+	zb/K4dmlG1ur/IeXS4HNLe7uXnDIBPnJb7vIVcc0NYnMAzaWxsTA
+X-Gm-Gg: ASbGncvbvrTvtUg+RoFWa9tJzWe3HD47rgUPJ3uh/ggbWWYgcIyZ9bIcp8RlH9psAFA
+	scUDGDTdUZcWR8ZUyCEMg85W6ZId4T5GR6VOd6+b7mmdariiTWaQTvpiMDIcGYMsbRR5VrXyQ62
+	BZsClH5HRWgWuO9JHlO9yAHkoh6DzDYVKvuDjm1f8DUNQjUv7ZyWxNpDVA1iC6pjGWWbL6fKAp1
+	jBXyutLnIZE9JhIz/RAZdUvNmkrqwhqJ4ZA5S8vRQq7Gb7W9dkC3rYt4ZDJh7prZA1owLmvXA2d
+	po1SKgkKebIvGBG3qiZpB5u5rv95AgwVQsdx7WjgGsM50Z+gsn/noB4Aaiqc/DiAN5OoCNR4LCy
+	U0n/melVihd+ZArlYCbD9UNpAxRPGZw==
+X-Google-Smtp-Source: AGHT+IHgEx/So5EIbHlSMpzfphWaNj6WsLQNTdHJsmuELyjZ0DzDKhxqJDDpr/U0LH8lOLMGSv6Ucw==
+X-Received: by 2002:a17:902:ef0b:b0:223:6657:5003 with SMTP id d9443c01a7336-22e103899d1mr22760535ad.32.1746158734054;
+        Thu, 01 May 2025 21:05:34 -0700 (PDT)
+Received: from localhost.localdomain (c-67-160-120-253.hsd1.wa.comcast.net. [67.160.120.253])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22e108fb836sm4510635ad.141.2025.05.01.21.05.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 May 2025 21:05:33 -0700 (PDT)
+From: mhkelley58@gmail.com
+X-Google-Original-From: mhklinux@outlook.com
+To: simona@ffwll.ch,
+	deller@gmx.de,
+	haiyangz@microsoft.com,
+	kys@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	akpm@linux-foundation.org
+Cc: weh@microsoft.com,
+	tzimmermann@suse.de,
+	hch@lst.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-hyperv@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: [PATCH v2 0/3] fbdev: Add deferred I/O support for contiguous kernel memory framebuffers
+Date: Thu,  1 May 2025 21:05:22 -0700
+Message-Id: <20250502040525.822075-1-mhklinux@outlook.com>
+X-Mailer: git-send-email 2.25.1
+Reply-To: mhklinux@outlook.com
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="2ysdmqcj2sl7kjzl"
-Content-Disposition: inline
-In-Reply-To: <Z8CX3vr1xuaKT38m@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+From: Michael Kelley <mhklinux@outlook.com>
 
---2ysdmqcj2sl7kjzl
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH RFC] backlight: pwm_bl: Read back PWM period from provider
-MIME-Version: 1.0
+Current deferred I/O code works only for framebuffer memory that is
+allocated with vmalloc(). The code assumes that the underlying page
+refcount can be used by the mm subsystem to manage each framebuffer
+page's lifecycle, which is consistent with vmalloc'ed memory, but not
+with contiguous kernel memory from alloc_pages() or similar. When used
+with contiguous kernel memory, current deferred I/O code eventually
+causes the memory free lists to be scrambled, and a kernel panic ensues.
+The problem is seen with the hyperv_fb driver when mmap'ing the
+framebuffer into user space, as that driver uses alloc_pages() for the
+framebuffer in some configurations. This patch set fixes the problem
+by supporting contiguous kernel memory framebuffers with deferred I/O.
 
-Hello Abel,
+Patch 1 exports a 'mm' subsystem function needed by Patch 2.
 
-On Thu, Feb 27, 2025 at 06:50:38PM +0200, Abel Vesa wrote:
-> On 25-02-27 16:51:15, Uwe Kleine-K=F6nig wrote:
-> > On Thu, Feb 27, 2025 at 03:07:21PM +0200, Abel Vesa wrote:
-> > > On 25-02-26 17:34:50, Uwe Kleine-K=F6nig wrote:
-> > > > On Wed, Feb 26, 2025 at 05:31:08PM +0200, Abel Vesa wrote:
-> > > > > The current implementation assumes that the PWM provider will be =
-able to
-> > > > > meet the requested period, but that is not always the case. Some =
-PWM
-> > > > > providers have limited HW configuration capabilities and can only
-> > > > > provide a period that is somewhat close to the requested one. This
-> > > > > simply means that the duty cycle requested might either be above =
-the
-> > > > > PWM's maximum value or the 100% duty cycle is never reached.
-> > > >=20
-> > > > If you request a state with 100% relative duty cycle you should get=
- 100%
-> > > > unless the hardware cannot do that. Which PWM hardware are you usin=
-g?
-> > > > Which requests are you actually doing that don't match your expecta=
-tion?
-> > >=20
-> > > The PWM hardware is Qualcomm PMK8550 PMIC. The way the duty cycle is
-> > > controlled is described in the following comment found in lpg_calc_fr=
-eq
-> > > of the leds-qcom-lpg driver:
-> > >=20
-> > > /*
-> > >  * The PWM period is determined by:
-> > >  *
-> > >  *          resolution * pre_div * 2^M
-> > >  * period =3D --------------------------
-> > >  *                   refclk
-> > >  *
-> > >  * Resolution =3D 2^9 bits for PWM or
-> > >  *              2^{8, 9, 10, 11, 12, 13, 14, 15} bits for high resolu=
-tion PWM
-> > >  * pre_div =3D {1, 3, 5, 6} and
-> > >  * M =3D [0..7].
-> > >  *
-> > >  * This allows for periods between 27uS and 384s for PWM channels and=
- periods between
-> > >  * 3uS and 24576s for high resolution PWMs.
-> > >  * The PWM framework wants a period of equal or lower length than req=
-uested,
-> > >  * reject anything below minimum period.
-> > >  */
-> > >=20
-> > > So if we request a period of 5MHz, that will not ever be reached no m=
-atter what config
-> > > is used. Instead, the 4.26 MHz is selected as closest possible.
-> >=20
-> > The trace in the other mail thread suggest that you asked for a period
-> > of 5 ms, not 5 MHz. And that results in a period of 4.26 ms.
->=20
-> OK. So unit is ms. Got it.
->=20
-> >=20
-> > > Now, the pwm_bl is not aware of this limitation and will request duty=
- cycle values that
-> > > go above 4.26MHz.
-> >=20
-> > It requests .period =3D 5 ms + .duty_cycle =3D 5 ms. This is fine, and
-> > according to the trace this results in both values becoming 4.26 ms in
-> > real life. Seems fine to me.
->=20
-> Right, but as I keep trying to explain is that, the consumer keeps
-> asking for duty cycles that go over the 4.26ms, which is the period that
-> the provider decided it can do instead of 5ms.
+Patch 2 is the changes to the fbdev deferred I/O code. More details
+are in the commit message of Patch 2.
 
-I see no problem here. Yes, requests are not implemented exactly in
-general, but there is no way around that. For some use-cases the picked
-configuration is sensible, for others less so. There is also no way
-around that.
+Patch 3 updates the hyperv_fb driver to use the new functionality
+from Patch 2.
 
-> > > > > This could be easily fixed if the pwm_apply*() API family would a=
-llow
-> > > > > overriding the period within the PWM state that's used for provid=
-ing the
-> > > > > duty cycle. But that is currently not the case.
-> > > >=20
-> > > > I don't understand what you mean here.
-> > >=20
-> > > What I was trying to say is that the PWM generic framework currently =
-doesn't
-> > > allow overriding the PWM state's period with one provided by the cons=
-umer,
-> > > when calling pwm_apply_might_sleep().
-> >=20
-> > Either I still don't understand what you want, or that is impossible or
-> > useless. If you target .period =3D 5 ms and the hardware can only do 4.=
-26
-> > ms, why would you want to override period to 5 ms?
->=20
-> Meaning the consumer should become aware of the period the provider can
-> do before asking for a duty cycle.=20
+Michael Kelley (3):
+  mm: Export vmf_insert_mixed_mkwrite()
+  fbdev/deferred-io: Support contiguous kernel memory framebuffers
+  fbdev: hyperv_fb: Fix mmap of framebuffers allocated using
+    alloc_pages()
 
-There is pwm_round_waveform_might_sleep() that you could use. Downside
-is that is currently only works for two lowlevel drivers.
+ drivers/video/fbdev/core/fb_defio.c | 128 +++++++++++++++++++++++-----
+ drivers/video/fbdev/hyperv_fb.c     |   1 +
+ include/linux/fb.h                  |   1 +
+ mm/memory.c                         |   1 +
+ 4 files changed, 111 insertions(+), 20 deletions(-)
 
-> If you look at the other mail thread, the trace there shows the
-> following sequence for every new backlight update request:
->=20
-> 1. pwm_apply with consumer's period (5ms)
-> 2. pwm_get reads the provider's period (4.25ms)=20
->    - which is what the provider is able to do instead of 5ms
-> 3. pwm_apply (due to debug) which uses the state from 2.
-> 4. pwm_get reads back exactly as 2.
->=20
-> So we can ignore 3 and 4 for now as they are there due to debug,
-> but the step 1 still requests a value over the 4.26ms (5ms),
-> which in the provider will translate to a pwm value higher than allowed
-> by the selected configuration.
+-- 
+2.25.1
 
-The lowlevel driver sees the request e.g.
-
-	.period =3D 5000
-	.duty_cycle =3D 4600
-
-and is supposed to implement (I guess)
-
-	.period =3D 4260
-	.duty_cycle =3D 4260
-
-=2E I don't see a technical problem here (apart from you being unlucky
-about the choice made?).
-
-Best regards
-Uwe
-
---2ysdmqcj2sl7kjzl
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmgSGKQACgkQj4D7WH0S
-/k44Rwf/aNKxkT+yPlC4Q8XTXzFe99nZwAn4OVpAe8qXQ6H3PeeU4CGPHDxPomi5
-QPpT0x53dWtJbk0qe9vr6fs6smmhN0w/kIVCaBj1eRUYKQdPnAE0lmPz01njPeM1
-1ASwQxqhOS2ikZHvwgm7hZlXee5nW39R6Fdx/aC/8ff+Xiv+wk283f8aXQwFaYv8
-C6W9z98zQ/51YZpmDATg6K9tD0uhMwfYsO5sikUNdZFv6rNosqzcd5DX+lQGE1ud
-SxUJprwiGIgi/sy0Yhy3JKAYK4+ktk27E+j+VX8qi2lsrLWqtvT54eulUcRX+tAj
-5ra7VKQWNbSMFO38wT6AIB3z3uzI7g==
-=B4w0
------END PGP SIGNATURE-----
-
---2ysdmqcj2sl7kjzl--

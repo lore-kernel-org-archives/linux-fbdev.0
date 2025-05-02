@@ -1,127 +1,136 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com [209.85.221.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 430761A3154;
-	Fri,  2 May 2025 04:05:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDBE8266B55;
+	Fri,  2 May 2025 07:37:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746158739; cv=none; b=ZxbT7Q4Ucp/fG1JmtM4rd5dg5AbsZepGzXs8HDSldw+X6o6MQY7CHsvVrlf+pCkJCk1yJ6s5XDeoWMRBlvWaAdpZWVzvX28wNk3ir4Haot5FBmB0RyyHH3P6AqJekDugYGchiX71EkPiNi+Yk1zNMMyT0dehSx5RKH+8RrfsDNg=
+	t=1746171436; cv=none; b=RsX1l9GexHtuvAa/qcyz2s+Hu8YlNITDu9yt+BJa2fjluaPAC8UcPrl38uIWbMvWAXCfUKztL4UJD1NwOzih+VrHlol73jQo82jjYbGwN0Bzxd0Iqp2r4sm9suAF8EjV7AI7Tk8ziwSGlPmxezbQX6cmkMXA7k/Uwn03+gY9xLI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746158739; c=relaxed/simple;
-	bh=UqNvfT8UNcQF1ajewAq/dch5PAUIobvrkdEpLmAZ7wA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=djFDmPnkKitOaumMZNb0/Rv9jSyRHtTBujvou2W2AHtsGlP6BH0nj0R2bM5gQl/yqFGWfORfYh2assirDwH0n6kpiLqLKJDUdGVwBMJtCOXp1P77OU5q8ORS5QP11X0Uk8zZum+8rLgHYs4xiKD5rQfpsgKfIer7Zw+5qXdM7Uw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FX/CIMg5; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	s=arc-20240116; t=1746171436; c=relaxed/simple;
+	bh=v201QsXuMk2tktiCCnexqwrucy1bAT1qtrUCkc84WXc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IpjZ40kTY5LeyPoLZwTICr898yG+gF+h2km6aDQH0bcbwgzGf5k6S6sgrram2LTO3vl5N/BNAflDNEFNevWapmz0U+XpKPr3i+4Z7D5lXhEzirjJ9MozxONnXflBIJOAPX96QOwiIPZd3irWWk764A6lWA3rH0LMaYYMqEQDE20=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FX/CIMg5"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2255003f4c6so18124695ad.0;
-        Thu, 01 May 2025 21:05:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1746158737; x=1746763537; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:reply-to:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=GNk2zZpC65xRherJZoi8fazJtKf8aShkVrAnPTjrn2Y=;
-        b=FX/CIMg5gyUgloz0wp++qlbHkK+ks6ibb6weIdVo+I8jrtKOXVg7b1wNZULDCtyL4d
-         kIZTlqdI2iDjFgOn5l6d8rqISxzPQopvr51Thyd47VxMICDTWdnyhOP/nhRfoKup6lR6
-         jDYJ+r02kZcQliAU08AX/ExeSNULKXXzYDzCbHPVRZhrAPvwZlMkzxs2+X6707giskYq
-         F9wec+IZqQfACYuI14UPS6oODynOUbSniiObHrmdDKwdX9IvdlU0kWeluobw4rSrJeQr
-         rkEfhikaI2XRHNwhLHGlBgJ78CSnptxmusaCxCJZEjbbWdBXlwGPIkF7bA8P/EilwnPR
-         y/9A==
+Received: by mail-vk1-f180.google.com with SMTP id 71dfb90a1353d-524038ba657so1323785e0c.0;
+        Fri, 02 May 2025 00:37:13 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746158737; x=1746763537;
-        h=content-transfer-encoding:mime-version:reply-to:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=GNk2zZpC65xRherJZoi8fazJtKf8aShkVrAnPTjrn2Y=;
-        b=qJQiEBZDwjMRlv5gpzd46xRBWIMrlB08iO12NL97Hdg8v8jN/iS083mzzQB3cxPG29
-         uc0734Eom72WHsbjojJ/8ZthIHlkxeuC7lkf8SwTcQd6VjEQVXG5o1zn8wv96VkSIq6W
-         GK1WM4+7VHXnLtrUeXAmn/fntMMNEexiJDO6dyFT6o6aqJCHssSyrvTUM0igm/wt7T6I
-         o54QKowg4DRpdjqr2iGoXvGzVVs46OrMWvxChrKEMYhRnkujANDvGsjXoU63QWr4j4TZ
-         KNzMLBxfEJFSmWTWvuKs9HMW7UGAljKAn8jv+MX12rw8MWTbwVFfn95LzaEA6u9ovwzB
-         vknw==
-X-Forwarded-Encrypted: i=1; AJvYcCUVdw6mS4lY1xZJkeZ1OzjZ7OzPWgeoCz91ZSKM54StFgbwZ/j9ltIi4QdU9EpPDl1oeoaLwLrLt21zoQ==@vger.kernel.org, AJvYcCWI5jYchNssOtqWNd0mmnPAVoaxfW4XW970kmX7Slniherq2Yq8V61P1oVjsaMA+PZ+iFY0Z5G88sf95Zm2@vger.kernel.org, AJvYcCWsGDkzxlBdxl8iyYpVLHbXjoLrq8BFBfjNhp8txa1qWb/35kVM7HrWou7/R/eNS04OtbGjSLBF0HSnsM+q@vger.kernel.org
-X-Gm-Message-State: AOJu0YyBvcvcJxPyNi7ibfv6NexQR6Nc7hq2PV9V1x1npKG9Ox84jhJv
-	Rp/KljzO05AbDbxCSM2dr9W0+L3IQlqplhqBCTx8ikGUkY70Xl1u
-X-Gm-Gg: ASbGnct8Y+jXPjYVIbUzuTjXasjP1sTSWkujuW6Yi0AMLX1tWXHHZhS15aeGboQd4Kx
-	EzB9djRnfva0OVgMl1f0U24jgNGTbWSXALmB5Zc+CJHWC668Ypk3EcXCdRhNHqlJiDkbDU+QKre
-	js8cR5Rvd01CezlL4y0mgCsGWpaNIm1GNcgc4SW/9Nf4p/VuvW8ZmTdo/3Pa57W2emQak8P5bzT
-	dXBCEu/zZrD5IjJiFianH0CHf1HFyg+/xb0z7dVYaUuxY8Dt2RxOPB07TbtkijHmThAg+ZZjc1l
-	TdSx5fv2K1ZdSH55GTzLKxFKHS4I3q15yvGliypFo6UQYYW/ToXWT0OjKgORfrEBfZDbV/x6dTD
-	PWYsryoazAxizp1H6V+U=
-X-Google-Smtp-Source: AGHT+IHj4Tzm6nKdcO1N5Fay8la+VC6hlU5iu6zD3k8sB96/zhwVRurosFkLDRNOZP+yc+Pg/6Qmxg==
-X-Received: by 2002:a17:902:da90:b0:224:c47:cbd with SMTP id d9443c01a7336-22e102363f5mr23127825ad.0.1746158737314;
-        Thu, 01 May 2025 21:05:37 -0700 (PDT)
-Received: from localhost.localdomain (c-67-160-120-253.hsd1.wa.comcast.net. [67.160.120.253])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22e108fb836sm4510635ad.141.2025.05.01.21.05.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 May 2025 21:05:36 -0700 (PDT)
-From: mhkelley58@gmail.com
-X-Google-Original-From: mhklinux@outlook.com
-To: simona@ffwll.ch,
-	deller@gmx.de,
-	haiyangz@microsoft.com,
-	kys@microsoft.com,
-	wei.liu@kernel.org,
-	decui@microsoft.com,
-	akpm@linux-foundation.org
-Cc: weh@microsoft.com,
-	tzimmermann@suse.de,
-	hch@lst.de,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-hyperv@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: [PATCH v2 3/3] fbdev: hyperv_fb: Fix mmap of framebuffers allocated using alloc_pages()
-Date: Thu,  1 May 2025 21:05:25 -0700
-Message-Id: <20250502040525.822075-4-mhklinux@outlook.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20250502040525.822075-1-mhklinux@outlook.com>
-References: <20250502040525.822075-1-mhklinux@outlook.com>
-Reply-To: mhklinux@outlook.com
+        d=1e100.net; s=20230601; t=1746171432; x=1746776232;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8llC9jHROc+tcTrdFCCLdaEjIsrrc+65EGVehejnUu0=;
+        b=IsDj9/6rkDxIrFtPJJ6oOaj6isa0vPuxx1RUZ5j/NPQM6B3Nb90yC/KzZsLP+Zmvq3
+         dZ2WCxWeenzvEJFV+7Tn4TQoPC/x+RRyfLWU9sAyVL2UojkJ4EAwbM7GLEcEH8lJNeY8
+         2CpTkjBGhxVoKQzlvbcL4UzXCxCMGqAo84hFVvEougVTJdm4SCx+e2D+2Euq4HlbCIrg
+         WruJDN5Z+aKgzC5SCgsDlcsPZBdbKi/AE2WfHqvWafYsnPurQh9RgofFoqRU792umJvc
+         NmnKLBcmTrfvryfaoBN4x92GRmsVGUzR2gc4HbNcR4XftKcqFcQt9Gy4n0oRED0wTXi5
+         ajeg==
+X-Forwarded-Encrypted: i=1; AJvYcCU+bgUAOsNEqUWNMxEYwygAT6Wr2Y9wgVWTSk4LjYzKw4C5yzMYZZIuD/sma1atu0GW742oGPNo9rPl2C1h@vger.kernel.org, AJvYcCWvEyz7SO/B39JMZOJb/kTnoe0bpLJ0F+wa/C98OWGNi49vaMsLcVC7wjJ+2w64/3KR2saxz8n8jAzBHQ==@vger.kernel.org, AJvYcCWwJVMOCmyb60+aPhfijDck4EKW5qcRNm0wTJvUBgRE7NAm5qG0U26+NVLIw8DxaOf0mKjua4Y5fS3X4TdwiKLu@vger.kernel.org
+X-Gm-Message-State: AOJu0YwPdNRqOk1eu6y0f3zBA9JDzWgDoRbMmmOVtbgjJtSE7CU8/NXw
+	Z+ugpprBTM8l+4F5qhuDoyafnbDre0uvsVvpSooK6TXHON98l8QFvBIWRD0f
+X-Gm-Gg: ASbGnct8tkwzSQRRLcVTgh1U57qGln966++rStdbIJP0hY29DB7/fX6KN5KFSW8JpeW
+	Fa8TUasa/U8D7v14LVYpnopufhaiEmn5BuKtim7H8AnKiYD0i0GYYGHbG87w4qnG5sJbF0XytV6
+	Ki+KtIGO7KHQq0P94r8dIkd4NxsG7zi+FmbMl+ZAoKS/IgF8zhRa/90DUP58St5NrgFF/wbmpFH
+	YuILTfXZs8bL/WHQy1vU2OlANojwtOBjGXr9CWc1//YaGlE1GA2z+vVQYQImylwAlnoNKoCaOsx
+	IcRjWy/kJgxyylThxCvT04sPKAYBOuERK75+KEjuaoMtmCxHeUgRMPer0lJOUKtt+wqEzDjhbDM
+	zV28=
+X-Google-Smtp-Source: AGHT+IEoE+W16s0SJ2xbxlja3yhtvcX8FAOTA8FL5KkN1dZTpqZBS4bWzy4M4XbQOAKwlm5GGNwBqw==
+X-Received: by 2002:a05:6122:1ac9:b0:527:b7a3:dda8 with SMTP id 71dfb90a1353d-52aecb0c9c2mr1211049e0c.7.1746171431702;
+        Fri, 02 May 2025 00:37:11 -0700 (PDT)
+Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com. [209.85.217.51])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-52ae419c84fsm437257e0c.36.2025.05.02.00.37.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 02 May 2025 00:37:10 -0700 (PDT)
+Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-4c32190386eso2016838137.1;
+        Fri, 02 May 2025 00:37:10 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCU342xxQt3FrQXXy+seiNh5I/OQbEGT+aJ8R5HNHyfBd6qr7KgY+FWZo/tGqrhXwtQC4W8VnvcxovTJqgsT@vger.kernel.org, AJvYcCXNNVXkZGb6GuoOIzLGZcEWIyOMcu0Y0S8A+2qu+5d6vOruS9G/0KsP28xVhS+mvsLYFE7ixcobzdU5/w==@vger.kernel.org, AJvYcCXwkZk3SjWyi/1xHaUjPuiN3Td1PEApCFxVoMVsXLEcw12MoTBgmGXHLHVQIOP2OTWYlStrsOL1TV44Is2Vib/F@vger.kernel.org
+X-Received: by 2002:a05:6102:5123:b0:4c1:8ded:2d66 with SMTP id
+ ada2fe7eead31-4dae8bbcf5fmr3872454137.12.1746171430220; Fri, 02 May 2025
+ 00:37:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20250426062305.work.819-kees@kernel.org> <b982d4f1-6ed8-490b-8d47-6dc5231913e7@gmx.de>
+ <CAMuHMdVY1_gEqULGD0BzdTd05OAkodhk+RXKRAy-T-0+RJt7yQ@mail.gmail.com> <e68c6218-6055-45a6-b96e-9c8381a4b409@gmx.de>
+In-Reply-To: <e68c6218-6055-45a6-b96e-9c8381a4b409@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 2 May 2025 09:36:58 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXWCPcjqqxJ2JxQBeTSnQaAUFL0DqnJ7X8kEYko2L935A@mail.gmail.com>
+X-Gm-Features: ATxdqUGW6RuInIXJPMsgitscW_CZTwRS749shCj0tpcRFKiOrjcAgwc2y1eUuZY
+Message-ID: <CAMuHMdXWCPcjqqxJ2JxQBeTSnQaAUFL0DqnJ7X8kEYko2L935A@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: arkfb: Cast ics5342_init() allocation type
+To: Helge Deller <deller@gmx.de>
+Cc: Kees Cook <kees@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Zheyu Ma <zheyuma97@gmail.com>, 
+	Samuel Thibault <samuel.thibault@ens-lyon.org>, 
+	Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+	linux-hardening@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-From: Michael Kelley <mhklinux@outlook.com>
+Hi Helge,
 
-Framebuffer memory allocated using alloc_pages() was added to hyperv_fb in
-commit 3a6fb6c4255c ("video: hyperv: hyperv_fb: Use physical memory for fb
-on HyperV Gen 1 VMs.") in kernel version 5.6. But mmap'ing such
-framebuffers into user space has never worked due to limitations in the
-kind of memory that fbdev deferred I/O works with. As a result of the
-limitation, hyperv_fb's usage results in memory free lists becoming corrupt
-and Linux eventually panics.
+On Tue, 29 Apr 2025 at 22:17, Helge Deller <deller@gmx.de> wrote:
+> On 4/28/25 08:36, Geert Uytterhoeven wrote:
+> > On Sat, 26 Apr 2025 at 13:33, Helge Deller <deller@gmx.de> wrote:
+> >> On 4/26/25 08:23, Kees Cook wrote:
+> >>> In preparation for making the kmalloc family of allocators type aware,
+> >>> we need to make sure that the returned type from the allocation matches
+> >>> the type of the variable being assigned. (Before, the allocator would
+> >>> always return "void *", which can be implicitly cast to any pointer type.)
+> >>>
+> >>> The assigned type is "struct dac_info *" but the returned type will be
+> >>> "struct ics5342_info *", which has a larger allocation size. This is
+> >>> by design, as struct ics5342_info contains struct dac_info as its first
+> >>> member. Cast the allocation type to match the assignment.
+> >>>
+> >>> Signed-off-by: Kees Cook <kees@kernel.org>
+> >
+> > Thanks for your patch, which is now commit 8d2f0f5bbac87b9d ("fbdev:
+> > arkfb: Cast ics5342_init() allocation type") in fbdev/for-next.
+> >
+> >> I applied your patch, but wouldn't this untested patch be cleaner and fulfill the
+> >> same purpose to match a kzalloc return type?
+> >>
+> >> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+> >> index 7d131e3d159a..a57c8a992e11 100644
+> >> --- a/drivers/video/fbdev/arkfb.c
+> >> +++ b/drivers/video/fbdev/arkfb.c
+> >> @@ -431,7 +431,8 @@ static struct dac_ops ics5342_ops = {
+> >>
+> >>    static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_regs_t dwr, void *data)
+> >>    {
+> >> -       struct dac_info *info = (struct dac_info *)kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+> >> +       struct ics5342_info *ics_info = kzalloc(sizeof(struct ics5342_info), GFP_KERNEL);
+> >
+> > sizeof(*ics_info)?
+> >
+> >> +       struct dac_info *info = &ics_info->dac;
+> >
+> > Exactly my thought when I noticed this commit.  Adding casts makes
+> > it harder to notice any future discrepancies.
+>
+> I've changed it accordingly.
 
-With support for framebuffers allocated using alloc_pages() recently added
-to fbdev deferred I/O, fix the problem by setting the flag telling fbdev
-deferred I/O to use the new support.
+Thanks, but the one-line summary no longer matches what the commit
+is doing...
 
-Fixes: 3a6fb6c4255c ("video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.")
-Signed-off-by: Michael Kelley <mhklinux@outlook.com>
----
- drivers/video/fbdev/hyperv_fb.c | 1 +
- 1 file changed, 1 insertion(+)
+Commit f1a78a7d7827357c ("fbdev: arkfb: Cast ics5342_init() allocation
+type") in fbdev/for-next.
 
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index 75338ffc703f..1698221f857e 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -1020,6 +1020,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 			info->fix.smem_len = screen_fb_size;
- 			info->screen_base = par->mmio_vp;
- 			info->screen_size = screen_fb_size;
-+			info->flags |= FBINFO_KMEMFB;
- 
- 			par->need_docopy = false;
- 			goto getmem_done;
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.25.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

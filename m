@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84E8B3AAC8D;
-	Mon,  5 May 2025 23:18:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0E7A28B7EB;
+	Mon,  5 May 2025 23:22:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746487116; cv=none; b=GOZRJ8FhyjV5g8qrytPw3xxJD4YuL9+Swzu9HIhngrGjSXAq5zKDbdPJouHtkKaxw4MNqPQTUIewkbjID3PxwNhB9sj2twUwFBtUrmxX/CUJHhQK7vN8TdFUQa8XtdZgynTknMsbPeQzJ7gzR1R2kkhnW8jCGZRHz2iZnQHKD1g=
+	t=1746487322; cv=none; b=UGD8cBL5JO+XVdXl64/KUOBC2BBNQQruckPCkUTmtgwRFPiIuDHcxWAyPTo0xo5uGUAQF554Q4P5gb823ZjKXBRm5V49RBCEakUmI5IJjrJ7AEN9DYjAZjAroeW/gxhb3j9X4/uTeG9Rgpge3JJJlyiDnmXe8EbDA8DiIQRvbAo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746487116; c=relaxed/simple;
-	bh=3ULExDd8Ylf4e5PFpCPkHwH4gfBdbtYyGO5jXIZxtfw=;
+	s=arc-20240116; t=1746487322; c=relaxed/simple;
+	bh=T7EMemMyTU2IT4FDrEcyhH1Vkm79OdN/MGy0fEqQJRw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=UE4HqzQMKy4OKp6JK3pfSO1O0A2X5ms8wZsW2gxWojDePFwV7zjJYB1FOEXjh3Wni00bha7quvVSPb4p+XlDbWCVdh+DE4qRbD4Aav9EFwJgqpXJ2QAA0M6u9Iwjiwv5HgwrHkR5fHk/Jx/KeokI66JWteguCB3yrvQQJJKAzsc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JnDez0Bs; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=scBBIRv2UyIRTWceZKXht2p+6yUWKDMg5hZ4AmzBCdZnZ8V4bHt3vbRH7Xtr7o5rWyIRHwkdIfegIb69EqOFMTiTJ5+VdBIYzVanRZLEEKMY1yDZwhdHkAX7iVzpnrBS3A4dCiqUuacujaZyebtCgTXt5ljKwgWaV9LkadQKujE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D8T4pYfT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JnDez0Bs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80B4CC4CEE4;
-	Mon,  5 May 2025 23:18:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D8T4pYfT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB351C4CEED;
+	Mon,  5 May 2025 23:21:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746487116;
-	bh=3ULExDd8Ylf4e5PFpCPkHwH4gfBdbtYyGO5jXIZxtfw=;
+	s=k20201202; t=1746487320;
+	bh=T7EMemMyTU2IT4FDrEcyhH1Vkm79OdN/MGy0fEqQJRw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JnDez0Bsr3znE5JrCaAvILhUWveENgpNG/9tekL88uqmCgk+bECrIxsVW90Klc3SW
-	 1ZyWDmFUpKh4Sqabi2IDNZkI5zGRVWLvFdRjdCgFUakc2YoA1VgOJxlmHOdhL7N2uT
-	 bxazfWpWGs89CPx4203bHjLReyl1x6GikeW2+agyhL1tiE41UgLKNQTjvBqzSFIeMm
-	 20kCi3WkVflUClvPvSDCyuMjHJ+ZbCxDjKw513QtkS6K+HTc+5gUyr3k722vhlacfs
-	 UOm+8ifd/pEMUXLHtKr4zvaSBzm8JULC3SFjjaMlLmPj17lRYdjjngan6IfCZS0dYY
-	 Xzvc2cWqA8TcA==
+	b=D8T4pYfTe7x/axMCcRxFSFL5QitGI/VwpGO8qtP6G44ksBVduG67gayF2yQkWQrvx
+	 AyawY9sOL0wQl8yShEabakqGQjBss/DAff4yK/N7LzdeX1Kx1RJ1fUODHYnV4+nN/J
+	 EVGNDi1Or5XUFCxsoUwYMGusSkHmZByHxMV8ZA+KMNScLYTdGPZQxaiHrT2karx5HN
+	 +P6/XF6bgERpTxpw0H1iDPixk0ZR8WSNON69VsSPlwEqmtdNFNRsqsICKd0xB6nt0g
+	 R1HerTdkQLeduEInM7Omh8/3OQXwvSvHoPzPfS8SRVgIwKUnr3iAATUnzjCH9esm8R
+	 4xyrlBFvAiBkg==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -35,12 +35,12 @@ Cc: Zsolt Kajtar <soci@c64.rulez.org>,
 	simona@ffwll.ch,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.10 006/114] fbdev: core: tileblit: Implement missing margin clearing for tileblit
-Date: Mon,  5 May 2025 19:16:29 -0400
-Message-Id: <20250505231817.2697367-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 04/79] fbdev: core: tileblit: Implement missing margin clearing for tileblit
+Date: Mon,  5 May 2025 19:20:36 -0400
+Message-Id: <20250505232151.2698893-4-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505231817.2697367-1-sashal@kernel.org>
-References: <20250505231817.2697367-1-sashal@kernel.org>
+In-Reply-To: <20250505232151.2698893-1-sashal@kernel.org>
+References: <20250505232151.2698893-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -49,7 +49,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.10.237
+X-stable-base: Linux 5.4.293
 Content-Transfer-Encoding: 8bit
 
 From: Zsolt Kajtar <soci@c64.rulez.org>
@@ -92,10 +92,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 36 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/core/tileblit.c
-index 82e43e82f488e..ef20824e9c7b4 100644
+index adff8d6ffe6f9..64c60fcb92d75 100644
 --- a/drivers/video/fbdev/core/tileblit.c
 +++ b/drivers/video/fbdev/core/tileblit.c
-@@ -75,7 +75,42 @@ static void tile_putcs(struct vc_data *vc, struct fb_info *info,
+@@ -77,7 +77,42 @@ static void tile_putcs(struct vc_data *vc, struct fb_info *info,
  static void tile_clear_margins(struct vc_data *vc, struct fb_info *info,
  			       int color, int bottom_only)
  {

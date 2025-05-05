@@ -1,46 +1,46 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A64C1397A56;
-	Mon,  5 May 2025 23:06:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78A962F230E;
+	Mon,  5 May 2025 23:13:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746486418; cv=none; b=LQbUXFoTU91VLTi64kdRUvAt1o39ITMerzyDUm/SjqLuulYCqy+8Xrtu1B1k9k0xhc/TSz4OI0xjIQlvkrk409Ylo+JJthU/MJ3hHSia29VlL1WuhRmTxW3gP45mU6EOIxeXfUClrjSj87yaUFXlReohuVhUTT3HsUPHz+IYm5Y=
+	t=1746486811; cv=none; b=mf1HrKMkmdOqTlCjkhKewxtqg6Ppw82tiIR5+KWx96e1vChxtZCh0OjjUS73+78xocUZ4efk13vnU5DLvkEIZxL+xIJ9J1azMHxxu55Qyn1XwTvjqWH/8MTlRQb7RA6i3hqxuTZm8m8mD4ViL5yla9t7ViaYpA+9kD68gBB1zSk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746486418; c=relaxed/simple;
-	bh=qGBraCnsV9M9vOL/SuUmu81wvyQ3isDl/GqO2uTQAXc=;
+	s=arc-20240116; t=1746486811; c=relaxed/simple;
+	bh=dGzUyxuhzvfEM3R/PhIaZ3ZpTDVIzR52pu2g+3tx7Rw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=jL1qXJLFUJf5h+QwoVaOTpi3eT+sjQGt2i0D1x2rBQ5nbqOtV244ZNV1JUCAcpPxR2O53s0/1TqmUQdO36w82827FIf3AbRtjaUwfjXwhhaJEK3VB2d2u/MIYWLnHmMJIwMkFDASU8B/Zd7auz5qEabW8pOWavL2sHoinPrW2KM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MPSelFcm; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=lcX1G94ff+LEUX0CnMJcso1+bmajRLT/yS5NsD1kV1r7UM+N7DAuEkU3NWpWtwFCCBXX4RpdHZqMCIxoYQgwgsULCWxkN1p2rp1tqWVtMRAvrFf32VKshOKlxZJBE+xuVCj5aUx4oxYbnQ9S5mTHFxL0wG9K5oRfkcXSeKdKnFM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JZejMIhV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MPSelFcm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3C73C4CEED;
-	Mon,  5 May 2025 23:06:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JZejMIhV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C0E1C4CEEF;
+	Mon,  5 May 2025 23:13:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746486417;
-	bh=qGBraCnsV9M9vOL/SuUmu81wvyQ3isDl/GqO2uTQAXc=;
+	s=k20201202; t=1746486810;
+	bh=dGzUyxuhzvfEM3R/PhIaZ3ZpTDVIzR52pu2g+3tx7Rw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MPSelFcmkz0NuLxBp35FeLN5TbjGII2WY/yXq9Cm+N91Kh6mWS+1mdePG0n84Tt6n
-	 DMEZMRVqK1VmrIMqyeSHoiqximi9UGTj1piHnzUceoplFUGV7XgNvINdtqDMhV3mhZ
-	 rRJDA3odA0HH4mCl5omzvVUu73fvEH0CY5CUR9NY64Pf1QkFwQkm6hSkOsvs2akHAL
-	 Kjh8oLYXxQzRtz9dCfZ3EUhp/4eDeev7pPtLWkDSBK8K1702GmI5xaEh4eeCIPivKp
-	 +E0VMIgYgQpK9zvZAVlnql8wSK5WLmQ4iyq2hKMdG8nL5nuXshmwuG7rCcZVuTpQog
-	 CTWgvSpWAILxg==
+	b=JZejMIhVFxF1VmTq6oCnYhRW/dXbMoAufMJ5ifvu20NgPiUdrE4VnEe9To3n0iwa1
+	 KG0ujiI6ra1fIbK/aI5pLl44IdooNHyEZWBzKn+YBirG4/ljzDX/4k7nyssGBz7CD3
+	 AELYmrAZtkcq8o8OGpY82zSOAg7yoIrxBDqq+qCuVQOYw/qnvnljsvIALmKwwb7v+U
+	 /RXpmAKYB3il8ZUo+5jKGb7/bnN0xO4bW1bW0unGG8Mq513+0OUB1xy86cvG3b52AP
+	 A6E8c+r5nrNR35M8LUr7VinN0R7OvlZtQsf5AkEnIuaXmixVFQGD1nfl/EUZBjjALY
+	 TG0oIUSdScD5g==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Cc: Zsolt Kajtar <soci@c64.rulez.org>,
+Cc: Shixiong Ou <oushixiong@kylinos.cn>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	simona@ffwll.ch,
+	timur@kernel.org,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 015/212] fbdev: core: tileblit: Implement missing margin clearing for tileblit
-Date: Mon,  5 May 2025 19:03:07 -0400
-Message-Id: <20250505230624.2692522-15-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 005/153] fbdev: fsl-diu-fb: add missing device_remove_file()
+Date: Mon,  5 May 2025 19:10:52 -0400
+Message-Id: <20250505231320.2695319-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505230624.2692522-1-sashal@kernel.org>
-References: <20250505230624.2692522-1-sashal@kernel.org>
+In-Reply-To: <20250505231320.2695319-1-sashal@kernel.org>
+References: <20250505231320.2695319-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -49,96 +49,34 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.136
+X-stable-base: Linux 5.15.181
 Content-Transfer-Encoding: 8bit
 
-From: Zsolt Kajtar <soci@c64.rulez.org>
+From: Shixiong Ou <oushixiong@kylinos.cn>
 
-[ Upstream commit 76d3ca89981354e1f85a3e0ad9ac4217d351cc72 ]
+[ Upstream commit 86d16cd12efa547ed43d16ba7a782c1251c80ea8 ]
 
-I was wondering why there's garbage at the bottom of the screen when
-tile blitting is used with an odd mode like 1080, 600 or 200. Sure there's
-only space for half a tile but the same area is clean when the buffer
-is bitmap.
+Call device_remove_file() when driver remove.
 
-Then later I found that it's supposed to be cleaned but that's not
-implemented. So I took what's in bitblit and adapted it for tileblit.
-
-This implementation was tested for both the horizontal and vertical case,
-and now does the same as what's done for bitmap buffers.
-
-If anyone is interested to reproduce the problem then I could bet that'd
-be on a S3 or Ark. Just set up a mode with an odd line count and make
-sure that the virtual size covers the complete tile at the bottom. E.g.
-for 600 lines that's 608 virtual lines for a 16 tall tile. Then the
-bottom area should be cleaned.
-
-For the right side it's more difficult as there the drivers won't let an
-odd size happen, unless the code is modified. But once it reports back a
-few pixel columns short then fbcon won't use the last column. With the
-patch that column is now clean.
-
-Btw. the virtual size should be rounded up by the driver for both axes
-(not only the horizontal) so that it's dividable by the tile size.
-That's a driver bug but correcting it is not in scope for this patch.
-
-Implement missing margin clearing for tileblit
-
-Signed-off-by: Zsolt Kajtar <soci@c64.rulez.org>
+Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/tileblit.c | 37 ++++++++++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/fsl-diu-fb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/core/tileblit.c
-index 674ca6a410ec8..b3aa0c6620c7d 100644
---- a/drivers/video/fbdev/core/tileblit.c
-+++ b/drivers/video/fbdev/core/tileblit.c
-@@ -74,7 +74,42 @@ static void tile_putcs(struct vc_data *vc, struct fb_info *info,
- static void tile_clear_margins(struct vc_data *vc, struct fb_info *info,
- 			       int color, int bottom_only)
- {
--	return;
-+	unsigned int cw = vc->vc_font.width;
-+	unsigned int ch = vc->vc_font.height;
-+	unsigned int rw = info->var.xres - (vc->vc_cols*cw);
-+	unsigned int bh = info->var.yres - (vc->vc_rows*ch);
-+	unsigned int rs = info->var.xres - rw;
-+	unsigned int bs = info->var.yres - bh;
-+	unsigned int vwt = info->var.xres_virtual / cw;
-+	unsigned int vht = info->var.yres_virtual / ch;
-+	struct fb_tilerect rect;
-+
-+	rect.index = vc->vc_video_erase_char &
-+		((vc->vc_hi_font_mask) ? 0x1ff : 0xff);
-+	rect.fg = color;
-+	rect.bg = color;
-+
-+	if ((int) rw > 0 && !bottom_only) {
-+		rect.sx = (info->var.xoffset + rs + cw - 1) / cw;
-+		rect.sy = 0;
-+		rect.width = (rw + cw - 1) / cw;
-+		rect.height = vht;
-+		if (rect.width + rect.sx > vwt)
-+			rect.width = vwt - rect.sx;
-+		if (rect.sx < vwt)
-+			info->tileops->fb_tilefill(info, &rect);
-+	}
-+
-+	if ((int) bh > 0) {
-+		rect.sx = info->var.xoffset / cw;
-+		rect.sy = (info->var.yoffset + bs) / ch;
-+		rect.width = rs / cw;
-+		rect.height = (bh + ch - 1) / ch;
-+		if (rect.height + rect.sy > vht)
-+			rect.height = vht - rect.sy;
-+		if (rect.sy < vht)
-+			info->tileops->fb_tilefill(info, &rect);
-+	}
- }
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index ce3c5b0b8f4ef..53be4ab374cc3 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1829,6 +1829,7 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 	int i;
  
- static void tile_cursor(struct vc_data *vc, struct fb_info *info, int mode,
+ 	data = dev_get_drvdata(&pdev->dev);
++	device_remove_file(&pdev->dev, &data->dev_attr);
+ 	disable_lcdc(&data->fsl_diu_info[0]);
+ 
+ 	free_irq(data->irq, data->diu_reg);
 -- 
 2.39.5
 

@@ -1,89 +1,121 @@
-Received: from sonic311-28.consmr.mail.ne1.yahoo.com (sonic311-28.consmr.mail.ne1.yahoo.com [66.163.188.209])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0043E28373
-	for <linux-fbdev@vger.kernel.org>; Thu,  8 May 2025 23:23:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=66.163.188.209
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E5CE25E836;
+	Fri,  9 May 2025 20:06:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746746617; cv=none; b=ZIwbfGibeVWVEVOXKH2TeIoyF7CL/H9aNxbS9D704c/vB/97RrlwRfag/Klq8S9jpF9JWLtgyvIYP2YsQdtriSweWa8phE3GwOAUiSCbouXcqzGCktoNdxXNc4td5wzXZhQEN6/o621AV/uk+BmgrUqc0V7Z9NfFM/2QnOc6o3M=
+	t=1746821211; cv=none; b=He+R67R1Y2yFR1GE0UE4YjsK42M+vJQ8LufZsH1fYOW+IW98bP94t1HQ6e+I57xQvTfm5PaEZWoXe6OHGAn5eZWwV+LfE1DT1MN016SOCEVjHUs4PQVC3I8BmZtiyFxPyOaBlWfz3Ohni1lyOgfjeY+CLzq9BfFUnl50HUzEZoQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746746617; c=relaxed/simple;
-	bh=OJlKv0wEKixT5BduJT56upmiVPhxHrP+sUAts9OMcRk=;
-	h=Date:From:Subject:To:Cc:Message-Id:MIME-Version:Content-Type:
-	 References; b=I1I6C5lXjZUgvJJNO0cbGPo+LloLKFop1VLYEOMIQY8vGSe1r/QShgK1crS1FzHUAoNYH24C65hyc+uVWQ4lXoBP/6KRXk7FCIdXZUi/gQv0JnLuHlOhCaxndqOvWeI4ZqfPVSjZ9dDx+zgaWoowkWKM3HhvEgoJysz1RmMYkUI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=att.net; spf=pass smtp.mailfrom=att.net; dkim=pass (1024-bit key) header.d=att.net header.i=@att.net header.b=ET8sbT6I; arc=none smtp.client-ip=66.163.188.209
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=att.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=att.net
+	s=arc-20240116; t=1746821211; c=relaxed/simple;
+	bh=c4N2IUsmCh9moub2+ZGNMBv0CyfWrRcXPTvqAC6Ij/I=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=rGAE/rpiyqlm4cG7jEhKnMmSAh37aIsqSMIyC3l+vpgpCJVU29ikvNTgY0WwFfGKnWDgt1bKHp5H80iEqLxy+2OlkzX8vCireSdGLi0juH+w8UlMGAFOD4pEAhUZR3BqMITQLWKMnzg4aHgHwHsg6pATeuIZS1UB6FYQsLIwrWo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iy/5oKN4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=att.net header.i=@att.net header.b="ET8sbT6I"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=att.net; s=s1024; t=1746746609; bh=fu0kH3UNF2gK+c5q/9U5pxvU3EgHIB/GGSpUDXVmTAk=; h=Date:From:Subject:To:Cc:References:From:Subject:Reply-To; b=ET8sbT6Ik4A7kLejLkI7FXtzaSCkXJlxw5k7vkYzbeRLB5C24Rj6Wnz46M3RhBfYIUzS2ek1sZJPkI01cKMnuv6wHo4rJYwC8e6bVWk0It+EQraVtq3DlwkZnwHLxp+d23BozufkW6eB/rMzvEPGqA3IQfExH/gWIkPA3FhbsTY=
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1746746609; bh=dDpQK1ZL6WUYbUlk0jT3Y/Sj/UZeZBRTcQb6ijxmvar=; h=X-Sonic-MF:Date:From:Subject:To:From:Subject; b=sh1CRFEWxj3fkinslVJjDzhvGrFF6eFKtEcvyRkEVFUn7D5ePjq7xrWdFHqMHI3yZy4UKlTM4e/omn8LYM4bTyu9T3gVAjeRaZDjEKrVWDNjTxo3F8zKx/HR1xfdaNYYWl45joybdwTCxCDhra7gWM5aqRSbGAeB4ote988rdsSO03iKFpHfsGgNGaUOXc3DB42PZFlBo2oebTwav6GOwkDJNtCYMI6qGZAQhY1PSHjWpMNf04QKZqPp2nzEPTIrTOovr9J1R/NHNH8edfqXgvXuD6+e5t5FwXCggPXhNNVVxE6Wn62TLPGy0V099m3XbfTnv3GxSPtv57rp8H41mQ==
-X-YMail-OSG: 5p_Ygu4VM1mrKVbiY1qPQgfxqpwGHWp2Re.tYtM2bRSQZ9eMg.dargGkxXzuhnr
- l8J0BX1N2u5INkQ3UoKOweM2_g9M8X.ynR0ni5uuqgM1roxwcEaY_vaLoEh_1ob2YeyS3LpW09yu
- J3GrZgtIS3Ix_tj3zacVt45z0qdn4kmiLWsk.qioRKxNQRcvHuXuOI6JDFKXQUw03u3yUzZXOFhK
- A8RDgvPFMbwvHrUn2CboLEMYMwpQ7_TV50kwEo1Fiwc5ZVTpHTfFBQFFH5qcGkvLX6HrpwmnA3hL
- y6Hn74INP7MFVxYPCLublm7Vb1p5YDR2eReaR0cVDg7q7cAov3e43uh0TZRPf1fTHADrj24UIF2i
- NMecD_6QsJOF4Ne7_KI85ZptvXXxNR6JVWBIv_Z.33jRINy21Hvmxdhs87OEh9y2DOnB7200rN3e
- f_OjevfZsnAOlpqklGEOsA7rUpOI6veyAtuhz8Eq2BKISUt7My7slZmQRAPyhLxVFT6xPXCJ1Th.
- 3VK.NpK922U6CvOkWYnQ7l6TfX10OnWx8gZythD8SOj_FtD.mbB1e8xuqoviDsbpD1nTwMEph.xr
- IuddZ5aHwDP5UISxJy.9WzPhzqaLdlLpHswTAWXjEqUySKrzZ1Sauyqn3i8LOLieKitNKjg99HIx
- uQiz_k6BYA1kZA3nRImVUOFygEhE53IGJ47FeOTnplyedeTWMJTXbLBAmVvflIA_MjlJhGUWMo.Y
- YTqXzB2MnsDmyYpLx86WklKMd4h4cgF9hAUkzqUP.cPcExhsdhKwYVHERwm0QOk5oWVqmArGH1vs
- NqsT.Cr4I7hGFWmxljFK_GL9VERlvLhukyrWaYdDuYsZaDmgr_ZukZp_m.A.kBf6kmjNifIcr4jH
- n_zP_HFl2ycCKGh0v3PbLLjidZ4WcfL8a5fSS18PU7o2jynaqH5JOttKMnyTwFyKhn6bLK4Tt0eg
- vmS05uBlrJALdmunigDPTyrayFXWwVWQrek1Ul3FOoukC_PXK1iowtZ9_EhSqiw8MvjdtJ065qfF
- 6rY0CeQA84zW6eL9WEgfa5dplPMC63mxCyutlsFqeMU7G9snkEBxIs5x1uZnfyjEZBAvpAv8I6K0
- oUeY.aL3Ck1rQFvmQ5BDu5pWjxVLJgzy5.HbeaLpsyM5gpLo3Q5mGTwGU3yb0Nmaz48UItdER9jy
- WqPPrEH2nCsjlAQiAZKIRYZFmUqMaWconqmE4mROAF.tIG7oaTttNntPgCwTUTqx0jkmk1dxgUAr
- RQ2Q8F8nsNSPTaXMNXuv.AvWpnvL6hZOesG.IFheLziVYWt.h_mMkwWU6SgauZZG54CCKQu7ekOj
- N4f1awJfn.VIETL9SPEQYIUl2b1qoaOlYjHyqZHgSJ1a5pPLN3n4oQPdWOmW5isn8Thy76cnxSG9
- 54knqsYQ2AIRZOqvKMWx40muV.2G1l_ExMiX34UNO3Qnaw0reACqYcD8XItQK92_Oa7eBLYpeem9
- 9DS6fL1mmmxkdrMMCp7AOUYnuYWf8fHbqkRLZJkiHvpS9.s7p8u4nTrWf8iAy_Yx05uj1cQr__ww
- DAWvi1warOqQjGyOtdSGmh3lmjnYeu6ClNjSvtMcfQOa0I7IxQzjxi9.qmZCiqrz0yQTp7JeeiPO
- JcktIppI5rs9GsuVVgRpKA4Lr8_3do3Fg75ZeqdxaqncqybPhbhe15ZG.VAmkg0cNaoFvPy3wrHh
- 0Bb32QP2WwPCbhxiqk__oFRKcmrhODSD8jaIZmYR6r3wl0RC0c.OGQnaBEa1wSWg7zKM6yLIYd1U
- 3QuFsVqkjLWYH9ui8zcVd89RUjWMf0GLYMeZkg1BSJvmoR8Ni2Oa8xX0wO3dy.1tERloEhBl67Rv
- .CUwodBy6IHXafjjyzz1jGpM08DZyDm6hzNLxzmUHyjR3zFOaMlAAroVs1bT4n7lyYYp7xKsmWTB
- uR4WyzhWtIQUXVlKmg6_qtreY0XLTuxlr3cALstfDHwF65DKOSp0Jm2WIi91pZ.L6shjSZiqQvHY
- AEpo0QIrIcHRX9SkwavoNpSYL1PfMLXMbpzFB1S6zRI2TaYckXKSgP8cYNr_ubhsrh6zeasAfrn_
- MpcNNIUL5j_39s7Q6DvgKyF8VE9uCkXLJOEpEAaNjvSQQejRqzUQj8WqOO9KEpOtOFfKH3b3B9fH
- SZ7lKxNNWx809cuZO4CNp8fDapLGY4ctMAYrAqH0ywhc4hCV6.fdahC5xjdr2wBzE9OC7IagRCVx
- 5T08Df3MictLu4djo..EJWA8jiCdlyfQhaOxpvUlhrwvnyg--
-X-Sonic-MF: <pheonix.sja@att.net>
-X-Sonic-ID: e7d5872f-7a08-4624-b3f2-32a66dc2e25f
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic311.consmr.mail.ne1.yahoo.com with HTTP; Thu, 8 May 2025 23:23:29 +0000
-Received: by hermes--production-bf1-689c4795f-t7r8f (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID d3d5ff78aa8107f14ed08ea5f425e2e1;
-          Thu, 08 May 2025 23:23:24 +0000 (UTC)
-Date: Thu, 08 May 2025 19:23:17 -0400
-From: Steven J Abner <pheonix.sja@att.net>
-Subject: Re: Kernels >= 6.3 disable video output
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org
-Message-Id: <TAUYVS.CG2JM4H6L6SG2@att.net>
-X-Mailer: geary/40.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iy/5oKN4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04EB6C4CEE4;
+	Fri,  9 May 2025 20:06:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746821211;
+	bh=c4N2IUsmCh9moub2+ZGNMBv0CyfWrRcXPTvqAC6Ij/I=;
+	h=From:To:Cc:Subject:Date:From;
+	b=iy/5oKN4Rax6mwtekgtc7DQfTrvQ+wam5Jjx0PiEo57N2FQa4laN6F5Pf713nTxcz
+	 rJEKhMVmFHqunx+dD0tttYsmVTr3ljhtZkRRXt72Eyp6MN40bBWGnd7jPE51VFcuy0
+	 i7gZuoE0yo8pyIk39tDuTrZhCRcj6Eef1sSRKhrUiN8a5ZXpazJ7IgDWPySCEmQLHJ
+	 MPbITL1LhxUGGm/K+byLzshRh6tfymDBT3+MV8td9nOUqPPHF2aV8LZdCkhjTvjYoq
+	 T1y0I6GYGXjkCfNWD6FfzmSHmMSfr9Cf/S1pIjYJdyfeipJ60e9WNd90d6m0jzRCif
+	 kAwjMTPHPtD2g==
+From: Kees Cook <kees@kernel.org>
+To: Simona Vetter <simona@ffwll.ch>
+Cc: Kees Cook <kees@kernel.org>,
+	syzbot+a7d4444e7b6e743572f7@syzkaller.appspotmail.com,
+	Helge Deller <deller@gmx.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Shixiong Ou <oushixiong@kylinos.cn>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Qianqiang Liu <qianqiang.liu@163.com>,
+	Jocelyn Falempe <jfalempe@redhat.com>,
+	Zsolt Kajtar <soci@c64.rulez.org>,
+	linux-kernel@vger.kernel.org,
+	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH] fbdev: fbcon: Make sure modelist not set on unregistered console
+Date: Fri,  9 May 2025 13:06:47 -0700
+Message-Id: <20250509200643.work.355-kees@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-References: <TAUYVS.CG2JM4H6L6SG2.ref@att.net>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2305; i=kees@kernel.org; h=from:subject:message-id; bh=c4N2IUsmCh9moub2+ZGNMBv0CyfWrRcXPTvqAC6Ij/I=; b=owGbwMvMwCVmps19z/KJym7G02pJDBlyCWH//WaueRBfJHD5a+nhDd/L42/f/L542tUJ0+wrn q/LdFl3oKOUhUGMi0FWTJElyM49zsXjbXu4+1xFmDmsTCBDGLg4BWAiy3IY/vsXvG2+e+HLYqtZ s3c+nt0XKsTc77J8XhOHfXjeZU7Ody4M/2v/VTEwFcQLZcqcWP5U1fes1kHGJ0HbGN4e2f3j5/e p/rwA
+X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 
- > You are using the DRM graphics drivers, and not the fbdev drivers.
+It looks like attempting to write to the "store_modes" sysfs node will
+run afoul of unregistered consoles:
 
-Great! Heading in right direction. Verified with:
-[ 0.308883] amdgpu 0000:0e:00.0: Direct firmware load for 
-amdgpu/raven_gpu_info.bin failed with error -2
-[ 0.308892] amdgpu 0000:0e:00.0: amdgpu: Failed to get gpu_info 
-firmware "raven_gpu_info.bin"
-[ 0.308899] amdgpu 0000:0e:00.0: amdgpu: Fatal error during GPU init
-[ 0.308905] amdgpu 0000:0e:00.0: amdgpu: amdgpu: finishing device.
-Shut off the driver and eureka 100% monitor or 13 times in a row (more 
-than 4) it worked.
-  At least now with the who to contact, progress :)
-Thank you and God bless!
-Steve
+UBSAN: array-index-out-of-bounds in drivers/video/fbdev/core/fbcon.c:122:28
+index -1 is out of range for type 'fb_info *[32]'
+...
+ fbcon_info_from_console+0x192/0x1a0 drivers/video/fbdev/core/fbcon.c:122
+ fbcon_new_modelist+0xbf/0x2d0 drivers/video/fbdev/core/fbcon.c:3048
+ fb_new_modelist+0x328/0x440 drivers/video/fbdev/core/fbmem.c:673
+ store_modes+0x1c9/0x3e0 drivers/video/fbdev/core/fbsysfs.c:113
+ dev_attr_store+0x55/0x80 drivers/base/core.c:2439
 
+static struct fb_info *fbcon_registered_fb[FB_MAX];
+...
+static signed char con2fb_map[MAX_NR_CONSOLES];
+...
+static struct fb_info *fbcon_info_from_console(int console)
+...
+        return fbcon_registered_fb[con2fb_map[console]];
 
+If con2fb_map contains a -1 things go wrong here. Instead, return NULL,
+as callers of fbcon_info_from_console() are trying to compare against
+existing "info" pointers, so error handling should kick in correctly.
+
+Reported-by: syzbot+a7d4444e7b6e743572f7@syzkaller.appspotmail.com
+Closes: https://lore.kernel.org/all/679d0a8f.050a0220.163cdc.000c.GAE@google.com/
+Signed-off-by: Kees Cook <kees@kernel.org>
+---
+Cc: Simona Vetter <simona@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Shixiong Ou <oushixiong@kylinos.cn>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <dri-devel@lists.freedesktop.org>
+---
+ drivers/video/fbdev/core/fbcon.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index ac3c99ed92d1..2df48037688d 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -117,9 +117,14 @@ static signed char con2fb_map_boot[MAX_NR_CONSOLES];
+ 
+ static struct fb_info *fbcon_info_from_console(int console)
+ {
++	signed char fb;
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+-	return fbcon_registered_fb[con2fb_map[console]];
++	fb = con2fb_map[console];
++	if (fb < 0 || fb >= ARRAY_SIZE(fbcon_registered_fb))
++		return NULL;
++
++	return fbcon_registered_fb[fb];
+ }
+ 
+ static int logo_lines;
+-- 
+2.34.1
 

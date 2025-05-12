@@ -1,121 +1,84 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f69.google.com (mail-io1-f69.google.com [209.85.166.69])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E5CE25E836;
-	Fri,  9 May 2025 20:06:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D6F62550AE
+	for <linux-fbdev@vger.kernel.org>; Mon, 12 May 2025 06:34:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.69
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746821211; cv=none; b=He+R67R1Y2yFR1GE0UE4YjsK42M+vJQ8LufZsH1fYOW+IW98bP94t1HQ6e+I57xQvTfm5PaEZWoXe6OHGAn5eZWwV+LfE1DT1MN016SOCEVjHUs4PQVC3I8BmZtiyFxPyOaBlWfz3Ohni1lyOgfjeY+CLzq9BfFUnl50HUzEZoQ=
+	t=1747031663; cv=none; b=GG6Esi4z5JNZEoYglg+NwDupZtd88t6iL3rOHAaeyiW77RTzWgUe1+k07Dj4BC2eX6D+ytRkt7wYUysOPP7SDgVAHd/SHzhm4unEpz0lhLsw6VcJiufZ7lHVNeF/aIoRFIwVyiVX7n01POjwpgyuLLZSVoKvbFJGVZ5SASM6nKs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746821211; c=relaxed/simple;
-	bh=c4N2IUsmCh9moub2+ZGNMBv0CyfWrRcXPTvqAC6Ij/I=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=rGAE/rpiyqlm4cG7jEhKnMmSAh37aIsqSMIyC3l+vpgpCJVU29ikvNTgY0WwFfGKnWDgt1bKHp5H80iEqLxy+2OlkzX8vCireSdGLi0juH+w8UlMGAFOD4pEAhUZR3BqMITQLWKMnzg4aHgHwHsg6pATeuIZS1UB6FYQsLIwrWo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iy/5oKN4; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iy/5oKN4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04EB6C4CEE4;
-	Fri,  9 May 2025 20:06:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746821211;
-	bh=c4N2IUsmCh9moub2+ZGNMBv0CyfWrRcXPTvqAC6Ij/I=;
-	h=From:To:Cc:Subject:Date:From;
-	b=iy/5oKN4Rax6mwtekgtc7DQfTrvQ+wam5Jjx0PiEo57N2FQa4laN6F5Pf713nTxcz
-	 rJEKhMVmFHqunx+dD0tttYsmVTr3ljhtZkRRXt72Eyp6MN40bBWGnd7jPE51VFcuy0
-	 i7gZuoE0yo8pyIk39tDuTrZhCRcj6Eef1sSRKhrUiN8a5ZXpazJ7IgDWPySCEmQLHJ
-	 MPbITL1LhxUGGm/K+byLzshRh6tfymDBT3+MV8td9nOUqPPHF2aV8LZdCkhjTvjYoq
-	 T1y0I6GYGXjkCfNWD6FfzmSHmMSfr9Cf/S1pIjYJdyfeipJ60e9WNd90d6m0jzRCif
-	 kAwjMTPHPtD2g==
-From: Kees Cook <kees@kernel.org>
-To: Simona Vetter <simona@ffwll.ch>
-Cc: Kees Cook <kees@kernel.org>,
-	syzbot+a7d4444e7b6e743572f7@syzkaller.appspotmail.com,
-	Helge Deller <deller@gmx.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Shixiong Ou <oushixiong@kylinos.cn>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Qianqiang Liu <qianqiang.liu@163.com>,
-	Jocelyn Falempe <jfalempe@redhat.com>,
-	Zsolt Kajtar <soci@c64.rulez.org>,
-	linux-kernel@vger.kernel.org,
-	syzbot+3d613ae53c031502687a@syzkaller.appspotmail.com,
-	linux-hardening@vger.kernel.org
-Subject: [PATCH] fbdev: fbcon: Make sure modelist not set on unregistered console
-Date: Fri,  9 May 2025 13:06:47 -0700
-Message-Id: <20250509200643.work.355-kees@kernel.org>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1747031663; c=relaxed/simple;
+	bh=4hTnCJZKbc6IzowhXTEn7o+qQ+7Igw0KCzxnMJkeNsE=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=PPB733H4xRr3IGh3G61dp/xKJgCX5IKzJ4fYhCGBYvhnHaREchCDSR1hd3JSbfgqRYC3TyvjZUkbHr+pCGCQietDBaPh0Dca0MxekNgAmXhW88Gpgp8aKnUgr/Vo0IBLEoIwCAk9NT7jIwavHh2c1Or10M63YzPAzoiPrNZn/kI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.69
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f69.google.com with SMTP id ca18e2360f4ac-86734b96d7aso473851039f.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 11 May 2025 23:34:22 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747031661; x=1747636461;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aY4YPekFezEFOenoNv7QvnHL9ecGgH1YuNNn9+bqEQM=;
+        b=Ncw8xmMq4a8g1UlknqRmOSZ+92JB9SmuA46fsRKkiMMVgPW/qfhv00Bfx9VrTiF+0H
+         muJVqQsYgUz7QV8i6lnqA79SjvgmbzKGF8HhfxDozTrFjCjWF9MOW3rNS3e/V7IqRyQ5
+         WV+q+kN7O321eSKVO3lsahFFDmKEY2eqZi+n6GvgBV1XjpsxtUxpOl2/e1fPIwFjfBom
+         liiwbGfGnqs+psywhH3GvHvra8QrmEsRCAx/eHFx5jwAZfwgt3evoBEdTNHvFKAYCX4g
+         O45bprdSxVfR6kN2CXfHYDjbAFnjAnzq2c6FyICo9n9tcjwOanteQ6DtWKRakFhBE4nU
+         NFng==
+X-Forwarded-Encrypted: i=1; AJvYcCVyHNdbsVDz1P5cSCSEwwNqMqVOJldN2TvnoxoG5+NIY8S3ERD8L+a4aPBl2pHKd9sHiEz8nAnnTwL+vg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwiFacO5GlTVLhAtQXGsYP1WIlz5a/6LnlbhX4oqvzr7IiBEzAh
+	umAZpIBbDdyFnc3Fu6w7/q0WX6xyXiCnb4Or7gcwwgvZ0iiGSIxpYPwXwNTEbKYSoGyARt7Ci/2
+	TuMrc7HaouUiAn4aaGREAI5o0uzJ9CgnDlg7Pzrn18jtUXDTa/is8Jlw=
+X-Google-Smtp-Source: AGHT+IE/gq9tU8dDX0ASPqGXpdsRLrai6u1l1DaPlmIX4+KOGGG7M7zAz8Nc88V/zx5bwevHNOlj5Q/7zqSuQmQo1RVVNZ6/iRgI
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2305; i=kees@kernel.org; h=from:subject:message-id; bh=c4N2IUsmCh9moub2+ZGNMBv0CyfWrRcXPTvqAC6Ij/I=; b=owGbwMvMwCVmps19z/KJym7G02pJDBlyCWH//WaueRBfJHD5a+nhDd/L42/f/L542tUJ0+wrn q/LdFl3oKOUhUGMi0FWTJElyM49zsXjbXu4+1xFmDmsTCBDGLg4BWAiy3IY/vsXvG2+e+HLYqtZ s3c+nt0XKsTc77J8XhOHfXjeZU7Ody4M/2v/VTEwFcQLZcqcWP5U1fes1kHGJ0HbGN4e2f3j5/e p/rwA
-X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6602:3fca:b0:867:16f4:5254 with SMTP id
+ ca18e2360f4ac-8676445406dmr1255531439f.6.1747031661405; Sun, 11 May 2025
+ 23:34:21 -0700 (PDT)
+Date: Sun, 11 May 2025 23:34:21 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6821966d.050a0220.f2294.0051.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (May 2025)
+From: syzbot <syzbot+listee2134ca234fc0c46f91@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-It looks like attempting to write to the "store_modes" sysfs node will
-run afoul of unregistered consoles:
+Hello fbdev maintainers/developers,
 
-UBSAN: array-index-out-of-bounds in drivers/video/fbdev/core/fbcon.c:122:28
-index -1 is out of range for type 'fb_info *[32]'
-...
- fbcon_info_from_console+0x192/0x1a0 drivers/video/fbdev/core/fbcon.c:122
- fbcon_new_modelist+0xbf/0x2d0 drivers/video/fbdev/core/fbcon.c:3048
- fb_new_modelist+0x328/0x440 drivers/video/fbdev/core/fbmem.c:673
- store_modes+0x1c9/0x3e0 drivers/video/fbdev/core/fbsysfs.c:113
- dev_attr_store+0x55/0x80 drivers/base/core.c:2439
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-static struct fb_info *fbcon_registered_fb[FB_MAX];
-...
-static signed char con2fb_map[MAX_NR_CONSOLES];
-...
-static struct fb_info *fbcon_info_from_console(int console)
-...
-        return fbcon_registered_fb[con2fb_map[console]];
+During the period, 0 new issues were detected and 0 were fixed.
+In total, 6 issues are still open and 25 have already been fixed.
 
-If con2fb_map contains a -1 things go wrong here. Instead, return NULL,
-as callers of fbcon_info_from_console() are trying to compare against
-existing "info" pointers, so error handling should kick in correctly.
+Some of the still happening issues:
 
-Reported-by: syzbot+a7d4444e7b6e743572f7@syzkaller.appspotmail.com
-Closes: https://lore.kernel.org/all/679d0a8f.050a0220.163cdc.000c.GAE@google.com/
-Signed-off-by: Kees Cook <kees@kernel.org>
+Ref Crashes Repro Title
+<1> 1393    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (4)
+                  https://syzkaller.appspot.com/bug?extid=c4b7aa0513823e2ea880
+<2> 123     Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<3> 18      Yes   KASAN: global-out-of-bounds Read in bit_putcs (3)
+                  https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
+
 ---
-Cc: Simona Vetter <simona@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Shixiong Ou <oushixiong@kylinos.cn>
-Cc: <linux-fbdev@vger.kernel.org>
-Cc: <dri-devel@lists.freedesktop.org>
----
- drivers/video/fbdev/core/fbcon.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index ac3c99ed92d1..2df48037688d 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -117,9 +117,14 @@ static signed char con2fb_map_boot[MAX_NR_CONSOLES];
- 
- static struct fb_info *fbcon_info_from_console(int console)
- {
-+	signed char fb;
- 	WARN_CONSOLE_UNLOCKED();
- 
--	return fbcon_registered_fb[con2fb_map[console]];
-+	fb = con2fb_map[console];
-+	if (fb < 0 || fb >= ARRAY_SIZE(fbcon_registered_fb))
-+		return NULL;
-+
-+	return fbcon_registered_fb[fb];
- }
- 
- static int logo_lines;
--- 
-2.34.1
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
 
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

@@ -1,63 +1,66 @@
-Received: from mail-pl1-f202.google.com (mail-pl1-f202.google.com [209.85.214.202])
+Received: from mail-pf1-f202.google.com (mail-pf1-f202.google.com [209.85.210.202])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA19C524F
-	for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 22:09:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.202
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 119D41CEADB
+	for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 22:10:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.202
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747606197; cv=none; b=M348PFwbp+xCKTnk6WHZZFSaS2c4EIA4i/gvsboVIE2MldIUOtWYWo+m1AJ/McFwVR/jfTVIcmhi0mL7Pt3IgIABPfgGI6/fCqtbEYtyVSkq6MxU3VsBjNm3he2xs2qU8pGa+KFF9oXqVeXfxJ082bDK6cfwMBwo1rq6BdunagA=
+	t=1747606214; cv=none; b=MRRLML/a+LuIJ0ot0iQ2ALXL56gu/1nErx7mdgPTmhgRRYhfUSsCH2q/VRXLlXrAttjVjh9Wh8hWSgViSeUJoXiSTF8bUFudyU6KjeMAdJNssHxQXZcUbTM9BJSFw3ryQG7oQRG9j5uEyUC6RtXIEfXHfd5CqtDpY2je8PK+LwE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747606197; c=relaxed/simple;
-	bh=WUUkI/runPD4UYFAWLA4UTyBwT40Tgtc9DAcQ9wpeAs=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=m0AW2EjxjvpVoYl69AEc9d6mnuWKr/mCD8s5t4ZCZCUtYKN1SKAaYfiYciaTCDcM47lO2M//Sif2kloMhYqn17hoxbPE7vQGpQWSvnZwScUYLdeLOlGaRNU1iKmChXC5h3/WfbxNrLG3JDVl0y5pGPHPquGupaEFg/yk2ixQtDk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=fT3uo6N0; arc=none smtp.client-ip=209.85.214.202
+	s=arc-20240116; t=1747606214; c=relaxed/simple;
+	bh=RlfQ7Sl9w5x6XC3rRVXrwDjFJLRI5opWfOuqy5T9x0Y=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=UJcgDufWjZ2oLJ7duARGnvJSGQrEad8GagF2tz4heK15N2wjfbE47LFuU6WLmi8jg4eZak1kv1GsvD0MEVe6FlkulFAaOn79ZvENpdxr5tag8Xz+U6S2kCE2gpOd1eeve1P7TaosVHghjHxNCSif/bqYJiWnaW4D7R3mjQfyzoI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=NK7nCVtV; arc=none smtp.client-ip=209.85.210.202
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="fT3uo6N0"
-Received: by mail-pl1-f202.google.com with SMTP id d9443c01a7336-231e76f6eafso17362095ad.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 15:09:55 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="NK7nCVtV"
+Received: by mail-pf1-f202.google.com with SMTP id d2e1a72fcca58-73e0094706bso5060476b3a.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 15:10:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1747606195; x=1748210995; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=gfhLPxw+UZ1Sf6wlYpIDTg9JpsqEdC+eRzqAuOTaGg4=;
-        b=fT3uo6N0ZQPyMUX5Oq+U2o5G/9C0QmdW8XvdejeAHu/7JF5df3it0uQJ1Glyo767bh
-         9sxuPR+dsGFvcIUKROSEE16EejLsFQnVcgwwoQq0EN5aVOLwgn5HyH2/3l9j7oZmcwqi
-         pb82bEdhwPUy8OYBpbhFqSsKcOWA5DjVahOM5c9aZwaF2GUR5jOH8zw/ygmZVHwSx0fy
-         EMJcbdPt/YMymz1xRMzzQ/9uURStrDWe+HNpfdc9iLdErQbIL433KpsB1r4RP8dCv4EU
-         I3S7rqZ0FiP5mpj3zSUnewcgrTULs+cigVm7dpV8IVgM+n3GYwKZ+jOL7ePQ1UxXBhsk
-         kM4w==
+        d=google.com; s=20230601; t=1747606212; x=1748211012; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=uYWWA92r/lnE6mLiwOw7SOEtSivOca0z811KglLj8l4=;
+        b=NK7nCVtVMjqrY0OZU395EqIixcQxTT0tAHqChv4BCAHF9LPo7I9yTE148pQsCQS7RS
+         Jhm6iMoBlaGdmEZgSMIh6MDPKQZDPlML84QnhrMsdbk/3pJBTIo/mLP0T75luqwR+uie
+         vY+75OGxTH9C6ThlfXJfNeZ+rdBZpsUquuu+jouTKcORfP38+Livf2EPq6VYFRbQBHtG
+         mNjH7k3vlViMvLDeRabCYwz/WBI2KCstkKjTDILz+/KoZC3xs8XBa71SkolodjBQEqkl
+         MpPErt5D16x54Up75DM5FEYWgkYEIkEwuAUN9MPyFwi3kmHnkp48XUkebDl9cLefbq2q
+         Yn+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747606195; x=1748210995;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=gfhLPxw+UZ1Sf6wlYpIDTg9JpsqEdC+eRzqAuOTaGg4=;
-        b=LX2GXQ7CwDaYUZnmokF282noXjLLGMCZmBdmlIR0jH8vBQq2VOei19YSVCFwCDeO/j
-         kHTiRwEt1zjQ/geYNkBpIa+2dlbvdYzu4ICnAIbCjyvc2+PibtsgxBfDZVBc67Aj+Jjp
-         wDg62QkWODrzOGJmKbhnDCgzHx58SPpeL6cZHiYRb9t5KjVyNqIxWHYtloDqpuUsvNLL
-         9N3RVwcqI4upX+PYvrLJFBPiRepf9esJK5BYScfhnCyeBHAViRkkdkaqKOeVwmajGudG
-         cnsFcgAzONYKRuM2shlSH2ORzypzMXEt7XhYYSV1zceCvKDKvFaN+mzBpRS3sHUDkIKN
-         MouQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXQ93DNNRc4jUWRhaqd1uR/AE6UkDOHro+90x+545TwFs0Yha7x8NgwoVFBQiTlIt69dGtAJSiD4hfuqw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzuj0uYncPVrskb3nPpwEVp0x6n7FRjin3EJnss6Wlm0XoSww+5
-	sif1HRh3pVA8egffLAgAaI5IOxihs3fP10gZ980eNjBiYYzoRdLJuVd50EhwK0AaAH9RWdcw+uf
-	AtIWkEIz0/QuVMLverSFxfw==
-X-Google-Smtp-Source: AGHT+IE/fmUAhEdNDzUegq5lLa6Q8dX9Z5TuEMtadBh3S+h8FbzaC55CAiy3l07PTwJodpEclNws7FtKjuJY56b/
-X-Received: from plrj4.prod.google.com ([2002:a17:903:284:b0:22e:327e:32c8])
+        d=1e100.net; s=20230601; t=1747606212; x=1748211012;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=uYWWA92r/lnE6mLiwOw7SOEtSivOca0z811KglLj8l4=;
+        b=UqlzV9WeQmcpuDBFyoXtFBDPiqMCo3KovNmt0i6p7W+1qoDgYwOf801Xarxp+P43je
+         IlfquzI42GLXA/dreofTLzIl26hJqayfX/rlRG5SyaYA52gkfy0ujhVOrCreK8JBQgdS
+         se03Qr4iRxAuy1xKS3nCpOOpFgdIleNa2CYmZ93CdEX+7oxWXHGFlKshQv8BSu4cjU7A
+         qh/T3c9tJmgg0eE3LUyRFq1E84Knz9b5dZ+RLw3sdXbUuKg51+vZ1nfMPtLwSetvqSNm
+         7xpKmapigz9oxSX5MTKwsAC5KWgnTpwbPsIBVaGflHnZQUSNKPuSi7b5Xb0E6TXY6zii
+         Geqg==
+X-Forwarded-Encrypted: i=1; AJvYcCW+OV22Z1dwAmtLqQELaZ59ZNjMmTMYfWES8Vmq2g1RLFLcKxpmbfRWT4g8WvYrEv843/hOLHB8G8o5SA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxxbgFYvc2EowHpOGvUj9EHaPTlb4gFXlAnlG4NL0Q7V+beyYxB
+	ZrHfC1m+1Ws5yMjgyvaf7lXCRP0nicVIUmN03uUC1jUK1nt/xJ9aAJx5pZIW5BxQgT8egeA6XtU
+	PrZFbtA5C+Wg8TyNAgUDvfQ==
+X-Google-Smtp-Source: AGHT+IFDEIjm3DAQ9auq4uM8uVG5ZGZ5EZoujr8el53HHhvTwmDVNTZeyCi31Dnb2f99N5E4a/jdjzSSCSIJNaWq
+X-Received: from pfqg8.prod.google.com ([2002:aa7:9dc8:0:b0:742:9f9a:bb76])
  (user=ericflorin job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:903:2f44:b0:223:88af:2c30 with SMTP id d9443c01a7336-231de30281bmr131476915ad.16.1747606195043;
- Sun, 18 May 2025 15:09:55 -0700 (PDT)
-Date: Sun, 18 May 2025 15:09:45 -0700
+ 2002:a05:6a00:1790:b0:73e:970:731 with SMTP id d2e1a72fcca58-742a98b2242mr15775081b3a.16.1747606212313;
+ Sun, 18 May 2025 15:10:12 -0700 (PDT)
+Date: Sun, 18 May 2025 15:09:46 -0700
+In-Reply-To: <cover.1747605658.git.ericflorin@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
+References: <cover.1747605658.git.ericflorin@google.com>
 X-Mailer: git-send-email 2.49.0.1112.g889b7c5bd8-goog
-Message-ID: <cover.1747605658.git.ericflorin@google.com>
-Subject: [PATCH 0/2] staging: sm750fb: style cleanup in `lynx_accel`
+Message-ID: <d4b30e00ca64a233efc2a7dac4bc568186dafc71.1747605658.git.ericflorin@google.com>
+Subject: [PATCH 1/2] staging: sm750fb: rename dprBase to dpr_base
 From: Eric Florin <ericflorin@google.com>
 To: teddy.wang@siliconmotion.com
 Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org, 
@@ -65,21 +68,63 @@ Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org,
 	linux-kernel@vger.kernel.org, Eric Florin <ericflorin@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-This set of patches covers two style cleanups in `struct lynx_accel`
-defined in `drivers/staging/sm750fb/sm750.h`.
+Rename `dprBase` to `dpr_base` to conform with kernel style guidelines
+as reported by checkpatch.pl
 
-PATCH #1: rename `dprBase` to `dpr_base`
-PATCH #2: rename `dpPortBase` to `dp_port_base`
+CHECK: Avoid CamelCase: <dprBase>
 
-Eric Florin (2):
-  staging: sm750fb: rename dprBase to dpr_base
-  staging: sm750fb: rename dpPortBase in lynx_accel
+Signed-off-by: Eric Florin <ericflorin@google.com>
+---
+ drivers/staging/sm750fb/sm750.h       | 2 +-
+ drivers/staging/sm750fb/sm750_accel.c | 4 ++--
+ drivers/staging/sm750fb/sm750_hw.c    | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
- drivers/staging/sm750fb/sm750.h       | 4 ++--
- drivers/staging/sm750fb/sm750_accel.c | 6 +++---
- drivers/staging/sm750fb/sm750_hw.c    | 4 ++--
- 3 files changed, 7 insertions(+), 7 deletions(-)
-
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index aff69661c8e6..a2342c69a65a 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -50,7 +50,7 @@ struct init_status {
+ 
+ struct lynx_accel {
+ 	/* base virtual address of DPR registers */
+-	volatile unsigned char __iomem *dprBase;
++	volatile unsigned char __iomem *dpr_base;
+ 	/* base virtual address of de data port */
+ 	volatile unsigned char __iomem *dpPortBase;
+ 
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 44b9e3fe3a41..97791f1b0123 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -19,12 +19,12 @@
+ #include "sm750_accel.h"
+ static inline void write_dpr(struct lynx_accel *accel, int offset, u32 regValue)
+ {
+-	writel(regValue, accel->dprBase + offset);
++	writel(regValue, accel->dpr_base + offset);
+ }
+ 
+ static inline u32 read_dpr(struct lynx_accel *accel, int offset)
+ {
+-	return readl(accel->dprBase + offset);
++	return readl(accel->dpr_base + offset);
+ }
+ 
+ static inline void write_dpPort(struct lynx_accel *accel, u32 data)
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 64b199061d14..159a5ad621f2 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -58,7 +58,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	}
+ 	pr_info("mmio virtual addr = %p\n", sm750_dev->pvReg);
+ 
+-	sm750_dev->accel.dprBase = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
++	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
+ 	sm750_dev->accel.dpPortBase = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
+ 
+ 	mmio750 = sm750_dev->pvReg;
 -- 
 2.49.0.1112.g889b7c5bd8-goog
 

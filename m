@@ -1,200 +1,152 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0634F265CD8
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 07:13:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5560526C3B2
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 09:04:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747638835; cv=none; b=iWRphAO9PwBt13dNPKtrOdkQydJZlKK+XnaSir+nVMiwL0AEg33CgBuRZ118GoxlhAcK3VdukezPI6yWWnd5Sd/2nS+/Q1iA4BL8tQYqZRtm4jdWo2Wm7elJo9ACVyL2goRvoPr4z1Y50F0WYKFTpY9xIDguqpZoGeBtcTqnrRE=
+	t=1747645484; cv=none; b=dewXu5PSEP5hC/EWCL3VhHW9Sb9iJ8FRM6KIA6U0gTGqwTQG0/uE+lBwY0TNz2ZOWbcuWnV2TxHkDbpBoPX/V/pYM5dgWVuQj2BXrHbSaN4x5zTRSwtNuqkz4H8JEaOk6sHO5IndWNIU0gCWXHFtKuhCMZevvIj0aHQ4zbA3lSg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747638835; c=relaxed/simple;
-	bh=02WXJ2e8nA1m8WxpiEMjKR6s0y9GjQ3QRKT5VE7jbsI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uyN8dnb7z6D706RN0VxbCp5VpPBAarzdsZ0KcNEKtX4/RekcczjOYxbx2KHCqgrC6/a+LniolZNLt7mDAUbLviYyfv3w43L98KRn1TobBNsMHG2i96cvf37nNb2Tfsz5rFV/ikzChxQVoFhzjLWs3Ya9t1/Elw7cNJ2dttNs+Pg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=nkLRKO5V; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gK/kmJUq; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=nkLRKO5V; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gK/kmJUq; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1747645484; c=relaxed/simple;
+	bh=s3ZF/R71XbQ2Wv8UWMHptS1RGAgFwyxTx7aSnB/lvm8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=AoTobwX5OUbw8KLa4cCrUvMhkn98MMpeWEwVhsEreLIuHPEQP+eJYhXmjNcIOaWV2GB7Q3G3Xc1rJjCGsckAkVa/0V1eVVpRJrZFmuCoMx6ePG9YH+FJf5uIsKI5LXNkEFFdPcwHPK8I113VCYBl2RF0Noo+jPLJnmdL/wz0XQ4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=SWkHHEUR; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="nkLRKO5V";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gK/kmJUq";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="nkLRKO5V";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gK/kmJUq"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 16D86201F5;
-	Mon, 19 May 2025 07:13:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1747638830; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=41Ev+vXHsAlb6sUce4V4iL7xMCren5QpN4AM1XVCMxQ=;
-	b=nkLRKO5VAA8+WH5Oo51570Xz7riWN8ZERdTzGvyBnFnQErP33CEkV3BuBnlgIhO9M9teT8
-	IRaTE3qU1mo5BVTDLi968m/kK2bQRinqrm13/2nvgAFA6LAcHJRzHnsNI0r0t8HhkedSPT
-	rVY9jxg6pgTuOGiGn2pU59faW81j6U4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1747638830;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=41Ev+vXHsAlb6sUce4V4iL7xMCren5QpN4AM1XVCMxQ=;
-	b=gK/kmJUqkyEwAqVD4dr+GHzwN4khEuv6j3JUBy28P0kJeYqT/jJmdNdJKkODgfGXzT+V+B
-	HVsvLWBtfGrH6RCQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=nkLRKO5V;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="gK/kmJUq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1747638830; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=41Ev+vXHsAlb6sUce4V4iL7xMCren5QpN4AM1XVCMxQ=;
-	b=nkLRKO5VAA8+WH5Oo51570Xz7riWN8ZERdTzGvyBnFnQErP33CEkV3BuBnlgIhO9M9teT8
-	IRaTE3qU1mo5BVTDLi968m/kK2bQRinqrm13/2nvgAFA6LAcHJRzHnsNI0r0t8HhkedSPT
-	rVY9jxg6pgTuOGiGn2pU59faW81j6U4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1747638830;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=41Ev+vXHsAlb6sUce4V4iL7xMCren5QpN4AM1XVCMxQ=;
-	b=gK/kmJUqkyEwAqVD4dr+GHzwN4khEuv6j3JUBy28P0kJeYqT/jJmdNdJKkODgfGXzT+V+B
-	HVsvLWBtfGrH6RCQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CCD061372E;
-	Mon, 19 May 2025 07:13:49 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 74HgLy3aKmgzTgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 19 May 2025 07:13:49 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: gregkh@linuxfoundation.org,
-	hdegoede@redhat.com,
-	arvidjaar@gmail.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	stable@vger.kernel.org
-Subject: [PATCH] dummycon: Trigger redraw when switching consoles with deferred takeover
-Date: Mon, 19 May 2025 09:10:13 +0200
-Message-ID: <20250519071026.11133-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.49.0
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="SWkHHEUR"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1747645482;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b+x4vTIQvSf2FWpLg3QbvkOR5KW8aweHD+AVnGY/4x4=;
+	b=SWkHHEUReS3/wzqhhdzM/qZ8ikzkMJxlChELE0Ha9VnjVY2/sW7G54SgFhn5SYnIe7cA35
+	mwxBOKlhHA4aatUCqzSHXbasPTTz/KjbLkilBpHqux4XS5cQCC1aooEV6etW9THK1D8DcC
+	vjjEFd2z7xYXI9VmERZc0wxwYqSxxxk=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-227-UbsEN-VXNia9wCTJWqZPbw-1; Mon, 19 May 2025 05:04:40 -0400
+X-MC-Unique: UbsEN-VXNia9wCTJWqZPbw-1
+X-Mimecast-MFC-AGG-ID: UbsEN-VXNia9wCTJWqZPbw_1747645479
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-43ea256f039so33760025e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 02:04:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747645479; x=1748250279;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=b+x4vTIQvSf2FWpLg3QbvkOR5KW8aweHD+AVnGY/4x4=;
+        b=QxWX5T0vyZ9hyN9A39/3qh6txUkqActnBC1zQNgHZ7MSzsmjpJEgLev74injKGm6/2
+         Vx86KDVbNKAnsXlcLU/zjhwIKQEj9DpBgdD7K0Atb4OeTkv3tC9fS3nEP4HpYwQIzGj4
+         l2Ki3uaDOyalgfK7wPmUfwMkoAzIR61jklV4BWmUlnDA/zolFk3KQJ7wr4DPvm3cUA3k
+         Cv6ZDop7jpvRfmQrFSxtAaIgQdE0PSKs39D3/PPpAn566LBy5rJF/4+zY7GjPHjMDT1W
+         8XPeMBlnpmmBcF0GmVV84rsQO9+VEBmjj+fLf/fZiJXjSWy3E+ncOM0nkMHmh6um4NDf
+         jAcQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUszt+aK1e5EMZKILc/lfOiU9S+UONemo1qd7ShOCZtxk8EQKl0EUFfhkDxzM/HqA+xL1z4Qc1MpGjuRw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyOgFWIlA95iAMo7xih+b13fEbmFxnF7XxNgQ0TMshkk5pbG6i/
+	rE4tL6VQGmMrh2NXHledIj4T8X1AAN3PbfJMvkLmaUuZ+LzBRO6+PwDhcUrbRjU/R25Nkt9rtt9
+	CDYOr+7i2Q2ipdM9oCltDfiDcUQXDboF0MuYvHd3d4inDMYkl66aovazVZfljqPmF
+X-Gm-Gg: ASbGncvEIsZoAEjEmf1QREiPD6kgshfWtMEqvzgsUKDld8DqNbKVYs+O3bkudE7WgoT
+	8ILVZI3YdyIkn1ncuANkTfrEDEsEsbH1BCfZCMh54O3sB4NkW2u9WttiHQ7Ph4JIzjIBAor7eT3
+	FD8uGGcXW8fX6TKbw+DUN72eVQBdtr667TC7MQYpUzHWz5CqyJYZn7o2nKTYzYtGTBfTivLEoRJ
+	GBvG6+4FHDZ6V754A7YwLtqaYGxd7xH0uJJeARKRiZG0ZF4+4m721rdoNFbdbihQwXbEK8I6C4R
+	Zywy74QZf1H0QXOazH0jqNwSlgbBOicYcUO0XUO5LQ==
+X-Received: by 2002:a05:600c:524d:b0:442:e109:3027 with SMTP id 5b1f17b1804b1-442fd6649bdmr105814955e9.24.1747645478941;
+        Mon, 19 May 2025 02:04:38 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHBHT37+a7uQLiNF7xXa9+Pq3Q8b9W3F1Dvt9NV0dg1vkagGrtK9lGqM9kuxuBv+sLOTByRBg==
+X-Received: by 2002:a05:600c:524d:b0:442:e109:3027 with SMTP id 5b1f17b1804b1-442fd6649bdmr105814645e9.24.1747645478524;
+        Mon, 19 May 2025 02:04:38 -0700 (PDT)
+Received: from localhost ([195.166.127.210])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-442f3369293sm207128905e9.6.2025.05.19.02.04.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 19 May 2025 02:04:37 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
+ hdegoede@redhat.com, arvidjaar@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+ stable@vger.kernel.org
+Subject: Re: [PATCH] dummycon: Trigger redraw when switching consoles with
+ deferred takeover
+In-Reply-To: <20250519071026.11133-1-tzimmermann@suse.de>
+References: <20250519071026.11133-1-tzimmermann@suse.de>
+Date: Mon, 19 May 2025 11:04:35 +0200
+Message-ID: <874ixhotss.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Spam-Level: 
-X-Rspamd-Queue-Id: 16D86201F5
-X-Spam-Score: -2.01
-X-Spam-Flag: NO
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-2.01 / 50.00];
-	DWL_DNSWL_MED(-2.00)[suse.de:dkim];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[linuxfoundation.org,redhat.com,gmail.com];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:email,suse.de:mid,suse.de:dkim];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
+Content-Type: text/plain
 
-Signal vt subsystem to redraw console when switching to dummycon
-with deferred takeover enabled. Makes the console switch to fbcon
-and displays the available output.
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-With deferred takeover enabled, dummycon acts as the placeholder
-until the first output to the console happens. At that point, fbcon
-takes over. If the output happens while dummycon is not active, it
-cannot inform fbcon. This is the case if the vt subsystem runs in
-graphics mode.
+Hello Thomas,
 
-A typical graphical boot starts plymouth, a display manager and a
-compositor; all while leaving out dummycon. Switching to a text-mode
-console leaves the console with dummycon even if a getty terminal
-has been started.
+> Signal vt subsystem to redraw console when switching to dummycon
+> with deferred takeover enabled. Makes the console switch to fbcon
+> and displays the available output.
+>
+> With deferred takeover enabled, dummycon acts as the placeholder
+> until the first output to the console happens. At that point, fbcon
+> takes over. If the output happens while dummycon is not active, it
+> cannot inform fbcon. This is the case if the vt subsystem runs in
+> graphics mode.
+>
+> A typical graphical boot starts plymouth, a display manager and a
+> compositor; all while leaving out dummycon. Switching to a text-mode
+> console leaves the console with dummycon even if a getty terminal
+> has been started.
+>
+> Returning true from dummycon's con_switch helper signals the vt
+> subsystem to redraw the screen. If there's output available dummycon's
+> con_putc{s} helpers trigger deferred takeover of fbcon, which sets a
+> display mode and displays the output. If no output is available,
+> dummycon remains active.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reported-by: Andrei Borzenkov <arvidjaar@gmail.com>
+> Closes: https://bugzilla.suse.com/show_bug.cgi?id=1242191
+> Tested-by: Andrei Borzenkov <arvidjaar@gmail.com>
+> Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: <stable@vger.kernel.org> # v4.19+
+> ---
+>  drivers/video/console/dummycon.c | 15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+> index 139049368fdc..afb8e4d2fc34 100644
+> --- a/drivers/video/console/dummycon.c
+> +++ b/drivers/video/console/dummycon.c
+> @@ -85,6 +85,12 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
+>  	/* Redraw, so that we get putc(s) for output done while blanked */
+>  	return true;
+>  }
+> +
+> +static bool dummycon_switch(struct vc_data *vc)
+> +{
+> +	/* Redraw, so that we get putc(s) for output done while switched away */
 
-Returning true from dummycon's con_switch helper signals the vt
-subsystem to redraw the screen. If there's output available dummycon's
-con_putc{s} helpers trigger deferred takeover of fbcon, which sets a
-display mode and displays the output. If no output is available,
-dummycon remains active.
+Maybe this comment could be a little bit more verbose about why this is needed
+for the framebuffer console deferred takeover case? It doesn't have to be as
+elaborated as how you have it in the commit message, but more information would
+be nice IMO.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Closes: https://bugzilla.suse.com/show_bug.cgi?id=1242191
-Tested-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: <stable@vger.kernel.org> # v4.19+
----
- drivers/video/console/dummycon.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+> +	return true;
+> +}
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index 139049368fdc..afb8e4d2fc34 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -85,6 +85,12 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
- 	/* Redraw, so that we get putc(s) for output done while blanked */
- 	return true;
- }
-+
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	/* Redraw, so that we get putc(s) for output done while switched away */
-+	return true;
-+}
- #else
- static void dummycon_putc(struct vc_data *vc, u16 c, unsigned int y,
- 			  unsigned int x) { }
-@@ -95,6 +101,10 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
- {
- 	return false;
- }
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	return false;
-+}
- #endif
- 
- static const char *dummycon_startup(void)
-@@ -124,11 +134,6 @@ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
- 	return false;
- }
- 
--static bool dummycon_switch(struct vc_data *vc)
--{
--	return false;
--}
--
- /*
-  *  The console `switch' structure for the dummy console
-  *
+Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+
 -- 
-2.49.0
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

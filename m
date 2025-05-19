@@ -1,109 +1,181 @@
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
+Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [217.70.183.198])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAE351DBB13;
-	Mon, 19 May 2025 20:15:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6BCA20E715;
+	Mon, 19 May 2025 20:19:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.198
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747685709; cv=none; b=d8PSympvZ9ld0ugD5dWUIwXxjG7N1kuTqqvoIl60v7shxnZZKUp7aPdkUx3TkyAWDOfHOFrLL2iYoQWqhIy64NHsj1/YlcI0ptSzEgcUUmjv8RCEFZHAx6zl5lknLq2VTgUVl+COlJBOtKm3nGt3ZOtsm+s4qYV0BdOsoguKMIo=
+	t=1747685988; cv=none; b=U0iUFQ3U5lBRfme0V24WSWmV5cRQkvkz7n05V0oxloiiLAlCasgem4MREj9a4cV5gJsZd1vT+jve/eImsjSP9gp/B79WW/xqNB6Xf7O6KJAKU/Sk1khiMebhkwKcqaF5BGxZfngL21kgQWikjZB3XBwdBVNfcd3WWY12KcLcvGo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747685709; c=relaxed/simple;
-	bh=ydl7IEuosPgNTSynArYsb5ZJn46GkS3mhACRb/LtaoU=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=pcH0s33oiwkVkaKm28enERXtWcf2hoH+xkVeBdVhlsXUT2amE7y2jUNzfYGUpDacVVByr4R/aKZ4Zr7hZ0Uv7XZ12BEEEiB3EwjrGiI0wZTXsUGS0MuiwW9q7wTEb1ZB1XfBRS5kIYcPyXLfbicgj+NXKHaL7aYJ8WblMKaC8pw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=LhMjZc/h; arc=none smtp.client-ip=217.70.183.197
+	s=arc-20240116; t=1747685988; c=relaxed/simple;
+	bh=CvgBHlBA2zl4zA1POiyt0S87W2ZxTO4B8wUiqIIjYZs=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=fLmP5/6RNNU2WT2xldkyuANNIPSJEOK0Olv4U78xhulorVsRJJm8Vu0HCDiZTd6eVnuWobfvml8IjQVz9fE/V4cUFU7TQUAoqygY4XnfgaLaMoNByOIcfYY5ISoRYWSU6qSQ4AfKHey95JUfG6rZUFj5Rkn7IOSVA5e3anr38kw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=IHp2zGCb; arc=none smtp.client-ip=217.70.183.198
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="LhMjZc/h"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 421C043A33;
-	Mon, 19 May 2025 20:15:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="IHp2zGCb"
+Received: by mail.gandi.net (Postfix) with ESMTPSA id A13AF439EE;
+	Mon, 19 May 2025 20:19:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1747685703;
+	t=1747685983;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VWHzGM/W/wjUc/bgNZxqSEV2qgSI0H1pzntZFKFd7BY=;
-	b=LhMjZc/hapeY3aN86R6FVZcQDp0vt8PRhYvnTZTktXkVbot+0eOGtK4PfH2gPUXl3/Qh8l
-	zbPcnPS8ygiwADYj+PqSW4e7pOYTY35aPxxNwXyLMedfvirVXKv4vw5dNTop9m8hLIY5vS
-	K6Oo83ObW3B39uuxiM/AVQqf9uEhr0ICppOas2ruivqerSTa7zALhqDZNCXYL/X4R/VHxU
-	Lc7zj60lQNMpgE3N30trodZ1mikpXEtqtYhy3UXDRk5sTWf1rMA7YUhlaGE//Gcm0VgBNu
-	9y0PJosTR4MjU63bWvswM2o5GdB1ZoC7ZMFOZwP9XdsxNt+7a0wCGkjV20m2kw==
-Date: Mon, 19 May 2025 22:15:00 +0200
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=d+ZhZFdcyO7MijMi13gLvQU8JeWL+SnKqaTCtITt0UM=;
+	b=IHp2zGCbtinQAZCN/tsAolCu3i5Dn5vBz3mgLCp17U3Dn7K42JlEPgAwY9TaW8VhwUvLtL
+	KMF/soMGNjN0C54a0MWN6wPkwTgQbj+7lsCFtRHPT28CjW+4QSLnejw7LSEBxfvc4NonQw
+	jq3qTZxVgO1PRAGPMAd9kvvR5JQU2BHrm/NwDDYdGOxyTQl+GHqIfpwdDYpvmjb56tSLw5
+	S2jpK1ywSQ3GfCe2o5uyzUod2EwOc5utHiGj3F0w7OwDcXe8WHKOwlATrl028mAB7lbdtk
+	8f19TTZfiQHCoJOhLcRnNWWubpj25XDBQtEU3NqagVi61drfvhIBEUrRNqoxJw==
 From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
- Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, Tony Lindgren
- <tony@atomide.com>, Pavel Machek <pavel@ucw.cz>, Jean-Jacques Hiblot
- <jjhiblot@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Saravana Kannan
- <saravanak@google.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Sverdlin
- <alexander.sverdlin@gmail.com>
-Subject: Re: [PATCH v5] backlight: led-backlight: add devlink to supplier
- LEDs
-Message-ID: <20250519221500.1796d4be@booty>
-In-Reply-To: <20250519174729.44fa1f7b@bootlin.com>
-References: <20250519-led-backlight-add-devlink-to-supplier-class-device-v5-1-76d6fd4aeb2f@bootlin.com>
-	<20250519174729.44fa1f7b@bootlin.com>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-redhat-linux-gnu)
+Date: Mon, 19 May 2025 22:19:11 +0200
+Subject: [PATCH v6] backlight: led-backlight: add devlink to supplier LEDs
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250519-led-backlight-add-devlink-to-supplier-class-device-v6-1-845224aeb2ce@bootlin.com>
+X-B4-Tracking: v=1; b=H4sIAD6SK2gC/6WOTQ6CMBCFr0K6dgyStkZX3sOwKJ0BJlRK2tpoC
+ He3cAWX33t5P6uIFJiiuFerCJQ5sp8L6FMl7GjmgYCxsGjqRtXqcgNHCJ2xk+NhTGAQASk7nid
+ IHuJ7WRxTAOtMjLvDlkAjWUm1lFIZUYqXQD1/jtFnW3jkmHz4Hh+y2tW/5rKCC1w16h6loa7pH
+ 533qWTO1r9Eu23bD2WrLvz2AAAA
+X-Change-ID: 20250519-led-backlight-add-devlink-to-supplier-class-device-6dec4e04445a
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ Tony Lindgren <tony@atomide.com>, Pavel Machek <pavel@ucw.cz>, 
+ Jean-Jacques Hiblot <jjhiblot@ti.com>, 
+ Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Saravana Kannan <saravanak@google.com>, 
+ =?utf-8?q?Herv=C3=A9_Codina?= <herve.codina@bootlin.com>, 
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>, 
+ Daniel Thompson <daniel.thompson@linaro.org>, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Alexander Sverdlin <alexander.sverdlin@gmail.com>, 
+ Luca Ceresoli <luca.ceresoli@bootlin.com>
+X-Mailer: b4 0.14.2
 X-GND-State: clean
 X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdefvddvfeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtqhertdertdejnecuhfhrohhmpefnuhgtrgcuvegvrhgvshholhhiuceolhhutggrrdgtvghrvghsohhlihessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhephfetudeugfehheeliefhjeejuddvledtuddttdevledthfehgeeugfetheekgfffnecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecukfhppedvrgdtvdemieejtdemvddtvddtmegvrgdtudemsggvgedumeelhegvjeemfeegfeemledufegvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvdgrtddvmeeijedtmedvtddvtdemvggrtddumegsvgegudemleehvgejmeefgeefmeeludefvgdphhgvlhhopegsohhothihpdhmrghilhhfrhhomheplhhutggrrdgtvghrvghsohhlihessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepudeipdhrtghpthhtohephhgvrhhvvgdrtghoughinhgrsegsohhothhlihhnrdgtohhmpdhrtghpthhtoheplhgvvgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghltheskhgvrhhnvghlrdhorhhgpdhrtghpt
- hhtohepjhhinhhgohhohhgrnhdusehgmhgrihhlrdgtohhmpdhrtghpthhtohepuggvlhhlvghrsehgmhigrdguvgdprhgtphhtthhopehtohhnhiesrghtohhmihguvgdrtghomhdprhgtphhtthhopehprghvvghlsehutgifrdgtiidprhgtphhtthhopehjjhhhihgslhhothesthhirdgtohhm
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdefvddvfedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhfffugggtgffkvfevofesthejredtredtjeenucfhrhhomhepnfhutggrucevvghrvghsohhlihcuoehluhgtrgdrtggvrhgvshholhhisegsohhothhlihhnrdgtohhmqeenucggtffrrghtthgvrhhnpedvueelteffuedthfevvdejffdutdetjedthfffvdehvdelveetkeejjefgjefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvrgdtvdemieejtdemvddtvddtmegvrgdtudemsggvgedumeelhegvjeemfeegfeemledufegvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvdgrtddvmeeijedtmedvtddvtdemvggrtddumegsvgegudemleehvgejmeefgeefmeeludefvgdphhgvlhhopegludelvddrudeikedrudejkedrjeehngdpmhgrihhlfhhrohhmpehluhgtrgdrtggvrhgvshholhhisegsohhothhlihhnrdgtohhmpdhnsggprhgtphhtthhopedujedprhgtphhtthhopegurghnihgvlhdrthhhohhmphhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepj
+ hhinhhgohhohhgrnhdusehgmhgrihhlrdgtohhmpdhrtghpthhtoheplhgvvgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepthhhohhmrghsrdhpvghtrgiiiihonhhisegsohhothhlihhnrdgtohhmpdhrtghpthhtohepshgrrhgrvhgrnhgrkhesghhoohhglhgvrdgtohhmpdhrtghpthhtohephhgvrhhvvgdrtghoughinhgrsegsohhothhlihhnrdgtohhmpdhrtghpthhtoheprghlvgigrghnuggvrhdrshhvvghrughlihhnsehgmhgrihhlrdgtohhm
 X-GND-Sasl: luca.ceresoli@bootlin.com
 
-Hi Herv=C3=A9,
+led-backlight is a consumer of one or multiple LED class devices, but
+devlink is currently unable to create correct supplier-producer links when
+the supplier is a class device. It creates instead a link where the
+supplier is the parent of the expected device.
 
-On Mon, 19 May 2025 17:47:29 +0200
-Herve Codina <herve.codina@bootlin.com> wrote:
+One consequence is that removal order is not correctly enforced.
 
-> Hi Luca,
->=20
-> On Mon, 19 May 2025 17:16:39 +0200
-> Luca Ceresoli <luca.ceresoli@bootlin.com> wrote:
->=20
-> ...
->=20
-> > diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight=
-/led_bl.c
-> > index d2db157b2c290adc3a159023e9e2394fc877388c..8fe645b5b75447d009e1045=
-dcf0c62d3bbc5425e 100644
-> > --- a/drivers/video/backlight/led_bl.c
-> > +++ b/drivers/video/backlight/led_bl.c
-> > @@ -209,6 +209,19 @@ static int led_bl_probe(struct platform_device *pd=
-ev)
-> >  		return PTR_ERR(priv->bl_dev);
-> >  	}
-> > =20
-> > +	for (i =3D 0; i < priv->nb_leds; i++) {
-> > +		struct device_link *link;
-> > +
-> > +		link =3D device_link_add(&pdev->dev, priv->leds[0]->dev->parent, =20
->=20
-> It should be priv->leds[i]->dev->parent instead of leds[0], shouldn't it?
+Issues happen for example with the following sections in a device tree
+overlay:
 
-Ah, well spotted, thanks!
+    // An LED driver chip
+    pca9632@62 {
+        compatible = "nxp,pca9632";
+        reg = <0x62>;
 
-My led-backlight device only uses one LED, so I hadn't noticed during
-testing.
+	// ...
 
-v6 on its way.
+        addon_led_pwm: led-pwm@3 {
+            reg = <3>;
+            label = "addon:led:pwm";
+        };
+    };
 
-Luca
+    backlight-addon {
+        compatible = "led-backlight";
+        leds = <&addon_led_pwm>;
+        brightness-levels = <255>;
+        default-brightness-level = <255>;
+    };
 
---=20
-Luca Ceresoli, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+In this example, the devlink should be created between the backlight-addon
+(consumer) and the pca9632@62 (supplier). Instead it is created between the
+backlight-addon (consumer) and the parent of the pca9632@62, which is
+typically the I2C bus adapter.
+
+On removal of the above overlay, the LED driver can be removed before the
+backlight device, resulting in:
+
+    Unable to handle kernel NULL pointer dereference at virtual address 0000000000000010
+    ...
+    Call trace:
+     led_put+0xe0/0x140
+     devm_led_release+0x6c/0x98
+
+Another way to reproduce the bug without any device tree overlays is
+unbinding the LED class device (pca9632@62) before unbinding the consumer
+(backlight-addon):
+
+  echo 11-0062 >/sys/bus/i2c/drivers/leds-pca963x/unbind
+  echo ...backlight-dock >/sys/bus/platform/drivers/led-backlight/unbind
+
+Fix by adding a devlink between the consuming led-backlight device and the
+supplying LED device, as other drivers and subsystems do as well.
+
+Tested-by: Alexander Sverdlin <alexander.sverdlin@siemens.com>
+Fixes: ae232e45acf9 ("backlight: add led-backlight driver")
+Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+---
+Changes in v6:
+- EDITME: describe what is new in this series revision.
+- EDITME: use bulletpoints and terse descriptions.
+- Link to v5: https://lore.kernel.org/r/20250519-led-backlight-add-devlink-to-supplier-class-device-v5-1-76d6fd4aeb2f@bootlin.com
+---
+
+Changes in v6:
+- fix incorrect array index
+- further improve commit message
+- Link to v5: https://lore.kernel.org/r/20250519-led-backlight-add-devlink-to-supplier-class-device-v5-1-76d6fd4aeb2f@bootlin.com
+
+Changes in v5:
+- separated this patch as a standalone patch
+- improved commit message, adding feedback from Alexander
+- no code changes
+
+This patch first appeared in the v4 of a longer series, even though the
+issue is orthogonal:
+https://lore.kernel.org/all/20240917-hotplug-drm-bridge-v4-6-bc4dfee61be6@bootlin.com/
+---
+ drivers/video/backlight/led_bl.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index d2db157b2c290adc3a159023e9e2394fc877388c..0ed585eb27903df43651c5365f479f7865cc8a95 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -209,6 +209,19 @@ static int led_bl_probe(struct platform_device *pdev)
+ 		return PTR_ERR(priv->bl_dev);
+ 	}
+ 
++	for (i = 0; i < priv->nb_leds; i++) {
++		struct device_link *link;
++
++		link = device_link_add(&pdev->dev, priv->leds[i]->dev->parent,
++				       DL_FLAG_AUTOREMOVE_CONSUMER);
++		if (!link) {
++			dev_err(&pdev->dev, "Failed to add devlink (consumer %s, supplier %s)\n",
++				dev_name(&pdev->dev), dev_name(priv->leds[i]->dev->parent));
++			backlight_device_unregister(priv->bl_dev);
++			return -EINVAL;
++		}
++	}
++
+ 	for (i = 0; i < priv->nb_leds; i++) {
+ 		mutex_lock(&priv->leds[i]->led_access);
+ 		led_sysfs_disable(priv->leds[i]);
+
+---
+base-commit: a5806cd506af5a7c19bcd596e4708b5c464bfd21
+change-id: 20250519-led-backlight-add-devlink-to-supplier-class-device-6dec4e04445a
+
+Best regards,
+-- 
+Luca Ceresoli <luca.ceresoli@bootlin.com>
+

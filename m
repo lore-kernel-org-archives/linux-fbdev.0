@@ -1,66 +1,63 @@
-Received: from mail-pl1-f202.google.com (mail-pl1-f202.google.com [209.85.214.202])
+Received: from mail-pj1-f74.google.com (mail-pj1-f74.google.com [209.85.216.74])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B20F20ADEE
-	for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 22:10:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.202
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0230800
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 02:05:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.74
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747606218; cv=none; b=lcwTugZjVt6pRxUUpcCmVfXx2F5i/HeWJO9wtOkLsJ/R/koteTGUir+D8O5UuUL1iGiGqsrnAz1SvW+2WIcmvQhVQLhKXbqlsAb5uWIFikxQW1HN4915GflDGiE2aKjDReuUB2ePXeIvbgt3FdsF7Q/AtM+lmt/+N4djuW4ZNqY=
+	t=1747620328; cv=none; b=QMlODFuipZig/lKnCc6xdXLG5B/UzpTPk8RdNy+BM0XyGxJzhkr8zUVX5S2DynTrVSz5jTXne5B9JUFm8rkDfOqRSXG0bamN8W5L/wHxNDn69BtpSTK3zrbMIu7Uqi1A+hXeGDUliK7yyy4YmJ9aWQU1W6UUo59pREpudrqmk94=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747606218; c=relaxed/simple;
-	bh=SWvGIfkhRbWfeovnI48bl+Lss7+3GtniH+IW64+H+po=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=RzdeLgNM6kfPrPf9Mh0lYByg+AVjEeBapFHnCEISdpFPcCGSn0GG2Q4zjVRdEixJceF9WNaMcx3Wl5qVhFkxTv2M7PquIXmgZmc+75LHsfWb+Quv9dATETh0qsD6Zp1xhPr3N83pqKRGxaDUuBo3UvE+A6nrtJmua01jeKhD+8M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=Ry5FHfhN; arc=none smtp.client-ip=209.85.214.202
+	s=arc-20240116; t=1747620328; c=relaxed/simple;
+	bh=g9TCDvkL7vdglguYr9J2B8LFxxhkUXoRYKW+v+UkYHQ=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=ZS+Ohml/qPz6HgXmphhq5c6UTfZMGblgksIm+kUOPcTkBuOwCk3s4Kd6mIS1WZpBMNQdilGahr+fmkQGh11ITV6OuOMK1dwXppZiYPzi6gNM6QwF2uZqUuNmjBzVve3OkhG1fj0rm6bQmJmkSQjTzHtVIGwpA1EfM9hj+dJEjx8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=Gn+fJmjK; arc=none smtp.client-ip=209.85.216.74
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Ry5FHfhN"
-Received: by mail-pl1-f202.google.com with SMTP id d9443c01a7336-23209d8ba1bso9636085ad.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 15:10:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Gn+fJmjK"
+Received: by mail-pj1-f74.google.com with SMTP id 98e67ed59e1d1-30e9b2e7a34so1413517a91.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 19:05:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1747606216; x=1748211016; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=7MgIN8qU07WLqB2jI+fLrkDZZnm1G0XlzsKXj9QMd8M=;
-        b=Ry5FHfhNoxTE0oGCsVR64tN0mhBh0v6GPVb9TpfKWV24HCE96I5a9zznoVgKZ2I1Es
-         218h+mZxGI1Kdpt0mbmzOgt6XtBIgEFL1FBucXBNMQgCJSd3MYTEa3EMEA/ehhlySnqH
-         xT7bGcyJLcKzRtjG4JnV7JVuhkl9wCNzvdGc2Qw2o+G6Zq8UqD17YAwe+gyO0ZTG4jrp
-         8lstC9kwl2uuhCvEzJDjrRJicRwe7xFXq3F/C8tsOZ3VUsqXM2Kzdr8FL39pQ9MTpl+2
-         twT0fn/j4kC7eTPk7wpaAEaxpr2YEiIVBw8TPiJWqzYbt5Jcyomry4m6p1LiSY09znNQ
-         vl8Q==
+        d=google.com; s=20230601; t=1747620326; x=1748225126; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=k4noPrc0+PmWjnqoGI34UlcvKKumIdg5SuK7l2WcSpc=;
+        b=Gn+fJmjKuXq5ylnkSu6abgTlBwZcxUSpmMr3u9uXgJr7flyK+lb117MbwuZGPSPYrp
+         tQKtWF2bU+qXecI56izsI8wh6jTGvOFoPLUgawLhp9MP5T3zSgZCVMX4g0wBVYEZpn+X
+         ShrHK9y/GpD+nacwxm9lmvAfzxeE8F+En/ZDDIEDIuWTqQF9fGZVBGp9KyM/SkyotDEu
+         LeqdTvGB4Fn0dg4xCFDGulYEqmrXiUusm37Zal4J+i0OHz3UYXImWsQ7jWPgpqpdp+xM
+         wu8qH6vxT5dPtQudKcvjBOKeTMqOFCZ9v6fjy864NswZV61brPEbXh/gXCpz2j77PQb1
+         qwnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747606216; x=1748211016;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7MgIN8qU07WLqB2jI+fLrkDZZnm1G0XlzsKXj9QMd8M=;
-        b=UVDuBB4i1xrhoeAy8BoEXZmgQUOA/ND9q50KYUMmuH2serPI1+xh0htZ0VuFrS3weJ
-         IO4taRLyaQ3+c9wVs0DNKAcyI8Dnc7rue5yrzJ4yOpo3t0IW1XX7JK6DoFyr0kWMKmg5
-         unNSUAxdwo8IIUuj2ab0RQ/erG3pUUaj5DEQtDsReO4iXm6Q6QUYqqbKl6kz7aDqM1ZV
-         UexWzSxWvsHKfGOIB6cnIPF3aYUjikJhqe5BKuoin2uP1kmPdPUGDW2DN/QlqjvKB72M
-         RCrgRrpNapHVeDX3rgdGyYflbcDeJrAUapJiqwQaC++45acaKcFVyhD6gdbmh5ZpNc4E
-         j9rw==
-X-Forwarded-Encrypted: i=1; AJvYcCVO6O+vLKSstIs0i8mgkQrlCcveEwJAzMwLVHoAYcffJrcnDDHoNx2rsEdXxk5FA167eymYZxbULAR7Kw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzic0Omd/zEr14AeB0Oip4tGuge/F+TuL7lBtc/KYK1zs7QaMur
-	rK0CNvdRFR9a2zmnJpvIcoz95UTD6KwtX7VKUkCY8nrPriK5T2z6WMBtR4kdUegVWNe56hAxhW3
-	58/wcZlrCN7XUC/efRchHZg==
-X-Google-Smtp-Source: AGHT+IGfnAPZYs1RjIQmyMNTBGtrRdET0rahQn+Z7K88kjkMkyG4PvQjlMM8Jb/K6YInMKuOlOjUwZPfuWnIm9Fv
-X-Received: from plbmu14.prod.google.com ([2002:a17:903:b4e:b0:231:e2ee:34c9])
+        d=1e100.net; s=20230601; t=1747620326; x=1748225126;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=k4noPrc0+PmWjnqoGI34UlcvKKumIdg5SuK7l2WcSpc=;
+        b=lh7nwsC3gJECf/qrKQB6Fn/qt1jsM5D46y62tCBUvcvVHEPItvJU9Lgff0Rcz7hjgB
+         UblXBAEVZDhzOfvI3kboe8CJNWp3ktWqq0xyCBTg2U3xOvChEgCtzb+kPiRe2Q37g+2J
+         bd016rkQ7oOND6cIbwkFFSOWb2wgmrDi2onQ4ZfF8xdK7s7ZyK2M1xpPPuAvw+/aHng0
+         iKQDg51FavoFdsotPYzJTS571VU1gLFLjjm7ugg5EHec7uix6AjT1e6ZXRBA5lAsuxb3
+         n1LRx3UlWNMt6O7T7B7lrAP2prCYVGXy4w/EdjDUuaB1NX4Smpy0wjxI3kKG1dZdEVNt
+         N7Og==
+X-Forwarded-Encrypted: i=1; AJvYcCW8MTXEG6gg3OlIB+nYW/DdchcuF57dXG8RTR9jA5fWNqQJazp6PtHxvWTtU85JBFPVoVHFDbVhR9Di2w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx2KRq+sOM7aubOLoIUWfwIEiscROMr8HgpdOK5TQC7QRUDMr+Y
+	ALT3TteSrZ/Z0kAmrCrosBnWFBPP7vZXcFMXxKGcZh8mSsf0a22G7h99jgWOsU0s9Ua3uwzSElM
+	1F7aY8DQ3JqElkKvCCOfIpA==
+X-Google-Smtp-Source: AGHT+IGbCZYYy+GBc+rke7WozoS3ZvUtccE9nDq5UAt3ravq7+I3UfQ2ippF4HNUX0ce/AnnRjAOKvEGxBtdeP1q
+X-Received: from pja16.prod.google.com ([2002:a17:90b:5490:b0:30a:3021:c1af])
  (user=ericflorin job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:902:d4c9:b0:232:202e:ab18 with SMTP id d9443c01a7336-232202eac80mr53400845ad.26.1747606215822;
- Sun, 18 May 2025 15:10:15 -0700 (PDT)
-Date: Sun, 18 May 2025 15:09:47 -0700
-In-Reply-To: <cover.1747605658.git.ericflorin@google.com>
+ 2002:a17:90a:d445:b0:30e:a1ec:68dd with SMTP id 98e67ed59e1d1-30ea1ec68e8mr12033666a91.8.1747620326231;
+ Sun, 18 May 2025 19:05:26 -0700 (PDT)
+Date: Sun, 18 May 2025 19:04:43 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
-References: <cover.1747605658.git.ericflorin@google.com>
 X-Mailer: git-send-email 2.49.0.1112.g889b7c5bd8-goog
-Message-ID: <97fcc39f3e63f465c49e8725d10f7c43fd35cd85.1747605658.git.ericflorin@google.com>
-Subject: [PATCH 2/2] staging: sm750fb: rename dpPortBase in lynx_accel
+Message-ID: <cover.1747619816.git.ericflorin@google.com>
+Subject: [PATCH 0/9] staging: sm750fb: Rename function headers in `sm750.h`
 From: Eric Florin <ericflorin@google.com>
 To: teddy.wang@siliconmotion.com
 Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org, 
@@ -68,57 +65,36 @@ Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org,
 	linux-kernel@vger.kernel.org, Eric Florin <ericflorin@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-Rename `dpPortBase` to `dp_port_base` to conform with kernel style
+This set of patches renames function headers declared in
+`drivers/staging/sm750fb/sm750.h` to conform with kernel style
 guidelines as reported by checkpatch.pl
 
-CHECK: Avoid CamelCase: <dpPortBase>
+PATCH #1: Rename `hw_sm750_initAccel` to `hw_sm750_init_accel`
+PATCH #2: Rename `hw_sm750_deWait` to `hw_sm750_de_wait`
+PATCH #3: Rename `hw_sm750le_deWait` to `hw_sm750le_de_wait`
+PATCH #4: Rename `hw_sm750_output_setMode` to `hw_sm750_output_set_mode`
+PATCH #5: Rename `hw_sm750_crtc_checkMode` to `hw_sm750_crtc_check_mode`
+PATCH #6: Rename `hw_sm750_crtc_setMode` to `hw_sm750_crtc_set_mode`
+PATCH #7: Rename `hw_sm750_setColReg` to `hw_sm750_set_col_reg`
+PATCH #8: Rename `hw_sm750_setBLANK` to `hw_sm750_set_blank`
+PATCH #9: Rename `hw_sm750le_setBLANK` to `hw_sm750le_set_blank`
 
-Signed-off-by: Eric Florin <ericflorin@google.com>
----
- drivers/staging/sm750fb/sm750.h       | 2 +-
- drivers/staging/sm750fb/sm750_accel.c | 2 +-
- drivers/staging/sm750fb/sm750_hw.c    | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Eric Florin (9):
+  staging: sm750fb: rename `hw_sm750_initAccel`
+  staging: sm750fb: rename `hw_sm750_deWait`
+  staging: sm750fb: rename `hw_sm750le_deWait`
+  staging: sm750fb: rename `hw_sm750_output_setMode`
+  staging: sm750fb: rename `hw_sm750_crtc_checkMode`
+  staging: sm750fb: rename `hw_sm750_crtc_setMode`
+  staging: sm750fb: rename `hw_sm750_setColReg`
+  staging: sm750fb: rename `hw_sm750_setBLANK`
+  staging: sm750fb: rename `hw_sm750le_setBLANK`
 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index a2342c69a65a..0ed1e18611ba 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -52,7 +52,7 @@ struct lynx_accel {
- 	/* base virtual address of DPR registers */
- 	volatile unsigned char __iomem *dpr_base;
- 	/* base virtual address of de data port */
--	volatile unsigned char __iomem *dpPortBase;
-+	volatile unsigned char __iomem *dp_port_base;
- 
- 	/* function pointers */
- 	void (*de_init)(struct lynx_accel *accel);
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 97791f1b0123..7ac2e7b6ea0f 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -29,7 +29,7 @@ static inline u32 read_dpr(struct lynx_accel *accel, int offset)
- 
- static inline void write_dpPort(struct lynx_accel *accel, u32 data)
- {
--	writel(data, accel->dpPortBase);
-+	writel(data, accel->dp_port_base);
- }
- 
- void sm750_hw_de_init(struct lynx_accel *accel)
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 159a5ad621f2..75ceb594fcb1 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -59,7 +59,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	pr_info("mmio virtual addr = %p\n", sm750_dev->pvReg);
- 
- 	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dpPortBase = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
- 
- 	mmio750 = sm750_dev->pvReg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
+ drivers/staging/sm750fb/sm750.c    | 12 +++++------
+ drivers/staging/sm750fb/sm750.h    | 30 ++++++++++++++--------------
+ drivers/staging/sm750fb/sm750_hw.c | 32 +++++++++++++++---------------
+ 3 files changed, 37 insertions(+), 37 deletions(-)
+
 -- 
 2.49.0.1112.g889b7c5bd8-goog
 

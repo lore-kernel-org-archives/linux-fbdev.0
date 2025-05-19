@@ -1,63 +1,66 @@
-Received: from mail-pj1-f74.google.com (mail-pj1-f74.google.com [209.85.216.74])
+Received: from mail-pf1-f201.google.com (mail-pf1-f201.google.com [209.85.210.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0230800
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 02:05:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.74
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82F121A0B08
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 02:05:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747620328; cv=none; b=QMlODFuipZig/lKnCc6xdXLG5B/UzpTPk8RdNy+BM0XyGxJzhkr8zUVX5S2DynTrVSz5jTXne5B9JUFm8rkDfOqRSXG0bamN8W5L/wHxNDn69BtpSTK3zrbMIu7Uqi1A+hXeGDUliK7yyy4YmJ9aWQU1W6UUo59pREpudrqmk94=
+	t=1747620331; cv=none; b=dPiTtvH1H0CLm+ugmAFNzIJ9A+BTkOX8zKQkrZEbM/MopH5uKcqs3RPKRPQxE0J3x6sgVmzfAzdJyKC/mXIbWDwtPndzlxRbyJJ1K0W8G7zS5DETchv5L/93RDHuMnyoUwPXdqI8TkqQcRBu+lZFQbfcz/42c1Ri6+xLToBO58M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747620328; c=relaxed/simple;
-	bh=g9TCDvkL7vdglguYr9J2B8LFxxhkUXoRYKW+v+UkYHQ=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=ZS+Ohml/qPz6HgXmphhq5c6UTfZMGblgksIm+kUOPcTkBuOwCk3s4Kd6mIS1WZpBMNQdilGahr+fmkQGh11ITV6OuOMK1dwXppZiYPzi6gNM6QwF2uZqUuNmjBzVve3OkhG1fj0rm6bQmJmkSQjTzHtVIGwpA1EfM9hj+dJEjx8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=Gn+fJmjK; arc=none smtp.client-ip=209.85.216.74
+	s=arc-20240116; t=1747620331; c=relaxed/simple;
+	bh=P6YhGfwpTWjH4RxelIMCi1nT/wtCrRVWtOdmcF4kceE=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=HXoREITxQj/KYYhKsK8KTmzlTOj/Ev876p+JT+sqJEapDhMpQwqpHjL96sRiIZzHMfgOfQcBEaCUdKUNGl61rL1dJGdyUGtmBsg1Gf3PIA5w1qgUOSDTfrfyeyUcHxbdh6xA4xBlPYHGT7HkcpxjUxRUmz+JbmDhPXLLGErbB+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=KUxQjmTN; arc=none smtp.client-ip=209.85.210.201
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Gn+fJmjK"
-Received: by mail-pj1-f74.google.com with SMTP id 98e67ed59e1d1-30e9b2e7a34so1413517a91.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 19:05:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="KUxQjmTN"
+Received: by mail-pf1-f201.google.com with SMTP id d2e1a72fcca58-742cede1473so833071b3a.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 19:05:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1747620326; x=1748225126; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=k4noPrc0+PmWjnqoGI34UlcvKKumIdg5SuK7l2WcSpc=;
-        b=Gn+fJmjKuXq5ylnkSu6abgTlBwZcxUSpmMr3u9uXgJr7flyK+lb117MbwuZGPSPYrp
-         tQKtWF2bU+qXecI56izsI8wh6jTGvOFoPLUgawLhp9MP5T3zSgZCVMX4g0wBVYEZpn+X
-         ShrHK9y/GpD+nacwxm9lmvAfzxeE8F+En/ZDDIEDIuWTqQF9fGZVBGp9KyM/SkyotDEu
-         LeqdTvGB4Fn0dg4xCFDGulYEqmrXiUusm37Zal4J+i0OHz3UYXImWsQ7jWPgpqpdp+xM
-         wu8qH6vxT5dPtQudKcvjBOKeTMqOFCZ9v6fjy864NswZV61brPEbXh/gXCpz2j77PQb1
-         qwnA==
+        d=google.com; s=20230601; t=1747620328; x=1748225128; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4WNeHNuQ/4XktBWCvVGZ2j9OjX/jX7Q26i4sZzFTDLM=;
+        b=KUxQjmTNePJDLIkVX+MvTyT9BJn3nuq1fTzjhK7XhIO+JCAP3aR/KiT+ndnGndtUcW
+         fJKx8KtbTsIaLG8uC70ZGCdII3/TizGVYE7ySvt2sIL5vzkd5/02ZqL8igWbzfNxFfPc
+         bByL/MGPm7bfIj+ZokviBRZwjmj5g0jqyDHHHxO/YOk5+oXZZ2QUDeuyjPfa6eXpN7lu
+         4y6hPnJrZrgL/Oeoxq/qDUWC5Z2DuOwxhiCtHEKYT2aa64w9s9OLeyewm3J2EZ0oY25x
+         X3w13cd+XSvzIqa63MCQb7GenbqAg2Lrl3CBbWp4q2S5i2YnVq8eNv09iqNtDmJeObjt
+         eywA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747620326; x=1748225126;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=k4noPrc0+PmWjnqoGI34UlcvKKumIdg5SuK7l2WcSpc=;
-        b=lh7nwsC3gJECf/qrKQB6Fn/qt1jsM5D46y62tCBUvcvVHEPItvJU9Lgff0Rcz7hjgB
-         UblXBAEVZDhzOfvI3kboe8CJNWp3ktWqq0xyCBTg2U3xOvChEgCtzb+kPiRe2Q37g+2J
-         bd016rkQ7oOND6cIbwkFFSOWb2wgmrDi2onQ4ZfF8xdK7s7ZyK2M1xpPPuAvw+/aHng0
-         iKQDg51FavoFdsotPYzJTS571VU1gLFLjjm7ugg5EHec7uix6AjT1e6ZXRBA5lAsuxb3
-         n1LRx3UlWNMt6O7T7B7lrAP2prCYVGXy4w/EdjDUuaB1NX4Smpy0wjxI3kKG1dZdEVNt
-         N7Og==
-X-Forwarded-Encrypted: i=1; AJvYcCW8MTXEG6gg3OlIB+nYW/DdchcuF57dXG8RTR9jA5fWNqQJazp6PtHxvWTtU85JBFPVoVHFDbVhR9Di2w==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx2KRq+sOM7aubOLoIUWfwIEiscROMr8HgpdOK5TQC7QRUDMr+Y
-	ALT3TteSrZ/Z0kAmrCrosBnWFBPP7vZXcFMXxKGcZh8mSsf0a22G7h99jgWOsU0s9Ua3uwzSElM
-	1F7aY8DQ3JqElkKvCCOfIpA==
-X-Google-Smtp-Source: AGHT+IGbCZYYy+GBc+rke7WozoS3ZvUtccE9nDq5UAt3ravq7+I3UfQ2ippF4HNUX0ce/AnnRjAOKvEGxBtdeP1q
-X-Received: from pja16.prod.google.com ([2002:a17:90b:5490:b0:30a:3021:c1af])
+        d=1e100.net; s=20230601; t=1747620328; x=1748225128;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4WNeHNuQ/4XktBWCvVGZ2j9OjX/jX7Q26i4sZzFTDLM=;
+        b=FCXRuXhUoriMpYd07lKbA2j5cHOrrbvR1Ng0z9KMHjyOyBMrVcmlHw1D5eFqaxZGVO
+         ywke7qORZ9eeHxtubiXWgB54I/853rAJ+aZns9XPp1vjqc4WYeJDjx3nkDUs3vyd0a4+
+         qwAye3q+aXIiOvyJGfe4KwKpsxQ6Flh7NWKVd6swpaWeajl8FHmutFMuotRatreRobrT
+         cnkr8ltAHLDLKfV1CE2jiTf8d3aW59VeexHe6fhMmE2NShLuOSerYfu7coTcDcO+/LCW
+         sTxOlZgUr8agno0udfgmgqeeDnPIZ3scfzYkLdD5+9y32hNq+YU6CTqPvjSMh6oWobN7
+         YWjA==
+X-Forwarded-Encrypted: i=1; AJvYcCWKQVx23wo3mqv8bY1c+cggdML4Bat39r9MFM2pYuF6tyP9fzIeZMSBe3VrTodAVp9xE+DAZSTrDBXEXQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YygrvVHo89Y0eAwtVl5tFpRIpqsKbmm3LkjL82Jb6zqSX7Zbd8V
+	gNi9IrfPf2FN8f02pbTLwoVhg0gunUOURwDFYbDjVSZ6nmhU0bFoN47Mk9m6BGMFp8JeKbNAR4p
+	ecuFIKwrtfKfIRjoN8pXAGQ==
+X-Google-Smtp-Source: AGHT+IGJ1y2LMgtkB4KN/mhUl2Kk6KWp4viAq1pbxiTlJMAogrAQ3rkz6/z6rHDzqvrWuq/M/ufamRUOrLWsXoK5
+X-Received: from pgre17.prod.google.com ([2002:a65:6791:0:b0:b14:9a53:2226])
  (user=ericflorin job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:90a:d445:b0:30e:a1ec:68dd with SMTP id 98e67ed59e1d1-30ea1ec68e8mr12033666a91.8.1747620326231;
- Sun, 18 May 2025 19:05:26 -0700 (PDT)
-Date: Sun, 18 May 2025 19:04:43 -0700
+ 2002:a05:6a20:3d1c:b0:1ee:d418:f764 with SMTP id adf61e73a8af0-2170ce33ad3mr16521363637.38.1747620327781;
+ Sun, 18 May 2025 19:05:27 -0700 (PDT)
+Date: Sun, 18 May 2025 19:04:44 -0700
+In-Reply-To: <cover.1747619816.git.ericflorin@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
+References: <cover.1747619816.git.ericflorin@google.com>
 X-Mailer: git-send-email 2.49.0.1112.g889b7c5bd8-goog
-Message-ID: <cover.1747619816.git.ericflorin@google.com>
-Subject: [PATCH 0/9] staging: sm750fb: Rename function headers in `sm750.h`
+Message-ID: <3c84dccaf38161d6de6ff560d4f10bb3d344cc51.1747619816.git.ericflorin@google.com>
+Subject: [PATCH 1/9] staging: sm750fb: rename `hw_sm750_initAccel`
 From: Eric Florin <ericflorin@google.com>
 To: teddy.wang@siliconmotion.com
 Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org, 
@@ -65,36 +68,52 @@ Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org,
 	linux-kernel@vger.kernel.org, Eric Florin <ericflorin@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-This set of patches renames function headers declared in
-`drivers/staging/sm750fb/sm750.h` to conform with kernel style
-guidelines as reported by checkpatch.pl
+Rename `hw_sm750_initAccel` to `hw_sm750_init_accel` to conform with
+kernel style guidelines as reported by checkpatch.pl
 
-PATCH #1: Rename `hw_sm750_initAccel` to `hw_sm750_init_accel`
-PATCH #2: Rename `hw_sm750_deWait` to `hw_sm750_de_wait`
-PATCH #3: Rename `hw_sm750le_deWait` to `hw_sm750le_de_wait`
-PATCH #4: Rename `hw_sm750_output_setMode` to `hw_sm750_output_set_mode`
-PATCH #5: Rename `hw_sm750_crtc_checkMode` to `hw_sm750_crtc_check_mode`
-PATCH #6: Rename `hw_sm750_crtc_setMode` to `hw_sm750_crtc_set_mode`
-PATCH #7: Rename `hw_sm750_setColReg` to `hw_sm750_set_col_reg`
-PATCH #8: Rename `hw_sm750_setBLANK` to `hw_sm750_set_blank`
-PATCH #9: Rename `hw_sm750le_setBLANK` to `hw_sm750le_set_blank`
+CHECK: Avoid CamelCase: <hw_sm750_initAccel>
 
-Eric Florin (9):
-  staging: sm750fb: rename `hw_sm750_initAccel`
-  staging: sm750fb: rename `hw_sm750_deWait`
-  staging: sm750fb: rename `hw_sm750le_deWait`
-  staging: sm750fb: rename `hw_sm750_output_setMode`
-  staging: sm750fb: rename `hw_sm750_crtc_checkMode`
-  staging: sm750fb: rename `hw_sm750_crtc_setMode`
-  staging: sm750fb: rename `hw_sm750_setColReg`
-  staging: sm750fb: rename `hw_sm750_setBLANK`
-  staging: sm750fb: rename `hw_sm750le_setBLANK`
+Signed-off-by: Eric Florin <ericflorin@google.com>
+---
+ drivers/staging/sm750fb/sm750.h    | 2 +-
+ drivers/staging/sm750fb/sm750_hw.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
- drivers/staging/sm750fb/sm750.c    | 12 +++++------
- drivers/staging/sm750fb/sm750.h    | 30 ++++++++++++++--------------
- drivers/staging/sm750fb/sm750_hw.c | 32 +++++++++++++++---------------
- 3 files changed, 37 insertions(+), 37 deletions(-)
-
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index aff69661c8e6..a797985a4df7 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -193,7 +193,7 @@ static inline unsigned long ps_to_hz(unsigned int psvalue)
+ 
+ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+-void hw_sm750_initAccel(struct sm750_dev *sm750_dev);
++void hw_sm750_init_accel(struct sm750_dev *sm750_dev);
+ int hw_sm750_deWait(void);
+ int hw_sm750le_deWait(void);
+ 
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 64b199061d14..a5bb067b30cc 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -173,7 +173,7 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 
+ 	/* init 2d engine */
+ 	if (!sm750_dev->accel_off)
+-		hw_sm750_initAccel(sm750_dev);
++		hw_sm750_init_accel(sm750_dev);
+ 
+ 	return 0;
+ }
+@@ -474,7 +474,7 @@ int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
+ 	return 0;
+ }
+ 
+-void hw_sm750_initAccel(struct sm750_dev *sm750_dev)
++void hw_sm750_init_accel(struct sm750_dev *sm750_dev)
+ {
+ 	u32 reg;
+ 
 -- 
 2.49.0.1112.g889b7c5bd8-goog
 

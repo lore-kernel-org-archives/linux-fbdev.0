@@ -1,55 +1,55 @@
-Received: from mail-pl1-f202.google.com (mail-pl1-f202.google.com [209.85.214.202])
+Received: from mail-pf1-f201.google.com (mail-pf1-f201.google.com [209.85.210.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 831231D7E37
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 02:05:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.202
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C93731DE3A4
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 May 2025 02:05:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747620333; cv=none; b=LTeTvdbSTrQ9QOn3A9N5Gvat4/Gjn0KgBkyKnzXVbG7QvZK8kq+g5RW80JNlYhqwaxTDuvgo0vOWMJVkpvu7oAtCuJ9v9aynDopt1tSnYrVFi4oGM1EJ+IE+R7ohB+RKYgxTkfPZIMGhFgiJp4VDAGu92KhkSbpT+qMeTPQTiYc=
+	t=1747620334; cv=none; b=gNtLRZsnjB5p5B1kbV29KIu+g68AxZFPXPGbSbE5IhO+nPu2mKm/mgTaALRELtkAgY0gI8VBRQPEhsyol7nymfJPskGNp2QUGH2pjGv5vO2z1s8N/hWg64FeoDWzBhwhuaR2Dz7YVAQmHRDgNxUAtFkDYs5KV22trDiqz+uBy9c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747620333; c=relaxed/simple;
-	bh=cgC2bKbGN145SIzxxROu9xdk0UstJ+Mxq5okATrOS2Y=;
+	s=arc-20240116; t=1747620334; c=relaxed/simple;
+	bh=KuNYkTVSYWwA6JxxznbCZ39dzpJPuPVHpn1XlVTuiTo=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=dtFb6oBuZZXWzfIxUqOK2Gg7GOd0HHKGfIKsvFsyKbTRvscvIWoC+3fyMLQKZ8pEAdQTRaG7e7whkQ4vNKtHgrTyidIK7gfyb2zaEkl0ReNc3DAVg72SCfV8IJZk12zE9PRGLxhqzlICeIMut9BYeJJEiysWPDDxZMwaIJZn7GE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=wBVLFfrG; arc=none smtp.client-ip=209.85.214.202
+	 To:Cc:Content-Type; b=hCvtwSC3lFTudGIGf5EUwKi46ObP6Y1t7RWPSwp8fOtyP3vrhlol+SlTcJNACVa+Fdt9I6k1SCrLPd1QTtp6zKVheQ2S6BXMM2wyFxgfvzT1IBF5iM3ctUGWJDk5gAaQplRLkL5Ye9rnQR82QiBjFTv0cnQyChKdZSdeL2F56XM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=RTJ+D6TN; arc=none smtp.client-ip=209.85.210.201
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--ericflorin.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="wBVLFfrG"
-Received: by mail-pl1-f202.google.com with SMTP id d9443c01a7336-2320502023fso13547885ad.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 19:05:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="RTJ+D6TN"
+Received: by mail-pf1-f201.google.com with SMTP id d2e1a72fcca58-74089884644so3342801b3a.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 18 May 2025 19:05:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1747620331; x=1748225131; darn=vger.kernel.org;
+        d=google.com; s=20230601; t=1747620332; x=1748225132; darn=vger.kernel.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=5D9tZ7lGJ/V+3LuhRgNag3WNMa+YH+Lpwj9LaaZAW9A=;
-        b=wBVLFfrG5lIaVHc99KkdwexZnm5gjc6vVk8hBAoxIRWhdJP0YkBN272+PFwxK8pZPT
-         IxKCGMbZf/Avxj/GJevPe8i/RoxVwlfNZhcTKMh6GF4oUk4ywL5CcHMzCseO2sOyuYL3
-         23LYo8S1avrJ3dQJZbjBpMiV45a+8k3OdvWgorWTj+JAiAG+iXrYeRCsOQDiipgw11LM
-         5xXU760FUVQysESXan1iVeiehzraOExVj624s4t/CJnZQ1PKN2j2Im5mKfmFYSLkugk9
-         K0wF/6Pm2NpnCakdHVLUk+Gre+D9PnhGZ2C73zLAAkt01cZFI6gjK/I6JpuNmne/Da9/
-         gIuw==
+        bh=wfHmDfi+DPX6UiPcv/N0w1gisnR08EyU/T2sRMe8FD8=;
+        b=RTJ+D6TNKETk6bvjnG9kooE8iwzDN3Tt0gWhkxBS7tSd64wzFflr9A9VovIuSsNkC2
+         VabOgcEJWtjORuFH7RkVR0F5YRCj4tt/Ul825fpgnyPVZm7kzn2b+PRIiJ0E8QA8w+qj
+         0qwkR8s3YgfjL9+WwbPFKMdcOjv/B2bSJF0hb3ZIP0kK06BnDS0tTtpYeT6dZhjAQxaV
+         4hmm5yHB8tngJ3znzxsQKF223NwgS0Q4okNFH15Qq9iEZ7fiS9OBX2RmugufRhGlztbq
+         1lx0gZvU59hLk+4Qcdj4THtoPtnS+eN6ycvmmia30eAZWCV3d0kOI6dFWUCa2c7gl7XZ
+         fK4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747620331; x=1748225131;
+        d=1e100.net; s=20230601; t=1747620332; x=1748225132;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=5D9tZ7lGJ/V+3LuhRgNag3WNMa+YH+Lpwj9LaaZAW9A=;
-        b=BuzqCJ+weLVuhyNXteX7JkBu6Ny7qDWr2PG0BtX2sn3siDACxrXkjwO5HH563afAHM
-         2/OnT0DTgnyfKS7d+7VWrTvbTBZAOH1uPYFVhiWta/FrzMLDVPH0+obiSDKBnnsU3rbi
-         O44hVH/QWxTRLOIj5pFyUs0DJVqy6U3CnLnEvcPc3sGo6I+2Pvf3EpCxy6dKtAdqwGJY
-         orupWXlo38Ls5u/eSEcqTPUzK99h4jFJKgbAQX2W8kjXwidvXcB6sR9HkAC6DPyo2Ov9
-         QR/br+Ou5m+uOApwBLvYh1MvoOVh7O1eedQ7vKMITdVaxZogp1b1Q67UXd9raV7o+MOM
-         i0lA==
-X-Forwarded-Encrypted: i=1; AJvYcCWrLzgMu/DNTOJkVOd6HG6sfrUTG0dX90x987MWMbh/5hZSiZNKdW1+i8a6GRlcOGfYv5HFquAe6fMi3Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwFdeFSbnZE4FfS6ttkX5drZ6pxyAssRRV42/xfWq0uzdOEUIub
-	MR649YH+p73ZfU5pwZiJ0CI3GquI952G7pdO1dtTsUpuzaxQyBbkz4EeVVfsOQ3qnIH+P+hvgEg
-	RSNcNnCi1VQwjgFEOrxLYEQ==
-X-Google-Smtp-Source: AGHT+IG3j7Do7IbGAZ3dDiD1KauPj9WTYzC2ZDbZxcTdDrHtGWx9FYXjV4NnDyYft8gZpoX+CDyliCNybh6S3Nzg
-X-Received: from plki13.prod.google.com ([2002:a17:903:1a0d:b0:231:f3aa:e763])
+        bh=wfHmDfi+DPX6UiPcv/N0w1gisnR08EyU/T2sRMe8FD8=;
+        b=iqlNoP1F2Gupmjs1cj7gXuxFF2Fqy3HYOwispOKEdf1FuvMrUJOqT+vJPWWSQ2Gi+I
+         HZX5tXal3QdKljQAmz+OgUjn9lqSvIMrOPrAKLrae45DNUvmt2WILlXYRpsN9wVOjDrw
+         5MbFCSozyGr/AREjcXvwsw7nava0EP8ZAhqMDhh4bJ7vKsizcrcNtlv3OiQ41g+qLXv8
+         oZb7uzZxKdvqOSBVokx6aD4RUsYUEkrgFlkYd8UgOu/nRqt2ox/vx+r6OFg/c/fZpPpx
+         cjbOAS4LTG/+I6IB2Ozr/N014IwmpmVyCVkhso56zlvBncfwnVQOT8YymEuOfYzUroc3
+         EAkQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUmyyRTkGjBa+rIDQB82METfn+zY28nSJJRecMu047DcpRxOItK+YnlOyxzXajweht7rFnZhgpcJti/+A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKp1iAtE2JmYR6Fz9rufo6MISgIXGMGE2SrJQ0Pjzpggfe3hdv
+	3xqix32L41hFXFfQuSxqDs71GtdQvbPO+38WR3VNLZ4P6B55xlCkGAW8iVB5ON3rx2BzrB3dEoz
+	aiOUXq/TMNmSFj6FUBJeItw==
+X-Google-Smtp-Source: AGHT+IFWhP9qCzE0xp+jghUcFnN+E/k12ZG/1Uh9728niLyC1prSappxNcMkFk73ffaaGfN/Y5Lbn/I5zuqjnXq6
+X-Received: from pfbg13.prod.google.com ([2002:a05:6a00:ae0d:b0:742:a1f2:abb3])
  (user=ericflorin job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:903:1a68:b0:227:ac2a:1dd6 with SMTP id d9443c01a7336-231d45273c6mr192805125ad.24.1747620330803;
- Sun, 18 May 2025 19:05:30 -0700 (PDT)
-Date: Sun, 18 May 2025 19:04:46 -0700
+ 2002:a05:6a00:2d0a:b0:740:6f69:8d94 with SMTP id d2e1a72fcca58-742acba67c1mr13868560b3a.0.1747620332264;
+ Sun, 18 May 2025 19:05:32 -0700 (PDT)
+Date: Sun, 18 May 2025 19:04:47 -0700
 In-Reply-To: <cover.1747619816.git.ericflorin@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -59,8 +59,8 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 References: <cover.1747619816.git.ericflorin@google.com>
 X-Mailer: git-send-email 2.49.0.1112.g889b7c5bd8-goog
-Message-ID: <0e5332f7758ad24cc5bca36671fd811c87881db7.1747619816.git.ericflorin@google.com>
-Subject: [PATCH 3/9] staging: sm750fb: rename `hw_sm750le_deWait`
+Message-ID: <32daa589cf80d2f6f67ed257aa9397128a5458d2.1747619816.git.ericflorin@google.com>
+Subject: [PATCH 4/9] staging: sm750fb: rename `hw_sm750_output_setMode`
 From: Eric Florin <ericflorin@google.com>
 To: teddy.wang@siliconmotion.com
 Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org, 
@@ -68,57 +68,65 @@ Cc: sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org,
 	linux-kernel@vger.kernel.org, Eric Florin <ericflorin@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-Rename `hw_sm750le_deWait` to `hw_sm750le_de_wait` to conform with
-kernel style guidelines as reported by checkpatch.pl
+Rename `hw_sm750_output_setMode` to `hw_sm750_output_set_mode` to
+conform with kernel style guidelines as reported by checkpatch.pl
 
-CHECK: Avoid CamelCase: <hw_sm750le_deWait>
+CHECK: Avoid CamelCase: <hw_sm750_output_setMode>
 
 Signed-off-by: Eric Florin <ericflorin@google.com>
 ---
  drivers/staging/sm750fb/sm750.c    | 2 +-
- drivers/staging/sm750fb/sm750.h    | 2 +-
- drivers/staging/sm750fb/sm750_hw.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/sm750fb/sm750.h    | 6 +++---
+ drivers/staging/sm750fb/sm750_hw.c | 6 +++---
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 6a6b48254af8..9c62adec9914 100644
+index 9c62adec9914..eb7bae5e2044 100644
 --- a/drivers/staging/sm750fb/sm750.c
 +++ b/drivers/staging/sm750fb/sm750.c
-@@ -609,7 +609,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 				 hw_sm750le_setBLANK : hw_sm750_setBLANK;
- 	/* chip specific phase */
- 	sm750_dev->accel.de_wait = (sm750_dev->revid == SM750LE_REVISION_ID) ?
--				    hw_sm750le_deWait : hw_sm750_de_wait;
-+				    hw_sm750le_de_wait : hw_sm750_de_wait;
- 	switch (sm750_dev->dataflow) {
- 	case sm750_simul_pri:
- 		output->paths = sm750_pnc;
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index e24ec6a9799e..7de3a3d44dce 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -195,7 +195,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
- int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
- void hw_sm750_init_accel(struct sm750_dev *sm750_dev);
- int hw_sm750_de_wait(void);
--int hw_sm750le_deWait(void);
-+int hw_sm750le_de_wait(void);
- 
- int hw_sm750_output_setMode(struct lynxfb_output *output,
- 			    struct fb_var_screeninfo *var,
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 5a6ee02bb95f..49b0d5b91183 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -504,7 +504,7 @@ void hw_sm750_init_accel(struct sm750_dev *sm750_dev)
- 	sm750_dev->accel.de_init(&sm750_dev->accel);
+@@ -394,7 +394,7 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+ 	}
+ 	ret = hw_sm750_crtc_setMode(crtc, var, fix);
+ 	if (!ret)
+-		ret = hw_sm750_output_setMode(output, var, fix);
++		ret = hw_sm750_output_set_mode(output, var, fix);
+ 	return ret;
  }
  
--int hw_sm750le_deWait(void)
-+int hw_sm750le_de_wait(void)
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 7de3a3d44dce..7450eb975b1b 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -197,9 +197,9 @@ void hw_sm750_init_accel(struct sm750_dev *sm750_dev);
+ int hw_sm750_de_wait(void);
+ int hw_sm750le_de_wait(void);
+ 
+-int hw_sm750_output_setMode(struct lynxfb_output *output,
+-			    struct fb_var_screeninfo *var,
+-			    struct fb_fix_screeninfo *fix);
++int hw_sm750_output_set_mode(struct lynxfb_output *output,
++			     struct fb_var_screeninfo *var,
++			     struct fb_fix_screeninfo *fix);
+ 
+ int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
+ 			    struct fb_var_screeninfo *var);
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 49b0d5b91183..c01abfcea811 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -178,9 +178,9 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	return 0;
+ }
+ 
+-int hw_sm750_output_setMode(struct lynxfb_output *output,
+-			    struct fb_var_screeninfo *var,
+-			    struct fb_fix_screeninfo *fix)
++int hw_sm750_output_set_mode(struct lynxfb_output *output,
++			     struct fb_var_screeninfo *var,
++			     struct fb_fix_screeninfo *fix)
  {
- 	int i = 0x10000000;
- 	unsigned int mask = DE_STATE2_DE_STATUS_BUSY | DE_STATE2_DE_FIFO_EMPTY |
+ 	int ret;
+ 	enum disp_output disp_set;
 -- 
 2.49.0.1112.g889b7c5bd8-goog
 

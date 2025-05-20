@@ -1,210 +1,213 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.dnamail.fi (sender103.dnamail.fi [83.102.40.157])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E488625CC69
-	for <linux-fbdev@vger.kernel.org>; Tue, 20 May 2025 07:17:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 109804430;
+	Wed, 21 May 2025 00:06:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=83.102.40.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747725438; cv=none; b=aaTjExT1Uzf0O/h8YP3fJkoFgC9wE6qbpeiE9bhkVfWCtSwACiHm8hgz1M+hqT6vtw09brLcYGGOqiOZpxFWSil8qsnxhrtkThZmn/mA+SJktyBCzDBwzu0YJZ8BDaAjB2AS+V/UCbgemu+6ZO/Ybe3ApSae91rw1vJaT0l95+w=
+	t=1747785969; cv=none; b=p5/kfqX0uUC0R90EkSsf+V2EANJzYmVKSUlSUg3jQJWucX9TzxD+R1PQ9GpKdNQsiXUX9tbLRTYTKqDv3L/a9oTVPhonIlsPkY2uNd7RSQjHt8Mac+5a2lsQr0XL9mgfNgTUWXa/+dtUKumlSHIMDTpxv2M3sT7eZ8egQL3SHfs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747725438; c=relaxed/simple;
-	bh=lRagZQmgUvdghHg7ZtAe29OmSbKWbRuyjyXrV4X+phg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bll0poseoZ/gAOrHOQWwRZNx+55zyls+m3MGRswvWSW+ecsPGiRB30W7yaxgNmlbQEEf9bbAucRFQpc99hri/q968+Q1JkgeziaTL8lnNkQxWoj1jI0x+n3LiseKMqKqUf+V1zd5q3RG/QKmIj84LZOj3dJHgPYwCdPvsHwGKpg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jRpCNbQs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=/DK7HFP3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=C2b2MQ/I; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xH+q0fbC; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1747785969; c=relaxed/simple;
+	bh=vysjJvceAcBmipRk4Jiwp5A2YVmJ19pKRMmLrkyS9ro=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CmuWw+JXPwspi23RpgcW8gWKQvoIBemcJQruiUXATEE0jH/DO/Vfpu5+IBmQsGuhFMULXbc3YzeCo9nhOBsPbOZZHdco3nvIRnzxr0ft03oopYGLr2OoulrKpfNraDX6mFh4ZEg7m8ZCJclpH5rSOh5wfITIaF+xZ++1nZqGAec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=helsinkinet.fi; spf=pass smtp.mailfrom=helsinkinet.fi; dkim=pass (2048-bit key) header.d=helsinkinet.fi header.i=@helsinkinet.fi header.b=Pb1KliAz; arc=none smtp.client-ip=83.102.40.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=helsinkinet.fi
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=helsinkinet.fi
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jRpCNbQs";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="/DK7HFP3";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="C2b2MQ/I";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xH+q0fbC"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	dkim=pass (2048-bit key) header.d=helsinkinet.fi header.i=@helsinkinet.fi header.b="Pb1KliAz"
+Received: from localhost (localhost [127.0.0.1])
+	by smtp.dnamail.fi (Postfix) with ESMTP id 87CAE4098E96;
+	Wed, 21 May 2025 02:59:54 +0300 (EEST)
+X-Virus-Scanned: X-Virus-Scanned: amavis at smtp.dnamail.fi
+Received: from smtp.dnamail.fi ([83.102.40.157])
+ by localhost (dmail-psmtp02.s.dnaip.fi [127.0.0.1]) (amavis, port 10024)
+ with ESMTP id Oi42qBaa9nU8; Wed, 21 May 2025 02:59:53 +0300 (EEST)
+Received: from [192.168.101.100] (87-92-86-78.bb.dnainternet.fi [87.92.86.78])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id DC0EC2228E;
-	Tue, 20 May 2025 07:17:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1747725434; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
-	b=jRpCNbQsrwGdsG50l8Udeh2QvYb4xWBl/o/SJCo3WynhJnJ4Rs1e3NT/ygTf1iA9LcnO+r
-	VzZjIfG58YENBkCxJ3+3Rid2IhfmBnBow+P6GMPGfKd2yuyJ+K/oRu1atREvteO67TB5pf
-	AFAy9/AL8PJZ1AoDRct1axLO2gt+J9U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1747725434;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
-	b=/DK7HFP3+0AHHaPZi5YBYCDDbOvM0xqNv4CLPFhkw59jsEQiYFCrSqZHSlCTNJfPRB46Xs
-	5Cdfj0I0M5bqG9Cg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="C2b2MQ/I";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=xH+q0fbC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1747725433; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
-	b=C2b2MQ/In3XsmTEFFJ7lntxxxda6LA6WpjzPTk3xx60Y4uwwUaxp2GTpc/Yd9tNTobBLaw
-	+cDS3epecrrAfN/TNy30JWnOH2Vrjn7GTaFwlLEk3QPDQEPyIhIWZboWgg4Pwi/8VbNXmM
-	+MmEW2U7MM+elUgVMMjZeE+NP17k6a0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1747725433;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
-	b=xH+q0fbCEaEG5O6J80vd6HE4OPU4VHMUGfmrL+vjdUamWBeyYFlrz0n5daKzmQuoMHLRDx
-	LczI73giHgTuQeAQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8358913A3E;
-	Tue, 20 May 2025 07:17:13 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id gSpMHnksLGiZNgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 20 May 2025 07:17:13 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: gregkh@linuxfoundation.org,
-	hdegoede@redhat.com,
-	arvidjaar@gmail.com,
-	tiwai@suse.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	stable@vger.kernel.org
-Subject: [PATCH v2] dummycon: Trigger redraw when switching consoles with deferred takeover
-Date: Tue, 20 May 2025 09:14:00 +0200
-Message-ID: <20250520071418.8462-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.49.0
+	(Authenticated sender: oak@dnamail.internal)
+	by smtp.dnamail.fi (Postfix) with ESMTPSA id 36C934098E90;
+	Wed, 21 May 2025 02:59:53 +0300 (EEST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.dnamail.fi 36C934098E90
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=helsinkinet.fi;
+	s=2025-03; t=1747785593;
+	bh=SWDuj3wmUThUE9hYxR5T+9uZspPMegALAiwkNnCzcYE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Pb1KliAzX0YnTYAA7m9qhy5aGHznqESOQjat2y9q3uh5+UWbxb7wOwiSi4QThRPzU
+	 BkDTWgsp2Lpv7aW9Mj83c2yKXYgdRSrNuNVQNHGkburPjR8Ig/q804AGmDRYSPMTPv
+	 c0fv92CCzuCMhy479HEXwZALiMrqtajfaOYkgaG67QJnOvrYXyWeGWQEdxaHJ2Uy52
+	 jXwYJ9glLAUANK9cFczKim9J1W2DByKDKOfUS10zRnP38nNc8zTwHJuoCtwMoedw7g
+	 HQ7aSfL36jsROj5bISFD3DNxLwhra/zh7hc38wDldv/xPf65AMfqwf+84Dr8kuMz1U
+	 7oFaA6JE5usIA==
+Message-ID: <74946b31-6166-44b0-b2a7-b0633f014b60@helsinkinet.fi>
+Date: Wed, 21 May 2025 02:59:52 +0300
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spamd-Bar: /
-X-Spam-Flag: NO
-X-Spam-Score: -0.01
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: DC0EC2228E
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-0.01 / 50.00];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	URIBL_BLOCKED(0.00)[suse.com:url,suse.de:email,suse.de:mid,suse.de:dkim,lists.freedesktop.org:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[linuxfoundation.org,redhat.com,gmail.com,suse.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	ARC_NA(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,lists.freedesktop.org:email,suse.de:email,suse.de:mid,suse.de:dkim,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH/RFC 0/3] Atari DRM driver
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, Michael Schmitz <schmitzmic@gmail.com>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-m68k@vger.kernel.org,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+References: <cover.1669406380.git.geert@linux-m68k.org>
+ <a9883a81-d909-09c5-708b-d598e030380e@physik.fu-berlin.de>
+ <CAMuHMdWHUnWBN7ddBow+fqmt8W--9wFe5x_YMeRg7GQ=BNAL2Q@mail.gmail.com>
+Content-Language: en-US
+From: Eero Tamminen <oak@helsinkinet.fi>
+In-Reply-To: <CAMuHMdWHUnWBN7ddBow+fqmt8W--9wFe5x_YMeRg7GQ=BNAL2Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signal vt subsystem to redraw console when switching to dummycon
-with deferred takeover enabled. Makes the console switch to fbcon
-and displays the available output.
+Hi Geert,
 
-With deferred takeover enabled, dummycon acts as the placeholder
-until the first output to the console happens. At that point, fbcon
-takes over. If the output happens while dummycon is not active, it
-cannot inform fbcon. This is the case if the vt subsystem runs in
-graphics mode.
+On 23.1.2023 17.10, Geert Uytterhoeven wrote:
+> On Mon, Jan 23, 2023 at 4:09 PM John Paul Adrian Glaubitz
+> <glaubitz@physik.fu-berlin.de> wrote:
+>> On 11/25/22 21:31, Geert Uytterhoeven wrote:
+>>> This RFC patch series adds a DRM driver for the good old Atari
+>>> ST/TT/Falcon hardware.  It was developed and tested (only) on the ARAnyM
+>>> emulator.
+>>
+>> I just remembered this WIP driver. Has there been any progress?
+> 
+> So far no further progress.
 
-A typical graphical boot starts plymouth, a display manager and a
-compositor; all while leaving out dummycon. Switching to a text-mode
-console leaves the console with dummycon even if a getty terminal
-has been started.
+I tried your "atari-drm-wip-v1" branch commits on top of 6.14.
 
-Returning true from dummycon's con_switch helper signals the vt
-subsystem to redraw the screen. If there's output available dummycon's
-con_putc{s} helpers trigger deferred takeover of fbcon, which sets a
-display mode and displays the output. If no output is available,
-dummycon remains active.
+After some minor changes those applied. Getting it to build required 
+adding "&shadow_plane_state->fmtcnv_state" (struct drm_format_conv_state 
+*) argument to *_blit() functions in atari_drm.c, and changing:
+	drm_fbdev_generic_setup(dev, dev->mode_config.preferred_depth);
+in its probe function to:
+	struct drm_format_info *format = NULL;
+         drm_client_setup(dev, format);
 
-v2:
-- make the comment slightly more verbose (Javier)
+However, the result is not working very well yet.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Closes: https://bugzilla.suse.com/show_bug.cgi?id=1242191
-Tested-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Acked-by: Javier Martinez Canillas <javierm@redhat.com>
-Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: <stable@vger.kernel.org> # v4.19+
----
- drivers/video/console/dummycon.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+Driver gets initialized fine under Hatari TT emulation:
+-------------------------
+atafb atafb: phys_screen_base 511000 screen_len 311296
+atafb atafb: Determined 1280x960, depth 1
+atafb atafb:    virtual 1280x1945
+Console: switching to mono frame buffer device 160x60
+fb0: frame buffer device, using 304K of video memory
+...
+atari_drm atari_drm: phys_screen_base 55d000 screen_len 311296
+atari_drm atari_drm: Determined 1280x960, depth 1
+atari_drm atari_drm:    virtual 1280x1945
+[drm] Initialized atari_drm 1.0.0 for atari_drm on minor 0
+atari_drm atari_drm: Atari DRM, using 304K of video memory
+-------------------------
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index 139049368fdc..7d02470f19b9 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -85,6 +85,15 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
- 	/* Redraw, so that we get putc(s) for output done while blanked */
- 	return true;
- }
-+
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	/*
-+	 * Redraw, so that we get putc(s) for output done while switched
-+	 * away. Informs deferred consoles to take over the display.
-+	 */
-+	return true;
-+}
- #else
- static void dummycon_putc(struct vc_data *vc, u16 c, unsigned int y,
- 			  unsigned int x) { }
-@@ -95,6 +104,10 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
- {
- 	return false;
- }
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	return false;
-+}
- #endif
- 
- static const char *dummycon_startup(void)
-@@ -124,11 +137,6 @@ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
- 	return false;
- }
- 
--static bool dummycon_switch(struct vc_data *vc)
--{
--	return false;
--}
--
- /*
-  *  The console `switch' structure for the dummy console
-  *
--- 
-2.49.0
+However, once screen switches from "atafb" to "atari_drm" driver, Linux 
+boot logo & texts disappear, and (emulated) screen is either all white 
+(on mono monitor) or all black (on VGA & RGGB monitors).
+
+
+And while "atafb" works fine also under Falcon emulation with RGB (50Hz) 
+or VGA (60Hz) monitor, "atari_drm" probing fails:
+-------------------------
+genirq: Flags mismatch irq 4. 00200000 (framebuffer:modeswitch) vs. 
+00200000 (framebuffer:modeswitch)
+CPU: 0 UID: 0 PID: 1 Comm: swapper Not tainted 
+6.14.0hatari-00001-g1d98935cdfd7-dirty #4
+Stack from 01029c78:
+         ...
+Call Trace: [<000088b0>] dump_stack+0x10/0x16
+  [<0005852a>] __setup_irq+0x264/0x4a4
+  [<00200000>] dma_buf_map_attachment_unlocked+0x34/0x6a
+  [<00200000>] dma_buf_map_attachment_unlocked+0x34/0x6a
+  [<001e874c>] falcon_vbl_switcher+0x0/0x14a
+  [<00058876>] request_threaded_irq+0x10c/0x142
+  [<0030fa1e>] strsep+0x0/0x36
+  [<00449cfe>] atari_drm_probe+0x8ba/0xe28
+  [<001e874c>] falcon_vbl_switcher+0x0/0x14a
+  [<00200000>] dma_buf_map_attachment_unlocked+0x34/0x6a
+  [<00042d6c>] parse_args+0x0/0x260
+  [<00300c2a>] klist_next+0x0/0x8a
+  [<00300c2a>] klist_next+0x0/0x8a
+  [<00116d3c>] sysfs_do_create_link_sd+0x68/0x92
+  [<00116d8e>] sysfs_create_link+0x28/0x3a
+  [<001f2a52>] driver_sysfs_add+0x46/0x6c
+  [<001f4dd0>] platform_probe+0x26/0x58
+  [<001f3390>] really_probe+0xfa/0x1f8
+  [<001f3296>] really_probe+0x0/0x1f8
+  [<001f3558>] __driver_probe_device+0xca/0xd8
+  [<00042d6c>] parse_args+0x0/0x260
+  [<00300c2a>] klist_next+0x0/0x8a
+  [<001f35da>] driver_probe_device+0x24/0x7c
+  [<001f378a>] __driver_attach+0xca/0xda
+  [<00300c2a>] klist_next+0x0/0x8a
+  [<001f2156>] bus_for_each_dev+0x64/0x8a
+  [<001f2d24>] driver_attach+0x1a/0x1e
+  [<001f36c0>] __driver_attach+0x0/0xda
+  [<001f270c>] bus_add_driver+0x9a/0x188
+  [<001f3e66>] driver_register+0xa6/0xe4
+  [<0044a790>] __platform_driver_probe+0x6c/0xa4
+  [<004493ee>] atari_drm_init+0x0/0x56
+  [<0044943c>] atari_drm_init+0x4e/0x56
+  [<00449444>] atari_drm_probe+0x0/0xe28
+  [<00437578>] do_one_initcall+0x5a/0x164
+  [<0030f7e4>] strcpy+0x0/0x22
+  [<00042d6c>] parse_args+0x0/0x260
+  [<00060006>] __timer_delete_sync+0x38/0x6a
+  [<00437820>] kernel_init_freeable+0x13e/0x198
+  [<00437876>] kernel_init_freeable+0x194/0x198
+  [<004493ee>] atari_drm_init+0x0/0x56
+  [<00315cac>] kernel_init+0x0/0xf4
+  [<00315cc4>] kernel_init+0x18/0xf4
+  [<00315cac>] kernel_init+0x0/0xf4
+  [<0000934c>] ret_from_kernel_thread+0xc/0x14
+
+atari_drm atari_drm: probe with driver atari_drm failed with error -16
+-------------------------
+
+Any ideas?
+
+
+============================================================
+
+Btw. While testing this, I noticed quite a few "atafb" issues:
+
+It panics under Falcon with mono monitor, so I couldn't test that with 
+"atari_drm":
+-------------------------
+Kernel panic - not syncing: can't set default video mode
+-------------------------
+
+"video=atafb:stlow" CLI arg causes probe fail on Falcon + VGA monitor 
+(but works with RGB monitor, and on TT):
+-------------------------
+atafb atafb: probe with driver atafb failed with error -22
+-------------------------
+
+Kernel CLI argument "video=atafb:falh2" gives 16-color mode, same as 
+"falh16", not 2-color one as documented (in arch/m68k/kernel-options.rst).
+
+Monochrome Tux logo is not shown in 2-color ("vga2", "sthigh") modes, 
+only in 4-color ("vga4", "stmed") ones.
+
+On TT, requesting unsupported mode, e.g. "fal2" or "tthigh" on color 
+monitor, gives lowest (320x200x4) resolution, instead of more reasonable 
+one, like the 640x480x4 given under Falcon.  "ttmid" (640x480x4) would 
+be more reasonable default...
+
+On TT, console text color is blue-on-black in "sthigh" mode, instead of 
+expected white-on-black (and cyan-on-black in "stmid").  I suspect this 
+is because "Duochrome" mode is not handled correctly, its colors should 
+be set with palette entries 254 & 255, and palette entry 0 is used just 
+for inverting the screen (like on real ST-high monitor/resolution).
+
+
+	- Eero
 

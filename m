@@ -1,132 +1,210 @@
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82EDABE5E;
-	Tue, 20 May 2025 06:05:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E488625CC69
+	for <linux-fbdev@vger.kernel.org>; Tue, 20 May 2025 07:17:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747721116; cv=none; b=ElIM82AvJ2EAp8+pkin1YQ+86rLFYsRJlo2ohn1unTkZqZoGdDdgh8qSy7qsafhLC9TxA5T+c+bOxwKTu+hBtaNpUXE8BDaQdKtQ+eIsjZl0ws8hkH3XSEBEvv5vO3GsG0LqwDPoHX8HylEGRJVboHg3Y2HtBmXAYXPHycysqTE=
+	t=1747725438; cv=none; b=aaTjExT1Uzf0O/h8YP3fJkoFgC9wE6qbpeiE9bhkVfWCtSwACiHm8hgz1M+hqT6vtw09brLcYGGOqiOZpxFWSil8qsnxhrtkThZmn/mA+SJktyBCzDBwzu0YJZ8BDaAjB2AS+V/UCbgemu+6ZO/Ybe3ApSae91rw1vJaT0l95+w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747721116; c=relaxed/simple;
-	bh=E6Bv5Kf1btUKpM56ks3fuPFcEXgIIHaRF+lU2+ALPo0=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=S+ETQxE9e0vuNq1ZRDkegC6hn/UpDADqB/D8xKsIswAYcId0ezjjWpdTvAepIzCTIxiJI3rQnBJsMEos/w3pXWVOHVOQx8+t9KBO7eXxQPCVfcvXgXJlTFYAAjEiHqt3u8eGRpRFHt+tziif4OhjSAgFFkyVSHV1KomdgKjB/Ds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=llnxB6g+; arc=none smtp.client-ip=217.70.183.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1747725438; c=relaxed/simple;
+	bh=lRagZQmgUvdghHg7ZtAe29OmSbKWbRuyjyXrV4X+phg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bll0poseoZ/gAOrHOQWwRZNx+55zyls+m3MGRswvWSW+ecsPGiRB30W7yaxgNmlbQEEf9bbAucRFQpc99hri/q968+Q1JkgeziaTL8lnNkQxWoj1jI0x+n3LiseKMqKqUf+V1zd5q3RG/QKmIj84LZOj3dJHgPYwCdPvsHwGKpg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jRpCNbQs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=/DK7HFP3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=C2b2MQ/I; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xH+q0fbC; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="llnxB6g+"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 310CE42E7E;
-	Tue, 20 May 2025 06:05:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1747721111;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2nl4mudUc0nIhyGRm1/GP/8CNdcLzRtbFIzfDOjZEcM=;
-	b=llnxB6g+wvmqq2N97pkvrFp96c+QEm5vP4eLMrbwxGzkK6hiR/39F3APB2fwqQudW8U7Ds
-	5QIkZ+wbJ2a0QdrdF1RPhvNjuzyxNLaM9PYKzp192l5WhBXkda1eRL81DB9hMMTgJP6A/9
-	0d+BdwQePSch8rEuBDb1GMXjBwlfDifyzrqwfNw+wcQa/qgnoD6plrECCsZE9yw8kHgmoc
-	/Mx58edhdyfnYV/rSew5mfbL97zgrFf3f8SmDFkyfKdCT09GxLMG80pmcxBb6dzRzkiWRr
-	H0Siut0K0wZd6LWqkq8Za0x4mgaJY6U5WFEl14mpgQ4fCMgn+fTXx18RQtZNzw==
-Date: Tue, 20 May 2025 08:05:08 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Luca Ceresoli <luca.ceresoli@bootlin.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
- Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, Tony Lindgren
- <tony@atomide.com>, Pavel Machek <pavel@ucw.cz>, Jean-Jacques Hiblot
- <jjhiblot@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Saravana Kannan
- <saravanak@google.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Sverdlin
- <alexander.sverdlin@gmail.com>
-Subject: Re: [PATCH v6] backlight: led-backlight: add devlink to supplier
- LEDs
-Message-ID: <20250520080508.3a15a949@bootlin.com>
-In-Reply-To: <20250519-led-backlight-add-devlink-to-supplier-class-device-v6-1-845224aeb2ce@bootlin.com>
-References: <20250519-led-backlight-add-devlink-to-supplier-class-device-v6-1-845224aeb2ce@bootlin.com>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jRpCNbQs";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="/DK7HFP3";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="C2b2MQ/I";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xH+q0fbC"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id DC0EC2228E;
+	Tue, 20 May 2025 07:17:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1747725434; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
+	b=jRpCNbQsrwGdsG50l8Udeh2QvYb4xWBl/o/SJCo3WynhJnJ4Rs1e3NT/ygTf1iA9LcnO+r
+	VzZjIfG58YENBkCxJ3+3Rid2IhfmBnBow+P6GMPGfKd2yuyJ+K/oRu1atREvteO67TB5pf
+	AFAy9/AL8PJZ1AoDRct1axLO2gt+J9U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1747725434;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
+	b=/DK7HFP3+0AHHaPZi5YBYCDDbOvM0xqNv4CLPFhkw59jsEQiYFCrSqZHSlCTNJfPRB46Xs
+	5Cdfj0I0M5bqG9Cg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="C2b2MQ/I";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=xH+q0fbC
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1747725433; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
+	b=C2b2MQ/In3XsmTEFFJ7lntxxxda6LA6WpjzPTk3xx60Y4uwwUaxp2GTpc/Yd9tNTobBLaw
+	+cDS3epecrrAfN/TNy30JWnOH2Vrjn7GTaFwlLEk3QPDQEPyIhIWZboWgg4Pwi/8VbNXmM
+	+MmEW2U7MM+elUgVMMjZeE+NP17k6a0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1747725433;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=/X6S6/bCWZmUJrcNoSW9IqCVsbt0BrJkVECymPGZju8=;
+	b=xH+q0fbCEaEG5O6J80vd6HE4OPU4VHMUGfmrL+vjdUamWBeyYFlrz0n5daKzmQuoMHLRDx
+	LczI73giHgTuQeAQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8358913A3E;
+	Tue, 20 May 2025 07:17:13 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id gSpMHnksLGiZNgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 20 May 2025 07:17:13 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: gregkh@linuxfoundation.org,
+	hdegoede@redhat.com,
+	arvidjaar@gmail.com,
+	tiwai@suse.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v2] dummycon: Trigger redraw when switching consoles with deferred takeover
+Date: Tue, 20 May 2025 09:14:00 +0200
+Message-ID: <20250520071418.8462-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.49.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-GND-State: clean
-X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdefvdefgeelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtkeertdertdejnecuhfhrohhmpefjvghrvhgvucevohguihhnrgcuoehhvghrvhgvrdgtohguihhnrgessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepveeiffefgeeitdelleeigefhjeelueeuveekveetgeffheeltdekgeduiefggfdvnecukfhppedvrgdtudemvgdtrgemvdekheemsgelkedtmegvgedttgemiegtgeefmegshegssgemrgegvdeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvdgrtddumegvtdgrmedvkeehmegsleektdemvgegtdgtmeeitgegfeemsgehsggsmegrgedvkedphhgvlhhopehlohgtrghlhhhoshhtpdhmrghilhhfrhhomhephhgvrhhvvgdrtghoughinhgrsegsohhothhlihhnrdgtohhmpdhnsggprhgtphhtthhopeduiedprhgtphhtthhopehluhgtrgdrtggvrhgvshholhhisegsohhothhlihhnrdgtohhmpdhrtghpthhtoheplhgvvgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghltheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepjhhinhhgohhohhgrnhdusehgmhgri
- hhlrdgtohhmpdhrtghpthhtohepuggvlhhlvghrsehgmhigrdguvgdprhgtphhtthhopehtohhnhiesrghtohhmihguvgdrtghomhdprhgtphhtthhopehprghvvghlsehutgifrdgtiidprhgtphhtthhopehjjhhhihgslhhothesthhirdgtohhm
-X-GND-Sasl: herve.codina@bootlin.com
+X-Spam-Level: 
+X-Spamd-Bar: /
+X-Spam-Flag: NO
+X-Spam-Score: -0.01
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: DC0EC2228E
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-0.01 / 50.00];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	TO_DN_SOME(0.00)[];
+	URIBL_BLOCKED(0.00)[suse.com:url,suse.de:email,suse.de:mid,suse.de:dkim,lists.freedesktop.org:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_TO(0.00)[linuxfoundation.org,redhat.com,gmail.com,suse.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,lists.freedesktop.org:email,suse.de:email,suse.de:mid,suse.de:dkim,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
 
-Hi Luca,
+Signal vt subsystem to redraw console when switching to dummycon
+with deferred takeover enabled. Makes the console switch to fbcon
+and displays the available output.
 
-On Mon, 19 May 2025 22:19:11 +0200
-Luca Ceresoli <luca.ceresoli@bootlin.com> wrote:
+With deferred takeover enabled, dummycon acts as the placeholder
+until the first output to the console happens. At that point, fbcon
+takes over. If the output happens while dummycon is not active, it
+cannot inform fbcon. This is the case if the vt subsystem runs in
+graphics mode.
 
-> led-backlight is a consumer of one or multiple LED class devices, but
-> devlink is currently unable to create correct supplier-producer links when
-> the supplier is a class device. It creates instead a link where the
-> supplier is the parent of the expected device.
-> 
-> One consequence is that removal order is not correctly enforced.
-> 
-> Issues happen for example with the following sections in a device tree
-> overlay:
-> 
->     // An LED driver chip
->     pca9632@62 {
->         compatible = "nxp,pca9632";
->         reg = <0x62>;
-> 
-> 	// ...
-> 
->         addon_led_pwm: led-pwm@3 {
->             reg = <3>;
->             label = "addon:led:pwm";
->         };
->     };
-> 
->     backlight-addon {
->         compatible = "led-backlight";
->         leds = <&addon_led_pwm>;
->         brightness-levels = <255>;
->         default-brightness-level = <255>;
->     };
-> 
-> In this example, the devlink should be created between the backlight-addon
-> (consumer) and the pca9632@62 (supplier). Instead it is created between the
-> backlight-addon (consumer) and the parent of the pca9632@62, which is
-> typically the I2C bus adapter.
-> 
-> On removal of the above overlay, the LED driver can be removed before the
-> backlight device, resulting in:
-> 
->     Unable to handle kernel NULL pointer dereference at virtual address 0000000000000010
->     ...
->     Call trace:
->      led_put+0xe0/0x140
->      devm_led_release+0x6c/0x98
-> 
-> Another way to reproduce the bug without any device tree overlays is
-> unbinding the LED class device (pca9632@62) before unbinding the consumer
-> (backlight-addon):
-> 
->   echo 11-0062 >/sys/bus/i2c/drivers/leds-pca963x/unbind
->   echo ...backlight-dock >/sys/bus/platform/drivers/led-backlight/unbind
-> 
-> Fix by adding a devlink between the consuming led-backlight device and the
-> supplying LED device, as other drivers and subsystems do as well.
-> 
-> Tested-by: Alexander Sverdlin <alexander.sverdlin@siemens.com>
-> Fixes: ae232e45acf9 ("backlight: add led-backlight driver")
-> Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+A typical graphical boot starts plymouth, a display manager and a
+compositor; all while leaving out dummycon. Switching to a text-mode
+console leaves the console with dummycon even if a getty terminal
+has been started.
 
-Reviewed-by: Herve Codina <herve.codina@bootlin.com>
+Returning true from dummycon's con_switch helper signals the vt
+subsystem to redraw the screen. If there's output available dummycon's
+con_putc{s} helpers trigger deferred takeover of fbcon, which sets a
+display mode and displays the output. If no output is available,
+dummycon remains active.
 
-Best regards,
-Hervé
+v2:
+- make the comment slightly more verbose (Javier)
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reported-by: Andrei Borzenkov <arvidjaar@gmail.com>
+Closes: https://bugzilla.suse.com/show_bug.cgi?id=1242191
+Tested-by: Andrei Borzenkov <arvidjaar@gmail.com>
+Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: <stable@vger.kernel.org> # v4.19+
+---
+ drivers/video/console/dummycon.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index 139049368fdc..7d02470f19b9 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -85,6 +85,15 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
+ 	/* Redraw, so that we get putc(s) for output done while blanked */
+ 	return true;
+ }
++
++static bool dummycon_switch(struct vc_data *vc)
++{
++	/*
++	 * Redraw, so that we get putc(s) for output done while switched
++	 * away. Informs deferred consoles to take over the display.
++	 */
++	return true;
++}
+ #else
+ static void dummycon_putc(struct vc_data *vc, u16 c, unsigned int y,
+ 			  unsigned int x) { }
+@@ -95,6 +104,10 @@ static bool dummycon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
+ {
+ 	return false;
+ }
++static bool dummycon_switch(struct vc_data *vc)
++{
++	return false;
++}
+ #endif
+ 
+ static const char *dummycon_startup(void)
+@@ -124,11 +137,6 @@ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
+ 	return false;
+ }
+ 
+-static bool dummycon_switch(struct vc_data *vc)
+-{
+-	return false;
+-}
+-
+ /*
+  *  The console `switch' structure for the dummy console
+  *
+-- 
+2.49.0
+

@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0828B144304;
-	Wed, 21 May 2025 11:45:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B98F1B4121;
+	Wed, 21 May 2025 11:47:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747827955; cv=none; b=VPJ+NjfN/Whsn/hSGVV5Xr99pW5n8SDMDXplCbpxRYOM5ZIBmXj4eNPkd3zZIK1nGb1NirI9T9W4WPPD+pnEcLl/HLxFTZsdwsKeXIaYzPVe4jE8QiARmAvDZawZ3w32bB6tfHZmmNhyzm2Jqi8O3mrL/oOCtOwFNY2g5JyNnIk=
+	t=1747828045; cv=none; b=IgfzsG74Y7c9qA1JHhstQihq0orcaenJJKgUQknIcLuLHh7CKX04FaVeArB5g657eBhIa1CuEGHgaXdVhYIL1ucvOJYxPBqBu+fZC1RkvflBR5Y/Y+nEDpLw+8p61i935a7LCPAXjZWNKWfAfGVMQwr7soTQDrispyJK2BD4eRM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747827955; c=relaxed/simple;
-	bh=JPQ6yJSkpKPy0/5o2YHVnemBY3bXyrjAfUeWpR6ZoB0=;
+	s=arc-20240116; t=1747828045; c=relaxed/simple;
+	bh=5G04Xfr/Kzfqdh1BXarJNMA4XuLP6nfQz3H+cym9yXg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tDJDdMaG9ZlIcslR9IBl7Op3x1dU9gu39+nPLjoh/Jnu41NaqRMY6NvJDAA66/czdNoi7i8y38yqD9qR3b9SwL2UQ1LlVGlSMrl7u4VZGRe+YvZLFppi2kbslpNybUWd0RUDXLOC/6DiJF11zth1rCpmzf/+qo2cxCN1iVl09dM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=wjPcswUv; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=hI/FwFIub9giX1fWmHYT2H6IGo3GYXWGes3AJZDnuOWZz0WA4GUKIoLgV0e2XewRP9QSBCy9UId+2tbyKfaBVr5EM1AXV9y/FvECGCdCRKau21BqTOOKoASfT/d2XMz8eW9HPaOqenkmuJ9QkASJOnO/09wPwLUN5MnL2FF/iI4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=N0ofAPH9; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="wjPcswUv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11D9BC4CEE4;
-	Wed, 21 May 2025 11:45:52 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="N0ofAPH9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EFE8C4CEE4;
+	Wed, 21 May 2025 11:47:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1747827953;
-	bh=JPQ6yJSkpKPy0/5o2YHVnemBY3bXyrjAfUeWpR6ZoB0=;
+	s=korg; t=1747828044;
+	bh=5G04Xfr/Kzfqdh1BXarJNMA4XuLP6nfQz3H+cym9yXg=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=wjPcswUvLmCkivCcVprl4jKJRTYzngdgTIwSryO2jJMjjr5SdHllFrbYvREkfiMzN
-	 3ZinZvlGRcEVkmY2JtCtNPuTgUcX81VCfXsE06rturgVKlWCoNKV4AZxg/43GzYJV0
-	 SaIebOvBlKVrVTPwEiAzSGRYpzYopeOv07YIrKv0=
-Date: Wed, 21 May 2025 13:45:50 +0200
+	b=N0ofAPH9L6eXj0DIV/GIgGJ552+D/csz3ckclq/g26Ppwrl0+OCKNlXdW8xo4qFFL
+	 mciOHF7IUHBI9D7lnoC+F8XMxBp2sao6hpnVMZGA+AFsZh23tJnrZv1YvDCItzjhTA
+	 iqgzZp4BQP/ssS+Plhk8AHbRGWrKqdPQV/syQvSE=
+Date: Wed, 21 May 2025 13:47:22 +0200
 From: Greg KH <gregkh@linuxfoundation.org>
 To: Eric Florin <ericflorin@google.com>
 Cc: teddy.wang@siliconmotion.com, sudipm.mukherjee@gmail.com,
 	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: rename `regValue` to `reg_value`
-Message-ID: <2025052130-verdict-limb-8b1a@gregkh>
-References: <20250506033340.3689818-1-ericflorin@google.com>
+Subject: Re: [PATCH 1/2] staging: sm750fb: rename dprBase to dpr_base
+Message-ID: <2025052112-creole-brush-7038@gregkh>
+References: <cover.1747605658.git.ericflorin@google.com>
+ <d4b30e00ca64a233efc2a7dac4bc568186dafc71.1747605658.git.ericflorin@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,32 +41,39 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250506033340.3689818-1-ericflorin@google.com>
+In-Reply-To: <d4b30e00ca64a233efc2a7dac4bc568186dafc71.1747605658.git.ericflorin@google.com>
 
-On Mon, May 05, 2025 at 08:30:13PM -0700, Eric Florin wrote:
-> Rename `regValue` to `reg_value` in `write_dpr` to conform with style
-> guidelines as reported by checkpatch.pl
+On Sun, May 18, 2025 at 03:09:46PM -0700, Eric Florin wrote:
+> Rename `dprBase` to `dpr_base` to conform with kernel style guidelines
+> as reported by checkpatch.pl
 > 
-> CHECK: Avoid CamelCase: <regValue>
+> CHECK: Avoid CamelCase: <dprBase>
 > 
 > Signed-off-by: Eric Florin <ericflorin@google.com>
 > ---
->  drivers/staging/sm750fb/sm750_accel.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  drivers/staging/sm750fb/sm750.h       | 2 +-
+>  drivers/staging/sm750fb/sm750_accel.c | 4 ++--
+>  drivers/staging/sm750fb/sm750_hw.c    | 2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-> index 44b9e3fe3a41..5648476a8f3c 100644
-> --- a/drivers/staging/sm750fb/sm750_accel.c
-> +++ b/drivers/staging/sm750fb/sm750_accel.c
-> @@ -17,9 +17,10 @@
+> diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+> index aff69661c8e6..a2342c69a65a 100644
+> --- a/drivers/staging/sm750fb/sm750.h
+> +++ b/drivers/staging/sm750fb/sm750.h
+> @@ -50,7 +50,7 @@ struct init_status {
 >  
->  #include "sm750.h"
->  #include "sm750_accel.h"
-> -static inline void write_dpr(struct lynx_accel *accel, int offset, u32 regValue)
-> +static inline void write_dpr(struct lynx_accel *accel, int offset,
-> +			     u32 reg_value)
+>  struct lynx_accel {
+>  	/* base virtual address of DPR registers */
+> -	volatile unsigned char __iomem *dprBase;
+> +	volatile unsigned char __iomem *dpr_base;
 
-You also wrapped this line, why?  It should be fine as-is.
+Are you sure this isn't coming directly from a hardware data sheet or
+description somewhere?  Based on the type, it really looks like it is.
+If not, please document it properly that you have researched this in the
+changelog text when resending.
+
+Don't change variable names that reflect external names, that just makes
+for more confusion over time.
 
 thanks,
 

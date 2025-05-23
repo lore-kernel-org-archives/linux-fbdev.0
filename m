@@ -1,169 +1,129 @@
-Received: from smtp.dnamail.fi (sender103.dnamail.fi [83.102.40.157])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38DF023A9AA;
-	Wed, 21 May 2025 22:56:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=83.102.40.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B89C2DCBE0;
+	Fri, 23 May 2025 16:15:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747868206; cv=none; b=PRjtaGC2JzDwSfsvwMpVS1T04ul6q2ovrB0ufaLukOjkw7ayAL6DmOU0MfdDprhVJRWSkOxT6/wmzyPFYibuhYPb3bhH7HObblDdD17Bt7mh3EyhN5iHv49S6I5K2RmnHhmwXwozps5ZXBj2WmhIB9ajUaHUbzeQtMrjSBEdKE8=
+	t=1748016945; cv=none; b=B3YAQLRfKWCbeCcQpIB4extO+iHN6nRk/NSKtzjo6hCpXDpKCtU9O3ZqwHkja3d/U0Njyolx+WE07i8iMt7pVV23oif7hddyZefezQwro/KvsJzC1Hfu5DsAKTOuHjyqe4pa2WISEscdsx8kcd+bU9dP0fFE49DbMkk4UqgHRTo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747868206; c=relaxed/simple;
-	bh=qjK+CMLxbfWqwXxuTX0H4cVO3OwkU6LHFEwTySf84tI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JvC8GB2tUxcQjVxK5L0sEWlBFDqTj+LPITPQ8df247As9evr7dpMeXEZQEo1ZmfOHkQxXj9mJz7EMFSclMcbuiHAe0wFfBJdZ0FERVetqxMQpBl8v+VCjKnT9XEElSbxC8UbifeDjds1VVDu/X4o2D9SXrJ/rDOkVAdfW8q3ZuI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=helsinkinet.fi; spf=pass smtp.mailfrom=helsinkinet.fi; dkim=pass (2048-bit key) header.d=helsinkinet.fi header.i=@helsinkinet.fi header.b=WhEbB7lW; arc=none smtp.client-ip=83.102.40.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=helsinkinet.fi
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=helsinkinet.fi
+	s=arc-20240116; t=1748016945; c=relaxed/simple;
+	bh=3wdedpDzqcbxUVOIt3ElR+2fnWpQvTv0IrlmfOx2kaQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=GQtnq3gIihHctbmzpkX3+UME2YBJEyDaGczSSSicGLFVbvnO4HJytf0bXTO84ohHyWMnD6qT5dMqOXkMYe1cCo9pLi3+2YXyL5QJVll+pdZah4g7RA+rwchKMQECvCDb/B7oa3nS03HHjDzls5XtThL1FDFTIvP9GATVmKhUjso=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cp6jWiUr; arc=none smtp.client-ip=209.85.216.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=helsinkinet.fi header.i=@helsinkinet.fi header.b="WhEbB7lW"
-Received: from localhost (localhost [127.0.0.1])
-	by smtp.dnamail.fi (Postfix) with ESMTP id C2F1A4098E88;
-	Thu, 22 May 2025 01:56:39 +0300 (EEST)
-X-Virus-Scanned: X-Virus-Scanned: amavis at smtp.dnamail.fi
-Received: from smtp.dnamail.fi ([83.102.40.157])
- by localhost (dmail-psmtp02.s.dnaip.fi [127.0.0.1]) (amavis, port 10024)
- with ESMTP id tqbCkjBvwo8f; Thu, 22 May 2025 01:56:39 +0300 (EEST)
-Received: from [192.168.101.100] (78-27-104-28.bb.dnainternet.fi [78.27.104.28])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: oak@dnamail.internal)
-	by smtp.dnamail.fi (Postfix) with ESMTPSA id 8801B4098E80;
-	Thu, 22 May 2025 01:56:38 +0300 (EEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.dnamail.fi 8801B4098E80
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=helsinkinet.fi;
-	s=2025-03; t=1747868199;
-	bh=rxWxSwacKgU4eNtwkkpnfHn/5VnKtcytBSlilZZ2N5Y=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=WhEbB7lWQoodAAam58K7itDKTiLMgMklJDtLQ5QbCOOYlCIx51W2wcuYEjUFXqNjC
-	 A1knSsdZ1WwbVc9fPgomeYYHm7ebyJKx1S+ykSw3dSwrjNtBjJiQ7U1h+0COJnAl7K
-	 7VHYijq4IYfyDBeTxlknFbTU62hI4ifOltXn46GKvlM+a0DzD4O/H2YRP/gFXBHwCc
-	 s50VYuKh/K3Adn4++aWH/JYrXKcDlXYap5xDErVvQc0xjSynSwVlXG1IqKWygBYH3u
-	 UcaaTOno7e8V6b2M/4DQuEywyjveIioHl1STkSdgOWKKWuOLVFvWJZb7UNAHInx5hW
-	 XTJ77fcj7oEkA==
-Message-ID: <beed53f4-b0d6-4d1d-b5ec-2694d2b5d47a@helsinkinet.fi>
-Date: Thu, 22 May 2025 01:56:38 +0300
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cp6jWiUr"
+Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-31107f4833fso99876a91.0;
+        Fri, 23 May 2025 09:15:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1748016942; x=1748621742; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:reply-to:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ls243XxE58XUFIhUPSeMMfbElJjdBNkZybvfZFLuLmk=;
+        b=cp6jWiUrrNqK6HG/b9Cm6J6fqw5N3ontxA+uNk3AsEwBRhBAkX3yWS1csvtPAK4zRG
+         tlz6xbR6HM44580YF5P2bMGxMY8dLXqFbBd8wCv9gkOjZFdRSKmZgp8DlWMZaq2DIZ+t
+         QVQD6fHWwSy3iiiCJqd+mU5YzqoG1OUvvdRJmQjhjpk/UEYTVhopoYtlQ+U5ueGyprPA
+         MgQoKKib387v+pGpytdqGQcY8OpZ7tWunQMLcsQN7NT2T+bHd3a8VXd0Ybf5DaRi3L7Q
+         ISs6fRP9/wjaaIfoH5AjpsKXWIA163Z9Li/Nz8I4eZndNd/0K5eZMRQy4IkWoF/QEHt4
+         oYcg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1748016942; x=1748621742;
+        h=content-transfer-encoding:mime-version:reply-to:message-id:date
+         :subject:cc:to:from:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ls243XxE58XUFIhUPSeMMfbElJjdBNkZybvfZFLuLmk=;
+        b=SeDggmMH0Gq4klHGrFYvM6XjJ/eaUBwPqa2Yhst4buWHat2oQmOUCa4ZW0vR4pPfJL
+         MuC2LyLDsD3XoLhzffGizJGWvg3kXQHh+tlueBqtNzODNsQGClG4VhFqUguNlqMJKWQC
+         MzvyTRVVSH1nGI6O5vaiZfoLcuo9men0y2tk6Myi0tkI3O0j06xsBaKDno1aqey+nIvx
+         Pu7mi2kAy/sofYaeD+SLjKcyWq/hmpw/H6Yds1yjVhLoykEe8bmRTBnYWt3oJMV1Jh5p
+         72RW8OxYyJL7XRJ78aslHqzl9ASGWB7mAvOteP6E1RAiGtEisA+rA6JVIH3zng7IyyEF
+         wNJQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU9C5InxSMLCHU0E6y4MZTpTmEtK4khPdTNEsXVPuCFcUx7jiK7hE9K6E2AbX+mzltTaSqWFn/WCdNCEcz8@vger.kernel.org, AJvYcCVKncHhsr1NtFFz8PFpXhm9JEd0i6oqTtZ6YF5tnvhRdLuRY6tURQ85zL1xRSGTiBd9jvlkZkcbb3vrVfDT@vger.kernel.org, AJvYcCX4iw9njlMiWhLNp6i44OvkQNxW3zjKFGl8z0bXXJMJyOdX8ZkkZsJs4jYpZLD+tV7bW6g5rextmwnqdw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxqKy01WD7eeUlCv3d/KuXUY84v4R+O/CFOhD542XTqjajBwO+0
+	I1J3T9kSw5khK2jp7iB0mpP0tIpmibrlKMU2LZmGSACns979dN5Ejih4
+X-Gm-Gg: ASbGncuhynXkh6kLqm+lXZUKlcNEf3bwHJziUq/yz8M78ncY7ml2dlXYU8PG/R08I9p
+	9pnHtU2PP1JWYvgWD6bEmdPvNYQjJpEyNyerSz4W7+eV7/rJ62l7w3bM49naztDgCz+bI8VlfDR
+	etW8uIAORiAMYXPqhIjfEPJvTdJLq7pT81LVYlx5K1An7bVjPDwRrXeq8DkkTDCzi63ghElVTBa
+	ULJGAYfXXFTgCmqqcSSfJjFLv7VoLjMumM9fUaEqCtOQ99DP/VSuB7NwPRToCgjzF/EKhV8vFVx
+	R7uuhzgN0xLuv51AdwWg36G/wSyLBOZhmPeBJA8tS7Sl1dM3VjkJw2mN6rKhL7RQKahnmEjvQ61
+	xI9YKNtmF3lDsa0J9SIJ9nV9v+IwVuw==
+X-Google-Smtp-Source: AGHT+IFm/aBR27COrCfUEG1WEEW/VaW4o7v7eFIsjnnSJARIe9dfY945CATNH/PdlGnGpUKKevkX5Q==
+X-Received: by 2002:a17:90b:54d0:b0:305:2d68:8d57 with SMTP id 98e67ed59e1d1-30e830ca02bmr37165622a91.5.1748016942269;
+        Fri, 23 May 2025 09:15:42 -0700 (PDT)
+Received: from localhost.localdomain (c-67-160-120-253.hsd1.wa.comcast.net. [67.160.120.253])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30f365d46ffsm7526565a91.25.2025.05.23.09.15.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 23 May 2025 09:15:42 -0700 (PDT)
+From: mhkelley58@gmail.com
+X-Google-Original-From: mhklinux@outlook.com
+To: simona@ffwll.ch,
+	deller@gmx.de,
+	haiyangz@microsoft.com,
+	kys@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	akpm@linux-foundation.org
+Cc: weh@microsoft.com,
+	tzimmermann@suse.de,
+	hch@lst.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-hyperv@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: [PATCH v3 0/4] fbdev: Add deferred I/O support for contiguous kernel memory framebuffers
+Date: Fri, 23 May 2025 09:15:18 -0700
+Message-Id: <20250523161522.409504-1-mhklinux@outlook.com>
+X-Mailer: git-send-email 2.25.1
+Reply-To: mhklinux@outlook.com
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH/RFC 0/3] Atari DRM driver
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Michael Schmitz <schmitzmic@gmail.com>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-m68k@vger.kernel.org,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-References: <cover.1669406380.git.geert@linux-m68k.org>
- <a9883a81-d909-09c5-708b-d598e030380e@physik.fu-berlin.de>
- <CAMuHMdWHUnWBN7ddBow+fqmt8W--9wFe5x_YMeRg7GQ=BNAL2Q@mail.gmail.com>
- <74946b31-6166-44b0-b2a7-b0633f014b60@helsinkinet.fi>
- <CAMuHMdXSWiM_xofyfgpoc0Jj8a_PwRR_tFe79t8=-X85-7WZug@mail.gmail.com>
-Content-Language: en-US
-From: Eero Tamminen <oak@helsinkinet.fi>
-In-Reply-To: <CAMuHMdXSWiM_xofyfgpoc0Jj8a_PwRR_tFe79t8=-X85-7WZug@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi Geert,
+From: Michael Kelley <mhklinux@outlook.com>
 
-On 21.5.2025 10.06, Geert Uytterhoeven wrote:
-> On Wed, 21 May 2025 at 01:59, Eero Tamminen <oak@helsinkinet.fi> wrote:
->> I tried your "atari-drm-wip-v1" branch commits on top of 6.14.
-> 
-> Thanks for testing!
-> 
->> After some minor changes those applied. Getting it to build required
->> adding "&shadow_plane_state->fmtcnv_state" (struct drm_format_conv_state
->> *) argument to *_blit() functions in atari_drm.c, and changing:
->>          drm_fbdev_generic_setup(dev, dev->mode_config.preferred_depth);
->> in its probe function to:
->>          struct drm_format_info *format = NULL;
->>           drm_client_setup(dev, format);
-> 
-> I do keep it up-to-date locally, so I could provide these changes,
-> if you are interested.
+Current deferred I/O code works only for framebuffer memory that is
+allocated with vmalloc(). The code assumes that the underlying page
+refcount can be used by the mm subsystem to manage each framebuffer
+page's lifecycle, which is consistent with vmalloc'ed memory, but not
+with contiguous kernel memory from alloc_pages() or similar. When used
+with contiguous kernel memory, current deferred I/O code eventually
+causes the memory free lists to be scrambled, and a kernel panic ensues.
+The problem is seen with the hyperv_fb driver when mmap'ing the
+framebuffer into user space, as that driver uses alloc_pages() for the
+framebuffer in some configurations. This patch set fixes the problem
+by supporting contiguous kernel memory framebuffers with deferred I/O.
 
-Yes, please!   (see below)
+Patch 1 exports a 'mm' subsystem function needed by Patch 3.
 
+Pathc 2 defines the FBINFO_KMEMFB flag for use by Patches 3 and 4.
 
->> However, the result is not working very well yet.
->>
->> Driver gets initialized fine under Hatari TT emulation:
->> -------------------------
->> atafb atafb: phys_screen_base 511000 screen_len 311296
->> atafb atafb: Determined 1280x960, depth 1
->> atafb atafb:    virtual 1280x1945
->> Console: switching to mono frame buffer device 160x60
->> fb0: frame buffer device, using 304K of video memory
->> ...
->> atari_drm atari_drm: phys_screen_base 55d000 screen_len 311296
->> atari_drm atari_drm: Determined 1280x960, depth 1
->> atari_drm atari_drm:    virtual 1280x1945
->> [drm] Initialized atari_drm 1.0.0 for atari_drm on minor 0
->> atari_drm atari_drm: Atari DRM, using 304K of video memory
->> -------------------------
->>
->> However, once screen switches from "atafb" to "atari_drm" driver, Linux
->> boot logo & texts disappear, and (emulated) screen is either all white
->> (on mono monitor) or all black (on VGA & RGGB monitors).
-> 
-> So you have both atafb and atari_drm enabled? Please don't do that.
+Patch 3 is the changes to the fbdev deferred I/O code. More details
+are in the commit message of Patch 3.
 
-Disabling CONFIG_FB_ATARI option (but still keeping rest of FB options), 
-worked worse:
--------------------------
-atari_drm atari_drm: phys_screen_base 512000 screen_len 311296
-atari_drm atari_drm: Determined 640x480, depth 4
-atari_drm atari_drm:    virtual 640x972
-[drm] Initialized atari_drm 1.0.0 for atari_drm on minor 0
-atari_drm atari_drm: Atari DRM, using 304K of video memory
-Data write fault at 0x00000020 in Super Data (pc=0x3115f6)
-BAD KERNEL BUSERR
-Oops: 00000000
-PC: [<003115f6>] strcpy+0x16/0x22
-SR: 2200  SP: (ptrval)  a2: 01026000
-d0: 00000000    d1: 0000015b    d2: 0114e000    d3: 00319f2a
-d4: 01181118    d5: 00000001    a0: 00000020    a1: 003e1cbf
-Process swapper (pid: 1, task=(ptrval))
-Frame format=A ssw=0315 isc=66f2 isb=2008 daddr=00000020 dobuf=0000005b
-Stack from 01029c24:
-         ...
-Call Trace:
-  [<001e6bc8>] __drm_fb_helper_initial_config_and_unlock+0x3a6/0x46c
-  [<001e6cb0>] drm_fb_helper_initial_config+0x22/0x30
-  [<001e85a0>] drm_fbdev_client_hotplug+0x6e/0x9c
-  [<001d6efc>] drm_client_register+0x62/0x9e
-  [<001e8714>] drm_fbdev_client_setup+0x146/0x14e
-  [<00311650>] strcmp+0x0/0x34
-  [<001e7bb6>] drm_client_setup+0x32/0xaa
-  [<00007336>] _dev_info+0x0/0x34
-  [<0044b472>] atari_drm_probe+0xd58/0xe32
-...
--------------------------
+Patch 4 updates the hyperv_fb driver to use the new functionality
+from Patch 3.
 
-=> due to me using NULL as drm_client_setup() "drm_format_info"?
+Michael Kelley (4):
+  mm: Export vmf_insert_mixed_mkwrite()
+  fbdev: Add flag indicating framebuffer is allocated from kernel memory
+  fbdev/deferred-io: Support contiguous kernel memory framebuffers
+  fbdev: hyperv_fb: Fix mmap of framebuffers allocated using
+    alloc_pages()
 
+ drivers/video/fbdev/core/fb_defio.c | 128 +++++++++++++++++++++++-----
+ drivers/video/fbdev/hyperv_fb.c     |   1 +
+ include/linux/fb.h                  |   1 +
+ mm/memory.c                         |   1 +
+ 4 files changed, 111 insertions(+), 20 deletions(-)
 
->> And while "atafb" works fine also under Falcon emulation with RGB (50Hz)
->> or VGA (60Hz) monitor, "atari_drm" probing fails:
->> -------------------------
->> genirq: Flags mismatch irq 4. 00200000 (framebuffer:modeswitch) vs.
->> 00200000 (framebuffer:modeswitch)
-> 
-> That's also a sign of two drivers requesting the same IRQ unexpectedly.
-> 
->> atari_drm atari_drm: probe with driver atari_drm failed with error -16
-> 
-> i.e. -EBUSY.
-
-Ok, makes sense.
-
-
-	- Eero
+-- 
+2.25.1
 

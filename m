@@ -1,207 +1,161 @@
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com [209.85.221.182])
+Received: from mail-io1-f77.google.com (mail-io1-f77.google.com [209.85.166.77])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB6142741A6;
-	Wed, 28 May 2025 08:57:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 084BF276027
+	for <linux-fbdev@vger.kernel.org>; Wed, 28 May 2025 09:22:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.77
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748422672; cv=none; b=B+V0z+UyCTVdDmD5QdPozN78nFzzr82xgd2AcyqEhDTT1MeH8NUfLqFwjopvpmh8Tp7UguQCH5wV5OhlYsiHiOuSRhdCtKV59DCSCjVFEv4oTH5EcGwhZixA84FEpQX5Awg8QzCn9L3gY1hSpLdmSVjwicQzYqafD+PUbNoC4yo=
+	t=1748424155; cv=none; b=gOEc+0vGi91lW/Hur8nICcpOn9XZOosrI1nLAkKz4Zi7dwyHJRsThP0GZFp+muzr8qDtbSykPAX1Urj5sU/HUoD7Sr+Z8yviR21IJvP1qw7y0wi13pQyOICJBM0YORHBXxv18Q1P5Ka0gXOs8AOXc/E1cqRALt7rRh8EA+bIsWU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748422672; c=relaxed/simple;
-	bh=dED1fsvoPPDQ4pwCz7+XwRKu1f8yHySJKwSduv+Lq20=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GRE6cjU363VTS0WPNS4W+tRKmEG3ahU8zTPWFfY8HceQsnnWpGkVlSlRQAeR+jNkzLuaeUFmgZ6GrUs95oYiqnh5JKfb8IJSAlRVCiFLZnqX8XHYmgmvdtoAc18AzxLER+bG0xb+r8Evmps/CTVrtRRrjnausKeTmH40gLeU/5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-52f036ef186so819552e0c.1;
-        Wed, 28 May 2025 01:57:49 -0700 (PDT)
+	s=arc-20240116; t=1748424155; c=relaxed/simple;
+	bh=EH1mMXQI5wxXfEugUS09ywjvRboZIQjKHsBHP/oQu+A=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=ekbnl6lcjfCziqqTSGlAsEw6gFwsFXf9oQ9w1n+Xrx5Mw/iNvy7Iw5tYVjGMIUSWRQ9RGT2D59u1td8efNKlNqMVV6dYo4+TsrFj9DkLsT7n21NgWXckNpdM2HDsdLGLG2JnXbQQSw3IXQZJI8ComUDaLXyVmxIFBgpHPL7oRdo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.77
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f77.google.com with SMTP id ca18e2360f4ac-869e9667f58so857330739f.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 28 May 2025 02:22:33 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748422667; x=1749027467;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=3Y6S2fpn88Y+LADx1uQi1HOUbcr69I8wgFh69LrgIRc=;
-        b=Lr2aawk/sxreVqlQ9afb1Kekd2FlbzahER+jEcqOWzYB89jQ3IungpJSW3Lk2CM0Yp
-         lpzKVRx51hgLdgND7TCD6wliYwwdPVqEKanU7q1MP8J6FWPw1lTxLzemIpd2/ikFS0DI
-         Q8tYQwDUyurgckhobx8P7D2y6yJYXTh+JY2l7P24hnHvdoCHCvdaI8Dy6z1+6a1ndAzG
-         +/T5CnL7eLZ62VWvH3iYDnjyv5bG8BDEzUUWl7gF0SO0ES3p6CrmR/zqQljS2wMghThN
-         FllHhJb2wkTh5cU78Q4tl7xGTZhGOqFhSBvi/BBlo1amj78hZK5HIRmQMOMNh3W+7505
-         KuhA==
-X-Forwarded-Encrypted: i=1; AJvYcCUyTVewnIoLB+J3uiAujoq+uhSGiCRp1GClJHdvlafXbzrgthCRzd/QMfTf03yx1Ci6jUbhr3YAwpPSSw==@vger.kernel.org, AJvYcCXMCREmgL/eMCFcOQIRrfSxEefKR1YF0twFuaw0YYt9woPYIs4hZOEu7SzlUVwzbt/GpY9fzoIJiw2WPw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxMISdVn25ZAiE00lnP/bzZ8Yt06yaDBu9I9HcrgU7tupxxmwlp
-	Fmx/NzNyZF2UUNcebCB+x4dIEOvVR93ttM4yCH4yBUXaSrPCz56myKSlok1tXEBG
-X-Gm-Gg: ASbGncs5DNHU0Td7fk5Ew/j/TvP8WQSGtX4o0/5MGIMJSwOBaXOiieZSetMGFEihMVT
-	zKRjLJK2+y6Tw4hmsLm/L06gEN89zHFcu1h2S3/iWpRuysrnK8DUZt4zrPRWNdcONGZ+SCo/95q
-	wI/ur4HZ+wNvD+cCC49maBFDW8QEAGuZ13WcRPFYiG7Qr5YEGpiC6B18+tBda4rFlpoy5tFEQCy
-	k36vnIDVgOEDwXFdWtSjEopfoBItqu/GQOnG1rcFMdfyzVVwf6xlccUCfVcfo2TeeTZfK1Jsm7G
-	XtQ9EFnX6CEC5Ag7x4XZRyYk2xOKbPaMZ3sklI1wefq6PFe2xKYC9tCmBIwEPHVE5OJ+WdkvErv
-	8UZGVn205eNff2Q==
-X-Google-Smtp-Source: AGHT+IHye0Di+TTb0Q//6sLtUbpf5aCqhlILzeQmHKbN2IJSXWcw+7U96byEOmWeDdFuFAGtnXyo/g==
-X-Received: by 2002:a05:6122:45a9:b0:52f:724a:c748 with SMTP id 71dfb90a1353d-5306689c85emr500621e0c.1.1748422666647;
-        Wed, 28 May 2025 01:57:46 -0700 (PDT)
-Received: from mail-vs1-f53.google.com (mail-vs1-f53.google.com. [209.85.217.53])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-53066750bd6sm626361e0c.0.2025.05.28.01.57.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 28 May 2025 01:57:46 -0700 (PDT)
-Received: by mail-vs1-f53.google.com with SMTP id ada2fe7eead31-4e58d270436so506396137.3;
-        Wed, 28 May 2025 01:57:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCV2D47bi37WBbBRujWfQgNoiNeKqby+i6IUz0Ak2m9jYiL8oqssjgLnSYJMBCmF2Rgy7tyU7J8TD+Ncxw==@vger.kernel.org, AJvYcCVPTCqAanYtwyp22NzFrJ5hrWuJn2CI2KqhwXiVaYxGJn7o/Ge3PHtffbmlNiGzuIvbzhqUe7ANif86qQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:6c6:b0:4e5:5c14:5935 with SMTP id
- ada2fe7eead31-4e59ed21195mr675818137.2.1748422665738; Wed, 28 May 2025
- 01:57:45 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1748424153; x=1749028953;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=QaxN9yI31Cw8gE+zvX2r8p8Olm+56SyVzimumhvEfJc=;
+        b=I844W5Vct/t9xRJVR5QQLhTU69DY7T+6Q1egV+b1ssYv4Md3tErrUWVFUWayHQIgpO
+         n4JhQlG/pjUEK5mlLEJ74wju5u3/8nUN42hF1VjQTfEqfPHVWwfTZFV5sD9m0gHJiz24
+         kHzF86ubJivyqtd3hqxaslFo/c3drALLkSQ4LuFVM4d7yuCoh4fhq86mpu483YSumghN
+         uH9Nfj/Hk6ZpcH8gOxfby2om2vIUT8qs+PkrOkRux9gsWeJcXTRZbbj/KojGKz3eVUS9
+         jzZVP2bLwKL890jQ5RVpmRY2IOqRzUK8C3kP4nx24k498x/5EG1hFpkVRYkDerWwTxt/
+         EJxA==
+X-Forwarded-Encrypted: i=1; AJvYcCU6jI6LD22f+xd1GeSz4he3GlD4eNAcwmmH6jiURKMSa43IxlzOwlKnScUdctDSx492kY5NucKSNxGW7Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyoiGr/QTDWjBiVKvBOIy1FEV1hY3tNCwzdqjC0OTeW5pd7Oy1+
+	U880fl4IAuU2XDMtOrZc72PPSiwJDnaAWEFSrR/Ivod2c4Ncikm1AQHMnyu9qsw8s2xx1kXtqSg
+	eFlFTs6ob8MYBGGEh1De2IOLtnB01dqtc44S0TL88JsV3C7DrqB59Y57pcVY=
+X-Google-Smtp-Source: AGHT+IEU8oC+KFnoYP3nDRWZ403fy3i4VUTZQ8/uDd7pju+VTyPCCQ2XA+O9zAdIm7tXNHqKPXfH4qvZVoL4nJW5cEwGqe+QDBym
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1669406380.git.geert@linux-m68k.org> <a9883a81-d909-09c5-708b-d598e030380e@physik.fu-berlin.de>
- <CAMuHMdWHUnWBN7ddBow+fqmt8W--9wFe5x_YMeRg7GQ=BNAL2Q@mail.gmail.com>
- <74946b31-6166-44b0-b2a7-b0633f014b60@helsinkinet.fi> <CAMuHMdXSWiM_xofyfgpoc0Jj8a_PwRR_tFe79t8=-X85-7WZug@mail.gmail.com>
- <beed53f4-b0d6-4d1d-b5ec-2694d2b5d47a@helsinkinet.fi> <CAMuHMdUSADF51tBbGV=_nsxqyXgfNZcgDNGxuZ4F+tvYs9Q2aw@mail.gmail.com>
- <72078ec9-25a0-42d5-b7da-b0a974033f86@helsinkinet.fi>
-In-Reply-To: <72078ec9-25a0-42d5-b7da-b0a974033f86@helsinkinet.fi>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 28 May 2025 10:57:32 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXDdrMewGgeghr3cwtaBvieguYOC4GZ-EXZmA+w5S4bpw@mail.gmail.com>
-X-Gm-Features: AX0GCFvEQkwp2oID6KSffEq9L6LrcoEy6JF-dSlC7UnCWkDvCuPecuCzc1Xha6A
-Message-ID: <CAMuHMdXDdrMewGgeghr3cwtaBvieguYOC4GZ-EXZmA+w5S4bpw@mail.gmail.com>
-Subject: Re: [PATCH/RFC 0/3] Atari DRM driver
-To: Eero Tamminen <oak@helsinkinet.fi>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, 
-	Helge Deller <deller@gmx.de>, Michael Schmitz <schmitzmic@gmail.com>, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+X-Received: by 2002:a05:6602:7509:b0:867:2374:49cd with SMTP id
+ ca18e2360f4ac-86cbb7b73demr1657350139f.2.1748424152959; Wed, 28 May 2025
+ 02:22:32 -0700 (PDT)
+Date: Wed, 28 May 2025 02:22:32 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6836d5d8.a70a0220.253bc2.00c5.GAE@google.com>
+Subject: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in fillrect
+From: syzbot <syzbot+7a63ce155648954e749b@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
+	soci@c64.rulez.org, syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
 
-Hi Eero,
+Hello,
 
-On Wed, 28 May 2025 at 00:47, Eero Tamminen <oak@helsinkinet.fi> wrote:
-> On 25.5.2025 15.05, Geert Uytterhoeven wrote:
-> > On Thu, 22 May 2025 at 00:56, Eero Tamminen <oak@helsinkinet.fi> wrote:
-> >> On 21.5.2025 10.06, Geert Uytterhoeven wrote:
-> >>> I do keep it up-to-date locally, so I could provide these changes,
-> >>> if you are interested.
-> >>
-> >> Yes, please!   (see below)
-> >
-> > Sorry for taking so long:
-> > https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/linux-m68k.git/log/?h=atari-drm-wip-rebasing
->
-> Thanks!
->
-> I did boot testing on Hatari emulator with a minimal kernel config
-> having atari_drm enabled, atafb disabled, FB & boot logo enabled.
->
-> Under Falcon emulation:
-> - RGB/VGA => works fine
-> - Mono monitor => panic
->    "Kernel panic - not syncing: can't set default video mode"
-> Under TT emulation:
-> - RGB/VGA => boots, but console is black[1] (palette issue?)
-> - Mono monitor => looks OKish[2], but has constant warnings:
-> -----------------------------------
-> WARNING: CPU: 0 PID: 1 at drivers/gpu/drm/drm_atomic_helper.c:1720
-> drm_atomic_helper_wait_for_vblanks+0x1a0/0x1ee
-> [CRTC:35:crtc-0] vblank wait timed out
+syzbot found the following issue on:
 
-I am not sure this is a bug in atari-drm, or just an issue when using
-DRM on slow machines.
+HEAD commit:    a5806cd506af Linux 6.15-rc7
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=12afde70580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=87b7b87abbf1a67f
+dashboard link: https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
 
-> -----------------------------------
->
-> Under 030 ST/STe emulation:
-> - RGB/VGA => boots, but console is black (palette issue?)
-> - Mono monitor => looks OK, but has constant slowpath warnings with:
->    "[CRTC:35:crtc-0] vblank wait timed out"
->
-> => Any advice on the issues?
+Unfortunately, I don't have any reproducer for this issue yet.
 
-Are these regression in atari-drm, or do they happen with atafb, too?
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/d0398ca67d9a/disk-a5806cd5.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/dccdb3c5ff14/vmlinux-a5806cd5.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/3d94cf3493b5/bzImage-a5806cd5.xz
 
-> PS. I also profiled where most of time goes from "atari-drm" probing,
-> until boot reaches user space.  On a minimal -Os built kernel, running
-> on (emulated) 32Mhz 030 Falcon, in the default 640x480@4 resolution:
-> ----------------------------------------------------------------
-> Time spent in profile = 15.29712s.
-> ...
-> Used cycles:
->    22.37%  22.42%  25.35%   _transp
->    19.15%  19.19%  46.82%   atari_drm_fb_blit_rect.isra.0
->     8.09%   8.09%  13.80%   sys_copyarea
->     3.94%   3.95%   6.23%   sys_imageblit
->     3.69%   3.69%   3.69%   fb_copy_offset.isra.0
->     2.12%   2.13%   2.41%   atari_scsi_falcon_reg_read
->     2.03%   2.03%   2.03%   fb_address_forward
->     1.85%   1.85%  17.98%   fbcon_redraw_blit.constprop.0
->     1.81%   1.81%   2.04%   atari_keyb_init
->     1.78%   1.78%   1.98%   fb_reverse_long
->     1.58%   1.58%   1.90%   arch_cpu_idle
->     1.05%                   memcpy
->     0.95%                   memset
-> ...
-> ----------------------------------------------------------------
->
-> => atari-drm blitting takes half the time during boot.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+7a63ce155648954e749b@syzkaller.appspotmail.com
 
-Yeah, conversion from chunky to planar is expensive.
-Would be great to have a text console that operates directly on the
-buffer used by the hardware...
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in bitfill drivers/video/fbdev/core/fb_fillrect.h:134 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_fillrect_static drivers/video/fbdev/core/fb_fillrect.h:220 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_fillrect drivers/video/fbdev/core/fb_fillrect.h:279 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_fillrect+0x15d4/0x17b0 drivers/video/fbdev/core/sysfillrect.c:22
+Write of size 8 at addr ffffc90003849000 by task syz.1.1552/13525
 
-> Building kernel with -O2, changes above rather radically, both
-> time-wise, and where that time goes:
-> ----------------------------------------------------------------
-> Time spent in profile = 6.54049s.
-> ...
-> Used cycles:
->    17.61%  17.61%  17.61%   sys_copyarea
->    11.18%  11.18%  13.11%   arch_cpu_idle
->     7.53%   7.55%   8.45%   atari_drm_fb_blit_rect.isra.0
->     4.26%   4.27%   4.76%   atari_keyb_init
->     2.70%   2.70%   2.93%   atari_scsi_falcon_reg_read
->     2.45%   2.45%  23.81%   fbcon_redraw_blit.constprop.0
->     2.35%   2.35%   2.48%   sys_imageblit
->     2.12%   2.12%   5.89%   atari_floppy_init
->     1.97%                   memset
->     1.31%                   memcpy
-> ...
-> Instruction cache misses:
->    27.14%  27.14%  27.14%   sys_copyarea
->     3.77%   3.77%   4.05%   atari_scsi_falcon_reg_read
-> ...
-> Data cache hits:
->    63.55%  63.55%  63.67%   atari_keyb_init
->     7.61%   7.62%   7.84%   atari_drm_fb_blit_rect.isra.0
->     3.86%   3.86%   3.86%   sys_copyarea <= not much hits for copying
-> ...
-> ----------------------------------------------------------------
+CPU: 1 UID: 0 PID: 13525 Comm: syz.1.1552 Tainted: G     U              6.15.0-rc7-syzkaller #0 PREEMPT(full) 
+Tainted: [U]=USER
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 05/07/2025
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:408 [inline]
+ print_report+0xc3/0x670 mm/kasan/report.c:521
+ kasan_report+0xe0/0x110 mm/kasan/report.c:634
+ fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+ bitfill drivers/video/fbdev/core/fb_fillrect.h:134 [inline]
+ fb_fillrect_static drivers/video/fbdev/core/fb_fillrect.h:220 [inline]
+ fb_fillrect drivers/video/fbdev/core/fb_fillrect.h:279 [inline]
+ sys_fillrect+0x15d4/0x17b0 drivers/video/fbdev/core/sysfillrect.c:22
+ drm_fbdev_shmem_defio_fillrect+0x22/0x140 drivers/gpu/drm/drm_fbdev_shmem.c:37
+ bit_clear+0x17a/0x220 drivers/video/fbdev/core/bitblit.c:73
+ __fbcon_clear+0x600/0x780 drivers/video/fbdev/core/fbcon.c:1292
+ fbcon_scroll+0x48b/0x690 drivers/video/fbdev/core/fbcon.c:1851
+ con_scroll+0x45c/0x690 drivers/tty/vt/vt.c:579
+ csi_M drivers/tty/vt/vt.c:2072 [inline]
+ csi_ECMA drivers/tty/vt/vt.c:2483 [inline]
+ do_con_trol drivers/tty/vt/vt.c:2657 [inline]
+ do_con_write+0x6869/0x7c90 drivers/tty/vt/vt.c:3092
+ con_write+0x23/0xb0 drivers/tty/vt/vt.c:3432
+ process_output_block drivers/tty/n_tty.c:561 [inline]
+ n_tty_write+0x40f/0x1160 drivers/tty/n_tty.c:2377
+ iterate_tty_write drivers/tty/tty_io.c:1015 [inline]
+ file_tty_write.constprop.0+0x502/0x9b0 drivers/tty/tty_io.c:1090
+ tty_write drivers/tty/tty_io.c:1111 [inline]
+ redirected_tty_write drivers/tty/tty_io.c:1134 [inline]
+ redirected_tty_write+0xd4/0x150 drivers/tty/tty_io.c:1114
+ new_sync_write fs/read_write.c:591 [inline]
+ vfs_write+0x5ba/0x1180 fs/read_write.c:684
+ ksys_write+0x12a/0x240 fs/read_write.c:736
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0x230 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f457158e969
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f457244f038 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f45717b5fa0 RCX: 00007f457158e969
+RDX: 0000000000000013 RSI: 0000200000000000 RDI: 0000000000000005
+RBP: 00007f4571610ab1 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 0000000000000000 R14: 00007f45717b5fa0 R15: 00007ffddb9e8a38
+ </TASK>
 
-So it would be worthwhile to factor out the code that is most
-performance-critical into its own file, and use CFLAGS_foo.o += -O2
-(or even -O3? or other options?) in the Makefile to build it with a
-better optimization level.
+The buggy address ffffc90003849000 belongs to a vmalloc virtual mapping
+Memory state around the buggy address:
+ ffffc90003848f00: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90003848f80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+>ffffc90003849000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                   ^
+ ffffc90003849080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90003849100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
 
-> However, -O2 build has the downside that the resulting kernel Oopses
-> once it reaches user-space, if 030 data cache emulation is enabled:
-> ----------------------------------------------------------------
-> Run /init as init process
-> ...
-> Instruction fault at 0x0041a256
-> BAD KERNEL BUSERR
 
-Interesting...
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-Thanks a lot for testing, and for your analysis!
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
-Gr{oetje,eeting}s,
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
 
-                        Geert
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+If you want to undo deduplication, reply with:
+#syz undup

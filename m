@@ -1,60 +1,62 @@
-Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FC6B610D;
-	Sat, 31 May 2025 21:13:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45B9A1A23A2;
+	Sat, 31 May 2025 21:13:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748726029; cv=none; b=ciblbJp8pKI2nmk6hlYcwtJvmdFw+Ok879GSOWpx56aAYG96h+zLdz/X02xhA/n8hOL7Z/O3ThQDUleAh79PXl+KCnnbOJi9biKyVKbddJMsAlIJLyAc+8T6sDcdN6lk/pFJ8GNQvqoV6EyEX9hWl6J/cNccrl39ssnhsXTVwnc=
+	t=1748726041; cv=none; b=na/I9sYPQv4NEdgLwUiCPFyH6A96/lWXH8gb4Uuhze8jFlaMQEJKRZJtcJOKpTL11SuQYT1QSdn9vVsR9nIbzTw+E7LqlZlt5qICrXOkd5bbgLDttDXRqQz3n6AUj8ihbSqmNMdNk65AgwvcIfLAg9YECKMqlo0gUuxIiPvP/4M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748726029; c=relaxed/simple;
-	bh=PRyboB1k7N2KcrjhZjcaIgm465CDqcL2+Yf2Cysk7ek=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Tfk9XHG7x64TAtJ5jZCTN2ppK2s7bkMQywSxAgFCRncIyEyulXx12CEHmVAZTzzaIOn7Tqgk/rx1Kn8JMMGeunGg2LjOhU0SVSrjdk/vIl0144UBPvPZIMzOD4c7m8BPRc/I7ew3TXuz6FEw2/IHUqBpXw1SU2baDO7YiPOJ12s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=if7JRV3J; arc=none smtp.client-ip=209.85.210.174
+	s=arc-20240116; t=1748726041; c=relaxed/simple;
+	bh=VPPHlfqUzR98R1C0Hq7Qr40ovgOaO9nWuetLhV41n34=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=tjZAJfcXbBonJ+6nDr6PHbqcQaGG602MoXIzW94DmuM9c5njtwDfpI09hWuX3R7J0pe5W5t0sLL+37zPQytA8xdkKgxFOSm/bc/C7k2+wQKk4gdD0g1hgXgMda1k7aLE32R5OtWWhGJyQrrPcmEh4nt4xY7xOjXCK9YOjDiA+X8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gT1IYafa; arc=none smtp.client-ip=209.85.210.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="if7JRV3J"
-Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-742c9563fd9so2593021b3a.3;
-        Sat, 31 May 2025 14:13:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gT1IYafa"
+Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-742c27df0daso2504996b3a.1;
+        Sat, 31 May 2025 14:13:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1748726027; x=1749330827; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=TPzi5xY/SLx3QtT6MiFRJHzuARJElgyvVmtym/koB58=;
-        b=if7JRV3JhL0B9bRu92uaOaNyV/gIZ4E9kTlrbfEQHl/5v9ag6YfmLqF5BXOo/3rM7U
-         wtBYJyl4JokGokdzn5UMRM0o5k2qma1KnTOsguB+3T8gCxRFTKi8C7EkF+gDu+uU3PtU
-         4bvM0jcxrYk9OJSTxTFx+rFMN/3cRtgVpIi4N4SaY9JshCs5B5xlyrzsVTgMv91eSjqs
-         CxKTqF4taopQbokMSohjJMKKi618MKqGfEg2IPAVFzevLxJJ3w2mPzoqAMyesMcNRxgX
-         iMOrjyy/b98n/PbgZmVns8Leayizvq1xOYCT0QqVZ2S6rKNAPAeMrYUyR3iJtaTobua5
-         mGNA==
+        d=gmail.com; s=20230601; t=1748726039; x=1749330839; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=i+Hw/XilsTCcppc7+np/QVEAhg7lSuqi8GdQaDLo6eE=;
+        b=gT1IYafa0Soyu2Ihk/rgF361gr3DMgHpkkUdWer7HBceSNTAJ5l9Rfd3eHli9tg5xJ
+         0ZyqCdmpxV8C2gw/9qTsjQB390Cleylo+CIlCwWXKkoYK7z6AiQbNUgnedRsUIl+8IPr
+         strwHY9ftPtqcXdqLZOglDLFISYjInIEn+E3ag+CA2yro9d47JDG41HginahhUrUsA9l
+         jwomSFDayw9i6ZOtCHZTJzUCh0wIGdDL73QP/iATMXhUC49bM4gUnV3wsM7fp1t+FtcD
+         ffeeX2JWrNXKy6h64+tccyuWjwKjH4iU28GD0sOnPId8Ayj1IPd0eyoFuNq7654L64sD
+         AeDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748726027; x=1749330827;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TPzi5xY/SLx3QtT6MiFRJHzuARJElgyvVmtym/koB58=;
-        b=OegFs4f/FSMyjkJrS4O3TjV4xxek18Lqtez/p6KtFZGVdqmojFHT/VNSfVlZaV8uEL
-         6mvR25DoYz7GON+9cimFRJqQVp6TXoiY0WGaWaXbQqDI1yNVZSJ4ht/cmc/MjDXoK/ZL
-         iCPYKhU7ejbQNRccHmYgST4tf99xx/vkiE1bV3wrSjRmhF/dLJNUI8SRQM7JFfnAN5sW
-         Yt231VTyMOAbOlLyyVTeDe644ebubMuICnBHDqXpHEQQwJuPh9ZWHIfYGnc375ANYhh2
-         MLlKsthH54qJzXz7qombJZNFiYuSvsHuKW61Mq09+tN4Qkf01RHbaV5xCIpCNdmmgJyn
-         x+FQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUjuLr/TEu1w61AI/WQSkWIe5EGVKdOg+ESdCS5qOeGRo+eJGRgpxO4Otwx9sUgux1DHSaLd9E3rORzZA==@vger.kernel.org, AJvYcCVfrS2xT2C1pVG4E0igrKIX4BwRz5fmg09kq/Op460G41Vcz5F8g1LqKDIDcJ25EBH6bH7jAyNg9Pr+GIaE@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx1NlkhzkUnhRjoYrYlaV9PVROpPm2DVgvF7j1eU40tDXxOGPFw
-	wYMUC1g3ZqXFHVj/L0tCZdCXSP8RsFlyhs+qD++5xVsU3mrUQdbzQIqI
-X-Gm-Gg: ASbGncs21ByIfgwjyJByg+6okJBzGXZFMwZWU78RJ+Yt5G6aV7sv0qb5iTOn8EM2XHO
-	/Z1aPzdCl2MbCnVv5gawr4VXEEJjVCtkYxiTupSUuUkR8AkUE5GSs4u3uKjd3B/bAcBnStgZbGB
-	hATcSE81Lx9VjveFpo2G9XKadx/kJ4xNOJsq5tSExn4/1StPX1Uq9U5andpkEYd7qNFwmo2eIPt
-	tq2WcqoLk4DCNpohGk5Q6ZFivxl4XypUJkUZbAU1GDb4lfuBVZRXHleM8r8nUvbzH5Cf/o5af+1
-	d5dSSOjjgqMXuph0MKb1q7qYWBileMUmhEuVNE80m0kVZ/lyrQRT6XcUvTRLGHK2x1A/
-X-Google-Smtp-Source: AGHT+IFNXrT07jQqOOjMisC/VlId5cQOFjn3jMV4LhgfHEDxAUPohcM7n20UJSliYShKjOPG5Nj/0A==
-X-Received: by 2002:a05:6a21:3a48:b0:1f5:8221:d68c with SMTP id adf61e73a8af0-21adff48c77mr10543241637.3.1748726026726;
-        Sat, 31 May 2025 14:13:46 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1748726039; x=1749330839;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=i+Hw/XilsTCcppc7+np/QVEAhg7lSuqi8GdQaDLo6eE=;
+        b=R9My2MVbJNexzguDcYpOT1G5Y1/zUkAWoyrF4iykfC5LyaJjp5VnyxBeSVa26w6NGl
+         h+vnTO33Rx+fyUMszh58DnP8+J7ayTN0SHDAKeTPmQevFD++7GKXtYRdem1ALLV2gH+L
+         Ig2i1D6YtGcPw4NC9qMEj0g6L/zas9tpQAKt8IqDVfAgBtT04e6TPhvsG8jEOMMh1SbZ
+         zuJc69pjTc+vPU3fgNsR4RnxAUEa544GRBFi4DhOMMBmBdPxgjTFwrbFNufyZ4s8YnVh
+         js69T6HjhgUhkV0k9NxJx0MoXS+mjXfTJKW14hanfwwhr9YIwuh6e2y2DPWWBUMUOSsg
+         Teng==
+X-Forwarded-Encrypted: i=1; AJvYcCVDHFIK4YB41fvHB03G3hG9scgsJzWfkrqsBYTnZkLSF9FGL2vom8hVCSaot9ae3UpY7GN3KTpmWYcWRCZP@vger.kernel.org, AJvYcCW4hLSDfk7ARnhzV1xVi88+knWmYsHAJvjPFhcBdXkwCQIHLgZCfybdfhVWXBROVaq3mmrAoZHrCI2fvQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyThjzStJpZzLoi7y/7cBnqIfXsnwPwaTttykwczyCNTckJ8Bb6
+	UYlHSWVcC8fCgMX+1dStYqEKFTdlm0QfdIkSRGMwaz5lzhIwz9Gdy8i8
+X-Gm-Gg: ASbGncsOHIG/yABp6+lbYt8AdmRdFsU2zJWd80YxaS/MZdmKZEYlvbGBDuCmt8Pv0Za
+	/5dzejfZWNAlFk6pjLuI9P7Nd5kV6OgOAcu4RscuB6+lVX6DsrTiGlAOVihRhf1wRPlljJ4Li94
+	1UUGedgLewugCck2fiq1lWL+Bh0sCKKyO6L/UWJ+q4ZKu4GlBRL6XH7Wk+XrW67syGR7+O4JbFj
+	IRA7qlv2otetqjPUA+OPtrREVRhpxOmFtLrpGzjGWCyg8IHuwMCpcaFSjAgfy4zKvgWzD37t3p2
+	PcA5CwHghDtanCVeGaDS2DTthVLlCEaUl0Jx/EsUK9TxzmL4K37UIJ4wiv7T2MvqIY/t
+X-Google-Smtp-Source: AGHT+IEePTRjoDKaPPluoCvoyqlgcI2sBsl94rFvsSGnUDIVsgbH2C7dGBrEm5FdAVCErZEbDuL1Ww==
+X-Received: by 2002:a05:6a00:a90:b0:73e:2dc5:a93c with SMTP id d2e1a72fcca58-747bd984f87mr10707720b3a.11.1748726039316;
+        Sat, 31 May 2025 14:13:59 -0700 (PDT)
 Received: from khalid-HP-Notebook.. ([49.204.30.182])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-747affaf9dasm5161824b3a.109.2025.05.31.14.13.44
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-747affaf9dasm5161824b3a.109.2025.05.31.14.13.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 May 2025 14:13:46 -0700 (PDT)
+        Sat, 31 May 2025 14:13:58 -0700 (PDT)
 From: khalid.datamax@gmail.com
 To: sudipm.mukherjee@gmail.com
 Cc: teddy.wang@siliconmotion.com,
@@ -64,9 +66,11 @@ Cc: teddy.wang@siliconmotion.com,
 	linux-kernel@vger.kernel.org,
 	Khalid Faisal <khalid.datamax@gmail.com>
 Subject: [PATCH 0/1] staging: sm750fb: convert CamelCase function names to snake_case
-Date: Sun,  1 Jun 2025 02:41:01 +0530
-Message-ID: <20250531211319.55682-1-khalid.datamax@gmail.com>
+Date: Sun,  1 Jun 2025 02:41:02 +0530
+Message-ID: <20250531211319.55682-2-khalid.datamax@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250531211319.55682-1-khalid.datamax@gmail.com>
+References: <20250531211319.55682-1-khalid.datamax@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -75,23 +79,16 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This patch cleans up the staging driver sm750fb by converting function names
-that are currently in CamelCase to the preferred snake_case style, following
-Linux kernel coding guidelines.
+From: Khalid Faisal <khalid.datamax@gmail.com>
 
-Specifically, it renames the following functions for consistency and readability:
-- sii164GetDeviceID		-> sii164_get_device_id
-- sii164ResetChip		-> sii164_reset_chip
-- sii164GetChipString		-> sii164_get_chip_string
-- sii164SetPower		-> sii164_set_power
-- sii164EnableHotPlugDetection	-> sii164_enable_hot_plug_detection
-- sii164IsConnected		-> sii164_is_connected
-- sii164CheckInterrupt		-> sii164_check_interrupt
-- sii164ClearInterrupt		-> sii164_clear_interrupt
+This patch updates various function names in the sm750fb driver to follow
+the Linux kernel coding style by converting CamelCase names to snake_case.
 
-This helps maintain uniformity with the rest of the kernel codebase and
-improves maintainability.
+These changes were identified using checkpatch.pl, which recommends
+using snake_case for function and variable names.
 
-Signed-off-by: Khalid Faisal <khalid.datamax@gmail.com>
+This patch is part of the Kernel Janitors cleanup effort.
 
+-- 
+Khalid Faisal
 

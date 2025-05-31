@@ -1,291 +1,82 @@
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
+Received: from mail-qv1-f48.google.com (mail-qv1-f48.google.com [209.85.219.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EEA01AC891;
-	Sat, 31 May 2025 21:14:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B9321ACE0C
+	for <linux-fbdev@vger.kernel.org>; Sat, 31 May 2025 21:46:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748726054; cv=none; b=Zq+Tws9in4vX6QbEsNfzuJQhP86/fL6wIFdLpcf/TMjz1kIPd87L9tgcmwQOBxvUKDnxUAmGOnrYvFwIlpQUMH++874JIMpYsNTAc/kT611Z5AyTLNId9Q1qvs0F/0Gr7dtlH4spisCDnhDigKVcheSVMYXOHYLN0veDfvQCBhs=
+	t=1748727981; cv=none; b=MdOoqUPfHv8ovq1UltjCetg9nHwmfeQ9ZT5VBjlNzuT0/C9PhO/4LI1bkUijGivIL/W0Jr42f1OfS7H26YAmoLF2RuQXJ5fO14ml5kQ02eiYWWcy/HnQyVg03l8OCa4PEdN50S2WK2xLZBpgdfLv2jjFggdr17pTRiQw0z4aVc4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748726054; c=relaxed/simple;
-	bh=d71kya2yib1xQWny5HRSfFEYAxSHhHAkIopEVCFPCzk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SPhUHyLGIoC6gYingaQe11JXQ2QJFkHkcZxbe7Hjgmb/CcV89uZNYltSEcjtAf/d0CPyNNQ18CV2MdAQmL3HLdr8A3/lpTa4aAM1Mz5pnTjTBYF5vCCoDVuslUMWHHLWXxBbQgvbjJ1QKX/i3q40fmFhiAzN/Tt0LmUvhW532WU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JKFylXUN; arc=none smtp.client-ip=209.85.210.180
+	s=arc-20240116; t=1748727981; c=relaxed/simple;
+	bh=GEXUM8bFiY2XVaUGrrwbZv1dyw6k5nc9Z0n6pZQoa8w=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=Ic7OsKHKz16Cnl2MASolO/0TlFqgQ8cIMfisUz3DWggmrOzRDDwERxUjiqZp8BQJWA+rrtIod8kOLSPoD+QFsKjMZu6LCcz2YyH1yC4puRP+y8GncsTJgSpjRypDj0IIvTn8l8G0N+oMY+GDZlBYcDM0p3DXdEWnGEv+XawwLsY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NRGc75wD; arc=none smtp.client-ip=209.85.219.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JKFylXUN"
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-742c9907967so3312611b3a.1;
-        Sat, 31 May 2025 14:14:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NRGc75wD"
+Received: by mail-qv1-f48.google.com with SMTP id 6a1803df08f44-6facba680a1so31029036d6.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 31 May 2025 14:46:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1748726052; x=1749330852; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uhqVWLzanP0xyNFLLfM8OCfW+c2IkuUYEmPVlLCkYFM=;
-        b=JKFylXUNgIqLHxY7UM8fH8vVn/LP69yL+yZ1hc/gXjCqZUMS1fvJ1o/RctU2NeXnzW
-         NM1GuCKIjmjRaGbNFvWdLJfNp9kJ3dxZI97rsKHv5tIU2omA1fTq27UlKDupykbWe+SY
-         Qlvv5/1PnyduwaPx3UXVJpgXvMQ/B+CMiOhcPG8VRsmUqXoLcNCQfLkbLI1UHGpHKit2
-         54UmJoxGJlsT5Dmc26PIn7+zoHyV2ebdq9isQkDtVFngr0PAoMWuqhVnH3CYW2evPM0k
-         9jCIXx9P6sZSiD8TTLyrVFBK63qpEJfjw7dkZj4SdGR7AANH/Mpl61Vtd2TIzupEDUR4
-         u43A==
+        d=gmail.com; s=20230601; t=1748727979; x=1749332779; darn=vger.kernel.org;
+        h=user-agent:content-disposition:mime-version:message-id:subject:to
+         :from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=N2xDO5CRbQ5TrevmjaImNogri6wZK1hThE5EiKgWG/Q=;
+        b=NRGc75wDLqTQTdIMLWCOl+XexQFdo9nEr5Tm0FL0lbMV67+npTp2Zi9k0VA8BMcXZ/
+         IQO4KqNEqg5SCeNAx854+P0gHgjGWfa3YdB6lmgZ8+YGqcs/gUe54U58dtQ3rR8n0+g/
+         RNk0xTm1tu2/e2KlcvSF0YJ8ijB//+Vz43pmxSqaMGC1Avz0xXAiXJvtUrJAgAqEcnxn
+         4wZYzXb683kXSIdWtRCsCA2XIayxQJMh8zmpd4arCDYoE1hCN6gPmMES9FSwKXyv1k1A
+         8KJ5h4VLbwi92u4u6mfciBQXLbtaChAhvMhiIkDHla11t3mKaRM9jAAHG09AgOpWRBOz
+         O+EA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748726052; x=1749330852;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=uhqVWLzanP0xyNFLLfM8OCfW+c2IkuUYEmPVlLCkYFM=;
-        b=GJfujAPWfJlV7s/2IDt+CxVBgKUJGd+BbXGu/Q7b+FE56H1ptDQcDcSkFW9LztkI6j
-         aa8jA+LunnHedJBPG6eqE8a5ImxnxIcuSkGocrFOk1d1OaDz2Yb7xqtarl9MEpz+2IjH
-         uruo6H1o7mPofprxqyIhXSAqHeoMts1ByG1YKLBZwOwjutARSA2rAjg6tShjcIXJLp6G
-         G4Wkny20vV9dObDsfdllUxokFR2RU5fXypQRWaTzOSx7jhGExvYkM3ejGLxffnE82lzK
-         7YnnZ9xAII38ZukWzjXtM2mdwMM6kcBnwxF/D5WJjZU17by4wJWPFtUako/A0LqutIUq
-         BbEA==
-X-Forwarded-Encrypted: i=1; AJvYcCVmov1dxs7NK15McvhtM5hc74p/lmTIICkJ1uMfx/8eS97Y2YM0U0Lzj9iVmBC79XG75kC4Zr2CL23JjTnn@vger.kernel.org, AJvYcCX1/Cs5V4CgjlnzODrxYFs2xdD/o1FNAfICscQlEH03KrcR6W0j288fDKqXea+LAUV4aWl950ki5nGf4Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzIGf34bmKp14ckHOp369PG2myupJRDHwu1L+4laDhpqmTa2xU3
-	LleIHp04P5i43sURSZdQhxLMknQSrtqZI94bHVevLMPCQ6mQoHfnrgJX
-X-Gm-Gg: ASbGnctkJvBAuCGoLFpndVGQtuLCH/0kX/Uoo8iD5lNWZpj2uG6F+GQ8KrfMWJS8trY
-	VjQmdn+kndOlvM4D7rPj4MJTtz9XEiO6Sv4lZAKfP1ITJrkhgQboXHGfaRgGT20QstO73m9wYqi
-	7haDQItysgLxLsrE4U3LnrJO+ECHTm6n/qAhpiaUHsV2bctgKWL03QvGfvXbLbzU3JdHUria2I+
-	vmEfiYtlEhUHoF/QGpiLHzN+EzTJcb8irHpND7f4LNFZ/sB5ZSqsIHq+K/nnoaiVSd8CRiz+XHL
-	pxyoToxJLj2ls1p1flf467jlzSwfLRxywW7lR15TEUUhwtb2bO0uhAbwnVF59u6OoTgY
-X-Google-Smtp-Source: AGHT+IH4bdi3OYNDTHdVm4xnXb+pj8+sjPoPMeiWoZcrBVF3ug78eCZfdPEAPO2VwBfn9D9DWnmPmA==
-X-Received: by 2002:a05:6a00:814:b0:740:aa33:c6f8 with SMTP id d2e1a72fcca58-747d1835ccbmr3886256b3a.7.1748726052191;
-        Sat, 31 May 2025 14:14:12 -0700 (PDT)
-Received: from khalid-HP-Notebook.. ([49.204.30.182])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-747affaf9dasm5161824b3a.109.2025.05.31.14.14.09
+        d=1e100.net; s=20230601; t=1748727979; x=1749332779;
+        h=user-agent:content-disposition:mime-version:message-id:subject:to
+         :from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=N2xDO5CRbQ5TrevmjaImNogri6wZK1hThE5EiKgWG/Q=;
+        b=lBI1Ki2EMm0Ebwm82cgPl9ayvzXC5hGWtSnxDfrXNbzjHkzTY10+FeIeIfClBMDHmV
+         xRHPnU/SzovWc/phGfNxGGS8lflg38FC/9hRlx9Z+U7Wo/HqeHNEIhZHGRcWMfJf+hvH
+         Z37ZVcIqBOdEvM+YFc8lHTJEjFW5G8WkDUzLmeAhzNGuLlrWyLRVi6BqXQZHobB32176
+         l5+OzWGEOWD1qaPYchze7rfEIKe0CZ1ZyzzeRwFFeInscmDIeqjghirUh12wnwpZk3Km
+         sOeH2fPMwF9zzrhhHv0dQBeiP7Ts1uzUSDVSwJTr3I66B3glQedwyxs8d5ObA7MDmkhK
+         5iLg==
+X-Gm-Message-State: AOJu0Yw5gc8M4noGdM/H+eogbLbBTHF+CKa4semui/AOH9ovf9+/FWr7
+	vNcsZifKyoBm/xDthD/iB+CW+SAMhP8Q1fe+RH2BheVPyunTj12JwCsuU/njVg==
+X-Gm-Gg: ASbGncuidW+J4ED5zUNdKcCQKHjFpFGn3lKuDh1PfTNa1ECsHtILLiaEs6BlxZ/I6us
+	xpfiGs1B3dg1a7gJ4iqtpWtwLHEdJhCSGi3GDhXrOQ6QOpz8Oo+5kHkaE8a5Mcf/K/TEjFvUXvt
+	+Pezlxy0KGH01Nat9M7E+hX4K0oqJOViqYQMsjjUxSFbd9jf9CovK4tUnMKLJjfRavyhk0ka8r/
+	wMyXyG8T4zfXEHs0ekW5fLT1yr7dJK42dltOk0xNt7+FLCbIKXY/5e4p2qyCHClZtJ1KoN61GbO
+	DKFqiBf+Tlv4GT9gyq+iyVb7siNkWMBLbZodU2WCm78OeQQda2DkjBYdexofAUwoW3bK0o6g/Tj
+	lhNHRq2IVF+V542lU5T1Q+VVU
+X-Google-Smtp-Source: AGHT+IFFDlylPTScOqrSgzj5Jkpt4E6q0iEH7rxtHJAwtH2kZ50snZ01kyVJlqgM5rVJw0LCi7jyHg==
+X-Received: by 2002:a05:6214:4114:b0:6fa:cb58:10b7 with SMTP id 6a1803df08f44-6fad913c2d1mr49829716d6.26.1748727978826;
+        Sat, 31 May 2025 14:46:18 -0700 (PDT)
+Received: from thinkpad (ip-74-215-254-164.dynamic.fuse.net. [74.215.254.164])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6fac6d33ad8sm41014356d6.9.2025.05.31.14.46.18
+        for <linux-fbdev@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 May 2025 14:14:11 -0700 (PDT)
-From: khalid.datamax@gmail.com
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Khalid Faisal <khalid.datamax@gmail.com>
-Subject: [PATCH 1/1] staging: sm750fb: convert CamelCase function names to snake_case
-Date: Sun,  1 Jun 2025 02:41:03 +0530
-Message-ID: <20250531211319.55682-3-khalid.datamax@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250531211319.55682-1-khalid.datamax@gmail.com>
-References: <20250531211319.55682-1-khalid.datamax@gmail.com>
+        Sat, 31 May 2025 14:46:18 -0700 (PDT)
+Date: Sat, 31 May 2025 17:46:17 -0400
+From: Adam Stylinski <kungfujesus06@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Subject: Issues with vgacon with kernels >= 6.13
+Message-ID: <aDt4pp9NE85BuAec@thinkpad>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/2.2.13 (00d56288) (2024-03-09)
 
-From: Khalid Faisal <khalid.datamax@gmail.com>
+I apologize in advance if this is the wrong tree to be barking up but I'm hitting a wall on this and I'm hoping someone on this ML can point me in the right direction.  Ever since kernel 6.13 (I've not yet bisected but that may be my next step) I've been unable to get my potato system booting up via the any of the simple framebuffer consoles.  The kernel simply hangs right after loading the disk IO schedulers (which, looking at my dmesg logs from 6.12 is _just_ before the vga framebuffer is supposed to take over).  The system is definitely in the realm of antique, with a Core 2 Quad Q9650 and a pre EFI boot stage. I've tried simplefb set as the default console, I've tried vesafb, and I've tried vga=normal, all of these seem to fail just before the GPU handoff.
 
-This patch converts function names in the sm750fb driver from CamelCase to
-snake_case to comply with Linux kernel coding style.
+The major change I do see around 6.13 was a change to support the DRM friendly panic message and I'm tempted to maybe think that's where the regression lives. I also realize I may be one of maybe 6 people affected by this by keeping this system limping along, but I do use it regularly to test SIMD related performance, as it's the last CPU family in Intel's line that actually has the unaligned load penalty.
 
-No functional changes.
+This is the last kernel message I see prior to boot (hopefully LKML doesn't flag me for adding a URL, but I figured attaching an image would be worse):
+https://imgur.com/a/3QkVs2O
 
-Signed-off-by: Khalid Faisal <khalid.datamax@gmail.com>
----
- drivers/staging/sm750fb/ddk750_dvi.c    | 16 +++++------
- drivers/staging/sm750fb/ddk750_sii164.c | 38 ++++++++++++-------------
- drivers/staging/sm750fb/ddk750_sii164.h | 16 +++++------
- 3 files changed, 35 insertions(+), 35 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index 8b81e8642..6fef1ab48 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -16,15 +16,15 @@ static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
- 	{
- 		.init = sii164_init_chip,
- 		.get_vendor_id = sii164_get_vendor_id,
--		.get_device_id = sii164GetDeviceID,
-+		.get_device_id = sii164_get_device_id,
- #ifdef SII164_FULL_FUNCTIONS
--		.reset_chip = sii164ResetChip,
--		.get_chip_string = sii164GetChipString,
--		.set_power = sii164SetPower,
--		.enable_hot_plug_detection = sii164EnableHotPlugDetection,
--		.is_connected = sii164IsConnected,
--		.check_interrupt = sii164CheckInterrupt,
--		.clear_interrupt = sii164ClearInterrupt,
-+		.reset_chip = sii164_reset_chip,
-+		.get_chip_string = sii164_get_chip_string,
-+		.set_power = sii164_set_power,
-+		.enable_hot_plug_detection = sii164_enable_hot_plug_detection,
-+		.is_connected = sii164_is_connected,
-+		.check_interrupt = sii164_check_interrupt,
-+		.clear_interrupt = sii164_clear_interrupt,
- #endif
- 	},
- #endif
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 2532b6024..d6bfd7c4e 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -48,13 +48,13 @@ unsigned short sii164_get_vendor_id(void)
- }
- 
- /*
-- *  sii164GetDeviceID
-+ *  sii164_get_device_id
-  *      This function gets the device ID of the DVI controller chip.
-  *
-  *  Output:
-  *      Device ID
-  */
--unsigned short sii164GetDeviceID(void)
-+unsigned short sii164_get_device_id(void)
- {
- 	unsigned short deviceID;
- 
-@@ -141,7 +141,7 @@ long sii164_init_chip(unsigned char edge_select,
- 
- 	/* Check if SII164 Chip exists */
- 	if ((sii164_get_vendor_id() == SII164_VENDOR_ID) &&
--	    (sii164GetDeviceID() == SII164_DEVICE_ID)) {
-+	    (sii164_get_device_id() == SII164_DEVICE_ID)) {
- 		/*
- 		 *  Initialize SII164 controller chip.
- 		 */
-@@ -250,36 +250,36 @@ long sii164_init_chip(unsigned char edge_select,
- #ifdef SII164_FULL_FUNCTIONS
- 
- /*
-- *  sii164ResetChip
-+ *  sii164_reset_chip
-  *      This function resets the DVI Controller Chip.
-  */
--void sii164ResetChip(void)
-+void sii164_reset_chip(void)
- {
- 	/* Power down */
--	sii164SetPower(0);
--	sii164SetPower(1);
-+	sii164_set_power(0);
-+	sii164_set_power(1);
- }
- 
- /*
-- * sii164GetChipString
-+ * sii164_get_chip_string
-  *      This function returns a char string name of the current DVI Controller
-  *      chip.
-  *
-  *      It's convenient for application need to display the chip name.
-  */
--char *sii164GetChipString(void)
-+char *sii164_get_chip_string(void)
- {
- 	return gDviCtrlChipName;
- }
- 
- /*
-- *  sii164SetPower
-+ *  sii164_set_power
-  *      This function sets the power configuration of the DVI Controller Chip.
-  *
-  *  Input:
-  *      powerUp - Flag to set the power down or up
-  */
--void sii164SetPower(unsigned char powerUp)
-+void sii164_set_power(unsigned char powerUp)
- {
- 	unsigned char config;
- 
-@@ -329,12 +329,12 @@ void sii164SelectHotPlugDetectionMode(enum sii164_hot_plug_mode hotPlugMode)
- }
- 
- /*
-- *  sii164EnableHotPlugDetection
-+ *  sii164_enable_hot_plug_detection
-  *      This function enables the Hot Plug detection.
-  *
-  *  enableHotPlug   - Enable (=1) / disable (=0) Hot Plug detection
-  */
--void sii164EnableHotPlugDetection(unsigned char enableHotPlug)
-+void sii164_enable_hot_plug_detection(unsigned char enableHotPlug)
- {
- 	unsigned char detectReg;
- 
-@@ -350,14 +350,14 @@ void sii164EnableHotPlugDetection(unsigned char enableHotPlug)
- }
- 
- /*
-- *  sii164IsConnected
-+ *  sii164_is_connected
-  *      Check if the DVI Monitor is connected.
-  *
-  *  Output:
-  *      0   - Not Connected
-  *      1   - Connected
-  */
--unsigned char sii164IsConnected(void)
-+unsigned char sii164_is_connected(void)
- {
- 	unsigned char hotPlugValue;
- 
-@@ -370,14 +370,14 @@ unsigned char sii164IsConnected(void)
- }
- 
- /*
-- *  sii164CheckInterrupt
-+ *  sii164_check_interrupt
-  *      Checks if interrupt has occurred.
-  *
-  *  Output:
-  *      0   - No interrupt
-  *      1   - Interrupt occurs
-  */
--unsigned char sii164CheckInterrupt(void)
-+unsigned char sii164_check_interrupt(void)
- {
- 	unsigned char detectReg;
- 
-@@ -390,10 +390,10 @@ unsigned char sii164CheckInterrupt(void)
- }
- 
- /*
-- *  sii164ClearInterrupt
-+ *  sii164_clear_interrupt
-  *      Clear the hot plug interrupt.
-  */
--void sii164ClearInterrupt(void)
-+void sii164_clear_interrupt(void)
- {
- 	unsigned char detectReg;
- 
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index 71a7c1cb4..005473ca2 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -28,16 +28,16 @@ long sii164_init_chip(unsigned char edgeSelect,
- 		      unsigned char pllFilterValue);
- 
- unsigned short sii164_get_vendor_id(void);
--unsigned short sii164GetDeviceID(void);
-+unsigned short sii164_get_device_id(void);
- 
- #ifdef SII164_FULL_FUNCTIONS
--void sii164ResetChip(void);
--char *sii164GetChipString(void);
--void sii164SetPower(unsigned char powerUp);
--void sii164EnableHotPlugDetection(unsigned char enableHotPlug);
--unsigned char sii164IsConnected(void);
--unsigned char sii164CheckInterrupt(void);
--void sii164ClearInterrupt(void);
-+void sii164_reset_chip(void);
-+char *sii164_get_chip_string(void);
-+void sii164_set_power(unsigned char powerUp);
-+void sii164_enable_hot_plug_detection(unsigned char enableHotPlug);
-+unsigned char sii164_is_connected(void);
-+unsigned char sii164_check_interrupt(void);
-+void sii164_clear_interrupt(void);
- #endif
- /*
-  * below register definition is used for
--- 
-2.43.0
-
+Does anyone know of any major changes that might have caused this and anything I should try? My previous configuration is actually to use uvesafb, of which has been failing due to v86d being missing from my distribution for some time now, but it would gracefully fallback. I have an nvidia GPU in this system so the nicer fb options aren't really a thing.  The builtin nvidia modeset is a thing and it does work but that doesn't happen until much later in the boot process. For all intents and purposes, I'm relying on VBE right until that module is loaded, but it hangs much much earlier than that.

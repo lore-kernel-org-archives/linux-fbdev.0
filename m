@@ -1,203 +1,246 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazolkn19011036.outbound.protection.outlook.com [52.103.14.36])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93F0619AD8B;
-	Tue,  3 Jun 2025 17:50:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.14.36
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748973029; cv=fail; b=fsRroJNCJv3oOyBmLI753WBZ4ahi6z5+vRKqSQL+IEU0wj1bg272qCVJ4M+n2ufGvKGWrstGCs+k1TmbzvQuyXnvKge/4SC8xbg6ZzbpzdmHLEVt6X+pe0BiJXkvRjQ04TxgDUyfe2fqFdt+dLX6dJeoa8LTcJjFiL3xQkxDaHQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748973029; c=relaxed/simple;
-	bh=Uw7aKmeVSBzg/2p/Sv/9l6CW6oyWWpaDDUiMo6HXc7c=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=vFpNDpWr+EsMZ5D5CZuP5jgcWucDfkw6WLm6dtWHjVlfabAWK4b0vHjzz3TDMptUs+/Bs7DkLwArPr1dexgi7vxZY7ZfwhNJCcdgRlMuzRUwrTglKxP0AuZMySMHn396wrPky17cIacmDf14SBTGcVVy7/3mHpnPipakGH6PiPY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=oi5lZ6fC; arc=fail smtp.client-ip=52.103.14.36
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F53B27FB1C
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Jun 2025 08:12:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1749024770; cv=none; b=JB8HLOPeo5LGFqX8wWOQj3pBP4hp6Djh8h14pEpmgEFg6AEUGuXcWbBThQwSrXxtm+2adb7gf/M+TJ9lZpjj7vgwb5hVCN2w7dSpzBxapNw34geRFv8FQaMcdDwwUGCy8wUrgLsmnQ7Awqd3iOp05BD4TH+tXVwCITCXTlAC/6U=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1749024770; c=relaxed/simple;
+	bh=bayr7l71aJK8xCvnToyVAKFE87Idmum4Q2rTzSbXuJo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jtsWGFzzJ8m1YrHSE6KaVa2f/nnnpxt2t5U4/KCY3xg/UG6qP6rSk24OjdsaxLiaVsIjBaaOBIn0SCBUot9fqiP34kmBr074KtaJ913WhDD7C6yxwvGrU+wXJ/oAb+AtTHVyLoVCcMUTIlm4z/sJ28T4a7urdQaOJvWPWtRV2CA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QhfMbTe3; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hsNOwS8i; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QhfMbTe3; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hsNOwS8i; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="oi5lZ6fC"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VBGe8/NGg1w/bU2pOjDop4PKP2rFudP0fCd3RqjSpKjZPalLJJxbgh/Vx05cU8nSFgd1fWtALhoyzSrZt6LyZKJ8UpbH+7qcDzRJ37rqbDXBu1iyPehb2cZhf+atcBtbPFgryGP5oQJvvf2pnrHVf9xiU32vtPaH/CcuYyGaiO230uBDl9j1CZ0eCWAmoZQOWBAtn9xvdXYE96Fs+V78ToYjXY1M8SEWK9CSnwfYJ1naDpm2TAkwyJCOgKV7KIjX2zTx1HvX5K3FuM/uSd9inseOtSJkCUGJr8lqtFVkk/hGu3KKVoI+rRHNU4qDd9QF8op5hjX1dgUHHPkEs5k7NA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7IO0m7QEak9ONuG7/CGdnpq0Gopa6IhWmmg9VWBqzN4=;
- b=CEEssvg++ZOpfCPhjan8hgTM12G/et9+GINvU+em61dZBny5ncXhVc9zRobcyIOkRaz9+dO5IMcXdj5jES2aAMZ2gafkA79tvy+UWqHVcKZbwR+TfOHXJXhE5yJCatM1k0arwtyNezAtmcYWk7Mq7uJ0/ge9+0Z1PpMZIgCetF3Fu8DGmorY1/PrVnevsKDsJ7h9e5nJUmJXN9ZWThR9O+ZBsZbLawNKTfkWy+XBhAt8WequI+n95Af4IlptQLaHbWNTuhzy/Ob/JUVHUpaWIykfpmIEkJi9KFZtdRfRBGoSFmsGFUxOv+vrgjiB587/Bbhux5gIpHkZYjmR92uEFQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7IO0m7QEak9ONuG7/CGdnpq0Gopa6IhWmmg9VWBqzN4=;
- b=oi5lZ6fCFE0ZQfbeVf6h79OgSe8xZYjqIZ+ylDsPuAM7a2l6DQMJVtlhwX/OXEeNO/KXvChWPyFhAQuEupY3EANzYovZRliZGznzOxAf8aMWZ/F3plPZkSSLT1d7r7oi6Qh/vG+vUZJahijq38mMbjAZQxAdfbt9KdqauwsPCC9PqW0J41xuJE4gg3FOGrFQj2oqkZojZs75BMGqi6Guhogwn/ZGMlJOt5EgtWXodx9E5HSoeaeYfZ4hRaxi1UoEUSepzFwpWBkgT+qeI2jBJ4S1/FNDNt+eZn7nvNc3vvfK2VF0st6ommgMCVsju/X9L3CdAxkamRe4RW3k8RAVMA==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by SA0PR02MB7353.namprd02.prod.outlook.com (2603:10b6:806:e6::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8813.19; Tue, 3 Jun
- 2025 17:50:25 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%4]) with mapi id 15.20.8813.016; Tue, 3 Jun 2025
- 17:50:25 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, David Hildenbrand
-	<david@redhat.com>, "simona@ffwll.ch" <simona@ffwll.ch>, "deller@gmx.de"
-	<deller@gmx.de>, "haiyangz@microsoft.com" <haiyangz@microsoft.com>,
-	"kys@microsoft.com" <kys@microsoft.com>, "wei.liu@kernel.org"
-	<wei.liu@kernel.org>, "decui@microsoft.com" <decui@microsoft.com>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>
-CC: "weh@microsoft.com" <weh@microsoft.com>, "hch@lst.de" <hch@lst.de>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: RE: [PATCH v3 3/4] fbdev/deferred-io: Support contiguous kernel
- memory framebuffers
-Thread-Topic: [PATCH v3 3/4] fbdev/deferred-io: Support contiguous kernel
- memory framebuffers
-Thread-Index: AQHby/4dA8oNLnhKakm3U+ZOuvHFDrPvrtEAgAEJQeCAAFCFAIAAuDlw
-Date: Tue, 3 Jun 2025 17:50:24 +0000
-Message-ID:
- <SN6PR02MB4157871127ED95AD24EDF96DD46DA@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <20250523161522.409504-1-mhklinux@outlook.com>
- <20250523161522.409504-4-mhklinux@outlook.com>
- <de0f2cb8-aed6-436f-b55e-d3f7b3fe6d81@redhat.com>
- <SN6PR02MB41573C075152ECD8428CAF5ED46DA@SN6PR02MB4157.namprd02.prod.outlook.com>
- <c0b91a50-d3e7-44f9-b9c5-9c3b29639428@suse.de>
-In-Reply-To: <c0b91a50-d3e7-44f9-b9c5-9c3b29639428@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|SA0PR02MB7353:EE_
-x-ms-office365-filtering-correlation-id: c3527edc-b362-4a95-5f14-08dda2c71e7f
-x-ms-exchange-slblob-mailprops:
- WaIXnCbdHrP4axiWuDsnATq01dsaK8T8MaYqj19nSr6koO2CLECqhMAv9lX5wjF6pwLKnPZb/1MwHHXctsAe04J3D4HhYBOwaLhRIVcB4q3zr+oSVHSB0fsqVkV/UNGzaLGX2mcd8T7L3n+UbSqWiLZHMGrpiaZ7GelvNgPT5c645ez59aiyct8SRIrS6DjxM4EMvFohgv3m74+E9ikDc+7zOx41nqQlD7Wz6Pa2HMXQUYljk6rgzbyVo9WWLTz6BeSZsGZM8hd9slH/lwZbdL4R+xYaR+5PrwKLihezzFjtd7lY9EcFjrs0fJZvQrzfm7fo7v8gOgooj1rEuHul2kuXWojJE78fIqe4ZdLBKT+khmN/Opql/V8/OiFyA7o3xqYlJcYICe9fwbd3vZtmkSmZSO4GmtxBRfcR1lzMJiUqmiTYdkQmS99CllOTsTv/R/Nz25paEHHZI/u7KoEa6MKMujqyfmCKYa+kOVlQG7s53b4KhCdd7COpaof3ks7/FUwNiNg7Dc+rsoKuubiqKr1YWyL9fAGZ1RiWbgZ5qrR5LZuL0WZOxabPg4M380RTMFKn+/J1lBA3iEgJeQNjI/2zGePouFpEgvgQzf7jgRPGkovPshxB8oI66mPV8CpxiqXU479U76ZpXEpyRakQ6BTkYeZPbMVZQX1TgA8FX6La+0jvd3/ihVMyUFGiM1+Z4Pte9NQota98gp9HQrmCFP9DESUkDvw2EbWrfrqJaQQlBvuH/N+VysywbOKChZsgSQjpnnNmWuA=
-x-microsoft-antispam:
- BCL:0;ARA:14566002|15080799009|8060799009|8062599006|19110799006|461199028|3412199025|440099028|12091999003|102099032|56899033;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?s8z+GHrYp/9/C5xXHpIpBepNhO6MimhpQicWbVR1Gs2ArPGQzqjr1NjAFMTR?=
- =?us-ascii?Q?WpzpbLesq9mAJKQfwQiv5p4ngGbCmEqy/0wJu7fwUgoEYzSJZLJMAyyfrCXw?=
- =?us-ascii?Q?tS2y0ovgQU5cgnrlsjlhDQzgrKHWZ5rh8x+F6HpmgwW33WhC0EaCOREg8Y15?=
- =?us-ascii?Q?d1hEzPmPR2fr5VUJPDpVLaoJJUwluNDMD5vIW8npi/F1sQOQuLFt20Mc28yp?=
- =?us-ascii?Q?DxHsJHfL2NScSdUTes6G2fR34oGCEWPWHZMZSoImOAt/m85UhA3qodvEdchh?=
- =?us-ascii?Q?zPntGnIESuHy1zch7GMTBAx6tMKXyXXzrof/X8rbtUhSmlrafR/95DHUEJl2?=
- =?us-ascii?Q?0BytA/gSCspGlZZhjlM7u1ttYqECuo0YXPK87VzDcW5hzHyxbduZ1LSdrdzW?=
- =?us-ascii?Q?P6C6TfhBc7A8F3xEanzdpLlNwzb/hIJaYwfLnTWiSDimUZseFxPsMVQEFZR3?=
- =?us-ascii?Q?vcN0rNM6q78sipPnFCbF07vuTKpI9fozkop9YKH7KcT0PSTKAwzU0KWTpj3X?=
- =?us-ascii?Q?3bLVOnWG3KlTVNozY1KGXIfmtQcA4cOsZhJ2ArglreMuIU3gN05CIiI4hh/T?=
- =?us-ascii?Q?IuWj8OBkHueNOdsZDvLISbZrX51iRgnkioDw8oQDVckOFQB+8iPn2MpfMTxF?=
- =?us-ascii?Q?GPL2Y3YAW9VX4AuKTHDbCqf7pWXmXu0PTUwqJTno8RKHx2/gN+D004GdR6bf?=
- =?us-ascii?Q?IT+ebGxMDYdo929YLvHEYAd80cUn9sHKerfUHRlI6yahWXnsuh5i3nmWOuiz?=
- =?us-ascii?Q?xJX9HKoDRWy/3TCYjZcFs5lHdgxkBVjEdBGoUTMHBUPjRAd/hITsg7CBjkJR?=
- =?us-ascii?Q?JAVwksaWtJLQWhgG+BG9ITXGB08kw6KkQaw0sqwCXxvOA1+8c2hx5QLucPrj?=
- =?us-ascii?Q?QgVwKy6FNa1ZaeA1vB8XJvbm9kkDHDJYFqoVnBYqIRlEJ2af5xE/aCSxmzWb?=
- =?us-ascii?Q?MfmjuhCw0dX1RqUXXKbfzVvL2Oe6Xe9DYljcBcNYYQHWZZ9dE4DdafXIhpUs?=
- =?us-ascii?Q?a4wXpq+A4o1A6FlOlfeoRrnpXO8QogklV5rFE2NFXwDnNFuUWORc9QIMI5tI?=
- =?us-ascii?Q?HpVH9rrlfJPJQ5OQfdKhEGTDFUxRd+U+9CSDfABjBuARtzRitcU=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?MkVNfRupmLiTUJpz7sylAV0G1tYQvspgJpdtaQZGYkCD+C2Qvi9siGLWAoR1?=
- =?us-ascii?Q?yDSwY1/0T81whsVi9SzUUo9PswdCppM57Pjq/nmKadXBAhLXblCxD6yiHiG1?=
- =?us-ascii?Q?bt2T2IJqZmYyIVKcOZ6QyjsY8UiGSL46DmVV/9ISmsxl01DLdeQXw24meqU/?=
- =?us-ascii?Q?c18s6tUzdWW6/fsPnFm1Ar0ooTK2sm/NyEjm49ruI0Q0nI1sClMn19uGHgQ8?=
- =?us-ascii?Q?CkfraT73WF0Fts/xByfVTHkLJcXfDQ4GtWDF+nB7uz2tc3RPeNtLzs3vP06H?=
- =?us-ascii?Q?rADBeS40Z/p964dcawxIWdnF/mbd+YNWNtpZpF5M9hPHYAqcGkIAr6J009y8?=
- =?us-ascii?Q?Y6XAKR9NBB1ZndD0dsGJ27bOCGYJ96cmlAmz6AeknVq2U8ulCNi7xuek7z5y?=
- =?us-ascii?Q?orwnjYoUT7kxhfqqVwy98L1CI9Ucd1pl81iqKKw/I+/dX61wJQKuxYVBv8cQ?=
- =?us-ascii?Q?t0QYfvTPdtQS5VeZhAEAnfmnsBt93BULVxs8CT56O/qlBW4GSPxRhLA+IZTG?=
- =?us-ascii?Q?nLVp8j9wJhhG4QyME/aLpa/g/NwNaaIYMiUQkfvu4n+Og1Rdi/BF0RAuHwqr?=
- =?us-ascii?Q?Oz2O8QURC+lQiBrxX/v0Lo66FMztZRhZEfA5ZhCsDVh6PZoUqsYLP7IHqyFL?=
- =?us-ascii?Q?Q61qnfS+jjCuUBjMTW13Xx49TlQHbVkjqyk1kvPF729F/Lagp0/T2Cy+rWOg?=
- =?us-ascii?Q?zH4szjInDXn2Adxsp5/KKA5rBHYtA990xqVJ93L+ffhOyBsmU3/vKfH6PyMJ?=
- =?us-ascii?Q?y1xPd34A7gZj38jZWnIFN7IRWPaMBBq4sIxE8FiO7GZjkJTNwVIn5G5WFaOA?=
- =?us-ascii?Q?TAt3+3T3s0rl0KsfLpChmoXJdzyPvg1h3D6m3T/WNDhNJeqKs+WMmSPgyLBO?=
- =?us-ascii?Q?SbYmkVtaYbKz9uCJKoGFvezISnFGoXL698ICCMpLgeCIGbY8+oWg7oeczxj9?=
- =?us-ascii?Q?koKMLI8zZFLWUdade6eKv2uhH1ah6GbtE0OkTCASVNSMo3muZgCb8VQQox+p?=
- =?us-ascii?Q?EoLiWW5tJYpeaZ9Ri1efXQH/lwrhNKpANlDb6Z335LpT83Ssk70/UsMmcDbS?=
- =?us-ascii?Q?0qhBZhFIwl+o/DrG0eLUnIfBoeL7srqt77pOen+qrEJ6UtG3RpUUfThfLn5Y?=
- =?us-ascii?Q?ZZllRH1FuicVzthPP2+RQ+B1ySc02/BSkCaGA2tUMg0luzvPealS+fIQyJ4B?=
- =?us-ascii?Q?cii5ehZhsY/TIj93nOI2V1zFbw7qSAlvV/1ZlQ=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QhfMbTe3";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hsNOwS8i";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QhfMbTe3";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hsNOwS8i"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 7986D2020C;
+	Wed,  4 Jun 2025 08:12:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1749024766; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=GehkjeXbUaVabMARjI8MzX+XYRRUc1ZTqrpmk77LOr8=;
+	b=QhfMbTe30Rwek73ksQG2t0gY1NtsBG8m+qkcNnNTfWvX8whcx8B3oyxMCH5ZL59fkJGPBk
+	ucBf8lyjTJj1FewA1QiLLMUppdRpocTtP3CiBBpwKHVqG3VrORPqJHjIfNytF0rnpVpqPE
+	v/x/IMMxjzyiRSl7DrEI0pp0FIhaJeA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1749024766;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=GehkjeXbUaVabMARjI8MzX+XYRRUc1ZTqrpmk77LOr8=;
+	b=hsNOwS8iLZwX6U7w8jV8ZtZg89TtoXPhFlxG+oQabjN/05IplQmo/iOjgfAClBbtKnIAgX
+	q/MdGtILqg9SsJCA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1749024766; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=GehkjeXbUaVabMARjI8MzX+XYRRUc1ZTqrpmk77LOr8=;
+	b=QhfMbTe30Rwek73ksQG2t0gY1NtsBG8m+qkcNnNTfWvX8whcx8B3oyxMCH5ZL59fkJGPBk
+	ucBf8lyjTJj1FewA1QiLLMUppdRpocTtP3CiBBpwKHVqG3VrORPqJHjIfNytF0rnpVpqPE
+	v/x/IMMxjzyiRSl7DrEI0pp0FIhaJeA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1749024766;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=GehkjeXbUaVabMARjI8MzX+XYRRUc1ZTqrpmk77LOr8=;
+	b=hsNOwS8iLZwX6U7w8jV8ZtZg89TtoXPhFlxG+oQabjN/05IplQmo/iOjgfAClBbtKnIAgX
+	q/MdGtILqg9SsJCA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1652E13A63;
+	Wed,  4 Jun 2025 08:12:46 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id qthLBP7/P2hhdgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 04 Jun 2025 08:12:46 +0000
+Message-ID: <9a93813c-4d7c-45ef-b5a2-0ad37e7a078a@suse.de>
+Date: Wed, 4 Jun 2025 10:12:45 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: c3527edc-b362-4a95-5f14-08dda2c71e7f
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Jun 2025 17:50:24.9884
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR02MB7353
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/4] fbdev/deferred-io: Support contiguous kernel
+ memory framebuffers
+To: Michael Kelley <mhklinux@outlook.com>,
+ David Hildenbrand <david@redhat.com>, "simona@ffwll.ch" <simona@ffwll.ch>,
+ "deller@gmx.de" <deller@gmx.de>,
+ "haiyangz@microsoft.com" <haiyangz@microsoft.com>,
+ "kys@microsoft.com" <kys@microsoft.com>,
+ "wei.liu@kernel.org" <wei.liu@kernel.org>,
+ "decui@microsoft.com" <decui@microsoft.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Cc: "weh@microsoft.com" <weh@microsoft.com>, "hch@lst.de" <hch@lst.de>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <20250523161522.409504-1-mhklinux@outlook.com>
+ <20250523161522.409504-4-mhklinux@outlook.com>
+ <de0f2cb8-aed6-436f-b55e-d3f7b3fe6d81@redhat.com>
+ <SN6PR02MB41573C075152ECD8428CAF5ED46DA@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <c0b91a50-d3e7-44f9-b9c5-9c3b29639428@suse.de>
+ <SN6PR02MB4157871127ED95AD24EDF96DD46DA@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <SN6PR02MB4157871127ED95AD24EDF96DD46DA@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Flag: NO
+X-Spam-Score: -4.29
+X-Spamd-Result: default: False [-4.29 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.19)[-0.950];
+	MIME_GOOD(-0.10)[text/plain];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de,outlook.com];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_EQ_ADDR_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[16];
+	FREEMAIL_TO(0.00)[outlook.com,redhat.com,ffwll.ch,gmx.de,microsoft.com,kernel.org,linux-foundation.org];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email]
+X-Spam-Level: 
 
-From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Monday, June 2, 2025 11=
-:25 PM
->=20
-> Hi
->=20
-> Am 03.06.25 um 03:49 schrieb Michael Kelley:
-> [...]
-> >> Will the VMA have VM_PFNMAP or VM_MIXEDMAP set? PFN_SPECIAL is a
-> >> horrible hack.
-> >>
-> >> In another thread, you mention that you use PFN_SPECIAL to bypass the
-> >> check in vm_mixed_ok(), so VM_MIXEDMAP is likely not set?
-> > The VMA has VM_PFNMAP set, not VM_MIXEDMAP.  It seemed like
-> > VM_MIXEDMAP is somewhat of a superset of VM_PFNMAP, but maybe that's
-> > a wrong impression. vm_mixed_ok() does a thorough job of validating the
-> > use of __vm_insert_mixed(), and since what I did was allowed, I thought
-> > perhaps it was OK. Your feedback has set me straight, and that's what I
-> > needed. :-)
-> >
-> > But the whole approach is moot with Alistair Popple's patch set that
-> > eliminates pfn_t. Is there an existing mm API that will do mkwrite on a
-> > special PTE in a VM_PFNMAP VMA? I didn't see one, but maybe I missed
-> > it. If there's not one, I'll take a crack at adding it in the next vers=
-ion of my
-> > patch set.
->=20
-> What is the motivation behind this work? The driver or fbdev as a whole
-> does not have much of a future anyway.
->=20
-> I'd like to suggest removing hyperv_fb entirely in favor of hypervdrm?
->=20
+Hi
 
-Yes, I think that's the longer term direction. A couple months ago I had an
-email conversation with Saurabh Sengar from the Microsoft Linux team where
-he raised this idea. I think the Microsoft folks will need to drive the dep=
-recation
-process, as they need to coordinate with the distro vendors who publish
-images for running on local Hyper-V and in the Azure cloud. And my
-understanding is that the Linux kernel process would want the driver to
-be available but marked "deprecated" for a year or so before it actually
-goes away.
+Am 03.06.25 um 19:50 schrieb Michael Kelley:
+> From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Monday, June 2, 2025 11:25 PM
+>> Hi
+>>
+>> Am 03.06.25 um 03:49 schrieb Michael Kelley:
+>> [...]
+>>>> Will the VMA have VM_PFNMAP or VM_MIXEDMAP set? PFN_SPECIAL is a
+>>>> horrible hack.
+>>>>
+>>>> In another thread, you mention that you use PFN_SPECIAL to bypass the
+>>>> check in vm_mixed_ok(), so VM_MIXEDMAP is likely not set?
+>>> The VMA has VM_PFNMAP set, not VM_MIXEDMAP.  It seemed like
+>>> VM_MIXEDMAP is somewhat of a superset of VM_PFNMAP, but maybe that's
+>>> a wrong impression. vm_mixed_ok() does a thorough job of validating the
+>>> use of __vm_insert_mixed(), and since what I did was allowed, I thought
+>>> perhaps it was OK. Your feedback has set me straight, and that's what I
+>>> needed. :-)
+>>>
+>>> But the whole approach is moot with Alistair Popple's patch set that
+>>> eliminates pfn_t. Is there an existing mm API that will do mkwrite on a
+>>> special PTE in a VM_PFNMAP VMA? I didn't see one, but maybe I missed
+>>> it. If there's not one, I'll take a crack at adding it in the next version of my
+>>> patch set.
+>> What is the motivation behind this work? The driver or fbdev as a whole
+>> does not have much of a future anyway.
+>>
+>> I'd like to suggest removing hyperv_fb entirely in favor of hypervdrm?
+>>
+> Yes, I think that's the longer term direction. A couple months ago I had an
+> email conversation with Saurabh Sengar from the Microsoft Linux team where
+> he raised this idea. I think the Microsoft folks will need to drive the deprecation
+> process, as they need to coordinate with the distro vendors who publish
+> images for running on local Hyper-V and in the Azure cloud. And my
+> understanding is that the Linux kernel process would want the driver to
+> be available but marked "deprecated" for a year or so before it actually
+> goes away.
 
-I do have some concerns about the maturity of the hyperv_drm driver
-"around the edges". For example, somebody just recently submitted a
-patch to flush output on panic. I have less familiarity hyperv_drm vs.
-hyperv_fb, so some of my concern is probably due to that. We might
-need to do review of hyperv_drm and see if there's anything else to
-deal with before hyperv_fb goes away.
+We (DRM upstream) recently considered moving some fbdev drivers to 
+drivers/staging or marking them with !DRM if a DRM driver is available. 
+Hyverv_fb would be a candidate.
 
-This all got started when I was looking at a problem with hyperv_fb,
-and I found several other related problems, some of which also existed
-in hyperv_drm. You've seen several small'ish fixes from me and Saurabh
-as a result, and this issue with mmap()'ing /dev/fb0 is the last one of tha=
-t
-set. This fix is definitely a bit bigger, but it's the right fix. On the fl=
-ip side,=20
-if we really get on a path to deprecate hyperv_fb, there are hack fixes for
-the mmap problem that are smaller and contained to hyperv_fb. I would
-be OK with a hack fix in that case.
+At least at SUSE, we ship hypervdrm instead of hyperv_fb. This works 
+well on the various generations of the hyperv system. Much of our 
+userspace would not be able to use hyperv_fb anyway.
 
-Michael
+>
+> I do have some concerns about the maturity of the hyperv_drm driver
+> "around the edges". For example, somebody just recently submitted a
+> patch to flush output on panic. I have less familiarity hyperv_drm vs.
+> hyperv_fb, so some of my concern is probably due to that. We might
+> need to do review of hyperv_drm and see if there's anything else to
+> deal with before hyperv_fb goes away.
+
+The panic output is a feature that we recently added to the kernel. It 
+allows a DRM driver to display a final error message in the case of a 
+kernel panic (think of blue screens on Windows). Drivers require a 
+minimum of support to make it work. That's what the hypervdrm patches 
+were about.
+
+Best regards
+Thomas
+
+>
+> This all got started when I was looking at a problem with hyperv_fb,
+> and I found several other related problems, some of which also existed
+> in hyperv_drm. You've seen several small'ish fixes from me and Saurabh
+> as a result, and this issue with mmap()'ing /dev/fb0 is the last one of that
+> set. This fix is definitely a bit bigger, but it's the right fix. On the flip side,
+> if we really get on a path to deprecate hyperv_fb, there are hack fixes for
+> the mmap problem that are smaller and contained to hyperv_fb. I would
+> be OK with a hack fix in that case.
+>
+> Michael
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+

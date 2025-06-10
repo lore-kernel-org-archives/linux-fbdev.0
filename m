@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87929246765;
-	Tue, 10 Jun 2025 18:00:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AE32236424
+	for <linux-fbdev@vger.kernel.org>; Tue, 10 Jun 2025 18:06:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749578455; cv=none; b=P31pwDgWr1nTF5c0/nf005FnxLs84FVBFeEwvpJByo8obI7Slbrwky12TXP52UENPxzChNoeemF+p+0WYIxkMyeg0gr9hdB4es52vkBGOXbST9UOBIG99xzsuAif5nxU3aZlhylx7YaEiP+8C53+hynms22DC7E0YUo48zCMlNI=
+	t=1749578817; cv=none; b=EFjE5Xunui+4D7POxf0cNJJamq0TDdb4r+ufMOg04QMtlrGtrZc7Q2YR3LojSoXJfZ2YhKIrlzSnV9FNcxb7RqGMoFZjwT2Y49FRfSdHV2FNbUR1G6jG9kiU0m8+8DMh0xtbquVrfkHpJlSSrdfZvLIcxQwqzIHpZTfL3xjdSYM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749578455; c=relaxed/simple;
-	bh=Cw3g9Jqf1WHjcRrOekmZFGB2G2Q8gVx9gXQt2CU91hY=;
+	s=arc-20240116; t=1749578817; c=relaxed/simple;
+	bh=QjQ3iHzor42VtDPIIGJ89GLNdpCa6Zf6qhDepS2VZds=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=F6Qd5sIxtRwrnNCnU/AezxjjVZIMqO47BlkX/Y/fZaZuIMsnkkhh/m3n6KoxM2f3VvTaRmNd5JJa8QtoBGbKpd8lUUSB7LeJ3t67t5Tglr4jOcon9o/c7QMy9o8V67MeQhHoAjjhWC7dTy8LWXWSXJ680eKlK5HtQFtMk6sQRkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=X/CD3fAN; arc=none smtp.client-ip=212.227.15.15
+	 In-Reply-To:Content-Type; b=BHdBK50MwD87faLEwNErdvDZozatMCmoVGmv/bzL+Q+cxA74tkRDqrpzbvz8qJFNmMEJdWwyME6L+13sERvh5M1NJrFNtAIJpfaKj1A1MDE/pPp03KR/GelqDiQf60edzM+QxdmaPKt8r8QuRJwfN8X2k25BmK25X+5DSDmgA+s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=U++k3vvn; arc=none smtp.client-ip=212.227.15.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="X/CD3fAN"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="U++k3vvn"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1749578429; x=1750183229; i=deller@gmx.de;
-	bh=K8TZOu36Zu0X+TwQ4J9L8v1/Sz5M4UbPXvWPJWawvAw=;
+	s=s31663417; t=1749578807; x=1750183607; i=deller@gmx.de;
+	bh=wbZXuH2tOA/Eusj7lw6da7edYMjoXVbcpmt/w4nzDtc=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=X/CD3fANxAWWn7v52YLkHfKEecpb6BKHqGc6zAgQ+tvomYeV0e/xRFT3WRIVRo0r
-	 bb98YXX5lB695gIUnOM4TnAUrYLHV54eGygVDCcH1arpPmUhIaXNyhypcfjL+WnLz
-	 cCR8Q3pgWQoegfxaIoqDffQCyz/qQ3dXtiZf6MKkd4r5SB2aRnJy24FLBKunt4L7l
-	 3GVS02Kpm3UyKSIgg7TfD6dLRzdqg5ix/ERf6wH3XWL+DXtcmIqaaJyS7Pd43MJVM
-	 VaG2V1YeUYXTZBiie2dLdTmOfBHNGxRg14zzLK7QN3BqhLc9HPn63DF2OhOLokPKP
-	 FRDsbh7F5hghrzuIjQ==
+	b=U++k3vvnS15wEycckm6Gg/8ghMH24fNqTSXCyuoaZuuYUFiKF7lP6heciys8SC+N
+	 LyXUl6kG/wP28P8TVhl+ShnfLBotemU0jOEB9oZ0sLLdBSIbFmb2mF8pa6AEBD5h5
+	 xyV3MmiV+yEoGuTPTBpFENydpzIhzttIimpmPPniiNrApo7pynhtsauqJ2+X7qTCl
+	 Gvwt4NNU4/OZV+GGQrxIrJil8nKQWJ/Zasd/RJrKc1XDdSnrSExvus1OWzoVz4qle
+	 rP9vyvUlg16lki42waRKpPM6defsjlkVio0fqFDDQmnYY9w968aJPb1LEqPj5FIZH
+	 zSked5kEkniAFOPiug==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.172] ([109.250.63.171]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTiPv-1uFL2O2Yf7-00SIpm; Tue, 10
- Jun 2025 20:00:29 +0200
-Message-ID: <e34abf13-b745-4683-8c8a-52a11e2be2e5@gmx.de>
-Date: Tue, 10 Jun 2025 21:48:12 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N49h5-1uplLy22Wf-012Rvs; Tue, 10
+ Jun 2025 20:06:47 +0200
+Message-ID: <abf99998-6779-4152-844e-85c9873e6bdf@gmx.de>
+Date: Tue, 10 Jun 2025 21:53:59 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,14 +43,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 11/14] fbdev/pxafb: Unexport symbol
+Subject: Re: [PATCH 01/14] fbdev: Remove trailing whitespaces
 To: Thomas Zimmermann <tzimmermann@suse.de>, soci@c64.rulez.org,
  simona@ffwll.ch, linux@armlinux.org.uk, FlorianSchandinat@gmx.de,
  alchark@gmail.com, krzk@kernel.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20250610105948.384540-1-tzimmermann@suse.de>
- <20250610105948.384540-12-tzimmermann@suse.de>
+ <20250610105948.384540-2-tzimmermann@suse.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -96,94 +95,67 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250610105948.384540-12-tzimmermann@suse.de>
+In-Reply-To: <20250610105948.384540-2-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:F4KyiKjsH3HRtj+5T+o+ZK4dWqglv7z0g4aHCoZsPmSd/+R1Bb/
- XfchOBgsD5qjauAeZ9O/ouwWWYwA4hM9o5iRLhiNBihmI0teahx3uZSvpUDmhzm9XKHSrA7
- LoCzKN8gbhjLP6lJP0tlYGQugX/5auvAfCyfUO6j+My0wfRvcrrCm58e/rRdsaUX9+7xghm
- C/J3WJGLeot4EYuJSLnpA==
+X-Provags-ID: V03:K1:+DkJ6FR+Km5D/WhgpvvOXa79/D5abjFVeGE77zLuGdeghkehmmK
+ njKpk7MF//n6D9iFXauiQcynDyj3PXQoTRn85oPHEbmanFi3U65LjZ2thKIESgm1wRXXEbm
+ aY7pvfx6o3AtSqmDUclo4j61v6vVBaSChbIs5rV8PQo9IZi0e41cM+gCniNc9ShLvr91WDO
+ aDHSUJXDTiZ0Fptf5C/Uw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:mtAr322YntY=;kBnmN4TSZ/mojLXlVZRxoGxf7m3
- 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
- H8cHdIaZfuoYBLQvVDAPxlvaa
+UI-OutboundReport: notjunk:1;M01:P0:RDgaSaUxPoE=;y+gBCxn6ZhdHxCcishqhgFbjGb8
+ mrEQXn6lL+yrBv2w115Zb1DXHdYITMOyWlmKW7Ar2FWknGyaeZFF/ZxB5K/u4Dz0aGgc/ioNT
+ gUhmpcLfRwEi+MSpRy5MwNnuFuZwRGCrJp9a+3xAn2iNBJxsauMi2oxBdKNREuep83RSd3LYY
+ 7+PAwoCQkcs9PVSDJrxyWlk7q/xlTHBRjp5nePyigVwm0VqwspIB2T4paEcaqZrQfcNgqjIdO
+ +fanoQoJMQt4xrpeylWhCLTo4EvgwhdYb2rrpNufFtl1xJ+B/Adhw+TtMm5Aa9qKiyJsfMhWv
+ zJog3ITWAwt3CECJNqlbfotdnztu4vtalIRiZdPGnDKJgHoszeTSVVqhMGUKcaNK+YfXtLVyF
+ sHsSu5mj6rD6x/iVtCBGt59efiXAE2LafuUbf81B8nnoblkJJFoRRJQ1d8ixZl883UfBxjNAI
+ c2LSJapB8ZuZPKARcUnz/YIKikFPHhMzhNwuXDs/gsBJxm1nksLAounLr3wNh9+k5ds40Qc07
+ 7rIU2gAFZiIckjDk0WVmkGB9PF0T8RmNRhjTdTwtIZeRXTHjcUjpReefopRPIxsgZ7CDy8YZ3
+ TSrvVFZiWBNsSRYY9a4rivJ+EGbhRST6+dfTJLjWWyQxX6AZYVjAWhcwjmvHbnGW/EFX6hM4B
+ s8sWflCXfED5xIy/OlG5bD8lul2f7BiJ8PGDO7dyXI3MptgxAg+U15UVFBc/UNbnMpuAP9ZTj
+ DfcAf8F4x6Tf8fnjkvu8uZx+VElciRRqW/jtCkl0BQrNerKbLe/U/xrAJnIvODpTiiZmGAgpx
+ ejtNgn+JpHIAI0IVBMJiLN50suFBhqjy+scEv4yBFlvyfUi6ZswEtqkv7UZ+nMP8WXTCYFoAD
+ AOlYIXf7Bz6V/M1zjedVBa9/PYjTQwLTux8efg7IwAokjfMhxaFW1bLgJQTvH31T9mmtA1cDM
+ lNslS5Le4ROPGySW/VZc144jQAGKXulZNbHeHsSGjL32qeGPbsZ7G8MVmyrXRh8lurPgzXvuZ
+ FS9GnEmgQFkMOhDoIXIHrOL/uwpKBxo6yK5c82Wkwtcbci0c+G5fzq2K6iwFCVdL9svmgrfq0
+ wpilqsWuuSxuIHm5gmoGpzphz2vpQJaTu1Hql3XjG8EoPZX3xfcjzn1yrZ54xHDJJ2Ka23z6L
+ iILVI/zwQifgv0abehZad8VQa09r0VirwdM1wVMVncqXPgrPlSkQB3W/R0V9JLgO/f7z1AAAW
+ Kn1gFC6ydC2KTHEyMDUdg83jBHq5FOKqXSyvedmBSbJGYuaSpPyLYoYcLqRd16qOe4eY2lMJG
+ 4mQ7wCupzloMYlwedS2YA7EaXqTCJZ7IUcFuQqfgz3xem3B17doL4t9xNPYIXSi/HM4BUH+qN
+ oFNHW1ggj3VMeNcU29lfJ0HO+SRPGJwyXugST2aswd6vg32uP7dULRRX/wjrwDwO4H4cq8VXw
+ k3VQGcj8XVU7ZCcai36IOJmdZUyxGznVEizkkcw3TmZ3S7Wz3b+3NsDhQWqsYdJSmyXv/v3v2
+ kngifrsJHD/6kS2GsLZDBo36K10O9PHaIxV0q1pXkjriMsat8UbcAJQn7N98ifaKQcNwVfQjU
+ TcVYG7HQZ0urmmgrKFuDSbxfoo2dJRZ1WgPL266gxOferRC57aLEdC7PHzR+EAKHx2nKrVUma
+ ttHE60tB+jsyDZ8EcU15f3Mmz/GKTz1SrlAtAt2CksQrmTkCoRfwj0/QzZRJwWa9YRQi2WnWQ
+ SuLtonhMyRXQHBOLfoYtYrK6RnykJcvMBzVTYGdDv4zGglzJ7vCHGMcUr9t1CMK+fzj+DLZa0
+ bvQ9WzyrDLPsZijILRHKqgO2eRLPni2lD1AACp2awgmZkUwOLOYWq6G36Mcz+0Bz21iECM8qz
+ 8kx90fitl0UZyrzVlMbcM7HzImxp2EkfQlspdiqzqRdPKG7ZP/gJN5K6KG3uUFJzfhhmR/ZTP
+ VV8ARi5My52LXHsB367zsZwKT0LiAAYM2sQiRz0Qv5kl1vpJn9JV/ADnHcIzbMKWRm1ZMy6z+
+ Lw6fTA3fmEwE8+k3hEURA3X4/TWURnlQu+U8piHO+izwxvealDi0ckoBg1a49nOu6oiHjDBmq
+ TR87HdgoiTfudZczdFFxxxZ3drbcXuaEK1VTVJpm4KwudKkuw+B9GjimfMIc9hilS3BoyChWR
+ zDRx011CSGZocKc7dTGjssBxjrP4J21Da9lUGU1688G/pU8Yc/KukG7o68mQ3g9QInhDPbu5s
+ mzK2qxHNn4SuO0YdY0BQtO+iRdg4r/433McTNqYusQ5csfb9Q319Q4NlXYaBaVPHxU3McsYxy
+ cbVNrElhiyI1VusMdITNDaIMpp1BNNn5vwlpWQIlPRvahcHrAdsLCXeAjy5ZV6NJ+k+sD+htE
+ Ws1zhupcSZNQEkjjimPZZBkhviKELcfBtpF41Qf+d5qXZPWGz9J4DYAHVGNePLaljXuJcb2Km
+ QiyjPTY8IjqYCGOg9yHV2VAHeNlktWnlmh6RgFcZxRsK1ZX6sCQAmnCVWEgFolPIMiGFrer4a
+ +Lz3h9wx/JSRfl1ukG8ajlPy5CYUMPOI9GKKrGA3hDDwAtjKE2ja22AXM6zL/RMrkTLPWbOla
+ nWLtuGG4gmP7xz7sHu0/U6d2WKIFEDVFZNLrdk+AoghfhuGJgPPzXWgyp8+51O2Ak54Ml3Zq9
+ 9sQ1dUMs+5+vapmAknuYRZPFAq/VIafFx26V68sLmRVxIkJ0wTCtiGTrg8V8tmoSMBv+4mgW5
+ GwRLjChP/0uAdFb8U3XOc0eu/VjS7HWURwchwyGj+LYOXekp2yoHTefR7Ur25/OaWvFnsCUvd
+ YtnNkRbjWeftENVNojq+iLD0DKskm0e2Ft1jFPZI81s6saWuZbeigxN3UcxRRhEEUHC1+yV+r
+ N4j1ORx92oyotHO34SfKLS676zoxzh+MvdkV9ndzpaf6UY86+ZMVr357C3ghP8vlBEAYlQEXE
+ kXkGJLI36X+Y7nS1L2EOejDEP86rVgOB5zYiVZt47lGhAYE/sHkojtKSt8yXaaiYQk5eFWUJ+
+ Wuub3OxbgIiirXPf7zof8D4GMwbFqKCv5IAnGmnQB69Lc520Bn57VkWWlJRyixShlkWZ2VtSZ
+ XUOJ6lsOFYp9m5LLAgjYZ2W3R7eZVUOVBHNdKjHY/8Z3T1jbGWqbYirkqw7QUUjOugWFyH1Wk
+ fb0M=
 
 On 6/10/25 12:56, Thomas Zimmermann wrote:
-> Fix the compile-time warning
->=20
->    drivers/video/fbdev/pxafb.c: warning: EXPORT_SYMBOL() is used, but #i=
-nclude <linux/export.h> is missing
->=20
-> The affected symbol is not used outside of its module.
+> Fix coding style.
 >=20
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->   drivers/video/fbdev/pxafb.c | 1 -
->   1 file changed, 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-> index ee6da5084242..f15310bf94cf 100644
-> --- a/drivers/video/fbdev/pxafb.c
-> +++ b/drivers/video/fbdev/pxafb.c
-> @@ -1058,7 +1058,6 @@ unsigned long pxafb_get_hsync_time(struct device *=
-dev)
->  =20
->   	return fbi->hsync_time;
->   }
-> -EXPORT_SYMBOL(pxafb_get_hsync_time);
+>   drivers/video/fbdev/macmodes.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 
-True, the function does not seem to be used anywhere (at least not any lon=
-ger).
-A comment in the file says:
-  * Some touchscreens need hsync information from the video driver to
-  * function correctly.
-Not sure if such touchscreen drivers still exist, but they don't seem
-to be in-kernel.
-
-So, if we clean up here, maybe you should then simply remove the whole
-function and the reference to it in the header file too?
-
-Helge
+Reviewed-by: Helge Deller <deller@gmx.de>

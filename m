@@ -1,131 +1,156 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from fhigh-b6-smtp.messagingengine.com (fhigh-b6-smtp.messagingengine.com [202.12.124.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE12525A62B;
-	Tue, 10 Jun 2025 10:26:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4F1628CF4B;
+	Tue, 10 Jun 2025 10:35:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749551209; cv=none; b=djrAG5MLDJ4O2lg9iSgq1lkswCQkqMZQhnBrxfOUOGIIZXBdsKO20D0sUAehEpK6tDwA3tH62JACzJHDNgn+NQndvY30Nr7FHm2gGw0xX7feyVym0/mNNqXvV1L/gZ/npjeV8ye/yHbTovYmVvr+9/eyzSxodBl2pQTsueYSUB4=
+	t=1749551739; cv=none; b=r2HwHZMXs49m2IJ+zX4yYrxgDeJFbiT6McTGOvhT0xCNBGSHXQlkUxBOBxQDZpjwBXESvGutyEqH7C7Zw+sdNCIUeBILBXBGxfW6PZFhnbKnt3TZTMZ2TKkK+6LL8/NMn5OB8f4sD3HsnohakcyeXAbPI/KcMq3/dtzQBW7AOfA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749551209; c=relaxed/simple;
-	bh=xj4Bk+QtP4Xe69OFwGbfLYunFjAhUgQvako1o9IrDtw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Tu8J6pgQ6kH2jjoZO+TAFSZsQG0YOtFMDXBLQwvlx5ufa0xY2iMF8q8vkMnVxavO+cnoPs5IOK3LOTGrHweeDfs1crsUKQWHYcAwEjbrZCZ8BcSSNeW3+Z0gQizQfOjDtk9+VPZMoQWUC6R9Twxis/ErJXBm8nrUlc9tEIYcQh0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=L9V4Sd/B; arc=none smtp.client-ip=192.198.163.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1749551739; c=relaxed/simple;
+	bh=CeQswRSD0Fu1GJhqXwPWw0zljZsyENP/fzUc2E8+hKQ=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=AgOFoWJqgUXIjEHH9LukX8Cf9PZnR0HmNVdAdYQArN/9rmHYEasoCwlEHammaxWTd8AIiTw/uJyT0o6+JwHL8JE7jiAMNHrbXmWDUQKlqW8qN1PK7+sZqhkDiXCqN+hl1B0roXc8Jdec6bdfH7mGc0GYqQXM2mW9t/AUgR/9SNs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=Dhg/CsQ3; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=NBonXYMv; arc=none smtp.client-ip=202.12.124.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="L9V4Sd/B"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1749551208; x=1781087208;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=xj4Bk+QtP4Xe69OFwGbfLYunFjAhUgQvako1o9IrDtw=;
-  b=L9V4Sd/B5lZVEM5lvinRVs6nb3hM5nkC2YWnAwXq7gP21mQ7bfAIEihK
-   1zjdE7k+hmU32R5QYQnxk+o2rp+l3IBcD3fz4uPjzbVPYekAw+ChNqh4J
-   xs1uDXb5aHE9zJKayXwLLHX4uqBTY3CdzZyN6zyEWlfBJjgyGuR5GY0Na
-   DYqxBkpDFhO+n5xIPXhAw+RDA2FVRoWiY6r2Ly8iSP3O0LyvkjjiGdgLN
-   yuTRs6rFMDcYsm9zgKG9vVFQ6ivrtzlLdgkNaL4bQqWDr50QuSJzCV6An
-   sEqE12mrbbRUjdxmUfVmxaDe4/J3/PhjcA5K5fhxWbJjNbr9LIQPndJMm
-   w==;
-X-CSE-ConnectionGUID: G+484nyLTZK94yFWJKdv8g==
-X-CSE-MsgGUID: 7fY7cQn5TAWIDNiGX1mZFQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11459"; a="39271737"
-X-IronPort-AV: E=Sophos;i="6.16,224,1744095600"; 
-   d="scan'208";a="39271737"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2025 03:26:47 -0700
-X-CSE-ConnectionGUID: T+GOp6Q7Ta66D4mv0ATegA==
-X-CSE-MsgGUID: ODHchsrkR7WUYMpiy6C/2w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,224,1744095600"; 
-   d="scan'208";a="183977231"
-Received: from smile.fi.intel.com ([10.237.72.52])
-  by orviesa001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2025 03:26:44 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.98.2)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1uOwBj-00000005Jum-2oTR;
-	Tue, 10 Jun 2025 13:26:39 +0300
-Date: Tue, 10 Jun 2025 13:26:39 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Riyan Dhiman <riyandhiman14@gmail.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Paolo Perego <pperego@suse.de>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbtft: reduce stack usage
-Message-ID: <aEgIX221QIt5k0zY@smile.fi.intel.com>
-References: <20250610092445.2640575-1-arnd@kernel.org>
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="Dhg/CsQ3";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="NBonXYMv"
+Received: from phl-compute-05.internal (phl-compute-05.phl.internal [10.202.2.45])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id C51A925400E7;
+	Tue, 10 Jun 2025 06:35:36 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-05.internal (MEProxy); Tue, 10 Jun 2025 06:35:37 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1749551736;
+	 x=1749638136; bh=wJ6K1Bg2EKOzCl4JP7wnZYiAEnsPSxJW7yzlyL9SDrY=; b=
+	Dhg/CsQ3lwukqyGwumJyoh8RAFfoAk74WSQ0txZSQsI4k4EkwceQnuR1O63lCr6B
+	YbZQx8FpKQPneYLaBDLrq09snuKmE36a+/puRsIVucSFD9tTnxS2TzBITsiUXKmh
+	UP7PoDqXdLv/SB2e0A+nDbxJOfJ9DO/MEvsxtRMofu4gtqGvvy/HGLuobSe8KBf1
+	nbpqPiw0K08htNZqXhdL+8TbFDeWyedMnWnLutGtiqqzVv/w+fYVxPNF422UYdy2
+	xUM0umTq4TAzrh3UnW0pGckyYqKfLgZZDCSj5ege/mF19Pgoyv4iBLDbIIMGdjPx
+	ZvnZ+VksqzRJepU9jQlXVw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1749551736; x=
+	1749638136; bh=wJ6K1Bg2EKOzCl4JP7wnZYiAEnsPSxJW7yzlyL9SDrY=; b=N
+	BonXYMvvEst6qDS4cbOonC6/2Wl30tJbHNRUj6h9MDvKE/x7rgJ0cH2SUvHUgGlY
+	xHKaour2RolblsDPAH4MhsVnvZ+NRuk7Nb/GQJd9V3oZrKLVccwWslKS9oNkLgVr
+	ArcrDoSOeVf+bOQBvPrYt4zoIJXG9cO3Uagl4ZiKPJzbu1VCXijX3SLbuF7HNXgI
+	fqQG7jvc/DM1zFBrnWXwfDZrmbmPhQkb4z0Vtw/YkBzhNejKHv2gq0qx04zhv0hA
+	89p6xso/1PVh2/RxzUe5a8zPvl28IXsYh+8sEvQQcCtGLQvD+UXI5EYQjV6ZlH48
+	emfpKMLfMKt86cLN+50wA==
+X-ME-Sender: <xms:dwpIaBC5s0BdUMi9rIszRUs_uxU5IaVtsiYzeMsN0UTl9PrLE8fJkQ>
+    <xme:dwpIaPhHgMcMhnfxavaaUPPI9qNXF24yudbt0Xub1myL25S8GcRnReUvDIDZ2rTCR
+    qSbknmRYQxfDGAvTM0>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtddugddutdeivdcutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
+    uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
+    hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredt
+    tdenucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusg
+    druggvqeenucggtffrrghtthgvrhhnpefhtdfhvddtfeehudekteeggffghfejgeegteef
+    gffgvedugeduveelvdekhfdvieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmh
+    epmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphhtthhopedu
+    fedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtoheprhhihigrnhguhhhimhgrnhduge
+    esghhmrghilhdrtghomhdprhgtphhtthhopeifihhllhihsehinhhfrhgruggvrggurdho
+    rhhgpdhrtghpthhtoheprghrnhgusehkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnh
+    gurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghp
+    thhtohepghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpth
+    htohepughrihdquggvvhgvlheslhhishhtshdrfhhrvggvuggvshhkthhophdrohhrghdp
+    rhgtphhtthhopehlihhnuhigqdhsthgrghhinhhgsehlihhsthhsrdhlihhnuhigrdguvg
+    hvpdhrtghpthhtoheplhhorhgvnhiiohdrshhtohgrkhgvshesohhrrggtlhgvrdgtohhm
+    pdhrtghpthhtohepjhgvfhhfrdhjohhhnhhsohhnsehoshhsrdhquhgrlhgtohhmmhdrtg
+    homh
+X-ME-Proxy: <xmx:dwpIaMnMR5IEeoAfV7RdRsbM__rzDqhhPYk6CToFFEJAkb4IFYsTTw>
+    <xmx:dwpIaLwzviYxwPrNq2HPvQOCyhWI5vfYvN0QT43CZSeNvcZcaXcsJg>
+    <xmx:dwpIaGSzClcDHloai92YpmPG90Iwig9HauMVZdWpwyQ22tZFT4_x7Q>
+    <xmx:dwpIaObV0EV9TpgQ6ZwKz87VncvtDCPgnSZVjDT6mKV3LVU8fbnaNQ>
+    <xmx:eApIaD1ewy-S6aw_2-p9Tr4q9kMUoeXujPaEiz3NhmiOsEgC11XQs8Ca>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 92CDE700061; Tue, 10 Jun 2025 06:35:35 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250610092445.2640575-1-arnd@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+X-ThreadId: T57998a13661304d4
+Date: Tue, 10 Jun 2025 12:35:14 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Andy Shevchenko" <andriy.shevchenko@linux.intel.com>,
+ "Arnd Bergmann" <arnd@kernel.org>
+Cc: "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Riyan Dhiman" <riyandhiman14@gmail.com>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "Paolo Perego" <pperego@suse.de>,
+ "Lorenzo Stoakes" <lorenzo.stoakes@oracle.com>,
+ "Matthew Wilcox" <willy@infradead.org>,
+ "Jeff Johnson" <jeff.johnson@oss.qualcomm.com>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Message-Id: <088dc0a1-fc54-478c-b253-4ed5dd6d6bae@app.fastmail.com>
+In-Reply-To: <aEgIX221QIt5k0zY@smile.fi.intel.com>
+References: <20250610092445.2640575-1-arnd@kernel.org>
+ <aEgIX221QIt5k0zY@smile.fi.intel.com>
+Subject: Re: [PATCH] fbtft: reduce stack usage
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 10, 2025 at 11:24:38AM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> The use of vararg function pointers combined with a huge number of
-> arguments causes some configurations to exceed the stack size warning
-> limit:
-> 
-> drivers/staging/fbtft/fbtft-core.c:863:12: error: stack frame size (1512) exceeds limit (1280) in 'fbtft_init_display_from_property' [-Werror,-Wframe-larger-than]
-> 
-> drivers/staging/fbtft/fb_ssd1331.c:131:30: error: stack frame size (1392) exceeds limit (1280) in 'set_gamma' [-Werror,-Wframe-larger-than]
->                   ^
-> drivers/staging/fbtft/fb_ssd1351.c:120:30: error: stack frame size (1392) exceeds limit (1280) in 'set_gamma' [-Werror,-Wframe-larger-than]
-> 
-> Move the varargs handling into a separate noinline function so each
-> individual function stays below the limit. A better approach might be to
-> replace the varargs function with one that takes an array of arguments,
-> but that would be a much larger rework of the other callers.
+On Tue, Jun 10, 2025, at 12:26, Andy Shevchenko wrote:
+> On Tue, Jun 10, 2025 at 11:24:38AM +0200, Arnd Bergmann wrote:
+>> Move the varargs handling into a separate noinline function so each
+>> individual function stays below the limit. A better approach might be to
+>> replace the varargs function with one that takes an array of arguments,
+>> but that would be a much larger rework of the other callers.
+>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>
+> ...
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Thanks
 
-...
+>> +static noinline_for_stack void fbtft_write_register_64(struct fbtft_par *par,
+>> +							int i, int buf[64])
+>
+> Perhaps int i, int buf[64] should be u32?
 
-> +static noinline_for_stack void fbtft_write_register_64(struct fbtft_par *par,
-> +							int i, int buf[64])
+Right, I can send an updated patch, or this could be fixed up when applying
+the patch
 
-Perhaps int i, int buf[64] should be u32?
+>> +{
+>> +	par->fbtftops.write_register(par, i,
+>> +		buf[0], buf[1], buf[2], buf[3],
+>> +		buf[4], buf[5], buf[6], buf[7],
+>> +		buf[8], buf[9], buf[10], buf[11],
+>> +		buf[12], buf[13], buf[14], buf[15],
+>> +		buf[16], buf[17], buf[18], buf[19],
+>> +		buf[20], buf[21], buf[22], buf[23],
+>> +		buf[24], buf[25], buf[26], buf[27],
+>> +		buf[28], buf[29], buf[30], buf[31],
+>> +		buf[32], buf[33], buf[34], buf[35],
+>> +		buf[36], buf[37], buf[38], buf[39],
+>> +		buf[40], buf[41], buf[42], buf[43],
+>> +		buf[44], buf[45], buf[46], buf[47],
+>> +		buf[48], buf[49], buf[50], buf[51],
+>> +		buf[52], buf[53], buf[54], buf[55],
+>> +		buf[56], buf[57], buf[58], buf[59],
+>> +		buf[60], buf[61], buf[62], buf[63]);
+>> +}
+>
+> Wondering if we may reuse this in other cases (by providing the additional
+> length parameter). But it may be done later on.
 
-> +{
-> +	par->fbtftops.write_register(par, i,
-> +		buf[0], buf[1], buf[2], buf[3],
-> +		buf[4], buf[5], buf[6], buf[7],
-> +		buf[8], buf[9], buf[10], buf[11],
-> +		buf[12], buf[13], buf[14], buf[15],
-> +		buf[16], buf[17], buf[18], buf[19],
-> +		buf[20], buf[21], buf[22], buf[23],
-> +		buf[24], buf[25], buf[26], buf[27],
-> +		buf[28], buf[29], buf[30], buf[31],
-> +		buf[32], buf[33], buf[34], buf[35],
-> +		buf[36], buf[37], buf[38], buf[39],
-> +		buf[40], buf[41], buf[42], buf[43],
-> +		buf[44], buf[45], buf[46], buf[47],
-> +		buf[48], buf[49], buf[50], buf[51],
-> +		buf[52], buf[53], buf[54], buf[55],
-> +		buf[56], buf[57], buf[58], buf[59],
-> +		buf[60], buf[61], buf[62], buf[63]);
-> +}
+I tried this and that quickly became a mess. It is probably a good
+idea to rework the code to completely avoid the varargs function
+pointer and instead take an array here, but this is not something
+I could easily do myself as that takes more time and needs better
+testing.
 
-Wondering if we may reuse this in other cases (by providing the additional
-length parameter). But it may be done later on.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+       Arnd

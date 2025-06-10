@@ -1,99 +1,44 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0C1A28DF30
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Jun 2025 11:04:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D909227EA3;
+	Tue, 10 Jun 2025 11:24:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749553456; cv=none; b=QPNs6wpKY5g7EDEi2Spr3khkt4QLeGEP7gCfPugGkPzB5lX/V1Jynv5kFcAbtbGJDf4iknDyBlYDfhzjxhgOkuuOnTijuDWkBZpfDrjHteihcOFnTyYkYAMLa2Y5u+afYXX2G7bNgwmOgSLz0o9F5abxppJHlxyqJb4sd0Rqj+I=
+	t=1749554643; cv=none; b=mcT0VytlOW34UOGl1rOjTAqv82H2siIAHrcAcLILS9kNfMHaWxBaM+vPiq8JtEV8j+8rpC3PtjM3Uz1w2f77ZL8SrPDzdI3nzJwGCxHaUHrIDffU7WSrp6zXXAo9OrfgMa8CCBiFpfvs+HXLj6BH7zepcbOiAjUQyHW3rupf7e4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749553456; c=relaxed/simple;
-	bh=pPRm8cyM5DRYswxfweJKY4SnscvJAMF4AuLF+/bVdhE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HioAUVjPXd8Q3YXUsN5iIsPhC/+ZJ0y05FCpuQvRrXcI/ww4tawyuU0+4c7JzFFEYF8aozb1Nwg0r73ofOIiB/0UNAf69vtkg4uGw2jSW7+BVWhVhvzZ8V3f+oP0Wio3WSevYFBVP+trNjrKV+zDvjC8Gj68tNCcm1++lL72LVY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AkV71N7U; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hHznZY2l; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AkV71N7U; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hHznZY2l; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1749554643; c=relaxed/simple;
+	bh=nN0ISiXyc8XuJnFSXPqaX/pMz8eCyow5+vzT8WEFryU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=uJbGrgYby3IAVfeJ38JKhKcg/u6h6us0wDe40CpDcxnVddOPiKHf0zbvWffn+S2D/K02hd/n6X0RVffmnkni0sgGG0QZepF7SEz/58mxqo2S0iRohM27qEujhVzWUSLaMg0TfgFY1TM+vKfeg04NTj5AKoMctWJ1/x8XoX/sELU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VJz2yXxj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AkV71N7U";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hHznZY2l";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AkV71N7U";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hHznZY2l"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 6DB291F854;
-	Tue, 10 Jun 2025 11:03:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1749553408; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8EYVnThvVOrlaLXHuHW82UGnJKwNNBPF2t2gEkPuHSc=;
-	b=AkV71N7U2kXRSVXo2IIgdz9iXnK3NxgxkX6ztVdUGt+hfUAp6da3IQOk6HveYG+R6zppVE
-	BMWXDic2Ntx5BRTzLdA3JbJ6izGdCq81wtIB+YaaUGlY7k3ea/ErpUPSAi7weH9qMmdc1t
-	/Y7E8onxgvUSizzoaXZZYz8hxLA/XFI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1749553408;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8EYVnThvVOrlaLXHuHW82UGnJKwNNBPF2t2gEkPuHSc=;
-	b=hHznZY2lAWGl1jQ89gm2s0aMx0zik3cZ97MXQfwaodNRIw7aRcG6dKop3Q6HP+9sa7o5Jk
-	N0HiLQJQRqDtNCCA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=AkV71N7U;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=hHznZY2l
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1749553408; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8EYVnThvVOrlaLXHuHW82UGnJKwNNBPF2t2gEkPuHSc=;
-	b=AkV71N7U2kXRSVXo2IIgdz9iXnK3NxgxkX6ztVdUGt+hfUAp6da3IQOk6HveYG+R6zppVE
-	BMWXDic2Ntx5BRTzLdA3JbJ6izGdCq81wtIB+YaaUGlY7k3ea/ErpUPSAi7weH9qMmdc1t
-	/Y7E8onxgvUSizzoaXZZYz8hxLA/XFI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1749553408;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8EYVnThvVOrlaLXHuHW82UGnJKwNNBPF2t2gEkPuHSc=;
-	b=hHznZY2lAWGl1jQ89gm2s0aMx0zik3cZ97MXQfwaodNRIw7aRcG6dKop3Q6HP+9sa7o5Jk
-	N0HiLQJQRqDtNCCA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0992E13A17;
-	Tue, 10 Jun 2025 11:03:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id KP0pAQARSGgOTAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 10 Jun 2025 11:03:28 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	soci@c64.rulez.org,
-	simona@ffwll.ch,
-	jayalk@intworks.biz,
-	linux@armlinux.org.uk,
-	FlorianSchandinat@gmx.de,
-	alchark@gmail.com,
-	krzk@kernel.org
-Cc: linux-fbdev@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VJz2yXxj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D78EC4CEED;
+	Tue, 10 Jun 2025 11:24:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749554642;
+	bh=nN0ISiXyc8XuJnFSXPqaX/pMz8eCyow5+vzT8WEFryU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=VJz2yXxjwhRNUFzgTWtsg1POeNxBM/YAk2daMD4qnmkQ7mfqIWudSaxcfoPoxKXnH
+	 G9FqXSujr+g4o+ZaAFLw8f1Z/0d9GcCIXvrhAJI4pC54I0cnHIYL1vro2CqWCjrMvc
+	 1Vflmq00sHkSZrnKVXLQYa9rMNZgCSAhz/G/TJ99M9aLOO4BjpG/8pXpq9fdJhAQ69
+	 bblWVc9/8+OWXp4WjtEW10InDgzpMxoioCp2x2YrK97tnNhO0jrBxgCRaePMHX2RPW
+	 kdwrmJ6qWzQQnvRPBSqsu1/R5w7b99+NOfAxJ9KPF9CO7xPR3Bpn2lpPYuXIZO7AiO
+	 UFhyvlDxMqPNg==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Riyan Dhiman <riyandhiman14@gmail.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
 	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-omap@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 14/14] fbdev/viafb: Do not include <linux/export.h>
-Date: Tue, 10 Jun 2025 12:56:47 +0200
-Message-ID: <20250610105948.384540-15-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250610105948.384540-1-tzimmermann@suse.de>
-References: <20250610105948.384540-1-tzimmermann@suse.de>
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] [v2] staging: fbtft: reduce stack usage
+Date: Tue, 10 Jun 2025 13:23:28 +0200
+Message-Id: <20250610112357.3306246-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -101,62 +46,254 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCPT_COUNT_TWELVE(0.00)[13];
-	FREEMAIL_TO(0.00)[gmx.de,c64.rulez.org,ffwll.ch,intworks.biz,armlinux.org.uk,gmail.com,kernel.org];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RLwqwbgho3bgbo9wb3ecq1qfng)];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:mid,suse.de:email];
-	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Rspamd-Queue-Id: 6DB291F854
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Score: -3.01
 
-Fix the compile-time warning
+From: Arnd Bergmann <arnd@arndb.de>
 
-  drivers/video/fbdev/via/via-gpio.c: warning: EXPORT_SYMBOL() is not used, but #include <linux/export.h> is present
+The use of vararg function pointers combined with a huge number of
+arguments causes some configurations to exceed the stack size warning
+limit:
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+drivers/staging/fbtft/fbtft-core.c:863:12: error: stack frame size (1512) exceeds limit (1280) in 'fbtft_init_display_from_property' [-Werror,-Wframe-larger-than]
+
+drivers/staging/fbtft/fb_ssd1331.c:131:30: error: stack frame size (1392) exceeds limit (1280) in 'set_gamma' [-Werror,-Wframe-larger-than]
+                  ^
+drivers/staging/fbtft/fb_ssd1351.c:120:30: error: stack frame size (1392) exceeds limit (1280) in 'set_gamma' [-Werror,-Wframe-larger-than]
+
+Move the varargs handling into a separate noinline function so each
+individual function stays below the limit. A better approach might be to
+replace the varargs function with one that takes an array of arguments,
+but that would be a much larger rework of the other callers.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/fbdev/via/via-gpio.c | 1 -
- 1 file changed, 1 deletion(-)
+v2: use u32 types consistently, suggested by Andy Shevchenko
+---
+ drivers/staging/fbtft/fb_ssd1331.c | 36 ++++++++++++------
+ drivers/staging/fbtft/fb_ssd1351.c | 42 +++++++++++---------
+ drivers/staging/fbtft/fbtft-core.c | 61 +++++++++++++-----------------
+ 3 files changed, 74 insertions(+), 65 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/via-gpio.c b/drivers/video/fbdev/via/via-gpio.c
-index 27226a8f3f42..72302384bf77 100644
---- a/drivers/video/fbdev/via/via-gpio.c
-+++ b/drivers/video/fbdev/via/via-gpio.c
-@@ -10,7 +10,6 @@
- #include <linux/gpio/machine.h>
- #include <linux/platform_device.h>
- #include <linux/via-core.h>
--#include <linux/export.h>
- #include "via-gpio.h"
+diff --git a/drivers/staging/fbtft/fb_ssd1331.c b/drivers/staging/fbtft/fb_ssd1331.c
+index 06b7056d6c71..f43ee3249175 100644
+--- a/drivers/staging/fbtft/fb_ssd1331.c
++++ b/drivers/staging/fbtft/fb_ssd1331.c
+@@ -107,6 +107,28 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+ 	va_end(args);
+ }
  
++static noinline_for_stack void write_gamma_reg(struct fbtft_par *par,
++					       u32 gamma[63])
++{
++	write_reg(par, 0xB8,
++		  gamma[0],  gamma[1],  gamma[2],  gamma[3],
++		  gamma[4],  gamma[5],  gamma[6],  gamma[7],
++		  gamma[8],  gamma[9],  gamma[10], gamma[11],
++		  gamma[12], gamma[13], gamma[14], gamma[15],
++		  gamma[16], gamma[17], gamma[18], gamma[19],
++		  gamma[20], gamma[21], gamma[22], gamma[23],
++		  gamma[24], gamma[25], gamma[26], gamma[27],
++		  gamma[28], gamma[29], gamma[30], gamma[31],
++		  gamma[32], gamma[33], gamma[34], gamma[35],
++		  gamma[36], gamma[37], gamma[38], gamma[39],
++		  gamma[40], gamma[41], gamma[42], gamma[43],
++		  gamma[44], gamma[45], gamma[46], gamma[47],
++		  gamma[48], gamma[49], gamma[50], gamma[51],
++		  gamma[52], gamma[53], gamma[54], gamma[55],
++		  gamma[56], gamma[57], gamma[58], gamma[59],
++		  gamma[60], gamma[61], gamma[62]);
++}
++
  /*
+  * Grayscale Lookup Table
+  * GS1 - GS63
+@@ -130,7 +152,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+  */
+ static int set_gamma(struct fbtft_par *par, u32 *curves)
+ {
+-	unsigned long tmp[GAMMA_NUM * GAMMA_LEN];
++	u32 tmp[GAMMA_NUM * GAMMA_LEN];
+ 	int i, acc = 0;
+ 
+ 	for (i = 0; i < 63; i++) {
+@@ -150,17 +172,7 @@ static int set_gamma(struct fbtft_par *par, u32 *curves)
+ 		}
+ 	}
+ 
+-	write_reg(par, 0xB8,
+-		  tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6],
+-		  tmp[7], tmp[8], tmp[9], tmp[10], tmp[11], tmp[12], tmp[13],
+-		  tmp[14], tmp[15], tmp[16], tmp[17], tmp[18], tmp[19], tmp[20],
+-		  tmp[21], tmp[22], tmp[23], tmp[24], tmp[25], tmp[26],	tmp[27],
+-		  tmp[28], tmp[29], tmp[30], tmp[31], tmp[32], tmp[33], tmp[34],
+-		  tmp[35], tmp[36], tmp[37], tmp[38], tmp[39], tmp[40], tmp[41],
+-		  tmp[42], tmp[43], tmp[44], tmp[45], tmp[46], tmp[47], tmp[48],
+-		  tmp[49], tmp[50], tmp[51], tmp[52], tmp[53], tmp[54], tmp[55],
+-		  tmp[56], tmp[57], tmp[58], tmp[59], tmp[60], tmp[61],
+-		  tmp[62]);
++	write_gamma_reg(par, tmp);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
+index 6736b09b2f45..eb8bee6993c3 100644
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -96,6 +96,28 @@ static int set_var(struct fbtft_par *par)
+ 	return 0;
+ }
+ 
++static noinline_for_stack void write_gamma_reg(struct fbtft_par *par,
++					       u32 gamma[63])
++{
++	write_reg(par, 0xB8,
++		  gamma[0],  gamma[1],  gamma[2],  gamma[3],
++		  gamma[4],  gamma[5],  gamma[6],  gamma[7],
++		  gamma[8],  gamma[9],  gamma[10], gamma[11],
++		  gamma[12], gamma[13], gamma[14], gamma[15],
++		  gamma[16], gamma[17], gamma[18], gamma[19],
++		  gamma[20], gamma[21], gamma[22], gamma[23],
++		  gamma[24], gamma[25], gamma[26], gamma[27],
++		  gamma[28], gamma[29], gamma[30], gamma[31],
++		  gamma[32], gamma[33], gamma[34], gamma[35],
++		  gamma[36], gamma[37], gamma[38], gamma[39],
++		  gamma[40], gamma[41], gamma[42], gamma[43],
++		  gamma[44], gamma[45], gamma[46], gamma[47],
++		  gamma[48], gamma[49], gamma[50], gamma[51],
++		  gamma[52], gamma[53], gamma[54], gamma[55],
++		  gamma[56], gamma[57], gamma[58], gamma[59],
++		  gamma[60], gamma[61], gamma[62]);
++}
++
+ /*
+  * Grayscale Lookup Table
+  * GS1 - GS63
+@@ -119,7 +141,7 @@ static int set_var(struct fbtft_par *par)
+  */
+ static int set_gamma(struct fbtft_par *par, u32 *curves)
+ {
+-	unsigned long tmp[GAMMA_NUM * GAMMA_LEN];
++	u32 tmp[GAMMA_NUM * GAMMA_LEN];
+ 	int i, acc = 0;
+ 
+ 	for (i = 0; i < 63; i++) {
+@@ -139,23 +161,7 @@ static int set_gamma(struct fbtft_par *par, u32 *curves)
+ 		}
+ 	}
+ 
+-	write_reg(par, 0xB8,
+-		  tmp[0],  tmp[1],  tmp[2],  tmp[3],
+-		  tmp[4],  tmp[5],  tmp[6],  tmp[7],
+-		  tmp[8],  tmp[9],  tmp[10], tmp[11],
+-		  tmp[12], tmp[13], tmp[14], tmp[15],
+-		  tmp[16], tmp[17], tmp[18], tmp[19],
+-		  tmp[20], tmp[21], tmp[22], tmp[23],
+-		  tmp[24], tmp[25], tmp[26], tmp[27],
+-		  tmp[28], tmp[29], tmp[30], tmp[31],
+-		  tmp[32], tmp[33], tmp[34], tmp[35],
+-		  tmp[36], tmp[37], tmp[38], tmp[39],
+-		  tmp[40], tmp[41], tmp[42], tmp[43],
+-		  tmp[44], tmp[45], tmp[46], tmp[47],
+-		  tmp[48], tmp[49], tmp[50], tmp[51],
+-		  tmp[52], tmp[53], tmp[54], tmp[55],
+-		  tmp[56], tmp[57], tmp[58], tmp[59],
+-		  tmp[60], tmp[61], tmp[62]);
++	write_gamma_reg(par, tmp);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index da9c64152a60..231cc6d7343c 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -833,6 +833,28 @@ int fbtft_unregister_framebuffer(struct fb_info *fb_info)
+ }
+ EXPORT_SYMBOL(fbtft_unregister_framebuffer);
+ 
++static noinline_for_stack void fbtft_write_register_64(struct fbtft_par *par,
++							int i, u32 buf[64])
++{
++	par->fbtftops.write_register(par, i,
++		buf[0], buf[1], buf[2], buf[3],
++		buf[4], buf[5], buf[6], buf[7],
++		buf[8], buf[9], buf[10], buf[11],
++		buf[12], buf[13], buf[14], buf[15],
++		buf[16], buf[17], buf[18], buf[19],
++		buf[20], buf[21], buf[22], buf[23],
++		buf[24], buf[25], buf[26], buf[27],
++		buf[28], buf[29], buf[30], buf[31],
++		buf[32], buf[33], buf[34], buf[35],
++		buf[36], buf[37], buf[38], buf[39],
++		buf[40], buf[41], buf[42], buf[43],
++		buf[44], buf[45], buf[46], buf[47],
++		buf[48], buf[49], buf[50], buf[51],
++		buf[52], buf[53], buf[54], buf[55],
++		buf[56], buf[57], buf[58], buf[59],
++		buf[60], buf[61], buf[62], buf[63]);
++}
++
+ /**
+  * fbtft_init_display_from_property() - Device Tree init_display() function
+  * @par: Driver data
+@@ -842,7 +864,7 @@ EXPORT_SYMBOL(fbtft_unregister_framebuffer);
+ static int fbtft_init_display_from_property(struct fbtft_par *par)
+ {
+ 	struct device *dev = par->info->device;
+-	int buf[64], count, index, i, j, ret;
++	u32 buf[64], count, index, i, j, ret;
+ 	u32 *values;
+ 	u32 val;
+ 
+@@ -887,23 +909,8 @@ static int fbtft_init_display_from_property(struct fbtft_par *par)
+ 				fbtft_par_dbg(DEBUG_INIT_DISPLAY, par,
+ 					      "buf[%d] = %02X\n", j, buf[j]);
+ 
+-			par->fbtftops.write_register(par, i,
+-				buf[0], buf[1], buf[2], buf[3],
+-				buf[4], buf[5], buf[6], buf[7],
+-				buf[8], buf[9], buf[10], buf[11],
+-				buf[12], buf[13], buf[14], buf[15],
+-				buf[16], buf[17], buf[18], buf[19],
+-				buf[20], buf[21], buf[22], buf[23],
+-				buf[24], buf[25], buf[26], buf[27],
+-				buf[28], buf[29], buf[30], buf[31],
+-				buf[32], buf[33], buf[34], buf[35],
+-				buf[36], buf[37], buf[38], buf[39],
+-				buf[40], buf[41], buf[42], buf[43],
+-				buf[44], buf[45], buf[46], buf[47],
+-				buf[48], buf[49], buf[50], buf[51],
+-				buf[52], buf[53], buf[54], buf[55],
+-				buf[56], buf[57], buf[58], buf[59],
+-				buf[60], buf[61], buf[62], buf[63]);
++			fbtft_write_register_64(par, i, buf);
++
+ 		} else if (val & FBTFT_OF_INIT_DELAY) {
+ 			fbtft_par_dbg(DEBUG_INIT_DISPLAY, par,
+ 				      "init: msleep(%u)\n", val & 0xFFFF);
+@@ -996,23 +1003,7 @@ int fbtft_init_display(struct fbtft_par *par)
+ 				}
+ 				buf[j++] = par->init_sequence[i++];
+ 			}
+-			par->fbtftops.write_register(par, j,
+-				buf[0], buf[1], buf[2], buf[3],
+-				buf[4], buf[5], buf[6], buf[7],
+-				buf[8], buf[9], buf[10], buf[11],
+-				buf[12], buf[13], buf[14], buf[15],
+-				buf[16], buf[17], buf[18], buf[19],
+-				buf[20], buf[21], buf[22], buf[23],
+-				buf[24], buf[25], buf[26], buf[27],
+-				buf[28], buf[29], buf[30], buf[31],
+-				buf[32], buf[33], buf[34], buf[35],
+-				buf[36], buf[37], buf[38], buf[39],
+-				buf[40], buf[41], buf[42], buf[43],
+-				buf[44], buf[45], buf[46], buf[47],
+-				buf[48], buf[49], buf[50], buf[51],
+-				buf[52], buf[53], buf[54], buf[55],
+-				buf[56], buf[57], buf[58], buf[59],
+-				buf[60], buf[61], buf[62], buf[63]);
++			fbtft_write_register_64(par, j, buf);
+ 			break;
+ 		case -2:
+ 			i++;
 -- 
-2.49.0
+2.39.5
 

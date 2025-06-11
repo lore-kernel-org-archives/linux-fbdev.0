@@ -1,86 +1,92 @@
-Received: from mail-io1-f71.google.com (mail-io1-f71.google.com [209.85.166.71])
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com [209.85.219.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDEF7234989
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Jun 2025 07:46:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DEC6185920;
+	Wed, 11 Jun 2025 16:12:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749627993; cv=none; b=Ihv+Vof1VYSYwfqc9aYOWJDUa+iWmbIeZXRYNeY4EZGZbvJqiC+MFhRkqxbKyO2Lpiaqc78qGUf55Envwa32pkg/TRo73Y28czkFBOLf8RTY4zAS+adNa7XTV1dqakWp4nbFhB8qDE1PUYiA9yHRhhT5YugQjt6ucFNUKBWECl0=
+	t=1749658333; cv=none; b=DAXY9vFKDylOTAsDw+7BaFGjdDMz2+e2fxbWArvAAW1b1GcfntXVRAnVC7SUm22vVBcZaWxxtq/UayHjCHj9ZqPmJpPSh0ZNjkgv8C4yANazJroLxj0in/aymf/4c8b13vhRPp4cApz13TJnNCYa2i8xHykOAT7R0fn5GcCZPzw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749627993; c=relaxed/simple;
-	bh=QdvcsZQCPQUQneY1mRYicjvuWfiYG/75rVkdYz/3/e8=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=AWUMv4QoAmLcoAr2ItC1B8ZpESiUNjYjERjrXtXeFo+B1nxbP8L8ZMg2kwA7WBHDn8Jpd2cL2nu3OuZ/uhYl+O8kPWaNSZCCv8HChfwCy6NSuoj3B804qTI2d7C7dd8w1O8FtHwcqUt5p3hFcV2d9SeCpPpQUeaSK+mPF/Hqrvo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-io1-f71.google.com with SMTP id ca18e2360f4ac-86cfccca327so1323346039f.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jun 2025 00:46:31 -0700 (PDT)
+	s=arc-20240116; t=1749658333; c=relaxed/simple;
+	bh=lel6KWnThfXW5zwACQgaKYQnlTF6ANQe3mMnf5Q4wUs=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=OKgal8DwmrXwBCXguJb0cJQXLc1vz/Hdg32SV1PiU25+eEdPaJ7MQrdmrqSM6DuKAqjZNIVQ2OZtPuia1XljVfZvdevVT1q6WBcLOU66bCwuTV7GrGT7ZpJyhtccdW71HeKmSsgw/tC7AQ9fxfwmqPKCAOtO5syzXV/pj22kY7k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GTaehJ/x; arc=none smtp.client-ip=209.85.219.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GTaehJ/x"
+Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-e81826d5b72so6632696276.3;
+        Wed, 11 Jun 2025 09:12:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1749658328; x=1750263128; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lel6KWnThfXW5zwACQgaKYQnlTF6ANQe3mMnf5Q4wUs=;
+        b=GTaehJ/xcvCdICqLK0Hy2AXZwA/eAdAnaURVW4bSARyacTohg3NAdFmhPS9wGsSlZh
+         XxKcGiWV8Ggwl5uWA26aKzKZuNbPa/jo+Fu5kNqhMHBhA43pQTldvjLMW+0h3JI25ZAz
+         C/SwVxnMVNUeN6MH04qdozyq/9gT9vv5XMY2XAYXOEHqzCFUWqQs4HaEeZcscs5M41cZ
+         D3wGrDIkQi2v6P8HvspKPXS80CHK29bXTjfWk7ckpeLnlyolKhK6vv8uewnWweUg3b8q
+         LS8S6hxJqLkIvfyHO6DxqeuRZFX8MqAJqqgdV6ROP2su9BQuBBH5q52PY2WRvEb/z9dE
+         x99Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749627991; x=1750232791;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=wJQYX4ht+z6t6dbB+Oe7UWnCz1EkkvIUIfzk0yOqfzA=;
-        b=FfzQ0lfmMw3SnBMtOPCXpItSLD3wU+NNN/GIP46b7mYd3D6uhRi3b0ND/PVm8epaTT
-         SyU3ILKm51OgKdlAhhVQxoGtqs7hesi+9XOd3xEQ0LQmrkX7o7NL6qfH0KACtUrCfBG9
-         Fr49cfkHD3nIjCtnSDI6F2yxyaiWWzYXv944RfSaePIjA/DDovYCkeiI2+6cBKjTMfHI
-         /yECtpvmn8t56wI+wO9h6TDhebiitqBNsmvwc99SoPt8RTRc7BBHCaOGBZ6RdAk/cNgH
-         Tj/6MccUU2Gq0WnHbo9jMyptjg1kgzuN8Sg6E+7+GwKQNKLwERXaKzVWmpkz+c0oGYu1
-         YYZQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW9lFeGFYNlzbOwq6d9Q/+i/EtIqIlHuMcT7it6facmJTmHvbuJPSCU+UGhOR86PqgSyHOdHbShZMns1w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwvQLwND2PJIUZfbGuvvSYklYfLX9Eybl3nm7SFLnuFyu/Z/tJ5
-	HOFHG/nvbp59LkMcP9zgxQlsRtFy1D9f8mdRsoh+MPY+D3eVOVYRfx4UKHpqlp9sCLSrblFD2U0
-	kC0muHoIsuG94ZdFrCo6IfkNBnRcV1VSW2NLLlw1TzY794LrF+nAAqHuYEOw=
-X-Google-Smtp-Source: AGHT+IHHdveevBdbL721x+5J/WieNE1O77deO3ouXaSVyKHnG99k7DWE6nuShOh44QmeYvETkRCpdE9iT/O0Yp+vcebOUhsbw4pN
+        d=1e100.net; s=20230601; t=1749658328; x=1750263128;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=lel6KWnThfXW5zwACQgaKYQnlTF6ANQe3mMnf5Q4wUs=;
+        b=YOeJFqOx2LlDUAPIniTpFghFFJOtMRiD3pKndDp/YdukMGsKfyIoM3g8LRE5frzaYx
+         cjmJRqhZ71V/4MwOChQIOew6Eqg0GfoI4KGOszoSuQexguYZFT5eLUY2S+eGHL7pxwC/
+         CD4VrZuX8/WMTbawFFj1Kr1nIMOH3fmkISJij447/udkXoKhECse+jDTldArpqKpX6wT
+         aUTdNtvh0sKE0hhQ+L4x/xandf4eGC52WVGBdwlDiak8XHIdRjKCDydLj/+ZgRwKz/sV
+         gHl+tUdz2U0kAdK3N9DvLIxz2pwNOVRITSEzVPVikW5Uuw9G/r+htqWw/EV+U09QSebY
+         qzMQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUdecroWnKiuaf3SnTQAXsz2w2otPa+fWw15HM8M4hlG3/2y1OhM3MY+L0Od0fgGD5wKcUmXDVyHSrH6A==@vger.kernel.org, AJvYcCWmtauJO051Oh9LmClqReo+XCrRZV8Ut9Cq3xI5RCITdhe/0K7fF0+L17uxN3tnSAD8Nz2/07vxUh7uCRVm@vger.kernel.org
+X-Gm-Message-State: AOJu0YyTB726GfLx25nrykvaA0NmVR4B+KINBw4yOlWDYSEnd1ToH3Vu
+	+efmGSg64iFs0/63IQNr3yg6C21EMIZbpn0iVE10JL/sa9pSgzlsdoMA
+X-Gm-Gg: ASbGncvleQar+VyV4YALlKkeqFOmF3NK+iYny1c1qtZsfRwZ30nrW1w1zjuRXLssq7S
+	vrZH0O3UDetyLzMbvvc/NB9g1122PHth+HvXGzQA4Mzav369JrItCcSDFOkMqGfZQmIbbLeYj7b
+	R0RI/1jwviUG3nE5wU1r2PdpDOREfFkjiYumxwNTG/qKqCIaek/SYWrurSURSVe/Tq7CW/M3Vl3
+	M/3gGjUvPZwJUkzLa8CTARO82ySzDJ1itqrBEKrZRWu0CMTG8lHvOhFJPCTYsONXbCwru3zz/0c
+	12s7dwA8z3IhyS5MoiMCk6zZPoMXSRBCI/51/KF0wx2HeM/JSnKHngYtnxTftjx/WI1WifCjrG4
+	EAyoCgcaO2QY=
+X-Google-Smtp-Source: AGHT+IHw3jX341QHh9PMSkVnd8CwSMWalCeUuZZZCDXumNX2LqqM+bvwBjGn8YRcQyj9ycgeBdLTmA==
+X-Received: by 2002:a05:6902:1690:b0:e81:abdb:5f91 with SMTP id 3f1490d57ef6-e820b6bc432mr168020276.25.1749658328427;
+        Wed, 11 Jun 2025 09:12:08 -0700 (PDT)
+Received: from trojai4.cs.purdue.edu ([128.210.0.165])
+        by smtp.gmail.com with ESMTPSA id 3f1490d57ef6-e81a40217a2sm3625106276.13.2025.06.11.09.12.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Jun 2025 09:12:08 -0700 (PDT)
+From: Alex Guo <alexguo1023@gmail.com>
+To: geert@linux-m68k.org
+Cc: alexguo1023@gmail.com,
+	deller@gmx.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbdev: pm3fb: Fix potential divide by zero
+Date: Wed, 11 Jun 2025 12:12:07 -0400
+Message-Id: <20250611161207.4031677-1-alexguo1023@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <CAMuHMdW5wU1ForGOGD-+HDUu7wcnBx3jx911nLEqbJ71t4MBsg@mail.gmail.com>
+References: <CAMuHMdW5wU1ForGOGD-+HDUu7wcnBx3jx911nLEqbJ71t4MBsg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a92:c242:0:b0:3dd:9a7e:13f4 with SMTP id
- e9e14a558f8ab-3ddf42628e5mr25309115ab.6.1749627991085; Wed, 11 Jun 2025
- 00:46:31 -0700 (PDT)
-Date: Wed, 11 Jun 2025 00:46:31 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <68493457.050a0220.33aa0e.0367.GAE@google.com>
-Subject: [syzbot] Monthly fbdev report (Jun 2025)
-From: syzbot <syzbot+list6c47f600adb8edca7977@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hello fbdev maintainers/developers,
+Hi Greet,
 
-This is a 31-day syzbot report for the fbdev subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/fbdev
+Thanks for your confirmation and suggestions.
 
-During the period, 0 new issues were detected and 0 were fixed.
-In total, 5 issues are still open and 26 have already been fixed.
+I added this patch based on existing checks on var->pixclock in other drivers, such as savagefb_check_var, nvidiafb_check_var, etc.
+Are you suggesting that it is better to replace an invalid value (var->pixclock == 0) with a default valid value, instead of returning -EINVAL? If so, could you advise what a suitable default value would be for this case?
 
-Some of the still happening issues:
+Actually, I have found a few similar issues in other functions as well. I would like to make sure I am addressing them in the correct way.
 
-Ref Crashes Repro Title
-<1> 1720    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (4)
-                  https://syzkaller.appspot.com/bug?extid=c4b7aa0513823e2ea880
-<2> 146     Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
-                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
-<3> 20      Yes   KASAN: global-out-of-bounds Read in bit_putcs (3)
-                  https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
-<4> 11      No    KASAN: vmalloc-out-of-bounds Write in fillrect
-                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
-
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.
+Best,
+Alex

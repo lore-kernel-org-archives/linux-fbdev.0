@@ -1,80 +1,81 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4F73A923
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Jun 2025 07:18:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAB31A923
+	for <linux-fbdev@vger.kernel.org>; Wed, 11 Jun 2025 07:19:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749626330; cv=none; b=N1i2d+OVx9xZzuEm4XJuFoNYGzu8OgTxwOrqELhX4AHZWbGsuZteYmW7VJCGhTxv5+Mg4aovKngmAvy8fWM0gHmXfXwJTBF7BpqfsxpzRSOWv9g24Xx3QdFR55rxMLQ+r51luoBUSWp9VpvhJDIP1lPtrWdxu54aVMXUJzX6rMQ=
+	t=1749626386; cv=none; b=HTsIal88UfNOWbtkS0cERXLaeVzFUsxGp7Esj2gx/6cNJm0Rku2f9tqoupUWMOgj914wyKi6vNq3QPVFRaJf5fSX/l7GkNNaX+7S42mZ7UsXaoVHlNA/sfTPQFUmF6qvn8/kXPUusEp51kG87c9lLiXxN6nL2iGFr0mBvvA/dY8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749626330; c=relaxed/simple;
-	bh=/Fi0zvw6zBBGC9NgicSWg+lsFbDzHbzEw1oybpA0wCo=;
+	s=arc-20240116; t=1749626386; c=relaxed/simple;
+	bh=E6IOE6xpudIBjIlSApvTRHP6zS0JuWEGyoFJfjn8vB0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jkVQX2+Xu8glVDS80tB981l/7hV/a8KeT9aRGd6XNqI5A4VcaFyvQiTqnBCHcqP17rJfuODvJFBxvsKI53HYUx8zcOmYSh9FUV9w4/jxW4kPsemsp6TzEe2bF3a+SqRPKJTCcgxkOQ1vcJfOIB3HlYVtcV+6fbjfnvEeuAFEuIQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gG8HiGto; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tCjn/FG4; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gG8HiGto; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tCjn/FG4; arc=none smtp.client-ip=195.135.223.130
+	 In-Reply-To:Content-Type; b=mwJwqR2StTgvFtCPvtCWWN96JxiVYEA263yRWY6HWj/xbQ9WVx+9BpQjuIgrJrwMNWNfeRPnYeTjAD4QW34ycB/pxNmcJj4911KgaDupvGa1xovkAZLKFWO6hWQEABK6MXnVaBHTQNL5Ft5MirefmTmLDb3fSLOQXMEUS/flZ1k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=UbFDuONn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=e9P/61h6; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=UbFDuONn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=e9P/61h6; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gG8HiGto";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tCjn/FG4";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gG8HiGto";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tCjn/FG4"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="UbFDuONn";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="e9P/61h6";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="UbFDuONn";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="e9P/61h6"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AF02F21755;
-	Wed, 11 Jun 2025 07:18:46 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id AF2871F766;
+	Wed, 11 Jun 2025 07:19:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1749626326; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1749626382; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=kiX1gBP4ZkjtcCmjALUkPX1xQ+yneT7Vi5apdcaPdW8=;
-	b=gG8HiGtoAWmOKZALbwKHB0N+GBbZXuRryQibK3MTiNxDgDU0CjNqaLeSPYOI9w6Gv4mF66
-	Gx/aJY9unYoQBQSs35XW+U85E+n3HTWJNRrdZg8K1s9xHbodqhfNSSPeaqfxxI/3lDdsWI
-	up8TSFIGoQshxIrLFFYefE39JGZ7620=
+	bh=CZ5BQktB6JiV0FnWi9nQ7rwGkB2UwahoOlBgBu4kiZg=;
+	b=UbFDuONn90TxulA/TsEB5Or0z3DHu3mRSKGWotPjdrSP5AqXCPl/O4Di0UElVV4pqLjyDk
+	0AODzhEzG/tTjCed/SZdTZdhDcI/DWYMEmyCSQpy40QLderMU8/gTj4QXEwmE9lRYQDwm8
+	blEMPjmgyyZP0uPV3tG9PGVanm29Ugc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1749626326;
+	s=susede2_ed25519; t=1749626382;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=kiX1gBP4ZkjtcCmjALUkPX1xQ+yneT7Vi5apdcaPdW8=;
-	b=tCjn/FG4ewcQenwGPYCN0lxFAMEeYbbvOcPjwzhQuud3NSXQHoNvdZFvc3ESZR6cHpohCc
-	WLUXsq8qOWrzNiAg==
-Authentication-Results: smtp-out1.suse.de;
-	none
+	bh=CZ5BQktB6JiV0FnWi9nQ7rwGkB2UwahoOlBgBu4kiZg=;
+	b=e9P/61h6dELyLz57LDyrfq+zOqs8WWi62EOm4SRVmtlOfiHhUZtvveCbAawSTQh432N4Bi
+	ZhOpmwTyqVH08ICQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=UbFDuONn;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="e9P/61h6"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1749626326; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1749626382; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=kiX1gBP4ZkjtcCmjALUkPX1xQ+yneT7Vi5apdcaPdW8=;
-	b=gG8HiGtoAWmOKZALbwKHB0N+GBbZXuRryQibK3MTiNxDgDU0CjNqaLeSPYOI9w6Gv4mF66
-	Gx/aJY9unYoQBQSs35XW+U85E+n3HTWJNRrdZg8K1s9xHbodqhfNSSPeaqfxxI/3lDdsWI
-	up8TSFIGoQshxIrLFFYefE39JGZ7620=
+	bh=CZ5BQktB6JiV0FnWi9nQ7rwGkB2UwahoOlBgBu4kiZg=;
+	b=UbFDuONn90TxulA/TsEB5Or0z3DHu3mRSKGWotPjdrSP5AqXCPl/O4Di0UElVV4pqLjyDk
+	0AODzhEzG/tTjCed/SZdTZdhDcI/DWYMEmyCSQpy40QLderMU8/gTj4QXEwmE9lRYQDwm8
+	blEMPjmgyyZP0uPV3tG9PGVanm29Ugc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1749626326;
+	s=susede2_ed25519; t=1749626382;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=kiX1gBP4ZkjtcCmjALUkPX1xQ+yneT7Vi5apdcaPdW8=;
-	b=tCjn/FG4ewcQenwGPYCN0lxFAMEeYbbvOcPjwzhQuud3NSXQHoNvdZFvc3ESZR6cHpohCc
-	WLUXsq8qOWrzNiAg==
+	bh=CZ5BQktB6JiV0FnWi9nQ7rwGkB2UwahoOlBgBu4kiZg=;
+	b=e9P/61h6dELyLz57LDyrfq+zOqs8WWi62EOm4SRVmtlOfiHhUZtvveCbAawSTQh432N4Bi
+	ZhOpmwTyqVH08ICQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8322E139CE;
-	Wed, 11 Jun 2025 07:18:46 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 87372139CE;
+	Wed, 11 Jun 2025 07:19:42 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id deCmHtYtSWikVAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 11 Jun 2025 07:18:46 +0000
-Message-ID: <e5708928-e562-4b2d-9f96-8e44448a9c30@suse.de>
-Date: Wed, 11 Jun 2025 09:18:46 +0200
+	id 0GhHHQ4uSWgAVQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 11 Jun 2025 07:19:42 +0000
+Message-ID: <c60bc49c-c578-4822-8898-46d8f4493e27@suse.de>
+Date: Wed, 11 Jun 2025 09:19:42 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,12 +83,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 02/14] fbdev: Include <linux/export.h>
-To: Helge Deller <deller@gmx.de>, soci@c64.rulez.org, simona@ffwll.ch
+Subject: Re: [PATCH 04/14] fbdev/cyber2000fb: Unexport symbols
+To: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20250610105948.384540-1-tzimmermann@suse.de>
- <20250610105948.384540-3-tzimmermann@suse.de>
- <a262f5a0-ba63-4692-a84b-216c4bfe5b4d@gmx.de>
+ <20250610105948.384540-5-tzimmermann@suse.de>
+ <7928576a-dffb-4d27-a04b-8257d7f25383@gmx.de>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -114,112 +115,107 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <a262f5a0-ba63-4692-a84b-216c4bfe5b4d@gmx.de>
+In-Reply-To: <7928576a-dffb-4d27-a04b-8257d7f25383@gmx.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: AF2871F766
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-4.51 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[gmx.de,c64.rulez.org,ffwll.ch];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_TO(0.00)[gmx.de];
 	TO_DN_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	MID_RHS_MATCH_FROM(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCVD_TLS_ALL(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[5];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCPT_COUNT_THREE(0.00)[3];
 	RCVD_COUNT_TWO(0.00)[2];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid]
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Spam-Score: -4.51
 X-Spam-Level: 
-X-Spam-Flag: NO
-X-Spam-Score: -4.30
 
 Hi
 
-Am 10.06.25 um 21:58 schrieb Helge Deller:
+Am 10.06.25 um 22:10 schrieb Helge Deller:
 > On 6/10/25 12:56, Thomas Zimmermann wrote:
->> Fix the compile-time warnings
+>> Fix the compile-time warning
 >>
->>    drivers/video/fbdev/core/cfbcopyarea.c: warning: EXPORT_SYMBOL() 
->> is used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/cfbfillrect.c: warning: EXPORT_SYMBOL() 
->> is used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/cfbimgblt.c: warning: EXPORT_SYMBOL() is 
+>>    drivers/video/fbdev/cyber2000fb.c: warning: EXPORT_SYMBOL() is 
 >> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fb_ddc.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fb_defio.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fb_io_fops.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fb_sys_fops.c: warning: EXPORT_SYMBOL() 
->> is used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fbcmap.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fbcon.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/fbmon.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/modedb.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/svgalib.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/syscopyarea.c: warning: EXPORT_SYMBOL() 
->> is used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/sysfillrect.c: warning: EXPORT_SYMBOL() 
->> is used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/core/sysimgblt.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
->>    drivers/video/fbdev/macmodes.c: warning: EXPORT_SYMBOL() is used, 
->> but #include <linux/export.h> is missing
->>    drivers/video/fbdev/sbuslib.c: warning: EXPORT_SYMBOL() is used, 
->> but #include <linux/export.h> is missing
->>    drivers/video/fbdev/wmt_ge_rops.c: warning: EXPORT_SYMBOL() is 
->> used, but #include <linux/export.h> is missing
+>>
+>> The affected symbols are not used outside of their module.
 >>
 >> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 >> ---
->>   drivers/video/fbdev/core/cfbcopyarea.c | 2 ++
->>   drivers/video/fbdev/core/cfbfillrect.c | 2 ++
->>   drivers/video/fbdev/core/cfbimgblt.c   | 2 ++
->>   drivers/video/fbdev/core/fb_ddc.c      | 1 +
->>   drivers/video/fbdev/core/fb_defio.c    | 1 +
->>   drivers/video/fbdev/core/fb_io_fops.c  | 1 +
->>   drivers/video/fbdev/core/fb_sys_fops.c | 2 ++
->>   drivers/video/fbdev/core/fbcmap.c      | 1 +
->>   drivers/video/fbdev/core/fbcon.c       | 1 +
->>   drivers/video/fbdev/core/fbmon.c       | 2 ++
->>   drivers/video/fbdev/core/modedb.c      | 1 +
->>   drivers/video/fbdev/core/svgalib.c     | 1 +
->>   drivers/video/fbdev/core/syscopyarea.c | 2 ++
->>   drivers/video/fbdev/core/sysfillrect.c | 2 ++
->>   drivers/video/fbdev/core/sysimgblt.c   | 2 ++
->>   drivers/video/fbdev/macmodes.c         | 1 +
->>   drivers/video/fbdev/sbuslib.c          | 1 +
->>   drivers/video/fbdev/wmt_ge_rops.c      | 1 +
->>   18 files changed, 26 insertions(+)
+>>   drivers/video/fbdev/cyber2000fb.c | 4 ----
+>>   1 file changed, 4 deletions(-)
 >
-> Reviewed-by: Helge Deller <deller@gmx.de>
 >
-> I wonder why this shows up for you but not for me...
+> Seems those functions were used for some capture card/tv driver
+> functionality in the past.
+> Maybe we should simply remove those functions today?
 
-They show up with v6.16-rc1 when I build with W=1. IDK if there's an 
-additional config option involved. It's not just fbdev, the kernel is 
-full of them.
+Good point. I'll go through the series again and remove any unused code.
 
 Best regards
 Thomas
 
 >
 > Helge
+>
+>>
+>> diff --git a/drivers/video/fbdev/cyber2000fb.c 
+>> b/drivers/video/fbdev/cyber2000fb.c
+>> index 986760b90465..fcc565b2d98c 100644
+>> --- a/drivers/video/fbdev/cyber2000fb.c
+>> +++ b/drivers/video/fbdev/cyber2000fb.c
+>> @@ -1089,7 +1089,6 @@ void cyber2000fb_enable_extregs(struct cfb_info 
+>> *cfb)
+>>           cyber2000_grphw(EXT_FUNC_CTL, old, cfb);
+>>       }
+>>   }
+>> -EXPORT_SYMBOL(cyber2000fb_enable_extregs);
+>>     /*
+>>    * Disable access to the extended registers
+>> @@ -1109,7 +1108,6 @@ void cyber2000fb_disable_extregs(struct 
+>> cfb_info *cfb)
+>>       else
+>>           cfb->func_use_count -= 1;
+>>   }
+>> -EXPORT_SYMBOL(cyber2000fb_disable_extregs);
+>>     /*
+>>    * Attach a capture/tv driver to the core CyberX0X0 driver.
+>> @@ -1135,7 +1133,6 @@ int cyber2000fb_attach(struct cyberpro_info 
+>> *info, int idx)
+>>         return int_cfb_info != NULL;
+>>   }
+>> -EXPORT_SYMBOL(cyber2000fb_attach);
+>>     /*
+>>    * Detach a capture/tv driver from the core CyberX0X0 driver.
+>> @@ -1143,7 +1140,6 @@ EXPORT_SYMBOL(cyber2000fb_attach);
+>>   void cyber2000fb_detach(int idx)
+>>   {
+>>   }
+>> -EXPORT_SYMBOL(cyber2000fb_detach);
+>>     #ifdef CONFIG_FB_CYBER2000_DDC
+>
 
 -- 
 --

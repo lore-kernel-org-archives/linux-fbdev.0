@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 777531531E3
-	for <linux-fbdev@vger.kernel.org>; Thu, 12 Jun 2025 21:19:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59A8D156C69
+	for <linux-fbdev@vger.kernel.org>; Thu, 12 Jun 2025 21:21:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749763159; cv=none; b=Q47lfAmYhqe4DlOkWGrdAvpTTYUboex90A5JRJHaLPTmb8sYurMIj7syF8XpGV7W8rzoPt+2PX2egvP/Ldo3+jFDmAnHacehowDGU9vYUXUmZqEJbfULw/Z8M1vgRfnJFuYSNQHmmHHRGu6p027zSRLQ/1HGuLf3BcJ7e3m9LAg=
+	t=1749763268; cv=none; b=LREFHKmR1OU+9nNTRfbDtj/67EZ+o1MuZcZHcuW/HmsT2PXzpw+xzwy3yC6ZGADAFln7Eomnn4owgID2O93qJitCFTfykM4OZRDFHtJYxfjUG8FFuOK3rcMEhxz4BKzDNb0indL4CIeEHUc4yO2dPQ/ikgUqC/kswcbGBCb6+nE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749763159; c=relaxed/simple;
-	bh=Nmmceo5/X0XoUUnyS0qvHrX/ADEv/sQjGSHAdNHlcFk=;
+	s=arc-20240116; t=1749763268; c=relaxed/simple;
+	bh=lk1H4xmnkQdgAKm8tH8eYKPNdgwJLA6aUJxNF0kakRw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NsD9RYNg2V8U/yu/84gmI3I9OB6afG9s7hDLoKxtxXB04+NtEaGqBmbQUMXZrDEzdBm0Iqzl9ClYX8InqCQzrrlPmXctrwzPYVziLM21AUYeFnV6wD3ZBH8cCoZ8iheVkidB0VdPKFls0bSqyiPGdD1fBviLP6M0m3HiFVyv6PI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Br3fFmgX; arc=none smtp.client-ip=212.227.17.20
+	 In-Reply-To:Content-Type; b=XEg9WD7s0LhDIbWpYvdkKzrLo9kHIAf+jm6RcT1xP5JD+sDPb900qdgWOXbPnXQNeQn8omfTwC9X1lHHn8KNkTjpVjnfz3XXvAPoAyLm8yLGmj9W4qDqh3erxhZRte6z5ae77h/qrBhqeUuPd/FdNROKFHv4n17Y6HMZLvEeTJ4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=KPgtuc+P; arc=none smtp.client-ip=212.227.17.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Br3fFmgX"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="KPgtuc+P"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1749763153; x=1750367953; i=deller@gmx.de;
-	bh=r44+RAC0PbOCiKZ0u1Ilbvh1iOInyWXtgHvlm1xgwUM=;
+	s=s31663417; t=1749763263; x=1750368063; i=deller@gmx.de;
+	bh=dkR21A2P/IJD89ehmKdEGZf8yF7alXTFi+OecnYILyU=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=Br3fFmgXjhDvTC3wh5gt6tY0GeVKKyItdpiT+MtKpAhmoKVdhCVdVk+aRmh4TzHO
-	 E1wTv57pNprA03/kCNScHoudPVnFcZ6NfWEykrO/km/JoihzSj5XNRPolRvnqZwQT
-	 PYvWOarJooiFy/RjitzPkfoNMC/ZZlJ7luUSCYG08Xk2PQrNJwUggGZMCo3dVoS8l
-	 Zvcl03y+09J90/CRdMM6oUbtHwidZRdzDQ7hrci4SiBb+LGf1BK+CGIf9Iak+sQXQ
-	 92DtBt0CB/UeIQeW1DpLXGsT4yP6T65GUlWNkcHZ8L78ziAcWZ4Em29hfAA3o2RQE
-	 mD057aeXk4N19Vo38g==
+	b=KPgtuc+PCybDTs7y4A2Wf50CxXRvLwHwtygWMa4Tv+2bdLMDDry7AuiAST+klcGL
+	 y5zRe1cwaf+wi9hIAyoKqCNsGuFMTfLPXMiA0SSYGs9aDCjXtmqkq4JeLgEPVu8JT
+	 S2/V3/Zvq/eWA3K8mEm9MLp0H1M13cP6nta42M/nBEmGIKZPoH3pM3AtYAUvCGdJn
+	 xc58F8FIheN+Oa9rAhBbXCN07mr3fJOl8f4HPahNtlo0qrhYlthtmjZrefOH7gkFf
+	 RwF8yu4O8RcFFcrHkTXCfbzzGnemf4XppsKSpTf+H2DyIyyarY1ZmZOSTvlM+tZ8w
+	 xLSPiCCKh0KhKyI7TQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.172] ([109.250.63.171]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N6KUT-1usHRh2w8n-00wBLi; Thu, 12
- Jun 2025 23:19:12 +0200
-Message-ID: <0efe9043-dc11-448c-a25c-a1dc2def9a1a@gmx.de>
-Date: Thu, 12 Jun 2025 23:19:11 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mz9Ux-1ul5cz41Sd-016fjZ; Thu, 12
+ Jun 2025 23:21:03 +0200
+Message-ID: <91f80e4c-d797-40ef-aa0b-c03fb5ff0c11@gmx.de>
+Date: Thu, 12 Jun 2025 23:21:02 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 04/14] fbdev/cyber2000fb: Unexport symbols
+Subject: Re: [PATCH v2 08/14] fbdev/omap2: Include <linux/export.h>
 To: Thomas Zimmermann <tzimmermann@suse.de>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20250612081738.197826-1-tzimmermann@suse.de>
- <20250612081738.197826-5-tzimmermann@suse.de>
+ <20250612081738.197826-9-tzimmermann@suse.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,78 +93,101 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250612081738.197826-5-tzimmermann@suse.de>
+In-Reply-To: <20250612081738.197826-9-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Yawz4FWwUmJ65fPTPXCkWDffmER/vjVG01/0wFjwvNE/gG8OlMW
- HjNYPT5jITrmNVuYg5qVD2gNQeS/TEZTCY/B+Knntm0XyYAp3uspZ+X+mDpfVNQj9DMxsm8
- 70bt0ba7cYfRs1K5SFMr5s5msHqbx5jc3qaDQYGJlZLjoI1Y8H+Sf5K3Ny1lgvvAcasl8S+
- ikHuBHJvvtbgc4y4W9ntQ==
+X-Provags-ID: V03:K1:8SdB/CSBb6Fq5jRYcDND0i69qpEW5QPMQjmc8anJbdhelfzQw8b
+ Mhdlu0pR+oGUwJyn7fISOJBL9H4Vqc9EQNwBO7tQPrIVxuB/oxtar7Kdh+QIlVSnhw3oETd
+ 1RI+6+OfLldzcrGbHaO9+NrDGjDR+Ez+2uFxLcQztaDKhEU0W/5f+dDDhiJt+HCIFp69LPv
+ 9IbygWrjncbeZo6I3752Q==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:q+brD2B8kZg=;wf/79FWE5CNGHQSSIbFtpcFVngV
- 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
- 6S0s=
+UI-OutboundReport: notjunk:1;M01:P0:ETRDOM4IxDg=;SzJjNclvjQtMmnMspf/dgtnITHA
+ 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
 
 On 6/12/25 10:16, Thomas Zimmermann wrote:
-> Fix the compile-time warning
+> Fix the compile-time warnings
 >=20
->    drivers/video/fbdev/cyber2000fb.c: warning: EXPORT_SYMBOL() is used, =
-but #include <linux/export.h> is missing
->=20
-> The affected symbols are not used anywhere, so remove the functions
-> entirely.
->=20
-> v2:
-> - remove unused functions (Helge)
+>    drivers/video/fbdev/omap2/omapfb/dss/apply.c: warning: EXPORT_SYMBOL(=
+) is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/core.c: warning: EXPORT_SYMBOL()=
+ is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c: warning: EXPORT_=
+SYMBOL() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/display.c: warning: EXPORT_SYMBO=
+L() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/dss-of.c: warning: EXPORT_SYMBOL=
+() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/dss_features.c: warning: EXPORT_=
+SYMBOL() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/manager.c: warning: EXPORT_SYMBO=
+L() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/output.c: warning: EXPORT_SYMBOL=
+() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/overlay.c: warning: EXPORT_SYMBO=
+L() is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/dss/venc.c: warning: EXPORT_SYMBOL()=
+ is used, but #include <linux/export.h> is missing
+>    drivers/video/fbdev/omap2/omapfb/vrfb.c: warning: EXPORT_SYMBOL() is =
+used, but #include <linux/export.h> is missing
 >=20
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->   drivers/video/fbdev/cyber2000fb.c | 36 -------------------------------
->   drivers/video/fbdev/cyber2000fb.h |  2 --
->   2 files changed, 38 deletions(-)
+>   drivers/video/fbdev/omap2/omapfb/dss/apply.c        | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/core.c         | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/display.c      | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/dss-of.c       | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/dss_features.c | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/manager.c      | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/output.c       | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/overlay.c      | 1 +
+>   drivers/video/fbdev/omap2/omapfb/dss/venc.c         | 1 +
+>   drivers/video/fbdev/omap2/omapfb/vrfb.c             | 1 +
+>   11 files changed, 11 insertions(+)
 
 Reviewed-by: Helge Deller <deller@gmx.de>
 

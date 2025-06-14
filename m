@@ -1,61 +1,61 @@
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18F6323DE;
-	Sat, 14 Jun 2025 01:03:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DE312E11D2;
+	Sat, 14 Jun 2025 04:57:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749863003; cv=none; b=Z6+1tmy6U8+508jCqyxzScq1Y8T0gn1xqQJywCRT4tTFb/pYgb/XO7J8IPOzOWl2lv28qM48yneyCaKJk4K7+I50TToWRujPNqGm1tEDQE+gK4WsCC1PlNo0odVt8vfhh8SgVCAXQyO2IpYOd6HmgbZ30llYm4/VU/XaYgFSp/s=
+	t=1749877064; cv=none; b=g9n7N9H75yFCyCbX+L5GIiR/afV3N3BlBKexo/QHRz4Yh7ha04yvKSCbFsjvmOEtEIbJsRuOf98EblzK0PxjEao2UGhL4laDjYhNjrf3a37h5qsJoi3aDwAiCmehB8zCIYKwbzSw8Lp/9mD8qna7hxINj4PA6umckE6C+I0VVSc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749863003; c=relaxed/simple;
-	bh=bx9XqlOPG1HpAffebukwlXEvNCXYob8Z/P9udGMfNkM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LDDumcGUu6DgFh/2f25q8zOgzqOOfeiB4WlW0Ll9pERCXi3nAWLZqT/urqvoWXjpIIP9qykXiBwuzfe5KOmD+bBnsBaMuqgS75jNsmhH2NeazgDz2smnt0fUIzzFKd1yLfGgUCMdyVk7Uwm0iHZYge6/U2jRZ5zfjhP5rnchvRw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kzIOydXi; arc=none smtp.client-ip=209.85.128.179
+	s=arc-20240116; t=1749877064; c=relaxed/simple;
+	bh=DtwppHjTfcSMBtUJssTEucZHd0zTwbMT0R7o2qQc6k0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Qg4vb5g/XCaP20o/et2eKGaWRCmJjy+64GaPQG1ZpwJxWJOZUCv0Ix2vRVVt0vfHemJ6VWAiC1/+MX811SkTgJrKgama/DCdBGE6rbq5P3FeIIf02axFOYcT5U0zeaAkN2oqNalDq5a5btr2j+rb3312j6+Chbx3FGvnGdvoLHQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EeqvFY+i; arc=none smtp.client-ip=209.85.219.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kzIOydXi"
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-708d90aa8f9so26337157b3.3;
-        Fri, 13 Jun 2025 18:03:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EeqvFY+i"
+Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-e7d925ff60bso2495897276.2;
+        Fri, 13 Jun 2025 21:57:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1749863001; x=1750467801; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1749877062; x=1750481862; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=45jf0gP7QjTTPLFpULqujGZqfZ7lIP0Ebdkf9ozISuA=;
-        b=kzIOydXigTBX1NH3c/452LLONv/WxtD81iVxGSh8De4dAyVqm1ccxyydYh2b3W3I1D
-         U2tRvh21zRu8i0dZ5K7NNaMJkX59f2xgcLsC+Ow/T9NowaSzdsjQwjbjzdpJssW1eubq
-         MGJsyCNN1S1k8wBKmtYC95kxHknaaoIGdQYwALjgL9O4PAUC23W25HL1ga34OLwiy5jH
-         pVYEYaYwUi93NPLbjwSV0uhXNkUjwqmf/T8xZvAJN5AaMpdxCKdRzmc7JhtiKRse7Haz
-         ALIM9LIM9JFsly7El+Aj2MlS8SvL9dT5tKMXHsmBSqLwL1oBveVUJXUTZ+u155iuuDiP
-         uzpg==
+        bh=N3q2qVFEmbLsR2HxaXqu+Z2ORgyuH1IAkMrz+Hg3+zQ=;
+        b=EeqvFY+iX439AlPYqdzsIQYcyo1TqkRb81fE9hzKmeW0Tksug51gq4dvVQqz5WtLwy
+         yEyeCW6bouCod+efCihPGC2qg3ZfTWdcfhnBjqWPI3CBd8uuIDxsM+cOy+Y0ZLOmyPcX
+         NhwejHcQxruNj4szST5Z76fscCJ5uHzLpqF4fjlxph8+vLznUYvc3lKylTBXfzWsTgmj
+         QBvFvu+FHoOFxUBsIkdGLvWTg5zPl0NjIRq1C5GbeJs47Abi4ko0iGGu2fiz3ffj6wC3
+         cYU7wN1lVJ/vgqD+hkwiaQTycGGultTGgoKSH2cvMbv6ChrKXZtMaiHPzyVS/YeU6cCU
+         oBNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749863001; x=1750467801;
+        d=1e100.net; s=20230601; t=1749877062; x=1750481862;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=45jf0gP7QjTTPLFpULqujGZqfZ7lIP0Ebdkf9ozISuA=;
-        b=uPTi2xjz+8W2XV7cQ3pXecDIjJpiqzUtCqSn/LtDeDSVl7ePWC3ZIizMaKhTiPSd4u
-         geW3ROB4/GXEEJHDEvTkhwFWLsNT0XL6ho4FnX/J4phYRYdQnRctgI69MIXegIwPln1e
-         frE+S9/1CW+2hi75ioS6nBjDy8U90zEDdbC+79gDwei1eompWBAQaBrzFc4uORnp6Zz3
-         zNYi7tkAX8PTTYCXPvFHVS6ZZ03RcPU3Q4zYAffATuTry96a+zXp0EAasUZCaov6Tf6m
-         hMhy4DBZFBcsfXr+EMDqhjxeodOpfWaV+acIwpwsxVcYpDazNiMQ6vyMAKBUuJlQYApm
-         jv2A==
-X-Forwarded-Encrypted: i=1; AJvYcCWW/tcVdyaf1VEvyVJ5wXwt+mimtOCwhrPfNECu6CFIhHVyeO9jpMXCDJn0f3LY/brhsA+BvE8VQrwkIQ==@vger.kernel.org, AJvYcCWf+abiFoqKTmhBPotGGVKBpHc4L0iS8VXDyX85QFasJ2+DrQfTBAWN0amPPlbFgrsK6UGMy7KsH8mY+Ta3@vger.kernel.org
-X-Gm-Message-State: AOJu0YzH0+xUht1TBvxVLk2VtT2ETN6gZnkBr3zfQU/nRKklOvXuXoBd
-	7CWRmE1HdiqsIt/V+IUieFK/KpponH+jtfMRDBkKEKE7fsyRQnV9UwcJxJUJj3Bw
-X-Gm-Gg: ASbGnctLoyCgvgekEbeaY8fuzf6SmSUJwTLIaJTuzToEE1b06D4mreF/C+IKCxIvyBj
-	OQF4PBaFepLDTKKGbHnp4gZIjtwj69ikEwXBJtSQ0UByWbhNZNT36p+lbHRD4n838M8Z5Z02WHe
-	pqdDp+ILQAzD8BDEvA+65pDE8sERl94utPiYAvtfan+aYH1p9ullV4/iCrPGiR7OOQIzhBC/2Lr
-	w1IT3jT3GZQ9iWIPwztKW5yhrJSxglMn6AcaY6gFuzovq877UbIMI4tXHL228R0rkD0NZ1ntbDv
-	tJjvKVngPRSxVFipFO3rfD4wqlpEn3dBg0uHdfmgbucfv3AtOrdXUUIdinWZAPULW1g+iP4O/tO
-	S
-X-Google-Smtp-Source: AGHT+IHmXSLPMx1K6XEijZ+aaRJwCSHJWyEvchSbPlDWmGU/iFQOIYE/s39k6qttoIL7OYrx8thaZQ==
-X-Received: by 2002:a05:690c:23ca:b0:710:d950:e70c with SMTP id 00721157ae682-71175475514mr21836157b3.28.1749863000992;
-        Fri, 13 Jun 2025 18:03:20 -0700 (PDT)
+        bh=N3q2qVFEmbLsR2HxaXqu+Z2ORgyuH1IAkMrz+Hg3+zQ=;
+        b=CtTQ6bm5I37PQaJkfEXO9YbMiHNdgfk0wBc5OB5tfeIz/bQN5bAQJSOyocvALz8xk7
+         cgOv9riiwV0dgYiIRjtfXuGYvbHkR9mTGYmHo1FouHuIuKOjKc+Da8Ad3y4UoXKSXNUj
+         GZsBQH5S+gguzmJO0jADtJnP1h0EIdxoxXiYymhV4RM1w1oJy+G5A2ns00AcXGeJdsOL
+         tB6lloovF17U4GSLZkWqwXHq8zXBlon0hWtfO9sa9C34fz3Wr0Az6GvQemQYhh+cONxy
+         hokbrP6qL0Z6+tzvdE15cQIZDQ6j/MZq4Zx7U0sqlqNMs8/2rr492wofwIIonJZmQFDI
+         Fg5g==
+X-Forwarded-Encrypted: i=1; AJvYcCUqJ3M2poWWChV8m3fwAGsjRXPuQrgn8uO6HYM+4KAR6nR3t4+mJW9N3CA5lqKLI6lN5IyG91xYBYWdNQTy@vger.kernel.org, AJvYcCXzWKLbrdQL3NfcrJQyXCB9V+Wb8vYXb/58x0qZpUhkd1OcMjhpkGezV7jD1qRRxGzH8Ce4vUWnR8cQ1A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxbdv9TS8spzJGkFQFEnw01RSZXmhfvajCSU3mxDZ4ntCwVfQSq
+	F4KM7aU0JsBzhFsz1Y6bou4H0Kd8dp1a+eStysdU26WBlc/XBhvx8HDBKb2ENnCa
+X-Gm-Gg: ASbGncsStN5u4jZT/H5rYgiWaMNw3dfJPIPh6XUZOTXPHquohO0yePHYdaplzrq+GzI
+	k8d92EntMFo6GmlCNU1dnRnl9SQ66H9BkoneJWvnDpA4JHvmRkbGdZV+rGtEDtKf88317k7dbmQ
+	UXUHIMYY/a8Q/i2gbBQp1KTZZZbn4pUd9H5oPhyDPsqUlktucxrRnJucKfNqFt+AggFDUsaxfoJ
+	JbPj8R2S8AZ099Nu5WgjeWb5OUt+trkwyfbXos6ye8ApaK2Pk8C4VwosMUvcshyLAJFmuSl2aEq
+	TqTP8Aw5HBnqMlWaUqhOfCJ+nfHBdYgvrMyD+R0w3VVSMPanxA6QSSurY/jt7UHFkPpyCzkFsZP
+	f
+X-Google-Smtp-Source: AGHT+IEV9Mmky9tjHAWVSE87xT+lR7tm5Ix4w7VEXf3TOBtMRYoUueAgNI3kbcVipyWMqOI7pqqzZA==
+X-Received: by 2002:a05:6902:1004:b0:e81:f2c1:60bb with SMTP id 3f1490d57ef6-e822acc6e9emr2965920276.46.1749877061987;
+        Fri, 13 Jun 2025 21:57:41 -0700 (PDT)
 Received: from trojai4.cs.purdue.edu ([128.210.0.165])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-7117157067esm2967597b3.41.2025.06.13.18.03.20
+        by smtp.gmail.com with ESMTPSA id 3f1490d57ef6-e820e315dc9sm1523330276.39.2025.06.13.21.57.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Jun 2025 18:03:20 -0700 (PDT)
+        Fri, 13 Jun 2025 21:57:41 -0700 (PDT)
 From: Alex Guo <alexguo1023@gmail.com>
 To: deller@gmx.de
 Cc: FlorianSchandinat@gmx.de,
@@ -63,9 +63,9 @@ Cc: FlorianSchandinat@gmx.de,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: via: hw: Fix potential divide by zero
-Date: Fri, 13 Jun 2025 21:03:18 -0400
-Message-Id: <20250614010318.3128558-1-alexguo1023@gmail.com>
+Subject: [PATCH] fbdev: via: Fix potential divide by zero in get_var_refresh
+Date: Sat, 14 Jun 2025 00:57:39 -0400
+Message-Id: <20250614045739.3487259-1-alexguo1023@gmail.com>
 X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -76,7 +76,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
 Variable var->pixclock can be set by user. In case it equals to
-zero, divide by zero would occur in viafb_fill_crtc_timing.
+zero, divide by zero would occur in get_var_refresh.
 Similar crashes have happened in other fbdev drivers. We fix this
 by checking whether 'pixclock' is zero.
 
@@ -85,25 +85,22 @@ Error out if 'pixclock' equals zero")
 
 Signed-off-by: Alex Guo <alexguo1023@gmail.com>
 ---
- drivers/video/fbdev/via/hw.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/via/viafbdev.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/via/hw.c b/drivers/video/fbdev/via/hw.c
-index 66afd7be00cc..31e0cac91889 100644
---- a/drivers/video/fbdev/via/hw.c
-+++ b/drivers/video/fbdev/via/hw.c
-@@ -1488,8 +1488,9 @@ void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
- 	if (viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266
- 		&& viaparinfo->chip_info->gfx_chip_name != UNICHROME_K400)
- 		viafb_load_FIFO_reg(iga, var->xres, var->yres);
--
--	viafb_set_vclock(PICOS2KHZ(var->pixclock) * 1000, iga);
-+	
-+	if (var->pixclock)
-+		viafb_set_vclock(PICOS2KHZ(var->pixclock) * 1000, iga);
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 6da5ae7d229a..5b58e93f8c28 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -179,6 +179,8 @@ static inline int get_var_refresh(struct fb_var_screeninfo *var)
+ 		+ var->hsync_len;
+ 	vtotal = var->upper_margin + var->yres + var->lower_margin
+ 		+ var->vsync_len;
++	if (!var->pixclock)
++		return -EINVAL;
+ 	return PICOS2KHZ(var->pixclock) * 1000 / (htotal * vtotal);
  }
  
- void viafb_init_chip_info(int chip_type)
 -- 
 2.34.1
 

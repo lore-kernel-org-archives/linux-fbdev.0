@@ -1,114 +1,125 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fhigh-a4-smtp.messagingengine.com (fhigh-a4-smtp.messagingengine.com [103.168.172.155])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B46F2EF283;
-	Wed, 18 Jun 2025 15:08:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFC722EE97A;
+	Wed, 18 Jun 2025 15:19:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.155
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750259309; cv=none; b=Pa2R4yPj7l7dDzjZvj0xFCFbLOUsT6BA8FOLEoDg2vFg4JWiUbsuCvF1O3fGt+ye58k6BSm1+bAwbdaVVBfrb/K423D52qMWdjSOjjpMHfGPZAk1fSKyKhtAzuIHHkKb0k+gebNofhY9SmHuSrih3OanaHdHa9i6Kg0uQbXGROI=
+	t=1750259954; cv=none; b=auiiF6iMImvZqMqZn+V7L9e1IoKGJMNOPGmxCHrOfC94YL0voM+Q8rqsShOI9iIpu3LML55AZKF+4U3THxh9zSnc7L/7BHkU2YkJ2lSnJ761iSlDU2/LT1hQU/qivDxlRyrjaIyo7o9iTIfVOa6YvZZYTKxefuNSt5c5S8a6yaQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750259309; c=relaxed/simple;
-	bh=L8Ij7WI1ztqVYmG775JBVUJdflNviiHPGOnb2Mh/ppk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=n+nkwwtPOW+o/meTEn776Zq4Wq3OvFtW3oN8S+iVbWR1hWzeW3jrh36I1mtHJSr5x5RkgK/PzC9sOFM9nTFf9Im6u7emWZ0ZK5+vxDyELV3VvhcgeFlgev/h7ivCMboiGcbYi7m+ORU+yuI/MKtiF/5vZoZVOjNtX8kIdC86FQk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=H4DogCP4; arc=none smtp.client-ip=209.85.216.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1750259954; c=relaxed/simple;
+	bh=U2qShf+f0BBjvB8R4BU0oiMW0/1u3Biw9w5U1eKbw5Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bwisS3l5GrgF3Tut+Bur+Ug+7vFv83F+vr2v9eoHAR7Qt0IHkz3LsFVXK3NYtNO7ykpuE0mzduZmghbKTdwe7FgV26/mUsAz9degCKeVoSNcAI9KMfyqRIow3OHIRkK74cHruUWC5+9//ZaefKzDwqUdwORVFbI//nUH0wYd/xs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net; spf=pass smtp.mailfrom=jannau.net; dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b=kBAG2d/k; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=OqXrceS/; arc=none smtp.client-ip=103.168.172.155
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jannau.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H4DogCP4"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-311da0bef4aso7719265a91.3;
-        Wed, 18 Jun 2025 08:08:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1750259307; x=1750864107; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=NlXLcdl0xMjJ43b63DNA4aQ9Nj5CoTCVpP0YbONQKfs=;
-        b=H4DogCP4PMxGSRhCsJJAduls7yJMMh8MdlnPUehDt5l6jrwLYGxgCDcZJFi5lrFEkK
-         iLu+SLIzZMfXZ1VKosrVSInqpwzYYm6dI9vhIqRw/J+UiCNUf0avuknN0R1eetwbKlc6
-         WX7TZRMzprURvnW0A88bBkVkJ1JCopWFhj3Qv8zNzdOhA6HZvhTkAMdilEFMMMeSOQgX
-         IGB8z00vXO7GyLxmFgYn11fZ/xGngVQvQtdLP6SVUrb6prgcUsm46JL/onURsRv+GN55
-         56szqtlRi9O1X19xDvSrbjopeXBYVl+ZFY3zVSlLrzPWAJYu05ndMbiHC0AHPkaUOr8n
-         xtvg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750259307; x=1750864107;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=NlXLcdl0xMjJ43b63DNA4aQ9Nj5CoTCVpP0YbONQKfs=;
-        b=MmCgiY2pwc/5dTHCXRFWWhIlWY7dQ9QEXHqRmJSn/9yatj1Cc9+hCoOtbPVXzZKA+p
-         0B5lYGUoHxg+dYsrLh/KuXAosKKEqkOv1L/ExYHB3rOZzpGqXMEVzy40U0+uX3o8A/Sf
-         b+5SGPsVjN66jivQqrLLQx/r192ZQOxAiGwYus+yblAsg59BSeW5FWgLn/sCVT79QDFZ
-         gbR3p4I/NmNdv8shiQFZl9sWWL14LzNCHJwaRQ0gyJjemA9vysfzTy0hTZGRlatOu9jS
-         OqCwaqhfDkORJCblSt8ZqgcL5tHhEdVkFWwimWVYL6jgI/QqoJbNTcsftbmBBdZAPZYW
-         rkwg==
-X-Forwarded-Encrypted: i=1; AJvYcCUUhbBDw8r1igQ8BQ79xvhJGgi3A0c6wx7MFp6rM3rVXZ7JTH/kWV13YztTH2ilojDHZ/HkF5kplpaqfQJFolTKSBwBdw==@vger.kernel.org, AJvYcCVjFSuAyIuVSJMwebVxaJoJyOTKxwcD5qAxl2DBafnSQ1oZEVAt/hUsMbKShQvi7LAteFE/G+EelpoTag==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywg0p+aangkc9S9XK2sM2zYZx96LgbaNbmsDRohCQ/zDUUqeeFa
-	jpEkg+Nk4Q986mqIZG0PB36AL3Hdi/3hZSutVfTo2I+Dk+5qLE1suqc7
-X-Gm-Gg: ASbGnculcsxXm6sHj/5SPDXFRWkkvTylvB8H7nY5Ryxc/CAfn0OZOPiQA8w/6h7An22
-	s+LC+U/diDppugExV7usdmkFTW/Nsf7tFsibgnN5/RzH9vrC8BE4QuZp8ekmVemvnFUDVBFWA/8
-	6TU6Yw1754k8o1YeF0yyy9Na+D8meEQcTOP5zFwTnyX/83yYpvMYiTL10GtxN8YrZbW7p4OGVRN
-	5TPQPMHLMTBvYmDVKzzPLdPIOFZAmqE8/UptOVjFPCE+zpSXR+CdDjqisr/s8kyIj2fAWXrHYda
-	d3MhJhzpy0PeUpn4UjbJxIejIJyZN/8cq8foiaFXH3l/L0Wu2lgqL44uzmtu3r+yqhhlrQ==
-X-Google-Smtp-Source: AGHT+IGMfD1en+jAPfFZnyKfP/6fLNvoxSDJknXoysVlOSdS/kFg5+qkb2avdYMr18aUztSudZuFfA==
-X-Received: by 2002:a17:90b:528d:b0:314:2a2e:9da9 with SMTP id 98e67ed59e1d1-3142a2e9e1cmr8449811a91.25.1750259307379;
-        Wed, 18 Jun 2025 08:08:27 -0700 (PDT)
-Received: from [192.168.0.123] ([59.188.211.160])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3158a22418dsm16968a91.9.2025.06.18.08.08.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 18 Jun 2025 08:08:27 -0700 (PDT)
-Message-ID: <c7ff4ca4-da9c-4b86-893b-1ffd9fb0fb4f@gmail.com>
-Date: Wed, 18 Jun 2025 23:08:21 +0800
+	dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b="kBAG2d/k";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="OqXrceS/"
+Received: from phl-compute-05.internal (phl-compute-05.phl.internal [10.202.2.45])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id 0AD4211401DC;
+	Wed, 18 Jun 2025 11:19:11 -0400 (EDT)
+Received: from phl-mailfrontend-01 ([10.202.2.162])
+  by phl-compute-05.internal (MEProxy); Wed, 18 Jun 2025 11:19:11 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jannau.net; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm3; t=1750259951; x=1750346351; bh=WO/z6nXKHh
+	mPKqTYhrdKPVyjJIEwheeScnSf5HObDQk=; b=kBAG2d/k3jYQcWwudKuhwnZoIg
+	bT8BGaGnO89+e2XdGsV8mXWAXXeBpDnr3+Z8+pd/GFblR4xe8NpgIH1hQ1cBEq2I
+	21Lfl2whGWeFJkTqu/p+LYyNhUx693Pi4jcMu8aCbtnT8HWBmcJl3hFhYb2xRuvR
+	ePneY+oeIhsWCtMyGUAu/I06c4iCMBjXsS06bp4nfy+zWPm/lYE8SREdlpRSCpcZ
+	xb5w/BN+lOKxIgcfFILV5zQfPBrY+fR5vFk40JxbL6gu83NLM4CNiQgwxeQo9rqP
+	QRIVojQgY8cFyf0OpFKqd5aQ3Rz2DA4jQ558rNT/AfiLnISk+uyCxFVH4EWw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
+	1750259951; x=1750346351; bh=WO/z6nXKHhmPKqTYhrdKPVyjJIEwheeScnS
+	f5HObDQk=; b=OqXrceS/LN7ABzPOO7vhJH6ksoO3UMevC6RoZWmTsilbltXbhiN
+	sIXM/OiSLFfDsTyhAuy5Opu6ckXdUJi73JxF38E9IkJ6ns2McCvVp3hxkhMlvr9B
+	Oue7iDYv/UztIqRXeQfPuGfKQYD+7yv7DQ/37dAhQHVoIM5rW7oj4BNNrbeJXlHr
+	4Dvwq9XcUWsCfyMIcICAfmcKobCBeYNMNCJQldN0i3eQye/emLZmRavWcH/Ld4T6
+	6323urQz6KmEzMZc4JGwR2iGHuJw52BEyBy3lPtb7PWRJEkl5xegpKHJNVOJ5YwI
+	ZFIT1vgL/waOce4NKSC8u3oqGEKOePE2w8Q==
+X-ME-Sender: <xms:7dhSaJIP82tX6p7DEl8JOHr7c7Z5DNE5mzALKcty1TNEdbzeKHPKiA>
+    <xme:7dhSaFLpCJXfsREoXkQR-5wOmgpFpFCsPWijN3ug8Ltqvy_ocTWGwRItNy_zBXkgn
+    1SP4pn_gwYpTWOldtU>
+X-ME-Received: <xmr:7dhSaBtcY6EJYMGN10cQtbN9EXV3QKTaSmD_dCuSEleLlb214gX1gEO4UE89FqQa6CwcxU_DBm69Tmogtmr6ec8VXzARWf7jxus>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtddvgddvleekucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
+    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
+    htshculddquddttddmnecujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtjeen
+    ucfhrhhomheplfgrnhhnvgcuifhruhhnrghuuceojhesjhgrnhhnrghurdhnvghtqeenuc
+    ggtffrrghtthgvrhhnpefgvdffveelgedujeeffeehheekheelheefgfejffeftedugeet
+    hfeuudefheefteenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfh
+    hrohhmpehjsehjrghnnhgruhdrnhgvthdpnhgspghrtghpthhtohepvdegpdhmohguvgep
+    shhmthhpohhuthdprhgtphhtthhopehtiihimhhmvghrmhgrnhhnsehsuhhsvgdruggvpd
+    hrtghpthhtoheplhgvvgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghl
+    theskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepjhhinhhgohhohhgrnhdusehgmhgrih
+    hlrdgtohhmpdhrtghpthhtohepnhgvihhlrdgrrhhmshhtrhhonhhgsehlihhnrghrohdr
+    ohhrghdprhgtphhtthhopehjvghsshhitggrrdiihhgrnhhgsehoshhsrdhquhgrlhgtoh
+    hmmhdrtghomhdprhgtphhtthhopehmrggrrhhtvghnrdhlrghnkhhhohhrshhtsehlihhn
+    uhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepmhhrihhprghrugeskhgvrhhnvghlrd
+    horhhgpdhrtghpthhtoheprghirhhlihgvugesghhmrghilhdrtghomh
+X-ME-Proxy: <xmx:7dhSaKbl1ZMotpjMQtM5yHRTHJc6TdIhRYJX4-2F-PuetDl30Wj4gQ>
+    <xmx:7dhSaAawsQO09J05y418B2N8d7WUoBEceWh2y08wPM6ASdEcmHVvAA>
+    <xmx:7dhSaODyOzGssvtqXZgRJie55tA53yYoxKaT8Ks5LuYffaw0oOepFw>
+    <xmx:7dhSaOY62WvDxdzEWfY-d_WOEyGTNRpVaFWfrFDJvIs-quOX6EAPJQ>
+    <xmx:79hSaGULqo-ojzHZEr62DhrX1iqgwD9W1XclI2m9nwJuc7QEZNUdEZIk>
+Feedback-ID: i47b949f6:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 18 Jun 2025 11:19:08 -0400 (EDT)
+Date: Wed, 18 Jun 2025 17:19:06 +0200
+From: Janne Grunau <j@jannau.net>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com,
+	neil.armstrong@linaro.org, jessica.zhang@oss.qualcomm.com,
+	maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+	airlied@gmail.com, simona@ffwll.ch, fnkl.kernel@gmail.com,
+	hdegoede@redhat.com, ilpo.jarvinen@linux.intel.com, sven@kernel.org,
+	alyssa@rosenzweig.io, neal@gompa.dev, deller@gmx.de,
+	support.opensource@diasemi.com, duje.mihanovic@skole.hr,
+	dri-devel@lists.freedesktop.org, asahi@lists.linux.dev,
+	platform-driver-x86@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 04/12] drm/panel: panel-summit: Include <linux/of.h>
+Message-ID: <20250618151906.GA103923@robin.jannau.net>
+References: <20250618122436.379013-1-tzimmermann@suse.de>
+ <20250618122436.379013-5-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 07/12] backlight: apple_dwi_bl: Include
- <linux/mod_devicetable.h>
-Content-Language: en-MW
-To: Thomas Zimmermann <tzimmermann@suse.de>, lee@kernel.org,
- danielt@kernel.org, jingoohan1@gmail.com, neil.armstrong@linaro.org,
- jessica.zhang@oss.qualcomm.com, maarten.lankhorst@linux.intel.com,
- mripard@kernel.org, airlied@gmail.com, simona@ffwll.ch,
- fnkl.kernel@gmail.com, j@jannau.net, hdegoede@redhat.com,
- ilpo.jarvinen@linux.intel.com, sven@kernel.org, alyssa@rosenzweig.io,
- neal@gompa.dev, deller@gmx.de, support.opensource@diasemi.com,
- duje.mihanovic@skole.hr
-Cc: dri-devel@lists.freedesktop.org, asahi@lists.linux.dev,
- platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org
-References: <20250618122436.379013-1-tzimmermann@suse.de>
- <20250618122436.379013-8-tzimmermann@suse.de>
-From: Nick Chan <towinchenmi@gmail.com>
-In-Reply-To: <20250618122436.379013-8-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250618122436.379013-5-tzimmermann@suse.de>
 
-
-
-On 18/6/2025 20:16, Thomas Zimmermann wrote:
-> Include <linux/mod_devicetable.h> to declare struct of_device_id.
-> Avoids dependency on backlight header to include it.
+On Wed, Jun 18, 2025 at 02:16:36PM +0200, Thomas Zimmermann wrote:
+> Include <linux/of.h> to declare device_property_read_u32() and
+> struct of_device_id. Avoids dependency on backlight header to include
+> it.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->  drivers/video/backlight/apple_dwi_bl.c | 1 +
+>  drivers/gpu/drm/panel/panel-summit.c | 1 +
 >  1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/video/backlight/apple_dwi_bl.c b/drivers/video/backlight/apple_dwi_bl.c
-> index 93bd744972d6..ed8bf13d3f51 100644
-> --- a/drivers/video/backlight/apple_dwi_bl.c
-> +++ b/drivers/video/backlight/apple_dwi_bl.c
-> @@ -9,6 +9,7 @@
->  #include <linux/bitfield.h>
->  #include <linux/device.h>
->  #include <linux/io.h>
-> +#include <linux/mod_devicetable.h>
->  #include <linux/module.h>
->  #include <linux/platform_device.h>
+> diff --git a/drivers/gpu/drm/panel/panel-summit.c b/drivers/gpu/drm/panel/panel-summit.c
+> index 4854437e2899..02aa1ec287d6 100644
+> --- a/drivers/gpu/drm/panel/panel-summit.c
+> +++ b/drivers/gpu/drm/panel/panel-summit.c
+> @@ -1,6 +1,7 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
 >  
+>  #include <linux/backlight.h>
+> +#include <linux/of.h>
+>  #include <drm/drm_device.h>
+>  #include <drm/drm_mipi_dsi.h>
+>  #include <drm/drm_mode.h>
 
-Reviewed-by: Nick Chan <towinchenmi@gmail.com>
+Reviewed-by: Janne Grunau <j@jannau.net>

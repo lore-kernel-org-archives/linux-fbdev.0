@@ -1,80 +1,81 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1950B288CBF
-	for <linux-fbdev@vger.kernel.org>; Fri, 20 Jun 2025 11:02:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83BD1289E1F
+	for <linux-fbdev@vger.kernel.org>; Fri, 20 Jun 2025 11:03:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750417338; cv=none; b=CFuiB2eWpLOHKL4mL6tPsGBvDj220sSVOpbgnHL2sbartTGn5r1bdtZDOmsdivzlOj2Z4bOrx8tvETNrOClBWMCgAFsW3SGTwUy5TxfvNcJFV6yd5mjohuZTQu6iybCmWNhpvdCPpOVU4gaSWT2oVd2ruEHg1NcGcFsspBPurNw=
+	t=1750417412; cv=none; b=M1gLvwuiIbg9Ie6Qg7Ip4HsWoUvDaXKg+iTIQebs8tmPtmzU65DNDG0Gbgh7jURcrxI8L2nUsApQeIk1M09Waqze0OP9Arh4ov3BEfcGkDSWeG1offbc2pGooSYAuYNh+ePUQv03wifgxvHJEg0pHwSbuTs03EHqizPPIctsbfo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750417338; c=relaxed/simple;
-	bh=zmV4806JVOWPLzrvPqmid4gN6v5hPUhpLvhhA4/ahAU=;
+	s=arc-20240116; t=1750417412; c=relaxed/simple;
+	bh=ztOJbw/FhlbwurBSOf+O/SamwpGIcYdyIfIAQzwFJbU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sXr4UBccRDJOOZTuvhwY27Akwt9enhAtB4qQkeERmPB3XgsQWHU/oUuiIpAuRtp53xSRw3fEo9gEnRlknlK+3teaaXeS3aT43lLtxoH2Oj6O1Sf439lN3uEoAWL4Z0VIZmX4FH0RP4wEFkYrnc7B+QgR3/503Gh5ULH+MOvXPr4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=1puoBEJk; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=f6slLtQc; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=1puoBEJk; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=f6slLtQc; arc=none smtp.client-ip=195.135.223.131
+	 In-Reply-To:Content-Type; b=Phj2PqPfCgkqcPW9G8df+iLEec7Ct1B/njzXOYijfLpyRnc4vK13vimcL3yG9ooCzix5ujRyBaeQT00fCmZgFt8jY2c2wX+HaZRLaMEFnCIdQ2s/mMuh1MJzLry1BbN9sf9e/xwotFjxM9KZVhSZ2XP0I7Sp4ZqVjwPMpPMQ6Vg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yoZpH2Bl; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=vToaK8ca; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yoZpH2Bl; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=vToaK8ca; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="1puoBEJk";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="f6slLtQc";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="1puoBEJk";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="f6slLtQc"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yoZpH2Bl";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="vToaK8ca";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yoZpH2Bl";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="vToaK8ca"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 654F51F390;
-	Fri, 20 Jun 2025 11:02:15 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8A60E21245;
+	Fri, 20 Jun 2025 11:03:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1750417335; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1750417406; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xYtH4KzYfQFnIOsPl+GHBvUXtKQ554CwNSubfr1Rwb0=;
-	b=1puoBEJkkSXgMCtJXlHMo/PjEeGCO12JMJ694GDv7hzLm1N7b+09p5aY9RJ1XULvNJZZNW
-	g1E5wxk6kR3fh16tBhwRLoREHRtjkO/knxNcLvhwf2zn6V+SozNnFNJfp8JhjPoL8CLp8K
-	A1HWSbgYzzGl3igTGgIVSVyefaa2hyg=
+	bh=fUE7/CVeD3VJgJaO+OJoc1ePQ4hnie+h3eVCjETA+Aw=;
+	b=yoZpH2BlkHLD1UKeGulYoF87QAxIXXJ+nBAwr8LF/Ma68p4Ph3Vcpf+Op7rhDlLO9v8/s+
+	6uz24RzT/b8BgkqQVddOJV1sYBFE2VAJ0MJpc0R9ixqbejoerLlA5ox88c+i0HT0LweDMI
+	epdId5UWEBCj/rWfUuXpeur9Jm//X5g=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1750417335;
+	s=susede2_ed25519; t=1750417406;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xYtH4KzYfQFnIOsPl+GHBvUXtKQ554CwNSubfr1Rwb0=;
-	b=f6slLtQcggdux0UWBINW2cNKPZztBNXHjtTugn4fSPzYsLTlV2K4nR6eB2tz+O05OF89Ky
-	/iG3UJ/fUqwFH3CA==
-Authentication-Results: smtp-out2.suse.de;
-	none
+	bh=fUE7/CVeD3VJgJaO+OJoc1ePQ4hnie+h3eVCjETA+Aw=;
+	b=vToaK8caoq7UALOvI9bliyHAOltEgZ+4PcNoBCLNFJiqqfMHgSDIAVkNjRQ1986g5zeumV
+	rLGSOSc/si3tlbBQ==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=yoZpH2Bl;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=vToaK8ca
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1750417335; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1750417406; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xYtH4KzYfQFnIOsPl+GHBvUXtKQ554CwNSubfr1Rwb0=;
-	b=1puoBEJkkSXgMCtJXlHMo/PjEeGCO12JMJ694GDv7hzLm1N7b+09p5aY9RJ1XULvNJZZNW
-	g1E5wxk6kR3fh16tBhwRLoREHRtjkO/knxNcLvhwf2zn6V+SozNnFNJfp8JhjPoL8CLp8K
-	A1HWSbgYzzGl3igTGgIVSVyefaa2hyg=
+	bh=fUE7/CVeD3VJgJaO+OJoc1ePQ4hnie+h3eVCjETA+Aw=;
+	b=yoZpH2BlkHLD1UKeGulYoF87QAxIXXJ+nBAwr8LF/Ma68p4Ph3Vcpf+Op7rhDlLO9v8/s+
+	6uz24RzT/b8BgkqQVddOJV1sYBFE2VAJ0MJpc0R9ixqbejoerLlA5ox88c+i0HT0LweDMI
+	epdId5UWEBCj/rWfUuXpeur9Jm//X5g=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1750417335;
+	s=susede2_ed25519; t=1750417406;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xYtH4KzYfQFnIOsPl+GHBvUXtKQ554CwNSubfr1Rwb0=;
-	b=f6slLtQcggdux0UWBINW2cNKPZztBNXHjtTugn4fSPzYsLTlV2K4nR6eB2tz+O05OF89Ky
-	/iG3UJ/fUqwFH3CA==
+	bh=fUE7/CVeD3VJgJaO+OJoc1ePQ4hnie+h3eVCjETA+Aw=;
+	b=vToaK8caoq7UALOvI9bliyHAOltEgZ+4PcNoBCLNFJiqqfMHgSDIAVkNjRQ1986g5zeumV
+	rLGSOSc/si3tlbBQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 01719136BA;
-	Fri, 20 Jun 2025 11:02:14 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1C676136BA;
+	Fri, 20 Jun 2025 11:03:26 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id eByUOrY/VWhPDwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 20 Jun 2025 11:02:14 +0000
-Message-ID: <cf29862b-496b-4825-aa0f-493eb44838a5@suse.de>
-Date: Fri, 20 Jun 2025 13:02:14 +0200
+	id s/CGBf4/VWidDwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 20 Jun 2025 11:03:26 +0000
+Message-ID: <5486da91-4e3c-400b-8d64-2efc1b2be9ce@suse.de>
+Date: Fri, 20 Jun 2025 13:03:25 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,7 +83,8 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] fbdev/simplefb: Add support for interconnect paths
+Subject: Re: [PATCH 1/3] dt-bindings: display: simple-framebuffer: Add
+ interconnects property
 To: Luca Weiss <luca.weiss@fairphone.com>, Hans de Goede
  <hdegoede@redhat.com>, Maarten Lankhorst
  <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
@@ -93,7 +95,7 @@ To: Luca Weiss <luca.weiss@fairphone.com>, Hans de Goede
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250620-simple-drm-fb-icc-v1-0-d92142e8f74f@fairphone.com>
- <20250620-simple-drm-fb-icc-v1-3-d92142e8f74f@fairphone.com>
+ <20250620-simple-drm-fb-icc-v1-1-d92142e8f74f@fairphone.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -120,173 +122,77 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20250620-simple-drm-fb-icc-v1-3-d92142e8f74f@fairphone.com>
+In-Reply-To: <20250620-simple-drm-fb-icc-v1-1-d92142e8f74f@fairphone.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 8A60E21245
+X-Rspamd-Action: no action
 X-Spam-Flag: NO
-X-Spam-Score: -2.80
-X-Spamd-Result: default: False [-2.80 / 50.00];
+X-Spamd-Result: default: False [-3.01 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_TO(0.00)[fairphone.com,redhat.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de];
-	TAGGED_RCPT(0.00)[dt];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	MX_GOOD(-0.01)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FREEMAIL_TO(0.00)[fairphone.com,redhat.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email,fairphone.com:email]
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,fairphone.com:email,suse.de:mid,suse.de:dkim,suse.de:email]
+X-Spam-Score: -3.01
 X-Spam-Level: 
 
 Hi
 
 Am 20.06.25 um 12:31 schrieb Luca Weiss:
-> Some devices might require keeping an interconnect path alive so that
-> the framebuffer continues working. Add support for that by setting the
-> bandwidth requirements appropriately for all provided interconnect
-> paths.
+> Document the interconnects property which is a list of interconnect
+> paths that is used by the framebuffer and therefore needs to be kept
+> alive when the framebuffer is being used.
 >
 > Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> ---
->   drivers/video/fbdev/simplefb.c | 83 ++++++++++++++++++++++++++++++++++++++++++
->   1 file changed, 83 insertions(+)
->
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index be95fcddce4c8ca794826b805cd7dad2985bd637..ca73e079fd13550ddc779e84db80f7f9b743d074 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -27,6 +27,7 @@
->   #include <linux/parser.h>
->   #include <linux/pm_domain.h>
->   #include <linux/regulator/consumer.h>
-> +#include <linux/interconnect.h>
 
-With alphabetical sorting:
+Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Maybe also get someone with DT expertise to look over this patch as well.
 
 Best regards
 Thomas
 
-
+> ---
+>   Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
+>   1 file changed, 3 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
+> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> @@ -79,6 +79,9 @@ properties:
+>     power-domains:
+>       description: List of power domains used by the framebuffer.
 >   
->   static const struct fb_fix_screeninfo simplefb_fix = {
->   	.id		= "simple",
-> @@ -89,6 +90,10 @@ struct simplefb_par {
->   	u32 regulator_count;
->   	struct regulator **regulators;
->   #endif
-> +#if defined CONFIG_OF && defined CONFIG_INTERCONNECT
-> +	unsigned int icc_count;
-> +	struct icc_path **icc_paths;
-> +#endif
->   };
->   
->   static void simplefb_clocks_destroy(struct simplefb_par *par);
-> @@ -525,6 +530,80 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
->   }
->   #endif
->   
-> +#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
-> +/*
-> + * Generic interconnect path handling code.
-> + */
-> +static void simplefb_detach_icc(void *res)
-> +{
-> +	struct simplefb_par *par = res;
-> +	int i;
+> +  interconnects:
+> +    description: List of interconnect paths used by the framebuffer.
 > +
-> +	for (i = par->icc_count - 1; i >= 0; i--) {
-> +		if (!IS_ERR_OR_NULL(par->icc_paths[i]))
-> +			icc_put(par->icc_paths[i]);
-> +	}
-> +}
-> +
-> +static int simplefb_attach_icc(struct simplefb_par *par,
-> +			       struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	int ret, count, i;
-> +
-> +	count = of_count_phandle_with_args(dev->of_node, "interconnects",
-> +							 "#interconnect-cells");
-> +	if (count < 0)
-> +		return 0;
-> +
-> +	/* An interconnect path consists of two elements */
-> +	if (count % 2) {
-> +		dev_err(dev, "invalid interconnects value\n");
-> +		return -EINVAL;
-> +	}
-> +	par->icc_count = count / 2;
-> +
-> +	par->icc_paths = devm_kcalloc(dev, par->icc_count,
-> +				      sizeof(*par->icc_paths),
-> +				      GFP_KERNEL);
-> +	if (!par->icc_paths)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; i < par->icc_count; i++) {
-> +		par->icc_paths[i] = of_icc_get_by_index(dev, i);
-> +		if (IS_ERR_OR_NULL(par->icc_paths[i])) {
-> +			ret = PTR_ERR(par->icc_paths[i]);
-> +			if (ret == -EPROBE_DEFER)
-> +				goto err;
-> +			dev_err(dev, "failed to get interconnect path %u: %d\n", i, ret);
-> +			continue;
-> +		}
-> +
-> +		ret = icc_set_bw(par->icc_paths[i], 0, UINT_MAX);
-> +		if (ret) {
-> +			dev_err(dev, "failed to set interconnect bandwidth %u: %d\n", i, ret);
-> +			continue;
-> +		}
-> +	}
-> +
-> +	return devm_add_action_or_reset(dev, simplefb_detach_icc, par);
-> +
-> +err:
-> +	while (i) {
-> +		--i;
-> +		if (!IS_ERR_OR_NULL(par->icc_paths[i]))
-> +			icc_put(par->icc_paths[i]);
-> +	}
-> +	return ret;
-> +}
-> +#else
-> +static int simplefb_attach_icc(struct simplefb_par *par,
-> +			       struct platform_device *pdev)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
->   static int simplefb_probe(struct platform_device *pdev)
->   {
->   	int ret;
-> @@ -615,6 +694,10 @@ static int simplefb_probe(struct platform_device *pdev)
->   	if (ret < 0)
->   		goto error_regulators;
->   
-> +	ret = simplefb_attach_icc(par, pdev);
-> +	if (ret < 0)
-> +		goto error_regulators;
-> +
->   	simplefb_clocks_enable(par, pdev);
->   	simplefb_regulators_enable(par, pdev);
->   
+>     width:
+>       $ref: /schemas/types.yaml#/definitions/uint32
+>       description: Width of the framebuffer in pixels
 >
 
 -- 

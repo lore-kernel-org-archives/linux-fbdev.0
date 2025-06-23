@@ -1,170 +1,127 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB37D823DD;
-	Sun, 22 Jun 2025 02:22:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEBEC1E1DFE
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Jun 2025 06:44:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750558973; cv=none; b=oOAuBVt5l41GF0V9TJFSe12VKRHpMlQnkKzNv4Zl06iPE2ZV0iW+CFS5omN2GPRl6GAkxHI+UiPY30BCZIhMxhAdPC68ncA0ZUXACLfBD6Z/fJOR++/rg2jv+5U58TF0t+1Z1JLoP9AKJnk+AS1QpIMDT6ky6Oq4invWCXK7h/M=
+	t=1750661099; cv=none; b=WildL9/4O6L9Ky24U2lytvvI3RRLYkQhqaLpRJlpR1Od0oEs1xg/0cvAhZTXR6np0YX/wLp51k2CNMOxSU95lb3ajQEOS4W9M+iVKg/O25x9H1EVuD8tvXlL0GOob6xZX23hJJr02QY/P059U6HPVwwvnB6fWoo1+SoQ26DXeXU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750558973; c=relaxed/simple;
-	bh=smT81ZGikL0XcHJsLT8lEppkH+fN2eauAFmorGIVhYQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=f91BjeolmLKJyjlpszS/+M5160b8J1qXw/8s4+ZaW1w3+C7TRuVgUdOJs3zmMrL7PGRQtj/3NX/isAxVRVQYl4dLS+KYMp3g6W/azHgzLCgdvMmc5Xc2wrNtJ8Rl0wMWNcK75wWALPI2S+OZVxmEr/Bb+S7e+FB1nAPQ2ieZgwA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=gF4hJt2J; arc=none smtp.client-ip=192.198.163.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1750661099; c=relaxed/simple;
+	bh=mG0ZFKhM/nBtFju2w5kydTvhmmvJKrUqQYrMK9O0+gQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Glvav1gWdQlNFQVGHaYmeCxMPhehnhFtxufRHYrT0Gk+6vNKQOIMEel9D/IFBs+bIWR/YRmTWeG00YhkI4GAFkR2M3dS/l+aoV0Ycniv6iL4+gesOGPxgFu11ZyWuiIKEoPH+db2bGOycTBPGYEr+WA5/JWDak0IOlAPJj9diJw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=5HpkMIW4; arc=none smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="gF4hJt2J"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1750558971; x=1782094971;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=smT81ZGikL0XcHJsLT8lEppkH+fN2eauAFmorGIVhYQ=;
-  b=gF4hJt2Jdgc4ItUSf9T8n9DOf7j+DzVjsfGafvafKoaY8TwGprBehI4f
-   N8+1BwWXdcHzoMefykYmz1a91CExg21280zflgfNT6cFuAxG7jyiMUiam
-   srTfj8OrY7I7oL4mEEukKnP58HS1n1c054vxv/4HVQX70gfBQ6auoiI9d
-   yv51Ude9lqkCeUxik6SzA9WZ5uLNYjrhiEWEZ63iVJVLepgM9ue1HXh9P
-   cNtu5JuasvxBklSlBdQ7LEytwLkgMGy4k8coCmEcj6PSi6AyfqrBJ1W22
-   sk7ZfyfSckRnKKG5LRHAzq1Njj7/KE0pkyltBijyaZtCLyebNqWkj9iNW
-   g==;
-X-CSE-ConnectionGUID: ODGdPXiBRcOfZkDiWVr5zg==
-X-CSE-MsgGUID: NhHsfJ1hQjiixNvF1gVp1A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11470"; a="51895306"
-X-IronPort-AV: E=Sophos;i="6.16,255,1744095600"; 
-   d="scan'208";a="51895306"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2025 19:22:50 -0700
-X-CSE-ConnectionGUID: r9sRgp3PR7evIMRC0XykFQ==
-X-CSE-MsgGUID: jWAxPm+4Qau9LxeZXkF/sg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,255,1744095600"; 
-   d="scan'208";a="182127439"
-Received: from lkp-server01.sh.intel.com (HELO e8142ee1dce2) ([10.239.97.150])
-  by fmviesa001.fm.intel.com with ESMTP; 21 Jun 2025 19:22:46 -0700
-Received: from kbuild by e8142ee1dce2 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uTAM0-000MzG-1C;
-	Sun, 22 Jun 2025 02:22:44 +0000
-Date: Sun, 22 Jun 2025 10:21:48 +0800
-From: kernel test robot <lkp@intel.com>
-To: Luca Weiss <luca.weiss@fairphone.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Helge Deller <deller@gmx.de>
-Cc: oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>
-Subject: Re: [PATCH 3/3] fbdev/simplefb: Add support for interconnect paths
-Message-ID: <202506221019.ooLo1xBw-lkp@intel.com>
-References: <20250620-simple-drm-fb-icc-v1-3-d92142e8f74f@fairphone.com>
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="5HpkMIW4"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-ade33027bcfso603357566b.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 22 Jun 2025 23:44:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fairphone.com; s=fair; t=1750661096; x=1751265896; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Rfv2PMTDIceIpvbq9xZVeanT080dZzydc/UXVnCEv1g=;
+        b=5HpkMIW4x+vnSd0/LTmWt1NQmYTsLjWI3YfyEHX+dd8gcMoDzq+xif/ls1wPIJJUko
+         0bge3vEVdGIIFkBhcqz79RUEgbLy9Vxv6mrhaAxvVqpnWtqiN8LGfUhQNI5+qsCQZAYp
+         5gGUOE1VnbFu0yhnWFZjbNX+nrCSkhxq+vg5BUx3+5Lp816tVjm5JBQMydaFS1LUHx26
+         r0n7Y16ZPQoZqibq1te8z9s6IPNRpKrCowWG9k2LjW0TQ5OrgWSnyR3zfxImP1jCr3oa
+         9fN1GrAHDMjSMRvL4CC1SL+4EodFIOuR5VXodbp+ocWZT0GgZkFP7LYI3HmJqiBoNr/v
+         3TLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750661096; x=1751265896;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Rfv2PMTDIceIpvbq9xZVeanT080dZzydc/UXVnCEv1g=;
+        b=TBlM4N7IAv4R7fqU3BogBGXc6xPyx2dH+oMGy7GFwbXrt4xd/S8BpcXG5IU1rrC1ZE
+         6okzmrhPXUCK/LAFCN2ZvuR1rYwDZFCAMuzpNbD8Lt/FL+UdhpBWPtOpzQ5cOJjoM59K
+         q9QtDrBGjQqYhCF9Jj9dQ8Hz0it8TQ2JUgPurpz4smRdI891YpmT4l+7F3PBGLJqK2NF
+         Syikr2NcOTWzjJuhIZv24sWWL4N32RQhHtu/uzc14f3DQu+c+AuYwhP6Qp40K4MDic+W
+         EVJt9LR9wQwXixzSfvdSSQDspJo+bM5YJ4nHrDcT+YsmOdJLwRWJ01niKadNF1vGujll
+         6DKg==
+X-Gm-Message-State: AOJu0Yx2CGZkenbdeTHPdHWe4Yk8kvGEOqTuWfs8OLn3AaKl7UOmR4TO
+	pjBrjTnoNCeBMYD4LYYzDAaLHw1TTL8f95D/WxsqU8AjkVa+bHc99Hu3zYLEbRiNVPo=
+X-Gm-Gg: ASbGncsCtOnuFe3Vytsepc0otdIk2jPHOzSXszkt6/V/X/8ARAqSLdDNzrH1ucdWB+G
+	IiQuQGbRKpBqlv1NpGMCOZMlLCc1Su4ygd0v0AQgWRZSn4NMN7MeNNmGMN5ilDiMnI6ODI3H0Il
+	022wzG/d/ImkMWMsyce+CobyFp/ulpQHqWhMDhWm5AU9kfo1BNBA8E+SfPqO+UZgLvC2pJPUdXa
+	JUzjrlQJaA6idngkXIbVFisLzGXVNblu0zgpRPKTOK/IVatC6gbPIv4uYgHQfWEjDXN/GuswgKr
+	GpxUvYt0c401SaQww9UKfPJb9xI0AwgJeSRvDzp+2mIGTvPmxUZEI8nKcztFAc2x8kYMUb8/8jK
+	WwPgncoNOVUmOWSeMxqd0GonZhejAMC/X
+X-Google-Smtp-Source: AGHT+IEIK4HYmI0KuUkjMGJQo8hgJeoSxD4CTOsQVO12rPi+l3/A1YCQcq/euCV+EvS2bfnw4by8Eg==
+X-Received: by 2002:a17:906:d260:b0:add:deb0:8b64 with SMTP id a640c23a62f3a-ae0579df1e2mr988741966b.24.1750661096075;
+        Sun, 22 Jun 2025 23:44:56 -0700 (PDT)
+Received: from otso.local (144-178-202-138.static.ef-service.nl. [144.178.202.138])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae053ee4ce9sm659258266b.69.2025.06.22.23.44.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Jun 2025 23:44:55 -0700 (PDT)
+From: Luca Weiss <luca.weiss@fairphone.com>
+Subject: [PATCH v2 0/5] Add interconnent support for simpledrm/simplefb
+Date: Mon, 23 Jun 2025 08:44:44 +0200
+Message-Id: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250620-simple-drm-fb-icc-v1-3-d92142e8f74f@fairphone.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIANz3WGgC/22NywrCMBBFf6XM2pEk9hVX/od0UZOJHbBNSSQoJ
+ f9uLC5dngP33A0iBaYI52qDQIkj+6WAOlRgpnG5E7ItDEqoRrSyw8jz+iC0YUZ3QzYGe1230jS
+ N1vIEZbcGcvzam9eh8MTx6cN7v0jya381Jf7UkkSBVitZK+pdV7uLGzmsk1/oaPwMQ875A5p80
+ rS2AAAA
+X-Change-ID: 20250617-simple-drm-fb-icc-89461c559913
+To: Hans de Goede <hdegoede@redhat.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Luca Weiss <luca.weiss@fairphone.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1750661095; l=1324;
+ i=luca.weiss@fairphone.com; s=20250611; h=from:subject:message-id;
+ bh=mG0ZFKhM/nBtFju2w5kydTvhmmvJKrUqQYrMK9O0+gQ=;
+ b=I+KJQKTokZRRzCjESYV5r3Vrrf+Epv1ziNUE8LuNep5eK0MjSPosyfeoDYv8RZeU6jY5CZxTZ
+ xhHsZM5KA+7B8Jq8+WQNHdc3VT7AJpG+u0BOirf4OMNaxUxiruPXKC5
+X-Developer-Key: i=luca.weiss@fairphone.com; a=ed25519;
+ pk=O1aw+AAust5lEmgrNJ1Bs7PTY0fEsJm+mdkjExA69q8=
 
-Hi Luca,
+Some devices might require keeping an interconnect path alive so that
+the framebuffer continues working. Add support for that by setting the
+bandwidth requirements appropriately for all provided interconnect
+paths.
 
-kernel test robot noticed the following build errors:
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+---
+Changes in v2:
+- Sort the headers before adding the new interconnect header, in
+  separate commits.
+- Use the correct #if guards for new interconnect code
+- Pick up tags
+- Link to v1: https://lore.kernel.org/r/20250620-simple-drm-fb-icc-v1-0-d92142e8f74f@fairphone.com
 
-[auto build test ERROR on 19272b37aa4f83ca52bdf9c16d5d81bdd1354494]
+---
+Luca Weiss (5):
+      dt-bindings: display: simple-framebuffer: Add interconnects property
+      drm/sysfb: simpledrm: Sort headers correctly
+      drm/sysfb: simpledrm: Add support for interconnect paths
+      fbdev/simplefb: Sort headers correctly
+      fbdev/simplefb: Add support for interconnect paths
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Luca-Weiss/dt-bindings-display-simple-framebuffer-Add-interconnects-property/20250620-183302
-base:   19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-patch link:    https://lore.kernel.org/r/20250620-simple-drm-fb-icc-v1-3-d92142e8f74f%40fairphone.com
-patch subject: [PATCH 3/3] fbdev/simplefb: Add support for interconnect paths
-config: sparc-randconfig-r063-20250622 (https://download.01.org/0day-ci/archive/20250622/202506221019.ooLo1xBw-lkp@intel.com/config)
-compiler: sparc64-linux-gcc (GCC) 10.3.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250622/202506221019.ooLo1xBw-lkp@intel.com/reproduce)
+ .../bindings/display/simple-framebuffer.yaml       |  3 +
+ drivers/gpu/drm/sysfb/simpledrm.c                  | 85 ++++++++++++++++++++-
+ drivers/video/fbdev/simplefb.c                     | 89 +++++++++++++++++++++-
+ 3 files changed, 173 insertions(+), 4 deletions(-)
+---
+base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+change-id: 20250617-simple-drm-fb-icc-89461c559913
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202506221019.ooLo1xBw-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/video/fbdev/simplefb.c: In function 'simplefb_detach_icc':
->> drivers/video/fbdev/simplefb.c:542:14: error: 'struct simplefb_par' has no member named 'icc_count'
-     542 |  for (i = par->icc_count - 1; i >= 0; i--) {
-         |              ^~
->> drivers/video/fbdev/simplefb.c:543:26: error: 'struct simplefb_par' has no member named 'icc_paths'
-     543 |   if (!IS_ERR_OR_NULL(par->icc_paths[i]))
-         |                          ^~
-   drivers/video/fbdev/simplefb.c:544:15: error: 'struct simplefb_par' has no member named 'icc_paths'
-     544 |    icc_put(par->icc_paths[i]);
-         |               ^~
-   drivers/video/fbdev/simplefb.c: In function 'simplefb_attach_icc':
-   drivers/video/fbdev/simplefb.c:564:5: error: 'struct simplefb_par' has no member named 'icc_count'
-     564 |  par->icc_count = count / 2;
-         |     ^~
-   drivers/video/fbdev/simplefb.c:566:5: error: 'struct simplefb_par' has no member named 'icc_paths'
-     566 |  par->icc_paths = devm_kcalloc(dev, par->icc_count,
-         |     ^~
-   drivers/video/fbdev/simplefb.c:566:40: error: 'struct simplefb_par' has no member named 'icc_count'
-     566 |  par->icc_paths = devm_kcalloc(dev, par->icc_count,
-         |                                        ^~
-   drivers/video/fbdev/simplefb.c:567:22: error: 'struct simplefb_par' has no member named 'icc_paths'
-     567 |           sizeof(*par->icc_paths),
-         |                      ^~
-   drivers/video/fbdev/simplefb.c:569:10: error: 'struct simplefb_par' has no member named 'icc_paths'
-     569 |  if (!par->icc_paths)
-         |          ^~
-   drivers/video/fbdev/simplefb.c:572:21: error: 'struct simplefb_par' has no member named 'icc_count'
-     572 |  for (i = 0; i < par->icc_count; i++) {
-         |                     ^~
-   drivers/video/fbdev/simplefb.c:573:6: error: 'struct simplefb_par' has no member named 'icc_paths'
-     573 |   par->icc_paths[i] = of_icc_get_by_index(dev, i);
-         |      ^~
-   drivers/video/fbdev/simplefb.c:574:25: error: 'struct simplefb_par' has no member named 'icc_paths'
-     574 |   if (IS_ERR_OR_NULL(par->icc_paths[i])) {
-         |                         ^~
-   drivers/video/fbdev/simplefb.c:575:21: error: 'struct simplefb_par' has no member named 'icc_paths'
-     575 |    ret = PTR_ERR(par->icc_paths[i]);
-         |                     ^~
-   drivers/video/fbdev/simplefb.c:582:23: error: 'struct simplefb_par' has no member named 'icc_paths'
-     582 |   ret = icc_set_bw(par->icc_paths[i], 0, UINT_MAX);
-         |                       ^~
-   drivers/video/fbdev/simplefb.c:594:26: error: 'struct simplefb_par' has no member named 'icc_paths'
-     594 |   if (!IS_ERR_OR_NULL(par->icc_paths[i]))
-         |                          ^~
-   drivers/video/fbdev/simplefb.c:595:15: error: 'struct simplefb_par' has no member named 'icc_paths'
-     595 |    icc_put(par->icc_paths[i]);
-         |               ^~
-
-
-vim +542 drivers/video/fbdev/simplefb.c
-
-   532	
-   533	#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
-   534	/*
-   535	 * Generic interconnect path handling code.
-   536	 */
-   537	static void simplefb_detach_icc(void *res)
-   538	{
-   539		struct simplefb_par *par = res;
-   540		int i;
-   541	
- > 542		for (i = par->icc_count - 1; i >= 0; i--) {
- > 543			if (!IS_ERR_OR_NULL(par->icc_paths[i]))
-   544				icc_put(par->icc_paths[i]);
-   545		}
-   546	}
-   547	
-
+Best regards,
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Luca Weiss <luca.weiss@fairphone.com>
+

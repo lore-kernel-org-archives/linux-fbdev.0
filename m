@@ -1,109 +1,186 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31C151B87D9;
-	Tue, 24 Jun 2025 11:36:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2182299A85
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Jun 2025 13:51:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750765006; cv=none; b=iCGRCp0yOEp8qnpAXWa3xNCSPaf4RvF9jMi6pzOb5ddZatKrqIElMvqbuCNUNplz7euj4iuFYZhsxPA2BXyzrGVl0xtvs3Qr7EI133mprtgBsocuROFRa/8/nbJZT459/zAZB4OV3oRjYpAUHnnzJE7INyMORFhHan/fydKa3u0=
+	t=1750773114; cv=none; b=t7CbTFmFR8skbKPrlRbPqmcPQxo97ia43cHxkmBKBFE/ehGJNgX0Vk4b0cas3hcjlzp4DI8zJ41akQc9eO2Ep15ayoswYcZUNhHgSdt+77ZmIqEiM/i5biLQSSFDEiQRsReGXtwYi9J08xEDH25nOpZumPCU363wcqHZP1Qt5yA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750765006; c=relaxed/simple;
-	bh=0QPLj8k1RfrRJykPno6tnMdX52dcMJxf3LHllaynLDw=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=iEdpCWnqJFDlFNJROpOR4TiIM5IxUlF2r2F/iVq7xdTo8UrMdPIeucMDD9aNHLCq8zx3F+64k1rf0YRY7vr5UvO2hFl38owik6yxXDTXU8fw8R064ckHb54+93W1AxO9aVCnZ+92hqoW4PxK2IrCD1b0IWvXIMyP/SKU4MRnrU8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=by7cf22X; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1750773114; c=relaxed/simple;
+	bh=41+Yjoi9OYz2fBRFnx0iFknWoNHKcEzR4kHyXMggmuY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fhc1wnALSqT0vpaWoDc0UhCUe7Er8nlg47Y4FyTczln+vi6iA5glf+ks0dMrdgqw668Oil5C1IgyGq7E0nN1Ab0lNMupT3KapLZuSK/wUAu97SJ+cx8jovewrOaqemHdyUpVpnBUh9BrkoddK8WVamAfwSx/Vncz7ANyzy0GJzY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=1WovXrx6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hcveDnqE; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=1WovXrx6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hcveDnqE; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="by7cf22X"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1750765005; x=1782301005;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=0QPLj8k1RfrRJykPno6tnMdX52dcMJxf3LHllaynLDw=;
-  b=by7cf22XaEy+fw2+Lrqw6U3dTmwCd2mAXOkp9GpcSiaUa92m1nlI8+co
-   kDFOygCGglG/c33BWFZpytdbwo5EzMLNqlcpG5epqpZ9UzEtf7FjuT0Vt
-   faPSXLb/97Nn0SPHMKyxjhnvgLmAZ2ssrseJYVw1vNrsi10BGCjgKZpxX
-   xjw3U3o512ns3DWiKSDrdh2t+WbgbhlcPOV1XV0oR6dw7+OoMsgWRxfp7
-   K+nY+LAKaIuve4w9t3Q1YrOnzeWEMGz8sn3KBonvaIFTQRl6KxnIoOoNm
-   S3ci+NU4eP6i3G/pNNtjWY2ZKKMCa0rKPVn2+SiXp9doGi7+4WwpCCJFu
-   g==;
-X-CSE-ConnectionGUID: q5UCm5PySaSvLiPLej/Jdg==
-X-CSE-MsgGUID: j7TPNPFNR2+oOKVNnSVWPw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11473"; a="75537674"
-X-IronPort-AV: E=Sophos;i="6.16,261,1744095600"; 
-   d="scan'208";a="75537674"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jun 2025 04:36:44 -0700
-X-CSE-ConnectionGUID: ZHCD7C6DTR2lmQR8qI5exA==
-X-CSE-MsgGUID: 7CPkk997S2yicYNRtR1V4g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,261,1744095600"; 
-   d="scan'208";a="156185875"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.16])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jun 2025 04:36:37 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 24 Jun 2025 14:36:34 +0300 (EEST)
-To: Thomas Zimmermann <tzimmermann@suse.de>
-cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, 
-    neil.armstrong@linaro.org, jessica.zhang@oss.qualcomm.com, 
-    maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com, 
-    simona@ffwll.ch, fnkl.kernel@gmail.com, j@jannau.net, 
-    Hans de Goede <hdegoede@redhat.com>, sven@kernel.org, alyssa@rosenzweig.io, 
-    neal@gompa.dev, deller@gmx.de, support.opensource@diasemi.com, 
-    duje.mihanovic@skole.hr, dri-devel@lists.freedesktop.org, 
-    asahi@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
-    linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 01/12] platform/x86: dell-uart-backlight: Use blacklight
- power constant
-In-Reply-To: <20250618122436.379013-2-tzimmermann@suse.de>
-Message-ID: <63e0be02-f7b5-2b14-d858-6b66d0a51bd2@linux.intel.com>
-References: <20250618122436.379013-1-tzimmermann@suse.de> <20250618122436.379013-2-tzimmermann@suse.de>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="1WovXrx6";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hcveDnqE";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="1WovXrx6";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hcveDnqE"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 1B10C1F46E;
+	Tue, 24 Jun 2025 13:51:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1750773110; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=oQQv5SKftafQDp93BKFKqx3Knbyd8+l+43ItvVQJEH8=;
+	b=1WovXrx6UqQo6zQcTf8U7Bu/rWjeSinKFSUf1NPEDGTUQceqnLv16kiIJhBW1SPMlhmTV8
+	CttmqkoQkbBlCEDYgeb59GaTmVlMZoRjdW+B80riomQeLVa6UowWTiBMXFLTpS7Q2hW7sm
+	zy0dFhDkBuS4/FSdzRFDdWHc4QG5kRI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1750773110;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=oQQv5SKftafQDp93BKFKqx3Knbyd8+l+43ItvVQJEH8=;
+	b=hcveDnqE/tmOpeJFISbFw72dzXR8c8HmEOap5owJHNIaa3Z9BWhHMFc5NfSG7Hr3uKgjGs
+	xA7KCky0GNofSHDw==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1750773110; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=oQQv5SKftafQDp93BKFKqx3Knbyd8+l+43ItvVQJEH8=;
+	b=1WovXrx6UqQo6zQcTf8U7Bu/rWjeSinKFSUf1NPEDGTUQceqnLv16kiIJhBW1SPMlhmTV8
+	CttmqkoQkbBlCEDYgeb59GaTmVlMZoRjdW+B80riomQeLVa6UowWTiBMXFLTpS7Q2hW7sm
+	zy0dFhDkBuS4/FSdzRFDdWHc4QG5kRI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1750773110;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=oQQv5SKftafQDp93BKFKqx3Knbyd8+l+43ItvVQJEH8=;
+	b=hcveDnqE/tmOpeJFISbFw72dzXR8c8HmEOap5owJHNIaa3Z9BWhHMFc5NfSG7Hr3uKgjGs
+	xA7KCky0GNofSHDw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7038113751;
+	Tue, 24 Jun 2025 13:51:49 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id e9f6GXWtWmjFcQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 24 Jun 2025 13:51:49 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: lee@kernel.org,
+	danielt@kernel.org,
+	jingoohan1@gmail.com,
+	neil.armstrong@linaro.org,
+	jessica.zhang@oss.qualcomm.com,
+	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	fnkl.kernel@gmail.com,
+	j@jannau.net,
+	hdegoede@redhat.com,
+	ilpo.jarvinen@linux.intel.com,
+	sven@kernel.org,
+	alyssa@rosenzweig.io,
+	neal@gompa.dev,
+	deller@gmx.de,
+	support.opensource@diasemi.com,
+	duje.mihanovic@skole.hr
+Cc: dri-devel@lists.freedesktop.org,
+	asahi@lists.linux.dev,
+	platform-driver-x86@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 00/15] backlight: Do not include <linux/fb.h> in header file
+Date: Tue, 24 Jun 2025 15:45:40 +0200
+Message-ID: <20250624134858.1736090-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.50.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-584399545-1750764994=:943"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Score: -1.80
+X-Spamd-Result: default: False [-1.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.982];
+	MIME_GOOD(-0.10)[text/plain];
+	TAGGED_RCPT(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[25];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_TO(0.00)[kernel.org,gmail.com,linaro.org,oss.qualcomm.com,linux.intel.com,ffwll.ch,jannau.net,redhat.com,rosenzweig.io,gompa.dev,gmx.de,diasemi.com,skole.hr];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo]
+X-Spam-Level: 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Remove the final dependencies on fbdev from the backlight subsystem.
+This is really just the include of <linux/fb.h> in <linux/backlight.h>,
+but it has some fallout in other code.
 
---8323328-584399545-1750764994=:943
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Patches 1 to 14 fix all the implicit includes that come from fb.h
+throughout the kernel. It's all trivial, but touches various drivers.
+Maintainers are in CC. Patch 15 fixes the backlight header.
 
-On Wed, 18 Jun 2025, Thomas Zimmermann wrote:
+With the series applied the backlight subsystem should be free from
+fbdev dependencies.
 
-> The backlight subsystem has gotten its own power constants. Replace
-> FB_BLANK_UNBLANK with BACKLIGHT_POWER_ON.
->=20
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/platform/x86/dell/dell-uart-backlight.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/platform/x86/dell/dell-uart-backlight.c b/drivers/pl=
-atform/x86/dell/dell-uart-backlight.c
-> index 8f868f845350..f323a667dc2d 100644
-> --- a/drivers/platform/x86/dell/dell-uart-backlight.c
-> +++ b/drivers/platform/x86/dell/dell-uart-backlight.c
-> @@ -305,7 +305,7 @@ static int dell_uart_bl_serdev_probe(struct serdev_de=
-vice *serdev)
->  =09dev_dbg(dev, "Firmware version: %.*s\n", resp[RESP_LEN] - 3, resp + R=
-ESP_DATA);
-> =20
->  =09/* Initialize bl_power to a known value */
-> -=09ret =3D dell_uart_set_bl_power(dell_bl, FB_BLANK_UNBLANK);
-> +=09ret =3D dell_uart_set_bl_power(dell_bl, BACKLIGHT_POWER_ON);
->  =09if (ret)
->  =09=09return ret;
+v2:
+- fix jornada720, rave-sp and rt4831 (kernel test robot)
 
-Acked-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
+Thomas Zimmermann (15):
+  platform/x86: dell-uart-backlight: Use blacklight power constant
+  drm/panel: panel-samsung-s6e63m0: Include <linux/of.h>
+  drm/panel: panel-samsung-s6e88a0-ams427ap24: Include <linux/of.h>
+  drm/panel: panel-summit: Include <linux/of.h>
+  fbcon: Add necessary include statements and forward declarations
+  backlight: Include <linux/of.h>
+  backlight: apple_dwi_bl: Include <linux/mod_devicetable.h>
+  backlight: as3711_bl: Include <linux/of.h>
+  backlight: da9052_bl: Include <linux/mod_devicetable.h>
+  backlight: jornada720: Include <linux/io.h>
+  backlight: ktd2801: Include <linux/mod_devicetable.h>
+  backlight: led_bl: Include <linux/of.h>
+  backlight: rave-sp: Include <linux/of.h> and <linux/mod_devicetable.h>
+  backlight: rt4831: Include <linux/mod_devicetable.h>
+  backlight: Do not include <linux/fb.h> in header file
 
---=20
- i.
+ drivers/gpu/drm/panel/panel-samsung-s6e63m0.c            | 1 +
+ drivers/gpu/drm/panel/panel-samsung-s6e88a0-ams427ap24.c | 1 +
+ drivers/gpu/drm/panel/panel-summit.c                     | 1 +
+ drivers/platform/x86/dell/dell-uart-backlight.c          | 2 +-
+ drivers/video/backlight/apple_dwi_bl.c                   | 1 +
+ drivers/video/backlight/as3711_bl.c                      | 1 +
+ drivers/video/backlight/backlight.c                      | 1 +
+ drivers/video/backlight/da9052_bl.c                      | 1 +
+ drivers/video/backlight/jornada720_bl.c                  | 1 +
+ drivers/video/backlight/ktd2801-backlight.c              | 1 +
+ drivers/video/backlight/led_bl.c                         | 1 +
+ drivers/video/backlight/rave-sp-backlight.c              | 2 ++
+ drivers/video/backlight/rt4831-backlight.c               | 1 +
+ include/linux/backlight.h                                | 1 -
+ include/linux/fbcon.h                                    | 7 +++++++
+ 15 files changed, 21 insertions(+), 2 deletions(-)
 
---8323328-584399545-1750764994=:943--
+-- 
+2.50.0
+

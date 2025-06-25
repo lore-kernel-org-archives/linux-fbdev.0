@@ -1,104 +1,97 @@
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
+Received: from mail-ot1-f42.google.com (mail-ot1-f42.google.com [209.85.210.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFA4D1DDC1E;
-	Wed, 25 Jun 2025 04:55:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F7BD1FECB0
+	for <linux-fbdev@vger.kernel.org>; Wed, 25 Jun 2025 11:19:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750827340; cv=none; b=iziWlpAK9jbdFsPrYDX3WhsZDzUDrPeEvIdHOwrVZTvlK5sxemPEH60IpSUNjF7I8Fn+TdQzcZGrZFfklgzp7CFLoTkf57mFqXL82oXwxSX2yH1JUar0/vMVSJmqxqdFt0uov0A+SAt9e5HvN3fHiUJ5bL7Pepwcs55Kid/2cvc=
+	t=1750850388; cv=none; b=cZdUrBdtPeS2x+jfgQzBqIZYU7is/v29X5ZvAvDxX8gVnahw0j980r+O0YMR1nr+yRLoxXltR0SdyLTkDMpTSTd/zNxUhQYCP+StdrvaKaf2iV6SVWHnvPCzoN6PNVaVwofsxqdaCjphDZ6mXidagra3wjQoRxECwe1WZH/Ohx4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750827340; c=relaxed/simple;
-	bh=KSjhtsYtDPWq5P0JewRLIYDc5syrJxdWyOswWFMIj2U=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dOI3cWeXV9Izmn0kCcnbHFjuMe1mCuIZvf2rhUqoM/YREX667UbIaTtYNxVeCPoDEY3A8OS8v40vq8NN40FyHQsCHFicPDEabVW6VrPGdP/8IzAAdq5//i2C83afSnQHg3VDdXmhjqMwzvaIsaaHBujtJozBg8ahZ9IIG+HEDVM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UH3wQvUc; arc=none smtp.client-ip=209.85.210.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1750850388; c=relaxed/simple;
+	bh=VNz+lSy568xXrNEW/LdsAyCYu0exIyy51MijlASqERI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gC4Yz0g8qhe4r8J7aagSC5D9yPqpOfbeN+pecwm85Zu9EhV5vhgi0vOxXXi/oOxMFELDlAoPX2aSJKby6Q/XJWWIYVbjN4Wn2vSmq913jTMv6tbhz1zL+Y9b5+n/usJVZtUOWyzJsLPRFO6NHaExoG8QBDLrQAnjH2wuwEaFA7M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=RC0Go2XJ; arc=none smtp.client-ip=209.85.210.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UH3wQvUc"
-Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-742c3d06de3so7019335b3a.0;
-        Tue, 24 Jun 2025 21:55:38 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RC0Go2XJ"
+Received: by mail-ot1-f42.google.com with SMTP id 46e09a7af769-72c14138668so397147a34.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 25 Jun 2025 04:19:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1750827338; x=1751432138; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=UO6NTPCPP/dvAMAtqZiOjPibwhoAo2anGboFbitGK6M=;
-        b=UH3wQvUcpx2YmKFRBdBZdWOoe/iPC+nnEz9k2FiqXLRolvm0m+5oiCgKijahEWXizP
-         cnacAHno9gdreVH8FWSmKNrmfalol6UQaifE79kUk7MHEXJQpsXbFfdM75pC72hOdunt
-         XGyC2MZKW3wuxtEj08fctgW9l2u9MLKrnxIjGRCi7Q/zvnjeBU2hmyV/bVg4oGbLNXO3
-         ofXewI940dBESbokos7q7Pe345Mh8kM88bdLAPwiIQJlNs12UZpTRAyWNLG2J/Wt6CNy
-         76sz0WHnn0DOynLQ6oCwsarfq6fQBchrWrLXaFGR7Nmy6t8rWkadkUZK/Xfn9hCPaLP6
-         Nc9Q==
+        d=linaro.org; s=google; t=1750850386; x=1751455186; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=iq4wYZ8O8v8iGoHVKCZbSBs74G20nkHHqtB4OQv75Kk=;
+        b=RC0Go2XJZoD2w9YPxoKoro2XpHEqF+1b5xeqdcMsIfB8KxSTHPl+yEaXv/ndqkxdgb
+         rPvi2fJgcJBLEdmQNmmuKmecCLxUqbbf6LwF5SQNrXGvTi6oAWGs501Nl7/gwek40IVv
+         weMj8/cEyefme9fnHqbq28HMMakgbdO6R5IOqyeN5fdOVSHwvIa3sBA26HCgDaQ5YpgR
+         Qn+gzry9zdkSwFnji72w/GPvCtk5PNUbSU7+QH/T+1PwjeVo7u7Nb0PcL9GqhAtQnvUq
+         hECmvSlDAMWPAb7HJtn2hT1lGBRfJKhfbRA6+bXMs0+dFMZp1upB72NTXpxwenO6yibh
+         V1HQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750827338; x=1751432138;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=UO6NTPCPP/dvAMAtqZiOjPibwhoAo2anGboFbitGK6M=;
-        b=GXb9eciq7ehaANlK1oxns1Zn37/oq/zWFyFmMgV9RCzuUW9esVld4vo6mbsoWUfLo9
-         aJPRurrqyiup64WjYMYOx84b4uKlPZ+saOS34hzwmU+7Rcw5IA9EpH45RkkUR+OPcQVH
-         yMQDok3EMS/I2bQFeaFGggsHh9QByJhDu/v42BbJuTJfKA4esyPRUKwsLm06eYtT8mVS
-         f0WY22JcI9My+GTWo8AyG5/HttSfyxQeLUUc74mfs8OrZ4xii0z3LQMTuM/2ZlnBmRuP
-         ekm4RHEBzsklVYbF+a2zuJjFyw39CziDKr0Mj0mimC+z1eeqkMnl9Sfswc39YI/llxDh
-         6kYw==
-X-Forwarded-Encrypted: i=1; AJvYcCVxRVCm4ievrwA867n2uo3VSrLx1ycUp6TQEmGBOOVyySc1E5hDH0R8+4KpV3AHjS0aSrD3aTLlk3zXNA==@vger.kernel.org, AJvYcCXtRmHYMubVn1nUvNHKu1wanrpduTTKWHjMY/ptLTuTMlZ/5C3ury/32R37wgwwg5jVfBZQYfnYu5lNqHxR@vger.kernel.org
-X-Gm-Message-State: AOJu0YwBwx5l2hieeRJlBTVCPB3BiSk57+Nyl7eKB44JhVrjVXOtZhA6
-	Y+n6H5iwYfXVvIc0xHE+GHqAKemyG7bHHYiD5q2Z9DdpNVi5tRn7NMa3
-X-Gm-Gg: ASbGncs2Fv091dWqWB+oD0V/p6KYJXlLhxIbj5JopTWhfxRmEfMuZwmNl8llnfNBIgE
-	7oiRXpItU7anpspEpe2lpkLxLkBCNO2aKcrfpRXz30hS5VaSsaIgDzMWvLVg/EwX6QFYklxoBxr
-	tuIjKVx6ciMhG9i7AsrJrdyd5pDOsrJFDFfD9fFXxZkrY1FC4ebRsRYrAbautK9OLeaCmSz3AkP
-	7WhzWrw9g3+Er1K9rq11njxY8ZGfp7R1jCNIyWs33Eyw0r2/OvJ9Ll6u3Ivv52UQPtk+D6x2sqX
-	f5sM9upr9u8PqroWPMLcWvDd13K6AA9QvL4ojovFPRv0oXkYp6MLSMtA52PijlJeEBz9Hp4AbOZ
-	mB+MUxZy6/rNtOGhzcA==
-X-Google-Smtp-Source: AGHT+IFLbqpz8txyiEyP4O5dWK2HN68bf3Px02AjjgY6ny0rLjNSLfBKIcKav5NxVJRGNqxZfpE+Uw==
-X-Received: by 2002:a05:6a00:2195:b0:736:2a73:6756 with SMTP id d2e1a72fcca58-74ad45e6b34mr2574345b3a.21.1750827337903;
-        Tue, 24 Jun 2025 21:55:37 -0700 (PDT)
-Received: from archlinux.worldlink.com.np ([2400:1a00:3b42:5d1:1d64:4a49:adde:630d])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-749b5e21120sm3610679b3a.43.2025.06.24.21.55.35
+        d=1e100.net; s=20230601; t=1750850386; x=1751455186;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iq4wYZ8O8v8iGoHVKCZbSBs74G20nkHHqtB4OQv75Kk=;
+        b=MO2YUzvjQXCV3tLA+rnKFyhZjN9qPU+MR4MX7/v/5h+hW2/nos2wr6csDpTzWYnaUm
+         xV/3jg3ytRdzyi2CBq34JXLEeKU7Xed9woPtjzkUQ+ngfU+qJfC9WIlkjdXHIpfuHRys
+         I8Ii3GI0HIKhSWYc3B/dtWF3TTK5JilzTMH672bBhsUqxemwTWybJaQ0pdM+EtT+Cz4j
+         bULsw45n1qaze1pnoA5yiRNTGOfdPvHKQhWUmyPCw/9/D5zzkjZBUhBlGQyyrStI9OIp
+         ONELqURkhltMCk77pHlcEiMF3G7DJxe1cm5VEWZg1F6LQKGFUEVq2RBJ1dIX3jXq9fgO
+         nawQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWkZ9kKpU2s2ZPD4oiU0cd1icLx1Dagc5XqjECIwoAjy/kEctgR6RU4c31hQTY8wMh4e6RmwvgldMdQAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyi08Tddx4kJr7R+navdxY9sZ5iWUGDMfIw6nUq7VN10xVLxu+j
+	zu+CbPI/nY9fbS+ueXbGwDr0CBpgcXsnPVM79io2nw7GNL3EnvNaUBZ3j2SiHkA35Jc=
+X-Gm-Gg: ASbGncv0i77RjYbPjcldrdVyaXCesxckOj0lxL5w9blJfxYO8EjrRSClnsDh1pU1rBP
+	OylGEV2i9XrUgElzCj/m1TUPP6DmsgshuyJcTIgalvuK0n/YWKDwcdPA6AxzCpfnZShsevhBp6R
+	GFBZylGG49xjGW6YXnPs4aghe5vcWFzIKYYkU1LY2bSy8IdQoA30LJAc7cklCna4U+MdlMb/pRW
+	UIgYGIiMN8HsPMRuLqLsEzJV//+QAZqrYBFoRa5p65QP0z98OdcMnq4ZubzVRgT2pkGA+5yKx/4
+	BbsPA4DN9EgV1NIzqhevtRYL0wYsH5MQt/V3OBsr9GVb+qpeYSwsP/I/8NGA4BVGP3NydI3o54w
+	GsS52
+X-Google-Smtp-Source: AGHT+IHUPmQyLG5EAp7kEhFfGkI4eD9tbFqoGyW5KZup0EXS2PDOGnB5h/POMmLnHUjyUistd5gdNg==
+X-Received: by 2002:a05:6830:4429:b0:72c:3235:3b97 with SMTP id 46e09a7af769-73adc8984e6mr1795836a34.22.1750850386145;
+        Wed, 25 Jun 2025 04:19:46 -0700 (PDT)
+Received: from localhost ([2603:8080:b800:f700:22c9:dcd3:f442:dd1d])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6117598cc6bsm989956eaf.32.2025.06.25.04.19.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Jun 2025 21:55:37 -0700 (PDT)
-From: Pratibimba Khadka <pratibimbakhadka@gmail.com>
-To: sudipm.mukherjee@gmail.com
-Cc: Pratibimba Khadka <pratibimbakhadka@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
+        Wed, 25 Jun 2025 04:19:44 -0700 (PDT)
+Date: Wed, 25 Jun 2025 14:19:42 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Pratibimba Khadka <pratibimbakhadka@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, Teddy Wang <teddy.wang@siliconmotion.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org (open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER),
-	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] staging: sm750fb: Mark g_fbmode as a pointer to const pointer
-Date: Wed, 25 Jun 2025 10:40:26 +0545
-Message-ID: <20250625045526.82758-1-pratibimbakhadka@gmail.com>
-X-Mailer: git-send-email 2.50.0
+	"open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
+	"open list:STAGING SUBSYSTEM" <linux-staging@lists.linux.dev>,
+	open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] staging: sm750fb: Mark g_fbmode as a pointer to const
+ pointer
+Message-ID: <e477d4a1-a941-4301-b295-c245f9023cd3@suswa.mountain>
+References: <20250625045526.82758-1-pratibimbakhadka@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250625045526.82758-1-pratibimbakhadka@gmail.com>
 
-Fixes a checkpatch warning:
-WARNING: static const char * array should probably be static const char * const
+On Wed, Jun 25, 2025 at 10:40:26AM +0545, Pratibimba Khadka wrote:
+> Fixes a checkpatch warning:
+> WARNING: static const char * array should probably be static const char * const
+> 
+> The array `g_fbmode` contains constant string pointers that are not
+> supposed to be modified. By declaring it as `const char * const`,
+> both the string literals and the pointers themselves are protected
+> from accidental modification, which improves code safety and clarity.
+> 
 
-The array `g_fbmode` contains constant string pointers that are not supposed to be modified. By declaring it as `const char * const`, both the string literals and the pointers themselves are protected from accidental modification, which improves code safety and clarity.
+You need to compile test code before sending it.  It can't be changed
+from being a NULL pointer now so it breaks.
 
-Signed-off-by: Pratibimba Khadka <pratibimbakhadka@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 1d929aca3..d3bce107f 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel;
- static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char *const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview;
--- 
-2.50.0
+regards,
+dan carpenter
 

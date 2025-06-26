@@ -1,175 +1,175 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AC46158520;
-	Wed, 25 Jun 2025 21:01:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 40FBA239E79;
+	Thu, 26 Jun 2025 09:50:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750885311; cv=none; b=o5h9/5NIYlRpfgz7qRp0VIDMWBKkQCRSKG9dlhAmbzs6HtX2+uMAv7HNni2f+F0LBcm8bW8QwYFAnJ8mbRx/uxHQX/McCHWDebk47wdGWLj2v3n+tOWFh6yIwaqTgmdishNTPES/I31O23hopfd0aQ5fa0fTRCqut6YOR4lawxs=
+	t=1750931410; cv=none; b=hMOFPEzSfNNK3zIBSDISABGe2tAYK80RqdwUXJHwC9QtkEker2eGLzmtMOCPPNHTOUH60SwOpnXBAWhajcqgwXHDDGihI8ryJ3dC7bdEgPZuakIKOiDmOP81dRVstXzsxuHSQmSMLVgOLRWPoIE2qwxkQcb0Q5BduXlqnDnSjm4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750885311; c=relaxed/simple;
-	bh=V8/EzIWR/vi4b7OkzShs9MbVv9esLGpvCH0GSZvFU24=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=o67FXj1xSA3cnoBs69mXReSw0N3OJIEkBTWRRx/0j638T+QCHudPWjJR62pBmiHANauOTdmemJQPX5jK+IDtkUAsXcGEHgzouyIKcDErQqQnM29Ce8PMYS++9v0MxWGxswb0XuD2OmRCw8u+ZyBMx9N4cWuO9Ni+JVzST+NNYgY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=q6D9+mab; arc=none smtp.client-ip=212.227.15.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1750931410; c=relaxed/simple;
+	bh=vcWGpVMuhqblfQVIDtKaB7bHc4bnBgf3xJHNKt77nhw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LyoWtjgmin80gWLbS/1ROoQGLsV/Yv/psUp0Aq4ud/cjoRcqMUFqOqh9OvGMjNtEUbGBgr4dA784KCfwTGtqIAhoyacTVVoqnSw3eKTL9rTfvyHzYLbKFitfW4iasuoDW1OKdnib5p2N4+4Ga672AZSSKgumz2CvW+y13UwBryk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ADiTCeqc; arc=none smtp.client-ip=117.135.210.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="q6D9+mab"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1750885305; x=1751490105; i=deller@gmx.de;
-	bh=V8/EzIWR/vi4b7OkzShs9MbVv9esLGpvCH0GSZvFU24=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=q6D9+mab7hWwLtQmnRONcfILyIsYk0M9k7QKKA6n/68cSpDklmYNEjdBNPrTNIiE
-	 oAtsiOmObgLqloJTUlg83V0V6m1P/01agqPfNlQkzKHDGMX2vhO/2CUgg08S4qcWB
-	 IfJECAfU5z/gEJGS+1wo+R201FcNlcODzLPKxFJ0Qt4KEST/VNUYsY7AH5aT5RpKy
-	 DID0D0QuD4bBG37Xs1lfebSdhxD7699jFbM0voQKNRpoIYf09V00L+yan6vIqVIrq
-	 vXh9MzcUpR9ztXKeDlQyIhT2cbk/YzlOKUIq89UP/C+sb51v0KpDzy3Hktr0yBtY6
-	 OIGHbdJlPeo+vvwaaA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.173] ([109.250.63.171]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MjS5A-1vAzX10X8s-00iVUQ; Wed, 25
- Jun 2025 23:01:45 +0200
-Message-ID: <e4afcf95-798c-4b29-a04b-d927e28504ce@gmx.de>
-Date: Wed, 25 Jun 2025 23:01:43 +0200
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ADiTCeqc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=/c
+	ma2AZin+wigRX09ym9Wqnf3KjaHR7/DQn0xw0S5oo=; b=ADiTCeqcicQQ3C8GDb
+	JO1sgLE1xIMQchA/n9pQE9/LBPht7e6yZbgI9IiGoz7BKbXnwaWtZewzq+KGnbPJ
+	kWVKE8ZZPMGtTE8HWCHxchFrbisedB7ZYO6nG4AQ2P4xAw4ZwmxbUNN2JGBl4d5a
+	9MrXMKLdC+IOYWDunKMVKPkY4=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g1-4 (Coremail) with SMTP id _____wDnj8KzF11odA7IAg--.18394S2;
+	Thu, 26 Jun 2025 17:49:40 +0800 (CST)
+From: oushixiong1025@163.com
+To: Helge Deller <deller@gmx.de>
+Cc: Peter Jones <pjones@redhat.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Shixiong Ou <oushixiong@kylinos.cn>
+Subject: [PATCH] fbdev: efifb: do not load efifb if PCI BAR has changed but not fixuped
+Date: Thu, 26 Jun 2025 17:49:37 +0800
+Message-Id: <20250626094937.515552-1-oushixiong1025@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] fbdev: remove fb_notify support
-To: Sam Ravnborg <sam@ravnborg.org>, Arnd Bergmann <arnd@kernel.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>,
- Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Robert Jarzmik <robert.jarzmik@free.fr>,
- Javier Martinez Canillas <javierm@redhat.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20250625131511.3366522-1-arnd@kernel.org>
- <20250625152033.GA183878@ravnborg.org>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20250625152033.GA183878@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:M2dNYQLr9sleKrchujq2NPLmJrATByZ+0sZ/B6NDz69b593qz8u
- iih0zrEFSJAnKlLz6yjOb7e4kI7frHJErOle/utF4o8y6ARKuC+uAoiRU8BvSQE0pKoDew2
- XA+Du192uO9Q4YsHtF3d64c30oy+3rHwmbqR7RDknRlpJjiXKc9zEFj31mOMDd/97TYi3BB
- YOCwxK0hWzu1nAJuaUgHA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:sPbPngiuj0M=;2suuijsSa2730ULZQyjYsxE5d6e
- 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
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wDnj8KzF11odA7IAg--.18394S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxWw1rur1xWF4DXry5tr1fJFb_yoWrZFyDpF
+	4fGFyfCF48Xrn3Gws8G3WDJr1fWr4kuFyqkFZIkw1rAry3JryYvrnruryDury5ZrWkJr1x
+	tr4Utw12kF15uaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jzBT5UUUUU=
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXQt4D2hdEMSbzAAAsX
 
-Hi Arnd,
+From: Shixiong Ou <oushixiong@kylinos.cn>
 
-On 6/25/25 17:20, Sam Ravnborg wrote:
-> Hi Arnd.
->=20
-> I remember I stared at this code before, good to see it gone.
-> There is a bit more tidiying up you can do.
->=20
-> Also, I suggest to split it in two patches, it itches me to see the
-> driver specific part mixed up with the fb_notify removal.
+[WHY]
+On an ARM machine, the following log is present:
+[    0.900884] efifb: framebuffer at 0x1020000000, using 3072k, total 3072k
+[    2.297884] amdgpu 0000:04:00.0: remove_conflicting_pci_framebuffers: bar 0: 0x1000000000 -> 0x100fffffff
+[    2.297886] amdgpu 0000:04:00.0: remove_conflicting_pci_framebuffers: bar 2: 0x1010000000 -> 0x10101fffff
+[    2.297888] amdgpu 0000:04:00.0: remove_conflicting_pci_framebuffers: bar 5: 0x58200000 -> 0x5823ffff
 
-I assume you will send a v2 patch series.
-If so, I'm happy to take it then.
+It show that the efifb framebuffer base is out of PCI BAR, and this
+results in both efi-framebuffer and amdgpudrmfb co-existing.
 
-Thanks!
-Helge
+The fbcon will be bound to efi-framebuffer by default and cannot be used.
+
+[HOW]
+Do not load efifb driver if PCI BAR has changed but not fixuped.
+In the following cases:
+	1. screen_info_lfb_pdev is NULL.
+	2. __screen_info_relocation_is_valid return false.
+
+Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
+---
+ drivers/video/fbdev/efifb.c     |  4 ++++
+ drivers/video/screen_info_pci.c | 24 ++++++++++++++++++++++++
+ include/linux/screen_info.h     |  5 +++++
+ 3 files changed, 33 insertions(+)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 0e1bd3dba255..de8d016c9a66 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -303,6 +303,10 @@ static void efifb_setup(struct screen_info *si, char *options)
+ 
+ static inline bool fb_base_is_valid(struct screen_info *si)
+ {
++	/* check whether fb_base has changed but not fixuped */
++	if (!screen_info_is_useful())
++		return false;
++
+ 	if (si->lfb_base)
+ 		return true;
+ 
+diff --git a/drivers/video/screen_info_pci.c b/drivers/video/screen_info_pci.c
+index 66bfc1d0a6dc..ac57dcaf0cac 100644
+--- a/drivers/video/screen_info_pci.c
++++ b/drivers/video/screen_info_pci.c
+@@ -9,6 +9,8 @@ static struct pci_dev *screen_info_lfb_pdev;
+ static size_t screen_info_lfb_bar;
+ static resource_size_t screen_info_lfb_res_start; // original start of resource
+ static resource_size_t screen_info_lfb_offset; // framebuffer offset within resource
++static bool screen_info_changed;
++static bool screen_info_fixuped;
+ 
+ static bool __screen_info_relocation_is_valid(const struct screen_info *si, struct resource *pr)
+ {
+@@ -24,6 +26,24 @@ static bool __screen_info_relocation_is_valid(const struct screen_info *si, stru
+ 	return true;
+ }
+ 
++bool screen_info_is_useful(void)
++{
++	unsigned int type;
++	const struct screen_info *si = &screen_info;
++
++	type = screen_info_video_type(si);
++	if (type != VIDEO_TYPE_EFI)
++		return true;
++
++	if (screen_info_changed && !screen_info_fixuped) {
++		pr_warn("The screen_info has changed but not fixuped");
++		return false;
++	}
++
++	pr_info("The screen_info is useful");
++	return true;
++}
++
+ void screen_info_apply_fixups(void)
+ {
+ 	struct screen_info *si = &screen_info;
+@@ -32,18 +52,22 @@ void screen_info_apply_fixups(void)
+ 		struct resource *pr = &screen_info_lfb_pdev->resource[screen_info_lfb_bar];
+ 
+ 		if (pr->start != screen_info_lfb_res_start) {
++			screen_info_changed = true;
+ 			if (__screen_info_relocation_is_valid(si, pr)) {
+ 				/*
+ 				 * Only update base if we have an actual
+ 				 * relocation to a valid I/O range.
+ 				 */
+ 				__screen_info_set_lfb_base(si, pr->start + screen_info_lfb_offset);
++				screen_info_fixuped = true;
+ 				pr_info("Relocating firmware framebuffer to offset %pa[d] within %pr\n",
+ 					&screen_info_lfb_offset, pr);
+ 			} else {
+ 				pr_warn("Invalid relocating, disabling firmware framebuffer\n");
+ 			}
+ 		}
++	} else {
++		screen_info_changed = true;
+ 	}
+ }
+ 
+diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+index 923d68e07679..632cdbb1adbe 100644
+--- a/include/linux/screen_info.h
++++ b/include/linux/screen_info.h
+@@ -138,9 +138,14 @@ ssize_t screen_info_resources(const struct screen_info *si, struct resource *r,
+ u32 __screen_info_lfb_bits_per_pixel(const struct screen_info *si);
+ 
+ #if defined(CONFIG_PCI)
++bool screen_info_is_useful(void);
+ void screen_info_apply_fixups(void);
+ struct pci_dev *screen_info_pci_dev(const struct screen_info *si);
+ #else
++bool screen_info_is_useful(void)
++{
++	return true;
++}
+ static inline void screen_info_apply_fixups(void)
+ { }
+ static inline struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
+-- 
+2.25.1
+

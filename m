@@ -1,64 +1,39 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+Received: from fgw23-7.mail.saunalahti.fi (fgw23-7.mail.saunalahti.fi [62.142.5.84])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 378B2202990;
-	Thu, 26 Jun 2025 21:28:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C6D8262FE6
+	for <linux-fbdev@vger.kernel.org>; Thu, 26 Jun 2025 21:59:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.142.5.84
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750973332; cv=none; b=umk7iE9rnM+P+fCFUkNF/w0udhp38qq4rkgpCGf4WNatziNzPYjWYuF2vsJNMif0JYF/NqLRUy/pqhUUqwZCq+YnkH72WECKRuajgOKAtxR80ljr9PgVNAABTCKd+t+gyp3jiKLqDTu8c7k3oA9vuZnnNQMXlBhEloHUfb6bhvU=
+	t=1750975177; cv=none; b=rUYolhaIpYdK6PLjHfM2XfZcHXkeiiytMg+B0jzzWvuRYeFRCDSWT9y0tLgnZCAsrFF/VtnG7En0qEknshtoTTgJCkcb6WUrDw1mt3b87uFtrQa3032ObxjWuGAh4fiOadgp4cJC+V+YwPWh3zdSzkHE58aTgtCaJc+ba/evXEg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750973332; c=relaxed/simple;
-	bh=PLZzAdX+5PzAgrtD7ATf2kU/OYqwm6guag3uzHDX384=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mc0KWk0TeTkqisyDtiQtHbbHnECaMvo01VKB/p96tIhTdAA7mAdiu2p5mEILVDlUedBfVYZ8YPcTpRO00s+2H3kDc7tn9Tz/6MnJsmi689x7JmV+c58kkXmM04SdsBkhXX77lyWJO7Qk+wn5CpuDSTh8dg2tMXLuASU6/ltFr5M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OVH0+HGa; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OVH0+HGa"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1750973331; x=1782509331;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=PLZzAdX+5PzAgrtD7ATf2kU/OYqwm6guag3uzHDX384=;
-  b=OVH0+HGaFJbdI515+Ix3IhEXRqlZGLFJokikQhBO0rJ3p1HarwGJZ8ZE
-   UhQ1jTsZ9B5q+4oxw68A/h7sb6RQZwmqnBS0RzW/H3PzxiTPrEWPuSiXI
-   VoEegrhH4OP2k9zTmnOvT16506GU1BmvpTpHy70nxbrvj2DaHHHpb2iha
-   jGNmIINNkNBmL4YK6Xgj9TytF2T/mVX4COGqwPOwQNXSeBEMw5Jr0V1vv
-   SsmtRyN3QAWJyqm/7KLtAKNe5tBoF+3zGSIporSvyTk9XdIOfiMuT22EO
-   degbxGCKlZEX/lP7u94g/ADLG7ishPCf9cAlNJT5dnXWGo0lMQ9oUUY9S
-   w==;
-X-CSE-ConnectionGUID: 3UHk18woTXGILQ7BHzyrZA==
-X-CSE-MsgGUID: yyk1VmJ7QVahZilUvr1XOg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11476"; a="53008181"
-X-IronPort-AV: E=Sophos;i="6.16,268,1744095600"; 
-   d="scan'208";a="53008181"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jun 2025 14:28:51 -0700
-X-CSE-ConnectionGUID: dA2POMMHSBGcOFw3AQerzw==
-X-CSE-MsgGUID: 8Nwjcn/pS7iKXdke8f6K5w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,268,1744095600"; 
-   d="scan'208";a="153149425"
-Received: from lkp-server01.sh.intel.com (HELO e8142ee1dce2) ([10.239.97.150])
-  by fmviesa008.fm.intel.com with ESMTP; 26 Jun 2025 14:28:48 -0700
-Received: from kbuild by e8142ee1dce2 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uUu9G-000VYE-0p;
-	Thu, 26 Jun 2025 21:28:46 +0000
-Date: Fri, 27 Jun 2025 05:27:55 +0800
-From: kernel test robot <lkp@intel.com>
-To: oushixiong1025@163.com, Helge Deller <deller@gmx.de>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Peter Jones <pjones@redhat.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, Shixiong Ou <oushixiong@kylinos.cn>
-Subject: Re: [PATCH] fbdev: efifb: do not load efifb if PCI BAR has changed
- but not fixuped
-Message-ID: <202506270558.awnEnyeN-lkp@intel.com>
-References: <20250626094937.515552-1-oushixiong1025@163.com>
+	s=arc-20240116; t=1750975177; c=relaxed/simple;
+	bh=W4UO3HjXnhwlsoocybFNQKYOaf64K89DJ1Due3lreUM=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ny8DKV45qXw8EC6X2pE9l3De/V0BajVjCnWPvbRpQtJ8ybQfhvthP2nahJL5lDYmPRf8ILhuLxFScZMLk6fNKIpRzPwZ4AZZ3lTDqVarcxRuFJoqxM/WGA1irOViOhQEPTFu6lH51XXIWAKKRuzoOd1wTLs8S2DPtFjqjk9I4Ew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com; spf=fail smtp.mailfrom=gmail.com; arc=none smtp.client-ip=62.142.5.84
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=gmail.com
+Received: from localhost (88-113-26-232.elisa-laajakaista.fi [88.113.26.232])
+	by fgw20.mail.saunalahti.fi (Halon) with ESMTP
+	id d64cf432-52d8-11f0-a011-005056bd6ce9;
+	Fri, 27 Jun 2025 00:59:31 +0300 (EEST)
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Fri, 27 Jun 2025 00:59:30 +0300
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
+	Abdun Nihaal <abdun.nihaal@gmail.com>, andy@kernel.org,
+	gregkh@linuxfoundation.org, lorenzo.stoakes@oracle.com,
+	tzimmermann@suse.de, riyandhiman14@gmail.com, willy@infradead.org,
+	notro@tronnes.org, thomas.petazzoni@free-electrons.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: fix potential memory leak in
+ fbtft_framebuffer_alloc()
+Message-ID: <aF3CwnHyW5HHzDSG@surfacebook.localdomain>
+References: <20250626172412.18355-1-abdun.nihaal@gmail.com>
+ <aF2Ic8BP0zWS6R19@smile.fi.intel.com>
+ <0327da98-8a7c-4db8-8bcd-4179b87a9486@suswa.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -67,67 +42,64 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250626094937.515552-1-oushixiong1025@163.com>
+In-Reply-To: <0327da98-8a7c-4db8-8bcd-4179b87a9486@suswa.mountain>
 
-Hi,
+Thu, Jun 26, 2025 at 11:11:39PM +0300, Dan Carpenter kirjoitti:
+> On Thu, Jun 26, 2025 at 08:50:43PM +0300, Andy Shevchenko wrote:
+> > On Thu, Jun 26, 2025 at 10:54:10PM +0530, Abdun Nihaal wrote:
 
-kernel test robot noticed the following build warnings:
+...
 
-[auto build test WARNING on linus/master]
-[also build test WARNING on v6.16-rc3 next-20250626]
-[cannot apply to drm-misc/drm-misc-next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> > >  release_framebuf:
+> > > +	fb_deferred_io_cleanup(info);
+> > >  	framebuffer_release(info);
+> > 
+> > While the fix sounds good, there are still problems in the driver in this area:
+> > 
+> > 1) managed resources allocation is mixed up with plain allocations
+> > (as you discovery hints);
+> > 
+> > 2) the order in fbtft_framebuffer_release() is asymmetrical to what
+> > we have in fbtft_framebuffer_alloc().
+> > 
+> > I would recommend to study this code a bit more and provide the following
+> > patches as a result:
+> > 
+> > 1) fixing the order in fbtft_framebuffer_release();
+> > 
+> > 2) moving vmem allocation closer to when it's needed, i.e. just after
+> > successful allocation of the info; at the same time move txbuf allocation
+> > from managed to unmanaged (drop devm, add respective kfree() calls where
+> > it's required);
+> 
+> Symetrical in this sense means that the cleanup in
+> fbtft_framebuffer_release() and in fbtft_framebuffer_alloc() are
+> similar:
+> 
+> 	fb_deferred_io_cleanup();
+> 	vfree();
+>  	framebuffer_release();
+> 
+> I feel like number 1 and 2 are sort of opposite approaches to making the
+> order symmetrical.  #1 is changing fbtft_framebuffer_release() and #2 is
+> changing fbtft_framebuffer_alloc().  #2 is the less awkward approach.
+> 
+> > 3) this patch.
+> > 
+> > All three should have the respective Fixes tags and hence may be backported.
+> 
+> Changing the order isn't a bug fix so it wouldn't get a Fixes tag.
+> I agree with Andy that the code isn't beautiful.  But I think it's
+> easier to just fix the bug, and do the cleanup later as an optional
+> patch 2/2.  I would also have been fine with a larger patch that does
+> the cleanup and the bug fix in one patch but I think other people
+> won't like that.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/oushixiong1025-163-com/fbdev-efifb-do-not-load-efifb-if-PCI-BAR-has-changed-but-not-fixuped/20250626-175111
-base:   linus/master
-patch link:    https://lore.kernel.org/r/20250626094937.515552-1-oushixiong1025%40163.com
-patch subject: [PATCH] fbdev: efifb: do not load efifb if PCI BAR has changed but not fixuped
-config: arm-allnoconfig (https://download.01.org/0day-ci/archive/20250627/202506270558.awnEnyeN-lkp@intel.com/config)
-compiler: clang version 21.0.0git (https://github.com/llvm/llvm-project e04c938cc08a90ae60440ce22d072ebc69d67ee8)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250627/202506270558.awnEnyeN-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202506270558.awnEnyeN-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   In file included from init/main.c:110:
-   In file included from arch/arm/include/asm/setup.h:14:
->> include/linux/screen_info.h:145:6: warning: no previous prototype for function 'screen_info_is_useful' [-Wmissing-prototypes]
-     145 | bool screen_info_is_useful(void)
-         |      ^
-   include/linux/screen_info.h:145:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     145 | bool screen_info_is_useful(void)
-         | ^
-         | static 
-   1 warning generated.
-
-
-vim +/screen_info_is_useful +145 include/linux/screen_info.h
-
-   139	
-   140	#if defined(CONFIG_PCI)
-   141	bool screen_info_is_useful(void);
-   142	void screen_info_apply_fixups(void);
-   143	struct pci_dev *screen_info_pci_dev(const struct screen_info *si);
-   144	#else
- > 145	bool screen_info_is_useful(void)
-   146	{
-   147		return true;
-   148	}
-   149	static inline void screen_info_apply_fixups(void)
-   150	{ }
-   151	static inline struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
-   152	{
-   153		return NULL;
-   154	}
-   155	#endif
-   156	
+Ah, you have a point. Yes, the moving vmem allocation will solve the ordering
+issue.
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+With Best Regards,
+Andy Shevchenko
+
+

@@ -1,292 +1,112 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62F9C26D4E4
-	for <linux-fbdev@vger.kernel.org>; Thu, 26 Jun 2025 10:31:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6F0F20E315;
+	Thu, 26 Jun 2025 17:24:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750933903; cv=none; b=AD8PwYBAk2vnkmynnw6af83o/jkQFPrb/svNp0CtyoMPN9ATgC+oeYVL1DSQjqII9zI8P87rXgVdKzPGSAVHAiWrPz//8E3lC+nF8EMptvABUPion0VHAZbRcpQQ9eYgeKIFB19sURS31ExR7Lee1dgEV/V0v3EBRq3/F5A3Nc4=
+	t=1750958671; cv=none; b=tihLT0KaayAik3KPR8J5dGt96sR2z20h1ikK+djc2U/G5zu38bt+f1uTZ42iLNpOrs1craJPE9Q1GwpGEUv60hM7Q0Dse64BTzEtdwdA/xCLBgzqqMhj/KUNUlMIL0WkLSeF3VIBiKCKzkOCLMdmOVCu466R2psfbi1cahnyugY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750933903; c=relaxed/simple;
-	bh=3ruTSftSudukUxsgTGRxvI43lHrj/qhZ+FTYT1CjjpU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=c2LU5CIhF9W/gpTQBHD6ZRvAibEQdQYSjURtGfOsBX0I8/aOKOPEYPv44gQa55OjFYahvFhWW62SdGAEuoyYVzaXBQlfe4KNV8hlK6uko9xTJbJJCYs1B5xO8VaeZMpEzS/2bxqlKTBLO5gsFE3pm8mRVtJj/3Q9luM+ThiYrwA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=0HHVlB7+; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=wgkHfQoC; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=bvUdgTqa; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=XR/pTJdS; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1750958671; c=relaxed/simple;
+	bh=KdQnwApMJiZhnf712Xc+Slm3O5Udnt89NCUlEf/erRg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lkzJdASTt78+HfoBuDXcYxpwyQIrfudrNodFYFRictQtkkX71/U/WfNE8k0tGASu/emnsN6RFXW6YhoEFWbh+GT3UzbMIuJ7l1XQimXzlRSYC6MijciCgn+AcFKnSMe4sNGzJfZso08U+r+PQjkjsLG7VsI+jBW9b4rtp/dquBY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mzaBjX7H; arc=none smtp.client-ip=209.85.210.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="0HHVlB7+";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="wgkHfQoC";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="bvUdgTqa";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="XR/pTJdS"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id BD95721174;
-	Thu, 26 Jun 2025 10:31:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1750933893; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ClzSD6HNMq3DsFUbkYh+DB0h/oRjb6Sh//7r0btRfN4=;
-	b=0HHVlB7+XDVZRkk6vS7m3hFdl5LYFdEG3DxApiert3GpgFaRztWSl6wg8VCVRG/8RmwwKo
-	uueGPdH8NoKx7vBpUoIBgVUyNmWRQYnTWf+pTqlJturh+5ky70fqGCWyeqo54rr4ahpP+N
-	4FjCOMSvL0xN4KxYmHL/ro9Bf8c5AdQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1750933893;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ClzSD6HNMq3DsFUbkYh+DB0h/oRjb6Sh//7r0btRfN4=;
-	b=wgkHfQoCSP856X2zbTiAYDy/jQ5uGV121lMtHYyJfwaxM1eIjT2UBbQR+5rmP34Hl3UNZB
-	1wZWgOvPozYhYSAg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1750933892; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ClzSD6HNMq3DsFUbkYh+DB0h/oRjb6Sh//7r0btRfN4=;
-	b=bvUdgTqaoAeNiW9idPjDl1aPn77IYbrTyQ+BoPLsl3v7BUSBzqwB6skPZRmDNn4GR/6EGr
-	krEcMhMZtbd+8EWUfP1vGcJekC9IOU6o7bMO6Z4Zk5C4lp9sOAH35RzXxi3vYN9wUF09aS
-	XTZzRPCJ4GrmRx/GUONei//DokG/8wQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1750933892;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=ClzSD6HNMq3DsFUbkYh+DB0h/oRjb6Sh//7r0btRfN4=;
-	b=XR/pTJdSRmZMODChFK6j4nIyRBdBDJQEMKBAor7ml/7rZfp2Y0+scylP+7pBL1s4nNX/s1
-	sTS7ggXZwrn/5VBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 88089138A7;
-	Thu, 26 Jun 2025 10:31:32 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id etjEH4QhXWjfYQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 26 Jun 2025 10:31:32 +0000
-Message-ID: <ecf7f260-4c5f-45fc-be8d-0361b00af6a3@suse.de>
-Date: Thu, 26 Jun 2025 12:31:32 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mzaBjX7H"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-7494999de5cso932741b3a.3;
+        Thu, 26 Jun 2025 10:24:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1750958669; x=1751563469; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=GKksa35feXB36GHTT9Qp1/4Jr24P78lzzDtaWWGcnqU=;
+        b=mzaBjX7H/mh7ZSWPCK7+kEZfVJG+wCkmBU+WhnrQfNfhnvygrRUsTM78fnYRHgB4D1
+         +IjQ+jb3S2jXXaG43wFljzSdqIaWE09CFSY2d5zxaJjzeBcRYGS2IOAYaWhG2NTVHAuQ
+         5NWHx+PRcnDjj1xJ8Pw8PLXZEV8BIk33UkehOV9VzIXQdU31fG4ZHcYajkwhZOwRlBVU
+         qlk+Sf9rEXYhl95Uz22NSdCLbWmP2phXtwWtiH8o6DvGnYNIx9sS2zZQO3JoCBjrEYB2
+         uQHQVLxf4mUTOodmZQUVSM6R63IIe7X8QyddZ0KeBbwh2sNB80c73L5PeQ/1P7c41TJN
+         3Ong==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750958669; x=1751563469;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=GKksa35feXB36GHTT9Qp1/4Jr24P78lzzDtaWWGcnqU=;
+        b=uhUNcxYHx0RKdjcFZ7D+M7jnfJIBzDinVVGq9s8scNJJClYt9RXpOfipycdU9c+nb7
+         xZs3KM89MKEk6VURinh8DZozTP4hPcJYiR3aVYlAkwX45Tgt3QCR/LHNNRxkDRS2D/eo
+         WJpLO2RIXA2auidqzgcFIRo6p5c8BjdopEvFlWbgDYZ6R+9OTzQSy1MBatv5z1xVfvK0
+         YsIWZEY/pOHbx1lzXdhX2LGPtpgMeG8uUrL7A0HiK+fCPLbveE3hag0V02qzsZKuI5bE
+         q3roYsEqe7nbwmbvomka9ufpWez14FBsXLxc/qlLXF9YoXGVYxrWGJ7JFfqB8XFpmVvF
+         hm9g==
+X-Forwarded-Encrypted: i=1; AJvYcCV1EjkzXVXoBwHvVLeZF1cAbVwVmScJ61DS2R7Ci2PvjdUPSRBlJ14UKJvawcZOi0ef3IXLk4odGxAJrg==@vger.kernel.org, AJvYcCXBBVD8Wzj6+oLRv4JFXyvkVj2qIksKaMfXCdBHlvE603qyCSOWdPh+vcgk05J08YDfxu7RTKHaU54f8Ur4@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyb/QWPplkkA+Rt9Fmcxjy6YSWZh5MvacHJNgPx1XP9s78iqgEA
+	Oe4/HV5kjWA+cEYRwR+naPqbHV5JW1AQALZWFl/Ry6DqbSUz3KB+LEQ75cqzCQ==
+X-Gm-Gg: ASbGnctotifMaW9RXyhbJ++qUM8lL8c37M9Ja9C3NTOPEgbkUilM2oKW9slk28bdgeH
+	wfSR/iLQ6dCIteB9FSVgHts9qnvk6vFltLz1Vy8Knbff8vz+GSKu+5LZfmBoIrHOUacpuhB7rtA
+	UepnvgFdr40GB60MkbV8BnQcdFnjFYYe/7igGZm9cz7FUbSEPgCvWs0laJzNm2KJf0FLZsigDHg
+	2TXhgF9gRxFCiF4BgOzE0W2aVzzXpnXIfmATUWcMB/q/cWi3/Lz4cwKPueFpd6tfRUg+oK4dnle
+	b8eMiKjYZevaQDCjELefVAFEJLFcgALWzldXO/1Y6P1GV6j3Tr8teYcBWb1NIgKOviD8dvWf35n
+	osA==
+X-Google-Smtp-Source: AGHT+IGpNrxWVlvz9yO0sPnp3SvG03DYr98IGTzu1iXn9pp/JkN8N+6B43mNyV1Djnpa3TrKJLV9Eg==
+X-Received: by 2002:a05:6a00:846:b0:736:a8db:93bb with SMTP id d2e1a72fcca58-74af6e66354mr59436b3a.5.1750958669114;
+        Thu, 26 Jun 2025 10:24:29 -0700 (PDT)
+Received: from localhost.localdomain ([49.37.221.186])
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-74af541be9fsm229670b3a.50.2025.06.26.10.24.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Jun 2025 10:24:28 -0700 (PDT)
+From: Abdun Nihaal <abdun.nihaal@gmail.com>
+To: andy@kernel.org
+Cc: Abdun Nihaal <abdun.nihaal@gmail.com>,
+	gregkh@linuxfoundation.org,
+	lorenzo.stoakes@oracle.com,
+	tzimmermann@suse.de,
+	riyandhiman14@gmail.com,
+	willy@infradead.org,
+	notro@tronnes.org,
+	thomas.petazzoni@free-electrons.com,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: fbtft: fix potential memory leak in fbtft_framebuffer_alloc()
+Date: Thu, 26 Jun 2025 22:54:10 +0530
+Message-ID: <20250626172412.18355-1-abdun.nihaal@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: efifb: do not load efifb if PCI BAR has changed
- but not fixuped
-To: oushixiong1025@163.com, Helge Deller <deller@gmx.de>
-Cc: Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- Shixiong Ou <oushixiong@kylinos.cn>
-References: <20250626094937.515552-1-oushixiong1025@163.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20250626094937.515552-1-oushixiong1025@163.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_TO(0.00)[163.com,gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	MIME_TRACE(0.00)[0:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[163.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid]
-X-Spam-Level: 
 
-Hi
+In the error paths after fb_info structure is successfully allocated,
+the memory allocated in fb_deferred_io_init() for info->pagerefs is not
+freed. Fix that by adding the cleanup function on the error path.
 
-Am 26.06.25 um 11:49 schrieb oushixiong1025@163.com:
-> From: Shixiong Ou <oushixiong@kylinos.cn>
->
-> [WHY]
-> On an ARM machine, the following log is present:
-> [    0.900884] efifb: framebuffer at 0x1020000000, using 3072k, total 3072k
-> [    2.297884] amdgpu 0000:04:00.0: remove_conflicting_pci_framebuffers: bar 0: 0x1000000000 -> 0x100fffffff
-> [    2.297886] amdgpu 0000:04:00.0: remove_conflicting_pci_framebuffers: bar 2: 0x1010000000 -> 0x10101fffff
-> [    2.297888] amdgpu 0000:04:00.0: remove_conflicting_pci_framebuffers: bar 5: 0x58200000 -> 0x5823ffff
->
-> It show that the efifb framebuffer base is out of PCI BAR, and this
+Fixes: c296d5f9957c ("staging: fbtft: core support")
+Signed-off-by: Abdun Nihaal <abdun.nihaal@gmail.com>
+---
+This patch is compile tested only. Not tested on real hardware.
+Bug was found using our prototype static analysis tool.
 
-The patch at
+ drivers/staging/fbtft/fbtft-core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-   https://patchwork.freedesktop.org/series/148057/
-
-is supposed to fix the problem. It has been merged with v6.16-rc1 as 
-commit 2f29b5c23101 ("video: screen_info: Relocate framebuffers behind 
-PCI bridges"). It is in your tree?
-
-Best regards
-Thomas
-
-> results in both efi-framebuffer and amdgpudrmfb co-existing.
->
-> The fbcon will be bound to efi-framebuffer by default and cannot be used.
->
-> [HOW]
-> Do not load efifb driver if PCI BAR has changed but not fixuped.
-> In the following cases:
-> 	1. screen_info_lfb_pdev is NULL.
-> 	2. __screen_info_relocation_is_valid return false.
->
-> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
-> ---
->   drivers/video/fbdev/efifb.c     |  4 ++++
->   drivers/video/screen_info_pci.c | 24 ++++++++++++++++++++++++
->   include/linux/screen_info.h     |  5 +++++
->   3 files changed, 33 insertions(+)
->
-> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> index 0e1bd3dba255..de8d016c9a66 100644
-> --- a/drivers/video/fbdev/efifb.c
-> +++ b/drivers/video/fbdev/efifb.c
-> @@ -303,6 +303,10 @@ static void efifb_setup(struct screen_info *si, char *options)
->   
->   static inline bool fb_base_is_valid(struct screen_info *si)
->   {
-> +	/* check whether fb_base has changed but not fixuped */
-> +	if (!screen_info_is_useful())
-> +		return false;
-> +
->   	if (si->lfb_base)
->   		return true;
->   
-> diff --git a/drivers/video/screen_info_pci.c b/drivers/video/screen_info_pci.c
-> index 66bfc1d0a6dc..ac57dcaf0cac 100644
-> --- a/drivers/video/screen_info_pci.c
-> +++ b/drivers/video/screen_info_pci.c
-> @@ -9,6 +9,8 @@ static struct pci_dev *screen_info_lfb_pdev;
->   static size_t screen_info_lfb_bar;
->   static resource_size_t screen_info_lfb_res_start; // original start of resource
->   static resource_size_t screen_info_lfb_offset; // framebuffer offset within resource
-> +static bool screen_info_changed;
-> +static bool screen_info_fixuped;
->   
->   static bool __screen_info_relocation_is_valid(const struct screen_info *si, struct resource *pr)
->   {
-> @@ -24,6 +26,24 @@ static bool __screen_info_relocation_is_valid(const struct screen_info *si, stru
->   	return true;
->   }
->   
-> +bool screen_info_is_useful(void)
-> +{
-> +	unsigned int type;
-> +	const struct screen_info *si = &screen_info;
-> +
-> +	type = screen_info_video_type(si);
-> +	if (type != VIDEO_TYPE_EFI)
-> +		return true;
-> +
-> +	if (screen_info_changed && !screen_info_fixuped) {
-> +		pr_warn("The screen_info has changed but not fixuped");
-> +		return false;
-> +	}
-> +
-> +	pr_info("The screen_info is useful");
-> +	return true;
-> +}
-> +
->   void screen_info_apply_fixups(void)
->   {
->   	struct screen_info *si = &screen_info;
-> @@ -32,18 +52,22 @@ void screen_info_apply_fixups(void)
->   		struct resource *pr = &screen_info_lfb_pdev->resource[screen_info_lfb_bar];
->   
->   		if (pr->start != screen_info_lfb_res_start) {
-> +			screen_info_changed = true;
->   			if (__screen_info_relocation_is_valid(si, pr)) {
->   				/*
->   				 * Only update base if we have an actual
->   				 * relocation to a valid I/O range.
->   				 */
->   				__screen_info_set_lfb_base(si, pr->start + screen_info_lfb_offset);
-> +				screen_info_fixuped = true;
->   				pr_info("Relocating firmware framebuffer to offset %pa[d] within %pr\n",
->   					&screen_info_lfb_offset, pr);
->   			} else {
->   				pr_warn("Invalid relocating, disabling firmware framebuffer\n");
->   			}
->   		}
-> +	} else {
-> +		screen_info_changed = true;
->   	}
->   }
->   
-> diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-> index 923d68e07679..632cdbb1adbe 100644
-> --- a/include/linux/screen_info.h
-> +++ b/include/linux/screen_info.h
-> @@ -138,9 +138,14 @@ ssize_t screen_info_resources(const struct screen_info *si, struct resource *r,
->   u32 __screen_info_lfb_bits_per_pixel(const struct screen_info *si);
->   
->   #if defined(CONFIG_PCI)
-> +bool screen_info_is_useful(void);
->   void screen_info_apply_fixups(void);
->   struct pci_dev *screen_info_pci_dev(const struct screen_info *si);
->   #else
-> +bool screen_info_is_useful(void)
-> +{
-> +	return true;
-> +}
->   static inline void screen_info_apply_fixups(void)
->   { }
->   static inline struct pci_dev *screen_info_pci_dev(const struct screen_info *si)
-
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index da9c64152a60..39bced400065 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -692,6 +692,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
+ 	return info;
+ 
+ release_framebuf:
++	fb_deferred_io_cleanup(info);
+ 	framebuffer_release(info);
+ 
+ alloc_fail:
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+2.43.0
 

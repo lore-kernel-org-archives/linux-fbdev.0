@@ -1,90 +1,102 @@
-Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com [209.85.215.170])
+Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 527A02E11AE;
-	Fri, 27 Jun 2025 16:26:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 295BE35957;
+	Fri, 27 Jun 2025 17:31:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751041574; cv=none; b=R6ghAmND+r9xfRxzuhiqYWDq0hlSktde3GPjDPCnMDFts9yhpkBnSbIiyu8wtRJHZNV2UNOoZ8ov8iajR6xvH+bMgUUR0fKA7TSr79RfqbbqldPWUN4xBGZJBC+UlKsFtZXTm7ulCM7MPl/U7qk31TTiA4lvY0t20KQ+beUA2UU=
+	t=1751045494; cv=none; b=hijTASbkWQ4SDZHa06h00u0JVGGqRI85zmxJq+yontCyvNlkH6pffKD6d0oP5LS8h2jYXE8+AtdjCsg7gQayQq6SzG/BeEIWRuAIBJBgqk8xL33hIxaYf1StzVS87QQ+jVC9p5wK3aLLypbwqSlEP3384ptbNbZrhdZg5G9Y4hw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751041574; c=relaxed/simple;
-	bh=iymRxdZHCbk6hr0LCFlebLISEqnGtGso2ocica07eUc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UQFuOocdkuhk9g4RF1/xhsdQ0pNeYnLRv8Q6+K4nlN7Rp4pn7Bvca+93OjWKSTAVS5O4snZnlavidf4uwxqrujZf16Le8VwveEbPPEYRhDQY4sxF70QGqPlgWHaTOE7uU9P8K20fbbuLmz/3FzntXvjJtdEUiiNmtOnVwa5W0jY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Tb6YEAaM; arc=none smtp.client-ip=209.85.215.170
+	s=arc-20240116; t=1751045494; c=relaxed/simple;
+	bh=JkQJjF0Qec5T4iobN1AOTeyQ5w/nJDrM5+viPyB3/E0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DBA2lPKciR8nhCh/6zT6ZzodAHplTR5hIyl0ucbBgp0xJjlu9BpECdNiEjS9TiiLbuCePz9CIpbMabtCAni1Ek6CvVMIP/16QfUcQ5+8dLYFoc+xL4BPrEYKIYROX2O3bDuvUDgMAg63vW97pBiNlHRMyf9KqX/UjlRvfHpdwbo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OB1NgpfF; arc=none smtp.client-ip=209.85.210.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tb6YEAaM"
-Received: by mail-pg1-f170.google.com with SMTP id 41be03b00d2f7-b26df8f44e6so16130a12.2;
-        Fri, 27 Jun 2025 09:26:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OB1NgpfF"
+Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-747ef5996edso149345b3a.0;
+        Fri, 27 Jun 2025 10:31:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751041572; x=1751646372; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=iymRxdZHCbk6hr0LCFlebLISEqnGtGso2ocica07eUc=;
-        b=Tb6YEAaMO5bkJZ3D1NCklDpR1Qna5H+NKm65xxJy+piBaa2U5yCqqnY5hXqTkGPIAV
-         70Oy2QyBK3YnW24WtsLoXpE9zuiJM05bBKGBmOT8uh8p0JiGcUuy38e/v7tqJru0kwrE
-         3uBBf+8ni99bWKO8FCYx5eaXLoN6I1+i26wz9/bymGoVGlvZkO4b97k/s/jhF+5uDZwd
-         CAGSq8lI5pz1Z5c8v8fsxp/+pCXvvJXgzl/oUnvFcTOKiU0BQpVPhLEO74qOcpwZ/Y3I
-         IqFB4l1jQAP4YxNLy9PxEAFSl4+dztHY/8/S3rMzulzs8prvjMoMnRKrIZkzAV/0mKw8
-         rolw==
+        d=gmail.com; s=20230601; t=1751045490; x=1751650290; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=oTfVgFtzOFOfg6vIGvu1wxSN1SyeGW/viyLGmJ6OnNo=;
+        b=OB1NgpfFxdCIdbRj1kFd2qqIUpo1cQePUMCXbwRyAX8fpTXPRsiTLIzsoDIu+rVt4H
+         xCEyGkkwvVZqOvzU7gd0XvfEzebSst4M4cU/Awtr/KL0KyRz6ipqiniSoFJvgUNX+cXM
+         6xuE+153b9dnOIfhe5zTGHkq2t9a5ENqIt+7h+mGdit1CUEOWPK3H2WeSbBsJqeoVDHi
+         KvOTnOC/FW/xTOLdOykPJV4hI1yHF38CK9P9WlelBpPcRNdqmpbo0fam8g1TtYSF3XQV
+         kuNVH7xj8kqnnyhPRKZaEWtTImIgK/weWezLtW7Wh7cSePh12w/gxQYN/HmSaUqBm0KZ
+         R53g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751041572; x=1751646372;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=iymRxdZHCbk6hr0LCFlebLISEqnGtGso2ocica07eUc=;
-        b=mSEX1kpgWumYtNxiZPNuvvdmk+C+PvXWO7g/58qPNFh0ppYwukBBPduCuPprmv4lKr
-         jDbJn5E2rsV8/xOsfQ2fU8R5cky0ZQWjPj3YEkWbiBTQ16lM/ImpyVgfEVWijeSHX1/1
-         Ef2vxopie4Mfsu+44nYOUpoTpDwuNHPEAv194A88KNVq3dcwy1JYddob2Z3bndiPVwP/
-         CltsE01+3Rw5NVoZBf7USMm9sJHUQA5UUnAzypw7mES6dgI70cBamnw/XajwLWum7JYo
-         FwHFuD6BlAhYuP8vPuhzSycQt7l0vWKzMSoHqI4+oLfNQb/kxF5+UyPXYyLFUdFSOAgR
-         eovQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUm9qRl6bRVnxGigK0PZAz5hs1SP11qjuj6MX86K4vkAAzLvMZhbULkEB76Wu3IlS2Kggi5ShdvgpPvFb2M@vger.kernel.org, AJvYcCWf7V32Ut40p6jxU2W717Ln7VtUpsj0NWwL3RCIHolmTDlv8aBIrIPMTq8JXTtIFmrScNJxV5yfGHNJ+g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzkQ9V4pwalekA1ZQGAkI1ctFc0UXe2Ub7q/bZaBF89/3IDhS4Q
-	4jnrrdO7pjxhzCjqExJYUoA0E22tI5pzOH0aCDK6Cp2Gr1kjOQN2gDdQ
-X-Gm-Gg: ASbGncs8u78ge+WntY3nW3GbTdcUq7QwQDudELbWiC0qtCsaTCp2TSGHWwaHRNZxEn4
-	nscxmoCV62BJUkS4FZ6eHppemfRnIORcIJLjwRh5GthYk4VUHXdldRysBITy3wWxmrucIEnKBLr
-	U1IDt7JUNONfufnt0Yw4FXZIkMZsicXYSXXbaw3gFhWv6uEYmxclOp2agwkvhdC2EkPhDJdv+hq
-	nEHppZy3/82IubgTCeqt4d+9aKvPI687XwPbFbGy32bhaJUysHIuVEE8jhnjtzgHHP1YegJJJBC
-	K8KzQftaFhQCQfMyLqLLwOkT7vHc6VJ22I3uknLHUGXZldYyC3zAQxo=
-X-Google-Smtp-Source: AGHT+IFV96Rf4LjT7OKaIYJfb5G8fLhC9of+ZZxWEW59VC9buNUWyd7wTakUgyC5gxDtG2Rwj+b4Cw==
-X-Received: by 2002:a17:90b:3c4a:b0:311:c1ec:7d11 with SMTP id 98e67ed59e1d1-318c92a2e8emr6033508a91.18.1751041572454;
-        Fri, 27 Jun 2025 09:26:12 -0700 (PDT)
-Received: from essd ([49.37.221.186])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-315f51d7913sm6875386a91.0.2025.06.27.09.26.06
+        d=1e100.net; s=20230601; t=1751045490; x=1751650290;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=oTfVgFtzOFOfg6vIGvu1wxSN1SyeGW/viyLGmJ6OnNo=;
+        b=tjV7ESbC3+uDZBBG2O6xXc/HPLpAZVqUtvmbKMl2YipIop47LigDqQI3exVfCZdKsM
+         Gb0mEFevSCO5wuo1qgZ2anRvnvtBkUjwQOQumO5BoSNFCb70DzJjtT9A/tYHxpwPdurq
+         1eanl0vAaGZ8v3oopwRFnfSz9mk3n3IAZ1yERo23kGWcY+5ghgArluvytl7O9RUOmsnb
+         +WxVTnJZnTmhgPh9chb1G4FaqbzKKmMC0RKKx/6J6ng8TqWKcT0szM86O1dVJjLOnM+G
+         XKm0b7XHJLBBQFKGQLHv/VJDxmPYpyjND8AU74Ygu3eBbkKCo8VWhtEaBjSLpHjO5bDj
+         F1+g==
+X-Forwarded-Encrypted: i=1; AJvYcCWZcWIevbyKe/Wku6gpri/DSdZ7++EzXmtdIOACtlJ9KDlCr4xVew7Xuu8JJ2477O/9bpByQKcdI2ZRpa4=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyNgYuHKj9X/FxAg1GQsy1i7Dc5WWrMDawfyesOOoOBboqFAnbO
+	ucZ/g0z65E35RqJeNsm4ULvf5zrW93uPtjravWvw+hH/LxMA9NVtxFPL
+X-Gm-Gg: ASbGnct7NOLzYcUNImDxML5cMEqBsWzboXxVu9kMjd4njawmtyyZDDDYbeSnEMaIyoq
+	HV6eCeta8eiYgGGn38I14Q6d1MrGOkUNTWu4pHmiMn5mJ5Sit0WkCNvO+vr1j4g4Yj+VZgHI52c
+	WlXnFPIPD/mng3WSWURyzPkc3+pm5wCVf0n3LRaMUQQtktPrCjmFIIKnToJniWYGNW8Gnlm8WOq
+	rnsHjR5Evo/DXU2OTikczfLgMxZ4fN9/hteUnAjGd1tcDjPXzJ7o53hDrXNIYfwiAQr1D94iI9o
+	5b3W21bqL52BKni4H4nvbRP4tZ2vVE/xHG9R8FeewfRjUg9k9Eu2cQiP2zqExIE=
+X-Google-Smtp-Source: AGHT+IEhIMepfK9nCZUOQR8wWahLBJNCF+QFm2OXbbyiVTTKrfuS1lKZ88tt5z5/UNXFlfl4cLUdMQ==
+X-Received: by 2002:a05:6a00:9094:b0:748:ed51:1300 with SMTP id d2e1a72fcca58-74af6e61c70mr5347132b3a.9.1751045490378;
+        Fri, 27 Jun 2025 10:31:30 -0700 (PDT)
+Received: from muxbit.. ([2401:4900:1cb8:b350:f061:66f3:baf1:5b2c])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74af557440fsm2907764b3a.74.2025.06.27.10.31.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Jun 2025 09:26:12 -0700 (PDT)
-Date: Fri, 27 Jun 2025 21:56:03 +0530
-From: Abdun Nihaal <abdun.nihaal@gmail.com>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, 
-	Dan Carpenter <dan.carpenter@linaro.org>, andy@kernel.org, gregkh@linuxfoundation.org, 
-	lorenzo.stoakes@oracle.com, tzimmermann@suse.de, riyandhiman14@gmail.com, 
-	willy@infradead.org, notro@tronnes.org, thomas.petazzoni@free-electrons.com, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: fix potential memory leak in
- fbtft_framebuffer_alloc()
-Message-ID: <gptas52msk2feixcrned7anmsozs5iyyku3h3am7fmv4jz46ty@lckiii7qhkq5>
-References: <20250626172412.18355-1-abdun.nihaal@gmail.com>
- <aF2Ic8BP0zWS6R19@smile.fi.intel.com>
- <0327da98-8a7c-4db8-8bcd-4179b87a9486@suswa.mountain>
- <aF3CwnHyW5HHzDSG@surfacebook.localdomain>
- <aF57eMeNafg1w9Qw@smile.fi.intel.com>
+        Fri, 27 Jun 2025 10:31:30 -0700 (PDT)
+From: Manish Kumar <manish1588@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Manish Kumar <manish1588@gmail.com>
+Subject: [PATCH] staging: sm750fb: make g_fbmode[] a read-only pointer array
+Date: Fri, 27 Jun 2025 23:01:20 +0530
+Message-ID: <20250627173120.7639-1-manish1588@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aF57eMeNafg1w9Qw@smile.fi.intel.com>
+Content-Transfer-Encoding: 8bit
 
-Thanks Andy and Dan for your detailed comments. I'll send a V2 with an
-another clean up patch that fixes the order and removes devm for txbuf.
+This fixes a checkpatch warning by changing the declaration of g_fbmode[]
+from 'static const char *' to 'static const char * const', making both the
+string contents and the array elements read-only.
 
-Regards,
-Nihaal
+Signed-off-by: Manish Kumar <manish1588@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 1d929aca399c..e77ad73f0db1 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -33,7 +33,7 @@
+ static int g_hwcursor = 1;
+ static int g_noaccel;
+ static int g_nomtrr;
+-static const char *g_fbmode[] = {NULL, NULL};
++static const char * const g_fbmode[] = {NULL, NULL};
+ static const char *g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview;
+-- 
+2.43.0
+

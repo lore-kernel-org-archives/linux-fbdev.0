@@ -1,213 +1,177 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C36D21C195
-	for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 07:43:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1408A22A4EB
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 07:51:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751010196; cv=none; b=HlYh4Qu4PTVkUKhc+pcfEf+EPRVoXJwZiG4ob2q7peUeJqDN77beUUucez9nUt4xYudhjsNPnbQkvTBZrppy1aPpR2t3LQGu8fsCd+iQXQFMrKmlROSHzuPkLlIfLQTAho9yuEAhVYbwqbtSmBzh2IKF7Lio1CMfVeOrrofbix8=
+	t=1751010709; cv=none; b=g4MLSOZlf92qEs7l5iXmp5VF9D+9F/n1UhSlnmtvO0jTiNPHOH2LMDQKwbSnqw9tVPXB6JAVllzqPnOdRQX2xvqj1Y6O29xTkUS/XXDeNEAcUEDeWzkL9V3jOHEye4C5SKbWKSHyNRR93DCYhPQXAdyxF+Xn/BOkllpuRLQ6DGY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751010196; c=relaxed/simple;
-	bh=mcIJFk1BZcqMJ+vhmYyQwN3voqEnRwZ1YCxJxVOwt+8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iylgbOHJGrsrJFrBOn5YC2EjzL1qYXMdZVSK+0NnwPKGiCGxVE76inOSvY16QHIkuuqBadgClRj7g6S520Rb2b8QecMDIjDYPK/+rUWlx/0tHRpd+TJf5oVZCPVQe+KjoY6DoHxD0XUb/wzN0phL0A8E/ESEnG6+k5jbccuzW0o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=FPBR33B6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mL8n51BQ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=FPBR33B6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mL8n51BQ; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1751010709; c=relaxed/simple;
+	bh=CmJByLtbVpwLLdyZCpUwCmCAxS6jbpT0as7eKt5fi5w=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=K7Ud1rKh4p8W0h8/x68BlqO0UwLcMjiivFcDgWsXWwse0wz7mEUPvb3DJmNGv5JsIygiTFuvWVyCjvZj18cENWxoFmpi2m4mI9fGfE+sLQ3RUKR75XGe/nMx19JF15dLnIvs6OFhN+ShaoHpe6T2VRwgRkFAlk2dkuXkBMMusl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Tqceywah; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="FPBR33B6";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mL8n51BQ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="FPBR33B6";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mL8n51BQ"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B09752116E;
-	Fri, 27 Jun 2025 07:43:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751010192; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=v83I5sWrw7pJlJ1VVVGM0VdIkUZd9LHitjShDYzsjX4=;
-	b=FPBR33B6z4upqtwJcW913zj0L01gitf/yT0hQl+21eW/RAgOSmXKI2bPlH7ffEjrrR23GK
-	BfqTARMOS3wsYiGhF/6nwftvWLI06DNVTjbvHhCpqof//shgI9pLQX7LL7WXUpytzmYDjk
-	wECjrDSUDr0zRUxEGi7+X3dlUa/wm7w=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751010192;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=v83I5sWrw7pJlJ1VVVGM0VdIkUZd9LHitjShDYzsjX4=;
-	b=mL8n51BQNnG8brYpYWkClYRxBED2e9+cxBewoN4eGzWLZ+NV/PWeQl8hUi4jhbpO8lsHzg
-	Zop/b90SQylMRZBw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=FPBR33B6;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=mL8n51BQ
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751010192; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=v83I5sWrw7pJlJ1VVVGM0VdIkUZd9LHitjShDYzsjX4=;
-	b=FPBR33B6z4upqtwJcW913zj0L01gitf/yT0hQl+21eW/RAgOSmXKI2bPlH7ffEjrrR23GK
-	BfqTARMOS3wsYiGhF/6nwftvWLI06DNVTjbvHhCpqof//shgI9pLQX7LL7WXUpytzmYDjk
-	wECjrDSUDr0zRUxEGi7+X3dlUa/wm7w=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751010192;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=v83I5sWrw7pJlJ1VVVGM0VdIkUZd9LHitjShDYzsjX4=;
-	b=mL8n51BQNnG8brYpYWkClYRxBED2e9+cxBewoN4eGzWLZ+NV/PWeQl8hUi4jhbpO8lsHzg
-	Zop/b90SQylMRZBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 514EE13786;
-	Fri, 27 Jun 2025 07:43:12 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id OTBsEpBLXmi3TQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 27 Jun 2025 07:43:12 +0000
-Message-ID: <16244be7-4cc7-4e3f-8403-35c1dd7fe31d@suse.de>
-Date: Fri, 27 Jun 2025 09:43:11 +0200
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Tqceywah"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1751010707;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ri0+PoGBbyLJmIsWOHAGRErY0fpNzrIikLK+X0yMjKY=;
+	b=Tqceywahhd8Ot3vMnmdndl6IDZecqwHEUHTLkg+0xwWr/eSBhZX2ImwChaTs8Pq9/kAm+P
+	UDjUfMG9Qs5wyRBuLn/Hy9+JNjPXXsdp22tThVH2mnBCTUFBBSLtUILvqmcsBVQ8ugCTY3
+	zxP2R9mgZfmL9W3ekm0oDM502EiBouM=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-665-znJEIw_0OVuzVdxnlRbMDA-1; Fri, 27 Jun 2025 03:51:45 -0400
+X-MC-Unique: znJEIw_0OVuzVdxnlRbMDA-1
+X-Mimecast-MFC-AGG-ID: znJEIw_0OVuzVdxnlRbMDA_1751010704
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4535d300d2dso14709385e9.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 00:51:45 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751010704; x=1751615504;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ri0+PoGBbyLJmIsWOHAGRErY0fpNzrIikLK+X0yMjKY=;
+        b=hCilu/dMtxCK/2C6mvqv21pyNlNd8DprQL31iSbJzwqYwEX9H2TkLls/R1NCm38Ym+
+         9mxFlB18rVBDzgLOiTr9VT9Ts7yuS13v+htxcsuAD77c3lrs1yybHqs+FyvuHoPlt7EY
+         Hyak2SZ8Q3toQtiN7nAsqZFgj9uuX/7nGjcD91NkXngbtAaqutdHxPaSjVRdAYVX1NVR
+         uHhblTJNjypZy9h8Ig1kUK16a7642zGVmCOv0AbnKzcB5N9v/PJ0JimFyLDOh/ggO23r
+         dCEWVPOZrX1WNGhzkJ7QaJQc7LG/cuP7DFN6EIYAgHRsRCmhhr74oDo935c3ipvFtfkD
+         gxFw==
+X-Gm-Message-State: AOJu0YwzN7Witk6yu2FEXSXoBeZesRQJBC16sH8KYxClSoQ/187pGaT3
+	no26i0+8JxnDznVrnZ+QKQ/Bxx1wamTleuAP7LLtw+Zp67RDwbP55ohywCcVB6ZdeAJ5IdmOj9i
+	jk/R8ZcQqOC946Nd/jVifiIp8QQl4y/uPu246vzwl27Ql7+EFFqG5N4lENMNOx+5OeH+kgvAq
+X-Gm-Gg: ASbGncsLnXsVaTQpGWyU8fKYbv3fGNC3W+ZrHCModbY8iblmsJvg0PN8t5yY/xq8/if
+	8uO0VfMHq3Il70nAlTYZwYqe5Ok6D6ppk8oGVO/o6f8XSqRK+yDq5L0uNxSNBzvuASt8dJdhhZz
+	KK/ZmX1gopf3Le7zeS6mVTsHeta3WhV+F1JdGZDPejcJY0tx7Lx16AOMacAHjsGUjTD6oiHTYf1
+	60UhAmHBDPCOsVxaW4pf2xjlpxHf+X2zoocZnRpF2j0AdQ5zVip8etGnAJeKsMMDilNajQklTlX
+	mwtrkYrEG20hwSEcmTK4nNaZa8GefPTS8ntPrbhvv/5qQhqA5U8IIMMh3FfT/N0wVctI2vPohNO
+	gUPM9
+X-Received: by 2002:a05:600c:3ba2:b0:441:b00d:e9d1 with SMTP id 5b1f17b1804b1-4538ee15a09mr27052115e9.2.1751010703341;
+        Fri, 27 Jun 2025 00:51:43 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IG84NMS43tLU4/bepm0RU/vh1jVbKdij5j7ryp5JJCNaNfJj8+Z/Tw54L4wr9lRRNPbvhEdWQ==
+X-Received: by 2002:a05:600c:3ba2:b0:441:b00d:e9d1 with SMTP id 5b1f17b1804b1-4538ee15a09mr27051735e9.2.1751010702905;
+        Fri, 27 Jun 2025 00:51:42 -0700 (PDT)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4538233c5fasm74208765e9.8.2025.06.27.00.51.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Jun 2025 00:51:42 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Luca Weiss <luca.weiss@fairphone.com>, Hans de Goede
+ <hdegoede@redhat.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge
+ Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Luca Weiss
+ <luca.weiss@fairphone.com>
+Subject: Re: [PATCH v2 3/5] drm/sysfb: simpledrm: Add support for
+ interconnect paths
+In-Reply-To: <20250623-simple-drm-fb-icc-v2-3-f69b86cd3d7d@fairphone.com>
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-3-f69b86cd3d7d@fairphone.com>
+Date: Fri, 27 Jun 2025 09:51:41 +0200
+Message-ID: <87qzz5d3le.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/5] fbdev/simplefb: Sort headers correctly
-To: Luca Weiss <luca.weiss@fairphone.com>, Hans de Goede
- <hdegoede@redhat.com>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-4-f69b86cd3d7d@fairphone.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20250623-simple-drm-fb-icc-v2-4-f69b86cd3d7d@fairphone.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	FREEMAIL_TO(0.00)[fairphone.com,redhat.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de];
-	MIME_TRACE(0.00)[0:+];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Rspamd-Queue-Id: B09752116E
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Score: -3.01
+Content-Type: text/plain
 
+Luca Weiss <luca.weiss@fairphone.com> writes:
 
-
-Am 23.06.25 um 08:44 schrieb Luca Weiss:
-> Make sure the headers are sorted alphabetically to ensure consistent
-> code.
+> Some devices might require keeping an interconnect path alive so that
+> the framebuffer continues working. Add support for that by setting the
+> bandwidth requirements appropriately for all provided interconnect
+> paths.
 >
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 > Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-
 > ---
->   drivers/video/fbdev/simplefb.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/gpu/drm/sysfb/simpledrm.c | 83 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 83 insertions(+)
 >
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index be95fcddce4c8ca794826b805cd7dad2985bd637..db27d51046af5cc3c46a0bc81ad9d9ed9a0783cc 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -13,18 +13,18 @@
->    */
->   
->   #include <linux/aperture.h>
-> +#include <linux/clk.h>
->   #include <linux/errno.h>
->   #include <linux/fb.h>
->   #include <linux/io.h>
->   #include <linux/module.h>
-> -#include <linux/platform_data/simplefb.h>
-> -#include <linux/platform_device.h>
-> -#include <linux/clk.h>
->   #include <linux/of.h>
->   #include <linux/of_address.h>
->   #include <linux/of_clk.h>
->   #include <linux/of_platform.h>
->   #include <linux/parser.h>
-> +#include <linux/platform_data/simplefb.h>
-> +#include <linux/platform_device.h>
->   #include <linux/pm_domain.h>
->   #include <linux/regulator/consumer.h>
->   
->
+> diff --git a/drivers/gpu/drm/sysfb/simpledrm.c b/drivers/gpu/drm/sysfb/simpledrm.c
+> index 349219330314e3421a6bb26ad5cf39a679a5cb7a..47d213e20cab1dd1e19528674a95edea00f4bb30 100644
+> --- a/drivers/gpu/drm/sysfb/simpledrm.c
+> +++ b/drivers/gpu/drm/sysfb/simpledrm.c
+> @@ -2,6 +2,7 @@
+>  
+>  #include <linux/aperture.h>
+>  #include <linux/clk.h>
+> +#include <linux/interconnect.h>
+>  #include <linux/minmax.h>
+>  #include <linux/of_address.h>
+>  #include <linux/of_clk.h>
+> @@ -225,6 +226,10 @@ struct simpledrm_device {
+>  	struct device **pwr_dom_devs;
+>  	struct device_link **pwr_dom_links;
+>  #endif
+
+Can you add a /* interconnects */ comment here? Similarly how there is one
+for clocks, regulators, power domains, etc.
+
+> +#if defined CONFIG_OF && defined CONFIG_INTERCONNECT
+> +	unsigned int icc_count;
+> +	struct icc_path **icc_paths;
+> +#endif
+>  
+
+...
+
+> +static int simpledrm_device_attach_icc(struct simpledrm_device *sdev)
+> +{
+> +	struct device *dev = sdev->sysfb.dev.dev;
+> +	int ret, count, i;
+> +
+> +	count = of_count_phandle_with_args(dev->of_node, "interconnects",
+> +							 "#interconnect-cells");
+> +	if (count < 0)
+> +		return 0;
+> +
+> +	/* An interconnect path consists of two elements */
+> +	if (count % 2) {
+> +		drm_err(&sdev->sysfb.dev,
+> +			"invalid interconnects value\n");
+> +		return -EINVAL;
+> +	}
+> +	sdev->icc_count = count / 2;
+> +
+> +	sdev->icc_paths = devm_kcalloc(dev, sdev->icc_count,
+> +					       sizeof(*sdev->icc_paths),
+> +					       GFP_KERNEL);
+> +	if (!sdev->icc_paths)
+> +		return -ENOMEM;
+> +
+> +	for (i = 0; i < sdev->icc_count; i++) {
+> +		sdev->icc_paths[i] = of_icc_get_by_index(dev, i);
+> +		if (IS_ERR_OR_NULL(sdev->icc_paths[i])) {
+> +			ret = PTR_ERR(sdev->icc_paths[i]);
+> +			if (ret == -EPROBE_DEFER)
+> +				goto err;
+> +			drm_err(&sdev->sysfb.dev, "failed to get interconnect path %u: %d\n",
+> +				i, ret);
+
+You could use dev_err_probe() instead that already handles the -EPROBE_DEFER
+case and also will get this message in the /sys/kernel/debug/devices_deferred
+debugfs entry, as the reason why the probe deferral happened.
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

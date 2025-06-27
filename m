@@ -1,157 +1,96 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7547E296169
-	for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 10:07:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F7662980A5;
+	Fri, 27 Jun 2025 11:07:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751018822; cv=none; b=iq7Pjmc//YhAPoFBWhkUufxqMWfeuzl7Z+Slqe7bcifYsh/R2GDATjAZw05q9jN++3Rx8TRL/TInriIwz0QfNAEGClDG/IogzXIL7BrqTbjlhiX6U3sJpJqxKcn6ufvy6NaG2erYC5K5oLK1QB/j8BOKrZXvj6iFX7fU77m8SpQ=
+	t=1751022467; cv=none; b=ieCkh0Yt/9rjIJZgnqeQfzjE16u0OuqfkspD9nt7j4clFnyCSkeGDXtbWjZsxRZczDvYknvyruSgKb0IhfqCdOjGS8GN3tylopDkUkj8CEm5sZv2w9saVOqdidEBHUBIBjvc2gXoNjzVphZPsqqmBg2bRw4i5c0CYN3+LRiK5bo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751018822; c=relaxed/simple;
-	bh=+IXYk0BLsk9VOjPdYK0JSoHlaBQmpqTb5SeExnFFEbc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=UdVOhXr+W16R8jtYpUJYSYur2ckKom+DoP7jU6fzt1YhH8BzvVe5RLJR4neHkWXJ+KykOmmyIQb649iRb8zmKhwsXiHwfQ6/EQacNXsunge6hXUBSt327CA0NWLMhXRanfRPizZrAXPOo+qyhMDPDkwqv4MnAKnoSKFl43y/NsI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Yw82fjHd; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1751022467; c=relaxed/simple;
+	bh=+F4+PRH6RZeS8ugoToiy4TCKLKkcYPK+TGHSXOUNJ18=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mskfV7IjoiFEA46IbGGGEfdglrZdfQo9LMQxM0kfHnJp3L+DTWjMmEScqa2R8o72qnUeraivqrgla4IRMC2UCQIJcUfaCwlmC704x2buAbTPj/9jdDnnPAPA8/JCunFfZandbhOoGpLuT2Jhprkhm4vz9jNRbtmOFuKg9f9OkJE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NhrvX4V6; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Yw82fjHd"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751018819;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uYXXAceZfrCUqpQ9OsgNrpmSa7NX1ldTsGlTcQdd5wI=;
-	b=Yw82fjHdKZeVJITIOfPoC3f658ALuFkiTfn1kta0ioOv1oCCOvhzfnRHDh/p7hajlWsd0C
-	D9445z93h9mOtl9GHX8obN2PhLXtKIZXzQsROqk87cyPrQPvznn9JqfWkhoAIUsf+37jUD
-	/0w4anqvXzSzL459ql7xncK21CXniac=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-169-sldUKMH-M0aRkSW3mI2Jaw-1; Fri, 27 Jun 2025 06:06:58 -0400
-X-MC-Unique: sldUKMH-M0aRkSW3mI2Jaw-1
-X-Mimecast-MFC-AGG-ID: sldUKMH-M0aRkSW3mI2Jaw_1751018817
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-4536962204aso7836925e9.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 03:06:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751018817; x=1751623617;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uYXXAceZfrCUqpQ9OsgNrpmSa7NX1ldTsGlTcQdd5wI=;
-        b=b3REXtcJLT5zJcbAIXP7yKTD0MH6RsfShGbm40ePbc0DuVetXtVaFI+cphnc7PTaQs
-         QLC3sp2bA2bLJPP5tx9ZJ0SWIMs36ig89q9YN3sYHnJiljAj4iKmaUuH9azHxH/4Vm61
-         LvFiEfSs8Td9vYKB8V0Mz0POl6bbDSDOT4aiVk1A/rl20RlaD65upNVxVgPG3dvzpdFf
-         fnRd89Aru3TN5jcX0NmnjC412DMwJzF9olR5XMkQ7n4xqeHqJF4rM0XtYy65RCtqIzo5
-         cvvt1c1/+5lCVXCRtmbEkIimpjXxI0Xg2tULGVVpxvtk4rscqkFcuGPvtbqOj0PAmKEj
-         ZTYg==
-X-Forwarded-Encrypted: i=1; AJvYcCWFt/QdUT71WaANlj+1GsSuScIQ4UTYCgNngwo6DsEKZwzcPxZ7IMV0tLOxEtVcrvs67Y7eNX0CQ7uckw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyAVQGH/4GV7buIO0n2f7SUWf+SCUoZ6peUTw6Ix2JxowELCOLN
-	nKrPfrH6tQw82IP6CYdQy3HgeqK08K/frsSV0wrUZ9oXdzXkMShQYNSr62/I7pUxIb2H3FsksI5
-	hymEs0RGeh1D44Z00jGNCGJJc/Oz0IdZTrGUYuWKyPXtfjmfFBSd0OCzJ0sDi2zxR
-X-Gm-Gg: ASbGnctStSUrlT/Km2QOR5ZxROmcHA5YeqteqVoNshZ2bPLZHjbSIEhCmxuxqqalTSo
-	yTyrxHPpPB5tz+lv/kfZgCvqzr77zwlkb2ahWDI5cgGMKBpVe+qRTwmnrz4ldd9gFsJsatxlwVq
-	ribNpdMuxpISRG4A18tNGvzTN+0MEkC291lutcO8boHeSya7Vl6EcE4DlERVMqpUCF/SaMCtU+N
-	zHZ4ntMZ6mylvlpcD0o3kfyfYmj8RWEDrnqgrKmBLdSM2FvtoBimmy1hCDbby6X50SEf4o9hqLl
-	E3Vov98aniMIFHWrsBeWX57qck1+dz2K2ynVIUgIxwJJxnitzn1vjWSZ1w+Z10Prz5meK4XABgM
-	Z//ul
-X-Received: by 2002:a05:6000:23c8:b0:3a4:eef9:818a with SMTP id ffacd0b85a97d-3a8ff51fb85mr1792631f8f.27.1751018816823;
-        Fri, 27 Jun 2025 03:06:56 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGjPZ2YyzP07UvUHeXF1IowQrFwAxVkZWw/RrEy4ehDzyrnnvfw0IfiYAn/CtAHUzPqxVhAtQ==
-X-Received: by 2002:a05:6000:23c8:b0:3a4:eef9:818a with SMTP id ffacd0b85a97d-3a8ff51fb85mr1792609f8f.27.1751018816340;
-        Fri, 27 Jun 2025 03:06:56 -0700 (PDT)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a892e5f918sm2247895f8f.100.2025.06.27.03.06.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Jun 2025 03:06:55 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Luca Weiss <luca.weiss@fairphone.com>, Krzysztof Kozlowski
- <krzk@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-In-Reply-To: <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
-References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
- <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
- <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
-Date: Fri, 27 Jun 2025 12:06:54 +0200
-Message-ID: <87o6u9birl.fsf@minerva.mail-host-address-is-not-set>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NhrvX4V6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1751022467; x=1782558467;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=+F4+PRH6RZeS8ugoToiy4TCKLKkcYPK+TGHSXOUNJ18=;
+  b=NhrvX4V6DkzlA6WcbF8LuqO3gQ1pX/5MaVdAGCgPPV0z5Hp5+QDtxMUv
+   ESkDvLJyBSBSx4ODcm7DCNx1VsBAtdCx/x4fM24GfEW4uPZ8EgNAhMGRj
+   b5HuBlPwCB2N03fPeai4KDswkUfGkfRpPIqw8obqVsSlM80Swz8nbRFVj
+   iCfX+nDgwp49YozuNfkkdnkYw0TEeGnKIcFLRek/WVaUyzcQRrs6OWsqM
+   0kbzps/Ln4Ts1lfVa+zOi0BGreQ2K7u6L1/JJrj+eYvll1O2pWzyRGfd7
+   o+Gmh45oAh7hHxvgG78Anc8R2MVkbsXITCL2pIpn/fFt+i1yH6aGoJhGV
+   w==;
+X-CSE-ConnectionGUID: h8WznA35ScC42ywar9RMmA==
+X-CSE-MsgGUID: ezpQrNjwQzWQYxh/qEo2CA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11476"; a="64772542"
+X-IronPort-AV: E=Sophos;i="6.16,270,1744095600"; 
+   d="scan'208";a="64772542"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2025 04:07:45 -0700
+X-CSE-ConnectionGUID: 6KDakIrXREWbY/0lrldFZA==
+X-CSE-MsgGUID: Fpu8o9HZTqm4cjPeGaFeug==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,270,1744095600"; 
+   d="scan'208";a="153494856"
+Received: from smile.fi.intel.com ([10.237.72.52])
+  by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2025 04:07:40 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.98.2)
+	(envelope-from <andriy.shevchenko@intel.com>)
+	id 1uV6vh-0000000ASaL-04jT;
+	Fri, 27 Jun 2025 14:07:37 +0300
+Date: Fri, 27 Jun 2025 14:07:36 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Dan Carpenter <dan.carpenter@linaro.org>,
+	Abdun Nihaal <abdun.nihaal@gmail.com>, andy@kernel.org,
+	gregkh@linuxfoundation.org, lorenzo.stoakes@oracle.com,
+	tzimmermann@suse.de, riyandhiman14@gmail.com, willy@infradead.org,
+	notro@tronnes.org, thomas.petazzoni@free-electrons.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: fix potential memory leak in
+ fbtft_framebuffer_alloc()
+Message-ID: <aF57eMeNafg1w9Qw@smile.fi.intel.com>
+References: <20250626172412.18355-1-abdun.nihaal@gmail.com>
+ <aF2Ic8BP0zWS6R19@smile.fi.intel.com>
+ <0327da98-8a7c-4db8-8bcd-4179b87a9486@suswa.mountain>
+ <aF3CwnHyW5HHzDSG@surfacebook.localdomain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aF3CwnHyW5HHzDSG@surfacebook.localdomain>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-"Luca Weiss" <luca.weiss@fairphone.com> writes:
+On Fri, Jun 27, 2025 at 12:59:30AM +0300, Andy Shevchenko wrote:
+> Thu, Jun 26, 2025 at 11:11:39PM +0300, Dan Carpenter kirjoitti:
+> > On Thu, Jun 26, 2025 at 08:50:43PM +0300, Andy Shevchenko wrote:
+> > > On Thu, Jun 26, 2025 at 10:54:10PM +0530, Abdun Nihaal wrote:
 
-> Hi Krzysztof,
->
-> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
->> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
->>> Document the interconnects property which is a list of interconnect
->>> paths that is used by the framebuffer and therefore needs to be kept
->>> alive when the framebuffer is being used.
->>> 
->>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
->>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->>> ---
->>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
->>>  1 file changed, 3 insertions(+)
->>> 
->>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
->>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>> @@ -79,6 +79,9 @@ properties:
->>>    power-domains:
->>>      description: List of power domains used by the framebuffer.
->>>  
->>> +  interconnects:
->>> +    description: List of interconnect paths used by the framebuffer.
->>> +
->>
->> maxItems: 1, or this is not a simple FB anymore. Anything which needs
->> some sort of resources in unknown way is not simple anymore. You need
->> device specific bindings.
->
-> The bindings support an arbitrary number of clocks, regulators,
-> power-domains. Why should I artificially limit the interconnects to only
-> one?
->
+...
 
-I agree with Luca here. There are device specific bindings for the device
-specific drivers. But this is about the generic drivers that are able to
-scan out using a system provided framebuffer.
+> Ah, you have a point. Yes, the moving vmem allocation will solve the ordering
+> issue.
 
-The display controller is setup by the firmware but it might need a set
-of clocks, power domains, regulators, etc left enabled in order to work.
-
-It's true that the "simple" is a misnomer, probably these drivers should
-had been named sysfb and sysfbdrm, or something along those lines.
-
-> The driver code also has that support added in this series.
->
-> Regards
-> Luca
->
->>
->> Best regards,
->> Krzysztof
->
+...with moving from devm for the txbuf. Otherwise we would still have a
+problematic ordering with it.
 
 -- 
-Best regards,
+With Best Regards,
+Andy Shevchenko
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
 

@@ -1,92 +1,98 @@
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
+Received: from mail-oi1-f182.google.com (mail-oi1-f182.google.com [209.85.167.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D13F2F1FF8;
-	Fri, 27 Jun 2025 18:16:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 727D11E0B91
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 18:18:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751048173; cv=none; b=fH2Ok20u3kOWypIuf8qJloLyAFCa/iM+Ap9UTRq03nWgY7RfFK+WVJbTyEBe7a+gXJgdoQxk3xxs7TIgkCGx26Sz255LUMgACrDOh1huYqHt9dRA+qB9jhJ48n4tlE5NweT8gRhMsyAPtShjNhHN2RDQ1zJAVJP8wD4PVmQ7G0M=
+	t=1751048303; cv=none; b=GwMNLO/Q1/hATzofUUx1V+m+IGRoFAFJ6HGTF9AyK4n0w6Cv62ZFiZFGcQvkGPDzLody4w2jlBvu3VnpM5CzCHlfroW/JGyPX6QCm1jWLK9QHwmf8dNDC2FgRX7rzu3uXKQper90Gga61l111lHnwkKrLynOaL7qhBF2BBz3nD4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751048173; c=relaxed/simple;
-	bh=VZowV171Nm0XistGOKs74QOrZOr6h4Rge3MCAkEFp+w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=sWCpOBb9IYXI594cNBSgpM0mraOPBGzh4lCGtydQCctttThoAhK7xVcFOySEeiHGBv1Qm83zW8Fa5EPzrK0iMASMANwocih5WdNkRG1dEcuGw+fDr71i+2Ipo5SeZ9R02F4JRG4yPyWM0maXX6AVjjQ5InNmMVzCUDWcFjAzNkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fMGDOQ2a; arc=none smtp.client-ip=209.85.210.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751048303; c=relaxed/simple;
+	bh=KnagyrEME31deL6Qm0/gI5QVFeXMRzRv0VC11XZU6DM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rdt6QWW//uEqCeHWw6p9pdOoInL4yqMDU/ADpJOHBzresC7BFpONozhHGm2cHEhG55LWHu5i//x0BEBlgYFG25sHw6E/mVnoje1bkJ8MIa/l6XEaADBpV94vKGb+zT9u0QXIerY/6qXWdNtaO4k08QlLwQe/MIxCcghd29Ikh5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=yZqv1Fwg; arc=none smtp.client-ip=209.85.167.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fMGDOQ2a"
-Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-7424ccbef4eso196196b3a.2;
-        Fri, 27 Jun 2025 11:16:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yZqv1Fwg"
+Received: by mail-oi1-f182.google.com with SMTP id 5614622812f47-40abe6f8f08so148453b6e.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Jun 2025 11:18:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751048172; x=1751652972; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kntk2ixuTAPii9dFKPtCKI0goZYsmp2oBVmbclFPZEg=;
-        b=fMGDOQ2a2DZpXM5Gx2ooQMpa3jiVoH2EhAddEVj7i9BJ7oo5XeHbrwf0a2av2yuB3B
-         /bff07/WAH0kVyUxV3yYAw4sDwqAuxPKFQS2UZ9PF2Ux09UA9uHqG1QKwti4BErZHKw2
-         LsYMO+sJ9pJy0Lsb2+XVLG93CnuCaKfNsxkp6facl9eDFP6xg+aJpKbaQY7bOzyPeXQK
-         QQ0n7byZ5GOFNfTH+o5ZFjugcMjyQMNX2/Q+jPMaDF+d7RB8odL/S1aOLXvarDgedw66
-         4Hw+JJW9bPSrExkaNaknmCfFHVDr7hmAXafZ507B8DPWEAgc2blyeDWDhLM8wrhBFhgU
-         p2mA==
+        d=linaro.org; s=google; t=1751048300; x=1751653100; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=RFQ6dvglvO57dmQMqJ9TjNqvSIg15aNiE+cHR4uuLHU=;
+        b=yZqv1FwgSeK1w99BzolgPb+vZJkZydwvmvnymtRkbTT9AvbZrH154lHQ9yuWO1IdP8
+         SZT7NWvSQPc049qFD3uTRp8KwbjMNXbM3bSCh3YXEHOVOGjA+R3jqeZv19pGsmFr8R7m
+         QLjOqCepY0EizJ/2RWtVfPx3marJyGjLalZ2eEosQCuCzZaFg4SF6hjjTnKgoWafUY82
+         j2surN/9PvgxFfjveOgnDgTjKQ/G30chNiaRk7BDxLT4zHs9NVygPmLnR/1r1OrSrosX
+         4Tzs3GODdnxFCMUxcUHNNaqjCasaGSeRNNCsQdH92NMNfESRNdpyoLzl4HJZrYdmAWdo
+         0ZwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751048172; x=1751652972;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kntk2ixuTAPii9dFKPtCKI0goZYsmp2oBVmbclFPZEg=;
-        b=Nnsa0Le1N46D6xDV0ZKxMvl3t4Fycb5JcFdpo9keXG/T6plbTzRLUa0vq1TewjPAR0
-         6eL0MibyOG79wx57R9Gbz8Gn7FGdoqkEA5iIht2DKBP46YHCm+0zln5t17bUMKSD9GaX
-         XdAvMylPf43ehp2biP3tphl5QSuGLvoA8/lwboQ8urtD4Oh1WVDpGFCffWwtZJi/vK8b
-         dKmXvtNchEHJSIzVt2Bp2QTlyWk5WQ3b5tivlDAz27ScRB7YblfDz3MZHWsxXYOIVJxc
-         otAcqBB0ebjTIVj/mF0VPUSyVjO7DDUcqAvSYldEbOteLE3n5TaIuBckqWeU3ii8QLl3
-         e6/A==
-X-Forwarded-Encrypted: i=1; AJvYcCVJc4+G9UF/eo23xzRDUmAqLWx42r2RtkIKiFi5K/0xLPa1fyLBlZ7ozbDOwRCxKFZXuueRaEpdYEierg==@vger.kernel.org, AJvYcCVitzORhm6r3X1zCod83vYy8O9Lu+NStNN2BJ4bvTgeJknn4rQwOAusfdezLXb5dqML/sn7ZmxsXzPj8NQt@vger.kernel.org
-X-Gm-Message-State: AOJu0YwD45O/RlE86Pc8mpT++E9Ew+AzWeEHJUiLi0JvYSVXiyVybPGT
-	nFdnNTZfwwmjylp3vRwEeJ7RPGPxitaO2gIzVbpsK3BNHfQSQELzApYQ
-X-Gm-Gg: ASbGncsMsoxlX/w2QcTyIdDT2lDKg7xgLZTaV069ToW8Avz3EYRfogq5An4mWeDIFEu
-	AZVZpfp9s7ZbGbYlKA4OdNU1GmlEvWczoNSKfamiHL8ttqGX6eeNuW/hoLfaL9UnZ91YGYpm9p6
-	h2NSsLTnkhZlAoq/sTe38DTnJ3WlXI0kSiaW8J3i9XcF1nU+Q3FiGh5J4g2pyl/UokEiP+JZFPU
-	IXGqJdn4Xd2CsoiAxmqjjURDsDuKTtyPSnJgTwB5+mo8efAdIXa7E2ppDoMnaeLk0kyMEPlElJV
-	oJgT6FfDxbtmoDdjle1AubzjlRrKfQna8oV6Ebpde3um9BKghBNBoSKxe0Bfx/w=
-X-Google-Smtp-Source: AGHT+IGsfDuPOYSFYou4KXdl9S3Jhy/VdZYaWCldI0+7hD4gfeDCNDh3T2UzCz5JIyRObCJH/6ANUA==
-X-Received: by 2002:a05:6a00:3d0a:b0:748:e8c7:5a38 with SMTP id d2e1a72fcca58-74af70469b2mr6613546b3a.23.1751048171643;
-        Fri, 27 Jun 2025 11:16:11 -0700 (PDT)
-Received: from muxbit.. ([2401:4900:1cb8:b350:f061:66f3:baf1:5b2c])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74af520db66sm2648601b3a.0.2025.06.27.11.16.08
+        d=1e100.net; s=20230601; t=1751048300; x=1751653100;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=RFQ6dvglvO57dmQMqJ9TjNqvSIg15aNiE+cHR4uuLHU=;
+        b=VucCJqIlR6cfW6A9Tsd7qiVXICHoxIpefvcj5LrvAPDK6FdzMYDs6vIAEM/+hWxDgT
+         BRyRPpwE5ToeOoXA7NfA0xGHhbDspXxShtZyoMrwnS3rlFevdTw34qtlQYCDBnFAAATz
+         Pqc7cInGB7hIrdhCufg7FH0cgWGTQFZ1zipw1ia6SoU86jCROgG2uVvZ5UhWaFHgRPSw
+         qv6uVLOTkTT3U9YGm999uqy+jKM+I68i3XoRUsktPcuUvEIhBKO+7znauF9zYHNH+OJ9
+         mwPbIrTokf2AoQAQeTkkKNoIFBQ9FHH/4TZDfTLvSgZlC8XQTgVI7yeg/bV8xLvbs8Cc
+         4SBQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWcQ3IlihbLJCTRNU4uTDMpl3X69FB0fwpTBFMMy3twvfSmbbRsydaEi7nTlcVAU7C1VxtggAmyH/mX0g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyLPOG4s3RKOQKT6hMeU1EKWJFiDEUjAnPFW+M7PZaGgAOXxtys
+	c5AwXQm+qYmSBQysR55Li5I+5XUiTWXkH7Dslr7bIPPbg8+7JBinY21A07m/gJwGblY=
+X-Gm-Gg: ASbGnctIwyaT48KMXG5aCk2HmOSfJT1mffMylekc3YJ2jXVe/5Z/vRdNj/Y4NsD6XVf
+	B2wyQecmGCNcH6BWGzhezO3e1ZQVnJ9V9hBG7CjhAmy77lxe+4oZrTy5YgsTYZjocWzRH4K5teI
+	Tvgt0+Bev4FANSWWjKiT2PmIXsIY0OnYpl+G21kk8P5PrhJV/pQv8ReYWAi9mYhODoqOiv+d3pb
+	/TeU/Vq4kcPXpE/IOvtScVHZ0Bw6yeUZFKRuIE+CIms7AGurduWZsWhD8umc6BVkey6qSwuLYJT
+	6/hnOFFEhBE8TUMdLvIzmzcwkKqlw7sqdliINYHkPK1m5nT0pYnNg4Ae8EwPt/m3FmItqw==
+X-Google-Smtp-Source: AGHT+IGNlF1zWRk96uWanb6ceMhDRXk8o9BVkP04SNj4Cv73ZVCCKgq/Ftq8mRKK3WE38/WIleI/+Q==
+X-Received: by 2002:a05:6808:1887:b0:406:72ad:bb6b with SMTP id 5614622812f47-40b33e7da1bmr3836758b6e.37.1751048300543;
+        Fri, 27 Jun 2025 11:18:20 -0700 (PDT)
+Received: from localhost ([2603:8080:b800:f700:f3a4:7b11:3bf4:5d7b])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-40b322b5900sm456205b6e.18.2025.06.27.11.18.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Jun 2025 11:16:11 -0700 (PDT)
-From: Manish Kumar <manish1588@gmail.com>
-To: dan.carpenter@linaro.org
-Cc: gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	manish1588@gmail.com,
-	sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Subject: Re: [PATCH] staging: sm750fb: make g_fbmode[] a read-only pointer array
-Date: Fri, 27 Jun 2025 23:45:58 +0530
-Message-ID: <20250627181600.9814-1-manish1588@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <c8f5f917-8412-408d-9dd9-6635af8825a7@suswa.mountain>
-References: <c8f5f917-8412-408d-9dd9-6635af8825a7@suswa.mountain>
+        Fri, 27 Jun 2025 11:18:20 -0700 (PDT)
+Date: Fri, 27 Jun 2025 21:18:18 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Manish Kumar <manish1588@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: make g_fbmode[] a read-only pointer
+ array
+Message-ID: <6059b2f6-4408-41db-8abc-a8a0f38db28e@suswa.mountain>
+References: <20250627173120.7639-1-manish1588@gmail.com>
+ <c8f5f917-8412-408d-9dd9-6635af8825a7@suswa.mountain>
+ <CAAoxDjcYwV9JhRLGJ+opJLEU5j4RHYUt4XZ8E4R9DgF2VqZD8Q@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAAoxDjcYwV9JhRLGJ+opJLEU5j4RHYUt4XZ8E4R9DgF2VqZD8Q@mail.gmail.com>
 
-Hi Dan,
+On Fri, Jun 27, 2025 at 11:16:06PM +0530, Manish Kumar wrote:
+> Hi Dan,
+> 
+> Thank you for the review and pointing out the issue. You're right —
+> changing the array to `const` makes it unmodifiable, which breaks the
+> assignment logic in the driver.
+> 
+> I've reverted the change and will look for another checkpatch warning to
+> address for the next version of the patch.
+> 
 
-Thank you for the review. You're absolutely right — changing the array to `const` breaks the assignments that follow.
+Awesome.  Thanks.
 
-I've reverted this and will send a new cleanup patch later.
-
-Regards,  
-Manish
+regards,
+dan carpenter
 

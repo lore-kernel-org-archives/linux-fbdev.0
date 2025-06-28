@@ -1,95 +1,147 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3132B1DE4FB;
-	Sat, 28 Jun 2025 08:29:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DFCF1A5BAF;
+	Sat, 28 Jun 2025 11:49:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751099366; cv=none; b=eadgz1N5yxBN01FPWPXcADRLnxfy4MWsGn/PHa7ZdKQCi8i78YwR6gG5V3s5Y+LkUcDz6yM2/Voxs1f/fatbKtabmacG/7yoi2nv10yhnUqJwwJS+OKL4EsKwB1DMpVTemNbQeB0UGkBf6SOW+0B1NgsxOnxq5HLsMtBCpB2e80=
+	t=1751111364; cv=none; b=ee5/COg7YotZtkhAQKII/SP5BIQJCoB2FQoJj4sUaqm3hMEqpdwC045DURPxV/xDSvR9PnppMiwKghB7Y/6C9/3G7qXJM17FzCw/SfE1NOUPH6KOhhgAZrNsMmLpc0riN7dNeCx0Cw22DMdvuoxv5D1WQRvR4I/osPjucgAVPCs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751099366; c=relaxed/simple;
-	bh=XUVgWuL6+H8JHuXLgLLOh47JwD9EdzSN4VmosdXNanQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ph/3E3S+0ASi0Qyql6kKeKjmFHwAkc7qXHsYYDCyQh2u1hVWtCMNVIJdjpeaQjImEus2l+UAYzJs2sTMPl/KIgsTdDx6/Oy5SJPmM/rZMWoretKigwW6uMB6TX8MdEAFio0U1mSfoF4mC6frfaGlqU8p8COwd7ezsH2BzWXTuzw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=aR2nD0Uz; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751111364; c=relaxed/simple;
+	bh=7wm0KwICN7Mak9Wk8U1M1bgcudhZF8Rka+KJoP0pgh0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=p9iyCc9gPprrKM/I+FJMxUU678fXaqZeTLCuYTv+1b6tblo3rSxfxqdukXe/QGWVdpj3BggLmmM9kkyBeGdF6RVhWet+gFBqB2Kbc5vPBvXRE+uHP2wuu54Ln8AN6PHBJBABoC0Udf1n7kdbfscaVK75NzlWIKwtSn5DEEEcmHc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XltbDsSm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="aR2nD0Uz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44C2AC4CEEA;
-	Sat, 28 Jun 2025 08:29:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1751099365;
-	bh=XUVgWuL6+H8JHuXLgLLOh47JwD9EdzSN4VmosdXNanQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aR2nD0UzCyjc9hoxjEZGseN9z4YarsqTxr8HPEZLxYDklv/lWp7wNYLRYeBtT7lm+
-	 hvX6y+HmkgwQbT6MR/VknQ+tWeO+OWZXjpc5yzDcK3DUiX6wKGoJCS/c+/71ul6afS
-	 WwweIWqodgpHwlt5GT6vl76KqnfFt2FNVIV/x654=
-Date: Sat, 28 Jun 2025 10:29:23 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Manish Kumar <manish1588@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: fix all checkpatch warnings in .c and
- .h files
-Message-ID: <2025062806-fit-harness-3d72@gregkh>
-References: <20250628082305.20847-1-manish1588@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XltbDsSm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 329EAC4CEEA;
+	Sat, 28 Jun 2025 11:49:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751111363;
+	bh=7wm0KwICN7Mak9Wk8U1M1bgcudhZF8Rka+KJoP0pgh0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=XltbDsSm6pnbWAwyWwTvy5uSIVkeIoRQ2pHHeNb1hfNBzABMG/JI7g8GRy6T5dhg2
+	 ploeFFmCNI2dTA2ORgOHCg3kIxHFJzVcsfqN/rUvv/D7/5GSqAgedpAOtMkbQQouFk
+	 bUibwOOz89VV/2++PIr3G0K4pUdZy/sDLBJqj1HwfwRDPa8OBSiWDhmBxiocEVU/hO
+	 qeTJ0Q7ehnOp5QV3ZEDqO/MBtMAUl1jXN1VBabkIEZ8Zs4/0aw2BliK83oLPN7yYj0
+	 5Au/0XaRySwcZ71bYgsBDVtXmx0mU7TqB2EbZGYsXQzDwl2LnBjYZtZrw0B3o2Maaz
+	 gu/FyfjKRpSuA==
+Message-ID: <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
+Date: Sat, 28 Jun 2025 13:49:16 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250628082305.20847-1-manish1588@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
+ interconnects property
+To: Luca Weiss <luca.weiss@fairphone.com>
+Cc: Hans de Goede <hdegoede@redhat.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
+ <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
+ <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJoF1BKBQkWlnSaAAoJEBuTQ307
+ QWKbHukP/3t4tRp/bvDnxJfmNdNVn0gv9ep3L39IntPalBFwRKytqeQkzAju0whYWg+R/rwp
+ +r2I1Fzwt7+PTjsnMFlh1AZxGDmP5MFkzVsMnfX1lGiXhYSOMP97XL6R1QSXxaWOpGNCDaUl
+ ajorB0lJDcC0q3xAdwzRConxYVhlgmTrRiD8oLlSCD5baEAt5Zw17UTNDnDGmZQKR0fqLpWy
+ 786Lm5OScb7DjEgcA2PRm17st4UQ1kF0rQHokVaotxRM74PPDB8bCsunlghJl1DRK9s1aSuN
+ hL1Pv9VD8b4dFNvCo7b4hfAANPU67W40AaaGZ3UAfmw+1MYyo4QuAZGKzaP2ukbdCD/DYnqi
+ tJy88XqWtyb4UQWKNoQqGKzlYXdKsldYqrLHGoMvj1UN9XcRtXHST/IaLn72o7j7/h/Ac5EL
+ 8lSUVIG4TYn59NyxxAXa07Wi6zjVL1U11fTnFmE29ALYQEXKBI3KUO1A3p4sQWzU7uRmbuxn
+ naUmm8RbpMcOfa9JjlXCLmQ5IP7Rr5tYZUCkZz08LIfF8UMXwH7OOEX87Y++EkAB+pzKZNNd
+ hwoXulTAgjSy+OiaLtuCys9VdXLZ3Zy314azaCU3BoWgaMV0eAW/+gprWMXQM1lrlzvwlD/k
+ whyy9wGf0AEPpLssLVt9VVxNjo6BIkt6d1pMg6mHsUEVzsFNBFVDXDQBEADNkrQYSREUL4D3
+ Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
+ MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
+ OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
+ GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
+ 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
+ YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
+ 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
+ BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
+ JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
+ 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
+ YpsFAmgXUF8FCRaWWyoACgkQG5NDfTtBYptO0w//dlXJs5/42hAXKsk+PDg3wyEFb4NpyA1v
+ qmx7SfAzk9Hf6lWwU1O6AbqNMbh6PjEwadKUk1m04S7EjdQLsj/MBSgoQtCT3MDmWUUtHZd5
+ RYIPnPq3WVB47GtuO6/u375tsxhtf7vt95QSYJwCB+ZUgo4T+FV4hquZ4AsRkbgavtIzQisg
+ Dgv76tnEv3YHV8Jn9mi/Bu0FURF+5kpdMfgo1sq6RXNQ//TVf8yFgRtTUdXxW/qHjlYURrm2
+ H4kutobVEIxiyu6m05q3e9eZB/TaMMNVORx+1kM3j7f0rwtEYUFzY1ygQfpcMDPl7pRYoJjB
+ dSsm0ZuzDaCwaxg2t8hqQJBzJCezTOIkjHUsWAK+tEbU4Z4SnNpCyM3fBqsgYdJxjyC/tWVT
+ AQ18NRLtPw7tK1rdcwCl0GFQHwSwk5pDpz1NH40e6lU+NcXSeiqkDDRkHlftKPV/dV+lQXiu
+ jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
+ zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
+ XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
+In-Reply-To: <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Sat, Jun 28, 2025 at 01:53:05PM +0530, Manish Kumar wrote:
-> This patch resolves all checkpatch.pl --strict warnings in the
-> sm750fb driver source files, including both C and header files.
+On 27/06/2025 11:48, Luca Weiss wrote:
+> Hi Krzysztof,
 > 
-> Changes include:
-> - Replacing CamelCase identifiers with snake_case
-> - Avoiding chained assignments
-> - Fixing indentation, spacing, and alignment issues
-> - Updating function declarations and comment styles
-> - Making code conform to kernel coding style
+> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
+>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
+>>> Document the interconnects property which is a list of interconnect
+>>> paths that is used by the framebuffer and therefore needs to be kept
+>>> alive when the framebuffer is being used.
+>>>
+>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+>>> ---
+>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
+>>>  1 file changed, 3 insertions(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
+>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>> @@ -79,6 +79,9 @@ properties:
+>>>    power-domains:
+>>>      description: List of power domains used by the framebuffer.
+>>>  
+>>> +  interconnects:
+>>> +    description: List of interconnect paths used by the framebuffer.
+>>> +
+>>
+>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
+>> some sort of resources in unknown way is not simple anymore. You need
+>> device specific bindings.
 > 
-> No functional changes.
+> The bindings support an arbitrary number of clocks, regulators,
+> power-domains. Why should I artificially limit the interconnects to only
+> one?
+
+And IMO they should not. Bindings are not supposed to be generic.
+
 > 
-> Signed-off-by: Manish Kumar <manish1588@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c       |  90 ++++++++++---------
->  drivers/staging/sm750fb/sm750.h       |  32 +++----
->  drivers/staging/sm750fb/sm750_accel.c | 120 +++++++++++++-------------
->  drivers/staging/sm750fb/sm750_hw.c    |  24 +++---
->  4 files changed, 135 insertions(+), 131 deletions(-)
+> The driver code also has that support added in this series.
 
-Hi,
+That's not the problem here.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
 
-You are receiving this message because of the following common error(s)
-as indicated below:
-
-- Your patch did many different things all at once, making it difficult
-  to review.  All Linux kernel patches need to only do one thing at a
-  time.  If you need to do multiple things (such as clean up all coding
-  style issues in a file/driver), do it in a sequence of patches, each
-  one doing only one thing.  This will make it easier to review the
-  patches to ensure that they are correct, and to help alleviate any
-  merge issues that larger patches can cause.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot
+Best regards,
+Krzysztof

@@ -1,167 +1,97 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 974BA214A94
-	for <linux-fbdev@vger.kernel.org>; Sun, 29 Jun 2025 12:08:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF6782367AF;
+	Sun, 29 Jun 2025 14:23:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751198887; cv=none; b=ooINryHARcxocZJxyhFLuJqOmS0F81+gjqlkZNqVXoSV9Q+a6JKVXqIq17IMgjGfM2Zqcopajp2cxMzBhpAmN762pmQyiAITiCL45aUfYkVk1XdOxzYO8YStUgK9Aq4ASrPIxMDJ5g7tmAcR6K4aPmJFqym3qCi3kYyu86NYp/o=
+	t=1751207004; cv=none; b=JChJWbiGfwzqYE6MmBtaM1ZZyp/JzPt1NHfk+mLJJtw5tGDb3eVEmy3MRHzQSiKjM1X8MNZ2XZh6LOwPJFTOvyRkiv6EJZLW7Cr2Sfl3PeW3WFmPDrXnwLRsdAPTuvef+QZsAUr/7gLCh2iuJp1NOuRILwxvJ8mm9WO7t6yriCM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751198887; c=relaxed/simple;
-	bh=Bd4ZFb5mI/vt0MlkmiVCP1yVrwm4sXAQYCfiPh8N3BA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RdIJ77y97c5XVTJcBt2zvnn3DmNXUwFTVKJXwkGpNsW9lZ/pn7E4ZDxS1GHJIHoe12+ghuckWPVEIIVnGrru891VbfLCMjRSx29wuMfA91k8fM/1ZTnJmTkRO9FPGtKzp23lH2aMRMIFyQP3CRgX1+Pcu9T991xbFUSX5H+Ilro=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=AcSwfLw+; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1751207004; c=relaxed/simple;
+	bh=nAzkLf6fByBaHr2zsZXR+WogUuCuVekqUNUPbP7vlYk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BCEukwPVS6XFbAFB7yXa5TtXOulDVzVUmfbvkfEacCuWe94hR8YpzyinljjRKTMNb44CUR598r0e7RDnvWJfiavASEUKQoiyl6r56X6rRwvE7V1nhMYMuSqVI9idxWD6uuKEHIlwoS7oVc2rIKBnn7Ahv+Qg61lT6ISB1Yj1y1g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Pfzka5qg; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="AcSwfLw+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751198884;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y61uksNXY3bfxfbmhRvj/wWi6127GwpvTiXCWAuJy7Y=;
-	b=AcSwfLw+eR77dtav8RM5UgkU0RGUt+2bIs7ZQjYUEjgx5mZjp1u36XjAjuwdhhpYiW2JAW
-	xzTVFrRSE2AxHXqIdsPjQS+g1gkB9spo/OrjUaahDOpHBjlIqBfAkioc1IRmqxGOFEl7L8
-	CYklQjDBIiJZ7xh8FEjOTut4cwSKuSg=
-Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
- [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-692-Gi0A26P2OBysWZRnsmWfqQ-1; Sun, 29 Jun 2025 08:08:02 -0400
-X-MC-Unique: Gi0A26P2OBysWZRnsmWfqQ-1
-X-Mimecast-MFC-AGG-ID: Gi0A26P2OBysWZRnsmWfqQ_1751198881
-Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-ae0d798398bso248903166b.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 29 Jun 2025 05:08:02 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Pfzka5qg"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-236377f00easo12778685ad.1;
+        Sun, 29 Jun 2025 07:23:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751207002; x=1751811802; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4XmE3HNeFPwhvV3YapnRmO/5DkoCIHrdHE5yflvWYiA=;
+        b=Pfzka5qgLdul3Gb1rfEqLZHPfPHl3vUmUDCaKp+R3D3jSWWy6weXW6qIHFS4B4n7Zb
+         uL4GDGo72r49p873rKIhEYsea9uteMWeFzrlUS+Q0cVfvPL1H4+5G7j8/1IWm81Lz933
+         S76GkMlmOe2GxcBYhHbZZkRwt9DbHct1CHDqF8F8Y91ZXPvE4T4wZWjJhohI2qpGKC8V
+         OjVkvaw41HAwO5bHo1oiJrWXEWHnvjGOy5eAP5PPT8DhyHAhxMLIJjRjST4GFDBd7/yg
+         6/0sLu4x7EBlYVcWL2+vvcbn27ECnRRu2h44/77QkEg3Cr7n3/c/I8P1ZLTgnVOyqg2I
+         H2YQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751198881; x=1751803681;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Y61uksNXY3bfxfbmhRvj/wWi6127GwpvTiXCWAuJy7Y=;
-        b=VcDTxCQq8pnB8eW5rqq+MTzvOwyRp8Y+A3uTqtmdXcnsU8hZwWSZ29TBk2LBZDI3EX
-         0AVLBkedTEZcqxIy2ngctTO1Xd7NzV2b/s6X6rXlLca/kqYCKUQYQEzf6Q70d0Iv6oQq
-         c6jCc0eln39w2uzu1gqqWBrHu2VdJ/kJQoZ0g4kQe1rjj/7zFzVKI0qzD0Acg7iZbK04
-         iKmH8teHEDJs6ck0A8JXg6Lur/AfuDEg4m8k0O6iy7FRxMT8dyRAvo19wQsLX3iQ7GUc
-         LVR28Smbvv8OBs9QK4r0TNm4fbP0KENF0q9wzgYmf4gx7tY0YWSjD71plVlaXQHrWVTL
-         pvQg==
-X-Forwarded-Encrypted: i=1; AJvYcCXI/et+shVnkJauzyuTZUlxpkdbJR03oP+ZVNxnrXOIcFdJiEPPw1STwV09lPPZoWhMxfdyEwuUCNidLA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyWaMPXgd9VldomSs19+E6m/+a7tx/mbRF34BR1bldt9Xfs71FM
-	iTDg5lwZaZ7ONgU35RDtQTFpgG4rkCotJPJjFchf0iCLKjhQNZ1UftV8FoET5jxVqgimiqBsyRo
-	BdN2n9U9XkitNLoDG7xD+xkuvS7UJyZ6Js2XrniqGba5F3ShNVew10XD8wCpJdjq4
-X-Gm-Gg: ASbGnctFVaRmyGdkwZzEuhBf3MfmdoKIzqNWUgdviB2dToiF2ozah2WIvBu6I+AVSsL
-	QiMVb5En++lb5yYnFcBmvsUh1H8cCXVfPRIuIt0xB/3QiedSP06JIb78KqFNlDV43h78n4Rcs7e
-	pWhEDc3I9FuiiWS3BmDad0+i+Ms/SZNDbnpMFz/Ds3sVquht9YyGbqp9vDzvbelPYN50lXSTLHC
-	FRZU3pt9KrvvQ74oC9GV7SMhwayAGFBueEx4uoxwi1hWSKxusXclODSjSvVO8EHmcxszQP/04rZ
-	nDdr6wL/zCvfVzXCe9l/+hhLhTNd5WhFQtUd6dg8XOb0ZPpS+hxKD21Mhy2o1IPZppyMO1oUpfm
-	t7O4TEdw52OXkDkIjiV0hlCEnfP7eloZR01ukiOwMLWJREiFR3D+P+eN3BSFJ+/ME0qxkYjgdwA
-	==
-X-Received: by 2002:a17:907:7207:b0:ae3:6b52:f7dd with SMTP id a640c23a62f3a-ae36b52f88amr514353666b.46.1751198881151;
-        Sun, 29 Jun 2025 05:08:01 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IET079+lNS2Zrgoqy9+whMR/tx3pQQ8PudfiWv0ZLtWOTerBzl2nFJIzCBrV1Me9yEUFQUboA==
-X-Received: by 2002:a17:907:7207:b0:ae3:6b52:f7dd with SMTP id a640c23a62f3a-ae36b52f88amr514350466b.46.1751198880619;
-        Sun, 29 Jun 2025 05:08:00 -0700 (PDT)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae353c6bc2dsm490353166b.136.2025.06.29.05.07.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 29 Jun 2025 05:07:59 -0700 (PDT)
-Message-ID: <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
-Date: Sun, 29 Jun 2025 14:07:58 +0200
+        d=1e100.net; s=20230601; t=1751207002; x=1751811802;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4XmE3HNeFPwhvV3YapnRmO/5DkoCIHrdHE5yflvWYiA=;
+        b=pbxoLsHTDaTlW9oMziNejOP1nNgy/GMrVH/4C5AGm9MnqnDnv5CeVOF4KLsfufwy6g
+         zpqvrnZongIiLhqJElafkJ5mZWsKwA/9qk77awcY1eoktM8TrBREss70cXwUdAiTwP/C
+         cLs1RzPRTdkKKLYSHnS9wSAFoLFX8MjulL+5qP9FRJK2s6dpQZRjA4hZ+2PmOzEsUCeH
+         vp1a4aWTFTQfYjFyQ2/Mxmm9zukbeQsagcR352snZmDB29jdqy72yU8P97AoWthaAGUI
+         8JG1bQuFhQ74cN3c+aoIZL2YpSsfxRHFJgaHPL+/Zax/7BBEQWwd11mTJvHvrCUn3aqb
+         74Qw==
+X-Forwarded-Encrypted: i=1; AJvYcCWM0137MPlifS9M11hLPZw61DvusV/d1tz/OteViWyBVvEATGwD159TxoKPMrF7qWn9/0SP6rtHV2ZJj92h@vger.kernel.org, AJvYcCWpF0F3dNtzVsmIZJ1fSfApM1+X1dTFjx44HJAZ9A+rna/PMLIatGev8tUJluxxmdNdF1idfK7in4nX9w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwsD66A1+zY3EoLYb8J9BYrIc4sD14th7OmTO5zc/jY4sNpdSi3
+	L0ntIQ/g8pV1oxOn20j2XU/vFGpdC4u1jCLq7n6h8e3tThkQ0WwP2InW
+X-Gm-Gg: ASbGncvsB7UAUerUhFMOPq9pBRClROx8jeH5JiuXVBCPb0L8XKB2CyWeQBJy8sWallc
+	vr59lfug3OGkkmkaAR5W3KBqTjdOO5GbabF1Y8lbcfasj0KNIIt/hIEHDSX3lc2Vcu1AFlvrpAv
+	rxOX1qG3JcA+cCT8vo5F9rGqWDD0W9O2/K7cjieeT1K+Q2UuHkJS4Pv59hyjjAwfMQ/q5P+OBCm
+	Ud4rxbk0xZBmWjf54b34+p6vwhLFT4cRhIRbyi2gdU1o5pfo4+j5tWqgpBSPyblhzz40zwcjem4
+	s6S7+kZavr2Q5x7fMxABu25KhCGLX7ia7X9H619koSZ9457HzOad6J0=
+X-Google-Smtp-Source: AGHT+IHXD8nXRq9dLp21pFDQyRXR7/wWUgH4S+2XEaLAGY7dzwkGVIgjA3e+5v3+0oNfgBvPx8YFhQ==
+X-Received: by 2002:a17:903:1aad:b0:234:ef42:5d5b with SMTP id d9443c01a7336-23ac3deb9a5mr167279295ad.16.1751207002043;
+        Sun, 29 Jun 2025 07:23:22 -0700 (PDT)
+Received: from essd ([49.37.221.186])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23acb39bd67sm60442735ad.136.2025.06.29.07.23.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 29 Jun 2025 07:23:21 -0700 (PDT)
+Date: Sun, 29 Jun 2025 19:53:12 +0530
+From: Abdun Nihaal <abdun.nihaal@gmail.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: andy@kernel.org, dan.carpenter@linaro.org, gregkh@linuxfoundation.org, 
+	lorenzo.stoakes@oracle.com, tzimmermann@suse.de, riyandhiman14@gmail.com, 
+	willy@infradead.org, notro@tronnes.org, thomas.petazzoni@free-electrons.com, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@intel.com>
+Subject: Re: [PATCH v2 2/2] staging: fbtft: cleanup error handling in
+ fbtft_framebuffer_alloc()
+Message-ID: <eemnoitjhvt3nkt6k66dl6p75zqvsdttalyncfg2dqs2bcbkgy@pvr5wgx3x5xz>
+References: <cover.1751086324.git.abdun.nihaal@gmail.com>
+ <62320323049c72b6e3fda6fa7a55e080b29491e8.1751086324.git.abdun.nihaal@gmail.com>
+ <CAHp75VeSYesZuJ-NEfEAvaRepEUtdLmxGrYmthD1YkSg-bsK_g@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-To: Krzysztof Kozlowski <krzk@kernel.org>,
- Luca Weiss <luca.weiss@fairphone.com>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
- <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
- <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
- <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
-Content-Language: en-US, nl
-From: Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHp75VeSYesZuJ-NEfEAvaRepEUtdLmxGrYmthD1YkSg-bsK_g@mail.gmail.com>
 
-Hi Krzysztof,
-
-On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
-> On 27/06/2025 11:48, Luca Weiss wrote:
->> Hi Krzysztof,
->>
->> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
->>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
->>>> Document the interconnects property which is a list of interconnect
->>>> paths that is used by the framebuffer and therefore needs to be kept
->>>> alive when the framebuffer is being used.
->>>>
->>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
->>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->>>> ---
->>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
->>>>  1 file changed, 3 insertions(+)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
->>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>> @@ -79,6 +79,9 @@ properties:
->>>>    power-domains:
->>>>      description: List of power domains used by the framebuffer.
->>>>  
->>>> +  interconnects:
->>>> +    description: List of interconnect paths used by the framebuffer.
->>>> +
->>>
->>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
->>> some sort of resources in unknown way is not simple anymore. You need
->>> device specific bindings.
->>
->> The bindings support an arbitrary number of clocks, regulators,
->> power-domains. Why should I artificially limit the interconnects to only
->> one?
+On Sat, Jun 28, 2025 at 10:58:20PM +0300, Andy Shevchenko wrote:
+> > +       struct fbtft_par *par = info->par;
+> > +
+> > +       if (par->txbuf.len > 0)
 > 
-> And IMO they should not. Bindings are not supposed to be generic.
+> Do we really need this check? If txbuf.buf is kept NULL (please, check
+> this), the kfree() is NULL-aware.
 
-The simplefb binding is a binding to allow keeping the firmware, e.g.
-uboot setup framebuffer alive to e.g. show a boot splash until
-the native display-engine drive loads. Needing display-engine
-specific bindings totally contradicts the whole goal of 
+I assumed that the par->txbuf.buf may be uninitialized, but I checked it
+now and it uses kzalloc to allocate, so it must be NULL to begin with.
 
-It is generic by nature and I really do not see how clocks and
-regulators are any different then interconnects here.
-
-Note that we had a huge discussion about adding clock
-and regulators to simplefb many years ago with pretty
-much the same arguments against doing so. In the end it was
-decided to add regulator and clocks support to the simplefb
-bindings and non of the feared problems with e.g. ordening
-of turning things on happened.
-
-A big part of this is that the claiming of clks / regulators /
-interconnects by the simplefb driver is there to keep things on,
-so it happens before the kernel starts tuning off unused resources
-IOW everything is already up and running and this really is about
-avoiding turning things off.
+I'll remove the check, and send a v3.
 
 Regards,
-
-Hans
-
-
-
+Nihaal

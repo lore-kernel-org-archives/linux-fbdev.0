@@ -1,92 +1,44 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 375B1255F49
-	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 10:11:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C63B5259CBF;
+	Mon, 30 Jun 2025 10:45:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751278263; cv=none; b=r5adEkHFs9PBl88NhKQfD/KH7buh+5OhQ6h2391DLeq37A+5Q+vmzaMh3QxMTdWcJiRxI+bOlFzKZofO0crbY95BPfM0+SRDDkjUhvFDr8AT0dodChCI+mgj/fKIKq0/xHONgBJm7QQRyeBB21SQ+8Psp4uhswxJhC1sPE03Tj4=
+	t=1751280310; cv=none; b=g7eGo3bK8jBw0ciQypCGI4p4pcN588F4wpRXnkeQ1XLFwZ9IM2n+hTD4IjYMgOm+whJHCPHG3KLSmLXc550jqA/xlLo4cIt3PbSR1/avJTgWDxpoWJGrTGL+wnUm4t9THD4vuVGWhYIdY/uggkpmvEAjYUp8rHTnKkSPP5Zostk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751278263; c=relaxed/simple;
-	bh=q1THjVn1VpIgW56NWxwaDH7UQqOVPhom8dNRs+AxCHE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=a/8O4H1D06qTAbWTpGG6PQWemQknwpH2ZVd9ui1oVGQ32ITkhsbdc+ERGjuffjnHavOdC1BYQGBpByO+YjD5KEiEaEO0s66RmScRxJZQ86ZYUyihwK1zVYB/0Zr3+Wzzv378FlZVTIDFC16HVL+9QX65xroD6Lrh+J3HpAJIMc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=C450icFA; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1751280310; c=relaxed/simple;
+	bh=wXMWujE7XchWdZ1zs2TcjwFnfNGsISRibnIGmp2rHBg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Xd6wgnBOti4gve8SMRvyoDF2CGVi2n1naRzK6eqhFsXdxtl8XSluEKBvnZSM/oNE9CAgLsiIFk6gL5tCPhUqDDdpdh5z7NEzb5oWnO3Xs/0wZ0SG1Wxo+EJosGkkUEhCK07i8EAEnqz3/MP45WBrj+I30A3tLf3o/ZozuTg4kr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wv8UFVB1; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="C450icFA"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751278260;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9A7R1NMgwmGs+rq/3fZEJMO/E+9JHfs2TTptrHFa6kI=;
-	b=C450icFAfvvh11Qpg1g1g06gf/CNVpI9Vn1GxeUSH+QRavgdIkMvFp73hu2P8WaKYLgHId
-	4YZZg68CKwlZkBFQN4fsgyU0xctKiLKzlgYqv4TRzPYpDwByvgT1+sG5RZM9ZJRNV2EZML
-	aQt8/S4S6NWfkAVkvV3p6VlEBQT18VA=
-Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
- [209.85.218.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-557-vSsMPsQ5NICyzXH82xW9AA-1; Mon, 30 Jun 2025 06:10:58 -0400
-X-MC-Unique: vSsMPsQ5NICyzXH82xW9AA-1
-X-Mimecast-MFC-AGG-ID: vSsMPsQ5NICyzXH82xW9AA_1751278257
-Received: by mail-ej1-f69.google.com with SMTP id a640c23a62f3a-adb33457610so203668266b.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 03:10:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751278257; x=1751883057;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9A7R1NMgwmGs+rq/3fZEJMO/E+9JHfs2TTptrHFa6kI=;
-        b=cbxUNd/1B8oVc1hYebBRfOwtb5YO8LVi/fmbV7t82x796C3rRHp/xdd8B/QBzzPuGz
-         ZMvovygp2w59qzSpTeXQJxj/PE6LrwZc/+eQQKmRWwvRde7D6atENFbUKsYv/XPX795Q
-         gUIsxVKo2g0A2NDZ3DpA2kpbofcAd+8pATXyIn31wZQBc2LRo2dzIoTx9SBFiXSjKbZ4
-         chQgzhlV1LBP2jJSrILb5WBTn6fW+mp1FqPkSoGY0HARX1VN8PM5DieVHaquy37K5M+3
-         bcYLKA3QHc9EmXIBJl96sw34L6Um1vA3K2MBSthbhk5gIgnWbSGIkonl4BcIYqa4ggX2
-         YzhQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVOPsgZlhvIwtANW3GW28b41vUP5daAbtm0VBwdHv11LGlJt7K4T3MciCS3BarEOqlL2jVQQNL7tDQTeg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxFtn9PV1Zmb3DWfKwv4kmxLUT2Q/LKgpjIqLTjDWMGqcTOZPe/
-	FDuDm1jOTSf1nsxaUjRKWsGUAONzIspjPnd+c8W0m5QX+qsNDNa1S9+AaEOxysn0WR4NpLW3Kc/
-	eg9cU0+CrSxdHcgGW/OjKWPwzrLrRg6PLSf+eLGwaElj1EAEgwcaPzCR7zSW3oII9
-X-Gm-Gg: ASbGncu9VcaiD5WugGkPTqum1n6rFwWqhw/RD2bIOMAVyZ3mklMZthlDcPswP08nFSB
-	8O4Xp1mFl9tidMm4Db3ubNPXdKxrrCzo2p3Gm9fZ5/lDI2LaIwe1Gu0l+fuFFkBrlD3AJUPkB8u
-	dsTPORBvbv0mjvVXiQYsenLkyp86J4Qi/wRiAWjMmDunXwcysCcwVNq5/jL/DouUXAXJfyowOSK
-	6FXdLqn3nk5U7pjRM+VNrOvlBpnXaaHKua1y4bniI3c24ku6QZ7rjTXicO5ekzclXAGkRyzZNJ/
-	3Bo6KNGqHZsSWL/yPc85GlkZsOLZMU8wdB5A3L2EPfwmTPvE/D2/f+DvyYheSsnwgqJaz63ranL
-	18nepzJ6Bwe7eiK6n0/EzhdSYFKDwEnR/VNn/iUdlE+oCrMpEhBcMA883m6efb542/VLwzbz/Yw
-	==
-X-Received: by 2002:a17:907:2d90:b0:ae0:cde3:4bbd with SMTP id a640c23a62f3a-ae350105a64mr1132307566b.44.1751278256885;
-        Mon, 30 Jun 2025 03:10:56 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IE8QLpRvbfPVUFa7p0t3e8hsAtXsONL5FPVYF4A4uxvUKJ0kZK4E7910YTHu2a3V2kjkojunQ==
-X-Received: by 2002:a17:907:2d90:b0:ae0:cde3:4bbd with SMTP id a640c23a62f3a-ae350105a64mr1132304666b.44.1751278256380;
-        Mon, 30 Jun 2025 03:10:56 -0700 (PDT)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae353c6bbf2sm633581266b.129.2025.06.30.03.10.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 30 Jun 2025 03:10:55 -0700 (PDT)
-Message-ID: <484bb47b-3e20-41fa-a4e4-f8fe2369d7df@redhat.com>
-Date: Mon, 30 Jun 2025 12:10:55 +0200
-Precedence: bulk
-X-Mailing-List: linux-fbdev@vger.kernel.org
-List-Id: <linux-fbdev.vger.kernel.org>
-List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wv8UFVB1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D78F1C4CEE3;
+	Mon, 30 Jun 2025 10:45:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751280310;
+	bh=wXMWujE7XchWdZ1zs2TcjwFnfNGsISRibnIGmp2rHBg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Wv8UFVB1aU4AvzIw1ixfToJE1xEcqMoMHqYghwS78xjMENr06K8/DX6FHA3Mf3wDe
+	 Eo1Rr3ee6ZGEWGAmOKgF1i6f3GVlN3nDpwd+riFvj5z/BPnxA4R0AWJn0S6DItq05o
+	 8WK0Bl96+tRkn2HLbNoy1AJcIEkXViT3bIG340LONbwIuedqpekwlBzGYT9X4XwUWX
+	 W5ORZ8Ej2+zfwfiortCTzgSvQfJZ+6FspsFztS+1QHk2wTxbd7yzXeKoo4fZvrHJLW
+	 umdUfe8Bu2okJ3c99tNMqapZJfNw1yTPvNhE12oaOwYI3iQDTghzvzB50ZWBwK6TSh
+	 hvPlygaXqrocg==
+Date: Mon, 30 Jun 2025 12:45:07 +0200
+From: Maxime Ripard <mripard@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, 
+	Luca Weiss <luca.weiss@fairphone.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
  interconnects property
-To: Krzysztof Kozlowski <krzk@kernel.org>, Maxime Ripard <mripard@kernel.org>
-Cc: Luca Weiss <luca.weiss@fairphone.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>,
- Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Message-ID: <20250630-tapir-of-astonishing-artistry-ad0bd8@houat>
 References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
  <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
@@ -96,132 +48,144 @@ References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
  <20250630-stirring-kiwi-of-adventure-8f22ba@houat>
  <b9f010ca-1564-4a3a-b004-ef179d5c90a6@kernel.org>
-Content-Language: en-US, nl
-From: Hans de Goede <hdegoede@redhat.com>
+Precedence: bulk
+X-Mailing-List: linux-fbdev@vger.kernel.org
+List-Id: <linux-fbdev.vger.kernel.org>
+List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha384;
+	protocol="application/pgp-signature"; boundary="2z4ar3mqh5a4nutv"
+Content-Disposition: inline
 In-Reply-To: <b9f010ca-1564-4a3a-b004-ef179d5c90a6@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
 
-On 30-Jun-25 11:36 AM, Krzysztof Kozlowski wrote:
+--2z4ar3mqh5a4nutv
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
+ interconnects property
+MIME-Version: 1.0
+
+On Mon, Jun 30, 2025 at 11:36:51AM +0200, Krzysztof Kozlowski wrote:
 > On 30/06/2025 10:38, Maxime Ripard wrote:
->> On Mon, Jun 30, 2025 at 10:24:06AM +0200, Krzysztof Kozlowski wrote:
->>> On 29/06/2025 14:07, Hans de Goede wrote:
->>>> Hi Krzysztof,
->>>>
->>>> On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
->>>>> On 27/06/2025 11:48, Luca Weiss wrote:
->>>>>> Hi Krzysztof,
->>>>>>
->>>>>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
->>>>>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
->>>>>>>> Document the interconnects property which is a list of interconnect
->>>>>>>> paths that is used by the framebuffer and therefore needs to be kept
->>>>>>>> alive when the framebuffer is being used.
->>>>>>>>
->>>>>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
->>>>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->>>>>>>> ---
->>>>>>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
->>>>>>>>  1 file changed, 3 insertions(+)
->>>>>>>>
->>>>>>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>>>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
->>>>>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>>>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>>>>>> @@ -79,6 +79,9 @@ properties:
->>>>>>>>    power-domains:
->>>>>>>>      description: List of power domains used by the framebuffer.
->>>>>>>>  
->>>>>>>> +  interconnects:
->>>>>>>> +    description: List of interconnect paths used by the framebuffer.
->>>>>>>> +
->>>>>>>
->>>>>>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
->>>>>>> some sort of resources in unknown way is not simple anymore. You need
->>>>>>> device specific bindings.
->>>>>>
->>>>>> The bindings support an arbitrary number of clocks, regulators,
->>>>>> power-domains. Why should I artificially limit the interconnects to only
->>>>>> one?
->>>>>
->>>>> And IMO they should not. Bindings are not supposed to be generic.
->>>>
->>>> The simplefb binding is a binding to allow keeping the firmware, e.g.
->>>> uboot setup framebuffer alive to e.g. show a boot splash until
->>>> the native display-engine drive loads. Needing display-engine
->>>> specific bindings totally contradicts the whole goal of 
->>>
->>> No, it does not. DT is well designed for that through expressing
->>> compatibility. I did not say you cannot have generic fallback for simple
->>> use case.
->>>
->>> But this (and previous patchset) grows this into generic binding ONLY
->>> and that is not correct.
->>
->> Can we have a proper definition of what a correct device tree binding is
->> then?
->>
->> It's a bit surprising to have *that* discussion over a binding that is
->> now well older than a decade now, and while there is definitely some
->> generic bindings in ePAPR/DT spec, like the CPU ones.
-> 
+> > On Mon, Jun 30, 2025 at 10:24:06AM +0200, Krzysztof Kozlowski wrote:
+> >> On 29/06/2025 14:07, Hans de Goede wrote:
+> >>> Hi Krzysztof,
+> >>>
+> >>> On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
+> >>>> On 27/06/2025 11:48, Luca Weiss wrote:
+> >>>>> Hi Krzysztof,
+> >>>>>
+> >>>>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
+> >>>>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
+> >>>>>>> Document the interconnects property which is a list of interconne=
+ct
+> >>>>>>> paths that is used by the framebuffer and therefore needs to be k=
+ept
+> >>>>>>> alive when the framebuffer is being used.
+> >>>>>>>
+> >>>>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+> >>>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> >>>>>>> ---
+> >>>>>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yam=
+l | 3 +++
+> >>>>>>>  1 file changed, 3 insertions(+)
+> >>>>>>>
+> >>>>>>> diff --git a/Documentation/devicetree/bindings/display/simple-fra=
+mebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffe=
+r.yaml
+> >>>>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043df=
+b2b220c654b80e2e80850cd 100644
+> >>>>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffe=
+r.yaml
+> >>>>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffe=
+r.yaml
+> >>>>>>> @@ -79,6 +79,9 @@ properties:
+> >>>>>>>    power-domains:
+> >>>>>>>      description: List of power domains used by the framebuffer.
+> >>>>>>> =20
+> >>>>>>> +  interconnects:
+> >>>>>>> +    description: List of interconnect paths used by the framebuf=
+fer.
+> >>>>>>> +
+> >>>>>>
+> >>>>>> maxItems: 1, or this is not a simple FB anymore. Anything which ne=
+eds
+> >>>>>> some sort of resources in unknown way is not simple anymore. You n=
+eed
+> >>>>>> device specific bindings.
+> >>>>>
+> >>>>> The bindings support an arbitrary number of clocks, regulators,
+> >>>>> power-domains. Why should I artificially limit the interconnects to=
+ only
+> >>>>> one?
+> >>>>
+> >>>> And IMO they should not. Bindings are not supposed to be generic.
+> >>>
+> >>> The simplefb binding is a binding to allow keeping the firmware, e.g.
+> >>> uboot setup framebuffer alive to e.g. show a boot splash until
+> >>> the native display-engine drive loads. Needing display-engine
+> >>> specific bindings totally contradicts the whole goal of=20
+> >>
+> >> No, it does not. DT is well designed for that through expressing
+> >> compatibility. I did not say you cannot have generic fallback for simp=
+le
+> >> use case.
+> >>
+> >> But this (and previous patchset) grows this into generic binding ONLY
+> >> and that is not correct.
+> >=20
+> > Can we have a proper definition of what a correct device tree binding is
+> > then?
+> >=20
+> > It's a bit surprising to have *that* discussion over a binding that is
+> > now well older than a decade now, and while there is definitely some
+> > generic bindings in ePAPR/DT spec, like the CPU ones.
+>=20
 > Hm? In ARM world at least they are specific, e.g. they have specific
 > compatibles.
-> 
->>
->> If you don't consider that spec to be correct DT bindings, please
->> provide a definition of what that is, and / or reasonable alternatives.
->>
->> Also, no, a device specific binding isn't reasonable here, because we
->> *don't* have a device. From a technical standpoint, the firmware creates
-> 
+>=20
+> >=20
+> > If you don't consider that spec to be correct DT bindings, please
+> > provide a definition of what that is, and / or reasonable alternatives.
+> >=20
+> > Also, no, a device specific binding isn't reasonable here, because we
+> > *don't* have a device. From a technical standpoint, the firmware creates
+>=20
 > You touch internal parts of the SoC and you list very specific SoC
 > parts. Interconnect is internal part of the SoC and only specific
 > devices are using it.
-> 
+>=20
 > You define here generic SW construct for something which is opposite of
 > generic: the interconnect connecting two specific, unique components of
 > one, given SoC.
-> 
->> the framebuffer, Linux just uses it. Just like you don't have a
->> device/platform specific compatible for PSCI, SCPI, et al.
-> 
+>=20
+> > the framebuffer, Linux just uses it. Just like you don't have a
+> > device/platform specific compatible for PSCI, SCPI, et al.
+>=20
 > They follow some sort of spec and still they do not reference chosen
 > SoC-design-specific properties.
 
-It does not look like this discussion is going anywhere,
-despite 2 drm subsystem maintainers and the simplefb
-maintainer telling you that this is what is necessary
-and also that we believe this is the right thing todo.
+ish.
 
-IOW despite 3 domain experts telling you we want this,
-you keep coming up with vague, not really technical
-argument about this not being generic / simple enough.
+I mean, on theory, you're absolutely correct. In practice,
+assigned-clock-parents, assigned-clock-rates, or protected-clocks for
+example exist and are *only* about SoC-design specific behaviours.
 
-Looking at this from a driver pov interconnects are just
-another resource we need to avoid from turning off.
+Maxime
 
-And this is simple and generic, the actual display-engine
-drivers are very complex and when powering things up
-this needs to be done in a very specific order with
-specific delays. That is hw-specific. The simplefb/simpledrm
-code does not need any of this knowledge everything is
-already setup. The simple* drivers just needs to claim all
-listed resources in an arbitrary order and without any delays
-as someone who has written many many drivers this is
-about as simple and generic as it can get.
+--2z4ar3mqh5a4nutv
+Content-Type: application/pgp-signature; name="signature.asc"
 
-But as mentioned it looks like this discussion is going
-anywhere. Is there some sort of arbitration / appeal
-process which we can use when DT-maintainers block
-a binding which has been acked and is seen as necessary
-by the subsystem maintainers of the subsystem for which
-the bindings are ?
+-----BEGIN PGP SIGNATURE-----
 
-Regards,
+iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCaGJqrwAKCRAnX84Zoj2+
+dh39AX9zdlE7lH+G78LqemzNaC1qyQx2EBeMEMVM3nimVQN4kHOYHHm+tp+q2szm
+O8OMuqkBgMxiYf+EbLKsRFdu5yB6Q8lQ1WgOmR8mtOKsPjecd8iby7KGmzt/2n/d
+5IpPDuJG2w==
+=h3OD
+-----END PGP SIGNATURE-----
 
-Hans
-
-
+--2z4ar3mqh5a4nutv--

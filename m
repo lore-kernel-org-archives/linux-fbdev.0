@@ -1,191 +1,116 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f53.google.com (mail-oa1-f53.google.com [209.85.160.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C63B5259CBF;
-	Mon, 30 Jun 2025 10:45:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7F6928ECDA
+	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 16:07:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751280310; cv=none; b=g7eGo3bK8jBw0ciQypCGI4p4pcN588F4wpRXnkeQ1XLFwZ9IM2n+hTD4IjYMgOm+whJHCPHG3KLSmLXc550jqA/xlLo4cIt3PbSR1/avJTgWDxpoWJGrTGL+wnUm4t9THD4vuVGWhYIdY/uggkpmvEAjYUp8rHTnKkSPP5Zostk=
+	t=1751299669; cv=none; b=mtenj77dTkuZvjneToPXPBbAyyKpQmdKMJnuRp+SP18HysGN0ZUqtHfA7ntiItUYmwyxfEgTi0fqEwrMQiisLjbpbvEAn4+q3ez60Qi/vdeb3g/tsiuEjRhZmomV50TG5liIlxRpJ/+vZCm/6473jlfiNy+UPmRJr0/c3xV2EMI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751280310; c=relaxed/simple;
-	bh=wXMWujE7XchWdZ1zs2TcjwFnfNGsISRibnIGmp2rHBg=;
+	s=arc-20240116; t=1751299669; c=relaxed/simple;
+	bh=LG1ksJiKWB3q9vR/65Pc5t6so9vAfBBQg/u1r+q10qU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Xd6wgnBOti4gve8SMRvyoDF2CGVi2n1naRzK6eqhFsXdxtl8XSluEKBvnZSM/oNE9CAgLsiIFk6gL5tCPhUqDDdpdh5z7NEzb5oWnO3Xs/0wZ0SG1Wxo+EJosGkkUEhCK07i8EAEnqz3/MP45WBrj+I30A3tLf3o/ZozuTg4kr4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wv8UFVB1; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=FsaCRQmdje/ph4TbtksSCI7PitRCMOeibP/QGXn6saCe+Jq+zkzZv3tmRtWHO4XLxHq2our0VKJYVZLTAD1nFprYyj4HS57nGS6+4r0tn8ICivXJTq4Q34jmDzhMNkGf8NgL8oO3n1s58cp8IWwj+dr1pz+seljYYOh/koelTkI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FcPWNbMd; arc=none smtp.client-ip=209.85.160.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wv8UFVB1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D78F1C4CEE3;
-	Mon, 30 Jun 2025 10:45:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751280310;
-	bh=wXMWujE7XchWdZ1zs2TcjwFnfNGsISRibnIGmp2rHBg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Wv8UFVB1aU4AvzIw1ixfToJE1xEcqMoMHqYghwS78xjMENr06K8/DX6FHA3Mf3wDe
-	 Eo1Rr3ee6ZGEWGAmOKgF1i6f3GVlN3nDpwd+riFvj5z/BPnxA4R0AWJn0S6DItq05o
-	 8WK0Bl96+tRkn2HLbNoy1AJcIEkXViT3bIG340LONbwIuedqpekwlBzGYT9X4XwUWX
-	 W5ORZ8Ej2+zfwfiortCTzgSvQfJZ+6FspsFztS+1QHk2wTxbd7yzXeKoo4fZvrHJLW
-	 umdUfe8Bu2okJ3c99tNMqapZJfNw1yTPvNhE12oaOwYI3iQDTghzvzB50ZWBwK6TSh
-	 hvPlygaXqrocg==
-Date: Mon, 30 Jun 2025 12:45:07 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, 
-	Luca Weiss <luca.weiss@fairphone.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-Message-ID: <20250630-tapir-of-astonishing-artistry-ad0bd8@houat>
-References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
- <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
- <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
- <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
- <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
- <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
- <20250630-stirring-kiwi-of-adventure-8f22ba@houat>
- <b9f010ca-1564-4a3a-b004-ef179d5c90a6@kernel.org>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FcPWNbMd"
+Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-2ea65f5a0easo2662485fac.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 09:07:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1751299667; x=1751904467; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=/R7vNwiF+9oBPUCy1uxOqRbFBhRy6o+8A0EvAUXNdqg=;
+        b=FcPWNbMdQg2WjYWbIYWWKRumX6etVvk/78d8SEAsQMXZjhzHw+S7+hYAlPrpa9/ncl
+         T7Hv8uHG13UfLfmCpLwTFzNcje6zhkccccO2vw5xiqR3A5C5v0J6ivCMY/8l1iiisuA0
+         jBhVv+vozDGe+I3zHbpWbF8IqB+pH0v6dnbvFOCTRu84yQvipbjqjcnH56D99sS1Z728
+         d3iH20GlBeq40slW4XauKedlKK1JhTqIM16O29dxNImuRBhWQxAKSKqm7inNwQI+aWFC
+         RqgrMsDoFv68zlefJ1h225xmFj4I8UOclFVRIe7huKlZXmr1u691txnMJ42hl+9fIrEk
+         Japw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751299667; x=1751904467;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/R7vNwiF+9oBPUCy1uxOqRbFBhRy6o+8A0EvAUXNdqg=;
+        b=RN6CL9FYh6AWhPQRsBB6RBIaHbwT3RFVObpQ+gyR/rYw6RwJeyOf+Epna9O9tok0uC
+         a1i4eouU8ESzkWMkgY2N+RzFle5W8JacWRRZfZv6Abayz7cQZib0Di2ucduVsz4vQxEY
+         5BdT/uzVELYIqnMX4UEddcz2e8/Nc/hoYSlqIFwZscHzmvCraRzv8DYvvo12lBZ3OOg3
+         5Sc3mkRcWsL6HBe97WPOBnUFzqrPmOXbwiusU35+vybbSE/UKyIPxtrgopVfQOE7LOJI
+         7TML1wCf4HNrRNgEWnCqrxDfF+xOaX1gGZ9Rmt/8phEm7lFeW9NQeUn/EljckJBOdM9y
+         QLzg==
+X-Forwarded-Encrypted: i=1; AJvYcCWWsV3fzjTu+pmejzeVih9lrtMEWgkNXP51Ebt62jDT+fWErTe+WZClc40eXWq4SxWWG4kpGnfF16cbGg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyxUb9qqd0gJRX11GXJeoQ6EFof+lFT5/qYbZl6wsVNxu0DRS4j
+	+scyEVnAfVNkucmJ9YvbPLwBGzcOvFQlFNJoxb/sy43PKUvR5mojqm934y0wrm7kkII=
+X-Gm-Gg: ASbGnct5tXNRIT5JJH3KBDDFKdi9aZiA6sKp4e/vHkMYF1KfgOnm0o+BN0v+RL+cnzD
+	UPHxgUTcWAFU11sZn1dBx578wyK3b6j3YrcBVcyTs7hU19cFrxaZyGL9rJHy60F1pA/WXoFLYj5
+	A7Q+MeIZJ0HwT1ac9Gf1mYJ7ZuDU5mi8Xryv6JKkoubNE1apZV5kqPT6cIQhxq9Di33GPUlYOLV
+	WZ+5OsTWdL8tZe0AuhD8B+IhqwbvsghKS8c9jzFYv0BLnHdKX4O6YWe1EamGEM/LE8YhQSZUuaG
+	20OQEcprDJ62RS4q+nW/GbQNDXlfqpjW569O4+YPbSsinlBbLCe59hanSQDMPzW7xQCD
+X-Google-Smtp-Source: AGHT+IGVpDYVlflVaW0F0NYK4knKVLcBuKDTprguFAwInJb/gAiKPsIXTprvj5I8HVKELM4BHElL1Q==
+X-Received: by 2002:a05:6870:c84:b0:2c4:1b1c:42c3 with SMTP id 586e51a60fabf-2f3c0424f69mr94470fac.9.1751299661472;
+        Mon, 30 Jun 2025 09:07:41 -0700 (PDT)
+Received: from localhost ([2603:8080:b800:f700:fb67:363d:328:e253])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-73afb122a27sm1702697a34.62.2025.06.30.09.07.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 Jun 2025 09:07:41 -0700 (PDT)
+Date: Mon, 30 Jun 2025 19:07:38 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Manish Kumar <manish1588@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: fix all checkpatch warnings in .c and
+ .h files
+Message-ID: <bf5aeded-3bb1-4535-ba84-f81e425b5734@suswa.mountain>
+References: <20250628082305.20847-1-manish1588@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="2z4ar3mqh5a4nutv"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b9f010ca-1564-4a3a-b004-ef179d5c90a6@kernel.org>
+In-Reply-To: <20250628082305.20847-1-manish1588@gmail.com>
 
+On Sat, Jun 28, 2025 at 01:53:05PM +0530, Manish Kumar wrote:
+> This patch resolves all checkpatch.pl --strict warnings in the
+> sm750fb driver source files, including both C and header files.
+> 
+> Changes include:
+> - Replacing CamelCase identifiers with snake_case
+> - Avoiding chained assignments
+> - Fixing indentation, spacing, and alignment issues
+> - Updating function declarations and comment styles
+> - Making code conform to kernel coding style
+> 
+> No functional changes.
+> 
+> Signed-off-by: Manish Kumar <manish1588@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.c       |  90 ++++++++++---------
+>  drivers/staging/sm750fb/sm750.h       |  32 +++----
+>  drivers/staging/sm750fb/sm750_accel.c | 120 +++++++++++++-------------
+>  drivers/staging/sm750fb/sm750_hw.c    |  24 +++---
+>  4 files changed, 135 insertions(+), 131 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index e77ad73f0db1..8794195a9594 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -33,7 +33,7 @@
+>  static int g_hwcursor = 1;
+>  static int g_noaccel;
+>  static int g_nomtrr;
+> -static const char * const g_fbmode[] = {NULL, NULL};
+> +static const char *g_fbmode[] = {NULL, NULL};
 
---2z4ar3mqh5a4nutv
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-MIME-Version: 1.0
+You're removing a patch which we never applied.  Start from a fresh
+tree.
 
-On Mon, Jun 30, 2025 at 11:36:51AM +0200, Krzysztof Kozlowski wrote:
-> On 30/06/2025 10:38, Maxime Ripard wrote:
-> > On Mon, Jun 30, 2025 at 10:24:06AM +0200, Krzysztof Kozlowski wrote:
-> >> On 29/06/2025 14:07, Hans de Goede wrote:
-> >>> Hi Krzysztof,
-> >>>
-> >>> On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
-> >>>> On 27/06/2025 11:48, Luca Weiss wrote:
-> >>>>> Hi Krzysztof,
-> >>>>>
-> >>>>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
-> >>>>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
-> >>>>>>> Document the interconnects property which is a list of interconne=
-ct
-> >>>>>>> paths that is used by the framebuffer and therefore needs to be k=
-ept
-> >>>>>>> alive when the framebuffer is being used.
-> >>>>>>>
-> >>>>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-> >>>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> >>>>>>> ---
-> >>>>>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yam=
-l | 3 +++
-> >>>>>>>  1 file changed, 3 insertions(+)
-> >>>>>>>
-> >>>>>>> diff --git a/Documentation/devicetree/bindings/display/simple-fra=
-mebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffe=
-r.yaml
-> >>>>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043df=
-b2b220c654b80e2e80850cd 100644
-> >>>>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffe=
-r.yaml
-> >>>>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffe=
-r.yaml
-> >>>>>>> @@ -79,6 +79,9 @@ properties:
-> >>>>>>>    power-domains:
-> >>>>>>>      description: List of power domains used by the framebuffer.
-> >>>>>>> =20
-> >>>>>>> +  interconnects:
-> >>>>>>> +    description: List of interconnect paths used by the framebuf=
-fer.
-> >>>>>>> +
-> >>>>>>
-> >>>>>> maxItems: 1, or this is not a simple FB anymore. Anything which ne=
-eds
-> >>>>>> some sort of resources in unknown way is not simple anymore. You n=
-eed
-> >>>>>> device specific bindings.
-> >>>>>
-> >>>>> The bindings support an arbitrary number of clocks, regulators,
-> >>>>> power-domains. Why should I artificially limit the interconnects to=
- only
-> >>>>> one?
-> >>>>
-> >>>> And IMO they should not. Bindings are not supposed to be generic.
-> >>>
-> >>> The simplefb binding is a binding to allow keeping the firmware, e.g.
-> >>> uboot setup framebuffer alive to e.g. show a boot splash until
-> >>> the native display-engine drive loads. Needing display-engine
-> >>> specific bindings totally contradicts the whole goal of=20
-> >>
-> >> No, it does not. DT is well designed for that through expressing
-> >> compatibility. I did not say you cannot have generic fallback for simp=
-le
-> >> use case.
-> >>
-> >> But this (and previous patchset) grows this into generic binding ONLY
-> >> and that is not correct.
-> >=20
-> > Can we have a proper definition of what a correct device tree binding is
-> > then?
-> >=20
-> > It's a bit surprising to have *that* discussion over a binding that is
-> > now well older than a decade now, and while there is definitely some
-> > generic bindings in ePAPR/DT spec, like the CPU ones.
->=20
-> Hm? In ARM world at least they are specific, e.g. they have specific
-> compatibles.
->=20
-> >=20
-> > If you don't consider that spec to be correct DT bindings, please
-> > provide a definition of what that is, and / or reasonable alternatives.
-> >=20
-> > Also, no, a device specific binding isn't reasonable here, because we
-> > *don't* have a device. From a technical standpoint, the firmware creates
->=20
-> You touch internal parts of the SoC and you list very specific SoC
-> parts. Interconnect is internal part of the SoC and only specific
-> devices are using it.
->=20
-> You define here generic SW construct for something which is opposite of
-> generic: the interconnect connecting two specific, unique components of
-> one, given SoC.
->=20
-> > the framebuffer, Linux just uses it. Just like you don't have a
-> > device/platform specific compatible for PSCI, SCPI, et al.
->=20
-> They follow some sort of spec and still they do not reference chosen
-> SoC-design-specific properties.
+regards,
+dan carpenter
 
-ish.
-
-I mean, on theory, you're absolutely correct. In practice,
-assigned-clock-parents, assigned-clock-rates, or protected-clocks for
-example exist and are *only* about SoC-design specific behaviours.
-
-Maxime
-
---2z4ar3mqh5a4nutv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCaGJqrwAKCRAnX84Zoj2+
-dh39AX9zdlE7lH+G78LqemzNaC1qyQx2EBeMEMVM3nimVQN4kHOYHHm+tp+q2szm
-O8OMuqkBgMxiYf+EbLKsRFdu5yB6Q8lQ1WgOmR8mtOKsPjecd8iby7KGmzt/2n/d
-5IpPDuJG2w==
-=h3OD
------END PGP SIGNATURE-----
-
---2z4ar3mqh5a4nutv--

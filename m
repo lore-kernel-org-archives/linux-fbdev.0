@@ -1,71 +1,73 @@
-Received: from mail-oa1-f53.google.com (mail-oa1-f53.google.com [209.85.160.53])
+Received: from mail-ot1-f41.google.com (mail-ot1-f41.google.com [209.85.210.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7F6928ECDA
-	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 16:07:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03F4B28DF3A
+	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 16:23:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751299669; cv=none; b=mtenj77dTkuZvjneToPXPBbAyyKpQmdKMJnuRp+SP18HysGN0ZUqtHfA7ntiItUYmwyxfEgTi0fqEwrMQiisLjbpbvEAn4+q3ez60Qi/vdeb3g/tsiuEjRhZmomV50TG5liIlxRpJ/+vZCm/6473jlfiNy+UPmRJr0/c3xV2EMI=
+	t=1751300641; cv=none; b=HpF9o3hwIuzXOviJnYl+/O1qwkHXhUjMXo22jc6suE/09QhF5PTELK13rUISRLaW8a22iDbAEzA+PrPy/hW5DO7s0rC82KIurDC4ybrpwxhh85DsvX/h2haEgmc7N7LB+gXG8T0jvhB356mxHl0RMAVL2XrbufRb2bzyoy6o6l8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751299669; c=relaxed/simple;
-	bh=LG1ksJiKWB3q9vR/65Pc5t6so9vAfBBQg/u1r+q10qU=;
+	s=arc-20240116; t=1751300641; c=relaxed/simple;
+	bh=5+OiCZTGghwKa74lu2VCudssFUMBCoc8IDFlvhmwSc0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FsaCRQmdje/ph4TbtksSCI7PitRCMOeibP/QGXn6saCe+Jq+zkzZv3tmRtWHO4XLxHq2our0VKJYVZLTAD1nFprYyj4HS57nGS6+4r0tn8ICivXJTq4Q34jmDzhMNkGf8NgL8oO3n1s58cp8IWwj+dr1pz+seljYYOh/koelTkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FcPWNbMd; arc=none smtp.client-ip=209.85.160.53
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZZ46zjsldrbLKU9s4D567yCjzK/pn4iSGfdKYtFdNmlMEwQvhf35Qf5a/c4UrgOv8xJbSO4dKyKUvsaQmrp+y8dSetRwPJdLFQVMwEfCYgl6EjDXUNqMR356oEvXEo13r6VUK9LFmPh83vIWygXW38OgnpmE6Xzd3I3x1XcMyXU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=X4lcGtgc; arc=none smtp.client-ip=209.85.210.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FcPWNbMd"
-Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-2ea65f5a0easo2662485fac.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 09:07:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="X4lcGtgc"
+Received: by mail-ot1-f41.google.com with SMTP id 46e09a7af769-735ae68cc78so2825416a34.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 09:23:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1751299667; x=1751904467; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1751300638; x=1751905438; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/R7vNwiF+9oBPUCy1uxOqRbFBhRy6o+8A0EvAUXNdqg=;
-        b=FcPWNbMdQg2WjYWbIYWWKRumX6etVvk/78d8SEAsQMXZjhzHw+S7+hYAlPrpa9/ncl
-         T7Hv8uHG13UfLfmCpLwTFzNcje6zhkccccO2vw5xiqR3A5C5v0J6ivCMY/8l1iiisuA0
-         jBhVv+vozDGe+I3zHbpWbF8IqB+pH0v6dnbvFOCTRu84yQvipbjqjcnH56D99sS1Z728
-         d3iH20GlBeq40slW4XauKedlKK1JhTqIM16O29dxNImuRBhWQxAKSKqm7inNwQI+aWFC
-         RqgrMsDoFv68zlefJ1h225xmFj4I8UOclFVRIe7huKlZXmr1u691txnMJ42hl+9fIrEk
-         Japw==
+        bh=fA2hiy3pBisBqFxIA1WfhCNpsJVYMFCT5jmkfAR5MRI=;
+        b=X4lcGtgcFC4FjrBVGlJtNIbmHEPy0nK+jBG+TPNJYk7M5Vj/MoXa+crBuk5AqLxzbB
+         gpQGAMKwsy433OE2vNN+2rKmUfknG5WaVel0jP6nO1MzZBJfX2698w3xvz1C7xr2Zqsd
+         D6UY7Jeb/08etcqf+up8ZqaIMhk/EfaVwR824WJj1rfuthPDrKa1wDbHYm3Dg3LRwudH
+         jJV/pkeAUm5+v5zMMFH2KQmcFaW3OZxLvy1fooarr7n1H7qAU7clVpmgZAIh9scLZKZZ
+         5NRsd390e3HUUhSziHc4Wo8v+wUV9IkR7ITd2ytEexWGRapqwy9sLXKWG2nj2zd/rix8
+         eSHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751299667; x=1751904467;
+        d=1e100.net; s=20230601; t=1751300638; x=1751905438;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=/R7vNwiF+9oBPUCy1uxOqRbFBhRy6o+8A0EvAUXNdqg=;
-        b=RN6CL9FYh6AWhPQRsBB6RBIaHbwT3RFVObpQ+gyR/rYw6RwJeyOf+Epna9O9tok0uC
-         a1i4eouU8ESzkWMkgY2N+RzFle5W8JacWRRZfZv6Abayz7cQZib0Di2ucduVsz4vQxEY
-         5BdT/uzVELYIqnMX4UEddcz2e8/Nc/hoYSlqIFwZscHzmvCraRzv8DYvvo12lBZ3OOg3
-         5Sc3mkRcWsL6HBe97WPOBnUFzqrPmOXbwiusU35+vybbSE/UKyIPxtrgopVfQOE7LOJI
-         7TML1wCf4HNrRNgEWnCqrxDfF+xOaX1gGZ9Rmt/8phEm7lFeW9NQeUn/EljckJBOdM9y
-         QLzg==
-X-Forwarded-Encrypted: i=1; AJvYcCWWsV3fzjTu+pmejzeVih9lrtMEWgkNXP51Ebt62jDT+fWErTe+WZClc40eXWq4SxWWG4kpGnfF16cbGg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyxUb9qqd0gJRX11GXJeoQ6EFof+lFT5/qYbZl6wsVNxu0DRS4j
-	+scyEVnAfVNkucmJ9YvbPLwBGzcOvFQlFNJoxb/sy43PKUvR5mojqm934y0wrm7kkII=
-X-Gm-Gg: ASbGnct5tXNRIT5JJH3KBDDFKdi9aZiA6sKp4e/vHkMYF1KfgOnm0o+BN0v+RL+cnzD
-	UPHxgUTcWAFU11sZn1dBx578wyK3b6j3YrcBVcyTs7hU19cFrxaZyGL9rJHy60F1pA/WXoFLYj5
-	A7Q+MeIZJ0HwT1ac9Gf1mYJ7ZuDU5mi8Xryv6JKkoubNE1apZV5kqPT6cIQhxq9Di33GPUlYOLV
-	WZ+5OsTWdL8tZe0AuhD8B+IhqwbvsghKS8c9jzFYv0BLnHdKX4O6YWe1EamGEM/LE8YhQSZUuaG
-	20OQEcprDJ62RS4q+nW/GbQNDXlfqpjW569O4+YPbSsinlBbLCe59hanSQDMPzW7xQCD
-X-Google-Smtp-Source: AGHT+IGVpDYVlflVaW0F0NYK4knKVLcBuKDTprguFAwInJb/gAiKPsIXTprvj5I8HVKELM4BHElL1Q==
-X-Received: by 2002:a05:6870:c84:b0:2c4:1b1c:42c3 with SMTP id 586e51a60fabf-2f3c0424f69mr94470fac.9.1751299661472;
-        Mon, 30 Jun 2025 09:07:41 -0700 (PDT)
+        bh=fA2hiy3pBisBqFxIA1WfhCNpsJVYMFCT5jmkfAR5MRI=;
+        b=AmTuv7U2BnlbcdpOavwpoYdjNk0Hx4B8lD+jsPwJFgvyOr6u4Xf2JvtIdDAM5T1Ugh
+         SOTj59d0stcNGS0oAV5+IgRYuAD+lB01iYYE5ShGM/wR8L8XxXxsY73RRc9iPDWqrNsP
+         sURnWUPmQa9V04S6Y7bDbnYI2lVn4m3/Aq/hLWs3rDKP0f88QXZQKjqiQhDWOVAVkXgS
+         1pTK5sU0CPaU6ZieqrK7QYx7ygfQl8fL/sKepdGelyDp4urPBkpQRUnaCL5F2Q/y6G+B
+         T03RUq3Gfk/YoM+xZYcKE1WNyo91aQ6N9ap1VchHIayuVyR9FR/F9hWFjmCYbSM/GZPG
+         +0kA==
+X-Forwarded-Encrypted: i=1; AJvYcCUiEGSD2KGLD5lI33qY8QSqO65r2mpGGmjJ/j5sGmOMSYSsOtNuTeSEh9C0DGC8h4rBuZoFDlGLlp7K9w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzaWMTLsbvHe3ed8lH7WiBH2W003Vlq34RLpt3p4tQTNDwR5vIC
+	HFrcQfo+EhQRd4NZIrE61g3zkCP8MmN1tZWji6otQwLVXj8Q0A9qN3Nk9hmDKfD2Tn4guCRyVPd
+	3GhsgwnQ=
+X-Gm-Gg: ASbGncuthTmJHG1mqJxYdak3l8GQBKCrPOyWjePOnFlRQ3jrXiAXyI276VB06l3PpzB
+	HippwC0urgmenytUMI4+vHIWjkbhMjT9sJUAAHIFP+g/CLVAsdRaHxRsrfKz6g84+QL0ZYco99q
+	yU0mHAoP30Crsp0iRWbWG/TxopaUzjjdWsZdCz4oj6oU2NJJNSTf+7mjssG9lyAVFGWQ5QkOhYH
+	ciKv02NIW684x3907XgfbuDcadGh6g8tlcLAsnFwPyei+/am0GA5y+rTDjGr+2tTd1SLmeY0EHt
+	BsInCXAiDiSXa0LZgr5rydrRI9GRfec9Fxy4tPMxf3JzEE1qZ+Fvj/79OgYlIVOPPool
+X-Google-Smtp-Source: AGHT+IHI8m9128kRd2fU4qN7fgHZ/eU48Raar7DmwpFo5FAW57ejeRpFPJvZQgadqdVBw4gRttl5dA==
+X-Received: by 2002:a05:6830:61c2:b0:73a:8705:e9e6 with SMTP id 46e09a7af769-73afc43ba8amr8817314a34.4.1751300637997;
+        Mon, 30 Jun 2025 09:23:57 -0700 (PDT)
 Received: from localhost ([2603:8080:b800:f700:fb67:363d:328:e253])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-73afb122a27sm1702697a34.62.2025.06.30.09.07.40
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-73b2459ee91sm644765a34.51.2025.06.30.09.23.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Jun 2025 09:07:41 -0700 (PDT)
-Date: Mon, 30 Jun 2025 19:07:38 +0300
+        Mon, 30 Jun 2025 09:23:57 -0700 (PDT)
+Date: Mon, 30 Jun 2025 19:23:54 +0300
 From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Manish Kumar <manish1588@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+To: Abdun Nihaal <abdun.nihaal@gmail.com>
+Cc: andy@kernel.org, gregkh@linuxfoundation.org, lorenzo.stoakes@oracle.com,
+	tzimmermann@suse.de, riyandhiman14@gmail.com, willy@infradead.org,
+	notro@tronnes.org, thomas.petazzoni@free-electrons.com,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: fix all checkpatch warnings in .c and
- .h files
-Message-ID: <bf5aeded-3bb1-4535-ba84-f81e425b5734@suswa.mountain>
-References: <20250628082305.20847-1-manish1588@gmail.com>
+Subject: Re: [PATCH v3 0/2] staging: fbtft: cleanup fbtft_framebuffer_alloc()
+Message-ID: <e15bb200-f59a-45bb-8349-72816629abb9@suswa.mountain>
+References: <cover.1751207100.git.abdun.nihaal@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -74,42 +76,16 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250628082305.20847-1-manish1588@gmail.com>
+In-Reply-To: <cover.1751207100.git.abdun.nihaal@gmail.com>
 
-On Sat, Jun 28, 2025 at 01:53:05PM +0530, Manish Kumar wrote:
-> This patch resolves all checkpatch.pl --strict warnings in the
-> sm750fb driver source files, including both C and header files.
+On Sun, Jun 29, 2025 at 08:10:09PM +0530, Abdun Nihaal wrote:
+> Fix a potential memory leak and cleanup error handling in
+> fbtft_framebuffer_alloc().
 > 
-> Changes include:
-> - Replacing CamelCase identifiers with snake_case
-> - Avoiding chained assignments
-> - Fixing indentation, spacing, and alignment issues
-> - Updating function declarations and comment styles
-> - Making code conform to kernel coding style
-> 
-> No functional changes.
-> 
-> Signed-off-by: Manish Kumar <manish1588@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c       |  90 ++++++++++---------
->  drivers/staging/sm750fb/sm750.h       |  32 +++----
->  drivers/staging/sm750fb/sm750_accel.c | 120 +++++++++++++-------------
->  drivers/staging/sm750fb/sm750_hw.c    |  24 +++---
->  4 files changed, 135 insertions(+), 131 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index e77ad73f0db1..8794195a9594 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -33,7 +33,7 @@
->  static int g_hwcursor = 1;
->  static int g_noaccel;
->  static int g_nomtrr;
-> -static const char * const g_fbmode[] = {NULL, NULL};
-> +static const char *g_fbmode[] = {NULL, NULL};
 
-You're removing a patch which we never applied.  Start from a fresh
-tree.
+Thanks!
+
+Reviewed-by: Dan Carpenter <dan.carpenter@linaro.org>
 
 regards,
 dan carpenter

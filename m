@@ -1,201 +1,228 @@
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12AA323183B;
-	Sun, 29 Jun 2025 14:41:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B92951EE03B
+	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 06:26:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751208087; cv=none; b=bjBBMW9t4eyZGNod3wIjIDV0EQsfpJaykOo/GbNNRfCaZpasXqxm1GUpy3usdvWlTwqOfYcWk6OSObbeGMeQxUqya4vQCZj/XICDwyPEFqJKejb7/iRMb9lB3V7wX6AlTfMQarB0mCQyngmOKo4md8cPSOHZwZ3V+yB2UVT5O0s=
+	t=1751264797; cv=none; b=c9GaF3002WMDErG5IDX32HgaSouB6/uKN9lJ/KSBhkruSDYgiZidRaPe02GuSYoJ0aygScaqfvnGMccx6RgVz48Kp43S7YQvjXLQoUtH5NReWu4aa00Ba/xF5LyN/L03FyN4kJG/pdBTI9VNJzxU++AVCAdesaNY2dJubUx1ju0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751208087; c=relaxed/simple;
-	bh=4iptySoXMXJs2UzWlhwIPyIT0WKR/AuX6Cj72Rs0gYU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OXlPI2JHWmNvxMFM49VXF5KxCrIz6Hq7sYyVYvXS77CWFytkUIPAlzOwgDYTxFVWnxI5UhuMXx1mRHlfA2XzLl00mdDUJ9qXrDNPIUHrnQ17bw6CyZxdEiW1vVwn4vf5Q/9ohPMaN1AbJ1hfrBn4GQrARCfk7sP7RoMVhVdr2QQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cKuEWC4D; arc=none smtp.client-ip=209.85.210.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751264797; c=relaxed/simple;
+	bh=2pbYtqt72bFhzKaMpq4O2PxMYsF3bjqM49YpZu6i9vk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fQyR8t/ELk2m3KHSpXUx0REaVTBCUiPjG8PRX8BDQ8p1DqoGncahGdDc64F4aeWzB2zFpelmsOqYnTEm853lO5WCUhzSqeyWCNHmmIrJ8i1YdcWE1QN3qKVc29AHV4nTH/IJJK/Tqcmi3pZ+dEhFttDxGUODwLUrTyyzl01HFv0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Y8oqyeZc; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lPjziXHR; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=A37pL8ug; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=8jlYB3vz; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cKuEWC4D"
-Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-747c2cc3419so3604712b3a.2;
-        Sun, 29 Jun 2025 07:41:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751208085; x=1751812885; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=AkH6WZ47tB33hOq1ktfgw4nXcDuqU5IvVV0uN0/lGcY=;
-        b=cKuEWC4DJxs19wI2H3cULpmVMG8N4950MJRhuXBPFDi1dIGwWdbCJByAcMUq09E7YG
-         REN0tcRsecCGI0wRsme/fxn3TmLrRL3QCPuCuKkFyTnP/FkCHJKxtQbQnqmJzpD7SVi6
-         f/PJ+h6ILauHcaxu0pIdHQbNXPWKdFlrdzNLeBWkbgTvkbQR4S4FoXj/DA8rdzoSzig7
-         AEPve/tm3sw3/SO/wOlc91cgRAQs7tM5o58Edeyz2n2pKcMHC1Oglx8Lg+zROB7b+riU
-         AEDjZXBcGQdJCFWlgNAivcHvvQmv/nvVoLu+Pnf5p+V75JgaipoVlq8xkMBX3obzHhfE
-         6pkw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751208085; x=1751812885;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=AkH6WZ47tB33hOq1ktfgw4nXcDuqU5IvVV0uN0/lGcY=;
-        b=dJCIC54nohxQ9ZMmhlvskY5BKUtkozhvN3j6tVDhKrTucIFp6pc/GG6GceE2kpd91e
-         cOCIe430UZ3Zl5n/dAkmnSm0VSJQhyWouhNmmyjOR1MUH4s3eTfgHrZayFeYejCGV90b
-         QBmoyEnBSR8lDofPs8oHY6wnhEB+CgMVqnszWHewTbrCecem/3LrXvs00AcxmFoAbAw6
-         bPN0/ogZV0fOhcTh62PE+4xzdsMeBf48gWJQ/TCyzq32r7WcmAwpg41wY9rCy5Idpy3h
-         JbyPSUxejpUPFdCmiWkeTZt78XUl/Cd07uS0Zm6n7gLwIyAjAg1eGDDsUFHKOJraYnMk
-         kU/A==
-X-Forwarded-Encrypted: i=1; AJvYcCVskIql5ueI9e6M9NHG0tLZhkXYkbhsujVcOlbky4lPT+AdzHFEzvjAmnvl2B0BsAWuT0WA0YmfjGwdFmVC@vger.kernel.org, AJvYcCXeY482NSkrYRyg+CYjwukXNCQ70RPRcIcYSmJ2AbYgWEVfw5ndovj4wB4M/9rgnmzDld/tJiLXnZzfZg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxtNs7xNLraRH2tx7Qia0iF4Kh9aqtx4Sn1ZgZPfTV/gr1Q1h/O
-	vXtnldzQlmWaVvg/oK6oloJvds+eT7Al6zvwCKYvtLASOs9gKIvsfIgo
-X-Gm-Gg: ASbGncvxs8oIKd1z/qtsm9rlQ1mOjIP8YO8zPh37Uvdn6y+NL8g86mDNCTnKLWz5iVi
-	DgoBWjDsxGSGmiz1n8dIzISJnyCCtDd/vO2HORSQeBsBMVxmONO1M3j3fnpvp8kqQ676sdfNHtz
-	lOt9uWQOMsQkLU/+qvxRBx5N6KT/U+sX4OI4lUcBU7+F7fXUIuTGK8K2AgqpnilSMIQbsW/PDLV
-	0R6CQLbsNsokH8dbs67HFRlVk7ZqAdQjLg9T9sfsUIBNpB1mqx/ezOMwuhESSxPCUG7OaAlrGqe
-	/fG+z5+FXsTsXbKAxjJgXBlmzFBWlBrvzwq2hB2w8YJjcNmnbNHXpBP6QMGPLEuUZSkCMocI+Ap
-	Skw==
-X-Google-Smtp-Source: AGHT+IFBiKmBx9yH5kYGSYjeMY9rQSEBpTMve8iNeUO9mG9D8vqHt/VBUqvbXcqaLSd2ovKMv+M48A==
-X-Received: by 2002:a05:6a00:2d07:b0:736:8c0f:7758 with SMTP id d2e1a72fcca58-74af6e6659bmr12804699b3a.10.1751208085209;
-        Sun, 29 Jun 2025 07:41:25 -0700 (PDT)
-Received: from localhost.localdomain ([49.37.221.186])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-74af55c7e89sm7039127b3a.109.2025.06.29.07.41.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 29 Jun 2025 07:41:24 -0700 (PDT)
-From: Abdun Nihaal <abdun.nihaal@gmail.com>
-To: andy@kernel.org
-Cc: Abdun Nihaal <abdun.nihaal@gmail.com>,
-	dan.carpenter@linaro.org,
-	gregkh@linuxfoundation.org,
-	lorenzo.stoakes@oracle.com,
-	tzimmermann@suse.de,
-	riyandhiman14@gmail.com,
-	willy@infradead.org,
-	notro@tronnes.org,
-	thomas.petazzoni@free-electrons.com,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Andy Shevchenko <andriy.shevchenko@intel.com>
-Subject: [PATCH v3 2/2] staging: fbtft: cleanup error handling in fbtft_framebuffer_alloc()
-Date: Sun, 29 Jun 2025 20:10:11 +0530
-Message-ID: <4e062d040806dc29d6124ac0309e741c63f13ac0.1751207100.git.abdun.nihaal@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1751207100.git.abdun.nihaal@gmail.com>
-References: <cover.1751207100.git.abdun.nihaal@gmail.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Y8oqyeZc";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lPjziXHR";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="A37pL8ug";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="8jlYB3vz"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id ADCF92115F;
+	Mon, 30 Jun 2025 06:26:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1751264794; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=NTCtVjkRjsf3XpkGGcPoiPqUEUrXTqpdn4TyrxK7LAc=;
+	b=Y8oqyeZcu5bvlchPCren4YulqZwz1oQIzhQDSAYfz+pksULp+xLpymUmDJpoYrfqwn0qBY
+	s+miDsFHv8P1EoDSXYP4PTK4gYh7wFamcj/M/p+EZ1ulMpj21lwKhpswt5waI5hta1enjR
+	CYospKGGnC+jWjxHVzI/rNWTjjk1Wrs=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1751264794;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=NTCtVjkRjsf3XpkGGcPoiPqUEUrXTqpdn4TyrxK7LAc=;
+	b=lPjziXHRIkHPf9FPVLshdRJDEv3ZKteUXxXdZNb759JO/ok6tdHsm03yBQiXGemYf30sNa
+	ja58e83qUCqkYJAw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=A37pL8ug;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=8jlYB3vz
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1751264792; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=NTCtVjkRjsf3XpkGGcPoiPqUEUrXTqpdn4TyrxK7LAc=;
+	b=A37pL8ugalGsGlArBQV45uxx1IvxrCqH1wL84g7F/Trq3PBJf97Uc0dsJeMWz8qsqbVpPl
+	Q6YXCsuBc/7g+JIkE4Um1B3njsoXMPyxHZWHMewA+rtKx916DsfK/mwfxzZUGAQ690bom1
+	S4mAdLrfmKsQQxdut20gwG6ICKc4gnU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1751264792;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=NTCtVjkRjsf3XpkGGcPoiPqUEUrXTqpdn4TyrxK7LAc=;
+	b=8jlYB3vzuplOjwn1h48flND04rrA1D6x6I0IHvQzyEe4wVZOV3FIX81OxVCqgXHzRtJ1F+
+	Bcqv4UwzirORrjBw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 45B8913983;
+	Mon, 30 Jun 2025 06:26:32 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id tnCaDxguYmgiVwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 30 Jun 2025 06:26:32 +0000
+Message-ID: <7c6f14d7-643e-4a2a-aa2c-59d0f265cbb5@suse.de>
+Date: Mon, 30 Jun 2025 08:26:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
+ interconnects property
+To: Krzysztof Kozlowski <krzk@kernel.org>,
+ Luca Weiss <luca.weiss@fairphone.com>
+Cc: Hans de Goede <hdegoede@redhat.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>,
+ Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
+ <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
+ <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
+ <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[16];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_CC(0.00)[redhat.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,fairphone.com:email,suse.de:dkim,suse.de:mid,suse.de:email]
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Rspamd-Queue-Id: ADCF92115F
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Score: -3.01
 
-The error handling in fbtft_framebuffer_alloc() mixes managed allocation
-and plain allocation, and performs error handling in an order different
-from the order in fbtft_framebuffer_release().
+Hi
 
-Fix them by moving vmem allocation closer to where it is used, and using
-plain kzalloc() for txbuf allocation.
+Am 28.06.25 um 13:49 schrieb Krzysztof Kozlowski:
+> On 27/06/2025 11:48, Luca Weiss wrote:
+>> Hi Krzysztof,
+>>
+>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
+>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
+>>>> Document the interconnects property which is a list of interconnect
+>>>> paths that is used by the framebuffer and therefore needs to be kept
+>>>> alive when the framebuffer is being used.
+>>>>
+>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+>>>> ---
+>>>>   Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
+>>>>   1 file changed, 3 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
+>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>> @@ -79,6 +79,9 @@ properties:
+>>>>     power-domains:
+>>>>       description: List of power domains used by the framebuffer.
+>>>>   
+>>>> +  interconnects:
+>>>> +    description: List of interconnect paths used by the framebuffer.
+>>>> +
+>>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
+>>> some sort of resources in unknown way is not simple anymore. You need
+>>> device specific bindings.
+>> The bindings support an arbitrary number of clocks, regulators,
+>> power-domains. Why should I artificially limit the interconnects to only
+>> one?
+> And IMO they should not. Bindings are not supposed to be generic.
+>
+>> The driver code also has that support added in this series.
+> That's not the problem here.
 
-Suggested-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-Suggested-by: Dan Carpenter <dan.carpenter@linaro.org>
-Signed-off-by: Abdun Nihaal <abdun.nihaal@gmail.com>
----
-v2->v3: 
-- Remove the if check before kfree of txbuf.buf, because it is zero
-  initialized on allocation, and kfree is NULL aware.
+Then could you please state the problem in clear terms? We're obviously 
+not all on the same page here.
 
-Newly added in v2
+Best regards
+Thomas
 
- drivers/staging/fbtft/fbtft-core.c | 31 +++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+>
+>
+> Best regards,
+> Krzysztof
+>
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 8538b6bab6a5..9e7b84071174 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -568,18 +568,13 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 		height = display->height;
- 	}
- 
--	vmem_size = display->width * display->height * bpp / 8;
--	vmem = vzalloc(vmem_size);
--	if (!vmem)
--		goto alloc_fail;
--
- 	fbdefio = devm_kzalloc(dev, sizeof(struct fb_deferred_io), GFP_KERNEL);
- 	if (!fbdefio)
--		goto alloc_fail;
-+		return NULL;
- 
- 	buf = devm_kzalloc(dev, 128, GFP_KERNEL);
- 	if (!buf)
--		goto alloc_fail;
-+		return NULL;
- 
- 	if (display->gamma_num && display->gamma_len) {
- 		gamma_curves = devm_kcalloc(dev,
-@@ -588,12 +583,17 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 					    sizeof(gamma_curves[0]),
- 					    GFP_KERNEL);
- 		if (!gamma_curves)
--			goto alloc_fail;
-+			return NULL;
- 	}
- 
- 	info = framebuffer_alloc(sizeof(struct fbtft_par), dev);
- 	if (!info)
--		goto alloc_fail;
-+		return NULL;
-+
-+	vmem_size = display->width * display->height * bpp / 8;
-+	vmem = vzalloc(vmem_size);
-+	if (!vmem)
-+		goto release_framebuf;
- 
- 	info->screen_buffer = vmem;
- 	info->fbops = &fbtft_ops;
-@@ -613,7 +613,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	info->fix.accel =          FB_ACCEL_NONE;
- 	info->fix.smem_len =       vmem_size;
- 	if (fb_deferred_io_init(info))
--		goto release_framebuf;
-+		goto release_screen_buffer;
- 
- 	info->var.rotate =         pdata->rotate;
- 	info->var.xres =           width;
-@@ -668,7 +668,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- #endif
- 
- 	if (txbuflen > 0) {
--		txbuf = devm_kzalloc(par->info->device, txbuflen, GFP_KERNEL);
-+		txbuf = kzalloc(txbuflen, GFP_KERNEL);
- 		if (!txbuf)
- 			goto cleanup_deferred;
- 		par->txbuf.buf = txbuf;
-@@ -694,12 +694,10 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 
- cleanup_deferred:
- 	fb_deferred_io_cleanup(info);
-+release_screen_buffer:
-+	vfree(info->screen_buffer);
- release_framebuf:
- 	framebuffer_release(info);
--
--alloc_fail:
--	vfree(vmem);
--
- 	return NULL;
- }
- EXPORT_SYMBOL(fbtft_framebuffer_alloc);
-@@ -712,6 +710,9 @@ EXPORT_SYMBOL(fbtft_framebuffer_alloc);
-  */
- void fbtft_framebuffer_release(struct fb_info *info)
- {
-+	struct fbtft_par *par = info->par;
-+
-+	kfree(par->txbuf.buf);
- 	fb_deferred_io_cleanup(info);
- 	vfree(info->screen_buffer);
- 	framebuffer_release(info);
 -- 
-2.43.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

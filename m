@@ -1,81 +1,33 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9CD7222597
-	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 07:46:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73E74221286;
+	Mon, 30 Jun 2025 08:24:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751269609; cv=none; b=ALv3uPYgzw/PmGxjPMQx39yWBvuEDy1MiamMdNQMtVdnlBVRxGWDOcUCtMZVyQDHC6RnJ0yTDnZVWKk01AI1q6ih6PGeESOVMGK8+2rZR+Rl+6726+CYCgUI9sV7eO+AViyzt4qToOHdOj6XYCVOwkFqhzpY/r3mKtdbKMJuU5s=
+	t=1751271856; cv=none; b=BjsIFR+84f8WnAVNTpIqZ/GFUeInLoa6x1tHEIz865NES5BQu/hY2/eoFrBJU9+FBWrmxooyY6Uym3NhgdBZiuUH6cfaW2pjVCW32s9HTxX+GUXRSlBqG6oQolMuf5kLEgWSi2fZjMSlA0/9Wc5cd0b6o462akNTZicF4wKEEAk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751269609; c=relaxed/simple;
-	bh=l/sqOAS8SnW9eJFEaCeGk3ejRyLErJyBhxTny4YWOis=;
+	s=arc-20240116; t=1751271856; c=relaxed/simple;
+	bh=KnqdYmSo9s5NiZ0efI74+ehXh+hBILnC72jZRK1fvLM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=F2sQfOxIRilzyIYWCsnYGqx2DaZ90VZHiZ+14NfA4avRLkxvwvtlDk7jRQMYgX+KTNGeEYizeLi7d+kGdwUDSRQVvmaivppFq5A2ScZ6nePAmsY9AAY9BabGfhx3lUeV94TIR28Xk/Kr96AW0VoG5Oebb5YafmLWdytFaRX1P04=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=nvI/uvA0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=W7a9Q0kG; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=nvI/uvA0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=W7a9Q0kG; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=e7IOZi1n6c/LL+cx5AaZ6ghpjsBZJ9+PT2rRgAHALY7H/y8RTRXeoFaOqie9I30CAJ31xAGEucr2njp1qvNewhqWEfEDxYOWO/3HLwWS6eOrxQFNssIeXb9g77y0jI9cAVfadc7kOQppcCKlPipM7uUD6TNfEd9NSaiNKUYeyXs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r+Bb7Inn; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="nvI/uvA0";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="W7a9Q0kG";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="nvI/uvA0";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="W7a9Q0kG"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 0B2301F397;
-	Mon, 30 Jun 2025 07:46:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751269605; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/JzfVyUo+u/H1SCo8yk5lWhlhy/dzknXmhZMMQY+SiU=;
-	b=nvI/uvA0+ILj9dSg/zfidR+t6uY5UprDb9VCBc06WtSDr+yHgXwK3rfyKPn0X5Ydpz6lU1
-	BHlULXNRQsFkdD23lWB5GJYUWX5RRDWwS5ry+kVGFTXfBXibOFtyOpBZdRzIrBylI6s1aH
-	6HwUJfQRPzW+s0o4hbLAvYf6bHZLFIc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751269605;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/JzfVyUo+u/H1SCo8yk5lWhlhy/dzknXmhZMMQY+SiU=;
-	b=W7a9Q0kGm2mf2pRGGPelsJmmV/Q81Ukrlj6L69QT7+wcvOHzbPiVyWyn5Et6JInx/rrO6r
-	xDfJV5RNsWJzmbAg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="nvI/uvA0";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=W7a9Q0kG
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751269605; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/JzfVyUo+u/H1SCo8yk5lWhlhy/dzknXmhZMMQY+SiU=;
-	b=nvI/uvA0+ILj9dSg/zfidR+t6uY5UprDb9VCBc06WtSDr+yHgXwK3rfyKPn0X5Ydpz6lU1
-	BHlULXNRQsFkdD23lWB5GJYUWX5RRDWwS5ry+kVGFTXfBXibOFtyOpBZdRzIrBylI6s1aH
-	6HwUJfQRPzW+s0o4hbLAvYf6bHZLFIc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751269605;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/JzfVyUo+u/H1SCo8yk5lWhlhy/dzknXmhZMMQY+SiU=;
-	b=W7a9Q0kGm2mf2pRGGPelsJmmV/Q81Ukrlj6L69QT7+wcvOHzbPiVyWyn5Et6JInx/rrO6r
-	xDfJV5RNsWJzmbAg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 903C013983;
-	Mon, 30 Jun 2025 07:46:44 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id ru7HIeRAYmjJbAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 30 Jun 2025 07:46:44 +0000
-Message-ID: <fd06aed1-bbb5-4b63-80e2-6b7465a45dae@suse.de>
-Date: Mon, 30 Jun 2025 09:46:44 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r+Bb7Inn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2659CC4CEE3;
+	Mon, 30 Jun 2025 08:24:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751271854;
+	bh=KnqdYmSo9s5NiZ0efI74+ehXh+hBILnC72jZRK1fvLM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=r+Bb7Inn8Vy22KXD38198pUWEe8FBp2sBCqQ/yUmybovKrqN9wygoCuEuRVC5SMm2
+	 gm5xd3AkSqygRW7xfmyOBN6Csv2e8N44KurbNvRX+ALrOeI1elU4d5Q+a1lIXLnoR6
+	 0Q3rUcmlKktOzdHPRgv7FLNFvu4prXlIcGskbjkE7UphuvtsJJP65JhMGMUOYs5Cqi
+	 2LYK52Rve1YoVwrRXIw1UUyWvAzX7AioHPSu2chfAnP9EYo4++db3BEsed0ItGEzzL
+	 7znY+g/b6ynYiqNdOLnrUTGNdZARlYsWenJDUc21bFeLYj3jl7jOyCVQVTET9p3kDe
+	 lKhTxR/iCX6iw==
+Message-ID: <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
+Date: Mon, 30 Jun 2025 10:24:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -85,210 +37,148 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
  interconnects property
-To: Hans de Goede <hdegoede@redhat.com>, Krzysztof Kozlowski
- <krzk@kernel.org>, Luca Weiss <luca.weiss@fairphone.com>
+To: Hans de Goede <hdegoede@redhat.com>, Luca Weiss <luca.weiss@fairphone.com>
 Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Javier Martinez Canillas <javierm@redhat.com>,
- Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
  <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
- <d8d85415-efc4-4a11-842e-23272cae29f7@suse.de>
- <b94b752c-d7f7-41d6-ac79-d21427f20964@kernel.org>
- <f15a775d-d82f-4ac9-9d88-159ffcf7e81c@suse.de>
- <72aab355-263c-4f63-8818-3d76bd3f6826@redhat.com>
+ <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
+ <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
+ <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <72aab355-263c-4f63-8818-3d76bd3f6826@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 0B2301F397
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RCPT_COUNT_TWELVE(0.00)[16];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_CC(0.00)[linux.intel.com,kernel.org,gmail.com,ffwll.ch,redhat.com,gmx.de,vger.kernel.org,lists.freedesktop.org];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
-X-Spam-Score: -3.01
-X-Spam-Level: 
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi
-
-Am 30.06.25 um 09:26 schrieb Hans de Goede:
-> Hi,
->
-> On 30-Jun-25 8:34 AM, Thomas Zimmermann wrote:
->> Hi
->>
->> Am 28.06.25 um 13:50 schrieb Krzysztof Kozlowski:
->>> On 27/06/2025 13:34, Thomas Zimmermann wrote:
->>>> Hi
+On 29/06/2025 14:07, Hans de Goede wrote:
+> Hi Krzysztof,
+> 
+> On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
+>> On 27/06/2025 11:48, Luca Weiss wrote:
+>>> Hi Krzysztof,
+>>>
+>>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
+>>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
+>>>>> Document the interconnects property which is a list of interconnect
+>>>>> paths that is used by the framebuffer and therefore needs to be kept
+>>>>> alive when the framebuffer is being used.
+>>>>>
+>>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+>>>>> ---
+>>>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
+>>>>>  1 file changed, 3 insertions(+)
+>>>>>
+>>>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
+>>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>>> @@ -79,6 +79,9 @@ properties:
+>>>>>    power-domains:
+>>>>>      description: List of power domains used by the framebuffer.
+>>>>>  
+>>>>> +  interconnects:
+>>>>> +    description: List of interconnect paths used by the framebuffer.
+>>>>> +
 >>>>
->>>> Am 27.06.25 um 10:08 schrieb Krzysztof Kozlowski:
->>>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
->>>>>> Document the interconnects property which is a list of interconnect
->>>>>> paths that is used by the framebuffer and therefore needs to be kept
->>>>>> alive when the framebuffer is being used.
->>>>>>
->>>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
->>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->>>>>> ---
->>>>>>     Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
->>>>>>     1 file changed, 3 insertions(+)
->>>>>>
->>>>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
->>>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
->>>>>> @@ -79,6 +79,9 @@ properties:
->>>>>>       power-domains:
->>>>>>         description: List of power domains used by the framebuffer.
->>>>>>     +  interconnects:
->>>>>> +    description: List of interconnect paths used by the framebuffer.
->>>>>> +
->>>>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
->>>>> some sort of resources in unknown way is not simple anymore. You need
->>>>> device specific bindings.
->>>> In this context, 'simple' means that this device cannot change display
->>>> modes or do graphics acceleration. The hardware itself is not
->>>> necessarily simple. As Javier pointed out, it's initialized by firmware
->>> If hardware is not simple, then it needs specific bindings.
+>>>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
+>>>> some sort of resources in unknown way is not simple anymore. You need
+>>>> device specific bindings.
 >>>
->>>> on the actual hardware. Think of 'VGA-for-ARM'. We need these resources
->>>> to keep the display working.
->>> I don't claim you do not need these resources. I claim device is not
->>> simple thus does not suit rules for generic bindings. Generic bindings
->>> are in general not allowed and we have them only for very, very simple
->>> devices.
->>>
->>> You say this is not simple device, so there you go - specific binding
->>> for this complex (not-simple) device.
->> No, I didn't. I said that the device is simple. I did not say that the device's hardware is simple. Sounds nonsensical, but makes sense here. The simple-framebuffer is just the range of display memory that the firmware configured for printing boot-up messages. We use it for the kernel's output as well.  Being generic and simple is the exact raison d'etre for simple-framebuffer.  (The display property points to the actual hardware, but we don't need it.)
-> I believe part of the problem here is the simple part of the simplefb
-> name in hindsight that is a mistake and we should have called the thing
-> firmware-framebuffer since its goal is to pass along a firmware setup
-> framebuffer to the OS for displaying stuff.
+>>> The bindings support an arbitrary number of clocks, regulators,
+>>> power-domains. Why should I artificially limit the interconnects to only
+>>> one?
+>>
+>> And IMO they should not. Bindings are not supposed to be generic.
+> 
+> The simplefb binding is a binding to allow keeping the firmware, e.g.
+> uboot setup framebuffer alive to e.g. show a boot splash until
+> the native display-engine drive loads. Needing display-engine
+> specific bindings totally contradicts the whole goal of 
 
-I totally feel you. In DRM land, we've also been upset about the naming. 
-But well...
+No, it does not. DT is well designed for that through expressing
+compatibility. I did not say you cannot have generic fallback for simple
+use case.
 
-
->
-> As for the argument for having a firmware-framebuffer not being allowed
-> because framebuffers are to complex to have a generic binding, that
-> ship has long sailed since we already have the simplefb binding.
->
-> And since we already have the binding I do not find this not being
-> simple a valid technical argument. That is an argument to allow
-> having a generic binding at all or to not have it at all, but here
-> we already have the binding and this is just about evolving the binding
-> with changing hw needs.
-
-Exactly my point.
-
->
-> And again this reminds me very much of the whole clocks / regulators
-> addition to simplefb discussion we had over a decade ago. Back then
-> we had a huge thread, almost a flamefest with in my memory over
-> a 100 emails and back then the only argument against adding them
-> was also "it is not simple", which IMHO really is a non argument for
-> an already existing binding. Certainly it is not a good technical
-> argument.
->
-> During the last decade, after clocks and regulators were added to
-> the binding. simplefb has been used successfully on millions (billions?)
-> handover the firmware framebuffer to the OS for bootsplash use,
-> replacing various vendor hacks for this. Disallowing the addition of
-> interconnect support to the simplefb binding will only result in
-> various vendor hacks appearing in vendor kernels for this, which
-> I believe is something which we should try to avoid.
-
-Exactly. And I'd also add that the current way of handling the situation 
-is the only feasible one. Simple-framebuffer needs to be generic and 
-compatible with existing and future hardware at minimal cost. The way of 
-doing so, is to have a few properties, such as clocks, regulators and 
-now interconnects, that the firmware clearly tells us about.  If we go 
-with per-hardware/per-vendor nodes, simple-framebuffer loses its usefulness.
+But this (and previous patchset) grows this into generic binding ONLY
+and that is not correct.
 
 
->
-> So as the maintainer of the simplefb kernel driver for over a decade
-> I strongly advice the DT maintainers to accept this bindings patch
+> 
+> It is generic by nature and I really do not see how clocks and
+> regulators are any different then interconnects here.
 
-As the maintainer of the simpledrm driver, I second this.
+Yeah, they are also wrong. I already commented on this.
 
-Best regards
-Thomas
+> 
+> Note that we had a huge discussion about adding clock
+> and regulators to simplefb many years ago with pretty
+> much the same arguments against doing so. In the end it was
+> decided to add regulator and clocks support to the simplefb
+> bindings and non of the feared problems with e.g. ordening
+> of turning things on happened.
+> 
+> A big part of this is that the claiming of clks / regulators /
+> interconnects by the simplefb driver is there to keep things on,
+> so it happens before the kernel starts tuning off unused resources
+> IOW everything is already up and running and this really is about
+> avoiding turning things off.
 
-> and from my my side this still is:
->
-> Reviewed-by: Hans de Goede <hansg@kernel.org>
->
-> Regards,
->
-> Hans
->
->
+No one asks to drop them from the driver. I only want specific front
+compatible which will list and constrain the properties. It is not
+contradictory to your statements, U-boot support, driver support. I
+really do not see ANY argument why this cannot follow standard DT rules.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+Best regards,
+Krzysztof

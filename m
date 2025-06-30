@@ -1,44 +1,92 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2898A23D28B;
-	Mon, 30 Jun 2025 08:38:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B37A521ABB1
+	for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 08:40:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751272705; cv=none; b=s3b//GlSKo3v7LE3nUnuyNH78YdGRXuDDTuOInKIGOzFbzfDwU4zEHD/sU21kRG00tUT8IG9p0W8xmA7T1aioQOZNrc4aSoSeC6QhY5yi2WAk0lZOA8nIeRAj2Ee7JIfhemqSIstytZ9grLCcvYAxMHp10/vJEwrYl4OS7dE7IM=
+	t=1751272856; cv=none; b=VvIdAPn9nDcm5Nm5de5Xco4ZaChEjJQBxwzj2Qr8IfDOUllAaxKszlpZ/Qsp9gr7BLiIpeOVWw+LXwrVYhUx3L5AkUaGoN8v0/LdHAPEyWBK32dK+Qp3YfIdt7vfOZehGCylDpWnKVhvfPt2Yjnf6oxENR5bMTRSh/1R4b4qcfg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751272705; c=relaxed/simple;
-	bh=PLIXEwxWC7QQ+4j+LLRtCwneBwdS5keVrROQQcKq2wg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WqQTkBLOJ/hPQI7w+Z3sk9ntdJJ+7BtiWO+R2XjRb/Zc7v5w1xOVTGBtE0sIpopmZsr8Gzenm9l3CIRQmH41K/mUTpW2t2Bljfe3onme5Q9njS+xgMQOJWAPfrgsIYGNiNBVOsUIVMwcuIazUhaF/74G6TQXogtJWsdhyaUUpkQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AsPbnEVe; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751272856; c=relaxed/simple;
+	bh=TtvZmKcu5ULV30hDwJa7QtVvX83gJrgmBcIfmoYQekA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XKTjKxri4Ds/KqPsJjfWOn1L4D7ycrSGlM9NR6Dj6ojtA3XhqEBL128eeCVV+yCfgFENNdJBurX+sz0Jmeb7OVRUloJ1FRcoDS4KVRtO/OPrtE5ll2x3dyWYyTH42OrVtvffqSFUB9wPiNdQ9II0laFbfaB4bowoyLS9NmJhXDw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=h6Pvm/1a; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AsPbnEVe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 378BAC4CEF2;
-	Mon, 30 Jun 2025 08:38:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751272704;
-	bh=PLIXEwxWC7QQ+4j+LLRtCwneBwdS5keVrROQQcKq2wg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AsPbnEVeeT6DMTbgBs5s9l+FTADNSJXYPbtIqiPsS/hU/aVY9Fy9OH3DwzduKxOUM
-	 fH2aIm8nT/GLFGZEsjjqzUeb352NzzCk0HbW7W4wFuN6Vom3QjrVjRUfTAq6jqIrkp
-	 NU6VZOrUnmat+iYPFSCC/VtJctGTXtBq8qveyVuyedbHsX7mCA95Ct0zAafMKEWrL5
-	 ZZyrTXPeFtyKU9Gm1Ccq0urSRwCPu6MSLl+1JbpmqNrjulRxwRWdjMpXVQAyajs0cs
-	 3uA1vTK0rMUERie5ddq8JL6W74ggIkLnTkRFFASbjlOqZD46FVe4GZkeVOHwjHrOy8
-	 mYHlD/8S21AFg==
-Date: Mon, 30 Jun 2025 10:38:21 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, 
-	Luca Weiss <luca.weiss@fairphone.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="h6Pvm/1a"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1751272853;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GbzS3/7wOLVYMQM7fq09DAq/NtYuBLxSJ0uQz6yllZw=;
+	b=h6Pvm/1afEJ2Ib8Gx1Xp74IaLTIm/EozgDwhO6Zvyfl3ks0/k2r/JsaYRH8BfT4l9rQ73F
+	dQ6P4nrcVjZ4HiT4cT0LJgzg1p436Wq+G9znqKCxa4+x1ISmTy229vpZAjwvbqGQSXodo6
+	qXXnWEdUuEgP3zmpgokmKrWUe8YFCGo=
+Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
+ [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-341-sBap33tKMWavmq9_YRfKpQ-1; Mon, 30 Jun 2025 04:40:50 -0400
+X-MC-Unique: sBap33tKMWavmq9_YRfKpQ-1
+X-Mimecast-MFC-AGG-ID: sBap33tKMWavmq9_YRfKpQ_1751272849
+Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-ae2b7bdc8f6so256509666b.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 30 Jun 2025 01:40:50 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751272849; x=1751877649;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=GbzS3/7wOLVYMQM7fq09DAq/NtYuBLxSJ0uQz6yllZw=;
+        b=RNjwyXUm38h9juQ04dGDAoUSlyn+D7TphWxsGaqr2isPxJxFTnHPo42KlCzFYLEkOG
+         riuAXAfflTQNWeTS67SgQ3zQclG9wec0uoKagJCIh+sk28u0KNAVXfHeVl42oUCA78NP
+         r4gssAXAHeoOdRg2/LO/ni/3h5JptBKkb2kvEman+vxUXClxl9qm6skO+/NYwSbaZI1v
+         GF4DMXV+yQX8/ue1uVL1gjxPTLRMUVfGJjP3ySu/ER5ODYgebqTyY37pZ/Z7nvfcRHy8
+         +M9D2J/QUguh/JmEKuztLuZE4gnkpsaEj62b960pe+wsHEd5t7hHcz45cU6sW0bcdNzI
+         Jtvg==
+X-Forwarded-Encrypted: i=1; AJvYcCXgaAtXg+pcrKeJFKHVpXIOA2c2UKZMHlmDl1yrW0JDdBgLnr+m+KOgSLYUWVD4IOQdMAmJV4QMYWdcdQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzfVyXMWIk7XVyi7d4WZxEH6k11pQERMO+4/TbCHygAt7OCn2GX
+	FW1KnVTt5T/2HqXdvyM2KU49jZNGSd3hDzufo8c9suyRwWm6+Nn0w97qJFZ1rpvJUuzsS/JB+ff
+	UkombXtPtyTimLlbV2Ghs4oRn/tjA8yQKMkgR9QQZEKNckiEda4n0dr2VWx0xVWO8
+X-Gm-Gg: ASbGnctNc/bAC8vencbYKPX92AAhG0K81yAbFjhyjXwo0FeODctgSdRXE2mDI80Myze
+	uBwM2vZwisudxLjlW2jDdPpKHZOhWWmAeFwtWQv7NNASnoFWTHBLRBXK26vmexDJe8ABl6boPIJ
+	ocurUsXbYjBDhS0H/1VKZgW53pID54a5KESCiVd6zjZavCjDLgGHc5QRU8dDlcURyq3zfz/PYq/
+	n7qEVPLI8KWv+vj6gG+WnqmgZkTmOZyOLleEmZqkqOC/T9YXDZJNIbecMv70gmDEC3Kh6j1nxLu
+	U0FWl2PkR7SIlO+PZlkF3Y5Ws8K4r/GX5KHQaEWhxUm7v0r56asTntCVlnoZBmTvUv2yFS669kf
+	+jl5wEGCaTya04nLwX+Te0XZo9dhtUa7Nd43CND4TCsmULjipe6pqnEf14sKNJ+nJkkdOo7Bv+w
+	==
+X-Received: by 2002:a17:907:3c91:b0:ae3:61ea:31b1 with SMTP id a640c23a62f3a-ae361ea3303mr1065072166b.12.1751272848977;
+        Mon, 30 Jun 2025 01:40:48 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IF/y7vOHMHZ5AF4xuBNceBfPbSy8M7ATw5UKXH09WWku0rRQgHald4Jy38PCYx58QuWLBfH7g==
+X-Received: by 2002:a17:907:3c91:b0:ae3:61ea:31b1 with SMTP id a640c23a62f3a-ae361ea3303mr1065069566b.12.1751272848439;
+        Mon, 30 Jun 2025 01:40:48 -0700 (PDT)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae362cbf19asm547457166b.128.2025.06.30.01.40.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 30 Jun 2025 01:40:47 -0700 (PDT)
+Message-ID: <e534d496-6ce0-46c8-835d-94b3346446a7@redhat.com>
+Date: Mon, 30 Jun 2025 10:40:46 +0200
+Precedence: bulk
+X-Mailing-List: linux-fbdev@vger.kernel.org
+List-Id: <linux-fbdev.vger.kernel.org>
+List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
  interconnects property
-Message-ID: <20250630-stirring-kiwi-of-adventure-8f22ba@houat>
+To: Krzysztof Kozlowski <krzk@kernel.org>,
+ Luca Weiss <luca.weiss@fairphone.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
  <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
@@ -46,123 +94,125 @@ References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
  <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
  <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
-Precedence: bulk
-X-Mailing-List: linux-fbdev@vger.kernel.org
-List-Id: <linux-fbdev.vger.kernel.org>
-List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="hbtofy4xtgn6gof3"
-Content-Disposition: inline
+Content-Language: en-US, nl
+From: Hans de Goede <hdegoede@redhat.com>
 In-Reply-To: <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+Hi,
 
---hbtofy4xtgn6gof3
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-MIME-Version: 1.0
-
-On Mon, Jun 30, 2025 at 10:24:06AM +0200, Krzysztof Kozlowski wrote:
+On 30-Jun-25 10:24 AM, Krzysztof Kozlowski wrote:
 > On 29/06/2025 14:07, Hans de Goede wrote:
-> > Hi Krzysztof,
-> >=20
-> > On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
-> >> On 27/06/2025 11:48, Luca Weiss wrote:
-> >>> Hi Krzysztof,
-> >>>
-> >>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
-> >>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
-> >>>>> Document the interconnects property which is a list of interconnect
-> >>>>> paths that is used by the framebuffer and therefore needs to be kept
-> >>>>> alive when the framebuffer is being used.
-> >>>>>
-> >>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-> >>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> >>>>> ---
-> >>>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml =
-| 3 +++
-> >>>>>  1 file changed, 3 insertions(+)
-> >>>>>
-> >>>>> diff --git a/Documentation/devicetree/bindings/display/simple-frame=
-buffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.=
-yaml
-> >>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2=
-b220c654b80e2e80850cd 100644
-> >>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.=
-yaml
-> >>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.=
-yaml
-> >>>>> @@ -79,6 +79,9 @@ properties:
-> >>>>>    power-domains:
-> >>>>>      description: List of power domains used by the framebuffer.
-> >>>>> =20
-> >>>>> +  interconnects:
-> >>>>> +    description: List of interconnect paths used by the framebuffe=
-r.
-> >>>>> +
-> >>>>
-> >>>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
-> >>>> some sort of resources in unknown way is not simple anymore. You need
-> >>>> device specific bindings.
-> >>>
-> >>> The bindings support an arbitrary number of clocks, regulators,
-> >>> power-domains. Why should I artificially limit the interconnects to o=
-nly
-> >>> one?
-> >>
-> >> And IMO they should not. Bindings are not supposed to be generic.
-> >=20
-> > The simplefb binding is a binding to allow keeping the firmware, e.g.
-> > uboot setup framebuffer alive to e.g. show a boot splash until
-> > the native display-engine drive loads. Needing display-engine
-> > specific bindings totally contradicts the whole goal of=20
->=20
+>> Hi Krzysztof,
+>>
+>> On 28-Jun-25 1:49 PM, Krzysztof Kozlowski wrote:
+>>> On 27/06/2025 11:48, Luca Weiss wrote:
+>>>> Hi Krzysztof,
+>>>>
+>>>> On Fri Jun 27, 2025 at 10:08 AM CEST, Krzysztof Kozlowski wrote:
+>>>>> On Mon, Jun 23, 2025 at 08:44:45AM +0200, Luca Weiss wrote:
+>>>>>> Document the interconnects property which is a list of interconnect
+>>>>>> paths that is used by the framebuffer and therefore needs to be kept
+>>>>>> alive when the framebuffer is being used.
+>>>>>>
+>>>>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>>>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+>>>>>> ---
+>>>>>>  Documentation/devicetree/bindings/display/simple-framebuffer.yaml | 3 +++
+>>>>>>  1 file changed, 3 insertions(+)
+>>>>>>
+>>>>>> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>>>> index 296500f9da05e296dbbeec50ba5186b6b30aaffc..f0fa0ef23d91043dfb2b220c654b80e2e80850cd 100644
+>>>>>> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>>>> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+>>>>>> @@ -79,6 +79,9 @@ properties:
+>>>>>>    power-domains:
+>>>>>>      description: List of power domains used by the framebuffer.
+>>>>>>  
+>>>>>> +  interconnects:
+>>>>>> +    description: List of interconnect paths used by the framebuffer.
+>>>>>> +
+>>>>>
+>>>>> maxItems: 1, or this is not a simple FB anymore. Anything which needs
+>>>>> some sort of resources in unknown way is not simple anymore. You need
+>>>>> device specific bindings.
+>>>>
+>>>> The bindings support an arbitrary number of clocks, regulators,
+>>>> power-domains. Why should I artificially limit the interconnects to only
+>>>> one?
+>>>
+>>> And IMO they should not. Bindings are not supposed to be generic.
+>>
+>> The simplefb binding is a binding to allow keeping the firmware, e.g.
+>> uboot setup framebuffer alive to e.g. show a boot splash until
+>> the native display-engine drive loads. Needing display-engine
+>> specific bindings totally contradicts the whole goal of 
+> 
 > No, it does not. DT is well designed for that through expressing
 > compatibility. I did not say you cannot have generic fallback for simple
 > use case.
->=20
+> 
 > But this (and previous patchset) grows this into generic binding ONLY
 > and that is not correct.
 
-Can we have a proper definition of what a correct device tree binding is
-then?
+I think that it is important here to notice that this is not
+a generic fallback binding, this is not and will never be
+intended to replace have a proper binding for
+the display-engine.
 
-It's a bit surprising to have *that* discussion over a binding that is
-now well older than a decade now, and while there is definitely some
-generic bindings in ePAPR/DT spec, like the CPU ones.
+This is just a way to give the kernel access to the firmware
+setup framebuffer to e.g. show a bootsplash but also fatal
+kernel errors until the real display-engine driver loads.
 
-If you don't consider that spec to be correct DT bindings, please
-provide a definition of what that is, and / or reasonable alternatives.
+Note sometimes the whole framebuffer memory is not touched
+at all and the sole reason for having a driver attach to
+the simplefb node early on is just to keep the resources
+needed to keep the panel lit up around (on) until the real
+display-engine driver comes along to claim those resources.
 
-Also, no, a device specific binding isn't reasonable here, because we
-*don't* have a device. From a technical standpoint, the firmware creates
-the framebuffer, Linux just uses it. Just like you don't have a
-device/platform specific compatible for PSCI, SCPI, et al.
+This avoids the display going black if the display-engine
+driver only binds after the kernel starts turning off
+unused resources, this typically happens when the display-engine
+driver is a module.
 
-And from a process standpoint, that driver is typically used years
-before we even get to writing a driver for the actual display driver.
-And since bindings are far from standard and actually pretty
-opionionated, even if we submitted a binding to use a proper binding
-without having a clear idea of what the hardware is, or what a driver
-would want, we would end up with either a broken binding, or a broken
-driver.
+>> It is generic by nature and I really do not see how clocks and
+>> regulators are any different then interconnects here.
+> 
+> Yeah, they are also wrong. I already commented on this.
+> 
+>>
+>> Note that we had a huge discussion about adding clock
+>> and regulators to simplefb many years ago with pretty
+>> much the same arguments against doing so. In the end it was
+>> decided to add regulator and clocks support to the simplefb
+>> bindings and non of the feared problems with e.g. ordening
+>> of turning things on happened.
+>>
+>> A big part of this is that the claiming of clks / regulators /
+>> interconnects by the simplefb driver is there to keep things on,
+>> so it happens before the kernel starts tuning off unused resources
+>> IOW everything is already up and running and this really is about
+>> avoiding turning things off.
+> 
+> No one asks to drop them from the driver. I only want specific front
+> compatible which will list and constrain the properties. It is not
+> contradictory to your statements, U-boot support, driver support. I
+> really do not see ANY argument why this cannot follow standard DT rules.
 
-Maxime
+So what you are saying is that you want something like:
 
---hbtofy4xtgn6gof3
-Content-Type: application/pgp-signature; name="signature.asc"
+framebuffer0: framebuffer@1d385000 {
+	compatible = "qcom.simple-framebuffer-sm8650-mdss", "simple-framebuffer";
+}
 
------BEGIN PGP SIGNATURE-----
+and that the binding for qcom.simple-framebuffer-sm8650-mdss
+can then list interconnects ?
 
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCaGJM/QAKCRAnX84Zoj2+
-dp8lAX0XjiHwXCRnaTDs4vlk7Mk0E+SF7vXGwL4XES2VVQuafyI5PHmNPASOj50l
-8IbNN4EBfjVbhdmCzLalbOYCKk+4j8bq9hixo+ZfPzxdRT2Esn8tvlUHMJa/Um+T
-DOcMcoHSYA==
-=uZYT
------END PGP SIGNATURE-----
+Regards,
 
---hbtofy4xtgn6gof3--
+Hans
+
+
+
+

@@ -1,91 +1,110 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D04449620
-	for <linux-fbdev@vger.kernel.org>; Tue,  1 Jul 2025 09:07:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D49F248F42
+	for <linux-fbdev@vger.kernel.org>; Tue,  1 Jul 2025 09:22:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751360890; cv=none; b=FgxT0yFUSdpkyRIimCDXoibBVRSRVK9hzS56m/CFYDogk092ztx/SH3clwW9IWc0JkhV1nwh67PKL0gyqw05r4/dkqFJz4hxGmef+gOiyg2CjJHaoHdYLxKJps0teTfhMLLAq0ljeWOK1wWuW6Uprj121x0lP/qmaRlI83Oqorw=
+	t=1751361769; cv=none; b=Xhl7D4eKQcm790+DVYnmKc1BL5BFGoB0JkGbscC2tEBS6sL6nlYeCjDuJTRB1Nu25PlLO3nGbhcsJ0QtGfv38DlFA5jd9D1gUpwr3rOraIMrCB+5+MpDz+r1xpq9sEieaV0kfCkrcWR0bfCEw40XNp2khVvMnK58EKATzovJBFg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751360890; c=relaxed/simple;
-	bh=P2o52q6EbEVh8ZM8TM+dHm5gV65ky6s4lLFyI2bLC+o=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=YUYg6Prb/9TVYdRdb0FqphBF8YpkKdYelI+weVnIRr/D4s5zU01okkt6PW8y8PVm6PvSHdBGek4wb/PhxBRHmtmNm48JVPNEyAyTX/TBgqoqxXgmhiiP3rzLxtobEyp0zpFYhlb/Keil65E5eQm4/7tDcPPEIiH398WMkF6N2jM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: c949aa54565a11f0b29709d653e92f7d-20250701
-X-CTIC-Tags:
-	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
-	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
-	HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM, HR_SJ_PHRASE
-	HR_SJ_PHRASE_LEN, HR_SJ_WS, HR_TO_COUNT, HR_TO_DOMAIN_COUNT, HR_TO_NO_NAME
-	IP_TRUSTED, SRC_TRUSTED, DN_TRUSTED, SA_EXISTED, SN_EXISTED
-	SPF_NOPASS, DKIM_NOPASS, DMARC_NOPASS, CIE_BAD, CIE_GOOD
-	CIE_GOOD_SPF, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_T1
-	AMN_GOOD, AMN_C_TI, AMN_C_BU, ABX_MISS_RDNS
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.45,REQID:f96cf731-ef75-4600-a4ab-4a506829d7fd,IP:15,
-	URL:0,TC:0,Content:0,EDM:25,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTI
-	ON:release,TS:35
-X-CID-INFO: VERSION:1.1.45,REQID:f96cf731-ef75-4600-a4ab-4a506829d7fd,IP:15,UR
-	L:0,TC:0,Content:0,EDM:25,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:35
-X-CID-META: VersionHash:6493067,CLOUDID:57dff3ec41b58ee6fd86cdbe338f0e89,BulkI
-	D:2507011707182UWYN7BE,BulkQuantity:0,Recheck:0,SF:19|24|38|44|66|72|78|10
-	2,TC:nil,Content:0|50,EDM:5,IP:-2,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BE
-	C:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 0,NGT
-X-CID-BAS: 0,NGT,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI
-X-UUID: c949aa54565a11f0b29709d653e92f7d-20250701
-X-User: zhangyongzhen@kylinos.cn
-Received: from localhost.localdomain [(39.156.73.13)] by mailgw.kylinos.cn
-	(envelope-from <zhangyongzhen@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 299963308; Tue, 01 Jul 2025 17:07:17 +0800
-From: Yongzhen Zhang <zhangyongzhen@kylinos.cn>
-To: simona@ffwll.ch,
-	deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	Yongzhen Zhang <zhangyongzhen@kylinos.cn>
-Subject: [PATCH] fbdev: fix potential buffer overflow in do_register_framebuffer()
-Date: Tue,  1 Jul 2025 17:07:04 +0800
-Message-Id: <20250701090704.161165-1-zhangyongzhen@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	s=arc-20240116; t=1751361769; c=relaxed/simple;
+	bh=WDPcSd680guMHutePUo2sb9AXNvKsSjrdc95DntYIlA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tz00xsPq1VPy55HYrjlVBSG6GfWnGh5GiIYsVt+G28gU1abA1Si2Q2dlio2zeSkugIQxpUegoXyug6WxvUM8wcMWuHMp60duZW2/DltUiNEyYJ0vu2DYXWCj4ZtvuZQuCd1VyVcxjYPRyjWzCumJrGL3o/n1Cnn33cO+WBIrwZI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=N1EzFnS0; arc=none smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="N1EzFnS0"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-ae3b37207easo49576366b.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Jul 2025 02:22:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1751361766; x=1751966566; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=QVT1yFp/HjeLlfeB/7qCKoB0uF7blBioZl7s6S0+Lag=;
+        b=N1EzFnS0LaghW1ukPNvkkSVCou8gUZJZI6q7MwMijiOaklGZWfrSCJaX5jSgNY8WFD
+         W4vgrKLeLzyluaIifBwIPRPoaLGGdgNE7Rar3JOtVDtMaczQZdS+bEwjYXqePzvJsGls
+         iroII/DNuZzSJp+/t3LU2hkxims+z0bKmG0tYCzP4c82S4UpWYZatYuw0uHrTc7sEI3u
+         yKhYXvuiakUNJFHaDMMi10v4fybeO2SFNUTxfq3nMWMmigNfmMXaZj6r0haiNhghh/xu
+         G/7PD73YnOni512vauW2wjuL0c/ISWpIdpJoB5q+LtWM08s+Q6QGohsKD0shoHAhzv+Y
+         kQ/A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751361766; x=1751966566;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QVT1yFp/HjeLlfeB/7qCKoB0uF7blBioZl7s6S0+Lag=;
+        b=tCa45FosS760ZQ9N8YcKm5eWfj93yvjRMvvIHl0wZkzL/GvJLmXTCa/LIevgq/NYD8
+         dPQJblFkxOly+1Wn0DNRwCqaDpUfLY7MVnMbGzNbIFiPRhyybIIusN/HQlHxgcDipCMY
+         lVxdthx4ZfBDpscQrsuWQLoapfg1A/Yl6I0M1WndI4xRbPMvA+v24Tj6V/f2OdzpSiO/
+         KIPHzHBHaHfGuWAjZAP+VYJM16KeTTEVt5pfQkTP1Xb3kQ4N5vYqfWqTlFsWgXb1QmZx
+         ahFWwL/6i6zrCJ/jEFIAmcJ5Qb6nVYn1XeV78r51Ry6qN0fOkPRTR/sGgQYmoD+LHiOc
+         ebxg==
+X-Forwarded-Encrypted: i=1; AJvYcCUCiwXuvD+5DYKBfIZbUG6oYWtUolXr1omzthIPO3k2Ola4l3JeQ2JgI4QkQs70ySi0XT7okpk+6A3zPQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxbj8sHczh5Sjdn9IIO/eV/Mq5YwN80XTpGYY0ddqERCDhXMnBN
+	O7+FcY7d/Ms7+DSgPAURdGn4wmMX0pC7J747NeCnqVY6i6Id/ecl4/ybozlTDLTww+A=
+X-Gm-Gg: ASbGncs4DQ3ZTPy+ZlAtMnfOccAz0RR07xujLy/XRAqCgmDoSleQO2+LADFFOOPTc9m
+	6bAn9+1imxfM0CjZ2kINxy1a9Vh5ytVYJnS5LLBjH06njJ+AcXTqQP3KywXochyLOqLC3cTC+Mw
+	e9SWG6Xkxo2yyJkn6zTYL1hR2eMcETDNupELfBi9asHlf2Truoqwe9dM2rVNupM5Qyy3/7AkYpv
+	Fl2HHldAKntTekjNGayI+4HX1qzbRcl4RXYP6r+jEEcYWabcJtCnAmiYB3Ib/MOBnBdGEZNG+4P
+	mZeE/EppucGBaH1QYicSH2CgzBOYuGbGNnlF+GCJQbW7bGbRY9kUPCThBqHgjpoDTg2fEkeQJ7W
+	v2s+Yicl80T60srQmEqroxxxYFIVK
+X-Google-Smtp-Source: AGHT+IFZdq1NZHDIulXPlQuX5XMNUcKGdnIBul8pqvsYdBp1L4Bvr5WiImxevKRjwpv/ZiS3cZkfeg==
+X-Received: by 2002:a17:907:3f0b:b0:ae0:ab07:7bba with SMTP id a640c23a62f3a-ae35011ff9amr1638414666b.45.1751361765635;
+        Tue, 01 Jul 2025 02:22:45 -0700 (PDT)
+Received: from localhost (p200300f65f06ab0400000000000001b9.dip0.t-ipconnect.de. [2003:f6:5f06:ab04::1b9])
+        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-ae353c0138bsm824291866b.85.2025.07.01.02.22.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 01 Jul 2025 02:22:45 -0700 (PDT)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Flavio Suligoi <f.suligoi@asem.it>,
+	Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-pwm@vger.kernel.org
+Subject: [PATCH 0/2] backlight: mp3309c: Drop pwm_apply_args()
+Date: Tue,  1 Jul 2025 11:22:35 +0200
+Message-ID: <cover.1751361465.git.u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.49.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=882; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=WDPcSd680guMHutePUo2sb9AXNvKsSjrdc95DntYIlA=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBoY6jbC5oB8EE9E9gtWZWsipYaB2TH8+5R6T5Kt 9AdMrVoRX6JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaGOo2wAKCRCPgPtYfRL+ TrsqB/44H74MvsBOGODdUXEVTHE6B31qnZdJQ6m46uqyRYqAc1xTitz9fVs0tI7m8L/HO4vrsB9 xhCPKF+qTY4FcR+zLCU6xw5xhp3J9Bcv+EPE4Yv34FVz2CgN32mvEW1HbkxHCCLyQDs1/087Po8 9pJ0VkX2TRM27UKnNMo+EhZcmWzkfqaIF8MUaMDg8w9Y6DbyT0oaIiu4FlSgaccJEAAlFH2mn46 clrJgdUXGGti2vmDiOC2u8d/cIftt+RAcFS5WW7zfUqwn55w846+sUf4I9mhrAGCBR9qtkLIP4K ASli44fO0rEJPMvs1HLHq+PuLP3k79oGPwxJrXX8Ft0ZKSzn
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-The current implementation may lead to buffer overflow when:
-1.  Unregistration creates NULL gaps in registered_fb[]
-2.  All array slots become occupied despite num_registered_fb < FB_MAX
-3.  The registration loop exceeds array bounds
+Hello,
 
-Add boundary check to prevent registered_fb[FB_MAX] access.
+the first patch of this series is what I really care about: There are
+hardly any drivers left that use pwm_apply_args(). When all of them are
+converted to not use it any more, I intend to drop that function.
 
-Signed-off-by: Yongzhen Zhang <zhangyongzhen@kylinos.cn>
----
- drivers/video/fbdev/core/fbmem.c | 3 +++
- 1 file changed, 3 insertions(+)
+The 2nd patch is just a change that I noticed while editing the driver
+that is IMHO nice. If you don't agree and only apply the first patch, I
+won't argue. It's an alternative approach to what Daniel Thompson did in
+commit 7ee6478d5aa9 ("backlight: mp3309c: Fully initialize
+backlight_properties during probe").
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index dfcf5e4d1d4c..53f1719b1ae1 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -449,6 +449,9 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 		if (!registered_fb[i])
- 			break;
- 
-+	if (i >= FB_MAX)
-+		return -ENXIO;
-+
- 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
- 		INIT_LIST_HEAD(&fb_info->modelist);
- 
+Best regards
+Uwe
+
+Uwe Kleine-König (2):
+  backlight: mp3309c: Drop pwm_apply_args()
+  backlight: mp3309c: Initialize backlight properties without memset
+
+ drivers/video/backlight/mp3309c.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+
+base-commit: 1343433ed38923a21425c602e92120a1f1db5f7a
 -- 
-2.25.1
+2.49.0
 

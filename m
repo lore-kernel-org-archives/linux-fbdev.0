@@ -1,134 +1,246 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E0982DCF4A;
-	Thu,  3 Jul 2025 09:46:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DE942EF9B7;
+	Thu,  3 Jul 2025 15:13:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751535965; cv=none; b=eaX5tcG9jO/3c9MU+5g47hVcls1UhSIplFgWlMgOBWy+wsrXjUd1FLOFOhiFm4xMii3dQ0HXWaoLO64AI7wnjAREAyJj/IU/kODnLYkRzhWgzZDF7aX3FRMxYkwAqIUebhWR7L00ML/+kHpR6WTZ29R1zYaXuSzJMBvn7+DxyTc=
+	t=1751555582; cv=none; b=QRTHoclR5rlhqkj4nXUVRaY8ax5Y4hCFE8pShAwIn9Apf1jbX/tMni84kyS5fHX+09N00+4BkYnQPCwvzK78oE2c7/1puBBlnAXMYmqs72N/IazSI/uJJ66JDJdXww5R13G8j5aaVV4w4YWBty5Gx9SW98KGfct1f/fGEHvmzeg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751535965; c=relaxed/simple;
-	bh=TqdILGUNLtHaa0kCIrn2n4mfoPZE8hzzx5z+kIeQFjE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mmAbtcisI6xBpyNxdVNJ+VYfkPTC1t1wJcoFk6RziEvQIfzkdQvsZoi7oT3ILCOqUcqoq+UYN0pmk9UhJgYLQgI9MgYnjCpzR2gITf52HKROf3E7jHwpguBJ3MnsTNdkp2e34q8xRVOnmLANKr218x+z9/VlL5eFMXdgxAcEEWg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lJMnHNxG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751555582; c=relaxed/simple;
+	bh=vzucKv9OLK6FSLpMliQ1t2fHXdOiSUkCDqNgsgoQP+0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=kRJj+BYtYsQSitPgS2CTlTwnzLYwkMeevPuSSCllGtTzOHQe5Ss1Axyzk0Xinb9RtT8vrVQVd1fgMSkOLp6WPyV+MWb04zBCqoh6SpyODsXGQEBGbs1OKuhHLJr9hIdGY8IiW4j64lUVQILuK8c0DUJifv927y1iCwIJDOrTTaY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ok3VSW0M; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lJMnHNxG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF723C4CEEB;
-	Thu,  3 Jul 2025 09:45:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751535964;
-	bh=TqdILGUNLtHaa0kCIrn2n4mfoPZE8hzzx5z+kIeQFjE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=lJMnHNxGEsCc4AINdhA6QQ7tcG9NUVosc4hrtxWYkvPH0dQEH5A31Oz+dlQzZnrSF
-	 r/r06Q9f0oWYzkIgq9JUHw1dhm/rbnR1LA2dJaHKLKc2XzgkNRsPZgGjeaey0mAHQN
-	 qmhK+aoVeMKQYCQck8COGRberTNMRmMs9OVnof5sTrjjFXgYsPF+HM5sP3NtBZMRA/
-	 OzC7Zg10KWGcEolc5ibRqWlVviocNADbL7zSWx4iWDHT6c90c3nhXwdPTmuUJpQWL4
-	 BjCFhXLIwOF7EKjQ8GIvShR9s2XgUOnvw5bjx1sVV7q8OvTNJtMlq8wtgzsUCWqViM
-	 jIqiAVLxVTDPg==
-Message-ID: <6af504ef-55b8-4599-a379-40842edfcfa5@kernel.org>
-Date: Thu, 3 Jul 2025 11:45:57 +0200
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ok3VSW0M"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8F91C4CEE3;
+	Thu,  3 Jul 2025 15:13:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1751555582;
+	bh=vzucKv9OLK6FSLpMliQ1t2fHXdOiSUkCDqNgsgoQP+0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=ok3VSW0MUJvOpHcdqJDoMZ5L72jEiWZCFGxlJ6PlR/IZZzbkwqBb6s8HKgZsi9Cuo
+	 Nl5sHfU+uZxORrIVO7HgWUQK1pbl8eeORXPwPUYOXpKCrcYokB5iiCr4+84wUzEpI0
+	 QEY1IcKHLI2zYj4ibOsS7ori90Z5d//2oOGC/D60=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Helge Deller <deller@gmx.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Daniel Vetter <daniel@ffwll.ch>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-parisc@vger.kernel.org,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 6.6 058/139] tty: vt: make init parameter of consw::con_init() a bool
+Date: Thu,  3 Jul 2025 16:42:01 +0200
+Message-ID: <20250703143943.435903829@linuxfoundation.org>
+X-Mailer: git-send-email 2.50.0
+In-Reply-To: <20250703143941.182414597@linuxfoundation.org>
+References: <20250703143941.182414597@linuxfoundation.org>
+User-Agent: quilt/0.68
+X-stable: review
+X-Patchwork-Hint: ignore
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-To: Maxime Ripard <mripard@kernel.org>, Hans de Goede <hdegoede@redhat.com>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
- Luca Weiss <luca.weiss@fairphone.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
- <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
- <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
- <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
- <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
- <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
- <e534d496-6ce0-46c8-835d-94b3346446a7@redhat.com>
- <6e4253dd-cd73-4302-b9df-44c8c311eb22@kernel.org>
- <e2159868-f31d-4d35-b6b1-2cbd1a9d249b@suse.de>
- <f5fe3fe1-903a-48ca-9249-b77bc07dbc77@redhat.com>
- <20250703-light-baboon-of-experiment-179ca3@houat>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20250703-light-baboon-of-experiment-179ca3@houat>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 03/07/2025 11:41, Maxime Ripard wrote:
->>> But does that work with *any* device that requires interconnects? The next such simple-framebuffer device should work out of the box *without* the kernel knowing anything about it. That's one of the key features of the simple-framebuffer.  If we have to maintainer per-device feature sets, it breaks that assumption.
->>
->> The driver code for this can still be generic and since the driver
->> will bind to the fallback plain "simple-framebuffer" compatible
->> this should also work for new platforms.
->>
->> The e.g. "qcom.simple-framebuffer-sm8650-mdss" compatible would
->> purely be something in the dt-bindings to document which simplefb
->> implementations will have interconnects and which ones will not.
->>
->> The driver does not necessarily need to check these more
->> precise compatibles, it can still just check for the generic
->> presence of interconnects.
-> 
-> This ship has kind of sailed though. This binding has been used by
-> plenty of firmwares and bootloaders over the years, and has been
-> deployed on plenty of devices already.
-> 
-> Good luck fixing it in all of them, and then updating every device.
-No one suggested that... We speak about new devices, although maybe this
-one SM7635 new device runs plenty of firmwares and bootloaders?
+6.6-stable review patch.  If anyone has any objections, please let me know.
 
-Best regards,
-Krzysztof
+------------------
+
+From: Jiri Slaby (SUSE) <jirislaby@kernel.org>
+
+[ Upstream commit dae3e6b6180f1a2394b984c596d39ed2c57d25fe ]
+
+The 'init' parameter of consw::con_init() is true for the first call of
+the hook on a particular console. So make the parameter a bool.
+
+And document the hook.
+
+Signed-off-by: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Helge Deller <deller@gmx.de>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-parisc@vger.kernel.org
+Tested-by: Helge Deller <deller@gmx.de> # parisc STI console
+Link: https://lore.kernel.org/r/20240122110401.7289-21-jirislaby@kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Stable-dep-of: 03bcbbb3995b ("dummycon: Trigger redraw when switching consoles with deferred takeover")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/tty/vt/vt.c                 | 8 ++++----
+ drivers/video/console/dummycon.c    | 2 +-
+ drivers/video/console/mdacon.c      | 2 +-
+ drivers/video/console/newport_con.c | 2 +-
+ drivers/video/console/sticon.c      | 2 +-
+ drivers/video/console/vgacon.c      | 4 ++--
+ drivers/video/fbdev/core/fbcon.c    | 2 +-
+ include/linux/console.h             | 4 +++-
+ 8 files changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 6bd1a7785e888..83028ccf6e529 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -999,7 +999,7 @@ int vc_cons_allocated(unsigned int i)
+ 	return (i < MAX_NR_CONSOLES && vc_cons[i].d);
+ }
+ 
+-static void visual_init(struct vc_data *vc, int num, int init)
++static void visual_init(struct vc_data *vc, int num, bool init)
+ {
+ 	/* ++Geert: vc->vc_sw->con_init determines console size */
+ 	if (vc->vc_sw)
+@@ -1083,7 +1083,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 	vc->port.ops = &vc_port_ops;
+ 	INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+ 
+-	visual_init(vc, currcons, 1);
++	visual_init(vc, currcons, true);
+ 
+ 	if (!*vc->uni_pagedict_loc)
+ 		con_set_default_unimap(vc);
+@@ -3474,7 +3474,7 @@ static int __init con_init(void)
+ 		vc_cons[currcons].d = vc = kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
+ 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+ 		tty_port_init(&vc->port);
+-		visual_init(vc, currcons, 1);
++		visual_init(vc, currcons, true);
+ 		/* Assuming vc->vc_{cols,rows,screenbuf_size} are sane here. */
+ 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
+ 		vc_init(vc, currcons || !vc->vc_sw->con_save_screen);
+@@ -3642,7 +3642,7 @@ static int do_bind_con_driver(const struct consw *csw, int first, int last,
+ 		old_was_color = vc->vc_can_do_color;
+ 		vc->vc_sw->con_deinit(vc);
+ 		vc->vc_origin = (unsigned long)vc->vc_screenbuf;
+-		visual_init(vc, i, 0);
++		visual_init(vc, i, false);
+ 		set_origin(vc);
+ 		update_attr(vc);
+ 
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index f1711b2f9ff05..9a19eb72a18b9 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -97,7 +97,7 @@ static const char *dummycon_startup(void)
+     return "dummy device";
+ }
+ 
+-static void dummycon_init(struct vc_data *vc, int init)
++static void dummycon_init(struct vc_data *vc, bool init)
+ {
+     vc->vc_can_do_color = 1;
+     if (init) {
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index ef29b321967f0..c5b255c968794 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -352,7 +352,7 @@ static const char *mdacon_startup(void)
+ 	return "MDA-2";
+ }
+ 
+-static void mdacon_init(struct vc_data *c, int init)
++static void mdacon_init(struct vc_data *c, bool init)
+ {
+ 	c->vc_complement_mask = 0x0800;	 /* reverse video */
+ 	c->vc_display_fg = &mda_display_fg;
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index e8e4f82cd4a1b..12c64ef470877 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -324,7 +324,7 @@ static const char *newport_startup(void)
+ 	return NULL;
+ }
+ 
+-static void newport_init(struct vc_data *vc, int init)
++static void newport_init(struct vc_data *vc, bool init)
+ {
+ 	int cols, rows;
+ 
+diff --git a/drivers/video/console/sticon.c b/drivers/video/console/sticon.c
+index 992a4fa431aaa..0bfeabc3f7c72 100644
+--- a/drivers/video/console/sticon.c
++++ b/drivers/video/console/sticon.c
+@@ -273,7 +273,7 @@ static int sticon_font_set(struct vc_data *vc, struct console_font *font,
+ 	return sticon_set_font(vc, font, vpitch);
+ }
+ 
+-static void sticon_init(struct vc_data *c, int init)
++static void sticon_init(struct vc_data *c, bool init)
+ {
+     struct sti_struct *sti = sticon_sti;
+     int vc_cols, vc_rows;
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index c9ec89649b055..490e157aebdd4 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -332,7 +332,7 @@ static const char *vgacon_startup(void)
+ 	return display_desc;
+ }
+ 
+-static void vgacon_init(struct vc_data *c, int init)
++static void vgacon_init(struct vc_data *c, bool init)
+ {
+ 	struct uni_pagedict *p;
+ 
+@@ -349,7 +349,7 @@ static void vgacon_init(struct vc_data *c, int init)
+ 	c->vc_scan_lines = vga_scan_lines;
+ 	c->vc_font.height = c->vc_cell_height = vga_video_font_height;
+ 
+-	/* set dimensions manually if init != 0 since vc_resize() will fail */
++	/* set dimensions manually if init is true since vc_resize() will fail */
+ 	if (init) {
+ 		c->vc_cols = vga_video_num_columns;
+ 		c->vc_rows = vga_video_num_lines;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 75996ef9992e4..9f10a6e92e509 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -993,7 +993,7 @@ static const char *fbcon_startup(void)
+ 	return display_desc;
+ }
+ 
+-static void fbcon_init(struct vc_data *vc, int init)
++static void fbcon_init(struct vc_data *vc, bool init)
+ {
+ 	struct fb_info *info;
+ 	struct fbcon_ops *ops;
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 7de11c763eb35..4efe76ac56d74 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -36,6 +36,8 @@ enum vc_intensity;
+ /**
+  * struct consw - callbacks for consoles
+  *
++ * @con_init:   initialize the console on @vc. @init is true for the very first
++ *		call on this @vc.
+  * @con_scroll: move lines from @top to @bottom in direction @dir by @lines.
+  *		Return true if no generic handling should be done.
+  *		Invoked by csi_M and printing to the console.
+@@ -46,7 +48,7 @@ enum vc_intensity;
+ struct consw {
+ 	struct module *owner;
+ 	const char *(*con_startup)(void);
+-	void	(*con_init)(struct vc_data *vc, int init);
++	void	(*con_init)(struct vc_data *vc, bool init);
+ 	void	(*con_deinit)(struct vc_data *vc);
+ 	void	(*con_clear)(struct vc_data *vc, int sy, int sx, int height,
+ 			int width);
+-- 
+2.39.5
+
+
+

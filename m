@@ -1,72 +1,80 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E5FF2D028F
-	for <linux-fbdev@vger.kernel.org>; Thu,  3 Jul 2025 08:34:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A84D2D193C
+	for <linux-fbdev@vger.kernel.org>; Thu,  3 Jul 2025 08:41:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751531674; cv=none; b=n3Z1ONX5P64czjkz5VIRYqy+IwzcSUE5JMVf45OqZzc30hiozumxLEcItsaAoFS/f50qpBmXN+4Z6nCT7QWhQftz/C7RucOveriI3DvBit7+ywHKkTyx8Iwn2ysWtPgeflsI3BSiBTva7eOzBAE75c6OdQHF+AYCKCV6o4IjOAQ=
+	t=1751532104; cv=none; b=p0jTCp6k6N9SVtItkkIZGpxc2/iMZPo7qYqYQhhSAve/SRQR+B6CA+Lebmy4Ybkw68t118CEG7eZaQziS5roHG8Zf0h2EwyOfOBCDywMiwm2eUPpyVMTDUjV6clntQCS7NxkQ/3TS9oJ7K2oMgEFmOu+WXIsUBJt1+84+RsvQ6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751531674; c=relaxed/simple;
-	bh=KiU0mOb5SXdM9IWDYReGvf6ZjDNAjg2kPIgG3hlcS6w=;
+	s=arc-20240116; t=1751532104; c=relaxed/simple;
+	bh=vzb2/RqeE4XZiLHHT2ZiJwAFi9H17syhqfEek/VdZV0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TownYaykYJWd0LBnfXe5qYe0tTINHEne2hd2iAumHYxLrbmmsaDI4oIeKE6ajmhY29U1C6pk2E5mzVZbCrs50iXCtRGMSPgszZEUNNWTYFvnhKaIyXdq2SHWf6tJA+3OlOBw6rvkcowaBE+zbLdQgqvSarwfVgvyM9b9zSIY3Hg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=N267G8YY; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	 In-Reply-To:Content-Type; b=TaMA7vVTTIJUgtMHTXv1Ye+p3Rl9/W+LNHSYQ3rJE02xCdHS3gKEYaDt7OGCpBDKM93fa3THH7VQONAtnRR15dp6s1Er79ujyiVMb/IwjoSudt4uE2c+rQhHlhJLoiwzNlKxT+SKeskyAJ33RTBb5+mA0MQA4+KtyHW9GEk6cFg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=hqLgk6Li; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Td5aX4pb; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=oyoWjY0n; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=fPloqsmS; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="N267G8YY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751531672;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="hqLgk6Li";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Td5aX4pb";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="oyoWjY0n";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="fPloqsmS"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id BC63321161;
+	Thu,  3 Jul 2025 08:41:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1751532100; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=221h2gTHX6oXGMnPCILS/QRTKOojZm+JGCoLjP5IEkI=;
-	b=N267G8YY1pPAeZ9tgt5PUXouANNDCqRcx41VmjCwBlELymFj3oyrEc7J/RaAfrhKxiP9Z8
-	B+fE0Jg731frN+ls8hC3pv/F1C5IsZ9kT3QV2391RNm634El1zy9GkBOmonWlsTT9paHqu
-	gd8vBnHBiVKCk6UCltd0m4+xSPgv9ZM=
-Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
- [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-277-iB2lJcfaPhSjmcQcgvmyIA-1; Thu, 03 Jul 2025 04:34:27 -0400
-X-MC-Unique: iB2lJcfaPhSjmcQcgvmyIA-1
-X-Mimecast-MFC-AGG-ID: iB2lJcfaPhSjmcQcgvmyIA_1751531667
-Received: by mail-ej1-f71.google.com with SMTP id a640c23a62f3a-ae2b7bdc8f6so76360266b.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 03 Jul 2025 01:34:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751531667; x=1752136467;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=221h2gTHX6oXGMnPCILS/QRTKOojZm+JGCoLjP5IEkI=;
-        b=Yj8RLafITiJYxBBqaMlkHZQZ6z+sJzphYGnpxGrPvJCLRWZkOOUaPoDmSAIbaBpe1q
-         GfoW9MthRkT9/rJ6dcF3cugyIUfuV7P8eDl2yHS2hrC6QPdUemZD7723b+IkPW06z6sv
-         nTCJxaPCmU6XqSUrKSnt2TgWxFOLnt4cLFzG+hNmnGFzInkv17+2OES/dVVdBCZmBY7n
-         gAWoUf+HbmPSp/srNFfxDu2NO3KIHMdvTH1kwuNTFpDpxn1ojwmB50zUrVY+5hcYy5QO
-         23AhjoF3/WnWm2tgkLdCkZFDfgt3U1dhY06bL5ho/exyfbDExvhErSC7TiWYyEIf52/T
-         PUyQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVTHEhOnXmQeAMwd7Uvo17pSBb1dVrl/VYoEm5JINgvRrOAYYP2WL8ek1FsWWUjgCOUmrDNDE6R34QbFg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz1n1137so4rEenrzpdLwFDfH4R8SutNYfNqjz7yhDdxb3IEdVV
-	m9nhXh1AMFCPmtyJQibtKqdZsj3UsA4cgiZdiCfGsSrIR3aQIvwlRThDTI2Sh7XvWccV/c/BsQ5
-	RGi96TKDqDarc9INoqBDcaFxYHjKl0ZTLhyyCKZy1qs3PEpwaVgZPUmyMr1T8bemB
-X-Gm-Gg: ASbGncsmR3OV2I1zrTHT8MwW7i+bjyZ/6CmUsJIvEoRJzgJHIysyYdYvPL3A6zhvWPI
-	A/wqkwSU5P1oNGEEeYzID0y4DOQi+FdB19zsXNVBegUww6zoL3kr5Gt5FRwG19L/gJLd8JtwiVA
-	dGjpnL+Cj/BKjS0H6EgAUorUqPxOBvYdDw8+cqfuYhSn4KGzTUv6nH8TTxVZ6TNm7tMzB8S4Pb1
-	heTKhxEWD7Udb4ZZpd+V0sdmxmdPWjVOMt7E901XSk0pGzwZY9R460wqaceQnTB8GxjqfUIqVNG
-	oRUXHJ4cxrg3TXLWsjI640/iEKozqjSDu2h/4GI6Wu9t2gT7YyalTuNISQZ//ZcuxStZwrSEYQI
-	RCeYxn4lpz2FThKEki/tyHnYmzV4gxGHC1N1x1HGurmV5p7p04MG2LTza18f4YQ4QEWXWikwJ
-X-Received: by 2002:a17:907:3d8d:b0:ae0:a465:1c20 with SMTP id a640c23a62f3a-ae3dcc33e3dmr202629066b.14.1751531666609;
-        Thu, 03 Jul 2025 01:34:26 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IH0jetECjsFXFGgQLjZYc5QGYfQzjQBHnfhAK7F+xPPGCcJzJbtB9How+LBWAWH7EYvtz0QzQ==
-X-Received: by 2002:a17:907:3d8d:b0:ae0:a465:1c20 with SMTP id a640c23a62f3a-ae3dcc33e3dmr202620766b.14.1751531665205;
-        Thu, 03 Jul 2025 01:34:25 -0700 (PDT)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae353ca2ab0sm1202272966b.164.2025.07.03.01.34.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 03 Jul 2025 01:34:24 -0700 (PDT)
-Message-ID: <f5fe3fe1-903a-48ca-9249-b77bc07dbc77@redhat.com>
-Date: Thu, 3 Jul 2025 10:34:23 +0200
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=jaa55Jkm4HEbY1gXLu6EskAh6+6v69clm2cvvQpaK6w=;
+	b=hqLgk6LixwgSTSd58ODQqJQO4dyz2yI31j/vjkv3VjA6zMVqVJ1dTVPVnbG3UR9H/2eM8y
+	je47VZ40OSvW0IsFAzfgplCc4gTQfp98K7/Lyq+vG0n/lNyORGw9g3P6l5uFa21QhcpzR0
+	nBgIgedb2yCTjKv+eLfM3wAoUXd6xy4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1751532100;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=jaa55Jkm4HEbY1gXLu6EskAh6+6v69clm2cvvQpaK6w=;
+	b=Td5aX4pbyRlUMQR5ZNv11WTMesZL1Yrz6Braqj7o+Lo6lp5fhOJd104aF8EKKSXaFYfu0Y
+	j6qH4Kjy4TbqKUAg==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1751532099; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=jaa55Jkm4HEbY1gXLu6EskAh6+6v69clm2cvvQpaK6w=;
+	b=oyoWjY0nB2sFn6JQe4gI4rfIHNGtc85eKw8sAWT8jH54gDfY5oj3oJuznTP1lJMAhXKf1+
+	hN/+paca234y0BPspALQKqbSiusuv5uDdwRWn1gf+tTa/zvSnVbfj49SmR9lxKsYO6FUNj
+	uDR45sk0HSBIy76jrZ1cPcO3RosqHkU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1751532099;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=jaa55Jkm4HEbY1gXLu6EskAh6+6v69clm2cvvQpaK6w=;
+	b=fPloqsmSlO3wXTMK2Qv+9uC/ab+bhLQj9RBnGwQpluexHIwL+NtwtD3KKndVeepRFTyGSC
+	WSiF5GYfL4Pe/EDA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 438041368E;
+	Thu,  3 Jul 2025 08:41:39 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id eRJPDkNCZmiRcQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 03 Jul 2025 08:41:39 +0000
+Message-ID: <1555efd6-5a39-4bc7-92d4-63f5c33b1dca@suse.de>
+Date: Thu, 3 Jul 2025 10:41:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -76,8 +84,8 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
  interconnects property
-To: Thomas Zimmermann <tzimmermann@suse.de>,
- Krzysztof Kozlowski <krzk@kernel.org>, Luca Weiss <luca.weiss@fairphone.com>
+To: Hans de Goede <hdegoede@redhat.com>, Krzysztof Kozlowski
+ <krzk@kernel.org>, Luca Weiss <luca.weiss@fairphone.com>
 Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
  Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
@@ -96,49 +104,117 @@ References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <e534d496-6ce0-46c8-835d-94b3346446a7@redhat.com>
  <6e4253dd-cd73-4302-b9df-44c8c311eb22@kernel.org>
  <e2159868-f31d-4d35-b6b1-2cbd1a9d249b@suse.de>
-Content-Language: en-US, nl
-From: Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <e2159868-f31d-4d35-b6b1-2cbd1a9d249b@suse.de>
-Content-Type: text/plain; charset=UTF-8
+ <f5fe3fe1-903a-48ca-9249-b77bc07dbc77@redhat.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <f5fe3fe1-903a-48ca-9249-b77bc07dbc77@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Score: -2.80
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TAGGED_RCPT(0.00)[dt];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[16];
+	MIME_TRACE(0.00)[0:+];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linux.intel.com,kernel.org,gmail.com,ffwll.ch,redhat.com,gmx.de,vger.kernel.org,lists.freedesktop.org];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_TLS_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,1d385000:email,suse.de:mid]
+X-Spam-Level: 
 
-Hi Thomas,
+Hi
 
-On 3-Jul-25 8:47 AM, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 02.07.25 um 22:43 schrieb Krzysztof Kozlowski:
->> On 30/06/2025 10:40, Hans de Goede wrote:
->>>> No one asks to drop them from the driver. I only want specific front
->>>> compatible which will list and constrain the properties. It is not
->>>> contradictory to your statements, U-boot support, driver support. I
->>>> really do not see ANY argument why this cannot follow standard DT rules.
->>> So what you are saying is that you want something like:
->>>
->>> framebuffer0: framebuffer@1d385000 {
->>>     compatible = "qcom.simple-framebuffer-sm8650-mdss", "simple-framebuffer";
->>> }
->>>
->>> and that the binding for qcom.simple-framebuffer-sm8650-mdss
->>> can then list interconnects ?
->> IMO yes (after adjusting above to coding style), but as mentioned in
->> other response you can just get an ack or opinion from Rob or Conor.
-> 
-> But does that work with *any* device that requires interconnects? The next such simple-framebuffer device should work out of the box *without* the kernel knowing anything about it. That's one of the key features of the simple-framebuffer.  If we have to maintainer per-device feature sets, it breaks that assumption.
+Am 03.07.25 um 10:34 schrieb Hans de Goede:
+> Hi Thomas,
+>
+> On 3-Jul-25 8:47 AM, Thomas Zimmermann wrote:
+>> Hi
+>>
+>> Am 02.07.25 um 22:43 schrieb Krzysztof Kozlowski:
+>>> On 30/06/2025 10:40, Hans de Goede wrote:
+>>>>> No one asks to drop them from the driver. I only want specific front
+>>>>> compatible which will list and constrain the properties. It is not
+>>>>> contradictory to your statements, U-boot support, driver support. I
+>>>>> really do not see ANY argument why this cannot follow standard DT rules.
+>>>> So what you are saying is that you want something like:
+>>>>
+>>>> framebuffer0: framebuffer@1d385000 {
+>>>>      compatible = "qcom.simple-framebuffer-sm8650-mdss", "simple-framebuffer";
+>>>> }
+>>>>
+>>>> and that the binding for qcom.simple-framebuffer-sm8650-mdss
+>>>> can then list interconnects ?
+>>> IMO yes (after adjusting above to coding style), but as mentioned in
+>>> other response you can just get an ack or opinion from Rob or Conor.
+>> But does that work with *any* device that requires interconnects? The next such simple-framebuffer device should work out of the box *without* the kernel knowing anything about it. That's one of the key features of the simple-framebuffer.  If we have to maintainer per-device feature sets, it breaks that assumption.
+> The driver code for this can still be generic and since the driver
+> will bind to the fallback plain "simple-framebuffer" compatible
+> this should also work for new platforms.
+>
+> The e.g. "qcom.simple-framebuffer-sm8650-mdss" compatible would
+> purely be something in the dt-bindings to document which simplefb
+> implementations will have interconnects and which ones will not.
+>
+> The driver does not necessarily need to check these more
+> precise compatibles, it can still just check for the generic
+> presence of interconnects.
 
-The driver code for this can still be generic and since the driver
-will bind to the fallback plain "simple-framebuffer" compatible
-this should also work for new platforms.
+Thanks, that's good to hear.
 
-The e.g. "qcom.simple-framebuffer-sm8650-mdss" compatible would
-purely be something in the dt-bindings to document which simplefb
-implementations will have interconnects and which ones will not.
+Best regards
+Thomas
 
-The driver does not necessarily need to check these more
-precise compatibles, it can still just check for the generic
-presence of interconnects.
+>
+> Regards,
+>
+> Hans
+>
 
-Regards,
-
-Hans
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 

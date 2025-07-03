@@ -1,45 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3FBA2C3266;
-	Thu,  3 Jul 2025 15:13:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A4FB226CF1;
+	Thu,  3 Jul 2025 15:22:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751555591; cv=none; b=L6y3+2vPvz9wkFFZeGRYfeVwmKIZovsoGqrtqthV3GBLmd+9VSav9gqavDxaD2+/GdTt5GBVUP8Z3eCpNzRqT2cv3YG+FW5lnevxmlWZC5Y5yMIOk8AQjeNRiZ77Bd+Do9v8pfx56eS0DNqavaQ/AHPsjNsLqNCZKNYFnydiAWw=
+	t=1751556159; cv=none; b=gxZn1haqEuG9lXpdVbQrG3E3F+7gNJUMioqn/cmKdyO8xOMmaP1XRnv1Nw7RGlpz5AyxHkRp3Z5qj2oU2hkLcCyXpEiy/MhVAVRj5dS+nJJCyPuI29jw37LHen5Fq22Ohll88G0y6L7ZZ3c7G6xfXxKoyAJPGo+bm/TiRrEUM+4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751555591; c=relaxed/simple;
-	bh=kPRRQIdajowrvuWvSfLhZYiUYr95/9iEWlCK9lgEiMk=;
+	s=arc-20240116; t=1751556159; c=relaxed/simple;
+	bh=V+pH3XO9nKwiO/o2VhZUCqJmxYoigW77zAeSAZhnX7M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OFwoIZmaFyh1xLAMyd7l1Ify4bwcfuba4gjdHzTVSVXU2cisNlYE5vns4SVQBRceFbKHoZlUphTyyZy4Vj7MYew/12U1z3j4mCpHBgg4+H54Lq1I9/9SwKvRxMiOeaYlITTlqTofyz/ny9FeuJNATF6LexSUbfAodQrO3bzmJW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=OW9YnW2J; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=VzQvDQcgBDOMy9iNABTcYuGfPwmvjnUWW1nH/zD8PfJCMoPW/mhLNBTqbWJjqzO4vfEQ4VlFv9LXYlr8LEy+oFti4ss34vIOl69nKTYuRrhXaVU01BkLNgGPfyGUhCP/wGoyH3MKUhbAKpb1qENZkePi4Zg7EEJ1GAt8oURcrWo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=SW88V0n0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="OW9YnW2J"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4206AC4CEE3;
-	Thu,  3 Jul 2025 15:13:11 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="SW88V0n0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CFEEC4CEE3;
+	Thu,  3 Jul 2025 15:22:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1751555591;
-	bh=kPRRQIdajowrvuWvSfLhZYiUYr95/9iEWlCK9lgEiMk=;
+	s=korg; t=1751556157;
+	bh=V+pH3XO9nKwiO/o2VhZUCqJmxYoigW77zAeSAZhnX7M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=OW9YnW2JQuVXEoj632+yixv4wSot7Taq6qwK920p5zkNajOmwPQ2s/DmCB+twNkee
-	 8aMXhgl+K+zChk0Yera9SMajZInygRcjjGeVMODYZjiKbGRO+dA83TTzNKbh9wlI0P
-	 kPTVUi59WNESKJ+RPEk4Da3tFXZw86dmG1qch4CI=
+	b=SW88V0n0ECjB7nxaKHeQfaEcxxbOPtYQrL6WaByoRvPRnJvxr+osFu7o5d9oHKqlS
+	 llajgoUEsFVLHG1ZAFTrmsHb8UGVN8HszwYkn49+ExyilzyKpuLKTI+ij8/IQtb8BG
+	 li8ljfnY9s/hIBzH3gTL9XNb9b8dPnK6u4Kwa9NI=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Andrei Borzenkov <arvidjaar@gmail.com>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Hans de Goede <hdegoede@redhat.com>,
+	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+	Helge Deller <deller@gmx.de>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6 061/139] dummycon: Trigger redraw when switching consoles with deferred takeover
-Date: Thu,  3 Jul 2025 16:42:04 +0200
-Message-ID: <20250703143943.553875999@linuxfoundation.org>
+Subject: [PATCH 6.1 063/132] vgacon: switch vgacon_scrolldelta() and vgacon_restore_screen()
+Date: Thu,  3 Jul 2025 16:42:32 +0200
+Message-ID: <20250703143941.888335092@linuxfoundation.org>
 X-Mailer: git-send-email 2.50.0
-In-Reply-To: <20250703143941.182414597@linuxfoundation.org>
-References: <20250703143941.182414597@linuxfoundation.org>
+In-Reply-To: <20250703143939.370927276@linuxfoundation.org>
+References: <20250703143939.370927276@linuxfoundation.org>
 User-Agent: quilt/0.68
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -51,97 +49,58 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.6-stable review patch.  If anyone has any objections, please let me know.
+6.1-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+From: Jiri Slaby (SUSE) <jirislaby@kernel.org>
 
-[ Upstream commit 03bcbbb3995ba5df43af9aba45334e35f2dfe27b ]
+[ Upstream commit 03b89a08484a88fb9e0604cab2b3eb0c2f265c74 ]
 
-Signal vt subsystem to redraw console when switching to dummycon
-with deferred takeover enabled. Makes the console switch to fbcon
-and displays the available output.
+Switch vgacon_scrolldelta() and vgacon_restore_screen() positions, so
+that the former is not needed to be forward-declared.
 
-With deferred takeover enabled, dummycon acts as the placeholder
-until the first output to the console happens. At that point, fbcon
-takes over. If the output happens while dummycon is not active, it
-cannot inform fbcon. This is the case if the vt subsystem runs in
-graphics mode.
-
-A typical graphical boot starts plymouth, a display manager and a
-compositor; all while leaving out dummycon. Switching to a text-mode
-console leaves the console with dummycon even if a getty terminal
-has been started.
-
-Returning true from dummycon's con_switch helper signals the vt
-subsystem to redraw the screen. If there's output available dummycon's
-con_putc{s} helpers trigger deferred takeover of fbcon, which sets a
-display mode and displays the output. If no output is available,
-dummycon remains active.
-
-v2:
-- make the comment slightly more verbose (Javier)
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Closes: https://bugzilla.suse.com/show_bug.cgi?id=1242191
-Tested-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Acked-by: Javier Martinez Canillas <javierm@redhat.com>
-Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
-Cc: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+Cc: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org
 Cc: dri-devel@lists.freedesktop.org
-Cc: <stable@vger.kernel.org> # v4.19+
-Link: https://lore.kernel.org/r/20250520071418.8462-1-tzimmermann@suse.de
+Signed-off-by: Helge Deller <deller@gmx.de>
+Stable-dep-of: 03bcbbb3995b ("dummycon: Trigger redraw when switching consoles with deferred takeover")
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/console/dummycon.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ drivers/video/console/vgacon.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index d701f2b51f5b1..d99e1b3e4e5c1 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -82,6 +82,15 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
- 	/* Redraw, so that we get putc(s) for output done while blanked */
- 	return 1;
- }
-+
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	/*
-+	 * Redraw, so that we get putc(s) for output done while switched
-+	 * away. Informs deferred consoles to take over the display.
-+	 */
-+	return true;
-+}
- #else
- static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
- static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
-@@ -90,6 +99,10 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
- {
- 	return 0;
- }
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	return false;
-+}
- #endif
- 
- static const char *dummycon_startup(void)
-@@ -119,11 +132,6 @@ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
- 	return false;
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index e960b27caadab..065da55f20d89 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -142,12 +142,6 @@ static inline void vga_set_mem_top(struct vc_data *c)
+ 	write_vga(12, (c->vc_visible_origin - vga_vram_base) / 2);
  }
  
--static bool dummycon_switch(struct vc_data *vc)
+-static void vgacon_restore_screen(struct vc_data *c)
 -{
--	return false;
+-	if (c->vc_origin != c->vc_visible_origin)
+-		vgacon_scrolldelta(c, 0);
 -}
 -
- /*
-  *  The console `switch' structure for the dummy console
-  *
+ static void vgacon_scrolldelta(struct vc_data *c, int lines)
+ {
+ 	vc_scrolldelta_helper(c, lines, vga_rolled_over, (void *)vga_vram_base,
+@@ -155,6 +149,12 @@ static void vgacon_scrolldelta(struct vc_data *c, int lines)
+ 	vga_set_mem_top(c);
+ }
+ 
++static void vgacon_restore_screen(struct vc_data *c)
++{
++	if (c->vc_origin != c->vc_visible_origin)
++		vgacon_scrolldelta(c, 0);
++}
++
+ static const char *vgacon_startup(void)
+ {
+ 	const char *display_desc = NULL;
 -- 
 2.39.5
 

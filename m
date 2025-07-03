@@ -1,48 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36C1019D8AC;
-	Thu,  3 Jul 2025 15:22:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D56E12F2C7B;
+	Thu,  3 Jul 2025 18:35:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751556174; cv=none; b=mMZQLc/fWTw0VSg07UAOI01MaPe1EZJ/FkAmO8PQhJdh7ZS7htCkRJYZHAYo+LSJRJ02sfAJP78R1plet+RX8SC4iZwptDU4TfD11AIixHikVTV+I3YXhJAKJ8zw8AVhbO/4iAEJpPhA8zHD4gKJshEf6HjGsiCHbOdIVSfg2Bs=
+	t=1751567717; cv=none; b=U8xt2Q2lBS7aD4gNYMrXcZn62ui8XjvkCorWpVNmgzg1Xun4kVWDHKNis1cBblvhk68kPRF50yqHKDcB1aAokMj2zDyolMoXLryz3v57nVFVenMcsQqdmFQiTOv9H6OnbEffEs12dpP5q499sCFGXNgDMHthmDbmpbDVBqvOFJg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751556174; c=relaxed/simple;
-	bh=N385rLwB6m/g5nTIimxsbKLLdRHC6lQFsQkAzbOcXLU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oD+Z0aKrq4/iglvGC+fZkJvDJck9CrIeEKr16Nnl0XYXKI3xADjPNBeLY1KgrWboDoEt3VU+270irsN1W9sw4dvaP8k9rRBxmrWobw8H3pkjjf28pCfdgNbccDkbhxG3gbJXiCFfRHako3aPdkb/AhrK0P9E0zjI2JfajjksHoQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=IqY8hFFk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751567717; c=relaxed/simple;
+	bh=9jb2HLI9HrPZc5LhaUHkznBv5LXACEW22xeTnBLCoi0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FDOxhjKQYzf7NjldbI7edrsjlC0naNmNs7EIo6GCe7W95MhkHtvoOE8W8IJVxB7qM5gCbBVkAiYm+OYdCo1gJhKcM/xjXR48gKMFc9D5fYXRjHhFbb99HTuqvqvZP4Oi4wjago7/xAVXlqO2WefFHJAPQdDFQ1IAeTWwmRMfYl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fbu0Pmtu; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="IqY8hFFk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2F3CC4CEE3;
-	Thu,  3 Jul 2025 15:22:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1751556174;
-	bh=N385rLwB6m/g5nTIimxsbKLLdRHC6lQFsQkAzbOcXLU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IqY8hFFk2fg9WeDHJlhvt0frke4fod9Nm40FwblQ7eqii/HqFgTMaZNbd6uqDMHMx
-	 SnxMoV4mrdgUve6bbFKgbkfmemGGWra581uaWvmAXCWsyiTzjKljqGesRHeiAyEupi
-	 2k4sAaGgD5jnrnCwGM3YhqxTtAPqbfOLm1G6Cel4=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Andrei Borzenkov <arvidjaar@gmail.com>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	linux-fbdev@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fbu0Pmtu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88A50C4CEE3;
+	Thu,  3 Jul 2025 18:35:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751567717;
+	bh=9jb2HLI9HrPZc5LhaUHkznBv5LXACEW22xeTnBLCoi0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=fbu0PmtuWC2GHVZSZNyBmOQD1mxvq6kYdXkW2FM1JSYB+I+vH9ljZS16YYVZIj2vD
+	 aDL6ezVHjRe/XjOBeBR6NNZcT1fokxdggvz2MOCFomJS4wyk/soWy9H3ydAnxM8fzt
+	 v9bXUvP3dMKjX2hdjfbRc7G3QWQtcTBDGn1KeLASvZobFtIRCRZq9TWxLsyYY6Dcma
+	 MydtI83vGfDLFvj+Er9QgOncX+cHKdCZPzsTXu39CivQistF+pTPIU+Ml29OAuRg2h
+	 mrCilhUS92/eDOLb7cyx7OuqTDlYFGtvefyTrhENHgJqMAzZ+hjNx8ScEd8OBMTdMH
+	 qaCqoc6qmT1fA==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>,
+	Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.1 068/132] dummycon: Trigger redraw when switching consoles with deferred takeover
-Date: Thu,  3 Jul 2025 16:42:37 +0200
-Message-ID: <20250703143942.086720834@linuxfoundation.org>
-X-Mailer: git-send-email 2.50.0
-In-Reply-To: <20250703143939.370927276@linuxfoundation.org>
-References: <20250703143939.370927276@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: simplefb: Use of_reserved_mem_region_to_resource() for "memory-region"
+Date: Thu,  3 Jul 2025 13:35:13 -0500
+Message-ID: <20250703183514.2074928-1-robh@kernel.org>
+X-Mailer: git-send-email 2.47.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -51,99 +43,67 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.1-stable review patch.  If anyone has any objections, please let me know.
+Use the newly added of_reserved_mem_region_to_resource() function to
+handle "memory-region" properties.
 
-------------------
+The error handling is a bit different. "memory-region" is optional, so
+failed lookup is not an error. But then an error in
+of_address_to_resource() is treated as an error. However, that
+distinction is not really important. Either the region is available
+and usable or it is not. So now, it is just
+of_reserved_mem_region_to_resource() which is checked for an error.
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
-
-[ Upstream commit 03bcbbb3995ba5df43af9aba45334e35f2dfe27b ]
-
-Signal vt subsystem to redraw console when switching to dummycon
-with deferred takeover enabled. Makes the console switch to fbcon
-and displays the available output.
-
-With deferred takeover enabled, dummycon acts as the placeholder
-until the first output to the console happens. At that point, fbcon
-takes over. If the output happens while dummycon is not active, it
-cannot inform fbcon. This is the case if the vt subsystem runs in
-graphics mode.
-
-A typical graphical boot starts plymouth, a display manager and a
-compositor; all while leaving out dummycon. Switching to a text-mode
-console leaves the console with dummycon even if a getty terminal
-has been started.
-
-Returning true from dummycon's con_switch helper signals the vt
-subsystem to redraw the screen. If there's output available dummycon's
-con_putc{s} helpers trigger deferred takeover of fbcon, which sets a
-display mode and displays the output. If no output is available,
-dummycon remains active.
-
-v2:
-- make the comment slightly more verbose (Javier)
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reported-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Closes: https://bugzilla.suse.com/show_bug.cgi?id=1242191
-Tested-by: Andrei Borzenkov <arvidjaar@gmail.com>
-Acked-by: Javier Martinez Canillas <javierm@redhat.com>
-Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: <stable@vger.kernel.org> # v4.19+
-Link: https://lore.kernel.org/r/20250520071418.8462-1-tzimmermann@suse.de
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- drivers/video/console/dummycon.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/simplefb.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index d701f2b51f5b1..d99e1b3e4e5c1 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -82,6 +82,15 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
- 	/* Redraw, so that we get putc(s) for output done while blanked */
- 	return 1;
- }
-+
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	/*
-+	 * Redraw, so that we get putc(s) for output done while switched
-+	 * away. Informs deferred consoles to take over the display.
-+	 */
-+	return true;
-+}
- #else
- static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
- static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
-@@ -90,6 +99,10 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index be95fcddce4c..1893815dc67f 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -21,9 +21,9 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/of.h>
+-#include <linux/of_address.h>
+ #include <linux/of_clk.h>
+ #include <linux/of_platform.h>
++#include <linux/of_reserved_mem.h>
+ #include <linux/parser.h>
+ #include <linux/pm_domain.h>
+ #include <linux/regulator/consumer.h>
+@@ -134,7 +134,7 @@ struct simplefb_params {
+ static int simplefb_parse_dt(struct platform_device *pdev,
+ 			   struct simplefb_params *params)
  {
- 	return 0;
- }
-+static bool dummycon_switch(struct vc_data *vc)
-+{
-+	return false;
-+}
- #endif
+-	struct device_node *np = pdev->dev.of_node, *mem;
++	struct device_node *np = pdev->dev.of_node;
+ 	int ret;
+ 	const char *format;
+ 	int i;
+@@ -174,19 +174,10 @@ static int simplefb_parse_dt(struct platform_device *pdev,
+ 		return -EINVAL;
+ 	}
  
- static const char *dummycon_startup(void)
-@@ -119,11 +132,6 @@ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
- 	return false;
- }
- 
--static bool dummycon_switch(struct vc_data *vc)
--{
--	return false;
--}
+-	mem = of_parse_phandle(np, "memory-region", 0);
+-	if (mem) {
+-		ret = of_address_to_resource(mem, 0, &params->memory);
+-		if (ret < 0) {
+-			dev_err(&pdev->dev, "failed to parse memory-region\n");
+-			of_node_put(mem);
+-			return ret;
+-		}
 -
- /*
-  *  The console `switch' structure for the dummy console
-  *
++	ret = of_reserved_mem_region_to_resource(np, 0, &params->memory);
++	if (!ret) {
+ 		if (of_property_present(np, "reg"))
+ 			dev_warn(&pdev->dev, "preferring \"memory-region\" over \"reg\" property\n");
+-
+-		of_node_put(mem);
+ 	} else {
+ 		memset(&params->memory, 0, sizeof(params->memory));
+ 	}
 -- 
-2.39.5
-
-
+2.47.2
 

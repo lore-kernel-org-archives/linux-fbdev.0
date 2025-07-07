@@ -1,373 +1,198 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2074.outbound.protection.outlook.com [40.107.223.74])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D80F7289E2A
-	for <linux-fbdev@vger.kernel.org>; Mon,  7 Jul 2025 10:17:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751883438; cv=none; b=ef+WD/f6nJqJf0rUo1XbyLVCe8XfiJLiOVniK5OM8vHJTPPh80VpN5+BSxbVyCR9hLH4hgy6cQI9ItDbPRPSRODXnJXs/V2ctxOsY+M+8KVL6PSweJKefBthLsProXjTDq9q7pXU6tQc9Y4RYyPF6rfnmkvRzE8fnnVV38L5KtY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751883438; c=relaxed/simple;
-	bh=GMPLjG51PABkEjO8LkcqqhXFFGOWfPOr81sitTZJI3A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gQw+SmMoTfKbery1Nx18WgxW9N2jIuLbc6dJfr82xH9Oyid+YwrTuSWnGJXe2xi1YTx03qk0I2zMvLjJABQ5OQmt0G+cvom8XtldcjDBdRwPE/+FZyg2rtIfALgNTSnBYNzHdeXFxYtP9baz3jhenll+PB2PqIo96Rc6++NpXy4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=OZ15/u1N; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lMvW1v9l; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=OZ15/u1N; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lMvW1v9l; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDD001A0728;
+	Mon,  7 Jul 2025 15:44:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.223.74
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1751903073; cv=fail; b=qwhwkU3GINqU7JjVl7TqW9g+NLREu4h3rhDxFkYb00/4xM7elJewAOaqx8ZpOsW6yMeUxhkbPPHymmKBBTWb1g5tmtqiR2ms3oJjFB3ynctCXccnc9jSPH73b2RNFj8/4ECLjG9GnxXqWP/8xkHSM5pmYR7bau917fPRLW7RX2M=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1751903073; c=relaxed/simple;
+	bh=hoMl9+f243xvGdQkQPns8SK7rgkQATWXhgMuO4r2Qu4=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=h8T7JV8SKsHMA2K+vLDtyG3/7UdAMWxvfWNadvV6s8zN5JpSRH4JfPwhlaa0wYkrCfM81miXDwlI0XzBsP5/d89uelDW66dqr9FXgefR0OPJYuuj8ndAN4HNdwDHct8EiO+sD+yx/nI5BCZwziI4YcKWdTZRraqDUm6iESqQbzU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=asem.it; spf=pass smtp.mailfrom=asem.it; dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b=TARbKrY9; arc=fail smtp.client-ip=40.107.223.74
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=asem.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=asem.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="OZ15/u1N";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lMvW1v9l";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="OZ15/u1N";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lMvW1v9l"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id E6D8021199;
-	Mon,  7 Jul 2025 10:17:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751883435; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=DE2k96o9iD+lqRTj460+OBpJ9c3Jss1dAuax0OXiA08=;
-	b=OZ15/u1NnN/LfxoMWgJ0qoFvtXMP7BOl2FNLR81Cf6WFoNb24W9oNxc5ycteG4qc8eC6X4
-	yqy7UsMPWFwwId7xByuaXMS98hIiIE8SKQo5HHn1Zkol0RLe0F5+QXrU0Ss5tsyzkoA1Om
-	MTRXs/Am8L3eD9v9p0P63BPMT/HY+QI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751883435;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=DE2k96o9iD+lqRTj460+OBpJ9c3Jss1dAuax0OXiA08=;
-	b=lMvW1v9lPd+8P5GUZC82JRnqQHmU1c95QVvLU8oKus5Bhr8TiYJavPx/gzS7SIztfMuwvq
-	buCUOSIsrf+4S0Ag==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="OZ15/u1N";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=lMvW1v9l
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751883435; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=DE2k96o9iD+lqRTj460+OBpJ9c3Jss1dAuax0OXiA08=;
-	b=OZ15/u1NnN/LfxoMWgJ0qoFvtXMP7BOl2FNLR81Cf6WFoNb24W9oNxc5ycteG4qc8eC6X4
-	yqy7UsMPWFwwId7xByuaXMS98hIiIE8SKQo5HHn1Zkol0RLe0F5+QXrU0Ss5tsyzkoA1Om
-	MTRXs/Am8L3eD9v9p0P63BPMT/HY+QI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751883435;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=DE2k96o9iD+lqRTj460+OBpJ9c3Jss1dAuax0OXiA08=;
-	b=lMvW1v9lPd+8P5GUZC82JRnqQHmU1c95QVvLU8oKus5Bhr8TiYJavPx/gzS7SIztfMuwvq
-	buCUOSIsrf+4S0Ag==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id AF6D713757;
-	Mon,  7 Jul 2025 10:17:14 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id I4ZRKaqea2iVWQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 07 Jul 2025 10:17:14 +0000
-Message-ID: <2c02e746-73d0-4d3c-aa2e-093523d4d58d@suse.de>
-Date: Mon, 7 Jul 2025 12:17:14 +0200
+	dkim=pass (2048-bit key) header.d=asem.it header.i=@asem.it header.b="TARbKrY9"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=pdh1jGBosDLv6IUOnwFkEv6YAs2ZY6dSQD4wN8182VosA9swbibIzeWNCy/YXcKmkPtqjNyXHLOmEKLvingwEW5TkXXH8TkvI3j6dDf3yQCkfDuYRfqJKrXYU/lRXnoyO5LV8hXnYgAVS0+iz5ehoCuIt+DoLH6Cr7MxHtVp+CXEakQ4rlk2ChhPjNT7p35T78YG6eRZ+BuMzWu4NSQPaFmlrEKk/ay3Cnocp9iDHZNM5DriTSVbhkOowuT6perz6SeFhU2wihuUE9ituxvgVZBrp0TT7+wnx50pzsA6u7vp7VKDdKjQiQeFDWjnvSnJlu3wUouBqZqnasRDvmX6gw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hoMl9+f243xvGdQkQPns8SK7rgkQATWXhgMuO4r2Qu4=;
+ b=s0LEHh4HXjkSY7LOYNJrsAGemHBUHlaJoIp3y2UA6WGMH86o0DlNhw5hOiTU097ynmuDhYwx2nI/xdEe+nyidSK7grXz7M3D5sm3dNwr9P4m/4v5cHV4ox74bmlkCcCi6zUmKTDl4Skkft5q2TCCRFmHhdU4FjnxCEB/cHe2099wUaFJnCra0BPp8qt7ORdr2CFlY4BDsoJi0MGfV2oUEkSIsBbLN0wJP/0QqmQl04sAPNtSo1m78meGzByOh4imViHHT5lz42j3jda5jjJ2jMVjIPnzG06W/EL/n2zjtY3j4un55Z8RQTLj1bXhc4l4BbIbNoctMFZ+oq6kAQJFxQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
+ header.d=asem.it; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hoMl9+f243xvGdQkQPns8SK7rgkQATWXhgMuO4r2Qu4=;
+ b=TARbKrY99RnCBTXdFRf/C+DZjQ5/Vrn9F0+bCaGzkXmo1+Dfmk/dqrZ4PG1+lj4NLG0wjctPcmPUMJW6MoY++xpBFC4re4kJFgG86XkuhpmyDJiTgIUv/WC3QuFd1avkGxe+w1mfbBwrEtFaUsDe7prcBVBLcQFmHM/JXBdLUXwP03OEqEpuv0oyDiBmCJNFi/G0cvQIcQGlR3l4m2lGpdWKON2LvBk4yTxwghE0A65Lz1kP5yNI3+Doa9WrOr7fUwDyKCUBOm0urK5iiqSF4N38k9WxHQCV7f5KhQnQl2EtaY91ACTM1kyL+O+qvyrQfRg8qAAWUIxnNy/IiGa1xA==
+Received: from PH0PR22MB3789.namprd22.prod.outlook.com (2603:10b6:510:29c::11)
+ by DS4PPF7C31BD26B.namprd22.prod.outlook.com (2603:10b6:f:fc00::b30) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.27; Mon, 7 Jul
+ 2025 15:44:26 +0000
+Received: from PH0PR22MB3789.namprd22.prod.outlook.com
+ ([fe80::e21a:e0c7:aff:b839]) by PH0PR22MB3789.namprd22.prod.outlook.com
+ ([fe80::e21a:e0c7:aff:b839%5]) with mapi id 15.20.8901.023; Mon, 7 Jul 2025
+ 15:44:25 +0000
+From: FLAVIO SULIGOI <f.suligoi@asem.it>
+To: =?utf-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= <u.kleine-koenig@baylibre.com>, Lee
+ Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo Han
+	<jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+CC: Daniel Thompson <daniel.thompson@linaro.org>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>
+Subject: RE: EXTERNAL: [PATCH 0/2] backlight: mp3309c: Drop pwm_apply_args()
+Thread-Topic: EXTERNAL: [PATCH 0/2] backlight: mp3309c: Drop pwm_apply_args()
+Thread-Index: AQHb6mm3vhTL/BlCmEG8osSQTtQtN7Qm1vLg
+Date: Mon, 7 Jul 2025 15:44:25 +0000
+Message-ID:
+ <PH0PR22MB37899F7A6262C599400AF912FA4FA@PH0PR22MB3789.namprd22.prod.outlook.com>
+References: <cover.1751361465.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <cover.1751361465.git.u.kleine-koenig@baylibre.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+ MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_ActionId=400c4944-5946-45a4-93ca-6bdad0535ff7;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_ContentBits=0;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_Enabled=true;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_Method=Standard;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_Name=e14c1950-b3a8-4278-88f1-6df69d73b9d5;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_SetDate=2025-07-07T15:43:29Z;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_SiteId=855b093e-7340-45c7-9f0c-96150415893e;MSIP_Label_e14c1950-b3a8-4278-88f1-6df69d73b9d5_Tag=10,
+ 3, 0, 1;
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=asem.it;
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PH0PR22MB3789:EE_|DS4PPF7C31BD26B:EE_
+x-ms-office365-filtering-correlation-id: bf71732f-8149-4589-041c-08ddbd6d26ea
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;ARA:13230040|366016|1800799024|376014|38070700018;
+x-microsoft-antispam-message-info:
+ =?utf-8?B?VkRkeVNGRVZSbzZNSmVkWWs2dlQzZzFoYkNQL042a253THZKbXBndU5PNlc3?=
+ =?utf-8?B?ZEQrZTFFN1ZkT2tGa3lCOTNBNVlkNWdhU25qUmVjRCs5VDhIY0JRL1pGMTBo?=
+ =?utf-8?B?eGx6RUdMeEZkZlcxTVRqdFBoYk1WWjJpSjRsOHZ0amx4V2NWcHh3SG5rUmFY?=
+ =?utf-8?B?dFFIT3I1UjVLRmtnYjgraGpJUDUwWDA1R2MzL2w1OTE3MkVqUWJaWDlhaVhZ?=
+ =?utf-8?B?d1J3UHowc2pWay8vaG02T2xWQlpNeWFhaG1XazB2SU5SNkFtZlVqcFZqY2VY?=
+ =?utf-8?B?TFYvVHBOMEtHQUhTMjErMDBYOVp0dHAweDNvS296ZXhHZ0pBK2plUkpSOUpZ?=
+ =?utf-8?B?bzY1OFUrb09HTGNjUHlCc3pYdEN2NGtuTHM2UjVTb2FYc3czYU9qUVRab1h0?=
+ =?utf-8?B?N0drRFZqekZaZEpLK3VPUjJYbEhPVk1JTEI2Y2l0enYvMFJqcjJqTFROV2xw?=
+ =?utf-8?B?Qk1DdU94T0FFb0ltR0ZQa3hTT0dmT0xaRFloVERPRzdHL2R0Y1NwdG9IczUz?=
+ =?utf-8?B?bWM4UjEwMzhaL0hmWlh3NjJhZmc4bS80d2loSWNEQ3p1d1VzaEIyU2RYVkVr?=
+ =?utf-8?B?V1BnOGVxQngwZ0JBVFR5TGFqVDlGeVZDSkxUV0ZKUlMwd2M3N1BuMDZqekhs?=
+ =?utf-8?B?c3g4MFg2YU52UUdmUkZTaUMwa2oyY3dMQlgvMzNUalkzVklDQ2hYUExXRHZU?=
+ =?utf-8?B?eko0UjFFU2ZZTTZTczRNMjBoR3AwcHEzc3RxSTViS3h6a0JGcm0zaEd3a2sv?=
+ =?utf-8?B?ZTBrZkdiQm4wcEVVTGhqNFRqdFM4L2hLNHJ3MDB6VG9nQWRqQXZaSmFKU2VI?=
+ =?utf-8?B?TXl1Q0RPVFo4SVU2elVWdUI0aExNcUh5VWN4WVhnMStFaWpsTGoyRFhtQjNj?=
+ =?utf-8?B?Q1FqS0s1aHR3ZHowWnJMS3VWYlh4MUhOMml4OVVoSWlpOWJkUFYxSVRuNmxT?=
+ =?utf-8?B?ck9PTFM0dWZVM2l6amZVTFZVQmloK0FmdlhBTUl3dXpkeER0Z1VJTDRoM3Zk?=
+ =?utf-8?B?NGJkejlHcS9ycWFBSC95bmVvT2w4MTdybmdxUXpOTkdwMHMyc2lrbnRlOHBI?=
+ =?utf-8?B?cVkxY1J6QkE0cnVnY3luNldBSnVxdTNQSGd0RmNSMkptbG5ud0VJSldHSHR2?=
+ =?utf-8?B?K28rMUFtRitURWoza0NOOXFZUzhtelQ2WUlycStacitNZzN0OGh5YnNrZHkr?=
+ =?utf-8?B?b3ZGMXR3UllsUU53aXpDd1ZjbmdHYmxmZnRicFl2YUtQUmRMeG9nQUJxWUdj?=
+ =?utf-8?B?czZjUi9sVmduYTBTTGNaYS9tTXovLzI1aHp1eUN3aUVwK2wxRVlPWUh5RXgy?=
+ =?utf-8?B?VEVuWElxY0xsRXlzMnRWWUQzU3dpM0NHL2JQZTl3aGlPSHZkN240djB6Qklm?=
+ =?utf-8?B?VmFXanZBdXN4US9kNURnVXZZb2p2VlVmcHNoYzBUdFRGVHRiZUIrc2ExMVVS?=
+ =?utf-8?B?b2t2ZVU3Ti9UYmpTbTVNeXBHRDF2T21zSG9ETG9EWkxqTG1ybVdXN3VBQkVh?=
+ =?utf-8?B?SUZtVHNyWmdwN09jVENoOGIzTDNWRU1wbUY4dkJYUzBCWkV3eFVaRWJoREpE?=
+ =?utf-8?B?cGplb3FVMXU5U29veXpxZUdEQnNuRkhkVzlyRjdYeFkzOHp3ZUZsVzFEa0RP?=
+ =?utf-8?B?N0VjRHg0TzhBNDhuZlNWUWhnMFN0QndBL1B0WHhDUUJFTWd4dU9TMmVUT0hO?=
+ =?utf-8?B?UkVqTzY2MkRpenZ1M2RuSXNxdGF0Z2RvalU2N21YbWkzaHhPa3FFK2pzZTRK?=
+ =?utf-8?B?dlVSRHNBSUZXUTJPT3psNHZYVEhKZ2U1aWYxUW42aGR0UnA2cjBhd0hRRVMw?=
+ =?utf-8?B?dHVFV0cySmh5dXBZUEdKUnZZOGwzOFZ3blo2L3JRQVNrZ0ExK2p6NkxValJD?=
+ =?utf-8?B?NXA3OXg4b1k4Q2pCZkJYQWovT00yU0VMRXRxSUg2WGZ5bll1eUtMYTJtZnJt?=
+ =?utf-8?B?dTZDT0o3UFUra290Mi9oa3Z2RytHbXZIVXkxMkluYkJzWEdXSWFDUHFSVHgw?=
+ =?utf-8?B?YXI4Uk50WVF3PT0=?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR22MB3789.namprd22.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(38070700018);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?SGEzUUNMTU1WNno0UTd0UkdmT05vQ2VCMVJsYm9OUlJnYVpXb3pqQU1SODBW?=
+ =?utf-8?B?WlE1ZGMvUHQ4elpqanpDZkZCamIraWhuZEV4cU9Wb2RnMHZQbGxqcnZoSDhU?=
+ =?utf-8?B?MzkyTnV2NFFZQmRxVzd1WXlpSG11L3BYSHdtNjQ3VmJvQmZENnRaekx3TWV2?=
+ =?utf-8?B?UUtkRVFLcUcvbmNNQ3lLUnJZN1oxak9wa2ZZall0cmxIb1FETmgrTnJ1UmV3?=
+ =?utf-8?B?OWtvQ3hOUWliL2h0VC9OZDhXellZeDl5bk9DaWpOR0ZYbXk3NVUxUCtQR0k2?=
+ =?utf-8?B?cGZsaGl0NUpCbjkvUjZORzBDbnpWZEU1ck04dURPQlNrMks5RExFUmsxUXN3?=
+ =?utf-8?B?Y1k3Y2t5ek5SaW1lajNFejdGK2xqUkIxY0RTN0ZyZCt1bzV3ZUhFWU1RVzk2?=
+ =?utf-8?B?aDVORjJEYTFJRDM3T2RWSE13cWpObW1hanlLSFc3VzZlRWlKNFFVdDNYWVJD?=
+ =?utf-8?B?VnBEc3JFSVhURXBJaU9HMHBJTUorY2J5VDhhejhKbEIyQ3dXSUxTT3I1akg1?=
+ =?utf-8?B?SkpkRzNrdDhCMDlQb3pYMjgrUzVTTUtoN05GV0I0WFhQU3EySmdQLzQ2Rzdi?=
+ =?utf-8?B?V29pMEh2WFhmc3ZKTmxlS05XQkdNNno3cllGaVh3a3BEbnJzZDVXR2ZhOGl4?=
+ =?utf-8?B?WHlBb1hxVlZRREtITEZwYklrR2p0V1F5WVlaNXNEV0pIb2NIeTJWOGd6NHFZ?=
+ =?utf-8?B?RG5LaTJDbjBQZUJqVHF1N1ZwUUI5cW9uYmxwODRKTitNRWpPNS8vbTN5THNL?=
+ =?utf-8?B?OEF0eHA3cTYvdUpsSjZFQ1VUaUJKd2o4a3RLYktwUFVEbU15OWtKWC81RWRI?=
+ =?utf-8?B?K3d3cm5PVDIyVzkxaFJxNkl2YnNudFVJeExWN05WNG90SWhJc1RsRDZQWkpi?=
+ =?utf-8?B?enJ3ai9IUlo0T244YUdvdTY2QXFVbnZGVGVORnN4aWozdW5uMmVpU01pZmhT?=
+ =?utf-8?B?UU5oNzNOUlhJaCsySWE5N2FNUUVUaGNWVVJNaWdIMzh1c2h5ZUlxai8yd2h2?=
+ =?utf-8?B?aVRnanJIMlBQdkdnTHhXcjRUWUlLN1BKZ1l5YjRXallHMmxQSWtWc29EOWVo?=
+ =?utf-8?B?MnFsakdxWXNvL1BudjFQVnJHcWEwOWQ3M2ZMb3lUa1dkYlg4N2hjR0ZPL3Jk?=
+ =?utf-8?B?Z1V0UVFlVmJRL0JlZlRBVXA2c0V3ZUtRblRsMi9TUVRNR1NyWWFncVZHYnRr?=
+ =?utf-8?B?VEx6YnBmcWRXS3lNUlN1b0ZabGVsWktBYy9TNGhjR1UwQU5wR0NrL0JYK3dr?=
+ =?utf-8?B?OFN1QTIzTXZkdjJZSitEYUNKcHdoZ213N1IzSEhLdHIrbTRhdXdML1BORFFI?=
+ =?utf-8?B?cldBdGxCNU1OUUQvaXJNL3luTGh0Q3FQcHUxcmVMcmVqZ0liSlVVc3V0VDY0?=
+ =?utf-8?B?bjRVYTduM2puTk1lZzlhRjRGMnBHbGZEUnB0V3RjUWNKcWM3MUl1RFVhK0gw?=
+ =?utf-8?B?Ny91TnhpblAvdTlMTndNTGN6b294NVlnak1nOXQ1Mkh4TmdJd2xXU2NuUTlY?=
+ =?utf-8?B?VnNDT0pyNjhaTkVRWTZtMStJcUMvSEZxOXlTVTBITENFd2M5SVM0WjYyUzFU?=
+ =?utf-8?B?dFgvK1NMaGZ0VnpFQlJWWXRQaUkxNFlBMmlvNDE5NkJNaFZOOTMweUtMZUFS?=
+ =?utf-8?B?a010enJTZGVuK2szbDNaYWhieFducDUyZVpxeW4ybHFndzlYandhckkvcUNE?=
+ =?utf-8?B?cTIrNTVXSUM5aDFkZlpYcmdIODZnclJnWEJ4QW00QnFDVVdHYlRTUFVMQk0y?=
+ =?utf-8?B?RDBQRUZVV2NGeERDZnRjc1luTjROSG5EcVZmOW1CSGhHdkxubDVBQ1pDbGZD?=
+ =?utf-8?B?ZFVPeHdMTndtdVNweXR5d1dlSnRXZE1scUs4MTA2OVpmMzd0MlIxSmI4OGph?=
+ =?utf-8?B?bmhvQjlZeWVreHozRkxyYWNUN3NHMW44VDJYc21OZGt2dmtWZWkyZXlaQ3Iz?=
+ =?utf-8?B?NzlqK2FILzN4NnFnNjBCZEkyZnUwRDNmQlEzc2Q0MFhmak9rU3pFTnpQcTA5?=
+ =?utf-8?B?UTNoZ24yaDV5WGx4bWl5eHdZN1YzRlZLRHR1S2xpRkhyaTh4VERYbm5VZzZZ?=
+ =?utf-8?B?dnBLZUdHU0IxOTcweEpISGRTK3FTWGE5VWkzYUNOendGamVCSm5ORUtRdjhI?=
+ =?utf-8?B?dDM2eHQ1QVUrZVBXc0xXZGh2RHgxSU83U3F3OXd6U0xiMWtHUjBZR3VYbllw?=
+ =?utf-8?Q?7HICBG3tBSnQYa7/dkNR9FY=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: efifb: do not load efifb if PCI BAR has changed
- but not fixuped
-To: Shixiong Ou <oushixiong1025@163.com>, Helge Deller <deller@gmx.de>
-Cc: Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- Shixiong Ou <oushixiong@kylinos.cn>
-References: <20250626094937.515552-1-oushixiong1025@163.com>
- <3b3feb03-c417-4569-b7b0-44565d7cce4f@suse.de>
- <a937f41f-2cee-459d-b94f-b7f979072f3e@163.com>
- <1687bb52-e724-46a8-af75-26b486634c20@suse.de>
- <1567a84b-3f78-4f0a-9549-bfe9fd4aa96b@163.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <1567a84b-3f78-4f0a-9549-bfe9fd4aa96b@163.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Rspamd-Queue-Id: E6D8021199
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[163.com,gmx.de];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[163.com,gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,kylinos.cn:email,suse.de:dkim,suse.de:mid]
-X-Spam-Score: -4.51
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR22MB3789.namprd22.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bf71732f-8149-4589-041c-08ddbd6d26ea
+X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Jul 2025 15:44:25.8408
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 855b093e-7340-45c7-9f0c-96150415893e
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: ciubfqRNkTAEr2MPTrOna9M6OMoBbnGAyCTee6VlfQGGSXrUPwOnReZ9FNSVQoHPNK4qJEx9nCfjeCfxyXLEyxHs4JlhQbIdlcVTJDLlB0yJRQxCDbimJOXQV05m3sc+
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PPF7C31BD26B
 
-Hi
-
-Am 07.07.25 um 12:02 schrieb Shixiong Ou:
->
-> 在 2025/7/7 17:28, Thomas Zimmermann 写道:
->> Hi
->>
->> Am 07.07.25 um 11:24 schrieb Shixiong Ou:
->>>
->>> 在 2025/6/27 17:13, Thomas Zimmermann 写道:
->>>> Hi
->>>>
->>>> Am 26.06.25 um 11:49 schrieb oushixiong1025@163.com:
->>>>> From: Shixiong Ou <oushixiong@kylinos.cn>
->>>>>
->>>>> [WHY]
->>>>> On an ARM machine, the following log is present:
->>>>> [    0.900884] efifb: framebuffer at 0x1020000000, using 3072k, 
->>>>> total 3072k
->>>>> [    2.297884] amdgpu 0000:04:00.0: 
->>>>> remove_conflicting_pci_framebuffers: bar 0: 0x1000000000 -> 
->>>>> 0x100fffffff
->>>>> [    2.297886] amdgpu 0000:04:00.0: 
->>>>> remove_conflicting_pci_framebuffers: bar 2: 0x1010000000 -> 
->>>>> 0x10101fffff
->>>>> [    2.297888] amdgpu 0000:04:00.0: 
->>>>> remove_conflicting_pci_framebuffers: bar 5: 0x58200000 -> 0x5823ffff
->>>>>
->>>>> It show that the efifb framebuffer base is out of PCI BAR, and this
->>>>> results in both efi-framebuffer and amdgpudrmfb co-existing.
->>>>>
->>>>> The fbcon will be bound to efi-framebuffer by default and cannot 
->>>>> be used.
->>>>>
->>>>> [HOW]
->>>>> Do not load efifb driver if PCI BAR has changed but not fixuped.
->>>>> In the following cases:
->>>>>     1. screen_info_lfb_pdev is NULL.
->>>>>     2. __screen_info_relocation_is_valid return false.
->>>>
->>>> Apart from ruling out invalid screen_info, did you figure out why 
->>>> the relocation tracking didn't work? It would be good to fix this 
->>>> if possible.
->>>>
->>>> Best regards
->>>> Thomas
->>>>
->>> I haven’t figure out the root cause yet.
->>>
->>> This issue is quite rare and might be related to the EFI firmware.
->>> However, I wonder if we could add some handling when no PCI 
->>> resources are found in screen_info_fixup_lfb(), as a temporary 
->>> workaround for the problem I mentioned earlier.
->>
->> As I said elsewhere in the thread, you can clear the screen_info's 
->> video type in the branch at [1] to disable it entirely. We should 
->> have probably done this anyway. Knowing the cause of the issue would 
->> still be nice though.
->>
->> Best regards
->> Thomas
->>
->> [1] 
->> https://elixir.bootlin.com/linux/v6.15.5/source/drivers/video/screen_info_pci.c#L44 
->>
->>
-> thanks for you suggestion, while there are two cases:
->     1. screen_info_lfb_pdev is NULL.
->     2. __screen_info_relocation_is_valid return false.
->
-> should we do it at [1] too?
-
-No. This being NULL is an entirely valid state.
-
-Best regards
-Thomas
-
->
-> Best regards
-> Shixiong Ou
->
-> [1] 
-> https://elixir.bootlin.com/linux/v6.15.5/source/drivers/video/screen_info_pci.c#L47
->
->>>
->>> Best regards
->>> Shixiong Ou
->>>
->>>>>
->>>>> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
->>>>> ---
->>>>>   drivers/video/fbdev/efifb.c     |  4 ++++
->>>>>   drivers/video/screen_info_pci.c | 24 ++++++++++++++++++++++++
->>>>>   include/linux/screen_info.h     |  5 +++++
->>>>>   3 files changed, 33 insertions(+)
->>>>>
->>>>> diff --git a/drivers/video/fbdev/efifb.c 
->>>>> b/drivers/video/fbdev/efifb.c
->>>>> index 0e1bd3dba255..de8d016c9a66 100644
->>>>> --- a/drivers/video/fbdev/efifb.c
->>>>> +++ b/drivers/video/fbdev/efifb.c
->>>>> @@ -303,6 +303,10 @@ static void efifb_setup(struct screen_info 
->>>>> *si, char *options)
->>>>>     static inline bool fb_base_is_valid(struct screen_info *si)
->>>>>   {
->>>>> +    /* check whether fb_base has changed but not fixuped */
->>>>> +    if (!screen_info_is_useful())
->>>>> +        return false;
->>>>> +
->>>>>       if (si->lfb_base)
->>>>>           return true;
->>>>>   diff --git a/drivers/video/screen_info_pci.c 
->>>>> b/drivers/video/screen_info_pci.c
->>>>> index 66bfc1d0a6dc..ac57dcaf0cac 100644
->>>>> --- a/drivers/video/screen_info_pci.c
->>>>> +++ b/drivers/video/screen_info_pci.c
->>>>> @@ -9,6 +9,8 @@ static struct pci_dev *screen_info_lfb_pdev;
->>>>>   static size_t screen_info_lfb_bar;
->>>>>   static resource_size_t screen_info_lfb_res_start; // original 
->>>>> start of resource
->>>>>   static resource_size_t screen_info_lfb_offset; // framebuffer 
->>>>> offset within resource
->>>>> +static bool screen_info_changed;
->>>>> +static bool screen_info_fixuped;
->>>>>     static bool __screen_info_relocation_is_valid(const struct 
->>>>> screen_info *si, struct resource *pr)
->>>>>   {
->>>>> @@ -24,6 +26,24 @@ static bool 
->>>>> __screen_info_relocation_is_valid(const struct screen_info *si, stru
->>>>>       return true;
->>>>>   }
->>>>>   +bool screen_info_is_useful(void)
->>>>> +{
->>>>> +    unsigned int type;
->>>>> +    const struct screen_info *si = &screen_info;
->>>>> +
->>>>> +    type = screen_info_video_type(si);
->>>>> +    if (type != VIDEO_TYPE_EFI)
->>>>> +        return true;
->>>>> +
->>>>> +    if (screen_info_changed && !screen_info_fixuped) {
->>>>> +        pr_warn("The screen_info has changed but not fixuped");
->>>>> +        return false;
->>>>> +    }
->>>>> +
->>>>> +    pr_info("The screen_info is useful");
->>>>> +    return true;
->>>>> +}
->>>>> +
->>>>>   void screen_info_apply_fixups(void)
->>>>>   {
->>>>>       struct screen_info *si = &screen_info;
->>>>> @@ -32,18 +52,22 @@ void screen_info_apply_fixups(void)
->>>>>           struct resource *pr = 
->>>>> &screen_info_lfb_pdev->resource[screen_info_lfb_bar];
->>>>>             if (pr->start != screen_info_lfb_res_start) {
->>>>> +            screen_info_changed = true;
->>>>>               if (__screen_info_relocation_is_valid(si, pr)) {
->>>>>                   /*
->>>>>                    * Only update base if we have an actual
->>>>>                    * relocation to a valid I/O range.
->>>>>                    */
->>>>>                   __screen_info_set_lfb_base(si, pr->start + 
->>>>> screen_info_lfb_offset);
->>>>> +                screen_info_fixuped = true;
->>>>>                   pr_info("Relocating firmware framebuffer to 
->>>>> offset %pa[d] within %pr\n",
->>>>>                       &screen_info_lfb_offset, pr);
->>>>>               } else {
->>>>>                   pr_warn("Invalid relocating, disabling firmware 
->>>>> framebuffer\n");
->>>>>               }
->>>>>           }
->>>>> +    } else {
->>>>> +        screen_info_changed = true;
->>>>>       }
->>>>>   }
->>>>>   diff --git a/include/linux/screen_info.h 
->>>>> b/include/linux/screen_info.h
->>>>> index 923d68e07679..632cdbb1adbe 100644
->>>>> --- a/include/linux/screen_info.h
->>>>> +++ b/include/linux/screen_info.h
->>>>> @@ -138,9 +138,14 @@ ssize_t screen_info_resources(const struct 
->>>>> screen_info *si, struct resource *r,
->>>>>   u32 __screen_info_lfb_bits_per_pixel(const struct screen_info *si);
->>>>>     #if defined(CONFIG_PCI)
->>>>> +bool screen_info_is_useful(void);
->>>>>   void screen_info_apply_fixups(void);
->>>>>   struct pci_dev *screen_info_pci_dev(const struct screen_info *si);
->>>>>   #else
->>>>> +bool screen_info_is_useful(void)
->>>>> +{
->>>>> +    return true;
->>>>> +}
->>>>>   static inline void screen_info_apply_fixups(void)
->>>>>   { }
->>>>>   static inline struct pci_dev *screen_info_pci_dev(const struct 
->>>>> screen_info *si)
->>>>
->>>
->>
->
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
-
+SGkgVXdlLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFV3ZSBLbGVp
+bmUtS8O2bmlnIDx1LmtsZWluZS1rb2VuaWdAYmF5bGlicmUuY29tPg0KPiBTZW50OiBtYXJ0ZWTD
+rCAxIGx1Z2xpbyAyMDI1IDExOjIzDQo+IFRvOiBGTEFWSU8gU1VMSUdPSSA8Zi5zdWxpZ29pQGFz
+ZW0uaXQ+OyBMZWUgSm9uZXMgPGxlZUBrZXJuZWwub3JnPjsNCj4gRGFuaWVsIFRob21wc29uIDxk
+YW5pZWx0QGtlcm5lbC5vcmc+OyBKaW5nb28gSGFuIDxqaW5nb29oYW4xQGdtYWlsLmNvbT47DQo+
+IEhlbGdlIERlbGxlciA8ZGVsbGVyQGdteC5kZT4NCj4gQ2M6IERhbmllbCBUaG9tcHNvbiA8ZGFu
+aWVsLnRob21wc29uQGxpbmFyby5vcmc+OyBkcmktDQo+IGRldmVsQGxpc3RzLmZyZWVkZXNrdG9w
+Lm9yZzsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gcHdtQHZnZXIua2Vy
+bmVsLm9yZw0KPiBTdWJqZWN0OiBFWFRFUk5BTDogW1BBVENIIDAvMl0gYmFja2xpZ2h0OiBtcDMz
+MDljOiBEcm9wIHB3bV9hcHBseV9hcmdzKCkNCj4gDQo+IFtVc2UgY2F1dGlvbiB3aXRoIGxpbmtz
+ICYgYXR0YWNobWVudHNdDQo+IA0KPiANCj4gDQo+IEhlbGxvLA0KPiANCj4gdGhlIGZpcnN0IHBh
+dGNoIG9mIHRoaXMgc2VyaWVzIGlzIHdoYXQgSSByZWFsbHkgY2FyZSBhYm91dDogVGhlcmUgYXJl
+DQo+IGhhcmRseSBhbnkgZHJpdmVycyBsZWZ0IHRoYXQgdXNlIHB3bV9hcHBseV9hcmdzKCkuIFdo
+ZW4gYWxsIG9mIHRoZW0gYXJlDQo+IGNvbnZlcnRlZCB0byBub3QgdXNlIGl0IGFueSBtb3JlLCBJ
+IGludGVuZCB0byBkcm9wIHRoYXQgZnVuY3Rpb24uDQo+IA0KPiBUaGUgMm5kIHBhdGNoIGlzIGp1
+c3QgYSBjaGFuZ2UgdGhhdCBJIG5vdGljZWQgd2hpbGUgZWRpdGluZyB0aGUgZHJpdmVyDQo+IHRo
+YXQgaXMgSU1ITyBuaWNlLiBJZiB5b3UgZG9uJ3QgYWdyZWUgYW5kIG9ubHkgYXBwbHkgdGhlIGZp
+cnN0IHBhdGNoLCBJDQo+IHdvbid0IGFyZ3VlLiBJdCdzIGFuIGFsdGVybmF0aXZlIGFwcHJvYWNo
+IHRvIHdoYXQgRGFuaWVsIFRob21wc29uIGRpZCBpbg0KPiBjb21taXQgN2VlNjQ3OGQ1YWE5ICgi
+YmFja2xpZ2h0OiBtcDMzMDljOiBGdWxseSBpbml0aWFsaXplDQo+IGJhY2tsaWdodF9wcm9wZXJ0
+aWVzIGR1cmluZyBwcm9iZSIpLg0KDQpJJ3ZlIHRlc3RlZCB5b3VyIHBhdGNoZXMgb24gbXkgYm9h
+cmQgYW5kIGFsbCBpcyBvay4NClRoYW5rcyENCg0KPiANCj4gQmVzdCByZWdhcmRzDQo+IFV3ZQ0K
+PiANCj4gVXdlIEtsZWluZS1Lw7ZuaWcgKDIpOg0KPiAgIGJhY2tsaWdodDogbXAzMzA5YzogRHJv
+cCBwd21fYXBwbHlfYXJncygpDQo+ICAgYmFja2xpZ2h0OiBtcDMzMDljOiBJbml0aWFsaXplIGJh
+Y2tsaWdodCBwcm9wZXJ0aWVzIHdpdGhvdXQgbWVtc2V0DQo+IA0KPiAgZHJpdmVycy92aWRlby9i
+YWNrbGlnaHQvbXAzMzA5Yy5jIHwgMTQgKysrKysrKy0tLS0tLS0NCj4gIDEgZmlsZSBjaGFuZ2Vk
+LCA3IGluc2VydGlvbnMoKyksIDcgZGVsZXRpb25zKC0pDQo+IA0KPiANCj4gYmFzZS1jb21taXQ6
+IDEzNDM0MzNlZDM4OTIzYTIxNDI1YzYwMmU5MjEyMGExZjFkYjVmN2ENCj4gLS0NCj4gMi40OS4w
+DQoNCg0KRmxhdmlvDQo=

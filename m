@@ -1,77 +1,38 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90D1128936B;
-	Wed,  9 Jul 2025 09:54:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.52
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.4])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9AAD228FFCF;
+	Wed,  9 Jul 2025 10:50:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752054860; cv=none; b=D/A7i5Oy6ziKNzITe6p4OaW2rv5A7ntaF41SN118MBmMPnVq8c9KhlijugdU2Mg+TcE0BVKfYp1ykVnppYsYX14cxA6im/9zGmMzDBGoHjToSxDarkD9tbv363KzCrT7YP6sYNqymYtjhSLHuKrME/UBYQvAPMDIFSg1bBEXfDI=
+	t=1752058225; cv=none; b=SWXqJYEIEwXeg0TV8+rNyuGKNu9hok8qw5ZsVmoRYsekLR98LG68JyjbfgkrbNUPDhUj5JN5PB17DzLUanSpUOQyylYNjX7WjPx66Xn1IpiMs7WidOxN+CX3CQd+yH+JDgrmrnJrgfrQiYKcpjeG+0ITBaEHl2XppF7zHL3I6ds=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752054860; c=relaxed/simple;
-	bh=h4gpVGYUUOWAeyRTD1SOCa8+XXStWpcmhFICs+EJe0k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dH+5PpwMRO+lVmnPYXxAMe6oNktSEJ1SWTrNf/c2ohJGmxMkdN4OgAUZNLjTTvo5Jx6qFQrlUrP0uhglrcuu5AKSbEoBU/svNpofZVpjqI4p+NC/tcaCGsGdbytoCgP3r1f051elihYPiS825CcEFnl7U8eeLRCtoNJ7HUftK1A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=O2bcxkhs; arc=none smtp.client-ip=209.85.218.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1752058225; c=relaxed/simple;
+	bh=FpOBHbqxNPaRyuzoso35Bw5NmFuK5VKTTeQfVm72Vqk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=N3MA+vCKoCcgarFupnR5qeKpITY8B3Rf8oz1RQmqJ8CABx03qLa9z1z0NRdFXodtYTosqoQyfc6+nz8KchWbDrRJnBzIXoX2R6cwp3iSHNAzVGw148Vto7XwbPtXV6ftwCUSEH1Vt226XYJhgWmSLHbfhmOLpC3kprQIokDzf1g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=NWvypW9s; arc=none smtp.client-ip=117.135.210.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O2bcxkhs"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-ae0dd7ac1f5so1015213566b.2;
-        Wed, 09 Jul 2025 02:54:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1752054857; x=1752659657; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=j/xA8RBMxt3BQS7+pWU6O20VRxuNRUsOkplI0dlKzd4=;
-        b=O2bcxkhswyxV2JqaOSA4iJqT/7NnBGAOCsB7ps153tO9S1a/lUDkFYX+HpMe3CpGF4
-         43869pRueZi4S/Yps227Wy1UtZa42oD6gJYgmAyGg6Svvb7umrTdS2hLjWeKa2Pc5gVd
-         zE0h5RwqtKtQU2TbbRLoRYeC0Ndjjm9z8dEROFWvZ7NZE1ODL8dOhdLfUymXC++VzZLA
-         CzF1MfLewRYHxBfAf7/Q+piRJBgFk4SaBDfAr7x7W5FLtxctedxfKt/L1EoUdoB1+fUx
-         YKyGwE56ADdINTNT+/XmjB9+ptvWGfLLR+LMIz+EXRxwpH1aZUmU+1iceBI7ZODJSkrb
-         okkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752054857; x=1752659657;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=j/xA8RBMxt3BQS7+pWU6O20VRxuNRUsOkplI0dlKzd4=;
-        b=rRHCbTPzyY1n5GJXdofpXWILsjP6fg/HZb2tWVv95IoXj3ILnINNomMmJkOK/n6fg6
-         ZUGeAHo/udDY9w22FLkr5kkLpP1/DB6ECoyGa0dkQDZ+2s+EQo0h7zVqVJzCC4KTuDPd
-         UiTan73MdqT4I1ST/6CScqW2KJQ0zhf7wTGamjaeY5v3D+9XQ8PRTanxBLQ7H2kF8CnL
-         nrfK6+UQ+xhQxLgWR0eIRLzIqqUiCyrmezjlZfxBDp72vKREUX3Or8RJNSDcpWVxTxBn
-         mch0kIqBxeDQW8CSYQOmUWxgoAuq4s6w3FfNnN/HwaC7GR+hP83bJnXC2t5G24No3ZJe
-         3o6g==
-X-Forwarded-Encrypted: i=1; AJvYcCXwVQOed74eFOZ1t6WdXQ0awEew0iQLh0L+NUQJ1xZ4LI8IE+r00uttkmakhJ5OysiQAP5xxJ0B43hNaOk=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwCxoqHU008KKwvPw1TaA9P9OvihiNK2DCUkv1UJvomLgEnQw7b
-	8KzC+5KFwBK9VU2JsZI0FTDxa78xmtdt+pY6ORqlnH6xp9piM7xjreGMd48Gp7Ix
-X-Gm-Gg: ASbGncuQyT80b2jJkY06bWSeQeHpL1TXB+HL9V5Po2qsGXaXeXAoU5gLgHnmXK8076t
-	xfG63/jRlL1u/W7rR+/6+wcMyyjQMxAXFtLlgLJcBSmj+ODjRgDcUpo7c/tJ5KWJtx3Xc5aeziY
-	SeVnv4B10UA2tKqQgQKknq+kjHtxrFcbdwsHLkrx07+LMrAJbdRB+VEqe7nStH+XsvNCB32B5Tz
-	EZHEbRZUhUF1sYv8iKmVdfxLYiu3T3pcjifQBOPAwF9kT4nmOuMe7xpZA9AGmWCxh1LQyDvrV5O
-	ijra5dGhfM583Q6kJe7/JSrB/f1RB7j7nMT6GDP3p+ih4G+MZ+om10iY00eqb/fdz65VOjFFdHv
-	STv6icHO85ldWvTBsJs9qZl/jd0VCdFL5gLgbc+r3o7uuvkNoJTBq/9p8/Bvs1+zzwRlY29weyD
-	L1BQ==
-X-Google-Smtp-Source: AGHT+IHL8xKvtzSGhMBpsn0NwBZB7qQ7UJ2fZ6LEEU4qkuyxDrV1Z4wSVwIi7Pi8zmbRHLIkbKU4wQ==
-X-Received: by 2002:a17:907:728c:b0:ae0:a590:bc64 with SMTP id a640c23a62f3a-ae6cf685479mr214095666b.18.1752054856747;
-        Wed, 09 Jul 2025 02:54:16 -0700 (PDT)
-Received: from kubuntu-e14.homenet.telecomitalia.it (host-87-21-242-88.retail.telecomitalia.it. [87.21.242.88])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae3f6949cb2sm1074172266b.67.2025.07.09.02.54.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Jul 2025 02:54:16 -0700 (PDT)
-From: Giovanni Di Santi <giovanni.disanti.lkl@gmail.com>
-To: tzimmermann@suse.de,
-	deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="NWvypW9s"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=YT
+	7+Q5/NWqu7pnKZyZQ2XSSZQm25QtlIaACuyvOyxGA=; b=NWvypW9spgpPozS5n6
+	jzJYk+xncOLnC/t8gU+nUY5ukpuOjIjRI1V1RRHwIB79lYsxHJ8MJj1T99aodS1T
+	cB7Uxc5YNbDJdDxRoouy+nbQcCQ5TzRxWOdznpAIYC+IW8/Id2aBujhL56bahims
+	FyVhnHvR4U5D1FqWbvSObluZI=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g0-0 (Coremail) with SMTP id _____wB3hDbARW5oKB04Dg--.12748S2;
+	Wed, 09 Jul 2025 18:34:42 +0800 (CST)
+From: oushixiong1025@163.com
+To: Simona Vetter <simona@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
-	Giovanni Di Santi <giovanni.disanti.lkl@gmail.com>
-Subject: [PATCH v3 3/3] fbdev: kyro: Use devm_ioremap_wc() for screen mem
-Date: Wed,  9 Jul 2025 11:53:54 +0200
-Message-ID: <20250709095354.931589-4-giovanni.disanti.lkl@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250709095354.931589-1-giovanni.disanti.lkl@gmail.com>
-References: <20250709095354.931589-1-giovanni.disanti.lkl@gmail.com>
+	Shixiong Ou <oushixiong@kylinos.cn>
+Subject: [PATCH] fbcon: Fix outdated registered_fb reference in comment
+Date: Wed,  9 Jul 2025 18:34:38 +0800
+Message-Id: <20250709103438.572309-1-oushixiong1025@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,59 +40,43 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wB3hDbARW5oKB04Dg--.12748S2
+X-Coremail-Antispam: 1Uf129KBjvdXoWrZFWDtF47uryDKryDGFyrtFb_yoWkCFc_Ca
+	sYv34DJ34DGrWfKrn3CFsxZ34FvayjvrWfu3WDtFyrta4UJ3y5Wr42vr1jqrWrKF1Ivrs0
+	gw17Kr4fuw1fCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU8vD73UUUUU==
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/1tbiXQSED2hsYPeT9wACsn
 
-Replace the manual pci_ioremap_wc() call for mapping screen memory with the
-device-managed devm_ioremap_wc() variant.
+From: Shixiong Ou <oushixiong@kylinos.cn>
 
-This simplifies the driver's resource management by ensuring the memory is
-automatically unmapped when the driver detaches from the device.
+The variable was renamed to fbcon_registered_fb, but this comment was
+not updated along with the change. Correct it to avoid confusion.
 
-Signed-off-by: Giovanni Di Santi <giovanni.disanti.lkl@gmail.com>
+Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index ddc241f508b1..c8b1dfa456a3 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -706,7 +706,8 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (!currentpar->regbase)
- 		goto out_free_fb;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 25684f5d6523..d8eab4859fd4 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -953,13 +953,13 @@ static const char *fbcon_startup(void)
+ 	int rows, cols;
  
--	info->screen_base = pci_ioremap_wc_bar(pdev, 0);
-+	info->screen_base = devm_ioremap_wc(&pdev->dev, kyro_fix.smem_start,
-+					    kyro_fix.smem_len);
- 	if (!info->screen_base)
- 		goto out_free_fb;
- 
-@@ -743,7 +744,7 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	fb_memset_io(info->screen_base, 0, size);
- 
- 	if (register_framebuffer(info) < 0)
--		goto out_unmap;
-+		goto out_free_fb;
- 
- 	fb_info(info, "%s frame buffer device, at %dx%d@%d using %ldk/%ldk of VRAM\n",
- 		info->fix.id,
-@@ -754,8 +755,6 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	return 0;
- 
--out_unmap:
--	iounmap(info->screen_base);
- out_free_fb:
- 	framebuffer_release(info);
- 
-@@ -777,8 +776,6 @@ static void kyrofb_remove(struct pci_dev *pdev)
- 	deviceInfo.ulNextFreeVidMem = 0;
- 	deviceInfo.ulOverlayOffset = 0;
- 
--	iounmap(info->screen_base);
--
- 	arch_phys_wc_del(par->wc_cookie);
- 
- 	unregister_framebuffer(info);
+ 	/*
+-	 *  If num_registered_fb is zero, this is a call for the dummy part.
++	 *  If fbcon_num_registered_fb is zero, this is a call for the dummy part.
+ 	 *  The frame buffer devices weren't initialized yet.
+ 	 */
+ 	if (!fbcon_num_registered_fb || info_idx == -1)
+ 		return display_desc;
+ 	/*
+-	 * Instead of blindly using registered_fb[0], we use info_idx, set by
++	 * Instead of blindly using fbcon_registered_fb[0], we use info_idx, set by
+ 	 * fbcon_fb_registered();
+ 	 */
+ 	info = fbcon_registered_fb[info_idx];
 -- 
-2.43.0
+2.25.1
 

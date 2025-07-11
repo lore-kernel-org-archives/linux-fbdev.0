@@ -1,88 +1,53 @@
-Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 593F71F4181
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 07:49:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 512061F4616;
+	Fri, 11 Jul 2025 07:56:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752220159; cv=none; b=B6AvbQlA+95r3yuU/rm1AOEekr8rtievk3hsTepb13U6myKWTW8EkjWs/2PPQyVVTfQw/51fBy43w6QGzO8k8HRf7QB/smfu3wyMF9Fa/jsRNy7ZP2lhGqH4vxuXC5aj7pi5bsMR3StD1Luh1ZgOqwwGRtBK27qkwRQU7jvXcfY=
+	t=1752220568; cv=none; b=h+/oywjVyALilQ7Zw3VvFcPydS17psvctXF5IIaS7ucds2X6pBMMPN2xAYIRcs74U9MspKNKFnVvchKu3bvZ7nGL1Q/GyUf/WMV/jrrlf55z41SC4apjCmv1TJ/Jik3ZyWILRS8GO7v0LcJbb7OxbJ1T6x62x/YQBORQ/kbzZZM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752220159; c=relaxed/simple;
-	bh=mnRVnOn745rc6zlhW3a70pKs5ebcseZrteDQiLGcxlI=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=V6LXlEDWlf/GdFNDFoTsDzYyDyjiRe2HOq0gO/jma/V2bFvOktMicwWzsMX9o+B+zESNj7euhUNLIzGWpg7ZCfsIkMdklVUelYKf1BtfGlmBOheNwh75my2cetvoYru9NJ6SGHyEBKgHcU89WyLurAPxiCODziWQuIzAFK5jOTU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=wJb5lVgd; arc=none smtp.client-ip=209.85.208.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
+	s=arc-20240116; t=1752220568; c=relaxed/simple;
+	bh=ZTl9Lcxqo1YuOckQGlJbPCZk0uyJdifoQEYcCmzeCIY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KyUawBkUQ5yJTlUF2SY5/Vg6HNY/YgHd5aDGgj5cqdWfahY70dTDrNnWWM9PjX2QuPDy+QkBiaEY/Lj2veebtuSBI0RG6xD7GBp9ahHujF78jtzsKR0l9gUl69LWN0DNLd6VtecK1NE+fybZwdCbr/Dmh8BVQUb6zr9KR7t3ISI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CxwzvimV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="wJb5lVgd"
-Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-60c4521ae2cso3347368a12.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 00:49:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1752220155; x=1752824955; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vuj2RXHOOyKDpGAVts46ctP8tG8E0kUzK0aOC3W5/W4=;
-        b=wJb5lVgdrc+Awpros3y9s4ry0nXiWlN0JEYHcUFmD7EV5XtdqSjSUWUTcKCUyi2nLC
-         im/9V9PK91WjBZd3qpINyvRaTc9Dx7NyBIHdsrZ4sQdKtRNNhD59Fk1NLqEQW8L0YTO1
-         mgAg9I3aHiKnfCLuqQf3m3ZXBNBrqQPyAhN88wB2ViP2usiQbhgsznujGgQjRTj6UyCQ
-         D3BIPutJv87De6qlFztccKRM9acwTKJ33s5G+GejpahI5dVmPeMg0SoVGDVDIuT/pWdK
-         zn9h86GtkEQ+bNwDFgkCwp6g9T9fSKMOqC7BfSBk7+E6yi1158hdTOzz4dDP6AeLYk1X
-         3oIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752220155; x=1752824955;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=vuj2RXHOOyKDpGAVts46ctP8tG8E0kUzK0aOC3W5/W4=;
-        b=CLuaM1HauziA9BySFrQjovyGsQVgRbqQ37meFgAIiHBYm/n5vZ6Br4lRvFOip0QUoZ
-         tlpq7HEaHck7C2ZCIE8oo+2pPrWenGq/DBj7CC3ZYIPFn8FjK6OKoxPBlEog8j3frG1l
-         mYc0pXdWZEc5dz+H3TqNAw3HRNnI6Dy3E2VnBGBUPAsXDaC80X1KhPdmS+HFT3NTnO44
-         2Vte4d4rtjVQVnNOFGWMon670sJJhX9Pd7PMRabT0fB27jZhAbvAMtKJjmc8gvvqK/Au
-         oDc2q33MxUmIla+KYRJ7fFHsbO0oXEGYP6qSaSYX22xtUPUcOn48elYlVvonsbmd9VwH
-         UGrQ==
-X-Forwarded-Encrypted: i=1; AJvYcCX4b6kVuine/Mk/FNIHaywk1CFM5Imw6N7NYl8GkWjKWTBMrFK6TFZueyhNM6PnR94svxDNaDA8mtrlSw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwJYHG0Rx1Zf8AA0zRQG8+zBZ5AFpzO+8k9ZUpNpm8qMOICFCkN
-	8iOaIdp84nznih79cLLk2a557ATyJd2R1SUpiFj2mqXo3+NFniKNlmCHvQ0zCvfNit8=
-X-Gm-Gg: ASbGncsxTmxvPh20+iyWcZeUO1oAaYCQOOXDxGPfJHncCCLb5e4m7aV9DIzhGFla6j1
-	iJWDXxQvtY49jFZGb+iJv9iMbDmcAw10id8a5vwfxYhc1mRCs6Ahc6bh1cM9dkF6x7PxmL4x+Im
-	2xldbXc6K3tihdfrduJu0dnK9XfWVcJr50oBa7VPRVYOS198EyE1zdhSOu5JcnilrFBWeLN/VqV
-	YkbkQ4M5X2Ro9TjWUGvzV8GCNY4AjjhPNh3jhpp18nbQlSH1xFkFG0jGEIBg1bAyzg81NQypCkK
-	JMYZnO6UD7nbwMLsuaf64uG9mDIqbjdK6IJ6aLU4cNBpPqi6Zm4IqjFprRbqoCGn17nhPikBUXP
-	6HRqG21WzW6wi2EzoilK++QKq4HKUHrXWpM1iuxl7U+bAmrZijRYh05Rgk8sJ3vk0tL4=
-X-Google-Smtp-Source: AGHT+IHF+UIT8lzRUG+Gi81dR379CZsNGMp8TAA1jLven/3EV99Cld3+kcRl0ivBgJtQ89/Q0wzV/w==
-X-Received: by 2002:a17:907:e984:b0:ad8:9466:3344 with SMTP id a640c23a62f3a-ae6fc10858fmr222387766b.43.1752220155539;
-        Fri, 11 Jul 2025 00:49:15 -0700 (PDT)
-Received: from localhost (144-178-202-139.static.ef-service.nl. [144.178.202.139])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae6e8264fa0sm248855466b.88.2025.07.11.00.49.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 11 Jul 2025 00:49:15 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CxwzvimV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED6A4C4CEED;
+	Fri, 11 Jul 2025 07:56:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1752220567;
+	bh=ZTl9Lcxqo1YuOckQGlJbPCZk0uyJdifoQEYcCmzeCIY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=CxwzvimVfkzfrBmMJQJCoLSQfD1YGdL/qdXo+fbYnuW6DSlG7efYaPc9ogj323+K6
+	 DtWygRDJh1Q4piDaP5koawGm3Valhr3pKWXzIHwoiwx2dbhmr6ACEjNx8mj/lNDsjr
+	 eV+IVp8ryYZX1+RdGaMrVMrFLA9LbmtOFxUEsvoC1H63m4mjqCJTpreKgItaxQQdL8
+	 p7aKGzrcbbViKXIXRkVmTXIj5S0o2G9BVuYDHkcjB+r8DA4WFLPUwWlT2YKBZpS2w1
+	 uNUH/2jLKUfb2WUiGNpKAonmRrvxZi+h1ik5y4uDc0Zuc9qaKNchaU8UM690/FbT7/
+	 aQuBpSQrorIWQ==
+Message-ID: <83a7add6-e72d-4042-af1b-db45fc3f8a34@kernel.org>
+Date: Fri, 11 Jul 2025 09:56:02 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Jul 2025 09:49:14 +0200
-Message-Id: <DB927EJAGV63.1RSRM7JK907VL@fairphone.com>
-Cc: "Hans de Goede" <hdegoede@redhat.com>, "Maarten Lankhorst"
- <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
- <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Rob Herring"
- <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
- Dooley" <conor+dt@kernel.org>, "Javier Martinez Canillas"
- <javierm@redhat.com>, "Helge Deller" <deller@gmx.de>,
- <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
  interconnects property
-From: "Luca Weiss" <luca.weiss@fairphone.com>
-To: "Dmitry Baryshkov" <dmitry.baryshkov@oss.qualcomm.com>, "Krzysztof
- Kozlowski" <krzk@kernel.org>
-X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
+To: Luca Weiss <luca.weiss@fairphone.com>,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Hans de Goede <hdegoede@redhat.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
  <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
@@ -93,56 +58,74 @@ References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
  <e534d496-6ce0-46c8-835d-94b3346446a7@redhat.com>
  <6e4253dd-cd73-4302-b9df-44c8c311eb22@kernel.org>
  <vk7xshncx3vj66ykbt3cfdjwdsx5uewfzlqmfsdbjfgju4awwk@lz76hnenxq2u>
-In-Reply-To: <vk7xshncx3vj66ykbt3cfdjwdsx5uewfzlqmfsdbjfgju4awwk@lz76hnenxq2u>
+ <DB927EJAGV63.1RSRM7JK907VL@fairphone.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJoF1BKBQkWlnSaAAoJEBuTQ307
+ QWKbHukP/3t4tRp/bvDnxJfmNdNVn0gv9ep3L39IntPalBFwRKytqeQkzAju0whYWg+R/rwp
+ +r2I1Fzwt7+PTjsnMFlh1AZxGDmP5MFkzVsMnfX1lGiXhYSOMP97XL6R1QSXxaWOpGNCDaUl
+ ajorB0lJDcC0q3xAdwzRConxYVhlgmTrRiD8oLlSCD5baEAt5Zw17UTNDnDGmZQKR0fqLpWy
+ 786Lm5OScb7DjEgcA2PRm17st4UQ1kF0rQHokVaotxRM74PPDB8bCsunlghJl1DRK9s1aSuN
+ hL1Pv9VD8b4dFNvCo7b4hfAANPU67W40AaaGZ3UAfmw+1MYyo4QuAZGKzaP2ukbdCD/DYnqi
+ tJy88XqWtyb4UQWKNoQqGKzlYXdKsldYqrLHGoMvj1UN9XcRtXHST/IaLn72o7j7/h/Ac5EL
+ 8lSUVIG4TYn59NyxxAXa07Wi6zjVL1U11fTnFmE29ALYQEXKBI3KUO1A3p4sQWzU7uRmbuxn
+ naUmm8RbpMcOfa9JjlXCLmQ5IP7Rr5tYZUCkZz08LIfF8UMXwH7OOEX87Y++EkAB+pzKZNNd
+ hwoXulTAgjSy+OiaLtuCys9VdXLZ3Zy314azaCU3BoWgaMV0eAW/+gprWMXQM1lrlzvwlD/k
+ whyy9wGf0AEPpLssLVt9VVxNjo6BIkt6d1pMg6mHsUEVzsFNBFVDXDQBEADNkrQYSREUL4D3
+ Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
+ MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
+ OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
+ GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
+ 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
+ YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
+ 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
+ BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
+ JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
+ 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
+ YpsFAmgXUF8FCRaWWyoACgkQG5NDfTtBYptO0w//dlXJs5/42hAXKsk+PDg3wyEFb4NpyA1v
+ qmx7SfAzk9Hf6lWwU1O6AbqNMbh6PjEwadKUk1m04S7EjdQLsj/MBSgoQtCT3MDmWUUtHZd5
+ RYIPnPq3WVB47GtuO6/u375tsxhtf7vt95QSYJwCB+ZUgo4T+FV4hquZ4AsRkbgavtIzQisg
+ Dgv76tnEv3YHV8Jn9mi/Bu0FURF+5kpdMfgo1sq6RXNQ//TVf8yFgRtTUdXxW/qHjlYURrm2
+ H4kutobVEIxiyu6m05q3e9eZB/TaMMNVORx+1kM3j7f0rwtEYUFzY1ygQfpcMDPl7pRYoJjB
+ dSsm0ZuzDaCwaxg2t8hqQJBzJCezTOIkjHUsWAK+tEbU4Z4SnNpCyM3fBqsgYdJxjyC/tWVT
+ AQ18NRLtPw7tK1rdcwCl0GFQHwSwk5pDpz1NH40e6lU+NcXSeiqkDDRkHlftKPV/dV+lQXiu
+ jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
+ zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
+ XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
+In-Reply-To: <DB927EJAGV63.1RSRM7JK907VL@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
+On 11/07/2025 09:49, Luca Weiss wrote:
+>> I think this explodes too quickly to be useful. I'd cast my (small) vote
+>> into continuing using the simple-framebuffer as is, without additional
+>> compatible strings and extend the bindings allowing unbound number of
+>> interconnects.
+> 
+> How do we continue on this?
+> 
+> If the current solution is not acceptable, can you suggest one that is?
+> 
+> I'd like to keep this moving to not block the dts upstreaming
+> unnecessarily - or otherwise I need to drop simple-framebuffer from the
+> dts patch and keep this out-of-tree along with a patch like this.
 
-On Sun Jul 6, 2025 at 1:24 PM CEST, Dmitry Baryshkov wrote:
-> On Wed, Jul 02, 2025 at 10:43:27PM +0200, Krzysztof Kozlowski wrote:
->> On 30/06/2025 10:40, Hans de Goede wrote:
->> >>
->> >> No one asks to drop them from the driver. I only want specific front
->> >> compatible which will list and constrain the properties. It is not
->> >> contradictory to your statements, U-boot support, driver support. I
->> >> really do not see ANY argument why this cannot follow standard DT rul=
-es.
->> >=20
->> > So what you are saying is that you want something like:
->> >=20
->> > framebuffer0: framebuffer@1d385000 {
->> > 	compatible =3D "qcom.simple-framebuffer-sm8650-mdss", "simple-framebu=
-ffer";
->> > }
->> >=20
->> > and that the binding for qcom.simple-framebuffer-sm8650-mdss
->> > can then list interconnects ?
->> IMO yes (after adjusting above to coding style), but as mentioned in
->> other response you can just get an ack or opinion from Rob or Conor.
->
-> But, this way we end up describing MDSS hardware block twice: once with
-> the proper device structure and once more in the simple-framebuffer
-> definition. I think this is a bit strange.
->
-> I understand your point of having a device-specific compatible string
-> and also having a verifiable schema, but I think it's an overkill here.
->
-> Consider regulator supplies of this simple-framebuffer. Obviously some
-> of them supply the panel and not the SoC parts. Should we also include
-> the panel into the respective compat string? What about describing the
-> device with two different DSI panels?
->
-> I think this explodes too quickly to be useful. I'd cast my (small) vote
-> into continuing using the simple-framebuffer as is, without additional
-> compatible strings and extend the bindings allowing unbound number of
-> interconnects.
 
-How do we continue on this?
+I gave another alternative already (in this thread!) - get an ack or
+opinion from @Rob or @Conor. For the cases I am not sure or I got
+something wrong, I always defer to @Rob.
 
-If the current solution is not acceptable, can you suggest one that is?
-
-I'd like to keep this moving to not block the dts upstreaming
-unnecessarily - or otherwise I need to drop simple-framebuffer from the
-dts patch and keep this out-of-tree along with a patch like this.
-
-Regards
-Luca
+Best regards,
+Krzysztof

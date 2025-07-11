@@ -1,62 +1,63 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
+Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D9EE1F12FB
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 07:43:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 593F71F4181
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 07:49:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752219830; cv=none; b=qsXOavL94iv3iyaIYInrXNtoNcZHucRYy8q3H/EPUwdH7wYaoBI9GVDVUKjyBEtVrKRWb6bNcIzymqpn21nUB4vFudUU351wwhIntVT1AsU6cVPQn9LHBHzfSHsTh+LZJA4WBGbLbM139R+nJGBPh/x8fSa9vIV5zaih5T/M7A0=
+	t=1752220159; cv=none; b=B6AvbQlA+95r3yuU/rm1AOEekr8rtievk3hsTepb13U6myKWTW8EkjWs/2PPQyVVTfQw/51fBy43w6QGzO8k8HRf7QB/smfu3wyMF9Fa/jsRNy7ZP2lhGqH4vxuXC5aj7pi5bsMR3StD1Luh1ZgOqwwGRtBK27qkwRQU7jvXcfY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752219830; c=relaxed/simple;
-	bh=CeWd6R0BO1sCTLl4uPfwyEIiA1cWcbzfMdI5RwEd9jE=;
+	s=arc-20240116; t=1752220159; c=relaxed/simple;
+	bh=mnRVnOn745rc6zlhW3a70pKs5ebcseZrteDQiLGcxlI=;
 	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=WpfVrLz3bISLTREjq4GXefvmlC6ILSAkiGplYseTUeq1pV+n/f7nroScZ1+zseXlQd0HfLXqGtpi+TnLVTjzk0EeLLQAbXA89K7B3VSIlw49ID1QjwDvnWDplqjEYEXpnXiMzEDkji6qgtBno4oO2RHdufCCE7KpTWISZulooQE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=nYaYZVfm; arc=none smtp.client-ip=209.85.218.43
+	 References:In-Reply-To; b=V6LXlEDWlf/GdFNDFoTsDzYyDyjiRe2HOq0gO/jma/V2bFvOktMicwWzsMX9o+B+zESNj7euhUNLIzGWpg7ZCfsIkMdklVUelYKf1BtfGlmBOheNwh75my2cetvoYru9NJ6SGHyEBKgHcU89WyLurAPxiCODziWQuIzAFK5jOTU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=wJb5lVgd; arc=none smtp.client-ip=209.85.208.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="nYaYZVfm"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-ae35f36da9dso347978666b.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 00:43:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="wJb5lVgd"
+Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-60c4521ae2cso3347368a12.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 00:49:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1752219827; x=1752824627; darn=vger.kernel.org;
+        d=fairphone.com; s=fair; t=1752220155; x=1752824955; darn=vger.kernel.org;
         h=in-reply-to:references:to:from:subject:cc:message-id:date
          :content-transfer-encoding:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=3IIaUlC/iOoJ+QVPC0O3jLr9bGCpNKQPquWiGz3IsOM=;
-        b=nYaYZVfmbWx9dQNXbLHrnfVH1lfkbxH2xTDw/rgUr9U9x5DmgidnNP1BuwkoCURpyP
-         jcomr4Vt0lNWCC1i4lJvns4c2eES1+5CLloGzKYhzM+3Qm/no+NUqfRxV1jWDK8T3l5K
-         mubRBba+O7sZ+3cErT5Z2iktaePg6wswX0OLyuD1OcIY5Gc8wnlbYdFAYt8TpbvsAZha
-         d55IH+dS1BiaoZCw8W0OpIwRPg56I8i5vZ2v7Lo4MORSbQ7hCtkE1bIAsordtv8Kq3Kj
-         Dfvc4RGAyGs2VWersRxTzcWIjXIn9JptF6DH0dzxQ/OvW3nl6y9rdteSNZWV1LlP5CY0
-         nrHQ==
+        bh=vuj2RXHOOyKDpGAVts46ctP8tG8E0kUzK0aOC3W5/W4=;
+        b=wJb5lVgdrc+Awpros3y9s4ry0nXiWlN0JEYHcUFmD7EV5XtdqSjSUWUTcKCUyi2nLC
+         im/9V9PK91WjBZd3qpINyvRaTc9Dx7NyBIHdsrZ4sQdKtRNNhD59Fk1NLqEQW8L0YTO1
+         mgAg9I3aHiKnfCLuqQf3m3ZXBNBrqQPyAhN88wB2ViP2usiQbhgsznujGgQjRTj6UyCQ
+         D3BIPutJv87De6qlFztccKRM9acwTKJ33s5G+GejpahI5dVmPeMg0SoVGDVDIuT/pWdK
+         zn9h86GtkEQ+bNwDFgkCwp6g9T9fSKMOqC7BfSBk7+E6yi1158hdTOzz4dDP6AeLYk1X
+         3oIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752219827; x=1752824627;
+        d=1e100.net; s=20230601; t=1752220155; x=1752824955;
         h=in-reply-to:references:to:from:subject:cc:message-id:date
          :content-transfer-encoding:mime-version:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=3IIaUlC/iOoJ+QVPC0O3jLr9bGCpNKQPquWiGz3IsOM=;
-        b=fkU6VxGXknwhtKVLWwihqX/BZCubCmNVTn8uQz6XgLqk3latEm+fkwYOcsu9Y+qCHU
-         kc5eiLwnZ57NmPRQlDwugCqW9+7zviGYRxBhcmZx6/Wzr77cgZiKdu+xxOsGDdpdzA0S
-         TAQeRJlaUgAPLAcZ8nhcZCwF9psvBpXHt049g4sz6u0eLfYzEwV9w93eOx5D+f7hZVAd
-         ZBZfJ3oZ3MN/BKKIkP/LNuhBN2oFTPqj6hewwhQKGdlA7upoKbUTzNOELkdZKH8uSJhy
-         f06inakfVpuq8sV/Vgq/LrpnkE3+gqg6MIE0V5FET4yegrCS/pu+a6H6lV8Y/BrXTwGT
-         1iuA==
-X-Gm-Message-State: AOJu0YwoCOxpXkOFRx7IwFpOUSZwtyHKHnF0db/8a68neADTSsLvkZ5+
-	kebSZLW5poZt/axJfw0CkADnKChAkhL+Xc+ujI5zNIKBNGq9MNI3nQAIKFqtnAun8EI=
-X-Gm-Gg: ASbGnct+InhRpNaL5Bn+f7ldXRBBqcguH85j1Kj/ZnUCKuXkDheBnqWZf0rcrhPO3z1
-	J+EDuuatatoHw3Z42/9OhWPvr1DF2sEiLu1ZtuBetiJy9tdrD+yNiHFJblWZk4etrFFBJ/LdOGy
-	RdKDLUjRguKzht0YHbuddwYgIX8J+l97eVEqOVTypGnWlLh/ptOZp4za6v4VMT56JnHCIDfdJTc
-	dTYT9LxRhW/otQ8l99WYoek5MrC71D1NHFI1cId6aksjexMyqytIIPGAZRI/HNOoQeQoxD0dtj9
-	fa2YwkzXsKnJ8R//Ge/NyAwX3+QbkownIIvV5DD3Me9IT1j7UbYbJnv0OqprmI3fWdQT8WpYcrc
-	6X0att4coxQWQpSH3RIz1R4iVDQ/k3WxA+Qu+cR8tDYbOf652jbs3OR5wWDmDl5/fMew=
-X-Google-Smtp-Source: AGHT+IFTYupbQy72RBvYwBS8ueAvzrjXrAehsUXPExTpFAM8Ni+N0B33aqtgCjScHufwI8X0ZAMX1g==
-X-Received: by 2002:a17:906:fe0c:b0:ae3:5212:c906 with SMTP id a640c23a62f3a-ae6fbe13960mr253963566b.10.1752219827399;
-        Fri, 11 Jul 2025 00:43:47 -0700 (PDT)
+        bh=vuj2RXHOOyKDpGAVts46ctP8tG8E0kUzK0aOC3W5/W4=;
+        b=CLuaM1HauziA9BySFrQjovyGsQVgRbqQ37meFgAIiHBYm/n5vZ6Br4lRvFOip0QUoZ
+         tlpq7HEaHck7C2ZCIE8oo+2pPrWenGq/DBj7CC3ZYIPFn8FjK6OKoxPBlEog8j3frG1l
+         mYc0pXdWZEc5dz+H3TqNAw3HRNnI6Dy3E2VnBGBUPAsXDaC80X1KhPdmS+HFT3NTnO44
+         2Vte4d4rtjVQVnNOFGWMon670sJJhX9Pd7PMRabT0fB27jZhAbvAMtKJjmc8gvvqK/Au
+         oDc2q33MxUmIla+KYRJ7fFHsbO0oXEGYP6qSaSYX22xtUPUcOn48elYlVvonsbmd9VwH
+         UGrQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX4b6kVuine/Mk/FNIHaywk1CFM5Imw6N7NYl8GkWjKWTBMrFK6TFZueyhNM6PnR94svxDNaDA8mtrlSw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwJYHG0Rx1Zf8AA0zRQG8+zBZ5AFpzO+8k9ZUpNpm8qMOICFCkN
+	8iOaIdp84nznih79cLLk2a557ATyJd2R1SUpiFj2mqXo3+NFniKNlmCHvQ0zCvfNit8=
+X-Gm-Gg: ASbGncsxTmxvPh20+iyWcZeUO1oAaYCQOOXDxGPfJHncCCLb5e4m7aV9DIzhGFla6j1
+	iJWDXxQvtY49jFZGb+iJv9iMbDmcAw10id8a5vwfxYhc1mRCs6Ahc6bh1cM9dkF6x7PxmL4x+Im
+	2xldbXc6K3tihdfrduJu0dnK9XfWVcJr50oBa7VPRVYOS198EyE1zdhSOu5JcnilrFBWeLN/VqV
+	YkbkQ4M5X2Ro9TjWUGvzV8GCNY4AjjhPNh3jhpp18nbQlSH1xFkFG0jGEIBg1bAyzg81NQypCkK
+	JMYZnO6UD7nbwMLsuaf64uG9mDIqbjdK6IJ6aLU4cNBpPqi6Zm4IqjFprRbqoCGn17nhPikBUXP
+	6HRqG21WzW6wi2EzoilK++QKq4HKUHrXWpM1iuxl7U+bAmrZijRYh05Rgk8sJ3vk0tL4=
+X-Google-Smtp-Source: AGHT+IHF+UIT8lzRUG+Gi81dR379CZsNGMp8TAA1jLven/3EV99Cld3+kcRl0ivBgJtQ89/Q0wzV/w==
+X-Received: by 2002:a17:907:e984:b0:ad8:9466:3344 with SMTP id a640c23a62f3a-ae6fc10858fmr222387766b.43.1752220155539;
+        Fri, 11 Jul 2025 00:49:15 -0700 (PDT)
 Received: from localhost (144-178-202-139.static.ef-service.nl. [144.178.202.139])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae6e7e90c70sm259816466b.13.2025.07.11.00.43.46
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae6e8264fa0sm248855466b.88.2025.07.11.00.49.14
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 11 Jul 2025 00:43:46 -0700 (PDT)
+        Fri, 11 Jul 2025 00:49:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -65,140 +66,83 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Jul 2025 09:43:46 +0200
-Message-Id: <DB9237QHOXRU.JRJB8SPUX8RO@fairphone.com>
-Cc: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 3/5] drm/sysfb: simpledrm: Add support for
- interconnect paths
-From: "Luca Weiss" <luca.weiss@fairphone.com>
-To: "Javier Martinez Canillas" <javierm@redhat.com>, "Hans de Goede"
- <hdegoede@redhat.com>, "Maarten Lankhorst"
+Date: Fri, 11 Jul 2025 09:49:14 +0200
+Message-Id: <DB927EJAGV63.1RSRM7JK907VL@fairphone.com>
+Cc: "Hans de Goede" <hdegoede@redhat.com>, "Maarten Lankhorst"
  <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
  "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
  <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Rob Herring"
  <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
- Dooley" <conor+dt@kernel.org>, "Helge Deller" <deller@gmx.de>
+ Dooley" <conor+dt@kernel.org>, "Javier Martinez Canillas"
+ <javierm@redhat.com>, "Helge Deller" <deller@gmx.de>,
+ <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+ <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
+ interconnects property
+From: "Luca Weiss" <luca.weiss@fairphone.com>
+To: "Dmitry Baryshkov" <dmitry.baryshkov@oss.qualcomm.com>, "Krzysztof
+ Kozlowski" <krzk@kernel.org>
 X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
 References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-3-f69b86cd3d7d@fairphone.com>
- <87qzz5d3le.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87qzz5d3le.fsf@minerva.mail-host-address-is-not-set>
+ <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
+ <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
+ <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
+ <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
+ <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
+ <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
+ <e534d496-6ce0-46c8-835d-94b3346446a7@redhat.com>
+ <6e4253dd-cd73-4302-b9df-44c8c311eb22@kernel.org>
+ <vk7xshncx3vj66ykbt3cfdjwdsx5uewfzlqmfsdbjfgju4awwk@lz76hnenxq2u>
+In-Reply-To: <vk7xshncx3vj66ykbt3cfdjwdsx5uewfzlqmfsdbjfgju4awwk@lz76hnenxq2u>
 
-Hi Javier,
+Hi Krzysztof,
 
-On Fri Jun 27, 2025 at 9:51 AM CEST, Javier Martinez Canillas wrote:
-> Luca Weiss <luca.weiss@fairphone.com> writes:
+On Sun Jul 6, 2025 at 1:24 PM CEST, Dmitry Baryshkov wrote:
+> On Wed, Jul 02, 2025 at 10:43:27PM +0200, Krzysztof Kozlowski wrote:
+>> On 30/06/2025 10:40, Hans de Goede wrote:
+>> >>
+>> >> No one asks to drop them from the driver. I only want specific front
+>> >> compatible which will list and constrain the properties. It is not
+>> >> contradictory to your statements, U-boot support, driver support. I
+>> >> really do not see ANY argument why this cannot follow standard DT rul=
+es.
+>> >=20
+>> > So what you are saying is that you want something like:
+>> >=20
+>> > framebuffer0: framebuffer@1d385000 {
+>> > 	compatible =3D "qcom.simple-framebuffer-sm8650-mdss", "simple-framebu=
+ffer";
+>> > }
+>> >=20
+>> > and that the binding for qcom.simple-framebuffer-sm8650-mdss
+>> > can then list interconnects ?
+>> IMO yes (after adjusting above to coding style), but as mentioned in
+>> other response you can just get an ack or opinion from Rob or Conor.
 >
->> Some devices might require keeping an interconnect path alive so that
->> the framebuffer continues working. Add support for that by setting the
->> bandwidth requirements appropriately for all provided interconnect
->> paths.
->>
->> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
->> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->> ---
->>  drivers/gpu/drm/sysfb/simpledrm.c | 83 ++++++++++++++++++++++++++++++++=
-+++++++
->>  1 file changed, 83 insertions(+)
->>
->> diff --git a/drivers/gpu/drm/sysfb/simpledrm.c b/drivers/gpu/drm/sysfb/s=
-impledrm.c
->> index 349219330314e3421a6bb26ad5cf39a679a5cb7a..47d213e20cab1dd1e1952867=
-4a95edea00f4bb30 100644
->> --- a/drivers/gpu/drm/sysfb/simpledrm.c
->> +++ b/drivers/gpu/drm/sysfb/simpledrm.c
->> @@ -2,6 +2,7 @@
->> =20
->>  #include <linux/aperture.h>
->>  #include <linux/clk.h>
->> +#include <linux/interconnect.h>
->>  #include <linux/minmax.h>
->>  #include <linux/of_address.h>
->>  #include <linux/of_clk.h>
->> @@ -225,6 +226,10 @@ struct simpledrm_device {
->>  	struct device **pwr_dom_devs;
->>  	struct device_link **pwr_dom_links;
->>  #endif
+> But, this way we end up describing MDSS hardware block twice: once with
+> the proper device structure and once more in the simple-framebuffer
+> definition. I think this is a bit strange.
 >
-> Can you add a /* interconnects */ comment here? Similarly how there is on=
-e
-> for clocks, regulators, power domains, etc.
-
-Sure!
-
+> I understand your point of having a device-specific compatible string
+> and also having a verifiable schema, but I think it's an overkill here.
 >
->> +#if defined CONFIG_OF && defined CONFIG_INTERCONNECT
->> +	unsigned int icc_count;
->> +	struct icc_path **icc_paths;
->> +#endif
->> =20
+> Consider regulator supplies of this simple-framebuffer. Obviously some
+> of them supply the panel and not the SoC parts. Should we also include
+> the panel into the respective compat string? What about describing the
+> device with two different DSI panels?
 >
-> ...
->
->> +static int simpledrm_device_attach_icc(struct simpledrm_device *sdev)
->> +{
->> +	struct device *dev =3D sdev->sysfb.dev.dev;
->> +	int ret, count, i;
->> +
->> +	count =3D of_count_phandle_with_args(dev->of_node, "interconnects",
->> +							 "#interconnect-cells");
->> +	if (count < 0)
->> +		return 0;
->> +
->> +	/* An interconnect path consists of two elements */
->> +	if (count % 2) {
->> +		drm_err(&sdev->sysfb.dev,
->> +			"invalid interconnects value\n");
->> +		return -EINVAL;
->> +	}
->> +	sdev->icc_count =3D count / 2;
->> +
->> +	sdev->icc_paths =3D devm_kcalloc(dev, sdev->icc_count,
->> +					       sizeof(*sdev->icc_paths),
->> +					       GFP_KERNEL);
->> +	if (!sdev->icc_paths)
->> +		return -ENOMEM;
->> +
->> +	for (i =3D 0; i < sdev->icc_count; i++) {
->> +		sdev->icc_paths[i] =3D of_icc_get_by_index(dev, i);
->> +		if (IS_ERR_OR_NULL(sdev->icc_paths[i])) {
->> +			ret =3D PTR_ERR(sdev->icc_paths[i]);
->> +			if (ret =3D=3D -EPROBE_DEFER)
->> +				goto err;
->> +			drm_err(&sdev->sysfb.dev, "failed to get interconnect path %u: %d\n"=
-,
->> +				i, ret);
->
-> You could use dev_err_probe() instead that already handles the -EPROBE_DE=
-FER
-> case and also will get this message in the /sys/kernel/debug/devices_defe=
-rred
-> debugfs entry, as the reason why the probe deferral happened.
+> I think this explodes too quickly to be useful. I'd cast my (small) vote
+> into continuing using the simple-framebuffer as is, without additional
+> compatible strings and extend the bindings allowing unbound number of
+> interconnects.
 
-Not quite sure how to implement dev_err_probe, but I think this should
-be quite okay?
+How do we continue on this?
 
-		if (IS_ERR_OR_NULL(sdev->icc_paths[i])) {
-			ret =3D dev_err_probe(dev, PTR_ERR(sdev->icc_paths[i]),
-				      "failed to get interconnect path %u\n", i);
-			if (ret =3D=3D -EPROBE_DEFER)
-				goto err;
-			continue;
-		}
+If the current solution is not acceptable, can you suggest one that is?
 
-That would still keep the current behavior for defer vs permanent error
-while printing when necessary and having it for devices_deferred for the
-defer case.
-
-Not sure what the difference between drm_err and dev_err are, but I
-trust you on that.
-
-Let me know.
+I'd like to keep this moving to not block the dts upstreaming
+unnecessarily - or otherwise I need to drop simple-framebuffer from the
+dts patch and keep this out-of-tree along with a patch like this.
 
 Regards
 Luca
-
->
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-

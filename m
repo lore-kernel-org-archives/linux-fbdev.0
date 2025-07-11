@@ -1,131 +1,173 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 512061F4616;
-	Fri, 11 Jul 2025 07:56:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFAB4279DC2
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 09:21:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752220568; cv=none; b=h+/oywjVyALilQ7Zw3VvFcPydS17psvctXF5IIaS7ucds2X6pBMMPN2xAYIRcs74U9MspKNKFnVvchKu3bvZ7nGL1Q/GyUf/WMV/jrrlf55z41SC4apjCmv1TJ/Jik3ZyWILRS8GO7v0LcJbb7OxbJ1T6x62x/YQBORQ/kbzZZM=
+	t=1752225697; cv=none; b=agH0IwfYJhRvVbCIRviOWecmu7iQo6GhFBRHsyxGAyw0cqDWcFhOBRuZzfSbii9KQwj4LbccgJVjON7Mgs8RBOOGuPccWv2cKpbIBcKbA3q0N6J9Cf6u6FGgiE9IwjLb4JBC+ADuqHPMqivBgeZX5Ip7dpLQ3sL8DgyHMUYI9y0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752220568; c=relaxed/simple;
-	bh=ZTl9Lcxqo1YuOckQGlJbPCZk0uyJdifoQEYcCmzeCIY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KyUawBkUQ5yJTlUF2SY5/Vg6HNY/YgHd5aDGgj5cqdWfahY70dTDrNnWWM9PjX2QuPDy+QkBiaEY/Lj2veebtuSBI0RG6xD7GBp9ahHujF78jtzsKR0l9gUl69LWN0DNLd6VtecK1NE+fybZwdCbr/Dmh8BVQUb6zr9KR7t3ISI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CxwzvimV; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1752225697; c=relaxed/simple;
+	bh=J1+gY7OYN0kPR3TnuQRjcQzBegXWzAAyK2wtVtceRZU=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=BadTxuZTbMSUBsykFZ+4D2q9wP9iVKKW9W/LQYwK8PVe6Xw1cCJ2R+7MVIp5fRDoBklpCrxiVafva3Sd0oGNNoeimXzNHkChujkgLxDkyQEzXEKk/ccPDlGGvw/QLAqIbW+LXBAHCyXlc8b76jMQFfR8L1msGleT2+Fd3seMnwU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=MkX37sg/; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CxwzvimV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED6A4C4CEED;
-	Fri, 11 Jul 2025 07:56:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752220567;
-	bh=ZTl9Lcxqo1YuOckQGlJbPCZk0uyJdifoQEYcCmzeCIY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=CxwzvimVfkzfrBmMJQJCoLSQfD1YGdL/qdXo+fbYnuW6DSlG7efYaPc9ogj323+K6
-	 DtWygRDJh1Q4piDaP5koawGm3Valhr3pKWXzIHwoiwx2dbhmr6ACEjNx8mj/lNDsjr
-	 eV+IVp8ryYZX1+RdGaMrVMrFLA9LbmtOFxUEsvoC1H63m4mjqCJTpreKgItaxQQdL8
-	 p7aKGzrcbbViKXIXRkVmTXIj5S0o2G9BVuYDHkcjB+r8DA4WFLPUwWlT2YKBZpS2w1
-	 uNUH/2jLKUfb2WUiGNpKAonmRrvxZi+h1ik5y4uDc0Zuc9qaKNchaU8UM690/FbT7/
-	 aQuBpSQrorIWQ==
-Message-ID: <83a7add6-e72d-4042-af1b-db45fc3f8a34@kernel.org>
-Date: Fri, 11 Jul 2025 09:56:02 +0200
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MkX37sg/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1752225693;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=S0JDyIunfR5DTlK8KTu+Yf5amiLX77lLqYYzQS582qg=;
+	b=MkX37sg/eL7Rmq+vbc3JTTudFR+OxxqGRpFqnX2iFIu6VLKogUCn4A3Msgai0dYO6o8Gr5
+	HaMjpmMGzZuDwF7kWEI8MLIC1LQdfn4K/2VbgwYTYt8rtvtb8e6yS2Wvt6PfwGWNZxJgiI
+	5L8SJ01BDzcV2Cxhff5bZpkVz6jdoCc=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-44-PNcA419eMzinTpBUK-Zoiw-1; Fri, 11 Jul 2025 05:21:32 -0400
+X-MC-Unique: PNcA419eMzinTpBUK-Zoiw-1
+X-Mimecast-MFC-AGG-ID: PNcA419eMzinTpBUK-Zoiw_1752225691
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-451d2037f1eso11894015e9.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Jul 2025 02:21:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1752225690; x=1752830490;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=S0JDyIunfR5DTlK8KTu+Yf5amiLX77lLqYYzQS582qg=;
+        b=oBzpowFvxJbysFm+BpjQrthldYe3MTJ59KODQrVnQ3rmKShd61t3Q81y8zJvnIfT/X
+         ObRcZyIB+cCizCJIEKfyq86Yn1yC/MF9kiF3MJ+vdeSVQNzs5tSrYn0FHvF4JYczTxvY
+         79R4j2D2Pto16MsTfp3zguxyPCAgZYdUTdtsISP0IUjN1MzUho5pI1u0uL8qzrLbMn01
+         X8qYWtM8aLEEdbFJSDVOHyIPitCH69Tvs3bh5rwqNHB1JgfErj48nnsCuKN5QUiVi9I+
+         YjUGvm+pZ6d4do5SNJFCjoJQtkopUs5VzDwVCgs9gdm9fvGfCEOWl0g+nzmQc9Ghl9pm
+         QLRQ==
+X-Gm-Message-State: AOJu0YyGoSQ/LCR+JsKebXYNENOLwpl6diJa68hucaAEWHmDf8YCzDaQ
+	Ffgc+zLSg6kO5PArked+YpD+R+ZkclP92V/5T+ChIkLigD/yekxRYXR9LW+hhyTlw22PK1BigAk
+	NZzZVmfQcHTKU6p6C3u9JuKqtwh9vuJKkamD6sIJ+XaD1rYD3jTOUpbrMoFXWQMZU
+X-Gm-Gg: ASbGncuPy1x9ZyK+GySauZtLR2WXRA6tbPSihRw7bcye2UL95cu07Bepr5OMPn3pHqy
+	HWuFrGDczy4k9ezqKaFhWxnhUD069psXUAqcoAf+Cn6LyfVW8pY1LQZFgDY/N9c2C9ICY/3cvLl
+	umFVtbkcdQ+LfE37MVsK16+uOcf56IwME45AWHcK3nLVPqKtNsOMfIw0ndLQDPXhW6M2DZRICQE
+	iqBXv5pSN7NYh2v0MIyzcGPjWOfNMZ3csjOs9JJ56P3h33EfIhQOP9Xluwey+MVc+eJagkAkoim
+	wV10EXKfL/eptQgII5gS6NR2ybbtBP1BBFZ0UdN7bFlEaOJvEG8jNL/5skamE0tTrYN0b8RSdv9
+	4GsnD4Nxn5Bo/hmpyoXef5Q==
+X-Received: by 2002:a05:600c:4fc7:b0:450:d568:909b with SMTP id 5b1f17b1804b1-454ec14848amr22904775e9.14.1752225690320;
+        Fri, 11 Jul 2025 02:21:30 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHopr/bZIg6PNEafq2nN27RiUQenQ7qTkGeKlIozsRqo7Tj0VZVvTn0sX8s4NUjyeT3MpW78Q==
+X-Received: by 2002:a05:600c:4fc7:b0:450:d568:909b with SMTP id 5b1f17b1804b1-454ec14848amr22904355e9.14.1752225689892;
+        Fri, 11 Jul 2025 02:21:29 -0700 (PDT)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-454dd537d12sm41439605e9.24.2025.07.11.02.21.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Jul 2025 02:21:29 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Luca Weiss <luca.weiss@fairphone.com>, Hans de Goede
+ <hdegoede@redhat.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor
+ Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/5] drm/sysfb: simpledrm: Add support for
+ interconnect paths
+In-Reply-To: <DB9237QHOXRU.JRJB8SPUX8RO@fairphone.com>
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-3-f69b86cd3d7d@fairphone.com>
+ <87qzz5d3le.fsf@minerva.mail-host-address-is-not-set>
+ <DB9237QHOXRU.JRJB8SPUX8RO@fairphone.com>
+Date: Fri, 11 Jul 2025 11:21:28 +0200
+Message-ID: <874ivjf5gn.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/5] dt-bindings: display: simple-framebuffer: Add
- interconnects property
-To: Luca Weiss <luca.weiss@fairphone.com>,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Hans de Goede <hdegoede@redhat.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-1-f69b86cd3d7d@fairphone.com>
- <20250627-mysterious-optimistic-bird-acaafb@krzk-bin>
- <DAX7ZB27SBPV.2Y0I09TVSF3TT@fairphone.com>
- <1129bc60-f9cb-40be-9869-8ffa3b3c9748@kernel.org>
- <8a3ad930-bfb1-4531-9d34-fdf7d437f352@redhat.com>
- <85521ded-734d-48e8-8f76-c57739102ded@kernel.org>
- <e534d496-6ce0-46c8-835d-94b3346446a7@redhat.com>
- <6e4253dd-cd73-4302-b9df-44c8c311eb22@kernel.org>
- <vk7xshncx3vj66ykbt3cfdjwdsx5uewfzlqmfsdbjfgju4awwk@lz76hnenxq2u>
- <DB927EJAGV63.1RSRM7JK907VL@fairphone.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <DB927EJAGV63.1RSRM7JK907VL@fairphone.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 
-On 11/07/2025 09:49, Luca Weiss wrote:
->> I think this explodes too quickly to be useful. I'd cast my (small) vote
->> into continuing using the simple-framebuffer as is, without additional
->> compatible strings and extend the bindings allowing unbound number of
->> interconnects.
-> 
-> How do we continue on this?
-> 
-> If the current solution is not acceptable, can you suggest one that is?
-> 
-> I'd like to keep this moving to not block the dts upstreaming
-> unnecessarily - or otherwise I need to drop simple-framebuffer from the
-> dts patch and keep this out-of-tree along with a patch like this.
+"Luca Weiss" <luca.weiss@fairphone.com> writes:
 
+Hello Luca,
 
-I gave another alternative already (in this thread!) - get an ack or
-opinion from @Rob or @Conor. For the cases I am not sure or I got
-something wrong, I always defer to @Rob.
+> Hi Javier,
+>
+> On Fri Jun 27, 2025 at 9:51 AM CEST, Javier Martinez Canillas wrote:
 
+[...]
+
+>>> +static int simpledrm_device_attach_icc(struct simpledrm_device *sdev)
+>>> +{
+>>> +	struct device *dev = sdev->sysfb.dev.dev;
+>>> +	int ret, count, i;
+>>> +
+>>> +	count = of_count_phandle_with_args(dev->of_node, "interconnects",
+>>> +							 "#interconnect-cells");
+>>> +	if (count < 0)
+>>> +		return 0;
+>>> +
+
+You are already checking here the number of interconnects phandlers. IIUC
+this should return -ENOENT if there's no "interconects" property and your
+logic returns success in that case.
+
+[...]
+
+>>
+>> You could use dev_err_probe() instead that already handles the -EPROBE_DEFER
+>> case and also will get this message in the /sys/kernel/debug/devices_deferred
+>> debugfs entry, as the reason why the probe deferral happened.
+>
+> Not quite sure how to implement dev_err_probe, but I think this should
+> be quite okay?
+>
+
+And of_icc_get_by_index() should only return NULL if CONFIG_INTERCONNECT
+is disabled but you have ifdef guards already for this so it should not
+happen.
+
+> 		if (IS_ERR_OR_NULL(sdev->icc_paths[i])) {
+
+Then here you could just do a IS_ERR() check and not care about being NULL.
+
+> 			ret = dev_err_probe(dev, PTR_ERR(sdev->icc_paths[i]),
+> 				      "failed to get interconnect path %u\n", i);
+> 			if (ret == -EPROBE_DEFER)
+> 				goto err;
+
+Why you only want to put the icc_paths get for the probe deferral case? I
+think that you want to do it for any error?
+
+> 			continue;
+
+I'm not sure why you need this?
+
+> 		}
+>
+> That would still keep the current behavior for defer vs permanent error
+> while printing when necessary and having it for devices_deferred for the
+> defer case.
+>
+
+As mentioned I still don't understand why you want the error path to only
+be called for probe deferral. I would had thought that any failure to get
+an interconnect would led to an error and cleanup.
+
+> Not sure what the difference between drm_err and dev_err are, but I
+> trust you on that.
+>
+
+The drm_err() adds DRM specific info but IMO the dev_err_probe() is better
+to avoid printing errors in case of probe deferral and also to have it in
+the devices_deferred debugfs entry.
+
+-- 
 Best regards,
-Krzysztof
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

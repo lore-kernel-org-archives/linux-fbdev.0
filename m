@@ -1,74 +1,79 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 020AF2DE6ED
-	for <linux-fbdev@vger.kernel.org>; Tue, 15 Jul 2025 12:29:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA0002DE70C
+	for <linux-fbdev@vger.kernel.org>; Tue, 15 Jul 2025 12:29:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752582597; cv=none; b=k3RJx6Rr91aN+M92uGW7bUc9sf2Tvh9/+TOjQuDXXyqENhjdE6rOpEwtjk0Nboh2Xpdbwdp+oO7Sg8aLrHX0SSLrIRTqCGPRuTF2buwBJYw9fnog/iVure5+AK+BYBQhM9TPtOZMohHgGjSi9Ug8Dx962uQg05QnZGhQWhPCcaI=
+	t=1752582599; cv=none; b=IAg3DNuOc679WjkveiUwXDZAZEU58KEUboPL5iafVDxi5wxzoy9/E52xQqRLT00k9l4OQ74aNsfni6a9I4A2VvlQ8jOEpm5rSqSIc6oD+HfGHXOHVip0z40RgJGZRozhuKITE/rx3pSQe3d9obJUYpWqoRWTl3XbmcExQPNlfG4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752582597; c=relaxed/simple;
-	bh=mYbeIX46vdmeWrZPpXLw+bmodcnhebm5aCNlZ3DiVCY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tYIzyOqiiBUJxOyefkCW9SVbqnfNfXZqVn5wRsI1PnWjspdcKLl2vamhTj/dm44fg4NCPXzTkWGWpLFMd5FGmyZPE0AeEjStxoGE4mj48dFH0fb59CS5jjQIMLZkB/RG89iKC3vxhKspoe5+7u1BQ+jXQ/XBhsNSrARftjDTeB0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QoKW7Yh6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=AkfZqHcj; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QoKW7Yh6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=AkfZqHcj; arc=none smtp.client-ip=195.135.223.131
+	s=arc-20240116; t=1752582599; c=relaxed/simple;
+	bh=XNZa8kdgsi/LebFHKiYdHCId1njAHooPccZ/KCWwzk0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=BBW+cUZvuuGYRPWYP2gR2WHEUorS3fX7yJ6/k+GEDtcHOAt+zVwTPttH/KKNFNVOut5zYcNXJty1ReJnIjZYQJLtp+lPIiQxAnGOUdovvnnsecRQbHcW+dfttwW6+h13NrLTStP4jsDTGnXncj2n7LahWTnjh1+WUouwHGgtAyc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QVU7nmCM; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=7ehudUId; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=P9xNpQAb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=WtYcfU3F; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QoKW7Yh6";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="AkfZqHcj";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QoKW7Yh6";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="AkfZqHcj"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QVU7nmCM";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="7ehudUId";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="P9xNpQAb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="WtYcfU3F"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 37FCA1F38F;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D9ED421202;
 	Tue, 15 Jul 2025 12:29:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1752582594; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1752582595; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=mjCwmxRw2oiS5uDhgBamrzilzsoTGXeob+BS+5zzIRE=;
-	b=QoKW7Yh6porPglfWJz2OZChxEiamLvLxKaIvycNJxh3bg7LYQSgk60CjlzhWEIENjMyj1Y
-	q42aI+n4ZNGdVGyAL8V1PftB8WPf2Xi1kTG2OG9CYS8agqfLmfAGndWG93mrdnPIbFKu69
-	JzeBhVTqGI2vhk9xwmhVfZQzUouV/PM=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=86y9r6nHahEnEZKMeYSQSkFSBgakMsJArIInMGC1XPw=;
+	b=QVU7nmCMV6CH97FXemiGwor0RtUR29LcrE44SW44O7SNBWdfvAkZg3eJqNl3JkRaj1aIna
+	2xKSGC/wj/nw8ifQH3/I0JiuE/GrbaaO1e2IJOJ4BWlly/NkP9/TIDDSglnllUJ2T5zuzP
+	nQLX7idPLE5tmisDomDzor9lBZRwj14=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1752582594;
+	s=susede2_ed25519; t=1752582595;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=mjCwmxRw2oiS5uDhgBamrzilzsoTGXeob+BS+5zzIRE=;
-	b=AkfZqHcjcB3keVB6qvSM3e0/bATe1ldj69gbeuALdJU7JgXK3Jo+3SZONymHV1JreOp94h
-	CwLntdyDfgzpm6BQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=QoKW7Yh6;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=AkfZqHcj
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=86y9r6nHahEnEZKMeYSQSkFSBgakMsJArIInMGC1XPw=;
+	b=7ehudUId3M6aL6eDDivK0+SLbKD5lPCd9qL21l9YeAgQSbFGXTxR2N318a8AUeuuUL2qP+
+	QN0XH0wbdHoy0GCw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=P9xNpQAb;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=WtYcfU3F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1752582594; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=mjCwmxRw2oiS5uDhgBamrzilzsoTGXeob+BS+5zzIRE=;
-	b=QoKW7Yh6porPglfWJz2OZChxEiamLvLxKaIvycNJxh3bg7LYQSgk60CjlzhWEIENjMyj1Y
-	q42aI+n4ZNGdVGyAL8V1PftB8WPf2Xi1kTG2OG9CYS8agqfLmfAGndWG93mrdnPIbFKu69
-	JzeBhVTqGI2vhk9xwmhVfZQzUouV/PM=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=86y9r6nHahEnEZKMeYSQSkFSBgakMsJArIInMGC1XPw=;
+	b=P9xNpQAbirR7wOj8HB+UVBoi6/I5qMRIoC+KWR/KIFzJZq25aDeOyGwvVwyd365lvlSpOb
+	64WMiFNe4qmFfsqVXXlyhXNTJWzgmnxY98wYsqz9k3QF19XsgmCRGMavua6/IjnJtukeva
+	QbqboYIk6WRR9YjHIl3yfHMyvKx9G+s=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1752582594;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=mjCwmxRw2oiS5uDhgBamrzilzsoTGXeob+BS+5zzIRE=;
-	b=AkfZqHcjcB3keVB6qvSM3e0/bATe1ldj69gbeuALdJU7JgXK3Jo+3SZONymHV1JreOp94h
-	CwLntdyDfgzpm6BQ==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=86y9r6nHahEnEZKMeYSQSkFSBgakMsJArIInMGC1XPw=;
+	b=WtYcfU3F2VrrSZq8BPVb4MWQyGrfYizHFcwJzgbmatCvCyA2D8xl/8hTmP1gVdVKZNTmEI
+	7DF2MApzgf2Q5iBw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8CEB913306;
-	Tue, 15 Jul 2025 12:29:53 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3D4B313A6C;
+	Tue, 15 Jul 2025 12:29:54 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id HyAMIcFJdmgaIwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 15 Jul 2025 12:29:53 +0000
+	id 0DvNDcJJdmgaIwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 15 Jul 2025 12:29:54 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: lee@kernel.org,
 	danielt@kernel.org,
@@ -94,11 +99,14 @@ Cc: dri-devel@lists.freedesktop.org,
 	platform-driver-x86@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 00/15] backlight: Do not include <linux/fb.h> in header file
-Date: Tue, 15 Jul 2025 14:24:37 +0200
-Message-ID: <20250715122643.137027-1-tzimmermann@suse.de>
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Hans de Goede <hansg@kernel.org>
+Subject: [PATCH v2 01/15] platform/x86: dell-uart-backlight: Use blacklight power constant
+Date: Tue, 15 Jul 2025 14:24:38 +0200
+Message-ID: <20250715122643.137027-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.50.0
+In-Reply-To: <20250715122643.137027-1-tzimmermann@suse.de>
+References: <20250715122643.137027-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -119,7 +127,7 @@ X-Spamd-Result: default: False [-2.01 / 50.00];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	MIME_TRACE(0.00)[0:+];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[25];
+	RCPT_COUNT_TWELVE(0.00)[26];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FUZZY_RATELIMITED(0.00)[rspamd.com];
 	FREEMAIL_TO(0.00)[kernel.org,gmail.com,linaro.org,oss.qualcomm.com,gmx.de,linux.intel.com,ffwll.ch,jannau.net,redhat.com,rosenzweig.io,gompa.dev,diasemi.com,skole.hr];
@@ -129,66 +137,42 @@ X-Spamd-Result: default: False [-2.01 / 50.00];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TAGGED_RCPT(0.00)[];
 	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim]
+	R_RATELIMIT(0.00)[to_ip_from(RL95szse9eqfwu74ziohs8j73e)];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[intel.com:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim,suse.de:email]
 X-Spam-Flag: NO
 X-Spam-Level: 
-X-Rspamd-Queue-Id: 37FCA1F38F
+X-Rspamd-Queue-Id: D9ED421202
 X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 X-Rspamd-Action: no action
 X-Spam-Score: -2.01
 
-Remove the final dependencies on fbdev from the backlight subsystem.
-This is really just the include of <linux/fb.h> in backlight, but it
-has some fallout in other code.
+The backlight subsystem has gotten its own power constants. Replace
+FB_BLANK_UNBLANK with BACKLIGHT_POWER_ON.
 
-Patches 1 to 14 fix all the implicit includes that come from fb.h
-throughout the kernel. It's all trivial, but touches various drivers.
-Maintainers are in CC. Patch 15 fixes the backlight header.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Hans de Goede <hansg@kernel.org>
+Acked-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+---
+ drivers/platform/x86/dell/dell-uart-backlight.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-With the series applied the backlight subsystem should be free from
-fbdev dependencies.
-
-v2:
-- add missing clean ups in jornada720, rave-sp, rt4831
-
-Thomas Zimmermann (15):
-  platform/x86: dell-uart-backlight: Use blacklight power constant
-  drm/panel: panel-samsung-s6e63m0: Include <linux/of.h>
-  drm/panel: panel-samsung-s6e88a0-ams427ap24: Include <linux/of.h>
-  drm/panel: panel-summit: Include <linux/of.h>
-  fbcon: Add necessary include statements and forward declarations
-  backlight: Include <linux/of.h>
-  backlight: apple_dwi_bl: Include <linux/mod_devicetable.h>
-  backlight: as3711_bl: Include <linux/of.h>
-  backlight: da9052_bl: Include <linux/mod_devicetable.h>
-  backlight: jornada720: Include <linux/io.h>
-  backlight: ktd2801: Include <linux/mod_devicetable.h>
-  backlight: led_bl: Include <linux/of.h>
-  backlight: rave-sp: Include <linux/of.h> and <linux/mod_devicetable.h>
-  backlight: rt4831: Include <linux/mod_devicetable.h>
-  backlight: Do not include <linux/fb.h> in header file
-
- drivers/gpu/drm/panel/panel-samsung-s6e63m0.c            | 1 +
- drivers/gpu/drm/panel/panel-samsung-s6e88a0-ams427ap24.c | 1 +
- drivers/gpu/drm/panel/panel-summit.c                     | 1 +
- drivers/platform/x86/dell/dell-uart-backlight.c          | 2 +-
- drivers/video/backlight/apple_dwi_bl.c                   | 1 +
- drivers/video/backlight/as3711_bl.c                      | 1 +
- drivers/video/backlight/backlight.c                      | 1 +
- drivers/video/backlight/da9052_bl.c                      | 1 +
- drivers/video/backlight/jornada720_bl.c                  | 1 +
- drivers/video/backlight/ktd2801-backlight.c              | 1 +
- drivers/video/backlight/led_bl.c                         | 1 +
- drivers/video/backlight/rave-sp-backlight.c              | 2 ++
- drivers/video/backlight/rt4831-backlight.c               | 1 +
- include/linux/backlight.h                                | 1 -
- include/linux/fbcon.h                                    | 7 +++++++
- 15 files changed, 21 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/platform/x86/dell/dell-uart-backlight.c b/drivers/platform/x86/dell/dell-uart-backlight.c
+index 8f868f845350..f323a667dc2d 100644
+--- a/drivers/platform/x86/dell/dell-uart-backlight.c
++++ b/drivers/platform/x86/dell/dell-uart-backlight.c
+@@ -305,7 +305,7 @@ static int dell_uart_bl_serdev_probe(struct serdev_device *serdev)
+ 	dev_dbg(dev, "Firmware version: %.*s\n", resp[RESP_LEN] - 3, resp + RESP_DATA);
+ 
+ 	/* Initialize bl_power to a known value */
+-	ret = dell_uart_set_bl_power(dell_bl, FB_BLANK_UNBLANK);
++	ret = dell_uart_set_bl_power(dell_bl, BACKLIGHT_POWER_ON);
+ 	if (ret)
+ 		return ret;
+ 
 -- 
 2.50.0
 

@@ -1,213 +1,127 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C0A6230D0E
-	for <linux-fbdev@vger.kernel.org>; Mon, 21 Jul 2025 19:42:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49F828F40;
+	Tue, 22 Jul 2025 13:04:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753126971; cv=none; b=T3VwmroDMnHiE+oQUsDqj517v8K7VP8NU5iXvQ3Q/dxdJ3/L/4WMpcmrNzK/AQdonPl5VtuQX63tPiRJEcXdEWdX2FAzpebC/2/HqPeFdGhguyIDtvruPevAkk+zu2DDhg8t8OLpoOYp8bjeGxrGGVT20CMSjdzSW16d2lyP9JQ=
+	t=1753189443; cv=none; b=PYRaok+LWszsvKekZSDYRfwr84pCgRKQiVuFE4TLuPHlgKMjdkBcR8MUc2KXHr/E6yWT8jsqJJFIOw+GWyva7YiMA35FvgMT9v3YDhLMz4h1Mykpff22oJ9luvKhmj4REw7EimBG/xAH8f6b5SJ7n0C5UF8K/njDuHtr0RFuLgs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753126971; c=relaxed/simple;
-	bh=RwNrHHYuhkBvnHiTy5gQqwZsQ3XwWnyrmrB7ECTBTAs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YE/xBnXlmaAfXIIxZZn6hg7MiggECu1/X5Dfasi+bvxJRFrP19YPMpL8J7u1PHuDkFdcir4bBIl8n30kvF8dtnsOhHC8cKql4aRBES6ZhIBsrl6pGzpFksHLMZKPqJTSnUe7Bf3SO7A8H3cg3qbeb1fwzoOrs14a81iv1g574CE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fCnv+kVB; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=00x96o/B; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fCnv+kVB; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=00x96o/B; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1753189443; c=relaxed/simple;
+	bh=M9Vw3KUZFsgEmCfhOhsRP4t6JpAYCh+PJDWJBaOwz3A=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=n95jm1vVj4ePSWq9HHyKQQgyMfkSGhBw43ytF6+o4xR/GyhabGaMiopdENKkzuR0I4vig3wVBzp4jb4GZ8m0yp+FELUC9XKuaTdNRLmzs7R9tnbf2UNWJNckN884x5k+Q40fY2uziTK2gR9TMYGf9L+PXrpfGK0RCT+QPtKF0yc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DtJw39HN; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fCnv+kVB";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="00x96o/B";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fCnv+kVB";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="00x96o/B"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 87D022118F;
-	Mon, 21 Jul 2025 19:42:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1753126967; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=2IWprOXfvc6EbCygrPqSL0CUWIJ2ps0kwcPH/0eYJTc=;
-	b=fCnv+kVBU7Lfomb+uOH+aKD8kZfgjgfbdrpYgXuown1mcht6eBibr58EaihXBowcBRiGmo
-	r5ecx9XJIWww+ujXi3GxkIBOSMC++gbo2axhWph3j65Clj19nPmsekYNRdzQVXTBwiv9PM
-	KgAJ6QzTmg7DMq/1G9BITGbrkTGYGaU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1753126967;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=2IWprOXfvc6EbCygrPqSL0CUWIJ2ps0kwcPH/0eYJTc=;
-	b=00x96o/BJT8X0gXMZQsYqn68EISCJbDlwVKkHQHtc04sixLrTRleFFqZeT1gCavj1wCwOW
-	lZixJ5a5/qwDOMBA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=fCnv+kVB;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="00x96o/B"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1753126967; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=2IWprOXfvc6EbCygrPqSL0CUWIJ2ps0kwcPH/0eYJTc=;
-	b=fCnv+kVBU7Lfomb+uOH+aKD8kZfgjgfbdrpYgXuown1mcht6eBibr58EaihXBowcBRiGmo
-	r5ecx9XJIWww+ujXi3GxkIBOSMC++gbo2axhWph3j65Clj19nPmsekYNRdzQVXTBwiv9PM
-	KgAJ6QzTmg7DMq/1G9BITGbrkTGYGaU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1753126967;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=2IWprOXfvc6EbCygrPqSL0CUWIJ2ps0kwcPH/0eYJTc=;
-	b=00x96o/BJT8X0gXMZQsYqn68EISCJbDlwVKkHQHtc04sixLrTRleFFqZeT1gCavj1wCwOW
-	lZixJ5a5/qwDOMBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 269C3136A8;
-	Mon, 21 Jul 2025 19:42:46 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id YAFYBjaYfmgSQgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 21 Jul 2025 19:42:46 +0000
-Message-ID: <90d816ba-aaf3-4b7b-9c52-72613be5b85a@suse.de>
-Date: Mon, 21 Jul 2025 21:42:41 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DtJw39HN"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1753189442; x=1784725442;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=M9Vw3KUZFsgEmCfhOhsRP4t6JpAYCh+PJDWJBaOwz3A=;
+  b=DtJw39HNieyEtkXKlIPyFEneErTH9dMLtRujXhCZOUxrR5/Kv5b1g6D4
+   A6kPnjWiiuCKECBKLjraN6fkFLj6waDeTsy97hspOU5IpWIB+75xqdHxa
+   dVrGhUQfXCLx26J/v5u8aDiH0tK+uyjTQGLuJVbTDUFZ5YQMBUNefx9ng
+   aPpwfzWNVtbKQvqdcjDAHVxHr0xZmHjWtR/yM7RI6PLBGkoL7agti2Txb
+   cgy26OtD53+EFkJQD/2TvpjnmnDtOHflcC/2SlmIdgOykH7YdZD7niSBn
+   q3VWYXK+RDEy7uK5qv3AR2YwaVM10JnlHURM7inoLf6r1AaTPnLwzFYAG
+   w==;
+X-CSE-ConnectionGUID: 9Y8ZhzOzTgGx6K6CEsaVdA==
+X-CSE-MsgGUID: ImGvSV9nTJuiOgpzkmrHEw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11500"; a="66868866"
+X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; 
+   d="scan'208";a="66868866"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jul 2025 06:04:01 -0700
+X-CSE-ConnectionGUID: s9F4wQS3SoOdr768O6l/2w==
+X-CSE-MsgGUID: a83p41ZBQmuPngQa5/7AJw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; 
+   d="scan'208";a="159209027"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.254])
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jul 2025 06:03:53 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Tue, 22 Jul 2025 16:03:48 +0300 (EEST)
+To: Thomas Zimmermann <tzimmermann@suse.de>
+cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, 
+    neil.armstrong@linaro.org, jessica.zhang@oss.qualcomm.com, deller@gmx.de, 
+    maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com, 
+    simona@ffwll.ch, fnkl.kernel@gmail.com, j@jannau.net, 
+    Hans de Goede <hdegoede@redhat.com>, sven@kernel.org, alyssa@rosenzweig.io, 
+    neal@gompa.dev, support.opensource@diasemi.com, duje.mihanovic@skole.hr, 
+    dri-devel@lists.freedesktop.org, asahi@lists.linux.dev, 
+    platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+    linux-fbdev@vger.kernel.org, Hans de Goede <hansg@kernel.org>
+Subject: Re: [PATCH v2 01/15] platform/x86: dell-uart-backlight: Use blacklight
+ power constant
+In-Reply-To: <90d816ba-aaf3-4b7b-9c52-72613be5b85a@suse.de>
+Message-ID: <19aaca56-6784-209c-3076-cc63f733a021@linux.intel.com>
+References: <20250715122643.137027-1-tzimmermann@suse.de> <20250715122643.137027-2-tzimmermann@suse.de> <c380d3a4-2a99-cf52-0952-ee916b6c9676@linux.intel.com> <90d816ba-aaf3-4b7b-9c52-72613be5b85a@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 01/15] platform/x86: dell-uart-backlight: Use
- blacklight power constant
-To: =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com,
- neil.armstrong@linaro.org, jessica.zhang@oss.qualcomm.com, deller@gmx.de,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
- simona@ffwll.ch, fnkl.kernel@gmail.com, j@jannau.net,
- Hans de Goede <hdegoede@redhat.com>, sven@kernel.org, alyssa@rosenzweig.io,
- neal@gompa.dev, support.opensource@diasemi.com, duje.mihanovic@skole.hr,
- dri-devel@lists.freedesktop.org, asahi@lists.linux.dev,
- platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org, Hans de Goede <hansg@kernel.org>
-References: <20250715122643.137027-1-tzimmermann@suse.de>
- <20250715122643.137027-2-tzimmermann@suse.de>
- <c380d3a4-2a99-cf52-0952-ee916b6c9676@linux.intel.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <c380d3a4-2a99-cf52-0952-ee916b6c9676@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spam-Flag: NO
-X-Rspamd-Queue-Id: 87D022118F
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RCPT_COUNT_TWELVE(0.00)[25];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_CC(0.00)[kernel.org,gmail.com,linaro.org,oss.qualcomm.com,gmx.de,linux.intel.com,ffwll.ch,jannau.net,redhat.com,rosenzweig.io,gompa.dev,diasemi.com,skole.hr,lists.freedesktop.org,lists.linux.dev,vger.kernel.org,lists.infradead.org];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.de:mid,suse.de:email]
-X-Spam-Score: -3.01
+Content-Type: multipart/mixed; boundary="8323328-860532718-1753189428=:920"
 
-Hi
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Am 21.07.25 um 13:43 schrieb Ilpo Järvinen:
-> On Tue, 15 Jul 2025, Thomas Zimmermann wrote:
->
->> The backlight subsystem has gotten its own power constants. Replace
->> FB_BLANK_UNBLANK with BACKLIGHT_POWER_ON.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> Reviewed-by: Hans de Goede <hansg@kernel.org>
->> Acked-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
->> ---
->>   drivers/platform/x86/dell/dell-uart-backlight.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/platform/x86/dell/dell-uart-backlight.c b/drivers/platform/x86/dell/dell-uart-backlight.c
->> index 8f868f845350..f323a667dc2d 100644
->> --- a/drivers/platform/x86/dell/dell-uart-backlight.c
->> +++ b/drivers/platform/x86/dell/dell-uart-backlight.c
->> @@ -305,7 +305,7 @@ static int dell_uart_bl_serdev_probe(struct serdev_device *serdev)
->>   	dev_dbg(dev, "Firmware version: %.*s\n", resp[RESP_LEN] - 3, resp + RESP_DATA);
->>   
->>   	/* Initialize bl_power to a known value */
->> -	ret = dell_uart_set_bl_power(dell_bl, FB_BLANK_UNBLANK);
->> +	ret = dell_uart_set_bl_power(dell_bl, BACKLIGHT_POWER_ON);
->>   	if (ret)
->>   		return ret;
-> Hi Thomas,
->
-> Do you expect this entire series to go in this cycle through some other
-> tree than pdx86? If not, I'll take this through pdx86 tree in this cycle.
+--8323328-860532718-1753189428=:920
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-I don't know when the series will get merged, but it might still take a 
-bit. Please take this patch through your tree. Good to have it off the list.
+On Mon, 21 Jul 2025, Thomas Zimmermann wrote:
 
-Best regards
-Thomas
+> Hi
+>=20
+> Am 21.07.25 um 13:43 schrieb Ilpo J=C3=A4rvinen:
+> > On Tue, 15 Jul 2025, Thomas Zimmermann wrote:
+> >=20
+> > > The backlight subsystem has gotten its own power constants. Replace
+> > > FB_BLANK_UNBLANK with BACKLIGHT_POWER_ON.
+> > >=20
+> > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> > > Reviewed-by: Hans de Goede <hansg@kernel.org>
+> > > Acked-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
+> > > ---
+> > >   drivers/platform/x86/dell/dell-uart-backlight.c | 2 +-
+> > >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > >=20
+> > > diff --git a/drivers/platform/x86/dell/dell-uart-backlight.c
+> > > b/drivers/platform/x86/dell/dell-uart-backlight.c
+> > > index 8f868f845350..f323a667dc2d 100644
+> > > --- a/drivers/platform/x86/dell/dell-uart-backlight.c
+> > > +++ b/drivers/platform/x86/dell/dell-uart-backlight.c
+> > > @@ -305,7 +305,7 @@ static int dell_uart_bl_serdev_probe(struct
+> > > serdev_device *serdev)
+> > >   =09dev_dbg(dev, "Firmware version: %.*s\n", resp[RESP_LEN] - 3, res=
+p +
+> > > RESP_DATA);
+> > >     =09/* Initialize bl_power to a known value */
+> > > -=09ret =3D dell_uart_set_bl_power(dell_bl, FB_BLANK_UNBLANK);
+> > > +=09ret =3D dell_uart_set_bl_power(dell_bl, BACKLIGHT_POWER_ON);
+> > >   =09if (ret)
+> > >   =09=09return ret;
+> > Hi Thomas,
+> >=20
+> > Do you expect this entire series to go in this cycle through some other
+> > tree than pdx86? If not, I'll take this through pdx86 tree in this cycl=
+e.
+>=20
+> I don't know when the series will get merged, but it might still take a b=
+it.
+> Please take this patch through your tree. Good to have it off the list.
 
->
+Thanks.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Applied it to the review-ilpo-next branch.
 
+--=20
+ i.
+
+--8323328-860532718-1753189428=:920--

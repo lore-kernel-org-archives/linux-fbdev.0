@@ -1,127 +1,124 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49F828F40;
-	Tue, 22 Jul 2025 13:04:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 176642192F4;
+	Wed, 23 Jul 2025 19:26:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753189443; cv=none; b=PYRaok+LWszsvKekZSDYRfwr84pCgRKQiVuFE4TLuPHlgKMjdkBcR8MUc2KXHr/E6yWT8jsqJJFIOw+GWyva7YiMA35FvgMT9v3YDhLMz4h1Mykpff22oJ9luvKhmj4REw7EimBG/xAH8f6b5SJ7n0C5UF8K/njDuHtr0RFuLgs=
+	t=1753298778; cv=none; b=s+tWBfc48KAEbaJz1dCzq4ynu9NdU3rmbL/AxnuCakCJJEwhFHOWfQoFbZDwEWC3YoAzmmIVmdnhzGg4d0EDuSFQXFtsyx8ISK+T2aMmy99+NO98ooPPUm0jDica6CknQkXDqol0hSHMwvv3eQIo3XKZR5elriMXy0j7mCZoA94=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753189443; c=relaxed/simple;
-	bh=M9Vw3KUZFsgEmCfhOhsRP4t6JpAYCh+PJDWJBaOwz3A=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=n95jm1vVj4ePSWq9HHyKQQgyMfkSGhBw43ytF6+o4xR/GyhabGaMiopdENKkzuR0I4vig3wVBzp4jb4GZ8m0yp+FELUC9XKuaTdNRLmzs7R9tnbf2UNWJNckN884x5k+Q40fY2uziTK2gR9TMYGf9L+PXrpfGK0RCT+QPtKF0yc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DtJw39HN; arc=none smtp.client-ip=198.175.65.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1753298778; c=relaxed/simple;
+	bh=McKtVO0Hih5A9AVjNMHsFSbGO7m6LL6HMnmcX3RYaM0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fTQLPaQogmTTXge+XPIr4XlPywhriD9eL8+Q4+pqAcGytk8LRT+SiHqxUAGzeARgOfPR0LIxozRKJtViewEYp2Dmc4rUFimL+7MBmWhaQkGLCGX9+POjg30I2dbZyojyeRCiS7l7gMWZeZPgkfdzkbPUeRBk1eYxIZFZcm61juQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=hNOs0sMM; arc=none smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DtJw39HN"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1753189442; x=1784725442;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=M9Vw3KUZFsgEmCfhOhsRP4t6JpAYCh+PJDWJBaOwz3A=;
-  b=DtJw39HNieyEtkXKlIPyFEneErTH9dMLtRujXhCZOUxrR5/Kv5b1g6D4
-   A6kPnjWiiuCKECBKLjraN6fkFLj6waDeTsy97hspOU5IpWIB+75xqdHxa
-   dVrGhUQfXCLx26J/v5u8aDiH0tK+uyjTQGLuJVbTDUFZ5YQMBUNefx9ng
-   aPpwfzWNVtbKQvqdcjDAHVxHr0xZmHjWtR/yM7RI6PLBGkoL7agti2Txb
-   cgy26OtD53+EFkJQD/2TvpjnmnDtOHflcC/2SlmIdgOykH7YdZD7niSBn
-   q3VWYXK+RDEy7uK5qv3AR2YwaVM10JnlHURM7inoLf6r1AaTPnLwzFYAG
-   w==;
-X-CSE-ConnectionGUID: 9Y8ZhzOzTgGx6K6CEsaVdA==
-X-CSE-MsgGUID: ImGvSV9nTJuiOgpzkmrHEw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11500"; a="66868866"
-X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; 
-   d="scan'208";a="66868866"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jul 2025 06:04:01 -0700
-X-CSE-ConnectionGUID: s9F4wQS3SoOdr768O6l/2w==
-X-CSE-MsgGUID: a83p41ZBQmuPngQa5/7AJw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; 
-   d="scan'208";a="159209027"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.254])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jul 2025 06:03:53 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 22 Jul 2025 16:03:48 +0300 (EEST)
-To: Thomas Zimmermann <tzimmermann@suse.de>
-cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, 
-    neil.armstrong@linaro.org, jessica.zhang@oss.qualcomm.com, deller@gmx.de, 
-    maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com, 
-    simona@ffwll.ch, fnkl.kernel@gmail.com, j@jannau.net, 
-    Hans de Goede <hdegoede@redhat.com>, sven@kernel.org, alyssa@rosenzweig.io, 
-    neal@gompa.dev, support.opensource@diasemi.com, duje.mihanovic@skole.hr, 
-    dri-devel@lists.freedesktop.org, asahi@lists.linux.dev, 
-    platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-    linux-fbdev@vger.kernel.org, Hans de Goede <hansg@kernel.org>
-Subject: Re: [PATCH v2 01/15] platform/x86: dell-uart-backlight: Use blacklight
- power constant
-In-Reply-To: <90d816ba-aaf3-4b7b-9c52-72613be5b85a@suse.de>
-Message-ID: <19aaca56-6784-209c-3076-cc63f733a021@linux.intel.com>
-References: <20250715122643.137027-1-tzimmermann@suse.de> <20250715122643.137027-2-tzimmermann@suse.de> <c380d3a4-2a99-cf52-0952-ee916b6c9676@linux.intel.com> <90d816ba-aaf3-4b7b-9c52-72613be5b85a@suse.de>
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="hNOs0sMM"
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 56NHttM6009436;
+	Wed, 23 Jul 2025 19:26:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=corp-2025-04-25; bh=o7Xj0Emi+6jkt4QCvj9ula6o/6JAU
+	0YBmQDnMaeeNpc=; b=hNOs0sMMrTU+Awv7bbiaSbGPAmgAN2DpIX786dgjW+YJd
+	z/l2Hpntuv7opZs9l/ZMtlKhX55QaUTHTjgrAp/383Nd93R8HCYJA1JiW0Ea8UAI
+	c2wdQSILKPmXH2qP1htRGY7HnJxgLCrVEUwYqoILyegdy+uvMo1FRw6+kCsOn3h+
+	K9inF5d/0YJNd0dWtJGebg8IbiQwPd8ubQadBB5TKjYRrs/8KshGBg1pr2hfC400
+	BODMvYENvNtzmZliHgERgzfXD9kcLIKj77RH+aP9PfCjyjYq+ZRlYSdLEKE1VQpG
+	Tn4jdCGU2eY0c9kiiyEXZF12R+6x1R37svAEGSiLQ==
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4805e2g7y8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 23 Jul 2025 19:26:06 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 56NI0sDe038352;
+	Wed, 23 Jul 2025 19:26:05 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4801tb12yx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 23 Jul 2025 19:26:05 +0000
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 56NJQ5rH022657;
+	Wed, 23 Jul 2025 19:26:05 GMT
+Received: from ca-dev110.us.oracle.com (ca-dev110.us.oracle.com [10.129.136.45])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4801tb12y4-1;
+	Wed, 23 Jul 2025 19:26:05 +0000
+From: Alok Tiwari <alok.a.tiwari@oracle.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+        gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev
+Cc: alok.a.tiwari@oracle.com, linux-kernel@vger.kernel.org
+Subject: [bug report] staging: sm750fb: Fix polarity assignment for vertical and horizontal mode
+Date: Wed, 23 Jul 2025 12:24:31 -0700
+Message-ID: <20250723192528.77109-1-alok.a.tiwari@oracle.com>
+X-Mailer: git-send-email 2.46.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-860532718-1753189428=:920"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-07-23_03,2025-07-23_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 suspectscore=0
+ bulkscore=0 malwarescore=0 adultscore=0 spamscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2505160000
+ definitions=main-2507230164
+X-Authority-Analysis: v=2.4 cv=WaYMa1hX c=1 sm=1 tr=0 ts=6881374e b=1 cx=c_pps
+ a=qoll8+KPOyaMroiJ2sR5sw==:117 a=qoll8+KPOyaMroiJ2sR5sw==:17
+ a=Wb1JkmetP80A:10 a=yPCof4ZbAAAA:8 a=dYcGuau3DC2CDLyDpIsA:9 cc=ntf
+ awl=host:12062
+X-Proofpoint-GUID: fKMKiYlUq6jK_HTh1oR3XqYkoeo99nBW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzIzMDE2NCBTYWx0ZWRfX+Wpp0PUoVB+Q
+ 82wgPOPJqKBirSki6OxbmI8lbs2GPkjes3x3gNtmFpnb1R0IYdPRyreAkd4Ixrp3Pz+BDiB9SP+
+ /MJxMtSFIaEpdRZw6C3u6I26csTYvvo7102uGrZ2szga/STfBvzslldauM6Pp18bQwPWl9+I9qz
+ ocR2+FOa5mldwQm4lleEn0VtzJkNc5lu8q+K+7KIvDtqYp7IV1F6EDiWtgb6S1uBUUgG3f370w3
+ 4pc6TwVvWhMYt/Mme4kJPBfNowtlhKbUXHuViFx97iqtvkHl3x0aT5YTIXo2w9yn60hNEAYqtnE
+ zq78H8xuPAWvGgHsMBr8iZ3KfEJ5lCb07ENItTqu6cc9wpe0l3OOoNe26Q4XwBF0b1/vY6j2nr+
+ x0yLFmZICH1kvc3gTvViLujLoas4EYa+LSf3Ov0UAXnWq2KzHRhGKTq93JBDuVK+S0q9LwQz
+X-Proofpoint-ORIG-GUID: fKMKiYlUq6jK_HTh1oR3XqYkoeo99nBW
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+In drivers/staging/sm750fb/sm750_hw.c,
+the vertical and horizontal sync polarity assignments were incorrectly
+ordered. 
+The assignment for modparm.vertical_sync_polarity was mistakenly using
+the FB_SYNC_HOR_HIGH_ACT bit instead of FB_SYNC_VERT_HIGH_ACT, 
+and the horizontal polarity line was commented out or missing.
 
---8323328-860532718-1753189428=:920
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+This patch corrects the logic by properly assigning:
 
-On Mon, 21 Jul 2025, Thomas Zimmermann wrote:
+vertical_sync_polarity -> from FB_SYNC_VERT_HIGH_ACT
+horizontal_sync_polarity -> from FB_SYNC_HOR_HIGH_ACT
 
-> Hi
->=20
-> Am 21.07.25 um 13:43 schrieb Ilpo J=C3=A4rvinen:
-> > On Tue, 15 Jul 2025, Thomas Zimmermann wrote:
-> >=20
-> > > The backlight subsystem has gotten its own power constants. Replace
-> > > FB_BLANK_UNBLANK with BACKLIGHT_POWER_ON.
-> > >=20
-> > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > > Reviewed-by: Hans de Goede <hansg@kernel.org>
-> > > Acked-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
-> > > ---
-> > >   drivers/platform/x86/dell/dell-uart-backlight.c | 2 +-
-> > >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > >=20
-> > > diff --git a/drivers/platform/x86/dell/dell-uart-backlight.c
-> > > b/drivers/platform/x86/dell/dell-uart-backlight.c
-> > > index 8f868f845350..f323a667dc2d 100644
-> > > --- a/drivers/platform/x86/dell/dell-uart-backlight.c
-> > > +++ b/drivers/platform/x86/dell/dell-uart-backlight.c
-> > > @@ -305,7 +305,7 @@ static int dell_uart_bl_serdev_probe(struct
-> > > serdev_device *serdev)
-> > >   =09dev_dbg(dev, "Firmware version: %.*s\n", resp[RESP_LEN] - 3, res=
-p +
-> > > RESP_DATA);
-> > >     =09/* Initialize bl_power to a known value */
-> > > -=09ret =3D dell_uart_set_bl_power(dell_bl, FB_BLANK_UNBLANK);
-> > > +=09ret =3D dell_uart_set_bl_power(dell_bl, BACKLIGHT_POWER_ON);
-> > >   =09if (ret)
-> > >   =09=09return ret;
-> > Hi Thomas,
-> >=20
-> > Do you expect this entire series to go in this cycle through some other
-> > tree than pdx86? If not, I'll take this through pdx86 tree in this cycl=
-e.
->=20
-> I don't know when the series will get merged, but it might still take a b=
-it.
-> Please take this patch through your tree. Good to have it off the list.
+Please let me know your feedback.
+Thanks,
+Alok
+---
+Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
+Signed-off-by: Alok Tiwari <alok.a.tiwari@oracle.com>
+---
+ drivers/staging/sm750fb/sm750_hw.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks.
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 7119b67efe11b..5a32756f98c31 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -280,9 +280,9 @@ int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
+ 	/* set timing */
+ 	modparm.pixel_clock = ps_to_hz(var->pixclock);
+ 	modparm.vertical_sync_polarity =
+-		(var->sync & FB_SYNC_HOR_HIGH_ACT) ? POS : NEG;
+-	modparm.horizontal_sync_polarity =
+ 		(var->sync & FB_SYNC_VERT_HIGH_ACT) ? POS : NEG;
++	modparm.horizontal_sync_polarity =
++		(var->sync & FB_SYNC_HOR_HIGH_ACT) ? POS : NEG;
+ 	modparm.clock_phase_polarity =
+ 		(var->sync & FB_SYNC_COMP_HIGH_ACT) ? POS : NEG;
+ 	modparm.horizontal_display_end = var->xres;
+-- 
+2.46.0
 
-Applied it to the review-ilpo-next branch.
-
---=20
- i.
-
---8323328-860532718-1753189428=:920--

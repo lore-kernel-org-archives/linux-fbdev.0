@@ -1,105 +1,93 @@
-Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25E15257452;
-	Thu, 24 Jul 2025 07:29:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF1DC259C;
+	Fri, 25 Jul 2025 05:31:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753342162; cv=none; b=Dqjzn1MssIzC4t+zflj0jJJhyxySvfr1xe5LOuhr+exOhSlN+glLrXhx91weM74u1NKysKAIWlYZITdDQ2iiFhKdrj3SVft335YRuOkhqYnm4FWLL+hmmGJbZVuuWisnTXO7Oc5Zbyrfh0F7y/wQEUR70iXp845WdJa9Gg1JoGI=
+	t=1753421461; cv=none; b=M3V8/VSaNiy3hj/HOTTnFnW17E1Hj9+1nB4e2LSDTkyq+6w8c6D+P1ftSlHlK1C5FPlpg2nK1Sewa8CYUxmZx1c3cafY40ZtJkbLAZUtrxDefbMo2xB7dYKGJxSPqTbap2W+KFhJg3BDQXWyYbFRuGptJT01Iuyk2iT7XtfcZ04=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753342162; c=relaxed/simple;
-	bh=i2q1X4v2wQxxKEohFKgZoAdvi42uSXAKH7PFNMJJ9BE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n4D0dFj8yBPlXBv0Wh6PKOCociqSuItCuK5nqTNsT+NdOohupFy8qF7NHh4dVgOe+aRNXG3NpBmeIaBTljy1Cu98jSmYoUJiXeCtMib8c443P0W4v2MlkU2Xe2QXcUJawrH4zFDZdIJUO3ktsGHJf3wGVA/oDeKsokUALfz0Xc4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=HZk7I5do; arc=none smtp.client-ip=217.70.183.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1753421461; c=relaxed/simple;
+	bh=QLEm3mGWlBu3c9Wu5ayDCuiDkfkThDB5veBBewlp+58=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=fI0FCQKKLqpm0j700XZP2IwDTL4hI/4wzlWMTsm64RD9aZgozrdvGBKTi+/9YEhQBv/XKRkTj8FMDUmIP3Fe1OvUwdkzvkUAuJ4sj5ICT8ZQMjVdtJ//IuaqDkM/hOO1BfEvaysDSF6W2Jg+TFWub2PXC+8gYhXatnRmaw7Aw/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uo5YIYbq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="HZk7I5do"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id B6345442A5;
-	Thu, 24 Jul 2025 07:29:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1753342156;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HuSxSBGWYzg8ppmBBZ57GZxUD2NpVmKocyw7538elEk=;
-	b=HZk7I5dom0NaZoXNr7ZUaqCxtTPCZ9rz0oAw0TPqYZch3Bberm1JrviipRsaYO21Rp2/tj
-	Lx/nw65YKNim+MQMGp0GMWNSo61TbL8Q/zQIvl/v3pRAqrA3q1fcOefiLZgiW691X8+G6B
-	ughoeNwQHn9YeB86iUa70KScN23mmKSPuflIZfEearVnbhBqPaa96nIOgGlc0rOawf4kdb
-	ZNonISBCN/9qZUZTNykQMimw7GdCPN0IGGLjtUspiZg36Uf5qS/izBTMEL3mTB2ExZBSP0
-	gPcIp4yhDNdL1+6sbK6f9M9kAsxAxIPSEsH0P34HuZm3gfIyyztCTa3eIoPIOA==
-Date: Thu, 24 Jul 2025 09:29:14 +0200
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Salah Triki <salah.triki@gmail.com>
-Cc: Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Helge Deller <deller@gmx.de>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbdev: atmel_lcdfb: Fix potential NULL dereference
-Message-ID: <2025072407291424126a1b@mail.local>
-References: <aIGg7erPjz1qJQ1F@pc>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uo5YIYbq"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 632DEC4CEE7;
+	Fri, 25 Jul 2025 05:31:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1753421461;
+	bh=QLEm3mGWlBu3c9Wu5ayDCuiDkfkThDB5veBBewlp+58=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=uo5YIYbqerFpk/0LG0DCk9zfRb5QPJsblghgmL1ykxwvim3GxWyqG1xc4/55W7PkE
+	 lWOU3/dlBvr4+fSeQWTvU35PwSDxYLSnpkuLbleExXOOmKGWS9cl87jlkD6eAmBibj
+	 djQjnXz7CCmj9WHnFAFlT8sIDVFyQIDNfAF9PYa5u227uTDRdwJ9DWQt81XoiNnTGm
+	 xim2fxvZImT7O4EMNIhaq4w1+T+bb6hrz3gk5Uq0nA/JeyLiOrjftIEUnRgDVtqqKT
+	 lpEF0Zxbx29oUAFQUuz6oJxK2xShkdlfbRiSRT5qdCHbHl+k1O3APcIdSCnXBKN1Mm
+	 zHDH8A66XTu6Q==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C37DC87FCA;
+	Fri, 25 Jul 2025 05:31:01 +0000 (UTC)
+From: Daniel Palmer via B4 Relay <devnull+daniel.palmer.sony.com@kernel.org>
+Date: Fri, 25 Jul 2025 14:30:57 +0900
+Subject: [PATCH] fbdev: Fix typo in Kconfig text for FB_DEVICE
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aIGg7erPjz1qJQ1F@pc>
-X-GND-State: clean
-X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgdektddthecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfitefpfffkpdcuggftfghnshhusghstghrihgsvgenuceurghilhhouhhtmecufedtudenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtvdenucfhrhhomheptehlvgigrghnughrvgcuuegvlhhlohhnihcuoegrlhgvgigrnhgurhgvrdgsvghllhhonhhisegsohhothhlihhnrdgtohhmqeenucggtffrrghtthgvrhhnpeegieduueethefhkeegjeevfefhiedujeeuhffgleejgfejgeekueejuefgheeggfenucffohhmrghinhepsghoohhtlhhinhdrtghomhenucfkphepvdgrtddumegvtdgrmegsieehmegsvdhftdemkegsleekmeejledtheemrggsvgelmeduhedvvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvrgdtudemvgdtrgemsgeiheemsgdvfhdtmeeksgelkeemjeeltdehmegrsggvleemudehvddvpdhhvghloheplhhotggrlhhhohhsthdpmhgrihhlfhhrohhmpegrlhgvgigrnhgurhgvrdgsvghllhhonhhisegsohhothhlihhnrdgtohhmpdhnsggprhgtphhtthhopeekpdhrtghpthhtohepshgrlhgrhhdrthhrihhkihesghhmrghilhdrtghomhdprhgtphhtthhopehnihgtohhlrghsrdhfvghrrhgvsehmihgtrhhotghhihhprdgtohhmpdhrtghpthhtohepu
- ggvlhhlvghrsehgmhigrdguvgdprhgtphhtthhopegtlhgruhguihhurdgsvgiinhgvrgesthhugihonhdruggvvhdprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepughrihdquggvvhgvlheslhhishhtshdrfhhrvggvuggvshhkthhophdrohhrghdprhgtphhtthhopehlihhnuhigqdgrrhhmqdhkvghrnhgvlheslhhishhtshdrihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-GND-Sasl: alexandre.belloni@bootlin.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250725-fbdev-typo-v1-1-f9fd1418cb51@sony.com>
+X-B4-Tracking: v=1; b=H4sIAJAWg2gC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI1MDcyNT3bSklNQy3ZLKgnxdSwMDE9NkoyTDlORUJaCGgqLUtMwKsGHRsbW
+ 1AGLSkX1cAAAA
+To: Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, Daniel Palmer <daniel.palmer@sony.com>
+X-Mailer: b4 0.14.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1753421457; l=983;
+ i=daniel.palmer@sony.com; s=20250610; h=from:subject:message-id;
+ bh=ExcVPhfNsQdjthV2mryqOJJS7Mv9bAw31RooTp1/9aE=;
+ b=K1ZHosEZoz9tKEb4ZtvEiu5I9COHbZQUNZ1Ax+1a5WQiczG05QpKkNOLMfVNUM1Rnp9eQB2Jb
+ JoGBo9hTltABbyO7ZRyv1Z6BAYpNMwHkC3qN2PPCiAON80fYIPGOBbE
+X-Developer-Key: i=daniel.palmer@sony.com; a=ed25519;
+ pk=dbwvNAF3zvjUZOTEPBh6uYWrBnOi7OPuXkoDcmmS8aY=
+X-Endpoint-Received: by B4 Relay for daniel.palmer@sony.com/20250610 with
+ auth_id=430
+X-Original-From: Daniel Palmer <daniel.palmer@sony.com>
+Reply-To: daniel.palmer@sony.com
 
-On 24/07/2025 03:56:45+0100, Salah Triki wrote:
-> of_match_device() returns NULL in case of failure, so check its return
-> value before casting and accessing to data field in order to prevent NULL
-> dereference.
-> 
-> Signed-off-by: Salah Triki <salah.triki@gmail.com>
-> ---
->  drivers/video/fbdev/atmel_lcdfb.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-> index 9dfbc5310210..b1017ac9c73b 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -922,6 +922,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
->  	struct device *dev = &sinfo->pdev->dev;
->  	struct device_node *np =dev->of_node;
->  	struct device_node *display_np;
-> +	const struct of_device_id *match;
->  	struct atmel_lcdfb_power_ctrl_gpio *og;
->  	bool is_gpio_power = false;
->  	struct fb_videomode fb_vm;
-> @@ -930,8 +931,11 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
->  	int ret;
->  	int i;
->  
-> -	sinfo->config = (struct atmel_lcdfb_config*)
-> -		of_match_device(atmel_lcdfb_dt_ids, dev)->data;
-> +	match = of_match_device(atmel_lcdfb_dt_ids, dev);
-> +	if (!match)
-> +		return -ENODEV;
+From: Daniel Palmer <daniel.palmer@sony.com>
 
-This is dead code, it will never happen because atmel_lcdfb_of_init is only
-called from atmel_lcdfb_probe which will only be called when there is a match.
+Seems like someone hit 'c' when they meant to hit 'd'.
 
-> +
-> +	sinfo->config = (struct atmel_lcdfb_config *)match->data;
->  
->  	display_np = of_parse_phandle(np, "display", 0);
->  	if (!display_np) {
-> -- 
-> 2.43.0
-> 
+Signed-off-by: Daniel Palmer <daniel.palmer@sony.com>
+---
+ drivers/video/fbdev/core/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+index 4abe12db7594..413cbfac569d 100644
+--- a/drivers/video/fbdev/core/Kconfig
++++ b/drivers/video/fbdev/core/Kconfig
+@@ -31,7 +31,7 @@ config FB_DEVICE
+ 	default FB
+ 	help
+ 	  Say Y here if you want the legacy /dev/fb* device file and
+-	  interfaces within sysfs anc procfs. It is only required if you
++	  interfaces within sysfs and procfs. It is only required if you
+ 	  have userspace programs that depend on fbdev for graphics output.
+ 	  This does not affect the framebuffer console. If unsure, say N.
+ 
+
+---
+base-commit: e04c78d86a9699d136910cfc0bdcf01087e3267e
+change-id: 20250725-fbdev-typo-90045c2b1dce
+
+Best regards,
 -- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Daniel Palmer <daniel.palmer@sony.com>
+
+

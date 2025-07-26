@@ -1,83 +1,114 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F9A81E766F;
-	Fri, 25 Jul 2025 19:51:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08CDE7E9;
+	Sat, 26 Jul 2025 00:04:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753473104; cv=none; b=rhXRLgU1hERyQM+Au7a/WJIduCNrpgaIKqcobltYix3BzPSetSheJTw+8sobLEqOZZKhfNmpMgwaBwsUKoeRrC8zjtNazv+/o23qKyIRYRyeKCkIgk3JHzwSGskpuZ6T3k+NDelUIuL1VkJACAN+Oj4oIwZEVMHhD87uhRutdhw=
+	t=1753488264; cv=none; b=Ai6e1D4F+MlqrmGhq5Nn/pRsLPe9bR5qaikWZyY9Z4YSTg445YiscuWOLaeTcggynwQ05MoFQQFQ8jwomavPU7gGq6+qkr2v+nATqh7G7f0OZc71lG+3tq/UhCqh911PSY+EQtY6gS1l2bAtZZuRT+7DUU9A2+VBKZEUFdcKJ3c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753473104; c=relaxed/simple;
-	bh=HIFZCasQnvflawLHEinivIZ7CGoYHgz1TfOYSlsci5A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ldnfDQEBz/AiF0lbR9kIaBmUyPtzyt+w5M/1V6uC02F0d0W+/xr09lbFwoyEfnemFOtYXPFdZMVR+vU2ESGF7sa1RhunO+8oHXNt9gUkOd0bpXowjpUQGzk+YitlIgEXp1V6X4+EHly7lR0BIp8+WOvjJFiUAb1L6hw4XoANDFM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c7IReT1m; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1753488264; c=relaxed/simple;
+	bh=tijO90f5V2+dEbHPsrjzz6aV8S4k/7RL7YfLEFSvJ3o=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=B9ZC+q/IZMIQxdVbADcOiKrl0K7mxaCAZYstH6tWGpQNJtRu/XtilWyD2FpugerriY+N6CnQb29RV5mib9FmDhhxTEZLN0J/4HEjHxHF1Eb5lT7K7OpkaHD25w/DWbfbF6TlFHgT5Hb6dMVRHgnN5tUZCOlxALsgQ/TrGwWlxAM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mMX5UXVE; arc=none smtp.client-ip=209.85.222.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c7IReT1m"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C08BEC4CEE7;
-	Fri, 25 Jul 2025 19:51:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1753473103;
-	bh=HIFZCasQnvflawLHEinivIZ7CGoYHgz1TfOYSlsci5A=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=c7IReT1m8egDm2RiZG6IZs9XJkWSVWWEaWM2T9QRwgauUdX2AFDzeVRji+7xYvf7w
-	 2q5Iq3z3/d+RbsVRQ2TymUaZsf7afz1W1pHCg6neFeqOeAH092Rfhqb0RwuYUv7/pA
-	 2sUaBr7obPmpG9Dd+eD7eFRQnZXyNO/znE8rgPc/yqfp/pRLxTXZbhso5dJxsmagpv
-	 TEojpnKd1CEmpaXLYT1n7FyiMD7faZq0Mif46V7ZOTZe5uPTjHDb2XJEnNM0sbPn1w
-	 2KIQ1Ox/iZbrveQ7eeXIjyiu0LwcAfEAOsUWt8NOXvbsJPC5FW7GzEYVn6MTJJP2R/
-	 lSDhPTaQdiSJQ==
-Date: Fri, 25 Jul 2025 14:51:43 -0500
-From: Rob Herring <robh@kernel.org>
-To: Maud Spierings <maudspierings@gocontroll.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Daniel Thompson <danielt@kernel.org>, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org, Lee Jones <lee@kernel.org>,
-	Fabio Estevam <festevam@gmail.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	Pavel Machek <pavel@kernel.org>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	Conor Dooley <conor+dt@kernel.org>
-Subject: Re: [PATCH 1/4] dt-bindings: backlight: Add max25014 bindings
-Message-ID: <20250725195143.GA1735522-robh@kernel.org>
-References: <20250725-max25014-v1-0-0e8cce92078e@gocontroll.com>
- <20250725-max25014-v1-1-0e8cce92078e@gocontroll.com>
- <175345006903.1002291.4212198267952446360.robh@kernel.org>
- <03096180-1e33-4dd0-b027-cc18a5010e46@gocontroll.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mMX5UXVE"
+Received: by mail-qk1-f178.google.com with SMTP id af79cd13be357-7e6399d0656so129266085a.3;
+        Fri, 25 Jul 2025 17:04:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1753488262; x=1754093062; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zLeoKD9pH6YTTrPLKVP4AiqhElR/HaLlmxJaymwaLxw=;
+        b=mMX5UXVEbaAxQooMKWO0/UDZCXL1B+84+YCLOnNtQ6ICZgADpwxniN0ufXWHrLXBOD
+         /6MmmSoVy12tjxNvxCIKmIm287g0eMqgr0dZO8baIKtCgiaXlVKwNNjz2gqsGIV+hqZp
+         o7sNjxAsitr+SsGZc4wKVoNdxzmAVmdVA+ujIDN7Uj4tXWtU89St98IiAP93vf+8M5VY
+         f/oH+Dz7zXRlcbKATFTBBRXexciCuzi48a/DQ+DkKyThJNa6GUCGLs625IA/757UQwE1
+         tOI5Y8EOZHAYzJ72oIkt8qqpJx5lcuC3J2zSUGKz3rRMZx9rp7IjcL9RNfrB1NxSLNaq
+         ujaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1753488262; x=1754093062;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zLeoKD9pH6YTTrPLKVP4AiqhElR/HaLlmxJaymwaLxw=;
+        b=EDlc/qAEleAMr1kRbabghjWHgaDgOs5sycGcgvUOs7HooCnoYodIrrpVwN39fl+Ora
+         JQN+NxKRHyY5dj2v32JrXb1Rl1cKAVPQcOPlDfsEYSXWfHRJFfiztyvmFpLcFexpjnUg
+         dIy5at6tA2T9IN12WsJx34ZeOSRn2uL4KUJJ129odFik0yZNLbntGLWmFFcBoi4oc1Kj
+         Ild/VRudAOvTIZo7MaRimBgTXNUPouBpvkrTO3RvGMHTrH7oj6iexygS7oz4iFAWZJEq
+         0dB947472mqheaJgZloik/+0PJ4iLUXExsWXIOy7kCdrtTRpQmYd0V1YER1tp1m76/RT
+         v7vQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVKHOPkMJgm+9E82nVtA9fhdtWKdnfTTlOZCBUIYBpuHUxzuBry4xtej8xby2hlKLL16K5ht50L@vger.kernel.org, AJvYcCVQjNxGXcbE4IWGkz5VZCIYxdk/hV0wK6Z3jVzfsELVyjUgulvCz1NQD+bKhejoRKQRKJ4yE3Sq1TpYJQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywrn7OO3g09lg7IUc4ebexYeDnnpkWRdf7qB1T+m38Da//jzIaS
+	629uPZT+C63nJgdPvqXUpUuFwkTWVm2CvKFnKATOu+1yudxJUid5tzS8WdTC1/kT
+X-Gm-Gg: ASbGncujyTZLSVkunzekOJ+dRO4hZjrbX9xLZfenBSQtVe4QmB4AktCvnrXzN8Ynhnz
+	qaTptUSUz3CUKk8dYCmKATnDT2nz9F9QYTlzA0ue6CfhIuPcKPwtzZJhW4Vbn+pl8mD2K2NvpR/
+	z+cU4dqwV8q4x6vgGCgNAPuV5bAqrEvZdGvGnuax7o5xQVEXsJ7h4NAsoVYLLC1zCwBBLZAKW75
+	U344dddfhmO322iAm1TM7V2yNaMrMEoQSgEcd81SHTBfZp1Bmhpra330inyDFmL1bmlUP/7Fhkv
+	z80y1bGsTZSe8NYJcX/8wdXT9pK9Soic65T2aO3nwnYfECwxFyPe+Gnbnml7BqSIdQZvIGaj942
+	sjf/FDRkQDwNaPvRB231z67IJsgNus51MOIdQJVpa
+X-Google-Smtp-Source: AGHT+IG6l3WQqMadpHdNJpC0zSJGr9aB1wMhpvY2ZooIl9NLW/T9j82ReuKVTuQm7JeZ8ae+D6R92Q==
+X-Received: by 2002:a05:620a:d94:b0:7c7:a602:66ee with SMTP id af79cd13be357-7e63bf69ba2mr563202185a.10.1753488261592;
+        Fri, 25 Jul 2025 17:04:21 -0700 (PDT)
+Received: from Latitude-7490.ht.home ([2607:fa49:8c41:2600:afb4:9d47:7cc2:f4e8])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-7e64327b331sm53652485a.10.2025.07.25.17.04.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Jul 2025 17:04:20 -0700 (PDT)
+From: chalianis1@gmail.com
+To: andy@kernel.org
+Cc: linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org,
+	stable@vger.kernel.org,
+	gregkh@linuxfoundation.org,
+	Chali Anis <chalianis1@gmail.com>
+Subject: [PATCH] staging: fbtft: add support for a device tree of backlight.
+Date: Fri, 25 Jul 2025 20:04:16 -0400
+Message-Id: <20250726000416.23960-1-chalianis1@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <03096180-1e33-4dd0-b027-cc18a5010e46@gocontroll.com>
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jul 25, 2025 at 04:06:45PM +0200, Maud Spierings wrote:
-> 
-> 
-> On 7/25/25 15:27, Rob Herring (Arm) wrote:
-> > 
-> > On Fri, 25 Jul 2025 13:09:23 +0200, Maud Spierings wrote:
-> > > The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
-> > > with intgrated boost controller.
-> > > 
-> > > Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
-> > > ---
-> > >   .../bindings/leds/backlight/maxim,max25014.yaml    | 78 ++++++++++++++++++++++
-> > >   MAINTAINERS                                        |  5 ++
-> > >   2 files changed, 83 insertions(+)
-> > > 
-> > 
-> > My bot found errors running 'make dt_binding_check' on your patch:
-> 
-> Pretty sure I did that, but I've never gotten those tools to work quite
-> right, I'll look at it for v2
+From: Chali Anis <chalianis1@gmail.com>
 
-What's the issue?
+Support the of backlight from device tree and keep compatibility
+for the legacy gpio backlight.
 
-Rob
+Cc: stable@vger.kernel.org
+Signed-off-by: Chali Anis <chalianis1@gmail.com>
+---
+ drivers/staging/fbtft/fbtft-core.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index da9c64152a60..5f0220dbe397 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -170,6 +170,18 @@ void fbtft_register_backlight(struct fbtft_par *par)
+ 	struct backlight_device *bd;
+ 	struct backlight_properties bl_props = { 0, };
+ 
++	bd = devm_of_find_backlight(par->info->device);
++	if (IS_ERR(bd)) {
++		dev_warn(par->info->device,
++			"cannot find of backlight device (%ld), trying legacy\n",
++			PTR_ERR(bd));
++	}
++
++	if (bd) {
++		par->info->bl_dev = bd;
++		return;
++	}
++
+ 	if (!par->gpio.led[0]) {
+ 		fbtft_par_dbg(DEBUG_BACKLIGHT, par,
+ 			      "%s(): led pin not set, exiting.\n", __func__);
+-- 
+2.34.1
+

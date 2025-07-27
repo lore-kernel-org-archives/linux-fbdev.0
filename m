@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A07C821A426
-	for <linux-fbdev@vger.kernel.org>; Sun, 27 Jul 2025 15:51:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AEBE2F37;
+	Sun, 27 Jul 2025 16:02:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753631475; cv=none; b=E1OiSkIRJJjVtpMrFmw2qU4370HNkS6HwlcJ3BmW1GG9P5LrCLN+G16++YmqKS59NVs/l22JFV4NJDRjSqx9siJ6ZVTHc1FJG1La9f9sprSnx56HcsQ3Mab0eA88dnB79BIeKnWEXN8R+ar5ncjpM+pBrxBKtEmnxVZQvbdUpng=
+	t=1753632124; cv=none; b=t9s7uTevUiVR6uSGAVUbGpCrlq38qAzXQg5zF7/P0vorOlC6bAs9sbXx7hwgfTmXVZtuctCj6C6m8+dIkOwFnKsi0Q+WzbNjqzFSdVkRX7jWKqRMk4N+Xo3rT4K6Y/0NpnB336hB3xTfeIrd2ehZzTrVEFbCRULf3SIlcul3id4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753631475; c=relaxed/simple;
-	bh=3zJrFwGtQAMzxK49J1rmC4/b+xK2/HHXucM4Sy7bKUE=;
+	s=arc-20240116; t=1753632124; c=relaxed/simple;
+	bh=bkHuhs1ZhzSGAItkH1JrwnppKViactg4dwQBqklhEos=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nbQ1+SpNLpifWuDCIEBfEp5d+2WNwMdv7FQ2er3H9OCIETTO4jKPnRw4oT+KNMeXUgGVyjWGDLyUEORm5PvdtHLsxx6dgxgpZvaMcp12MM+WAYM0sJbEfjXoYyFPFR4Frwaa2A6S55Kzdzo0XHkre2UxrRKrH0Lt//eyO4oMlDo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=KcywHZi3; arc=none smtp.client-ip=212.227.17.20
+	 In-Reply-To:Content-Type; b=cN7OJn4dfUZxFv4sPiXQPwtZNmjvgyxQd2W4EqOuiIaQZOiG7jUCdTzXxpmNP302iqIp6xB4C8/+H9DOgYn6GqUisrqh2YIuZudsvPJkGi+V9QBcmvQi70YjUsaotshkAoxPdAxvayGBbMzP4NdGtllcQqn8QgRZsvWutEJ6E20=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=WiVpeKdd; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="KcywHZi3"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="WiVpeKdd"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1753631470; x=1754236270; i=deller@gmx.de;
-	bh=RXyj7Jc5AR9Po7gJ3lSknuaNLcCDQ7fAtsjSj87Vksw=;
+	s=s31663417; t=1753632120; x=1754236920; i=deller@gmx.de;
+	bh=crl2NY3z8ht7kT2f4GAg9DUloR/Qxz14Lpt5cIkZZcc=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=KcywHZi3fPIMkCc0Di/O7KAZPDJMZnKPg5vBhvFbDHu+MvwupySRSPISbbfGkQ0e
-	 xnCPeL8R/dov//QdI5LwttoTzQRFI2PKbqHjkCzXH1/DLCvVyMxH6huQsxlS/uLBF
-	 ZfVHlr4ZT0dVpnqAN4AbOvoFSxuuZ7s48inIVyNI/XmAgGZ0n1VWCT5kyoq66o/e1
-	 4+UKwO5AxkRvig9IASl75F70Px5ZOpFBFv4ksUDmkRDnvWw4gi04TBTYOGSVngmSv
-	 OTcy86rVfGUOKqzwC41Wu5Hn+PU4qZJpwmUZo1XZ41Q66FSFAbsTtB0BwaZRLmxZd
-	 E6S6MH3Lklnb1yedwQ==
+	b=WiVpeKddOKCGXyux5T8LVNhSkDHG397OUtcWti6F4adLO9QwkB3UBdBrlwXk/43P
+	 5yg6VOYBOZHxYw/8NvbS4DmB3LQ7NbOlDifhfBPUQlEAlTRTEGV43pmQEsJgpmDoR
+	 UH5msDYOyolf93bQdsgahB0u8VqCmwYztfo9Wlpf597U4i5RQN4jNX7prISQ/purM
+	 bUBhLsKaAmdAv1J5IQRDrtJaWdPbl1aGchK5OWvhwId4+8CRLIfmJC5i5tsGUJhSV
+	 HdvBvMLtVdaFOMf7HID8fsLCe3fCj59U27KzJ1bQ+GXP6HggCrbtEV05YkquYwNpf
+	 /PplV4jPKl1WdGcUPQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.173] ([109.250.63.22]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MHGCu-1utJC21xHk-00CdiH; Sun, 27
- Jul 2025 17:51:10 +0200
-Message-ID: <5aad10cc-0ab1-4716-b0fa-afbc73660fd4@gmx.de>
-Date: Sun, 27 Jul 2025 19:43:27 +0200
+Received: from [192.168.20.173] ([109.250.63.22]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MBUqF-1uphvM40x5-00HDcA; Sun, 27
+ Jul 2025 18:02:00 +0200
+Message-ID: <cd0f78c1-354b-452a-880e-cbdb12f76292@gmx.de>
+Date: Sun, 27 Jul 2025 19:53:24 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: fix potential buffer overflow in
- do_register_framebuffer()
-To: Yongzhen Zhang <zhangyongzhen@kylinos.cn>
-Cc: linux-fbdev@vger.kernel.org
-References: <20250701090704.161165-1-zhangyongzhen@kylinos.cn>
+Subject: Re: [PATCH] fbdev: simplefb: Use of_reserved_mem_region_to_resource()
+ for "memory-region"
+To: "Rob Herring (Arm)" <robh@kernel.org>, Hans de Goede <hdegoede@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20250703183514.2074928-1-robh@kernel.org>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,76 +94,79 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250701090704.161165-1-zhangyongzhen@kylinos.cn>
+In-Reply-To: <20250703183514.2074928-1-robh@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:mArhKTt3B7idxdxRsCHDOu+LjLV3MPGQOFQA296AWK1TpoGgShM
- UaYR5hE21Ui2nSi+j0DGnVmD0WTr5hP2L3Cwad0EP31ySTf31oM+D4OIE7wUrXbswQ+l2k/
- K8nmdFLv7M291YBVNB5FGjdXCn95m3M7+7ckyqsmvoSmQr9aIaXrq38h75E4tFwtCHtqyMN
- rhr4PvYeNfXurS2UdAgRQ==
+X-Provags-ID: V03:K1:rKmM2tfwVz/4DQST8SYcBqplU7G3sPUm7Rseicrovt3Vx4s8Q9w
+ u+/uwsdPIULdRyGRw3h/lGvWdLtKA2sOWvOmlLWtP+Kt0zZop2La3ZTQ1/dN50npcp5ftmE
+ 4RSKKNA2uBxK/4j/ZERPAh6sz2TCYxnqQjfD6QBieQRzaWLYn8+gUUsUoYPEX1MF+yykMAE
+ WjBHIC80u/t1cVem2N6+g==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:fOD+GdFD9vE=;lIcUdW9MWT65sYmOfFTXuZhr6ij
- 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
+UI-OutboundReport: notjunk:1;M01:P0:zHFtaK5eRIU=;vuYsHAVWmKCHd4NRj/ri+ijZMm7
+ 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
 
-On 7/1/25 11:07, Yongzhen Zhang wrote:
-> The current implementation may lead to buffer overflow when:
-> 1.  Unregistration creates NULL gaps in registered_fb[]
-> 2.  All array slots become occupied despite num_registered_fb < FB_MAX
-> 3.  The registration loop exceeds array bounds
+On 7/3/25 20:35, Rob Herring (Arm) wrote:
+> Use the newly added of_reserved_mem_region_to_resource() function to
+> handle "memory-region" properties.
 >=20
-> Add boundary check to prevent registered_fb[FB_MAX] access.
+> The error handling is a bit different. "memory-region" is optional, so
+> failed lookup is not an error. But then an error in
+> of_address_to_resource() is treated as an error. However, that
+> distinction is not really important. Either the region is available
+> and usable or it is not. So now, it is just
+> of_reserved_mem_region_to_resource() which is checked for an error.
 >=20
-> Signed-off-by: Yongzhen Zhang <zhangyongzhen@kylinos.cn>
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 > ---
->   drivers/video/fbdev/core/fbmem.c | 3 +++
->   1 file changed, 3 insertions(+)
+>   drivers/video/fbdev/simplefb.c | 17 ++++-------------
+>   1 file changed, 4 insertions(+), 13 deletions(-
 
 applied.
 

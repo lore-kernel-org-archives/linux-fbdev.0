@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C3C3128819;
-	Sun, 27 Jul 2025 15:35:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A07C821A426
+	for <linux-fbdev@vger.kernel.org>; Sun, 27 Jul 2025 15:51:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753630520; cv=none; b=Wt4ggynKWAtPuqdq3Urfe7m2nl9gbLXk5clQ8Zdu98zSfd+4OJCgdJw4qadoPAXfUdILgz3taAKWnnFbscieH2K86fH6vnxn4UEuwsKliVO0eFMl3A0iGD59CRON7yFEi2OvZMNNyDk701bngU66pdDtlN8tPn7QMlxr8RLNfRg=
+	t=1753631475; cv=none; b=E1OiSkIRJJjVtpMrFmw2qU4370HNkS6HwlcJ3BmW1GG9P5LrCLN+G16++YmqKS59NVs/l22JFV4NJDRjSqx9siJ6ZVTHc1FJG1La9f9sprSnx56HcsQ3Mab0eA88dnB79BIeKnWEXN8R+ar5ncjpM+pBrxBKtEmnxVZQvbdUpng=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753630520; c=relaxed/simple;
-	bh=oLS9DjHXDEi2Wu+DOtU7+LKO/cwCR/Dqv8I1238NY7c=;
+	s=arc-20240116; t=1753631475; c=relaxed/simple;
+	bh=3zJrFwGtQAMzxK49J1rmC4/b+xK2/HHXucM4Sy7bKUE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Gq+wGaOfdGtpTz+WqRyJyLLiK8Sk+YOROADW3q4Gkpn7ubC5JAR19OE9yHBclY6+SYtQhvlhNStuA6v7TXtuc04Vp9Eb6JRV9bPyuvOMy94gKOgTHkAmMG9Vyef2xKIsOkc7EdQ0kH0KxGtoBowa8OUzCVNYn0i3GffwPLwpgKk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=eTl1J54i; arc=none smtp.client-ip=212.227.17.20
+	 In-Reply-To:Content-Type; b=nbQ1+SpNLpifWuDCIEBfEp5d+2WNwMdv7FQ2er3H9OCIETTO4jKPnRw4oT+KNMeXUgGVyjWGDLyUEORm5PvdtHLsxx6dgxgpZvaMcp12MM+WAYM0sJbEfjXoYyFPFR4Frwaa2A6S55Kzdzo0XHkre2UxrRKrH0Lt//eyO4oMlDo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=KcywHZi3; arc=none smtp.client-ip=212.227.17.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="eTl1J54i"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="KcywHZi3"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1753630515; x=1754235315; i=deller@gmx.de;
-	bh=7KFIp9QJjt86jqd8grVfKPODLA75ai887TcSuOQb0Jo=;
+	s=s31663417; t=1753631470; x=1754236270; i=deller@gmx.de;
+	bh=RXyj7Jc5AR9Po7gJ3lSknuaNLcCDQ7fAtsjSj87Vksw=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=eTl1J54icf4W9bEmP32ZB7NvLxPF3eb752dtt2vut9Yo+jKfweKA5PMxlcI7zJXr
-	 odfwVWkNqQKW5Mrzt2Zo+knnw7UpVMnebJw/0RR1oOMs+DqE0HQ7oZunnVlfTU4VI
-	 n4CDG4tYBA9yVNSfHtuxiyRxFwOX4U7II8XeXFVcyguycE06WM607efeMygJ9q/VF
-	 +HsIBlUx1NEwSPhngXUih57hVEvfTDud0qH1Sut3tUNRZNshMI2KQz86GQrhAOTsp
-	 3dswJSTwBExV8zPygHEA6jHu+dUIMXWuaNov10KP91Y0jA40vAI26N4O4TMTqG/Gh
-	 EsoGvTjE7l7jDq/+ew==
+	b=KcywHZi3fPIMkCc0Di/O7KAZPDJMZnKPg5vBhvFbDHu+MvwupySRSPISbbfGkQ0e
+	 xnCPeL8R/dov//QdI5LwttoTzQRFI2PKbqHjkCzXH1/DLCvVyMxH6huQsxlS/uLBF
+	 ZfVHlr4ZT0dVpnqAN4AbOvoFSxuuZ7s48inIVyNI/XmAgGZ0n1VWCT5kyoq66o/e1
+	 4+UKwO5AxkRvig9IASl75F70Px5ZOpFBFv4ksUDmkRDnvWw4gi04TBTYOGSVngmSv
+	 OTcy86rVfGUOKqzwC41Wu5Hn+PU4qZJpwmUZo1XZ41Q66FSFAbsTtB0BwaZRLmxZd
+	 E6S6MH3Lklnb1yedwQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.173] ([109.250.63.22]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MLiCu-1uxaHz1wtE-00PiE0; Sun, 27
- Jul 2025 17:35:15 +0200
-Message-ID: <09e7d9c0-3348-49d0-a390-372031652e97@gmx.de>
-Date: Sun, 27 Jul 2025 19:28:53 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MHGCu-1utJC21xHk-00CdiH; Sun, 27
+ Jul 2025 17:51:10 +0200
+Message-ID: <5aad10cc-0ab1-4716-b0fa-afbc73660fd4@gmx.de>
+Date: Sun, 27 Jul 2025 19:43:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: nvidiafb: add depends on HAS_IOPORT
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@kernel.org>, Niklas Schnelle
- <schnelle@linux.ibm.com>, Antonino Daplas <adaplas@gmail.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20250615183651.902092-1-rdunlap@infradead.org>
+Subject: Re: [PATCH] fbdev: fix potential buffer overflow in
+ do_register_framebuffer()
+To: Yongzhen Zhang <zhangyongzhen@kylinos.cn>
+Cc: linux-fbdev@vger.kernel.org
+References: <20250701090704.161165-1-zhangyongzhen@kylinos.cn>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,109 +93,78 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250615183651.902092-1-rdunlap@infradead.org>
+In-Reply-To: <20250701090704.161165-1-zhangyongzhen@kylinos.cn>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:IHUNI1p1fU113kR6OYZbvVxGwAn0J7KM6wwR5NDy/erYDrHSSOi
- QIbDbkISPEAcaJU/T643idMZXkViROBAAL1/tgSnEE9WO/xLZdO7Gzy6sHSeXE0ltm/ptqg
- kycRFEccYJ02IE9VUvwAIYx3D3thfwnuvWRXms0l6xfH2XIvS+2zQCswWSbcJtX6d8q8Rd3
- xdDdA18lJ3lU42DiXB4cg==
+X-Provags-ID: V03:K1:mArhKTt3B7idxdxRsCHDOu+LjLV3MPGQOFQA296AWK1TpoGgShM
+ UaYR5hE21Ui2nSi+j0DGnVmD0WTr5hP2L3Cwad0EP31ySTf31oM+D4OIE7wUrXbswQ+l2k/
+ K8nmdFLv7M291YBVNB5FGjdXCn95m3M7+7ckyqsmvoSmQr9aIaXrq38h75E4tFwtCHtqyMN
+ rhr4PvYeNfXurS2UdAgRQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:hhUulzEyYdw=;J4LKUArBf27wEDh1W/LJmJ8awji
- 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
+UI-OutboundReport: notjunk:1;M01:P0:fOD+GdFD9vE=;lIcUdW9MWT65sYmOfFTXuZhr6ij
+ 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
 
-On 6/15/25 20:36, Randy Dunlap wrote:
-> The nvidiafb driver uses inb()/outb() without depending on HAS_IOPORT,
-> which leads to build errors since kernel v6.13-rc1:
-> commit 6f043e757445 ("asm-generic/io.h: Remove I/O port accessors
-> for HAS_IOPORT=3Dn")
+On 7/1/25 11:07, Yongzhen Zhang wrote:
+> The current implementation may lead to buffer overflow when:
+> 1.  Unregistration creates NULL gaps in registered_fb[]
+> 2.  All array slots become occupied despite num_registered_fb < FB_MAX
+> 3.  The registration loop exceeds array bounds
 >=20
-> Add the HAS_IOPORT dependency to prevent the build errors.
+> Add boundary check to prevent registered_fb[FB_MAX] access.
 >=20
-> (Found in ARCH=3Dum allmodconfig builds)
->=20
-> drivers/video/fbdev/nvidia/nv_accel.c: In function =E2=80=98NVDmaWait=E2=
-=80=99:
-> include/asm-generic/io.h:596:15: error: call to =E2=80=98_outb=E2=80=99 =
-declared with attribute error: outb() requires CONFIG_HAS_IOPORT
->    596 | #define _outb _outb
->=20
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Arnd Bergmann <arnd@kernel.org>
-> Cc: Niklas Schnelle <schnelle@linux.ibm.com>
-> Cc: Antonino Daplas <adaplas@gmail.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
+> Signed-off-by: Yongzhen Zhang <zhangyongzhen@kylinos.cn>
 > ---
->   drivers/video/fbdev/Kconfig |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/video/fbdev/core/fbmem.c | 3 +++
+>   1 file changed, 3 insertions(+)
 
 applied.
 
 Thanks!
 Helge
-
-
->=20
-> --- lnx-616-rc1.orig/drivers/video/fbdev/Kconfig
-> +++ lnx-616-rc1/drivers/video/fbdev/Kconfig
-> @@ -660,7 +660,7 @@ config FB_ATMEL
->  =20
->   config FB_NVIDIA
->   	tristate "nVidia Framebuffer Support"
-> -	depends on FB && PCI
-> +	depends on FB && PCI && HAS_IOPORT
->   	select FB_CFB_FILLRECT
->   	select FB_CFB_COPYAREA
->   	select FB_CFB_IMAGEBLIT
-> ---
-> base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494 # v6.16-rc1
-

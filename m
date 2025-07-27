@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45FCD214228
-	for <linux-fbdev@vger.kernel.org>; Sun, 27 Jul 2025 16:16:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF9951C84BC;
+	Sun, 27 Jul 2025 16:28:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753632978; cv=none; b=Kvdg1gnb5hyXdV7n6Lkx226Fe3EfLKk47Y1EIS0hVNQezhl86Fk3wKrQRun1f+LEOVBTpc2ZVMcXCj0bNqZRUVF+OBDcSLKH8col5XO7GZxFYjecLzpI+/taaw0pRdtCOlx2bTftQNdxjp4RUfvrIUptslhxX0BzXzNUxpTLydk=
+	t=1753633718; cv=none; b=G8RU8ndCudNMcsE0LTavJldZPqulbFhL+S+rLonQDvNHvHpu71/LCu8qlyI5z6GcxlRlz2nNWWFCY0Au6Jyz7q1FQRgXG84qBBHWR5+V4CGhiXVxBlpJiDzmz7xkZrLGSI6slcBsw6a3MaxgiZiPC7wy8Gbfo5o3cyIqldhft00=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753632978; c=relaxed/simple;
-	bh=JVeeopiehG0jA6P5GrQ7dd5K66fW8DygHQQ3j7ufjzA=;
+	s=arc-20240116; t=1753633718; c=relaxed/simple;
+	bh=ZomwM7MouMwcy/OMbnFMk7CRtazTaSNNgdUyQSIq+fM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y2xgl2oEg2VP5BLVznhMsJ5x+goTRor0RtpD3dQ9mO94z9qSVt95RzB74Ds2AWext7HN8tGeC0qKC578I8tXcoYJJKm/qIWd4DYYkG+tRbTjCTyA+ITiUbXV8/CkLcoapyroFeImlEMI7bXK2jOq6dVhj+kFursx1liMw8Qbnr4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=QsRa23cE; arc=none smtp.client-ip=212.227.17.20
+	 In-Reply-To:Content-Type; b=D2gl2jg7lMnhlqSQ2Zo5lh07wD3QDFUc9rUF10basCrfnIN6v6CXmEo2bo8BddnVP7ZDvN2e5kWCn3zU60C84QDrBuAnjkezVRQXEOtu1tXF3wXKYaiFVR2Of+fUAaCJwU78vE3YzdHxExnsWMW72HGOQvShQT090j62e5it/w8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=ZVGF4J2g; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="QsRa23cE"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="ZVGF4J2g"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1753632973; x=1754237773; i=deller@gmx.de;
-	bh=sNbqz4l2VlsezJnN5tus4fgjuQr0FDo/Jx9eg29uLk4=;
+	s=s31663417; t=1753633712; x=1754238512; i=deller@gmx.de;
+	bh=pkLDT0HEsunX2btfz401SE7y2JBuE7M2u3LhGnMVqDw=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=QsRa23cEHdcMXW3GX2m0nYpTRscxLgcP28SpLHsJEAokj+Ofc8JtG1yTElB0S9Lh
-	 nqf5rvDusSA9qx6ExLlU4P3pa1tNKFBtWHpMUEWoFOaB9FV3mq2PFcBffli/0Sdcq
-	 uoRyh5pFFejeGwNkTe7j0PPaYd63LD0nex6CgRXXL/5yB2DwV6UAQ3C8t7vLAmVBX
-	 mcWd3Feh6XvnsCHLlTEdllirshbFfWEtr3Uzskm1jp5dUVISMZY9mr4NpEQi2ZJJy
-	 SZCb+qgCF3rXmWX3XJ17BgDrOGE3kAAjvdEwVZz5VJwSnlxtvmscwM5XpoFI6KyL4
-	 Vis8Re3RsFRS0+kKoA==
+	b=ZVGF4J2g6XFJoNwVshZ5gG5PZ8fiyT/NonOCvP74vVQD7oPpO0CYQ39CARmdmiEo
+	 e6TQpBvj0Sj/XLMa4lQ13ZXEcrA5KxR8KL0yQ4MZLC6J2Yoq3SjPaawX18ItM7BOu
+	 fwA/eIZgCin1XzzsWKk0s2HgfVVEQB271OrbDXPrh74VyuQHwVrWyXMeWoTaRD+rP
+	 JEk8Ixq4sc27Uos1HbmaOd4/Z7mGwQjlX3+l5sSn/AWzUQzI97Or0uRmjmbdKfeJ4
+	 1AH+FvUfhWtbvD276qIi8p1T1qKSMmozGP4a2SxrlsJt7oBgpknzsHIhX2PU8f/9b
+	 QXTC5b5ffZBI7TeHzQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.173] ([109.250.63.22]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N63VY-1udxTQ2jQ8-011276; Sun, 27
- Jul 2025 18:16:12 +0200
-Message-ID: <90c87092-6545-4460-9421-58751e437ae7@gmx.de>
-Date: Sun, 27 Jul 2025 20:06:25 +0200
+Received: from [192.168.20.173] ([109.250.63.22]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MUowb-1v6hn726M5-00V1Kw; Sun, 27
+ Jul 2025 18:28:32 +0200
+Message-ID: <00dfd97d-892f-405e-b395-caf7e8e8f1e9@gmx.de>
+Date: Sun, 27 Jul 2025 20:17:44 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,10 +43,14 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: Fix typo in Kconfig text for FB_DEVICE
-To: daniel.palmer@sony.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20250725-fbdev-typo-v1-1-f9fd1418cb51@sony.com>
+Subject: Re: [PATCH] fbdev: pm3fb: Fix potential divide by zero
+To: Alex Guo <alexguo1023@gmail.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <CAMuHMdW5wU1ForGOGD-+HDUu7wcnBx3jx911nLEqbJ71t4MBsg@mail.gmail.com>
+ <20250611161207.4031677-1-alexguo1023@gmail.com>
+ <CAMuHMdW=GyUHsfqtSD8iYaV_nRszEunaDMCoL6zWf5_bPS0T4Q@mail.gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -92,75 +96,134 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20250725-fbdev-typo-v1-1-f9fd1418cb51@sony.com>
+In-Reply-To: <CAMuHMdW=GyUHsfqtSD8iYaV_nRszEunaDMCoL6zWf5_bPS0T4Q@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:sCSGhxsoLimG34jRuGGoaLM85WWVJzB3ocLIE8cRfl2sRXiHFI4
- GijpeYJzlCW+NN/iSfjryjjy88hpakx9DFucltZ69qncVfzywWjMAXKoGALJYRBfNep/etj
- 3Qtjq7FHCrJKGjx5JLURR0aEYy+yGqrZYy5rGt3M9y87cXUh87OL1lHPPuuCqT7MW5Y/AQC
- Tt9ZU4+2bYf3eqR1wfQXw==
+X-Provags-ID: V03:K1:e05JDAVMkyZ+FQ8bw/sOH11d+LSn4k+EZk0JAbBUOxdLsFr6grc
+ bL5L72uooH7pgjg2RJwsF+ib3Slj+1hjNlq3ceyjA/AQECPn4m1EKJ+di8cpiCEZgP6DF3K
+ MvzQ44c/oyvkOCEYvAYaqlIDxc+GLJi3hMSZvRjXr4qZrHEMIjU4LCmpAyGAXJkR9S/Wd4D
+ w4gzxtnqK6rzY57oYxCQw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:lJ4IZaKQ7KE=;sshfeD4hww81di9JX36SNg8Qsbb
- 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
+UI-OutboundReport: notjunk:1;M01:P0:nMzw6wrqWvo=;h1NOHVh/mmKRv5p/xOcKR4jgXAJ
+ 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
+ C3qFFYoa7tQ==
 
-On 7/25/25 07:30, Daniel Palmer via B4 Relay wrote:
-> From: Daniel Palmer <daniel.palmer@sony.com>
+Hi Alex,
+
+On 6/12/25 11:29, Geert Uytterhoeven wrote:
+> On Wed, 11 Jun 2025 at 18:12, Alex Guo <alexguo1023@gmail.com> wrote:
+>>> On Sat, 7 Jun 2025 at 22:14, Alex Guo <alexguo1023@gmail.com> wrote:
+>>>> variable var->pixclock can be set by user. In case it equals to
+>>>>   zero, divide by zero would occur in pm3fb_check_var. Similar
+>>>> crashes have happened in other fbdev drivers. There is no check
+>>>> and modification on var->pixclock along the call chain to
+>>>> pm3fb_check_var. So we fix this by checking whether 'pixclock'
+>>>> is zero.
+>>>>
+>>>> Similar commit: commit 16844e58704 ("video: fbdev: tridentfb:
+>>>> Error out if 'pixclock' equals zero")
+>>>>
+>>>> Signed-off-by: Alex Guo <alexguo1023@gmail.com>
+>>>
+>>> Thanks for your patch, which is now commit 59d1fc7b3e1ae9d4
+>>> ("fbdev: pm3fb: fix potential divide by zero") in fbdev/for-next.
+>>>
+>>>> --- a/drivers/video/fbdev/pm3fb.c
+>>>> +++ b/drivers/video/fbdev/pm3fb.c
+>>>> @@ -998,6 +998,9 @@ static int pm3fb_check_var(struct fb_var_screenin=
+fo *var, struct fb_info *info)
+>>>>                  return -EINVAL;
+>>>>          }
+>>>>
+>>>> +       if (!var->pixclock)
+>>>> +               return -EINVAL;
+>>>
+>>> While this fixes the crash, this is correct behavior for an fbdev driv=
+er.
+>>> When a value is invalid, it should be rounded up to a valid value inst=
+ead,
+>>> if possible.
+>>
+>> Thanks for your confirmation and suggestions.
+>>
+>> I added this patch based on existing checks on var->pixclock in other d=
+rivers, such as savagefb_check_var, nvidiafb_check_var, etc.
+>> Are you suggesting that it is better to replace an invalid value (var->=
+pixclock =3D=3D 0) with a default valid value, instead of returning -EINVA=
+L?
 >=20
-> Seems like someone hit 'c' when they meant to hit 'd'.
+> Indeed.
 >=20
-> Signed-off-by: Daniel Palmer <daniel.palmer@sony.com>
-> ---
->   drivers/video/fbdev/core/Kconfig | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>> If so, could you advise what a suitable default value would be for this=
+ case?
+>=20
+> The answer is hidden in the existing check below:
+>=20
+>>>> +
+>>>>          if (PICOS2KHZ(var->pixclock) > PM3_MAX_PIXCLOCK) {
+>>>>                  DPRINTK("pixclock too high (%ldKHz)\n",
+>>>>                          PICOS2KHZ(var->pixclock));
+>>>>                  return -EINVAL;
+>>>>          }
+>=20
+> It can be replaced by:
+>=20
+>      if (var->pixclock <=3D KHZ2PICOS(PM3_MAX_PIXCLOCK))
+>              var->pixclock =3D KHZ2PICOS(PM3_MAX_PIXCLOCK) + 1;
+>=20
+> The "+ 1" is needed because of rounding.
 
-applied.
+You sent a whole bunch of patches [1] which check pixclock against
+zero, but you don't set the default value as Geert pointed out
+above. Can you maybe revise your patches accordingly?
 
-Thanks!
 Helge
+
+[1] https://patchwork.kernel.org/project/linux-fbdev/list/

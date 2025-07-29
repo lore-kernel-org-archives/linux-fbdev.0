@@ -1,35 +1,35 @@
 Received: from mx.olsak.net (mx.olsak.net [37.205.8.231])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9BA3145FE8;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49420220F35;
 	Tue, 29 Jul 2025 17:18:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.205.8.231
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753809548; cv=none; b=ZMmYhH/8jg0W91+M6DXIWe3+XDphxCopivcoIYxI69jKXdDSRCAglj6i42DwOLvQi8V9bpd0PP7RsL+RYHeI1O5dy0A8e+ESLhiuKMl26JpIW58gvM+Od5bJ0GAzUfXwKEhVKcMpjlej7eELNAJnQ7NK5bJWr5KJo5ek9VQ8bg8=
+	t=1753809549; cv=none; b=Um3655Ro2szoPhkoaT1Xbk40uFyeakRRU+wq5/I0yG3Rz4E44uDZKbiLf6ZZoZam12jS2WbeUPJNGEmkVZ6G5DtZfx+bOIq/ps7KRdD/fy79hXYI3w3y+lDM7CbRBWBEYcZ/i9RSXJuAV5imfqPdZxBAo7y6GvNxgotip1IDHqI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753809548; c=relaxed/simple;
-	bh=wjHJkN76xZ9+6Pej99kANjeJrfM+//U0Dq7FGLrDcTk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=T0i36iPx4RyRqeFgCb9V4kVAfxBfrZ+nGzImddQg5GEWx8Mg1PeXERhGzUivzgeTVWRNNAf2Fpy5rM8JdnN6GrncXDoyMjChjbGRc2J8mMsE7px575kuqW1L3OtMeWjZ15I3rgI3d4A7flT7+mUEhZmSJiYIePLAF9wNElsj0p8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz; spf=pass smtp.mailfrom=dujemihanovic.xyz; dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b=RHXZcSIq; arc=none smtp.client-ip=37.205.8.231
+	s=arc-20240116; t=1753809549; c=relaxed/simple;
+	bh=bvWDVVpk4oQ7rFFnlM8bA7rrp960UJMZcCVetBY4MuY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=fbsLf15aeMFWnmdixmBxL13ywRLXxMt0b/1ubjYpQRNiBV4M47Oo1t30BhKOUnMD2SMuTuUMCqBeSfc/idx6MRV2Aiv0iw3oPmw7S34iv2vEhi9U5AqsTxDWx+JTvn4Yzz/UOMJ2Il/SzGf2Zf0KO08x91bqIN0TLWGX7N6PATc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz; spf=pass smtp.mailfrom=dujemihanovic.xyz; dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b=l6zPQ/b6; arc=none smtp.client-ip=37.205.8.231
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dujemihanovic.xyz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b="RHXZcSIq"
-DKIM-Signature: a=rsa-sha256; bh=d03/wWoZaW4ksV5PR26r4aqD4rRo/KHEvjwMt78Y6Ss=;
+	dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b="l6zPQ/b6"
+DKIM-Signature: a=rsa-sha256; bh=KtOg56+S4xfGCOYiMQ0mc7kx1YDPunzosiHCMEL6Lnc=;
  c=relaxed/relaxed; d=dujemihanovic.xyz;
- h=Subject:Subject:Sender:To:To:Cc:Cc:From:From:Date:Date:MIME-Version:MIME-Version:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Reply-To:In-Reply-To:Message-Id:Message-Id:References:Autocrypt:Openpgp;
- i=@dujemihanovic.xyz; s=default; t=1753809528; v=1; x=1754241528;
- b=RHXZcSIql0aq2ed4UX/XfOo3Elf6Bk1AsVrRZI/vaGtDxN4ne/uqY9/odZ0p8VZnnUoSW0ll
- h13iL08zJhVIrh4SEUhaOA94ILTs9FgQE6LVGBuaa/gY1222fX4vpeoJffJjuwhUvpS1Z6IPB8r
- dQB95de8/QXMCFihHltfJQSUFP61lbzpRyK8LfP+ti32CUtXIDJ4tZx2yMI7bXEfSambsZJLsAX
- 0pnr5+ih3rRZhkf/gquRiDU1s6AAAUcNFv8ugFXOsUWINyHDMoFwvzsw1bj0PZd5v0hrt0dkVhS
- cp7NAVWjGOtQdR9zTY9EoR8A3bpU0wZDa1o/MlYZwGftQ==
+ h=Subject:Subject:Sender:To:To:Cc:Cc:From:From:Date:Date:MIME-Version:MIME-Version:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Reply-To:In-Reply-To:In-Reply-To:Message-Id:Message-Id:References:References:Autocrypt:Openpgp;
+ i=@dujemihanovic.xyz; s=default; t=1753809529; v=1; x=1754241529;
+ b=l6zPQ/b6tFVgjCiE07rNfSwynt4+rG+JW4SaQgn6QLoOLrl7bQu30/PFlWn3Obxwph6KaWZp
+ ffrDMaH0yNYxo7jvfKIRqDddvv9EgdGE4GcfabhhIOuw69b0W6pr/2ngwCjEYmDWxhVByrpKNNr
+ vGi6o388rs15BPK/YYJ+awyl485oiAKf0d7nx4wybw5aGZ3SU22/isYjJjlCuFINiEetMXVq6B5
+ iKqC1PDW9yAXMLC0WIr0QdnDQRvL4Pi32LKRPnaXPOkNnM0T4whWO4NCXQUOvaaD/n3qH7ycJZM
+ YVvM2xbt1oA56ixs5CaQ9Z1p1hElZQgCDUYsqYz8ydvEg==
 Received: by mx.olsak.net (envelope-sender <duje@dujemihanovic.xyz>) with
- ESMTPS id e1aa4e3f; Tue, 29 Jul 2025 19:18:48 +0200
+ ESMTPS id fd44c069; Tue, 29 Jul 2025 19:18:49 +0200
 From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>
-Subject: [PATCH 0/2] ExpressWire dependency fixes
-Date: Tue, 29 Jul 2025 19:18:28 +0200
-Message-Id: <20250729-expresswire-dep-fix-v1-0-635cd4cc746b@dujemihanovic.xyz>
+Date: Tue, 29 Jul 2025 19:18:30 +0200
+Subject: [PATCH 2/2] backlight: ktd2801: Depend on GPIOLIB
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -38,10 +38,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAGQCiWgC/x2MQQqAMAwEvyI5G6gVsfoV8dBo1FxUGlCh+HeDx
- 1lmJ4NyElboiwyJL1E5doOqLGDa4r4yymwM3vnGtb5Dfs7EqrckxplPXORBig0FihTqicCeZtj
- 8V4fxfT9JWuo9ZQAAAA==
-X-Change-ID: 20250729-expresswire-dep-fix-ba5b8bab83cb
+Message-Id: <20250729-expresswire-dep-fix-v1-2-635cd4cc746b@dujemihanovic.xyz>
+References: <20250729-expresswire-dep-fix-v1-0-635cd4cc746b@dujemihanovic.xyz>
+In-Reply-To: <20250729-expresswire-dep-fix-v1-0-635cd4cc746b@dujemihanovic.xyz>
 To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
  Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
  Helge Deller <deller@gmx.de>
@@ -50,36 +49,39 @@ Cc: Randy Dunlap <rdunlap@infradead.org>, linux-leds@vger.kernel.org,
  linux-fbdev@vger.kernel.org, 
  =?utf-8?q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=654; i=duje@dujemihanovic.xyz;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=938; i=duje@dujemihanovic.xyz;
  s=20240706; h=from:subject:message-id;
- bh=wjHJkN76xZ9+6Pej99kANjeJrfM+//U0Dq7FGLrDcTk=;
- b=owGbwMvMwCW21nBykGv/WmbG02pJDBmdTOVPTn2rZ50TvW5y6lYfS0np5Nvvrd5fe7zv3DGHx
- sOb9bbXdJSyMIhxMciKKbLk/ne8xvtZZOv27GUGMHNYmUCGMHBxCsBE/pQwMnyKXXpItnL+CVXB
- iGiT59d+SMeseeQWmh1g/q6iYZ37bgWG/w6uhx08ilh8Lra3rTo2b+l9mU0hrjeOrj0hLl15v+r
- BUjYA
+ bh=bvWDVVpk4oQ7rFFnlM8bA7rrp960UJMZcCVetBY4MuY=;
+ b=owGbwMvMwCW21nBykGv/WmbG02pJDBmdTOXied73I7Zl7j4tyjU9pG3+go1LOKest1AKj89Ru
+ MyxJte6o5SFQYyLQVZMkSX3v+M13s8iW7dnLzOAmcPKBDKEgYtTACbyfz/D/zCBeN7Wif9+SRlb
+ 3997LL8kUj2t3XD2ttSKKxPWrg186cjIcEBPW3tjpCR3rEPkH7aH3bt8M27/3qGawnX51ck7wan
+ 17AA=
 X-Developer-Key: i=duje@dujemihanovic.xyz; a=openpgp;
  fpr=6DFF41D60DF314B5B76BA630AD319352458FAD03
 
-Hello,
+The LEDS_EXPRESSWIRE library used by the driver requires GPIOLIB. Make
+sure this dependency is not left unsatisfied.
 
-This tiny series fixes two dependency issues with the ExpressWire
-library and the KTD2801 backlight driver. Thanks to Randy for reporting
-these.
-
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Link: https://lore.kernel.org/all/b6c481bb-e854-405e-a428-90301789fe20@infradead.org/
 Signed-off-by: Duje Mihanović <duje@dujemihanovic.xyz>
 ---
-Duje Mihanović (2):
-      leds: Drop duplicate LEDS_EXPRESSWIRE config
-      backlight: ktd2801: Depend on GPIOLIB
-
- drivers/leds/Kconfig            | 4 ----
  drivers/video/backlight/Kconfig | 1 +
- 2 files changed, 1 insertion(+), 4 deletions(-)
----
-base-commit: 038d61fd642278bab63ee8ef722c50d10ab01e8f
-change-id: 20250729-expresswire-dep-fix-ba5b8bab83cb
+ 1 file changed, 1 insertion(+)
 
-Best regards,
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index d9374d208ceebbf8b3c27976e9cb4d725939b942..37341474beb9982f7099711e5e2506081061df46 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -185,6 +185,7 @@ config BACKLIGHT_KTD253
+ 
+ config BACKLIGHT_KTD2801
+ 	tristate "Backlight Driver for Kinetic KTD2801"
++	depends on GPIOLIB || COMPILE_TEST
+ 	select LEDS_EXPRESSWIRE
+ 	help
+ 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
+
 -- 
-Duje Mihanović <duje@dujemihanovic.xyz>
+2.50.1
 

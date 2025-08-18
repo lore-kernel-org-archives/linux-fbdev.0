@@ -1,315 +1,102 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AC3F2765FE
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 Aug 2025 10:50:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2FC0335BA0;
+	Mon, 18 Aug 2025 13:41:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755514214; cv=none; b=qMutz+DbwR80jai+xb2RSpbIGev8YPEaxncg9+R1Q6+92+AyW3erp09Mck/RcXyJWG2cRnLt7mmU8cp2zZFJryhuzuzhMmLr6dlTCqml2DlpJl7U1Sy+ji72BcQxcrrceQ3Xulo0lZjnKwdjs8ZHxcG8DurGMwsYY+FgKErcgbY=
+	t=1755524481; cv=none; b=JF1XU/g23RsQWYkpnrQUdKJaVCii497IvxRxEjENLcWZiXTCSgAgLMJ/iWHUeadlUFPNFRnBXVQcc0FF9DNTjORRQZyulYp8zjSMTccJQG2FmDqFSxW0hMFjNTdBDHJDoVtnBw+hBqJAYPEFuqhChA7+bjBnk0IiDqsi/h6ux8s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755514214; c=relaxed/simple;
-	bh=1FtGflq7EJb8RQspDnIkdCESNYr/H5gDqZATe00b9zQ=;
+	s=arc-20240116; t=1755524481; c=relaxed/simple;
+	bh=trB9AkrcUEdNRbN97zhTZn8SczTpHwlLjWUsFjPMVj8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AWiMBKnrKZp8+8J/njrrIknZfypACajdXf71k+C/bgJUcfhSg8kG+0/FFt9fYMYyi4+0FX/rwVzX4Q8xd3D3zHG4QOERYkwv5x6AZjZBroVAHnMDZa+OFKzr2R9qfKRIu8ys2z7zv0zT2XTMR44rXxvoC1sssoZY110VaesjOto=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WN7XiqjM; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=T8I4AkLO; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WN7XiqjM; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=T8I4AkLO; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 MIME-Version:Content-Type; b=Gj7k+VM+clScf7ZCuM2mkqoXlQ4yglOHeCjtIReHfUEAnPI49GY380mYkjDo3wGC1O2zTHq7XyZ2pD2d+IcW59s4I4+RCzK4HbtOW4MRO5JQGfoaxx647vA2Um0m+9LvIDOGinrQ91OX+N1TLC0KjdSDP/bwfc5H1CM+t6GR5FA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=rSsohK7y; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WN7XiqjM";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="T8I4AkLO";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WN7XiqjM";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="T8I4AkLO"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 3A7F421254;
-	Mon, 18 Aug 2025 10:49:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1755514186; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v2TZ48VDTt1jbJ/079dh0Dt6TM12VQX3cMjlOnsLeV0=;
-	b=WN7XiqjMC2CXeB7IIC3TK5W+k8ibKJe2ix9IIDmv674S9Zl+mMzrtLv4/VT4qg28roKz9Y
-	SivRobi7jv0Xo5uyBD3/Q7lWP6Cqz6Jiibec6PHKKWIFysY0rFTOi0Op7tBCOBTn1eVMBZ
-	h/MQIGuGS5f7gFZ20tLcEuJlVZV/nHY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1755514186;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v2TZ48VDTt1jbJ/079dh0Dt6TM12VQX3cMjlOnsLeV0=;
-	b=T8I4AkLOdhW8Gm86qgVPLemZ0++JzOtzAn8yK6Y9a/pI+KRllE0TRMR8G3RU+XGrEotmvb
-	ArpGxsmU8BkM95CA==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1755514186; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v2TZ48VDTt1jbJ/079dh0Dt6TM12VQX3cMjlOnsLeV0=;
-	b=WN7XiqjMC2CXeB7IIC3TK5W+k8ibKJe2ix9IIDmv674S9Zl+mMzrtLv4/VT4qg28roKz9Y
-	SivRobi7jv0Xo5uyBD3/Q7lWP6Cqz6Jiibec6PHKKWIFysY0rFTOi0Op7tBCOBTn1eVMBZ
-	h/MQIGuGS5f7gFZ20tLcEuJlVZV/nHY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1755514186;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=v2TZ48VDTt1jbJ/079dh0Dt6TM12VQX3cMjlOnsLeV0=;
-	b=T8I4AkLOdhW8Gm86qgVPLemZ0++JzOtzAn8yK6Y9a/pI+KRllE0TRMR8G3RU+XGrEotmvb
-	ArpGxsmU8BkM95CA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0A95D13686;
-	Mon, 18 Aug 2025 10:49:46 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id MIUhAUoFo2hQVQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 18 Aug 2025 10:49:46 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: simona@ffwll.ch,
-	deller@gmx.de,
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="rSsohK7y"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F61EC113D0;
+	Mon, 18 Aug 2025 13:41:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1755524480;
+	bh=trB9AkrcUEdNRbN97zhTZn8SczTpHwlLjWUsFjPMVj8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=rSsohK7yRTJGUP26IgYaRyl28qTbMyTUCvrG64K7vrssVq6cto6EbkzYF418zIryp
+	 zQyloesXKuaCO1IekMMVCrpBSOcVZ4j8jWPRniWGNXii11wBqg/OXdNaRvZ9wPqBuB
+	 XQEcMySkPkSIUkIUWd5aB0Q9flLE4pSKRyuFdTSo=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Arnd Bergmann <arnd@kernel.org>,
+	Niklas Schnelle <schnelle@linux.ibm.com>,
+	Antonino Daplas <adaplas@gmail.com>,
+	Helge Deller <deller@gmx.de>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 5/6] fbcon: Streamline setting rotated/unrotated bitops
-Date: Mon, 18 Aug 2025 12:36:40 +0200
-Message-ID: <20250818104655.235001-6-tzimmermann@suse.de>
+Subject: [PATCH 6.15 485/515] fbdev: nvidiafb: add depends on HAS_IOPORT
+Date: Mon, 18 Aug 2025 14:47:51 +0200
+Message-ID: <20250818124517.094676777@linuxfoundation.org>
 X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250818104655.235001-1-tzimmermann@suse.de>
-References: <20250818104655.235001-1-tzimmermann@suse.de>
+In-Reply-To: <20250818124458.334548733@linuxfoundation.org>
+References: <20250818124458.334548733@linuxfoundation.org>
+User-Agent: quilt/0.68
+X-stable: review
+X-Patchwork-Hint: ignore
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	R_RATELIMIT(0.00)[to_ip_from(RLqirfcw6gnbcr9a9yhi49fhi6)];
-	TO_DN_SOME(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FROM_EQ_ENVFROM(0.00)[];
-	URIBL_BLOCKED(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_TO(0.00)[ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org];
-	RCVD_TLS_ALL(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Spam-Flag: NO
-X-Spam-Level: 
-X-Spam-Score: -2.80
 
-Support for console rotation is somewhat bolted onto the helper
-fbcon_set_bitops() for unrotated displays.
+6.15-stable review patch.  If anyone has any objections, please let me know.
 
-Update fbcon_set_bitops() with a switch statement that picks the
-correct settings helper for the current rotation. For unrotated
-consoles, set the bitops for in the new helper fbcon_set_bitops_ur().
-Rename the other, existing helpers to match the common naming
-scheme.
+------------------
 
-The old helper fbcon_set_rotate() is no longer used.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+commit ecdd7df997fd992f0ec70b788e3b12258008a2bf upstream.
+
+The nvidiafb driver uses inb()/outb() without depending on HAS_IOPORT,
+which leads to build errors since kernel v6.13-rc1:
+commit 6f043e757445 ("asm-generic/io.h: Remove I/O port accessors
+for HAS_IOPORT=n")
+
+Add the HAS_IOPORT dependency to prevent the build errors.
+
+(Found in ARCH=um allmodconfig builds)
+
+drivers/video/fbdev/nvidia/nv_accel.c: In function ‘NVDmaWait’:
+include/asm-generic/io.h:596:15: error: call to ‘_outb’ declared with attribute error: outb() requires CONFIG_HAS_IOPORT
+  596 | #define _outb _outb
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Arnd Bergmann <arnd@kernel.org>
+Cc: Niklas Schnelle <schnelle@linux.ibm.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: stable@vger.kernel.org # v6.13+
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/video/fbdev/core/bitblit.c      |  5 +----
- drivers/video/fbdev/core/fbcon.c        | 21 +++++++++++++++++++++
- drivers/video/fbdev/core/fbcon.h        |  8 +-------
- drivers/video/fbdev/core/fbcon_ccw.c    |  2 +-
- drivers/video/fbdev/core/fbcon_cw.c     |  2 +-
- drivers/video/fbdev/core/fbcon_rotate.c | 15 ---------------
- drivers/video/fbdev/core/fbcon_rotate.h | 16 +++++++++++++---
- drivers/video/fbdev/core/fbcon_ud.c     |  2 +-
- 8 files changed, 39 insertions(+), 32 deletions(-)
+ drivers/video/fbdev/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-index 267bd1635a41..5fd5fa69a796 100644
---- a/drivers/video/fbdev/core/bitblit.c
-+++ b/drivers/video/fbdev/core/bitblit.c
-@@ -393,10 +393,7 @@ static const struct fbcon_bitops bit_fbcon_bitops = {
- 	.update_start = bit_update_start,
- };
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -660,7 +660,7 @@ config FB_ATMEL
  
--void fbcon_set_bitops(struct fbcon *confb)
-+void fbcon_set_bitops_ur(struct fbcon *confb)
- {
- 	confb->bitops = &bit_fbcon_bitops;
--
--	if (confb->rotate)
--		fbcon_set_rotate(confb);
- }
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index baaed48dbb4f..369a656521bd 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -81,6 +81,7 @@
- #include <asm/irq.h>
- 
- #include "fbcon.h"
-+#include "fbcon_rotate.h"
- #include "fb_internal.h"
- 
- /*
-@@ -270,6 +271,26 @@ static void fbcon_rotate_all(struct fb_info *info, u32 rotate)
- }
- #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
- 
-+static void fbcon_set_bitops(struct fbcon *confb)
-+{
-+	switch (confb->rotate) {
-+	default:
-+		fallthrough;
-+	case FB_ROTATE_UR:
-+		fbcon_set_bitops_ur(confb);
-+		break;
-+	case FB_ROTATE_CW:
-+		fbcon_set_bitops_cw(confb);
-+		break;
-+	case FB_ROTATE_UD:
-+		fbcon_set_bitops_ud(confb);
-+		break;
-+	case FB_ROTATE_CCW:
-+		fbcon_set_bitops_ccw(confb);
-+		break;
-+	}
-+}
-+
- static int fbcon_get_rotate(struct fb_info *info)
- {
- 	struct fbcon *confb = info->fbcon_par;
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 6a4dac3fd12e..8d5a4b980747 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -191,7 +191,7 @@ static inline u_short fb_scrollmode(struct fbcon_display *fb)
- #ifdef CONFIG_FB_TILEBLITTING
- extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
- #endif
--extern void fbcon_set_bitops(struct fbcon *confb);
-+extern void fbcon_set_bitops_ur(struct fbcon *confb);
- extern int  soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
- 
- #define FBCON_ATTRIBUTE_UNDERLINE 1
-@@ -229,10 +229,4 @@ static inline int get_attribute(struct fb_info *info, u16 c)
-         (void) (&_r == &_v); \
-         (i == FB_ROTATE_UR || i == FB_ROTATE_UD) ? _r : _v; })
- 
--#ifdef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
--extern void fbcon_set_rotate(struct fbcon *confb);
--#else
--#define fbcon_set_rotate(x) do {} while(0)
--#endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
--
- #endif /* _VIDEO_FBCON_H */
-diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/core/fbcon_ccw.c
-index 4902541305dd..1b1a0c923297 100644
---- a/drivers/video/fbdev/core/fbcon_ccw.c
-+++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -400,7 +400,7 @@ static const struct fbcon_bitops ccw_fbcon_bitops = {
- 	.rotate_font = fbcon_rotate_font,
- };
- 
--void fbcon_rotate_ccw(struct fbcon *confb)
-+void fbcon_set_bitops_ccw(struct fbcon *confb)
- {
- 	confb->bitops = &ccw_fbcon_bitops;
- }
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index 0c924581e65d..72288b0cd27f 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -383,7 +383,7 @@ static const struct fbcon_bitops cw_fbcon_bitops = {
- 	.rotate_font = fbcon_rotate_font,
- };
- 
--void fbcon_rotate_cw(struct fbcon *confb)
-+void fbcon_set_bitops_cw(struct fbcon *confb)
- {
- 	confb->bitops = &cw_fbcon_bitops;
- }
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index 8100d6f28e70..d311f15519dc 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -92,18 +92,3 @@ int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- finished:
- 	return err;
- }
--
--void fbcon_set_rotate(struct fbcon *confb)
--{
--	switch (confb->rotate) {
--	case FB_ROTATE_CW:
--		fbcon_rotate_cw(confb);
--		break;
--	case FB_ROTATE_UD:
--		fbcon_rotate_ud(confb);
--		break;
--	case FB_ROTATE_CCW:
--		fbcon_rotate_ccw(confb);
--		break;
--	}
--}
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.h b/drivers/video/fbdev/core/fbcon_rotate.h
-index c378687dd09d..ca70b91fab00 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.h
-+++ b/drivers/video/fbdev/core/fbcon_rotate.h
-@@ -92,7 +92,17 @@ static inline void rotate_ccw(const char *in, char *out, u32 width, u32 height)
- 
- int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc);
- 
--extern void fbcon_rotate_cw(struct fbcon *confb);
--extern void fbcon_rotate_ud(struct fbcon *confb);
--extern void fbcon_rotate_ccw(struct fbcon *confb);
-+#if defined(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION)
-+void fbcon_set_bitops_cw(struct fbcon *confb);
-+void fbcon_set_bitops_ud(struct fbcon *confb);
-+void fbcon_set_bitops_ccw(struct fbcon *confb);
-+#else
-+static inline void fbcon_set_bitops_cw(struct fbcon *confb)
-+{ }
-+static inline void fbcon_set_bitops_ud(struct fbcon *confb)
-+{ }
-+static inline void fbcon_set_bitops_ccw(struct fbcon *confb)
-+{ }
-+#endif
-+
- #endif
-diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/core/fbcon_ud.c
-index 6bc73966e1ff..1f31eb87ec81 100644
---- a/drivers/video/fbdev/core/fbcon_ud.c
-+++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -427,7 +427,7 @@ static const struct fbcon_bitops ud_fbcon_bitops = {
- 	.rotate_font = fbcon_rotate_font,
- };
- 
--void fbcon_rotate_ud(struct fbcon *confb)
-+void fbcon_set_bitops_ud(struct fbcon *confb)
- {
- 	confb->bitops = &ud_fbcon_bitops;
- }
--- 
-2.50.1
+ config FB_NVIDIA
+ 	tristate "nVidia Framebuffer Support"
+-	depends on FB && PCI
++	depends on FB && PCI && HAS_IOPORT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+
 

@@ -1,125 +1,90 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79956322A2A;
-	Tue, 19 Aug 2025 10:59:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B6C230505D;
+	Tue, 19 Aug 2025 12:28:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755601144; cv=none; b=oKxmBktyKHgl/C6dW3VdiAHataIQFHH1u5VWgn9mJ3sB3QiT31NvJMHaCYZpDIGOScteUzr591Z+b0e71SPYM7qnlwUJ/ckcH75uqDpX/IqZ2xuX6WG5oAc0x7nA6VXsZpDKfd0TnLaGIOAIDeZwWwikHXSCr6129lBFgFtXTfE=
+	t=1755606521; cv=none; b=kuBl8We4WDQhQIK7I3+cCPj3GDDPhLz5o75RWEUR1/IlJ4JeaJovj5olhnN9S36tykDA4wW05QIERzsSYwmIhzbbDvFAd+OK7g9fPNSQGggrx+HWzPrNF99eEH/ScFFkPqkHuCkctQzCs0HPZDn+MzLqEXbpvvv/o8XX6PmthsM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755601144; c=relaxed/simple;
-	bh=IqjXzr05zSduckLPDfWkg7xIEVFrdf8l5BHBSomO7vs=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NeDaw1NtpceMtfPBDLDokwJRtaypbcWmp3/nhupbmf62RnSbOZTYdzMTsAB9/qpO/dOb4ScR6Cxenr/Ar/XfPN+N9v06nrNlhzA3vCuEjAecLIrqz3NK7e2NMJxs9AYBfhFegXp0JIstAhzmE7n/F0aCJPtA1P80ajr+NRkPWZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r7EwYQCJ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1755606521; c=relaxed/simple;
+	bh=73NLA3Q5TxwI++kTf2HzDKfU8xX1fFXua00XcnHgTMw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FFyZq1iZahYpO5RV/KyA2tu56K7VG9lQoTs0xMQBdNt60t1XBOPHBPHi0rR+XQxDF/GRSisYqLI3hNDIMLKKvwan8YYqGN9f1wNBk6ndyripSiq4vl0cl4I5p790gehJKBUjylmzmVUUM3ObFnau8lWpmvRZI9C9QV30lQ4mjks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kLR+ngqj; arc=none smtp.client-ip=209.85.167.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r7EwYQCJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 231FDC16AAE;
-	Tue, 19 Aug 2025 10:59:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755601144;
-	bh=IqjXzr05zSduckLPDfWkg7xIEVFrdf8l5BHBSomO7vs=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=r7EwYQCJ9AkhvYx4Yp9r6f6F9lF0u1sSPIQIPM/8p29+kbYyFXwspO37yeT4Gx5p4
-	 h8fgk4floTNfbR9TRLj8gY10JxwzYZn85jTNg1iH+MtP7FN//5MQuMZif+RIL8xzDI
-	 sg4783DSANSNOAcJOZuLC2m2KhUJc0mEpd5RKbdymq9nrp6lCRTBhdCdlii7vRRjjN
-	 s5grXxmvwRjrlLnRC/V1mnqoXJIGsuVd3phlttJkojCvWNWqn+6Y2+xmlh2Z4C30hF
-	 I/M3V1L/gMh5fBvqnJCZndbxKjxkn9qXpfQ5GANSQ0zgRB0ircZaNFqB1Qg/NppVKe
-	 CaITJm34TENoQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16AD1CA0EEB;
-	Tue, 19 Aug 2025 10:59:04 +0000 (UTC)
-From: Maud Spierings via B4 Relay <devnull+maudspierings.gocontroll.com@kernel.org>
-Date: Tue, 19 Aug 2025 12:59:01 +0200
-Subject: [PATCH v2 3/4] arm64: dts: freescale:
- moduline-display-av101hdt-a10: add backlight
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kLR+ngqj"
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-55ce52b01caso5998959e87.3;
+        Tue, 19 Aug 2025 05:28:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1755606516; x=1756211316; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=73NLA3Q5TxwI++kTf2HzDKfU8xX1fFXua00XcnHgTMw=;
+        b=kLR+ngqjQBGGX1PH7AvR8L5DwCsiYw5sKvOqlPPr65fSfTBUr7WIRrNvF+NyJp7U+y
+         lqibKPKYMgUJS4xOYDSkjFWSet5fB1uOv0RVZOMuWAfCKYnIdWf3djriL72it3gofQoC
+         MSy4Ud2SR8hDDIIpSzYxM1FhZ95TrLZZKcfHC3WcBUbl5j1QbhZXn4b6kv/UBf6Uaw+w
+         TEUbbWPifzV48XU2OBkwNZ3kipU1p5wpWyZDoCu7aPp7SBvNVxJvvHzCEgfmDUeLPFDP
+         GdYOeOYhdliaMUSS1lTm46Hgq/n8QUtK5mGDQ3qaS88DWyIP23VSgDSeRAytz+OQuuSH
+         woXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755606516; x=1756211316;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=73NLA3Q5TxwI++kTf2HzDKfU8xX1fFXua00XcnHgTMw=;
+        b=ivenKlRVOP4BgpY4F3AeALDtHMPTUXZNZ9Xy1zFgGwz403aDSXqtlVs223hsVN7gYj
+         5lF3xhIVhkEN62GaKfCbamUkvLTsTZetqTFhNiXkmvIleFZjEcSJo0zVudZfP8X8ce3p
+         j+mmqhq2vTzM9tCs3LXl+p+OkXnGa94OTOXeo16M8oXHD7BsJFK6d+LL9lmGb4/XnwoK
+         yoRTakamxz/g8xXtqtRccFe9gUoku7c5lnLilN75jWpWVWAjHWmdwL02CemQty+/rz3L
+         AdOhaeZDVgxBRCCKclSWguXBOc10E29dZ+gEiuOV7SpvblU8YzDGSbgimdfSn0HjPZzP
+         lMYA==
+X-Forwarded-Encrypted: i=1; AJvYcCUHA5g+waw/P0XFEulbP7gt2E3W4bzGOYe/+nTsihvdPv+0wk89NNyePSrBUM4uFY6PGWHknncOJarYR5A=@vger.kernel.org, AJvYcCUoOnXjucBUS04ciW9+SaMEvskD/wLt+B8OAtM043xvpl2kfTijS3HZO0En8rOCdAk38IUu+lS37fUZ@vger.kernel.org, AJvYcCVEUbCL17NY5qvSpxX1z4lyHHnzqmkNG2mz2KFkuzJDlW3UcsQB2wG9VAvy1Rl32PrYSnWw7AcdcSVhiDih@vger.kernel.org, AJvYcCXZ8bqS81wKj/sj9XT1Cl19P0W1r1D9vg0CKPKH2LGYMO6ZF2pEPOKBge9eD4Xw2QXMpT4j33aDNzEsqA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwDC9AgP+3NRJXZO27Qst12IfmAE5OStELG+fJzFqHdsAUhzOV4
+	gh9HsPLyfAOkU3xq439McW1k5OkHLDfQLjoZ+t3DtAxXQqX6ZStsq+gfay7HEvebnieNG47KgLi
+	Q11atqaH4kH/g06eIJKcuE37niLpzjKs=
+X-Gm-Gg: ASbGncsqkphR6RMmUC8PxuS9nPT4KLpWP25Kf7ZpEfL5p8kVgTu2GKNgVkU/Jw+Y67k
+	MK8P/UFrOg+DJySqSpS0f7WgZB8khu0plZT55ZGLzZLfz8COZhCwuC1EhiHt0O5tf97tv2C8s+k
+	e3n2Y9Rr5UrY7u9vsjMtz0tnwaEltSzROoMW9CUo+NIRDR6RskDit2DB+aLVF09Ne1+Zn4YMiNg
+	4y4SokV28olp5ZTYCPOIMPfzRGa3CkBdtuCAIY=
+X-Google-Smtp-Source: AGHT+IF3FdZF8lxL8RpNSUh6zxATY4SIt92cNJtcaia124EXxHOqkJg6/HCXrud0DRgssmpwJMmfWsjfkko12V6DytQ=
+X-Received: by 2002:a05:6512:1349:b0:55b:8e2e:8cc7 with SMTP id
+ 2adb3069b0e04-55e008538e5mr661274e87.42.1755606516081; Tue, 19 Aug 2025
+ 05:28:36 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250819-max25014-v2-3-5fd7aeb141ea@gocontroll.com>
-References: <20250819-max25014-v2-0-5fd7aeb141ea@gocontroll.com>
-In-Reply-To: <20250819-max25014-v2-0-5fd7aeb141ea@gocontroll.com>
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, 
- Maud Spierings <maudspierings@gocontroll.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755601142; l=1541;
- i=maudspierings@gocontroll.com; s=20250214; h=from:subject:message-id;
- bh=hP/iMSDnGfJ92Bbev2fKqlJFdnLO6wB7nn/ebAUvpWI=;
- b=nNR/p/xEsP3b/4DiXK7GkttSOvmSvpk+twYdNEKrmyAuoUm0sCmK7rijwIuZ4/FPLyS8W4NYF
- dlSh1xWDGeSBi7e+KWoO93cmoY5gRFj3CNDkFqkmwb/1pPvhevOWDQT
-X-Developer-Key: i=maudspierings@gocontroll.com; a=ed25519;
- pk=7chUb8XpaTQDvWhzTdHC0YPMkTDloELEC7q94tOUyPg=
-X-Endpoint-Received: by B4 Relay for maudspierings@gocontroll.com/20250214
- with auth_id=341
-X-Original-From: Maud Spierings <maudspierings@gocontroll.com>
-Reply-To: maudspierings@gocontroll.com
+References: <20250819-max25014-v2-0-5fd7aeb141ea@gocontroll.com> <20250819-max25014-v2-1-5fd7aeb141ea@gocontroll.com>
+In-Reply-To: <20250819-max25014-v2-1-5fd7aeb141ea@gocontroll.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Tue, 19 Aug 2025 09:28:24 -0300
+X-Gm-Features: Ac12FXxqW79wXsLJzEF9Uadzf5uAoXqplbY5O5fWW6-5y6AnA9c00um3MEHlLP8
+Message-ID: <CAOMZO5D6m3V2ZpFOtabrkvf6+SGE+3-xpAE=PZo+Ak=49ozyLg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/4] dt-bindings: backlight: Add max25014 bindings
+To: maudspierings@gocontroll.com
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+	Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, dri-devel@lists.freedesktop.org, 
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Maud Spierings <maudspierings@gocontroll.com>
+On Tue, Aug 19, 2025 at 7:59=E2=80=AFAM Maud Spierings via B4 Relay
+<devnull+maudspierings.gocontroll.com@kernel.org> wrote:
+>
+> From: Maud Spierings <maudspierings@gocontroll.com>
+>
+> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+> with intgrated boost controller.
 
-Add the missing backlight driver.
-
-Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
----
- ...tx8p-ml81-moduline-display-106-av101hdt-a10.dtso | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso
-index e3965caca6be42a17aa89b77bd5b919382c84151..143243ba95cd7a69c7b043fa0fb32c37b67e1064 100644
---- a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso
-+++ b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso
-@@ -17,6 +17,7 @@
- 
- 	panel {
- 		compatible = "boe,av101hdt-a10";
-+		backlight = <&backlight>;
- 		enable-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
- 		pinctrl-0 = <&pinctrl_panel>;
- 		pinctrl-names = "default";
-@@ -40,7 +41,27 @@ reg_vbus: regulator-vbus {
- 	};
- };
- 
-+&i2c4 {
-+	backlight: backlight@6f {
-+		reg = <0x6f>;
-+		compatible = "maxim,max25014";
-+		default-brightness = <50>;
-+		enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_backlight>;
-+		maxim,iset = <7>;
-+		maxim,strings = <1 1 1 0>;
-+	};
-+};
-+
- &iomuxc {
-+	pinctrl_backlight: backlightgrp {
-+		fsl,pins = <
-+			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04
-+				(MX8MP_PULL_UP | MX8MP_PULL_ENABLE)
-+		>;
-+	};
-+
- 	pinctrl_panel: panelgrp {
- 		fsl,pins = <
- 			MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07
-
--- 
-2.50.1
-
-
+Typo: integrated

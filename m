@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 798E431E10A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79956322A2A;
 	Tue, 19 Aug 2025 10:59:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755601144; cv=none; b=TdsLKasFmGdjmw7LVo99E98uhU9IEmR/IOB4oAq/OrT0EmvZ/DWl72Rr7xBczjwvKonAu2shSi8gwY9pQeIEA6GzkFChUKz0CnGmCRvp/8oyHqpoOQ+8lQHmrQ8AQ2p1X8kCWI4a/ZEBuJ45q+lVlo+5N4SzWlkPuVO0/zQhEOE=
+	t=1755601144; cv=none; b=oKxmBktyKHgl/C6dW3VdiAHataIQFHH1u5VWgn9mJ3sB3QiT31NvJMHaCYZpDIGOScteUzr591Z+b0e71SPYM7qnlwUJ/ckcH75uqDpX/IqZ2xuX6WG5oAc0x7nA6VXsZpDKfd0TnLaGIOAIDeZwWwikHXSCr6129lBFgFtXTfE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1755601144; c=relaxed/simple;
-	bh=4IkvT70nHT7DJuTLaCAnhM8pgdfF6Jlm4i+ijqif6h0=;
+	bh=IqjXzr05zSduckLPDfWkg7xIEVFrdf8l5BHBSomO7vs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jAxj8QRK2swVaxii+Xx6VHXmHyRsKltnmjGhewXi1jeNqVJ8MFZ4cwWoL49tMr/c39KdxuguWx1qnXRJ1BVjocYct821YXKC8WWinEXXoxW43/n0X/Msjctqx3SbG5ceG+heA08sFDxbg42PPmffDHE3tfc2pAmypS4n3S9mFMg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KFAUQzIO; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=NeDaw1NtpceMtfPBDLDokwJRtaypbcWmp3/nhupbmf62RnSbOZTYdzMTsAB9/qpO/dOb4ScR6Cxenr/Ar/XfPN+N9v06nrNlhzA3vCuEjAecLIrqz3NK7e2NMJxs9AYBfhFegXp0JIstAhzmE7n/F0aCJPtA1P80ajr+NRkPWZE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r7EwYQCJ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KFAUQzIO"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2D9CCC19424;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r7EwYQCJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 231FDC16AAE;
 	Tue, 19 Aug 2025 10:59:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1755601144;
-	bh=4IkvT70nHT7DJuTLaCAnhM8pgdfF6Jlm4i+ijqif6h0=;
+	bh=IqjXzr05zSduckLPDfWkg7xIEVFrdf8l5BHBSomO7vs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=KFAUQzIOR+leIQKJcUy4B90FB3ChcuAZoS9nHClOE2t5JBv9KB+3hppHNdF0WT/Ml
-	 U3LaBp8IGvf9rY2B3QAK4OndIR46wiAlmbKbl0y1Lu/r+e2JuzJUSaZ6lbli2OKv4o
-	 6uatutfD8cvIkqR7IF76J5pjOWX+O1hgCwbGzpZPn9EeA5zWj13iWfXEnu9GbEVVhV
-	 zYAg9mi5ImgFKUcCYraLTy1r5Lc8p8Og3LutjhdRF41rUKlhNXSIOl5JQgamzHZ8dK
-	 7mEt6aWINcNeiWTnwumktE3+V5cdZUjoLS5J7k1LOhV2MPhHsBbZ6LO41KXHMZA7Cu
-	 pvexCzJPL7ZuA==
+	b=r7EwYQCJ9AkhvYx4Yp9r6f6F9lF0u1sSPIQIPM/8p29+kbYyFXwspO37yeT4Gx5p4
+	 h8fgk4floTNfbR9TRLj8gY10JxwzYZn85jTNg1iH+MtP7FN//5MQuMZif+RIL8xzDI
+	 sg4783DSANSNOAcJOZuLC2m2KhUJc0mEpd5RKbdymq9nrp6lCRTBhdCdlii7vRRjjN
+	 s5grXxmvwRjrlLnRC/V1mnqoXJIGsuVd3phlttJkojCvWNWqn+6Y2+xmlh2Z4C30hF
+	 I/M3V1L/gMh5fBvqnJCZndbxKjxkn9qXpfQ5GANSQ0zgRB0ircZaNFqB1Qg/NppVKe
+	 CaITJm34TENoQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2488BCA0EFB;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16AD1CA0EEB;
 	Tue, 19 Aug 2025 10:59:04 +0000 (UTC)
 From: Maud Spierings via B4 Relay <devnull+maudspierings.gocontroll.com@kernel.org>
-Date: Tue, 19 Aug 2025 12:59:02 +0200
-Subject: [PATCH v2 4/4] arm64: dts: freescale:
- moduline-display-av123z7m-n17: add backlight
+Date: Tue, 19 Aug 2025 12:59:01 +0200
+Subject: [PATCH v2 3/4] arm64: dts: freescale:
+ moduline-display-av101hdt-a10: add backlight
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250819-max25014-v2-4-5fd7aeb141ea@gocontroll.com>
+Message-Id: <20250819-max25014-v2-3-5fd7aeb141ea@gocontroll.com>
 References: <20250819-max25014-v2-0-5fd7aeb141ea@gocontroll.com>
 In-Reply-To: <20250819-max25014-v2-0-5fd7aeb141ea@gocontroll.com>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
@@ -57,11 +57,11 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, 
  Maud Spierings <maudspierings@gocontroll.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755601142; l=1572;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755601142; l=1541;
  i=maudspierings@gocontroll.com; s=20250214; h=from:subject:message-id;
- bh=xr006rWCG+GoAENJGxVDQaJVtVRYuMkX4hmKlW17MZE=;
- b=o3s7pl43uFDuSAYIBTVfU+HDdqpXl0+vhB17TTwnR9M7Nz9N2n3Eh1HwIQ6KGejAGhPTdZPOp
- OUEO0DwIC5JD8ewHxNjwo1HsnRgNLeaHl673uuPCPkyfALCOXeZv5YC
+ bh=hP/iMSDnGfJ92Bbev2fKqlJFdnLO6wB7nn/ebAUvpWI=;
+ b=nNR/p/xEsP3b/4DiXK7GkttSOvmSvpk+twYdNEKrmyAuoUm0sCmK7rijwIuZ4/FPLyS8W4NYF
+ dlSh1xWDGeSBi7e+KWoO93cmoY5gRFj3CNDkFqkmwb/1pPvhevOWDQT
 X-Developer-Key: i=maudspierings@gocontroll.com; a=ed25519;
  pk=7chUb8XpaTQDvWhzTdHC0YPMkTDloELEC7q94tOUyPg=
 X-Endpoint-Received: by B4 Relay for maudspierings@gocontroll.com/20250214
@@ -71,30 +71,30 @@ Reply-To: maudspierings@gocontroll.com
 
 From: Maud Spierings <maudspierings@gocontroll.com>
 
-Add the missing backlight.
+Add the missing backlight driver.
 
 Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
 ---
- ...p-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ ...tx8p-ml81-moduline-display-106-av101hdt-a10.dtso | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso
-index 3eb665ce9d5d2a1c742ffb4feca046e406e29956..9124cd87cce54a5aa7b7ad674f70f814d1dc3515 100644
---- a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso
-+++ b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso
-@@ -16,6 +16,7 @@
+diff --git a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso
+index e3965caca6be42a17aa89b77bd5b919382c84151..143243ba95cd7a69c7b043fa0fb32c37b67e1064 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso
++++ b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av101hdt-a10.dtso
+@@ -17,6 +17,7 @@
  
  	panel {
- 		compatible = "boe,av123z7m-n17";
+ 		compatible = "boe,av101hdt-a10";
 +		backlight = <&backlight>;
  		enable-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
  		pinctrl-0 = <&pinctrl_panel>;
  		pinctrl-names = "default";
-@@ -91,10 +92,26 @@ lvds1_out: endpoint {
- 		};
+@@ -40,7 +41,27 @@ reg_vbus: regulator-vbus {
  	};
+ };
  
--	/* max25014 @ 0x6f */
++&i2c4 {
 +	backlight: backlight@6f {
 +		reg = <0x6f>;
 +		compatible = "maxim,max25014";
@@ -103,10 +103,10 @@ index 3eb665ce9d5d2a1c742ffb4feca046e406e29956..9124cd87cce54a5aa7b7ad674f70f814
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&pinctrl_backlight>;
 +		maxim,iset = <7>;
-+		maxim,strings = <1 1 1 1>;
++		maxim,strings = <1 1 1 0>;
 +	};
- };
- 
++};
++
  &iomuxc {
 +	pinctrl_backlight: backlightgrp {
 +		fsl,pins = <
@@ -115,9 +115,9 @@ index 3eb665ce9d5d2a1c742ffb4feca046e406e29956..9124cd87cce54a5aa7b7ad674f70f814
 +		>;
 +	};
 +
- 	pinctrl_lvds_bridge: lvdsbridgegrp {
+ 	pinctrl_panel: panelgrp {
  		fsl,pins = <
- 			MX8MP_IOMUXC_SAI1_TXD2__GPIO4_IO14
+ 			MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07
 
 -- 
 2.50.1

@@ -1,109 +1,187 @@
-Received: from c64.rulez.org (c64.rulez.org [79.139.58.36])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 430B42D3ECF
-	for <linux-fbdev@vger.kernel.org>; Thu, 21 Aug 2025 03:05:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.139.58.36
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B2482E7BB1
+	for <linux-fbdev@vger.kernel.org>; Fri, 22 Aug 2025 07:20:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755745513; cv=none; b=ZPW7LyDk0AKw8HAjD7g5CKIDtx0RY/v+Myx3epzb3jXp0tkiZD5x13DVe7j9B2bTp1k5YyGAdHHn/uzdx/v3rQHiFqWQPntsZN0Sl5yetsaMYHK+CpDAdbx1zu99l1EECfJBcQmis5qasML+wyJfWitie6KlDP+hjyn6JBpvoTQ=
+	t=1755847258; cv=none; b=oY2B1ciERwRC+havLHvBB5F0Q/ZQNaRlQGhCtFeQ3D9iT4fnLTLw1jMOXACQRzgGv2AS02/LCbRmwB8GlZyAUO2KW89zmocb1p0Sstay8bbTU4S5xR0L0itKAy6buUjionaIjPqPW6BKyHzvNuISsHVKiOVhIXbWvnYbcCtyjms=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755745513; c=relaxed/simple;
-	bh=42mJUxzBaGOIdxnlspI6xaxDFGvGJa4t6GnVoBdW22c=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:From:Subject:
-	 In-Reply-To:Content-Type; b=VjxL8DaM0moi6Xhf5IAoJ8HPEXheJg5bThf81S5L81bBAN2LHUMH3+2uHrZ+oCv1av+tBf11rVuWOOBYXZ09ZsRA6B6AWTsqYWzegeHsHWzB69sGbjZEkZ9f4sbiVxKzxdkJTwMAgLBzRdfJ3JgvdhPEpG7A87aZXo+6QIaDyVk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org; spf=pass smtp.mailfrom=c64.rulez.org; arc=none smtp.client-ip=79.139.58.36
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=c64.rulez.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=c64.rulez.org
-Received: from [192.168.1.73] (4F7A343C.dsl.pool.telekom.hu [79.122.52.60])
-	by c64.rulez.org (Postfix) with ESMTPSA id 137441020F;
-	Thu, 21 Aug 2025 05:05:08 +0200 (CEST)
-Message-ID: <9473ef5b-c298-56b1-0051-e10bb3b4dd67@c64.rulez.org>
-Date: Thu, 21 Aug 2025 05:04:57 +0200
+	s=arc-20240116; t=1755847258; c=relaxed/simple;
+	bh=Wqi2mO2fmQYFGAwZhuS4EvTXv9c8e4vGOynXydsCYEg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZiQf+ORRR8Ua5DGYjhbTWMY1r6laqvRsxldZp3nJrHwxwlLfWZyKOf8EbNuQqGmsbS00FvzGKidBgs6lcmwp49hpidl75Z9xvD/Jqb6s0epWt7rUxRZuR0xewwzlhxTmcvBpw61lVld1RCRgfxcZcqa4gH/BREJdUC7ct6zPbbw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=CzrCEgtp; arc=none smtp.client-ip=209.85.221.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="CzrCEgtp"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-3c68ac7e18aso18235f8f.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 22 Aug 2025 00:20:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1755847254; x=1756452054; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=IvJwbcOsjvAx4Cb95HKEUrId4UgDZ83tfHPDy6XNbLM=;
+        b=CzrCEgtpdoGkqnoFgd3BDRMQ2P/eQhCKG4Z0wkSUWcnLPt1vgcTCwf9zdi6p2aBpn8
+         VL1Pwp52zWpuBdNhKhgTgRVKmkCSbU/9DNoleP+RBHNhZdW9XSVosePCGKsFvgQR+LL1
+         2sDzg3Iub364w8hWEyuPXhF4CYwMK8tiuqW+X2KccwWuE0FHvxLDpAUTwiTYmjv1TwBw
+         Rysft3BvN4jEh2qSjaZ97wcE7EMngwGILnucCnRNhJkqgQGxFt6ox/d2oIN1zfzfqahV
+         nI4VviJ6iWybgjVU9uI0SzAFZkcToWpjpXmnlJoxSjLuRCgLaOK9IiH52C399oVODUzZ
+         jmdw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755847254; x=1756452054;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=IvJwbcOsjvAx4Cb95HKEUrId4UgDZ83tfHPDy6XNbLM=;
+        b=sa06kNdNYzBv5n/JlmJtI73/WyEGLMVP408VnuoEY19mryy2VNqh8bPUsSDCo2YPX5
+         U4v8Zfm82xuEU5TXCjx5QMgEozi/7orldqWnYgfOTLK0Q3JwgUSUdzhlnB6UHxe9MQzQ
+         qFcZ9TmQP+inPhgOWaRvPr/1c1Tb4GaXqvVGwpCqddYYnMqRjRRZONTZ5vtbGgqCIwGp
+         kIFVxtJu2S9+J1pucljZ6MMZfeCjHMHQbkydH8r8wLGK9ZulG8cmZ2M3v8FSnI6by0J6
+         1WHT62m60E0tglnLXZtgtpC5niDbAIMxeluRzy3tqMwqCvSObWJEG3Fp7N0bP1mVeQnO
+         ZRuw==
+X-Forwarded-Encrypted: i=1; AJvYcCX82E00MAmiu8B+ZN3hOipDmzYRqFHKjif1JclYn4GulUAX8YKTZIOuOkg40JQDqzW8fDf3mhBClfOlSg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzxrwqxepTnItOfcavdbx6zXIBYnEd6LX+pgOZtRF/+xgHiOL+v
+	+NpWXex9Wz4pfWcr5DMtHnK6H2ikBSoJPkJGVMgRNUqyy2DtD+IaJyWOZQj1xZKmT2U=
+X-Gm-Gg: ASbGncvBhNsT5zH4YwOhnguGkVqy9yezsiPChpfUx+egewrLeH6uGd9XRYZ4h47R8gX
+	DH2Fhd3MKJORDNc3jVcNT2ZWYLJFNRBPVqXfCwK4jGheyTzYI9SECX+P9yOOJPIwJ2V10ShZDIL
+	izTUDTC5o5FAVYfWm6BvseE0BF2K/bCTsxF/gzVWmN9UAlQwVEUJ8eJv0qVZ0mJvy0fDtd6g3ji
+	efUXySMFDHWu6s8KKIgxwIQOkSLyr7AMQaI1bEPvBAi9IhDBc8cdGbShBFnj7q8wbAkj2CF5ZLe
+	gC3BS6i8RrBHAgS+ZXrCdJwywiOEeq0zhxRilqnRvhNTE+VnJp52NTmhFSdARGvcdmFjyPj23gc
+	iLOInoW9IRs61pPFJSCuCrkdYYz7r0TayWmS5F92u2PdT2s2nHXot02RjhNptsp6dn/0oI95YQI
+	RP7Ha8Vg==
+X-Google-Smtp-Source: AGHT+IFLbHL5Jfp1HiEMgBzb/cWVZllJl0fqqVCyRz90kU9u6d+rKWlXzqxgMmKXZyGMMiOGZn0oyA==
+X-Received: by 2002:a5d:5f4e:0:b0:3c0:7e02:67b9 with SMTP id ffacd0b85a97d-3c5dcefeda4mr1234311f8f.61.1755847253747;
+        Fri, 22 Aug 2025 00:20:53 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3c077c576b7sm14060427f8f.63.2025.08.22.00.20.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 22 Aug 2025 00:20:53 -0700 (PDT)
+Date: Fri, 22 Aug 2025 08:20:50 +0100
+From: Daniel Thompson <daniel@riscstar.com>
+To: maudspierings@gocontroll.com
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	MaudSpieringsmaudspierings@gocontroll.com
+Subject: Re: [PATCH v2 2/4] backlight: add max25014atg backlight
+Message-ID: <aKgaUtcNoOsga6l7@aspen.lan>
+References: <20250819-max25014-v2-0-5fd7aeb141ea@gocontroll.com>
+ <20250819-max25014-v2-2-5fd7aeb141ea@gocontroll.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.0
-Content-Language: en-GB
-To: Erhard Furtner <erhard_f@mailbox.org>, linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-References: <1fda26b1-f988-449d-834d-b185d3ebf5c6@mailbox.org>
-From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
-Subject: Re: UBSAN: shift-out-of-bounds in
- drivers/video/fbdev/core/fb_fillrect.h:100:21 (v6.17-rc2)
-In-Reply-To: <1fda26b1-f988-449d-834d-b185d3ebf5c6@mailbox.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------465X0dp0dcCFUbYFICqAZu59"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250819-max25014-v2-2-5fd7aeb141ea@gocontroll.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------465X0dp0dcCFUbYFICqAZu59
-Content-Type: multipart/mixed; boundary="------------bY0FFrD4MbwWZx0CYx98LZ0G";
- protected-headers="v1"
-From: =?UTF-8?Q?Kajt=c3=a1r_Zsolt?= <soci@c64.rulez.org>
-To: Erhard Furtner <erhard_f@mailbox.org>, linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Message-ID: <9473ef5b-c298-56b1-0051-e10bb3b4dd67@c64.rulez.org>
-Subject: Re: UBSAN: shift-out-of-bounds in
- drivers/video/fbdev/core/fb_fillrect.h:100:21 (v6.17-rc2)
-References: <1fda26b1-f988-449d-834d-b185d3ebf5c6@mailbox.org>
-In-Reply-To: <1fda26b1-f988-449d-834d-b185d3ebf5c6@mailbox.org>
+On Tue, Aug 19, 2025 at 12:59:00PM +0200, Maud Spierings via B4 Relay wrote:
+> From: Maud Spierings <maudspierings@gocontroll.com>
+>
+> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+> with intgrated boost controller.
+>
+> Signed-off-by: Maud Spierings maudspierings@gocontroll.com
 
---------------bY0FFrD4MbwWZx0CYx98LZ0G
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Looking good but still a few small comments (below).
 
-> Greetings!
->=20
-> Getting this UBSAN hit on my PowerMac G4 DP with kernel 6.17-rc2:
->=20
-> [...]
-> Console: switching to colour frame buffer device 240x67
-> ------------[ cut here ]------------
-> UBSAN: shift-out-of-bounds in drivers/video/fbdev/core/fb_fillrect.h:10=
-0:21
-> shift exponent 32 is too large for 32-bit type 'unsigned long'
 
-Thanks for reporting!
+> diff --git a/drivers/video/backlight/max25014.c b/drivers/video/backlight/max25014.c
+> new file mode 100644
+> index 0000000000000000000000000000000000000000..fe5e0615cf6d151868b56ebb9544b175b09dfcee
+> --- /dev/null
+> +++ b/drivers/video/backlight/max25014.c
+> @@ -0,0 +1,395 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Backlight driver for Maxim MAX25014
+> + *
+> + * Copyright (C) 2025 GOcontroll B.V.
+> + * Author: Maud Spierings <maudspierings@gocontroll.com>
+> + */
+> +
+> +#include <linux/backlight.h>
+> +#include <linux/gpio/consumer.h>
+> +#include <linux/i2c.h>
+> +#include <linux/regmap.h>
+> +#include <linux/slab.h>
+> +
+> +#define MAX25014_ISET_DEFAULT_100 11
+> +#define MAX_BRIGHTNESS (100)
+> +#define MIN_BRIGHTNESS (0)
+> +#define TON_MAX (130720) /* @153Hz */
+> +#define TON_STEP (1307) /* @153Hz */
+> +#define TON_MIN (0)
+> +
+> +#define MAX25014_DEV_ID         (0x00)
+> +#define MAX25014_REV_ID         (0x01)
+> +#define MAX25014_ISET           (0x02)
+> +#define MAX25014_IMODE          (0x03)
+> +#define MAX25014_TON1H          (0x04)
+> +#define MAX25014_TON1L          (0x05)
+> +#define MAX25014_TON2H          (0x06)
+> +#define MAX25014_TON2L          (0x07)
+> +#define MAX25014_TON3H          (0x08)
+> +#define MAX25014_TON3L          (0x09)
+> +#define MAX25014_TON4H          (0x0A)
+> +#define MAX25014_TON4L          (0x0B)
+> +#define MAX25014_TON_1_4_LSB    (0x0C)
+> +#define MAX25014_SETTING        (0x12)
+> +#define MAX25014_DISABLE        (0x13)
+> +#define MAX25014_BSTMON         (0x14)
+> +#define MAX25014_IOUT1          (0x15)
+> +#define MAX25014_IOUT2          (0x16)
+> +#define MAX25014_IOUT3          (0x17)
+> +#define MAX25014_IOUT4          (0x18)
+> +#define MAX25014_OPEN           (0x1B)
+> +#define MAX25014_SHORT_GND      (0x1C)
+> +#define MAX25014_SHORT_LED      (0x1D)
+> +#define MAX25014_MASK           (0x1E)
+> +#define MAX25014_DIAG           (0x1F)
 
-> I guess this would be a problem on other 32bit arches too?
+There is no need to put raw numbers in brackets.
 
-It's only on 32 bit big endian. I don't have UBSAN for MIPS on my setup
-so haven't noticed it.
 
-#ifndef __LITTLE_ENDIAN
-        pattern <<=3D (BITS_PER_LONG % bpp);
-        pattern |=3D pattern >> bpp;          <-
-#endif
+> +
+> +#define MAX25014_IMODE_HDIM     BIT(2)
+> +#define MAX25014_ISET_ENABLE    BIT(5)
+> +#define MAX25014_ISET_PSEN      BIT(4)
+> +#define MAX25014_DIAG_HW_RST    BIT(2)
+> +#define MAX25014_SETTING_FPWM   GENMASK(6, 4)
+> +
+> +struct max25014 {
+> +	struct i2c_client *client;
+> +	struct backlight_device *bl;
+> +	struct regmap *regmap;
+> +	struct max25014_platform_data *pdata;
 
-In the 32 BPP case the result is identical in both the no shift and zero
-result implementations.
+This appears to be unused.
 
-I've patched it by skipping this realignment as it's only needed if the
-BPP is smaller than the word length.
 
---=20
-						    -soci-
+> +	struct gpio_desc *enable;
+> +	struct regulator *vin; /* regulator for boost converter Vin rail */
+> +	uint32_t initial_brightness;
 
---------------bY0FFrD4MbwWZx0CYx98LZ0G--
+It is important to keep the initial_brightness for the lifetime of the
+driver?
 
---------------465X0dp0dcCFUbYFICqAZu59
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+> +	uint32_t iset;
+> +	uint8_t strings_mask;
+> +};
+> +
 
------BEGIN PGP SIGNATURE-----
 
-wsB5BAABCAAjFiEE8WlaH4v4aHNT2Bn0WOeEu4KftGsFAmimjNkFAwAAAAAACgkQWOeEu4KftGv7
-bgf+NaPv0Y8aB946BhEzP2K6F5FMVuSdCRFFOABPx7zxh3RrJRki+Sb0g2sT8U0Ku9BTnw1DUPzC
-wBi6O7iXZzdRCxrnbjQyo68lQOIQ2iJhHUieT6M2fyyX1Qqv+1FB2aSVpfi1Lb/xlS7ndUsxwD1A
-RJGGddTsQzc6OoRZn1KgCUf3JdWylU86c7Oe5zhLBo5hRW2qCAjjt4dCfBqNLH8brw4oJU5uAa3s
-xi8rgqbfi8yBuGDz88oHlwzonDRjsV71Xxy8WdV2RzqsGM2BgK0bBvIudg5FQihM2ZNqoW1YIjhj
-Wl3NSwYM6bv8dZ//S6hDzNsB0BNYCBi4SpwLLQCV+Q==
-=v2Nq
------END PGP SIGNATURE-----
-
---------------465X0dp0dcCFUbYFICqAZu59--
+Daniel.

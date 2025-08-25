@@ -1,64 +1,64 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4341622DFBA;
-	Mon, 25 Aug 2025 02:31:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDED51CEAB2;
+	Mon, 25 Aug 2025 02:32:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756089114; cv=none; b=riNBaUqjj1/1dfiQTD4BZaVLdpzjol6iMuu4LP9eTZZl7mW2MLtQY2sytJdUyC77PawZaGtTPf9Ja7nwxkAYPX59MRRkrAFaJZqPSb/ZhXrtKsTAxrRx1zyiQuJVEHqgDdLs5WM+7AZN75E+j1Uo95VMkaTOeYT+ScT7XdXtqeY=
+	t=1756089126; cv=none; b=pR5W4AZ+bs+xcQomQsdwhayXB0/7QkFWJDrBHpodHDbNVf2BwGuPtuQzpA2k2FXlUQ2GtDiVQc81x+6YsXYJU19eY7L7yT1S9NukgXHE/zm1agyv9SSbzcpZdFOORJ1DdZAqPlMjyQ//dyJFeyR2ZC/Pg9XvyzpBEfhUunGO3QA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756089114; c=relaxed/simple;
-	bh=x+zpPC83ksQG9E0+OFpEShWdLPcZ9M4Kt6xZ7CcaWEc=;
+	s=arc-20240116; t=1756089126; c=relaxed/simple;
+	bh=8w+Va6M4jsubK7hSQ4EV51F40ANmqzPbE3g+V8Rdxvc=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cb+YxdfMpxXbeQKwDEd0tWmBTrQGntHbKQetPgxTkpdV4Tnds1hI3gY7wvCaLws3N1iAGYYFdkgwRj0hCtpsp23YqmNucL2t5o8kbakmXVCIkzAlze0y0+xJ/q3sa9k315aZHW01aOziDlz2DMjenPEUG7i3cT/QiPXwBlDpKJY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eHislJqk; arc=none smtp.client-ip=209.85.214.179
+	 MIME-Version; b=W9UnYAr5S/XB/tSqodzQwyiTob14zM977yf1js12ISBG4hFVHOXAoTO/FxCCZ9pJLoUtHvvIuKyO71YXbpf+UfeEdkPK8Jg0EA4viUTlgpKAI1eDyswtxq28xdODjMEt/B7AJPWaO4QIxNCZ5fZ145E14x+TY4hU0WMUodmzV+k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=N5cZ1oPZ; arc=none smtp.client-ip=209.85.214.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eHislJqk"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2461864f7f8so31149165ad.2;
-        Sun, 24 Aug 2025 19:31:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N5cZ1oPZ"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2445824dc27so36350635ad.3;
+        Sun, 24 Aug 2025 19:32:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756089112; x=1756693912; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1756089124; x=1756693924; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=hEDXk3YI1ppq8XrZvysREbE40c1EqMSzH1Ycau0V0x0=;
-        b=eHislJqkVIKnCPHmStUwdpfdCzOvq+/bNLthoobRtjdMpQgPt5Wd47/+dbRBI2t+o/
-         NeSZGjI95/dPfDzII823q/YlzdnOHwniAAWNXkuEbsr4boE5gSsqj6gADje+7lzTBP+C
-         oyBYe1str+7qgJbuxjOmN1bezGnsvTFtWAFvPsZbwVjt4GB5Rm93GH03/Rn5s5I7r0p7
-         uQDrMQ6y4zmzsvlWwI660tX9+/QmOeEkpNGPJxjVwgc0nZxubL8MUWWqZurF3m4bidnE
-         +NnvM1HiYJXVdxNPVjwyPROx8X/9d+2S9cwzuEvjrri81Rutos3rW7vHxHIeUs3VmCF6
-         RSLQ==
+        bh=O10Bl4oetUFVZeVcIyFTPuGNIUEAVGF7F9sLfkbwSS4=;
+        b=N5cZ1oPZdztFGINcAHDODig49X5faudKEq/6mYZ39STs/S51OUqWwNnwRSau+FWI1J
+         P8nHCOxbEgX6wOo3pHQOiLLfSOCL6xVRjCbiL00m1u/vhokYGkOxIRN0mQmoT+shhEC2
+         VgOZb7LwEff+owTsP9Ku8l+iu/XLysQByVSi0x6i6IBw7xtsrceUx/M6psG19KZS2g/C
+         o7A2le41vY88uEuZ0yf6ycer5aRfRINmy1OzztLkgAnHkwfXHn9H7Cu76CB6XgZ/urGh
+         INBv7Vr67Q1Exr88DMCUsa/pxBjTJPWb9ObLyhK4goPO9yzfm+yfzVpb4xs3A9bX4BT4
+         QQRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756089112; x=1756693912;
+        d=1e100.net; s=20230601; t=1756089124; x=1756693924;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=hEDXk3YI1ppq8XrZvysREbE40c1EqMSzH1Ycau0V0x0=;
-        b=C3tElyumIBCHBFvn+Zu/8rAM4PUSCBy1BUK495/kW6UUfJdTP97WC8qtC0Hrix1kWa
-         Jwrk2yfsU4aM/74sSpWSigd0A+2jZRqX3mZXsZaZTJuXqZdcCZbELwkePek+dVVlQpQn
-         uDfGe6NdlS/Iarhq1rg5ObBBdbQ/pFoPqQbzRp9IfGSXAVy79g2FQ+7xvOrsCuwNEE0a
-         mSfWiyj218x9ZS3gfN807nk1wC36XN5x8c7C8VK8IKYgam700b54qlTSU/CBGLJUkPt9
-         JW0Y1q7wws3sKdM2LMRTtC9gS/03uvCiSDRGEaHv7K48c/g+AtczNMvjsWA473jdpTvs
-         cyAw==
-X-Forwarded-Encrypted: i=1; AJvYcCUxTL33QI9qUvj1pyltvt5tYFkcGJtXfRjla7QUZrsmU/DTxo5yrh2Oz94zNWv6BK+JCtHIXRj7xJjEdA==@vger.kernel.org, AJvYcCV6g9jAQdCto+dLr7kss6df97Kki3cgvomMYxxmVgBg9/AYW9e+O5uOIa6IPn4noqKjiUhJn5DD4wQpmOD5k9Zb@vger.kernel.org, AJvYcCXCXAZ33h10xSMo8+FLYrYNdH6rruMz21vUvOZ2+tF9ueBG75etfcQuzVo1fbZl2bj40zcogSk5X3BQytM7@vger.kernel.org
-X-Gm-Message-State: AOJu0YxC8iuOHkIk/iYa864UPRyIeoin8scPGOy23YB9650OIAZ+uavy
-	7vwPXI0keRNF1HfHwXQVLJp+ppN95Haj5iHDFFeqesziK7srhJdYtxvq
-X-Gm-Gg: ASbGncvbNmFQyqzqr3i578Ttu0DYOm2vDfi2ORyhXW/x55AdcferA9PRhu/2LW6oTsl
-	H284KUZ8GmJGw6fa8Skr/oW00xatFa8DcR+/ELtJVrwW1oZ23ZKkGU2dXcQhZll+88UCjBRtkut
-	gGLyLOgxe5wNZcUaAUvIC4UZTT2DkRxTdcFDBj5TJqLsMsBndCSs96Gh+bKN7vr7nq+KQ/VkvgE
-	0JolrLqyCmdNCAewChQVGPoqRdKoBebj4Q2nFo+nQ52YFWpoZZLTs/HLI28ScbKmNL0qA9Fp3op
-	5tydsTR/EzIhIn4mOUWJFr+AJDnxXGJm4D5j9VZVu0vfSwKj29hIsrEkjWWRw6Vw1dg9sroUis+
-	LbT50lqm2vnpOGvVv1gjGctG19M43Bp72wW5Sthvnwy9xZvWci0Hkbm7kR45m4m5ZBeA0C1ZDwP
-	U=
-X-Google-Smtp-Source: AGHT+IGvyPlqdqig4mXFsHmtjBV9YF8gxzZSDkAdZlQGY1e3N0SakBpd1QLytsyfS5huP+/UcwJ3nw==
-X-Received: by 2002:a17:903:238e:b0:240:50ef:2f00 with SMTP id d9443c01a7336-2462eea80fbmr165661135ad.26.1756089112460;
-        Sun, 24 Aug 2025 19:31:52 -0700 (PDT)
+        bh=O10Bl4oetUFVZeVcIyFTPuGNIUEAVGF7F9sLfkbwSS4=;
+        b=t0emYk5H9kwG/Gv+kxbyTm1xiaveiB5YO33mrN1YaGu0stzRQDQY2AmCO9fZiH/fD/
+         sJ1au5fEeMUFol4bQuibRvJYxxAs4VQiOVYg1S2TQJWqTycmrNCDMZrGnLKEwn7TNpXp
+         6ZYQuwzHx2lSJ/gT8oN7RsAftPxkYewlNUhYrNNJjL+irHjDS4MPBpImP/N6dkjxSpGq
+         Ubq41UOFv70syaQia70SwgM0zqfbp3JNW7TEBnZI4/2Ijyjpxr1qx4HdykWiCllA8YnR
+         SiR5aEJMeH6bNsPU7LtJfx+JREnUsD4jkPn87IAnJJCOggDY18JBmHdpdgdaK9seE0Ow
+         BRtQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU2L+7vx6dDVyU9yhNON7T1ky1Fj1+pPBXd3FsBpa8cKsoJ9p7PqS+Ds5Qo044V5G5Rguywu8IDVJWArw==@vger.kernel.org, AJvYcCU8GbPoWSkkjsfyVVqnh0XDE4WbxEGtjXVld45cmSPT4wLfr9ipPH4PJqafH6Dg22CZ+TW2/GU40lYharzNEMBm@vger.kernel.org, AJvYcCXvi1Id32xzH+q6vtbSYysx1gkv18OvJXD7e/MGbsfatlyaQ/S/1bBnhICQZLDNXaLsHp+HcrrMU5wtQZ9j@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxlsdd69B5HnL9kwznURI/KDJIChd6ueLc9/UQazFeLQxQDM0Fz
+	hURbtM1qgIPJq3rsC7v8Pvk8ubmwjbhWMN2pOcyvxFlzoSgDq79ZRtWt
+X-Gm-Gg: ASbGncuAdhRz4NctxDiMh6z1yUDSKpXB3CODzvZuv4FGR1/KOVv0dinD7NljqYXvRdc
+	Phd/qL0st1G9Vyaf6osQBFBoUbhckMo4se8cGAJdovqFHTTb0s24nUgzBLPeP1OpVsdqQ//KCcD
+	cKs7oVEAAjKJofwV135zTnFMHDpRnX3qHYevVStPPNQmNuxqHc+wD/cbIfYQ6h783iwNN9TnPmG
+	ONS5DZ8rYA0knt+8s8PuCq4uVLqzRXmTcFz58GU51HPx+nX4qn+/KPhbUdHX5ojkNXSlrwv1jRT
+	DnbtMHJZpGLlnCOeS8sxEN86Jk5vaBaRhYH/PdsOgIA+n6GTsBhfy7OCAnBQWRjD+ZkcWYYfQB5
+	SuNLbkrW3Mr5pUF/nX/W+llQTLyCXtun0GX/noC3ORFUofAxpaBTI/l8YduotpvJbaHiMNNKwDA
+	Y=
+X-Google-Smtp-Source: AGHT+IHiK6ZNzGbxD1aVZDdpEIJSJdRVCIVYu6qhCycor6e6tzkhdDgkg9nCBYkly1FiN66XhTD6Bw==
+X-Received: by 2002:a17:903:38c4:b0:240:5bde:532d with SMTP id d9443c01a7336-2462ef4c8eemr131114705ad.38.1756089123935;
+        Sun, 24 Aug 2025 19:32:03 -0700 (PDT)
 Received: from localhost.localdomain ([114.242.33.243])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.31.41
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.31.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 24 Aug 2025 19:31:51 -0700 (PDT)
+        Sun, 24 Aug 2025 19:32:03 -0700 (PDT)
 From: Jinchao Wang <wangjinchao600@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Baoquan He <bhe@redhat.com>,
@@ -105,9 +105,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	kexec@lists.infradead.org,
 	linux-hardening@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 8/9] panic/printk: replace other_cpu_in_panic() with panic_on_other_cpu()
-Date: Mon, 25 Aug 2025 10:29:36 +0800
-Message-ID: <20250825022947.1596226-9-wangjinchao600@gmail.com>
+Subject: [PATCH v2 9/9] watchdog: skip checks when panic is in progress
+Date: Mon, 25 Aug 2025 10:29:37 +0800
+Message-ID: <20250825022947.1596226-10-wangjinchao600@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250825022947.1596226-1-wangjinchao600@gmail.com>
 References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
@@ -119,131 +119,86 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The helper other_cpu_in_panic() duplicated logic already provided by
-panic_on_other_cpu().
+This issue was found when an EFI pstore was configured for kdump
+logging with the NMI hard lockup detector enabled. The efi-pstore
+write operation was slow, and with a large number of logs, the
+pstore dump callback within kmsg_dump() took a long time.
 
-Remove other_cpu_in_panic() and update all users to call
-panic_on_other_cpu() instead.
+This delay triggered the NMI watchdog, leading to a nested panic.
+The call flow demonstrates how the secondary panic caused an
+emergency_restart() to be triggered before the initial pstore
+operation could finish, leading to a failure to dump the logs:
 
-This removes redundant code and makes panic handling consistent.
+  real panic() {
+	kmsg_dump() {
+		...
+		pstore_dump() {
+			start_dump();
+			... // long time operation triggers NMI watchdog
+			nmi panic() {
+				...
+				emergency_restart(); // pstore unfinished
+			}
+			...
+			finish_dump(); // never reached
+		}
+	}
+  }
+
+Both watchdog_buddy_check_hardlockup() and watchdog_overflow_callback() may
+trigger during a panic. This can lead to recursive panic handling.
+
+Add panic_in_progress() checks so watchdog activity is skipped once a panic
+has begun.
+
+This prevents recursive panic and keeps the panic path more reliable.
 
 Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
+Reviewed-by: Yury Norov (NVIDIA) <yury.norov@gmail.com>
 ---
- kernel/printk/internal.h |  1 -
- kernel/printk/nbcon.c    |  8 ++++----
- kernel/printk/printk.c   | 19 ++++---------------
- 3 files changed, 8 insertions(+), 20 deletions(-)
+ kernel/watchdog.c      | 6 ++++++
+ kernel/watchdog_perf.c | 4 ++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/kernel/printk/internal.h b/kernel/printk/internal.h
-index ef282001f200..f72bbfa266d6 100644
---- a/kernel/printk/internal.h
-+++ b/kernel/printk/internal.h
-@@ -332,7 +332,6 @@ struct printk_message {
- 	unsigned long		dropped;
- };
+diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+index 80b56c002c7f..597c0d947c93 100644
+--- a/kernel/watchdog.c
++++ b/kernel/watchdog.c
+@@ -740,6 +740,12 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+ 	if (!watchdog_enabled)
+ 		return HRTIMER_NORESTART;
  
--bool other_cpu_in_panic(void);
- bool printk_get_next_message(struct printk_message *pmsg, u64 seq,
- 			     bool is_extended, bool may_supress);
++	/*
++	 * pass the buddy check if a panic is in process
++	 */
++	if (panic_in_progress())
++		return HRTIMER_NORESTART;
++
+ 	watchdog_hardlockup_kick();
  
-diff --git a/kernel/printk/nbcon.c b/kernel/printk/nbcon.c
-index c6d1a4a747e9..171480135830 100644
---- a/kernel/printk/nbcon.c
-+++ b/kernel/printk/nbcon.c
-@@ -255,7 +255,7 @@ static int nbcon_context_try_acquire_direct(struct nbcon_context *ctxt,
- 		 * opportunity to perform any necessary cleanup if they were
- 		 * interrupted by the panic CPU while printing.
- 		 */
--		if (other_cpu_in_panic() &&
-+		if (panic_on_other_cpu() &&
- 		    (!is_reacquire || cur->unsafe_takeover)) {
- 			return -EPERM;
- 		}
-@@ -310,7 +310,7 @@ static bool nbcon_waiter_matches(struct nbcon_state *cur, int expected_prio)
- 	 * Event #2 implies the new context is PANIC.
- 	 * Event #3 occurs when panic() has flushed the console.
- 	 * Event #4 occurs when a non-panic CPU reacquires.
--	 * Event #5 is not possible due to the other_cpu_in_panic() check
-+	 * Event #5 is not possible due to the panic_on_other_cpu() check
- 	 *          in nbcon_context_try_acquire_handover().
- 	 */
+ 	/* kick the softlockup detector */
+diff --git a/kernel/watchdog_perf.c b/kernel/watchdog_perf.c
+index 9c58f5b4381d..d3ca70e3c256 100644
+--- a/kernel/watchdog_perf.c
++++ b/kernel/watchdog_perf.c
+@@ -12,6 +12,7 @@
  
-@@ -349,7 +349,7 @@ static int nbcon_context_try_acquire_requested(struct nbcon_context *ctxt,
- 	struct nbcon_state new;
+ #define pr_fmt(fmt) "NMI watchdog: " fmt
  
- 	/* Note that the caller must still remove the request! */
--	if (other_cpu_in_panic())
-+	if (panic_on_other_cpu())
- 		return -EPERM;
++#include <linux/panic.h>
+ #include <linux/nmi.h>
+ #include <linux/atomic.h>
+ #include <linux/module.h>
+@@ -108,6 +109,9 @@ static void watchdog_overflow_callback(struct perf_event *event,
+ 	/* Ensure the watchdog never gets throttled */
+ 	event->hw.interrupts = 0;
  
- 	/*
-@@ -447,7 +447,7 @@ static int nbcon_context_try_acquire_handover(struct nbcon_context *ctxt,
- 	 * nbcon_waiter_matches(). In particular, the assumption that
- 	 * lower priorities are ignored during panic.
- 	 */
--	if (other_cpu_in_panic())
-+	if (panic_on_other_cpu())
- 		return -EPERM;
++	if (panic_in_progress())
++		return;
++
+ 	if (!watchdog_check_timestamp())
+ 		return;
  
- 	/* Handover is not possible on the same CPU. */
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index faa8b1f0585b..236f03937107 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -346,17 +346,6 @@ static void __up_console_sem(unsigned long ip)
- }
- #define up_console_sem() __up_console_sem(_RET_IP_)
- 
--/*
-- * Return true if a panic is in progress on a remote CPU.
-- *
-- * On true, the local CPU should immediately release any printing resources
-- * that may be needed by the panic CPU.
-- */
--bool other_cpu_in_panic(void)
--{
--	return (panic_in_progress() && !panic_on_this_cpu());
--}
--
- /*
-  * This is used for debugging the mess that is the VT code by
-  * keeping track if we have the console semaphore held. It's
-@@ -2391,7 +2380,7 @@ asmlinkage int vprintk_emit(int facility, int level,
- 	 * non-panic CPUs are generating any messages, they will be
- 	 * silently dropped.
- 	 */
--	if (other_cpu_in_panic() &&
-+	if (panic_on_other_cpu() &&
- 	    !debug_non_panic_cpus &&
- 	    !panic_triggering_all_cpu_backtrace)
- 		return 0;
-@@ -2827,7 +2816,7 @@ void console_lock(void)
- 	might_sleep();
- 
- 	/* On panic, the console_lock must be left to the panic cpu. */
--	while (other_cpu_in_panic())
-+	while (panic_on_other_cpu())
- 		msleep(1000);
- 
- 	down_console_sem();
-@@ -2847,7 +2836,7 @@ EXPORT_SYMBOL(console_lock);
- int console_trylock(void)
- {
- 	/* On panic, the console_lock must be left to the panic cpu. */
--	if (other_cpu_in_panic())
-+	if (panic_on_other_cpu())
- 		return 0;
- 	if (down_trylock_console_sem())
- 		return 0;
-@@ -3227,7 +3216,7 @@ static bool console_flush_all(bool do_cond_resched, u64 *next_seq, bool *handove
- 			any_progress = true;
- 
- 			/* Allow panic_cpu to take over the consoles safely. */
--			if (other_cpu_in_panic())
-+			if (panic_on_other_cpu())
- 				goto abandon;
- 
- 			if (do_cond_resched)
 -- 
 2.43.0
 

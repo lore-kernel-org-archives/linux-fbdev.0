@@ -1,64 +1,64 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0811723504B;
-	Mon, 25 Aug 2025 02:31:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 019B4234963;
+	Mon, 25 Aug 2025 02:31:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756089080; cv=none; b=nXdn8LMA3UcR5hNA4/qGp0eNFT4tabTRmH67cD07zBtFQZfNFwxthTrsLf67v3lhji1BCZiHLFmhsi4AnNYj1h8vvAM/QXY1lnHYFaqPYuDJw2v0Z0cICRjh6Xs3nKAo0AOGPLnoC3S5aqSTHbQlywhAq9JHtCyEPRRPNMVNAOg=
+	t=1756089092; cv=none; b=QSv1eSv57uOYWQLHoAu/cqpqC3+e7PsFOzp0FOtWDRe+DWM1krBJpO4wKtq/sVLtDhDiA22EsiepxC6L3n6pBlMpco7k1sM7ro+0XJo9f7ecvtaQwNZ3fjeizfg6AMu+/S8Ouo6zznL5nc6vsj8ty5e/DuvBkvT2ob7icspbozk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756089080; c=relaxed/simple;
-	bh=NRMbYvlGW941kMEietS2rZxYzAjvsg56wuTDhUbjaPE=;
+	s=arc-20240116; t=1756089092; c=relaxed/simple;
+	bh=KT9SUhjt4AKUdsfAMRDowDVzPk3fq4BEd8+MHQn5wjI=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MJiz2SVR3sGZI3p1Rhs+kB3gYMo7+xub3fDWNipVymI1XUxuxOoRRUda/8row5HNdaP8GweZfcJ4WEHlfTJcO0OM12HV0ObwrTIjxjoeV8oUx4LU6ceg8q2mxRhUxqHRBm/1l1T7byyxUDMjxSrCUT1FfaOb7HoybO5O5vrDXWA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gTiBlNCq; arc=none smtp.client-ip=209.85.214.171
+	 MIME-Version; b=AVaJ5D0jlh6fxKHYN254vTp5cqXwpaS54s/wUlCJacwA0M1SjDZ9FcLvaMy7HVq3ZQGI3lGGad0TEmMmiyIkQvj+01VVYWyPFvP4QqpLfq/wVpW8eRvWXiWWyIHLj9jGIiOXJ9mHMvT1faK6aYyBF06Lz5/d5sbPcK6FxhwlQtY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d1s/pu/1; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gTiBlNCq"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2445824dc27so36346345ad.3;
-        Sun, 24 Aug 2025 19:31:18 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d1s/pu/1"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-32326e67c95so4256544a91.3;
+        Sun, 24 Aug 2025 19:31:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756089078; x=1756693878; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1756089090; x=1756693890; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=F7yKzJNb2rx6SiyelcSe/xXvw8ffKUxo6CoK3itAFgM=;
-        b=gTiBlNCq/54tADIkumqgmrWdWUjbwz9mKFE1qPSQ7rlwd+gB0jvF8Aa5libp9AzXz4
-         lS+G66TmLsxbZg0nprtjnXv1jCs8iLYcd/RTZweeEIzCxP4JwfdDzwm9Un78pGZZazWr
-         MeO/uxmd0RbMjrkFRPX10UjM7z2o9PDnsGA6WqFrqUnYp933oNAt1XqF6rF8r41/mpYp
-         /aODh8NVaJa5LhcmdAyCl5tviuZ4O/qThTKc4azWzR2AlStpw01+yC2hsIC0XBSz3jvP
-         htSn7c8Z04CPk6EjlGIUT3Rog7iy6ErD+psAu7Lv0o6XzUlm5BX9luFndGWjqxYKWplz
-         XaiA==
+        bh=QVC8azoXPoxosuCvm1eCBz9SCYhPLAwxnPZ8goaQCGw=;
+        b=d1s/pu/10YXd/RekzjE/SzgHro1ydF+nhCUIJcKNureBewoaci2wm59OPy6e7vjgP9
+         UIrFa+YI9w9DHNf3qLAbr3spiK6DUBuBX5x89CNLWGl6Y2MyKavxLUqwkdY5csyxaQHu
+         wrIYAoKgbdB1OQufObZCAGFV7oHv+GuJCr5DmwxX9ydmqnItGpqI10/2IPvqVeXBpTNl
+         HYNdp1VmvLUsmNNGoiQRL0KdcKsicwyp5CXDFX9N1vRNpCgqfCV7I4IgFsO5cm09HkZC
+         6bWl9UlU+f+wK7bep8D2XQfMV9t2mLLz1JDy+L5tt2EENrDIkFesx7dNur1BUUJ4TyDH
+         xcVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756089078; x=1756693878;
+        d=1e100.net; s=20230601; t=1756089090; x=1756693890;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=F7yKzJNb2rx6SiyelcSe/xXvw8ffKUxo6CoK3itAFgM=;
-        b=rRKmchATgaLvgMHrKFh6r6Ge2qnk5137a+0eTXPq6gnIPjTWyeimPsnXou5lZ/5Idn
-         VjCivb23xKe+8PrfyN2yJS4JH7ffE+2Ql4OMMXmLw0h8jldfC6SWv4gqskxIMZKQvm9r
-         4mIwIjcNNS55molIfPU94uDYZX5wCYCJ2urRB9kpuEXeOyUmDNa+aTV+uOrAuAA/Eu9/
-         j8SIyRq8Rj9uYQauybePDMEA9RIBmc38u4/2KQzFgRQt5ojfcvdm/YqonjqZ+BGKFvRt
-         d1oL844PZLQOjFwf8ZOG+NUrtVp8IZfg2NQvOgVqpKApeSd6h00pDR0j1tmQ4YG5WOdV
-         o19Q==
-X-Forwarded-Encrypted: i=1; AJvYcCU/zI9lmZ8ScV4iUuROzu4oI0fqFRSE4yT/DtgH+VyvAtcT+yQvEQpT2O+FJ9wRwCxS3HZVUC/uqmovZ094@vger.kernel.org, AJvYcCVjauU948bNEjIc4JgZfnDC25/6U5RLP3M/NnWtEeVCpSvlvnl1C3Zjye4mr7XFpBVwosXP7WnIp0kSgg==@vger.kernel.org, AJvYcCW0IrZ8CYUJ1I8FjKS6KDzp7GQNGZjfD6alGDDXv2o8SQxHEcj+2WmPRtueGzbAxMABSN6SooEPdl1k57rBW0l2@vger.kernel.org
-X-Gm-Message-State: AOJu0YwaBINqW9oAqzq8rIHH2ZOtU6AC9N9UASlTDEe/LsElgyjptmxf
-	3W4BxiAIvnAi4MzfM5Xbyq23T7RF7kg5B9KXmCbw7IheAA/e03yMXxMn
-X-Gm-Gg: ASbGnct/1KIajgZk3GWCUx7eqFXVZO4Nhqm3TZ7tbKiemPgaYMXJ50lSvIbeQrpDmy7
-	mtAHNYD3/m9WUvvKb7RvF/+WnbpEG5gD28+7i9+DxNG8UwW0b6XLX5lQuFA9bVYoD/hyq1+SBZr
-	8zXti8wMGDBc4d6y3aRo8RHuIAjUBIEGw6MBS8Gj9UlMtuvSeewm9BpbVA4KteCxq04TyQFvGeD
-	2OOc55hCD6wkvb+0bTLVpRn1KZxljV9YoU9COmAUZ895ExCcV9ASAYoAq+IYnZu3dxliNtJVDoy
-	lUaAnhPTn04OnwbGOgw+9Gl8p8r1kj8HVgZdy9/63ZhKdmZzs0iLIRUiHu6LT5ZdcDHkPjnsj3P
-	oDcZIh6P45jBTqUb6LNtG43KER/+s5zV4VC5YqVQLYIAhL34QQJAzBPrC05SUr5O7XiXoxmEWzZ
-	ITR1os15mDyg==
-X-Google-Smtp-Source: AGHT+IGGk8nOO00I8QY6Ycp9jgs1ZyfKkaugn7N1DZdz8CRfy99hpUtZQbqKZx4/jp/Z5JOoCix/CQ==
-X-Received: by 2002:a17:903:40ca:b0:246:ece3:de0b with SMTP id d9443c01a7336-246ed0267f5mr4431665ad.16.1756089078131;
-        Sun, 24 Aug 2025 19:31:18 -0700 (PDT)
+        bh=QVC8azoXPoxosuCvm1eCBz9SCYhPLAwxnPZ8goaQCGw=;
+        b=C7ayGiX/DSTfHoCPZjjgaKu0WYZwCLMlOIHo+F3JDXJQqDP30J5riydlJQrOMaYQYS
+         42rpxEDQKdlWKY2Ls2F7RAxsNkjVV12I/XnlglzQg40pjGwrJyT/F/2rPBkmJ0/dEizg
+         ZOybUJvFyD5ba0c7cGA6BnCtYyqbAbUvYahWmwvCvqizKA1rgyjldXtCpMeIaYc8XuLI
+         Jt2qEEOsdquOZOTWFopLqSpIGGsg5hQFnUUHBV9Q7CK8737UIVGOKYeMhDEjpwnFSzV4
+         01hpoEVBJfvmiYrgRY3cv8gJsrfhKIfzHO6Ri6Oyoasbzb+G9rwJSpFkBVGupO1uGyNR
+         Ljig==
+X-Forwarded-Encrypted: i=1; AJvYcCVafHzzdubKVZcXMf+Xep0faxBxHovbdTPlGN9HnXBDCAMQnRA4hly3ND9v82xsESkjypVenhpqfSEyFfotdcij@vger.kernel.org, AJvYcCWWtY4Bt8R+obNWNd3fFt7caIV4USI8V0jy1wZn4Jou+gMkB0//RIYfCVhGe21cvzfU+28/WXnbWxM8yw==@vger.kernel.org, AJvYcCXL8FXlwzxVe2vpRYb/ntFsDm8ig8LgY168Lxwy18fzNk1BDL9f+XAQra+enKld186YTs/b8dCha1LwNYWJ@vger.kernel.org
+X-Gm-Message-State: AOJu0YyQtGyqluWw9pHD/zcLm1SGPTmsNXleUro8eYEDqBbtUhJWyCAM
+	GD+O3CHuF77MBaTUIckbLrYiwkv/DL/XupUWri2ZoSHHZKTrxqgaLi4T
+X-Gm-Gg: ASbGncs3/BVHtbXDniEPl18HPgnIDG396ZKjINu7HuQBh4Ydi4xeFo9eJsRjrX8fD3h
+	zkaNZRLvXKn05DG1KuTcRlWdDA6ctgB0HwgAo05dB6NAHN8r0D40LGItY/gkQENzS1QQFRWzGoh
+	deyV4bYmycb83lDoi8nTx/eh2439OHOtsJXUAIGvYzvnGXgBAUYBMV6AgUi+oLAUS7Voay7QPVU
+	BrjXKV7L+L9DwJJP1rdoEZlwJ7HJYjM9B7d6BHXDbhzoEZmZR06rwMDoNZx47yyUQYlSDRJP4Pp
+	9ulXJHtx0LnFiVHamfWUbh5j8ZiPr9Bo7YKUTC/JjDyrplNNvVDgLBZyKDrhirB23gh4QZ3mpOE
+	GmC2T+SljiMGdZ670vbB45mHwpmoZNGlA/iA9amEBPXOODRqmrt8S7T9Clcynbc5/q5pcwbjbd7
+	I=
+X-Google-Smtp-Source: AGHT+IEJ/RxmV9vk0nXMb491fT4XTeycZujwgAzjS69NOeWahllc9+DZTfyHZl2PP7ynSHAO+OZuag==
+X-Received: by 2002:a17:903:1ae4:b0:240:a889:554d with SMTP id d9443c01a7336-2462ef8e723mr143141775ad.45.1756089090224;
+        Sun, 24 Aug 2025 19:31:30 -0700 (PDT)
 Received: from localhost.localdomain ([114.242.33.243])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.31.06
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.31.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 24 Aug 2025 19:31:17 -0700 (PDT)
+        Sun, 24 Aug 2025 19:31:29 -0700 (PDT)
 From: Jinchao Wang <wangjinchao600@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Baoquan He <bhe@redhat.com>,
@@ -105,9 +105,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	kexec@lists.infradead.org,
 	linux-hardening@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/9] panic: use panic_try_start() in vpanic()
-Date: Mon, 25 Aug 2025 10:29:33 +0800
-Message-ID: <20250825022947.1596226-6-wangjinchao600@gmail.com>
+Subject: [PATCH v2 6/9] printk/nbcon: use panic_on_this_cpu() helper
+Date: Mon, 25 Aug 2025 10:29:34 +0800
+Message-ID: <20250825022947.1596226-7-wangjinchao600@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250825022947.1596226-1-wangjinchao600@gmail.com>
 References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
@@ -119,48 +119,46 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-vpanic() had open-coded logic to claim panic_cpu with atomic_try_cmpxchg.
-This is already handled by panic_try_start().
+nbcon_context_try_acquire() compared panic_cpu directly with
+smp_processor_id().  This open-coded check is now provided by
+panic_on_this_cpu().
 
-Switch to panic_try_start() and use panic_on_other_cpu() for the fallback
-path.
-
-This removes duplicate code and makes panic handling consistent across
-functions.
+Switch to panic_on_this_cpu() to simplify the code and improve readability.
 
 Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
 ---
- kernel/panic.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ kernel/printk/nbcon.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index cd86d37d124c..5266e195f5ac 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -415,7 +415,6 @@ void vpanic(const char *fmt, va_list args)
- 	static char buf[1024];
- 	long i, i_next = 0, len;
- 	int state = 0;
--	int old_cpu, this_cpu;
- 	bool _crash_kexec_post_notifiers = crash_kexec_post_notifiers;
+diff --git a/kernel/printk/nbcon.c b/kernel/printk/nbcon.c
+index 646801813415..7490865e2f44 100644
+--- a/kernel/printk/nbcon.c
++++ b/kernel/printk/nbcon.c
+@@ -2,6 +2,7 @@
+ // Copyright (C) 2022 Linutronix GmbH, John Ogness
+ // Copyright (C) 2022 Intel, Thomas Gleixner
  
- 	if (panic_on_warn) {
-@@ -452,13 +451,10 @@ void vpanic(const char *fmt, va_list args)
- 	 * `old_cpu == this_cpu' means we came from nmi_panic() which sets
- 	 * panic_cpu to this CPU.  In this case, this is also the 1st CPU.
- 	 */
--	old_cpu = PANIC_CPU_INVALID;
--	this_cpu = raw_smp_processor_id();
--
- 	/* atomic_try_cmpxchg updates old_cpu on failure */
--	if (atomic_try_cmpxchg(&panic_cpu, &old_cpu, this_cpu)) {
-+	if (panic_try_start()) {
- 		/* go ahead */
--	} else if (old_cpu != this_cpu)
-+	} else if (panic_on_other_cpu())
- 		panic_smp_self_stop();
++#include "linux/panic.h"
+ #include <linux/atomic.h>
+ #include <linux/bug.h>
+ #include <linux/console.h>
+@@ -589,7 +590,6 @@ static struct printk_buffers panic_nbcon_pbufs;
+  */
+ static bool nbcon_context_try_acquire(struct nbcon_context *ctxt, bool is_reacquire)
+ {
+-	unsigned int cpu = smp_processor_id();
+ 	struct console *con = ctxt->console;
+ 	struct nbcon_state cur;
+ 	int err;
+@@ -614,7 +614,7 @@ static bool nbcon_context_try_acquire(struct nbcon_context *ctxt, bool is_reacqu
+ 	/* Acquire succeeded. */
  
- 	console_verbose();
+ 	/* Assign the appropriate buffer for this context. */
+-	if (atomic_read(&panic_cpu) == cpu)
++	if (panic_on_this_cpu())
+ 		ctxt->pbufs = &panic_nbcon_pbufs;
+ 	else
+ 		ctxt->pbufs = con->pbufs;
 -- 
 2.43.0
 

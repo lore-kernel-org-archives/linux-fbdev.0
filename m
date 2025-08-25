@@ -1,64 +1,64 @@
-Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 382D01C8626;
-	Mon, 25 Aug 2025 02:30:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2FA11F7575;
+	Mon, 25 Aug 2025 02:30:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756089044; cv=none; b=siy3d+urwY+TuP/UhETIVrZy6VtNJ5FHNEC7htTJVxvT8Wug5GMEAZUkcjnYCzqMKwX/zKK947BqBk+YWAqlD97GRNC8t7B/33NGAzFVL1IpK5ANRH7NzAiRJ3Cxc/jIba/t7PKA1yuaJeT36idBYLjkfI1B5tpR0M/GeGtcCNw=
+	t=1756089057; cv=none; b=EaexxOpGsUcNuKQzGyw7UoEaU9JOdvZ/pe6Hw4s5UMmpXmHE5LjY57JP6CuGjkxxLQ80OQwoTBZmXzbn8mD7hBIUd5wt39+M7frV7rk85CFFnMRd4/edaeiRuuLw8xI2yApkynYrbbQF9FC1hOU1TWGexc4kWKlvFRFFwFX5Dj4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756089044; c=relaxed/simple;
-	bh=gK1bji433iA2jl/n7FvFfwhw8vDqh7Q2h32KSjblVwA=;
+	s=arc-20240116; t=1756089057; c=relaxed/simple;
+	bh=rotx+P4b7HEx0aZgPSk7AQPfYVAI7p0UBrUh5aeZU8E=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=liuocTlFlN8URlJlcqWwJjnPQyV3OJhPCjF9E8cVJco+FLsKcNw3AA/56m1H937WHOuHfLWow4JkDdxIsSdi3f+KayvWjlsYpqixS9/Z5Wh6uK0faP35c8GlzvsQAHfy589BMHYELfybDbH/beszHJVfiwVoVXcn29fBYEkCvH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LBEifjA5; arc=none smtp.client-ip=209.85.215.174
+	 MIME-Version; b=Ai03tpIep7ouFGElweQ8nmFbFbcuVQsuIYXFWstAxxjSM/1xUqFJCW6EEixjxWiicgCzwgaoiecPIganKIfRwyMu3BnnkCNsZIYaT2dW/jOd4BPvXIAo3Y45UK59CSdYSdHxdkeZ0sIfcjiZviVCAw3dmDr6PHrTsP7oY4V4lxI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gmlI6ExJ; arc=none smtp.client-ip=209.85.215.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LBEifjA5"
-Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-b49e0686139so594932a12.2;
-        Sun, 24 Aug 2025 19:30:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gmlI6ExJ"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-b49d46a8d05so1058004a12.0;
+        Sun, 24 Aug 2025 19:30:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756089042; x=1756693842; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1756089054; x=1756693854; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=zFHAHU/+z+yhl9VER8s4Wp+oPk3FiOJt9Cdy6eMoyvc=;
-        b=LBEifjA5kgkD++w99+07meLC8qMpVeKMElvKw+RLaoIw+zKqBqNChLmzIEXhxeqFY3
-         AzPb+3vs6lx45/ApuHo7tKrHaO5dJupR+Bdq4jjS0IYfy61LlLPE1c93WdRyyspLkqtm
-         FUb8ilAS5iXpqjAYH3n6k/Fl7KFt/mMGP225C+6f4wBg7moar3mBkj8DMWIubGXv6Usm
-         uYsIK2QIhNIN5moHzX2QTolMVlP2kQyJUcKTK308K19cdqmW4F3kXBIIpxkCkbXvkhbL
-         dB3c14zfHoTtzlf3McY/zn+4H+H/Z9HjTStfd3AT4gk2mt7EH6v5Ao8+IlVW7/VvrAby
-         ihew==
+        bh=IH8YhLChJO+46PfNNdyjwrwQJKBLxU7b8IaUufHISe4=;
+        b=gmlI6ExJmqstcC1YRgn/PmipRAGa0T1V3CVu9pNKNrKUq5d5OrfG+eGxhoY1J3diDb
+         6fAevfBrYFZ4PCfclConeCzpS48lgI2i9OWtr1TTyBfhPs4KXCCUkOZkuMsKxVHsxAQ8
+         6+kQC6nHiecFoLtY2KaNuBKn0jdh4yCZFCWnzLVWZITcU8f2uCy+jXEtYIUAOwBgjfFG
+         kc/iSm23yXDiI2z/yIfGjH1grGZOAn7wBW7+36MRhZwaE7wD/BJOTA00jug9UEv14WEn
+         bp5yhMYiueF+G0OcL/fMHx6yrMEwZXOtsnb2gzIIuvjVDb9FCiV+dqY/Yskr+3JkIQU6
+         6+cQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756089042; x=1756693842;
+        d=1e100.net; s=20230601; t=1756089055; x=1756693855;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=zFHAHU/+z+yhl9VER8s4Wp+oPk3FiOJt9Cdy6eMoyvc=;
-        b=bbXXnGOKFiofmLYAqTzOVIW9AqWxaxBHQ9rY/6n8Ufr/6iOGtf/plZB/NznJ8PPJzw
-         NFQSdZtETh0vaMm+2Hp2fjt9CwU+CmJWQP9IX2K+zxau5DPRIra8dOLkxH2MlbrX8x6D
-         ldR9Rz4n1zCysNh0SL2WeLecfEdlmqps6PcAhrYrkxrHNXG2ESHrPEaNRKVWqvrhSJmf
-         XmLLRzNx20dGAwcMeLOzUn789G2iWsk2H3q93JcuIr+DXdNTom0lbQARBUJCEhQAjHqj
-         z9v0zHOh/tqEbKqu5nD3WyACE4trAURyQZnUqNAsZPD3xS1+P6729hu3kC2dWhJsZfYx
-         qAwQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU2CeDk3W9Al4fEeCjgPqtAwpPwfy65iCEmSOUoDRfM0nFU85+1GtITs5am7dZviKizc+woKL+N5zVXhg==@vger.kernel.org, AJvYcCUn7Qvxjbrs62mbQjpLCMT8HkHuoS7FqXMlDo9hcx9pAgo3y+BzzzpILL6wgD9I0Ar9xjeNiCZQOKH3uz1w4eJB@vger.kernel.org, AJvYcCWOdJpGkrL/qq5kYHCSteAh17mQBPUsMp24WKFBYjfKm1H4B8sDV1Nv5uFTGIu9+JmkiQs/TtEb9uXOYvFo@vger.kernel.org
-X-Gm-Message-State: AOJu0YyzbhAj0nDs97QXsfUNWoL6MyEpEwEAbsq+Z1sXY/kp/LdXFO3z
-	iRM5OuTxpX60PzSAoT5M5KJ9G8zqFahY38Hx7J9D6n5l2AI23UO3gXtA
-X-Gm-Gg: ASbGnctCm0N0wZIw5rdlK5fHEaJnqvlSnKog1hC8rFY1JVKbJSUMq4F1Pjmn9Ou7lBZ
-	SrbENK1zjfgItjFbZbXRy/PTA8AlZEej080mpWprrZtpwJdN1c6BLZ4yz64B/0c/cSeRAPCfcm7
-	3paEhDzIEPXpbV6uk/HCxWiEUTYlcK6LIp+jSK/LxThFWhF2cgc/PVgx/U2MLjmdWbnFu7kay/A
-	irNorpl2e6mxfRoMNp11vwefA8V2qWlc+sfmgLPPGvUGbjsdmFKoWd/N3Xmk8tPobmwRizHI2gP
-	ocmFGGYDosQhp7pqw/vcivTz5uspE2OKFPQRI4IQUeuA9Ce49Wt257Vkqp/3WZi6nIf8cWHUvTx
-	lwtZ1XRvjHOEfQFhpT6qsBJLGX2muGcvXTbYivld6ySfna/JsmJ2RG9VPQ0TkrLU/jxBf3IvnGq
-	k=
-X-Google-Smtp-Source: AGHT+IHERO/1eHRkEF6AC+dBVfTjpOtqq/Unp7jmksVhNk83icoLby3erE1Gst+iT6A6gassubAXtA==
-X-Received: by 2002:a17:903:41cc:b0:246:b58b:8b86 with SMTP id d9443c01a7336-246b58b8f44mr31066895ad.32.1756089042108;
-        Sun, 24 Aug 2025 19:30:42 -0700 (PDT)
+        bh=IH8YhLChJO+46PfNNdyjwrwQJKBLxU7b8IaUufHISe4=;
+        b=GmJp/f2jhn9KcXY57J7Ej6OC1SRnV90ZWpe616fdMnXsiipKXGqP+PR3vRpEwVRrCp
+         OHNuecr1uyVYrJJtrFrZajuTI99ffHDQCsEtnw3ZlwasSRZpYOlnu5vFBct3cvfTdVUr
+         lldkOwqp4bohVaVI0Mv6L1VBPVwzKQsShOKfDxGWe9NPAlQbmRWBCxqesS/YmEqb+qLv
+         xP/cd05Nz+ygAhybgqwaf9Ho4fobF4amJdBpzLoufEJlHrHKrFrqID0a+TJ63q3Ft1tS
+         Oc+niozDPVzZGqW4JZzeZjV06foZ9j7VeDkgm0vkHDcDpDZJtxQL74kGhC9XtapTaVsU
+         8C+g==
+X-Forwarded-Encrypted: i=1; AJvYcCUV2LJPdQgmY/Cvgw3aquf+j825VbheqwpLg9v145r4VJGBdogL7fBgdYINAMPLIXImDuPWgWQmkDSjsfIW@vger.kernel.org, AJvYcCV0beaxJwVnt4QBhtypbwy8cV3thw5ei+q1PWcj6VC2vN7KgbsfmwfLYfE8z2nLVztGBxykt/FoWXyVTlH+/BDy@vger.kernel.org, AJvYcCX0nMD7pA3YMw2dzuAEq6hG2DaCohdpSjyZ9RxJT5XXMYK2DzvpgMSF3m0zlhSL0MZAMEoi7V/gDw2AWw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyGtiPCw0GiMNAwwfkpCU5bKmrVHxipk2h2BCLHqPGgZGSfdc20
+	ZJ83SVm4EYsquaWZYO7KAHo5W1SOafDpRtTe9zdG7DIMWpwTvHguLXa5
+X-Gm-Gg: ASbGncskm6ztyYAsLAsDDwbFRM2+Laz8G+gICbygiorgVr9NZR2AXaOtlG0iJSpJ3Hf
+	dSjUuqZZ1BGU0vmn3xtYvDNy/4cMmWFjvalSFZ6amoML2Lvuq+qh1iNwnv+O8jqskPXutPGeMJA
+	bsF+E3062t/ZrJ6Xyzt+MhB0m/t9wtQ5C2Mqf6cfIXNJ+kYmqaZzSm60OH9mm6gi1E5Wm6LhH4c
+	HC73UDQLzz4x4gWJ8bli78NiSknghyYT3D1iYuPB9sYIq38PdmTN6G8QfpPdjqfUm9MkAQj2bj+
+	3JXsPGPt5TJcIuiEcch7788RzkEN9nnddmGFEi5v+2ZNiphAl4ePhsm18i+XeYhrXQ6Z60Q5Zf4
+	hCKi5wlC1f5OeS+z6FPYxcjRSOTXwESuL5SSwVIj9zOcP0BdhQI01WH7X5AsCsnMI6WnuC+0zjQ
+	I=
+X-Google-Smtp-Source: AGHT+IH6pBx05EUggFYxitz83mZVXTIxwPpm1bcXy5QtfKJU32rVyZCwSo5s5hfxiY5yh80orLgZOQ==
+X-Received: by 2002:a17:902:dad1:b0:240:8262:1a46 with SMTP id d9443c01a7336-2462ee54512mr139147305ad.25.1756089054419;
+        Sun, 24 Aug 2025 19:30:54 -0700 (PDT)
 Received: from localhost.localdomain ([114.242.33.243])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.30.31
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.30.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 24 Aug 2025 19:30:41 -0700 (PDT)
+        Sun, 24 Aug 2025 19:30:54 -0700 (PDT)
 From: Jinchao Wang <wangjinchao600@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Baoquan He <bhe@redhat.com>,
@@ -105,9 +105,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	kexec@lists.infradead.org,
 	linux-hardening@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/9] fbdev: Use panic_in_progress() helper
-Date: Mon, 25 Aug 2025 10:29:30 +0800
-Message-ID: <20250825022947.1596226-3-wangjinchao600@gmail.com>
+Subject: [PATCH v2 3/9] crash_core: use panic_try_start() in crash_kexec()
+Date: Mon, 25 Aug 2025 10:29:31 +0800
+Message-ID: <20250825022947.1596226-4-wangjinchao600@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250825022947.1596226-1-wangjinchao600@gmail.com>
 References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
@@ -119,41 +119,55 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This patch updates the fbcon_skip_panic() function to use the
-panic_in_progress() helper.
-
-The previous direct access to panic_cpu is less readable and is being
-replaced by a dedicated function that more clearly expresses the intent.
-
-This change is part of a series to refactor the kernel's panic handling
-logic for better clarity and robustness.
+crash_kexec() had its own code to exclude parallel execution by setting
+panic_cpu. This is already handled by panic_try_start(). Switch to
+panic_try_start() to remove the duplication and keep the logic consistent.
 
 Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
-Acked-by Qianqiang Liu <qianqiang.liu@163.com>
 ---
- drivers/video/fbdev/core/fbcon.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ kernel/crash_core.c | 15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 55f5731e94c3..b062b05f4128 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -279,14 +279,7 @@ static int fbcon_get_rotate(struct fb_info *info)
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index a4ef79591eb2..bb38bbaf3a26 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -4,6 +4,7 @@
+  * Copyright (C) 2002-2004 Eric Biederman  <ebiederm@xmission.com>
+  */
  
- static bool fbcon_skip_panic(struct fb_info *info)
++#include "linux/panic.h"
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+ #include <linux/buildid.h>
+@@ -143,17 +144,7 @@ STACK_FRAME_NON_STANDARD(__crash_kexec);
+ 
+ __bpf_kfunc void crash_kexec(struct pt_regs *regs)
  {
--/* panic_cpu is not exported, and can't be used if built as module. Use
-- * oops_in_progress instead, but non-fatal oops won't be printed.
-- */
--#if defined(MODULE)
--	return (info->skip_panic && unlikely(oops_in_progress));
--#else
--	return (info->skip_panic && unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID));
--#endif
-+	return (info->skip_panic && unlikely(panic_in_progress()));
+-	int old_cpu, this_cpu;
+-
+-	/*
+-	 * Only one CPU is allowed to execute the crash_kexec() code as with
+-	 * panic().  Otherwise parallel calls of panic() and crash_kexec()
+-	 * may stop each other.  To exclude them, we use panic_cpu here too.
+-	 */
+-	old_cpu = PANIC_CPU_INVALID;
+-	this_cpu = raw_smp_processor_id();
+-
+-	if (atomic_try_cmpxchg(&panic_cpu, &old_cpu, this_cpu)) {
++	if (panic_try_start()) {
+ 		/* This is the 1st CPU which comes here, so go ahead. */
+ 		__crash_kexec(regs);
+ 
+@@ -161,7 +152,7 @@ __bpf_kfunc void crash_kexec(struct pt_regs *regs)
+ 		 * Reset panic_cpu to allow another panic()/crash_kexec()
+ 		 * call.
+ 		 */
+-		atomic_set(&panic_cpu, PANIC_CPU_INVALID);
++		panic_reset();
+ 	}
  }
  
- static inline bool fbcon_is_active(struct vc_data *vc, struct fb_info *info)
 -- 
 2.43.0
 

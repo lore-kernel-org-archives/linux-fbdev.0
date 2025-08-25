@@ -1,64 +1,64 @@
-Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EF53153BD9;
-	Mon, 25 Aug 2025 02:31:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0811723504B;
+	Mon, 25 Aug 2025 02:31:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756089068; cv=none; b=Inv3XPmk4tug7CbhdjuMW7VTlkfyOET8x9/KGDC1hfQD1aAHT0BgK7ZxOLIqI7zb5GJO+1gGDHIdJlgVZGshfuAlWQY/wQplfPX11t9I2bnneaDX05YUEowefwkAHzxss39cYdf9WPwSsQ8u6JEV4/vF3NZWp/FLwITz81hs5R4=
+	t=1756089080; cv=none; b=nXdn8LMA3UcR5hNA4/qGp0eNFT4tabTRmH67cD07zBtFQZfNFwxthTrsLf67v3lhji1BCZiHLFmhsi4AnNYj1h8vvAM/QXY1lnHYFaqPYuDJw2v0Z0cICRjh6Xs3nKAo0AOGPLnoC3S5aqSTHbQlywhAq9JHtCyEPRRPNMVNAOg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756089068; c=relaxed/simple;
-	bh=l4d2aO6yflIfj5ehW9qRQYi+2Dxw/Zf2JlJdhPbdTWU=;
+	s=arc-20240116; t=1756089080; c=relaxed/simple;
+	bh=NRMbYvlGW941kMEietS2rZxYzAjvsg56wuTDhUbjaPE=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UpNtfJ6+MW+b7CBM71JYa8/K8bRXMLnLqRfKJErgPLqOVJEdfuA3En2mIfZTV4djUp05QT9kZb0ht1Swn1diAsouqM9i0uceye967XwklIzHGqjPpvdD3AmDO38WUavcA4Dd7UW1wp1EGrmju3edTzVLybnRgX66RAjNAu6RvR0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WcTeO2Mk; arc=none smtp.client-ip=209.85.216.50
+	 MIME-Version; b=MJiz2SVR3sGZI3p1Rhs+kB3gYMo7+xub3fDWNipVymI1XUxuxOoRRUda/8row5HNdaP8GweZfcJ4WEHlfTJcO0OM12HV0ObwrTIjxjoeV8oUx4LU6ceg8q2mxRhUxqHRBm/1l1T7byyxUDMjxSrCUT1FfaOb7HoybO5O5vrDXWA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gTiBlNCq; arc=none smtp.client-ip=209.85.214.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WcTeO2Mk"
-Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-323267872f3so3010197a91.1;
-        Sun, 24 Aug 2025 19:31:06 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gTiBlNCq"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2445824dc27so36346345ad.3;
+        Sun, 24 Aug 2025 19:31:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756089066; x=1756693866; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1756089078; x=1756693878; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=G+OueiTUtaQ+cl4byHqQJI84zYdm0M5wQwtNQy1rpWk=;
-        b=WcTeO2MkOCzTvt270utL5p0lLRjRwePHQ7scat6skhMuIxsENAuVEznNCp/IE5NI8r
-         BQjYWnAJHp0RjQhfgS3GNs6Wlfft2BvI/OIlNJjMsfsZ05y0hJ1ClT1WNfhokiHqoXsJ
-         Txg3E5Y3V2OYd5R4g12BsfEc9tCXc1kZk+UNM65YG6mQcEUYj5lQeAMcZzs7BgZAvjfO
-         7IhpjT/Uyh+/HiL496h/RAKPckJpGkhABV+w21m+l3Os5mx3VkVaO2nrTJ3lhfltqhvj
-         6eZ8fYOPFAswJ2QsfJuMETE30Y53Tydb1W3Fn17+pn9Wb5gX+bm5Z1z49jZgKsAzlDOH
-         QKag==
+        bh=F7yKzJNb2rx6SiyelcSe/xXvw8ffKUxo6CoK3itAFgM=;
+        b=gTiBlNCq/54tADIkumqgmrWdWUjbwz9mKFE1qPSQ7rlwd+gB0jvF8Aa5libp9AzXz4
+         lS+G66TmLsxbZg0nprtjnXv1jCs8iLYcd/RTZweeEIzCxP4JwfdDzwm9Un78pGZZazWr
+         MeO/uxmd0RbMjrkFRPX10UjM7z2o9PDnsGA6WqFrqUnYp933oNAt1XqF6rF8r41/mpYp
+         /aODh8NVaJa5LhcmdAyCl5tviuZ4O/qThTKc4azWzR2AlStpw01+yC2hsIC0XBSz3jvP
+         htSn7c8Z04CPk6EjlGIUT3Rog7iy6ErD+psAu7Lv0o6XzUlm5BX9luFndGWjqxYKWplz
+         XaiA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756089066; x=1756693866;
+        d=1e100.net; s=20230601; t=1756089078; x=1756693878;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=G+OueiTUtaQ+cl4byHqQJI84zYdm0M5wQwtNQy1rpWk=;
-        b=j+WnwpczMwMayXC0L6F8XyNwCAG6itzd9Q7seXnn2sW84H5pXHD7KAn0IpZMeApm/H
-         5kI06Hn54jXTAOTjL5nLnivz2mfOtr7m5M/yHtUzWL0C0ilmSHRe7wLHD11mZpUro/Ud
-         A2i4HSpopYh7xLl/JF4R3jsIDI37/WXunRs5pKLELaaOTUwY2SdhWFAHEGSDX1hyAU3g
-         /15cCtFU+3Hj/xjXD4ON7/FqbcwxQkftyZK8ZICvsGN7PLWyQ4KwxDpLdP5yEHkIIgvf
-         kXxufBO9vasUJ2z1rbrLhhMnXTUmM4atCjmJ0fYRP00+T4/5LC6YafSUwDlXeH//cO0X
-         vU6A==
-X-Forwarded-Encrypted: i=1; AJvYcCUBh1B27bBbpLD9GOTUe7XpnuC125yaDhuqhHEkilEDBzlF4GfQ1a4ZwiXfYX2No0YcR1QEW4Exu86frA==@vger.kernel.org, AJvYcCX+F5yNVObW949NcNuohAWQPSn4AYMxOkx9RU5jf+QnF/ZLyQ8O+zUjZzPGRJuuWxCRFtm4inIZJQ9VgI/A@vger.kernel.org, AJvYcCXMDPH3WwHSvV3EXp1NGZIMQVjYdAsLI3oUK0sp1pO4AIXtQ01OC5shovFlqnIL8YEifKlB8vWqvjtadbbsvEm6@vger.kernel.org
-X-Gm-Message-State: AOJu0Yws3c+k1+SE+VnZXSyrWu4e4cYicSJsNTwzdnXkD8gSAjSTFuF+
-	VPUy/JZxJUtB3wg1DrPPcqcZ7DrU1YCFq+m0+hwe8BOudcpszAyF0gfW
-X-Gm-Gg: ASbGncvk6jBPCsJXNz04MKgCJm8ytVUMkdQxyOddbCy0D3y0thvv4hTBO5R3OIqNy/h
-	kctPE3luPPAnbA17bZXyl/SJO1DMnjgVwjiXfv3EbKjUN8PIE3NzS0S8NXSQITSP6Yg/w6uLkzC
-	5vdAvB2uW7exae1gPZldKLr9nOx24BlhF8ODXzvITBqUs6nUP2cJ/koW/noYLJK5rKNWdwsGHfG
-	4jyI9j6x19B+TQlBjWKtcaLOK2dQ8LNfN1JyBSvHJ62P6y/MkM+f+O8Z5tsc9q6vt48VXR8rMcS
-	Uumr3vc7GNJss/TbFIWv3sppXBlpxFZDEt62M4T05Zugh+Oy1+O3TIzJAf5mKnINBNFQeosXtno
-	//XpWu/cXeiU8FIv31MTD5xZtF1FKgjjcQaRoCwrj7sJ3RLfZwctMVookd3BnrRtEM09AXSxZaZ
-	U=
-X-Google-Smtp-Source: AGHT+IGGTCfkkziinXGfm5OQ/klvHSQOorcEs0SZvFKbeIqW5aKv9q5QfSmua5wLs2b3iOYngv2Dpw==
-X-Received: by 2002:a17:903:37cb:b0:240:1bdc:afc3 with SMTP id d9443c01a7336-2462ef6f678mr124826755ad.44.1756089066318;
-        Sun, 24 Aug 2025 19:31:06 -0700 (PDT)
+        bh=F7yKzJNb2rx6SiyelcSe/xXvw8ffKUxo6CoK3itAFgM=;
+        b=rRKmchATgaLvgMHrKFh6r6Ge2qnk5137a+0eTXPq6gnIPjTWyeimPsnXou5lZ/5Idn
+         VjCivb23xKe+8PrfyN2yJS4JH7ffE+2Ql4OMMXmLw0h8jldfC6SWv4gqskxIMZKQvm9r
+         4mIwIjcNNS55molIfPU94uDYZX5wCYCJ2urRB9kpuEXeOyUmDNa+aTV+uOrAuAA/Eu9/
+         j8SIyRq8Rj9uYQauybePDMEA9RIBmc38u4/2KQzFgRQt5ojfcvdm/YqonjqZ+BGKFvRt
+         d1oL844PZLQOjFwf8ZOG+NUrtVp8IZfg2NQvOgVqpKApeSd6h00pDR0j1tmQ4YG5WOdV
+         o19Q==
+X-Forwarded-Encrypted: i=1; AJvYcCU/zI9lmZ8ScV4iUuROzu4oI0fqFRSE4yT/DtgH+VyvAtcT+yQvEQpT2O+FJ9wRwCxS3HZVUC/uqmovZ094@vger.kernel.org, AJvYcCVjauU948bNEjIc4JgZfnDC25/6U5RLP3M/NnWtEeVCpSvlvnl1C3Zjye4mr7XFpBVwosXP7WnIp0kSgg==@vger.kernel.org, AJvYcCW0IrZ8CYUJ1I8FjKS6KDzp7GQNGZjfD6alGDDXv2o8SQxHEcj+2WmPRtueGzbAxMABSN6SooEPdl1k57rBW0l2@vger.kernel.org
+X-Gm-Message-State: AOJu0YwaBINqW9oAqzq8rIHH2ZOtU6AC9N9UASlTDEe/LsElgyjptmxf
+	3W4BxiAIvnAi4MzfM5Xbyq23T7RF7kg5B9KXmCbw7IheAA/e03yMXxMn
+X-Gm-Gg: ASbGnct/1KIajgZk3GWCUx7eqFXVZO4Nhqm3TZ7tbKiemPgaYMXJ50lSvIbeQrpDmy7
+	mtAHNYD3/m9WUvvKb7RvF/+WnbpEG5gD28+7i9+DxNG8UwW0b6XLX5lQuFA9bVYoD/hyq1+SBZr
+	8zXti8wMGDBc4d6y3aRo8RHuIAjUBIEGw6MBS8Gj9UlMtuvSeewm9BpbVA4KteCxq04TyQFvGeD
+	2OOc55hCD6wkvb+0bTLVpRn1KZxljV9YoU9COmAUZ895ExCcV9ASAYoAq+IYnZu3dxliNtJVDoy
+	lUaAnhPTn04OnwbGOgw+9Gl8p8r1kj8HVgZdy9/63ZhKdmZzs0iLIRUiHu6LT5ZdcDHkPjnsj3P
+	oDcZIh6P45jBTqUb6LNtG43KER/+s5zV4VC5YqVQLYIAhL34QQJAzBPrC05SUr5O7XiXoxmEWzZ
+	ITR1os15mDyg==
+X-Google-Smtp-Source: AGHT+IGGk8nOO00I8QY6Ycp9jgs1ZyfKkaugn7N1DZdz8CRfy99hpUtZQbqKZx4/jp/Z5JOoCix/CQ==
+X-Received: by 2002:a17:903:40ca:b0:246:ece3:de0b with SMTP id d9443c01a7336-246ed0267f5mr4431665ad.16.1756089078131;
+        Sun, 24 Aug 2025 19:31:18 -0700 (PDT)
 Received: from localhost.localdomain ([114.242.33.243])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.30.54
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.31.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 24 Aug 2025 19:31:05 -0700 (PDT)
+        Sun, 24 Aug 2025 19:31:17 -0700 (PDT)
 From: Jinchao Wang <wangjinchao600@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Baoquan He <bhe@redhat.com>,
@@ -105,9 +105,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	kexec@lists.infradead.org,
 	linux-hardening@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/9] panic: use panic_try_start() in nmi_panic()
-Date: Mon, 25 Aug 2025 10:29:32 +0800
-Message-ID: <20250825022947.1596226-5-wangjinchao600@gmail.com>
+Subject: [PATCH v2 5/9] panic: use panic_try_start() in vpanic()
+Date: Mon, 25 Aug 2025 10:29:33 +0800
+Message-ID: <20250825022947.1596226-6-wangjinchao600@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250825022947.1596226-1-wangjinchao600@gmail.com>
 References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
@@ -119,41 +119,48 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-nmi_panic() duplicated the logic to claim panic_cpu with atomic_try_cmpxchg.
-This is already wrapped in panic_try_start().
+vpanic() had open-coded logic to claim panic_cpu with atomic_try_cmpxchg.
+This is already handled by panic_try_start().
 
-Replace the open-coded logic with panic_try_start(), and use
-panic_on_other_cpu() for the fallback path.
+Switch to panic_try_start() and use panic_on_other_cpu() for the fallback
+path.
 
-This removes duplication and keeps panic handling code consistent.
+This removes duplicate code and makes panic handling consistent across
+functions.
 
 Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
 ---
- kernel/panic.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ kernel/panic.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/panic.c b/kernel/panic.c
-index eacb0c972110..cd86d37d124c 100644
+index cd86d37d124c..5266e195f5ac 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -355,15 +355,9 @@ EXPORT_SYMBOL(panic_on_other_cpu);
-  */
- void nmi_panic(struct pt_regs *regs, const char *msg)
- {
+@@ -415,7 +415,6 @@ void vpanic(const char *fmt, va_list args)
+ 	static char buf[1024];
+ 	long i, i_next = 0, len;
+ 	int state = 0;
 -	int old_cpu, this_cpu;
--
+ 	bool _crash_kexec_post_notifiers = crash_kexec_post_notifiers;
+ 
+ 	if (panic_on_warn) {
+@@ -452,13 +451,10 @@ void vpanic(const char *fmt, va_list args)
+ 	 * `old_cpu == this_cpu' means we came from nmi_panic() which sets
+ 	 * panic_cpu to this CPU.  In this case, this is also the 1st CPU.
+ 	 */
 -	old_cpu = PANIC_CPU_INVALID;
 -	this_cpu = raw_smp_processor_id();
 -
--	/* atomic_try_cmpxchg updates old_cpu on failure */
--	if (atomic_try_cmpxchg(&panic_cpu, &old_cpu, this_cpu))
-+	if (panic_try_start())
- 		panic("%s", msg);
--	else if (old_cpu != this_cpu)
-+	else if (panic_on_other_cpu())
- 		nmi_panic_self_stop(regs);
- }
- EXPORT_SYMBOL(nmi_panic);
+ 	/* atomic_try_cmpxchg updates old_cpu on failure */
+-	if (atomic_try_cmpxchg(&panic_cpu, &old_cpu, this_cpu)) {
++	if (panic_try_start()) {
+ 		/* go ahead */
+-	} else if (old_cpu != this_cpu)
++	} else if (panic_on_other_cpu())
+ 		panic_smp_self_stop();
+ 
+ 	console_verbose();
 -- 
 2.43.0
 

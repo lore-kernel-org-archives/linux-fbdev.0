@@ -1,204 +1,208 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-ed1-f66.google.com (mail-ed1-f66.google.com [209.85.208.66])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDED51CEAB2;
-	Mon, 25 Aug 2025 02:32:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F69E33A023
+	for <linux-fbdev@vger.kernel.org>; Wed, 27 Aug 2025 08:42:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756089126; cv=none; b=pR5W4AZ+bs+xcQomQsdwhayXB0/7QkFWJDrBHpodHDbNVf2BwGuPtuQzpA2k2FXlUQ2GtDiVQc81x+6YsXYJU19eY7L7yT1S9NukgXHE/zm1agyv9SSbzcpZdFOORJ1DdZAqPlMjyQ//dyJFeyR2ZC/Pg9XvyzpBEfhUunGO3QA=
+	t=1756284142; cv=none; b=AfYmrthGK8//kqCEYNLSRL7NE63kn5FCwvRJK2LL6kTElXs3Jxwz/KtUiTl9q/MLtvi4z+PiT9yTqwKExIseF/8ln/to19uaJaJcbQ7CAng0+aTQZ8KHamVykJiDi7proNOdipKYFIi5uy6/iKflC/5i5+tQsHCo5N8wvD5ZFx8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756089126; c=relaxed/simple;
-	bh=8w+Va6M4jsubK7hSQ4EV51F40ANmqzPbE3g+V8Rdxvc=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=W9UnYAr5S/XB/tSqodzQwyiTob14zM977yf1js12ISBG4hFVHOXAoTO/FxCCZ9pJLoUtHvvIuKyO71YXbpf+UfeEdkPK8Jg0EA4viUTlgpKAI1eDyswtxq28xdODjMEt/B7AJPWaO4QIxNCZ5fZ145E14x+TY4hU0WMUodmzV+k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=N5cZ1oPZ; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1756284142; c=relaxed/simple;
+	bh=C3J5F98SUq/XbJdI5mkH/BowXWLNgIYkLopDpGLXpXI=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=VLANtwyjcDy2x45EzxviIcw5OuajuxFpladUewa/yCRZdc9jWUCAy2/hM8rPjAMt2iLDXv3Z5Ctn5n+XH8b9HjqnNfhkIKKjjDFTYSypmrljo672TMV/HzwriHXKvN2U5SE51l70psz5W6u0Nqms4wpZYmzyAlCuLiQOoBR8SV0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=eEc25c3x; arc=none smtp.client-ip=209.85.208.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N5cZ1oPZ"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2445824dc27so36350635ad.3;
-        Sun, 24 Aug 2025 19:32:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="eEc25c3x"
+Received: by mail-ed1-f66.google.com with SMTP id 4fb4d7f45d1cf-61c325a4d18so7176005a12.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Aug 2025 01:42:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756089124; x=1756693924; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=O10Bl4oetUFVZeVcIyFTPuGNIUEAVGF7F9sLfkbwSS4=;
-        b=N5cZ1oPZdztFGINcAHDODig49X5faudKEq/6mYZ39STs/S51OUqWwNnwRSau+FWI1J
-         P8nHCOxbEgX6wOo3pHQOiLLfSOCL6xVRjCbiL00m1u/vhokYGkOxIRN0mQmoT+shhEC2
-         VgOZb7LwEff+owTsP9Ku8l+iu/XLysQByVSi0x6i6IBw7xtsrceUx/M6psG19KZS2g/C
-         o7A2le41vY88uEuZ0yf6ycer5aRfRINmy1OzztLkgAnHkwfXHn9H7Cu76CB6XgZ/urGh
-         INBv7Vr67Q1Exr88DMCUsa/pxBjTJPWb9ObLyhK4goPO9yzfm+yfzVpb4xs3A9bX4BT4
-         QQRQ==
+        d=fairphone.com; s=fair; t=1756284138; x=1756888938; darn=vger.kernel.org;
+        h=in-reply-to:references:cc:to:from:subject:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Ru399StOWX0y3ow8u4rjjmb8WPAPqnIEt4F7fasIcxE=;
+        b=eEc25c3x5PXcT1AHnb/dd/pK0kjfUbP9sm+mbeau8SUzBSmQAFsDjgICcXFHWkCasF
+         CEJRrex62BkT3As7pW65RpznQk6trJexK/QcyJPPoaxomyHKKkjI/PNbOVGnmpfIb8BH
+         auofQ2V/WJi55gqWSb06bITRix7V0pbcrxchJES+jYAlAMh7kqyspAC73bam1RKcYucG
+         w2IoXhXz6KB27jTSfHXmQjFsBR7lfDjWp+Rgr3EPkrPa1QzLnoYo0DRGdV1Pke367wS9
+         VYUFYGGOudjo4onhgVI1wDgcO3esXjZMRoVbSaszfYkj2zM+nQvbOdgN2nGDIl0cavoK
+         KEOQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756089124; x=1756693924;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=O10Bl4oetUFVZeVcIyFTPuGNIUEAVGF7F9sLfkbwSS4=;
-        b=t0emYk5H9kwG/Gv+kxbyTm1xiaveiB5YO33mrN1YaGu0stzRQDQY2AmCO9fZiH/fD/
-         sJ1au5fEeMUFol4bQuibRvJYxxAs4VQiOVYg1S2TQJWqTycmrNCDMZrGnLKEwn7TNpXp
-         6ZYQuwzHx2lSJ/gT8oN7RsAftPxkYewlNUhYrNNJjL+irHjDS4MPBpImP/N6dkjxSpGq
-         Ubq41UOFv70syaQia70SwgM0zqfbp3JNW7TEBnZI4/2Ijyjpxr1qx4HdykWiCllA8YnR
-         SiR5aEJMeH6bNsPU7LtJfx+JREnUsD4jkPn87IAnJJCOggDY18JBmHdpdgdaK9seE0Ow
-         BRtQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU2L+7vx6dDVyU9yhNON7T1ky1Fj1+pPBXd3FsBpa8cKsoJ9p7PqS+Ds5Qo044V5G5Rguywu8IDVJWArw==@vger.kernel.org, AJvYcCU8GbPoWSkkjsfyVVqnh0XDE4WbxEGtjXVld45cmSPT4wLfr9ipPH4PJqafH6Dg22CZ+TW2/GU40lYharzNEMBm@vger.kernel.org, AJvYcCXvi1Id32xzH+q6vtbSYysx1gkv18OvJXD7e/MGbsfatlyaQ/S/1bBnhICQZLDNXaLsHp+HcrrMU5wtQZ9j@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxlsdd69B5HnL9kwznURI/KDJIChd6ueLc9/UQazFeLQxQDM0Fz
-	hURbtM1qgIPJq3rsC7v8Pvk8ubmwjbhWMN2pOcyvxFlzoSgDq79ZRtWt
-X-Gm-Gg: ASbGncuAdhRz4NctxDiMh6z1yUDSKpXB3CODzvZuv4FGR1/KOVv0dinD7NljqYXvRdc
-	Phd/qL0st1G9Vyaf6osQBFBoUbhckMo4se8cGAJdovqFHTTb0s24nUgzBLPeP1OpVsdqQ//KCcD
-	cKs7oVEAAjKJofwV135zTnFMHDpRnX3qHYevVStPPNQmNuxqHc+wD/cbIfYQ6h783iwNN9TnPmG
-	ONS5DZ8rYA0knt+8s8PuCq4uVLqzRXmTcFz58GU51HPx+nX4qn+/KPhbUdHX5ojkNXSlrwv1jRT
-	DnbtMHJZpGLlnCOeS8sxEN86Jk5vaBaRhYH/PdsOgIA+n6GTsBhfy7OCAnBQWRjD+ZkcWYYfQB5
-	SuNLbkrW3Mr5pUF/nX/W+llQTLyCXtun0GX/noC3ORFUofAxpaBTI/l8YduotpvJbaHiMNNKwDA
-	Y=
-X-Google-Smtp-Source: AGHT+IHiK6ZNzGbxD1aVZDdpEIJSJdRVCIVYu6qhCycor6e6tzkhdDgkg9nCBYkly1FiN66XhTD6Bw==
-X-Received: by 2002:a17:903:38c4:b0:240:5bde:532d with SMTP id d9443c01a7336-2462ef4c8eemr131114705ad.38.1756089123935;
-        Sun, 24 Aug 2025 19:32:03 -0700 (PDT)
-Received: from localhost.localdomain ([114.242.33.243])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-246687af234sm53905175ad.48.2025.08.24.19.31.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 24 Aug 2025 19:32:03 -0700 (PDT)
-From: Jinchao Wang <wangjinchao600@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Baoquan He <bhe@redhat.com>,
-	Yury Norov <yury.norov@gmail.com>,
-	Qianqiang Liu <qianqiang.liu@163.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>,
-	Petr Mladek <pmladek@suse.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Ogness <john.ogness@linutronix.de>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Vivek Goyal <vgoyal@redhat.com>,
-	Dave Young <dyoung@redhat.com>,
-	Kees Cook <kees@kernel.org>,
-	Tony Luck <tony.luck@intel.com>,
-	"Guilherme G. Piccoli" <gpiccoli@igalia.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	=?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@linux.intel.com>,
-	Shixiong Ou <oushixiong@kylinos.cn>,
-	Jinchao Wang <wangjinchao600@gmail.com>,
-	Zsolt Kajtar <soci@c64.rulez.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	Nam Cao <namcao@linutronix.de>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	Joel Granados <joel.granados@kernel.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Sohil Mehta <sohil.mehta@intel.com>,
-	Feng Tang <feng.tang@linux.alibaba.com>,
-	Sravan Kumar Gundu <sravankumarlpu@gmail.com>,
-	Douglas Anderson <dianders@chromium.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Anna Schumaker <anna.schumaker@oracle.com>,
-	"Darrick J. Wong" <djwong@kernel.org>,
-	Max Kellermann <max.kellermann@ionos.com>,
-	Yunhui Cui <cuiyunhui@bytedance.com>,
-	Tejun Heo <tj@kernel.org>,
-	Luo Gengkun <luogengkun@huaweicloud.com>,
-	Li Huafei <lihuafei1@huawei.com>,
-	Thorsten Blum <thorsten.blum@linux.dev>,
-	Yicong Yang <yangyicong@hisilicon.com>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	kexec@lists.infradead.org,
-	linux-hardening@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 9/9] watchdog: skip checks when panic is in progress
-Date: Mon, 25 Aug 2025 10:29:37 +0800
-Message-ID: <20250825022947.1596226-10-wangjinchao600@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250825022947.1596226-1-wangjinchao600@gmail.com>
-References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
+        d=1e100.net; s=20230601; t=1756284138; x=1756888938;
+        h=in-reply-to:references:cc:to:from:subject:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Ru399StOWX0y3ow8u4rjjmb8WPAPqnIEt4F7fasIcxE=;
+        b=k3kLzePcXNtWGj6SN8/+YI2WkJ5EQj5IDK+u8lGrEi/qNXzA1mt6DZWqmANqBMuZXs
+         CHrswS4KkIz/Jq2Za+CUcFeVVYdvwX8z9rPwbrDzOBgv4QRqXErmCvPADlZnCgDK3v2v
+         pCcIhkfnZ7UZRm/suqtjG9180SdmCLpzK64rOcxbbNJP9rpFvRElFwDx3/gTKDiZ3VpE
+         5Z4fqrnlDbiOKEXo/A+LAmkOLqSc3xBWVc/OAmtkoaHuV3SGbVcj2X00dqcfdwYlNhK6
+         4m/UVz7JBQmDn7Kf32PdfcfEbKZrKiM3Wx7xvKbGi/SRBsb2OGAAV3jwN7VI9EVaK+RH
+         X4Wg==
+X-Gm-Message-State: AOJu0Yxk2LB9yuwXUXIafzA4B3Z1JEq0s9+cajYYedI6ziYXxJKTPoij
+	LU8AtQcJTYrCs1U2azHOWcqtQKFh7gDqIkXyYlEq607RpTffoBwajH3fdD+tUDvL6kE=
+X-Gm-Gg: ASbGncsWf3LoDAUjhj3DoAgE9W2OJzVInosDMicT/rHBXd6ylCBPjbv2/I772aPZGSZ
+	XGthTn+up3qMy9YStGqIhElzaL5nITWLWQ6bepiwiH0nnZvhozXo6w/C8gQzPc7OR8zKxg2HVrw
+	G41lDtD42JjhxnXIAepPl5OLyboNUwSNPtWSTO4TUDVITsOs1Pqq0pJyjtxGCZGH2Q0DLdxl28Z
+	/WE3S9m8WCiMH+v3rCDyBIlGebeKLzIn64vKYpxvfDvQjOUXNFv8xDkMdmSMugr8aFDEkJq3Qtg
+	lbfiZcQc+e+v8nb8ePPrKLfEH5mGr641vGtgEhIKxlgDTvAuN0AxJmz85syBPG2LFDYwGCRcLp2
+	wFoHW9aSGHBao7L3C+XYFSvXrK3NgfMs33TgPD7E31HIVC9jsZ04T4qKcg5Q=
+X-Google-Smtp-Source: AGHT+IE7qHCUmyrseOQu74QlBZCIEPNa9QZI/28Loh0vgbPoaePjhaimKbaEW3VRUGcYdoYW86lRtw==
+X-Received: by 2002:a05:6402:2554:b0:61c:5d76:3a8b with SMTP id 4fb4d7f45d1cf-61c5d7640b7mr8937360a12.32.1756284137573;
+        Wed, 27 Aug 2025 01:42:17 -0700 (PDT)
+Received: from localhost ([213.244.170.152])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-61caeb5e77bsm1411780a12.35.2025.08.27.01.42.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 27 Aug 2025 01:42:17 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 27 Aug 2025 10:42:16 +0200
+Message-Id: <DCD2RLZO62P6.MNAOWRUWVFHK@fairphone.com>
+Subject: Re: [PATCH v2 3/5] drm/sysfb: simpledrm: Add support for
+ interconnect paths
+From: "Luca Weiss" <luca.weiss@fairphone.com>
+To: "Javier Martinez Canillas" <javierm@redhat.com>, "Hans de Goede"
+ <hdegoede@redhat.com>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
+ <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Rob Herring"
+ <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, "Helge Deller" <deller@gmx.de>
+Cc: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+ <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-3-f69b86cd3d7d@fairphone.com>
+ <87qzz5d3le.fsf@minerva.mail-host-address-is-not-set>
+ <DB9237QHOXRU.JRJB8SPUX8RO@fairphone.com>
+ <874ivjf5gn.fsf@minerva.mail-host-address-is-not-set>
+In-Reply-To: <874ivjf5gn.fsf@minerva.mail-host-address-is-not-set>
 
-This issue was found when an EFI pstore was configured for kdump
-logging with the NMI hard lockup detector enabled. The efi-pstore
-write operation was slow, and with a large number of logs, the
-pstore dump callback within kmsg_dump() took a long time.
+Hi Javier,
 
-This delay triggered the NMI watchdog, leading to a nested panic.
-The call flow demonstrates how the secondary panic caused an
-emergency_restart() to be triggered before the initial pstore
-operation could finish, leading to a failure to dump the logs:
+On Fri Jul 11, 2025 at 11:21 AM CEST, Javier Martinez Canillas wrote:
+> "Luca Weiss" <luca.weiss@fairphone.com> writes:
+>
+> Hello Luca,
+>
+>> Hi Javier,
+>>
+>> On Fri Jun 27, 2025 at 9:51 AM CEST, Javier Martinez Canillas wrote:
+>
+> [...]
+>
+>>>> +static int simpledrm_device_attach_icc(struct simpledrm_device *sdev)
+>>>> +{
+>>>> +	struct device *dev =3D sdev->sysfb.dev.dev;
+>>>> +	int ret, count, i;
+>>>> +
+>>>> +	count =3D of_count_phandle_with_args(dev->of_node, "interconnects",
+>>>> +							 "#interconnect-cells");
+>>>> +	if (count < 0)
+>>>> +		return 0;
+>>>> +
+>
+> You are already checking here the number of interconnects phandlers. IIUC
+> this should return -ENOENT if there's no "interconects" property and your
+> logic returns success in that case.
 
-  real panic() {
-	kmsg_dump() {
-		...
-		pstore_dump() {
-			start_dump();
-			... // long time operation triggers NMI watchdog
-			nmi panic() {
-				...
-				emergency_restart(); // pstore unfinished
-			}
-			...
-			finish_dump(); // never reached
-		}
-	}
-  }
+We shouldn't error out in case there's no interconnects defined for this
+simple-framebuffer though? That'd break all other usages of it?
 
-Both watchdog_buddy_check_hardlockup() and watchdog_overflow_callback() may
-trigger during a panic. This can lead to recursive panic handling.
+>
+> [...]
+>
+>>>
+>>> You could use dev_err_probe() instead that already handles the -EPROBE_=
+DEFER
+>>> case and also will get this message in the /sys/kernel/debug/devices_de=
+ferred
+>>> debugfs entry, as the reason why the probe deferral happened.
+>>
+>> Not quite sure how to implement dev_err_probe, but I think this should
+>> be quite okay?
+>>
+>
+> And of_icc_get_by_index() should only return NULL if CONFIG_INTERCONNECT
+> is disabled but you have ifdef guards already for this so it should not
+> happen.
+>
+>> 		if (IS_ERR_OR_NULL(sdev->icc_paths[i])) {
+>
+> Then here you could just do a IS_ERR() check and not care about being NUL=
+L.
 
-Add panic_in_progress() checks so watchdog activity is skipped once a panic
-has begun.
+But checking also for NULL shouldn't hurt either, in case the compile
+guards get removed in the future or something?
 
-This prevents recursive panic and keeps the panic path more reliable.
+Quote:
+> * Return: icc_path pointer on success or ERR_PTR() on error. NULL is retu=
+rned
+> * when the API is disabled or the "interconnects" DT property is missing.
 
-Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
-Reviewed-by: Yury Norov (NVIDIA) <yury.norov@gmail.com>
----
- kernel/watchdog.c      | 6 ++++++
- kernel/watchdog_perf.c | 4 ++++
- 2 files changed, 10 insertions(+)
 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 80b56c002c7f..597c0d947c93 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -740,6 +740,12 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 	if (!watchdog_enabled)
- 		return HRTIMER_NORESTART;
- 
-+	/*
-+	 * pass the buddy check if a panic is in process
-+	 */
-+	if (panic_in_progress())
-+		return HRTIMER_NORESTART;
-+
- 	watchdog_hardlockup_kick();
- 
- 	/* kick the softlockup detector */
-diff --git a/kernel/watchdog_perf.c b/kernel/watchdog_perf.c
-index 9c58f5b4381d..d3ca70e3c256 100644
---- a/kernel/watchdog_perf.c
-+++ b/kernel/watchdog_perf.c
-@@ -12,6 +12,7 @@
- 
- #define pr_fmt(fmt) "NMI watchdog: " fmt
- 
-+#include <linux/panic.h>
- #include <linux/nmi.h>
- #include <linux/atomic.h>
- #include <linux/module.h>
-@@ -108,6 +109,9 @@ static void watchdog_overflow_callback(struct perf_event *event,
- 	/* Ensure the watchdog never gets throttled */
- 	event->hw.interrupts = 0;
- 
-+	if (panic_in_progress())
-+		return;
-+
- 	if (!watchdog_check_timestamp())
- 		return;
- 
--- 
-2.43.0
+
+>
+>> 			ret =3D dev_err_probe(dev, PTR_ERR(sdev->icc_paths[i]),
+>> 				      "failed to get interconnect path %u\n", i);
+>> 			if (ret =3D=3D -EPROBE_DEFER)
+>> 				goto err;
+>
+> Why you only want to put the icc_paths get for the probe deferral case? I
+> think that you want to do it for any error?
+
+This is the same logic as e.g. for the regulator code in simpledrm. The
+idea seems to be that in case some regulator (or here interconnect)
+doesn't probe correctly, we still try anyways. Just for EPROBE_DEFER we
+defer and wait until the supplier is available.
+
+So defer -> defer simpledrm probe
+So error -> ignore error and continue probe
+
+>
+>> 			continue;
+>
+> I'm not sure why you need this?
+
+For the above behavior.
+
+I guess there were some original design decisions behind handling it
+this way, so I don't see a reason to handle it differently for
+interconnects.
+
+>
+>> 		}
+>>
+>> That would still keep the current behavior for defer vs permanent error
+>> while printing when necessary and having it for devices_deferred for the
+>> defer case.
+>>
+>
+> As mentioned I still don't understand why you want the error path to only
+> be called for probe deferral. I would had thought that any failure to get
+> an interconnect would led to an error and cleanup.
+
+See above.
+
+Regards
+Luca
+
+>
+>> Not sure what the difference between drm_err and dev_err are, but I
+>> trust you on that.
+>>
+>
+> The drm_err() adds DRM specific info but IMO the dev_err_probe() is bette=
+r
+> to avoid printing errors in case of probe deferral and also to have it in
+> the devices_deferred debugfs entry.
 

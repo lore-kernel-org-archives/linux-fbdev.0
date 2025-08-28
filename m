@@ -1,208 +1,112 @@
-Received: from mail-ed1-f66.google.com (mail-ed1-f66.google.com [209.85.208.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F69E33A023
-	for <linux-fbdev@vger.kernel.org>; Wed, 27 Aug 2025 08:42:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.66
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 388AE176ADB;
+	Thu, 28 Aug 2025 01:00:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756284142; cv=none; b=AfYmrthGK8//kqCEYNLSRL7NE63kn5FCwvRJK2LL6kTElXs3Jxwz/KtUiTl9q/MLtvi4z+PiT9yTqwKExIseF/8ln/to19uaJaJcbQ7CAng0+aTQZ8KHamVykJiDi7proNOdipKYFIi5uy6/iKflC/5i5+tQsHCo5N8wvD5ZFx8=
+	t=1756342822; cv=none; b=DzkFeuHC4OnH9NC/OqDsXehHVX4Ry/tmkD6WWIzPvHDaHiurPXsd14PoWWCi9mtdLynRkqboAvtuCdLViKLpPwuCTNb80/9dSDHYarvAXUAVrYODy4wsCyaDKIFXSl8s1pM+cvmQArJ7wZDN/qpV6dSvunQYvvfVlcSD4Nh8ceA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756284142; c=relaxed/simple;
-	bh=C3J5F98SUq/XbJdI5mkH/BowXWLNgIYkLopDpGLXpXI=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=VLANtwyjcDy2x45EzxviIcw5OuajuxFpladUewa/yCRZdc9jWUCAy2/hM8rPjAMt2iLDXv3Z5Ctn5n+XH8b9HjqnNfhkIKKjjDFTYSypmrljo672TMV/HzwriHXKvN2U5SE51l70psz5W6u0Nqms4wpZYmzyAlCuLiQOoBR8SV0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=eEc25c3x; arc=none smtp.client-ip=209.85.208.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
+	s=arc-20240116; t=1756342822; c=relaxed/simple;
+	bh=XQu1rdxxUinGT7Y9vLuOwBTb0UwZx4H12j6Ewo+CEhY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GiZ75Y/4D499LFrjHJl+NGq9SX6/rNpftm9QMN7Iaum5B2G3Nxqnjqg4i+IhMgzSXp4+69t+c96Jepsrdcp0jsGVfogCRB8LNyzymoAFLV6qZPVfcfWsJNWeTRyoximbMa0EKR5w9e0enJTiKTYwsp8zbTtuQ0lXeseupRPck+0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=EVUhRe0o; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="eEc25c3x"
-Received: by mail-ed1-f66.google.com with SMTP id 4fb4d7f45d1cf-61c325a4d18so7176005a12.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 27 Aug 2025 01:42:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1756284138; x=1756888938; darn=vger.kernel.org;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Ru399StOWX0y3ow8u4rjjmb8WPAPqnIEt4F7fasIcxE=;
-        b=eEc25c3x5PXcT1AHnb/dd/pK0kjfUbP9sm+mbeau8SUzBSmQAFsDjgICcXFHWkCasF
-         CEJRrex62BkT3As7pW65RpznQk6trJexK/QcyJPPoaxomyHKKkjI/PNbOVGnmpfIb8BH
-         auofQ2V/WJi55gqWSb06bITRix7V0pbcrxchJES+jYAlAMh7kqyspAC73bam1RKcYucG
-         w2IoXhXz6KB27jTSfHXmQjFsBR7lfDjWp+Rgr3EPkrPa1QzLnoYo0DRGdV1Pke367wS9
-         VYUFYGGOudjo4onhgVI1wDgcO3esXjZMRoVbSaszfYkj2zM+nQvbOdgN2nGDIl0cavoK
-         KEOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756284138; x=1756888938;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=Ru399StOWX0y3ow8u4rjjmb8WPAPqnIEt4F7fasIcxE=;
-        b=k3kLzePcXNtWGj6SN8/+YI2WkJ5EQj5IDK+u8lGrEi/qNXzA1mt6DZWqmANqBMuZXs
-         CHrswS4KkIz/Jq2Za+CUcFeVVYdvwX8z9rPwbrDzOBgv4QRqXErmCvPADlZnCgDK3v2v
-         pCcIhkfnZ7UZRm/suqtjG9180SdmCLpzK64rOcxbbNJP9rpFvRElFwDx3/gTKDiZ3VpE
-         5Z4fqrnlDbiOKEXo/A+LAmkOLqSc3xBWVc/OAmtkoaHuV3SGbVcj2X00dqcfdwYlNhK6
-         4m/UVz7JBQmDn7Kf32PdfcfEbKZrKiM3Wx7xvKbGi/SRBsb2OGAAV3jwN7VI9EVaK+RH
-         X4Wg==
-X-Gm-Message-State: AOJu0Yxk2LB9yuwXUXIafzA4B3Z1JEq0s9+cajYYedI6ziYXxJKTPoij
-	LU8AtQcJTYrCs1U2azHOWcqtQKFh7gDqIkXyYlEq607RpTffoBwajH3fdD+tUDvL6kE=
-X-Gm-Gg: ASbGncsWf3LoDAUjhj3DoAgE9W2OJzVInosDMicT/rHBXd6ylCBPjbv2/I772aPZGSZ
-	XGthTn+up3qMy9YStGqIhElzaL5nITWLWQ6bepiwiH0nnZvhozXo6w/C8gQzPc7OR8zKxg2HVrw
-	G41lDtD42JjhxnXIAepPl5OLyboNUwSNPtWSTO4TUDVITsOs1Pqq0pJyjtxGCZGH2Q0DLdxl28Z
-	/WE3S9m8WCiMH+v3rCDyBIlGebeKLzIn64vKYpxvfDvQjOUXNFv8xDkMdmSMugr8aFDEkJq3Qtg
-	lbfiZcQc+e+v8nb8ePPrKLfEH5mGr641vGtgEhIKxlgDTvAuN0AxJmz85syBPG2LFDYwGCRcLp2
-	wFoHW9aSGHBao7L3C+XYFSvXrK3NgfMs33TgPD7E31HIVC9jsZ04T4qKcg5Q=
-X-Google-Smtp-Source: AGHT+IE7qHCUmyrseOQu74QlBZCIEPNa9QZI/28Loh0vgbPoaePjhaimKbaEW3VRUGcYdoYW86lRtw==
-X-Received: by 2002:a05:6402:2554:b0:61c:5d76:3a8b with SMTP id 4fb4d7f45d1cf-61c5d7640b7mr8937360a12.32.1756284137573;
-        Wed, 27 Aug 2025 01:42:17 -0700 (PDT)
-Received: from localhost ([213.244.170.152])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-61caeb5e77bsm1411780a12.35.2025.08.27.01.42.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 27 Aug 2025 01:42:17 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="EVUhRe0o"
+Received: from mrdev.corp.microsoft.com (192-184-212-33.fiber.dynamic.sonic.net [192.184.212.33])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 40DB3211082D;
+	Wed, 27 Aug 2025 18:00:14 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 40DB3211082D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1756342815;
+	bh=ZR3q/sqU11jc+D0wNTmcaAct75MXJv7BhHNEAQ7boIU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=EVUhRe0ohRSnQF/YYNdCLVZptm6BIAk+Hq6DVhul1oAbqMlFRe0KvhyhxKPoM7efX
+	 rMQI8XEKVQhtmJoKGyGeHa0irYjiEI8GWCSnQeC796ekCftvH1sfujFiin5aYZn37O
+	 3/MMjWjjAmmF9NONI30kvVGYQdEhMti1myllwkL0=
+From: Mukesh Rathor <mrathor@linux.microsoft.com>
+To: dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	linux-input@vger.kernel.org,
+	linux-hyperv@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	virtualization@lists.linux.dev
+Cc: maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	tzimmermann@suse.de,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	jikos@kernel.org,
+	bentiss@kernel.org,
+	kys@microsoft.com,
+	haiyangz@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	dmitry.torokhov@gmail.com,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	bhelgaas@google.com,
+	James.Bottomley@HansenPartnership.com,
+	martin.petersen@oracle.com,
+	gregkh@linuxfoundation.org,
+	deller@gmx.de,
+	arnd@arndb.de,
+	sgarzare@redhat.com,
+	horms@kernel.org
+Subject: [PATCH V0 0/2] Fix CONFIG_HYPERV and vmbus related anamoly
+Date: Wed, 27 Aug 2025 17:59:50 -0700
+Message-Id: <20250828005952.884343-1-mrathor@linux.microsoft.com>
+X-Mailer: git-send-email 2.36.1.vfs.0.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 27 Aug 2025 10:42:16 +0200
-Message-Id: <DCD2RLZO62P6.MNAOWRUWVFHK@fairphone.com>
-Subject: Re: [PATCH v2 3/5] drm/sysfb: simpledrm: Add support for
- interconnect paths
-From: "Luca Weiss" <luca.weiss@fairphone.com>
-To: "Javier Martinez Canillas" <javierm@redhat.com>, "Hans de Goede"
- <hdegoede@redhat.com>, "Maarten Lankhorst"
- <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
- <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Rob Herring"
- <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
- Dooley" <conor+dt@kernel.org>, "Helge Deller" <deller@gmx.de>
-Cc: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
-References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
- <20250623-simple-drm-fb-icc-v2-3-f69b86cd3d7d@fairphone.com>
- <87qzz5d3le.fsf@minerva.mail-host-address-is-not-set>
- <DB9237QHOXRU.JRJB8SPUX8RO@fairphone.com>
- <874ivjf5gn.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <874ivjf5gn.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Hi Javier,
+At present, drivers/Makefile will subst =m to =y for CONFIG_HYPERV for hv
+subdir. Also, drivers/hv/Makefile replaces =m to =y to build in
+hv_common.c that is needed for the drivers. Moreover, vmbus driver is
+built if CONFIG_HYPER is set, either loadable or builtin.
 
-On Fri Jul 11, 2025 at 11:21 AM CEST, Javier Martinez Canillas wrote:
-> "Luca Weiss" <luca.weiss@fairphone.com> writes:
->
-> Hello Luca,
->
->> Hi Javier,
->>
->> On Fri Jun 27, 2025 at 9:51 AM CEST, Javier Martinez Canillas wrote:
->
-> [...]
->
->>>> +static int simpledrm_device_attach_icc(struct simpledrm_device *sdev)
->>>> +{
->>>> +	struct device *dev =3D sdev->sysfb.dev.dev;
->>>> +	int ret, count, i;
->>>> +
->>>> +	count =3D of_count_phandle_with_args(dev->of_node, "interconnects",
->>>> +							 "#interconnect-cells");
->>>> +	if (count < 0)
->>>> +		return 0;
->>>> +
->
-> You are already checking here the number of interconnects phandlers. IIUC
-> this should return -ENOENT if there's no "interconects" property and your
-> logic returns success in that case.
+This is not a good approach. CONFIG_HYPERV is really an umbrella config that
+encompasses builtin code and various other things and not a dedicated config
+option for VMBUS. Vmbus should really have a config option just like
+CONFIG_HYPERV_BALLOON etc. This small series introduces CONFIG_HYPERV_VMBUS
+to build VMBUS driver and make that distinction explicit. With that
+CONFIG_HYPERV could be changed to bool.
 
-We shouldn't error out in case there's no interconnects defined for this
-simple-framebuffer though? That'd break all other usages of it?
+For now, hv_common.c is left as is to reduce conflicts for upcoming patches,
+but once merges are mostly done, that and some others should be moved to
+virt/hyperv directory.
 
->
-> [...]
->
->>>
->>> You could use dev_err_probe() instead that already handles the -EPROBE_=
-DEFER
->>> case and also will get this message in the /sys/kernel/debug/devices_de=
-ferred
->>> debugfs entry, as the reason why the probe deferral happened.
->>
->> Not quite sure how to implement dev_err_probe, but I think this should
->> be quite okay?
->>
->
-> And of_icc_get_by_index() should only return NULL if CONFIG_INTERCONNECT
-> is disabled but you have ifdef guards already for this so it should not
-> happen.
->
->> 		if (IS_ERR_OR_NULL(sdev->icc_paths[i])) {
->
-> Then here you could just do a IS_ERR() check and not care about being NUL=
-L.
+Mukesh Rathor (2):
+  hyper-v: Add CONFIG_HYPERV_VMBUS option
+  hyper-v: Make CONFIG_HYPERV bool
 
-But checking also for NULL shouldn't hurt either, in case the compile
-guards get removed in the future or something?
+ drivers/Makefile               |  2 +-
+ drivers/gpu/drm/Kconfig        |  2 +-
+ drivers/hid/Kconfig            |  2 +-
+ drivers/hv/Kconfig             | 14 ++++++++++----
+ drivers/hv/Makefile            |  4 ++--
+ drivers/input/serio/Kconfig    |  4 ++--
+ drivers/net/hyperv/Kconfig     |  2 +-
+ drivers/pci/Kconfig            |  2 +-
+ drivers/scsi/Kconfig           |  2 +-
+ drivers/uio/Kconfig            |  2 +-
+ drivers/video/fbdev/Kconfig    |  2 +-
+ include/asm-generic/mshyperv.h |  8 +++++---
+ net/vmw_vsock/Kconfig          |  2 +-
+ 13 files changed, 28 insertions(+), 20 deletions(-)
 
-Quote:
-> * Return: icc_path pointer on success or ERR_PTR() on error. NULL is retu=
-rned
-> * when the API is disabled or the "interconnects" DT property is missing.
-
-
-
->
->> 			ret =3D dev_err_probe(dev, PTR_ERR(sdev->icc_paths[i]),
->> 				      "failed to get interconnect path %u\n", i);
->> 			if (ret =3D=3D -EPROBE_DEFER)
->> 				goto err;
->
-> Why you only want to put the icc_paths get for the probe deferral case? I
-> think that you want to do it for any error?
-
-This is the same logic as e.g. for the regulator code in simpledrm. The
-idea seems to be that in case some regulator (or here interconnect)
-doesn't probe correctly, we still try anyways. Just for EPROBE_DEFER we
-defer and wait until the supplier is available.
-
-So defer -> defer simpledrm probe
-So error -> ignore error and continue probe
-
->
->> 			continue;
->
-> I'm not sure why you need this?
-
-For the above behavior.
-
-I guess there were some original design decisions behind handling it
-this way, so I don't see a reason to handle it differently for
-interconnects.
-
->
->> 		}
->>
->> That would still keep the current behavior for defer vs permanent error
->> while printing when necessary and having it for devices_deferred for the
->> defer case.
->>
->
-> As mentioned I still don't understand why you want the error path to only
-> be called for probe deferral. I would had thought that any failure to get
-> an interconnect would led to an error and cleanup.
-
-See above.
-
-Regards
-Luca
-
->
->> Not sure what the difference between drm_err and dev_err are, but I
->> trust you on that.
->>
->
-> The drm_err() adds DRM specific info but IMO the dev_err_probe() is bette=
-r
-> to avoid printing errors in case of probe deferral and also to have it in
-> the devices_deferred debugfs entry.
+-- 
+2.36.1.vfs.0.0
 

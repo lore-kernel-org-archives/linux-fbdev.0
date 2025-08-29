@@ -1,171 +1,316 @@
-Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8BB930CD9F;
-	Fri, 29 Aug 2025 04:39:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0950122B594;
+	Fri, 29 Aug 2025 20:59:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756442372; cv=none; b=V4488zoD88oUVTAfG5Jq42GgFlAAnmMThXuKAUQ0t56pSL9LaKARV7dd/VuBR7QCdu8Z7pFn11zOr7osjJ2gYiVPMi3TferDdEq0iOEVYS097bwVMPN/jGbC5k6pGh16iijuFwxgJCCbRjDjRGLB3OI7wo7ChePAjmdfDd1Hsa8=
+	t=1756501180; cv=none; b=isIZRD5OoIYWWQzC5Fyqlx/SqXLuQZjUF6VYg4w0jhRkyk/d/ohBTbkyO+NPyLYnn8/z60l8LZBZzSE0kR/s9Dbb0KsoZj0V2ohVYlcAa3r5u66dx71xL2IhtWCj44PRe6fQTB+OKkU89HvhzIsuDmss687fxkFdgH22RQSv7m8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756442372; c=relaxed/simple;
-	bh=HmCUTmclUH+l14uLFBEDWRsTY0aJH86oSyDvSLARr8k=;
+	s=arc-20240116; t=1756501180; c=relaxed/simple;
+	bh=+2BW0UEG49SU/o/955BEv69wInYx4DfrQgnHNrBDmdc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bgGxjIQBw7g4ZUIYRsrhOiSF074z1iallYRijlCb1xbMF0jPZhmY4MO1OB0eobUnUjju2OrPXditb4QUFoUM1YNhKETuqiOMyS6Fuvca2KrnFUKRWLcJ7IR+Zoic8VMIjT0lZtpQIn7Iq2TfdOvf3iY5hUL9rnsuvFBPI3iikcI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=c0R5OEAD; arc=none smtp.client-ip=209.85.210.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=tt7rTCT6H0/q5rEPXyru7MC5eFsIjG/bz7YGFum1277tNWrf3tT0fTYLKc3XvF/VJbk5EXCp/PF/PIOPCg259Sjl/albHlHrqn/RGTQkk8OgjXArJ5x6GeBdQGCCCSKBYDAqgRegSOASZYQhsQ7irnHf8T0kSPBZq4XT+zsK5WI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=dESvnRAv; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="c0R5OEAD"
-Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-7722f2f2aa4so278068b3a.1;
-        Thu, 28 Aug 2025 21:39:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756442370; x=1757047170; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=YMG2hjYDplEAn5LWv3MpjvQ+a5gZ6WKPCO72/I7KThc=;
-        b=c0R5OEAD2P7RHDfYDYZrJ+mdMHxWWEK6Gg89IE0BgpBXBf8NMx+EpJKqXBDady0OZA
-         UySerriIsurKWJj0ZC+7Ru7QUOM+EbfeX6jnnbTd/1ELzicza65gvtKihD9eG+fWk8H4
-         hwYmVIvNlechBUd15FX100Qsjb2/KbEM21tH2hWxJ0/r+mKSvJVmsi34UwOSDBXoYYWk
-         4PiJQRVjyKXN50eaDU6WlpHAxqOcI5/9c7eBdb74CaTBvGI/wDt65ExGq8oM/7kpx/is
-         eVtcg9zVR3w42/pCt+g7rnTkPWVLbKYx/MLcwNwF6RRr89huF9BMGx6pPmXe5Rf6iyZv
-         g7QQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756442370; x=1757047170;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YMG2hjYDplEAn5LWv3MpjvQ+a5gZ6WKPCO72/I7KThc=;
-        b=OaTgCWfyTzXHADZl49GX+7VXljRqlR/7cBFTUtETb4EFycUiHfgrkXnLHSv8uGiMUy
-         zyyp2jtOO/15Fy4t9AYaIzk4v/h5O0gloRHhTVMnenr4JJljcsPrlvEDa7jd//nrQNKZ
-         a0HojyY6EDjdGkoEpXgPEUj8CbAMS9T7mdaOGC8nNnWl2aaBGpWbS4Lm/Ja5xAkQVp9B
-         tF2cK2bkMSCs+0dEMVhqUPwkZnx5q0DkXApoO24SyfVfBcLjEEygo+azis3xxxiGYR9V
-         rUbnWBl7QUcTiMCw+eAM1cWxy2UYuEhBgB4G5hEhb5g5vz2527n6fhXxq1wGKZ27FzqE
-         ZAjg==
-X-Forwarded-Encrypted: i=1; AJvYcCVV8O32oh+HFmq+qJpYQxZ+NHzhXIpDYmJUyoH6x1zesqBzusI+35p6JPLLxIzy8+epd8far+v0/xkvdg==@vger.kernel.org, AJvYcCXLxM19a3UAgurRwLbiOViGYJW8ueGtdk1fMUQT7jEP77yWTwJanTdkfsRhrC0qnpVbWTHQjNdqCxuAC+BI@vger.kernel.org, AJvYcCXa66D4ix0UJyWglc4qtMP9o0B6vN883Itw7AhN/FC4ehyexNRhKRYXYQR3gb8q3k9ICe9F5KtES2Vxl58Ne8NQ@vger.kernel.org
-X-Gm-Message-State: AOJu0YznHONCGcNvdjiu1U4Z9LHQIiL9cMJW0I4lBgMiIqjO1Hxr0/NK
-	QCvlCViWxAy+5zOIRQxtrvKQY5b1s7Wyb5Enw1ovzjJgyD/MbkrcYOAn
-X-Gm-Gg: ASbGncvDiWyTtjn/eG1CgMRWB3k7zL+TMSn5BUY/1arBuTh0aFRCMB+t2N5IPBEe25f
-	/1r8JBtY1rB3iNIn2kHHwI7/DZ0j6pU9N08jd/1ycJqbc1h9nI3BKTFdQqJcuS2Qr3qI7PbQulx
-	9KqUq+kpmv3VPxYafjV/HWrjb36VNICd5GGNBuG37raHTH+wl549662qKrducrCiX+UCwy99AcO
-	yTEZnrBGBkbU62aB0zdqE3bX6ns1QZrRZXw1dviNp+/WF7doFSvF2d+SpHcgA+T6RZAdtvWCJYX
-	ErxwSqn0TjuG/YhqED9hZgkMPJHH/MZCHQ9kuscHPTaGSw/k7v3/x/46XYUQuXdhLG1hT6j1tjg
-	IvacHZRAGhvmku6lXrZcSJ/IL7Cuk9cHrgD9iJxDyUJTCv+w=
-X-Google-Smtp-Source: AGHT+IGJUc7Yk+JHWAKY9iaRV2EhpE+ow/DVQcP8YQgFsIIxjRV2hvCIR3RWEDtRtL041w/+SYnwCQ==
-X-Received: by 2002:a05:6a00:bd92:b0:76b:f7af:c47d with SMTP id d2e1a72fcca58-7702f9df039mr32683745b3a.4.1756442369806;
-        Thu, 28 Aug 2025 21:39:29 -0700 (PDT)
-Received: from [127.0.0.1] ([103.88.46.62])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7722a26a4e5sm1070875b3a.19.2025.08.28.21.39.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 28 Aug 2025 21:39:29 -0700 (PDT)
-Message-ID: <58e87116-a8af-4c8f-b5b4-3d0540cd3333@gmail.com>
-Date: Fri, 29 Aug 2025 12:39:14 +0800
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="dESvnRAv"
+Received: from [192.168.0.88] (192-184-212-33.fiber.dynamic.sonic.net [192.184.212.33])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 4CA79211627B;
+	Fri, 29 Aug 2025 13:59:36 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 4CA79211627B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1756501177;
+	bh=JFWDwi8WW+5cmq8k1iafkjchsEZ4XvNd8Q16Wo9KAu8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=dESvnRAvmpVLr0VYBZnRRYhqqZR3B639/FohGqaKD2D5bP/9Yrve21Irvr3nS9rb6
+	 oV0XKAIHOKvPIy3mqCdHpdb+o4CglUZTuulng4cFfFX5xmNa+/8oCUYPlxUGlvaNbr
+	 67e3J3ZlD0dwqiTzzvQCWTMikVloz4heqlFWTFCA=
+Message-ID: <0b9ea4e8-3751-0286-4bd9-fe09035dd22d@linux.microsoft.com>
+Date: Fri, 29 Aug 2025 13:59:35 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/9] crash_core: use panic_try_start() in crash_kexec()
-To: Qianqiang Liu <qianqiang.liu@163.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Baoquan He <bhe@redhat.com>,
- Yury Norov <yury.norov@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>, John Ogness
- <john.ogness@linutronix.de>, Sergey Senozhatsky <senozhatsky@chromium.org>,
- Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
- Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>,
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
- Thomas Zimmermann <tzimmermann@suse.de>,
- =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>,
- Shixiong Ou <oushixiong@kylinos.cn>, Zsolt Kajtar <soci@c64.rulez.org>,
- Ingo Molnar <mingo@kernel.org>, Nam Cao <namcao@linutronix.de>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Joel Fernandes <joelagnelf@nvidia.com>,
- Joel Granados <joel.granados@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Sohil Mehta <sohil.mehta@intel.com>, Feng Tang
- <feng.tang@linux.alibaba.com>, Sravan Kumar Gundu
- <sravankumarlpu@gmail.com>, Douglas Anderson <dianders@chromium.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Anna Schumaker <anna.schumaker@oracle.com>,
- "Darrick J. Wong" <djwong@kernel.org>,
- Max Kellermann <max.kellermann@ionos.com>,
- Yunhui Cui <cuiyunhui@bytedance.com>, Tejun Heo <tj@kernel.org>,
- Luo Gengkun <luogengkun@huaweicloud.com>, Li Huafei <lihuafei1@huawei.com>,
- Thorsten Blum <thorsten.blum@linux.dev>,
- Yicong Yang <yangyicong@hisilicon.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, kexec@lists.infradead.org,
- linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
- <20250825022947.1596226-4-wangjinchao600@gmail.com>
- <aLEQy-srX89Rndch@debian.debian.local>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.13.1
+Subject: Re: [PATCH V0 1/2] hyper-v: Add CONFIG_HYPERV_VMBUS option
 Content-Language: en-US
-From: Jinchao Wang <wangjinchao600@gmail.com>
-In-Reply-To: <aLEQy-srX89Rndch@debian.debian.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Nuno Das Neves <nunodasneves@linux.microsoft.com>,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-hyperv@vger.kernel.org,
+ netdev@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-arch@vger.kernel.org, virtualization@lists.linux.dev
+Cc: maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+ tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, jikos@kernel.org,
+ bentiss@kernel.org, kys@microsoft.com, haiyangz@microsoft.com,
+ wei.liu@kernel.org, decui@microsoft.com, dmitry.torokhov@gmail.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, bhelgaas@google.com,
+ James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com,
+ gregkh@linuxfoundation.org, deller@gmx.de, arnd@arndb.de,
+ sgarzare@redhat.com, horms@kernel.org
+References: <20250828005952.884343-1-mrathor@linux.microsoft.com>
+ <20250828005952.884343-2-mrathor@linux.microsoft.com>
+ <5003d5e8-a025-4827-b8a0-6fe11877421b@linux.microsoft.com>
+From: Mukesh R <mrathor@linux.microsoft.com>
+In-Reply-To: <5003d5e8-a025-4827-b8a0-6fe11877421b@linux.microsoft.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 8/29/25 10:30, Qianqiang Liu wrote:
-> On Mon, Aug 25, 2025 at 10:29:31AM +0800, Jinchao Wang wrote:
->> crash_kexec() had its own code to exclude parallel execution by setting
->> panic_cpu. This is already handled by panic_try_start(). Switch to
->> panic_try_start() to remove the duplication and keep the logic consistent.
+On 8/28/25 17:29, Nuno Das Neves wrote:
+> On 8/27/2025 5:59 PM, Mukesh Rathor wrote:
+>> Somehow vmbus driver is hinged on CONFIG_HYPERV. It appears this is initial
+>> code that did not get addressed when the scope of CONFIG_HYPERV went beyond
+>> vmbus. This commit creates a fine grained HYPERV_VMBUS option and updates
+>> drivers that depend on VMBUS.
 >>
->> Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
+> 
+> The commit message can be improved. The docs are helpful here:
+> https://docs.kernel.org/process/submitting-patches.html#describe-your-changes
+> 
+> In particular, some clearer reasons for the change.
+> e.g.
+> - CONFIG_HYPERV encompasses too much right now. It's not always clear what
+>   depends on builtin hyperv code and what depends on vmbus.
+> 
+> - Since there is so much builtin hyperv code, building CONFIG_HYPERV as a
+>   module doesn't make intuitive sense. Building vmbus support as a module does.
+> 
+> - There are actually some real scenarios someone may want to compile with
+>   CONFIG_HYPERV but without vmbus, like baremetal root partition.
+> 
+> FWIW I think it's a good idea, interested to hear what others think.
+
+Sorry, you had mentioned it and I expanded the cover letter and forgot the
+commit message here. You said it better than I could above, so I can just use
+that in V1 next week if no other comments.
+
+Thanks,
+-Mukesh
+
+
+> Nuno
+> 
+>> Signed-off-by: Mukesh Rathor <mrathor@linux.microsoft.com>
 >> ---
->>   kernel/crash_core.c | 15 +++------------
->>   1 file changed, 3 insertions(+), 12 deletions(-)
+>>  drivers/gpu/drm/Kconfig        |  2 +-
+>>  drivers/hid/Kconfig            |  2 +-
+>>  drivers/hv/Kconfig             | 12 +++++++++---
+>>  drivers/hv/Makefile            |  2 +-
+>>  drivers/input/serio/Kconfig    |  4 ++--
+>>  drivers/net/hyperv/Kconfig     |  2 +-
+>>  drivers/pci/Kconfig            |  2 +-
+>>  drivers/scsi/Kconfig           |  2 +-
+>>  drivers/uio/Kconfig            |  2 +-
+>>  drivers/video/fbdev/Kconfig    |  2 +-
+>>  include/asm-generic/mshyperv.h |  8 +++++---
+>>  net/vmw_vsock/Kconfig          |  2 +-
+>>  12 files changed, 25 insertions(+), 17 deletions(-)
 >>
->> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
->> index a4ef79591eb2..bb38bbaf3a26 100644
->> --- a/kernel/crash_core.c
->> +++ b/kernel/crash_core.c
->> @@ -4,6 +4,7 @@
->>    * Copyright (C) 2002-2004 Eric Biederman  <ebiederm@xmission.com>
->>    */
->>   
->> +#include "linux/panic.h"
-> 
-> Can you change this line of code to #include <linux/panic.h>?
-Yes, I will.
-Thanks for the feedback.>
->>   #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->>   
->>   #include <linux/buildid.h>
->> @@ -143,17 +144,7 @@ STACK_FRAME_NON_STANDARD(__crash_kexec);
->>   
->>   __bpf_kfunc void crash_kexec(struct pt_regs *regs)
->>   {
->> -	int old_cpu, this_cpu;
+>> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+>> index f7ea8e895c0c..58f34da061c6 100644
+>> --- a/drivers/gpu/drm/Kconfig
+>> +++ b/drivers/gpu/drm/Kconfig
+>> @@ -398,7 +398,7 @@ source "drivers/gpu/drm/imagination/Kconfig"
+>>  
+>>  config DRM_HYPERV
+>>  	tristate "DRM Support for Hyper-V synthetic video device"
+>> -	depends on DRM && PCI && HYPERV
+>> +	depends on DRM && PCI && HYPERV_VMBUS
+>>  	select DRM_CLIENT_SELECTION
+>>  	select DRM_KMS_HELPER
+>>  	select DRM_GEM_SHMEM_HELPER
+>> diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+>> index a57901203aeb..fe3dc8c0db99 100644
+>> --- a/drivers/hid/Kconfig
+>> +++ b/drivers/hid/Kconfig
+>> @@ -1162,7 +1162,7 @@ config GREENASIA_FF
+>>  
+>>  config HID_HYPERV_MOUSE
+>>  	tristate "Microsoft Hyper-V mouse driver"
+>> -	depends on HYPERV
+>> +	depends on HYPERV_VMBUS
+>>  	help
+>>  	Select this option to enable the Hyper-V mouse driver.
+>>  
+>> diff --git a/drivers/hv/Kconfig b/drivers/hv/Kconfig
+>> index 2e8df09db599..08c4ed005137 100644
+>> --- a/drivers/hv/Kconfig
+>> +++ b/drivers/hv/Kconfig
+>> @@ -44,18 +44,24 @@ config HYPERV_TIMER
+>>  
+>>  config HYPERV_UTILS
+>>  	tristate "Microsoft Hyper-V Utilities driver"
+>> -	depends on HYPERV && CONNECTOR && NLS
+>> +	depends on HYPERV_VMBUS && CONNECTOR && NLS
+>>  	depends on PTP_1588_CLOCK_OPTIONAL
+>>  	help
+>>  	  Select this option to enable the Hyper-V Utilities.
+>>  
+>>  config HYPERV_BALLOON
+>>  	tristate "Microsoft Hyper-V Balloon driver"
+>> -	depends on HYPERV
+>> +	depends on HYPERV_VMBUS
+>>  	select PAGE_REPORTING
+>>  	help
+>>  	  Select this option to enable Hyper-V Balloon driver.
+>>  
+>> +config HYPERV_VMBUS
+>> +	tristate "Microsoft Hyper-V Vmbus driver"
+>> +	depends on HYPERV
+>> +	help
+>> +	  Select this option to enable Hyper-V Vmbus driver.
+>> +
+>>  config MSHV_ROOT
+>>  	tristate "Microsoft Hyper-V root partition support"
+>>  	depends on HYPERV && (X86_64 || ARM64)
+>> @@ -75,7 +81,7 @@ config MSHV_ROOT
+>>  
+>>  config MSHV_VTL
+>>  	tristate "Microsoft Hyper-V VTL driver"
+>> -	depends on X86_64 && HYPERV_VTL_MODE
+>> +	depends on X86_64 && HYPERV_VTL_MODE && HYPERV_VMBUS
+>>  	# Mapping VTL0 memory to a userspace process in VTL2 is supported in OpenHCL.
+>>  	# VTL2 for OpenHCL makes use of Huge Pages to improve performance on VMs,
+>>  	# specially with large memory requirements.
+>> diff --git a/drivers/hv/Makefile b/drivers/hv/Makefile
+>> index c53a0df746b7..050517756a82 100644
+>> --- a/drivers/hv/Makefile
+>> +++ b/drivers/hv/Makefile
+>> @@ -1,5 +1,5 @@
+>>  # SPDX-License-Identifier: GPL-2.0
+>> -obj-$(CONFIG_HYPERV)		+= hv_vmbus.o
+>> +obj-$(CONFIG_HYPERV_VMBUS)	+= hv_vmbus.o
+>>  obj-$(CONFIG_HYPERV_UTILS)	+= hv_utils.o
+>>  obj-$(CONFIG_HYPERV_BALLOON)	+= hv_balloon.o
+>>  obj-$(CONFIG_MSHV_ROOT)		+= mshv_root.o
+>> diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
+>> index 17edc1597446..c7ef347a4dff 100644
+>> --- a/drivers/input/serio/Kconfig
+>> +++ b/drivers/input/serio/Kconfig
+>> @@ -276,8 +276,8 @@ config SERIO_OLPC_APSP
+>>  
+>>  config HYPERV_KEYBOARD
+>>  	tristate "Microsoft Synthetic Keyboard driver"
+>> -	depends on HYPERV
+>> -	default HYPERV
+>> +	depends on HYPERV_VMBUS
+>> +	default HYPERV_VMBUS
+>>  	help
+>>  	  Select this option to enable the Hyper-V Keyboard driver.
+>>  
+>> diff --git a/drivers/net/hyperv/Kconfig b/drivers/net/hyperv/Kconfig
+>> index c8cbd85adcf9..982964c1a9fb 100644
+>> --- a/drivers/net/hyperv/Kconfig
+>> +++ b/drivers/net/hyperv/Kconfig
+>> @@ -1,7 +1,7 @@
+>>  # SPDX-License-Identifier: GPL-2.0-only
+>>  config HYPERV_NET
+>>  	tristate "Microsoft Hyper-V virtual network driver"
+>> -	depends on HYPERV
+>> +	depends on HYPERV_VMBUS
+>>  	select UCS2_STRING
+>>  	select NLS
+>>  	help
+>> diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+>> index 9a249c65aedc..7065a8e5f9b1 100644
+>> --- a/drivers/pci/Kconfig
+>> +++ b/drivers/pci/Kconfig
+>> @@ -221,7 +221,7 @@ config PCI_LABEL
+>>  
+>>  config PCI_HYPERV
+>>  	tristate "Hyper-V PCI Frontend"
+>> -	depends on ((X86 && X86_64) || ARM64) && HYPERV && PCI_MSI && SYSFS
+>> +	depends on ((X86 && X86_64) || ARM64) && HYPERV_VMBUS && PCI_MSI && SYSFS
+>>  	select PCI_HYPERV_INTERFACE
+>>  	select IRQ_MSI_LIB
+>>  	help
+>> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+>> index 5522310bab8d..19d0884479a2 100644
+>> --- a/drivers/scsi/Kconfig
+>> +++ b/drivers/scsi/Kconfig
+>> @@ -589,7 +589,7 @@ config XEN_SCSI_FRONTEND
+>>  
+>>  config HYPERV_STORAGE
+>>  	tristate "Microsoft Hyper-V virtual storage driver"
+>> -	depends on SCSI && HYPERV
+>> +	depends on SCSI && HYPERV_VMBUS
+>>  	depends on m || SCSI_FC_ATTRS != m
+>>  	default HYPERV
+>>  	help
+>> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+>> index b060dcd7c635..6f86a61231e6 100644
+>> --- a/drivers/uio/Kconfig
+>> +++ b/drivers/uio/Kconfig
+>> @@ -140,7 +140,7 @@ config UIO_MF624
+>>  
+>>  config UIO_HV_GENERIC
+>>  	tristate "Generic driver for Hyper-V VMBus"
+>> -	depends on HYPERV
+>> +	depends on HYPERV_VMBUS
+>>  	help
+>>  	  Generic driver that you can bind, dynamically, to any
+>>  	  Hyper-V VMBus device. It is useful to provide direct access
+>> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>> index c21484d15f0c..72c63eaeb983 100644
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -1774,7 +1774,7 @@ config FB_BROADSHEET
+>>  
+>>  config FB_HYPERV
+>>  	tristate "Microsoft Hyper-V Synthetic Video support"
+>> -	depends on FB && HYPERV
+>> +	depends on FB && HYPERV_VMBUS
+>>  	select DMA_CMA if HAVE_DMA_CONTIGUOUS && CMA
+>>  	select FB_IOMEM_HELPERS_DEFERRED
+>>  	help
+>> diff --git a/include/asm-generic/mshyperv.h b/include/asm-generic/mshyperv.h
+>> index 1d2ad1304ad4..66c58c91b530 100644
+>> --- a/include/asm-generic/mshyperv.h
+>> +++ b/include/asm-generic/mshyperv.h
+>> @@ -165,6 +165,7 @@ static inline u64 hv_generate_guest_id(u64 kernel_version)
+>>  
+>>  void __init hv_mark_resources(void);
+>>  
+>> +#if IS_ENABLED(CONFIG_HYPERV_VMBUS)
+>>  /* Free the message slot and signal end-of-message if required */
+>>  static inline void vmbus_signal_eom(struct hv_message *msg, u32 old_msg_type)
+>>  {
+>> @@ -200,6 +201,10 @@ static inline void vmbus_signal_eom(struct hv_message *msg, u32 old_msg_type)
+>>  	}
+>>  }
+>>  
+>> +extern int vmbus_interrupt;
+>> +extern int vmbus_irq;
+>> +#endif /* CONFIG_HYPERV_VMBUS */
+>> +
+>>  int hv_get_hypervisor_version(union hv_hypervisor_version_info *info);
+>>  
+>>  void hv_setup_vmbus_handler(void (*handler)(void));
+>> @@ -213,9 +218,6 @@ void hv_setup_crash_handler(void (*handler)(struct pt_regs *regs));
+>>  void hv_remove_crash_handler(void);
+>>  void hv_setup_mshv_handler(void (*handler)(void));
+>>  
+>> -extern int vmbus_interrupt;
+>> -extern int vmbus_irq;
 >> -
->> -	/*
->> -	 * Only one CPU is allowed to execute the crash_kexec() code as with
->> -	 * panic().  Otherwise parallel calls of panic() and crash_kexec()
->> -	 * may stop each other.  To exclude them, we use panic_cpu here too.
->> -	 */
->> -	old_cpu = PANIC_CPU_INVALID;
->> -	this_cpu = raw_smp_processor_id();
->> -
->> -	if (atomic_try_cmpxchg(&panic_cpu, &old_cpu, this_cpu)) {
->> +	if (panic_try_start()) {
->>   		/* This is the 1st CPU which comes here, so go ahead. */
->>   		__crash_kexec(regs);
->>   
->> @@ -161,7 +152,7 @@ __bpf_kfunc void crash_kexec(struct pt_regs *regs)
->>   		 * Reset panic_cpu to allow another panic()/crash_kexec()
->>   		 * call.
->>   		 */
->> -		atomic_set(&panic_cpu, PANIC_CPU_INVALID);
->> +		panic_reset();
->>   	}
->>   }
->>   
->> -- 
->> 2.43.0
-> 
+>>  #if IS_ENABLED(CONFIG_HYPERV)
+>>  /*
+>>   * Hypervisor's notion of virtual processor ID is different from
+>> diff --git a/net/vmw_vsock/Kconfig b/net/vmw_vsock/Kconfig
+>> index 56356d2980c8..8e803c4828c4 100644
+>> --- a/net/vmw_vsock/Kconfig
+>> +++ b/net/vmw_vsock/Kconfig
+>> @@ -72,7 +72,7 @@ config VIRTIO_VSOCKETS_COMMON
+>>  
+>>  config HYPERV_VSOCKETS
+>>  	tristate "Hyper-V transport for Virtual Sockets"
+>> -	depends on VSOCKETS && HYPERV
+>> +	depends on VSOCKETS && HYPERV_VMBUS
+>>  	help
+>>  	  This module implements a Hyper-V transport for Virtual Sockets.
+>>  
 
-
--- 
-Best regards,
-Jinchao

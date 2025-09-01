@@ -1,171 +1,260 @@
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazon11013001.outbound.protection.outlook.com [52.101.127.1])
+Received: from fhigh-b2-smtp.messagingengine.com (fhigh-b2-smtp.messagingengine.com [202.12.124.153])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F69E2356C7;
-	Sat, 30 Aug 2025 12:47:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.127.1
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756558042; cv=fail; b=m3QpH52foIXTUmTuAVHTCb7H9gGzfZuno7V5tIxtKStysSL7saeravc1xH9E0d1riZYMi+yDC0r8AJaE3AXG+w2/OMOOcIgMisdTAEctZxieQI8VJj+PYxa6F7CQ7LvjzUqglYwyypN4eB8yM3OJZz2fjq5hVgD72SzPbI7uMRA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756558042; c=relaxed/simple;
-	bh=S3l9V/Di5yS01kfwbrB8O/JJYZLhsPHiH7sCj6Dqnw0=;
-	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=k0NV1QRWagm3ysKUYkMcDtMqse2JolHAafq+pvDVFc97+3EAutUNaai6LXlA78ylLn3DpjISkmmfXbOsgsigQlonUR/bgWELPt1t9zGOybNY696R2G/mw6gWvmWo1dV9yk6xT2xtIj7CculfwmI+0XQgPfWYt2qjz8CZlMaV1pE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=jCm2WXEu; arc=fail smtp.client-ip=52.101.127.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F28822FFDFE;
+	Mon,  1 Sep 2025 09:12:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.153
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1756717978; cv=none; b=ljavOYbpyvl1igTNFuUNPTH9A/rbckTLbOIr+VW7cmv6ZZVSxXz1hK/5Nr+OUgejW+rAtckMfdBEnicwbuThM/B36eBvd6fYdo7XlMbakKhkKiwOh/gHjxbSRclPl7N4x1msDBjilA914I5qf2o/q7VR6OweOeHvCzHlYhBjyOc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1756717978; c=relaxed/simple;
+	bh=wutNVAbp3dfG7ym5Z5nxrvnUXjfIKhxTM7oCA1K2ZZ8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=V2hh9zmI2+HJS4uVA2WeI1Ze2D2KpsN3+dLJM3j94+MAdnb/V6KGsctGYuOXbce4p/bc14BeJYSG3pI9RG9rGiECy3jnST12DwcAuj2ldNAjPbfpp5Ebp2ChweY2FDyT8g5HmrYCN/bcy0qSBmSx3RuozWQoyCTwt1oHg0nFwtQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net; spf=pass smtp.mailfrom=jannau.net; dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b=jJkFmExS; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=mxt9M1w0; arc=none smtp.client-ip=202.12.124.153
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jannau.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="jCm2WXEu"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=uMwOSnhPeUYG1caLCY6hg6yqHj8jMixBsw5vob6O/BOb68o0gc/wQar/UOM9uHsLP8QjrsQ7z8+PRRG625g1W30HHOxfDPlV7kG2eEEHpaXFo1vCiqtYkHI/mMwAUbSL7vEx56+xRpi39wYSyUSL5Tp4Y0Og1/Ve6Puj7aRcVhJJfn8Qr9pVbzSEnL8QGnac4m4UVJ9W3GLdXBJsLfRDKj/OaRSHdbam46xhmuehuwBVyzOqIkv3JZ3UXS/S7BO63AtsFcL/cubNbDnWXzZDGacIFdf3/ZahRTfU7mZhFjzEOLFGz5PJb+d8rKUNI1FeTeFOCjr0Hc8yzgKlAIij+g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=F07n9j/P7vHwoojB1r7IHCVCKOMhRLqygGLUHx61Arw=;
- b=tfriyiqAvG/vPZybpDk1U37+RoKYnDKElZ3NW+Tq/yizf8R3UokoRMlea9RB4XHnuPEbgoRaNMFo2ozb7IqGBhV8c56rVpb4d+yEJgFvOuoTIBYXkIbeQzf5VvN4sF4L1snhZwhksOmvaCvK6ZLh8USZGVyK8kj/m2dzzWHGbAATdxVQTjks8v51moGu7/W5Ep195rqHQmX7L9k1e/ND0AI3B8T6ohzjI92LFMhz/e2qDLnSkFiRRmgQEsPy7GOQ9lenW+zFztXdTv71V13LZdDsdbgGOoCZsvioVI2xBOobs0BBzK0/MRa49OwwonqT41169RK3JNDiy0sNFrBpYg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=F07n9j/P7vHwoojB1r7IHCVCKOMhRLqygGLUHx61Arw=;
- b=jCm2WXEu3nhcs/F6gthiPjzjhLMNIcmgPukrC5SShbQa9rOxZ9f5HSR8e/x9yPRpMCJvdsVujHFe1EjaLpt3mrAKy5Rw7uadJKIxPHnwseg4Nu0annYLCPSn3JxcJQ5UYYXU0VZxUWzU11MwedSgYcLPMuzmyLZVnFiJLSwtYWi7SMZn5rH6SpyiksCiBeKymcUGLJkiEetiJn95zKW3oiqWUbMJGmMcSyV/aP2RbuzpflonkN8bPlvkCY6WN03HG7uOziXKBw9QMGkfzp6iK67fOEJBdPhkw4jxI610yg02a2Cw28r07Xvtb7jBNqVFxgSE446Nv99vgHjGoiEShA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SI2PR06MB5140.apcprd06.prod.outlook.com (2603:1096:4:1af::9) by
- TYSPR06MB6713.apcprd06.prod.outlook.com (2603:1096:400:479::8) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9052.21; Sat, 30 Aug 2025 12:47:15 +0000
-Received: from SI2PR06MB5140.apcprd06.prod.outlook.com
- ([fe80::468a:88be:bec:666]) by SI2PR06MB5140.apcprd06.prod.outlook.com
- ([fe80::468a:88be:bec:666%5]) with mapi id 15.20.9073.021; Sat, 30 Aug 2025
- 12:47:15 +0000
-From: Qianfeng Rong <rongqianfeng@vivo.com>
-To: Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Qianfeng Rong <rongqianfeng@vivo.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: mb862xxfb: Use int type to store negative error codes
-Date: Sat, 30 Aug 2025 20:47:00 +0800
-Message-Id: <20250830124703.73732-1-rongqianfeng@vivo.com>
-X-Mailer: git-send-email 2.34.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI1PR02CA0008.apcprd02.prod.outlook.com
- (2603:1096:4:1f7::14) To SI2PR06MB5140.apcprd06.prod.outlook.com
- (2603:1096:4:1af::9)
+	dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b="jJkFmExS";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="mxt9M1w0"
+Received: from phl-compute-12.internal (phl-compute-12.internal [10.202.2.52])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id B976A7A00E2;
+	Mon,  1 Sep 2025 05:12:54 -0400 (EDT)
+Received: from phl-mailfrontend-01 ([10.202.2.162])
+  by phl-compute-12.internal (MEProxy); Mon, 01 Sep 2025 05:12:55 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jannau.net; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:message-id:mime-version:reply-to
+	:subject:subject:to:to; s=fm2; t=1756717974; x=1756804374; bh=SP
+	HadFh9HxajytO1/5tbW7NlX857Ehz5RAZeJmX89Yg=; b=jJkFmExSFSC1eUsvzh
+	zgQqexcH+p+PtKGuPtu9c7InDWOwum8OdNz4JH7O2w1ntpJd6Lzm8q+uLScqUtPZ
+	XD0+QNvO55dhvKz9q+OQ4P7q7gcKsXmscx+9IEb/xJJm7MWKNgqnAE4vbK/1ha8c
+	N+ehWsHBi0RTn6ODkgWqwJd5lNGRHFo6M24T3hFprIOf/r5e8M2D33xO0qLHblrC
+	ZDzvn/x6SRp0TwJu/Cq12IePLB2Qa83Fob/XjBr/zyoGB3Ol2T87ZdpfrVvXwGsr
+	K/adJFyD1h8SN+x7WP0Rmcd1TYklKf88tmiDe/aAmqXHnA+dTAHa3yF1JsRpNEiT
+	XlyA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:message-id:mime-version:reply-to:subject
+	:subject:to:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm1; t=1756717974; x=1756804374; bh=SPHadFh9HxajytO1/5tbW7NlX857
+	Ehz5RAZeJmX89Yg=; b=mxt9M1w0cW0DptNYPyjYfDc6ZaTcC6FprKcYmyuaYoqF
+	2VO2E1kV8O1FSYIwjF2HDLeD30ZkLmXZIJ/xMNaxk7Y81hk+nLN+xZ6BXF0xj346
+	ZrKdTVdsgiT1yfyVOn8ICxlFTfizSIvrqClwK4fNsvmB0jT+EEm1XEGeA4/Uxa9g
+	eoVRhCA+c25jUc8I6ACV/gI1OAtfWt66HhncFGVziEWgE6xTkbcejTjDdlyPtwwa
+	rMlpzcDmH7zfiQB8hzlrb0Z+MmO1CupbGDcCPHgDLhmSpuwPK7XdBkvef6KV3Mdp
+	TO1oTdd4im+4ftO8mK3T6KTVRFDRWjtLX8EONxHL5A==
+X-ME-Sender: <xms:lWO1aET5GBi-W7rahTwEyS3GN4-x_DyuFcPoe2j0H2DDWTaJQJvMjg>
+    <xme:lWO1aNdy6-iqHYmHHUMirUriEGKuhgMqemkWIXkmAPS2EHFgY89ir_RIT5p9Q4WyX
+    DiyhH-ICMC_74DDYPU>
+X-ME-Received: <xmr:lWO1aOQQFjY2xl3iogA2C5ZVXFXciBwt9_kaDNnvnMyQezvxO_2LNoKnkpj0VLdnZMYT0B_H6uDRH7QJD-ahxsVYIesladM3kVBs_A>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgdduledujeeiucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhephfffufggtgfgkffvvefosehtjeertdertdejnecuhfhrohhmpeflrghnnhgvucfi
+    rhhunhgruhcuoehjsehjrghnnhgruhdrnhgvtheqnecuggftrfgrthhtvghrnhepgfffie
+    ffteeuffetuefggefhgfehtdfhkefgtdejueeuvdevkeetveevvdffkeehnecuvehluhhs
+    thgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepjhesjhgrnhhnrghurd
+    hnvghtpdhnsggprhgtphhtthhopeelpdhmohguvgepshhmthhpohhuthdprhgtphhtthho
+    pehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoh
+    epughrihdquggvvhgvlheslhhishhtshdrfhhrvggvuggvshhkthhophdrohhrghdprhgt
+    phhtthhopehjsehjrghnnhgruhdrnhgvthdprhgtphhtthhopeguvghllhgvrhesghhmgi
+    druggvpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghl
+    rdhorhhgpdhrtghpthhtohepthgvtghhsehtohhothgrihdrnhgvthdprhgtphhtthhope
+    hsthgrsghlvgesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehhrghnshhg
+    sehkvghrnhgvlhdrohhrghdprhgtphhtthhopehtrhgvughinhhgsehnvhhiughirgdrtg
+    homh
+X-ME-Proxy: <xmx:lWO1aBLh34AXbBGfsbg-fU0EvJBzHX7krwbkkb8hBTcVto7LvzsTnA>
+    <xmx:lWO1aDJ4I_WKHs00ZVjMLKuKIBQd1SLj2_CPOioWYTbIhjIf2fPXuA>
+    <xmx:lWO1aEiC7_uIURdNsgMs9MH5kgBN9sFGbdC2v5B-qPisEyXkxN69Dw>
+    <xmx:lWO1aFM52cAQX-LPI5caDTy2YIjvbh5chB7m9ivw730Y0Zjptr9vqg>
+    <xmx:lmO1aDUWv4nxEDAc6S2suqcfXxgeH_HC42d17FBk4HoMu6VkdxNOfHYE>
+Feedback-ID: i47b949f6:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 1 Sep 2025 05:12:53 -0400 (EDT)
+From: Janne Grunau <j@jannau.net>
+Date: Mon, 01 Sep 2025 11:12:45 +0200
+Subject: [PATCH] fbdev/simplefb: Fix use after free in
+ simplefb_detach_genpds()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SI2PR06MB5140:EE_|TYSPR06MB6713:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6e8d2c69-b236-4fef-e716-08dde7c358a6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|52116014|376014|1800799024|366016|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?IIOf7jqpxUhql9HMVmP7XgMFJJcNzDfFUobUh0JU/hnffOw8u0tMTLLRiVur?=
- =?us-ascii?Q?Vfuv/D4z44LefYWJQGOb4J15vui63aQc4lMORwXnqubWAvBjmRiVU5OVgePd?=
- =?us-ascii?Q?duquzTySBQagPgfbeOBhg4YS7SCCnRfQJDT9kaBafUMkG5bCGwRkpFbOZcsP?=
- =?us-ascii?Q?dDEkrP6/BpTb1IE7DpGJjV3D9PuwLq7KFYaEoQTJS/Qf9D4PXbVq5LRBNYQj?=
- =?us-ascii?Q?XUUcuXHtfx1TNCiWHucE0qahr0JLnVKH6CXBRg0H6fNISWX8+Wm2W5OmJ0YW?=
- =?us-ascii?Q?Pl/l5eexaTFXs/u/J3avjj/p16a6vuYqHsa8/jWMKOV98iriKtRXxtV1Auj3?=
- =?us-ascii?Q?j1mi68xRh+wIPIVgfqJKqeo1Xh7jJ2viiPdNfLDpQd68P+HRdbiXW0sTHWEq?=
- =?us-ascii?Q?EHtTUub7i0fCRmlGIl79pmtiHyg7uDdIr0bjP7OWi9DlF0UIme4ClNMpcwTP?=
- =?us-ascii?Q?36u9iM5EkJ05G2nCC/lpVecAy004ZviVF6n5XFlpwb/Hc3P1GCyRlLpkj7iz?=
- =?us-ascii?Q?LU8JN1v5YWxWG6JTlfNHO1XTGR7VpmPHE8vY98i2ra251C1iu5a2lxdQp1d2?=
- =?us-ascii?Q?35Bl/bLDuHCz3G1O8fQVn6Fd4ElJEyHUgthTzlOcICIn5wnZ03ZY+MQWcNcU?=
- =?us-ascii?Q?7hWjGjFdajglg51vQZvMesZmYekYP5XVrUVopnIqyX6U2jGEnLJf/ZP7eMzs?=
- =?us-ascii?Q?XvnwL6O9VS8n6iCmywFHMoyKtMMLEyZfKwDUlwn7kCuztoQSRTYxzRZy5EVP?=
- =?us-ascii?Q?vDRwwHKw3Pq5+lAOD3GZwhUUx0l4BDBIJo74K5Gl6/Tlolrz77J2XZ9OorUi?=
- =?us-ascii?Q?+FI9dcOGRxkLrSMdfzlesYKDKcOpgzPdMyj7tK1wENjhddd3gTUAvrjCPosu?=
- =?us-ascii?Q?u8cpBaVnB2+oMKzcYciBiBb3MhdG/hpp7XqLVUXgtJs0sDnui+OpemoiCgYz?=
- =?us-ascii?Q?VCTJyCaK5pT7J3LcvbSsePsEN/ydWmmQSwNx+G8zghFA4OLeg3+bPuUn80ch?=
- =?us-ascii?Q?hR0/PC8nzb+NDk95kipDBGoT6k3bAYscgz4ZC+69Ey2FmG+J+g0OF23brKa8?=
- =?us-ascii?Q?7/P32MVT02WCfVTs86ENuicytlZKwbFArwFYewkUQeXJfPJae0gBkM2yclAu?=
- =?us-ascii?Q?Hc4m4yxMsk71dos3qrWOQ3/GtAHIKGciY59/HzgOVfMAI2SeAO34tDYlM9SG?=
- =?us-ascii?Q?yKzT/sis6Yy7DKdg40UrIu2b+mlorDvefZfbNxDXqVZ4l0BCRWayIhJSr3k5?=
- =?us-ascii?Q?TeENFYtYYuSNUO0iUgOC4Ts1RIGRkZWyHiXnI97CsVErYJSLZrooTO7fUJCg?=
- =?us-ascii?Q?4EZhMLD7yIU5aNrTj6jFi8/WaDJzqBL/Zuftd2q70E3OKNcuLG5dav4+bqlC?=
- =?us-ascii?Q?9hey9PCYZLIU3TWzXZLdSZX50j/QwEuFTmviuGxxkgbcYTfNfOTHpTlPoV1h?=
- =?us-ascii?Q?a/sMb2i5sGWbj6bnqLIHBg6JdY1gB1k+pKI/NUmisb57jjVZ0T1ErA=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SI2PR06MB5140.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(1800799024)(366016)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?90KA6FIpEx9nysPtEqD+gTn41tf8bz5ru2AtrEC9y55l7Md1XL2SsYDouw9n?=
- =?us-ascii?Q?Z5ifFE95AS3gQ8sFjyW4f0dA8XaipNqN93I6TVpxlOAxIjAntW/McBdMu0jj?=
- =?us-ascii?Q?B3CGJEG7TBH6lpum3U22vYUUcLXSnahpbLDkduepYXdnzS2IBRzfjpnd5dnE?=
- =?us-ascii?Q?pYL+SzZUA55Jbm232lXmv8Gi5UawY9sq8IGv4zVsunyFloKgjOKTm/6KTcnl?=
- =?us-ascii?Q?1k+uNClwHRzkiyTRacUqnI8FfSIswmCemPkqBx0biO7rubAZ7un6CSXtdfWl?=
- =?us-ascii?Q?1AXR3qXc257yYgq5yCVT17RRh5URVV+wUgxUMhVziD8f66kxRwN+gVcq5hg2?=
- =?us-ascii?Q?a2INQyIn2NILBgIMTr8r4sgIeD+cpYbnlJZX5+con10Og9wWZXEvecN0eqVT?=
- =?us-ascii?Q?jC7U/S7SC6g8gbGAU23RjPED4u6lr3kDjTpl95QWl21GtmM8xr4GqCZsBREM?=
- =?us-ascii?Q?e7p99RBmtp2vBmvRFXfWGVWeTfXaJoFQNjJU1jGhh5GYE6HjjD8KmjWjHzVd?=
- =?us-ascii?Q?5YbxVa0HUI4yRqpwrOXLCQEMFDD6xS0LTO/gu+Y3EvNsE/J68IZghjamFiLU?=
- =?us-ascii?Q?MqUf6VOirkK4op80aTaruOMpOsPX0g4oPmB/TXlSeHbjok++EMcCATQCs8YH?=
- =?us-ascii?Q?WxD4ySW052otOAdc9032agh6o76nahhz1n0zvm42UiXS3LshTlFNHbMeglsq?=
- =?us-ascii?Q?MmVtLeWcHXKXK6yaAzK24C2aT9GC8f6924H1TD0QyPQwdhz+SBjBaqXqB3n6?=
- =?us-ascii?Q?/yTWPEJtB+XGVNLRlygBg70bQczFzRHMOpKR6IJy9jL9u+72N/X+ixUaGJSr?=
- =?us-ascii?Q?7NDrSCj0vK6Gzr5DfoIw1Xixa0QtiLwkCa+zaB3y2r4j96C2aCoHTypOLYa4?=
- =?us-ascii?Q?g/jqmQPVRug+4GNq0nyd9kEEBNtPVFpRd8eTDdIGDBYy1AQ6yTD5rhPaQuL1?=
- =?us-ascii?Q?1TfcUWxiyojtesELX/UbrDT0mRrudkeJBA0YpZgvpNE43KjB4vUD6rbo0WyW?=
- =?us-ascii?Q?d08iRuN7WeKcoh4bfEZif9OsMOOxm7CUba5r5HIDiuL3bDjPseqqqCSU1LWA?=
- =?us-ascii?Q?uu37QM2gsBq7uf+uYR2ID97UBtYUy45Fhs/fC7b28D3fv9p6xli1gpyMHfOb?=
- =?us-ascii?Q?AjAVdO68dBxUlObUbsvO3GdjZmaccLXDQBnjYv6sS8/6fMefOrOt4vX5SP75?=
- =?us-ascii?Q?fUQ9lgzGERn/dV4qw3VE2KoqU8AJ19GjKzHTRD9uEiTf0H0AbF9jGXTzsYX+?=
- =?us-ascii?Q?dR8Is22DiCrCZTUDn89xMzB3WDs0WaVLLU2uM1gWEoFbWqIZ/n5PH21YxqDx?=
- =?us-ascii?Q?j78mTV2lwb5sr1FvO0T+dnl+/CMyTBFdOQ04f5MAPHjHlpLCY1oUfnOJdqs2?=
- =?us-ascii?Q?kQUs+dYMCQq47JyMtomxx2b1lzrlLT+fwlB3JLzYr4448QJ36nZB1chiVjUB?=
- =?us-ascii?Q?GpfwtpGbhAfX6MPXiUs/aKYbxA2anvpl/vmwbl1V2UaIUtfyVvLZCxxLlJcN?=
- =?us-ascii?Q?HCuAt6evkiky1ssrwb97EcRhefivhnC0BiVD6d5iL1bjH2Lh3jK0NvIdliZN?=
- =?us-ascii?Q?9mKr8GYAYET4rnUaLUpn2GS3AQ2sJppJtzfIhB+6?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6e8d2c69-b236-4fef-e716-08dde7c358a6
-X-MS-Exchange-CrossTenant-AuthSource: SI2PR06MB5140.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Aug 2025 12:47:15.0147
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: qyDN6r6mbqjXtemvXW0G6rRxzBzUhVvYpEH34bUIr61e5d30yw2oHWIqWKbWYz76tUEMK3N1X2q7mXnJ2nJZTg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYSPR06MB6713
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250901-simplefb-genpd-uaf-v1-1-0d9f3a34c4dc@jannau.net>
+X-B4-Tracking: v=1; b=H4sIAIxjtWgC/x3MTQqAIBBA4avIrBtQ+8OuEi2sxhooE6UIorsnL
+ b/Few8kikwJOvFApIsTHz5DFQKm1fqFkOds0FLX0kiFifewkRtxIR9mPK3DstatrNpGWW0ghyG
+ S4/uf9sP7fsK6ROdkAAAA
+X-Change-ID: 20250901-simplefb-genpd-uaf-352704761a29
+To: Hans de Goede <hansg@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Thierry Reding <treding@nvidia.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, Daniel Huhardeaux <tech@tootai.net>, 
+ stable@vger.kernel.org, Janne Grunau <j@jannau.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6069; i=j@jannau.net;
+ s=yk2024; h=from:subject:message-id;
+ bh=wutNVAbp3dfG7ym5Z5nxrvnUXjfIKhxTM7oCA1K2ZZ8=;
+ b=owGbwMvMwCW2UNrmdq9+ahrjabUkhoytyZPfqtrvt+I4c9IiRXCO8mr5pxPSBFac1JeUPb4qM
+ Xa1a0FURykLgxgXg6yYIkuS9ssOhtU1ijG1D8Jg5rAygQxh4OIUgIkwzGT4K2i+JeZJQFZ8xHpd
+ B24p/gmZtxpEzQ+Uu0V9/13ittNzGyPDg2sH8+5f3v3zXoZL4MpjC+5I6DNPUPfXzOvfwCMbJ5j
+ BDQA=
+X-Developer-Key: i=j@jannau.net; a=openpgp;
+ fpr=8B336A6BE4E5695E89B8532B81E806F586338419
 
-Change the 'ret' variable in of_platform_mb862xx_probe() from unsigned long
-to int, as it needs to store either negative error codes or zero.
+The pm_domain cleanup can not be devres managed as it uses struct
+simplefb_par which is allocated within struct fb_info by
+framebuffer_alloc(). This allocation is explicitly freed by
+unregister_framebuffer() in simplefb_remove().
+Devres managed cleanup runs after the device remove call and thus can no
+longer access struct simplefb_par.
+Call simplefb_detach_genpds() explicitly from simplefb_destroy() like
+the cleanup functions for clocks and regulators.
 
-Storing the negative error codes in unsigned type, doesn't cause an issue
-at runtime but can be confusing. Additionally, assigning negative error
-codes to unsigned type may trigger a GCC warning when the -Wsign-conversion
-flag is enabled.
+Fixes an use after free on M2 Mac mini during
+aperture_remove_conflicting_devices() using the downstream asahi kernel
+with Debian's kernel config. For unknown reasons this started to
+consistently dereference an invalid pointer in v6.16.3 based kernels.
 
-No effect on runtime.
+[    6.736134] BUG: KASAN: slab-use-after-free in simplefb_detach_genpds+0x58/0x220
+[    6.743545] Read of size 4 at addr ffff8000304743f0 by task (udev-worker)/227
+[    6.750697]
+[    6.752182] CPU: 6 UID: 0 PID: 227 Comm: (udev-worker) Tainted: G S                  6.16.3-asahi+ #16 PREEMPTLAZY
+[    6.752186] Tainted: [S]=CPU_OUT_OF_SPEC
+[    6.752187] Hardware name: Apple Mac mini (M2, 2023) (DT)
+[    6.752189] Call trace:
+[    6.752190]  show_stack+0x34/0x98 (C)
+[    6.752194]  dump_stack_lvl+0x60/0x80
+[    6.752197]  print_report+0x17c/0x4d8
+[    6.752201]  kasan_report+0xb4/0x100
+[    6.752206]  __asan_report_load4_noabort+0x20/0x30
+[    6.752209]  simplefb_detach_genpds+0x58/0x220
+[    6.752213]  devm_action_release+0x50/0x98
+[    6.752216]  release_nodes+0xd0/0x2c8
+[    6.752219]  devres_release_all+0xfc/0x178
+[    6.752221]  device_unbind_cleanup+0x28/0x168
+[    6.752224]  device_release_driver_internal+0x34c/0x470
+[    6.752228]  device_release_driver+0x20/0x38
+[    6.752231]  bus_remove_device+0x1b0/0x380
+[    6.752234]  device_del+0x314/0x820
+[    6.752238]  platform_device_del+0x3c/0x1e8
+[    6.752242]  platform_device_unregister+0x20/0x50
+[    6.752246]  aperture_detach_platform_device+0x1c/0x30
+[    6.752250]  aperture_detach_devices+0x16c/0x290
+[    6.752253]  aperture_remove_conflicting_devices+0x34/0x50
+...
+[    6.752343]
+[    6.967409] Allocated by task 62:
+[    6.970724]  kasan_save_stack+0x3c/0x70
+[    6.974560]  kasan_save_track+0x20/0x40
+[    6.978397]  kasan_save_alloc_info+0x40/0x58
+[    6.982670]  __kasan_kmalloc+0xd4/0xd8
+[    6.986420]  __kmalloc_noprof+0x194/0x540
+[    6.990432]  framebuffer_alloc+0xc8/0x130
+[    6.994444]  simplefb_probe+0x258/0x2378
+...
+[    7.054356]
+[    7.055838] Freed by task 227:
+[    7.058891]  kasan_save_stack+0x3c/0x70
+[    7.062727]  kasan_save_track+0x20/0x40
+[    7.066565]  kasan_save_free_info+0x4c/0x80
+[    7.070751]  __kasan_slab_free+0x6c/0xa0
+[    7.074675]  kfree+0x10c/0x380
+[    7.077727]  framebuffer_release+0x5c/0x90
+[    7.081826]  simplefb_destroy+0x1b4/0x2c0
+[    7.085837]  put_fb_info+0x98/0x100
+[    7.089326]  unregister_framebuffer+0x178/0x320
+[    7.093861]  simplefb_remove+0x3c/0x60
+[    7.097611]  platform_remove+0x60/0x98
+[    7.101361]  device_remove+0xb8/0x160
+[    7.105024]  device_release_driver_internal+0x2fc/0x470
+[    7.110256]  device_release_driver+0x20/0x38
+[    7.114529]  bus_remove_device+0x1b0/0x380
+[    7.118628]  device_del+0x314/0x820
+[    7.122116]  platform_device_del+0x3c/0x1e8
+[    7.126302]  platform_device_unregister+0x20/0x50
+[    7.131012]  aperture_detach_platform_device+0x1c/0x30
+[    7.136157]  aperture_detach_devices+0x16c/0x290
+[    7.140779]  aperture_remove_conflicting_devices+0x34/0x50
+...
 
-Signed-off-by: Qianfeng Rong <rongqianfeng@vivo.com>
+Reported-by: Daniel Huhardeaux <tech@tootai.net>
+Cc: stable@vger.kernel.org
+Fixes: 92a511a568e44 ("fbdev/simplefb: Add support for generic power-domains")
+Signed-off-by: Janne Grunau <j@jannau.net>
 ---
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/simplefb.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index ade88e7bc760..676c6d3ccc12 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -674,7 +674,7 @@ static int of_platform_mb862xx_probe(struct platform_device *ofdev)
- 	struct fb_info *info;
- 	struct resource res;
- 	resource_size_t res_size;
--	unsigned long ret = -ENODEV;
-+	int ret = -ENODEV;
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 1893815dc67f4c1403eea42c0e10a7ead4d96ba9..cd5193e704ffe1ccc178c13916a462446af9cb14 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -93,6 +93,7 @@ struct simplefb_par {
  
- 	if (of_address_to_resource(np, 0, &res)) {
- 		dev_err(dev, "Invalid address\n");
+ static void simplefb_clocks_destroy(struct simplefb_par *par);
+ static void simplefb_regulators_destroy(struct simplefb_par *par);
++static void simplefb_detach_genpds(void *res);
+ 
+ /*
+  * fb_ops.fb_destroy is called by the last put_fb_info() call at the end
+@@ -105,6 +106,7 @@ static void simplefb_destroy(struct fb_info *info)
+ 
+ 	simplefb_regulators_destroy(info->par);
+ 	simplefb_clocks_destroy(info->par);
++	simplefb_detach_genpds(info->par);
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
+ 
+@@ -465,13 +467,11 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+ 		return err;
+ 	}
+ 
+-	par->num_genpds = err;
+-
+ 	/*
+ 	 * Single power-domain devices are handled by the driver core, so
+ 	 * nothing to do here.
+ 	 */
+-	if (par->num_genpds <= 1)
++	if (err <= 1)
+ 		return 0;
+ 
+ 	par->genpds = devm_kcalloc(dev, par->num_genpds, sizeof(*par->genpds),
+@@ -485,6 +485,12 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+ 	if (!par->genpd_links)
+ 		return -ENOMEM;
+ 
++	/*
++	 * Set num_genpds only after genpds and genpd_links are allocated to
++	 * exit early from simplefb_detach_genpds() without full initialisation.
++	 */
++	par->num_genpds = err;
++
+ 	for (i = 0; i < par->num_genpds; i++) {
+ 		par->genpds[i] = dev_pm_domain_attach_by_id(dev, i);
+ 		if (IS_ERR(par->genpds[i])) {
+@@ -506,9 +512,10 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+ 			dev_warn(dev, "failed to link power-domain %u\n", i);
+ 	}
+ 
+-	return devm_add_action_or_reset(dev, simplefb_detach_genpds, par);
++	return 0;
+ }
+ #else
++static void simplefb_detach_genpds(void *res) { }
+ static int simplefb_attach_genpds(struct simplefb_par *par,
+ 				  struct platform_device *pdev)
+ {
+
+---
+base-commit: 8f5ae30d69d7543eee0d70083daf4de8fe15d585
+change-id: 20250901-simplefb-genpd-uaf-352704761a29
+
+Best regards,
 -- 
-2.34.1
+Janne Grunau <j@jannau.net>
 

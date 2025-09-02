@@ -1,80 +1,64 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DF752F068A;
-	Tue,  2 Sep 2025 10:36:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6937C28466E;
+	Tue,  2 Sep 2025 10:40:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756809397; cv=none; b=gTBPEtkBvFpj/eW6k3wZwAg+HNoRynYa8jtNLeCfKFS429xRtxxVuLD4NiC6/yu4mG35L/dXyCIjDwSmELJfGCxn9pBM/Q4TTKSzsyBTTfsA3NCF1qbeOrlZ5iChvi8fOwg7milXK4WQohEnQawvy3no3XFhnmvtU1HzvaXRCQA=
+	t=1756809657; cv=none; b=lkMxgpSh0pyOZQXmD5/7cs4eBta7IG5a/y+fQWsh5ARfWlDKeLuy9BmkbOPWnAcIIqjujijZFZjjhEYBolHIhGQhQdzehQzuwB0Ul7iu6+X4/FQ+AMdgXCwJ2hySQEPpPakylHCfe+Qft4hJGBrGrX5Asu2oJFLICx/BCO16wls=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756809397; c=relaxed/simple;
-	bh=aLYwCVcjgK+Ykfa6a4sTh95sU5K4KlPUrOioPHSSVUI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rVWMT3aA6PvIDyD6mKRcoDQEy4oqFF84hQFKwY01siS/7jFdWsyvPvwj3HLB7ozk3W2XDHDNNm9TLYtDfvftJT8VbUtEf4oDopqzkoEFdX/XHF4GyERts+dN8OBRicu21NEFOxCEfR5X3KByDJuyx0KDtak61g6oytudREepMo0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ApSYHyaf; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1756809657; c=relaxed/simple;
+	bh=4EdmcQuNQy+OKjG07zuxiwGokehf0Nr2XE4I/Phgibo=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=RgBRiHzV0gbwCUtah12J6hse77vYTKJJkcGceALnO2TvKb9OBsJ9JU54XIvdgIN81tYhi8JRtRoko65YuHIzH9VW1WM5R3eFYTSQM7ykeHo0slaYss3r7FvYLhvTpx0UzT/nixCeDvN+j+6O54T9KjJRCdmIrTlR2szIMKmo9tg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GRMDL0ZZ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ApSYHyaf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7EAFC4CEF7;
-	Tue,  2 Sep 2025 10:36:34 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GRMDL0ZZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82070C4CEED;
+	Tue,  2 Sep 2025 10:40:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756809396;
-	bh=aLYwCVcjgK+Ykfa6a4sTh95sU5K4KlPUrOioPHSSVUI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ApSYHyafSOLKGR+yfxcc3judZLx8wLkmz1h8TPBOIn+XAUVpmx4fvPPUV3WL5HUm1
-	 koGpuRdxldC1LV2PHrjvCDA2NwXeS6VUub6Wm0z1Xi6MRu6y9kOUfc1Ebw40hTEbTC
-	 Uu3yjxRBmLzLckSAGeouhw/1Yu10CsqvRKHJjE9DoVy5upVniAN63ei77ETj5ZIT0s
-	 40ntXS197fYo7dKrmypM/m76LLsCs2GBjouNaZlNNdKm44ORHeeYSlCjHEgHg/0Y3a
-	 2vIJXF0WUyv787A2iTqiB+X0ibiwzXAi0lozNAVIAgDFc++kWLm8kqGLKDCagYgHpG
-	 XTPuPvWwwvG5A==
-Date: Tue, 2 Sep 2025 11:36:32 +0100
+	s=k20201202; t=1756809657;
+	bh=4EdmcQuNQy+OKjG07zuxiwGokehf0Nr2XE4I/Phgibo=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=GRMDL0ZZiI+KzzUOxeXuEZUqHa94l0iXlibBJJACpGpT6//kJCB6Kob9Hh3vQsCYB
+	 3iPZu33GUKo9JtzYnwwQYRptut2WKDV3EtHSnOyAH6UWK5CU50CzASV4AkyCYKu1sK
+	 SdpoJUV0tIrXbcmGnOhwFhlLQimL/WYAg7wQ4n3c/9J5xcNz1ldoV9TJKMPN0NC0c4
+	 oRMF5IteKRyARjq9B3N9/hRFGBXldgduNNysOYiiTbjH9b5dT19+rGi3V9jBpY4naI
+	 d0c6InG1/MZFnkS/Dj6cYgSu9Cd65JJTRpHGrv31bTTnhvsl2yymzatInBoLDGNZFH
+	 Fhl1jy+dcRd+A==
 From: Lee Jones <lee@kernel.org>
-To: Daniel Thompson <daniel@riscstar.com>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	Flavio Suligoi <f.suligoi@asem.it>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-pwm@vger.kernel.org
-Subject: Re: [PATCH 2/2] backlight: mp3309c: Initialize backlight properties
- without memset
-Message-ID: <20250902103632.GH2163762@google.com>
-References: <cover.1751361465.git.u.kleine-koenig@baylibre.com>
- <14514a1b0d3df6438aa10bb74f1c4fc2367d9987.1751361465.git.u.kleine-koenig@baylibre.com>
- <aKLvaP55PIVhyFSc@aspen.lan>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Qianfeng Rong <rongqianfeng@vivo.com>
+In-Reply-To: <20250819035804.433615-1-rongqianfeng@vivo.com>
+References: <20250819035804.433615-1-rongqianfeng@vivo.com>
+Subject: Re: (subset) [PATCH] backlight: led_bl: Use devm_kcalloc() for
+ array space allocation
+Message-Id: <175680965526.2264832.11658794524011845016.b4-ty@kernel.org>
+Date: Tue, 02 Sep 2025 11:40:55 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <aKLvaP55PIVhyFSc@aspen.lan>
+X-Mailer: b4 0.15-dev-c81fc
 
-On Mon, 18 Aug 2025, Daniel Thompson wrote:
-
-> On Tue, Jul 01, 2025 at 11:22:37AM +0200, Uwe Kleine-König wrote:
-> > Assigning values to a struct using a compound literal (since C99) also
-> > guarantees that all unspecified struct members are empty-initialized, so
-> > it properly replaces the memset to zero.
-> >
-> > The code looks a bit nicer and more idiomatic (though that might be
-> > subjective?). The resulting binary is a bit smaller. On ARCH=arm with
-> > an allnoconfig + minimal changes to enable the mp3309c driver the
-> > difference is 12 bytes.
-> >
-> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+On Tue, 19 Aug 2025 11:58:03 +0800, Qianfeng Rong wrote:
+> Replace calls of devm_kzalloc() with devm_kcalloc() in led_bl_get_leds()
+> and led_bl_parse_levels() for safer memory allocation with built-in
+> overflow protection.
 > 
-> Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+> 
 
-Looks like you cannot send tags from non-related email accounts:
+Applied, thanks!
 
-NOTE: some trailers ignored due to from/email mismatches:
-    ! Trailer: Reviewed-by: "Daniel Thompson (RISCstar)" <danielt@kernel.org>
-     Msg From: Daniel Thompson <daniel@riscstar.com>
+[1/1] backlight: led_bl: Use devm_kcalloc() for array space allocation
+      commit: 7a5e9040f418c2dd5d30fbdc2cad4446a004c6c5
 
-I'll add the tags manually this time.
-
--- 
+--
 Lee Jones [李琼斯]
+

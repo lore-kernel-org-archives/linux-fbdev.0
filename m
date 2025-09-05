@@ -1,181 +1,199 @@
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C76D1FAC4B;
-	Fri,  5 Sep 2025 02:52:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 816EE2D3220
+	for <linux-fbdev@vger.kernel.org>; Fri,  5 Sep 2025 06:56:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757040773; cv=none; b=KXgSUZkJTbhDi+vawiobOk8fOv08uR5Jab54N2yQX29r1mb9Mv48KqhAWMJKyUyoflHIkTX9V3jFxlctNIFA1g3ZWSzVFHe+g0cU9+I11rW3vAgGLR+vkXX67KgCXZ+fmtqjItfhaBpb9ZuODVOEYBwIMS95v1Tq6J+yl7yQZe0=
+	t=1757055386; cv=none; b=h10021wJbi+wDC/UZmeUcSqOc5GNxsil0ewTz/SMM61MhvDZKdJv1U+rgVa9RvS4R0ceWKqA4nwQXbEIz3ngDEqx/FbTxaorg9wQWRHpGoG3DwKdiWfvuWIp0ENvbar8yOJRxKTvT6B7zroh6camoKGZRCNiIgd5Z9sXdFeA8ls=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757040773; c=relaxed/simple;
-	bh=awyv4lGa39gJ6Bpo1BVOB/Uk18u0N6Fl8y0t2Nnar/E=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZeeYhlAsvktEoNcMqdixFlX6fxJhZai5cV074MbpBmzlhVDITDYlk99NYrYoKg4U9dvBG/ftT0laH33yIPYyBBAJVZLMQJAExr6ANu0PhyZnkJUUwF8rzRPV4yIEr17WPV0He1Gs4Hyk//3mk/9yuBON1StxEasYPtgJy4ce73Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.163.235])
-	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4cJ19W1lM6zKHMvV;
-	Fri,  5 Sep 2025 10:52:47 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.128])
-	by mail.maildlp.com (Postfix) with ESMTP id 31FDD1A0877;
-	Fri,  5 Sep 2025 10:52:47 +0800 (CST)
-Received: from huaweicloud.com (unknown [10.175.104.67])
-	by APP4 (Coremail) with SMTP id gCh0CgAncY18ULpou6m7BQ--.37022S4;
-	Fri, 05 Sep 2025 10:52:46 +0800 (CST)
-From: Zizhi Wo <wozizhi@huaweicloud.com>
-To: deller@gmx.de,
-	tzimmermann@suse.de,
-	lee@kernel.org,
-	jani.nikula@intel.com,
-	oushixiong@kylinos.cn,
-	soci@c64.rulez.org
-Cc: linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	yangerkun@huawei.com,
-	wozizhi@huaweicloud.com
-Subject: [PATCH] fbdev: Delay the setting of fbcon_ops to fix KASAN issues
-Date: Fri,  5 Sep 2025 10:43:40 +0800
-Message-Id: <20250905024340.337521-1-wozizhi@huaweicloud.com>
-X-Mailer: git-send-email 2.39.2
+	s=arc-20240116; t=1757055386; c=relaxed/simple;
+	bh=7Ov6pqFOcCQOGobPb4PJRr5tp8z7JpxmPqF4ANnSEbI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uwx8nN3pDpDiYogHnH5f92rYhkd/X8PhVnSeiHY4vMf28G3vlirgQQNTKkDGW2WWT8UMBhT7iS5oM9jTWKzRmTYTbfP/zp+bd7ax3H8QttuOc1VnHPjx0+N2xpQx8s5Ljd9IBQSVdrZOkBT/U2wvR/2IgaPGkdegzRYHhxfsv+8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=EbfyS7fx; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MmkLfQ93; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=EbfyS7fx; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MmkLfQ93; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="EbfyS7fx";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MmkLfQ93";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="EbfyS7fx";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MmkLfQ93"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 7880A20599;
+	Fri,  5 Sep 2025 06:56:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1757055382; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=egy9Zu3bRx8BJ79Jn5qClQjMQorMYZAG+hUc9JPg81Y=;
+	b=EbfyS7fxEI7KPPsn0tSrs1zCWMY0Nczx0L/5eVocn5q092opzWtLiFiKw1zP2JDTSMblU9
+	S9ARISTityDxe7Rd6Pl8i0j0wq/lrY8Uh+CnvzKpJmwFF3xp+a5ONAg+/+rwHnxpuWzIds
+	N4sqhFpgGtTU4CWGElJ6tphVPZ+cf4U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1757055382;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=egy9Zu3bRx8BJ79Jn5qClQjMQorMYZAG+hUc9JPg81Y=;
+	b=MmkLfQ93Ma788dVf2SyUvDD3ZbcEz43fgxx4a3qmSaqMJJnC6upHMGDCr+aumG7QNlOG0h
+	LP2NAiPVEPNjT8Aw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=EbfyS7fx;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=MmkLfQ93
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1757055382; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=egy9Zu3bRx8BJ79Jn5qClQjMQorMYZAG+hUc9JPg81Y=;
+	b=EbfyS7fxEI7KPPsn0tSrs1zCWMY0Nczx0L/5eVocn5q092opzWtLiFiKw1zP2JDTSMblU9
+	S9ARISTityDxe7Rd6Pl8i0j0wq/lrY8Uh+CnvzKpJmwFF3xp+a5ONAg+/+rwHnxpuWzIds
+	N4sqhFpgGtTU4CWGElJ6tphVPZ+cf4U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1757055382;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=egy9Zu3bRx8BJ79Jn5qClQjMQorMYZAG+hUc9JPg81Y=;
+	b=MmkLfQ93Ma788dVf2SyUvDD3ZbcEz43fgxx4a3qmSaqMJJnC6upHMGDCr+aumG7QNlOG0h
+	LP2NAiPVEPNjT8Aw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4C857139B9;
+	Fri,  5 Sep 2025 06:56:22 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id +PUIEZaJumisfQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 05 Sep 2025 06:56:22 +0000
+Message-ID: <5a79e01c-c1be-4386-a3b5-ef9580ae7195@suse.de>
+Date: Fri, 5 Sep 2025 08:56:21 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:gCh0CgAncY18ULpou6m7BQ--.37022S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxArWkurWUXr4rAryfGw47twb_yoWrArWDpF
-	yYkry2q3Z8tw45C3W3Xw45WF4rX3ZrJry7ua97ta4YgFy3uFW8W34kJFyUuFWrur97Jry8
-	Xw1DtrW8GFWDuw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
-	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
-	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
-	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
-	zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF
-	4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
-	CwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
-	nIWIevJa73UjIFyTuYvjfUonmRUUUUU
-X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/6] fbcon: Move bitops callbacks into separate struct
+To: simona@ffwll.ch, deller@gmx.de, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org
+References: <20250818104655.235001-1-tzimmermann@suse.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20250818104655.235001-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_TO(0.00)[ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[5];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_NONE(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Spam-Flag: NO
+X-Spam-Level: 
+X-Rspamd-Queue-Id: 7880A20599
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Score: -4.51
 
-[BUG]
-Recently, we encountered a KASAN warning as follows:
+ping for a review
 
-kasan_report+0xaf/0xe0 mm/kasan/report.c:588
-fb_pad_aligned_buffer+0x12f/0x150 drivers/video/fbdev/core/fbmem.c:116
-ccw_putcs_aligned drivers/video/fbdev/core/fbcon_ccw.c:119 [inline]
-ccw_putcs+0x9ac/0xbb0 drivers/video/fbdev/core/fbcon_ccw.c:175
-fbcon_putcs+0x329/0x3f0 drivers/video/fbdev/core/fbcon.c:1297
-do_update_region+0x3de/0x670 drivers/tty/vt/vt.c:623
-invert_screen+0x1de/0x600 drivers/tty/vt/vt.c:748
-highlight drivers/tty/vt/selection.c:57 [inline]
-clear_selection+0x5e/0x70 drivers/tty/vt/selection.c:81
-vc_do_resize+0xc8e/0xf40 drivers/tty/vt/vt.c:1206
-fbcon_modechanged+0x489/0x7a0 drivers/video/fbdev/core/fbcon.c:2705
-fbcon_set_all_vcs+0x1e0/0x600 drivers/video/fbdev/core/fbcon.c:2752
-fbcon_rotate_all drivers/video/fbdev/core/fbcon.c:250 [inline]
-...
+Am 18.08.25 um 12:36 schrieb Thomas Zimmermann:
+> Instances of fbcon use a number callbacks to support tile-based
+> drawing or console rotation. The fields are writeable in struct
+> fbcon_ops. Each case; unrotated, various rotated and tile-based
+> drawing; uses a set of related calbacks. Updating these 'bitops'
+> at runtime is spread throughout various helper functions.
+>
+> This series puts related callbacks into dedicated instances of the
+> new type struct fbcon_bitops. Changing the callbacks at runtime
+> then only requires to pick the correct instance. It further allows
+> the various struct fbcon_bitops' to be declared 'static const', which
+> makes them write-protected at runtime.
+>
+> Makes the fbcon bitops easier and safer to use and modify.
+>
+> Thomas Zimmermann (6):
+>    fbcon: Fix empty lines in fbcon.h
+>    fbcon: Rename struct fbcon_ops to struct fbcon
+>    fbcon: Set rotate_font callback with related callbacks
+>    fbcon: Move fbcon callbacks into struct fbcon_bitops
+>    fbcon: Streamline setting rotated/unrotated bitops
+>    fbcon: Pass struct fbcon to callbacks in struct fbcon_bitops
+>
+>   drivers/video/fbdev/core/bitblit.c      | 148 ++++----
+>   drivers/video/fbdev/core/fb_internal.h  |   2 +
+>   drivers/video/fbdev/core/fbcon.c        | 459 ++++++++++++------------
+>   drivers/video/fbdev/core/fbcon.h        |  33 +-
+>   drivers/video/fbdev/core/fbcon_ccw.c    | 180 +++++-----
+>   drivers/video/fbdev/core/fbcon_cw.c     | 172 ++++-----
+>   drivers/video/fbdev/core/fbcon_rotate.c |  47 +--
+>   drivers/video/fbdev/core/fbcon_rotate.h |  18 +-
+>   drivers/video/fbdev/core/fbcon_ud.c     | 192 +++++-----
+>   drivers/video/fbdev/core/softcursor.c   |  18 +-
+>   drivers/video/fbdev/core/tileblit.c     |  49 +--
+>   11 files changed, 681 insertions(+), 637 deletions(-)
+>
 
-reproduce[probabilistic, depending on the width and height of vc_font, as
-well as the value of "p" in do_update_region()]:
-1) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
-2) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
-
-[CAUSE]
-The root cause is that fbcon_modechanged() first sets the current rotate's
-corresponding ops. Subsequently, during vc_resize(), it may trigger
-clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can result
-in an out-of-bounds access to "src". This happens because ops->fontbuffer
-is reallocated in fbcon_rotate_font():
-1) When rotate=2, its size is (width + 7) / 8 * height
-2) When rotate=3, its size is (height + 7) / 8 * width
-
-And the call to fbcon_rotate_font() occurs after clear_selection(). In
-other words, the fontbuffer is allocated using the size calculated from the
-previous rotation[2], but before reallocating it with the new size,
-con_putcs is already using the new rotation[3]:
-
-rotate_all_store
- fbcon_rotate_all
-  fbcon_set_all_vcs
-   fbcon_modechanged
-   ...
-    fbcon_set_rotate
-     fbcon_rotate_ccw
-      ops->putcs = ccw_putcs // set rotate 3 ops
-    vc_resize
-    ...
-     clear_selection
-      highlight
-      ...
-       do_update_region
-	fbcon_putcs
-	 ccw_putcs_aligned
-	  src = ops->fontbuffer + (scr_readw(s--) & charmask)*cellsize
-	  fb_pad_aligned_buffer----[src KASAN!!!]
-       update_screen
-        redraw_screen
-	 fbcon_switch
-	  fbcon_rotate_font
-	   dst = kmalloc_array(len, d_cellsize, GFP_KERNEL)
-	   ops->fontbuffer = dst
-
-[FIX]
-Considering that when the rotation changes, clear_selection() should clear
-the previously selected region and not consider the new rotation yet.
-Therefore, the assignment to fbcon_ops for the newly set rotate can be
-postponed to fbcon_rotate_font(), since the fontbuffer is regenerated
-there. To avoid affecting other code paths, fbcon_set_rotate() will
-temporarily continue assigning fbcon_ops based on cur_rotate not rotate.
-
-Signed-off-by: Zizhi Wo <wozizhi@huaweicloud.com>
----
- drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index ec3c883400f7..d76446da24d4 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -70,6 +70,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 			src += s_cellsize;
- 			dst += d_cellsize;
- 		}
-+		fbcon_rotate_ud(ops);
- 		break;
- 	case FB_ROTATE_CW:
- 		for (i = len; i--; ) {
-@@ -78,6 +79,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 			src += s_cellsize;
- 			dst += d_cellsize;
- 		}
-+		fbcon_rotate_cw(ops);
- 		break;
- 	case FB_ROTATE_CCW:
- 		for (i = len; i--; ) {
-@@ -86,6 +88,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 			src += s_cellsize;
- 			dst += d_cellsize;
- 		}
-+		fbcon_rotate_ccw(ops);
- 		break;
- 	}
- 
-@@ -97,7 +100,7 @@ void fbcon_set_rotate(struct fbcon_ops *ops)
- {
- 	ops->rotate_font = fbcon_rotate_font;
- 
--	switch(ops->rotate) {
-+	switch (ops->cur_rotate) {
- 	case FB_ROTATE_CW:
- 		fbcon_rotate_cw(ops);
- 		break;
 -- 
-2.39.2
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+
 

@@ -1,42 +1,181 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61E4B134AB
-	for <linux-fbdev@vger.kernel.org>; Fri,  5 Sep 2025 01:00:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C76D1FAC4B;
+	Fri,  5 Sep 2025 02:52:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757034053; cv=none; b=AyTsEACTd3IBVl/vdEatDsiCcJeg+6TDueHaZ+gauX/Ax/E1QRIgiXiQrN4wlt5199SV5bnytvnp/kY7ODdapWLkKyJRYk8ZrP3KEFKabYyYX9x5nvV8ltVYFZjp19JomDcbuQOpxTKBRIz4TXUMn2OLM1BuYZ2fxP5An0YijRI=
+	t=1757040773; cv=none; b=KXgSUZkJTbhDi+vawiobOk8fOv08uR5Jab54N2yQX29r1mb9Mv48KqhAWMJKyUyoflHIkTX9V3jFxlctNIFA1g3ZWSzVFHe+g0cU9+I11rW3vAgGLR+vkXX67KgCXZ+fmtqjItfhaBpb9ZuODVOEYBwIMS95v1Tq6J+yl7yQZe0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757034053; c=relaxed/simple;
-	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
-	h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type; b=PE5dEU4rLiSviRgOFyQMTIcK2efezP+xTRYsRt3pmPOI1UWIk9yG1Hr9rx28JfnIuTMB8vejRYxSTmq+s0kMua84L3c4wPinPqyBSOm1NkfCZD0+gx2/5QSH3GV6xmSkDJjUb1w9Z1NX+6nlyxgHwD5CgF9Q7IcJfFJXqM2lKKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4cHyb001C2zQk6r
-	for <linux-fbdev@vger.kernel.org>; Fri,  5 Sep 2025 08:56:11 +0800 (CST)
-Received: from kwepemf100017.china.huawei.com (unknown [7.202.181.16])
-	by mail.maildlp.com (Postfix) with ESMTPS id 8B4B5180B66
-	for <linux-fbdev@vger.kernel.org>; Fri,  5 Sep 2025 09:00:48 +0800 (CST)
-Received: from [10.174.176.88] (10.174.176.88) by
- kwepemf100017.china.huawei.com (7.202.181.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 5 Sep 2025 09:00:48 +0800
-Message-ID: <2871a168-1028-4935-9f7c-c20a8818dad0@huawei.com>
-Date: Fri, 5 Sep 2025 09:00:47 +0800
+	s=arc-20240116; t=1757040773; c=relaxed/simple;
+	bh=awyv4lGa39gJ6Bpo1BVOB/Uk18u0N6Fl8y0t2Nnar/E=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZeeYhlAsvktEoNcMqdixFlX6fxJhZai5cV074MbpBmzlhVDITDYlk99NYrYoKg4U9dvBG/ftT0laH33yIPYyBBAJVZLMQJAExr6ANu0PhyZnkJUUwF8rzRPV4yIEr17WPV0He1Gs4Hyk//3mk/9yuBON1StxEasYPtgJy4ce73Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
+Received: from mail.maildlp.com (unknown [172.19.163.235])
+	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4cJ19W1lM6zKHMvV;
+	Fri,  5 Sep 2025 10:52:47 +0800 (CST)
+Received: from mail02.huawei.com (unknown [10.116.40.128])
+	by mail.maildlp.com (Postfix) with ESMTP id 31FDD1A0877;
+	Fri,  5 Sep 2025 10:52:47 +0800 (CST)
+Received: from huaweicloud.com (unknown [10.175.104.67])
+	by APP4 (Coremail) with SMTP id gCh0CgAncY18ULpou6m7BQ--.37022S4;
+	Fri, 05 Sep 2025 10:52:46 +0800 (CST)
+From: Zizhi Wo <wozizhi@huaweicloud.com>
+To: deller@gmx.de,
+	tzimmermann@suse.de,
+	lee@kernel.org,
+	jani.nikula@intel.com,
+	oushixiong@kylinos.cn,
+	soci@c64.rulez.org
+Cc: linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	yangerkun@huawei.com,
+	wozizhi@huaweicloud.com
+Subject: [PATCH] fbdev: Delay the setting of fbcon_ops to fix KASAN issues
+Date: Fri,  5 Sep 2025 10:43:40 +0800
+Message-Id: <20250905024340.337521-1-wozizhi@huaweicloud.com>
+X-Mailer: git-send-email 2.39.2
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: <linux-fbdev@vger.kernel.org>
-From: Zizhi Wo <wozizhi@huawei.com>
-Subject: subscribe
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemf100017.china.huawei.com (7.202.181.16)
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:gCh0CgAncY18ULpou6m7BQ--.37022S4
+X-Coremail-Antispam: 1UD129KBjvJXoWxArWkurWUXr4rAryfGw47twb_yoWrArWDpF
+	yYkry2q3Z8tw45C3W3Xw45WF4rX3ZrJry7ua97ta4YgFy3uFW8W34kJFyUuFWrur97Jry8
+	Xw1DtrW8GFWDuw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
+	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
+	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
+	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
+	zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF
+	4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
+	CwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
+	nIWIevJa73UjIFyTuYvjfUonmRUUUUU
+X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
+
+[BUG]
+Recently, we encountered a KASAN warning as follows:
+
+kasan_report+0xaf/0xe0 mm/kasan/report.c:588
+fb_pad_aligned_buffer+0x12f/0x150 drivers/video/fbdev/core/fbmem.c:116
+ccw_putcs_aligned drivers/video/fbdev/core/fbcon_ccw.c:119 [inline]
+ccw_putcs+0x9ac/0xbb0 drivers/video/fbdev/core/fbcon_ccw.c:175
+fbcon_putcs+0x329/0x3f0 drivers/video/fbdev/core/fbcon.c:1297
+do_update_region+0x3de/0x670 drivers/tty/vt/vt.c:623
+invert_screen+0x1de/0x600 drivers/tty/vt/vt.c:748
+highlight drivers/tty/vt/selection.c:57 [inline]
+clear_selection+0x5e/0x70 drivers/tty/vt/selection.c:81
+vc_do_resize+0xc8e/0xf40 drivers/tty/vt/vt.c:1206
+fbcon_modechanged+0x489/0x7a0 drivers/video/fbdev/core/fbcon.c:2705
+fbcon_set_all_vcs+0x1e0/0x600 drivers/video/fbdev/core/fbcon.c:2752
+fbcon_rotate_all drivers/video/fbdev/core/fbcon.c:250 [inline]
+...
+
+reproduce[probabilistic, depending on the width and height of vc_font, as
+well as the value of "p" in do_update_region()]:
+1) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
+2) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
+
+[CAUSE]
+The root cause is that fbcon_modechanged() first sets the current rotate's
+corresponding ops. Subsequently, during vc_resize(), it may trigger
+clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can result
+in an out-of-bounds access to "src". This happens because ops->fontbuffer
+is reallocated in fbcon_rotate_font():
+1) When rotate=2, its size is (width + 7) / 8 * height
+2) When rotate=3, its size is (height + 7) / 8 * width
+
+And the call to fbcon_rotate_font() occurs after clear_selection(). In
+other words, the fontbuffer is allocated using the size calculated from the
+previous rotation[2], but before reallocating it with the new size,
+con_putcs is already using the new rotation[3]:
+
+rotate_all_store
+ fbcon_rotate_all
+  fbcon_set_all_vcs
+   fbcon_modechanged
+   ...
+    fbcon_set_rotate
+     fbcon_rotate_ccw
+      ops->putcs = ccw_putcs // set rotate 3 ops
+    vc_resize
+    ...
+     clear_selection
+      highlight
+      ...
+       do_update_region
+	fbcon_putcs
+	 ccw_putcs_aligned
+	  src = ops->fontbuffer + (scr_readw(s--) & charmask)*cellsize
+	  fb_pad_aligned_buffer----[src KASAN!!!]
+       update_screen
+        redraw_screen
+	 fbcon_switch
+	  fbcon_rotate_font
+	   dst = kmalloc_array(len, d_cellsize, GFP_KERNEL)
+	   ops->fontbuffer = dst
+
+[FIX]
+Considering that when the rotation changes, clear_selection() should clear
+the previously selected region and not consider the new rotation yet.
+Therefore, the assignment to fbcon_ops for the newly set rotate can be
+postponed to fbcon_rotate_font(), since the fontbuffer is regenerated
+there. To avoid affecting other code paths, fbcon_set_rotate() will
+temporarily continue assigning fbcon_ops based on cur_rotate not rotate.
+
+Signed-off-by: Zizhi Wo <wozizhi@huaweicloud.com>
+---
+ drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
+index ec3c883400f7..d76446da24d4 100644
+--- a/drivers/video/fbdev/core/fbcon_rotate.c
++++ b/drivers/video/fbdev/core/fbcon_rotate.c
+@@ -70,6 +70,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
+ 			src += s_cellsize;
+ 			dst += d_cellsize;
+ 		}
++		fbcon_rotate_ud(ops);
+ 		break;
+ 	case FB_ROTATE_CW:
+ 		for (i = len; i--; ) {
+@@ -78,6 +79,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
+ 			src += s_cellsize;
+ 			dst += d_cellsize;
+ 		}
++		fbcon_rotate_cw(ops);
+ 		break;
+ 	case FB_ROTATE_CCW:
+ 		for (i = len; i--; ) {
+@@ -86,6 +88,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
+ 			src += s_cellsize;
+ 			dst += d_cellsize;
+ 		}
++		fbcon_rotate_ccw(ops);
+ 		break;
+ 	}
+ 
+@@ -97,7 +100,7 @@ void fbcon_set_rotate(struct fbcon_ops *ops)
+ {
+ 	ops->rotate_font = fbcon_rotate_font;
+ 
+-	switch(ops->rotate) {
++	switch (ops->cur_rotate) {
+ 	case FB_ROTATE_CW:
+ 		fbcon_rotate_cw(ops);
+ 		break;
+-- 
+2.39.2
 

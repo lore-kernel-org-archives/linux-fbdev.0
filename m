@@ -1,159 +1,149 @@
-Received: from mailrelay-egress4.pub.mailoutpod2-cph3.one.com (mailrelay-egress4.pub.mailoutpod2-cph3.one.com [46.30.211.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f207.google.com (mail-il1-f207.google.com [209.85.166.207])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F064031D757
-	for <linux-fbdev@vger.kernel.org>; Mon,  8 Sep 2025 18:51:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6C902475CD
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Sep 2025 19:19:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.207
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757357485; cv=none; b=m7df6kxKCusWkV+lIzi6skr6SsH+pIDdWQSZQDqfH842ET/q1Y/88ya0WcunNKpSDyEITfPzmZIG4QBUs3ufyh3u9qKT2JajERgRjAOk55YLIYaFUhMD6heUMKVF4QekA9FJ3CzQp8JnikBimAyY5cUtGje6v1N6o8U+3Gt4SJo=
+	t=1757359170; cv=none; b=oFRZTvABPQd+/Ecjs5A7SmuVrb65QW9Om+UFgDWhYmztnfHzqj1pHan/rrnXkUXRcBjNOLGq8a61DYbWbQ7YdccY9y6gnDZJA9A+xB25jw+hXPOAD0fHI3oy/ovxgv5YKwSUauU/7+AuE085aI/05a1JPyQsds5quRDa5cSDIZw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757357485; c=relaxed/simple;
-	bh=c+tXIw22H7GmL5X/H+OdpBd4RRRzRwrd6dquWXNLbEE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JiAuXAEawyHdzMv+LyEaxPA8Eqeu11fy/zL5f/mcB+rY9x8S+A3XAR5l+YSoqDH6Bgr9lQJFP1qOw7JgFXLwDtDqclFd1TyAFrWyxAMkLXpQcC1WTAyKuwoTiMbzg6bxkmM+Z/9wAyEEtX1j1jGPofIkKJJaDG9jtyUNLy/rCDw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=Y6/o9/tB; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=NfvqCtXf; arc=none smtp.client-ip=46.30.211.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="Y6/o9/tB";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="NfvqCtXf"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1757357470; x=1757962270;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=b0OrA6ztwdprbIrsGVPpqZHoL8FCk7RDtGNiYi1AB8A=;
-	b=Y6/o9/tBKmtzr/qxtociDT2bSMVYXoJelswDHk9m2iR4vQdq35lnruQ2xglgwYKhni2ZAwIxnwlqP
-	 VD5k0FtAnnsceOOutHj58w8inTRoqhI08hzL1HF2gf1qe8PZStFEoKk8lUX0jzPmYewJS6VhB716vf
-	 0yXcKczAaQguQdZetbLYRXxAkl9CxYQaGHQqBmdRbrv6JPlK8qv617DhGZ8eGS62HdqrhV7MRCgYVH
-	 nfKAhVS0YcZqTt5RakpksQbs35GWQRMGcBelJJ216+nP29iUNruohIgsEhYpdXkwGb1GoRxv0FTuEY
-	 OBoHm+sNa7bcKWkVuHNpwDUuMj2E1hw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1757357470; x=1757962270;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=b0OrA6ztwdprbIrsGVPpqZHoL8FCk7RDtGNiYi1AB8A=;
-	b=NfvqCtXf73TsWDArjFg7yJk5dZykcxaHg4dbLfDJiNGSRV6blOrNGpFrbeiFjML83ZdBkxLFb6igR
-	 uUjLHMzDw==
-X-HalOne-ID: c85cbffc-8ce4-11f0-9fa4-d510462faafc
-Received: from ravnborg.org (2-105-16-150-cable.dk.customer.tdc.net [2.105.16.150])
-	by mailrelay4.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id c85cbffc-8ce4-11f0-9fa4-d510462faafc;
-	Mon, 08 Sep 2025 18:51:10 +0000 (UTC)
-Date: Mon, 8 Sep 2025 20:51:09 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: simona@ffwll.ch, deller@gmx.de, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] fbcon: Move fbcon callbacks into struct fbcon_bitops
-Message-ID: <20250908185109.GA643261@ravnborg.org>
-References: <20250818104655.235001-1-tzimmermann@suse.de>
- <20250818104655.235001-5-tzimmermann@suse.de>
- <20250905185358.GA361827@ravnborg.org>
- <c1674a81-3435-445c-b359-e2b094b7f8a5@suse.de>
+	s=arc-20240116; t=1757359170; c=relaxed/simple;
+	bh=qAFcrVBOup5OQXNEdOgYwcxxaA5N6iyAxjDJOx0IFRo=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=JeBwJd4myCLTfYbqAFu+Abrdtp+TIEH/ENchwhuw1JUruJSvHJ5n6DqvhTKmdg+Fx3Nytpgov9IgP6yIOSnYYLqRe82ian7lb1VPzc9d7QYfQvhpMxiVwsZa3/mHtHFy45pjQGA8KshlJZ0iMuG8ocHav8EGGIly0L71yevECuo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.207
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-il1-f207.google.com with SMTP id e9e14a558f8ab-3f66898cc14so63727515ab.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 08 Sep 2025 12:19:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757359168; x=1757963968;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=GS51yBm+KZpy05gOITF+TyPHlJCUTXtwtV3UCcoHVHI=;
+        b=iwDNtwLdzNdB3aBdMRiu48K9Jg5zoSIBZGI53aMN1m9cFY5G4BHjTKM+HIsKnTbvwe
+         B6MCeJ7ujmqqzR6RjaFyLTe+rwyU7Qi7Z3AzBroRO51tYnFyA/WA4vFdVvVPkiuWIevg
+         zwhQBe6tXUtBBwNcG8KEyiYZgMKbcCjxmP2z2EwH+qjO0ewBmc5ro6rTLqKTAGiMnoO6
+         qNX4Vgk2X+fY8kbj/C23y72b4bLcA+BWq68+obK0paRJzRZWFqiqnfylYD7Ul1DUgoPh
+         bwJ5Qo+DgbEOz+S5RfOgKO+ErfvTFBHLNYIHbXqfK6xSJ6WHXDkk3pnOnsDGHZe3MHvQ
+         GKvw==
+X-Forwarded-Encrypted: i=1; AJvYcCXSp9UG3trxsdBVLeYQJgw0z4+lj0iOCYlX3S7eneirLjMSXhLdSxlfZeJUZ+wz6YBZWgAmK9+8s6FwsA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz3W9X7t1yu3B0X/Dv+qoUxLE3Ol/PvAYTdZO7kLby4zpzHejAY
+	S3WHHWGXvz9JRrmuuoK9hIXMUCAzQbrMshaYbGqkDQ4AUa7Q2ggGnQUXY4yXBlZmSdWAScI7NbE
+	nYzHIgrwYaUO5agPzOArxqSQAJrNVDBB3S3DaVSNa5Hwdw+uM/a6dzGmHZo4=
+X-Google-Smtp-Source: AGHT+IEES7IE7iRjJaxYjfY8EtJaJrjfyO12oDu3Dxea0hsbmIRzW3W9wfliz6N4OT7EukOeIr7wEqRT3bnbv1mqF8q806YnN/Vc
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c1674a81-3435-445c-b359-e2b094b7f8a5@suse.de>
+X-Received: by 2002:a05:6e02:2194:b0:40e:fe2a:b321 with SMTP id
+ e9e14a558f8ab-40efe2ab529mr12939775ab.15.1757359168014; Mon, 08 Sep 2025
+ 12:19:28 -0700 (PDT)
+Date: Mon, 08 Sep 2025 12:19:27 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <68bf2c3f.050a0220.192772.0884.GAE@google.com>
+Subject: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in imageblit (5)
+From: syzbot <syzbot+48b0652a95834717f190@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
+	soci@c64.rulez.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Thomas.
+Hello,
 
-On Mon, Sep 08, 2025 at 03:06:46PM +0200, Thomas Zimmermann wrote:
-> Hi Sam,
-> 
-> thanks for doing the review.
-> 
-> Am 05.09.25 um 20:53 schrieb Sam Ravnborg:
-> > Hi Thomas.
-> > 
-> > On Mon, Aug 18, 2025 at 12:36:39PM +0200, Thomas Zimmermann wrote:
-> > > Depending on rotation settings, fbcon sets different callback
-> > > functions in struct fbcon from within fbcon_set_bitops(). Declare
-> > > the callback functions in the new type struct fbcon_bitops. Then
-> > > only replace the single bitops pointer in struct fbcon.
-> > > 
-> > > Keeping callbacks in constant instances of struct fbcon_bitops
-> > > makes it harder to exploit the callbacks. Also makes the code slightly
-> > > easier to maintain.
-> > > 
-> > > For tile-based consoles, there's a separate instance of the bitops
-> > > structure.
-> > > 
-> > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > > ---
-> > >   drivers/video/fbdev/core/bitblit.c   | 17 ++++---
-> > >   drivers/video/fbdev/core/fbcon.c     | 67 +++++++++++++++-------------
-> > >   drivers/video/fbdev/core/fbcon.h     |  7 ++-
-> > >   drivers/video/fbdev/core/fbcon_ccw.c | 18 +++++---
-> > >   drivers/video/fbdev/core/fbcon_cw.c  | 18 +++++---
-> > >   drivers/video/fbdev/core/fbcon_ud.c  | 18 +++++---
-> > >   drivers/video/fbdev/core/tileblit.c  | 16 ++++---
-> > >   7 files changed, 94 insertions(+), 67 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-> > > index a2202cae0691..267bd1635a41 100644
-> > > --- a/drivers/video/fbdev/core/bitblit.c
-> > > +++ b/drivers/video/fbdev/core/bitblit.c
-> > > @@ -384,15 +384,18 @@ static int bit_update_start(struct fb_info *info)
-> > >   	return err;
-> > >   }
-> > > +static const struct fbcon_bitops bit_fbcon_bitops = {
-> > > +	.bmove = bit_bmove,
-> > > +	.clear = bit_clear,
-> > > +	.putcs = bit_putcs,
-> > > +	.clear_margins = bit_clear_margins,
-> > > +	.cursor = bit_cursor,
-> > > +	.update_start = bit_update_start,
-> > > +};
-> > > +
-> > >   void fbcon_set_bitops(struct fbcon *confb)
-> > >   {
-> > > -	confb->bmove = bit_bmove;
-> > > -	confb->clear = bit_clear;
-> > > -	confb->putcs = bit_putcs;
-> > > -	confb->clear_margins = bit_clear_margins;
-> > > -	confb->cursor = bit_cursor;
-> > > -	confb->update_start = bit_update_start;
-> > > -	confb->rotate_font = NULL;
-> > > +	confb->bitops = &bit_fbcon_bitops;
-> > >   	if (confb->rotate)
-> > >   		fbcon_set_rotate(confb);
-> > fbcon_set_rotate() is only used to set the correct bitops.
-> > 
-> > It would be simpler to just do
-> > 
-> > 	if (confb->rotate)
-> > 		confb->bitops = fbcon_rotate_get_ops();
-> > 
-> > And rename fbcon_set_rotate() to fbcon_rotate_get_ops() and return the
-> > pointer to the struct.
-> > 
-> > The no need to pass the struct, and it is obvious that the bitops are
-> > overwritten.
-> 
-> I tried to keep the changes here to a minimum and avoided changing the
-> function interfaces too much.
-> 
-> But did you read patch 5 already? I think the cleanup you're looking for is
-> there. fbcon_set_rotate() will be gone. And the update bit-op selection is
-> contained in fbcon_set_bitops(). I guess this could be renamed to
-> fbcon_update_bitops() to make it clear that it updates from internal state.
+syzbot found the following issue on:
 
-Patch 5 looks good, and is again a nice cleanup.
-I like that the code is now more explicit in what it does and do not
-do overwrites.
+HEAD commit:    76eeb9b8de98 Linux 6.17-rc5
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=14379562580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=e0bea6c0b97a2002
+dashboard link: https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
+compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
 
-Returning a pointer or adding the assignment in a helper is not a big
-deal.
+Unfortunately, I don't have any reproducer for this issue yet.
 
-With or without the suggested renaming both patch 4 + 5 are r-b.
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/b2c9b90de8ba/disk-76eeb9b8.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/dd1bcf1fd25e/vmlinux-76eeb9b8.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/dc7e94f5dffb/bzImage-76eeb9b8.xz
 
-That said, I am not expert in this field, but at least you had another
-pair of eyes on the changes.
-I look forward to see the next batches of refactoring you have planned.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
 
-	Sam
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
+Write of size 8 at addr ffffc90003649000 by task syz.1.259/7231
+
+CPU: 0 UID: 0 PID: 7231 Comm: syz.1.259 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/12/2025
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:378 [inline]
+ print_report+0xcd/0x630 mm/kasan/report.c:482
+ kasan_report+0xe0/0x110 mm/kasan/report.c:595
+ fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+ fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
+ fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
+ fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
+ sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
+ drm_fbdev_shmem_defio_imageblit+0x20/0x130 drivers/gpu/drm/drm_fbdev_shmem.c:38
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:138 [inline]
+ bit_putcs+0x90f/0xde0 drivers/video/fbdev/core/bitblit.c:187
+ fbcon_putcs+0x384/0x4a0 drivers/video/fbdev/core/fbcon.c:1327
+ do_update_region+0x2e6/0x3f0 drivers/tty/vt/vt.c:627
+ update_region+0xc1/0x160 drivers/tty/vt/vt.c:641
+ vcs_write+0x7c7/0xdb0 drivers/tty/vt/vc_screen.c:698
+ vfs_write+0x29d/0x11d0 fs/read_write.c:684
+ ksys_write+0x12a/0x250 fs/read_write.c:738
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0x490 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7effcbf8ebe9
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007effccda6038 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007effcc1c6270 RCX: 00007effcbf8ebe9
+RDX: 000000000000ffd8 RSI: 0000000000000000 RDI: 0000000000000003
+RBP: 00007effcc011e19 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007effcc1c6308 R14: 00007effcc1c6270 R15: 00007ffd4fcb0c08
+ </TASK>
+
+The buggy address belongs to a 0-page vmalloc region starting at 0xffffc90003349000 allocated at drm_gem_shmem_vmap_locked+0x561/0x7e0 drivers/gpu/drm/drm_gem_shmem_helper.c:371
+Memory state around the buggy address:
+ ffffc90003648f00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffffc90003648f80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffffc90003649000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                   ^
+ ffffc90003649080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90003649100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup

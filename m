@@ -1,78 +1,79 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 796EF33A002
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Sep 2025 12:49:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 886E033EB1C
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Sep 2025 12:49:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757422149; cv=none; b=KT+8TW7tHmbNsg/B8a9JeyOXQxTW1hdMY4i5POJMzdPZ7uRuGqW+F5KIeVH3tU47AQtcR5L0ROT8/D46SVlc1Zo3drtcCbITcZW4e66wXEvz7PGrwtMrKvxPsc3jqVcs7dJVuhLD2K7jLETCwZENgtQHz/uGbOvTc6ojZapOA4k=
+	t=1757422153; cv=none; b=F9brCJFuCKl3lF3T7zgCDtj1M4sN/wtNA+wYg3T9D7Qr+SSG1lzwllqNxIdUAj2Skb5KFTQEo6oFm8dAjTpPtVZQ/PTRhqha49b6F6oSY0Z++fx+HUgoTbDWToj8x6pX7Bgl5oAW4m4359IcJPbWO8cZUx1mWdnCMPFoXvtU+6Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757422149; c=relaxed/simple;
-	bh=0sPZ4UDlhK0Uty8ucd3kLYPOpJgfKEOJZABTRt33hfg=;
+	s=arc-20240116; t=1757422153; c=relaxed/simple;
+	bh=jFTFkBdeUmrgMiNd5kCssdxObQfxExXXABln9vTuyG4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DCQY4ry9sPFIpAs046Df1VPbo9UurNMiAxivbWdsXBOk7bqeyyLMW2brYEd5RuLFZ+4PMlD0bBWE77kymY9tyMKYz2MQ6GBwmpR1hmLuUf3+26P3oPyyKOo/DzZ37diH112aGycWqCChDKljOwwhv3JLdqV3/HDxOnla6OYuUBg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=YDs9QXfn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=h9lQC/Ru; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=YDs9QXfn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=h9lQC/Ru; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=ABfbjSDG3iFEGiLUkQg4a1qes/sKNlSjQ9oJEvgVuvQw6Pi/AQUmEIKKXEiQALrTqFYHu8gJbyen0ocYjUI9c4xEvcbZ2rd+Ybn6hPIBoX8MBlMDclY15cuFvXJsr7ocDXM1F8zT70Jl9Y/b/8Rbfz42wLZQ6FenGsgfnYXbpXI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MY4zDBU/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=3e6eDYNZ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MY4zDBU/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=3e6eDYNZ; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="YDs9QXfn";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="h9lQC/Ru";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="YDs9QXfn";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="h9lQC/Ru"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MY4zDBU/";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="3e6eDYNZ";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MY4zDBU/";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="3e6eDYNZ"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B371121E16;
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 3608920AC2;
 	Tue,  9 Sep 2025 12:49:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1757422144; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iXrTNcIXey7r3a4IZTag05S2jAmGCHxkyv+nq5ZFf6M=;
-	b=YDs9QXfneYE2dw+PtqHLKvs2/FNXKJ2iiguMZ0EAtbODZYry3bd0q2zUyNh8itqEXDTVEY
-	vqrnffZE4Ng2g6u4SPbZuIuHeSu0nbqRRRhehdUFpHJ5Tnpc/ksKe4lIi7tsmQrtm/qyxl
-	HOs/YtwMdn3tHIaClzztM+RyJiyYvLE=
+	bh=O0HvIyf9fblBRJJsPTgmzAyP2FHmBSKfV09sfj/n55A=;
+	b=MY4zDBU/pm0M8yGjL7mhWamUc8chewhM2UN0E8AueCuwGB8Z7/52lWo9Et94wwTH1PVe1u
+	9RAOKWZvM4C1QQb8NHF/xnyFElFTQGtI1x91ynGSc+ugl2+aFafJ9wtL1poxwgh7NFzu22
+	nv4uZupKOwfmIdTW+c/4H4NndnOqIYs=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1757422144;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iXrTNcIXey7r3a4IZTag05S2jAmGCHxkyv+nq5ZFf6M=;
-	b=h9lQC/Rugoj6ozHiIuawqV6NJxEQ9gd5YCc6OGqxxn04zTdi9pSJ/PddpZnqGOSZHqyh5U
-	CPMqde51n4z+3bDw==
-Authentication-Results: smtp-out1.suse.de;
-	none
+	bh=O0HvIyf9fblBRJJsPTgmzAyP2FHmBSKfV09sfj/n55A=;
+	b=3e6eDYNZ/nGkoMHXPcX18f8vsalZ4zuxB1G9waIIO6NGRs/J4tKutbP1P8K6tTljAyHNhL
+	e231ExLbFXLf+kDg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="MY4zDBU/";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=3e6eDYNZ
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1757422144; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iXrTNcIXey7r3a4IZTag05S2jAmGCHxkyv+nq5ZFf6M=;
-	b=YDs9QXfneYE2dw+PtqHLKvs2/FNXKJ2iiguMZ0EAtbODZYry3bd0q2zUyNh8itqEXDTVEY
-	vqrnffZE4Ng2g6u4SPbZuIuHeSu0nbqRRRhehdUFpHJ5Tnpc/ksKe4lIi7tsmQrtm/qyxl
-	HOs/YtwMdn3tHIaClzztM+RyJiyYvLE=
+	bh=O0HvIyf9fblBRJJsPTgmzAyP2FHmBSKfV09sfj/n55A=;
+	b=MY4zDBU/pm0M8yGjL7mhWamUc8chewhM2UN0E8AueCuwGB8Z7/52lWo9Et94wwTH1PVe1u
+	9RAOKWZvM4C1QQb8NHF/xnyFElFTQGtI1x91ynGSc+ugl2+aFafJ9wtL1poxwgh7NFzu22
+	nv4uZupKOwfmIdTW+c/4H4NndnOqIYs=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1757422144;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iXrTNcIXey7r3a4IZTag05S2jAmGCHxkyv+nq5ZFf6M=;
-	b=h9lQC/Rugoj6ozHiIuawqV6NJxEQ9gd5YCc6OGqxxn04zTdi9pSJ/PddpZnqGOSZHqyh5U
-	CPMqde51n4z+3bDw==
+	bh=O0HvIyf9fblBRJJsPTgmzAyP2FHmBSKfV09sfj/n55A=;
+	b=3e6eDYNZ/nGkoMHXPcX18f8vsalZ4zuxB1G9waIIO6NGRs/J4tKutbP1P8K6tTljAyHNhL
+	e231ExLbFXLf+kDg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7F80113A56;
-	Tue,  9 Sep 2025 12:49:04 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F18A513A56;
+	Tue,  9 Sep 2025 12:49:03 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id qFP1HUAiwGilUAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 09 Sep 2025 12:49:04 +0000
+	id eBTBOT8iwGilUAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 09 Sep 2025 12:49:03 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: sam@ravnborg.org,
 	simona@ffwll.ch,
@@ -81,9 +82,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 3/5] fbcon: Set rotate_font callback with related callbacks
-Date: Tue,  9 Sep 2025 14:44:43 +0200
-Message-ID: <20250909124616.143365-4-tzimmermann@suse.de>
+Subject: [PATCH v2 1/5] fbcon: Fix empty lines in fbcon.h
+Date: Tue,  9 Sep 2025 14:44:41 +0200
+Message-ID: <20250909124616.143365-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20250909124616.143365-1-tzimmermann@suse.de>
 References: <20250909124616.143365-1-tzimmermann@suse.de>
@@ -95,115 +96,68 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Spam-Level: 
-X-Spamd-Result: default: False [-2.80 / 50.00];
+X-Spam-Flag: NO
+X-Rspamd-Queue-Id: 3608920AC2
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-3.01 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
 	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
 	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MX_GOOD(-0.01)[];
 	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FROM_HAS_DN(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_COUNT_TWO(0.00)[2];
 	FREEMAIL_TO(0.00)[ravnborg.org,ffwll.ch,gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	TO_DN_SOME(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
 	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Spam-Flag: NO
-X-Spam-Score: -2.80
+X-Spam-Score: -3.01
 
-The field struct fbcon_par.rotate_font points to fbcon_rotate_font() if
-the console is rotated. Set the callback in the same place as the other
-callbacks. Prepares for declaring all fbcon callbacks in a dedicated
-struct type.
-
-If not rotated, fbcon_set_bitops() still clears the callback to NULL.
+Add and remove empty lines as necessary to fix coding style. No
+functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- drivers/video/fbdev/core/fbcon_ccw.c    | 1 +
- drivers/video/fbdev/core/fbcon_cw.c     | 1 +
- drivers/video/fbdev/core/fbcon_rotate.c | 4 +---
- drivers/video/fbdev/core/fbcon_rotate.h | 3 +++
- drivers/video/fbdev/core/fbcon_ud.c     | 1 +
- 5 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/core/fbcon.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/core/fbcon_ccw.c
-index 2ba8ec4c3e2b..ba744b67a4fd 100644
---- a/drivers/video/fbdev/core/fbcon_ccw.c
-+++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -398,4 +398,5 @@ void fbcon_rotate_ccw(struct fbcon_par *par)
- 	par->clear_margins = ccw_clear_margins;
- 	par->cursor = ccw_cursor;
- 	par->update_start = ccw_update_start;
-+	par->rotate_font = fbcon_rotate_font;
- }
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index 4bd22d5ee5f4..974bd9d9b770 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -381,4 +381,5 @@ void fbcon_rotate_cw(struct fbcon_par *par)
- 	par->clear_margins = cw_clear_margins;
- 	par->cursor = cw_cursor;
- 	par->update_start = cw_update_start;
-+	par->rotate_font = fbcon_rotate_font;
- }
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index 380b2746451a..0c7cac71a9c2 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -18,7 +18,7 @@
- #include "fbcon.h"
- #include "fbcon_rotate.h"
- 
--static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
-+int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- {
- 	struct fbcon_par *par = info->fbcon_par;
- 	int len, err = 0;
-@@ -95,8 +95,6 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 
- void fbcon_set_rotate(struct fbcon_par *par)
- {
--	par->rotate_font = fbcon_rotate_font;
--
- 	switch (par->rotate) {
- 	case FB_ROTATE_CW:
- 		fbcon_rotate_cw(par);
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.h b/drivers/video/fbdev/core/fbcon_rotate.h
-index 48305e1a0763..784f3231a958 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.h
-+++ b/drivers/video/fbdev/core/fbcon_rotate.h
-@@ -90,7 +90,10 @@ static inline void rotate_ccw(const char *in, char *out, u32 width, u32 height)
- 	}
- }
- 
-+int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc);
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+index 4d97e6d8a16a..c535d8f84356 100644
+--- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -87,6 +87,7 @@ struct fbcon_ops {
+ 	u32    cursor_size;
+ 	u32    fd_size;
+ };
 +
- extern void fbcon_rotate_cw(struct fbcon_par *par);
- extern void fbcon_rotate_ud(struct fbcon_par *par);
- extern void fbcon_rotate_ccw(struct fbcon_par *par);
-+
- #endif
-diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/core/fbcon_ud.c
-index 14b40e2bf323..1a214a4d538f 100644
---- a/drivers/video/fbdev/core/fbcon_ud.c
-+++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -425,4 +425,5 @@ void fbcon_rotate_ud(struct fbcon_par *par)
- 	par->clear_margins = ud_clear_margins;
- 	par->cursor = ud_cursor;
- 	par->update_start = ud_update_start;
-+	par->rotate_font = fbcon_rotate_font;
- }
+     /*
+      *  Attribute Decoding
+      */
+@@ -106,7 +107,6 @@ struct fbcon_ops {
+ 	((s) & 0x400)
+ #define attr_blink(s) \
+ 	((s) & 0x8000)
+-	
+ 
+ static inline int mono_col(const struct fb_info *info)
+ {
 -- 
 2.51.0
 

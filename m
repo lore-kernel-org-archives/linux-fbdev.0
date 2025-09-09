@@ -1,155 +1,101 @@
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 488D6301480;
-	Tue,  9 Sep 2025 06:03:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24A5A302166;
+	Tue,  9 Sep 2025 06:23:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757397824; cv=none; b=KU1W0ArxAUQV+vV4l4gba/Lm+hELUWSn4amqkYzhUon2M9JEijjKdLWpG9pDBkpGRc+8Aqmw+akAtd/SEwIbOZJwPgJ2ivtM2Wm9n7wcjXn6anAhIv2h+RvOV81lcwSGpYbE3XhFs3mJ10v6zSl0c/CEZG1ijR2d+Yw8zE0IPMw=
+	t=1757399014; cv=none; b=pirHo5uUnTrAuNle4ntUsm7sCq2WSG6ai5cx7t+Sx2c0EemI7OfSEC7+PdZGUUkHJAWdZEXMqTx+/91fM6vBm/+D1cEXHOj3jxN6DxZeOkYJiAY8oOp0HS3fPZ9+DZT5QM+2OmjXtDQ4bkiUORqH/Mg9GPHznEcmzbNb2XxOyEI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757397824; c=relaxed/simple;
-	bh=sArw20JjfCGt3Tt3VJw4wcfrb4jGqV5C5oSbve8OqSQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DsXUDRa91WLseKweRez1yzLm1gpitIGR8G0c6Mzw18aCIMW30VTKWr3mkQMmXmj1sKk+uOxPEJRDBq132/ojB+u3YpCbfdMcGbO9gFnU9RPsBzK9gEp/UemgS5rMWtW0fFPro7gFWnXseLoKCrSDmZ0UrO5P2PjoHosYg+FJDvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E5cY24hc; arc=none smtp.client-ip=209.85.210.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1757399014; c=relaxed/simple;
+	bh=RpvqyvM6Tia415RbHYKNy7KCcVHJVN5DwJEHb6JVKqw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jaD1QkK70TkyYH3fHnyvk4eAIH6f3QtX/mgONquJhr9BvHOKRdEJEy1EJ2dx/TgZ4bSYb/809hNH+L5nrDf99FUknHVvs19YdX0vAQrfE5/Bq/PesRzobqb8i3gr9rGPVp7gf6YtnAufWd/EcK357C1pQnbzy7WsMJ7bSmxZePE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=z0pQ6SS7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E5cY24hc"
-Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-77246079bc9so6213107b3a.3;
-        Mon, 08 Sep 2025 23:03:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1757397822; x=1758002622; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=0xUdZKaT5B2ZhU9BDE5iqzR0B7D+QHqptUpqCo3VtYQ=;
-        b=E5cY24hc/a4QMqN1+MEjk/UZh/bpa5igthcrWSG9KXZmiTgByWE+9lt5sG7twuLtLy
-         BKmPwtPawIOWfGW3V0h0ymXGnyPi7MlHY5qFzl6B/wjnY5L2gILGkig9fCxuvOzkZZVU
-         Tvtexg7/O+BumkBLgdCDbPgnU8MpiIu9+t3fL4mn/MPTGzCIkDhFKSgzDN8Hb0x93T09
-         L41UPcdsSb2zsiMCu+saz8HV+DOAY3ziwUmxzN8IBq52Rfnj/T2ry2SCMtZqjxMvFR+t
-         7A+Vz5MiKL7WF9pHtX7fGyb+uWpfd1rrbKlPhfIVk+1Xh7INjmSTqONcpcRo5IrB3+VV
-         ZZ1w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757397822; x=1758002622;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=0xUdZKaT5B2ZhU9BDE5iqzR0B7D+QHqptUpqCo3VtYQ=;
-        b=GXfETsY9x/Ej7LyjG1NXgweazS+Yp7S8B6HAMnlZZ7hCt7X+S0uT4wcKljgwCDuvVF
-         YRVO1Cs9P5GX4xDNZ26OUjhdCtLl0IsaQO/xycyryDezj3T6ARts/XxMSaOLzPug5x9w
-         iTIFe7357lcvpt+u6a54Bo7FaD6dHDTvcoLen1yCwgy1pjlr0+Ym7NlER37ibGmHo+Mc
-         j1bnKIRm7ySK0J4U24LyxroAFRpMV/Ii3KpZ3M+1dLY0WY6AWwpLglSOX3wdwJfUKBx9
-         QHURIQkCKpJcEXuPwzplOcCGOMXVlCx1uMoLVQFxN/B2gZtQ4HO06b1TGOuyIHW0iVRT
-         oD7A==
-X-Forwarded-Encrypted: i=1; AJvYcCV8RGFeomWCKTqjEvTR6xT7VYFR93s6sZhiyQjqYTsnGWHFt3qPuZCrJHI/Zq1NuDrM7Vx1eeMgO2q8sg==@vger.kernel.org, AJvYcCVBE1Y9uJF6xHSl9HAL5BwQVJtlHPqwg972uEJuutflb2DHgatWbxxsDaDTZlXMosL898P3Qf/HuOUQ5gva@vger.kernel.org
-X-Gm-Message-State: AOJu0YyxFqNJmp/H5urtu2E29iRqqRUoYO3sNTdn+3VTmrXFpBGiTZkz
-	3eHdyfZWeiVyJVW8TTriTiqZMoR92QYSgsfwRL1Qm/YuPkEpT5l6mbAq
-X-Gm-Gg: ASbGncsgsmBUIhTXnqd+mGqfhXFaGlTKucDG1X05K9Ogj6gkpfc7m4XiGXwgKz0Eiw9
-	ma+ec/qu8DTkzHWBq08y+P/Yo/o8eS2ojhAA82Nw2Ckfq56TI8iOd0WHMVY6jGq0jnPy1fa+Kgf
-	b5uPgzDwj2V5Uh5XN8YYye0/vhxut6FeEU4OmvrjkWfbVfYFPs8HFgijVnCR0BD2DttGi4QHFss
-	GUOvEU2lL6W+eAmIZUpL+PQv71IrjFRlqoWlZ86BJFzOehsxh4jCjwh1yG6fTN2cQl9Mw352AP2
-	XDUefCYLVaA6ZP3fkmib8fa4TYwrIp1xVPWffIyBYQZRp7OoX4/G9IOh4WWQOkcyIsD8adF5gQO
-	u5UV5l0lnaYs2aRkb4Vq4Fnk8gyi1mEFuWPKmdHgYEVQEFld/YB//BrBQbQ8y4p3s8yYMyejmbm
-	H+wBfZh6fZjFAhqbljIesEpg==
-X-Google-Smtp-Source: AGHT+IELkEZWe7bc0mm4YjG+JrKa1xdnUFM2Qo97pI+DJaZi6VrJk2uBZqkDxhuO3JMPgeL9l6sllw==
-X-Received: by 2002:a05:6a00:4104:b0:772:750f:4e2a with SMTP id d2e1a72fcca58-7742df53ec5mr13133323b3a.31.1757397822314;
-        Mon, 08 Sep 2025 23:03:42 -0700 (PDT)
-Received: from klmny09 (awork062176.netvigator.com. [203.198.28.176])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-77466156d94sm852148b3a.40.2025.09.08.23.03.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Sep 2025 23:03:42 -0700 (PDT)
-From: Yiming Qian <qianym1996@gmail.com>
-To: dan.carpenter@linaro.org
-Cc: gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	qianym1996@gmail.com,
-	sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Subject: [PATCH v2 2/2] staging: sm750fb: rename snake case variables
-Date: Tue,  9 Sep 2025 14:01:30 +0800
-Message-ID: <20250909060130.12919-3-qianym1996@gmail.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20250909060130.12919-1-qianym1996@gmail.com>
-References: <aL5tjv_2YkvHPs5C@stanley.mountain>
- <20250909060130.12919-1-qianym1996@gmail.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="z0pQ6SS7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 221BFC4CEF5;
+	Tue,  9 Sep 2025 06:23:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1757399012;
+	bh=RpvqyvM6Tia415RbHYKNy7KCcVHJVN5DwJEHb6JVKqw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=z0pQ6SS7eR2zJMW725Xm153fb0MmYDN1/F8RX2jDWN2asJKPn77OQKv9tW/ECSX74
+	 n91mDIMxCmVgzgjo0XihSloDRxk0DL7XjSz5NeCnILW9zIXDgL3wto4DW60mCvCOnb
+	 9v07Qb67+9Mg9qqlyJjeIBBIGn/m4BzYCjgW5pRE=
+Date: Tue, 9 Sep 2025 08:23:28 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Mukesh R <mrathor@linux.microsoft.com>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-hyperv@vger.kernel.org,
+	netdev@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	linux-arch@vger.kernel.org, virtualization@lists.linux.dev,
+	maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+	tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
+	jikos@kernel.org, bentiss@kernel.org, kys@microsoft.com,
+	haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
+	dmitry.torokhov@gmail.com, andrew+netdev@lunn.ch,
+	davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+	pabeni@redhat.com, bhelgaas@google.com,
+	James.Bottomley@hansenpartnership.com, martin.petersen@oracle.com,
+	deller@gmx.de, arnd@arndb.de, sgarzare@redhat.com, horms@kernel.org
+Subject: Re: [PATCH v1 2/2] Drivers: hv: Make CONFIG_HYPERV bool
+Message-ID: <2025090946-antibody-mortician-d6e1@gregkh>
+References: <20250906010952.2145389-1-mrathor@linux.microsoft.com>
+ <20250906010952.2145389-3-mrathor@linux.microsoft.com>
+ <2025090621-rumble-cost-2c0d@gregkh>
+ <d7d7b23f-eaea-2dbc-9c9d-4bee082f6fe7@linux.microsoft.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d7d7b23f-eaea-2dbc-9c9d-4bee082f6fe7@linux.microsoft.com>
 
-Replaces CamelCase variable names with snake_case:
-- dprBase -> dpr_base
-- dpPortBase -> dp_port_base
+On Mon, Sep 08, 2025 at 02:01:34PM -0700, Mukesh R wrote:
+> On 9/6/25 04:36, Greg KH wrote:
+> > On Fri, Sep 05, 2025 at 06:09:52PM -0700, Mukesh Rathor wrote:
+> >> With CONFIG_HYPERV and CONFIG_HYPERV_VMBUS separated, change CONFIG_HYPERV
+> >> to bool from tristate. CONFIG_HYPERV now becomes the core Hyper-V
+> >> hypervisor support, such as hypercalls, clocks/timers, Confidential
+> >> Computing setup, PCI passthru, etc. that doesn't involve VMBus or VMBus
+> >> devices.
+> > 
+> > But why are you making it so that this can not be a module anymore?  You
+> > are now forcing ALL Linux distro users to always have this code in their
+> > system, despite not ever using the feature.  That feels like a waste to
+> > me.
+> > 
+> > What is preventing this from staying as a module?  Why must you always
+> > have this code loaded at all times for everyone?
+> 
+> This is currently not a module. I assume it was at the beginning. In
+> drivers/Makefile today:
+> 
+> obj-$(subst m,y,$(CONFIG_HYPERV))       += hv/
+> 
+> 
+> More context: CONFIG_HYPERV doesn't really reflect one module. It is
+> both for kernel built in code and building of stuff in drivers/hv.
+> 
+> drivers/hv then builds 4 modules:
+> 
+> obj-$(CONFIG_HYPERV)            += hv_vmbus.o
+> obj-$(CONFIG_HYPERV_UTILS)      += hv_utils.o
+> obj-$(CONFIG_HYPERV_BALLOON)    += hv_balloon.o
+> obj-$(CONFIG_MSHV_ROOT)         += mshv_root.o
+> 
+> Notice vmbus is using CONFIG_HYPERV because there is no 
+> CONFIG_HYPERV_VMBUS. We are trying to fix that here.
 
-Signed-off-by: Yiming Qian <qianym1996@gmail.com>
----
- drivers/staging/sm750fb/sm750.h       | 4 ++--
- drivers/staging/sm750fb/sm750_accel.c | 6 +++---
- drivers/staging/sm750fb/sm750_hw.c    | 4 ++--
- 3 files changed, 7 insertions(+), 7 deletions(-)
+Ah, I missed that this was getting changed in the Makefile in patch 1,
+that is what I was worried about.
 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 41f1fb390..fcb7d586e 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -50,9 +50,9 @@ struct init_status {
- 
- struct lynx_accel {
- 	/* base virtual address of DPR registers */
--	unsigned char __iomem *dprBase;
-+	unsigned char __iomem *dpr_base;
- 	/* base virtual address of de data port */
--	unsigned char __iomem *dpPortBase;
-+	unsigned char __iomem *dp_port_base;
- 
- 	/* function pointers */
- 	void (*de_init)(struct lynx_accel *accel);
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 44b9e3fe3..7ac2e7b6e 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -19,17 +19,17 @@
- #include "sm750_accel.h"
- static inline void write_dpr(struct lynx_accel *accel, int offset, u32 regValue)
- {
--	writel(regValue, accel->dprBase + offset);
-+	writel(regValue, accel->dpr_base + offset);
- }
- 
- static inline u32 read_dpr(struct lynx_accel *accel, int offset)
- {
--	return readl(accel->dprBase + offset);
-+	return readl(accel->dpr_base + offset);
- }
- 
- static inline void write_dpPort(struct lynx_accel *accel, u32 data)
- {
--	writel(data, accel->dpPortBase);
-+	writel(data, accel->dp_port_base);
- }
- 
- void sm750_hw_de_init(struct lynx_accel *accel)
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 7119b67ef..ce46f240c 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -58,8 +58,8 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	}
- 	pr_info("mmio virtual addr = %p\n", sm750_dev->pvReg);
- 
--	sm750_dev->accel.dprBase = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dpPortBase = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
- 
- 	mmio750 = sm750_dev->pvReg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
--- 
-2.51.0
+Nevermind, this should be fine, sorry for the noise.  I'll go queue it
+up later today.
 
+greg k-h

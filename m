@@ -1,65 +1,65 @@
-Received: from mail-pl1-f170.google.com (mail-pl1-f170.google.com [209.85.214.170])
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD467303A24;
-	Tue,  9 Sep 2025 06:38:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 360553043CB;
+	Tue,  9 Sep 2025 06:38:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757399883; cv=none; b=rl8zX5pBzi7COm5ciIU3MzOjTeKOfGfOguX/gPvncrUVZjOg7RVgW/CwP/qg5sYHhxADGexbSSKD3CB/SzeAr1VXdFXmKg18fVRSVQ3XhF/0wiyX6BU5WuLA7QX8KPrFaV9tOl3zSjvEBqEGq/Plorf6W4HCwQTtlXGLChT/79g=
+	t=1757399884; cv=none; b=ACdlODD9knyuWcPGP3CfylFBrUU1heK41yA19LO5v3F9xIQusB3CTFhMD3y8opKshc8AlkpF0WLaoYFK46ds8TyzWipZCuAXDYITjE7m6jWMECdLuUD3Tf9902IyWEldqrqBdY6QhUggmUDJhgj9vkicQ9wLLvO7sH6JD7znFgo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757399883; c=relaxed/simple;
-	bh=ppPTTyuY/PaFOyKjbTMo6eVL8nyf2NMkBqkAEYcpBFk=;
+	s=arc-20240116; t=1757399884; c=relaxed/simple;
+	bh=1YacTfXCdJtgWi2zW6TivDngANaEgZA7E1AouXXqbn4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WJn/yqNzNq/hbZCUofXrcuHs9ILoz3qRR+LZ3wp4LB09LBsV7FX+RY52z0Z1onm70EYoDakcsULxnNRUGJlJ7B0elPIwrEELDJ+JNYzQMnWgPNAIZ9NAkGL4B/j3SYHusejjY6KZqg53nM/vPxgpqHgd/C/0nYTlmzGW69dDTt8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NrmofW1j; arc=none smtp.client-ip=209.85.214.170
+	 MIME-Version; b=MebZdXW9Vk9ryRPBNCvSZ/SnZvLalFtcx5uydZyxJCFo1UTwEW1n1mSqarJMQO03EBIHvT9QcWuO8ypBjr/yTaiIRU81uau366gROwI18rQrggjqhB8LUPcDVCqJdJyrBOGwFuDh90bcOpEPM42jY1zRQX0UBH1ozWal05hBmEY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Itx/MCAZ; arc=none smtp.client-ip=209.85.214.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NrmofW1j"
-Received: by mail-pl1-f170.google.com with SMTP id d9443c01a7336-24cb39fbd90so44142315ad.3;
-        Mon, 08 Sep 2025 23:38:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Itx/MCAZ"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-24c863e852aso46997335ad.1;
+        Mon, 08 Sep 2025 23:38:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20230601; t=1757399881; x=1758004681; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=g270YyKIrBevOK4fPlqJKWoE5PLhUjpLa5PhsUHs33U=;
-        b=NrmofW1j1Qytm+pXraKjEzrK/EPrEsxkVK8JxjJJldVQl4EsDjNZM/KESE6GRPNpEW
-         kFHWlspJTgmbRo9IkXT6EaZS8HEmf9rBGo/HCO5aoSBxm1hA/l2AXx1frdCiOazvUBFi
-         9fW+c/PsuDzDyhwBjVxYCLVJYqluObAabyyPCAh6ZskQfOs+V4GSqouLPoy8977LBYaU
-         zm0MRRYu7m5hckpde5XRd7Pdr2a9iXILsalzAblEKrR9Oul2iu9XZl50n7RYJp6PU9WF
-         ci4U8beT0qlWozA+uT7Me/70SytyzlmgCZMWGdoQoJ8iT4f4lRaBMcDilI9vVcVt3Z6R
-         d2bw==
+        bh=25UWmpQf5SbKYiEprNQF1Lau5aR6d2EunzG6nL5zuBo=;
+        b=Itx/MCAZh7EWEwHrzHU6eICT1qhGcjmSQ7Ca1huQ5Tqc+0PmyHMQfuTKGIKGRH7C/6
+         8yQxW1bQC1SaU4CnwWnnwFJ4XR0Z9cevl8CAYZCRUHHf4CnnFGuiEueF5MA3Hpy/JwPH
+         xChBoHkgoctg1BX1GYhUsDsBP1iWh6Dr563LeCavUoVqV0AmlOvg2sSYmbU8mZkt9Q0n
+         aADXU7gWMyUfdvgsgtdL2lTR+5A3WRJZA3ko0e3W3XUDrd78ypXoP4OciqNysAjNijCZ
+         nNR1F9oGyPyaBduyLpJ23D4eagtA7yaPxSD4neokchwUHuQn4JhhJsUVpB5giEZijYyf
+         XdUw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20230601; t=1757399881; x=1758004681;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=g270YyKIrBevOK4fPlqJKWoE5PLhUjpLa5PhsUHs33U=;
-        b=dEKtvWTnysMpZkiBbsASvxkC4Bcsn52Leh5omz5w6oB2bWnp2BtynMWOHHv8BQis2S
-         pKDS/75Umc0G3FRL5AkYI5aE0a9NF8PwyLJx8qdnMHAttoFdWJ0+rVpaL8Drk3O34zOv
-         aenRrzd560nG3XThha8RioTHF0+XPdp55DHKLPFUHe0uuntbgnlQLN9cwEmbB1QD88Iw
-         5qUaO/GdJJC5DaUjHBmZRmx6pEaBERHMhJfJdQ3DzNzqKvqFSIm6YMGYnl/B4+p54NW2
-         x/q2FvAolXuva7rxiOkm+7M67T+5t9q/vESvSXpPRO2/TlGCBVOYrTDyogx6d3NW7hlt
-         SWZw==
-X-Forwarded-Encrypted: i=1; AJvYcCWe05dYwBGDixzIpwf9WPSiGXX51B9oRHLGZQbM4dNujmW2Tb0lNJBgIN65+3Qj4DzWj7iroLbM8Ag=@vger.kernel.org, AJvYcCXYTg/I6wZbB842iziOD8ExLz3JH1AfLO9FQj1YpTxk1DPi+eLGlS8MnIVzSRBvMNSDi9c74hzga7xJh6s=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyzPS7YPVzTmLOth6sPsOW4WJkGvZbSi2JG9Yv6dtTGiLUGmo/w
-	/IthS4Xd31XDsFtUmsPYGeFcMgi1Rp2KLN6BmME5Kjh33wcApZJ92sBu
-X-Gm-Gg: ASbGncsSDHw06M0/N+yTn150VNebVrA0rXUxx70tQl+Co6Qtrq/UMzMYHMvY7n+UYSy
-	IoXw7O3MyP2rXMFyPSEk32IDUyiShWRJWYP3bUmdnti0fV7OUjyZHhdJn12/Vxtem3933hsRNNI
-	VMRzYhRIRlVv1K8Q9JmqOMyJOADkzomoKSxaBmzIs8Gy6MS7mYNkLOOKcfvwz2cU+VrPPDR91o3
-	u3H+Sq8K/YsQeCGtxVszd9bckzZzk8N/sSQWQIh1Rf0yC3ocoOiGeKNEP+xM6d5oP6dP512hOW4
-	RRjxXLn+gKmWnGXK+eOBG0Pj3epXlR+NK+P7Qa1rqLCICVKe50BFyZEm+qXLVOtuq7cYNWvgcK7
-	P8ycHUZzUwh8Z/Rigbbo8S0bAdg==
-X-Google-Smtp-Source: AGHT+IE09Vd5suFOpX68LFKhPPmahV9nA3jIm/tqi6CxQ5Yys9D9wYL4f/cGw7U7nLr6pnOmMN+/QA==
-X-Received: by 2002:a17:903:2b06:b0:24e:e5c9:ecf7 with SMTP id d9443c01a7336-25170c416ebmr134604565ad.34.1757399881128;
+        bh=25UWmpQf5SbKYiEprNQF1Lau5aR6d2EunzG6nL5zuBo=;
+        b=Q64TYk4bEn8I0YSgBhQ9iflnlLt6taiijzuVlyvQfHDwXNZKrBU1sFsatYDaoYfoft
+         1MxOVgreEE9YmcRGOFhD/AK98LVA6cQynzni236mtq5bX38u/BHnqAWSSclfujIdMt3c
+         EjA1nZK8LbeZfgnzsqsqzt2QyUla5SIYLiLlz92fBYhTJrzTymgHd9reFB34qxwQ/fUd
+         cq3yPGyL3mVsZeA0C5YyepEfdXTY9q7MPkOd8KsrLgh0ErZvpd1PcAxjlg+izCM8Bl3e
+         O0nk8c/5e4bKJdz9LsdjZ0XkYEbErKxfu+gIWXloeepcsVkReglKJirjc/8KgazLIj4u
+         qeTw==
+X-Forwarded-Encrypted: i=1; AJvYcCW4PjXWHyL/auXfgKNV+14TigU5xG2jyiOhZFyTF9J647ye0qFhcokPcbPML65oHi7PZ1Ulqc1lmShH5YU=@vger.kernel.org, AJvYcCXOUG50g7T6gdpw1H3a/qI0UivT6+fCRg9K/ylLYbpb/z1GDZi7/y6TSfG0/R3czbtQhk5/yFOCbdc=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyW4CoemPtHhxbCzUWxt2ydS0VrclQ+zush78YeKjbhimOzC1Gi
+	mrkHHPcqhugaOb6dt5D8HFfpieoHi1RfyUkirLCMnRDoW4A/i6pUyJvr
+X-Gm-Gg: ASbGncvNypamVWcR5bPtB4vjLIBU9hZM0Y4Wq/MM397GPocLUtpUykP5/J6aB0t9C1s
+	NkMspNJPmKQtASphgnjTNqM7B9bDgGzmfhQQtGhbgIlWTLiyv7+3u/6akis0eT0M2HuyVubIqXH
+	8UMxGhKxGuiMG5WtaRRVv6R25JYsY6VB0FIKM6zZ9UzgwxRFGXnmhIpYwc/Myjxnkpx684j1/hW
+	6jU0lkUky7XzZXfLhiuupV1DBr4TSQB8uLOvhG3V/Wl0ATWsNM8rpiLSBpm4k6UTQEcAz466G1O
+	4ClJRsF+ALaUbJ+1UFBP0B2leQc+Rqi1qNz/aEGG+ggtjuashWnDXr0S3u7uLfzLaGXyZCdcyTd
+	tHXxYHSztwq9FP5PToBaDgdpQY5f3ARb1tKsw
+X-Google-Smtp-Source: AGHT+IFFSNt/TerbKOH/mJyFNdTgR/Ln9+8EsB6tolM8c81vOQhFBupjVWJyh52QWZXF3IA6RTkAgg==
+X-Received: by 2002:a17:902:f78f:b0:24c:ea17:e322 with SMTP id d9443c01a7336-2516d817c2dmr141370545ad.3.1757399881492;
         Mon, 08 Sep 2025 23:38:01 -0700 (PDT)
 Received: from archie.me ([103.124.138.155])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-25125d76218sm83975455ad.119.2025.09.08.23.37.58
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-32b8ba6e145sm15157694a91.22.2025.09.08.23.37.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Mon, 08 Sep 2025 23:37:58 -0700 (PDT)
 Received: by archie.me (Postfix, from userid 1000)
-	id 6DE6B41F3D84; Tue, 09 Sep 2025 13:37:56 +0700 (WIB)
+	id 534E041FA3A5; Tue, 09 Sep 2025 13:37:56 +0700 (WIB)
 From: Bagas Sanjaya <bagasdotme@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Linux Documentation <linux-doc@vger.kernel.org>,
@@ -68,9 +68,9 @@ To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 Cc: Helge Deller <deller@gmx.de>,
 	Jonathan Corbet <corbet@lwn.net>,
 	Bagas Sanjaya <bagasdotme@gmail.com>
-Subject: [PATCH 3/3] Documentation: fbcon: Use admonition directives
-Date: Tue,  9 Sep 2025 13:37:43 +0700
-Message-ID: <20250909063744.30053-4-bagasdotme@gmail.com>
+Subject: [PATCH 2/3] Documentation: fbcon: Reindent 8th step of attach/detach/unload
+Date: Tue,  9 Sep 2025 13:37:42 +0700
+Message-ID: <20250909063744.30053-3-bagasdotme@gmail.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20250909063744.30053-1-bagasdotme@gmail.com>
 References: <20250909063744.30053-1-bagasdotme@gmail.com>
@@ -80,71 +80,39 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2647; i=bagasdotme@gmail.com; h=from:subject; bh=ppPTTyuY/PaFOyKjbTMo6eVL8nyf2NMkBqkAEYcpBFk=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBn7Tx3cOpHbgmdSxvWYfYznAzWz3UsMpW+GRVbrPBbse csR5mfZUcrCIMbFICumyDIpka/p9C4jkQvtax1h5rAygQxh4OIUgIkwrGdk+PeJM2/H+4LOlpen MyzCtwp8WnH11rHXZY3frvL5rr+zS4iRYVn2ZUNf/mNGTaH1m/dNv5edyV52YuqPhb6vk5osJwm v4QQA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1443; i=bagasdotme@gmail.com; h=from:subject; bh=1YacTfXCdJtgWi2zW6TivDngANaEgZA7E1AouXXqbn4=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBn7Tx28Gh9mctv9ptsR4dle9jxzmIqdrgjfesJ3UVz8d H5kRWdMRykLgxgXg6yYIsukRL6m07uMRC60r3WEmcPKBDKEgYtTACZiVsbw342j+u7xNOaQJtNm 53B1v0mH+uXcjnmJv8iQTj4rNPvqW4b/8Za5n7JXP9Lb9qNY/+VV1sqmSY233onwc51MDmRYHPW IBwA=
 X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
 Content-Transfer-Encoding: 8bit
 
-Use reST syntax for admonitions (notes and custom admonition
-for gotcha).
+Properly indent 8th step text (as enumerated list item) to be inline
+with other steps.
 
 Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
 ---
- Documentation/fb/fbcon.rst | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ Documentation/fb/fbcon.rst | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
-index 3ed98b3ce64713..a98a5cb0b0d8bd 100644
+index b9ddc145aa9f6a..3ed98b3ce64713 100644
 --- a/Documentation/fb/fbcon.rst
 +++ b/Documentation/fb/fbcon.rst
-@@ -39,11 +39,13 @@ Also, you will need to select at least one compiled-in font, but if
- you don't do anything, the kernel configuration tool will select one for you,
- usually an 8x16 font.
+@@ -251,11 +251,11 @@ restored properly. The following is one of the several methods that you can do:
+        echo 1 > /sys/class/vtconsole/vtcon1/bind
  
--GOTCHA: A common bug report is enabling the framebuffer without enabling the
--framebuffer console.  Depending on the driver, you may get a blanked or
--garbled display, but the system still boots to completion.  If you are
--fortunate to have a driver that does not alter the graphics chip, then you
--will still get a VGA console.
-+.. admonition:: GOTCHA
-+
-+   A common bug report is enabling the framebuffer without enabling the
-+   framebuffer console.  Depending on the driver, you may get a blanked or
-+   garbled display, but the system still boots to completion.  If you are
-+   fortunate to have a driver that does not alter the graphics chip, then you
-+   will still get a VGA console.
+ 8. Once fbcon is unbound, all drivers registered to the system will also
+-become unbound.  This means that fbcon and individual framebuffer drivers
+-can be unloaded or reloaded at will. Reloading the drivers or fbcon will
+-automatically bind the console, fbcon and the drivers together. Unloading
+-all the drivers without unloading fbcon will make it impossible for the
+-console to bind fbcon.
++   become unbound.  This means that fbcon and individual framebuffer drivers
++   can be unloaded or reloaded at will. Reloading the drivers or fbcon will
++   automatically bind the console, fbcon and the drivers together. Unloading
++   all the drivers without unloading fbcon will make it impossible for the
++   console to bind fbcon.
  
- B. Loading
- ==========
-@@ -117,9 +119,10 @@ C. Boot options
- 	outside the given range will still be controlled by the standard
- 	console driver.
- 
--	NOTE: For x86 machines, the standard console is the VGA console which
--	is typically located on the same video card.  Thus, the consoles that
--	are controlled by the VGA console will be garbled.
-+	.. note::
-+	   For x86 machines, the standard console is the VGA console which
-+	   is typically located on the same video card.  Thus, the consoles that
-+	   are controlled by the VGA console will be garbled.
- 
- 4. fbcon=rotate:<n>
- 
-@@ -141,10 +144,11 @@ C. Boot options
- 	Console rotation will only become available if Framebuffer Console
- 	Rotation support is compiled in your kernel.
- 
--	NOTE: This is purely console rotation.  Any other applications that
--	use the framebuffer will remain at their 'normal' orientation.
--	Actually, the underlying fb driver is totally ignorant of console
--	rotation.
-+	.. note::
-+	   This is purely console rotation.  Any other applications that
-+	   use the framebuffer will remain at their 'normal' orientation.
-+	   Actually, the underlying fb driver is totally ignorant of console
-+	   rotation.
- 
- 5. fbcon=margin:<color>
- 
+ Notes for vesafb users:
+ =======================
 -- 
 An old man doll... just what I always wanted! - Clara
 

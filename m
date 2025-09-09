@@ -1,324 +1,143 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D786F33472A
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Sep 2025 12:49:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7103729408
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Sep 2025 13:17:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757422168; cv=none; b=tW3zoulSkYZrrD/DmCoymyWoYSggMmYUeZVsn7t2/NgTTBSMV4mmaILTrVdBfuBUYRG9r9z374/3x7399yCl6o7jXFZFzoeGdWnZkP2nhprs58BQ7crtkbrt4/XrwsfoaBv+qy2SMO07BWzB75Hglvw3aQKagLzFLjorv15SFF4=
+	t=1757423822; cv=none; b=fOZWHsyTP9/TxjSYxBUaW6scNDAmYnP+0R6iKPxUooBklcyNQ315aQRbgNJb5Vu9CHiHfnQWJ6qfBTnEHt2dru/1k2m8UGzjtVUBnhWLCEtRb7a2mhXZrjaDO2oYoSzTE2Qx/ksNtKkDbSuYAp2TxrJ7X6AI2GSrY/fY/LnV8ro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757422168; c=relaxed/simple;
-	bh=lL+kvbuubvLsUhD/Ea2na6fl33qse3s5rjzCMrWvCIU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MCkSlcpJA5K2i3loTF4lOr5Gx6XUDqRhLrEC54CtnohnL/obQi16V9AFDcJrRB9ADjsWTs7wiPUfkhL4GDqj27/o6cPtrzqaqFBjj3SklwfUFIHmfVvUWsyG50nrv1PsXvSh10Z49jQ3eVZqkQyfWrmx6Wz5xn8V2DhkriPBTR4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fnO036Fu; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=AOaw69do; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=BHigqScE; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=y988j1Jh; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1757423822; c=relaxed/simple;
+	bh=njG3LFyIk9lOK/0Fwe0ao7xj9bNzObnhRx5BUKhzFJ0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MzunhqYDt/8DCdcvy48pP2aBJgtNQFzLC0kwSFexBXtnOZcdypBbZsRGZ7guNuWvarYxreJXi2SLay8vZ/748jErUSio80qBjY9Fdh/47d8X4KWAAmxd+gbpDl5/L6mZUDNkwJZrpD/JHRnUCC+Y9gZZ9PwY5EoYEgVkaM/82BQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=IQ1d6tuK; arc=none smtp.client-ip=209.85.221.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fnO036Fu";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="AOaw69do";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="BHigqScE";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="y988j1Jh"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 2ED121FFD8;
-	Tue,  9 Sep 2025 12:49:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1757422146; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fXbkr+4cgZLwwrnUjo+/GvjaLMuCY/Ju3904Tb+aKU0=;
-	b=fnO036Fu3RJdegvx/pc9wOpsTV1UoybHRZBbBZyr/vcRrVn0oi+Ken5IfchiRfjJ8GU/DM
-	PeUmG216gUjdCz38W6M1/gcTRkUmitxfAZtkGw5IA+j1ai5iHktz/5WSrDj+bqSkuaHi86
-	bLL/h6yfcIKVOwq/kxb+Uzgt6nnOu9A=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1757422146;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fXbkr+4cgZLwwrnUjo+/GvjaLMuCY/Ju3904Tb+aKU0=;
-	b=AOaw69doyO0pB9NNqss+sf119DIs6N1TATn05fBf6atwbmPIST5klJqHImdY42/tIJ2RfL
-	rItnCWZlGRHGUNDg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=BHigqScE;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=y988j1Jh
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1757422145; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fXbkr+4cgZLwwrnUjo+/GvjaLMuCY/Ju3904Tb+aKU0=;
-	b=BHigqScE4BfBkUAV7fn7TFFvrWXAVeynfbwjcnGCftFL9Relu0Szbn5c9pTzuD+q+T9O52
-	RgrdphSuApG0MgQTZerI7+FRWTJhJLmF3fA+XQyPg4B46l5Aejtz8ZntpxPwUW5h832EIS
-	9DjP9QZpGXxXvetsS8Kt85/3JqD4xyA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1757422145;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fXbkr+4cgZLwwrnUjo+/GvjaLMuCY/Ju3904Tb+aKU0=;
-	b=y988j1JhBL2DPsrKJVSeXr0OzSLoI+8YP/V6tX9hLtL0iZ3JbzQxJh/iJV6YiMPg91fI4e
-	RP8KJzFAbnQVDzDA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F09DC13A56;
-	Tue,  9 Sep 2025 12:49:04 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id OKqOOUAiwGilUAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 09 Sep 2025 12:49:04 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: sam@ravnborg.org,
-	simona@ffwll.ch,
-	deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 5/5] fbcon: Streamline setting rotated/unrotated bitops
-Date: Tue,  9 Sep 2025 14:44:45 +0200
-Message-ID: <20250909124616.143365-6-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20250909124616.143365-1-tzimmermann@suse.de>
-References: <20250909124616.143365-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="IQ1d6tuK"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-3df3be0e098so3071154f8f.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 09 Sep 2025 06:17:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1757423819; x=1758028619; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=fdo9zUh3cC7JZ4YMFIK1It9t13duwlrpE1xo6oVXcCI=;
+        b=IQ1d6tuKESQPX32N+lZB9IPpoBqJopYTlu7RisNoZJXDPI+bOfH/l79xp4gROYbPE/
+         fyCGSUcozm9UXtyXvd55yp5BJfFeL6OftpYQphXlXQQw4/Jm0CpMxCirHNhfFldAvlrR
+         ibWERWhMUkCHMX20ENHGi7WCanMvZMq+rhMb/Sv/uuYQyBwSK81mHg/V6u9DNWjyKIAQ
+         I78G8efJKAIFU7BV17wZgDtMG/7m8A/Ep2t8lu3TRtOqq31CO7DmiF7lPXWuALlrSYE0
+         +Gzn1WMGwJc3EkzqqOFUUkqRAudafP1AWqXGnl4ipQNSojCZTquYJgh9GOBeFELdzdlO
+         U5Qg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757423819; x=1758028619;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fdo9zUh3cC7JZ4YMFIK1It9t13duwlrpE1xo6oVXcCI=;
+        b=N3xHKSrpfTOFINhuCF89zandcj94L9zV/cdqhO0KORCRucTmtHLmJ60mGIt2wInKiz
+         3r4IiFxtmmBnEyGCt+ivetnYz/rnpMwz9/eCm7ci7kt6J16TAvzaNbRzT+5dHd+fQJE6
+         PO/UeIgdvV8h73ZQefWrjXvcoPzs+W8g5FCEa9GjpoDkqCl1ENo/inPzliEiXM8uWB61
+         tpu9urDlPAjJ5vZNsyqZ6+yjGPfsmqM6v3y+nZit+1Vf8HfGb82Ypts+ZTAg9mk/ZY+M
+         to+0qshe13aVOhZdwQwq2TDB4tTbjulHxu42t3jxo9lq1odJq4LBvVj39JVeikKqUpmj
+         Qdfg==
+X-Forwarded-Encrypted: i=1; AJvYcCWtgnqBsT7Wt7lzZLfDvkRWXsfR0Q8Cjy5hDjXF4ZonWjllJ0+tep5H3B2N32rUC+X++yVNe2APHOcXtw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx4mnyp4Y5nRfrDZ89/rGxln8dipHEOMF4/1kMaOtWIZXjLufiZ
+	UBHNtupdUmL/r8ABY6CEtqz1dBVHzMlIp9h+tRenh904cUyTchH74W0Udl4K9uh8Iog=
+X-Gm-Gg: ASbGncv/BaD5x5VkAoD2qFOLG+rb2VMKk8COIo989v+CZzP2rYuK2rIhvdS/5LK/vsd
+	jB5/hQr+Bb88fhScjPZTjattAnswxCBBhuUIgU7i9v65Et467TpMdATI5OJyIFFW1H6cK8QRM/a
+	cEPGGqG7oqyJwjEyvjHZqQJNUaGazlvwwxATtL/kn9ASGTW9/O4ydaCKM7lYZYnwxYp4SqZ8pnx
+	uV2gP1ldnhK1qJQ0DVT+iwLQ7acJZlkE2DZudPibTRoQl0fm/vXZpLKHw2NBI+UOYYod4b0Z8FZ
+	1ZG03kEcLZoeQcFzW4GcksQyHbLDz8i3FhZSNPgajsT+25ETVGQ2rX4cxlhu4ecPQRrKgnqJ/3k
+	QWDWlsbfk+rOnbK4GXEg8tQCE85IAdEHvTrj4VYQfopplxoEYY6MiEM5PnGHGNhdi
+X-Google-Smtp-Source: AGHT+IFhCowW9gu1/w93obIiBVf6Vuc4ShjzL0HEHZ6PJqdOO6o5Jz7iReA+oY0Aa+n+lLDZfcOsfA==
+X-Received: by 2002:a05:6000:4211:b0:3e5:d2f1:403d with SMTP id ffacd0b85a97d-3e6440ef05fmr11560309f8f.36.1757423818701;
+        Tue, 09 Sep 2025 06:16:58 -0700 (PDT)
+Received: from localhost (p200300f65f06ab0400000000000001b9.dip0.t-ipconnect.de. [2003:f6:5f06:ab04::1b9])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3e7532f90e6sm2066036f8f.6.2025.09.09.06.16.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Sep 2025 06:16:57 -0700 (PDT)
+Date: Tue, 9 Sep 2025 15:16:56 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <daniel@riscstar.com>, 
+	Flavio Suligoi <f.suligoi@asem.it>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH 2/2] backlight: mp3309c: Initialize backlight properties
+ without memset
+Message-ID: <d3mnxjbtek2q4465xgje2orjbzmbrkcicapal4apiqk3hc3hbq@3jp4yytvtmfc>
+References: <cover.1751361465.git.u.kleine-koenig@baylibre.com>
+ <14514a1b0d3df6438aa10bb74f1c4fc2367d9987.1751361465.git.u.kleine-koenig@baylibre.com>
+ <aKLvaP55PIVhyFSc@aspen.lan>
+ <20250902103632.GH2163762@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[ravnborg.org,ffwll.ch,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_TRACE(0.00)[0:+];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim,suse.de:email];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Spam-Flag: NO
-X-Spam-Level: 
-X-Rspamd-Queue-Id: 2ED121FFD8
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -3.01
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="dbmzc4rcf7ixa6l5"
+Content-Disposition: inline
+In-Reply-To: <20250902103632.GH2163762@google.com>
 
-Support for console rotation is somewhat bolted onto the helper
-fbcon_set_bitops() for unrotated displays.
 
-Update fbcon_set_bitops() with a switch statement that picks the
-correct settings helper for the current rotation. For unrotated
-consoles, set the bitops for in the new helper fbcon_set_bitops_ur().
-Rename the other, existing helpers to match the common naming
-scheme.
+--dbmzc4rcf7ixa6l5
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 2/2] backlight: mp3309c: Initialize backlight properties
+ without memset
+MIME-Version: 1.0
 
-The old helper fbcon_set_rotate() is no longer used.
+On Tue, Sep 02, 2025 at 11:36:32AM +0100, Lee Jones wrote:
+> On Mon, 18 Aug 2025, Daniel Thompson wrote:
+>=20
+> > On Tue, Jul 01, 2025 at 11:22:37AM +0200, Uwe Kleine-K=F6nig wrote:
+> > > Assigning values to a struct using a compound literal (since C99) also
+> > > guarantees that all unspecified struct members are empty-initialized,=
+ so
+> > > it properly replaces the memset to zero.
+> > >
+> > > The code looks a bit nicer and more idiomatic (though that might be
+> > > subjective?). The resulting binary is a bit smaller. On ARCH=3Darm wi=
+th
+> > > an allnoconfig + minimal changes to enable the mp3309c driver the
+> > > difference is 12 bytes.
+> > >
+> > > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
+> >=20
+> > Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+>=20
+> Looks like you cannot send tags from non-related email accounts:
+>=20
+> NOTE: some trailers ignored due to from/email mismatches:
+>     ! Trailer: Reviewed-by: "Daniel Thompson (RISCstar)" <danielt@kernel.=
+org>
+>      Msg From: Daniel Thompson <daniel@riscstar.com>
+>=20
+> I'll add the tags manually this time.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
----
- drivers/video/fbdev/core/bitblit.c      |  5 +----
- drivers/video/fbdev/core/fbcon.c        | 21 +++++++++++++++++++++
- drivers/video/fbdev/core/fbcon.h        |  8 +-------
- drivers/video/fbdev/core/fbcon_ccw.c    |  2 +-
- drivers/video/fbdev/core/fbcon_cw.c     |  2 +-
- drivers/video/fbdev/core/fbcon_rotate.c | 15 ---------------
- drivers/video/fbdev/core/fbcon_rotate.h | 15 ++++++++++++---
- drivers/video/fbdev/core/fbcon_ud.c     |  2 +-
- 8 files changed, 38 insertions(+), 32 deletions(-)
+FTR: The email address *or* the real name has to match the From: line to
+make b4 happy.
 
-diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-index 7a68372f0444..08cfcd81c6b4 100644
---- a/drivers/video/fbdev/core/bitblit.c
-+++ b/drivers/video/fbdev/core/bitblit.c
-@@ -393,10 +393,7 @@ static const struct fbcon_bitops bit_fbcon_bitops = {
- 	.update_start = bit_update_start,
- };
- 
--void fbcon_set_bitops(struct fbcon_par *par)
-+void fbcon_set_bitops_ur(struct fbcon_par *par)
- {
- 	par->bitops = &bit_fbcon_bitops;
--
--	if (par->rotate)
--		fbcon_set_rotate(par);
- }
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 1074dc90ed92..85f63f87d3c1 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -81,6 +81,7 @@
- #include <asm/irq.h>
- 
- #include "fbcon.h"
-+#include "fbcon_rotate.h"
- #include "fb_internal.h"
- 
- /*
-@@ -270,6 +271,26 @@ static void fbcon_rotate_all(struct fb_info *info, u32 rotate)
- }
- #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
- 
-+static void fbcon_set_bitops(struct fbcon_par *par)
-+{
-+	switch (par->rotate) {
-+	default:
-+		fallthrough;
-+	case FB_ROTATE_UR:
-+		fbcon_set_bitops_ur(par);
-+		break;
-+	case FB_ROTATE_CW:
-+		fbcon_set_bitops_cw(par);
-+		break;
-+	case FB_ROTATE_UD:
-+		fbcon_set_bitops_ud(par);
-+		break;
-+	case FB_ROTATE_CCW:
-+		fbcon_set_bitops_ccw(par);
-+		break;
-+	}
-+}
-+
- static int fbcon_get_rotate(struct fb_info *info)
- {
- 	struct fbcon_par *par = info->fbcon_par;
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 4bff4f5b3ec1..44ea4ae4bba0 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -191,7 +191,7 @@ static inline u_short fb_scrollmode(struct fbcon_display *fb)
- #ifdef CONFIG_FB_TILEBLITTING
- extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
- #endif
--extern void fbcon_set_bitops(struct fbcon_par *par);
-+extern void fbcon_set_bitops_ur(struct fbcon_par *par);
- extern int  soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
- 
- #define FBCON_ATTRIBUTE_UNDERLINE 1
-@@ -229,10 +229,4 @@ static inline int get_attribute(struct fb_info *info, u16 c)
-         (void) (&_r == &_v); \
-         (i == FB_ROTATE_UR || i == FB_ROTATE_UD) ? _r : _v; })
- 
--#ifdef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
--extern void fbcon_set_rotate(struct fbcon_par *par);
--#else
--#define fbcon_set_rotate(x) do {} while(0)
--#endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
--
- #endif /* _VIDEO_FBCON_H */
-diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/core/fbcon_ccw.c
-index 4721f4b5e29a..2f394b5a17f7 100644
---- a/drivers/video/fbdev/core/fbcon_ccw.c
-+++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -400,7 +400,7 @@ static const struct fbcon_bitops ccw_fbcon_bitops = {
- 	.rotate_font = fbcon_rotate_font,
- };
- 
--void fbcon_rotate_ccw(struct fbcon_par *par)
-+void fbcon_set_bitops_ccw(struct fbcon_par *par)
- {
- 	par->bitops = &ccw_fbcon_bitops;
- }
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index 2771924d0fb7..3c3ad3471ec4 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -383,7 +383,7 @@ static const struct fbcon_bitops cw_fbcon_bitops = {
- 	.rotate_font = fbcon_rotate_font,
- };
- 
--void fbcon_rotate_cw(struct fbcon_par *par)
-+void fbcon_set_bitops_cw(struct fbcon_par *par)
- {
- 	par->bitops = &cw_fbcon_bitops;
- }
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index 0c7cac71a9c2..1562a8f20b4f 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -92,18 +92,3 @@ int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- finished:
- 	return err;
- }
--
--void fbcon_set_rotate(struct fbcon_par *par)
--{
--	switch (par->rotate) {
--	case FB_ROTATE_CW:
--		fbcon_rotate_cw(par);
--		break;
--	case FB_ROTATE_UD:
--		fbcon_rotate_ud(par);
--		break;
--	case FB_ROTATE_CCW:
--		fbcon_rotate_ccw(par);
--		break;
--	}
--}
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.h b/drivers/video/fbdev/core/fbcon_rotate.h
-index 784f3231a958..8cb019e8a9c0 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.h
-+++ b/drivers/video/fbdev/core/fbcon_rotate.h
-@@ -92,8 +92,17 @@ static inline void rotate_ccw(const char *in, char *out, u32 width, u32 height)
- 
- int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc);
- 
--extern void fbcon_rotate_cw(struct fbcon_par *par);
--extern void fbcon_rotate_ud(struct fbcon_par *par);
--extern void fbcon_rotate_ccw(struct fbcon_par *par);
-+#if defined(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION)
-+void fbcon_set_bitops_cw(struct fbcon_par *par);
-+void fbcon_set_bitops_ud(struct fbcon_par *par);
-+void fbcon_set_bitops_ccw(struct fbcon_par *par);
-+#else
-+static inline void fbcon_set_bitops_cw(struct fbcon_par *par)
-+{ }
-+static inline void fbcon_set_bitops_ud(struct fbcon_par *par)
-+{ }
-+static inline void fbcon_set_bitops_ccw(struct fbcon_par *par)
-+{ }
-+#endif
- 
- #endif
-diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/core/fbcon_ud.c
-index 148ca9b539d1..6fc30cad5b19 100644
---- a/drivers/video/fbdev/core/fbcon_ud.c
-+++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -427,7 +427,7 @@ static const struct fbcon_bitops ud_fbcon_bitops = {
- 	.rotate_font = fbcon_rotate_font,
- };
- 
--void fbcon_rotate_ud(struct fbcon_par *par)
-+void fbcon_set_bitops_ud(struct fbcon_par *par)
- {
- 	par->bitops = &ud_fbcon_bitops;
- }
--- 
-2.51.0
+Best regards
+Uwe
 
+--dbmzc4rcf7ixa6l5
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmjAKL4ACgkQj4D7WH0S
+/k5BrQf+JX3ho13wgiKmkcJ0Tjb0+y2mxhAU2VHfSxu0jGL6GsKb00SZXQ7/bQ0y
+FpqkmXr91kb5uhg5pOQL0D6W3OxwLRFLf4XfOL84TaAHintXN8gMBOsJA+Pn9iIA
+5rqGHhO7dT4zJt9SmdGVn7f9VBu2qdvo4wpf/tvzlIcYTYFGD8W/giikgRQcJcI3
+Hb3zRDIrRZWcNfHoN7yGFYC13iL2PyRFns/eyw+YqzCud+fHvfHbWV89l8LEzNod
+iwlF/fHCaSa7fqG154A0PgXPyF3ltgNwwi0RUNiwAtX/i0WcZrWYMavCTToq+SgE
+KrERYvE7oOdpFcIJNmXdRWQYyeDDZQ==
+=qQ6Z
+-----END PGP SIGNATURE-----
+
+--dbmzc4rcf7ixa6l5--

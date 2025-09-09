@@ -1,39 +1,79 @@
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7E654315A;
-	Tue,  9 Sep 2025 03:03:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE9271C683;
+	Tue,  9 Sep 2025 06:03:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757387010; cv=none; b=Dv4DUQnS8/46l9HmFauirr+Yklkiav4GL0tv0ICLW+u3NAyptDA/anmc7ZJ6LW7myjNAJAhaGftAW1RPe5FZ0N3mz1jgSb5F81XBC/k9PqpWu99WxJM0Lvahz6VLP/oocEHFN1GUinZDUHCqswU6ae+OECVUxrD310Vvc6yFp3Q=
+	t=1757397786; cv=none; b=ThZPpC6QSnFMvITqr+nm5aWlmdyXRFrcclVB7PdbaS/eM30pvvJRnS0cniPugVINyN8jZxZ01ssr9+vTwGvtPLEP66wd1fsMX+fvM3EVnM5yRmXSAPV7gI0yA7LUHYO0DSgPKX6bPAm0L+ZirsoB1EH6R3TJ+mgoGgJSBlYKxf8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757387010; c=relaxed/simple;
-	bh=5Br/JtHWpm9N8F9/75f4idwkCmmdDe/0q5sbqqZBaW4=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=C6HPs/WHfpDcZGwNE/gZle3PtfYFpj3uWdugFNeTOtOFAJFs3GhOth7xGiSfLH2dto3NjeMZjvZJqPnrTRRpmaMreiPciU1HqVPxVVehBpOTv6m3WD/gVsTxstusE/DQoMTfiGHry8rEhHyhiVHejK7qOsRnH+Gg+ELGkjA3WQM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.163])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4cLT7n1ybPz2TTKD;
-	Tue,  9 Sep 2025 10:59:49 +0800 (CST)
-Received: from dggpemf500016.china.huawei.com (unknown [7.185.36.197])
-	by mail.maildlp.com (Postfix) with ESMTPS id 8FB85180043;
-	Tue,  9 Sep 2025 11:03:03 +0800 (CST)
-Received: from huawei.com (10.50.159.234) by dggpemf500016.china.huawei.com
- (7.185.36.197) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 9 Sep
- 2025 11:03:02 +0800
-From: Wang Liang <wangliang74@huawei.com>
-To: <gregkh@linuxfoundation.org>, <jirislaby@kernel.org>,
-	<npitre@baylibre.com>, <simona@ffwll.ch>, <deller@gmx.de>,
-	<soci@c64.rulez.org>
-CC: <yuehaibing@huawei.com>, <zhangchangzhong@huawei.com>,
-	<wangliang74@huawei.com>, <linux-fbdev@vger.kernel.org>,
-	<netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [report] BUG: KASAN: slab-out-of-bounds in soft_cursor+0x454/0xa30
-Date: Tue, 9 Sep 2025 11:24:43 +0800
-Message-ID: <20250909032443.196506-1-wangliang74@huawei.com>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1757397786; c=relaxed/simple;
+	bh=1mv0aNBNacoR8Z3k1QWoVR0SCJGhdYSQQ+8O3o2QeEQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=pnHnt3iPMPCX6V3M7nVYtK10aYWi8nzfqHoyZ2mvskEYH6fiDcvJyFvMxJ2v/fJCEybKpSCglvoOoRdKgAEqBiUBdYPA7w0yvciaSKaigGvGo2E6NqbaSt1QEqlk47bxMjoZ1NXaw2cQICL646L0U262CtWslWIWsv5Jz9W6U/A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WgHBE22u; arc=none smtp.client-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WgHBE22u"
+Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-327ae052173so3404371a91.0;
+        Mon, 08 Sep 2025 23:03:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757397784; x=1758002584; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FMTAsIx4EXrT2ijx0IpLSYA8rxhXY+w0cxt7phZoGjs=;
+        b=WgHBE22uNZ9k6x34GM8eUvxtpoyafkGpQtuiWpqHG1spew9tMYQjPYZKej8Qiw55SC
+         ZQ0d9xZZkKFWYIlh964I/oeW8L6bjsCFnYIEz0tGTYPFgBoBP4IRREVEmbMl2s9SdY54
+         sjaQ5U3DbKIF+GMm8iVgtJYGRV40FMuLK9/Qto8ZsesQSkfeVU5INJWulQlCbB91QfG8
+         GH2rPbcudIArLtiHL7yzRJqk+LuN7DtTAF5SzOb+JYvSyowk+80+IEm6tS1USZ2kbePQ
+         POgoEYDCceNZVCT8u8FfwOBaepWSq6VWh38BRqInViDVgewMlLyY0UdliDravKeyXeua
+         /p0A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757397784; x=1758002584;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FMTAsIx4EXrT2ijx0IpLSYA8rxhXY+w0cxt7phZoGjs=;
+        b=O/KGALbTOe5qc34oc0JfSkkOgBgwHRvLRaEe5N8Vn9t8+2+XLrYsWTneuJ5q08yKie
+         TDu0CokmKq0GGQ0GI7+xSg5xzSI6g6brIRfXZ0/qH5TBRktQial4dX6CSBoWQRJwprNi
+         2XGpVp8sWeRjivyjVttm9WDJRj7+4aJlCTzH/C4HqF6qz284XbQUnXdS6jtsmkVlZZf5
+         ESDi4mHcQBIbNJqMq/dOEsrAsth6SnjEpg3aLZiJGPfym8BiH2QU5Tfv5aSzFiYVfXM3
+         MzY6Tnz6781B8L6z5AvDMwbvmvxkYL/tTGkzxTcoZQvdgC7gxK1AP+46OMgR6IMI6s8f
+         XJqw==
+X-Forwarded-Encrypted: i=1; AJvYcCUzAJ4ROv8W4wPHScsEQjI7RmhsWJyxtZXMVTDhPt2TWO9AgMxCpgHJtI3fX+XJ7/0UcYncJMGZiwx6tA==@vger.kernel.org, AJvYcCXWgz/y6rlyH64iWvjKskC0XSQ0MdFIKifV32bToZJWEpSSITpyZvjm+mrdlLSMNeC96Qzx1bTv7Ql0KYPx@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxp0PaslML3+kdocR8i5qBHjHPP3VDFntsUWGSVhQuptgyd1R0C
+	7H0GafOZ55WbCbWbMRrvZny+TMLZ4Au38rNaO3yZNP+nsrvZwfnJTOsK
+X-Gm-Gg: ASbGncuOjKNNY66mMXsupwBs/CbT2z+qSm35xRkjb1/TxVvcJsdp0uOgUhFS0qxdnuH
+	vacG8gjoSfiD0VhIbNk58ka49+yYhi18ygubQv7JshYg6a+A+yHhWv4weLPrY918Mkqt8B5Lgo2
+	bKojbDDSP03Q9t1vsJ+VqU9HJWuY4uq+BqhMwx9584q0BpGoG106rbPtCfqrTAP2pqwQw7ebgNn
+	AUkyG0Q9D7J7iqbfOhmKk63IV+I0IeZkyjDO/7YifVIOvC/RQyzE2Ea/yA58SxVICrWVAFVi8kG
+	n10CthX85z7zbi35tUPEAxD1OuLwPDST059FJmYmKuHWtxqvhr5nEWJhjvK9oeudA+qdqivPsAa
+	CkLIs6qpm5DMV7cFxuWWYY97h59TsnrNGHPeCBD9TPg/HJUAo1Df8eKAlLj4IUk4oBPDxuiqwPB
+	dUIzWokPupALPZ
+X-Google-Smtp-Source: AGHT+IFJBO3xDoLj4DlYD8W4yc5VM+vGGJ5bvgBXCAj3dFstVJS+RDiOm5nuaXCn8SgmgAj0jpnn2Q==
+X-Received: by 2002:a17:90b:3fcb:b0:32b:bac7:5a41 with SMTP id 98e67ed59e1d1-32d43f8e8a7mr14198668a91.37.1757397783936;
+        Mon, 08 Sep 2025 23:03:03 -0700 (PDT)
+Received: from klmny09 (n058152109064.netvigator.com. [58.152.109.64])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-32d69bd489csm6938561a91.17.2025.09.08.23.03.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Sep 2025 23:03:03 -0700 (PDT)
+From: Yiming Qian <qianym1996@gmail.com>
+To: dan.carpenter@linaro.org
+Cc: gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	qianym1996@gmail.com,
+	sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com
+Subject: [PATCH v2 0/2] fix coding style issues in sm750.h
+Date: Tue,  9 Sep 2025 14:01:28 +0800
+Message-ID: <20250909060130.12919-1-qianym1996@gmail.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <aL5tjv_2YkvHPs5C@stanley.mountain>
+References: <aL5tjv_2YkvHPs5C@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,108 +81,22 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- dggpemf500016.china.huawei.com (7.185.36.197)
 
-Hello, my local syzkaller report a KASAN slab-out-of-bounds issue:
+Fix volatile and camelCase issues in coding style:
 
- ==================================================================
- BUG: KASAN: slab-out-of-bounds in soft_cursor+0x454/0xa30
- Read of size 128 at addr ffff88810f53d000 by task test/674
+changes in v2:
+- Split single patch into two separate patches as suggested
 
- CPU: 1 UID: 0 PID: 674 Comm: test Not tainted 6.17.0-rc4+ #272 PREEMPT(none)
- Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014
- Call Trace:
-  <TASK>
-  dump_stack_lvl+0xab/0xe0
-  print_address_description.constprop.0+0x2c/0x3d0
-  print_report+0xb4/0x270
-  kasan_report+0xb8/0xf0
-  kasan_check_range+0x39/0x1c0
-  __asan_memcpy+0x24/0x60
-  soft_cursor+0x454/0xa30
-  ccw_cursor+0x1715/0x1ce0
-  fbcon_cursor+0x410/0x5f0
-  hide_cursor+0x8b/0x230
-  redraw_screen+0x5c7/0x740
-  vc_do_resize+0xcdd/0xe90
-  fbcon_do_set_font+0x45d/0x940
-  fbcon_set_font+0x83b/0x980
-  con_font_op+0x805/0xa10
-  vt_k_ioctl+0x2f9/0xb00
-  vt_ioctl+0x14a/0x1870
-  tty_ioctl+0x6d0/0x1610
-  __x64_sys_ioctl+0x194/0x210
-  do_syscall_64+0x5f/0x2d0
-  entry_SYSCALL_64_after_hwframe+0x76/0x7e
-  </TASK>
 
- Allocated by task 613:
-  kasan_save_stack+0x24/0x50
-  kasan_save_track+0x14/0x30
-  __kasan_kmalloc+0x7f/0x90
-  __kmalloc_noprof+0x1f5/0x510
-  fbcon_rotate_font+0x440/0xee0
-  fbcon_switch+0x751/0x1480
-  redraw_screen+0x2b6/0x740
-  vc_do_resize+0xcdd/0xe90
-  fbcon_modechanged+0x333/0x6d0
-  fbcon_set_all_vcs+0x1e0/0x3c0
-  rotate_all_store+0x2e4/0x370
-  dev_attr_store+0x5c/0x90
-  sysfs_kf_write+0x1db/0x270
-  kernfs_fop_write_iter+0x365/0x510
-  vfs_write+0xa5e/0xd70
-  ksys_write+0x129/0x240
-  do_syscall_64+0x5f/0x2d0
-  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+Yiming Qian (2):
+  staging: sm750fb: remove unnecessary volatile qualifiers
+  staging: sm750fb: rename snake case variables
 
-This issue can be reproduced by:
- echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
- ioctl(fd, KDFONTOP, &font_op); // set bigger width or height
+ drivers/staging/sm750fb/sm750.h       | 6 +++---
+ drivers/staging/sm750fb/sm750_accel.c | 6 +++---
+ drivers/staging/sm750fb/sm750_hw.c    | 4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-When exec KD_FONT_OP_SET cmd, function fbcon_do_set_font() update
-vc->vc_font.width/height, but visit the old ops->fontbuffer in
-ccw_cursor(), which will be updated in fbcon_rotate_font() later.
+-- 
+2.51.0
 
-fbcon_set_font
-    fbcon_do_set_font
-        // update vc->vc_font.width/height
-        vc->vc_font.width = w;
-        vc->vc_font.height = h;
-        vc_do_resize
-            redraw_screen
-                // ops->fontbuffer is old, but width/height is new
-                hide_cursor
-                    ccw_cursor
-                        src = ops->fontbuffer + (...*vc->vc_font.width));
-                // update ops->fontbuffer
-                fbcon_switch
-                    fbcon_rotate_font
-                        ops->fontbuffer = kmalloc_array(len, d_cellsize);
-
-I am not sure below code is ok to fix this issue, although it can prevent
-the KASAN report.
-
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 62049ceb34de..12dc2fa30417 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -953,7 +953,6 @@  void redraw_screen(struct vc_data *vc, int is_switch)
- 		if (tty0dev)
- 			sysfs_notify(&tty0dev->kobj, NULL, "active");
- 	} else {
--		hide_cursor(vc);
- 		redraw = 1;
- 	}
- 
-@@ -964,6 +963,8 @@  void redraw_screen(struct vc_data *vc, int is_switch)
- 		set_origin(vc);
- 		update = vc->vc_sw->con_switch(vc);
- 		set_palette(vc);
-+		if (!is_switch)
-+			hide_cursor(vc);
- 		/*
- 		 * If console changed from mono<->color, the best we can do
- 		 * is to clear the buffer attributes. As it currently stands,

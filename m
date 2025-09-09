@@ -1,65 +1,63 @@
-Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0EF52E0B48;
-	Tue,  9 Sep 2025 06:37:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 695672E2DD8;
+	Tue,  9 Sep 2025 06:38:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757399881; cv=none; b=Cf3MFj5Tm12UuywCH/l5sBlFN/Rju2imRgGa2RZWIS2R0wh2PeLkU8svs9mRZvHt+7+sP7Az/C1GNgZ242CJ2spdS4u/aSTyJAcO8ybsvQ9LXx2eCZse/nm0XHsFv6/y7d9q5dmHvPQT35TfFyQT86mJfmmtCb1YkFL5DMFmp7M=
+	t=1757399881; cv=none; b=bXi1RxDDNS6FQHKNJp6xtkATwjPfryn9MLWvNMa2335h/58DM3WamTBrIAjj2qz+h4+PxgZF/0MRORStvTWlO9hWUHq5Ve9wMUFIEjbaSRoGNUmVFfP7vGNExSumoztFmKaH6dEBmyZJh8dlUioDGOLs0Eg1iRNH5uN5fN3LBZ4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1757399881; c=relaxed/simple;
-	bh=7KhPgY9CNs+EyWne3MtjBbauIv/3NliTxGyLPRrBtVk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cnVcT2Ji/T73H0sGktIzOceiM+i77AQ1mWhLgKgXMpcYvYm6bSW/vfIpxB829FjDVe61SDs2zRMAHBVbJ/gFTm1weYZRBFpb11lzmpi7ro9G4B4y/IM7V6a7T1dCZ0pkdaLcKcHUt/FV5SqHZE0LruGfJRDes7TG4fLnLxmyOaY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VKhtXNrj; arc=none smtp.client-ip=209.85.210.172
+	bh=pfVPxDxt9WcZWPqzB85AUj4avLsvCa8ghrZrU5R+vBk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lBkgKyi2B+Fbj2z67NFgzDSrQH8QYUJ6PsceiInoHhYQWLZ8X1M5/M9YT1LzaViTa7ycNTHdKzyJ/0cTNzsFOrqIIckVeXjjytpaXqxn8IkArDrNssexwX7KNV7YZWzcANNo61rQxHJqU1YvKkkJZdJEpcSFKDI9hGdLwgtPRww=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aHbef1bh; arc=none smtp.client-ip=209.85.214.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VKhtXNrj"
-Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-7741991159bso4633381b3a.0;
-        Mon, 08 Sep 2025 23:37:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aHbef1bh"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-24eb713b2dfso32594575ad.0;
+        Mon, 08 Sep 2025 23:38:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1757399879; x=1758004679; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zgXaASlXjGFVjUJ/ZBrWtnsm4G9IgZXSsCGm5rp0YN4=;
-        b=VKhtXNrj9v0cFuJX7QfLc9aG3N1EIwIuH52WpdMdoLrWljWj6H6ZEeL5HLmmOKTPGH
-         yXo1JYHcQf/Ijyc9rIqEsTuV0x2/cpq3cVmUboxe81GgMZscIqTnG9O+VVsrckXG9N2L
-         UuQYsym35gbjgwdbbOfUa7DUpCRes9ufaIEsny3XAZQAojZYgP/PqGtjAOB7rqlc9k+a
-         LF6amcwm7id8XJ+Dn0L2+FJ1lpuygJvUVH0x8FZeuYp6Gi3isKUlBZpTZpK3RS1+utkN
-         6IYuoT74RdHO4R1z8B/DqZ0JPZ0A37jcHOkpqBYNTd0NvYrdDPwGvwN/yS0jXNt0/gSy
-         XEmQ==
+        d=gmail.com; s=20230601; t=1757399880; x=1758004680; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=HJiukvQMYchQJB9oFovtwsPeen/LDiO7bwNq5dPromA=;
+        b=aHbef1bhuoeK0ZsMF2gIA9GU0FW1U7fb8D0AfXUS/uSC/2ZExWETk6zYTmVJjiCL+0
+         iGkczpqF4O4vo/a8yENiLjChL2lhpxC3EU1eONL6B1co4PWdg7zjc6lld6xkG08saD/u
+         ZZ+/BKWPDGbLy0eCMiv2VQnRrv2XBBq1MCLkT2D2/uiuzpjUJAYnRv/PSKfzZENAWe8v
+         +GHZzQF+I/L8nMXRpQG3EMbHe7P7+JKu40rreh4HzYT+4UXkia20xD9Mnk0475A7NRzF
+         1bavTQgjkgPC4U3aYn8uuMMF9RRLiaeYm/ttfUiHLv+BInCz49GtZzJ1EVkM0uoOIxu1
+         OXaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757399879; x=1758004679;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=zgXaASlXjGFVjUJ/ZBrWtnsm4G9IgZXSsCGm5rp0YN4=;
-        b=nNAU+gklxCwkl27sEIgxivwlqrGVycqOwWzvEwYtKan0YrCFd378s6E9srI3KRBw+I
-         SdRedy3Io5jdHCGsZK3dNVAeQYCIfKI9QOKnXQh9VyBz7RztYj+cqg+LMnx2msuktyVG
-         uA9QGpJg7rHqarAhp0U6UGeXPVTywGtADmWC6zzSq3n/CBgWGpP/e6uRVwVr9LWAL7a0
-         KJE4T0OenKXT3ahc56+LtwK+LE65xMBbmWraQL1jW7TnQwFX3gV2sKt6AeDpPSuympc/
-         HEYva344k2yU2ANL56g64SAmipyebPKjGvYov5/tIXKBZW7JA0wEwMUuqE1aNrYV08l7
-         lYLA==
-X-Forwarded-Encrypted: i=1; AJvYcCViqSgf3uHgXZm+gePxy54ZWL8tJA13kCC8GwD5TnnI2p31iiERVsqaIVrb/TfZG9BI51w5pyWpqL4/V58=@vger.kernel.org, AJvYcCXmLK0B/g9kCjwfElsxVZwm2xnllrh4oYcVklwd4rVxJSfPRFNT7PxXaYuwgV24ew+zVZFKnkdj9vU=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwVE9cx4HlrQQvC3KQ2a4d0Bl/mXmgG4qpwxzXinzuCG+f/BVn+
-	J8wslaTeBuhpnBrL85KuUARAexN6j5oNGp64gfFlIqOaiwUSoTlZcRTX
-X-Gm-Gg: ASbGnctvCOSxM0MnsTCC8LpT+RXu4Wwt+PAexvj5GooYO2a6TpAPI/iOQMDMmSAK6DR
-	NomN64Au4+lqoiYOm+KN6bD5uakY5tMkhyAig51CLpmhWi/4+SEh6ICWomf+ZrOa74EDByAXG83
-	fIEUOrcgthw7JKKDKhk9/r1bAk+A3nRXadC4uqIVKOiaiWSSz8Cwdb25lrRbweWTi25YPg2QMG2
-	+JVHV0pkqACN4UkHaEPDfUMiim15zfE99ibY3exkwfNLzB8QQFPzDLEVszPV2cgLmdo6OE3lJ6j
-	GzvmXIbcxEPKcrTidepU1fXGkjxl+WgR/p7OsVz4hSZcbQBJiTl//1nfV+wNawevsLSwmRuMsTv
-	3N3hlxyI3msPioWp55SWQ3fhxwZG+iMT11KPI
-X-Google-Smtp-Source: AGHT+IG6+uKhAARr7UhkwbpUZaECdPB7dPFA+WM5GrddjHbis2bBcSqGfb34MVFU/2f1IDfS0fsxGQ==
-X-Received: by 2002:a05:6a00:1a8f:b0:772:2850:783d with SMTP id d2e1a72fcca58-7742dedf06emr13704013b3a.22.1757399879056;
+        d=1e100.net; s=20230601; t=1757399880; x=1758004680;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=HJiukvQMYchQJB9oFovtwsPeen/LDiO7bwNq5dPromA=;
+        b=GXp1rxDEBjojUwJWR4wnHxxgmuMaWvHKUD1Zo1q3lhhuuewi48NaKdIJjXWXv+JJZD
+         8qfO6YQ4sffscwiTJBvaK1ZzJFoXxYNPpT1q/rDGb8T3+HjVMvzqLZR0Tbeg+/wIInDh
+         MO+k6M0Bs64tHDiXjQ05RV1sUc2R46STzsbQqz8RM2gCxio1hQx+KI4C5GmnkSJ1ZlLM
+         TpUj3wSkP0WKp1U7FGved4Jdl9vVDli2Pfq/fyZ5z24YgIzWZkbSV4coqYbMlAdyLxDT
+         iSwdIQiRr6ppA87c83IOs0qohsy1VOo43LzFjxROqRFqrsVHE2qT3HzS57SrNcbHbb5g
+         Narw==
+X-Forwarded-Encrypted: i=1; AJvYcCUqOMB77hfmz1tKxB+4PYmNXEmYR+po+0ME6izVgENJQQnPuBxfqaLY0/V+x0mCl20RYBOBNfOtAh8xSA8=@vger.kernel.org, AJvYcCX6OLqhL4tNnNrWgzzaRxDtzbbwUSQ5zLwaig80XI47lUomd68P1+9mG8U10FP12Ff/FhYGGztEWl8=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwVBJyKOpFweX16xXiDIujjsclWipbBuIWaARewT2WyQGu7/+X0
+	YmSnNzC3EMJns9B+QTujQ7YEFYxgM0jCPyb7QQf2NTwk6aiKQ1m16e50+DRwHBt5
+X-Gm-Gg: ASbGncvwqpelNa6xbosgrKFThcuNumMi8BZjJmy3kDYSRJN3PffAiTspxLDP6ZwbYSo
+	hOD3fbjn6+aTAfzIcYL1WacAK/SgYBsXv/n5EXlGPi3YuH8y3a4zU+4ryETjoeF3G4WiUh9kdd+
+	39RWhHLDrRrc2+ToZVQHQZJ0+3bWh8JWiTIWW2RD/1PjvIOg1XzA1qr/Jb0QyXsHuVCe7fqiLFH
+	nEBTlhqhmDPMgnMgddhhnt4EnIDXBQWHtDZgZTJkOGGS276mogipBevnHmNrRLOkLxd7Me6COtq
+	mbbc0U/mnXKzbUxBXrh+wxo71tkSbuSP/mebY4RywThw7i5Jpw4sxC6MaiHh362dC5udpWeM5hz
+	F7xoU4HWvf+BE/QuWkKTk/OF1iCt01zK0itX7
+X-Google-Smtp-Source: AGHT+IFotQUFwQ0lDMECPT4okq9EM0mj1zKB3mE36lhz+JWVRbzizXv+ZEreuSwiB9QKkN0vzAYNcw==
+X-Received: by 2002:a17:902:ea09:b0:246:7a43:3f84 with SMTP id d9443c01a7336-2516d33d4ebmr152795015ad.5.1757399879430;
         Mon, 08 Sep 2025 23:37:59 -0700 (PDT)
 Received: from archie.me ([103.124.138.155])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-77466290d84sm975093b3a.65.2025.09.08.23.37.58
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24903724b94sm299653805ad.35.2025.09.08.23.37.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Mon, 08 Sep 2025 23:37:58 -0700 (PDT)
 Received: by archie.me (Postfix, from userid 1000)
-	id 49A9C41FA3A4; Tue, 09 Sep 2025 13:37:56 +0700 (WIB)
+	id 1C2AD4206923; Tue, 09 Sep 2025 13:37:56 +0700 (WIB)
 From: Bagas Sanjaya <bagasdotme@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Linux Documentation <linux-doc@vger.kernel.org>,
@@ -68,54 +66,40 @@ To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 Cc: Helge Deller <deller@gmx.de>,
 	Jonathan Corbet <corbet@lwn.net>,
 	Bagas Sanjaya <bagasdotme@gmail.com>
-Subject: [PATCH 1/3] Documentation: fbcon: Add boot options and attach/detach/unload section headings
-Date: Tue,  9 Sep 2025 13:37:41 +0700
-Message-ID: <20250909063744.30053-2-bagasdotme@gmail.com>
+Subject: [PATCH 0/3] Documentation: fbcon: formatting cleanup and improvements
+Date: Tue,  9 Sep 2025 13:37:40 +0700
+Message-ID: <20250909063744.30053-1-bagasdotme@gmail.com>
 X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20250909063744.30053-1-bagasdotme@gmail.com>
-References: <20250909063744.30053-1-bagasdotme@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1183; i=bagasdotme@gmail.com; h=from:subject; bh=7KhPgY9CNs+EyWne3MtjBbauIv/3NliTxGyLPRrBtVk=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBn7Tx0s7WQpKWwo33WmoaP/l4nBEv9vbeycaUnb5V3+s 2zmPMHWUcrCIMbFICumyDIpka/p9C4jkQvtax1h5rAygQxh4OIUgIn49jP84V5aYP3wy4o9nyNb Zdti/25iObrHI4fx3oeHJQI6P2sv8jMy3GPlYzxz01k2cKGpS9rPqjKeHZ+WS93f7HxvZef/TbY FrAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=659; i=bagasdotme@gmail.com; h=from:subject; bh=pfVPxDxt9WcZWPqzB85AUj4avLsvCa8ghrZrU5R+vBk=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBn7Tx20iWWJjb/lWBh8I1FUi3Guacrjs6uD9i9I019af tpCU0Wlo5SFQYyLQVZMkWVSIl/T6V1GIhfa1zrCzGFlAhnCwMUpABORyGb4n3z/yTEjjXcT+Vv+ Xljb/Dg67vzpPRs1ys24ltkvtzayq2X4K2ixfbfWP88tBZvtPlSHWTg/m3lcer2I9ko59VUiS6/ 2cQMA
 X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
 Content-Transfer-Encoding: 8bit
 
-These last two enumerated sections headings are in normal paragraphs,
-making both sections merged into "Loading" section instead.
+Hi,
 
-Add the headings.
+Here are reST formatting cleanup and improvements for fbcon documentation.
+The shortlog below should be self-explanatory.
 
-Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
----
- Documentation/fb/fbcon.rst | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+This series is based on docs-next tree.
 
-diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
-index 212f7003cfbab2..b9ddc145aa9f6a 100644
---- a/Documentation/fb/fbcon.rst
-+++ b/Documentation/fb/fbcon.rst
-@@ -74,6 +74,7 @@ Possible scenarios:
- 	 over the console.
- 
- C. Boot options
-+===============
- 
- 	 The framebuffer console has several, largely unknown, boot options
- 	 that can change its behavior.
-@@ -172,7 +173,8 @@ C. Boot options
- 	The value 'n' overrides the number of bootup logos. 0 disables the
- 	logo, and -1 gives the default which is the number of online CPUs.
- 
--C. Attaching, Detaching and Unloading
-+D. Attaching, Detaching and Unloading
-+=====================================
- 
- Before going on to how to attach, detach and unload the framebuffer console, an
- illustration of the dependencies may help.
+Enjoy!
+
+Bagas Sanjaya (3):
+  Documentation: fbcon: Add boot options and attach/detach/unload
+    section headings
+  Documentation: fbcon: Reindent 8th step of attach/detach/unload
+  Documentation: fbcon: Use admonition directives
+
+ Documentation/fb/fbcon.rst | 42 ++++++++++++++++++++++----------------
+ 1 file changed, 24 insertions(+), 18 deletions(-)
+
+
+base-commit: 7e5a0fe4e8ae2eb341f8ebbee2b24231a58fc28b
 -- 
 An old man doll... just what I always wanted! - Clara
 

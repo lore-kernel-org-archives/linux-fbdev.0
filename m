@@ -1,106 +1,92 @@
-Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com [209.85.167.47])
+Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4C503081D1;
-	Tue,  9 Sep 2025 07:43:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E68020D4FC
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Sep 2025 07:54:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757403799; cv=none; b=tuxjl0PSALLcmt5nkQW79HQgKRt3caN68jPU8DFkRptzG2CCN4U8NKwOpygtQ/IIi8lXLJza0XIuXtMUNVZ3c4WKE5AtVAteV0XWIU32pWg+VGoCnx4b0PpCLHJ3qQrSj0dbARAiJZxaFgNuEvkWQ5L9RIApYWpQ6nHMr5pNtVg=
+	t=1757404500; cv=none; b=ZILlUfVb65nDcwHKZvAKlScp7TU3tu7m1hIR4whR+d5+ttQ1R9pfyto+fmjD9aE0zySWd/EIez2DDwgM4EQ9c4tSSPcDYVhzH4b8aYs1WLmDFc50mUjvqfayfnTLCYnVrKJRBkq2xWUR/0tsFVl13cKXmzRaJHLr1GA00Uzvx2E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757403799; c=relaxed/simple;
-	bh=yua/wpv2PRKHIi8YtGOAbHnQH2z90+tQ6zj/5Nq7KV4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZZ3AEbrgwWWgT0aZ8vDXOFa1fkl2yJyl/RidLJ8xVEnI1MJFJxXbX1UR2F4xODBAu1cX/7ZJF/QrG58ywouZcjcApskzhz6NATAQnf9wk7QsF0Y/XkQMlKH+hky5BDUrH7e2KhZCV5fcvFtp28XoMwJQhQSafAPporppus4XiL8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Bf0CkDob; arc=none smtp.client-ip=209.85.167.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1757404500; c=relaxed/simple;
+	bh=bPYYoqftfSKsz0hlk498WcRINtzXQZnNUseNh+Begto=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=u8lVg5EZq5U5Q7WlH1jseaNZyNh4u20TezXvMOnrKjlWvqjLSL+Ma1UiWL/ytnfVs5G8qa9Pb4cxEQV2PtOCvatdf2zgUGSrc8YBfMNzzvUUb4VNldpbTB/gEMzNLKfwJ7Qe236KM/u0GrFXAIwXcO7jD0PJ2CEEETCjqKGjsWY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=vqLahdfO; arc=none smtp.client-ip=209.85.221.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Bf0CkDob"
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-55f68d7a98aso6221850e87.3;
-        Tue, 09 Sep 2025 00:43:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vqLahdfO"
+Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-3e2fdddd01dso873705f8f.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 09 Sep 2025 00:54:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1757403793; x=1758008593; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=AS7VNoPE31hVbngNYKGN2vb4znQT5BywBU8nWd9Q2tk=;
-        b=Bf0CkDobTFk65le/6tASoywSLn8JVrwSt65SM0imMDwqbrFAcbcVzYVtRLymnMYIsQ
-         AsQiPv44ldRKrIap2rrptChsewI0EY74+TVR1AL6Tqnq8WJLA1gxuauSz7MEdNjCg1Kn
-         zMeFA6s4JoGAP6VXMmDjJyGygbDUoA5vxqF8kTODLiEkVkC/KUMC/FuoFmWzS9wHU0Rc
-         R9MMvspg33hcfaScPqzZAuRjOqoOG004cJ9fJZwrNUJfpSJ5Ob4tfbs8HKQGNTHw37CU
-         MBZigEp8m/9CVsGKRIHa7SUK+wTGtMUCpylaOOatuBgMqg7A2Af0ENnMH5F77gcpxAzd
-         tDnw==
+        d=linaro.org; s=google; t=1757404497; x=1758009297; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=t5sZUHke1cOrNWY6qZMJoyROLt4T1nD+uxD+OwzRsAo=;
+        b=vqLahdfOvDoy3e8ZlV9Fw79WizA6wTAmyOsJarmprpE3i7Ue3xfaKUt9+ed67Y5qRU
+         K2zJLRygdjzAxwcYXNciBakdt8Z+XH2JJ+ahny2CJCIV0uRhrJrCd4QvI4AA5LEdEdPG
+         cww+VJuZdTNPN0R2hRtzhKKljhBjLdY3lgFA0a001/1RK+P+/Q5eBaZvB/73h3cPWFVG
+         U0RJcuBKcuQqI7HKPOlO6VPBDLOIF/Kgjnz0Ad1syHArO1aDxWE9elmgJUdmk8mvP0Cb
+         qVHBK+u9mMtU3lU5jAu0zHHEDhvFhOVCx6r1pOycHA7fWpucNeOdQ/ZvbjvOnc+Ie0dl
+         Cz7w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757403793; x=1758008593;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=AS7VNoPE31hVbngNYKGN2vb4znQT5BywBU8nWd9Q2tk=;
-        b=j7hCmGFvPIdj9QzVPR9+8UqLir6/obnE43tTVkiuj5RYcBXt7K5nUGQlOA2GdewXwE
-         qwNtQWtpd/snBf6RmrcflBKnVAv+zHmVEjZMWY3XSNi+aVn6eeTMCCe8wil455JCaAJz
-         ZMPO5UsDo+wXgJ4oqY7o6IUUrrT9Q26v6iiVrPb82ZyUjjdcIX/cNof+EiUeZZp8T/2h
-         +/sO+X6cXlICq0/Fn8o3sVxDc9li0T+0KdAj7rJdaoJgbAcZkl+bk0y7pX3C8MIDh/mP
-         H13vZ6wokyxtxcwnxHXVlbS3ryeFEMJpRqjYT4R/3xDeyhzVVlMdSdx1nJkoM+tTsPUE
-         bm4w==
-X-Forwarded-Encrypted: i=1; AJvYcCVvtnXyNNq8ldoUeeisIoBRdsSx7hZTvTasA3Wse5JYZ4+b2OB8pVRw7ck6YtfURV9UeOQXQ2IDrAweUA==@vger.kernel.org, AJvYcCXJ242kWUgRxfbFLAgvCfdZDPF+wED2wAR2knd6jiypvS8AvVDdA1/NacKwd12JvYlc/4MBXGk93lOEJ0tV@vger.kernel.org
-X-Gm-Message-State: AOJu0YxvEmbuOCTmS6vATqCWyvFfPXwNvlpAaaeQy8RPalQNu/boqeTO
-	1CVYGRreHdpRW7LEhhECGgiTNLEKs5DBPXDjCdpFN+3VQJr72/EPgabD
-X-Gm-Gg: ASbGnctIS83whFeqVsgj8ya4HE5RakPIq4/tzD8KiFabSqheL+pRl9VMgV7N64/Jbsk
-	hbhXAChoY5B/SP+eLg2MGvDkPtE+QWsDfbJnZ1pFC4UgT6/snWnYGaWxkEBBITmyUs+h1/Kx7rR
-	JQxpV411YJVwahyrN99ZSTXG6r+icFZw3e9XANFpIiCHtwTMzb930T5cgawAbt29rUkFwNwuIWE
-	ohuSL+8ayt42VOVIcFMy2yA7SiyqjL+ojEPvQm6QvmT3t575tAgLNUTq7Pvk8SWZs/7d5vtFf9k
-	3A2r2imoRSDWc+1GPMbX9jSNfxbtHFACF6sFIyRI2iXUDqpMOR9KgrwZLf6ozaeBwrbiK88yc5j
-	XwH30Ql6Lk+yV9Vs5Bw0vwUx9vjRvpZ6R1Aw=
-X-Google-Smtp-Source: AGHT+IFVQZHqLjAbCZi2TcAKzcKwotgrbVRy+JcaKxU5U4GsAo4FHGFmFmjOR5+4JFXb0wcxlhDOtQ==
-X-Received: by 2002:a05:6512:3a8a:b0:55f:3ef4:a0f0 with SMTP id 2adb3069b0e04-5625fed2778mr3793700e87.24.1757403792554;
-        Tue, 09 Sep 2025 00:43:12 -0700 (PDT)
-Received: from xeon.. ([188.163.112.70])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5681795d633sm333731e87.68.2025.09.09.00.43.11
+        d=1e100.net; s=20230601; t=1757404497; x=1758009297;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=t5sZUHke1cOrNWY6qZMJoyROLt4T1nD+uxD+OwzRsAo=;
+        b=cD2uiYdeQhW2/Rbo0Cz3RB+1cBe3yqa+AIRrluvdpEOyb6HFDnE2Z6RljplhCBcD3C
+         o3+akEZd4ermiAT1GpoTqZZ9gC+0Q6joO+dMsU80iWkqHqziYyGGZvIW/8uJ6Q3+YIHb
+         CjCUFs7xpMQnGxjiAvunSQ6r1/r/yiP94odVLKrjcaOyQc9esp6QniUSCAoyuLo+1oHp
+         rZj1pFT6vc3WEttVKs4/sY4LHVg8Xh06tDFI2gNrPcUwX6XLiI6ivkMWYW7UUNCSU3qK
+         892uzoCv/LYg7F/GjQBMh9NSdOu79/G6wWKLtOgmccMmpdWyVjHx/NysvLZTJOgsTqo4
+         Jpag==
+X-Forwarded-Encrypted: i=1; AJvYcCVjV+8cUrXPwJ4wLV3wjllgUPYXVl5y6u92JkhOJdcpEH5/qwNNNJHoYcO+qWGklfrf1S2ilkrpfEnNFw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz8ccKEa2NUeF6WcY8jRu33p7pv9Q+2p+WFCtadEajyH/wwf8gn
+	bt5+qEhl985TWJKs5Eu634azEqR6BQ+DBjCzrvYnKt4Aie6Q2huqe6zF8qg10rYwOZ4=
+X-Gm-Gg: ASbGnctfQBx8daKadQbDJ765/fSN/CNomzjpn25kW7sVWMFwXeYonNdH5h8+5ReQiFm
+	Vv2qidK5QjQS+MVTRxbRj83eHmyDLObeLhTefUKIJ9hAvl6UnAdO8gEZzkSr2wReue4plwm5h0q
+	VRLFc5j6133sz5Bk7BVmRGCqGLEOrwuePk+cdl9a0OeuXwliWeN6IYgFJFFl+aRQzLOOtkv5xZE
+	xA2Gow6wfIt8787yhhldg8nQPo0hifyQlOkBo2ebUQoOTj9IEnLFdsEi7aZWEyiVVL8kTChaiaO
+	isRTcuJxuNLdScxLsUyZK27ETXp1I21uhLhA65bPwfLk5s6stn2y+6/cE0VC7kHRCKzsbQfeAgs
+	EnDcRs7ih/3t22GEe9ePlCB5Urbv5MuhJUROpwg==
+X-Google-Smtp-Source: AGHT+IFMrL+qpqVZLHtIpk0NAIPagB6TkPEvQUOKqRDE9Ox6P//HG3+ZZPicp7UNZIR5zh9FPOH4xQ==
+X-Received: by 2002:a05:6000:144a:b0:3d1:61f0:d253 with SMTP id ffacd0b85a97d-3e64cc61000mr8735700f8f.60.1757404497452;
+        Tue, 09 Sep 2025 00:54:57 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-45deff68b43sm5564215e9.2.2025.09.09.00.54.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Sep 2025 00:43:12 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 1/1] video: backlight: lp855x_bl: set correct eprom start for LP8556
-Date: Tue,  9 Sep 2025 10:43:04 +0300
-Message-ID: <20250909074304.92135-2-clamor95@gmail.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250909074304.92135-1-clamor95@gmail.com>
-References: <20250909074304.92135-1-clamor95@gmail.com>
+        Tue, 09 Sep 2025 00:54:57 -0700 (PDT)
+Date: Tue, 9 Sep 2025 10:54:53 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Yiming Qian <qianym1996@gmail.com>
+Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-staging@lists.linux.dev,
+	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com
+Subject: Re: [PATCH v2 0/2] fix coding style issues in sm750.h
+Message-ID: <aL_dTVlN13Q2nYX0@stanley.mountain>
+References: <aL5tjv_2YkvHPs5C@stanley.mountain>
+ <20250909060130.12919-1-qianym1996@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250909060130.12919-1-qianym1996@gmail.com>
 
-According to LP8556 datasheet eprom region starts at 0x98 so adjust value
-in the driver accordingly.
+On Tue, Sep 09, 2025 at 02:01:28PM +0800, Yiming Qian wrote:
+> Fix volatile and camelCase issues in coding style:
+> 
+> changes in v2:
+> - Split single patch into two separate patches as suggested
+> 
 
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
----
- drivers/video/backlight/lp855x_bl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks!
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 7075bfab59c4..d191560ce285 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -22,7 +22,7 @@
- #define LP855X_DEVICE_CTRL		0x01
- #define LP855X_EEPROM_START		0xA0
- #define LP855X_EEPROM_END		0xA7
--#define LP8556_EPROM_START		0xA0
-+#define LP8556_EPROM_START		0x98
- #define LP8556_EPROM_END		0xAF
- 
- /* LP8555/7 Registers */
--- 
-2.48.1
+Reviewed-by: Dan Carpenter <dan.carpenter@linaro.org>
 
+regards,
+dan carpenter

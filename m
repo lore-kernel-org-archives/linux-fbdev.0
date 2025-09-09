@@ -1,156 +1,82 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E0A3342CB6;
-	Tue,  9 Sep 2025 13:49:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B951436CE19;
+	Tue,  9 Sep 2025 16:57:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757425765; cv=none; b=oqhVvs3CshdeTCPuY0RDbVvphs5x5hIK41BDryV3Gx/sjVwH+2tj2HlEu3GPvsVW8APPguY7JOKMpoghtNYntPaC2e/DJmaWkRnxmW5gHKgodyqBNWwxQ5DFAxms7YXedDw6oNjuQiy7ICoLF+j1jN2E0368/V9Rowns/MeFbvI=
+	t=1757437051; cv=none; b=HUHRvpNEqmsO3LdHgIiuuChrp42SEANoSvylVvU++BzQCX7dYL942rM9jiwkQxA+T0J2dLuxju7z4/fKoCaOtrxfRsp2zZGMObc0mhlte+0o0y4TRE5SNBQPpyAavp65mxLcQ7vsjazYu5ABJHmGPkoWIaV3FwBsXLwQRNLoZCs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757425765; c=relaxed/simple;
-	bh=49gZNr2H7kccNqE5XR78ZGc2FVHa7pQDJF9bw7z2c/Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=P7gES1ixVHh2iTribllgNkO1f0QQjApjkOWjHTgMyCZBjvogI0FcxL9ARgTQZNiUqhJ11NYcNaHOH9oYEKir+rZOS4zCNg8Bwuz/PLJnGdeCw7Fu8Lg2w8NV5m64wPGZ00YHyCHADQkVfmLyAEN3eTrjOanutRPLjf8R6HVA2hI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GUNS3aBv; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1757437051; c=relaxed/simple;
+	bh=HVmUZ+Kf9fN2pSWhKRRh4CN/CjjrHWPGz82cE6IRqns=;
+	h=From:To:Subject:Date:Message-Id; b=BmKa7fIn/BLcn+wKYx6pb5+/CQ+lh5BOYDbgUHnLKF3n4PLy/rfjNgf0blAEbqbrNNJruwlRrdkMEy07u61LL1wMyvDvM+MtdwSYju6sObnCB0l4XOz06nFEojMAgesjFqbKKwyrhQVfDWSXpp13vh+Fs0h88B1EqaAyjcysQNM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=RMD74kV8; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GUNS3aBv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F2CAC4CEF7;
-	Tue,  9 Sep 2025 13:49:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757425764;
-	bh=49gZNr2H7kccNqE5XR78ZGc2FVHa7pQDJF9bw7z2c/Q=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=GUNS3aBv17s4mfY42cI+aghlpnercgKfmDtnImYtucNS6mqCKtDfNjOg7amxH+TCK
-	 lcRE+yACfehHA02LBH75TsHgCypy4X7IrXAltdoQE1cU+5/lT/mA6gHsaxgtTnb13f
-	 M2UTl1+Lq722rHyS6+Ti0VxP+8qZk+dOau/p9c2RMWfY78/iVUO2mzjsLyG6DLb12X
-	 ocIzKXKbBHI9TBREkqbp1DPYZNq4GU6GIPzALkARqLgs+PPfAdwldPFrV/44sYB6DM
-	 ykflOQV27hBIj8dmdVDne81ZDm2DHnJLUWiGMnW57Tl6x1WVcoQEL3UdT8IZrpFW2T
-	 N1nep5yJQq4EA==
-Date: Tue, 9 Sep 2025 15:49:22 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
-To: Michael Grzeschik <m.grzeschik@pengutronix.de>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	Pengutronix <kernel@pengutronix.de>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: pwm_bl: apply the initial backlight state
- with sane defaults
-Message-ID: <7zae3uaz5wdk2ktmg44aqdnfjglklqujtktslvlye3ssd3xvbv@qwwjiip6kgfo>
-References: <20250731-blpwm-v1-1-0171fd31bff9@pengutronix.de>
- <n6rltuxqwybh2mwzz3hxi3tzix2c7q3mbovscobzzmkj6puo6w@gc3qnchjlagq>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="RMD74kV8"
+Received: from linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net (linux.microsoft.com [13.77.154.182])
+	by linux.microsoft.com (Postfix) with ESMTPSA id E2D7F2119CB4;
+	Tue,  9 Sep 2025 09:57:28 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com E2D7F2119CB4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1757437048;
+	bh=lme8K4Nr1+yoqaz7H6lvUNp0A2O6Va0RIFe2JGydUTE=;
+	h=From:To:Subject:Date:From;
+	b=RMD74kV8g9ic+OtmzX19t+LcdSJGDKWM+owfdL/97U9Rv2f17n/HsuVdRDK6OM4OG
+	 hfscUIZphxW4NztwU18/7Y96smpq2BtQ86ZSLWuhmyIQt8XLwnqjGi7QvFo4hNSD1J
+	 ipB3HSpms4C9ET8HhqVHPDC1oXI2wBW+8h4LwogU=
+From: Prasanna Kumar T S M <ptsm@linux.microsoft.com>
+To: maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	tzimmermann@suse.de,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	drawat.floss@gmail.com,
+	kys@microsoft.com,
+	haiyangz@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	deller@gmx.de,
+	arnd@arndb.de,
+	soci@c64.rulez.org,
+	rdunlap@infradead.org,
+	gonzalo.silvalde@gmail.com,
+	bartosz.golaszewski@linaro.org,
+	mhklinux@outlook.com,
+	ssengar@linux.microsoft.com,
+	linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-hyperv@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: [RFC 0/3] fbdev: remove Hyper-V framebuffer driver
+Date: Tue,  9 Sep 2025 09:57:24 -0700
+Message-Id: <1757437044-2170-1-git-send-email-ptsm@linux.microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="d5ajcr2dlqwa72tk"
-Content-Disposition: inline
-In-Reply-To: <n6rltuxqwybh2mwzz3hxi3tzix2c7q3mbovscobzzmkj6puo6w@gc3qnchjlagq>
 
+This series removes the Hyper-V framebuffer driver. The Hyper-V DRM
+driver is available since kernel version 5.14 and provides full KMS
+support along with fbdev emulation via the DRM fbdev helpers. This makes
+the hyperv_fb driver redundant. So remove hyperv_fb driver.
 
---d5ajcr2dlqwa72tk
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] backlight: pwm_bl: apply the initial backlight state
- with sane defaults
-MIME-Version: 1.0
+Prasanna Kumar T S M (3):
+  drivers: video: fbdev: Remove hyperv_fb driver
+  drm: hyprev: Remove reference to hyperv_fb driver
+  drivers: hv: vmbus_drv: Remove reference to hpyerv_fb
 
-Hello Michael,
+ MAINTAINERS                               |    1 -
+ drivers/gpu/drm/Kconfig                   |    3 +-
+ drivers/gpu/drm/hyperv/hyperv_drm_proto.c |   15 +-
+ drivers/hv/vmbus_drv.c                    |    4 +-
+ drivers/video/fbdev/Kconfig               |    8 -
+ drivers/video/fbdev/Makefile              |    1 -
+ drivers/video/fbdev/hyperv_fb.c           | 1386 ---------------------
+ 7 files changed, 8 insertions(+), 1410 deletions(-)
+ delete mode 100644 drivers/video/fbdev/hyperv_fb.c
 
-On Fri, Aug 01, 2025 at 08:32:20AM +0200, Uwe Kleine-K=F6nig wrote:
-> Hallo Michael,
->=20
-> On Thu, Jul 31, 2025 at 10:47:18AM +0200, Michael Grzeschik wrote:
-> > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight=
-/pwm_bl.c
-> > index 237d3d3f3bb1a..5924e0b9f01e7 100644
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -518,13 +518,6 @@ static int pwm_backlight_probe(struct platform_dev=
-ice *pdev)
-> >  	if (!state.period && (data->pwm_period_ns > 0))
-> >  		state.period =3D data->pwm_period_ns;
-> > =20
-> > -	ret =3D pwm_apply_might_sleep(pb->pwm, &state);
-> > -	if (ret) {
-> > -		dev_err_probe(&pdev->dev, ret,
-> > -			      "failed to apply initial PWM state");
-> > -		goto err_alloc;
-> > -	}
-> > -
-> >  	memset(&props, 0, sizeof(struct backlight_properties));
-> > =20
-> >  	if (data->levels) {
-> > @@ -582,6 +575,15 @@ static int pwm_backlight_probe(struct platform_dev=
-ice *pdev)
-> >  	pb->lth_brightness =3D data->lth_brightness * (div_u64(state.period,
-> >  				pb->scale));
-> > =20
-> > +	state.duty_cycle =3D compute_duty_cycle(pb, data->dft_brightness, &st=
-ate);
-> > +
-> > +	ret =3D pwm_apply_might_sleep(pb->pwm, &state);
-> > +	if (ret) {
-> > +		dev_err_probe(&pdev->dev, ret,
-> > +			      "failed to apply initial PWM state");
-> > +		goto err_alloc;
-> > +	}
-> > +
->=20
-> I wonder why the PWM is updated at all in .probe(). Wouldn't it be the
-> natural thing to keep the PWM configured as it was (in its reset default
-> state or how the bootloader set it up)?
->=20
-> Orthogonal to your change, while looking at the driver I wondered about:
->=20
->         bl =3D backlight_device_register(dev_name(&pdev->dev), &pdev->dev=
-, pb,
->                                        &pwm_backlight_ops, &props);
->         if (IS_ERR(bl)) {
->                 ret =3D dev_err_probe(&pdev->dev, PTR_ERR(bl),
->                                     "failed to register backlight\n");
->                 goto err_alloc;
->         }
->=20
->         if (data->dft_brightness > data->max_brightness) {
->                 dev_warn(&pdev->dev,
->                          "invalid default brightness level: %u, using %u\=
-n",
->                          data->dft_brightness, data->max_brightness);
->                 data->dft_brightness =3D data->max_brightness;
->         }
->=20
->         bl->props.brightness =3D data->dft_brightness;
->         bl->props.power =3D pwm_backlight_initial_power_state(pb);
->         backlight_update_status(bl);
->=20
-> Shoudn't setting data->dft_brightness, bl->props.brightness and
-> bl->props.power better happen before backlight_device_register()? Also
-> calling backlight_update_status() after backlight_device_register()
-> seems wrong to me, I'd claim the backend driver shouldn't call that.
+--
+2.49.0
 
-Do you intend to work on this orthogonal feedback? If not, I'll put it
-on my todo list.
-
-Best regards
-Uwe
-
---d5ajcr2dlqwa72tk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmjAMFsACgkQj4D7WH0S
-/k4BWQgAuXV/ULnAxDCQ3VIqXyMJPZ9q/2BOe6oUyBZUls9TN9oBBE97kCYQT03v
-nY/10hGSr8Pf3XZ/VJfXQX7LCV/Scc0U0Ufz2Pwtb01s7zERx4SgBlHW9k/a4IB8
-UQ/BmYixfkuQoVFsNhjzgsyzR0Yul5abMKBwWme86iu3L4PWWzs0Nt8p0otOV5Yw
-HabxoMBQTTVx2MvK8u9tWB3xkinIzXxVDowWKB7FR7kQpcoCxy6XJnAI0BSwDvNV
-8YywwiaiNGdecrHj0vBDY7yTPiiT8BKAi1H3SiwFdn3cO//lnhbqzNHntPQ1N67V
-ZoGfcECUaGfqJL2w5nsRXewnLty7qA==
-=YVsb
------END PGP SIGNATURE-----
-
---d5ajcr2dlqwa72tk--

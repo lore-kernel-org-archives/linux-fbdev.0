@@ -1,138 +1,243 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42BBF317707
-	for <linux-fbdev@vger.kernel.org>; Wed, 10 Sep 2025 11:09:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F891329F12;
+	Wed, 10 Sep 2025 15:07:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757502569; cv=none; b=PDpG6XgWVEvdlUpWVYDZpL75pcAs2N1LcoH+MeRi8vUhZrIvahr/XEUTZnqA0Gb/tesUG836XPN9UYE677+eelocNI5KUpGvYyTjHtc+09iumWfNBjB4x7MrsUiucMn62nfy9NBTxBo7oDJBbBsCtlsoJb4QSFe8pgOR2jYiyxk=
+	t=1757516854; cv=none; b=TmAI2z1UM91CdQ8VPazSojGAnYw5x1irI7RJzMJIWG0MbTZNE259W0VqWHI40aG7cfzi80jDzYrSMb5bUm47wLeHtlKOrkEZgNtk+7eLqb1OirEAm4H5H+gWDFTShwPsUbzoaLwGN8h1DtxOle9pMRsgBuF1/Mq4IstLyXNsHqU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757502569; c=relaxed/simple;
-	bh=BQ2XtYRwei+F/8LMUKBdKEm+z8pxUaNiGAkH40rNEKc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=aZvocAPfDXgTzJEaNUUtgARKlpQEKhzH/Fyo5fp+1Zeya+UCegMHuH8B54YlE92ksoxPZ3+NBVXtUooNztUgNJueN3re7KxNPoDrA49hXdZzEMtEWM6HipiCckyQnyXQihVeLfZAs0kCfxfx7QuMGrzW7pn9OQHPmriqCQxHCTQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=HPrk7u7Z; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1757516854; c=relaxed/simple;
+	bh=umxHN0eSqhWGYImhBQzS1cHIh4vrTZ/y67rXoJWxDJE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mz7HwYL+aKkxbgFwkiig5tF94uQWIXhKShTQFpiLQSkNKR5T4uu4WBHh6U45gWrRqzizRPUFV0dBuHfDUe1p61fwojBYgdxevqgaccTMY2BB33zfJRD2th3CTCPwLJFh+Eeybmhslhw2OoMzWU8IYw2CYWCkS13s4WwReFF6Pok=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DgnE+HzF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="HPrk7u7Z"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1757502566;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=EEfKAAgF77B0N35cHlVCZR8H3qoPVBq2FQNy2mJIamk=;
-	b=HPrk7u7ZaSZTh4jOKCdVu2CnJAdddbfTonlDn9pyM4WMafX7E5oEWXm8mqB6tzoMd7gyuO
-	aMaN1cJ1xNMdsleooq3+qUUKACcPwc5fTaiGYcJ5FEbGVPplqOa/3tDv3sTlm5//S6SIiO
-	9T17r9ff6wJ37rCrBAMoevDMWYWH74c=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-516-gdrzmoAhPfi44bM0aX3GJg-1; Wed, 10 Sep 2025 07:09:24 -0400
-X-MC-Unique: gdrzmoAhPfi44bM0aX3GJg-1
-X-Mimecast-MFC-AGG-ID: gdrzmoAhPfi44bM0aX3GJg_1757502564
-Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-3db4cfcc23eso3478130f8f.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Sep 2025 04:09:24 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757502563; x=1758107363;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=EEfKAAgF77B0N35cHlVCZR8H3qoPVBq2FQNy2mJIamk=;
-        b=VpZnOY4lRlvlu2UzNN5dD+mfPvYDhhmo5qxa/R0DhYUFnsQs2PbEGevbg/oZkHWxo5
-         hXekLDoSp4mEC5koGm/bDbDEwDMe+g4jF28Dho7FURwotBSDxymuabYqMIAM0seexw5G
-         5dqt/l73i94lTKQsJpwEAHwlcsOLMRX7kCeGsM4jRjikhbShM9q1h5gMkm9L4SURRo1j
-         4/Me+T0neEgJVl7x/CEnYkUdHnQPmzyI5uEX3egiYmBrdLhNRijYSQ36CSQbFRyjF+S1
-         Llyua7t4zrhddKWOPDuT8sGsdDFcOcWbCD+sUrN6YB2U5ZatUb1bj0TenudMCn1YRCsO
-         jRvg==
-X-Forwarded-Encrypted: i=1; AJvYcCXbEzT6DPBSriSdqZ6leUPjo/9E7bHf4lDo+0NM5up6HUn1fE2KCTvhfBfgjEKllpAQGawmNdYIVMnFZA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwPJLsbfO346eW63R23aptKUcquE+XRh9fKP7IpTXpT1t8WrcYa
-	4VUoo6uRIwXkxG3ngDRGfnntKKyXIwIu3FzrnMpJx76GanxEmpAH/mru5gXRvZ1vkKBztfLdnom
-	inntFnDDx7/JvpnWEtG4ETHa7X7XlbaAJAQHIBKELA8VEpzKRcSHuybUH9pVr6tz7
-X-Gm-Gg: ASbGncv78Bj8z6cs2NwoYDnMp+qQmhf7EmAxp1psBv8ur3hWEqoW5MjgC1/NHBznmhr
-	OuIXF3Rp7ifr/IAQ3gh1nV+XZM+3jm4O67ieYrfD7J7zEhvhlSOo3fZB6XDYS981JlbrSUf4GMr
-	r1DLHGaJflwmQYUuxrpUlzmvsDle9iMrKMYLrPNy9d1xmMKyhIHUlySmLajeq6NWWrT/qooSpHe
-	Hj0UH+ie8SE4QRTStphcyx057CbQ9E7P8Ik5C1zvRy/LQRkuQQPnuqxtBrB1XPtrw/6QrHiRq3U
-	ccJ+01UfYph9TK1RMkrK+03RV6pKWuD55EJosZRf3aywNrCMa36TkSioV9+zyGR0ILAwRO1xpNA
-	KOo622DFltiW1bN/W+DdmjQ==
-X-Received: by 2002:a05:6000:2889:b0:3e5:50:e044 with SMTP id ffacd0b85a97d-3e643555859mr13543081f8f.45.1757502563475;
-        Wed, 10 Sep 2025 04:09:23 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEtsE6TP99LwCM9DefOr4NgVBIR7vSn0IU371t63+HnR3UaFYs5LDu32sAvz1H1Dto10pgN1g==
-X-Received: by 2002:a05:6000:2889:b0:3e5:50:e044 with SMTP id ffacd0b85a97d-3e643555859mr13543046f8f.45.1757502563021;
-        Wed, 10 Sep 2025 04:09:23 -0700 (PDT)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-45df1ba282dsm26332925e9.5.2025.09.10.04.09.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Sep 2025 04:09:22 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Brett A C Sheffield <bacs@librecast.net>
-Cc: stable@vger.kernel.org, regressions@lists.linux.dev,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Simona Vetter <simona@ffwll.ch>, Helge
- Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, Lee Jones
- <lee@kernel.org>, Murad Masimov <m.masimov@mt-integration.ru>, Yongzhen
- Zhang <zhangyongzhen@kylinos.cn>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
-Subject: Re: [PATCH 1/1] Revert "fbdev: Disable sysfb device registration
- when removing conflicting FBs"
-In-Reply-To: <aMFYeV4UdD7NnrSC@karahi.gladserv.com>
-References: <20250910095124.6213-3-bacs@librecast.net>
- <20250910095124.6213-5-bacs@librecast.net>
- <87frcuegb7.fsf@minerva.mail-host-address-is-not-set>
- <aMFYeV4UdD7NnrSC@karahi.gladserv.com>
-Date: Wed, 10 Sep 2025 13:09:20 +0200
-Message-ID: <87cy7yef8f.fsf@minerva.mail-host-address-is-not-set>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DgnE+HzF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CDA4C4CEEB;
+	Wed, 10 Sep 2025 15:07:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757516853;
+	bh=umxHN0eSqhWGYImhBQzS1cHIh4vrTZ/y67rXoJWxDJE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=DgnE+HzF4jsYdoJvzQQmArzEeAF8hOnexC6z7f9yZs3esjDd916767upJxvCjl8LW
+	 U0AQfZEescGT4PbF2LvrnNB1yyShHOlPWBPMuVOnalW/MlDEQ74+W+ZWBvH3S/YgqO
+	 0pmmMJyWC1qerXbM+OYXNGx3xy+4XufahXq7D+b1b68srydRB5mIYXBGC6DQxGm6Jx
+	 WT2tnuEj96CEbrPqawb7l4Gl3x+bzoehX06l6UFjs4GYAGkbVDWeW//HfBn46saLPV
+	 93Mh4g2tMAsBt+m+ZwHGOXXkTCqnni+zvYW9yHNmaA/R6SC2EI0nSSViEMGm1LksPl
+	 pdwsN0dnaYosA==
+Message-ID: <0f358cc9-c8cf-4fd9-80d5-b524cc5b6c3c@kernel.org>
+Date: Wed, 10 Sep 2025 17:07:29 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] fbdev/simplefb: Fix use after free in
+ simplefb_detach_genpds()
+To: Janne Grunau <j@jannau.net>, Helge Deller <deller@gmx.de>,
+ Thierry Reding <treding@nvidia.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, Daniel Huhardeaux <tech@tootai.net>,
+ stable@vger.kernel.org
+References: <20250908-simplefb-genpd-uaf-v2-1-f88a0d9d880f@jannau.net>
+From: Hans de Goede <hansg@kernel.org>
+Content-Language: en-US, nl
+In-Reply-To: <20250908-simplefb-genpd-uaf-v2-1-f88a0d9d880f@jannau.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Brett A C Sheffield <bacs@librecast.net> writes:
+Hi Janne,
 
-> On 2025-09-10 12:46, Javier Martinez Canillas wrote:
->> Brett A C Sheffield <bacs@librecast.net> writes:
->> 
->> Hello Brett,
->> 
->> > This reverts commit 13d28e0c79cbf69fc6f145767af66905586c1249.
->> >
->> > Commit ee7a69aa38d8 ("fbdev: Disable sysfb device registration when
->> > removing conflicting FBs") was backported to 5.15.y LTS. This causes a
->> > regression where all virtual consoles stop responding during boot at:
->> >
->> > "Populating /dev with existing devices through uevents ..."
->> >
->> > Reverting the commit fixes the regression.
->> >
->> > Signed-off-by: Brett A C Sheffield <bacs@librecast.net>
->> > ---
->> 
->> In the other email you said:
->> 
->> > Newer stable kernels with this
->> > patch (6.1.y, 6.6.y, 6.12,y, 6.15.y, 6.16.y) and mainline are unaffected.
->> 
->> But are you proposing to revert the mentioned commit in mainline too
->> or just in the 5.15.y LTS tree ?
->
-> Only the 5.15.y tree. Sorry - that could have been clearer.  There's no
-> regression anywhere else. Mainline and other stable kernels are all ok.
->
+On 8-Sep-25 11:23 PM, Janne Grunau wrote:
+> The pm_domain cleanup can not be devres managed as it uses struct
+> simplefb_par which is allocated within struct fb_info by
+> framebuffer_alloc(). This allocation is explicitly freed by
+> unregister_framebuffer() in simplefb_remove().
+> Devres managed cleanup runs after the device remove call and thus can no
+> longer access struct simplefb_par.
+> Call simplefb_detach_genpds() explicitly from simplefb_destroy() like
+> the cleanup functions for clocks and regulators.
+> 
+> Fixes an use after free on M2 Mac mini during
+> aperture_remove_conflicting_devices() using the downstream asahi kernel
+> with Debian's kernel config. For unknown reasons this started to
+> consistently dereference an invalid pointer in v6.16.3 based kernels.
 
-That's what I thought but just wanted to confirm that was the case. Thanks!
+Thank you for your patch.
 
-> Cheers,
->
->
-> Brett
->
+This patch seems to miss adding a simplefb_detach_genpds()
+on error-exit from simplefb_probe() after a successful
+simplefb_attach_genpds() call ?
 
--- 
-Best regards,
+Regards,
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+Hans
+
+
+
+
+> 
+> [    6.736134] BUG: KASAN: slab-use-after-free in simplefb_detach_genpds+0x58/0x220
+> [    6.743545] Read of size 4 at addr ffff8000304743f0 by task (udev-worker)/227
+> [    6.750697]
+> [    6.752182] CPU: 6 UID: 0 PID: 227 Comm: (udev-worker) Tainted: G S                  6.16.3-asahi+ #16 PREEMPTLAZY
+> [    6.752186] Tainted: [S]=CPU_OUT_OF_SPEC
+> [    6.752187] Hardware name: Apple Mac mini (M2, 2023) (DT)
+> [    6.752189] Call trace:
+> [    6.752190]  show_stack+0x34/0x98 (C)
+> [    6.752194]  dump_stack_lvl+0x60/0x80
+> [    6.752197]  print_report+0x17c/0x4d8
+> [    6.752201]  kasan_report+0xb4/0x100
+> [    6.752206]  __asan_report_load4_noabort+0x20/0x30
+> [    6.752209]  simplefb_detach_genpds+0x58/0x220
+> [    6.752213]  devm_action_release+0x50/0x98
+> [    6.752216]  release_nodes+0xd0/0x2c8
+> [    6.752219]  devres_release_all+0xfc/0x178
+> [    6.752221]  device_unbind_cleanup+0x28/0x168
+> [    6.752224]  device_release_driver_internal+0x34c/0x470
+> [    6.752228]  device_release_driver+0x20/0x38
+> [    6.752231]  bus_remove_device+0x1b0/0x380
+> [    6.752234]  device_del+0x314/0x820
+> [    6.752238]  platform_device_del+0x3c/0x1e8
+> [    6.752242]  platform_device_unregister+0x20/0x50
+> [    6.752246]  aperture_detach_platform_device+0x1c/0x30
+> [    6.752250]  aperture_detach_devices+0x16c/0x290
+> [    6.752253]  aperture_remove_conflicting_devices+0x34/0x50
+> ...
+> [    6.752343]
+> [    6.967409] Allocated by task 62:
+> [    6.970724]  kasan_save_stack+0x3c/0x70
+> [    6.974560]  kasan_save_track+0x20/0x40
+> [    6.978397]  kasan_save_alloc_info+0x40/0x58
+> [    6.982670]  __kasan_kmalloc+0xd4/0xd8
+> [    6.986420]  __kmalloc_noprof+0x194/0x540
+> [    6.990432]  framebuffer_alloc+0xc8/0x130
+> [    6.994444]  simplefb_probe+0x258/0x2378
+> ...
+> [    7.054356]
+> [    7.055838] Freed by task 227:
+> [    7.058891]  kasan_save_stack+0x3c/0x70
+> [    7.062727]  kasan_save_track+0x20/0x40
+> [    7.066565]  kasan_save_free_info+0x4c/0x80
+> [    7.070751]  __kasan_slab_free+0x6c/0xa0
+> [    7.074675]  kfree+0x10c/0x380
+> [    7.077727]  framebuffer_release+0x5c/0x90
+> [    7.081826]  simplefb_destroy+0x1b4/0x2c0
+> [    7.085837]  put_fb_info+0x98/0x100
+> [    7.089326]  unregister_framebuffer+0x178/0x320
+> [    7.093861]  simplefb_remove+0x3c/0x60
+> [    7.097611]  platform_remove+0x60/0x98
+> [    7.101361]  device_remove+0xb8/0x160
+> [    7.105024]  device_release_driver_internal+0x2fc/0x470
+> [    7.110256]  device_release_driver+0x20/0x38
+> [    7.114529]  bus_remove_device+0x1b0/0x380
+> [    7.118628]  device_del+0x314/0x820
+> [    7.122116]  platform_device_del+0x3c/0x1e8
+> [    7.126302]  platform_device_unregister+0x20/0x50
+> [    7.131012]  aperture_detach_platform_device+0x1c/0x30
+> [    7.136157]  aperture_detach_devices+0x16c/0x290
+> [    7.140779]  aperture_remove_conflicting_devices+0x34/0x50
+> ...
+> 
+> Reported-by: Daniel Huhardeaux <tech@tootai.net>
+> Cc: stable@vger.kernel.org
+> Fixes: 92a511a568e44 ("fbdev/simplefb: Add support for generic power-domains")
+> Signed-off-by: Janne Grunau <j@jannau.net>
+> ---
+> Changes in v2:
+> - reworked change due to missed use of `par->num_genpds` before setting
+>   it. Missed in testing due to FB_SIMPLE vs. SYSFB_SIMPLEFB.
+> - Link to v1: https://lore.kernel.org/r/20250901-simplefb-genpd-uaf-v1-1-0d9f3a34c4dc@jannau.net
+> ---
+>  drivers/video/fbdev/simplefb.c | 22 ++++++++++++++++------
+>  1 file changed, 16 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+> index 1893815dc67f4c1403eea42c0e10a7ead4d96ba9..2f3e5449509d1824a3d26f73e103af82d56d558a 100644
+> --- a/drivers/video/fbdev/simplefb.c
+> +++ b/drivers/video/fbdev/simplefb.c
+> @@ -93,6 +93,7 @@ struct simplefb_par {
+>  
+>  static void simplefb_clocks_destroy(struct simplefb_par *par);
+>  static void simplefb_regulators_destroy(struct simplefb_par *par);
+> +static void simplefb_detach_genpds(void *res);
+>  
+>  /*
+>   * fb_ops.fb_destroy is called by the last put_fb_info() call at the end
+> @@ -105,6 +106,7 @@ static void simplefb_destroy(struct fb_info *info)
+>  
+>  	simplefb_regulators_destroy(info->par);
+>  	simplefb_clocks_destroy(info->par);
+> +	simplefb_detach_genpds(info->par);
+>  	if (info->screen_base)
+>  		iounmap(info->screen_base);
+>  
+> @@ -451,7 +453,7 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+>  				  struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+> -	unsigned int i;
+> +	unsigned int i, num_genpds;
+>  	int err;
+>  
+>  	err = of_count_phandle_with_args(dev->of_node, "power-domains",
+> @@ -465,26 +467,33 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+>  		return err;
+>  	}
+>  
+> -	par->num_genpds = err;
+> +	num_genpds = err;
+>  
+>  	/*
+>  	 * Single power-domain devices are handled by the driver core, so
+>  	 * nothing to do here.
+>  	 */
+> -	if (par->num_genpds <= 1)
+> +	if (num_genpds <= 1)
+>  		return 0;
+>  
+> -	par->genpds = devm_kcalloc(dev, par->num_genpds, sizeof(*par->genpds),
+> +	par->genpds = devm_kcalloc(dev, num_genpds, sizeof(*par->genpds),
+>  				   GFP_KERNEL);
+>  	if (!par->genpds)
+>  		return -ENOMEM;
+>  
+> -	par->genpd_links = devm_kcalloc(dev, par->num_genpds,
+> +	par->genpd_links = devm_kcalloc(dev, num_genpds,
+>  					sizeof(*par->genpd_links),
+>  					GFP_KERNEL);
+>  	if (!par->genpd_links)
+>  		return -ENOMEM;
+>  
+> +	/*
+> +	 * Set par->num_genpds only after genpds and genpd_links are allocated
+> +	 * to exit early from simplefb_detach_genpds() without full
+> +	 * initialisation.
+> +	 */
+> +	par->num_genpds = num_genpds;
+> +
+>  	for (i = 0; i < par->num_genpds; i++) {
+>  		par->genpds[i] = dev_pm_domain_attach_by_id(dev, i);
+>  		if (IS_ERR(par->genpds[i])) {
+> @@ -506,9 +515,10 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
+>  			dev_warn(dev, "failed to link power-domain %u\n", i);
+>  	}
+>  
+> -	return devm_add_action_or_reset(dev, simplefb_detach_genpds, par);
+> +	return 0;
+>  }
+>  #else
+> +static void simplefb_detach_genpds(void *res) { }
+>  static int simplefb_attach_genpds(struct simplefb_par *par,
+>  				  struct platform_device *pdev)
+>  {
+> 
+> ---
+> base-commit: 8f5ae30d69d7543eee0d70083daf4de8fe15d585
+> change-id: 20250901-simplefb-genpd-uaf-352704761a29
+> 
+> Best regards,
 

@@ -1,243 +1,199 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azolkn19010038.outbound.protection.outlook.com [52.103.10.38])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F891329F12;
-	Wed, 10 Sep 2025 15:07:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757516854; cv=none; b=TmAI2z1UM91CdQ8VPazSojGAnYw5x1irI7RJzMJIWG0MbTZNE259W0VqWHI40aG7cfzi80jDzYrSMb5bUm47wLeHtlKOrkEZgNtk+7eLqb1OirEAm4H5H+gWDFTShwPsUbzoaLwGN8h1DtxOle9pMRsgBuF1/Mq4IstLyXNsHqU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757516854; c=relaxed/simple;
-	bh=umxHN0eSqhWGYImhBQzS1cHIh4vrTZ/y67rXoJWxDJE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mz7HwYL+aKkxbgFwkiig5tF94uQWIXhKShTQFpiLQSkNKR5T4uu4WBHh6U45gWrRqzizRPUFV0dBuHfDUe1p61fwojBYgdxevqgaccTMY2BB33zfJRD2th3CTCPwLJFh+Eeybmhslhw2OoMzWU8IYw2CYWCkS13s4WwReFF6Pok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DgnE+HzF; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A0C2324B0A;
+	Wed, 10 Sep 2025 15:25:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.10.38
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1757517924; cv=fail; b=EwcO4P+iYhF0jrrj+H/E6fL9du+GQqOeAe0kx8EbQjXOkJEusU+rycspQ2B8DTyXGqgQV8ca7jzdtCzSgZOlkcSs9GLFmRKejsC2tC1TpZEpQ3pVvzoSRbYeiair9b45BAoFou9kq46hMKT0qmNhtmqcuYJOXHsFQ7DOqhbFyW0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1757517924; c=relaxed/simple;
+	bh=z6LjHgCY+x2FfQnmzPnicKpyDbrwUe7yc61Un1c3MgQ=;
+	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=uxiDVqwuIUYiK45P9dAA/9SrVsro4L/C19mc6o53ZoOY/RFzFWHhdRaVrJ7FtAYpKRhTdvT21p2qT1Ei47laORBQKVJjj7uBqp7LtW1wEHhM5iAIicbJKDPPY/3qtpXDvAhogKLrxyZXCZv+idkxjcvLFv+fLoMMcq5WrgBNg94=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=iLzCekdq; arc=fail smtp.client-ip=52.103.10.38
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DgnE+HzF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CDA4C4CEEB;
-	Wed, 10 Sep 2025 15:07:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757516853;
-	bh=umxHN0eSqhWGYImhBQzS1cHIh4vrTZ/y67rXoJWxDJE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=DgnE+HzF4jsYdoJvzQQmArzEeAF8hOnexC6z7f9yZs3esjDd916767upJxvCjl8LW
-	 U0AQfZEescGT4PbF2LvrnNB1yyShHOlPWBPMuVOnalW/MlDEQ74+W+ZWBvH3S/YgqO
-	 0pmmMJyWC1qerXbM+OYXNGx3xy+4XufahXq7D+b1b68srydRB5mIYXBGC6DQxGm6Jx
-	 WT2tnuEj96CEbrPqawb7l4Gl3x+bzoehX06l6UFjs4GYAGkbVDWeW//HfBn46saLPV
-	 93Mh4g2tMAsBt+m+ZwHGOXXkTCqnni+zvYW9yHNmaA/R6SC2EI0nSSViEMGm1LksPl
-	 pdwsN0dnaYosA==
-Message-ID: <0f358cc9-c8cf-4fd9-80d5-b524cc5b6c3c@kernel.org>
-Date: Wed, 10 Sep 2025 17:07:29 +0200
+	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="iLzCekdq"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=pTEfKU5+exLkxpn/+1/VO6cCb45yD19DLUbi9XrT6Epb0fR2Ij8axnJyNQ9I7CVgyu/3gscIt8OghbjsTx/o46A2E1q6ZwqB5k1IAWBkP9qWYyWyXF4NQ+ns/U7r8WGGdkCJcF6nDTkcS5xbp2eqdAZB72uKiN8ePJby4E63MAofTmXoFqmnZP7W8VrpQjGJc8p6+++WxbKR0c4nJdYVnA+pC3gAPPe9IAY5OJPRvIZK5SoXr8AtypQHUWakL2en5+2GTMleZaFqE13n+8iRcOaZf4Qk0ZaQkXDYUFzzudm7lHMeoGoyxLyabat4qAy10UF1bA6ErYdtG5yCQbHBpQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=MQhl7iPgOUZiR7VjL6oK7rHIO6xMgO+gJ2Xi82X6umQ=;
+ b=wte2f8reP4lp2f3bq71oTGAyiHDT/ECpTy88XoIP80na7iLe4edRMx9YjtjokVuoSeXkPqnQdykal3y/YdbJkY0gncTemLgxAwI9dKtXuA4gS8IK3qNBIeIihHxS08uL7N8/gM4dfPHxXFxZ1wCsdA+fM767wLiv1l6oE5fX2wYS4hjW+JowVtGZakPfDZD1X+Ay/8J0QuE9ZSV2Ws/MvaR/xfwcJk5xL8N1sSr+pmMeXMwjIVl+tVHvJDM3OndZXXfbG5Q/MEqaZptQbYOTKaRslv06eBjyPyRlCAz2KOdYcryqfDiyfJ/+fb+gxcBpOQYeGxwLp0Aql6jCFhLVaQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MQhl7iPgOUZiR7VjL6oK7rHIO6xMgO+gJ2Xi82X6umQ=;
+ b=iLzCekdqwPQY5AvEwW+Oih0xzKgZv6S3O/EDz8TjWQeM2yjI0+8m5rvoaiJhoyk5xkqzHAFq1ZA2uKPUX+jtvecNkVAExiU0/vACjE4DQiPV++cEs4d7bYmMZqtGCiEYkbDpvu610ipeOf6BMv8MHR2qtBGdrU/D7fp8dLPMygpkzUrDsKXTX03AslGJfQHg93ygi/e0J+Bcbbs7pooaMHXXcWqvqOVgSMhdk0DfhFgQmouCdgby8LhB8oQmB/K1dilj++fU5Fio+grcOHPJObax+xwwAWofn84bq8lkcn5laqWtiP8Z9jm6GPx6S2tlGXkV1WFi5R/XenDL3pcKrQ==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by CY8PR02MB9154.namprd02.prod.outlook.com (2603:10b6:930:96::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Wed, 10 Sep
+ 2025 15:25:20 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::cedd:1e64:8f61:b9df%3]) with mapi id 15.20.9094.021; Wed, 10 Sep 2025
+ 15:25:19 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, Prasanna Kumar T S M
+	<ptsm@linux.microsoft.com>, "deller@gmx.de" <deller@gmx.de>, "arnd@arndb.de"
+	<arnd@arndb.de>, "soci@c64.rulez.org" <soci@c64.rulez.org>,
+	"gonzalo.silvalde@gmail.com" <gonzalo.silvalde@gmail.com>,
+	"rdunlap@infradead.org" <rdunlap@infradead.org>,
+	"bartosz.golaszewski@linaro.org" <bartosz.golaszewski@linaro.org>,
+	"wei.liu@kernel.org" <wei.liu@kernel.org>, "ssengar@linux.microsoft.com"
+	<ssengar@linux.microsoft.com>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org"
+	<linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
+	<dri-devel@lists.freedesktop.org>
+Subject: RE: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
+Thread-Topic: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
+Thread-Index: AQHcIasCn50A4HP2yUGHdjWciNX7b7SMKV0AgABbISA=
+Date: Wed, 10 Sep 2025 15:25:19 +0000
+Message-ID:
+ <SN6PR02MB415755A10BD2C9D0E7F847FCD40EA@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <E2D7F2119CB4>
+ <1757437112-2509-1-git-send-email-ptsm@linux.microsoft.com>
+ <8a958fe8-fbba-4bd6-a79d-fd310f08f8d7@suse.de>
+In-Reply-To: <8a958fe8-fbba-4bd6-a79d-fd310f08f8d7@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|CY8PR02MB9154:EE_
+x-ms-office365-filtering-correlation-id: aa544281-e56f-4bab-6e95-08ddf07e4060
+x-ms-exchange-slblob-mailprops:
+ YfhX3sd/0TVWrg+fxRScxfg9v9HXnUFliY5CL1PUSlSP4JOveej6uHlIFMOthK7FWGTj0V24kCwEWAexG39L1SSG49kK0X50e6GW1JkN8xf9yBONANI/Ymxgs6hPjv7pA1Tx1F9T+2Cqnoqeoj0bo156Th+MRMqsMlma4sPpj0k5Qll1r2kMwIpSmp7N1SNMX4LMFKDxuAsIB9psNCQ+u0DeYZYHv6/aTRbZRBFv1NDldX58UKCqDwS9e4gZJoyhfSlP1LVOAPKgGF0s5eZj7lwXwvLkWPFdzRgLMGtSQg6o3ZA1XeBDjtQvb71XiLtr3fId0MilPgdq6eMNEgTwO1YYNVK22qhnDGhXrK+35bTOuyNdOlMXAUUCb2/6Geq7P+2/A0dys6IpA7r6QWkKtoan88tcnEppCKexLoJYDI9RwB793v+9PfxUjBBOFNDa8JNeNEtlCUZR1u6wjJfdCrB1EgfEK0AZFXw5A+x+wU5yr3kEhDuGk1foqSAhsQ6VqiBiQWTYoC1jQxmSxuAU+TFkd3dHlKKCcDohuagn4u5H62HHIiePqwSIE9I9oCLmAMMDjnnuy4csfUR2d+GIBm0UyMvExtuZoBvgZrNul1wiSWAcVY5W+JEf4v0w5ct8ox/vVQe/yNfWJtfFXFCVmbj9zgrGN+oW5ch5APwXPb/4Bwguxi/Zz1oOEGz5SyrJMW/UoH7ilZY0WGkLVEacxRzgximYkLGVqq6GlL0SlXy7fSwD+rhCibw8I6hzUI6hn/UsrTRxGfLv+dHw41l2hHpfHhRUWuoFiDR5mm6iwvk=
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|19110799012|8060799015|8062599012|461199028|13091999003|31061999003|41001999006|15080799012|10035399007|52005399003|4302099013|40105399003|440099028|3412199025|102099032|1602099012;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?OXzLIooxr6OXiQwZqXxA9Nfib6T3P8apR/p1m+ik88KG7eDh2tqdZ0nEfNTp?=
+ =?us-ascii?Q?yiCgmbmwIlzpxNVPpHwrhy/6uVw/ij8oTvPGVy58B9xvFjLdh374LFLYWNCe?=
+ =?us-ascii?Q?erK0lXS197dUuZVz1xKrezA7S0feABH3Yf5KDvEV00Nb2Ac+ZTk5Ufgf4/o0?=
+ =?us-ascii?Q?ddGW79pVLBs+bbXEkwYp+1kynGKb3H0s0UhWHVfyaiI3RSd3LRp0xp/WkcTS?=
+ =?us-ascii?Q?0+QtlQwMGgdcL/1UsfGBfVK3rGRlej3Y0X9sLi53KQE8ZdI7uKOCIg3X+X95?=
+ =?us-ascii?Q?fzI9E+ox66YPnJ1ObUoJPaGbIuNKN6egkKsx0cHFFKpbSndJ+bw18hrUVxqu?=
+ =?us-ascii?Q?+FFgAMcL57bpK2InwaRzn0CFnaGQBLn3C/LKAxw5C3wPFI/aK7pl+h8iyiwC?=
+ =?us-ascii?Q?FErYlD3lUYC4nu8HjRVUqDYLUSm6m+9PklFTrbzwDSOe38jHBtVbtKLtl21r?=
+ =?us-ascii?Q?+jKDJDRwvBXeja07eV5/e2t/kNXdhHPtPwrAey1+daPx270xXhaYZ8u6Intn?=
+ =?us-ascii?Q?3+HR0TeGMYDO8PGPA+5zj4LT1FpCZEC4WsuF8L52KCnt8dIsqkW9KTC6rdQb?=
+ =?us-ascii?Q?j3btpPF5s3/nPxls2RrqU2DywUYlaMbIj/jjbD+4/8HO3R2PCXOf28cGbUBJ?=
+ =?us-ascii?Q?o+ik+qa4dk+I5jbKp6GUwCoiZbpxKZikFO4Dpo/NVfsgTgGq1fqlwC3RGQoF?=
+ =?us-ascii?Q?uGtpc3YffdTW1GKjHHLiKLPEFVG7WYif3pT0k0ixrGjDDhk1fCVf3GreQ/NP?=
+ =?us-ascii?Q?KsS6F8Qyc98x/IPjBoHXjxLVRLwI9Sz8qMq8UNQeTUHFMtqq6H1S+XPC+/pT?=
+ =?us-ascii?Q?8Slg7keKImSwJM+j9aD2FGXAdbreXGIeYbAHabeDbfIAY+PwbIHddB2WqANy?=
+ =?us-ascii?Q?gaJUMfS98MsXtwEuUp133eUMAcdWn9aHDsMaXzl/3Q5oOpDchtmgR/6pd1Nq?=
+ =?us-ascii?Q?ul6un6TWHcF2qPgX/pX2fQPc7iphyc9lyPczbUbF2N+WO1qSj0VbzQaGrylA?=
+ =?us-ascii?Q?WXmGmoW0hCtRnCgSSHEqhNMgPdo0LCv5AeunICihmg5EWqXuh9sKFAzPAMgD?=
+ =?us-ascii?Q?KZScKhSKci5ZrWUFKFf37LBBJjnUrg0L7qZdJgnNBSu2i2dgjDBY4ELJO5md?=
+ =?us-ascii?Q?IGhC2t1Ra8TP1EKrTnswKIPrMEB3dDFqTXzZMKm6h8x00yOOerunXQL0Uafr?=
+ =?us-ascii?Q?/iNY2BSFcEylc3KjibaKLYRwblWwdPcCsF7uJJqBpPWStXlddTAJM+Q/R6xh?=
+ =?us-ascii?Q?gxVKYcrh8KVXCK/GTAXQSiwOmCQtyYvtBB55ge011zcUIkHBQBkfmbdrQYcV?=
+ =?us-ascii?Q?g9xvKYx75pxgZBdl0PG+iMke6j/1c07/oeJUJJidIRm/e5mc2tTa8f9mkgOo?=
+ =?us-ascii?Q?7Klxrsj5gS7j+nr02XVyhTn7E7vs?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?OL11NHEsXKT1s3F0Qlkxuv0IJEWrF6cE16avkHSh9Ycgw0T42PFH8tbGkOds?=
+ =?us-ascii?Q?0z5n0ghtQA8e+qdFDNQ6Ca8TU8Y41mme4D9Ry1ORip6u+9GieRmUf8SnRtxR?=
+ =?us-ascii?Q?fua0rhIQggR5f7g3cVnyk9WVQQeWCOsK5NgBk5yDrLzUTfL9H1DuSA1t2a3d?=
+ =?us-ascii?Q?h3BZ13G+gtZG5HAn3H63CYx8XEBsdmo9ZmT14QyJLqlUtP5xg1jazKu6CpQ/?=
+ =?us-ascii?Q?pM2DBf44zSkp8e1IKNcqzXHVnqDLomUNPmNQv1hx35fHdlG2eWKL2iUZsgY9?=
+ =?us-ascii?Q?FpCAB45FRywQQeAAiKijpFCxWg4gW9j9G3vKeyvZ6NbxxGcQvEse+D/5MSD9?=
+ =?us-ascii?Q?dhPGBB0wbkfLNvtBqKPjP+bML0UcGOVFa0sHOsrTSlh9CUxLMGo+6vcInRuC?=
+ =?us-ascii?Q?mVMXQcv/yJHHUFqXfnmP+ecYvLSY7d5ob7Z7vMhrmatPi2wiBm8DLSxBUl9L?=
+ =?us-ascii?Q?yECYkYRVyIcSceBC+AzX+8ICwBBer4YQgS9DjKBrdbA01IF4PHZON2/2UVNd?=
+ =?us-ascii?Q?ef8QlrCUZjzzJZobp8MdzhQO27Wh25zbJwRMxMTnud3mwrgxHcVXBejaMXgh?=
+ =?us-ascii?Q?kFg+uz5nIHhXOGHU9MFzAu76N1B+p6DrAi5wJmEZQzBXB4N3z6K3+8th2aC5?=
+ =?us-ascii?Q?ST0rwktZJJHD3EkPoRk+uAv01XXNHB11mvXtii9h184reC4A90qcwCqn0EfK?=
+ =?us-ascii?Q?VLb/wUNBS5DBEFueuXoZHDCIQ5eyfMe7t1vmzqWABJuJ/gg4QWXaDH2cz9Hl?=
+ =?us-ascii?Q?GAwYkyUmuE+K+qgiyJBEtNcb3VhRUfy2CYI3SuXRwJdySOa7mhFYRLC93zFc?=
+ =?us-ascii?Q?+hk4gsI9/N/A5k+34DcjrE88zi/OqG1j7CK76ZIEwzZWtUXqhmYrXZkb0GJc?=
+ =?us-ascii?Q?uWhDL0IQZRXBxAIu/T6fU3QvUI3itjedlsPc2B8qajqwxKsVCK46qEaND6kd?=
+ =?us-ascii?Q?cHwGTwIwGQ3k95GCo2e83Hf+BZdY+BwSbdVJScYnYnbXPxEeF3fJsp5jcSkK?=
+ =?us-ascii?Q?wUWHwFFwaxxLDdmIt3SQYbQ3YqfzI5xZE2SDZQpYg40XwzEYXaNkW/wnNksq?=
+ =?us-ascii?Q?RTcp3qzDsR3S1ApNQnWpR65SVIBb+e2bFH/owLwu8xzHwa9S3TI5EiNv+WS3?=
+ =?us-ascii?Q?nxaKeNYDRTGWD13OMw4ImhEZ2sapSSjvu049WQBkaMj1FYsoOD6u8H+6TVVX?=
+ =?us-ascii?Q?nP/oSkZbqVujvnnyeXZ5IDlRiw1oP7x1p0VGVmOp+U/mKaXdSXaWjTRiMv0?=
+ =?us-ascii?Q?=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev/simplefb: Fix use after free in
- simplefb_detach_genpds()
-To: Janne Grunau <j@jannau.net>, Helge Deller <deller@gmx.de>,
- Thierry Reding <treding@nvidia.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Daniel Huhardeaux <tech@tootai.net>,
- stable@vger.kernel.org
-References: <20250908-simplefb-genpd-uaf-v2-1-f88a0d9d880f@jannau.net>
-From: Hans de Goede <hansg@kernel.org>
-Content-Language: en-US, nl
-In-Reply-To: <20250908-simplefb-genpd-uaf-v2-1-f88a0d9d880f@jannau.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: aa544281-e56f-4bab-6e95-08ddf07e4060
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Sep 2025 15:25:19.2835
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR02MB9154
 
-Hi Janne,
+From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Wednesday, September 10=
+, 2025 2:36 AM
+>=20
+> Hi
+>=20
+> Am 09.09.25 um 18:58 schrieb Prasanna Kumar T S M:
+> > The Hyper-V DRM driver is available since kernel version 5.14 and
+> > provides full KMS support along with fbdev emulation via the DRM fbdev
+> > helpers. This makes the hyperv_fb driver redundant, remove it.
+>=20
+> I'm all for removing obsolete drivers. But hyperv_drm likely first needs
+> to merge the patch at
+> https://lore.kernel.org/dri-devel/20250904145806.430568-5-tzimmermann@sus=
+e.de/
+> It's been tested and works well. If maintainers from Microsoft have a
+> look at the patch first, we could possibly land it fairly soon.
 
-On 8-Sep-25 11:23 PM, Janne Grunau wrote:
-> The pm_domain cleanup can not be devres managed as it uses struct
-> simplefb_par which is allocated within struct fb_info by
-> framebuffer_alloc(). This allocation is explicitly freed by
-> unregister_framebuffer() in simplefb_remove().
-> Devres managed cleanup runs after the device remove call and thus can no
-> longer access struct simplefb_par.
-> Call simplefb_detach_genpds() explicitly from simplefb_destroy() like
-> the cleanup functions for clocks and regulators.
-> 
-> Fixes an use after free on M2 Mac mini during
-> aperture_remove_conflicting_devices() using the downstream asahi kernel
-> with Debian's kernel config. For unknown reasons this started to
-> consistently dereference an invalid pointer in v6.16.3 based kernels.
+Thomas --
 
-Thank you for your patch.
+My testing of your v3 patch series for vblank timers ended up getting a
+WARN_ON after about 3 days of usage. See [1]. So I don't think it's 100%
+ready yet.
 
-This patch seems to miss adding a simplefb_detach_genpds()
-on error-exit from simplefb_probe() after a successful
-simplefb_attach_genpds() call ?
+But I agree we need your synthetic vblank timer support to address the
+Hyper-V DRM driver performance issue, before removing the Hyper-V
+fbdev driver. (See [2] for a description of the performance issue.)
 
-Regards,
+Second, isn't it customary to mark a driver as deprecated for a period
+of time, before removing it entirely? I don't see any documentation
+on the deprecation process, but I've seen it done in other cases. If you
+grep through all the kernel Kconfig files, you'll see entries tagged with
+DEPRECATED. Also the driver should be updated to output a deprecated
+message when it loads.
 
-Hans
+Michael
 
+[1] https://lore.kernel.org/dri-devel/BN7PR02MB4148E80C13605F6EAD2B0A03D40F=
+A@BN7PR02MB4148.namprd02.prod.outlook.com/
+[2] https://lore.kernel.org/dri-devel/SN6PR02MB415702B00D6D52B0EE962C98D46C=
+A@SN6PR02MB4157.namprd02.prod.outlook.com/
 
-
-
-> 
-> [    6.736134] BUG: KASAN: slab-use-after-free in simplefb_detach_genpds+0x58/0x220
-> [    6.743545] Read of size 4 at addr ffff8000304743f0 by task (udev-worker)/227
-> [    6.750697]
-> [    6.752182] CPU: 6 UID: 0 PID: 227 Comm: (udev-worker) Tainted: G S                  6.16.3-asahi+ #16 PREEMPTLAZY
-> [    6.752186] Tainted: [S]=CPU_OUT_OF_SPEC
-> [    6.752187] Hardware name: Apple Mac mini (M2, 2023) (DT)
-> [    6.752189] Call trace:
-> [    6.752190]  show_stack+0x34/0x98 (C)
-> [    6.752194]  dump_stack_lvl+0x60/0x80
-> [    6.752197]  print_report+0x17c/0x4d8
-> [    6.752201]  kasan_report+0xb4/0x100
-> [    6.752206]  __asan_report_load4_noabort+0x20/0x30
-> [    6.752209]  simplefb_detach_genpds+0x58/0x220
-> [    6.752213]  devm_action_release+0x50/0x98
-> [    6.752216]  release_nodes+0xd0/0x2c8
-> [    6.752219]  devres_release_all+0xfc/0x178
-> [    6.752221]  device_unbind_cleanup+0x28/0x168
-> [    6.752224]  device_release_driver_internal+0x34c/0x470
-> [    6.752228]  device_release_driver+0x20/0x38
-> [    6.752231]  bus_remove_device+0x1b0/0x380
-> [    6.752234]  device_del+0x314/0x820
-> [    6.752238]  platform_device_del+0x3c/0x1e8
-> [    6.752242]  platform_device_unregister+0x20/0x50
-> [    6.752246]  aperture_detach_platform_device+0x1c/0x30
-> [    6.752250]  aperture_detach_devices+0x16c/0x290
-> [    6.752253]  aperture_remove_conflicting_devices+0x34/0x50
-> ...
-> [    6.752343]
-> [    6.967409] Allocated by task 62:
-> [    6.970724]  kasan_save_stack+0x3c/0x70
-> [    6.974560]  kasan_save_track+0x20/0x40
-> [    6.978397]  kasan_save_alloc_info+0x40/0x58
-> [    6.982670]  __kasan_kmalloc+0xd4/0xd8
-> [    6.986420]  __kmalloc_noprof+0x194/0x540
-> [    6.990432]  framebuffer_alloc+0xc8/0x130
-> [    6.994444]  simplefb_probe+0x258/0x2378
-> ...
-> [    7.054356]
-> [    7.055838] Freed by task 227:
-> [    7.058891]  kasan_save_stack+0x3c/0x70
-> [    7.062727]  kasan_save_track+0x20/0x40
-> [    7.066565]  kasan_save_free_info+0x4c/0x80
-> [    7.070751]  __kasan_slab_free+0x6c/0xa0
-> [    7.074675]  kfree+0x10c/0x380
-> [    7.077727]  framebuffer_release+0x5c/0x90
-> [    7.081826]  simplefb_destroy+0x1b4/0x2c0
-> [    7.085837]  put_fb_info+0x98/0x100
-> [    7.089326]  unregister_framebuffer+0x178/0x320
-> [    7.093861]  simplefb_remove+0x3c/0x60
-> [    7.097611]  platform_remove+0x60/0x98
-> [    7.101361]  device_remove+0xb8/0x160
-> [    7.105024]  device_release_driver_internal+0x2fc/0x470
-> [    7.110256]  device_release_driver+0x20/0x38
-> [    7.114529]  bus_remove_device+0x1b0/0x380
-> [    7.118628]  device_del+0x314/0x820
-> [    7.122116]  platform_device_del+0x3c/0x1e8
-> [    7.126302]  platform_device_unregister+0x20/0x50
-> [    7.131012]  aperture_detach_platform_device+0x1c/0x30
-> [    7.136157]  aperture_detach_devices+0x16c/0x290
-> [    7.140779]  aperture_remove_conflicting_devices+0x34/0x50
-> ...
-> 
-> Reported-by: Daniel Huhardeaux <tech@tootai.net>
-> Cc: stable@vger.kernel.org
-> Fixes: 92a511a568e44 ("fbdev/simplefb: Add support for generic power-domains")
-> Signed-off-by: Janne Grunau <j@jannau.net>
-> ---
-> Changes in v2:
-> - reworked change due to missed use of `par->num_genpds` before setting
->   it. Missed in testing due to FB_SIMPLE vs. SYSFB_SIMPLEFB.
-> - Link to v1: https://lore.kernel.org/r/20250901-simplefb-genpd-uaf-v1-1-0d9f3a34c4dc@jannau.net
-> ---
->  drivers/video/fbdev/simplefb.c | 22 ++++++++++++++++------
->  1 file changed, 16 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index 1893815dc67f4c1403eea42c0e10a7ead4d96ba9..2f3e5449509d1824a3d26f73e103af82d56d558a 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -93,6 +93,7 @@ struct simplefb_par {
->  
->  static void simplefb_clocks_destroy(struct simplefb_par *par);
->  static void simplefb_regulators_destroy(struct simplefb_par *par);
-> +static void simplefb_detach_genpds(void *res);
->  
->  /*
->   * fb_ops.fb_destroy is called by the last put_fb_info() call at the end
-> @@ -105,6 +106,7 @@ static void simplefb_destroy(struct fb_info *info)
->  
->  	simplefb_regulators_destroy(info->par);
->  	simplefb_clocks_destroy(info->par);
-> +	simplefb_detach_genpds(info->par);
->  	if (info->screen_base)
->  		iounmap(info->screen_base);
->  
-> @@ -451,7 +453,7 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
->  				  struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
-> -	unsigned int i;
-> +	unsigned int i, num_genpds;
->  	int err;
->  
->  	err = of_count_phandle_with_args(dev->of_node, "power-domains",
-> @@ -465,26 +467,33 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
->  		return err;
->  	}
->  
-> -	par->num_genpds = err;
-> +	num_genpds = err;
->  
->  	/*
->  	 * Single power-domain devices are handled by the driver core, so
->  	 * nothing to do here.
->  	 */
-> -	if (par->num_genpds <= 1)
-> +	if (num_genpds <= 1)
->  		return 0;
->  
-> -	par->genpds = devm_kcalloc(dev, par->num_genpds, sizeof(*par->genpds),
-> +	par->genpds = devm_kcalloc(dev, num_genpds, sizeof(*par->genpds),
->  				   GFP_KERNEL);
->  	if (!par->genpds)
->  		return -ENOMEM;
->  
-> -	par->genpd_links = devm_kcalloc(dev, par->num_genpds,
-> +	par->genpd_links = devm_kcalloc(dev, num_genpds,
->  					sizeof(*par->genpd_links),
->  					GFP_KERNEL);
->  	if (!par->genpd_links)
->  		return -ENOMEM;
->  
-> +	/*
-> +	 * Set par->num_genpds only after genpds and genpd_links are allocated
-> +	 * to exit early from simplefb_detach_genpds() without full
-> +	 * initialisation.
-> +	 */
-> +	par->num_genpds = num_genpds;
-> +
->  	for (i = 0; i < par->num_genpds; i++) {
->  		par->genpds[i] = dev_pm_domain_attach_by_id(dev, i);
->  		if (IS_ERR(par->genpds[i])) {
-> @@ -506,9 +515,10 @@ static int simplefb_attach_genpds(struct simplefb_par *par,
->  			dev_warn(dev, "failed to link power-domain %u\n", i);
->  	}
->  
-> -	return devm_add_action_or_reset(dev, simplefb_detach_genpds, par);
-> +	return 0;
->  }
->  #else
-> +static void simplefb_detach_genpds(void *res) { }
->  static int simplefb_attach_genpds(struct simplefb_par *par,
->  				  struct platform_device *pdev)
->  {
-> 
-> ---
-> base-commit: 8f5ae30d69d7543eee0d70083daf4de8fe15d585
-> change-id: 20250901-simplefb-genpd-uaf-352704761a29
-> 
-> Best regards,
-
+>=20
+> Best regards
+> Thomas
+>=20
+> >
+> > Signed-off-by: Prasanna Kumar T S M <ptsm@linux.microsoft.com>
+> > ---
+> >   MAINTAINERS                     |    1 -
+> >   drivers/video/fbdev/Kconfig     |    8 -
+> >   drivers/video/fbdev/Makefile    |    1 -
+> >   drivers/video/fbdev/hyperv_fb.c | 1386 ------------------------------=
+-
+> >   4 files changed, 1396 deletions(-)
+> >   delete mode 100644 drivers/video/fbdev/hyperv_fb.c
+> >

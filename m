@@ -1,199 +1,237 @@
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azolkn19010038.outbound.protection.outlook.com [52.103.10.38])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A0C2324B0A;
-	Wed, 10 Sep 2025 15:25:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.10.38
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757517924; cv=fail; b=EwcO4P+iYhF0jrrj+H/E6fL9du+GQqOeAe0kx8EbQjXOkJEusU+rycspQ2B8DTyXGqgQV8ca7jzdtCzSgZOlkcSs9GLFmRKejsC2tC1TpZEpQ3pVvzoSRbYeiair9b45BAoFou9kq46hMKT0qmNhtmqcuYJOXHsFQ7DOqhbFyW0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757517924; c=relaxed/simple;
-	bh=z6LjHgCY+x2FfQnmzPnicKpyDbrwUe7yc61Un1c3MgQ=;
-	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=uxiDVqwuIUYiK45P9dAA/9SrVsro4L/C19mc6o53ZoOY/RFzFWHhdRaVrJ7FtAYpKRhTdvT21p2qT1Ei47laORBQKVJjj7uBqp7LtW1wEHhM5iAIicbJKDPPY/3qtpXDvAhogKLrxyZXCZv+idkxjcvLFv+fLoMMcq5WrgBNg94=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=iLzCekdq; arc=fail smtp.client-ip=52.103.10.38
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFCFC264F8A
+	for <linux-fbdev@vger.kernel.org>; Wed, 10 Sep 2025 15:48:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1757519339; cv=none; b=WAWrdFnknVgiumEkcRmt26TUjqbT/vh8ok+1nVWHXSr7gQ0xF6zkJtnU91RXwErpwgICV2SxbSxu1rAu+GJxc/IvF9TQZ4rKwDpM4EtAEwfHqM2rtFxkReoMOtHnKBsKD6n6/B/Vp+7D1hsU/4JZCL1o5o8D8IJMgSXV54lEVn8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1757519339; c=relaxed/simple;
+	bh=1zieRllMd/VK2edR6+sZzJN9lZfn0rTroobUlj/6uYo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=WQQdlUC8puk205OOggVdnbnmP/2beFxRYCtDNaYlYPWqvEZsVzq7GlaT2ejmxdfJ4Te+5kyqEgKeyGZUEymBBLz2ePDiKU3CzkbreOS1a6y19sHImZ6q7mMUqPGOAaP+9D2JWpvjiE8118KS9FXOre2jeDgRpayziKB1+3jXlJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wvQI8UMs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=k3yvW2Oi; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wvQI8UMs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=k3yvW2Oi; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="iLzCekdq"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pTEfKU5+exLkxpn/+1/VO6cCb45yD19DLUbi9XrT6Epb0fR2Ij8axnJyNQ9I7CVgyu/3gscIt8OghbjsTx/o46A2E1q6ZwqB5k1IAWBkP9qWYyWyXF4NQ+ns/U7r8WGGdkCJcF6nDTkcS5xbp2eqdAZB72uKiN8ePJby4E63MAofTmXoFqmnZP7W8VrpQjGJc8p6+++WxbKR0c4nJdYVnA+pC3gAPPe9IAY5OJPRvIZK5SoXr8AtypQHUWakL2en5+2GTMleZaFqE13n+8iRcOaZf4Qk0ZaQkXDYUFzzudm7lHMeoGoyxLyabat4qAy10UF1bA6ErYdtG5yCQbHBpQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MQhl7iPgOUZiR7VjL6oK7rHIO6xMgO+gJ2Xi82X6umQ=;
- b=wte2f8reP4lp2f3bq71oTGAyiHDT/ECpTy88XoIP80na7iLe4edRMx9YjtjokVuoSeXkPqnQdykal3y/YdbJkY0gncTemLgxAwI9dKtXuA4gS8IK3qNBIeIihHxS08uL7N8/gM4dfPHxXFxZ1wCsdA+fM767wLiv1l6oE5fX2wYS4hjW+JowVtGZakPfDZD1X+Ay/8J0QuE9ZSV2Ws/MvaR/xfwcJk5xL8N1sSr+pmMeXMwjIVl+tVHvJDM3OndZXXfbG5Q/MEqaZptQbYOTKaRslv06eBjyPyRlCAz2KOdYcryqfDiyfJ/+fb+gxcBpOQYeGxwLp0Aql6jCFhLVaQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MQhl7iPgOUZiR7VjL6oK7rHIO6xMgO+gJ2Xi82X6umQ=;
- b=iLzCekdqwPQY5AvEwW+Oih0xzKgZv6S3O/EDz8TjWQeM2yjI0+8m5rvoaiJhoyk5xkqzHAFq1ZA2uKPUX+jtvecNkVAExiU0/vACjE4DQiPV++cEs4d7bYmMZqtGCiEYkbDpvu610ipeOf6BMv8MHR2qtBGdrU/D7fp8dLPMygpkzUrDsKXTX03AslGJfQHg93ygi/e0J+Bcbbs7pooaMHXXcWqvqOVgSMhdk0DfhFgQmouCdgby8LhB8oQmB/K1dilj++fU5Fio+grcOHPJObax+xwwAWofn84bq8lkcn5laqWtiP8Z9jm6GPx6S2tlGXkV1WFi5R/XenDL3pcKrQ==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by CY8PR02MB9154.namprd02.prod.outlook.com (2603:10b6:930:96::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Wed, 10 Sep
- 2025 15:25:20 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%3]) with mapi id 15.20.9094.021; Wed, 10 Sep 2025
- 15:25:19 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, Prasanna Kumar T S M
-	<ptsm@linux.microsoft.com>, "deller@gmx.de" <deller@gmx.de>, "arnd@arndb.de"
-	<arnd@arndb.de>, "soci@c64.rulez.org" <soci@c64.rulez.org>,
-	"gonzalo.silvalde@gmail.com" <gonzalo.silvalde@gmail.com>,
-	"rdunlap@infradead.org" <rdunlap@infradead.org>,
-	"bartosz.golaszewski@linaro.org" <bartosz.golaszewski@linaro.org>,
-	"wei.liu@kernel.org" <wei.liu@kernel.org>, "ssengar@linux.microsoft.com"
-	<ssengar@linux.microsoft.com>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org"
-	<linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
-	<dri-devel@lists.freedesktop.org>
-Subject: RE: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
-Thread-Topic: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
-Thread-Index: AQHcIasCn50A4HP2yUGHdjWciNX7b7SMKV0AgABbISA=
-Date: Wed, 10 Sep 2025 15:25:19 +0000
-Message-ID:
- <SN6PR02MB415755A10BD2C9D0E7F847FCD40EA@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <E2D7F2119CB4>
- <1757437112-2509-1-git-send-email-ptsm@linux.microsoft.com>
- <8a958fe8-fbba-4bd6-a79d-fd310f08f8d7@suse.de>
-In-Reply-To: <8a958fe8-fbba-4bd6-a79d-fd310f08f8d7@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|CY8PR02MB9154:EE_
-x-ms-office365-filtering-correlation-id: aa544281-e56f-4bab-6e95-08ddf07e4060
-x-ms-exchange-slblob-mailprops:
- YfhX3sd/0TVWrg+fxRScxfg9v9HXnUFliY5CL1PUSlSP4JOveej6uHlIFMOthK7FWGTj0V24kCwEWAexG39L1SSG49kK0X50e6GW1JkN8xf9yBONANI/Ymxgs6hPjv7pA1Tx1F9T+2Cqnoqeoj0bo156Th+MRMqsMlma4sPpj0k5Qll1r2kMwIpSmp7N1SNMX4LMFKDxuAsIB9psNCQ+u0DeYZYHv6/aTRbZRBFv1NDldX58UKCqDwS9e4gZJoyhfSlP1LVOAPKgGF0s5eZj7lwXwvLkWPFdzRgLMGtSQg6o3ZA1XeBDjtQvb71XiLtr3fId0MilPgdq6eMNEgTwO1YYNVK22qhnDGhXrK+35bTOuyNdOlMXAUUCb2/6Geq7P+2/A0dys6IpA7r6QWkKtoan88tcnEppCKexLoJYDI9RwB793v+9PfxUjBBOFNDa8JNeNEtlCUZR1u6wjJfdCrB1EgfEK0AZFXw5A+x+wU5yr3kEhDuGk1foqSAhsQ6VqiBiQWTYoC1jQxmSxuAU+TFkd3dHlKKCcDohuagn4u5H62HHIiePqwSIE9I9oCLmAMMDjnnuy4csfUR2d+GIBm0UyMvExtuZoBvgZrNul1wiSWAcVY5W+JEf4v0w5ct8ox/vVQe/yNfWJtfFXFCVmbj9zgrGN+oW5ch5APwXPb/4Bwguxi/Zz1oOEGz5SyrJMW/UoH7ilZY0WGkLVEacxRzgximYkLGVqq6GlL0SlXy7fSwD+rhCibw8I6hzUI6hn/UsrTRxGfLv+dHw41l2hHpfHhRUWuoFiDR5mm6iwvk=
-x-microsoft-antispam:
- BCL:0;ARA:14566002|19110799012|8060799015|8062599012|461199028|13091999003|31061999003|41001999006|15080799012|10035399007|52005399003|4302099013|40105399003|440099028|3412199025|102099032|1602099012;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?OXzLIooxr6OXiQwZqXxA9Nfib6T3P8apR/p1m+ik88KG7eDh2tqdZ0nEfNTp?=
- =?us-ascii?Q?yiCgmbmwIlzpxNVPpHwrhy/6uVw/ij8oTvPGVy58B9xvFjLdh374LFLYWNCe?=
- =?us-ascii?Q?erK0lXS197dUuZVz1xKrezA7S0feABH3Yf5KDvEV00Nb2Ac+ZTk5Ufgf4/o0?=
- =?us-ascii?Q?ddGW79pVLBs+bbXEkwYp+1kynGKb3H0s0UhWHVfyaiI3RSd3LRp0xp/WkcTS?=
- =?us-ascii?Q?0+QtlQwMGgdcL/1UsfGBfVK3rGRlej3Y0X9sLi53KQE8ZdI7uKOCIg3X+X95?=
- =?us-ascii?Q?fzI9E+ox66YPnJ1ObUoJPaGbIuNKN6egkKsx0cHFFKpbSndJ+bw18hrUVxqu?=
- =?us-ascii?Q?+FFgAMcL57bpK2InwaRzn0CFnaGQBLn3C/LKAxw5C3wPFI/aK7pl+h8iyiwC?=
- =?us-ascii?Q?FErYlD3lUYC4nu8HjRVUqDYLUSm6m+9PklFTrbzwDSOe38jHBtVbtKLtl21r?=
- =?us-ascii?Q?+jKDJDRwvBXeja07eV5/e2t/kNXdhHPtPwrAey1+daPx270xXhaYZ8u6Intn?=
- =?us-ascii?Q?3+HR0TeGMYDO8PGPA+5zj4LT1FpCZEC4WsuF8L52KCnt8dIsqkW9KTC6rdQb?=
- =?us-ascii?Q?j3btpPF5s3/nPxls2RrqU2DywUYlaMbIj/jjbD+4/8HO3R2PCXOf28cGbUBJ?=
- =?us-ascii?Q?o+ik+qa4dk+I5jbKp6GUwCoiZbpxKZikFO4Dpo/NVfsgTgGq1fqlwC3RGQoF?=
- =?us-ascii?Q?uGtpc3YffdTW1GKjHHLiKLPEFVG7WYif3pT0k0ixrGjDDhk1fCVf3GreQ/NP?=
- =?us-ascii?Q?KsS6F8Qyc98x/IPjBoHXjxLVRLwI9Sz8qMq8UNQeTUHFMtqq6H1S+XPC+/pT?=
- =?us-ascii?Q?8Slg7keKImSwJM+j9aD2FGXAdbreXGIeYbAHabeDbfIAY+PwbIHddB2WqANy?=
- =?us-ascii?Q?gaJUMfS98MsXtwEuUp133eUMAcdWn9aHDsMaXzl/3Q5oOpDchtmgR/6pd1Nq?=
- =?us-ascii?Q?ul6un6TWHcF2qPgX/pX2fQPc7iphyc9lyPczbUbF2N+WO1qSj0VbzQaGrylA?=
- =?us-ascii?Q?WXmGmoW0hCtRnCgSSHEqhNMgPdo0LCv5AeunICihmg5EWqXuh9sKFAzPAMgD?=
- =?us-ascii?Q?KZScKhSKci5ZrWUFKFf37LBBJjnUrg0L7qZdJgnNBSu2i2dgjDBY4ELJO5md?=
- =?us-ascii?Q?IGhC2t1Ra8TP1EKrTnswKIPrMEB3dDFqTXzZMKm6h8x00yOOerunXQL0Uafr?=
- =?us-ascii?Q?/iNY2BSFcEylc3KjibaKLYRwblWwdPcCsF7uJJqBpPWStXlddTAJM+Q/R6xh?=
- =?us-ascii?Q?gxVKYcrh8KVXCK/GTAXQSiwOmCQtyYvtBB55ge011zcUIkHBQBkfmbdrQYcV?=
- =?us-ascii?Q?g9xvKYx75pxgZBdl0PG+iMke6j/1c07/oeJUJJidIRm/e5mc2tTa8f9mkgOo?=
- =?us-ascii?Q?7Klxrsj5gS7j+nr02XVyhTn7E7vs?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?OL11NHEsXKT1s3F0Qlkxuv0IJEWrF6cE16avkHSh9Ycgw0T42PFH8tbGkOds?=
- =?us-ascii?Q?0z5n0ghtQA8e+qdFDNQ6Ca8TU8Y41mme4D9Ry1ORip6u+9GieRmUf8SnRtxR?=
- =?us-ascii?Q?fua0rhIQggR5f7g3cVnyk9WVQQeWCOsK5NgBk5yDrLzUTfL9H1DuSA1t2a3d?=
- =?us-ascii?Q?h3BZ13G+gtZG5HAn3H63CYx8XEBsdmo9ZmT14QyJLqlUtP5xg1jazKu6CpQ/?=
- =?us-ascii?Q?pM2DBf44zSkp8e1IKNcqzXHVnqDLomUNPmNQv1hx35fHdlG2eWKL2iUZsgY9?=
- =?us-ascii?Q?FpCAB45FRywQQeAAiKijpFCxWg4gW9j9G3vKeyvZ6NbxxGcQvEse+D/5MSD9?=
- =?us-ascii?Q?dhPGBB0wbkfLNvtBqKPjP+bML0UcGOVFa0sHOsrTSlh9CUxLMGo+6vcInRuC?=
- =?us-ascii?Q?mVMXQcv/yJHHUFqXfnmP+ecYvLSY7d5ob7Z7vMhrmatPi2wiBm8DLSxBUl9L?=
- =?us-ascii?Q?yECYkYRVyIcSceBC+AzX+8ICwBBer4YQgS9DjKBrdbA01IF4PHZON2/2UVNd?=
- =?us-ascii?Q?ef8QlrCUZjzzJZobp8MdzhQO27Wh25zbJwRMxMTnud3mwrgxHcVXBejaMXgh?=
- =?us-ascii?Q?kFg+uz5nIHhXOGHU9MFzAu76N1B+p6DrAi5wJmEZQzBXB4N3z6K3+8th2aC5?=
- =?us-ascii?Q?ST0rwktZJJHD3EkPoRk+uAv01XXNHB11mvXtii9h184reC4A90qcwCqn0EfK?=
- =?us-ascii?Q?VLb/wUNBS5DBEFueuXoZHDCIQ5eyfMe7t1vmzqWABJuJ/gg4QWXaDH2cz9Hl?=
- =?us-ascii?Q?GAwYkyUmuE+K+qgiyJBEtNcb3VhRUfy2CYI3SuXRwJdySOa7mhFYRLC93zFc?=
- =?us-ascii?Q?+hk4gsI9/N/A5k+34DcjrE88zi/OqG1j7CK76ZIEwzZWtUXqhmYrXZkb0GJc?=
- =?us-ascii?Q?uWhDL0IQZRXBxAIu/T6fU3QvUI3itjedlsPc2B8qajqwxKsVCK46qEaND6kd?=
- =?us-ascii?Q?cHwGTwIwGQ3k95GCo2e83Hf+BZdY+BwSbdVJScYnYnbXPxEeF3fJsp5jcSkK?=
- =?us-ascii?Q?wUWHwFFwaxxLDdmIt3SQYbQ3YqfzI5xZE2SDZQpYg40XwzEYXaNkW/wnNksq?=
- =?us-ascii?Q?RTcp3qzDsR3S1ApNQnWpR65SVIBb+e2bFH/owLwu8xzHwa9S3TI5EiNv+WS3?=
- =?us-ascii?Q?nxaKeNYDRTGWD13OMw4ImhEZ2sapSSjvu049WQBkaMj1FYsoOD6u8H+6TVVX?=
- =?us-ascii?Q?nP/oSkZbqVujvnnyeXZ5IDlRiw1oP7x1p0VGVmOp+U/mKaXdSXaWjTRiMv0?=
- =?us-ascii?Q?=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wvQI8UMs";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="k3yvW2Oi";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wvQI8UMs";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="k3yvW2Oi"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 7F07237EF1;
+	Wed, 10 Sep 2025 15:48:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1757519333; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yBVL7srJiNT7NEluSsuL96mfRyRtVk421jqNwvKTG00=;
+	b=wvQI8UMszCg/6KdMiq5WmXV5Q88H2tmFIsy8RsXHrgcxspMmHZjm3LHZIKjALzTeONG5rA
+	ngi3vk3RN7nKcxi3sS4o5pCa8Oo/oiAJd+aJUMDetAgo8I/LY/AM8VjG/P3OxyEeW1TETF
+	BzXLqqlXMvuW25BedSH/3hCrorKrjS0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1757519333;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yBVL7srJiNT7NEluSsuL96mfRyRtVk421jqNwvKTG00=;
+	b=k3yvW2OitZA3WZIBuzinAF3nI/jNTDjxxIQLSgGppjRhccpufFS0OyQcmstSvnu7TNccJt
+	3NTDvx0tUAYHX0BA==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=wvQI8UMs;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=k3yvW2Oi
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1757519333; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yBVL7srJiNT7NEluSsuL96mfRyRtVk421jqNwvKTG00=;
+	b=wvQI8UMszCg/6KdMiq5WmXV5Q88H2tmFIsy8RsXHrgcxspMmHZjm3LHZIKjALzTeONG5rA
+	ngi3vk3RN7nKcxi3sS4o5pCa8Oo/oiAJd+aJUMDetAgo8I/LY/AM8VjG/P3OxyEeW1TETF
+	BzXLqqlXMvuW25BedSH/3hCrorKrjS0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1757519333;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yBVL7srJiNT7NEluSsuL96mfRyRtVk421jqNwvKTG00=;
+	b=k3yvW2OitZA3WZIBuzinAF3nI/jNTDjxxIQLSgGppjRhccpufFS0OyQcmstSvnu7TNccJt
+	3NTDvx0tUAYHX0BA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2B66713310;
+	Wed, 10 Sep 2025 15:48:53 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id RJAiCeWdwWi3PQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 10 Sep 2025 15:48:53 +0000
+Message-ID: <77576214-a849-41d7-bcfe-f9af20ff263b@suse.de>
+Date: Wed, 10 Sep 2025 17:48:52 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: aa544281-e56f-4bab-6e95-08ddf07e4060
-X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Sep 2025 15:25:19.2835
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR02MB9154
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
+To: Michael Kelley <mhklinux@outlook.com>,
+ Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+ "deller@gmx.de" <deller@gmx.de>, "arnd@arndb.de" <arnd@arndb.de>,
+ "soci@c64.rulez.org" <soci@c64.rulez.org>,
+ "gonzalo.silvalde@gmail.com" <gonzalo.silvalde@gmail.com>,
+ "rdunlap@infradead.org" <rdunlap@infradead.org>,
+ "bartosz.golaszewski@linaro.org" <bartosz.golaszewski@linaro.org>,
+ "wei.liu@kernel.org" <wei.liu@kernel.org>,
+ "ssengar@linux.microsoft.com" <ssengar@linux.microsoft.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+References: <E2D7F2119CB4>
+ <1757437112-2509-1-git-send-email-ptsm@linux.microsoft.com>
+ <8a958fe8-fbba-4bd6-a79d-fd310f08f8d7@suse.de>
+ <SN6PR02MB415755A10BD2C9D0E7F847FCD40EA@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <SN6PR02MB415755A10BD2C9D0E7F847FCD40EA@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_DN_EQ_ADDR_SOME(0.00)[];
+	FREEMAIL_TO(0.00)[outlook.com,linux.microsoft.com,gmx.de,arndb.de,c64.rulez.org,gmail.com,infradead.org,linaro.org,kernel.org,vger.kernel.org,lists.freedesktop.org];
+	MIME_TRACE(0.00)[0:+];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de,outlook.com];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim,suse.de:email]
+X-Spam-Flag: NO
+X-Spam-Level: 
+X-Rspamd-Queue-Id: 7F07237EF1
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Score: -3.01
 
-From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Wednesday, September 10=
-, 2025 2:36 AM
->=20
-> Hi
->=20
-> Am 09.09.25 um 18:58 schrieb Prasanna Kumar T S M:
-> > The Hyper-V DRM driver is available since kernel version 5.14 and
-> > provides full KMS support along with fbdev emulation via the DRM fbdev
-> > helpers. This makes the hyperv_fb driver redundant, remove it.
->=20
-> I'm all for removing obsolete drivers. But hyperv_drm likely first needs
-> to merge the patch at
-> https://lore.kernel.org/dri-devel/20250904145806.430568-5-tzimmermann@sus=
-e.de/
-> It's been tested and works well. If maintainers from Microsoft have a
-> look at the patch first, we could possibly land it fairly soon.
+Hi
 
-Thomas --
+Am 10.09.25 um 17:25 schrieb Michael Kelley:
+> From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Wednesday, September 10, 2025 2:36 AM
+>> Hi
+>>
+>> Am 09.09.25 um 18:58 schrieb Prasanna Kumar T S M:
+>>> The Hyper-V DRM driver is available since kernel version 5.14 and
+>>> provides full KMS support along with fbdev emulation via the DRM fbdev
+>>> helpers. This makes the hyperv_fb driver redundant, remove it.
+>> I'm all for removing obsolete drivers. But hyperv_drm likely first needs
+>> to merge the patch at
+>> https://lore.kernel.org/dri-devel/20250904145806.430568-5-tzimmermann@suse.de/
+>> It's been tested and works well. If maintainers from Microsoft have a
+>> look at the patch first, we could possibly land it fairly soon.
+> Thomas --
+>
+> My testing of your v3 patch series for vblank timers ended up getting a
+> WARN_ON after about 3 days of usage. See [1]. So I don't think it's 100%
+> ready yet.
 
-My testing of your v3 patch series for vblank timers ended up getting a
-WARN_ON after about 3 days of usage. See [1]. So I don't think it's 100%
-ready yet.
+Yeah, I've seen your message, but didn't have time to investigate yet. 
+It might not be that much of an issue.
 
-But I agree we need your synthetic vblank timer support to address the
-Hyper-V DRM driver performance issue, before removing the Hyper-V
-fbdev driver. (See [2] for a description of the performance issue.)
+>
+> But I agree we need your synthetic vblank timer support to address the
+> Hyper-V DRM driver performance issue, before removing the Hyper-V
+> fbdev driver. (See [2] for a description of the performance issue.)
+>
+> Second, isn't it customary to mark a driver as deprecated for a period
+> of time, before removing it entirely? I don't see any documentation
+> on the deprecation process, but I've seen it done in other cases. If you
+> grep through all the kernel Kconfig files, you'll see entries tagged with
+> DEPRECATED. Also the driver should be updated to output a deprecated
+> message when it loads.
 
-Second, isn't it customary to mark a driver as deprecated for a period
-of time, before removing it entirely? I don't see any documentation
-on the deprecation process, but I've seen it done in other cases. If you
-grep through all the kernel Kconfig files, you'll see entries tagged with
-DEPRECATED. Also the driver should be updated to output a deprecated
-message when it loads.
+Sure, we can do that.
 
-Michael
+Best regards
+Thomas
 
-[1] https://lore.kernel.org/dri-devel/BN7PR02MB4148E80C13605F6EAD2B0A03D40F=
-A@BN7PR02MB4148.namprd02.prod.outlook.com/
-[2] https://lore.kernel.org/dri-devel/SN6PR02MB415702B00D6D52B0EE962C98D46C=
-A@SN6PR02MB4157.namprd02.prod.outlook.com/
+>
+> Michael
+>
+> [1] https://lore.kernel.org/dri-devel/BN7PR02MB4148E80C13605F6EAD2B0A03D40FA@BN7PR02MB4148.namprd02.prod.outlook.com/
+> [2] https://lore.kernel.org/dri-devel/SN6PR02MB415702B00D6D52B0EE962C98D46CA@SN6PR02MB4157.namprd02.prod.outlook.com/
+>
+>> Best regards
+>> Thomas
+>>
+>>> Signed-off-by: Prasanna Kumar T S M <ptsm@linux.microsoft.com>
+>>> ---
+>>>    MAINTAINERS                     |    1 -
+>>>    drivers/video/fbdev/Kconfig     |    8 -
+>>>    drivers/video/fbdev/Makefile    |    1 -
+>>>    drivers/video/fbdev/hyperv_fb.c | 1386 -------------------------------
+>>>    4 files changed, 1396 deletions(-)
+>>>    delete mode 100644 drivers/video/fbdev/hyperv_fb.c
+>>>
 
->=20
-> Best regards
-> Thomas
->=20
-> >
-> > Signed-off-by: Prasanna Kumar T S M <ptsm@linux.microsoft.com>
-> > ---
-> >   MAINTAINERS                     |    1 -
-> >   drivers/video/fbdev/Kconfig     |    8 -
-> >   drivers/video/fbdev/Makefile    |    1 -
-> >   drivers/video/fbdev/hyperv_fb.c | 1386 ------------------------------=
--
-> >   4 files changed, 1396 deletions(-)
-> >   delete mode 100644 drivers/video/fbdev/hyperv_fb.c
-> >
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+
+

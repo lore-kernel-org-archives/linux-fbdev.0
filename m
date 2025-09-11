@@ -1,89 +1,189 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DF2D216E26;
-	Thu, 11 Sep 2025 03:35:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69CC122F74A;
+	Thu, 11 Sep 2025 07:53:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757561724; cv=none; b=L3vabEsztS/6CCg45i0uWt0BR9l+8ziMy3Q1bi+GixAIfl2ES0NfF0yegV2w/Z6CdLkVG5fNUWJZ4xl7HQ5gmnZe3jSpMPpQ8/KPyQMm9G5Le1VgLuqlZDvztdJyYUNraAjAuMWeWhH73owMkFXnVVxzuXUw1Gap6P5GjPdL7oM=
+	t=1757577208; cv=none; b=hfiwzq4PZEeeMqbp50cfGtY9639D6GvJEloxR4tbRE8Zy6Y9Hz6lk3dkW/Nasf7fGqkcis8nAWwujo9z1Jxrq9BfiU/W+DLCvsVuMrmJT9CcL/0W7yPUE7rTD3//uMfh81yyLz9BaBqODa1whHK+ZtESzNxjCoQ+SaLXV/7ci1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757561724; c=relaxed/simple;
-	bh=ShNe3T8WBbWuzZEozXdVpPXOnVPbiv9wKLagbhrPdxs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LrmC5dlNfmlyFyzLDCpKlqIUjNzCzcwWaxZlw/x48G0EsYQcuw5L2UOJRsIjFtZHskeNrbDEgTEQFxeLmO4bOPCzRCvYR2jmSRT4kO5HQarMjs1uUi7JcZpA4/R7UHANg7OJy/KsYoy4f2YCeph8JAcvSwo9dBFGXdEqPSgjFo4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=UxEqJs+m; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1757577208; c=relaxed/simple;
+	bh=dMNYBL2O6f4/igyNj4rxu6fdmJ5X6xhc9PGg4Vp5DT0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=UzyjhACSLly4F49XMe8CwPt6zFnXfDiaJbNzGMDD3Pm1pGoPAHDB/ilfng/1+OjLr0Ns0eQXAylv0V3prdWIyjF7pE6QgyE0bCWEaK6QiNTGslwAsBhwWrQcCLAv8mFi9MEXYVqnwIUB6Wg6kS6akgVRz4j84HWsufQbtyu4qFU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tvxbs4FZ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="UxEqJs+m"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=32AG34pAnZG3Yar61We5Dkbx6Ha1F8P9HswwXyA8pBA=; b=UxEqJs+maHdtoHkwgXTqEI0NHm
-	/jACiHe6KLBV2tfShbg8Dbw0N/wllh8X59TgIFomtGlbENLPYYE1h56XdizjQt69x46wrWJyPI/7T
-	ej5ACmgjiWOWuigLnhim08kzu5HQoz2ceLkC5sAKf3X4uM0fm9S0odBBv2iWF51brocJqaLEJnaPn
-	xq7vq1FGv8K7XeXOs2Jmm561skLwDD54dxbPOElwGuGGoVkDdCu8SeKu/MRVtGFuCcCOQH2ijqVHo
-	cX6Bf0lkPa433YwL0VNTuNgNCN20kRNBM6iQauYpfGeUZEPWDyEsFEb3lDDY0nPIvk4zz1/zq0WlH
-	8nQJ5Vhg==;
-Received: from [50.53.25.54] (helo=[192.168.254.17])
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uwY5h-00000000cXj-2TMx;
-	Thu, 11 Sep 2025 03:35:21 +0000
-Message-ID: <f2236555-9529-4586-a834-bb254513bd0b@infradead.org>
-Date: Wed, 10 Sep 2025 20:35:19 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tvxbs4FZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 370C9C4CEF7;
+	Thu, 11 Sep 2025 07:53:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757577208;
+	bh=dMNYBL2O6f4/igyNj4rxu6fdmJ5X6xhc9PGg4Vp5DT0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=tvxbs4FZsWYVO8hw/0sDZCBSQMU4p6YLR0SgXrYWFQe/1P+cZRu6q41Jj9OZtd5nv
+	 ndgDO8ZiT3kXpaIKMj4ElajFXH+k+Nbf62hqdYo2gLVR1WrafmMR5XnrOKd7tB0Qka
+	 UJD1L4VedcSiEym1tEuHgdHt6akwNkof3x7osr223lgcTer2MRbPV4L3Dg2VvMX+oz
+	 nD40DDf6f5x0jFKrvLTf0UqoyDAbNITQHiJa9nlrNhVB7cP2cXRYf8tFGu6kB56lqR
+	 AABrLo+T42dINbmHsLQVeGnWypPLe3HUjnXYEZS7Mt84TQYGQgt7nhJKH4o6G+h4um
+	 /hvR+/J05iUFg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2563ACA1016;
+	Thu, 11 Sep 2025 07:53:28 +0000 (UTC)
+From: Maud Spierings via B4 Relay <devnull+maudspierings.gocontroll.com@kernel.org>
+Date: Thu, 11 Sep 2025 09:53:18 +0200
+Subject: [PATCH v3 1/4] dt-bindings: backlight: Add max25014 bindings
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/3] Documentation: fbcon: formatting cleanup and
- improvements
-To: Bagas Sanjaya <bagasdotme@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Documentation <linux-doc@vger.kernel.org>,
- Linux Framebuffer <linux-fbdev@vger.kernel.org>,
- Linux DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Helge Deller <deller@gmx.de>, Jonathan Corbet <corbet@lwn.net>
-References: <20250909063744.30053-1-bagasdotme@gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20250909063744.30053-1-bagasdotme@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20250911-max25014-v3-1-d03f4eba375e@gocontroll.com>
+References: <20250911-max25014-v3-0-d03f4eba375e@gocontroll.com>
+In-Reply-To: <20250911-max25014-v3-0-d03f4eba375e@gocontroll.com>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, imx@lists.linux.dev, 
+ linux-arm-kernel@lists.infradead.org, 
+ Maud Spierings <maudspierings@gocontroll.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1757577207; l=3271;
+ i=maudspierings@gocontroll.com; s=20250214; h=from:subject:message-id;
+ bh=5g4P1Wahkw5JoS3mX7/6i/sx/W0CFQwRY6rNR38SJig=;
+ b=l0RYJ1FzMcXSI4IFv4c60sFbpautxCOLa2QrSLHkl3pIPbI7i+ExXyxrkfg7D58y9Us3zN3Oi
+ s/XtYiRRe3vCbM3UmML90iyhGPMBMXsydB98oYmt1xcPAiWOUiRWjBj
+X-Developer-Key: i=maudspierings@gocontroll.com; a=ed25519;
+ pk=7chUb8XpaTQDvWhzTdHC0YPMkTDloELEC7q94tOUyPg=
+X-Endpoint-Received: by B4 Relay for maudspierings@gocontroll.com/20250214
+ with auth_id=341
+X-Original-From: Maud Spierings <maudspierings@gocontroll.com>
+Reply-To: maudspierings@gocontroll.com
 
+From: Maud Spierings <maudspierings@gocontroll.com>
 
+The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+with integrated boost controller.
 
-On 9/8/25 11:37 PM, Bagas Sanjaya wrote:
-> Hi,
-> 
-> Here are reST formatting cleanup and improvements for fbcon documentation.
-> The shortlog below should be self-explanatory.
-> 
-> This series is based on docs-next tree.
-> 
-> Enjoy!
-> 
-> Bagas Sanjaya (3):
->   Documentation: fbcon: Add boot options and attach/detach/unload
->     section headings
->   Documentation: fbcon: Reindent 8th step of attach/detach/unload
->   Documentation: fbcon: Use admonition directives
-> 
->  Documentation/fb/fbcon.rst | 42 ++++++++++++++++++++++----------------
->  1 file changed, 24 insertions(+), 18 deletions(-)
-> 
-> 
-> base-commit: 7e5a0fe4e8ae2eb341f8ebbee2b24231a58fc28b
+Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
+---
+ .../bindings/leds/backlight/maxim,max25014.yaml    | 81 ++++++++++++++++++++++
+ MAINTAINERS                                        |  5 ++
+ 2 files changed, 86 insertions(+)
 
-For all 3 patches:
-
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
-
-Thanks.
+diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..e113a2ad16aa74f982b9c2ea80578aed2d9424fe
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+@@ -0,0 +1,81 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Maxim max25014 backlight controller
++
++maintainers:
++  - Maud Spierings <maudspierings@gocontroll.com>
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    enum:
++      - maxim,max25014
++
++  reg:
++    maxItems: 1
++
++  enable-gpios:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  power-supply:
++    description: Regulator which controls the boost converter input rail.
++
++  pwms:
++    maxItems: 1
++
++  maxim,iset:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    maximum: 15
++    default: 11
++    description:
++      Value of the ISET register field. This controls the current scale of the
++      outputs, a higher number means more current.
++
++  maxim,strings:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    description:
++      A 4-bit bitfield that describes which led strings to turn on.
++    minItems: 4
++    maxItems: 4
++    items:
++      maximum: 1
++
++required:
++  - compatible
++  - reg
++  - maxim,strings
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        backlight@6f {
++            compatible = "maxim,max25014";
++            reg = <0x6f>;
++            default-brightness = <50>;
++            enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
++            interrupt-parent = <&gpio1>;
++            interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
++            power-supply = <&reg_backlight>;
++            pwms = <&pwm1>;
++            maxim,iset = <7>;
++            maxim,strings = <1 1 1 1>;
++        };
++    };
++
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 7b7396ed28a700a2aab318553ce8ba1788312bff..5a592eefbe7562734aada05ab9e3aea8cee010e7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -15069,6 +15069,11 @@ F:	Documentation/userspace-api/media/drivers/max2175.rst
+ F:	drivers/media/i2c/max2175*
+ F:	include/uapi/linux/max2175.h
+ 
++MAX25014 BACKLIGHT DRIVER
++M:	Maud Spierings <maudspierings@gocontroll.com>
++S:	Maintained
++F:	Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
++
+ MAX31335 RTC DRIVER
+ M:	Antoniu Miclaus <antoniu.miclaus@analog.com>
+ L:	linux-rtc@vger.kernel.org
 
 -- 
-~Randy
+2.51.0
+
+

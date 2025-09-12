@@ -1,49 +1,50 @@
-Received: from forward201a.mail.yandex.net (forward201a.mail.yandex.net [178.154.239.92])
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2807F221FCA;
-	Fri, 12 Sep 2025 16:34:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.92
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DDCA226541;
+	Fri, 12 Sep 2025 17:00:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757694878; cv=none; b=NjaRunN5HCR3oMOTvRjouxZpNmSGngJXyOgrcPc7NEj7fqCdJq+v027B7XWFBrI0kFD2qzliETfPKD7w1T7rLlZmpDyHVPufQl6FznsWipojsvokU0iXUh/cIr6gbj1gUeOXvnIUxzOdf/lxO9tPDLfjsXrti8MYu7wNEaWiKUU=
+	t=1757696433; cv=none; b=BKRfNDHlpO5ng5HlQfyA6OZMGD2XWu8C1i2jUFGA9NdXASy1GcOnoRbjQkJrp6T0RRRpWk4qCmVSiI17XqCu5mMjbKw++buOATXLHI9Nhyf+pWeT2L0SQ3XQ3rNIBKUto/+FrrQwrmxw2x67zr3uiN/npnAkD+wPTQX0UokNsG8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757694878; c=relaxed/simple;
-	bh=zCkNOJymvoBu1SpL3OWeIa0g3zh1RhZ+FgOJutrMNfg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Dz2kU73Cmg2+phLHOfh9oL6V6gAnMtQjTtYfITVEZPdM98jBUZ+piLUmuUZH4XSprvgn8im+3E04LMvC+GVXuQje8fBvrquYqdMpQRP2cqBwg6TNF9t2GKd8jb7snb4QyUtQEstt5B2ua2lJNPa3aghg34qaqKa/0HGM2S9AIrA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=HcmDPXTj; arc=none smtp.client-ip=178.154.239.92
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
+	s=arc-20240116; t=1757696433; c=relaxed/simple;
+	bh=wwUIAgg5UDdjvjHBa8UH55xKwKAPBQ2vn6ojHpKLwHU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RqUT1NoNtmC80zViz63xMag6/55yZT3BdPNltNEY0ZYR2UschyTKfFGQb0+JgPA4QXV7lvyCN97TWONwCV8JxD3vu7O0rymH+MEjTNkVaMwT6WQyCqJDJJr0NMSNF8z9L6b27Icn+5CWadzJ9B+FjnU2JgtI3K3XDh/Axn5dW48=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=jPA7u0HU; arc=none smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="HcmDPXTj"
-Received: from forward102a.mail.yandex.net (forward102a.mail.yandex.net [IPv6:2a02:6b8:c0e:500:1:45:d181:d102])
-	by forward201a.mail.yandex.net (Yandex) with ESMTPS id 1D39583C87;
-	Fri, 12 Sep 2025 19:27:30 +0300 (MSK)
-Received: from mail-nwsmtp-smtp-production-main-85.iva.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-85.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:93:0:640:a6b9:0])
-	by forward102a.mail.yandex.net (Yandex) with ESMTPS id 12F29C0051;
-	Fri, 12 Sep 2025 19:27:22 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-85.iva.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id IRPNrLDM2Os0-SJ2475Cl;
-	Fri, 12 Sep 2025 19:27:21 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
-	s=mail; t=1757694441;
-	bh=PCaAlaWp8LVECg4JwoFxljnvY13wEesqETHXhJjF7wM=;
-	h=Message-ID:Date:Cc:Subject:To:From;
-	b=HcmDPXTj7mdMZ3aUvzzI6eG4675bsfXPe4+kXTqi7d1E5yqh3x4h0X4ajzB7+BpQs
-	 5SnRzPU7GTIhQduizKtM9GsUk7MHm0HDzjxMZ7WKxscEtw67ZubdwsSK0pxpaw/vXc
-	 s2HwUvJB1dTaiI06s0Qv7dbf5tHSgBvBk5OXvySA=
-Authentication-Results: mail-nwsmtp-smtp-production-main-85.iva.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
-From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Ahmet Sezgin Duran <ahmet@sezginduran.net>
-Subject: [PATCH] staging: sm750fb: rename camel case variable
-Date: Fri, 12 Sep 2025 16:26:27 +0000
-Message-ID: <20250912162627.95010-1-ahmet@sezginduran.net>
-X-Mailer: git-send-email 2.47.3
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="jPA7u0HU"
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58CGN66u023858;
+	Fri, 12 Sep 2025 17:00:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=corp-2025-04-25; bh=06+g7AZH7i0HwmSRN02FkXgDW1kLN
+	QkWhVc/5luFnrE=; b=jPA7u0HUzkA2DsqjNffEODqW6dHqUc1krdsGz8PkFjMam
+	smR/HLiMnfEYFJk22QKlE7k2eojA0JkTgeDKFJ0m5vA6yRCzciz+a+Kuub5sjwK1
+	/EwAzk58BFyCdHI5Bcxr1uUwKsSIFKMLl8TGqscSEbQRpcJPoKECW0Uo1Yz9ZWBv
+	qJcgW/Wgv3zrQ49V4lWpfTrjRjJKFgHgNuteM3nu33KnOcnzT09ceDaFlxg3q3RY
+	uyTA/CuHbHdguNLLbZOALr43ZHtWwi84nkHaZqSj4SkGs3cI815nFhU55rfE85Hi
+	lGO8kVbbsgAhEDPHl6ItX0kcBPO4gf3gR5jREDYQw==
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4921m30kac-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 12 Sep 2025 17:00:26 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 58CGga3K038836;
+	Fri, 12 Sep 2025 17:00:25 GMT
+Received: from ca-dev112.us.oracle.com (ca-dev112.us.oracle.com [10.129.136.47])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 490bde5atv-1;
+	Fri, 12 Sep 2025 17:00:25 +0000
+From: Samasth Norway Ananda <samasth.norway.ananda@oracle.com>
+To: simona@ffwll.ch, deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] fbcon: fix integer overflow in fbcon_do_set_font
+Date: Fri, 12 Sep 2025 10:00:23 -0700
+Message-ID: <20250912170023.3931881-1-samasth.norway.ananda@oracle.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -51,30 +52,70 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-12_06,2025-09-12_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 bulkscore=0 suspectscore=0
+ mlxlogscore=999 adultscore=0 spamscore=0 phishscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2508110000
+ definitions=main-2509120155
+X-Proofpoint-GUID: BD1hBxHGxIjYKS9kfTh7ahBaI79xRZcx
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA4MDE1MSBTYWx0ZWRfXxPZM6+vGXYFk
+ 71DDAgvmAE3Q52WR345M1UlMOsBn2R2sSRVmb9z9RJllL+6cj+mvINiFsA9gQ6fE+Oa7oIsOnlZ
+ MBalIiiW0VqeXM9Zto7DqQuUgEw0dM/0zRDd5KkqZEidCm2qnIze6u6eO75oshc3rQF5BROpE4t
+ 746IGE2+3lcBZhFDAa08ZeatHjOtiH3+Dn3sHyXLlePi2hhPT9ol9nP2N5vjLbKfAtIo66xpG0F
+ 3cc647UxmAwMSnXuKIITEeZJk9EpjoU5NU+exrTscZojAOaW5RliPovM7AaGmcDWRYvpmtqdeAo
+ eUpW8/nBWyekRSVh2dptwVE56badjOKwMbYpz/CpkrUwFKWv/9fVFkKd5QUUZWC4MMZ7uX5kwW5
+ sd/2YulY+Q7dUUhFzkfAvXypWnJY3g==
+X-Authority-Analysis: v=2.4 cv=Dp5W+H/+ c=1 sm=1 tr=0 ts=68c451aa b=1 cx=c_pps
+ a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
+ a=yJojWOMRYYMA:10 a=yPCof4ZbAAAA:8 a=gbwJbyMY3ZHlS5J_450A:9 cc=ntf
+ awl=host:12083
+X-Proofpoint-ORIG-GUID: BD1hBxHGxIjYKS9kfTh7ahBaI79xRZcx
 
-Rename regValue to reg_value to follow kernel coding style.
+Fix integer overflow vulnerabilities in fbcon_do_set_font() where font
+size calculations could overflow when handling user-controlled font
+parameters.
 
-Signed-off-by: Ahmet Sezgin Duran <ahmet@sezginduran.net>
+The vulnerabilities occur when:
+1. CALC_FONTSZ(h, pitch, charcount) performs h * pith * charcount
+   multiplication with user-controlled values that can overflow.
+2. FONT_EXTRA_WORDS * sizeof(int) + size addition can also overflow
+3. This results in smaller allocations than expected, leading to buffer
+   overflows during font data copying.
+
+Add explicit overflow checking using check_mul_overflow() and
+check_add_overflow() kernel helpers to safety validate all size
+calculations before allocation.
+
+Signed-off-by: Samasth Norway Ananda <samasth.norway.ananda@oracle.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 7ac2e7b6ea0f..b07c1aa68621 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -17,9 +17,9 @@
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 55f5731e94c3..a507d05f8fea 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2531,9 +2531,16 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+ 	if (fbcon_invalid_charcount(info, charcount))
+ 		return -EINVAL;
  
- #include "sm750.h"
- #include "sm750_accel.h"
--static inline void write_dpr(struct lynx_accel *accel, int offset, u32 regValue)
-+static inline void write_dpr(struct lynx_accel *accel, int offset, u32 reg_value)
- {
--	writel(regValue, accel->dpr_base + offset);
-+	writel(reg_value, accel->dpr_base + offset);
- }
+-	size = CALC_FONTSZ(h, pitch, charcount);
++	/* Check for integer overflow in font size calculation */
++	if (check_mul_overflow(h, pitch, &size) ||
++	    check_mul_overflow(size, charcount, &size))
++		return -EINVAL;
++
++	/* Check for overflow in allocation size calculation */
++	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &size))
++		return -EINVAL;
  
- static inline u32 read_dpr(struct lynx_accel *accel, int offset)
+-	new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size, GFP_USER);
++	new_data = kmalloc(size, GFP_USER);
+ 
+ 	if (!new_data)
+ 		return -ENOMEM;
 -- 
-2.47.3
+2.50.1
 

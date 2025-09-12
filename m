@@ -1,206 +1,258 @@
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazolkn19012056.outbound.protection.outlook.com [52.103.2.56])
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11021097.outbound.protection.outlook.com [52.101.65.97])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CEC3136351;
-	Fri, 12 Sep 2025 03:24:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.2.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80975134BD;
+	Fri, 12 Sep 2025 06:17:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.97
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757647499; cv=fail; b=tN7gvT9m5FqxXKzuErwB6oUDOz751XbQHKoUXlG+Sey3/fMfx/ex9vSs5eA8THJYxc3EOZfhk31eods3WqGy4fzNJPYiUrhshL3kidAUjSDWcgNnhw8w/kL9ckogrx7EHqa9Dw5RiI/CkDLFeKMXfQAm+MDKXoXh0rH0WMzvH5g=
+	t=1757657838; cv=fail; b=kYuHpDbZY3nHNtnSqnFxaXZe87O6KLPhGABe7GXoRqzd5h/PHXm7c+Flj0L2v2guxjYBdguHdJtpCh2Aj9ZdEFp0uj9f+gWUiJ5k/HF2lY7NKMlg1gtamsPu2tBQ3k8OTR2IK/d4eEYVaCqUM7IrwFP3b0btRxFLTW7YsdAJfOY=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757647499; c=relaxed/simple;
-	bh=pwiyOeEx0bYqH9pA+XlxYBa3q/aFBePwopg0jKcOUEo=;
-	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=OTVg65f1PDv74DGlhXdSUJsfEWdcCEahElxfZghb5x1aCoOTIE02A+dJiQGb7kVewW0uvIQX+1odIWAz3n34ugJWEwr9jmL/z6cIidRIr/+MYhO/EB4QtGl9AVlxdLpDNKhqvXmMZIAyrhECzwe9ExaRadbblMYGJLuso25sViQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=ZhZ3BlhW; arc=fail smtp.client-ip=52.103.2.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	s=arc-20240116; t=1757657838; c=relaxed/simple;
+	bh=E4XFrvV5tld89Ur/xQG7j5AauP/X6IQ5eYgwTtITc3w=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=uMVSl7wtmKZ6t5Swowa2rDTQGQfgoRVd74N+4lK5P5hAWGqRfINLQ19R0ZwY/a1g9YpjlNfidr3b5vbU9Zs71A/VfLJu5kzdzIYDO6/BTyPuoHAe2TRHc9wlgMioHVBOlt9VR2c+f6xp8fZwFB2lwGjOsPKgPmXJ/L76jwwkbkE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com; spf=pass smtp.mailfrom=gocontroll.com; dkim=pass (2048-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b=ONz/9qgc; arc=fail smtp.client-ip=52.101.65.97
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gocontroll.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="ZhZ3BlhW"
+	dkim=pass (2048-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b="ONz/9qgc"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BMCs9jGc+QClq1ecjTz1+iV4ZYtti4efyFmUAiVF0BW0ckWMng594INN/ftwciJ7UMluYORBX1bK+4n4Ty/FKuNdasYtvg0DUKosgSzDW/5NuKJRAH88KECECsUVO2LWuKbtZNKMYOpCmlxknKXA/yJP4IJPSsXzyg/U+mIyxFfaCMYkbvmfxXddmsCDPnB3l+eUrnjzXQyJNmp+tKKXku24xlgjC7LVH/BaB75RCo9QhhnA1W4v9aI5TyfjHI07fg7aA9dY3Jx+1isMgJ9dndffIH19pOHbRqPqEt2uUmnVNhzxqpUMWQ8xtbOsokDmrn97JNvx863mqfDXvE1IzQ==
+ b=C8v2pKW2W0jE5FyVzRVoE8VRMK5S8buiHsTbAV2drKNyCCU3cKB432VYUi1TEWy3bTo1h/oPvebl1EpMKZDS8DxNeMwdHgDnIJaEbD/1PjaQZTtmyo8k5SW0HFWRPHOTBhiJqTT5CxGRVgjU8rvXlRJ05VTwvPfMAUDpCjzgSrnNZ4D7i2TnMc/5Pcd2WJTiHWbZajlQtkcmQBY9sTg+0j8l9kQ61+OxbDlHhMNj3fdJNguRPyBzOx5/7RSHRmidirJoRehUaM+ZlcxD95d4G52ri+m/lTgdAEGHgiw5UZpkhaK+i/ZopZKsM9yXGV5fueE0uERhRCAf6z7PMvmDiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=pwiyOeEx0bYqH9pA+XlxYBa3q/aFBePwopg0jKcOUEo=;
- b=q9rYQ3KtyhBdK8hNdWWLaKokuBJh2kAks9viaolzZ4mjA1yK1XIlMXvdsovLhv3KPmmQYFu6hxDoW+1hiXnhsx6ufURPafGxVr1N9fVWBRtikBoEHytNscXRxSqmHrcc9sREMMNdUADKMDk5JNwzmxf0bqBMUeHoP6/FXzrPQ4196F6dfsewP6orgXHBbkw6fMVPyiH+iXbxvGrQwDd9pncKOajqbZRcsCSx8r8ok/5c42ggpo5neRNMO1BwyrTQD/AxnuRnPjlIfP+YlAImntdW3Wp42mKr5rJdOfBALqhBa2U3yv3pR8VcAHmWiEqde4+xoqStFwrZTYE3TYKEdQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
+ bh=kHoISVlm0y+BTh19FSqQcONOiluYUMMRpWfjIldVELI=;
+ b=eVnOZLvKLtU/FZjC+STiL6Pl04q3T4tefvXy80qlWrw2bAMxL5bMdkvEgLt1YsfOmRFIdzV1euoUSkXzJ8qPLllNqwD53bOmAnaO+0MsCX0Dj+CTz68H0/oGxNFu3N5Ov3+6F6FPYL9406z+FP1wmPfFLkyjTe0LiCl3uJ/pzxrrDsuD9QwSy7c7oIwsXI0sUCYQKqs+iPY57p1lahv/RMpuce8eaUyxIsfQHCEK2UzPoQIiOc/i95JK/KxSBIkdC78rbVdlUGP4Gar8lD2MK/7LigAa3MX6bZ2FvlcBOTlyIk5VImeegXHW/7NiTzuPDaTo5wW3iR57nLschaJDVA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=gocontroll.com; dmarc=pass action=none
+ header.from=gocontroll.com; dkim=pass header.d=gocontroll.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gocontrollcom.onmicrosoft.com; s=selector1-gocontrollcom-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=pwiyOeEx0bYqH9pA+XlxYBa3q/aFBePwopg0jKcOUEo=;
- b=ZhZ3BlhWmPqV3alqrFARVLdWFH9nckfxPTy8epRbD8EbScIFZLO6zzcTEztIapwoUG5CCc0ujGuizjlqxSDzBJ72k7lZqnNRHZh00nHHWCX7R3M9ztX33kakY3KltxNpi3cCI+ZTKn/wwnk02rCCUBvcxQYtSsTFXZBl9EiyNBCtR/0NQm3MoQOoDTpIqsMU6PVHNX7mmDPrFF2UceM7uY0B9AYV7F5f/06VJYxzwKPTO9BL+PccUAmOWHn9sIJUQu0+50ELMwkzNDpQtExfhBfmtT786z+zBGQWyx73ZTXClk8QWZZstOB5prBpzeGg567E/3Lyf3kDqXt4CMWaag==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by DM6PR02MB6841.namprd02.prod.outlook.com (2603:10b6:5:211::10) with
+ bh=kHoISVlm0y+BTh19FSqQcONOiluYUMMRpWfjIldVELI=;
+ b=ONz/9qgcj0GbLTcpAOYuPdFr58I5X4fHkwPmjN1GquG2gRPCOR5W/yVSyidcvkP4PW7lFKvPopEsfwSE3yHHm/j/6qxaYYRLD92568NDGpPFufmmdVdsSeW4PHPWPcGTch5WA06SuZESnourY/TvSLg/i1+aoOPjoTS+f6MoWnsNdWErwYjKlWW6IC693UQEWMyZUjTpg93Q6HrpufFfLSC0SuIR7Gh9zExrZnTlHD0TPzy1Rddo6rHCA23+pOmN38VZy8ESAFcLAXJkhvvaOL1QSYnZ9XSaqUh1DB54z+WpwHhfXNBz2YidQT8g0qlOTfRT2D7ljadivdf2IerqVQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=gocontroll.com;
+Received: from PA4PR04MB7630.eurprd04.prod.outlook.com (2603:10a6:102:ec::16)
+ by AS8PR04MB8008.eurprd04.prod.outlook.com (2603:10a6:20b:2a7::20) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Fri, 12 Sep
- 2025 03:24:55 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::cedd:1e64:8f61:b9df%3]) with mapi id 15.20.9094.021; Fri, 12 Sep 2025
- 03:24:55 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Prasanna Kumar T S M <ptsm@linux.microsoft.com>, Thomas Zimmermann
-	<tzimmermann@suse.de>, "deller@gmx.de" <deller@gmx.de>, "arnd@arndb.de"
-	<arnd@arndb.de>, "soci@c64.rulez.org" <soci@c64.rulez.org>,
-	"gonzalo.silvalde@gmail.com" <gonzalo.silvalde@gmail.com>,
-	"rdunlap@infradead.org" <rdunlap@infradead.org>,
-	"bartosz.golaszewski@linaro.org" <bartosz.golaszewski@linaro.org>,
-	"wei.liu@kernel.org" <wei.liu@kernel.org>, "ssengar@linux.microsoft.com"
-	<ssengar@linux.microsoft.com>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org"
-	<linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
-	<dri-devel@lists.freedesktop.org>
-Subject: RE: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
-Thread-Topic: [RFC 1/3] fbdev: hyperv_fb: Remove hyperv_fb driver
-Thread-Index: AQHcIasCn50A4HP2yUGHdjWciNX7b7SMKV0AgABbISCAAapbgIAAtPSg
-Date: Fri, 12 Sep 2025 03:24:55 +0000
-Message-ID:
- <SN6PR02MB41578C2984A84B4D0AA17943D408A@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <E2D7F2119CB4>
- <1757437112-2509-1-git-send-email-ptsm@linux.microsoft.com>
- <8a958fe8-fbba-4bd6-a79d-fd310f08f8d7@suse.de>
- <SN6PR02MB415755A10BD2C9D0E7F847FCD40EA@SN6PR02MB4157.namprd02.prod.outlook.com>
- <ccc6011c-d1bb-48b1-bf35-6fea1b1e8a49@linux.microsoft.com>
-In-Reply-To: <ccc6011c-d1bb-48b1-bf35-6fea1b1e8a49@linux.microsoft.com>
-Accept-Language: en-US
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9115.17; Fri, 12 Sep
+ 2025 06:17:11 +0000
+Received: from PA4PR04MB7630.eurprd04.prod.outlook.com
+ ([fe80::311b:ad3a:4a62:7b5f]) by PA4PR04MB7630.eurprd04.prod.outlook.com
+ ([fe80::311b:ad3a:4a62:7b5f%6]) with mapi id 15.20.9115.017; Fri, 12 Sep 2025
+ 06:17:11 +0000
+Message-ID: <3960b845-3838-4690-b01d-21e61ccfa8fd@gocontroll.com>
+Date: Fri, 12 Sep 2025 08:17:09 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/4] dt-bindings: backlight: Add max25014 bindingsy
+To: Frank Li <Frank.li@nxp.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, dri-devel@lists.freedesktop.org,
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+References: <20250911-max25014-v3-0-d03f4eba375e@gocontroll.com>
+ <20250911-max25014-v3-1-d03f4eba375e@gocontroll.com>
+ <aMLrrcBZ2Kc4o84t@lizhi-Precision-Tower-5810>
 Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|DM6PR02MB6841:EE_
-x-ms-office365-filtering-correlation-id: 5b74e0ab-0df6-4735-9358-08ddf1abf194
-x-microsoft-antispam:
- BCL:0;ARA:14566002|41001999006|8060799015|8062599012|13091999003|15080799012|19110799012|461199028|31061999003|10035399007|3412199025|440099028|40105399003|4302099013|102099032|1602099012;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?iHQPQVQt0iDKrZQnBERr8mvjQEckHGM3naJHObaIEWT1h83tTCJJL1pzdUsL?=
- =?us-ascii?Q?clTQmN02QyxjofFHWA7veS2Oc8ra/793tEpEPjzG262Ir2tqAFqsVnle6x+h?=
- =?us-ascii?Q?fUoPTSQctf7861dIC3JNig12CpAEnGaXwqrAwHIvRIakutJu7X4jD3W59ifP?=
- =?us-ascii?Q?hcEeLd0XZHnIg3vg3Y9sGyoph9U5iu235PMnHpnKgxBSDEO/MzLnQ313Rx1h?=
- =?us-ascii?Q?Z6wdOFTH7TfTWlf/ZEsjZ2nrrVA3aoCZA0wG66UktzR9EO5wOaaP5KHNvm/s?=
- =?us-ascii?Q?sIZTwQWJ1w1PFCl1o30TuTw3CT6NRWZ+3Xv8xeKsmiHg+f6+S1JNWgA15aM0?=
- =?us-ascii?Q?p6h2a9mcD+rX2LcgQA0ZRRveVqbHBPwugGcQkudc5KRMZU60u6fST2yUvexv?=
- =?us-ascii?Q?kc5LkqHipmT6+124ZbzAhNPuPMKgyip08QnJmtMYol7qMarThrcMrgk6FwTV?=
- =?us-ascii?Q?fvwKy98+KMDUA1GR0LHqThriMNpG7s0VnKOXjwcR3dXeWvIHekxiz127R82t?=
- =?us-ascii?Q?6qweeAYVMjtqqbx7sOgUkhqWOhq+mJyxdMkqYZyBYcGK3jmVdD6UPRTdDNYY?=
- =?us-ascii?Q?apHgLnYtcknseBnluCaLcXWL/wGtv2tD9pmt+Tze9icYcRb4wj5zN9nkjgn5?=
- =?us-ascii?Q?LCbv2LahMG9+raPloKTNQ0KO4SmeC8Z0Q6lGV5RNvDbT+jS6b/iMR5cKLt5M?=
- =?us-ascii?Q?/b7ycL5xYlA8prylax1seib1gwAKlZSNPv1HHvoa5nqdT1+dY44366fmjDEM?=
- =?us-ascii?Q?60Jsf4FiKjA27YNb6lfjc39jdhC6VVbBIzoCccZTHMwNLAfjt+CugyVctgOM?=
- =?us-ascii?Q?x6UYSrX217vA0+klrcNcpmg02BeLjmb9fZU26nBbDwCJzyp7nN3J9jhqhft6?=
- =?us-ascii?Q?BZ9H1TOj/VE5Hw8a1JlYdYIH290r8Ot809CMmNkZx9FDgIgZmG5sHvrmFsLq?=
- =?us-ascii?Q?vdAAVI9Vvqr+Tx2DeozP6/n0/vkYza1RpeA83WSZJ4bdpRvXAEMDNBy10aZ1?=
- =?us-ascii?Q?wEXaCJxntsD2GsbFX938qBKEF7VJALcL8p0dFuCDNK4IvvaYCSQU3l0U1FPJ?=
- =?us-ascii?Q?FFwa/amLTuGvlvcUMYHkfOE59DPabOHQkdGhg179vVdcC9ckXCJa5DgmJ6Zc?=
- =?us-ascii?Q?9kqUCOMiwLAx+EGz054YBGKvxj9n0DaRRnfG5LPIuSG74wQtGzZ7gOXOcvzC?=
- =?us-ascii?Q?+P7zbIIncqBqPqyrbu9bYtEuFLyHI+N8tKKa31VNHBc5+RZNfwDYrFRiJaGk?=
- =?us-ascii?Q?2omNFUDxFyvG1AGVqxL4qM9Uvhyi3Z8vbx0QkSMfFjSdJ78s0/v7xqe3rtyA?=
- =?us-ascii?Q?rlLndpIh4R1BG0nN0yEnuJxK0UujAB/QP6KQA38Q2V7bJw=3D=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?sXb4WgPFUHaxCmIDpSGr4QJa/q7zj3Tnzuj+Htz7+kOG60rYOMtsCH7s/Suv?=
- =?us-ascii?Q?/R5GeA6OFPI9/4cqa70Xo0/spQKGExn5kZEGKbZRTZifc28sCYxJ9yVnlCCm?=
- =?us-ascii?Q?lQYBad3wGXWO0IpGr7bYrL6OR8RksMV5azwejruk76fPXrpZbyAGy4GAYatY?=
- =?us-ascii?Q?BtklEXYnEd6+nd4/y3TLx676Kpr5iY0FrfiRIKhOSoaiRftJMh2VPQKmRdCZ?=
- =?us-ascii?Q?6g1cKJe7oao+uANLGJDEo12/9Vjejp5UQE2k5Ywar1dh6UWVx6jgF0M/6m/h?=
- =?us-ascii?Q?TtlTLk0HmgBDpwnixlZtfh2NOudaYhUlw7qR8cZ4mN49TvOL59scxbbkFop2?=
- =?us-ascii?Q?N5Xr7uV0gDz41AjT2usCOWqX8pBPp2W0bxizgd61HecekunCL2bSPezfEsJg?=
- =?us-ascii?Q?zPGcwwIGsiCSMar3weVoY+dL9u/BpBQgvOevhATEvC5E4CNtU3qnZHbc0JaE?=
- =?us-ascii?Q?Yo0tFcArcfuRd4aboorZdJxgv+9tZ+inZVkZ11aKcSrwJ7bh4nZqXksxAzEH?=
- =?us-ascii?Q?605d0TCcJfHsrucVTYsjOgG/qlD3fpZQXM5qgyCbN+ANIqPbDDiFzddf1w/n?=
- =?us-ascii?Q?Bf9XEIx48x7r1xFv9RUfJk//2tSM8CxW5DYkvGaMUVOcX6mJtDUrQTXx5AdY?=
- =?us-ascii?Q?OzJVzxH8VDVPgPE3viVlLe/4rJvOZkwIm89FSNPyD3sosw1ijpJV+5chJDdj?=
- =?us-ascii?Q?XdxKMny5eu8RdNosnTPq27Lv4LP82fdMxvCYbCrfxvHrfzNceQhFgQndxfuu?=
- =?us-ascii?Q?2bXdAP74P0DXQ2b++rfClMD3W567PQ71KD2TBhYOfLfnRN+jbp8YaruPgu5Y?=
- =?us-ascii?Q?nMVw4lPrOFSSR4YjvmcXgqCWWpW24VKF40aSrl+RF/11kZun5iNbP43HYyaa?=
- =?us-ascii?Q?3ZgcgMd7nttTRhI+f5dnjfIPahdjnjJ49ozfsOtRNIc6JpzsOC12joatp6co?=
- =?us-ascii?Q?O6DcTINRyoTVQJESSB7vMQOG0jnwYo+IdxZbPQR8Sq9NuZ1Kc8VZIb05ZS7W?=
- =?us-ascii?Q?p4BIxA/lX3p9r9D79iTfM0Y7dcAN046QdgjXtRX6TVOn45WFxQU2yH7SYJlr?=
- =?us-ascii?Q?LJzok8bS1SzD0rRA4cdMv8sXQU6jWqc41/DtA+kIX3JO6FTsuF4ggDwI+/xo?=
- =?us-ascii?Q?M4I1lrEJ05erSlzTbaaSD0U05EJmf4mXGwLaiFfy/I5MzasUYymIIEt51aTr?=
- =?us-ascii?Q?15KbiO59l0wWeWW02MRNafKEHdYiAmlCxjwZip6v2TGv9Z3Yps7mCP5bIdA?=
- =?us-ascii?Q?=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: Maud Spierings <maudspierings@gocontroll.com>
+In-Reply-To: <aMLrrcBZ2Kc4o84t@lizhi-Precision-Tower-5810>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: AM8P191CA0015.EURP191.PROD.OUTLOOK.COM
+ (2603:10a6:20b:21a::20) To PA4PR04MB7630.eurprd04.prod.outlook.com
+ (2603:10a6:102:ec::16)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PA4PR04MB7630:EE_|AS8PR04MB8008:EE_
+X-MS-Office365-Filtering-Correlation-Id: f303a714-b3a4-4e7f-7b88-08ddf1c40222
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|10070799003|7416014|376014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?Y3l6bFJWbU84cW1wQnFZejV3Z2ozRjgrMDU5RkUxaXg5dDJuNVgweU44VW9V?=
+ =?utf-8?B?dTkrNmpSZzhmU014anRsblNnWHFyNjVKcGtNTlhMeEZZZFU1Wm9Jb2ovVnds?=
+ =?utf-8?B?c0JHWkVZVU1wUkxsbDQ5VDB0YTlBd0REUHNpTUpHWEhjSHczVzBTZE0xaG9E?=
+ =?utf-8?B?Si9vZTVCMlRVYTJ6WG5DZUdsaDV6bnhWQlBuU2RISEttay9DNm1OeWJTNGhi?=
+ =?utf-8?B?R2d2bjJyRjhXL2xqWlRBcUNlckVhWWpKOGwwZ1lFRzJzK3A0NXdTMnZvRkJx?=
+ =?utf-8?B?cWlhSkRNZ3FXNDVOZGJjUnZkU0l5VDFZcDhnbzBaRjIyNDNReVJoS21rZFhV?=
+ =?utf-8?B?cEl2emt5SncwaEVnQWpWdUpKODMzc09Fc1ZsZ1FUa2dXVG9Xdy9ZOGVqWVlV?=
+ =?utf-8?B?cmtWaGtnY0d5YnM2UFJQOU5wYkJKaFY5WWU4bmMzQnlNNVNydXBFYzRjUW83?=
+ =?utf-8?B?bXQ1bTNYZkFPSnNhUkJoQ2FUQmJFVlR5bWFhWm5QSnVSY1lhUllQNzdMbHZu?=
+ =?utf-8?B?MkN5dVdpdmpaTTRpcVVmKzZocDczS2c3MSsvR2Z5TnpCbkNFU0Fxd2VFOXpn?=
+ =?utf-8?B?a2NVWHRjaFY0QktsWjV5dThONWRMcUdHM2NBOFVFL29CM05CZmJSSzB2MUdh?=
+ =?utf-8?B?aldQcGlhNUcvTUI2RGk0OTkreVY5Y1crMEQ0S3hYK1gxSmxqdWlVZS9MTWh3?=
+ =?utf-8?B?MzRkbWE3N0lJcWRRdGh4N0tVcEk0RDkwbmo1U3lhbDhFR2QrcHVYNVFoRDJT?=
+ =?utf-8?B?RnNoSzBGMUsyb2V5eWJ3MzB5bEd4WTBpZjNkWW80MWFEZit4azE0T1NtWVAz?=
+ =?utf-8?B?SWdTRlZqNFR5ZGNCc1dNNzdOQ0lwWHBWdEN5UmdLRmYwdUp3K082dktmYk1H?=
+ =?utf-8?B?blVPeEJCeWRJd0ZsNGNLZFEvTGVhMXFyMG82YkZrbUp1Y3BFSHdGRG81VjVB?=
+ =?utf-8?B?ZVdsZThsVWl3eUZ5ZFREQ0Zld01mYU8xWFVqOUNwNlZGT2FJelBzVGtHTFoz?=
+ =?utf-8?B?bVRtbDB1Y1h1dVgzNUgvbEhvZUxESWtHMzIrZGRXbE9HeGppd0dYU1cwai9Y?=
+ =?utf-8?B?OFJnbEJLSkZwaTRPb0dYMkUzcU5relZCc1hVRU40TUhKZTgwb01WTHk5ZFkv?=
+ =?utf-8?B?OEFnWHFGWCtiSi9xRndBK2UwazVjMGRSUUVacW5MYTEwQ0d1c0NmRFZMRlR0?=
+ =?utf-8?B?TGpXTkhVZWFFSjR1cU9oaVd1eVRtTElONm5kU1RKZ1M3RmwxS2xZLy9kbVJl?=
+ =?utf-8?B?MnRvZlRjV0lOa2V0VGQyQTQ0ZzBGR2pqWEtqQXZSZkZLbFhIVWlybXJVNFJp?=
+ =?utf-8?B?ODJmOHZHU3NKRnJXeVhwOUZLT01JMnVlUDZ0cDlPaFl2WlNUVEU5VlUrVjd0?=
+ =?utf-8?B?Qml6TXJUbTRFR2FmOEYrNmlkY2dLaFhaaXhTaC9pMHZWVUN0QjlMZXB3YkFF?=
+ =?utf-8?B?UWNzYlVJMHpoT1lJcnpsb05lR0RtaVJRSU5ZekVVUSsvY3RhN1lobk54TVkr?=
+ =?utf-8?B?dG5ZSUl1c1ZWUUtFbE1xNG4rMVVRQkxSZG9HNnlmZlB2NXdIWHhPSXlvVEto?=
+ =?utf-8?B?SDhhd0VDS1NRSEVLS2RNVEpKRFNJd1NhZXRDbnlyYjNIclo3TnVRQXU1NDFy?=
+ =?utf-8?B?bDk5dVl3NUdVY0JydVNJa2NDa1ZSSTBwN0FoeTdUOWpTQmIzdFdycUc4a0dD?=
+ =?utf-8?B?TW50UzVpOW1GenNpY3pMTkdsNXFzVFZKby9tMkJXS3ZwdWgwRE5sQXMxcnpz?=
+ =?utf-8?B?TzA5aStqMUxEdTFLOFRuM01DQzc2TFpRVy9MOEtVa1RndFZBa25DcVQ1RnVD?=
+ =?utf-8?Q?CunnHAe9IpUfOYWuwPfsFR3DqaOkX0xCJ4NLk=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA4PR04MB7630.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(7416014)(376014)(366016)(1800799024);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?NFdrOVkwNkFZcGpibGxBMVg4K0pUVHlHaUFKclIyRE84WFNSSWZXOThDenZM?=
+ =?utf-8?B?clBNbFJVYlFrNkNtWDE5WFJFeUhwZk1IaldUNWRKZGp4VXNJU1g4Wko2WDNP?=
+ =?utf-8?B?dWJtU0tyV0s5SGZYbW1OeVNJeVNGWHR3T2owZXBZKy9tUUJBMVNYWlNlMXZH?=
+ =?utf-8?B?aEpPNU1IK3BaR1pxblg1Vnc2aWE3NkdZWlFQa1JnbFpvRURqUERsbkNKQ1RP?=
+ =?utf-8?B?WEQ5V2ZsOThrZGp4QjlobkFMVi9oUzNEUmw4OE9lUlQxODRqWDRHZ0JqUTJD?=
+ =?utf-8?B?a3graXlCMGJNaCtCR2Z5dTViSFE0RURLbU1yZkVweTB5N1J6YlRrOHkxRStu?=
+ =?utf-8?B?blErRk81S0ZZSEV5dDlrTW1HTDNrOC9BS1l6ME5vVW9ob1I3TXFwZUVaSXh2?=
+ =?utf-8?B?WTBGdDV1QkkvUjJ0cGsxTkx2UTFPMm1aeG9CTTc0U2l4RzV5eFA4NWY3amxJ?=
+ =?utf-8?B?c0IvVGYybnpzVGFIenV5NXkzbkhmY0FqRS9jd0V5bjdHU3lVV1ErcDNQcGlL?=
+ =?utf-8?B?WGNIaWwwN2FaZW8zeEw0STdxUHgwd1FWZ1hram9OcE5TTDZGbDlrMW9rdkdi?=
+ =?utf-8?B?UlVjTnhCbDNPM3RmSWdIZFp3bzE5S1JsRjllWmFoaVJzNFFyN2xBQTRsSnJD?=
+ =?utf-8?B?K3dQYjhIRHFWTzZoUnFJM0hjMHEwRStyVDV1VjIzbThyUjhBU2tkYXJBbnoy?=
+ =?utf-8?B?L0U1M3dTWnNqc2pYUG1ud2NqSXpXQ3pYWWZ3UFhSZ2tMb3htMC9nOCsxVkZB?=
+ =?utf-8?B?eXhIMUx6eE9mVDN3aFhHODl0K3NobnhVRGk0V1FGdGZaYk5oaGN6d2VKcUpN?=
+ =?utf-8?B?N3JVTWUxMkJqOVBWalNmVlFoUExLYm54d3orckFJN2hXbDNWVmZDbG10MVZs?=
+ =?utf-8?B?Myt6NkNDbjlXUkZtM2dobmpndER3S2RJRkIvWHY5M0E3M1ViZW1DL0h4azRH?=
+ =?utf-8?B?SG9vbVpveWFraGNjMVY1c3E5amNUOFRoL1JLbXBXZkZ0NDBCcTFSdFVDOVlj?=
+ =?utf-8?B?d2FzcmFEZVF3RHhuN2JWZ1FPeExEcVFIaDQyeVFLYmdaUTk4QkFGMjROTnNX?=
+ =?utf-8?B?UUhHZldOSlNZUHh5djlodzFqN1dLbmVvcXBmcHl4V2psUngrRlM3OHNValFV?=
+ =?utf-8?B?dWxIdTh4QkhGRkQyRlp6VGRTa2w3VXN0dEsyK21JSERsVFRrUkF0enhuSjVY?=
+ =?utf-8?B?aEFYMTU2ZFJ2WEs3d3FwTUI4NU1kZjFxZXpuUCtYZ1loaW5mc3ZuNTdKdXcr?=
+ =?utf-8?B?NVd5S1BLUmYzdUkwSnRmaEQ5MmYxMXpmQUVOa1RIczNSNnczalFySVRWU01r?=
+ =?utf-8?B?NWJTWGhiczFscXh6MUMzVC9NUUNhaGFLbGZQVzlHZ3krR1JIdVZMc0hzbXJP?=
+ =?utf-8?B?K0Q0M0xkejRPQzY4dm1rZVRvbVpiOUNzd3hKd2laejNodXZGMDBQcXhENWxl?=
+ =?utf-8?B?UmlxNXM0S2N0UWM3UVFuUlR0RCsrTUxCeFdTVXpVVU9WQXNnbmRZdzZZWWxw?=
+ =?utf-8?B?Mk1FOUo0VlF5OXJPWXA4VTd6Z3Faa1dYNG5DVFVnY1lKdnJJZnJWTTA2elk3?=
+ =?utf-8?B?bjBSMzFKNXFjNGx4SWswWm0xcHEwNi8wekZXRXFabkdYRjAyMTIvREFuenZ5?=
+ =?utf-8?B?MlVubGhMWVcvSzJhcFNsckFIaURZSTZuYUE1bEdPZ3NTOW5zcW51Y0FWa2Fq?=
+ =?utf-8?B?UXc0SlNuWmRVNDZWeDgwQkpzYi9tTWhjZHo4Um9aMm5zODRhdFJLYjYxK1NM?=
+ =?utf-8?B?eXQzMkRFZUFvTVJBMlFPeXJwa1ZBbGtKNzJWM2tOcXVLV0czb2tkbFhIaFUz?=
+ =?utf-8?B?Z1d5T05JNmJic2JqWU4xdkF5azA1WnRjT1FZaHJ1N2FZWXVMaytwMlI1alF4?=
+ =?utf-8?B?RzdpQlpibnN0Q1ZJNHY2UFJxb01KNndZc205bXp3cUVXRUNsQ0pUckZZbmhK?=
+ =?utf-8?B?cEp2RExqTk9xaEt4VG9tYzN4eEt1MmtTMnptTkJ3ckJTRXh3VFdOZGpEMEJo?=
+ =?utf-8?B?cFE5NmFmb0RkWnJRc0pnc0lEMjN6VDFGSElBamFsVnNIV0F2MVBsVEdqRm53?=
+ =?utf-8?B?SmF0QzliWDhiT2MrK2VMMlF0Qy95T3Jnak9EcjdsZHRSaGx3UHpvL1FUbGp0?=
+ =?utf-8?B?VGxFakNzY2hSMzdkK2txK1Mra3F6eVNRSVpKdU5jM01OUGxkRERqZUptamhB?=
+ =?utf-8?B?V2RyaWFDZXVERWRDZHkyWG9uODF6TVd6aEFQQmtzb0hURWkzNWd0S0k1eGNh?=
+ =?utf-8?B?N2tZbjlzQmFjMUN5cXpHM25nNUxRPT0=?=
+X-OriginatorOrg: gocontroll.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f303a714-b3a4-4e7f-7b88-08ddf1c40222
+X-MS-Exchange-CrossTenant-AuthSource: PA4PR04MB7630.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5b74e0ab-0df6-4735-9358-08ddf1abf194
-X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Sep 2025 03:24:55.0789
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Sep 2025 06:17:11.0372
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR02MB6841
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4c8512ff-bac0-4d26-919a-ee6a4cecfc9d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ytZER8S0guSueur5QRj99YkGRp0U/y6UepklbEXWE42m6myZP+QBDQiIN8c+OHN1Zm1lezpUcvB1onj3PvfGHbxcYmRTJJ5A7vSCeWhchKE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8008
 
-From: Prasanna Kumar T S M <ptsm@linux.microsoft.com> Sent: Thursday, Septe=
-mber 11, 2025 9:28 AM
->=20
-> Hi Michael,
->=20
-> On 10-09-2025 20:55, Michael Kelley wrote:
-> > From: Thomas Zimmermann <tzimmermann@suse.de> Sent: Wednesday, Septembe=
-r
-> 10, 2025 2:36 AM
-> >>
-> >> Hi
-> >>
-> >> Am 09.09.25 um 18:58 schrieb Prasanna Kumar T S M:
-> >>> The Hyper-V DRM driver is available since kernel version 5.14 and
-> >>> provides full KMS support along with fbdev emulation via the DRM fbde=
-v
-> >>> helpers. This makes the hyperv_fb driver redundant, remove it.
-> >>
-> >> I'm all for removing obsolete drivers. But hyperv_drm likely first nee=
-ds
-> >> to merge the patch at
-> >> https://lore.kernel.org/dri-devel/20250904145806.430568-5-tzimmermann@=
-suse.de/
-> >> It's been tested and works well. If maintainers from Microsoft have a
-> >> look at the patch first, we could possibly land it fairly soon.
-> >
-> > Thomas --
-> >
-> > My testing of your v3 patch series for vblank timers ended up getting a
-> > WARN_ON after about 3 days of usage. See [1]. So I don't think it's 100=
-%
-> > ready yet.
-> >
-> > But I agree we need your synthetic vblank timer support to address the
-> > Hyper-V DRM driver performance issue, before removing the Hyper-V
-> > fbdev driver. (See [2] for a description of the performance issue.)
-> >
-> > Second, isn't it customary to mark a driver as deprecated for a period
-> > of time, before removing it entirely? I don't see any documentation
-> > on the deprecation process, but I've seen it done in other cases. If yo=
-u
-> > grep through all the kernel Kconfig files, you'll see entries tagged wi=
-th
-> > DEPRECATED. Also the driver should be updated to output a deprecated
-> > message when it loads.
->=20
-> Is deprecating the driver a mandatory step?
->=20
+Hi Frank,
+Thanks for the review.
 
-I'm not aware of a mandatory requirement, at least not in the sense
-of it being documented in Documentation/process like other aspects
-of the Linux kernel development process. So I would say it's up to
-the Maintainers for Hyper-V and FBDEV as to whether the Hyper-V
-FB driver should go through a deprecation phase before being
-removed.
+On 9/11/25 17:33, Frank Li wrote:
+> On Thu, Sep 11, 2025 at 09:53:18AM +0200, Maud Spierings via B4 Relay wrote:
+>> From: Maud Spierings <maudspierings@gocontroll.com>
+>>
+>> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+>> with integrated boost controller.
+>>
+>> Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
+>> ---
+>>   .../bindings/leds/backlight/maxim,max25014.yaml    | 81 ++++++++++++++++++++++
+>>   MAINTAINERS                                        |  5 ++
+>>   2 files changed, 86 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+>> new file mode 100644
+>> index 0000000000000000000000000000000000000000..e113a2ad16aa74f982b9c2ea80578aed2d9424fe
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+>> @@ -0,0 +1,81 @@
+>> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Maxim max25014 backlight controller
+>> +
+>> +maintainers:
+>> +  - Maud Spierings <maudspierings@gocontroll.com>
+>> +
+>> +allOf:
+>> +  - $ref: common.yaml#
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - maxim,max25014
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  enable-gpios:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  power-supply:
+>> +    description: Regulator which controls the boost converter input rail.
+>> +
+>> +  pwms:
+>> +    maxItems: 1
+>> +
+>> +  maxim,iset:
+>> +    $ref: /schemas/types.yaml#/definitions/uint32
+>> +    maximum: 15
+>> +    default: 11
+>> +    description:
+>> +      Value of the ISET register field. This controls the current scale of the
+>> +      outputs, a higher number means more current.
+> 
+> Use standard unit. Do not use register value directly.
 
-Of course, the purpose of the deprecation phase is to be "nice"
-to users of the driver by giving them some warning that it is going
-away. That gives them an opportunity to raise objections, and/or
-to do any necessary migration to the replacement driver. I suspect
-there aren't many (or any?) users of Hyper-V FB that can't just move
-to the Hyper-V DRM driver, but who knows. We might be surprised.
+It is unfortunately not just a value in Amps, it depends on the hardware 
+design. There is a kind of "default" table with a 49.9K resistor, but 
+depending on that resistor the current is different.
 
-Michael
+>> +
+>> +  maxim,strings:
+>> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+>> +    description:
+>> +      A 4-bit bitfield that describes which led strings to turn on.
+>> +    minItems: 4
+>> +    maxItems: 4
+>> +    items:
+>> +      maximum: 1
+> 
+> led should have standard interface.
+> 
+> check  Documentation/devicetree/bindings/leds/common.yaml
+
+Thanks I will investigate, that may indeed be a better abstraction.
+
+Kind regards,
+Maud
+

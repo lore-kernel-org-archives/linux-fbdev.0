@@ -1,132 +1,86 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 51810302CB2;
-	Fri, 12 Sep 2025 18:10:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from mail-il1-f199.google.com (mail-il1-f199.google.com [209.85.166.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57A9826D4D4
+	for <linux-fbdev@vger.kernel.org>; Fri, 12 Sep 2025 21:33:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757700609; cv=none; b=JxqUS9OQDGgaAyDAAMKec8QM684ZH6xZQwlJnymGck3XTl4lCq6qylYrbvG0jxl+EF6LL/BYS9BQi8VCPovP3V2DomvnuD/n4q1yYJRl9l/41AiPZ1nQuLCa8LlQ6DZkVTRTFUuBhm51kS4MPcR0m97ZZBW9DLY1ah/972CM0pE=
+	t=1757712818; cv=none; b=OVWqmPKo9+Rw2nzkuyvlatvETHPxIgw4Y6FS65Ut5lZuoQO9BwQrbnNWd9+uEikWCHvndpHJAaFJU9dK1mymMWkRaSer6usj6DOf3Ptbxm0kBsfNoJm2ukDZwBD1fZQ7MGevbENYnOJMQcw+6JHFrTSaGupxUUsUUmYd62rvMSg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757700609; c=relaxed/simple;
-	bh=yPJqLt8S5WWM4BObvCnuZSDbc1t/tgpd5gl4wkceEGg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X3c+crgGM9/fJ1XVtzaq2C74CVkrhehomByFYYJ3536xoME/bMOoI+eCfaFN+QpLEeXimyjuMh1mHTFgsWFMP0cunydtYHzj6hzrZoeg6QfcYcDom9jPyqzvP0axGR48m3M6LnNbhmhdWwc3I8hVBhZEFcjUksr1tpZ8m7qj9EM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=LQ3BgZpe; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="LQ3BgZpe"
-Received: from [192.168.0.88] (192-184-212-33.fiber.dynamic.sonic.net [192.184.212.33])
-	by linux.microsoft.com (Postfix) with ESMTPSA id ED2B42119CBF;
-	Fri, 12 Sep 2025 11:10:00 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com ED2B42119CBF
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1757700602;
-	bh=HXYJgEfXFwo/OPKrYhrveFvpXwC44rrX+LkCZApziY4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LQ3BgZpeMJGwjTLRudlWpMa8SX8RO+j/34vsQaL4PkTvTkI/qkWK/wElTFG4ma7bq
-	 8NM3LoJh5HhkcNK+KwwYAoh01/HqKWzw8IdRL8lUGd7y0lqldMU83UUu/URfbdFHiD
-	 X8LZ8UBwGVc2sHYIuNq4iAAYSpEmzqL/34I8VDGk=
-Message-ID: <a8c8305c-b518-c840-fc64-50bcba302725@linux.microsoft.com>
-Date: Fri, 12 Sep 2025 11:10:00 -0700
+	s=arc-20240116; t=1757712818; c=relaxed/simple;
+	bh=HnmzlyxjR6rrvKe11Aj9jBd2UJxbBPPj8iol5QCFONo=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=ALiTY5SwWPwvXLXcCpDtOUp9hak1PWUViOhh5oYS6reymmtssM0tDn9DQT6FpVApH20n3uIiyytHRL/J8JQfLqPXUZoJp6SaAT2O0sNvwrxKc0K5238gjlkBOv8oxyBBW92vWzIhPUorKfC2z9rmSwqKM+TojH0vnASBBOfv1Ek=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-il1-f199.google.com with SMTP id e9e14a558f8ab-406d2dab9b0so34267875ab.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 12 Sep 2025 14:33:37 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757712816; x=1758317616;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=LXO5mkFCL4ZX0NuJtYajf8x5HrQRd3rVt9ZYSd4TZdU=;
+        b=ZF/5ypu8cMPCrWukrF+mUeEGQVRJLAQrd+wMatqRny9ou2+TVI5IUOFizyAuhCPGSo
+         C6PPA+nCZNE5h8vLoSxLQH5KyuiD8IUzdynB1pmrvd3GLMCRGk8FXRe4CGq/7KWQ8qK+
+         e4BiNBp8ExfHHgKpXrtsxGOF0H52A7iIzGzN/noSk5pw5NWeiWPqUrFcHPr4qwPuqyqT
+         VaFmOfiRDj7lRoYhXwkKzKQzIeZrEYn0L0ZV+3f9gwwh72dJy6K5JbHgrDuJWJmmPOw4
+         4GhiRS7VyYluLOngklFiDZ5fgwBOzhxvcB5Ea5SClvn7iTgB/WxvPuFjVCy+jnaMZ36i
+         bNsQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVimvraIXzZY8CfNr11Z3e72yKGh9KCroAyFQrJVCbV/lk95qXeLb7QYaHF84vP3gG7S2i+6WsZEoSoYw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxv5+VubaqNAdPRIc6ocKJTFRhdXbcvMZovZVdMYAYvlSkLYw27
+	Mw4Wp+6quzdUA1VnqzjkjELDHRh68BAjYP4GLcHH49B8s9aTwf+tHAcNTfsueWmVa3czWc4c/9B
+	LhxS6d58gaYgdzUSW66K7ub5BIkf8wdU9DuVfzh2lZXSsnokHflcyiTrw8kY=
+X-Google-Smtp-Source: AGHT+IEJ0MQ3LWqpsXMgBd/aLzM5ImfP69r2HA2KIQl7mSRqFOCMb4uN8AY54+NtaLOAQuIWrn4OEN17ioWWA7OqecGTlENNxkR8
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.1
-Subject: Re: [PATCH v1 2/2] Drivers: hv: Make CONFIG_HYPERV bool
-Content-Language: en-US
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-input@vger.kernel.org, linux-hyperv@vger.kernel.org,
- netdev@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-arch@vger.kernel.org, virtualization@lists.linux.dev,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org, tzimmermann@suse.de,
- airlied@gmail.com, simona@ffwll.ch, jikos@kernel.org, bentiss@kernel.org,
- kys@microsoft.com, haiyangz@microsoft.com, wei.liu@kernel.org,
- decui@microsoft.com, dmitry.torokhov@gmail.com, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, bhelgaas@google.com,
- James.Bottomley@hansenpartnership.com, martin.petersen@oracle.com,
- deller@gmx.de, arnd@arndb.de, sgarzare@redhat.com, horms@kernel.org
-References: <20250906010952.2145389-1-mrathor@linux.microsoft.com>
- <20250906010952.2145389-3-mrathor@linux.microsoft.com>
- <2025090621-rumble-cost-2c0d@gregkh>
- <d7d7b23f-eaea-2dbc-9c9d-4bee082f6fe7@linux.microsoft.com>
- <2025091253-overwrite-carol-b197@gregkh>
-From: Mukesh R <mrathor@linux.microsoft.com>
-In-Reply-To: <2025091253-overwrite-carol-b197@gregkh>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Received: by 2002:a05:6e02:1fee:b0:405:59ba:4ef0 with SMTP id
+ e9e14a558f8ab-4209e463015mr67657245ab.8.1757712816477; Fri, 12 Sep 2025
+ 14:33:36 -0700 (PDT)
+Date: Fri, 12 Sep 2025 14:33:36 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <68c491b0.050a0220.2ff435.0364.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (Sep 2025)
+From: syzbot <syzbot+list5c6629998bf2c39e2dfc@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On 9/12/25 04:43, Greg KH wrote:
-> On Mon, Sep 08, 2025 at 02:01:34PM -0700, Mukesh R wrote:
->> On 9/6/25 04:36, Greg KH wrote:
->>> On Fri, Sep 05, 2025 at 06:09:52PM -0700, Mukesh Rathor wrote:
->>>> With CONFIG_HYPERV and CONFIG_HYPERV_VMBUS separated, change CONFIG_HYPERV
->>>> to bool from tristate. CONFIG_HYPERV now becomes the core Hyper-V
->>>> hypervisor support, such as hypercalls, clocks/timers, Confidential
->>>> Computing setup, PCI passthru, etc. that doesn't involve VMBus or VMBus
->>>> devices.
->>>
->>> But why are you making it so that this can not be a module anymore?  You
->>> are now forcing ALL Linux distro users to always have this code in their
->>> system, despite not ever using the feature.  That feels like a waste to
->>> me.
->>>
->>> What is preventing this from staying as a module?  Why must you always
->>> have this code loaded at all times for everyone?
->>
->> This is currently not a module. I assume it was at the beginning. In
->> drivers/Makefile today:
->>
->> obj-$(subst m,y,$(CONFIG_HYPERV))       += hv/
->>
->>
->> More context: CONFIG_HYPERV doesn't really reflect one module. It is
->> both for kernel built in code and building of stuff in drivers/hv.
->>
->> drivers/hv then builds 4 modules:
->>
->> obj-$(CONFIG_HYPERV)            += hv_vmbus.o
->> obj-$(CONFIG_HYPERV_UTILS)      += hv_utils.o
->> obj-$(CONFIG_HYPERV_BALLOON)    += hv_balloon.o
->> obj-$(CONFIG_MSHV_ROOT)         += mshv_root.o
->>
->> Notice vmbus is using CONFIG_HYPERV because there is no 
->> CONFIG_HYPERV_VMBUS. We are trying to fix that here.
-> 
-> This series does not apply to my tree:
-> 
-> checking file drivers/gpu/drm/Kconfig
-> checking file drivers/hid/Kconfig
-> checking file drivers/hv/Kconfig
-> Hunk #2 FAILED at 82.
-> 1 out of 2 hunks FAILED
-> checking file drivers/hv/Makefile
-> checking file drivers/input/serio/Kconfig
-> checking file drivers/net/hyperv/Kconfig
-> checking file drivers/pci/Kconfig
-> checking file drivers/scsi/Kconfig
-> checking file drivers/uio/Kconfig
-> checking file drivers/video/fbdev/Kconfig
-> checking file include/asm-generic/mshyperv.h
-> Hunk #1 succeeded at 162 with fuzz 2 (offset -3 lines).
-> Hunk #2 succeeded at 198 (offset -3 lines).
-> Hunk #3 succeeded at 215 (offset -3 lines).
-> checking file net/vmw_vsock/Kconfig
-> 
-> What was it made against?
-> 
+Hello fbdev maintainers/developers,
 
-Sorry to hear that. It was built against hyper-next, but perhaps I 
-accidentally used our internal mirror. Let me rebase and send V2
-right away.
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-Thanks,
--Mukesh
+During the period, 2 new issues were detected and 0 were fixed.
+In total, 6 issues are still open and 27 have already been fixed.
 
+Some of the still happening issues:
 
+Ref Crashes Repro Title
+<1> 345     Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<2> 201     No    KASAN: vmalloc-out-of-bounds Write in imageblit (5)
+                  https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
+<3> 65      No    KASAN: vmalloc-out-of-bounds Write in fillrect
+                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+<4> 44      Yes   KASAN: global-out-of-bounds Read in bit_putcs (3)
+                  https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
 
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
+
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

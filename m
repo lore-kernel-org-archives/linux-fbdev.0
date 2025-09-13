@@ -1,86 +1,106 @@
-Received: from mail-il1-f199.google.com (mail-il1-f199.google.com [209.85.166.199])
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57A9826D4D4
-	for <linux-fbdev@vger.kernel.org>; Fri, 12 Sep 2025 21:33:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F8AD1F63D9
+	for <linux-fbdev@vger.kernel.org>; Sat, 13 Sep 2025 20:42:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757712818; cv=none; b=OVWqmPKo9+Rw2nzkuyvlatvETHPxIgw4Y6FS65Ut5lZuoQO9BwQrbnNWd9+uEikWCHvndpHJAaFJU9dK1mymMWkRaSer6usj6DOf3Ptbxm0kBsfNoJm2ukDZwBD1fZQ7MGevbENYnOJMQcw+6JHFrTSaGupxUUsUUmYd62rvMSg=
+	t=1757796139; cv=none; b=R3BTAwI+AZJFvDHjpw9VRDqzGLK8F0OwLDAMIytnNWTn78Bg/r3oqf3pC+DI7VdI4XQGtJR8s9LEcOtkBbLEiFwW3M908+uo5IZufnB+O1o1os7NzvKHWBLioH2kS9Qm1kfyvzU9rTW5qsx9d1+OYZ2e4O+eiUFvebC4FG3Iv8s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757712818; c=relaxed/simple;
-	bh=HnmzlyxjR6rrvKe11Aj9jBd2UJxbBPPj8iol5QCFONo=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=ALiTY5SwWPwvXLXcCpDtOUp9hak1PWUViOhh5oYS6reymmtssM0tDn9DQT6FpVApH20n3uIiyytHRL/J8JQfLqPXUZoJp6SaAT2O0sNvwrxKc0K5238gjlkBOv8oxyBBW92vWzIhPUorKfC2z9rmSwqKM+TojH0vnASBBOfv1Ek=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-il1-f199.google.com with SMTP id e9e14a558f8ab-406d2dab9b0so34267875ab.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 12 Sep 2025 14:33:37 -0700 (PDT)
+	s=arc-20240116; t=1757796139; c=relaxed/simple;
+	bh=/P/qxo+yyhtCd2WG67Ww2v62Ig3zgNGIDT8HLN0TCu0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ut8OpN0zQvoKOu0+8KIW3wbaN2KART3tu59ywrmHenw3UDsA5eBT0Yyk2YWUhrEwhBIw+OkF95LoxnHANtM/f7fcf/yIWCqYKAVIqrSeXWaG2jY7MHAbreAnTWPd8QzeOWMHb74xMNySUmcSt9cjFnf4UxZd+nmdliq22z38Il4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HC1xCqiD; arc=none smtp.client-ip=209.85.221.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HC1xCqiD"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-3e9c5faa858so71546f8f.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 13 Sep 2025 13:42:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757796136; x=1758400936; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=R+lV53uizaZ+F2RLP0bqdZS+lXR7ayYbIemsvFkoydw=;
+        b=HC1xCqiDsq/nkeyjy2UYQ/V6p1+8KmjFTZFtjIq3HX9PqcxX8Jf+fetCBMJEcogR3s
+         vTYPT+lPmsQW+lDYnPy1y4ttm33u4cRcr271XIzTn1u/9FpmMrHISFbqcKTNJMquNWee
+         bPB09BjJY44nUWnbNrlGmqCXwftnriiLbPDlyOTT0YUDDoW6Ku77YA6M5KL3gI7hr+B1
+         lLojeFq1E9L+Zhi5wedwxRHC7UMzs+xpcYq5OccvtBT6ddhdL0uY61tHJC3An7wTs76b
+         iq0d7OUhVUcFYZrh6Oyk0HXk8XStPP0WMkKEc9iuEPSq/fA+fX681R0EQojKcko7zstT
+         Ol1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757712816; x=1758317616;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=LXO5mkFCL4ZX0NuJtYajf8x5HrQRd3rVt9ZYSd4TZdU=;
-        b=ZF/5ypu8cMPCrWukrF+mUeEGQVRJLAQrd+wMatqRny9ou2+TVI5IUOFizyAuhCPGSo
-         C6PPA+nCZNE5h8vLoSxLQH5KyuiD8IUzdynB1pmrvd3GLMCRGk8FXRe4CGq/7KWQ8qK+
-         e4BiNBp8ExfHHgKpXrtsxGOF0H52A7iIzGzN/noSk5pw5NWeiWPqUrFcHPr4qwPuqyqT
-         VaFmOfiRDj7lRoYhXwkKzKQzIeZrEYn0L0ZV+3f9gwwh72dJy6K5JbHgrDuJWJmmPOw4
-         4GhiRS7VyYluLOngklFiDZ5fgwBOzhxvcB5Ea5SClvn7iTgB/WxvPuFjVCy+jnaMZ36i
-         bNsQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVimvraIXzZY8CfNr11Z3e72yKGh9KCroAyFQrJVCbV/lk95qXeLb7QYaHF84vP3gG7S2i+6WsZEoSoYw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxv5+VubaqNAdPRIc6ocKJTFRhdXbcvMZovZVdMYAYvlSkLYw27
-	Mw4Wp+6quzdUA1VnqzjkjELDHRh68BAjYP4GLcHH49B8s9aTwf+tHAcNTfsueWmVa3czWc4c/9B
-	LhxS6d58gaYgdzUSW66K7ub5BIkf8wdU9DuVfzh2lZXSsnokHflcyiTrw8kY=
-X-Google-Smtp-Source: AGHT+IEJ0MQ3LWqpsXMgBd/aLzM5ImfP69r2HA2KIQl7mSRqFOCMb4uN8AY54+NtaLOAQuIWrn4OEN17ioWWA7OqecGTlENNxkR8
+        d=1e100.net; s=20230601; t=1757796136; x=1758400936;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=R+lV53uizaZ+F2RLP0bqdZS+lXR7ayYbIemsvFkoydw=;
+        b=kGJAkVhDEdjedIE82GNYr7HGSjbzGidFX8c5QMFTIALLDoLb93mVFSrPieCg86OPlM
+         7fOA/biVWeRrxsMe45h4KdRQKNenoCfX/AOEVzqF1rqZomPQBsjlLUdY1+1SrL7vtV5n
+         RZaRXEkDkqS2rcLSCuX6bwgHeNsUi5ypXC44BuU+jkXB83z48rc2mEpfOmivqqjyHSbS
+         TTqBN3MR+RBS7WLU/VqlzoqcA31E+zVpb1PZci7dU5p3Bot0WnPaG5EF3iE6/4pnJj7O
+         lX+08YRCm4fw3eAOaZVdO70iOxvqB5GndRw8sDYntscGEmAa1cq7rknaTQgaQtyfP1f2
+         bcmg==
+X-Forwarded-Encrypted: i=1; AJvYcCUH9Wxj5VS2MKWSdT79kN+ERwCQJPskkTcwJio3GHKnIbiRLhW+XdcbjpQgp/kEUULOLboj/5Icyr903Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywh7vif1CJvJceB4o1d0MgPTyGLLj8tqArJQWYZ7C2S1xFYjR3j
+	vohZWU+Qn1MEKXAAZkqSstXpA5bDw7Wrs+zQSfc2nPSfANOa7GhXjIbM3nCGKwzWbAQ=
+X-Gm-Gg: ASbGncvNMpUmVnmS5Niyhk4vdgKqQo/Doe00WZ1bGzaF4L2TccLiLhv7O+KCgPHE7TN
+	17g2/tQWAIURqAn2ZWfaX+R/9NU0Yz9LhEwGRCPOZD9rnNz4moYPCW6eNzwdoA3WwF3IIuXVPL5
+	RwscUK7Z80o6EBtPexhZFc5Z9TBHygiTfW5vQ025mkTx5o5TbbdrBPZet2dS+dBqnjx6eE1Ovus
+	pyVeq7uvxcIc3wZfh7hMDUmjAuR9ttlMynixcttt5LWe6ueXbQWo7l7p+4tGIAxmn+PCVtz3nsj
+	o4piXrotczqf5RN7nNWk3e2bsZncI4I3MoI8KyKfuplc6hsdjdTM3hR8jHt/2WiyyqpjXG3QS3E
+	ph/Gzd/hz96a5aKz/5gBoefwIV5kaR3I4s2/o8QDWhln3QZifZyr16nLBNAUJo2BatGxk8V1NDa
+	r0sFylnTJGhwkRgf8iIg==
+X-Google-Smtp-Source: AGHT+IH0uXG2lGFiqqlltX/cdJclGu6EeCpbeRw9akH3b1yiw6P/wxLThUCO3KVM56ssT1Ub693z0w==
+X-Received: by 2002:a05:6000:1a86:b0:3e1:3b1c:2c13 with SMTP id ffacd0b85a97d-3e765a172f2mr5973449f8f.59.1757796135508;
+        Sat, 13 Sep 2025 13:42:15 -0700 (PDT)
+Received: from localhost (86-42-187-225-dynamic.agg2.cty.lmk-pgs.eircom.net. [86.42.187.225])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3e91b2519d9sm2144423f8f.22.2025.09.13.13.42.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 13 Sep 2025 13:42:14 -0700 (PDT)
+From: Shay Power <shaythomaspower@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: andy@kernel.org,
+	linux-fbdev@vger.kernel.org,
+	Shay Power <shaythomaspower@gmail.com>
+Subject: [PATCH] staging: fbtft/fb_ra8875: replace udelay with usleep_range
+Date: Sat, 13 Sep 2025 21:41:10 +0100
+Message-ID: <20250913204110.24980-1-shaythomaspower@gmail.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6e02:1fee:b0:405:59ba:4ef0 with SMTP id
- e9e14a558f8ab-4209e463015mr67657245ab.8.1757712816477; Fri, 12 Sep 2025
- 14:33:36 -0700 (PDT)
-Date: Fri, 12 Sep 2025 14:33:36 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <68c491b0.050a0220.2ff435.0364.GAE@google.com>
-Subject: [syzbot] Monthly fbdev report (Sep 2025)
-From: syzbot <syzbot+list5c6629998bf2c39e2dfc@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hello fbdev maintainers/developers,
-
-This is a 31-day syzbot report for the fbdev subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/fbdev
-
-During the period, 2 new issues were detected and 0 were fixed.
-In total, 6 issues are still open and 27 have already been fixed.
-
-Some of the still happening issues:
-
-Ref Crashes Repro Title
-<1> 345     Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
-                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
-<2> 201     No    KASAN: vmalloc-out-of-bounds Write in imageblit (5)
-                  https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
-<3> 65      No    KASAN: vmalloc-out-of-bounds Write in fillrect
-                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
-<4> 44      Yes   KASAN: global-out-of-bounds Read in bit_putcs (3)
-                  https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
-
+Signed-off-by: Shay Power <shaythomaspower@gmail.com>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/staging/fbtft/fb_ra8875.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
+diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
+index 0ab1de6647d0..edd467c6bf1a 100644
+--- a/drivers/staging/fbtft/fb_ra8875.c
++++ b/drivers/staging/fbtft/fb_ra8875.c
+@@ -210,7 +210,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+ 	}
+ 	len--;
+ 
+-	udelay(100);
++	usleep_range(100, 150);
+ 
+ 	if (len) {
+ 		buf = (u8 *)par->buf;
+@@ -231,7 +231,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+ 
+ 	/* restore user spi-speed */
+ 	par->fbtftops.write = fbtft_write_spi;
+-	udelay(100);
++	usleep_range(100, 150);
+ }
+ 
+ static int write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+-- 
+2.50.1
 
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.

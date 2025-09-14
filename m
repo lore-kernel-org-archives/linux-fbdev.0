@@ -1,124 +1,92 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 717AE1FDD;
-	Sun, 14 Sep 2025 00:10:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C467155A4E
+	for <linux-fbdev@vger.kernel.org>; Sun, 14 Sep 2025 13:17:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757808638; cv=none; b=g4RoblqF0X6u8HSOdS7DE9kQK3h9glUR+i+oXcP6SQw7Nwq1H2xJ4uFe6FGod3mixR2Gu9iYsZpb5CE9TUhAzycWBPlPYcPJRhsfVM92KRRQCaurQdybExo3lFIThxD0gDTnPO/ZbeymHFzchu78iG6qDNCdIJ6xKz3ywJ7xLPg=
+	t=1757855835; cv=none; b=ZP2GLfode6FTJsnGtK8KIqu5dvjexSKB3+YfgZIekldTm1awCxomG5EDV8XfXlmp/o1sRybvV7WLJxhfc9nOQC+xQl3V6897oC6FGNky4MWnEpZcBpzE9SDFwm1zHx1yAFD/iVjC/Vgv7vdNsfyYF5JRi1xwkNxDKA/keJJkYhI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757808638; c=relaxed/simple;
-	bh=W9ZIOfyNi/P8gcrhWZeTBJmG0AG5kAWmh7vlYZSE3kc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aNNG6w/3iPKR64TF2oMFaWMYRVnIsnv9RX6YtU2LoLuDDlViTrABdYnLjJkJpWTe5PjxzgDXdHTbMutDQAV9kld2GEEm3oQ2b1GnQ3ELoUjiDNL2q/8VB0DecasR7ozLbh0n7FPOn0HtjYy3A65Z/jilOWFN32JkPVO2WRcWbDo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XDCYYgsH; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1757855835; c=relaxed/simple;
+	bh=4IJzghTZyFk+V7nl6fQn98vKJnXu9hEQAbqGTMr55Og=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=I/xYWuFPQKO6FEauD+GgPFSP1KKusRswOj+aFBkjNmxVc7fWte4wUAMn73PW7YZy4B/FFWQQlaeJUmkEzorauYZMzYepgPwmHNHmrq9wqQUjbOtXoQu6lY3rhdFxU5Fb3xVM0gxtvM9vAVGyvXgiFQyCPtS/rUHkN09StQMmbzQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eNVFUZ02; arc=none smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XDCYYgsH"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1757808636; x=1789344636;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=W9ZIOfyNi/P8gcrhWZeTBJmG0AG5kAWmh7vlYZSE3kc=;
-  b=XDCYYgsHttml7NPirvTJ70Y8KGDGpaatDcd6RnbrXCKoB9hm3qJd+UpJ
-   larnMLHHbQFB6zaSMaWVa7SnZYnZdR2SkCCC2brDsM2KE39ziZCxl7YUn
-   EaFqsOBkWRR/D0Kv4kW7pvbVmSFgP8lO5UChDLPfW/UaUEFHGevgLUwO7
-   MHHFFdBofQjAGM5mHAiI7CRfWJjv4twAcDsgiD+y4xH/4gprRzbe0coG/
-   oiHF32pfTOAeRhvkBLYeZGITcSkqNEqwswzV0Mb3dvhUXJ9ORNoe09YEf
-   vQ2WnDy00bDILSjgl/MRJAfQqwMA1kEiMnRrETfkOsh8yT6lkpy47jrX+
-   A==;
-X-CSE-ConnectionGUID: IjOysGdoTiiab47TmL3GqQ==
-X-CSE-MsgGUID: eZ84ADbzT32lCDcTPSS2bw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11552"; a="59805803"
-X-IronPort-AV: E=Sophos;i="6.18,262,1751266800"; 
-   d="scan'208";a="59805803"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Sep 2025 17:10:36 -0700
-X-CSE-ConnectionGUID: cQy8dHMTQbid9or6wsK6Ig==
-X-CSE-MsgGUID: NCueaxNrTeaxkfiIFBYUyA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,262,1751266800"; 
-   d="scan'208";a="174749576"
-Received: from lkp-server02.sh.intel.com (HELO eb5fdfb2a9b7) ([10.239.97.151])
-  by fmviesa009.fm.intel.com with ESMTP; 13 Sep 2025 17:10:34 -0700
-Received: from kbuild by eb5fdfb2a9b7 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uxaK8-0001xw-0a;
-	Sun, 14 Sep 2025 00:10:32 +0000
-Date: Sun, 14 Sep 2025 08:10:31 +0800
-From: kernel test robot <lkp@intel.com>
-To: Shay Power <shaythomaspower@gmail.com>, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, andy@kernel.org,
-	linux-fbdev@vger.kernel.org, Shay Power <shaythomaspower@gmail.com>
-Subject: Re: [PATCH] staging: fbtft/fbtft-bus: remove empty macro argument
-Message-ID: <202509140751.ZWyZhali-lkp@intel.com>
-References: <20250913210600.36986-1-shaythomaspower@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eNVFUZ02"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-b04271cfc3eso423560866b.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 14 Sep 2025 06:17:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757855832; x=1758460632; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VMvCzG2QohEMnNbVfOkDiJ2slh71CG2iSq4/6TwPDRY=;
+        b=eNVFUZ023qOvwSPxEYP1hQu7C2nF8+9zjQUldquGucEAqzQomr6AgrX/zDfCq5mCb2
+         ekwlR3hyJOh37T/haVyfpDY+Da7rjvjtd9EBV13aDF9NvPJG7wauyiMS4nj0ytfjpDqI
+         PDy+iSorZjbYB7opSx2xmEt1CymbwOeRa5EVEq8aXj6nYn6IBiRj5R1gTWUcPOy14kLY
+         Ly1WdAfWoUhWOr+VxDo2zXFn0mgmS3ycYOmzuFW8SfhUtyoAkDRV//wdcXoqXe5KB4o8
+         hpN08t7b3BckEV1llpqexzS7pm4wNiDAZKLSiJQAmG1fBgxcieXS/QBCIRrIzhV7xcIG
+         IixQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757855832; x=1758460632;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VMvCzG2QohEMnNbVfOkDiJ2slh71CG2iSq4/6TwPDRY=;
+        b=IdDIT4NnHj+qSZDdYR+qTX+N/K1CT83uZgQ5GisI1EM2H5SL57oACteU3RCWqRvRES
+         v6RkMpiQ4SInOAWys28t4jotfCfrq0lBS94Fx4yPry5ALKndx1Vob7SSK1vItn9QEorn
+         JuWKZuH6EwJzRbegvTx17vdHyQJdFH+k5PfyJ3MlvZCd6nfO7v+thwX7MEi33y0EokNY
+         89RzOzC6b7PsLzjMySelEi6zTkJJR1ZjTFEZ5nZkSrXVHMGK8pve51MRsC+02c/NgtpJ
+         Wuw+NcLMuhkUdVY2f2EDfSQpvFpLzO5UDY6qKfFjpZ9gT6HDxGblBPfOsQBXaACB2RN2
+         5mxg==
+X-Forwarded-Encrypted: i=1; AJvYcCWaF+QG0CTeBnk/33rmWgZ75himnOvLJghzpQcrWJfyKPf7/HtAJY7kgC841m5dA6ObFXheMIMXnzkcJA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLcx4QMHofGXMauclVouqQPzPjNzJYzqQ325iTPmUn8SX1xFlg
+	k2v7ZZf2eLMZ22Ctwrrdl49gigU5S5S2Vzj5GjzMfBu8PM2pqYxP1OH9nqjy153cQ7evTGnVUBS
+	i7zSUUD4kKp0M/4n0NWiGyr9OyU3qvt2qZNulGqU=
+X-Gm-Gg: ASbGncvSdD8PPITA40rAxdGigfLNf9HGu8LPaC+0HuxAFmKjwV4u/mTdlQVQBmxbY8b
+	kFpdICyHsCj/uDH/Rcz1tSyGGNP5HNuMEgwjmZhsrk40EGY2n/AyeQG8p4ksZ4GLbhHrS3fxAJn
+	tI9/7WtI9qD2VM08pR8+gYPGuuWOVHZiyk+JfjcOJoDgkil66xwmt8uAIzWlC7VM1dfKApfRleS
+	ZnrfRU=
+X-Google-Smtp-Source: AGHT+IGQWCxR2Gac4xPiL8D9KgXgiGtd7tFcnyGpphGq+VIE+n1JrTdBZSMFUWqAi5ICISdmwA3yCJQTbDVPKdRiYZ4=
+X-Received: by 2002:a17:907:1b1d:b0:b04:2edd:280b with SMTP id
+ a640c23a62f3a-b07c37e1907mr843954466b.39.1757855832412; Sun, 14 Sep 2025
+ 06:17:12 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250913210600.36986-1-shaythomaspower@gmail.com>
+References: <20250913204110.24980-1-shaythomaspower@gmail.com>
+In-Reply-To: <20250913204110.24980-1-shaythomaspower@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Sun, 14 Sep 2025 16:16:34 +0300
+X-Gm-Features: Ac12FXxzo44Yh92_XgEzXec_KthqwpOATtacfY4xJGWidLeF3FTQ72dLqmHLyew
+Message-ID: <CAHp75VeBq4rR0kqhFF=koN-Za_RdhWbzN0W7MHF4LWORsn1WAA@mail.gmail.com>
+Subject: Re: [PATCH] staging: fbtft/fb_ra8875: replace udelay with usleep_range
+To: Shay Power <shaythomaspower@gmail.com>
+Cc: linux-kernel@vger.kernel.org, andy@kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Shay,
+On Sat, Sep 13, 2025 at 11:42=E2=80=AFPM Shay Power <shaythomaspower@gmail.=
+com> wrote:
 
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on staging/staging-testing]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Shay-Power/staging-fbtft-fbtft-bus-remove-empty-macro-argument/20250914-050734
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20250913210600.36986-1-shaythomaspower%40gmail.com
-patch subject: [PATCH] staging: fbtft/fbtft-bus: remove empty macro argument
-config: arc-randconfig-002-20250914 (https://download.01.org/0day-ci/archive/20250914/202509140751.ZWyZhali-lkp@intel.com/config)
-compiler: arc-linux-gcc (GCC) 10.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250914/202509140751.ZWyZhali-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202509140751.ZWyZhali-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> drivers/staging/fbtft/fbtft-bus.c:65:53: error: macro "define_fbtft_write_reg" requires 4 arguments, but only 3 given
-      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-         |                                                     ^
-   drivers/staging/fbtft/fbtft-bus.c:14: note: macro "define_fbtft_write_reg" defined here
-      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-         | 
->> drivers/staging/fbtft/fbtft-bus.c:65:23: error: expected ';' before 'void'
-      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-         |                       ^
-         |                       ;
-   drivers/staging/fbtft/fbtft-bus.c:67:57: error: macro "define_fbtft_write_reg" requires 4 arguments, but only 3 given
-      67 | define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
-         |                                                         ^
-   drivers/staging/fbtft/fbtft-bus.c:14: note: macro "define_fbtft_write_reg" defined here
-      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-         | 
-   drivers/staging/fbtft/fbtft-bus.c:67:23: error: expected ';' before 'void'
-      67 | define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
-         |                       ^
-         |                       ;
-      68 | 
-      69 | void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
-         | ~~~~                   
+You must provide a commit message explaining "why?".
 
 
-vim +/define_fbtft_write_reg +65 drivers/staging/fbtft/fbtft-bus.c
+...
 
-    64	
-  > 65	define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-    66	define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
-    67	define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
-    68	
+> -       udelay(100);
+> +       usleep_range(100, 150);
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+In both cases this, besides not using fsleep(), moves from atomic to
+sleepable context. This is the must to be explained in the commit
+message as this is the main point of the change AFAICS.
+
+--=20
+With Best Regards,
+Andy Shevchenko

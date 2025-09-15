@@ -1,417 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f206.google.com (mail-il1-f206.google.com [209.85.166.206])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F0CB2163B2;
-	Mon, 15 Sep 2025 15:31:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D49C9230BD5
+	for <linux-fbdev@vger.kernel.org>; Mon, 15 Sep 2025 15:59:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.206
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757950289; cv=none; b=JARMgi0jsd6Bw2sM5N27syO1UUL/wvPwzHL2yylemLnrcb4gG7S5F3vsJFJrtrLflpPABr+qAXPWiMWduXAGU7O7v7ecPTFiY5sjsFIspxsfGXlAD5ja4uPIq6p4+F05rG61z/3Lwh042Kw8YtAqysx0Je6PCj8kQydXakgltlw=
+	t=1757951973; cv=none; b=UkxKzneY5nkWHeYVOavYBGsGoIBo+djWFD60cpIKf8nGriiwHItVUIAsWnc5YsZvpXY3AWOuy+G8v7su3fWyRlKmu7h4tqN9KXtk6mgcmebnNk89mAGG2LcQDark0HZPxkdmDc1T3gJP/z/qzRqftBLWPOE+3UqjpzlHsczWA8U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757950289; c=relaxed/simple;
-	bh=/6SecB83u1v8w/NbyVqyqydDInMYYCThfcOa2FnQ6dk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OSeEndVjYfg7oAnPOlm5a02hHievicrO0BAVBYG+fGxudxCvJyvo8uc9FaXwHFRQxBaJeVn0dAvNDvKLpcOuGh4mxDzK43gp3eGZUlUB6qM84kfMb8juHoYXUxR/lR22A3sVLgljRJY0x+HKWgYf57iegNtj+1ZYeiuuEqfnfk0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sRw248T3; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sRw248T3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4703FC4CEF1;
-	Mon, 15 Sep 2025 15:31:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757950288;
-	bh=/6SecB83u1v8w/NbyVqyqydDInMYYCThfcOa2FnQ6dk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sRw248T3ndMFtl9dkaIozkjq9+OmsUtoXeVS/2ViJJiXXInmF5mPwvsyRfaVouLcj
-	 f1X4JoOzw7bIrGbtMpjh5nBEPQsIsEpwmymSBr3Qm9czUkA/15sgX2t/EggAHq04QX
-	 9AxYPUCYnKwFfcldSgS/czdTR6YAWPs6vao5OxpzHVnkt9KLOpd/DQp+RSHUDwXJOY
-	 ZeKGjhT+agUSQftAsF1U4MMkuCAx2d/e8F3oyiqf6JKv1M/FFALi8/BP77h+/Fwnz2
-	 u7U6Im+cXlrJ6glAFs8lfFcG1NO6UVhKHO6crDZ5LQ2qCn6Nzax30/Lj4fOlIjyhcd
-	 3sPyjKuu/cqPg==
-Date: Mon, 15 Sep 2025 16:31:22 +0100
-From: Daniel Thompson <danielt@kernel.org>
-To: maudspierings@gocontroll.com
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	MaudSpieringsmaudspierings@gocontroll.com
-Subject: Re: [PATCH v3 2/4] backlight: add max25014atg backlight
-Message-ID: <aMgxSokzn9Y9tyAs@aspen.lan>
-References: <20250911-max25014-v3-0-d03f4eba375e@gocontroll.com>
- <20250911-max25014-v3-2-d03f4eba375e@gocontroll.com>
+	s=arc-20240116; t=1757951973; c=relaxed/simple;
+	bh=kNVFWUkmNC1lBlh4H8LMAsxRtlfWdqS6hF8okKMOvRQ=;
+	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:
+	 Content-Type; b=Ut6SzqHZbkX5sVIoeFVRPFxncaMZA3+udh7+yYiKPK74CPYv9Vd3Tx22TQY8/1HhdviDsBRz1+qruGjdYscL1xVmLfePxdq8anLxYT/rltcYCBFbWRr6Jpihv8KJa9tTAIgVLUTJ53jVskXJL5cH7W8wgO/Beyk3lGznNgd7pWE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.206
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-il1-f206.google.com with SMTP id e9e14a558f8ab-42351e83862so78219865ab.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Sep 2025 08:59:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757951971; x=1758556771;
+        h=to:from:subject:message-id:in-reply-to:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=cEEppNHulk6/a4mav9kdAfWGQ62YPb0YxchlxpDlJvY=;
+        b=ZhOReAewWqUrK01gEdPycD0NSfJIsCtlCx+RU1SwI3qQDdQjyJ1mhLBdbU8xnEa1NG
+         0gCWbgSBug1UqZBuoNH/mqfcknx7UgxeETRQDQNAZ2MREen1UxKQ3kAadZ5/F4gIV64v
+         pd/GHNr+wUvX1CqsM2OHzvCGI5KE9/sQEykA3OUpPEOO4XXzNIRVxYCtwl0PVCDcFfcC
+         jP10iDqu2qtgRK4L8VSc8mIS1+uYij5QNSo2LaFREExx2DMTD2cwNUHgzQ4kBqRncXXe
+         gVz/eC1mLlXtIFqijeRpGjq0jTA1Xbnz157C+ZMK2EvZnBsHNwLHUZdfEg01qwhdQ2hk
+         pDkQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXYIhNIxT+XEZSFxz9vQ04zofS7KM9FJyuTjDQfe37lvAQQUfNLtzRWSrmxk/lje71TdIoOzoyNJ7n0uQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwNWQ+0WDXP//Wr2BhHv8pRq/ukRlGGUUHJkCpPTXZVsiA8qWgH
+	RuY7X3cyuriYJMWdk3hcQMuZESDNY+/Q1Ppu/YhH0tf4Ffre+xHYmYEgJImntH7rEcPJBkHiNpJ
+	YaE2HhgzAH8lce9dla6PN3utvvJecT3ky4dxdOeWtyMMjqjx2rCZhExClLVI=
+X-Google-Smtp-Source: AGHT+IHfCiWzh1x3f5wDLNXu2i83Btmx14JdBi4AdfR7fkuznpeJOZ3EkL8T9mqZwcuFuM/FjqXf4sDMXqPZnsQ3X2HEx3Z+EAqY
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250911-max25014-v3-2-d03f4eba375e@gocontroll.com>
+X-Received: by 2002:a92:c248:0:b0:424:866:ec6d with SMTP id
+ e9e14a558f8ab-4240866edffmr24886355ab.12.1757951970963; Mon, 15 Sep 2025
+ 08:59:30 -0700 (PDT)
+Date: Mon, 15 Sep 2025 08:59:30 -0700
+In-Reply-To: <68bf2c3f.050a0220.192772.0884.GAE@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <68c837e2.050a0220.2ff435.039c.GAE@google.com>
+Subject: Re: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in imageblit (5)
+From: syzbot <syzbot+48b0652a95834717f190@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
+	soci@c64.rulez.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Sep 11, 2025 at 09:53:19AM +0200, Maud Spierings via B4 Relay wrote:
-> diff --git a/drivers/video/backlight/max25014.c b/drivers/video/backlight/max25014.c
-> new file mode 100644
-> index 0000000000000000000000000000000000000000..f4ca79dfc39ccb04702e6114c35a5863f80b8853
-> --- /dev/null
-> +++ b/drivers/video/backlight/max25014.c
-> @@ -0,0 +1,394 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Backlight driver for Maxim MAX25014
-> + *
-> + * Copyright (C) 2025 GOcontroll B.V.
-> + * Author: Maud Spierings <maudspierings@gocontroll.com>
-> + */
-> +
-> +#include <linux/backlight.h>
-> +#include <linux/gpio/consumer.h>
-> +#include <linux/i2c.h>
-> +#include <linux/regmap.h>
-> +#include <linux/slab.h>
-> +
-> +#define MAX25014_ISET_DEFAULT_100 11
-> +#define MAX_BRIGHTNESS            100
-> +#define MIN_BRIGHTNESS            0
-> +#define TON_MAX                   130720 /* @153Hz */
-> +#define TON_STEP                  1307 /* @153Hz */
-> +#define TON_MIN                   0
-> +
-> +#define MAX25014_DEV_ID           0x00
-> +#define MAX25014_REV_ID           0x01
-> +#define MAX25014_ISET             0x02
-> +#define MAX25014_IMODE            0x03
-> +#define MAX25014_TON1H            0x04
-> +#define MAX25014_TON1L            0x05
-> +#define MAX25014_TON2H            0x06
-> +#define MAX25014_TON2L            0x07
-> +#define MAX25014_TON3H            0x08
-> +#define MAX25014_TON3L            0x09
-> +#define MAX25014_TON4H            0x0A
-> +#define MAX25014_TON4L            0x0B
-> +#define MAX25014_TON_1_4_LSB      0x0C
-> +#define MAX25014_SETTING          0x12
-> +#define MAX25014_DISABLE          0x13
-> +#define MAX25014_BSTMON           0x14
-> +#define MAX25014_IOUT1            0x15
-> +#define MAX25014_IOUT2            0x16
-> +#define MAX25014_IOUT3            0x17
-> +#define MAX25014_IOUT4            0x18
-> +#define MAX25014_OPEN             0x1B
-> +#define MAX25014_SHORT_GND        0x1C
-> +#define MAX25014_SHORT_LED        0x1D
-> +#define MAX25014_MASK             0x1E
-> +#define MAX25014_DIAG             0x1F
-> +
-> +#define MAX25014_IMODE_HDIM       BIT(2)
-> +#define MAX25014_ISET_ENABLE      BIT(5)
-> +#define MAX25014_ISET_PSEN        BIT(4)
-> +#define MAX25014_DIAG_HW_RST      BIT(2)
-> +#define MAX25014_SETTING_FPWM     GENMASK(6, 4)
-> +
-> +struct max25014 {
-> +	struct i2c_client *client;
-> +	struct backlight_device *bl;
-> +	struct regmap *regmap;
-> +	struct gpio_desc *enable;
-> +	struct regulator *vin; /* regulator for boost converter Vin rail */
-> +	uint32_t iset;
-> +	uint8_t strings_mask;
-> +};
-> +
-> +static const struct regmap_config max25014_regmap_config = {
-> +	.reg_bits = 8,
-> +	.val_bits = 8,
-> +	.max_register = MAX25014_DIAG,
-> +};
-> +
-> +/**
-> + * @brief control the brightness with i2c registers
-> + *
-> + * @param regmap trivial
-> + * @param brt brightness
-> + * @return int
-> + */
-> +static int max25014_register_control(struct regmap *regmap, uint32_t brt)
-> +{
-> +	uint32_t reg = TON_STEP * brt;
-> +	int ret;
-> +	/*
-> +	 * 18 bit number lowest, 2 bits in first register,
-> +	 * next lowest 8 in the L register, next 8 in the H register
-> +	 * Seemingly setting the strength of only one string controls all of
-> +	 * them, individual settings don't affect the outcome.
-> +	 */
-> +
-> +	ret = regmap_write(regmap, MAX25014_TON_1_4_LSB, reg & 0b00000011);
-> +	if (ret != 0)
-> +		return ret;
-> +	ret = regmap_write(regmap, MAX25014_TON1L, (reg >> 2) & 0b11111111);
-> +	if (ret != 0)
-> +		return ret;
-> +	return regmap_write(regmap, MAX25014_TON1H, (reg >> 10) & 0b11111111);
-> +}
-> +
-> +static int max25014_check_errors(struct max25014 *maxim)
-> +{
-> +	uint8_t i;
-> +	int ret;
-> +	uint32_t val;
-> +
-> +	ret = regmap_read(maxim->regmap, MAX25014_OPEN, &val);
-> +	if (ret != 0)
-> +		return ret;
-> +	if (val > 0) {
-> +		dev_err(&maxim->client->dev, "Open led strings detected on:\n");
-> +		for (i = 0; i < 4; i++) {
-> +			if (val & 1 << i)
-> +				dev_err(&maxim->client->dev, "string %d\n", i + 1);
-> +		}
-> +		return -EIO;
-> +	}
-> +
-> +	ret = regmap_read(maxim->regmap, MAX25014_SHORT_GND, &val);
-> +	if (ret != 0)
-> +		return ret;
-> +	if (val > 0) {
-> +		dev_err(&maxim->client->dev, "Short to ground detected on:\n");
-> +		for (i = 0; i < 4; i++) {
-> +			if (val & 1 << i)
-> +				dev_err(&maxim->client->dev, "string %d\n", i + 1);
-> +		}
-> +		return -EIO;
-> +	}
-> +
-> +	ret = regmap_read(maxim->regmap, MAX25014_SHORT_GND, &val);
-> +	if (ret != 0)
-> +		return ret;
-> +	if (val > 0) {
-> +		dev_err(&maxim->client->dev, "Shorted led detected on:\n");
-> +		for (i = 0; i < 4; i++) {
-> +			if (val & 1 << i)
-> +				dev_err(&maxim->client->dev, "string %d\n", i + 1);
-> +		}
-> +		return -EIO;
-> +	}
-> +
-> +	ret = regmap_read(maxim->regmap, MAX25014_DIAG, &val);
-> +	if (ret != 0)
-> +		return ret;
-> +	/*
-> +	 * The HW_RST bit always starts at 1 after power up.
-> +	 * It is reset on first read, does not indicate an error.
-> +	 */
-> +	if (val > 0 && val != MAX25014_DIAG_HW_RST) {
-> +		if (val & 0b1)
-> +			dev_err(&maxim->client->dev, "Overtemperature shutdown\n");
-> +		if (val & 0b10)
-> +			dev_warn(&maxim->client->dev,
-> +				 "Chip is getting too hot (>125C)\n");
+syzbot has found a reproducer for the following issue on:
 
-The dev_warn() looks a bit odd here. Even through the hardware is alive
-the drive reacts to this warning by refusing to probe.
+HEAD commit:    f83ec76bf285 Linux 6.17-rc6
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=13e5f934580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=8f01d8629880e620
+dashboard link: https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
+compiler:       gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14097b62580000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=17a9bb12580000
 
-That problem means this should be dev_err() like all the other issues
-here.
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/d900f083ada3/non_bootable_disk-f83ec76b.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/bdedf70f8797/vmlinux-f83ec76b.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/5bf9318d9242/bzImage-f83ec76b.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
+
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
+Write of size 8 at addr ffffc900051b1000 by task syz.0.17/6126
+
+CPU: 2 UID: 0 PID: 6126 Comm: syz.0.17 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2~bpo12+1 04/01/2014
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:378 [inline]
+ print_report+0xcd/0x630 mm/kasan/report.c:482
+ kasan_report+0xe0/0x110 mm/kasan/report.c:595
+ fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+ fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
+ fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
+ fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
+ sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
+ drm_fbdev_shmem_defio_imageblit+0x20/0x130 drivers/gpu/drm/drm_fbdev_shmem.c:38
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:138 [inline]
+ bit_putcs+0x90f/0xde0 drivers/video/fbdev/core/bitblit.c:187
+ fbcon_putcs+0x384/0x4a0 drivers/video/fbdev/core/fbcon.c:1327
+ do_update_region+0x2e6/0x3f0 drivers/tty/vt/vt.c:627
+ invert_screen+0x1e4/0x590 drivers/tty/vt/vt.c:748
+ highlight drivers/tty/vt/selection.c:57 [inline]
+ clear_selection drivers/tty/vt/selection.c:87 [inline]
+ clear_selection+0x59/0x70 drivers/tty/vt/selection.c:83
+ vc_do_resize+0xd9b/0x10e0 drivers/tty/vt/vt.c:1195
+ vc_resize include/linux/vt_kern.h:49 [inline]
+ fbcon_set_disp+0x7ad/0xe50 drivers/video/fbdev/core/fbcon.c:1430
+ con2fb_init_display drivers/video/fbdev/core/fbcon.c:828 [inline]
+ set_con2fb_map+0x703/0x1080 drivers/video/fbdev/core/fbcon.c:902
+ fbcon_set_con2fb_map_ioctl+0x16c/0x220 drivers/video/fbdev/core/fbcon.c:3132
+ do_fb_ioctl+0x328/0x7e0 drivers/video/fbdev/core/fb_chrdev.c:138
+ fb_ioctl+0xe5/0x150 drivers/video/fbdev/core/fb_chrdev.c:169
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:598 [inline]
+ __se_sys_ioctl fs/ioctl.c:584 [inline]
+ __x64_sys_ioctl+0x18b/0x210 fs/ioctl.c:584
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0x4e0 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f8e73d8eba9
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffc51d189d8 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00007f8e73fd5fa0 RCX: 00007f8e73d8eba9
+RDX: 0000200000000180 RSI: 0000000000004610 RDI: 0000000000000004
+RBP: 00007f8e73e11e19 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007f8e73fd5fa0 R14: 00007f8e73fd5fa0 R15: 0000000000000003
+ </TASK>
+
+The buggy address belongs to a 0-page vmalloc region starting at 0xffffc90004eb1000 allocated at drm_gem_shmem_vmap_locked+0x561/0x7e0 drivers/gpu/drm/drm_gem_shmem_helper.c:371
+Memory state around the buggy address:
+ ffffc900051b0f00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffffc900051b0f80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffffc900051b1000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                   ^
+ ffffc900051b1080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc900051b1100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
 
 
-> +		if (val & 0b1000)
-> +			dev_err(&maxim->client->dev, "Boost converter overvoltage\n");
-> +		if (val & 0b10000)
-> +			dev_err(&maxim->client->dev, "Boost converter undervoltage\n");
-> +		if (val & 0b100000)
-> +			dev_err(&maxim->client->dev, "IREF out of range\n");
-> +		return -EIO;
-> +	}
-> +	return 0;
-> +}
-> +
-> +/*
-> + * 1. disable unused strings
-> + * 2. set dim mode
-> + * 3. set initial brightness
-> + * 4. set setting register
-> + * 5. enable the backlight
-> + */
-> +static int max25014_configure(struct max25014 *maxim, uint32_t initial_brightness)
-> +{
-> +	int ret;
-> +	uint32_t val;
-> +
-> +	ret = regmap_write(maxim->regmap, MAX25014_DISABLE,
-> +			   maxim->strings_mask);
-> +	if (ret != 0)
-> +		return ret;
-> +
-> +	ret = regmap_write(maxim->regmap, MAX25014_IMODE, MAX25014_IMODE_HDIM);
-> +	if (ret != 0)
-> +		return ret;
-> +
-> +	max25014_register_control(maxim->regmap,
-> +				  initial_brightness);
-> +
-> +	ret = regmap_read(maxim->regmap, MAX25014_SETTING, &val);
-> +	if (ret != 0)
-> +		return ret;
-> +
-> +	ret = regmap_write(
-> +		maxim->regmap, MAX25014_SETTING,
-> +		val & ~MAX25014_SETTING_FPWM);
-> +	if (ret != 0)
-> +		return ret;
-> +
-> +	ret = regmap_write(maxim->regmap, MAX25014_ISET,
-> +			   maxim->iset | MAX25014_ISET_ENABLE | MAX25014_ISET_PSEN);
-> +	return ret;
-> +}
-> +
-> +static int max25014_update_status(struct backlight_device *bl_dev)
-> +{
-> +	struct max25014 *maxim = bl_get_data(bl_dev);
-> +
-> +	if (bl_dev->props.state & BL_CORE_SUSPENDED)
-> +		bl_dev->props.brightness = 0;
-
-This should be using the backlight_is_blank() helper rather than
-fiddling with the state variables.
-
-
-> +
-> +	return max25014_register_control(maxim->regmap, bl_dev->props.brightness);
-> +}
-> +
-> +static const struct backlight_ops max25014_bl_ops = {
-> +	.options = BL_CORE_SUSPENDRESUME,
-> +	.update_status = max25014_update_status,
-> +};
-> +
-> +static int max25014_parse_dt(struct max25014 *maxim, uint32_t *initial_brightness)
-> +{
-> +	struct device *dev = &maxim->client->dev;
-> +	struct device_node *node = dev->of_node;
-> +	uint32_t strings[4];
-> +	int res, i;
-> +
-> +	if (!node) {
-> +		dev_err(dev, "no platform data\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	res = of_property_count_u32_elems(node, "maxim,strings");
-> +	if (res == 4) {
-> +		of_property_read_u32_array(node, "maxim,strings", strings, 4);
-> +	} else {
-> +		dev_err(dev, "strings property not correctly defined\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	for (i = 0; i < 4; i++) {
-> +		if (strings[i] == 0)
-> +			maxim->strings_mask |= 1 << i;
-> +	}
-> +
-> +	*initial_brightness = 50U;
-> +	of_property_read_u32(node, "default-brightness", initial_brightness);
-> +	maxim->iset = MAX25014_ISET_DEFAULT_100;
-> +	of_property_read_u32(node, "maxim,iset", &maxim->iset);
-> +
-> +	if (maxim->iset < 0 || maxim->iset > 15) {
-> +		dev_err(dev,
-> +			"Invalid iset, should be a value from 0-15, entered was %d\n",
-> +			maxim->iset);
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (*initial_brightness < 0 || *initial_brightness > 100) {
-> +		dev_err(dev,
-> +			"Invalid initial brightness, should be a value from 0-100, entered was %d\n",
-> +			*initial_brightness);
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int max25014_probe(struct i2c_client *cl)
-> +{
-> +	struct backlight_device *bl;
-> +	const struct i2c_device_id *id = i2c_client_get_device_id(cl);
-> +	struct max25014 *maxim;
-> +	struct backlight_properties props;
-> +	int ret;
-> +	uint32_t initial_brightness;
-> +
-> +	maxim = devm_kzalloc(&cl->dev, sizeof(struct max25014), GFP_KERNEL);
-> +	if (!maxim)
-> +		return -ENOMEM;
-> +
-> +	maxim->client = cl;
-> +
-> +	ret = max25014_parse_dt(maxim, &initial_brightness);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	maxim->vin = devm_regulator_get(&maxim->client->dev, "power");
-> +	if (IS_ERR(maxim->vin)) {
-> +		if (PTR_ERR(maxim->vin) == -EPROBE_DEFER)
-> +			return -EPROBE_DEFER;
-> +		maxim->vin = NULL;
-> +	}
-> +
-> +	if (maxim->vin) {
-> +		ret = regulator_enable(maxim->vin);
-> +		if (ret < 0) {
-> +			dev_err(&maxim->client->dev, "failed to enable Vin: %d\n", ret);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	maxim->enable =
-> +		devm_gpiod_get_optional(&maxim->client->dev, "enable", GPIOD_ASIS);
-> +	if (IS_ERR(maxim->enable)) {
-> +		ret = PTR_ERR(maxim->enable);
-> +		dev_err(&maxim->client->dev, "failed to get enable gpio: %d\n", ret);
-> +		goto disable_vin;
-> +	}
-> +
-> +	if (maxim->enable) {
-> +		gpiod_set_value_cansleep(maxim->enable, 1);
-> +
-> +		/* Datasheet Electrical Characteristics tSTARTUP 2ms */
-> +		usleep_range(2000, 2500);
-> +	}
-> +
-> +	maxim->regmap = devm_regmap_init_i2c(cl, &max25014_regmap_config);
-> +	if (IS_ERR(maxim->regmap)) {
-> +		ret = PTR_ERR(maxim->regmap);
-> +		dev_err(&maxim->client->dev, "failed to initialize the i2c regmap: %d\n", ret);
-> +		goto disable_full;
-> +	}
-> +
-> +	i2c_set_clientdata(cl, maxim);
-> +
-> +	ret = max25014_check_errors(maxim);
-> +	if (ret) { /* error is already reported in the above function */
-> +		goto disable_full;
-> +	}
-> +
-> +	ret = max25014_configure(maxim, initial_brightness);
-> +	if (ret) {
-> +		dev_err(&maxim->client->dev, "device config err: %d", ret);
-> +		goto disable_full;
-> +	}
-> +
-> +	memset(&props, 0, sizeof(props));
-> +	props.type = BACKLIGHT_PLATFORM;
-> +	props.max_brightness = MAX_BRIGHTNESS;
-
-Please ensure that props.scale is set to something better than UNKNOWN.
-
-
-Daniel.
+---
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.

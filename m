@@ -1,94 +1,65 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F8A321D3CC;
-	Mon, 15 Sep 2025 15:01:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60F9C327A2E;
+	Mon, 15 Sep 2025 15:01:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757948471; cv=none; b=FVTVUQKMI0CxiBLQboBZbVN36lVl8vU6BUFr7RIIR6+k1QGnmDgiCdXBGOUE7nRuAvqlDQ2UkKY2DoSwk19dnYlUyiTLqBSEVOJXfbdVpXPWfFKBun2DAmH7+rQUywpNB4bbucpbecqI+eRAXGGxZNALPNt0hOBT2fCSMWOUE/A=
+	t=1757948502; cv=none; b=tPrZIO3N6kF+NNes/PkzTzgyZh2IizBueZzKH/n8C9Gr6/afe3yqBRfPyBHUCyEP87c6h54nl3vb0bYgBNfZXWHREGm5LwM4z0wNKZlA/a6DZ9KiIp/S5UB+eW6uRX3N7PAXBVgv0eZw8kITZD6KFIpdFrudVY3LDRTjt8tXan8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757948471; c=relaxed/simple;
-	bh=z0vvKjrNnbzohkI8G7KdLmDE1Sza+Ghgjl1k3I/cZus=;
+	s=arc-20240116; t=1757948502; c=relaxed/simple;
+	bh=+0i6RikQC6DfYiiM+/GamuDmLEyTAbg8j3Lwj+lkcTk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LFFEEgH7f78k+jd7KbsTopSqY7uckgpbV1mvOxkTBWhgk5rO0xTxqhSDOwUMk3xZdBoDlEdMmXW5/tAHY1e3wtoKG2xaGcdhj16aB/tR+xOy9gXdbe3wSv2p7Vo+xXGrNh0R/S1LAoNIR/taaIM9SIdU6AIcaFrupm65r9u69wg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=i4pyKPGl; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=HMBjoCTgyLHO3qm6YQpDfLmGTh+HhxSI+HyAJFe05XPV6uog9MxdYu2ICMZgB9IF7WmVyDJJIQAdCFtuy64v/OuCnyRqTrKBNJ82v+h590qdhlR4khpqUG2zmRCHESjoFhL9EaCryfKgJnkVm5b5Q9Cnx4h8QnUzJsfDWormV+I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qqJlOyb4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="i4pyKPGl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4B2AC4CEF1;
-	Mon, 15 Sep 2025 15:01:06 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qqJlOyb4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C476C4CEF5;
+	Mon, 15 Sep 2025 15:01:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757948471;
-	bh=z0vvKjrNnbzohkI8G7KdLmDE1Sza+Ghgjl1k3I/cZus=;
+	s=k20201202; t=1757948502;
+	bh=+0i6RikQC6DfYiiM+/GamuDmLEyTAbg8j3Lwj+lkcTk=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=i4pyKPGlIG0QOHu7CV1l+6FD65J4tSTt9q76gucq+drVv8UquOGGHgWeHMlY34tFl
-	 bf7UIFoIZZHAtNs2JSfUIJJ+lemNb0lJhhkJBQXghrUa3+2SA3wynWu3TMeLmTm7ea
-	 XARLu959v0QcwDTVRiZeZGVpT8oK8pH6luSM1CaPQIyNoISCvvKAzl5XkXsPxTcYRv
-	 lJKssGhU5jDjkqP8tm/ILybIZptGFBiquoA0o/xM4gK5y7yURzu7q1TUh+WEj89wfC
-	 srs5mEOVaCI0wC8+W8DrEq/3g4jpoov4VABTijNuCKUu0ywgxhA4TfNl11w2JKvzJ6
-	 +kv31KGcVF/9g==
-Date: Mon, 15 Sep 2025 16:01:03 +0100
+	b=qqJlOyb4u8dmfEH9xbldImMZRZQ85dwUmfhkUuUpDfbyva9VqHjaKc9MzztA4vVki
+	 chZ5OqV3dwxrwhKpmvTDOSImagN1Tf3y0+7WlysTXgEvoZfSeLj7zNrHhLNiuT1j3x
+	 hKnV+LPaPhzZOPSKiNjeiSVvJ0KSUy/DVXv/8Ssufa41BQ/As2e95mbdUK03jNGcrJ
+	 Fj5/t8PAhN2sh/02gINWNH5uMVELU3JzuvwIGaJ6dAjkKEL6RO4JHS72gkNgDttyKy
+	 Y4H7YfB6t0zKhB3+UXTF3Cq/bc6r3+aCXy3TZ9v94cZLfoEkal70A2i3um88KDlvb6
+	 YXwK5kFAnLIvA==
+Date: Mon, 15 Sep 2025 16:01:35 +0100
 From: Daniel Thompson <danielt@kernel.org>
 To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Rob Herring <robh@kernel.org>, lee@kernel.org, jingoohan1@gmail.com,
-	neil.armstrong@linaro.org, jessica.zhang@oss.qualcomm.com,
-	deller@gmx.de, maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org, airlied@gmail.com, simona@ffwll.ch,
-	fnkl.kernel@gmail.com, j@jannau.net, hdegoede@redhat.com,
-	ilpo.jarvinen@linux.intel.com, sven@kernel.org,
-	alyssa@rosenzweig.io, neal@gompa.dev,
+Cc: lee@kernel.org, jingoohan1@gmail.com, neil.armstrong@linaro.org,
+	jessica.zhang@oss.qualcomm.com, deller@gmx.de,
+	maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+	airlied@gmail.com, simona@ffwll.ch, fnkl.kernel@gmail.com,
+	j@jannau.net, hdegoede@redhat.com, ilpo.jarvinen@linux.intel.com,
+	sven@kernel.org, alyssa@rosenzweig.io, neal@gompa.dev,
 	support.opensource@diasemi.com, duje.mihanovic@skole.hr,
 	dri-devel@lists.freedesktop.org, asahi@lists.linux.dev,
 	platform-driver-x86@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 13/15] backlight: rave-sp: Include <linux/of.h> and
+Subject: Re: [PATCH v2 14/15] backlight: rt4831: Include
  <linux/mod_devicetable.h>
-Message-ID: <aMgqL-ZeSkICqRih@aspen.lan>
+Message-ID: <aMgqT8crih7S79Oj@aspen.lan>
 References: <20250715122643.137027-1-tzimmermann@suse.de>
- <20250715122643.137027-14-tzimmermann@suse.de>
- <CAL_JsqKSjQy8CVohbVL50kn=o_kPVUsAUFjYvNC3mpcA7pm_Og@mail.gmail.com>
- <26a9a762-23bc-4367-9cb3-c2b081d641c6@suse.de>
+ <20250715122643.137027-15-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <26a9a762-23bc-4367-9cb3-c2b081d641c6@suse.de>
+In-Reply-To: <20250715122643.137027-15-tzimmermann@suse.de>
 
-On Wed, Jul 16, 2025 at 08:39:03AM +0200, Thomas Zimmermann wrote:
-> Hi
+On Tue, Jul 15, 2025 at 02:24:51PM +0200, Thomas Zimmermann wrote:
+> Include <linux/mod_devicetable.h> to declare struct of_device_id.
+> Avoids dependency on backlight header to include it.
 >
-> Am 15.07.25 um 15:34 schrieb Rob Herring:
-> > On Tue, Jul 15, 2025 at 7:30 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> > > Include <linux/of.h> to declare struct device_node and include
-> > > <linux/mod_devicetable.h> to declare struct of_device_id. Avoids
-> > > dependency on backlight header to include it.
-> > struct device_node should be opaque...
-> >
-> >          /*
-> >           * If there is a phandle pointing to the device node we can
-> >           * assume that another device will manage the status changes.
-> >           * If not we make sure the backlight is in a consistent state.
-> >           */
-> >          if (!dev->of_node->phandle)
-> >                  backlight_update_status(bd);
-> >
-> > Well, that is ugly. IMO, we should just drop the check. A DT built
-> > with "-@" option will have phandle set, so that's not a reliable test.
->
-> Not that I disagree, but fixing it is out of scope for this series.
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-This pattern appears in several places. It is used to guess whether
-the initial state of the backlight should be on or off (which avoids
-flickering artefacts during boot).
-
-You won't get much argument from me about the ugliness either. However
-this patch makes the presence of this logic more obvious rather than
-less. On that basis I view it as moving in the right direction rather
-than the wrong one and therefore:
 Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 
 

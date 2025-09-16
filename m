@@ -1,63 +1,63 @@
-Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 806BC2D5C92
-	for <linux-fbdev@vger.kernel.org>; Tue, 16 Sep 2025 11:22:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 097B62D6E64
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Sep 2025 11:23:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758021779; cv=none; b=EhxTaSILosVPuMmpL+3ciftai9PdiAVjzLFxhM+6soqqrmX/RoRsMcVnT+cSQiTmT8wi9qCa6R+ad5iRyTongtBCw+alHOQT5mTXAyYRyudMsz08wVNFbuikxkW424ad7uLgtPGnmiZVvL7zWSTO8JrBS+2BdCd1yxMebRrrMN0=
+	t=1758021814; cv=none; b=OrZ7+Qv15VslWMP0ONFi/s10IHIR+D3EIr0wkj6j+yrNz4n5vFN0oQWVLsLQ+C44xAUrODHH8DRFp+cmgGJqUK1owqxbfzwvPYVeKUuo2SKae250NjYCDbIpidE3gFD+8LURtdyxjFYfl9iyoQOYrrt5ckE/szmz7IRXUlVgZds=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758021779; c=relaxed/simple;
-	bh=8kc0CeLZLfeiMXrcTaHIH/R4jGNR3faf9TtHlR/N16I=;
+	s=arc-20240116; t=1758021814; c=relaxed/simple;
+	bh=Gjb8euWhpxYPXfp/FaJb+FpWV2lF87I07NelregEU0E=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b3MLbae1QWOONiWVunTzB7Ru1Zu3AFiCr2HYqDeYSCreXePI6lK7GrCZA9ZGEb/gsJt7WN54wxMjp0q6AtMjKKGrqH6n9Hpy2JUvyEcuUq3vU8fG0MwLfC4IHKFLWqu8oeauPngVwMOP60ucSV6W10JZwPvZH04dfu+pwcSGiog=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=MX5mipFP; arc=none smtp.client-ip=209.85.218.50
+	 Content-Type:Content-Disposition:In-Reply-To; b=jj3tmI/RT/2PcRmjeGtuzhcueY2Dy6zDLFcKupO4kkQ7Xhb9yc36kEbatR2trt7LfRuVRiHhtMjMH+c6pC4Ph/BubvTF2DGjVF5xNyysQ5dc50hWo1Z3j7L7B9I/bUJxQA6TeT0pAseI8tbeIqkSocaqLQ5jS0qtA5Nbtq+9qsM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=GU84kVvd; arc=none smtp.client-ip=209.85.218.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="MX5mipFP"
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-afcb78ead12so753081666b.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Sep 2025 04:22:55 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="GU84kVvd"
+Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-b0473327e70so274558666b.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Sep 2025 04:23:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1758021774; x=1758626574; darn=vger.kernel.org;
+        d=suse.com; s=google; t=1758021811; x=1758626611; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=h0oabvOv3LnHYmSMEDkeEgkYTZEtABtHwxuQ+4V9AEw=;
-        b=MX5mipFPNTEeqUz+RN5Bk3CNl2bgoRjnfeBCCnTpnZwFdVp2AUHOiZB5H0MhEXFS0p
-         Dvt4wNOou4O/mbc4KNwTzf725/3AzR+10Z/Qcf1YHf3+GoDXPsZAA24cPXIGn1BIYv6Z
-         t5/mSgVHEEDywFY1wbDcY3Hb1953rwYazW+fsPy0nB1lOL6BezBABOug+G5K9ac9xq7j
-         /fThtfbNmg5zXKaDBBNNen2pvJpT40RlTjRPTnRG6O8o7Ff8JZIBYug8kwGktm9+/wR2
-         Rx199khf/PS2JCs1L38dFm1F/xyMrobmsqVS3sk7iFpjrENvMRV/2jQcrd6aJ41jYpaM
-         15jg==
+        bh=gxtZUSssqP8QQ4xDjcwfBCGzgO78XtwgCRIXLf8n188=;
+        b=GU84kVvdmi+t3YvgzOqWiakAstZsra7MM6IDccRx2ap8XaT+vCnYDlUyVTaKv2kq9P
+         qR1Np0ODMticDk2YaRADHLhIvy3yz/axKDfRgGvzgML4DrkJYWrE4cs3BJ64+lSNSucT
+         Yh6W+L3jFBlRKPibe9erSnKEQ48nJylcr6bRIMLkDXwUlPt9uFpssVatbBxSu6OOfKdf
+         bG2M1xUX2SMBfjNESOMsOIYatFlHlH3XQhpe/56XBUVgqpaRQFvcz4HHYLit9zfv263A
+         Z9+VAmPNtOJfHvVvdVr6Zn7S/yUU/hrID+sFO8hrkiPqGJ7t7909kJl4Oicri+BdHl25
+         Xkug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758021774; x=1758626574;
+        d=1e100.net; s=20230601; t=1758021811; x=1758626611;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=h0oabvOv3LnHYmSMEDkeEgkYTZEtABtHwxuQ+4V9AEw=;
-        b=Up82nr4UHOgbd/dA7EIocODTcUgy0Rf4rcyq93wo5wHDIwAEcJWVY5PelC3KAhSW0n
-         oBztWScdwhggdlbr2VrwIivBP5cujuXvFXJhO/1GxbF+b88X5zirMrSwU4GJXsbDio+b
-         uMmN1GN1/o/OLLxuEQ6bAp8Boeh9qVXQKRi76JreCg+53wkuzzqeigYi7rKtseX+u1R9
-         NnNaYobnmeX22VKKiq6KdB7HK3UPgNxkOBy8TH0PGvFEyCbkmoU+ePnCoNRrX+GXJfE7
-         CAJJcXQul4NaEer8k61KenHUwliMPm+GQJB2b9avGRq6Ogm+ujisOq9p+XbNFf6R0Z3C
-         s+Lg==
-X-Forwarded-Encrypted: i=1; AJvYcCUrd/uLK6MixlZjvMFAF+GBlBrL15k7mMcx3xosYprfETsuO8MjHMo1GaB3SGbFujlA0eARgWVIh/7bTQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz6xS4QtySkFzlyQFBN0UAsouhE32HZ9GJsUapUSnw/FmLiJ/kK
-	NDm0CiZytY6ngXwmb7P6ZtaGnycus2uAogj+tBWNwrjWqJ2oTef7wkKFi7f89nfvdjM=
-X-Gm-Gg: ASbGnctEwkLHXqm73cHtVagvUyBBBq9pAvnVw2lg7HGcXlNQ9+CrBqo2AjmnVUnTvww
-	KF1BBbiQbO3a9C5Nnl3dNS6T07oPKEqwqbm+6n//BMKb0ew/kAKO/HaRAULaOFaLl3EcJhlJXv1
-	gmf3QMt6EnIm2toFzHazb2sTeYafCO5RF5EbDe83w1+u3qd1SAeuXuIAhHQRk2gQ7iAveFCYrTF
-	bVWevl80EqIXe392N2cc+g49YlzRlgoJ4ZyPaLdDMyOtz+/kC4tDE91lV5hi1B2X5GpoM2Zurts
-	DDtHc38b5+87XlLOYgm5D9UbO0gxMpNyfiDqS69LIAhz1QaYZswQ4LpmljWDVvOrB9Z6NakCF6L
-	nw7UDRyOIgsQ88q+RPjH8tdUl2Lkw4xCWQp6W+8OzXSCqcIVx2hs=
-X-Google-Smtp-Source: AGHT+IHgksZmCXWo+aWrU2puhznGEL5CDcY5xl+DcR6ldtoPz+TwMIqHuYXw60VG60pLkMPaI+rleg==
-X-Received: by 2002:a17:907:daa:b0:afe:7027:56f9 with SMTP id a640c23a62f3a-b07c3574efemr1811450966b.17.1758021773565;
-        Tue, 16 Sep 2025 04:22:53 -0700 (PDT)
+        bh=gxtZUSssqP8QQ4xDjcwfBCGzgO78XtwgCRIXLf8n188=;
+        b=nGmZNDuH5TtsfmBe5G0gw1TrFjxwamcx6IVwLu2e7Y9tQytCZXE+TRmzd+qwXE32Za
+         7WIgXw7mwWwGku4zFp2Ejfz3O9zd2eWEbSPbkuY/ZHKhuzsbnOLzaVkMXpF7N+TU/IEZ
+         uJ7VbJbkhG3H/1ev9p1Ir2/js5q5umcJ2B0yvJsriverbYypJ6hJU0AhYtoTo0PeB8Si
+         9q3eAGv8SojuDTRVqPqIsmOCsVq9dgFyNirwK/z12eKor8g1StvCCIFx7znjXhtBC422
+         rBF6nnFmg8UmVcNJDUoC6cRgJq8HBLjjUxhWw2MdmfDOJc2msbytJL4OhjOtQD0yzp9Z
+         lDcw==
+X-Forwarded-Encrypted: i=1; AJvYcCU1mM6Sllnog2GwceTRXjiJTIudBdc8P4gQBh0pzbkefYh96hIfTPxCbGtYzhVxtGX4MT3N5IuncIhGNQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxQITN0vttSZF9JKYHd5q1AnDXTi81aqNhobrz3FKmlnFewlgE3
+	ORYM5a6tLVTHZxPd1x3hpjTkqwoL2wYc1epYtX1FLjexb67Mp96IpTg+gohWvutv+2I=
+X-Gm-Gg: ASbGncsTEy1JC1oHImaR6ghJ+YJZxKreOCi/srOp0kCKCkoNlVqRNMCP3GJWXeObbKY
+	rKGeQNFUbmQJ/1/E8Wi4yIOwyC5rf+fV9AK/MU+EgZhAIBUphNL4AYj5CwelXC4aIHGlRStWJQ+
+	ubbsPKe1MXAX+Mv7OfTfBVhhDtkxxi2ddNd2Y/R7CVQTXbJ69l5m5zOHyYFJsrfXIuGiXmstK8L
+	fqPwMRFLgsbi0+5JlnOFwkCBCZcPYx3+C/0MM3JPbklSRpmYyCreiRi766ZE2broU7pbd+ov030
+	emrsCm41DpKZ3CYeD/Na/UhNLQcZRBNln+sPaweq82IiLvsxnh1Eoin/Nh/TWXhAeMTmJXSQ9m/
+	oXEXSktcRFv1g62sgFnIkkd9Fnz7MFeSjW/lnifO8
+X-Google-Smtp-Source: AGHT+IHpyTR/3eF3SMuNwTyjqfOeFBdU6maF0JBSLHjxTUYrHkZ3Z43YeF6fl1FdRdLJxJTI3BmjLQ==
+X-Received: by 2002:a17:907:7e83:b0:ad5:d597:561e with SMTP id a640c23a62f3a-b07c3a7bd75mr1672253566b.56.1758021811303;
+        Tue, 16 Sep 2025 04:23:31 -0700 (PDT)
 Received: from pathway.suse.cz (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b07b32f2098sm1157083666b.74.2025.09.16.04.22.52
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b07b32dd5a9sm1125541966b.57.2025.09.16.04.23.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Sep 2025 04:22:53 -0700 (PDT)
-Date: Tue, 16 Sep 2025 13:22:51 +0200
+        Tue, 16 Sep 2025 04:23:30 -0700 (PDT)
+Date: Tue, 16 Sep 2025 13:23:28 +0200
 From: Petr Mladek <pmladek@suse.com>
 To: Jinchao Wang <wangjinchao600@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Baoquan He <bhe@redhat.com>,
@@ -93,11 +93,11 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Baoquan He <bhe@redhat.com>,
 	Yicong Yang <yangyicong@hisilicon.com>, linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org, kexec@lists.infradead.org,
 	linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 7/9] panic/printk: replace this_cpu_in_panic() with
- panic_on_this_cpu()
-Message-ID: <aMlIi9cT7xiYWo29@pathway.suse.cz>
+Subject: Re: [PATCH v2 8/9] panic/printk: replace other_cpu_in_panic() with
+ panic_on_other_cpu()
+Message-ID: <aMlIsOH1dirXjrE1@pathway.suse.cz>
 References: <20250825022947.1596226-1-wangjinchao600@gmail.com>
- <20250825022947.1596226-8-wangjinchao600@gmail.com>
+ <20250825022947.1596226-9-wangjinchao600@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -106,20 +106,20 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250825022947.1596226-8-wangjinchao600@gmail.com>
+In-Reply-To: <20250825022947.1596226-9-wangjinchao600@gmail.com>
 
-On Mon 2025-08-25 10:29:35, Jinchao Wang wrote:
-> The helper this_cpu_in_panic() duplicated logic already provided by
-> panic_on_this_cpu().
+On Mon 2025-08-25 10:29:36, Jinchao Wang wrote:
+> The helper other_cpu_in_panic() duplicated logic already provided by
+> panic_on_other_cpu().
 > 
-> Remove this_cpu_in_panic() and switch all users to panic_on_this_cpu().
+> Remove other_cpu_in_panic() and update all users to call
+> panic_on_other_cpu() instead.
 > 
-> This simplifies the code and avoids having two helpers for the same check.
+> This removes redundant code and makes panic handling consistent.
 > 
 > Signed-off-by: Jinchao Wang <wangjinchao600@gmail.com>
 
-It is great that the helper functions were consolidated and moved
-from printk to panic code.
+Looks good:
 
 Reviewed-by: Petr Mladek <pmladek@suse.com>
 

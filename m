@@ -1,93 +1,80 @@
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 656B32EFD8A;
-	Thu, 18 Sep 2025 08:05:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A41D23C507;
+	Thu, 18 Sep 2025 16:37:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.79.88.28
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758182720; cv=none; b=I4g8qhWC0ATlSzB9BiyrfKQx8TKMDfC2dkxEPrhjJguLTEJ/r/b1e+s7htcj3B9eQLBbNCqAK5mPAyawQqvzD/JKvE1DCjaQpk7N6JdY30TxqoqS4lByfLAY+SiCOIDpYDNyoo28353AXIgaM1wFPXLWdRNSH2s9eGuScL+7pR8=
+	t=1758213457; cv=none; b=f5GHPNNLLUlZnZ0EonDC0sQ4ywxk+JSH13Fu3Zfvn7h40SsELYpJZog8iOYnWyheU9S4JqRW7DgCOiASJLdhjvgBkPvFONwIP9MWKH1IS/MWTMmFPK8CerxKoCKYUX+dw4+3D0TP4Z14l+zCTGZGx2ULgy1gK0wLT12EPD3ELvg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758182720; c=relaxed/simple;
-	bh=3hIYTT1ZcNliMeoFx5ijfiEzeNg3UJdkWLLfOB2jAYQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=l4cgQr0jcQ/vkW9ZVDKMMBl+slI4TVuDBXQdInHEO4x+pQMU/DY1KA9v9EeQotfON2Bi+cdeICFSncS57v+7zhpoPMFBG/gXztpl4a/6UM8eXytO7Cu30A06Dxyism+NdEVhE1OPhZSKYHa+KO5V3l5z/RssBBQNmwYcqI8wceA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=bB8r9c7k; arc=none smtp.client-ip=13.77.154.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
+	s=arc-20240116; t=1758213457; c=relaxed/simple;
+	bh=IrcnXMaTqy1N+7c8LcrUly8rrgilMMAu8XxmYF2RPGE=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Thz2oko7s/ZwHWZ2942vF4F1FPv/v0IVHsg5TmBv1A+vsux+gR1igpb1QslpVwGR+dSZvdSu9hS6vJLRWTgfmN4jsQIWx4l5CQTigoKxXR3rUd/qdTKEMF+qcJtyvF0hBdckaXBqSIuy1FfAMkRJ6yxnVQHg8hYQccnG1NTagy8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lwn.net; spf=pass smtp.mailfrom=lwn.net; dkim=pass (2048-bit key) header.d=lwn.net header.i=@lwn.net header.b=UZe0w0rR; arc=none smtp.client-ip=45.79.88.28
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lwn.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lwn.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="bB8r9c7k"
-Received: by linux.microsoft.com (Postfix, from userid 1127)
-	id 1068720143C5; Thu, 18 Sep 2025 01:05:19 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1068720143C5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1758182719;
-	bh=f6Xq/qzmkWBxkjsonhrjIu+AIDazg4cml5u/EGCUwPU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bB8r9c7kBJIUWPHkehFORLxOvLjCwkQvqm41saev5ohf3b+kUXL/Gx4VuOq6LMbuy
-	 yS1ADesr3o3mUX/a+66BzjrpR4rzSdtPCFJWm5xOnSWgmQxUNtob0h9Hi6QaoGqPZ8
-	 81O13NsLhzqA+eU/+wzr0zOawJT+t5vR3k4zt7go=
-Date: Thu, 18 Sep 2025 01:05:19 -0700
-From: Saurabh Singh Sengar <ssengar@linux.microsoft.com>
-To: Prasanna Kumar T S M <ptsm@linux.microsoft.com>
-Cc: dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	mhklinux@outlook.com, rdunlap@infradead.org,
-	bartosz.golaszewski@linaro.org, gonzalo.silvalde@gmail.com,
-	arnd@arndb.de, tzimmermann@suse.de, decui@microsoft.com,
-	wei.liu@kernel.org, deller@gmx.de, kys@microsoft.com,
-	haiyangz@microsoft.com
-Subject: Re: [PATCH 2/2] MAINTAINERS: Mark hyperv_fb driver Obsolete
-Message-ID: <20250918080519.GB17773@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
-References: <E5C2A201B1BD>
- <1758117804-20798-1-git-send-email-ptsm@linux.microsoft.com>
+	dkim=pass (2048-bit key) header.d=lwn.net header.i=@lwn.net header.b="UZe0w0rR"
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 9B9A7406FA
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+	t=1758213452; bh=L9szdGSNdMCYHon3m7+1Z2PiMa4HJ7fzR+DoUw4hOfo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=UZe0w0rR//C5WKDhbukAj2qlgSg/rU56cO6rvaiGFwP/uT4FFlW8UIVV/9YBsuYrg
+	 5qk5dKpWfcpfSP3CTQ7q7r/mVnt508nGlFlPTnXeeft3vcXX18CRLsofzDHkdyIQ2m
+	 OywnBGNUlK776a614F3K35+7kyV2Ly/D69LgMOUMiEzPnUNjgOfCa443W93Tkhv9zf
+	 5I5xDIbRmZPhDefm3NJNGyGtOkOJJkG/fN8sdUyj5RzMYWanwS3lh5COBrg+QW0s7D
+	 b39J0Bp/AEwKCzKst8Hw1fstBf/fYJ1kanIsvCTr18qmXs3liZPQbDjYns8VrC8vbr
+	 Gr24tuugLYGXA==
+Received: from localhost (unknown [IPv6:2601:280:4600:2da9::1fe])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ms.lwn.net (Postfix) with ESMTPSA id 9B9A7406FA;
+	Thu, 18 Sep 2025 16:37:32 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
+To: Bagas Sanjaya <bagasdotme@gmail.com>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Linux Documentation
+ <linux-doc@vger.kernel.org>, Linux Framebuffer
+ <linux-fbdev@vger.kernel.org>, Linux DRI Development
+ <dri-devel@lists.freedesktop.org>
+Cc: Helge Deller <deller@gmx.de>, Bagas Sanjaya <bagasdotme@gmail.com>
+Subject: Re: [PATCH 0/3] Documentation: fbcon: formatting cleanup and
+ improvements
+In-Reply-To: <20250909063744.30053-1-bagasdotme@gmail.com>
+References: <20250909063744.30053-1-bagasdotme@gmail.com>
+Date: Thu, 18 Sep 2025 10:37:31 -0600
+Message-ID: <875xdf90ok.fsf@trenco.lwn.net>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1758117804-20798-1-git-send-email-ptsm@linux.microsoft.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+Content-Type: text/plain
 
-On Wed, Sep 17, 2025 at 07:03:24AM -0700, Prasanna Kumar T S M wrote:
-> The hyperv_fb driver is deprecated in favor of Hyper-V DRM driver. Split
-> the hyperv_fb entry from the hyperv drivers list, mark it obsolete.
-> 
-> Signed-off-by: Prasanna Kumar T S M <ptsm@linux.microsoft.com>
-> ---
->  MAINTAINERS | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index f6206963efbf..aa9d0fa6020b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -11424,7 +11424,6 @@ F:	drivers/pci/controller/pci-hyperv-intf.c
->  F:	drivers/pci/controller/pci-hyperv.c
->  F:	drivers/scsi/storvsc_drv.c
->  F:	drivers/uio/uio_hv_generic.c
-> -F:	drivers/video/fbdev/hyperv_fb.c
->  F:	include/asm-generic/mshyperv.h
->  F:	include/clocksource/hyperv_timer.h
->  F:	include/hyperv/hvgdk.h
-> @@ -11438,6 +11437,16 @@ F:	include/uapi/linux/hyperv.h
->  F:	net/vmw_vsock/hyperv_transport.c
->  F:	tools/hv/
->  
-> +HYPER-V FRAMEBUFFER DRIVER
-> +M:	"K. Y. Srinivasan" <kys@microsoft.com>
-> +M:	Haiyang Zhang <haiyangz@microsoft.com>
-> +M:	Wei Liu <wei.liu@kernel.org>
-> +M:	Dexuan Cui <decui@microsoft.com>
-> +L:	linux-hyperv@vger.kernel.org
-> +S:	Obsolete
-> +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/hyperv/linux.git
-> +F:	drivers/video/fbdev/hyperv_fb.c
-> +
->  HYPERBUS SUPPORT
->  M:	Vignesh Raghavendra <vigneshr@ti.com>
->  R:	Tudor Ambarus <tudor.ambarus@linaro.org>
-> -- 
-> 2.49.0
+Bagas Sanjaya <bagasdotme@gmail.com> writes:
 
-Reviewed-by: Saurabh Sengar <ssengar@linux.microsoft.com>
+> Hi,
+>
+> Here are reST formatting cleanup and improvements for fbcon documentation.
+> The shortlog below should be self-explanatory.
+>
+> This series is based on docs-next tree.
+>
+> Enjoy!
+>
+> Bagas Sanjaya (3):
+>   Documentation: fbcon: Add boot options and attach/detach/unload
+>     section headings
+>   Documentation: fbcon: Reindent 8th step of attach/detach/unload
+>   Documentation: fbcon: Use admonition directives
+>
+>  Documentation/fb/fbcon.rst | 42 ++++++++++++++++++++++----------------
+>  1 file changed, 24 insertions(+), 18 deletions(-)
+
+It looks like nobody has picked these up yet, so I've applied them.
+
+Thanks,
+
+jon

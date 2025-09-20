@@ -1,175 +1,112 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from forward103d.mail.yandex.net (forward103d.mail.yandex.net [178.154.239.214])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D93232836A0
-	for <linux-fbdev@vger.kernel.org>; Sat, 20 Sep 2025 08:37:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8436D220698;
+	Sat, 20 Sep 2025 15:56:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.214
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758357457; cv=none; b=DBnhdoTtqmDsyoYIbYtUoAqHLfZBjfBFEKJs+aqoYBhY2JyHyyXPYE/0v1SX8+VzPCW1thcNVBSQ0XUKnswU1W4GbRcKhbWQyutCXcIE405I3S45/ntgfvGRP/sY5dibOU6ZYK8gZNvWbQUBBNJoanaTExp/5s81QA3+dw6NxzU=
+	t=1758383783; cv=none; b=Jlcw9kM0Lhk0rTMz0YiYMxpcXdGAfGoae5nUCe3uLBSKkbLPK8wDZA84txVY628SUacEr1VKu0IqMXTAq1xk6hDv+gyVrhnVLkNRdXGGYJuPs0cDPnl7gDZNCih5KTcrHy7iuyTxj4grIwD7mOqgRGA6zT5d0KcWCaaglmUTttI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758357457; c=relaxed/simple;
-	bh=LlzRi6bk10r8Z/aQ0b6CxVImRK79Ze9lOeWEQTrLmNI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GVZUGkZ2UwpvgOptsXjYEy/yA3qZets2jwGK7YZddlRl5w2wY5FdINFtolQxkCnmKo8qFa+o9Xfxx5zZFqh7I7twKwPMdq+kmIl0gXZUUaWxG4238D/f5oBOJE8qTeXyboeBH3lG9pYwSG1bev288vMCvY7q8aJGkMz+ZnqIP6U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fBjQ1R9+; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1758383783; c=relaxed/simple;
+	bh=hQHDmwnGbYQZbf9/nPLWKaETgRt4+EZd0tTre0SC4NA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Y/EnLOdTLgyDgEWPtGLL+Sp3hZJtmxPfBdrVenasFm9Q+7oD2ZdEttVA1QvxrRkpRSgjeFwiPjFHM7cnF/NLz52gmKgRX3N7YA+VferZchnGpYrnaj4HsrUncGjcDnA1ubd7yDRPhGiCoOcsE07YjdtjHS3WLM4ppLuhrzILH6I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=iOOUzFT0; arc=none smtp.client-ip=178.154.239.214
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fBjQ1R9+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1758357456; x=1789893456;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=LlzRi6bk10r8Z/aQ0b6CxVImRK79Ze9lOeWEQTrLmNI=;
-  b=fBjQ1R9+xXwGDSgKI3o7YRZXkUb8daO23gYX/AbtT4rnZVTpFWP47R4G
-   oTdHlsqMUozE7NPIEU4ykSD6uB/RWyHREd+3a4tRNqSQEyCf0j7h57APi
-   r+9Ol9UUxEXbOZnPnmq967TCvhGcQTgeaN5WvGEK6wl+WZhfOaddhuq6C
-   6+GbHAsrdGrOQ0O8oSagVQPXvkqViX2/TCBIz/zsjfNr6sXlT6oKyndw1
-   lfQ5l+LzKhgR8MpqewfzcY1chrN9RAOWd5rypGEbW1pSyIgfNY5mjfls8
-   /sHGkVApN+hWfDNec/20OYrT4dBQcs82kod9jcx0Qcz4HSLzcAMZDQck2
-   Q==;
-X-CSE-ConnectionGUID: pvcb3IMeTOWhmbN5D6zvCA==
-X-CSE-MsgGUID: 9zaourSYSIeQ3ETAU5EqUA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11558"; a="64512819"
-X-IronPort-AV: E=Sophos;i="6.18,280,1751266800"; 
-   d="scan'208";a="64512819"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Sep 2025 01:37:35 -0700
-X-CSE-ConnectionGUID: Dfw/SjHRRkqqAwhq4X36bA==
-X-CSE-MsgGUID: 9VeOsDXBTFy6vTS6xHtZHQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,280,1751266800"; 
-   d="scan'208";a="199748111"
-Received: from lkp-server01.sh.intel.com (HELO 84a20bd60769) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 20 Sep 2025 01:37:33 -0700
-Received: from kbuild by 84a20bd60769 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uzt63-0005B1-0s;
-	Sat, 20 Sep 2025 08:37:31 +0000
-Date: Sat, 20 Sep 2025 16:37:23 +0800
-From: kernel test robot <lkp@intel.com>
-To: DeepanshuPratik <deepanshu.pratik@gmail.com>, andy@kernel.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	DeepanshuPratik <deepanshu.pratik@gmail.com>
-Subject: Re: [PATCH] staging: fbtft: fix macro usage and style warnings
-Message-ID: <202509201601.hTKUjeIe-lkp@intel.com>
-References: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
+	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="iOOUzFT0"
+Received: from mail-nwsmtp-smtp-production-main-88.iva.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-88.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:5b9b:0:640:5d70:0])
+	by forward103d.mail.yandex.net (Yandex) with ESMTPS id ECDD5C0051;
+	Sat, 20 Sep 2025 18:56:09 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-88.iva.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id 5uWWxMdMsKo0-C9EVhexi;
+	Sat, 20 Sep 2025 18:56:09 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
+	s=mail; t=1758383769;
+	bh=2Cm8GwjzPTQSGnGP/jtp41W0WE0pfRZxKAWpYfamrA8=;
+	h=Message-ID:Date:Cc:Subject:To:From;
+	b=iOOUzFT0Cj6wnaZ2vyLATF/lg/uDMgx3iDzFfwnOSOAh3RU8S9MQYTrYC5cQdK9VL
+	 6X2GyU0kxD9QqTuwIfwRNpFqGWRYHPdofdQqSgXKfdbVq5LB0t+xh7AjroESed8xeF
+	 Di7j588LnSiFOHv5B74D8ColloZrohZle6+hPquA=
+Authentication-Results: mail-nwsmtp-smtp-production-main-88.iva.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
+From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Ahmet Sezgin Duran <ahmet@sezginduran.net>
+Subject: [PATCH] staging: sm750fb: rename camel case identifiers
+Date: Sat, 20 Sep 2025 18:55:52 +0300
+Message-ID: <20250920155552.261976-1-ahmet@sezginduran.net>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-Hi DeepanshuPratik,
+Rename two identifiers from camel case to snake case, in order to follow
+kernel coding style.
 
-kernel test robot noticed the following build errors:
+Changes:
 
-[auto build test ERROR on staging/staging-testing]
+- Local variable `deCtrl` to `de_ctrl`
+- Function `deGetTransparency` to `de_get_transparency`
 
-url:    https://github.com/intel-lab-lkp/linux/commits/DeepanshuPratik/staging-fbtft-fix-macro-usage-and-style-warnings/20250920-053248
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20250919212938.822374-1-deepanshu.pratik%40gmail.com
-patch subject: [PATCH] staging: fbtft: fix macro usage and style warnings
-config: x86_64-buildonly-randconfig-002-20250920 (https://download.01.org/0day-ci/archive/20250920/202509201601.hTKUjeIe-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250920/202509201601.hTKUjeIe-lkp@intel.com/reproduce)
+Signed-off-by: Ahmet Sezgin Duran <ahmet@sezginduran.net>
+---
+ drivers/staging/sm750fb/sm750_accel.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202509201601.hTKUjeIe-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> drivers/staging/fbtft/fbtft-bus.c:15:2: error: '#' is not followed by a macro parameter
-      15 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-         |  ^
->> drivers/staging/fbtft/fbtft-bus.c:66:47: error: unexpected type name 'u8': expected identifier
-      66 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
-         |                                               ^
-   drivers/staging/fbtft/fbtft-bus.c:66:51: error: unexpected type name 'u8': expected identifier
-      66 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
-         |                                                   ^
->> drivers/staging/fbtft/fbtft-bus.c:66:51: error: redefinition of parameter 'u8'
->> drivers/staging/fbtft/fbtft-bus.c:67:1: error: expected function body after function declarator
-      67 | define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
-         | ^
-   5 errors generated.
-
-
-vim +15 drivers/staging/fbtft/fbtft-bus.c
-
-c296d5f9957c039 Thomas Petazzoni   2014-12-31   7  
-c296d5f9957c039 Thomas Petazzoni   2014-12-31   8  /*****************************************************************************
-c296d5f9957c039 Thomas Petazzoni   2014-12-31   9   *
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  10   *   void (*write_reg)(struct fbtft_par *par, int len, ...);
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  11   *
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  12   *****************************************************************************/
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  13  
-49f31092c55579e DeepanshuPratik    2025-09-20  14  #define NOOP(x) (x)                                                           \
-8d8825b420ffb37 Alfonso Lima Astor 2017-10-17 @15  #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  16  void func(struct fbtft_par *par, int len, ...)                                \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  17  {                                                                             \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  18  	va_list args;                                                         \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  19  	int i, ret;                                                           \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  20  	int offset = 0;                                                       \
-8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  21  	buffer_type *buf = (buffer_type *)par->buf;                           \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  22  									      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  23  	if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {                    \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  24  		va_start(args, len);                                          \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  25  		for (i = 0; i < len; i++) {                                   \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  26  			buf[i] = modifier((data_type)va_arg(args,             \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  27  							    unsigned int));   \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  28  		}                                                             \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  29  		va_end(args);                                                 \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  30  		fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par,                  \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  31  				  par->info->device, buffer_type, buf, len,   \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  32  				  "%s: ", __func__);                          \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  33  	}                                                                     \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  34  									      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  35  	va_start(args, len);                                                  \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  36  									      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  37  	if (par->startbyte) {                                                 \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  38  		*(u8 *)par->buf = par->startbyte;                             \
-8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  39  		buf = (buffer_type *)(par->buf + 1);                          \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  40  		offset = 1;                                                   \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  41  	}                                                                     \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  42  									      \
-8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  43  	*buf = modifier((data_type)va_arg(args, unsigned int));               \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  44  	ret = fbtft_write_buf_dc(par, par->buf, sizeof(data_type) + offset,   \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  45  				 0);                                          \
-e70065fdc11d86f Heiner Kallweit    2017-03-02  46  	if (ret < 0)							      \
-e70065fdc11d86f Heiner Kallweit    2017-03-02  47  		goto out;						      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  48  	len--;                                                                \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  49  									      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  50  	if (par->startbyte)                                                   \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  51  		*(u8 *)par->buf = par->startbyte | 0x2;                       \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  52  									      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  53  	if (len) {                                                            \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  54  		i = len;                                                      \
-e70065fdc11d86f Heiner Kallweit    2017-03-02  55  		while (i--)						      \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  56  			*buf++ = modifier((data_type)va_arg(args,             \
-cc1c0eea8527bd2 Renato Soma        2018-04-17  57  							    unsigned int));   \
-e70065fdc11d86f Heiner Kallweit    2017-03-02  58  		fbtft_write_buf_dc(par, par->buf,			      \
-8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  59  				   len * (sizeof(data_type) + offset), 1);    \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  60  	}                                                                     \
-e70065fdc11d86f Heiner Kallweit    2017-03-02  61  out:									      \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  62  	va_end(args);                                                         \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  63  }                                                                             \
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  64  EXPORT_SYMBOL(func);
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  65  
-49f31092c55579e DeepanshuPratik    2025-09-20 @66  define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
-8d8825b420ffb37 Alfonso Lima Astor 2017-10-17 @67  define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
-49f31092c55579e DeepanshuPratik    2025-09-20  68  define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, NOOP)
-c296d5f9957c039 Thomas Petazzoni   2014-12-31  69  
-
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index b07c1aa68621..046b9282b24a 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -89,7 +89,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ 		      u32 x, u32 y, u32 width, u32 height,
+ 		      u32 color, u32 rop)
+ {
+-	u32 deCtrl;
++	u32 de_ctrl;
+ 
+ 	if (accel->de_wait() != 0) {
+ 		/*
+@@ -121,11 +121,11 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ 		  ((width << DE_DIMENSION_X_SHIFT) & DE_DIMENSION_X_MASK) |
+ 		  (height & DE_DIMENSION_Y_ET_MASK)); /* dpr8 */
+ 
+-	deCtrl = DE_CONTROL_STATUS | DE_CONTROL_LAST_PIXEL |
++	de_ctrl = DE_CONTROL_STATUS | DE_CONTROL_LAST_PIXEL |
+ 		DE_CONTROL_COMMAND_RECTANGLE_FILL | DE_CONTROL_ROP_SELECT |
+ 		(rop & DE_CONTROL_ROP_MASK); /* dpr0xc */
+ 
+-	write_dpr(accel, DE_CONTROL, deCtrl);
++	write_dpr(accel, DE_CONTROL, de_ctrl);
+ 	return 0;
+ }
+ 
+@@ -284,7 +284,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 	return 0;
+ }
+ 
+-static unsigned int deGetTransparency(struct lynx_accel *accel)
++static unsigned int de_get_transparency(struct lynx_accel *accel)
+ {
+ 	unsigned int de_ctrl;
+ 
+@@ -391,7 +391,7 @@ int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
+ 		DE_CONTROL_ROP_SELECT | DE_CONTROL_COMMAND_HOST_WRITE |
+ 		DE_CONTROL_HOST | DE_CONTROL_STATUS;
+ 
+-	write_dpr(accel, DE_CONTROL, de_ctrl | deGetTransparency(accel));
++	write_dpr(accel, DE_CONTROL, de_ctrl | de_get_transparency(accel));
+ 
+ 	/* Write MONO data (line by line) to 2D Engine data port */
+ 	for (i = 0; i < height; i++) {
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.51.0
+

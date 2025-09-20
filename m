@@ -1,122 +1,175 @@
-Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A17AA274FEF
-	for <linux-fbdev@vger.kernel.org>; Fri, 19 Sep 2025 21:29:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D93232836A0
+	for <linux-fbdev@vger.kernel.org>; Sat, 20 Sep 2025 08:37:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758317388; cv=none; b=DD03rL988OlPh3sPx5GFWDtv96xxJJbL7+VLAw9KOfd9hq2q/IYo6uNrrbRH5wKfD/OJzmyiNTlW/0Nm203SpDamnHPMsDTYPRIErPVKtfb6dIupuLperl5m2mHBkZtaRh4spkT/CfinPTzPRuEo+4++xPjnUBYkCm3cVNojV78=
+	t=1758357457; cv=none; b=DBnhdoTtqmDsyoYIbYtUoAqHLfZBjfBFEKJs+aqoYBhY2JyHyyXPYE/0v1SX8+VzPCW1thcNVBSQ0XUKnswU1W4GbRcKhbWQyutCXcIE405I3S45/ntgfvGRP/sY5dibOU6ZYK8gZNvWbQUBBNJoanaTExp/5s81QA3+dw6NxzU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758317388; c=relaxed/simple;
-	bh=Gt/3Q4eCw7M+9b+H8XPRAm/hfMkHXsiKakZZRnzhecc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=k73l9P5cD60bTM6ubbyTMTUd8RPVG6P8cW1sQhvwKvR/ajtEwdEbpcaIdrcHJlzzmV87Cbiq6Hds89Bi2HBkx65QVrkQdL8qmWYZ/41WWNiYyWmC/nw5LmNTC+ltJ+0MSw/2nwr4aNqNNMnG/PLGyE9L1Egvd6Kr1QIBZYR8GbE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=l7Qlz9EL; arc=none smtp.client-ip=209.85.216.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1758357457; c=relaxed/simple;
+	bh=LlzRi6bk10r8Z/aQ0b6CxVImRK79Ze9lOeWEQTrLmNI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GVZUGkZ2UwpvgOptsXjYEy/yA3qZets2jwGK7YZddlRl5w2wY5FdINFtolQxkCnmKo8qFa+o9Xfxx5zZFqh7I7twKwPMdq+kmIl0gXZUUaWxG4238D/f5oBOJE8qTeXyboeBH3lG9pYwSG1bev288vMCvY7q8aJGkMz+ZnqIP6U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fBjQ1R9+; arc=none smtp.client-ip=192.198.163.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l7Qlz9EL"
-Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-32e372c413aso2565403a91.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 19 Sep 2025 14:29:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758317386; x=1758922186; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vleSOAnQ7W/ttFzCw+PSwwPxqJNTbd1eP/1iar3uehM=;
-        b=l7Qlz9ELegRfq5mUKmH/P36puEP0JAwz0cEUMzzKsyl0gk5hpCmnK8RBUs+hLAjxow
-         qegGCkNvSvG3h/V8JXrk1p5WgpQkkqigAjCoN7s/f/cLbGojyH/93kLTCXO5l4HiQI0m
-         QJG7XlEpAkTE5huwVaDxilg9DMjC6FLt9JGCWnPZn2cZXanmtl6N2J5xexagVa5kNvo+
-         sxZJVYLyn9smRruIzomhA6izBkp+pnBtRul0lZFflS+E1LBWptgMg8A7JlFpnRrPlojh
-         l31qYcGp1bRE3D19p4MyXdc5lRc2er01+MmzigORkMerdWiaMEOHK0rTSJDiG476QraS
-         blcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758317386; x=1758922186;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vleSOAnQ7W/ttFzCw+PSwwPxqJNTbd1eP/1iar3uehM=;
-        b=VDWBgdi8AhuU0XxmaceNqYPPpnL6U7qkfRds08dLlB+14Uxzg9BNHDbeAVqmvOQPwP
-         a+TYgEKcoSJT4TbYhJhGhJHwty4nvo157TLj6a8LWH8zmD3auFCKeW6JMOsQxFact3rg
-         1rB42VWc5Tu8aakF51cPYX3OMdujWbHhhsCXMz7Dy0lMKckPk+S+Qk/dD5FskCc+/l1C
-         NxGhZnMs5tob1/JqPhxl3wE9Vl5pAfHZ2hOUj3QAjFWrxt8yg3qxghUg895OE9qCrPTv
-         U06GyMhTea57P1DEQVm3jBNImMKSOSoG3kCYdKJQt3oyyawymv6jWBO/F9egiiNktgq4
-         6NpQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVdlkvy/TabwXaXpTCJ4pVfQ7FGy4Ug7YeA5cmx6Bnzmgka7GV0gzjKIlkeJlAQEVIO6AIPa76+D6D4sQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwsvlWJYZN7x10JPgB0hN4KD2jjniTrRqxxEPVBOkV9aeVS8k0+
-	dYQ6hG7ZruHZZ5SK3KDqq4JRYCZie8h0RWNVL+x53SnGhkiyUVuPxuPJ
-X-Gm-Gg: ASbGncu4nNMAlW6zO0NcF3r7T22H2Y16X/F9Riih3MQjnjjgOBuCKEGoY5RULHaKX8I
-	PlY/kTXO52AC1DewpeP7jWjHPrrbEP6lKhmNhL1Rk0FESM7TkP42b0w2TSnKHOn/6d/PxrsJJcO
-	JA6+Kf48lnFLDcqwY8tPkRrU0Z8uBrlG+fmuW1AHE5Z9Q5ZqbxI5aioCsKjdvUXal9OsaDYEDzX
-	f1/mrvDuROa6hNgKfnTb//rloGEQGRmCFMrr2G3bogq4MPlHuvCB+YWpySLg8VriWb6b+au/UIb
-	Bfkf3O2gfVMCZsX+o1igD8TKo0wen4Yr2Zj7awXJs3MyMv3VGs+PByIiHtq2u3ayKeCqa4Wl08I
-	+6d+upCutTIbZ2nEV//J3sYZLhxAXnoZFO8Vn/EZ19n4SHGO6LhWnGno3XOdERw==
-X-Google-Smtp-Source: AGHT+IHsl189j2QSfxSlpgxEoKYSohVc3V9vQEcwrv5b1bjjq+l89ZFUZ2CsOgVd9B2doDfpl+okoA==
-X-Received: by 2002:a17:90b:54d0:b0:32e:3837:284e with SMTP id 98e67ed59e1d1-33097ff70ebmr5944059a91.10.1758317385798;
-        Fri, 19 Sep 2025 14:29:45 -0700 (PDT)
-Received: from deepanshupratik.taild3063f.ts.net ([205.254.163.168])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b54ff3fdb22sm5837987a12.25.2025.09.19.14.29.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 19 Sep 2025 14:29:45 -0700 (PDT)
-From: DeepanshuPratik <deepanshu.pratik@gmail.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fBjQ1R9+"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1758357456; x=1789893456;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=LlzRi6bk10r8Z/aQ0b6CxVImRK79Ze9lOeWEQTrLmNI=;
+  b=fBjQ1R9+xXwGDSgKI3o7YRZXkUb8daO23gYX/AbtT4rnZVTpFWP47R4G
+   oTdHlsqMUozE7NPIEU4ykSD6uB/RWyHREd+3a4tRNqSQEyCf0j7h57APi
+   r+9Ol9UUxEXbOZnPnmq967TCvhGcQTgeaN5WvGEK6wl+WZhfOaddhuq6C
+   6+GbHAsrdGrOQ0O8oSagVQPXvkqViX2/TCBIz/zsjfNr6sXlT6oKyndw1
+   lfQ5l+LzKhgR8MpqewfzcY1chrN9RAOWd5rypGEbW1pSyIgfNY5mjfls8
+   /sHGkVApN+hWfDNec/20OYrT4dBQcs82kod9jcx0Qcz4HSLzcAMZDQck2
+   Q==;
+X-CSE-ConnectionGUID: pvcb3IMeTOWhmbN5D6zvCA==
+X-CSE-MsgGUID: 9zaourSYSIeQ3ETAU5EqUA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11558"; a="64512819"
+X-IronPort-AV: E=Sophos;i="6.18,280,1751266800"; 
+   d="scan'208";a="64512819"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Sep 2025 01:37:35 -0700
+X-CSE-ConnectionGUID: Dfw/SjHRRkqqAwhq4X36bA==
+X-CSE-MsgGUID: 9VeOsDXBTFy6vTS6xHtZHQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,280,1751266800"; 
+   d="scan'208";a="199748111"
+Received: from lkp-server01.sh.intel.com (HELO 84a20bd60769) ([10.239.97.150])
+  by fmviesa002.fm.intel.com with ESMTP; 20 Sep 2025 01:37:33 -0700
+Received: from kbuild by 84a20bd60769 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uzt63-0005B1-0s;
+	Sat, 20 Sep 2025 08:37:31 +0000
+Date: Sat, 20 Sep 2025 16:37:23 +0800
+From: kernel test robot <lkp@intel.com>
+To: DeepanshuPratik <deepanshu.pratik@gmail.com>, andy@kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	DeepanshuPratik <deepanshu.pratik@gmail.com>
-Subject: [PATCH] staging: fbtft: fix macro usage and style warnings
-Date: Sat, 20 Sep 2025 02:59:38 +0530
-Message-ID: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
-X-Mailer: git-send-email 2.43.0
+Subject: Re: [PATCH] staging: fbtft: fix macro usage and style warnings
+Message-ID: <202509201601.hTKUjeIe-lkp@intel.com>
+References: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
 
-This patch fixes the trailing comma issue in the
-define_fbtft_write_reg() macro calls, which caused
-checkpatch.pl to complain with:
+Hi DeepanshuPratik,
 
-  ERROR: space prohibited before that close parenthesis ')'
+kernel test robot noticed the following build errors:
 
-The affected macro invocations were updated to pass an
-identity modifier instead of leaving the argument empty.
-This resolves build errors while ensuring compliance
-with kernel coding style.
+[auto build test ERROR on staging/staging-testing]
 
-No functional changes are introduced; this patch only
-addresses build and style issues.
+url:    https://github.com/intel-lab-lkp/linux/commits/DeepanshuPratik/staging-fbtft-fix-macro-usage-and-style-warnings/20250920-053248
+base:   staging/staging-testing
+patch link:    https://lore.kernel.org/r/20250919212938.822374-1-deepanshu.pratik%40gmail.com
+patch subject: [PATCH] staging: fbtft: fix macro usage and style warnings
+config: x86_64-buildonly-randconfig-002-20250920 (https://download.01.org/0day-ci/archive/20250920/202509201601.hTKUjeIe-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250920/202509201601.hTKUjeIe-lkp@intel.com/reproduce)
 
-Signed-off-by: DeepanshuPratik <deepanshu.pratik@gmail.com>
----
- drivers/staging/fbtft/fbtft-bus.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202509201601.hTKUjeIe-lkp@intel.com/
 
-diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-index 30e436ff1..60846185d 100644
---- a/drivers/staging/fbtft/fbtft-bus.c
-+++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -11,6 +11,7 @@
-  *
-  *****************************************************************************/
- 
-+#define NOOP(x) (x)                                                           \
- #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
- void func(struct fbtft_par *par, int len, ...)                                \
- {                                                                             \
-@@ -62,9 +63,9 @@ out:									      \
- }                                                                             \
- EXPORT_SYMBOL(func);
- 
--define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
-+define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
- define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
--define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-+define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, NOOP)
- 
- void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
- {
+All errors (new ones prefixed by >>):
+
+>> drivers/staging/fbtft/fbtft-bus.c:15:2: error: '#' is not followed by a macro parameter
+      15 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
+         |  ^
+>> drivers/staging/fbtft/fbtft-bus.c:66:47: error: unexpected type name 'u8': expected identifier
+      66 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
+         |                                               ^
+   drivers/staging/fbtft/fbtft-bus.c:66:51: error: unexpected type name 'u8': expected identifier
+      66 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
+         |                                                   ^
+>> drivers/staging/fbtft/fbtft-bus.c:66:51: error: redefinition of parameter 'u8'
+>> drivers/staging/fbtft/fbtft-bus.c:67:1: error: expected function body after function declarator
+      67 | define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+         | ^
+   5 errors generated.
+
+
+vim +15 drivers/staging/fbtft/fbtft-bus.c
+
+c296d5f9957c039 Thomas Petazzoni   2014-12-31   7  
+c296d5f9957c039 Thomas Petazzoni   2014-12-31   8  /*****************************************************************************
+c296d5f9957c039 Thomas Petazzoni   2014-12-31   9   *
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  10   *   void (*write_reg)(struct fbtft_par *par, int len, ...);
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  11   *
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  12   *****************************************************************************/
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  13  
+49f31092c55579e DeepanshuPratik    2025-09-20  14  #define NOOP(x) (x)                                                           \
+8d8825b420ffb37 Alfonso Lima Astor 2017-10-17 @15  #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  16  void func(struct fbtft_par *par, int len, ...)                                \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  17  {                                                                             \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  18  	va_list args;                                                         \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  19  	int i, ret;                                                           \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  20  	int offset = 0;                                                       \
+8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  21  	buffer_type *buf = (buffer_type *)par->buf;                           \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  22  									      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  23  	if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {                    \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  24  		va_start(args, len);                                          \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  25  		for (i = 0; i < len; i++) {                                   \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  26  			buf[i] = modifier((data_type)va_arg(args,             \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  27  							    unsigned int));   \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  28  		}                                                             \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  29  		va_end(args);                                                 \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  30  		fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par,                  \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  31  				  par->info->device, buffer_type, buf, len,   \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  32  				  "%s: ", __func__);                          \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  33  	}                                                                     \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  34  									      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  35  	va_start(args, len);                                                  \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  36  									      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  37  	if (par->startbyte) {                                                 \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  38  		*(u8 *)par->buf = par->startbyte;                             \
+8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  39  		buf = (buffer_type *)(par->buf + 1);                          \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  40  		offset = 1;                                                   \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  41  	}                                                                     \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  42  									      \
+8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  43  	*buf = modifier((data_type)va_arg(args, unsigned int));               \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  44  	ret = fbtft_write_buf_dc(par, par->buf, sizeof(data_type) + offset,   \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  45  				 0);                                          \
+e70065fdc11d86f Heiner Kallweit    2017-03-02  46  	if (ret < 0)							      \
+e70065fdc11d86f Heiner Kallweit    2017-03-02  47  		goto out;						      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  48  	len--;                                                                \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  49  									      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  50  	if (par->startbyte)                                                   \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  51  		*(u8 *)par->buf = par->startbyte | 0x2;                       \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  52  									      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  53  	if (len) {                                                            \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  54  		i = len;                                                      \
+e70065fdc11d86f Heiner Kallweit    2017-03-02  55  		while (i--)						      \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  56  			*buf++ = modifier((data_type)va_arg(args,             \
+cc1c0eea8527bd2 Renato Soma        2018-04-17  57  							    unsigned int));   \
+e70065fdc11d86f Heiner Kallweit    2017-03-02  58  		fbtft_write_buf_dc(par, par->buf,			      \
+8d8825b420ffb37 Alfonso Lima Astor 2017-10-17  59  				   len * (sizeof(data_type) + offset), 1);    \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  60  	}                                                                     \
+e70065fdc11d86f Heiner Kallweit    2017-03-02  61  out:									      \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  62  	va_end(args);                                                         \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  63  }                                                                             \
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  64  EXPORT_SYMBOL(func);
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  65  
+49f31092c55579e DeepanshuPratik    2025-09-20 @66  define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, NOOP)
+8d8825b420ffb37 Alfonso Lima Astor 2017-10-17 @67  define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+49f31092c55579e DeepanshuPratik    2025-09-20  68  define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, NOOP)
+c296d5f9957c039 Thomas Petazzoni   2014-12-31  69  
+
 -- 
-2.43.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

@@ -1,37 +1,37 @@
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFCC02C187;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E449119CC37;
 	Sun, 21 Sep 2025 04:08:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758427740; cv=none; b=nnr1IbtsSSvr6JsEuNzUOKE2g09gEoQPpUrnCwG8+WkOBv/HThG8ogaqe8ucAV5D+j1AjKir/FUKJzwBqdivk5Q2UIrnrySC2effwW3ljMRd8r439yy2gxekckyZHL2JyKSmwEiXrrGyhg6a5PUxAZ8B0H9SkE69PcJPTGy3b58=
+	t=1758427740; cv=none; b=YMvooGHFcW7APR1QXhEVPhqy8VmMRI7aO5DxPB4gEKHqFe+6+lmHX+VEg6TCRXjWCuTmw07N7R39wRreXsHjUYzMMIMhMYdzyhbfbBAS/BywoJOqbGTKPFd3oKryJa6JcSe9rjiPnWTbTufgp1kDMIFynJflL00/H1OrCFU8S/w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758427740; c=relaxed/simple;
-	bh=pk/MDwtIt50lYbUkZEHIcUUnRHIiLgB+b9uTQ9baskc=;
+	bh=8qVVlZfhmnjxv6QE5aeW2E/isvEhuskf2mkEt8x69wo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QVOvcvWEOYPl5vzb+QJjt3n7h3n4iVM9Uyr9LhItQS7nIPqNvVSqNraZICexR4NVmgfk4gcs9+IARbactCe4j5XCamXyHLbwHmO+pxhj3wDypTI7jCirJkSpgdf9WzKUnEBbkPIWGdTu61ezRCsQC3p8mP+2SEYg82oyzj7cEyg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=NVs/xMzu; arc=none smtp.client-ip=198.137.202.133
+	 In-Reply-To:Content-Type; b=kQovCDdiMC8fxIQulQkSC3hRpohz2j1PbN+CPOUNocGp1AoGBjZTGkPfVBgCccwpU8QvJMUWkf41Yjxr4pjk3gFZxpD4gUMHolFmaP9QsGqjtQeimMvt3PPma5p3/UKWkFDIvDMbNdhktOupKGIZF6cyd3RhSHhr90lhKDRv7ks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=b50WMB1L; arc=none smtp.client-ip=198.137.202.133
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NVs/xMzu"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="b50WMB1L"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
 	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=uZy4lE0W2i6JOY3YpgM9YvBZoVT5j3/cDuVy9Tqt69U=; b=NVs/xMzuhLqWzvjk9aJtv3osGj
-	yW/2U3K29Rwfhb8aqEo0KvQKZIDKljYztHK8shHPy2PFu941/9qT/0/DdKm0rDXrU1iXb3K/D0Inf
-	64pzlNcjmbByypkXhSpDfLgqQlzJxCrZd7LAe6/YUQpl+1jdwF8G2yqGQPjdcPOCHZ2Llwd0NPl9f
-	P/xeqCsDFUauxx/DEbdKitk3QWv2JGg0be0zHjSH7mgbCXUkF2rMzIUnYDoWgxOTg0QEHTcLwcL8j
-	TrPlqqo8KrdGMjgNSuQXHk229el5e8j6kZRmzHUpTAfrguinbU3ShxjioZVgao4h6bioVl4X0O0mG
-	0nYvdAeA==;
+	bh=VksaqJGdjzMhlLjKPHSM10/o9OsUOF4Mq5NDrlabej0=; b=b50WMB1L//3bi+ioD+U700kVdw
+	Dp2claeyHiJwoTHZTSExIXYQNEOX3ZMS4wKtlibrW3AD90usdDs2Y5G/uzRR+XRGJ6XtLGYOg+F6Y
+	QeoQvXCwgpPlKK7jDCPvVqGZowY1Jej2BYUaEeMhFAvL4dgiOpFxWqZQ2MFPYDVpAFVw83sJvIqBq
+	96xy6jfLFkxdQwcfwi75rdnZPs7TzpombOz3isfV8qL/mYcSMGSgN+2Fcv01k4M7V007otSTjSCb4
+	5LD+HzDNtSXKe+YsPqn5yTP06EHlI7jEz5TcAakyy5pZFl9VNz0EW22hoqfKN9Bf5eJNYuiHDLEXV
+	VR0GxXeQ==;
 Received: from [50.53.25.54] (helo=[192.168.254.17])
 	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v0BNe-00000006VSD-0Cck;
-	Sun, 21 Sep 2025 04:08:54 +0000
-Message-ID: <51ccc0fb-d17f-45c9-984b-65b9e2d0c4ac@infradead.org>
-Date: Sat, 20 Sep 2025 21:08:53 -0700
+	id 1v0BNh-00000006VSD-2RN5;
+	Sun, 21 Sep 2025 04:08:57 +0000
+Message-ID: <222d551c-fb01-4a8c-9b83-daef019b6795@infradead.org>
+Date: Sat, 20 Sep 2025 21:08:57 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -39,7 +39,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] Documentation: fb: Split toctree
+Subject: Re: [PATCH 2/3] Documentation: fb: Retitle driver docs
 To: Bagas Sanjaya <bagasdotme@gmail.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Linux Documentation <linux-doc@vger.kernel.org>,
@@ -52,125 +52,234 @@ Cc: Helge Deller <deller@gmx.de>, Jonathan Corbet <corbet@lwn.net>,
  Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
  Ard Biesheuvel <ardb@kernel.org>, Arvind Sankar <nivedita@alum.mit.edu>
 References: <20250919003640.14867-1-bagasdotme@gmail.com>
- <20250919003640.14867-4-bagasdotme@gmail.com>
+ <20250919003640.14867-3-bagasdotme@gmail.com>
 Content-Language: en-US
 From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20250919003640.14867-4-bagasdotme@gmail.com>
+In-Reply-To: <20250919003640.14867-3-bagasdotme@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
+Hi,
+I would change a couple of the headings, but otherwise
+looks good.
 
 
 On 9/18/25 5:36 PM, Bagas Sanjaya wrote:
-> Framebuffer docs toctree consists of driver-independent docs
-> (e.g. API docs) and driver-specific docs. The latter has much
-> more entries.
+> Many framebuffer driver docs are copied from vesafb docs as their
+> template, including "What is <driver name>" title. Such title
+> implies the introductory section, however, and not the whole docs.
 > 
-> Group the docs into separate toctrees.
+> Retitle them.
 > 
 > Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
+> ---
+>  Documentation/fb/aty128fb.rst | 8 +++-----
+>  Documentation/fb/efifb.rst    | 6 +++---
+>  Documentation/fb/gxfb.rst     | 8 +++-----
+>  Documentation/fb/lxfb.rst     | 9 +++------
+>  Documentation/fb/matroxfb.rst | 9 +++------
+>  Documentation/fb/pvr2fb.rst   | 6 +++---
+>  Documentation/fb/sa1100fb.rst | 9 +++------
+>  Documentation/fb/sisfb.rst    | 6 +++---
+>  Documentation/fb/sm712fb.rst  | 6 +++---
+>  Documentation/fb/tgafb.rst    | 6 +++---
+>  Documentation/fb/udlfb.rst    | 6 +++---
+>  Documentation/fb/vesafb.rst   | 6 +++---
+>  12 files changed, 36 insertions(+), 49 deletions(-)
+> 
+> diff --git a/Documentation/fb/aty128fb.rst b/Documentation/fb/aty128fb.rst
+> index 3f107718f933fc..0da8070a552165 100644
+> --- a/Documentation/fb/aty128fb.rst
+> +++ b/Documentation/fb/aty128fb.rst
+> @@ -1,8 +1,6 @@
+> -=================
+> -What is aty128fb?
+> -=================
+> -
+> -.. [This file is cloned from VesaFB/matroxfb]
+> +=========================================
+> +aty128fb - ATI Rage128 framebuffer driver
+> +=========================================
+>  
+>  This is a driver for a graphic framebuffer for ATI Rage128 based devices
+>  on Intel and PPC boxes.
+> diff --git a/Documentation/fb/efifb.rst b/Documentation/fb/efifb.rst
+> index 6badff64756f49..3d4aab406dee0a 100644
+> --- a/Documentation/fb/efifb.rst
+> +++ b/Documentation/fb/efifb.rst
+> @@ -1,6 +1,6 @@
+> -==============
+> -What is efifb?
+> -==============
+> +===================================
+> +efifb - Generic EFI platform driver
+> +===================================
+>  
+>  This is a generic EFI platform driver for systems with UEFI firmware. The
+>  system must be booted via the EFI stub for this to be usable. efifb supports
+> diff --git a/Documentation/fb/gxfb.rst b/Documentation/fb/gxfb.rst
+> index 5738709bccbbf3..3fda485606bdc1 100644
+> --- a/Documentation/fb/gxfb.rst
+> +++ b/Documentation/fb/gxfb.rst
+> @@ -1,8 +1,6 @@
+> -=============
+> -What is gxfb?
+> -=============
+> -
+> -.. [This file is cloned from VesaFB/aty128fb]
+> +=======================================
+> +gxfb - AMD Geode GX2 framebuffer driver
+> +=======================================
+>  
+>  This is a graphics framebuffer driver for AMD Geode GX2 based processors.
+>  
+> diff --git a/Documentation/fb/lxfb.rst b/Documentation/fb/lxfb.rst
+> index 863e6b98fbae55..0a176ab376e30e 100644
+> --- a/Documentation/fb/lxfb.rst
+> +++ b/Documentation/fb/lxfb.rst
+> @@ -1,9 +1,6 @@
+> -=============
+> -What is lxfb?
+> -=============
+> -
+> -.. [This file is cloned from VesaFB/aty128fb]
+> -
+> +======================================
+> +lxfb - AMD Geode LX framebuffer driver
+> +======================================
+>  
+>  This is a graphics framebuffer driver for AMD Geode LX based processors.
+>  
+> diff --git a/Documentation/fb/matroxfb.rst b/Documentation/fb/matroxfb.rst
+> index 6158c49c857148..34cafaa00bab19 100644
+> --- a/Documentation/fb/matroxfb.rst
+> +++ b/Documentation/fb/matroxfb.rst
+> @@ -1,9 +1,6 @@
+> -=================
+> -What is matroxfb?
+> -=================
+> -
+> -.. [This file is cloned from VesaFB. Thanks go to Gerd Knorr]
+> -
+> +==================================
+> +matroxfb driver for Matrox devices
+> +==================================
 
-LGTM. Thanks.
+Add a '-' after matroxfb
+
+>  
+>  This is a driver for a graphic framebuffer for Matrox devices on
+>  Alpha, Intel and PPC boxes.
+> diff --git a/Documentation/fb/pvr2fb.rst b/Documentation/fb/pvr2fb.rst
+> index fcf2c21c8fcfeb..315ce085a5855b 100644
+> --- a/Documentation/fb/pvr2fb.rst
+> +++ b/Documentation/fb/pvr2fb.rst
+> @@ -1,6 +1,6 @@
+> -===============
+> -What is pvr2fb?
+> -===============
+> +===============================================
+> +pvr2fb - PowerVR 2 graphics frame buffer driver
+> +===============================================
+>  
+>  This is a driver for PowerVR 2 based graphics frame buffers, such as the
+>  one found in the Dreamcast.
+> diff --git a/Documentation/fb/sa1100fb.rst b/Documentation/fb/sa1100fb.rst
+> index 67e2650e017d12..c5ca019b361a94 100644
+> --- a/Documentation/fb/sa1100fb.rst
+> +++ b/Documentation/fb/sa1100fb.rst
+> @@ -1,9 +1,6 @@
+> -=================
+> -What is sa1100fb?
+> -=================
+> -
+> -.. [This file is cloned from VesaFB/matroxfb]
+> -
+> +=================================================
+> +sa1100fb - SA-1100 LCD graphic framebuffer driver
+> +=================================================
+>  
+>  This is a driver for a graphic framebuffer for the SA-1100 LCD
+>  controller.
+> diff --git a/Documentation/fb/sisfb.rst b/Documentation/fb/sisfb.rst
+> index 8f4e502ea12ea7..9982f5ee05601b 100644
+> --- a/Documentation/fb/sisfb.rst
+> +++ b/Documentation/fb/sisfb.rst
+> @@ -1,6 +1,6 @@
+> -==============
+> -What is sisfb?
+> -==============
+> +=====================================
+> +sisfb - SiS framebuffer device driver
+> +=====================================
+>  
+>  sisfb is a framebuffer device driver for SiS (Silicon Integrated Systems)
+>  graphics chips. Supported are:
+> diff --git a/Documentation/fb/sm712fb.rst b/Documentation/fb/sm712fb.rst
+> index 8e000f80b5bc6d..abbc6efae25f46 100644
+> --- a/Documentation/fb/sm712fb.rst
+> +++ b/Documentation/fb/sm712fb.rst
+> @@ -1,6 +1,6 @@
+> -================
+> -What is sm712fb?
+> -================
+> +==========================================================
+> +sm712fb - Silicon Motion SM712 graphics framebuffer driver
+> +==========================================================
+>  
+>  This is a graphics framebuffer driver for Silicon Motion SM712 based processors.
+>  
+> diff --git a/Documentation/fb/tgafb.rst b/Documentation/fb/tgafb.rst
+> index 0c50d2134aa433..f0944da1ea5ef1 100644
+> --- a/Documentation/fb/tgafb.rst
+> +++ b/Documentation/fb/tgafb.rst
+> @@ -1,6 +1,6 @@
+> -==============
+> -What is tgafb?
+> -==============
+> +=======================================
+> +tgafb - TGA graphics framebuffer driver
+> +=======================================
+>  
+>  This is a driver for DECChip 21030 based graphics framebuffers, a.k.a. TGA
+>  cards, which are usually found in older Digital Alpha systems. The
+> diff --git a/Documentation/fb/udlfb.rst b/Documentation/fb/udlfb.rst
+> index 99cfbb7a192238..9e75ac6b07c36a 100644
+> --- a/Documentation/fb/udlfb.rst
+> +++ b/Documentation/fb/udlfb.rst
+> @@ -1,6 +1,6 @@
+> -==============
+> -What is udlfb?
+> -==============
+> +==================================
+> +udlfb - DisplayLink USB 2.0 driver
+> +==================================
+>  
+>  This is a driver for DisplayLink USB 2.0 era graphics chips.
+>  
+> diff --git a/Documentation/fb/vesafb.rst b/Documentation/fb/vesafb.rst
+> index f890a4f5623b45..5ffb35efd4538a 100644
+> --- a/Documentation/fb/vesafb.rst
+> +++ b/Documentation/fb/vesafb.rst
+> @@ -1,6 +1,6 @@
+> -===============
+> -What is vesafb?
+> -===============
+> +===========================================
+> +Generic graphic framebuffer driver (vesafb)
+> +===========================================
+
+vesafb - Generic graphic framebuffer driver
+
+>  
+>  This is a generic driver for a graphic framebuffer on intel boxes.
+>  
+
 
 Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
 Tested-by: Randy Dunlap <rdunlap@infradead.org>
 
-> ---
->  Documentation/fb/index.rst | 80 +++++++++++++++++++++-----------------
->  1 file changed, 45 insertions(+), 35 deletions(-)
-> 
-> diff --git a/Documentation/fb/index.rst b/Documentation/fb/index.rst
-> index 33e3c49f885695..e2f7488b6e2e42 100644
-> --- a/Documentation/fb/index.rst
-> +++ b/Documentation/fb/index.rst
-> @@ -4,42 +4,52 @@
->  Frame Buffer
->  ============
->  
-> -.. toctree::
-> -    :maxdepth: 1
-> +General information
-> +===================
->  
-> -    api
-> -    arkfb
-> -    aty128fb
-> -    cirrusfb
-> -    cmap_xfbdev
-> -    deferred_io
-> -    efifb
-> -    ep93xx-fb
-> -    fbcon
-> -    framebuffer
-> -    gxfb
-> -    intel810
-> -    internals
-> -    lxfb
-> -    matroxfb
-> -    metronomefb
-> -    modedb
-> -    pvr2fb
-> -    pxafb
-> -    s3fb
-> -    sa1100fb
-> -    sh7760fb
-> -    sisfb
-> -    sm501
-> -    sm712fb
-> -    sstfb
-> -    tgafb
-> -    tridentfb
-> -    udlfb
-> -    uvesafb
-> -    vesafb
-> -    viafb
-> -    vt8623fb
-> +.. toctree::
-> +   :maxdepth: 1
-> +
-> +   api
-> +   cmap_xfbdev
-> +   deferred_io
-> +   fbcon
-> +   framebuffer
-> +   internals
-> +   modedb
-> +
-> +Driver documentation
-> +====================
-> +
-> +.. toctree::
-> +   :maxdepth: 1
-> +
-> +   arkfb
-> +   aty128fb
-> +   cirrusfb
-> +   efifb
-> +   ep93xx-fb
-> +   gxfb
-> +   intel810
-> +   lxfb
-> +   matroxfb
-> +   metronomefb
-> +   pvr2fb
-> +   pxafb
-> +   s3fb
-> +   sa1100fb
-> +   sh7760fb
-> +   sisfb
-> +   sm501
-> +   sm712fb
-> +   sstfb
-> +   tgafb
-> +   tridentfb
-> +   udlfb
-> +   uvesafb
-> +   vesafb
-> +   viafb
-> +   vt8623fb
->  
->  .. only::  subproject and html
->  
+Thanks.
 
 -- 
 ~Randy

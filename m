@@ -1,117 +1,240 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f77.google.com (mail-io1-f77.google.com [209.85.166.77])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B6C92BE62D;
-	Sun, 21 Sep 2025 04:09:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D31D12EFDBE
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 04:15:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.77
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758427744; cv=none; b=sJ25OwrFXUpKR7a7XTJhC8q+lotghaxcvtm8U3ISR8qjekhdprs6g+Y1VqxHtjTVOlgUGOOlDdtD7rqGJFL1Ff44Laa2PjndBplA9XtdtFkj+zvQ2nTX/W9JOzn93XbjnjKBBZKF4a6zXJ6665WcFBBpts5FBQYZ/9tJMKA+3cA=
+	t=1758514530; cv=none; b=FSsLuP001g+IL1XKuTYq+992T4d4sV5m6WOpIN1TFWAK46yVgayti9YFsuwOyF5BXW8gaMwDK+KK6WIQhD6ZS93NdjsXUEnike6wUQl7yoSQwGijzXTT1nC7XF1qaBY1oF9BTeMOatcWadeZRrLzl9FMNeHt+1gK/YMCUx/dkxk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758427744; c=relaxed/simple;
-	bh=lOkGvdMLgCDOoZKq846BetnuIF8ic8xJ0dyEAbX6azg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZHIBUme+KJCstrUTtvIIvZd0ZKopB7tHOihhXmVK+N3571CFS7EDLfCi1lst8EbmMnt+u6lgzaw3eDQSYcv9kttma4npTuaj+JBgV25ilDT+zegjcKpi+jYIJuu0hCbERlYFjF+zU2QarT+BJ64v9dALm1wzWkjqncMjd4Xc/8k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=NG68O/75; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NG68O/75"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=9CBAu4CBqssJ5aeqARNzTf8RZdzR5TsWpD4SoDPRrv4=; b=NG68O/758Xbg8gZMvzvVvRur2F
-	dh5pkOw/DgAroma81uEItqhLzl5vfI6VOW+pUKZcZa1GmH0/1tQ1DJBOA/I6CmEZ4IcbBgM3OvpWR
-	yZI8vO6X+8OewlaSqGhYbDc1VaelyomBBd+vU6KREeZPTS+oY+14D/PUCsGQE+ji1oUV5/YW+7tRc
-	3ILS3/RvQb4vN2zM2bGnc8wPovPgSbZgzFgG134DzXWaBX6bCqjP4rAgAyZ1Hhe37W7e/u8Kzp82l
-	zlLX6dOH8YV6otHkL5JAnOc2wNAPPqWb6bPLJd00n15bwxT60cOa826kBLP9IewE9xmuqkbPNEGOT
-	YzLMTwpQ==;
-Received: from [50.53.25.54] (helo=[192.168.254.17])
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v0BNm-00000006VSD-3alo;
-	Sun, 21 Sep 2025 04:09:02 +0000
-Message-ID: <e0051102-adcf-400d-b57d-2c0d14755a7c@infradead.org>
-Date: Sat, 20 Sep 2025 21:09:02 -0700
+	s=arc-20240116; t=1758514530; c=relaxed/simple;
+	bh=d5jyAUOyOuNwNPi0K5UeEN2IaYmjoAzAaUvITMdvBiY=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=Nns9Jpk4nIGmW5YaB/UcxTn7Ri0YpruKHGCj8H5Z9vNVn1HRieYFVCXMxrXKp2APe6yBND5wvfQNqRXd356KbDt3HLWGbm3Zm+9DERxmUpfeP3jD1iDhYf6M5zezL3zSux2SWgUrSI41xFdmHQZ29oKOLaglHnufilEmdDrD8HA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.77
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f77.google.com with SMTP id ca18e2360f4ac-886e347d2afso431599439f.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 21 Sep 2025 21:15:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758514528; x=1759119328;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=BakDNPWo+QkF9V9wbXmNqYGZxd72ptFmNyaovE0QhPw=;
+        b=E6rXUbCBomIhJCoMBd8Saz8ObEj+kUjN+bbmunqRjEDVOJncG2+2o8nD0yCmLs28Sa
+         Y8i33zGCiNLIbWnNPkFxm58guu5+MWz+0owsYXQYVi8eKlRi4v1nOZhb0z4eEULEDKCC
+         P1yFadIN2nNcFOw277jA2GIagWxSKATa+AhjpVm2P9PWAJSVSREPRzUwHb1+2SPr2ujo
+         5kwtuPI1voFh/MlqZ+8jTMVZnisRO69EkJaBlgUq9I9/7gdtOnSRx+lli0kQ9wmVKWsr
+         IM+b4IxXvFaBiiARgGzizXD+pTmFgsxUWSZp/BgPd9pQWmcbJYtA12O8fUs92oU7qhLf
+         ExOw==
+X-Forwarded-Encrypted: i=1; AJvYcCW95yDMnXPEgpkDbXoMJWq/HNzsMZyN4nA7y2+JDagDYl41uw/WrxRZhy9QpsXnVF+2IviQJkKAPMyGXw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YydrsmdDivOmPpFjQ9jUvkc6HF3mSvVf1CbxfGVJxWsKtG5tzFK
+	4tipBIF1YEQdemnFxM8uamYkeE3wJqQ8iDeE/8YZSs/9kQQnZTa38zsgeZXfg4TiSFg9hA3FFH0
+	RF2b6RPEHJ2nx/FuqnT0X70lGrfGniUKbM4TnjI29yqrzjgw34k9bmjDU0ew=
+X-Google-Smtp-Source: AGHT+IGdtf8+tn/0tLHSfNn/WIvMRMx9qNdlFsybI223Br7aqGakbUQdFqw2QC0HSYbbI1UdSWjVmRuaUdU9L5ru6k+ec5lkq/dK
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] Documentation: fb: ep93xx: Demote section headings
-To: Bagas Sanjaya <bagasdotme@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Documentation <linux-doc@vger.kernel.org>,
- Linux Framebuffer <linux-fbdev@vger.kernel.org>,
- Linux DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Helge Deller <deller@gmx.de>, Jonathan Corbet <corbet@lwn.net>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Teddy Wang <teddy.wang@siliconmotion.com>,
- Bernie Thompson <bernie@plugable.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- Ard Biesheuvel <ardb@kernel.org>, Arvind Sankar <nivedita@alum.mit.edu>
-References: <20250919003640.14867-1-bagasdotme@gmail.com>
- <20250919003640.14867-2-bagasdotme@gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20250919003640.14867-2-bagasdotme@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Received: by 2002:a05:6e02:258a:b0:424:3b83:4f5f with SMTP id
+ e9e14a558f8ab-4248190bbd3mr155108815ab.8.1758514527823; Sun, 21 Sep 2025
+ 21:15:27 -0700 (PDT)
+Date: Sun, 21 Sep 2025 21:15:27 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <68d0cd5f.050a0220.139b6.0017.GAE@google.com>
+Subject: [syzbot] [fbdev?] KASAN: slab-out-of-bounds Read in
+ fb_pad_unaligned_buffer (4)
+From: syzbot <syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
+
+Hello,
+
+syzbot found the following issue on:
+
+HEAD commit:    b320789d6883 Linux 6.17-rc4
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=16ceae62580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=d4703ac89d9e185a
+dashboard link: https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
+compiler:       gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
+
+Unfortunately, I don't have any reproducer for this issue yet.
+
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/daf1f6c847dd/disk-b320789d.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/fbeb0bd5d987/vmlinux-b320789d.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/a85084f8e16b/bzImage-b320789d.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
+
+==================================================================
+BUG: KASAN: slab-out-of-bounds in fb_pad_unaligned_buffer+0x3b8/0x440 drivers/video/fbdev/core/fbmem.c:110
+Read of size 1 at addr ffff888075fb54e4 by task syz.0.1621/12752
+
+CPU: 1 UID: 0 PID: 12752 Comm: syz.0.1621 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 08/14/2025
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:378 [inline]
+ print_report+0xcd/0x630 mm/kasan/report.c:482
+ kasan_report+0xe0/0x110 mm/kasan/report.c:595
+ fb_pad_unaligned_buffer+0x3b8/0x440 drivers/video/fbdev/core/fbmem.c:110
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:129 [inline]
+ bit_putcs+0x870/0xde0 drivers/video/fbdev/core/bitblit.c:187
+ fbcon_putcs+0x384/0x4a0 drivers/video/fbdev/core/fbcon.c:1327
+ con_flush drivers/tty/vt/vt.c:2746 [inline]
+ do_con_write+0xfed/0x8280 drivers/tty/vt/vt.c:3173
+ con_write+0x23/0xb0 drivers/tty/vt/vt.c:3516
+ process_output_block drivers/tty/n_tty.c:561 [inline]
+ n_tty_write+0x41c/0x11e0 drivers/tty/n_tty.c:2377
+ iterate_tty_write drivers/tty/tty_io.c:1006 [inline]
+ file_tty_write.constprop.0+0x504/0x9b0 drivers/tty/tty_io.c:1081
+ new_sync_write fs/read_write.c:593 [inline]
+ vfs_write+0x7d3/0x11d0 fs/read_write.c:686
+ ksys_write+0x12a/0x250 fs/read_write.c:738
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0x4c0 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f1f5fb8ebe9
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f1f60a10038 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f1f5fdc6180 RCX: 00007f1f5fb8ebe9
+RDX: 0000000000001066 RSI: 0000200000001640 RDI: 0000000000000009
+RBP: 00007f1f5fc11e19 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007f1f5fdc6218 R14: 00007f1f5fdc6180 R15: 00007ffc8f9c3728
+ </TASK>
+
+Allocated by task 10009:
+ kasan_save_stack+0x33/0x60 mm/kasan/common.c:47
+ kasan_save_track+0x14/0x30 mm/kasan/common.c:68
+ poison_kmalloc_redzone mm/kasan/common.c:388 [inline]
+ __kasan_kmalloc+0xaa/0xb0 mm/kasan/common.c:405
+ kasan_kmalloc include/linux/kasan.h:260 [inline]
+ __do_kmalloc_node mm/slub.c:4365 [inline]
+ __kmalloc_noprof+0x223/0x510 mm/slub.c:4377
+ kmalloc_noprof include/linux/slab.h:909 [inline]
+ fbcon_set_font+0x434/0xb80 drivers/video/fbdev/core/fbcon.c:2536
+ con_font_set drivers/tty/vt/vt.c:4887 [inline]
+ con_font_op+0x7fb/0xf50 drivers/tty/vt/vt.c:4934
+ vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+ vt_ioctl+0x48f/0x30a0 drivers/tty/vt/vt_ioctl.c:751
+ tty_ioctl+0x661/0x1680 drivers/tty/tty_io.c:2792
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:598 [inline]
+ __se_sys_ioctl fs/ioctl.c:584 [inline]
+ __x64_sys_ioctl+0x18b/0x210 fs/ioctl.c:584
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0x4c0 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+
+The buggy address belongs to the object at ffff888075fb5000
+ which belongs to the cache kmalloc-1k of size 1024
+The buggy address is located 468 bytes to the right of
+ allocated 784-byte region [ffff888075fb5000, ffff888075fb5310)
+
+The buggy address belongs to the physical page:
+page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x75fb0
+head: order:3 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
+anon flags: 0xfff00000000040(head|node=0|zone=1|lastcpupid=0x7ff)
+page_type: f5(slab)
+raw: 00fff00000000040 ffff88801b841dc0 0000000000000000 dead000000000001
+raw: 0000000000000000 0000000000100010 00000000f5000000 0000000000000000
+head: 00fff00000000040 ffff88801b841dc0 0000000000000000 dead000000000001
+head: 0000000000000000 0000000000100010 00000000f5000000 0000000000000000
+head: 00fff00000000003 ffffea0001d7ec01 00000000ffffffff 00000000ffffffff
+head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000008
+page dumped because: kasan: bad access detected
+page_owner tracks the page as allocated
+page last allocated via order 3, migratetype Unmovable, gfp_mask 0x52820(GFP_ATOMIC|__GFP_NOWARN|__GFP_NORETRY|__GFP_COMP), pid 37, tgid 37 (kworker/u8:3), ts 77706432678, free_ts 77578310551
+ set_page_owner include/linux/page_owner.h:32 [inline]
+ post_alloc_hook+0x1c0/0x230 mm/page_alloc.c:1851
+ prep_new_page mm/page_alloc.c:1859 [inline]
+ get_page_from_freelist+0x132b/0x38e0 mm/page_alloc.c:3858
+ __alloc_frozen_pages_noprof+0x261/0x23f0 mm/page_alloc.c:5148
+ alloc_pages_mpol+0x1fb/0x550 mm/mempolicy.c:2416
+ alloc_slab_page mm/slub.c:2487 [inline]
+ allocate_slab mm/slub.c:2655 [inline]
+ new_slab+0x247/0x330 mm/slub.c:2709
+ ___slab_alloc+0xcf2/0x1740 mm/slub.c:3891
+ __slab_alloc.constprop.0+0x56/0xb0 mm/slub.c:3981
+ __slab_alloc_node mm/slub.c:4056 [inline]
+ slab_alloc_node mm/slub.c:4217 [inline]
+ __do_kmalloc_node mm/slub.c:4364 [inline]
+ __kmalloc_noprof+0x2f2/0x510 mm/slub.c:4377
+ kmalloc_noprof include/linux/slab.h:909 [inline]
+ kzalloc_noprof include/linux/slab.h:1039 [inline]
+ ieee802_11_parse_elems_full+0x1db/0x3780 net/mac80211/parse.c:1011
+ ieee802_11_parse_elems_crc net/mac80211/ieee80211_i.h:2462 [inline]
+ ieee802_11_parse_elems net/mac80211/ieee80211_i.h:2469 [inline]
+ ieee80211_inform_bss+0x10b/0x1140 net/mac80211/scan.c:79
+ rdev_inform_bss net/wireless/rdev-ops.h:418 [inline]
+ cfg80211_inform_single_bss_data+0x8e7/0x1df0 net/wireless/scan.c:2379
+ cfg80211_inform_bss_data+0x224/0x3bd0 net/wireless/scan.c:3234
+ cfg80211_inform_bss_frame_data+0x26f/0x750 net/wireless/scan.c:3325
+ ieee80211_bss_info_update+0x310/0xab0 net/mac80211/scan.c:226
+ ieee80211_rx_bss_info net/mac80211/ibss.c:1094 [inline]
+ ieee80211_rx_mgmt_probe_beacon net/mac80211/ibss.c:1573 [inline]
+ ieee80211_ibss_rx_queued_mgmt+0x1905/0x2fd0 net/mac80211/ibss.c:1600
+ ieee80211_iface_process_skb net/mac80211/iface.c:1699 [inline]
+ ieee80211_iface_work+0xe2e/0x1360 net/mac80211/iface.c:1753
+page last free pid 5220 tgid 5220 stack trace:
+ reset_page_owner include/linux/page_owner.h:25 [inline]
+ free_pages_prepare mm/page_alloc.c:1395 [inline]
+ __free_frozen_pages+0x7d5/0x10f0 mm/page_alloc.c:2895
+ qlink_free mm/kasan/quarantine.c:163 [inline]
+ qlist_free_all+0x4d/0x120 mm/kasan/quarantine.c:179
+ kasan_quarantine_reduce+0x195/0x1e0 mm/kasan/quarantine.c:286
+ __kasan_slab_alloc+0x69/0x90 mm/kasan/common.c:340
+ kasan_slab_alloc include/linux/kasan.h:250 [inline]
+ slab_post_alloc_hook mm/slub.c:4180 [inline]
+ slab_alloc_node mm/slub.c:4229 [inline]
+ kmem_cache_alloc_noprof+0x1cb/0x3b0 mm/slub.c:4236
+ getname_flags.part.0+0x4c/0x550 fs/namei.c:146
+ getname_flags+0x93/0xf0 include/linux/audit.h:322
+ do_readlinkat+0xb4/0x3a0 fs/stat.c:575
+ __do_sys_readlink fs/stat.c:613 [inline]
+ __se_sys_readlink fs/stat.c:610 [inline]
+ __x64_sys_readlink+0x78/0xc0 fs/stat.c:610
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0x4c0 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+
+Memory state around the buggy address:
+ ffff888075fb5380: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff888075fb5400: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+>ffff888075fb5480: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+                                                       ^
+ ffff888075fb5500: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff888075fb5580: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+==================================================================
 
 
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-On 9/18/25 5:36 PM, Bagas Sanjaya wrote:
-> Section headings are formatted the same as title heading, thus
-> increasing number of entries in framebuffer toctree. Demote them.
-> 
-> Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
-Looks good. Thanks.
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
 
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
 
-> ---
->  Documentation/fb/ep93xx-fb.rst | 4 ----
->  1 file changed, 4 deletions(-)
-> 
-> diff --git a/Documentation/fb/ep93xx-fb.rst b/Documentation/fb/ep93xx-fb.rst
-> index 1dd67f4688c751..93b3494f530979 100644
-> --- a/Documentation/fb/ep93xx-fb.rst
-> +++ b/Documentation/fb/ep93xx-fb.rst
-> @@ -41,7 +41,6 @@ your board initialisation function::
->  
->  	ep93xx_register_fb(&some_board_fb_info);
->  
-> -=====================
->  Video Attribute Flags
->  =====================
->  
-> @@ -79,7 +78,6 @@ EP93XXFB_USE_SDCSN2		Use SDCSn[2] for the framebuffer.
->  EP93XXFB_USE_SDCSN3		Use SDCSn[3] for the framebuffer.
->  =============================== ======================================
->  
-> -==================
->  Platform callbacks
->  ==================
->  
-> @@ -101,7 +99,6 @@ obtained as follows::
->  		/* Board specific framebuffer setup */
->  	}
->  
-> -======================
->  Setting the video mode
->  ======================
->  
-> @@ -119,7 +116,6 @@ set when the module is installed::
->  
->  	modprobe ep93xx-fb video=320x240
->  
-> -==============
->  Screenpage bug
->  ==============
->  
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
 
--- 
-~Randy
+If you want to undo deduplication, reply with:
+#syz undup

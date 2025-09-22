@@ -1,190 +1,106 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BDE73093D3
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 13:49:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9914D19C569
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 14:07:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758548952; cv=none; b=anel/+J6Zj6+9yIjfj+n3WSPz7CkW3rAqITf01u26SlZwXNcFRQiSUoQ2FSVe7zkRIDFep+plwxITxDP3Ar8YfSLtpbrrYlcr5fuLZMkcYjIxoata2+CwEu4TVKCIGtGhP6WtRl+mQ2+OT+WZ9wAbIqBLopoZAMjvDQtG1VOo2w=
+	t=1758550071; cv=none; b=g8W3uMwi2TSxTkgbw+1CCwkGyYnj6DA3A+WNECZ6mWjTcOFyrNMytRCbnLyEkqU2UOr7GbhXkPpcWmktn26HF1y/IUUsH3k0JCA6pEH0YHYtlPceXBJk7SQ0ZdU8yb2YUHxGCxogpNy3P3PePoxb5ggmkbXS3VzQdrkRlCRsk1A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758548952; c=relaxed/simple;
-	bh=ngl7H2YJ1DHyIGZNomAJTEjURUQ4b0al6n5Rb1tJTz4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=glzT4flIu6RDQI2zweZckglJZ4b0TK9DPbaFqwAAi8HObsQl7RYCiQI5lROXZvIBhWgSxzQBszJGYdVLKIO84+4cvBgUfNEamjC7K4qE9jZ0zYY2OawZBMgdvsQiu59Ked19Y5qIpZeBrKLXrUGm/BbR3sfe8qESMA7NM9LVH1g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=V4olzZ1s; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Jb4G78GC; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=V4olzZ1s; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Jb4G78GC; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1758550071; c=relaxed/simple;
+	bh=2gKCZnS8Y0kw7LI52aPWPye+cd/qPIjBzxQKuWEn6pk=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=iR7H7otcyGRjv6qJv6HpjIvAheWoXBIEysz/YBkzQUgGNacZecsjX10U1WjLVFhfJt6aFu3DTihscLFXTCUZpg4PtnwTFNSW/NWewbs1N7yhkGCaJ6WzUtB73g0edNnpEEma61gtTlDb4zeZQP2LpRZUhEPxxQJXsSER9lciQiE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=13oRaIfE; arc=none smtp.client-ip=209.85.208.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="V4olzZ1s";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Jb4G78GC";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="V4olzZ1s";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Jb4G78GC"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 349621F79A;
-	Mon, 22 Sep 2025 13:49:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1758548949; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
-	b=V4olzZ1sVE6zlzQYJ9cqO2/GPIzc9f3v/C2WFa3nzC07/9UtK46eNSkp5Q+ZODqBIcq7km
-	VxYXSBdkebX8PDURYy9lLZwtWInJuB8+7hav0DHWYEpCDNcaQOhJ/5cWcuQLGVOUdgfu0I
-	2zCXR0pnzQPp4LmEf8mhpKM+JwofUU8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1758548949;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
-	b=Jb4G78GCOKJ7HMid6++qn5pfiNCZTNmUiXh/eihDkAn76Kw5FJyRTcWWt9V5qNxyIgl0A2
-	vgE6apw3X4EBX/Bw==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=V4olzZ1s;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=Jb4G78GC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1758548949; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
-	b=V4olzZ1sVE6zlzQYJ9cqO2/GPIzc9f3v/C2WFa3nzC07/9UtK46eNSkp5Q+ZODqBIcq7km
-	VxYXSBdkebX8PDURYy9lLZwtWInJuB8+7hav0DHWYEpCDNcaQOhJ/5cWcuQLGVOUdgfu0I
-	2zCXR0pnzQPp4LmEf8mhpKM+JwofUU8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1758548949;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
-	b=Jb4G78GCOKJ7HMid6++qn5pfiNCZTNmUiXh/eihDkAn76Kw5FJyRTcWWt9V5qNxyIgl0A2
-	vgE6apw3X4EBX/Bw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C067313A63;
-	Mon, 22 Sep 2025 13:49:08 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id uN1KLdRT0WguAgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 22 Sep 2025 13:49:08 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: jani.nikula@linux.intel.com,
-	samasth.norway.ananda@oracle.com,
-	simona@ffwll.ch,
-	deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	George Kennedy <george.kennedy@oracle.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	=?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@linux.intel.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Qianqiang Liu <qianqiang.liu@163.com>,
-	Shixiong Ou <oushixiong@kylinos.cn>,
-	Kees Cook <kees@kernel.org>,
-	stable@vger.kernel.org,
-	Zsolt Kajtar <soci@c64.rulez.org>
-Subject: [PATCH] fbcon: Fix OOB access in font allocation
-Date: Mon, 22 Sep 2025 15:45:54 +0200
-Message-ID: <20250922134619.257684-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.51.0
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="13oRaIfE"
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-61feb87fe26so5607322a12.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 07:07:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fairphone.com; s=fair; t=1758550068; x=1759154868; darn=vger.kernel.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2gKCZnS8Y0kw7LI52aPWPye+cd/qPIjBzxQKuWEn6pk=;
+        b=13oRaIfEW+73jLfqkyekNErZbMJqXdnSYacGoyP2XAv6ZfSQf1RXPcha8atJOZl8As
+         46vhi5spf6uugfF2HRkrCGnngBkhpSKwqsOkk5OYk85LfSrz7LbfLsPwhVRYToYTXkqz
+         +1ZLJuSe2KBcwjuxVw6YY4LVO98aDuiisfokbLUcSNYz8kMw5HJx39snWC62fR7VVmIP
+         7zM85Qj96lClyr/B8O5QVaul7SKe33eNJP5xRF1zUmd3u4ylwb/kRSmRTW86aOz2gvbF
+         kXslc/8QQmixEmS3PCXkkdI8irlBHJ+OMliP64r1Viic8ND2F7FfAIGtHgJIMlOJM+3/
+         URdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758550068; x=1759154868;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=2gKCZnS8Y0kw7LI52aPWPye+cd/qPIjBzxQKuWEn6pk=;
+        b=WpY0Ffy3S7HMlQ1NsfdRILuj4i6HEzUbZPvi/Ync/s6DZNoOi5+0XDCOCljp3GGVhN
+         a/YKs1ewfy5VJmci3tJ/am0leXoMDk0BjI/7BLZsTjVSEsyfmdiEmVMsCOSgX9UoOO6F
+         NUhgvtQyS2s+aXF/r4zrDvNkAxbjDH72yTbe4qIDwqBa/+1DO/Mc7WifleqkogdrYTXR
+         rGC/ZzLu3mJOnTZa/6LgMWXv6TZ2BS23RyXTuW+zazdDuERZC8Ldr2rCuWE/2KNCarM8
+         lcurjJp/BHrDmAgxBUHTlse1GxQfQBmKG/cXqkX5g7/k2JrHifC4QHuhQrZsQ4jCZW2C
+         tJWw==
+X-Gm-Message-State: AOJu0YxEDnEGQaEBlhh9FLCvRHU7tRlup9LNxcBG7723KAbCoxULy5nH
+	mIlHXncKdp6x4f1MPOZqDSM/uglTjUrCbL9zIab0DjFlB79QKotfbCbjF8Fo6UwF2QM=
+X-Gm-Gg: ASbGncuqzR227+Me3HCwfxlFUoygL+LCOzAvHl/Lwe8kQ7QtwDP0WcRQ6IsSYm+JDh+
+	hUIuHz1AkoAT4fWq6j6hO6T3OBb5MNWHMIoG47/9OB9e27BW8VKZu8KN9kFU5C48iWeKVmAAlc2
+	dVF4pAYKqslP0FcP4I07YbLr68RDRLMcbjcYPLV5sEeZSaZj2t1mQrB6ticalLKuK5YX/1xGPED
+	bmQKN36Itc7bDT0fWPtlK9jwGl0CG9x708tTXMpnrGZEbBQy+oKVpNC1YV3N1FhKX8w11q5hlHL
+	JnznOttf2AyWTzUzx4LKVM0udcnifPyZGpSMecoVv6SMKldmNKIOlzs6a/ROQD/tW4PUpcoZfgg
+	Qv9Ooek6tt3XtZV2q/MTlvEjTV3E0NkS9GWQOSmySjd+yEABInw3XU59z8jNLkFRZe7Wa
+X-Google-Smtp-Source: AGHT+IG2LQi+1Jve61dJzJPf3p6C4wK2oRc2C6Ic3zD7ZHI0AKL2Y3hhz823ekZ6+r+8VVvfemU3qw==
+X-Received: by 2002:a17:907:972a:b0:b04:4046:db6b with SMTP id a640c23a62f3a-b24f567c816mr1300784166b.45.1758550067866;
+        Mon, 22 Sep 2025 07:07:47 -0700 (PDT)
+Received: from localhost (144-178-202-139.static.ef-service.nl. [144.178.202.139])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b29b80eaec6sm484442766b.87.2025.09.22.07.07.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 22 Sep 2025 07:07:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[16];
-	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[linux.intel.com,oracle.com,ffwll.ch,gmx.de];
-	MIME_TRACE(0.00)[0:+];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_ENVRCPT(0.00)[163.com,gmx.de];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,suse.de,oracle.com,linuxfoundation.org,linux.intel.com,ravnborg.org,163.com,kylinos.cn,kernel.org,c64.rulez.org];
-	RCVD_TLS_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,intel.com:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
-X-Spam-Flag: NO
-X-Spam-Level: 
-X-Rspamd-Queue-Id: 349621F79A
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -3.51
+Date: Mon, 22 Sep 2025 16:07:47 +0200
+Message-Id: <DCZDZ037P56C.3MS3HI55IN41J@fairphone.com>
+Cc: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+ <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 4/5] fbdev/simplefb: Sort headers correctly
+From: "Luca Weiss" <luca.weiss@fairphone.com>
+To: "Javier Martinez Canillas" <javierm@redhat.com>, "Luca Weiss"
+ <luca.weiss@fairphone.com>, "Hans de Goede" <hdegoede@redhat.com>, "Maarten
+ Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard"
+ <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David
+ Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Rob
+ Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "Helge Deller" <deller@gmx.de>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-4-f69b86cd3d7d@fairphone.com>
+ <87o6u9d3kg.fsf@minerva.mail-host-address-is-not-set>
+In-Reply-To: <87o6u9d3kg.fsf@minerva.mail-host-address-is-not-set>
 
-Commit 1a194e6c8e1e ("fbcon: fix integer overflow in fbcon_do_set_font")
-introduced an out-of-bounds access by storing data and allocation sizes
-in the same variable. Restore the old size calculation and use the new
-variable 'alloc_size' for the allocation.
+Hi all,
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: 1a194e6c8e1e ("fbcon: fix integer overflow in fbcon_do_set_font")
-Reported-by: Jani Nikula <jani.nikula@linux.intel.com>
-Closes: https://gitlab.freedesktop.org/drm/i915/kernel/-/issues/15020
-Cc: Samasth Norway Ananda <samasth.norway.ananda@oracle.com>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: George Kennedy <george.kennedy@oracle.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Simona Vetter <simona@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>
-Cc: "Ville Syrjälä" <ville.syrjala@linux.intel.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Qianqiang Liu <qianqiang.liu@163.com>
-Cc: Shixiong Ou <oushixiong@kylinos.cn>
-Cc: Kees Cook <kees@kernel.org>
-Cc: <stable@vger.kernel.org> # v5.9+
-Cc: Zsolt Kajtar <soci@c64.rulez.org>
----
- drivers/video/fbdev/core/fbcon.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Fri Jun 27, 2025 at 9:52 AM CEST, Javier Martinez Canillas wrote:
+> Luca Weiss <luca.weiss@fairphone.com> writes:
+>
+>> Make sure the headers are sorted alphabetically to ensure consistent
+>> code.
+>>
+>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+>> ---
+>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 5fade44931b8..c1c0cdd7597c 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2518,7 +2518,7 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
- 	unsigned charcount = font->charcount;
- 	int w = font->width;
- 	int h = font->height;
--	int size;
-+	int size, alloc_size;
- 	int i, csum;
- 	u8 *new_data, *data = font->data;
- 	int pitch = PITCH(font->width);
-@@ -2551,10 +2551,10 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
- 		return -EINVAL;
- 
- 	/* Check for overflow in allocation size calculation */
--	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &size))
-+	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &alloc_size))
- 		return -EINVAL;
- 
--	new_data = kmalloc(size, GFP_USER);
-+	new_data = kmalloc(alloc_size, GFP_USER);
- 
- 	if (!new_data)
- 		return -ENOMEM;
--- 
-2.51.0
+While there's still some open questions surrounding dt-bindings and how
+exactly to do that, I think it would be good to pick up the two
+"Sort headers correctly" patches so that they already get in. They're
+good to have in any case in my opinion.
 
+Regards
+Luca

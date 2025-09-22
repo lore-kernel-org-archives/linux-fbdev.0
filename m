@@ -1,233 +1,190 @@
-Received: from mail-il1-f208.google.com (mail-il1-f208.google.com [209.85.166.208])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 504013081AB
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 12:50:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.208
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BDE73093D3
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 13:49:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758545436; cv=none; b=ZZRWU1LpMzx76Kq1PwK38887A/ZOCVR0K4Nl3jfQercC+Xw8Xu/6Jir+gnDO/qHlC2kS2K2iCJMjiRyXDXTiC+Up9ZMtnJo3X+fyeV0w6GAaBjz4o0+0W4YKBRRtGOCWrg2Wm/8cXitbc5CkR7z8BRqN4h9RejBOTiZO7PvElP8=
+	t=1758548952; cv=none; b=anel/+J6Zj6+9yIjfj+n3WSPz7CkW3rAqITf01u26SlZwXNcFRQiSUoQ2FSVe7zkRIDFep+plwxITxDP3Ar8YfSLtpbrrYlcr5fuLZMkcYjIxoata2+CwEu4TVKCIGtGhP6WtRl+mQ2+OT+WZ9wAbIqBLopoZAMjvDQtG1VOo2w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758545436; c=relaxed/simple;
-	bh=N7iBCeB1NX/WELU1UW6cPg88YTxzDsWTyL9DUs/4ZKE=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=urUws+aVShFY7QgvdT5fWKzbYmZE4NpWI/OmsMEh+GA/1d6k3DjsmmiOdgHO8159cVG9cZjthahaC7WKUrBPYBfuZMM+2bReIyNjRbqTeE320Fj7pSlTYRlwAH8lWqrJhcCIYAC3iVdLV4TyRvgCTIM3nY9CjAYTmJlsRuPJeKg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.208
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-il1-f208.google.com with SMTP id e9e14a558f8ab-42574804553so35604715ab.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 05:50:34 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758545433; x=1759150233;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=7FJVEO2JSEInNaIAVfqXuJ582DXJMN71NIxbYU3RqcA=;
-        b=Jvw1yujss7e4S1DYYY6Ky/ZKcXZvmzTTLfSllIqMPwoO1yRcMagse7KCAvRH0v5j74
-         02MBBzX3m9Een8ZHmFXF+C66lKBTjUp8aSU5jt0JbQUTwlZtWHFWRT87/yNTGbYFm//a
-         Y18wQfsZ01crRBXXZQsswghVwBUHUQWmuJTePddPKeDJ7pXeCUBMHlf3Ev1XtVuW0Aza
-         OsznSGRQsFM2VDvEBSOvb4wcIZzttNGyirVdSyvNhrnIkv/wD4V0Oodhdcev3LdnW5D6
-         ctViLw3ysAS9n1L3YQHRla6oLlAjRYg+Xko5glanLawHCSiPYXUTdL7GBaCYLRxEJCV8
-         y5LA==
-X-Forwarded-Encrypted: i=1; AJvYcCV/l3Vezi9gw1E2VTdLWZ+Z5ye7BUjtiCsdaegv+dkhzZpYKRv+H5whbnXa88H7XX4NYi0wvOjjLl2l4g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyBfjinwok+vaWJGNOkXCkeYPldF6wRlm+Sb5vqfklKE/S+HBv5
-	LV70YpY/fP0V5XnOCmcKXDO2YSWQy6qVWUj0BzvisCoVqJ8ih6RXoibj71DQLDSh5baZReSu2d2
-	xLjjlQPwzusWplEuxVmegvIRKGAl65ama19laDhCbeunBn+6wQT2q54L0NGU=
-X-Google-Smtp-Source: AGHT+IHYpBtAyVXLokHcOTao6pfLrHb+XMXkLtI9C6fT1fK39oMs+hOhy4hVdkZNjyscp1qCAvz8YoVixCrJdLEG3gOum3gFSBE4
+	s=arc-20240116; t=1758548952; c=relaxed/simple;
+	bh=ngl7H2YJ1DHyIGZNomAJTEjURUQ4b0al6n5Rb1tJTz4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=glzT4flIu6RDQI2zweZckglJZ4b0TK9DPbaFqwAAi8HObsQl7RYCiQI5lROXZvIBhWgSxzQBszJGYdVLKIO84+4cvBgUfNEamjC7K4qE9jZ0zYY2OawZBMgdvsQiu59Ked19Y5qIpZeBrKLXrUGm/BbR3sfe8qESMA7NM9LVH1g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=V4olzZ1s; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Jb4G78GC; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=V4olzZ1s; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Jb4G78GC; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="V4olzZ1s";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Jb4G78GC";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="V4olzZ1s";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Jb4G78GC"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 349621F79A;
+	Mon, 22 Sep 2025 13:49:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1758548949; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
+	b=V4olzZ1sVE6zlzQYJ9cqO2/GPIzc9f3v/C2WFa3nzC07/9UtK46eNSkp5Q+ZODqBIcq7km
+	VxYXSBdkebX8PDURYy9lLZwtWInJuB8+7hav0DHWYEpCDNcaQOhJ/5cWcuQLGVOUdgfu0I
+	2zCXR0pnzQPp4LmEf8mhpKM+JwofUU8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1758548949;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
+	b=Jb4G78GCOKJ7HMid6++qn5pfiNCZTNmUiXh/eihDkAn76Kw5FJyRTcWWt9V5qNxyIgl0A2
+	vgE6apw3X4EBX/Bw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=V4olzZ1s;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=Jb4G78GC
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1758548949; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
+	b=V4olzZ1sVE6zlzQYJ9cqO2/GPIzc9f3v/C2WFa3nzC07/9UtK46eNSkp5Q+ZODqBIcq7km
+	VxYXSBdkebX8PDURYy9lLZwtWInJuB8+7hav0DHWYEpCDNcaQOhJ/5cWcuQLGVOUdgfu0I
+	2zCXR0pnzQPp4LmEf8mhpKM+JwofUU8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1758548949;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7TzD8bMv0gdipWLQ/wOu3P08SLqKkylmdgnKiucqS+8=;
+	b=Jb4G78GCOKJ7HMid6++qn5pfiNCZTNmUiXh/eihDkAn76Kw5FJyRTcWWt9V5qNxyIgl0A2
+	vgE6apw3X4EBX/Bw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C067313A63;
+	Mon, 22 Sep 2025 13:49:08 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id uN1KLdRT0WguAgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 22 Sep 2025 13:49:08 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: jani.nikula@linux.intel.com,
+	samasth.norway.ananda@oracle.com,
+	simona@ffwll.ch,
+	deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	George Kennedy <george.kennedy@oracle.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	=?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@linux.intel.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Qianqiang Liu <qianqiang.liu@163.com>,
+	Shixiong Ou <oushixiong@kylinos.cn>,
+	Kees Cook <kees@kernel.org>,
+	stable@vger.kernel.org,
+	Zsolt Kajtar <soci@c64.rulez.org>
+Subject: [PATCH] fbcon: Fix OOB access in font allocation
+Date: Mon, 22 Sep 2025 15:45:54 +0200
+Message-ID: <20250922134619.257684-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6e02:1489:b0:421:7d1:7af8 with SMTP id
- e9e14a558f8ab-424819a21a9mr188902185ab.26.1758545433518; Mon, 22 Sep 2025
- 05:50:33 -0700 (PDT)
-Date: Mon, 22 Sep 2025 05:50:33 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <68d14619.a00a0220.37dadf.0049.GAE@google.com>
-Subject: [syzbot] [fbdev?] KASAN: slab-out-of-bounds Read in soft_cursor (2)
-From: syzbot <syzbot+ae44b38396335bd847cd@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-3.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCPT_COUNT_TWELVE(0.00)[16];
+	ARC_NA(0.00)[];
+	FREEMAIL_TO(0.00)[linux.intel.com,oracle.com,ffwll.ch,gmx.de];
+	MIME_TRACE(0.00)[0:+];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_ENVRCPT(0.00)[163.com,gmx.de];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,suse.de,oracle.com,linuxfoundation.org,linux.intel.com,ravnborg.org,163.com,kylinos.cn,kernel.org,c64.rulez.org];
+	RCVD_TLS_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,intel.com:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
+X-Spam-Flag: NO
+X-Spam-Level: 
+X-Rspamd-Queue-Id: 349621F79A
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Score: -3.51
 
-Hello,
+Commit 1a194e6c8e1e ("fbcon: fix integer overflow in fbcon_do_set_font")
+introduced an out-of-bounds access by storing data and allocation sizes
+in the same variable. Restore the old size calculation and use the new
+variable 'alloc_size' for the allocation.
 
-syzbot found the following issue on:
-
-HEAD commit:    f83ec76bf285 Linux 6.17-rc6
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=17147b12580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=8f01d8629880e620
-dashboard link: https://syzkaller.appspot.com/bug?extid=ae44b38396335bd847cd
-compiler:       gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
-
-Unfortunately, I don't have any reproducer for this issue yet.
-
-Downloadable assets:
-disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/d900f083ada3/non_bootable_disk-f83ec76b.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/bdedf70f8797/vmlinux-f83ec76b.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/5bf9318d9242/bzImage-f83ec76b.xz
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+ae44b38396335bd847cd@syzkaller.appspotmail.com
-
-==================================================================
-BUG: KASAN: slab-out-of-bounds in soft_cursor+0x458/0xa10 drivers/video/fbdev/core/softcursor.c:70
-Read of size 3 at addr ffff888054a70d7d by task kworker/2:2/3582
-
-CPU: 2 UID: 0 PID: 3582 Comm: kworker/2:2 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2~bpo12+1 04/01/2014
-Workqueue: events_power_efficient fb_flashcursor
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:94 [inline]
- dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
- print_address_description mm/kasan/report.c:378 [inline]
- print_report+0xcd/0x630 mm/kasan/report.c:482
- kasan_report+0xe0/0x110 mm/kasan/report.c:595
- check_region_inline mm/kasan/generic.c:183 [inline]
- kasan_check_range+0x100/0x1b0 mm/kasan/generic.c:189
- __asan_memcpy+0x23/0x60 mm/kasan/shadow.c:105
- soft_cursor+0x458/0xa10 drivers/video/fbdev/core/softcursor.c:70
- bit_cursor+0xe8c/0x17e0 drivers/video/fbdev/core/bitblit.c:370
- fb_flashcursor drivers/video/fbdev/core/fbcon.c:408 [inline]
- fb_flashcursor+0x30d/0x400 drivers/video/fbdev/core/fbcon.c:377
- process_one_work+0x9cc/0x1b70 kernel/workqueue.c:3236
- process_scheduled_works kernel/workqueue.c:3319 [inline]
- worker_thread+0x6c8/0xf10 kernel/workqueue.c:3400
- kthread+0x3c2/0x780 kernel/kthread.c:463
- ret_from_fork+0x56a/0x730 arch/x86/kernel/process.c:148
- ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
- </TASK>
-
-Allocated by task 10710:
- kasan_save_stack+0x33/0x60 mm/kasan/common.c:47
- kasan_save_track+0x14/0x30 mm/kasan/common.c:68
- poison_kmalloc_redzone mm/kasan/common.c:388 [inline]
- __kasan_kmalloc+0xaa/0xb0 mm/kasan/common.c:405
- kasan_kmalloc include/linux/kasan.h:260 [inline]
- __do_kmalloc_node mm/slub.c:4376 [inline]
- __kmalloc_noprof+0x223/0x510 mm/slub.c:4388
- kmalloc_noprof include/linux/slab.h:909 [inline]
- fbcon_set_font+0x434/0xb80 drivers/video/fbdev/core/fbcon.c:2536
- con_font_set drivers/tty/vt/vt.c:4887 [inline]
- con_font_op+0x7fb/0xf50 drivers/tty/vt/vt.c:4934
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x48f/0x30a0 drivers/tty/vt/vt_ioctl.c:751
- tty_ioctl+0x661/0x1680 drivers/tty/tty_io.c:2792
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:598 [inline]
- __se_sys_ioctl fs/ioctl.c:584 [inline]
- __x64_sys_ioctl+0x18b/0x210 fs/ioctl.c:584
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0xcd/0x4e0 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-
-The buggy address belongs to the object at ffff888054a70800
- which belongs to the cache kmalloc-1k of size 1024
-The buggy address is located 621 bytes to the right of
- allocated 784-byte region [ffff888054a70800, ffff888054a70b10)
-
-The buggy address belongs to the physical page:
-page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x54a70
-head: order:3 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
-flags: 0xfff00000000040(head|node=0|zone=1|lastcpupid=0x7ff)
-page_type: f5(slab)
-raw: 00fff00000000040 ffff88801b842dc0 ffffea0000d94e00 dead000000000002
-raw: 0000000000000000 0000000000100010 00000000f5000000 0000000000000000
-head: 00fff00000000040 ffff88801b842dc0 ffffea0000d94e00 dead000000000002
-head: 0000000000000000 0000000000100010 00000000f5000000 0000000000000000
-head: 00fff00000000003 ffffea0001529c01 00000000ffffffff 00000000ffffffff
-head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000008
-page dumped because: kasan: bad access detected
-page_owner tracks the page as allocated
-page last allocated via order 3, migratetype Unmovable, gfp_mask 0x52820(GFP_ATOMIC|__GFP_NOWARN|__GFP_NORETRY|__GFP_COMP), pid 12, tgid 12 (kworker/u32:0), ts 114834271157, free_ts 113350555070
- set_page_owner include/linux/page_owner.h:32 [inline]
- post_alloc_hook+0x1c0/0x230 mm/page_alloc.c:1851
- prep_new_page mm/page_alloc.c:1859 [inline]
- get_page_from_freelist+0x132b/0x38e0 mm/page_alloc.c:3858
- __alloc_frozen_pages_noprof+0x261/0x23f0 mm/page_alloc.c:5148
- alloc_pages_mpol+0x1fb/0x550 mm/mempolicy.c:2416
- alloc_slab_page mm/slub.c:2492 [inline]
- allocate_slab mm/slub.c:2660 [inline]
- new_slab+0x247/0x330 mm/slub.c:2714
- ___slab_alloc+0xcf2/0x1750 mm/slub.c:3901
- __slab_alloc.constprop.0+0x56/0xb0 mm/slub.c:3992
- __slab_alloc_node mm/slub.c:4067 [inline]
- slab_alloc_node mm/slub.c:4228 [inline]
- __do_kmalloc_node mm/slub.c:4375 [inline]
- __kmalloc_noprof+0x2f2/0x510 mm/slub.c:4388
- kmalloc_noprof include/linux/slab.h:909 [inline]
- kzalloc_noprof include/linux/slab.h:1039 [inline]
- neigh_alloc net/core/neighbour.c:522 [inline]
- ___neigh_create+0x14e6/0x28c0 net/core/neighbour.c:656
- ip6_finish_output2+0x1299/0x2020 net/ipv6/ip6_output.c:132
- __ip6_finish_output+0x3cd/0x1010 net/ipv6/ip6_output.c:215
- ip6_finish_output net/ipv6/ip6_output.c:226 [inline]
- NF_HOOK_COND include/linux/netfilter.h:307 [inline]
- ip6_output+0x1ca/0x3e0 net/ipv6/ip6_output.c:248
- dst_output include/net/dst.h:461 [inline]
- NF_HOOK include/linux/netfilter.h:318 [inline]
- ndisc_send_skb+0xa66/0x1e30 net/ipv6/ndisc.c:512
- ndisc_send_rs+0x129/0x670 net/ipv6/ndisc.c:722
- addrconf_dad_completed+0x49d/0x10d0 net/ipv6/addrconf.c:4360
- addrconf_dad_work+0x855/0x14e0 net/ipv6/addrconf.c:4268
-page last free pid 60 tgid 60 stack trace:
- reset_page_owner include/linux/page_owner.h:25 [inline]
- free_pages_prepare mm/page_alloc.c:1395 [inline]
- __free_frozen_pages+0x7d5/0x10f0 mm/page_alloc.c:2895
- qlink_free mm/kasan/quarantine.c:163 [inline]
- qlist_free_all+0x4d/0x120 mm/kasan/quarantine.c:179
- kasan_quarantine_reduce+0x195/0x1e0 mm/kasan/quarantine.c:286
- __kasan_kmalloc+0x8a/0xb0 mm/kasan/common.c:396
- kmalloc_noprof include/linux/slab.h:905 [inline]
- netdevice_queue_work drivers/infiniband/core/roce_gid_mgmt.c:664 [inline]
- netdevice_event+0x365/0x9d0 drivers/infiniband/core/roce_gid_mgmt.c:823
- notifier_call_chain+0xb9/0x410 kernel/notifier.c:85
- call_netdevice_notifiers_info+0xbe/0x140 net/core/dev.c:2229
- call_netdevice_notifiers_extack net/core/dev.c:2267 [inline]
- call_netdevice_notifiers net/core/dev.c:2281 [inline]
- unregister_netdevice_many_notify+0xf76/0x24c0 net/core/dev.c:12166
- unregister_netdevice_many net/core/dev.c:12229 [inline]
- default_device_exit_batch+0x853/0xaf0 net/core/dev.c:12733
- ops_exit_list net/core/net_namespace.c:204 [inline]
- ops_undo_list+0x360/0xab0 net/core/net_namespace.c:251
- cleanup_net+0x408/0x890 net/core/net_namespace.c:682
- process_one_work+0x9cc/0x1b70 kernel/workqueue.c:3236
- process_scheduled_works kernel/workqueue.c:3319 [inline]
- worker_thread+0x6c8/0xf10 kernel/workqueue.c:3400
- kthread+0x3c2/0x780 kernel/kthread.c:463
- ret_from_fork+0x56a/0x730 arch/x86/kernel/process.c:148
- ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
-
-Memory state around the buggy address:
- ffff888054a70c00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
- ffff888054a70c80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
->ffff888054a70d00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-                                                                ^
- ffff888054a70d80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
- ffff888054a70e00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-==================================================================
-
-
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 1a194e6c8e1e ("fbcon: fix integer overflow in fbcon_do_set_font")
+Reported-by: Jani Nikula <jani.nikula@linux.intel.com>
+Closes: https://gitlab.freedesktop.org/drm/i915/kernel/-/issues/15020
+Cc: Samasth Norway Ananda <samasth.norway.ananda@oracle.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: George Kennedy <george.kennedy@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Simona Vetter <simona@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>
+Cc: "Ville Syrjälä" <ville.syrjala@linux.intel.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Qianqiang Liu <qianqiang.liu@163.com>
+Cc: Shixiong Ou <oushixiong@kylinos.cn>
+Cc: Kees Cook <kees@kernel.org>
+Cc: <stable@vger.kernel.org> # v5.9+
+Cc: Zsolt Kajtar <soci@c64.rulez.org>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/video/fbdev/core/fbcon.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 5fade44931b8..c1c0cdd7597c 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2518,7 +2518,7 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+ 	unsigned charcount = font->charcount;
+ 	int w = font->width;
+ 	int h = font->height;
+-	int size;
++	int size, alloc_size;
+ 	int i, csum;
+ 	u8 *new_data, *data = font->data;
+ 	int pitch = PITCH(font->width);
+@@ -2551,10 +2551,10 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+ 		return -EINVAL;
+ 
+ 	/* Check for overflow in allocation size calculation */
+-	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &size))
++	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &alloc_size))
+ 		return -EINVAL;
+ 
+-	new_data = kmalloc(size, GFP_USER);
++	new_data = kmalloc(alloc_size, GFP_USER);
+ 
+ 	if (!new_data)
+ 		return -ENOMEM;
+-- 
+2.51.0
 
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup

@@ -1,129 +1,221 @@
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF038303A31
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 10:36:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 713F92FCBFD;
+	Mon, 22 Sep 2025 11:42:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758537402; cv=none; b=n1gIFdUh7AO3n/ytj985mM0tEH0fcz2W57QRmUGBxOVAaUX7E4OV7v1E21VFgRj2z3TFsQMHUbet690bBvpw5yo4buh5ctcuZdSX2egerWNNQcZmpiW4Ta1u5ku+ZygOcmWhVRrpucNaKOgDcI0mVgulq+zePHfWk+EOB59r8B0=
+	t=1758541346; cv=none; b=KGougSkS9qhTYwQKZIkTcrbhGwwOaKKa1x4fYxGF/IjG/mrX2/UJDh+XUZ0972Iv/i9KiDo7hkC9fgQ/uf99b8YWTrAiY8pqYbBXqPSkq6J9tzQbPIh1cu5LOXb6DMnSdr18cRpcvzfdGYjqXTsdiU+0XHYeQrORgbO10CxlowM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758537402; c=relaxed/simple;
-	bh=RXgkduA9t/iaVUetjSaNFmeGS+3ycNLeNR6/iqQUeUo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KL0HDvTN+KFl9WvaiEjVvm6J7eiJ8o9C7jk9q2Okv7BNj7gWLj2wsjR6V8+bCOGoM+X8C6eROJl2QAK3RBAui0iOqCI0bqw3AiaVEagwh30+iXJcZ/q0ea7afhPCw2uaVRUuJfc8FztOf1R4OS4Ca9kp0HUevewvrXXr0y7EX+g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KMB33dgp; arc=none smtp.client-ip=209.85.210.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KMB33dgp"
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-76e2ea933b7so3689481b3a.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Sep 2025 03:36:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758537400; x=1759142200; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=O4rjMybAXAfa9QQnXjs8aGz45/fsypTonY048qW3FBs=;
-        b=KMB33dgpmNlqz7BVPEroDz5dLTVD3730hUo046jTKiVyM982ModaflF4GKDzUV8L9+
-         AqjWmmlJWgvZ6lfFLe/6I73p8s10t9nkMRjVJ49TsA1xXF7QTBiXSnkbEbdyhWE+rSQH
-         NcoXZ3Mf3CulqP6WHpRAwuqQIscgFYdHmpXkyCdS8tH2oFbFv07om8BUGSYKMftUQXQ+
-         hOWWPdOij364Y2IqPfj5cWZYB6v98Qa/vYwqSGSOecPOR9zg/HsXRRTxD3Os/rz9DNzL
-         dAB7GDSP5OVUm+CT8AS/HegC8rgBI9Z/dJzEm4fAKkt17yAkTrm8MQ3Gnqx+1Q5fpn6D
-         ZZoQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758537400; x=1759142200;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=O4rjMybAXAfa9QQnXjs8aGz45/fsypTonY048qW3FBs=;
-        b=A26dKIDdSO95juw53ARkf8abJf5WB8N1yx68j/hQ218d+dN0oKHh+Bll6m2eKomTSp
-         xKXrg4oIPfXYLj6zQ82pP8ZmFj3tj21+duSSJnw7uv5jhavEa/r0cQIeSEIhnAbkVKLB
-         lVKQuGOPIXG/XO3hazqDCBnZV8RRbPACN7IK7n0CagqGLXrnMIM7w/yoH48LoU/Hj2KG
-         jQc/b8mfAA7OZtE2hJO7v5j6CZO8HPZqINHqi25tYHpJJ7W2PBwYDnF2xJMlUHVikaCi
-         pqwrIxM9Dics/iwvkx1+uYLsM30zn6ImN3muQFvAlk//IlbKFEL6FNRBLw/RPpXTf3UE
-         /Aqw==
-X-Forwarded-Encrypted: i=1; AJvYcCUeoYaz6PlkmiVmY7FdL6hwKrzat5oca7N5CiJQFJNRk0ryxT3siz1/n+4Wi0++YnCZ3BonaZ6j+YnHZQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxzMfqHUzwjWSHTEt1FSoGpHPyaPKbfcMsPsnFYFI6e+6W3pMz7
-	3/Eo83sAcvqevArtkdj21neJfq/LjVN7uGRy7MZUH9spiUDESc626SHU
-X-Gm-Gg: ASbGncsd2j0bW8bsq66HpkBGpw7b8oPd6UP29eaWbBC0unfwcRCmkZVaggFoAWcYFEx
-	hkMbwUNm5xecGtiLMH/lsqpXCrksasQpingX2lX/oFQSnf03n2CjYixD3pRJl7NriyWuXbwhqU/
-	UAuf+nEMpbKyvIqr67OIL2K2c/10fYRPZVYLzkBDUHgchYFAfShckeyyd5bAizz0NblQkxNhWDG
-	Ji73HH6W0+1GFcPA4W9AVBI5s7p1N/S4mOr1TIwtYWmEHGmbfB/6JmxHsCpfpzbLYXAbhrYBKgg
-	/wYHg4NRFNyRS4mAoVVHE90lYIsl+myWroZtELisRf4R3mLZbu2FnSj/j0LQTqINi1DkbtmB0pt
-	+bi8Vxa+j+cQ4w8MhOc3OqQ==
-X-Google-Smtp-Source: AGHT+IGx/AbAeHF8PEb0Q776W6z+sCUlCf72y7lCKvvsiZcqlsNVtOnkt+abaAy0lE0qaFDfobwBLA==
-X-Received: by 2002:a05:6a21:e081:b0:248:86a1:a242 with SMTP id adf61e73a8af0-2920104846amr16819940637.4.1758537399897;
-        Mon, 22 Sep 2025 03:36:39 -0700 (PDT)
-Received: from archie.me ([103.124.138.155])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-32ed27612b3sm15751320a91.22.2025.09.22.03.36.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Sep 2025 03:36:36 -0700 (PDT)
-Received: by archie.me (Postfix, from userid 1000)
-	id 4A87A423FA7F; Mon, 22 Sep 2025 17:36:34 +0700 (WIB)
-From: Bagas Sanjaya <bagasdotme@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux Documentation <linux-doc@vger.kernel.org>,
-	Linux Framebuffer <linux-fbdev@vger.kernel.org>,
-	Linux DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Helge Deller <deller@gmx.de>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Bernie Thompson <bernie@plugable.com>,
-	Bagas Sanjaya <bagasdotme@gmail.com>,
-	Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Arvind Sankar <nivedita@alum.mit.edu>
-Subject: [PATCH v2 0/3] framebuffer docs toctree index refactoring
-Date: Mon, 22 Sep 2025 17:36:13 +0700
-Message-ID: <20250922103615.42925-2-bagasdotme@gmail.com>
-X-Mailer: git-send-email 2.51.0
+	s=arc-20240116; t=1758541346; c=relaxed/simple;
+	bh=WxBCkp7CDm9lFHXFic/l68d1KIlKT4RxOgDq417+sv4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ihAQiJqA4lx6F9cFvYSz4dsuavEK8CHSP4+dMhytgf6ELRjkBafOT2RNuQaxW8FHCsw1WiYDsVlseNZlLLTB/JcHyW1QLGlKtuqF8w6l85Rc7gjQjlFb98Df1YDPprAH2fCmRrDaC2E9Cq8KvCmgW0APfB23G8BoxZuwPmZFInk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
+Received: from mail.maildlp.com (unknown [172.19.93.142])
+	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4cVh6d26pkzKHN7L;
+	Mon, 22 Sep 2025 19:42:17 +0800 (CST)
+Received: from mail02.huawei.com (unknown [10.116.40.128])
+	by mail.maildlp.com (Postfix) with ESMTP id E79131A124B;
+	Mon, 22 Sep 2025 19:42:20 +0800 (CST)
+Received: from [10.174.176.88] (unknown [10.174.176.88])
+	by APP4 (Coremail) with SMTP id gCh0CgAXKWEYNtFoiYXFAQ--.64696S3;
+	Mon, 22 Sep 2025 19:42:18 +0800 (CST)
+Message-ID: <394c720f-d23e-4208-b1d6-e0b98b03fc91@huaweicloud.com>
+Date: Mon, 22 Sep 2025 19:42:16 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1333; i=bagasdotme@gmail.com; h=from:subject; bh=RXgkduA9t/iaVUetjSaNFmeGS+3ycNLeNR6/iqQUeUo=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBkX1QJvvc6sv/jO0nqfj0DYtUu7tRW/7X70Km37Ao3pJ 2LZSxfwdZSyMIhxMciKKbJMSuRrOr3LSORC+1pHmDmsTCBDGLg4BWAis4sYGfb4Ctjv/7f6iW73 x8VKe54ssFz3ZU+RvmW++9oU7lMvrBQZGeYFbvq87d5V56gezZPWqSeFNr56/O5c3UIm2SlTH65 24GUHAA==
-X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: Delay the setting of fbcon_ops to fix KASAN issues
+To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de, lee@kernel.org,
+ jani.nikula@intel.com, oushixiong@kylinos.cn, soci@c64.rulez.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, yangerkun@huawei.com
+References: <20250905024340.337521-1-wozizhi@huaweicloud.com>
+ <97658279-73a4-4d30-817b-6dcd47a11d6b@suse.de>
+From: Zizhi Wo <wozizhi@huaweicloud.com>
+In-Reply-To: <97658279-73a4-4d30-817b-6dcd47a11d6b@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-
-Hi,
-
-Here is simple toctree refactoring for framebuffer documentation,
-based on docs-next tree. Simple because it only splits the toctree
-in patch [3/3] into two sections.
-
-Enjoy!
-
-Changes since v1 [1]:
-
-  * Apply proofreading suggestions (Randy, [2/3])
-  * Add review tags (Randy)
-
-[1]: https://lore.kernel.org/linux-doc/20250919003640.14867-1-bagasdotme@gmail.com/
-
-Bagas Sanjaya (3):
-  Documentation: fb: ep93xx: Demote section headings
-  Documentation: fb: Retitle driver docs
-  Documentation: fb: Split toctree
-
- Documentation/fb/aty128fb.rst  |  8 ++--
- Documentation/fb/efifb.rst     |  6 +--
- Documentation/fb/ep93xx-fb.rst |  4 --
- Documentation/fb/gxfb.rst      |  8 ++--
- Documentation/fb/index.rst     | 80 +++++++++++++++++++---------------
- Documentation/fb/lxfb.rst      |  9 ++--
- Documentation/fb/matroxfb.rst  |  9 ++--
- Documentation/fb/pvr2fb.rst    |  6 +--
- Documentation/fb/sa1100fb.rst  |  9 ++--
- Documentation/fb/sisfb.rst     |  6 +--
- Documentation/fb/sm712fb.rst   |  6 +--
- Documentation/fb/tgafb.rst     |  6 +--
- Documentation/fb/udlfb.rst     |  6 +--
- Documentation/fb/vesafb.rst    |  6 +--
- 14 files changed, 81 insertions(+), 88 deletions(-)
+X-CM-TRANSID:gCh0CgAXKWEYNtFoiYXFAQ--.64696S3
+X-Coremail-Antispam: 1UD129KBjvJXoWxKFyrtFykur4UKFy3GF43trb_yoWxGrWDpF
+	10yryUtFy5Crn5Jw17Xr4UXFy5XwnrJa4DW397ta4YyFW5AF1jqw4UXF1qgFW8Grs7Jr18
+	Xw1DJrWxuF47Ar7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkEb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k2
+	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
+	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7Cj
+	xVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I
+	0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40E
+	x7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x
+	0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AF
+	wI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4
+	xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43
+	MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I
+	0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWU
+	JVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x07UAwI
+	DUUUUU=
+X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
 
 
-base-commit: 348011753d99b146c190aae262ee361d03cb0c5e
--- 
-An old man doll... just what I always wanted! - Clara
+
+在 2025/9/22 14:31, Thomas Zimmermann 写道:
+> Hi
+> 
+> Am 05.09.25 um 04:43 schrieb Zizhi Wo:
+>> [BUG]
+>> Recently, we encountered a KASAN warning as follows:
+>>
+>> kasan_report+0xaf/0xe0 mm/kasan/report.c:588
+>> fb_pad_aligned_buffer+0x12f/0x150 drivers/video/fbdev/core/fbmem.c:116
+>> ccw_putcs_aligned drivers/video/fbdev/core/fbcon_ccw.c:119 [inline]
+>> ccw_putcs+0x9ac/0xbb0 drivers/video/fbdev/core/fbcon_ccw.c:175
+>> fbcon_putcs+0x329/0x3f0 drivers/video/fbdev/core/fbcon.c:1297
+>> do_update_region+0x3de/0x670 drivers/tty/vt/vt.c:623
+>> invert_screen+0x1de/0x600 drivers/tty/vt/vt.c:748
+>> highlight drivers/tty/vt/selection.c:57 [inline]
+>> clear_selection+0x5e/0x70 drivers/tty/vt/selection.c:81
+>> vc_do_resize+0xc8e/0xf40 drivers/tty/vt/vt.c:1206
+>> fbcon_modechanged+0x489/0x7a0 drivers/video/fbdev/core/fbcon.c:2705
+>> fbcon_set_all_vcs+0x1e0/0x600 drivers/video/fbdev/core/fbcon.c:2752
+>> fbcon_rotate_all drivers/video/fbdev/core/fbcon.c:250 [inline]
+>> ...
+>>
+>> reproduce[probabilistic, depending on the width and height of vc_font, as
+>> well as the value of "p" in do_update_region()]:
+> 
+> Which font sizes trigger the bug?
+
+As far as I can remember, op.width = 32 and op.height = 12;
+
+And I also do the TIOCL_SETSEL ioctl to set vc_sel.start && vc_sel.end
+
+> 
+>> 1) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
+>> 2) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
+>>
+>> [CAUSE]
+>> The root cause is that fbcon_modechanged() first sets the current 
+>> rotate's
+>> corresponding ops. Subsequently, during vc_resize(), it may trigger
+>> clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can 
+>> result
+>> in an out-of-bounds access to "src". This happens because ops->fontbuffer
+>> is reallocated in fbcon_rotate_font():
+>> 1) When rotate=2, its size is (width + 7) / 8 * height
+>> 2) When rotate=3, its size is (height + 7) / 8 * width
+>>
+>> And the call to fbcon_rotate_font() occurs after clear_selection(). In
+>> other words, the fontbuffer is allocated using the size calculated 
+>> from the
+>> previous rotation[2], but before reallocating it with the new size,
+>> con_putcs is already using the new rotation[3]:
+> 
+> We recently reworked the way rotation callbacks are set. [1] Does the 
+> bug still happen with [1] applied?
+> 
+> [1] https://patchwork.freedesktop.org/series/153056/#rev2
+
+Sorry, my reproduction script has been cleaned up because some time has
+passed. But the root cause of the issue is still setting ops too early,
+which leads to vc_resize() calling clear_selection(), then eventually
+.putcs. This uses the updated rotation-related functions on the previous
+region, which may cause out-of-bounds access.
+
+If this patch series does not ensure that the old putcs is used in the
+context of clear_selection() during vc_resize(), the problem may still 
+exist?
+
+Thanks,
+Zizhi Wo
+
+> 
+> Best regards
+> Thomas
+> 
+>>
+>> rotate_all_store
+>>   fbcon_rotate_all
+>>    fbcon_set_all_vcs
+>>     fbcon_modechanged
+>>     ...
+>>      fbcon_set_rotate
+>>       fbcon_rotate_ccw
+>>        ops->putcs = ccw_putcs // set rotate 3 ops
+>>      vc_resize
+>>      ...
+>>       clear_selection
+>>        highlight
+>>        ...
+>>         do_update_region
+>>     fbcon_putcs
+>>      ccw_putcs_aligned
+>>       src = ops->fontbuffer + (scr_readw(s--) & charmask)*cellsize
+>>       fb_pad_aligned_buffer----[src KASAN!!!]
+>>         update_screen
+>>          redraw_screen
+>>      fbcon_switch
+>>       fbcon_rotate_font
+>>        dst = kmalloc_array(len, d_cellsize, GFP_KERNEL)
+>>        ops->fontbuffer = dst
+>>
+>> [FIX]
+>> Considering that when the rotation changes, clear_selection() should 
+>> clear
+>> the previously selected region and not consider the new rotation yet.
+>> Therefore, the assignment to fbcon_ops for the newly set rotate can be
+>> postponed to fbcon_rotate_font(), since the fontbuffer is regenerated
+>> there. To avoid affecting other code paths, fbcon_set_rotate() will
+>> temporarily continue assigning fbcon_ops based on cur_rotate not rotate.
+>>
+>> Signed-off-by: Zizhi Wo <wozizhi@huaweicloud.com>
+>> ---
+>>   drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
+>>   1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/video/fbdev/core/fbcon_rotate.c 
+>> b/drivers/video/fbdev/core/fbcon_rotate.c
+>> index ec3c883400f7..d76446da24d4 100644
+>> --- a/drivers/video/fbdev/core/fbcon_rotate.c
+>> +++ b/drivers/video/fbdev/core/fbcon_rotate.c
+>> @@ -70,6 +70,7 @@ static int fbcon_rotate_font(struct fb_info *info, 
+>> struct vc_data *vc)
+>>               src += s_cellsize;
+>>               dst += d_cellsize;
+>>           }
+>> +        fbcon_rotate_ud(ops);
+>>           break;
+>>       case FB_ROTATE_CW:
+>>           for (i = len; i--; ) {
+>> @@ -78,6 +79,7 @@ static int fbcon_rotate_font(struct fb_info *info, 
+>> struct vc_data *vc)
+>>               src += s_cellsize;
+>>               dst += d_cellsize;
+>>           }
+>> +        fbcon_rotate_cw(ops);
+>>           break;
+>>       case FB_ROTATE_CCW:
+>>           for (i = len; i--; ) {
+>> @@ -86,6 +88,7 @@ static int fbcon_rotate_font(struct fb_info *info, 
+>> struct vc_data *vc)
+>>               src += s_cellsize;
+>>               dst += d_cellsize;
+>>           }
+>> +        fbcon_rotate_ccw(ops);
+>>           break;
+>>       }
+>> @@ -97,7 +100,7 @@ void fbcon_set_rotate(struct fbcon_ops *ops)
+>>   {
+>>       ops->rotate_font = fbcon_rotate_font;
+>> -    switch(ops->rotate) {
+>> +    switch (ops->cur_rotate) {
+>>       case FB_ROTATE_CW:
+>>           fbcon_rotate_cw(ops);
+>>           break;
+> 
 

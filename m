@@ -1,221 +1,136 @@
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 713F92FCBFD;
-	Mon, 22 Sep 2025 11:42:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B44043064BC;
+	Mon, 22 Sep 2025 12:43:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758541346; cv=none; b=KGougSkS9qhTYwQKZIkTcrbhGwwOaKKa1x4fYxGF/IjG/mrX2/UJDh+XUZ0972Iv/i9KiDo7hkC9fgQ/uf99b8YWTrAiY8pqYbBXqPSkq6J9tzQbPIh1cu5LOXb6DMnSdr18cRpcvzfdGYjqXTsdiU+0XHYeQrORgbO10CxlowM=
+	t=1758545017; cv=none; b=gkbY7uVJOzWrXFKI0dX/2sbbZ3/yN7KfGciTSlrztQmEySBiT2+QNNw5bebs8HDhiAoDwRKP3xHVcqVTHGawgT3QmSoZyJ9xM+1/ZXHeEgxmxV3zk5OCRgPy0eEqosPsDPh8uiKoNVJic6oz8BdpXt94hc5SGGIl8NDhrqswShA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758541346; c=relaxed/simple;
-	bh=WxBCkp7CDm9lFHXFic/l68d1KIlKT4RxOgDq417+sv4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ihAQiJqA4lx6F9cFvYSz4dsuavEK8CHSP4+dMhytgf6ELRjkBafOT2RNuQaxW8FHCsw1WiYDsVlseNZlLLTB/JcHyW1QLGlKtuqF8w6l85Rc7gjQjlFb98Df1YDPprAH2fCmRrDaC2E9Cq8KvCmgW0APfB23G8BoxZuwPmZFInk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.93.142])
-	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4cVh6d26pkzKHN7L;
-	Mon, 22 Sep 2025 19:42:17 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.128])
-	by mail.maildlp.com (Postfix) with ESMTP id E79131A124B;
-	Mon, 22 Sep 2025 19:42:20 +0800 (CST)
-Received: from [10.174.176.88] (unknown [10.174.176.88])
-	by APP4 (Coremail) with SMTP id gCh0CgAXKWEYNtFoiYXFAQ--.64696S3;
-	Mon, 22 Sep 2025 19:42:18 +0800 (CST)
-Message-ID: <394c720f-d23e-4208-b1d6-e0b98b03fc91@huaweicloud.com>
-Date: Mon, 22 Sep 2025 19:42:16 +0800
+	s=arc-20240116; t=1758545017; c=relaxed/simple;
+	bh=APuMRP3rBerOLEZakooMja47D9AUuHnsvpBbckyw0fw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=dgVTWw+ojHWxXOnzZKYkY04/Meyd7nr0tPn3v8z8xYh68L3NXtbvuqNeVYns7Mo1PvA+cYZW/VIXfqjI5KHpmwpVYXsnvNorJCDYoVKymR2axEcEx8YciDbvP+V59CiO0Dw6x2RFPEeP6sOGKPG6cu53jV4SfW+3qqfUgZ9TYGk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lccEoa99; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lccEoa99"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1758545015; x=1790081015;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=APuMRP3rBerOLEZakooMja47D9AUuHnsvpBbckyw0fw=;
+  b=lccEoa99ZYUtjdDfc5RJl1N5BAuXS/B+0eif9SFlsgHOl6XVSGeBh4Vi
+   /nz4F7fyApfhSAIOp3RzKqqN+o/OngombtRaBEy8Xg5sAXJFDumBUZtUl
+   1H1dBkj2aPd/rvJ0TB6s8bCAtocbYJcR745c8riITVJ8R+pMcP82v5U/i
+   qlqK+7PMO6vwQNZ3tBsaDrzpARHnI18DLVWgf71jwj2kFgHXPoDtv9zKN
+   DQCA6V36Ntf7VJSSFN5Rj7oft3PbOZKrPcNCx/gb/rFJCITSdJbfXwkqt
+   6RD+X6cok5HXk0K/pNkrkdNYHc/cIX9G81+1I2mVrJYNw1/E68ByZj58s
+   w==;
+X-CSE-ConnectionGUID: turXMXcWSHWsmjT5CmYySg==
+X-CSE-MsgGUID: bAqlACbfT/eoqtbpay+xdQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11560"; a="64444130"
+X-IronPort-AV: E=Sophos;i="6.18,285,1751266800"; 
+   d="scan'208";a="64444130"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Sep 2025 05:43:34 -0700
+X-CSE-ConnectionGUID: rL8CtahTTW6tjiuE4pausg==
+X-CSE-MsgGUID: zxS0a5yzTc60Txy1+7JaXQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,285,1751266800"; 
+   d="scan'208";a="176848451"
+Received: from mwiniars-desk2.ger.corp.intel.com (HELO localhost) ([10.245.246.61])
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Sep 2025 05:43:31 -0700
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Samasth Norway Ananda <samasth.norway.ananda@oracle.com>,
+ simona@ffwll.ch, deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, tzimmermann@suse.de
+Subject: Re: [PATCH] fbcon: fix integer overflow in fbcon_do_set_font
+In-Reply-To: <20250912170023.3931881-1-samasth.norway.ananda@oracle.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20250912170023.3931881-1-samasth.norway.ananda@oracle.com>
+Date: Mon, 22 Sep 2025 15:43:29 +0300
+Message-ID: <12cfe7be56a4eeed0f32d8da69d06f0490a9eec9@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: Delay the setting of fbcon_ops to fix KASAN issues
-To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de, lee@kernel.org,
- jani.nikula@intel.com, oushixiong@kylinos.cn, soci@c64.rulez.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, yangerkun@huawei.com
-References: <20250905024340.337521-1-wozizhi@huaweicloud.com>
- <97658279-73a4-4d30-817b-6dcd47a11d6b@suse.de>
-From: Zizhi Wo <wozizhi@huaweicloud.com>
-In-Reply-To: <97658279-73a4-4d30-817b-6dcd47a11d6b@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:gCh0CgAXKWEYNtFoiYXFAQ--.64696S3
-X-Coremail-Antispam: 1UD129KBjvJXoWxKFyrtFykur4UKFy3GF43trb_yoWxGrWDpF
-	10yryUtFy5Crn5Jw17Xr4UXFy5XwnrJa4DW397ta4YyFW5AF1jqw4UXF1qgFW8Grs7Jr18
-	Xw1DJrWxuF47Ar7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkEb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
-	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7Cj
-	xVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I
-	0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40E
-	x7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x
-	0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AF
-	wI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4
-	xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43
-	MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I
-	0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWU
-	JVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x07UAwI
-	DUUUUU=
-X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
+Content-Type: text/plain
+
+On Fri, 12 Sep 2025, Samasth Norway Ananda <samasth.norway.ananda@oracle.com> wrote:
+> Fix integer overflow vulnerabilities in fbcon_do_set_font() where font
+> size calculations could overflow when handling user-controlled font
+> parameters.
+>
+> The vulnerabilities occur when:
+> 1. CALC_FONTSZ(h, pitch, charcount) performs h * pith * charcount
+>    multiplication with user-controlled values that can overflow.
+> 2. FONT_EXTRA_WORDS * sizeof(int) + size addition can also overflow
+> 3. This results in smaller allocations than expected, leading to buffer
+>    overflows during font data copying.
+>
+> Add explicit overflow checking using check_mul_overflow() and
+> check_add_overflow() kernel helpers to safety validate all size
+> calculations before allocation.
+>
+> Signed-off-by: Samasth Norway Ananda <samasth.norway.ananda@oracle.com>
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 55f5731e94c3..a507d05f8fea 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2531,9 +2531,16 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+>  	if (fbcon_invalid_charcount(info, charcount))
+>  		return -EINVAL;
+>  
+> -	size = CALC_FONTSZ(h, pitch, charcount);
+> +	/* Check for integer overflow in font size calculation */
+> +	if (check_mul_overflow(h, pitch, &size) ||
+> +	    check_mul_overflow(size, charcount, &size))
+> +		return -EINVAL;
+> +
+> +	/* Check for overflow in allocation size calculation */
+> +	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &size))
+
+This change stores the intermediate value into size, but fails to take
+into account that size is used just a bit later in the function,
+expecting the original size:
+
+	new_data += FONT_EXTRA_WORDS * sizeof(int);
+	FNTSIZE(new_data) = size;
+	REFCOUNT(new_data) = 0;	/* usage counter */
+	for (i=0; i< charcount; i++) {
+		memcpy(new_data + i*h*pitch, data +  i*vpitch*pitch, h*pitch);
+	}
+
+	/* Since linux has a nice crc32 function use it for counting font
+	 * checksums. */
+	csum = crc32(0, new_data, size);
+
+What was supposed to address an unlikely integer overflow seems to have
+caused a real buffer overflow [1].
+
+BR,
+Jani.
 
 
+[1] https://gitlab.freedesktop.org/drm/i915/kernel/-/issues/15020
 
-在 2025/9/22 14:31, Thomas Zimmermann 写道:
-> Hi
-> 
-> Am 05.09.25 um 04:43 schrieb Zizhi Wo:
->> [BUG]
->> Recently, we encountered a KASAN warning as follows:
->>
->> kasan_report+0xaf/0xe0 mm/kasan/report.c:588
->> fb_pad_aligned_buffer+0x12f/0x150 drivers/video/fbdev/core/fbmem.c:116
->> ccw_putcs_aligned drivers/video/fbdev/core/fbcon_ccw.c:119 [inline]
->> ccw_putcs+0x9ac/0xbb0 drivers/video/fbdev/core/fbcon_ccw.c:175
->> fbcon_putcs+0x329/0x3f0 drivers/video/fbdev/core/fbcon.c:1297
->> do_update_region+0x3de/0x670 drivers/tty/vt/vt.c:623
->> invert_screen+0x1de/0x600 drivers/tty/vt/vt.c:748
->> highlight drivers/tty/vt/selection.c:57 [inline]
->> clear_selection+0x5e/0x70 drivers/tty/vt/selection.c:81
->> vc_do_resize+0xc8e/0xf40 drivers/tty/vt/vt.c:1206
->> fbcon_modechanged+0x489/0x7a0 drivers/video/fbdev/core/fbcon.c:2705
->> fbcon_set_all_vcs+0x1e0/0x600 drivers/video/fbdev/core/fbcon.c:2752
->> fbcon_rotate_all drivers/video/fbdev/core/fbcon.c:250 [inline]
->> ...
->>
->> reproduce[probabilistic, depending on the width and height of vc_font, as
->> well as the value of "p" in do_update_region()]:
-> 
-> Which font sizes trigger the bug?
+> +		return -EINVAL;
+>  
+> -	new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size, GFP_USER);
+> +	new_data = kmalloc(size, GFP_USER);
+>  
+>  	if (!new_data)
+>  		return -ENOMEM;
 
-As far as I can remember, op.width = 32 and op.height = 12;
-
-And I also do the TIOCL_SETSEL ioctl to set vc_sel.start && vc_sel.end
-
-> 
->> 1) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
->> 2) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
->>
->> [CAUSE]
->> The root cause is that fbcon_modechanged() first sets the current 
->> rotate's
->> corresponding ops. Subsequently, during vc_resize(), it may trigger
->> clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can 
->> result
->> in an out-of-bounds access to "src". This happens because ops->fontbuffer
->> is reallocated in fbcon_rotate_font():
->> 1) When rotate=2, its size is (width + 7) / 8 * height
->> 2) When rotate=3, its size is (height + 7) / 8 * width
->>
->> And the call to fbcon_rotate_font() occurs after clear_selection(). In
->> other words, the fontbuffer is allocated using the size calculated 
->> from the
->> previous rotation[2], but before reallocating it with the new size,
->> con_putcs is already using the new rotation[3]:
-> 
-> We recently reworked the way rotation callbacks are set. [1] Does the 
-> bug still happen with [1] applied?
-> 
-> [1] https://patchwork.freedesktop.org/series/153056/#rev2
-
-Sorry, my reproduction script has been cleaned up because some time has
-passed. But the root cause of the issue is still setting ops too early,
-which leads to vc_resize() calling clear_selection(), then eventually
-.putcs. This uses the updated rotation-related functions on the previous
-region, which may cause out-of-bounds access.
-
-If this patch series does not ensure that the old putcs is used in the
-context of clear_selection() during vc_resize(), the problem may still 
-exist?
-
-Thanks,
-Zizhi Wo
-
-> 
-> Best regards
-> Thomas
-> 
->>
->> rotate_all_store
->>   fbcon_rotate_all
->>    fbcon_set_all_vcs
->>     fbcon_modechanged
->>     ...
->>      fbcon_set_rotate
->>       fbcon_rotate_ccw
->>        ops->putcs = ccw_putcs // set rotate 3 ops
->>      vc_resize
->>      ...
->>       clear_selection
->>        highlight
->>        ...
->>         do_update_region
->>     fbcon_putcs
->>      ccw_putcs_aligned
->>       src = ops->fontbuffer + (scr_readw(s--) & charmask)*cellsize
->>       fb_pad_aligned_buffer----[src KASAN!!!]
->>         update_screen
->>          redraw_screen
->>      fbcon_switch
->>       fbcon_rotate_font
->>        dst = kmalloc_array(len, d_cellsize, GFP_KERNEL)
->>        ops->fontbuffer = dst
->>
->> [FIX]
->> Considering that when the rotation changes, clear_selection() should 
->> clear
->> the previously selected region and not consider the new rotation yet.
->> Therefore, the assignment to fbcon_ops for the newly set rotate can be
->> postponed to fbcon_rotate_font(), since the fontbuffer is regenerated
->> there. To avoid affecting other code paths, fbcon_set_rotate() will
->> temporarily continue assigning fbcon_ops based on cur_rotate not rotate.
->>
->> Signed-off-by: Zizhi Wo <wozizhi@huaweicloud.com>
->> ---
->>   drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/fbdev/core/fbcon_rotate.c 
->> b/drivers/video/fbdev/core/fbcon_rotate.c
->> index ec3c883400f7..d76446da24d4 100644
->> --- a/drivers/video/fbdev/core/fbcon_rotate.c
->> +++ b/drivers/video/fbdev/core/fbcon_rotate.c
->> @@ -70,6 +70,7 @@ static int fbcon_rotate_font(struct fb_info *info, 
->> struct vc_data *vc)
->>               src += s_cellsize;
->>               dst += d_cellsize;
->>           }
->> +        fbcon_rotate_ud(ops);
->>           break;
->>       case FB_ROTATE_CW:
->>           for (i = len; i--; ) {
->> @@ -78,6 +79,7 @@ static int fbcon_rotate_font(struct fb_info *info, 
->> struct vc_data *vc)
->>               src += s_cellsize;
->>               dst += d_cellsize;
->>           }
->> +        fbcon_rotate_cw(ops);
->>           break;
->>       case FB_ROTATE_CCW:
->>           for (i = len; i--; ) {
->> @@ -86,6 +88,7 @@ static int fbcon_rotate_font(struct fb_info *info, 
->> struct vc_data *vc)
->>               src += s_cellsize;
->>               dst += d_cellsize;
->>           }
->> +        fbcon_rotate_ccw(ops);
->>           break;
->>       }
->> @@ -97,7 +100,7 @@ void fbcon_set_rotate(struct fbcon_ops *ops)
->>   {
->>       ops->rotate_font = fbcon_rotate_font;
->> -    switch(ops->rotate) {
->> +    switch (ops->cur_rotate) {
->>       case FB_ROTATE_CW:
->>           fbcon_rotate_cw(ops);
->>           break;
-> 
-
+-- 
+Jani Nikula, Intel

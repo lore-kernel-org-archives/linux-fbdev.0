@@ -1,81 +1,81 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEB3C25A340
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 15:15:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 357241E0B9C
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 15:21:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758640505; cv=none; b=Hm7PrzZGJtqQg9cW7Wbl7nwb2oGlJiiYToLbRTpLgNvMbatF/fENwrRbH6xU5Rqm14gNtAVN6gSgNjszZ8citi+J4iu7srH/CYJ5P9fdUtN3SqSx4654wBYS35yH2yxnCMi+v5qHJ4IIXjPLirhuNGs3SdUixZaamQXPvumnvEE=
+	t=1758640900; cv=none; b=jkma/Cv1UQJZE8yKLJOzuY9TEEsD5flSORqD5AQW3sOX2ceCpKIpxI/aLSalSzY2FwnN7zZEjqc1FGJ4m7056cxgNowbw9tvgUXvAn+qt91J71JIOjnOPcrdUk5fAc9zZBlKXoU8hwSX1Qp7GMdAuGZR1LB9q/VDrvkkqDit8/0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758640505; c=relaxed/simple;
-	bh=eJhVXdPCwDEVlFLRrAWQlRYtN4vZHVUrPVqjy5gX164=;
+	s=arc-20240116; t=1758640900; c=relaxed/simple;
+	bh=qt+6KRyKxPkORPP5QEsbIBjsuDn3dRtpoy1rgq8l/Xo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iLXFjikmcfKLbu839pp/wATKQkDqvgBcMVdgMw5oFvaPdkmK3QDzCWZPA66+ys9s2EYorrxFOZnscz/H5saCneQcOPIPLoanqk2KFx3au8jPzJjdOC+eMm1Nye0j28GkXxlJRKA4/JJeeLd5v7qdvjdoJ34Ja1e1CvBuZslBsAQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ulKAAr9r; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=sUGH+Zfq; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ulKAAr9r; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=sUGH+Zfq; arc=none smtp.client-ip=195.135.223.130
+	 In-Reply-To:Content-Type; b=YLfs3OgOxYkOw3FhTG6r7lkVnOdn8Bs6/Ihl6EeAA7m/SPAgwDCjIFqvVRMcOJGNii5n1UzN/EQuNMHUTe3lUljbzSU7Yufd5zl49a/AA+kPwgybpuFOVxtdEs296nxvn8S77jiwIfeKqFQpgKDzXyKwep1kTkXUKVS+3Tg1HaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=A+gj0jP8; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=M9O4+V5H; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=A+gj0jP8; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=M9O4+V5H; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ulKAAr9r";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="sUGH+Zfq";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ulKAAr9r";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="sUGH+Zfq"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="A+gj0jP8";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="M9O4+V5H";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="A+gj0jP8";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="M9O4+V5H"
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 269A12210B;
-	Tue, 23 Sep 2025 15:14:56 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 6C2881F7F4;
+	Tue, 23 Sep 2025 15:21:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1758640496; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1758640897; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Qrap3zrlwqq38JIujBy9Py/9DHRcj3SDYEx6STNCrfg=;
-	b=ulKAAr9rO/c+0LBTRBwuP2KABYtHLcguWnwigZ7bu+8T78q7PbYUc/Lxvku67iDxrru6b3
-	xPD84hv04rf52mRYHJeEfHMjiD3+f3kbL7h9K/DvMLoGJ+q6MU6c/wuyZewTYFEiCh9cIm
-	cognpEqCIZQ/7OmEw1lymoOT7hWfz94=
+	bh=49VtfWcgbDap/wiXADPZ3BMXozuzKI2e+wmDabn0Ky0=;
+	b=A+gj0jP8IpXodEJAtAqqIcm+yqybcP8ofnj4kNvTsn5+osiEr3Vo2EztPp5hOfdde/qpwp
+	xnkDsp6/cOeb1ILvpvlDQ97tg1bPob/AD6TQZUgsA1bGL33ERViBkw13kDNH1to4Bz7xmy
+	EIUWp8lxb7XSNphbJesf0rlBHBPOCpo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1758640496;
+	s=susede2_ed25519; t=1758640897;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Qrap3zrlwqq38JIujBy9Py/9DHRcj3SDYEx6STNCrfg=;
-	b=sUGH+ZfqzfEXPXd/BGwAG4/8mVhxrnNTsUbBQZUcUPhMi9qzvm1aLkfUcCuwzJsvm02KHa
-	nlYmr0HCwCSiP2Bg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=ulKAAr9r;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=sUGH+Zfq
+	bh=49VtfWcgbDap/wiXADPZ3BMXozuzKI2e+wmDabn0Ky0=;
+	b=M9O4+V5HZH4bBeG27XOytmI/UqdnDJXq9IXjHTRauorPMvdvaINcEOVoMWuLsIBFQ0KysI
+	2KbRbnbp2qXlXJDA==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=A+gj0jP8;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=M9O4+V5H
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1758640496; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1758640897; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Qrap3zrlwqq38JIujBy9Py/9DHRcj3SDYEx6STNCrfg=;
-	b=ulKAAr9rO/c+0LBTRBwuP2KABYtHLcguWnwigZ7bu+8T78q7PbYUc/Lxvku67iDxrru6b3
-	xPD84hv04rf52mRYHJeEfHMjiD3+f3kbL7h9K/DvMLoGJ+q6MU6c/wuyZewTYFEiCh9cIm
-	cognpEqCIZQ/7OmEw1lymoOT7hWfz94=
+	bh=49VtfWcgbDap/wiXADPZ3BMXozuzKI2e+wmDabn0Ky0=;
+	b=A+gj0jP8IpXodEJAtAqqIcm+yqybcP8ofnj4kNvTsn5+osiEr3Vo2EztPp5hOfdde/qpwp
+	xnkDsp6/cOeb1ILvpvlDQ97tg1bPob/AD6TQZUgsA1bGL33ERViBkw13kDNH1to4Bz7xmy
+	EIUWp8lxb7XSNphbJesf0rlBHBPOCpo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1758640496;
+	s=susede2_ed25519; t=1758640897;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Qrap3zrlwqq38JIujBy9Py/9DHRcj3SDYEx6STNCrfg=;
-	b=sUGH+ZfqzfEXPXd/BGwAG4/8mVhxrnNTsUbBQZUcUPhMi9qzvm1aLkfUcCuwzJsvm02KHa
-	nlYmr0HCwCSiP2Bg==
+	bh=49VtfWcgbDap/wiXADPZ3BMXozuzKI2e+wmDabn0Ky0=;
+	b=M9O4+V5HZH4bBeG27XOytmI/UqdnDJXq9IXjHTRauorPMvdvaINcEOVoMWuLsIBFQ0KysI
+	2KbRbnbp2qXlXJDA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CD62B13AAF;
-	Tue, 23 Sep 2025 15:14:55 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 44C7F1388C;
+	Tue, 23 Sep 2025 15:21:37 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id mFyBL2+50mhBVQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 23 Sep 2025 15:14:55 +0000
-Message-ID: <d7c9b216-cadb-4c07-8122-800b58f14fad@suse.de>
-Date: Tue, 23 Sep 2025 17:14:55 +0200
+	id lTCbDwG70mjaVwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 23 Sep 2025 15:21:37 +0000
+Message-ID: <b76b8168-bca1-4374-9626-7d7d155d79ae@suse.de>
+Date: Tue, 23 Sep 2025 17:21:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,17 +83,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev/radeon: Update stale product link in
- Kconfig/FB_RADEON
-To: Sukrut Heroorkar <hsukrut3@gmail.com>, Helge Deller <deller@gmx.de>,
- Arnd Bergmann <arnd@arndb.de>, Randy Dunlap <rdunlap@infradead.org>,
- Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
- "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
- "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
- open list <linux-kernel@vger.kernel.org>
-Cc: skhan@linuxfoundation.org, david.hunter.linux@gmail.com
-References: <20250923084157.11582-1-hsukrut3@gmail.com>
+Subject: Re: [PATCH] fbcon: fix buffer overflow in fbcon_set_font
+To: Simon Richter <Simon.Richter@hogyros.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: stable <stable@vger.kernel.org>
+References: <20250923150642.2441-1-Simon.Richter@hogyros.de>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -120,77 +114,104 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20250923084157.11582-1-hsukrut3@gmail.com>
+In-Reply-To: <20250923150642.2441-1-Simon.Richter@hogyros.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
+X-Spamd-Result: default: False [-4.51 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
 	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
 	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com,gmx.de,arndb.de,infradead.org,linaro.org,vger.kernel.org,lists.freedesktop.org];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	RCVD_TLS_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
 	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	TO_DN_SOME(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[linuxfoundation.org,gmail.com];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[amd.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim]
+	RCPT_COUNT_FIVE(0.00)[5];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_TRACE(0.00)[suse.de:+]
 X-Spam-Flag: NO
 X-Spam-Level: 
-X-Rspamd-Queue-Id: 269A12210B
+X-Rspamd-Queue-Id: 6C2881F7F4
 X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 X-Rspamd-Action: no action
-X-Spam-Score: -3.01
+X-Spam-Score: -4.51
 
-Hi
+Hi,
 
-Am 23.09.25 um 10:41 schrieb Sukrut Heroorkar:
-> The previous Radeon product page link was no longer valid. Repalce
-> it with the current working link.
->
-> Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
-> ---
->   drivers/video/fbdev/Kconfig | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index c21484d15f0c..3037455adf48 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -949,7 +949,7 @@ config FB_RADEON
->   	  don't need to choose this to run the Radeon in plain VGA mode.
->   
->   	  There is a product page at
-> -	  https://products.amd.com/en-us/GraphicCardResult.aspx
-> +	  https://www.amd.com/en/products/specifications/graphics.html
+thanks for the patch. The fix at [1] has meanwhile been merged into the 
+DRM tree.
 
-May I suggest to remove this URL entirely?
+[1] https://patchwork.freedesktop.org/series/154848/
 
 Best regards
 Thomas
 
+Am 23.09.25 um 17:06 schrieb Simon Richter:
+> Commit 1a194e6c8e1ee745e914b0b7f50fa86c89ed13fe introduced overflow
+> checking for the font allocation size calculation, but in doing so moved
+> the addition of the size for font housekeeping data out of the kmalloc
+> call.
+>
+> As a result, the calculated size now includes those extra bytes, which
+> marks the same number of bytes beyond the allocation as valid font data.
+>
+> The crc32() call and the later memcmp() in fbcon_set_font() already perform
+> an out-of-bounds read, the latter is flagged on ppc64el:
+>
+>      memcmp: detected buffer overflow: 4112 byte read of buffer size 4096
+>
+> when loading Lat15-Fixed16.psf.gz.
+>
+> Since the addition of the extra size should only go into the kmalloc()
+> call, calculate this size in a separate variable.
+>
+> Signed-off-by: Simon Richter <Simon.Richter@hogyros.de>
+> Fixes: 1a194e6c8e1e ("fbcon: fix integer overflow in fbcon_do_set_font")
+> Cc: stable <stable@vger.kernel.org> #v5.9+
+> ---
+>   drivers/video/fbdev/core/fbcon.c | 6 +++---
+>   1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 5fade44931b8..a3fbf42c57d9 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2518,7 +2518,7 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+>   	unsigned charcount = font->charcount;
+>   	int w = font->width;
+>   	int h = font->height;
+> -	int size;
+> +	int size, allocsize;
+>   	int i, csum;
+>   	u8 *new_data, *data = font->data;
+>   	int pitch = PITCH(font->width);
+> @@ -2551,10 +2551,10 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+>   		return -EINVAL;
 >   
->   config FB_RADEON_I2C
->   	bool "DDC/I2C for ATI Radeon support"
+>   	/* Check for overflow in allocation size calculation */
+> -	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &size))
+> +	if (check_add_overflow(FONT_EXTRA_WORDS * sizeof(int), size, &allocsize))
+>   		return -EINVAL;
+>   
+> -	new_data = kmalloc(size, GFP_USER);
+> +	new_data = kmalloc(allocsize, GFP_USER);
+>   
+>   	if (!new_data)
+>   		return -ENOMEM;
 
 -- 
 --

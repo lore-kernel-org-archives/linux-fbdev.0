@@ -1,183 +1,202 @@
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FAB0182B4;
-	Tue, 23 Sep 2025 11:07:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D3B922DFA4
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 14:04:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758625629; cv=none; b=ZXSDsYyDFyOWDpBLRkLWp4ZVW1oUNL60fgQW/MRra52SEeX1qDZUt1iXbkAn5wrJzdTe/szbibdyorvPZr8YzUhdS4HP2UgDXsbk0HZ9a/wRWLG3Y3rM6i75KsImbbhZZMrV0bM541BrdroKQLEGq7+OclSyZ8Bzf7n0R4c+aKU=
+	t=1758636252; cv=none; b=tEL7awINWGI6PGffsSPLGUO1KPLCCIIISltWQnUzOQMAFaepUnx7X3r7DaRhZLy0Tg5ta8FUNM7HI7VDyZ3fnTRymZMAZgmifruRjoWSsE1v72ZHvLdRLEGnrArPn4rjQWttGUTw4+R+++osuLFg8xeBKpLIj0vCGg9Oi5fZfGo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758625629; c=relaxed/simple;
-	bh=iqyLva5ENeFJt1XjKaPRFvMGlYqucYojIW/YfbuQ9gM=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XXIwNrGa5YxrH7Sgvk0d1bDH8bujGtH9fyBAJwExqUfv/uhcPVOeBC2w28g+RyxykPTVnhl6mq9Z+vkGkAFsdswlLPK6qJzr7qrhQ8VMhAY93+Y3TtUckLSVYcHz+aHtYaIAzdnr+M6VnW0RoXCleLolguPc59fXHrulXOS7TXM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.214])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4cWHB75Np6z2CgP5;
-	Tue, 23 Sep 2025 19:02:23 +0800 (CST)
-Received: from dggpemf200018.china.huawei.com (unknown [7.185.36.31])
-	by mail.maildlp.com (Postfix) with ESMTPS id DAA421A016C;
-	Tue, 23 Sep 2025 19:07:01 +0800 (CST)
-Received: from huawei.com (10.50.85.135) by dggpemf200018.china.huawei.com
- (7.185.36.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 23 Sep
- 2025 19:07:01 +0800
-From: Quanmin Yan <yanquanmin1@huawei.com>
-To: <simona@ffwll.ch>
-CC: <deller@gmx.de>, <linux-kernel@vger.kernel.org>,
-	<linux-fbdev@vger.kernel.org>, <=dri-devel@lists.freedesktop.org>,
-	<yanquanmin1@huawei.com>, <wangkefeng.wang@huawei.com>, <zuoze1@huawei.com>,
-	<sunnanyong@huawei.com>
-Subject: [PATCH] fbcon: Set fb_display[i]->mode to NULL when the mode is released
-Date: Tue, 23 Sep 2025 19:06:08 +0800
-Message-ID: <20250923110608.3385083-1-yanquanmin1@huawei.com>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1758636252; c=relaxed/simple;
+	bh=C/pqfpq2n33ei9UVPcDT7adUzqYKnNF9cNwhyINn4dU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=crJsFClpkUzxAVJYFNKHnfd8abxS44EGVApQcuPXbGC+4Cvkwfsi0MJSspWaNrks+62F8ErcO3Q5INknIofaS69cPTkbILVuHOSBLI//XowOUn79yfHkh70DURLV2Uo0oZswUFT9B0+QFMHjTNUoUR3RFEkR+/ES/2kR+u6GNqo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tCRKXwwT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=NL79GJmF; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tCRKXwwT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=NL79GJmF; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tCRKXwwT";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="NL79GJmF";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tCRKXwwT";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="NL79GJmF"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 83A6E1F7E4;
+	Tue, 23 Sep 2025 14:04:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1758636248; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=lAbA8uet9nln2jYceX2bIfUMjKO0namb6mYHyV11xlc=;
+	b=tCRKXwwTO0/KfyGW2JtT2i4ZO99Lo/xOYWqORJWCqbu6sOUD/8DzT59v4lRWz2e72Hrw6Y
+	MnAmyRf/o4Z4aYIRqnubDHZUO21bi/yySElvdDwzlKhWndxFJYKpI9CV8DwnUtFUpj+hg0
+	udD7qOMkLKkLzv9iitEYJj4ay7hxz8o=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1758636248;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=lAbA8uet9nln2jYceX2bIfUMjKO0namb6mYHyV11xlc=;
+	b=NL79GJmFJLdmmAgz2i60aPIdXg2VPjBUnpUzz7VhMe5PMpsdHsCG2WO0kpe/+KsS5zi39Y
+	LBi6LDcz3KdumvBg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=tCRKXwwT;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=NL79GJmF
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1758636248; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=lAbA8uet9nln2jYceX2bIfUMjKO0namb6mYHyV11xlc=;
+	b=tCRKXwwTO0/KfyGW2JtT2i4ZO99Lo/xOYWqORJWCqbu6sOUD/8DzT59v4lRWz2e72Hrw6Y
+	MnAmyRf/o4Z4aYIRqnubDHZUO21bi/yySElvdDwzlKhWndxFJYKpI9CV8DwnUtFUpj+hg0
+	udD7qOMkLKkLzv9iitEYJj4ay7hxz8o=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1758636248;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=lAbA8uet9nln2jYceX2bIfUMjKO0namb6mYHyV11xlc=;
+	b=NL79GJmFJLdmmAgz2i60aPIdXg2VPjBUnpUzz7VhMe5PMpsdHsCG2WO0kpe/+KsS5zi39Y
+	LBi6LDcz3KdumvBg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 143DA132C9;
+	Tue, 23 Sep 2025 14:04:08 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id GmKAA9io0mjSOgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 23 Sep 2025 14:04:08 +0000
+Message-ID: <e2ce647a-c911-4148-9d1d-be9f2715a227@suse.de>
+Date: Tue, 23 Sep 2025 16:04:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- dggpemf200018.china.huawei.com (7.185.36.31)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 4/5] fbdev/simplefb: Sort headers correctly
+To: Luca Weiss <luca.weiss@fairphone.com>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Hans de Goede <hdegoede@redhat.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250623-simple-drm-fb-icc-v2-0-f69b86cd3d7d@fairphone.com>
+ <20250623-simple-drm-fb-icc-v2-4-f69b86cd3d7d@fairphone.com>
+ <87o6u9d3kg.fsf@minerva.mail-host-address-is-not-set>
+ <DCZDZ037P56C.3MS3HI55IN41J@fairphone.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <DCZDZ037P56C.3MS3HI55IN41J@fairphone.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Rspamd-Queue-Id: 83A6E1F7E4
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_TO(0.00)[fairphone.com,redhat.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
+X-Spam-Score: -3.01
 
-Recently, we discovered the following issue through syzkaller:
+Hi
 
-BUG: KASAN: slab-use-after-free in fb_mode_is_equal+0x285/0x2f0
-Read of size 4 at addr ff11000001b3c69c by task syz.xxx
-...
-Call Trace:
- <TASK>
- dump_stack_lvl+0xab/0xe0
- print_address_description.constprop.0+0x2c/0x390
- print_report+0xb9/0x280
- kasan_report+0xb8/0xf0
- fb_mode_is_equal+0x285/0x2f0
- fbcon_mode_deleted+0x129/0x180
- fb_set_var+0xe7f/0x11d0
- do_fb_ioctl+0x6a0/0x750
- fb_ioctl+0xe0/0x140
- __x64_sys_ioctl+0x193/0x210
- do_syscall_64+0x5f/0x9c0
- entry_SYSCALL_64_after_hwframe+0x76/0x7e
+Am 22.09.25 um 16:07 schrieb Luca Weiss:
+> Hi all,
+>
+> On Fri Jun 27, 2025 at 9:52 AM CEST, Javier Martinez Canillas wrote:
+>> Luca Weiss <luca.weiss@fairphone.com> writes:
+>>
+>>> Make sure the headers are sorted alphabetically to ensure consistent
+>>> code.
+>>>
+>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+>>> ---
+>> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> While there's still some open questions surrounding dt-bindings and how
+> exactly to do that, I think it would be good to pick up the two
+> "Sort headers correctly" patches so that they already get in. They're
+> good to have in any case in my opinion.
 
-The issue occurs in the function fb_mode_is_equal(p->mode, mode), I also
-noticed that when freeing the memory related to fb_info->modelist, there's
-no attempt to set the corresponding fb_display[i]->mode to NULL after
-freeing. Based on analysis, the root cause of this bug appears to be that
-a certain p->mode has become a wild pointer.
+Good idea. I've added them to drm-misc-next.
 
-I've identified two code paths for freeing modelist->mode:
-1. fb_delete_videomode - removes videomode entry from modelist.
-2. fb_destroy_modelist - destroys the entire modelist.
+Best regards
+Thomas
 
-Analysis shows that fb_delete_videomode path should have been fixed in
-a previous patch[1]. Therefore, the current bug is likely triggered
-through the fb_destroy_modelist path. I've found a reproducible test case:
-1. With /dev/fb0 already registered in the system, load a kernel module
-   to register a new device /dev/fb1;
-2. Set fb1's mode to the global fb_display[] array (via FBIOPUT_CON2FBMAP);
-3. Switch console from fb to VGA (to allow normal rmmod of the ko);
-4. Unload the kernel module - at this point fb1's modelist is freed, leaving
-   a wild pointer in fb_display[];
-5. Trigger the bug via system calls through fb0 attempting to delete a mode
-   from fb0.
+>
+> Regards
+> Luca
 
-To prevent similar issues from recurring, consider traversing fb_display[]
-whenever releasing a mode from fb_info. If the corresponding mode exists
-in fb_display[], set its pointer to NULL.
-
-[1] https://lore.kernel.org/all/20210712085544.2828-1-thunder.leizhen@huawei.com/
-
-Signed-off-by: Quanmin Yan <yanquanmin1@huawei.com>
----
-This is my first time working on fb issues. If there are any misunderstandings
-in my analysis, I would appreciate corrections from the community.
-
- drivers/video/fbdev/core/fbcon.c  | 11 +++++++++++
- drivers/video/fbdev/core/modedb.c |  7 +++++++
- include/linux/fbcon.h             |  2 ++
- 3 files changed, 20 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index b062b05f4128..bfbf79d6cd05 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2803,6 +2803,17 @@ int fbcon_mode_deleted(struct fb_info *info,
- 	return found;
- }
- 
-+void fb_display_clean_videomode(struct fb_videomode *m)
-+{
-+	struct fbcon_display *p;
-+
-+	for (int i = first_fb_vc; i <= last_fb_vc; i++) {
-+		p = &fb_display[i];
-+		if (p->mode == m)
-+			p->mode = NULL;
-+	}
-+}
-+
- #ifdef CONFIG_VT_HW_CONSOLE_BINDING
- static void fbcon_unbind(void)
- {
-diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
-index 53a610948c4a..5a0ee96ebefa 100644
---- a/drivers/video/fbdev/core/modedb.c
-+++ b/drivers/video/fbdev/core/modedb.c
-@@ -16,6 +16,7 @@
- #include <linux/slab.h>
- #include <linux/fb.h>
- #include <linux/kernel.h>
-+#include <linux/fbcon.h>
- 
- #undef DEBUG
- 
-@@ -1100,6 +1101,7 @@ void fb_delete_videomode(const struct fb_videomode *mode,
- 		modelist = list_entry(pos, struct fb_modelist, list);
- 		m = &modelist->mode;
- 		if (fb_mode_is_equal(m, mode)) {
-+			fb_display_clean_videomode(m);
- 			list_del(pos);
- 			kfree(pos);
- 		}
-@@ -1113,8 +1115,13 @@ void fb_delete_videomode(const struct fb_videomode *mode,
- void fb_destroy_modelist(struct list_head *head)
- {
- 	struct list_head *pos, *n;
-+	struct fb_modelist *modelist;
-+	struct fb_videomode *m;
- 
- 	list_for_each_safe(pos, n, head) {
-+		modelist = list_entry(pos, struct fb_modelist, list);
-+		m = &modelist->mode;
-+		fb_display_clean_videomode(m);
- 		list_del(pos);
- 		kfree(pos);
- 	}
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index 81f0e698acbf..2b5e93aeaaff 100644
---- a/include/linux/fbcon.h
-+++ b/include/linux/fbcon.h
-@@ -18,6 +18,7 @@ void fbcon_suspended(struct fb_info *info);
- void fbcon_resumed(struct fb_info *info);
- int fbcon_mode_deleted(struct fb_info *info,
- 		       struct fb_videomode *mode);
-+void fb_display_clean_videomode(struct fb_videomode *m);
- void fbcon_new_modelist(struct fb_info *info);
- void fbcon_get_requirement(struct fb_info *info,
- 			   struct fb_blit_caps *caps);
-@@ -38,6 +39,7 @@ static inline void fbcon_suspended(struct fb_info *info) {}
- static inline void fbcon_resumed(struct fb_info *info) {}
- static inline int fbcon_mode_deleted(struct fb_info *info,
- 				     struct fb_videomode *mode) { return 0; }
-+static inline void fb_display_clean_videomode(struct fb_videomode *m) {}
- static inline void fbcon_new_modelist(struct fb_info *info) {}
- static inline void fbcon_get_requirement(struct fb_info *info,
- 					 struct fb_blit_caps *caps) {}
 -- 
-2.43.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
+
 

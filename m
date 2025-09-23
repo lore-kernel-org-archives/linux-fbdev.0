@@ -1,130 +1,112 @@
-Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
+Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07F1C257437
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 16:03:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C852F19C546
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 17:14:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758643397; cv=none; b=uvIuFrtxfwo2tAF7A28DgTtwB8HOWjtmzLFkXn5rFvVfMJGQu4Yjn52npjdagqtAdHuxP8SN8oqgL982NmGqsOLp/2cPw28wNVgSKKqDK3AaCrzQJ1wfIIFSLqv1a7dkSQ+i9HVPntU1CeITlGtGr7UrETEjPU1jrg8GysKBhjg=
+	t=1758647669; cv=none; b=n7JKg4pRpTDb4u5kBnEIjNoOPSV77kv9mozincElM+SbfP0igwXPRIr9mqabKBAFtfFAPx4sgfHOIzG/qMRYEJk5qXZRYwqkMvGc4y8jjnHF/KBNsPw6W0ORF4B1s68eXshH2l3SRhH9o13YT5iEQmpXzviXBcBphNlVtkzmKFk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758643397; c=relaxed/simple;
-	bh=+eCklkEo4Dd5/86Fex5KOYIdlbYxcz9vSH+N6Bhs0v4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Ro6WNSWBIpaYg6nA9l1IcfRXyWKs+7wMQiqZ7OM78DzxVADphU9msO368IJENHrJ6uJW+sy4sUxr6pwKWkMeXeWDxSzxKYEd577HyeR1t+i8adlYEuTieXuXKzTluGgYxUKoIOExWkr9O/C280UMFCil6RaF7hm/hEWHP9t5LYs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=A0Dr6a2p; arc=none smtp.client-ip=209.85.214.172
+	s=arc-20240116; t=1758647669; c=relaxed/simple;
+	bh=Eq1AOZS62E3U426nVTK/WCGChMfD99wRr7zuaKWdzzY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=sPAw0ac6yvwbCKbwb9v0uIXporrn+C195235f0HnoiUTRPreRxc8ndRveEN2QBxinI0jhh1lkqICRsTulq19+gQlNROZmwhGCf9aNNkdj343zk5+BYlpZZoBO7qTM/BkNTLKypRewKirQAaADmniK7WEZz0gwjZGRij7NfL1tm4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=F/d4uUN4; arc=none smtp.client-ip=209.85.218.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A0Dr6a2p"
-Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-267fad019d4so12335025ad.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 09:03:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F/d4uUN4"
+Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-b3194020e86so82711366b.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 10:14:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758643394; x=1759248194; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=m2ROfUbxr/KN7oAi0rJA/6LeNf8GF4G0Z/s0Uz4C+7I=;
-        b=A0Dr6a2pjBftbkzQl7rGy3HsyD/T6Yv684SAy8YMhxC+ulMAJHeoodfcw2YzdzA8Xy
-         xwl7X8GVSVpkcmq4y6mU5ypg/IMNvjQdEWWNpA8UcSidn4Flg9+EFbBEzQTH8qAhFDDZ
-         W9STtdzRW5cEabf6Me9orDlu4B0BcNQLOOnetZteYCVx6PdbCIHaSuDzmsQQYx2a9U4v
-         Huk9t7wrUfZrkEohDiAVkkdlKx1YitvydMLg4Mmwd4wIWSsuFVuXgWdR4g/AlyXXXiAd
-         uakXeYW7kHqsTkgFGIgS0F/hnhaE+GdXseDM/nuBO4lrKsx7/PyZEBGlUnH7ZD/47QQT
-         3LfQ==
+        d=gmail.com; s=20230601; t=1758647666; x=1759252466; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=NXqXBnmiXImIakMVKpGGeYlSvR6C1NJ+HVUMvwnxdDk=;
+        b=F/d4uUN4h2UHvet+h32/A9jiWw67ksJhqX7aMqi4CJkj0JrRvRXkU14ezj476DdTns
+         0s1nyaLgt0X9YU/eHddqKCKlxpeecLs/lG2XCMrNvER1szzeks6UC9BmjEnh/t6i/Inj
+         /5f2K/szSECXG62W2oiukiA1nKr+yOqeFALkuWd/G1Vg8kKFxfuRQqv2KKBibypozaSy
+         sxM0/cpcozEXqPvrhGEFiHIGZZWg+NAvRhq1e1uj7w+WTB6nk8KAFm6BNFnZWkim/dDk
+         pOWLqUwL6XaCAjYXsjj3SD6PnrhjowCr9V0o+2CVoLZdCzQBNBdr6K4VjQUlCMMtBHE0
+         sBxA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758643394; x=1759248194;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=m2ROfUbxr/KN7oAi0rJA/6LeNf8GF4G0Z/s0Uz4C+7I=;
-        b=WiDLG2FlOZq4DXNh1yxbyRsaZm1K9FrokPDZd62zjf74HlhSefCs87KI/wqwNNznY+
-         hQCtjl9e3mxDXgRHyXMBQd52SbiDS5W2Fa7YxNqEDIJ/L0r/R6ksmm02vqlOQW2e2CGb
-         XwClp8VhUF2NEs1NeSHKGJfTS0YFRAOwrk6sGzbnEZ/P3IfN36GJa0KhoG8ko36Q6TdY
-         p/KGICi8NWH0o43M5wUUh8NqZ7tu190vlgUYMJrYvIyTUCNG1sJ6huRJoRmRi2wkpvaI
-         vLG9NZDPFlKVPZP5Hn6674zN6ATKMfc2lgdfAjV8pnMKVHCJbf0zEFveXpckUj7p79kk
-         42BA==
-X-Forwarded-Encrypted: i=1; AJvYcCUUdfqPmJFdrhR0jaXrJOcXPw/S3f4AtGmiygswHDibq7BDmKHS8YrmXblK6z2hR/C6EFyXZYoBM7l9yw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz5FRMIZ1teTx58peNwLZF3eHWtZf07Lll+9Q+iA920uEjZ6Xhh
-	CkIggE2CpD0sVPC10kEsYtTTkFBuxy0Xfduwk25kh09zAUUaSE3E9E6oFxSZZgrcPGzbuGLXBd4
-	QtxyNmiF5V6qgrf0MeZtLwXUE1xbtjeI=
-X-Gm-Gg: ASbGnctx/66sRcndk3iqO8FeKjih+Lzc+EEGVULGo8f3N35CSgyoT67xb1TKgjr03o7
-	Bm4NdK4WPDW3Ysl7pWk5AYSC1Oo+KlHMrvJmsBnOXHxwUCSepX6DjCVbE9j+vLD9rUtPYo7veH4
-	L9pHEh/8f8Y1V5l8hTyZSr9ehLo8/RroamP9ZwYMjF81TuTSfcorDS0hsEvKZz1Vk+f0h8RLLzd
-	Qt7QDA=
-X-Google-Smtp-Source: AGHT+IGBbiHkgD0/2labtH1NeFTzXLVqipenHtdKCLOlRtkUCqCDTMEK1XiJMTv9TX8U0v9Y4TZdy6Zkg1xfbYYFpBI=
-X-Received: by 2002:a17:902:b695:b0:264:cda8:7fd3 with SMTP id
- d9443c01a7336-27cc712154dmr18207895ad.6.1758643394109; Tue, 23 Sep 2025
- 09:03:14 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1758647666; x=1759252466;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NXqXBnmiXImIakMVKpGGeYlSvR6C1NJ+HVUMvwnxdDk=;
+        b=h5vjc2vHd6wtRjM89n+ulqtRn7Imfc13IHR+P1UTFzdzYdLB8BTRfH7LOJEtwIo482
+         y99xXwnT2aqNkkOsdZRiSVHBa2XMlMDW+cdrLD27qwsOyJuet1ndRdbrLgH9xT2yf4NA
+         KEQG6NbiTIR8+Z1awjxU+e1pqK29P5PP+xdr9mkdhyzlaGGqJDCwOyOrAvqEIT2YRtHW
+         6UxYipJy2UA6XSaAxUzsfYipAhbORnXVf6E3xpcY4NVEExz5B/wGxSBfqoQZy4VtUdY+
+         1LAVmzOBFZWh62kqjBQD9/OF0mQbq7e/RC0xnz7mb5kHbtS/fqtZT5mUB96r2RBvK8pi
+         TR1A==
+X-Forwarded-Encrypted: i=1; AJvYcCX+SQRywmc22dZl9v4NrJQ9VHKJx7FHouKT+FyLzfMM47IfGCmhcB9rK9Iie3m/p/jDrcPPeACvieFnWg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwpWAXoM3HaAiORd2Es+AeG/qetG7O6UWna3uKOyXDFizjhOJ4W
+	BGnKwXDKCf3GpeHY0+5ZhoXyVJtO04OFljTkR47G+c3v9DDUEgPcJaZ3
+X-Gm-Gg: ASbGncvJFXW4xAgFVMkL6QDQnEAxnFXNcqSZqyml+4/ykcfLXE2nhFmN93BsW3J2kL0
+	MzRUCtT1CO3F/DJN1auRwnACUrtWfgO7ABHnXgAB6OBv4WkSj0H2baupqRRtFHM9FibzbkrjFrE
+	aacNnnIu8ZBy5jlu8/UVt3eXCF8tDOueOAPMcvVqZC77uOkBP0Z1Rcp/Y5oMMzguut++W0c43q8
+	Rb1PDKeUcsTxtLlmMqX4WkdKujFJS20cn6ERWnucaE4LTAp+BKqhp/CcOnHZBe3yiREoG0ohjvB
+	vLGHHOkg+2PY1Lyl0S4DeHc1Hekh4vnYfIyHVO+eqhKROWSt5atxSiR8qoRI32KCdVje0OB2A9h
+	o04QzY91214W4n9I=
+X-Google-Smtp-Source: AGHT+IGSyRbCpjt3M6fPL9Ny0dbed0xWG6GvMzBnFnctl3j3KrQXRZZdJVYOgLoC0uHRbRnhxPV+ww==
+X-Received: by 2002:a17:906:ef04:b0:b2a:7f08:23cd with SMTP id a640c23a62f3a-b302b5190e7mr331780266b.50.1758647665932;
+        Tue, 23 Sep 2025 10:14:25 -0700 (PDT)
+Received: from hsukr3.. ([141.70.88.200])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b2636394d79sm1043812466b.38.2025.09.23.10.14.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 Sep 2025 10:14:25 -0700 (PDT)
+From: Sukrut Heroorkar <hsukrut3@gmail.com>
+To: Helge Deller <deller@gmx.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Sukrut Heroorkar <hsukrut3@gmail.com>,
+	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
+	dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER),
+	linux-kernel@vger.kernel.org (open list)
+Cc: skhan@linuxfoundation.org,
+	david.hunter.linux@gmail.com
+Subject: [PATCH v2] fbdev/radeon: Remove stale product link in Kconfig/FB_RADEON
+Date: Tue, 23 Sep 2025 19:14:04 +0200
+Message-ID: <20250923171409.25927-1-hsukrut3@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250923084157.11582-1-hsukrut3@gmail.com> <9fe75192-9260-44f7-8f13-e024e2bbd731@suse.de>
-In-Reply-To: <9fe75192-9260-44f7-8f13-e024e2bbd731@suse.de>
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Tue, 23 Sep 2025 12:03:02 -0400
-X-Gm-Features: AS18NWDnCIuE4uDg0qpAn-RzVENplvgl1AQzC-tA5opkGWF7-LN_yd6zTJ3mypY
-Message-ID: <CADnq5_NHu5=esJZrgy_S80jF68ZapRRYX4_L70DwDDSN3VXitQ@mail.gmail.com>
-Subject: Re: [PATCH] fbdev/radeon: Update stale product link in Kconfig/FB_RADEON
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Sukrut Heroorkar <hsukrut3@gmail.com>, Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>, 
-	Randy Dunlap <rdunlap@infradead.org>, 
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>, 
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, 
-	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, 
-	"open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, 
-	skhan@linuxfoundation.org, david.hunter.linux@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 23, 2025 at 11:29=E2=80=AFAM Thomas Zimmermann <tzimmermann@sus=
-e.de> wrote:
->
-> Hi
->
-> Am 23.09.25 um 10:41 schrieb Sukrut Heroorkar:
-> > The previous Radeon product page link was no longer valid. Repalce
-> > it with the current working link.
-> >
-> > Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
-> > ---
-> >   drivers/video/fbdev/Kconfig | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> > index c21484d15f0c..3037455adf48 100644
-> > --- a/drivers/video/fbdev/Kconfig
-> > +++ b/drivers/video/fbdev/Kconfig
-> > @@ -949,7 +949,7 @@ config FB_RADEON
-> >         don't need to choose this to run the Radeon in plain VGA mode.
-> >
-> >         There is a product page at
-> > -       https://products.amd.com/en-us/GraphicCardResult.aspx
-> > +       https://www.amd.com/en/products/specifications/graphics.html
->
-> May I suggest to remove this URL entirely?
+The product page referenced in the FB_RADEON is no longer valid.
+Remove it to avoid pointing to an invalid link.
 
-Yes, agreed.  I doubt any of the chips listed there actually work with rade=
-onfb.
+Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
+---
+Changes since v1:
+- Dropped the link entirely as suggested
+(See: https://lore.kernel.org/all/CADnq5_NHu5=esJZrgy_S80jF68ZapRRYX4_L70DwDDSN3VXitQ@mail.gmail.com/)
 
-Alex
+ drivers/video/fbdev/Kconfig | 3 ---
+ 1 file changed, 3 deletions(-)
 
->
-> Best regards
-> Thomas
->
-> >
-> >   config FB_RADEON_I2C
-> >       bool "DDC/I2C for ATI Radeon support"
->
-> --
-> --
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Frankenstrasse 146, 90461 Nuernberg, Germany
-> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-> HRB 36809 (AG Nuernberg)
->
->
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index c21484d15f0c..27639b2590d8 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -948,9 +948,6 @@ config FB_RADEON
+ 	  a framebuffer device.  There are both PCI and AGP versions.  You
+ 	  don't need to choose this to run the Radeon in plain VGA mode.
+ 
+-	  There is a product page at
+-	  https://products.amd.com/en-us/GraphicCardResult.aspx
+-
+ config FB_RADEON_I2C
+ 	bool "DDC/I2C for ATI Radeon support"
+ 	depends on FB_RADEON
+-- 
+2.43.0
+

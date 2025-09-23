@@ -1,77 +1,37 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53B9B1DFF7
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 08:43:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FAB0182B4;
+	Tue, 23 Sep 2025 11:07:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758617038; cv=none; b=bkbDGhh+fIX32kpRrRTd8/1IxuWmL/6p1P2+evn2tMM2bOn0jpFnB2Un1GFpHeTudRtyuLGBOAoQ+ZcTRnJI5JG8ZghX8zejP4TuQwy34oigQFsZ/OcZwVTLdkv9Wc1v8VfO6Er0mE+R+ygIrOGbgYQkaOL8vXnRbFWoIzgHh1Y=
+	t=1758625629; cv=none; b=ZXSDsYyDFyOWDpBLRkLWp4ZVW1oUNL60fgQW/MRra52SEeX1qDZUt1iXbkAn5wrJzdTe/szbibdyorvPZr8YzUhdS4HP2UgDXsbk0HZ9a/wRWLG3Y3rM6i75KsImbbhZZMrV0bM541BrdroKQLEGq7+OclSyZ8Bzf7n0R4c+aKU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758617038; c=relaxed/simple;
-	bh=gy4uqxOCIGLwvs84h8NOCEWXZqQgcCRkqfRUYk238eo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NpbSZkR8YXVMsSK9HJrOHqqSmL1wwetXcMKJeJ5nEsHIBtdVFQG/ghpmSD6ngzyZdkK871XFn5mUy645BXwJ71S6/hZvmhDdYhmQ3NAWWigYutnWn0Y6IuzyHTTWL0SvnUth2Bcy2hugqd3kagGXBgEeOju2UiV1pCvIvhR9Ljc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gEYP3n4S; arc=none smtp.client-ip=209.85.218.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gEYP3n4S"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-b28e1b87aa7so377890366b.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Sep 2025 01:43:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758617036; x=1759221836; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=/mGp4D0/N7zj9lqu2hqSY2BaksNmyzuS6a+IwtNsiCQ=;
-        b=gEYP3n4SnylJ6HmgLWL4EPmvr6WRgIuhlPf5K2vcl4Ce7Glm/itR9cPjv6/GdXk6Fu
-         6H28K+0qOZ5wU0gpHf7O3Qox/eUrk66lozP2EYmY2BPI4u93mundKgwyga3mxoPw5VAe
-         EoAs9tPOpiDl5TPDz30VlDU6M4HRBPUkKpGVjr1lNvME5sfjbCppZ4qJmUxqZ0qPxVtj
-         KZ6STeMGCfDIH8OiTuQF4fM612dbjNx749DfXj/tYIdcBb/W/4UdSK9xqnp3fX2FDuZQ
-         Dhd/jtGhNMHWsYr3Z8vNanPNV7OZogODuY+5qOuQfV1bjDO3mxR9jNEqKXg/lKu2nPgw
-         UMuQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758617036; x=1759221836;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/mGp4D0/N7zj9lqu2hqSY2BaksNmyzuS6a+IwtNsiCQ=;
-        b=UB0OXLaITUdp9Wm3xfUqI9p5XW8Z/xjl1bgmo9eXDnika71gRsnNwMF8VPSje3aeHW
-         nRwlpSIxyFxBjv+qqWgOjHGOO2cak1LUg1rvnJ2tIVGzXxTqM8PmOhoaz2H3w1BQN/BK
-         yPCENzfkCJxgR0kPWdFVWXZ+pJZ6DkdrUTa7xn9e/4RHHVLdhrGp6iavS7n4Ca8NOROy
-         cXKo+Alu826dtpd/izONdhKFZ5/Zn6osF9Ra/lLXddk/EkD6S+ciLg0aUkSwXN5upf7L
-         NNU4zFZWoVpvySCs4zT1MTXOjHZXTeZo8sKXRq5oEkOOtzY+xCStZaxU1CCrelJj8HnK
-         YuqQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWXomS1R89La/8hmKMuGzurOJ7wBocjRQEOfKwWwk9Um+ILigwZ1PBj+/2gbgfwcHi8mgU7Q/Ymbi7zkg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxUawIePPLKjbNiB0Oi6R9gkQaaMg7iVrpR3tFZr9Ob6n97SFrH
-	RhoB8PSOM9o4SYqlaC77CjOL18HDcVa71InLne8s2DAZhX1Ym4/NXLIB
-X-Gm-Gg: ASbGncvROrSarAimcuCNbKmdQdnEWfpDk98ye18ucUGBOzahC8nNeUPwE2/fxl2gHka
-	Um/m4JoyDoZ231ajmCGd0JPA+N3D4ldobwBMrrvm5f0p7ZSen6zkT41u5s8IUV6E/1loWctcXi0
-	xo2RMTpGVES2VcIBkavmW0xwRetEZmtNYxI8IC6E9n8/4ANDLwn5KWeaiFz08C7/a7fH8J69XJq
-	HC4c0p6QSFWXVBw9MKgGIFCFshbUctmXE7qhyl1XGZAZZt6abXRXuEMk/kXc5pkTcgrk7jDhTVu
-	i9cQ3coMEnhyFfqLN+Xz62MJjoIz6B9UDV2n6e8T6Kq7IHIxWy7r5DI6BkIWJsBCFaPY3WltMjT
-	e6fqshDOkdTikw64mvEzKm0mNdg==
-X-Google-Smtp-Source: AGHT+IHZf6TnZmvJ/kWnGmv0GcPcYtIPGdUTBRc/Tnmg6bn8o3PfdZRyuZLiArXHvkr85ZYF6HZWCQ==
-X-Received: by 2002:a17:906:dc8d:b0:b2b:62f8:e490 with SMTP id a640c23a62f3a-b3027a4ace6mr168920566b.27.1758617035386;
-        Tue, 23 Sep 2025 01:43:55 -0700 (PDT)
-Received: from hsukr3.. ([141.70.88.200])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b261bdfe8d2sm943936766b.58.2025.09.23.01.43.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Sep 2025 01:43:55 -0700 (PDT)
-From: Sukrut Heroorkar <hsukrut3@gmail.com>
-To: Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Sukrut Heroorkar <hsukrut3@gmail.com>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
-	dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER),
-	linux-kernel@vger.kernel.org (open list)
-Cc: skhan@linuxfoundation.org,
-	david.hunter.linux@gmail.com
-Subject: [PATCH] fbdev/radeon: Update stale product link in Kconfig/FB_RADEON
-Date: Tue, 23 Sep 2025 10:41:50 +0200
-Message-ID: <20250923084157.11582-1-hsukrut3@gmail.com>
+	s=arc-20240116; t=1758625629; c=relaxed/simple;
+	bh=iqyLva5ENeFJt1XjKaPRFvMGlYqucYojIW/YfbuQ9gM=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XXIwNrGa5YxrH7Sgvk0d1bDH8bujGtH9fyBAJwExqUfv/uhcPVOeBC2w28g+RyxykPTVnhl6mq9Z+vkGkAFsdswlLPK6qJzr7qrhQ8VMhAY93+Y3TtUckLSVYcHz+aHtYaIAzdnr+M6VnW0RoXCleLolguPc59fXHrulXOS7TXM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.88.214])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4cWHB75Np6z2CgP5;
+	Tue, 23 Sep 2025 19:02:23 +0800 (CST)
+Received: from dggpemf200018.china.huawei.com (unknown [7.185.36.31])
+	by mail.maildlp.com (Postfix) with ESMTPS id DAA421A016C;
+	Tue, 23 Sep 2025 19:07:01 +0800 (CST)
+Received: from huawei.com (10.50.85.135) by dggpemf200018.china.huawei.com
+ (7.185.36.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 23 Sep
+ 2025 19:07:01 +0800
+From: Quanmin Yan <yanquanmin1@huawei.com>
+To: <simona@ffwll.ch>
+CC: <deller@gmx.de>, <linux-kernel@vger.kernel.org>,
+	<linux-fbdev@vger.kernel.org>, <=dri-devel@lists.freedesktop.org>,
+	<yanquanmin1@huawei.com>, <wangkefeng.wang@huawei.com>, <zuoze1@huawei.com>,
+	<sunnanyong@huawei.com>
+Subject: [PATCH] fbcon: Set fb_display[i]->mode to NULL when the mode is released
+Date: Tue, 23 Sep 2025 19:06:08 +0800
+Message-ID: <20250923110608.3385083-1-yanquanmin1@huawei.com>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -80,28 +40,144 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ dggpemf200018.china.huawei.com (7.185.36.31)
 
-The previous Radeon product page link was no longer valid. Repalce
-it with the current working link.
+Recently, we discovered the following issue through syzkaller:
 
-Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
+BUG: KASAN: slab-use-after-free in fb_mode_is_equal+0x285/0x2f0
+Read of size 4 at addr ff11000001b3c69c by task syz.xxx
+...
+Call Trace:
+ <TASK>
+ dump_stack_lvl+0xab/0xe0
+ print_address_description.constprop.0+0x2c/0x390
+ print_report+0xb9/0x280
+ kasan_report+0xb8/0xf0
+ fb_mode_is_equal+0x285/0x2f0
+ fbcon_mode_deleted+0x129/0x180
+ fb_set_var+0xe7f/0x11d0
+ do_fb_ioctl+0x6a0/0x750
+ fb_ioctl+0xe0/0x140
+ __x64_sys_ioctl+0x193/0x210
+ do_syscall_64+0x5f/0x9c0
+ entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+The issue occurs in the function fb_mode_is_equal(p->mode, mode), I also
+noticed that when freeing the memory related to fb_info->modelist, there's
+no attempt to set the corresponding fb_display[i]->mode to NULL after
+freeing. Based on analysis, the root cause of this bug appears to be that
+a certain p->mode has become a wild pointer.
+
+I've identified two code paths for freeing modelist->mode:
+1. fb_delete_videomode - removes videomode entry from modelist.
+2. fb_destroy_modelist - destroys the entire modelist.
+
+Analysis shows that fb_delete_videomode path should have been fixed in
+a previous patch[1]. Therefore, the current bug is likely triggered
+through the fb_destroy_modelist path. I've found a reproducible test case:
+1. With /dev/fb0 already registered in the system, load a kernel module
+   to register a new device /dev/fb1;
+2. Set fb1's mode to the global fb_display[] array (via FBIOPUT_CON2FBMAP);
+3. Switch console from fb to VGA (to allow normal rmmod of the ko);
+4. Unload the kernel module - at this point fb1's modelist is freed, leaving
+   a wild pointer in fb_display[];
+5. Trigger the bug via system calls through fb0 attempting to delete a mode
+   from fb0.
+
+To prevent similar issues from recurring, consider traversing fb_display[]
+whenever releasing a mode from fb_info. If the corresponding mode exists
+in fb_display[], set its pointer to NULL.
+
+[1] https://lore.kernel.org/all/20210712085544.2828-1-thunder.leizhen@huawei.com/
+
+Signed-off-by: Quanmin Yan <yanquanmin1@huawei.com>
 ---
- drivers/video/fbdev/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This is my first time working on fb issues. If there are any misunderstandings
+in my analysis, I would appreciate corrections from the community.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index c21484d15f0c..3037455adf48 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -949,7 +949,7 @@ config FB_RADEON
- 	  don't need to choose this to run the Radeon in plain VGA mode.
+ drivers/video/fbdev/core/fbcon.c  | 11 +++++++++++
+ drivers/video/fbdev/core/modedb.c |  7 +++++++
+ include/linux/fbcon.h             |  2 ++
+ 3 files changed, 20 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index b062b05f4128..bfbf79d6cd05 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2803,6 +2803,17 @@ int fbcon_mode_deleted(struct fb_info *info,
+ 	return found;
+ }
  
- 	  There is a product page at
--	  https://products.amd.com/en-us/GraphicCardResult.aspx
-+	  https://www.amd.com/en/products/specifications/graphics.html
++void fb_display_clean_videomode(struct fb_videomode *m)
++{
++	struct fbcon_display *p;
++
++	for (int i = first_fb_vc; i <= last_fb_vc; i++) {
++		p = &fb_display[i];
++		if (p->mode == m)
++			p->mode = NULL;
++	}
++}
++
+ #ifdef CONFIG_VT_HW_CONSOLE_BINDING
+ static void fbcon_unbind(void)
+ {
+diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
+index 53a610948c4a..5a0ee96ebefa 100644
+--- a/drivers/video/fbdev/core/modedb.c
++++ b/drivers/video/fbdev/core/modedb.c
+@@ -16,6 +16,7 @@
+ #include <linux/slab.h>
+ #include <linux/fb.h>
+ #include <linux/kernel.h>
++#include <linux/fbcon.h>
  
- config FB_RADEON_I2C
- 	bool "DDC/I2C for ATI Radeon support"
+ #undef DEBUG
+ 
+@@ -1100,6 +1101,7 @@ void fb_delete_videomode(const struct fb_videomode *mode,
+ 		modelist = list_entry(pos, struct fb_modelist, list);
+ 		m = &modelist->mode;
+ 		if (fb_mode_is_equal(m, mode)) {
++			fb_display_clean_videomode(m);
+ 			list_del(pos);
+ 			kfree(pos);
+ 		}
+@@ -1113,8 +1115,13 @@ void fb_delete_videomode(const struct fb_videomode *mode,
+ void fb_destroy_modelist(struct list_head *head)
+ {
+ 	struct list_head *pos, *n;
++	struct fb_modelist *modelist;
++	struct fb_videomode *m;
+ 
+ 	list_for_each_safe(pos, n, head) {
++		modelist = list_entry(pos, struct fb_modelist, list);
++		m = &modelist->mode;
++		fb_display_clean_videomode(m);
+ 		list_del(pos);
+ 		kfree(pos);
+ 	}
+diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
+index 81f0e698acbf..2b5e93aeaaff 100644
+--- a/include/linux/fbcon.h
++++ b/include/linux/fbcon.h
+@@ -18,6 +18,7 @@ void fbcon_suspended(struct fb_info *info);
+ void fbcon_resumed(struct fb_info *info);
+ int fbcon_mode_deleted(struct fb_info *info,
+ 		       struct fb_videomode *mode);
++void fb_display_clean_videomode(struct fb_videomode *m);
+ void fbcon_new_modelist(struct fb_info *info);
+ void fbcon_get_requirement(struct fb_info *info,
+ 			   struct fb_blit_caps *caps);
+@@ -38,6 +39,7 @@ static inline void fbcon_suspended(struct fb_info *info) {}
+ static inline void fbcon_resumed(struct fb_info *info) {}
+ static inline int fbcon_mode_deleted(struct fb_info *info,
+ 				     struct fb_videomode *mode) { return 0; }
++static inline void fb_display_clean_videomode(struct fb_videomode *m) {}
+ static inline void fbcon_new_modelist(struct fb_info *info) {}
+ static inline void fbcon_get_requirement(struct fb_info *info,
+ 					 struct fb_blit_caps *caps) {}
 -- 
 2.43.0
 

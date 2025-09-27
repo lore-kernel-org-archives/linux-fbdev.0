@@ -1,129 +1,228 @@
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0CC5280339
-	for <linux-fbdev@vger.kernel.org>; Sat, 27 Sep 2025 07:50:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D3AF20010C;
+	Sat, 27 Sep 2025 16:13:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758959434; cv=none; b=rM4VH5aocdwvYyEuQNTfZNp7Bsz9b8AdNXwyyhbW1sCgYQNTJ1o/mbRU0IneGJNSwLp466xGPmp2FR6u8LEQMwYxhYqYIyId8JoHHEDu92U7Z+XHed/FH/6C9chkj8T/TfOkXn2ZKm84F6f0xoEvVnw/166ASx04pd6Kd9DDJkk=
+	t=1758989587; cv=none; b=hnJPtB2oeMaZdc8Kdj8UfvLbKjArd9ggHFSN4d3hJ9xTOUehn3TkS+UrHd8kFlB07OFHfPdMIsB/KArSu+MBFAaogRWT7qy7CU9SwOXrKnIEel+r2E48q3QlcUE5iruBeTlmcYZM8E31rap/3W/zw1Mrhz9WwK8z7FduJax36oE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758959434; c=relaxed/simple;
-	bh=18wu7FR6Yh7UiKlpOC82WgZL7X3EtF2rIULwmTLxiL8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z1kalqwQcxiyxa1muZtsZ+3RdWR/SOBXW1mDLFHP87AiRSiXrlXny+3b8A1Dtdzl+p1voKfiSyYch9rTBqrcT3jL1ma4II9VdjPC3kJ2IOl0WGiYlsmPFWY52S2gOGBB6cAFpWDHI7A0RDcka8uI3/Gub5zksi2JmP60tB+QK7I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gHaoh/jl; arc=none smtp.client-ip=209.85.222.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1758989587; c=relaxed/simple;
+	bh=O2se9tcFwdGBniBb7bdIWHL/pjxrbvplf1HxXPO5P8c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SgUVyFQiU7M/Eag7gX+Fww+0hxyU79GlrMTTUY3x7Ik2yCNwJIDVHXA68gNJZEiwkVWfzqDK/UM0bhxILsm689e4KWf5qRbUhR2Qhb37PV8ujAOZSxnlw7qk3axsMMlZ7zW9wjnGdy5RolfRVtJ+m6xHW+CcPpT8m+PssaDJnck=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lFN1G0sf; arc=none smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gHaoh/jl"
-Received: by mail-qk1-f180.google.com with SMTP id af79cd13be357-8599c274188so298311585a.1
-        for <linux-fbdev@vger.kernel.org>; Sat, 27 Sep 2025 00:50:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758959431; x=1759564231; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=hgfPKSQNysrHS9dWJ30TPeInwwtlPIqd1YDWoMjDLSU=;
-        b=gHaoh/jlihj0WCk6VC7+A4U+v1cUOJDS8wBr7VURZdtBuq1macboKr3GHMzSuM1FJ2
-         bAF+1fmUspN3/uibpT89VS3crxfuxL8iy9u5KXd9iu5gjFbJAASRT6jFPoSLN40MAdyQ
-         NfesaemNIJ0FrA1zGiuj9QqrX1pG9rZI73gqwVsqeIetbSlVKHh+4I89XFUC370Zhpik
-         WUQ/WPw/VoGuqNem86zSxQvEBxg8+3zZZYU9eeHiPQ6XSh7oTbieEwycZyh8FTz+KtUr
-         K4p/ntT+B4ZxS2u27tcTcbOGJA2CcNWLB53FLGMTClKz3aqyO4BTpykbzLR+kcDFrzno
-         r8Tg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758959431; x=1759564231;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hgfPKSQNysrHS9dWJ30TPeInwwtlPIqd1YDWoMjDLSU=;
-        b=d12fI/W9v2pOtGF3mikCTK7xEUwcZ+hZkIF4/1s/pvxz8+xOrISGmY8rYhcgZe9tXG
-         t7GOXHcuZFseUS1wi7Ejq1z7xpb/8NZe6fUsg0hBzR2GNjLvWJh0I1g1Cjs5nb017qzW
-         K85Np2pHXe9wi4ehwaR5R13Dua21EFtLE05PzYWCId7daJIIljgDm5fz4dMqPFg92FzC
-         x/Gb03tIpXCyQOEpPBOkDhTwdrT0uR7SJ0LTUQ0Y6AJ3Ia/B4iYTN+1jXiEocyu/c8AN
-         EGcylvbwPtchKaGzMkmv2dSCs12Pzwbg8dBpl8kLmSrsQsBeUoFnD0pCW9jv5s2r9OVw
-         u77w==
-X-Forwarded-Encrypted: i=1; AJvYcCVIVxmQifzWvTLtpRIqJsViYrkqoyoJxPsE5hhsgxzW1Swz3FtNJ1JZz0KEhGC4cIml6yMpY1ybmk7N2A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw7iwHCKj6f0XQteFhs8LxqUQxhIkUkceuP+bmnaheKgLRpvuHk
-	SUDiYRP/1EUsJViLxYejXIMehAoMGyvR0zUtRvE9MtOqg2m2qLN0ADwZ
-X-Gm-Gg: ASbGnct0ceNUKyLf5OTSpkquNE1H1tB5Xsejrx4556iJvyt2lMUvSzYtajoNDTwEOug
-	2mF02bGYwrVYZ5dawP910I5Q5jtiZWeK50zN69qxobbY/Mt8X2YFXC9RWF2lPg/o+BrhwE5mPet
-	cYc7ZdyDNvBpAMOC2kWdjbxSjDWfrK/RvkoL+ksYXrnLX4eiEXhpv6dLHlruu4tLqe/yYXUDkIZ
-	z56/3AHCrmHyCI7FvJSFtu1vPsanx9nVM0GKh7otGlIk7Y8htTOcdXBaCKaW0u1MVihgSh8ZUSL
-	fov23TlFfjrJEXJgfDOqdSFWQJfsP+MDdkvO+5m595eJovIc4un5MF5zqO/p+YOlxinR91baPKw
-	vYF+3lmrCEqCzJdJ6sXPjbL/4vw3A
-X-Google-Smtp-Source: AGHT+IGDAZZkx3WIl9guUtfSPbuaq94sVuUIs0iollEMe6q0H0aWqiaDGpBWQY8KPFyB2BFDhYgIQw==
-X-Received: by 2002:a05:620a:f06:b0:80b:139f:f61a with SMTP id af79cd13be357-85ae0527294mr1731949285a.23.1758959430710;
-        Sat, 27 Sep 2025 00:50:30 -0700 (PDT)
-Received: from arch-box ([2607:fea8:54de:2200::9c5c])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-85c2737848csm415143585a.3.2025.09.27.00.50.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 27 Sep 2025 00:50:29 -0700 (PDT)
-From: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
-To: Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>
-Cc: Albin Babu Varghese <albinbabuvarghese20@gmail.com>,
-	syzbot+48b0652a95834717f190@syzkaller.appspotmail.com,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lFN1G0sf"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1758989584; x=1790525584;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=O2se9tcFwdGBniBb7bdIWHL/pjxrbvplf1HxXPO5P8c=;
+  b=lFN1G0sfOVG5xq6gN2S0R9TSv+dNLcbAYqlJZbjqKf/NQ+b6HQSYDX95
+   BaGrYm/N1KaCh1tei4YYNtexNIBv/LVsMGGpULB6rf7DxTtex0M+ZvMAa
+   SKf8fea++JquXc+oOx6uXAluCcOCFXm01p+8Q7k/5uVF+Zs5SqmqKahjZ
+   n+oCsbuK89cyq7vFSkDAWa8ACn/VdG9oi2UqdvMO6dpYo9+FbDhztjp/7
+   iH0Nh1dNwB/v67+D4vjUtN47H7dM2SN6yMt9DafQDNh26w8dDnTGRsGOO
+   /fbi/yPvi7MmKdSCqSYODCm47ddfESpnan6D+A9dEW+kevKQZVZm884fw
+   w==;
+X-CSE-ConnectionGUID: h+ZiuZVaSL+PluxQdgrwfg==
+X-CSE-MsgGUID: jXfBJm/DTp+oemxvZ0y8hg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11566"; a="63928298"
+X-IronPort-AV: E=Sophos;i="6.18,297,1751266800"; 
+   d="scan'208";a="63928298"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Sep 2025 09:13:03 -0700
+X-CSE-ConnectionGUID: C/Q8PvakT/+xQLIPmEYxcA==
+X-CSE-MsgGUID: ODe5s3/fTvWJl3x7+jf24w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,297,1751266800"; 
+   d="scan'208";a="208591696"
+Received: from lkp-server02.sh.intel.com (HELO 84c55410ccf6) ([10.239.97.151])
+  by orviesa002.jf.intel.com with ESMTP; 27 Sep 2025 09:12:59 -0700
+Received: from kbuild by 84c55410ccf6 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1v2XXc-0007B1-37;
+	Sat, 27 Sep 2025 16:12:56 +0000
+Date: Sun, 28 Sep 2025 00:12:38 +0800
+From: kernel test robot <lkp@intel.com>
+To: Sukrut Heroorkar <hsukrut3@gmail.com>, Helge Deller <deller@gmx.de>,
+	Bernie Thompson <bernie@plugable.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Arnd Bergmann <arnd@arndb.de>, Randy Dunlap <rdunlap@infradead.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+	Zsolt Kajtar <soci@c64.rulez.org>,
+	Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: Add bounds checking in bit_putcs to fix vmalloc-out-of-bounds
-Date: Sat, 27 Sep 2025 03:50:09 -0400
-Message-ID: <20250927075010.119671-1-albinbabuvarghese20@gmail.com>
-X-Mailer: git-send-email 2.51.0
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	skhan@linuxfoundation.org, david.hunter.linux@gmail.com
+Subject: Re: [PATCH] fbdev: udlfb: make CONFIG_FB_DEVICE optional
+Message-ID: <202509272320.3K8kdDCw-lkp@intel.com>
+References: <20250924175743.6790-1-hsukrut3@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250924175743.6790-1-hsukrut3@gmail.com>
 
-KASAN reports vmalloc-out-of-bounds writes in sys_imageblit during console
-resize operations. The crash happens when bit_putcs renders characters 
-outside the allocated framebuffer region.
+Hi Sukrut,
 
-Call trace: vc_do_resize -> clear_selection -> invert_screen ->
-do_update_region -> fbcon_putcs -> bit_putcs -> sys_imageblit
+kernel test robot noticed the following build errors:
 
-The console resize changes dimensions but bit_putcs doesn't validate that 
-the character positions fit within the framebuffer before rendering. 
-This causes writes past the allocated buffer in fb_imageblit functions.
+[auto build test ERROR on drm-misc/drm-misc-next]
+[also build test ERROR on linus/master v6.17-rc7 next-20250926]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Fix by checking bounds before rendering:
-- Return if dy + height > yres (would write past bottom)
-- Break if dx + width > xres (would write past right edge)
+url:    https://github.com/intel-lab-lkp/linux/commits/Sukrut-Heroorkar/fbdev-udlfb-make-CONFIG_FB_DEVICE-optional/20250925-015939
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20250924175743.6790-1-hsukrut3%40gmail.com
+patch subject: [PATCH] fbdev: udlfb: make CONFIG_FB_DEVICE optional
+config: x86_64-randconfig-001-20250927 (https://download.01.org/0day-ci/archive/20250927/202509272320.3K8kdDCw-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250927/202509272320.3K8kdDCw-lkp@intel.com/reproduce)
 
-Reported-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190  
-Tested-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
-Signed-off-by: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
----
- drivers/video/fbdev/core/bitblit.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202509272320.3K8kdDCw-lkp@intel.com/
 
-diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-index f9475c14f733..4c732284384a 100644
---- a/drivers/video/fbdev/core/bitblit.c
-+++ b/drivers/video/fbdev/core/bitblit.c
-@@ -160,6 +160,9 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
- 	image.height = vc->vc_font.height;
- 	image.depth = 1;
- 
-+	if (image.dy + image.height > info->var.yres)
-+		return;
-+
- 	if (attribute) {
- 		buf = kmalloc(cellsize, GFP_ATOMIC);
- 		if (!buf)
-@@ -173,6 +176,10 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
- 			cnt = count;
- 
- 		image.width = vc->vc_font.width * cnt;
-+
-+		if (image.dx + image.width > info->var.xres)
-+			break;
-+
- 		pitch = DIV_ROUND_UP(image.width, 8) + scan_align;
- 		pitch &= ~scan_align;
- 		size = pitch * image.height + buf_align;
+All errors (new ones prefixed by >>):
+
+>> drivers/video/fbdev/udlfb.c:345:16: error: no member named 'dev' in 'struct fb_info'
+     345 |         dev_dbg(info->dev, "mmap() framebuffer addr:%lu size:%lu\n",
+         |                 ~~~~  ^
+   include/linux/dev_printk.h:171:28: note: expanded from macro 'dev_dbg'
+     171 |         dev_no_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                   ^~~
+   include/linux/dev_printk.h:139:23: note: expanded from macro 'dev_no_printk'
+     139 |                         _dev_printk(level, dev, fmt, ##__VA_ARGS__);    \
+         |                                            ^~~
+   drivers/video/fbdev/udlfb.c:933:16: error: no member named 'dev' in 'struct fb_info'
+     933 |         dev_dbg(info->dev, "open, user=%d fb_info=%p count=%d\n",
+         |                 ~~~~  ^
+   include/linux/dev_printk.h:171:28: note: expanded from macro 'dev_dbg'
+     171 |         dev_no_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                   ^~~
+   include/linux/dev_printk.h:139:23: note: expanded from macro 'dev_no_printk'
+     139 |                         _dev_printk(level, dev, fmt, ##__VA_ARGS__);    \
+         |                                            ^~~
+   drivers/video/fbdev/udlfb.c:986:16: error: no member named 'dev' in 'struct fb_info'
+     986 |         dev_dbg(info->dev, "release, user=%d count=%d\n", user, dlfb->fb_count);
+         |                 ~~~~  ^
+   include/linux/dev_printk.h:171:28: note: expanded from macro 'dev_dbg'
+     171 |         dev_no_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                   ^~~
+   include/linux/dev_printk.h:139:23: note: expanded from macro 'dev_no_printk'
+     139 |                         _dev_printk(level, dev, fmt, ##__VA_ARGS__);    \
+         |                                            ^~~
+   drivers/video/fbdev/udlfb.c:1099:16: error: no member named 'dev' in 'struct fb_info'
+    1099 |         dev_dbg(info->dev, "blank, mode %d --> %d\n",
+         |                 ~~~~  ^
+   include/linux/dev_printk.h:171:28: note: expanded from macro 'dev_dbg'
+     171 |         dev_no_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                   ^~~
+   include/linux/dev_printk.h:139:23: note: expanded from macro 'dev_no_printk'
+     139 |                         _dev_printk(level, dev, fmt, ##__VA_ARGS__);    \
+         |                                            ^~~
+   drivers/video/fbdev/udlfb.c:1193:18: error: no member named 'dev' in 'struct fb_info'
+    1193 |                         dev_err(info->dev, "Virtual framebuffer alloc failed\n");
+         |                                 ~~~~  ^
+   include/linux/dev_printk.h:154:44: note: expanded from macro 'dev_err'
+     154 |         dev_printk_index_wrap(_dev_err, KERN_ERR, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                                   ^~~
+   include/linux/dev_printk.h:110:11: note: expanded from macro 'dev_printk_index_wrap'
+     110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+         |                         ^~~
+   drivers/video/fbdev/udlfb.c:1217:19: error: no member named 'dev' in 'struct fb_info'
+    1217 |                         dev_info(info->dev,
+         |                                  ~~~~  ^
+   include/linux/dev_printk.h:160:46: note: expanded from macro 'dev_info'
+     160 |         dev_printk_index_wrap(_dev_info, KERN_INFO, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                                     ^~~
+   include/linux/dev_printk.h:110:11: note: expanded from macro 'dev_printk_index_wrap'
+     110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+         |                         ^~~
+   drivers/video/fbdev/udlfb.c:1251:12: error: no member named 'dev' in 'struct fb_info'
+    1251 |         if (info->dev) {
+         |             ~~~~  ^
+   drivers/video/fbdev/udlfb.c:1255:15: error: no member named 'dev' in 'struct fb_info'
+    1255 |                 dev = info->dev;
+         |                       ~~~~  ^
+   drivers/video/fbdev/udlfb.c:1379:12: error: no member named 'dev' in 'struct fb_info'
+    1379 |         if (info->dev)
+         |             ~~~~  ^
+   drivers/video/fbdev/udlfb.c:1720:40: error: no member named 'dev' in 'struct fb_info'
+    1720 |         retval = device_create_bin_file(info->dev, &edid_attr);
+         |                                         ~~~~  ^
+   drivers/video/fbdev/udlfb.c:1727:19: error: no member named 'dev' in 'struct fb_info'
+    1727 |                  dev_name(info->dev), info->var.xres, info->var.yres,
+         |                           ~~~~  ^
+   include/linux/dev_printk.h:160:67: note: expanded from macro 'dev_info'
+     160 |         dev_printk_index_wrap(_dev_info, KERN_INFO, dev, dev_fmt(fmt), ##__VA_ARGS__)
+         |                                                                          ^~~~~~~~~~~
+   include/linux/dev_printk.h:110:23: note: expanded from macro 'dev_printk_index_wrap'
+     110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+         |                                     ^~~~~~~~~~~
+   drivers/video/fbdev/udlfb.c:1767:31: error: no member named 'dev' in 'struct fb_info'
+    1767 |         device_remove_bin_file(info->dev, &edid_attr);
+         |                                ~~~~  ^
+   12 errors generated.
+
+
+vim +345 drivers/video/fbdev/udlfb.c
+
+59277b679f8b5c drivers/staging/udlfb/udlfb.c Bernie Thompson    2009-11-24  323  
+4574203f45eb26 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-02-15  324  static int dlfb_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  325  {
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  326  	unsigned long start = vma->vm_start;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  327  	unsigned long size = vma->vm_end - vma->vm_start;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  328  	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  329  	unsigned long page, pos;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  330  
+5905585103276b drivers/video/fbdev/udlfb.c   Thomas Zimmermann  2022-04-29  331  	if (info->fbdefio)
+5905585103276b drivers/video/fbdev/udlfb.c   Thomas Zimmermann  2022-04-29  332  		return fb_deferred_io_mmap(info, vma);
+5905585103276b drivers/video/fbdev/udlfb.c   Thomas Zimmermann  2022-04-29  333  
+76f92201b821dd drivers/video/fbdev/udlfb.c   Thomas Zimmermann  2023-11-27  334  	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+76f92201b821dd drivers/video/fbdev/udlfb.c   Thomas Zimmermann  2023-11-27  335  
+04f8afbec37f63 drivers/video/udlfb.c         Tomi Valkeinen     2013-04-18  336  	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+04f8afbec37f63 drivers/video/udlfb.c         Tomi Valkeinen     2013-04-18  337  		return -EINVAL;
+04f8afbec37f63 drivers/video/udlfb.c         Tomi Valkeinen     2013-04-18  338  	if (size > info->fix.smem_len)
+04f8afbec37f63 drivers/video/udlfb.c         Tomi Valkeinen     2013-04-18  339  		return -EINVAL;
+04f8afbec37f63 drivers/video/udlfb.c         Tomi Valkeinen     2013-04-18  340  	if (offset > info->fix.smem_len - size)
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  341  		return -EINVAL;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  342  
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  343  	pos = (unsigned long)info->fix.smem_start + offset;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  344  
+5865889fe43194 drivers/video/fbdev/udlfb.c   Ladislav Michl     2018-01-16 @345  	dev_dbg(info->dev, "mmap() framebuffer addr:%lu size:%lu\n",
+2685cffa9e7992 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-09-05  346  		pos, size);
+2685cffa9e7992 drivers/staging/udlfb/udlfb.c Bernie Thompson    2010-09-05  347  
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  348  	while (size > 0) {
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  349  		page = vmalloc_to_pfn((void *)pos);
+f05e0575ed334a drivers/staging/udlfb/udlfb.c Greg Kroah-Hartman 2009-06-03  350  		if (remap_pfn_range(vma, start, page, PAGE_SIZE, PAGE_SHARED))
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  351  			return -EAGAIN;
+f05e0575ed334a drivers/staging/udlfb/udlfb.c Greg Kroah-Hartman 2009-06-03  352  
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  353  		start += PAGE_SIZE;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  354  		pos += PAGE_SIZE;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  355  		if (size > PAGE_SIZE)
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  356  			size -= PAGE_SIZE;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  357  		else
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  358  			size = 0;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  359  	}
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  360  
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  361  	return 0;
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  362  }
+88e58b1a42f8c1 drivers/staging/udlfb/udlfb.c Roberto De Ioris   2009-06-03  363  
+
 -- 
-2.51.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

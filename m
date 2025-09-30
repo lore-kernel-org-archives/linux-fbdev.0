@@ -1,126 +1,192 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 723511A83ED
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Sep 2025 20:06:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 825BA22E004
+	for <linux-fbdev@vger.kernel.org>; Tue, 30 Sep 2025 20:35:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759262783; cv=none; b=hYzohhYhI0TZLH13jqwiuuV+4A9eJYnzm/Dc8IBbCwav7rk8mXdaoUMZFi7DRR8JiwI0i9sPCdWKkI0N/nwRLybJwSqUw1v1DOscauIJfDK6WjNgI/1SXButWVsYfUS7NMqsRMWcr3O2DYKwaRmMAFQukoAjh9Zo8jQNBLfnX0A=
+	t=1759264526; cv=none; b=r3kHTekD6cbIaXC6DQkN9SELOei5HqnybMphg9cCOjhMuup4LMfxCOSUYiKZOMS4Hj69PXENrRtBMdSvyuDZ2z+a03+OjjDQeckbALe8W1kgaoxKlJsGxbbauLD+doSZkXvwNtus4zEcRJ7zZUBC/3voc7k6asAK2vgy3kNS2dM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759262783; c=relaxed/simple;
-	bh=uXkF/ihhwXZnSvOZ1vZab5GXRver+3TRBZj8qTXUuuk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qMkACt2T80TWwTcT+dNfW9P/f2mVR2wTklmsko99/mWMph0VW7NrM7T8nwJ8DNCkdVQ69L34avDVMz6fPXeUMIoZ9dpcNFCjE4/ugfIeD5vAy/fRnv0A+MplP2nXEUBhjG48hkgawZUYhioS7Js0nKNKhgXrmMKXwmwp+VrHPcw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=pPAcwORD; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1759264526; c=relaxed/simple;
+	bh=dW4o5mHCnnQj6ktoaXDq4rL2wfjMVO6chOCCNAo2eCQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=q9C+gswWHwHuVHqJahppe4wNOjngW8wKEv7mj20ftKucQ1iZkrfm1GjtdUwzv5Kt2YFm2EfLkSU4hvOfLr3enltj46jZViYwF4bZ55wwKWo563fFS9qApMe87JUsY1x/+LbB8vcEdTalPFBZLseClp10VVlbmo+wVuuCMo2QzhY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=SvJMv1ea; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="pPAcwORD"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58UBWnvn009452
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Sep 2025 20:06:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=nnCDWQBx3MEUkPGk1nPDrYBk
-	0/iZtvd9WsbeqrQ9y0s=; b=pPAcwORDhNc5V5kCVRdy1IZmLTHcRoUgyba/fmd3
-	LsdcVm9mBl23+/rygXKXLx4xTmFejhl5BRVUieYfVrucQZuz4UUt1acQc6HyTIyO
-	RPqAXMPfwf7YaC7RTcJr4ZV3JkbbSxBKxh5pPWHJSWSsno6VL8fubM/sxLmOXb6M
-	lWHGcrG0XGpyEMF1ttNJPNALUy6c1JR8Qk24PVus9lvJdbntQaG2hFR+Ln+FlgUF
-	AyOiJsXXSybd3jMHrCKtl4KLiRcraBsEtSM4sCTFmWu3LWeBbK5TpP8rLv+3bwAG
-	By3BP5CkBKpniG/bunzzytaqAcm5eQROG5ldQf3aestZ8A==
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 49e977t3ea-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Sep 2025 20:06:20 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-4e002f413e4so38929941cf.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 30 Sep 2025 13:06:20 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759262779; x=1759867579;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nnCDWQBx3MEUkPGk1nPDrYBk0/iZtvd9WsbeqrQ9y0s=;
-        b=YyLhiau8qos3KgDlN46HW+F+ejkqxaoulBjv8CEIz2/EI/Noe6p3HUSex/dxIASx1e
-         IfSGPmkayo21oyi6m7h81iNr5Mu9tPD8QY3RertQ4o1s3fp2lzmpu26W9KkZfh0ltJzV
-         5K79PD+WRs3ry94QDji0WyDewMYIAFDaemP0ZUTAnRfhAHnbsyyn3cEU8XRu2J3Nk32E
-         CgRchOpsiKQY6KmKqpJhNAhQF1nexOCPiF/QsG9GMgGJqTXiaaWbFSDtKfs6d82O1o84
-         nBf2j+GktXmwjYunzp2EVaTqrOSn+19XyiXVTP8tUYIZ0P/5GuEO7vpoTrgZNYpkbMSO
-         /vKg==
-X-Forwarded-Encrypted: i=1; AJvYcCWlm0aYO3j1ZG5CCR2jtksiO0sV9Y4Mv0a0Tc68xiBQj91Rv7ugokLKm15211YibY5i+qfk0tSBIR6kng==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzaNDvXY0wjK0CtBWPosA54jbtom7WUC5KAKrL0x0/ihJ3YdZWj
-	tVK9xLZH6B1tXJS0HDzBNceReopTmPkSLEAfykn29IfngDsJHEhxVG48elJDLivTWCe4DptzybJ
-	EcCOFXLFJQaix7HwfovJsHW3H27D+hgAbwt4LrFEMEHpvs3moTx35Iae28AR7kLGjsw==
-X-Gm-Gg: ASbGncvCp2S0ZiyMwnHG4995W82/z60RqUegybG45hwQbO1lR6XnsJuGNDoPiHS77TO
-	adjqV9ieGFYohiw3XgjDa8YjwkW/HqPW2QtspldRcTfylrjMfGWTfsxsmLGMKXFYvnVemarbV2c
-	zbZm2FyfkYl/8Z9ZwOsKt0th7OcsHfW/MrFqkzvYg0dHRmIOgraJDyqYvLq9Ksf94CgPc63V9ZQ
-	DbifLsFfWUtHNlQy/CmLjwotp/FuERMZi9JBgFwN8f1Vk8DtPft3He82xChEjhIY/yBDkhZPmNC
-	5GQctSTq3JKCDH0WBZoaS4TguT9wtg0M/IxhMIMO+qmfRg+HxTAHBdJXCcxWEvWTQC/l1YwucAN
-	Tl6tjH03/oznJX1AXyqsyJzclSGkCsd3y6wRcgaL9pKvEdvXKCXcxmygMQw==
-X-Received: by 2002:a05:622a:1f06:b0:4de:8e13:2ccf with SMTP id d75a77b69052e-4e41ea169c4mr13229291cf.74.1759262779101;
-        Tue, 30 Sep 2025 13:06:19 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IExAC+gjWYrGkYGyC7iuQx0n8IkXtiwE5ml3GBXLD2rdjXMDvnTqbMjAoTH934KEvOlO8Ctyg==
-X-Received: by 2002:a05:622a:1f06:b0:4de:8e13:2ccf with SMTP id d75a77b69052e-4e41ea169c4mr13228591cf.74.1759262778420;
-        Tue, 30 Sep 2025 13:06:18 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a0c3-3a00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a0c3:3a00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-586048c815asm3037274e87.25.2025.09.30.13.06.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Sep 2025 13:06:17 -0700 (PDT)
-Date: Tue, 30 Sep 2025 23:06:14 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: daniel@zonque.org, haojian.zhuang@gmail.com, robert.jarzmik@free.fr,
-        linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] ARM: spitz: Do not include <linux/fb.h>
-Message-ID: <atoda7fiaw6xxc3arfg2rvczt4ezhravwogbshvca4dsr5kjqm@vjj32eqjxkwl>
-References: <20250930112651.87159-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="SvJMv1ea"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1759264518; x=1759869318; i=deller@gmx.de;
+	bh=/4NQDtLIBMiD17zjpoxNiq3YuloIyWdg2IivP46km6w=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=SvJMv1eahgHVshVCUC9TxYkkQaE05Fq/L3dQBUior39kjEHhqH96xGoNXhIoR0Py
+	 EygixQOMHIPziAmWbye2COy3Ltjdas37+ZB0d3Y4tluzKJC1O31n6jNhV8Go2PjdM
+	 +3ksy3EI6n+j+TZxG7Gj4Z4WS0Ul+/A0PCTm/qul8HNRcU3/YJNHtchOjplHvA3D1
+	 q7Xwtm2D01ZBzAYOPJgp6Vfzq5jl8p20xJhVHayRv5ZvxTzaZQMQknt8iZwc0PJiF
+	 Qd9QL1kj6451e3WvbTbhPBBO07Kzq79LB8gn/OyTYq3NRyxR5qsyJV9q4gApc/grK
+	 P3dDxQYm/TaOn8girg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.50.4]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MdNcA-1uUdMc0DHk-00e066; Tue, 30
+ Sep 2025 22:35:18 +0200
+Message-ID: <a8bf25a0-fb2f-4e35-9a14-f09a530ef0fb@gmx.de>
+Date: Tue, 30 Sep 2025 22:35:16 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250930112651.87159-1-tzimmermann@suse.de>
-X-Proofpoint-GUID: UtCwj7gG5PlVQVakye2Feu80bfybgakh
-X-Proofpoint-ORIG-GUID: UtCwj7gG5PlVQVakye2Feu80bfybgakh
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTI3MDA0MyBTYWx0ZWRfX/KyVlLnX5k/Z
- o34WhU9BIgsbJ3WVf9pYTKeRoUbce6Xf8b/aACKNgzsxDyllxFr9/woOdtM0NvTwJT+y47W7mdj
- Y11AUIWhd+Dy61A8L299BKEg0arpst8+u6oRaTWG8BjxcbvtBfKZQd8Dr4fNIFEatL882/qFEtW
- la1CIKLlDYVQKjrfMCQHtTdqQqU3N9hQXSObRHH3TImco/2/AvpYyoYo85tnOOLqH6gxhcWpNwW
- kUQfqO9psjboKmBlop6daMrRcaFzmBuc+Ey1GkTaw5hm0OCRzdoUHPIL+eWdjvlCzuDZ02Z5IwO
- AZf6L/sBYXx08dHNqRwo0CfHiSgo6vC6ve8e8X1zO9m2NGT7ltAWH2JsLz/K5S3tYmQ/7LKmRFg
- /UIDKC7iXr6gdXxV/h3rxUDtP8FB/w==
-X-Authority-Analysis: v=2.4 cv=Sf36t/Ru c=1 sm=1 tr=0 ts=68dc383c cx=c_pps
- a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=yJojWOMRYYMA:10 a=EUspDBNiAAAA:8 a=al7qi2xbfAQSSKGDXgwA:9 a=CjuIK1q_8ugA:10
- a=dawVfQjAaf238kedN5IG:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-30_04,2025-09-29_04,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 bulkscore=0 suspectscore=0 adultscore=0 spamscore=0
- priorityscore=1501 malwarescore=0 lowpriorityscore=0 phishscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2509150000
- definitions=main-2509270043
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: Make drivers depend on LCD_CLASS_DEVICE
+To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20250924083411.165979-1-tzimmermann@suse.de>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20250924083411.165979-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:iPDAjVfzk4o3tnordyrzQVbjHgfxnqaRGrEN5m0ch3LhBm8eqoZ
+ s2eHn+WJEdURhymuTStqv5diWmsPB+TBC2Lu5vRFG44n7XYSvH1xsrbJR6eq4EDCXjcJu7L
+ ZD9enomT0vRkPDFHO+y1uNqG6d5xbqtICDlB9L2flnAvYyagVmdGoEEVJ23KbvaybgPBlFv
+ xnVdSwgehbMFUenJhumFw==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:lbl8qDL7tBc=;moMUops1RnaLASxVBIX96HtO92+
+ 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
+ ShnNXHOih0sUtVGndslnIn/+gv0YRiqsfAs=
 
-On Tue, Sep 30, 2025 at 01:26:46PM +0200, Thomas Zimmermann wrote:
-> This ARM architecture's source file does not require <linux/fb.h>.
-> Remove the include statement.
-> 
+On 9/24/25 10:33, Thomas Zimmermann wrote:
+> LCD_CLASS_DEVICE is the user-controlled option that enables the LCD
+> display subsystem. Do not select it from fbdev drivers. Selecting it
+> from drivers can lead to cyclic dependencies within the config.
+>=20
+> Some guidelines for using select can be found in the kernel docs at [1].
+>=20
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Link: https://elixir.bootlin.com/linux/v6.16/source/Documentation/kbuild=
+/kconfig-language.rst#L147 # [1]
 > ---
->  arch/arm/mach-pxa/spitz.h | 1 -
->  1 file changed, 1 deletion(-)
-> 
+>   drivers/video/fbdev/Kconfig | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+applied to fbdev.
 
-> 
-
--- 
-With best wishes
-Dmitry
+Thanks!
+Helge

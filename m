@@ -1,126 +1,271 @@
-Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADB49280CC8
-	for <linux-fbdev@vger.kernel.org>; Mon,  6 Oct 2025 13:49:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B942021CFF6
+	for <linux-fbdev@vger.kernel.org>; Mon,  6 Oct 2025 16:10:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759758596; cv=none; b=U4pMcbuofpewxiGhLNjoxbJkA2BypdJZJ9iZa3myYSihqEsCY2fCtXlnZJZdlIesJRd+4B/BV5QW1lSxIWaJKtkp08L+VnC7oyWeTtHrWR4MOaWCbGjZtcRJq47bRpOTQzI9SvxjvsWiEyWqUXZphz+nMI/A9tXGkAD/36mNDuQ=
+	t=1759767031; cv=none; b=tnRx8IczuUI2icRe1WIEAfGRrnH5U9PGVjIiB/iSGzA1PMP9WGquzesOLLbLVGuWt98qUeXrU9vpB3fFwuGRHmPG7GuWW9MjiSuoTKIZe7CFbWgrwzh8Cl6oNYG3RSZev986qYk/unZQR+9C51xHxgoi1OW/Nwo9xe5mPXqI1hw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759758596; c=relaxed/simple;
-	bh=naBllE4IE535a1UhrtE/NG5vtCFsBFvSt2Qvtj+AiGw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kB7kmLWSnHwTH57Q2A7bJLxTcUPe/8WZqo5KO+5BcVKVzXiwLP24Y5CGkLZ47OeDCWQDpxVSj+V/8qU5LfcoRj5zGwQQk46dXdgQLTDYIUfgw0vYvpal2L3HJPi2ONf+OB3Y8V+HxDR8mPjpbk6WmJxUtS5bEywAzTNGS4HVvaU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kqKwDz69; arc=none smtp.client-ip=209.85.128.178
+	s=arc-20240116; t=1759767031; c=relaxed/simple;
+	bh=ePa97dm3NcqZXftvfOWv2RSckfY9XMYCyQtd6xGsmCg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=U+mXi1s16f1pJMpBi7gR3C27zqIRdsqiS4ZGGFUomKB6RtuKqTWE+aekQcJLixZ7Nn70W0okO/ftptx60pZ+eMUqv5DhKJQbGzMcFrGtazNGadsFVXB8XQYuhjMMOGuSNE0e/FkshKfOaNjvW3goK/NE/BaU3OzhwWkDZhYuuE4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WpoG0qEY; arc=none smtp.client-ip=209.85.217.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kqKwDz69"
-Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-71d603a269cso53034527b3.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 06 Oct 2025 06:49:54 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WpoG0qEY"
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-5c7fda918feso5594617137.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 06 Oct 2025 09:10:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1759758594; x=1760363394; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=naBllE4IE535a1UhrtE/NG5vtCFsBFvSt2Qvtj+AiGw=;
-        b=kqKwDz69EMTkAiOT48gl3EkdLcxLEW+2AaLRD/FgOmZAGr/u0yS2tmwWJHaZO7bj7K
-         PiK/mP38jF55AT7Mxh4XzJVd2gp+hwLaC9qm8n4ej5onsIzAFgV64zlUnumPgotrIdwE
-         s1CXY8DOvfgebKMJT7Z3QZA53DtpAfONZiFnEK0Q/fDQDNdhr6gkvecpruyThzpVmq6L
-         Z9h0Wjcgsed+JIhMVTkdnZZpVR26sq7QTbomXALfKcPommsgmLDtWE0UeYDBgARo8PEE
-         sN5itGGBkMlm2mCHNBr0fBMgjestyv8SvwW/3dkaKByjrMm2/wyMdJuNlwsJNHWCSFEM
-         IdrQ==
+        d=gmail.com; s=20230601; t=1759767027; x=1760371827; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Sns+z5Mv33hVtLxV8rlbvAVv+VeJiohyhxaGcNY7H14=;
+        b=WpoG0qEYC991WYLRwgiEEyK/jdfjXCDLT4S+UfrTHB1FDeszM3FdKsXREyxY8RbZxy
+         FpSWEU18pe5Uxsg4H0vVuseJOWWomWEe41Z5BA0YUAxMQzgW6y8PyCpdscjI7DXdhFiy
+         Fsz7gPU8/m++OTIx+b/LtLKW40qq0NwAGO8+hiuHDZUNnLhSPR00W1PwKKqq59f7OXKt
+         zAUsiro0ScwF9/i3qfEZCRBx03DMXCTpKFGyBQsBIIUwZluvHqhKnYAXLuCkUUtet3oE
+         YbKDCFKIGqH6pfveWIVs/iuDrcaEOrFQPP5E9dihNRg1ASAMTm1H0NRxafJ7/84a0NAm
+         OqOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759758594; x=1760363394;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=naBllE4IE535a1UhrtE/NG5vtCFsBFvSt2Qvtj+AiGw=;
-        b=ZGyn8OsNH1gQzkr6axcRvUChN5ko5A8ZlZaMjW4jA4BAz/5alsO5lgGXgL4uMO+zhT
-         NJkDjRdgfDZWgsTv16CbE0jIqkBXEVPSCxs2MMZSH8k+zIcTGHNfJEZR8DBSLldy5IlE
-         E3yzDtI5o6q+VLh6w7bJQB8PbG3dAPns4tZPMZ4wDmyNyNH3b47TcCerPxf6DJxTKnSI
-         cCf31dennWZpdq7TpZ4kFvq6ihNTAxK1ywg/j09qU1bT9IxuoBdU1yvw+vgn4ZlPgFxp
-         fAbTgvOfBnJaDMux3FHJctqaZsnKkwIMIepTCW4nz5fYBRQt7GInYbA5GC6mPrYV9w5w
-         EFLA==
-X-Forwarded-Encrypted: i=1; AJvYcCVVVRCBay2m2a4fBc9EIDlZVQhEC+CpgXKRXPViEUXI6w5yHPkO/jRUBjDJUANW9uPLj/COoyYtuXu6Mw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyhFs0yjcSgmx5ecFC0mkMiallmcB9oDZ/V0Dv/pwMABnRCcOSI
-	j/aVWYK2ONzMIg/dfcy/JYkENq+DerXapC29/xk0te+cAV5gu79xycWI
-X-Gm-Gg: ASbGnct5sHnaBLrkSMcp5wwHURoDJ4LTkO/Hf6PzjX+iCv8Pgx0u97plWmp2dpHZ3Ts
-	mwzEjv1wvMcARhlhs080vd/a8FU5wyAgY1KCHeXQmC/D6uxiVE503t1QXDLm6U+3lnM2tXTrJcI
-	Vv01PKvwBHFALVQq0XyUucKvBIW47ldBYcF6LDfMS85A/KsWMHsj/w95a/V9eaW2nVVNvTIOkx2
-	3F8ZHDIThGs37bIFBKy07RrIX+/Hh/P4DNxc/mshnCfWcT1AA06l1semSYbeyqozlHIBwvbY9Yz
-	uVmCXZDF32/lXqiZ/OrRmsaBAKqdd2Z0TuerCHm4lCthP5cMKtcZIFbDcmFk4JyKY4LYuSfOTZl
-	3TNgERGVCdRagCn1VFGPlfUUlUs61jkx6FDmANqx5fwJO245rGGYK4LNcfPWPzdza6gDZVcfrpg
-	LMEUjNfBgv5y2HIihW8dXgJPA6ZQxF9Q==
-X-Google-Smtp-Source: AGHT+IF95I/GWMOy7K0yQH9P573Gh61Ga6VWxZPEu4GIRjFsPKAyfm6hJudD/c1aH+Spd7nOuM10XA==
-X-Received: by 2002:a05:690c:f8f:b0:731:76db:a5e0 with SMTP id 00721157ae682-77f946a89e6mr163041287b3.25.1759758593563;
-        Mon, 06 Oct 2025 06:49:53 -0700 (PDT)
-Received: from ?IPV6:2600:1700:6165:1c10:83e:4131:1b09:7d81? ([2600:1700:6165:1c10:83e:4131:1b09:7d81])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-77fa19a7d6asm27562527b3.55.2025.10.06.06.49.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Oct 2025 06:49:53 -0700 (PDT)
-Message-ID: <51030f00-48c6-49b6-a4be-0b4e238f71bd@gmail.com>
-Date: Mon, 6 Oct 2025 09:49:48 -0400
+        d=1e100.net; s=20230601; t=1759767027; x=1760371827;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Sns+z5Mv33hVtLxV8rlbvAVv+VeJiohyhxaGcNY7H14=;
+        b=tZ4z1TcKw0HKbzZyQCJMiio/8Ad7YGOsH5DlF3gT48JNV4+6PV12w7BM14E6zo3l1O
+         Q4MS+p/BnGmL/aq7wpYdBlTcfnH8ovZViCCu/LkiBUvg5l2WUCXCH/eE5LECfUBfyMLf
+         jKgQdXLs1wc/ElXfjStB0cz19r52ZzwpOf5bXm+tZL7sl2MaMEoxv2+kwJQvgTdKN9T3
+         8xuPiQOvwBxRHgSZeY/ppKlAPOBkLvPt/mdGYZzb6C1cBJ2n5q1cr0g3Si4vjiO3m/Li
+         E+/hIf+zcTo6BSOyA4TFG6oKTeGlLJ9K4o+gSNojYxUPzOpbbIDibjae3Es1k7QCxA3k
+         G1Eg==
+X-Forwarded-Encrypted: i=1; AJvYcCWXvfawYoEeNHVH/IIf57rjoJ0c6ZiwCALFL7S+0C5CCod8TC5ghWVRVHFul7AY/PuubF6CZgRbyCmYrQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyrtZxPWfDPtW4/TWV04Hn20HuVBEdYjMfCibd9T1HSoHMNHTe/
+	/AhbgYuaeBKk+yMsCDEQinA1jeEjzm8Q8ccVPLxi0Pl0nfC9z1/CwrGWgg8pxumGqpw2qxFIsph
+	Ep9sZdQo+t0Rz5h1TsYu3OQpJ/aHXKZQ=
+X-Gm-Gg: ASbGnct+DmRFQikpEtTeYU6qhGXzWPF3A32fKsb7hlUw71jAevhIH/9dq3di1tuklLK
+	MM26l9TvtLKk0mGAmyTlCyqOoJsMzVLuAp4yZI7wiqrq1wMtAoq2/ax5A0Z3n5nRyFk3/FiQg85
+	8P+vqLfbtr7JKFcItMKgSk9EUJELVWTxsj5o9U01GXMTT4FRzVg9CO9C6NFtfSPeKsNOD45GZhO
+	inv25lTz7COVFOe89Ry1Ozo1FjmDgQFBcFVbMHQkQ==
+X-Google-Smtp-Source: AGHT+IGx2FWJKb95FW2SfxczsReiCSn/kQDzAgvpgQVCOUkA5uaUj6QL1gZm/DDn/MBdaheqD1T6ycaBXstgwm/g/6M=
+X-Received: by 2002:a05:6102:1613:b0:533:ff66:696d with SMTP id
+ ada2fe7eead31-5d41d0fd7efmr5390644137.23.1759767027433; Mon, 06 Oct 2025
+ 09:10:27 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: udlfb: make CONFIG_FB_DEVICE optional
-To: sukrut heroorkar <hsukrut3@gmail.com>
-Cc: kernel test robot <lkp@intel.com>, Helge Deller <deller@gmx.de>,
- Bernie Thompson <bernie@plugable.com>,
- Thomas Zimmermann <tzimmermann@suse.de>, Arnd Bergmann <arnd@arndb.de>,
- Randy Dunlap <rdunlap@infradead.org>,
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
- Zsolt Kajtar <soci@c64.rulez.org>,
- Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
- oe-kbuild-all@lists.linux.dev, skhan@linuxfoundation.org
-References: <20250924175743.6790-1-hsukrut3@gmail.com>
- <202509272320.3K8kdDCw-lkp@intel.com>
- <bb9d90ca-aa4d-4168-bdc5-543109c74493@gmail.com>
- <CAHCkknrZ-ieNKeg-aj3-NVqgGSk770jJpUpCvn_SuffkPu+ZrQ@mail.gmail.com>
-Content-Language: en-US
-From: David Hunter <david.hunter.linux@gmail.com>
-In-Reply-To: <CAHCkknrZ-ieNKeg-aj3-NVqgGSk770jJpUpCvn_SuffkPu+ZrQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20251005173812.1169436-1-rampxxxx@gmail.com> <ewca4jzmahwdl47rbojxtynbizu2vuompjxrprsz7aelovnvao@kzpxjjbjj6px>
+In-Reply-To: <ewca4jzmahwdl47rbojxtynbizu2vuompjxrprsz7aelovnvao@kzpxjjbjj6px>
+From: Javier Garcia <rampxxxx@gmail.com>
+Date: Mon, 6 Oct 2025 18:10:16 +0200
+X-Gm-Features: AS18NWB4fZelcAzqnM_-bbbpZoWXlfxaoLs_XEpCmyOIHmZJDiAtcegNgh2-OWk
+Message-ID: <CABPJ0vjtr2e=PMPF7AAi-Q=CrwgdHoO6HDb+G8PWF8T6b2_6Vw@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: mb862xxfbdrv: Make CONFIG_FB_DEVICE optional
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: deller@gmx.de, tzimmermann@suse.de, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+	shuah@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 10/2/25 02:35, sukrut heroorkar wrote:
->>> kernel test robot noticed the following build errors:
->>>
->> Did you compile and test this code before submitting this patch?
->>
->>
-> Yes, I had compiled & loaded the udlfb module with no errors. Please
-> let me know how to proceed
-> in this case.
+Hello.
 
-Hey Sukrut,
+On Mon, 6 Oct 2025 at 10:07, Uwe Kleine-K=C3=B6nig
+<u.kleine-koenig@baylibre.com> wrote:
+>
+> Hello,
+>
+> On Sun, Oct 05, 2025 at 07:38:12PM +0200, Javier Garcia wrote:
+> > This patch wraps the relevant code blocks with #ifdef CONFIG_FB_DEVICE,
+> > allowing the driver to be built and used even if CONFIG_FB_DEVICE is no=
+t selected.
+> >
+> > The sysfs only give access to show some controller and cursor registers=
+ so
+> > it's not needed to allow driver works correctly.
+> >
+> > Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
+>
+> I don't understand this patch. CONFIG_FB_DEVICE is about legacy /dev/fb*
+> stuff, and this patch make the creation of a sysfs file dependent on
+> that.
 
-When you make code that deletes something from the kernel, you need to
-make sure that all other code that references that code will still
-function properly.
+This is part of the TODO
+https://www.kernel.org/doc/html/latest/gpu/todo.html#remove-driver-dependen=
+cies-on-fb-device
 
-When you surround things in the #ifdev, depending on the config file,
-the compiler strips those things out and compiles without them. That
-means that you actually need to compile and test under two conditions.
-Once when CONFIG_FB_DEVICE=y and another time when CONFIG_FB_DEVICE=n.
+I think the idea is to make the driver independent of CONFIG_FB_DEVICE .
 
-The test robot gave you a sample config file that you can use. Please
-ensure that you have the proper version of Clang on your Host machine
-for that particular config file, if you choose to use it.
+>
+> > diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video=
+/fbdev/mb862xx/mb862xxfbdrv.c
+> > index ade88e7bc760..a691a5fefb25 100644
+> > --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+> > +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+> > @@ -530,6 +530,7 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fb=
+i)
+> >       return 0;
+> >  }
+> >
+> > +#ifdef CONFIG_FB_DEVICE
+> >  /*
+> >   * show some display controller and cursor registers
+> >   */
+> > @@ -569,6 +570,7 @@ static ssize_t dispregs_show(struct device *dev,
+> >  }
+> >
+> >  static DEVICE_ATTR_RO(dispregs);
+> > +#endif
+> >
+> >  static irqreturn_t mb862xx_intr(int irq, void *dev_id)
+> >  {
+> > @@ -759,9 +761,11 @@ static int of_platform_mb862xx_probe(struct platfo=
+rm_device *ofdev)
+> >
+> >       dev_set_drvdata(dev, info);
+> >
+> > +#ifdef CONFIG_FB_DEVICE
+> >       if (device_create_file(dev, &dev_attr_dispregs))
+> >               dev_err(dev, "Can't create sysfs regdump file\n");
+> >       return 0;
+> > +#endif
+>
+> That looks wrong. Without CONFIG_FB_DEVICE set the success return is
+> removed and all resources are freed essentially making the
+> CONFIG_FB_MB862XX_LIME part of the driver unusable.
 
-Also, I strongly recommend that you run the code on a sufficient
-hardware or emulator after you test it so that you can verify that the
-code does what you think it does.
+Thanks, I'll fix that.
 
-Thanks,
-David Hunter
+And add your suggestion instead of the `ifdef`.
 
+>
+> >  rel_cmap:
+> >       fb_dealloc_cmap(&info->cmap);
+> > @@ -801,7 +805,9 @@ static void of_platform_mb862xx_remove(struct platf=
+orm_device *ofdev)
+> >       free_irq(par->irq, (void *)par);
+> >       irq_dispose_mapping(par->irq);
+> >
+> > +#ifdef CONFIG_FB_DEVICE
+> >       device_remove_file(&ofdev->dev, &dev_attr_dispregs);
+> > +#endif
+> >
+> >       unregister_framebuffer(fbi);
+> >       fb_dealloc_cmap(&fbi->cmap);
+> > @@ -1101,8 +1107,10 @@ static int mb862xx_pci_probe(struct pci_dev *pde=
+v,
+> >
+> >       pci_set_drvdata(pdev, info);
+> >
+> > +#ifdef CONFIG_FB_DEVICE
+> >       if (device_create_file(dev, &dev_attr_dispregs))
+> >               dev_err(dev, "Can't create sysfs regdump file\n");
+> > +#endif
+> >
+> >       if (par->type =3D=3D BT_CARMINE)
+> >               outreg(ctrl, GC_CTRL_INT_MASK, GC_CARMINE_INT_EN);
+> > @@ -1151,7 +1159,9 @@ static void mb862xx_pci_remove(struct pci_dev *pd=
+ev)
+> >
+> >       mb862xx_i2c_exit(par);
+> >
+> > +#ifdef CONFIG_FB_DEVICE
+> >       device_remove_file(&pdev->dev, &dev_attr_dispregs);
+> > +#endif
+> >
+> >       unregister_framebuffer(fbi);
+> >       fb_dealloc_cmap(&fbi->cmap);
+>
+> The amount of ifdefs could be greatly reduced using the following patch:
+>
+> diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/f=
+bdev/mb862xx/mb862xxfbdrv.c
+> index a691a5fefb25..3f79dfc27a53 100644
+> --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+> +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+> @@ -530,7 +530,6 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
+>         return 0;
+>  }
+>
+> -#ifdef CONFIG_FB_DEVICE
+>  /*
+>   * show some display controller and cursor registers
+>   */
+> @@ -570,7 +569,6 @@ static ssize_t dispregs_show(struct device *dev,
+>  }
+>
+>  static DEVICE_ATTR_RO(dispregs);
+> -#endif
+>
+>  static irqreturn_t mb862xx_intr(int irq, void *dev_id)
+>  {
+> @@ -761,11 +759,9 @@ static int of_platform_mb862xx_probe(struct platform=
+_device *ofdev)
+>
+>         dev_set_drvdata(dev, info);
+>
+> -#ifdef CONFIG_FB_DEVICE
+> -       if (device_create_file(dev, &dev_attr_dispregs))
+> +       if (IS_ENABLED(CONFIG_FB_DEVICE) && device_create_file(dev, &dev_=
+attr_dispregs))
+>                 dev_err(dev, "Can't create sysfs regdump file\n");
+>         return 0;
+> -#endif
+>
+>  rel_cmap:
+>         fb_dealloc_cmap(&info->cmap);
+> @@ -805,9 +801,8 @@ static void of_platform_mb862xx_remove(struct platfor=
+m_device *ofdev)
+>         free_irq(par->irq, (void *)par);
+>         irq_dispose_mapping(par->irq);
+>
+> -#ifdef CONFIG_FB_DEVICE
+> -       device_remove_file(&ofdev->dev, &dev_attr_dispregs);
+> -#endif
+> +       if (IS_ENABLED(CONFIG_FB_DEVICE))
+> +               device_remove_file(&ofdev->dev, &dev_attr_dispregs);
+>
+>         unregister_framebuffer(fbi);
+>         fb_dealloc_cmap(&fbi->cmap);
+> @@ -1107,10 +1102,8 @@ static int mb862xx_pci_probe(struct pci_dev *pdev,
+>
+>         pci_set_drvdata(pdev, info);
+>
+> -#ifdef CONFIG_FB_DEVICE
+> -       if (device_create_file(dev, &dev_attr_dispregs))
+> +       if (IS_ENABLED(CONFIG_FB_DEVICE) && device_create_file(dev, &dev_=
+attr_dispregs))
+>                 dev_err(dev, "Can't create sysfs regdump file\n");
+> -#endif
+>
+>         if (par->type =3D=3D BT_CARMINE)
+>                 outreg(ctrl, GC_CTRL_INT_MASK, GC_CARMINE_INT_EN);
+> @@ -1159,9 +1152,8 @@ static void mb862xx_pci_remove(struct pci_dev *pdev=
+)
+>
+>         mb862xx_i2c_exit(par);
+>
+> -#ifdef CONFIG_FB_DEVICE
+> -       device_remove_file(&pdev->dev, &dev_attr_dispregs);
+> -#endif
+> +       if (IS_ENABLED(CONFIG_FB_DEVICE))
+> +               device_remove_file(&pdev->dev, &dev_attr_dispregs);
+>
+>         unregister_framebuffer(fbi);
+>         fb_dealloc_cmap(&fbi->cmap);
+>
+> (It would still be questionable however to make the device file creation
+> dependent on FB_DEVICE.)
 
+https://www.kernel.org/doc/html/latest/gpu/todo.html#remove-driver-dependen=
+cies-on-fb-device
 
+>
+> Best regards
+> Uwe

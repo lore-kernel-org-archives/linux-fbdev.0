@@ -1,249 +1,257 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11020132.outbound.protection.outlook.com [52.101.84.132])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 952512472B9
-	for <linux-fbdev@vger.kernel.org>; Mon,  6 Oct 2025 08:07:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759738058; cv=none; b=FfMDwPVFKOoMJsiiILztXDG5h/c3/9EnwRBVPo7qHhkPl+2g1zBL3KWpckYzhJGDNjMsKxwEQ81GpGqskC8U8GlRN90yalRuQtXUCtE6PmR3RhXEX2NIEfJB8SSIsKP0x1EKWGqa31cj7x6f5hXM1D6kJrz/iBAJAp2ZT2QWOII=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759738058; c=relaxed/simple;
-	bh=n+5G5zLCQtVUtTCkfsHcjEWUoQbyGcwHnsl/KbwHGD8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZYYXOW2PmKPW4Y4Jm0BDhOTKM+GEwv7bcKkkMZZrt/PyXLQH1dhQILtZEPF38vjBSQy+PUNSZjFCZSdutFiOGRan5vzZPHHqayxmvhpt3jnTDvcxmXZqMEVWeZDf/mPA3oTYIJxTX+yxAhduRKB68dUcgK390ja1bgcrVpAfKoE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=GmcwCV/v; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E0812135D7;
+	Mon,  6 Oct 2025 10:03:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.132
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1759745022; cv=fail; b=okSSvuVrYmBYyBfMwQmD9u1Z8AenzeDK7AV+xuz95jB/dGaWNHlZp1DrG2ROQ8L0vZSYBFRWHN41PVbOGQAtEXJFvuLKOGQBjb7+IOUF0DnWPObE7viR46ZfjdBJ0XIkr2+Spchk4btBZds6Z/YlRUaALZnWckpCvq5HHZnEaqw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1759745022; c=relaxed/simple;
+	bh=y96QswxoPQqU3s6eitVjmrEsJbIlW8cGISIawCM2I6I=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=dJFMdlJGvF5b4VJrOqXYH6w1WqaO7FH+NjT3eAwfjDUWh87XRj6R9OgnmrfM6nn5vqbJmkvAfPyrtU7811KKua6vC6blD0ZIBH2/dwi1X8taQjdCuZvGTiHINlMs8tKF4HomsishNvPT7g5PAJ5EXjfAdSxVF54KMHvwJSYcOhQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com; spf=pass smtp.mailfrom=gocontroll.com; dkim=pass (2048-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b=eIGZLXRq; arc=fail smtp.client-ip=52.101.84.132
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gocontroll.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="GmcwCV/v"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-46e2c3b6d4cso36630625e9.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 06 Oct 2025 01:07:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b="eIGZLXRq"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=DEmWZyPVEDga/YVRbB0rBcAl4pGFDI8OU3ciLJ8F+GGJKpDWk2JoYv1J7EK+pPJq0j4ds0jkWpKAKRCFtsoI++Z1AMCXU5lEPoIOqHJTRb8cXEe3ULpKBjpTMLfM2Fdr0YKyMh9G/5lchs9bEDwcXv1phTAcZXctopBQb/cHoE+NudhgQMZ+Fj5jDk6SzugbUSveU6wYrp0Jb96Ml/9oAb6yeltQ/qaPDx78/HW4AIPYknxsBSLJEHxGPztEPIlpqIo/2PR7FXLHRXYyv2nt7Bx7t3Yxqmr5Ob/lnUkL9X/drL8CV47JHGcHXAwZmy9CW+OsX2biSGgE/POxrytpGg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=vYdv4SGfdrXn6SZIeaZsVc0w5axvdFAOM8v3r8fxOro=;
+ b=hoS6CEA6b4vx5FJVK1n09wtdoBCDVQdUVDxOzvUwRLtHz0Eg9av4XjM2/aw/4R+ZWbG2+82MDLoHd+jjvO8hM5UIK3tFkgrQDdZI3heloA9KCOG9tZulc2GagI+0GtadqAQAq2fgl5lfapX9w0+C+D3Flo9fb0FPvox5pqjl2VL2Tyl3aCQ3S055Ib9MS1hIuqEpR3o/O3rfDXeAUuubu/1bxD3qomeqMzaiI4+5haau2V1YT+CfQri23x3wVRSZb7ysvuezT1e3aRXPsgMkEV07tM6uPvvO62n/seRjKz4dALqyyCvnwzmg/1xQhdH9QwTiYYpxKneJh5J4HihojQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=gocontroll.com; dmarc=pass action=none
+ header.from=gocontroll.com; dkim=pass header.d=gocontroll.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1759738054; x=1760342854; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fIP3nj/kaZqoURQHnILt3INTmC8e4a2ZYKLYXuyFz/8=;
-        b=GmcwCV/vroKVrRVF/L+yOhaGnC+rmkWvyEWJLPZyuDA0dE+pxzo9eZS7s6WJJFlPLI
-         V2rJ2I5AB8QWaTzxvwe+C5rDI3p0266doy3hxSTdSF+91506cYg7p3/BTsQymrInmt5Z
-         Udsh/Zto4F/EnIDDRJoLsbecNoSxJWdG+VY6gA8G60UWTFGWdG4Bue3WrQoydvGYKYgP
-         +Mwwts/I5cf60Xzi0CiE7doakV5ykeJhvo4U5v7pXJcN1XG5uRvYVVT3vW2daROxEwPH
-         5Tla0PB3RtaWRaAYvwXH56RbJRnRX0ncyYvEw+BctMaDFDv8qEfzBmLKzmJZaS24mil6
-         Pq/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759738054; x=1760342854;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fIP3nj/kaZqoURQHnILt3INTmC8e4a2ZYKLYXuyFz/8=;
-        b=o9VUUCHzxmaIazmK4UClqGHTpiyFc5YbyllxroVutWHg8iovrhAHohx9NMuqgJjhvq
-         nv5bb+wekbVspA8lThRD5crfUydlY8wWCksreE/5gB7jNp0wI5g9GAusxUfhbYfhrkyY
-         w4UL5L4Pb6MXubCWvFNfCp+IaT8ohs6UpoOoASlhQy9ms2p7KG3gJTu+13iQQXef3vSe
-         IaLqHYlbxBNbxQ6HOMFTQiIOsdzN/sUvw0PYCm2r9v9WObANumlMI5J7zBmH59mRWP5x
-         uV6khaWmAJtAluXdvCrCkSPt9Gn0WZ4tcqqPW+nB4g5NcCIFMQeDmE8o+J27pp8NzBy1
-         70+g==
-X-Forwarded-Encrypted: i=1; AJvYcCXMmiC80o+vKs+xblH3ErQ6367lsjWTBL3G2xzVJamRuMblA7gYH1lSK0EqTci/fls+d8HHCSVJtETaug==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywy0r9VdxtEkj+c9sZLn6RsT3ccQ6DsyfbBocYYBRNNLQpSqe+r
-	gcCFenI/yz+D3S9dfJxiRYyEAz6sKEncwkGPc6cnKRBIeoB0FqmQzQG1w1lovoppkSc=
-X-Gm-Gg: ASbGncvGC6t/qf+7RI9vKmIYGT542EzGVashL34cT+88gh5+mcDhN9kmlJJ5AvqNJCi
-	57DdD56AcvakzGwMMTkFsBe/tNOe60hngMBto6oHDbmBc2sJ+g0JPxFZUqOvq/PKVbpx1EAI2VU
-	cynWkTN4Kijfn48rps0kMhrBqeEXXHLu/OVMXG2csmymvGwrtejs1niYTz1kIjEmPN3TeAvbFaM
-	VOSNGxJPPFNChWK6tK1Zy+Br6an/t2p9T89+x1QkKx+e1GD/vLPz17SDUkrvL+gSvcB4QfkL8og
-	TrBG8js1I8NsDab5cwxHVLz4YzSAJ0WCGJ+bSeTwXXhzdFmOPHVelyc/qo3gIBr1qUaOP5Bn6yj
-	j2Vjx49rJ6JnW5yksG41WQo9bLmSzeiiFHaRGuXjglDqSZ/HrWg2NodT/BMpT2TZGJ8xjfhxn2k
-	2katWrEHGb8KJX
-X-Google-Smtp-Source: AGHT+IEPOZAD4VRyHv8G07fK+SBrRsq0r0Hw/6N9Dx+r87/odXDC5BnpiOYuk9CtEdQgvS4jobcOWw==
-X-Received: by 2002:a05:600c:1d12:b0:46e:32d4:46a1 with SMTP id 5b1f17b1804b1-46e7113f48fmr66978345e9.22.1759738053649;
-        Mon, 06 Oct 2025 01:07:33 -0700 (PDT)
-Received: from localhost (p200300f65f06ab0400000000000001b9.dip0.t-ipconnect.de. [2003:f6:5f06:ab04::1b9])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-4255d8e9724sm19466682f8f.28.2025.10.06.01.07.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Oct 2025 01:07:33 -0700 (PDT)
-Date: Mon, 6 Oct 2025 10:07:31 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Javier Garcia <rampxxxx@gmail.com>
-Cc: deller@gmx.de, tzimmermann@suse.de, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, shuah@kernel.org
-Subject: Re: [PATCH] fbdev: mb862xxfbdrv: Make CONFIG_FB_DEVICE optional
-Message-ID: <ewca4jzmahwdl47rbojxtynbizu2vuompjxrprsz7aelovnvao@kzpxjjbjj6px>
-References: <20251005173812.1169436-1-rampxxxx@gmail.com>
+ d=gocontrollcom.onmicrosoft.com; s=selector1-gocontrollcom-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=vYdv4SGfdrXn6SZIeaZsVc0w5axvdFAOM8v3r8fxOro=;
+ b=eIGZLXRqZa1O4JVqfOYlH8WJ3djnBG1ImYloTmiHsUJexR8mY/BuQmzTU6168KNjSAT+Ss2NIthHBNpzKJqWlNykomishOfh4DctTdY/O1UiszalcSgvgx1lA6VkyUoW4t5EuL0AD9KEtTtS3bK2t7+hv/z4ZDBYTLdPRn1YtOOZQEgr8c7RVuQo8tDlYqHjSs5SN1WwCg6OLWJ+eJ4Is+VRaLm/Yx0U4pSlrHSNCSDTBb/Tl5V33kp/8OCTCdxdbVQW13Kt1T2+rysTDqbzukf40pbQBokGIC48ZngRz2UVS4dC2a3DuOXBbnKHQgo47AcrR3i9CxOu7zYfvnZ7zw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=gocontroll.com;
+Received: from DBBPR04MB7628.eurprd04.prod.outlook.com (2603:10a6:10:204::21)
+ by DB9PR04MB9865.eurprd04.prod.outlook.com (2603:10a6:10:4f0::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9182.20; Mon, 6 Oct
+ 2025 10:03:32 +0000
+Received: from DBBPR04MB7628.eurprd04.prod.outlook.com
+ ([fe80::13ac:aaf4:c0fd:2106]) by DBBPR04MB7628.eurprd04.prod.outlook.com
+ ([fe80::13ac:aaf4:c0fd:2106%4]) with mapi id 15.20.9182.017; Mon, 6 Oct 2025
+ 10:03:32 +0000
+Message-ID: <5c5cf363-db5c-4d0b-902f-97c6ef06c08f@gocontroll.com>
+Date: Mon, 6 Oct 2025 12:02:46 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/4] dt-bindings: backlight: Add max25014 bindingsy
+To: Frank Li <Frank.li@nxp.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, dri-devel@lists.freedesktop.org,
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+References: <20250911-max25014-v3-0-d03f4eba375e@gocontroll.com>
+ <20250911-max25014-v3-1-d03f4eba375e@gocontroll.com>
+ <aMLrrcBZ2Kc4o84t@lizhi-Precision-Tower-5810>
+ <3960b845-3838-4690-b01d-21e61ccfa8fd@gocontroll.com>
+ <aMQ6rZJzbMeBrrFv@lizhi-Precision-Tower-5810>
+Content-Language: en-US
+From: Maud Spierings <maudspierings@gocontroll.com>
+In-Reply-To: <aMQ6rZJzbMeBrrFv@lizhi-Precision-Tower-5810>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: AM0P190CA0026.EURP190.PROD.OUTLOOK.COM
+ (2603:10a6:208:190::36) To DBBPR04MB7628.eurprd04.prod.outlook.com
+ (2603:10a6:10:204::21)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20251005173812.1169436-1-rampxxxx@gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DBBPR04MB7628:EE_|DB9PR04MB9865:EE_
+X-MS-Office365-Filtering-Correlation-Id: 665a5e91-4c3f-4eb6-b508-08de04bf9aa8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|10070799003|366016|376014|7416014|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?aTRDaDdta3ZoVk1SVGVBNmxnTFpvSVFLWC9OeVlHaTNPenRpOXB4MFNwbXdZ?=
+ =?utf-8?B?cG8rYnRCZnp3TVlCQUFvM01jclUybVczNUJWd0kxWnFtU3dzVGthMWdJZHJR?=
+ =?utf-8?B?NUd0alNOT2h1MS9ST3kzWHhyRnJ6cmJYVEkzd0ZRaVlLdUhhUWYxNmsvNEtu?=
+ =?utf-8?B?Y1RxL3VTcUFpUnpDeXlzOXNYeWRpQUdBL2taaGVQVUZmSGVvMTVJR29HWGcx?=
+ =?utf-8?B?NEYveEtaczF4dGxRQTkwb1oxTmNrc25JM2FsTHhoUHJzUFdaTC9HUVNtREwx?=
+ =?utf-8?B?eGtsVmtvK1ZleGRMY3Z5elpHQzNNOTJINHY0TXIrZWdPMUpsZW1SL2pidk5O?=
+ =?utf-8?B?UFc2QVhCYnJjWktRUnpNTk1mR29oWFZIWDE1OUFXY3JqWDNZSjQ1TGpCdlRV?=
+ =?utf-8?B?KzJycmQ3N3RqaWtNTVYxVFk5eENSN252b2dyQ2luaHlMdldSRkpUWGZtbUlE?=
+ =?utf-8?B?d2tHcHBmdEVpdHJzNmJuNGdQOFoyWTRxeVl4MmFLWGdXWUxGck51VjVselJO?=
+ =?utf-8?B?MlZMTHdwUVFUWk5tdXVjMDFlSDRnblRhN3RDTCtIRzVWOGR4YUNvUGZxbTUv?=
+ =?utf-8?B?V0Y3NytBMU1nR1kzVFVoSWoxUUN5eDdlL1RrQ1Z6TE9yamN6dms5ejhucmk4?=
+ =?utf-8?B?N1ZmRDFlOVNld3R6Z0R0Z0dzczJNN01BbGxlL1lNTlRvbjIrcWtoWHFsRTF2?=
+ =?utf-8?B?SVF5WVVhckVEOWxUTCtQT3BEOVRIODlXa3NiRzZtakRINmZuNE1MaVVSL1Jm?=
+ =?utf-8?B?ZzR6OExLQ0tvcm55U21mNEkxSVNtQUY2SHVEU3NuNjhOcWJhWUFJTzdVTGEr?=
+ =?utf-8?B?OG1MbmZjUUhsbjNXZE9HUzU0WXJweXpueXFsRUZpNktHeldzcFlmcVJhWTYw?=
+ =?utf-8?B?WGh5N2xxbVFSQkVPWTZBeGJaK0l4S01lMGU1VUphODk4cVlUNVRrMWY4MGhR?=
+ =?utf-8?B?Y2N5U00zZkRPVk5jRVFaWExvYnBqRndWdkgvS1htVENTK01NZm1TMWFoMVBO?=
+ =?utf-8?B?SURhRGJvWEhZUFJETURzVGVlMmh4eW1KWWdEZDFOWW5XNmQ4SmhGa1NndmRv?=
+ =?utf-8?B?RFdqSTdTT1FVSjJJSS93TmU5L1lpQW5pWk9qdnVnSXgvQzJTR2YwbExaQ3NY?=
+ =?utf-8?B?N2drN0dBZDdpTEVJdWJLSEFpQkQ5TnB0dEZsZWdwSlQ3TUVONUNLVVR2blV4?=
+ =?utf-8?B?SFB3MlhOem9TUnUyVmZiWWdhZ2JKOThJOWxBZ29FZGNQeXNRV3MzaUNRbVVC?=
+ =?utf-8?B?THJONUl1VU1FaHYwd1lNcUw1NHBOOTIvSXRtell6dUhCWWtaQ2ZxcVljZzY3?=
+ =?utf-8?B?b0lTR011U2hzUktvM1RKWm8xVUxNZHhvV0puNmtXc1RkdUpCNzlvOUxvT1c5?=
+ =?utf-8?B?ZG8xUEVhSFFOOVhnZy9EVllVR3M3UEE3T0x4cloyM3Fpd3htYUhlbzFpVStB?=
+ =?utf-8?B?MW5iMHEwZ2JNQ20wTzFIdm5UZkJhODB6UktUMXJmM2hrbFdyRXRvRXpVVm5q?=
+ =?utf-8?B?VS9vcTRHVjRKOVI4TWQyUmVIRUxVaVgxSE5NVDRYaVEvbGlnd0JnaDJ4K1Br?=
+ =?utf-8?B?SFRUWjU4c29HWXg5ZG5xVU5rc2Z0bW8vUUJqWm9yU3kvSmFWUE5ZVDFrOWgz?=
+ =?utf-8?B?WUFFUDY4TXNUTmo5bDEyU2Y0VlFEeVVjSjJZUWVSTmNDcWV6TkpQYVJDeWhp?=
+ =?utf-8?B?bWhTY29IcUtmR1V5aC9BaitZdy9BK1pjWnNpOFE1QmxkUEhScE01ajFCRytH?=
+ =?utf-8?B?N0hsUHZqRWtPN1lLSkNwdWpNSGVvYS9jcUtiSzNPekFZVmxPV2hzQXlDUU8r?=
+ =?utf-8?B?Uk4zS1JzTDViSldpcmNsSDBpWFRJSUlocVpVdkd2QnBGTmIwaWZlOGFpU28r?=
+ =?utf-8?B?VDU2WVpHblZQZmtXNnBHNUNNY2NrUUxLaGc2SS91NEJQdFE9PQ==?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR04MB7628.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(366016)(376014)(7416014)(1800799024);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?dUZpeEk5NEt4L2ZQNVRpcnJoNGNwK2dyaXJJNWtwNnk3SG1uejFGamhCaStu?=
+ =?utf-8?B?UnRnSFRybWtvQ1hHSkJrblhxK1JMQ3czTFFuZ2RqSVVJdnlPTWZKMXlXWTJW?=
+ =?utf-8?B?OWFaNjRITVUyL3Qxcys0Rm5ubzd1YitOSmpqTEpYMnZvVW43WVdXSzdOYXJj?=
+ =?utf-8?B?SHJiNU1GTEpkdWxkazJ5QUkveFd5SGpqakdmeFBjNFRGQjE2ZWE1c0loUVJm?=
+ =?utf-8?B?aHZHNWVRRUdMVkNqU2Z2cm84bkFFeUxDMk9kc3lpcVIwUTJodVY5QmREVzZT?=
+ =?utf-8?B?OUR0d20zR2I3MDdObXo2eDNNV2dzeXlXcWltNFQ1SCtkMzUrcGt2VGJwTDBY?=
+ =?utf-8?B?aUtkRmx1bWVadllCUXdtV254NUhwQndTby9pUi81WHAxNDlGQkJrS1dhZE5H?=
+ =?utf-8?B?blpnTWJnVnFXUUM2ZWZGemVhQmJnWVJpL2Rya3VsWjQ4UHVIekg5U3FtZkFJ?=
+ =?utf-8?B?S0VtZ0RaVWdzUjA1V3d4TmlyeitZd3IxbEU3eU5ucG5xbjAvS25xU25ITXBI?=
+ =?utf-8?B?YUhHR2QrSDhVam9TY0VtK3V0d1V1OEQzckYxR3RoU05aNXlHYkFCN3FwQnho?=
+ =?utf-8?B?M3RJRExqL0pJR0liaU1ocUV2Zk4yeXVxOGxXSExQeGV6eUFIYmprc3U4OUxu?=
+ =?utf-8?B?L1ZDWURWdlh2ektzcHNvU0krZHVDNXl6TzlFRlJFSk9NRnZBKzhRY0V6VUgw?=
+ =?utf-8?B?UFFmTm9sYzMva1R6Qk0vKzEvR25UR1B3L3RudFM4aWl3NGUvTzZCSFRwSU9L?=
+ =?utf-8?B?MDd5eW1jTTFQR3YxRzFReXRpRGR3UUVhamJtb0pHcDNHeVhTekdpTCt6c1pB?=
+ =?utf-8?B?Z1F2ZWlVcDNQUWthb2xxNDBaYmkzYWhnSkNXVCtyZG5zWlRNTlo4VTRRNVhW?=
+ =?utf-8?B?OTNiQWd4dUZDNWd1dWNlSVlLL2kwdzl6K0daamxVc1NaQkRUanhBSUt4WlF4?=
+ =?utf-8?B?YkFzYUp2amJ6TnV5elNnU1hEcG5MMXE1TTB3TXAzOTZLNUFFT0FiUTVXdVVZ?=
+ =?utf-8?B?R3ZTcEE2cjhSRFByeXRTdUs0eTFkNlFwZkFyYVhzck56dXlzUlVXdDNQQ1Zi?=
+ =?utf-8?B?enc1ZlpSTzYxYjJmZFFJZEtyeTZ6NS9TY2FWeDNtUDkzK0tyRm9UNmJZcXho?=
+ =?utf-8?B?UDZnTWNoZU9kVUFOWkJvV29tSUlpdjdGNitQN1ZKR25EN1FaSm9kelZOQ1hq?=
+ =?utf-8?B?VTlFbndYVWEwNXZKY2licUdmcGpiOHF3UVZ0elRqTlRtZjg0VHF2dmZ4akNl?=
+ =?utf-8?B?c0ZJek5WL2tOdFZJRGlUbUFNalNoaHVhYzJwYXBFU0dCQ2dKMzlGcFM3RXZr?=
+ =?utf-8?B?eEtrbVViM2svbVd1MDA5YlFwRWErNWdXcVpsNkxzK2Q4TkJGaS9uV3dxbHZ6?=
+ =?utf-8?B?RFdRMGtqR1FvZWhySFozWmtqdHNpajNLdFZhMkwrSU83KzRqLzBOQjVDRmNh?=
+ =?utf-8?B?WVpEdmpZUXZKUXJOR0ZVK1JuZ05ZZUtBNG02M2NBc0Y1bTlQYTBqS2c5TWVD?=
+ =?utf-8?B?dHg4bkZvbzlCTzBJUFVMcldPczVIeU1nTjZOVnFBeGJXVnJVZm16cmd3Z1J5?=
+ =?utf-8?B?VkZaaEgxS2NmS0F2eXdNSGcreEZWeHdKbFN6Nzh4N0dOSnZzdkpPdU92b1Qx?=
+ =?utf-8?B?ODBTOExwVHRHU2IyNmFZRnZsNm9tYVdyYnpJK0luVzVOK2hRdkQ2czh0S09C?=
+ =?utf-8?B?TFJEcEpVRTNPeVRlOEZOWGpkYmxueGQzRXdsa2YyOHVjbkVpcjhuam5lTTg1?=
+ =?utf-8?B?UUxrYjQwazViZ2dhSkYwc2c3Q2ZEN3hJdUo4Uk5oeUJPM1BkKy9RMEJIcVR2?=
+ =?utf-8?B?VUVkOFA2ZWZkRVV5ejBNZWFFVEhxUlI0MnYvQWRKczFxelZVN214N2pkdlM5?=
+ =?utf-8?B?enRuRmcyeDFqTXZpVC9yRmYxYStKOGxnMDZiM2doY1hTT2VhMUtWa0tHZkVh?=
+ =?utf-8?B?dnEwRXNjbUhXakVrb3JXMVNmWGprTWFlSUtlb1R3ZDNhZWxZeW93aVhRYTRC?=
+ =?utf-8?B?cUtaTjA3Q0UrK3pDYWFnSitzUHVKZVFlN1FFVk0vTDFaVHFxNk5xT2huQXNl?=
+ =?utf-8?B?RWZsQXViMmpON0FFTExmakpKLzVKSXpRYUxrWEJ4TUxNTVIyK0RXN0MzNFp4?=
+ =?utf-8?B?MzJkZnpkKzZqUmR3cGEyczFzUXJGWitCSHVCcSt6VFo4elQ5MWhCU0xjcjAx?=
+ =?utf-8?B?Vk44emlsNHROQnl0TVh0TG9VTjlqN1dSdmFsQjVDQXJWanNvajQxRzMzUG44?=
+ =?utf-8?B?SEwvWWhNOW40N0dmOWhxSXh3Ujd3PT0=?=
+X-OriginatorOrg: gocontroll.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 665a5e91-4c3f-4eb6-b508-08de04bf9aa8
+X-MS-Exchange-CrossTenant-AuthSource: DBBPR04MB7628.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Oct 2025 10:03:31.6061
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4c8512ff-bac0-4d26-919a-ee6a4cecfc9d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: JfRrZvKxKDb1HGPeIzwimT3Mv/BUt5VjaheGilBNMwmd3dE/7ya89jJx/mAMhQdETFWdh6TqcQODVd4h9KVnfHQS6BirBUzPpbRL9cnSBn0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB9865
 
-Hello,
+On 9/12/25 17:22, Frank Li wrote:
+> On Fri, Sep 12, 2025 at 08:17:09AM +0200, Maud Spierings wrote:
+>> Hi Frank,
+>> Thanks for the review.
+>>
+>> On 9/11/25 17:33, Frank Li wrote:
+>>> On Thu, Sep 11, 2025 at 09:53:18AM +0200, Maud Spierings via B4 Relay wrote:
+>>>> From: Maud Spierings <maudspierings@gocontroll.com>
+>>>>
+>>>> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+>>>> with integrated boost controller.
+>>>>
+>>>> Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
+>>>> ---
+>>>>    .../bindings/leds/backlight/maxim,max25014.yaml    | 81 ++++++++++++++++++++++
+>>>>    MAINTAINERS                                        |  5 ++
+>>>>    2 files changed, 86 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+>>>> new file mode 100644
+>>>> index 0000000000000000000000000000000000000000..e113a2ad16aa74f982b9c2ea80578aed2d9424fe
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+>>>> @@ -0,0 +1,81 @@
+>>>> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+>>>> +%YAML 1.2
+>>>> +---
+>>>> +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
+>>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>>>> +
+>>>> +title: Maxim max25014 backlight controller
+>>>> +
+>>>> +maintainers:
+>>>> +  - Maud Spierings <maudspierings@gocontroll.com>
+>>>> +
+>>>> +allOf:
+>>>> +  - $ref: common.yaml#
+>>>> +
+>>>> +properties:
+>>>> +  compatible:
+>>>> +    enum:
+>>>> +      - maxim,max25014
+>>>> +
+>>>> +  reg:
+>>>> +    maxItems: 1
+>>>> +
+>>>> +  enable-gpios:
+>>>> +    maxItems: 1
+>>>> +
+>>>> +  interrupts:
+>>>> +    maxItems: 1
+>>>> +
+>>>> +  power-supply:
+>>>> +    description: Regulator which controls the boost converter input rail.
+>>>> +
+>>>> +  pwms:
+>>>> +    maxItems: 1
+>>>> +
+>>>> +  maxim,iset:
+>>>> +    $ref: /schemas/types.yaml#/definitions/uint32
+>>>> +    maximum: 15
+>>>> +    default: 11
+>>>> +    description:
+>>>> +      Value of the ISET register field. This controls the current scale of the
+>>>> +      outputs, a higher number means more current.
+>>>
+>>> Use standard unit. Do not use register value directly.
+>>
+>> It is unfortunately not just a value in Amps, it depends on the hardware
+>> design. There is a kind of "default" table with a 49.9K resistor, but
+>> depending on that resistor the current is different.
+> 
+> You should calculate in your driver. if 49.9K is dependence, you should
+> add xxx_ohm at dts.
 
-On Sun, Oct 05, 2025 at 07:38:12PM +0200, Javier Garcia wrote:
-> This patch wraps the relevant code blocks with #ifdef CONFIG_FB_DEVICE,
-> allowing the driver to be built and used even if CONFIG_FB_DEVICE is not =
-selected.
->=20
-> The sysfs only give access to show some controller and cursor registers so
-> it's not needed to allow driver works correctly.
->=20
-> Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
+I've tried to find the logic behind the Riref resistor and its 
+values/effects, but there is no formula for it, there are example values 
+for 49.9k and 40.2k, besides that all that is stated that the minimum 
+allowed value is 27.5k and the maximum value is 83.5k.
 
-I don't understand this patch. CONFIG_FB_DEVICE is about legacy /dev/fb*
-stuff, and this patch make the creation of a sysfs file dependent on
-that.
+Not sure how to continue after that, I cannot verify/approximate any 
+relation with only two data points.
+Kind regards,
+Maud
 
-> diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/f=
-bdev/mb862xx/mb862xxfbdrv.c
-> index ade88e7bc760..a691a5fefb25 100644
-> --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> @@ -530,6 +530,7 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
->  	return 0;
->  }
-> =20
-> +#ifdef CONFIG_FB_DEVICE
->  /*
->   * show some display controller and cursor registers
->   */
-> @@ -569,6 +570,7 @@ static ssize_t dispregs_show(struct device *dev,
->  }
-> =20
->  static DEVICE_ATTR_RO(dispregs);
-> +#endif
-> =20
->  static irqreturn_t mb862xx_intr(int irq, void *dev_id)
->  {
-> @@ -759,9 +761,11 @@ static int of_platform_mb862xx_probe(struct platform=
-_device *ofdev)
-> =20
->  	dev_set_drvdata(dev, info);
-> =20
-> +#ifdef CONFIG_FB_DEVICE
->  	if (device_create_file(dev, &dev_attr_dispregs))
->  		dev_err(dev, "Can't create sysfs regdump file\n");
->  	return 0;
-> +#endif
-
-That looks wrong. Without CONFIG_FB_DEVICE set the success return is
-removed and all resources are freed essentially making the
-CONFIG_FB_MB862XX_LIME part of the driver unusable.
-
->  rel_cmap:
->  	fb_dealloc_cmap(&info->cmap);
-> @@ -801,7 +805,9 @@ static void of_platform_mb862xx_remove(struct platfor=
-m_device *ofdev)
->  	free_irq(par->irq, (void *)par);
->  	irq_dispose_mapping(par->irq);
-> =20
-> +#ifdef CONFIG_FB_DEVICE
->  	device_remove_file(&ofdev->dev, &dev_attr_dispregs);
-> +#endif
-> =20
->  	unregister_framebuffer(fbi);
->  	fb_dealloc_cmap(&fbi->cmap);
-> @@ -1101,8 +1107,10 @@ static int mb862xx_pci_probe(struct pci_dev *pdev,
-> =20
->  	pci_set_drvdata(pdev, info);
-> =20
-> +#ifdef CONFIG_FB_DEVICE
->  	if (device_create_file(dev, &dev_attr_dispregs))
->  		dev_err(dev, "Can't create sysfs regdump file\n");
-> +#endif
-> =20
->  	if (par->type =3D=3D BT_CARMINE)
->  		outreg(ctrl, GC_CTRL_INT_MASK, GC_CARMINE_INT_EN);
-> @@ -1151,7 +1159,9 @@ static void mb862xx_pci_remove(struct pci_dev *pdev)
-> =20
->  	mb862xx_i2c_exit(par);
-> =20
-> +#ifdef CONFIG_FB_DEVICE
->  	device_remove_file(&pdev->dev, &dev_attr_dispregs);
-> +#endif
-> =20
->  	unregister_framebuffer(fbi);
->  	fb_dealloc_cmap(&fbi->cmap);
-
-The amount of ifdefs could be greatly reduced using the following patch:
-
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbd=
-ev/mb862xx/mb862xxfbdrv.c
-index a691a5fefb25..3f79dfc27a53 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -530,7 +530,6 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
- 	return 0;
- }
-=20
--#ifdef CONFIG_FB_DEVICE
- /*
-  * show some display controller and cursor registers
-  */
-@@ -570,7 +569,6 @@ static ssize_t dispregs_show(struct device *dev,
- }
-=20
- static DEVICE_ATTR_RO(dispregs);
--#endif
-=20
- static irqreturn_t mb862xx_intr(int irq, void *dev_id)
- {
-@@ -761,11 +759,9 @@ static int of_platform_mb862xx_probe(struct platform_d=
-evice *ofdev)
-=20
- 	dev_set_drvdata(dev, info);
-=20
--#ifdef CONFIG_FB_DEVICE
--	if (device_create_file(dev, &dev_attr_dispregs))
-+	if (IS_ENABLED(CONFIG_FB_DEVICE) && device_create_file(dev, &dev_attr_dis=
-pregs))
- 		dev_err(dev, "Can't create sysfs regdump file\n");
- 	return 0;
--#endif
-=20
- rel_cmap:
- 	fb_dealloc_cmap(&info->cmap);
-@@ -805,9 +801,8 @@ static void of_platform_mb862xx_remove(struct platform_=
-device *ofdev)
- 	free_irq(par->irq, (void *)par);
- 	irq_dispose_mapping(par->irq);
-=20
--#ifdef CONFIG_FB_DEVICE
--	device_remove_file(&ofdev->dev, &dev_attr_dispregs);
--#endif
-+	if (IS_ENABLED(CONFIG_FB_DEVICE))
-+		device_remove_file(&ofdev->dev, &dev_attr_dispregs);
-=20
- 	unregister_framebuffer(fbi);
- 	fb_dealloc_cmap(&fbi->cmap);
-@@ -1107,10 +1102,8 @@ static int mb862xx_pci_probe(struct pci_dev *pdev,
-=20
- 	pci_set_drvdata(pdev, info);
-=20
--#ifdef CONFIG_FB_DEVICE
--	if (device_create_file(dev, &dev_attr_dispregs))
-+	if (IS_ENABLED(CONFIG_FB_DEVICE) && device_create_file(dev, &dev_attr_dis=
-pregs))
- 		dev_err(dev, "Can't create sysfs regdump file\n");
--#endif
-=20
- 	if (par->type =3D=3D BT_CARMINE)
- 		outreg(ctrl, GC_CTRL_INT_MASK, GC_CARMINE_INT_EN);
-@@ -1159,9 +1152,8 @@ static void mb862xx_pci_remove(struct pci_dev *pdev)
-=20
- 	mb862xx_i2c_exit(par);
-=20
--#ifdef CONFIG_FB_DEVICE
--	device_remove_file(&pdev->dev, &dev_attr_dispregs);
--#endif
-+	if (IS_ENABLED(CONFIG_FB_DEVICE))
-+		device_remove_file(&pdev->dev, &dev_attr_dispregs);
-=20
- 	unregister_framebuffer(fbi);
- 	fb_dealloc_cmap(&fbi->cmap);
-
-(It would still be questionable however to make the device file creation
-dependent on FB_DEVICE.)
-
-Best regards
-Uwe

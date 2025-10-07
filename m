@@ -1,156 +1,223 @@
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1FF51DFF0
-	for <linux-fbdev@vger.kernel.org>; Tue,  7 Oct 2025 06:57:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EAF33D81
+	for <linux-fbdev@vger.kernel.org>; Tue,  7 Oct 2025 07:35:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759820244; cv=none; b=gJybVtDpXTK7Tz5T6KDRvP8BHIibdj4RXWtrGNchrmuNLbAoYLmW6zEo4XpBzEFuvydnljj7RVpbNsTZo23Nyuqrronif5yytdkVmW7Avz3Mbk1ojdYG5ObupvTB1zMPcO4qdXFB8xism/uW1N+JemhyvtBYG5hK/hBQ+3/WyTo=
+	t=1759822506; cv=none; b=pynd1zNUR0EiXxL526KTzrlxJ2fSxRZp5F1QKZB15eD4OkcyIxkyGUj4E5W/Q+D+YWkwqQqAGu+L/fbadbmIPc3W+BN6gvdQ9wL8Y5k449/4+zoEfqrh2FeIkaiWdTNfmiqaUiiCaNNRj6N6fpPnFfss/EUNJsZNMhXcJV0Wh9o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759820244; c=relaxed/simple;
-	bh=pSXHczsOQ+O+qL7wzRP41/2qS+AEtN6NYQCYJaAcnXk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ac1hCh2qbLbOLgd0uQ9NnxqD0xZK3Cm5DaCxSF3sHkas2vF3q7TJFL73TqP0dvB16o4+hblCo2DpdtyYSnpdbvyef7Cu2PrSGIu5Qk0Pq8CWKt8NNdncfSMfwNtb+l6SSoBClCd9BB58Yct/i/tkpTpVxLOeKAz5KR/w1xShfOo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=GDm6T3/E; arc=none smtp.client-ip=209.85.218.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1759822506; c=relaxed/simple;
+	bh=4RQoSJwyG0CBoyUz4X7AO1wBYwylVJf97i1JKIe8RsA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TWKBiqnvJT80G3gD9j9YeX/0GsCe91u8VZbCGYZ7b5GfvY4Miyc1SPqN+bt55SIlQj8gKIJvRo+teOEEWDumzgcbLeGOs42FC/saUeLoAp809SO3kUSgwcOaD6q8acoXIRoyOxCR4kGr7c8bIj+vcmehLhtRaKGKm/arJv2ziWs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=F3IAZa9V; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=bfJwPtMS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=F3IAZa9V; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=bfJwPtMS; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="GDm6T3/E"
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-afcb7a16441so951522866b.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 06 Oct 2025 23:57:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1759820240; x=1760425040; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=kQBr1iLVFNtqeaNs6yJ80+xGl4WT5Nt3T8RxbNCflzM=;
-        b=GDm6T3/EqEXNZNyqG3807ztDAdlLvZQnHWsMR5qsLoJeQLK9euGjMSXUg9Lpsa7DBH
-         Dxyqcr31TqScDpZYPqJLyy5dvIisAg9vc/XZCeptLfS8bJmVkN52uY26J2+cOWn7xRjf
-         TQ2MwQimmRYT9lLhdSq8TJrZJ55Izbx0Y1FpsphG9cC8pJIC6cAU3bp5AtNJgxLQVmo2
-         3nfPCVVrIG9euX44FYXi59aDxXx6+huMKqqM5MHloGeNkdstfzdVQd/cmVn5LGeGEsPq
-         exv63tkC9UsM8CECyqhYBzPopONIbldb3M8XK/xrBdkH/m+cbI8zPdFjYt07hN/Y1aMT
-         br9Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759820240; x=1760425040;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kQBr1iLVFNtqeaNs6yJ80+xGl4WT5Nt3T8RxbNCflzM=;
-        b=O/brNrH00LPv8VKsWG075q8WaoopezzFYKcT5XVKyZxCVkYZfgNuIT03lCzu/LMlgO
-         cFkYznIQV4qkQVk+aW1I8MW8VigP9JbaIdWZREPBSq2MktZVre3uoluaVQ7ow6aj7wtb
-         Hg4NEn2djGGWhO15OszcSbsAHnoMfEoMcJyREK+pnpQEo5yxWOwOZDIVE8LlTJQXXSDY
-         8OfT+3YUIwnacMO8bO9MvslI3pSFhwlsYJNQOfTp0tlgGZLmxiISNHHLTgchKnKsjJYv
-         Fjw5MBZ4fEXe9dvDIBPVD7kbpTHhRMEClqOWl7oV0gT6wWXEoNN4qqocDorSyFhwY9yh
-         uIIw==
-X-Forwarded-Encrypted: i=1; AJvYcCUor3xk41YKspkOAL9q/z7vWbpEsQUdPgw60iArYrkkQhU9JLh0f1a+3dhqARZneG57jbh5Kt5C0r9BiQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxuQ6VS5FCsgqNshclxO9JrFPcNkDVnk1WTUyapypjsZB17oJlC
-	o+90YS3oCqTUsFXgwL9sqnIUFw+NHMMh43uXCYLY0w60QDHmZ0+19bw5FczuwI6yVz4=
-X-Gm-Gg: ASbGncsOJw5dj2IhHI/fmdNoRck2YyWHUtcAScbGwbrdR4RnigUwHm3nWCu/gpiYfd3
-	bAH4mAdIes6RSX05abrOwmrrQ086pZ0xbLAy47P4ug/aQiqihedBL35cvcNUNAw7fOieus9R/vy
-	iFAwjxYHTFWtjGeqbb+Rst7EUTAi7oWW+4OAMjcVmgSmx05hx8pBbSlJtDCLOBvGgsFjFYWVyUt
-	zoP8VzWV+J7gz/l5pCo77GQioydB+E9ZAo9rdaBw0hBqaSCyq6hP8eB6dOXPHANgLFUE9Dtgfg3
-	CJy27AayeithU5OdN3WN1Ul1bT8W4vOfFf20W1r+Y4X+B+Y1kBMPTkeM5PtQqbRL2r+kefg4eLP
-	KAc7xoNH3od95mtq+rDcvL69rEAln0bcIzhvhHUljPxi6VdfGfUmawBbeQIj/CfDD62LCbWG3gX
-	6ugu92P+CBBNCuhRZ3uSJ6+ug=
-X-Google-Smtp-Source: AGHT+IH+x4rvNU4JaZu7YZXVaGBVLRKK1beKwvljFVhpKQF3G9mDqkXPfemHJ//E1ME4YBbm97oUxQ==
-X-Received: by 2002:a17:906:9fcf:b0:b41:e675:95e3 with SMTP id a640c23a62f3a-b49c20531d6mr2080358366b.16.1759820239882;
-        Mon, 06 Oct 2025 23:57:19 -0700 (PDT)
-Received: from localhost (p200300f65f06ab0400000000000001b9.dip0.t-ipconnect.de. [2003:f6:5f06:ab04::1b9])
-        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-b486970a60dsm1302323866b.63.2025.10.06.23.57.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Oct 2025 23:57:19 -0700 (PDT)
-Date: Tue, 7 Oct 2025 08:57:17 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Javier Garcia <rampxxxx@gmail.com>
-Cc: deller@gmx.de, tzimmermann@suse.de, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, shuah@kernel.org
-Subject: Re: [PATCH v2] fbdev: mb862xxfbdrv: Make CONFIG_FB_DEVICE optional
-Message-ID: <i63463tzmzyjwqvqgduwakdx26zzftj43yay5ytit6ll2hvg72@3azlq2glpmos>
-References: <20251006164143.1187434-1-rampxxxx@gmail.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="F3IAZa9V";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="bfJwPtMS";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="F3IAZa9V";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="bfJwPtMS"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 76B601F78F;
+	Tue,  7 Oct 2025 07:35:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1759822502; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=vvFbZ+0VV9H5Bhjv8F8h8LAAyhywyDVWF/24Dt4ofAg=;
+	b=F3IAZa9VIUy/qQm2ohx7x6Ru8MkalPUc8i8waVw8yXLf9r3OLlt0rS19AyFeZmg/DkMle1
+	sxB6b/C6cSkn8lBuKH12tGKfTCjXHXaKddrNl7kAOf3c62hCbbJUQcspmDULS8PBgo6xQn
+	TPjkiQ1yRiF/rOb7w1FqyixAWp0xN4A=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1759822502;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=vvFbZ+0VV9H5Bhjv8F8h8LAAyhywyDVWF/24Dt4ofAg=;
+	b=bfJwPtMSQuCiWwwtyBJ2Mo3R5A0vYuUWSXFpUin4M94ZjZB+tlXIOrV/nhXNFTkPxFANbO
+	h+rz6AIOPvqBZyDw==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1759822502; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=vvFbZ+0VV9H5Bhjv8F8h8LAAyhywyDVWF/24Dt4ofAg=;
+	b=F3IAZa9VIUy/qQm2ohx7x6Ru8MkalPUc8i8waVw8yXLf9r3OLlt0rS19AyFeZmg/DkMle1
+	sxB6b/C6cSkn8lBuKH12tGKfTCjXHXaKddrNl7kAOf3c62hCbbJUQcspmDULS8PBgo6xQn
+	TPjkiQ1yRiF/rOb7w1FqyixAWp0xN4A=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1759822502;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=vvFbZ+0VV9H5Bhjv8F8h8LAAyhywyDVWF/24Dt4ofAg=;
+	b=bfJwPtMSQuCiWwwtyBJ2Mo3R5A0vYuUWSXFpUin4M94ZjZB+tlXIOrV/nhXNFTkPxFANbO
+	h+rz6AIOPvqBZyDw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0862913693;
+	Tue,  7 Oct 2025 07:35:02 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 7s1TAKbC5GisKQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 07 Oct 2025 07:35:01 +0000
+Message-ID: <6b1f8366-7ec8-4c1f-9563-29e06a8060e2@suse.de>
+Date: Tue, 7 Oct 2025 09:35:01 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="xmvirqnkodsp7h45"
-Content-Disposition: inline
-In-Reply-To: <20251006164143.1187434-1-rampxxxx@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: udlfb: make CONFIG_FB_DEVICE optional
+To: Helge Deller <deller@gmx.de>, sukrut heroorkar <hsukrut3@gmail.com>,
+ Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Hunter <david.hunter.linux@gmail.com>,
+ kernel test robot <lkp@intel.com>, Bernie Thompson <bernie@plugable.com>,
+ Arnd Bergmann <arnd@arndb.de>, Randy Dunlap <rdunlap@infradead.org>,
+ Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+ Zsolt Kajtar <soci@c64.rulez.org>,
+ Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
+ oe-kbuild-all@lists.linux.dev, skhan@linuxfoundation.org
+References: <20250924175743.6790-1-hsukrut3@gmail.com>
+ <202509272320.3K8kdDCw-lkp@intel.com>
+ <bb9d90ca-aa4d-4168-bdc5-543109c74493@gmail.com>
+ <CAHCkknrZ-ieNKeg-aj3-NVqgGSk770jJpUpCvn_SuffkPu+ZrQ@mail.gmail.com>
+ <edccab86-321b-4e6e-998f-3ce320ee0193@gmx.de>
+ <41ef536d-2399-43f8-8041-c6b0e642aba2@suse.de>
+ <CAHCkknrAKGxzAYE-R3QX20W4faR9Wfjgn37peyHRJcZ6PRLENA@mail.gmail.com>
+ <c1d86274-44e2-4ceb-b887-5c4af45d8b37@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <c1d86274-44e2-4ceb-b887-5c4af45d8b37@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCPT_COUNT_TWELVE(0.00)[17];
+	TAGGED_RCPT(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[gmail.com,intel.com,plugable.com,arndb.de,infradead.org,linaro.org,c64.rulez.org,vger.kernel.org,lists.freedesktop.org,lists.linux.dev,linuxfoundation.org];
+	FREEMAIL_TO(0.00)[gmx.de,gmail.com,redhat.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email]
+X-Spam-Flag: NO
+X-Spam-Level: 
+X-Spam-Score: -2.80
 
+Hi
 
---xmvirqnkodsp7h45
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2] fbdev: mb862xxfbdrv: Make CONFIG_FB_DEVICE optional
-MIME-Version: 1.0
+Am 03.10.25 um 21:50 schrieb Helge Deller:
+> On 10/3/25 20:43, sukrut heroorkar wrote:
+>> On Thu, Oct 2, 2025 at 8:52 AM Thomas Zimmermann 
+>> <tzimmermann@suse.de> wrote:
+>>> Am 02.10.25 um 08:41 schrieb Helge Deller:
+>>>>>>> kernel test robot noticed the following build errors:
+>>>>>>
+>>>>>> Did you compile and test this code before submitting this patch?
+>>>>>
+>>>>> Yes, I had compiled & loaded the udlfb module with no errors. Please
+>>>>> let me know how to proceed in this case.
+>>>>
+>>>> Look at the reported build error, which seems to happen in dev_dbg().
+>>>> So, maybe in your testing you did not have debugging enabled?
+>>>> The report contains the .config file with which you can test.
+>>>
+>>> Can we rather make an effort to remove the udlfb driver entirely? A few
+>>> years back, there was one user who was still using it because of some
+>>> problems with the DRM udl driver. But I think we've addressed them. The
+>>> discussion is at [1].
+>
+> Would be good to know if they issues/crashes really have been solved.
+> In [1] it seems the crashes still happened with DRM.
 
-On Mon, Oct 06, 2025 at 06:41:43PM +0200, Javier Garcia wrote:
-> This patch wraps the relevant code blocks with `IS_ENABLED(ifdef CONFIG_F=
-B_DEVICE)`,
-
-stray "ifdef "
-
-> allowing the driver to be built and used even if CONFIG_FB_DEVICE is not =
-selected.
-
-The driver built fine without FB_DEVICE already before, doesn't it?
-
-> The sysfs only give access to show some controller and cursor registers so
-> it's not needed to allow driver works correctly.
->=20
-> This align with Documentation/drm/todo.rst
-> "Remove driver dependencies on FB_DEVICE"
-
-Given the above, I still don't understand that. (But maybe this can be
-fixed by Helge's request to improve the commit message.)
-
-> Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
-> ---
-> v1 -> v2:
->       * Fix error and improvement , thanks Uwe Kleine-Koenig.
->       * v1 https://lore.kernel.org/lkml/20251005173812.1169436-1-rampxxxx=
-@gmail.com
->=20
->=20
->  drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/f=
-bdev/mb862xx/mb862xxfbdrv.c
-> index ade88e7bc760..dc99b8c9ff0f 100644
-> --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> @@ -17,6 +17,7 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/interrupt.h>
-> +#include "linux/kconfig.h"
-
-I didn't need that during my build tests, also don't use "" here, but
-<>.
-
->  #include <linux/pci.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> [...]
+The thread at [1] was the original removal attempt. And that was 5 years 
+ago. I think we could retry and take the reporter (Mikulas) into cc.
 
 Best regards
-Uwe
+Thomas
 
---xmvirqnkodsp7h45
-Content-Type: application/pgp-signature; name="signature.asc"
+>
+>> Should I send a patch series to completely remove udlfb, 
+>
+> No. (at least not yet)
+>
+>> since [1] echoed that DRM udl driver is good enough?
+>>> [1] 
+>>> https://lore.kernel.org/dri-devel/20201130125200.10416-1-tzimmermann@suse.de/
+>
+> Well, some people who do *NOT* actively use fbdev with the old
+> cards say the DRM replacements are "good enough".
+> For tThose people who really depend on fbdev and the speed it has
+> over DRM, the DRM "basic-drivers" are simply a 
+> nice-to-have-but-not-really-useable
+> type of drivers.
+> So, unless the really affected people say the DRM replacement
+> is fully usable, we need to keep the fbdev driver.
+>
+> Helge
 
------BEGIN PGP SIGNATURE-----
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmjkucoACgkQj4D7WH0S
-/k4C1Af/WV9h/qgYbP/3+qXNhC1BXfM3TuwVm+Sff8RZnlO741v4wQpli3yGXbi9
-KcG2h9XY0lwvH/VMa67XES7Mndveqbrc129IdezMXfpXxskJpUgvhtSaEdpWf8wL
-QfjmYKi3YchT4zMmtqzr5rSePQpfqEbxXN+Bo/FRofoQkrKLIslEo9xYzbUExm0t
-WUMwiK4+Den2I8Km5fTZoCp4z5RXxARQ4yc+/8hCE4KQ912dNSoIde2pFzxo/25C
-vzuO/UINyYqPt4F1AHY/7tfrP5cgO3z3jbdtjLvEIk6m/UYCwnkfpJXsEteOVgJx
-kYSTrHFuIq1enwL31Vxj10PYMgEwcQ==
-=zm7i
------END PGP SIGNATURE-----
 
---xmvirqnkodsp7h45--

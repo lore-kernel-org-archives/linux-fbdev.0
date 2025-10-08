@@ -1,151 +1,109 @@
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fout-b6-smtp.messagingengine.com (fout-b6-smtp.messagingengine.com [202.12.124.149])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8AAD2147EF
-	for <linux-fbdev@vger.kernel.org>; Wed,  8 Oct 2025 18:36:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 208B584039;
+	Wed,  8 Oct 2025 22:59:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.149
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759948594; cv=none; b=A9f5BEcDFl9rJRn/5O2E7QaIiDgzF9shdauB0ma2LIvlQSh5TJywn/M9I2sfOBdWgcYH92b3DeO6GlrPTWuQMibTYIE+41IGlr4CCFjksyj+orNKEvUIdkkEYvqqGCy5KwrEDar1H/0C+Me+BJncCIYFdosg/9PesJKbZ0bWPOQ=
+	t=1759964366; cv=none; b=PeXQ3p0dLc9epmmOYzvzpQd7RY5LryQoGosj5sLgeUOai1T5jklvcBF8iAFULB94Im7+oQu9Dc+OHa68eD/qhJIpj2uCD5bbc6OOuoXU2AQjv9Q8tmyW6rtRZ7RrQte+M1zAeerjmJWEQxH41icaMWo/6C2XYs1KH+o0PJK6QiA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759948594; c=relaxed/simple;
-	bh=TbhdRPExR52xBVb5XUSrHLPhu33n97/eTTgshWJPXH8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=t4MEWnykRnAERD9F4O6uckSHa3MrrLaVRWhGcDTn2GkOXni7G6kZu9VZFgCww2SqsYalWDvzPidis8vBsAdtBdZ7bT23nxiXRb++sF3WA9ROMB9Ft9Q3FrYhc8Cozaav9KGm/jCPu3GRBtW6YO1OV8TowuxmkqRHmfto8CNqj/4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OqAB52VY; arc=none smtp.client-ip=209.85.128.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1759964366; c=relaxed/simple;
+	bh=i79i+bUg5eCZTYfX9ZgOghJFCXfQE3kYGl8OBXHOMcQ=;
+	h=To:Cc:Message-ID:From:Subject:Date; b=lPCicraj4rUOGXljlS/1E4kAHmwz3MfewEBLlOjFdXCmAEJFbXl25dba48EY91g1Clgspkf9k14DE/UsmK3hjh+wenpgqhoS3CH3K+KK8Am/7tW+9T/SQWc1BVmStLXx63nsq3/AkX7PcmgN4hQAjeZNcKh2uP9qEeBjXxlpQp0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=none smtp.mailfrom=linux-m68k.org; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=b6q9RRm0; arc=none smtp.client-ip=202.12.124.149
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OqAB52VY"
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-46e6c8bc46eso1033675e9.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 08 Oct 2025 11:36:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1759948591; x=1760553391; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FXl25NV/bCKQtXQE+8UoQ32n8mgGUsnabyuLmYWSLFM=;
-        b=OqAB52VYLzFAl3wTIKxU1mmcD5YGezU9o8+CUA7SqbidnyDiJZ3FkTRthSgsnL3ohZ
-         KmEt7j09N5ZCYdPBSfCLCB4s1sIox5xWGNun1a1BU4t/HhaR+IDi6YrtXrC2+V4uwQWh
-         gx7SKq4KDF5JQuKxgvnesqexbdFCxChKeyXv4SpyiVX5NwFt8r5irFRKmfGsjfYmRGIq
-         gE3kQ/zqkEMZCA9JJixnsJX0WN49RzNIIIZeBErbx/ynABy1NoT9EhopcKb3BgewrRY6
-         fzv4eEtFgcXcE2z0hBsNvvIhtacE4jEJmMMHpzfSP0djDubon+JWpeV5MWSGSXX1HR8x
-         7zhg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759948591; x=1760553391;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=FXl25NV/bCKQtXQE+8UoQ32n8mgGUsnabyuLmYWSLFM=;
-        b=FpryliOx6gXcKhFR0bNIDP/2kN3AJm7Mz/B+QUjBp+Jf74EejCs4G5+V1MUoEuBpHg
-         GoTvrrC6cpwLrFRSEoBFA/RY5Y1HeSmYiLNnASB3yKduBCPBLmOT6vWh3/ihWK3reJxb
-         QliGaTJGRFVEZPrcr2bmmidCuZR1u/kzDDFIQgOR7zc7k8SEw1uSiZN0aGIradQEeFea
-         RHndu5U4x8oICsxvlQ7jaO/J61GH5AbpUntHnazHaJzIJL+PmkcaeBLRSXloEMVl+KWI
-         79efKZ9jhws6O6hEX6uT+YJnTgmDdKYQGkyEhI+sXcQq+HxqxW1fQI3XfhdVD+BHoC20
-         8Lag==
-X-Gm-Message-State: AOJu0YxNVoi42FfMTN/FnptXYYodRNUZlYPjH+CYqaSITCy5C/PiC7Ul
-	CFaN54xOwEmVw/BxhYfxXmA/tfK2fsinCkanDlIPsq7bS5TmEp9DE36P
-X-Gm-Gg: ASbGncvZfWWovva9fngkl6JSmyETyi+mF44tqNy88qN4LtmGjRmmJilAyNhWMQTtRlK
-	9Q5/cWe3oKhRIQM7OqRa9aMEsuIrkQT0w99F+QeuN9M+lR/YSP4K3PmruME6+eRPOpnKxy+85xi
-	gkN/4luoM5oyo0IH0Xu3fY4jEyuEZfHkhzgZzQ0JaRNU5fTqoLs7/NKGX11I0o3qK53pAbBvLzq
-	IimP6+CmE7yuD14aFbLzDGUBb9l+LgcB1zmUqHhNW8Toq3zAf8O/iIYbdXpNbmD7JRzP3y2JCuZ
-	llAlQtL82WPQoPnoUnafft557vxK5Q9jnP8yf2rHwVGMxr5SQ2my3sI3qYNhX4lBCyiBsnupy0W
-	ANp10EETosChNMJzj35cZQrZRd7Ok3/9eFwx7UtBjiKjJAhsK1vEa9pi2TDos91+m4/7DKI6bQz
-	GvfVg=
-X-Google-Smtp-Source: AGHT+IHMaf049Vy0bK5HqZ7v24YZjjYWkYmfKtcVF11hqH5XCAA615OXjCUg7WY+wO3hElGgf+q6Og==
-X-Received: by 2002:a05:600c:1e87:b0:46f:a95d:e9e7 with SMTP id 5b1f17b1804b1-46fa9a22e8cmr29602565e9.0.1759948590639;
-        Wed, 08 Oct 2025 11:36:30 -0700 (PDT)
-Received: from dell (117.red-81-33-123.dynamicip.rima-tde.net. [81.33.123.117])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-46fab5250ddsm18839465e9.6.2025.10.08.11.36.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Oct 2025 11:36:30 -0700 (PDT)
-From: Javier Garcia <rampxxxx@gmail.com>
-To: deller@gmx.de,
-	u.kleine-koenig@baylibre.com,
-	tzimmermann@suse.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	shuah@kernel.org,
-	Javier Garcia <rampxxxx@gmail.com>
-Subject: [PATCH v3] fbdev: mb862xxfbdrv: Make CONFIG_FB_DEVICE optional
-Date: Wed,  8 Oct 2025 20:36:27 +0200
-Message-ID: <20251008183627.1279115-1-rampxxxx@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20251006164143.1187434-1-rampxxxx@gmail.com>
-References: <20251006164143.1187434-1-rampxxxx@gmail.com>
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="b6q9RRm0"
+Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
+	by mailfout.stl.internal (Postfix) with ESMTP id DB3671D0028F;
+	Wed,  8 Oct 2025 18:59:21 -0400 (EDT)
+Received: from phl-mailfrontend-02 ([10.202.2.163])
+  by phl-compute-03.internal (MEProxy); Wed, 08 Oct 2025 18:59:22 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+	:feedback-id:from:from:in-reply-to:message-id:reply-to:subject
+	:subject:to:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm2; t=1759964361; x=1760050761; bh=b16CgqUYwDhd7yU4NyNftQntXr1J
+	c5ksgcWR+Afr8vs=; b=b6q9RRm0hObBdglvYpOTO4AfTSPdlI5aWmCmXt4CEnWn
+	egFl0nUuOGD4TCMMMnWeTM1s35hFo4Z+DQcKt86TCWkxtVxZTw4PVrqa2LVWwlh7
+	nrovtGu1o0V7s5fZNte3RGQ2HWHwDTCGqd+SFb2usHgG+5Qu2Gd3UGE9TohhaCKg
+	JXdU7qj6TlxaDQn2g5iJBcym5f4dqGbHqJuRlYFIwVEbp02bLcLHn9dO9WoR4tIa
+	/LIV6CK1WfjWB9NJlvw6TPzHOUbF1hjtwUGm3SBkWCRcSSrjBiC4tTc6XqbO4z7W
+	B36Sm9eYG2FCizSOpPJV/GL2/ildsAiMRAIWdQch0g==
+X-ME-Sender: <xms:yezmaPr_LF8cX12FzBlGMQeXsXXuRINbYADjYCb_z8nq0Vjzd0-vhQ>
+    <xme:yezmaMN5T-3_S8VI0lhKWdTmAr0mVGsS2zg1hGmb-AvvQ9JrrJvQ021uI3RggxkDm
+    m3IJV4woiMzLaks1uXYCJTZmVyJUTeAEAw8PEFge-P2HkgZ60L29FU>
+X-ME-Received: <xmr:yezmaP3eHVMk8XiR-e2ecL2MFkeOrjRN2U9A43rX83BDvsekieb28CUMaHjTalsX3Df_CmJyzqbmlFlYZAA0IKCdrIY_3pxceP0>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggddutdegheeiucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepvfevkffhufffsedttdertddttddtnecuhfhrohhmpefhihhnnhcuvfhhrghinhcu
+    oehfthhhrghinheslhhinhhugidqmheikehkrdhorhhgqeenucggtffrrghtthgvrhhnpe
+    ehfffggeefveegvedtiefffeevuedtgefhueehieetffejfefggeevfeeuvdduleenucev
+    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehfthhhrghinh
+    eslhhinhhugidqmheikehkrdhorhhgpdhnsggprhgtphhtthhopeekpdhmohguvgepshhm
+    thhpohhuthdprhgtphhtthhopehsihhmohhnrgesfhhffihllhdrtghhpdhrtghpthhtoh
+    epuggvlhhlvghrsehgmhigrdguvgdprhgtphhtthhopehtiihimhhmvghrmhgrnhhnsehs
+    uhhsvgdruggvpdhrtghpthhtohepjhgrvhhivghrmhesrhgvughhrghtrdgtohhmpdhrtg
+    hpthhtohepshhtrggslhgvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohep
+    lhhinhhugidqfhgsuggvvhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhope
+    gurhhiqdguvghvvghlsehlihhsthhsrdhfrhgvvgguvghskhhtohhprdhorhhgpdhrtghp
+    thhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-ME-Proxy: <xmx:yezmaDD11z4k02BTrdh8hYr7-7Q1XeRDGpuL1M1HskbQHvI8pdVj7g>
+    <xmx:yezmaEK1_PH76SO-1RxUx7QBTXB7Dwni9OhKOscm11Ti3DEN4c7j1w>
+    <xmx:yezmaEkv7HkKbwC2AjSkW9R1pAESS2eMEDlXzaZ6uctkPJkDwaFDaw>
+    <xmx:yezmaFa0Xsr_0tEaNprULfO0bsTlg_TgMFZuKv_5f-XdpWB1h-rRaA>
+    <xmx:yezmaNP7n09jyketXJs9Uwz3kxlKGf4Ugpj42Lr9LH06m8clrkyIkIm7>
+Feedback-ID: i58a146ae:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 8 Oct 2025 18:59:18 -0400 (EDT)
+To: Simona Vetter <simona@ffwll.ch>,
+    Helge Deller <deller@gmx.de>,
+    Thomas Zimmermann <tzimmermann@suse.de>,
+    Javier Martinez Canillas <javierm@redhat.com>
+Cc: stable@vger.kernel.org,
+    linux-fbdev@vger.kernel.org,
+    dri-devel@lists.freedesktop.org,
+    linux-kernel@vger.kernel.org
+Message-ID: <f91c6079ef9764c7e23abd80ceab39a35f39417f.1759964186.git.fthain@linux-m68k.org>
+From: Finn Thain <fthain@linux-m68k.org>
+Subject: [PATCH] fbdev: Fix logic error in "offb" name match
+Date: Thu, 09 Oct 2025 09:56:25 +1100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-This patch wraps the relevant code blocks with `IS_ENABLED(CONFIG_FB_DEVICE)`.
+A regression was reported to me recently whereby /dev/fb0 had disappeared
+from a PowerBook G3 Series "Wallstreet". The problem shows up when the
+"video=ofonly" parameter is passed to the kernel, which is what the
+bootloader does when "no video driver" is selected. The cause of the
+problem is the "offb" string comparison, which got mangled when it got
+refactored. Fix it.
 
-Allows the driver to be used for framebuffer text console, even if
-support for the /dev/fb device isn't compiled-in (CONFIG_FB_DEVICE=n).
-
-This align with Documentation/drm/todo.rst
-"Remove driver dependencies on FB_DEVICE"
-
-I've not the card so I was not able to test it.
-
-Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
+Cc: stable@vger.kernel.org
+Fixes: 93604a5ade3a ("fbdev: Handle video= parameter in video/cmdline.c")
+Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@linux-m68k.org>
 ---
-v2 -> v3:
-      * Change commit msg , thanks Helge Deller.
-      * Delete not used include , thanks Uwe Kleine-Koenig.
-      * v1 https://lore.kernel.org/lkml/20251006164143.1187434-1-rampxxxx@gmail.com/
-v1 -> v2:
-      * Fix error and improvement , thanks Uwe Kleine-Koenig.
-      * v1 https://lore.kernel.org/lkml/20251005173812.1169436-1-rampxxxx@gmail.com
+ drivers/video/fbdev/core/fb_cmdline.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index ade88e7bc760..3f79dfc27a53 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -759,7 +759,7 @@ static int of_platform_mb862xx_probe(struct platform_device *ofdev)
+diff --git a/drivers/video/fbdev/core/fb_cmdline.c b/drivers/video/fbdev/core/fb_cmdline.c
+index 4d1634c492ec..594b60424d1c 100644
+--- a/drivers/video/fbdev/core/fb_cmdline.c
++++ b/drivers/video/fbdev/core/fb_cmdline.c
+@@ -40,7 +40,7 @@ int fb_get_options(const char *name, char **option)
+ 	bool enabled;
  
- 	dev_set_drvdata(dev, info);
+ 	if (name)
+-		is_of = strncmp(name, "offb", 4);
++		is_of = !strncmp(name, "offb", 4);
  
--	if (device_create_file(dev, &dev_attr_dispregs))
-+	if (IS_ENABLED(CONFIG_FB_DEVICE) && device_create_file(dev, &dev_attr_dispregs))
- 		dev_err(dev, "Can't create sysfs regdump file\n");
- 	return 0;
+ 	enabled = __video_get_options(name, &options, is_of);
  
-@@ -801,7 +801,8 @@ static void of_platform_mb862xx_remove(struct platform_device *ofdev)
- 	free_irq(par->irq, (void *)par);
- 	irq_dispose_mapping(par->irq);
- 
--	device_remove_file(&ofdev->dev, &dev_attr_dispregs);
-+	if (IS_ENABLED(CONFIG_FB_DEVICE))
-+		device_remove_file(&ofdev->dev, &dev_attr_dispregs);
- 
- 	unregister_framebuffer(fbi);
- 	fb_dealloc_cmap(&fbi->cmap);
-@@ -1101,7 +1102,7 @@ static int mb862xx_pci_probe(struct pci_dev *pdev,
- 
- 	pci_set_drvdata(pdev, info);
- 
--	if (device_create_file(dev, &dev_attr_dispregs))
-+	if (IS_ENABLED(CONFIG_FB_DEVICE) && device_create_file(dev, &dev_attr_dispregs))
- 		dev_err(dev, "Can't create sysfs regdump file\n");
- 
- 	if (par->type == BT_CARMINE)
-@@ -1151,7 +1152,8 @@ static void mb862xx_pci_remove(struct pci_dev *pdev)
- 
- 	mb862xx_i2c_exit(par);
- 
--	device_remove_file(&pdev->dev, &dev_attr_dispregs);
-+	if (IS_ENABLED(CONFIG_FB_DEVICE))
-+		device_remove_file(&pdev->dev, &dev_attr_dispregs);
- 
- 	unregister_framebuffer(fbi);
- 	fb_dealloc_cmap(&fbi->cmap);
 -- 
-2.50.1
+2.49.1
 

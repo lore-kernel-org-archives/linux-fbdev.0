@@ -1,80 +1,41 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91726248880
-	for <linux-fbdev@vger.kernel.org>; Fri, 10 Oct 2025 08:49:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96A66288CA3;
+	Fri, 10 Oct 2025 12:08:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760086201; cv=none; b=Nv7zueXypO+35VwRExIQ3QvIEZpNaT90mZnk5LLkxc8emGXOgf+5xp5x3lgHx//2jLxpBJP7Hkkz502wJmMGT2RHw49NxOQjoScahZIgQVvy4boeUyJbELY3j0PmihZmgxqg3wzbogEh4fNQHsnlCiQihZzg5hlXe0pCZDqTDlM=
+	t=1760098117; cv=none; b=PaiFtwOmyRaXm7BtDUEud8JOqLfhdb88FNTiDppq/RFZPCYpcfUL4gM4yc7SiXwT6vBL+E8fcGDZwc4BrDqigL9hL6N0qncxgAFIMzy3xjaXs42c06H84cUKf8NEX22fmx9Bf7RqmxMoV/ymvTE69bvpcInOcj00GLZ9QYZOVeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760086201; c=relaxed/simple;
-	bh=LPofthVqwqcvLvIwGKcjC4dZKGgicICWrEc+tYy4nL0=;
+	s=arc-20240116; t=1760098117; c=relaxed/simple;
+	bh=Zh6BhKnMA79MWyab0CAzmMs8HsF0Oe7PImX9VjoEZRk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YzPbyuSgTYB+TZXJBuv0r5Txan9z5zUiB0VAl4s2yJY8bNm2TQkMtUx44EiU4CbOXMp3tOEB8HOE1y7jixlvAE5HtxQNHHTRIgpXpSZwmeEGXpvUGBWxyDu0QOgnoM2zRYKzqm69IPJCRLBHGHzP6zJm8ejoutUEFA0crORtqxg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MlJFNKnR; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=VRwlNs9r; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MlJFNKnR; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=VRwlNs9r; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=bJtq0xTrZlWz5ANse4HjmSJCFO7KYS/ax2KCjGrFnDb+KbaM63K1q2AYwLTXH0bddD0oCPYE9hNYLyddDb9NJuDPHEVzLqc0WRKq5z5idVf/4HHJNyDqBH20mdT3KFGLWaTsZ2OQpwaJi+dgo1pegTGN+ocfVOTneJCSF2yDtxY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=uEr8DHEq; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MlJFNKnR";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="VRwlNs9r";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MlJFNKnR";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="VRwlNs9r"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id BDA39222F3;
-	Fri, 10 Oct 2025 08:49:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1760086197; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=G2YPFH36RFW1KsX05nepgyydyvLRnC9H/eJhuwKUFkY=;
-	b=MlJFNKnR4fYc26sPNoio8OTamZFf6721D/A5KeMo4eH3FqTv6xIFBz8lb3h1IXLPqw1J+b
-	YiAdC8TSeRxm1wUKi45GebbpG+/5yKCJ/yghxfUpUHwG4hj8XbIh2dL0kgMVwEHOC+tDau
-	VX5YfBMLk2NhAXj9YLEsCnEBraEmb6E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1760086197;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=G2YPFH36RFW1KsX05nepgyydyvLRnC9H/eJhuwKUFkY=;
-	b=VRwlNs9rY+/7Fr7INQCa7CofEHu6MFFDlkKCOT/FzyHlk/7takXwcclKEfCNYh0Y10lW8a
-	AIS/egbN2rY5yiAQ==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1760086197; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=G2YPFH36RFW1KsX05nepgyydyvLRnC9H/eJhuwKUFkY=;
-	b=MlJFNKnR4fYc26sPNoio8OTamZFf6721D/A5KeMo4eH3FqTv6xIFBz8lb3h1IXLPqw1J+b
-	YiAdC8TSeRxm1wUKi45GebbpG+/5yKCJ/yghxfUpUHwG4hj8XbIh2dL0kgMVwEHOC+tDau
-	VX5YfBMLk2NhAXj9YLEsCnEBraEmb6E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1760086197;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=G2YPFH36RFW1KsX05nepgyydyvLRnC9H/eJhuwKUFkY=;
-	b=VRwlNs9rY+/7Fr7INQCa7CofEHu6MFFDlkKCOT/FzyHlk/7takXwcclKEfCNYh0Y10lW8a
-	AIS/egbN2rY5yiAQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7BC7713A40;
-	Fri, 10 Oct 2025 08:49:57 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 8tbKHLXI6GiETAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 10 Oct 2025 08:49:57 +0000
-Message-ID: <79871b84-de1f-461e-b4b0-8fa49fbd74ef@suse.de>
-Date: Fri, 10 Oct 2025 10:49:57 +0200
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="uEr8DHEq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1760098104; x=1760702904; i=deller@gmx.de;
+	bh=Zh6BhKnMA79MWyab0CAzmMs8HsF0Oe7PImX9VjoEZRk=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=uEr8DHEqzEp5AsiARDrUfkeBbKxGSB2AS3l2wwkgRPC5jjy/CPfVVV69Jvb37cRf
+	 lCMaD61UkH7O8fh7IoQfboM8OCfFRhJ7nlSvkSGfTNKMK0kanmTaL1Ee8jB0mEZhA
+	 7du/I1QrIyY+WSTcwyGqF0dvxm3qHGh1aySo3eIA65OffKaakre4wiI3DxeesbsZ2
+	 PAQh3WvbZcmEocf5NwyvF/o3VE1CabQeZSZC0rwCFVsFPRRbvaXDUJk1wxE/BFmFI
+	 0Q60Er5ZM4gQxQ2VamFMv19ulWk7rHa+QhsHaH6OP/FKEdENAr50FcUGyH1CLRRLg
+	 9lDX83tNUgD8AJWyiQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.51.136]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mlw7f-1uPqPb0xNb-00gwy2; Fri, 10
+ Oct 2025 14:08:24 +0200
+Message-ID: <f532c6d3-b6e1-4fc4-9627-1e84f4ba6df8@gmx.de>
+Date: Fri, 10 Oct 2025 14:08:23 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,195 +43,185 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbcon: Set fb_display[i]->mode to NULL when the mode
- is released
-To: Quanmin Yan <yanquanmin1@huawei.com>
-Cc: simona@ffwll.ch, deller@gmx.de, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- wangkefeng.wang@huawei.com, zuoze1@huawei.com, sunnanyong@huawei.com
-References: <20251010081659.3609082-1-yanquanmin1@huawei.com>
+Subject: Re: [PATCH v3] fbdev: mb862xxfbdrv: Make CONFIG_FB_DEVICE optional
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ Javier Garcia <rampxxxx@gmail.com>
+Cc: tzimmermann@suse.de, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ shuah@kernel.org
+References: <20251006164143.1187434-1-rampxxxx@gmail.com>
+ <20251008183627.1279115-1-rampxxxx@gmail.com>
+ <dis2jb72ejrbmv26jdj3rwawrdmhmde5fahrkdn6y3elsgg4p7@wsjopejnmz5f>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20251010081659.3609082-1-yanquanmin1@huawei.com>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <dis2jb72ejrbmv26jdj3rwawrdmhmde5fahrkdn6y3elsgg4p7@wsjopejnmz5f>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FREEMAIL_CC(0.00)[ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org,huawei.com];
-	ARC_NA(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TO_DN_SOME(0.00)[]
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:zsjiOZTGZ1wj/tdP4v0oUQPCeHEqqinC1gG4XVGXpm3XwHES9Np
+ 0AddWeg+R0jT/eu08T3TUnXreY05bg/Qqv8E9xunRs0tjdRzJBDnyzdMPHk0aVRIQU7YJKg
+ y+CdmUh67IZ1CoKSVRfKLWGcMpIeGUy5n4D8ZMXwHciHVxmomiMIhs+AGHHYH1Zr7hBtoYl
+ 7XW6CwXMKsTCogV6bn6WQ==
 X-Spam-Flag: NO
-X-Spam-Score: -4.30
+UI-OutboundReport: notjunk:1;M01:P0:B+G/qZvIa98=;CmxxUvj9S2yxX0w7Og885ssBKVp
+ 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
+ A7Uq1/558SOh7w==
 
+On 10/9/25 10:50, Uwe Kleine-K=C3=B6nig wrote:
+> Hello Javier,
+>=20
+> On Wed, Oct 08, 2025 at 08:36:27PM +0200, Javier Garcia wrote:
+>> This patch wraps the relevant code blocks with `IS_ENABLED(CONFIG_FB_DE=
+VICE)`.
+>>
+>> Allows the driver to be used for framebuffer text console, even if
+>> support for the /dev/fb device isn't compiled-in (CONFIG_FB_DEVICE=3Dn)=
+.
+>>
+>> This align with Documentation/drm/todo.rst
 
+This seems to be Documentation/gpu/todo.rst now...
 
-Am 10.10.25 um 10:16 schrieb Quanmin Yan:
-> Recently, we discovered the following issue through syzkaller:
->
-> BUG: KASAN: slab-use-after-free in fb_mode_is_equal+0x285/0x2f0
-> Read of size 4 at addr ff11000001b3c69c by task syz.xxx
-> ...
-> Call Trace:
->   <TASK>
->   dump_stack_lvl+0xab/0xe0
->   print_address_description.constprop.0+0x2c/0x390
->   print_report+0xb9/0x280
->   kasan_report+0xb8/0xf0
->   fb_mode_is_equal+0x285/0x2f0
->   fbcon_mode_deleted+0x129/0x180
->   fb_set_var+0xe7f/0x11d0
->   do_fb_ioctl+0x6a0/0x750
->   fb_ioctl+0xe0/0x140
->   __x64_sys_ioctl+0x193/0x210
->   do_syscall_64+0x5f/0x9c0
->   entry_SYSCALL_64_after_hwframe+0x76/0x7e
->
-> Based on experimentation and analysis, during framebuffer unregistration,
-> only the memory of fb_info->modelist is freed, without setting the
-> corresponding fb_display[i]->mode to NULL for the freed modes. This leads
-> to UAF issues during subsequent accesses. Here's an example of reproduction
-> steps:
-> 1. With /dev/fb0 already registered in the system, load a kernel module
->     to register a new device /dev/fb1;
-> 2. Set fb1's mode to the global fb_display[] array (via FBIOPUT_CON2FBMAP);
-> 3. Switch console from fb to VGA (to allow normal rmmod of the ko);
-> 4. Unload the kernel module, at this point fb1's modelist is freed, leaving
->     a wild pointer in fb_display[];
-> 5. Trigger the bug via system calls through fb0 attempting to delete a mode
->     from fb0.
->
-> Add a check in do_unregister_framebuffer(): if the mode to be freed exists
-> in fb_display[], set the corresponding mode pointer to NULL.
->
-> Signed-off-by: Quanmin Yan <yanquanmin1@huawei.com>
+>> "Remove driver dependencies on FB_DEVICE">>> I've not the card so I was=
+ not able to test it.
+>=20
+> I still don't understand why the creation of the dispregs sysfs file
+> should be conditional on FB_DEVICE.=20
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+I think this is because people simply believe it, as it's documented like =
+this
+in the todo file. I think this is wrong.
 
-Thanks for fixing the bug.
+I think the problem was, that device_create_file() has a "struct device *"
+pointer as first parameter. Some device drivers probably referenced
+the "struct device" pointer of the "/dev/fb" device, which does not exist
+when FB_DEVICE isn't enabled. As such, the device_create_file() would fail
+during initialization (since the devide ptr is NULL) of the driver and
+prevent the driver from working.
+That's not the case for this driver here, and probably not for the other
+remaining drivers.
 
-> ---
->
-> Changes from v1
-> (https://lore.kernel.org/all/20250923110608.3385083-1-yanquanmin1@huawei.com/)
-> - Focus on fixing the issue specifically in the framebuffer unregistration
->    path, as other paths do not encounter this problem.
-> - Adjusted according to Thomas's suggestions.
->
->   drivers/video/fbdev/core/fbcon.c | 19 +++++++++++++++++++
->   drivers/video/fbdev/core/fbmem.c |  1 +
->   include/linux/fbcon.h            |  2 ++
->   3 files changed, 22 insertions(+)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 96cc9b389246..9bd3c3814b5c 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -2810,6 +2810,25 @@ int fbcon_mode_deleted(struct fb_info *info,
->   	return found;
->   }
->   
-> +static void fbcon_delete_mode(struct fb_videomode *m)
-> +{
-> +	struct fbcon_display *p;
-> +
-> +	for (int i = first_fb_vc; i <= last_fb_vc; i++) {
-> +		p = &fb_display[i];
-> +		if (p->mode == m)
-> +			p->mode = NULL;
-> +	}
-> +}
-> +
-> +void fbcon_delete_modelist(struct list_head *head)
-> +{
-> +	struct fb_modelist *modelist;
-> +
-> +	list_for_each_entry(modelist, head, list)
-> +		fbcon_delete_mode(&modelist->mode);
-> +}
-> +
->   #ifdef CONFIG_VT_HW_CONSOLE_BINDING
->   static void fbcon_unbind(void)
->   {
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 53f1719b1ae1..eff757ebbed1 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -544,6 +544,7 @@ static void do_unregister_framebuffer(struct fb_info *fb_info)
->   		fb_info->pixmap.addr = NULL;
->   	}
->   
-> +	fbcon_delete_modelist(&fb_info->modelist);
->   	fb_destroy_modelist(&fb_info->modelist);
->   	registered_fb[fb_info->node] = NULL;
->   	num_registered_fb--;
-> diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-> index 81f0e698acbf..f206370060e1 100644
-> --- a/include/linux/fbcon.h
-> +++ b/include/linux/fbcon.h
-> @@ -18,6 +18,7 @@ void fbcon_suspended(struct fb_info *info);
->   void fbcon_resumed(struct fb_info *info);
->   int fbcon_mode_deleted(struct fb_info *info,
->   		       struct fb_videomode *mode);
-> +void fbcon_delete_modelist(struct list_head *head);
->   void fbcon_new_modelist(struct fb_info *info);
->   void fbcon_get_requirement(struct fb_info *info,
->   			   struct fb_blit_caps *caps);
-> @@ -38,6 +39,7 @@ static inline void fbcon_suspended(struct fb_info *info) {}
->   static inline void fbcon_resumed(struct fb_info *info) {}
->   static inline int fbcon_mode_deleted(struct fb_info *info,
->   				     struct fb_videomode *mode) { return 0; }
-> +static inline void fbcon_delete_modelist(struct list_head *head) {}
->   static inline void fbcon_new_modelist(struct fb_info *info) {}
->   static inline void fbcon_get_requirement(struct fb_info *info,
->   					 struct fb_blit_caps *caps) {}
+> Either they have nothing to do with each other, or I'm missing
+> something.=20
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstrasse 146, 90461 Nuernberg, Germany
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-HRB 36809 (AG Nuernberg)
+Right now you are right... it has nothing to do with each other.
 
+> The former makes this patch wrong, the latter would be an
+> indication that the commit log is still non-optimal.
+Either way, I've dropped the patch from the git repo for now.
+I don't think the patch is wrong, but it's not deemed necessary either.
+If someone has that device I'd happy to apply it after some feedback.
 
+In addition, maybe the section from the todo file should be dropped?
+
+Helge

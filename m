@@ -1,123 +1,64 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 346C52F7AD8
-	for <linux-fbdev@vger.kernel.org>; Fri, 10 Oct 2025 15:12:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F0F480604;
+	Fri, 10 Oct 2025 18:25:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760109133; cv=none; b=W3Co+V1EWObGj/23f4Sz0Km5QaenIrZi4lzfy5gUYtIT9IvjRub5/fmBt3+pUoLhHVRW7WJZJQGezA1CmQyQC3GIfOkUM3BxtLqxKXYt81W4651exkKHNoHHxHlSO7gDeVqCq9/c0Dida8M3icntyRIwsSqL/ahsJlAO6PaKhqs=
+	t=1760120756; cv=none; b=iFRaf92R25a54zOM+Sa6FHcWkF/gjcCXc02aa2yJBPhvlwqfQLgDW6BtRK60/nUI+cReKirR3tJB5+gSb37ilbz4OsgOGdMg1MJkzz+nY8xBDLZQ3SquJCdEDpJvfpbKoBmy6PkeZzsvq2jUcizhGx7MZ13SG1YinZrGUe7KmPw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760109133; c=relaxed/simple;
-	bh=WIkXLM1r7Q1O7LPVjMvifve9AQ66MNpnx4ZqY/8T61M=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=V1a5phTT0IqfDjFx9liasDfrDgtW9PpE2KTT17CsDPqzrDHjlOIpXKohcT3f2hLRE6Rb7uR7BvJ8m6GRk3spwHHAy2qx6Lf4k6ujkpxvwhLCb6Djq838juk+8BOW+Leq2LwPj7iXznZEz+Rd4ic77THRVWgkUyLUoNcaCY99GlE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=EFbjDWdR; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1760120756; c=relaxed/simple;
+	bh=y8fzFnlKunWEVat2RXlybSvQtyQAeDPzKvb7bm0YiXc=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=FuZThfgr4SaECO1r+O3M2hazehjD6hFWR9H/bEmhwFfY5/KUaynTk+g76mKRSsvaeQm+376nfTN6L2xqOb8eE7+T1u/BV/1RA1tZq3N9jDsbQTqzJ+KA8obDhxD4tX75nimhlmLyhGx+ffSgdolGXjiVvj5KhH0WpQTowyzIwaY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l6O+yOmO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="EFbjDWdR"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1760109131;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qHCdZi6C7ELhvkHmBE99ONw5f0wTBtemnyHf1SDAuNY=;
-	b=EFbjDWdRcyA56fcCXLlK55h9E3lF8+aaPpuezJ3m8xCbpG8nvC84G1In9Fw5sAAwnh5TOA
-	j1uR/hWS4BZizbbdUAbY71dqCRZevxe1COCLcKqZiBFeGVxWfLrcaBsjV7GooSi4PkNH5L
-	xGLmsKSlOdWJDRiSh11L1v5DjBebQAs=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-266-5gxgZ7HqORGcbXAp1Yrqxg-1; Fri,
- 10 Oct 2025 11:12:07 -0400
-X-MC-Unique: 5gxgZ7HqORGcbXAp1Yrqxg-1
-X-Mimecast-MFC-AGG-ID: 5gxgZ7HqORGcbXAp1Yrqxg_1760109125
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id B964918005BF;
-	Fri, 10 Oct 2025 15:12:03 +0000 (UTC)
-Received: from [10.45.224.32] (unknown [10.45.224.32])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id E0D821955F42;
-	Fri, 10 Oct 2025 15:11:56 +0000 (UTC)
-Date: Fri, 10 Oct 2025 17:11:49 +0200 (CEST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-cc: Helge Deller <deller@gmx.de>, sukrut heroorkar <hsukrut3@gmail.com>, 
-    David Hunter <david.hunter.linux@gmail.com>, 
-    kernel test robot <lkp@intel.com>, Bernie Thompson <bernie@plugable.com>, 
-    Arnd Bergmann <arnd@arndb.de>, Randy Dunlap <rdunlap@infradead.org>, 
-    Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, 
-    Zsolt Kajtar <soci@c64.rulez.org>, 
-    Gonzalo Silvalde Blanco <gonzalo.silvalde@gmail.com>, 
-    linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-    linux-kernel@vger.kernel.org, llvm@lists.linux.dev, 
-    oe-kbuild-all@lists.linux.dev, skhan@linuxfoundation.org
-Subject: Re: [PATCH] fbdev: udlfb: make CONFIG_FB_DEVICE optional
-In-Reply-To: <6b1f8366-7ec8-4c1f-9563-29e06a8060e2@suse.de>
-Message-ID: <b8472f68-982b-c00b-55cc-547c72bef34c@redhat.com>
-References: <20250924175743.6790-1-hsukrut3@gmail.com> <202509272320.3K8kdDCw-lkp@intel.com> <bb9d90ca-aa4d-4168-bdc5-543109c74493@gmail.com> <CAHCkknrZ-ieNKeg-aj3-NVqgGSk770jJpUpCvn_SuffkPu+ZrQ@mail.gmail.com> <edccab86-321b-4e6e-998f-3ce320ee0193@gmx.de>
- <41ef536d-2399-43f8-8041-c6b0e642aba2@suse.de> <CAHCkknrAKGxzAYE-R3QX20W4faR9Wfjgn37peyHRJcZ6PRLENA@mail.gmail.com> <c1d86274-44e2-4ceb-b887-5c4af45d8b37@gmx.de> <6b1f8366-7ec8-4c1f-9563-29e06a8060e2@suse.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l6O+yOmO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C63A2C4CEF1;
+	Fri, 10 Oct 2025 18:25:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760120755;
+	bh=y8fzFnlKunWEVat2RXlybSvQtyQAeDPzKvb7bm0YiXc=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=l6O+yOmOKx4iHMva2BFIJpVqz9f3UwLpP4446+ygYKeVWVCFtxZJyDvF8Tieptphl
+	 WSjTpFlMTuMcg59J9+UwUnJj7lBiImyUAuHiJWz1PPhEbQppzZuEfKMjD4djiedEcI
+	 fLPbr+eHQlaOwguOTe2WYKYra4frWWi/m1qex0QQp0H0QJIiVVqJfT9OusDpWp3BIp
+	 ADVFZD+s9UFtoBoYhYOL0j6WdU5XMFxTl5MsQMpzR7hGgkAsLLhTWFh2wFe6Fp0Zu+
+	 Q2DJ42Cl1MyzJrSEEPHBIR+zzLpoMvlFEdroAVYvr8tRbJebwtD/VpObZTcwJjzVU6
+	 8bNR/AhpLa9rA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 70CB03809A00;
+	Fri, 10 Oct 2025 18:25:44 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev updates for v6.18-rc1
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <aOkKroU5EAorYET0@carbonx1>
+References: <aOkKroU5EAorYET0@carbonx1>
+X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
+ <dri-devel.lists.freedesktop.org>
+X-PR-Tracked-Message-Id: <aOkKroU5EAorYET0@carbonx1>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.18-rc1
+X-PR-Tracked-Commit-Id: 15df28699b28d6b49dc305040c4e26a9553df07a
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 06a88f47990974f1322c2bf2e8c5125f8a2f69fe
+Message-Id: <176012074303.1074429.6013388198844623304.pr-tracker-bot@kernel.org>
+Date: Fri, 10 Oct 2025 18:25:43 +0000
+To: Helge Deller <deller@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="-1463811712-636264779-1760108298=:3315052"
-Content-ID: <b28657e4-9db0-51fc-5872-290b4927a66a@redhat.com>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+The pull request you sent on Fri, 10 Oct 2025 15:31:26 +0200:
 
----1463811712-636264779-1760108298=:3315052
-Content-Type: text/plain; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <77da2ba4-763b-3169-d87c-f655b00b6162@redhat.com>
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.18-rc1
 
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/06a88f47990974f1322c2bf2e8c5125f8a2f69fe
 
+Thank you!
 
-On Tue, 7 Oct 2025, Thomas Zimmermann wrote:
-
-> Hi
-> 
-> Am 03.10.25 um 21:50 schrieb Helge Deller:
-> > On 10/3/25 20:43, sukrut heroorkar wrote:
-> > > On Thu, Oct 2, 2025 at 8:52 AM Thomas Zimmermann <tzimmermann@suse.de>
-> > > wrote:
-> > > > Am 02.10.25 um 08:41 schrieb Helge Deller:
-> > > > > > > > kernel test robot noticed the following build errors:
-> > > > > > > 
-> > > > > > > Did you compile and test this code before submitting this patch?
-> > > > > > 
-> > > > > > Yes, I had compiled & loaded the udlfb module with no errors. Please
-> > > > > > let me know how to proceed in this case.
-> > > > > 
-> > > > > Look at the reported build error, which seems to happen in dev_dbg().
-> > > > > So, maybe in your testing you did not have debugging enabled?
-> > > > > The report contains the .config file with which you can test.
-> > > > 
-> > > > Can we rather make an effort to remove the udlfb driver entirely? A few
-> > > > years back, there was one user who was still using it because of some
-> > > > problems with the DRM udl driver. But I think we've addressed them. The
-> > > > discussion is at [1].
-
-It was me - and I am still using it on an ARM64 MacchiatoBIN board because 
-the board doesn't have graphics output.
-
-The problems with the UDL DRM driver were:
-
-* crashes with full-screen framebuffer applications, such as "links2 -g", 
-"fbi" or "fbgs". On UDLFB, there are no crashes.
-
-* worse performance - the UDL DRM driver updates everything in a given 
-rectangle, while the UDLFB driver keeps back-buffer and front-buffer and 
-updates only differences between them.
-
-* crash when you unplug the card while Xorg was running (already fixed)
-
-Mikulas
----1463811712-636264779-1760108298=:3315052--
-
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

@@ -1,127 +1,91 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAE49334693
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Oct 2025 17:18:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3F1425C6E2
+	for <linux-fbdev@vger.kernel.org>; Sat, 18 Oct 2025 17:34:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760635131; cv=none; b=m981LqaW2lxLDClRyS8t98xVdhb64+QFWIMo8FQdSEEbGui4bVS5Sr+TrQ4R6Vx3r9Ler2czahFOky78eKKhzb9tudb86hEfc8LxASA2y7XCAcE/md8ESm0+8oZFnea9WlUjZMJrkBo/VRZ/fCrDyvR7myT4fXqbYn9w4s6zByo=
+	t=1760808859; cv=none; b=BOitN3Fwdvc83ElX1EmxEaStNQjFSk7DQQMMSXcqmDlUzi0nHxMgSpVdbmosrVp5iw4EvJvCS4LcETZHqxDw4Hm8GDEwqrGkh43g4yt51K66lbMISYYZQeB83QNtAyODJ0qFqtNZrKEfhpQO07SClShAs1cVbp7ySYyuyB4QUXo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760635131; c=relaxed/simple;
-	bh=u1UIA2BIHa75e19Dzixz25eBYZXZ7a8Rdt0+VX/LF+c=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YII7uqiIWiI2ByiCfr2+Imf0318gdglkxpT6KineSiAlaz8wBYF70nM8OIEWITkYw91WBOvrEd0Fhl4S7c53K68t2JKmwGdtOhGw7pGiae6r/qXnGq2CZH4ittxmgiQVyA4eLbDocKVKhrJZm1C/pBvsK4JsF0vXKGsqfWN7HlM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C+Nos+lS; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1760808859; c=relaxed/simple;
+	bh=RJ5KIkMJIdV/yBi8CkjP5HLVKkDZSkWUq8PX0/Pcz0U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RB0BTuGPy+1yay4panxY20tQgOaIijQbBT3JInHaV8HpX2O64/jCwkwCskmdHqqfHRHeK+utWfVNMpxI+cEf/lRR2XRCCNTPttoO+b1fOTjXPMfaSt22jzeZTr6QiAay22FdJKOPvuK2YSPZbopg/Xw45uG0Hef8VFNpAbPb1SA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nMmtuHOU; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C+Nos+lS"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-4256866958bso688380f8f.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Oct 2025 10:18:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1760635128; x=1761239928; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=R61SKl0heteonfQWMBAG66A3jLT07W0AMS7C2zZswDI=;
-        b=C+Nos+lSiGdgujFJDKUQyd+bH8qPtw7hcHWCoY16VPySRRuIxsInKJsdG78YXKeZyL
-         szPUURnyfJYR9jhlawmikP1TBSDEzogdZ2HAAmKpo3YBZXGpv96c//zVhDAUZiypPGq5
-         h2+ZoT2DzUTk4UIE75b2B7j2hLXeNkJNhgLSF1iXdbOXpBOx2gfMU2QMsjUh+DO5KA3p
-         MS7o+uUtqqpzqTEQ1uFlmHotnMByn1/h85DKQRk15KDM3VCtcFcB6TulMloXgrIRftxE
-         2m8kJ6OAoTV+JUCftD6ISOcA6dflMc+q18plkjS68cuEyl8mJJwh8dLQNmokFZDmPsOL
-         Ntkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760635128; x=1761239928;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=R61SKl0heteonfQWMBAG66A3jLT07W0AMS7C2zZswDI=;
-        b=L7y90trMFq8bhShSK93JBXrbj5BiIRwTtVTbHDf6Amr6wXCxzmSCtfdrJnkDGWVQKS
-         rzVIWk9lV2eOqbRpyVUIAQjFCPi7XRtHVDd4qickjbENssJtLgNA5mBPnRz+a1jmak8F
-         itlxy/qWd5H49+O/WbjomR0f4oFZvvD0V6q/+ARxOCS9rEm6lnW8ldrl5N9cOgLsECNh
-         UgQdMS+Wz7sEGJrImBMUN0DQee1Avr3HagesWMMBy5mZ88fp8coypSW0b+b7UcoG8BBK
-         ijXXIcAfZDdHKCKf00PlcqN6EQYWPVJIAnq9BeKQEtSYdCUsl7+f0kxKK+lYlTG3UFAm
-         TpJA==
-X-Gm-Message-State: AOJu0Yw5u4tZpwFOLke+8j4fOkgRtS4vBqODBGgXzFjRp98AJelcsE27
-	NdIt4JMXUqguvtlOq2gBI7r68kvxm8F8MtJhwdp7Y2a9xnSmjw24JlLo
-X-Gm-Gg: ASbGncs25rMgDjoyX+BmAekEG4lORwJjJPM7i82UIjGdv160flLsFKM5FrIEh5vXznA
-	vVOyCILPWmoPk04VMnW9l8fzZSXVHPsZqXCzegHB2uwrkroNJmCEGa2g7pIIDajS/fjoyy9w/Up
-	6dkDOjnJnbO4Qgwq0K/Ir6Lv8SvflXHwJozDZ1dC2YFmVWOr3WPJzkrLvYMR4NVn6B7sgh/w5TK
-	Lhsyv+NJ/capW1CcCVYyKuI6j2cBJjQiFJrgxXNXRlKsF4jR9+E0Q91evJ2GeEHGdYf1xqztuSs
-	UF2+YaVJyh/Mu78CHrb6YnlHQSfKNZCozXz1YyhKWycZWsDRyEJkcbdjT5mGBUMnOEKHXSj6s1k
-	d7lk2g/F21yHC4RYvj8PDG4gGihx47ISd6KvkE9hm9ZCKPRSZDApL0dWJIKikwdCpddFDg/b6dn
-	BH0NrPSLm7M8LSDeHKyrsJ+jGQHzcWiwhC
-X-Google-Smtp-Source: AGHT+IGtxy9t5BEeTVIETxG2Z41hQ7E4hmY7HEIitTLwANiVPbSqfV1FzBoCuUQpqq4aGGwjVLWXHA==
-X-Received: by 2002:a5d:5f82:0:b0:426:d54a:67e with SMTP id ffacd0b85a97d-42704dc9bffmr775251f8f.44.1760635127949;
-        Thu, 16 Oct 2025 10:18:47 -0700 (PDT)
-Received: from dell (117.red-81-33-123.dynamicip.rima-tde.net. [81.33.123.117])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4711442dbaesm39349145e9.8.2025.10.16.10.18.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Oct 2025 10:18:47 -0700 (PDT)
-From: Javier Garcia <rampxxxx@gmail.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	shuah@kernel.org,
-	Javier Garcia <rampxxxx@gmail.com>
-Subject: [PATCH] fbdev: vga16fb: Request memory region.
-Date: Thu, 16 Oct 2025 19:18:45 +0200
-Message-ID: <20251016171845.1397153-1-rampxxxx@gmail.com>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nMmtuHOU"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1760808858; x=1792344858;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=RJ5KIkMJIdV/yBi8CkjP5HLVKkDZSkWUq8PX0/Pcz0U=;
+  b=nMmtuHOUh/j932Ho0a2O+nqthYn+eDquwgnsSGnggQAhymYqSvHpuF3D
+   U8KnaBPG7+7SRkqc65rzrU1lOsMY+kgRhirEOneue47/1Pyqn4K/FjyNf
+   injg+13lK18FZk4HaZQAgj4KWCpH/xfJic0WbH3nHOMonMVSe2yiiQZXn
+   DAj2sS2SJC/3BR8qG3NULr2IAt3Q2HVG79v1xkHAwlMsXwqATpAN3q5xI
+   L3Y7lVdAfmSUp3dymCFE4YRs1E2BgWmeRIkq9Ew8gXQ5O1KWdZffVCMLS
+   sOJL3N6YX765CTeIdl49Xcf3uQw5HN6WEYxghW3+06In3ZNVvzd13JHkg
+   A==;
+X-CSE-ConnectionGUID: zb/svY9iTUekLOcuBUCTlg==
+X-CSE-MsgGUID: BK168pUjQJmd4eCiOwNz4A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="63086756"
+X-IronPort-AV: E=Sophos;i="6.19,239,1754982000"; 
+   d="scan'208";a="63086756"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2025 10:34:16 -0700
+X-CSE-ConnectionGUID: WHdI2lB5T8SS9QNrPq6EOw==
+X-CSE-MsgGUID: RnMIvm3yRVacyah8szT1/g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,239,1754982000"; 
+   d="scan'208";a="183749980"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO ashevche-desk.local) ([10.245.244.194])
+  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2025 10:34:15 -0700
+Received: from andy by ashevche-desk with local (Exim 4.98.2)
+	(envelope-from <andriy.shevchenko@intel.com>)
+	id 1v8PVf-000000002rj-2iH5;
+	Mon, 13 Oct 2025 23:51:11 +0300
+Date: Mon, 13 Oct 2025 23:51:11 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: DeepanshuPratik <deepanshu.pratik@gmail.com>
+Cc: andy@kernel.org, gregkh@linuxfoundation.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: fix macro usage and style warnings
+Message-ID: <aO1mPzy6vjg3tnrh@smile.fi.intel.com>
+References: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250919212938.822374-1-deepanshu.pratik@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-This patch reserve and release VGA memory region with `*_mem_region`
-fn's.
+On Sat, Sep 20, 2025 at 02:59:38AM +0530, DeepanshuPratik wrote:
+> This patch fixes the trailing comma issue in the
+> define_fbtft_write_reg() macro calls, which caused
+> checkpatch.pl to complain with:
+> 
+>   ERROR: space prohibited before that close parenthesis ')'
 
-This align with Documentation/drm/todo.rst
-"Request memory regions in all fbdev drivers"
+Please. go and fix checkpatch instead.
 
-I've tested with kernel and qemu both 32bits.
+> The affected macro invocations were updated to pass an
+> identity modifier instead of leaving the argument empty.
+> This resolves build errors while ensuring compliance
+> with kernel coding style.
+> 
+> No functional changes are introduced; this patch only
+> addresses build and style issues.
 
-Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
----
-
-When I've run the code always return -EBUSY which makes sense as
-mem is already requested,`/proc/iomem` shows `000a0000-000bffff : Video RAM area`.
-
-I've seen that `cirrusfb` has this kind of code wrapped up with `#if 0`, and I
-wonder if it makes sense to also wrap up with `#if 0`, at least , in
-that way the code gets commented about expected behavior.
-
-
- drivers/video/fbdev/vga16fb.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index eedab14c7d51..f506bf144a97 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1319,6 +1319,11 @@ static int vga16fb_probe(struct platform_device *dev)
- 	if (ret)
- 		return ret;
- 
-+	if (!request_mem_region(vga16fb_fix.smem_start, vga16fb_fix.smem_len,
-+				"vga16b")) {
-+		dev_err(&dev->dev,"vga16b: cannot reserve video memory at 0x%lx\n",
-+		       vga16fb_fix.smem_start);
-+	}
- 	printk(KERN_DEBUG "vga16fb: initializing\n");
- 	info = framebuffer_alloc(sizeof(struct vga16fb_par), &dev->dev);
- 
-@@ -1398,6 +1403,8 @@ static int vga16fb_probe(struct platform_device *dev)
-  err_ioremap:
- 	framebuffer_release(info);
-  err_fb_alloc:
-+	release_mem_region(vga16fb_fix.smem_start,
-+		    vga16fb_fix.smem_len);
- 	return ret;
- }
- 
 -- 
-2.50.1
+With Best Regards,
+Andy Shevchenko
+
 

@@ -1,109 +1,181 @@
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+Received: from mail-io1-f53.google.com (mail-io1-f53.google.com [209.85.166.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD2AE15B0EC
-	for <linux-fbdev@vger.kernel.org>; Wed, 15 Oct 2025 14:08:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F08317597
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Oct 2025 01:45:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760537341; cv=none; b=dJ8rKMo8zJAP2FNruKhpWn9PTPvGFhGQHeIAnukrW0IaF+gYseTokY1ttQqV8HRYY1USgngPemE/TtlaGrR4Cg3qt//mCLXF0AZKckRIsZYJNw2+cUl0VBf/IeBFAHy8AsBzsH+aMFzq81B5LRK5ovEEctknpYI6VWXgnsAENkA=
+	t=1760579137; cv=none; b=uunL3D3oetn58JBKCN048dDnn4rG3AO49yUv+XfceGT0Juvlks/FEG6HEqwgirQxfLyT4EDApq8ahK7mEYQNhmNysVcLmzduGGF1yUSwr/t6L1A/FFTMHPdvgAyYp727ppvnlkjCccDuZE6rFdic5L7zQQSIUJEc4I7BhnhcvUA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760537341; c=relaxed/simple;
-	bh=psVvFbur+V+VuNV4QnzcYrS4EZtY583QSmPdL4nzXFQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Vb3vLRfvssgw3HznyWB3Nn1tMv+kt7HuPJ046yC4vvtSHb3/CfFuJJZJVUDj8tjStVO+G5xtT5KRKFf9yciGJ3SsPfXhyIB/8SSQgunanoqK1wSFjYsondvK54YPb86BszgqrCMptJqE75fQcNVZD5HhXU5KcVewUK9lMylBBLs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=l9dVDPZ5; arc=none smtp.client-ip=209.85.216.44
+	s=arc-20240116; t=1760579137; c=relaxed/simple;
+	bh=BmO9QvsJixoNrPHTLBb7ox8ODljvqV5zZ13V/ZDyQ3w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SD4pQxvKx07RwQpZX4ifgbBTJKG7ZvmfNlIgvG2pBuxK0nE24NgEZMuZvr2cShaLDie9al+/yaF/w6vdHz2TGiHEw+TajlrTzcoJLsfnNfTBLnBLej5BEDijuLbfhx919myDmbxQkTu3BHa3Wx19ULO0XlGHtBVn1BtBjtX16Fc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b/DCLpCX; arc=none smtp.client-ip=209.85.166.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l9dVDPZ5"
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-339c9bf3492so8478362a91.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 15 Oct 2025 07:08:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b/DCLpCX"
+Received: by mail-io1-f53.google.com with SMTP id ca18e2360f4ac-93e2d42d9b4so8426639f.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 15 Oct 2025 18:45:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1760537339; x=1761142139; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BDEVuh4N5QxnjfWl9GfHaiYC0Bn0qUwYZnFQleExTuc=;
-        b=l9dVDPZ57ZIGmuSK8pfM+yW9fN/EO4gDGWiujyrBXj/rvyWdlB5rSWikZPLfT8aj8e
-         H/Mm3vxCWpz/hMIiX7w964fAvrjz7nde29lTSsnEITu3TtSiXy97hWpFOhW0dmTg7M8r
-         3wukUdncmUQaZmPtS5Kw2FHZStVS5AVqgL1iTNP7vEW254n11dZFJps+F+KXW5ib5OWD
-         P/wOsquwIzKNEkTKKDJMF43PdVvgY+HSBYNE17Dax9nMPYYZSfD8SS1sr4OTP2MFGBov
-         4pVKUp8KThlmRUeZlrjr8t71GFA0fNIRGJy1HEkF16D8vJxzp1xjOOu9YAGxMrbD7FSI
-         1ULg==
+        d=gmail.com; s=20230601; t=1760579134; x=1761183934; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=9rwUSd8nuRKW1ZndheoOnbtiXymXGXCv7wri7PtzlnM=;
+        b=b/DCLpCXZe5+5Q8BKTkDyuv+dL3M095rdN3cw8MBCV2AmaDe/5/i941c7jApxzrcZ6
+         as1t4S03m+nzYlK8RpKVUdgQq4yucmRBf6Odb5HG4eXkvCwrNuhAxzTIjR9jKK/nuW4B
+         iRk92yiMPfNjxLWR+X9Z/86kvbHQ7wyq/XOZHP61W3aDBalAuNe8lLHeeOIVh5G+oOD8
+         paJLTdOokatQ211VqnYF/rqopoARnZz/h/s+jXOobcRl7dOmKkdhneB6T8kHuWbO78TR
+         bCg1WuiQvLtwaiSJ+KWJ1DFuQuk1289I7M0fmyaAa/0lMPL1DS/jYDJ99LCluudirncd
+         j2Fg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760537339; x=1761142139;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BDEVuh4N5QxnjfWl9GfHaiYC0Bn0qUwYZnFQleExTuc=;
-        b=XoaGOPxTHykymx/PNC1YATx0a1qsknWdHorJtnxf+JO2IgxmtlyWK+WDfEvbhIIbPA
-         JzedWpiQ5+hhlwFAKh9yFHTTikHCeZB5JGMcT/FaHVqz1844U7fLF1ezLzmfl+ZogBCN
-         ger+sKDtjLtE/3hUWgjEEf5KeyvvyZstycXM3+ggBGAN7URaYzGqEEvmGyXcxSMAk/nM
-         TobUSZ+ybTIsN0Jv7VxAsDV3NPOdvLVf5tyJv0aD8TbnPndi9kgqzBzGx8Ijc5PFWMiE
-         vyhi9y3Cst4OMobHo0slGCYFrHxuddgO6957oeMePIvwSTQkbQap6KdxdaDJNOimAkIi
-         febQ==
-X-Gm-Message-State: AOJu0YyQw5VNXln7rl/SptWA5U8SAbjau6y0BYNbAuPYbfxfew4c7Hgn
-	WXsEsQY5gL3eqpoDwekWljXsprLnqEnEXWQp+1lNWyeaBzPx243/Z4PgVyIwGA==
-X-Gm-Gg: ASbGncvr161asT+TybeCfG9jl49UG41gdP3Z+NWgL/+Mu7taW7XxUWPjvX74BUhdEgH
-	OGL6VWGnAntMOHqZl/+0uKgGx76CYu165G/o/BpN44bLNnw5HZDqLllufqEkKPlEn69sX7vr3TZ
-	iUN64Detw7gW9h9QTSMpQ2igtPio8788G2mARm2HJxBQIRGJa0sYyF5Jk2c60LzPbvYUES12mwF
-	QA9GVFVxUZLm/OGC4gwT7YxEL+A9LOzfd1mNFBxwjyUSv1NrfNjF/XsRC3/PEwko+wzFr+/u4Is
-	seNY8c1ENoWHLXE/fQLGb8DT9FuoiQEP3AI9tywYd1AuEX6hhb6SpAqf4VtuD7m007iRzwSY7cS
-	c4GRHOMJ99VQCpPONQrIi5O5b+TOmM8cLbs5sRWVZ8KBNHLjpJvBcBK3qEQ==
-X-Google-Smtp-Source: AGHT+IHrOWHiUm/F/+lZtbBia8s/2w5x9paCeR7fv8SYDyLAYWcFv8myDkJZHNDMxMSeMJWGxY++Fg==
-X-Received: by 2002:a17:90b:4c4c:b0:32d:3895:656b with SMTP id 98e67ed59e1d1-33b51112266mr40262461a91.12.1760537338313;
-        Wed, 15 Oct 2025 07:08:58 -0700 (PDT)
-Received: from fedora ([2401:4900:1c6a:12d1:7eb9:cd0c:2129:1182])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-33b6192995asm20043418a91.0.2025.10.15.07.08.55
+        d=1e100.net; s=20230601; t=1760579134; x=1761183934;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=9rwUSd8nuRKW1ZndheoOnbtiXymXGXCv7wri7PtzlnM=;
+        b=Mo5qCQICeW629QyBllkChtY/4tNhpw3gYN9TDo5nu5JQ84uigZjqlfqSxJY0uCQEJY
+         BYrGde9lFf9XXM4TKwTBFW6iBXTzlKJDGk9JKw0lN83TL9fTInTzQ57Ejz+aLs+wfsAt
+         hvskYbJIHaUHLv70GK2mXMRoQfFZxe12K8Okr8Y1GHYgqXckmpLnf5qLXw28dskybEHi
+         ISPZoJZZReTFp1DvbjdWEkQV7jm4BU0t/9IgYcBYLAykcWBeQAMSdnc/+Y0u9pQju7kR
+         mcvl7RbPes+Jqm8BdHf9Xgfma1dMsHGsEzSL+4ovxErWU3hiL7ASrH5aGMz34ZTJ1e02
+         T5DQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXxKL/5kVSr9MFR1A44JuL407J/N3eKjMR00sNRQShq7P441muOJXiemYLVY5OZY/E0vKwzN4SXijSIkw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw6SMopcD1X7wpURYEtqUCNa3GdwAk/59gJXOKrj9/qUim+yB3V
+	x72uSVbfjRL4fZUHBz97JLZL9KV5BMdc/vZqw6wbggWyHkr/0U5MMyd6
+X-Gm-Gg: ASbGncsZBJ6kJWgvUXuQR/Mp/W1pusQO2hDhNW9ROKePwWsPoOk3pnfAo6c38OSRTVx
+	OP7p6wZypZfp/Jbqvbvde0OgUTzIbAQpVN1lPsLUVN8LlDjlJrtsuYtU3Q/T9DAsEaXDh+FvU/C
+	wi9HYKKnFA1RTl/DracGPu+/8a18gSDB36jzy03PrI81n1utImpvo809CGg1H+H3ly0HLAM5YEA
+	n7gH1HR46fUQGe0AQfjeKTEMsq/qGd6N6vOptsWWEWuogABKHzBSvY3Z3WRSgtUBK98uValubhN
+	yvx1n6/8pg1dH53ET8GsaVKGFa5/zYxoDtOSkwiKZiEzD4gDfhW0dOwZ3RNGCwNM41w1my18GRI
+	b1/xrDlOMPO/FVK2ZcZYxB+DSgkPSGum+r5UADHzCrezxb+7zFhxX6/DsRNARwtOgTe8dPg==
+X-Google-Smtp-Source: AGHT+IFp34gerWyI/eqrZfZ7861Ql4TRlIasFqKa/zgiw4czVi2L9IWSlxhtzXGcGKWZ9dJtvmyXZw==
+X-Received: by 2002:a05:6602:1645:b0:93b:da4b:d0a3 with SMTP id ca18e2360f4ac-93bda4bd174mr4031136539f.19.1760579134525;
+        Wed, 15 Oct 2025 18:45:34 -0700 (PDT)
+Received: from arch-box ([2607:fea8:54de:2200::ffb])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-59043f842bfsm5965410173.62.2025.10.15.18.45.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Oct 2025 07:08:57 -0700 (PDT)
-From: Shi Hao <i.shihao.999@gmail.com>
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	deller@gmx.de,
-	adaplas@gmail.com,
-	Shi Hao <i.shihao.999@gmail.com>
-Subject: [RFC PATCH] fdev: i810: use appropriate log interface pr_info
-Date: Wed, 15 Oct 2025 19:38:45 +0530
-Message-ID: <20251015140845.31671-1-i.shihao.999@gmail.com>
-X-Mailer: git-send-email 2.51.0
+        Wed, 15 Oct 2025 18:45:33 -0700 (PDT)
+Date: Wed, 15 Oct 2025 21:45:31 -0400
+From: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Simona Vetter <simona@ffwll.ch>,
+	syzbot+48b0652a95834717f190@syzkaller.appspotmail.com,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] fbdev: Add bounds checking in bit_putcs to fix
+ vmalloc-out-of-bounds
+Message-ID: <aPBOOyrV3ihF_Bpq@arch-box>
+References: <20251003073210.48501-1-albinbabuvarghese20@gmail.com>
+ <b4af6e84-6555-4629-8291-fc4c2c99390b@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <b4af6e84-6555-4629-8291-fc4c2c99390b@gmx.de>
 
-use appropriate logging interface pr_info instead of printk
-without KERN_INFO with it. It could be updated with proper
-logging interfaces.
+On Sat, Oct 04, 2025 at 02:43:33AM +0200, Helge Deller wrote:
+> On 10/3/25 09:32, Albin Babu Varghese wrote:
+> > Add bounds checking to prevent writes past framebuffer boundaries when
+> > rendering text near screen edges. Return early if the Y position is off-screen
+> > and clip image height to screen boundary. Break from the rendering loop if the
+> > X position is off-screen. When clipping image width to fit the screen, update
+> > the character count to match the clipped width to prevent buffer size
+> > mismatches.
+> > 
+> > Without the character count update, bit_putcs_aligned and bit_putcs_unaligned
+> > receive mismatched parameters where the buffer is allocated for the clipped
+> > width but cnt reflects the original larger count, causing out-of-bounds writes.
+> > 
+> > Reported-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
+> > Closes: https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
+> > Suggested-by: Helge Deller <deller@gmx.de>
+> > Tested-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
+> > Signed-off-by: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
+> > ---
+> > Changes in v2:
+> > - Partially render when height exceeding screen boundaries instead of skipping
+> > - Update character count when width is clipped to prevent buffer mismatch
+> > 
+> > Link to v1:
+> > https://lore.kernel.org/all/20250927075010.119671-1-albinbabuvarghese20@gmail.com/
+> > ---
+> >   drivers/video/fbdev/core/bitblit.c | 20 ++++++++++++++++++++
+> >   1 file changed, 20 insertions(+)
+> 
+> applied.
+> 
+> Thanks!
+> Helge
+Thank you for merging the patch.
 
-Legacy printk() calls in the i810 fbdev driver can be replaced
-with the standard kernel logging interface pr_info() which will
-help to allow proper log level handling, making messages easier
-to filter and manage.
+After the patch appeared in mainline, I observed that syzbot continues
+to find the same bug through different execution paths. My fix addressed
+bit_putcs, but the crashes now occur through bit_cursor and cw_putcs,
+which bypass bit_putcs entirely and go directly to sys_imageblit():
 
-No functional changes to the driver behavior are introduced.
-Only the logging method has been updated to follow modern
-kernel coding guidelines.
+Crash 1 (cursor path):
+https://syzkaller.appspot.com/text?tag=CrashReport&x=11fe95e2580000
+Call trace: hide_cursor → bit_cursor → soft_cursor → sys_imageblit
 
-Signed-off-by: Shi Hao <i.shihao.999@gmail.com>
----
- drivers/video/fbdev/i810/i810_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Crash 2 (rotation path):
+https://syzkaller.appspot.com/text?tag=CrashReport&x=164f0b04580000
+Call trace: fbcon_modechanged → cw_putcs → sys_imageblit
 
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index d73a795fe1be..8c4b9eae151d 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -2137,7 +2137,7 @@ static void i810fb_remove_pci(struct pci_dev *dev)
+The original syzbot reproducer depended on character height going out of
+bounds, so I focused on bit_putcs where character images are drawn. I
+naively overlooked cursor drawing - apologies for that. That's why I
+looked at the other crash reports after the merge, because it seemed odd
+that it was still hitting the bug after the fix.
 
- 	unregister_framebuffer(info);
- 	i810fb_release_resource(info, par);
--	printk("cleanup_module:  unloaded i810 framebuffer device\n");
-+	pr_info("cleanup_module: unloaded i810 framebuffer device\n");
- }
+I believe adding the same clipping logic in sys_imageblit() would provide
+comprehensive protection. Something like this:
 
- #ifndef MODULE
---
-2.51.0
+void sys_imageblit(struct fb_info *p, const struct fb_image *image)
+  {
+ +       struct fb_image clipped;
+ +       u32 width, height;
+ +
+         if (!(p->flags & FBINFO_VIRTFB))
+                 fb_warn_once(p, "%s: framebuffer is not in virtual address space.\n", __func__);
+ 
+ -       fb_imageblit(p, image);
+ +       if (!image || image->dx >= p->var.xres || image->dy >= p->var.yres)
+ +               return;
+ +
+ +       if (image->dx + image->width > p->var.xres || image->dy + image->height > p->var.yres) {
+ +               clipped = *image;
+ +
+ +               height = clipped.height;
+ +               if (clipped.dy + height > p->var.yres)
+ +                       height = p->var.yres - clipped.dy;
+ +
+ +               clipped.height = height;
+ +
+ +               width = clipped.width;
+ +               if (clipped.dx + width > p->var.xres)
+ +                       width = p->var.xres - clipped.dx;
+ +
+ +               clipped.width = width;
+ +
+ +               if (clipped.width == 0 || clipped.height == 0)
+ +                       return;
+ +
+ +               fb_imageblit(p, &clipped);
+ +       } else {
+ +               fb_imageblit(p, image);
+ +       }
+  }
+ 
+I don't have any way to test this other than testing it with the existing
+reproducers. I can prepare a patch if this approach sounds reasonable.
 
+Thanks,
+Albin

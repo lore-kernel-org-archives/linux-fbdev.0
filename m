@@ -1,181 +1,142 @@
-Received: from mail-io1-f53.google.com (mail-io1-f53.google.com [209.85.166.53])
+Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com [209.85.222.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F08317597
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Oct 2025 01:45:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65E851DFDAB
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Oct 2025 10:55:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760579137; cv=none; b=uunL3D3oetn58JBKCN048dDnn4rG3AO49yUv+XfceGT0Juvlks/FEG6HEqwgirQxfLyT4EDApq8ahK7mEYQNhmNysVcLmzduGGF1yUSwr/t6L1A/FFTMHPdvgAyYp727ppvnlkjCccDuZE6rFdic5L7zQQSIUJEc4I7BhnhcvUA=
+	t=1760612145; cv=none; b=G9WMSGHUiwkpez/kTyNR0zAOi7ed+gixl+131LrPQm3QY5OjH3UNnzVBiO9+KOpYFZQtqzSjSuQNkmXzJ/Bjr8qxQfVMB6QO64XuqJjw2mjmnzUN6VInrPCgeUJbE68JaQhWbab3jWT3Qvfn63RluUXgNhRUE7kBJXq8DDJr4Vw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760579137; c=relaxed/simple;
-	bh=BmO9QvsJixoNrPHTLBb7ox8ODljvqV5zZ13V/ZDyQ3w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SD4pQxvKx07RwQpZX4ifgbBTJKG7ZvmfNlIgvG2pBuxK0nE24NgEZMuZvr2cShaLDie9al+/yaF/w6vdHz2TGiHEw+TajlrTzcoJLsfnNfTBLnBLej5BEDijuLbfhx919myDmbxQkTu3BHa3Wx19ULO0XlGHtBVn1BtBjtX16Fc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b/DCLpCX; arc=none smtp.client-ip=209.85.166.53
+	s=arc-20240116; t=1760612145; c=relaxed/simple;
+	bh=4r1z6HtWUnySZNvtvG1gblMCYFFQ/7oF0GQ1wyfk/fA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=mA5uUfyzd8ve+ixhnOLPgSYHxMLO5o0MSHz0HDVMpVBxHIrQbKgVLMR77m0OCE9F7a2O7v/nbIP4JaxSOnkDPhRVYO9303a6OrkxzQfd98+5I8f9f1YM8jfhwKVT2eVcHLA1KyDsuep00t+Mnb5m9KqiYNxZEraWcCvZZ9XQYi0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bSYeA3HF; arc=none smtp.client-ip=209.85.222.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b/DCLpCX"
-Received: by mail-io1-f53.google.com with SMTP id ca18e2360f4ac-93e2d42d9b4so8426639f.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 15 Oct 2025 18:45:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bSYeA3HF"
+Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-88fa5974432so70129685a.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Oct 2025 03:55:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1760579134; x=1761183934; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=9rwUSd8nuRKW1ZndheoOnbtiXymXGXCv7wri7PtzlnM=;
-        b=b/DCLpCXZe5+5Q8BKTkDyuv+dL3M095rdN3cw8MBCV2AmaDe/5/i941c7jApxzrcZ6
-         as1t4S03m+nzYlK8RpKVUdgQq4yucmRBf6Odb5HG4eXkvCwrNuhAxzTIjR9jKK/nuW4B
-         iRk92yiMPfNjxLWR+X9Z/86kvbHQ7wyq/XOZHP61W3aDBalAuNe8lLHeeOIVh5G+oOD8
-         paJLTdOokatQ211VqnYF/rqopoARnZz/h/s+jXOobcRl7dOmKkdhneB6T8kHuWbO78TR
-         bCg1WuiQvLtwaiSJ+KWJ1DFuQuk1289I7M0fmyaAa/0lMPL1DS/jYDJ99LCluudirncd
-         j2Fg==
+        d=gmail.com; s=20230601; t=1760612142; x=1761216942; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=tUv0dDyeU7y7WspWVqJNMNUdztGgUwvGxjkgJqZoga0=;
+        b=bSYeA3HFh6BZtr3WrjNAhb9VuapbTjNDYM+wBozoQ2utR6P447I2KsR39hu61fsvX9
+         Xv9Scp6E5jkxsE8mh4ne5gBXUBXK9+kA5fXFaX+SDxZEc71Ya5lntxedL9rsMhvgz46a
+         yfCERzbQEjF5aD5QZyIR9gNGDJddS4wplrmIQ/0jncJ0O+zG+jKsq6R9P5M6jb17+KiY
+         hcL0wD4++DzrfMppgfuCNeMA5GqAvc4u80UrIVBkoG1drjyWNNLDYtWt1oVLk2L7IRLK
+         x6Awm13jgFuR1XdZ/BwmaicopjAn73PXHo0bGKWFX1nbYPxQlmAI4WDVD8Gaoc88cgVN
+         2dLA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760579134; x=1761183934;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9rwUSd8nuRKW1ZndheoOnbtiXymXGXCv7wri7PtzlnM=;
-        b=Mo5qCQICeW629QyBllkChtY/4tNhpw3gYN9TDo5nu5JQ84uigZjqlfqSxJY0uCQEJY
-         BYrGde9lFf9XXM4TKwTBFW6iBXTzlKJDGk9JKw0lN83TL9fTInTzQ57Ejz+aLs+wfsAt
-         hvskYbJIHaUHLv70GK2mXMRoQfFZxe12K8Okr8Y1GHYgqXckmpLnf5qLXw28dskybEHi
-         ISPZoJZZReTFp1DvbjdWEkQV7jm4BU0t/9IgYcBYLAykcWBeQAMSdnc/+Y0u9pQju7kR
-         mcvl7RbPes+Jqm8BdHf9Xgfma1dMsHGsEzSL+4ovxErWU3hiL7ASrH5aGMz34ZTJ1e02
-         T5DQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXxKL/5kVSr9MFR1A44JuL407J/N3eKjMR00sNRQShq7P441muOJXiemYLVY5OZY/E0vKwzN4SXijSIkw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw6SMopcD1X7wpURYEtqUCNa3GdwAk/59gJXOKrj9/qUim+yB3V
-	x72uSVbfjRL4fZUHBz97JLZL9KV5BMdc/vZqw6wbggWyHkr/0U5MMyd6
-X-Gm-Gg: ASbGncsZBJ6kJWgvUXuQR/Mp/W1pusQO2hDhNW9ROKePwWsPoOk3pnfAo6c38OSRTVx
-	OP7p6wZypZfp/Jbqvbvde0OgUTzIbAQpVN1lPsLUVN8LlDjlJrtsuYtU3Q/T9DAsEaXDh+FvU/C
-	wi9HYKKnFA1RTl/DracGPu+/8a18gSDB36jzy03PrI81n1utImpvo809CGg1H+H3ly0HLAM5YEA
-	n7gH1HR46fUQGe0AQfjeKTEMsq/qGd6N6vOptsWWEWuogABKHzBSvY3Z3WRSgtUBK98uValubhN
-	yvx1n6/8pg1dH53ET8GsaVKGFa5/zYxoDtOSkwiKZiEzD4gDfhW0dOwZ3RNGCwNM41w1my18GRI
-	b1/xrDlOMPO/FVK2ZcZYxB+DSgkPSGum+r5UADHzCrezxb+7zFhxX6/DsRNARwtOgTe8dPg==
-X-Google-Smtp-Source: AGHT+IFp34gerWyI/eqrZfZ7861Ql4TRlIasFqKa/zgiw4czVi2L9IWSlxhtzXGcGKWZ9dJtvmyXZw==
-X-Received: by 2002:a05:6602:1645:b0:93b:da4b:d0a3 with SMTP id ca18e2360f4ac-93bda4bd174mr4031136539f.19.1760579134525;
-        Wed, 15 Oct 2025 18:45:34 -0700 (PDT)
-Received: from arch-box ([2607:fea8:54de:2200::ffb])
-        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-59043f842bfsm5965410173.62.2025.10.15.18.45.32
+        d=1e100.net; s=20230601; t=1760612142; x=1761216942;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=tUv0dDyeU7y7WspWVqJNMNUdztGgUwvGxjkgJqZoga0=;
+        b=S6vHjzJeFEsIFk+LzzmNnzUiv9EyYIYuy+41WuBEqaG1AE0huz6MihPEWXHeW34j1e
+         jj/Pn1/s9zo+7PbFKr+ZUqP7NHu9CgKTZtvM6BS+00CQ4nnj/UqbvvhpNOJiXAIYVGjN
+         EWkfZ3udLN+kb9q0+MMs3tZFmM9nmxd9x/ChDA+wJcF32cq0HTd7veXfcMyl/1QYWMC7
+         dFmzmTPnHbHAST9ux1N/nS1GxJaQoTcjc9mftuT0UBNmxt5sXNEx+EIKo81d595wTR/D
+         CCwf9bVUij8/qpGmfBE3nAjmC5uFvBhqaZMP1TJT1hk5EXIx4qQJQMr2C3kgH6S++En8
+         Eeqw==
+X-Forwarded-Encrypted: i=1; AJvYcCX904fmJuzaVxrYGDbI401IeUg1rysFlHABCyh7KJF8TlFVpW1UPQL3FGQozoqdvrNBtfYLzKFbE6AI9w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxgZktMjH4ACqTuuPSnXE0t70bcCnf6p3Q/wCRXi4pnZV3GVcbd
+	Xpzjvn/sRXvKe8dI8SAnxIwn7Ss5TzrcG2R6XALTqwmzS0Swa6NsysG2
+X-Gm-Gg: ASbGncvmHRRVUeYKcU7+4EjoFtpraJ06UzXNB7YHidHWvqvnNAxpO/sY7XNgUpmscTh
+	sJmVH/6tdncbqA3hgiHD3TdA2PUU509xt5GWFkbI/WhJreRLP5zKYLOXcoUcPJmj0F69h+MIvpn
+	vJRK7dUtVGvN0KELDJ++5rHC5N+GrytZ0nJw4UreIVrKYfWhReuNWvo0gGdDJ9U6muku4xT7Wkm
+	p1+Ul0cTIgDmVl0w2Dwn6uWnl39ORW09e+k7EQ6YCYjljub/+OZ9HtBNlsIze0df2wf2zh9/QB1
+	ICCb92Mnb261GMQ0JgJdoMhYCIxTwQOWiW5MYVohXY5IqSSsRg/E/0nRN3uSykBKMkOhogiw+rt
+	PTiQsuP+gAT3C7eSD/kn45KPeHYwwzexziMT/kVHXCxXZgWJor6HMkxGJC956PNrT2o/YzHpZ6k
+	Zf+RJeCmctiOeqm5lY5Zf29Wen4r6yVaKwD5OuPtO9bE8=
+X-Google-Smtp-Source: AGHT+IHSbCNA4gKXGQ79Apbh6UBdRta7p0DwiGGgBt4gE+gkwTjNxJ3W0SoZh5OSP96PJHmnX5Q4Lw==
+X-Received: by 2002:a05:620a:2982:b0:827:1bda:ca68 with SMTP id af79cd13be357-883544f4c00mr3625404985a.46.1760612142108;
+        Thu, 16 Oct 2025 03:55:42 -0700 (PDT)
+Received: from kernel-internship-machine.. ([143.110.209.46])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-88f35c67577sm173681985a.25.2025.10.16.03.55.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Oct 2025 18:45:33 -0700 (PDT)
-Date: Wed, 15 Oct 2025 21:45:31 -0400
-From: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Simona Vetter <simona@ffwll.ch>,
-	syzbot+48b0652a95834717f190@syzkaller.appspotmail.com,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fbdev: Add bounds checking in bit_putcs to fix
- vmalloc-out-of-bounds
-Message-ID: <aPBOOyrV3ihF_Bpq@arch-box>
-References: <20251003073210.48501-1-albinbabuvarghese20@gmail.com>
- <b4af6e84-6555-4629-8291-fc4c2c99390b@gmx.de>
+        Thu, 16 Oct 2025 03:55:41 -0700 (PDT)
+From: Vivek BalachandharTN <vivek.balachandhar@gmail.com>
+To: deller@gmx.de,
+	soci@c64.rulez.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	vivek.balachandhar@gmail.com
+Subject: [PATCH] fbdev: vga16fb: replace printk() with dev_*() in probe
+Date: Thu, 16 Oct 2025 10:54:46 +0000
+Message-Id: <20251016105446.3646544-1-vivek.balachandhar@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <b4af6e84-6555-4629-8291-fc4c2c99390b@gmx.de>
 
-On Sat, Oct 04, 2025 at 02:43:33AM +0200, Helge Deller wrote:
-> On 10/3/25 09:32, Albin Babu Varghese wrote:
-> > Add bounds checking to prevent writes past framebuffer boundaries when
-> > rendering text near screen edges. Return early if the Y position is off-screen
-> > and clip image height to screen boundary. Break from the rendering loop if the
-> > X position is off-screen. When clipping image width to fit the screen, update
-> > the character count to match the clipped width to prevent buffer size
-> > mismatches.
-> > 
-> > Without the character count update, bit_putcs_aligned and bit_putcs_unaligned
-> > receive mismatched parameters where the buffer is allocated for the clipped
-> > width but cnt reflects the original larger count, causing out-of-bounds writes.
-> > 
-> > Reported-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
-> > Closes: https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
-> > Suggested-by: Helge Deller <deller@gmx.de>
-> > Tested-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
-> > Signed-off-by: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
-> > ---
-> > Changes in v2:
-> > - Partially render when height exceeding screen boundaries instead of skipping
-> > - Update character count when width is clipped to prevent buffer mismatch
-> > 
-> > Link to v1:
-> > https://lore.kernel.org/all/20250927075010.119671-1-albinbabuvarghese20@gmail.com/
-> > ---
-> >   drivers/video/fbdev/core/bitblit.c | 20 ++++++++++++++++++++
-> >   1 file changed, 20 insertions(+)
-> 
-> applied.
-> 
-> Thanks!
-> Helge
-Thank you for merging the patch.
+Use dev_*() with &dev->dev and drop the hard-coded prefix. Keep
+original severities. No functional change.
 
-After the patch appeared in mainline, I observed that syzbot continues
-to find the same bug through different execution paths. My fix addressed
-bit_putcs, but the crashes now occur through bit_cursor and cw_putcs,
-which bypass bit_putcs entirely and go directly to sys_imageblit():
+Signed-off-by: Vivek BalachandharTN <vivek.balachandhar@gmail.com>
+---
+ drivers/video/fbdev/vga16fb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Crash 1 (cursor path):
-https://syzkaller.appspot.com/text?tag=CrashReport&x=11fe95e2580000
-Call trace: hide_cursor → bit_cursor → soft_cursor → sys_imageblit
-
-Crash 2 (rotation path):
-https://syzkaller.appspot.com/text?tag=CrashReport&x=164f0b04580000
-Call trace: fbcon_modechanged → cw_putcs → sys_imageblit
-
-The original syzbot reproducer depended on character height going out of
-bounds, so I focused on bit_putcs where character images are drawn. I
-naively overlooked cursor drawing - apologies for that. That's why I
-looked at the other crash reports after the merge, because it seemed odd
-that it was still hitting the bug after the fix.
-
-I believe adding the same clipping logic in sys_imageblit() would provide
-comprehensive protection. Something like this:
-
-void sys_imageblit(struct fb_info *p, const struct fb_image *image)
-  {
- +       struct fb_image clipped;
- +       u32 width, height;
- +
-         if (!(p->flags & FBINFO_VIRTFB))
-                 fb_warn_once(p, "%s: framebuffer is not in virtual address space.\n", __func__);
+diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
+index eedab14c7d51..85852bca2d23 100644
+--- a/drivers/video/fbdev/vga16fb.c
++++ b/drivers/video/fbdev/vga16fb.c
+@@ -1319,7 +1319,7 @@ static int vga16fb_probe(struct platform_device *dev)
+ 	if (ret)
+ 		return ret;
  
- -       fb_imageblit(p, image);
- +       if (!image || image->dx >= p->var.xres || image->dy >= p->var.yres)
- +               return;
- +
- +       if (image->dx + image->width > p->var.xres || image->dy + image->height > p->var.yres) {
- +               clipped = *image;
- +
- +               height = clipped.height;
- +               if (clipped.dy + height > p->var.yres)
- +                       height = p->var.yres - clipped.dy;
- +
- +               clipped.height = height;
- +
- +               width = clipped.width;
- +               if (clipped.dx + width > p->var.xres)
- +                       width = p->var.xres - clipped.dx;
- +
- +               clipped.width = width;
- +
- +               if (clipped.width == 0 || clipped.height == 0)
- +                       return;
- +
- +               fb_imageblit(p, &clipped);
- +       } else {
- +               fb_imageblit(p, image);
- +       }
-  }
+-	printk(KERN_DEBUG "vga16fb: initializing\n");
++	dev_dbg(&dev->dev, "initializing\n");
+ 	info = framebuffer_alloc(sizeof(struct vga16fb_par), &dev->dev);
  
-I don't have any way to test this other than testing it with the existing
-reproducers. I can prepare a patch if this approach sounds reasonable.
+ 	if (!info) {
+@@ -1331,12 +1331,12 @@ static int vga16fb_probe(struct platform_device *dev)
+ 	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS_BASE, 0);
+ 
+ 	if (!info->screen_base) {
+-		printk(KERN_ERR "vga16fb: unable to map device\n");
++		dev_err(&dev->dev, "unable to map device\n");
+ 		ret = -ENOMEM;
+ 		goto err_ioremap;
+ 	}
+ 
+-	printk(KERN_INFO "vga16fb: mapped to 0x%p\n", info->screen_base);
++	dev_info(&dev->dev, "mapped to 0x%p\n", info->screen_base);
+ 	par = info->par;
+ 
+ 	par->isVGA = screen_info_video_type(si) == VIDEO_TYPE_VGAC;
+@@ -1364,13 +1364,13 @@ static int vga16fb_probe(struct platform_device *dev)
+ 	i = (info->var.bits_per_pixel == 8) ? 256 : 16;
+ 	ret = fb_alloc_cmap(&info->cmap, i, 0);
+ 	if (ret) {
+-		printk(KERN_ERR "vga16fb: unable to allocate colormap\n");
++		dev_err(&dev->dev, "unable to allocate colormap\n");
+ 		ret = -ENOMEM;
+ 		goto err_alloc_cmap;
+ 	}
+ 
+ 	if (vga16fb_check_var(&info->var, info)) {
+-		printk(KERN_ERR "vga16fb: unable to validate variable\n");
++		dev_err(&dev->dev, "unable to validate variable\n");
+ 		ret = -EINVAL;
+ 		goto err_check_var;
+ 	}
+@@ -1381,7 +1381,7 @@ static int vga16fb_probe(struct platform_device *dev)
+ 	if (ret)
+ 		goto err_check_var;
+ 	if (register_framebuffer(info) < 0) {
+-		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
++		dev_err(&dev->dev, "unable to register framebuffer\n");
+ 		ret = -EINVAL;
+ 		goto err_check_var;
+ 	}
+-- 
+2.34.1
 
-Thanks,
-Albin

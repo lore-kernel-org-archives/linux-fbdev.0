@@ -1,78 +1,95 @@
-Received: from h5.fbrelay.privateemail.com (h5.fbrelay.privateemail.com [162.0.218.228])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C49426B2D7;
-	Tue, 21 Oct 2025 08:13:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.0.218.228
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E1DF252906
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 08:50:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761034401; cv=none; b=TziluhR4TF8BRNYg6ZcRcy12jCiUSwuksdLIbJnkqjSNdEJxNpT6fZM6ELKaL3YBa813qv5cw+hMVjX0JJksQrr7pzqQLMmGwhMN6HkrByHpd5LtC1sUsQ4JDjsnGpzoUP61+QNKQrW/3+AqLE3wpNaOAeFvqNFOGBJf3ruFj40=
+	t=1761036650; cv=none; b=bbVGGJ1d76YgoMbxU74zDrxSTipmsTHIixgJrhcbl3wU07W+ZoJ0tzPBXXgezH90cGjkYf1GebsATy+EB+o6vr3JkPf6i9xDPMVcd7PF6JSI3VgK+NUYipkmAzA9xNcTmjvBzGb8t5UiQHBeojBLdStipW2XzqlLHopgkjfmEd4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761034401; c=relaxed/simple;
-	bh=21tz4INp76XZE73YF39d4OhuGExWH86i52/5vzcfF/g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=itD+zd2QTP+zoZRQIuLyR0y4lNnDC7HT4FPNAfitJ+8DJUiYbiRBcizram4VAOp9Id4eBv3QtRtOdILdU2t8ePDbgCT+93xh3RcHdaIUmyXmfki9UgBLZpzWGZrbTaPGNWza14W6o2NXHlwl0XVfPALUr4tGar6OOTM5OvcIrtE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lukowski.dev; spf=pass smtp.mailfrom=lukowski.dev; dkim=pass (2048-bit key) header.d=lukowski.dev header.i=@lukowski.dev header.b=YsTqt2fd; arc=none smtp.client-ip=162.0.218.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lukowski.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lukowski.dev
+	s=arc-20240116; t=1761036650; c=relaxed/simple;
+	bh=YYGwKIw4DU78XjYwaYwxke2dNDi4SH+1u4WyDiQEDQk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qTUuifWE4wwrckva99tAFYScMIynqgfvm71B2xhjNGiATqK7i8CmjfoEFmWI03dxAcuedBE2+6IWAcRilC827rMz7ZT8BHiJuOlKNiW/dParua3NziHLtZSRB5OgBBFIrpAXyjxLJI6qGCeKi+B+cTa7i+1mNMXvbFBC8aaFt30=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=exNdML0O; arc=none smtp.client-ip=209.85.218.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lukowski.dev header.i=@lukowski.dev header.b="YsTqt2fd"
-Received: from MTA-13-4.privateemail.com (mta-13-1.privateemail.com [198.54.122.107])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by h5.fbrelay.privateemail.com (Postfix) with ESMTPSA id 4crQ646kWkz2xLr;
-	Tue, 21 Oct 2025 08:13:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=lukowski.dev;
-	s=default; t=1761034388;
-	bh=21tz4INp76XZE73YF39d4OhuGExWH86i52/5vzcfF/g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YsTqt2fdlrinIEsrbq0Yd8KxA06pQ+fD7p78ggFYqeuI1tjtSOP4izSW8cmoBN0Ar
-	 qMFOcJAXFrM6f0eCZYh/90f9lZ06ojqvju+zAjd8/02N7FOjzUd2yIG3SPeWZn/4b8
-	 9Un/gO4T+/lH+m3rp0dt0Cvq4cjK0r1jPxuzOfNEJaxNseXItNEfi9ziVTB1XG5PYG
-	 q53kLyWsj6LwgiXsz2EvjNekNogA0tBA9BIsZi9XvZWQnAbysJgO8IaGwznutQmJlE
-	 CMIcJfe/Td7Hum+D9W8j+xZUhSkFOwyIgdPdOGs71KmmzuZnuho9rJPnPfd14Vh9nb
-	 CeqkzZ3fZrKEQ==
-Received: from mta-13.privateemail.com (localhost [127.0.0.1])
-	by mta-13.privateemail.com (Postfix) with ESMTP id 4crQ5w6T8tz3hhZK;
-	Tue, 21 Oct 2025 04:13:08 -0400 (EDT)
-Received: from Olles-MacBook-Air.local (unknown [150.228.61.72])
-	by mta-13.privateemail.com (Postfix) with ESMTPA;
-	Tue, 21 Oct 2025 04:13:01 -0400 (EDT)
-Date: Tue, 21 Oct 2025 11:12:56 +0300
-From: Olle Lukowski <olle@lukowski.dev>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Andy Shevchenko <andy@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: fb_ra8875: replace udelay with
- usleep_range
-Message-ID: <aPdAiG8h_bY34vfV@Olles-MacBook-Air.local>
-References: <20251020-staging-fbtft-ra8875-usleep-v1-1-9592dd390c13@lukowski.dev>
- <2025102120-ride-repaint-7a22@gregkh>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="exNdML0O"
+Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-b5e19810703so880581666b.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 01:50:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1761036647; x=1761641447; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=M3LdkJEpXUwO+NWSEZVny0C0q696Pa6fK5D8TjFSc4w=;
+        b=exNdML0OPXuIqL5e6eBhFDWo1OgUzlX+BD755VQARhdlIH+4Z/yM9D7x48MY6N5dWv
+         W9pmcjas3RYwT12Bi2yFaawqvC+oS42k4ehaP2mbTjvhJbHtmLrxmVrgIEVHH7C8QB1o
+         ilRZ31H85bDTblvONh5GG6ZjIFd1LhbAxRfuAQYjgsh3XZuHZVrVGh+gjuJDfF+WVZGu
+         pzY2kOFTiqkf+OgUCC80kTckEAUdE50YH4Fc07YBEfLB1JOEIWKJTIw/tZFSZO5bJlHb
+         szN4IXbjbBIlhTxdNvHfsC1jlSmWDSgCfUaavnCDhupYwxKhKF+i/+YZVkc6JbE4Ysg+
+         5QvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761036647; x=1761641447;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=M3LdkJEpXUwO+NWSEZVny0C0q696Pa6fK5D8TjFSc4w=;
+        b=XIXlHJwWnzkOS0FdfaC/+euU1q6pDJdqEnJLAgOjQ/ppxIOLSAFstUYtqb3L514QNM
+         AwRyzkci0mXc9ORE+zHEgdkRi/A3FuJ7grcmcjSGe+XiarTXPybOkJxDJ+qnfli8UMZd
+         PKte4ga/rZ25D69O/scTr6MJpY+9DAH0g9Ni7eXY9l5bfy5cD1Lmztv/8lasiEKKQKt3
+         Z8ZOPLNmFoQeonyvDgHsP6i5hNx1OHvy8lyM2MmJRgQWk2z49LYGmmdivDQ+zFDdZKR3
+         9sE9X5Vhbf5df1KtTnIuilQwlUq98hm6g0boFfMPBqMuMwLmzSbRZJJti5f1zRX0Vomz
+         +T6A==
+X-Forwarded-Encrypted: i=1; AJvYcCU32xLtQ1QQLWrxTW/kyqqZYP+fHPhfbPyeqaVOKQLD2HA57nLNf9YWtMEa95OXFtduTLWodXkiHR7Z9g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzh5Vog9tBXMHSsmnRiaMzqsbKmCIMI+59Tba/1KBUcBqjv2hdC
+	Lt7eS3fwUI3BbGqRin5jNnTKdEmsuAe0ILn5wpxPNkGTqhZ+qJLoUPvyK5n11oYx6DyQtdgsDny
+	H3cC7XnaGI2a+4QktqID1YA/TXkIE56M=
+X-Gm-Gg: ASbGncu7qpW/6FeH0UGaOMhaP18GaifhoG4+3rx7h/Ou65k4oEVYP9gP7gTlu58WdnL
+	9VZg+cHgoYFuHkS2G5sbjov+91Q/++jweGrrpupAl0LEmqsy5oFya/kxTI+Z1Atbik2R/f8Weea
+	ko7J91RfLlrwh1JrPDl0U34CL+2FryIrwJBdiWWJWrTBZk2NPyta1UgnUeotY9ahust3HdisAUH
+	bxHbkufBCLKpnhe1qtoeDQDpfZT6zEUj9Hw8S9H+KfbCqkWPI8yslqmrfJPbQ==
+X-Google-Smtp-Source: AGHT+IHBY2IUN83Pw2ENBSOgJpr4Jc1uqt5wNDK5R+8Ap8x+c1BNaeQ/FRba66e2cv8DRUxHfZF+WnI79kMwhHazwpc=
+X-Received: by 2002:a17:907:c11:b0:b46:897b:d759 with SMTP id
+ a640c23a62f3a-b647443b9c2mr1867846866b.40.1761036647265; Tue, 21 Oct 2025
+ 01:50:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2025102120-ride-repaint-7a22@gregkh>
-X-Virus-Scanned: ClamAV using ClamSMTP
-X-Rspamd-Queue-Id: 4crQ646kWkz2xLr
+References: <20251020-staging-fbtft-ra8875-usleep-v1-1-9592dd390c13@lukowski.dev>
+In-Reply-To: <20251020-staging-fbtft-ra8875-usleep-v1-1-9592dd390c13@lukowski.dev>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Tue, 21 Oct 2025 11:50:11 +0300
+X-Gm-Features: AS18NWBqAmjo3KOZJeoj3rpQJcbhQ65NoVyhN4fDfDmM2riHc6TQ9QZuK7Sh_wM
+Message-ID: <CAHp75VeWGAyzAFBYSQS7FGpU1eSRo1Egrh44hUpXJgYZhFEkwg@mail.gmail.com>
+Subject: Re: [PATCH] staging: fbtft: fb_ra8875: replace udelay with usleep_range
+To: Olle Lukowski <olle@lukowski.dev>
+Cc: Andy Shevchenko <andy@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Greg,
+On Mon, Oct 20, 2025 at 10:16=E2=80=AFPM Olle Lukowski <olle@lukowski.dev> =
+wrote:
+>
+> Replace udelay(100) calls with usleep_range(100, 200) to allow the
+> scheduler to yield instead of busy-waiting. This is the preferred API for
+> sleep durations above 10 microseconds.
 
-On Tue, Oct 21, 2025 at 09:37:50AM +0200, Greg Kroah-Hartman wrote:
-> As per this type of change, have you tested it on real hardware?
-> Without that, we can't accept this change, and such checkpatch.pl
-> comments should be ignored.
+...
 
-Thanks for clarifying!
+> -       udelay(100);
+> +       usleep_range(100, 200);
 
-I don't have access to the hardware for this driver, so I'll skip these
-types of timing-related changes for now and focus on other
-non-functional cleanups in staging instead.
+Besides what Greg said, the function in similar changes should be
+fsleep(), it will automatically choose the best low-level API for the
+given delay.
 
-Thanks again,
-Olle
+--=20
+With Best Regards,
+Andy Shevchenko

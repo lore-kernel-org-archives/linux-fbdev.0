@@ -1,95 +1,178 @@
-Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E1DF252906
-	for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 08:50:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD82932AAD8
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 09:25:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761036650; cv=none; b=bbVGGJ1d76YgoMbxU74zDrxSTipmsTHIixgJrhcbl3wU07W+ZoJ0tzPBXXgezH90cGjkYf1GebsATy+EB+o6vr3JkPf6i9xDPMVcd7PF6JSI3VgK+NUYipkmAzA9xNcTmjvBzGb8t5UiQHBeojBLdStipW2XzqlLHopgkjfmEd4=
+	t=1761038717; cv=none; b=fk3gNfNXYU/wJhxZaxPtScbl1OGEybjKFFwz+09mldZlc2t2wg2xrLdNOQ5aErrvFaL7oqgyEqImZNukgoT+8QToUwoQFpPptLVohJMKxN3tEAG7oIR/SM5HDkQJFXibqRqKmdULdjeY4zC6V/tWBSsCV3wMQlV4ADW/DKaGE9M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761036650; c=relaxed/simple;
-	bh=YYGwKIw4DU78XjYwaYwxke2dNDi4SH+1u4WyDiQEDQk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=qTUuifWE4wwrckva99tAFYScMIynqgfvm71B2xhjNGiATqK7i8CmjfoEFmWI03dxAcuedBE2+6IWAcRilC827rMz7ZT8BHiJuOlKNiW/dParua3NziHLtZSRB5OgBBFIrpAXyjxLJI6qGCeKi+B+cTa7i+1mNMXvbFBC8aaFt30=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=exNdML0O; arc=none smtp.client-ip=209.85.218.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1761038717; c=relaxed/simple;
+	bh=wOmHGZyZKyJNqAdT7tHEp7PbIwkY9sbR/Ea1DPL5/o8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nP/gamcZ492IIeL2Ovv+JRN+eJlbKji+oOsAGLpDubgwudOuzcl++dsDKUTlNppHJUpmYpXPHCZYkLjVNwHGHYd22xW7O0oYylFOhJk5MSNMgVsFI2gYttZHjrAJ9W86p3zq0TblL+boSkZtXG810KijDn56TaEU34gLHj6/JiU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ES1sGkVm; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="exNdML0O"
-Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-b5e19810703so880581666b.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 01:50:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761036647; x=1761641447; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=M3LdkJEpXUwO+NWSEZVny0C0q696Pa6fK5D8TjFSc4w=;
-        b=exNdML0OPXuIqL5e6eBhFDWo1OgUzlX+BD755VQARhdlIH+4Z/yM9D7x48MY6N5dWv
-         W9pmcjas3RYwT12Bi2yFaawqvC+oS42k4ehaP2mbTjvhJbHtmLrxmVrgIEVHH7C8QB1o
-         ilRZ31H85bDTblvONh5GG6ZjIFd1LhbAxRfuAQYjgsh3XZuHZVrVGh+gjuJDfF+WVZGu
-         pzY2kOFTiqkf+OgUCC80kTckEAUdE50YH4Fc07YBEfLB1JOEIWKJTIw/tZFSZO5bJlHb
-         szN4IXbjbBIlhTxdNvHfsC1jlSmWDSgCfUaavnCDhupYwxKhKF+i/+YZVkc6JbE4Ysg+
-         5QvA==
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ES1sGkVm"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59L88P1N030302
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 09:25:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	7nW2A2/Sdl+uA+0oNeIno2lzJVyfIo1jiDtXonqrUVg=; b=ES1sGkVmOXmoUqoZ
+	BOuZXLEhjrmlGaBzUy8AfJwTkfgGwKDnyMlKODA5J+pPwIq6ttrAnb+efE9FZnyl
+	AbVrs5C4+eWw/NoYx07MwKlhX9jeYCyR2n9eF9OVUEDyLeC2uWphjjC5EX8iUqi6
+	ousMS/JP8RgDJgA19wWwd/aTAi3ghIwwyNyN+Aaz9aciUp5tIjxeqe6VyJEygfY3
+	xpFrMyA2irDJMX7PbcTrW8D88xapHmuaVcizKtxcrIa/DifJMDplaWczqRX1G2T1
+	H+es4mfT37LmDV75bV9Oww1vYS5wQtm76vnq3DSfHfJ/0LsIoj8dpsNmeF2JKR4X
+	yaIfbQ==
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 49wswnthge-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 09:25:14 +0000 (GMT)
+Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-87c19c8393dso19172326d6.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 21 Oct 2025 02:25:14 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761036647; x=1761641447;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=M3LdkJEpXUwO+NWSEZVny0C0q696Pa6fK5D8TjFSc4w=;
-        b=XIXlHJwWnzkOS0FdfaC/+euU1q6pDJdqEnJLAgOjQ/ppxIOLSAFstUYtqb3L514QNM
-         AwRyzkci0mXc9ORE+zHEgdkRi/A3FuJ7grcmcjSGe+XiarTXPybOkJxDJ+qnfli8UMZd
-         PKte4ga/rZ25D69O/scTr6MJpY+9DAH0g9Ni7eXY9l5bfy5cD1Lmztv/8lasiEKKQKt3
-         Z8ZOPLNmFoQeonyvDgHsP6i5hNx1OHvy8lyM2MmJRgQWk2z49LYGmmdivDQ+zFDdZKR3
-         9sE9X5Vhbf5df1KtTnIuilQwlUq98hm6g0boFfMPBqMuMwLmzSbRZJJti5f1zRX0Vomz
-         +T6A==
-X-Forwarded-Encrypted: i=1; AJvYcCU32xLtQ1QQLWrxTW/kyqqZYP+fHPhfbPyeqaVOKQLD2HA57nLNf9YWtMEa95OXFtduTLWodXkiHR7Z9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzh5Vog9tBXMHSsmnRiaMzqsbKmCIMI+59Tba/1KBUcBqjv2hdC
-	Lt7eS3fwUI3BbGqRin5jNnTKdEmsuAe0ILn5wpxPNkGTqhZ+qJLoUPvyK5n11oYx6DyQtdgsDny
-	H3cC7XnaGI2a+4QktqID1YA/TXkIE56M=
-X-Gm-Gg: ASbGncu7qpW/6FeH0UGaOMhaP18GaifhoG4+3rx7h/Ou65k4oEVYP9gP7gTlu58WdnL
-	9VZg+cHgoYFuHkS2G5sbjov+91Q/++jweGrrpupAl0LEmqsy5oFya/kxTI+Z1Atbik2R/f8Weea
-	ko7J91RfLlrwh1JrPDl0U34CL+2FryIrwJBdiWWJWrTBZk2NPyta1UgnUeotY9ahust3HdisAUH
-	bxHbkufBCLKpnhe1qtoeDQDpfZT6zEUj9Hw8S9H+KfbCqkWPI8yslqmrfJPbQ==
-X-Google-Smtp-Source: AGHT+IHBY2IUN83Pw2ENBSOgJpr4Jc1uqt5wNDK5R+8Ap8x+c1BNaeQ/FRba66e2cv8DRUxHfZF+WnI79kMwhHazwpc=
-X-Received: by 2002:a17:907:c11:b0:b46:897b:d759 with SMTP id
- a640c23a62f3a-b647443b9c2mr1867846866b.40.1761036647265; Tue, 21 Oct 2025
- 01:50:47 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1761038712; x=1761643512;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=7nW2A2/Sdl+uA+0oNeIno2lzJVyfIo1jiDtXonqrUVg=;
+        b=Dr9vwRLTo0C06Jaykf8tcF8HVbfhjRnZ1fbEh+P0RSTqEbWTfEomXhZsOtaR+SJ41x
+         9XPfUAolVIqx/yuomddzVSJAt2fN4Yt3mYmlDQcGBITGlBFtL8OohT3rGxlkwHBnW5ti
+         gwc5/2smUVAXOVYKj1iwGckE2ReCRia2mzddVs0nwfetf6HBNK+zzW9yylcO/vd5+7Fm
+         EZVsVx6yaYaf4oMGLILyb0dwWDnXA+konri0Zrx4xFT1VY9MRtdWKmz5U47hWcCYwfIb
+         Z4hTHXb6Y5u3BrGYrIFPcS3DXrVKifWJbv6kSC8t2LrnY+8dSt7XWBD210H2g6rtdq3j
+         wnxw==
+X-Forwarded-Encrypted: i=1; AJvYcCVh26tzyU/4NrKuyPPmsgowgbZiT7JylSxqik3XRbh+FUleREOrfPws/DVyVEDp8+QBoTKPdQhgwapMrg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxl7fnTJ8zIKOflA9DXTLKSID4mePDEcIPwD6tiZgMJ66Rm5YBj
+	xTpBNhVl4cBF8AL21y20TOGk5UDOzlLWjuSS6i9rEjO6DU9WubHX8ll++XFf1O05u1bAI50qNAU
+	F2/61ywCDRU6WJEEmWYRQ5iGqMXnUMMUj46Hu6PvcYf6BdHOLZ7C+5iXL4j4b8VP4xlPeV49vaQ
+	==
+X-Gm-Gg: ASbGncsLDs2lNwM0YieGIxO272Le2x/lZlwvFF0mkBJmcqOLHdmbpWVVWeT5dJj6Glt
+	l5nrNqbHVXwAT7gua2ujoPeUXH1S1KCaMOveQzJcn2RPp2Y6azzTzIMvTQ3f7Ng6M3WC8MIB26n
+	nYNIukN24Ublanj8ixdiwGMtaLu+XQUOByBYo5JYHm+2hhzTpebhDDsIYuNrTKhkmrXiYXVWdHh
+	6RlOeeOr6aFc+YVhbDrZBF/OuI3MbhedjFtem33Y3G9h54mugzD3DY87jDt5UZYFumdsv2lDwOr
+	wFRoUtAKMW51qU938FxP85Uu97yWuVKhJ80B/arE1BjrXkPZI/rf9KHsqLFwMGSftJptZz5IJgh
+	vM3mBelMws1tJq7PwiBwV8UeyqjxKf89w/pIQf76Wva3BkPaCt7oR/UBJ
+X-Received: by 2002:a05:622a:4c7:b0:4e8:9bf5:5ecd with SMTP id d75a77b69052e-4ea1168541bmr18751981cf.1.1761038711967;
+        Tue, 21 Oct 2025 02:25:11 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHk59Wq45eSmY+tGWqEQNxDk//11cZC7q1beswb65jhbWLCg1ETbu+zF69qDRXnYYMyGb4j9A==
+X-Received: by 2002:a05:622a:4c7:b0:4e8:9bf5:5ecd with SMTP id d75a77b69052e-4ea1168541bmr18751761cf.1.1761038711453;
+        Tue, 21 Oct 2025 02:25:11 -0700 (PDT)
+Received: from [192.168.119.202] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b65eb03671csm1014961166b.38.2025.10.21.02.25.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 21 Oct 2025 02:25:10 -0700 (PDT)
+Message-ID: <5569198e-5548-48f7-b64e-b7574ea59691@oss.qualcomm.com>
+Date: Tue, 21 Oct 2025 11:25:09 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251020-staging-fbtft-ra8875-usleep-v1-1-9592dd390c13@lukowski.dev>
-In-Reply-To: <20251020-staging-fbtft-ra8875-usleep-v1-1-9592dd390c13@lukowski.dev>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Tue, 21 Oct 2025 11:50:11 +0300
-X-Gm-Features: AS18NWBqAmjo3KOZJeoj3rpQJcbhQ65NoVyhN4fDfDmM2riHc6TQ9QZuK7Sh_wM
-Message-ID: <CAHp75VeWGAyzAFBYSQS7FGpU1eSRo1Egrh44hUpXJgYZhFEkwg@mail.gmail.com>
-Subject: Re: [PATCH] staging: fbtft: fb_ra8875: replace udelay with usleep_range
-To: Olle Lukowski <olle@lukowski.dev>
-Cc: Andy Shevchenko <andy@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] backlight: qcom-wled: fix unbalanced ovp irq enable
+To: foss@joelselvaraj.com, Lee Jones <lee@kernel.org>,
+        Daniel Thompson <danielt@kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20251021-qcom-wled-fix-unbalanced-ovp-irq-enable-v1-1-edd304d165a5@joelselvaraj.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20251021-qcom-wled-fix-unbalanced-ovp-irq-enable-v1-1-edd304d165a5@joelselvaraj.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: SvLim_Mc_y-bayJ4raSQpdOf_2IGoOaW
+X-Authority-Analysis: v=2.4 cv=Maxhep/f c=1 sm=1 tr=0 ts=68f7517a cx=c_pps
+ a=oc9J++0uMp73DTRD5QyR2A==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=WFa1dZBpAAAA:8 a=6r-yMKpJyw27a2n3RXYA:9 a=QEXdDO2ut3YA:10
+ a=iYH6xdkBrDN1Jqds4HTS:22 a=MZguhEFr_PtxzKXayD1K:22
+X-Proofpoint-ORIG-GUID: SvLim_Mc_y-bayJ4raSQpdOf_2IGoOaW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDIwMDE0OCBTYWx0ZWRfX3NtSkCDMAnTY
+ M1g0yl+njVqC+0GU23PFL6x35EHKnkAXdsUOSJSJyaYIBCu/By8TVtvvKB3D7RTTn+KiQqZ3wSF
+ xafepi1EbC3yB4JKthEdWubNvtJdyA9f2Hl57mMu5oJgfF8JVeavJ+Ha1TtdkmhVtihEfMAeVaD
+ Buz1rJrVHAzKCeRgaiq2x7gXvd9Q3rw4dgpG+fbWayKjSb1l7I8HQIyo3dPONheojDsD8Hetx0I
+ weZYdPWXbCvsdb2w/Z/X+H11QnnrCJAgdu+a40rXUzfjvOC3SKXPIX514mgkKbBCZuI5JZTVtJA
+ nM+5ZBYqSS7/KHzD85LNAWprUP8TwK/p0P5FiU9uqURSmnIkbKIJnTEygoM4YNJS/6ZhO7LXaCe
+ l9ttOn7WrpnLLlCqLTwSXq8h7RnEBA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-10-20_07,2025-10-13_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0
+ suspectscore=0 impostorscore=0 clxscore=1011 malwarescore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510020000 definitions=main-2510200148
 
-On Mon, Oct 20, 2025 at 10:16=E2=80=AFPM Olle Lukowski <olle@lukowski.dev> =
-wrote:
->
-> Replace udelay(100) calls with usleep_range(100, 200) to allow the
-> scheduler to yield instead of busy-waiting. This is the preferred API for
-> sleep durations above 10 microseconds.
+On 10/21/25 9:33 AM, Joel Selvaraj via B4 Relay wrote:
+> From: Joel Selvaraj <foss@joelselvaraj.com>
+> 
+> In Xiaomi Poco F1 and at least few other devices, the qcom wled driver
+> triggers unbalanced ovp irq enable warning like the following during
+> boot up.
+> 
+> [    1.151677] ------------[ cut here ]------------
+> [    1.151680] Unbalanced enable for IRQ 176
+> [    1.151693] WARNING: CPU: 0 PID: 160 at kernel/irq/manage.c:774 __enable_irq+0x50/0x80
+> [    1.151710] Modules linked in:
+> [    1.151717] CPU: 0 PID: 160 Comm: kworker/0:11 Not tainted 5.17.0-sdm845 #4
+> [    1.151724] Hardware name: Xiaomi Pocophone F1 (DT)
+> [    1.151728] Workqueue: events wled_ovp_work
+> ...<snip>...
+> [    1.151833] Call trace:
+> [    1.151836]  __enable_irq+0x50/0x80
+> [    1.151841]  enable_irq+0x48/0xa0
+> [    1.151846]  wled_ovp_work+0x18/0x24
+> [    1.151850]  process_one_work+0x1d0/0x350
+> [    1.151858]  worker_thread+0x13c/0x460
+> [    1.151862]  kthread+0x110/0x114
+> [    1.151868]  ret_from_fork+0x10/0x20
+> [    1.151876] ---[ end trace 0000000000000000 ]---
+> 
+> Fix it by storing and checking the state of ovp irq before enabling and
+> disabling it.
+> 
+> Signed-off-by: Joel Selvaraj <foss@joelselvaraj.com>
+> ---
+> I am not entirely sure if this is the ideal fix. But this patch provides
+> an okayish stopgap solution till we can properly fix it. I am open to 
+> try a different approach if there is any suggestion.
+> ---
+>  drivers/video/backlight/qcom-wled.c | 15 ++++++++++++---
+>  1 file changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> index a63bb42c8f8b0333cd6d0ddc5bda93916da3fef3..36e2fe5c5fa37cfb8750254a75eff612741983c8 100644
+> --- a/drivers/video/backlight/qcom-wled.c
+> +++ b/drivers/video/backlight/qcom-wled.c
+> @@ -197,6 +197,7 @@ struct wled {
+>  	bool disabled_by_short;
+>  	bool has_short_detect;
+>  	bool cabc_disabled;
+> +	bool ovp_irq_disabled;
 
-...
+This is generally "..irq_enabled"
 
-> -       udelay(100);
-> +       usleep_range(100, 200);
+>  	int short_irq;
+>  	int ovp_irq;
+>  
+> @@ -294,7 +295,10 @@ static void wled_ovp_work(struct work_struct *work)
+>  {
+>  	struct wled *wled = container_of(work,
+>  					 struct wled, ovp_work.work);
+> -	enable_irq(wled->ovp_irq);
+> +	if (wled->ovp_irq_disabled) {
+> +		enable_irq(wled->ovp_irq);
+> +		wled->ovp_irq_disabled = false;
 
-Besides what Greg said, the function in similar changes should be
-fsleep(), it will automatically choose the best low-level API for the
-given delay.
+You can also create a short wrapper like ovp_irq_enable() that would do
+it internally (making it harder to overlook assigning this variable)
 
---=20
-With Best Regards,
-Andy Shevchenko
+Konrad

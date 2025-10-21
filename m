@@ -1,46 +1,36 @@
-Received: from h5.fbrelay.privateemail.com (h5.fbrelay.privateemail.com [162.0.218.228])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 320442C3745;
-	Mon, 20 Oct 2025 19:25:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.0.218.228
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CB33274B37;
+	Tue, 21 Oct 2025 07:33:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760988336; cv=none; b=fzRgZ62IPVEy0OkwefkKAPaLcXclOhO0F7IPXAkSMFJY0ma/siQVHJ24Xubd87G1KE1Xe2uFUC7iOcznH0I9/LXZzHf0ecOycHcZFb8R1fze948Zj5NzBts8BtW6VZwAwN02074TFeHqwtXy123DuyvR3yjch+ix3LOZ+Kpl3oY=
+	t=1761032010; cv=none; b=Syp6kzjgfxVUQuCF/3GMSSehJAPJl5WbCIICJz4xaofzUK+GUlpmGsbfN0ivxiJwaVD34E/KUYOQNGFfIC+Kkd9pzOptPoFg/WRtEiojkUCJUnAnHGFQTvtaOzzw9SPNRCpN3TBA1Oecp2Wb+1yaYp66FyVcYxBkts85RlybBi8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760988336; c=relaxed/simple;
-	bh=nrgRgNHCDk2InzSXMS2FndXavGmVtBMyfPdak7dPxU8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Y0Yiqm609VE2N4NYgumxEEKPv4yF17MrL8qKA1BcNlspCKvH0dmfT1GNVU8GikyG0aQAv2c7kJKSJ2b5GFUT2nxtvfpqzIThoE4zxSHXd/zkkOiPcIvUweQemuaiCVqrrXQWa/H5jR8uEXt0u/kG0r/vQLZoVdoUbzXVfGf98no=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lukowski.dev; spf=pass smtp.mailfrom=lukowski.dev; dkim=pass (2048-bit key) header.d=lukowski.dev header.i=@lukowski.dev header.b=fsZmiJ/X; arc=none smtp.client-ip=162.0.218.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lukowski.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lukowski.dev
+	s=arc-20240116; t=1761032010; c=relaxed/simple;
+	bh=+mStnn3HPi6kjUfpST2uFpAvmbn8K6R4UaMlJ2X3oSE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=LboknfwjpigDjgZNkrkxExqYlmKNMRfc42Sb1NQ9HalrawV+N3oSE+ZbX23+r9FJO/ko+51vBlNJ5iQzdv/vQ8AZdvNVUwm6vqpa49gVwUDVrxpBN9mZO1vfWqZwqlYjSjQHCXuyK8E1gEn1y5CgapaCOpNKOPTbaKAeahZizhI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l/hY+F5v; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lukowski.dev header.i=@lukowski.dev header.b="fsZmiJ/X"
-Received: from MTA-10-3.privateemail.com (mta-10.privateemail.com [198.54.118.218])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by h5.fbrelay.privateemail.com (Postfix) with ESMTPSA id 4cr4sB5rjQz2x9p;
-	Mon, 20 Oct 2025 19:15:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=lukowski.dev;
-	s=default; t=1760987751;
-	bh=nrgRgNHCDk2InzSXMS2FndXavGmVtBMyfPdak7dPxU8=;
-	h=From:Date:Subject:To:Cc:From;
-	b=fsZmiJ/XedZgMdFLTAho3wpjBWEeK4tvba9rx2fXhRJRtdXi5bYdq2gL1Z9tqyPyV
-	 0rlAgETTT13G+Ycz21NWQAP3SzN9oz4Xs1GyHiDj957okFciL6QkUN6gIQwTQb+oFS
-	 rto5cGulzzqj3b4rk8Y3vz2wWZ2lP1Wd1EVx4O3eVWuHsVjmfyxtYxIio+7kzzxdNa
-	 SdlINBWlnmZwr0x+91N9MCIeMruCXANqQEf7iYNNc92RVoudEheyguZkabkBEHP0sQ
-	 G8Usmu3iOtsKpz6Iq2Y02DOzGZpR0iTXT3DNMwOKSWB4HYZ7rQ1qZW+HkBzzOrwsU1
-	 XnjcyJtkrtfjQ==
-Received: from mta-10.privateemail.com (localhost [127.0.0.1])
-	by mta-10.privateemail.com (Postfix) with ESMTP id 4cr4s26mHXz3hhVD;
-	Mon, 20 Oct 2025 15:15:50 -0400 (EDT)
-Received: from 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa (unknown [150.228.61.196])
-	by mta-10.privateemail.com (Postfix) with ESMTPA;
-	Mon, 20 Oct 2025 15:15:42 -0400 (EDT)
-From: Olle Lukowski <olle@lukowski.dev>
-Date: Mon, 20 Oct 2025 22:15:36 +0300
-Subject: [PATCH] staging: fbtft: fb_ra8875: replace udelay with
- usleep_range
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l/hY+F5v"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AF788C4CEF1;
+	Tue, 21 Oct 2025 07:33:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761032009;
+	bh=+mStnn3HPi6kjUfpST2uFpAvmbn8K6R4UaMlJ2X3oSE=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=l/hY+F5vyMD+XVWeaZ224w1o6v9I+kaGNzSfbVSMHvRy71ptwu1ohChPpDYOIzR/6
+	 agN0VIxsfKJZuya7ngp09Gp2cusgJNqs/ows/J++GPZeg+/wKO4sRUFwZfVb3P4KC2
+	 cADrJbq/RQsXjSKxN/rctvQ2jes/se9RCFvA0E6UqoBeUBFQ7bbjg6FII/weh0XLvj
+	 4M0D/O5i4FFUbxlo5oqlSVtjXoPUa0Z50oNZlEKOzTKoeVZrD0DyeQBLb1lZcALJW8
+	 PnX2hmxN/rucD60hepiys+tm2EV7L4xIEfeHUXMzW7nAqeiYBWZEfp0bLsEC/e3lU8
+	 yYdZeDto/Smyg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F302CCD184;
+	Tue, 21 Oct 2025 07:33:29 +0000 (UTC)
+From: Joel Selvaraj via B4 Relay <devnull+foss.joelselvaraj.com@kernel.org>
+Date: Tue, 21 Oct 2025 02:33:23 -0500
+Subject: [PATCH] backlight: qcom-wled: fix unbalanced ovp irq enable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -49,59 +39,128 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251020-staging-fbtft-ra8875-usleep-v1-1-9592dd390c13@lukowski.dev>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MwQqEIBAA0F+JOe+AWWb0K8serEYbCAvHjSD69
- 6Tju7wLhBKTwFBdkOhg4S0W1J8KpsXFQMhzMWilTa20QskucAzox+wzJtf31uBfVqIdrW1UR86
- 0zWShDHsiz+e7f3/3/QCE9POSbQAAAA==
-X-Change-ID: 20251020-staging-fbtft-ra8875-usleep-77306ea543c7
-To: Andy Shevchenko <andy@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
- Olle Lukowski <olle@lukowski.dev>
-X-Mailer: b4 0.14.3
-X-Virus-Scanned: ClamAV using ClamSMTP
-X-Rspamd-Queue-Id: 4cr4sB5rjQz2x9p
+Message-Id: <20251021-qcom-wled-fix-unbalanced-ovp-irq-enable-v1-1-edd304d165a5@joelselvaraj.com>
+X-B4-Tracking: v=1; b=H4sIAEI392gC/x3NQQrCMBCF4auUWTuQhDagVxEXk2TUgZi0CdZC6
+ d07uPwW/3s7dG7CHW7DDo1X6VKLwl4GiG8qL0ZJanDGTdY4i0usH/xlTviUDb8lUKYSlXWdUdq
+ CXChkxmkcfbDGU7p60LW5sQb/p/vjOE5zlSnweQAAAA==
+X-Change-ID: 20251021-qcom-wled-fix-unbalanced-ovp-irq-enable-5446b106ad96
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Joel Selvaraj <foss@joelselvaraj.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1761032009; l=3415;
+ i=foss@joelselvaraj.com; s=20250919; h=from:subject:message-id;
+ bh=TgO0CVPZO00Cf30CCD6Yj7u97D72h24ioMyPxeIISiA=;
+ b=yX/Y7aeTGZuyQpEDbLe8dX/oAgeOGDp2FkygKfpZZ62PMf7+MuuNncznQinNhRQ3og0ZjqdTy
+ 1Xe2rZJ1399BBHxdszQPKd4v164bVEHrCwKZc2Qtw8ur1ehxF1x82SE
+X-Developer-Key: i=foss@joelselvaraj.com; a=ed25519;
+ pk=BBMos4ph15apUFh2AkG9rLZIrBWl5LD4egPOhEv63X0=
+X-Endpoint-Received: by B4 Relay for foss@joelselvaraj.com/20250919 with
+ auth_id=529
+X-Original-From: Joel Selvaraj <foss@joelselvaraj.com>
+Reply-To: foss@joelselvaraj.com
 
-Replace udelay(100) calls with usleep_range(100, 200) to allow the
-scheduler to yield instead of busy-waiting. This is the preferred API for
-sleep durations above 10 microseconds.
+From: Joel Selvaraj <foss@joelselvaraj.com>
 
-Signed-off-by: Olle Lukowski <olle@lukowski.dev>
+In Xiaomi Poco F1 and at least few other devices, the qcom wled driver
+triggers unbalanced ovp irq enable warning like the following during
+boot up.
+
+[    1.151677] ------------[ cut here ]------------
+[    1.151680] Unbalanced enable for IRQ 176
+[    1.151693] WARNING: CPU: 0 PID: 160 at kernel/irq/manage.c:774 __enable_irq+0x50/0x80
+[    1.151710] Modules linked in:
+[    1.151717] CPU: 0 PID: 160 Comm: kworker/0:11 Not tainted 5.17.0-sdm845 #4
+[    1.151724] Hardware name: Xiaomi Pocophone F1 (DT)
+[    1.151728] Workqueue: events wled_ovp_work
+...<snip>...
+[    1.151833] Call trace:
+[    1.151836]  __enable_irq+0x50/0x80
+[    1.151841]  enable_irq+0x48/0xa0
+[    1.151846]  wled_ovp_work+0x18/0x24
+[    1.151850]  process_one_work+0x1d0/0x350
+[    1.151858]  worker_thread+0x13c/0x460
+[    1.151862]  kthread+0x110/0x114
+[    1.151868]  ret_from_fork+0x10/0x20
+[    1.151876] ---[ end trace 0000000000000000 ]---
+
+Fix it by storing and checking the state of ovp irq before enabling and
+disabling it.
+
+Signed-off-by: Joel Selvaraj <foss@joelselvaraj.com>
 ---
-This patch replaces udelay() with usleep_range() in fb_ra8875.
+I am not entirely sure if this is the ideal fix. But this patch provides
+an okayish stopgap solution till we can properly fix it. I am open to 
+try a different approach if there is any suggestion.
 ---
- drivers/staging/fbtft/fb_ra8875.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/backlight/qcom-wled.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 0ab1de664..d2400bb44 100644
---- a/drivers/staging/fbtft/fb_ra8875.c
-+++ b/drivers/staging/fbtft/fb_ra8875.c
-@@ -210,7 +210,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
- 	}
- 	len--;
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index a63bb42c8f8b0333cd6d0ddc5bda93916da3fef3..36e2fe5c5fa37cfb8750254a75eff612741983c8 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -197,6 +197,7 @@ struct wled {
+ 	bool disabled_by_short;
+ 	bool has_short_detect;
+ 	bool cabc_disabled;
++	bool ovp_irq_disabled;
+ 	int short_irq;
+ 	int ovp_irq;
  
--	udelay(100);
-+	usleep_range(100, 200);
- 
- 	if (len) {
- 		buf = (u8 *)par->buf;
-@@ -231,7 +231,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
- 
- 	/* restore user spi-speed */
- 	par->fbtftops.write = fbtft_write_spi;
--	udelay(100);
-+	usleep_range(100, 200);
+@@ -294,7 +295,10 @@ static void wled_ovp_work(struct work_struct *work)
+ {
+ 	struct wled *wled = container_of(work,
+ 					 struct wled, ovp_work.work);
+-	enable_irq(wled->ovp_irq);
++	if (wled->ovp_irq_disabled) {
++		enable_irq(wled->ovp_irq);
++		wled->ovp_irq_disabled = false;
++	}
  }
  
- static int write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ static int wled_module_enable(struct wled *wled, int val)
+@@ -321,8 +325,10 @@ static int wled_module_enable(struct wled *wled, int val)
+ 			 */
+ 			schedule_delayed_work(&wled->ovp_work, HZ / 100);
+ 		} else {
+-			if (!cancel_delayed_work_sync(&wled->ovp_work))
++			if (!cancel_delayed_work_sync(&wled->ovp_work) && !wled->ovp_irq_disabled) {
+ 				disable_irq(wled->ovp_irq);
++				wled->ovp_irq_disabled = true;
++			}
+ 		}
+ 	}
+ 
+@@ -1613,8 +1619,10 @@ static int wled_configure_ovp_irq(struct wled *wled,
+ 		return rc;
+ 
+ 	/* Keep OVP irq disabled until module is enabled */
+-	if (!(val & WLED3_CTRL_REG_MOD_EN_MASK))
++	if (!(val & WLED3_CTRL_REG_MOD_EN_MASK)) {
+ 		disable_irq(wled->ovp_irq);
++		wled->ovp_irq_disabled = true;
++	}
+ 
+ 	return 0;
+ }
+@@ -1727,6 +1735,7 @@ static void wled_remove(struct platform_device *pdev)
+ 	cancel_delayed_work_sync(&wled->ovp_work);
+ 	disable_irq(wled->short_irq);
+ 	disable_irq(wled->ovp_irq);
++	wled->ovp_irq_disabled = true;
+ }
+ 
+ static const struct of_device_id wled_match_table[] = {
 
 ---
-base-commit: 211ddde0823f1442e4ad052a2f30f050145ccada
-change-id: 20251020-staging-fbtft-ra8875-usleep-77306ea543c7
+base-commit: fe45352cd106ae41b5ad3f0066c2e54dbb2dfd70
+change-id: 20251021-qcom-wled-fix-unbalanced-ovp-irq-enable-5446b106ad96
 
 Best regards,
 -- 
-Olle Lukowski <olle@lukowski.dev>
+Joel Selvaraj <foss@joelselvaraj.com>
+
 

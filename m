@@ -1,137 +1,110 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD3E92F5A22;
-	Fri, 24 Oct 2025 23:24:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761348269; cv=pass; b=tESIZXI3rYe74n1MlkmYxetEG3LosKmeN3UR1hdQDjz99Tbz9srsmGVoDx8Wt4YvF1W87bGfcvNavQPxn7Nj7P9kXzzJ6n6TRvefIAhbizE8PqujlDCJzBPDyifyWVTwv1CLlkT+FvgpXTXTWHecJR+SB7Zsfo10l0t51+fECNY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761348269; c=relaxed/simple;
-	bh=NQ0CrT99S0HB3iA81tiE1fKOXNruYRsIn5L3vGBZdtI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=R8JSdoh30zTpkv6DtPR9UqjoEILC8+z0s+1Ndj9y9flFG9S6SiV2d8jrt6hAqlx98mamkkU772V9SXHMqb6FLq9Q8oF2I6f1yTOpM0T8cJsnr2EL37uclg12YjC5zQnpg1dIRbZ+1QTDUVK5x58ziodwvrPG+7DKkUIVgQ0ROQc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=jUTlBQ2h; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 781852D46CB
+	for <linux-fbdev@vger.kernel.org>; Sat, 25 Oct 2025 22:42:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1761432137; cv=none; b=G4bKvRdR5Z3rwD00e1HFzkbm0r5tDSpjQWBz4nEECXFqYAaOBMzc1Twipf4GBxw9Ysnd5n0AbKpD0FQz/skB3hWxi3bEZNIpf9ak43WYv8Zytbqy0cxcCtfLATkh5vqi8JX2VUEm9FJ2ZkWbuAZ4ZZ9qYSCJ1zI1S6TsFLh+p28=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1761432137; c=relaxed/simple;
+	bh=4TeSUUQyzmjI+AmEM5j9GI7xFhPjauS254ia4GjX/nc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PBRfO3pkynqzXspBEFrQH/V+bdMWuP0d+ncwBraI/2CNtJrpHxGK1nqJrUf6S+PJLN736+NiRmlpB0RijyIuWJU+9PSYWD4OvcvlR7UQ+BX4ioRw4rPs/OjEizdZoLpXdKGfDqGxHNGC3bqUsS9akDnp8FJfpGtDJoEvocvgLxI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YtGPljA5; arc=none smtp.client-ip=209.85.221.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="jUTlBQ2h"
-ARC-Seal: i=1; a=rsa-sha256; t=1761348264; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=E7jo3eFGtMbYc4umajgAJrDaAAeoH78FvXSvtwIPzMd+KALm6TW6J/PZo3Gl8IAj7J4S4JOqDkVaqCJ4DpyxUkL/D7r/nDZxCDXQIylw9m80ZHFV7ZnmYl6fN+yD1hWHfO07oqL+vl1wjfMlpqfazjWlj918MvnuxIHK7Hk60jc=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1761348264; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=TolhaGIsyaj1gVoV8dHb9QimZIX1Tzw1zXYiEcETqjM=; 
-	b=ERHFHpBMKqE6LtNxoI7EvA9o2mCsVLRI6J1+/qPThd+k1qt+nO9OwZhbx5E81USsXE7RyOCW1GyB5isp3iLRSkJC/p6ufY9tyScGPtH6liK71Qdq4msBQsSye0JsA4aNBjxrfKHSyGI+LcIwBsP7dWSDg8vI9r+LX3h+vlO9w2c=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1761348264;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=TolhaGIsyaj1gVoV8dHb9QimZIX1Tzw1zXYiEcETqjM=;
-	b=jUTlBQ2h6Tuak+aNMb2CNTnEQ4BDpyDVgaRRROiBpKRCvZOPLn1o5LGy8JyX0l9X
-	sOXFCDgYktIsDNXusx7tmsAjPkY6Gy0P2EcQplSNWKOk61O5CR3GNBKVdk6o+/41U8c
-	rO3cD7tc7lCrL45EbJ0fyWmdAPtKKmAhIvpw6Ir4=
-Received: by mx.zohomail.com with SMTPS id 1761348261746725.1283250784594;
-	Fri, 24 Oct 2025 16:24:21 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 476FE181935; Sat, 25 Oct 2025 01:24:06 +0200 (CEST)
-Date: Sat, 25 Oct 2025 01:24:06 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	Andrzej Hajda <andrzej.hajda@intel.com>, Robert Foss <rfoss@kernel.org>, Vinod Koul <vkoul@kernel.org>, 
-	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, Guenter Roeck <linux@roeck-us.net>, 
-	Andi Shyti <andi.shyti@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Georgi Djakov <djakov@kernel.org>, 
-	Thomas Gleixner <tglx@linutronix.de>, Joerg Roedel <joro@8bytes.org>, 
-	Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
-	Lee Jones <lee@kernel.org>, Miquel Raynal <miquel.raynal@bootlin.com>, 
-	Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
-	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
-	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
-	Paolo Abeni <pabeni@redhat.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Kishon Vijay Abraham I <kishon@kernel.org>, 
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, Mark Brown <broonie@kernel.org>, 
-	Mathieu Poirier <mathieu.poirier@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Olivia Mackall <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, dmaengine@vger.kernel.org, 
-	linux-fpga@vger.kernel.org, linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-pm@vger.kernel.org, iommu@lists.linux.dev, linux-media@vger.kernel.org, 
-	linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-phy@lists.infradead.org, linux-pwm@vger.kernel.org, 
-	linux-remoteproc@vger.kernel.org, linux-crypto@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-usb@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Remove extra blank lines
-Message-ID: <god73pukywwznfyym7tym6m5k6fn3u7hwzj5gwhrxytt7oinfv@pokb4aos7pp6>
-References: <20251023143957.2899600-1-robh@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YtGPljA5"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-3f99ac9acc4so3049934f8f.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Oct 2025 15:42:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1761432134; x=1762036934; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZXq2mQ4sAJmwho7etnf6FLZOIO7gybFmwHnhQ+k6dI8=;
+        b=YtGPljA532L3+1QTNRK8ucyMfbMjuy1X4EvYe7fZ9cn/Sf/vdvXVFXJ3eVPRmRCf79
+         wsD++hhvwDxz8P0UrlzVVZs+0eJSfSZAFPd7uskAKPrZZBlIPrfM63qU12Rc/lbgHQYz
+         ccj4DqwGnTj7lMuUbUoe1lfRT+jYLyvl2NdBABK5h14/NEklRqPk2p8NYEbdvuseB6rd
+         /4SCEemylkOzoyMOO+pQNcaxRrxq3DoZB1XSSpI+zn0XQGkPl9VSegx76bUCtwyrU1Yw
+         Mo9xL+BNqgDkq3lIGGQrVw8b0yUOoxqo4MNFHnH1SQsaGuUaa/jWeTkpY+ivKSyp34jW
+         hiXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761432134; x=1762036934;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ZXq2mQ4sAJmwho7etnf6FLZOIO7gybFmwHnhQ+k6dI8=;
+        b=Y0/XnQ0UCfFzu+S8Tr6behTtXoNY8CPyJgAIlJCxkuo7WNWS/k3wl9xSkBnW/OJkpR
+         Bav1iWqdSiDNoorAsfi8B5s4AtPTTDYonpzckDHzoWkhohV8Lp/WJsb2m7FRoE4KOszW
+         b/p8ANeTgG7vVhDwG5gnswVjS4vxnh0usBeqWckW8qg7VvdhH5LVh7qc9ctWMEVVh1qS
+         d+y93RmALrF6Nn+ovmwLUTiC3wZ7cuCsA0YTiMpc+VpvIQBmZvWl0E4OLk040lWx0JBV
+         a0wECb9On42wul35ebht7NtgYbSM04VMAWh2E0C7W/MmqljwcLbMrZaHs8PP96EKkUFY
+         7G+w==
+X-Forwarded-Encrypted: i=1; AJvYcCV2ypPtbOQORpfZne6CYW98vumG5M4erqQLDwOLcybCTQEoop/j3gM4Jmrwef36nRV+Xiz3hXvKWtT7RA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy+mATBfh7LbWMHdxFQJDDZp2VVkbuJAFi1p9UO4uSTbUyvUnbY
+	peoC8LNnWNFRpxktw4P3izGSzJeohVL/53Buc/lbtWohRNqAcPx+scA=
+X-Gm-Gg: ASbGncuwgX9cYs3FC9awksJdwSab8Ou56czlodvpvkZuC857JedaciKh+5j06p2/inG
+	/wB3lIVrp7yDfBaneQZGkeDNmtZS4SjyVyCAnrJauWiMLZog0jU6wluLABfjYm5qzyXhNOa8pgZ
+	BdGr2S3bWi+FBoSNlidE2cLqkHX9/Le8zpqIhetUalHKkm2SKAU1bKwHQD6he7wqiNvevLqNwGL
+	jPf9a4XSipbodQJhleuKJNtppqyD00Ma3F3JgQ2ivB0ELxxSSqGOXiIw2/5D5QMNBTwxBmZK70Q
+	A7kI9MRKcGnPwsK8py3HKucCp4mUqrjbBKhR1J6Z8BW2kX7y9GDMaWau55meIj0nbvyz4WtYGeO
+	ugx/TALjXks5ARMpc9k/Ymdm4zQ9BU8lhBYlxVzaY8hP7jWrnhZV4OnT+15/M6h+jhPAvrpUyQx
+	O4Dg0L4f+GHTZ0sIkzO8Nc2SuH85TzOVUzNtWbpbFCSufXA4WZ4vgqun4iaNv9UUOk2t3Dp7jFr
+	f3WTsE=
+X-Google-Smtp-Source: AGHT+IH5qEmI200tfknZM3nb5ovcfV9MSsErH9Gyktcj7nN/CQ7b7jCUO5zA24B4gpxH66kEW1MyEA==
+X-Received: by 2002:a05:6000:41d5:b0:427:666:f9d6 with SMTP id ffacd0b85a97d-4270666fa57mr22253037f8f.39.1761432133628;
+        Sat, 25 Oct 2025 15:42:13 -0700 (PDT)
+Received: from localhost ([2a02:810d:4a94:b300:bad8:a439:d5f7:21de])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-429952cb55asm5742091f8f.17.2025.10.25.15.42.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 25 Oct 2025 15:42:13 -0700 (PDT)
+From: Florian Fuchs <fuchsfl@gmail.com>
+To: Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	fuchsfl@gmail.com
+Subject: [PATCH] fbdev/pvr2fb: Fix leftover reference to ONCHIP_NR_DMA_CHANNELS
+Date: Sun, 26 Oct 2025 00:38:50 +0200
+Message-ID: <20251025223850.1056175-1-fuchsfl@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="4uianbie6i5kbvu2"
-Content-Disposition: inline
-In-Reply-To: <20251023143957.2899600-1-robh@kernel.org>
-X-Zoho-Virus-Status: 1
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-1.4.3/261.330.82
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 8bit
 
+Commit e24cca19babe ("sh: Kill off MAX_DMA_ADDRESS leftovers.") removed
+the define ONCHIP_NR_DMA_CHANNELS. So that the leftover reference needs
+to be replaced by CONFIG_NR_ONCHIP_DMA_CHANNELS to compile successfully
+with CONFIG_PVR2_DMA enabled.
 
---4uianbie6i5kbvu2
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] dt-bindings: Remove extra blank lines
-MIME-Version: 1.0
+Signed-off-by: Florian Fuchs <fuchsfl@gmail.com>
+---
+Note: The fix has been compiled, and tested on real Dreamcast hardware,
+with CONFIG_PVR2_DMA=y.
 
-Hi,
+ drivers/video/fbdev/pvr2fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Thu, Oct 23, 2025 at 09:37:56AM -0500, Rob Herring (Arm) wrote:
-> Generally at most 1 blank line is the standard style for DT schema
-> files. Remove the few cases with more than 1 so that the yamllint check
-> for this can be enabled.
->=20
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> ---
->  .../devicetree/bindings/power/supply/mt6360_charger.yaml     | 1 -
->  .../bindings/power/supply/stericsson,ab8500-charger.yaml     | 1 -
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index cbdb1caf61bd..0b8d23c12b77 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -192,7 +192,7 @@ static unsigned long pvr2fb_map;
+ 
+ #ifdef CONFIG_PVR2_DMA
+ static unsigned int shdma = PVR2_CASCADE_CHAN;
+-static unsigned int pvr2dma = ONCHIP_NR_DMA_CHANNELS;
++static unsigned int pvr2dma = CONFIG_NR_ONCHIP_DMA_CHANNELS;
+ #endif
+ 
+ static struct fb_videomode pvr2_modedb[] = {
 
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+base-commit: 3a8660878839faadb4f1a6dd72c3179c1df56787
+-- 
+2.43.0
 
--- Sebastian
-
---4uianbie6i5kbvu2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmj8CpEACgkQ2O7X88g7
-+pqEIQ//WxlORWTU9xe37JxSV9323KQXYJPU3wtmtK4U8OlNGoVKu9XeR3w5pitG
-uy2cIzo80EdVMKsq5GKcONqwht31w9+RJaWZmytnll9Wbe3eiW3Lu6Ymx2zopgcW
-OoRuaiPPQUqGdgt7+VKgNt+4kH1sX/ur8z/Zd1rUrK9Xkks09pdqcZ/wpjm6KlQw
-e7x03OaDQ5h17Cg56SgH7NwoYjoUXDuSEKoZDx4wv5DQWh171Ez0/tWvYwYxM7+a
-Pxqt+zTDC1hdh6j1CaiOuwNb7pbdfcOWS7WZC8BPHNYW3eqFk5OQg+tZwEgoK9zV
-GLO0FrPPimJLgL2mfnq5FP0SzYU7FNgJD6gD/qKPzjsQlFLnwn69QCH/nTA9J/ZT
-ajcxgv6FLs3R3CGRptDBEUPOXez3dJeMeaN7hNeoswZNAe9uw1irXmedEzxLDO7S
-8WDVz6MvUAXOdXEcI+pUvuYfGWPwuJHspOgPuOwzO2sqg212V3sScOGcATq2BTDD
-mpc8LtRdKoZ3vUS9cVLRxtqLo8YB5roCBg0HEOexrwJayA074TSteqXhF2LH7LOW
-IcSZ37y+8QgWjTO2aXsiLJjoK2PsOLnvKzBRD5aeLhMd4H1Lw1xCxi75ut/fJPUY
-MLaS7WMtq7TVMRxBrjz8kaiR4opj84mVIXbVgoiISYooEKbbdic=
-=pPcb
------END PGP SIGNATURE-----
-
---4uianbie6i5kbvu2--

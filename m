@@ -1,107 +1,242 @@
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f193.google.com (mail-pl1-f193.google.com [209.85.214.193])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E60A51494C2;
-	Sat, 25 Oct 2025 23:14:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D50691D5CFE
+	for <linux-fbdev@vger.kernel.org>; Sun, 26 Oct 2025 12:39:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.193
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761434078; cv=none; b=ZwHKBJqPFlLqcW3NYABVjqPn82mpStikAwcL8LVrXSHnVOlsJDoN/RRV/GQ7kNzOqglaA505u3ovXsdb1UnorDTRLmex+lVqKHjZzRr8NisDQe2KJkOJxqB5I9cQ0T/Ffdzx1mIBGbtAg+DnxhBlQ80s1bO7r6pQ5s9E+5f7ijk=
+	t=1761482379; cv=none; b=laFC95x++D19Ng0W2QEFLTh8vFhfZZcNxwd8AUaWg4A994qQWwOYpzbmr03oOTo1zGrh7u3+9XsUQfE2ST/Kdt7aiIXGbG6/CVlpOe6uhXBoSdl7Rl3TyBqTGpecg2dnGkokA7wKA88FzS966KlowbBrIiVn7s38YdobtVMqezQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761434078; c=relaxed/simple;
-	bh=O/aY2/oYtu6iZwbY0C0ZN7lc+jnAYORpIMoVcAqTarM=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=FZZN9jQmMQ51DwNEg4qLSbMLgC5BsEeI2d0MUuWcSMKwb/2ihm7ixPuN1bLI7AS3CKgyWbk01nwXLB6EfYJVtz9Vf9JbftZAwLZ6+mXVfIbVbwkdGFDFm53HX8SB9ymy4cK7UzM39dtl/n4pPQt9dzYP3YkeGA4o8YGV/i3CEhc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b=Ffl9BUiR; arc=none smtp.client-ip=130.133.4.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
+	s=arc-20240116; t=1761482379; c=relaxed/simple;
+	bh=FwahnmFI+RANUbP/ccocpD49/vz2nmfLhC6tjHp5sWQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=jyv+wr5Q9OzmonWJ8yQL5cx2a+812ha7tgno0gkxlI8Eiv7rYSLmlcEYq07dAfj0mTJYeCWCgh+epFDPivnuiZcEcrrFzgh5Ixe5wa/sMt/mJh+yVzlVpfIPvLyvcxfsFR9MkgZERY/BgInywHpvNcmUbIyP2WYKG9aWeJmPZHg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NjVnWuQJ; arc=none smtp.client-ip=209.85.214.193
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b="Ffl9BUiR"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
-	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
-	References; bh=o+Qike691zJBF1RCaslWg3meFxGDo0KmJqy1XTllb5g=; t=1761434074;
-	x=1762038874; b=Ffl9BUiRQ15GbjCVI5ACBEIdSfhN8NJmuDCHR93FR9iZil/zPT8+ZSM5qsgDf
-	fxxDrnoi/VfGVblzT8OHQxY0xE3KPHpIoGlx7PNF8/aLKAEbi+OiGxZanbpGiLLF5fFrqoHVcLXc+
-	0+lLLnqJh0HU4wkIPPE8PoJ7KaBB2Z6xeOzTpq7jCHutCb1kEmn0m3eQXN+b+rAPMFBeWalv8VOnf
-	6tM+SxyTNJ2DZGGh0USighsNAoyrb9G1yWN4mqtmvL6KnM7cpi/EKIRuLsrm3yk4wOjaqFX0oC/SO
-	F1dyrRuhbRPQ8Zw2zrQp/G1R357U4+9NLVlu+t8+N3n01QLOpA==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.98)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1vCnSq-00000002Ne2-2Pxv; Sun, 26 Oct 2025 01:14:24 +0200
-Received: from dynamic-089-012-087-223.89.12.pool.telefonica.de ([89.12.87.223] helo=[192.168.178.50])
-          by inpost2.zedat.fu-berlin.de (Exim 4.98)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1vCnSq-00000003w6N-1Uqx; Sun, 26 Oct 2025 01:14:24 +0200
-Message-ID: <cee852ea863613abb7b3fe2a2ec3870abecb8b6c.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH] fbdev/pvr2fb: Fix leftover reference to
- ONCHIP_NR_DMA_CHANNELS
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Florian Fuchs <fuchsfl@gmail.com>, Helge Deller <deller@gmx.de>, 
-	linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org
-Date: Sun, 26 Oct 2025 01:14:23 +0200
-In-Reply-To: <20251025223850.1056175-1-fuchsfl@gmail.com>
-References: <20251025223850.1056175-1-fuchsfl@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.1 
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NjVnWuQJ"
+Received: by mail-pl1-f193.google.com with SMTP id d9443c01a7336-290a3a4c7ecso41064795ad.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 26 Oct 2025 05:39:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1761482376; x=1762087176; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ieZihMLOOLBctZi12lxn8LR/iyKa5pG/boJ+0OiRR90=;
+        b=NjVnWuQJkHnC0qeAII8x/wOD8/oIn4gEQOhkkLDRqz1f6wIIN5HtU+eGYrHUIXVCGN
+         hgfyeFpJCAzoKDguTh8apmZ/RptddfLj6uKo2h0UPGLOa9NBh0gSCSzDEyiEHygflyeS
+         FPb1tZq8QQKzCoNDVCnZgFnx9p3avbtRwtRe0wmHozy4rdh6vtD58/nWWZeuYwGdL7uG
+         MjpESRxUdg3RPQOOktbgKXwsLQ/iR2kUR4yU64keyB6ZnU+gJwEbriLO6Jaoj2Fdrhsy
+         h6aT/aRpkZ2eai+1eXQPK2A7CeuB/vhVWUXCHBLAY4vo74dkrJIZw5Jljr1/ZbeeDpGJ
+         7DOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761482376; x=1762087176;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ieZihMLOOLBctZi12lxn8LR/iyKa5pG/boJ+0OiRR90=;
+        b=u4ZK9Yesb9id+wTarv8QcYgzdT0BnKpgidnR/xCpA3jqIDzsNop6dlH19KFaC5I/Cu
+         gz7xzdZdR2tLBH1qDIpx+Acb0JukFQCPDM8ipKlt6j0cozEkwraS82Xm8NiC77BM9pkq
+         PHmqxg/H5z9kP9fGNyIQNTGJuksMRmS/sKf0Y2g/7OfS2a3ZS/Ldm5Pf9TVzWfJv1kY0
+         oNkKylnSTIpirdCqMAm4eMF3iWoXHwUFs3WSrL/9qwG6pQnKE4UeZUL3pHvIHA/oLBsm
+         T4eKUokkdoRegPVZGrIPpaxb1JTQMvFbEU/tBk6SZXgYulXsok5XGIdDa8uzHvCd9LK5
+         H1uw==
+X-Forwarded-Encrypted: i=1; AJvYcCWp9h080hju4rnkTrYtn3RQe7T/gkUhbzQITJe0vt8q2kN1ioD+Rqol90mmJW2boSNosvQuWcp1oRQ1xQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyWOiCAb9toPqVyTxxKz9cmH6nZEfEmzTGsj6Fy82QlWaxuRMvt
+	n1hCAzkt4hfNxLLoLVNdentwf+mlk4q9D+eIC9jnMnuCljTzq1OieCO3
+X-Gm-Gg: ASbGncthdnjlUFZ4JPMeg5/3VAV09rpxtzzNemvgD2l/+4NXeBsP8I0JRbvIvdjb+1L
+	XYv7tgDiZxmDqy+iDjW+7lzSPm2ZEVdyx8oIdhxktdvq0L78ryQWFP+oJIxStudG6Yrw+hqAx3C
+	11MpU4r7ywZShVmLNIXKluwWkQEhmVBgcSiOZCWSVsoqzi2AoQVPJwAkbApX2f9XtCdZLpbrvuX
+	V8ABsyHgfU5xEoxPZN3dZkxR9wGOUnpgmOGQLhoIC4P8lus0CLQ5pO8FUp6cApMhDNK2om+GNfX
+	HI3U25zEHp1UroeNxQ1VqisOew50EK4PaD3wxbM3Q1Wf4rJY0vVdWshjyduK/zgnz5hlLt4kxY7
+	A1VP1IIUk0SEci8MIFKML+aZypFqgqcUryM5JfHu/GlRPC8ZRsIaefnGLoRnpNarJ9yQBbFfkai
+	2gpNul8MY3mWwOXWg8gQ==
+X-Google-Smtp-Source: AGHT+IHGs4DwXfP6nWqnbQ+7R8SWiz+qxqpgqaWLkFf+omIN7sI48ep3gWUkRscpSyoQrMau23dXqg==
+X-Received: by 2002:a17:903:19cb:b0:24c:7b94:2f87 with SMTP id d9443c01a7336-290c9ca6707mr410391015ad.14.1761482376103;
+        Sun, 26 Oct 2025 05:39:36 -0700 (PDT)
+Received: from VM-0-14-ubuntu.. ([43.134.26.72])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-33fed7d2869sm5119634a91.7.2025.10.26.05.39.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 26 Oct 2025 05:39:35 -0700 (PDT)
+From: Junjie Cao <caojunjie650@gmail.com>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	Junjie Cao <caojunjie650@gmail.com>
+Subject: [PATCH 1/2] dt-bindings: leds: backlight: Add Awinic AW99706 backlight
+Date: Sun, 26 Oct 2025 20:39:22 +0800
+Message-ID: <20251026123923.1531727-2-caojunjie650@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251026123923.1531727-1-caojunjie650@gmail.com>
+References: <20251026123923.1531727-1-caojunjie650@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-ZEDAT-Hint: PO
+Content-Transfer-Encoding: 8bit
 
-Hi Florian,
+Add Awinic AW99706 backlight binding documentation.
 
-On Sun, 2025-10-26 at 00:38 +0200, Florian Fuchs wrote:
-> Commit e24cca19babe ("sh: Kill off MAX_DMA_ADDRESS leftovers.") removed
-> the define ONCHIP_NR_DMA_CHANNELS. So that the leftover reference needs
-> to be replaced by CONFIG_NR_ONCHIP_DMA_CHANNELS to compile successfully
-> with CONFIG_PVR2_DMA enabled.
->=20
-> Signed-off-by: Florian Fuchs <fuchsfl@gmail.com>
-> ---
-> Note: The fix has been compiled, and tested on real Dreamcast hardware,
-> with CONFIG_PVR2_DMA=3Dy.
->=20
->  drivers/video/fbdev/pvr2fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-> index cbdb1caf61bd..0b8d23c12b77 100644
-> --- a/drivers/video/fbdev/pvr2fb.c
-> +++ b/drivers/video/fbdev/pvr2fb.c
-> @@ -192,7 +192,7 @@ static unsigned long pvr2fb_map;
-> =20
->  #ifdef CONFIG_PVR2_DMA
->  static unsigned int shdma =3D PVR2_CASCADE_CHAN;
-> -static unsigned int pvr2dma =3D ONCHIP_NR_DMA_CHANNELS;
-> +static unsigned int pvr2dma =3D CONFIG_NR_ONCHIP_DMA_CHANNELS;
->  #endif
-> =20
->  static struct fb_videomode pvr2_modedb[] =3D {
->=20
-> base-commit: 3a8660878839faadb4f1a6dd72c3179c1df56787
+Signed-off-by: Junjie Cao <caojunjie650@gmail.com>
+---
+ .../leds/backlight/awinic,aw99706.yaml        | 135 ++++++++++++++++++
+ 1 file changed, 135 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
 
-Good catch, thanks for fixing this!
+diff --git a/Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml b/Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
+new file mode 100644
+index 000000000..640af3891
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
+@@ -0,0 +1,135 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/awinic,aw99706.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Awinic AW99706 6-channel WLED Backlight Driver
++
++maintainers:
++  - Junjie Cao <caojunjie650@gmail.com>
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: awinic,aw99706
++
++  reg:
++    maxItems: 1
++
++  enable-gpios:
++    description: GPIO to use to enable/disable the backlight (HWEN pin).
++    maxItems: 1
++
++  awinic,dim-mode:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: >
++      Select dimming mode of the device.
++        0 = Bypass mode.
++        1 = DC mode.
++        2 = MIX mode.
++        3 = MIX-26k.
++    enum: [0, 1, 2, 3]
++    default: 1
++
++  awinic,sw-freq:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Boost switching frequency in kHz.
++    enum: [300, 400, 500, 600, 660, 750, 850, 1000, 1200, 1330, 1500, 1700]
++    default: 750
++
++  awinic,sw-ilmt:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Switching current limitation in mA.
++    enum: [1500, 2000, 2500, 3000]
++    default: 3000
++
++  awinic,iled-max:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Maximum LED current setting in uA.
++    minimum: 5000
++    maximum: 50000
++    multipleOf: 500
++    default: 20000
++
++  awinic,uvlo-thres:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: UVLO(Under Voltage Lock Out) in mV.
++    enum: [2200, 5000]
++    default: 2200
++
++  awinic,fade-time:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Fade In/Out Time(per step) in us.
++    enum: [8, 16, 32, 64, 128, 256, 512, 1024]
++    default: 16
++
++  awinic,slope-time:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Slope time in ms.
++    enum: [8, 24, 48, 96, 200, 300, 400, 500]
++    default: 300
++
++  awinic,ramp-ctl:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: >
++      Select ramp control and filter of the device.
++        0 = Fade in/fade out.
++        1 = Light filter.
++        2 = Medium filter.
++        3 = Heavy filter.
++    enum: [0, 1, 2, 3]
++    default: 2
++
++  awinic,brt-mode:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: >
++      Select brightness control of the device.
++        0 = PWM.
++        1 = IIC.
++        2 = IIC x PWM.
++        3 = IIC x PWM(P-ramp).
++    enum: [0, 1, 2, 3]
++    default: 1
++
++  awinic,onoff-time:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Turn on/off time(per step) in ns.
++    enum: [250, 500, 1000, 2000, 4000, 8000, 16000]
++    default: 2000
++
++required:
++  - compatible
++  - reg
++  - enable-gpios
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        aw99706@76 {
++            compatible = "awinic,aw99706";
++            reg = <0x76>;
++            enable-gpios = <&tlmm 88 GPIO_ACTIVE_HIGH>;
++            awinic,dim-mode = <1>;
++            awinic,sw-ilmt = <3000>;
++            awinic,sw-freq = <750>;
++            awinic,uvlo-thres = <2200>;
++            awinic,iled-max = <23500>;
++            awinic,ramp-ctl = <2>;
++            awinic,slope-time = <96>;
++            awinic,fade-time = <16>;
++            awinic,brt-mode = <1>;
++            awinic,onoff-time = <2000>;
++        };
++    };
++
++...
+-- 
+2.51.1.dirty
 
-Reviewed-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-
-Adrian
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

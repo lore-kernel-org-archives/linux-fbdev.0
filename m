@@ -1,133 +1,185 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAEC1252912
-	for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 18:02:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CF6532BF21;
+	Mon, 27 Oct 2025 19:03:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761588172; cv=none; b=jkfELigLEbgO1crGWbv9Qy9n7TyPT/L77LszKYSvinRPrlESRz6oJKm0TlTZC2t/OvCuy7shkDC3HAVXNeXS1fUlGpW2QxLvP4QTr4cX2GSQteFwaU5oZN/LQTbp74GBH9yBU/75LGMb2sYqvwooceTCdl6xJhy0hUl4AGdRvm0=
+	t=1761591814; cv=none; b=vGFXRsXebbGJnYY1+0AyBKnexYr339yxayZc0QWN78/BDLq3KPiQYiGyLp2mkoz0ML7tv9LuUtz4GaocuI9r2cAGAs13Dbra7r03fZx0cijNmgu0736aSIPc6LFky47iu1CtQI0IL0q7K4RDz/znsRLSmhieFNNjEPHYyg4EiTY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761588172; c=relaxed/simple;
-	bh=LvP36OFqg1n8BtKv/l9bCO2uLiZFM2W8O0LRWvjaIRE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jjk9qlPfspJ6yCy3xsiTEwVHVXIqxXcelU2gaIljcGPK2yrK01FzPeLcNJ2F5gvL1CHvdJbgUmHDyx9Iud3x7QXkJkCA7N3kJKrQ03JFP+HB4IqXoWlvbx9lkWit/CxOUPxBfAZm4K2HbvoNzfvtSmvya6iwe2az9mgfErY17Uk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lqw5m9xV; arc=none smtp.client-ip=209.85.218.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1761591814; c=relaxed/simple;
+	bh=QGCu0V3w0s4HySzwBgsSxoWTxrzLr5KD4kIlTtEAspU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Itu4tsTgp8ncgMKXEU51K3l1Fjar76xd8Au6w5bC9+3nByPfWwqYHmi9+0ma4uQ4z3vGQTuFRPFyAnZqsQJQnEB6+He61/3GRT43fRYnwjqxj2RaCWe6523y5fC3y2cO/V2GFCJ21jCFg4S2sv8F7rIeOhPpr8164ite3SRfi9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FPEjbRDI; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lqw5m9xV"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b6d402422c2so1174474166b.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 11:02:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761588169; x=1762192969; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=keQgCiVBqugDEVy75un1KzT9J08z1JpEGApwh+kNxek=;
-        b=lqw5m9xViL14XfWCA9IYLvK9rauu1SJrWXaIsv4X/vVIeR3be/1BxXALbqRitr50iA
-         XzoBP34LGbZZAbLkId09tCkwv8llCoHG8cn6HYWskNnzInqCvdksjV2xQNZFjlcbU6VA
-         EMoIcSyJbJYcrFOHuUTrVY1P3uyu43inTgIZ58lF0l8PUj3rSL0R/yb/vX173B75EiaM
-         7WMQpwMLIab1anPpDNv2AHeZHomeRQnrWs5phQokU2+NoUFqcwzDJkW3/RXgDnsCxUVj
-         GLg2rX8k8HR+BIu4Iu6kYcV4A64+FPPV0SHFpQSxWbwXPI86NI+5o2kQr3GuS5KcWI+L
-         UbVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761588169; x=1762192969;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=keQgCiVBqugDEVy75un1KzT9J08z1JpEGApwh+kNxek=;
-        b=KWvNm+OuEZvgaQFD8VNOHzopIEnjQ5J/uC/hGX/V7emS8W4qzKLqroalzF65deO5Xx
-         NiM8mrFh+7N2Lv76aaRGBpH6p/AdEPibgeoJUbP5wvVvN4YZAYw0iogNntxbFKTEh3Yf
-         v/GrLqB4QPO6Cz1jyotMh4k3ur8LRWN7Ey/usKBkzRBOtku1XsDnnXEc5POY21BlhVkx
-         pbg8daWaGnJHMR8vwhTxOCgTf+buSX3IP1JaoboAgcGOvrwHKtzS043XrOTtKiu3MZ3p
-         zdFOG+CTloHsF9/O4ov7aoevdPhHawOA+/rbHe9hjJoYpx4grujA2XF4b03d+KaX0/69
-         3gWw==
-X-Gm-Message-State: AOJu0Yyp3hk8SyBuwOWL2omjL5R7TEms101j2kE4JA2EJ/euem5U7jmt
-	45FIo0xNa6YQ+/UagDMkdJiOm8lpsG861sYQ6PUv5AM86V0kfiDAPzJcqqi+VzFnqp4fIjqRSCU
-	VSBCEpVOkCn3lfKQ8Tzy5XAw8K+WgVa4=
-X-Gm-Gg: ASbGncsHEBAwEgQpDgbh4a0CZnnT9ox1kWtu7lwGhbFYMRE/Qd2a5VS1TXa9eogTtGa
-	V44c8arqqMuiwlME6qkjZZquJQSCdAbnry/Uc3Wsp9RXT1qN/Ui5puC/1EXTXMR7SNxnEfgIIWt
-	O63ZTN0+nE2XoFy7OvFJxW7TYl6n+9MrojhpO9f4IOmunmq1qHebN81pgS5DrPPiCTEdA/gFdPV
-	HYtxMvZqNH5YhvKZYYdg5nV+Ljkj9shtCf2S+nKsBU+y5FOimJ8GUA6nj8TJdW0KR15ZUEmZ08L
-	ZcochccDRwU9Uz3IReQmaRDK
-X-Google-Smtp-Source: AGHT+IHP/V1F9P3TW5ZFh/h+hXxyEHvlqMWOQvAOVjJ5loLIb8qqHYGPMlplTaY2sFeQxNozQ0fFjQ7ofp+S0wxS29I=
-X-Received: by 2002:a17:907:785:b0:b6d:6a3e:b960 with SMTP id
- a640c23a62f3a-b6dba5c0ce8mr88785366b.59.1761588168846; Mon, 27 Oct 2025
- 11:02:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FPEjbRDI"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761591813; x=1793127813;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=QGCu0V3w0s4HySzwBgsSxoWTxrzLr5KD4kIlTtEAspU=;
+  b=FPEjbRDIgQOkE5x1AMeQCfO584NNbT0njwykbuCpVGePhHRKbWZDjNF8
+   FCK3hIurSW2hwi/QRSwVQ6k1e2MEwsM0gpgjXqJ1nkE4IkQkNR+Ir8I5i
+   UhnZMz2hD6SryWEo2C9eXWKCZX5Mm0XpWon8WyZD5Jfk9mvCLFPFlZGBN
+   I7luXEWEaC6nxkziF++zXaxQSzTztQFLlx1ErhruYmgWxRJJnqGstI/RB
+   LJvO9olpNkn+5QKn0+zCtuErGMpCRFnO773R/2VU2z4/H9RKdWyxAQfe5
+   WYqDdiZw8JGERpg3H9GvgMzeDiXhTIbBixkvPIekjO+Cnd+UW3LB/JQUM
+   A==;
+X-CSE-ConnectionGUID: QuuCvH/HS7mp6dNWMATcDA==
+X-CSE-MsgGUID: z82CFTcaSui7ihWxZE2bKA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="67325771"
+X-IronPort-AV: E=Sophos;i="6.19,259,1754982000"; 
+   d="scan'208";a="67325771"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2025 12:03:32 -0700
+X-CSE-ConnectionGUID: 4BOOzhGIRR+lgDMlxxjyQQ==
+X-CSE-MsgGUID: ig4GyY7LSYqacFU0E1Ymew==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,259,1754982000"; 
+   d="scan'208";a="184751958"
+Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
+  by orviesa009.jf.intel.com with ESMTP; 27 Oct 2025 12:03:28 -0700
+Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1vDSUk-000HRp-0C;
+	Mon, 27 Oct 2025 19:03:20 +0000
+Date: Tue, 28 Oct 2025 02:59:30 +0800
+From: kernel test robot <lkp@intel.com>
+To: Junjie Cao <caojunjie650@gmail.com>, Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	Junjie Cao <caojunjie650@gmail.com>,
+	Pengyu Luo <mitltlatltl@gmail.com>
+Subject: Re: [PATCH 2/2] backlight: aw99706: Add support for Awinic AW99706
+ backlight
+Message-ID: <202510280208.NhQyE0y1-lkp@intel.com>
+References: <20251026123923.1531727-3-caojunjie650@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251016171845.1397153-1-rampxxxx@gmail.com>
-In-Reply-To: <20251016171845.1397153-1-rampxxxx@gmail.com>
-From: Javier Garcia <rampxxxx@gmail.com>
-Date: Mon, 27 Oct 2025 19:02:37 +0100
-X-Gm-Features: AWmQ_bnRxFLdM34KXqFkDra9NbBgRdtN8M_nP9qHeXiirDeaOiJxudxosg27OyM
-Message-ID: <CABPJ0vgtpjh2q605TifawiS36qAS+OO_dAnYVGsqd03GSXZp+g@mail.gmail.com>
-Subject: Re: [PATCH] fbdev: vga16fb: Request memory region.
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, shuah@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251026123923.1531727-3-caojunjie650@gmail.com>
 
-Hi,
+Hi Junjie,
 
-Helge Deller, any comment on this patch?
+kernel test robot noticed the following build warnings:
 
----
-Javier Garcia
+[auto build test WARNING on lee-backlight/for-backlight-next]
+[also build test WARNING on lee-leds/for-leds-next linus/master v6.18-rc3 next-20251027]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Junjie-Cao/backlight-aw99706-Add-support-for-Awinic-AW99706-backlight/20251026-214135
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git for-backlight-next
+patch link:    https://lore.kernel.org/r/20251026123923.1531727-3-caojunjie650%40gmail.com
+patch subject: [PATCH 2/2] backlight: aw99706: Add support for Awinic AW99706 backlight
+config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20251028/202510280208.NhQyE0y1-lkp@intel.com/config)
+compiler: powerpc64-linux-gcc (GCC) 15.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251028/202510280208.NhQyE0y1-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202510280208.NhQyE0y1-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/fortify-string.h:5,
+                    from include/linux/string.h:382,
+                    from arch/powerpc/include/asm/paca.h:16,
+                    from arch/powerpc/include/asm/current.h:13,
+                    from include/linux/sched.h:12,
+                    from include/linux/ratelimit.h:6,
+                    from include/linux/dev_printk.h:16,
+                    from include/linux/device.h:15,
+                    from include/linux/backlight.h:12,
+                    from drivers/video/backlight/aw99706.c:12:
+   drivers/video/backlight/aw99706.c: In function 'aw99706_bl_enable':
+>> include/linux/bitfield.h:172:27: warning: 'val' is used uninitialized [-Wuninitialized]
+     172 |                 *(_reg_p) &= ~(_mask);                                                  \
+         |                           ^~
+   drivers/video/backlight/aw99706.c:325:9: note: in expansion of macro 'FIELD_MODIFY'
+     325 |         FIELD_MODIFY(AW99706_BACKLIGHT_EN_MASK, &val, en);
+         |         ^~~~~~~~~~~~
+   drivers/video/backlight/aw99706.c:323:12: note: 'val' was declared here
+     323 |         u8 val;
+         |            ^~~
 
 
-On Thu, 16 Oct 2025 at 19:18, Javier Garcia <rampxxxx@gmail.com> wrote:
->
-> This patch reserve and release VGA memory region with `*_mem_region`
-> fn's.
->
-> This align with Documentation/drm/todo.rst
-> "Request memory regions in all fbdev drivers"
->
-> I've tested with kernel and qemu both 32bits.
->
-> Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
-> ---
->
-> When I've run the code always return -EBUSY which makes sense as
-> mem is already requested,`/proc/iomem` shows `000a0000-000bffff : Video RAM area`.
->
-> I've seen that `cirrusfb` has this kind of code wrapped up with `#if 0`, and I
-> wonder if it makes sense to also wrap up with `#if 0`, at least , in
-> that way the code gets commented about expected behavior.
->
->
->  drivers/video/fbdev/vga16fb.c | 7 +++++++
->  1 file changed, 7 insertions(+)
->
-> diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-> index eedab14c7d51..f506bf144a97 100644
-> --- a/drivers/video/fbdev/vga16fb.c
-> +++ b/drivers/video/fbdev/vga16fb.c
-> @@ -1319,6 +1319,11 @@ static int vga16fb_probe(struct platform_device *dev)
->         if (ret)
->                 return ret;
->
-> +       if (!request_mem_region(vga16fb_fix.smem_start, vga16fb_fix.smem_len,
-> +                               "vga16b")) {
-> +               dev_err(&dev->dev,"vga16b: cannot reserve video memory at 0x%lx\n",
-> +                      vga16fb_fix.smem_start);
-> +       }
->         printk(KERN_DEBUG "vga16fb: initializing\n");
->         info = framebuffer_alloc(sizeof(struct vga16fb_par), &dev->dev);
->
-> @@ -1398,6 +1403,8 @@ static int vga16fb_probe(struct platform_device *dev)
->   err_ioremap:
->         framebuffer_release(info);
->   err_fb_alloc:
-> +       release_mem_region(vga16fb_fix.smem_start,
-> +                   vga16fb_fix.smem_len);
->         return ret;
->  }
->
-> --
-> 2.50.1
->
+vim +/val +172 include/linux/bitfield.h
+
+e2192de59e457a Johannes Berg   2023-01-18  120  
+e2192de59e457a Johannes Berg   2023-01-18  121  /**
+e2192de59e457a Johannes Berg   2023-01-18  122   * FIELD_PREP_CONST() - prepare a constant bitfield element
+e2192de59e457a Johannes Berg   2023-01-18  123   * @_mask: shifted mask defining the field's length and position
+e2192de59e457a Johannes Berg   2023-01-18  124   * @_val:  value to put in the field
+e2192de59e457a Johannes Berg   2023-01-18  125   *
+e2192de59e457a Johannes Berg   2023-01-18  126   * FIELD_PREP_CONST() masks and shifts up the value.  The result should
+e2192de59e457a Johannes Berg   2023-01-18  127   * be combined with other fields of the bitfield using logical OR.
+e2192de59e457a Johannes Berg   2023-01-18  128   *
+e2192de59e457a Johannes Berg   2023-01-18  129   * Unlike FIELD_PREP() this is a constant expression and can therefore
+e2192de59e457a Johannes Berg   2023-01-18  130   * be used in initializers. Error checking is less comfortable for this
+e2192de59e457a Johannes Berg   2023-01-18  131   * version, and non-constant masks cannot be used.
+e2192de59e457a Johannes Berg   2023-01-18  132   */
+e2192de59e457a Johannes Berg   2023-01-18  133  #define FIELD_PREP_CONST(_mask, _val)					\
+e2192de59e457a Johannes Berg   2023-01-18  134  	(								\
+e2192de59e457a Johannes Berg   2023-01-18  135  		/* mask must be non-zero */				\
+e2192de59e457a Johannes Berg   2023-01-18  136  		BUILD_BUG_ON_ZERO((_mask) == 0) +			\
+e2192de59e457a Johannes Berg   2023-01-18  137  		/* check if value fits */				\
+e2192de59e457a Johannes Berg   2023-01-18  138  		BUILD_BUG_ON_ZERO(~((_mask) >> __bf_shf(_mask)) & (_val)) + \
+e2192de59e457a Johannes Berg   2023-01-18  139  		/* check if mask is contiguous */			\
+e2192de59e457a Johannes Berg   2023-01-18  140  		__BF_CHECK_POW2((_mask) + (1ULL << __bf_shf(_mask))) +	\
+e2192de59e457a Johannes Berg   2023-01-18  141  		/* and create the value */				\
+e2192de59e457a Johannes Berg   2023-01-18  142  		(((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask))	\
+e2192de59e457a Johannes Berg   2023-01-18  143  	)
+e2192de59e457a Johannes Berg   2023-01-18  144  
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  145  /**
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  146   * FIELD_GET() - extract a bitfield element
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  147   * @_mask: shifted mask defining the field's length and position
+7240767450d6d8 Masahiro Yamada 2017-10-03  148   * @_reg:  value of entire bitfield
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  149   *
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  150   * FIELD_GET() extracts the field specified by @_mask from the
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  151   * bitfield passed in as @_reg by masking and shifting it down.
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  152   */
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  153  #define FIELD_GET(_mask, _reg)						\
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  154  	({								\
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  155  		__BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");	\
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  156  		(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask));	\
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  157  	})
+3e9b3112ec74f1 Jakub Kicinski  2016-08-31  158  
+a256ae22570ee4 Luo Jie         2025-04-17  159  /**
+a256ae22570ee4 Luo Jie         2025-04-17  160   * FIELD_MODIFY() - modify a bitfield element
+a256ae22570ee4 Luo Jie         2025-04-17  161   * @_mask: shifted mask defining the field's length and position
+a256ae22570ee4 Luo Jie         2025-04-17  162   * @_reg_p: pointer to the memory that should be updated
+a256ae22570ee4 Luo Jie         2025-04-17  163   * @_val: value to store in the bitfield
+a256ae22570ee4 Luo Jie         2025-04-17  164   *
+a256ae22570ee4 Luo Jie         2025-04-17  165   * FIELD_MODIFY() modifies the set of bits in @_reg_p specified by @_mask,
+a256ae22570ee4 Luo Jie         2025-04-17  166   * by replacing them with the bitfield value passed in as @_val.
+a256ae22570ee4 Luo Jie         2025-04-17  167   */
+a256ae22570ee4 Luo Jie         2025-04-17  168  #define FIELD_MODIFY(_mask, _reg_p, _val)						\
+a256ae22570ee4 Luo Jie         2025-04-17  169  	({										\
+a256ae22570ee4 Luo Jie         2025-04-17  170  		typecheck_pointer(_reg_p);						\
+a256ae22570ee4 Luo Jie         2025-04-17  171  		__BF_FIELD_CHECK(_mask, *(_reg_p), _val, "FIELD_MODIFY: ");		\
+a256ae22570ee4 Luo Jie         2025-04-17 @172  		*(_reg_p) &= ~(_mask);							\
+a256ae22570ee4 Luo Jie         2025-04-17  173  		*(_reg_p) |= (((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask));	\
+a256ae22570ee4 Luo Jie         2025-04-17  174  	})
+a256ae22570ee4 Luo Jie         2025-04-17  175  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

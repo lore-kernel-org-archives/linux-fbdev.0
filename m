@@ -1,126 +1,245 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f68.google.com (mail-ed1-f68.google.com [209.85.208.68])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BC9418C02E;
-	Mon, 27 Oct 2025 01:50:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CFF22BE04B
+	for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 06:59:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.68
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761529826; cv=none; b=kuP22l7rSYTek7b3rcovEYjQNtlD53apUojadl4r4UyC01Gg5dCUMB47Pn6GHwNq3xirgID/EJw+iXuYPFzhit8VzdF5tvgfO4LhsNwfhnSoXd80IIzEwbSH6Fl5Lg5YsrK1PpUV68NkHBTc6WRukPH+wqDEeoAwffuhK3X1BzA=
+	t=1761548350; cv=none; b=hda3uvx5avnL7bzLBiKjNC/ErPlX/8BBu2hFRLQnSTtzOHvjpKmh0HxPIOOJM8zqApYA80qY+67d64E0bO/nPDIgUQx2hJ+d7hstNF4AANNuRcPk1rl6nkzolbxlSIOqooBB1EjqOKexwr1TygB1l6PwaEvvLf26eCJ0R3E1968=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761529826; c=relaxed/simple;
-	bh=T3pkaI/GJuOsGFoVg5/R4SNriMbvV6bNB454qQaWZQ8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LQAtezO5/4R5PaFcURhdb+93yXLU+udan6DUbahneHDgX/tNmJex+Mke+1RBYEhRPCdTQtpFYVYGW3k9xfSjG6MMT3IG2qPcZH8u8Y5hYyWMc4lpOmj2P73Rc39u6BD9t3mIJRCkwzeaPMTfrHZTzOfKeXirCwGEodO4oyF1bIU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SFY3HsTq; arc=none smtp.client-ip=198.175.65.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1761548350; c=relaxed/simple;
+	bh=yLiitsiaftwnng1FNqD31hBY5W7XwCrFjEgrC73eW6I=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DGVzojBb6GkAODUeU6jx3j+9TsOGWlJxZWU4XZjSP1rj3QZa320GnsbqEQ2VVwPLWj9cLcwaIKw35FprX5uu6xkopRmbIjLTAw5E9A0EPC+Y8U8XIZ/DJkozurAU05OqlkVRGdgiMXzrH804aZsjjzbuUCBMpTKuQu0DDTj7hkw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=f7bwThEk; arc=none smtp.client-ip=209.85.208.68
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SFY3HsTq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761529825; x=1793065825;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=T3pkaI/GJuOsGFoVg5/R4SNriMbvV6bNB454qQaWZQ8=;
-  b=SFY3HsTqY2Ry2NQd3zO0yKdoJsln+nTLaiUb4zzF60W8D3fRq3fTXODw
-   vIBdycM9zJwvlhYvqOcGxcNv44Wqhmf9fou4m9uCosnAOkm6KckOTJUSi
-   nkN927iyFhYV3TRCynZEFAVQPkqrYSO/6TtlB7mDEjtvQ1U9lSgvnIdzd
-   XwnRRWL2OjwRSPQ87xHjhLVEbaRdYK45rUr66pRQNTdKsHayxukAQ/5wc
-   dIM67bUNf8kclm4K6Kwww5CDKvMH3gHlYXHgnPehlNFFU8HvWh+phtlbm
-   QuCapYO8U12dwTIYM86QRSxqOuwZLqOC3cCInr5Mx/LWbufk48meZkVPf
-   w==;
-X-CSE-ConnectionGUID: 6YWLrCLOQ/Gu/IAQzfBJ+Q==
-X-CSE-MsgGUID: UMt8ChPkQUa81pml1bmMLQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="75050337"
-X-IronPort-AV: E=Sophos;i="6.19,257,1754982000"; 
-   d="scan'208";a="75050337"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2025 18:50:24 -0700
-X-CSE-ConnectionGUID: RqD3PVgcSpO3hdFc8HdBsw==
-X-CSE-MsgGUID: bAZX7S5kQLGkCNKy4yStdQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,257,1754982000"; 
-   d="scan'208";a="188967609"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orviesa003.jf.intel.com with ESMTP; 26 Oct 2025 18:50:09 -0700
-Date: Mon, 27 Oct 2025 09:36:28 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Robert Foss <rfoss@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Joerg Roedel <joro@8bytes.org>,
-	Jassi Brar <jassisinghbrar@gmail.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Lee Jones <lee@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Kishon Vijay Abraham I <kishon@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
-	Mark Brown <broonie@kernel.org>,
-	Mathieu Poirier <mathieu.poirier@linaro.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Olivia Mackall <olivia@selenic.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, dmaengine@vger.kernel.org,
-	linux-fpga@vger.kernel.org, linux-gpio@vger.kernel.org,
-	linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-pm@vger.kernel.org, iommu@lists.linux.dev,
-	linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
-	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-phy@lists.infradead.org,
-	linux-pwm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-	linux-crypto@vger.kernel.org, linux-sound@vger.kernel.org,
-	linux-usb@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Remove extra blank lines
-Message-ID: <aP7MnJ8mIlZhT//S@yilunxu-OptiPlex-7050>
-References: <20251023143957.2899600-1-robh@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f7bwThEk"
+Received: by mail-ed1-f68.google.com with SMTP id 4fb4d7f45d1cf-63c4b41b38cso9325692a12.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 26 Oct 2025 23:59:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1761548344; x=1762153144; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gORW6RzMgWR3pCXy5E9wgSn/fbVRWV9iD4rw/Tx62iw=;
+        b=f7bwThEkW9kjmiTOYSGIJ71YsxMgBRGmTYslYhyophh2krXzvwXp8qHIKRkrkpkbLD
+         7q9F5uxzBl4UQ7CUtSmqnniRTRYdT/9+EfU2X0mQTr81FJi0dtol+skzjwTlb4urZvdd
+         M5ICewhXmhwOaOtpImVT695PADN6AycMZbVmzOoaBHKiJdyIgPU0+ziiMfZmXbpDgO58
+         OxTL7+fxJtkaIWWF3oV2t5frp/gfN0rCaIIB5yFzx5Xm+GQ1QaIRAGVx5j40QeYvUjcK
+         D+9n5DE06dB6NOdxtTUWtR0AuO9LRTLAS4Qq0J/QGJVxcQh25g/HuNkisdW5+ZhaHnJU
+         1zLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761548344; x=1762153144;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gORW6RzMgWR3pCXy5E9wgSn/fbVRWV9iD4rw/Tx62iw=;
+        b=NiB1XlZFZ+IUTqdb85/ibCbb9SoqPldZ79yboihJxHSRWF/fX3qcBPuZfDG+94mnUw
+         BEHDGxcpMkOIcdaMKRrS60J+/PQTr2uD7eZHC30Xb9KU54/Or7+0GH/hAMMRbKQ98AVP
+         1l+etLmWQgZbeo1rRI49jmhHyDRsoWug8XAQltXqPLULVcgeXmTMV2SXWChNfRR8hEuW
+         9wtkx7iR5WAIaX0vLtgL1zCVk9VT4lRyifqYuucUT9QaUfc+IVMV2ysUvD86eXW8brfd
+         DQnaFZpwOgHof1m5fQ7nLPQOhw8VUYtGULTgHFQtVGceRv9+EHwN6/3OHhzkIuxEXQ6W
+         1W3Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXtadRpjPol4LIrMrJKqnKdwIoqZkQVQPInNy+w+94ix7YeydwcP9V/MJANyRheHsThv1pFUPaGvu6Wog==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzOuGRfd+PcVYf8Syecw9IvWgpEuCkwktWBkIVwpvprsurNbmCp
+	5txySz+bIgweuqysA2r8Ix3xEIP1P77lfFrrIPrQ6ZVo2KeE9p6Jyvcd4jHEIhYjQ0lTmw9Duxb
+	LB6gMPQb0nUyKxf75cOVT+Y5bQipPmkA=
+X-Gm-Gg: ASbGncvx+7Bu4X1KxxbbhIMAojwcGY427f7l4FKSAhKYTmJNyiLHqGNp6Ah2fZWRJMA
+	GyvCgQni7R5RLA+KHmI/Wc8+mSfqcXWPncwDKK1xfh9DJt0Q8OeIE9cdisGjejPg4NkUrmlEMeg
+	+CPBTeZlG6EVyf4hU4Js5k+F4BasGsVfg03iJTxjUTq+wDoou7ey7YwGdTliilXp/ppkr76GxTb
+	8Ko43WYmJuArAxgLuMmJeXwm0Ut1Z26pg8NmIlEij0Vl/Xf6Co9Ldfb8bnRp88nWZbITefrpGrG
+	fxf8Fw==
+X-Google-Smtp-Source: AGHT+IGj1lyRw0Om+NZfHG7wsV5wmbuah2URTGrz7PyOIc3h8h8uykLzVDyCv3r2N4k1sj1rNHO4xIqOF9SGnYYISNI=
+X-Received: by 2002:a05:6402:1941:b0:634:cb54:810e with SMTP id
+ 4fb4d7f45d1cf-63e3e586b6cmr12920258a12.31.1761548343474; Sun, 26 Oct 2025
+ 23:59:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251023143957.2899600-1-robh@kernel.org>
+References: <20251026123923.1531727-1-caojunjie650@gmail.com>
+ <20251026123923.1531727-2-caojunjie650@gmail.com> <c17c10d4-cc1f-46fd-8719-e7bb9ffa91ba@kernel.org>
+In-Reply-To: <c17c10d4-cc1f-46fd-8719-e7bb9ffa91ba@kernel.org>
+From: Junjie Cao <caojunjie650@gmail.com>
+Date: Mon, 27 Oct 2025 14:58:51 +0800
+X-Gm-Features: AWmQ_bn4pyB-a8JGS6VOEXrwwtzP__Kqn7eL_CWe8p8AnY7T1FRYBRpGwHrdOZQ
+Message-ID: <CAK6c68gqHMR-FpH3MY9E_9R+V0J75V9zOii=x81e+bRcnBYOig@mail.gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: leds: backlight: Add Awinic AW99706 backlight
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 23, 2025 at 09:37:56AM -0500, Rob Herring (Arm) wrote:
-> Generally at most 1 blank line is the standard style for DT schema
-> files. Remove the few cases with more than 1 so that the yamllint check
-> for this can be enabled.
-> 
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+On Sun, Oct 26, 2025 at 9:48=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On 26/10/2025 13:39, Junjie Cao wrote:
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  enable-gpios:
+> > +    description: GPIO to use to enable/disable the backlight (HWEN pin=
+).
+> > +    maxItems: 1
+> > +
+> > +  awinic,dim-mode:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: >
+> > +      Select dimming mode of the device.
+> > +        0 =3D Bypass mode.
+> > +        1 =3D DC mode.
+> > +        2 =3D MIX mode.
+> > +        3 =3D MIX-26k.
+> > +    enum: [0, 1, 2, 3]
+> > +    default: 1
+> > +
+> > +  awinic,sw-freq:
+>
+> Please use proper units, see:
+> https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pr=
+operty-units.yaml
+> and other examples
+>
+> Same everywhere else.
+>
 
-[...]
+ACK
 
->  Documentation/devicetree/bindings/fpga/fpga-region.yaml      | 5 -----
+>
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: Boost switching frequency in kHz.
+> > +    enum: [300, 400, 500, 600, 660, 750, 850, 1000, 1200, 1330, 1500, =
+1700]
+> > +    default: 750
+> > +
+> > +  awinic,sw-ilmt:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: Switching current limitation in mA.
+> > +    enum: [1500, 2000, 2500, 3000]
+> > +    default: 3000
+> > +
+> > +  awinic,iled-max:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: Maximum LED current setting in uA.
+> > +    minimum: 5000
+> > +    maximum: 50000
+> > +    multipleOf: 500
+> > +    default: 20000
+> > +
+> > +  awinic,uvlo-thres:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: UVLO(Under Voltage Lock Out) in mV.
+> > +    enum: [2200, 5000]
+> > +    default: 2200
+> > +
+> > +  awinic,fade-time:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: Fade In/Out Time(per step) in us.
+> > +    enum: [8, 16, 32, 64, 128, 256, 512, 1024]
+>
+> Why would this be fixed setting? This really looks like runtime, drop.
+>
 
-Acked-by: Xu Yilun <yilun.xu@intel.com>
+Yes, it is fixed. I am quoting this from the datasheet.
+AW99706B provides Fade in/out mode to transform backlight from one brightne=
+ss
+to another or turn on/off backlight with a fixed slope. Writing 0b00 into
+RAMP_CTR (CFG 0x06) to enter Fade in/out mode, and the the slope of current
+transition can be set in FADE_TIME (CFG 0x06).
+
+> > +    default: 16
+> > +
+> > +  awinic,slope-time:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: Slope time in ms.
+>
+> Slope of what?
+>
+
+Ramp time in slope mode, it is retained from downstream drivers, it will
+be more clear in the next version.
+
+> > +    enum: [8, 24, 48, 96, 200, 300, 400, 500]
+> > +    default: 300
+> > +
+> > +  awinic,ramp-ctl:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: >
+> > +      Select ramp control and filter of the device.
+> > +        0 =3D Fade in/fade out.
+> > +        1 =3D Light filter.
+> > +        2 =3D Medium filter.
+> > +        3 =3D Heavy filter.
+> > +    enum: [0, 1, 2, 3]
+> > +    default: 2
+> > +
+> > +  awinic,brt-mode:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: >
+> > +      Select brightness control of the device.
+> > +        0 =3D PWM.
+> > +        1 =3D IIC.
+> > +        2 =3D IIC x PWM.
+> > +        3 =3D IIC x PWM(P-ramp).
+> > +    enum: [0, 1, 2, 3]
+> > +    default: 1
+> > +
+> > +  awinic,onoff-time:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: Turn on/off time(per step) in ns.
+> > +    enum: [250, 500, 1000, 2000, 4000, 8000, 16000]
+>
+> Not a DT property.
+>
+
+It is mandatory in the downstream driver, I keep it.
+
+The following is the description about it,
+
+If the value in ONOFF_CTR(CFG 0x08 [4:3]) is 0b00, the turning on/off ramp =
+of
+AW99706B is soft start and fast end. In this mode, the ramp time can be
+programmed by ONOFF_TIME (CFG 0x08 [2:0]).
+
+> > +    default: 2000
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - enable-gpios
+> > +
+> > +unevaluatedProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/gpio/gpio.h>
+> > +
+> > +    i2c {
+> > +        #address-cells =3D <1>;
+> > +        #size-cells =3D <0>;
+> > +
+> > +        aw99706@76 {
+> > +            compatible =3D "awinic,aw99706";
+> > +            reg =3D <0x76>;
+> > +            enable-gpios =3D <&tlmm 88 GPIO_ACTIVE_HIGH>;
+>
+> Where are other properties from common.yaml? Looks like you re-invented
+> some parts.
+>
+
+Sorry, I forgot it, when writing the bindings, I used ktz8866.yaml as a
+template. I  should have dropped the common.yaml. This driver does
+not require other properties in common.yaml.
+
+Regards,
+Junjie

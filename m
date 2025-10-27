@@ -1,114 +1,284 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+Received: from mail-ej1-f67.google.com (mail-ej1-f67.google.com [209.85.218.67])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5295D2FAC05
-	for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 08:43:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BA401BC41
+	for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 10:30:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.67
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761554639; cv=none; b=C/X3YlYAOiDlj7l+h3Vy/vLLIWIrSzwrksa2r284KH6iDgmbWHNyJBYqIpjwrr1l8zswEc8tgExqWlsDQAFTnzeTeiTS4Po0GZt1qMXxDp9cr/1QNmvC10UC1RAuhgCmq5aQEjxkpHwe3Zu+dmUY3KWS8ef/7WphcXExMnED7xs=
+	t=1761561042; cv=none; b=mgULNLGltF+qkhZGTtDdS2DQodFLxG6FtX/xmbdwBYmYh1jWHl+aumCckaXRTJOOKawoMkzOSQCdrcbyfyEsdORzCKeSAJLjo9WkOYAkCLDgRqo6U6STWmTefwy2yJk2REc5qcrnfW0pHLT1wD2X+RW8DOlPSzcz4cxkiMKlv+Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761554639; c=relaxed/simple;
-	bh=6GhP5nzTlCJfW037vP9XgllmDGxPVLYMDiLoDoeZNf4=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=DqADf00f8Qbv17pDV8T1Gk+Hw3SHAoN31KIrCISq2mcPpwAOs2ZcHIyP91gId96brfp6IF7g8JPFmfmKejx90SXE8Ya2PvW6tn9d6rd0zcu54qxMtgrdXqS16LYbgkhD5PWq9e2KnZc8aqNEur+J4CngC5P8+gOGPccm7Eucq6U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=etBaUrra; arc=none smtp.client-ip=209.85.214.177
+	s=arc-20240116; t=1761561042; c=relaxed/simple;
+	bh=SqZ0Ub745WWb3ZeyhwmiHZeS8d01xTOY/Qojh9ScUdc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JeZmO17WxS4eEFB8Af3/o07y9HVLUdp4aqyB5eQ++aq+mBe5G+ICSKPouImTeeMj/+UilsZRCMiIFminyHdmqGS9p1t/Wl+mDSeyKxrfK+5Auw0KTGG0AZdpntZsPRsS5GLAM0UesHJP9+T4VstdomEd4DOAS82gJbR7eyovDgE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hd33ZkFi; arc=none smtp.client-ip=209.85.218.67
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="etBaUrra"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2698d47e776so34841505ad.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 01:43:57 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hd33ZkFi"
+Received: by mail-ej1-f67.google.com with SMTP id a640c23a62f3a-b4aed12cea3so503595966b.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 27 Oct 2025 03:30:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761554636; x=1762159436; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=3XdBHtrgp03ghVnsbwdnfe2LK03D2az8OLXtLHgvnDs=;
-        b=etBaUrral7HiRlkJR5xaCp3MNIXyZm0xW2f6n99fj0EjBEICuBayIANI1njiuZgH3J
-         MIkNOYCgvHo8FqzquFQ8dMygzlTiohEzoGRM/64fb+dj2XdVyKj5d16NKCWpWHOw0n7O
-         lNI8DOrgVGAQjMP1JPDB5qQ7S6uMo1GQEYC7MYrFVe0YM5TCuCPhEzTjuR6n+Klle5tB
-         Wib4R7WXeJRiPtw0Mc32FYsEputC4mB/WT8GzIFvzMNdgxCXKPPrOA4bqy/csF1vScOf
-         c1stI8wv//WN0snEiNTTguzLBmvkor+9Vh7a/H1xfkXZrNNOaaPSp2lRzziPH2/1ctgQ
-         QIMA==
+        d=gmail.com; s=20230601; t=1761561039; x=1762165839; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=r+t/oTmZjxhzW3SWsg5D/3k7ryEIEHaxHipwLWpbI60=;
+        b=hd33ZkFiXaYLiNJgs5vod1PJuWbeOcQHlPTdmM9XNSHMiGobxPQbFR1WJoaclcbOH6
+         LmAq06mazq8ByagF6BVAoUodPtdWAiglBKxE67DFh6Jn5ecbZLUbeXabQgbWMRDk7ChE
+         IfPqbChGH2kSAI0LKrU0kwfM9uodJp8DRQvP18IGFwwZe4WP0N/bhhg0MSif8t0CiY4W
+         0Rw7R41AXT+f3TXhN3OGcvdlCHh07poD4DylE2vKLRAq1FLIFbkKHE6ZjoD3/+yED1sq
+         +Oky2aKwK2QFgzJ7SAnAZGB7DJ/jbhni56Q7hvoLpeU/8SENae4PdNw6t9hG9Vyn//kG
+         yXNQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761554636; x=1762159436;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=3XdBHtrgp03ghVnsbwdnfe2LK03D2az8OLXtLHgvnDs=;
-        b=oJlOPvn2susD4O16YghHUywFzN85u6efqJqq5HSEQbr2f8DH0akk4Ldu5TUchM8hMJ
-         V2362+1UB/D1KAMa7Hy5Tw+70k2Cf2b8FR7BNkUYRXtfI/002gsfO17tCX8Arm/FxuOR
-         hhxcnNiVKtM9DS7vyQWWqoTaK51oCHhs+xm9QRb7G0wIxJlb3lwfsgn5PUSF3uywoYnl
-         J8+uzyndG5vOOCXjQ/3zA3Igr7nGCy2ywRVJQ340efsOoOBo/pdS9FZjZwbCDAUhwA80
-         whlbuYWuHyVoYWdzROCKvNXqwq3L65a3t0UwubGhOGzHch3WiLUi1LhoxmrDMU1V8fui
-         gBTQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWfiSraSxjB1KVFGKKAIPxcgjz4NgaYZV5Cg2H97hJmfdO6xYtB120whVfb3BxKB6igtJNQki0Gd6p2vg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw9NCF91YrfWHqpW3nH4h23IpWcPt75KVo4pJLBhysbi/mXgUX0
-	VEDuKdialwuqg2Q10xSCUInWD7WFa+rmQp80mXJfodWgoHpdy5W0GzHY
-X-Gm-Gg: ASbGnctRX508wQRQPHCi6A15+YI52NFoGzpsdGFqj+sApbaWlGxBrUW1gKcvyydeytu
-	ggTu3XGL6k3Qing2SFNBGEvN+NQjx5+lui/2CmQHAtaH6ffsHKGUq71XEfKub795NGNVxfoXumG
-	ne4G42zUVCCvtv08hdj6F+ETTAia2sQhscLxhwp20IqzA7AR+KWIa3ZnMCfBSmMSZGvMlRH8niR
-	O7niZ5Io7BwCnMlBoXZBDCh01w3SFG/saedHRiNwX7jqzyHDkvne5hpG60RHFNLWic+U00CEcD/
-	ZVCMF+hZB08irAq4xmMps097SiwcYf7o9Y+lDvSUxfp+EsHPO8bJv7Ti8GdOSEhe4IFPsk6xnzJ
-	zzfax0Mg7OQXd++6oIU6y6erf0kJrKhlssWvEcpeGK4bvx0hnvNOh5awv2ZvWXprMg+QLgD1wcx
-	SDD0UZAHbxX/y2spyYGBXYiS5y4rtSlnMD
-X-Google-Smtp-Source: AGHT+IHJsL6+kpoPk8x1PWb0mqg3iHOZS6wR/zv/DBqOZ8GMqq9D0VqdZrEygNgekK2sc9hwLF1zkA==
-X-Received: by 2002:a17:902:c952:b0:290:a3ba:1a8b with SMTP id d9443c01a7336-29465525229mr183633555ad.24.1761554636181;
-        Mon, 27 Oct 2025 01:43:56 -0700 (PDT)
-Received: from localhost.localdomain ([124.77.218.104])
-        by smtp.googlemail.com with ESMTPSA id d9443c01a7336-29498e4349fsm73037945ad.107.2025.10.27.01.43.53
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 27 Oct 2025 01:43:55 -0700 (PDT)
-From: Miaoqian Lin <linmq006@gmail.com>
-To: Helge Deller <deller@gmx.de>,
-	Paul Mackerras <paulus@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Cc: linmq006@gmail.com,
-	stable@vger.kernel.org
-Subject: [PATCH] video: valkyriefb: Fix reference count leak in valkyriefb_init
-Date: Mon, 27 Oct 2025 16:43:37 +0800
-Message-Id: <20251027084340.79419-1-linmq006@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+        d=1e100.net; s=20230601; t=1761561039; x=1762165839;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=r+t/oTmZjxhzW3SWsg5D/3k7ryEIEHaxHipwLWpbI60=;
+        b=hTsoZDos9Hl4qNb0LnUUMsT4tNhZXCmSwyp5hilvtUGIRHpMOIkyuTRnWp9iGgqbxn
+         hh+l7LL4s7OJHVZuCZW9BHmREwG83R9KdmG9yHveHR628wOG9tq6lG41lJVDPzVR27qz
+         t/UxAlA2964e/ZF8mSdv3f8LliNm5YCoLqLEFJsWZ8iREdtQwXZpsMDTGe9OOC8MxTEz
+         Kh8gmMgTYCrdGy5mNCSLIN5+ixlhwCH+PU7f4V4aNUrT+maa9g8t7obM9iXBTycE121s
+         P7E7pDyJh7zBNYOY6vv7/TOiKGarzRKa93UD39vinjJjXsNaoEHYvOnyqesey/3fnytD
+         aKTQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXvzJ968bsmAgk+mKVtHBZZDTk1jfIFosD6EdKMqLP0uYc1dn/rPS5qJ/VISnGByLdDn6tX/0hQU6olgA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzhTVaoHK6i4foebRt5G7kFQJmTn0O+909eb+rMwjml7qNzLyxy
+	QhDETjGbCxbLSTI+4xMYvmgP4RAS5A1r8Plq5IJpkrpPzDkxesc0OZRDyCWYfkXv06GBk7unw+l
+	my0XbFCpqaDaftbYV9tx2MGwLTHQ0PsQ=
+X-Gm-Gg: ASbGncurik4r/yolG2mthhfJZBXJgTzPzo7Jm2VMrtvioZfSno8oWkdSuAim31rXeKU
+	p/u/1qbMWVpjiv1F+bbB/4iuL1O9p+oKiQys6a/p+9GoUd79O8mhWNtV059Sg1xiX8j6Y3KCmGV
+	Iu+Tj5OZYDCpn3oQYSQ0AgaTmRF20Xoxs25/D1PG4BnZK8ynDuahDTdT+SfMrr9nYB4W9keNk5S
+	QO2oaJd5NvvKbwVUskBdHgYdSNIMzeyi1GaD4JLXQ1+A9GQbxhHiZemMYUw66mtjf4MWl8=
+X-Google-Smtp-Source: AGHT+IHLxFJ3SPEDNoyMay98zhNlSRUKkyfFmuSirmfTIVuYNM52PHBBa3Zie8g2ZOnRY/ZMCMowauQRHmA5eHcm2CY=
+X-Received: by 2002:a17:907:9448:b0:b04:626e:f43d with SMTP id
+ a640c23a62f3a-b64751284f6mr3751346266b.47.1761561038573; Mon, 27 Oct 2025
+ 03:30:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20251026123923.1531727-1-caojunjie650@gmail.com>
+ <20251026123923.1531727-2-caojunjie650@gmail.com> <c17c10d4-cc1f-46fd-8719-e7bb9ffa91ba@kernel.org>
+ <CAK6c68gqHMR-FpH3MY9E_9R+V0J75V9zOii=x81e+bRcnBYOig@mail.gmail.com> <c32970a8-c1d1-4130-839b-981bca5373f3@kernel.org>
+In-Reply-To: <c32970a8-c1d1-4130-839b-981bca5373f3@kernel.org>
+From: Junjie Cao <caojunjie650@gmail.com>
+Date: Mon, 27 Oct 2025 18:29:01 +0800
+X-Gm-Features: AWmQ_bmSyDTyEE0NzC1P6-5KqVAikLVF9X2J_Ed-gcKZn6A6nKVOVFcs4LVP9Cc
+Message-ID: <CAK6c68iV2qUFEp_ujWwKYFmgt261rvQNK8Jo5Wjt-dCRbG_BVw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: leds: backlight: Add Awinic AW99706 backlight
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The of_find_node_by_name() function returns a device tree node with its
-reference count incremented. The caller is responsible for calling
-of_node_put() to release this reference when done.
+On Mon, Oct 27, 2025 at 4:38=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On 27/10/2025 07:58, Junjie Cao wrote:
+> > On Sun, Oct 26, 2025 at 9:48=E2=80=AFPM Krzysztof Kozlowski <krzk@kerne=
+l.org> wrote:
+> >>
+> >> On 26/10/2025 13:39, Junjie Cao wrote:
+> >>> +
+> >>> +  reg:
+> >>> +    maxItems: 1
+> >>> +
+> >>> +  enable-gpios:
+> >>> +    description: GPIO to use to enable/disable the backlight (HWEN p=
+in).
+> >>> +    maxItems: 1
+> >>> +
+> >>> +  awinic,dim-mode:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: >
+> >>> +      Select dimming mode of the device.
+> >>> +        0 =3D Bypass mode.
+> >>> +        1 =3D DC mode.
+> >>> +        2 =3D MIX mode.
+> >>> +        3 =3D MIX-26k.
+> >>> +    enum: [0, 1, 2, 3]
+> >>> +    default: 1
+> >>> +
+> >>> +  awinic,sw-freq:
+> >>
+> >> Please use proper units, see:
+> >> https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas=
+/property-units.yaml
+> >> and other examples
+> >>
+> >> Same everywhere else.
+> >>
+> >
+> > ACK
+> >
+> >>
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: Boost switching frequency in kHz.
+> >>> +    enum: [300, 400, 500, 600, 660, 750, 850, 1000, 1200, 1330, 1500=
+, 1700]
+> >>> +    default: 750
+> >>> +
+> >>> +  awinic,sw-ilmt:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: Switching current limitation in mA.
+> >>> +    enum: [1500, 2000, 2500, 3000]
+> >>> +    default: 3000
+> >>> +
+> >>> +  awinic,iled-max:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: Maximum LED current setting in uA.
+> >>> +    minimum: 5000
+> >>> +    maximum: 50000
+> >>> +    multipleOf: 500
+> >>> +    default: 20000
+> >>> +
+> >>> +  awinic,uvlo-thres:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: UVLO(Under Voltage Lock Out) in mV.
+> >>> +    enum: [2200, 5000]
+> >>> +    default: 2200
+> >>> +
+> >>> +  awinic,fade-time:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: Fade In/Out Time(per step) in us.
+> >>> +    enum: [8, 16, 32, 64, 128, 256, 512, 1024]
+> >>
+> >> Why would this be fixed setting? This really looks like runtime, drop.
+> >>
+> >
+> > Yes, it is fixed. I am quoting this from the datasheet.
+>
+> Fixed per board.
+>
+>
+> > AW99706B provides Fade in/out mode to transform backlight from one brig=
+htness
+> > to another or turn on/off backlight with a fixed slope. Writing 0b00 in=
+to
+> > RAMP_CTR (CFG 0x06) to enter Fade in/out mode, and the the slope of cur=
+rent
+> > transition can be set in FADE_TIME (CFG 0x06).
+> >
+> >>> +    default: 16
+> >>> +
+> >>> +  awinic,slope-time:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: Slope time in ms.
+> >>
+> >> Slope of what?
+> >>
+> >
+> > Ramp time in slope mode, it is retained from downstream drivers, it wil=
+l
+> > be more clear in the next version.
+> >
+> >>> +    enum: [8, 24, 48, 96, 200, 300, 400, 500]
+> >>> +    default: 300
+> >>> +
+> >>> +  awinic,ramp-ctl:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: >
+> >>> +      Select ramp control and filter of the device.
+> >>> +        0 =3D Fade in/fade out.
+> >>> +        1 =3D Light filter.
+> >>> +        2 =3D Medium filter.
+> >>> +        3 =3D Heavy filter.
+> >>> +    enum: [0, 1, 2, 3]
+> >>> +    default: 2
+> >>> +
+> >>> +  awinic,brt-mode:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: >
+> >>> +      Select brightness control of the device.
+> >>> +        0 =3D PWM.
+> >>> +        1 =3D IIC.
+> >>> +        2 =3D IIC x PWM.
+> >>> +        3 =3D IIC x PWM(P-ramp).
+> >>> +    enum: [0, 1, 2, 3]
+> >>> +    default: 1
+> >>> +
+> >>> +  awinic,onoff-time:
+> >>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> >>> +    description: Turn on/off time(per step) in ns.
+> >>> +    enum: [250, 500, 1000, 2000, 4000, 8000, 16000]
+> >>
+> >> Not a DT property.
+> >>
+> >
+> > It is mandatory in the downstream driver, I keep it.
+>
+> Huh? I don't care about downstream driver. Again, not a DT property. You
+> cannot add here runtime properties and when, we tell you that, you just
+> ignore our review.
+>
+> NAK
+>
 
-Found via static analysis.
+My apologies for the misunderstanding and my poorly worded previous
+comment. I absolutely did not intend to ignore your review.
 
-Fixes: cc5d0189b9ba ("[PATCH] powerpc: Remove device_node addrs/n_addr")
-Cc: stable@vger.kernel.org
-Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
----
- drivers/video/fbdev/valkyriefb.c | 2 ++
- 1 file changed, 2 insertions(+)
+I mentioned the "downstream driver" only to explain why I had originally
+included the property.
 
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index 91d070ef6989..6ff059ee1694 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -329,11 +329,13 @@ static int __init valkyriefb_init(void)
- 
- 		if (of_address_to_resource(dp, 0, &r)) {
- 			printk(KERN_ERR "can't find address for valkyrie\n");
-+			of_node_put(dp);
- 			return 0;
- 		}
- 
- 		frame_buffer_phys = r.start;
- 		cmap_regs_phys = r.start + 0x304000;
-+		of_node_put(dp);
- 	}
- #endif /* ppc (!CONFIG_MAC) */
- 
--- 
-2.39.5 (Apple Git-154)
+I now understand your point clearly. I will remove them in the next
+version.
 
+Thanks for your fast reviews and for clarifying this principle for me.
+
+>
+> >
+> > The following is the description about it,
+> >
+> > If the value in ONOFF_CTR(CFG 0x08 [4:3]) is 0b00, the turning on/off r=
+amp of
+> > AW99706B is soft start and fast end. In this mode, the ramp time can be
+> > programmed by ONOFF_TIME (CFG 0x08 [2:0]).
+> >
+> >>> +    default: 2000
+> >>> +
+> >>> +required:
+> >>> +  - compatible
+> >>> +  - reg
+> >>> +  - enable-gpios
+> >>> +
+> >>> +unevaluatedProperties: false
+> >>> +
+> >>> +examples:
+> >>> +  - |
+> >>> +    #include <dt-bindings/gpio/gpio.h>
+> >>> +
+> >>> +    i2c {
+> >>> +        #address-cells =3D <1>;
+> >>> +        #size-cells =3D <0>;
+> >>> +
+> >>> +        aw99706@76 {
+> >>> +            compatible =3D "awinic,aw99706";
+> >>> +            reg =3D <0x76>;
+> >>> +            enable-gpios =3D <&tlmm 88 GPIO_ACTIVE_HIGH>;
+> >>
+> >> Where are other properties from common.yaml? Looks like you re-invente=
+d
+> >> some parts.
+> >>
+> >
+> > Sorry, I forgot it, when writing the bindings, I used ktz8866.yaml as a
+> > template. I  should have dropped the common.yaml. This driver does
+> > not require other properties in common.yaml.
+>
+>
+> I don't care about driver much, but anyway it should use common.yaml.
+> Please read the feedback very carefully.
+>
+
+ACK
+
+Regards,
+Junjie

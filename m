@@ -1,106 +1,126 @@
-Received: from mail-ot1-f46.google.com (mail-ot1-f46.google.com [209.85.210.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DAAA27A477
-	for <linux-fbdev@vger.kernel.org>; Sun, 26 Oct 2025 23:34:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BC9418C02E;
+	Mon, 27 Oct 2025 01:50:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761521700; cv=none; b=Tl1ba6DkbMqVq2Kns9BbJAnYQAT9qM0dCVkWJZ33+Rfrs6xXJtWhnLnnrkPfotHbpIs3kMS5YWE2JumeSdlfO5KOlgy8vwUDAb9Z1oyE1LUzBDUv2zcChpK4Yx4MwHYmFP7GupmE0z99bwrh/tllLCySC8V5Wwjp3DjjLFNpsB4=
+	t=1761529826; cv=none; b=kuP22l7rSYTek7b3rcovEYjQNtlD53apUojadl4r4UyC01Gg5dCUMB47Pn6GHwNq3xirgID/EJw+iXuYPFzhit8VzdF5tvgfO4LhsNwfhnSoXd80IIzEwbSH6Fl5Lg5YsrK1PpUV68NkHBTc6WRukPH+wqDEeoAwffuhK3X1BzA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761521700; c=relaxed/simple;
-	bh=at/67SzS/p3gsLpJ5YF0J/wwgPW9IOdgdRXKzYCWyc0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=pn2LdIoeGkvl1QMM0lxGhmNqM2eGW30hM/KZ+4md8dzRYGKflQqTW6Pq9JCpMA7/5arWPierJs/434J9Cj66m657yg/mGw+1niIBUNaFMzaQhsFYm11M8VSbLeDsqSroNNLYej4djFAvzr41HZv6E40bCdnecrhDWwnvqH3ffk4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NUGu5kuo; arc=none smtp.client-ip=209.85.210.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1761529826; c=relaxed/simple;
+	bh=T3pkaI/GJuOsGFoVg5/R4SNriMbvV6bNB454qQaWZQ8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LQAtezO5/4R5PaFcURhdb+93yXLU+udan6DUbahneHDgX/tNmJex+Mke+1RBYEhRPCdTQtpFYVYGW3k9xfSjG6MMT3IG2qPcZH8u8Y5hYyWMc4lpOmj2P73Rc39u6BD9t3mIJRCkwzeaPMTfrHZTzOfKeXirCwGEodO4oyF1bIU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SFY3HsTq; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NUGu5kuo"
-Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-7c2846c961fso2260232a34.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 26 Oct 2025 16:34:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761521698; x=1762126498; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xjXmcOnCPMZhVr3FarSjpJslIfc1BLVEl3PoT/jHhcQ=;
-        b=NUGu5kuoD8yLc3pGsGS/0F3+5rhS8YdjqTOx249l5dG03TzEg+MB35wS4gc+i4EZWo
-         8ES4GSHyhd9oxJVMfUSign0guAD33MxLeyPY0miSZ1m0NzlP4BzlESh7wrWfJv4aD172
-         lWZyyzywmXb6Ui5X+CqTyqRW5jk4kzJI/NTOgqBLUS5/lkbgoLTuJWHzQcjTj0KurS1d
-         h1jW8xIbQA8bN8mmLG17i+yCzp17OTaCfcAHDxeO32cGWC8J7LhIy/txCfCsmiqutD8Q
-         sxT/ZGTKKgEGXkmlP/cGNOyjQTrdZen5Un4EvRJnn3C4T4UK9ppKNqikgFSadQm1Mtyu
-         a2lA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761521698; x=1762126498;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xjXmcOnCPMZhVr3FarSjpJslIfc1BLVEl3PoT/jHhcQ=;
-        b=X2tRvGDZBRV/WhPlxG1YZROLIDU+mesF3ewC5hNPeSK4MciRzA3H489xmRryl1Fg/Y
-         ZJXA/kzR3qCT8pGP6gacqcmNvfZ0t4U9YmgprRmUz+yB2ftZwVYQiEh/2tDa2HoqBxFa
-         FgewFBqZBl5jG9uoNwP8IEtzg3dO4SaktTWj4DtYA20gspYVX2PBj/80Yap2m/oMNwd3
-         atG5dHY9q4amYprGoBPweL2lBpeEkLeo+UZW9qE5heZDx+uyJTd4nc17m0M/WmFuBLu6
-         3S4ZAJkSm6J4fYVFIG0p+yjobyTDEQWICe8R5IzK4zh71CQBlZiDX/QrmFSqT3QBjqRX
-         QLoQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVlMWIiS+wvvjzZJzos0lKA7Hei93j+GkNcotZuR9HsnfaS7q/2U6UXBk5/NHa9Ry4qjwtS9d0CbgY3Gw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyl+SAbYs4p3iMWq00BQDmDSml04KgaDsB1iooU+XB7H2yf41ko
-	F3zMlMYeCS5b4pqo0SdkSDckm7/uvIuB+KpQP3MLs8+qxYCXLRyy3z2u
-X-Gm-Gg: ASbGncvUvOiX/GJsk1lJlm05K+8Lf+wiMHwy7Fmzv4lchcFGzgw70dsPH9PDGwwj/mB
-	//9V4pYEq2agZ/oGgVVKKFFi28exo0zrqByx8XR0s9veFzrpM2FFbN03TRW3HCqDzQBoH2bDs2u
-	IXI5nc80tiUmsdSERz1k/paDf+oZxQha7wDZvqHdJvpkO0UpMMZB707ysHvN2L17MP8DobostNt
-	mhQVy3zS4jAL4pNmoAM+QTfXyNWXs5WJWow/Mzic5s3Sh2bIO905NsEXLiO7Gs54fNNcpPLI7bH
-	Bou4H/ZLOPjis4jhm9DUUscgKOBbVVbg4nDGkusSvFiYflG6Yx+pwqClEbAtvrrFP5W3GaJ6CBv
-	9MhGxGSRv5bNw2WFrhAJUgsFAkJUX+kfIHhcxWiVvPWc5slUkYi9TcaqGXCw0DyxqsRsaHHoXsx
-	nbmj2rgq6s2mRu3EcAlMDDonJMi4cyELrU
-X-Google-Smtp-Source: AGHT+IFRoVxA8JDxaqFZaD1Z5ybzyAsPgQl8ptpUfUhfppOKQNfzWK4qTEYWo1gQA8fuuCYqe0XEzQ==
-X-Received: by 2002:a05:6830:83ab:b0:7c5:3aa3:4927 with SMTP id 46e09a7af769-7c53aa3554emr1369347a34.25.1761521698127;
-        Sun, 26 Oct 2025 16:34:58 -0700 (PDT)
-Received: from localhost.localdomain ([104.247.98.2])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7c530134ddbsm1691602a34.8.2025.10.26.16.34.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Oct 2025 16:34:56 -0700 (PDT)
-From: Cristian Del Gobbo <cristiandelgobbo87@gmail.com>
-To: sudip.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Cristian Del Gobbo <cristiandelgobbo87@gmail.com>
-Subject: [PATCH] staging: sm750fb: make g_fbmode0 an array of const pointers
-Date: Mon, 27 Oct 2025 00:34:32 +0100
-Message-Id: <20251026233432.1707-1-cristiandelgobbo87@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SFY3HsTq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761529825; x=1793065825;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=T3pkaI/GJuOsGFoVg5/R4SNriMbvV6bNB454qQaWZQ8=;
+  b=SFY3HsTqY2Ry2NQd3zO0yKdoJsln+nTLaiUb4zzF60W8D3fRq3fTXODw
+   vIBdycM9zJwvlhYvqOcGxcNv44Wqhmf9fou4m9uCosnAOkm6KckOTJUSi
+   nkN927iyFhYV3TRCynZEFAVQPkqrYSO/6TtlB7mDEjtvQ1U9lSgvnIdzd
+   XwnRRWL2OjwRSPQ87xHjhLVEbaRdYK45rUr66pRQNTdKsHayxukAQ/5wc
+   dIM67bUNf8kclm4K6Kwww5CDKvMH3gHlYXHgnPehlNFFU8HvWh+phtlbm
+   QuCapYO8U12dwTIYM86QRSxqOuwZLqOC3cCInr5Mx/LWbufk48meZkVPf
+   w==;
+X-CSE-ConnectionGUID: 6YWLrCLOQ/Gu/IAQzfBJ+Q==
+X-CSE-MsgGUID: UMt8ChPkQUa81pml1bmMLQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="75050337"
+X-IronPort-AV: E=Sophos;i="6.19,257,1754982000"; 
+   d="scan'208";a="75050337"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2025 18:50:24 -0700
+X-CSE-ConnectionGUID: RqD3PVgcSpO3hdFc8HdBsw==
+X-CSE-MsgGUID: bAZX7S5kQLGkCNKy4yStdQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,257,1754982000"; 
+   d="scan'208";a="188967609"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orviesa003.jf.intel.com with ESMTP; 26 Oct 2025 18:50:09 -0700
+Date: Mon, 27 Oct 2025 09:36:28 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Andrzej Hajda <andrzej.hajda@intel.com>,
+	Robert Foss <rfoss@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Joerg Roedel <joro@8bytes.org>,
+	Jassi Brar <jassisinghbrar@gmail.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Lee Jones <lee@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+	Mark Brown <broonie@kernel.org>,
+	Mathieu Poirier <mathieu.poirier@linaro.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Olivia Mackall <olivia@selenic.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, dmaengine@vger.kernel.org,
+	linux-fpga@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-pm@vger.kernel.org, iommu@lists.linux.dev,
+	linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
+	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-phy@lists.infradead.org,
+	linux-pwm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+	linux-crypto@vger.kernel.org, linux-sound@vger.kernel.org,
+	linux-usb@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: Remove extra blank lines
+Message-ID: <aP7MnJ8mIlZhT//S@yilunxu-OptiPlex-7050>
+References: <20251023143957.2899600-1-robh@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251023143957.2899600-1-robh@kernel.org>
 
-Change g_fbmode0 from 'static const char *' to 'static const char * const'
-so that both the array and its elements are const. This addresses a
-checkpatch warning and matches intended usage.
+On Thu, Oct 23, 2025 at 09:37:56AM -0500, Rob Herring (Arm) wrote:
+> Generally at most 1 blank line is the standard style for DT schema
+> files. Remove the few cases with more than 1 so that the yamllint check
+> for this can be enabled.
+> 
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 
-No functional change intended.
+[...]
 
-Signed-off-by: Cristian Del Gobbo <cristiandelgobbo87@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>  Documentation/devicetree/bindings/fpga/fpga-region.yaml      | 5 -----
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 3659af7e519d..ceb89ee99ce0 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel;
- static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview;
--- 
-2.34.1
-
+Acked-by: Xu Yilun <yilun.xu@intel.com>

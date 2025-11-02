@@ -1,141 +1,107 @@
-Received: from mail-il1-f205.google.com (mail-il1-f205.google.com [209.85.166.205])
+Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16A491917F0
-	for <linux-fbdev@vger.kernel.org>; Sun,  2 Nov 2025 21:10:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.205
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C173F5695
+	for <linux-fbdev@vger.kernel.org>; Sun,  2 Nov 2025 23:01:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762117835; cv=none; b=MZcjdMNP5C9nrYh38H5GVyp7aEUq6loQK0YCNeMxvFy6zdgaKNo86uTeuv1Z46TSkFBGgiJ02ALPQWCp/sXo94FE2pNP9piWR1DZjixSxJr8xv9vsuBkugqcbNwV6wGkPbhDdlMA2D5iG4T59JPGuaVK7qE1K5UXSFNY/D3858E=
+	t=1762124511; cv=none; b=TKFfJb1HSvwuUqsl4r5qDaVKpPotk+GbwQpZ8ogOqYXrqqQfUClYR/bm9WDT49+h1wxHyIFjDDhoUtY9q7+nfFc6hbP4ftlxVMd+EueAmkVo2pp21KWHBQ6IEKLJ+d/PmekrfB8l7O/of1Ec4kiQksk/Vg/7WEaa6HtzurppjTs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762117835; c=relaxed/simple;
-	bh=hHOeeEihzzDfg1Xo6u6zZ2eGJFu1etPWu2Vm+y9Jth4=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=gMjo9UgjFmpONO+oTHgE3fUdoO5C8qctyADp6AzuBD095eEqFdsLHtb1XA6/78BOvswvZlfruWN55KdO4uYktI+ZoMvgdxZDIh73Vs4F18G8aedVX91R2ghNQGMm+vqQVnv4Rklj8tvlgduX7jjSbK0lZ+AeqnGvaQHMvkI4ZCQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.205
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-il1-f205.google.com with SMTP id e9e14a558f8ab-433316b78f4so1393035ab.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 02 Nov 2025 13:10:32 -0800 (PST)
+	s=arc-20240116; t=1762124511; c=relaxed/simple;
+	bh=TLZKZNnITQFcd97o8fyws0ES3nNzbLGkdPJtuqGz5sQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=f1bsKuPJ6Fa59UnDBG+PKsE2JjNinAuqPFRHYmU00rfEwxeX0isPT12kq6IpGfKGv6+pveXwqGzRJXI0faXIRa0pSkrvEq2WIm3Z2cA8405bOnjhLOFtlxISW36/pKGfJjlLxpEsXBle3bLjLt1mhPLGlTznZMySl9HO2FxQou8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QcMexx5L; arc=none smtp.client-ip=209.85.160.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QcMexx5L"
+Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-3d70c5bb455so1399214fac.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 02 Nov 2025 15:01:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1762124508; x=1762729308; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=suckYxpxhS8tpm2524qw9Mw5oQrBRRr9u/yRv9LVIaI=;
+        b=QcMexx5LR1PZSxEkWDknLztbCBkMo0IGDANf0xGvP945SFPldvjINnJ52WbH/E3OUl
+         /sYxi3n7Hez96A+9jhU7AKqAnMKj5t1VlQ8sBXwx2fYCM7eMEeNPV3YpVcnSmLN/Ikl/
+         jrqkIrVHzC2dYLeULsMau9OMt9lmQXt6eTbu9jU7CPkJOjLGEelbmRUBF3SUbsq/DNsq
+         k+LClaQTEqbGj4ySenUmqH8GoyahZn4VFs11eoupW2KGhlvysUIksjtCiXDAGekq42ck
+         ROjaa8cAScVaaIsj7nc+GmUsa4ZEJJxvxOEm5qFiNHUV4eEFBRmH9AxRn//iE27UXG9Z
+         gp6Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762117832; x=1762722632;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=3r4tNEJZqNR7jvnaf7lJZd2h8YwAodUy8epKeDGKL8M=;
-        b=qks+LskE8teGZIa7h7mnMopmoMZ2BMRGxZWKCrATkazF+NOlv7FS4LOaKDyxIVYqH/
-         nVwj4XUZUtc0RzijcWodhTi9prXbd0V/1a4eWxR2DR0grMOzc1jJxexHkOXOiw88TXkX
-         +QGpkQoMFaNDyKE8elhdqW6QQa6vu6Q+KkH6AcS+1VZqRQJI5Yme4KF4mrjiJigqjIEH
-         LTgpoTtLISAt6QcafWWxNpkZnRZSv2r/rk1VuWVybNjJwK5rI6F8v/Q2UymeztWoyvny
-         F3Yg0ljaR3beW6y3bAuNbvBKTLU78ufxc41mlWMlaDGGVvd72Yb5sgTJhHPlBIufotv2
-         l7zA==
-X-Forwarded-Encrypted: i=1; AJvYcCVFmI3B0LgYJaSre15SfV8LwD7zoZaPE4LQfmvPDWExYMtXFd6m08YhRAb+nz091AZ5yFvUJqcFPyrCgg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzMeHogma0/MwvpUcR1fjFcETtwqjJW2/SR0EQecckSzWSOWAYG
-	BpbS1OKdNnGiHdrEYCsuSuZQ8IKyYCvxxxk8KiQCuZxhJav7ScAi7nFTPS08x1AG0OxsSaSObCF
-	JoO2kArxpMTIqu/v6gKDbLaP5Eg1ATYhzAoGLAMhcBSZXDhWMgqEndtlZojk=
-X-Google-Smtp-Source: AGHT+IEqch9T1rUJ4zmGL76ryOqcCV26GrGnOehnclE3lWkRPkCkLqATTcyvFnUrKGBOLj8Tji95+WoXRgANuKRr2nfZX0/Qrafy
+        d=1e100.net; s=20230601; t=1762124508; x=1762729308;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=suckYxpxhS8tpm2524qw9Mw5oQrBRRr9u/yRv9LVIaI=;
+        b=VZS0Zl8XxZSzqYbOVMDnZiPHq9kdg19DEjUtBe9X++6K7K6SiX7c+ZFVNJfIYzYmTf
+         XyCca+8v/juOKzwRf6KjGf0V4jOxR/z47Y6gQVJupTfVFl122ti85/0UP4SMGvgYWD56
+         RD2RKi5r05Gu04PTPX30xe+dBmg2CQNo/Q/1nwtmwv69OEQKkxsZ6VdOfMxwm/FxCRTd
+         TFGtbvoL9sLJnAL8BBS5W+OSeD2rUbU6Mtyx6GYg4+fOL9DkosjaE/mGJNiQtHVZY+g7
+         eY6MJS5veja1+59sDTOfV3HHe1JltfW8yOCpLx+jhwgvBeEc3cMFL/kHQiLmzO5aMSTt
+         l+XQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXU9oTubJE65co42ULcjIT9mK3O6mzAsDxYBujnsIsk+J+6+cla6JN7Fe4aCTw5S7of5qNg0V5GN1QZMQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxL0VVJxggLnSHZPY92tUyZgGK6oSDR4VrRvJeyCufDJsohsAr/
+	wCblDvIHuCv2SWIbyS9fVAPCw3fcbNtmzxJAyjIFshLti49S4YxL3Y3a
+X-Gm-Gg: ASbGnctfFJtb8mrW4Ud92lbN0OF/pP+ILjpsk0+3S89egJBHIkehkhyIIejd1Zp8O5s
+	Re6oHjdSAkFt8FZ8coKFQQMK+r+l4WNFtTbgpk3cGJd4AwIL4dOzP+sHm2VqcWgFQjKKYzgdpmd
+	NZZgAzN22L2UhLP5eC2U4ulsfcExIGYf5b79qgpJ8eB0XCSCsjfalesez3EcH87PMMhuNvliew7
+	ulvxOpUpoKi4sXhaVUKETs/c7lUX/Vjx8PKGSs4AvW0WBKHH73fMJCH7oZxI2gFiliJpGfVUQEA
+	rodDstEAkh3FvvEDr3BZkgJCKE32Yfc85Cg1/7LSs1uRABorVI3Y2bDzQmzwPsN8kkElj3EOq6g
+	8dQ74Hx/qZ5juXY8ugvSv2iR4tGoU7HgNmgWxnpNRNpGcfsBkHAK5e+qY6cNEbNBRnFrRteciaq
+	HcHXjdVoisU8xN4sQ446O/F+KOr+W+TKQ=
+X-Google-Smtp-Source: AGHT+IHwr7jt3DaVtnfLsqGmmW7FFdKpHCSeTikP3CPRe2wVho/p0Ad6nhxEqMqv/Lasjs4QOtMNdQ==
+X-Received: by 2002:a05:6808:3c4c:b0:441:8f74:f2f with SMTP id 5614622812f47-44f96029336mr4760053b6e.57.1762124507728;
+        Sun, 02 Nov 2025 15:01:47 -0800 (PST)
+Received: from localhost.localdomain ([104.247.98.2])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-3dd9a924727sm1210628fac.15.2025.11.02.15.01.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 02 Nov 2025 15:01:47 -0800 (PST)
+From: Cristian Del Gobbo <cristiandelgobbo87@gmail.com>
+To: sudip.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Cristian Del Gobbo <cristiandelgobbo87@gmail.com>
+Subject: [PATCH 1/2] staging: sm750fb: align sm750_hw_cursor_set_size() arguments
+Date: Mon,  3 Nov 2025 00:01:38 +0100
+Message-Id: <20251102230139.1720-1-cristiandelgobbo87@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6e02:1849:b0:433:3035:7426 with SMTP id
- e9e14a558f8ab-4333035764fmr19518625ab.16.1762117832219; Sun, 02 Nov 2025
- 13:10:32 -0800 (PST)
-Date: Sun, 02 Nov 2025 13:10:32 -0800
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6907c8c8.a70a0220.37351b.0012.GAE@google.com>
-Subject: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in imageblit (6)
-From: syzbot <syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
-	soci@c64.rulez.org, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hello,
+Align the continued arguments with the opening parenthesis to satisfy
+CodingStyle and checkpatch.
 
-syzbot found the following issue on:
+No functional change intended.
 
-HEAD commit:    691d401c7e0e Merge tag 'spi-fix-v6.18-rc3' of git://git.ke..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=14607932580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=19d831c6d0386a9c
-dashboard link: https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
-compiler:       gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
-
-Unfortunately, I don't have any reproducer for this issue yet.
-
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/5eaccda03e4f/disk-691d401c.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/0df5294a69bc/vmlinux-691d401c.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/f4f242731772/bzImage-691d401c.xz
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com
-
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
-Write of size 8 at addr ffffc90003e99280 by task kworker/0:2/781
-
-CPU: 0 UID: 0 PID: 781 Comm: kworker/0:2 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 10/02/2025
-Workqueue: events_power_efficient fb_flashcursor
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:94 [inline]
- dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
- print_address_description mm/kasan/report.c:378 [inline]
- print_report+0xcd/0x630 mm/kasan/report.c:482
- kasan_report+0xe0/0x110 mm/kasan/report.c:595
- fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
- fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
- fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
- fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
- sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
- drm_fbdev_shmem_defio_imageblit+0x20/0x130 drivers/gpu/drm/drm_fbdev_shmem.c:38
- soft_cursor+0x524/0xa10 drivers/video/fbdev/core/softcursor.c:74
- bit_cursor+0xe8c/0x17e0 drivers/video/fbdev/core/bitblit.c:395
- fb_flashcursor drivers/video/fbdev/core/fbcon.c:401 [inline]
- fb_flashcursor+0x310/0x400 drivers/video/fbdev/core/fbcon.c:370
- process_one_work+0x9cf/0x1b70 kernel/workqueue.c:3263
- process_scheduled_works kernel/workqueue.c:3346 [inline]
- worker_thread+0x6c8/0xf10 kernel/workqueue.c:3427
- kthread+0x3c5/0x780 kernel/kthread.c:463
- ret_from_fork+0x675/0x7d0 arch/x86/kernel/process.c:158
- ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
- </TASK>
-
-The buggy address belongs to a vmalloc virtual mapping
-Memory state around the buggy address:
- ffffc90003e99180: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90003e99200: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
->ffffc90003e99280: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                   ^
- ffffc90003e99300: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90003e99380: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
-
-
+Signed-off-by: Cristian Del Gobbo <cristiandelgobbo87@gmail.com>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/staging/sm750fb/sm750.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 3659af7e519d..9740f2705679 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -121,8 +121,8 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	sm750_hw_cursor_disable(cursor);
+ 	if (fbcursor->set & FB_CUR_SETSIZE)
+ 		sm750_hw_cursor_set_size(cursor,
+-					fbcursor->image.width,
+-					fbcursor->image.height);
++					 fbcursor->image.width,
++					 fbcursor->image.height);
+ 
+ 	if (fbcursor->set & FB_CUR_SETPOS)
+ 		sm750_hw_cursor_set_pos(cursor,
+-- 
+2.34.1
 
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup

@@ -1,62 +1,64 @@
-Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com [209.85.214.195])
+Received: from mail-pl1-f193.google.com (mail-pl1-f193.google.com [209.85.214.193])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E80FA2FF64C
-	for <linux-fbdev@vger.kernel.org>; Mon,  3 Nov 2025 11:06:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 968A63016FF
+	for <linux-fbdev@vger.kernel.org>; Mon,  3 Nov 2025 11:07:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.193
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762168021; cv=none; b=Ty3Ybxq/Dz3tCloU7lYqZT/vPsqD/TE8yBI3ySZLjiy/bVARmz2I4PPBo5kqQRhMf3GMmaSmyHFqRg9qBFWyKyUEPzT+l8UEjk9BQyiRTu5wwivvpoyuXh+L+egSSp6CkmtyiUgTDTRY9QX77VFYyqqq7WLWhLazlFqIfl0eDLE=
+	t=1762168024; cv=none; b=HAL865/LJrLCDYnFCwLaRn+luv58jDYJlaxKyTVbt4FImeFhDmiBCN0DpoWmyKOocJOx6uTaH3l4mzVaioGCyhfYQiy6+FEkFuDSzMz5gjnLWNTQEu9RDOVg+WfvUItEJ4z+eXYUqZrpEMkgz//B4F5P+zOprY0I7nWtC4n3+9k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762168021; c=relaxed/simple;
-	bh=4K8ff7naWva5QP5+rWneFBDK+QFz923xCqhRcHl62d0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lYHPiQwedf0fTblWhzUnf4n8mDII0b2otzABp6Spy+9T4ggjXzXsPSTmhnRUMW2zTOhF/ToH1VdB6NLGQPf1EkaFbv7iiyvCsrlUcA4c4zU19JnnqE3pc1VxEYCtB2yQZ4yLX608OoJ+PhiuYEid1iXAoWXlPNuh2oLqYFQ55qs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=acI4HVvX; arc=none smtp.client-ip=209.85.214.195
+	s=arc-20240116; t=1762168024; c=relaxed/simple;
+	bh=U2S1xSihT43zwJfSjpJYIZmqbEiWaSbNbBj+0gTTbSw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=DVkPGpAnRjs2+EDA6ywW3689LuL5Ecn1shYNAFYquMHJtep3KCG0hXPxlZRugj8loRG/3CIUmfI9aLYyP+dZpcRCmSz93qWYwt4Zeo2X85wC6q0+QcJv+Ds4y8JMUM1s/mPmvfye9dEldijdnNgocOwXlUWRYpoOcUzWif80Xh0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PSaL5qiU; arc=none smtp.client-ip=209.85.214.193
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="acI4HVvX"
-Received: by mail-pl1-f195.google.com with SMTP id d9443c01a7336-29555415c5fso24231915ad.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 03 Nov 2025 03:06:58 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PSaL5qiU"
+Received: by mail-pl1-f193.google.com with SMTP id d9443c01a7336-29558061c68so16691335ad.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 03 Nov 2025 03:07:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762168018; x=1762772818; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=msKPrbmLk4Pe+fn3QzDxAI35yUJEjQv+lopXWiS4lts=;
-        b=acI4HVvXpDlipCGu3tF4pNA8mEaYI1wS8/ybxO6sMKNln0/f7Gj3M5kUfhyGVu8102
-         ABa0zey2hWthYSAA3OcCg7wcrTtW29eQqb/9dZae2Dp5KPdsn3G27R4MTbud2uCbhzgR
-         L0OqhTVA9v2QyG7/eVIekBPQDPMzgvApbmjEJGMW/MI2VGxZzSJBaAwpZq90S5eCjxLH
-         vJymWCOpwDc2FP8R7KKRDQ9fV5oYimwMkNNDJTgNvswhTJNz2lDrozvvzDlnEVn2K6Dg
-         JE1bN1jgtdF/mMnj5Omq440UNL4tT+1BFzmxb155G1QgizwJ7V3BuecGAE84hKKTrCrd
-         8ahQ==
+        d=gmail.com; s=20230601; t=1762168022; x=1762772822; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Vwqxs3pFPgUNdzREwICsv/UCTbRI0baMAHgNVcVWKho=;
+        b=PSaL5qiUcpMiwwN6Z+iZaZe5A3Ze+E9ajOL6GFzvw1com9pJfxR6HTTLSftCHpFMY4
+         hlf12EjNXCbBxGYGEYRy1I/qImxGXYIF6tSqYais1oO5gBcSPth9o0ej8utTHGWk6Kco
+         jk+V6cg5GBOAAfHWdARx+iiJOB+bFrqmNUEA1qiE0LTGN3NWOO60BMTwsmTK4LBulSdP
+         DTPtLh4pmBkx+Emd3TaMw7QjNY0WMepAJwDhyoT4N+HGb7cXVKfdesYsQ1JuO1Ac5+hj
+         uCLvX3wOdB/7dMEN1yyA+yS4G9Lx/CVSDJWMETEGSLw3/PSZI7WekJyJuZ1bOU/fOjjW
+         E2wA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762168018; x=1762772818;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=msKPrbmLk4Pe+fn3QzDxAI35yUJEjQv+lopXWiS4lts=;
-        b=Z19nW7G8NT8yx2eZhkBd74oX5BONlB6yg7a+IR+NEhRRXQ+EmMWZJhQ8kJEXdP0j9Q
-         CNHrPvbW/Ufrt1EyhgEI9yUyEURARhcmQdkbsZl0E7zjUmFOFxemQBsBLUyNbtRyhlSS
-         CXa0uqesmq64Eo830xUCl51Z6x3yAW21JRCf6Ba6xCCt/YpKr0o4IVnv18RgGbuRrRzq
-         JIjdNPgC9VHmUsuq5PUkXtVipeMBEkEBcrqjHYJYj8Kwwn93pw0AoFP0JT+MHYDOW1Mn
-         a52vYgmvhAC0wqNip3ntCpThYvIt47dPdXx7aZGrTzDKcrB04u8HFuk7aY8mI9nL752Q
-         3UTQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXhtcH7+WUyM1ru2/xj6sZen2HUiWW+kEnkJ6P3lLGbalwvL828iCp00gzKqrVEFYphjxYeJOqkSv1v2g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw8MuX3aGToNszd1UflNjY+/nuIxV4kg16mHX6bXavW3cJNZYcx
-	kMNukepB0JYV/6eJ/341SFUmAL4HlqiOoaLE4zXNUazPQaiIdQoaIp1A
-X-Gm-Gg: ASbGncs9cCGFuJ6Unz4N7LPMSeSzzo/48ptZCEOZrnUGoXe2ZfOggdtFpOfHApbg/3h
-	T+xQmVAA0cD99ntgQt6ibL9cGCRsDvjK6NCfvPywzG0LiXB+gPjL8ycRVbfNOXTcRB0w6Dsn39l
-	Wmjd2DREUhnpVHFxlbL4Y/7/kLbWett+8/ZmaN0xG2UEOMQ5Zc1A/yPsut9A3uevjNjmWeeSs3N
-	RlPODsObZS3tWwnynGDpun2gWSLNu8AOiPJWvqj0c+tUmei4uI4FtXsmLyAPQ9MjOmrRufCOear
-	H1Xxeh59J1bFLswZDZxx4GsfTqRxOnMRlOCfIgVNMf1eAW5/i8AkLmmOqp5vnSgJdeNZ2aU8gBT
-	ku272AW7OsQKY72OvdL0TcRTuZghJMEBjAT/h/IIcBY4fw9ADwJVgFI9y+3pos0hJF0L0qPti9k
-	7SiMg83pSNfNTqJrMk/Q==
-X-Google-Smtp-Source: AGHT+IG3q2ScRjcYVlSQKEOGzfSShOd+VCm6j/zTtP/syrwGIinOh8u7Pw68B0XoVDTjaFHiUhDd5Q==
-X-Received: by 2002:a17:902:e74b:b0:269:b30c:c9b8 with SMTP id d9443c01a7336-2951a55923fmr150821025ad.56.1762168018110;
-        Mon, 03 Nov 2025 03:06:58 -0800 (PST)
+        d=1e100.net; s=20230601; t=1762168022; x=1762772822;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Vwqxs3pFPgUNdzREwICsv/UCTbRI0baMAHgNVcVWKho=;
+        b=Oqg15LLbr0DR7p6g+m9fOhc5K1mPK2ro4xyIOFmT6UaVdTbx2T2YHFCd32JELSUC+A
+         lJ+RaPTrbZDEcPZ12yIDHcTyp7VtOZWfRjTaPGy54pGYYPAVbiC0I993WHCan2QNNlAU
+         FVvxvh1Fg5OORr4IFve3Sn0qGhaq2KU4B7YWwmnOoz7YmApc03wxTtROvukQIsYYJC6P
+         9YAXGsMS2z4v18W6VFVgQECc91pcBt6CFET5LZcTkhUl9bzOMXKqYuzDNKBC+BmoGxhd
+         v3U/t5EN1mXt8K+7B9TMYxZCOlwsmAcTvXUT/pvm/DPozbaD3d21lyYD3439Y0sbHGL9
+         uYRQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVLeoiQnEwn3LL7IkujXDXLlNG5eQdhHSoW5j/YdYnHskTcIPowWSEYyJaTTymWJgQU1iWByWo1lXth2w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxQ6lxtMrEofQIbbDQGuhSYcW4m6zM+HAM1Ci4VCd868iXLcGiO
+	wK8X/GG98c9ZArPvkbNiFwYpx2Nco6ESjFYPrtkMzDVTtPMlg+UHxAfF8zGyGD34dkN5mQ==
+X-Gm-Gg: ASbGncs5ic5X8E5DGBveX2obU4/3eKDYJZ2NWQPzqbGgDUYXU33ndOrYviT3NERCJP6
+	5OQCiqF04FCNYMGGuynU6jyyQi4Vmb/vtymFJNlrZhpCCZu4AlHmY84yEoilnEek4abaDy0vKJd
+	6paWhaZ/bE2QEhqN+/4Sv3CI/x9N4mnPy7uSiJBKtFNrJjntCbP4QsYUP/7O3DwZn0qLpR/fQzl
+	Q2AiypWMLz4K5AA2Le0QZrdIYIgLNqHPVxSc1IrU1hywbm4J9oY1L+LPw8xG82PPEt5jFzxNsfR
+	Q9htYVksAdmME3D8m25d7XEkh5Jkln/yBin/6L5mymCBn9Ug49wvGc0F/5oO0udQ+VOFAFaYsm6
+	dAUbgwnWL7TVPNSYFpYvGZcKA+CSwLJPsqjVuoKqyhAjRgofGaM1XKXc1axnLELlO7nAYRWtWOl
+	ll/KRCoke5rO/P9ETnng==
+X-Google-Smtp-Source: AGHT+IED1NK8Nun74yVDxcwX2L2vPElvPQSyImAaJGU2myF3ZiOioVg5mqtofEuE0gFzFHfeDCXjwQ==
+X-Received: by 2002:a17:902:f682:b0:295:8db9:305f with SMTP id d9443c01a7336-2958db93392mr64853685ad.34.1762168021882;
+        Mon, 03 Nov 2025 03:07:01 -0800 (PST)
 Received: from VM-0-14-ubuntu.. ([43.134.26.72])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2955615d720sm84025575ad.65.2025.11.03.03.06.54
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2955615d720sm84025575ad.65.2025.11.03.03.06.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Nov 2025 03:06:57 -0800 (PST)
+        Mon, 03 Nov 2025 03:07:01 -0800 (PST)
 From: Junjie Cao <caojunjie650@gmail.com>
 To: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -73,10 +75,12 @@ Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	Pengyu Luo <mitltlatltl@gmail.com>,
 	Junjie Cao <caojunjie650@gmail.com>
-Subject: [PATCH v2 0/2] backlight: aw99706: Add support for Awinic AW99706 backlight
-Date: Mon,  3 Nov 2025 19:06:46 +0800
-Message-ID: <20251103110648.878325-1-caojunjie650@gmail.com>
+Subject: [PATCH v2 1/2] dt-bindings: leds: backlight: Add Awinic AW99706 backlight
+Date: Mon,  3 Nov 2025 19:06:47 +0800
+Message-ID: <20251103110648.878325-2-caojunjie650@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251103110648.878325-1-caojunjie650@gmail.com>
+References: <20251103110648.878325-1-caojunjie650@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -87,43 +91,126 @@ Content-Transfer-Encoding: 8bit
 
 From: Pengyu Luo <mitltlatltl@gmail.com>
 
-Add support for Awinic AW99706 backlight, which can be found in
-tablet and notebook backlight, one case is the Lenovo Legion Y700
-Gen4. This driver refers to the official datasheets and android
-driver, they can be found in [1].
-
-[1] https://www.awinic.com/en/productDetail/AW99706QNR
+Add Awinic AW99706 backlight binding documentation.
 
 Signed-off-by: Junjie Cao <caojunjie650@gmail.com>
 ---
-base-commit: 72fb0170ef1f45addf726319c52a0562b6913707
----
 Changes in v2:
-- add handler for max-brightness and default-brightness
-- add properties(max-brightness, default-brightness) (Krzysztof)
 - use proper units for properties (Krzysztof)
 - drop non-fixed properties (Krzysztof)
-- include default values in the aw99706_dt_props table (Daniel)
-- warn when a property value from DT is invalid (Daniel)
-- drop warning when optional properties are missing (Daniel)
-- add a function pointer into the aw99706_dt_props table to handle lookup (Daniel)
-- use a lookup function instead of hardcoding the formula for the iLED max (Daniel)
-- move BL enalbe handler into aw99706_update_brightness (Daniel)
-- Link to v1: https://lore.kernel.org/linux-leds/20251026123923.1531727-3-caojunjie650@gmail.com
+- add properties(max-brightness, default-brightness) (Krzysztof)
+- Link to v1: https://lore.kernel.org/linux-leds/20251026123923.1531727-2-caojunjie650@gmail.com
 
-Junjie Cao (2):
-  dt-bindings: leds: backlight: Add Awinic AW99706 backlight
-  backlight: aw99706: Add support for Awinic AW99706 backlight
-
- .../leds/backlight/awinic,aw99706.yaml        | 100 ++++
- MAINTAINERS                                   |   6 +
- drivers/video/backlight/Kconfig               |   8 +
- drivers/video/backlight/Makefile              |   1 +
- drivers/video/backlight/aw99706.c             | 492 ++++++++++++++++++
- 5 files changed, 607 insertions(+)
+ .../leds/backlight/awinic,aw99706.yaml        | 100 ++++++++++++++++++
+ 1 file changed, 100 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
- create mode 100644 drivers/video/backlight/aw99706.c
 
+diff --git a/Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml b/Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
+new file mode 100644
+index 000000000..9b7266e61
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
+@@ -0,0 +1,100 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/awinic,aw99706.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Awinic AW99706 6-channel WLED Backlight Driver
++
++maintainers:
++  - Junjie Cao <caojunjie650@gmail.com>
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: awinic,aw99706
++
++  reg:
++    maxItems: 1
++
++  enable-gpios:
++    description: GPIO to use to enable/disable the backlight (HWEN pin).
++    maxItems: 1
++
++  awinic,dim-mode:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: >
++      Select dimming mode of the device.
++        0 = Bypass mode.
++        1 = DC mode.
++        2 = MIX mode(PWM at low brightness and DC at high brightness).
++        3 = MIX-26k mode(MIX mode with different PWM frequency).
++    enum: [ 0, 1, 2, 3 ]
++    default: 1
++
++  awinic,sw-freq-hz:
++    description: Boost switching frequency in Hz.
++    enum: [ 300000, 400000, 500000, 600000, 660000, 750000, 850000, 1000000, 1200000, 1330000, 1500000, 1700000 ]
++    default: 750000
++
++  awinic,sw-ilmt-microamp:
++    description: Switching current limitation in uA.
++    enum: [ 1500000, 2000000, 2500000, 3000000 ]
++    default: 3000000
++
++  awinic,iled-max-microamp:
++    description: Maximum LED current setting in uA.
++    minimum: 5000
++    maximum: 50000
++    multipleOf: 500
++    default: 20000
++
++  awinic,uvlo-thres-microvolt:
++    description: UVLO(Under Voltage Lock Out) in uV.
++    enum: [ 2200000, 5000000 ]
++    default: 2200000
++
++  awinic,ramp-ctl:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: >
++      Select ramp control and filter of the device.
++        0 = Fade in/fade out.
++        1 = Light filter.
++        2 = Medium filter.
++        3 = Heavy filter.
++    enum: [ 0, 1, 2, 3 ]
++    default: 2
++
++required:
++  - compatible
++  - reg
++  - enable-gpios
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        aw99706@76 {
++            compatible = "awinic,aw99706";
++            reg = <0x76>;
++            enable-gpios = <&tlmm 88 GPIO_ACTIVE_HIGH>;
++            default-brightness = <2047>;
++            max-brightness = <4095>;
++            awinic,dim-mode = <1>;
++            awinic,sw-freq-hz = <750000>;
++            awinic,sw-ilmt-microamp = <3000000>;
++            awinic,uvlo-thres-microvolt = <2200000>;
++            awinic,iled-max-microamp = <20000>;
++            awinic,ramp-ctl = <2>;
++        };
++    };
++
++...
 -- 
 2.51.1.dirty
 

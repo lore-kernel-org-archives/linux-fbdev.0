@@ -1,59 +1,59 @@
-Received: from mail-ej1-f65.google.com (mail-ej1-f65.google.com [209.85.218.65])
+Received: from mail-ej1-f68.google.com (mail-ej1-f68.google.com [209.85.218.68])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 803D52F0C6A
-	for <linux-fbdev@vger.kernel.org>; Tue,  4 Nov 2025 12:10:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.65
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C67CC2E5B13
+	for <linux-fbdev@vger.kernel.org>; Tue,  4 Nov 2025 12:24:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.68
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762258251; cv=none; b=PdsQ4wXxatAMS6Qp+XfyvBeuxYftPUdoxOkeBBi7XP9f1dvbcCLZriPh4HNLsd8QgpUJHsKodCiGCLc7Y/ZPMbBsumMsw5ectTL9wphIbnu43FkNp4mcjMOLpIbWHu97i/lenvFu8dnmwUq7iyEFi7H6H8RHXZgTYsUIqMZBt1w=
+	t=1762259055; cv=none; b=ZeUkkbOYyldVPeWKoZjFrYHFopKEJRDe1PilECm01e53f8TvF8bmAAONf81mw/cQ0e8oIW3fpXNABua/vJc0QUilg3zvBIdK/pqoWv1eXTVzqrW1dBFZRYh9Vvbe1oDh5mhY3BDnAtJW/rfStyWsmQysDXYSYUBxBaaioCvz0Z8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762258251; c=relaxed/simple;
-	bh=Dzj77OltBvkgDDn8952TkOFzMhRy0pNivm62rHqrknk=;
+	s=arc-20240116; t=1762259055; c=relaxed/simple;
+	bh=4G4WmsNqNizyWK3nhkV2waDHR6+qEIhH3Gbq1UFjq7k=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QYc7EEbOW3rgv4FKzbkUiRd5/tNMwnMc9EwTjt7w0khMJOSIiDIcLdn/daajy1E2AFuGdUe3SREay75JWbp8k533RWgdgCa4fBsheCxgjNDN6NnmdeCaVU1b6WLVJ8aqBouFYKGxe4dqrlR8/LWuZ7Q4LnAkuCNEEAvFREyICdI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kllIFGal; arc=none smtp.client-ip=209.85.218.65
+	 To:Cc:Content-Type; b=EAl5mjF/ejADF/Gjt9N4crWEBmNhWH0jZ79UN9Mw24n5DSUx8MJUCNIIKgcnxqVRihpH5wXCo2mtvCCBVpBpJQQl9gB4z2/mO0XWE1r0wXpCEn9FRXYfksRIyieYu8+lI+6Gm7df/QhkUXc3pDm0uq4b8OGjxs64UC/Nmx9LSXw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KQutNc31; arc=none smtp.client-ip=209.85.218.68
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kllIFGal"
-Received: by mail-ej1-f65.google.com with SMTP id a640c23a62f3a-b4f323cf89bso211723666b.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Nov 2025 04:10:46 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KQutNc31"
+Received: by mail-ej1-f68.google.com with SMTP id a640c23a62f3a-b3b3a6f4dd4so1002341866b.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Nov 2025 04:24:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762258245; x=1762863045; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1762259052; x=1762863852; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=KzUjjBieESWl/eKHRRME8VO1FyP4Xh2Gr78dnGWZR3M=;
-        b=kllIFGal8Q4VzaPhV62Wo8vb1RCA1Tlz17GOkGw/P9pAOwOlZQehgqE9fvwNGIf1Gz
-         kj3G7ArTvZwlclxlcAMAs+WOBDyZodPmB9YbunvvcRYOb9/4QOLVY3FyvoECCAH29zf8
-         QiqH9r9ac0H39gb5SS37rXRQ8RJmokz3j7DsrZPazKXmk1IzhHJ1D+yJTvo/hcr69+cF
-         KTWJnkNPdEpfBkozGuhC77XXGM/NQ5jEuj0ie7QtRvhfAxvtNw2VOfPz1/JA2yrDvU5K
-         MOUpHFab+UOlg5Nwfcm7GYaGBNqGlELLSkwvk0ru3Kov/ndutsqZEAcDyim3QdEi/Agr
-         iB8A==
+        bh=8w9oB3T8XUJgBGc+hBaim4B4JguaWQfKbWBDqClypRw=;
+        b=KQutNc31ZFNIt7trjML1B6+ICKFTlx6hKjVrRTkwjs10Wu/IMqdhP5kmYHeDnt2A4W
+         uCaDl7Ge7UL9TMX9HZZKPbsrhPm1UygeaYjGKwiy0N0AoJ/mHD7aczntUFpL6+0wby1z
+         LaiBurl2htcuaQ+v8tNWqhHfJTxsz4Swbmtjdg0sIMkhgDzxjuV7tAtzhPpUVo5ewwRt
+         UniK7m+/o1kvYur85i9ySkYViaeh70z9TgleXn+XAu1+LioF+ENSgcWpobLKacdVpfY/
+         27yK8APNxomBtU9rlWhg9oardPjl+thVom/SPDOX7kbypCQrjpFoKFIxrrbTXWpuvyck
+         RHKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762258245; x=1762863045;
+        d=1e100.net; s=20230601; t=1762259052; x=1762863852;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=KzUjjBieESWl/eKHRRME8VO1FyP4Xh2Gr78dnGWZR3M=;
-        b=pBvJbtIDWE+Mf6VRDqYee1IAZ8tA2DzkCEF0CfKpnlrFkKmopzMLz8PnQYcFNPF4U5
-         w7NIE4UnrkKiQwobc8/1mD7yLKhgcFcbMbeyHpTuAUMblgXT5rr4I2RM2dciA2l6s8Ou
-         WNKH1NaNW7F6XlcbLEREcxayDD1CtfNvGittG+8G5qVQii3fmIypVeYc2qoruYYNq2G6
-         3Af8ZsKOeMBXcTmOxy/DOhvwcd2MsUZQm76nKWy3AzoU1wUYLurl90zfeZ2KyoHny/+U
-         EXVepBf56EehJE4bEZD3Ng6C1SC0b5Rm80kzW6iBMFIUdY551aEUG+Qmup542aH5cTGr
-         HV8Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVTpeUEN+Ql2WRUKYrIKqwUK8ieZIr6G7V1W151g04eXAxOM052PUHQoB5NPq1XaOQwJVtziHq9394dzA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwKUd8KjAploaJvCBnln469bVmUgM+/S1C3Q/7x67wwpAp6NqKx
-	jtQsE6jusiFI/gCbSb6W6M3Q0Yooh9NU100jh8lc7YINuafEpK11US9iZc7UVmxESbVqvPg+fg3
-	WigQBI0vEEldM73dp7tHkW9DFn+gmfx4=
-X-Gm-Gg: ASbGnctST2yFwhnvx4ElWWoGKSE9JegFrZ8nIsCIXkFMV4aUR6LqIRK5w5vXkHPmOST
-	ulg+coQnTgBCvX/UOirxWZUAHOdADJrfuTCZIdWH9B9sfTQfB/a6orn95BcBWbVJalpyzAjQtYo
-	VoFJj3zpBWeuJyISB3ArTFm0ftXaX3IVd87cu9/xJAylgjG2dMMGYqPHCWvU7vpMrXJSzStLGJv
-	ZKVghQSgLr6MZ4uRfLg5vB+YdtgUHinwgyEYjS7KdJUyLUa2FpboAWkoQBZ
-X-Google-Smtp-Source: AGHT+IFYNmK4p8ZzQreCCOl4PXO/MkzLrFaWoACxm/O8s2bicL/zOLsbm8jPi41+2YZ1Lhpc6tL1AcArgolgsFl++YU=
-X-Received: by 2002:a17:907:3faa:b0:b72:5983:db09 with SMTP id
- a640c23a62f3a-b725983e06amr109317066b.32.1762258244771; Tue, 04 Nov 2025
- 04:10:44 -0800 (PST)
+        bh=8w9oB3T8XUJgBGc+hBaim4B4JguaWQfKbWBDqClypRw=;
+        b=jaUitrScN2kzL2nOpzLbtGT/eWUshtKmJmlVCOXLFqx7x0rjtjJtneZSYcjnsubtpu
+         aR9K4XyPTWBdDM3SbB7wCABX7iZlgmYwieQUemheWgcZlPSzGpMKGPkPOy1Y7hQSAs8o
+         uJ5G0EOLZSqggAnmQPAD1jD8fCgJ8D2FNq7K3plM+RnnN6NMgpkvgA/QBRYnEmkDxd27
+         sBeijUbjDEy9kdqn3S+jRveKYzCLQwFAzSu+bYGxENVmZBsAQAtCirhtBTqMYCrUZqr/
+         zXRlwazDDR+jANq4XNfYCUav8sZsBYlIGGoyMo+P/l7YvrVA7coLoOb5wTlJthWc2Q6x
+         aqfw==
+X-Forwarded-Encrypted: i=1; AJvYcCUEZnIryu1B+hHZViCCsczeduLt7owML1tb/PDZJv0rOM2LvnhBVZ5ARqckl1IYc241VCu57vMq9CuwOg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YztFqTyCRqMzyswmp0NA5O3kgjxO8AgYjEQVgaI74SkPEkpSpdV
+	tFtD+noLpdKmb5dPhc2TWpjBAZlStKF58zFprJDmx0wDeGYDMYKGMTzX+Vm5e4h54lJyQ8RXC3g
+	nHhST0ggmGn5Y7nZzXCfcor8jSb07aus=
+X-Gm-Gg: ASbGnctSecCYrtP+9man4+hXK04qdybDahz5XQT0ZHDja1+PY9z/K0cVNGU003L0c5A
+	dp5d5KI5Lekeu1iigYe+dCZd1Ybhk+3l0ltbAVOf87ytt1s+hriQWgS+Sg+gtfXFmUoeDSmKWtS
+	tYUPSivRRpva6CCcsq8fMA+iz3iJEjcHdkkf6z7EMO/oBKz7rvbHRc8tXbnANhuUY0td0OI+0pw
+	e/EKNG53hay/YtrjbwzpABhL12T+JCLeWHyRezC2lbRaZYRE66Pve621Mfg
+X-Google-Smtp-Source: AGHT+IG6ud+xpKAMBlMA5WdjCGVGxS6YVcNlLSwDSmnLLrN6CJtwEsTAMY7TqC8k7Rf1nkyRUDIwFwQ7kTSNndxnDeE=
+X-Received: by 2002:a17:907:97c5:b0:b71:5079:9702 with SMTP id
+ a640c23a62f3a-b715079aed8mr550597766b.21.1762259051951; Tue, 04 Nov 2025
+ 04:24:11 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -61,13 +61,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20251103110648.878325-1-caojunjie650@gmail.com>
- <20251103110648.878325-2-caojunjie650@gmail.com> <20251104-dancing-panda-of-patience-49bcc7@kuoka>
-In-Reply-To: <20251104-dancing-panda-of-patience-49bcc7@kuoka>
+ <20251103110648.878325-3-caojunjie650@gmail.com> <20251104-attractive-dragonfly-of-perspective-0d52d6@kuoka>
+In-Reply-To: <20251104-attractive-dragonfly-of-perspective-0d52d6@kuoka>
 From: Junjie Cao <caojunjie650@gmail.com>
-Date: Tue, 4 Nov 2025 20:09:05 +0800
-X-Gm-Features: AWmQ_bkkyexGfBD5XHzrBd-xICWXFb2FCbbahEGY3fitC4E7OLdD5Bwvl1yJFfQ
-Message-ID: <CAK6c68iy0vwgKJTgXr=YptyENTWC1MJrsJWsbsyp9KQkAtOYVg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] dt-bindings: leds: backlight: Add Awinic AW99706 backlight
+Date: Tue, 4 Nov 2025 20:22:32 +0800
+X-Gm-Features: AWmQ_blg6GhTdK5EC6AuU-36Dga5TQMKLH2FNjAQ7Rr6vjrvigIa3A71HhVneEs
+Message-ID: <CAK6c68j2j536UEgq36RAuAv7HGW9VTUS-s32+1YDshqK+gTfzw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] backlight: aw99706: Add support for Awinic AW99706 backlight
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
 	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -78,124 +78,106 @@ Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 4, 2025 at 3:30=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
+On Tue, Nov 4, 2025 at 3:36=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
 > wrote:
 >
-> On Mon, Nov 03, 2025 at 07:06:47PM +0800, Junjie Cao wrote:
-> > From: Pengyu Luo <mitltlatltl@gmail.com>
-> >
-> > Add Awinic AW99706 backlight binding documentation.
-> >
-> > Signed-off-by: Junjie Cao <caojunjie650@gmail.com>
+> On Mon, Nov 03, 2025 at 07:06:48PM +0800, Junjie Cao wrote:
+> > +struct reg_init_data;
+> > +
+> > +struct aw99706_device {
+> > +     struct i2c_client *client;
+> > +     struct device *dev;
+> > +     struct regmap *regmap;
+> > +     struct backlight_device *bl_dev;
+> > +     struct gpio_desc *hwen_gpio;
+> > +     struct reg_init_data *init_tbl;
+> > +     int init_tbl_size;
+> > +     bool bl_enable;
+> > +};
+> > +
+> > +enum reg_access {
+> > +     REG_NONE_ACCESS =3D 0,
+> > +     REG_RD_ACCESS   =3D 1,
+> > +     REG_WR_ACCESS   =3D 2,
+> > +};
+> > +
+> > +const u8 aw99706_regs[AW99706_REG_MAX + 1] =3D {
 >
-> Messed DCO chain. This wasn't here, so you must have altered v1 to add
-> some weird change.
->
-> This is a blocker, please read carefully submitting patches and DCO.
+> Why isn't this static?
 >
 
-Apologies for the DCO mess.
+That was an oversight on my part. It will be static.
 
-The tablet device is currently with Pengyu. He helped with testing and
-tweaked the .c driver file (patch 2/2) after my change. The entire
-series was then re-formatted on his machine, which caused his git
-configuration to be incorrectly applied to the From: line of this
-dt-binding patch (patch 1/2).
-
-I am the actual author of this dt-binding file. I will correct the
-authorship and DCO chain in v2.
-
-> > ---
-> > Changes in v2:
-> > - use proper units for properties (Krzysztof)
-> > - drop non-fixed properties (Krzysztof)
-> > - add properties(max-brightness, default-brightness) (Krzysztof)
-> > - Link to v1: https://lore.kernel.org/linux-leds/20251026123923.1531727=
--2-caojunjie650@gmail.com
+> > +     [AW99706_CFG0_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG1_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG2_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG3_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG4_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG5_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG6_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG7_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG8_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFG9_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFGA_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFGB_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFGC_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_CFGD_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
+,
+> > +     [AW99706_FLAG_REG]              =3D REG_RD_ACCESS,
+> > +     [AW99706_CHIPID_REG]            =3D REG_RD_ACCESS,
+> > +     [AW99706_LED_OPEN_FLAG_REG]     =3D REG_RD_ACCESS,
+> > +     [AW99706_LED_SHORT_FLAG_REG]    =3D REG_RD_ACCESS,
+> > +
+> > +     /*
+> > +      * Write bit is dropped here, writing BIT(0) to MTPLDOSEL will un=
+lock
+> > +      * Multi-time Programmable (MTP).
+> > +      */
+> > +     [AW99706_MTPLDOSEL_REG]         =3D REG_RD_ACCESS,
+> > +     [AW99706_MTPRUN_REG]            =3D REG_NONE_ACCESS,
+> > +};
+> > +
 >
 > ...
 >
-> > +  awinic,dim-mode:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description: >
-> > +      Select dimming mode of the device.
-> > +        0 =3D Bypass mode.
-> > +        1 =3D DC mode.
-> > +        2 =3D MIX mode(PWM at low brightness and DC at high brightness=
-).
-> > +        3 =3D MIX-26k mode(MIX mode with different PWM frequency).
-> > +    enum: [ 0, 1, 2, 3 ]
-> > +    default: 1
+> > +     aw =3D devm_kzalloc(dev, sizeof(*aw), GFP_KERNEL);
+> > +     if (!aw)
+> > +             return -ENOMEM;
 > > +
-> > +  awinic,sw-freq-hz:
-> > +    description: Boost switching frequency in Hz.
-> > +    enum: [ 300000, 400000, 500000, 600000, 660000, 750000, 850000, 10=
-00000, 1200000, 1330000, 1500000, 1700000 ]
+> > +     aw->client =3D client;
+> > +     aw->dev =3D dev;
+> > +     i2c_set_clientdata(client, aw);
+> > +
+> > +     aw->regmap =3D devm_regmap_init_i2c(client, &aw99706_regmap_confi=
+g);
+> > +     if (IS_ERR(aw->regmap))
+> > +             return dev_err_probe(dev, PTR_ERR(aw->regmap),
+> > +                                  "Failed to init regmap\n");
+> > +
+> > +     ret =3D aw99706_chip_id_read(aw);
+> > +     if (ret !=3D AW99706_ID)
+> > +             return dev_err_probe(dev, ret,
+> > +                                  "Failed to validate chip id\n")
 >
-> Please wrap code according to the preferred limit expressed in Kernel
-> coding style (checkpatch is not a coding style description, but only a
-> tool).
->
-
-ACK.
-
-> > +    default: 750000
-> > +
-> > +  awinic,sw-ilmt-microamp:
-> > +    description: Switching current limitation in uA.
-> > +    enum: [ 1500000, 2000000, 2500000, 3000000 ]
-> > +    default: 3000000
-> > +
-> > +  awinic,iled-max-microamp:
-> > +    description: Maximum LED current setting in uA.
-> > +    minimum: 5000
-> > +    maximum: 50000
-> > +    multipleOf: 500
-> > +    default: 20000
-> > +
-> > +  awinic,uvlo-thres-microvolt:
-> > +    description: UVLO(Under Voltage Lock Out) in uV.
-> > +    enum: [ 2200000, 5000000 ]
-> > +    default: 2200000
-> > +
-> > +  awinic,ramp-ctl:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description: >
-> > +      Select ramp control and filter of the device.
-> > +        0 =3D Fade in/fade out.
-> > +        1 =3D Light filter.
-> > +        2 =3D Medium filter.
-> > +        3 =3D Heavy filter.
-> > +    enum: [ 0, 1, 2, 3 ]
-> > +    default: 2
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - enable-gpios
-> > +
-> > +unevaluatedProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/gpio/gpio.h>
-> > +
-> > +    i2c {
-> > +        #address-cells =3D <1>;
-> > +        #size-cells =3D <0>;
-> > +
-> > +        aw99706@76 {
->
-> Node names should be generic. See also an explanation and list of
-> examples (not exhaustive) in DT specification:
-> https://devicetree-specification.readthedocs.io/en/latest/chapter2-device=
-tree-basics.html#generic-names-recommendation
-> If you cannot find a name matching your device, please check in kernel
-> sources for similar cases or you can grow the spec (via pull request to
-> DT spec repo).
+> Why are you exiting the probe with a positive value like 4 or 8? This
+> makes no sense. Registers do not coontain Linux return codes.
 >
 
-I see. backlight@76, thanks for your detailed explanation.
+Thanks for pointing this out. Using -ENODEV makes more sense. I will do
+it in the next version.
 
 Regards,
 Junjie

@@ -1,129 +1,201 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f65.google.com (mail-ej1-f65.google.com [209.85.218.65])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A35FE3093BB;
-	Tue,  4 Nov 2025 07:36:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 803D52F0C6A
+	for <linux-fbdev@vger.kernel.org>; Tue,  4 Nov 2025 12:10:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.65
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762241769; cv=none; b=RO6Y+Nh4RknszYLqIIV7Hy34lxIfC6QalKUq9z18b8EnccLH8acCg7mvGSiLSlyF4BLnWJsp9GG+IzzycuKMjgH7XHi2Nsaf8Gc4nh4a9XQ2fqBtOlMJ63Bc2X7SKQGZ5hycYsg4F5rzp7EWeWkDTpuPjqfhH8MmmvaXU3prTns=
+	t=1762258251; cv=none; b=PdsQ4wXxatAMS6Qp+XfyvBeuxYftPUdoxOkeBBi7XP9f1dvbcCLZriPh4HNLsd8QgpUJHsKodCiGCLc7Y/ZPMbBsumMsw5ectTL9wphIbnu43FkNp4mcjMOLpIbWHu97i/lenvFu8dnmwUq7iyEFi7H6H8RHXZgTYsUIqMZBt1w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762241769; c=relaxed/simple;
-	bh=dTh7uimuP+1HLMgpMWUL0kWi3PgDJrHfNJi+05SCrXo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hLpO85rB7icejgCdwVV3HBuRT3J9MgsNcNQQMI1bnZ7EmZb19lSoLCUPpnK9kGaXF18Da0u6tXcjkPEI45uQsjPfvTUsV2l0hvo1yvyGqUuEjWM8MNuHwk1DH/H/Xe/mZfVisZjc+PjUvL0mRJKfByD/EQaw4WjViYuudOkJTiw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JSOsP/b/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1762258251; c=relaxed/simple;
+	bh=Dzj77OltBvkgDDn8952TkOFzMhRy0pNivm62rHqrknk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QYc7EEbOW3rgv4FKzbkUiRd5/tNMwnMc9EwTjt7w0khMJOSIiDIcLdn/daajy1E2AFuGdUe3SREay75JWbp8k533RWgdgCa4fBsheCxgjNDN6NnmdeCaVU1b6WLVJ8aqBouFYKGxe4dqrlR8/LWuZ7Q4LnAkuCNEEAvFREyICdI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kllIFGal; arc=none smtp.client-ip=209.85.218.65
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JSOsP/b/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3BDFC4CEF8;
-	Tue,  4 Nov 2025 07:36:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762241767;
-	bh=dTh7uimuP+1HLMgpMWUL0kWi3PgDJrHfNJi+05SCrXo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JSOsP/b/wFTdryqmS4RRLFMFoTGlDjVc8A2BgC7sDJayzpLsvh7QWaWOLMTYXMNkc
-	 zZFmUdkf2HpN4fqUlVCuhzhNuoNNJBSIyGhXvZ7FHSeitj1LkwGt3UsvopH5ritr91
-	 bY7+76qoqs7T+W6Cg7Ls93UTAs0P1xhrvJwsDx9KbYLmIfdwR58C49czLU6KPpmldU
-	 Ds5iT83syzYNE35dA4qWJiCEuoI8fgD3K1SOZgityNpzjNyMi/RoxsZZ55eIFxiuNI
-	 Jo23ze5M69sb5hruBZ+ws4Dp87MDODFuN2ajKcjFpEZvBB6LFuNzGcdP9xXn8D4Ztx
-	 4YKM2ZO5wQRtg==
-Date: Tue, 4 Nov 2025 08:36:04 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Junjie Cao <caojunjie650@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Pengyu Luo <mitltlatltl@gmail.com>
-Subject: Re: [PATCH v2 2/2] backlight: aw99706: Add support for Awinic
- AW99706 backlight
-Message-ID: <20251104-attractive-dragonfly-of-perspective-0d52d6@kuoka>
-References: <20251103110648.878325-1-caojunjie650@gmail.com>
- <20251103110648.878325-3-caojunjie650@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kllIFGal"
+Received: by mail-ej1-f65.google.com with SMTP id a640c23a62f3a-b4f323cf89bso211723666b.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Nov 2025 04:10:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1762258245; x=1762863045; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KzUjjBieESWl/eKHRRME8VO1FyP4Xh2Gr78dnGWZR3M=;
+        b=kllIFGal8Q4VzaPhV62Wo8vb1RCA1Tlz17GOkGw/P9pAOwOlZQehgqE9fvwNGIf1Gz
+         kj3G7ArTvZwlclxlcAMAs+WOBDyZodPmB9YbunvvcRYOb9/4QOLVY3FyvoECCAH29zf8
+         QiqH9r9ac0H39gb5SS37rXRQ8RJmokz3j7DsrZPazKXmk1IzhHJ1D+yJTvo/hcr69+cF
+         KTWJnkNPdEpfBkozGuhC77XXGM/NQ5jEuj0ie7QtRvhfAxvtNw2VOfPz1/JA2yrDvU5K
+         MOUpHFab+UOlg5Nwfcm7GYaGBNqGlELLSkwvk0ru3Kov/ndutsqZEAcDyim3QdEi/Agr
+         iB8A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762258245; x=1762863045;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=KzUjjBieESWl/eKHRRME8VO1FyP4Xh2Gr78dnGWZR3M=;
+        b=pBvJbtIDWE+Mf6VRDqYee1IAZ8tA2DzkCEF0CfKpnlrFkKmopzMLz8PnQYcFNPF4U5
+         w7NIE4UnrkKiQwobc8/1mD7yLKhgcFcbMbeyHpTuAUMblgXT5rr4I2RM2dciA2l6s8Ou
+         WNKH1NaNW7F6XlcbLEREcxayDD1CtfNvGittG+8G5qVQii3fmIypVeYc2qoruYYNq2G6
+         3Af8ZsKOeMBXcTmOxy/DOhvwcd2MsUZQm76nKWy3AzoU1wUYLurl90zfeZ2KyoHny/+U
+         EXVepBf56EehJE4bEZD3Ng6C1SC0b5Rm80kzW6iBMFIUdY551aEUG+Qmup542aH5cTGr
+         HV8Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVTpeUEN+Ql2WRUKYrIKqwUK8ieZIr6G7V1W151g04eXAxOM052PUHQoB5NPq1XaOQwJVtziHq9394dzA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKUd8KjAploaJvCBnln469bVmUgM+/S1C3Q/7x67wwpAp6NqKx
+	jtQsE6jusiFI/gCbSb6W6M3Q0Yooh9NU100jh8lc7YINuafEpK11US9iZc7UVmxESbVqvPg+fg3
+	WigQBI0vEEldM73dp7tHkW9DFn+gmfx4=
+X-Gm-Gg: ASbGnctST2yFwhnvx4ElWWoGKSE9JegFrZ8nIsCIXkFMV4aUR6LqIRK5w5vXkHPmOST
+	ulg+coQnTgBCvX/UOirxWZUAHOdADJrfuTCZIdWH9B9sfTQfB/a6orn95BcBWbVJalpyzAjQtYo
+	VoFJj3zpBWeuJyISB3ArTFm0ftXaX3IVd87cu9/xJAylgjG2dMMGYqPHCWvU7vpMrXJSzStLGJv
+	ZKVghQSgLr6MZ4uRfLg5vB+YdtgUHinwgyEYjS7KdJUyLUa2FpboAWkoQBZ
+X-Google-Smtp-Source: AGHT+IFYNmK4p8ZzQreCCOl4PXO/MkzLrFaWoACxm/O8s2bicL/zOLsbm8jPi41+2YZ1Lhpc6tL1AcArgolgsFl++YU=
+X-Received: by 2002:a17:907:3faa:b0:b72:5983:db09 with SMTP id
+ a640c23a62f3a-b725983e06amr109317066b.32.1762258244771; Tue, 04 Nov 2025
+ 04:10:44 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20251103110648.878325-3-caojunjie650@gmail.com>
+References: <20251103110648.878325-1-caojunjie650@gmail.com>
+ <20251103110648.878325-2-caojunjie650@gmail.com> <20251104-dancing-panda-of-patience-49bcc7@kuoka>
+In-Reply-To: <20251104-dancing-panda-of-patience-49bcc7@kuoka>
+From: Junjie Cao <caojunjie650@gmail.com>
+Date: Tue, 4 Nov 2025 20:09:05 +0800
+X-Gm-Features: AWmQ_bkkyexGfBD5XHzrBd-xICWXFb2FCbbahEGY3fitC4E7OLdD5Bwvl1yJFfQ
+Message-ID: <CAK6c68iy0vwgKJTgXr=YptyENTWC1MJrsJWsbsyp9KQkAtOYVg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: leds: backlight: Add Awinic AW99706 backlight
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, Pengyu Luo <mitltlatltl@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Nov 03, 2025 at 07:06:48PM +0800, Junjie Cao wrote:
-> +struct reg_init_data;
-> +
-> +struct aw99706_device {
-> +	struct i2c_client *client;
-> +	struct device *dev;
-> +	struct regmap *regmap;
-> +	struct backlight_device *bl_dev;
-> +	struct gpio_desc *hwen_gpio;
-> +	struct reg_init_data *init_tbl;
-> +	int init_tbl_size;
-> +	bool bl_enable;
-> +};
-> +
-> +enum reg_access {
-> +	REG_NONE_ACCESS	= 0,
-> +	REG_RD_ACCESS	= 1,
-> +	REG_WR_ACCESS	= 2,
-> +};
-> +
-> +const u8 aw99706_regs[AW99706_REG_MAX + 1] = {
+On Tue, Nov 4, 2025 at 3:30=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
+> wrote:
+>
+> On Mon, Nov 03, 2025 at 07:06:47PM +0800, Junjie Cao wrote:
+> > From: Pengyu Luo <mitltlatltl@gmail.com>
+> >
+> > Add Awinic AW99706 backlight binding documentation.
+> >
+> > Signed-off-by: Junjie Cao <caojunjie650@gmail.com>
+>
+> Messed DCO chain. This wasn't here, so you must have altered v1 to add
+> some weird change.
+>
+> This is a blocker, please read carefully submitting patches and DCO.
+>
 
-Why isn't this static?
+Apologies for the DCO mess.
 
-> +	[AW99706_CFG0_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG1_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG2_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG3_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG4_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG5_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG6_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG7_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG8_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFG9_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFGA_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFGB_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFGC_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_CFGD_REG]		= REG_RD_ACCESS | REG_WR_ACCESS,
-> +	[AW99706_FLAG_REG]		= REG_RD_ACCESS,
-> +	[AW99706_CHIPID_REG]		= REG_RD_ACCESS,
-> +	[AW99706_LED_OPEN_FLAG_REG]	= REG_RD_ACCESS,
-> +	[AW99706_LED_SHORT_FLAG_REG]	= REG_RD_ACCESS,
-> +
-> +	/*
-> +	 * Write bit is dropped here, writing BIT(0) to MTPLDOSEL will unlock
-> +	 * Multi-time Programmable (MTP).
-> +	 */
-> +	[AW99706_MTPLDOSEL_REG]		= REG_RD_ACCESS,
-> +	[AW99706_MTPRUN_REG]		= REG_NONE_ACCESS,
-> +};
-> +
+The tablet device is currently with Pengyu. He helped with testing and
+tweaked the .c driver file (patch 2/2) after my change. The entire
+series was then re-formatted on his machine, which caused his git
+configuration to be incorrectly applied to the From: line of this
+dt-binding patch (patch 1/2).
 
-...
+I am the actual author of this dt-binding file. I will correct the
+authorship and DCO chain in v2.
 
-> +	aw = devm_kzalloc(dev, sizeof(*aw), GFP_KERNEL);
-> +	if (!aw)
-> +		return -ENOMEM;
-> +
-> +	aw->client = client;
-> +	aw->dev = dev;
-> +	i2c_set_clientdata(client, aw);
-> +
-> +	aw->regmap = devm_regmap_init_i2c(client, &aw99706_regmap_config);
-> +	if (IS_ERR(aw->regmap))
-> +		return dev_err_probe(dev, PTR_ERR(aw->regmap),
-> +				     "Failed to init regmap\n");
-> +
-> +	ret = aw99706_chip_id_read(aw);
-> +	if (ret != AW99706_ID)
-> +		return dev_err_probe(dev, ret,
-> +				     "Failed to validate chip id\n")
+> > ---
+> > Changes in v2:
+> > - use proper units for properties (Krzysztof)
+> > - drop non-fixed properties (Krzysztof)
+> > - add properties(max-brightness, default-brightness) (Krzysztof)
+> > - Link to v1: https://lore.kernel.org/linux-leds/20251026123923.1531727=
+-2-caojunjie650@gmail.com
+>
+> ...
+>
+> > +  awinic,dim-mode:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: >
+> > +      Select dimming mode of the device.
+> > +        0 =3D Bypass mode.
+> > +        1 =3D DC mode.
+> > +        2 =3D MIX mode(PWM at low brightness and DC at high brightness=
+).
+> > +        3 =3D MIX-26k mode(MIX mode with different PWM frequency).
+> > +    enum: [ 0, 1, 2, 3 ]
+> > +    default: 1
+> > +
+> > +  awinic,sw-freq-hz:
+> > +    description: Boost switching frequency in Hz.
+> > +    enum: [ 300000, 400000, 500000, 600000, 660000, 750000, 850000, 10=
+00000, 1200000, 1330000, 1500000, 1700000 ]
+>
+> Please wrap code according to the preferred limit expressed in Kernel
+> coding style (checkpatch is not a coding style description, but only a
+> tool).
+>
 
-Why are you exiting the probe with a positive value like 4 or 8? This
-makes no sense. Registers do not coontain Linux return codes.
+ACK.
 
-Best regards,
-Krzysztof
+> > +    default: 750000
+> > +
+> > +  awinic,sw-ilmt-microamp:
+> > +    description: Switching current limitation in uA.
+> > +    enum: [ 1500000, 2000000, 2500000, 3000000 ]
+> > +    default: 3000000
+> > +
+> > +  awinic,iled-max-microamp:
+> > +    description: Maximum LED current setting in uA.
+> > +    minimum: 5000
+> > +    maximum: 50000
+> > +    multipleOf: 500
+> > +    default: 20000
+> > +
+> > +  awinic,uvlo-thres-microvolt:
+> > +    description: UVLO(Under Voltage Lock Out) in uV.
+> > +    enum: [ 2200000, 5000000 ]
+> > +    default: 2200000
+> > +
+> > +  awinic,ramp-ctl:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: >
+> > +      Select ramp control and filter of the device.
+> > +        0 =3D Fade in/fade out.
+> > +        1 =3D Light filter.
+> > +        2 =3D Medium filter.
+> > +        3 =3D Heavy filter.
+> > +    enum: [ 0, 1, 2, 3 ]
+> > +    default: 2
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - enable-gpios
+> > +
+> > +unevaluatedProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/gpio/gpio.h>
+> > +
+> > +    i2c {
+> > +        #address-cells =3D <1>;
+> > +        #size-cells =3D <0>;
+> > +
+> > +        aw99706@76 {
+>
+> Node names should be generic. See also an explanation and list of
+> examples (not exhaustive) in DT specification:
+> https://devicetree-specification.readthedocs.io/en/latest/chapter2-device=
+tree-basics.html#generic-names-recommendation
+> If you cannot find a name matching your device, please check in kernel
+> sources for similar cases or you can grow the spec (via pull request to
+> DT spec repo).
+>
 
+I see. backlight@76, thanks for your detailed explanation.
+
+Regards,
+Junjie

@@ -1,183 +1,239 @@
-Received: from mail-ej1-f68.google.com (mail-ej1-f68.google.com [209.85.218.68])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C67CC2E5B13
-	for <linux-fbdev@vger.kernel.org>; Tue,  4 Nov 2025 12:24:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.68
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35DF741C63
+	for <linux-fbdev@vger.kernel.org>; Wed,  5 Nov 2025 16:15:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762259055; cv=none; b=ZeUkkbOYyldVPeWKoZjFrYHFopKEJRDe1PilECm01e53f8TvF8bmAAONf81mw/cQ0e8oIW3fpXNABua/vJc0QUilg3zvBIdK/pqoWv1eXTVzqrW1dBFZRYh9Vvbe1oDh5mhY3BDnAtJW/rfStyWsmQysDXYSYUBxBaaioCvz0Z8=
+	t=1762359356; cv=none; b=jMBt1y36ytxLTn3a+alxnvWH3MsZWubUKVZyiqubk5yZmIO63vpkiSdjt3lXABDlmn2i87IoYqB4mwRqLZR2ASykXkL9HjLsGtnoGB249zlVC3fGbeanLEX71iGIT9jbPeoOlPlCzmqZfjgssHras7HKWzjVzf9ZJ9WKtXAJaEo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762259055; c=relaxed/simple;
-	bh=4G4WmsNqNizyWK3nhkV2waDHR6+qEIhH3Gbq1UFjq7k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=EAl5mjF/ejADF/Gjt9N4crWEBmNhWH0jZ79UN9Mw24n5DSUx8MJUCNIIKgcnxqVRihpH5wXCo2mtvCCBVpBpJQQl9gB4z2/mO0XWE1r0wXpCEn9FRXYfksRIyieYu8+lI+6Gm7df/QhkUXc3pDm0uq4b8OGjxs64UC/Nmx9LSXw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KQutNc31; arc=none smtp.client-ip=209.85.218.68
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1762359356; c=relaxed/simple;
+	bh=emjAQXznJrzKXrq4IRBRYrINtNv+YX+JwbDVxA65hjw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=siqQ0fUEGr0kotpkfqn/DKaIUNa+2Z2WxaaCslT9p3rKXlweO6e/Kzw8dtAD1XDjX+GULaDxtqms83yQd8K8+MlDfAvyQE3ZzUecfE7u9HV28FxG15bmY8tJwyrYVRD6crTHu+4XFLrgVL+F3+mZ7ANHWQXybztBItXMHUxGNpE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lYAyi1cz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=p8RfIe60; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lYAyi1cz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=p8RfIe60; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KQutNc31"
-Received: by mail-ej1-f68.google.com with SMTP id a640c23a62f3a-b3b3a6f4dd4so1002341866b.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Nov 2025 04:24:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762259052; x=1762863852; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8w9oB3T8XUJgBGc+hBaim4B4JguaWQfKbWBDqClypRw=;
-        b=KQutNc31ZFNIt7trjML1B6+ICKFTlx6hKjVrRTkwjs10Wu/IMqdhP5kmYHeDnt2A4W
-         uCaDl7Ge7UL9TMX9HZZKPbsrhPm1UygeaYjGKwiy0N0AoJ/mHD7aczntUFpL6+0wby1z
-         LaiBurl2htcuaQ+v8tNWqhHfJTxsz4Swbmtjdg0sIMkhgDzxjuV7tAtzhPpUVo5ewwRt
-         UniK7m+/o1kvYur85i9ySkYViaeh70z9TgleXn+XAu1+LioF+ENSgcWpobLKacdVpfY/
-         27yK8APNxomBtU9rlWhg9oardPjl+thVom/SPDOX7kbypCQrjpFoKFIxrrbTXWpuvyck
-         RHKA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762259052; x=1762863852;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8w9oB3T8XUJgBGc+hBaim4B4JguaWQfKbWBDqClypRw=;
-        b=jaUitrScN2kzL2nOpzLbtGT/eWUshtKmJmlVCOXLFqx7x0rjtjJtneZSYcjnsubtpu
-         aR9K4XyPTWBdDM3SbB7wCABX7iZlgmYwieQUemheWgcZlPSzGpMKGPkPOy1Y7hQSAs8o
-         uJ5G0EOLZSqggAnmQPAD1jD8fCgJ8D2FNq7K3plM+RnnN6NMgpkvgA/QBRYnEmkDxd27
-         sBeijUbjDEy9kdqn3S+jRveKYzCLQwFAzSu+bYGxENVmZBsAQAtCirhtBTqMYCrUZqr/
-         zXRlwazDDR+jANq4XNfYCUav8sZsBYlIGGoyMo+P/l7YvrVA7coLoOb5wTlJthWc2Q6x
-         aqfw==
-X-Forwarded-Encrypted: i=1; AJvYcCUEZnIryu1B+hHZViCCsczeduLt7owML1tb/PDZJv0rOM2LvnhBVZ5ARqckl1IYc241VCu57vMq9CuwOg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YztFqTyCRqMzyswmp0NA5O3kgjxO8AgYjEQVgaI74SkPEkpSpdV
-	tFtD+noLpdKmb5dPhc2TWpjBAZlStKF58zFprJDmx0wDeGYDMYKGMTzX+Vm5e4h54lJyQ8RXC3g
-	nHhST0ggmGn5Y7nZzXCfcor8jSb07aus=
-X-Gm-Gg: ASbGnctSecCYrtP+9man4+hXK04qdybDahz5XQT0ZHDja1+PY9z/K0cVNGU003L0c5A
-	dp5d5KI5Lekeu1iigYe+dCZd1Ybhk+3l0ltbAVOf87ytt1s+hriQWgS+Sg+gtfXFmUoeDSmKWtS
-	tYUPSivRRpva6CCcsq8fMA+iz3iJEjcHdkkf6z7EMO/oBKz7rvbHRc8tXbnANhuUY0td0OI+0pw
-	e/EKNG53hay/YtrjbwzpABhL12T+JCLeWHyRezC2lbRaZYRE66Pve621Mfg
-X-Google-Smtp-Source: AGHT+IG6ud+xpKAMBlMA5WdjCGVGxS6YVcNlLSwDSmnLLrN6CJtwEsTAMY7TqC8k7Rf1nkyRUDIwFwQ7kTSNndxnDeE=
-X-Received: by 2002:a17:907:97c5:b0:b71:5079:9702 with SMTP id
- a640c23a62f3a-b715079aed8mr550597766b.21.1762259051951; Tue, 04 Nov 2025
- 04:24:11 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lYAyi1cz";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="p8RfIe60";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lYAyi1cz";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="p8RfIe60"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 379DD2120C;
+	Wed,  5 Nov 2025 16:15:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1762359352; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
+	b=lYAyi1czn68pAsBzLrTbssEoTehf5Ghz9czvUgD4zn33+v6v9JQ8bj88f2DUWJ6DQ0n/hd
+	1r00L1uEN/0Pmod0cqt1sU1a67Im6cDFoXVKq7We+idMWefqhcVxkDC4KEiogIUWoslypw
+	6mks9TF/imQYzwVstHAIcOJXrAt4K3U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1762359352;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
+	b=p8RfIe60dOSgBdlMmlOm4Gy2LKQxV41v4aRb916tnF2p8kS2aVZfkfjzkNCzYewS350CWe
+	NPuwc+mY+hWd9nBQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1762359352; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
+	b=lYAyi1czn68pAsBzLrTbssEoTehf5Ghz9czvUgD4zn33+v6v9JQ8bj88f2DUWJ6DQ0n/hd
+	1r00L1uEN/0Pmod0cqt1sU1a67Im6cDFoXVKq7We+idMWefqhcVxkDC4KEiogIUWoslypw
+	6mks9TF/imQYzwVstHAIcOJXrAt4K3U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1762359352;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
+	b=p8RfIe60dOSgBdlMmlOm4Gy2LKQxV41v4aRb916tnF2p8kS2aVZfkfjzkNCzYewS350CWe
+	NPuwc+mY+hWd9nBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D155F13699;
+	Wed,  5 Nov 2025 16:15:51 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 9rivMTd4C2kfOwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 05 Nov 2025 16:15:51 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	deller@gmx.de,
+	lukas@wunner.de,
+	ville.syrjala@linux.intel.com,
+	sam@ravnborg.org,
+	javierm@redhat.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH] drm, fbcon, vga_switcheroo: Avoid race condition in fbcon setup
+Date: Wed,  5 Nov 2025 17:14:49 +0100
+Message-ID: <20251105161549.98836-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.51.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251103110648.878325-1-caojunjie650@gmail.com>
- <20251103110648.878325-3-caojunjie650@gmail.com> <20251104-attractive-dragonfly-of-perspective-0d52d6@kuoka>
-In-Reply-To: <20251104-attractive-dragonfly-of-perspective-0d52d6@kuoka>
-From: Junjie Cao <caojunjie650@gmail.com>
-Date: Tue, 4 Nov 2025 20:22:32 +0800
-X-Gm-Features: AWmQ_blg6GhTdK5EC6AuU-36Dga5TQMKLH2FNjAQ7Rr6vjrvigIa3A71HhVneEs
-Message-ID: <CAK6c68j2j536UEgq36RAuAv7HGW9VTUS-s32+1YDshqK+gTfzw@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] backlight: aw99706: Add support for Awinic AW99706 backlight
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, Pengyu Luo <mitltlatltl@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	MIME_TRACE(0.00)[0:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FREEMAIL_TO(0.00)[linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de,wunner.de,ravnborg.org,redhat.com];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
+X-Spam-Flag: NO
+X-Spam-Score: -2.80
 
-On Tue, Nov 4, 2025 at 3:36=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
-> wrote:
->
-> On Mon, Nov 03, 2025 at 07:06:48PM +0800, Junjie Cao wrote:
-> > +struct reg_init_data;
-> > +
-> > +struct aw99706_device {
-> > +     struct i2c_client *client;
-> > +     struct device *dev;
-> > +     struct regmap *regmap;
-> > +     struct backlight_device *bl_dev;
-> > +     struct gpio_desc *hwen_gpio;
-> > +     struct reg_init_data *init_tbl;
-> > +     int init_tbl_size;
-> > +     bool bl_enable;
-> > +};
-> > +
-> > +enum reg_access {
-> > +     REG_NONE_ACCESS =3D 0,
-> > +     REG_RD_ACCESS   =3D 1,
-> > +     REG_WR_ACCESS   =3D 2,
-> > +};
-> > +
-> > +const u8 aw99706_regs[AW99706_REG_MAX + 1] =3D {
->
-> Why isn't this static?
->
+Protect vga_switcheroo_client_fb_set() with console lock. Avoids OOB
+access in fbcon_remap_all(). Without holding the console lock the call
+races with switching outputs.
 
-That was an oversight on my part. It will be static.
+VGA switcheroo calls fbcon_remap_all() when switching clients. The fbcon
+function uses struct fb_info.node, which is set by register_framebuffer().
+As the fb-helper code currently sets up VGA switcheroo before registering
+the framebuffer, the value of node is -1 and therefore not a legal value.
+For example, fbcon uses the value within set_con2fb_map() [1] as an index
+into an array.
 
-> > +     [AW99706_CFG0_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG1_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG2_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG3_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG4_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG5_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG6_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG7_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG8_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFG9_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFGA_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFGB_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFGC_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_CFGD_REG]              =3D REG_RD_ACCESS | REG_WR_ACCESS=
-,
-> > +     [AW99706_FLAG_REG]              =3D REG_RD_ACCESS,
-> > +     [AW99706_CHIPID_REG]            =3D REG_RD_ACCESS,
-> > +     [AW99706_LED_OPEN_FLAG_REG]     =3D REG_RD_ACCESS,
-> > +     [AW99706_LED_SHORT_FLAG_REG]    =3D REG_RD_ACCESS,
-> > +
-> > +     /*
-> > +      * Write bit is dropped here, writing BIT(0) to MTPLDOSEL will un=
-lock
-> > +      * Multi-time Programmable (MTP).
-> > +      */
-> > +     [AW99706_MTPLDOSEL_REG]         =3D REG_RD_ACCESS,
-> > +     [AW99706_MTPRUN_REG]            =3D REG_NONE_ACCESS,
-> > +};
-> > +
->
-> ...
->
-> > +     aw =3D devm_kzalloc(dev, sizeof(*aw), GFP_KERNEL);
-> > +     if (!aw)
-> > +             return -ENOMEM;
-> > +
-> > +     aw->client =3D client;
-> > +     aw->dev =3D dev;
-> > +     i2c_set_clientdata(client, aw);
-> > +
-> > +     aw->regmap =3D devm_regmap_init_i2c(client, &aw99706_regmap_confi=
-g);
-> > +     if (IS_ERR(aw->regmap))
-> > +             return dev_err_probe(dev, PTR_ERR(aw->regmap),
-> > +                                  "Failed to init regmap\n");
-> > +
-> > +     ret =3D aw99706_chip_id_read(aw);
-> > +     if (ret !=3D AW99706_ID)
-> > +             return dev_err_probe(dev, ret,
-> > +                                  "Failed to validate chip id\n")
->
-> Why are you exiting the probe with a positive value like 4 or 8? This
-> makes no sense. Registers do not coontain Linux return codes.
->
+Moving vga_switcheroo_client_fb_set() after register_framebuffer() can
+result in VGA switching that does not switch fbcon correctly.
 
-Thanks for pointing this out. Using -ENODEV makes more sense. I will do
-it in the next version.
+Therefore move vga_switcheroo_client_fb_set() under fbcon_fb_registered(),
+which already holds the console lock. Fbdev calls fbcon_fb_registered()
+from within register_framebuffer(). Serializes the helper with VGA
+switcheroo's call to fbcon_remap_all().
 
-Regards,
-Junjie
+Although vga_switcheroo_client_fb_set() takes an instance of struct fb_info
+as parameter, it really only needs the contained fbcon state. Moving the
+call to fbcon initialization is therefore cleaner than before. Only amdgpu,
+i915, nouveau and radeon support vga_switcheroo. For all other drivers,
+this change does nothing.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Link: https://elixir.bootlin.com/linux/v6.17/source/drivers/video/fbdev/core/fbcon.c#L2942 # [1]
+---
+ drivers/gpu/drm/drm_fb_helper.c  | 14 --------------
+ drivers/video/fbdev/core/fbcon.c |  9 +++++++++
+ 2 files changed, 9 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 53e9dc0543de..c0343ec16a57 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -31,9 +31,7 @@
+ 
+ #include <linux/console.h>
+ #include <linux/export.h>
+-#include <linux/pci.h>
+ #include <linux/sysrq.h>
+-#include <linux/vga_switcheroo.h>
+ 
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_drv.h>
+@@ -570,11 +568,6 @@ EXPORT_SYMBOL(drm_fb_helper_release_info);
+  */
+ void drm_fb_helper_unregister_info(struct drm_fb_helper *fb_helper)
+ {
+-	struct fb_info *info = fb_helper->info;
+-	struct device *dev = info->device;
+-
+-	if (dev_is_pci(dev))
+-		vga_switcheroo_client_fb_set(to_pci_dev(dev), NULL);
+ 	unregister_framebuffer(fb_helper->info);
+ }
+ EXPORT_SYMBOL(drm_fb_helper_unregister_info);
+@@ -1614,7 +1607,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
+ 	struct drm_client_dev *client = &fb_helper->client;
+ 	struct drm_device *dev = fb_helper->dev;
+ 	struct drm_fb_helper_surface_size sizes;
+-	struct fb_info *info;
+ 	int ret;
+ 
+ 	if (drm_WARN_ON(dev, !dev->driver->fbdev_probe))
+@@ -1635,12 +1627,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
+ 
+ 	strcpy(fb_helper->fb->comm, "[fbcon]");
+ 
+-	info = fb_helper->info;
+-
+-	/* Set the fb info for vgaswitcheroo clients. Does nothing otherwise. */
+-	if (dev_is_pci(info->device))
+-		vga_switcheroo_client_fb_set(to_pci_dev(info->device), info);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 7f35ad66b462..863944530c8e 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -66,6 +66,7 @@
+ #include <linux/string.h>
+ #include <linux/kd.h>
+ #include <linux/panic.h>
++#include <linux/pci.h>
+ #include <linux/printk.h>
+ #include <linux/slab.h>
+ #include <linux/fb.h>
+@@ -78,6 +79,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/crc32.h> /* For counting font checksums */
+ #include <linux/uaccess.h>
++#include <linux/vga_switcheroo.h>
+ #include <asm/irq.h>
+ 
+ #include "fbcon.h"
+@@ -2894,6 +2896,9 @@ void fbcon_fb_unregistered(struct fb_info *info)
+ 
+ 	console_lock();
+ 
++	if (info->device && dev_is_pci(info->device))
++		vga_switcheroo_client_fb_set(to_pci_dev(info->device), NULL);
++
+ 	fbcon_registered_fb[info->node] = NULL;
+ 	fbcon_num_registered_fb--;
+ 
+@@ -3027,6 +3032,10 @@ static int do_fb_registered(struct fb_info *info)
+ 		}
+ 	}
+ 
++	/* Set the fb info for vga_switcheroo clients. Does nothing otherwise. */
++	if (info->device && dev_is_pci(info->device))
++		vga_switcheroo_client_fb_set(to_pci_dev(info->device), info);
++
+ 	return ret;
+ }
+ 
+-- 
+2.51.1
+

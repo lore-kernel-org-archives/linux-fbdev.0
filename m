@@ -1,239 +1,68 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35DF741C63
-	for <linux-fbdev@vger.kernel.org>; Wed,  5 Nov 2025 16:15:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BBE034B661;
+	Thu,  6 Nov 2025 16:56:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762359356; cv=none; b=jMBt1y36ytxLTn3a+alxnvWH3MsZWubUKVZyiqubk5yZmIO63vpkiSdjt3lXABDlmn2i87IoYqB4mwRqLZR2ASykXkL9HjLsGtnoGB249zlVC3fGbeanLEX71iGIT9jbPeoOlPlCzmqZfjgssHras7HKWzjVzf9ZJ9WKtXAJaEo=
+	t=1762448188; cv=none; b=kpq/4SzuNNOnr645aAKSjJ2eV19QEbs/zflIy4A1wj5t+P2ChtzuXAUKKaUKrbm54Crvd7Lqml3U4rv/SNODlKLlUGdjKSJ/JnPLPvFmsFsFrAmkO9NpX9YHlj98qBFbfJem0sqj+NEB5/TpsoPlmuipamknRh1bOJrduZL2rjM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762359356; c=relaxed/simple;
-	bh=emjAQXznJrzKXrq4IRBRYrINtNv+YX+JwbDVxA65hjw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=siqQ0fUEGr0kotpkfqn/DKaIUNa+2Z2WxaaCslT9p3rKXlweO6e/Kzw8dtAD1XDjX+GULaDxtqms83yQd8K8+MlDfAvyQE3ZzUecfE7u9HV28FxG15bmY8tJwyrYVRD6crTHu+4XFLrgVL+F3+mZ7ANHWQXybztBItXMHUxGNpE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lYAyi1cz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=p8RfIe60; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lYAyi1cz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=p8RfIe60; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1762448188; c=relaxed/simple;
+	bh=g8hhqYAlLRPy0OO8aW+VM4dqaefjEpSWoUgU+32L+Ko=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=E0nnbD7TMO15mk/X6dktPJRujvPzgXIEScdQgkKdKeSQ41mYf855Eu6RXWpYBXC/Y4MdeABuglIFiIvfr2XBd18EK0cV4sMsQ7ZxetEGmIg2n3HZ7wF+BgdqPYlxayZb7wB/HmnRGNlP1ty0RIGblOUlCGxouJcMtfISG0ndHHI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KRiTQyzo; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lYAyi1cz";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="p8RfIe60";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lYAyi1cz";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="p8RfIe60"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 379DD2120C;
-	Wed,  5 Nov 2025 16:15:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1762359352; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
-	b=lYAyi1czn68pAsBzLrTbssEoTehf5Ghz9czvUgD4zn33+v6v9JQ8bj88f2DUWJ6DQ0n/hd
-	1r00L1uEN/0Pmod0cqt1sU1a67Im6cDFoXVKq7We+idMWefqhcVxkDC4KEiogIUWoslypw
-	6mks9TF/imQYzwVstHAIcOJXrAt4K3U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1762359352;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
-	b=p8RfIe60dOSgBdlMmlOm4Gy2LKQxV41v4aRb916tnF2p8kS2aVZfkfjzkNCzYewS350CWe
-	NPuwc+mY+hWd9nBQ==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1762359352; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
-	b=lYAyi1czn68pAsBzLrTbssEoTehf5Ghz9czvUgD4zn33+v6v9JQ8bj88f2DUWJ6DQ0n/hd
-	1r00L1uEN/0Pmod0cqt1sU1a67Im6cDFoXVKq7We+idMWefqhcVxkDC4KEiogIUWoslypw
-	6mks9TF/imQYzwVstHAIcOJXrAt4K3U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1762359352;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=pajwFlCpBgWZ62dV0PUsqFxNLgz+F0F3xL4KtatBMSA=;
-	b=p8RfIe60dOSgBdlMmlOm4Gy2LKQxV41v4aRb916tnF2p8kS2aVZfkfjzkNCzYewS350CWe
-	NPuwc+mY+hWd9nBQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D155F13699;
-	Wed,  5 Nov 2025 16:15:51 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 9rivMTd4C2kfOwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 05 Nov 2025 16:15:51 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	deller@gmx.de,
-	lukas@wunner.de,
-	ville.syrjala@linux.intel.com,
-	sam@ravnborg.org,
-	javierm@redhat.com
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH] drm, fbcon, vga_switcheroo: Avoid race condition in fbcon setup
-Date: Wed,  5 Nov 2025 17:14:49 +0100
-Message-ID: <20251105161549.98836-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.51.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KRiTQyzo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F67DC19421;
+	Thu,  6 Nov 2025 16:56:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762448187;
+	bh=g8hhqYAlLRPy0OO8aW+VM4dqaefjEpSWoUgU+32L+Ko=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=KRiTQyzoeXHPV3ZgoIDaRR/5bkTrDMu3LXTDeswLnqvUsIHubMVgJzxY0pDXgcR1W
+	 jx8PIe5ieZxbb3ENAIXYmzy0SdbYd7xFQCmgd3atLpTlNQP5dFpMjfN+HWaLIjtEax
+	 X/GDQgi/C5D/1xgqSarpTSKrdOYdeQ2hCd81CN1aqKfoEithXlnK+Y6bZICIZiJHC+
+	 7nv4SuTGY1vzUkq/lidwnF6vvvxgbpb/PusDqFuvU/BO8gd43XtKja4CFV+mdzLINr
+	 ebPTgu1fkZcd4BTOhnMmWNnpChNlBV35POmfYzfEQOWWDHLxM3DBOdcIvlYfRI671A
+	 jpUjSaBY9pKqg==
+From: Lee Jones <lee@kernel.org>
+To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Helge Deller <deller@gmx.de>, 
+ =?utf-8?q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>
+Cc: Randy Dunlap <rdunlap@infradead.org>, linux-leds@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org
+In-Reply-To: <20250729-expresswire-dep-fix-v1-0-635cd4cc746b@dujemihanovic.xyz>
+References: <20250729-expresswire-dep-fix-v1-0-635cd4cc746b@dujemihanovic.xyz>
+Subject: Re: [PATCH 0/2] ExpressWire dependency fixes
+Message-Id: <176244818496.1958671.2173337292589676568.b4-ty@kernel.org>
+Date: Thu, 06 Nov 2025 16:56:24 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	MIME_TRACE(0.00)[0:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_TO(0.00)[linux.intel.com,kernel.org,gmail.com,ffwll.ch,gmx.de,wunner.de,ravnborg.org,redhat.com];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
-X-Spam-Flag: NO
-X-Spam-Score: -2.80
+X-Mailer: b4 0.15-dev-52d38
 
-Protect vga_switcheroo_client_fb_set() with console lock. Avoids OOB
-access in fbcon_remap_all(). Without holding the console lock the call
-races with switching outputs.
+On Tue, 29 Jul 2025 19:18:28 +0200, Duje Mihanović wrote:
+> This tiny series fixes two dependency issues with the ExpressWire
+> library and the KTD2801 backlight driver. Thanks to Randy for reporting
+> these.
+> 
+> 
 
-VGA switcheroo calls fbcon_remap_all() when switching clients. The fbcon
-function uses struct fb_info.node, which is set by register_framebuffer().
-As the fb-helper code currently sets up VGA switcheroo before registering
-the framebuffer, the value of node is -1 and therefore not a legal value.
-For example, fbcon uses the value within set_con2fb_map() [1] as an index
-into an array.
+Applied, thanks!
 
-Moving vga_switcheroo_client_fb_set() after register_framebuffer() can
-result in VGA switching that does not switch fbcon correctly.
+[1/2] leds: Drop duplicate LEDS_EXPRESSWIRE config
+      (no commit info)
+[2/2] backlight: ktd2801: Depend on GPIOLIB
+      commit: d95963e309bc1211e28051314e72638d98225614
 
-Therefore move vga_switcheroo_client_fb_set() under fbcon_fb_registered(),
-which already holds the console lock. Fbdev calls fbcon_fb_registered()
-from within register_framebuffer(). Serializes the helper with VGA
-switcheroo's call to fbcon_remap_all().
-
-Although vga_switcheroo_client_fb_set() takes an instance of struct fb_info
-as parameter, it really only needs the contained fbcon state. Moving the
-call to fbcon initialization is therefore cleaner than before. Only amdgpu,
-i915, nouveau and radeon support vga_switcheroo. For all other drivers,
-this change does nothing.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Link: https://elixir.bootlin.com/linux/v6.17/source/drivers/video/fbdev/core/fbcon.c#L2942 # [1]
----
- drivers/gpu/drm/drm_fb_helper.c  | 14 --------------
- drivers/video/fbdev/core/fbcon.c |  9 +++++++++
- 2 files changed, 9 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 53e9dc0543de..c0343ec16a57 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -31,9 +31,7 @@
- 
- #include <linux/console.h>
- #include <linux/export.h>
--#include <linux/pci.h>
- #include <linux/sysrq.h>
--#include <linux/vga_switcheroo.h>
- 
- #include <drm/drm_atomic.h>
- #include <drm/drm_drv.h>
-@@ -570,11 +568,6 @@ EXPORT_SYMBOL(drm_fb_helper_release_info);
-  */
- void drm_fb_helper_unregister_info(struct drm_fb_helper *fb_helper)
- {
--	struct fb_info *info = fb_helper->info;
--	struct device *dev = info->device;
--
--	if (dev_is_pci(dev))
--		vga_switcheroo_client_fb_set(to_pci_dev(dev), NULL);
- 	unregister_framebuffer(fb_helper->info);
- }
- EXPORT_SYMBOL(drm_fb_helper_unregister_info);
-@@ -1614,7 +1607,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
- 	struct drm_client_dev *client = &fb_helper->client;
- 	struct drm_device *dev = fb_helper->dev;
- 	struct drm_fb_helper_surface_size sizes;
--	struct fb_info *info;
- 	int ret;
- 
- 	if (drm_WARN_ON(dev, !dev->driver->fbdev_probe))
-@@ -1635,12 +1627,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
- 
- 	strcpy(fb_helper->fb->comm, "[fbcon]");
- 
--	info = fb_helper->info;
--
--	/* Set the fb info for vgaswitcheroo clients. Does nothing otherwise. */
--	if (dev_is_pci(info->device))
--		vga_switcheroo_client_fb_set(to_pci_dev(info->device), info);
--
- 	return 0;
- }
- 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 7f35ad66b462..863944530c8e 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -66,6 +66,7 @@
- #include <linux/string.h>
- #include <linux/kd.h>
- #include <linux/panic.h>
-+#include <linux/pci.h>
- #include <linux/printk.h>
- #include <linux/slab.h>
- #include <linux/fb.h>
-@@ -78,6 +79,7 @@
- #include <linux/interrupt.h>
- #include <linux/crc32.h> /* For counting font checksums */
- #include <linux/uaccess.h>
-+#include <linux/vga_switcheroo.h>
- #include <asm/irq.h>
- 
- #include "fbcon.h"
-@@ -2894,6 +2896,9 @@ void fbcon_fb_unregistered(struct fb_info *info)
- 
- 	console_lock();
- 
-+	if (info->device && dev_is_pci(info->device))
-+		vga_switcheroo_client_fb_set(to_pci_dev(info->device), NULL);
-+
- 	fbcon_registered_fb[info->node] = NULL;
- 	fbcon_num_registered_fb--;
- 
-@@ -3027,6 +3032,10 @@ static int do_fb_registered(struct fb_info *info)
- 		}
- 	}
- 
-+	/* Set the fb info for vga_switcheroo clients. Does nothing otherwise. */
-+	if (info->device && dev_is_pci(info->device))
-+		vga_switcheroo_client_fb_set(to_pci_dev(info->device), info);
-+
- 	return ret;
- }
- 
--- 
-2.51.1
+--
+Lee Jones [李琼斯]
 

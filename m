@@ -1,45 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55F312D12E2;
-	Thu,  6 Nov 2025 16:58:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB80D2E7F2C;
+	Thu,  6 Nov 2025 16:59:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762448310; cv=none; b=Shue9TjSAY4DGD0PU5WcsZyhEvt/48p74DwxwrAoG0wexLNaulJcsuoh8VkadrmdxoKHjVi1QQWlJ7nN5qprf8oQfBjxKq4BrCQWxzXtd9wrZEa7m+5m+vcET3baCniZX9crLGbtD6+BjCBGah7Fh99PcVrwPxRGBRyTdBHxHx4=
+	t=1762448353; cv=none; b=uOXquqRPCGwgmzNgKNZiYVtMGeQGYEtdHBChIpLhObI+vOJ8ps3mZJ7ASOymRpoLlBhUpzDWwmz0QYi7I6mLhChdvJb0ZhsZ6sQFMXsiSbgb/UnLHXoXf7ChJTCERlmpx0DIe5yLIyzdL/I5bRjgm5Uw9LGaEKGlXgZS+DT7GDU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762448310; c=relaxed/simple;
-	bh=71V4FIo2y+M4KAyJTyXGLsgHH48fxpWbne7lhs/Dq3A=;
+	s=arc-20240116; t=1762448353; c=relaxed/simple;
+	bh=snXPP2sPZlmwx9IoETc7vmai7mDjCry6M8ACC/gwYNI=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=KnbNQiYs0wtUjIFnrFj25QlXYRT+GffWxMBi5zqr5B/kmkBtOh7UXKKnzVi/oYB48R2cj+4gmMKqc1ssgffzfo1yMDGiuJA2lgGycN9NURd0GdF3XQha3pLk/cgepbZzv8BIHzIjeL+60n+E35oTZiV0wVa4WUIquYzkz4OkyFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZTyDg9OS; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=XdQbnrToNzbDYDo+WAo81tsABlyA9bpjgWbN1KvNOGpfxCGjVKi4Af3yBeBCiDI1e3T25n4Nii3kUGG+gXcndnEvoJl3BHS3BOLkG9PV6/IkPWSvK2F4eUs54UVaLgeTHL6uxhWId4XMoN/UUf1uclvwnOYsDCzapQa4m//BTZY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RQiUFSZO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZTyDg9OS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DBFCC116C6;
-	Thu,  6 Nov 2025 16:58:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RQiUFSZO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31DA6C116C6;
+	Thu,  6 Nov 2025 16:59:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762448310;
-	bh=71V4FIo2y+M4KAyJTyXGLsgHH48fxpWbne7lhs/Dq3A=;
+	s=k20201202; t=1762448352;
+	bh=snXPP2sPZlmwx9IoETc7vmai7mDjCry6M8ACC/gwYNI=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=ZTyDg9OSjzmgeEwzWEwqhSpnBgTVq4stc9rd5Z6n7W/bK50KLnuUCxpIBswNgVlXf
-	 S9KjsyO8ojFjY7qCyHpYvw2oYybuWL7TGvyqnImyFhGEtNsOG3MRbpBNdzHjCo8WeL
-	 RFwZjIzwqF4DsQoMpDUuj/WzUl7HXJdDdSNq/v16wZYwwTC/peMR2tNCmoKAQw+WCT
-	 zT1M+EXq1hXwGb9xvc4FGUwgsuy+TQq6air4HfPOWOK9J+yS4wTqWnpDW1UhmNp2DI
-	 eb4OMFTqka/AyVa/lJ2sn7AWULQrSdxGNmloPQXFaI47OciyRR8no0Njv3kzRVm8nE
-	 guSJcDEspmAIg==
+	b=RQiUFSZO7/QYncXJmZBRx8p0ksrpFY9UIbQeVlQC51Vea6u2Z6tiP4bxPv7CPT9Jw
+	 4jFx3C1xwNnfOoaWobWvvu3bNHIzzdIBefPkAgLg/lc6z5MLZ4huiiK1ozZO1/r0Ce
+	 Rl+NanvmpPu2eNPtLh+p8+HRbAWJ9MRlKz9rTYptV9vpnfwztVmxBsQxq5WNFEwEBZ
+	 dc9tVrfNnh3jFKmFLyNYje3sZrNpPtKf480rykGJ2DBlBQKTC7wyiGldPmrbD4G3T3
+	 27nTDDSbhrH1qttQJ3Mf/xHGQv5xyufINHRjqsZrGFem6x2EBtJXXuAd3qZ5/8Xbr9
+	 TIwh4Irf+32vA==
 From: Lee Jones <lee@kernel.org>
-To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
- Helge Deller <deller@gmx.de>, 
- =?utf-8?q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linux-leds@vger.kernel.org, 
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-fbdev@vger.kernel.org
-In-Reply-To: <20250729-expresswire-dep-fix-v1-1-635cd4cc746b@dujemihanovic.xyz>
-References: <20250729-expresswire-dep-fix-v1-1-635cd4cc746b@dujemihanovic.xyz>
-Subject: Re: (subset) [PATCH 1/2] leds: Drop duplicate LEDS_EXPRESSWIRE
- config
-Message-Id: <176244830776.1960780.8531286743558641469.b4-ty@kernel.org>
-Date: Thu, 06 Nov 2025 16:58:27 +0000
+To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ Michael Grzeschik <m.grzeschik@pengutronix.de>
+Cc: Pengutronix <kernel@pengutronix.de>, linux-pwm@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20250731-blpwm-v1-1-0171fd31bff9@pengutronix.de>
+References: <20250731-blpwm-v1-1-0171fd31bff9@pengutronix.de>
+Subject: Re: (subset) [PATCH] backlight: pwm_bl: apply the initial
+ backlight state with sane defaults
+Message-Id: <176244834994.1961871.13787969990090168625.b4-ty@kernel.org>
+Date: Thu, 06 Nov 2025 16:59:09 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -50,16 +50,21 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.15-dev-52d38
 
-On Tue, 29 Jul 2025 19:18:29 +0200, Duje Mihanović wrote:
-> While moving said config symbol out of the "if NEW_LEDS" block, I
-> accidentally left a copy inside that block. Remove it.
+On Thu, 31 Jul 2025 10:47:18 +0200, Michael Grzeschik wrote:
+> Currently when calling pwm_apply_might_sleep in the probe routine
+> the pwm will be configured with an not fully defined state.
 > 
+> The duty_cycle is not yet set in that moment. There is a final
+> backlight_update_status call that will have a properly setup state.
+> However this change in the backlight can create a short flicker if the
+> backlight was already preinitialised.
 > 
+> [...]
 
 Applied, thanks!
 
-[1/2] leds: Drop duplicate LEDS_EXPRESSWIRE config
-      commit: ea1c4c7e648d1ca91577071fc42fdc219521098c
+[1/1] backlight: pwm_bl: apply the initial backlight state with sane defaults
+      commit: c596a53cb0c607ccff34aac30ada774aa28b7dc0
 
 --
 Lee Jones [李琼斯]

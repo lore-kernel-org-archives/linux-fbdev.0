@@ -1,65 +1,33 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B9FA262FC7
-	for <linux-fbdev@vger.kernel.org>; Fri,  7 Nov 2025 16:20:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD603334695;
+	Fri,  7 Nov 2025 17:14:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762532442; cv=none; b=s9x7ebIL5pRVA0Ffh16LBQaHn7+m2EYYdmOcsgnPd1OQrrLZQjQ7HsAB6eV+TrOQEXms//aOgZsY/t1uzVT5N1JBjgAouqAxXt7RBbKq7sKl1W7/ZWkaHMTFtyK7xhRfkNoCOIvvN5h9NUL2JNKEJD0RuxJS8pBXBYNYSM+4MuA=
+	t=1762535685; cv=none; b=G3uWApnNN3QGt38TPH66ekAo+WxHLHF0sd1abGkNTwJeMCp9Xmy1Z71vkk0Wjo2M44TO6rfVnSG+WxgNhsh9TBkYoIuzfrbBxbIWqMfeaIWkQXi2pSC+VzlKdk1n7ldJIvdgYNCGv15AiDU+0AejhfkEwXjfjPN5sLuiYmu2H4g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762532442; c=relaxed/simple;
-	bh=Fqsv7T5UOZsDf8OyIMapY71LUPMEa73mHQs1iYV1MDA=;
+	s=arc-20240116; t=1762535685; c=relaxed/simple;
+	bh=iZ+FrXmrNg9m+vRphS3VtQYquQLEkFINHFmKNJIzHf0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kTPMi8yWvnC5w836h+Ac/NlgRYMaErA6jaNqKR39nlTuX0/joS67rjuBpgmVwvt/zSgVKBd+w8vrMuPUpj4hFywDp8erhxmC/j9Czdd5Q2cbRjSH22YlO91v7McZ2CI8NXYpws043a9nAqEoHDp5q3oj436RJyEheT7svAX5ErM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=GrSpfDG5; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=HCZiOLc/doG+UrfZ+OIAnsQvM4w3jbcsYg7w5cdDBrG6KzOVZE2l9KWVacLnanDm5itnJW6oe0PA/lhINEbEL3+RNv9ipP1NvB3LHp0h3iQXiulxvE8Iux7WZoXtxzOOiU8UHqQBaCC5TXsycOUh+NSa1MyyO/vt/5bqKp0lEnY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ch4WLeyk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="GrSpfDG5"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-47728f914a4so5791485e9.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 07 Nov 2025 08:20:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1762532438; x=1763137238; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=wDYDeeQ/vWAVkTVZ2tumPs2hnzhDw4b29aU1EHWCyII=;
-        b=GrSpfDG5UEA62RszPCamiXBlJMTzRq/172nlAeJBrWsdesZzjS4yKwDk2uPZl2TAxD
-         kovPJcpe3glAbYlq4vnnS1Xcq4eAfxVVjXer2YHuVUpnQlxdLDhGwrXECH32yG/ug1/R
-         xvqGOpIfPF2NFGtE1jYgxQ+nUvPNthJTXKBCxGZ/rbivATdqQsKWCceJXObblp7IgqTK
-         ucKfiisyTfcihb7quFaxVwbf3Ru0FEUwLkVf+y4DCD9NLNN8d60M/3xra+KJ1JtMnGdb
-         YaTFnPIveiIpNv/+J+PE+soVDp6fM8gNFA8/D6lqyRDWVn2fdZA3jkR6L+CXomvE2QpK
-         IKRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762532438; x=1763137238;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wDYDeeQ/vWAVkTVZ2tumPs2hnzhDw4b29aU1EHWCyII=;
-        b=FVQL2b81d0s32Zmyd/kERIhEGjk/22hdrD7YM7sv7VGd1XFmpgM34xVRkxf5Ubr97r
-         YWG/Afo5bFF8ArX+lwngEYTLkj7n5moqOhPmqceBu79C57B/WnG1T4P34ziR00YE+NpB
-         +sz/9ElgnAt4tsJXA4Xc5C5duatGOau9p7DnA0ZBt9HuSdFICpy6lg4KCwKqkoZewOOO
-         4e9yD+mIP/JRkkw4k9xIHucUGA/KM/S0cra66tJpphZzWU6vqv4C7W/97YKj1IxOn3J1
-         jrUkwMs7Cv3hrzxvjQ41pXSFauZXuw4jjCPHfcZ0mZLxTKOiJpPQ0IGtX/v9Gjsl25Sm
-         ctvA==
-X-Forwarded-Encrypted: i=1; AJvYcCXJ929EqSjav9rg5sP4RkZJX/4jbpO6GkByMOBzXQYwbHAEYheqb5ZMyVyflM08rVEKNb3QWHMpwxmtdw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxXO8EZ0rgMIQ0YZ09FnlUohRVpE0gF9d0ALda7hfqYaHzQDqx5
-	/fba5ATrbDDvUCKsWJy6f5xf4EdB9wpcDtn2oT2ACqg73gQJIFbTObCWtK71OLq0hcU=
-X-Gm-Gg: ASbGncuYFfvtC7lrqTfQ9LFcfncaODrZ5K8pBh1X3LEidcapRUk8sowkkSKrgqMEfdO
-	HriQuo3tSJchp1NlJXmi3QsGGtIw6pizqHyCOAOt2azCYDrYJg49b4e51PQkwA/dnwP2/ojFigH
-	iTF1gPeFGtaVblGiPhT4Ze9c+DqEiT7PRsXR0s8g3mwAXZv4293B5QbVACUqeoATRGX9lP28BAQ
-	TDahXC89Si2RmL5tofwL71C8DtJ3YrHhj5xKuJrGGJBSmPgvWMhwfXy/18KH+LOXONZ4lYZi7rl
-	IAH58ISArBGRdUQyZ88oX6ns8sNylNtuDOtoxmj4/7yhekdaYp88umBimqqCf/jTKB+o5r8K2c2
-	xEa+rBfCwfPPb6+KDk5ZNvgC/0NYwxD37wmEnmcmfgrwNS7SfgSb6deRYXfEqgnYLUBb6ZKZmai
-	FKW2/3KGzXfNPooy+pyfoQnPQecg/DvzdPCIAyoaooYmwHwTcOBX0nX+6wiy8=
-X-Google-Smtp-Source: AGHT+IFcgdIpQe62FnRg4rVkke0TruBClBrbAABNqXTY7mPIIJ+cQeAzHNDnmh9vCKPrBQJ6NHkN0w==
-X-Received: by 2002:a05:600c:1c8e:b0:475:ddf7:995e with SMTP id 5b1f17b1804b1-4776bca6415mr30487885e9.12.1762532438329;
-        Fri, 07 Nov 2025 08:20:38 -0800 (PST)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-477641fdbd8sm48938385e9.5.2025.11.07.08.20.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Nov 2025 08:20:37 -0800 (PST)
-Date: Fri, 7 Nov 2025 16:22:33 +0000
-From: Daniel Thompson <daniel@riscstar.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ch4WLeyk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A450C19423;
+	Fri,  7 Nov 2025 17:14:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762535685;
+	bh=iZ+FrXmrNg9m+vRphS3VtQYquQLEkFINHFmKNJIzHf0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ch4WLeykxW0UEitLCeqR5iRGkb3N1IvMlWvvO2kVip+YATE5uJqoryTiLs1VKE1c4
+	 fOC0t29HS+RHFklWe+3LyA7a2BxHfqj3W1RwbHeiDrm/5kyIwLpXQsc1sHJi+hz/L2
+	 vMfcZjUHYTkie+9w5AnCxlBH3l9a/hJtW2aRHmw3f09supzpeDBGKKuebZ3AeNUO4n
+	 bnTFhrXQcQZR6jKAAMjVav+lmBCLgNqK38earv+Fl7ngPVI5a4XpHWqO2bPI/E2p4y
+	 Zr56knLQp23Wfz/chOhb1p5d7lCZnOBVSzohujEStOWZO2oZ92kNvv6n4lXkqFvMpi
+	 DqPmX21yGYLLQ==
+Date: Fri, 7 Nov 2025 17:14:38 +0000
+From: Conor Dooley <conor@kernel.org>
 To: Frank Li <Frank.li@nxp.com>
 Cc: maudspierings@gocontroll.com, Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -76,23 +44,31 @@ Cc: maudspierings@gocontroll.com, Lee Jones <lee@kernel.org>,
 	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
 	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v5 2/4] backlight: add max25014atg backlighty
-Message-ID: <aQ4cyVKzgBUfpsj9@aspen.lan>
+Subject: Re: [PATCH v5 1/4] dt-bindings: backlight: Add max25014 supporty
+Message-ID: <20251107-estimator-flap-158b1dc054af@spud>
 References: <20251107-max25014-v5-0-9a6aa57306bf@gocontroll.com>
- <20251107-max25014-v5-2-9a6aa57306bf@gocontroll.com>
- <aQ4Vb4eUmSX0Nj6+@lizhi-Precision-Tower-5810>
+ <20251107-max25014-v5-1-9a6aa57306bf@gocontroll.com>
+ <aQ4RqNiGsngOWrV5@lizhi-Precision-Tower-5810>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="s6RySbGPqQzAw7m8"
+Content-Disposition: inline
+In-Reply-To: <aQ4RqNiGsngOWrV5@lizhi-Precision-Tower-5810>
+
+
+--s6RySbGPqQzAw7m8
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aQ4Vb4eUmSX0Nj6+@lizhi-Precision-Tower-5810>
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 07, 2025 at 10:51:11AM -0500, Frank Li wrote:
-> On Fri, Nov 07, 2025 at 01:49:59PM +0100, Maud Spierings via B4 Relay wrote:
+On Fri, Nov 07, 2025 at 10:35:04AM -0500, Frank Li wrote:
+> On Fri, Nov 07, 2025 at 01:49:58PM +0100, Maud Spierings via B4 Relay wro=
+te:
 > > From: Maud Spierings <maudspierings@gocontroll.com>
 > >
 > > The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
@@ -100,21 +76,32 @@ On Fri, Nov 07, 2025 at 10:51:11AM -0500, Frank Li wrote:
 > >
 > > Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
 
-<snip>
 
-> > +static int max25014_probe(struct i2c_client *cl)
-> > +{
-> > +	struct backlight_device *bl;
-> > +	const struct i2c_device_id *id = i2c_client_get_device_id(cl);
-> > +	struct max25014 *maxim;
-> > +	struct backlight_properties props;
-> > +	int ret;
-> > +	uint32_t initial_brightness = 50;
->
-> try keep reverise christmas order
+> > +  led@0:
+> > +    type: object
+> > +    description: Properties for a string of connected LEDs.
+> > +    $ref: common.yaml#
+> > +
+> > +    properties:
+> > +      reg:
+> > +        const: 0
+>=20
+> If reg is const 0, why need use led@0?
 
-I thought reverse christmas tree order only applied to code where the
-maintainers called it out in Development/process (e.g. netdev and tip).
+> > In the current implementation the control registers for channel 1,
+> > control all channels. So only one led subnode with led-sources is
+> > supported right now. If at some point the driver functionality is
+> > expanded the bindings can be easily extended with it.
 
+--s6RySbGPqQzAw7m8
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Daniel.
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaQ4o/gAKCRB4tDGHoIJi
+0jIvAQD0+hh9svmOHdU5hyVROE565agXP34VdWQ0eWMxVyOYNAD9GBNH6x0Xyw93
+6zQVoS9McvIgls8VBa4UvQeukIIKJg4=
+=JBJl
+-----END PGP SIGNATURE-----
+
+--s6RySbGPqQzAw7m8--
